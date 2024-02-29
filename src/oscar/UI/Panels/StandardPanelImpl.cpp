@@ -48,13 +48,13 @@ void osc::StandardPanelImpl::implOnDraw()
     {
         bool v = true;
         implBeforeImGuiBegin();
-        bool began = ImGui::Begin(m_PanelName.c_str(), &v, m_PanelFlags);
+        bool began = ui::Begin(m_PanelName.c_str(), &v, m_PanelFlags);
         implAfterImGuiBegin();
         if (began)
         {
             implDrawContent();
         }
-        ImGui::End();
+        ui::End();
 
         if (!v)
         {

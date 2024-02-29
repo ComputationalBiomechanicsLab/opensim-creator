@@ -87,7 +87,7 @@ private:
 
     void draw2DUI()
     {
-        ImGui::Begin("controls");
+        ui::Begin("controls");
         if (ui::Button("off")) {
             m_Material.setCullMode(CullMode::Off);
         }
@@ -97,7 +97,7 @@ private:
         if (ui::Button("front")) {
             m_Material.setCullMode(CullMode::Front);
         }
-        ImGui::End();
+        ui::End();
     }
 
     ResourceLoader m_Loader = App::resource_loader();

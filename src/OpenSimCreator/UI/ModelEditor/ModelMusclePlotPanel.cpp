@@ -2254,13 +2254,13 @@ public:
         if (m_IsOpen) {
             bool isOpen = m_IsOpen;
 
-            if (ImGui::Begin(m_PanelName.c_str(), &isOpen)) {
+            if (ui::Begin(m_PanelName.c_str(), &isOpen)) {
                 if (auto maybeNextState = m_ActiveState->onDraw()) {
                     m_ActiveState = std::move(maybeNextState);
                 }
                 m_IsOpen = isOpen;
             }
-            ImGui::End();
+            ui::End();
 
             if (isOpen != m_IsOpen) {
                 m_IsOpen = isOpen;

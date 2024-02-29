@@ -143,9 +143,9 @@ private:
         m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
         m_Camera.renderToScreen();
 
-        ImGui::Begin("controls");
+        ui::Begin("controls");
         ui::Checkbox("normal mapping", &m_IsNormalMappingEnabled);
-        ImGui::End();
+        ui::End();
     }
 
     ResourceLoader m_Loader = App::resource_loader();

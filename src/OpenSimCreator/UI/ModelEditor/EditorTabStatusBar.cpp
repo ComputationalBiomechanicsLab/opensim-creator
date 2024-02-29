@@ -32,7 +32,7 @@ public:
     {
         BeginMainViewportBottomBar("bottom");
         drawSelectionBreadcrumbs();
-        ImGui::End();
+        ui::End();
     }
 
 private:

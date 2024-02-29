@@ -14,7 +14,7 @@ namespace osc
         ~LogViewer() noexcept;
 
 
-        // assumes caller handles `ImGui::Begin(panel_name, nullptr, ImGuiWindowFlags_MenuBar)`
+        // assumes caller handles `ui::Begin(panel_name, nullptr, ImGuiWindowFlags_MenuBar)`
         void onDraw();
 
     private:

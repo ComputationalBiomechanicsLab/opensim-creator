@@ -137,7 +137,7 @@ private:
 
     void draw2DUI()
     {
-        ImGui::Begin("Tutorial Step");
+        ui::Begin("Tutorial Step");
         ui::Checkbox("step1", &m_ShowStep1);
         if (m_Camera.isCapturingMouse()) {
             ui::Text("mouse captured (esc to uncapture)");
@@ -147,7 +147,7 @@ private:
         ui::Text("camera pos = (%f, %f, %f)", cameraPos.x, cameraPos.y, cameraPos.z);
         Vec<3, Degrees> const cameraEulers = m_Camera.eulers();
         ui::Text("camera eulers = (%f, %f, %f)", cameraEulers.x.count(), cameraEulers.y.count(), cameraEulers.z.count());
-        ImGui::End();
+        ui::End();
 
         m_PerfPanel.onDraw();
     }

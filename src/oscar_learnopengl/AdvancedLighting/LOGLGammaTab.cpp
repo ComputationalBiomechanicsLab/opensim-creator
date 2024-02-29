@@ -135,9 +135,9 @@ private:
 
     void draw2DUI()
     {
-        ImGui::Begin("controls");
+        ui::Begin("controls");
         ui::Text("no need to gamma correct - OSC is a gamma-corrected renderer");
-        ImGui::End();
+        ui::End();
     }
 
     Material m_Material = CreateFloorMaterial(App::resource_loader());

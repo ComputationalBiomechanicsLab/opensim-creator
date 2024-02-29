@@ -75,7 +75,7 @@ private:
             UpdatePolarCameraFromImGuiMouseInputs(m_Camera, App::get().dims());
         }
 
-        if (ImGui::Begin("viewer")) {
+        if (ui::Begin("viewer")) {
             ui::Checkbox("wireframe", &m_DrawWireframe);
             for (auto const& [name, _] : m_AllMeshes) {
                 if (ui::Button(name.c_str())) {
@@ -106,7 +106,7 @@ private:
                 }}}, m_RenderParams);
             }
         }
-        ImGui::End();
+        ui::End();
     }
 
     std::map<std::string, Mesh> m_AllMeshes = GenerateMeshLookup();

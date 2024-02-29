@@ -60,7 +60,7 @@ public:
         {
             drawContent();
         }
-        ImGui::End();
+        ui::End();
     }
 
 private:

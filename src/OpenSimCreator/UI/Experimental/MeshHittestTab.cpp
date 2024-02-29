@@ -147,7 +147,7 @@ public:
         // auxiliary 2D UI
         // printout stats
         {
-            ImGui::Begin("controls");
+            ui::Begin("controls");
             ui::Checkbox("BVH", &m_UseBVH);
             ui::Text("%ld microseconds", static_cast<long>(m_RaycastDuration.count()));
             auto r = m_Ray;
@@ -161,7 +161,7 @@ public:
                 ui::Text("p3 = (%.2f, %.2f, %.2f)", m_Tris[2].x, m_Tris[2].y, m_Tris[2].z);
 
             }
-            ImGui::End();
+            ui::End();
         }
         m_PerfPanel.onDraw();
     }

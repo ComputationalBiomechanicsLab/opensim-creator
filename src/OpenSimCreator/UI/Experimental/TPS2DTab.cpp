@@ -337,7 +337,7 @@ public:
     {
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
-        ImGui::Begin("Input");
+        ui::Begin("Input");
         {
             Vec2 const windowDims = ImGui::GetContentRegionAvail();
             float const minDim = std::min(windowDims.x, windowDims.y);
@@ -357,11 +357,11 @@ public:
             }
         }
 
-        ImGui::End();
+        ui::End();
 
         Vec2 outputWindowPos;
         Vec2 outputWindowDims;
-        ImGui::Begin("Output");
+        ui::Begin("Output");
         {
             outputWindowPos = ImGui::GetCursorScreenPos();
             outputWindowDims = ImGui::GetContentRegionAvail();
@@ -385,7 +385,7 @@ public:
             // draw rendered texture via ImGui
             DrawTextureAsImGuiImage(*m_OutputRender, texDims);
         }
-        ImGui::End();
+        ui::End();
 
         // draw scubber overlay
         {
@@ -394,10 +394,10 @@ public:
             float panelHeight = 50.0f;
             ImGui::SetNextWindowPos({ outputWindowPos.x + leftPadding, outputWindowPos.y + outputWindowDims.y - panelHeight - bottomPadding });
             ImGui::SetNextWindowSize({ outputWindowDims.x - leftPadding, panelHeight });
-            ImGui::Begin("##scrubber", nullptr, GetMinimalWindowFlags() & ~ImGuiWindowFlags_NoInputs);
+            ui::Begin("##scrubber", nullptr, GetMinimalWindowFlags() & ~ImGuiWindowFlags_NoInputs);
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
             ImGui::SliderFloat("##blend", &m_BlendingFactor, 0.0f, 1.0f);
-            ImGui::End();
+            ui::End();
         }
 
         // draw log panel (debugging)

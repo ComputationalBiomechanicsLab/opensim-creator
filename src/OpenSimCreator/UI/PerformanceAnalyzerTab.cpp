@@ -77,7 +77,7 @@ public:
             ImGuiDockNodeFlags_PassthruCentralNode
         );
 
-        ImGui::Begin("Inputs");
+        ui::Begin("Inputs");
 
         ImGui::InputInt("parallelism", &m_Parallelism);
         if (ui::Button("edit base params"))
@@ -90,9 +90,9 @@ public:
             populateParamsFromParamBlock();
         }
 
-        ImGui::End();
+        ui::End();
 
-        ImGui::Begin("Outputs");
+        ui::Begin("Outputs");
 
         if (!m_Sims.empty() && ImGui::BeginTable("simulations", 4))
         {
@@ -134,7 +134,7 @@ public:
             }
         }
 
-        ImGui::End();
+        ui::End();
 
         if (m_ParamEditor.beginPopup())
         {

@@ -215,11 +215,11 @@ public:
         if (m_Shared->isPanelEnabled(MeshImporterSharedState::PanelIndex_History))
         {
             bool v = true;
-            if (ImGui::Begin("history", &v))
+            if (ui::Begin("history", &v))
             {
                 drawHistoryPanelContent();
             }
-            ImGui::End();
+            ui::End();
 
             m_Shared->setPanelEnabled(MeshImporterSharedState::PanelIndex_History, v);
         }
@@ -228,11 +228,11 @@ public:
         if (m_Shared->isPanelEnabled(MeshImporterSharedState::PanelIndex_Navigator))
         {
             bool v = true;
-            if (ImGui::Begin("navigator", &v))
+            if (ui::Begin("navigator", &v))
             {
                 drawNavigatorPanelContent();
             }
-            ImGui::End();
+            ui::End();
 
             m_Shared->setPanelEnabled(MeshImporterSharedState::PanelIndex_Navigator, v);
         }
@@ -241,11 +241,11 @@ public:
         if (m_Shared->isPanelEnabled(MeshImporterSharedState::PanelIndex_Log))
         {
             bool v = true;
-            if (ImGui::Begin("Log", &v, ImGuiWindowFlags_MenuBar))
+            if (ui::Begin("Log", &v, ImGuiWindowFlags_MenuBar))
             {
                 m_Shared->updLogViewer().onDraw();
             }
-            ImGui::End();
+            ui::End();
 
             m_Shared->setPanelEnabled(MeshImporterSharedState::PanelIndex_Log, v);
         }
@@ -2433,7 +2433,7 @@ private:
         else
         {
             ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
-            if (ImGui::Begin("wizard_3dViewer"))
+            if (ui::Begin("wizard_3dViewer"))
             {
                 ImGui::PopStyleVar();
                 draw3DViewer();
@@ -2444,7 +2444,7 @@ private:
             {
                 ImGui::PopStyleVar();
             }
-            ImGui::End();
+            ui::End();
         }
     }
 

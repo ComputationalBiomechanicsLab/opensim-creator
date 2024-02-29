@@ -176,9 +176,9 @@ private:
         m_Camera.renderToScreen();
 
         // render auxiliary UI
-        ImGui::Begin("controls");
+        ui::Begin("controls");
         ImGui::InputFloat("uMaterialShininess", &m_MaterialShininess);
-        ImGui::End();
+        ui::End();
 
         m_LogViewer.onDraw();
         m_PerfPanel.onDraw();

@@ -39,7 +39,7 @@ namespace osc
             {
                 drawContent();
             }
-            ImGui::End();
+            ui::End();
         }
 
     private:

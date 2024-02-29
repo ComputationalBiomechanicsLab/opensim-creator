@@ -39,7 +39,7 @@ private:
             ImGui::SetNextWindowPos(pos, ImGuiCond_Once, {0.5f, 0.0f});
             ImGui::SetNextWindowSize({width, 0.0f});
 
-            if (ImGui::Begin("fatal error"))
+            if (ui::Begin("fatal error"))
             {
                 ui::TextWrapped("The application threw an exception with the following message:");
                 ui::Dummy({2.0f, 10.0f});
@@ -47,7 +47,7 @@ private:
                 ui::TextWrapped(m_ErrorMessage);
                 ui::Dummy({0.0f, 10.0f});
             }
-            ImGui::End();
+            ui::End();
         }
 
         // log message panel
@@ -56,11 +56,11 @@ private:
             ImGui::SetNextWindowPos(pos, ImGuiCond_Once, ImVec2(0.5f, 1.0f));
             ImGui::SetNextWindowSize(ImVec2(width, 0.0f));
 
-            if (ImGui::Begin("Error Log", nullptr, ImGuiWindowFlags_MenuBar))
+            if (ui::Begin("Error Log", nullptr, ImGuiWindowFlags_MenuBar))
             {
                 m_LogViewer.onDraw();
             }
-            ImGui::End();
+            ui::End();
         }
     }
 

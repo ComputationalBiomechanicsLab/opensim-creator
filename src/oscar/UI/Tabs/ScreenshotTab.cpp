@@ -112,26 +112,26 @@ private:
         // draw screenshot window
         {
             ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
-            ImGui::Begin("Screenshot");
+            ui::Begin("Screenshot");
             ImGui::PopStyleVar();
 
             Rect imageRect = drawScreenshot();
             drawOverlays(*ImGui::GetWindowDrawList(), imageRect, c_UnselectedColor, c_SelectedColor);
 
-            ImGui::End();
+            ui::End();
         }
 
         // draw controls window
         {
             int id = 0;
-            ImGui::Begin("Controls");
+            ui::Begin("Controls");
             for (ScreenshotAnnotation const& annotation : m_Screenshot.annotations)
             {
                 ImGui::PushID(id++);
                 ui::TextUnformatted(annotation.label);
                 ImGui::PopID();
             }
-            ImGui::End();
+            ui::End();
         }
     }
 

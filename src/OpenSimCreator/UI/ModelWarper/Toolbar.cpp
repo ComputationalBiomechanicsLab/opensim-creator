@@ -15,7 +15,7 @@ void osc::mow::Toolbar::onDraw()
     if (BeginToolbar(m_Label)) {
         drawContent();
     }
-    ImGui::End();
+    ui::End();
 }
 
 void osc::mow::Toolbar::drawContent()

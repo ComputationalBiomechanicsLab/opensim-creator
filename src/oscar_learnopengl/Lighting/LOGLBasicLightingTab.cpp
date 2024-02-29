@@ -75,14 +75,14 @@ private:
         m_Camera.renderToScreen();
 
         // render auxiliary UI
-        ImGui::Begin("controls");
+        ui::Begin("controls");
         ImGui::InputFloat3("light pos", value_ptr(m_LightTransform.position));
         ImGui::InputFloat("ambient strength", &m_AmbientStrength);
         ImGui::InputFloat("diffuse strength", &m_DiffuseStrength);
         ImGui::InputFloat("specular strength", &m_SpecularStrength);
         ImGui::ColorEdit3("object color", value_ptr(m_ObjectColor));
         ImGui::ColorEdit3("light color", value_ptr(m_LightColor));
-        ImGui::End();
+        ui::End();
     }
 
     ResourceLoader m_Loader = App::resource_loader();

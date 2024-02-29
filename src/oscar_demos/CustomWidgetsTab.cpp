@@ -100,12 +100,12 @@ public:
 private:
     void implOnDraw() final
     {
-        ImGui::Begin("window");
+        ui::Begin("window");
         ImGui::InputFloat("standardinput", &m_Value);
         CircularSliderFloat("custom slider", &m_Value, 15.0f, 5.0f);
         ui::Text("%f", m_Value);
         Toggle("custom toggle", &m_Toggle);
-        ImGui::End();
+        ui::End();
     }
 
     float m_Value = 10.0f;

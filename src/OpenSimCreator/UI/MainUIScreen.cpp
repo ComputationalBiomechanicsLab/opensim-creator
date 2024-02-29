@@ -389,7 +389,7 @@ private:
                 }
                 ImGui::EndMenuBar();
             }
-            ImGui::End();
+            ui::End();
             handleDeletedTabs();
         }
     }
@@ -484,7 +484,7 @@ private:
                 ImGui::EndMenuBar();
             }
 
-            ImGui::End();
+            ui::End();
             handleDeletedTabs();
         }
         ImGui::PopStyleVar(4);

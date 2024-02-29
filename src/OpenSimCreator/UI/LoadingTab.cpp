@@ -111,16 +111,16 @@ public:
 
         if (m_LoadingErrorMsg.empty())
         {
-            if (ImGui::Begin("Loading Message", nullptr, ImGuiWindowFlags_NoTitleBar))
+            if (ui::Begin("Loading Message", nullptr, ImGuiWindowFlags_NoTitleBar))
             {
                 ui::Text("loading: %s", m_OsimPath.string().c_str());
                 ImGui::ProgressBar(m_LoadingProgress);
             }
-            ImGui::End();
+            ui::End();
         }
         else
         {
-            if (ImGui::Begin("Error Message", nullptr, ImGuiWindowFlags_NoTitleBar))
+            if (ui::Begin("Error Message", nullptr, ImGuiWindowFlags_NoTitleBar))
             {
                 ui::TextWrapped("An error occurred while loading the file:");
                 ui::Dummy({0.0f, 5.0f});
@@ -133,7 +133,7 @@ public:
                     m_Parent->closeTab(m_TabID);
                 }
             }
-            ImGui::End();
+            ui::End();
         }
     }
 

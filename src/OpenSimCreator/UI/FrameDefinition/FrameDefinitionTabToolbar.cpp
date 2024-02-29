@@ -35,7 +35,7 @@ void osc::FrameDefinitionTabToolbar::onDraw()
     {
         drawContent();
     }
-    ImGui::End();
+    ui::End();
 }
 
 void osc::FrameDefinitionTabToolbar::drawContent()

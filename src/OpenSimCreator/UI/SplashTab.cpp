@@ -197,7 +197,7 @@ private:
         ImGui::SetNextWindowSize(dimensions(screenRect));
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0.0f, 0.0f });
-        ImGui::Begin("##splashscreenbackground", nullptr, GetMinimalWindowFlags());
+        ui::Begin("##splashscreenbackground", nullptr, GetMinimalWindowFlags());
         ImGui::PopStyleVar();
 
         SceneRendererParams params{m_LastSceneRendererParams};
@@ -213,7 +213,7 @@ private:
 
         DrawTextureAsImGuiImage(m_SceneRenderer.updRenderTexture());
 
-        ImGui::End();
+        ui::End();
     }
 
     void drawLogo()
@@ -221,9 +221,9 @@ private:
         Rect const logoRect = calcLogoRect();
 
         ImGui::SetNextWindowPos(logoRect.p1);
-        ImGui::Begin("##osclogo", nullptr, GetMinimalWindowFlags());
+        ui::Begin("##osclogo", nullptr, GetMinimalWindowFlags());
         DrawTextureAsImGuiImage(m_MainAppLogo, dimensions(logoRect));
-        ImGui::End();
+        ui::End();
     }
 
     void drawMenu()
@@ -234,11 +234,11 @@ private:
         ImGui::SetNextWindowSize({dimensions(mmr).x, -1.0f});
         ImGui::SetNextWindowSizeConstraints(dimensions(mmr), dimensions(mmr));
 
-        if (ImGui::Begin("Splash screen", nullptr, ImGuiWindowFlags_NoTitleBar))
+        if (ui::Begin("Splash screen", nullptr, ImGuiWindowFlags_NoTitleBar))
         {
             drawMenuContent();
         }
-        ImGui::End();
+        ui::End();
     }
 
     void drawMenuContent()
@@ -363,15 +363,15 @@ private:
         loc.y = loc.y - 2.0f*ImGui::GetStyle().WindowPadding.y - static_cast<float>(std::max(m_CziLogo.getDimensions().y, m_TudLogo.getDimensions().y));
 
         ImGui::SetNextWindowPos(loc);
-        ImGui::Begin("##czlogo", nullptr, GetMinimalWindowFlags());
+        ui::Begin("##czlogo", nullptr, GetMinimalWindowFlags());
         DrawTextureAsImGuiImage(m_CziLogo);
-        ImGui::End();
+        ui::End();
 
         loc.x += static_cast<float>(m_CziLogo.getDimensions().x) + 2.0f*ImGui::GetStyle().ItemSpacing.x;
         ImGui::SetNextWindowPos(loc);
-        ImGui::Begin("##tudlogo", nullptr, GetMinimalWindowFlags());
+        ui::Begin("##tudlogo", nullptr, GetMinimalWindowFlags());
         DrawTextureAsImGuiImage(m_TudLogo);
-        ImGui::End();
+        ui::End();
     }
 
     void drawVersionInfo()

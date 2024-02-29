@@ -270,14 +270,14 @@ namespace osc
     // returns `true` if the user's mouse is within the current workspace area of the main viewport
     bool IsMouseInMainViewportWorkspaceScreenRect();
 
-    // begin a menu that's attached to the top of a viewport, end it with ImGui::End();
+    // begin a menu that's attached to the top of a viewport, end it with ui::End();
     bool BeginMainViewportTopBar(
         CStringView label,
         float height = ImGui::GetFrameHeight(),
         ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_MenuBar
     );
 
-    // begin a menu that's attached to the bottom of a viewport, end it with ImGui::End();
+    // begin a menu that's attached to the bottom of a viewport, end it with ui::End();
     bool BeginMainViewportBottomBar(CStringView);
 
     //  draw ImGui::Button, but centered on the current line

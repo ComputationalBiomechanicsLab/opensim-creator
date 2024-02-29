@@ -97,13 +97,13 @@ private:
         m_Camera.renderToScreen();
 
         // render 2D UI
-        ImGui::Begin("controls");
+        ui::Begin("controls");
         ImGui::InputFloat3("uLightPos", value_ptr(m_LightTransform.position));
         ImGui::InputFloat("uLightAmbient", &m_LightAmbient);
         ImGui::InputFloat("uLightDiffuse", &m_LightDiffuse);
         ImGui::InputFloat("uLightSpecular", &m_LightSpecular);
         ImGui::InputFloat("uMaterialShininess", &m_MaterialShininess);
-        ImGui::End();
+        ui::End();
     }
 
     ResourceLoader m_Loader = App::resource_loader();

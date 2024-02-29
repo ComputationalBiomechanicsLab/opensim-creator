@@ -178,10 +178,10 @@ private:
 
     void draw2DUI()
     {
-        ImGui::Begin("controls");
+        ui::Begin("controls");
         ui::Checkbox("show shadows", &m_ShowShadows);
         ui::Checkbox("soften shadows", &m_UseSoftShadows);
-        ImGui::End();
+        ui::End();
 
         m_PerfPanel.onDraw();
     }

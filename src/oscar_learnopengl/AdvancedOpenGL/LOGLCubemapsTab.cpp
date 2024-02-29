@@ -183,7 +183,7 @@ private:
 
     void draw2DUI()
     {
-        ImGui::Begin("controls");
+        ui::Begin("controls");
         if (ImGui::BeginCombo("Cube Texturing", m_CubeMaterials.at(m_CubeMaterialIndex).label.c_str())) {
             for (size_t i = 0; i < m_CubeMaterials.size(); ++i) {
                 bool selected = i == m_CubeMaterialIndex;
@@ -194,7 +194,7 @@ private:
             ImGui::EndCombo();
         }
         ImGui::InputFloat("IOR", &m_IOR);
-        ImGui::End();
+        ui::End();
     }
 
     ResourceLoader m_Loader = App::resource_loader();
