@@ -212,7 +212,7 @@ private:
         if (coordinateLocked)
         {
             ImGui::PushStyleVar(ImGuiStyleVar_DisabledAlpha, 0.2f);
-            ImGui::BeginDisabled();
+            ui::BeginDisabled();
         }
         if (CircularSliderFloat("##coordinatevalueeditor", &displayedValue, minValue, maxValue))
         {
@@ -221,7 +221,7 @@ private:
         }
         if (coordinateLocked)
         {
-            ImGui::EndDisabled();
+            ui::EndDisabled();
             ImGui::PopStyleVar();
         }
         if (ImGui::IsItemDeactivatedAfterEdit())

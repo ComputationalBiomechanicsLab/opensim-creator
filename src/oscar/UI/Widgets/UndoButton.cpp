@@ -23,7 +23,7 @@ void osc::UndoButton::onDraw()
     bool wasDisabled = false;
     if (!m_UndoRedo->canUndo())
     {
-        ImGui::BeginDisabled();
+        ui::BeginDisabled();
         wasDisabled = true;
     }
     if (ui::Button(ICON_FA_UNDO))
@@ -39,7 +39,7 @@ void osc::UndoButton::onDraw()
 
     if (wasDisabled)
     {
-        ImGui::EndDisabled();
+        ui::EndDisabled();
     }
 
     if (ImGui::BeginPopupContextItem("##OpenUndoMenu", ImGuiPopupFlags_MouseButtonLeft))

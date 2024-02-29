@@ -179,7 +179,7 @@ private:
 
         if (disabledReason)
         {
-            ImGui::BeginDisabled();
+            ui::BeginDisabled();
         }
         if (ui::Button("OK"))
         {
@@ -188,7 +188,7 @@ private:
         }
         if (disabledReason)
         {
-            ImGui::EndDisabled();
+            ui::EndDisabled();
             if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
             {
                 DrawTooltipBodyOnly(*disabledReason);

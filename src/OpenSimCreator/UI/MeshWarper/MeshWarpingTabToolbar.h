@@ -124,12 +124,12 @@ namespace osc
             ui::SameLine();
             if (!m_State->linkCameras)
             {
-                ImGui::BeginDisabled();
+                ui::BeginDisabled();
             }
             ui::Checkbox("only link rotation", &m_State->onlyLinkRotation);
             if (!m_State->linkCameras)
             {
-                ImGui::EndDisabled();
+                ui::EndDisabled();
             }
         }
 

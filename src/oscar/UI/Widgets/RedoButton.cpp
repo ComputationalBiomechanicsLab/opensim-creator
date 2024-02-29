@@ -23,7 +23,7 @@ void osc::RedoButton::onDraw()
     bool wasDisabled = false;
     if (!m_UndoRedo->canRedo())
     {
-        ImGui::BeginDisabled();
+        ui::BeginDisabled();
         wasDisabled = true;
     }
     if (ui::Button(ICON_FA_REDO))
@@ -39,7 +39,7 @@ void osc::RedoButton::onDraw()
 
     if (wasDisabled)
     {
-        ImGui::EndDisabled();
+        ui::EndDisabled();
     }
 
     if (ImGui::BeginPopupContextItem("##OpenRedoMenu", ImGuiPopupFlags_MouseButtonLeft))

@@ -219,7 +219,7 @@ private:
 
         if (i <= 0)
         {
-            ImGui::BeginDisabled();
+            ui::BeginDisabled();
         }
         if (ImGui::SmallButton(ICON_FA_ARROW_UP))
         {
@@ -227,14 +227,14 @@ private:
         }
         if (i <= 0)
         {
-            ImGui::EndDisabled();
+            ui::EndDisabled();
         }
 
         ui::SameLine();
 
         if (i+1 >= ssize(pps))
         {
-            ImGui::BeginDisabled();
+            ui::BeginDisabled();
         }
         if (ImGui::SmallButton(ICON_FA_ARROW_DOWN))
         {
@@ -242,7 +242,7 @@ private:
         }
         if (i+1 >= ssize(pps))
         {
-            ImGui::EndDisabled();
+            ui::EndDisabled();
         }
 
         ui::SameLine();

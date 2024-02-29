@@ -44,7 +44,7 @@ namespace osc
 
             if (!hasLandmarks)
             {
-                ImGui::BeginDisabled();
+                ui::BeginDisabled();
             }
 
             if (ui::MenuItem(ICON_FA_ERASER " clear landmarks"))
@@ -54,7 +54,7 @@ namespace osc
 
             if (!hasLandmarks)
             {
-                ImGui::EndDisabled();
+                ui::EndDisabled();
             }
         }
 
@@ -65,7 +65,7 @@ namespace osc
 
             if (!hasNonParticipatingLandmarks)
             {
-                ImGui::BeginDisabled();
+                ui::BeginDisabled();
             }
 
             if (ui::MenuItem(ICON_FA_ERASER " clear non-participating landmarks"))
@@ -75,7 +75,7 @@ namespace osc
 
             if (!hasNonParticipatingLandmarks)
             {
-                ImGui::EndDisabled();
+                ui::EndDisabled();
             }
         }
 

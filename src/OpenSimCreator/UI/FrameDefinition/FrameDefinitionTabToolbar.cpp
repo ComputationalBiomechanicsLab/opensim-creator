@@ -53,7 +53,7 @@ void osc::FrameDefinitionTabToolbar::drawExportToOpenSimButton()
 
     if (numBodies == 0)
     {
-        ImGui::BeginDisabled();
+        ui::BeginDisabled();
     }
     if (ui::Button(ICON_FA_FILE_EXPORT " Export to OpenSim"))
     {
@@ -61,7 +61,7 @@ void osc::FrameDefinitionTabToolbar::drawExportToOpenSimButton()
     }
     if (numBodies == 0)
     {
-        ImGui::EndDisabled();
+        ui::EndDisabled();
     }
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
     {

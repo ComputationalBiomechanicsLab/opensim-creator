@@ -369,7 +369,7 @@ private:
             {
                 if (shouldDisable)
                 {
-                    ImGui::BeginDisabled();
+                    ui::BeginDisabled();
                 }
                 if (ui::MenuItem("Show"))
                 {
@@ -377,14 +377,14 @@ private:
                 }
                 if (shouldDisable)
                 {
-                    ImGui::EndDisabled();
+                    ui::EndDisabled();
                 }
             }
 
             {
                 if (shouldDisable)
                 {
-                    ImGui::BeginDisabled();
+                    ui::BeginDisabled();
                 }
                 if (ui::MenuItem("Show Only This"))
                 {
@@ -392,14 +392,14 @@ private:
                 }
                 if (shouldDisable)
                 {
-                    ImGui::EndDisabled();
+                    ui::EndDisabled();
                 }
             }
 
             {
                 if (shouldDisable)
                 {
-                    ImGui::BeginDisabled();
+                    ui::BeginDisabled();
                 }
                 if (ui::MenuItem("Hide"))
                 {
@@ -407,7 +407,7 @@ private:
                 }
                 if (shouldDisable)
                 {
-                    ImGui::EndDisabled();
+                    ui::EndDisabled();
                 }
             }
 

@@ -391,7 +391,7 @@ private:
 
             if (i <= 0)
             {
-                ImGui::BeginDisabled();
+                ui::BeginDisabled();
             }
             if (ui::Button(ICON_FA_ARROW_UP) && i > 0)
             {
@@ -399,14 +399,14 @@ private:
             }
             if (i <= 0)
             {
-                ImGui::EndDisabled();
+                ui::EndDisabled();
             }
 
             ui::SameLine();
 
             if (i >= std::ssize(m_PathPoints) - 1)
             {
-                ImGui::BeginDisabled();
+                ui::BeginDisabled();
             }
             if (ui::Button(ICON_FA_ARROW_DOWN) && i < std::ssize(m_PathPoints) - 1)
             {
@@ -414,7 +414,7 @@ private:
             }
             if (i >= std::ssize(m_PathPoints) - 1)
             {
-                ImGui::EndDisabled();
+                ui::EndDisabled();
             }
 
             ImGui::PopStyleVar();

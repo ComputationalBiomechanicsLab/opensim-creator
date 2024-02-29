@@ -850,9 +850,9 @@ void osc::TextCentered(CStringView s)
 
 void osc::TextDisabledAndCentered(CStringView s)
 {
-    ImGui::BeginDisabled();
+    ui::BeginDisabled();
     TextCentered(s);
-    ImGui::EndDisabled();
+    ui::EndDisabled();
 }
 
 void osc::TextColumnCentered(CStringView s)
@@ -1193,10 +1193,10 @@ bool osc::CircularSliderFloat(
 
 void osc::BeginDisabled()
 {
-    ImGui::BeginDisabled();
+    ui::BeginDisabled();
 }
 
 void osc::EndDisabled()
 {
-    ImGui::EndDisabled();
+    ui::EndDisabled();
 }

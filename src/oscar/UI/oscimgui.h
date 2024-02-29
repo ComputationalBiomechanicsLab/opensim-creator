@@ -116,4 +116,14 @@ namespace osc::ui
     {
         ImGui::End();
     }
+
+    inline void BeginDisabled(bool disabled = true)
+    {
+        ImGui::BeginDisabled(disabled);
+    }
+
+    inline void EndDisabled()
+    {
+        ImGui::EndDisabled();
+    }
 }

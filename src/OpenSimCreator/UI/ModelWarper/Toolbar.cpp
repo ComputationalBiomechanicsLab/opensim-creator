@@ -33,7 +33,7 @@ void osc::mow::Toolbar::drawContent()
 void osc::mow::Toolbar::drawWarpModelButton()
 {
     if (!m_State->canWarpModel()) {
-        ImGui::BeginDisabled();
+        ui::BeginDisabled();
     }
     PushStyleColor(ImGuiCol_Button, Color::darkGreen());
     if (ui::Button(ICON_FA_PLAY " Warp Model")) {
@@ -41,7 +41,7 @@ void osc::mow::Toolbar::drawWarpModelButton()
     }
     PopStyleColor();
     if (!m_State->canWarpModel()) {
-        ImGui::EndDisabled();
+        ui::EndDisabled();
     }
 
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
