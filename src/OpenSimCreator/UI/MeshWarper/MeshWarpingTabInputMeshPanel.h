@@ -493,7 +493,7 @@ namespace osc
         void drawImportButton()
         {
             ui::Button(ICON_FA_FILE_IMPORT " import" ICON_FA_CARET_DOWN);
-            if (ImGui::BeginPopupContextItem("##importcontextmenu", ImGuiPopupFlags_MouseButtonLeft))
+            if (ui::BeginPopupContextItem("##importcontextmenu", ImGuiPopupFlags_MouseButtonLeft))
             {
                 if (ui::MenuItem("Mesh"))
                 {
@@ -508,7 +508,7 @@ namespace osc
                 {
                     ActionLoadNonParticipatingLandmarksFromCSV(m_State->updUndoable());
                 }
-                ImGui::EndPopup();
+                ui::EndPopup();
             }
         }
 
@@ -516,7 +516,7 @@ namespace osc
         void drawExportButton()
         {
             ui::Button(ICON_FA_FILE_EXPORT " export" ICON_FA_CARET_DOWN);
-            if (ImGui::BeginPopupContextItem("##exportcontextmenu", ImGuiPopupFlags_MouseButtonLeft))
+            if (ui::BeginPopupContextItem("##exportcontextmenu", ImGuiPopupFlags_MouseButtonLeft))
             {
                 if (ui::MenuItem("Mesh to OBJ"))
                 {
@@ -534,7 +534,7 @@ namespace osc
                 {
                     ActionSaveLandmarksToCSV(m_State->getScratch(), m_DocumentIdentifier, LandmarkCSVFlags::NoHeader | LandmarkCSVFlags::NoNames);
                 }
-                ImGui::EndPopup();
+                ui::EndPopup();
             }
         }
 

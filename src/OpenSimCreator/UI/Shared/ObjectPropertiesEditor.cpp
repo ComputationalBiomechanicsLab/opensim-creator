@@ -184,7 +184,7 @@ namespace
     // draws a context menu that the user can use to change the step interval of the +/- buttons
     void DrawStepSizeEditor(float& stepSize)
     {
-        if (ImGui::BeginPopupContextItem("##valuecontextmenu"))
+        if (ui::BeginPopupContextItem("##valuecontextmenu"))
         {
             ui::Text("Set Step Size");
             ui::SameLine();
@@ -318,7 +318,7 @@ namespace
                 ImGui::EndTable();
             }
 
-            ImGui::EndPopup();
+            ui::EndPopup();
         }
     }
 

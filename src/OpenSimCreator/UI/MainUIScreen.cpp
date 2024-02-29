@@ -473,10 +473,10 @@ private:
                     // adding buttons to tab bars: https://github.com/ocornut/imgui/issues/3291
                     ImGui::TabItemButton(ICON_FA_PLUS);
 
-                    if (ImGui::BeginPopupContextItem("popup", ImGuiPopupFlags_MouseButtonLeft))
+                    if (ui::BeginPopupContextItem("popup", ImGuiPopupFlags_MouseButtonLeft))
                     {
                         drawAddNewTabMenu();
-                        ImGui::EndPopup();
+                        ui::EndPopup();
                     }
 
                     ImGui::EndTabBar();

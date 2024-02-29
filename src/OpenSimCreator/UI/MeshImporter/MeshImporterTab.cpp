@@ -1705,10 +1705,10 @@ private:
         // a navigator element might have opened the context menu in the navigator panel
         //
         // this can happen when the user right-clicks something in the navigator
-        if (ImGui::BeginPopup("##maincontextmenu"))
+        if (ui::BeginPopup("##maincontextmenu"))
         {
             drawContextMenuContent();
-            ImGui::EndPopup();
+            ui::EndPopup();
         }
     }
 
@@ -1754,10 +1754,10 @@ private:
         ui::Button(ICON_FA_PLUS " Add Other");
         DrawTooltipIfItemHovered("Add components to the model");
 
-        if (ImGui::BeginPopupContextItem("##additemtoscenepopup", ImGuiPopupFlags_MouseButtonLeft))
+        if (ui::BeginPopupContextItem("##additemtoscenepopup", ImGuiPopupFlags_MouseButtonLeft))
         {
             drawAddOtherMenuItems();
-            ImGui::EndPopup();
+            ui::EndPopup();
         }
 
         ui::SameLine();
@@ -1765,7 +1765,7 @@ private:
         ui::Button(ICON_FA_PAINT_ROLLER " Colors");
         DrawTooltipIfItemHovered("Change scene display colors", "This only changes the decroative display colors of model elements in this screen. Color changes are not saved to the exported OpenSim model. Changing these colors can be handy for spotting things, or constrasting scene elements more strongly");
 
-        if (ImGui::BeginPopupContextItem("##addpainttoscenepopup", ImGuiPopupFlags_MouseButtonLeft))
+        if (ui::BeginPopupContextItem("##addpainttoscenepopup", ImGuiPopupFlags_MouseButtonLeft))
         {
             std::span<Color const> colors = m_Shared->getColors();
             std::span<char const* const> labels = m_Shared->getColorLabels();
@@ -1781,7 +1781,7 @@ private:
                 }
                 ui::PopID();
             }
-            ImGui::EndPopup();
+            ui::EndPopup();
         }
 
         ui::SameLine();
@@ -1789,7 +1789,7 @@ private:
         ui::Button(ICON_FA_EYE " Visibility");
         DrawTooltipIfItemHovered("Change what's visible in the 3D scene", "This only changes what's visible in this screen. Visibility options are not saved to the exported OpenSim model. Changing these visibility options can be handy if you have a lot of overlapping/intercalated scene elements");
 
-        if (ImGui::BeginPopupContextItem("##changevisibilitypopup", ImGuiPopupFlags_MouseButtonLeft))
+        if (ui::BeginPopupContextItem("##changevisibilitypopup", ImGuiPopupFlags_MouseButtonLeft))
         {
             std::span<bool const> visibilities = m_Shared->getVisibilityFlags();
             std::span<char const* const> labels = m_Shared->getVisibilityFlagLabels();
@@ -1805,7 +1805,7 @@ private:
                 }
                 ui::PopID();
             }
-            ImGui::EndPopup();
+            ui::EndPopup();
         }
 
         ui::SameLine();
@@ -1813,7 +1813,7 @@ private:
         ui::Button(ICON_FA_LOCK " Interactivity");
         DrawTooltipIfItemHovered("Change what your mouse can interact with in the 3D scene", "This does not prevent being able to edit the model - it only affects whether you can click that type of element in the 3D scene. Combining these flags with visibility and custom colors can be handy if you have heavily overlapping/intercalated scene elements.");
 
-        if (ImGui::BeginPopupContextItem("##changeinteractionlockspopup", ImGuiPopupFlags_MouseButtonLeft))
+        if (ui::BeginPopupContextItem("##changeinteractionlockspopup", ImGuiPopupFlags_MouseButtonLeft))
         {
             std::span<bool const> interactables = m_Shared->getIneractivityFlags();
             std::span<char const* const> labels =  m_Shared->getInteractivityFlagLabels();
@@ -1829,7 +1829,7 @@ private:
                 }
                 ui::PopID();
             }
-            ImGui::EndPopup();
+            ui::EndPopup();
         }
 
         ui::SameLine();
@@ -2006,7 +2006,7 @@ private:
         ui::Button(settingButtonText.c_str());
         ui::PopStyleVar();
 
-        if (ImGui::BeginPopupContextItem("##settingspopup", ImGuiPopupFlags_MouseButtonLeft))
+        if (ui::BeginPopupContextItem("##settingspopup", ImGuiPopupFlags_MouseButtonLeft))
         {
             ModelCreationFlags const flags = m_Shared->getModelCreationFlags();
 
@@ -2021,7 +2021,7 @@ private:
                 }
             }
 
-            ImGui::EndPopup();
+            ui::EndPopup();
         }
     }
 
@@ -2279,11 +2279,11 @@ private:
         }
 
         bool ctxMenuShowing = false;
-        if (ImGui::BeginPopup("##maincontextmenu"))
+        if (ui::BeginPopup("##maincontextmenu"))
         {
             ctxMenuShowing = true;
             drawContextMenuContent();
-            ImGui::EndPopup();
+            ui::EndPopup();
         }
 
         if (m_Shared->isRenderHovered() && m_MaybeHover && (ctxMenuShowing ? m_MaybeHover.ID != m_MaybeOpenedContextMenu.ID : true))
@@ -2419,11 +2419,11 @@ private:
                 ImGuiWindowFlags_NoMove |
                 ImGuiWindowFlags_NoResize;
 
-            if (ImGui::BeginPopupModal("##visualizermodalpopup", nullptr, modalFlags))
+            if (ui::BeginPopupModal("##visualizermodalpopup", nullptr, modalFlags))
             {
                 ui::PopStyleVar();
                 ptr->onDraw();
-                ImGui::EndPopup();
+                ui::EndPopup();
             }
             else
             {

@@ -265,7 +265,7 @@ namespace
         SimTK::State const& state)
     {
         ui::Button("Select" ICON_FA_CARET_DOWN);
-        if (ImGui::BeginPopupContextItem("##selectmenu", ImGuiPopupFlags_MouseButtonLeft))
+        if (ui::BeginPopupContextItem("##selectmenu", ImGuiPopupFlags_MouseButtonLeft))
         {
             DrawSelectionStateModifierMenuContent(
                 uiState,
@@ -274,13 +274,13 @@ namespace
                 SelectionState::Selected
             );
 
-            ImGui::EndPopup();
+            ui::EndPopup();
         }
 
         ui::SameLine();
 
         ui::Button("De-Select" ICON_FA_CARET_DOWN);
-        if (ImGui::BeginPopupContextItem("##deselectmenu", ImGuiPopupFlags_MouseButtonLeft))
+        if (ui::BeginPopupContextItem("##deselectmenu", ImGuiPopupFlags_MouseButtonLeft))
         {
             DrawSelectionStateModifierMenuContent(
                 uiState,
@@ -289,7 +289,7 @@ namespace
                 SelectionState::NotSelected
             );
 
-            ImGui::EndPopup();
+            ui::EndPopup();
         }
     }
 

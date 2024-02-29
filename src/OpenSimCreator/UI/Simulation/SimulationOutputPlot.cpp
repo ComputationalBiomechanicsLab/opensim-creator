@@ -257,10 +257,10 @@ public:
             ui::TextUnformatted(m_OutputExtractor.getValueString(*sim.getModel(), r));
 
             // draw context menu (if user right clicks)
-            if (ImGui::BeginPopupContextItem("plotcontextmenu"))
+            if (ui::BeginPopupContextItem("plotcontextmenu"))
             {
                 DrawToggleWatchOutputMenuItem(*m_API, m_OutputExtractor);
-                ImGui::EndPopup();
+                ui::EndPopup();
             }
         }
         else
@@ -328,10 +328,10 @@ private:
 
 
         // draw context menu (if user right clicks)
-        if (ImGui::BeginPopupContextItem("plotcontextmenu"))
+        if (ui::BeginPopupContextItem("plotcontextmenu"))
         {
             DrawGenericNumericOutputContextMenuItems(*m_API, sim, m_OutputExtractor);
-            ImGui::EndPopup();
+            ui::EndPopup();
         }
 
         // (the rest): handle scrubber overlay

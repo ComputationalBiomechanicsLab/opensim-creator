@@ -147,7 +147,7 @@ namespace osc
         {
             m_CursorXAtExportButton = ImGui::GetCursorPos().x;  // needed to align the blending factor slider
             ui::Button(ICON_FA_FILE_EXPORT " export" ICON_FA_CARET_DOWN);
-            if (ImGui::BeginPopupContextItem("##exportcontextmenu", ImGuiPopupFlags_MouseButtonLeft))
+            if (ui::BeginPopupContextItem("##exportcontextmenu", ImGuiPopupFlags_MouseButtonLeft))
             {
                 if (ui::MenuItem("Mesh to OBJ"))
                 {
@@ -173,7 +173,7 @@ namespace osc
                 {
                     ActionSavePairedLandmarksToCSV(m_State->getScratch(), LandmarkCSVFlags::NoNames);
                 }
-                ImGui::EndPopup();
+                ui::EndPopup();
             }
         }
 

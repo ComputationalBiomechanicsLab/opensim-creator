@@ -204,10 +204,10 @@ private:
         // draw filter stuff
 
         ui::TextUnformatted(ICON_FA_EYE);
-        if (ImGui::BeginPopupContextItem("##filterpopup"))
+        if (ui::BeginPopupContextItem("##filterpopup"))
         {
             ui::Checkbox("frames", &m_ShowFrames);
-            ImGui::EndPopup();
+            ui::EndPopup();
         }
         ui::SameLine();
         DrawSearchBar(m_CurrentSearch);

@@ -1946,9 +1946,9 @@ namespace
             std::string const& plotTitle,
             ImGuiPopupFlags flags = ImGuiPopupFlags_MouseButtonRight)
         {
-            if (ImGui::BeginPopupContextItem((plotTitle + "_contextmenu").c_str(), flags)) {
+            if (ui::BeginPopupContextItem((plotTitle + "_contextmenu").c_str(), flags)) {
                 drawGeneralPlotPopupContent(coord);
-                ImGui::EndPopup();
+                ui::EndPopup();
             }
         }
 

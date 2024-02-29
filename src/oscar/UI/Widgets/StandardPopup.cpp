@@ -99,7 +99,7 @@ bool osc::StandardPopup::implBeginPopup()
 
         // try to begin the modal window
         implBeforeImguiBeginPopup();
-        bool const opened = ImGui::BeginPopupModal(m_PopupName.c_str(), nullptr, m_PopupFlags);
+        bool const opened = ui::BeginPopupModal(m_PopupName.c_str(), nullptr, m_PopupFlags);
         implAfterImguiBeginPopup();
 
         if (!opened)
@@ -127,7 +127,7 @@ bool osc::StandardPopup::implBeginPopup()
 
         // try to begin the popup window
         implBeforeImguiBeginPopup();
-        bool const opened = ImGui::BeginPopup(m_PopupName.c_str(), m_PopupFlags);
+        bool const opened = ui::BeginPopup(m_PopupName.c_str(), m_PopupFlags);
         implAfterImguiBeginPopup();
 
         // try to show popup
@@ -160,7 +160,7 @@ void osc::StandardPopup::implOnDraw()
 
 void osc::StandardPopup::implEndPopup()
 {
-    ImGui::EndPopup();
+    ui::EndPopup();
     m_JustOpened = false;
 }
 

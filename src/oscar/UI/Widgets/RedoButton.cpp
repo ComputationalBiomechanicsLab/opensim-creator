@@ -42,7 +42,7 @@ void osc::RedoButton::onDraw()
         ui::EndDisabled();
     }
 
-    if (ImGui::BeginPopupContextItem("##OpenRedoMenu", ImGuiPopupFlags_MouseButtonLeft))
+    if (ui::BeginPopupContextItem("##OpenRedoMenu", ImGuiPopupFlags_MouseButtonLeft))
     {
         for (ptrdiff_t i = 0; i < m_UndoRedo->getNumRedoEntriesi(); ++i)
         {
@@ -53,7 +53,7 @@ void osc::RedoButton::onDraw()
             }
             ui::PopID();
         }
-        ImGui::EndPopup();
+        ui::EndPopup();
     }
 
     ui::PopStyleVar();

@@ -162,4 +162,24 @@ namespace osc::ui
     {
         ImGui::PopStyleVar(count);
     }
+
+    inline bool BeginPopup(const char* str_id, ImGuiWindowFlags flags = 0)
+    {
+        return ImGui::BeginPopup(str_id, flags);
+    }
+
+    inline bool BeginPopupContextItem(const char* str_id = nullptr, ImGuiPopupFlags popup_flags = 1)
+    {
+        return ImGui::BeginPopupContextItem(str_id, popup_flags);
+    }
+
+    inline bool BeginPopupModal(const char* name, bool* p_open = NULL, ImGuiWindowFlags flags = 0)
+    {
+        return ImGui::BeginPopupModal(name, p_open, flags);
+    }
+
+    inline void EndPopup()
+    {
+        ImGui::EndPopup();
+    }
 }

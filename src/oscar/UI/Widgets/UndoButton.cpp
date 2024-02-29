@@ -42,7 +42,7 @@ void osc::UndoButton::onDraw()
         ui::EndDisabled();
     }
 
-    if (ImGui::BeginPopupContextItem("##OpenUndoMenu", ImGuiPopupFlags_MouseButtonLeft))
+    if (ui::BeginPopupContextItem("##OpenUndoMenu", ImGuiPopupFlags_MouseButtonLeft))
     {
         for (ptrdiff_t i = 0; i < m_UndoRedo->getNumUndoEntriesi(); ++i)
         {
@@ -53,7 +53,7 @@ void osc::UndoButton::onDraw()
             }
             ui::PopID();
         }
-        ImGui::EndPopup();
+        ui::EndPopup();
     }
 
     ui::PopStyleVar();

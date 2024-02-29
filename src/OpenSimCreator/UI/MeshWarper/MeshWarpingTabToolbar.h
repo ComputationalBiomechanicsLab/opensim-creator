@@ -88,7 +88,7 @@ namespace osc
         void drawOpenDocumentButton()
         {
             ui::Button(ICON_FA_FOLDER_OPEN);
-            if (ImGui::BeginPopupContextItem("##OpenFolder", ImGuiPopupFlags_MouseButtonLeft))
+            if (ui::BeginPopupContextItem("##OpenFolder", ImGuiPopupFlags_MouseButtonLeft))
             {
                 if (ui::MenuItem("Load Source Mesh"))
                 {
@@ -98,7 +98,7 @@ namespace osc
                 {
                     ActionLoadMeshFile(m_State->updUndoable(), TPSDocumentInputIdentifier::Destination);
                 }
-                ImGui::EndPopup();
+                ui::EndPopup();
             }
             DrawTooltipIfItemHovered(
                 "Open File",
