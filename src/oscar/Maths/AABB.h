@@ -6,6 +6,7 @@
 
 namespace osc
 {
+    // axis-aligned bounding box (AABB)
     struct AABB final {
 
         friend bool operator==(AABB const&, AABB const&) = default;

@@ -133,6 +133,11 @@ namespace
 
         return ShadowCameraMatrices{viewMat, projMat};
     }
+
+    bool HasRimHighlights(SceneDecoration const& d)
+    {
+        return d.flags & (SceneDecorationFlags::IsSelected | SceneDecorationFlags::IsChildOfSelected | SceneDecorationFlags::IsHovered | SceneDecorationFlags::IsChildOfHovered);
+    }
 }
 
 
@@ -318,15 +323,14 @@ private:
         }
 
         // compute the worldspace bounds union of all rim-highlighted geometry
-        std::optional<AABB> maybeRimWorldspaceAABB;
-        for (SceneDecoration const& dec : decorations)
+        auto const rimAABB = [](SceneDecoration const& d) -> std::optional<AABB>
         {
-            if (dec.flags & (SceneDecorationFlags::IsSelected | SceneDecorationFlags::IsChildOfSelected | SceneDecorationFlags::IsHovered | SceneDecorationFlags::IsChildOfHovered))
-            {
-                AABB const decAABB = WorldpaceAABB(dec);
-                maybeRimWorldspaceAABB = maybeRimWorldspaceAABB ? union_of(*maybeRimWorldspaceAABB, decAABB) : decAABB;
+            if (d.flags & (SceneDecorationFlags::IsSelected | SceneDecorationFlags::IsChildOfSelected | SceneDecorationFlags::IsHovered | SceneDecorationFlags::IsChildOfHovered)) {
+                return WorldpaceAABB(d);
             }
-        }
+            return std::nullopt;
+        };
+        std::optional<AABB> maybeRimWorldspaceAABB = maybe_aabb_of(decorations, rimAABB);
 
         if (!maybeRimWorldspaceAABB)
         {
@@ -432,8 +436,7 @@ private:
         std::span<SceneDecoration const> decorations,
         SceneRendererParams const& params)
     {
-        if (!params.drawShadows)
-        {
+        if (!params.drawShadows) {
             return std::nullopt;  // the caller doesn't actually want shadows
         }
 
@@ -444,18 +447,14 @@ private:
         //
         // (also, while doing that, draw each mesh - to prevent multipass)
         std::optional<AABB> casterAABBs;
-        for (SceneDecoration const& dec : decorations)
-        {
-            if (dec.flags & SceneDecorationFlags::CastsShadows)
-            {
-                AABB const decorationAABB = WorldpaceAABB(dec);
-                casterAABBs = casterAABBs ? union_of(*casterAABBs, decorationAABB) : decorationAABB;
+        for (SceneDecoration const& dec : decorations) {
+            if (dec.flags & SceneDecorationFlags::CastsShadows) {
+                casterAABBs = aabb_of(casterAABBs, WorldpaceAABB(dec));
                 Graphics::DrawMesh(dec.mesh, dec.transform, m_DepthWritingMaterial, m_Camera);
             }
         }
 
-        if (!casterAABBs)
-        {
+        if (!casterAABBs) {
             // there are no shadow casters, so there will be no shadows
             m_Camera.reset();
             return std::nullopt;

@@ -40,16 +40,6 @@ std::ostream& osc::operator<<(std::ostream& o, AABB const& aabb)
 // BVH helpers
 namespace
 {
-    AABB union_of(std::span<BVHPrim const> prims)
-    {
-        AABB rv = prims.front().getBounds();
-        for (auto it = prims.begin() + 1; it != prims.end(); ++it)
-        {
-            rv = union_of(rv, it->getBounds());
-        }
-        return rv;
-    }
-
     bool HasAVolume(Triangle const& t)
     {
         return !(t.p0 == t.p1 || t.p0 == t.p2 || t.p1 == t.p2);
@@ -80,7 +70,10 @@ namespace
             // allocate an appropriate internal node
 
             // compute bounding box of remaining (children) prims
-            AABB const aabb = union_of({prims.begin() + begin, static_cast<size_t>(n)});
+            AABB const aabb = aabb_of(
+                std::span<BVHPrim const>{prims.begin() + begin, static_cast<size_t>(n)},
+                [](BVHPrim const& p) { return p.getBounds(); }
+            );
 
             // compute slicing position along the longest dimension
             auto const longestDimIdx = max_element_index(dimensions(aabb));
@@ -1260,54 +1253,6 @@ Mat4 osc::DiscToDiscMat4(Disc const& a, Disc const& b)
     return translator * rotator * scaler;
 }
 
-Vec3 osc::centroid(AABB const& a)
-{
-    return 0.5f * (a.min + a.max);
-}
-
-Vec3 osc::dimensions(AABB const& a)
-{
-    return a.max - a.min;
-}
-
-Vec3 osc::half_widths(AABB const& a)
-{
-    return 0.5f*dimensions(a);
-}
-
-float osc::volume(AABB const& a)
-{
-    Vec3 d = dimensions(a);
-    return d.x * d.y * d.z;
-}
-
-AABB osc::union_of(AABB const& a, AABB const& b)
-{
-    return AABB
-    {
-        elementwise_min(a.min, b.min),
-        elementwise_max(a.max, b.max),
-    };
-}
-
-bool osc::is_point(AABB const& a)
-{
-    return a.min == a.max;
-}
-
-bool osc::has_zero_volume(AABB const& a)
-{
-
-    for (Vec3::size_type i = 0; i < 3; ++i)
-    {
-        if (a.min[i] == a.max[i])
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
 std::array<Vec3, 8> osc::cuboid_vertices(AABB const& aabb)
 {
     Vec3 d = dimensions(aabb);
@@ -1330,15 +1275,14 @@ std::array<Vec3, 8> osc::cuboid_vertices(AABB const& aabb)
 
 AABB osc::transform_aabb(AABB const& aabb, Mat4 const& m)
 {
-    auto verts = cuboid_vertices(aabb);
+    auto vertices = cuboid_vertices(aabb);
 
-    for (Vec3& vert : verts)
-    {
-        Vec4 p = m * Vec4{vert, 1.0f};
-        vert = Vec3{p / p.w}; // perspective divide
+    for (Vec3& vertex : vertices) {
+        Vec4 p = m * Vec4{vertex, 1.0f};
+        vertex = Vec3{p / p.w}; // perspective divide
     }
 
-    return aabb_of(verts);
+    return aabb_of(vertices);
 }
 
 AABB osc::transform_aabb(AABB const& aabb, Transform const& t)
@@ -1349,140 +1293,24 @@ AABB osc::transform_aabb(AABB const& aabb, Transform const& t)
 
     Mat3 const m = mat3_cast(t);
 
-    AABB rv{t.position, t.position};  // add in the translation
-    for (Vec3::size_type i = 0; i < 3; ++i)
-    {
+    AABB rv = aabb_of(t.position);  // add in the translation
+    for (Vec3::size_type i = 0; i < 3; ++i) {
+
         // form extent by summing smaller and larger terms repsectively
-        for (Vec3::size_type j = 0; j < 3; ++j)
-        {
+        for (Vec3::size_type j = 0; j < 3; ++j) {
             float const e = m[j][i] * aabb.min[j];
             float const f = m[j][i] * aabb.max[j];
 
-            if (e < f)
-            {
+            if (e < f) {
                 rv.min[i] += e;
                 rv.max[i] += f;
             }
-            else
-            {
+            else {
                 rv.min[i] += f;
                 rv.max[i] += e;
             }
         }
     }
-    return rv;
-}
-
-AABB osc::aabb_of(Vec3 const& v)
-{
-    return AABB{.min = v, .max = v};
-}
-
-AABB osc::aabb_of(Triangle const& t)
-{
-    AABB rv{t.p0, t.p0};
-    rv.min = elementwise_min(rv.min, t.p1);
-    rv.max = elementwise_max(rv.max, t.p1);
-    rv.min = elementwise_min(rv.min, t.p2);
-    rv.max = elementwise_max(rv.max, t.p2);
-    return rv;
-}
-
-AABB osc::aabb_of(std::span<Vec3 const> vs)
-{
-    // edge-case: no points provided
-    if (vs.empty())
-    {
-        return AABB{};
-    }
-
-    // otherwise, compute bounds
-    AABB rv{vs[0], vs[0]};
-    for (size_t i = 1; i < vs.size(); ++i)
-    {
-        Vec3 const& pos = vs[i];
-        rv.min = elementwise_min(rv.min, pos);
-        rv.max = elementwise_max(rv.max, pos);
-    }
-
-    return rv;
-}
-
-AABB osc::aabb_of(
-    std::span<Vec3 const> verts,
-    std::span<uint32_t const> indices)
-{
-    AABB rv{};
-
-    // edge-case: no points provided
-    if (indices.empty())
-    {
-        return rv;
-    }
-
-    rv.min =
-    {
-        std::numeric_limits<float>::max(),
-        std::numeric_limits<float>::max(),
-        std::numeric_limits<float>::max(),
-    };
-
-    rv.max =
-    {
-        std::numeric_limits<float>::lowest(),
-        std::numeric_limits<float>::lowest(),
-        std::numeric_limits<float>::lowest(),
-    };
-
-    for (uint32_t idx : indices)
-    {
-        if (idx < verts.size())  // ignore invalid indices
-        {
-            Vec3 const& pos = verts[idx];
-            rv.min = elementwise_min(rv.min, pos);
-            rv.max = elementwise_max(rv.max, pos);
-        }
-    }
-
-    return rv;
-}
-
-AABB osc::aabb_of(
-    std::span<Vec3 const> verts,
-    std::span<uint16_t const> indices)
-{
-    AABB rv{};
-
-    // edge-case: no points provided
-    if (indices.empty())
-    {
-        return rv;
-    }
-
-    rv.min =
-    {
-        std::numeric_limits<float>::max(),
-        std::numeric_limits<float>::max(),
-        std::numeric_limits<float>::max(),
-    };
-
-    rv.max =
-    {
-        std::numeric_limits<float>::lowest(),
-        std::numeric_limits<float>::lowest(),
-        std::numeric_limits<float>::lowest(),
-    };
-
-    for (uint16_t idx : indices)
-    {
-        if (idx < verts.size())  // ignore invalid indices
-        {
-            Vec3 const& pos = verts[idx];
-            rv.min = elementwise_min(rv.min, pos);
-            rv.max = elementwise_max(rv.max, pos);
-        }
-    }
-
     return rv;
 }
 
@@ -1502,13 +1330,11 @@ std::optional<Rect> osc::loosely_project_into_ndc(
     // care: znear and zfar are usually defined as positive distances from the
     //       camera but viewspace points along -Z
 
-    if (viewspaceAABB.min.z > -znear && viewspaceAABB.max.z > -znear)
-    {
-        return std::nullopt;
+    if (viewspaceAABB.min.z > -znear && viewspaceAABB.max.z > -znear) {
+        return std::nullopt;  // AABB out of NDC bounds
     }
-    if (viewspaceAABB.min.z < -zfar && viewspaceAABB.max.z < -zfar)
-    {
-        return std::nullopt;
+    if (viewspaceAABB.min.z < -zfar && viewspaceAABB.max.z < -zfar) {
+        return std::nullopt;  // AABB out of NDC bounds
     }
 
     // clamp the viewspace AABB to within the camera's clipping planes
@@ -1521,7 +1347,7 @@ std::optional<Rect> osc::loosely_project_into_ndc(
     // take the X and Y coordinates of that AABB and ensure they are clamped to within bounds
     Rect rv{Vec2{ndcAABB.min}, Vec2{ndcAABB.max}};
     rv.p1 = clamp(rv.p1, {-1.0f, -1.0f}, {1.0f, 1.0f});
-    rv.p2 = clamp(rv.p2, { -1.0f, -1.0f }, {1.0f, 1.0f});
+    rv.p2 = clamp(rv.p2, {-1.0f, -1.0f}, {1.0f, 1.0f});
 
     return rv;
 }

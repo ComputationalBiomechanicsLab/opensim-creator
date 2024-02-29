@@ -1861,16 +1861,13 @@ private:
 
     std::optional<AABB> calcSceneAABB() const
     {
-        std::optional<AABB> rv;
-        for (DrawableThing const& drawable : m_DrawablesBuffer)
+        return maybe_aabb_of(m_DrawablesBuffer, [](DrawableThing const& drawable) -> std::optional<AABB>
         {
-            if (drawable.id != MIIDs::Empty())
-            {
-                AABB const bounds = calcBounds(drawable);
-                rv = rv ? union_of(*rv, bounds) : bounds;
+            if (drawable.id != MIIDs::Empty()) {
+                return calcBounds(drawable);
             }
-        }
-        return rv;
+            return std::nullopt;
+        });
     }
 
     void draw3DViewerOverlayBottomBar()

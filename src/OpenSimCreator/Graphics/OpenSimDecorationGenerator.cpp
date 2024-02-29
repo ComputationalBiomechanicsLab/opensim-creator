@@ -1106,8 +1106,7 @@ float osc::GetRecommendedScaleFactor(
         1.0f,
         [&aabb](OpenSim::Component const&, SceneDecoration&& dec)
         {
-            AABB const decorationAABB = GetWorldspaceAABB(dec);
-            aabb = aabb ? union_of(*aabb, decorationAABB) : decorationAABB;
+            aabb = aabb_of(aabb, GetWorldspaceAABB(dec));
         }
     );
 

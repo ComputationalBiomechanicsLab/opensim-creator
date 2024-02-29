@@ -307,6 +307,12 @@ namespace osc
     }
 
     template<size_t L, typename T>
+    constexpr Vec<L, bool> elementwise_equal(Vec<L, T> const& x, Vec<L, T> const& y)
+    {
+        return map(x, y, std::equal_to<T>{});
+    }
+
+    template<size_t L, typename T>
     constexpr Vec<L, bool> elementwise_less(Vec<L, T> const& x, Vec<L, T> const& y)
     {
         return map(x, y, std::less<T>{});
