@@ -278,15 +278,15 @@ void osc::MainMenuAboutTab::onDraw()
         ui::TextUnformatted("window");
         ui::NextColumn();
 
-        if (ImGui::Button(ICON_FA_EXPAND " fullscreen"))
+        if (ui::Button(ICON_FA_EXPAND " fullscreen"))
         {
             App::upd().makeFullscreen();
         }
-        if (ImGui::Button(ICON_FA_EXPAND " windowed fullscreen"))
+        if (ui::Button(ICON_FA_EXPAND " windowed fullscreen"))
         {
             App::upd().makeWindowedFullscreen();
         }
-        if (ImGui::Button(ICON_FA_WINDOW_RESTORE " windowed"))
+        if (ui::Button(ICON_FA_WINDOW_RESTORE " windowed"))
         {
             App::upd().makeWindowed();
         }
@@ -369,7 +369,7 @@ void osc::MainMenuAboutTab::onDraw()
         DrawHelpMarker("opens OSC's installation location in your OS's default file browser");
         ui::NextColumn();
         ImGui::PushID(id++);
-        if (ImGui::Button(ICON_FA_FOLDER " open"))
+        if (ui::Button(ICON_FA_FOLDER " open"))
         {
             OpenPathInOSDefaultApplication(App::get().getExecutableDirPath());
         }
@@ -381,7 +381,7 @@ void osc::MainMenuAboutTab::onDraw()
         DrawHelpMarker("opens your OSC user data directory in your OS's default file browser");
         ui::NextColumn();
         ImGui::PushID(id++);
-        if (ImGui::Button(ICON_FA_FOLDER " open")) {
+        if (ui::Button(ICON_FA_FOLDER " open")) {
             OpenPathInOSDefaultApplication(App::get().getUserDataDirPath());
         }
         ImGui::PopID();
@@ -421,7 +421,7 @@ void osc::MainMenuAboutTab::onDraw()
         ui::TextUnformatted("OpenSim Creator Documentation");
         ui::NextColumn();
         ImGui::PushID(id++);
-        if (ImGui::Button(ICON_FA_LINK " open"))
+        if (ui::Button(ICON_FA_LINK " open"))
         {
             OpenPathInOSDefaultApplication(App::get().getConfig().getHTMLDocsDir() / "index.html");
         }
@@ -434,7 +434,7 @@ void osc::MainMenuAboutTab::onDraw()
             ui::TextUnformatted("OpenSim Creator Repository");
             ui::NextColumn();
             ImGui::PushID(id++);
-            if (ImGui::Button(ICON_FA_LINK " open"))
+            if (ui::Button(ICON_FA_LINK " open"))
             {
                 OpenPathInOSDefaultApplication(std::filesystem::path{std::string_view{*repoURL}});
             }
@@ -446,7 +446,7 @@ void osc::MainMenuAboutTab::onDraw()
         ui::TextUnformatted("OpenSim Documentation");
         ui::NextColumn();
         ImGui::PushID(id++);
-        if (ImGui::Button(ICON_FA_LINK " open"))
+        if (ui::Button(ICON_FA_LINK " open"))
         {
             OpenPathInOSDefaultApplication("https://simtk-confluence.stanford.edu/display/OpenSim/Documentation");
         }

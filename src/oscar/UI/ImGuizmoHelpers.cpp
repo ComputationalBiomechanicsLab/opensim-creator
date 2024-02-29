@@ -52,7 +52,7 @@ bool osc::DrawGizmoOpSelector(
             PushStyleColor(ImGuiCol_Button, Color::mutedBlue());
             ++colorsPushed;
         }
-        if (ImGui::Button(ICON_FA_ARROWS_ALT))
+        if (ui::Button(ICON_FA_ARROWS_ALT))
         {
             if (op != ImGuizmo::TRANSLATE)
             {
@@ -72,7 +72,7 @@ bool osc::DrawGizmoOpSelector(
             PushStyleColor(ImGuiCol_Button, Color::mutedBlue());
             ++colorsPushed;
         }
-        if (ImGui::Button(ICON_FA_REDO))
+        if (ui::Button(ICON_FA_REDO))
         {
             if (op != ImGuizmo::ROTATE)
             {
@@ -92,7 +92,7 @@ bool osc::DrawGizmoOpSelector(
             PushStyleColor(ImGuiCol_Button, Color::mutedBlue());
             ++colorsPushed;
         }
-        if (ImGui::Button(ICON_FA_EXPAND_ARROWS_ALT))
+        if (ui::Button(ICON_FA_EXPAND_ARROWS_ALT))
         {
             if (op != ImGuizmo::SCALE)
             {

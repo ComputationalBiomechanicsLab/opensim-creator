@@ -41,7 +41,7 @@ private:
                 {
                     continue;  // filtered out
                 }
-                if (ImGui::Button(c.getName().c_str()))
+                if (ui::Button(c.getName().c_str()))
                 {
                     selected = &c;
                 }

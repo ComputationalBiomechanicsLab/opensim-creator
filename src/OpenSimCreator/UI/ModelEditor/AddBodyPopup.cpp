@@ -179,7 +179,7 @@ private:
             {
                 std::string label = m_BodyDetails.maybeGeometry ? GetDisplayName(*m_BodyDetails.maybeGeometry) : std::string{"attach"};
 
-                if (ImGui::Button(label.c_str()))
+                if (ui::Button(label.c_str()))
                 {
                     // open geometry selection popup
                     auto popup = std::make_unique<SelectGeometryPopup>(
@@ -200,14 +200,14 @@ private:
 
         ImGui::Dummy({0.0f, 1.0f});
 
-        if (ImGui::Button("cancel"))
+        if (ui::Button("cancel"))
         {
             requestClose();
         }
 
         ui::SameLine();
 
-        if (ImGui::Button(ICON_FA_PLUS " add body"))
+        if (ui::Button(ICON_FA_PLUS " add body"))
         {
             ActionAddBodyToModel(*m_Uum, m_BodyDetails);
             requestClose();

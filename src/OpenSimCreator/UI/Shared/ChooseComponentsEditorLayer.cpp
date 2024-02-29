@@ -253,7 +253,7 @@ public:
             Vec2 const buttonDims = CalcButtonSize(cancellationButtonText);
             Vec2 const buttonTopLeft = panelState.viewportRect.p2 - (buttonDims + margin);
             ImGui::SetCursorScreenPos(buttonTopLeft);
-            if (ImGui::Button(cancellationButtonText.c_str()))
+            if (ui::Button(cancellationButtonText.c_str()))
             {
                 m_State.shouldClosePopup = true;
             }

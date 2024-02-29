@@ -434,7 +434,7 @@ void osc::DrawSearchBar(std::string& out)
 {
     if (!out.empty())
     {
-        if (ImGui::Button("X"))
+        if (ui::Button("X"))
         {
             out.clear();
         }
@@ -1022,7 +1022,7 @@ bool osc::DrawAdvancedParamsEditor(
 {
     bool edited = false;
 
-    if (ImGui::Button("Export to .dae"))
+    if (ui::Button("Export to .dae"))
     {
         TryPromptUserToSaveAsDAE(drawlist);
     }
@@ -1242,7 +1242,7 @@ bool osc::BeginToolbar(CStringView label, std::optional<Vec2> padding)
 
 void osc::DrawNewModelButton(ParentPtr<IMainUIStateAPI> const& api)
 {
-    if (ImGui::Button(ICON_FA_FILE))
+    if (ui::Button(ICON_FA_FILE))
     {
         ActionNewModel(api);
     }
@@ -1253,14 +1253,14 @@ void osc::DrawOpenModelButtonWithRecentFilesDropdown(
     std::function<void(std::optional<std::filesystem::path>)> const& onUserClickedOpenOrSelectedFile)
 {
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {2.0f, 0.0f});
-    if (ImGui::Button(ICON_FA_FOLDER_OPEN))
+    if (ui::Button(ICON_FA_FOLDER_OPEN))
     {
         onUserClickedOpenOrSelectedFile(std::nullopt);
     }
     DrawTooltipIfItemHovered("Open Model", "Opens an existing osim file in a new tab");
     ui::SameLine();
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {1.0f, ImGui::GetStyle().FramePadding.y});
-    ImGui::Button(ICON_FA_CARET_DOWN);
+    ui::Button(ICON_FA_CARET_DOWN);
     DrawTooltipIfItemHovered("Open Recent File", "Opens a recently-opened osim file in a new tab");
     ImGui::PopStyleVar();
     ImGui::PopStyleVar();
@@ -1303,7 +1303,7 @@ void osc::DrawSaveModelButton(
     ParentPtr<IMainUIStateAPI> const& api,
     UndoableModelStatePair& model)
 {
-    if (ImGui::Button(ICON_FA_SAVE))
+    if (ui::Button(ICON_FA_SAVE))
     {
         ActionSaveModel(*api, model);
     }
@@ -1318,7 +1318,7 @@ void osc::DrawReloadModelButton(UndoableModelStatePair& model)
         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f * ImGui::GetStyle().Alpha);
     }
 
-    if (ImGui::Button(ICON_FA_RECYCLE))
+    if (ui::Button(ICON_FA_RECYCLE))
     {
         ActionReloadOsimFromDisk(model, *App::singleton<SceneCache>());
     }
@@ -1344,7 +1344,7 @@ void osc::DrawUndoButton(UndoableModelStatePair& model)
         ++styleVarsPushed;
     }
 
-    if (ImGui::Button(ICON_FA_UNDO))
+    if (ui::Button(ICON_FA_UNDO))
     {
         ActionUndoCurrentlyEditedModel(model);
     }
@@ -1367,7 +1367,7 @@ void osc::DrawRedoButton(UndoableModelStatePair& model)
         ++styleVarsPushed;
     }
 
-    if (ImGui::Button(ICON_FA_REDO))
+    if (ui::Button(ICON_FA_REDO))
     {
         ActionRedoCurrentlyEditedModel(model);
     }
@@ -1455,7 +1455,7 @@ void osc::DrawSceneScaleFactorEditorControls(UndoableModelStatePair& model)
 
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {2.0f, 0.0f});
     ui::SameLine();
-    if (ImGui::Button(ICON_FA_EXPAND_ARROWS_ALT))
+    if (ui::Button(ICON_FA_EXPAND_ARROWS_ALT))
     {
         ActionAutoscaleSceneScaleFactor(model);
     }

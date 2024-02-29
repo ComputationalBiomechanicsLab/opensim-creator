@@ -200,7 +200,7 @@ namespace osc::mi
             Vec2 const buttonTopLeft = m_Shared->get3DSceneRect().p2 - (CalcButtonSize(text) + margin);
 
             ImGui::SetCursorScreenPos(buttonTopLeft);
-            if (ImGui::Button(text.c_str()))
+            if (ui::Button(text.c_str()))
             {
                 requestPop();
             }

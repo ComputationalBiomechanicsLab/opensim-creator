@@ -96,4 +96,9 @@ namespace osc::ui
     {
         return ImGui::Checkbox(label, v);
     }
+
+    inline bool Button(const char* label, ImVec2 const& size = ImVec2(0.0f, 0.0f))
+    {
+        return ImGui::Button(label, size);
+    }
 }

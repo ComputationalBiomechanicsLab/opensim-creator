@@ -80,12 +80,12 @@ public:
         ImGui::Begin("Inputs");
 
         ImGui::InputInt("parallelism", &m_Parallelism);
-        if (ImGui::Button("edit base params"))
+        if (ui::Button("edit base params"))
         {
             m_ParamEditor.open();
         }
 
-        if (ImGui::Button("(re)start"))
+        if (ui::Button("(re)start"))
         {
             populateParamsFromParamBlock();
         }
@@ -128,7 +128,7 @@ public:
 
             ImGui::EndTable();
 
-            if (ImGui::Button(ICON_FA_SAVE " Export to CSV"))
+            if (ui::Button(ICON_FA_SAVE " Export to CSV"))
             {
                 tryExportOutputs();
             }

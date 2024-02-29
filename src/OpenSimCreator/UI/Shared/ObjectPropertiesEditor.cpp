@@ -208,22 +208,22 @@ namespace
                 ImGui::TableSetColumnIndex(0);
                 ui::Text("Lengths");
                 ImGui::TableSetColumnIndex(1);
-                if (ImGui::Button("10 cm"))
+                if (ui::Button("10 cm"))
                 {
                     stepSize = 0.1f;
                 }
                 ui::SameLine();
-                if (ImGui::Button("1 cm"))
+                if (ui::Button("1 cm"))
                 {
                     stepSize = 0.01f;
                 }
                 ui::SameLine();
-                if (ImGui::Button("1 mm"))
+                if (ui::Button("1 mm"))
                 {
                     stepSize = 0.001f;
                 }
                 ui::SameLine();
-                if (ImGui::Button("0.1 mm"))
+                if (ui::Button("0.1 mm"))
                 {
                     stepSize = 0.0001f;
                 }
@@ -232,27 +232,27 @@ namespace
                 ImGui::TableSetColumnIndex(0);
                 ui::Text("Angles (Degrees)");
                 ImGui::TableSetColumnIndex(1);
-                if (ImGui::Button("180"))
+                if (ui::Button("180"))
                 {
                     stepSize = 180.0f;
                 }
                 ui::SameLine();
-                if (ImGui::Button("90"))
+                if (ui::Button("90"))
                 {
                     stepSize = 90.0f;
                 }
                 ui::SameLine();
-                if (ImGui::Button("45"))
+                if (ui::Button("45"))
                 {
                     stepSize = 45.0f;
                 }
                 ui::SameLine();
-                if (ImGui::Button("10"))
+                if (ui::Button("10"))
                 {
                     stepSize = 10.0f;
                 }
                 ui::SameLine();
-                if (ImGui::Button("1"))
+                if (ui::Button("1"))
                 {
                     stepSize = 1.0f;
                 }
@@ -261,27 +261,27 @@ namespace
                 ImGui::TableSetColumnIndex(0);
                 ui::Text("Angles (Radians)");
                 ImGui::TableSetColumnIndex(1);
-                if (ImGui::Button("1 pi"))
+                if (ui::Button("1 pi"))
                 {
                     stepSize = pi_v<float>;
                 }
                 ui::SameLine();
-                if (ImGui::Button("1/2 pi"))
+                if (ui::Button("1/2 pi"))
                 {
                     stepSize = pi_v<float>/2.0f;
                 }
                 ui::SameLine();
-                if (ImGui::Button("1/4 pi"))
+                if (ui::Button("1/4 pi"))
                 {
                     stepSize = pi_v<float>/4.0f;
                 }
                 ui::SameLine();
-                if (ImGui::Button("10/180 pi"))
+                if (ui::Button("10/180 pi"))
                 {
                     stepSize = (10.0f/180.0f) * pi_v<float>;
                 }
                 ui::SameLine();
-                if (ImGui::Button("1/180 pi"))
+                if (ui::Button("1/180 pi"))
                 {
                     stepSize = (1.0f/180.0f) * pi_v<float>;
                 }
@@ -290,27 +290,27 @@ namespace
                 ImGui::TableSetColumnIndex(0);
                 ui::Text("Masses");
                 ImGui::TableSetColumnIndex(1);
-                if (ImGui::Button("1 kg"))
+                if (ui::Button("1 kg"))
                 {
                     stepSize = 1.0f;
                 }
                 ui::SameLine();
-                if (ImGui::Button("100 g"))
+                if (ui::Button("100 g"))
                 {
                     stepSize = 0.1f;
                 }
                 ui::SameLine();
-                if (ImGui::Button("10 g"))
+                if (ui::Button("10 g"))
                 {
                     stepSize = 0.01f;
                 }
                 ui::SameLine();
-                if (ImGui::Button("1 g"))
+                if (ui::Button("1 g"))
                 {
                     stepSize = 0.001f;
                 }
                 ui::SameLine();
-                if (ImGui::Button("100 mg"))
+                if (ui::Button("100 mg"))
                 {
                     stepSize = 0.0001f;
                 }
@@ -540,7 +540,7 @@ namespace
             // draw trash can that can delete an element from the property's list
             if (m_EditedProperty.isListProperty())
             {
-                if (ImGui::Button(ICON_FA_TRASH))
+                if (ui::Button(ICON_FA_TRASH))
                 {
                     rv = MakePropElementDeleter<std::string>(idx);
                 }
@@ -627,7 +627,7 @@ namespace
             // draw trash can that can delete an element from the property's list
             if (m_EditedProperty.isListProperty())
             {
-                if (ImGui::Button(ICON_FA_TRASH))
+                if (ui::Button(ICON_FA_TRASH))
                 {
                     rv = MakePropElementDeleter<double>(idx);
                 }
@@ -719,7 +719,7 @@ namespace
             // draw trash can that can delete an element from the property's list
             if (m_EditedProperty.isListProperty())
             {
-                if (ImGui::Button(ICON_FA_TRASH))
+                if (ui::Button(ICON_FA_TRASH))
                 {
                     rv = MakePropElementDeleter<bool>(idx);
                 }
@@ -996,7 +996,7 @@ namespace
             // draw trash can that can delete an element from the property's list
             if (m_EditedProperty.isListProperty())
             {
-                if (ImGui::Button(ICON_FA_TRASH))
+                if (ui::Button(ICON_FA_TRASH))
                 {
                     rv = MakePropElementDeleter<SimTK::Vec3>(idx);
                 }
@@ -1067,7 +1067,7 @@ namespace
 
             if (m_OrientationValsAreInRadians)
             {
-                if (ImGui::Button("radians"))
+                if (ui::Button("radians"))
                 {
                     m_OrientationValsAreInRadians = !m_OrientationValsAreInRadians;
                 }
@@ -1076,7 +1076,7 @@ namespace
             }
             else
             {
-                if (ImGui::Button("degrees"))
+                if (ui::Button("degrees"))
                 {
                     m_OrientationValsAreInRadians = !m_OrientationValsAreInRadians;
                 }
@@ -1145,7 +1145,7 @@ namespace
             // draw trash can that can delete an element from the property's list
             if (m_EditedProperty.isListProperty())
             {
-                if (ImGui::Button(ICON_FA_TRASH))
+                if (ui::Button(ICON_FA_TRASH))
                 {
                     rv = MakePropElementDeleter<SimTK::Vec6>(idx);
                 }
@@ -1240,7 +1240,7 @@ namespace
             // draw trash can that can delete an element from the property's list
             if (m_EditedProperty.isListProperty())
             {
-                if (ImGui::Button(ICON_FA_TRASH))
+                if (ui::Button(ICON_FA_TRASH))
                 {
                     rv = MakePropElementDeleter<int>(idx);
                 }
@@ -1478,7 +1478,7 @@ namespace
             ImGui::Separator();
             DrawPropertyName(prop);
             ui::NextColumn();
-            if (ImGui::Button(ICON_FA_EDIT))
+            if (ui::Button(ICON_FA_EDIT))
             {
                 pushPopup(createGeometryPathEditorPopup());
             }

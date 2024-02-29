@@ -189,7 +189,7 @@ private:
 
     void drawAddPathPointButton()
     {
-        if (ImGui::Button(ICON_FA_PLUS_CIRCLE " Add Point"))
+        if (ui::Button(ICON_FA_PLUS_CIRCLE " Add Point"))
         {
             ActionAddNewPathPoint(m_EditedGeometryPath.updPathPointSet());
         }
@@ -320,14 +320,14 @@ private:
 
     void drawBottomButtons()
     {
-        if (ImGui::Button("cancel"))
+        if (ui::Button("cancel"))
         {
             requestClose();
         }
 
         ui::SameLine();
 
-        if (ImGui::Button("save"))
+        if (ui::Button("save"))
         {
             m_OnLocalCopyEdited(m_EditedGeometryPath);
             requestClose();

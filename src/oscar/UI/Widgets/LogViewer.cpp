@@ -91,20 +91,20 @@ public:
             ui::Checkbox("autoscroll", &autoscroll);
 
             ui::SameLine();
-            if (ImGui::Button("clear"))
+            if (ui::Button("clear"))
             {
                 getTracebackLog().lock()->clear();
             }
             App::upd().addFrameAnnotation("LogClearButton", GetItemRect());
 
             ui::SameLine();
-            if (ImGui::Button("turn off"))
+            if (ui::Button("turn off"))
             {
                 logger->set_level(LogLevel::off);
             }
 
             ui::SameLine();
-            if (ImGui::Button("copy to clipboard"))
+            if (ui::Button("copy to clipboard"))
             {
                 copyTracebackLogToClipboard();
             }

@@ -26,7 +26,7 @@ void osc::UndoButton::onDraw()
         ImGui::BeginDisabled();
         wasDisabled = true;
     }
-    if (ImGui::Button(ICON_FA_UNDO))
+    if (ui::Button(ICON_FA_UNDO))
     {
         m_UndoRedo->undo();
     }
@@ -34,7 +34,7 @@ void osc::UndoButton::onDraw()
     ui::SameLine();
 
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {0.0f, ImGui::GetStyle().FramePadding.y});
-    ImGui::Button(ICON_FA_CARET_DOWN);
+    ui::Button(ICON_FA_CARET_DOWN);
     ImGui::PopStyleVar();
 
     if (wasDisabled)

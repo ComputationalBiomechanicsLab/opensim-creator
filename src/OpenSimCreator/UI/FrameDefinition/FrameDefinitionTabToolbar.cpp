@@ -55,7 +55,7 @@ void osc::FrameDefinitionTabToolbar::drawExportToOpenSimButton()
     {
         ImGui::BeginDisabled();
     }
-    if (ImGui::Button(ICON_FA_FILE_EXPORT " Export to OpenSim"))
+    if (ui::Button(ICON_FA_FILE_EXPORT " Export to OpenSim"))
     {
         fd::ActionExportFrameDefinitionSceneModelToEditorTab(m_TabHost, *m_Model);
     }

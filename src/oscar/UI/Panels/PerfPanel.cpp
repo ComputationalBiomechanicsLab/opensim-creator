@@ -54,7 +54,7 @@ private:
                 App::upd().setVsync(vsync);
             }
         }
-        if (ImGui::Button("clear measurements"))
+        if (ui::Button("clear measurements"))
         {
             ClearAllPerfMeasurements();
         }

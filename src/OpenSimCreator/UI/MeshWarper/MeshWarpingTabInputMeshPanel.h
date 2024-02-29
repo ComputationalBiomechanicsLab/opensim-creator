@@ -492,7 +492,7 @@ namespace osc
         // draws an import button that enables the user to import things for this input
         void drawImportButton()
         {
-            ImGui::Button(ICON_FA_FILE_IMPORT " import" ICON_FA_CARET_DOWN);
+            ui::Button(ICON_FA_FILE_IMPORT " import" ICON_FA_CARET_DOWN);
             if (ImGui::BeginPopupContextItem("##importcontextmenu", ImGuiPopupFlags_MouseButtonLeft))
             {
                 if (ui::MenuItem("Mesh"))
@@ -515,7 +515,7 @@ namespace osc
         // draws an export button that enables the user to export things from this input
         void drawExportButton()
         {
-            ImGui::Button(ICON_FA_FILE_EXPORT " export" ICON_FA_CARET_DOWN);
+            ui::Button(ICON_FA_FILE_EXPORT " export" ICON_FA_CARET_DOWN);
             if (ImGui::BeginPopupContextItem("##exportcontextmenu", ImGuiPopupFlags_MouseButtonLeft))
             {
                 if (ui::MenuItem("Mesh to OBJ"))
@@ -541,7 +541,7 @@ namespace osc
         // draws a button that auto-fits the camera to the 3D scene
         void drawAutoFitCameraButton()
         {
-            if (ImGui::Button(ICON_FA_EXPAND_ARROWS_ALT))
+            if (ui::Button(ICON_FA_EXPAND_ARROWS_ALT))
             {
                 AutoFocus(m_Camera, m_State->getScratchMesh(m_DocumentIdentifier).getBounds(), AspectRatio(m_LastTextureHittestResult.rect));
                 m_State->linkedCameraBase = m_Camera;

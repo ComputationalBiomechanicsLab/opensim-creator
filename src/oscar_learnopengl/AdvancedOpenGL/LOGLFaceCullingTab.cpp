@@ -88,13 +88,13 @@ private:
     void draw2DUI()
     {
         ImGui::Begin("controls");
-        if (ImGui::Button("off")) {
+        if (ui::Button("off")) {
             m_Material.setCullMode(CullMode::Off);
         }
-        if (ImGui::Button("back")) {
+        if (ui::Button("back")) {
             m_Material.setCullMode(CullMode::Back);
         }
-        if (ImGui::Button("front")) {
+        if (ui::Button("front")) {
             m_Material.setCullMode(CullMode::Front);
         }
         ImGui::End();

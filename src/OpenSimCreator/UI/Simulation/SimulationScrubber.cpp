@@ -56,14 +56,14 @@ public:
 private:
     void drawBackwardsButtons()
     {
-        if (ImGui::Button(ICON_FA_FAST_BACKWARD))
+        if (ui::Button(ICON_FA_FAST_BACKWARD))
         {
             m_SimulatorAPI->setSimulationScrubTime(m_Simulation->getStartTime());
         }
         DrawTooltipIfItemHovered("Go to First State");
         ui::SameLine();
 
-        if (ImGui::Button(ICON_FA_STEP_BACKWARD))
+        if (ui::Button(ICON_FA_STEP_BACKWARD))
         {
             m_SimulatorAPI->stepBack();
         }
@@ -79,7 +79,7 @@ private:
         // play/pause
         if (tCur >= tEnd)
         {
-            if (ImGui::Button(ICON_FA_REDO))
+            if (ui::Button(ICON_FA_REDO))
             {
                 m_SimulatorAPI->setSimulationScrubTime(tStart);
                 m_SimulatorAPI->setSimulationPlaybackState(true);
@@ -88,7 +88,7 @@ private:
         }
         else if (!m_SimulatorAPI->getSimulationPlaybackState())
         {
-            if (ImGui::Button(ICON_FA_PLAY))
+            if (ui::Button(ICON_FA_PLAY))
             {
                 m_SimulatorAPI->setSimulationPlaybackState(true);
             }
@@ -96,7 +96,7 @@ private:
         }
         else
         {
-            if (ImGui::Button(ICON_FA_PAUSE))
+            if (ui::Button(ICON_FA_PAUSE))
             {
                 m_SimulatorAPI->setSimulationPlaybackState(false);
             }
@@ -106,7 +106,7 @@ private:
 
     void drawForwardsButtons()
     {
-        if (ImGui::Button(ICON_FA_STEP_FORWARD))
+        if (ui::Button(ICON_FA_STEP_FORWARD))
         {
             m_SimulatorAPI->stepForward();
         }
@@ -114,7 +114,7 @@ private:
 
         ui::SameLine();
 
-        if (ImGui::Button(ICON_FA_FAST_FORWARD))
+        if (ui::Button(ICON_FA_FAST_FORWARD))
         {
             m_SimulatorAPI->setSimulationScrubTime(m_Simulation->getEndTime());
         }

@@ -484,7 +484,7 @@ bool osc::ButtonNoBg(CStringView label, Vec2 size)
 {
     PushStyleColor(ImGuiCol_Button, Color::clear());
     PushStyleColor(ImGuiCol_ButtonHovered, Color::clear());
-    bool const rv = ImGui::Button(label.c_str(), size);
+    bool const rv = ui::Button(label.c_str(), size);
     PopStyleColor();
     PopStyleColor();
 
@@ -836,7 +836,7 @@ bool osc::ButtonCentered(CStringView s)
 
     ImGui::SetCursorScreenPos({buttonStartX, ImGui::GetCursorScreenPos().y});
 
-    return ImGui::Button(s.c_str());
+    return ui::Button(s.c_str());
 }
 
 void osc::TextCentered(CStringView s)

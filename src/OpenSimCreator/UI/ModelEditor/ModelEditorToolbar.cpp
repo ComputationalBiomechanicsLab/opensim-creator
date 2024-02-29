@@ -62,7 +62,7 @@ private:
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {2.0f, 0.0f});
 
         PushStyleColor(ImGuiCol_Text, Color::darkGreen());
-        if (ImGui::Button(ICON_FA_PLAY))
+        if (ui::Button(ICON_FA_PLAY))
         {
             ActionStartSimulatingModel(m_MainUIStateAPI, *m_Model);
         }
@@ -72,7 +72,7 @@ private:
 
         ui::SameLine();
 
-        if (ImGui::Button(ICON_FA_EDIT))
+        if (ui::Button(ICON_FA_EDIT))
         {
             m_EditorAPI->pushPopup(std::make_unique<ParamBlockEditorPopup>("simulation parameters", &m_MainUIStateAPI->updSimulationParams()));
         }

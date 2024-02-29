@@ -382,7 +382,7 @@ private:
 
             ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0.0f, 0.0f});
 
-            if (ImGui::Button(ICON_FA_TRASH))
+            if (ui::Button(ICON_FA_TRASH))
             {
                 maybeIndexToErase = i;
             }
@@ -393,7 +393,7 @@ private:
             {
                 ImGui::BeginDisabled();
             }
-            if (ImGui::Button(ICON_FA_ARROW_UP) && i > 0)
+            if (ui::Button(ICON_FA_ARROW_UP) && i > 0)
             {
                 std::swap(m_PathPoints[i], m_PathPoints[i-1]);
             }
@@ -408,7 +408,7 @@ private:
             {
                 ImGui::BeginDisabled();
             }
-            if (ImGui::Button(ICON_FA_ARROW_DOWN) && i < std::ssize(m_PathPoints) - 1)
+            if (ui::Button(ICON_FA_ARROW_DOWN) && i < std::ssize(m_PathPoints) - 1)
             {
                 std::swap(m_PathPoints[i], m_PathPoints[i+1]);
             }
@@ -474,7 +474,7 @@ private:
 
     void drawBottomButtons()
     {
-        if (ImGui::Button("cancel"))
+        if (ui::Button("cancel"))
         {
             requestClose();
         }
@@ -486,7 +486,7 @@ private:
 
         ui::SameLine();
 
-        if (ImGui::Button(ICON_FA_PLUS " add"))
+        if (ui::Button(ICON_FA_PLUS " add"))
         {
             std::unique_ptr<OpenSim::Component> rv = tryCreateComponentFromState();
             if (rv)

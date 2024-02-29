@@ -81,7 +81,7 @@ private:
         ui::NextColumn();
         if (std::any_of(outputs.begin(), outputs.end(), [](OutputExtractor const& o) { return o.getOutputType() == OutputType::Float; }))
         {
-            ImGui::Button(ICON_FA_SAVE " Save All " ICON_FA_CARET_DOWN);
+            ui::Button(ICON_FA_SAVE " Save All " ICON_FA_CARET_DOWN);
             if (ImGui::BeginPopupContextItem("##exportoptions", ImGuiPopupFlags_MouseButtonLeft))
             {
                 if (ui::MenuItem("as CSV"))

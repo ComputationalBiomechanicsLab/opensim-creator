@@ -191,7 +191,7 @@ private:
         // add ability to re-express a component in a new frame (#326)
         tryDrawReexpressPropertyInFrameCheckbox(*component, *socket);
 
-        if (ImGui::Button("Cancel"))
+        if (ui::Button("Cancel"))
         {
             requestClose();
             return;

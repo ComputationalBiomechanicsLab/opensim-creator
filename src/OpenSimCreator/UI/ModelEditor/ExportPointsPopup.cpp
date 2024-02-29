@@ -264,7 +264,7 @@ namespace
         OpenSim::Model const& model,
         SimTK::State const& state)
     {
-        ImGui::Button("Select" ICON_FA_CARET_DOWN);
+        ui::Button("Select" ICON_FA_CARET_DOWN);
         if (ImGui::BeginPopupContextItem("##selectmenu", ImGuiPopupFlags_MouseButtonLeft))
         {
             DrawSelectionStateModifierMenuContent(
@@ -279,7 +279,7 @@ namespace
 
         ui::SameLine();
 
-        ImGui::Button("De-Select" ICON_FA_CARET_DOWN);
+        ui::Button("De-Select" ICON_FA_CARET_DOWN);
         if (ImGui::BeginPopupContextItem("##deselectmenu", ImGuiPopupFlags_MouseButtonLeft))
         {
             DrawSelectionStateModifierMenuContent(
@@ -587,14 +587,14 @@ private:
 
     void drawBottomButtons()
     {
-        if (ImGui::Button("Cancel"))
+        if (ui::Button("Cancel"))
         {
             requestClose();
         }
 
         ui::SameLine();
 
-        if (ImGui::Button(ICON_FA_UPLOAD " Export to CSV"))
+        if (ui::Button(ICON_FA_UPLOAD " Export to CSV"))
         {
             static_assert(NumOptions<ExportStepReturn>() == 3, "review error handling");
             ExportStepReturn const rv = ActionPromptUserForSaveLocationAndExportPoints(

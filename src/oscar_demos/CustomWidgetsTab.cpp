@@ -65,7 +65,7 @@ namespace
         ImVec2 const bb(ImGui::GetColumnWidth(), ImGui::GetFrameHeight());
         ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0, 0));
         ImGui::PushID(label.c_str());
-        bool const status = ImGui::Button("###toggle_button", bb);
+        bool const status = ui::Button("###toggle_button", bb);
 
         if (status) {
             *v = !*v;

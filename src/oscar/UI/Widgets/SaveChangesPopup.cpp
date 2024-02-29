@@ -19,7 +19,7 @@ public:
     {
         ui::TextUnformatted(m_Config.content);
 
-        if (ImGui::Button("Yes"))
+        if (ui::Button("Yes"))
         {
             if (m_Config.onUserClickedSave())
             {
@@ -29,7 +29,7 @@ public:
 
         ui::SameLine();
 
-        if (ImGui::Button("No"))
+        if (ui::Button("No"))
         {
             if (m_Config.onUserClickedDontSave())
             {
@@ -39,7 +39,7 @@ public:
 
         ui::SameLine();
 
-        if (ImGui::Button("Cancel"))
+        if (ui::Button("Cancel"))
         {
             if (m_Config.onUserCancelled())
             {

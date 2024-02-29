@@ -36,14 +36,14 @@ private:
 
 void osc::UndoRedoPanel::DrawContent(UndoRedoBase& storage)
 {
-    if (ImGui::Button("undo"))
+    if (ui::Button("undo"))
     {
         storage.undo();
     }
 
     ui::SameLine();
 
-    if (ImGui::Button("redo"))
+    if (ui::Button("redo"))
     {
         storage.redo();
     }

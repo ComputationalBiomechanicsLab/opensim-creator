@@ -36,7 +36,7 @@ void osc::mow::Toolbar::drawWarpModelButton()
         ImGui::BeginDisabled();
     }
     PushStyleColor(ImGuiCol_Button, Color::darkGreen());
-    if (ImGui::Button(ICON_FA_PLAY " Warp Model")) {
+    if (ui::Button(ICON_FA_PLAY " Warp Model")) {
         m_State->actionWarpModelAndOpenInModelEditor();
     }
     PopStyleColor();

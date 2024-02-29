@@ -1743,7 +1743,7 @@ private:
     {
         int imguiID = 0;
 
-        if (ImGui::Button(ICON_FA_CUBE " Add Meshes"))
+        if (ui::Button(ICON_FA_CUBE " Add Meshes"))
         {
             m_Shared->promptUserForMeshFilesAndPushThemOntoMeshLoader();
         }
@@ -1751,7 +1751,7 @@ private:
 
         ui::SameLine();
 
-        ImGui::Button(ICON_FA_PLUS " Add Other");
+        ui::Button(ICON_FA_PLUS " Add Other");
         DrawTooltipIfItemHovered("Add components to the model");
 
         if (ImGui::BeginPopupContextItem("##additemtoscenepopup", ImGuiPopupFlags_MouseButtonLeft))
@@ -1762,7 +1762,7 @@ private:
 
         ui::SameLine();
 
-        ImGui::Button(ICON_FA_PAINT_ROLLER " Colors");
+        ui::Button(ICON_FA_PAINT_ROLLER " Colors");
         DrawTooltipIfItemHovered("Change scene display colors", "This only changes the decroative display colors of model elements in this screen. Color changes are not saved to the exported OpenSim model. Changing these colors can be handy for spotting things, or constrasting scene elements more strongly");
 
         if (ImGui::BeginPopupContextItem("##addpainttoscenepopup", ImGuiPopupFlags_MouseButtonLeft))
@@ -1786,7 +1786,7 @@ private:
 
         ui::SameLine();
 
-        ImGui::Button(ICON_FA_EYE " Visibility");
+        ui::Button(ICON_FA_EYE " Visibility");
         DrawTooltipIfItemHovered("Change what's visible in the 3D scene", "This only changes what's visible in this screen. Visibility options are not saved to the exported OpenSim model. Changing these visibility options can be handy if you have a lot of overlapping/intercalated scene elements");
 
         if (ImGui::BeginPopupContextItem("##changevisibilitypopup", ImGuiPopupFlags_MouseButtonLeft))
@@ -1810,7 +1810,7 @@ private:
 
         ui::SameLine();
 
-        ImGui::Button(ICON_FA_LOCK " Interactivity");
+        ui::Button(ICON_FA_LOCK " Interactivity");
         DrawTooltipIfItemHovered("Change what your mouse can interact with in the 3D scene", "This does not prevent being able to edit the model - it only affects whether you can click that type of element in the 3D scene. Combining these flags with visibility and custom colors can be handy if you have heavily overlapping/intercalated scene elements.");
 
         if (ImGui::BeginPopupContextItem("##changeinteractionlockspopup", ImGuiPopupFlags_MouseButtonLeft))
@@ -1893,7 +1893,7 @@ private:
         Vec2 trPos = {sceneRect.p1.x + 100.0f, sceneRect.p2.y - 55.0f};
         ImGui::SetCursorScreenPos(trPos);
 
-        if (ImGui::Button(ICON_FA_SEARCH_MINUS))
+        if (ui::Button(ICON_FA_SEARCH_MINUS))
         {
             m_Shared->updCamera().radius *= 1.2f;
         }
@@ -1901,7 +1901,7 @@ private:
 
         ui::SameLine();
 
-        if (ImGui::Button(ICON_FA_SEARCH_PLUS))
+        if (ui::Button(ICON_FA_SEARCH_PLUS))
         {
             m_Shared->updCamera().radius *= 0.8f;
         }
@@ -1909,7 +1909,7 @@ private:
 
         ui::SameLine();
 
-        if (ImGui::Button(ICON_FA_EXPAND_ARROWS_ALT))
+        if (ui::Button(ICON_FA_EXPAND_ARROWS_ALT))
         {
             if (std::optional<AABB> const sceneAABB = calcSceneAABB())
             {
@@ -1920,7 +1920,7 @@ private:
 
         ui::SameLine();
 
-        if (ImGui::Button("X"))
+        if (ui::Button("X"))
         {
             m_Shared->updCamera().theta = 90_deg;
             m_Shared->updCamera().phi = 0_deg;
@@ -1934,7 +1934,7 @@ private:
 
         ui::SameLine();
 
-        if (ImGui::Button("Y"))
+        if (ui::Button("Y"))
         {
             m_Shared->updCamera().theta = 0_deg;
             m_Shared->updCamera().phi = 90_deg;
@@ -1948,7 +1948,7 @@ private:
 
         ui::SameLine();
 
-        if (ImGui::Button("Z"))
+        if (ui::Button("Z"))
         {
             m_Shared->updCamera().theta = 0_deg;
             m_Shared->updCamera().phi = 0_deg;
@@ -1962,7 +1962,7 @@ private:
 
         ui::SameLine();
 
-        if (ImGui::Button(ICON_FA_CAMERA))
+        if (ui::Button(ICON_FA_CAMERA))
         {
             m_Shared->resetCamera();
         }
@@ -1992,7 +1992,7 @@ private:
 
         ImGui::SetCursorScreenPos(buttonTopLeft);
         PushStyleColor(ImGuiCol_Button, Color::darkGreen());
-        if (ImGui::Button(mainButtonText.c_str()))
+        if (ui::Button(mainButtonText.c_str()))
         {
             m_Shared->tryCreateOutputModel();
         }
@@ -2003,7 +2003,7 @@ private:
 
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
         ui::SameLine(0.0f, spacingBetweenMainAndSettingsButtons.x);
-        ImGui::Button(settingButtonText.c_str());
+        ui::Button(settingButtonText.c_str());
         ImGui::PopStyleVar();
 
         if (ImGui::BeginPopupContextItem("##settingspopup", ImGuiPopupFlags_MouseButtonLeft))

@@ -120,13 +120,13 @@ private:
 
         ImGui::Dummy({0.0f, 1.0f});
 
-        if (ImGui::Button("save"))
+        if (ui::Button("save"))
         {
             *m_OutputTarget = m_LocalCopy;
             requestClose();
         }
         ui::SameLine();
-        if (ImGui::Button("close"))
+        if (ui::Button("close"))
         {
             requestClose();
         }

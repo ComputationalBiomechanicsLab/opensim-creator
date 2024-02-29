@@ -75,7 +75,7 @@ namespace osc
 
         void drawNewDocumentButton()
         {
-            if (ImGui::Button(ICON_FA_FILE))
+            if (ui::Button(ICON_FA_FILE))
             {
                 ActionCreateNewDocument(m_State->updUndoable());
             }
@@ -87,7 +87,7 @@ namespace osc
 
         void drawOpenDocumentButton()
         {
-            ImGui::Button(ICON_FA_FOLDER_OPEN);
+            ui::Button(ICON_FA_FOLDER_OPEN);
             if (ImGui::BeginPopupContextItem("##OpenFolder", ImGuiPopupFlags_MouseButtonLeft))
             {
                 if (ui::MenuItem("Load Source Mesh"))
@@ -108,7 +108,7 @@ namespace osc
 
         void drawSaveLandmarksButton()
         {
-            if (ImGui::Button(ICON_FA_SAVE))
+            if (ui::Button(ICON_FA_SAVE))
             {
                 ActionSavePairedLandmarksToCSV(m_State->getScratch(), LandmarkCSVFlags::NoNames);
             }

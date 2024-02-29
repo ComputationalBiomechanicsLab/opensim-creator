@@ -127,7 +127,7 @@ public:
                 ui::TextWrapped(m_LoadingErrorMsg);
                 ImGui::Dummy({0.0f, 5.0f});
 
-                if (ImGui::Button("try again"))
+                if (ui::Button("try again"))
                 {
                     m_Parent->addAndSelectTab<LoadingTab>(m_Parent, m_OsimPath);
                     m_Parent->closeTab(m_TabID);

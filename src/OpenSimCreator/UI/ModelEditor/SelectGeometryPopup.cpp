@@ -174,7 +174,7 @@ private:
 
         ImGui::EndChild();
 
-        if (ImGui::Button("Open Mesh File"))
+        if (ui::Button("Open Mesh File"))
         {
             if (auto maybeMeshFile = PromptUserForGeometryFile())
             {
@@ -185,7 +185,7 @@ private:
 
         ImGui::Dummy({0.0f, 5.0f});
 
-        if (ImGui::Button("Cancel"))
+        if (ui::Button("Cancel"))
         {
             m_Search.clear();
             requestClose();

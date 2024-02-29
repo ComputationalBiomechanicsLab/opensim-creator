@@ -70,7 +70,7 @@ private:
         constexpr CStringView c_ExampleInputText = "name,x,y,z\nstationatground,0,0,0\nstation2,1.53,0.2,1.7\nstation3,3.0,2.0,0.0\n";
         ui::TextWrapped("Example Input: ");
         ui::SameLine();
-        if (ImGui::Button(ICON_FA_COPY))
+        if (ui::Button(ICON_FA_COPY))
         {
             SetClipboardText(c_ExampleInputText);
         }
@@ -128,12 +128,12 @@ private:
         }
         ImGui::Dummy({0.0f, 0.2f*ImGui::GetTextLineHeight()});
 
-        if (ImGui::Button(ICON_FA_FILE " Select Different File"))
+        if (ui::Button(ICON_FA_FILE " Select Different File"))
         {
             actionTryPromptingUserForCSVFile();
         }
         ui::SameLine();
-        if (ImGui::Button(ICON_FA_RECYCLE " Reload Same File"))
+        if (ui::Button(ICON_FA_RECYCLE " Reload Same File"))
         {
             actionLoadCSVFile(*m_MaybeImportPath);
         }
@@ -181,7 +181,7 @@ private:
         {
             ImGui::BeginDisabled();
         }
-        if (ImGui::Button("OK"))
+        if (ui::Button("OK"))
         {
             actionAttachResultToModelGraph();
             close();
@@ -195,7 +195,7 @@ private:
             }
         }
         ui::SameLine();
-        if (ImGui::Button("Cancel"))
+        if (ui::Button("Cancel"))
         {
             close();
         }

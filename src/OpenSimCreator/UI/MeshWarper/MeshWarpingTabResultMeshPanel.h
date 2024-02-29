@@ -146,7 +146,7 @@ namespace osc
         void drawExportButton()
         {
             m_CursorXAtExportButton = ImGui::GetCursorPos().x;  // needed to align the blending factor slider
-            ImGui::Button(ICON_FA_FILE_EXPORT " export" ICON_FA_CARET_DOWN);
+            ui::Button(ICON_FA_FILE_EXPORT " export" ICON_FA_CARET_DOWN);
             if (ImGui::BeginPopupContextItem("##exportcontextmenu", ImGuiPopupFlags_MouseButtonLeft))
             {
                 if (ui::MenuItem("Mesh to OBJ"))
@@ -180,7 +180,7 @@ namespace osc
         // draws a button that auto-fits the camera to the 3D scene
         void drawAutoFitCameraButton()
         {
-            if (ImGui::Button(ICON_FA_EXPAND_ARROWS_ALT))
+            if (ui::Button(ICON_FA_EXPAND_ARROWS_ALT))
             {
                 AutoFocus(
                     m_Camera,

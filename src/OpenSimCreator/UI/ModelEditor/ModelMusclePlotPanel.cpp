@@ -1703,7 +1703,7 @@ namespace
             //
             // it's easier for users to figure out than having to guess they need to
             // right-click the plot (#399)
-            ImGui::Button(ICON_FA_BARS " Options");
+            ui::Button(ICON_FA_BARS " Options");
             tryDrawGeneralPlotPopup(coord, plotTitle, ImGuiPopupFlags_MouseButtonLeft);
         }
 
@@ -2059,15 +2059,15 @@ namespace
             ImVec2 const dims{1.5f * s, s};
 
             ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(2, 2));
-            if (ImGui::Button("NW", dims))         { m_LegendLocation = ImPlotLocation_NorthWest; } ui::SameLine();
-            if (ImGui::Button("N", dims))          { m_LegendLocation = ImPlotLocation_North; }     ui::SameLine();
-            if (ImGui::Button("NE", dims))         { m_LegendLocation = ImPlotLocation_NorthEast; }
-            if (ImGui::Button("W", dims))          { m_LegendLocation = ImPlotLocation_West; }      ui::SameLine();
+            if (ui::Button("NW", dims))         { m_LegendLocation = ImPlotLocation_NorthWest; } ui::SameLine();
+            if (ui::Button("N", dims))          { m_LegendLocation = ImPlotLocation_North; }     ui::SameLine();
+            if (ui::Button("NE", dims))         { m_LegendLocation = ImPlotLocation_NorthEast; }
+            if (ui::Button("W", dims))          { m_LegendLocation = ImPlotLocation_West; }      ui::SameLine();
             if (ImGui::InvisibleButton("C", dims)) { m_LegendLocation = ImPlotLocation_Center; }    ui::SameLine();
-            if (ImGui::Button("E", dims))          { m_LegendLocation = ImPlotLocation_East; }
-            if (ImGui::Button("SW", dims))         { m_LegendLocation = ImPlotLocation_SouthWest; } ui::SameLine();
-            if (ImGui::Button("S", dims))          { m_LegendLocation = ImPlotLocation_South; }     ui::SameLine();
-            if (ImGui::Button("SE", dims))         { m_LegendLocation = ImPlotLocation_SouthEast; }
+            if (ui::Button("E", dims))          { m_LegendLocation = ImPlotLocation_East; }
+            if (ui::Button("SW", dims))         { m_LegendLocation = ImPlotLocation_SouthWest; } ui::SameLine();
+            if (ui::Button("S", dims))          { m_LegendLocation = ImPlotLocation_South; }     ui::SameLine();
+            if (ui::Button("SE", dims))         { m_LegendLocation = ImPlotLocation_SouthEast; }
             ImGui::PopStyleVar();
         }
 

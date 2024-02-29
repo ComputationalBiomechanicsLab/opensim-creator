@@ -91,7 +91,7 @@ namespace osc
             }
             else
             {
-                if (ImGui::Button("add source"))
+                if (ui::Button("add source"))
                 {
                     ActionSetLandmarkPosition(m_State->updUndoable(), lm.uid, TPSDocumentInputIdentifier::Source, Vec3{});
                 }
