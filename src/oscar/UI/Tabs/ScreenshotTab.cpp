@@ -95,13 +95,13 @@ public:
 private:
     void implOnDrawMainMenu() final
     {
-        if (ImGui::BeginMenu("File"))
+        if (ui::BeginMenu("File"))
         {
-            if (ImGui::MenuItem("Save"))
+            if (ui::MenuItem("Save"))
             {
                 actionSaveOutputImage();
             }
-            ImGui::EndMenu();
+            ui::EndMenu();
         }
     }
 

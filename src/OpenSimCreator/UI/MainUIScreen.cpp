@@ -545,12 +545,12 @@ private:
 
     void drawAddNewTabMenu()
     {
-        if (ImGui::MenuItem(ICON_FA_EDIT " Editor"))
+        if (ui::MenuItem(ICON_FA_EDIT " Editor"))
         {
             selectTab(addTab(std::make_unique<ModelEditorTab>(getTabHostAPI(), std::make_unique<UndoableModelStatePair>())));
         }
 
-        if (ImGui::MenuItem(ICON_FA_CUBE " Mesh Importer"))
+        if (ui::MenuItem(ICON_FA_CUBE " Mesh Importer"))
         {
             selectTab(addTab(std::make_unique<mi::MeshImporterTab>(getTabHostAPI())));
         }
@@ -558,17 +558,17 @@ private:
         std::shared_ptr<TabRegistry const> const tabs = App::singleton<TabRegistry>();
         if (tabs->size() > 0)
         {
-            if (ImGui::BeginMenu("Experimental Tabs"))
+            if (ui::BeginMenu("Experimental Tabs"))
             {
                 for (size_t i = 0; i < tabs->size(); ++i)
                 {
                     TabRegistryEntry e = (*tabs)[i];
-                    if (ImGui::MenuItem(e.getName().c_str()))
+                    if (ui::MenuItem(e.getName().c_str()))
                     {
                         selectTab(addTab(e.createTab(ParentPtr<ITabHost>{getTabHostAPI()})));
                     }
                 }
-                ImGui::EndMenu();
+                ui::EndMenu();
             }
         }
     }

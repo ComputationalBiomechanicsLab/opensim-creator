@@ -90,11 +90,11 @@ namespace osc
             ImGui::Button(ICON_FA_FOLDER_OPEN);
             if (ImGui::BeginPopupContextItem("##OpenFolder", ImGuiPopupFlags_MouseButtonLeft))
             {
-                if (ImGui::MenuItem("Load Source Mesh"))
+                if (ui::MenuItem("Load Source Mesh"))
                 {
                     ActionLoadMeshFile(m_State->updUndoable(), TPSDocumentInputIdentifier::Source);
                 }
-                if (ImGui::MenuItem("Load Destination Mesh"))
+                if (ui::MenuItem("Load Destination Mesh"))
                 {
                     ActionLoadMeshFile(m_State->updUndoable(), TPSDocumentInputIdentifier::Destination);
                 }

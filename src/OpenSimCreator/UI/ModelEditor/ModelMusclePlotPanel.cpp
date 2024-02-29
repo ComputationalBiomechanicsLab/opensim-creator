@@ -1753,23 +1753,23 @@ namespace
                 {
                     m_LegendPopupIsOpen = true;
 
-                    if (ImGui::MenuItem(ICON_FA_TRASH " delete"))
+                    if (ui::MenuItem(ICON_FA_TRASH " delete"))
                     {
                         m_Lines.tagOtherPlotForDeletion(i);
                     }
-                    if (!plot.getIsLocked() && ImGui::MenuItem(ICON_FA_LOCK " lock"))
+                    if (!plot.getIsLocked() && ui::MenuItem(ICON_FA_LOCK " lock"))
                     {
                         m_Lines.setOtherPlotLocked(i, true);
                     }
-                    if (plot.getIsLocked() && ImGui::MenuItem(ICON_FA_UNLOCK " unlock"))
+                    if (plot.getIsLocked() && ui::MenuItem(ICON_FA_UNLOCK " unlock"))
                     {
                         m_Lines.setOtherPlotLocked(i, false);
                     }
-                    if (plot.tryGetParameters() && ImGui::MenuItem(ICON_FA_UNDO " revert to this"))
+                    if (plot.tryGetParameters() && ui::MenuItem(ICON_FA_UNDO " revert to this"))
                     {
                         m_Lines.revertToPreviousPlot(updShared().updModel(), i);
                     }
-                    if (ImGui::MenuItem(ICON_FA_FILE_EXPORT " export to CSV"))
+                    if (ui::MenuItem(ICON_FA_FILE_EXPORT " export to CSV"))
                     {
                         ActionPromptUserToSavePlotToCSV(coord, getShared().getPlotParams(), plot);
                     }
@@ -1809,15 +1809,15 @@ namespace
                 {
                     m_LegendPopupIsOpen = true;
 
-                    if (!plot.getIsLocked() && ImGui::MenuItem(ICON_FA_LOCK " lock"))
+                    if (!plot.getIsLocked() && ui::MenuItem(ICON_FA_LOCK " lock"))
                     {
                         m_Lines.setActivePlotLocked(true);
                     }
-                    if (plot.getIsLocked() && ImGui::MenuItem(ICON_FA_UNLOCK " unlock"))
+                    if (plot.getIsLocked() && ui::MenuItem(ICON_FA_UNLOCK " unlock"))
                     {
                         m_Lines.setActivePlotLocked(false);
                     }
-                    if (ImGui::MenuItem(ICON_FA_FILE_EXPORT " export to CSV"))
+                    if (ui::MenuItem(ICON_FA_FILE_EXPORT " export to CSV"))
                     {
                         ActionPromptUserToSavePlotToCSV(coord, getShared().getPlotParams(), plot);
                     }
@@ -1959,31 +1959,31 @@ namespace
             drawMaxDatapointsIntInput();
             drawMaxHistoryEntriesIntInput();
 
-            if (ImGui::MenuItem("clear unlocked plots")) {
+            if (ui::MenuItem("clear unlocked plots")) {
                 m_Lines.clearUnlockedPlots();
             }
 
-            if (ImGui::BeginMenu("legend")) {
+            if (ui::BeginMenu("legend")) {
                 drawLegendContextMenuContent();
-                ImGui::EndMenu();
+                ui::EndMenu();
             }
 
-            ImGui::MenuItem("show markers on active plot", nullptr, &m_ShowMarkersOnActivePlot);
-            ImGui::MenuItem("show markers on other plots", nullptr, &m_ShowMarkersOnOtherPlots);
-            ImGui::MenuItem("snap cursor to datapoints", nullptr, &m_SnapCursor);
+            ui::MenuItem("show markers on active plot", nullptr, &m_ShowMarkersOnActivePlot);
+            ui::MenuItem("show markers on other plots", nullptr, &m_ShowMarkersOnOtherPlots);
+            ui::MenuItem("snap cursor to datapoints", nullptr, &m_SnapCursor);
 
-            if (ImGui::MenuItem("duplicate plot")) {
+            if (ui::MenuItem("duplicate plot")) {
                 actionDuplicateCurrentPlotIntoNewPanel(coord);
             }
 
-            if (ImGui::MenuItem("import CSV overlay(s)")) {
+            if (ui::MenuItem("import CSV overlay(s)")) {
                 ActionPromptUserForCSVOverlayFile(m_Lines);
             }
             DrawTooltipIfItemHovered("import CSV overlay(s)", "Imports the specified CSV file as an overlay over the current plot. This is handy fitting muscle curves against externally-supplied data.\n\nThe provided CSV file must contain a header row and at least two columns of numeric data on each data row. The values in the columns must match this plot's axes.");
 
-            if (ImGui::BeginMenu("export CSV")) {
+            if (ui::BeginMenu("export CSV")) {
                 drawExportCSVMenuContent(coord);
-                ImGui::EndMenu();
+                ui::EndMenu();
             }
         }
 
@@ -2078,14 +2078,14 @@ namespace
 
             for (size_t i = 0; i < m_Lines.getNumOtherPlots(); ++i) {
                 ImGui::PushID(id++);
-                if (ImGui::MenuItem(m_Lines.getOtherPlot(i).getName().c_str())) {
+                if (ui::MenuItem(m_Lines.getOtherPlot(i).getName().c_str())) {
                     ActionPromptUserToSavePlotToCSV(coord, getShared().getPlotParams(), m_Lines.getOtherPlot(i));
                 }
                 ImGui::PopID();
             }
 
             ImGui::PushID(id++);
-            if (ImGui::MenuItem(m_Lines.getActivePlot().getName().c_str())) {
+            if (ui::MenuItem(m_Lines.getActivePlot().getName().c_str())) {
                 ActionPromptUserToSavePlotToCSV(coord, getShared().getPlotParams(), m_Lines.getActivePlot());
             }
             ImGui::PopID();
@@ -2093,7 +2093,7 @@ namespace
             ImGui::Separator();
 
             ImGui::PushID(id++);
-            if (ImGui::MenuItem("Export All Curves")) {
+            if (ui::MenuItem("Export All Curves")) {
                 ActionPromptUserToSavePlotLinesToCSV(coord, getShared().getPlotParams(), m_Lines);
             }
             DrawTooltipIfItemHovered("Export All Curves to CSV", "Exports all curves in the plot to a CSV file.\n\nThe implementation will try to group things together by X value, but the CSV file *may* contain sparse rows if (e.g.) some curves have a different number of plot points, or some curves were loaded from another CSV, etc.");

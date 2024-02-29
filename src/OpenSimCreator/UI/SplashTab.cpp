@@ -68,7 +68,7 @@ namespace
         return rv;
     }
 
-    // helper: draws an ImGui::MenuItem for a given recent- or example-file-path
+    // helper: draws an ui::MenuItem for a given recent- or example-file-path
     void DrawRecentOrExampleFileMenuItem(
         std::filesystem::path const& path,
         ParentPtr<IMainUIStateAPI>& parent_,
@@ -77,7 +77,7 @@ namespace
         std::string const label = std::string{ICON_FA_FILE} + " " + path.filename().string();
 
         ImGui::PushID(++imguiID);
-        if (ImGui::MenuItem(label.c_str()))
+        if (ui::MenuItem(label.c_str()))
         {
             parent_->addAndSelectTab<LoadingTab>(parent_, path);
         }
@@ -257,20 +257,20 @@ private:
 
     void drawActionsMenuSectionContent()
     {
-        if (ImGui::MenuItem(ICON_FA_FILE " New Model"))
+        if (ui::MenuItem(ICON_FA_FILE " New Model"))
         {
             ActionNewModel(m_Parent);
         }
-        if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN " Open Model"))
+        if (ui::MenuItem(ICON_FA_FOLDER_OPEN " Open Model"))
         {
             ActionOpenModel(m_Parent);
         }
-        if (ImGui::MenuItem(ICON_FA_MAGIC " Import Meshes"))
+        if (ui::MenuItem(ICON_FA_MAGIC " Import Meshes"))
         {
             m_Parent->addAndSelectTab<mi::MeshImporterTab>(m_Parent);
         }
         App::upd().addFrameAnnotation("SplashTab/ImportMeshesMenuItem", GetItemRect());
-        if (ImGui::MenuItem(ICON_FA_BOOK " Open Documentation"))
+        if (ui::MenuItem(ICON_FA_BOOK " Open Documentation"))
         {
             OpenPathInOSDefaultApplication(App::get().getConfig().getHTMLDocsDir() / "index.html");
         }
@@ -278,15 +278,15 @@ private:
 
     void drawWorkflowsMenuSectionContent()
     {
-        if (ImGui::MenuItem(ICON_FA_ARROWS_ALT " Frame Definition"))
+        if (ui::MenuItem(ICON_FA_ARROWS_ALT " Frame Definition"))
         {
             m_Parent->addAndSelectTab<FrameDefinitionTab>(m_Parent);
         }
-        if (ImGui::MenuItem(ICON_FA_MAGIC " Mesh Importer"))
+        if (ui::MenuItem(ICON_FA_MAGIC " Mesh Importer"))
         {
             m_Parent->addAndSelectTab<mi::MeshImporterTab>(m_Parent);
         }
-        if (ImGui::MenuItem(ICON_FA_CUBE " Mesh Warping"))
+        if (ui::MenuItem(ICON_FA_CUBE " Mesh Warping"))
         {
             m_Parent->addAndSelectTab<MeshWarpingTab>(m_Parent);
         }

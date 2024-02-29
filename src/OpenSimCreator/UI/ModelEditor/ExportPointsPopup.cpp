@@ -191,7 +191,7 @@ namespace
     {
         for (OpenSim::Frame const& f : model.getComponentList<OpenSim::Frame>())
         {
-            if (ImGui::MenuItem(f.getName().c_str()))
+            if (ui::MenuItem(f.getName().c_str()))
             {
                 auto const isAttachedToFrame = [path = GetAbsolutePath(f), &state](OpenSim::Component const& c)
                 {
@@ -222,7 +222,7 @@ namespace
         SimTK::State const& state,
         SelectionState newStateOnUserClick)
     {
-        if (ImGui::MenuItem("All"))
+        if (ui::MenuItem("All"))
         {
             ActionChangeSelectionStateIf(
                 uiState,
@@ -233,7 +233,7 @@ namespace
             );
         }
 
-        if (ImGui::MenuItem("Listed (searched)"))
+        if (ui::MenuItem("Listed (searched)"))
         {
             ActionChangeSelectionStateIf(
                 uiState,
@@ -247,7 +247,7 @@ namespace
             );
         }
 
-        if (ImGui::BeginMenu("Expressed In"))
+        if (ui::BeginMenu("Expressed In"))
         {
             DrawChangeSelectionStateOfPointsExpressedInMenuContent(
                 uiState,
@@ -255,7 +255,7 @@ namespace
                 state,
                 newStateOnUserClick
             );
-            ImGui::EndMenu();
+            ui::EndMenu();
         }
     }
 

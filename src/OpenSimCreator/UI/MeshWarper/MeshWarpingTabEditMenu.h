@@ -20,10 +20,10 @@ namespace osc
 
         void onDraw()
         {
-            if (ImGui::BeginMenu("Edit"))
+            if (ui::BeginMenu("Edit"))
             {
                 drawContent();
-                ImGui::EndMenu();
+                ui::EndMenu();
             }
         }
 
@@ -31,20 +31,20 @@ namespace osc
 
         void drawContent()
         {
-            if (ImGui::MenuItem("Undo", "Ctrl+Z", nullptr, m_State->canUndo()))
+            if (ui::MenuItem("Undo", "Ctrl+Z", nullptr, m_State->canUndo()))
             {
                 m_State->undo();
             }
-            if (ImGui::MenuItem("Redo", "Ctrl+Shift+Z", nullptr, m_State->canRedo()))
+            if (ui::MenuItem("Redo", "Ctrl+Shift+Z", nullptr, m_State->canRedo()))
             {
                 m_State->redo();
             }
             ImGui::Separator();
-            if (ImGui::MenuItem("Select All", "Ctrl+A"))
+            if (ui::MenuItem("Select All", "Ctrl+A"))
             {
                 m_State->selectAll();
             }
-            if (ImGui::MenuItem("Deselect", "Escape", nullptr, m_State->hasSelection()))
+            if (ui::MenuItem("Deselect", "Escape", nullptr, m_State->hasSelection()))
             {
                 m_State->clearSelection();
             }

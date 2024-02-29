@@ -27,38 +27,38 @@ namespace osc
 
         void onDraw()
         {
-            if (ImGui::BeginMenu("File"))
+            if (ui::BeginMenu("File"))
             {
                 drawContent();
-                ImGui::EndMenu();
+                ui::EndMenu();
             }
         }
     private:
         void drawContent()
         {
-            if (ImGui::MenuItem(ICON_FA_FILE " New", "Ctrl+N"))
+            if (ui::MenuItem(ICON_FA_FILE " New", "Ctrl+N"))
             {
                 ActionCreateNewDocument(m_State->updUndoable());
             }
 
-            if (ImGui::BeginMenu(ICON_FA_FILE_IMPORT " Import"))
+            if (ui::BeginMenu(ICON_FA_FILE_IMPORT " Import"))
             {
                 drawImportMenuContent();
-                ImGui::EndMenu();
+                ui::EndMenu();
             }
 
-            if (ImGui::BeginMenu(ICON_FA_FILE_EXPORT " Export"))
+            if (ui::BeginMenu(ICON_FA_FILE_EXPORT " Export"))
             {
                 drawExportMenuContent();
-                ImGui::EndMenu();
+                ui::EndMenu();
             }
 
-            if (ImGui::MenuItem(ICON_FA_TIMES " Close", "Ctrl+W"))
+            if (ui::MenuItem(ICON_FA_TIMES " Close", "Ctrl+W"))
             {
                 m_State->closeTab();
             }
 
-            if (ImGui::MenuItem(ICON_FA_TIMES_CIRCLE " Quit", "Ctrl+Q"))
+            if (ui::MenuItem(ICON_FA_TIMES_CIRCLE " Quit", "Ctrl+Q"))
             {
                 App::upd().requestQuit();
             }
@@ -66,23 +66,23 @@ namespace osc
 
         void drawImportMenuContent()
         {
-            if (ImGui::MenuItem("Source Mesh"))
+            if (ui::MenuItem("Source Mesh"))
             {
                 ActionLoadMeshFile(m_State->updUndoable(), TPSDocumentInputIdentifier::Source);
             }
-            if (ImGui::MenuItem("Destination Mesh"))
+            if (ui::MenuItem("Destination Mesh"))
             {
                 ActionLoadMeshFile(m_State->updUndoable(), TPSDocumentInputIdentifier::Destination);
             }
-            if (ImGui::MenuItem("Source Landmarks from CSV"))
+            if (ui::MenuItem("Source Landmarks from CSV"))
             {
                 ActionLoadLandmarksFromCSV(m_State->updUndoable(), TPSDocumentInputIdentifier::Source);
             }
-            if (ImGui::MenuItem("Destination Landmarks from CSV"))
+            if (ui::MenuItem("Destination Landmarks from CSV"))
             {
                 ActionLoadLandmarksFromCSV(m_State->updUndoable(), TPSDocumentInputIdentifier::Destination);
             }
-            if (ImGui::MenuItem("Non-Participating Landmarks from CSV"))
+            if (ui::MenuItem("Non-Participating Landmarks from CSV"))
             {
                 ActionLoadNonParticipatingLandmarksFromCSV(m_State->updUndoable());
             }
@@ -90,19 +90,19 @@ namespace osc
 
         void drawExportMenuContent()
         {
-            if (ImGui::MenuItem("Source Landmarks to CSV"))
+            if (ui::MenuItem("Source Landmarks to CSV"))
             {
                 ActionSaveLandmarksToCSV(m_State->getScratch(), TPSDocumentInputIdentifier::Source);
             }
-            if (ImGui::MenuItem("Destination Landmarks to CSV"))
+            if (ui::MenuItem("Destination Landmarks to CSV"))
             {
                 ActionSaveLandmarksToCSV(m_State->getScratch(), TPSDocumentInputIdentifier::Destination);
             }
-            if (ImGui::MenuItem("Landmark Pairs to CSV"))
+            if (ui::MenuItem("Landmark Pairs to CSV"))
             {
                 ActionSavePairedLandmarksToCSV(m_State->getScratch());
             }
-            if (ImGui::MenuItem("Landmark Pairs to CSV (no names)"))
+            if (ui::MenuItem("Landmark Pairs to CSV (no names)"))
             {
                 ActionSavePairedLandmarksToCSV(m_State->getScratch(), LandmarkCSVFlags::NoNames);
             }

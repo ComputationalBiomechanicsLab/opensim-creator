@@ -17,10 +17,10 @@ osc::WindowMenu::~WindowMenu() noexcept = default;
 
 void osc::WindowMenu::onDraw()
 {
-    if (ImGui::BeginMenu("Window"))
+    if (ui::BeginMenu("Window"))
     {
         drawContent();
-        ImGui::EndMenu();
+        ui::EndMenu();
     }
 }
 
@@ -35,7 +35,7 @@ void osc::WindowMenu::drawContent()
     {
         bool activated = manager.isToggleablePanelActivated(i);
         CStringView const name = manager.getToggleablePanelName(i);
-        if (ImGui::MenuItem(name.c_str(), nullptr, &activated))
+        if (ui::MenuItem(name.c_str(), nullptr, &activated))
         {
             manager.setToggleablePanelActivated(i, activated);
         }
@@ -50,7 +50,7 @@ void osc::WindowMenu::drawContent()
         {
             bool activated = true;
             CStringView const name = manager.getDynamicPanelName(i);
-            if (ImGui::MenuItem(name.c_str(), nullptr, &activated))
+            if (ui::MenuItem(name.c_str(), nullptr, &activated))
             {
                 manager.deactivateDynamicPanel(i);
             }
@@ -63,17 +63,17 @@ void osc::WindowMenu::drawContent()
     {
         ImGui::Separator();
 
-        if (ImGui::BeginMenu("Add"))
+        if (ui::BeginMenu("Add"))
         {
             for (size_t i = 0; i < manager.getNumSpawnablePanels(); ++i)
             {
                 CStringView const name = manager.getSpawnablePanelBaseName(i);
-                if (ImGui::MenuItem(name.c_str()))
+                if (ui::MenuItem(name.c_str()))
                 {
                     manager.createDynamicPanel(i);
                 }
             }
-            ImGui::EndMenu();
+            ui::EndMenu();
             ++numMenuItemsPrinted;
         }
     }

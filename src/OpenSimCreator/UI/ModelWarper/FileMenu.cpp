@@ -4,9 +4,9 @@
 
 void osc::mow::FileMenu::onDraw()
 {
-    if (ImGui::BeginMenu("File")) {
+    if (ui::BeginMenu("File")) {
         drawContent();
-        ImGui::EndMenu();
+        ui::EndMenu();
     }
 }
 

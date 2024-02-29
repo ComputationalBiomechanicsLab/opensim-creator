@@ -42,7 +42,7 @@ public:
         // action: add body
         {
             // draw button
-            if (ImGui::MenuItem("Body"))
+            if (ui::MenuItem("Body"))
             {
                 auto popup = std::make_unique<AddBodyPopup>("add body", m_EditorAPI, m_Model);
                 popup->open();
@@ -74,11 +74,11 @@ private:
 
     void renderButton(ComponentRegistryBase const& registry)
     {
-        if (ImGui::BeginMenu(registry.name().c_str()))
+        if (ui::BeginMenu(registry.name().c_str()))
         {
             for (auto const& entry : registry)
             {
-                if (ImGui::MenuItem(entry.name().c_str()))
+                if (ui::MenuItem(entry.name().c_str()))
                 {
                     auto popup = std::make_unique<AddComponentPopup>(
                         "Add " + registry.name(),
@@ -96,7 +96,7 @@ private:
                 }
             }
 
-            ImGui::EndMenu();
+            ui::EndMenu();
         }
 
         if (ImGui::IsItemHovered())

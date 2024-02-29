@@ -6,8 +6,9 @@
 #include <imgui/misc/cpp/imgui_stdlib.h>
 #include <ImGuizmo.h>
 #include <implot.h>
-
 #include <oscar/Utils/CStringView.h>
+
+#include <utility>
 
 namespace osc::ui
 {
@@ -53,5 +54,21 @@ namespace osc::ui
     inline void TextUnformatted(CStringView sv)
     {
         ImGui::TextUnformatted(sv.c_str());
+    }
+
+    inline bool BeginMenu(CStringView sv, bool enabled = true)
+    {
+        return ImGui::BeginMenu(sv.c_str(), enabled);
+    }
+
+    inline void EndMenu()
+    {
+        return ImGui::EndMenu();
+    }
+
+    template<typename... Args>
+    inline bool MenuItem(Args&&... args)
+    {
+        return ImGui::MenuItem(std::forward<Args>(args)...);
     }
 }

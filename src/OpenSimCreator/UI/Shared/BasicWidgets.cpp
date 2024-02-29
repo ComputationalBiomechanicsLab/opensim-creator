@@ -114,20 +114,20 @@ namespace
         OutputSubfield supportedSubfields = GetSupportedSubfields(o);
 
         // can plot suboutputs
-        if (ImGui::BeginMenu(("  " + o.getName()).c_str()))
+        if (ui::BeginMenu(("  " + o.getName()).c_str()))
         {
             for (OutputSubfield f : GetAllSupportedOutputSubfields())
             {
                 if (f & supportedSubfields)
                 {
-                    if (auto label = GetOutputSubfieldLabel(f); label && ImGui::MenuItem(label->c_str()))
+                    if (auto label = GetOutputSubfieldLabel(f); label && ui::MenuItem(label->c_str()))
                     {
                         api.addUserOutputExtractor(OutputExtractor{ComponentOutputExtractor{o, f}});
                         outputAdded = true;
                     }
                 }
             }
-            ImGui::EndMenu();
+            ui::EndMenu();
         }
 
         if (ImGui::IsItemHovered())
@@ -144,7 +144,7 @@ namespace
 
         bool outputAdded = false;
 
-        if (ImGui::MenuItem(("  " + o.getName()).c_str()))
+        if (ui::MenuItem(("  " + o.getName()).c_str()))
         {
             api.addUserOutputExtractor(OutputExtractor{ComponentOutputExtractor{o}});
             outputAdded = true;
@@ -331,7 +331,7 @@ void osc::DrawComponentHoverTooltip(OpenSim::Component const& hovered)
 
 void osc::DrawSelectOwnerMenu(IModelStatePair& model, OpenSim::Component const& selected)
 {
-    if (ImGui::BeginMenu("Select Owner"))
+    if (ui::BeginMenu("Select Owner"))
     {
         model.setHovered(nullptr);
 
@@ -347,7 +347,7 @@ void osc::DrawSelectOwnerMenu(IModelStatePair& model, OpenSim::Component const& 
                 return std::move(ss).str();
             }();
 
-            if (ImGui::MenuItem(menuLabel.c_str()))
+            if (ui::MenuItem(menuLabel.c_str()))
             {
                 model.setSelected(owner);
             }
@@ -357,7 +357,7 @@ void osc::DrawSelectOwnerMenu(IModelStatePair& model, OpenSim::Component const& 
             }
         }
 
-        ImGui::EndMenu();
+        ui::EndMenu();
     }
 }
 
@@ -365,7 +365,7 @@ bool osc::DrawWatchOutputMenu(IMainUIStateAPI& api, OpenSim::Component const& c)
 {
     bool outputAdded = false;
 
-    if (ImGui::BeginMenu("Watch Output"))
+    if (ui::BeginMenu("Watch Output"))
     {
         DrawHelpMarker("Watch the selected output. This makes it appear in the 'Output Watches' window in the editor panel and the 'Output Plots' window during a simulation");
 
@@ -397,7 +397,7 @@ bool osc::DrawWatchOutputMenu(IMainUIStateAPI& api, OpenSim::Component const& c)
             ImGui::PopID();
         }
 
-        ImGui::EndMenu();
+        ui::EndMenu();
     }
 
     return outputAdded;
@@ -503,10 +503,10 @@ void osc::DrawWithRespectToMenuContainingMenuPerFrame(
     for (OpenSim::Frame const& frame : root.getComponentList<OpenSim::Frame>())
     {
         ImGui::PushID(imguiID++);
-        if (ImGui::BeginMenu(frame.getName().c_str()))
+        if (ui::BeginMenu(frame.getName().c_str()))
         {
             onFrameMenuOpened(frame);
-            ImGui::EndMenu();
+            ui::EndMenu();
         }
         ImGui::PopID();
     }
@@ -523,7 +523,7 @@ void osc::DrawWithRespectToMenuContainingMenuItemPerFrame(
     for (OpenSim::Frame const& frame : root.getComponentList<OpenSim::Frame>())
     {
         ImGui::PushID(imguiID++);
-        if (ImGui::MenuItem(frame.getName().c_str()))
+        if (ui::MenuItem(frame.getName().c_str()))
         {
             onFrameMenuItemClicked(frame);
         }
@@ -588,12 +588,12 @@ bool osc::BeginCalculateMenu(CalculateMenuFlags flags)
     CStringView const label = flags & CalculateMenuFlags::NoCalculatorIcon ?
         "Calculate" :
         ICON_FA_CALCULATOR " Calculate";
-    return ImGui::BeginMenu(label.c_str());
+    return ui::BeginMenu(label.c_str());
 }
 
 void osc::EndCalculateMenu()
 {
-    ImGui::EndMenu();
+    ui::EndMenu();
 }
 
 void osc::DrawCalculatePositionMenu(
@@ -601,7 +601,7 @@ void osc::DrawCalculatePositionMenu(
     SimTK::State const& state,
     OpenSim::Point const& point)
 {
-    if (ImGui::BeginMenu("Position"))
+    if (ui::BeginMenu("Position"))
     {
         auto const onFrameMenuOpened = [&state, &point](OpenSim::Frame const& frame)
         {
@@ -613,7 +613,7 @@ void osc::DrawCalculatePositionMenu(
         };
 
         DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
-        ImGui::EndMenu();
+        ui::EndMenu();
     }
 }
 
@@ -635,14 +635,14 @@ void osc::DrawCalculateTransformMenu(
     SimTK::State const& state,
     OpenSim::Frame const& frame)
 {
-    if (ImGui::BeginMenu("Transform"))
+    if (ui::BeginMenu("Transform"))
     {
         auto const onFrameMenuOpened = [&state, &frame](OpenSim::Frame const& otherFrame)
         {
             DrawFrameInformationExpressedIn(frame, state, otherFrame);
         };
         DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
-        ImGui::EndMenu();
+        ui::EndMenu();
     }
 }
 
@@ -651,7 +651,7 @@ void osc::DrawCalculateAxisDirectionsMenu(
     SimTK::State const& state,
     OpenSim::Frame const& frame)
 {
-    if (ImGui::BeginMenu("Axis Directions")) {
+    if (ui::BeginMenu("Axis Directions")) {
         auto const onFrameMenuOpened = [&state, &frame](OpenSim::Frame const& other)
         {
             Vec3 x = ToVec3(frame.expressVectorInAnotherFrame(state, {1.0, 0.0, 0.0}, other));
@@ -671,7 +671,7 @@ void osc::DrawCalculateAxisDirectionsMenu(
             ImGui::InputFloat3("##zdir", value_ptr(z), "%.6f", ImGuiInputTextFlags_ReadOnly);
         };
         DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
-        ImGui::EndMenu();
+        ui::EndMenu();
     }
 }
 
@@ -680,7 +680,7 @@ void osc::DrawCalculateOriginMenu(
     SimTK::State const& state,
     OpenSim::Frame const& frame)
 {
-    if (ImGui::BeginMenu("Origin")) {
+    if (ui::BeginMenu("Origin")) {
         auto const onFrameMenuOpened = [&state, &frame](OpenSim::Frame const& otherFrame)
         {
             auto v = ToVec3(frame.findStationLocationInAnotherFrame(state, {0.0f, 0.0f, 0.0f}, otherFrame));
@@ -689,7 +689,7 @@ void osc::DrawCalculateOriginMenu(
             ImGui::InputFloat3("##origin", value_ptr(v), "%.6f", ImGuiInputTextFlags_ReadOnly);
         };
         DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
-        ImGui::EndMenu();
+        ui::EndMenu();
     }
 }
 
@@ -713,7 +713,7 @@ void osc::DrawCalculateOriginMenu(
     SimTK::State const& state,
     OpenSim::Sphere const& sphere)
 {
-    if (ImGui::BeginMenu("Origin"))
+    if (ui::BeginMenu("Origin"))
     {
         Vec3 const posInGround = ToVec3(sphere.getFrame().getPositionInGround(state));
         auto const onFrameMenuOpened = [&state, posInGround](OpenSim::Frame const& otherFrame)
@@ -722,7 +722,7 @@ void osc::DrawCalculateOriginMenu(
         };
         DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
 
-        ImGui::EndMenu();
+        ui::EndMenu();
     }
 }
 
@@ -731,11 +731,11 @@ void osc::DrawCalculateRadiusMenu(
     SimTK::State const&,
     OpenSim::Sphere const& sphere)
 {
-    if (ImGui::BeginMenu("Radius"))
+    if (ui::BeginMenu("Radius"))
     {
         double d = sphere.get_radius();
         ImGui::InputDouble("radius", &d);
-        ImGui::EndMenu();
+        ui::EndMenu();
     }
 }
 
@@ -744,12 +744,12 @@ void osc::DrawCalculateVolumeMenu(
     SimTK::State const&,
     OpenSim::Sphere const& sphere)
 {
-    if (ImGui::BeginMenu("Volume"))
+    if (ui::BeginMenu("Volume"))
     {
         double const r = sphere.get_radius();
         double v = 4.0/3.0 * SimTK::Pi * r*r*r;
         ImGui::InputDouble("volume", &v, 0.0, 0.0, "%.6f", ImGuiInputTextFlags_ReadOnly);
-        ImGui::EndMenu();
+        ui::EndMenu();
     }
 }
 
@@ -798,7 +798,7 @@ void osc::DrawCalculateOriginMenu(
     SimTK::State const& state,
     OpenSim::Ellipsoid const& ellipsoid)
 {
-    if (ImGui::BeginMenu("Origin")) {
+    if (ui::BeginMenu("Origin")) {
         Vec3 const posInGround = ToVec3(ellipsoid.getFrame().getPositionInGround(state));
         auto const onFrameMenuOpened = [&state, posInGround](OpenSim::Frame const& otherFrame)
         {
@@ -806,7 +806,7 @@ void osc::DrawCalculateOriginMenu(
         };
         DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
 
-        ImGui::EndMenu();
+        ui::EndMenu();
     }
 }
 
@@ -815,12 +815,12 @@ void osc::DrawCalculateRadiiMenu(
     SimTK::State const&,
     OpenSim::Ellipsoid const& ellipsoid)
 {
-    if (ImGui::BeginMenu("Radii")) {
+    if (ui::BeginMenu("Radii")) {
         auto v = ToVec3(ellipsoid.get_radii());
         ui::Text("radii");
         ImGui::SameLine();
         ImGui::InputFloat3("##radii", value_ptr(v), "%.6f", ImGuiInputTextFlags_ReadOnly);
-        ImGui::EndMenu();
+        ui::EndMenu();
     }
 }
 
@@ -837,7 +837,7 @@ void osc::DrawCalculateScaledRadiiDirectionsMenu(
     SimTK::State const& state,
     OpenSim::Ellipsoid const& ellipsoid)
 {
-    if (ImGui::BeginMenu("Axis Directions (Scaled by Radii)")) {
+    if (ui::BeginMenu("Axis Directions (Scaled by Radii)")) {
         auto const onFrameMenuOpened = [&state, &ellipsoid](OpenSim::Frame const& other)
         {
             auto const& radii = ellipsoid.get_radii();
@@ -858,7 +858,7 @@ void osc::DrawCalculateScaledRadiiDirectionsMenu(
             ImGui::InputFloat3("##zdir", value_ptr(z), "%.6f", ImGuiInputTextFlags_ReadOnly);
         };
         DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
-        ImGui::EndMenu();
+        ui::EndMenu();
     }
 }
 
@@ -1470,7 +1470,7 @@ void osc::DrawMeshExportContextMenuContent(
     ui::TextDisabled("Format:");
     ImGui::Separator();
 
-    if (ImGui::BeginMenu(".obj"))
+    if (ui::BeginMenu(".obj"))
     {
         auto const onFrameMenuItemClicked = [&model, &mesh](OpenSim::Frame const& frame)
         {
@@ -1483,10 +1483,10 @@ void osc::DrawMeshExportContextMenuContent(
         };
 
         DrawWithRespectToMenuContainingMenuItemPerFrame(model.getModel(), onFrameMenuItemClicked);
-        ImGui::EndMenu();
+        ui::EndMenu();
     }
 
-    if (ImGui::BeginMenu(".stl"))
+    if (ui::BeginMenu(".stl"))
     {
         auto const onFrameMenuItemClicked = [model, &mesh](OpenSim::Frame const& frame)
         {
@@ -1499,6 +1499,6 @@ void osc::DrawMeshExportContextMenuContent(
         };
 
         DrawWithRespectToMenuContainingMenuItemPerFrame(model.getModel(), onFrameMenuItemClicked);
-        ImGui::EndMenu();
+        ui::EndMenu();
     }
 }

@@ -130,7 +130,7 @@ namespace
     {
         bool isWatching = api.hasUserOutputExtractor(output);
 
-        if (ImGui::MenuItem(ICON_FA_EYE " Watch Output", nullptr, &isWatching))
+        if (ui::MenuItem(ICON_FA_EYE " Watch Output", nullptr, &isWatching))
         {
             if (isWatching)
             {
@@ -151,12 +151,12 @@ namespace
     {
         OSC_ASSERT(output.getOutputType() == OutputType::Float);
 
-        if (ImGui::MenuItem(ICON_FA_SAVE "Save as CSV"))
+        if (ui::MenuItem(ICON_FA_SAVE "Save as CSV"))
         {
             TryExportNumericOutputToCSV(sim, output);
         }
 
-        if (ImGui::MenuItem(ICON_FA_SAVE "Save as CSV (and open)"))
+        if (ui::MenuItem(ICON_FA_SAVE "Save as CSV (and open)"))
         {
             std::string p = TryExportNumericOutputToCSV(sim, output);
             if (!p.empty())

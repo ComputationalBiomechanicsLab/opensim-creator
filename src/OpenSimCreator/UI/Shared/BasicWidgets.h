@@ -57,7 +57,7 @@ namespace osc
     // within the given component hierarchy (from `root`)
     //
     // calls `onFrameMenuOpened` when the user is hovering a frame's menu
-    // (i.e. `ImGui::BeginMenu($FRAME)` returned `true`)
+    // (i.e. `ui::BeginMenu($FRAME)` returned `true`)
     void DrawWithRespectToMenuContainingMenuPerFrame(
         OpenSim::Component const& root,
         std::function<void(OpenSim::Frame const&)> const& onFrameMenuOpened
@@ -66,7 +66,7 @@ namespace osc
     // draws a "With Respect to" menu that prompts the user to click a frame
     // within the given component hierarchy (from `root`)
     //
-    // calls `onFrameMenuItemClicked` when the user clicks the `ImGui::MenuItem`
+    // calls `onFrameMenuItemClicked` when the user clicks the `ui::MenuItem`
     // associated with a frame
     void DrawWithRespectToMenuContainingMenuItemPerFrame(
         OpenSim::Component const& root,

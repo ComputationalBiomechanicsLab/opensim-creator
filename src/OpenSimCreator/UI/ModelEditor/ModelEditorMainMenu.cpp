@@ -48,53 +48,53 @@ public:
 private:
     void drawMainMenuEditTab()
     {
-        if (ImGui::BeginMenu("Edit"))
+        if (ui::BeginMenu("Edit"))
         {
-            if (ImGui::MenuItem(ICON_FA_UNDO " Undo", "Ctrl+Z", false, m_Model->canUndo()))
+            if (ui::MenuItem(ICON_FA_UNDO " Undo", "Ctrl+Z", false, m_Model->canUndo()))
             {
                 ActionUndoCurrentlyEditedModel(*m_Model);
             }
 
-            if (ImGui::MenuItem(ICON_FA_REDO " Redo", "Ctrl+Shift+Z", false, m_Model->canRedo()))
+            if (ui::MenuItem(ICON_FA_REDO " Redo", "Ctrl+Shift+Z", false, m_Model->canRedo()))
             {
                 ActionRedoCurrentlyEditedModel(*m_Model);
             }
 
             ImGui::Separator();
 
-            if (ImGui::MenuItem("         Deselect", nullptr, false, m_Model->getSelected() != nullptr))
+            if (ui::MenuItem("         Deselect", nullptr, false, m_Model->getSelected() != nullptr))
             {
                 m_Model->setSelected(nullptr);
             }
 
-            ImGui::EndMenu();
+            ui::EndMenu();
         }
     }
 
     void drawMainMenuAddTab()
     {
-        if (ImGui::BeginMenu("Add"))
+        if (ui::BeginMenu("Add"))
         {
             m_MainMenuAddTabMenuItems.onDraw();
-            ImGui::EndMenu();
+            ui::EndMenu();
         }
     }
 
     void drawMainMenuToolsTab()
     {
-        if (ImGui::BeginMenu("Tools"))
+        if (ui::BeginMenu("Tools"))
         {
-            if (ImGui::MenuItem(ICON_FA_PLAY " Simulate", "Ctrl+R"))
+            if (ui::MenuItem(ICON_FA_PLAY " Simulate", "Ctrl+R"))
             {
                 ActionStartSimulatingModel(m_MainUIStateAPI, *m_Model);
             }
 
-            if (ImGui::MenuItem(ICON_FA_EDIT " Edit simulation settings"))
+            if (ui::MenuItem(ICON_FA_EDIT " Edit simulation settings"))
             {
                 m_EditorAPI->pushPopup(std::make_unique<ParamBlockEditorPopup>("simulation parameters", &m_MainUIStateAPI->updSimulationParams()));
             }
 
-            if (ImGui::MenuItem("         Import Points"))
+            if (ui::MenuItem("         Import Points"))
             {
                 m_EditorAPI->pushPopup(std::make_unique<ImportStationsFromCSVPopup>(
                     "Import Points",
@@ -105,50 +105,50 @@ private:
                 ));
             }
 
-            if (ImGui::MenuItem("         Export Points"))
+            if (ui::MenuItem("         Export Points"))
             {
                 m_EditorAPI->pushPopup(std::make_unique<ExportPointsPopup>("Export Points", m_Model));
             }
 
-            if (ImGui::BeginMenu("         Experimental Tools"))
+            if (ui::BeginMenu("         Experimental Tools"))
             {
-                if (ImGui::MenuItem("Simulate Against All Integrators (advanced)"))
+                if (ui::MenuItem("Simulate Against All Integrators (advanced)"))
                 {
                     ActionSimulateAgainstAllIntegrators(m_MainUIStateAPI, *m_Model);
                 }
                 DrawTooltipIfItemHovered("Simulate Against All Integrators", "Simulate the given model against all available SimTK integrators. This takes the current simulation parameters and permutes the integrator, reporting the overall simulation wall-time to the user. It's an advanced feature that's handy for developers to figure out which integrator best-suits a particular model");
 
-                if (ImGui::MenuItem("Export Model Graph as Dotviz")) {
+                if (ui::MenuItem("Export Model Graph as Dotviz")) {
                     ActionExportModelGraphToDotviz(*m_Model);
                 }
                 DrawTooltipIfItemHovered("Writes the model's data topology graph in dotviz format, so that it can be visualized in external tooling such as Graphviz Online");
 
-                if (ImGui::MenuItem("Export Model Graph as Dotviz (clipboard)")) {
+                if (ui::MenuItem("Export Model Graph as Dotviz (clipboard)")) {
                     ActionExportModelGraphToDotvizClipboard(*m_Model);
                 }
 
-                ImGui::EndMenu();
+                ui::EndMenu();
             }
 
-            ImGui::EndMenu();
+            ui::EndMenu();
         }
     }
 
     void drawMainMenuActionsTab()
     {
-        if (ImGui::BeginMenu("Actions"))
+        if (ui::BeginMenu("Actions"))
         {
-            if (ImGui::MenuItem("Disable all wrapping surfaces"))
+            if (ui::MenuItem("Disable all wrapping surfaces"))
             {
                 ActionDisableAllWrappingSurfaces(*m_Model);
             }
 
-            if (ImGui::MenuItem("Enable all wrapping surfaces"))
+            if (ui::MenuItem("Enable all wrapping surfaces"))
             {
                 ActionEnableAllWrappingSurfaces(*m_Model);
             }
 
-            ImGui::EndMenu();
+            ui::EndMenu();
         }
     }
 

@@ -87,17 +87,17 @@ void osc::MainMenuFileTab::onDraw(
         maybeSaveChangesPopup->onDraw();
     }
 
-    if (!ImGui::BeginMenu("File"))
+    if (!ui::BeginMenu("File"))
     {
         return;
     }
 
-    if (ImGui::MenuItem(ICON_FA_FILE " New", "Ctrl+N"))
+    if (ui::MenuItem(ICON_FA_FILE " New", "Ctrl+N"))
     {
         ActionNewModel(api);
     }
 
-    if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN " Open", "Ctrl+O"))
+    if (ui::MenuItem(ICON_FA_FOLDER_OPEN " Open", "Ctrl+O"))
     {
         ActionOpenModel(api);
     }
@@ -105,40 +105,40 @@ void osc::MainMenuFileTab::onDraw(
     int imgui_id = 0;
 
     auto recentFiles = App::singleton<RecentFiles>();
-    if (ImGui::BeginMenu(ICON_FA_FOLDER_OPEN " Open Recent", !recentFiles->empty()))
+    if (ui::BeginMenu(ICON_FA_FOLDER_OPEN " Open Recent", !recentFiles->empty()))
     {
         // iterate in reverse: recent files are stored oldest --> newest
         for (RecentFile const& rf : *recentFiles)
         {
             ImGui::PushID(++imgui_id);
-            if (ImGui::MenuItem(rf.path.filename().string().c_str()))
+            if (ui::MenuItem(rf.path.filename().string().c_str()))
             {
                 ActionOpenModel(api, rf.path);
             }
             ImGui::PopID();
         }
 
-        ImGui::EndMenu();
+        ui::EndMenu();
     }
 
-    if (ImGui::BeginMenu(ICON_FA_FOLDER_OPEN " Open Example"))
+    if (ui::BeginMenu(ICON_FA_FOLDER_OPEN " Open Example"))
     {
         for (std::filesystem::path const& ex : exampleOsimFiles)
         {
             ImGui::PushID(++imgui_id);
-            if (ImGui::MenuItem(ex.filename().string().c_str()))
+            if (ui::MenuItem(ex.filename().string().c_str()))
             {
                 ActionOpenModel(api, ex);
             }
             ImGui::PopID();
         }
 
-        ImGui::EndMenu();
+        ui::EndMenu();
     }
 
     ImGui::Separator();
 
-    if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN " Load Motion", nullptr, false, maybeModel != nullptr))
+    if (ui::MenuItem(ICON_FA_FOLDER_OPEN " Load Motion", nullptr, false, maybeModel != nullptr))
     {
         std::optional<std::filesystem::path> maybePath = PromptUserForFile("sto,mot");
         if (maybePath && maybeModel)
@@ -160,7 +160,7 @@ void osc::MainMenuFileTab::onDraw(
 
     ImGui::Separator();
 
-    if (ImGui::MenuItem(ICON_FA_SAVE " Save", "Ctrl+S", false, maybeModel != nullptr))
+    if (ui::MenuItem(ICON_FA_SAVE " Save", "Ctrl+S", false, maybeModel != nullptr))
     {
         if (maybeModel)
         {
@@ -168,7 +168,7 @@ void osc::MainMenuFileTab::onDraw(
         }
     }
 
-    if (ImGui::MenuItem(ICON_FA_SAVE " Save As", "Shift+Ctrl+S", false, maybeModel != nullptr))
+    if (ui::MenuItem(ICON_FA_SAVE " Save As", "Shift+Ctrl+S", false, maybeModel != nullptr))
     {
         if (maybeModel)
         {
@@ -181,24 +181,24 @@ void osc::MainMenuFileTab::onDraw(
     {
         bool const modelHasBackingFile = maybeModel != nullptr && HasInputFileName(maybeModel->getModel());
 
-        if (ImGui::MenuItem(ICON_FA_RECYCLE " Reload", "F5", false, modelHasBackingFile) && maybeModel)
+        if (ui::MenuItem(ICON_FA_RECYCLE " Reload", "F5", false, modelHasBackingFile) && maybeModel)
         {
             ActionReloadOsimFromDisk(*maybeModel, *App::singleton<SceneCache>());
         }
         DrawTooltipIfItemHovered("Reload", "Attempts to reload the osim file from scratch. This can be useful if (e.g.) editing third-party files that OpenSim Creator doesn't automatically track.");
 
-        if (ImGui::MenuItem(ICON_FA_CLIPBOARD " Copy .osim path to clipboard", nullptr, false, modelHasBackingFile) && maybeModel)
+        if (ui::MenuItem(ICON_FA_CLIPBOARD " Copy .osim path to clipboard", nullptr, false, modelHasBackingFile) && maybeModel)
         {
             ActionCopyModelPathToClipboard(*maybeModel);
         }
         DrawTooltipIfItemHovered("Copy .osim path to clipboard", "Copies the absolute path to the model's .osim file into your clipboard.\n\nThis is handy if you want to (e.g.) load the osim via a script, open it from the command line in another app, etc.");
 
-        if (ImGui::MenuItem(ICON_FA_FOLDER " Open .osim's parent directory", nullptr, false, modelHasBackingFile) && maybeModel)
+        if (ui::MenuItem(ICON_FA_FOLDER " Open .osim's parent directory", nullptr, false, modelHasBackingFile) && maybeModel)
         {
             ActionOpenOsimParentDirectory(*maybeModel);
         }
 
-        if (ImGui::MenuItem(ICON_FA_LINK " Open .osim in external editor", nullptr, false, modelHasBackingFile) && maybeModel)
+        if (ui::MenuItem(ICON_FA_LINK " Open .osim in external editor", nullptr, false, modelHasBackingFile) && maybeModel)
         {
             ActionOpenOsimInExternalEditor(*maybeModel);
         }
@@ -212,7 +212,7 @@ void osc::MainMenuFileTab::onDraw(
 
     ImGui::Separator();
 
-    if (ImGui::MenuItem(ICON_FA_MAGIC " Import Meshes"))
+    if (ui::MenuItem(ICON_FA_MAGIC " Import Meshes"))
     {
         api->addAndSelectTab<mi::MeshImporterTab>(api);
     }
@@ -220,18 +220,18 @@ void osc::MainMenuFileTab::onDraw(
 
 
 
-    if (ImGui::MenuItem(ICON_FA_TIMES_CIRCLE " Quit", "Ctrl+Q"))
+    if (ui::MenuItem(ICON_FA_TIMES_CIRCLE " Quit", "Ctrl+Q"))
     {
         App::upd().requestQuit();
     }
 
-    ImGui::EndMenu();
+    ui::EndMenu();
 }
 
 
 void osc::MainMenuAboutTab::onDraw()
 {
-    if (!ImGui::BeginMenu("About"))
+    if (!ui::BeginMenu("About"))
     {
         return;
     }
@@ -457,5 +457,5 @@ void osc::MainMenuAboutTab::onDraw()
         ImGui::Columns();
     }
 
-    ImGui::EndMenu();
+    ui::EndMenu();
 }

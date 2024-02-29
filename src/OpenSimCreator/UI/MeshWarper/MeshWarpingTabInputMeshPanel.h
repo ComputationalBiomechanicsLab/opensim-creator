@@ -495,16 +495,16 @@ namespace osc
             ImGui::Button(ICON_FA_FILE_IMPORT " import" ICON_FA_CARET_DOWN);
             if (ImGui::BeginPopupContextItem("##importcontextmenu", ImGuiPopupFlags_MouseButtonLeft))
             {
-                if (ImGui::MenuItem("Mesh"))
+                if (ui::MenuItem("Mesh"))
                 {
                     ActionLoadMeshFile(m_State->updUndoable(), m_DocumentIdentifier);
                 }
-                if (ImGui::MenuItem("Landmarks from CSV"))
+                if (ui::MenuItem("Landmarks from CSV"))
                 {
                     ActionLoadLandmarksFromCSV(m_State->updUndoable(), m_DocumentIdentifier);
                 }
                 if (m_DocumentIdentifier == TPSDocumentInputIdentifier::Source &&
-                    ImGui::MenuItem("Non-Participating Landmarks from CSV"))
+                    ui::MenuItem("Non-Participating Landmarks from CSV"))
                 {
                     ActionLoadNonParticipatingLandmarksFromCSV(m_State->updUndoable());
                 }
@@ -518,19 +518,19 @@ namespace osc
             ImGui::Button(ICON_FA_FILE_EXPORT " export" ICON_FA_CARET_DOWN);
             if (ImGui::BeginPopupContextItem("##exportcontextmenu", ImGuiPopupFlags_MouseButtonLeft))
             {
-                if (ImGui::MenuItem("Mesh to OBJ"))
+                if (ui::MenuItem("Mesh to OBJ"))
                 {
                     ActionTrySaveMeshToObjFile(m_State->getScratchMesh(m_DocumentIdentifier));
                 }
-                if (ImGui::MenuItem("Mesh to STL"))
+                if (ui::MenuItem("Mesh to STL"))
                 {
                     ActionTrySaveMeshToStlFile(m_State->getScratchMesh(m_DocumentIdentifier));
                 }
-                if (ImGui::MenuItem("Landmarks to CSV"))
+                if (ui::MenuItem("Landmarks to CSV"))
                 {
                     ActionSaveLandmarksToCSV(m_State->getScratch(), m_DocumentIdentifier);
                 }
-                if (ImGui::MenuItem("Landmark Positions to CSV"))
+                if (ui::MenuItem("Landmark Positions to CSV"))
                 {
                     ActionSaveLandmarksToCSV(m_State->getScratch(), m_DocumentIdentifier, LandmarkCSVFlags::NoHeader | LandmarkCSVFlags::NoNames);
                 }

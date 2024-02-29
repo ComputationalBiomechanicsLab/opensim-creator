@@ -84,12 +84,12 @@ private:
             ImGui::Button(ICON_FA_SAVE " Save All " ICON_FA_CARET_DOWN);
             if (ImGui::BeginPopupContextItem("##exportoptions", ImGuiPopupFlags_MouseButtonLeft))
             {
-                if (ImGui::MenuItem("as CSV"))
+                if (ui::MenuItem("as CSV"))
                 {
                     TryPromptAndSaveOutputsAsCSV(*m_SimulatorUIAPI, outputs);
                 }
 
-                if (ImGui::MenuItem("as CSV (and open)"))
+                if (ui::MenuItem("as CSV (and open)"))
                 {
                     std::filesystem::path p = TryPromptAndSaveOutputsAsCSV(*m_SimulatorUIAPI, outputs);
                     if (!p.empty())

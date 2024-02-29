@@ -120,7 +120,7 @@ namespace osc
 
             DrawContextMenuSeparator();
 
-            if (ImGui::MenuItem(ICON_FA_TRASH " Delete", "Delete"))
+            if (ui::MenuItem(ICON_FA_TRASH " Delete", "Delete"))
             {
                 ActionDeleteElementByID(m_State->updUndoable(), lm.uid);
                 return;  // CARE: `lm` is now dead
@@ -158,7 +158,7 @@ namespace osc
 
             DrawContextMenuSeparator();
 
-            if (ImGui::MenuItem(ICON_FA_TRASH " Delete", "Delete"))
+            if (ui::MenuItem(ICON_FA_TRASH " Delete", "Delete"))
             {
                 ActionDeleteElementByID(m_State->updUndoable(), npl.uid);
                 return;  // CARE: `npl` is now dead

@@ -58,7 +58,7 @@ namespace
         auto const& registry = GetComponentRegistry<OpenSim::Joint>();
 
         std::optional<ptrdiff_t> selectedIdx;
-        if (ImGui::BeginMenu("Change Joint Type"))
+        if (ui::BeginMenu("Change Joint Type"))
         {
             // look the Joint up in the type registry so we know where it should be in the ImGui::Combo
             std::optional<size_t> maybeTypeIndex = IndexOf(registry, *joint);
@@ -68,7 +68,7 @@ namespace
                 bool selected = i == maybeTypeIndex;
                 bool wasSelected = selected;
 
-                if (ImGui::MenuItem(registry[i].name().c_str(), nullptr, &selected))
+                if (ui::MenuItem(registry[i].name().c_str(), nullptr, &selected))
                 {
                     if (!wasSelected)
                     {
@@ -76,7 +76,7 @@ namespace
                     }
                 }
             }
-            ImGui::EndMenu();
+            ui::EndMenu();
         }
 
         if (selectedIdx && *selectedIdx < std::ssize(registry))
@@ -106,7 +106,7 @@ namespace
             );
         }
 
-        if (ImGui::MenuItem("Add Geometry"))
+        if (ui::MenuItem("Add Geometry"))
         {
             std::function<void(std::unique_ptr<OpenSim::Geometry>)> const callback = [uim, pfPath](auto geom)
             {
@@ -122,7 +122,7 @@ namespace
         }
         DrawTooltipIfItemHovered("Add Geometry", "Add geometry to this component. Geometry can be removed by selecting it in the navigator and pressing DELETE");
 
-        if (ImGui::MenuItem("Add Offset Frame"))
+        if (ui::MenuItem("Add Offset Frame"))
         {
             ActionAddOffsetFrameToPhysicalFrame(*uim, pfPath);
         }
@@ -139,24 +139,24 @@ namespace
 
         if (CanRezeroJoint(uim, jointPath))
         {
-            if (ImGui::MenuItem("Rezero Joint"))
+            if (ui::MenuItem("Rezero Joint"))
             {
                 ActionRezeroJoint(uim, jointPath);
             }
             DrawTooltipIfItemHovered("Re-zero the joint", "Given the joint's current geometry due to joint defaults, coordinate defaults, and any coordinate edits made in the coordinates panel, this will reorient the joint's parent (if it's an offset frame) to match the child's transformation. Afterwards, it will then resets all of the joints coordinates to zero. This effectively sets the 'zero point' of the joint (i.e. the geometry when all coordinates are zero) to match whatever the current geometry is.");
         }
 
-        if (ImGui::MenuItem("Add Parent Offset Frame"))
+        if (ui::MenuItem("Add Parent Offset Frame"))
         {
             ActionAddParentOffsetFrameToJoint(uim, jointPath);
         }
 
-        if (ImGui::MenuItem("Add Child Offset Frame"))
+        if (ui::MenuItem("Add Child Offset Frame"))
         {
             ActionAddChildOffsetFrameToJoint(uim, jointPath);
         }
 
-        if (ImGui::MenuItem("Toggle Frame Visibility"))
+        if (ui::MenuItem("Toggle Frame Visibility"))
         {
             ActionToggleFrames(uim);
         }
@@ -179,7 +179,7 @@ namespace
             return;  // cannot edit: has more than one HuntCrossleyForce::Parameter
         }
 
-        if (ImGui::MenuItem("Add Contact Geometry"))
+        if (ui::MenuItem("Add Contact Geometry"))
         {
             auto onSelection = [uim, hcfPath](OpenSim::ComponentPath const& geomPath)
             {
@@ -202,7 +202,7 @@ namespace
         std::shared_ptr<UndoableModelStatePair> const& uim,
         OpenSim::ComponentPath const& paPath)
     {
-        if (ImGui::MenuItem("Add Path Point"))
+        if (ui::MenuItem("Add Path Point"))
         {
             auto onSelection = [uim, paPath](OpenSim::ComponentPath const& pfPath) { ActionAddPathPointToPathActuator(*uim, paPath, pfPath); };
             auto popup = std::make_unique<Select1PFPopup>("Select Physical Frame", uim, onSelection);
@@ -214,7 +214,7 @@ namespace
 
     void DrawModelContextualActions(UndoableModelStatePair& uim)
     {
-        if (ImGui::MenuItem("Toggle Frames"))
+        if (ui::MenuItem("Toggle Frames"))
         {
             ActionToggleFrames(uim);
         }
@@ -248,32 +248,32 @@ namespace
         UndoableModelStatePair& uim,
         OpenSim::Mesh const& mesh)
     {
-        if (ImGui::BeginMenu("Fit Analytic Geometry to This"))
+        if (ui::BeginMenu("Fit Analytic Geometry to This"))
         {
             DrawHelpMarker("Uses shape-fitting algorithms to fit analytic geometry to the points in the given mesh.\n\nThe 'htbad'-suffixed algorithms were adapted (potentially, with bugs - report them) from the MATLAB code in:\n\n        Bishop P., How to build a dinosaur..., doi:10.1017/pab.2020.46");
 
-            if (ImGui::MenuItem("Sphere (htbad)"))
+            if (ui::MenuItem("Sphere (htbad)"))
             {
                 ActionFitSphereToMesh(uim, mesh);
             }
 
-            if (ImGui::MenuItem("Ellipsoid (htbad)"))
+            if (ui::MenuItem("Ellipsoid (htbad)"))
             {
                 ActionFitEllipsoidToMesh(uim, mesh);
             }
 
-            if (ImGui::MenuItem("Plane (htbad)"))
+            if (ui::MenuItem("Plane (htbad)"))
             {
                 ActionFitPlaneToMesh(uim, mesh);
             }
 
-            ImGui::EndMenu();
+            ui::EndMenu();
         }
 
-        if (ImGui::BeginMenu("Export"))
+        if (ui::BeginMenu("Export"))
         {
             DrawMeshExportContextMenuContent(uim, mesh);
-            ImGui::EndMenu();
+            ui::EndMenu();
         }
     }
 
@@ -327,10 +327,10 @@ private:
             // draw context menu content that's shown when nothing was right-clicked
             DrawNothingRightClickedContextMenuHeader();
             DrawContextMenuSeparator();
-            if (ImGui::BeginMenu("Add"))
+            if (ui::BeginMenu("Add"))
             {
                 m_ModelActionsMenuBar.onDraw();
-                ImGui::EndMenu();
+                ui::EndMenu();
             }
 
             // draw a display menu to match the display menu that appears when right-clicking
@@ -339,14 +339,14 @@ private:
             //
             // it's handy when users have selectively hidden this-or-that, or have hidden everything
             // in the model (#422)
-            if (ImGui::BeginMenu("Display"))
+            if (ui::BeginMenu("Display"))
             {
-                if (ImGui::MenuItem("Show All"))
+                if (ui::MenuItem("Show All"))
                 {
                     ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, GetRootComponentPath(), true);
                 }
                 DrawTooltipIfItemHovered("Show All", "Sets the visiblity of all components within the model to 'visible', handy for undoing selective hiding etc.");
-                ImGui::EndMenu();
+                ui::EndMenu();
             }
             return;
         }
@@ -362,7 +362,7 @@ private:
             m_EditorAPI->getPanelManager()->setToggleablePanelActivated("Output Watches", true);
         }
 
-        if (ImGui::BeginMenu("Display"))
+        if (ui::BeginMenu("Display"))
         {
             bool const shouldDisable = !AnyDescendentInclusiveHasAppearanceProperty(*c);
 
@@ -371,7 +371,7 @@ private:
                 {
                     ImGui::BeginDisabled();
                 }
-                if (ImGui::MenuItem("Show"))
+                if (ui::MenuItem("Show"))
                 {
                     ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, GetAbsolutePath(*c), true);
                 }
@@ -386,7 +386,7 @@ private:
                 {
                     ImGui::BeginDisabled();
                 }
-                if (ImGui::MenuItem("Show Only This"))
+                if (ui::MenuItem("Show Only This"))
                 {
                     ActionShowOnlyComponentAndAllChildren(*m_Model, GetAbsolutePath(*c));
                 }
@@ -401,7 +401,7 @@ private:
                 {
                     ImGui::BeginDisabled();
                 }
-                if (ImGui::MenuItem("Hide"))
+                if (ui::MenuItem("Hide"))
                 {
                     ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, GetAbsolutePath(*c), false);
                 }
@@ -418,7 +418,7 @@ private:
             // redundantly put a "Show All" option here, also, so that the user doesn't have
             // to "know" that they need to right-click in the middle of nowhere or on the
             // model
-            if (ImGui::MenuItem("Show All"))
+            if (ui::MenuItem("Show All"))
             {
                 ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, GetRootComponentPath(), true);
             }
@@ -427,7 +427,7 @@ private:
                 std::stringstream ss;
                 ss << "Show All '" << c->getConcreteClassName() << "' Components";
                 std::string const label = std::move(ss).str();
-                if (ImGui::MenuItem(label.c_str()))
+                if (ui::MenuItem(label.c_str()))
                 {
                     ActionSetComponentAndAllChildrenWithGivenConcreteClassNameIsVisibleTo(
                         *m_Model,
@@ -442,7 +442,7 @@ private:
                 std::stringstream ss;
                 ss << "Hide All '" << c->getConcreteClassName() << "' Components";
                 std::string const label = std::move(ss).str();
-                if (ImGui::MenuItem(label.c_str()))
+                if (ui::MenuItem(label.c_str()))
                 {
                     ActionSetComponentAndAllChildrenWithGivenConcreteClassNameIsVisibleTo(
                         *m_Model,
@@ -452,10 +452,10 @@ private:
                     );
                 }
             }
-            ImGui::EndMenu();
+            ui::EndMenu();
         }
 
-        if (ImGui::MenuItem("Copy Absolute Path to Clipboard"))
+        if (ui::MenuItem("Copy Absolute Path to Clipboard"))
         {
             std::string const path = GetAbsolutePathString(*c);
             SetClipboardText(path.c_str());
@@ -509,7 +509,7 @@ private:
 
     void drawSocketMenu(OpenSim::Component const& c)
     {
-        if (ImGui::BeginMenu("Sockets"))
+        if (ui::BeginMenu("Sockets"))
         {
             std::vector<std::string> socketNames = GetSocketNames(c);
 
@@ -573,23 +573,23 @@ private:
                 ui::TextDisabled("%s has no sockets", c.getName().c_str());
             }
 
-            ImGui::EndMenu();
+            ui::EndMenu();
         }
     }
 
     void drawAddMusclePlotMenu(OpenSim::Muscle const& m)
     {
-        if (ImGui::BeginMenu("Plot vs. Coordinate"))
+        if (ui::BeginMenu("Plot vs. Coordinate"))
         {
             for (OpenSim::Coordinate const& c : m_Model->getModel().getComponentList<OpenSim::Coordinate>())
             {
-                if (ImGui::MenuItem(c.getName().c_str()))
+                if (ui::MenuItem(c.getName().c_str()))
                 {
                     m_EditorAPI->addMusclePlot(c, m);
                 }
             }
 
-            ImGui::EndMenu();
+            ui::EndMenu();
         }
     }
 
