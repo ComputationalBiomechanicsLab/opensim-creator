@@ -133,11 +133,6 @@ namespace
 
         return ShadowCameraMatrices{viewMat, projMat};
     }
-
-    bool HasRimHighlights(SceneDecoration const& d)
-    {
-        return d.flags & (SceneDecorationFlags::IsSelected | SceneDecorationFlags::IsChildOfSelected | SceneDecorationFlags::IsHovered | SceneDecorationFlags::IsChildOfHovered);
-    }
 }
 
 
