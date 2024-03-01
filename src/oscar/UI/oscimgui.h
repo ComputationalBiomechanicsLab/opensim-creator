@@ -14,7 +14,7 @@ namespace osc::ui
 {
     inline void Text(CStringView sv)
     {
-        ImGui::Text(sv.c_str());
+        ImGui::Text("%s", sv.c_str());
     }
 
     inline void Text(char const* fmt, ...) IM_FMTARGS(1)
