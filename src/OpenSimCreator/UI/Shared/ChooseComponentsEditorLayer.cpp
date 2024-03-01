@@ -214,7 +214,7 @@ public:
                 *m_State.meshCache,
                 m_Decorations.decorations,
                 m_State.renderParams.camera,
-                ImGui::GetMousePos(),
+                ui::GetMousePos(),
                 panelState.viewportRect
             );
             if (collision)

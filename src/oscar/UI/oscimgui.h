@@ -6,6 +6,7 @@
 #include <imgui/misc/cpp/imgui_stdlib.h>
 #include <ImGuizmo.h>
 #include <implot.h>
+#include <oscar/Maths/Vec2.h>
 #include <oscar/Utils/CStringView.h>
 
 #include <utility>
@@ -97,6 +98,11 @@ namespace osc::ui
         return ImGui::Checkbox(label, v);
     }
 
+    inline bool InputFloat3(const char* label, float v[3], const char* format = "%.3f", ImGuiInputTextFlags flags = 0)
+    {
+        return ImGui::InputFloat3(label, v, format, flags);
+    }
+
     inline bool Button(const char* label, ImVec2 const& size = ImVec2(0.0f, 0.0f))
     {
         return ImGui::Button(label, size);
@@ -181,5 +187,35 @@ namespace osc::ui
     inline void EndPopup()
     {
         ImGui::EndPopup();
+    }
+
+    inline Vec2 GetMousePos()
+    {
+        return ImGui::GetMousePos();
+    }
+
+    inline bool BeginMenuBar()
+    {
+        return ImGui::BeginMenuBar();
+    }
+
+    inline void EndMenuBar()
+    {
+        ImGui::EndMenuBar();
+    }
+
+    inline void SetMouseCursor(ImGuiMouseCursor cursor_type)
+    {
+        ImGui::SetMouseCursor(cursor_type);
+    }
+
+    inline bool IsItemHovered(ImGuiHoveredFlags flags = 0)
+    {
+        return ImGui::IsItemHovered(flags);
+    }
+
+    inline bool IsItemDeactivatedAfterEdit()
+    {
+        return ImGui::IsItemDeactivatedAfterEdit();
     }
 }

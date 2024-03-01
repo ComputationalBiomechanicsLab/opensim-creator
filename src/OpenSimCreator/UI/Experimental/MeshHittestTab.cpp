@@ -60,7 +60,7 @@ public:
 
         Rect r = GetMainViewportWorkspaceScreenRect();
         Vec2 d = dimensions(r);
-        m_Ray = m_PolarCamera.unprojectTopLeftPosToWorldRay(Vec2{ImGui::GetMousePos()} - r.p1, d);
+        m_Ray = m_PolarCamera.unprojectTopLeftPosToWorldRay(Vec2{ui::GetMousePos()} - r.p1, d);
 
         m_IsMousedOver = false;
         if (m_UseBVH)

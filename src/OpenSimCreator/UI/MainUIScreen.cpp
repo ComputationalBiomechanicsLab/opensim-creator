@@ -362,7 +362,7 @@ private:
 
         if (BeginMainViewportTopBar("##TabSpecificMenuBar"))
         {
-            if (ImGui::BeginMenuBar())
+            if (ui::BeginMenuBar())
             {
                 if (ITab* active = getActiveTab())
                 {
@@ -387,7 +387,7 @@ private:
                         return;  // must return here to prevent the ImGui End calls from erroring
                     }
                 }
-                ImGui::EndMenuBar();
+                ui::EndMenuBar();
             }
             ui::End();
             handleDeletedTabs();
@@ -404,7 +404,7 @@ private:
         ui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.0f);
         if (BeginMainViewportTopBar("##TabBarViewport"))
         {
-            if (ImGui::BeginMenuBar())
+            if (ui::BeginMenuBar())
             {
                 if (ImGui::BeginTabBar("##TabBar"))
                 {
@@ -481,7 +481,7 @@ private:
 
                     ImGui::EndTabBar();
                 }
-                ImGui::EndMenuBar();
+                ui::EndMenuBar();
             }
 
             ui::End();

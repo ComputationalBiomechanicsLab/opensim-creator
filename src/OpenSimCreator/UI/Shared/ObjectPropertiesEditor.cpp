@@ -1164,7 +1164,7 @@ namespace
                 ui::PushID(i);
 
                 ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-                if (ImGui::InputFloat3("##vec6editor", rawValue.data() + static_cast<ptrdiff_t>(3*i), "%.6f"))
+                if (ui::InputFloat3("##vec6editor", rawValue.data() + static_cast<ptrdiff_t>(3*i), "%.6f"))
                 {
                     m_EditedProperty.updValue(idx)[3*i + 0] = static_cast<double>(rawValue[3*i + 0]);
                     m_EditedProperty.updValue(idx)[3*i + 1] = static_cast<double>(rawValue[3*i + 1]);

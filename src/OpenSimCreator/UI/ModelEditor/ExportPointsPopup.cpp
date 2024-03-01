@@ -117,7 +117,7 @@ namespace
             }
         }
 
-        if (ImGui::IsItemHovered())
+        if (ui::IsItemHovered())
         {
             DrawPointListElementHoverTooltip(component, state);
         }

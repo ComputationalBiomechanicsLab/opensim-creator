@@ -521,7 +521,7 @@ ImGuiItemHittestResult osc::HittestLastImguiItem(float dragThreshold)
     ImGuiItemHittestResult rv;
     rv.rect.p1 = ImGui::GetItemRectMin();
     rv.rect.p2 = ImGui::GetItemRectMax();
-    rv.isHovered = ImGui::IsItemHovered();
+    rv.isHovered = ui::IsItemHovered();
     rv.isLeftClickReleasedWithoutDragging = rv.isHovered && IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left, dragThreshold);
     rv.isRightClickReleasedWithoutDragging = rv.isHovered && IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right, dragThreshold);
     return rv;
@@ -629,7 +629,7 @@ void osc::DrawTooltipBodyOnlyIfItemHovered(
     CStringView label,
     ImGuiHoveredFlags flags)
 {
-    if (ImGui::IsItemHovered(flags))
+    if (ui::IsItemHovered(flags))
     {
         DrawTooltipBodyOnly(label);
     }
@@ -652,7 +652,7 @@ void osc::DrawTooltipIfItemHovered(
     CStringView description,
     ImGuiHoveredFlags flags)
 {
-    if (ImGui::IsItemHovered(flags))
+    if (ui::IsItemHovered(flags))
     {
         DrawTooltip(header, description);
     }
@@ -689,7 +689,7 @@ bool osc::InputMetersFloat(CStringView label, float& v, float step, float step_f
 
 bool osc::InputMetersFloat3(CStringView label, Vec3& vec, ImGuiInputTextFlags flags)
 {
-    return ImGui::InputFloat3(label.c_str(), value_ptr(vec), "%.6f", flags);
+    return ui::InputFloat3(label.c_str(), value_ptr(vec), "%.6f", flags);
 }
 
 bool osc::SliderMetersFloat(CStringView label, float& v, float v_min, float v_max, ImGuiSliderFlags flags)
@@ -719,7 +719,7 @@ bool osc::InputAngle3(
     CStringView format)
 {
     Vec3 dvs = {Degrees{vs.x}.count(), Degrees{vs.y}.count(), Degrees{vs.z}.count()};
-    if (ImGui::InputFloat3(label.c_str(), value_ptr(dvs), format.c_str()))
+    if (ui::InputFloat3(label.c_str(), value_ptr(dvs), format.c_str()))
     {
         vs = Vec<3, Degrees>{dvs};
         return true;
@@ -804,7 +804,7 @@ Rect osc::GetMainViewportWorkspaceScreenRect()
 
 bool osc::IsMouseInMainViewportWorkspaceScreenRect()
 {
-    Vec2 const mousepos = ImGui::GetMousePos();
+    Vec2 const mousepos = ui::GetMousePos();
     Rect const hitRect = GetMainViewportWorkspaceScreenRect();
 
     return is_point_in_rect(hitRect, mousepos);
@@ -881,7 +881,7 @@ void osc::TextWarning(CStringView s)
 
 bool osc::ItemValueShouldBeSaved()
 {
-    if (ImGui::IsItemDeactivatedAfterEdit())
+    if (ui::IsItemDeactivatedAfterEdit())
     {
         return true;  // ImGui detected that the item was deactivated after an edit
     }

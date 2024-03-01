@@ -77,12 +77,12 @@ public:
         if (m_IsMouseCaptured)
         {
             UpdateEulerCameraFromImGuiUserInput(m_SceneCamera, m_CameraEulers);
-            ImGui::SetMouseCursor(ImGuiMouseCursor_None);
+            ui::SetMouseCursor(ImGuiMouseCursor_None);
             App::upd().setShowCursor(false);
         }
         else
         {
-            ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
+            ui::SetMouseCursor(ImGuiMouseCursor_Arrow);
             App::upd().setShowCursor(true);
         }
         m_SceneCamera.setPixelRect(GetMainViewportWorkspaceScreenRect());

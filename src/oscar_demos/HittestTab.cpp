@@ -161,11 +161,11 @@ private:
         // handle mouse capturing
         if (m_IsMouseCaptured) {
             UpdateEulerCameraFromImGuiUserInput(m_Camera, m_CameraEulers);
-            ImGui::SetMouseCursor(ImGuiMouseCursor_None);
+            ui::SetMouseCursor(ImGuiMouseCursor_None);
             App::upd().setShowCursor(false);
         }
         else {
-            ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
+            ui::SetMouseCursor(ImGuiMouseCursor_Arrow);
             App::upd().setShowCursor(true);
         }
 

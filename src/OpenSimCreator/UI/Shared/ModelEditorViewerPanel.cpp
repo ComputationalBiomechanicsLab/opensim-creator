@@ -431,7 +431,7 @@ private:
 
             // check if the 3D render is hovered - ignore blocking and overlapping because the layer
             // stack might be screwing with this
-            bool const renderHoveredIgnoringOverlap = ImGui::IsItemHovered(
+            bool const renderHoveredIgnoringOverlap = ui::IsItemHovered(
                 ImGuiHoveredFlags_AllowWhenBlockedByActiveItem |
                 ImGuiHoveredFlags_AllowWhenOverlapped
             );
@@ -447,7 +447,7 @@ private:
         {
             m_State.maybeBaseLayerHittest = m_State.getRenderer().getClosestCollision(
                 m_Parameters.getRenderParams(),
-                ImGui::GetMousePos(),
+                ui::GetMousePos(),
                 m_State.viewportRect
             );
         }

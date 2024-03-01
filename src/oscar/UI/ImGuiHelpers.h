@@ -166,7 +166,7 @@ namespace osc
     // draws an overlay tooltip with a header and description
     void DrawTooltip(CStringView header, CStringView description = {});
 
-    // equivalent to `if (ImGui::IsItemHovered(flags)) DrawTooltip(header, description);`
+    // equivalent to `if (ui::IsItemHovered(flags)) DrawTooltip(header, description);`
     void DrawTooltipIfItemHovered(
         CStringView header,
         CStringView description = {},

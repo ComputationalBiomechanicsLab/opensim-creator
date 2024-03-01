@@ -67,7 +67,7 @@ namespace osc
             // compute top-level UI variables (render rect, mouse pos, etc.)
             Rect const contentRect = ContentRegionAvailScreenRect();
             Vec2 const contentRectDims = dimensions(contentRect);
-            Vec2 const mousePos = ImGui::GetMousePos();
+            Vec2 const mousePos = ui::GetMousePos();
 
             // un-project mouse's (2D) location into the 3D scene as a ray
             Line const cameraRay = m_Camera.unprojectTopLeftPosToWorldRay(mousePos - contentRect.p1, contentRectDims);
@@ -448,7 +448,7 @@ namespace osc
         void drawInformationIcon()
         {
             ButtonNoBg(ICON_FA_INFO_CIRCLE);
-            if (ImGui::IsItemHovered())
+            if (ui::IsItemHovered())
             {
                 BeginTooltip();
 

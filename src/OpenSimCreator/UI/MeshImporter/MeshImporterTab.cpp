@@ -881,7 +881,7 @@ private:
             {
                 mg.updByID(e.getID()).setLabel(buf);
             }
-            if (ImGui::IsItemDeactivatedAfterEdit())
+            if (ui::IsItemDeactivatedAfterEdit())
             {
                 std::stringstream ss;
                 ss << "changed " << e.getClass().getName() << " name";
@@ -895,11 +895,11 @@ private:
         if (e.canChangePosition())
         {
             Vec3 translation = e.getPos(mg);
-            if (ImGui::InputFloat3("Translation", value_ptr(translation), "%.6f"))
+            if (ui::InputFloat3("Translation", value_ptr(translation), "%.6f"))
             {
                 mg.updByID(e.getID()).setPos(mg, translation);
             }
-            if (ImGui::IsItemDeactivatedAfterEdit())
+            if (ui::IsItemDeactivatedAfterEdit())
             {
                 std::stringstream ss;
                 ss << "changed " << e.getLabel() << "'s translation";
@@ -919,7 +919,7 @@ private:
                 Quat quatRads = osc::WorldspaceRotation(eulers);
                 mg.updByID(e.getID()).setRotation(mg, quatRads);
             }
-            if (ImGui::IsItemDeactivatedAfterEdit())
+            if (ui::IsItemDeactivatedAfterEdit())
             {
                 std::stringstream ss;
                 ss << "changed " << e.getLabel() << "'s rotation";
@@ -933,11 +933,11 @@ private:
         if (e.canChangeScale())
         {
             Vec3 scaleFactors = e.getScale(mg);
-            if (ImGui::InputFloat3("Scale", value_ptr(scaleFactors), "%.6f"))
+            if (ui::InputFloat3("Scale", value_ptr(scaleFactors), "%.6f"))
             {
                 mg.updByID(e.getID()).setScale(mg, scaleFactors);
             }
-            if (ImGui::IsItemDeactivatedAfterEdit())
+            if (ui::IsItemDeactivatedAfterEdit())
             {
                 std::stringstream ss;
                 ss << "changed " << e.getLabel() << "'s scale";
@@ -1307,7 +1307,7 @@ private:
         {
             m_Shared->updModelGraph().updByID<Body>(bodyEl.getID()).setMass(static_cast<double>(curMass));
         }
-        if (ImGui::IsItemDeactivatedAfterEdit())
+        if (ui::IsItemDeactivatedAfterEdit())
         {
             m_Shared->commitCurrentModelGraph("changed body mass");
         }
@@ -1665,7 +1665,7 @@ private:
 
             ImGui::PopStyleColor(styles);
 
-            if (ImGui::IsItemHovered())
+            if (ui::IsItemHovered())
             {
                 m_MaybeHover = {id, {}};
             }

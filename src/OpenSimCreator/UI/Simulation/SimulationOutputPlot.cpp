@@ -356,9 +356,9 @@ private:
             drawlist->AddLine(p1, p2, currentTimeLineColor);
         }
 
-        if (ImGui::IsItemHovered())
+        if (ui::IsItemHovered())
         {
-            Vec2 mp = ImGui::GetMousePos();
+            Vec2 mp = ui::GetMousePos();
             Vec2 plotLoc = mp - plotTopLeft;
             float relLoc = plotLoc.x / (plotBottomRight.x - plotTopLeft.x);
             SimulationClock::time_point timeLoc = simStartTime + relLoc*(simEndTime - simStartTime);

@@ -72,7 +72,7 @@ private:
 
     void drawMouseInteractionStuff(OpenSim::Component const& c)
     {
-        if (ImGui::IsItemHovered())
+        if (ui::IsItemHovered())
         {
             m_Model->setHovered(&c);
 

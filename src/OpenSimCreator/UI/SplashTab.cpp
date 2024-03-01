@@ -83,7 +83,7 @@ namespace
         }
         // show the full path as a tooltip when the item is hovered (some people have
         // long file names (#784)
-        if (ImGui::IsItemHovered())
+        if (ui::IsItemHovered())
         {
             ImGui::BeginTooltip();
             ui::TextUnformatted(path.filename().string());

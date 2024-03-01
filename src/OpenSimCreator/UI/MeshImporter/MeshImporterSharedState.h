@@ -419,7 +419,7 @@ namespace osc::mi
             DrawTextureAsImGuiImage(m_SceneRenderer.updRenderTexture(), m_SceneRenderer.getDimensions());
 
             // handle hittesting, etc.
-            setIsRenderHovered(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup));
+            setIsRenderHovered(ui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup));
         }
 
         bool isRenderHovered() const
@@ -563,7 +563,7 @@ namespace osc::mi
             auto cache = App::singleton<SceneCache>();
 
             Rect const sceneRect = get3DSceneRect();
-            Vec2 const mousePos = ImGui::GetMousePos();
+            Vec2 const mousePos = ui::GetMousePos();
 
             if (!is_point_in_rect(sceneRect, mousePos))
             {

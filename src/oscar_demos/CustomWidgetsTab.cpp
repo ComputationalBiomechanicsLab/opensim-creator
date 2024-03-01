@@ -84,7 +84,7 @@ namespace
             pMax.x - toggleSize.x - style.FramePadding.x,
             pMin.y + (titleHeight - toggleSize.y)/2.0f + style.FramePadding.y,
         };
-        DrawToggle(*v, ImGui::IsItemHovered(), togglePos, toggleSize);
+        DrawToggle(*v, ui::IsItemHovered(), togglePos, toggleSize);
 
         ImGui::PopStyleColor();
 

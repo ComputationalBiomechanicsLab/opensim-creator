@@ -107,7 +107,7 @@ namespace osc
         void drawInformationIcon()
         {
             ButtonNoBg(ICON_FA_INFO_CIRCLE);
-            if (ImGui::IsItemHovered())
+            if (ui::IsItemHovered())
             {
                 BeginTooltip();
 
@@ -219,7 +219,7 @@ namespace osc
             {
                 ActionSetBlendFactorWithoutCommitting(m_State->updUndoable(), factor);
             }
-            if (ImGui::IsItemDeactivatedAfterEdit())
+            if (ui::IsItemDeactivatedAfterEdit())
             {
                 ActionSetBlendFactor(m_State->updUndoable(), factor);
             }

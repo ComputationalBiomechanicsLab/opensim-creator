@@ -123,7 +123,7 @@ namespace
     void DrawEntry(UIState const& state, T const& c)
     {
         DrawEntryIconAndText(state, c);
-        if (ImGui::IsItemHovered(ImGuiHoveredFlags_ForTooltip)) {
+        if (ui::IsItemHovered(ImGuiHoveredFlags_ForTooltip)) {
             ImGui::BeginTooltip();
             DrawTooltipContent(state, c);
             ImGui::EndTooltip();

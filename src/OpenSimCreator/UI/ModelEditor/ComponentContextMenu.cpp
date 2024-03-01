@@ -543,7 +543,7 @@ private:
                             requestClose();
                         }
                         if (auto const* connectee = dynamic_cast<OpenSim::Component const*>(&socket.getConnecteeAsObject());
-                            connectee && ImGui::IsItemHovered())
+                            connectee && ui::IsItemHovered())
                         {
                             DrawComponentHoverTooltip(*connectee);
                         }

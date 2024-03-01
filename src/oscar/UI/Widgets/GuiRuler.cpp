@@ -40,7 +40,7 @@ void osc::GuiRuler::onDraw(
         return;
     }
 
-    Vec2 mouseLoc = ImGui::GetMousePos();
+    Vec2 mouseLoc = ui::GetMousePos();
     ImDrawList& dl = *ImGui::GetWindowDrawList();
     ImU32 circleMousedOverNothingColor = ToImU32(Color::red().withAlpha(0.6f));
     ImU32 circleColor = ToImU32(Color::white().withAlpha(0.8f));

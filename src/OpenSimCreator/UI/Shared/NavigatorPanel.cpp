@@ -356,7 +356,7 @@ private:
             ui::PopID();
             ImGui::PopStyleColor(styles);
 
-            if (ImGui::IsItemHovered())
+            if (ui::IsItemHovered())
             {
                 rv.type = ResponseType::HoverChanged;
                 rv.ptr = cur;

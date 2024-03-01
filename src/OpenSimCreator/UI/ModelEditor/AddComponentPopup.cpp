@@ -421,7 +421,7 @@ private:
             ui::SameLine();
 
             ui::Text(m_PathPoints[i].userChoice.getComponentName());
-            if (ImGui::IsItemHovered())
+            if (ui::IsItemHovered())
             {
                 if (OpenSim::Component const* c = FindComponent(model, m_PathPoints[i].userChoice))
                 {

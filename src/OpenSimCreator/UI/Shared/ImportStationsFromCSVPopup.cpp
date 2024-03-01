@@ -150,7 +150,7 @@ private:
         ui::Text(ICON_FA_EXCLAMATION " input file contains issues");
         PopStyleColor();
 
-        if (ImGui::IsItemHovered())
+        if (ui::IsItemHovered())
         {
             BeginTooltip();
             ImGui::Indent();
@@ -189,7 +189,7 @@ private:
         if (disabledReason)
         {
             ui::EndDisabled();
-            if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+            if (ui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
             {
                 DrawTooltipBodyOnly(*disabledReason);
             }

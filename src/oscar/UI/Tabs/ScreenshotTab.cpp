@@ -152,7 +152,7 @@ private:
         Color const& unselectedColor,
         Color const& selectedColor)
     {
-        Vec2 const mousePos = ImGui::GetMousePos();
+        Vec2 const mousePos = ui::GetMousePos();
         bool const leftClickReleased = ImGui::IsMouseReleased(ImGuiMouseButton_Left);
         Rect const imageSourceRect = {{0.0f, 0.0f}, m_Screenshot.image.getDimensions()};
 

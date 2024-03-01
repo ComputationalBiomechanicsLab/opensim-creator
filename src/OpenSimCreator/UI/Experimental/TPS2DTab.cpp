@@ -444,7 +444,7 @@ private:
             GUIFirstClickMouseState const& st = std::get<GUIFirstClickMouseState>(m_MouseState);
 
             Vec2 const p1 = ht.rect.p1 + (dimensions(ht.rect) * NDCPointToTopLeftRelPos(st.srcNDCPos));
-            Vec2 const p2 = ImGui::GetMousePos();
+            Vec2 const p2 = ui::GetMousePos();
 
             drawlist->AddLine(p1, p2, m_ConnectionLineColor, 5.0f);
             drawlist->AddRectFilled(p1 - 12.0f, p1 + 12.0f, m_SrcSquareColor);
@@ -465,7 +465,7 @@ private:
     // render any mouse-related overlays for when the user hasn't clicked yet
     void renderMouseUIElements(ImGuiItemHittestResult const& ht, GUIInitialMouseState)
     {
-        Vec2 const mouseScreenPos = ImGui::GetMousePos();
+        Vec2 const mouseScreenPos = ui::GetMousePos();
         Vec2 const mouseImagePos = mouseScreenPos - ht.rect.p1;
         Vec2 const mouseImageRelPos = mouseImagePos / dimensions(ht.rect);
         Vec2 const mouseImageNDCPos = TopleftRelPosToNDCPoint(mouseImageRelPos);
@@ -481,7 +481,7 @@ private:
     // render any mouse-related overlays for when the user has clicked once
     void renderMouseUIElements(ImGuiItemHittestResult const& ht, GUIFirstClickMouseState st)
     {
-        Vec2 const mouseScreenPos = ImGui::GetMousePos();
+        Vec2 const mouseScreenPos = ui::GetMousePos();
         Vec2 const mouseImagePos = mouseScreenPos - ht.rect.p1;
         Vec2 const mouseImageRelPos = mouseImagePos / dimensions(ht.rect);
         Vec2 const mouseImageNDCPos = TopleftRelPosToNDCPoint(mouseImageRelPos);

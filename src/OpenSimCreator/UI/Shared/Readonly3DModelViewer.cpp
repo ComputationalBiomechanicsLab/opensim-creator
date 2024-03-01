@@ -107,7 +107,7 @@ public:
         {
             hittestResult = m_CachedModelRenderer.getClosestCollision(
                 m_Params,
-                ImGui::GetMousePos(),
+                ui::GetMousePos(),
                 hittest.rect
             );
         }

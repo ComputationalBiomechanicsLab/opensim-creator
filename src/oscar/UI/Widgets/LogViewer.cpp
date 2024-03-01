@@ -67,7 +67,7 @@ public:
         }
 
         // draw top menu bar
-        if (ImGui::BeginMenuBar())
+        if (ui::BeginMenuBar())
         {
             // draw level selector
             {
@@ -111,7 +111,7 @@ public:
 
             ui::Dummy({0.0f, 10.0f});
 
-            ImGui::EndMenuBar();
+            ui::EndMenuBar();
         }
 
         // draw log content lines

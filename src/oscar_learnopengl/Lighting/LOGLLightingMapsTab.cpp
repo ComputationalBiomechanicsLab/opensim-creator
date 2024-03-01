@@ -98,7 +98,7 @@ private:
 
         // render 2D UI
         ui::Begin("controls");
-        ImGui::InputFloat3("uLightPos", value_ptr(m_LightTransform.position));
+        ui::InputFloat3("uLightPos", value_ptr(m_LightTransform.position));
         ImGui::InputFloat("uLightAmbient", &m_LightAmbient);
         ImGui::InputFloat("uLightDiffuse", &m_LightDiffuse);
         ImGui::InputFloat("uLightSpecular", &m_LightSpecular);

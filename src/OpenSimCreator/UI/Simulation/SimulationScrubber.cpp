@@ -159,7 +159,7 @@ private:
             m_SimulatorAPI->setSimulationScrubTime(SimulationClock::start() + SimulationClock::duration{static_cast<double>(v)});
         }
 
-        if (ImGui::IsItemHovered())
+        if (ui::IsItemHovered())
         {
             BeginTooltip();
             ui::TextUnformatted("Left-Click: Change simulation time being shown");

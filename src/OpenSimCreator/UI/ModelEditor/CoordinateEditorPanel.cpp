@@ -145,7 +145,7 @@ private:
         ui::TextUnformatted(c.getName());
         ImGui::PopStyleColor(std::exchange(stylesPushed, 0));
 
-        if (ImGui::IsItemHovered())
+        if (ui::IsItemHovered())
         {
             m_Model->setHovered(&c);
 
@@ -224,7 +224,7 @@ private:
             ui::EndDisabled();
             ui::PopStyleVar();
         }
-        if (ImGui::IsItemDeactivatedAfterEdit())
+        if (ui::IsItemDeactivatedAfterEdit())
         {
             double storedValue = ConvertCoordDisplayValueToStorageValue(c, displayedValue);
             ActionSetCoordinateValueAndSave(*m_Model, c, storedValue);
@@ -243,7 +243,7 @@ private:
             ActionSetCoordinateSpeed(*m_Model, c, storedSpeed);
         }
 
-        if (ImGui::IsItemDeactivatedAfterEdit())
+        if (ui::IsItemDeactivatedAfterEdit())
         {
             double storedSpeed = ConvertCoordDisplayValueToStorageValue(c, displayedSpeed);
             ActionSetCoordinateSpeedAndSave(*m_Model, c, storedSpeed);
