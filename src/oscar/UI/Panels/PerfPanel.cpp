@@ -97,11 +97,11 @@ private:
                 ui::TableSetColumnIndex(column++);
                 ui::Text("%" PRId64, pm.getCallCount());
                 ui::TableSetColumnIndex(column++);
-                ui::Text("%ld us", static_cast<long>(std::chrono::duration_cast<std::chrono::microseconds>(pm.getLastDuration()).count()));
+                ui::Text("%" PRId64 " us", static_cast<int64_t>(std::chrono::duration_cast<std::chrono::microseconds>(pm.getLastDuration()).count()));
                 ui::TableSetColumnIndex(column++);
-                ui::Text("%ld us", static_cast<long>(std::chrono::duration_cast<std::chrono::microseconds>(pm.getAvgDuration()).count()));
+                ui::Text("%" PRId64 " us", static_cast<int64_t>(std::chrono::duration_cast<std::chrono::microseconds>(pm.getAvgDuration()).count()));
                 ui::TableSetColumnIndex(column++);
-                ui::Text("%ld us", static_cast<long>(std::chrono::duration_cast<std::chrono::microseconds>(pm.getTotalDuration()).count()));
+                ui::Text("%" PRId64 " us", static_cast<int64_t>(std::chrono::duration_cast<std::chrono::microseconds>(pm.getTotalDuration()).count()));
             }
 
             ui::EndTable();

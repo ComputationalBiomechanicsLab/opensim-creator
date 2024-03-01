@@ -167,6 +167,11 @@ namespace osc::ui
         return ImGui::IsMouseClicked(button, repeat);
     }
 
+    inline bool IsMouseClicked(ImGuiMouseButton button, ImGuiID owner_id, ImGuiInputFlags flags = 0)
+    {
+        return ImGui::IsMouseClicked(button, owner_id, flags);
+    }
+
     inline bool IsMouseReleased(ImGuiMouseButton button)
     {
         return ImGui::IsMouseReleased(button);
