@@ -29,6 +29,7 @@
 #include <oscar/Utils/UID.h>
 
 #include <array>
+#include <cinttypes>
 #include <chrono>
 
 using namespace osc;
@@ -149,7 +150,7 @@ public:
         {
             ui::Begin("controls");
             ui::Checkbox("BVH", &m_UseBVH);
-            ui::Text("%ld microseconds", static_cast<long>(m_RaycastDuration.count()));
+            ui::Text("%" PRId64 " microseconds", static_cast<int64_t>(m_RaycastDuration.count()));
             auto r = m_Ray;
             ui::Text("camerapos = (%.2f, %.2f, %.2f)", m_Camera.getPosition().x, m_Camera.getPosition().y, m_Camera.getPosition().z);
             ui::Text("origin = (%.2f, %.2f, %.2f), direction = (%.2f, %.2f, %.2f)", r.origin.x, r.origin.y, r.origin.z, r.direction.x, r.direction.y, r.direction.z);

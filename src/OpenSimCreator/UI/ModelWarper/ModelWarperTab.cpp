@@ -26,7 +26,7 @@ namespace
 
 class osc::mow::ModelWarperTab::Impl final : public StandardTabImpl {
 public:
-    Impl(ParentPtr<ITabHost> const& tabHost) :
+    explicit Impl(ParentPtr<ITabHost> const& tabHost) :
         StandardTabImpl{c_TabStringID},
         m_TabHost{tabHost}
     {
