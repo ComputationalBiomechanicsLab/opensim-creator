@@ -50,7 +50,7 @@ private:
         if (coordPtrs.empty())
         {
             CStringView const msg = "(there are no coordinates in the model)";
-            float const w = ui::CalcTextSize(msg.c_str()).x;
+            float const w = ui::CalcTextSize(msg).x;
             ui::SetCursorPosX(0.5f * (ui::GetContentRegionAvail().x - w));  // center align
             ui::TextDisabled(msg);
             return;

@@ -104,7 +104,7 @@ namespace
         constexpr Uint32 flags =
             SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED;
 
-        return sdl::CreateWindoww(applicationName.c_str(), x, y, width, height, flags);
+        return sdl::CreateWindoww(applicationName, x, y, width, height, flags);
     }
 
     AppClock::duration ConvertPerfTicksToFClockDuration(Uint64 ticks, Uint64 frequency)

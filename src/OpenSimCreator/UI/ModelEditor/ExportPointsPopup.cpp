@@ -105,7 +105,7 @@ namespace
         std::string const absPath = GetAbsolutePathString(component);
 
         bool selected = uiState.selectedPointAbsPaths.contains(absPath);
-        if (ui::Checkbox(component.getName().c_str(), &selected))
+        if (ui::Checkbox(component.getName(), &selected))
         {
             if (selected)
             {
@@ -191,7 +191,7 @@ namespace
     {
         for (OpenSim::Frame const& f : model.getComponentList<OpenSim::Frame>())
         {
-            if (ui::MenuItem(f.getName().c_str()))
+            if (ui::MenuItem(f.getName()))
             {
                 auto const isAttachedToFrame = [path = GetAbsolutePath(f), &state](OpenSim::Component const& c)
                 {
@@ -325,7 +325,7 @@ namespace
     void DrawOriginalFrameSelectable(FrameSelectorUiState& uiState)
     {
         bool const selected = uiState.maybeSelectedFrameAbsPath != std::nullopt;
-        if (ui::Selectable(c_OriginalFrameLabel.c_str(), selected))
+        if (ui::Selectable(c_OriginalFrameLabel, selected))
         {
             uiState.maybeSelectedFrameAbsPath.reset();
         }
@@ -338,7 +338,7 @@ namespace
         std::string const absPath = GetAbsolutePathString(frame);
         bool const selected = uiState.maybeSelectedFrameAbsPath == absPath;
 
-        if (ui::Selectable(frame.getName().c_str(), selected))
+        if (ui::Selectable(frame.getName(), selected))
         {
             uiState.maybeSelectedFrameAbsPath = absPath;
         }
@@ -360,7 +360,7 @@ namespace
     void DrawFrameSelector(FrameSelectorUiState& uiState, OpenSim::Model const& model)
     {
         std::string const label = CalcComboLabel(uiState, model);
-        if (ui::BeginCombo("Express Points In", label.c_str()))
+        if (ui::BeginCombo("Express Points In", label))
         {
             DrawOriginalFrameSelectable(uiState);
             DrawModelFrameSelectables(uiState, model);

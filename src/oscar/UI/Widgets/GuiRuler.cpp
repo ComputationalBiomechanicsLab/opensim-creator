@@ -52,7 +52,7 @@ void osc::GuiRuler::onDraw(
 
     auto drawTooltipWithBg = [&dl, &textBgColor, &textColor](Vec2 const& pos, CStringView tooltipText)
     {
-        Vec2 sz = ui::CalcTextSize(tooltipText.c_str());
+        Vec2 sz = ui::CalcTextSize(tooltipText);
         float bgPad = 5.0f;
         float edgeRounding = bgPad - 2.0f;
 

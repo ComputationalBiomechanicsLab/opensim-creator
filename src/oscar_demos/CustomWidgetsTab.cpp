@@ -64,7 +64,7 @@ namespace
         ImVec2 const p = ui::GetCursorScreenPos();
         ImVec2 const bb(ui::GetColumnWidth(), ui::GetFrameHeight());
         ui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0, 0));
-        ui::PushID(label.c_str());
+        ui::PushID(label);
         bool const status = ui::Button("###toggle_button", bb);
 
         if (status) {

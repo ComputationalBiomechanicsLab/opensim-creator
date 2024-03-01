@@ -1624,11 +1624,11 @@ namespace
             // parameters visually (#397)
 
             std::string muscleName = Ellipsis(getShared().getPlotParams().getMusclePath().getComponentName(), 15);
-            float muscleNameWidth = ui::CalcTextSize(muscleName.c_str()).x + 2.0f*ui::GetStyle().FramePadding.x;
+            float muscleNameWidth = ui::CalcTextSize(muscleName).x + 2.0f*ui::GetStyle().FramePadding.x;
             std::string outputName = Ellipsis(getShared().getPlotParams().getPlottedOutput().getName(), 15);
-            float outputNameWidth = ui::CalcTextSize(outputName.c_str()).x + 2.0f*ui::GetStyle().FramePadding.x;
+            float outputNameWidth = ui::CalcTextSize(outputName).x + 2.0f*ui::GetStyle().FramePadding.x;
             std::string coordName = Ellipsis(getShared().getPlotParams().getCoordinatePath().getComponentName(), 15);
-            float coordNameWidth = ui::CalcTextSize(coordName.c_str()).x + 2.0f*ui::GetStyle().FramePadding.x;
+            float coordNameWidth = ui::CalcTextSize(coordName).x + 2.0f*ui::GetStyle().FramePadding.x;
 
             float totalWidth =
                 muscleNameWidth +
@@ -1648,13 +1648,13 @@ namespace
             ui::SetCursorPosX(cursorStart);
 
             ui::SetNextItemWidth(muscleNameWidth);
-            if (ui::BeginCombo("##musclename", muscleName.c_str(), ImGuiComboFlags_NoArrowButton))
+            if (ui::BeginCombo("##musclename", muscleName, ImGuiComboFlags_NoArrowButton))
             {
                 auto const* current = FindComponent<OpenSim::Muscle>(getShared().getModel().getModel(), getShared().getPlotParams().getMusclePath());
                 for (OpenSim::Muscle const& musc : getShared().getModel().getModel().getComponentList<OpenSim::Muscle>())
                 {
                     bool selected = &musc == current;
-                    if (ui::Selectable(musc.getName().c_str(), &selected))
+                    if (ui::Selectable(musc.getName(), &selected))
                     {
                         updShared().updPlotParams().setMusclePath(musc.getAbsolutePath());
                     }
@@ -1667,13 +1667,13 @@ namespace
             ui::Text("'s");
             ui::SameLine();
             ui::SetNextItemWidth(outputNameWidth);
-            if (ui::BeginCombo("##outputname", outputName.c_str(), ImGuiComboFlags_NoArrowButton))
+            if (ui::BeginCombo("##outputname", outputName, ImGuiComboFlags_NoArrowButton))
             {
                 PlottableOutput current = getShared().getPlotParams().getPlottedOutput();
                 for (PlottableOutput const& output : getShared().availableOutputs())
                 {
                     bool selected = output == current;
-                    if (ui::Selectable(output.getName().c_str(), &selected))
+                    if (ui::Selectable(output.getName(), &selected))
                     {
                         updShared().updPlotParams().setPlottedOutput(output);
                     }
@@ -1684,13 +1684,13 @@ namespace
             ui::TextUnformatted("vs.");
             ui::SameLine();
             ui::SetNextItemWidth(coordNameWidth);
-            if (ui::BeginCombo("##coordname", coordName.c_str(), ImGuiComboFlags_NoArrowButton))
+            if (ui::BeginCombo("##coordname", coordName, ImGuiComboFlags_NoArrowButton))
             {
                 auto const* current = FindComponent<OpenSim::Coordinate>(getShared().getModel().getModel(), getShared().getPlotParams().getCoordinatePath());
                 for (OpenSim::Coordinate const& c : getShared().getModel().getModel().getComponentList<OpenSim::Coordinate>())
                 {
                     bool selected = &c == current;
-                    if (ui::Selectable(c.getName().c_str(), &selected))
+                    if (ui::Selectable(c.getName(), &selected))
                     {
                         updShared().updPlotParams().setCoordinatePath(GetAbsolutePath(c));
                     }
@@ -1946,7 +1946,7 @@ namespace
             std::string const& plotTitle,
             ImGuiPopupFlags flags = ImGuiPopupFlags_MouseButtonRight)
         {
-            if (ui::BeginPopupContextItem((plotTitle + "_contextmenu").c_str(), flags)) {
+            if (ui::BeginPopupContextItem(plotTitle + "_contextmenu", flags)) {
                 drawGeneralPlotPopupContent(coord);
                 ui::EndPopup();
             }
@@ -1968,9 +1968,9 @@ namespace
                 ui::EndMenu();
             }
 
-            ui::MenuItem("show markers on active plot", nullptr, &m_ShowMarkersOnActivePlot);
-            ui::MenuItem("show markers on other plots", nullptr, &m_ShowMarkersOnOtherPlots);
-            ui::MenuItem("snap cursor to datapoints", nullptr, &m_SnapCursor);
+            ui::MenuItem("show markers on active plot", {}, &m_ShowMarkersOnActivePlot);
+            ui::MenuItem("show markers on other plots", {}, &m_ShowMarkersOnOtherPlots);
+            ui::MenuItem("snap cursor to datapoints", {}, &m_SnapCursor);
 
             if (ui::MenuItem("duplicate plot")) {
                 actionDuplicateCurrentPlotIntoNewPanel(coord);
@@ -2078,14 +2078,14 @@ namespace
 
             for (size_t i = 0; i < m_Lines.getNumOtherPlots(); ++i) {
                 ui::PushID(id++);
-                if (ui::MenuItem(m_Lines.getOtherPlot(i).getName().c_str())) {
+                if (ui::MenuItem(m_Lines.getOtherPlot(i).getName())) {
                     ActionPromptUserToSavePlotToCSV(coord, getShared().getPlotParams(), m_Lines.getOtherPlot(i));
                 }
                 ui::PopID();
             }
 
             ui::PushID(id++);
-            if (ui::MenuItem(m_Lines.getActivePlot().getName().c_str())) {
+            if (ui::MenuItem(m_Lines.getActivePlot().getName())) {
                 ActionPromptUserToSavePlotToCSV(coord, getShared().getPlotParams(), m_Lines.getActivePlot());
             }
             ui::PopID();
@@ -2158,7 +2158,7 @@ namespace
 
             ui::BeginChild("MomentArmPlotCoordinateSelection");
             for (OpenSim::Coordinate const* coord : coordinates) {
-                if (ui::Selectable(coord->getName().c_str())) {
+                if (ui::Selectable(coord->getName())) {
                     updShared().updPlotParams().setCoordinatePath(GetAbsolutePath(*coord));
                     rv = std::make_unique<ShowingPlotState>(updShared());
                 }
@@ -2202,7 +2202,7 @@ namespace
             else {
                 ui::BeginChild("MomentArmPlotMuscleSelection");
                 for (OpenSim::Muscle const* musc : muscles) {
-                    if (ui::Selectable(musc->getName().c_str())) {
+                    if (ui::Selectable(musc->getName())) {
                         updShared().updPlotParams().setMusclePath(GetAbsolutePath(*musc));
                         rv = std::make_unique<PickCoordinateState>(updShared());
                     }
@@ -2254,7 +2254,7 @@ public:
         if (m_IsOpen) {
             bool isOpen = m_IsOpen;
 
-            if (ui::Begin(m_PanelName.c_str(), &isOpen)) {
+            if (ui::Begin(m_PanelName, &isOpen)) {
                 if (auto maybeNextState = m_ActiveState->onDraw()) {
                     m_ActiveState = std::move(maybeNextState);
                 }

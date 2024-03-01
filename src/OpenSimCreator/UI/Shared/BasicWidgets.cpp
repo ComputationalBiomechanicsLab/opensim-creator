@@ -114,13 +114,13 @@ namespace
         OutputSubfield supportedSubfields = GetSupportedSubfields(o);
 
         // can plot suboutputs
-        if (ui::BeginMenu(("  " + o.getName()).c_str()))
+        if (ui::BeginMenu(("  " + o.getName())))
         {
             for (OutputSubfield f : GetAllSupportedOutputSubfields())
             {
                 if (f & supportedSubfields)
                 {
-                    if (auto label = GetOutputSubfieldLabel(f); label && ui::MenuItem(label->c_str()))
+                    if (auto label = GetOutputSubfieldLabel(f); label && ui::MenuItem(*label))
                     {
                         api.addUserOutputExtractor(OutputExtractor{ComponentOutputExtractor{o, f}});
                         outputAdded = true;
@@ -144,7 +144,7 @@ namespace
 
         bool outputAdded = false;
 
-        if (ui::MenuItem(("  " + o.getName()).c_str()))
+        if (ui::MenuItem(("  " + o.getName())))
         {
             api.addUserOutputExtractor(OutputExtractor{ComponentOutputExtractor{o}});
             outputAdded = true;
@@ -347,7 +347,7 @@ void osc::DrawSelectOwnerMenu(IModelStatePair& model, OpenSim::Component const& 
                 return std::move(ss).str();
             }();
 
-            if (ui::MenuItem(menuLabel.c_str()))
+            if (ui::MenuItem(menuLabel))
             {
                 model.setSelected(owner);
             }
@@ -503,7 +503,7 @@ void osc::DrawWithRespectToMenuContainingMenuPerFrame(
     for (OpenSim::Frame const& frame : root.getComponentList<OpenSim::Frame>())
     {
         ui::PushID(imguiID++);
-        if (ui::BeginMenu(frame.getName().c_str()))
+        if (ui::BeginMenu(frame.getName()))
         {
             onFrameMenuOpened(frame);
             ui::EndMenu();
@@ -523,7 +523,7 @@ void osc::DrawWithRespectToMenuContainingMenuItemPerFrame(
     for (OpenSim::Frame const& frame : root.getComponentList<OpenSim::Frame>())
     {
         ui::PushID(imguiID++);
-        if (ui::MenuItem(frame.getName().c_str()))
+        if (ui::MenuItem(frame.getName()))
         {
             onFrameMenuItemClicked(frame);
         }
@@ -588,7 +588,7 @@ bool osc::BeginCalculateMenu(CalculateMenuFlags flags)
     CStringView const label = flags & CalculateMenuFlags::NoCalculatorIcon ?
         "Calculate" :
         ICON_FA_CALCULATOR " Calculate";
-    return ui::BeginMenu(label.c_str());
+    return ui::BeginMenu(label);
 }
 
 void osc::EndCalculateMenu()
@@ -883,7 +883,7 @@ bool osc::DrawMuscleRenderingOptionsRadioButtions(OpenSimDecorationOptions& opts
     bool edited = false;
     for (auto const& metadata : GetAllMuscleDecorationStyleMetadata())
     {
-        if (ui::RadioButton(metadata.label.c_str(), metadata.value == currentStyle))
+        if (ui::RadioButton(metadata.label, metadata.value == currentStyle))
         {
             opts.setMuscleDecorationStyle(metadata.value);
             edited = true;
@@ -898,7 +898,7 @@ bool osc::DrawMuscleSizingOptionsRadioButtons(OpenSimDecorationOptions& opts)
     bool edited = false;
     for (auto const& metadata : GetAllMuscleSizingStyleMetadata())
     {
-        if (ui::RadioButton(metadata.label.c_str(), metadata.value == currentStyle))
+        if (ui::RadioButton(metadata.label, metadata.value == currentStyle))
         {
             opts.setMuscleSizingStyle(metadata.value);
             edited = true;
@@ -913,7 +913,7 @@ bool osc::DrawMuscleColoringOptionsRadioButtons(OpenSimDecorationOptions& opts)
     bool edited = false;
     for (auto const& metadata : GetAllMuscleColoringStyleMetadata())
     {
-        if (ui::RadioButton(metadata.label.c_str(), metadata.value == currentStyle))
+        if (ui::RadioButton(metadata.label, metadata.value == currentStyle))
         {
             opts.setMuscleColoringStyle(metadata.value);
             edited = true;
@@ -954,7 +954,7 @@ bool osc::DrawRenderingOptionsEditor(CustomRenderingOptions& opts)
     for (size_t i = 0; i < opts.getNumOptions(); ++i)
     {
         bool value = opts.getOptionValue(i);
-        if (ui::Checkbox(opts.getOptionLabel(i).c_str(), &value))
+        if (ui::Checkbox(opts.getOptionLabel(i), &value))
         {
             opts.setOptionValue(i, value);
             edited = true;
@@ -982,7 +982,7 @@ bool osc::DrawOverlayOptionsEditor(OverlayDecorationOptions& opts)
         }
 
         bool value = opts.getOptionValue(i);
-        if (ui::Checkbox(opts.getOptionLabel(i).c_str(), &value))
+        if (ui::Checkbox(opts.getOptionLabel(i), &value))
         {
             opts.setOptionValue(i, value);
             edited = true;
@@ -1000,7 +1000,7 @@ bool osc::DrawCustomDecorationOptionCheckboxes(OpenSimDecorationOptions& opts)
         ui::PushID(imguiID++);
 
         bool v = opts.getOptionValue(i);
-        if (ui::Checkbox(opts.getOptionLabel(i).c_str(), &v))
+        if (ui::Checkbox(opts.getOptionLabel(i), &v))
         {
             opts.setOptionValue(i, v);
             edited = true;
@@ -1273,7 +1273,7 @@ void osc::DrawOpenModelButtonWithRecentFilesDropdown(
         for (RecentFile const& rf : *recentFiles)
         {
             ui::PushID(imguiID++);
-            if (ui::Selectable(rf.path.filename().string().c_str()))
+            if (ui::Selectable(rf.path.filename().string()))
             {
                 onUserClickedOpenOrSelectedFile(rf.path);
             }

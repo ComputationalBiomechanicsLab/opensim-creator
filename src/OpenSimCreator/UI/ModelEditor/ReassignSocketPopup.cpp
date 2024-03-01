@@ -173,7 +173,7 @@ private:
         for (ConnecteeOption const& option : m_Options)
         {
             ui::PushID(id++);
-            if (ui::Selectable(option.name.c_str()))
+            if (ui::Selectable(option.name))
             {
                 userSelection = option.absPath;
             }
@@ -236,7 +236,7 @@ private:
         if (!physFrameSocket)
         {
             bool v = false;
-            ui::Checkbox(label.c_str(), &v);
+            ui::Checkbox(label, &v);
             ui::DrawTooltipBodyOnlyIfItemHovered("Disabled: the socket doesn't connect to a physical frame");
             return;
         }
@@ -246,12 +246,12 @@ private:
         if (!componentSpatialRepresentation)
         {
             bool v = false;
-            ui::Checkbox(label.c_str(), &v);
+            ui::Checkbox(label, &v);
             ui::DrawTooltipBodyOnlyIfItemHovered("Disabled: the component doesn't have a spatial representation that OSC knows how to re-express");
             return;
         }
 
-        ui::Checkbox(label.c_str(), &m_TryReexpressInDifferentFrame);
+        ui::Checkbox(label, &m_TryReexpressInDifferentFrame);
     }
 
     std::shared_ptr<UndoableModelStatePair> m_Model;

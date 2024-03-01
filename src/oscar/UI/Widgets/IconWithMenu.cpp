@@ -25,11 +25,11 @@ bool osc::IconWithMenu::onDraw()
 {
     if (m_IconWithoutMenu.onDraw())
     {
-        ui::OpenPopup(m_ContextMenuID.c_str());
+        ui::OpenPopup(m_ContextMenuID);
     }
 
     bool rv = false;
-    if (ui::BeginPopup(m_ContextMenuID.c_str(),ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings))
+    if (ui::BeginPopup(m_ContextMenuID,ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings))
     {
         ui::TextDisabled(m_IconWithoutMenu.getTitle());
         ui::Dummy({0.0f, 0.5f*ui::GetTextLineHeight()});

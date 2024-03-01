@@ -184,10 +184,10 @@ private:
     void draw2DUI()
     {
         ui::Begin("controls");
-        if (ui::BeginCombo("Cube Texturing", m_CubeMaterials.at(m_CubeMaterialIndex).label.c_str())) {
+        if (ui::BeginCombo("Cube Texturing", m_CubeMaterials.at(m_CubeMaterialIndex).label)) {
             for (size_t i = 0; i < m_CubeMaterials.size(); ++i) {
                 bool selected = i == m_CubeMaterialIndex;
-                if (ui::Selectable(m_CubeMaterials[i].label.c_str(), &selected)) {
+                if (ui::Selectable(m_CubeMaterials[i].label, &selected)) {
                     m_CubeMaterialIndex = i;
                 }
             }

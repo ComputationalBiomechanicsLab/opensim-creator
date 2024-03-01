@@ -282,7 +282,7 @@ private:
 
                 ui::TableSetColumnIndex(column++);
                 ui::SetNextItemWidth(inputWidth);
-                if (ui::InputFloat(c_LocationInputIDs[dim].c_str(), &v))
+                if (ui::InputFloat(c_LocationInputIDs[dim], &v))
                 {
                     location[static_cast<int>(dim)] = static_cast<double>(v);
                 }
@@ -304,12 +304,12 @@ private:
         std::string const& label = At(pps, i).getSocket("parent_frame").getConnecteePath();
 
         ui::SetNextItemWidth(width);
-        if (ui::BeginCombo("##framesel", label.c_str()))
+        if (ui::BeginCombo("##framesel", label))
         {
             for (OpenSim::Frame const& frame : m_TargetModel->getModel().getComponentList<OpenSim::Frame>())
             {
                 std::string const absPath = frame.getAbsolutePathString();
-                if (ui::Selectable(absPath.c_str()))
+                if (ui::Selectable(absPath))
                 {
                     ActionSetPathPointFramePath(pps, i, absPath);
                 }

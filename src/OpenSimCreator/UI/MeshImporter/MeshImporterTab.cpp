@@ -977,19 +977,19 @@ private:
                 {
                     AddBody(m_Shared->updCommittableModelGraph(), el.getPos(m_Shared->getModelGraph()), el.getID());
                 }
-                ui::DrawTooltipIfItemHovered("Add Body", MIStrings::c_BodyDescription.c_str());
+                ui::DrawTooltipIfItemHovered("Add Body", MIStrings::c_BodyDescription);
 
                 if (ui::MenuItem(ICON_FA_MOUSE_POINTER " at click position"))
                 {
                     AddBody(m_Shared->updCommittableModelGraph(), clickPos, el.getID());
                 }
-                ui::DrawTooltipIfItemHovered("Add Body", MIStrings::c_BodyDescription.c_str());
+                ui::DrawTooltipIfItemHovered("Add Body", MIStrings::c_BodyDescription);
 
                 if (ui::MenuItem(ICON_FA_DOT_CIRCLE " at ground"))
                 {
                     AddBody(m_Shared->updCommittableModelGraph());
                 }
-                ui::DrawTooltipIfItemHovered("Add body", MIStrings::c_BodyDescription.c_str());
+                ui::DrawTooltipIfItemHovered("Add body", MIStrings::c_BodyDescription);
 
                 if (auto const* mesh = dynamic_cast<Mesh const*>(&el))
                 {
@@ -998,21 +998,21 @@ private:
                         Vec3 const location = centroid(mesh->calcBounds());
                         AddBody(m_Shared->updCommittableModelGraph(), location, mesh->getID());
                     }
-                    ui::DrawTooltipIfItemHovered("Add Body", MIStrings::c_BodyDescription.c_str());
+                    ui::DrawTooltipIfItemHovered("Add Body", MIStrings::c_BodyDescription);
 
                     if (ui::MenuItem(ICON_FA_DIVIDE " at mesh average center"))
                     {
                         Vec3 const location = AverageCenter(*mesh);
                         AddBody(m_Shared->updCommittableModelGraph(), location, mesh->getID());
                     }
-                    ui::DrawTooltipIfItemHovered("Add Body", MIStrings::c_BodyDescription.c_str());
+                    ui::DrawTooltipIfItemHovered("Add Body", MIStrings::c_BodyDescription);
 
                     if (ui::MenuItem(ICON_FA_WEIGHT " at mesh mass center"))
                     {
                         Vec3 const location = MassCenter(*mesh);
                         AddBody(m_Shared->updCommittableModelGraph(), location, mesh->getID());
                     }
-                    ui::DrawTooltipIfItemHovered("Add body", MIStrings::c_BodyDescription.c_str());
+                    ui::DrawTooltipIfItemHovered("Add body", MIStrings::c_BodyDescription);
                 }
 
                 ui::EndMenu();
@@ -1024,7 +1024,7 @@ private:
             {
                 AddBody(m_Shared->updCommittableModelGraph(), el.getPos(m_Shared->getModelGraph()), el.getID());
             }
-            ui::DrawTooltipIfItemHovered("Add Body", MIStrings::c_BodyDescription.c_str());
+            ui::DrawTooltipIfItemHovered("Add Body", MIStrings::c_BodyDescription);
         }
         ui::PopID();
 
@@ -1157,7 +1157,7 @@ private:
         for (int i = 0, len = el.getNumCrossReferences(); i < len; ++i)
         {
             std::string label = "To " + el.getCrossReferenceLabel(i);
-            if (ui::MenuItem(label.c_str()))
+            if (ui::MenuItem(label))
             {
                 TryTranslateObjectToAnotherObject(m_Shared->updCommittableModelGraph(), el.getID(), el.getCrossReferenceConnecteeID(i));
             }
@@ -1171,7 +1171,7 @@ private:
         if (el.getNumCrossReferences() == 2)
         {
             std::string label = "Between " + el.getCrossReferenceLabel(0) + " and " + el.getCrossReferenceLabel(1);
-            if (ui::MenuItem(label.c_str()))
+            if (ui::MenuItem(label))
             {
                 UID a = el.getCrossReferenceConnecteeID(0);
                 UID b = el.getCrossReferenceConnecteeID(1);
@@ -1233,7 +1233,7 @@ private:
                 {
                     std::string label = "Towards " + el.getCrossReferenceLabel(i);
 
-                    if (ui::MenuItem(label.c_str()))
+                    if (ui::MenuItem(label))
                     {
                         point_axis_towards(m_Shared->updCommittableModelGraph(), el.getID(), axis, el.getCrossReferenceConnecteeID(i));
                     }
@@ -1348,7 +1348,7 @@ private:
             for (int i = 0; i < nRefs; ++i)
             {
                 CStringView label = el.getCrossReferenceLabel(i);
-                if (ui::MenuItem(label.c_str()))
+                if (ui::MenuItem(label))
                 {
                     transitionToReassigningCrossRef(el, i);
                 }
@@ -1440,7 +1440,7 @@ private:
             ui::Separator();
             for (MIObject const& MIObject : m_Shared->getModelGraph().iter())
             {
-                if (ui::BeginMenu(MIObject.getLabel().c_str()))
+                if (ui::BeginMenu(MIObject.getLabel()))
                 {
                     ui::TextDisabled("Format:");
                     ui::Separator();
@@ -1992,7 +1992,7 @@ private:
 
         ui::SetCursorScreenPos(buttonTopLeft);
         ui::PushStyleColor(ImGuiCol_Button, Color::darkGreen());
-        if (ui::Button(mainButtonText.c_str()))
+        if (ui::Button(mainButtonText))
         {
             m_Shared->tryCreateOutputModel();
         }
@@ -2003,7 +2003,7 @@ private:
 
         ui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
         ui::SameLine(0.0f, spacingBetweenMainAndSettingsButtons.x);
-        ui::Button(settingButtonText.c_str());
+        ui::Button(settingButtonText);
         ui::PopStyleVar();
 
         if (ui::BeginPopupContextItem("##settingspopup", ImGuiPopupFlags_MouseButtonLeft))
@@ -2384,7 +2384,7 @@ private:
             for (size_t i = 0; i < m_Shared->getNumToggleablePanels(); ++i)
             {
                 bool isEnabled = m_Shared->isNthPanelEnabled(i);
-                if (ui::MenuItem(m_Shared->getNthPanelName(i).c_str(), nullptr, isEnabled))
+                if (ui::MenuItem(m_Shared->getNthPanelName(i), {}, isEnabled))
                 {
                     m_Shared->setNthPanelEnabled(i, !isEnabled);
                 }

@@ -77,7 +77,7 @@ namespace
         std::string const label = std::string{ICON_FA_FILE} + " " + path.filename().string();
 
         ui::PushID(++imguiID);
-        if (ui::MenuItem(label.c_str()))
+        if (ui::MenuItem(label))
         {
             parent_->addAndSelectTab<LoadingTab>(parent_, path);
         }

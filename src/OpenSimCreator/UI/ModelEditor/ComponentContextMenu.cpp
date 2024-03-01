@@ -68,7 +68,7 @@ namespace
                 bool selected = i == maybeTypeIndex;
                 bool wasSelected = selected;
 
-                if (ui::MenuItem(registry[i].name().c_str(), nullptr, &selected))
+                if (ui::MenuItem(registry[i].name(), {}, &selected))
                 {
                     if (!wasSelected)
                     {
@@ -427,7 +427,7 @@ private:
                 std::stringstream ss;
                 ss << "Show All '" << c->getConcreteClassName() << "' Components";
                 std::string const label = std::move(ss).str();
-                if (ui::MenuItem(label.c_str()))
+                if (ui::MenuItem(label))
                 {
                     ActionSetComponentAndAllChildrenWithGivenConcreteClassNameIsVisibleTo(
                         *m_Model,
@@ -442,7 +442,7 @@ private:
                 std::stringstream ss;
                 ss << "Hide All '" << c->getConcreteClassName() << "' Components";
                 std::string const label = std::move(ss).str();
-                if (ui::MenuItem(label.c_str()))
+                if (ui::MenuItem(label))
                 {
                     ActionSetComponentAndAllChildrenWithGivenConcreteClassNameIsVisibleTo(
                         *m_Model,
@@ -458,7 +458,7 @@ private:
         if (ui::MenuItem("Copy Absolute Path to Clipboard"))
         {
             std::string const path = GetAbsolutePathString(*c);
-            SetClipboardText(path.c_str());
+            SetClipboardText(path);
         }
         ui::DrawTooltipIfItemHovered("Copy Component Absolute Path", "Copy the absolute path to this component to your clipboard.\n\n(This is handy if you are separately using absolute component paths to (e.g.) manipulate the model in a script or something)");
 
@@ -537,7 +537,7 @@ private:
                         ui::TextDisabled(socketName);
 
                         ui::TableSetColumnIndex(column++);
-                        if (ui::SmallButton(socket.getConnecteeAsObject().getName().c_str()))
+                        if (ui::SmallButton(socket.getConnecteeAsObject().getName()))
                         {
                             m_Model->setSelected(dynamic_cast<OpenSim::Component const*>(&socket.getConnecteeAsObject()));
                             requestClose();
@@ -583,7 +583,7 @@ private:
         {
             for (OpenSim::Coordinate const& c : m_Model->getModel().getComponentList<OpenSim::Coordinate>())
             {
-                if (ui::MenuItem(c.getName().c_str()))
+                if (ui::MenuItem(c.getName()))
                 {
                     m_EditorAPI->addMusclePlot(c, m);
                 }

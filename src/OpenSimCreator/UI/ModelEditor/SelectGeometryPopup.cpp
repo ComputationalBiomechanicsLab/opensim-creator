@@ -218,7 +218,7 @@ private:
     {
         if (p.filename().string().find(m_Search) != std::string::npos)
         {
-            if (ui::Selectable(p.filename().string().c_str()))
+            if (ui::Selectable(p.filename().string()))
             {
                 return onMeshFileChosen(p.filename());
             }

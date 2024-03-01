@@ -74,11 +74,11 @@ private:
 
     void renderButton(ComponentRegistryBase const& registry)
     {
-        if (ui::BeginMenu(registry.name().c_str()))
+        if (ui::BeginMenu(registry.name()))
         {
             for (auto const& entry : registry)
             {
-                if (ui::MenuItem(entry.name().c_str()))
+                if (ui::MenuItem(entry.name()))
                 {
                     auto popup = std::make_unique<AddComponentPopup>(
                         "Add " + registry.name(),

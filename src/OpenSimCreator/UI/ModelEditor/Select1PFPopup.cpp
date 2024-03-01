@@ -34,7 +34,7 @@ private:
         ui::BeginChild("pflist", ImVec2(256, 256), ImGuiChildFlags_Border, ImGuiWindowFlags_HorizontalScrollbar);
         for (auto const& pf : m_Model->getModel().getComponentList<OpenSim::PhysicalFrame>())
         {
-            if (ui::Selectable(pf.getName().c_str()))
+            if (ui::Selectable(pf.getName()))
             {
                 selected = &pf;
             }

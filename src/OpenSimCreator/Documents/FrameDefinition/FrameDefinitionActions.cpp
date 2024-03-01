@@ -183,7 +183,7 @@ void osc::fd::ActionSwapSocketAssignments(
     std::string const commitMessage = [&componentAbsPath, &firstSocketName, &secondSocketName]()
     {
         std::stringstream ss;
-        ss << "swapped socket '" << firstSocketName << "' with socket '" << secondSocketName << " in " << componentAbsPath.getComponentName().c_str();
+        ss << "swapped socket '" << firstSocketName << "' with socket '" << secondSocketName << " in " << componentAbsPath.getComponentName();
         return std::move(ss).str();
     }();
 

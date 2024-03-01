@@ -557,8 +557,8 @@ namespace osc
             ImGuiSliderFlags const flags = ImGuiSliderFlags_Logarithmic;
 
             CStringView const label = "landmark radius";
-            ui::SetNextItemWidth(ui::GetContentRegionAvail().x - ui::CalcTextSize(label.c_str()).x - ui::GetStyle().ItemInnerSpacing.x - m_State->overlayPadding.x);
-            ui::SliderFloat(label.c_str(), &m_LandmarkRadius, 0.0001f, 100.0f, "%.4f", flags);
+            ui::SetNextItemWidth(ui::GetContentRegionAvail().x - ui::CalcTextSize(label).x - ui::GetStyle().ItemInnerSpacing.x - m_State->overlayPadding.x);
+            ui::SliderFloat(label, &m_LandmarkRadius, 0.0001f, 100.0f, "%.4f", flags);
         }
 
         bool isUserPlacingNonParticipatingLandmark() const

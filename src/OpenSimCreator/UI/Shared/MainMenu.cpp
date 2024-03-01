@@ -111,7 +111,7 @@ void osc::MainMenuFileTab::onDraw(
         for (RecentFile const& rf : *recentFiles)
         {
             ui::PushID(++imgui_id);
-            if (ui::MenuItem(rf.path.filename().string().c_str()))
+            if (ui::MenuItem(rf.path.filename().string()))
             {
                 ActionOpenModel(api, rf.path);
             }
@@ -126,7 +126,7 @@ void osc::MainMenuFileTab::onDraw(
         for (std::filesystem::path const& ex : exampleOsimFiles)
         {
             ui::PushID(++imgui_id);
-            if (ui::MenuItem(ex.filename().string().c_str()))
+            if (ui::MenuItem(ex.filename().string()))
             {
                 ActionOpenModel(api, ex);
             }
@@ -138,7 +138,7 @@ void osc::MainMenuFileTab::onDraw(
 
     ui::Separator();
 
-    if (ui::MenuItem(ICON_FA_FOLDER_OPEN " Load Motion", nullptr, false, maybeModel != nullptr))
+    if (ui::MenuItem(ICON_FA_FOLDER_OPEN " Load Motion", {}, false, maybeModel != nullptr))
     {
         std::optional<std::filesystem::path> maybePath = PromptUserForFile("sto,mot");
         if (maybePath && maybeModel)
@@ -187,18 +187,18 @@ void osc::MainMenuFileTab::onDraw(
         }
         ui::DrawTooltipIfItemHovered("Reload", "Attempts to reload the osim file from scratch. This can be useful if (e.g.) editing third-party files that OpenSim Creator doesn't automatically track.");
 
-        if (ui::MenuItem(ICON_FA_CLIPBOARD " Copy .osim path to clipboard", nullptr, false, modelHasBackingFile) && maybeModel)
+        if (ui::MenuItem(ICON_FA_CLIPBOARD " Copy .osim path to clipboard", {}, false, modelHasBackingFile) && maybeModel)
         {
             ActionCopyModelPathToClipboard(*maybeModel);
         }
         ui::DrawTooltipIfItemHovered("Copy .osim path to clipboard", "Copies the absolute path to the model's .osim file into your clipboard.\n\nThis is handy if you want to (e.g.) load the osim via a script, open it from the command line in another app, etc.");
 
-        if (ui::MenuItem(ICON_FA_FOLDER " Open .osim's parent directory", nullptr, false, modelHasBackingFile) && maybeModel)
+        if (ui::MenuItem(ICON_FA_FOLDER " Open .osim's parent directory", {}, false, modelHasBackingFile) && maybeModel)
         {
             ActionOpenOsimParentDirectory(*maybeModel);
         }
 
-        if (ui::MenuItem(ICON_FA_LINK " Open .osim in external editor", nullptr, false, modelHasBackingFile) && maybeModel)
+        if (ui::MenuItem(ICON_FA_LINK " Open .osim in external editor", {}, false, modelHasBackingFile) && maybeModel)
         {
             ActionOpenOsimInExternalEditor(*maybeModel);
         }
@@ -260,12 +260,12 @@ void osc::MainMenuAboutTab::onDraw()
             AntiAliasingLevel const current = App::get().getCurrentAntiAliasingLevel();
             AntiAliasingLevel const max = App::get().getMaxAntiAliasingLevel();
 
-            if (ui::BeginCombo("##msxaa", to_string(current).c_str()))
+            if (ui::BeginCombo("##msxaa", to_string(current)))
             {
                 for (AntiAliasingLevel l = AntiAliasingLevel::min(); l <= max; ++l)
                 {
                     bool selected = l == current;
-                    if (ui::Selectable(to_string(l).c_str(), &selected))
+                    if (ui::Selectable(to_string(l), &selected))
                     {
                         App::upd().setCurrentAntiAliasingLevel(l);
                     }

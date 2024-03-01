@@ -114,7 +114,7 @@ private:
             ui::BeginChild("join targets", ImVec2(0, 128.0f), ImGuiChildFlags_Border, ImGuiWindowFlags_HorizontalScrollbar);
             for (OpenSim::PhysicalFrame const& pf : model.getComponentList<OpenSim::PhysicalFrame>())
             {
-                if (ui::Selectable(pf.getName().c_str(), &pf == selectedPf))
+                if (ui::Selectable(pf.getName(), &pf == selectedPf))
                 {
                     selectedPf = &pf;
                     m_BodyDetails.parentFrameAbsPath = GetAbsolutePathString(*selectedPf);
@@ -179,7 +179,7 @@ private:
             {
                 std::string label = m_BodyDetails.maybeGeometry ? GetDisplayName(*m_BodyDetails.maybeGeometry) : std::string{"attach"};
 
-                if (ui::Button(label.c_str()))
+                if (ui::Button(label))
                 {
                     // open geometry selection popup
                     auto popup = std::make_unique<SelectGeometryPopup>(

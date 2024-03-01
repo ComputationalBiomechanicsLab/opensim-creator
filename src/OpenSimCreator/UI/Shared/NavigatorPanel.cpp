@@ -348,7 +348,7 @@ private:
             }
 
             ui::PushID(imguiId);
-            if (ui::TreeNodeEx(cur->getName().c_str(), nodeFlags))
+            if (ui::TreeNodeEx(cur->getName(), nodeFlags))
             {
                 ui::Unindent(unindentPerLevel);
                 ++imguiTreeDepth;

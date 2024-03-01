@@ -72,10 +72,10 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
             Rect const circleBounds = BoundingRectOf(circ);
 
             auto const labels = std::to_array<CStringView>({ "X", "Y", "Z" });
-            auto const id = ui::GetID(labels[i].c_str());
+            auto const id = ui::GetID(labels[i]);
             ui::ItemSize(circleBounds);
             if (ui::ItemAdd(circleBounds, id)) {
-                Vec2 const labelSize = ui::CalcTextSize(labels[i].c_str());
+                Vec2 const labelSize = ui::CalcTextSize(labels[i]);
 
                 bool const hovered = ui::ItemHoverable(circleBounds, id, ui::GetItemFlags());
                 ImU32 const color = ui::ToImU32(hovered ? Color::white() : baseColor);
@@ -99,7 +99,7 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
             Rect const circleBounds = BoundingRectOf(circ);
 
             auto const labels = std::to_array<CStringView>({ "-X", "-Y", "-Z" });
-            auto const id = ui::GetID(labels[i].c_str());
+            auto const id = ui::GetID(labels[i]);
             ui::ItemSize(circleBounds);
             if (ui::ItemAdd(circleBounds, id)) {
                 bool const hovered = ui::ItemHoverable(circleBounds, id, ui::GetItemFlags());

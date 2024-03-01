@@ -203,8 +203,8 @@ namespace osc
             ImGuiSliderFlags const flags = ImGuiSliderFlags_Logarithmic;
 
             CStringView const label = "landmark radius";
-            ui::SetNextItemWidth(ui::GetContentRegionAvail().x - ui::CalcTextSize(label.c_str()).x - ui::GetStyle().ItemInnerSpacing.x - m_State->overlayPadding.x);
-            ui::SliderFloat(label.c_str(), &m_LandmarkRadius, 0.0001f, 100.0f, "%.4f", flags);
+            ui::SetNextItemWidth(ui::GetContentRegionAvail().x - ui::CalcTextSize(label).x - ui::GetStyle().ItemInnerSpacing.x - m_State->overlayPadding.x);
+            ui::SliderFloat(label, &m_LandmarkRadius, 0.0001f, 100.0f, "%.4f", flags);
         }
 
         void drawBlendingFactorSlider()
@@ -212,10 +212,10 @@ namespace osc
             ui::SetCursorPosX(m_CursorXAtExportButton);  // align with "export" button in row above
 
             CStringView const label = "blending factor  ";  // deliberate trailing spaces (for alignment with "landmark radius")
-            ui::SetNextItemWidth(ui::GetContentRegionAvail().x - ui::CalcTextSize(label.c_str()).x - ui::GetStyle().ItemInnerSpacing.x - m_OverlayPadding.x);
+            ui::SetNextItemWidth(ui::GetContentRegionAvail().x - ui::CalcTextSize(label).x - ui::GetStyle().ItemInnerSpacing.x - m_OverlayPadding.x);
 
             float factor = m_State->getScratch().blendingFactor;
-            if (ui::SliderFloat(label.c_str(), &factor, 0.0f, 1.0f))
+            if (ui::SliderFloat(label, &factor, 0.0f, 1.0f))
             {
                 ActionSetBlendFactorWithoutCommitting(m_State->updUndoable(), factor);
             }

@@ -267,7 +267,7 @@ private:
             bool selected = absPath == connectee;
 
             ui::PushID(innerID++);
-            if (ui::Selectable(c.getName().c_str(), selected))
+            if (ui::Selectable(c.getName(), selected))
             {
                 connectee = absPath;
             }
@@ -355,7 +355,7 @@ private:
                 continue;  // search failed
             }
 
-            if (ui::Selectable(c.getName().c_str()))
+            if (ui::Selectable(c.getName()))
             {
                 m_PathPoints.emplace_back(
                     GetAbsolutePath(*userChoice),

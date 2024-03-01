@@ -130,7 +130,7 @@ namespace
     {
         bool isWatching = api.hasUserOutputExtractor(output);
 
-        if (ui::MenuItem(ICON_FA_EYE " Watch Output", nullptr, &isWatching))
+        if (ui::MenuItem(ICON_FA_EYE " Watch Output", {}, &isWatching))
         {
             if (isWatching)
             {

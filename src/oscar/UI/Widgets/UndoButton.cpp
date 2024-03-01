@@ -47,7 +47,7 @@ void osc::UndoButton::onDraw()
         for (ptrdiff_t i = 0; i < m_UndoRedo->getNumUndoEntriesi(); ++i)
         {
             ui::PushID(imguiID++);
-            if (ui::Selectable(m_UndoRedo->getUndoEntry(i).message().c_str()))
+            if (ui::Selectable(m_UndoRedo->getUndoEntry(i).message()))
             {
                 m_UndoRedo->undoTo(i);
             }

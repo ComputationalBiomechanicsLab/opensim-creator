@@ -62,7 +62,7 @@ private:
 
             ui::Separator();
 
-            if (ui::MenuItem("         Deselect", nullptr, false, m_Model->getSelected() != nullptr))
+            if (ui::MenuItem("         Deselect", {}, false, m_Model->getSelected() != nullptr))
             {
                 m_Model->setSelected(nullptr);
             }

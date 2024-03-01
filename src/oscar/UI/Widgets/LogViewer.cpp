@@ -52,7 +52,7 @@ namespace
 
         std::string full_log_content = std::move(ss).str();
 
-        SetClipboardText(full_log_content.c_str());
+        SetClipboardText(full_log_content);
     }
 }
 
@@ -73,12 +73,12 @@ public:
             {
                 LogLevel currentLevel = logger->get_level();
                 ui::SetNextItemWidth(200.0f);
-                if (ui::BeginCombo("level", ToCStringView(currentLevel).c_str()))
+                if (ui::BeginCombo("level", ToCStringView(currentLevel)))
                 {
                     for (LogLevel l = FirstLogLevel(); l <= LastLogLevel(); l = Next(l))
                     {
                         bool active = l == currentLevel;
-                        if (ui::Selectable(ToCStringView(l).c_str(), &active))
+                        if (ui::Selectable(ToCStringView(l), &active))
                         {
                             logger->set_level(l);
                         }

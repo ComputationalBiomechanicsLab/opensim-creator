@@ -436,7 +436,7 @@ private:
                         ui::PushID(m_Tabs[i].get());
                         bool active = true;
 
-                        if (ui::BeginTabItem(m_Tabs[i]->getName().c_str(), &active, flags))
+                        if (ui::BeginTabItem(m_Tabs[i]->getName(), &active, flags))
                         {
                             if (m_Tabs[i]->getID() != m_ActiveTabID)
                             {
@@ -563,7 +563,7 @@ private:
                 for (size_t i = 0; i < tabs->size(); ++i)
                 {
                     TabRegistryEntry e = (*tabs)[i];
-                    if (ui::MenuItem(e.getName().c_str()))
+                    if (ui::MenuItem(e.getName()))
                     {
                         selectTab(addTab(e.createTab(ParentPtr<ITabHost>{getTabHostAPI()})));
                     }

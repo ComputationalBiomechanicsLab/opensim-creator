@@ -47,7 +47,7 @@ private:
             {
                 ui::PushID(i);
                 std::string const label = Ellipsis(els[i]->getName(), 15);
-                if (ui::SmallButton(label.c_str()))
+                if (ui::SmallButton(label))
                 {
                     m_Model->setSelected(els[i]);
                 }

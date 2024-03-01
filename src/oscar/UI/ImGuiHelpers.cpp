@@ -471,7 +471,7 @@ void osc::ui::DrawTextureAsImGuiImage(RenderTexture const& t, Vec2 dims)
 Vec2 osc::ui::CalcButtonSize(CStringView content)
 {
     Vec2 const padding = ui::GetStyle().FramePadding;
-    Vec2 const contentDims = ui::CalcTextSize(content.c_str());
+    Vec2 const contentDims = ui::CalcTextSize(content);
     return contentDims + 2.0f*padding;
 }
 
@@ -484,7 +484,7 @@ bool osc::ui::ButtonNoBg(CStringView label, Vec2 size)
 {
     PushStyleColor(ImGuiCol_Button, Color::clear());
     PushStyleColor(ImGuiCol_ButtonHovered, Color::clear());
-    bool const rv = ui::Button(label.c_str(), size);
+    bool const rv = ui::Button(label, size);
     PopStyleColor();
     PopStyleColor();
 
@@ -679,17 +679,17 @@ bool osc::ui::InputString(CStringView label, std::string& editedString, ImGuiInp
 
 bool osc::ui::InputMetersFloat(CStringView label, float& v, float step, float step_fast, ImGuiInputTextFlags flags)
 {
-    return ui::InputFloat(label.c_str(), &v, step, step_fast, "%.6f", flags);
+    return ui::InputFloat(label, &v, step, step_fast, "%.6f", flags);
 }
 
 bool osc::ui::InputMetersFloat3(CStringView label, Vec3& vec, ImGuiInputTextFlags flags)
 {
-    return ui::InputFloat3(label.c_str(), value_ptr(vec), "%.6f", flags);
+    return ui::InputFloat3(label, value_ptr(vec), "%.6f", flags);
 }
 
 bool osc::ui::SliderMetersFloat(CStringView label, float& v, float v_min, float v_max, ImGuiSliderFlags flags)
 {
-    return ui::SliderFloat(label.c_str(), &v, v_min, v_max, "%.6f", flags);
+    return ui::SliderFloat(label, &v, v_min, v_max, "%.6f", flags);
 }
 
 bool osc::ui::InputKilogramFloat(CStringView label, float& v, float step, float step_fast, ImGuiInputTextFlags flags)
@@ -700,7 +700,7 @@ bool osc::ui::InputKilogramFloat(CStringView label, float& v, float step, float 
 bool osc::ui::InputAngle(CStringView label, Radians& v)
 {
     float dv = Degrees{v}.count();
-    if (ui::InputFloat(label.c_str(), &dv))
+    if (ui::InputFloat(label, &dv))
     {
         v = Degrees{dv};
         return true;
@@ -714,7 +714,7 @@ bool osc::ui::InputAngle3(
     CStringView format)
 {
     Vec3 dvs = {Degrees{vs.x}.count(), Degrees{vs.y}.count(), Degrees{vs.z}.count()};
-    if (ui::InputFloat3(label.c_str(), value_ptr(dvs), format.c_str()))
+    if (ui::InputFloat3(label, value_ptr(dvs), format.c_str()))
     {
         vs = Vec<3, Degrees>{dvs};
         return true;
@@ -727,7 +727,7 @@ bool osc::ui::SliderAngle(CStringView label, Radians& v, Radians min, Radians ma
     float dv = Degrees{v}.count();
     Degrees const dmin{min};
     Degrees const dmax{max};
-    if (ui::SliderFloat(label.c_str(), &dv, dmin.count(), dmax.count()))
+    if (ui::SliderFloat(label, &dv, dmin.count(), dmax.count()))
     {
         v = Degrees{dv};
         return true;
@@ -800,19 +800,19 @@ bool osc::ui::BeginMainViewportBottomBar(CStringView label)
 
 bool osc::ui::ButtonCentered(CStringView s)
 {
-    float const buttonWidth = ui::CalcTextSize(s.c_str()).x + 2.0f*ui::GetStyle().FramePadding.x;
+    float const buttonWidth = ui::CalcTextSize(s).x + 2.0f*ui::GetStyle().FramePadding.x;
     float const midpoint = ui::GetCursorScreenPos().x + 0.5f*ui::GetContentRegionAvail().x;
     float const buttonStartX = midpoint - 0.5f*buttonWidth;
 
     ui::SetCursorScreenPos({buttonStartX, ui::GetCursorScreenPos().y});
 
-    return ui::Button(s.c_str());
+    return ui::Button(s);
 }
 
 void osc::ui::TextCentered(CStringView s)
 {
     float const windowWidth = ImGui::GetWindowSize().x;
-    float const textWidth   = ui::CalcTextSize(s.c_str()).x;
+    float const textWidth   = ui::CalcTextSize(s).x;
 
     ui::SetCursorPosX(0.5f * (windowWidth - textWidth));
     TextUnformatted(s);
@@ -829,7 +829,7 @@ void osc::ui::TextColumnCentered(CStringView s)
 {
     float const columnWidth = ui::GetColumnWidth();
     float const columnOffset = ui::GetCursorPos().x;
-    float const textWidth = ui::CalcTextSize(s.c_str()).x;
+    float const textWidth = ui::CalcTextSize(s).x;
 
     ui::SetCursorPosX(columnOffset + 0.5f*(columnWidth-textWidth));
     TextUnformatted(s);
@@ -882,7 +882,7 @@ bool osc::ui::Combo(
         accessor(*current) :
         CStringView{};
 
-    if (!ui::BeginCombo(label.c_str(), preview.c_str(), ImGuiComboFlags_None))
+    if (!ui::BeginCombo(label, preview, ImGuiComboFlags_None))
     {
         return false;
     }
@@ -892,7 +892,7 @@ bool osc::ui::Combo(
     {
         ui::PushID(static_cast<int>(i));
         bool const isSelected = current != nullptr && *current == i;
-        if (ui::Selectable(accessor(i).c_str(), isSelected))
+        if (ui::Selectable(accessor(i), isSelected))
         {
             changed = true;
             if (current != nullptr)
@@ -970,7 +970,7 @@ bool osc::ui::CircularSliderFloat(
     const ImGuiID id = window->GetID(label.c_str());
 
     // calculate top-level item info for early-cull checks etc.
-    const Vec2 labelSize = ui::CalcTextSize(label.c_str(), nullptr, true);
+    const Vec2 labelSize = ui::CalcTextSize(label, true);
     const Vec2 frameDims = {ImGui::CalcItemWidth(), labelSize.y + 2.0f*style.FramePadding.y};
     const Vec2 cursorScreenPos = ui::GetCursorScreenPos();
     const ImRect frameBB = {cursorScreenPos, cursorScreenPos + frameDims};

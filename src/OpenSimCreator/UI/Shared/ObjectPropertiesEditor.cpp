@@ -336,7 +336,7 @@ namespace
         ScalarInputRv rv;
 
         ui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, {1.0f, 0.0f});
-        if (ui::InputScalar(label.c_str(), ImGuiDataType_Float, &value, &stepSize, nullptr, "%.6f"))
+        if (ui::InputScalar(label, ImGuiDataType_Float, &value, &stepSize, nullptr, "%.6f"))
         {
             rv.wasEdited = true;
         }
@@ -946,7 +946,7 @@ namespace
                 std::string{defaultedLabel};
 
             ui::SetNextItemWidth(ui::GetContentRegionAvail().x);
-            if (ui::BeginCombo("##reexpressioneditor", preview.c_str()))
+            if (ui::BeginCombo("##reexpressioneditor", preview))
             {
                 ui::TextDisabled("Frame (editing)");
                 ui::SameLine();
@@ -960,7 +960,7 @@ namespace
                     ui::Separator();
                     ui::PushID(imguiID++);
                     bool selected = !m_MaybeUserSelectedFrameAbsPath.has_value();
-                    if (ui::Selectable(defaultedLabel.c_str(), &selected))
+                    if (ui::Selectable(defaultedLabel, &selected))
                     {
                         m_MaybeUserSelectedFrameAbsPath.reset();
                     }
@@ -975,7 +975,7 @@ namespace
 
                     ui::PushID(imguiID++);
                     bool selected = frameAbsPath == m_MaybeUserSelectedFrameAbsPath;
-                    if (ui::Selectable(frame.getName().c_str(), &selected))
+                    if (ui::Selectable(frame.getName(), &selected))
                     {
                         m_MaybeUserSelectedFrameAbsPath = frameAbsPath;
                     }
@@ -1713,7 +1713,7 @@ private:
         OpenSim::AbstractProperty const& prop,
         IPropertyEditor& editor)
     {
-        ui::PushID(prop.getName().c_str());
+        ui::PushID(prop.getName());
         std::optional<std::function<void(OpenSim::AbstractProperty&)>> maybeUpdater = editor.onDraw();
         ui::PopID();
 

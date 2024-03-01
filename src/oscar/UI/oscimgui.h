@@ -64,7 +64,7 @@ namespace osc::ui
 
     inline void TextUnformatted(CStringView sv)
     {
-        ImGui::TextUnformatted(sv.c_str());
+        ImGui::TextUnformatted(sv.c_str(), sv.c_str() + sv.size());
     }
 
     inline void Bullet()
@@ -77,9 +77,9 @@ namespace osc::ui
         ImGui::BulletText("%s", str.c_str());
     }
 
-    inline bool TreeNodeEx(const char* label, ImGuiTreeNodeFlags flags = 0)
+    inline bool TreeNodeEx(CStringView label, ImGuiTreeNodeFlags flags = 0)
     {
-        return ImGui::TreeNodeEx(label, flags);
+        return ImGui::TreeNodeEx(label.c_str(), flags);
     }
 
     inline float GetTreeNodeToLabelSpacing()
@@ -107,10 +107,14 @@ namespace osc::ui
         return ImGui::EndMenu();
     }
 
-    template<typename... Args>
-    inline bool MenuItem(Args&&... args)
+    inline bool MenuItem(CStringView label, CStringView shortcut = {}, bool selected = false, bool enabled = true)
     {
-        return ImGui::MenuItem(std::forward<Args>(args)...);
+        return ImGui::MenuItem(label.c_str(), shortcut.empty() ? nullptr : shortcut.c_str(), selected, enabled);
+    }
+
+    inline bool MenuItem(CStringView label, CStringView shortcut, bool* p_selected, bool enabled = true)
+    {
+        return ImGui::MenuItem(label.c_str(), shortcut.empty() ? nullptr : shortcut.c_str(), p_selected, enabled);
     }
 
     inline bool BeginTabBar(CStringView str_id)
@@ -123,9 +127,9 @@ namespace osc::ui
         ImGui::EndTabBar();
     }
 
-    inline bool BeginTabItem(const char* label, bool* p_open = NULL, ImGuiTabItemFlags flags = 0)
+    inline bool BeginTabItem(CStringView label, bool* p_open = nullptr, ImGuiTabItemFlags flags = 0)
     {
-        return ImGui::BeginTabItem(label, p_open, flags);
+        return ImGui::BeginTabItem(label.c_str(), p_open, flags);
     }
 
     inline void EndTabItem()
@@ -178,59 +182,59 @@ namespace osc::ui
         return ImGui::IsMouseDragging(button, lock_threshold);
     }
 
-    inline bool Selectable(const char* label, bool* p_selected, ImGuiSelectableFlags flags = 0, const ImVec2& size = ImVec2(0, 0))
+    inline bool Selectable(CStringView label, bool* p_selected, ImGuiSelectableFlags flags = 0, const Vec2& size = {})
     {
-        return ImGui::Selectable(label, p_selected, flags, size);
+        return ImGui::Selectable(label.c_str(), p_selected, flags, size);
     }
 
-    inline bool Selectable(const char* label, bool selected = false, ImGuiSelectableFlags flags = 0, const ImVec2& size = ImVec2(0, 0))
+    inline bool Selectable(CStringView label, bool selected = false, ImGuiSelectableFlags flags = 0, const Vec2& size = {})
     {
-        return ImGui::Selectable(label, selected, flags, size);
+        return ImGui::Selectable(label.c_str(), selected, flags, size);
     }
 
-    inline bool Checkbox(const char* label, bool* v)
+    inline bool Checkbox(CStringView label, bool* v)
     {
-        return ImGui::Checkbox(label, v);
+        return ImGui::Checkbox(label.c_str(), v);
     }
 
-    inline bool CheckboxFlags(const char* label, int* flags, int flags_value)
+    inline bool CheckboxFlags(CStringView label, int* flags, int flags_value)
     {
-        return ImGui::CheckboxFlags(label, flags, flags_value);
+        return ImGui::CheckboxFlags(label.c_str(), flags, flags_value);
     }
 
-    inline bool CheckboxFlags(const char* label, unsigned int* flags, unsigned int flags_value)
+    inline bool CheckboxFlags(CStringView label, unsigned int* flags, unsigned int flags_value)
     {
-        return ImGui::CheckboxFlags(label, flags, flags_value);
+        return ImGui::CheckboxFlags(label.c_str(), flags, flags_value);
     }
 
-    inline bool SliderFloat(const char* label, float* v, float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0)
+    inline bool SliderFloat(CStringView label, float* v, float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0)
     {
-        return ImGui::SliderFloat(label, v, v_min, v_max, format, flags);
+        return ImGui::SliderFloat(label.c_str(), v, v_min, v_max, format, flags);
     }
 
-    inline bool InputScalar(const char* label, ImGuiDataType data_type, void* p_data, const void* p_step = NULL, const void* p_step_fast = NULL, const char* format = NULL, ImGuiInputTextFlags flags = 0)
+    inline bool InputScalar(CStringView label, ImGuiDataType data_type, void* p_data, const void* p_step = NULL, const void* p_step_fast = NULL, const char* format = NULL, ImGuiInputTextFlags flags = 0)
     {
-        return ImGui::InputScalar(label, data_type, p_data, p_step, p_step_fast, format, flags);
+        return ImGui::InputScalar(label.c_str(), data_type, p_data, p_step, p_step_fast, format, flags);
     }
 
-    inline bool InputInt(const char* label, int* v, int step = 1, int step_fast = 100, ImGuiInputTextFlags flags = 0)
+    inline bool InputInt(CStringView label, int* v, int step = 1, int step_fast = 100, ImGuiInputTextFlags flags = 0)
     {
-        return ImGui::InputInt(label, v, step, step_fast, flags);
+        return ImGui::InputInt(label.c_str(), v, step, step_fast, flags);
     }
 
-    inline bool InputDouble(const char* label, double* v, double step = 0.0, double step_fast = 0.0, const char* format = "%.6f", ImGuiInputTextFlags flags = 0)
+    inline bool InputDouble(CStringView label, double* v, double step = 0.0, double step_fast = 0.0, const char* format = "%.6f", ImGuiInputTextFlags flags = 0)
     {
-        return ImGui::InputDouble(label, v, step, step_fast, format, flags);
+        return ImGui::InputDouble(label.c_str(), v, step, step_fast, format, flags);
     }
 
-    inline bool InputFloat(const char* label, float* v, float step = 0.0f, float step_fast = 0.0f, const char* format = "%.3f", ImGuiInputTextFlags flags = 0)
+    inline bool InputFloat(CStringView label, float* v, float step = 0.0f, float step_fast = 0.0f, const char* format = "%.3f", ImGuiInputTextFlags flags = 0)
     {
-        return ImGui::InputFloat(label, v, step, step_fast, format, flags);
+        return ImGui::InputFloat(label.c_str(), v, step, step_fast, format, flags);
     }
 
-    inline bool InputFloat3(const char* label, float v[3], const char* format = "%.3f", ImGuiInputTextFlags flags = 0)
+    inline bool InputFloat3(CStringView label, float v[3], const char* format = "%.3f", ImGuiInputTextFlags flags = 0)
     {
-        return ImGui::InputFloat3(label, v, format, flags);
+        return ImGui::InputFloat3(label.c_str(), v, format, flags);
     }
 
     inline bool ColorEditRGB(CStringView label, Color& color)
@@ -243,24 +247,24 @@ namespace osc::ui
         return ImGui::ColorEdit4(label.c_str(), value_ptr(color));
     }
 
-    inline bool Button(const char* label, ImVec2 const& size = ImVec2(0.0f, 0.0f))
+    inline bool Button(CStringView label, Vec2 const& size = {})
     {
-        return ImGui::Button(label, size);
+        return ImGui::Button(label.c_str(), size);
     }
 
-    inline bool SmallButton(const char* label)
+    inline bool SmallButton(CStringView label)
     {
-        return ImGui::SmallButton(label);
+        return ImGui::SmallButton(label.c_str());
     }
 
-    inline bool InvisibleButton(const char* label, Vec2 size = {})
+    inline bool InvisibleButton(CStringView label, Vec2 size = {})
     {
-        return ImGui::InvisibleButton(label, size);
+        return ImGui::InvisibleButton(label.c_str(), size);
     }
 
-    inline bool RadioButton(const char* label, bool active)
+    inline bool RadioButton(CStringView label, bool active)
     {
-        return ImGui::RadioButton(label, active);
+        return ImGui::RadioButton(label.c_str(), active);
     }
 
     inline bool CollapsingHeader(CStringView label)
@@ -268,14 +272,14 @@ namespace osc::ui
         return ImGui::CollapsingHeader(label.c_str());
     }
 
-    inline void Dummy(ImVec2 const& size)
+    inline void Dummy(Vec2 const& size)
     {
         ImGui::Dummy(size);
     }
 
-    inline bool BeginCombo(const char* label, const char* preview_value, ImGuiComboFlags flags = 0)
+    inline bool BeginCombo(CStringView label, CStringView preview_value, ImGuiComboFlags flags = 0)
     {
-        return ImGui::BeginCombo(label, preview_value, flags);
+        return ImGui::BeginCombo(label.c_str(), preview_value.empty() ? nullptr : preview_value.c_str(), flags);
     }
 
     inline void EndCombo()
@@ -283,9 +287,9 @@ namespace osc::ui
         ImGui::EndCombo();
     }
 
-    inline bool Combo(const char* label, int* current_item, const char* const items[], int items_count, int popup_max_height_in_items = -1)
+    inline bool Combo(CStringView label, int* current_item, const char* const items[], int items_count, int popup_max_height_in_items = -1)
     {
-        return ImGui::Combo(label, current_item, items, items_count, popup_max_height_in_items);
+        return ImGui::Combo(label.c_str(), current_item, items, items_count, popup_max_height_in_items);
     }
 
     inline bool BeginListBox(CStringView label)
@@ -308,9 +312,9 @@ namespace osc::ui
         return ImGui::DockSpaceOverViewport(viewport, flags, window_class);
     }
 
-    inline bool Begin(const char* name, bool* p_open = nullptr, ImGuiWindowFlags flags = 0)
+    inline bool Begin(CStringView name, bool* p_open = nullptr, ImGuiWindowFlags flags = 0)
     {
-        return ImGui::Begin(name, p_open, flags);
+        return ImGui::Begin(name.c_str(), p_open, flags);
     }
 
     inline void End()
@@ -318,9 +322,9 @@ namespace osc::ui
         ImGui::End();
     }
 
-    inline bool BeginChild(const char* str_id, const ImVec2& size = ImVec2(0, 0), ImGuiChildFlags child_flags = 0, ImGuiWindowFlags window_flags = 0)
+    inline bool BeginChild(CStringView str_id, const Vec2& size = {}, ImGuiChildFlags child_flags = 0, ImGuiWindowFlags window_flags = 0)
     {
-        return ImGui::BeginChild(str_id, size, child_flags, window_flags);
+        return ImGui::BeginChild(str_id.c_str(), size, child_flags, window_flags);
     }
 
     inline void EndChild()
@@ -471,9 +475,9 @@ namespace osc::ui
         ImGui::PopID();
     }
 
-    inline ImGuiID GetID(const char* str_id)
+    inline ImGuiID GetID(CStringView str_id)
     {
-        return ImGui::GetID(str_id);
+        return ImGui::GetID(str_id.c_str());
     }
 
     inline ImGuiItemFlags GetItemFlags()
@@ -551,7 +555,7 @@ namespace osc::ui
         return ImGui::GetIO();
     }
 
-    inline void PushStyleVar(ImGuiStyleVar style, ImVec2 const& pos)
+    inline void PushStyleVar(ImGuiStyleVar style, Vec2 const& pos)
     {
         ImGui::PushStyleVar(style, pos);
     }
@@ -566,24 +570,24 @@ namespace osc::ui
         ImGui::PopStyleVar(count);
     }
 
-    inline void OpenPopup(const char* str_id, ImGuiPopupFlags popup_flags = 0)
+    inline void OpenPopup(CStringView str_id, ImGuiPopupFlags popup_flags = 0)
     {
-        return ImGui::OpenPopup(str_id, popup_flags);
+        return ImGui::OpenPopup(str_id.c_str(), popup_flags);
     }
 
-    inline bool BeginPopup(const char* str_id, ImGuiWindowFlags flags = 0)
+    inline bool BeginPopup(CStringView str_id, ImGuiWindowFlags flags = 0)
     {
-        return ImGui::BeginPopup(str_id, flags);
+        return ImGui::BeginPopup(str_id.c_str(), flags);
     }
 
-    inline bool BeginPopupContextItem(const char* str_id = nullptr, ImGuiPopupFlags popup_flags = 1)
+    inline bool BeginPopupContextItem(CStringView str_id = nullptr, ImGuiPopupFlags popup_flags = 1)
     {
-        return ImGui::BeginPopupContextItem(str_id, popup_flags);
+        return ImGui::BeginPopupContextItem(str_id.c_str(), popup_flags);
     }
 
-    inline bool BeginPopupModal(const char* name, bool* p_open = NULL, ImGuiWindowFlags flags = 0)
+    inline bool BeginPopupModal(CStringView name, bool* p_open = NULL, ImGuiWindowFlags flags = 0)
     {
-        return ImGui::BeginPopupModal(name, p_open, flags);
+        return ImGui::BeginPopupModal(name.c_str(), p_open, flags);
     }
 
     inline void EndPopup()
@@ -656,9 +660,9 @@ namespace osc::ui
         return ImGui::GetItemRectMax();
     }
 
-    inline bool BeginTable(const char* str_id, int column, ImGuiTableFlags flags = 0, const ImVec2& outer_size = ImVec2(0.0f, 0.0f), float inner_width = 0.0f)
+    inline bool BeginTable(CStringView str_id, int column, ImGuiTableFlags flags = 0, const Vec2& outer_size = {}, float inner_width = 0.0f)
     {
-        return ImGui::BeginTable(str_id, column, flags, outer_size, inner_width);
+        return ImGui::BeginTable(str_id.c_str(), column, flags, outer_size, inner_width);
     }
 
     inline void TableSetupScrollFreeze(int cols, int rows)
@@ -686,9 +690,9 @@ namespace osc::ui
         ImGui::TableNextRow(row_flags, min_row_height);
     }
 
-    inline void TableSetupColumn(const char* label, ImGuiTableColumnFlags flags = 0, float init_width_or_weight = 0.0f, ImGuiID user_id = 0)
+    inline void TableSetupColumn(CStringView label, ImGuiTableColumnFlags flags = 0, float init_width_or_weight = 0.0f, ImGuiID user_id = 0)
     {
-        ImGui::TableSetupColumn(label, flags, init_width_or_weight, user_id);
+        ImGui::TableSetupColumn(label.c_str(), flags, init_width_or_weight, user_id);
     }
 
     inline void EndTable()
@@ -741,9 +745,9 @@ namespace osc::ui
         return ImGui::GetFontSize();
     }
 
-    inline Vec2 CalcTextSize(const char* text, const char* text_end = NULL, bool hide_text_after_double_hash = false, float wrap_width = -1.0f)
+    inline Vec2 CalcTextSize(CStringView text, bool hide_text_after_double_hash = false)
     {
-        return ImGui::CalcTextSize(text, text_end, hide_text_after_double_hash, wrap_width);
+        return ImGui::CalcTextSize(text.c_str(), text.c_str() + text.size(), hide_text_after_double_hash);
     }
 
     inline ImDrawList* GetWindowDrawList()

@@ -725,7 +725,7 @@ namespace
             groundOrExistingBody = FindFirstDescendentOfType<OpenSim::Body>(frame);
         }
 
-        if (ui::MenuItem(ICON_FA_WEIGHT " Body From This", nullptr, false, groundOrExistingBody == nullptr))
+        if (ui::MenuItem(ICON_FA_WEIGHT " Body From This", {}, false, groundOrExistingBody == nullptr))
         {
             ActionCreateBodyFromFrame(editor, model, maybeSourceEvent, frame);
         }
@@ -996,12 +996,12 @@ namespace
         {
             if (ui::BeginMenu("Edit"))
             {
-                if (ui::MenuItem(ICON_FA_UNDO " Undo", nullptr, false, m_Model->canUndo()))
+                if (ui::MenuItem(ICON_FA_UNDO " Undo", {}, false, m_Model->canUndo()))
                 {
                     ActionUndoCurrentlyEditedModel(*m_Model);
                 }
 
-                if (ui::MenuItem(ICON_FA_REDO " Redo", nullptr, false, m_Model->canRedo()))
+                if (ui::MenuItem(ICON_FA_REDO " Redo", {}, false, m_Model->canRedo()))
                 {
                     ActionRedoCurrentlyEditedModel(*m_Model);
                 }
