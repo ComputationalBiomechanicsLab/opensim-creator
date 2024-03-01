@@ -83,9 +83,9 @@ private:
                 }
                 ui::SameLine();
             }
-            ImGui::NewLine();
+            ui::NewLine();
 
-            Vec2 contentRegion = ImGui::GetContentRegionAvail();
+            Vec2 contentRegion = ui::GetContentRegionAvail();
             m_RenderParams.dimensions = elementwise_max(contentRegion, {0.0f, 0.0f});
             m_RenderParams.antiAliasingLevel = App::get().getCurrentAntiAliasingLevel();
 

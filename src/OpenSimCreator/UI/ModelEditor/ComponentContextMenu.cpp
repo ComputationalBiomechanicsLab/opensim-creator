@@ -60,7 +60,7 @@ namespace
         std::optional<ptrdiff_t> selectedIdx;
         if (ui::BeginMenu("Change Joint Type"))
         {
-            // look the Joint up in the type registry so we know where it should be in the ImGui::Combo
+            // look the Joint up in the type registry so we know where it should be in the ui::Combo
             std::optional<size_t> maybeTypeIndex = IndexOf(registry, *joint);
 
             for (ptrdiff_t i = 0; i < std::ssize(registry); ++i)
@@ -515,14 +515,14 @@ private:
 
             if (!socketNames.empty())
             {
-                ui::PushStyleVar(ImGuiStyleVar_CellPadding, {0.5f*ImGui::GetTextLineHeight(), 0.5f*ImGui::GetTextLineHeight()});
+                ui::PushStyleVar(ImGuiStyleVar_CellPadding, {0.5f*ui::GetTextLineHeight(), 0.5f*ui::GetTextLineHeight()});
                 if (ui::BeginTable("sockets table", 3, ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_BordersInner | ImGuiTableFlags_PadOuterX))
                 {
                     ui::TableSetupColumn("Socket Name");
                     ui::TableSetupColumn("Connectee");
                     ui::TableSetupColumn("Actions");
 
-                    ImGui::TableHeadersRow();
+                    ui::TableHeadersRow();
 
                     int id = 0;
                     for (std::string const& socketName : socketNames)
@@ -531,25 +531,25 @@ private:
 
                         int column = 0;
                         ui::PushID(id++);
-                        ImGui::TableNextRow();
+                        ui::TableNextRow();
 
-                        ImGui::TableSetColumnIndex(column++);
+                        ui::TableSetColumnIndex(column++);
                         ui::TextDisabled(socketName);
 
-                        ImGui::TableSetColumnIndex(column++);
-                        if (ImGui::SmallButton(socket.getConnecteeAsObject().getName().c_str()))
+                        ui::TableSetColumnIndex(column++);
+                        if (ui::SmallButton(socket.getConnecteeAsObject().getName().c_str()))
                         {
                             m_Model->setSelected(dynamic_cast<OpenSim::Component const*>(&socket.getConnecteeAsObject()));
                             requestClose();
                         }
                         if (auto const* connectee = dynamic_cast<OpenSim::Component const*>(&socket.getConnecteeAsObject());
-                            connectee && ImGui::IsItemHovered())
+                            connectee && ui::IsItemHovered())
                         {
                             DrawComponentHoverTooltip(*connectee);
                         }
 
-                        ImGui::TableSetColumnIndex(column++);
-                        if (ImGui::SmallButton("change"))
+                        ui::TableSetColumnIndex(column++);
+                        if (ui::SmallButton("change"))
                         {
                             auto popup = std::make_unique<ReassignSocketPopup>(
                                 "Reassign " + socket.getName(),

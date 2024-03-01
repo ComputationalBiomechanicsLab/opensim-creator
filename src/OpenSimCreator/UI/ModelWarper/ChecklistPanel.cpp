@@ -73,13 +73,13 @@ namespace
 
             ui::TableSetupColumn("Label");
             ui::TableSetupColumn("Value");
-            ImGui::TableHeadersRow();
+            ui::TableHeadersRow();
 
             for (auto&& detail : state.details(c)) {
-                ImGui::TableNextRow();
-                ImGui::TableSetColumnIndex(0);
+                ui::TableNextRow();
+                ui::TableSetColumnIndex(0);
                 ui::TextUnformatted(detail.name());
-                ImGui::TableSetColumnIndex(1);
+                ui::TableSetColumnIndex(1);
                 ui::TextUnformatted(detail.value());
             }
 
@@ -90,7 +90,7 @@ namespace
     template<WarpableOpenSimComponent T>
     void DrawChecklist(UIState const& state, T const& c)
     {
-        ImGui::Indent(5.0f);
+        ui::Indent(5.0f);
         int id = 0;
         for (auto&& check : state.validate(c)) {
             ui::PushID(id);
@@ -100,7 +100,7 @@ namespace
             ui::TextUnformatted(check.description());
             ui::PopID();
         }
-        ImGui::Unindent(5.0f);
+        ui::Unindent(5.0f);
     }
 
     template<WarpableOpenSimComponent T>
@@ -112,7 +112,7 @@ namespace
         ui::Dummy({0.0f, 3.0f});
         DrawChecklist(state, c);
 
-        ImGui::NewLine();
+        ui::NewLine();
 
         ui::Text("Details:");
         ui::Dummy({0.0f, 3.0f});
@@ -123,10 +123,10 @@ namespace
     void DrawEntry(UIState const& state, T const& c)
     {
         DrawEntryIconAndText(state, c);
-        if (ImGui::IsItemHovered(ImGuiHoveredFlags_ForTooltip)) {
-            ImGui::BeginTooltip();
+        if (ui::IsItemHovered(ImGuiHoveredFlags_ForTooltip)) {
+            ui::BeginTooltip();
             DrawTooltipContent(state, c);
-            ImGui::EndTooltip();
+            ui::EndTooltip();
         }
     }
 }
@@ -192,7 +192,7 @@ void osc::mow::ChecklistPanel::implDrawContent()
     DrawMeshSection(*m_State);
     ui::PopID();
 
-    ImGui::NewLine();
+    ui::NewLine();
 
     ui::PushID(id++);
     DrawFramesSection(*m_State);

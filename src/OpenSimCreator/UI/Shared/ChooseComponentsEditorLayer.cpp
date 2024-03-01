@@ -177,13 +177,13 @@ public:
         ModelEditorViewerPanelParameters& panelParams,
         ModelEditorViewerPanelState& panelState)
     {
-        bool const layerIsHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
+        bool const layerIsHovered = ui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
 
         // update this layer's state from provided state
         m_State.renderParams = panelParams.getRenderParams();
         m_IsLeftClickReleasedWithoutDragging = ui::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left);
         m_IsRightClickReleasedWithoutDragging = ui::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right);
-        if (ImGui::IsKeyReleased(ImGuiKey_Escape))
+        if (ui::IsKeyReleased(ImGuiKey_Escape))
         {
             m_State.shouldClosePopup = true;
         }
@@ -234,7 +234,7 @@ public:
         }
 
         // show header
-        ImGui::SetCursorScreenPos(panelState.viewportRect.p1 + Vec2{10.0f, 10.0f});
+        ui::SetCursorScreenPos(panelState.viewportRect.p1 + Vec2{10.0f, 10.0f});
         ui::Text("%s (ESC to cancel)", m_State.popupParams.popupHeaderText.c_str());
 
         // handle completion state (i.e. user selected enough components)
@@ -252,7 +252,7 @@ public:
             Vec2 const margin = {25.0f, 25.0f};
             Vec2 const buttonDims = ui::CalcButtonSize(cancellationButtonText);
             Vec2 const buttonTopLeft = panelState.viewportRect.p2 - (buttonDims + margin);
-            ImGui::SetCursorScreenPos(buttonTopLeft);
+            ui::SetCursorScreenPos(buttonTopLeft);
             if (ui::Button(cancellationButtonText.c_str()))
             {
                 m_State.shouldClosePopup = true;

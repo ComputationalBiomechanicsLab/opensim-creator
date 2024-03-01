@@ -339,7 +339,7 @@ public:
 
         ui::Begin("Input");
         {
-            Vec2 const windowDims = ImGui::GetContentRegionAvail();
+            Vec2 const windowDims = ui::GetContentRegionAvail();
             float const minDim = std::min(windowDims.x, windowDims.y);
             Vec2i const texDims = Vec2i{minDim, minDim};
 
@@ -363,8 +363,8 @@ public:
         Vec2 outputWindowDims;
         ui::Begin("Output");
         {
-            outputWindowPos = ImGui::GetCursorScreenPos();
-            outputWindowDims = ImGui::GetContentRegionAvail();
+            outputWindowPos = ui::GetCursorScreenPos();
+            outputWindowDims = ui::GetContentRegionAvail();
             float const minDim = std::min(outputWindowDims.x, outputWindowDims.y);
             Vec2i const texDims = Vec2i{minDim, minDim};
 
@@ -392,11 +392,11 @@ public:
             float leftPadding = 10.0f;
             float bottomPadding = 10.0f;
             float panelHeight = 50.0f;
-            ImGui::SetNextWindowPos({ outputWindowPos.x + leftPadding, outputWindowPos.y + outputWindowDims.y - panelHeight - bottomPadding });
-            ImGui::SetNextWindowSize({ outputWindowDims.x - leftPadding, panelHeight });
+            ui::SetNextWindowPos({ outputWindowPos.x + leftPadding, outputWindowPos.y + outputWindowDims.y - panelHeight - bottomPadding });
+            ui::SetNextWindowSize({ outputWindowDims.x - leftPadding, panelHeight });
             ui::Begin("##scrubber", nullptr, ui::GetMinimalWindowFlags() & ~ImGuiWindowFlags_NoInputs);
-            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            ImGui::SliderFloat("##blend", &m_BlendingFactor, 0.0f, 1.0f);
+            ui::SetNextItemWidth(ui::GetContentRegionAvail().x);
+            ui::SliderFloat("##blend", &m_BlendingFactor, 0.0f, 1.0f);
             ui::End();
         }
 
@@ -425,7 +425,7 @@ private:
     // render any 2D overlays
     void renderOverlayElements(ui::ImGuiItemHittestResult const& ht)
     {
-        ImDrawList* const drawlist = ImGui::GetWindowDrawList();
+        ImDrawList* const drawlist = ui::GetWindowDrawList();
 
         // render all fully-established landmark pairs
         for (LandmarkPair2D const& p : m_LandmarkPairs)

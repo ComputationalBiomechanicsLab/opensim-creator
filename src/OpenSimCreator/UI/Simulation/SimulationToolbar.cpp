@@ -35,7 +35,7 @@ namespace
         case SimulationStatus::Error:
             return Color::red();
         default:
-            return Color{Vec4{ImGui::GetStyle().Colors[ImGuiCol_Text]}};
+            return Color{Vec4{ui::GetStyle().Colors[ImGuiCol_Text]}};
         }
     }
 }
@@ -69,13 +69,13 @@ private:
         drawScaleFactorGroup();
 
         ui::SameLine();
-        ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+        ui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
         ui::SameLine();
 
         m_Scrubber.onDraw();
 
         ui::SameLine();
-        ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+        ui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
         ui::SameLine();
 
         drawSimulationStatusGroup();
@@ -90,8 +90,8 @@ private:
 
         {
             float scaleFactor = m_Simulation->getFixupScaleFactor();
-            ImGui::SetNextItemWidth(ImGui::CalcTextSize("0.00000").x);
-            if (ImGui::InputFloat("##scaleinput", &scaleFactor))
+            ui::SetNextItemWidth(ui::CalcTextSize("0.00000").x);
+            if (ui::InputFloat("##scaleinput", &scaleFactor))
             {
                 m_Simulation->setFixupScaleFactor(scaleFactor);
             }

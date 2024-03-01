@@ -745,7 +745,7 @@ private:
     // update this scene from the current keyboard state, as saved by ImGui
     bool updateFromImGuiKeyboardState()
     {
-        if (ImGui::GetIO().WantCaptureKeyboard)
+        if (ui::GetIO().WantCaptureKeyboard)
         {
             return false;
         }
@@ -1133,7 +1133,7 @@ private:
             {
                 DeleteObject(m_Shared->updCommittableModelGraph(), el.getID());
                 garbageCollectStaleRefs();
-                ImGui::CloseCurrentPopup();
+                ui::CloseCurrentPopup();
             }
             ui::DrawTooltipIfItemHovered("Delete", "Deletes the component from the model. Deletion is undo-able (use the undo/redo feature). Anything attached to this element (e.g. joints, meshes) will also be deleted.");
         }
@@ -1303,7 +1303,7 @@ private:
     void drawMassEditor(Body const& bodyEl)
     {
         auto curMass = static_cast<float>(bodyEl.getMass());
-        if (ImGui::InputFloat("Mass", &curMass, 0.0f, 0.0f, "%.6f"))
+        if (ui::InputFloat("Mass", &curMass, 0.0f, 0.0f, "%.6f"))
         {
             m_Shared->updModelGraph().updByID<Body>(bodyEl.getID()).setMass(static_cast<double>(curMass));
         }
@@ -1617,7 +1617,7 @@ private:
         if (ui::IsAnyKeyPressed({ImGuiKey_Enter, ImGuiKey_Escape}))
         {
             m_MaybeOpenedContextMenu.reset();
-            ImGui::CloseCurrentPopup();
+            ui::CloseCurrentPopup();
         }
     }
 
@@ -1635,7 +1635,7 @@ private:
         ui::SameLine();
         ui::DrawHelpMarker(c.getNamePluralized(), c.getDescription());
         ui::Dummy({0.0f, 5.0f});
-        ImGui::Indent();
+        ui::Indent();
 
         bool empty = true;
         for (MIObject const& el : mg.iter())
@@ -1663,14 +1663,14 @@ private:
 
             ui::Text(el.getLabel());
 
-            ImGui::PopStyleColor(styles);
+            ui::PopStyleColor(styles);
 
-            if (ImGui::IsItemHovered())
+            if (ui::IsItemHovered())
             {
                 m_MaybeHover = {id, {}};
             }
 
-            if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+            if (ui::IsItemClicked(ImGuiMouseButton_Left))
             {
                 if (!ui::IsShiftDown())
                 {
@@ -1679,10 +1679,10 @@ private:
                 m_Shared->updModelGraph().select(id);
             }
 
-            if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+            if (ui::IsItemClicked(ImGuiMouseButton_Right))
             {
                 m_MaybeOpenedContextMenu = MeshImporterHover{id, {}};
-                ImGui::OpenPopup("##maincontextmenu");
+                ui::OpenPopup("##maincontextmenu");
                 App::upd().requestRedraw();
             }
         }
@@ -1691,7 +1691,7 @@ private:
         {
             ui::TextDisabled("(no %s)", c.getNamePluralized().c_str());
         }
-        ImGui::Unindent();
+        ui::Unindent();
     }
 
     void drawNavigatorPanelContent()
@@ -1775,7 +1775,7 @@ private:
             {
                 Color colorVal = colors[i];
                 ui::PushID(imguiID++);
-                if (ImGui::ColorEdit4(labels[i], value_ptr(colorVal)))
+                if (ui::ColorEditRGBA(labels[i], colorVal))
                 {
                     m_Shared->setColor(i, colorVal);
                 }
@@ -1850,8 +1850,8 @@ private:
             CStringView const tooltipDesc = "This rescales *some* elements in the scene. Specifically, the ones that have no 'size', such as body frames, joint frames, and the chequered floor texture.\n\nChanging this is handy if you are working on smaller or larger models, where the size of the (decorative) frames and floor are too large/small compared to the model you are working on.\n\nThis is purely decorative and does not affect the exported OpenSim model in any way.";
 
             float sf = m_Shared->getSceneScaleFactor();
-            ImGui::SetNextItemWidth(ImGui::CalcTextSize("1000.00").x);
-            if (ImGui::InputFloat("scene scale factor", &sf))
+            ui::SetNextItemWidth(ui::CalcTextSize("1000.00").x);
+            if (ui::InputFloat("scene scale factor", &sf))
             {
                 m_Shared->setSceneScaleFactor(sf);
             }
@@ -1878,20 +1878,20 @@ private:
         {
             CameraViewAxes axes;
 
-            ImGuiStyle const& style = ImGui::GetStyle();
+            ImGuiStyle const& style = ui::GetStyle();
             Rect const& r = m_Shared->get3DSceneRect();
             Vec2 const topLeft =
             {
                 r.p1.x + style.WindowPadding.x,
                 r.p2.y - style.WindowPadding.y - axes.dimensions().y,
             };
-            ImGui::SetCursorScreenPos(topLeft);
+            ui::SetCursorScreenPos(topLeft);
             axes.draw(m_Shared->updCamera());
         }
 
         Rect sceneRect = m_Shared->get3DSceneRect();
         Vec2 trPos = {sceneRect.p1.x + 100.0f, sceneRect.p2.y - 55.0f};
-        ImGui::SetCursorScreenPos(trPos);
+        ui::SetCursorScreenPos(trPos);
 
         if (ui::Button(ICON_FA_SEARCH_MINUS))
         {
@@ -1925,7 +1925,7 @@ private:
             m_Shared->updCamera().theta = 90_deg;
             m_Shared->updCamera().phi = 0_deg;
         }
-        if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+        if (ui::IsItemClicked(ImGuiMouseButton_Right))
         {
             m_Shared->updCamera().theta = -90_deg;
             m_Shared->updCamera().phi = 0_deg;
@@ -1939,7 +1939,7 @@ private:
             m_Shared->updCamera().theta = 0_deg;
             m_Shared->updCamera().phi = 90_deg;
         }
-        if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+        if (ui::IsItemClicked(ImGuiMouseButton_Right))
         {
             m_Shared->updCamera().theta = 0_deg;
             m_Shared->updCamera().phi = -90_deg;
@@ -1953,7 +1953,7 @@ private:
             m_Shared->updCamera().theta = 0_deg;
             m_Shared->updCamera().phi = 0_deg;
         }
-        if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+        if (ui::IsItemClicked(ImGuiMouseButton_Right))
         {
             m_Shared->updCamera().theta = 180_deg;
             m_Shared->updCamera().phi = 0_deg;
@@ -1990,7 +1990,7 @@ private:
             viewportBottomRight.y - (margin.y + mainButtonDims.y),
         };
 
-        ImGui::SetCursorScreenPos(buttonTopLeft);
+        ui::SetCursorScreenPos(buttonTopLeft);
         ui::PushStyleColor(ImGuiCol_Button, Color::darkGreen());
         if (ui::Button(mainButtonText.c_str()))
         {
@@ -2034,11 +2034,11 @@ private:
 
     void drawMIObjectTooltip(MIObject const& e) const
     {
-        ImGui::BeginTooltip();
+        ui::BeginTooltip();
         ui::Text("%s %s", e.getClass().getIconUTF8().c_str(), e.getLabel().c_str());
         ui::SameLine();
         ui::TextDisabled(GetContextMenuSubHeaderText(m_Shared->getModelGraph(), e));
-        ImGui::EndTooltip();
+        ui::EndTooltip();
     }
 
     void drawHoverTooltip()
@@ -2113,7 +2113,7 @@ private:
             dimensions(sceneRect).x,
             dimensions(sceneRect).y
         );
-        ImGuizmo::SetDrawlist(ImGui::GetWindowDrawList());
+        ImGuizmo::SetDrawlist(ui::GetWindowDrawList());
         ImGuizmo::AllowAxisFlip(false);  // user's didn't like this feature in UX sessions
 
         Mat4 delta;
@@ -2270,12 +2270,12 @@ private:
             dt.flags = computeFlags(m_Shared->getModelGraph(), dt.id, m_MaybeHover.ID);
         }
 
-        // draw 3D scene (effectively, as an ImGui::Image)
+        // draw 3D scene (effectively, as an ui::Image)
         m_Shared->drawScene(MIObjects);
         if (m_Shared->isRenderHovered() && ui::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right) && !ImGuizmo::IsUsing())
         {
             m_MaybeOpenedContextMenu = m_MaybeHover;
-            ImGui::OpenPopup("##maincontextmenu");
+            ui::OpenPopup("##maincontextmenu");
         }
 
         bool ctxMenuShowing = false;
@@ -2408,9 +2408,9 @@ private:
 
             // open it "over" the whole UI as a "modal" - so that the user can't click things
             // outside of the panel
-            ImGui::OpenPopup("##visualizermodalpopup");
-            ImGui::SetNextWindowSize(m_Shared->get3DSceneDims());
-            ImGui::SetNextWindowPos(m_Shared->get3DSceneRect().p1);
+            ui::OpenPopup("##visualizermodalpopup");
+            ui::SetNextWindowSize(m_Shared->get3DSceneDims());
+            ui::SetNextWindowPos(m_Shared->get3DSceneRect().p1);
             ui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
 
             ImGuiWindowFlags const modalFlags =
@@ -2437,7 +2437,7 @@ private:
             {
                 ui::PopStyleVar();
                 draw3DViewer();
-                ImGui::SetCursorPos(Vec2{ImGui::GetCursorStartPos()} + Vec2{10.0f, 10.0f});
+                ui::SetCursorPos(Vec2{ui::GetCursorStartPos()} + Vec2{10.0f, 10.0f});
                 draw3DViewerOverlay();
             }
             else

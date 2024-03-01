@@ -129,9 +129,9 @@ private:
 
     void drawPlaybackSpeedSelector()
     {
-        ImGui::SetNextItemWidth(ImGui::CalcTextSize("0.000x").x + 2.0f*ImGui::GetStyle().FramePadding.x);
+        ui::SetNextItemWidth(ui::CalcTextSize("0.000x").x + 2.0f*ui::GetStyle().FramePadding.x);
         float speed = m_SimulatorAPI->getSimulationPlaybackSpeed();
-        if (ImGui::InputFloat("speed", &speed, 0.0f, 0.0f, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue))
+        if (ui::InputFloat("speed", &speed, 0.0f, 0.0f, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue))
         {
             m_SimulatorAPI->setSimulationPlaybackSpeed(speed);
         }
@@ -143,9 +143,9 @@ private:
         SimulationClock::time_point const tEnd = m_Simulation->getEndTime();
         SimulationClock::time_point const tCur = m_SimulatorAPI->getSimulationScrubTime();
 
-        ImGui::SetNextItemWidth(ImGui::GetFontSize() * 20.0f);
+        ui::SetNextItemWidth(ui::GetFontSize() * 20.0f);
         float v = static_cast<float>(tCur.time_since_epoch().count());
-        bool const userScrubbed = ImGui::SliderFloat("##scrubber",
+        bool const userScrubbed = ui::SliderFloat("##scrubber",
             &v,
             static_cast<float>(tStart.time_since_epoch().count()),
             static_cast<float>(tEnd.time_since_epoch().count()),
@@ -159,7 +159,7 @@ private:
             m_SimulatorAPI->setSimulationScrubTime(SimulationClock::start() + SimulationClock::duration{static_cast<double>(v)});
         }
 
-        if (ImGui::IsItemHovered())
+        if (ui::IsItemHovered())
         {
             ui::BeginTooltip();
             ui::TextUnformatted("Left-Click: Change simulation time being shown");

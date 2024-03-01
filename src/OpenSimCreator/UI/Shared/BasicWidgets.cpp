@@ -130,7 +130,7 @@ namespace
             ui::EndMenu();
         }
 
-        if (ImGui::IsItemHovered())
+        if (ui::IsItemHovered())
         {
             DrawOutputTooltip(o);
         }
@@ -150,7 +150,7 @@ namespace
             outputAdded = true;
         }
 
-        if (ImGui::IsItemHovered())
+        if (ui::IsItemHovered())
         {
             DrawOutputTooltip(o);
         }
@@ -351,7 +351,7 @@ void osc::DrawSelectOwnerMenu(IModelStatePair& model, OpenSim::Component const& 
             {
                 model.setSelected(owner);
             }
-            if (ImGui::IsItemHovered())
+            if (ui::IsItemHovered())
             {
                 model.setHovered(owner);
             }
@@ -448,7 +448,7 @@ void osc::DrawSearchBar(std::string& out)
     // draw search bar
 
     ui::SameLine();
-    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+    ui::SetNextItemWidth(ui::GetContentRegionAvail().x);
     ui::InputString("##hirarchtsearchbar", out);
 }
 
@@ -474,12 +474,12 @@ void osc::DrawOutputNameColumn(
     // the user)
     if (auto const* co = dynamic_cast<ComponentOutputExtractor const*>(&output); co && maybeActiveSate)
     {
-        if (ImGui::IsItemHovered())
+        if (ui::IsItemHovered())
         {
             maybeActiveSate->setHovered(FindComponent(maybeActiveSate->getModel(), co->getComponentAbsPath()));
         }
 
-        if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+        if (ui::IsItemClicked(ImGuiMouseButton_Left))
         {
             maybeActiveSate->setSelected(FindComponent(maybeActiveSate->getModel(), co->getComponentAbsPath()));
         }
@@ -734,7 +734,7 @@ void osc::DrawCalculateRadiusMenu(
     if (ui::BeginMenu("Radius"))
     {
         double d = sphere.get_radius();
-        ImGui::InputDouble("radius", &d);
+        ui::InputDouble("radius", &d);
         ui::EndMenu();
     }
 }
@@ -748,7 +748,7 @@ void osc::DrawCalculateVolumeMenu(
     {
         double const r = sphere.get_radius();
         double v = 4.0/3.0 * SimTK::Pi * r*r*r;
-        ImGui::InputDouble("volume", &v, 0.0, 0.0, "%.6f", ImGuiInputTextFlags_ReadOnly);
+        ui::InputDouble("volume", &v, 0.0, 0.0, "%.6f", ImGuiInputTextFlags_ReadOnly);
         ui::EndMenu();
     }
 }
@@ -883,7 +883,7 @@ bool osc::DrawMuscleRenderingOptionsRadioButtions(OpenSimDecorationOptions& opts
     bool edited = false;
     for (auto const& metadata : GetAllMuscleDecorationStyleMetadata())
     {
-        if (ImGui::RadioButton(metadata.label.c_str(), metadata.value == currentStyle))
+        if (ui::RadioButton(metadata.label.c_str(), metadata.value == currentStyle))
         {
             opts.setMuscleDecorationStyle(metadata.value);
             edited = true;
@@ -898,7 +898,7 @@ bool osc::DrawMuscleSizingOptionsRadioButtons(OpenSimDecorationOptions& opts)
     bool edited = false;
     for (auto const& metadata : GetAllMuscleSizingStyleMetadata())
     {
-        if (ImGui::RadioButton(metadata.label.c_str(), metadata.value == currentStyle))
+        if (ui::RadioButton(metadata.label.c_str(), metadata.value == currentStyle))
         {
             opts.setMuscleSizingStyle(metadata.value);
             edited = true;
@@ -913,7 +913,7 @@ bool osc::DrawMuscleColoringOptionsRadioButtons(OpenSimDecorationOptions& opts)
     bool edited = false;
     for (auto const& metadata : GetAllMuscleColoringStyleMetadata())
     {
-        if (ImGui::RadioButton(metadata.label.c_str(), metadata.value == currentStyle))
+        if (ui::RadioButton(metadata.label.c_str(), metadata.value == currentStyle))
         {
             opts.setMuscleColoringStyle(metadata.value);
             edited = true;
@@ -932,13 +932,13 @@ bool osc::DrawMuscleDecorationOptionsEditor(OpenSimDecorationOptions& opts)
     edited = DrawMuscleRenderingOptionsRadioButtions(opts) || edited;
     ui::PopID();
 
-    ui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
+    ui::Dummy({0.0f, 0.25f*ui::GetTextLineHeight()});
     ui::PushID(id++);
     ui::TextDisabled("Sizing");
     edited = DrawMuscleSizingOptionsRadioButtons(opts) || edited;
     ui::PopID();
 
-    ui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
+    ui::Dummy({0.0f, 0.25f*ui::GetTextLineHeight()});
     ui::PushID(id++);
     ui::TextDisabled("Coloring");
     edited = DrawMuscleColoringOptionsRadioButtons(opts) || edited;
@@ -975,7 +975,7 @@ bool osc::DrawOverlayOptionsEditor(OverlayDecorationOptions& opts)
         {
             if (lastGroupLabel)
             {
-                ui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
+                ui::Dummy({0.0f, 0.25f*ui::GetTextLineHeight()});
             }
             ui::TextDisabled(groupLabel);
             lastGroupLabel = groupLabel;
@@ -1037,7 +1037,7 @@ bool osc::DrawAdvancedParamsEditor(
     edited = ui::SliderAngle("fov", params.camera.vertical_fov, 0_deg, 360_deg) || edited;
     edited = ui::InputMetersFloat("znear", params.camera.znear) || edited;
     edited = ui::InputMetersFloat("zfar", params.camera.zfar) || edited;
-    ImGui::NewLine();
+    ui::NewLine();
     edited = ui::SliderMetersFloat("pan_x", params.camera.focusPoint.x, -100.0f, 100.0f) || edited;
     edited = ui::SliderMetersFloat("pan_y", params.camera.focusPoint.y, -100.0f, 100.0f) || edited;
     edited = ui::SliderMetersFloat("pan_z", params.camera.focusPoint.z, -100.0f, 100.0f) || edited;
@@ -1045,8 +1045,8 @@ bool osc::DrawAdvancedParamsEditor(
     ui::Dummy({0.0f, 10.0f});
     ui::Text("advanced scene properties:");
     ui::Separator();
-    edited = ImGui::ColorEdit3("light_color", value_ptr(params.lightColor)) || edited;
-    edited = ImGui::ColorEdit3("background color", value_ptr(params.backgroundColor)) || edited;
+    edited = ui::ColorEditRGB("light_color", params.lightColor) || edited;
+    edited = ui::ColorEditRGB("background color", params.backgroundColor) || edited;
     edited = ui::InputMetersFloat3("floor location", params.floorLocation) || edited;
     ui::DrawTooltipBodyOnlyIfItemHovered("Set the origin location of the scene's chequered floor. This is handy if you are working on smaller models, or models that need a floor somewhere else");
 
@@ -1064,7 +1064,7 @@ bool osc::DrawVisualAidsContextMenuContent(ModelRendererParams& params)
     edited = DrawOverlayOptionsEditor(params.overlayOptions) || edited;
 
     // OpenSim-specific extra rendering options
-    ui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
+    ui::Dummy({0.0f, 0.25f*ui::GetTextLineHeight()});
     ui::TextDisabled("OpenSim");
     edited = DrawCustomDecorationOptionCheckboxes(params.decorationOptions) || edited;
 
@@ -1099,7 +1099,7 @@ bool osc::DrawViewerTopButtonRow(
     edited = vizAidsButton.onDraw() || edited;
 
     ui::SameLine();
-    ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+    ui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
     ui::SameLine();
 
     // caller-provided extra buttons (usually, context-dependent)
@@ -1138,14 +1138,14 @@ bool osc::DrawCameraControlButtons(
         [&params, drawlist]() { return DrawAdvancedParamsEditor(params, drawlist); },
     };
 
-    auto c = ImGui::GetStyle().Colors[ImGuiCol_Button];
+    auto c = ui::GetStyle().Colors[ImGuiCol_Button];
     c.w *= 0.9f;
-    ImGui::PushStyleColor(ImGuiCol_Button, c);
+    ui::PushStyleColor(ImGuiCol_Button, c);
 
-    float const spacing = ImGui::GetStyle().ItemSpacing.x;
+    float const spacing = ui::GetStyle().ItemSpacing.x;
     float width = zoomOutButton.dimensions().x + spacing + zoomInButton.dimensions().x + spacing + autoFocusButton.dimensions().x;
-    Vec2 const topleft = {desiredTopCentroid.x - 0.5f*width, desiredTopCentroid.y + 2.0f*ImGui::GetStyle().ItemSpacing.y};
-    ImGui::SetCursorScreenPos(topleft);
+    Vec2 const topleft = {desiredTopCentroid.x - 0.5f*width, desiredTopCentroid.y + 2.0f*ui::GetStyle().ItemSpacing.y};
+    ui::SetCursorScreenPos(topleft);
 
     bool edited = false;
     if (zoomOutButton.onDraw()) {
@@ -1167,15 +1167,15 @@ bool osc::DrawCameraControlButtons(
     {
         Vec2 const tl = {
             desiredTopCentroid.x - 0.5f*sceneSettingsButton.dimensions().x,
-            ImGui::GetCursorScreenPos().y,
+            ui::GetCursorScreenPos().y,
         };
-        ImGui::SetCursorScreenPos(tl);
+        ui::SetCursorScreenPos(tl);
         if (sceneSettingsButton.onDraw()) {
             edited = true;
         }
     }
 
-    ImGui::PopStyleColor();
+    ui::PopStyleColor();
 
     return edited;
 }
@@ -1188,12 +1188,12 @@ bool osc::DrawViewerImGuiOverlays(
     IconCache& iconCache,
     std::function<bool()> const& drawExtraElementsInTop)
 {
-    ImGuiStyle const& style = ImGui::GetStyle();
+    ImGuiStyle const& style = ui::GetStyle();
 
     bool edited = false;
 
     // draw top-left buttons
-    ImGui::SetCursorScreenPos(renderRect.p1 + Vec2{style.WindowPadding});
+    ui::SetCursorScreenPos(renderRect.p1 + Vec2{style.WindowPadding});
     edited = DrawViewerTopButtonRow(params, drawlist, iconCache, drawExtraElementsInTop) || edited;
 
     // draw top-right camera manipulators
@@ -1206,11 +1206,11 @@ bool osc::DrawViewerImGuiOverlays(
     };
 
     // draw the bottom overlays
-    ImGui::SetCursorScreenPos(axesTopLeft);
+    ui::SetCursorScreenPos(axesTopLeft);
     edited = axes.draw(params.camera) || edited;
 
     Vec2 const cameraButtonsTopLeft = axesTopLeft + Vec2{0.0f, axesDims.y};
-    ImGui::SetCursorScreenPos(cameraButtonsTopLeft);
+    ui::SetCursorScreenPos(cameraButtonsTopLeft);
     edited = DrawCameraControlButtons(
         params,
         drawlist,
@@ -1230,7 +1230,7 @@ bool osc::BeginToolbar(CStringView label, std::optional<Vec2> padding)
         ui::PushStyleVar(ImGuiStyleVar_WindowPadding, *padding);
     }
 
-    float const height = ImGui::GetFrameHeight() + 2.0f*ImGui::GetStyle().WindowPadding.y;
+    float const height = ui::GetFrameHeight() + 2.0f*ui::GetStyle().WindowPadding.y;
     ImGuiWindowFlags const flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
     bool open = ui::BeginMainViewportTopBar(label, height, flags);
     if (padding)
@@ -1259,7 +1259,7 @@ void osc::DrawOpenModelButtonWithRecentFilesDropdown(
     }
     ui::DrawTooltipIfItemHovered("Open Model", "Opens an existing osim file in a new tab");
     ui::SameLine();
-    ui::PushStyleVar(ImGuiStyleVar_FramePadding, {1.0f, ImGui::GetStyle().FramePadding.y});
+    ui::PushStyleVar(ImGuiStyleVar_FramePadding, {1.0f, ui::GetStyle().FramePadding.y});
     ui::Button(ICON_FA_CARET_DOWN);
     ui::DrawTooltipIfItemHovered("Open Recent File", "Opens a recently-opened osim file in a new tab");
     ui::PopStyleVar();
@@ -1273,7 +1273,7 @@ void osc::DrawOpenModelButtonWithRecentFilesDropdown(
         for (RecentFile const& rf : *recentFiles)
         {
             ui::PushID(imguiID++);
-            if (ImGui::Selectable(rf.path.filename().string().c_str()))
+            if (ui::Selectable(rf.path.filename().string().c_str()))
             {
                 onUserClickedOpenOrSelectedFile(rf.path);
             }
@@ -1314,8 +1314,8 @@ void osc::DrawReloadModelButton(UndoableModelStatePair& model)
 {
     if (!HasInputFileName(model.getModel()))
     {
-        ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-        ui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f * ImGui::GetStyle().Alpha);
+        ui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+        ui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f * ui::GetStyle().Alpha);
     }
 
     if (ui::Button(ICON_FA_RECYCLE))
@@ -1325,7 +1325,7 @@ void osc::DrawReloadModelButton(UndoableModelStatePair& model)
 
     if (!HasInputFileName(model.getModel()))
     {
-        ImGui::PopItemFlag();
+        ui::PopItemFlag();
         ui::PopStyleVar();
     }
 
@@ -1338,9 +1338,9 @@ void osc::DrawUndoButton(UndoableModelStatePair& model)
     int styleVarsPushed = 0;
     if (!model.canUndo())
     {
-        ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+        ui::PushItemFlag(ImGuiItemFlags_Disabled, true);
         ++itemFlagsPushed;
-        ui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f * ImGui::GetStyle().Alpha);
+        ui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f * ui::GetStyle().Alpha);
         ++styleVarsPushed;
     }
 
@@ -1361,9 +1361,9 @@ void osc::DrawRedoButton(UndoableModelStatePair& model)
     int styleVarsPushed = 0;
     if (!model.canRedo())
     {
-        ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+        ui::PushItemFlag(ImGuiItemFlags_Disabled, true);
         ++itemFlagsPushed;
-        ui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f * ImGui::GetStyle().Alpha);
+        ui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f * ui::GetStyle().Alpha);
         ++styleVarsPushed;
     }
 
@@ -1445,8 +1445,8 @@ void osc::DrawSceneScaleFactorEditorControls(UndoableModelStatePair& model)
 
     {
         float scaleFactor = model.getFixupScaleFactor();
-        ImGui::SetNextItemWidth(ImGui::CalcTextSize("0.00000").x);
-        if (ImGui::InputFloat("##scaleinput", &scaleFactor))
+        ui::SetNextItemWidth(ui::CalcTextSize("0.00000").x);
+        if (ui::InputFloat("##scaleinput", &scaleFactor))
         {
             ActionSetModelSceneScaleFactorTo(model, scaleFactor);
         }

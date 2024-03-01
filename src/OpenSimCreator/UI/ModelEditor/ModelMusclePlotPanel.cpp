@@ -1565,7 +1565,7 @@ namespace
 
             drawPlotTitle(coord, plotTitle);  // draw a custom title bar
             ImPlot::PushStyleVar(ImPlotStyleVar_FitPadding, {0.025f, 0.05f});
-            if (ImPlot::BeginPlot(plotTitle.c_str(), ImGui::GetContentRegionAvail(), m_PlotFlags)) {
+            if (ImPlot::BeginPlot(plotTitle.c_str(), ui::GetContentRegionAvail(), m_PlotFlags)) {
                 PlotParameters const& plotParams = getShared().getPlotParams();
 
                 ImPlot::SetupLegend(
@@ -1624,78 +1624,78 @@ namespace
             // parameters visually (#397)
 
             std::string muscleName = Ellipsis(getShared().getPlotParams().getMusclePath().getComponentName(), 15);
-            float muscleNameWidth = ImGui::CalcTextSize(muscleName.c_str()).x + 2.0f*ImGui::GetStyle().FramePadding.x;
+            float muscleNameWidth = ui::CalcTextSize(muscleName.c_str()).x + 2.0f*ui::GetStyle().FramePadding.x;
             std::string outputName = Ellipsis(getShared().getPlotParams().getPlottedOutput().getName(), 15);
-            float outputNameWidth = ImGui::CalcTextSize(outputName.c_str()).x + 2.0f*ImGui::GetStyle().FramePadding.x;
+            float outputNameWidth = ui::CalcTextSize(outputName.c_str()).x + 2.0f*ui::GetStyle().FramePadding.x;
             std::string coordName = Ellipsis(getShared().getPlotParams().getCoordinatePath().getComponentName(), 15);
-            float coordNameWidth = ImGui::CalcTextSize(coordName.c_str()).x + 2.0f*ImGui::GetStyle().FramePadding.x;
+            float coordNameWidth = ui::CalcTextSize(coordName.c_str()).x + 2.0f*ui::GetStyle().FramePadding.x;
 
             float totalWidth =
                 muscleNameWidth +
-                ImGui::CalcTextSize("'s").x +
-                ImGui::GetStyle().ItemSpacing.x +
+                ui::CalcTextSize("'s").x +
+                ui::GetStyle().ItemSpacing.x +
                 outputNameWidth +
-                ImGui::GetStyle().ItemSpacing.x +
-                ImGui::CalcTextSize("vs.").x +
-                ImGui::GetStyle().ItemSpacing.x +
+                ui::GetStyle().ItemSpacing.x +
+                ui::CalcTextSize("vs.").x +
+                ui::GetStyle().ItemSpacing.x +
                 coordNameWidth +
-                ImGui::GetStyle().ItemSpacing.x +
-                ImGui::GetStyle().FramePadding.x +
-                ImGui::CalcTextSize(ICON_FA_BARS " Options").x +
-                ImGui::GetStyle().FramePadding.x;
+                ui::GetStyle().ItemSpacing.x +
+                ui::GetStyle().FramePadding.x +
+                ui::CalcTextSize(ICON_FA_BARS " Options").x +
+                ui::GetStyle().FramePadding.x;
 
-            float cursorStart = 0.5f*(ImGui::GetContentRegionAvail().x - totalWidth);
-            ImGui::SetCursorPosX(cursorStart);
+            float cursorStart = 0.5f*(ui::GetContentRegionAvail().x - totalWidth);
+            ui::SetCursorPosX(cursorStart);
 
-            ImGui::SetNextItemWidth(muscleNameWidth);
-            if (ImGui::BeginCombo("##musclename", muscleName.c_str(), ImGuiComboFlags_NoArrowButton))
+            ui::SetNextItemWidth(muscleNameWidth);
+            if (ui::BeginCombo("##musclename", muscleName.c_str(), ImGuiComboFlags_NoArrowButton))
             {
                 auto const* current = FindComponent<OpenSim::Muscle>(getShared().getModel().getModel(), getShared().getPlotParams().getMusclePath());
                 for (OpenSim::Muscle const& musc : getShared().getModel().getModel().getComponentList<OpenSim::Muscle>())
                 {
                     bool selected = &musc == current;
-                    if (ImGui::Selectable(musc.getName().c_str(), &selected))
+                    if (ui::Selectable(musc.getName().c_str(), &selected))
                     {
                         updShared().updPlotParams().setMusclePath(musc.getAbsolutePath());
                     }
                 }
-                ImGui::EndCombo();
+                ui::EndCombo();
             }
 
             ui::SameLine();
-            ImGui::SetCursorPosX(ImGui::GetCursorPosX() - ImGui::GetStyle().ItemSpacing.x);
+            ui::SetCursorPosX(ui::GetCursorPosX() - ui::GetStyle().ItemSpacing.x);
             ui::Text("'s");
             ui::SameLine();
-            ImGui::SetNextItemWidth(outputNameWidth);
-            if (ImGui::BeginCombo("##outputname", outputName.c_str(), ImGuiComboFlags_NoArrowButton))
+            ui::SetNextItemWidth(outputNameWidth);
+            if (ui::BeginCombo("##outputname", outputName.c_str(), ImGuiComboFlags_NoArrowButton))
             {
                 PlottableOutput current = getShared().getPlotParams().getPlottedOutput();
                 for (PlottableOutput const& output : getShared().availableOutputs())
                 {
                     bool selected = output == current;
-                    if (ImGui::Selectable(output.getName().c_str(), &selected))
+                    if (ui::Selectable(output.getName().c_str(), &selected))
                     {
                         updShared().updPlotParams().setPlottedOutput(output);
                     }
                 }
-                ImGui::EndCombo();
+                ui::EndCombo();
             }
             ui::SameLine();
             ui::TextUnformatted("vs.");
             ui::SameLine();
-            ImGui::SetNextItemWidth(coordNameWidth);
-            if (ImGui::BeginCombo("##coordname", coordName.c_str(), ImGuiComboFlags_NoArrowButton))
+            ui::SetNextItemWidth(coordNameWidth);
+            if (ui::BeginCombo("##coordname", coordName.c_str(), ImGuiComboFlags_NoArrowButton))
             {
                 auto const* current = FindComponent<OpenSim::Coordinate>(getShared().getModel().getModel(), getShared().getPlotParams().getCoordinatePath());
                 for (OpenSim::Coordinate const& c : getShared().getModel().getModel().getComponentList<OpenSim::Coordinate>())
                 {
                     bool selected = &c == current;
-                    if (ImGui::Selectable(c.getName().c_str(), &selected))
+                    if (ui::Selectable(c.getName().c_str(), &selected))
                     {
                         updShared().updPlotParams().setCoordinatePath(GetAbsolutePath(c));
                     }
                 }
-                ImGui::EndCombo();
+                ui::EndCombo();
             }
             ui::SameLine();
 
@@ -1912,7 +1912,7 @@ namespace
             // then "scrub" through the output in the model
             //
             // this is handy for users to visually see how the independent variable affects the model
-            if (maybeMouseX && ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
+            if (maybeMouseX && ui::IsMouseDown(ImGuiMouseButton_Left)) {
                 if (coord.getDefaultLocked()) {
                     ui::DrawTooltip("scrubbing disabled", "you cannot scrub this plot because the coordinate is locked");
                 }
@@ -1924,7 +1924,7 @@ namespace
 
             // when the user stops dragging their left-mouse around, commit the scrubbed-to
             // coordinate to model storage
-            if (maybeMouseX && ImGui::IsMouseReleased(ImGuiMouseButton_Left)) {
+            if (maybeMouseX && ui::IsMouseReleased(ImGuiMouseButton_Left)) {
                 if (coord.getDefaultLocked()) {
                     ui::DrawTooltip("scrubbing disabled", "you cannot scrub this plot because the coordinate is locked");
                 }
@@ -1991,7 +1991,7 @@ namespace
         void drawMaxDatapointsIntInput()
         {
             int currentDataPoints = getShared().getNumRequestedDatapoints();
-            if (ImGui::InputInt("num data points", &currentDataPoints, 1, 1024, ImGuiInputTextFlags_EnterReturnsTrue)) {
+            if (ui::InputInt("num data points", &currentDataPoints, 1, 1024, ImGuiInputTextFlags_EnterReturnsTrue)) {
                 if (currentDataPoints >= 0) {
                     updShared().setNumRequestedDataPoints(currentDataPoints);
                 }
@@ -2002,7 +2002,7 @@ namespace
         void drawMaxHistoryEntriesIntInput()
         {
             int maxHistoryEntries = m_Lines.getMaxHistoryEntries();
-            if (ImGui::InputInt("max history size", &maxHistoryEntries, 1, 100, ImGuiInputTextFlags_EnterReturnsTrue)) {
+            if (ui::InputInt("max history size", &maxHistoryEntries, 1, 100, ImGuiInputTextFlags_EnterReturnsTrue)) {
                 if (maxHistoryEntries >= 0) {
                     m_Lines.setMaxHistoryEntries(maxHistoryEntries);
                 }
@@ -2041,7 +2041,7 @@ namespace
             {
                 static_assert(std::is_same_v<decltype(m_PlotFlags), int>);
                 auto f = static_cast<unsigned int>(m_PlotFlags);
-                if (ImGui::CheckboxFlags("Hide", &f, ImPlotFlags_NoLegend)) {
+                if (ui::CheckboxFlags("Hide", &f, ImPlotFlags_NoLegend)) {
                     m_PlotFlags = static_cast<int>(f);
                 }
             }
@@ -2050,12 +2050,12 @@ namespace
             {
                 static_assert(std::is_same_v<decltype(m_LegendFlags), int>);
                 auto f = static_cast<unsigned int>(m_LegendFlags);
-                if (ImGui::CheckboxFlags("Outside", &f, ImPlotLegendFlags_Outside)) {
+                if (ui::CheckboxFlags("Outside", &f, ImPlotLegendFlags_Outside)) {
                     m_LegendFlags = static_cast<int>(f);
                 }
             }
 
-            const float s = ImGui::GetFrameHeight();
+            const float s = ui::GetFrameHeight();
             ImVec2 const dims{1.5f * s, s};
 
             ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(2, 2));
@@ -2063,7 +2063,7 @@ namespace
             if (ui::Button("N", dims))          { m_LegendLocation = ImPlotLocation_North; }     ui::SameLine();
             if (ui::Button("NE", dims))         { m_LegendLocation = ImPlotLocation_NorthEast; }
             if (ui::Button("W", dims))          { m_LegendLocation = ImPlotLocation_West; }      ui::SameLine();
-            if (ImGui::InvisibleButton("C", dims)) { m_LegendLocation = ImPlotLocation_Center; }    ui::SameLine();
+            if (ui::InvisibleButton("C", dims)) { m_LegendLocation = ImPlotLocation_Center; }    ui::SameLine();
             if (ui::Button("E", dims))          { m_LegendLocation = ImPlotLocation_East; }
             if (ui::Button("SW", dims))         { m_LegendLocation = ImPlotLocation_SouthWest; } ui::SameLine();
             if (ui::Button("S", dims))          { m_LegendLocation = ImPlotLocation_South; }     ui::SameLine();
@@ -2156,14 +2156,14 @@ namespace
 
             ui::Text("select coordinate:");
 
-            ImGui::BeginChild("MomentArmPlotCoordinateSelection");
+            ui::BeginChild("MomentArmPlotCoordinateSelection");
             for (OpenSim::Coordinate const* coord : coordinates) {
-                if (ImGui::Selectable(coord->getName().c_str())) {
+                if (ui::Selectable(coord->getName().c_str())) {
                     updShared().updPlotParams().setCoordinatePath(GetAbsolutePath(*coord));
                     rv = std::make_unique<ShowingPlotState>(updShared());
                 }
             }
-            ImGui::EndChild();
+            ui::EndChild();
 
             return rv;
         }
@@ -2200,14 +2200,14 @@ namespace
                 ui::TextDisabled("(the model contains no muscles?)");
             }
             else {
-                ImGui::BeginChild("MomentArmPlotMuscleSelection");
+                ui::BeginChild("MomentArmPlotMuscleSelection");
                 for (OpenSim::Muscle const* musc : muscles) {
-                    if (ImGui::Selectable(musc->getName().c_str())) {
+                    if (ui::Selectable(musc->getName().c_str())) {
                         updShared().updPlotParams().setMusclePath(GetAbsolutePath(*musc));
                         rv = std::make_unique<PickCoordinateState>(updShared());
                     }
                 }
-                ImGui::EndChild();
+                ui::EndChild();
             }
 
             return rv;
@@ -2275,7 +2275,7 @@ private:
     // currently active state (this class controls a state machine)
     std::unique_ptr<MusclePlotState> m_ActiveState;
 
-    // name of the panel, as shown in the UI (via ImGui::Begin)
+    // name of the panel, as shown in the UI (via ui::Begin)
     std::string m_PanelName;
 
     // if the panel is currently open or not

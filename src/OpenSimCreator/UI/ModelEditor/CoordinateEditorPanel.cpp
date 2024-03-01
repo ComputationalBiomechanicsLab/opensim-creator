@@ -50,8 +50,8 @@ private:
         if (coordPtrs.empty())
         {
             CStringView const msg = "(there are no coordinates in the model)";
-            float const w = ImGui::CalcTextSize(msg.c_str()).x;
-            ImGui::SetCursorPosX(0.5f * (ImGui::GetContentRegionAvail().x - w));  // center align
+            float const w = ui::CalcTextSize(msg.c_str()).x;
+            ui::SetCursorPosX(0.5f * (ui::GetContentRegionAvail().x - w));  // center align
             ui::TextDisabled(msg);
             return;
         }
@@ -69,10 +69,10 @@ private:
             ui::TableSetupColumn("Name");
             ui::TableSetupColumn("Value", ImGuiTableColumnFlags_NoSort, 1.65f);
             ui::TableSetupColumn("Speed", ImGuiTableColumnFlags_NoSort, 0.5f);
-            ImGui::TableSetupScrollFreeze(0, 1);
-            ImGui::TableHeadersRow();
+            ui::TableSetupScrollFreeze(0, 1);
+            ui::TableHeadersRow();
 
-            if (ImGuiTableSortSpecs* p = ImGui::TableGetSortSpecs(); p && p->SpecsDirty)
+            if (ImGuiTableSortSpecs* p = ui::TableGetSortSpecs(); p && p->SpecsDirty)
             {
                 std::span<ImGuiTableColumnSortSpecs const> specs(p->Specs, p->SpecsCount);
 
@@ -117,14 +117,14 @@ private:
 
     void drawRow(OpenSim::Coordinate const& c)
     {
-        ImGui::TableNextRow();
+        ui::TableNextRow();
 
         int column = 0;
-        ImGui::TableSetColumnIndex(column++);
+        ui::TableSetColumnIndex(column++);
         drawNameCell(c);
-        ImGui::TableSetColumnIndex(column++);
+        ui::TableSetColumnIndex(column++);
         drawDataCell(c);
-        ImGui::TableSetColumnIndex(column++);
+        ui::TableSetColumnIndex(column++);
         drawSpeedCell(c);
     }
 
@@ -143,9 +143,9 @@ private:
         }
 
         ui::TextUnformatted(c.getName());
-        ImGui::PopStyleColor(std::exchange(stylesPushed, 0));
+        ui::PopStyleColor(std::exchange(stylesPushed, 0));
 
-        if (ImGui::IsItemHovered())
+        if (ui::IsItemHovered())
         {
             m_Model->setHovered(&c);
 
@@ -156,11 +156,11 @@ private:
             ui::DrawTooltip(c.getName(), ss.str());
         }
 
-        if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+        if (ui::IsItemClicked(ImGuiMouseButton_Left))
         {
             m_Model->setSelected(&c);
         }
-        else if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+        else if (ui::IsItemClicked(ImGuiMouseButton_Right))
         {
             auto popup = std::make_unique<ComponentContextMenu>(
                 "##componentcontextmenu",
@@ -183,19 +183,19 @@ private:
 
     void drawDataCellLockButton(OpenSim::Coordinate const& c)
     {
-        ImGui::PushStyleColor(ImGuiCol_Button, {0.0f, 0.0f, 0.0f, 0.0f});
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, {0.0f, 0.0f, 0.0f, 0.0f});
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, {0.0f, 0.0f, 0.0f, 0.0f});
-        ui::PushStyleVar(ImGuiStyleVar_FramePadding, {0.0f, ImGui::GetStyle().FramePadding.y});
+        ui::PushStyleColor(ImGuiCol_Button, Color::clear());
+        ui::PushStyleColor(ImGuiCol_ButtonActive, Color::clear());
+        ui::PushStyleColor(ImGuiCol_ButtonHovered, Color::clear());
+        ui::PushStyleVar(ImGuiStyleVar_FramePadding, {0.0f, ui::GetStyle().FramePadding.y});
         if (ui::Button(c.getLocked(m_Model->getState()) ? ICON_FA_LOCK : ICON_FA_UNLOCK))
         {
             bool newValue = !c.getLocked(m_Model->getState());
             ActionSetCoordinateLockedAndSave(*m_Model, c, newValue);
         }
         ui::PopStyleVar();
-        ImGui::PopStyleColor();
-        ImGui::PopStyleColor();
-        ImGui::PopStyleColor();
+        ui::PopStyleColor();
+        ui::PopStyleColor();
+        ui::PopStyleColor();
         ui::DrawTooltipIfItemHovered("Toggle Coordinate Lock", "Lock/unlock the coordinate's value.\n\nLocking a coordinate indicates whether the coordinate's value should be constrained to this value during the simulation.");
     }
 
@@ -203,7 +203,7 @@ private:
     {
         bool const coordinateLocked = c.getLocked(m_Model->getState());
 
-        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+        ui::SetNextItemWidth(ui::GetContentRegionAvail().x);
 
         float minValue = ConvertCoordValueToDisplayValue(c, c.getRangeMin());
         float maxValue = ConvertCoordValueToDisplayValue(c, c.getRangeMax());
@@ -236,7 +236,7 @@ private:
     {
         float displayedSpeed = ConvertCoordValueToDisplayValue(c, c.getSpeedValue(m_Model->getState()));
 
-        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+        ui::SetNextItemWidth(ui::GetContentRegionAvail().x);
         if (ui::InputMetersFloat("##coordinatespeededitor", displayedSpeed))
         {
             double storedSpeed = ConvertCoordDisplayValueToStorageValue(c, displayedSpeed);

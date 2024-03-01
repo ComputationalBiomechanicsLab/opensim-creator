@@ -21,7 +21,7 @@ using namespace osc;
 namespace
 {
     struct AxesMetrics final {
-        float fontSize = ImGui::GetFontSize();
+        float fontSize = ui::GetFontSize();
         float linelen = 2.0f * fontSize;
         float circleRadius = 0.6f * fontSize;
         float edgeLen = 2.0f * (linelen + circleRadius);
@@ -40,7 +40,7 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
     auto const metrics = AxesMetrics{};
 
     // calculate widget screen-space metrics
-    Vec2 const topLeft = ImGui::GetCursorScreenPos();
+    Vec2 const topLeft = ui::GetCursorScreenPos();
     Rect const bounds = {topLeft, topLeft + metrics.dimensions};
     Vec2 const origin = centroid(bounds);
 
@@ -56,7 +56,7 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
 
     // draw each edge back-to-front
     bool edited = false;
-    ImDrawList& drawlist = *ImGui::GetWindowDrawList();
+    ImDrawList& drawlist = *ui::GetWindowDrawList();
     for (auto i : order) {
         // calc direction vector in screen space
         Vec2 view = Vec2{viewMtx * Vec4{}.with_element(i, 1.0f)};
@@ -70,15 +70,14 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
             Vec2 const end = origin + metrics.linelen*view;
             Circle const circ = {.origin = end, .radius = metrics.circleRadius};
             Rect const circleBounds = BoundingRectOf(circ);
-            ImRect const imCircleBounds = {circleBounds.p1, circleBounds.p2};
 
             auto const labels = std::to_array<CStringView>({ "X", "Y", "Z" });
-            auto const id = ImGui::GetID(labels[i].c_str());
-            ImGui::ItemSize(imCircleBounds);
-            if (ImGui::ItemAdd(imCircleBounds, id)) {
-                Vec2 const labelSize = ImGui::CalcTextSize(labels[i].c_str());
+            auto const id = ui::GetID(labels[i].c_str());
+            ui::ItemSize(circleBounds);
+            if (ui::ItemAdd(circleBounds, id)) {
+                Vec2 const labelSize = ui::CalcTextSize(labels[i].c_str());
 
-                bool const hovered = ImGui::ItemHoverable(imCircleBounds, id, ImGui::GetItemFlags());
+                bool const hovered = ui::ItemHoverable(circleBounds, id, ui::GetItemFlags());
                 ImU32 const color = ui::ToImU32(hovered ? Color::white() : baseColor);
                 ImU32 const textColor = ui::ToImU32(hovered ? Color::black() : Color::white());
 
@@ -98,13 +97,12 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
             Vec2 const end = origin - metrics.linelen*view;
             Circle const circ = {.origin = end, .radius = metrics.circleRadius};
             Rect const circleBounds = BoundingRectOf(circ);
-            ImRect const imCircleBounds = {circleBounds.p1, circleBounds.p2};
 
             auto const labels = std::to_array<CStringView>({ "-X", "-Y", "-Z" });
-            auto const id = ImGui::GetID(labels[i].c_str());
-            ImGui::ItemSize(imCircleBounds);
-            if (ImGui::ItemAdd(imCircleBounds, id)) {
-                bool const hovered = ImGui::ItemHoverable(imCircleBounds, id, ImGui::GetItemFlags());
+            auto const id = ui::GetID(labels[i].c_str());
+            ui::ItemSize(circleBounds);
+            if (ui::ItemAdd(circleBounds, id)) {
+                bool const hovered = ui::ItemHoverable(circleBounds, id, ui::GetItemFlags());
                 ImU32 const color = ui::ToImU32(hovered ? Color::white() : baseColor.withAlpha(0.3f));
 
                 drawlist.AddCircleFilled(circ.origin, circ.radius, color);

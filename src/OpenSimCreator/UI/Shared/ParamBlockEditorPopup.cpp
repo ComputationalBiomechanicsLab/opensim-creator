@@ -27,7 +27,7 @@ namespace
         //       see: #553
 
         auto fv = static_cast<float>(v);
-        if (ImGui::InputFloat("##", &fv, 0.0f, 0.0f, "%.9f"))
+        if (ui::InputFloat("##", &fv, 0.0f, 0.0f, "%.9f"))
         {
             b.setValue(idx, static_cast<double>(fv));
             return true;
@@ -40,7 +40,7 @@ namespace
 
     bool DrawEditor(ParamBlock& b, int idx, int v)
     {
-        if (ImGui::InputInt("##", &v))
+        if (ui::InputInt("##", &v))
         {
             b.setValue(idx, v);
             return true;

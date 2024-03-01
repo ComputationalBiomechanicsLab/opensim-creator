@@ -50,7 +50,7 @@ public:
             }
 
             // draw tooltip (if hovered)
-            if (ImGui::IsItemHovered())
+            if (ui::IsItemHovered())
             {
                 ui::DrawTooltip(
                     "Add an OpenSim::Body into the model",
@@ -90,7 +90,7 @@ private:
                     m_EditorAPI->pushPopup(std::move(popup));
                 }
 
-                if (ImGui::IsItemHovered())
+                if (ui::IsItemHovered())
                 {
                     ui::DrawTooltip(entry.name(), entry.description());
                 }
@@ -99,7 +99,7 @@ private:
             ui::EndMenu();
         }
 
-        if (ImGui::IsItemHovered())
+        if (ui::IsItemHovered())
         {
             std::stringstream ttTitle;
             ttTitle << "Add a " << registry.name() << " into the model";

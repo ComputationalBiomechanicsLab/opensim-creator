@@ -116,7 +116,7 @@ private:
             ui::PopStyleVar();
 
             Rect imageRect = drawScreenshot();
-            drawOverlays(*ImGui::GetWindowDrawList(), imageRect, c_UnselectedColor, c_SelectedColor);
+            drawOverlays(*ui::GetWindowDrawList(), imageRect, c_UnselectedColor, c_SelectedColor);
 
             ui::End();
         }
@@ -138,10 +138,10 @@ private:
     // returns screenspace rect of the screenshot within the UI
     Rect drawScreenshot()
     {
-        Vec2 const screenTopLeft = ImGui::GetCursorScreenPos();
-        Rect const windowRect = {screenTopLeft, screenTopLeft + Vec2{ImGui::GetContentRegionAvail()}};
+        Vec2 const screenTopLeft = ui::GetCursorScreenPos();
+        Rect const windowRect = {screenTopLeft, screenTopLeft + Vec2{ui::GetContentRegionAvail()}};
         Rect const imageRect = ShrinkToFit(windowRect, AspectRatio(m_Screenshot.image.getDimensions()));
-        ImGui::SetCursorScreenPos(imageRect.p1);
+        ui::SetCursorScreenPos(imageRect.p1);
         ui::DrawTextureAsImGuiImage(m_ImageTexture, dimensions(imageRect));
         return imageRect;
     }
@@ -153,7 +153,7 @@ private:
         Color const& selectedColor)
     {
         Vec2 const mousePos = ui::GetMousePos();
-        bool const leftClickReleased = ImGui::IsMouseReleased(ImGuiMouseButton_Left);
+        bool const leftClickReleased = ui::IsMouseReleased(ImGuiMouseButton_Left);
         Rect const imageSourceRect = {{0.0f, 0.0f}, m_Screenshot.image.getDimensions()};
 
         for (ScreenshotAnnotation const& annotation : m_Screenshot.annotations)
@@ -183,7 +183,7 @@ private:
             drawlist.AddRect(
                 annotationRectScreenSpace.p1,
                 annotationRectScreenSpace.p2,
-                ImGui::ColorConvertFloat4ToU32(color),
+                ui::ColorConvertFloat4ToU32(color),
                 3.0f,
                 0,
                 3.0f
@@ -215,7 +215,7 @@ private:
         Graphics::Blit(m_ImageTexture, *rt);
 
         // draw overlays to a local ImGui drawlist
-        ImDrawList drawlist{ImGui::GetDrawListSharedData()};
+        ImDrawList drawlist{ui::GetDrawListSharedData()};
         drawlist.Flags |= ImDrawListFlags_AntiAliasedLines;
         drawlist.AddDrawCmd();
         Color outlineColor = c_SelectedColor;

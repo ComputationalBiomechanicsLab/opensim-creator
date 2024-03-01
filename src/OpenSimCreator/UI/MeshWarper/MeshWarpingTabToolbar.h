@@ -53,7 +53,7 @@ namespace osc
             drawSaveLandmarksButton();
             ui::SameLine();
 
-            ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+            ui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
             ui::SameLine();
 
             // undo/redo-related stuff
@@ -62,14 +62,14 @@ namespace osc
             m_RedoButton.onDraw();
             ui::SameLine();
 
-            ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+            ui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
             ui::SameLine();
 
             // camera stuff
             drawCameraLockCheckbox();
             ui::SameLine();
 
-            ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+            ui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
             ui::SameLine();
         }
 

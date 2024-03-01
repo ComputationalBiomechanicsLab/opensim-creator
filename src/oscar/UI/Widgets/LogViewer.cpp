@@ -72,18 +72,18 @@ public:
             // draw level selector
             {
                 LogLevel currentLevel = logger->get_level();
-                ImGui::SetNextItemWidth(200.0f);
-                if (ImGui::BeginCombo("level", ToCStringView(currentLevel).c_str()))
+                ui::SetNextItemWidth(200.0f);
+                if (ui::BeginCombo("level", ToCStringView(currentLevel).c_str()))
                 {
                     for (LogLevel l = FirstLogLevel(); l <= LastLogLevel(); l = Next(l))
                     {
                         bool active = l == currentLevel;
-                        if (ImGui::Selectable(ToCStringView(l).c_str(), &active))
+                        if (ui::Selectable(ToCStringView(l).c_str(), &active))
                         {
                             logger->set_level(l);
                         }
                     }
-                    ImGui::EndCombo();
+                    ui::EndCombo();
                 }
             }
 
@@ -119,15 +119,15 @@ public:
         auto const& contentGuard = guardedContent.lock();
         for (LogMessage const& msg : *contentGuard)
         {
-            ImGui::PushStyleColor(ImGuiCol_Text, ::ToColor(msg.level));
+            ui::PushStyleColor(ImGuiCol_Text, ::ToColor(msg.level));
             ui::Text("[%s]", ToCStringView(msg.level).c_str());
-            ImGui::PopStyleColor();
+            ui::PopStyleColor();
             ui::SameLine();
             ui::TextWrapped(msg.payload);
 
             if (autoscroll)
             {
-                ImGui::SetScrollHereY();
+                ui::SetScrollHereY();
             }
         }
     }

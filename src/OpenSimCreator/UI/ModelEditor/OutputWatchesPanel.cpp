@@ -69,7 +69,7 @@ private:
         {
             ui::TableSetupColumn("Output", ImGuiTableColumnFlags_WidthStretch);
             ui::TableSetupColumn("Value");
-            ImGui::TableHeadersRow();
+            ui::TableHeadersRow();
 
             for (int outputIdx = 0; outputIdx < m_API->getNumUserOutputExtractors(); ++outputIdx)
             {
@@ -78,17 +78,17 @@ private:
 
                 ui::PushID(outputIdx);
 
-                ImGui::TableNextRow();
+                ui::TableNextRow();
 
-                ImGui::TableSetColumnIndex(column++);
-                if (ImGui::SmallButton(ICON_FA_TRASH))
+                ui::TableSetColumnIndex(column++);
+                if (ui::SmallButton(ICON_FA_TRASH))
                 {
                     m_API->removeUserOutputExtractor(outputIdx);
                 }
                 ui::SameLine();
                 ui::TextUnformatted(o.getName());
 
-                ImGui::TableSetColumnIndex(column++);
+                ui::TableSetColumnIndex(column++);
                 ui::TextUnformatted(o.getValueString(m_Model->getModel(), m_CachedReport.simulationReport));
 
                 ui::PopID();

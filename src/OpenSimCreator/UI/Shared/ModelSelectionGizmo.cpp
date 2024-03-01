@@ -554,7 +554,7 @@ namespace
         // else: it's a supported operation and the gizmo should be drawn
 
         // important: necessary for multi-viewport gizmos
-        // also important: don't use ImGui::GetID(), because it uses an ID stack and we might want to know if "isover" etc. is true outside of a window
+        // also important: don't use ui::GetID(), because it uses an ID stack and we might want to know if "isover" etc. is true outside of a window
         ImGuizmo::SetID(static_cast<int>(std::hash<void*>{}(gizmoID)));
         ScopeGuard const g{[]() { ImGuizmo::SetID(-1); }};
 
@@ -564,7 +564,7 @@ namespace
             dimensions(viewportRect).x,
             dimensions(viewportRect).y
         );
-        ImGuizmo::SetDrawlist(ImGui::GetWindowDrawList());
+        ImGuizmo::SetDrawlist(ui::GetWindowDrawList());
         ImGuizmo::AllowAxisFlip(false);
 
         // use rotation from the parent, translation from station

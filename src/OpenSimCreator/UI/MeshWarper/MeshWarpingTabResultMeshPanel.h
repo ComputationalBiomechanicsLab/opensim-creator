@@ -47,7 +47,7 @@ namespace osc
         void implDrawContent() final
         {
             // fill the entire available region with the render
-            Vec2 const dims = ImGui::GetContentRegionAvail();
+            Vec2 const dims = ui::GetContentRegionAvail();
 
             updateCamera();
 
@@ -89,7 +89,7 @@ namespace osc
         void drawOverlays(Rect const& renderRect)
         {
             // ImGui: set cursor to draw over the top-right of the render texture (with padding)
-            ImGui::SetCursorScreenPos(renderRect.p1 + m_OverlayPadding);
+            ui::SetCursorScreenPos(renderRect.p1 + m_OverlayPadding);
 
             drawInformationIcon();
             ui::SameLine();
@@ -107,7 +107,7 @@ namespace osc
         void drawInformationIcon()
         {
             ui::ButtonNoBg(ICON_FA_INFO_CIRCLE);
-            if (ImGui::IsItemHovered())
+            if (ui::IsItemHovered())
             {
                 ui::BeginTooltip();
 
@@ -126,16 +126,16 @@ namespace osc
                 ui::TableSetupColumn("Name");
                 ui::TableSetupColumn("Value");
 
-                ImGui::TableNextRow();
-                ImGui::TableSetColumnIndex(0);
+                ui::TableNextRow();
+                ui::TableSetColumnIndex(0);
                 ui::Text("# verts");
-                ImGui::TableSetColumnIndex(1);
+                ui::TableSetColumnIndex(1);
                 ui::Text("%zu", m_State->getResultMesh().getNumVerts());
 
-                ImGui::TableNextRow();
-                ImGui::TableSetColumnIndex(0);
+                ui::TableNextRow();
+                ui::TableSetColumnIndex(0);
                 ui::Text("# triangles");
-                ImGui::TableSetColumnIndex(1);
+                ui::TableSetColumnIndex(1);
                 ui::Text("%zu", m_State->getResultMesh().getNumIndices()/3);
 
                 ui::EndTable();
@@ -145,7 +145,7 @@ namespace osc
         // draws an export button that enables the user to export things from this input
         void drawExportButton()
         {
-            m_CursorXAtExportButton = ImGui::GetCursorPos().x;  // needed to align the blending factor slider
+            m_CursorXAtExportButton = ui::GetCursorPos().x;  // needed to align the blending factor slider
             ui::Button(ICON_FA_FILE_EXPORT " export" ICON_FA_CARET_DOWN);
             if (ui::BeginPopupContextItem("##exportcontextmenu", ImGuiPopupFlags_MouseButtonLeft))
             {
@@ -203,19 +203,19 @@ namespace osc
             ImGuiSliderFlags const flags = ImGuiSliderFlags_Logarithmic;
 
             CStringView const label = "landmark radius";
-            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(label.c_str()).x - ImGui::GetStyle().ItemInnerSpacing.x - m_State->overlayPadding.x);
-            ImGui::SliderFloat(label.c_str(), &m_LandmarkRadius, 0.0001f, 100.0f, "%.4f", flags);
+            ui::SetNextItemWidth(ui::GetContentRegionAvail().x - ui::CalcTextSize(label.c_str()).x - ui::GetStyle().ItemInnerSpacing.x - m_State->overlayPadding.x);
+            ui::SliderFloat(label.c_str(), &m_LandmarkRadius, 0.0001f, 100.0f, "%.4f", flags);
         }
 
         void drawBlendingFactorSlider()
         {
-            ImGui::SetCursorPosX(m_CursorXAtExportButton);  // align with "export" button in row above
+            ui::SetCursorPosX(m_CursorXAtExportButton);  // align with "export" button in row above
 
             CStringView const label = "blending factor  ";  // deliberate trailing spaces (for alignment with "landmark radius")
-            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(label.c_str()).x - ImGui::GetStyle().ItemInnerSpacing.x - m_OverlayPadding.x);
+            ui::SetNextItemWidth(ui::GetContentRegionAvail().x - ui::CalcTextSize(label.c_str()).x - ui::GetStyle().ItemInnerSpacing.x - m_OverlayPadding.x);
 
             float factor = m_State->getScratch().blendingFactor;
-            if (ImGui::SliderFloat(label.c_str(), &factor, 0.0f, 1.0f))
+            if (ui::SliderFloat(label.c_str(), &factor, 0.0f, 1.0f))
             {
                 ActionSetBlendFactorWithoutCommitting(m_State->updUndoable(), factor);
             }

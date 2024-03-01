@@ -217,7 +217,7 @@ private:
         ui::Dummy({0.0f, 3.0f});
 
         // draw content
-        ImGui::BeginChild("##componentnavigatorvieweritems", {0.0, 0.0}, ImGuiChildFlags_None, ImGuiWindowFlags_NoBackground);
+        ui::BeginChild("##componentnavigatorvieweritems", {0.0, 0.0}, ImGuiChildFlags_None, ImGuiWindowFlags_NoBackground);
 
         OpenSim::Component const* root = &m_Model->getModel();
         OpenSim::Component const* selection = m_Model->getSelected();
@@ -253,7 +253,7 @@ private:
         int imguiId = 0;
         bool const hasSearch = !m_CurrentSearch.empty();
 
-        float const unindentPerLevel = ImGui::GetTreeNodeToLabelSpacing() - 15.0f;
+        float const unindentPerLevel = ui::GetTreeNodeToLabelSpacing() - 15.0f;
 
         while (lookahead)
         {
@@ -309,8 +309,8 @@ private:
             // pop tree nodes down to the current depth
             while (imguiTreeDepth >= currentPath.sizei())
             {
-                ImGui::Indent(unindentPerLevel);
-                ImGui::TreePop();
+                ui::Indent(unindentPerLevel);
+                ui::TreePop();
                 --imguiTreeDepth;
             }
             OSC_ASSERT(imguiTreeDepth <= currentPath.sizei() - 1);
@@ -344,19 +344,19 @@ private:
             // auto-open in these cases
             if (searchHit || currentPath.sizei() == 1 || pathContains(selectionPath, cur))
             {
-                ImGui::SetNextItemOpen(true);
+                ui::SetNextItemOpen(true);
             }
 
             ui::PushID(imguiId);
-            if (ImGui::TreeNodeEx(cur->getName().c_str(), nodeFlags))
+            if (ui::TreeNodeEx(cur->getName().c_str(), nodeFlags))
             {
-                ImGui::Unindent(unindentPerLevel);
+                ui::Unindent(unindentPerLevel);
                 ++imguiTreeDepth;
             }
             ui::PopID();
-            ImGui::PopStyleColor(styles);
+            ui::PopStyleColor(styles);
 
-            if (ImGui::IsItemHovered())
+            if (ui::IsItemHovered())
             {
                 rv.type = ResponseType::HoverChanged;
                 rv.ptr = cur;
@@ -364,13 +364,13 @@ private:
                 ui::DrawTooltip(cur->getConcreteClassName());
             }
 
-            if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+            if (ui::IsItemClicked(ImGuiMouseButton_Left))
             {
                 rv.type = ResponseType::SelectionChanged;
                 rv.ptr = cur;
             }
 
-            if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+            if (ui::IsItemClicked(ImGuiMouseButton_Right))
             {
                 m_OnRightClick(GetAbsolutePath(*cur));
             }
@@ -379,11 +379,11 @@ private:
         // pop remaining dangling tree elements
         while (imguiTreeDepth-- > 0)
         {
-            ImGui::Indent(unindentPerLevel);
-            ImGui::TreePop();
+            ui::Indent(unindentPerLevel);
+            ui::TreePop();
         }
 
-        ImGui::EndChild();
+        ui::EndChild();
 
         return rv;
     }

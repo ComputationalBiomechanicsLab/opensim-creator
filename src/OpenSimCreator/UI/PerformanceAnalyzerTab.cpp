@@ -79,7 +79,7 @@ public:
 
         ui::Begin("Inputs");
 
-        ImGui::InputInt("parallelism", &m_Parallelism);
+        ui::InputInt("parallelism", &m_Parallelism);
         if (ui::Button("edit base params"))
         {
             m_ParamEditor.open();
@@ -100,7 +100,7 @@ public:
             ui::TableSetupColumn("Progress");
             ui::TableSetupColumn("Wall Time (sec)");
             ui::TableSetupColumn("NumStepsTaken");
-            ImGui::TableHeadersRow();
+            ui::TableHeadersRow();
 
             for (ForwardDynamicSimulation const& sim : m_Sims)
             {
@@ -114,15 +114,15 @@ public:
                 float t = m_WalltimeExtractor.getValueFloat(*sim.getModel(), reports.back());
                 float steps = m_StepsTakenExtractor.getValueFloat(*sim.getModel(), reports.back());
 
-                ImGui::TableNextRow();
+                ui::TableNextRow();
                 int column = 0;
-                ImGui::TableSetColumnIndex(column++);
+                ui::TableSetColumnIndex(column++);
                 ui::TextUnformatted(GetIntegratorMethodString(m));
-                ImGui::TableSetColumnIndex(column++);
-                ImGui::ProgressBar(sim.getProgress());
-                ImGui::TableSetColumnIndex(column++);
+                ui::TableSetColumnIndex(column++);
+                ui::ProgressBar(sim.getProgress());
+                ui::TableSetColumnIndex(column++);
                 ui::Text("%f", t);
-                ImGui::TableSetColumnIndex(column++);
+                ui::TableSetColumnIndex(column++);
                 ui::Text("%i", static_cast<int>(steps));
             }
 

@@ -44,7 +44,7 @@ void osc::mow::Toolbar::drawWarpModelButton()
         ui::EndDisabled();
     }
 
-    if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
+    if (ui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
         ui::BeginTooltip();
         ui::TooltipHeaderText("Warp Model");
         ui::TooltipDescriptionSpacer();
@@ -59,9 +59,9 @@ void osc::mow::Toolbar::drawWarpModelButton()
     }
 
     ui::SameLine();
-    ImGui::SetNextItemWidth(ImGui::CalcTextSize("should be roughly this long incl label").x);
+    ui::SetNextItemWidth(ui::CalcTextSize("should be roughly this long incl label").x);
     float blend = m_State->getWarpBlendingFactor();
-    if (ImGui::SliderFloat("blending", &blend, 0.0f, 1.0f)) {
+    if (ui::SliderFloat("blending", &blend, 0.0f, 1.0f)) {
         m_State->setWarpBlendingFactor(blend);
     }
 }

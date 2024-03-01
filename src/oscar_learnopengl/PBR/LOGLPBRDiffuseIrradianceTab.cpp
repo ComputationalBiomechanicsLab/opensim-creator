@@ -206,7 +206,7 @@ private:
     {
         if (ui::Begin("Controls")) {
             float ao = m_PBRMaterial.getFloat("uAO").value_or(1.0f);
-            if (ImGui::SliderFloat("ao", &ao, 0.0f, 1.0f)) {
+            if (ui::SliderFloat("ao", &ao, 0.0f, 1.0f)) {
                 m_PBRMaterial.setFloat("uAO", ao);
             }
         }

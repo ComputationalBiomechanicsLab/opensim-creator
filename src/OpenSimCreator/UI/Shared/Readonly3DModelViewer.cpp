@@ -69,7 +69,7 @@ public:
             m_CachedModelRenderer.autoFocusCamera(
                 rs,
                 m_Params,
-                AspectRatio(ImGui::GetContentRegionAvail())
+                AspectRatio(ui::GetContentRegionAvail())
             );
         }
 
@@ -87,14 +87,14 @@ public:
         m_CachedModelRenderer.onDraw(
             rs,
             m_Params,
-            ImGui::GetContentRegionAvail(),
+            ui::GetContentRegionAvail(),
             App::get().getCurrentAntiAliasingLevel()
         );
 
-        // blit texture as an ImGui::Image
+        // blit texture as a ui::Image
         ui::DrawTextureAsImGuiImage(
             m_CachedModelRenderer.updRenderTexture(),
-            ImGui::GetContentRegionAvail()
+            ui::GetContentRegionAvail()
         );
 
         // update current+retained hittest
@@ -188,7 +188,7 @@ private:
     // overlay-related data
     std::shared_ptr<IconCache> m_IconCache = App::singleton<IconCache>(
         App::resource_loader().withPrefix("icons/"),
-        ImGui::GetTextLineHeight()/128.0f
+        ui::GetTextLineHeight()/128.0f
     );
     GuiRuler m_Ruler;
 };

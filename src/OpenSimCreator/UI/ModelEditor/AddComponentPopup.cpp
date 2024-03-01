@@ -222,7 +222,7 @@ private:
         for (size_t i = 0; i < m_ProtoSockets.size(); ++i)
         {
             drawIthSocketEditor(i);
-            ui::Dummy({0.0f, 0.5f*ImGui::GetTextLineHeight()});
+            ui::Dummy({0.0f, 0.5f*ui::GetTextLineHeight()});
         }
     }
 
@@ -243,9 +243,9 @@ private:
         ui::PushID(static_cast<int>(i));
         ui::TextUnformatted(ICON_FA_SEARCH);
         ui::SameLine();
-        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+        ui::SetNextItemWidth(ui::GetContentRegionAvail().x);
         ui::InputString("##search", m_SocketSearchStrings[i]);
-        ImGui::BeginChild("##pfselector", {ImGui::GetContentRegionAvail().x, 128.0f});
+        ui::BeginChild("##pfselector", {ui::GetContentRegionAvail().x, 128.0f});
 
         // iterate through potential connectees in model and print connect-able options
         int innerID = 0;
@@ -267,7 +267,7 @@ private:
             bool selected = absPath == connectee;
 
             ui::PushID(innerID++);
-            if (ImGui::Selectable(c.getName().c_str(), selected))
+            if (ui::Selectable(c.getName().c_str(), selected))
             {
                 connectee = absPath;
             }
@@ -283,7 +283,7 @@ private:
             }
         }
 
-        ImGui::EndChild();
+        ui::EndChild();
         ui::PopID();
         ui::NextColumn();
         ui::Columns();
@@ -294,7 +294,7 @@ private:
         OpenSim::Model const& model = m_Uum->getModel();
 
         // show list of choices
-        ImGui::BeginChild("##pf_ppchoices", {ImGui::GetContentRegionAvail().x, 128.0f});
+        ui::BeginChild("##pf_ppchoices", {ui::GetContentRegionAvail().x, 128.0f});
 
         // choices
         for (OpenSim::Component const& c : model.getComponentList())
@@ -355,7 +355,7 @@ private:
                 continue;  // search failed
             }
 
-            if (ImGui::Selectable(c.getName().c_str()))
+            if (ui::Selectable(c.getName().c_str()))
             {
                 m_PathPoints.emplace_back(
                     GetAbsolutePath(*userChoice),
@@ -366,14 +366,14 @@ private:
             ui::DrawTooltipIfItemHovered(c.getName(), (GetAbsolutePathString(c) + " " + c.getConcreteClassName()));
         }
 
-        ImGui::EndChild();
+        ui::EndChild();
     }
 
     void drawPathPointEditorAlreadyChosenPoints()
     {
         OpenSim::Model const& model = m_Uum->getModel();
 
-        ImGui::BeginChild("##pf_pathpoints", {ImGui::GetContentRegionAvail().x, 128.0f});
+        ui::BeginChild("##pf_pathpoints", {ui::GetContentRegionAvail().x, 128.0f});
 
         std::optional<ptrdiff_t> maybeIndexToErase;
         for (ptrdiff_t i = 0; i < std::ssize(m_PathPoints); ++i)
@@ -421,7 +421,7 @@ private:
             ui::SameLine();
 
             ui::Text(m_PathPoints[i].userChoice.getComponentName());
-            if (ImGui::IsItemHovered())
+            if (ui::IsItemHovered())
             {
                 if (OpenSim::Component const* c = FindComponent(model, m_PathPoints[i].userChoice))
                 {
@@ -437,7 +437,7 @@ private:
             m_PathPoints.erase(m_PathPoints.begin() + *maybeIndexToErase);
         }
 
-        ImGui::EndChild();
+        ui::EndChild();
     }
 
     void drawPathPointEditor()

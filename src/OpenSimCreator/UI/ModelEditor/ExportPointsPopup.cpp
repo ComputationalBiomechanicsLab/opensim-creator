@@ -75,7 +75,7 @@ namespace
         ui::BeginDisabled();
         ui::TextWrapped(c_ExplanationText);
         ui::EndDisabled();
-        ImGui::PopStyleColor();
+        ui::PopStyleColor();
     }
 
     void DrawPointListElementHoverTooltip(
@@ -117,7 +117,7 @@ namespace
             }
         }
 
-        if (ImGui::IsItemHovered())
+        if (ui::IsItemHovered())
         {
             DrawPointListElementHoverTooltip(component, state);
         }
@@ -128,12 +128,12 @@ namespace
         OpenSim::Model const& model,
         SimTK::State const& state)
     {
-        auto color = ImGui::GetStyle().Colors[ImGuiCol_FrameBg];
+        auto color = ui::GetStyle().Colors[ImGuiCol_FrameBg];
         color.w *= 0.5f;
 
-        ImGui::PushStyleColor(ImGuiCol_FrameBg, color);
-        bool const showingListBox = ImGui::BeginListBox("##PointsList");
-        ImGui::PopStyleColor();
+        ui::PushStyleColor(ImGuiCol_FrameBg, color);
+        bool const showingListBox = ui::BeginListBox("##PointsList");
+        ui::PopStyleColor();
 
         if (showingListBox)
         {
@@ -147,7 +147,7 @@ namespace
                     ui::PopID();
                 }
             }
-            ImGui::EndListBox();
+            ui::EndListBox();
         }
     }
 
@@ -325,7 +325,7 @@ namespace
     void DrawOriginalFrameSelectable(FrameSelectorUiState& uiState)
     {
         bool const selected = uiState.maybeSelectedFrameAbsPath != std::nullopt;
-        if (ImGui::Selectable(c_OriginalFrameLabel.c_str(), selected))
+        if (ui::Selectable(c_OriginalFrameLabel.c_str(), selected))
         {
             uiState.maybeSelectedFrameAbsPath.reset();
         }
@@ -338,7 +338,7 @@ namespace
         std::string const absPath = GetAbsolutePathString(frame);
         bool const selected = uiState.maybeSelectedFrameAbsPath == absPath;
 
-        if (ImGui::Selectable(frame.getName().c_str(), selected))
+        if (ui::Selectable(frame.getName().c_str(), selected))
         {
             uiState.maybeSelectedFrameAbsPath = absPath;
         }
@@ -360,11 +360,11 @@ namespace
     void DrawFrameSelector(FrameSelectorUiState& uiState, OpenSim::Model const& model)
     {
         std::string const label = CalcComboLabel(uiState, model);
-        if (ImGui::BeginCombo("Express Points In", label.c_str()))
+        if (ui::BeginCombo("Express Points In", label.c_str()))
         {
             DrawOriginalFrameSelectable(uiState);
             DrawModelFrameSelectables(uiState, model);
-            ImGui::EndCombo();
+            ui::EndCombo();
         }
     }
 
@@ -568,7 +568,7 @@ private:
         OpenSim::Model const& model = m_Model->getModel();
         SimTK::State const& state = m_Model->getState();
 
-        float const sectionSpacing = 0.5f*ImGui::GetTextLineHeight();
+        float const sectionSpacing = 0.5f*ui::GetTextLineHeight();
 
         DrawExportPointsPopupDescriptionSection();
         ui::Dummy({0.0f, sectionSpacing});

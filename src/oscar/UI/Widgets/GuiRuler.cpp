@@ -27,21 +27,21 @@ void osc::GuiRuler::onDraw(
     }
 
     // users can exit measuring through these actions
-    if (ImGui::IsKeyDown(ImGuiKey_Escape) || ImGui::IsMouseReleased(ImGuiMouseButton_Right))
+    if (ui::IsKeyDown(ImGuiKey_Escape) || ui::IsMouseReleased(ImGuiMouseButton_Right))
     {
         stopMeasuring();
         return;
     }
 
     // users can "finish" the measurement through these actions
-    if (m_State == State::WaitingForSecondPoint && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+    if (m_State == State::WaitingForSecondPoint && ui::IsMouseReleased(ImGuiMouseButton_Left))
     {
         stopMeasuring();
         return;
     }
 
     Vec2 mouseLoc = ui::GetMousePos();
-    ImDrawList& dl = *ImGui::GetWindowDrawList();
+    ImDrawList& dl = *ui::GetWindowDrawList();
     ImU32 circleMousedOverNothingColor = ui::ToImU32(Color::red().withAlpha(0.6f));
     ImU32 circleColor = ui::ToImU32(Color::white().withAlpha(0.8f));
     ImU32 lineColor = circleColor;
@@ -52,7 +52,7 @@ void osc::GuiRuler::onDraw(
 
     auto drawTooltipWithBg = [&dl, &textBgColor, &textColor](Vec2 const& pos, CStringView tooltipText)
     {
-        Vec2 sz = ImGui::CalcTextSize(tooltipText.c_str());
+        Vec2 sz = ui::CalcTextSize(tooltipText.c_str());
         float bgPad = 5.0f;
         float edgeRounding = bgPad - 2.0f;
 
@@ -73,7 +73,7 @@ void osc::GuiRuler::onDraw(
             // mousing over something
             dl.AddCircleFilled(mouseLoc, circleRadius, circleColor);
 
-            if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+            if (ui::IsMouseReleased(ImGuiMouseButton_Left))
             {
                 m_State = State::WaitingForSecondPoint;
                 m_StartWorldPos = maybeMouseover->worldspaceLocation;

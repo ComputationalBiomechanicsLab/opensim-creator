@@ -398,7 +398,7 @@ private:
     {
         OSC_PERF("MainUIScreen/drawTabBar");
 
-        ui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ ImGui::GetStyle().FramePadding.x + 2.0f, ImGui::GetStyle().FramePadding.y + 2.0f });
+        ui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ ui::GetStyle().FramePadding.x + 2.0f, ui::GetStyle().FramePadding.y + 2.0f });
         ui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2{ 5.0f, 0.0f });
         ui::PushStyleVar(ImGuiStyleVar_TabRounding, 10.0f);
         ui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.0f);
@@ -406,7 +406,7 @@ private:
         {
             if (ui::BeginMenuBar())
             {
-                if (ImGui::BeginTabBar("##TabBar"))
+                if (ui::BeginTabBar("##TabBar"))
                 {
                     for (size_t i = 0; i < m_Tabs.size(); ++i)
                     {
@@ -436,7 +436,7 @@ private:
                         ui::PushID(m_Tabs[i].get());
                         bool active = true;
 
-                        if (ImGui::BeginTabItem(m_Tabs[i]->getName().c_str(), &active, flags))
+                        if (ui::BeginTabItem(m_Tabs[i]->getName().c_str(), &active, flags))
                         {
                             if (m_Tabs[i]->getID() != m_ActiveTabID)
                             {
@@ -460,7 +460,7 @@ private:
                                 return;
                             }
 
-                            ImGui::EndTabItem();
+                            ui::EndTabItem();
                         }
 
                         ui::PopID();
@@ -471,7 +471,7 @@ private:
                     }
 
                     // adding buttons to tab bars: https://github.com/ocornut/imgui/issues/3291
-                    ImGui::TabItemButton(ICON_FA_PLUS);
+                    ui::TabItemButton(ICON_FA_PLUS);
 
                     if (ui::BeginPopupContextItem("popup", ImGuiPopupFlags_MouseButtonLeft))
                     {
@@ -479,7 +479,7 @@ private:
                         ui::EndPopup();
                     }
 
-                    ImGui::EndTabBar();
+                    ui::EndTabBar();
                 }
                 ui::EndMenuBar();
             }

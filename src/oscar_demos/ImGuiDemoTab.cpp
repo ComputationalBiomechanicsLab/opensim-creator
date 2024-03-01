@@ -19,7 +19,7 @@ public:
 private:
     void implOnDraw() final
     {
-        ImGui::ShowDemoWindow();
+        ui::ShowDemoWindow();
     }
 };
 

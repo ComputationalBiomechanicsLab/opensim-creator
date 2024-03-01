@@ -143,10 +143,10 @@ namespace osc::mi
                 return std::move(ss).str();
             }(m_MaybeCurrentHover.Pos);
 
-            ImGui::BeginTooltip();
+            ui::BeginTooltip();
             ui::Text(pos);
             ui::TextDisabled("(left-click to assign as first point, right-click to assign as second point)");
-            ImGui::EndTooltip();
+            ui::EndTooltip();
         }
 
         // draw 2D overlay over the render, things like connection lines, dots, etc.
@@ -162,7 +162,7 @@ namespace osc::mi
 
             auto color = ui::ToImU32(Color::black());
 
-            ImDrawList* dl = ImGui::GetWindowDrawList();
+            ImDrawList* dl = ui::GetWindowDrawList();
             dl->AddCircleFilled(clickedScrPos, 5.0f, color);
 
             if (!m_MaybeCurrentHover) {
@@ -186,7 +186,7 @@ namespace osc::mi
             ImU32 color = ui::ToImU32(Color::white());
             Vec2 padding{10.0f, 10.0f};
             Vec2 pos = m_Shared->get3DSceneRect().p1 + padding;
-            ImGui::GetWindowDrawList()->AddText(pos, color, m_Options.header.c_str());
+            ui::GetWindowDrawList()->AddText(pos, color, m_Options.header.c_str());
         }
 
         // draw a user-clickable button for cancelling out of this choosing state
@@ -199,7 +199,7 @@ namespace osc::mi
             Vec2 const margin = {25.0f, 35.0f};
             Vec2 const buttonTopLeft = m_Shared->get3DSceneRect().p2 - (ui::CalcButtonSize(text) + margin);
 
-            ImGui::SetCursorScreenPos(buttonTopLeft);
+            ui::SetCursorScreenPos(buttonTopLeft);
             if (ui::Button(text.c_str()))
             {
                 requestPop();

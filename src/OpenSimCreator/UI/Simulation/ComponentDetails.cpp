@@ -89,7 +89,7 @@ ComponentDetails::Response osc::ComponentDetails::onDraw(
     }
 
     // properties
-    if (ImGui::CollapsingHeader("properties"))
+    if (ui::CollapsingHeader("properties"))
     {
         ui::Columns(2);
         for (int i = 0; i < c.getNumProperties(); ++i)
@@ -104,7 +104,7 @@ ComponentDetails::Response osc::ComponentDetails::onDraw(
     }
 
     // state variables
-    if (ImGui::CollapsingHeader("state variables"))
+    if (ui::CollapsingHeader("state variables"))
     {
         OpenSim::Array<std::string> names = c.getStateVariableNames();
         ui::Columns(2);
@@ -126,7 +126,7 @@ ComponentDetails::Response osc::ComponentDetails::onDraw(
     }
 
     // inputs
-    if (ImGui::CollapsingHeader("inputs"))
+    if (ui::CollapsingHeader("inputs"))
     {
         std::vector<std::string> input_names = c.getInputNames();
         for (std::string const& inputName : input_names)
@@ -136,7 +136,7 @@ ComponentDetails::Response osc::ComponentDetails::onDraw(
     }
 
     // sockets
-    if (ImGui::CollapsingHeader("sockets"))
+    if (ui::CollapsingHeader("sockets"))
     {
         std::vector<std::string> socknames = GetSocketNames(c);
         ui::Columns(2);
@@ -147,7 +147,7 @@ ComponentDetails::Response osc::ComponentDetails::onDraw(
 
             std::string const& cp = c.getSocket(sn).getConnecteePath();
             ui::Text(cp);
-            if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+            if (ui::IsItemClicked(ImGuiMouseButton_Right))
             {
                 rv.type = ResponseType::SelectionChanged;
                 rv.ptr = &c.getComponent(cp);

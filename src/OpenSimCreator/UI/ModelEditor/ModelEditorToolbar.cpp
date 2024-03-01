@@ -105,7 +105,7 @@ private:
 
     std::shared_ptr<IconCache> m_IconCache = App::singleton<IconCache>(
         App::resource_loader().withPrefix("icons/"),
-        ImGui::GetTextLineHeight()/128.0f
+        ui::GetTextLineHeight()/128.0f
     );
 };
 

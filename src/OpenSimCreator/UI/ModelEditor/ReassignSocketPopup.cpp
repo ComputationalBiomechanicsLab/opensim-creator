@@ -160,31 +160,31 @@ private:
 
         ui::Text("connect %s (%s) to:", socket->getName().c_str(), socket->getConnecteeTypeName().c_str());
 
-        ui::Dummy({0.0f, 0.1f * ImGui::GetTextLineHeight()});
+        ui::Dummy({0.0f, 0.1f * ui::GetTextLineHeight()});
         ui::Separator();
-        ui::Dummy({0.0f, 0.25f * ImGui::GetTextLineHeight()});
+        ui::Dummy({0.0f, 0.25f * ui::GetTextLineHeight()});
 
         DrawSearchBar(m_EditedParams.search);
 
         std::optional<OpenSim::ComponentPath> userSelection;
-        ImGui::BeginChild("##componentlist", ImVec2(512, 256), ImGuiChildFlags_Border, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_AlwaysVerticalScrollbar);
+        ui::BeginChild("##componentlist", ImVec2(512, 256), ImGuiChildFlags_Border, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_AlwaysVerticalScrollbar);
 
         int id = 0;  // care: necessary because multiple connectees may have the same name
         for (ConnecteeOption const& option : m_Options)
         {
             ui::PushID(id++);
-            if (ImGui::Selectable(option.name.c_str()))
+            if (ui::Selectable(option.name.c_str()))
             {
                 userSelection = option.absPath;
             }
             ui::DrawTooltipIfItemHovered(option.absPath.toString());
             ui::PopID();
         }
-        ImGui::EndChild();
+        ui::EndChild();
 
         if (!m_Error.empty())
         {
-            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+            ui::SetNextItemWidth(ui::GetContentRegionAvail().x);
             ui::TextWrapped(m_Error);
         }
 

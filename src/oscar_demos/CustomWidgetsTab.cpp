@@ -14,8 +14,8 @@ namespace
 
     void WidgetTitle(CStringView title, Vec2 pos)
     {
-        Vec2 const textTopLeft = pos + Vec2{ImGui::GetStyle().FramePadding};
-        ImGui::GetWindowDrawList()->AddText(textTopLeft, ImGui::GetColorU32(ImGuiCol_Text), title.c_str());
+        Vec2 const textTopLeft = pos + Vec2{ui::GetStyle().FramePadding};
+        ui::GetWindowDrawList()->AddText(textTopLeft, ui::GetColorU32(ImGuiCol_Text), title.c_str());
     }
 }
 
@@ -24,7 +24,7 @@ namespace
 {
     void DrawToggle(bool enabled, bool hovered, ImVec2 pos, ImVec2 size)
     {
-        ImDrawList& draw_list = *ImGui::GetWindowDrawList();
+        ImDrawList& draw_list = *ui::GetWindowDrawList();
 
         float const radius = size.y * 0.5f;
         float const rounding = size.y * 0.25f;
@@ -32,8 +32,8 @@ namespace
         bool const circular_grab = false;
 
         ImU32 const bgColor = hovered ?
-            ImGui::GetColorU32(enabled ? ImGuiCol_FrameBgActive : ImGuiCol_FrameBgHovered) :
-            ImGui::GetColorU32(enabled ? ImGuiCol_CheckMark : ImGuiCol_FrameBg);
+            ui::GetColorU32(enabled ? ImGuiCol_FrameBgActive : ImGuiCol_FrameBgHovered) :
+            ui::GetColorU32(enabled ? ImGuiCol_CheckMark : ImGuiCol_FrameBg);
 
         Vec2 const pmid{
             pos.x + radius + (enabled ? 1.0f : 0.0f) * (size.x - radius * 2),
@@ -45,24 +45,24 @@ namespace
         draw_list.AddRectFilled(smin, smax, bgColor, rounding);
 
         if (circular_grab) {
-            draw_list.AddCircleFilled(pmid, radius * 0.8f, ImGui::GetColorU32(ImGuiCol_SliderGrab));
+            draw_list.AddCircleFilled(pmid, radius * 0.8f, ui::GetColorU32(ImGuiCol_SliderGrab));
         }
         else {
             Vec2 const offs = {radius*0.8f, radius*0.8f};
-            draw_list.AddRectFilled(pmid - offs, pmid + offs, ImGui::GetColorU32(ImGuiCol_SliderGrab), rounding);
+            draw_list.AddRectFilled(pmid - offs, pmid + offs, ui::GetColorU32(ImGuiCol_SliderGrab), rounding);
         }
     }
 
     bool Toggle(CStringView label, bool* v)
     {
-        ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32_BLACK_TRANS);
+        ui::PushStyleColor(ImGuiCol_Button, IM_COL32_BLACK_TRANS);
 
-        ImGuiStyle const& style = ImGui::GetStyle();
+        ImGuiStyle const& style = ui::GetStyle();
 
-        float const titleHeight = ImGui::GetTextLineHeight();
+        float const titleHeight = ui::GetTextLineHeight();
 
-        ImVec2 const p = ImGui::GetCursorScreenPos();
-        ImVec2 const bb(ImGui::GetColumnWidth(), ImGui::GetFrameHeight());
+        ImVec2 const p = ui::GetCursorScreenPos();
+        ImVec2 const bb(ui::GetColumnWidth(), ui::GetFrameHeight());
         ui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0, 0));
         ui::PushID(label.c_str());
         bool const status = ui::Button("###toggle_button", bb);
@@ -73,8 +73,8 @@ namespace
 
         ui::PopID();
         ui::PopStyleVar();
-        ImVec2 const pMin = ImGui::GetItemRectMin();
-        ImVec2 const pMax = ImGui::GetItemRectMax();
+        ImVec2 const pMin = ui::GetItemRectMin();
+        ImVec2 const pMax = ui::GetItemRectMax();
 
         WidgetTitle(label, p);
 
@@ -84,9 +84,9 @@ namespace
             pMax.x - toggleSize.x - style.FramePadding.x,
             pMin.y + (titleHeight - toggleSize.y)/2.0f + style.FramePadding.y,
         };
-        DrawToggle(*v, ImGui::IsItemHovered(), togglePos, toggleSize);
+        DrawToggle(*v, ui::IsItemHovered(), togglePos, toggleSize);
 
-        ImGui::PopStyleColor();
+        ui::PopStyleColor();
 
         return status;
     }
@@ -101,7 +101,7 @@ private:
     void implOnDraw() final
     {
         ui::Begin("window");
-        ImGui::InputFloat("standardinput", &m_Value);
+        ui::InputFloat("standardinput", &m_Value);
         ui::CircularSliderFloat("custom slider", &m_Value, 15.0f, 5.0f);
         ui::Text("%f", m_Value);
         Toggle("custom toggle", &m_Toggle);

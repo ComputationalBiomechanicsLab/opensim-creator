@@ -248,7 +248,7 @@ public:
         }
         else if (outputType == OutputType::Float)
         {
-            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+            ui::SetNextItemWidth(ui::GetContentRegionAvail().x);
             drawFloatOutputPlot(sim);
         }
         else if (outputType == OutputType::String)
@@ -294,7 +294,7 @@ private:
         }
 
         // draw plot
-        float const plotWidth = ImGui::GetContentRegionAvail().x;
+        float const plotWidth = ui::GetContentRegionAvail().x;
         Vec2 plotTopLeft{};
         Vec2 plotBottomRight{};
 
@@ -346,7 +346,7 @@ private:
 
         float simScrubPct = static_cast<float>(static_cast<double>((simScrubTime - simStartTime)/(simEndTime - simStartTime)));
 
-        ImDrawList* drawlist = ImGui::GetWindowDrawList();
+        ImDrawList* drawlist = ui::GetWindowDrawList();
 
         // draw a vertical Y line showing the current scrub time over the plots
         {
@@ -356,7 +356,7 @@ private:
             drawlist->AddLine(p1, p2, currentTimeLineColor);
         }
 
-        if (ImGui::IsItemHovered())
+        if (ui::IsItemHovered())
         {
             Vec2 mp = ui::GetMousePos();
             Vec2 plotLoc = mp - plotTopLeft;
@@ -376,13 +376,13 @@ private:
                 if (0 <= step && static_cast<size_t>(step) < buf.size())
                 {
                     float y = buf[static_cast<size_t>(step)];
-                    ImGui::SetTooltip("(%.2fs, %.4f)", static_cast<float>(timeLoc.time_since_epoch().count()), y);
+                    ui::SetTooltip("(%.2fs, %.4f)", static_cast<float>(timeLoc.time_since_epoch().count()), y);
                 }
             }
 
             // if the user presses their left mouse while hovering over the plot,
             // change the current sim scrub time to match their press location
-            if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
+            if (ui::IsMouseDown(ImGuiMouseButton_Left))
             {
                 m_API->setSimulationScrubTime(timeLoc);
             }

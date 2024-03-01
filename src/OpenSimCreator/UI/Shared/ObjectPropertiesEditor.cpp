@@ -173,12 +173,12 @@ namespace
     // x/y/z to the user
     void DrawColoredDimensionHintVerticalLine(Color const& color)
     {
-        ImDrawList* const l = ImGui::GetWindowDrawList();
-        Vec2 const p = ImGui::GetCursorScreenPos();
-        float const h = ImGui::GetTextLineHeight() + 2.0f*ImGui::GetStyle().FramePadding.y + 2.0f*ImGui::GetStyle().FrameBorderSize;
+        ImDrawList* const l = ui::GetWindowDrawList();
+        Vec2 const p = ui::GetCursorScreenPos();
+        float const h = ui::GetTextLineHeight() + 2.0f*ui::GetStyle().FramePadding.y + 2.0f*ui::GetStyle().FrameBorderSize;
         Vec2 const dims = Vec2{4.0f, h};
         l->AddRectFilled(p, p + dims, ui::ToImU32(color));
-        ImGui::SetCursorScreenPos({p.x + 4.0f, p.y});
+        ui::SetCursorScreenPos({p.x + 4.0f, p.y});
     }
 
     // draws a context menu that the user can use to change the step interval of the +/- buttons
@@ -189,25 +189,25 @@ namespace
             ui::Text("Set Step Size");
             ui::SameLine();
             ui::DrawHelpMarker("Sets the decrement/increment of the + and - buttons. Can be handy for tweaking property values");
-            ui::Dummy({0.0f, 0.1f*ImGui::GetTextLineHeight()});
+            ui::Dummy({0.0f, 0.1f*ui::GetTextLineHeight()});
             ui::Separator();
-            ui::Dummy({0.0f, 0.2f*ImGui::GetTextLineHeight()});
+            ui::Dummy({0.0f, 0.2f*ui::GetTextLineHeight()});
 
             if (ui::BeginTable("CommonChoicesTable", 2, ImGuiTableFlags_SizingStretchProp))
             {
                 ui::TableSetupColumn("Type");
                 ui::TableSetupColumn("Options");
 
-                ImGui::TableNextRow();
-                ImGui::TableSetColumnIndex(0);
+                ui::TableNextRow();
+                ui::TableSetColumnIndex(0);
                 ui::Text("Custom");
-                ImGui::TableSetColumnIndex(1);
-                ImGui::InputFloat("##stepsizeinput", &stepSize, 0.0f, 0.0f, "%.6f");
+                ui::TableSetColumnIndex(1);
+                ui::InputFloat("##stepsizeinput", &stepSize, 0.0f, 0.0f, "%.6f");
 
-                ImGui::TableNextRow();
-                ImGui::TableSetColumnIndex(0);
+                ui::TableNextRow();
+                ui::TableSetColumnIndex(0);
                 ui::Text("Lengths");
-                ImGui::TableSetColumnIndex(1);
+                ui::TableSetColumnIndex(1);
                 if (ui::Button("10 cm"))
                 {
                     stepSize = 0.1f;
@@ -228,10 +228,10 @@ namespace
                     stepSize = 0.0001f;
                 }
 
-                ImGui::TableNextRow();
-                ImGui::TableSetColumnIndex(0);
+                ui::TableNextRow();
+                ui::TableSetColumnIndex(0);
                 ui::Text("Angles (Degrees)");
-                ImGui::TableSetColumnIndex(1);
+                ui::TableSetColumnIndex(1);
                 if (ui::Button("180"))
                 {
                     stepSize = 180.0f;
@@ -257,10 +257,10 @@ namespace
                     stepSize = 1.0f;
                 }
 
-                ImGui::TableNextRow();
-                ImGui::TableSetColumnIndex(0);
+                ui::TableNextRow();
+                ui::TableSetColumnIndex(0);
                 ui::Text("Angles (Radians)");
-                ImGui::TableSetColumnIndex(1);
+                ui::TableSetColumnIndex(1);
                 if (ui::Button("1 pi"))
                 {
                     stepSize = pi_v<float>;
@@ -286,10 +286,10 @@ namespace
                     stepSize = (1.0f/180.0f) * pi_v<float>;
                 }
 
-                ImGui::TableNextRow();
-                ImGui::TableSetColumnIndex(0);
+                ui::TableNextRow();
+                ui::TableSetColumnIndex(0);
                 ui::Text("Masses");
-                ImGui::TableSetColumnIndex(1);
+                ui::TableSetColumnIndex(1);
                 if (ui::Button("1 kg"))
                 {
                     stepSize = 1.0f;
@@ -336,7 +336,7 @@ namespace
         ScalarInputRv rv;
 
         ui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, {1.0f, 0.0f});
-        if (ImGui::InputScalar(label.c_str(), ImGuiDataType_Float, &value, &stepSize, nullptr, "%.6f"))
+        if (ui::InputScalar(label.c_str(), ImGuiDataType_Float, &value, &stepSize, nullptr, "%.6f"))
         {
             rv.wasEdited = true;
         }
@@ -552,7 +552,7 @@ namespace
             // care: optional properties have size==0, so perform a range check
             std::string value = idx < m_EditedProperty.size() ? m_EditedProperty.getValue(idx) : std::string{};
 
-            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+            ui::SetNextItemWidth(ui::GetContentRegionAvail().x);
             if (ui::InputString("##stringeditor", value))
             {
                 // update the edited property - don't rely on ImGui to remember edits
@@ -634,7 +634,7 @@ namespace
                 ui::SameLine();
             }
 
-            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+            ui::SetNextItemWidth(ui::GetContentRegionAvail().x);
 
             // draw an invisible vertical line, so that `double` properties are properly
             // aligned with `Vec3` properties (that have a non-invisible R/G/B line)
@@ -732,7 +732,7 @@ namespace
             bool value = idx < m_EditedProperty.size() ? m_EditedProperty.getValue(idx) : false;
             bool edited = false;
 
-            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+            ui::SetNextItemWidth(ui::GetContentRegionAvail().x);
             if (ui::Checkbox("##booleditor", &value))
             {
                 // update the edited property - don't rely on ImGui to remember edits
@@ -945,13 +945,13 @@ namespace
                 m_MaybeUserSelectedFrameAbsPath->getComponentName() :
                 std::string{defaultedLabel};
 
-            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            if (ImGui::BeginCombo("##reexpressioneditor", preview.c_str()))
+            ui::SetNextItemWidth(ui::GetContentRegionAvail().x);
+            if (ui::BeginCombo("##reexpressioneditor", preview.c_str()))
             {
                 ui::TextDisabled("Frame (editing)");
                 ui::SameLine();
                 ui::DrawHelpMarker("Note: this only affects the values that the quantities are edited in. It does not change the frame that the component is attached to. You can change the frame attachment by using the component's context menu: Socket > $FRAME > (edit button) > (select new frame)");
-                ui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
+                ui::Dummy({0.0f, 0.25f*ui::GetTextLineHeight()});
 
                 int imguiID = 0;
 
@@ -960,7 +960,7 @@ namespace
                     ui::Separator();
                     ui::PushID(imguiID++);
                     bool selected = !m_MaybeUserSelectedFrameAbsPath.has_value();
-                    if (ImGui::Selectable(defaultedLabel.c_str(), &selected))
+                    if (ui::Selectable(defaultedLabel.c_str(), &selected))
                     {
                         m_MaybeUserSelectedFrameAbsPath.reset();
                     }
@@ -975,14 +975,14 @@ namespace
 
                     ui::PushID(imguiID++);
                     bool selected = frameAbsPath == m_MaybeUserSelectedFrameAbsPath;
-                    if (ImGui::Selectable(frame.getName().c_str(), &selected))
+                    if (ui::Selectable(frame.getName().c_str(), &selected))
                     {
                         m_MaybeUserSelectedFrameAbsPath = frameAbsPath;
                     }
                     ui::PopID();
                 }
 
-                ImGui::EndCombo();
+                ui::EndCombo();
             }
         }
 
@@ -1036,7 +1036,7 @@ namespace
             ValueConverter const& valueConverter)
         {
             ui::PushID(i);
-            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+            ui::SetNextItemWidth(ui::GetContentRegionAvail().x);
 
             // draw dimension hint (color bar next to the input)
             DrawColoredDimensionHintVerticalLine(IthDimensionColor(i));
@@ -1163,7 +1163,7 @@ namespace
             {
                 ui::PushID(i);
 
-                ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+                ui::SetNextItemWidth(ui::GetContentRegionAvail().x);
                 if (ui::InputFloat3("##vec6editor", rawValue.data() + static_cast<ptrdiff_t>(3*i), "%.6f"))
                 {
                     m_EditedProperty.updValue(idx)[3*i + 0] = static_cast<double>(rawValue[3*i + 0]);
@@ -1253,8 +1253,8 @@ namespace
             int value = idx < m_EditedProperty.size() ? m_EditedProperty.getValue(idx) : 0;
             bool edited = false;
 
-            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            if (ImGui::InputInt("##inteditor", &value))
+            ui::SetNextItemWidth(ui::GetContentRegionAvail().x);
+            if (ui::InputInt("##inteditor", &value))
             {
                 // update the edited property - don't rely on ImGui to remember edits
                 m_EditedProperty.setValue(idx, value);
@@ -1343,9 +1343,9 @@ namespace
             bool shouldSave = false;
 
             Color color = ToColor(m_EditedProperty.getValue());
-            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+            ui::SetNextItemWidth(ui::GetContentRegionAvail().x);
 
-            if (ImGui::ColorEdit4("##coloreditor", value_ptr(color)))
+            if (ui::ColorEditRGBA("##coloreditor", color))
             {
                 SimTK::Vec3 newColor;
                 newColor[0] = static_cast<double>(color[0]);

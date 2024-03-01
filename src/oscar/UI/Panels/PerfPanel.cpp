@@ -36,7 +36,7 @@ private:
         ui::Columns(2);
         ui::TextUnformatted("FPS");
         ui::NextColumn();
-        ui::Text("%.0f", static_cast<double>(ImGui::GetIO().Framerate));
+        ui::Text("%.0f", static_cast<double>(ui::GetIO().Framerate));
         ui::NextColumn();
         ui::Columns();
 
@@ -79,7 +79,7 @@ private:
             ui::TableSetupColumn("Last Duration");
             ui::TableSetupColumn("Average Duration");
             ui::TableSetupColumn("Total Duration");
-            ImGui::TableHeadersRow();
+            ui::TableHeadersRow();
 
             for (PerfMeasurement const& pm : measurements)
             {
@@ -89,18 +89,18 @@ private:
                 }
 
                 int column = 0;
-                ImGui::TableNextRow();
-                ImGui::TableSetColumnIndex(column++);
+                ui::TableNextRow();
+                ui::TableSetColumnIndex(column++);
                 ui::TextUnformatted(pm.getLabel());
-                ImGui::TableSetColumnIndex(column++);
+                ui::TableSetColumnIndex(column++);
                 ui::Text("%s:%u", pm.getFilename().c_str(), pm.getLine());
-                ImGui::TableSetColumnIndex(column++);
+                ui::TableSetColumnIndex(column++);
                 ui::Text("%" PRId64, pm.getCallCount());
-                ImGui::TableSetColumnIndex(column++);
+                ui::TableSetColumnIndex(column++);
                 ui::Text("%ld us", static_cast<long>(std::chrono::duration_cast<std::chrono::microseconds>(pm.getLastDuration()).count()));
-                ImGui::TableSetColumnIndex(column++);
+                ui::TableSetColumnIndex(column++);
                 ui::Text("%ld us", static_cast<long>(std::chrono::duration_cast<std::chrono::microseconds>(pm.getAvgDuration()).count()));
-                ImGui::TableSetColumnIndex(column++);
+                ui::TableSetColumnIndex(column++);
                 ui::Text("%ld us", static_cast<long>(std::chrono::duration_cast<std::chrono::microseconds>(pm.getTotalDuration()).count()));
             }
 

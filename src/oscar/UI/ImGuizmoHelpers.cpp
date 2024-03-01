@@ -19,8 +19,8 @@ bool osc::DrawGizmoModeSelector(ImGuizmo::MODE& mode)
     bool rv = false;
     int currentMode = static_cast<int>(std::distance(std::begin(modes), std::find(std::begin(modes), std::end(modes), mode)));
     ui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
-    ImGui::SetNextItemWidth(ImGui::CalcTextSize(modeLabels[0]).x + 40.0f);
-    if (ImGui::Combo("##modeselect", &currentMode, modeLabels.data(), static_cast<int>(modeLabels.size())))
+    ui::SetNextItemWidth(ui::CalcTextSize(modeLabels[0]).x + 40.0f);
+    if (ui::Combo("##modeselect", &currentMode, modeLabels.data(), static_cast<int>(modeLabels.size())))
     {
         mode = modes.at(static_cast<size_t>(currentMode));
         rv = true;
@@ -61,7 +61,7 @@ bool osc::DrawGizmoOpSelector(
             }
         }
         ui::DrawTooltipIfItemHovered("Translate", "Make the 3D manipulation gizmos translate things (hotkey: G)");
-        ImGui::PopStyleColor(std::exchange(colorsPushed, 0));
+        ui::PopStyleColor(std::exchange(colorsPushed, 0));
         ui::SameLine();
     }
 
@@ -81,7 +81,7 @@ bool osc::DrawGizmoOpSelector(
             }
         }
         ui::DrawTooltipIfItemHovered("Rotate", "Make the 3D manipulation gizmos rotate things (hotkey: R)");
-        ImGui::PopStyleColor(std::exchange(colorsPushed, 0));
+        ui::PopStyleColor(std::exchange(colorsPushed, 0));
         ui::SameLine();
     }
 
@@ -101,7 +101,7 @@ bool osc::DrawGizmoOpSelector(
             }
         }
         ui::DrawTooltipIfItemHovered("Scale", "Make the 3D manipulation gizmos scale things (hotkey: S)");
-        ImGui::PopStyleColor(std::exchange(colorsPushed, 0));
+        ui::PopStyleColor(std::exchange(colorsPushed, 0));
         ui::SameLine();
     }
 

@@ -56,7 +56,7 @@ namespace osc::ui
     // returns the ImGui content region available in screenspace as a `Rect`
     Rect ContentRegionAvailScreenRect();
 
-    // draws a texutre as an ImGui::Image
+    // draws a texutre as a ui::Image
     //
     // assumes coords == [(0.0, 1.0), (1.0, 0.0)]
     void DrawTextureAsImGuiImage(
@@ -89,7 +89,7 @@ namespace osc::ui
         Vec2 size = {0.0f, 0.0f}
     );
 
-    // draws a texture using ImGui::ImageButton
+    // draws a texture using a ui::ImageButton
     bool ImageButton(
         CStringView,
         Texture2D const&,
@@ -148,8 +148,8 @@ namespace osc::ui
     bool IsDraggingWithAnyMouseButtonDown();
 
     // (lower-level tooltip methods: prefer using higher-level 'DrawTooltip(txt)' methods)
-    void BeginTooltip(std::optional<float> wrapWidth = std::nullopt);
-    void EndTooltip();
+    void BeginTooltip(float wrapWidth);
+    void EndTooltip(float wrapWidth);
     void TooltipHeaderText(CStringView);
     void TooltipDescriptionSpacer();
     void TooltipDescriptionText(CStringView);
@@ -166,7 +166,7 @@ namespace osc::ui
     // draws an overlay tooltip with a header and description
     void DrawTooltip(CStringView header, CStringView description = {});
 
-    // equivalent to `if (ImGui::IsItemHovered(flags)) DrawTooltip(header, description);`
+    // equivalent to `if (ui::IsItemHovered(flags)) DrawTooltip(header, description);`
     void DrawTooltipIfItemHovered(
         CStringView header,
         CStringView description = {},
@@ -179,14 +179,14 @@ namespace osc::ui
     // draw a help text marker `"(?)"` and display a tooltip when the user hovers over it
     void DrawHelpMarker(CStringView);
 
-    // draw an ImGui::InputText that manipulates a std::string
+    // draw a ui::InputText that manipulates a std::string
     bool InputString(
         CStringView label,
         std::string& editedString,
         ImGuiInputTextFlags flags = ImGuiInputTextFlags_None
     );
 
-    // draw an ImGui::InputFloat that manipulates in the scene scale (note: some users work with very very small sizes)
+    // draw a ui::InputFloat that manipulates in the scene scale (note: some users work with very very small sizes)
     bool InputMetersFloat(
         CStringView label,
         float& v,
@@ -195,14 +195,14 @@ namespace osc::ui
         ImGuiInputTextFlags flags = ImGuiInputTextFlags_None
     );
 
-    // draw an ImGui::InputFloat3 that manipulates in the scene scale (note: some users work with very very small sizes)
+    // draw a ui::InputFloat3 that manipulates in the scene scale (note: some users work with very very small sizes)
     bool InputMetersFloat3(
         CStringView label,
         Vec3&,
         ImGuiInputTextFlags flags = ImGuiInputTextFlags_None
     );
 
-    // draw an ImGui::SliderFloat that manipulates in the scene scale (note: some users work with very very small sizes)
+    // draw a ui::SliderFloat that manipulates in the scene scale (note: some users work with very very small sizes)
     bool SliderMetersFloat(
         CStringView label,
         float& v,
@@ -211,7 +211,7 @@ namespace osc::ui
         ImGuiSliderFlags flags = ImGuiInputTextFlags_None
     );
 
-    // draw an ImGui::InputFloat for masses (note: some users work with very very small masses)
+    // draw a ui::InputFloat for masses (note: some users work with very very small masses)
     bool InputKilogramFloat(
         CStringView label,
         float& v,
@@ -220,20 +220,20 @@ namespace osc::ui
         ImGuiInputTextFlags flags = ImGuiInputTextFlags_None
     );
 
-    // draw an ImGui::InputFloat that edits the given angular value in degrees
+    // draw a ui::InputFloat that edits the given angular value in degrees
     bool InputAngle(
         CStringView label,
         Radians& v
     );
 
-    // draw an ImGui::InputFloat3 that edits the given angular value in degrees
+    // draw a ui::InputFloat3 that edits the given angular value in degrees
     bool InputAngle3(
         CStringView label,
         Vec<3, Radians>&,
         CStringView format = "%.3f"
     );
 
-    // draw an ImGui::SliderFloat that edits the given angular value as degrees
+    // draw a ui::SliderFloat that edits the given angular value as degrees
     bool SliderAngle(
         CStringView label,
         Radians& v,
@@ -244,10 +244,6 @@ namespace osc::ui
     // convert a color to ImU32 (used by ImGui's drawlist)
     ImU32 ToImU32(Color const&);
     Color ToColor(ImU32);
-
-    // push an Color as an ImGui style color var (via ImGui::PushStyleColor())
-    void PushStyleColor(ImGuiCol, Color const&);
-    void PopStyleColor(int count = 1);
 
     // returns "minimal" window flags (i.e. no title bar, can't move the window - ideal for images etc.)
     ImGuiWindowFlags GetMinimalWindowFlags();
@@ -263,14 +259,14 @@ namespace osc::ui
     // begin a menu that's attached to the top of a viewport, end it with ui::End();
     bool BeginMainViewportTopBar(
         CStringView label,
-        float height = ImGui::GetFrameHeight(),
+        float height = ui::GetFrameHeight(),
         ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_MenuBar
     );
 
     // begin a menu that's attached to the bottom of a viewport, end it with ui::End();
     bool BeginMainViewportBottomBar(CStringView);
 
-    //  draw ImGui::Button, but centered on the current line
+    // draws a ui::Button, but centered on the current line
     bool ButtonCentered(CStringView);
 
     // draw text, but centered on the current window/line
@@ -279,7 +275,7 @@ namespace osc::ui
     // draw disabled text, but centered on the current window/line
     void TextDisabledAndCentered(CStringView);
 
-    // draw text that's centered in the current ImGui::Table column
+    // draw text that's centered in the current ui::Table column
     void TextColumnCentered(CStringView);
 
     // draw faded (muted) text

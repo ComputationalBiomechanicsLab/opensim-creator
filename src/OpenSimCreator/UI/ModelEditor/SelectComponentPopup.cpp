@@ -34,7 +34,7 @@ private:
 
         // iterate through each T in `root` and give the user the option to click it
         {
-            ImGui::BeginChild("first", ImVec2(256, 256), ImGuiChildFlags_Border, ImGuiWindowFlags_HorizontalScrollbar);
+            ui::BeginChild("first", ImVec2(256, 256), ImGuiChildFlags_Border, ImGuiWindowFlags_HorizontalScrollbar);
             for (OpenSim::Component const& c : m_Model->getModel().getComponentList())
             {
                 if (!m_Filter(c))
@@ -46,7 +46,7 @@ private:
                     selected = &c;
                 }
             }
-            ImGui::EndChild();
+            ui::EndChild();
         }
 
         if (selected)

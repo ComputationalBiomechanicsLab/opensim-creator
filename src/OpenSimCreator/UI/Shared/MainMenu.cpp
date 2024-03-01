@@ -55,7 +55,7 @@ void osc::MainMenuFileTab::onDraw(
 {
     // handle hotkeys enabled by just drawing the menu
     {
-        auto const& io = ImGui::GetIO();
+        auto const& io = ui::GetIO();
 
         bool mod = ui::IsCtrlOrSuperDown();
 
@@ -249,7 +249,7 @@ void osc::MainMenuAboutTab::onDraw()
 
         ui::TextUnformatted("FPS");
         ui::NextColumn();
-        ui::Text("%.0f", static_cast<double>(ImGui::GetIO().Framerate));
+        ui::Text("%.0f", static_cast<double>(ui::GetIO().Framerate));
         ui::NextColumn();
 
         ui::TextUnformatted("MSXAA");
@@ -260,17 +260,17 @@ void osc::MainMenuAboutTab::onDraw()
             AntiAliasingLevel const current = App::get().getCurrentAntiAliasingLevel();
             AntiAliasingLevel const max = App::get().getMaxAntiAliasingLevel();
 
-            if (ImGui::BeginCombo("##msxaa", to_string(current).c_str()))
+            if (ui::BeginCombo("##msxaa", to_string(current).c_str()))
             {
                 for (AntiAliasingLevel l = AntiAliasingLevel::min(); l <= max; ++l)
                 {
                     bool selected = l == current;
-                    if (ImGui::Selectable(to_string(l).c_str(), &selected))
+                    if (ui::Selectable(to_string(l).c_str(), &selected))
                     {
                         App::upd().setCurrentAntiAliasingLevel(l);
                     }
                 }
-                ImGui::EndCombo();
+                ui::EndCombo();
             }
         }
         ui::NextColumn();

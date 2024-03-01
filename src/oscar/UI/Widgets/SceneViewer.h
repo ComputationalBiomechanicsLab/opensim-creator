@@ -8,7 +8,7 @@ namespace osc { struct SceneRendererParams; }
 
 namespace osc
 {
-    // pumps scenes into a `BasicRenderer` and emits the output as an `ImGui::Image()`
+    // pumps scenes into a `BasicRenderer` and emits the output as a `ui::Image()`
     class SceneViewer final {
     public:
         SceneViewer();

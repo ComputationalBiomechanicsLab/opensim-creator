@@ -296,7 +296,7 @@ namespace osc::mi
             Vec3 const& child) const
         {
             // the line
-            ImGui::GetWindowDrawList()->AddLine(worldPosToScreenPos(parent), worldPosToScreenPos(child), color, c_ConnectionLineWidth);
+            ui::GetWindowDrawList()->AddLine(worldPosToScreenPos(parent), worldPosToScreenPos(child), color, c_ConnectionLineWidth);
 
             // the triangle
             drawConnectionLineTriangleAtMidpoint(color, parent, child);
@@ -419,7 +419,7 @@ namespace osc::mi
             ui::DrawTextureAsImGuiImage(m_SceneRenderer.updRenderTexture(), m_SceneRenderer.getDimensions());
 
             // handle hittesting, etc.
-            setIsRenderHovered(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup));
+            setIsRenderHovered(ui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup));
         }
 
         bool isRenderHovered() const
@@ -963,7 +963,7 @@ namespace osc::mi
             Vec2 const p2 = midpointScr - (triangleWidth/2.0f)*directionNormalScr;
             Vec2 const p3 = midpointScr + triangleWidth*directionScr;
 
-            ImGui::GetWindowDrawList()->AddTriangleFilled(p1, p2, p3, color);
+            ui::GetWindowDrawList()->AddTriangleFilled(p1, p2, p3, color);
         }
 
         void drawConnectionLines(
@@ -1567,7 +1567,7 @@ namespace osc::mi
         // `nullptr` until the model is successfully created
         std::unique_ptr<OpenSim::Model> m_MaybeOutputModel = nullptr;
 
-        // set to true after drawing the ImGui::Image
+        // set to true after drawing the ui::Image
         bool m_IsRenderHovered = false;
 
         // true if the implementation wants the host to close the mesh importer UI

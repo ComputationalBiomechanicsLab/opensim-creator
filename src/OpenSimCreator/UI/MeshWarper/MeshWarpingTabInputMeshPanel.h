@@ -431,7 +431,7 @@ namespace osc
         // draws 2D ImGui overlays over the scene render
         void draw2DOverlayUI(Rect const& renderRect)
         {
-            ImGui::SetCursorScreenPos(renderRect.p1 + m_State->overlayPadding);
+            ui::SetCursorScreenPos(renderRect.p1 + m_State->overlayPadding);
 
             drawInformationIcon();
             ui::SameLine();
@@ -448,7 +448,7 @@ namespace osc
         void drawInformationIcon()
         {
             ui::ButtonNoBg(ICON_FA_INFO_CIRCLE);
-            if (ImGui::IsItemHovered())
+            if (ui::IsItemHovered())
             {
                 ui::BeginTooltip();
 
@@ -467,22 +467,22 @@ namespace osc
                 ui::TableSetupColumn("Name");
                 ui::TableSetupColumn("Value");
 
-                ImGui::TableNextRow();
-                ImGui::TableSetColumnIndex(0);
+                ui::TableNextRow();
+                ui::TableSetColumnIndex(0);
                 ui::Text("# landmarks");
-                ImGui::TableSetColumnIndex(1);
+                ui::TableSetColumnIndex(1);
                 ui::Text("%zu", CountNumLandmarksForInput(m_State->getScratch(), m_DocumentIdentifier));
 
-                ImGui::TableNextRow();
-                ImGui::TableSetColumnIndex(0);
+                ui::TableNextRow();
+                ui::TableSetColumnIndex(0);
                 ui::Text("# verts");
-                ImGui::TableSetColumnIndex(1);
+                ui::TableSetColumnIndex(1);
                 ui::Text("%zu", m_State->getScratchMesh(m_DocumentIdentifier).getNumVerts());
 
-                ImGui::TableNextRow();
-                ImGui::TableSetColumnIndex(0);
+                ui::TableNextRow();
+                ui::TableSetColumnIndex(0);
                 ui::Text("# triangles");
-                ImGui::TableSetColumnIndex(1);
+                ui::TableSetColumnIndex(1);
                 ui::Text("%zu", m_State->getScratchMesh(m_DocumentIdentifier).getNumIndices()/3);
 
                 ui::EndTable();
@@ -557,8 +557,8 @@ namespace osc
             ImGuiSliderFlags const flags = ImGuiSliderFlags_Logarithmic;
 
             CStringView const label = "landmark radius";
-            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(label.c_str()).x - ImGui::GetStyle().ItemInnerSpacing.x - m_State->overlayPadding.x);
-            ImGui::SliderFloat(label.c_str(), &m_LandmarkRadius, 0.0001f, 100.0f, "%.4f", flags);
+            ui::SetNextItemWidth(ui::GetContentRegionAvail().x - ui::CalcTextSize(label.c_str()).x - ui::GetStyle().ItemInnerSpacing.x - m_State->overlayPadding.x);
+            ui::SliderFloat(label.c_str(), &m_LandmarkRadius, 0.0001f, 100.0f, "%.4f", flags);
         }
 
         bool isUserPlacingNonParticipatingLandmark() const

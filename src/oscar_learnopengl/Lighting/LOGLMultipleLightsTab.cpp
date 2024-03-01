@@ -177,7 +177,7 @@ private:
 
         // render auxiliary UI
         ui::Begin("controls");
-        ImGui::InputFloat("uMaterialShininess", &m_MaterialShininess);
+        ui::InputFloat("uMaterialShininess", &m_MaterialShininess);
         ui::End();
 
         m_LogViewer.onDraw();

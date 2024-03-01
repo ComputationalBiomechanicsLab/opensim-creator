@@ -256,11 +256,11 @@ namespace osc::mi
 
             if (se)
             {
-                ImGui::BeginTooltip();
+                ui::BeginTooltip();
                 ui::TextUnformatted(se->getLabel());
                 ui::SameLine();
                 ui::TextDisabled("(%s, click to choose)", se->getClass().getName().c_str());
-                ImGui::EndTooltip();
+                ui::EndTooltip();
             }
         }
 
@@ -310,7 +310,7 @@ namespace osc::mi
             ImU32 color = ui::ToImU32(Color::white());
             Vec2 padding = Vec2{10.0f, 10.0f};
             Vec2 pos = m_Shared->get3DSceneRect().p1 + padding;
-            ImGui::GetWindowDrawList()->AddText(pos, color, m_Options.header.c_str());
+            ui::GetWindowDrawList()->AddText(pos, color, m_Options.header.c_str());
         }
 
         // draw a user-clickable button for cancelling out of this choosing state
@@ -323,7 +323,7 @@ namespace osc::mi
             Vec2 const margin = {25.0f, 35.0f};
             Vec2 const buttonTopLeft = m_Shared->get3DSceneRect().p2 - (ui::CalcButtonSize(text) + margin);
 
-            ImGui::SetCursorScreenPos(buttonTopLeft);
+            ui::SetCursorScreenPos(buttonTopLeft);
             if (ui::Button(text.c_str()))
             {
                 requestPop();

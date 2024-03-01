@@ -185,7 +185,7 @@ namespace
             }
 
             ui::SameLine();
-            ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+            ui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
             ui::SameLine();
 
             // draw translate/rotate/scale selector
@@ -217,7 +217,7 @@ namespace
 
         std::shared_ptr<IconCache> m_IconCache = App::singleton<IconCache>(
             App::resource_loader().withPrefix("icons/"),
-            ImGui::GetTextLineHeight()/128.0f
+            ui::GetTextLineHeight()/128.0f
         );
         std::string m_PanelName;
         ModelSelectionGizmo m_Gizmo;
@@ -398,13 +398,13 @@ private:
         {
             layersHandleMouseInputs();
 
-            if (!ImGui::GetIO().WantCaptureKeyboard)
+            if (!ui::GetIO().WantCaptureKeyboard)
             {
                 layersHandleKeyboardInputs();
             }
         }
 
-        // render the 3D scene to a texture and present it via an ImGui::Image
+        // render the 3D scene to a texture and present it via a ui::Image
         {
             RenderTexture& sceneTexture = m_State.updRenderer().onDraw(
                 *m_Parameters.getModelSharedPtr(),
@@ -417,7 +417,7 @@ private:
                 dimensions(m_State.viewportRect)
             );
 
-            // care: hittesting is done here, rather than using ImGui::IsWindowHovered, because
+            // care: hittesting is done here, rather than using ui::IsWindowHovered, because
             // we care about whether the _render_ is hovered, not any part of the window (which
             // may include things like the title bar, etc.
             //
@@ -427,11 +427,11 @@ private:
             // check if the window is conditionally hovered: this returns true if no other window is
             // overlapping the editor panel, _but_ it also returns true if the user is only hovering
             // the title bar of the window, rather than specifically the render
-            bool const windowHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows);
+            bool const windowHovered = ui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows);
 
             // check if the 3D render is hovered - ignore blocking and overlapping because the layer
             // stack might be screwing with this
-            bool const renderHoveredIgnoringOverlap = ImGui::IsItemHovered(
+            bool const renderHoveredIgnoringOverlap = ui::IsItemHovered(
                 ImGuiHoveredFlags_AllowWhenBlockedByActiveItem |
                 ImGuiHoveredFlags_AllowWhenOverlapped
             );
@@ -517,17 +517,17 @@ private:
 
             // layers always have a background (although, it can be entirely invisible)
             windowFlags &= ~ImGuiWindowFlags_NoBackground;
-            ImGui::SetNextWindowBgAlpha(layer.getBackgroundAlpha());
+            ui::SetNextWindowBgAlpha(layer.getBackgroundAlpha());
 
             // draw the layer in a child window, so that ImGui understands that hittests
             // should happen window-by-window (otherwise, you'll have problems with overlapping
             // buttons, widgets, etc.)
-            ImGui::SetNextWindowPos(m_State.viewportRect.p1);
+            ui::SetNextWindowPos(m_State.viewportRect.p1);
             std::string const childID = std::to_string(std::distance(it, m_Layers.end()));
-            if (ImGui::BeginChild(childID.c_str(), dimensions(m_State.viewportRect), ImGuiChildFlags_None, windowFlags))
+            if (ui::BeginChild(childID.c_str(), dimensions(m_State.viewportRect), ImGuiChildFlags_None, windowFlags))
             {
                 layer.onDraw(m_Parameters, m_State);
-                ImGui::EndChild();
+                ui::EndChild();
             }
         }
     }

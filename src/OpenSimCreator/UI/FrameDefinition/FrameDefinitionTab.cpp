@@ -729,7 +729,7 @@ namespace
         {
             ActionCreateBodyFromFrame(editor, model, maybeSourceEvent, frame);
         }
-        if (groundOrExistingBody && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+        if (groundOrExistingBody && ui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
         {
             std::stringstream ss;
             ss << "Cannot create a body from this frame: it is already the frame of " << groundOrExistingBody->getName();

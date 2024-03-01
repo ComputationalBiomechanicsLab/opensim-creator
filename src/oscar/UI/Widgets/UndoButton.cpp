@@ -33,7 +33,7 @@ void osc::UndoButton::onDraw()
 
     ui::SameLine();
 
-    ui::PushStyleVar(ImGuiStyleVar_FramePadding, {0.0f, ImGui::GetStyle().FramePadding.y});
+    ui::PushStyleVar(ImGuiStyleVar_FramePadding, {0.0f, ui::GetStyle().FramePadding.y});
     ui::Button(ICON_FA_CARET_DOWN);
     ui::PopStyleVar();
 
@@ -47,7 +47,7 @@ void osc::UndoButton::onDraw()
         for (ptrdiff_t i = 0; i < m_UndoRedo->getNumUndoEntriesi(); ++i)
         {
             ui::PushID(imguiID++);
-            if (ImGui::Selectable(m_UndoRedo->getUndoEntry(i).message().c_str()))
+            if (ui::Selectable(m_UndoRedo->getUndoEntry(i).message().c_str()))
             {
                 m_UndoRedo->undoTo(i);
             }

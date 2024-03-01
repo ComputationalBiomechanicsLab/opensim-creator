@@ -40,7 +40,7 @@ private:
         if (e.type == SDL_MOUSEWHEEL) {
             float const factor = e.wheel.y > 0 ? 0.9f : 1.11111111f;
 
-            applyZoom(ImGui::GetIO().MousePos, factor);
+            applyZoom(ui::GetIO().MousePos, factor);
             return true;
         }
         if (e.type == SDL_MOUSEMOTION && (e.motion.state & SDL_BUTTON_LMASK) != 0) {

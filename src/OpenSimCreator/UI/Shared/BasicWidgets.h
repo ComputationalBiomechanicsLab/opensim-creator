@@ -223,7 +223,7 @@ namespace osc
     );
 
     // toolbar stuff
-    bool BeginToolbar(CStringView label, std::optional<Vec2> padding = {});  // behaves the same as ImGui::Begin (i.e. you must call ImGui::End)
+    bool BeginToolbar(CStringView label, std::optional<Vec2> padding = {});  // behaves the same as ui::Begin (i.e. you must call ui::End)
     void DrawNewModelButton(ParentPtr<IMainUIStateAPI> const&);
     void DrawOpenModelButtonWithRecentFilesDropdown(
         std::function<void(std::optional<std::filesystem::path>)> const& onUserClickedOpenOrSelectedFile

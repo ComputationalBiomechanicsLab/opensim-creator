@@ -152,7 +152,7 @@ private:
         drawPathPointEditorTable();
         ui::Separator();
         drawAddPathPointButton();
-        ImGui::NewLine();
+        ui::NewLine();
         drawBottomButtons();
     }
 
@@ -168,8 +168,8 @@ private:
             ui::TableSetupColumn("Y");
             ui::TableSetupColumn("Z");
             ui::TableSetupColumn("Frame");
-            ImGui::TableSetupScrollFreeze(0, 1);
-            ImGui::TableHeadersRow();
+            ui::TableSetupScrollFreeze(0, 1);
+            ui::TableHeadersRow();
 
             for (ptrdiff_t i = 0; i < ssize(pps); ++i)
             {
@@ -199,17 +199,17 @@ private:
     {
         int column = 0;
 
-        ImGui::TableNextRow();
+        ui::TableNextRow();
 
-        ImGui::TableSetColumnIndex(column++);
+        ui::TableSetColumnIndex(column++);
         drawIthPathPointActionsCell(pps, i);
 
-        ImGui::TableSetColumnIndex(column++);
+        ui::TableSetColumnIndex(column++);
         drawIthPathPointTypeCell(pps, i);
 
         tryDrawIthPathPointLocationEditorCells(pps, i, column);
 
-        ImGui::TableSetColumnIndex(column++);
+        ui::TableSetColumnIndex(column++);
         drawIthPathPointFrameCell(pps, i);
     }
 
@@ -221,7 +221,7 @@ private:
         {
             ui::BeginDisabled();
         }
-        if (ImGui::SmallButton(ICON_FA_ARROW_UP))
+        if (ui::SmallButton(ICON_FA_ARROW_UP))
         {
             m_RequestedAction = RequestedAction{RequestedAction::Type::MoveUp, i};
         }
@@ -236,7 +236,7 @@ private:
         {
             ui::BeginDisabled();
         }
-        if (ImGui::SmallButton(ICON_FA_ARROW_DOWN))
+        if (ui::SmallButton(ICON_FA_ARROW_DOWN))
         {
             m_RequestedAction = RequestedAction{RequestedAction::Type::MoveDown, i};
         }
@@ -247,12 +247,12 @@ private:
 
         ui::SameLine();
 
-        ImGui::PushStyleColor(ImGuiCol_Text, {0.7f, 0.0f, 0.0f, 1.0f});
-        if (ImGui::SmallButton(ICON_FA_TIMES))
+        ui::PushStyleColor(ImGuiCol_Text, Color{0.7f, 0.0f, 0.0f});
+        if (ui::SmallButton(ICON_FA_TIMES))
         {
             m_RequestedAction = RequestedAction{RequestedAction::Type::Delete, i};
         }
-        ImGui::PopStyleColor();
+        ui::PopStyleColor();
 
         ui::PopStyleVar();
     }
@@ -271,7 +271,7 @@ private:
 
         if (auto* const pp = dynamic_cast<OpenSim::PathPoint*>(&app))
         {
-            float const inputWidth = ImGui::CalcTextSize("0.00000").x;
+            float const inputWidth = ui::CalcTextSize("0.00000").x;
 
             SimTK::Vec3& location = pp->upd_location();
 
@@ -280,9 +280,9 @@ private:
             {
                 auto v = static_cast<float>(location[static_cast<int>(dim)]);
 
-                ImGui::TableSetColumnIndex(column++);
-                ImGui::SetNextItemWidth(inputWidth);
-                if (ImGui::InputFloat(c_LocationInputIDs[dim].c_str(), &v))
+                ui::TableSetColumnIndex(column++);
+                ui::SetNextItemWidth(inputWidth);
+                if (ui::InputFloat(c_LocationInputIDs[dim].c_str(), &v))
                 {
                     location[static_cast<int>(dim)] = static_cast<double>(v);
                 }
@@ -291,30 +291,30 @@ private:
         else
         {
             // it's some other kind of path point, with no editable X, Y, or Z
-            ImGui::TableSetColumnIndex(column++);
-            ImGui::TableSetColumnIndex(column++);
-            ImGui::TableSetColumnIndex(column++);
+            ui::TableSetColumnIndex(column++);
+            ui::TableSetColumnIndex(column++);
+            ui::TableSetColumnIndex(column++);
         }
     }
 
     void drawIthPathPointFrameCell(OpenSim::PathPointSet& pps, ptrdiff_t i)
     {
-        float const width = ImGui::CalcTextSize("/bodyset/a_typical_body_name").x;
+        float const width = ui::CalcTextSize("/bodyset/a_typical_body_name").x;
 
         std::string const& label = At(pps, i).getSocket("parent_frame").getConnecteePath();
 
-        ImGui::SetNextItemWidth(width);
-        if (ImGui::BeginCombo("##framesel", label.c_str()))
+        ui::SetNextItemWidth(width);
+        if (ui::BeginCombo("##framesel", label.c_str()))
         {
             for (OpenSim::Frame const& frame : m_TargetModel->getModel().getComponentList<OpenSim::Frame>())
             {
                 std::string const absPath = frame.getAbsolutePathString();
-                if (ImGui::Selectable(absPath.c_str()))
+                if (ui::Selectable(absPath.c_str()))
                 {
                     ActionSetPathPointFramePath(pps, i, absPath);
                 }
             }
-            ImGui::EndCombo();
+            ui::EndCombo();
         }
     }
 

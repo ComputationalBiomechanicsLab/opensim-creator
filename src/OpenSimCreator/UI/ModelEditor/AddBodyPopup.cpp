@@ -58,14 +58,14 @@ private:
         {
             if (isPopupOpenedThisFrame())
             {
-                ImGui::SetKeyboardFocusHere();
+                ui::SetKeyboardFocusHere();
             }
 
             ui::Text("body name");
             ui::SameLine();
             ui::DrawHelpMarker("The name used to identify the OpenSim::Body in the model. OpenSim typically uses the name to identify connections between components in a model, so the name should be unique.");
             ui::NextColumn();
-            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+            ui::SetNextItemWidth(ui::GetContentRegionAvail().x);
             ui::InputString("##bodyname", m_BodyDetails.bodyName);
             App::upd().addFrameAnnotation("AddBodyPopup::BodyNameInput", ui::GetItemRect());
             ui::NextColumn();
@@ -77,7 +77,7 @@ private:
             ui::SameLine();
             ui::DrawHelpMarker("The mass of the body in kilograms");
             ui::NextColumn();
-            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+            ui::SetNextItemWidth(ui::GetContentRegionAvail().x);
             ui::InputKilogramFloat("##mass", m_BodyDetails.mass);
             ui::NextColumn();
         }
@@ -88,7 +88,7 @@ private:
             ui::SameLine();
             ui::DrawHelpMarker("The location of the mass center in the body frame.");
             ui::NextColumn();
-            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+            ui::SetNextItemWidth(ui::GetContentRegionAvail().x);
             ui::InputMetersFloat3("##comeditor", m_BodyDetails.centerOfMass);
             ui::NextColumn();
         }
@@ -99,7 +99,7 @@ private:
             ui::SameLine();
             ui::DrawHelpMarker("The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz]. These are measured about the center of mass, *not* the center of the body frame.");
             ui::NextColumn();
-            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+            ui::SetNextItemWidth(ui::GetContentRegionAvail().x);
             ui::InputMetersFloat3("##inertiaeditor", m_BodyDetails.inertia);
             ui::NextColumn();
         }
@@ -111,10 +111,10 @@ private:
             ui::DrawHelpMarker("What the added body will be joined to. All bodies in an OpenSim model are connected to other bodies, or the ground, by joints. This is true even if the joint is unconstrained and does nothing (e.g. an OpenSim::FreeJoint) or if the joint constrains motion in all direcctions (e.g. an OpenSim::WeldJoint).");
             ui::NextColumn();
 
-            ImGui::BeginChild("join targets", ImVec2(0, 128.0f), ImGuiChildFlags_Border, ImGuiWindowFlags_HorizontalScrollbar);
+            ui::BeginChild("join targets", ImVec2(0, 128.0f), ImGuiChildFlags_Border, ImGuiWindowFlags_HorizontalScrollbar);
             for (OpenSim::PhysicalFrame const& pf : model.getComponentList<OpenSim::PhysicalFrame>())
             {
-                if (ImGui::Selectable(pf.getName().c_str(), &pf == selectedPf))
+                if (ui::Selectable(pf.getName().c_str(), &pf == selectedPf))
                 {
                     selectedPf = &pf;
                     m_BodyDetails.parentFrameAbsPath = GetAbsolutePathString(*selectedPf);
@@ -124,7 +124,7 @@ private:
                     App::upd().addFrameAnnotation(pf.getName(), ui::GetItemRect());
                 }
             }
-            ImGui::EndChild();
+            ui::EndChild();
             ui::NextColumn();
         }
 
@@ -153,7 +153,7 @@ private:
             ui::SameLine();
             ui::DrawHelpMarker("The name of the OpenSim::Joint that will join the new body to the existing frame specified above");
             ui::NextColumn();
-            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+            ui::SetNextItemWidth(ui::GetContentRegionAvail().x);
             ui::InputString("##jointnameinput", m_BodyDetails.jointName);
             App::upd().addFrameAnnotation("AddBodyPopup::JointNameInput", ui::GetItemRect());
             ui::NextColumn();

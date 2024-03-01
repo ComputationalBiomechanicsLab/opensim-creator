@@ -47,7 +47,7 @@ private:
             {
                 ui::PushID(i);
                 std::string const label = Ellipsis(els[i]->getName(), 15);
-                if (ImGui::SmallButton(label.c_str()))
+                if (ui::SmallButton(label.c_str()))
                 {
                     m_Model->setSelected(els[i]);
                 }
@@ -72,7 +72,7 @@ private:
 
     void drawMouseInteractionStuff(OpenSim::Component const& c)
     {
-        if (ImGui::IsItemHovered())
+        if (ui::IsItemHovered())
         {
             m_Model->setHovered(&c);
 
@@ -80,7 +80,7 @@ private:
             ui::TextDisabled(c.getConcreteClassName());
             ui::EndTooltip();
         }
-        if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+        if (ui::IsItemClicked(ImGuiMouseButton_Right))
         {
             auto menu = std::make_unique<ComponentContextMenu>(
                 "##hovermenu",

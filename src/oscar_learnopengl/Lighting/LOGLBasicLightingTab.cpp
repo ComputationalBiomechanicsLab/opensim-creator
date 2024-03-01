@@ -77,11 +77,11 @@ private:
         // render auxiliary UI
         ui::Begin("controls");
         ui::InputFloat3("light pos", value_ptr(m_LightTransform.position));
-        ImGui::InputFloat("ambient strength", &m_AmbientStrength);
-        ImGui::InputFloat("diffuse strength", &m_DiffuseStrength);
-        ImGui::InputFloat("specular strength", &m_SpecularStrength);
-        ImGui::ColorEdit3("object color", value_ptr(m_ObjectColor));
-        ImGui::ColorEdit3("light color", value_ptr(m_LightColor));
+        ui::InputFloat("ambient strength", &m_AmbientStrength);
+        ui::InputFloat("diffuse strength", &m_DiffuseStrength);
+        ui::InputFloat("specular strength", &m_SpecularStrength);
+        ui::ColorEditRGB("object color", m_ObjectColor);
+        ui::ColorEditRGB("light color", m_LightColor);
         ui::End();
     }
 

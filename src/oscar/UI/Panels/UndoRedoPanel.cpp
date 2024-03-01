@@ -54,7 +54,7 @@ void osc::UndoRedoPanel::DrawContent(UndoRedoBase& storage)
     for (ptrdiff_t i = storage.getNumUndoEntriesi()-1; 0 <= i && i < storage.getNumUndoEntriesi(); --i)
     {
         ui::PushID(imguiID++);
-        if (ImGui::Selectable(storage.getUndoEntry(i).message().c_str()))
+        if (ui::Selectable(storage.getUndoEntry(i).message().c_str()))
         {
             storage.undoTo(i);
         }
@@ -69,7 +69,7 @@ void osc::UndoRedoPanel::DrawContent(UndoRedoBase& storage)
     for (ptrdiff_t i = 0; i < storage.getNumRedoEntriesi(); ++i)
     {
         ui::PushID(imguiID++);
-        if (ImGui::Selectable(storage.getRedoEntry(i).message().c_str()))
+        if (ui::Selectable(storage.getRedoEntry(i).message().c_str()))
         {
             storage.redoTo(i);
         }

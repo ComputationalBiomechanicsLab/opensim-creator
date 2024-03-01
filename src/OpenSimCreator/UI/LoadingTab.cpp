@@ -105,8 +105,8 @@ public:
         // center the menu
         {
             Vec2 const menuTopLeft = (windowDims - menuDims) / 2.0f;
-            ImGui::SetNextWindowPos(menuTopLeft);
-            ImGui::SetNextWindowSize({menuDims.x, -1.0f});
+            ui::SetNextWindowPos(menuTopLeft);
+            ui::SetNextWindowSize({menuDims.x, -1.0f});
         }
 
         if (m_LoadingErrorMsg.empty())
@@ -114,7 +114,7 @@ public:
             if (ui::Begin("Loading Message", nullptr, ImGuiWindowFlags_NoTitleBar))
             {
                 ui::Text("loading: %s", m_OsimPath.string().c_str());
-                ImGui::ProgressBar(m_LoadingProgress);
+                ui::ProgressBar(m_LoadingProgress);
             }
             ui::End();
         }

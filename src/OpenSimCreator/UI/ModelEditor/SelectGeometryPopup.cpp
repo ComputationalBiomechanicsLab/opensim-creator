@@ -118,7 +118,7 @@ private:
             ui::Dummy({0.0f, 2.0f});
 
             int item = -1;
-            if (ImGui::Combo("##premade", &item, c_GeomNames.data(), static_cast<int>(c_GeomNames.size())))
+            if (ui::Combo("##premade", &item, c_GeomNames.data(), static_cast<int>(c_GeomNames.size())))
             {
                 auto const& ctor = c_GeomCtors.at(static_cast<size_t>(item));
                 m_Result = ctor();
@@ -139,9 +139,9 @@ private:
         ui::InputString("search", m_Search);
         ui::Dummy({0.0f, 1.0f});
 
-        ImGui::BeginChild(
+        ui::BeginChild(
             "mesh list",
-            ImVec2(ImGui::GetContentRegionAvail().x, 256),
+            ImVec2(ui::GetContentRegionAvail().x, 256),
             ImGuiChildFlags_None,
             ImGuiWindowFlags_HorizontalScrollbar);
 
@@ -172,7 +172,7 @@ private:
             }
         }
 
-        ImGui::EndChild();
+        ui::EndChild();
 
         if (ui::Button("Open Mesh File"))
         {
@@ -218,7 +218,7 @@ private:
     {
         if (p.filename().string().find(m_Search) != std::string::npos)
         {
-            if (ImGui::Selectable(p.filename().string().c_str()))
+            if (ui::Selectable(p.filename().string().c_str()))
             {
                 return onMeshFileChosen(p.filename());
             }

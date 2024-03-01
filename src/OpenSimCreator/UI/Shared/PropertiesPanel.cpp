@@ -39,7 +39,7 @@ namespace
         ui::DrawHelpMarker("Shows a menu containing extra actions that can be performed on this component.\n\nYou can also access the same menu by right-clicking the component in the 3D viewer, bottom status bar, or navigator panel.");
         ui::NextColumn();
         ui::PushStyleColor(ImGuiCol_Text, Color::yellow());
-        if (ui::Button(ICON_FA_BOLT) || ImGui::IsItemClicked(ImGuiMouseButton_Right))
+        if (ui::Button(ICON_FA_BOLT) || ui::IsItemClicked(ImGuiMouseButton_Right))
         {
             editorAPI->pushComponentContextMenuPopup(GetAbsolutePath(*selection));
         }
@@ -81,7 +81,7 @@ namespace
 
             ui::NextColumn();
 
-            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+            ui::SetNextItemWidth(ui::GetContentRegionAvail().x);
             ui::InputString("##nameeditor", m_EditedName);
             if (ui::ItemValueShouldBeSaved())
             {

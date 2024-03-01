@@ -50,7 +50,7 @@ private:
 
         m_ComponentDetailsWidget.onDraw(ms.getState(), selected);
 
-        if (ImGui::CollapsingHeader("outputs"))
+        if (ui::CollapsingHeader("outputs"))
         {
             int imguiID = 0;
             ui::Columns(2);
@@ -64,7 +64,7 @@ private:
                 {
                     m_SimulatorUIAPI,
                     OutputExtractor{ComponentOutputExtractor{*aoPtr}},
-                    ImGui::GetTextLineHeight(),
+                    ui::GetTextLineHeight(),
                 };
                 plot.onDraw();
                 ui::NextColumn();
