@@ -178,6 +178,11 @@ namespace osc::ui
         return ImGui::IsMouseDragging(button, lock_threshold);
     }
 
+    inline bool Selectable(const char* label, bool* p_selected, ImGuiSelectableFlags flags = 0, const ImVec2& size = ImVec2(0, 0))
+    {
+        return ImGui::Selectable(label, p_selected, flags, size);
+    }
+
     inline bool Selectable(const char* label, bool selected = false, ImGuiSelectableFlags flags = 0, const ImVec2& size = ImVec2(0, 0))
     {
         return ImGui::Selectable(label, selected, flags, size);
