@@ -24,7 +24,7 @@ namespace osc::ui
     {
         va_list args;
         va_start(args, fmt);
-        ImGui::Text(fmt, args);
+        ImGui::TextV(fmt, args);
         va_end(args);
     }
 
@@ -37,7 +37,7 @@ namespace osc::ui
     {
         va_list args;
         va_start(args, fmt);
-        ImGui::TextDisabled(fmt, args);
+        ImGui::TextDisabledV(fmt, args);
         va_end(args);
     }
 
@@ -50,7 +50,7 @@ namespace osc::ui
     {
         va_list args;
         va_start(args, fmt);
-        ImGui::TextWrapped(fmt, args);
+        ImGui::TextWrappedV(fmt, args);
         va_end(args);
     }
 
