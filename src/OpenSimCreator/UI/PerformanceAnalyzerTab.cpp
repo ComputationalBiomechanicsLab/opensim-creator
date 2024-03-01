@@ -72,8 +72,8 @@ public:
 
     void onDraw()
     {
-        ImGui::DockSpaceOverViewport(
-            ImGui::GetMainViewport(),
+        ui::DockSpaceOverViewport(
+            ui::GetMainViewport(),
             ImGuiDockNodeFlags_PassthruCentralNode
         );
 
@@ -94,12 +94,12 @@ public:
 
         ui::Begin("Outputs");
 
-        if (!m_Sims.empty() && ImGui::BeginTable("simulations", 4))
+        if (!m_Sims.empty() && ui::BeginTable("simulations", 4))
         {
-            ImGui::TableSetupColumn("Integrator");
-            ImGui::TableSetupColumn("Progress");
-            ImGui::TableSetupColumn("Wall Time (sec)");
-            ImGui::TableSetupColumn("NumStepsTaken");
+            ui::TableSetupColumn("Integrator");
+            ui::TableSetupColumn("Progress");
+            ui::TableSetupColumn("Wall Time (sec)");
+            ui::TableSetupColumn("NumStepsTaken");
             ImGui::TableHeadersRow();
 
             for (ForwardDynamicSimulation const& sim : m_Sims)
@@ -126,7 +126,7 @@ public:
                 ui::Text("%i", static_cast<int>(steps));
             }
 
-            ImGui::EndTable();
+            ui::EndTable();
 
             if (ui::Button(ICON_FA_SAVE " Export to CSV"))
             {

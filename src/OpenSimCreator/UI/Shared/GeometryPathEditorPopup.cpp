@@ -160,14 +160,14 @@ private:
     {
         OpenSim::PathPointSet& pps = m_EditedGeometryPath.updPathPointSet();
 
-        if (ImGui::BeginTable("##GeometryPathEditorTable", 6))
+        if (ui::BeginTable("##GeometryPathEditorTable", 6))
         {
-            ImGui::TableSetupColumn("Actions");
-            ImGui::TableSetupColumn("Type");
-            ImGui::TableSetupColumn("X");
-            ImGui::TableSetupColumn("Y");
-            ImGui::TableSetupColumn("Z");
-            ImGui::TableSetupColumn("Frame");
+            ui::TableSetupColumn("Actions");
+            ui::TableSetupColumn("Type");
+            ui::TableSetupColumn("X");
+            ui::TableSetupColumn("Y");
+            ui::TableSetupColumn("Z");
+            ui::TableSetupColumn("Frame");
             ImGui::TableSetupScrollFreeze(0, 1);
             ImGui::TableHeadersRow();
 
@@ -178,7 +178,7 @@ private:
                 ui::PopID();
             }
 
-            ImGui::EndTable();
+            ui::EndTable();
         }
 
         // perform any actions after rendering the table: in case the action would

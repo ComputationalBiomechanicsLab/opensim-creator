@@ -93,7 +93,7 @@ private:
 
     void implOnDraw() final
     {
-        ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+        ui::DockSpaceOverViewport(ui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
         m_Toolbar.onDraw();
         m_PanelManager->onDraw();
     }

@@ -72,7 +72,7 @@ bool osc::StandardPopup::implBeginPopup()
         else
         {
             ImGui::SetNextWindowPos(
-                ImGui::GetMainViewport()->GetCenter(),
+                ui::GetMainViewport()->GetCenter(),
                 ImGuiCond_Appearing,
                 ImVec2{0.5f, 0.5f}
             );

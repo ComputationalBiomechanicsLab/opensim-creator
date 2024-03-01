@@ -121,10 +121,10 @@ namespace osc
         // draws a table containing useful input information (handy for debugging)
         void drawInformationTable()
         {
-            if (ImGui::BeginTable("##inputinfo", 2))
+            if (ui::BeginTable("##inputinfo", 2))
             {
-                ImGui::TableSetupColumn("Name");
-                ImGui::TableSetupColumn("Value");
+                ui::TableSetupColumn("Name");
+                ui::TableSetupColumn("Value");
 
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
@@ -138,7 +138,7 @@ namespace osc
                 ImGui::TableSetColumnIndex(1);
                 ui::Text("%zu", m_State->getResultMesh().getNumIndices()/3);
 
-                ImGui::EndTable();
+                ui::EndTable();
             }
         }
 

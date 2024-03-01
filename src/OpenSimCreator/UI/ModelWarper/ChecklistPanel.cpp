@@ -69,10 +69,10 @@ namespace
     template<WarpableOpenSimComponent T>
     void DrawDetailsTable(UIState const& state, T const& c)
     {
-        if (ImGui::BeginTable("##Details", 2)) {
+        if (ui::BeginTable("##Details", 2)) {
 
-            ImGui::TableSetupColumn("Label");
-            ImGui::TableSetupColumn("Value");
+            ui::TableSetupColumn("Label");
+            ui::TableSetupColumn("Value");
             ImGui::TableHeadersRow();
 
             for (auto&& detail : state.details(c)) {
@@ -83,7 +83,7 @@ namespace
                 ui::TextUnformatted(detail.value());
             }
 
-            ImGui::EndTable();
+            ui::EndTable();
         }
     }
 

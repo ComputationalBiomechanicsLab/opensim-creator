@@ -64,14 +64,14 @@ namespace osc
         // - whether they have source/destination location, or are paired
         void drawLandmarksTable()
         {
-            if (!ImGui::BeginTable("##LandmarksTable", 3, getTableFlags()))
+            if (!ui::BeginTable("##LandmarksTable", 3, getTableFlags()))
             {
                 return;
             }
 
-            ImGui::TableSetupColumn("Name", 0, 0.7f*ImGui::GetContentRegionAvail().x);
-            ImGui::TableSetupColumn("Source", 0, 0.15f*ImGui::GetContentRegionAvail().x);
-            ImGui::TableSetupColumn("Destination", 0, 0.15f*ImGui::GetContentRegionAvail().x);
+            ui::TableSetupColumn("Name", 0, 0.7f*ImGui::GetContentRegionAvail().x);
+            ui::TableSetupColumn("Source", 0, 0.15f*ImGui::GetContentRegionAvail().x);
+            ui::TableSetupColumn("Destination", 0, 0.15f*ImGui::GetContentRegionAvail().x);
 
             int id = 0;
             for (auto const& lm : m_State->getScratch().landmarkPairs)
@@ -81,7 +81,7 @@ namespace osc
                 ui::PopID();
             }
 
-            ImGui::EndTable();
+            ui::EndTable();
         }
 
         void drawLandmarksTableRow(TPSDocumentLandmarkPair const& p)
@@ -177,13 +177,13 @@ namespace osc
         // draws non-participating landmarks table
         void drawNonPariticpatingLandmarksTable()
         {
-            if (!ImGui::BeginTable("##NonParticipatingLandmarksTable", 2, getTableFlags()))
+            if (!ui::BeginTable("##NonParticipatingLandmarksTable", 2, getTableFlags()))
             {
                 return;
             }
 
-            ImGui::TableSetupColumn("Name", 0, 0.7f*ImGui::GetContentRegionAvail().x);
-            ImGui::TableSetupColumn("Location", 0, 0.3f*ImGui::GetContentRegionAvail().x);
+            ui::TableSetupColumn("Name", 0, 0.7f*ImGui::GetContentRegionAvail().x);
+            ui::TableSetupColumn("Location", 0, 0.3f*ImGui::GetContentRegionAvail().x);
 
             int id = 0;
             for (auto const& npl : m_State->getScratch().nonParticipatingLandmarks)
@@ -193,7 +193,7 @@ namespace osc
                 ui::PopID();
             }
 
-            ImGui::EndTable();
+            ui::EndTable();
         }
 
         void drawNonParticipatingLandmarksTableRow(TPSDocumentNonParticipatingLandmark const& npl)

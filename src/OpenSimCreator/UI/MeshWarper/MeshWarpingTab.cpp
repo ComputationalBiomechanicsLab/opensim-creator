@@ -141,7 +141,7 @@ public:
 
     void onDraw()
     {
-        ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+        ui::DockSpaceOverViewport(ui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
         m_TopToolbar.onDraw();
         m_PanelManager->onDraw();

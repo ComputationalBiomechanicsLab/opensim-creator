@@ -64,11 +64,11 @@ private:
             ImGuiTableFlags_SortTristate |
             ImGuiTableFlags_BordersInnerV |
             ImGuiTableFlags_SizingStretchSame;
-        if (ImGui::BeginTable("##coordinatestable", 3, flags))
+        if (ui::BeginTable("##coordinatestable", 3, flags))
         {
-            ImGui::TableSetupColumn("Name");
-            ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_NoSort, 1.65f);
-            ImGui::TableSetupColumn("Speed", ImGuiTableColumnFlags_NoSort, 0.5f);
+            ui::TableSetupColumn("Name");
+            ui::TableSetupColumn("Value", ImGuiTableColumnFlags_NoSort, 1.65f);
+            ui::TableSetupColumn("Speed", ImGuiTableColumnFlags_NoSort, 0.5f);
             ImGui::TableSetupScrollFreeze(0, 1);
             ImGui::TableHeadersRow();
 
@@ -111,7 +111,7 @@ private:
                 ui::PopID();
             }
 
-            ImGui::EndTable();
+            ui::EndTable();
         }
     }
 

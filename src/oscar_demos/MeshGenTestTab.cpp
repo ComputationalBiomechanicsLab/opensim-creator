@@ -69,7 +69,7 @@ public:
 private:
     void implOnDraw() final
     {
-        ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+        ui::DockSpaceOverViewport(ui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
         if (m_Viewer.isHovered()) {
             ui::UpdatePolarCameraFromImGuiMouseInputs(m_Camera, App::get().dims());

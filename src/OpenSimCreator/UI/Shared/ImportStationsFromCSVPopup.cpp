@@ -99,12 +99,12 @@ private:
         ui::TextCentered(std::string{"("} + std::to_string(m_ImportedLandmarks.size()) + " data rows)");
 
         ui::Dummy({0.0f, 0.2f*ImGui::GetTextLineHeight()});
-        if (ImGui::BeginTable("##importtable", 4, ImGuiTableFlags_ScrollY, {0.0f, 10.0f*ImGui::GetTextLineHeight()}))
+        if (ui::BeginTable("##importtable", 4, ImGuiTableFlags_ScrollY, {0.0f, 10.0f*ImGui::GetTextLineHeight()}))
         {
-            ImGui::TableSetupColumn("Name");
-            ImGui::TableSetupColumn("X");
-            ImGui::TableSetupColumn("Y");
-            ImGui::TableSetupColumn("Z");
+            ui::TableSetupColumn("Name");
+            ui::TableSetupColumn("X");
+            ui::TableSetupColumn("Y");
+            ui::TableSetupColumn("Z");
             ImGui::TableHeadersRow();
 
             int id = 0;
@@ -124,7 +124,7 @@ private:
                 ui::PopID();
             }
 
-            ImGui::EndTable();
+            ui::EndTable();
         }
         ui::Dummy({0.0f, 0.2f*ImGui::GetTextLineHeight()});
 

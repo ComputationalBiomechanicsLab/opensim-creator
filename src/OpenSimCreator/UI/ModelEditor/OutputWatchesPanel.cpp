@@ -65,10 +65,10 @@ private:
     {
         UpdateCachedSimulationReportIfNecessary(*m_Model, m_CachedReport);
 
-        if (m_API->getNumUserOutputExtractors() > 0 && ImGui::BeginTable("##OutputWatchesTable", 2, ImGuiTableFlags_SizingStretchProp))
+        if (m_API->getNumUserOutputExtractors() > 0 && ui::BeginTable("##OutputWatchesTable", 2, ImGuiTableFlags_SizingStretchProp))
         {
-            ImGui::TableSetupColumn("Output", ImGuiTableColumnFlags_WidthStretch);
-            ImGui::TableSetupColumn("Value");
+            ui::TableSetupColumn("Output", ImGuiTableColumnFlags_WidthStretch);
+            ui::TableSetupColumn("Value");
             ImGui::TableHeadersRow();
 
             for (int outputIdx = 0; outputIdx < m_API->getNumUserOutputExtractors(); ++outputIdx)
@@ -94,7 +94,7 @@ private:
                 ui::PopID();
             }
 
-            ImGui::EndTable();
+            ui::EndTable();
         }
         else
         {

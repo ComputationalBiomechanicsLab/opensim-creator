@@ -516,11 +516,11 @@ private:
             if (!socketNames.empty())
             {
                 ui::PushStyleVar(ImGuiStyleVar_CellPadding, {0.5f*ImGui::GetTextLineHeight(), 0.5f*ImGui::GetTextLineHeight()});
-                if (ImGui::BeginTable("sockets table", 3, ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_BordersInner | ImGuiTableFlags_PadOuterX))
+                if (ui::BeginTable("sockets table", 3, ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_BordersInner | ImGuiTableFlags_PadOuterX))
                 {
-                    ImGui::TableSetupColumn("Socket Name");
-                    ImGui::TableSetupColumn("Connectee");
-                    ImGui::TableSetupColumn("Actions");
+                    ui::TableSetupColumn("Socket Name");
+                    ui::TableSetupColumn("Connectee");
+                    ui::TableSetupColumn("Actions");
 
                     ImGui::TableHeadersRow();
 
@@ -564,7 +564,7 @@ private:
                         ui::PopID();
                     }
 
-                    ImGui::EndTable();
+                    ui::EndTable();
                 }
                 ui::PopStyleVar();
             }

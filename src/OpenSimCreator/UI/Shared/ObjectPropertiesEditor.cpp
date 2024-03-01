@@ -193,10 +193,10 @@ namespace
             ui::Separator();
             ui::Dummy({0.0f, 0.2f*ImGui::GetTextLineHeight()});
 
-            if (ImGui::BeginTable("CommonChoicesTable", 2, ImGuiTableFlags_SizingStretchProp))
+            if (ui::BeginTable("CommonChoicesTable", 2, ImGuiTableFlags_SizingStretchProp))
             {
-                ImGui::TableSetupColumn("Type");
-                ImGui::TableSetupColumn("Options");
+                ui::TableSetupColumn("Type");
+                ui::TableSetupColumn("Options");
 
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
@@ -315,7 +315,7 @@ namespace
                     stepSize = 0.0001f;
                 }
 
-                ImGui::EndTable();
+                ui::EndTable();
             }
 
             ui::EndPopup();

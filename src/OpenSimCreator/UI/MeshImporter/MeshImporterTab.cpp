@@ -198,7 +198,7 @@ public:
     void onDraw()
     {
         // enable panel docking
-        ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+        ui::DockSpaceOverViewport(ui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
         // handle keyboards using ImGui's input poller
         if (!m_Maybe3DViewerModal)

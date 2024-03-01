@@ -773,7 +773,7 @@ ImGuiWindowFlags osc::ui::GetMinimalWindowFlags()
 
 Rect osc::ui::GetMainViewportWorkspaceScreenRect()
 {
-    ImGuiViewport const& viewport = *ImGui::GetMainViewport();
+    ImGuiViewport const& viewport = *ui::GetMainViewport();
 
     return Rect
     {
@@ -793,7 +793,7 @@ bool osc::ui::IsMouseInMainViewportWorkspaceScreenRect()
 bool osc::ui::BeginMainViewportTopBar(CStringView label, float height, ImGuiWindowFlags flags)
 {
     // https://github.com/ocornut/imgui/issues/3518
-    auto* const viewport = static_cast<ImGuiViewportP*>(static_cast<void*>(ImGui::GetMainViewport()));
+    auto* const viewport = static_cast<ImGuiViewportP*>(static_cast<void*>(ui::GetMainViewport()));
     return ImGui::BeginViewportSideBar(label.c_str(), viewport, ImGuiDir_Up, height, flags);
 }
 
@@ -801,7 +801,7 @@ bool osc::ui::BeginMainViewportTopBar(CStringView label, float height, ImGuiWind
 bool osc::ui::BeginMainViewportBottomBar(CStringView label)
 {
     // https://github.com/ocornut/imgui/issues/3518
-    auto* const viewport = static_cast<ImGuiViewportP*>(static_cast<void*>(ImGui::GetMainViewport()));
+    auto* const viewport = static_cast<ImGuiViewportP*>(static_cast<void*>(ui::GetMainViewport()));
     ImGuiWindowFlags const flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
     float const height = ImGui::GetFrameHeight() + ImGui::GetStyle().WindowPadding.y;
 

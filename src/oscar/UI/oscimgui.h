@@ -115,6 +115,16 @@ namespace osc::ui
         ImGui::Dummy(size);
     }
 
+    inline ImGuiViewport* GetMainViewport()
+    {
+        return ImGui::GetMainViewport();
+    }
+
+    inline ImGuiID DockSpaceOverViewport(const ImGuiViewport* viewport = NULL, ImGuiDockNodeFlags flags = 0, const ImGuiWindowClass* window_class = NULL)
+    {
+        return ImGui::DockSpaceOverViewport(viewport, flags, window_class);
+    }
+
     inline bool Begin(const char* name, bool* p_open = nullptr, ImGuiWindowFlags flags = 0)
     {
         return ImGui::Begin(name, p_open, flags);
@@ -243,5 +253,20 @@ namespace osc::ui
     inline bool IsItemDeactivatedAfterEdit()
     {
         return ImGui::IsItemDeactivatedAfterEdit();
+    }
+
+    inline bool BeginTable(const char* str_id, int column, ImGuiTableFlags flags = 0, const ImVec2& outer_size = ImVec2(0.0f, 0.0f), float inner_width = 0.0f)
+    {
+        return ImGui::BeginTable(str_id, column, flags, outer_size, inner_width);
+    }
+
+    inline void TableSetupColumn(const char* label, ImGuiTableColumnFlags flags = 0, float init_width_or_weight = 0.0f, ImGuiID user_id = 0)
+    {
+        ImGui::TableSetupColumn(label, flags, init_width_or_weight, user_id);
+    }
+
+    inline void EndTable()
+    {
+        ImGui::EndTable();
     }
 }

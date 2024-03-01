@@ -71,14 +71,14 @@ private:
             ImGuiTableFlags_NoSavedSettings |
             ImGuiTableFlags_Resizable |
             ImGuiTableFlags_BordersInner;
-        if (ImGui::BeginTable("measurements", 6, flags))
+        if (ui::BeginTable("measurements", 6, flags))
         {
-            ImGui::TableSetupColumn("Label");
-            ImGui::TableSetupColumn("Source File");
-            ImGui::TableSetupColumn("Num Calls");
-            ImGui::TableSetupColumn("Last Duration");
-            ImGui::TableSetupColumn("Average Duration");
-            ImGui::TableSetupColumn("Total Duration");
+            ui::TableSetupColumn("Label");
+            ui::TableSetupColumn("Source File");
+            ui::TableSetupColumn("Num Calls");
+            ui::TableSetupColumn("Last Duration");
+            ui::TableSetupColumn("Average Duration");
+            ui::TableSetupColumn("Total Duration");
             ImGui::TableHeadersRow();
 
             for (PerfMeasurement const& pm : measurements)
@@ -104,7 +104,7 @@ private:
                 ui::Text("%ld us", static_cast<long>(std::chrono::duration_cast<std::chrono::microseconds>(pm.getTotalDuration()).count()));
             }
 
-            ImGui::EndTable();
+            ui::EndTable();
         }
     }
 
