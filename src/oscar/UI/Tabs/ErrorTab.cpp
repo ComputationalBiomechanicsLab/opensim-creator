@@ -53,8 +53,8 @@ private:
         // log message panel
         {
             Vec2 pos{tabRect.p1.x + tabDims.x/2.0f, tabRect.p2.y - padding};
-            ui::SetNextWindowPos(pos, ImGuiCond_Once, ImVec2(0.5f, 1.0f));
-            ui::SetNextWindowSize(ImVec2(width, 0.0f));
+            ui::SetNextWindowPos(pos, ImGuiCond_Once, {0.5f, 1.0f});
+            ui::SetNextWindowSize({width, 0.0f});
 
             if (ui::Begin("Error Log", nullptr, ImGuiWindowFlags_MenuBar))
             {

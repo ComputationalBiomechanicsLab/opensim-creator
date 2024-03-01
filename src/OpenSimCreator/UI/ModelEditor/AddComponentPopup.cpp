@@ -380,7 +380,7 @@ private:
         {
             ui::PushID(i);
 
-            ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0.0f, 0.0f});
+            ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
 
             if (ui::Button(ICON_FA_TRASH))
             {

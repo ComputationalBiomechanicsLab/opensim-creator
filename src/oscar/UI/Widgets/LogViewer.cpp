@@ -1,5 +1,6 @@
 #include "LogViewer.h"
 
+#include <oscar/Graphics/Color.h>
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
@@ -16,24 +17,24 @@ using namespace osc;
 
 namespace
 {
-    ImVec4 ToColor(LogLevel lvl)
+    Color ToColor(LogLevel lvl)
     {
         switch (lvl)
         {
         case LogLevel::trace:
-            return ImVec4{0.5f, 0.5f, 0.5f, 1.0f};
+            return {0.5f, 0.5f, 0.5f, 1.0f};
         case LogLevel::debug:
-            return ImVec4{0.8f, 0.8f, 0.8f, 1.0f};
+            return {0.8f, 0.8f, 0.8f, 1.0f};
         case LogLevel::info:
-            return ImVec4{0.5f, 0.5f, 1.0f, 1.0f};
+            return {0.5f, 0.5f, 1.0f, 1.0f};
         case LogLevel::warn:
-            return ImVec4{1.0f, 1.0f, 0.0f, 1.0f};
+            return {1.0f, 1.0f, 0.0f, 1.0f};
         case LogLevel::err:
-            return ImVec4{1.0f, 0.0f, 0.0f, 1.0f};
+            return {1.0f, 0.0f, 0.0f, 1.0f};
         case LogLevel::critical:
-            return ImVec4{1.0f, 0.0f, 0.0f, 1.0f};
+            return {1.0f, 0.0f, 0.0f, 1.0f};
         default:
-            return ImVec4{1.0f, 1.0f, 1.0f, 1.0f};
+            return {1.0f, 1.0f, 1.0f, 1.0f};
         }
     }
 

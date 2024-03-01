@@ -22,7 +22,7 @@ namespace
 // toggle
 namespace
 {
-    void DrawToggle(bool enabled, bool hovered, ImVec2 pos, ImVec2 size)
+    void DrawToggle(bool enabled, bool hovered, Vec2 pos, Vec2 size)
     {
         ImDrawList& draw_list = *ui::GetWindowDrawList();
 
@@ -39,8 +39,8 @@ namespace
             pos.x + radius + (enabled ? 1.0f : 0.0f) * (size.x - radius * 2),
             pos.y + size.y / 2.0f,
         };
-        ImVec2 const smin = {pos.x, pmid.y - slot_half_height};
-        ImVec2 const smax = {pos.x + size.x, pmid.y + slot_half_height};
+        Vec2 const smin = {pos.x, pmid.y - slot_half_height};
+        Vec2 const smax = {pos.x + size.x, pmid.y + slot_half_height};
 
         draw_list.AddRectFilled(smin, smax, bgColor, rounding);
 
@@ -61,9 +61,9 @@ namespace
 
         float const titleHeight = ui::GetTextLineHeight();
 
-        ImVec2 const p = ui::GetCursorScreenPos();
-        ImVec2 const bb(ui::GetColumnWidth(), ui::GetFrameHeight());
-        ui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0, 0));
+        Vec2 const p = ui::GetCursorScreenPos();
+        Vec2 const bb(ui::GetColumnWidth(), ui::GetFrameHeight());
+        ui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, {0.0f, 0.0f});
         ui::PushID(label);
         bool const status = ui::Button("###toggle_button", bb);
 
@@ -73,14 +73,14 @@ namespace
 
         ui::PopID();
         ui::PopStyleVar();
-        ImVec2 const pMin = ui::GetItemRectMin();
-        ImVec2 const pMax = ui::GetItemRectMax();
+        Vec2 const pMin = ui::GetItemRectMin();
+        Vec2 const pMax = ui::GetItemRectMax();
 
         WidgetTitle(label, p);
 
         float const toggleHeight = titleHeight * 0.9f;
-        ImVec2 const toggleSize = {toggleHeight * 1.75f, toggleHeight};
-        ImVec2 const togglePos{
+        Vec2 const toggleSize = {toggleHeight * 1.75f, toggleHeight};
+        Vec2 const togglePos{
             pMax.x - toggleSize.x - style.FramePadding.x,
             pMin.y + (titleHeight - toggleSize.y)/2.0f + style.FramePadding.y,
         };

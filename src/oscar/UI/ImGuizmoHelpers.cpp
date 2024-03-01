@@ -41,7 +41,7 @@ bool osc::DrawGizmoOpSelector(
 {
     bool rv = false;
 
-    ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0.0f, 0.0f});
+    ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
     ui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
     int colorsPushed = 0;
 

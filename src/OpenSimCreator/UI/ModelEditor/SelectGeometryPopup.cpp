@@ -141,7 +141,7 @@ private:
 
         ui::BeginChild(
             "mesh list",
-            ImVec2(ui::GetContentRegionAvail().x, 256),
+            Vec2{ui::GetContentRegionAvail().x, 256},
             ImGuiChildFlags_None,
             ImGuiWindowFlags_HorizontalScrollbar);
 

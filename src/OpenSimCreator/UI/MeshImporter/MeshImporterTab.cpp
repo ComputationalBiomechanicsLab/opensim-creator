@@ -951,7 +951,7 @@ private:
     // draw content of "Add" menu for some scene element
     void drawAddOtherToMIObjectActions(MIObject& el, Vec3 const& clickPos)
     {
-        ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{10.0f, 10.0f});
+        ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {10.0f, 10.0f});
         ScopeGuard const g1{[]() { ui::PopStyleVar(); }};
 
         int imguiID = 0;
@@ -1152,7 +1152,7 @@ private:
             return;  // top-level menu isn't open
         }
 
-        ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{10.0f, 10.0f});
+        ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {10.0f, 10.0f});
 
         for (int i = 0, len = el.getNumCrossReferences(); i < len; ++i)
         {
@@ -1224,7 +1224,7 @@ private:
             return;  // top-level menu isn't open
         }
 
-        ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{10.0f, 10.0f});
+        ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {10.0f, 10.0f});
 
         {
             auto DrawMenuContent = [&](int axis)
@@ -1343,7 +1343,7 @@ private:
 
         if (ui::BeginMenu(ICON_FA_EXTERNAL_LINK_ALT " Reassign Connection"))
         {
-            ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{10.0f, 10.0f});
+            ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {10.0f, 10.0f});
 
             for (int i = 0; i < nRefs; ++i)
             {
@@ -1714,7 +1714,7 @@ private:
 
     void drawAddOtherMenuItems()
     {
-        ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{10.0f, 10.0f});
+        ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {10.0f, 10.0f});
 
         if (ui::MenuItem(ICON_FA_CUBE " Meshes"))
         {
@@ -1836,7 +1836,7 @@ private:
 
         DrawGizmoOpSelector(m_ImGuizmoState.op);
 
-        ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0.0f, 0.0f});
+        ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
         ui::SameLine();
         ui::PopStyleVar();
 
@@ -2411,7 +2411,7 @@ private:
             ui::OpenPopup("##visualizermodalpopup");
             ui::SetNextWindowSize(m_Shared->get3DSceneDims());
             ui::SetNextWindowPos(m_Shared->get3DSceneRect().p1);
-            ui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
+            ui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
 
             ImGuiWindowFlags const modalFlags =
                 ImGuiWindowFlags_AlwaysAutoResize |
@@ -2432,7 +2432,7 @@ private:
         }
         else
         {
-            ui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
+            ui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
             if (ui::Begin("wizard_3dViewer"))
             {
                 ui::PopStyleVar();

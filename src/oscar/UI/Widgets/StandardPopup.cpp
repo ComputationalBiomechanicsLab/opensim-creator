@@ -74,7 +74,7 @@ bool osc::StandardPopup::implBeginPopup()
             ui::SetNextWindowPos(
                 ui::GetMainViewport()->GetCenter(),
                 ImGuiCond_Appearing,
-                ImVec2{0.5f, 0.5f}
+                Vec2{0.5f, 0.5f}
             );
         }
 

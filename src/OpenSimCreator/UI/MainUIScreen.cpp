@@ -398,8 +398,8 @@ private:
     {
         OSC_PERF("MainUIScreen/drawTabBar");
 
-        ui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ ui::GetStyle().FramePadding.x + 2.0f, ui::GetStyle().FramePadding.y + 2.0f });
-        ui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2{ 5.0f, 0.0f });
+        ui::PushStyleVar(ImGuiStyleVar_FramePadding, Vec2{ui::GetStyle().FramePadding} + 2.0f);
+        ui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, Vec2{5.0f, 0.0f});
         ui::PushStyleVar(ImGuiStyleVar_TabRounding, 10.0f);
         ui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.0f);
         if (ui::BeginMainViewportTopBar("##TabBarViewport"))

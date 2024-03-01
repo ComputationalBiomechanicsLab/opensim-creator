@@ -198,7 +198,7 @@ namespace
                 }
             }
 
-            ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0.0f, 0.0f});
+            ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
             ui::SameLine();
             ui::PopStyleVar();
 

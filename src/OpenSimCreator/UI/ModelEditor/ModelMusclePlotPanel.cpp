@@ -2056,9 +2056,9 @@ namespace
             }
 
             const float s = ui::GetFrameHeight();
-            ImVec2 const dims{1.5f * s, s};
+            Vec2 const dims{1.5f * s, s};
 
-            ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(2, 2));
+            ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {2.0f, 2.0f});
             if (ui::Button("NW", dims))         { m_LegendLocation = ImPlotLocation_NorthWest; } ui::SameLine();
             if (ui::Button("N", dims))          { m_LegendLocation = ImPlotLocation_North; }     ui::SameLine();
             if (ui::Button("NE", dims))         { m_LegendLocation = ImPlotLocation_NorthEast; }

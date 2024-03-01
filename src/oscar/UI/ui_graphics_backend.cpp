@@ -218,10 +218,10 @@ namespace
         OSC_ASSERT(drawCommand.UserCallback == nullptr && "user callbacks are not supported in oscar's ImGui renderer impl");
 
         // Will project scissor/clipping rectangles into framebuffer space
-        ImVec2 clip_off = drawData.DisplayPos;         // (0,0) unless using multi-viewports
-        ImVec2 clip_scale = drawData.FramebufferScale; // (1,1) unless using retina display which are often (2,2)
-        ImVec2 clip_min((drawCommand.ClipRect.x - clip_off.x) * clip_scale.x, (drawCommand.ClipRect.y - clip_off.y) * clip_scale.y);
-        ImVec2 clip_max((drawCommand.ClipRect.z - clip_off.x) * clip_scale.x, (drawCommand.ClipRect.w - clip_off.y) * clip_scale.y);
+        Vec2 clip_off = drawData.DisplayPos;         // (0,0) unless using multi-viewports
+        Vec2 clip_scale = drawData.FramebufferScale; // (1,1) unless using retina display which are often (2,2)
+        Vec2 clip_min((drawCommand.ClipRect.x - clip_off.x) * clip_scale.x, (drawCommand.ClipRect.y - clip_off.y) * clip_scale.y);
+        Vec2 clip_max((drawCommand.ClipRect.z - clip_off.x) * clip_scale.x, (drawCommand.ClipRect.w - clip_off.y) * clip_scale.y);
 
         if (clip_max.x <= clip_min.x || clip_max.y <= clip_min.y)
         {
