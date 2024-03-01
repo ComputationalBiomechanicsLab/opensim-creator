@@ -153,7 +153,7 @@ namespace osc::ui
         ImGui::NextColumn();
     }
 
-    inline void SameLine(float offset_from_start_x = 0.0f, float spacing = 1.0f)
+    inline void SameLine(float offset_from_start_x = 0.0f, float spacing = -1.0f)
     {
         ImGui::SameLine(offset_from_start_x, spacing);
     }
