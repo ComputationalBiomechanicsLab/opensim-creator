@@ -69,8 +69,8 @@ namespace osc
             {
                 m_ActiveNameEdit = lm.name;
             }
-            InputString("name", *m_ActiveNameEdit);
-            if (ItemValueShouldBeSaved())
+            ui::InputString("name", *m_ActiveNameEdit);
+            if (ui::ItemValueShouldBeSaved())
             {
                 ActionRenameLandmark(m_State->updUndoable(), lm.uid, *m_ActiveNameEdit);
                 m_ActiveNameEdit.reset();
@@ -82,8 +82,8 @@ namespace osc
                 {
                     m_ActivePositionEdit = lm.maybeSourceLocation;
                 }
-                InputMetersFloat3("source           ", *m_ActivePositionEdit);  // (padded to align with `destination`)
-                if (ItemValueShouldBeSaved())
+                ui::InputMetersFloat3("source           ", *m_ActivePositionEdit);  // (padded to align with `destination`)
+                if (ui::ItemValueShouldBeSaved())
                 {
                     ActionSetLandmarkPosition(m_State->updUndoable(), lm.uid, TPSDocumentInputIdentifier::Source, *m_ActivePositionEdit);
                     m_ActivePositionEdit.reset();
@@ -103,8 +103,8 @@ namespace osc
                 {
                     m_ActiveDestinationPositionEdit = lm.maybeDestinationLocation;
                 }
-                InputMetersFloat3("destination", *m_ActiveDestinationPositionEdit);
-                if (ItemValueShouldBeSaved())
+                ui::InputMetersFloat3("destination", *m_ActiveDestinationPositionEdit);
+                if (ui::ItemValueShouldBeSaved())
                 {
                     ActionSetLandmarkPosition(m_State->updUndoable(), lm.uid, TPSDocumentInputIdentifier::Destination, *m_ActiveDestinationPositionEdit);
                     m_ActivePositionEdit.reset();
@@ -112,7 +112,7 @@ namespace osc
             }
             else
             {
-                if (ButtonCentered("add destination"))
+                if (ui::ButtonCentered("add destination"))
                 {
                     ActionSetLandmarkPosition(m_State->updUndoable(), lm.uid, TPSDocumentInputIdentifier::Destination, Vec3{});
                 }
@@ -138,8 +138,8 @@ namespace osc
             {
                 m_ActiveNameEdit = npl.name;
             }
-            InputString("name", *m_ActiveNameEdit);
-            if (ItemValueShouldBeSaved())
+            ui::InputString("name", *m_ActiveNameEdit);
+            if (ui::ItemValueShouldBeSaved())
             {
                 ActionRenameNonParticipatingLandmark(m_State->updUndoable(), npl.uid, *m_ActiveNameEdit);
                 m_ActiveNameEdit.reset();
@@ -149,8 +149,8 @@ namespace osc
             {
                 m_ActivePositionEdit = npl.location;
             }
-            InputMetersFloat3("location", *m_ActivePositionEdit);
-            if (ItemValueShouldBeSaved())
+            ui::InputMetersFloat3("location", *m_ActivePositionEdit);
+            if (ui::ItemValueShouldBeSaved())
             {
                 ActionSetNonParticipatingLandmarkPosition(m_State->updUndoable(), npl.uid, *m_ActivePositionEdit);
                 m_ActivePositionEdit.reset();

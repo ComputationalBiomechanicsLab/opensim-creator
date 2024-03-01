@@ -53,7 +53,7 @@ private:
 
     void implOnDraw() final
     {
-        m_MainViewportWorkspaceScreenRect = GetMainViewportWorkspaceScreenRect();
+        m_MainViewportWorkspaceScreenRect = ui::GetMainViewportWorkspaceScreenRect();
 
         m_Material.setVec2("uRescale", {1.0f, 1.0f});
         m_Material.setVec2("uOffset", {});

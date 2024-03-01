@@ -95,7 +95,7 @@ public:
             {
                 getTracebackLog().lock()->clear();
             }
-            App::upd().addFrameAnnotation("LogClearButton", GetItemRect());
+            App::upd().addFrameAnnotation("LogClearButton", ui::GetItemRect());
 
             ui::SameLine();
             if (ui::Button("turn off"))

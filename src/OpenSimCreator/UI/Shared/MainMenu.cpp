@@ -57,7 +57,7 @@ void osc::MainMenuFileTab::onDraw(
     {
         auto const& io = ImGui::GetIO();
 
-        bool mod = IsCtrlOrSuperDown();
+        bool mod = ui::IsCtrlOrSuperDown();
 
         if (mod && ui::IsKeyPressed(ImGuiKey_N))
         {
@@ -185,13 +185,13 @@ void osc::MainMenuFileTab::onDraw(
         {
             ActionReloadOsimFromDisk(*maybeModel, *App::singleton<SceneCache>());
         }
-        DrawTooltipIfItemHovered("Reload", "Attempts to reload the osim file from scratch. This can be useful if (e.g.) editing third-party files that OpenSim Creator doesn't automatically track.");
+        ui::DrawTooltipIfItemHovered("Reload", "Attempts to reload the osim file from scratch. This can be useful if (e.g.) editing third-party files that OpenSim Creator doesn't automatically track.");
 
         if (ui::MenuItem(ICON_FA_CLIPBOARD " Copy .osim path to clipboard", nullptr, false, modelHasBackingFile) && maybeModel)
         {
             ActionCopyModelPathToClipboard(*maybeModel);
         }
-        DrawTooltipIfItemHovered("Copy .osim path to clipboard", "Copies the absolute path to the model's .osim file into your clipboard.\n\nThis is handy if you want to (e.g.) load the osim via a script, open it from the command line in another app, etc.");
+        ui::DrawTooltipIfItemHovered("Copy .osim path to clipboard", "Copies the absolute path to the model's .osim file into your clipboard.\n\nThis is handy if you want to (e.g.) load the osim via a script, open it from the command line in another app, etc.");
 
         if (ui::MenuItem(ICON_FA_FOLDER " Open .osim's parent directory", nullptr, false, modelHasBackingFile) && maybeModel)
         {
@@ -202,7 +202,7 @@ void osc::MainMenuFileTab::onDraw(
         {
             ActionOpenOsimInExternalEditor(*maybeModel);
         }
-        DrawTooltipIfItemHovered("Open .osim in external editor", "Open the .osim file currently being edited in an external text editor. The editor that's used depends on your operating system's default for opening .osim files.");
+        ui::DrawTooltipIfItemHovered("Open .osim in external editor", "Open the .osim file currently being edited in an external text editor. The editor that's used depends on your operating system's default for opening .osim files.");
     }
 
     // reload
@@ -216,7 +216,7 @@ void osc::MainMenuFileTab::onDraw(
     {
         api->addAndSelectTab<mi::MeshImporterTab>(api);
     }
-    App::upd().addFrameAnnotation("MainMenu/ImportMeshesMenuItem", GetItemRect());
+    App::upd().addFrameAnnotation("MainMenu/ImportMeshesMenuItem", ui::GetItemRect());
 
 
 
@@ -241,7 +241,7 @@ void osc::MainMenuAboutTab::onDraw()
 
     ui::TextUnformatted("graphics");
     ui::SameLine();
-    DrawHelpMarker("OSMV's global graphical settings");
+    ui::DrawHelpMarker("OSMV's global graphical settings");
     ui::Separator();
     ui::Dummy({0.0f, 0.5f});
     {
@@ -254,7 +254,7 @@ void osc::MainMenuAboutTab::onDraw()
 
         ui::TextUnformatted("MSXAA");
         ui::SameLine();
-        DrawHelpMarker("the level of MultiSample Anti-Aliasing to use. This only affects 3D renders *within* the UI, not the whole UI (panels etc. will not be affected)");
+        ui::DrawHelpMarker("the level of MultiSample Anti-Aliasing to use. This only affects 3D renders *within* the UI, not the whole UI (panels etc. will not be affected)");
         ui::NextColumn();
         {
             AntiAliasingLevel const current = App::get().getCurrentAntiAliasingLevel();
@@ -294,7 +294,7 @@ void osc::MainMenuAboutTab::onDraw()
 
         ui::TextUnformatted("VSYNC");
         ui::SameLine();
-        DrawHelpMarker("whether the backend uses vertical sync (VSYNC), which will cap the rendering FPS to your monitor's refresh rate");
+        ui::DrawHelpMarker("whether the backend uses vertical sync (VSYNC), which will cap the rendering FPS to your monitor's refresh rate");
         ui::NextColumn();
 
         bool enabled = App::get().isVsyncEnabled();
@@ -313,7 +313,7 @@ void osc::MainMenuAboutTab::onDraw()
     ui::Dummy({0.0f, 2.0f});
     ui::TextUnformatted("properties");
     ui::SameLine();
-    DrawHelpMarker("general software properties: useful information for bug reporting etc.");
+    ui::DrawHelpMarker("general software properties: useful information for bug reporting etc.");
     ui::Separator();
     ui::Dummy({0.0f, 0.5f});
     {
@@ -357,7 +357,7 @@ void osc::MainMenuAboutTab::onDraw()
     ui::Dummy({0.0f, 2.5f});
     ui::TextUnformatted("debugging utilities:");
     ui::SameLine();
-    DrawHelpMarker("standard utilities that can help with development, debugging, etc.");
+    ui::DrawHelpMarker("standard utilities that can help with development, debugging, etc.");
     ui::Separator();
     ui::Dummy({0.0f, 0.5f});
     int id = 0;
@@ -366,7 +366,7 @@ void osc::MainMenuAboutTab::onDraw()
 
         ui::TextUnformatted("OSC Install Location");
         ui::SameLine();
-        DrawHelpMarker("opens OSC's installation location in your OS's default file browser");
+        ui::DrawHelpMarker("opens OSC's installation location in your OS's default file browser");
         ui::NextColumn();
         ui::PushID(id++);
         if (ui::Button(ICON_FA_FOLDER " open"))
@@ -378,7 +378,7 @@ void osc::MainMenuAboutTab::onDraw()
 
         ui::TextUnformatted("User Data Dir");
         ui::SameLine();
-        DrawHelpMarker("opens your OSC user data directory in your OS's default file browser");
+        ui::DrawHelpMarker("opens your OSC user data directory in your OS's default file browser");
         ui::NextColumn();
         ui::PushID(id++);
         if (ui::Button(ICON_FA_FOLDER " open")) {
@@ -389,7 +389,7 @@ void osc::MainMenuAboutTab::onDraw()
 
         ui::TextUnformatted("Debug mode");
         ui::SameLine();
-        DrawHelpMarker("Toggles whether the application is in debug mode or not: enabling this can reveal more inforamtion about bugs");
+        ui::DrawHelpMarker("Toggles whether the application is in debug mode or not: enabling this can reveal more inforamtion about bugs");
         ui::NextColumn();
         {
             bool appIsInDebugMode = App::get().isInDebugMode();
@@ -412,7 +412,7 @@ void osc::MainMenuAboutTab::onDraw()
     ui::Dummy({0.0f, 2.5f});
     ui::TextUnformatted("useful links:");
     ui::SameLine();
-    DrawHelpMarker("links to external sites that might be useful");
+    ui::DrawHelpMarker("links to external sites that might be useful");
     ui::Separator();
     ui::Dummy({0.0f, 0.5f});
     {
@@ -425,7 +425,7 @@ void osc::MainMenuAboutTab::onDraw()
         {
             OpenPathInOSDefaultApplication(App::get().getConfig().getHTMLDocsDir() / "index.html");
         }
-        DrawTooltipBodyOnlyIfItemHovered("this will open the (locally installed) documentation in a separate browser window");
+        ui::DrawTooltipBodyOnlyIfItemHovered("this will open the (locally installed) documentation in a separate browser window");
         ui::PopID();
         ui::NextColumn();
 
@@ -438,7 +438,7 @@ void osc::MainMenuAboutTab::onDraw()
             {
                 OpenPathInOSDefaultApplication(std::filesystem::path{std::string_view{*repoURL}});
             }
-            DrawTooltipBodyOnlyIfItemHovered("this will open the repository homepage in a separate browser window");
+            ui::DrawTooltipBodyOnlyIfItemHovered("this will open the repository homepage in a separate browser window");
             ui::PopID();
             ui::NextColumn();
         }
@@ -450,7 +450,7 @@ void osc::MainMenuAboutTab::onDraw()
         {
             OpenPathInOSDefaultApplication("https://simtk-confluence.stanford.edu/display/OpenSim/Documentation");
         }
-        DrawTooltipBodyOnlyIfItemHovered("this will open the documentation in a separate browser window");
+        ui::DrawTooltipBodyOnlyIfItemHovered("this will open the documentation in a separate browser window");
         ui::PopID();
         ui::NextColumn();
 

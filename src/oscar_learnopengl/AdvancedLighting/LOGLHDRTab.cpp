@@ -111,7 +111,7 @@ private:
     {
         // reformat intermediate HDR texture to match tab dimensions etc.
         {
-            Rect const viewportRect = GetMainViewportWorkspaceScreenRect();
+            Rect const viewportRect = ui::GetMainViewportWorkspaceScreenRect();
             RenderTextureDescriptor descriptor{dimensions(viewportRect)};
             descriptor.setAntialiasingLevel(App::get().getCurrentAntiAliasingLevel());
             if (m_Use16BitFormat)
@@ -130,7 +130,7 @@ private:
     {
         Camera orthoCamera;
         orthoCamera.setBackgroundColor(Color::clear());
-        orthoCamera.setPixelRect(GetMainViewportWorkspaceScreenRect());
+        orthoCamera.setPixelRect(ui::GetMainViewportWorkspaceScreenRect());
         orthoCamera.setProjectionMatrixOverride(identity<Mat4>());
         orthoCamera.setViewMatrixOverride(identity<Mat4>());
 

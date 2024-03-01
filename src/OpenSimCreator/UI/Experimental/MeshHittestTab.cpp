@@ -53,12 +53,12 @@ public:
 
     void onTick()
     {
-        UpdatePolarCameraFromImGuiMouseInputs(m_PolarCamera, App::get().dims());
+        ui::UpdatePolarCameraFromImGuiMouseInputs(m_PolarCamera, App::get().dims());
 
         // handle hittest
         auto raycastStart = std::chrono::high_resolution_clock::now();
 
-        Rect r = GetMainViewportWorkspaceScreenRect();
+        Rect r = ui::GetMainViewportWorkspaceScreenRect();
         Vec2 d = dimensions(r);
         m_Ray = m_PolarCamera.unprojectTopLeftPosToWorldRay(Vec2{ui::GetMousePos()} - r.p1, d);
 
@@ -97,7 +97,7 @@ public:
     {
         // setup scene
         {
-            Rect const viewportRect = GetMainViewportWorkspaceScreenRect();
+            Rect const viewportRect = ui::GetMainViewportWorkspaceScreenRect();
             Vec2 const viewportRectDims = dimensions(viewportRect);
             m_Camera.setPixelRect(viewportRect);
 

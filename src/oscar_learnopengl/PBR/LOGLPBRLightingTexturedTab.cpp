@@ -114,7 +114,7 @@ private:
 
     void draw3DRender()
     {
-        m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
+        m_Camera.setPixelRect(ui::GetMainViewportWorkspaceScreenRect());
 
         m_PBRMaterial.setVec3("uCameraWorldPosition", m_Camera.getPosition());
 

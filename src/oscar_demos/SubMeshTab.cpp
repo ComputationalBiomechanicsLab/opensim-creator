@@ -85,7 +85,7 @@ private:
                 subMeshIndex
             );
         }
-        m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
+        m_Camera.setPixelRect(ui::GetMainViewportWorkspaceScreenRect());
         m_Camera.renderToScreen();
     }
 

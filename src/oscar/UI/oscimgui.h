@@ -8,7 +8,9 @@
 #include <implot.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Utils/CStringView.h>
+#include <oscar/Utils/UID.h>
 
+#include <cstddef>
 #include <utility>
 
 namespace osc::ui
@@ -133,10 +135,34 @@ namespace osc::ui
         ImGui::EndDisabled();
     }
 
-    template<typename... Args>
-    inline void PushID(Args&&... args)
+    inline void PushID(UID id)
     {
-        ImGui::PushID(std::forward<Args>(args)...);
+        ImGui::PushID(static_cast<int>(id.get()));
+    }
+
+    inline void PushID(ptrdiff_t p)
+    {
+        ImGui::PushID(static_cast<int>(p));
+    }
+
+    inline void PushID(size_t i)
+    {
+        ImGui::PushID(static_cast<int>(i));
+    }
+
+    inline void PushID(int int_id)
+    {
+        ImGui::PushID(int_id);
+    }
+
+    inline void PushID(const void* ptr_id)
+    {
+        ImGui::PushID(ptr_id);
+    }
+
+    inline void PushID(CStringView str_id)
+    {
+        ImGui::PushID(str_id.data(), str_id.data() + str_id.size());
     }
 
     inline void PopID()

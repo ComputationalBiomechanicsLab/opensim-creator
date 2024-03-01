@@ -346,8 +346,8 @@ public:
             renderMesh(m_InputGrid, texDims, m_InputRender);
 
             // draw rendered texture via ImGui
-            DrawTextureAsImGuiImage(*m_InputRender, texDims);
-            ImGuiItemHittestResult const ht = HittestLastImguiItem();
+            ui::DrawTextureAsImGuiImage(*m_InputRender, texDims);
+            ui::ImGuiItemHittestResult const ht = ui::HittestLastImguiItem();
 
             // draw any 2D overlays etc.
             renderOverlayElements(ht);
@@ -383,7 +383,7 @@ public:
             renderMesh(m_OutputGrid, texDims, m_OutputRender);
 
             // draw rendered texture via ImGui
-            DrawTextureAsImGuiImage(*m_OutputRender, texDims);
+            ui::DrawTextureAsImGuiImage(*m_OutputRender, texDims);
         }
         ui::End();
 
@@ -394,7 +394,7 @@ public:
             float panelHeight = 50.0f;
             ImGui::SetNextWindowPos({ outputWindowPos.x + leftPadding, outputWindowPos.y + outputWindowDims.y - panelHeight - bottomPadding });
             ImGui::SetNextWindowSize({ outputWindowDims.x - leftPadding, panelHeight });
-            ui::Begin("##scrubber", nullptr, GetMinimalWindowFlags() & ~ImGuiWindowFlags_NoInputs);
+            ui::Begin("##scrubber", nullptr, ui::GetMinimalWindowFlags() & ~ImGuiWindowFlags_NoInputs);
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
             ImGui::SliderFloat("##blend", &m_BlendingFactor, 0.0f, 1.0f);
             ui::End();
@@ -423,7 +423,7 @@ private:
     }
 
     // render any 2D overlays
-    void renderOverlayElements(ImGuiItemHittestResult const& ht)
+    void renderOverlayElements(ui::ImGuiItemHittestResult const& ht)
     {
         ImDrawList* const drawlist = ImGui::GetWindowDrawList();
 
@@ -453,7 +453,7 @@ private:
     }
 
     // render any mouse-related overlays
-    void renderMouseUIElements(ImGuiItemHittestResult const& ht)
+    void renderMouseUIElements(ui::ImGuiItemHittestResult const& ht)
     {
         std::visit(Overload
         {
@@ -463,14 +463,14 @@ private:
     }
 
     // render any mouse-related overlays for when the user hasn't clicked yet
-    void renderMouseUIElements(ImGuiItemHittestResult const& ht, GUIInitialMouseState)
+    void renderMouseUIElements(ui::ImGuiItemHittestResult const& ht, GUIInitialMouseState)
     {
         Vec2 const mouseScreenPos = ui::GetMousePos();
         Vec2 const mouseImagePos = mouseScreenPos - ht.rect.p1;
         Vec2 const mouseImageRelPos = mouseImagePos / dimensions(ht.rect);
         Vec2 const mouseImageNDCPos = TopleftRelPosToNDCPoint(mouseImageRelPos);
 
-        DrawTooltipBodyOnly(to_string(mouseImageNDCPos));
+        ui::DrawTooltipBodyOnly(to_string(mouseImageNDCPos));
 
         if (ui::IsMouseClicked(ImGuiMouseButton_Left))
         {
@@ -479,14 +479,14 @@ private:
     }
 
     // render any mouse-related overlays for when the user has clicked once
-    void renderMouseUIElements(ImGuiItemHittestResult const& ht, GUIFirstClickMouseState st)
+    void renderMouseUIElements(ui::ImGuiItemHittestResult const& ht, GUIFirstClickMouseState st)
     {
         Vec2 const mouseScreenPos = ui::GetMousePos();
         Vec2 const mouseImagePos = mouseScreenPos - ht.rect.p1;
         Vec2 const mouseImageRelPos = mouseImagePos / dimensions(ht.rect);
         Vec2 const mouseImageNDCPos = TopleftRelPosToNDCPoint(mouseImageRelPos);
 
-        DrawTooltipBodyOnly(to_string(mouseImageNDCPos) + "*");
+        ui::DrawTooltipBodyOnly(to_string(mouseImageNDCPos) + "*");
 
         if (ui::IsMouseClicked(ImGuiMouseButton_Left))
         {
@@ -518,9 +518,9 @@ private:
     Camera m_Camera;
     std::optional<RenderTexture> m_InputRender;
     std::optional<RenderTexture> m_OutputRender;
-    ImU32 m_SrcSquareColor = ToImU32(Color::red());
-    ImU32 m_DestCircleColor = ToImU32(Color::green());
-    ImU32 m_ConnectionLineColor = ToImU32(Color::white());
+    ImU32 m_SrcSquareColor = ui::ToImU32(Color::red());
+    ImU32 m_DestCircleColor = ui::ToImU32(Color::green());
+    ImU32 m_ConnectionLineColor = ui::ToImU32(Color::white());
 
     // log panel (handy for debugging)
     LogViewerPanel m_LogViewerPanel{"Log"};

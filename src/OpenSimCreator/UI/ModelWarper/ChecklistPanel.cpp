@@ -36,9 +36,9 @@ namespace
 
     void DrawIcon(EntryStyling const& style)
     {
-        PushStyleColor(ImGuiCol_Text, style.color);
-        TextUnformatted(style.icon);
-        PopStyleColor();
+        ui::PushStyleColor(ImGuiCol_Text, style.color);
+        ui::TextUnformatted(style.icon);
+        ui::PopStyleColor();
     }
 
     void DrawEntryIconAndText(
@@ -48,7 +48,7 @@ namespace
     {
         DrawIcon(style);
         ui::SameLine();
-        TextUnformatted(component.getName());
+        ui::TextUnformatted(component.getName());
     }
 
     template<WarpableOpenSimComponent T>
@@ -59,7 +59,7 @@ namespace
 
     void DrawTooltipHeader(UIState const&, OpenSim::Component const& component)
     {
-        TextUnformatted(GetAbsolutePathString(component));
+        ui::TextUnformatted(GetAbsolutePathString(component));
         ui::SameLine();
         ui::TextDisabled(component.getConcreteClassName());
         ui::Separator();
@@ -78,9 +78,9 @@ namespace
             for (auto&& detail : state.details(c)) {
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
-                TextUnformatted(detail.name());
+                ui::TextUnformatted(detail.name());
                 ImGui::TableSetColumnIndex(1);
-                TextUnformatted(detail.value());
+                ui::TextUnformatted(detail.value());
             }
 
             ImGui::EndTable();
@@ -97,7 +97,7 @@ namespace
             auto style = ToStyle(check.state());
             DrawIcon(style);
             ui::SameLine();
-            TextUnformatted(check.description());
+            ui::TextUnformatted(check.description());
             ui::PopID();
         }
         ImGui::Unindent(5.0f);
@@ -123,7 +123,7 @@ namespace
     void DrawEntry(UIState const& state, T const& c)
     {
         DrawEntryIconAndText(state, c);
-        if (ui::IsItemHovered(ImGuiHoveredFlags_ForTooltip)) {
+        if (ImGui::IsItemHovered(ImGuiHoveredFlags_ForTooltip)) {
             ImGui::BeginTooltip();
             DrawTooltipContent(state, c);
             ImGui::EndTooltip();
@@ -140,7 +140,7 @@ namespace
         ui::SameLine();
         ui::TextDisabled("(%zu)", GetNumChildren<OpenSim::Mesh>(state.model()));
         ui::SameLine();
-        DrawHelpMarker("Shows which meshes are elegible for warping in the source model - and whether the model warper has enough information to warp them (plus any other useful validation checks)");
+        ui::DrawHelpMarker("Shows which meshes are elegible for warping in the source model - and whether the model warper has enough information to warp them (plus any other useful validation checks)");
     }
 
     void DrawMeshSection(UIState const& state)
@@ -165,7 +165,7 @@ namespace
         ui::SameLine();
         ui::TextDisabled("(%zu)", GetNumChildren<OpenSim::PhysicalOffsetFrame>(state.model()));
         ui::SameLine();
-        DrawHelpMarker("Shows which frames are eligible for warping in the source model - and whether the model warper has enough information to warp them");
+        ui::DrawHelpMarker("Shows which frames are eligible for warping in the source model - and whether the model warper has enough information to warp them");
     }
 
     void DrawFramesSection(UIState const& state)

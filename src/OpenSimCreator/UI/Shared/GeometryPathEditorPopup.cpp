@@ -173,9 +173,9 @@ private:
 
             for (ptrdiff_t i = 0; i < ssize(pps); ++i)
             {
-                PushID(i);
+                ui::PushID(i);
                 drawIthPathPointTableRow(pps, i);
-                PopID();
+                ui::PopID();
             }
 
             ImGui::EndTable();

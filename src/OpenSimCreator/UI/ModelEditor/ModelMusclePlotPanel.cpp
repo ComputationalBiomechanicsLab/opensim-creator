@@ -1914,7 +1914,7 @@ namespace
             // this is handy for users to visually see how the independent variable affects the model
             if (maybeMouseX && ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
                 if (coord.getDefaultLocked()) {
-                    DrawTooltip("scrubbing disabled", "you cannot scrub this plot because the coordinate is locked");
+                    ui::DrawTooltip("scrubbing disabled", "you cannot scrub this plot because the coordinate is locked");
                 }
                 else {
                     double storedValue = ConvertCoordDisplayValueToStorageValue(coord, *maybeMouseX);
@@ -1926,7 +1926,7 @@ namespace
             // coordinate to model storage
             if (maybeMouseX && ImGui::IsMouseReleased(ImGuiMouseButton_Left)) {
                 if (coord.getDefaultLocked()) {
-                    DrawTooltip("scrubbing disabled", "you cannot scrub this plot because the coordinate is locked");
+                    ui::DrawTooltip("scrubbing disabled", "you cannot scrub this plot because the coordinate is locked");
                 }
                 else {
                     double storedValue = ConvertCoordDisplayValueToStorageValue(coord, *maybeMouseX);
@@ -1979,7 +1979,7 @@ namespace
             if (ui::MenuItem("import CSV overlay(s)")) {
                 ActionPromptUserForCSVOverlayFile(m_Lines);
             }
-            DrawTooltipIfItemHovered("import CSV overlay(s)", "Imports the specified CSV file as an overlay over the current plot. This is handy fitting muscle curves against externally-supplied data.\n\nThe provided CSV file must contain a header row and at least two columns of numeric data on each data row. The values in the columns must match this plot's axes.");
+            ui::DrawTooltipIfItemHovered("import CSV overlay(s)", "Imports the specified CSV file as an overlay over the current plot. This is handy fitting muscle curves against externally-supplied data.\n\nThe provided CSV file must contain a header row and at least two columns of numeric data on each data row. The values in the columns must match this plot's axes.");
 
             if (ui::BeginMenu("export CSV")) {
                 drawExportCSVMenuContent(coord);
@@ -2029,7 +2029,7 @@ namespace
                 }
             }
 
-            if (Combo("output", &active, names)) {
+            if (ui::Combo("output", &active, names)) {
                 updShared().setPlottedOutput(availableOutputs[active]);
             }
         }
@@ -2096,7 +2096,7 @@ namespace
             if (ui::MenuItem("Export All Curves")) {
                 ActionPromptUserToSavePlotLinesToCSV(coord, getShared().getPlotParams(), m_Lines);
             }
-            DrawTooltipIfItemHovered("Export All Curves to CSV", "Exports all curves in the plot to a CSV file.\n\nThe implementation will try to group things together by X value, but the CSV file *may* contain sparse rows if (e.g.) some curves have a different number of plot points, or some curves were loaded from another CSV, etc.");
+            ui::DrawTooltipIfItemHovered("Export All Curves to CSV", "Exports all curves in the plot to a CSV file.\n\nThe implementation will try to group things together by X value, but the CSV file *may* contain sparse rows if (e.g.) some curves have a different number of plot points, or some curves were loaded from another CSV, etc.");
             ui::PopID();
         }
 

@@ -84,7 +84,7 @@ namespace
             pMax.x - toggleSize.x - style.FramePadding.x,
             pMin.y + (titleHeight - toggleSize.y)/2.0f + style.FramePadding.y,
         };
-        DrawToggle(*v, ui::IsItemHovered(), togglePos, toggleSize);
+        DrawToggle(*v, ImGui::IsItemHovered(), togglePos, toggleSize);
 
         ImGui::PopStyleColor();
 
@@ -102,7 +102,7 @@ private:
     {
         ui::Begin("window");
         ImGui::InputFloat("standardinput", &m_Value);
-        CircularSliderFloat("custom slider", &m_Value, 15.0f, 5.0f);
+        ui::CircularSliderFloat("custom slider", &m_Value, 15.0f, 5.0f);
         ui::Text("%f", m_Value);
         Toggle("custom toggle", &m_Toggle);
         ui::End();

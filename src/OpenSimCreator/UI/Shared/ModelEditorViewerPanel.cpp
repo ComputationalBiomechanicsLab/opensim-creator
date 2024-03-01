@@ -237,7 +237,7 @@ namespace
             ModelEditorViewerPanelParameters& params,
             ModelEditorViewerPanelState& state) final
         {
-            return UpdatePolarCameraFromImGuiKeyboardInputs(
+            return ui::UpdatePolarCameraFromImGuiKeyboardInputs(
                 params.updRenderParams().camera,
                 state.viewportRect,
                 state.maybeSceneAABB
@@ -251,12 +251,12 @@ namespace
             m_IsHandlingMouseInputs = true;
 
             // try updating the camera (mouse panning, etc.)
-            bool rv = UpdatePolarCameraFromImGuiMouseInputs(
+            bool rv = ui::UpdatePolarCameraFromImGuiMouseInputs(
                 params.updRenderParams().camera,
                 dimensions(state.viewportRect)
             );
 
-            if (IsDraggingWithAnyMouseButtonDown())
+            if (ui::IsDraggingWithAnyMouseButtonDown())
             {
                 params.getModelSharedPtr()->setHovered(nullptr);
             }
@@ -290,7 +290,7 @@ namespace
             // hover, but not panning: show tooltip
             if (!state.maybeHoveredComponentAbsPath.toString().empty() &&
                 m_IsHandlingMouseInputs &&
-                !IsDraggingWithAnyMouseButtonDown())
+                !ui::IsDraggingWithAnyMouseButtonDown())
             {
                 if (OpenSim::Component const* c = FindComponent(params.getModelSharedPtr()->getModel(), state.maybeHoveredComponentAbsPath))
                 {
@@ -376,9 +376,9 @@ private:
         // because GCing destroyed them before they were rendered
         layersGarbageCollect();
 
-        m_State.viewportRect = ContentRegionAvailScreenRect();
-        m_State.isLeftClickReleasedWithoutDragging = IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left);
-        m_State.isRightClickReleasedWithoutDragging = IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right);
+        m_State.viewportRect = ui::ContentRegionAvailScreenRect();
+        m_State.isLeftClickReleasedWithoutDragging = ui::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left);
+        m_State.isRightClickReleasedWithoutDragging = ui::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right);
 
         // if necessary, auto-focus the camera on the first frame
         if (m_IsFirstFrame)
@@ -412,7 +412,7 @@ private:
                 dimensions(m_State.viewportRect),
                 App::get().getCurrentAntiAliasingLevel()
             );
-            DrawTextureAsImGuiImage(
+            ui::DrawTextureAsImGuiImage(
                 sceneTexture,
                 dimensions(m_State.viewportRect)
             );
@@ -431,7 +431,7 @@ private:
 
             // check if the 3D render is hovered - ignore blocking and overlapping because the layer
             // stack might be screwing with this
-            bool const renderHoveredIgnoringOverlap = ui::IsItemHovered(
+            bool const renderHoveredIgnoringOverlap = ImGui::IsItemHovered(
                 ImGuiHoveredFlags_AllowWhenBlockedByActiveItem |
                 ImGuiHoveredFlags_AllowWhenOverlapped
             );
@@ -507,7 +507,7 @@ private:
         {
             ModelEditorViewerPanelLayer& layer = **it;
 
-            ImGuiWindowFlags windowFlags = GetMinimalWindowFlags() & ~ImGuiWindowFlags_NoInputs;
+            ImGuiWindowFlags windowFlags = ui::GetMinimalWindowFlags() & ~ImGuiWindowFlags_NoInputs;
 
             // if any layer above this one captures mouse inputs then disable this layer's inputs
             if (std::find_if(it+1, m_Layers.end(), [](auto const& layerPtr) -> bool { return layerPtr->getFlags() & ModelEditorViewerPanelLayerFlags::CapturesMouseInputs; }) != m_Layers.end())

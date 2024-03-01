@@ -93,7 +93,7 @@ private:
         Graphics::DrawMesh(m_Mesh, m_LightTransform, m_LightCubeMaterial, m_Camera);
 
         // render 3D scene
-        m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
+        m_Camera.setPixelRect(ui::GetMainViewportWorkspaceScreenRect());
         m_Camera.renderToScreen();
 
         // render 2D UI

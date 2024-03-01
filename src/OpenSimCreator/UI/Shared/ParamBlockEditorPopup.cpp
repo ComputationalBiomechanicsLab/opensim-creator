@@ -57,7 +57,7 @@ namespace
             GetAllIntegratorMethodStrings();
         auto method = static_cast<size_t>(im);
 
-        if (Combo("##", &method, methodStrings))
+        if (ui::Combo("##", &method, methodStrings))
         {
             b.setValue(idx, static_cast<IntegratorMethod>(method));
             return true;
@@ -105,7 +105,7 @@ private:
 
             ui::TextUnformatted(m_LocalCopy.getName(i));
             ui::SameLine();
-            DrawHelpMarker(m_LocalCopy.getName(i), m_LocalCopy.getDescription(i));
+            ui::DrawHelpMarker(m_LocalCopy.getName(i), m_LocalCopy.getDescription(i));
             ui::NextColumn();
 
             if (DrawEditor(m_LocalCopy, i))

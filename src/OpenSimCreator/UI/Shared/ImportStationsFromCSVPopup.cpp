@@ -74,7 +74,7 @@ private:
         {
             SetClipboardText(c_ExampleInputText);
         }
-        DrawTooltipBodyOnlyIfItemHovered("Copy example input to clipboard");
+        ui::DrawTooltipBodyOnlyIfItemHovered("Copy example input to clipboard");
         ImGui::Indent();
         ui::TextWrapped(c_ExampleInputText);
         ImGui::Unindent();
@@ -82,7 +82,7 @@ private:
 
     void drawSelectInitialFileState()
     {
-        if (ButtonCentered(ICON_FA_FILE " Select File"))
+        if (ui::ButtonCentered(ICON_FA_FILE " Select File"))
         {
             actionTryPromptingUserForCSVFile();
         }
@@ -95,8 +95,8 @@ private:
             return;
         }
 
-        TextCentered(m_MaybeImportPath->string());
-        TextCentered(std::string{"("} + std::to_string(m_ImportedLandmarks.size()) + " data rows)");
+        ui::TextCentered(m_MaybeImportPath->string());
+        ui::TextCentered(std::string{"("} + std::to_string(m_ImportedLandmarks.size()) + " data rows)");
 
         ui::Dummy({0.0f, 0.2f*ImGui::GetTextLineHeight()});
         if (ImGui::BeginTable("##importtable", 4, ImGuiTableFlags_ScrollY, {0.0f, 10.0f*ImGui::GetTextLineHeight()}))
@@ -146,22 +146,22 @@ private:
             return;
         }
 
-        PushStyleColor(ImGuiCol_Text, Color::orange());
+        ui::PushStyleColor(ImGuiCol_Text, Color::orange());
         ui::Text(ICON_FA_EXCLAMATION " input file contains issues");
-        PopStyleColor();
+        ui::PopStyleColor();
 
-        if (ui::IsItemHovered())
+        if (ImGui::IsItemHovered())
         {
-            BeginTooltip();
+            ui::BeginTooltip();
             ImGui::Indent();
             int id = 0;
             for (auto const& warning : m_ImportWarnings)
             {
                 ui::PushID(id++);
-                TextUnformatted(warning);
+                ui::TextUnformatted(warning);
                 ui::PopID();
             }
-            EndTooltip();
+            ui::EndTooltip();
         }
     }
 
@@ -189,9 +189,9 @@ private:
         if (disabledReason)
         {
             ui::EndDisabled();
-            if (ui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
             {
-                DrawTooltipBodyOnly(*disabledReason);
+                ui::DrawTooltipBodyOnly(*disabledReason);
             }
         }
         ui::SameLine();

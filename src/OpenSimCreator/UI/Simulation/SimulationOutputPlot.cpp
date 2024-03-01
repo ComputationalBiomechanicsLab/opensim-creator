@@ -141,7 +141,7 @@ namespace
                 api.removeUserOutputExtractor(output);
             }
         }
-        DrawTooltipIfItemHovered("Watch Output", "Watch the selected output. This makes it appear in the 'Output Watches' window in the editor panel and the 'Output Plots' window during a simulation");
+        ui::DrawTooltipIfItemHovered("Watch Output", "Watch the selected output. This makes it appear in the 'Output Watches' window in the editor panel and the 'Output Plots' window during a simulation");
     }
 
     void DrawGenericNumericOutputContextMenuItems(
@@ -274,8 +274,8 @@ private:
     {
         OSC_ASSERT(m_OutputExtractor.getOutputType() == OutputType::Float);
 
-        ImU32 const currentTimeLineColor = ToImU32(Color::yellow().withAlpha(0.6f));
-        ImU32 const hoverTimeLineColor = ToImU32(Color::yellow().withAlpha(0.3f));
+        ImU32 const currentTimeLineColor = ui::ToImU32(Color::yellow().withAlpha(0.6f));
+        ImU32 const hoverTimeLineColor = ui::ToImU32(Color::yellow().withAlpha(0.3f));
 
         // collect data
         ptrdiff_t const nReports = sim.getNumReports();
@@ -356,7 +356,7 @@ private:
             drawlist->AddLine(p1, p2, currentTimeLineColor);
         }
 
-        if (ui::IsItemHovered())
+        if (ImGui::IsItemHovered())
         {
             Vec2 mp = ui::GetMousePos();
             Vec2 plotLoc = mp - plotTopLeft;

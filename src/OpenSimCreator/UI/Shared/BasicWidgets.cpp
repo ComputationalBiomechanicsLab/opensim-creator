@@ -105,7 +105,7 @@ namespace
 
     void DrawOutputTooltip(OpenSim::AbstractOutput const& o)
     {
-        DrawTooltip(o.getTypeName());
+        ui::DrawTooltip(o.getTypeName());
     }
 
     bool DrawOutputWithSubfieldsMenu(IMainUIStateAPI& api, OpenSim::AbstractOutput const& o)
@@ -130,7 +130,7 @@ namespace
             ui::EndMenu();
         }
 
-        if (ui::IsItemHovered())
+        if (ImGui::IsItemHovered())
         {
             DrawOutputTooltip(o);
         }
@@ -150,7 +150,7 @@ namespace
             outputAdded = true;
         }
 
-        if (ui::IsItemHovered())
+        if (ImGui::IsItemHovered())
         {
             DrawOutputTooltip(o);
         }
@@ -320,13 +320,13 @@ void osc::DrawContextMenuSeparator()
 
 void osc::DrawComponentHoverTooltip(OpenSim::Component const& hovered)
 {
-    BeginTooltip();
+    ui::BeginTooltip();
 
     ui::TextUnformatted(hovered.getName());
     ui::SameLine();
     ui::TextDisabled(hovered.getConcreteClassName());
 
-    EndTooltip();
+    ui::EndTooltip();
 }
 
 void osc::DrawSelectOwnerMenu(IModelStatePair& model, OpenSim::Component const& selected)
@@ -351,7 +351,7 @@ void osc::DrawSelectOwnerMenu(IModelStatePair& model, OpenSim::Component const& 
             {
                 model.setSelected(owner);
             }
-            if (ui::IsItemHovered())
+            if (ImGui::IsItemHovered())
             {
                 model.setHovered(owner);
             }
@@ -367,7 +367,7 @@ bool osc::DrawWatchOutputMenu(IMainUIStateAPI& api, OpenSim::Component const& c)
 
     if (ui::BeginMenu("Watch Output"))
     {
-        DrawHelpMarker("Watch the selected output. This makes it appear in the 'Output Watches' window in the editor panel and the 'Output Plots' window during a simulation");
+        ui::DrawHelpMarker("Watch the selected output. This makes it appear in the 'Output Watches' window in the editor panel and the 'Output Plots' window during a simulation");
 
         // iterate from the selected component upwards to the root
         int imguiId = 0;
@@ -408,7 +408,7 @@ void osc::DrawSimulationParams(ParamBlock const& params)
     ui::Dummy({0.0f, 1.0f});
     ui::TextUnformatted("parameters:");
     ui::SameLine();
-    DrawHelpMarker("The parameters used when this simulation was launched. These must be set *before* running the simulation");
+    ui::DrawHelpMarker("The parameters used when this simulation was launched. These must be set *before* running the simulation");
     ui::Separator();
     ui::Dummy({0.0f, 2.0f});
 
@@ -421,7 +421,7 @@ void osc::DrawSimulationParams(ParamBlock const& params)
 
         ui::TextUnformatted(name);
         ui::SameLine();
-        DrawHelpMarker(name, description);
+        ui::DrawHelpMarker(name, description);
         ui::NextColumn();
 
         DrawSimulationParamValue(value);
@@ -438,7 +438,7 @@ void osc::DrawSearchBar(std::string& out)
         {
             out.clear();
         }
-        DrawTooltipBodyOnlyIfItemHovered("Clear the search string");
+        ui::DrawTooltipBodyOnlyIfItemHovered("Clear the search string");
     }
     else
     {
@@ -449,7 +449,7 @@ void osc::DrawSearchBar(std::string& out)
 
     ui::SameLine();
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-    InputString("##hirarchtsearchbar", out);
+    ui::InputString("##hirarchtsearchbar", out);
 }
 
 void osc::DrawOutputNameColumn(
@@ -459,7 +459,7 @@ void osc::DrawOutputNameColumn(
 {
     if (centered)
     {
-        TextCentered(output.getName());
+        ui::TextCentered(output.getName());
     }
     else
     {
@@ -474,7 +474,7 @@ void osc::DrawOutputNameColumn(
     // the user)
     if (auto const* co = dynamic_cast<ComponentOutputExtractor const*>(&output); co && maybeActiveSate)
     {
-        if (ui::IsItemHovered())
+        if (ImGui::IsItemHovered())
         {
             maybeActiveSate->setHovered(FindComponent(maybeActiveSate->getModel(), co->getComponentAbsPath()));
         }
@@ -488,7 +488,7 @@ void osc::DrawOutputNameColumn(
     if (!output.getDescription().empty())
     {
         ui::SameLine();
-        DrawHelpMarker(output.getName(), output.getDescription());
+        ui::DrawHelpMarker(output.getName(), output.getDescription());
     }
 }
 
@@ -541,7 +541,7 @@ void osc::DrawPointTranslationInformationWithRespectTo(
 
     ui::Text("translation");
     ui::SameLine();
-    DrawHelpMarker("translation", "Translational offset (in meters) of the point expressed in the chosen frame");
+    ui::DrawHelpMarker("translation", "Translational offset (in meters) of the point expressed in the chosen frame");
     ui::SameLine();
     ui::InputFloat3("##translation", value_ptr(position), "%.6f", ImGuiInputTextFlags_ReadOnly);
 }
@@ -556,7 +556,7 @@ void osc::DrawDirectionInformationWithRepsectTo(
 
     ui::Text("direction");
     ui::SameLine();
-    DrawHelpMarker("direction", "a unit vector expressed in the given frame");
+    ui::DrawHelpMarker("direction", "a unit vector expressed in the given frame");
     ui::SameLine();
     ui::InputFloat3("##direction", value_ptr(direction), "%.6f", ImGuiInputTextFlags_ReadOnly);
 }
@@ -572,13 +572,13 @@ void osc::DrawFrameInformationExpressedIn(
 
     ui::Text("translation");
     ui::SameLine();
-    DrawHelpMarker("translation", "Translational offset (in meters) of the frame's origin expressed in the chosen frame");
+    ui::DrawHelpMarker("translation", "Translational offset (in meters) of the frame's origin expressed in the chosen frame");
     ui::SameLine();
     ui::InputFloat3("##translation", value_ptr(position), "%.6f", ImGuiInputTextFlags_ReadOnly);
 
     ui::Text("orientation");
     ui::SameLine();
-    DrawHelpMarker("orientation", "Orientation offset (in radians) of the frame, expressed in the chosen frame as a frame-fixed x-y-z rotation sequence");
+    ui::DrawHelpMarker("orientation", "Orientation offset (in radians) of the frame, expressed in the chosen frame as a frame-fixed x-y-z rotation sequence");
     ui::SameLine();
     ui::InputFloat3("##orientation", value_ptr(rotationEulers), "%.6f", ImGuiInputTextFlags_ReadOnly);
 }
@@ -1008,7 +1008,7 @@ bool osc::DrawCustomDecorationOptionCheckboxes(OpenSimDecorationOptions& opts)
         if (std::optional<CStringView> description = opts.getOptionDescription(i))
         {
             ui::SameLine();
-            DrawHelpMarker(*description);
+            ui::DrawHelpMarker(*description);
         }
 
         ui::PopID();
@@ -1026,29 +1026,29 @@ bool osc::DrawAdvancedParamsEditor(
     {
         TryPromptUserToSaveAsDAE(drawlist);
     }
-    DrawTooltipBodyOnlyIfItemHovered("Try to export the 3D scene to a portable DAE file, so that it can be viewed in 3rd-party modelling software, such as Blender");
+    ui::DrawTooltipBodyOnlyIfItemHovered("Try to export the 3D scene to a portable DAE file, so that it can be viewed in 3rd-party modelling software, such as Blender");
 
     ui::Dummy({0.0f, 10.0f});
     ui::Text("advanced camera properties:");
     ui::Separator();
-    edited = SliderMetersFloat("radius", params.camera.radius, 0.0f, 10.0f) || edited;
-    edited = SliderAngle("theta", params.camera.theta, 0_deg, 360_deg) || edited;
-    edited = SliderAngle("phi", params.camera.phi, 0_deg, 360_deg) || edited;
-    edited = SliderAngle("fov", params.camera.vertical_fov, 0_deg, 360_deg) || edited;
-    edited = InputMetersFloat("znear", params.camera.znear) || edited;
-    edited = InputMetersFloat("zfar", params.camera.zfar) || edited;
+    edited = ui::SliderMetersFloat("radius", params.camera.radius, 0.0f, 10.0f) || edited;
+    edited = ui::SliderAngle("theta", params.camera.theta, 0_deg, 360_deg) || edited;
+    edited = ui::SliderAngle("phi", params.camera.phi, 0_deg, 360_deg) || edited;
+    edited = ui::SliderAngle("fov", params.camera.vertical_fov, 0_deg, 360_deg) || edited;
+    edited = ui::InputMetersFloat("znear", params.camera.znear) || edited;
+    edited = ui::InputMetersFloat("zfar", params.camera.zfar) || edited;
     ImGui::NewLine();
-    edited = SliderMetersFloat("pan_x", params.camera.focusPoint.x, -100.0f, 100.0f) || edited;
-    edited = SliderMetersFloat("pan_y", params.camera.focusPoint.y, -100.0f, 100.0f) || edited;
-    edited = SliderMetersFloat("pan_z", params.camera.focusPoint.z, -100.0f, 100.0f) || edited;
+    edited = ui::SliderMetersFloat("pan_x", params.camera.focusPoint.x, -100.0f, 100.0f) || edited;
+    edited = ui::SliderMetersFloat("pan_y", params.camera.focusPoint.y, -100.0f, 100.0f) || edited;
+    edited = ui::SliderMetersFloat("pan_z", params.camera.focusPoint.z, -100.0f, 100.0f) || edited;
 
     ui::Dummy({0.0f, 10.0f});
     ui::Text("advanced scene properties:");
     ui::Separator();
     edited = ImGui::ColorEdit3("light_color", value_ptr(params.lightColor)) || edited;
     edited = ImGui::ColorEdit3("background color", value_ptr(params.backgroundColor)) || edited;
-    edited = InputMetersFloat3("floor location", params.floorLocation) || edited;
-    DrawTooltipBodyOnlyIfItemHovered("Set the origin location of the scene's chequered floor. This is handy if you are working on smaller models, or models that need a floor somewhere else");
+    edited = ui::InputMetersFloat3("floor location", params.floorLocation) || edited;
+    ui::DrawTooltipBodyOnlyIfItemHovered("Set the origin location of the scene's chequered floor. This is handy if you are working on smaller models, or models that need a floor somewhere else");
 
     return edited;
 }
@@ -1232,7 +1232,7 @@ bool osc::BeginToolbar(CStringView label, std::optional<Vec2> padding)
 
     float const height = ImGui::GetFrameHeight() + 2.0f*ImGui::GetStyle().WindowPadding.y;
     ImGuiWindowFlags const flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
-    bool open = BeginMainViewportTopBar(label, height, flags);
+    bool open = ui::BeginMainViewportTopBar(label, height, flags);
     if (padding)
     {
         ui::PopStyleVar();
@@ -1246,7 +1246,7 @@ void osc::DrawNewModelButton(ParentPtr<IMainUIStateAPI> const& api)
     {
         ActionNewModel(api);
     }
-    DrawTooltipIfItemHovered("New Model", "Creates a new OpenSim model in a new tab");
+    ui::DrawTooltipIfItemHovered("New Model", "Creates a new OpenSim model in a new tab");
 }
 
 void osc::DrawOpenModelButtonWithRecentFilesDropdown(
@@ -1257,11 +1257,11 @@ void osc::DrawOpenModelButtonWithRecentFilesDropdown(
     {
         onUserClickedOpenOrSelectedFile(std::nullopt);
     }
-    DrawTooltipIfItemHovered("Open Model", "Opens an existing osim file in a new tab");
+    ui::DrawTooltipIfItemHovered("Open Model", "Opens an existing osim file in a new tab");
     ui::SameLine();
     ui::PushStyleVar(ImGuiStyleVar_FramePadding, {1.0f, ImGui::GetStyle().FramePadding.y});
     ui::Button(ICON_FA_CARET_DOWN);
-    DrawTooltipIfItemHovered("Open Recent File", "Opens a recently-opened osim file in a new tab");
+    ui::DrawTooltipIfItemHovered("Open Recent File", "Opens a recently-opened osim file in a new tab");
     ui::PopStyleVar();
     ui::PopStyleVar();
 
@@ -1307,7 +1307,7 @@ void osc::DrawSaveModelButton(
     {
         ActionSaveModel(*api, model);
     }
-    DrawTooltipIfItemHovered("Save Model", "Saves the model to an osim file");
+    ui::DrawTooltipIfItemHovered("Save Model", "Saves the model to an osim file");
 }
 
 void osc::DrawReloadModelButton(UndoableModelStatePair& model)
@@ -1329,7 +1329,7 @@ void osc::DrawReloadModelButton(UndoableModelStatePair& model)
         ui::PopStyleVar();
     }
 
-    DrawTooltipIfItemHovered("Reload Model", "Reloads the model from its source osim file");
+    ui::DrawTooltipIfItemHovered("Reload Model", "Reloads the model from its source osim file");
 }
 
 void osc::DrawUndoButton(UndoableModelStatePair& model)
@@ -1349,10 +1349,10 @@ void osc::DrawUndoButton(UndoableModelStatePair& model)
         ActionUndoCurrentlyEditedModel(model);
     }
 
-    PopItemFlags(itemFlagsPushed);
+    ui::PopItemFlags(itemFlagsPushed);
     ui::PopStyleVar(styleVarsPushed);
 
-    DrawTooltipIfItemHovered("Undo", "Undo the model to an earlier version");
+    ui::DrawTooltipIfItemHovered("Undo", "Undo the model to an earlier version");
 }
 
 void osc::DrawRedoButton(UndoableModelStatePair& model)
@@ -1372,10 +1372,10 @@ void osc::DrawRedoButton(UndoableModelStatePair& model)
         ActionRedoCurrentlyEditedModel(model);
     }
 
-    PopItemFlags(itemFlagsPushed);
+    ui::PopItemFlags(itemFlagsPushed);
     ui::PopStyleVar(styleVarsPushed);
 
-    DrawTooltipIfItemHovered("Redo", "Redo the model to an undone version");
+    ui::DrawTooltipIfItemHovered("Redo", "Redo the model to an undone version");
 }
 
 void osc::DrawUndoAndRedoButtons(UndoableModelStatePair& model)
@@ -1388,41 +1388,41 @@ void osc::DrawUndoAndRedoButtons(UndoableModelStatePair& model)
 void osc::DrawToggleFramesButton(UndoableModelStatePair& model, IconCache& icons)
 {
     Icon const& icon = icons.getIcon(IsShowingFrames(model.getModel()) ? "frame_colored" : "frame_bw");
-    if (ImageButton("##toggleframes", icon.getTexture(), icon.getDimensions(), icon.getTextureCoordinates()))
+    if (ui::ImageButton("##toggleframes", icon.getTexture(), icon.getDimensions(), icon.getTextureCoordinates()))
     {
         ActionToggleFrames(model);
     }
-    DrawTooltipIfItemHovered("Toggle Rendering Frames", "Toggles whether frames (coordinate systems) within the model should be rendered in the 3D scene.");
+    ui::DrawTooltipIfItemHovered("Toggle Rendering Frames", "Toggles whether frames (coordinate systems) within the model should be rendered in the 3D scene.");
 }
 
 void osc::DrawToggleMarkersButton(UndoableModelStatePair& model, IconCache& icons)
 {
     Icon const& icon = icons.getIcon(IsShowingMarkers(model.getModel()) ? "marker_colored" : "marker");
-    if (ImageButton("##togglemarkers", icon.getTexture(), icon.getDimensions(), icon.getTextureCoordinates()))
+    if (ui::ImageButton("##togglemarkers", icon.getTexture(), icon.getDimensions(), icon.getTextureCoordinates()))
     {
         ActionToggleMarkers(model);
     }
-    DrawTooltipIfItemHovered("Toggle Rendering Markers", "Toggles whether markers should be rendered in the 3D scene");
+    ui::DrawTooltipIfItemHovered("Toggle Rendering Markers", "Toggles whether markers should be rendered in the 3D scene");
 }
 
 void osc::DrawToggleWrapGeometryButton(UndoableModelStatePair& model, IconCache& icons)
 {
     Icon const& icon = icons.getIcon(IsShowingWrapGeometry(model.getModel()) ? "wrap_colored" : "wrap");
-    if (ImageButton("##togglewrapgeom", icon.getTexture(), icon.getDimensions(), icon.getTextureCoordinates()))
+    if (ui::ImageButton("##togglewrapgeom", icon.getTexture(), icon.getDimensions(), icon.getTextureCoordinates()))
     {
         ActionToggleWrapGeometry(model);
     }
-    DrawTooltipIfItemHovered("Toggle Rendering Wrap Geometry", "Toggles whether wrap geometry should be rendered in the 3D scene.\n\nNOTE: This is a model-level property. Individual wrap geometries *within* the model may have their visibility set to 'false', which will cause them to be hidden from the visualizer, even if this is enabled.");
+    ui::DrawTooltipIfItemHovered("Toggle Rendering Wrap Geometry", "Toggles whether wrap geometry should be rendered in the 3D scene.\n\nNOTE: This is a model-level property. Individual wrap geometries *within* the model may have their visibility set to 'false', which will cause them to be hidden from the visualizer, even if this is enabled.");
 }
 
 void osc::DrawToggleContactGeometryButton(UndoableModelStatePair& model, IconCache& icons)
 {
     Icon const& icon = icons.getIcon(IsShowingContactGeometry(model.getModel()) ? "contact_colored" : "contact");
-    if (ImageButton("##togglecontactgeom", icon.getTexture(), icon.getDimensions(), icon.getTextureCoordinates()))
+    if (ui::ImageButton("##togglecontactgeom", icon.getTexture(), icon.getDimensions(), icon.getTextureCoordinates()))
     {
         ActionToggleContactGeometry(model);
     }
-    DrawTooltipIfItemHovered("Toggle Rendering Contact Geometry", "Toggles whether contact geometry should be rendered in the 3D scene");
+    ui::DrawTooltipIfItemHovered("Toggle Rendering Contact Geometry", "Toggles whether contact geometry should be rendered in the 3D scene");
 }
 
 void osc::DrawAllDecorationToggleButtons(UndoableModelStatePair& model, IconCache& icons)
@@ -1440,7 +1440,7 @@ void osc::DrawSceneScaleFactorEditorControls(UndoableModelStatePair& model)
 {
     ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
     ui::TextUnformatted(ICON_FA_EXPAND_ALT);
-    DrawTooltipIfItemHovered("Scene Scale Factor", "Rescales decorations in the model by this amount. Changing this can be handy when working on extremely small/large models.");
+    ui::DrawTooltipIfItemHovered("Scene Scale Factor", "Rescales decorations in the model by this amount. Changing this can be handy when working on extremely small/large models.");
     ui::SameLine();
 
     {
@@ -1460,7 +1460,7 @@ void osc::DrawSceneScaleFactorEditorControls(UndoableModelStatePair& model)
         ActionAutoscaleSceneScaleFactor(model);
     }
     ui::PopStyleVar();
-    DrawTooltipIfItemHovered("Autoscale Scale Factor", "Try to autoscale the model's scale factor based on the current dimensions of the model");
+    ui::DrawTooltipIfItemHovered("Autoscale Scale Factor", "Try to autoscale the model's scale factor based on the current dimensions of the model");
 }
 
 void osc::DrawMeshExportContextMenuContent(

@@ -119,7 +119,7 @@ private:
         m_Camera.onDraw();
 
         // clear screen and ensure camera has correct pixel rect
-        m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
+        m_Camera.setPixelRect(ui::GetMainViewportWorkspaceScreenRect());
 
         // cubes
         {

@@ -30,7 +30,7 @@ public:
 
     void onDraw()
     {
-        BeginMainViewportBottomBar("bottom");
+        ui::BeginMainViewportBottomBar("bottom");
         drawSelectionBreadcrumbs();
         ui::End();
     }
@@ -45,7 +45,7 @@ private:
             std::vector<OpenSim::Component const*> const els = GetPathElements(*c);
             for (ptrdiff_t i = 0; i < std::ssize(els)-1; ++i)
             {
-                PushID(i);
+                ui::PushID(i);
                 std::string const label = Ellipsis(els[i]->getName(), 15);
                 if (ImGui::SmallButton(label.c_str()))
                 {
@@ -55,7 +55,7 @@ private:
                 ui::SameLine();
                 ui::TextDisabled("/");
                 ui::SameLine();
-                PopID();
+                ui::PopID();
             }
             if (!els.empty())
             {
@@ -72,13 +72,13 @@ private:
 
     void drawMouseInteractionStuff(OpenSim::Component const& c)
     {
-        if (ui::IsItemHovered())
+        if (ImGui::IsItemHovered())
         {
             m_Model->setHovered(&c);
 
-            BeginTooltip();
+            ui::BeginTooltip();
             ui::TextDisabled(c.getConcreteClassName());
-            EndTooltip();
+            ui::EndTooltip();
         }
         if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
         {

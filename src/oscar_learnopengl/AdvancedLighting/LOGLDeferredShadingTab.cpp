@@ -194,7 +194,7 @@ private:
 
     void draw3DScene()
     {
-        Rect const viewportRect = GetMainViewportWorkspaceScreenRect();
+        Rect const viewportRect = ui::GetMainViewportWorkspaceScreenRect();
         Vec2 const viewportDims = dimensions(viewportRect);
         AntiAliasingLevel const antiAliasingLevel = App::get().getCurrentAntiAliasingLevel();
 

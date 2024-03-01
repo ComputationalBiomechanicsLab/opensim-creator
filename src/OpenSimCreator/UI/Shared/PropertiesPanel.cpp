@@ -36,14 +36,14 @@ namespace
         ui::Columns(2);
         ui::TextUnformatted("actions");
         ui::SameLine();
-        DrawHelpMarker("Shows a menu containing extra actions that can be performed on this component.\n\nYou can also access the same menu by right-clicking the component in the 3D viewer, bottom status bar, or navigator panel.");
+        ui::DrawHelpMarker("Shows a menu containing extra actions that can be performed on this component.\n\nYou can also access the same menu by right-clicking the component in the 3D viewer, bottom status bar, or navigator panel.");
         ui::NextColumn();
-        PushStyleColor(ImGuiCol_Text, Color::yellow());
+        ui::PushStyleColor(ImGuiCol_Text, Color::yellow());
         if (ui::Button(ICON_FA_BOLT) || ImGui::IsItemClicked(ImGuiMouseButton_Right))
         {
             editorAPI->pushComponentContextMenuPopup(GetAbsolutePath(*selection));
         }
-        PopStyleColor();
+        ui::PopStyleColor();
         ui::NextColumn();
         ui::Columns();
     }
@@ -77,13 +77,13 @@ namespace
             ui::Separator();
             ui::TextUnformatted("name");
             ui::SameLine();
-            DrawHelpMarker("The name of the component", "The component's name can be important. It can be used when components want to refer to eachover. E.g. a joint will name the two frames it attaches to.");
+            ui::DrawHelpMarker("The name of the component", "The component's name can be important. It can be used when components want to refer to eachover. E.g. a joint will name the two frames it attaches to.");
 
             ui::NextColumn();
 
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            InputString("##nameeditor", m_EditedName);
-            if (ItemValueShouldBeSaved())
+            ui::InputString("##nameeditor", m_EditedName);
+            if (ui::ItemValueShouldBeSaved())
             {
                 ActionSetComponentName(*m_Model, GetAbsolutePath(*selected), m_EditedName);
             }

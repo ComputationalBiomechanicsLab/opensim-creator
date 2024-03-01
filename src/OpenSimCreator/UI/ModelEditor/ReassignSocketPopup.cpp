@@ -177,7 +177,7 @@ private:
             {
                 userSelection = option.absPath;
             }
-            DrawTooltipIfItemHovered(option.absPath.toString());
+            ui::DrawTooltipIfItemHovered(option.absPath.toString());
             ui::PopID();
         }
         ImGui::EndChild();
@@ -237,7 +237,7 @@ private:
         {
             bool v = false;
             ui::Checkbox(label.c_str(), &v);
-            DrawTooltipBodyOnlyIfItemHovered("Disabled: the socket doesn't connect to a physical frame");
+            ui::DrawTooltipBodyOnlyIfItemHovered("Disabled: the socket doesn't connect to a physical frame");
             return;
         }
 
@@ -247,7 +247,7 @@ private:
         {
             bool v = false;
             ui::Checkbox(label.c_str(), &v);
-            DrawTooltipBodyOnlyIfItemHovered("Disabled: the component doesn't have a spatial representation that OSC knows how to re-express");
+            ui::DrawTooltipBodyOnlyIfItemHovered("Disabled: the component doesn't have a spatial representation that OSC knows how to re-express");
             return;
         }
 

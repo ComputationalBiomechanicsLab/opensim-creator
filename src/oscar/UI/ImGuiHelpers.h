@@ -25,7 +25,7 @@ namespace osc { class RenderTexture; }
 namespace osc { class Texture2D; }
 namespace osc { class UID; }
 
-namespace osc
+namespace osc::ui
 {
     // applies "dark" theme to current ImGui context
     void ImGuiApplyDarkTheme();
@@ -166,7 +166,7 @@ namespace osc
     // draws an overlay tooltip with a header and description
     void DrawTooltip(CStringView header, CStringView description = {});
 
-    // equivalent to `if (ui::IsItemHovered(flags)) DrawTooltip(header, description);`
+    // equivalent to `if (ImGui::IsItemHovered(flags)) DrawTooltip(header, description);`
     void DrawTooltipIfItemHovered(
         CStringView header,
         CStringView description = {},
@@ -178,9 +178,6 @@ namespace osc
 
     // draw a help text marker `"(?)"` and display a tooltip when the user hovers over it
     void DrawHelpMarker(CStringView);
-
-    // draw the provided string view using ui::TextUnformatted
-    void TextUnformatted(CStringView);
 
     // draw an ImGui::InputText that manipulates a std::string
     bool InputString(
@@ -243,13 +240,6 @@ namespace osc
         Radians min,
         Radians max
     );
-
-    // push things as-if by calling `ui::PushID(int);`
-    void PushID(UID);
-    void PushID(ptrdiff_t);
-
-    // symmetric equivalent to `ui::PopID();`
-    void PopID();
 
     // convert a color to ImU32 (used by ImGui's drawlist)
     ImU32 ToImU32(Color const&);
@@ -331,7 +321,4 @@ namespace osc
         CStringView format = "%.3f",
         ImGuiSliderFlags flags = 0
     );
-
-    void BeginDisabled();
-    void EndDisabled();
 }

@@ -60,14 +60,14 @@ private:
         {
             m_SimulatorAPI->setSimulationScrubTime(m_Simulation->getStartTime());
         }
-        DrawTooltipIfItemHovered("Go to First State");
+        ui::DrawTooltipIfItemHovered("Go to First State");
         ui::SameLine();
 
         if (ui::Button(ICON_FA_STEP_BACKWARD))
         {
             m_SimulatorAPI->stepBack();
         }
-        DrawTooltipIfItemHovered("Previous State");
+        ui::DrawTooltipIfItemHovered("Previous State");
     }
 
     void drawPlayOrPauseOrReplayButton()
@@ -84,7 +84,7 @@ private:
                 m_SimulatorAPI->setSimulationScrubTime(tStart);
                 m_SimulatorAPI->setSimulationPlaybackState(true);
             }
-            DrawTooltipIfItemHovered("Replay");
+            ui::DrawTooltipIfItemHovered("Replay");
         }
         else if (!m_SimulatorAPI->getSimulationPlaybackState())
         {
@@ -92,7 +92,7 @@ private:
             {
                 m_SimulatorAPI->setSimulationPlaybackState(true);
             }
-            DrawTooltipIfItemHovered("Play");
+            ui::DrawTooltipIfItemHovered("Play");
         }
         else
         {
@@ -100,7 +100,7 @@ private:
             {
                 m_SimulatorAPI->setSimulationPlaybackState(false);
             }
-            DrawTooltipIfItemHovered("Pause");
+            ui::DrawTooltipIfItemHovered("Pause");
         }
     }
 
@@ -110,7 +110,7 @@ private:
         {
             m_SimulatorAPI->stepForward();
         }
-        DrawTooltipIfItemHovered("Next State");
+        ui::DrawTooltipIfItemHovered("Next State");
 
         ui::SameLine();
 
@@ -118,7 +118,7 @@ private:
         {
             m_SimulatorAPI->setSimulationScrubTime(m_Simulation->getEndTime());
         }
-        DrawTooltipIfItemHovered("Go to Last State");
+        ui::DrawTooltipIfItemHovered("Go to Last State");
     }
 
     void drawStartTimeText()
@@ -159,12 +159,12 @@ private:
             m_SimulatorAPI->setSimulationScrubTime(SimulationClock::start() + SimulationClock::duration{static_cast<double>(v)});
         }
 
-        if (ui::IsItemHovered())
+        if (ImGui::IsItemHovered())
         {
-            BeginTooltip();
+            ui::BeginTooltip();
             ui::TextUnformatted("Left-Click: Change simulation time being shown");
             ui::TextUnformatted("Ctrl-Click: Type in the simulation time being shown");
-            EndTooltip();
+            ui::EndTooltip();
         }
     }
 

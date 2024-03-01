@@ -172,7 +172,7 @@ private:
         }
 
         // render to output (window)
-        m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
+        m_Camera.setPixelRect(ui::GetMainViewportWorkspaceScreenRect());
         m_Camera.renderToScreen();
 
         // render auxiliary UI

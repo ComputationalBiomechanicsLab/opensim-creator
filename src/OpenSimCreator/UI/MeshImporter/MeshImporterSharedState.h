@@ -307,7 +307,7 @@ namespace osc::mi
             std::unordered_set<UID> const& excludedIDs) const
         {
             Document const& mg = getModelGraph();
-            ImU32 colorU32 = ToImU32(color);
+            ImU32 colorU32 = ui::ToImU32(color);
 
             for (MIObject const& el : mg.iter())
             {
@@ -342,7 +342,7 @@ namespace osc::mi
         void drawConnectionLines(MeshImporterHover const& currentHover) const
         {
             Document const& mg = getModelGraph();
-            ImU32 color = ToImU32(m_Colors.connectionLines);
+            ImU32 color = ui::ToImU32(m_Colors.connectionLines);
 
             for (MIObject const& el : mg.iter())
             {
@@ -376,7 +376,7 @@ namespace osc::mi
 
         void setContentRegionAvailAsSceneRect()
         {
-            set3DSceneRect(ContentRegionAvailScreenRect());
+            set3DSceneRect(ui::ContentRegionAvailScreenRect());
         }
 
         void drawScene(std::span<DrawableThing const> drawables)
@@ -416,10 +416,10 @@ namespace osc::mi
             m_SceneRenderer.render(decs, p);
 
             // send texture to ImGui
-            DrawTextureAsImGuiImage(m_SceneRenderer.updRenderTexture(), m_SceneRenderer.getDimensions());
+            ui::DrawTextureAsImGuiImage(m_SceneRenderer.updRenderTexture(), m_SceneRenderer.getDimensions());
 
             // handle hittesting, etc.
-            setIsRenderHovered(ui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup));
+            setIsRenderHovered(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup));
         }
 
         bool isRenderHovered() const

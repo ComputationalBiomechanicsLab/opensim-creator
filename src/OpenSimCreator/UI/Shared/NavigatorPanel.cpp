@@ -323,12 +323,12 @@ private:
             int styles = 0;
             if (cur == selection)
             {
-                PushStyleColor(ImGuiCol_Text, Color::yellow());
+                ui::PushStyleColor(ImGuiCol_Text, Color::yellow());
                 ++styles;
             }
             else if (cur == hover)
             {
-                PushStyleColor(ImGuiCol_Text, Color::yellow());
+                ui::PushStyleColor(ImGuiCol_Text, Color::yellow());
                 ++styles;
             }
             else if (!hasSearch || searchHit)
@@ -337,7 +337,7 @@ private:
             }
             else
             {
-                PushStyleColor(ImGuiCol_Text, Color::halfGrey());
+                ui::PushStyleColor(ImGuiCol_Text, Color::halfGrey());
                 ++styles;
             }
 
@@ -356,12 +356,12 @@ private:
             ui::PopID();
             ImGui::PopStyleColor(styles);
 
-            if (ui::IsItemHovered())
+            if (ImGui::IsItemHovered())
             {
                 rv.type = ResponseType::HoverChanged;
                 rv.ptr = cur;
 
-                DrawTooltip(cur->getConcreteClassName());
+                ui::DrawTooltip(cur->getConcreteClassName());
             }
 
             if (ImGui::IsItemClicked(ImGuiMouseButton_Left))

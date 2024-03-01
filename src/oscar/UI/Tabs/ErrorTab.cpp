@@ -30,7 +30,7 @@ private:
         constexpr float width = 800.0f;
         constexpr float padding = 10.0f;
 
-        Rect tabRect = GetMainViewportWorkspaceScreenRect();
+        Rect tabRect = ui::GetMainViewportWorkspaceScreenRect();
         Vec2 tabDims = dimensions(tabRect);
 
         // error message panel

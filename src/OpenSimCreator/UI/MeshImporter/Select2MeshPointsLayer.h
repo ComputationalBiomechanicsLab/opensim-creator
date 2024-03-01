@@ -160,7 +160,7 @@ namespace osc::mi
             Vec3 clickedWorldPos = m_MaybeFirstLocation ? *m_MaybeFirstLocation : *m_MaybeSecondLocation;
             Vec2 clickedScrPos = m_Shared->worldPosToScreenPos(clickedWorldPos);
 
-            auto color = ToImU32(Color::black());
+            auto color = ui::ToImU32(Color::black());
 
             ImDrawList* dl = ImGui::GetWindowDrawList();
             dl->AddCircleFilled(clickedScrPos, 5.0f, color);
@@ -183,7 +183,7 @@ namespace osc::mi
                 return;
             }
 
-            ImU32 color = ToImU32(Color::white());
+            ImU32 color = ui::ToImU32(Color::white());
             Vec2 padding{10.0f, 10.0f};
             Vec2 pos = m_Shared->get3DSceneRect().p1 + padding;
             ImGui::GetWindowDrawList()->AddText(pos, color, m_Options.header.c_str());
@@ -193,11 +193,11 @@ namespace osc::mi
         void drawCancelButton()
         {
             ui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
-            PushStyleColor(ImGuiCol_Button, Color::halfGrey());
+            ui::PushStyleColor(ImGuiCol_Button, Color::halfGrey());
 
             CStringView const text = ICON_FA_ARROW_LEFT " Cancel (ESC)";
             Vec2 const margin = {25.0f, 35.0f};
-            Vec2 const buttonTopLeft = m_Shared->get3DSceneRect().p2 - (CalcButtonSize(text) + margin);
+            Vec2 const buttonTopLeft = m_Shared->get3DSceneRect().p2 - (ui::CalcButtonSize(text) + margin);
 
             ImGui::SetCursorScreenPos(buttonTopLeft);
             if (ui::Button(text.c_str()))
@@ -205,7 +205,7 @@ namespace osc::mi
                 requestPop();
             }
 
-            PopStyleColor();
+            ui::PopStyleColor();
             ui::PopStyleVar();
         }
 
@@ -228,7 +228,7 @@ namespace osc::mi
 
             if (isRenderHovered)
             {
-                UpdatePolarCameraFromImGuiMouseInputs(m_Shared->updCamera(), m_Shared->get3DSceneDims());
+                ui::UpdatePolarCameraFromImGuiMouseInputs(m_Shared->updCamera(), m_Shared->get3DSceneDims());
             }
         }
 

@@ -50,9 +50,9 @@ public:
             }
 
             // draw tooltip (if hovered)
-            if (ui::IsItemHovered())
+            if (ImGui::IsItemHovered())
             {
-                DrawTooltip(
+                ui::DrawTooltip(
                     "Add an OpenSim::Body into the model",
                     "An OpenSim::Body is a PhysicalFrame (reference frame) with an associated inertia specified by its mass, center-of-mass located in the PhysicalFrame, and its moment of inertia tensor about the center-of-mass");
             }
@@ -90,21 +90,21 @@ private:
                     m_EditorAPI->pushPopup(std::move(popup));
                 }
 
-                if (ui::IsItemHovered())
+                if (ImGui::IsItemHovered())
                 {
-                    DrawTooltip(entry.name(), entry.description());
+                    ui::DrawTooltip(entry.name(), entry.description());
                 }
             }
 
             ui::EndMenu();
         }
 
-        if (ui::IsItemHovered())
+        if (ImGui::IsItemHovered())
         {
             std::stringstream ttTitle;
             ttTitle << "Add a " << registry.name() << " into the model";
 
-            DrawTooltip(ttTitle.str(), registry.description());
+            ui::DrawTooltip(ttTitle.str(), registry.description());
         }
     }
 

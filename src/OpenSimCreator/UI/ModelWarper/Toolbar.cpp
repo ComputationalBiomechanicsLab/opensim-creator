@@ -35,27 +35,27 @@ void osc::mow::Toolbar::drawWarpModelButton()
     if (!m_State->canWarpModel()) {
         ui::BeginDisabled();
     }
-    PushStyleColor(ImGuiCol_Button, Color::darkGreen());
+    ui::PushStyleColor(ImGuiCol_Button, Color::darkGreen());
     if (ui::Button(ICON_FA_PLAY " Warp Model")) {
         m_State->actionWarpModelAndOpenInModelEditor();
     }
-    PopStyleColor();
+    ui::PopStyleColor();
     if (!m_State->canWarpModel()) {
         ui::EndDisabled();
     }
 
-    if (ui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
-        BeginTooltip();
-        TooltipHeaderText("Warp Model");
-        TooltipDescriptionSpacer();
-        TooltipDescriptionText("Warp the model and open the warped model in the model editor");
+    if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
+        ui::BeginTooltip();
+        ui::TooltipHeaderText("Warp Model");
+        ui::TooltipDescriptionSpacer();
+        ui::TooltipDescriptionText("Warp the model and open the warped model in the model editor");
         if (!m_State->canWarpModel()) {
-            TooltipDescriptionSpacer();
-            PushStyleColor(ImGuiCol_Text, Color::mutedRed());
+            ui::TooltipDescriptionSpacer();
+            ui::PushStyleColor(ImGuiCol_Text, Color::mutedRed());
             ui::Text("Cannot warp the model right now: there are errors that need to be fixed. See the checklist panel.");
-            PopStyleColor();
+            ui::PopStyleColor();
         }
-        EndTooltip();
+        ui::EndTooltip();
     }
 
     ui::SameLine();

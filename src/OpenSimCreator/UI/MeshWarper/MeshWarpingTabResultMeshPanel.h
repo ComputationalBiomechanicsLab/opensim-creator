@@ -53,8 +53,8 @@ namespace osc
 
             // render it via ImGui and hittest it
             RenderTexture& renderTexture = renderScene(dims);
-            DrawTextureAsImGuiImage(renderTexture);
-            m_LastTextureHittestResult = HittestLastImguiItem();
+            ui::DrawTextureAsImGuiImage(renderTexture);
+            m_LastTextureHittestResult = ui::HittestLastImguiItem();
 
             drawOverlays(m_LastTextureHittestResult.rect);
         }
@@ -78,7 +78,7 @@ namespace osc
             // update camera if user drags it around etc.
             if (m_LastTextureHittestResult.isHovered)
             {
-                if (UpdatePolarCameraFromImGuiMouseInputs(m_Camera, dimensions(m_LastTextureHittestResult.rect)))
+                if (ui::UpdatePolarCameraFromImGuiMouseInputs(m_Camera, dimensions(m_LastTextureHittestResult.rect)))
                 {
                     m_State->linkedCameraBase = m_Camera;  // reflects latest modification
                 }
@@ -106,15 +106,15 @@ namespace osc
         // draws a information icon that shows basic mesh info when hovered
         void drawInformationIcon()
         {
-            ButtonNoBg(ICON_FA_INFO_CIRCLE);
-            if (ui::IsItemHovered())
+            ui::ButtonNoBg(ICON_FA_INFO_CIRCLE);
+            if (ImGui::IsItemHovered())
             {
-                BeginTooltip();
+                ui::BeginTooltip();
 
                 ui::TextDisabled("Result Information:");
                 drawInformationTable();
 
-                EndTooltip();
+                ui::EndTooltip();
             }
         }
 
@@ -189,7 +189,7 @@ namespace osc
                 );
                 m_State->linkedCameraBase = m_Camera;
             }
-            DrawTooltipIfItemHovered(
+            ui::DrawTooltipIfItemHovered(
                 "Autoscale Scene",
                 "Zooms camera to try and fit everything in the scene into the viewer"
             );
@@ -282,7 +282,7 @@ namespace osc
             *App::singleton<SceneCache>(),
             *App::singleton<ShaderCache>(App::resource_loader()),
         };
-        ImGuiItemHittestResult m_LastTextureHittestResult;
+        ui::ImGuiItemHittestResult m_LastTextureHittestResult;
         bool m_WireframeMode = true;
         bool m_ShowDestinationMesh = false;
         Vec2 m_OverlayPadding = {10.0f, 10.0f};

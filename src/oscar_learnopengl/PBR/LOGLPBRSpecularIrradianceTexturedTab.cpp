@@ -237,7 +237,7 @@ private:
 
     void implOnDraw() final
     {
-        Rect const outputRect = GetMainViewportWorkspaceScreenRect();
+        Rect const outputRect = ui::GetMainViewportWorkspaceScreenRect();
         m_OutputRender.setDimensions(dimensions(outputRect));
         m_OutputRender.setAntialiasingLevel(App::get().getCurrentAntiAliasingLevel());
 

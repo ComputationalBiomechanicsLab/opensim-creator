@@ -61,14 +61,14 @@ private:
     {
         ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {2.0f, 0.0f});
 
-        PushStyleColor(ImGuiCol_Text, Color::darkGreen());
+        ui::PushStyleColor(ImGuiCol_Text, Color::darkGreen());
         if (ui::Button(ICON_FA_PLAY))
         {
             ActionStartSimulatingModel(m_MainUIStateAPI, *m_Model);
         }
-        PopStyleColor();
-        App::upd().addFrameAnnotation("Simulate Button", GetItemRect());
-        DrawTooltipIfItemHovered("Simulate Model", "Run a forward-dynamic simulation of the model");
+        ui::PopStyleColor();
+        App::upd().addFrameAnnotation("Simulate Button", ui::GetItemRect());
+        ui::DrawTooltipIfItemHovered("Simulate Model", "Run a forward-dynamic simulation of the model");
 
         ui::SameLine();
 
@@ -76,7 +76,7 @@ private:
         {
             m_EditorAPI->pushPopup(std::make_unique<ParamBlockEditorPopup>("simulation parameters", &m_MainUIStateAPI->updSimulationParams()));
         }
-        DrawTooltipIfItemHovered("Edit Simulation Settings", "Change the parameters used when simulating the model");
+        ui::DrawTooltipIfItemHovered("Edit Simulation Settings", "Change the parameters used when simulating the model");
 
         ui::PopStyleVar();
     }
@@ -84,16 +84,16 @@ private:
     void drawContent()
     {
         drawModelFileRelatedButtons();
-        SameLineWithVerticalSeperator();
+        ui::SameLineWithVerticalSeperator();
 
         DrawUndoAndRedoButtons(*m_Model);
-        SameLineWithVerticalSeperator();
+        ui::SameLineWithVerticalSeperator();
 
         DrawSceneScaleFactorEditorControls(*m_Model);
-        SameLineWithVerticalSeperator();
+        ui::SameLineWithVerticalSeperator();
 
         drawForwardDynamicSimulationControls();
-        SameLineWithVerticalSeperator();
+        ui::SameLineWithVerticalSeperator();
 
         DrawAllDecorationToggleButtons(*m_Model, *m_IconCache);
     }

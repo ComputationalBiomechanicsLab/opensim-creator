@@ -28,7 +28,7 @@ bool osc::DrawGizmoModeSelector(ImGuizmo::MODE& mode)
     ui::PopStyleVar();
     constexpr CStringView tooltipTitle = "Manipulation coordinate system";
     constexpr CStringView tooltipDesc = "This affects whether manipulations (such as the arrow gizmos that you can use to translate things) are performed relative to the global coordinate system or the selection's (local) one. Local manipulations can be handy when translating/rotating something that's already rotated.";
-    DrawTooltipIfItemHovered(tooltipTitle, tooltipDesc);
+    ui::DrawTooltipIfItemHovered(tooltipTitle, tooltipDesc);
 
     return rv;
 }
@@ -49,7 +49,7 @@ bool osc::DrawGizmoOpSelector(
     {
         if (op == ImGuizmo::TRANSLATE)
         {
-            PushStyleColor(ImGuiCol_Button, Color::mutedBlue());
+            ui::PushStyleColor(ImGuiCol_Button, Color::mutedBlue());
             ++colorsPushed;
         }
         if (ui::Button(ICON_FA_ARROWS_ALT))
@@ -60,7 +60,7 @@ bool osc::DrawGizmoOpSelector(
                 rv = true;
             }
         }
-        DrawTooltipIfItemHovered("Translate", "Make the 3D manipulation gizmos translate things (hotkey: G)");
+        ui::DrawTooltipIfItemHovered("Translate", "Make the 3D manipulation gizmos translate things (hotkey: G)");
         ImGui::PopStyleColor(std::exchange(colorsPushed, 0));
         ui::SameLine();
     }
@@ -69,7 +69,7 @@ bool osc::DrawGizmoOpSelector(
     {
         if (op == ImGuizmo::ROTATE)
         {
-            PushStyleColor(ImGuiCol_Button, Color::mutedBlue());
+            ui::PushStyleColor(ImGuiCol_Button, Color::mutedBlue());
             ++colorsPushed;
         }
         if (ui::Button(ICON_FA_REDO))
@@ -80,7 +80,7 @@ bool osc::DrawGizmoOpSelector(
                 rv = true;
             }
         }
-        DrawTooltipIfItemHovered("Rotate", "Make the 3D manipulation gizmos rotate things (hotkey: R)");
+        ui::DrawTooltipIfItemHovered("Rotate", "Make the 3D manipulation gizmos rotate things (hotkey: R)");
         ImGui::PopStyleColor(std::exchange(colorsPushed, 0));
         ui::SameLine();
     }
@@ -89,7 +89,7 @@ bool osc::DrawGizmoOpSelector(
     {
         if (op == ImGuizmo::SCALE)
         {
-            PushStyleColor(ImGuiCol_Button, Color::mutedBlue());
+            ui::PushStyleColor(ImGuiCol_Button, Color::mutedBlue());
             ++colorsPushed;
         }
         if (ui::Button(ICON_FA_EXPAND_ARROWS_ALT))
@@ -100,7 +100,7 @@ bool osc::DrawGizmoOpSelector(
                 rv = true;
             }
         }
-        DrawTooltipIfItemHovered("Scale", "Make the 3D manipulation gizmos scale things (hotkey: S)");
+        ui::DrawTooltipIfItemHovered("Scale", "Make the 3D manipulation gizmos scale things (hotkey: S)");
         ImGui::PopStyleColor(std::exchange(colorsPushed, 0));
         ui::SameLine();
     }
@@ -114,8 +114,8 @@ bool osc::UpdateImguizmoStateFromKeyboard(
     ImGuizmo::OPERATION& op,
     ImGuizmo::MODE& mode)
 {
-    bool const shiftDown = IsShiftDown();
-    bool const ctrlOrSuperDown = IsCtrlOrSuperDown();
+    bool const shiftDown = ui::IsShiftDown();
+    bool const ctrlOrSuperDown = ui::IsCtrlOrSuperDown();
 
     if (shiftDown || ctrlOrSuperDown)
     {

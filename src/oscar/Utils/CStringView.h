@@ -13,6 +13,8 @@ namespace osc
     class CStringView final {
     public:
         using value_type = std::string_view::value_type;
+        using pointer = value_type*;
+        using const_pointer = value_type const*;
         using iterator = value_type*;
         using const_iterator = value_type const*;
 
@@ -72,6 +74,11 @@ namespace osc
         constexpr const_iterator end() const
         {
             return m_Data + m_Size;
+        }
+
+        constexpr const_pointer data() const
+        {
+            return m_Data;
         }
 
         constexpr friend bool operator==(CStringView const& lhs, CStringView const& rhs)

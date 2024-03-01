@@ -135,7 +135,7 @@ private:
             Graphics::DrawMesh(m_CubeMesh, m_LightTransform, m_LightCubeMaterial, m_Camera);
         }
 
-        m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
+        m_Camera.setPixelRect(ui::GetMainViewportWorkspaceScreenRect());
         m_Camera.renderToScreen();
 
         ui::Begin("controls");

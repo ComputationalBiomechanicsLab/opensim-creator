@@ -40,7 +40,7 @@ namespace osc
             }
             else
             {
-                TextDisabledAndCentered("(none in the scene)");
+                ui::TextDisabledAndCentered("(none in the scene)");
             }
 
             ImGui::NewLine();
@@ -53,7 +53,7 @@ namespace osc
             }
             else
             {
-                TextDisabledAndCentered("(none in the scene)");
+                ui::TextDisabledAndCentered("(none in the scene)");
             }
             ImGui::NewLine();
         }
@@ -90,7 +90,7 @@ namespace osc
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
             ImGui::AlignTextToFramePadding();
-            TextColumnCentered(p.name);
+            ui::TextColumnCentered(p.name);
 
             // source column
             ImGui::TableSetColumnIndex(1);
@@ -123,7 +123,7 @@ namespace osc
             bool hasLocation)
         {
             Circle const circle{.origin = calcColumnMidpointScreenPos(), .radius = calcCircleRadius()};
-            ImU32 const color = ToImU32(landmarkDotColor(hasLocation, isPaired));
+            ImU32 const color = ui::ToImU32(landmarkDotColor(hasLocation, isPaired));
 
             auto& dl = *ImGui::GetWindowDrawList();
             if (hasLocation)
@@ -146,11 +146,11 @@ namespace osc
             float const thickness = 2.0f;
             if (isSelected)
             {
-                dl.AddCircle(circle.origin, circle.radius + thickness, ToImU32(Color::yellow()), 0, thickness);
+                dl.AddCircle(circle.origin, circle.radius + thickness, ui::ToImU32(Color::yellow()), 0, thickness);
             }
             else if (isHovered)
             {
-                dl.AddCircle(circle.origin, circle.radius + thickness, ToImU32(Color::yellow().withAlpha(0.5f)), 0, thickness);
+                dl.AddCircle(circle.origin, circle.radius + thickness, ui::ToImU32(Color::yellow().withAlpha(0.5f)), 0, thickness);
             }
         }
 
@@ -162,7 +162,7 @@ namespace osc
             Vec2 const direction = normalize(dest.origin - src.origin);
             Vec2 const start = src.origin  + (src.radius  + Vec2{pad, 0.0f})*direction;
             Vec2 const end   = dest.origin - (dest.radius + Vec2{pad, 0.0f})*direction;
-            ImU32 const color = ToImU32(Color::halfGrey());
+            ImU32 const color = ui::ToImU32(Color::halfGrey());
             ImGui::GetWindowDrawList()->AddLine(start, end, color);
 
             // draw triangle on end of connecting line to form an arrow
@@ -202,7 +202,7 @@ namespace osc
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
             ImGui::AlignTextToFramePadding();
-            TextColumnCentered(npl.name);
+            ui::TextColumnCentered(npl.name);
 
             // source column
             ImGui::TableSetColumnIndex(1);
@@ -221,7 +221,7 @@ namespace osc
             ImGui::GetWindowDrawList()->AddCircleFilled(
                 circle.origin,
                 circle.radius,
-                ToImU32(m_State->nonParticipatingLandmarkColor)
+                ui::ToImU32(m_State->nonParticipatingLandmarkColor)
             );
 
             tryDrawCircleHighlight(circle, isSelected, isHovered);

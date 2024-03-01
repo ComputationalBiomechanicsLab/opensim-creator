@@ -134,7 +134,7 @@ namespace
         if (!prop.getComment().empty())
         {
             ui::SameLine();
-            DrawHelpMarker(prop.getComment());
+            ui::DrawHelpMarker(prop.getComment());
         }
     }
 
@@ -177,7 +177,7 @@ namespace
         Vec2 const p = ImGui::GetCursorScreenPos();
         float const h = ImGui::GetTextLineHeight() + 2.0f*ImGui::GetStyle().FramePadding.y + 2.0f*ImGui::GetStyle().FrameBorderSize;
         Vec2 const dims = Vec2{4.0f, h};
-        l->AddRectFilled(p, p + dims, ToImU32(color));
+        l->AddRectFilled(p, p + dims, ui::ToImU32(color));
         ImGui::SetCursorScreenPos({p.x + 4.0f, p.y});
     }
 
@@ -188,7 +188,7 @@ namespace
         {
             ui::Text("Set Step Size");
             ui::SameLine();
-            DrawHelpMarker("Sets the decrement/increment of the + and - buttons. Can be handy for tweaking property values");
+            ui::DrawHelpMarker("Sets the decrement/increment of the + and - buttons. Can be handy for tweaking property values");
             ui::Dummy({0.0f, 0.1f*ImGui::GetTextLineHeight()});
             ui::Separator();
             ui::Dummy({0.0f, 0.2f*ImGui::GetTextLineHeight()});
@@ -341,9 +341,9 @@ namespace
             rv.wasEdited = true;
         }
         ui::PopStyleVar();
-        rv.shouldSave = ItemValueShouldBeSaved();
-        App::upd().addFrameAnnotation(frameAnnotationLabel, GetItemRect());
-        DrawTooltipIfItemHovered("Step Size", "You can right-click to adjust the step size of the buttons");
+        rv.shouldSave = ui::ItemValueShouldBeSaved();
+        App::upd().addFrameAnnotation(frameAnnotationLabel, ui::GetItemRect());
+        ui::DrawTooltipIfItemHovered("Step Size", "You can right-click to adjust the step size of the buttons");
         DrawStepSizeEditor(stepSize);
 
         return rv;
@@ -553,16 +553,16 @@ namespace
             std::string value = idx < m_EditedProperty.size() ? m_EditedProperty.getValue(idx) : std::string{};
 
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            if (InputString("##stringeditor", value))
+            if (ui::InputString("##stringeditor", value))
             {
                 // update the edited property - don't rely on ImGui to remember edits
                 m_EditedProperty.setValue(idx, value);
             }
 
             // globally annotate the editor rect, for downstream screenshot automation
-            App::upd().addFrameAnnotation("ObjectPropertiesEditor::StringEditor/" + m_EditedProperty.getName(), GetItemRect());
+            App::upd().addFrameAnnotation("ObjectPropertiesEditor::StringEditor/" + m_EditedProperty.getName(), ui::GetItemRect());
 
-            if (ItemValueShouldBeSaved())
+            if (ui::ItemValueShouldBeSaved())
             {
                 rv = MakePropValueSetter(idx, m_EditedProperty.getValue(idx));
             }
@@ -741,9 +741,9 @@ namespace
             }
 
             // globally annotate the editor rect, for downstream screenshot automation
-            App::upd().addFrameAnnotation("ObjectPropertiesEditor::BoolEditor/" + m_EditedProperty.getName(), GetItemRect());
+            App::upd().addFrameAnnotation("ObjectPropertiesEditor::BoolEditor/" + m_EditedProperty.getName(), ui::GetItemRect());
 
-            if (edited || ItemValueShouldBeSaved())
+            if (edited || ui::ItemValueShouldBeSaved())
             {
                 rv = MakePropValueSetter(idx, m_EditedProperty.getValue(idx));
             }
@@ -950,7 +950,7 @@ namespace
             {
                 ui::TextDisabled("Frame (editing)");
                 ui::SameLine();
-                DrawHelpMarker("Note: this only affects the values that the quantities are edited in. It does not change the frame that the component is attached to. You can change the frame attachment by using the component's context menu: Socket > $FRAME > (edit button) > (select new frame)");
+                ui::DrawHelpMarker("Note: this only affects the values that the quantities are edited in. It does not change the frame that the component is attached to. You can change the frame attachment by using the component's context menu: Socket > $FRAME > (edit button) > (select new frame)");
                 ui::Dummy({0.0f, 0.25f*ImGui::GetTextLineHeight()});
 
                 int imguiID = 0;
@@ -1035,7 +1035,7 @@ namespace
             Vec3 editedValue,
             ValueConverter const& valueConverter)
         {
-            PushID(i);
+            ui::PushID(i);
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 
             // draw dimension hint (color bar next to the input)
@@ -1071,8 +1071,8 @@ namespace
                 {
                     m_OrientationValsAreInRadians = !m_OrientationValsAreInRadians;
                 }
-                App::upd().addFrameAnnotation("ObjectPropertiesEditor::OrientationToggle/" + m_EditedProperty.getName(), GetItemRect());
-                DrawTooltipBodyOnlyIfItemHovered("This quantity is edited in radians (click to switch to degrees)");
+                App::upd().addFrameAnnotation("ObjectPropertiesEditor::OrientationToggle/" + m_EditedProperty.getName(), ui::GetItemRect());
+                ui::DrawTooltipBodyOnlyIfItemHovered("This quantity is edited in radians (click to switch to degrees)");
             }
             else
             {
@@ -1080,8 +1080,8 @@ namespace
                 {
                     m_OrientationValsAreInRadians = !m_OrientationValsAreInRadians;
                 }
-                App::upd().addFrameAnnotation("ObjectPropertiesEditor::OrientationToggle/" + m_EditedProperty.getName(), GetItemRect());
-                DrawTooltipBodyOnlyIfItemHovered("This quantity is edited in degrees (click to switch to radians)");
+                App::upd().addFrameAnnotation("ObjectPropertiesEditor::OrientationToggle/" + m_EditedProperty.getName(), ui::GetItemRect());
+                ui::DrawTooltipBodyOnlyIfItemHovered("This quantity is edited in degrees (click to switch to radians)");
             }
         }
 
@@ -1170,8 +1170,8 @@ namespace
                     m_EditedProperty.updValue(idx)[3*i + 1] = static_cast<double>(rawValue[3*i + 1]);
                     m_EditedProperty.updValue(idx)[3*i + 2] = static_cast<double>(rawValue[3*i + 2]);
                 }
-                shouldSave = shouldSave || ItemValueShouldBeSaved();
-                App::upd().addFrameAnnotation("ObjectPropertiesEditor::Vec6Editor/" + m_EditedProperty.getName(), osc::GetItemRect());
+                shouldSave = shouldSave || ui::ItemValueShouldBeSaved();
+                App::upd().addFrameAnnotation("ObjectPropertiesEditor::Vec6Editor/" + m_EditedProperty.getName(), ui::GetItemRect());
 
                 ui::PopID();
             }
@@ -1262,9 +1262,9 @@ namespace
             }
 
             // globally annotate the editor rect, for downstream screenshot automation
-            App::upd().addFrameAnnotation("ObjectPropertiesEditor::IntEditor/" + m_EditedProperty.getName(), GetItemRect());
+            App::upd().addFrameAnnotation("ObjectPropertiesEditor::IntEditor/" + m_EditedProperty.getName(), ui::GetItemRect());
 
-            if (edited || ItemValueShouldBeSaved())
+            if (edited || ui::ItemValueShouldBeSaved())
             {
                 rv = MakePropValueSetter(idx, m_EditedProperty.getValue(idx));
             }
@@ -1355,14 +1355,14 @@ namespace
                 m_EditedProperty.updValue().set_color(newColor);
                 m_EditedProperty.updValue().set_opacity(static_cast<double>(color[3]));
             }
-            shouldSave = shouldSave || ItemValueShouldBeSaved();
+            shouldSave = shouldSave || ui::ItemValueShouldBeSaved();
 
             bool isVisible = m_EditedProperty.getValue().get_visible();
             if (ui::Checkbox("is visible", &isVisible))
             {
                 m_EditedProperty.updValue().set_visible(isVisible);
             }
-            shouldSave = shouldSave || ItemValueShouldBeSaved();
+            shouldSave = shouldSave || ui::ItemValueShouldBeSaved();
 
             // DisplayPreference
             {
@@ -1379,7 +1379,7 @@ namespace
                     "Surface",
                 });
                 size_t index = clamp(static_cast<size_t>(m_EditedProperty.getValue().get_representation())+1, static_cast<size_t>(0), options.size());
-                if (osc::Combo("##DisplayPref", &index, options)) {
+                if (ui::Combo("##DisplayPref", &index, options)) {
                     m_EditedProperty.updValue().set_representation(static_cast<OpenSim::VisualRepresentation>(static_cast<int>(index)-1));
                     shouldSave = true;
                 }

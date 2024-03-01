@@ -629,7 +629,7 @@ namespace
 
         if (maybeSourceEvent && ui::BeginMenu(ICON_FA_ARROWS_ALT " Frame With This Edge as"))
         {
-            PushStyleColor(ImGuiCol_Text, Color::mutedRed());
+            ui::PushStyleColor(ImGuiCol_Text, Color::mutedRed());
             if (ui::MenuItem("+x"))
             {
                 ActionPushCreateFrameLayer(
@@ -640,9 +640,9 @@ namespace
                     maybeSourceEvent
                 );
             }
-            PopStyleColor();
+            ui::PopStyleColor();
 
-            PushStyleColor(ImGuiCol_Text, Color::mutedGreen());
+            ui::PushStyleColor(ImGuiCol_Text, Color::mutedGreen());
             if (ui::MenuItem("+y"))
             {
                 ActionPushCreateFrameLayer(
@@ -653,9 +653,9 @@ namespace
                     maybeSourceEvent
                 );
             }
-            PopStyleColor();
+            ui::PopStyleColor();
 
-            PushStyleColor(ImGuiCol_Text, Color::mutedBlue());
+            ui::PushStyleColor(ImGuiCol_Text, Color::mutedBlue());
             if (ui::MenuItem("+z"))
             {
                 ActionPushCreateFrameLayer(
@@ -666,11 +666,11 @@ namespace
                     maybeSourceEvent
                 );
             }
-            PopStyleColor();
+            ui::PopStyleColor();
 
             ui::Separator();
 
-            PushStyleColor(ImGuiCol_Text, Color::mutedRed());
+            ui::PushStyleColor(ImGuiCol_Text, Color::mutedRed());
             if (ui::MenuItem("-x"))
             {
                 ActionPushCreateFrameLayer(
@@ -681,9 +681,9 @@ namespace
                     maybeSourceEvent
                 );
             }
-            PopStyleColor();
+            ui::PopStyleColor();
 
-            PushStyleColor(ImGuiCol_Text, Color::mutedGreen());
+            ui::PushStyleColor(ImGuiCol_Text, Color::mutedGreen());
             if (ui::MenuItem("-y"))
             {
                 ActionPushCreateFrameLayer(
@@ -694,9 +694,9 @@ namespace
                     maybeSourceEvent
                 );
             }
-            PopStyleColor();
+            ui::PopStyleColor();
 
-            PushStyleColor(ImGuiCol_Text, Color::mutedBlue());
+            ui::PushStyleColor(ImGuiCol_Text, Color::mutedBlue());
             if (ui::MenuItem("-z"))
             {
                 ActionPushCreateFrameLayer(
@@ -707,7 +707,7 @@ namespace
                     maybeSourceEvent
                 );
             }
-            PopStyleColor();
+            ui::PopStyleColor();
 
             ui::EndMenu();
         }
@@ -729,11 +729,11 @@ namespace
         {
             ActionCreateBodyFromFrame(editor, model, maybeSourceEvent, frame);
         }
-        if (groundOrExistingBody && ui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+        if (groundOrExistingBody && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
         {
             std::stringstream ss;
             ss << "Cannot create a body from this frame: it is already the frame of " << groundOrExistingBody->getName();
-            DrawTooltipBodyOnly(std::move(ss).str());
+            ui::DrawTooltipBodyOnly(std::move(ss).str());
         }
     }
     void DrawMeshAddContextMenuItems(
@@ -1147,7 +1147,7 @@ public:
 private:
     bool onKeydownEvent(SDL_KeyboardEvent const& e)
     {
-        bool const ctrlOrSuperDown = IsCtrlOrSuperDown();
+        bool const ctrlOrSuperDown = ui::IsCtrlOrSuperDown();
 
         if (ctrlOrSuperDown && e.keysym.mod & KMOD_SHIFT && e.keysym.sym == SDLK_z)
         {

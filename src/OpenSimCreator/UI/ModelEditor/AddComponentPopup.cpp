@@ -172,11 +172,11 @@ private:
 
         ui::TextUnformatted("name");
         ui::SameLine();
-        DrawHelpMarker("Name the newly-added component will have after being added into the model. Note: this is used to derive the name of subcomponents (e.g. path points)");
+        ui::DrawHelpMarker("Name the newly-added component will have after being added into the model. Note: this is used to derive the name of subcomponents (e.g. path points)");
         ui::NextColumn();
 
-        InputString("##componentname", m_Name);
-        App::upd().addFrameAnnotation("AddComponentPopup::ComponentNameInput", GetItemRect());
+        ui::InputString("##componentname", m_Name);
+        App::upd().addFrameAnnotation("AddComponentPopup::ComponentNameInput", ui::GetItemRect());
 
         ui::NextColumn();
 
@@ -187,7 +187,7 @@ private:
     {
         ui::TextUnformatted("Properties");
         ui::SameLine();
-        DrawHelpMarker("These are properties of the OpenSim::Component being added. Their datatypes, default values, and help text are defined in the source code (see OpenSim_DECLARE_PROPERTY in OpenSim's C++ source code, if you want the details). Their default values are typically sane enough to let you add the component directly into your model.");
+        ui::DrawHelpMarker("These are properties of the OpenSim::Component being added. Their datatypes, default values, and help text are defined in the source code (see OpenSim_DECLARE_PROPERTY in OpenSim's C++ source code, if you want the details). Their default values are typically sane enough to let you add the component directly into your model.");
         ui::Separator();
 
         ui::Dummy({0.0f, 3.0f});
@@ -212,7 +212,7 @@ private:
 
         ui::TextUnformatted("Socket assignments (required)");
         ui::SameLine();
-        DrawHelpMarker("The OpenSim::Component being added has `socket`s that connect to other components in the model. You must specify what these sockets should be connected to; otherwise, the component cannot be added to the model.\n\nIn OpenSim, a Socket formalizes the dependency between a Component and another object (typically another Component) without owning that object. While Components can be composites (of multiple components) they often depend on unrelated objects/components that are defined and owned elsewhere. The object that satisfies the requirements of the Socket we term the 'connectee'. When a Socket is satisfied by a connectee we have a successful 'connection' or is said to be connected.");
+        ui::DrawHelpMarker("The OpenSim::Component being added has `socket`s that connect to other components in the model. You must specify what these sockets should be connected to; otherwise, the component cannot be added to the model.\n\nIn OpenSim, a Socket formalizes the dependency between a Component and another object (typically another Component) without owning that object. While Components can be composites (of multiple components) they often depend on unrelated objects/components that are defined and owned elsewhere. The object that satisfies the requirements of the Socket we term the 'connectee'. When a Socket is satisfied by a connectee we have a successful 'connection' or is said to be connected.");
         ui::Separator();
 
         ui::Dummy({0.0f, 1.0f});
@@ -235,7 +235,7 @@ private:
 
         ui::TextUnformatted(socket.getName());
         ui::SameLine();
-        DrawHelpMarker(m_Proto->getPropertyByName("socket_" + socket.getName()).getComment());
+        ui::DrawHelpMarker(m_Proto->getPropertyByName("socket_" + socket.getName()).getComment());
         ui::TextDisabled(socket.getConnecteeTypeName());
         ui::NextColumn();
 
@@ -244,7 +244,7 @@ private:
         ui::TextUnformatted(ICON_FA_SEARCH);
         ui::SameLine();
         ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-        InputString("##search", m_SocketSearchStrings[i]);
+        ui::InputString("##search", m_SocketSearchStrings[i]);
         ImGui::BeginChild("##pfselector", {ImGui::GetContentRegionAvail().x, 128.0f});
 
         // iterate through potential connectees in model and print connect-able options
@@ -272,8 +272,8 @@ private:
                 connectee = absPath;
             }
 
-            Rect const selectableRect = GetItemRect();
-            DrawTooltipIfItemHovered(absPath.toString());
+            Rect const selectableRect = ui::GetItemRect();
+            ui::DrawTooltipIfItemHovered(absPath.toString());
 
             ui::PopID();
 
@@ -363,7 +363,7 @@ private:
                     locationInFrame
                 );
             }
-            DrawTooltipIfItemHovered(c.getName(), (GetAbsolutePathString(c) + " " + c.getConcreteClassName()));
+            ui::DrawTooltipIfItemHovered(c.getName(), (GetAbsolutePathString(c) + " " + c.getConcreteClassName()));
         }
 
         ImGui::EndChild();
@@ -378,7 +378,7 @@ private:
         std::optional<ptrdiff_t> maybeIndexToErase;
         for (ptrdiff_t i = 0; i < std::ssize(m_PathPoints); ++i)
         {
-            PushID(i);
+            ui::PushID(i);
 
             ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0.0f, 0.0f});
 
@@ -421,15 +421,15 @@ private:
             ui::SameLine();
 
             ui::Text(m_PathPoints[i].userChoice.getComponentName());
-            if (ui::IsItemHovered())
+            if (ImGui::IsItemHovered())
             {
                 if (OpenSim::Component const* c = FindComponent(model, m_PathPoints[i].userChoice))
                 {
-                    DrawTooltip(c->getName(), GetAbsolutePathString(*c));
+                    ui::DrawTooltip(c->getName(), GetAbsolutePathString(*c));
                 }
             }
 
-            PopID();
+            ui::PopID();
         }
 
         if (maybeIndexToErase)
@@ -451,10 +451,10 @@ private:
         // header
         ui::TextUnformatted("Path Points (at least 2 required)");
         ui::SameLine();
-        DrawHelpMarker("The Component being added is (effectively) a line that connects physical frames (e.g. bodies) in the model. For example, an OpenSim::Muscle can be described as an actuator that connects bodies in the model together. You **must** specify at least two physical frames on the line in order to add a PathActuator component.\n\nDetails: in OpenSim, some `Components` are `PathActuator`s. All `Muscle`s are defined as `PathActuator`s. A `PathActuator` is an `Actuator` that actuates along a path. Therefore, a `Model` containing a `PathActuator` with zero or one points would be invalid. This is why it is required that you specify at least two points");
+        ui::DrawHelpMarker("The Component being added is (effectively) a line that connects physical frames (e.g. bodies) in the model. For example, an OpenSim::Muscle can be described as an actuator that connects bodies in the model together. You **must** specify at least two physical frames on the line in order to add a PathActuator component.\n\nDetails: in OpenSim, some `Components` are `PathActuator`s. All `Muscle`s are defined as `PathActuator`s. A `PathActuator` is an `Actuator` that actuates along a path. Therefore, a `Model` containing a `PathActuator` with zero or one points would be invalid. This is why it is required that you specify at least two points");
         ui::Separator();
 
-        InputString(ICON_FA_SEARCH " search", m_PathSearchString);
+        ui::InputString(ICON_FA_SEARCH " search", m_PathSearchString);
 
         ui::Columns(2);
         int imguiID = 0;
@@ -503,11 +503,11 @@ private:
     {
         if (!m_CurrentErrors.empty())
         {
-            PushStyleColor(ImGuiCol_Text, Color::red());
+            ui::PushStyleColor(ImGuiCol_Text, Color::red());
             ui::Dummy({0.0f, 2.0f});
             ui::TextWrapped("Error adding component to model: %s", m_CurrentErrors.c_str());
             ui::Dummy({0.0f, 2.0f});
-            PopStyleColor();
+            ui::PopStyleColor();
         }
     }
 

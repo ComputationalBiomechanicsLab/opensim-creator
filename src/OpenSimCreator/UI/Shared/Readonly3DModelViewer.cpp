@@ -76,7 +76,7 @@ public:
         // inputs: process inputs, if hovering
         if (m_MaybeLastHittest && m_MaybeLastHittest->isHovered)
         {
-            UpdatePolarCameraFromImGuiInputs(
+            ui::UpdatePolarCameraFromImGuiInputs(
                 m_Params.camera,
                 m_MaybeLastHittest->rect,
                 m_CachedModelRenderer.getRootAABB()
@@ -92,18 +92,18 @@ public:
         );
 
         // blit texture as an ImGui::Image
-        DrawTextureAsImGuiImage(
+        ui::DrawTextureAsImGuiImage(
             m_CachedModelRenderer.updRenderTexture(),
             ImGui::GetContentRegionAvail()
         );
 
         // update current+retained hittest
-        ImGuiItemHittestResult const hittest = HittestLastImguiItem();
+        ui::ImGuiItemHittestResult const hittest = ui::HittestLastImguiItem();
         m_MaybeLastHittest = hittest;
 
         // if allowed, hittest the scene
         std::optional<SceneCollision> hittestResult;
-        if (hittest.isHovered && !IsDraggingWithAnyMouseButtonDown())
+        if (hittest.isHovered && !ui::IsDraggingWithAnyMouseButtonDown())
         {
             hittestResult = m_CachedModelRenderer.getClosestCollision(
                 m_Params,
@@ -183,7 +183,7 @@ private:
     };
 
     // only available after rendering the first frame
-    std::optional<ImGuiItemHittestResult> m_MaybeLastHittest;
+    std::optional<ui::ImGuiItemHittestResult> m_MaybeLastHittest;
 
     // overlay-related data
     std::shared_ptr<IconCache> m_IconCache = App::singleton<IconCache>(

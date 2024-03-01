@@ -28,7 +28,7 @@ namespace osc
                 m_IsMouseCaptured = false;
                 return true;
             }
-            if (e.type == SDL_MOUSEBUTTONDOWN && IsMouseInMainViewportWorkspaceScreenRect()) {
+            if (e.type == SDL_MOUSEBUTTONDOWN && ui::IsMouseInMainViewportWorkspaceScreenRect()) {
                 m_IsMouseCaptured = true;
                 return true;
             }
@@ -40,7 +40,7 @@ namespace osc
         {
             // handle mouse capturing
             if (m_IsMouseCaptured) {
-                UpdateEulerCameraFromImGuiUserInput(*this, m_CameraEulers);
+                ui::UpdateEulerCameraFromImGuiUserInput(*this, m_CameraEulers);
                 ui::SetMouseCursor(ImGuiMouseCursor_None);
                 App::upd().setShowCursor(false);
             }

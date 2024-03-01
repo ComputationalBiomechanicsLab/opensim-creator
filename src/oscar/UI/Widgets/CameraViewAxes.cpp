@@ -79,8 +79,8 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
                 Vec2 const labelSize = ImGui::CalcTextSize(labels[i].c_str());
 
                 bool const hovered = ImGui::ItemHoverable(imCircleBounds, id, ImGui::GetItemFlags());
-                ImU32 const color = ToImU32(hovered ? Color::white() : baseColor);
-                ImU32 const textColor = ToImU32(hovered ? Color::black() : Color::white());
+                ImU32 const color = ui::ToImU32(hovered ? Color::white() : baseColor);
+                ImU32 const textColor = ui::ToImU32(hovered ? Color::black() : Color::white());
 
                 drawlist.AddLine(origin, end, color, 3.0f);
                 drawlist.AddCircleFilled(circ.origin, circ.radius, color);
@@ -105,7 +105,7 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
             ImGui::ItemSize(imCircleBounds);
             if (ImGui::ItemAdd(imCircleBounds, id)) {
                 bool const hovered = ImGui::ItemHoverable(imCircleBounds, id, ImGui::GetItemFlags());
-                ImU32 const color = ToImU32(hovered ? Color::white() : baseColor.withAlpha(0.3f));
+                ImU32 const color = ui::ToImU32(hovered ? Color::white() : baseColor.withAlpha(0.3f));
 
                 drawlist.AddCircleFilled(circ.origin, circ.radius, color);
 

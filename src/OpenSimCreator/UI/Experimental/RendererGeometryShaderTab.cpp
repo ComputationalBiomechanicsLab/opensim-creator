@@ -63,7 +63,7 @@ public:
             m_IsMouseCaptured = false;
             return true;
         }
-        else if (e.type == SDL_MOUSEBUTTONDOWN && IsMouseInMainViewportWorkspaceScreenRect())
+        else if (e.type == SDL_MOUSEBUTTONDOWN && ui::IsMouseInMainViewportWorkspaceScreenRect())
         {
             m_IsMouseCaptured = true;
             return true;
@@ -76,7 +76,7 @@ public:
         // handle mouse capturing
         if (m_IsMouseCaptured)
         {
-            UpdateEulerCameraFromImGuiUserInput(m_SceneCamera, m_CameraEulers);
+            ui::UpdateEulerCameraFromImGuiUserInput(m_SceneCamera, m_CameraEulers);
             ui::SetMouseCursor(ImGuiMouseCursor_None);
             App::upd().setShowCursor(false);
         }
@@ -85,7 +85,7 @@ public:
             ui::SetMouseCursor(ImGuiMouseCursor_Arrow);
             App::upd().setShowCursor(true);
         }
-        m_SceneCamera.setPixelRect(GetMainViewportWorkspaceScreenRect());
+        m_SceneCamera.setPixelRect(ui::GetMainViewportWorkspaceScreenRect());
 
         m_SceneMaterial.setColor("uDiffuseColor", m_MeshColor);
         Graphics::DrawMesh(m_Mesh, identity<Transform>(), m_SceneMaterial, m_SceneCamera);

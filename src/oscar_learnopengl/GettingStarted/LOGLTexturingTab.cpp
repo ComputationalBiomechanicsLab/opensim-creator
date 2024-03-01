@@ -76,7 +76,7 @@ private:
     {
         Graphics::DrawMesh(m_Mesh, identity<Transform>(), m_Material, m_Camera);
 
-        m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
+        m_Camera.setPixelRect(ui::GetMainViewportWorkspaceScreenRect());
         m_Camera.renderToScreen();
     }
 

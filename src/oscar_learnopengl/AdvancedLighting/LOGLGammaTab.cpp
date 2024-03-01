@@ -125,7 +125,7 @@ private:
     void draw3DScene()
     {
         // clear screen and ensure camera has correct pixel rect
-        m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
+        m_Camera.setPixelRect(ui::GetMainViewportWorkspaceScreenRect());
 
         // render scene
         m_Material.setVec3("uViewPos", m_Camera.getPosition());

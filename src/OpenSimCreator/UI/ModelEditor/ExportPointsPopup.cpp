@@ -72,9 +72,9 @@ namespace
     {
         ui::Text("Description");
         ui::Separator();
-        BeginDisabled();
+        ui::BeginDisabled();
         ui::TextWrapped(c_ExplanationText);
-        EndDisabled();
+        ui::EndDisabled();
         ImGui::PopStyleColor();
     }
 
@@ -82,7 +82,7 @@ namespace
         OpenSim::Component const& component,
         SimTK::State const& state)
     {
-        BeginTooltip();
+        ui::BeginTooltip();
         ui::TextUnformatted(component.getName());
         ui::SameLine();
         ui::TextDisabled(component.getConcreteClassName());
@@ -92,7 +92,7 @@ namespace
             ui::TextDisabled("Expressed In: %s", pointInfo->frameAbsPath.toString().c_str());
         }
 
-        EndTooltip();
+        ui::EndTooltip();
     }
 
     void DrawPointListElement(
@@ -117,7 +117,7 @@ namespace
             }
         }
 
-        if (ui::IsItemHovered())
+        if (ImGui::IsItemHovered())
         {
             DrawPointListElementHoverTooltip(component, state);
         }
@@ -300,7 +300,7 @@ namespace
     {
         ui::Text("Points");
         ui::Separator();
-        InputString("search", uiState.searchString);
+        ui::InputString("search", uiState.searchString);
         DrawPointSelectionList(uiState, model, state);
         DrawSelectionManipulatorButtons(uiState, model, state);
     }
@@ -371,7 +371,7 @@ namespace
     void DrawOutputFormatEditor(OutputFormatEditorUiState& uiState)
     {
         ui::Checkbox("Export Point Names as Absolute Paths", &uiState.exportPointNamesAsAbsPaths);
-        DrawTooltipBodyOnlyIfItemHovered("If selected, the exported point name will be the full path to the point (e.g. `/forceset/somemuscle/geometrypath/pointname`), rather than just the name of the point (e.g. `pointname`)");
+        ui::DrawTooltipBodyOnlyIfItemHovered("If selected, the exported point name will be the full path to the point (e.g. `/forceset/somemuscle/geometrypath/pointname`), rather than just the name of the point (e.g. `pointname`)");
     }
 
     enum class ExportStepReturn {

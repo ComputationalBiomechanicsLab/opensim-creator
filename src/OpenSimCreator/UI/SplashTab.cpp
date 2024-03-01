@@ -83,7 +83,7 @@ namespace
         }
         // show the full path as a tooltip when the item is hovered (some people have
         // long file names (#784)
-        if (ui::IsItemHovered())
+        if (ImGui::IsItemHovered())
         {
             ImGui::BeginTooltip();
             ui::TextUnformatted(path.filename().string());
@@ -148,7 +148,7 @@ public:
 
     void onDraw()
     {
-        if (Area(GetMainViewportWorkspaceScreenRect()) <= 0.0f)
+        if (Area(ui::GetMainViewportWorkspaceScreenRect()) <= 0.0f)
         {
             // edge-case: splash screen is the first rendered frame and ImGui
             //            is being unusual about it
@@ -165,7 +165,7 @@ public:
 private:
     Rect calcMainMenuRect() const
     {
-        Rect tabRect = GetMainViewportWorkspaceScreenRect();
+        Rect tabRect = ui::GetMainViewportWorkspaceScreenRect();
         // pretend the attributation bar isn't there (avoid it)
         tabRect.p2.y -= static_cast<float>(std::max(m_TudLogo.getDimensions().y, m_CziLogo.getDimensions().y)) - 2.0f*ImGui::GetStyle().WindowPadding.y;
 
@@ -191,13 +191,13 @@ private:
 
     void drawBackground()
     {
-        Rect const screenRect = GetMainViewportWorkspaceScreenRect();
+        Rect const screenRect = ui::GetMainViewportWorkspaceScreenRect();
 
         ImGui::SetNextWindowPos(screenRect.p1);
         ImGui::SetNextWindowSize(dimensions(screenRect));
 
         ui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0.0f, 0.0f });
-        ui::Begin("##splashscreenbackground", nullptr, GetMinimalWindowFlags());
+        ui::Begin("##splashscreenbackground", nullptr, ui::GetMinimalWindowFlags());
         ui::PopStyleVar();
 
         SceneRendererParams params{m_LastSceneRendererParams};
@@ -211,7 +211,7 @@ private:
             m_LastSceneRendererParams = params;
         }
 
-        DrawTextureAsImGuiImage(m_SceneRenderer.updRenderTexture());
+        ui::DrawTextureAsImGuiImage(m_SceneRenderer.updRenderTexture());
 
         ui::End();
     }
@@ -221,8 +221,8 @@ private:
         Rect const logoRect = calcLogoRect();
 
         ImGui::SetNextWindowPos(logoRect.p1);
-        ui::Begin("##osclogo", nullptr, GetMinimalWindowFlags());
-        DrawTextureAsImGuiImage(m_MainAppLogo, dimensions(logoRect));
+        ui::Begin("##osclogo", nullptr, ui::GetMinimalWindowFlags());
+        ui::DrawTextureAsImGuiImage(m_MainAppLogo, dimensions(logoRect));
         ui::End();
     }
 
@@ -269,7 +269,7 @@ private:
         {
             m_Parent->addAndSelectTab<mi::MeshImporterTab>(m_Parent);
         }
-        App::upd().addFrameAnnotation("SplashTab/ImportMeshesMenuItem", GetItemRect());
+        App::upd().addFrameAnnotation("SplashTab/ImportMeshesMenuItem", ui::GetItemRect());
         if (ui::MenuItem(ICON_FA_BOOK " Open Documentation"))
         {
             OpenPathInOSDefaultApplication(App::get().getConfig().getHTMLDocsDir() / "index.html");
@@ -308,12 +308,12 @@ private:
         }
         else
         {
-            PushStyleColor(ImGuiCol_Text, Color::halfGrey());
+            ui::PushStyleColor(ImGuiCol_Text, Color::halfGrey());
             ui::TextWrapped("No files opened recently. Try:");
             ImGui::BulletText("Creating a new model (Ctrl+N)");
             ImGui::BulletText("Opening an existing model (Ctrl+O)");
             ImGui::BulletText("Opening an example (right-side)");
-            PopStyleColor();
+            ui::PopStyleColor();
         }
     }
 
@@ -357,26 +357,26 @@ private:
 
     void drawAttributationLogos()
     {
-        Rect const viewportRect = GetMainViewportWorkspaceScreenRect();
+        Rect const viewportRect = ui::GetMainViewportWorkspaceScreenRect();
         Vec2 loc = viewportRect.p2;
         loc.x = loc.x - 2.0f*ImGui::GetStyle().WindowPadding.x - static_cast<float>(m_CziLogo.getDimensions().x) - 2.0f*ImGui::GetStyle().ItemSpacing.x - static_cast<float>(m_TudLogo.getDimensions().x);
         loc.y = loc.y - 2.0f*ImGui::GetStyle().WindowPadding.y - static_cast<float>(std::max(m_CziLogo.getDimensions().y, m_TudLogo.getDimensions().y));
 
         ImGui::SetNextWindowPos(loc);
-        ui::Begin("##czlogo", nullptr, GetMinimalWindowFlags());
-        DrawTextureAsImGuiImage(m_CziLogo);
+        ui::Begin("##czlogo", nullptr, ui::GetMinimalWindowFlags());
+        ui::DrawTextureAsImGuiImage(m_CziLogo);
         ui::End();
 
         loc.x += static_cast<float>(m_CziLogo.getDimensions().x) + 2.0f*ImGui::GetStyle().ItemSpacing.x;
         ImGui::SetNextWindowPos(loc);
-        ui::Begin("##tudlogo", nullptr, GetMinimalWindowFlags());
-        DrawTextureAsImGuiImage(m_TudLogo);
+        ui::Begin("##tudlogo", nullptr, ui::GetMinimalWindowFlags());
+        ui::DrawTextureAsImGuiImage(m_TudLogo);
         ui::End();
     }
 
     void drawVersionInfo()
     {
-        Rect const tabRect = GetMainViewportWorkspaceScreenRect();
+        Rect const tabRect = ui::GetMainViewportWorkspaceScreenRect();
         float const h = ImGui::GetTextLineHeightWithSpacing();
         float const padding = 5.0f;
 
@@ -387,7 +387,7 @@ private:
         };
 
         ImDrawList* const dl = ImGui::GetForegroundDrawList();
-        ImU32 const color = ToImU32(Color::black());
+        ImU32 const color = ui::ToImU32(Color::black());
         std::string const text = CalcFullApplicationNameWithVersionAndBuild(App::get().getMetadata());
         dl->AddText(pos, color, text.c_str());
     }

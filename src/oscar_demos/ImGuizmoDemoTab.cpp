@@ -23,7 +23,7 @@ private:
         // ImGuizmo::BeginFrame();  already done by MainUIScreen
 
         Mat4 view = m_SceneCamera.view_matrix();
-        Rect viewportRect = GetMainViewportWorkspaceScreenRect();
+        Rect viewportRect = ui::GetMainViewportWorkspaceScreenRect();
         Vec2 dims = dimensions(viewportRect);
         Mat4 projection = m_SceneCamera.projection_matrix(AspectRatio(dims));
 

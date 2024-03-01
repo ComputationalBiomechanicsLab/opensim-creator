@@ -121,7 +121,7 @@ private:
             m_IsMouseCaptured = false;
             return true;
         }
-        else if (e.type == SDL_MOUSEBUTTONDOWN && IsMouseInMainViewportWorkspaceScreenRect()) {
+        else if (e.type == SDL_MOUSEBUTTONDOWN && ui::IsMouseInMainViewportWorkspaceScreenRect()) {
             m_IsMouseCaptured = true;
             return true;
         }
@@ -160,7 +160,7 @@ private:
     {
         // handle mouse capturing
         if (m_IsMouseCaptured) {
-            UpdateEulerCameraFromImGuiUserInput(m_Camera, m_CameraEulers);
+            ui::UpdateEulerCameraFromImGuiUserInput(m_Camera, m_CameraEulers);
             ui::SetMouseCursor(ImGuiMouseCursor_None);
             App::upd().setShowCursor(false);
         }
@@ -237,7 +237,7 @@ private:
             );
         }
 
-        Rect const viewport = GetMainViewportWorkspaceScreenRect();
+        Rect const viewport = ui::GetMainViewportWorkspaceScreenRect();
 
         // draw crosshair overlay
         Graphics::DrawMesh(

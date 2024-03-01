@@ -116,12 +116,12 @@ private:
                 {
                     ActionSimulateAgainstAllIntegrators(m_MainUIStateAPI, *m_Model);
                 }
-                DrawTooltipIfItemHovered("Simulate Against All Integrators", "Simulate the given model against all available SimTK integrators. This takes the current simulation parameters and permutes the integrator, reporting the overall simulation wall-time to the user. It's an advanced feature that's handy for developers to figure out which integrator best-suits a particular model");
+                ui::DrawTooltipIfItemHovered("Simulate Against All Integrators", "Simulate the given model against all available SimTK integrators. This takes the current simulation parameters and permutes the integrator, reporting the overall simulation wall-time to the user. It's an advanced feature that's handy for developers to figure out which integrator best-suits a particular model");
 
                 if (ui::MenuItem("Export Model Graph as Dotviz")) {
                     ActionExportModelGraphToDotviz(*m_Model);
                 }
-                DrawTooltipIfItemHovered("Writes the model's data topology graph in dotviz format, so that it can be visualized in external tooling such as Graphviz Online");
+                ui::DrawTooltipIfItemHovered("Writes the model's data topology graph in dotviz format, so that it can be visualized in external tooling such as Graphviz Online");
 
                 if (ui::MenuItem("Export Model Graph as Dotviz (clipboard)")) {
                     ActionExportModelGraphToDotvizClipboard(*m_Model);

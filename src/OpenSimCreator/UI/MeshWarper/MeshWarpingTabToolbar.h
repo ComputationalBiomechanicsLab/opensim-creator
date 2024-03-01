@@ -79,7 +79,7 @@ namespace osc
             {
                 ActionCreateNewDocument(m_State->updUndoable());
             }
-            DrawTooltipIfItemHovered(
+            ui::DrawTooltipIfItemHovered(
                 "Create New Document",
                 "Creates the default scene (undoable)"
             );
@@ -100,7 +100,7 @@ namespace osc
                 }
                 ui::EndPopup();
             }
-            DrawTooltipIfItemHovered(
+            ui::DrawTooltipIfItemHovered(
                 "Open File",
                 "Open Source/Destination data"
             );
@@ -112,7 +112,7 @@ namespace osc
             {
                 ActionSavePairedLandmarksToCSV(m_State->getScratch(), LandmarkCSVFlags::NoNames);
             }
-            DrawTooltipIfItemHovered(
+            ui::DrawTooltipIfItemHovered(
                 "Save Landmarks to CSV (no names)",
                 "Saves all pair-able landmarks to a CSV file, for external processing\n\n(legacy behavior: does not export names: use 'File' menu if you want the names)"
             );

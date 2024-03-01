@@ -113,7 +113,7 @@ private:
         {
             ui::TextUnformatted("Generated geometry");
             ui::SameLine();
-            DrawHelpMarker("This is geometry that OpenSim can generate without needing an external mesh file. Useful for basic geometry.");
+            ui::DrawHelpMarker("This is geometry that OpenSim can generate without needing an external mesh file. Useful for basic geometry.");
             ui::Separator();
             ui::Dummy({0.0f, 2.0f});
 
@@ -131,12 +131,12 @@ private:
         ui::Dummy({0.0f, 3.0f});
         ui::TextUnformatted("mesh file");
         ui::SameLine();
-        DrawHelpMarker("This is geometry that OpenSim loads from external mesh files. Useful for custom geometry (usually, created in some other application, such as ParaView or Blender)");
+        ui::DrawHelpMarker("This is geometry that OpenSim loads from external mesh files. Useful for custom geometry (usually, created in some other application, such as ParaView or Blender)");
         ui::Separator();
         ui::Dummy({0.0f, 2.0f});
 
         // let the user search through mesh files in pre-established Geometry/ dirs
-        InputString("search", m_Search);
+        ui::InputString("search", m_Search);
         ui::Dummy({0.0f, 1.0f});
 
         ImGui::BeginChild(
@@ -181,7 +181,7 @@ private:
                 m_Result = onMeshFileChosen(std::move(maybeMeshFile).value());
             }
         }
-        DrawTooltipIfItemHovered("Open Mesh File", "Open a mesh file on the filesystem");
+        ui::DrawTooltipIfItemHovered("Open Mesh File", "Open a mesh file on the filesystem");
 
         ui::Dummy({0.0f, 5.0f});
 

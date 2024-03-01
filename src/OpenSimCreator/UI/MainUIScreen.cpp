@@ -360,7 +360,7 @@ private:
     {
         OSC_PERF("MainUIScreen/drawTabSpecificMenu");
 
-        if (BeginMainViewportTopBar("##TabSpecificMenuBar"))
+        if (ui::BeginMainViewportTopBar("##TabSpecificMenuBar"))
         {
             if (ui::BeginMenuBar())
             {
@@ -402,7 +402,7 @@ private:
         ui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2{ 5.0f, 0.0f });
         ui::PushStyleVar(ImGuiStyleVar_TabRounding, 10.0f);
         ui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.0f);
-        if (BeginMainViewportTopBar("##TabBarViewport"))
+        if (ui::BeginMainViewportTopBar("##TabBarViewport"))
         {
             if (ui::BeginMenuBar())
             {

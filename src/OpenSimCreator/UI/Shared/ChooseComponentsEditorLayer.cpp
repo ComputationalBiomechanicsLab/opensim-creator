@@ -144,7 +144,7 @@ public:
         ModelEditorViewerPanelParameters& params,
         ModelEditorViewerPanelState& state) const
     {
-        return UpdatePolarCameraFromImGuiKeyboardInputs(
+        return ui::UpdatePolarCameraFromImGuiKeyboardInputs(
             params.updRenderParams().camera,
             state.viewportRect,
             m_Decorations.bvh.getRootAABB()
@@ -155,12 +155,12 @@ public:
         ModelEditorViewerPanelParameters& params,
         ModelEditorViewerPanelState& state)
     {
-        bool rv = UpdatePolarCameraFromImGuiMouseInputs(
+        bool rv = ui::UpdatePolarCameraFromImGuiMouseInputs(
             params.updRenderParams().camera,
             dimensions(state.viewportRect)
         );
 
-        if (IsDraggingWithAnyMouseButtonDown())
+        if (ui::IsDraggingWithAnyMouseButtonDown())
         {
             m_State.hoveredComponent = {};
         }
@@ -181,8 +181,8 @@ public:
 
         // update this layer's state from provided state
         m_State.renderParams = panelParams.getRenderParams();
-        m_IsLeftClickReleasedWithoutDragging = IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left);
-        m_IsRightClickReleasedWithoutDragging = IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right);
+        m_IsLeftClickReleasedWithoutDragging = ui::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left);
+        m_IsRightClickReleasedWithoutDragging = ui::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right);
         if (ImGui::IsKeyReleased(ImGuiKey_Escape))
         {
             m_State.shouldClosePopup = true;
@@ -201,7 +201,7 @@ public:
         m_Renderer.render(m_Decorations.decorations, rendererParameters);
 
         // blit texture as ImGui image
-        DrawTextureAsImGuiImage(
+        ui::DrawTextureAsImGuiImage(
             m_Renderer.updRenderTexture(),
             dimensions(panelState.viewportRect)
         );
@@ -250,7 +250,7 @@ public:
 
             constexpr CStringView cancellationButtonText = ICON_FA_ARROW_LEFT " Cancel (ESC)";
             Vec2 const margin = {25.0f, 25.0f};
-            Vec2 const buttonDims = CalcButtonSize(cancellationButtonText);
+            Vec2 const buttonDims = ui::CalcButtonSize(cancellationButtonText);
             Vec2 const buttonTopLeft = panelState.viewportRect.p2 - (buttonDims + margin);
             ImGui::SetCursorScreenPos(buttonTopLeft);
             if (ui::Button(cancellationButtonText.c_str()))

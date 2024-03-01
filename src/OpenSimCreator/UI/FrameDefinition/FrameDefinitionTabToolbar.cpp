@@ -41,9 +41,9 @@ void osc::FrameDefinitionTabToolbar::onDraw()
 void osc::FrameDefinitionTabToolbar::drawContent()
 {
     DrawUndoAndRedoButtons(*m_Model);
-    SameLineWithVerticalSeperator();
+    ui::SameLineWithVerticalSeperator();
     DrawSceneScaleFactorEditorControls(*m_Model);
-    SameLineWithVerticalSeperator();
+    ui::SameLineWithVerticalSeperator();
     drawExportToOpenSimButton();
 }
 
@@ -63,7 +63,7 @@ void osc::FrameDefinitionTabToolbar::drawExportToOpenSimButton()
     {
         ui::EndDisabled();
     }
-    if (ui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+    if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
     {
         drawExportToOpenSimTooltipContent(numBodies);
     }
@@ -71,16 +71,16 @@ void osc::FrameDefinitionTabToolbar::drawExportToOpenSimButton()
 
 void osc::FrameDefinitionTabToolbar::drawExportToOpenSimTooltipContent(size_t numBodies)
 {
-    BeginTooltip();
-    TooltipHeaderText("Export to OpenSim");
-    TooltipDescriptionSpacer();
-    TooltipDescriptionText("Exports the frame definition scene to opensim.");
+    ui::BeginTooltip();
+    ui::TooltipHeaderText("Export to OpenSim");
+    ui::TooltipDescriptionSpacer();
+    ui::TooltipDescriptionText("Exports the frame definition scene to opensim.");
     if (numBodies == 0)
     {
         ui::Separator();
-        TextWarning("Warning:");
+        ui::TextWarning("Warning:");
         ui::SameLine();
         ui::Text("You currently have %zu bodies defined. Use the 'Add > Body from This' feature on a frame in your scene to add a new body", numBodies);
     }
-    EndTooltip();
+    ui::EndTooltip();
 }

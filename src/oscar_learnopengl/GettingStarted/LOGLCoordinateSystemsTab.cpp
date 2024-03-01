@@ -110,7 +110,7 @@ private:
     void draw3DScene()
     {
         // clear screen and ensure camera has correct pixel rect
-        m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
+        m_Camera.setPixelRect(ui::GetMainViewportWorkspaceScreenRect());
 
         // draw 3D scene
         if (m_ShowStep1) {

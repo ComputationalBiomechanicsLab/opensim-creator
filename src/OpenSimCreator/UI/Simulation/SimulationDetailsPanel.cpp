@@ -38,7 +38,7 @@ private:
             ui::Dummy({0.0f, 1.0f});
             ui::TextUnformatted("info:");
             ui::SameLine();
-            DrawHelpMarker("Top-level info about the simulation");
+            ui::DrawHelpMarker("Top-level info about the simulation");
             ui::Separator();
             ui::Dummy({0.0f, 2.0f});
 
@@ -77,7 +77,7 @@ private:
         ui::Columns(2);
         ui::TextUnformatted("plots:");
         ui::SameLine();
-        DrawHelpMarker("Various statistics collected when the simulation was ran");
+        ui::DrawHelpMarker("Various statistics collected when the simulation was ran");
         ui::NextColumn();
         if (std::any_of(outputs.begin(), outputs.end(), [](OutputExtractor const& o) { return o.getOutputType() == OutputType::Float; }))
         {

@@ -65,7 +65,7 @@ namespace osc
         void implDrawContent() final
         {
             // compute top-level UI variables (render rect, mouse pos, etc.)
-            Rect const contentRect = ContentRegionAvailScreenRect();
+            Rect const contentRect = ui::ContentRegionAvailScreenRect();
             Vec2 const contentRectDims = dimensions(contentRect);
             Vec2 const mousePos = ui::GetMousePos();
 
@@ -99,8 +99,8 @@ namespace osc
 
             // render 3D: draw the scene into the content rect and 2D-hittest it
             RenderTexture& renderTexture = renderScene(contentRectDims, meshCollision, landmarkCollision);
-            DrawTextureAsImGuiImage(renderTexture);
-            m_LastTextureHittestResult = HittestLastImguiItem();
+            ui::DrawTextureAsImGuiImage(renderTexture);
+            m_LastTextureHittestResult = ui::HittestLastImguiItem();
 
             // handle any events due to hovering over, clicking, etc.
             handleInputAndHoverEvents(m_LastTextureHittestResult, meshCollision, landmarkCollision);
@@ -129,7 +129,7 @@ namespace osc
             // if the user interacts with the render, update the camera as necessary
             if (m_LastTextureHittestResult.isHovered)
             {
-                if (UpdatePolarCameraFromImGuiMouseInputs(m_Camera, dimensions(m_LastTextureHittestResult.rect)))
+                if (ui::UpdatePolarCameraFromImGuiMouseInputs(m_Camera, dimensions(m_LastTextureHittestResult.rect)))
                 {
                     m_State->linkedCameraBase = m_Camera;  // reflects latest modification
                 }
@@ -372,7 +372,7 @@ namespace osc
 
         // handle any input-related side-effects
         void handleInputAndHoverEvents(
-            ImGuiItemHittestResult const& htResult,
+            ui::ImGuiItemHittestResult const& htResult,
             std::optional<RayCollision> const& meshCollision,
             std::optional<MeshWarpingTabHover> const& landmarkCollision)
         {
@@ -381,7 +381,7 @@ namespace osc
             {
                 if (landmarkCollision && landmarkCollision->isHoveringASceneElement())
                 {
-                    if (!IsShiftDown())
+                    if (!ui::IsShiftDown())
                     {
                         m_State->clearSelection();
                     }
@@ -416,7 +416,7 @@ namespace osc
 
             // event: if the user is hovering the render while something is selected and the user
             // presses delete then the landmarks should be deleted
-            if (htResult.isHovered && IsAnyKeyPressed({ImGuiKey_Delete, ImGuiKey_Backspace}))
+            if (htResult.isHovered && ui::IsAnyKeyPressed({ImGuiKey_Delete, ImGuiKey_Backspace}))
             {
                 ActionDeleteSceneElementsByID(
                     m_State->updUndoable(),
@@ -447,15 +447,15 @@ namespace osc
         // draws a information icon that shows basic mesh info when hovered
         void drawInformationIcon()
         {
-            ButtonNoBg(ICON_FA_INFO_CIRCLE);
-            if (ui::IsItemHovered())
+            ui::ButtonNoBg(ICON_FA_INFO_CIRCLE);
+            if (ImGui::IsItemHovered())
             {
-                BeginTooltip();
+                ui::BeginTooltip();
 
                 ui::TextDisabled("Input Information:");
                 drawInputInformationTable();
 
-                EndTooltip();
+                ui::EndTooltip();
             }
         }
 
@@ -546,7 +546,7 @@ namespace osc
                 AutoFocus(m_Camera, m_State->getScratchMesh(m_DocumentIdentifier).getBounds(), AspectRatio(m_LastTextureHittestResult.rect));
                 m_State->linkedCameraBase = m_Camera;
             }
-            DrawTooltipIfItemHovered("Autoscale Scene", "Zooms camera to try and fit everything in the scene into the viewer");
+            ui::DrawTooltipIfItemHovered("Autoscale Scene", "Zooms camera to try and fit everything in the scene into the viewer");
         }
 
         // draws a slider that lets the user edit how large the landmarks are
@@ -565,7 +565,7 @@ namespace osc
         {
             static_assert(NumOptions<TPSDocumentInputIdentifier>() == 2);
             bool const isSourceMesh = m_DocumentIdentifier == TPSDocumentInputIdentifier::Source;
-            bool const isCtrlPressed = IsAnyKeyDown({ImGuiKey_LeftCtrl, ImGuiKey_RightCtrl});
+            bool const isCtrlPressed = ui::IsAnyKeyDown({ImGuiKey_LeftCtrl, ImGuiKey_RightCtrl});
             return isSourceMesh && isCtrlPressed;
         }
 
@@ -577,7 +577,7 @@ namespace osc
             *App::singleton<SceneCache>(),
             *App::singleton<ShaderCache>(App::resource_loader()),
         };
-        ImGuiItemHittestResult m_LastTextureHittestResult;
+        ui::ImGuiItemHittestResult m_LastTextureHittestResult;
         bool m_WireframeMode = true;
         float m_LandmarkRadius = 0.05f;
     };

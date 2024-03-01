@@ -85,7 +85,7 @@ private:
     {
         ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
         ui::TextUnformatted(ICON_FA_EXPAND_ALT);
-        DrawTooltipIfItemHovered("Scene Scale Factor", "Rescales decorations in the model by this amount. Changing this can be handy when working on extremely small/large models.");
+        ui::DrawTooltipIfItemHovered("Scene Scale Factor", "Rescales decorations in the model by this amount. Changing this can be handy when working on extremely small/large models.");
         ui::SameLine();
 
         {
@@ -104,9 +104,9 @@ private:
         SimulationStatus const status = m_Simulation->getStatus();
         ui::TextDisabled("simulator status:");
         ui::SameLine();
-        PushStyleColor(ImGuiCol_Text, CalcStatusColor(status));
+        ui::PushStyleColor(ImGuiCol_Text, CalcStatusColor(status));
         ui::TextUnformatted(GetAllSimulationStatusStrings()[static_cast<size_t>(status)]);
-        PopStyleColor();
+        ui::PopStyleColor();
     }
 
     std::string m_Label;

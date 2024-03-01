@@ -150,7 +150,7 @@ private:
 
     void draw3DRender()
     {
-        m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
+        m_Camera.setPixelRect(ui::GetMainViewportWorkspaceScreenRect());
 
         m_PBRMaterial.setVec3("uCameraWorldPos", m_Camera.getPosition());
         m_PBRMaterial.setVec3Array("uLightPositions", c_LightPositions);
@@ -196,7 +196,7 @@ private:
         m_BackgroundMaterial.setRenderTexture("uEnvironmentMap", m_ProjectedMap);
         m_BackgroundMaterial.setDepthFunction(DepthFunction::LessOrEqual);  // for skybox depth trick
         Graphics::DrawMesh(m_CubeMesh, identity<Transform>(), m_BackgroundMaterial, m_Camera);
-        m_Camera.setPixelRect(GetMainViewportWorkspaceScreenRect());
+        m_Camera.setPixelRect(ui::GetMainViewportWorkspaceScreenRect());
         m_Camera.setClearFlags(CameraClearFlags::Nothing);
         m_Camera.renderToScreen();
         m_Camera.setClearFlags(CameraClearFlags::Default);

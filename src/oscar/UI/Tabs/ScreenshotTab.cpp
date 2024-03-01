@@ -142,7 +142,7 @@ private:
         Rect const windowRect = {screenTopLeft, screenTopLeft + Vec2{ImGui::GetContentRegionAvail()}};
         Rect const imageRect = ShrinkToFit(windowRect, AspectRatio(m_Screenshot.image.getDimensions()));
         ImGui::SetCursorScreenPos(imageRect.p1);
-        DrawTextureAsImGuiImage(m_ImageTexture, dimensions(imageRect));
+        ui::DrawTextureAsImGuiImage(m_ImageTexture, dimensions(imageRect));
         return imageRect;
     }
 
@@ -249,7 +249,7 @@ private:
                     colors.reserve(drawlist.VtxBuffer.size());
                     for (ImDrawVert const& vert : drawlist.VtxBuffer)
                     {
-                        Color const linearColor = ToColor(vert.col);
+                        Color const linearColor = ui::ToColor(vert.col);
                         colors.push_back(linearColor);
                     }
                     mesh.setColors(colors);
