@@ -20,7 +20,7 @@ namespace osc::ui
         ImGui::Text("%s", sv.c_str());
     }
 
-    inline void Text(char const* fmt, ...) IM_FMTARGS(1)
+    inline void Text(char const* fmt, ...)
     {
         va_list args;
         va_start(args, fmt);
@@ -33,7 +33,7 @@ namespace osc::ui
         ImGui::TextDisabled("%s", sv.c_str());
     }
 
-    inline void TextDisabled(char const* fmt, ...) IM_FMTARGS(1)
+    inline void TextDisabled(char const* fmt, ...)
     {
         va_list args;
         va_start(args, fmt);
@@ -46,7 +46,7 @@ namespace osc::ui
         ImGui::TextWrapped("%s", sv.c_str());
     }
 
-    inline void TextWrapped(char const* fmt, ...) IM_FMTARGS(1)
+    inline void TextWrapped(char const* fmt, ...)
     {
         va_list args;
         va_start(args, fmt);
