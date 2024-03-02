@@ -208,3 +208,75 @@ TEST(GenerateTorusMesh2, WorksWithNonDefaultArgs)
     ASSERT_TRUE(m.hasTexCoords());
     ASSERT_FALSE(m.getIndices().empty());
 }
+
+TEST(GenerateCylinderMesh2, DefaultCtorWorksFine)
+{
+    Mesh const m = GenerateCylinderMesh2();
+    ASSERT_TRUE(m.hasVerts());
+    ASSERT_TRUE(m.hasNormals());
+    ASSERT_TRUE(m.hasTexCoords());
+    ASSERT_FALSE(m.getIndices().empty());
+}
+
+TEST(GenerateCylinderMesh2, WorksWithNonDefaultArgs)
+{
+    Mesh const m = GenerateCylinderMesh2(0.1f, 0.05f, 0.5f, 16, 2, true, 180_deg, 270_deg);
+    ASSERT_TRUE(m.hasVerts());
+    ASSERT_TRUE(m.hasNormals());
+    ASSERT_TRUE(m.hasTexCoords());
+    ASSERT_FALSE(m.getIndices().empty());
+}
+
+TEST(GenerateConeMesh2, DefaultCtorWorksFine)
+{
+    Mesh const m = GenerateConeMesh2();
+    ASSERT_TRUE(m.hasVerts());
+    ASSERT_TRUE(m.hasNormals());
+    ASSERT_TRUE(m.hasTexCoords());
+    ASSERT_FALSE(m.getIndices().empty());
+}
+
+TEST(GenerateConeMesh2, WorksWithNonDefaultArgs)
+{
+    Mesh const m = GenerateConeMesh2(0.2f, 500.0f, 4, 3, true, -90_deg, 90_deg);
+    ASSERT_TRUE(m.hasVerts());
+    ASSERT_TRUE(m.hasNormals());
+    ASSERT_TRUE(m.hasTexCoords());
+    ASSERT_FALSE(m.getIndices().empty());
+}
+
+TEST(GeneratePlaneMesh2, DefaultCtorWorksFine)
+{
+    Mesh const m = GeneratePlaneMesh2();
+    ASSERT_TRUE(m.hasVerts());
+    ASSERT_TRUE(m.hasNormals());
+    ASSERT_TRUE(m.hasTexCoords());
+    ASSERT_FALSE(m.getIndices().empty());
+}
+
+TEST(GeneratePlaneMesh2, WorksWithNonDefaultArgs)
+{
+    Mesh const m = GeneratePlaneMesh2(0.5f, 2.0f, 4, 4);
+    ASSERT_TRUE(m.hasVerts());
+    ASSERT_TRUE(m.hasNormals());
+    ASSERT_TRUE(m.hasTexCoords());
+    ASSERT_FALSE(m.getIndices().empty());
+}
+
+TEST(GenerateSphereMesh2, DefaultCtorWorksFine)
+{
+    Mesh const m = GenerateSphereMesh2();
+    ASSERT_TRUE(m.hasVerts());
+    ASSERT_TRUE(m.hasNormals());
+    ASSERT_TRUE(m.hasTexCoords());
+    ASSERT_FALSE(m.getIndices().empty());
+}
+
+TEST(GenerateSphereMesh2, WorksWithNonDefaultArgs)
+{
+    Mesh const m = GenerateSphereMesh2(0.5f, 12, 4, 90_deg, 180_deg, -45_deg, -60_deg);
+    ASSERT_TRUE(m.hasVerts());
+    ASSERT_TRUE(m.hasNormals());
+    ASSERT_TRUE(m.hasTexCoords());
+    ASSERT_FALSE(m.getIndices().empty());
+}
