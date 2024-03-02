@@ -18,7 +18,7 @@ namespace osc
         {
         }
 
-        int64_t getID() const
+        size_t getID() const
         {
             return m_Metadata->getID();
         }
@@ -38,7 +38,7 @@ namespace osc
             return m_Metadata->getLine();
         }
 
-        int64_t getCallCount() const
+        size_t getCallCount() const
         {
             return m_CallCount;
         }
@@ -50,7 +50,7 @@ namespace osc
 
         PerfClock::duration getAvgDuration() const
         {
-            return m_CallCount > 0 ? m_TotalDuration/m_CallCount : PerfClock::duration{0};
+            return m_CallCount > 0 ? m_TotalDuration/static_cast<ptrdiff_t>(m_CallCount) : PerfClock::duration{0};
         }
 
         PerfClock::duration getTotalDuration() const
@@ -74,7 +74,7 @@ namespace osc
 
     private:
         std::shared_ptr<PerfMeasurementMetadata const> m_Metadata;
-        int64_t m_CallCount = 0;
+        size_t m_CallCount = 0;
         PerfClock::duration m_TotalDuration{0};
         PerfClock::duration m_LastDuration{0};
     };

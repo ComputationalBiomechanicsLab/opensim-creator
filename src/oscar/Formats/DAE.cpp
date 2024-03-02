@@ -85,11 +85,11 @@ namespace
     {
         DAESceneGraph rv;
 
-        int64_t latestMesh = 0;
-        int64_t latestMaterial = 0;
+        size_t latestMesh = 0;
+        size_t latestMaterial = 0;
         std::unordered_map<Mesh, std::string> mesh2id;
         std::unordered_map<Color, std::string> color2materialid;
-        int64_t latestInstance = 0;
+        size_t latestInstance = 0;
 
         for (SceneDecoration const& el : els)
         {

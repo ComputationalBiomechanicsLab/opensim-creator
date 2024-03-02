@@ -189,7 +189,7 @@ namespace osc
         std::string getGraphicsBackendShadingLanguageVersionString() const;
 
         // returns the number of times the application has drawn a frame to the screen
-        uint64_t getFrameCount() const;
+        size_t getFrameCount() const;
 
         // returns the time at which the app started up (arbitrary timepoint, don't assume 0)
         AppClock::time_point getAppStartupTime() const;

@@ -148,7 +148,7 @@ namespace
     struct AnnotatedScreenshotRequest final {
 
         AnnotatedScreenshotRequest(
-            uint64_t frameRequested_,
+            size_t frameRequested_,
             std::future<Texture2D> underlyingFuture_) :
 
             frameRequested{frameRequested_},
@@ -157,7 +157,7 @@ namespace
         }
 
         // the frame on which the screenshot was requested
-        uint64_t frameRequested;
+        size_t frameRequested;
 
         // underlying (to-be-waited-on) future for the screenshot
         std::future<Texture2D> underlyingScreenshotFuture;
@@ -372,7 +372,7 @@ public:
         return m_GraphicsContext.getBackendShadingLanguageVersionString();
     }
 
-    uint64_t getFrameCount() const
+    size_t getFrameCount() const
     {
         return m_FrameCounter;
     }
@@ -764,7 +764,7 @@ private:
     Uint64 m_AppCounter = 0;
 
     // number of frames the application has drawn
-    uint64_t m_FrameCounter = 0;
+    size_t m_FrameCounter = 0;
 
     // when the application started up (set now)
     AppClock::time_point m_AppStartupTime = ConvertPerfCounterToFClock(SDL_GetPerformanceCounter(), m_AppCounterFq);
@@ -1001,7 +1001,7 @@ std::string osc::App::getGraphicsBackendShadingLanguageVersionString() const
     return m_Impl->getGraphicsBackendShadingLanguageVersionString();
 }
 
-uint64_t osc::App::getFrameCount() const
+size_t osc::App::getFrameCount() const
 {
     return m_Impl->getFrameCount();
 }

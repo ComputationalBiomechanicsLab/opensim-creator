@@ -14,17 +14,17 @@ using namespace osc;
 
 namespace
 {
-    int64_t GenerateID(
+    size_t GenerateID(
         std::string_view label,
         std::string_view filename,
         unsigned int line)
     {
-        return static_cast<int64_t>(HashOf(label, filename, line));
+        return HashOf(label, filename, line);
     }
 
-    SynchronizedValue<std::unordered_map<int64_t, PerfMeasurement>>& GetMeasurementStorage()
+    SynchronizedValue<std::unordered_map<size_t, PerfMeasurement>>& GetMeasurementStorage()
     {
-        static SynchronizedValue<std::unordered_map<int64_t, PerfMeasurement>> s_Measurements;
+        static SynchronizedValue<std::unordered_map<size_t, PerfMeasurement>> s_Measurements;
         return s_Measurements;
     }
 }
@@ -32,9 +32,9 @@ namespace
 
 // public API
 
-int64_t osc::detail::AllocateMeasurementID(std::string_view label, std::string_view filename, unsigned int line)
+size_t osc::detail::AllocateMeasurementID(std::string_view label, std::string_view filename, unsigned int line)
 {
-    int64_t id = GenerateID(label, filename, line);
+    size_t id = GenerateID(label, filename, line);
     auto metadata = std::make_shared<PerfMeasurementMetadata>(id, label, filename, line);
 
     auto guard = GetMeasurementStorage().lock();
@@ -42,7 +42,7 @@ int64_t osc::detail::AllocateMeasurementID(std::string_view label, std::string_v
     return id;
 }
 
-void osc::detail::SubmitMeasurement(int64_t id, PerfClock::time_point start, PerfClock::time_point end)
+void osc::detail::SubmitMeasurement(size_t id, PerfClock::time_point start, PerfClock::time_point end)
 {
     auto guard = GetMeasurementStorage().lock();
     auto it = guard->find(id);

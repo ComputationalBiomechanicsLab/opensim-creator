@@ -9,7 +9,7 @@ namespace osc
     class PerfMeasurementMetadata final {
     public:
         PerfMeasurementMetadata(
-            int64_t id_,
+            size_t id_,
             std::string_view label_,
             std::string_view filename_,
             unsigned int fileLine_) :
@@ -21,7 +21,7 @@ namespace osc
         {
         }
 
-        int64_t getID() const
+        size_t getID() const
         {
             return m_ID;
         }
@@ -41,7 +41,7 @@ namespace osc
             return m_FileLine;
         }
     private:
-        int64_t m_ID;
+        size_t m_ID;
         std::string m_Label;
         std::string m_Filename;
         unsigned int m_FileLine;
