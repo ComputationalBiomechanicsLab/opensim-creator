@@ -1310,22 +1310,18 @@ Mesh osc::GeneratePolyhedronMesh(
         meshIndices.push_back(i);
     }
 
-    auto meshNormals = vertexBuffer;
-    for (auto& v : meshNormals) { v = normalize(v); }
-
-    // TODO
-    // if (detail == 0) {
-    //     compute flat normals: (three.js: computeVertexNormals)
-    // }
-    // else {
-    //     compute smooth normals (three.js: normalizeNormals)
-    // }
-
     Mesh rv;
     rv.setVerts(vertexBuffer);
-    rv.setNormals(meshNormals);
     rv.setTexCoords(uvBuffer);
     rv.setIndices(meshIndices);
+    if (detail == 0) {
+        rv.recalculateNormals();  // flat-shaded
+    }
+    else {
+        auto meshNormals = vertexBuffer;
+        for (auto& v : meshNormals) { v = normalize(v); }
+        rv.setNormals(meshNormals);
+    }
     return rv;
 }
 
