@@ -44,7 +44,7 @@ namespace
 
     float ToFloatOrZero(std::string_view v)
     {
-        // TODO: temporarily using `std::strof` here, rather than `std::from_chars` (C++17),
+        // HACK: temporarily using `std::strof` here, rather than `std::from_chars` (C++17),
         // because MacOS (Catalina) and Ubuntu 20 don't support the latter (as of Oct 2023)
         // for floating-point values
 

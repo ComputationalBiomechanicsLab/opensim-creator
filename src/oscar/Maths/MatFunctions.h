@@ -352,7 +352,6 @@ namespace osc
         }
         PerspectiveMatrix[3][3] = static_cast<T>(1);
 
-        /// TODO: Fixme!
         if (equal_within_epsilon(determinant(PerspectiveMatrix), static_cast<T>(0))) {
             return false;
         }
