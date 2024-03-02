@@ -19,7 +19,9 @@ std::string osc::IResourceLoader::slurp(ResourcePath const& rp)
     try {
         // reserve memory
         fd.stream().seekg(0, std::ios::end);
-        rv.reserve(fd.stream().tellg());
+        if (auto pos = fd.stream().tellg(); pos > 0) {
+            rv.reserve(static_cast<size_t>(pos));
+        }
         fd.stream().seekg(0, std::ios::beg);
 
         // then assign to it via an iterator

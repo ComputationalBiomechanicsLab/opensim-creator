@@ -95,7 +95,7 @@ private:
                 ui::TableSetColumnIndex(column++);
                 ui::Text("%s:%u", pm.getFilename().c_str(), pm.getLine());
                 ui::TableSetColumnIndex(column++);
-                ui::Text("%" PRId64, pm.getCallCount());
+                ui::Text("%zu", pm.getCallCount());
                 ui::TableSetColumnIndex(column++);
                 ui::Text("%" PRId64 " us", static_cast<int64_t>(std::chrono::duration_cast<std::chrono::microseconds>(pm.getLastDuration()).count()));
                 ui::TableSetColumnIndex(column++);
