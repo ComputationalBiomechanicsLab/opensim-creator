@@ -1234,6 +1234,8 @@ namespace
     // the OpenGL data associated with an Texture2D
     struct CubemapOpenGLData final {
         gl::TextureCubemap texture;
+        UID dataVersion;
+        UID parametersVersion;
     };
 }
 
@@ -1269,7 +1271,7 @@ public:
         m_WrapModeU = wm;
         m_WrapModeV = wm;
         m_WrapModeW = wm;
-        // TODO: update parameter block that tells OpenGL to reformat the params if necessary
+        m_TextureParamsVersion.reset();
     }
 
     TextureWrapMode getWrapModeU() const
@@ -1280,7 +1282,7 @@ public:
     void setWrapModeU(TextureWrapMode wm)
     {
         m_WrapModeU = wm;
-        // TODO: update parameter block that tells OpenGL to reformat the params if necessary
+        m_TextureParamsVersion.reset();
     }
 
     TextureWrapMode getWrapModeV() const
@@ -1291,7 +1293,7 @@ public:
     void setWrapModeV(TextureWrapMode wm)
     {
         m_WrapModeV = wm;
-        // TODO: update parameter block that tells OpenGL to reformat the params if necessary
+        m_TextureParamsVersion.reset();
     }
 
     TextureWrapMode getWrapModeW() const
@@ -1302,7 +1304,7 @@ public:
     void setWrapModeW(TextureWrapMode wm)
     {
         m_WrapModeW = wm;
-        // TODO: update parameter block that tells OpenGL to reformat the params if necessary
+        m_TextureParamsVersion.reset();
     }
 
     TextureFilterMode getFilterMode() const
@@ -1313,7 +1315,7 @@ public:
     void setFilterMode(TextureFilterMode fm)
     {
         m_FilterMode = fm;
-        // TODO: update parameter block that tells OpenGL to reformat the params if necessary
+        m_TextureParamsVersion.reset();
     }
 
     void setPixelData(CubemapFace face, std::span<uint8_t const> data)
@@ -1329,33 +1331,35 @@ public:
         OSC_ASSERT(destinationDataEnd <= m_Data.size() && "out of range assignment detected: this should be handled in the constructor");
 
         std::copy(data.begin(), data.end(), m_Data.begin() + destinationDataStart);
-        // TODO: ensure OpenGL is reset etc.
+        m_DataVersion.reset();
     }
 
     gl::TextureCubemap& updCubemap()
     {
-        if (!*m_MaybeGPUTexture)
-        {
-            uploadToGPU();
+        if (!*m_MaybeGPUTexture) {
+            *m_MaybeGPUTexture = CubemapOpenGLData{};
         }
-        OSC_ASSERT(*m_MaybeGPUTexture);
 
-        CubemapOpenGLData& bufs = **m_MaybeGPUTexture;
+        CubemapOpenGLData& buf = **m_MaybeGPUTexture;
 
-        return bufs.texture;
+        if (buf.dataVersion != m_DataVersion) {
+            uploadPixelData(buf);
+        }
+
+        if (buf.parametersVersion != m_TextureParamsVersion) {
+            updateTextureParameters(buf);
+        }
+
+        return buf.texture;
     }
 private:
-    void uploadToGPU()
+    void uploadPixelData(CubemapOpenGLData& buf)
     {
-        // create new OpenGL handle(s)
-        *m_MaybeGPUTexture = CubemapOpenGLData{};
-
         // calculate CPU-to-GPU data transfer parameters
         size_t const numBytesPerPixel = NumBytesPerPixel(m_Format);
         size_t const numBytesPerRow = m_Width * numBytesPerPixel;
         size_t const numBytesPerFace = m_Width * numBytesPerRow;
-        size_t const numFaces = NumOptions<CubemapFace>();
-        size_t const numBytesInCubemap = numFaces * numBytesPerFace;
+        size_t const numBytesInCubemap = NumOptions<CubemapFace>() * numBytesPerFace;
         CPUDataType const cpuDataType = ToEquivalentCPUDataType(m_Format);  // TextureFormat's datatype == CPU format's datatype for cubemaps
         CPUImageFormat const cpuChannelLayout = ToEquivalentCPUImageFormat(m_Format);  // TextureFormat's layout == CPU formats's layout for cubemaps
         GLint const unpackAlignment = ToOpenGLUnpackAlignment(m_Format);
@@ -1368,7 +1372,7 @@ private:
 
         // upload cubemap to GPU
         static_assert(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z - GL_TEXTURE_CUBE_MAP_POSITIVE_X == 5);
-        gl::BindTexture((*m_MaybeGPUTexture)->texture);
+        gl::BindTexture(buf.texture);
         gl::PixelStorei(GL_UNPACK_ALIGNMENT, unpackAlignment);
         for (GLint faceIdx = 0; faceIdx < static_cast<GLint>(NumOptions<CubemapFace>()); ++faceIdx)
         {
@@ -1390,6 +1394,15 @@ private:
         // generate mips (care: they can be uploaded to with Graphics::CopyTexture)
         glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 
+        gl::BindTexture();
+
+        buf.dataVersion = m_DataVersion;
+    }
+
+    void updateTextureParameters(CubemapOpenGLData& buf)
+    {
+        gl::BindTexture(buf.texture);
+
         // set texture parameters
         gl::TexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, ToGLTextureMagFilterParam(m_FilterMode));
         gl::TexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, ToGLTextureMinFilterParam(m_FilterMode));
@@ -1399,15 +1412,20 @@ private:
 
         // cleanup OpenGL binding state
         gl::BindTexture();
+
+        buf.parametersVersion = m_TextureParamsVersion;
     }
 
     int32_t m_Width;
     TextureFormat m_Format;
+    std::vector<uint8_t> m_Data;
+    UID m_DataVersion;
+
     TextureWrapMode m_WrapModeU = TextureWrapMode::Repeat;
     TextureWrapMode m_WrapModeV = TextureWrapMode::Repeat;
     TextureWrapMode m_WrapModeW = TextureWrapMode::Repeat;
     TextureFilterMode m_FilterMode = TextureFilterMode::Mipmap;
-    std::vector<uint8_t> m_Data;
+    UID m_TextureParamsVersion;
 
     DefaultConstructOnCopy<std::optional<CubemapOpenGLData>> m_MaybeGPUTexture;
 };
