@@ -13,7 +13,7 @@ namespace osc
     // an ID that is guaranteed to be unique upon non-copy/move construction
     class UID final {
     public:
-        using element_type = int64_t;
+        using element_type = intptr_t;
 
         static constexpr UID invalid()
         {

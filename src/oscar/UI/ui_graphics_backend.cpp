@@ -89,7 +89,7 @@ namespace
 
     UID ToUID(ImTextureID id)
     {
-        return UID::FromIntUnchecked(cpp20::bit_cast<int64_t>(id));
+        return UID::FromIntUnchecked(cpp20::bit_cast<UID::element_type>(id));
     }
 
     Texture2D CreateFontsTexture(UID textureID)
