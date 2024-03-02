@@ -204,6 +204,8 @@ add_library(OpenSimCreator STATIC
 
     UI/Experimental/MeshHittestTab.cpp
     UI/Experimental/MeshHittestTab.h
+    UI/Experimental/PreviewExperimentalDataTab.cpp
+    UI/Experimental/PreviewExperimentalDataTab.h
     UI/Experimental/RendererGeometryShaderTab.cpp
     UI/Experimental/RendererGeometryShaderTab.h
     UI/Experimental/TPS2DTab.cpp
