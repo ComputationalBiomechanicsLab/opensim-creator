@@ -85,7 +85,7 @@ namespace
             columnDataType{t_},
             suffixes{std::move(suffixes_)}
         {
-            OSC_ASSERT(suffixes.size() == NumElementsIn(columnDataType));
+            OSC_ASSERT(suffixes.size() == static_cast<size_t>(NumElementsIn(columnDataType)));
             OSC_ASSERT(!suffixes.empty());
         }
 
@@ -479,7 +479,7 @@ private:
             ui::UpdatePolarCameraFromImGuiMouseInputs(m_Camera, dims);
         }
 
-        if (m_ActiveRow < NumRows(*m_Motion))
+        if (static_cast<size_t>(m_ActiveRow) < NumRows(*m_Motion))
         {
             ui::DrawTextureAsImGuiImage(render3DScene(dims), dims);
             m_RenderIsMousedOver = ImGui::IsItemHovered();
