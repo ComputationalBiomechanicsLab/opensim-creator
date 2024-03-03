@@ -48,7 +48,9 @@ target_link_libraries(TestOpenSimCreator PUBLIC
 )
 
 # tell CMake (+IDEs) how to find all tests
-gtest_discover_tests(TestOpenSimCreator)
+if(${OSC_DISCOVER_TESTS})
+    gtest_discover_tests(TestOpenSimCreator)
+endif()
 
 # for development on Windows, copy all runtime dlls to the exe directory
 # (because Windows doesn't have an RPATH)

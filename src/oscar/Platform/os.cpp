@@ -6,7 +6,9 @@
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/StringHelpers.h>
 
-#include <nfd.h>
+#ifndef EMSCRIPTEN
+    #include <nfd.h>
+#endif
 #include <SDL_clipboard.h>
 #include <SDL_error.h>
 #include <SDL_filesystem.h>
@@ -102,6 +104,11 @@ std::optional<std::filesystem::path> osc::PromptUserForFile(
     std::optional<CStringView> maybeCommaDelimitedExtensions,
     std::optional<CStringView> maybeInitialDirectoryToOpen)
 {
+#ifdef EMSCRIPTEN
+    static_cast<void>(maybeCommaDelimitedExtensions);
+    static_cast<void>(maybeInitialDirectoryToOpen);
+    return std::nullopt;
+#else
     auto [path, result] = [&]()
     {
         nfdchar_t* ptr = nullptr;
@@ -126,12 +133,18 @@ std::optional<std::filesystem::path> osc::PromptUserForFile(
     {
         return std::nullopt;
     }
+#endif
 }
 
 std::vector<std::filesystem::path> osc::PromptUserForFiles(
     std::optional<CStringView> maybeCommaDelimitedExtensions,
     std::optional<CStringView> maybeInitialDirectoryToOpen)
 {
+#ifdef EMSCRIPTEN
+    static_cast<void>(maybeCommaDelimitedExtensions);
+    static_cast<void>(maybeInitialDirectoryToOpen);
+    return {};
+#else
     nfdpathset_t s{};
     nfdresult_t result = NFD_OpenDialogMultiple(
         maybeCommaDelimitedExtensions ? maybeCommaDelimitedExtensions->c_str() : nullptr,
@@ -161,12 +174,18 @@ std::vector<std::filesystem::path> osc::PromptUserForFiles(
     }
 
     return rv;
+#endif
 }
 
 std::optional<std::filesystem::path> osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary(
     std::optional<CStringView> maybeExtension,
     std::optional<CStringView> maybeInitialDirectoryToOpen)
 {
+#ifdef EMSCRIPTEN
+    static_cast<void>(maybeExtension);
+    static_cast<void>(maybeInitialDirectoryToOpen);
+    return std::nullopt;
+#else
     if (maybeExtension)
     {
         OSC_ASSERT(!Contains(*maybeExtension, ',') && "can only provide one extension to this implementation!");
@@ -211,6 +230,7 @@ std::optional<std::filesystem::path> osc::PromptUserForFileSaveLocationAndAddExt
     }
 
     return p;
+#endif
 }
 
 std::string osc::CurrentErrnoAsString()
@@ -300,6 +320,11 @@ namespace
 
     void OnCriticalSignalRecv(int sig_num, siginfo_t* info, void* ucontext)
     {
+#ifdef EMSCRIPTEN
+        static_cast<void>(sig_num);
+        static_cast<void>(info);
+        static_cast<void>(ucontext);
+#else
         // reset abort signal handler
         if (signal(SIGABRT, SIG_DFL) == SIG_ERR)
         {
@@ -340,6 +365,7 @@ namespace
         {
             std::cerr << "    #" << std::setw(2) << i << ' ' << messages.get()[i] << '\n';
         }
+#endif
     }
 }
 
@@ -714,6 +740,15 @@ void osc::OpenPathInOSDefaultApplication(std::filesystem::path const& p)
 void osc::OpenURLInDefaultBrowser(std::string_view)
 {
     log_error("unsupported action: cannot open external URLs in Windows (yet!)");
+}
+#elif EMSCRIPTEN
+void osc::InstallBacktraceHandler(std::filesystem::path const&) {}
+
+std::tm osc::GMTimeThreadsafe(std::time_t t)
+{
+    std::tm rv{};
+    gmtime_r(&t, &rv);
+    return rv;
 }
 #else
 #error "Unsupported platform?"
