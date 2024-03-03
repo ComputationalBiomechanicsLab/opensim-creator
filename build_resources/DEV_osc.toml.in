@@ -22,7 +22,7 @@ docs = "@CMAKE_CURRENT_SOURCE_DIR@/../../docs/build"
 
 [experimental_feature_flags]
 
-# enable dragging panels out of the host window and into their own window
+# change this to tell the application that it can use high-DPI mode
 #
-# warning: results vary *greatly* accross platforms
-# multiple_viewports = false
+# note: extremely experimental, because the codebase isn't DPI-aware - yet ;)
+# high_dpi_mode = true

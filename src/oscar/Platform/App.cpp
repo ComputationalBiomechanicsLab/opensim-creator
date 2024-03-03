@@ -84,7 +84,7 @@ namespace
     }
 
     // initialize the main application window
-    sdl::Window CreateMainAppWindow(CStringView applicationName)
+    sdl::Window CreateMainAppWindow(AppConfig const& config, CStringView applicationName)
     {
         log_info("initializing main application window");
 
@@ -101,8 +101,13 @@ namespace
         constexpr int y = SDL_WINDOWPOS_CENTERED;
         constexpr int width = 800;
         constexpr int height = 600;
-        constexpr Uint32 flags =
+
+        Uint32 flags =
             SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED;
+        if (auto v = config.getValue("experimental_feature_flags/high_dpi_mode"); v && v->toBool()) {
+            flags |= SDL_WINDOW_ALLOW_HIGHDPI;
+            SetProcessHighDPIMode();
+        }
 
         return sdl::CreateWindoww(applicationName, x, y, width, height, flags);
     }
@@ -752,7 +757,7 @@ private:
     sdl::Context m_SDLContext{SDL_INIT_VIDEO};
 
     // init main application window
-    sdl::Window m_MainWindow = CreateMainAppWindow(GetBestHumanReadableApplicationName(m_Metadata));
+    sdl::Window m_MainWindow = CreateMainAppWindow(m_ApplicationConfig, GetBestHumanReadableApplicationName(m_Metadata));
 
     // init graphics context
     GraphicsContext m_GraphicsContext{*m_MainWindow};

@@ -83,8 +83,17 @@ void osc::ui::context::Init()
         io.IniFilename = s_UserImguiIniFilePath.c_str();
     }
 
+    float dpiScaleFactor = [&]()
+    {
+        float dpi{};
+        float hdpi{};
+        float vdpi{};
+        SDL_GetDisplayDPI(SDL_GetWindowDisplayIndex(App::upd().updUndleryingWindow()), &dpi, &hdpi, &vdpi);
+        return dpi / 96.0f;
+    }();
+
     ImFontConfig baseConfig;
-    baseConfig.SizePixels = 15.0f;
+    baseConfig.SizePixels = dpiScaleFactor*15.0f;
     baseConfig.PixelSnapH = true;
     baseConfig.OversampleH = 2;
     baseConfig.OversampleV = 2;

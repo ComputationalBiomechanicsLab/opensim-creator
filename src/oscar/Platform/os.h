@@ -70,6 +70,9 @@ namespace osc
     // set an environment variable's value (process-wide)
     void SetEnv(CStringView name, CStringView value, bool overwrite);
 
+    // set the current process to HighDPI mode (must be called before a window is created)
+    void SetProcessHighDPIMode();
+
     // synchronously prompt a user to select a single file
     //
     // - `maybeCommaDelimitedExtensions` can be:

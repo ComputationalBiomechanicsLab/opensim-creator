@@ -418,6 +418,8 @@ void osc::OpenURLInDefaultBrowser(std::string_view vw)
     OpenPathInOSDefaultApplication(vw);
 }
 
+void osc::SetProcessHighDPIMode() {}
+
 #elif defined(__APPLE__)
 #include <errno.h>  // ERANGE
 #include <execinfo.h>  // backtrace(), backtrace_symbols()
@@ -506,6 +508,8 @@ void osc::OpenURLInDefaultBrowser(std::string_view url)
     std::string cmd = "open " + std::string{url};
     system(cmd.c_str());
 }
+
+void osc::SetProcessHighDPIMode() {}
 
 #elif defined(WIN32)
 #include <Windows.h>  // PVOID, RtlCaptureStackBackTrace(), MEMORY_BASIC_INFORMATION, VirtualQuery(), DWORD64, TCHAR, GetModuleFileName()
@@ -714,6 +718,11 @@ void osc::OpenPathInOSDefaultApplication(std::filesystem::path const& p)
 void osc::OpenURLInDefaultBrowser(std::string_view)
 {
     log_error("unsupported action: cannot open external URLs in Windows (yet!)");
+}
+
+void osc::SetProcessHighDPIMode()
+{
+    SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
 }
 #else
 #error "Unsupported platform?"
