@@ -24,3 +24,6 @@ cmake --build osc-deps-build -j20 -v
 
 LDFLAGS="-fexceptions -sNO_DISABLE_EXCEPTION_CATCHING=1 -sLEGACY_GL_EMULATION=1 -sUSE_WEBGL2=1 -sUSE_SDL=2" CXXFLAGS="-fexceptions --use-port=sdl2" CC=emcc CXX=em++ cmake -S . -B osc-build -DOSC_EXECUTABLE_SUFFIX=".html" -DOSC_BUILD_OPENSIMCREATOR=OFF -DOSC_BUILD_BENCHMARKS=OFF -DOSC_BUILD_INSTALLABLE_PACKAGE=OFF -DOSC_DISCOVER_TESTS=OFF -DOSC_EMSCRIPTEN=ON -DCMAKE_PREFIX_PATH=${PWD}/osc-deps-install
 cmake --build osc-build --target testoscar -v -j20
+
+# run test suite, excluding tests that depend on window/files (work-in-progress)
+node osc-build/tests/testoscar/testoscar.js  --gtest_filter=-Renderer*:Image*:ResourceStream*
