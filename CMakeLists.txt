@@ -46,11 +46,6 @@ set(
     "the internet location of the software's repo - used by in-app links, installers, etc."
 )
 set(
-    OSC_BUILD_DOCS OFF
-    CACHE BOOL
-    "enable/disable building the documentation (requires that sphinx-build is available on the PATH)"
-)
-set(
     OSC_ORGNAME "cbl"
     CACHE STRING
     "the name of the organization that created the application (affects configuration location)"
@@ -85,10 +80,36 @@ set(
     CACHE STRING
     "the user-facing email of the author (appears in 'email support', installer, etc.)"
 )
+set(OSC_BUILD_OPENSIMCREATOR ON
+    CACHE BOOL
+    "enable/disable building OpenSim Creator (i.e. the OpenSim-dependent part of the codebase)"
+)
+set(
+    OSC_BUILD_DOCS OFF
+    CACHE BOOL
+    "enable/disable building the documentation (requires that sphinx-build is available on the PATH)"
+)
 set(
     OSC_BUILD_BENCHMARKS ON
     CACHE BOOL
     "enable/disable building the benchmark suite (handy for development)"
+)
+set(OSC_EXECUTABLE_SUFFIX ${CMAKE_EXECUTABLE_SUFFIX}
+    CACHE BOOL
+    "global suffix to place on the end of each executable (platform-dependent)"
+)
+set(OSC_BUILD_INSTALLABLE_PACKAGE ON
+    CACHE BOOL
+    "enable/disable building installable packages (exe self-installer, .deb package, etc.)"
+)
+set(OSC_DISCOVER_TESTS ON
+    CACHE BOOL
+    "enable/disable automatically running test discovery (IDE integration)"
+)
+set(
+    OSC_EMSCRIPTEN OFF
+    CACHE BOOL
+    "enable special build parameters for emscripten (emsdk) - don't try this unless you know what you're doing ;)"
 )
 
 # set OSC_BUILD_ID
@@ -122,6 +143,7 @@ endif()
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_EXECUTABLE_SUFFIX ${OSC_EXECUTABLE_SUFFIX})
 
 # set LINUX
 #
@@ -175,12 +197,15 @@ enable_testing()
 add_subdirectory(src)
 add_subdirectory(apps)
 add_subdirectory(tests)
+
 if(${OSC_BUILD_DOCS})
     add_subdirectory(docs)
 endif()
+
 if(${OSC_BUILD_BENCHMARKS})
     add_subdirectory(benches)
 endif()
 
-# install/packaging
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Packaging.cmake)
+if (${OSC_BUILD_INSTALLABLE_PACKAGE})
+    include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Packaging.cmake)
+endif()

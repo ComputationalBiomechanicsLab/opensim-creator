@@ -7632,6 +7632,9 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::BindAndClearRenderBuffers(
                         t.multisampledRBO
                     );
                 },
+#ifdef EMSCRIPTEN
+                [](SingleSampledCubemap&) {}
+#else
                 [i](SingleSampledCubemap& t)
                 {
                     glFramebufferTexture(
@@ -7641,6 +7644,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::BindAndClearRenderBuffers(
                         0
                     );
                 }
+#endif
             }, maybeCustomRenderTarget->colors[i].buffer->m_Impl->updRenderBufferData());
         }
 
@@ -7664,6 +7668,9 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::BindAndClearRenderBuffers(
                     t.multisampledRBO
                 );
             },
+#ifdef EMSCRIPTEN
+            [](SingleSampledCubemap&) {}
+#else
             [](SingleSampledCubemap& t)
             {
                 glFramebufferTexture(
@@ -7673,6 +7680,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::BindAndClearRenderBuffers(
                     0
                 );
             }
+#endif
         }, maybeCustomRenderTarget->depth.buffer->m_Impl->updRenderBufferData());
 
         // Multi-Render Target (MRT) support: tell OpenGL to use all specified

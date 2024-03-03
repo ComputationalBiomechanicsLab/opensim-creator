@@ -2,10 +2,12 @@
 cmake_policy(SET CMP0072 NEW)
 
 # find dependencies (usually built+installed from `third_party/`)
-find_package(OpenGL REQUIRED)
-find_package(glew REQUIRED CONFIG)
-find_package(SDL2 REQUIRED CONFIG)
-find_package(nativefiledialog REQUIRED CONFIG)
+if (NOT ${OSC_EMSCRIPTEN})
+    find_package(OpenGL REQUIRED)
+    find_package(glew REQUIRED CONFIG)
+    find_package(SDL2 REQUIRED CONFIG)
+    find_package(nativefiledialog REQUIRED CONFIG)
+endif()
 find_package(imgui REQUIRED CONFIG)
 find_package(IconFontCppHeaders REQUIRED CONFIG)
 find_package(ImGuizmo REQUIRED CONFIG)
@@ -374,10 +376,10 @@ target_link_libraries(oscar PUBLIC
 
     oscar_compiler_configuration
 
-    OpenGL::GL
-    GLEW::glew_s
-    SDL2::SDL2
-    nativefiledialog
+    $<$<NOT:$<BOOL:${OSC_EMSCRIPTEN}>>:OpenGL::GL>
+    $<$<NOT:$<BOOL:${OSC_EMSCRIPTEN}>>:GLEW::glew_s>
+    $<$<NOT:$<BOOL:${OSC_EMSCRIPTEN}>>:SDL2::SDL2>
+    $<$<NOT:$<BOOL:${OSC_EMSCRIPTEN}>>:nativefiledialog>
     imgui
     IconFontCppHeaders
     ImGuizmo

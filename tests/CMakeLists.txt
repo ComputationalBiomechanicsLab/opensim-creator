@@ -1,4 +1,6 @@
-add_subdirectory(TestOpenSimCreator)
+if(${OSC_BUILD_OPENSIMCREATOR})
+    add_subdirectory(TestOpenSimCreator)
+endif()
 add_subdirectory(testoscar)
 add_subdirectory(testoscar_demos)
 add_subdirectory(testoscar_learnopengl)

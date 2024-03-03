@@ -120,7 +120,9 @@ target_link_libraries(testoscar PUBLIC
 )
 
 # tell CMake (+IDEs) how to find all tests
-gtest_discover_tests(testoscar)
+if(${OSC_DISCOVER_TESTS})
+    gtest_discover_tests(testoscar)
+endif()
 
 # for development on Windows, copy all runtime dlls to the exe directory
 # (because Windows doesn't have an RPATH)
