@@ -3,16 +3,16 @@
 set -xeuo pipefail
 
 # install emsdk
-#if [ -e emsdk/ ];
-     #git clone https://github.com/emscripten-core/emsdk.git
-     #cd emsdk/
-     #./emsdk install latest
-     #cd -
-#fi
+if [ ! -d emsdk ]; then
+     git clone https://github.com/emscripten-core/emsdk.git
+     cd emsdk/
+     ./emsdk install latest
+     cd -
+fi
 
 # activate emsdk
-#./emsdk/emsdk activate latest
-#source ./emsdk/emsdk_env.sh
+./emsdk/emsdk activate latest
+source ./emsdk/emsdk_env.sh
 
 # build oscar (only) with emsdk
 #

@@ -50,6 +50,21 @@ jobs:
         path: osc/osc-build/*.deb
         if-no-files-found: error
 
+  ubuntu2004emscripten:
+    name: Ubuntu 20.04 (clang)
+    runs-on: ubuntu-20.04
+    steps:
+
+    - uses: actions/checkout@v4
+      with:
+        path: osc
+        submodules: 'recursive'
+
+    - name: run build script
+      run: |
+        cd $GITHUB_WORKSPACE/osc
+        ./scripts/build_emscripten.sh
+
   macos11clang:
     name: MacOS 11 (Catalina, llvm@15)
     runs-on: macos-11
