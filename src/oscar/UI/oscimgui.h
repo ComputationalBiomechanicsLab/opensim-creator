@@ -710,9 +710,9 @@ namespace osc::ui
         ImGui::PushStyleColor(index, col);
     }
 
-    inline void PushStyleColor(ImGuiCol index, ImVec4 const& col)
+    inline void PushStyleColor(ImGuiCol index, Vec4 const& col)
     {
-        ImGui::PushStyleColor(index, col);
+        ImGui::PushStyleColor(index, ImVec4{col});
     }
 
     inline void PushStyleColor(ImGuiCol index, Color const& c)
