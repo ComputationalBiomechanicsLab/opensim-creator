@@ -35,6 +35,9 @@ add_library(oscar_learnopengl STATIC
     GettingStarted/LOGLTexturingTab.cpp
     GettingStarted/LOGLTexturingTab.h
 
+    Guest/LOGLOITTab.cpp
+    Guest/LOGLOITTab.h
+
     Lighting/LOGLBasicLightingTab.cpp
     Lighting/LOGLBasicLightingTab.h
     Lighting/LOGLLightingMapsTab.cpp
@@ -56,6 +59,7 @@ add_library(oscar_learnopengl STATIC
     AdvancedLighting.h
     AdvancedOpenGL.h
     GettingStarted.h
+    Guest.h
     LearnOpenGLHelpers.cpp
     LearnOpenGLHelpers.h
     LearnOpenGLTabRegistry.cpp
