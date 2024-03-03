@@ -4,8 +4,8 @@ env:
   OSC_BUILD_DOCS: 1
 
 jobs:
-  windows:
-    name: Build on Windows
+  windows2022msvc:
+    name: Windows 2022 (MSVC)
     runs-on: windows-2022
     steps:
 
@@ -25,8 +25,8 @@ jobs:
         path: osc/osc-build/*win64.exe
         if-no-files-found: error
 
-  ubuntu2004:
-    name: Build on Ubuntu 20.04
+  ubuntu2004clang:
+    name: Ubuntu 20.04 (clang)
     runs-on: ubuntu-20.04
     steps:
 
@@ -50,8 +50,8 @@ jobs:
         path: osc/osc-build/*.deb
         if-no-files-found: error
 
-  macCatalina:
-    name: Build on Mac (Catalina)
+  macos11clang:
+    name: MacOS 11 (Catalina, llvm@15)
     runs-on: macos-11
     steps:
 
