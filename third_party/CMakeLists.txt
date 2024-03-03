@@ -3,10 +3,23 @@ project(osc-dependencies)
 
 # -------------- gather user-facing build cache vars ---------------- #
 
-set(
-    OSCDEPS_EMSCRIPTEN OFF
+set(OSCDEPS_GET_GOOGLETEST ON CACHE BOOL "enable getting googletest")
+set(OSCDEPS_GET_BENCHMARK ON CACHE BOOL "enable getting benchmark")
+set(OSCDEPS_GET_LUNASVG ON CACHE BOOL "enable getting lunasvg")
+set(OSCDEPS_GET_SDL ON CACHE BOOL "enable getting SDL")
+set(OSCDEPS_GET_TOMLPLUSPLUS ON CACHE BOOL "enable gettting tomlplusplus")
+set(OSCDEPS_GET_UNORDERED_DENSE ON CACHE BOOL "enable getting unordered-dense")
+set(OSCDEPS_GET_GLEW ON CACHE BOOL "enable getting glew")
+set(OSCDEPS_GET_ICONFONTCPPHEADERS ON CACHE BOOL "enable gettting IconFontAwesome cpp headers")
+set(OSCDEPS_GET_STB ON CACHE BOOL "enable getting stb headers")
+set(OSCDEPS_GET_NATIVEFILEDIALOG ON CACHE BOOL "enable getting nativefiledialog")
+set(OSCDEPS_GET_IMGUIZMO ON CACHE BOOL "enable getting ImGuizmo")
+set(OSCDEPS_GET_IMPLOT ON CACHE BOOL "enable gettting implot")
+set(OSCDEPS_GET_OPENSIM ON CACHE BOOL "enable getting OpenSim (+its dependencies)")
+
+set(OSCDEPS_EMSCRIPTEN OFF
     CACHE BOOL
-    "enable special build parameters for emscripten (emsdk) - don't try this unless you know what you're doing ;)"
+    "enable special (read: hacky) build steps for emscripten (emsdk) - don't try this unless you know what you're doing ;)"
 )
 
 include(ExternalProject)  # ExternalProject_Add
@@ -39,15 +52,17 @@ if(TRUE)
     unset(OSCDEPS_FORWARDED_VARS)
 endif()
 
-ExternalProject_Add(googletest
-    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/googletest
-    CMAKE_CACHE_ARGS
-        ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
-        -DBUILD_GMOCK:BOOL=OFF
-        -Dgtest_force_shared_crt:BOOL=ON  # osc uses a shared runtime lib
-)
+if(${OSCDEPS_GET_GOOGLETEST})
+    ExternalProject_Add(googletest
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/googletest
+        CMAKE_CACHE_ARGS
+            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
+            -DBUILD_GMOCK:BOOL=OFF
+            -Dgtest_force_shared_crt:BOOL=ON  # osc uses a shared runtime lib
+    )
+endif()
 
-if(NOT ${OSCDEPS_EMSCRIPTEN})
+if(${OSCDEPS_GET_BENCHMARK})
     ExternalProject_Add(benchmark
         DEPENDS googletest
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/benchmark
@@ -59,13 +74,15 @@ if(NOT ${OSCDEPS_EMSCRIPTEN})
     )
 endif()
 
-ExternalProject_Add(lunasvg
-    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lunasvg
-    CMAKE_CACHE_ARGS
-        ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
-)
+if(${OSCDEPS_GET_LUNASVG})
+    ExternalProject_Add(lunasvg
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lunasvg
+        CMAKE_CACHE_ARGS
+            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
+    )
+endif()
 
-if(NOT ${OSCDEPS_EMSCRIPTEN})
+if(${OSCDEPS_GET_SDL})
     ExternalProject_Add(sdl
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/SDL
         CMAKE_CACHE_ARGS
@@ -76,19 +93,23 @@ if(NOT ${OSCDEPS_EMSCRIPTEN})
     )
 endif()
 
-ExternalProject_Add(tomlplusplus
-    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tomlplusplus
-    CMAKE_CACHE_ARGS
-        ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
-)
+if(${OSCDEPS_GET_TOMLPLUSPLUS})
+    ExternalProject_Add(tomlplusplus
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tomlplusplus
+        CMAKE_CACHE_ARGS
+            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
+    )
+endif()
 
-ExternalProject_Add(unordered_dense
-    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/unordered_dense
-    CMAKE_CACHE_ARGS
-        ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
-)
+if(${OSCDEPS_GET_UNORDERED_DENSE})
+    ExternalProject_Add(unordered_dense
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/unordered_dense
+        CMAKE_CACHE_ARGS
+            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
+    )
+endif()
 
-if(NOT ${OSCDEPS_EMSCRIPTEN})
+if(${OSCDEPS_GET_GLEW})
     ExternalProject_Add(glew
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/glew
         SOURCE_SUBDIR build/cmake
@@ -99,29 +120,33 @@ if(NOT ${OSCDEPS_EMSCRIPTEN})
     )
 endif()
 
-ExternalProject_Add(IconFontCppHeaders
-    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/IconFontCppHeaders
+if (${OSCDEPS_GET_ICONFONTCPPHEADERS})
+    ExternalProject_Add(IconFontCppHeaders
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/IconFontCppHeaders
 
-    # we provide our own cmake for this dependency
-    PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/IconFontCppHeaders.cmake" <SOURCE_DIR>/CMakeLists.txt
-    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/IconFontCppHeadersConfig.cmake.in" <SOURCE_DIR>/IconFontCppHeadersConfig.cmake.in
+        # we provide our own cmake for this dependency
+        PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/IconFontCppHeaders.cmake" <SOURCE_DIR>/CMakeLists.txt
+        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/IconFontCppHeadersConfig.cmake.in" <SOURCE_DIR>/IconFontCppHeadersConfig.cmake.in
 
-    CMAKE_CACHE_ARGS
-        ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
-)
+        CMAKE_CACHE_ARGS
+            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
+    )
+endif()
 
-ExternalProject_Add(stb
-    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stb
+if (${OSCDEPS_GET_STB})
+    ExternalProject_Add(stb
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stb
 
-    # we provide our own cmake for this dependency
-    PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/stb.cmake" <SOURCE_DIR>/CMakeLists.txt
-    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/stbConfig.cmake.in" <SOURCE_DIR>/stbConfig.cmake.in
+        # we provide our own cmake for this dependency
+        PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/stb.cmake" <SOURCE_DIR>/CMakeLists.txt
+        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/stbConfig.cmake.in" <SOURCE_DIR>/stbConfig.cmake.in
 
-    CMAKE_CACHE_ARGS
-        ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
-)
+        CMAKE_CACHE_ARGS
+            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
+    )
+endif()
 
-if(NOT ${OSCDEPS_EMSCRIPTEN})
+if(${OSCDEPS_GET_NATIVEFILEDIALOG})
     ExternalProject_Add(nativefiledialog
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/nativefiledialog
 
@@ -135,6 +160,7 @@ if(NOT ${OSCDEPS_EMSCRIPTEN})
 endif()
 
 if (${OSCDEPS_EMSCRIPTEN})
+    # emscripten build cannot depend on sdl (build bug?)
     ExternalProject_Add(imgui
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/imgui
 
@@ -161,33 +187,37 @@ else()
     )
 endif()
 
-ExternalProject_Add(ImGuizmo
-    DEPENDS imgui
-    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ImGuizmo
+if(${OSCDEPS_GET_IMGUIZMO})
+    ExternalProject_Add(ImGuizmo
+        DEPENDS imgui
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ImGuizmo
 
-    # we provide our own cmake for this dependency
-    PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/ImGuizmo.cmake" <SOURCE_DIR>/CMakeLists.txt
-    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/ImGuizmoConfig.cmake.in" <SOURCE_DIR>/ImGuizmoConfig.cmake.in
+        # we provide our own cmake for this dependency
+        PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/ImGuizmo.cmake" <SOURCE_DIR>/CMakeLists.txt
+        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/ImGuizmoConfig.cmake.in" <SOURCE_DIR>/ImGuizmoConfig.cmake.in
 
-    CMAKE_CACHE_ARGS
-        ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
-        -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}
-)
+        CMAKE_CACHE_ARGS
+            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
+            -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}
+    )
+endif()
 
-ExternalProject_Add(implot
-    DEPENDS imgui
-    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/implot
+if(${OSCDEPS_GET_IMPLOT})
+    ExternalProject_Add(implot
+        DEPENDS imgui
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/implot
 
-    # we provide our own cmake for this dependency
-    PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/implot.cmake" <SOURCE_DIR>/CMakeLists.txt
-    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/implotConfig.cmake.in" <SOURCE_DIR>/implotConfig.cmake.in
+        # we provide our own cmake for this dependency
+        PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/implot.cmake" <SOURCE_DIR>/CMakeLists.txt
+        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/implotConfig.cmake.in" <SOURCE_DIR>/implotConfig.cmake.in
 
-    CMAKE_CACHE_ARGS
-        ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
-        -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}
-)
+        CMAKE_CACHE_ARGS
+            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
+            -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}
+    )
+endif()
 
-if(NOT ${OSCDEPS_EMSCRIPTEN})
+if(${OSCDEPS_GET_OPENSIM})
     ExternalProject_Add(opensim-core-dependencies
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/opensim-core/dependencies
         INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/opensim-core-dependencies-install
@@ -199,9 +229,7 @@ if(NOT ${OSCDEPS_EMSCRIPTEN})
             -DCMAKE_INSTALL_PREFIX:STRING=<INSTALL_DIR>
             "-DSIMBODY_EXTRA_CMAKE_ARGS:STRING=-DBUILD_VISUALIZER:BOOL=OFF"
     )
-endif()
 
-if (NOT ${OSCDEPS_EMSCRIPTEN})
     ExternalProject_Add(opensim-core
         DEPENDS opensim-core-dependencies
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/opensim-core
