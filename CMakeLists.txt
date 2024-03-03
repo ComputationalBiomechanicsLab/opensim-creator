@@ -80,7 +80,7 @@ set(
     CACHE STRING
     "the user-facing email of the author (appears in 'email support', installer, etc.)"
 )
-set(OSC_BUILD_OPENSIMCREATOR
+set(OSC_BUILD_OPENSIMCREATOR ON
     CACHE BOOL
     "enable/disable building OpenSim Creator (i.e. the OpenSim-dependent part of the codebase)"
 )
