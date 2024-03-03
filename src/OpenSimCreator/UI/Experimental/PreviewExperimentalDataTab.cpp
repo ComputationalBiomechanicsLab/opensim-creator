@@ -442,7 +442,7 @@ namespace
     }
 
     // returns a parsed motion, read from disk motion from disk
-    LoadedMotion LoadData(std::filesystem::path const& sourceFile)
+    [[maybe_unused]] LoadedMotion LoadData(std::filesystem::path const& sourceFile)
     {
         OpenSim::Storage const storage{sourceFile.string()};
 
@@ -464,7 +464,8 @@ namespace
 class osc::PreviewExperimentalDataTab::Impl final : public StandardTabImpl {
 public:
 
-    Impl(ParentPtr<ITabHost> const&) : StandardTabImpl{ICON_FA_DOT_CIRCLE " Experimental Data"}
+    explicit Impl(ParentPtr<ITabHost> const&) :
+        StandardTabImpl{ICON_FA_DOT_CIRCLE " Experimental Data"}
     {}
 
 private:
@@ -570,7 +571,7 @@ private:
     SceneRendererParams m_LastRendererParams;
     SceneRenderer m_Renderer{
         *App::singleton<SceneCache>(),
-        *App::singleton<ShaderCache>(App::get().resource_loader())
+        *App::singleton<ShaderCache>(App::resource_loader())
     };
     bool m_RenderIsMousedOver = false;
 
