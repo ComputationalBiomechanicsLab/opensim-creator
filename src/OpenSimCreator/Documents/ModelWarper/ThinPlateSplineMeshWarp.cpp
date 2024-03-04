@@ -1,7 +1,9 @@
 #include "ThinPlateSplineMeshWarp.h"
 
 #include <OpenSimCreator/Documents/Landmarks/LandmarkHelpers.h>
+#include <OpenSimCreator/Documents/ModelWarper/Document.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationState.h>
+#include <OpenSimCreator/Utils/TPS3D.h>
 
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Platform/Log.h>
@@ -323,8 +325,29 @@ std::vector<ValidationCheck> osc::mow::ThinPlateSplineMeshWarp::implValidate() c
     return rv;
 }
 
-void osc::mow::ThinPlateSplineMeshWarp::implWarpInPlace(std::span<Vec3> points) const
+std::unique_ptr<IPointWarper> osc::mow::ThinPlateSplineMeshWarp::implCompileWarper(Document const& document) const
 {
-    OSC_ASSERT_ALWAYS(m_MaybeCoefficients && "no thin-plate spline coefficients available for this mesh: is it valid? (e.g. paired landmarks available, valid data, etc.)");
-    ApplyThinPlateWarpToPointsInPlace(*m_MaybeCoefficients, points);
+    class TPSWarper : public IPointWarper {
+    public:
+        TPSWarper(Document const& doc, std::span<LandmarkPairing const> ps)
+        {
+            TPSCoefficientSolverInputs3D inputs;
+            for (LandmarkPairing const& p : ps) {
+                if (auto locs = p.tryGetPairedLocations()) {
+                    inputs.landmarks.push_back(*locs);
+                }
+            }
+            inputs.blendingFactor = doc.getWarpBlendingFactor();
+            m_Coefs = CalcCoefficients(inputs);
+        }
+    private:
+        void implWarpInPlace(std::span<Vec3> points) const override
+        {
+            ApplyThinPlateWarpToPointsInPlace(m_Coefs, points);
+        }
+
+        TPSCoefficients3D m_Coefs;
+    };
+
+    return std::make_unique<TPSWarper>(document, m_Landmarks);
 }

@@ -115,6 +115,7 @@ add_library(OpenSimCreator STATIC
     Documents/ModelWarper/IMeshWarp.h
     Documents/ModelWarper/InMemoryMesh.cpp
     Documents/ModelWarper/InMemoryMesh.h
+    Documents/ModelWarper/IPointWarper.h
     Documents/ModelWarper/IValidateable.cpp
     Documents/ModelWarper/IValidateable.h
     Documents/ModelWarper/LandmarkPairing.h

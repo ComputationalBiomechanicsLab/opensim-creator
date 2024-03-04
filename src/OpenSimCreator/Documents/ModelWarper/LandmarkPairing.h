@@ -1,5 +1,7 @@
 #pragma once
 
+#include <OpenSimCreator/Utils/LandmarkPair3D.h>
+
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Utils/CStringView.h>
 
@@ -31,9 +33,17 @@ namespace osc::mow
         bool hasSource() const { return m_MaybeSourcePos.has_value(); }
         bool hasDestination() const { return m_MaybeDestinationPos.has_value(); }
         bool isFullyPaired() const { return hasSource() && hasDestination(); }
+        std::optional<LandmarkPair3D> tryGetPairedLocations() const
+        {
+            if (m_MaybeSourcePos && m_MaybeDestinationPos) {
+                return LandmarkPair3D{*m_MaybeSourcePos, *m_MaybeDestinationPos};
+            }
+            else {
+                return std::nullopt;
+            }
+        }
 
         void setDestination(std::optional<Vec3> p) { m_MaybeDestinationPos = p; }
-
     private:
         std::string m_Name;
         std::optional<Vec3> m_MaybeSourcePos;

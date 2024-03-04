@@ -55,7 +55,7 @@ namespace osc::mow
         std::unique_ptr<IMeshWarp> implClone() const override;
         std::vector<WarpDetail> implWarpDetails() const override;
         std::vector<ValidationCheck> implValidate() const override;
-        void implWarpInPlace(std::span<Vec3>) const override;
+        std::unique_ptr<IPointWarper> implCompileWarper(Document const&) const override;
 
         std::filesystem::path m_SourceMeshAbsoluteFilepath;
 
@@ -69,7 +69,5 @@ namespace osc::mow
         bool m_DestinationLandmarksFileExists;
 
         std::vector<LandmarkPairing> m_Landmarks;
-
-        std::optional<TPSCoefficients3D> m_MaybeCoefficients;
     };
 }

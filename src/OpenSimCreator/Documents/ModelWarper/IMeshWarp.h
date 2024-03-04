@@ -2,11 +2,15 @@
 
 #include <OpenSimCreator/Documents/ModelWarper/ICloneable.h>
 #include <OpenSimCreator/Documents/ModelWarper/IDetailListable.h>
+#include <OpenSimCreator/Documents/ModelWarper/IPointWarper.h>
 #include <OpenSimCreator/Documents/ModelWarper/IValidateable.h>
 
 #include <oscar/Maths/Vec3.h>
 
+#include <memory>
 #include <span>
+
+namespace osc::mow { class Document; }
 
 namespace osc::mow
 {
@@ -23,8 +27,8 @@ namespace osc::mow
     public:
         virtual ~IMeshWarp() = default;
 
-        void warpInPlace(std::span<Vec3> points) const { return implWarpInPlace(points); }
+        std::unique_ptr<IPointWarper> compileWarper(Document const& document) const { return implCompileWarper(document); }
     private:
-        virtual void implWarpInPlace(std::span<Vec3>) const = 0;
+        virtual std::unique_ptr<IPointWarper> implCompileWarper(Document const&) const = 0;
     };
 }

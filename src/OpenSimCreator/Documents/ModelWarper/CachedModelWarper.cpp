@@ -19,6 +19,7 @@ using namespace osc::mow;
 namespace
 {
     std::unique_ptr<InMemoryMesh> WarpMesh(
+        Document const& document,
         OpenSim::Model const& model,
         SimTK::State const& state,
         OpenSim::Mesh const& inputMesh,
@@ -27,7 +28,8 @@ namespace
         // TODO: this ignores scale factors
         Mesh mesh = ToOscMesh(model, state, inputMesh);
         auto verts = mesh.getVerts();
-        warper.warpInPlace(verts);
+        auto compiled = warper.compileWarper(document);
+        compiled->warpInPlace(verts);
         return std::make_unique<InMemoryMesh>(verts, mesh.getIndices());
     }
 
@@ -41,6 +43,8 @@ namespace
         newGeometry->connectSocket_frame(oldGeometry.getConnectee("frame"));
         OpenSim::Component& owner = const_cast<OpenSim::Component&>(oldGeometry.getOwner());  // TODO: use mutable lookup
         OSC_ASSERT_ALWAYS(TryDeleteComponentFromModel(model, oldGeometry) && "cannot delete old mesh from model during warping");
+        InitializeModel(model);
+        InitializeState(model);
         owner.addComponent(newGeometry.release());
         FinalizeConnections(model);
     }
@@ -67,7 +71,7 @@ public:
         // the warped model where necessary
         for (auto const& mesh : document.model().getComponentList<OpenSim::Mesh>()) {
             if (auto const* meshWarper = document.findMeshWarp(mesh)) {
-                auto warpedMesh = WarpMesh(document.model(), document.modelstate().getState(), mesh, *meshWarper);
+                auto warpedMesh = WarpMesh(document, document.model(), document.modelstate().getState(), mesh, *meshWarper);
                 OpenSim::Mesh* targetMesh = FindComponentMut<OpenSim::Mesh>(warpedModel, mesh.getAbsolutePath());
                 OSC_ASSERT_ALWAYS(targetMesh && "cannot find target mesh in output model: this should never happen");
                 OverwriteGeometry(warpedModel, *targetMesh, std::move(warpedMesh));
