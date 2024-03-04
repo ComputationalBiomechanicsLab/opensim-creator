@@ -113,6 +113,7 @@ add_library(OpenSimCreator STATIC
     Documents/ModelWarper/IDetailListable.h
     Documents/ModelWarper/IFrameWarp.h
     Documents/ModelWarper/IMeshWarp.h
+    Documents/ModelWarper/InMemoryMesh.h
     Documents/ModelWarper/IValidateable.cpp
     Documents/ModelWarper/IValidateable.h
     Documents/ModelWarper/LandmarkPairing.h
@@ -383,7 +384,7 @@ add_library(OpenSimCreator STATIC
     Utils/SimTKHelpers.h
     Utils/TPS3D.cpp
     Utils/TPS3D.h
-)
+ )
 
 # OpenSimCreatorConfig.h
 #

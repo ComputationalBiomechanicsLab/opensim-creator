@@ -1,15 +1,37 @@
 #include "CachedModelWarper.h"
 
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
+
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSimCreator/Documents/Model/BasicModelStatePair.h>
 #include <OpenSimCreator/Documents/ModelWarper/Document.h>
+#include <OpenSimCreator/Documents/ModelWarper/InMemoryMesh.h>
+#include <oscar/Utils/Assertions.h>
 
 #include <memory>
 #include <optional>
 
 using namespace osc;
 using namespace osc::mow;
+
+namespace
+{
+    std::unique_ptr<InMemoryMesh> WarpMesh(
+        OpenSim::Mesh const&,
+        IMeshWarp const&)
+    {
+        return std::make_unique<InMemoryMesh>();
+    }
+
+    void OverwriteGeometry(
+        OpenSim::Geometry&,
+        std::unique_ptr<OpenSim::Geometry>)
+    {
+        // TODO: update sockets, names, etc. delete the old one add in the
+        // old one
+    }
+}
 
 class osc::mow::CachedModelWarper::Impl final {
 public:
@@ -24,17 +46,28 @@ public:
 
     std::shared_ptr<IConstModelStatePair const> createWarpedModel(Document const& document)
     {
-        auto rv = std::make_shared<BasicModelStatePair>(document.modelstate());
+        OpenSim::Model warpedModel{document.model()};
+        InitializeModel(warpedModel);
+        InitializeState(warpedModel);
 
-        for ([[maybe_unused]] auto const& mesh : document.model().getComponentList<OpenSim::Mesh>()) {
-            [[maybe_unused]] auto const* warper = document.findMeshWarp(mesh);
-            // TODO
-            // use the warper to warp the mesh data
-            // re-export the warped mesh points as a temporary OBJ
-            // mutate the returned model to point to the OBJ
+        // iterate over component in the source model and write warped versions into
+        // the warped model where necessary
+        for (auto const& mesh : document.model().getComponentList<OpenSim::Mesh>()) {
+            if (auto const* meshWarper = document.findMeshWarp(mesh)) {
+                auto warpedMesh = WarpMesh(mesh, *meshWarper);
+                OpenSim::Mesh* targetMesh = FindComponentMut<OpenSim::Mesh>(warpedModel, mesh.getAbsolutePath());
+                OSC_ASSERT_ALWAYS(targetMesh && "cannot find target mesh in output model: this should never happen");
+                OverwriteGeometry(*targetMesh, std::move(warpedMesh));
+            }
+            else {
+                return nullptr;  // no warper for the mesh (not even an identity warp): halt
+            }
         }
 
-        return rv;
+        return std::make_shared<BasicModelStatePair>(
+            warpedModel.getModel(),
+            warpedModel.getWorkingState()
+        );
     }
 private:
     std::optional<Document> m_PreviousDocument;

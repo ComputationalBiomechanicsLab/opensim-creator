@@ -1,5 +1,7 @@
 #include "TPS3D.h"
 
+#include <OpenSimCreator/Utils/SimTKHelpers.h>
+
 #include <Simbody.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/VecFunctions.h>
@@ -276,4 +278,15 @@ std::vector<Vec3> osc::ApplyThinPlateWarpToPoints(
     }
 
     return rv;
+}
+
+void osc::ApplyThinPlateWarpToPointsInPlace(
+    TPSCoefficients3D const& coefs,
+    std::span<SimTK::Vec3> points)
+{
+    OSC_PERF("ApplyThinPlateWarpToPointsInPlace");
+    ForEachParUnseq(8192, points, [&coefs](SimTK::Vec3& vert)
+    {
+        vert = ToSimTKVec3(EvaluateTPSEquation(coefs, ToVec3(vert)));
+    });
 }

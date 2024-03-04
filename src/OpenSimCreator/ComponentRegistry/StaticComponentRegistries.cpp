@@ -5,6 +5,7 @@
 #include <OpenSimCreator/Documents/FrameDefinition/MidpointLandmark.h>
 #include <OpenSimCreator/Documents/FrameDefinition/PointToPointEdge.h>
 #include <OpenSimCreator/Documents/FrameDefinition/SphereLandmark.h>
+#include <OpenSimCreator/Documents/ModelWarper/InMemoryMesh.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Actuators/ActivationCoordinateActuator.h>
@@ -86,6 +87,7 @@ namespace
             std::make_shared<PointToPointEdge>(),
             std::make_shared<SphereLandmark>(),
             std::make_shared<OpenSim::StationDefinedFrame>(),
+            std::make_shared<InMemoryMesh>(),
         };
     }
 

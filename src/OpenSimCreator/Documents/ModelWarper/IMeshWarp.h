@@ -4,6 +4,10 @@
 #include <OpenSimCreator/Documents/ModelWarper/IDetailListable.h>
 #include <OpenSimCreator/Documents/ModelWarper/IValidateable.h>
 
+#include <Simbody.h>
+
+#include <span>
+
 namespace osc::mow
 {
     class IMeshWarp :
@@ -18,5 +22,9 @@ namespace osc::mow
         IMeshWarp& operator=(IMeshWarp&&) noexcept = default;
     public:
         virtual ~IMeshWarp() = default;
+
+        void warpInPlace(std::span<SimTK::Vec3> points) const { return implWarpInPlace(points); }
+    private:
+        virtual void implWarpInPlace(std::span<SimTK::Vec3>) const = 0;
     };
 }

@@ -4,11 +4,15 @@
 #include <OpenSimCreator/Documents/ModelWarper/LandmarkPairing.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.h>
 #include <OpenSimCreator/Documents/ModelWarper/WarpDetail.h>
+#include <OpenSimCreator/Utils/TPS3D.h>
+
+#include <Simbody.h>
 
 #include <cstddef>
 #include <filesystem>
 #include <functional>
 #include <optional>
+#include <span>
 #include <string_view>
 #include <vector>
 
@@ -51,6 +55,7 @@ namespace osc::mow
         std::unique_ptr<IMeshWarp> implClone() const override;
         std::vector<WarpDetail> implWarpDetails() const override;
         std::vector<ValidationCheck> implValidate() const override;
+        void implWarpInPlace(std::span<SimTK::Vec3>) const override;
 
         std::filesystem::path m_SourceMeshAbsoluteFilepath;
 
@@ -64,5 +69,7 @@ namespace osc::mow
         bool m_DestinationLandmarksFileExists;
 
         std::vector<LandmarkPairing> m_Landmarks;
+
+        std::optional<TPSCoefficients3D> m_MaybeCoefficients;
     };
 }
