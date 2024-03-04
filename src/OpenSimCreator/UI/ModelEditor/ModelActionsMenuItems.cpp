@@ -32,8 +32,7 @@ public:
 
         m_EditorAPI{api},
         m_Model{std::move(uum_)}
-    {
-    }
+    {}
 
     void onDraw()
     {
@@ -42,16 +41,14 @@ public:
         // action: add body
         {
             // draw button
-            if (ui::MenuItem("Body"))
-            {
+            if (ui::MenuItem("Body")) {
                 auto popup = std::make_unique<AddBodyPopup>("add body", m_EditorAPI, m_Model);
                 popup->open();
                 m_EditorAPI->pushPopup(std::move(popup));
             }
 
             // draw tooltip (if hovered)
-            if (ui::IsItemHovered())
-            {
+            if (ui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
                 ui::DrawTooltip(
                     "Add an OpenSim::Body into the model",
                     "An OpenSim::Body is a PhysicalFrame (reference frame) with an associated inertia specified by its mass, center-of-mass located in the PhysicalFrame, and its moment of inertia tensor about the center-of-mass");
@@ -74,12 +71,9 @@ private:
 
     void renderButton(ComponentRegistryBase const& registry)
     {
-        if (ui::BeginMenu(registry.name()))
-        {
-            for (auto const& entry : registry)
-            {
-                if (ui::MenuItem(entry.name()))
-                {
+        if (ui::BeginMenu(registry.name())) {
+            for (auto const& entry : registry) {
+                if (ui::MenuItem(entry.name())) {
                     auto popup = std::make_unique<AddComponentPopup>(
                         "Add " + registry.name(),
                         m_EditorAPI,
@@ -90,8 +84,7 @@ private:
                     m_EditorAPI->pushPopup(std::move(popup));
                 }
 
-                if (ui::IsItemHovered())
-                {
+                if (ui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
                     ui::DrawTooltip(entry.name(), entry.description());
                 }
             }
@@ -99,12 +92,8 @@ private:
             ui::EndMenu();
         }
 
-        if (ui::IsItemHovered())
-        {
-            std::stringstream ttTitle;
-            ttTitle << "Add a " << registry.name() << " into the model";
-
-            ui::DrawTooltip(ttTitle.str(), registry.description());
+        if (ui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
+            ui::DrawTooltip(registry.name(), registry.description());
         }
     }
 

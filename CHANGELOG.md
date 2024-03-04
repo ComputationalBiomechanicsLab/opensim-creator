@@ -20,6 +20,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   as they would from external scripts
 - Fixed mesh importer scrolling calculation for the new camera manipulator causing unnecessary scrolling
 - Fixed muscles not casting shadows after the surface rendering change
+- There is now a minor delay when mousing over entries in the `Add` menus in the model editor
 - Internal: google/benchmark, ocornut/imgui, sammycage/lunasvg, nothings/stb, marzer/tomlplusplus, and
   martinus/unordered_dense were all updated to their latest releases
 
