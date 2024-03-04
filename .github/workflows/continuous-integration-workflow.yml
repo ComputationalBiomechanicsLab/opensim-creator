@@ -51,7 +51,7 @@ jobs:
         if-no-files-found: error
 
   ubuntu2004emscripten:
-    name: Ubuntu 20.04 (clang)
+    name: Ubuntu 20.04 (emsdk)
     runs-on: ubuntu-20.04
     steps:
 
