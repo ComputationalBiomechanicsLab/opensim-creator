@@ -350,16 +350,6 @@ namespace osc::ui
         va_end(args);
     }
 
-    inline bool BeginTooltip()
-    {
-        return ImGui::BeginTooltip();
-    }
-
-    inline void EndTooltip()
-    {
-        ImGui::EndTooltip();
-    }
-
     inline void SetScrollHereY()
     {
         ImGui::SetScrollHereY();
@@ -490,7 +480,7 @@ namespace osc::ui
         return ImGui::GetItemFlags();
     }
 
-    inline void ItemSize(Rect r)
+    inline void ItemSize(Rect r)  // note: ImGui API assumes cursor is located at `p1` already
     {
         ImGui::ItemSize(ImRect{r.p1, r.p2});
     }

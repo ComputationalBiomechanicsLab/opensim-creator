@@ -427,10 +427,7 @@ void osc::ui::UpdateEulerCameraFromImGuiUserInput(Camera& camera, Eulers& eulers
 Rect osc::ui::ContentRegionAvailScreenRect()
 {
     Vec2 const topLeft = ui::GetCursorScreenPos();
-    Vec2 const dims = ui::GetContentRegionAvail();
-    Vec2 const bottomRight = topLeft + dims;
-
-    return Rect{topLeft, bottomRight};
+    return Rect{topLeft, topLeft + ui::GetContentRegionAvail()};
 }
 
 void osc::ui::DrawTextureAsImGuiImage(Texture2D const& t)
@@ -591,16 +588,16 @@ bool osc::ui::IsDraggingWithAnyMouseButtonDown()
         ui::IsMouseDragging(ImGuiMouseButton_Right);
 }
 
-void osc::ui::BeginTooltip(float wrapWidth)
+void osc::ui::BeginTooltip(std::optional<float> wrapWidth)
 {
-    ui::BeginTooltip();
-    ImGui::PushTextWrapPos(wrapWidth);
+    ImGui::BeginTooltip();
+    ImGui::PushTextWrapPos(wrapWidth.value_or(ImGui::GetFontSize() * 35.0f));
 }
 
-void osc::ui::EndTooltip(float)
+void osc::ui::EndTooltip(std::optional<float>)
 {
     ImGui::PopTextWrapPos();
-    ui::EndTooltip();
+    ImGui::EndTooltip();
 }
 
 void osc::ui::TooltipHeaderText(CStringView s)
