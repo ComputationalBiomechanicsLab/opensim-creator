@@ -16,8 +16,7 @@ osc::ComponentRegistryEntryBase::ComponentRegistryEntryBase(
     m_Name{name_},
     m_Description{description_},
     m_Prototype{std::move(prototype_)}
-{
-}
+{}
 
 std::unique_ptr<OpenSim::Component> osc::ComponentRegistryEntryBase::instantiate() const
 {

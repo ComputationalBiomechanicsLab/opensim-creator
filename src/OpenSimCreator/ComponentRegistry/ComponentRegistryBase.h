@@ -19,35 +19,13 @@ namespace osc
     public:
         using value_type = ComponentRegistryEntryBase;
 
-        CStringView name() const
-        {
-            return m_Name;
-        }
+        CStringView name() const { return m_Name; }
+        CStringView description() const { return m_Description; }
 
-        CStringView description() const
-        {
-            return m_Description;
-        }
-
-        value_type const* begin() const
-        {
-            return m_Entries.data();
-        }
-
-        value_type const* end() const
-        {
-            return m_Entries.data() + m_Entries.size();
-        }
-
-        size_t size() const
-        {
-            return m_Entries.size();
-        }
-
-        value_type const& operator[](size_t i) const
-        {
-            return m_Entries[i];
-        }
+        value_type const* begin() const { return m_Entries.data(); }
+        value_type const* end() const { return m_Entries.data() + m_Entries.size(); }
+        size_t size() const { return m_Entries.size(); }
+        value_type const& operator[](size_t i) const { return m_Entries[i]; }
 
     protected:
         ComponentRegistryBase(
@@ -56,8 +34,7 @@ namespace osc
 
             m_Name{name_},
             m_Description{description_}
-        {
-        }
+        {}
 
         ComponentRegistryEntryBase& push_back_erased(ComponentRegistryEntryBase&& el)
         {
@@ -75,11 +52,9 @@ namespace osc
     template<typename T>
     std::optional<size_t> IndexOf(ComponentRegistryBase const& registry)
     {
-        for (size_t i = 0; i < registry.size(); ++i)
-        {
+        for (size_t i = 0; i < registry.size(); ++i) {
             OpenSim::Component const& prototype = registry[i].prototype();
-            if (typeid(prototype) == typeid(T))
-            {
+            if (typeid(prototype) == typeid(T)) {
                 return i;
             }
         }

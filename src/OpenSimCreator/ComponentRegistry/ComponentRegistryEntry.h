@@ -17,8 +17,7 @@ namespace osc
             std::shared_ptr<T const> prototype_) :
 
             ComponentRegistryEntryBase{name_, description_, std::move(prototype_)}
-        {
-        }
+        {}
 
         T const& prototype() const
         {

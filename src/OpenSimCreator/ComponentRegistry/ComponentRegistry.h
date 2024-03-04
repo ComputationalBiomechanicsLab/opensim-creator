@@ -22,8 +22,7 @@ namespace osc
             std::string_view description_) :
 
             ComponentRegistryBase{name_, description_}
-        {
-        }
+        {}
 
         value_type const* begin() const
         {
@@ -61,8 +60,7 @@ namespace osc
     template<typename T>
     ComponentRegistryEntry<T> const& At(ComponentRegistry<T> const& registry, size_t i)
     {
-        if (i >= registry.size())
-        {
+        if (i >= registry.size()) {
             throw std::out_of_range{"attempted to access an out-of-bounds registry entry"};
         }
         return registry[i];
@@ -71,12 +69,10 @@ namespace osc
     template<typename T>
     ComponentRegistryEntry<T> const& Get(ComponentRegistry<T> const& registry, T const& el)
     {
-        if (auto i = IndexOf(registry, el))
-        {
+        if (auto i = IndexOf(registry, el)) {
             return registry[*i];
         }
-        else
-        {
+        else {
             throw std::out_of_range{"attempted to get an element from the registry that does not exist"};
         }
     }
