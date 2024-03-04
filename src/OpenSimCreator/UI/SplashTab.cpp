@@ -85,9 +85,9 @@ namespace
         // long file names (#784)
         if (ui::IsItemHovered())
         {
-            ui::BeginTooltip();
+            ui::BeginTooltipNoWrap();
             ui::TextUnformatted(path.filename().string());
-            ui::EndTooltip();
+            ui::EndTooltipNoWrap();
         }
         ui::PopID();
     }

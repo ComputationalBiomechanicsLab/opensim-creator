@@ -2034,11 +2034,11 @@ private:
 
     void drawMIObjectTooltip(MIObject const& e) const
     {
-        ui::BeginTooltip();
+        ui::BeginTooltipNoWrap();
         ui::Text("%s %s", e.getClass().getIconUTF8().c_str(), e.getLabel().c_str());
         ui::SameLine();
         ui::TextDisabled(GetContextMenuSubHeaderText(m_Shared->getModelGraph(), e));
-        ui::EndTooltip();
+        ui::EndTooltipNoWrap();
     }
 
     void drawHoverTooltip()

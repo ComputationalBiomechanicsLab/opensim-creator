@@ -430,6 +430,16 @@ namespace osc::ui
         ImGui::BeginDisabled(disabled);
     }
 
+    inline bool BeginTooltipNoWrap()
+    {
+        return ImGui::BeginTooltip();
+    }
+
+    inline void EndTooltipNoWrap()
+    {
+        ImGui::EndTooltip();
+    }
+
     inline void EndDisabled()
     {
         ImGui::EndDisabled();

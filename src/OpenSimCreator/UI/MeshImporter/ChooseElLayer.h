@@ -256,11 +256,11 @@ namespace osc::mi
 
             if (se)
             {
-                ui::BeginTooltip();
+                ui::BeginTooltipNoWrap();
                 ui::TextUnformatted(se->getLabel());
                 ui::SameLine();
                 ui::TextDisabled("(%s, click to choose)", se->getClass().getName().c_str());
-                ui::EndTooltip();
+                ui::EndTooltipNoWrap();
             }
         }
 

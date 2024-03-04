@@ -590,14 +590,14 @@ bool osc::ui::IsDraggingWithAnyMouseButtonDown()
 
 void osc::ui::BeginTooltip(std::optional<float> wrapWidth)
 {
-    ImGui::BeginTooltip();
+    BeginTooltipNoWrap();
     ImGui::PushTextWrapPos(wrapWidth.value_or(ImGui::GetFontSize() * 35.0f));
 }
 
 void osc::ui::EndTooltip(std::optional<float>)
 {
     ImGui::PopTextWrapPos();
-    ImGui::EndTooltip();
+    EndTooltipNoWrap();
 }
 
 void osc::ui::TooltipHeaderText(CStringView s)

@@ -124,9 +124,9 @@ namespace
     {
         DrawEntryIconAndText(state, c);
         if (ui::IsItemHovered(ImGuiHoveredFlags_ForTooltip)) {
-            ui::BeginTooltip();
+            ui::BeginTooltipNoWrap();
             DrawTooltipContent(state, c);
-            ui::EndTooltip();
+            ui::EndTooltipNoWrap();
         }
     }
 }

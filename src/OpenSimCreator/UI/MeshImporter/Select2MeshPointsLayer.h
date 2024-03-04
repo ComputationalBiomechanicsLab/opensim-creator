@@ -143,10 +143,10 @@ namespace osc::mi
                 return std::move(ss).str();
             }(m_MaybeCurrentHover.Pos);
 
-            ui::BeginTooltip();
+            ui::BeginTooltipNoWrap();
             ui::Text(pos);
             ui::TextDisabled("(left-click to assign as first point, right-click to assign as second point)");
-            ui::EndTooltip();
+            ui::EndTooltipNoWrap();
         }
 
         // draw 2D overlay over the render, things like connection lines, dots, etc.
