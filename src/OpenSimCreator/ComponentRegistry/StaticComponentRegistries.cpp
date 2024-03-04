@@ -276,6 +276,10 @@ namespace
                 "ConstantDistanceConstraint",
                 "A constraint that maintains a constant distance between two points on separate physical frames (underlying constraint: SimTK::Constraint::Rod)",
             },
+            {
+                "StationDefinedFrame",
+                "A PhysicalFrame that has its orientation and origin point computed from Stations.\n\nIntended to be used as an alternative to OffsetFrame that explicitly establishes coordinate systems (`Frame`s) from relationships between Stations in the model.",
+            },
         };
     }
 
