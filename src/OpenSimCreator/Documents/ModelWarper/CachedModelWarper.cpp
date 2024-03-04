@@ -41,11 +41,12 @@ namespace
         newGeometry->set_scale_factors(oldGeometry.get_scale_factors());
         newGeometry->set_Appearance(oldGeometry.get_Appearance());
         newGeometry->connectSocket_frame(oldGeometry.getConnectee("frame"));
-        OpenSim::Component& owner = const_cast<OpenSim::Component&>(oldGeometry.getOwner());  // TODO: use mutable lookup
+        OpenSim::Component* owner = UpdOwner(model, oldGeometry);
+        OSC_ASSERT_ALWAYS(owner && "the mesh being replaced has no owner? cannot overwrite a root component");
         OSC_ASSERT_ALWAYS(TryDeleteComponentFromModel(model, oldGeometry) && "cannot delete old mesh from model during warping");
         InitializeModel(model);
         InitializeState(model);
-        owner.addComponent(newGeometry.release());
+        owner->addComponent(newGeometry.release());
         FinalizeConnections(model);
     }
 }
