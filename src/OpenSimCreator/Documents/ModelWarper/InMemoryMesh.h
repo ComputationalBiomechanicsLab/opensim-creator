@@ -1,7 +1,12 @@
 #pragma once
 
 #include <OpenSim/Simulation/Model/Geometry.h>
+#include <oscar/Graphics/MeshIndicesView.h>
+#include <oscar/Maths/Vec3.h>
 #include <Simbody.h>
+
+#include <cstdint>
+#include <span>
 
 namespace osc
 {
@@ -12,10 +17,10 @@ namespace osc
     class InMemoryMesh : public OpenSim::Geometry {
         OpenSim_DECLARE_CONCRETE_OBJECT(InMemoryMesh, OpenSim::Geometry);
     public:
-        void implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& out) const override
-        {
-            out.push_back(SimTK::DecorativeMesh{m_MeshData});
-        }
+        InMemoryMesh() = default;
+        InMemoryMesh(std::span<Vec3 const>, MeshIndicesView);
+
+        void implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>&) const override;
     private:
         SimTK::PolygonalMesh m_MeshData;
     };

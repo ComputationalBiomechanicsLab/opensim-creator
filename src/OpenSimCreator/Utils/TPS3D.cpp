@@ -256,10 +256,7 @@ Mesh osc::ApplyThinPlateWarpToMesh(TPSCoefficients3D const& coefs, Mesh const& m
     // parallelize function evaluation, because the mesh may contain *a lot* of
     // verts and the TPS equation may contain *a lot* of coefficients
     auto verts = rv.getVerts();
-    ForEachParUnseq(8192, std::span<Vec3>(verts), [&coefs](Vec3& vert)
-    {
-        vert = EvaluateTPSEquation(coefs, vert);
-    });
+    ApplyThinPlateWarpToPointsInPlace(coefs, verts);
     rv.setVerts(verts);
 
     return rv;
@@ -271,22 +268,18 @@ std::vector<Vec3> osc::ApplyThinPlateWarpToPoints(
 {
     std::vector<Vec3> rv;
     rv.reserve(points.size());
-
-    for (Vec3 const& point : points)
-    {
-        rv.push_back(EvaluateTPSEquation(coefs, point));
-    }
-
+    std::copy(points.begin(), points.end(), std::back_inserter(rv));
+    ApplyThinPlateWarpToPointsInPlace(coefs, rv);
     return rv;
 }
 
 void osc::ApplyThinPlateWarpToPointsInPlace(
     TPSCoefficients3D const& coefs,
-    std::span<SimTK::Vec3> points)
+    std::span<Vec3> points)
 {
     OSC_PERF("ApplyThinPlateWarpToPointsInPlace");
-    ForEachParUnseq(8192, points, [&coefs](SimTK::Vec3& vert)
+    ForEachParUnseq(8192, points, [&coefs](Vec3& vert)
     {
-        vert = ToSimTKVec3(EvaluateTPSEquation(coefs, ToVec3(vert)));
+        vert = EvaluateTPSEquation(coefs, vert);
     });
 }

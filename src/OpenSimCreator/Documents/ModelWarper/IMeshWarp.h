@@ -4,7 +4,7 @@
 #include <OpenSimCreator/Documents/ModelWarper/IDetailListable.h>
 #include <OpenSimCreator/Documents/ModelWarper/IValidateable.h>
 
-#include <Simbody.h>
+#include <oscar/Maths/Vec3.h>
 
 #include <span>
 
@@ -23,8 +23,8 @@ namespace osc::mow
     public:
         virtual ~IMeshWarp() = default;
 
-        void warpInPlace(std::span<SimTK::Vec3> points) const { return implWarpInPlace(points); }
+        void warpInPlace(std::span<Vec3> points) const { return implWarpInPlace(points); }
     private:
-        virtual void implWarpInPlace(std::span<SimTK::Vec3>) const = 0;
+        virtual void implWarpInPlace(std::span<Vec3>) const = 0;
     };
 }

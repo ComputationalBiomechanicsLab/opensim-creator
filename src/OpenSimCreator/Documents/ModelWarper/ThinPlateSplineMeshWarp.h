@@ -6,7 +6,7 @@
 #include <OpenSimCreator/Documents/ModelWarper/WarpDetail.h>
 #include <OpenSimCreator/Utils/TPS3D.h>
 
-#include <Simbody.h>
+#include <oscar/Maths/Vec3.h>
 
 #include <cstddef>
 #include <filesystem>
@@ -55,7 +55,7 @@ namespace osc::mow
         std::unique_ptr<IMeshWarp> implClone() const override;
         std::vector<WarpDetail> implWarpDetails() const override;
         std::vector<ValidationCheck> implValidate() const override;
-        void implWarpInPlace(std::span<SimTK::Vec3>) const override;
+        void implWarpInPlace(std::span<Vec3>) const override;
 
         std::filesystem::path m_SourceMeshAbsoluteFilepath;
 

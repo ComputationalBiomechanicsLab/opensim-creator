@@ -3,6 +3,7 @@
 #include <OpenSimCreator/Documents/Landmarks/LandmarkHelpers.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationState.h>
 
+#include <oscar/Maths/Vec2.h>
 #include <oscar/Platform/Log.h>
 
 #include <algorithm>
@@ -10,6 +11,7 @@
 #include <fstream>
 #include <functional>
 #include <optional>
+#include <span>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -321,7 +323,7 @@ std::vector<ValidationCheck> osc::mow::ThinPlateSplineMeshWarp::implValidate() c
     return rv;
 }
 
-void osc::mow::ThinPlateSplineMeshWarp::implWarpInPlace(std::span<SimTK::Vec3> points) const
+void osc::mow::ThinPlateSplineMeshWarp::implWarpInPlace(std::span<Vec3> points) const
 {
     OSC_ASSERT_ALWAYS(m_MaybeCoefficients && "no thin-plate spline coefficients available for this mesh: is it valid? (e.g. paired landmarks available, valid data, etc.)");
     ApplyThinPlateWarpToPointsInPlace(*m_MaybeCoefficients, points);

@@ -4,7 +4,6 @@
 
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Maths/Vec3.h>
-#include <Simbody.h>
 
 #include <iosfwd>
 #include <span>
@@ -97,5 +96,5 @@ namespace osc
     std::vector<Vec3> ApplyThinPlateWarpToPoints(TPSCoefficients3D const&, std::span<Vec3 const>);
 
     // applies the 3D TPS warp in-place to each SimTK::Vec3 in the provided span
-    void ApplyThinPlateWarpToPointsInPlace(TPSCoefficients3D const&, std::span<SimTK::Vec3>);
+    void ApplyThinPlateWarpToPointsInPlace(TPSCoefficients3D const&, std::span<Vec3>);
 }

@@ -13,6 +13,7 @@
 #include <oscar/Maths/Triangle.h>
 #include <oscar/Maths/TriangleFunctions.h>
 #include <oscar/Maths/Vec3.h>
+#include <oscar/Utils/Assertions.h>
 
 #include <array>
 #include <cstddef>
@@ -158,4 +159,28 @@ Mesh osc::LoadMeshViaSimTK(std::filesystem::path const& p)
     SimTK::DecorativeMeshFile const dmf{p.string()};
     SimTK::PolygonalMesh const& mesh = dmf.getMesh();
     return ToOscMesh(mesh);
+}
+
+void osc::AssignIndexedVerts(SimTK::PolygonalMesh& mesh, std::span<Vec3 const> vertices, MeshIndicesView indices)
+{
+    using std::begin;
+    using std::end;
+    using std::distance;
+
+    mesh.clear();
+
+    // assign vertices
+    for (Vec3 const& vertex : vertices) {
+        mesh.addVertex(ToSimTKVec3(vertex));
+    }
+
+    // assign indices (assumed triangle)
+    OSC_ASSERT_ALWAYS(distance(begin(indices), end(indices)) % 3 == 0);
+    SimTK::Array_<int> triVerts(3, 0);
+    for (auto it = begin(indices); it != end(indices); it += 3) {
+        triVerts[0] = static_cast<int>(it[0]);
+        triVerts[1] = static_cast<int>(it[1]);
+        triVerts[2] = static_cast<int>(it[2]);
+        mesh.addFace(triVerts);
+    }
 }

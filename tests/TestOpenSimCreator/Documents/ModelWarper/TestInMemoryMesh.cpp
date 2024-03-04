@@ -69,3 +69,8 @@ TEST(InMemoryMesh, DefaultConstructedEmitsABlankMesh)
     ASSERT_EQ(v.vert_count(), 0);
     ASSERT_EQ(v.face_count(), 0);
 }
+
+TEST(InMemoryMesh, CanConstructFromOSCMesh)
+{
+
+}

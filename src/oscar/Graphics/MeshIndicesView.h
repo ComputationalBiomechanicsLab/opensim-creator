@@ -40,12 +40,11 @@ namespace osc
             Iterator(U32PtrOrU16Ptr ptr, bool isU32) :
                 m_Ptr{ptr},
                 m_IsU32{isU32}
-            {
-            }
+            {}
 
-            uint32_t operator*() const
+            value_type operator*() const
             {
-                return m_IsU32 ? *m_Ptr.u32 : static_cast<uint32_t>(*m_Ptr.u16);
+                return m_IsU32 ? *m_Ptr.u32 : static_cast<value_type>(*m_Ptr.u16);
             }
 
             friend bool operator==(Iterator const& lhs, Iterator const& rhs)
@@ -55,8 +54,28 @@ namespace osc
 
             Iterator& operator++()
             {
-                if (m_IsU32) { ++m_Ptr.u32; } else { ++m_Ptr.u16; }
+                return *this += 1;
+            }
+
+            Iterator& operator+=(difference_type v)
+            {
+                if (m_IsU32) {
+                    m_Ptr.u32 += v;
+                }
+                else {
+                    m_Ptr.u16 += v;
+                }
                 return *this;
+            }
+
+            reference operator[](difference_type v) const
+            {
+                if (m_IsU32) {
+                    return m_Ptr.u32[v];
+                }
+                else {
+                    return m_Ptr.u16[v];
+                }
             }
         private:
             U32PtrOrU16Ptr m_Ptr;
