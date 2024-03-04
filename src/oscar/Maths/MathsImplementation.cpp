@@ -1087,7 +1087,7 @@ Rect osc::BoundingRectOf(std::span<Vec2 const> vs)
 
 Rect osc::BoundingRectOf(Circle const& c)
 {
-    float const hypot = sqrt(c.radius * c.radius);
+    float const hypot = sqrt(2.0f * c.radius * c.radius);
     return {c.origin - hypot, c.origin + hypot};
 }
 
