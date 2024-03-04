@@ -18,6 +18,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - The `Calculate` menu for `Ellipsoid`s and `Frame`s now contain additional options, such as being able
   to ask for the axis directions, so that users can get similar information out of shape-fitted geometry
   as they would from external scripts
+- Fixed mesh importer scrolling calculation for the new camera manipulator causing unnecessary scrolling
 - Fixed muscles not casting shadows after the surface rendering change
 - Internal: google/benchmark, ocornut/imgui, sammycage/lunasvg, nothings/stb, marzer/tomlplusplus, and
   martinus/unordered_dense were all updated to their latest releases

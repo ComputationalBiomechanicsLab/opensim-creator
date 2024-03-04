@@ -14,6 +14,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <iterator>
 
 using namespace osc;
@@ -24,8 +25,8 @@ namespace
         float fontSize = ui::GetFontSize();
         float linelen = 2.0f * fontSize;
         float circleRadius = 0.6f * fontSize;
-        float edgeLen = 2.0f * (linelen + circleRadius);
-        Vec2 dimensions = {edgeLen, edgeLen};
+        float maxEdgeLength = 2.0f * (linelen + std::sqrt(2.0f * circleRadius * circleRadius));
+        Vec2 dimensions = {maxEdgeLength, maxEdgeLength};
     };
 }
 
@@ -73,6 +74,7 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
 
             auto const labels = std::to_array<CStringView>({ "X", "Y", "Z" });
             auto const id = ui::GetID(labels[i]);
+            ui::SetCursorScreenPos(circleBounds.p1);
             ui::ItemSize(circleBounds);
             if (ui::ItemAdd(circleBounds, id)) {
                 Vec2 const labelSize = ui::CalcTextSize(labels[i]);
@@ -100,6 +102,7 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
 
             auto const labels = std::to_array<CStringView>({ "-X", "-Y", "-Z" });
             auto const id = ui::GetID(labels[i]);
+            ui::SetCursorScreenPos(circleBounds.p1);
             ui::ItemSize(circleBounds);
             if (ui::ItemAdd(circleBounds, id)) {
                 bool const hovered = ui::ItemHoverable(circleBounds, id, ui::GetItemFlags());
