@@ -329,7 +329,8 @@ std::unique_ptr<IPointWarper> osc::mow::ThinPlateSplineMeshWarp::implCompileWarp
 {
     class TPSWarper : public IPointWarper {
     public:
-        TPSWarper(Document const& doc, std::span<LandmarkPairing const> ps)
+        TPSWarper(Document const& doc, std::span<LandmarkPairing const> ps) :
+            m_BlendingFactor{doc.getWarpBlendingFactor()}
         {
             TPSCoefficientSolverInputs3D inputs;
             for (LandmarkPairing const& p : ps) {
@@ -338,7 +339,6 @@ std::unique_ptr<IPointWarper> osc::mow::ThinPlateSplineMeshWarp::implCompileWarp
                 }
             }
             m_Coefs = CalcCoefficients(inputs);
-            m_BlendingFactor = doc.getWarpBlendingFactor();
         }
     private:
         void implWarpInPlace(std::span<Vec3> points) const override
