@@ -36,8 +36,9 @@ namespace
 
 class osc::Readonly3DModelViewer::Impl final {
 public:
-    explicit Impl(std::string_view parentPanelName_) :
-        m_ParentPanelName{parentPanelName_}
+    explicit Impl(std::string_view parentPanelName_, Readonly3DModelViewerFlags flags_) :
+        m_ParentPanelName{parentPanelName_},
+        m_Flags{flags_}
     {
         UpdModelRendererParamsFrom(
             App::config(),
@@ -103,7 +104,7 @@ public:
 
         // if allowed, hittest the scene
         std::optional<SceneCollision> hittestResult;
-        if (hittest.isHovered && !ui::IsDraggingWithAnyMouseButtonDown())
+        if (!(m_Flags & Readonly3DModelViewerFlags::NoSceneHittest) && hittest.isHovered && !ui::IsDraggingWithAnyMouseButtonDown())
         {
             hittestResult = m_CachedModelRenderer.getClosestCollision(
                 m_Params,
@@ -174,6 +175,9 @@ private:
     // used for saving per-panel data to the application config
     std::string m_ParentPanelName;
 
+    // runtime modification flags
+    Readonly3DModelViewerFlags m_Flags = Readonly3DModelViewerFlags::None;
+
     // rendering-related data
     ModelRendererParams m_Params;
     CachedModelRenderer m_CachedModelRenderer
@@ -196,8 +200,8 @@ private:
 
 // public API (PIMPL)
 
-osc::Readonly3DModelViewer::Readonly3DModelViewer(std::string_view parentPanelName_) :
-    m_Impl{std::make_unique<Impl>(parentPanelName_)}
+osc::Readonly3DModelViewer::Readonly3DModelViewer(std::string_view parentPanelName_, Readonly3DModelViewerFlags flags_) :
+    m_Impl{std::make_unique<Impl>(parentPanelName_, flags_)}
 {
 }
 osc::Readonly3DModelViewer::Readonly3DModelViewer(Readonly3DModelViewer&&) noexcept = default;

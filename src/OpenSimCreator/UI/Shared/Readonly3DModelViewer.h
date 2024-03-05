@@ -1,6 +1,7 @@
 #pragma once
 
 #include <oscar/Graphics/Scene/SceneCollision.h>
+#include <oscar/Shims/Cpp23/utility.h>
 #include <oscar/Maths/Rect.h>
 
 #include <memory>
@@ -11,6 +12,16 @@ namespace osc { class IConstModelStatePair; }
 
 namespace osc
 {
+    enum class Readonly3DModelViewerFlags {
+        None           = 0,
+        NoSceneHittest = 1<<0,
+        NUM_OPTIONS
+    };
+
+    constexpr bool operator&(Readonly3DModelViewerFlags lhs, Readonly3DModelViewerFlags rhs)
+    {
+        return (cpp23::to_underlying(lhs) & cpp23::to_underlying(rhs)) != 0;
+    }
 
     // readonly 3D viewer for a single OpenSim::Model
     //
@@ -18,7 +29,10 @@ namespace osc
     // callers only have to handle `OpenSim::Model`s, `OpenSim::Component`s, etc.
     class Readonly3DModelViewer final {
     public:
-        explicit Readonly3DModelViewer(std::string_view parentPanelName_);
+        Readonly3DModelViewer(
+            std::string_view parentPanelName_,
+            Readonly3DModelViewerFlags = Readonly3DModelViewerFlags::None
+        );
         Readonly3DModelViewer(Readonly3DModelViewer const&) = delete;
         Readonly3DModelViewer(Readonly3DModelViewer&&) noexcept;
         Readonly3DModelViewer& operator=(Readonly3DModelViewer const&) = delete;

@@ -111,6 +111,17 @@ namespace
         }
         return PairLandmarks(std::move(src), std::move(dest));
     }
+
+    TPSCoefficients3D TryCalcTPSCoefficients(std::span<LandmarkPairing const> maybePairs)
+    {
+        TPSCoefficientSolverInputs3D rv;
+        for (LandmarkPairing const& maybePair: maybePairs) {
+            if (auto pair = maybePair.tryGetPairedLocations()) {
+                rv.landmarks.push_back(*pair);
+            }
+        }
+        return CalcCoefficients(rv);
+    }
 }
 
 osc::mow::ThinPlateSplineMeshWarp::ThinPlateSplineMeshWarp(
@@ -124,7 +135,8 @@ osc::mow::ThinPlateSplineMeshWarp::ThinPlateSplineMeshWarp(
     m_DestinationMeshFileExists{std::filesystem::exists(m_ExpectedDestinationMeshAbsoluteFilepath)},
     m_ExpectedDestinationLandmarksAbsoluteFilepath{CalcExpectedAssociatedLandmarksFile(m_ExpectedDestinationMeshAbsoluteFilepath)},
     m_DestinationLandmarksFileExists{std::filesystem::exists(m_ExpectedDestinationLandmarksAbsoluteFilepath)},
-    m_Landmarks{TryLoadPairedLandmarks(tryGetSourceLandmarksFilepath(), tryGetDestinationLandmarksFilepath())}
+    m_Landmarks{TryLoadPairedLandmarks(tryGetSourceLandmarksFilepath(), tryGetDestinationLandmarksFilepath())},
+    m_TPSCoefficients{make_cow<TPSCoefficients3D>(TryCalcTPSCoefficients(m_Landmarks))}
 {}
 
 std::filesystem::path osc::mow::ThinPlateSplineMeshWarp::getSourceMeshAbsoluteFilepath() const
@@ -329,26 +341,19 @@ std::unique_ptr<IPointWarper> osc::mow::ThinPlateSplineMeshWarp::implCompileWarp
 {
     class TPSWarper : public IPointWarper {
     public:
-        TPSWarper(Document const& doc, std::span<LandmarkPairing const> ps) :
-            m_BlendingFactor{doc.getWarpBlendingFactor()}
-        {
-            TPSCoefficientSolverInputs3D inputs;
-            for (LandmarkPairing const& p : ps) {
-                if (auto locs = p.tryGetPairedLocations()) {
-                    inputs.landmarks.push_back(*locs);
-                }
-            }
-            m_Coefs = CalcCoefficients(inputs);
-        }
+        TPSWarper(CopyOnUpdPtr<TPSCoefficients3D> coefficients_, float blendingFactor_) :
+            m_Coefficients{std::move(coefficients_)},
+            m_BlendingFactor{blendingFactor_}
+        {}
     private:
         void implWarpInPlace(std::span<Vec3> points) const override
         {
-            ApplyThinPlateWarpToPointsInPlace(m_Coefs, points, m_BlendingFactor);
+            ApplyThinPlateWarpToPointsInPlace(*m_Coefficients, points, m_BlendingFactor);
         }
 
-        TPSCoefficients3D m_Coefs;
+        CopyOnUpdPtr<TPSCoefficients3D> m_Coefficients;
         float m_BlendingFactor;
     };
 
-    return std::make_unique<TPSWarper>(document, m_Landmarks);
+    return std::make_unique<TPSWarper>(m_TPSCoefficients, document.getWarpBlendingFactor());
 }

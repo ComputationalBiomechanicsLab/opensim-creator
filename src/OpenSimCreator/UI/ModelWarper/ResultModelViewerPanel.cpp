@@ -41,7 +41,7 @@ private:
     }
 
     std::shared_ptr<UIState> m_State;
-    Readonly3DModelViewer m_ModelViewer{this->getName()};
+    Readonly3DModelViewer m_ModelViewer{this->getName(), Readonly3DModelViewerFlags::NoSceneHittest};
 };
 
 osc::mow::ResultModelViewerPanel::ResultModelViewerPanel(

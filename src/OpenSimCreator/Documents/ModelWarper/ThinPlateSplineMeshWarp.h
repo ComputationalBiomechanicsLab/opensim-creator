@@ -7,6 +7,7 @@
 #include <OpenSimCreator/Utils/TPS3D.h>
 
 #include <oscar/Maths/Vec3.h>
+#include <oscar/Utils/CopyOnUpdPtr.h>
 
 #include <cstddef>
 #include <filesystem>
@@ -69,5 +70,7 @@ namespace osc::mow
         bool m_DestinationLandmarksFileExists;
 
         std::vector<LandmarkPairing> m_Landmarks;
+
+        CopyOnUpdPtr<TPSCoefficients3D> m_TPSCoefficients;
     };
 }
