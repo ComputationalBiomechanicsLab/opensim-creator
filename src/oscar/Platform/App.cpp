@@ -265,7 +265,7 @@ public:
 
     Vec2 dims() const
     {
-        return Vec2{sdl::GetWindowSize(m_MainWindow.get())};
+        return Vec2{sdl::GetWindowSizeInPixels(m_MainWindow.get())};
     }
 
     void setShowCursor(bool v)

@@ -154,11 +154,13 @@ namespace osc::sdl
         return GLContext{ctx};
     }
 
-    // https://wiki.libsdl.org/SDL_GetWindowSize
-    inline Vec2i GetWindowSize(SDL_Window* window)
+    // https://wiki.libsdl.org/SDL_GetWindowSizeInPixels
+    inline Vec2i GetWindowSizeInPixels(SDL_Window* window)
     {
+        // care: SDL_GetWindowSize may return a number that's different from
+        // the number of pixels in the window on Mac Retina devices
         Vec2i d;
-        SDL_GetWindowSize(window, &d.x, &d.y);
+        SDL_GetWindowSizeInPixels(window, &d.x, &d.y);
         return d;
     }
 }
