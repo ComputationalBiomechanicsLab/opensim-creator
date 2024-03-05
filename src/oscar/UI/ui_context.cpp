@@ -2,6 +2,7 @@
 
 #include <IconsFontAwesome5.h>
 #include <oscar/Platform/App.h>
+#include <oscar/Platform/AppConfig.h>
 #include <oscar/Platform/ResourceLoader.h>
 #include <oscar/Platform/ResourcePath.h>
 #include <oscar/Shims/Cpp20/bit.h>
@@ -88,10 +89,15 @@ void osc::ui::context::Init()
         float dpi{};
         float hdpi{};
         float vdpi{};
-        if (SDL_GetDisplayDPI(SDL_GetWindowDisplayIndex(App::upd().updUndleryingWindow()), &dpi, &hdpi, &vdpi) == 0) {
-            return dpi / 96.0f;
-    }
-    return 1.0f;
+
+        // if the user explicitly enabled high_dpi_mode...
+        if (auto v = App::config().getValue("experimental_feature_flags/high_dpi_mode"); v && v->toBool()) {
+            // and SDL is able to get the DPI of the given window...
+            if (SDL_GetDisplayDPI(SDL_GetWindowDisplayIndex(App::upd().updUndleryingWindow()), &dpi, &hdpi, &vdpi) == 0) {
+                return dpi / 96.0f;  // then calculate the scaling factor
+            }
+        }
+        return 1.0f;  // else: assume it's an unscaled 96dpi screen
     }();
 
     ImFontConfig baseConfig;
