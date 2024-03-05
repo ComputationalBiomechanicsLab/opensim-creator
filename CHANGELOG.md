@@ -12,6 +12,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
     exactly the same as the input mesh (previously, it would try to solve for the input positions and
     sometimes produce a non-identity solution when given a small number of input landmarks)
 
+- The surface normals of warped meshes are now recalculated after the warp is applied, which yields
+  better-looking rendering results when the mesh is exported
+
 
 ## [0.5.10] - 2024/03/05
 

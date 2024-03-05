@@ -257,6 +257,9 @@ Mesh osc::ApplyThinPlateWarpToMesh(TPSCoefficients3D const& coefs, Mesh const& m
     ApplyThinPlateWarpToPointsInPlace(coefs, verts, blendingFactor);
     rv.setVerts(verts);
 
+    // the surface normals may have changed, so recalculate them
+    rv.recalculateNormals();
+
     return rv;
 }
 
