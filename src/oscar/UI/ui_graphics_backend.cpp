@@ -230,8 +230,8 @@ namespace
 
         // setup clipping rectangle
         bd.camera.setClearFlags(CameraClearFlags::Nothing);
-        Vec2 minflip{clip_min.x, drawData.DisplaySize.y - clip_max.y};
-        Vec2 maxflip{clip_max.x, drawData.DisplaySize.y - clip_min.y};
+        Vec2 minflip{clip_min.x, (drawData.FramebufferScale.y * drawData.DisplaySize.y) - clip_max.y};
+        Vec2 maxflip{clip_max.x, (drawData.FramebufferScale.y * drawData.DisplaySize.y) - clip_min.y};
         bd.camera.setScissorRect(Rect{minflip, maxflip});
 
         // setup submesh description
