@@ -5,6 +5,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+## [0.5.10] - 2024/03/05
+
 - Updated `opensim-core` to a version which includes `StationDefinedFrame` support:
   - Upstream feature: https://github.com/opensim-org/opensim-core/pull/3694
   - They let you define an `OpenSim::PhysicalFrame` from stations/landmarks/markers. This more closely
@@ -25,7 +27,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   martinus/unordered_dense were all updated to their latest releases
 
 
-## [0.5.9] - 2023/02/27
+## [0.5.9] - 2024/02/27
 
 - The mesh loader now obeys the normals of shared vertices in provided mesh files:
   - Practically speaking, it means that the surface shading of meshes in OSC will more closely match what
@@ -60,7 +62,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Internal: glm was dropped as an external dependency by copying the bare-minimum parts used by `osc` in-tree
 
 
-## [0.5.8] - 2023/02/14
+## [0.5.8] - 2024/02/14
 
 0.5.8 makes moving `PhysicalOffsetFrame`s a little bit easier when they're the child of a `Joint`, and adds
 user-facing support for OSC-specific `OpenSim::Component`s (explained below). It also contains a few minor
@@ -90,7 +92,7 @@ bugfixes, plus a variety of internal engine changes.
   editor, etc.) tabs to ensure they are always working
 - Internal: all header files are now suffixed with `.h` to match most libraries etc. (previously: `.hpp`)
 
-## [0.5.7] - 2023/01/11
+## [0.5.7] - 2024/01/11
 
 0.5.7 is purely a bugfix release. The main fix is that the GeometryPath editor popup has
 now returned. It dissapeared because `opensim-core` now supports function-based muscle
