@@ -5,6 +5,13 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- The warping algorithm used by the mesh warper and model warper (TPS) now `lerp`s between "not warped"
+  and "fully warped", rather than recomputing the warp kernel based on blended input data:
+
+  - Practically, this means that setting the blending factor to zero guarantees that the warped mesh is
+    exactly the same as the input mesh (previously, it would try to solve for the input positions and
+    sometimes produce a non-identity solution when given a small number of input landmarks)
+
 
 ## [0.5.10] - 2024/03/05
 

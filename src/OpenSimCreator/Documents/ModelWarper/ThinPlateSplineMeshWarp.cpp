@@ -337,16 +337,17 @@ std::unique_ptr<IPointWarper> osc::mow::ThinPlateSplineMeshWarp::implCompileWarp
                     inputs.landmarks.push_back(*locs);
                 }
             }
-            inputs.blendingFactor = doc.getWarpBlendingFactor();
             m_Coefs = CalcCoefficients(inputs);
+            m_BlendingFactor = doc.getWarpBlendingFactor();
         }
     private:
         void implWarpInPlace(std::span<Vec3> points) const override
         {
-            ApplyThinPlateWarpToPointsInPlace(m_Coefs, points);
+            ApplyThinPlateWarpToPointsInPlace(m_Coefs, points, m_BlendingFactor);
         }
 
         TPSCoefficients3D m_Coefs;
+        float m_BlendingFactor;
     };
 
     return std::make_unique<TPSWarper>(document, m_Landmarks);

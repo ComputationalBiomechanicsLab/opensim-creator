@@ -44,7 +44,7 @@ std::ostream& osc::operator<<(std::ostream& o, TPSCoefficientSolverInputs3D cons
         o << delim << landmark;
         delim = ", ";
     }
-    o << "], BlendingFactor = " << inputs.blendingFactor << '}';
+    o << "]}";
     return o;
 }
 
@@ -182,12 +182,10 @@ TPSCoefficients3D osc::CalcCoefficients(TPSCoefficientSolverInputs3D const& inpu
     SimTK::Vector Vx(numPairs + 4, 0.0);
     SimTK::Vector Vy(numPairs + 4, 0.0);
     SimTK::Vector Vz(numPairs + 4, 0.0);
-    for (int row = 0; row < numPairs; ++row)
-    {
-        Vec3 const blended = lerp(inputs.landmarks[row].source, inputs.landmarks[row].destination, inputs.blendingFactor);
-        Vx[row] = blended.x;
-        Vy[row] = blended.y;
-        Vz[row] = blended.z;
+    for (int row = 0; row < numPairs; ++row) {
+        Vx[row] = inputs.landmarks[row].destination.x;
+        Vy[row] = inputs.landmarks[row].destination.y;
+        Vz[row] = inputs.landmarks[row].destination.z;
     }
 
     // create a linear solver that can be used to solve `L*Cn = Vn` for `Cn` (where `n` is a dimension)
@@ -245,7 +243,7 @@ Vec3 osc::EvaluateTPSEquation(TPSCoefficients3D const& coefs, Vec3 p)
 }
 
 // returns a mesh that is the equivalent of applying the 3D TPS warp to each vertex of the mesh
-Mesh osc::ApplyThinPlateWarpToMesh(TPSCoefficients3D const& coefs, Mesh const& mesh)
+Mesh osc::ApplyThinPlateWarpToMesh(TPSCoefficients3D const& coefs, Mesh const& mesh, float blendingFactor)
 {
     OSC_PERF("ApplyThinPlateWarpToMesh");
 
@@ -256,7 +254,7 @@ Mesh osc::ApplyThinPlateWarpToMesh(TPSCoefficients3D const& coefs, Mesh const& m
     // parallelize function evaluation, because the mesh may contain *a lot* of
     // verts and the TPS equation may contain *a lot* of coefficients
     auto verts = rv.getVerts();
-    ApplyThinPlateWarpToPointsInPlace(coefs, verts);
+    ApplyThinPlateWarpToPointsInPlace(coefs, verts, blendingFactor);
     rv.setVerts(verts);
 
     return rv;
@@ -264,22 +262,24 @@ Mesh osc::ApplyThinPlateWarpToMesh(TPSCoefficients3D const& coefs, Mesh const& m
 
 std::vector<Vec3> osc::ApplyThinPlateWarpToPoints(
     TPSCoefficients3D const& coefs,
-    std::span<Vec3 const> points)
+    std::span<Vec3 const> points,
+    float blendingFactor)
 {
     std::vector<Vec3> rv;
     rv.reserve(points.size());
     std::copy(points.begin(), points.end(), std::back_inserter(rv));
-    ApplyThinPlateWarpToPointsInPlace(coefs, rv);
+    ApplyThinPlateWarpToPointsInPlace(coefs, rv, blendingFactor);
     return rv;
 }
 
 void osc::ApplyThinPlateWarpToPointsInPlace(
     TPSCoefficients3D const& coefs,
-    std::span<Vec3> points)
+    std::span<Vec3> points,
+    float blendingFactor)
 {
     OSC_PERF("ApplyThinPlateWarpToPointsInPlace");
-    ForEachParUnseq(8192, points, [&coefs](Vec3& vert)
+    ForEachParUnseq(8192, points, [&coefs, blendingFactor](Vec3& vert)
     {
-        vert = EvaluateTPSEquation(coefs, vert);
+        vert = lerp(vert, EvaluateTPSEquation(coefs, vert), blendingFactor);
     });
 }

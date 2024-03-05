@@ -38,13 +38,56 @@ namespace osc
             bool const updatedCoefficients = updateCoefficients(doc);
             bool const updatedNonParticipatingLandmarks = updateSourceNonParticipatingLandmarks(doc);
             bool const updatedMesh = updateInputMesh(doc);
+            bool const updatedBlendingFactor = updateBlendingFactor(doc);
 
-            if (updatedCoefficients || updatedNonParticipatingLandmarks || updatedMesh)
+            if (updatedCoefficients || updatedNonParticipatingLandmarks || updatedMesh || updatedBlendingFactor)
             {
-                m_CachedResultMesh = ApplyThinPlateWarpToMesh(m_CachedCoefficients, m_CachedSourceMesh);
-                m_CachedResultNonParticipatingLandmarks = ApplyThinPlateWarpToPoints(m_CachedCoefficients, m_CachedSourceNonParticipatingLandmarks);
+                m_CachedResultMesh = ApplyThinPlateWarpToMesh(m_CachedCoefficients, m_CachedSourceMesh, m_CachedBlendingFactor);
+                m_CachedResultNonParticipatingLandmarks = ApplyThinPlateWarpToPoints(m_CachedCoefficients, m_CachedSourceNonParticipatingLandmarks, m_CachedBlendingFactor);
             }
         }
+
+        // returns `true` if cached inputs were updated; otherwise, returns the cached inputs
+        bool updateInputs(TPSDocument const& doc)
+        {
+            TPSCoefficientSolverInputs3D newInputs
+            {
+                GetLandmarkPairs(doc),
+            };
+
+            if (newInputs != m_CachedInputs)
+            {
+                m_CachedInputs = std::move(newInputs);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        // returns `true` if cached coefficients were updated
+        bool updateCoefficients(TPSDocument const& doc)
+        {
+            if (!updateInputs(doc))
+            {
+                // cache: the inputs have not been updated, so the coefficients will not change
+                return false;
+            }
+
+            TPSCoefficients3D newCoefficients = CalcCoefficients(m_CachedInputs);
+
+            if (newCoefficients != m_CachedCoefficients)
+            {
+                m_CachedCoefficients = std::move(newCoefficients);
+                return true;
+            }
+            else
+            {
+                return false;  // no change in the coefficients
+            }
+        }
+
 
         bool updateSourceNonParticipatingLandmarks(TPSDocument const& doc)
         {
@@ -78,28 +121,6 @@ namespace osc
             }
         }
 
-        // returns `true` if cached coefficients were updated
-        bool updateCoefficients(TPSDocument const& doc)
-        {
-            if (!updateInputs(doc))
-            {
-                // cache: the inputs have not been updated, so the coefficients will not change
-                return false;
-            }
-
-            TPSCoefficients3D newCoefficients = CalcCoefficients(m_CachedInputs);
-
-            if (newCoefficients != m_CachedCoefficients)
-            {
-                m_CachedCoefficients = std::move(newCoefficients);
-                return true;
-            }
-            else
-            {
-                return false;  // no change in the coefficients
-            }
-        }
-
         // returns `true` if `m_CachedSourceMesh` is updated
         bool updateInputMesh(TPSDocument const& doc)
         {
@@ -114,22 +135,13 @@ namespace osc
             }
         }
 
-        // returns `true` if cached inputs were updated; otherwise, returns the cached inputs
-        bool updateInputs(TPSDocument const& doc)
+        bool updateBlendingFactor(TPSDocument const& doc)
         {
-            TPSCoefficientSolverInputs3D newInputs
-            {
-                GetLandmarkPairs(doc),
-                doc.blendingFactor,
-            };
-
-            if (newInputs != m_CachedInputs)
-            {
-                m_CachedInputs = std::move(newInputs);
+            if (m_CachedBlendingFactor != doc.blendingFactor) {
+                m_CachedBlendingFactor = doc.blendingFactor;
                 return true;
             }
-            else
-            {
+            else {
                 return false;
             }
         }
@@ -137,6 +149,7 @@ namespace osc
         TPSCoefficientSolverInputs3D m_CachedInputs;
         TPSCoefficients3D m_CachedCoefficients;
         Mesh m_CachedSourceMesh;
+        float m_CachedBlendingFactor = 1.0f;
         Mesh m_CachedResultMesh;
         std::vector<Vec3> m_CachedSourceNonParticipatingLandmarks;
         std::vector<Vec3> m_CachedResultNonParticipatingLandmarks;

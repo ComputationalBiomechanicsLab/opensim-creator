@@ -90,8 +90,8 @@ void osc::ui::context::Init()
         float vdpi{};
         if (SDL_GetDisplayDPI(SDL_GetWindowDisplayIndex(App::upd().updUndleryingWindow()), &dpi, &hdpi, &vdpi) == 0) {
             return dpi / 96.0f;
-	}
-	return 1.0f;
+    }
+    return 1.0f;
     }();
 
     ImFontConfig baseConfig;

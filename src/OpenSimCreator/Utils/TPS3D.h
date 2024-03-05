@@ -27,19 +27,13 @@ namespace osc
 
         TPSCoefficientSolverInputs3D() = default;
 
-        TPSCoefficientSolverInputs3D(
-            std::vector<LandmarkPair3D> landmarks_,
-            float blendingFactor_) :
-
-            landmarks{std::move(landmarks_)},
-            blendingFactor{std::move(blendingFactor_)}
-        {
-        }
+        explicit TPSCoefficientSolverInputs3D(std::vector<LandmarkPair3D> landmarks_) :
+            landmarks{std::move(landmarks_)}
+        {}
 
         friend bool operator==(TPSCoefficientSolverInputs3D const&, TPSCoefficientSolverInputs3D const&) = default;
 
         std::vector<LandmarkPair3D> landmarks;
-        float blendingFactor = 1.0f;
     };
 
     std::ostream& operator<<(std::ostream&, TPSCoefficientSolverInputs3D const&);
@@ -56,8 +50,7 @@ namespace osc
 
             weight{weight_},
             controlPoint{controlPoint_}
-        {
-        }
+        {}
 
         friend bool operator==(TPSNonAffineTerm3D const&, TPSNonAffineTerm3D const&) = default;
 
@@ -90,11 +83,11 @@ namespace osc
     Vec3 EvaluateTPSEquation(TPSCoefficients3D const&, Vec3);
 
     // returns a mesh that is the equivalent of applying the 3D TPS warp to the mesh
-    Mesh ApplyThinPlateWarpToMesh(TPSCoefficients3D const&, Mesh const&);
+    Mesh ApplyThinPlateWarpToMesh(TPSCoefficients3D const&, Mesh const&, float blendingFactor);
 
     // returns points that are the equivalent of applying the 3D TPS warp to each input point
-    std::vector<Vec3> ApplyThinPlateWarpToPoints(TPSCoefficients3D const&, std::span<Vec3 const>);
+    std::vector<Vec3> ApplyThinPlateWarpToPoints(TPSCoefficients3D const&, std::span<Vec3 const>, float blendingFactor);
 
     // applies the 3D TPS warp in-place to each SimTK::Vec3 in the provided span
-    void ApplyThinPlateWarpToPointsInPlace(TPSCoefficients3D const&, std::span<Vec3>);
+    void ApplyThinPlateWarpToPointsInPlace(TPSCoefficients3D const&, std::span<Vec3>, float blendingFactor);
 }
