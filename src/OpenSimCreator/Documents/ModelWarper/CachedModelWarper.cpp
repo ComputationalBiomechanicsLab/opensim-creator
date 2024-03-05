@@ -73,7 +73,7 @@ public:
         for (auto const& mesh : document.model().getComponentList<OpenSim::Mesh>()) {
             if (auto const* meshWarper = document.findMeshWarp(mesh)) {
                 auto warpedMesh = WarpMesh(document, document.model(), document.modelstate().getState(), mesh, *meshWarper);
-                OpenSim::Mesh* targetMesh = FindComponentMut<OpenSim::Mesh>(warpedModel, mesh.getAbsolutePath());
+                auto* targetMesh = FindComponentMut<OpenSim::Mesh>(warpedModel, mesh.getAbsolutePath());
                 OSC_ASSERT_ALWAYS(targetMesh && "cannot find target mesh in output model: this should never happen");
                 OverwriteGeometry(warpedModel, *targetMesh, std::move(warpedMesh));
             }

@@ -16,7 +16,7 @@ TEST(InMemoryMesh, CanDefaultConstruct)
 TEST(InMemoryMesh, DefaultConstructedEmitsABlankMesh)
 {
     OpenSim::Model model;
-    InMemoryMesh& mesh = AddComponent<InMemoryMesh>(model);
+    auto& mesh = AddComponent<InMemoryMesh>(model);
     mesh.connectSocket_frame(model.getGround());
     FinalizeConnections(model);
     InitializeModel(model);
