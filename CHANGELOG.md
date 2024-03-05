@@ -5,14 +5,6 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
-- The warping algorithm used by the mesh warper and model warper (TPS) now `lerp`s between "not warped"
-  and "fully warped", rather than recomputing the warp kernel based on blended input data:
-
-  - Practically, this means that setting the blending factor to zero guarantees that the warped mesh is
-    exactly the same as the input mesh (previously, it would try to solve for the input positions and
-    sometimes produce a non-identity solution when given a small number of input landmarks)
-
-
 ## [0.5.10] - 2024/03/05
 
 - Updated `opensim-core` to a version which includes `StationDefinedFrame` support:
@@ -28,6 +20,12 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - The `Calculate` menu for `Ellipsoid`s and `Frame`s now contain additional options, such as being able
   to ask for the axis directions, so that users can get similar information out of shape-fitted geometry
   as they would from external scripts
+- The warping algorithm used by the mesh warper and model warper (TPS) now `lerp`s between "not warped"
+  and "fully warped", rather than recomputing the warp kernel based on blended input data:
+
+  - Practically, this means that setting the blending factor to zero guarantees that the warped mesh is
+    exactly the same as the input mesh (previously, it would try to solve for the input positions and
+    sometimes produce a non-identity solution when given a small number of input landmarks)
 - Fixed mesh importer scrolling calculation for the new camera manipulator causing unnecessary scrolling
 - Fixed muscles not casting shadows after the surface rendering change
 - There is now a minor delay when mousing over entries in the `Add` menus in the model editor
