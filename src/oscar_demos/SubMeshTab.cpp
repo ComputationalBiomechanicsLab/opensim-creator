@@ -37,12 +37,13 @@ namespace
         std::vector<SubMeshDescriptor> allDescriptors;
 
         for (auto const& mesh : meshes) {
+            size_t firstVert = allVerts.size();
             Append(allVerts, mesh.getVerts());
             Append(allNormals, mesh.getNormals());
 
             size_t firstIndex = allIndices.size();
             for (auto index : mesh.getIndices()) {
-                allIndices.push_back(static_cast<uint32_t>(firstIndex + index));
+                allIndices.push_back(static_cast<uint32_t>(firstVert + index));
             }
             size_t nIndices = allIndices.size() - firstIndex;
 

@@ -13,9 +13,6 @@
 
 namespace osc
 {
-    // generates an untextured cylinder, where the bottom/top are -1.0f/+1.0f in Y
-    Mesh GenerateUntexturedYToYCylinderMesh(size_t nsides);
-
     // generates an untextured cone, where the bottom/top are -1.0f/+1.0f in Y
     Mesh GenerateUntexturedYToYConeMesh(size_t nsides);
 
