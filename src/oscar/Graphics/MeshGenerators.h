@@ -22,18 +22,6 @@ namespace osc
     // generates the *lines* of a cube with [-1,+1] in each dimension
     Mesh GenerateCubeLinesMesh();
 
-    // generates a torus with the given number of slices/stacks of triangulated quads
-    //
-    // x size: [-(torusCenterToTubeCenterRadius + tubeRadius), +(torusCenterToTubeCenterRadius + tubeRadius)]
-    // y size: [-(torusCenterToTubeCenterRadius + tubeRadius), +(torusCenterToTubeCenterRadius + tubeRadius)]
-    // z size: [-tubeRadius, +tubeRadius]
-    Mesh GenerateTorusMesh(
-        size_t slices,
-        size_t stacks,
-        float torusCenterToTubeCenterRadius,
-        float tubeRadius
-    );
-
     // generates a steps.x * steps.y (NxM) 2D grid of independent points connected
     // to their nearest neighbour by lines (MeshTopology::Lines), where the
     // lowest X/Y values are min.x/min.y and the highest X/Y values are max.x/max.y
