@@ -57,6 +57,8 @@ add_library(oscar STATIC
 
     Graphics/Geometries/BoxGeometry.cpp
     Graphics/Geometries/BoxGeometry.h
+    Graphics/Geometries/DodecahedronGeometry.cpp
+    Graphics/Geometries/DodecahedronGeometry.h
     Graphics/Geometries/IcosahedronGeometry.cpp
     Graphics/Geometries/IcosahedronGeometry.h
     Graphics/Geometries/PolyhedronGeometry.cpp

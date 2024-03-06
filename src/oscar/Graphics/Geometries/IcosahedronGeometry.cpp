@@ -10,9 +10,7 @@
 
 using namespace osc;
 
-Mesh osc::IcosahedronGeometry::generate_mesh(
-    float radius = 1.0f,
-    size_t detail = 0)
+Mesh osc::IcosahedronGeometry::generate_mesh(float radius, size_t detail)
 {
     float const t = (1.0f + sqrt(5.0f))/2.0f;
 
