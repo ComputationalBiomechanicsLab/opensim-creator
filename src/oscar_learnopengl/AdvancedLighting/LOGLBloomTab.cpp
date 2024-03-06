@@ -335,7 +335,7 @@ private:
         ColorSpace::sRGB
     );
     Mesh m_CubeMesh = GenerateCubeMesh();
-    Mesh m_QuadMesh = GenerateTexturedQuadMesh();
+    Mesh m_QuadMesh = GeneratePlaneMesh2(2.0f, 2.0f, 1, 1);
 
     RenderTexture m_SceneHDRColorOutput;
     RenderTexture m_SceneHDRThresholdedOutput;

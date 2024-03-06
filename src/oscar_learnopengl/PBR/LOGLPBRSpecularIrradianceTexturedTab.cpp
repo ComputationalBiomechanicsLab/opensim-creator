@@ -161,7 +161,7 @@ namespace
         camera.setViewMatrixOverride(identity<Mat4>());
 
         Graphics::DrawMesh(
-            GenerateTexturedQuadMesh(),
+            GeneratePlaneMesh2(2.0f, 2.0f, 1, 1),
             identity<Transform>(),
             Material{Shader{
                 rl.slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/BRDF.vert"),

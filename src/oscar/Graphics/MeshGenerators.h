@@ -13,12 +13,6 @@
 
 namespace osc
 {
-    // generates a textured quad with:
-    //
-    // - positions: Z == 0, X == [-1, 1], and Y == [-1, 1]
-    // - texcoords: (0, 0) to (1, 1)
-    Mesh GenerateTexturedQuadMesh();
-
     // generates UV sphere centered at (0,0,0) with radius = 1
     Mesh GenerateUVSphereMesh(size_t sectors, size_t stacks);
 

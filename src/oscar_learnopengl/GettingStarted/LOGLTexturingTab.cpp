@@ -13,10 +13,7 @@ namespace
 
     Mesh GenTexturedQuadMesh()
     {
-        Mesh quad = GenerateTexturedQuadMesh();
-
-        // transform default quad verts to match LearnOpenGL
-        quad.transformVerts({ .scale = Vec3{0.5f} });
+        Mesh quad = GeneratePlaneMesh2(1.0f, 1.0f, 1, 1);
 
         // transform default quad texture coordinates to exercise wrap modes
         quad.transformTexCoords([](Vec2 coord) { return 2.0f * coord; });

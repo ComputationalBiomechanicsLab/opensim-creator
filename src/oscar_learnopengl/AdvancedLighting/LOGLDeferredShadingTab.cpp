@@ -300,7 +300,7 @@ private:
     std::vector<Vec3> m_LightColors = GenerateNSceneLightColors(c_NumLights);
     MouseCapturingCamera m_Camera = CreateCameraThatMatchesLearnOpenGL();
     Mesh m_CubeMesh = GenerateCubeMesh();
-    Mesh m_QuadMesh = GenerateTexturedQuadMesh();
+    Mesh m_QuadMesh = GeneratePlaneMesh2(2.0f, 2.0f, 1, 1);
     Texture2D m_DiffuseMap = LoadTexture2DFromImage(
         m_Loader.open("oscar_learnopengl/textures/container2.png"),
         ColorSpace::sRGB,

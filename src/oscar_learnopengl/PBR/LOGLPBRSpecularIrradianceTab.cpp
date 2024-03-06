@@ -174,7 +174,7 @@ namespace
             rl.slurp("oscar_learnopengl/shaders/PBR/ibl_specular/BRDF.frag"),
         }};
 
-        Mesh quad = GenerateTexturedQuadMesh();
+        Mesh quad = GeneratePlaneMesh2(2.0f, 2.0f, 1, 1);
 
         // TODO: Graphics::Blit with material
         Camera camera;

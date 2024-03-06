@@ -95,22 +95,6 @@ namespace
         {{-1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}}  // bottom-left
     }};
 
-    // standard textured quad
-    // - dimensions [-1, +1] in xy and [0, 0] in z
-    // - uv coords are (0, 0) bottom-left, (1, 1) top-right
-    // - normal is +1 in Z, meaning that it faces toward the camera
-    constexpr std::array<TexturedVert, 6> c_ShadedTexturedQuadVerts =
-    {{
-        // CCW winding (culling)
-        {{-1.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},  // bottom-left
-        {{1.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}},  // bottom-right
-        {{1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},  // top-right
-
-        {{1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},  // top-right
-        {{-1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},  // top-left
-        {{-1.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},  // bottom-left
-    }};
-
     // a cube wire mesh, suitable for `MeshTopology::Lines` drawing
     //
     // a pair of verts per edge of the cube. The cube has 12 edges, so 24 lines
@@ -207,26 +191,6 @@ namespace
         rv.setIndices(data.indices);
         return rv;
     }
-}
-
-Mesh osc::GenerateTexturedQuadMesh()
-{
-    NewMeshData data;
-    data.reserve(c_ShadedTexturedQuadVerts.size());
-
-    uint16_t index = 0;
-    for (TexturedVert const& v : c_ShadedTexturedQuadVerts)
-    {
-        data.verts.push_back(v.pos);
-        data.normals.push_back(v.norm);
-        data.texcoords.push_back(v.uv);
-        data.indices.push_back(index++);
-    }
-
-    OSC_ASSERT(data.verts.size() % 3 == 0);
-    OSC_ASSERT(data.verts.size() == data.normals.size() && data.verts.size() == data.indices.size());
-
-    return CreateMeshFromData(std::move(data));
 }
 
 Mesh osc::GenerateUVSphereMesh(size_t sectors, size_t stacks)

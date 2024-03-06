@@ -284,7 +284,7 @@ private:
 
     Mesh m_SphereMesh = GenerateUVSphereMesh(32, 32);
     Mesh m_CubeMesh = GenerateCubeMesh();
-    Mesh m_QuadMesh = GenerateTexturedQuadMesh();
+    Mesh m_QuadMesh = GeneratePlaneMesh2(2.0f, 2.0f, 1, 1);
 
     // rendering state
     struct GBufferRenderingState final {
