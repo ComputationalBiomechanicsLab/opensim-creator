@@ -50,6 +50,7 @@ public:
     Mesh sphere = GenerateSphereMesh2(1.0f, 16, 16);
     Mesh circle = GenerateCircleMesh2(1.0f, 16);
     Mesh cylinder = GenerateCylinderMesh2(1.0f, 1.0f, 2.0f, 16, 1);
+    Mesh uncappedCylinder = GenerateCylinderMesh2(1.0f, 1.0f, 2.0f, 16, 1, true);
     Mesh cube = GenerateBoxMesh(2.0f, 2.0f, 2.0f, 1, 1, 1);
     Mesh cone = GenerateConeMesh2(1.0f, 2.0f, 16);
     Mesh floor = GeneratePlaneMesh2(2.0f, 2.0f, 1, 1);
@@ -115,6 +116,11 @@ Mesh osc::SceneCache::getCircleMesh()
 Mesh osc::SceneCache::getCylinderMesh()
 {
     return m_Impl->cylinder;
+}
+
+Mesh osc::SceneCache::getUncappedCylinderMesh()
+{
+    return m_Impl->uncappedCylinder;
 }
 
 Mesh osc::SceneCache::getBrickMesh()

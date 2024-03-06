@@ -196,9 +196,9 @@ namespace
             return m_SphereMesh;
         }
 
-        Mesh const& getCylinderMesh() const
+        Mesh const& getUncappedCylinderMesh() const
         {
-            return m_CylinderMesh;
+            return m_UncappedCylinderMesh;
         }
 
         OpenSim::ModelDisplayHints const& getModelDisplayHints() const
@@ -302,7 +302,7 @@ namespace
     private:
         SceneCache& m_MeshCache;
         Mesh m_SphereMesh = m_MeshCache.getSphereMesh();
-        Mesh m_CylinderMesh = m_MeshCache.getCylinderMesh();
+        Mesh m_UncappedCylinderMesh = m_MeshCache.getUncappedCylinderMesh();
         OpenSim::Model const& m_Model;
         OpenSim::ModelDisplayHints const& m_ModelDisplayHints = m_Model.getDisplayHints();
         bool m_ShowPathPoints = m_ModelDisplayHints.get_show_path_points();
@@ -331,7 +331,7 @@ namespace
 
         rs.consume(p2p, SceneDecoration
         {
-            .mesh = rs.getCylinderMesh(),
+            .mesh = rs.updMeshCache().getCylinderMesh(),
             .transform = YToYCylinderToSegmentTransform({p1, p2}, radius),
             .color = {0.7f, 0.7f, 0.7f, 1.0f},
             .flags = SceneDecorationFlags::CastsShadows,
@@ -442,7 +442,7 @@ namespace
         };
         SceneDecoration const tendonCylinderPrototype =
         {
-            .mesh = rs.getCylinderMesh(),
+            .mesh = rs.getUncappedCylinderMesh(),
             .color = tendonColor,
             .flags = SceneDecorationFlags::CastsShadows,
         };
@@ -455,7 +455,7 @@ namespace
         };
         SceneDecoration const fiberCylinderPrototype =
         {
-            .mesh = rs.getCylinderMesh(),
+            .mesh = rs.getUncappedCylinderMesh(),
             .color = fiberColor,
             .flags = SceneDecorationFlags::CastsShadows,
         };
@@ -655,7 +655,7 @@ namespace
         {
             rs.consume(hittestTarget, SceneDecoration
             {
-                .mesh = rs.getCylinderMesh(),
+                .mesh = rs.getUncappedCylinderMesh(),
                 .transform = YToYCylinderToSegmentTransform({p1, p2}, radius),
                 .color  = color,
                 .flags = SceneDecorationFlags::CastsShadows,

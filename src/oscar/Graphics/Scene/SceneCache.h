@@ -28,6 +28,7 @@ namespace osc
         Mesh getSphereMesh();
         Mesh getCircleMesh();
         Mesh getCylinderMesh();
+        Mesh getUncappedCylinderMesh();
         Mesh getBrickMesh();
         Mesh getConeMesh();
         Mesh getFloorMesh();
