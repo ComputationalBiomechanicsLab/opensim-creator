@@ -8,8 +8,11 @@
 #include <OpenSimCreator/Documents/Model/BasicModelStatePair.h>
 #include <OpenSimCreator/Documents/ModelWarper/Document.h>
 #include <OpenSimCreator/Documents/ModelWarper/InMemoryMesh.h>
+#include <OpenSimCreator/Utils/SimTKHelpers.h>
+#include <oscar/Platform/Log.h>
 #include <oscar/Utils/Assertions.h>
 
+#include <map>
 #include <memory>
 #include <optional>
 
@@ -43,6 +46,7 @@ namespace
         newGeometry->set_scale_factors(oldGeometry.get_scale_factors());
         newGeometry->set_Appearance(oldGeometry.get_Appearance());
         newGeometry->connectSocket_frame(oldGeometry.getConnectee("frame"));
+        newGeometry->setName(oldGeometry.getName());
         OpenSim::Component* owner = UpdOwner(model, oldGeometry);
         OSC_ASSERT_ALWAYS(owner && "the mesh being replaced has no owner? cannot overwrite a root component");
         OSC_ASSERT_ALWAYS(TryDeleteComponentFromModel(model, oldGeometry) && "cannot delete old mesh from model during warping");
@@ -66,13 +70,17 @@ public:
 
     std::shared_ptr<IConstModelStatePair const> createWarpedModel(Document const& document)
     {
+        // copy the model into an editable "warped" version
         OpenSim::Model warpedModel{document.model()};
         InitializeModel(warpedModel);
         InitializeState(warpedModel);
 
-        // iterate over component in the source model and write warped versions into
-        // the warped model where necessary
+        // iterate over each mesh in the model and warp it in-memory
+        //
+        // additionally, collect a base-frame-to-mesh lookup while doing this
+        std::map<OpenSim::ComponentPath, std::vector<OpenSim::ComponentPath>> baseFrame2meshes;
         for (auto const& mesh : document.model().getComponentList<OpenSim::Mesh>()) {
+            // try to warp+overwrite
             if (auto const* meshWarper = document.findMeshWarp(mesh)) {
                 auto warpedMesh = WarpMesh(document, document.model(), document.modelstate().getState(), mesh, *meshWarper);
                 auto* targetMesh = FindComponentMut<OpenSim::Mesh>(warpedModel, mesh.getAbsolutePath());
@@ -82,7 +90,48 @@ public:
             else {
                 return nullptr;  // no warper for the mesh (not even an identity warp): halt
             }
+
+            // update base-frame-to-mesh lookup
+            auto const& [it, inserted] = baseFrame2meshes.try_emplace(mesh.getFrame().findBaseFrame().getAbsolutePath());
+            it->second.push_back(mesh.getAbsolutePath());
         }
+        InitializeModel(warpedModel);
+        InitializeState(warpedModel);
+
+        // iterate over each `PathPoint` in the model (incl. muscle points) and warp them by
+        // figuring out how each relates to a mesh in the model
+        //
+        // TODO: the `osc::mow::Document` should handle figuring out each point's warper, because
+        // there are situations where there isn't a 1:1 relationship between meshes and bodies
+        for (auto& station : warpedModel.updComponentList<OpenSim::PathPoint>()) {
+            auto baseFramePath = station.getParentFrame().findBaseFrame().getAbsolutePath();
+            if (auto it = baseFrame2meshes.find(baseFramePath); it != baseFrame2meshes.end()) {
+                if (it->second.size() == 1) {
+                    if (auto const* mesh = FindComponent<OpenSim::Mesh>(document.model(), it->second.front())) {
+                        if (auto const meshWarper = document.findMeshWarp(*mesh)) {
+                            // redefine the station's position in the mesh's coordinate system
+                            auto reexpresed = station.getParentFrame().expressVectorInAnotherFrame(warpedModel.getWorkingState(), station.get_location(), mesh->getFrame());
+                            auto warped = ToSimTKVec3(meshWarper->compileWarper(document)->warp(ToVec3(reexpresed)));
+                            station.set_location(warped);
+                        }
+                        else {
+                            log_warn("no warper available for %s", it->second.front().toString().c_str());
+                        }
+                    }
+                    else {
+                        log_error("cannot find %s in the model: this shouldn't happen", it->second.front().toString().c_str());
+                    }
+                }
+                else {
+                    log_warn("cannot warp %s: there are multiple meshes attached to the same base frame, so it's ambiguous how to warp this point", station.getName().c_str());
+                }
+            }
+            else {
+                log_warn("cannot warp %s: there don't appear to be any meshes attached to the same base frame?", station.getName().c_str());
+            }
+        }
+        InitializeModel(warpedModel);
+        InitializeState(warpedModel);
 
         return std::make_shared<BasicModelStatePair>(
             warpedModel.getModel(),
