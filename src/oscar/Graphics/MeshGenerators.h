@@ -212,4 +212,7 @@ namespace osc
         Radians thetaStart = Degrees{0},
         Radians thetaLength = Degrees{180}
     );
+
+    // (ported from three.js/WireframeGeometry)
+    Mesh GenerateWireframeGeometry(Mesh const&);
 }
