@@ -28,7 +28,7 @@ namespace
         auto const meshes = std::to_array({
             GenerateBoxMesh(2.0f, 2.0f, 2.0f),
             GenerateSphereMesh2(1.0f, 16, 16),
-            GenerateCircleMesh(32),
+            GenerateCircleMesh2(1.0f, 32),
         });
 
         std::vector<Vec3> allVerts;

@@ -261,7 +261,7 @@ private:
     }};
     Mesh m_SphereMesh = GenerateSphereMesh2(1.0f, 12, 12);
     Mesh m_WireframeCubeMesh = GenerateCubeLinesMesh();
-    Mesh m_CircleMesh = GenerateCircleMesh(36);
+    Mesh m_CircleMesh = GenerateCircleMesh2(1.0f, 36);
     Mesh m_CrosshairMesh = GenerateCrosshairMesh();
     Mesh m_TriangleMesh = GenerateTriangleMesh();
     MaterialPropertyBlock m_BlackColorMaterialProps = GeneratePropertyBlock({0.0f, 0.0f, 0.0f, 1.0f});

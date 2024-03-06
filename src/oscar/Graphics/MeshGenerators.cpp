@@ -223,34 +223,6 @@ Mesh osc::GenerateCubeLinesMesh()
     return CreateMeshFromData(std::move(data));
 }
 
-Mesh osc::GenerateCircleMesh(size_t nsides)
-{
-    NewMeshData data;
-    data.verts.reserve(3*nsides);
-    data.topology = MeshTopology::Triangles;
-
-    uint16_t index = 0;
-    auto push = [&data, &index](float x, float y, float z)
-    {
-        data.verts.emplace_back(x, y, z);
-        data.indices.push_back(index++);
-        data.normals.emplace_back(0.0f, 0.0f, 1.0f);
-    };
-
-    Radians const step = 360_deg / nsides;
-    for (size_t i = 0; i < nsides; ++i)
-    {
-        Radians const theta1 = static_cast<float>(i) * step;
-        Radians const theta2 = static_cast<float>(i + 1) * step;
-
-        push(0.0f, 0.0f, 0.0f);
-        push(sin(theta1), cos(theta1), 0.0f);
-        push(sin(theta2), cos(theta2), 0.0f);
-    }
-
-    return CreateMeshFromData(std::move(data));
-}
-
 Mesh osc::GenerateTorusMesh(size_t slices, size_t stacks, float torusCenterToTubeCenterRadius, float tubeRadius)
 {
     // adapted from GitHub:prideout/par (used by raylib internally)
