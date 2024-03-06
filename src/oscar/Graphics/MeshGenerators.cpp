@@ -29,111 +29,6 @@
 using namespace osc::literals;
 using namespace osc;
 
-namespace
-{
-    struct UntexturedVert final {
-        Vec3 pos;
-        Vec3 norm;
-    };
-
-    // a cube wire mesh, suitable for `MeshTopology::Lines` drawing
-    //
-    // a pair of verts per edge of the cube. The cube has 12 edges, so 24 lines
-    constexpr std::array<UntexturedVert, 24> c_CubeEdgeLines =
-    {{
-        // back
-
-        // back bottom left -> back bottom right
-        {{-1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
-        {{+1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
-
-        // back bottom right -> back top right
-        {{+1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
-        {{+1.0f, +1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
-
-        // back top right -> back top left
-        {{+1.0f, +1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
-        {{-1.0f, +1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
-
-        // back top left -> back bottom left
-        {{-1.0f, +1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
-        {{-1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}},
-
-        // front
-
-        // front bottom left -> front bottom right
-        {{-1.0f, -1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
-        {{+1.0f, -1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
-
-        // front bottom right -> front top right
-        {{+1.0f, -1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
-        {{+1.0f, +1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
-
-        // front top right -> front top left
-        {{+1.0f, +1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
-        {{-1.0f, +1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
-
-        // front top left -> front bottom left
-        {{-1.0f, +1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
-        {{-1.0f, -1.0f, +1.0f}, {0.0f, 0.0f, +1.0f}},
-
-        // front-to-back edges
-
-        // front bottom left -> back bottom left
-        {{-1.0f, -1.0f, +1.0f}, {-1.0f, -1.0f, +1.0f}},
-        {{-1.0f, -1.0f, -1.0f}, {-1.0f, -1.0f, -1.0f}},
-
-        // front bottom right -> back bottom right
-        {{+1.0f, -1.0f, +1.0f}, {+1.0f, -1.0f, +1.0f}},
-        {{+1.0f, -1.0f, -1.0f}, {+1.0f, -1.0f, -1.0f}},
-
-        // front top left -> back top left
-        {{-1.0f, +1.0f, +1.0f}, {-1.0f, +1.0f, +1.0f}},
-        {{-1.0f, +1.0f, -1.0f}, {-1.0f, +1.0f, -1.0f}},
-
-        // front top right -> back top right
-        {{+1.0f, +1.0f, +1.0f}, {+1.0f, +1.0f, +1.0f}},
-        {{+1.0f, +1.0f, -1.0f}, {+1.0f, +1.0f, -1.0f}}
-    }};
-
-    struct NewMeshData final {
-
-        void clear()
-        {
-            verts.clear();
-            normals.clear();
-            texcoords.clear();
-            indices.clear();
-            topology = MeshTopology::Triangles;
-        }
-
-        void reserve(size_t s)
-        {
-            verts.reserve(s);
-            normals.reserve(s);
-            texcoords.reserve(s);
-            indices.reserve(s);
-        }
-
-        std::vector<Vec3> verts;
-        std::vector<Vec3> normals;
-        std::vector<Vec2> texcoords;
-        std::vector<uint32_t> indices;
-        MeshTopology topology = MeshTopology::Triangles;
-    };
-
-    Mesh CreateMeshFromData(NewMeshData&& data)
-    {
-        Mesh rv;
-        rv.setTopology(data.topology);
-        rv.setVerts(data.verts);
-        rv.setNormals(data.normals);
-        rv.setTexCoords(data.texcoords);
-        rv.setIndices(data.indices);
-        return rv;
-    }
-}
-
 Mesh osc::GenerateGridLinesMesh(size_t n)
 {
     constexpr float z = 0.0f;
@@ -144,16 +39,17 @@ Mesh osc::GenerateGridLinesMesh(size_t n)
 
     size_t const nlines = n + 1;
 
-    NewMeshData data;
-    data.reserve(4 * nlines);
-    data.topology = MeshTopology::Lines;
+    std::vector<Vec3> vertices;
+    vertices.reserve(4 * nlines);
+    std::vector<uint32_t> indices;
+    indices.reserve(4 * nlines);
+    uint32_t index = 0;
 
-    uint16_t index = 0;
-    auto push = [&index, &data](Vec3 const& pos)
+    auto push = [&index, &vertices, &indices](Vec3 const& pos)
     {
-        data.verts.push_back(pos);
-        data.indices.push_back(index++);
-        data.normals.emplace_back(0.0f, 0.0f, 1.0f);
+        vertices.push_back(pos);
+        indices.push_back(index++);
+        //data.normals.emplace_back(0.0f, 0.0f, 1.0f);
     };
 
     // lines parallel to X axis
@@ -174,47 +70,42 @@ Mesh osc::GenerateGridLinesMesh(size_t n)
         push({x, +1.0f, z});
     }
 
-    OSC_ASSERT(data.verts.size() % 2 == 0);  // lines, not triangles
-    OSC_ASSERT(data.normals.size() == data.verts.size());  // they contain dummy normals
-    OSC_ASSERT(data.verts.size() == data.indices.size());
-
-    return CreateMeshFromData(std::move(data));
+    Mesh rv;
+    rv.setTopology(MeshTopology::Lines);
+    rv.setVerts(vertices);
+    rv.setIndices(indices);
+    return rv;
 }
 
 Mesh osc::GenerateYToYLineMesh()
 {
-    NewMeshData data;
-    data.verts = {{0.0f, -1.0f, 0.0f}, {0.0f, +1.0f, 0.0f}};
-    data.normals = {{0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}};  // just give them *something* in-case they are rendered through a shader that requires normals
-    data.indices = {0, 1};
-    data.topology = MeshTopology::Lines;
-
-    OSC_ASSERT(data.verts.size() % 2 == 0);
-    OSC_ASSERT(data.normals.size() % 2 == 0);
-    OSC_ASSERT(data.verts.size() == data.indices.size());
-
-    return CreateMeshFromData(std::move(data));
+    Mesh rv;
+    rv.setTopology(MeshTopology::Lines);
+    rv.setVerts({{0.0f, -1.0f, 0.0f}, {0.0f, +1.0f, 0.0f}});
+    rv.setNormals({{0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}});  // just give them *something* in-case they are rendered through a shader that requires normals
+    rv.setIndices({0, 1});
+    return rv;
 }
 
 Mesh osc::GenerateCubeLinesMesh()
 {
-    NewMeshData data;
-    data.verts.reserve(c_CubeEdgeLines.size());
-    data.indices.reserve(c_CubeEdgeLines.size());
-    data.topology = MeshTopology::Lines;
+    Vec3 min = {-1.0f, -1.0f, -1.0f};
+    Vec3 max = { 1.0f,  1.0f,  1.0f};
 
-    uint16_t index = 0;
-    for (UntexturedVert const& v : c_CubeEdgeLines)
-    {
-        data.verts.push_back(v.pos);
-        data.indices.push_back(index++);
-    }
-
-    OSC_ASSERT(data.verts.size() % 2 == 0);  // lines, not triangles
-    OSC_ASSERT(data.normals.empty());
-    OSC_ASSERT(data.verts.size() == data.indices.size());
-
-    return CreateMeshFromData(std::move(data));
+    Mesh rv;
+    rv.setTopology(MeshTopology::Lines);
+    rv.setVerts({
+        {max.x, max.y, max.z},
+        {min.x, max.y, max.z},
+        {min.x, min.y, max.z},
+        {max.x, min.y, max.z},
+        {max.x, max.y, min.z},
+        {min.x, max.y, min.z},
+        {min.x, min.y, min.z},
+        {max.x, min.y, min.z},
+    });
+    rv.setIndices({0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7});
+    return rv;
 }
 
 Mesh osc::GenerateTorusKnotMesh(
