@@ -1,16 +1,18 @@
 #include "InMemoryMesh.h"
 
-#include <OpenSimCreator/Graphics/SimTKMeshLoader.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
+#include <OpenSimCreator/Utils/SimTKHelpers.h>
 
-#include <cstdint>
-#include <span>
+#include <OpenSim/Simulation/Model/Frame.h>
+#include <oscar/Graphics/Scene/SceneDecoration.h>
 
-osc::InMemoryMesh::InMemoryMesh(std::span<Vec3 const> vertices, MeshIndicesView indices)
+void osc::InMemoryMesh::implGenerateCustomDecorations(
+    SimTK::State const& state,
+    std::function<void(SceneDecoration&&)> const& out) const
 {
-    AssignIndexedVerts(m_MeshData, vertices, indices);
-}
-
-void osc::InMemoryMesh::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& out) const
-{
-    out.push_back(SimTK::DecorativeMesh{m_MeshData});
+    out({
+        .mesh = m_OscMesh,
+        .transform = decompose_to_transform(getFrame().getTransformInGround(state)),
+        .color = ToColor(get_Appearance()),
+    });
 }

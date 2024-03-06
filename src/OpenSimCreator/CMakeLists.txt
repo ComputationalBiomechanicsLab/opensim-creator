@@ -153,6 +153,8 @@ add_library(OpenSimCreator STATIC
     Documents/Simulation/StoFileSimulation.h
     Documents/Simulation/StoFileSimulation.cpp
 
+    Documents/ICustomDecorationGenerator.h
+
     Graphics/CachedModelRenderer.cpp
     Graphics/CachedModelRenderer.h
     Graphics/ComponentAbsPathDecorationTagger.cpp

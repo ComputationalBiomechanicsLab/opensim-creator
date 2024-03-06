@@ -30,7 +30,9 @@ namespace
         auto verts = mesh.getVerts();
         auto compiled = warper.compileWarper(document);
         compiled->warpInPlace(verts);
-        return std::make_unique<InMemoryMesh>(verts, mesh.getIndices());
+        mesh.setVerts(verts);
+        mesh.recalculateNormals();
+        return std::make_unique<InMemoryMesh>(mesh);
     }
 
     void OverwriteGeometry(

@@ -1156,6 +1156,20 @@ bool osc::TrySetAppearancePropertyIsVisibleTo(OpenSim::Component& c, bool v)
     }
 }
 
+Color osc::ToColor(OpenSim::Appearance const& appearance)
+{
+    SimTK::Vec3 const& rgb = appearance.get_color();
+    double const a = appearance.get_opacity();
+
+    return
+    {
+        static_cast<float>(rgb[0]),
+        static_cast<float>(rgb[1]),
+        static_cast<float>(rgb[2]),
+        static_cast<float>(a),
+    };
+}
+
 Color osc::GetSuggestedBoneColor()
 {
     Color usualDefault = {232.0f / 255.0f, 216.0f / 255.0f, 200.0f/255.0f, 1.0f};

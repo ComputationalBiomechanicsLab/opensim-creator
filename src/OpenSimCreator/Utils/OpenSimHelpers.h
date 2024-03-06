@@ -570,6 +570,9 @@ namespace osc
     // the value was set)
     bool TrySetAppearancePropertyIsVisibleTo(OpenSim::Component&, bool);
 
+    // returns the color part of the `OpenSim::Appearance` as an `osc::Color`
+    Color ToColor(OpenSim::Appearance const&);
+
     Color GetSuggestedBoneColor();  // best guess, based on shaders etc.
 
     // returns `true` if the given model's display properties asks to show frames

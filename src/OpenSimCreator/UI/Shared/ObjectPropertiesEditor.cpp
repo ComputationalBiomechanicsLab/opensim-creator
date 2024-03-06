@@ -67,21 +67,6 @@ namespace
         };
     }
 
-    // returns an `Color` extracted from the given `OpenSim::Appearance`
-    Color ToColor(OpenSim::Appearance const& appearance)
-    {
-        SimTK::Vec3 const& rgb = appearance.get_color();
-        double const a = appearance.get_opacity();
-
-        return
-        {
-            static_cast<float>(rgb[0]),
-            static_cast<float>(rgb[1]),
-            static_cast<float>(rgb[2]),
-            static_cast<float>(a),
-        };
-    }
-
     // returns an updater function that deletes an element from a list property
     template<typename T>
     std::function<void(OpenSim::AbstractProperty&)> MakePropElementDeleter(int idx)

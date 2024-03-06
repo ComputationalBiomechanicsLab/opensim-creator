@@ -1,6 +1,7 @@
 #include "OpenSimDecorationGenerator.h"
 
 #include <OpenSimCreator/Documents/Model/IConstModelStatePair.h>
+#include <OpenSimCreator/Documents/ICustomDecorationGenerator.h>
 #include <OpenSimCreator/Graphics/OpenSimDecorationOptions.h>
 #include <OpenSimCreator/Graphics/SimTKDecorationGenerator.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
@@ -978,6 +979,15 @@ void osc::GenerateSubcomponentDecorations(
         if (!ShouldShowInUI(c))
         {
             return;
+        }
+        else if (auto const* const custom = dynamic_cast<ICustomDecorationGenerator const*>(&c))
+        {
+            // edge-case: it's a component that has an OSC-specific `ICustomDecorationGenerator`
+            //            so we can skip the song-and-dance with caches, OpenSim, SimTK, etc.
+            custom->generateCustomDecorations(rendererState.getState(), [&c, &rendererState](SceneDecoration&& dec)
+            {
+                rendererState.consume(c, std::move(dec));
+            });
         }
         else if (auto const* const gp = dynamic_cast<OpenSim::GeometryPath const*>(&c))
         {

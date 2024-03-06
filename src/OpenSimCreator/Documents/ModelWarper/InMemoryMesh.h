@@ -1,12 +1,9 @@
 #pragma once
 
-#include <OpenSim/Simulation/Model/Geometry.h>
-#include <oscar/Graphics/MeshIndicesView.h>
-#include <oscar/Maths/Vec3.h>
-#include <Simbody.h>
+#include <OpenSimCreator/Documents/ICustomDecorationGenerator.h>
 
-#include <cstdint>
-#include <span>
+#include <OpenSim/Simulation/Model/Geometry.h>
+#include <oscar/Graphics/Mesh.h>
 
 namespace osc
 {
@@ -14,14 +11,19 @@ namespace osc
     //
     // used for (e.g.) storing+showing warp results without having to persist
     // a mesh file to disk
-    class InMemoryMesh : public OpenSim::Geometry {
+    class InMemoryMesh : public OpenSim::Geometry, public ICustomDecorationGenerator {
         OpenSim_DECLARE_CONCRETE_OBJECT(InMemoryMesh, OpenSim::Geometry);
     public:
         InMemoryMesh() = default;
-        InMemoryMesh(std::span<Vec3 const>, MeshIndicesView);
+        explicit InMemoryMesh(Mesh const& mesh_) : m_OscMesh{mesh_} {}
 
-        void implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>&) const override;
+        void implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>&) const override
+        {
+            // do nothing: this custom component uses the OSC-specific `ICustomDecorationGenerator` for perf
+        }
     private:
-        SimTK::PolygonalMesh m_MeshData;
+        void implGenerateCustomDecorations(SimTK::State const&, std::function<void(SceneDecoration&&)> const&) const override;
+
+        Mesh m_OscMesh;
     };
 }
