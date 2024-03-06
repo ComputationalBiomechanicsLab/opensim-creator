@@ -193,69 +193,6 @@ namespace
     }
 }
 
-Mesh osc::GenerateUntexturedYToYConeMesh(size_t nsides)
-{
-    NewMeshData data;
-    data.reserve(static_cast<size_t>(2*3)*nsides);
-
-    constexpr float topY = +1.0f;
-    constexpr float bottomY = -1.0f;
-    Radians const stepAngle = 360_deg / nsides;
-
-    uint16_t index = 0;
-    auto const push = [&data, &index](Vec3 const& pos, Vec3 const& norm)
-    {
-        data.verts.push_back(pos);
-        data.normals.push_back(norm);
-        data.indices.push_back(index++);
-    };
-
-    // bottom
-    {
-        Vec3 const normal = {0.0f, -1.0f, 0.0f};
-        Vec3 const middle = {0.0f, bottomY, 0.0f};
-
-        for (size_t i = 0; i < nsides; ++i)
-        {
-            Radians const thetaStart = i * stepAngle;
-            Radians const thetaEnd = (i + 1) * stepAngle;
-
-            Vec3 const p1 = {cos(thetaStart), bottomY, sin(thetaStart)};
-            Vec3 const p2 = {cos(thetaEnd), bottomY, sin(thetaEnd)};
-
-            push(middle, normal);
-            push(p1, normal);
-            push(p2, normal);
-        }
-    }
-
-    // sides
-    {
-        for (size_t i = 0; i < nsides; ++i)
-        {
-            Radians const thetaStart = i * stepAngle;
-            Radians const thetaEnd = (i + 1) * stepAngle;
-
-            Triangle const triangle = {
-                {0.0f, topY, 0.0f},
-                {cos(thetaEnd), bottomY, sin(thetaEnd)},
-                {cos(thetaStart), bottomY, sin(thetaStart)},
-            };
-
-            auto const normal = triangle_normal(triangle);
-
-            push(triangle.p0, normal);
-            push(triangle.p1, normal);
-            push(triangle.p2, normal);
-        }
-    }
-
-    OSC_ASSERT(data.verts.size() % 3 == 0);
-    OSC_ASSERT(data.verts.size() == data.normals.size() && data.verts.size() == data.indices.size());
-
-    return CreateMeshFromData(std::move(data));
-}
-
 Mesh osc::GenerateNbyNGridLinesMesh(size_t n)
 {
     constexpr float z = 0.0f;

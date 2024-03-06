@@ -13,9 +13,6 @@
 
 namespace osc
 {
-    // generates an untextured cone, where the bottom/top are -1.0f/+1.0f in Y
-    Mesh GenerateUntexturedYToYConeMesh(size_t nsides);
-
     // generates 2D grid lines at Z == 0, X/Y == [-1,+1]
     Mesh GenerateNbyNGridLinesMesh(size_t nticks);
 
