@@ -26,7 +26,7 @@ namespace
     Mesh GenerateMeshWithSubMeshes()
     {
         auto const meshes = std::to_array({
-            GenerateCubeMesh(),
+            GenerateBoxMesh(2.0f, 2.0f, 2.0f),
             GenerateSphereMesh2(1.0f, 16, 16),
             GenerateCircleMesh(32),
         });

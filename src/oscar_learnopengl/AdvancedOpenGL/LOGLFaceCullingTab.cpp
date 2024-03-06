@@ -16,9 +16,7 @@ namespace
 
     Mesh GenerateCubeSimilarlyToLOGL()
     {
-        Mesh m = GenerateCubeMesh();
-        m.transformVerts({.scale = Vec3{0.5f}});
-        return m;
+        return GenerateBoxMesh(1.0f, 1.0f, 1.0f);
     }
 
     Material GenerateUVTestingTextureMappedMaterial(IResourceLoader& rl)

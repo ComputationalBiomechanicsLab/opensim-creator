@@ -175,7 +175,7 @@ private:
         m_Loader.open("oscar_learnopengl/textures/wood.png"),
         ColorSpace::sRGB
     );
-    Mesh m_CubeMesh = GenerateCubeMesh();
+    Mesh m_CubeMesh = GenerateBoxMesh(2.0f, 2.0f, 2.0f);
     Mesh m_PlaneMesh = GeneratePlaneMesh();
     Material m_SceneMaterial{Shader{
         m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/shadow_mapping/Scene.vert"),

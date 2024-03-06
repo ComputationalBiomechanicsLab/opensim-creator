@@ -283,8 +283,8 @@ private:
     MouseCapturingCamera m_Camera = CreateCameraWithSameParamsAsLearnOpenGL();
 
     Mesh m_SphereMesh = GenerateSphereMesh2(1.0f, 32, 32);
-    Mesh m_CubeMesh = GenerateCubeMesh();
-    Mesh m_QuadMesh = GeneratePlaneMesh2(2.0f, 2.0f, 1, 1);
+    Mesh m_CubeMesh = GenerateBoxMesh(2.0f, 2.0f, 2.0f);
+    Mesh m_QuadMesh = GeneratePlaneMesh2(2.0f, 2.0f);
 
     // rendering state
     struct GBufferRenderingState final {

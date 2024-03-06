@@ -73,7 +73,7 @@ namespace
         material.setMat4Array("uShadowMatrices", CalcCubemapViewProjMatrices(projectionMatrix, Vec3{}));
 
         Camera camera;
-        Graphics::DrawMesh(GenerateCubeMesh(), identity<Transform>(), material, camera);
+        Graphics::DrawMesh(GenerateBoxMesh(2.0f, 2.0f, 2.0f), identity<Transform>(), material, camera);
         camera.renderTo(cubemapRenderTarget);
 
         // TODO: some way of copying it into an `osc::Cubemap` would make sense
@@ -99,7 +99,7 @@ namespace
         material.setMat4Array("uShadowMatrices", CalcCubemapViewProjMatrices(captureProjection, Vec3{}));
 
         Camera camera;
-        Graphics::DrawMesh(GenerateCubeMesh(), identity<Transform>(), material, camera);
+        Graphics::DrawMesh(GenerateBoxMesh(2.0f, 2.0f, 2.0f), identity<Transform>(), material, camera);
         camera.renderTo(irradianceCubemap);
 
         // TODO: some way of copying it into an `osc::Cubemap` would make sense
@@ -229,7 +229,7 @@ private:
         m_Loader.slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/Background.frag"),
     }};
 
-    Mesh m_CubeMesh = GenerateCubeMesh();
+    Mesh m_CubeMesh = GenerateBoxMesh(2.0f, 2.0f, 2.0f);
     Material m_PBRMaterial = CreateMaterial(m_Loader);
     Mesh m_SphereMesh = GenerateSphereMesh2(1.0f, 64, 64);
     MouseCapturingCamera m_Camera = CreateCamera();
