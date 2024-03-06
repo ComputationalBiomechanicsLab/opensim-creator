@@ -36,12 +36,6 @@ namespace
         Vec3 norm;
     };
 
-    struct TexturedVert final {
-        Vec3 pos;
-        Vec3 norm;
-        Vec2 uv;
-    };
-
     // a cube wire mesh, suitable for `MeshTopology::Lines` drawing
     //
     // a pair of verts per edge of the cube. The cube has 12 edges, so 24 lines
@@ -140,7 +134,7 @@ namespace
     }
 }
 
-Mesh osc::GenerateNbyNGridLinesMesh(size_t n)
+Mesh osc::GenerateGridLinesMesh(size_t n)
 {
     constexpr float z = 0.0f;
     constexpr float min = -1.0f;
@@ -221,176 +215,6 @@ Mesh osc::GenerateCubeLinesMesh()
     OSC_ASSERT(data.verts.size() == data.indices.size());
 
     return CreateMeshFromData(std::move(data));
-}
-
-Mesh osc::GenerateNxMGridLinesMesh(Vec2 min, Vec2 max, Vec2i steps)
-{
-    // all Z values in the returned mesh shall be 0
-    constexpr float zValue = 0.0f;
-
-    if (steps.x <= 0 || steps.y <= 0)
-    {
-        // edge case: no steps specified: return empty mesh
-        return {};
-    }
-
-    // ensure the indices can fit the requested grid
-    {
-        OSC_ASSERT(steps.x*steps.y <= std::numeric_limits<int32_t>::max() && "requested a grid size that is too large for the mesh class");
-    }
-
-    // create vector of grid points
-    std::vector<Vec3> verts;
-    verts.reserve(static_cast<size_t>(steps.x) * static_cast<size_t>(steps.y));
-
-    // create vector of line indices (indices to the two points that make a grid line)
-    std::vector<uint32_t> indices;
-    indices.reserve(static_cast<size_t>(4) * static_cast<size_t>(steps.x) * static_cast<size_t>(steps.y));
-
-    // precompute spatial step between points
-    Vec2 const stepSize = (max - min) / Vec2{steps - 1};
-
-    // push first row (no verticals)
-    {
-        // emit top-leftmost point (no links)
-        {
-            verts.emplace_back(min, zValue);
-        }
-
-        // emit rest of the first row (only has horizontal links)
-        for (int32_t x = 1; x < steps.x; ++x)
-        {
-            Vec3 const pos = {min.x + static_cast<float>(x)*stepSize.x, min.y, zValue};
-            verts.push_back(pos);
-            uint32_t const index = static_cast<int32_t>(verts.size() - 1);
-            indices.push_back(index - 1);  // link to previous point
-            indices.push_back(index);      // and then the new point
-        }
-
-        OSC_ASSERT(verts.size() == static_cast<size_t>(steps.x) && "all points in the first row have not been emitted");
-        OSC_ASSERT(indices.size() == static_cast<size_t>(2 * (steps.x - 1)) && "all lines in the first row have not been emitted");
-    }
-
-    // push remaining rows (all points have verticals, first point of each row has no horizontal)
-    for (int32_t y = 1; y < steps.y; ++y)
-    {
-        // emit leftmost point (only has a vertical link)
-        {
-            verts.emplace_back(min.x, min.y + static_cast<float>(y)*stepSize.y, zValue);
-            uint32_t const index = static_cast<int32_t>(verts.size() - 1);
-            indices.push_back(index - steps.x);  // link the point one row above
-            indices.push_back(index);            // to the point (vertically)
-        }
-
-        // emit rest of the row (has vertical and horizontal links)
-        for (int32_t x = 1; x < steps.x; ++x)
-        {
-            Vec3 const pos = {min.x + static_cast<float>(x)*stepSize.x, min.y + static_cast<float>(y)*stepSize.y, zValue};
-            verts.push_back(pos);
-            uint32_t const index = static_cast<int32_t>(verts.size() - 1);
-            indices.push_back(index - 1);        // link the previous point
-            indices.push_back(index);            // to the current point (horizontally)
-            indices.push_back(index - steps.x);  // link the point one row above
-            indices.push_back(index);            // to the current point (vertically)
-        }
-    }
-
-    OSC_ASSERT(verts.size() == static_cast<size_t>(steps.x*steps.y) && "incorrect number of vertices emitted");
-    OSC_ASSERT(indices.size() <= static_cast<size_t>(4 * steps.y * steps.y) && "too many indices were emitted?");
-
-    // emit data as a renderable mesh
-    Mesh rv;
-    rv.setTopology(MeshTopology::Lines);
-    rv.setVerts(verts);
-    rv.setIndices(indices);
-    return rv;
-}
-
-Mesh osc::GenerateNxMTriangleQuadGridMesh(Vec2i steps)
-{
-    // all Z values in the returned mesh shall be 0
-    constexpr float zValue = 0.0f;
-
-    if (steps.x <= 0 || steps.y <= 0)
-    {
-        // edge case: no steps specified: return empty mesh
-        return {};
-    }
-
-    // ensure the indices can fit the requested grid
-    {
-        OSC_ASSERT(steps.x*steps.y <= std::numeric_limits<int32_t>::max() && "requested a grid size that is too large for the mesh class");
-    }
-
-    // create a vector of triangle verts
-    std::vector<Vec3> verts;
-    verts.reserve(Area(steps));
-
-    // create a vector of texture coordinates (1:1 with verts)
-    std::vector<Vec2> coords;
-    coords.reserve(Area(steps));
-
-    // create a vector of triangle primitive indices (2 triangles, or 6 indices, per grid cell)
-    std::vector<uint32_t> indices;
-    indices.reserve(static_cast<size_t>(6) * Area(steps-1));
-
-    // precompute step/min in each direction
-    Vec2 const vectorStep = Vec2{2.0f, 2.0f} / Vec2{steps - 1};
-    Vec2 const uvStep = Vec2{1.0f, 1.0f} / Vec2{steps - 1};
-    Vec2 const vectorMin = {-1.0f, -1.0f};
-    Vec2 const uvMin = {0.0f, 0.0f};
-
-    // push first row of verts + texture coords for all columns
-    for (int32_t col = 0; col < steps.x; ++col)
-    {
-        verts.emplace_back(vectorMin.x + static_cast<float>(col)*vectorStep.x, vectorMin.y, zValue);
-        coords.emplace_back(uvMin.x + static_cast<float>(col)*uvStep.x, uvMin.y);
-    }
-
-    // then work through the next rows, which can safely assume there's a row above them
-    for (int32_t row = 1; row < steps.y; ++row)
-    {
-        auto const rowf = static_cast<float>(row);
-
-        // push point + coord of the first column's left-edge
-        verts.emplace_back(vectorMin.x, vectorMin.y + rowf*vectorStep.y, zValue);
-        coords.emplace_back(uvMin.x, uvMin.y + rowf*uvStep.y);
-
-        // then, for all remaining columns, push the right-edge data and the triangles
-        for (int32_t col = 1; col < steps.x; ++col)
-        {
-            auto const colf = static_cast<float>(col);
-            verts.emplace_back(vectorMin.x + colf*vectorStep.x, vectorMin.y + rowf*vectorStep.y, zValue);
-            coords.emplace_back(uvMin.x + colf*uvStep.x, uvMin.y + rowf*uvStep.y);
-
-            // triangles (anti-clockwise wound)
-            int32_t const currentIdx = row*steps.x + col;
-            int32_t const bottomRightIdx = currentIdx;
-            int32_t const bottomLeftIdx = currentIdx - 1;
-            int32_t const topLeftIdx =  bottomLeftIdx - steps.x;
-            int32_t const topRightIdx = bottomRightIdx - steps.x;
-
-            // top-left triangle
-            indices.push_back(topRightIdx);
-            indices.push_back(topLeftIdx);
-            indices.push_back(bottomLeftIdx);
-
-            // bottom-right triangle
-            indices.push_back(topRightIdx);
-            indices.push_back(bottomLeftIdx);
-            indices.push_back(bottomRightIdx);
-        }
-    }
-
-    OSC_ASSERT(verts.size() == coords.size());
-    OSC_ASSERT(std::ssize(indices) == static_cast<ptrdiff_t>((steps.x-1)*(steps.y-1)*6));
-
-    Mesh rv;
-    rv.setTopology(MeshTopology::Triangles);
-    rv.setVerts(verts);
-    rv.setTexCoords(coords);
-    rv.setIndices(indices);
-    return rv;
 }
 
 Mesh osc::GenerateTorusKnotMesh(

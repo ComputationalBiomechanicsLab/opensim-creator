@@ -510,7 +510,7 @@ private:
         m_Loader.open("textures/container.jpg"),
         ColorSpace::sRGB
     );
-    Mesh m_InputGrid = GenerateNxMTriangleQuadGridMesh({50, 50});
+    Mesh m_InputGrid = GeneratePlaneMesh2(2.0f, 2.0f, 50, 50);
     Mesh m_OutputGrid = m_InputGrid;
     Material m_Material{m_ShaderCache->load("shaders/TPS2D/Textured.vert", "shaders/TPS2D/Textured.frag")};
     Material m_WireframeMaterial{m_ShaderCache->load("shaders/SolidColor.vert", "shaders/SolidColor.frag")};
