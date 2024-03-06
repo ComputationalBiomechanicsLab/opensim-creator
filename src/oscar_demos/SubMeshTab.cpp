@@ -27,7 +27,7 @@ namespace
     {
         auto const meshes = std::to_array({
             GenerateCubeMesh(),
-            GenerateUVSphereMesh(16, 16),
+            GenerateSphereMesh2(1.0f, 16, 16),
             GenerateCircleMesh(32),
         });
 

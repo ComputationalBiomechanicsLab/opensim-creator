@@ -259,7 +259,7 @@ private:
         m_Loader.slurp("oscar_demos/shaders/SolidColor.vert"),
         m_Loader.slurp("oscar_demos/shaders/SolidColor.frag"),
     }};
-    Mesh m_SphereMesh = GenerateUVSphereMesh(12, 12);
+    Mesh m_SphereMesh = GenerateSphereMesh2(1.0f, 12, 12);
     Mesh m_WireframeCubeMesh = GenerateCubeLinesMesh();
     Mesh m_CircleMesh = GenerateCircleMesh(36);
     Mesh m_CrosshairMesh = GenerateCrosshairMesh();

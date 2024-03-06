@@ -13,9 +13,6 @@
 
 namespace osc
 {
-    // generates UV sphere centered at (0,0,0) with radius = 1
-    Mesh GenerateUVSphereMesh(size_t sectors, size_t stacks);
-
     // generates an untextured cylinder, where the bottom/top are -1.0f/+1.0f in Y
     Mesh GenerateUntexturedYToYCylinderMesh(size_t nsides);
 

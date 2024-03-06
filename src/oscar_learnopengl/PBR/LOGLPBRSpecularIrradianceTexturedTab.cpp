@@ -340,7 +340,7 @@ private:
 
     Mesh m_CubeMesh = GenerateCubeMesh();
     Material m_PBRMaterial = CreateMaterial(m_Loader);
-    Mesh m_SphereMesh = GenerateUVSphereMesh(64, 64);
+    Mesh m_SphereMesh = GenerateSphereMesh2(1.0f, 64, 64);
 
     MouseCapturingCamera m_Camera = CreateCamera();
 
