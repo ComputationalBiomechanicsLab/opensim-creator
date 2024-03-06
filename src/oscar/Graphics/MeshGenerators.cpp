@@ -823,7 +823,7 @@ Mesh osc::GenerateLatheMesh(
     return rv;
 }
 
-Mesh osc::GenerateCircleMesh2(
+Mesh osc::GenerateCircleMesh(
     float radius,
     size_t segments,
     Radians thetaStart,
@@ -930,7 +930,7 @@ Mesh osc::GenerateRingMesh(
     return rv;
 }
 
-Mesh osc::GenerateTorusMesh2(
+Mesh osc::GenerateTorusMesh(
     float radius,
     float tube,
     size_t radialSegments,
@@ -988,7 +988,7 @@ Mesh osc::GenerateTorusMesh2(
     return rv;
 }
 
-Mesh osc::GenerateCylinderMesh2(
+Mesh osc::GenerateCylinderMesh(
     float radiusTop,
     float radiusBottom,
     float height,
@@ -1135,7 +1135,7 @@ Mesh osc::GenerateCylinderMesh2(
     return rv;
 }
 
-Mesh osc::GenerateConeMesh2(
+Mesh osc::GenerateConeMesh(
     float radius,
     float height,
     size_t radialSegments,
@@ -1144,7 +1144,7 @@ Mesh osc::GenerateConeMesh2(
     Radians thetaStart,
     Radians thetaLength)
 {
-    return GenerateCylinderMesh2(
+    return GenerateCylinderMesh(
         0.0f,
         radius,
         height,
@@ -1156,7 +1156,7 @@ Mesh osc::GenerateConeMesh2(
     );
 }
 
-Mesh osc::GeneratePlaneMesh2(
+Mesh osc::GeneratePlaneMesh(
     float width,
     float height,
     size_t widthSegments,
@@ -1210,7 +1210,7 @@ Mesh osc::GeneratePlaneMesh2(
     return m;
 }
 
-Mesh osc::GenerateSphereMesh2(
+Mesh osc::GenerateSphereMesh(
     float radius,
     size_t widthSegments,
     size_t heightSegments,
@@ -1290,7 +1290,7 @@ Mesh osc::GenerateSphereMesh2(
     return rv;
 }
 
-Mesh osc::GenerateWireframeGeometry(Mesh const& mesh)
+Mesh osc::GenerateWireframeMesh(Mesh const& mesh)
 {
     static_assert(NumOptions<MeshTopology>() == 2);
 

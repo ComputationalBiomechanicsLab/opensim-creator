@@ -91,7 +91,7 @@ namespace osc
     // returns a mesh representation of a solid circle
     //
     // (ported from three.js:CircleGeometry)
-    Mesh GenerateCircleMesh2(
+    Mesh GenerateCircleMesh(
         float radius = 1.0f,
         size_t segments = 32,
         Radians thetaStart = Degrees{0},
@@ -111,7 +111,7 @@ namespace osc
     );
 
     // (ported from three.js/TorusGeometry)
-    Mesh GenerateTorusMesh2(
+    Mesh GenerateTorusMesh(
         float radius = 1.0f,
         float tube = 0.4f,
         size_t radialSegments = 12,
@@ -120,7 +120,7 @@ namespace osc
     );
 
     // (ported from three.js/CylinderGeometry)
-    Mesh GenerateCylinderMesh2(
+    Mesh GenerateCylinderMesh(
         float radiusTop = 1.0f,
         float radiusBottom = 1.0f,
         float height = 1.0f,
@@ -132,7 +132,7 @@ namespace osc
     );
 
     // (ported from three.js/ConeGeometry)
-    Mesh GenerateConeMesh2(
+    Mesh GenerateConeMesh(
         float radius = 1.0f,
         float height = 1.0f,
         size_t radialSegments = 32,
@@ -143,7 +143,7 @@ namespace osc
     );
 
     // (ported from three.js/PlaneGeometry)
-    Mesh GeneratePlaneMesh2(
+    Mesh GeneratePlaneMesh(
         float width = 1.0f,
         float height = 1.0f,
         size_t widthSegments = 1,
@@ -151,7 +151,7 @@ namespace osc
     );
 
     // (ported from three.js/SphereGeometry)
-    Mesh GenerateSphereMesh2(
+    Mesh GenerateSphereMesh(
         float radius = 1.0f,
         size_t widthSegments = 32,
         size_t heightSegments = 16,
@@ -162,5 +162,5 @@ namespace osc
     );
 
     // (ported from three.js/WireframeGeometry)
-    Mesh GenerateWireframeGeometry(Mesh const&);
+    Mesh GenerateWireframeMesh(Mesh const&);
 }

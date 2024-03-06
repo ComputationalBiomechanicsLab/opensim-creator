@@ -1441,13 +1441,13 @@ namespace osc::mi
         MeshLoader m_MeshLoader;
 
         // sphere mesh used by various scene elements
-        osc::Mesh m_SphereMesh = GenerateSphereMesh2(1.0f, 12, 12);
+        osc::Mesh m_SphereMesh = GenerateSphereMesh(1.0f, 12, 12);
 
         // cylinder mesh used by various scene elements
-        osc::Mesh m_CylinderMesh = GenerateCylinderMesh2(1.0f, 1.0f, 2.0f, 16);
+        osc::Mesh m_CylinderMesh = GenerateCylinderMesh(1.0f, 1.0f, 2.0f, 16);
 
         // cone mesh used to render scene elements
-        osc::Mesh m_ConeMesh = GenerateConeMesh2(1.0f, 2.0f, 16);
+        osc::Mesh m_ConeMesh = GenerateConeMesh(1.0f, 2.0f, 16);
 
         // main 3D scene camera
         PolarPerspectiveCamera m_3DSceneCamera = CreateDefaultCamera();

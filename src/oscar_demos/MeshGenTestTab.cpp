@@ -39,7 +39,7 @@ namespace
             {"circle", cache.getCircleMesh()},
             {"100x100 grid", cache.get100x100GridMesh()},
             {"cube (wire)", cache.getCubeWireMesh()},
-            {"cube2 (wire)", GenerateWireframeGeometry(GenerateBoxMesh(2.0f, 2.0f, 2.0f, 1, 1, 1))},
+            {"cube2 (wire)", GenerateWireframeMesh(GenerateBoxMesh(2.0f, 2.0f, 2.0f, 1, 1, 1))},
             {"yline", cache.getYLineMesh()},
             {"quad", cache.getTexturedQuadMesh()},
             {"torus", cache.getTorusMesh(0.9f, 0.1f)},
@@ -50,13 +50,13 @@ namespace
             {"octahedron", GenerateOctahedronMesh()},
             {"tetrahedron", GenerateTetrahedronMesh()},
             {"lathe", GenerateLatheMesh(LathePoints(), 3)},
-            {"circle2", GenerateCircleMesh2(1.0f, 16)},
+            {"circle2", GenerateCircleMesh(1.0f, 16)},
             {"ring", GenerateRingMesh(0.5f, 1.0f, 32, 3, Degrees{0}, Degrees{180})},
-            {"torus2", GenerateTorusMesh2(0.9f, 0.1f, 12, 12, Degrees{360})},
-            {"cylinder2", GenerateCylinderMesh2(1.0f, 1.0f, 2.0f, 16, 1)},
-            {"cone2", GenerateConeMesh2(1.0f, 2.0f, 16)},
-            {"plane2", GeneratePlaneMesh2(2.0f, 2.0f, 1, 1)},
-            {"sphere2", GenerateSphereMesh2(1.0f, 16, 16)},
+            {"torus2", GenerateTorusMesh(0.9f, 0.1f, 12, 12, Degrees{360})},
+            {"cylinder2", GenerateCylinderMesh(1.0f, 1.0f, 2.0f, 16, 1)},
+            {"cone2", GenerateConeMesh(1.0f, 2.0f, 16)},
+            {"plane2", GeneratePlaneMesh(2.0f, 2.0f, 1, 1)},
+            {"sphere2", GenerateSphereMesh(1.0f, 16, 16)},
         };
     }
 }

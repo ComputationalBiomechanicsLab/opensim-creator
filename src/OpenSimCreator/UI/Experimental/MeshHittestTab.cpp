@@ -182,7 +182,7 @@ private:
         },
     };
     Mesh m_Mesh = LoadMeshViaSimTK(App::resourceFilepath("geometry/hat_ribs.vtp"));
-    Mesh m_SphereMesh = GenerateSphereMesh2(1.0f, 12, 12);
+    Mesh m_SphereMesh = GenerateSphereMesh(1.0f, 12, 12);
     Mesh m_CubeLinesMesh = GenerateCubeLinesMesh();
 
     // other state

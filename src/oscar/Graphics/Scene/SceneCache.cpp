@@ -47,13 +47,13 @@ struct std::hash<TorusParameters> final {
 
 class osc::SceneCache::Impl final {
 public:
-    Mesh sphere = GenerateSphereMesh2(1.0f, 16, 16);
-    Mesh circle = GenerateCircleMesh2(1.0f, 16);
-    Mesh cylinder = GenerateCylinderMesh2(1.0f, 1.0f, 2.0f, 16);
-    Mesh uncappedCylinder = GenerateCylinderMesh2(1.0f, 1.0f, 2.0f, 16, 1, true);
+    Mesh sphere = GenerateSphereMesh(1.0f, 16, 16);
+    Mesh circle = GenerateCircleMesh(1.0f, 16);
+    Mesh cylinder = GenerateCylinderMesh(1.0f, 1.0f, 2.0f, 16);
+    Mesh uncappedCylinder = GenerateCylinderMesh(1.0f, 1.0f, 2.0f, 16, 1, true);
     Mesh cube = GenerateBoxMesh(2.0f, 2.0f, 2.0f);
-    Mesh cone = GenerateConeMesh2(1.0f, 2.0f, 16);
-    Mesh floor = GeneratePlaneMesh2(2.0f, 2.0f, 1, 1);
+    Mesh cone = GenerateConeMesh(1.0f, 2.0f, 16);
+    Mesh floor = GeneratePlaneMesh(2.0f, 2.0f, 1, 1);
     Mesh grid100x100 = GenerateGridLinesMesh(1000);
     Mesh cubeWire = GenerateCubeLinesMesh();
     Mesh yLine = GenerateYToYLineMesh();
@@ -167,7 +167,7 @@ Mesh osc::SceneCache::getTorusMesh(float torusCenterToTubeCenterRadius, float tu
 
     if (inserted)
     {
-        it->second = Mesh{GenerateTorusMesh2(key.torusCenterToTubeCenterRadius, key.tubeRadius, 12, 12, Degrees{360})};
+        it->second = Mesh{GenerateTorusMesh(key.torusCenterToTubeCenterRadius, key.tubeRadius, 12, 12, Degrees{360})};
     }
 
     return it->second;

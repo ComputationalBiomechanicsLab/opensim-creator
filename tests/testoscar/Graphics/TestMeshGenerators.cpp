@@ -155,18 +155,18 @@ TEST(GenerateLatheMesh, WorksWithNonDefaultArgs)
     ASSERT_FALSE(m.getIndices().empty());
 }
 
-TEST(GenerateCircleMesh2, DefaultCtorWorksFine)
+TEST(GenerateCircleMesh, DefaultCtorWorksFine)
 {
-    Mesh const m = GenerateCircleMesh2();
+    Mesh const m = GenerateCircleMesh();
     ASSERT_TRUE(m.hasVerts());
     ASSERT_TRUE(m.hasNormals());
     ASSERT_TRUE(m.hasTexCoords());
     ASSERT_FALSE(m.getIndices().empty());
 }
 
-TEST(GenerateCircleMesh2, WorksWithNonDefaultArgs)
+TEST(GenerateCircleMesh, WorksWithNonDefaultArgs)
 {
-    Mesh const m = GenerateCircleMesh2(0.5f, 64, 90_deg, 80_deg);
+    Mesh const m = GenerateCircleMesh(0.5f, 64, 90_deg, 80_deg);
     ASSERT_TRUE(m.hasVerts());
     ASSERT_TRUE(m.hasNormals());
     ASSERT_TRUE(m.hasTexCoords());
@@ -191,90 +191,90 @@ TEST(GenerateRingMesh, WorksWithNonDefaultArgs)
     ASSERT_FALSE(m.getIndices().empty());
 }
 
-TEST(GenerateTorusMesh2, DefaultCtorWorksFine)
+TEST(GenerateTorusMesh, DefaultCtorWorksFine)
 {
-    Mesh const m = GenerateTorusMesh2();
+    Mesh const m = GenerateTorusMesh();
     ASSERT_TRUE(m.hasVerts());
     ASSERT_TRUE(m.hasNormals());
     ASSERT_TRUE(m.hasTexCoords());
     ASSERT_FALSE(m.getIndices().empty());
 }
 
-TEST(GenerateTorusMesh2, WorksWithNonDefaultArgs)
+TEST(GenerateTorusMesh, WorksWithNonDefaultArgs)
 {
-    Mesh const m = GenerateTorusMesh2(0.2f, 0.3f, 4, 32, 180_deg);
+    Mesh const m = GenerateTorusMesh(0.2f, 0.3f, 4, 32, 180_deg);
     ASSERT_TRUE(m.hasVerts());
     ASSERT_TRUE(m.hasNormals());
     ASSERT_TRUE(m.hasTexCoords());
     ASSERT_FALSE(m.getIndices().empty());
 }
 
-TEST(GenerateCylinderMesh2, DefaultCtorWorksFine)
+TEST(GenerateCylinderMesh, DefaultCtorWorksFine)
 {
-    Mesh const m = GenerateCylinderMesh2();
+    Mesh const m = GenerateCylinderMesh();
     ASSERT_TRUE(m.hasVerts());
     ASSERT_TRUE(m.hasNormals());
     ASSERT_TRUE(m.hasTexCoords());
     ASSERT_FALSE(m.getIndices().empty());
 }
 
-TEST(GenerateCylinderMesh2, WorksWithNonDefaultArgs)
+TEST(GenerateCylinderMesh, WorksWithNonDefaultArgs)
 {
-    Mesh const m = GenerateCylinderMesh2(0.1f, 0.05f, 0.5f, 16, 2, true, 180_deg, 270_deg);
+    Mesh const m = GenerateCylinderMesh(0.1f, 0.05f, 0.5f, 16, 2, true, 180_deg, 270_deg);
     ASSERT_TRUE(m.hasVerts());
     ASSERT_TRUE(m.hasNormals());
     ASSERT_TRUE(m.hasTexCoords());
     ASSERT_FALSE(m.getIndices().empty());
 }
 
-TEST(GenerateConeMesh2, DefaultCtorWorksFine)
+TEST(GenerateConeMesh, DefaultCtorWorksFine)
 {
-    Mesh const m = GenerateConeMesh2();
+    Mesh const m = GenerateConeMesh();
     ASSERT_TRUE(m.hasVerts());
     ASSERT_TRUE(m.hasNormals());
     ASSERT_TRUE(m.hasTexCoords());
     ASSERT_FALSE(m.getIndices().empty());
 }
 
-TEST(GenerateConeMesh2, WorksWithNonDefaultArgs)
+TEST(GenerateConeMesh, WorksWithNonDefaultArgs)
 {
-    Mesh const m = GenerateConeMesh2(0.2f, 500.0f, 4, 3, true, -90_deg, 90_deg);
+    Mesh const m = GenerateConeMesh(0.2f, 500.0f, 4, 3, true, -90_deg, 90_deg);
     ASSERT_TRUE(m.hasVerts());
     ASSERT_TRUE(m.hasNormals());
     ASSERT_TRUE(m.hasTexCoords());
     ASSERT_FALSE(m.getIndices().empty());
 }
 
-TEST(GeneratePlaneMesh2, DefaultCtorWorksFine)
+TEST(GeneratePlaneMesh, DefaultCtorWorksFine)
 {
-    Mesh const m = GeneratePlaneMesh2();
+    Mesh const m = GeneratePlaneMesh();
     ASSERT_TRUE(m.hasVerts());
     ASSERT_TRUE(m.hasNormals());
     ASSERT_TRUE(m.hasTexCoords());
     ASSERT_FALSE(m.getIndices().empty());
 }
 
-TEST(GeneratePlaneMesh2, WorksWithNonDefaultArgs)
+TEST(GeneratePlaneMesh, WorksWithNonDefaultArgs)
 {
-    Mesh const m = GeneratePlaneMesh2(0.5f, 2.0f, 4, 4);
+    Mesh const m = GeneratePlaneMesh(0.5f, 2.0f, 4, 4);
     ASSERT_TRUE(m.hasVerts());
     ASSERT_TRUE(m.hasNormals());
     ASSERT_TRUE(m.hasTexCoords());
     ASSERT_FALSE(m.getIndices().empty());
 }
 
-TEST(GenerateSphereMesh2, DefaultCtorWorksFine)
+TEST(GenerateSphereMesh, DefaultCtorWorksFine)
 {
-    Mesh const m = GenerateSphereMesh2();
+    Mesh const m = GenerateSphereMesh();
     ASSERT_TRUE(m.hasVerts());
     ASSERT_TRUE(m.hasNormals());
     ASSERT_TRUE(m.hasTexCoords());
     ASSERT_FALSE(m.getIndices().empty());
 }
 
-TEST(GenerateSphereMesh2, WorksWithNonDefaultArgs)
+TEST(GenerateSphereMesh, WorksWithNonDefaultArgs)
 {
-    Mesh const m = GenerateSphereMesh2(0.5f, 12, 4, 90_deg, 180_deg, -45_deg, -60_deg);
+    Mesh const m = GenerateSphereMesh(0.5f, 12, 4, 90_deg, 180_deg, -45_deg, -60_deg);
     ASSERT_TRUE(m.hasVerts());
     ASSERT_TRUE(m.hasNormals());
     ASSERT_TRUE(m.hasTexCoords());

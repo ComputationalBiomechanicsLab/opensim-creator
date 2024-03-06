@@ -161,7 +161,7 @@ namespace
         camera.setViewMatrixOverride(identity<Mat4>());
 
         Graphics::DrawMesh(
-            GeneratePlaneMesh2(2.0f, 2.0f, 1, 1),
+            GeneratePlaneMesh(2.0f, 2.0f, 1, 1),
             identity<Transform>(),
             Material{Shader{
                 rl.slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/BRDF.vert"),
@@ -340,7 +340,7 @@ private:
 
     Mesh m_CubeMesh = GenerateBoxMesh(2.0f, 2.0f, 2.0f);
     Material m_PBRMaterial = CreateMaterial(m_Loader);
-    Mesh m_SphereMesh = GenerateSphereMesh2(1.0f, 64, 64);
+    Mesh m_SphereMesh = GenerateSphereMesh(1.0f, 64, 64);
 
     MouseCapturingCamera m_Camera = CreateCamera();
 

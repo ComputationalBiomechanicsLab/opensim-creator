@@ -39,7 +39,7 @@ TEST(FitSphere, ReturnsUnitSphereWhenGivenAnEmptyMesh)
 TEST(FitSphere, ReturnsRoughlyExpectedParametersWhenGivenAUnitSphereMesh)
 {
     // generate a UV unit sphere
-    Mesh const sphereMesh = GenerateSphereMesh2(1.0f, 16, 16);
+    Mesh const sphereMesh = GenerateSphereMesh(1.0f, 16, 16);
     Sphere const sphereFit = FitSphere(sphereMesh);
 
     ASSERT_TRUE(all_of(equal_within_absdiff(sphereFit.origin, Vec3{}, 0.000001f)));
@@ -53,7 +53,7 @@ TEST(FitSphere, ReturnsRoughlyExpectedParametersWhenGivenATransformedSphere)
     t.scale = {3.25f, 3.25f, 3.25f};  // keep it spherical
     t.rotation = angle_axis(45_deg, UnitVec3{1.0f, 1.0f, 0.0f});
 
-    Mesh sphereMesh = GenerateSphereMesh2(1.0f, 16, 16);
+    Mesh sphereMesh = GenerateSphereMesh(1.0f, 16, 16);
     sphereMesh.transformVerts(t);
 
     Sphere const sphereFit = FitSphere(sphereMesh);

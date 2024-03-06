@@ -160,7 +160,7 @@ private:
     Material m_TonemapMaterial = CreateTonemapMaterial(m_Loader);
     MouseCapturingCamera m_Camera = CreateSceneCamera();
     Mesh m_CubeMesh = GenerateBoxMesh(2.0f, 2.0f, 2.0f);
-    Mesh m_QuadMesh = GeneratePlaneMesh2(2.0f, 2.0f);
+    Mesh m_QuadMesh = GeneratePlaneMesh(2.0f, 2.0f);
     Transform m_CorridoorTransform = CalcCorridoorTransform();
     RenderTexture m_SceneHDRTexture;
     float m_Exposure = 1.0f;

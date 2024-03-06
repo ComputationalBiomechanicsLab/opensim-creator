@@ -77,7 +77,7 @@ private:
     int m_NumIterations = 16;
     Rect m_NormalizedMandelbrotViewport = {{}, {1.0f, 1.0f}};
     Rect m_MainViewportWorkspaceScreenRect = {};
-    Mesh m_QuadMesh = GeneratePlaneMesh2(2.0f, 2.0f, 1, 1);
+    Mesh m_QuadMesh = GeneratePlaneMesh(2.0f, 2.0f, 1, 1);
     Material m_Material{Shader{
         m_Loader.slurp("oscar_demos/shaders/Mandelbrot.vert"),
         m_Loader.slurp("oscar_demos/shaders/Mandelbrot.frag"),
