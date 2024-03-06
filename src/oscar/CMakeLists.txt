@@ -55,6 +55,15 @@ add_library(oscar STATIC
     Graphics/Detail/VertexAttributeList.h
     Graphics/Detail/VertexAttributeTraits.h
 
+    Graphics/Geometries/BoxGeometry.cpp
+    Graphics/Geometries/BoxGeometry.h
+    Graphics/Geometries/IcosahedronGeometry.cpp
+    Graphics/Geometries/IcosahedronGeometry.h
+    Graphics/Geometries/PolyhedronGeometry.cpp
+    Graphics/Geometries/PolyhedronGeometry.h
+    Graphics/Geometries/TorusKnotGeometry.cpp
+    Graphics/Geometries/TorusKnotGeometry.h
+
     Graphics/OpenGL/CPUDataTypeOpenGLTraits.h
     Graphics/OpenGL/CPUImageFormatOpenGLTraits.h
     Graphics/OpenGL/Gl.cpp
@@ -92,6 +101,7 @@ add_library(oscar STATIC
     Graphics/Cubemap.h
     Graphics/CubemapFace.h
     Graphics/DepthStencilFormat.h
+    Graphics/Geometries.h
     Graphics/Graphics.h
     Graphics/GraphicsContext.h
     Graphics/GraphicsHelpers.cpp

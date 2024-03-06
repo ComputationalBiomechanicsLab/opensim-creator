@@ -14,6 +14,7 @@
 #include <oscar/Graphics/CullMode.h>
 #include <oscar/Graphics/DepthFunction.h>
 #include <oscar/Graphics/DepthStencilFormat.h>
+#include <oscar/Graphics/Geometries.h>
 #include <oscar/Graphics/Graphics.h>
 #include <oscar/Graphics/GraphicsContext.h>
 #include <oscar/Graphics/GraphicsHelpers.h>
