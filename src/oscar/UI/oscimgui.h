@@ -9,7 +9,9 @@
 #include <implot.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Maths/Rect.h>
+#include <oscar/Maths/Vec.h>
 #include <oscar/Maths/Vec2.h>
+#include <oscar/Maths/Vec3.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/UID.h>
 
@@ -240,6 +242,11 @@ namespace osc::ui
     inline bool InputFloat3(CStringView label, float v[3], const char* format = "%.3f", ImGuiInputTextFlags flags = 0)
     {
         return ImGui::InputFloat3(label.c_str(), v, format, flags);
+    }
+
+    inline bool InputVec3(CStringView label, Vec3& v, const char* format = "%.3f", ImGuiInputTextFlags flags = 0)
+    {
+        return ImGui::InputFloat3(label.c_str(), &v.x, format, flags);
     }
 
     inline bool ColorEditRGB(CStringView label, Color& color)

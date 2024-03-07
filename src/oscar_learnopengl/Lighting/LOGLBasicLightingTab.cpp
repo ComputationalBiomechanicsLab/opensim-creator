@@ -76,7 +76,7 @@ private:
 
         // render auxiliary UI
         ui::Begin("controls");
-        ui::InputFloat3("light pos", value_ptr(m_LightTransform.position));
+        ui::InputVec3("light pos", m_LightTransform.position);
         ui::InputFloat("ambient strength", &m_AmbientStrength);
         ui::InputFloat("diffuse strength", &m_DiffuseStrength);
         ui::InputFloat("specular strength", &m_SpecularStrength);

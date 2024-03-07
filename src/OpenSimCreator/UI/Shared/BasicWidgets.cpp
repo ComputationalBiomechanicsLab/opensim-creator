@@ -543,7 +543,7 @@ void osc::DrawPointTranslationInformationWithRespectTo(
     ui::SameLine();
     ui::DrawHelpMarker("translation", "Translational offset (in meters) of the point expressed in the chosen frame");
     ui::SameLine();
-    ui::InputFloat3("##translation", value_ptr(position), "%.6f", ImGuiInputTextFlags_ReadOnly);
+    ui::InputVec3("##translation", position, "%.6f", ImGuiInputTextFlags_ReadOnly);
 }
 
 void osc::DrawDirectionInformationWithRepsectTo(
@@ -558,7 +558,7 @@ void osc::DrawDirectionInformationWithRepsectTo(
     ui::SameLine();
     ui::DrawHelpMarker("direction", "a unit vector expressed in the given frame");
     ui::SameLine();
-    ui::InputFloat3("##direction", value_ptr(direction), "%.6f", ImGuiInputTextFlags_ReadOnly);
+    ui::InputVec3("##direction", direction, "%.6f", ImGuiInputTextFlags_ReadOnly);
 }
 
 void osc::DrawFrameInformationExpressedIn(
@@ -574,13 +574,13 @@ void osc::DrawFrameInformationExpressedIn(
     ui::SameLine();
     ui::DrawHelpMarker("translation", "Translational offset (in meters) of the frame's origin expressed in the chosen frame");
     ui::SameLine();
-    ui::InputFloat3("##translation", value_ptr(position), "%.6f", ImGuiInputTextFlags_ReadOnly);
+    ui::InputVec3("##translation", position, "%.6f", ImGuiInputTextFlags_ReadOnly);
 
     ui::Text("orientation");
     ui::SameLine();
     ui::DrawHelpMarker("orientation", "Orientation offset (in radians) of the frame, expressed in the chosen frame as a frame-fixed x-y-z rotation sequence");
     ui::SameLine();
-    ui::InputFloat3("##orientation", value_ptr(rotationEulers), "%.6f", ImGuiInputTextFlags_ReadOnly);
+    ui::InputVec3("##orientation", rotationEulers, "%.6f", ImGuiInputTextFlags_ReadOnly);
 }
 
 bool osc::BeginCalculateMenu(CalculateMenuFlags flags)
@@ -660,15 +660,15 @@ void osc::DrawCalculateAxisDirectionsMenu(
 
             ui::Text("x axis");
             ui::SameLine();
-            ui::InputFloat3("##xdir", value_ptr(x), "%.6f", ImGuiInputTextFlags_ReadOnly);
+            ui::InputVec3("##xdir", x, "%.6f", ImGuiInputTextFlags_ReadOnly);
 
             ui::Text("y axis");
             ui::SameLine();
-            ui::InputFloat3("##ydir", value_ptr(y), "%.6f", ImGuiInputTextFlags_ReadOnly);
+            ui::InputVec3("##ydir", y, "%.6f", ImGuiInputTextFlags_ReadOnly);
 
             ui::Text("z axis");
             ui::SameLine();
-            ui::InputFloat3("##zdir", value_ptr(z), "%.6f", ImGuiInputTextFlags_ReadOnly);
+            ui::InputVec3("##zdir", z, "%.6f", ImGuiInputTextFlags_ReadOnly);
         };
         DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
         ui::EndMenu();
@@ -686,7 +686,7 @@ void osc::DrawCalculateOriginMenu(
             auto v = ToVec3(frame.findStationLocationInAnotherFrame(state, {0.0f, 0.0f, 0.0f}, otherFrame));
             ui::Text("origin");
             ui::SameLine();
-            ui::InputFloat3("##origin", value_ptr(v), "%.6f", ImGuiInputTextFlags_ReadOnly);
+            ui::InputVec3("##origin", v, "%.6f", ImGuiInputTextFlags_ReadOnly);
         };
         DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
         ui::EndMenu();
@@ -819,7 +819,7 @@ void osc::DrawCalculateRadiiMenu(
         auto v = ToVec3(ellipsoid.get_radii());
         ui::Text("radii");
         ui::SameLine();
-        ui::InputFloat3("##radii", value_ptr(v), "%.6f", ImGuiInputTextFlags_ReadOnly);
+        ui::InputVec3("##radii", v, "%.6f", ImGuiInputTextFlags_ReadOnly);
         ui::EndMenu();
     }
 }
@@ -847,15 +847,15 @@ void osc::DrawCalculateScaledRadiiDirectionsMenu(
 
             ui::Text("x axis");
             ui::SameLine();
-            ui::InputFloat3("##xdir", value_ptr(x), "%.6f", ImGuiInputTextFlags_ReadOnly);
+            ui::InputVec3("##xdir", x, "%.6f", ImGuiInputTextFlags_ReadOnly);
 
             ui::Text("y axis");
             ui::SameLine();
-            ui::InputFloat3("##ydir", value_ptr(y), "%.6f", ImGuiInputTextFlags_ReadOnly);
+            ui::InputVec3("##ydir", y, "%.6f", ImGuiInputTextFlags_ReadOnly);
 
             ui::Text("z axis");
             ui::SameLine();
-            ui::InputFloat3("##zdir", value_ptr(z), "%.6f", ImGuiInputTextFlags_ReadOnly);
+            ui::InputVec3("##zdir", z, "%.6f", ImGuiInputTextFlags_ReadOnly);
         };
         DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
         ui::EndMenu();

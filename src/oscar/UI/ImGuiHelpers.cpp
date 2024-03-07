@@ -711,7 +711,7 @@ bool osc::ui::InputAngle3(
     CStringView format)
 {
     Vec3 dvs = {Degrees{vs.x}.count(), Degrees{vs.y}.count(), Degrees{vs.z}.count()};
-    if (ui::InputFloat3(label, value_ptr(dvs), format.c_str()))
+    if (ui::InputVec3(label, dvs, format.c_str()))
     {
         vs = Vec<3, Degrees>{dvs};
         return true;

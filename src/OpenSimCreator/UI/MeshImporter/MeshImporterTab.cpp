@@ -895,7 +895,7 @@ private:
         if (e.canChangePosition())
         {
             Vec3 translation = e.getPos(mg);
-            if (ui::InputFloat3("Translation", value_ptr(translation), "%.6f"))
+            if (ui::InputVec3("Translation", translation, "%.6f"))
             {
                 mg.updByID(e.getID()).setPos(mg, translation);
             }
@@ -933,7 +933,7 @@ private:
         if (e.canChangeScale())
         {
             Vec3 scaleFactors = e.getScale(mg);
-            if (ui::InputFloat3("Scale", value_ptr(scaleFactors), "%.6f"))
+            if (ui::InputVec3("Scale", scaleFactors, "%.6f"))
             {
                 mg.updByID(e.getID()).setScale(mg, scaleFactors);
             }
