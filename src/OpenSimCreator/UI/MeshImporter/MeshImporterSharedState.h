@@ -18,6 +18,7 @@
 
 #include <IconsFontAwesome5.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <oscar/Graphics/Materials/MeshBasicMaterial.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/Geometries.h>
 #include <oscar/Graphics/Material.h>
@@ -78,10 +79,13 @@ namespace osc::mi
     // data that's shared between multiple UI states.
     class MeshImporterSharedState final {
     public:
-        MeshImporterSharedState() = default;
+        MeshImporterSharedState() :
+            MeshImporterSharedState{std::vector<std::filesystem::path>{}}
+        {}
 
         explicit MeshImporterSharedState(std::vector<std::filesystem::path> meshFiles)
         {
+            m_FloorMaterial.setTransparent(true);
             pushMeshLoadRequests(std::move(meshFiles));
         }
 
@@ -506,15 +510,8 @@ namespace osc::mi
             Transform t = getFloorTransform();
             t.scale *= 0.5f;
 
-            Material material
-            {
-                App::singleton<ShaderCache>(App::resource_loader())->load(
-                    "shaders/SolidColor.vert",
-                    "shaders/SolidColor.frag"
-                )
-            };
-            material.setColor("uColor", m_Colors.gridLines);
-            material.setTransparent(true);
+            auto props = MeshBasicMaterial::PropertyBlock{};
+            props.setColor(m_Colors.gridLines);
 
             DrawableThing dt;
             dt.id = MIIDs::Empty();
@@ -523,7 +520,8 @@ namespace osc::mi
             dt.transform = t;
             dt.color = m_Colors.gridLines;
             dt.flags = SceneDecorationFlags::None;
-            dt.maybeMaterial = std::move(material);
+            dt.maybeMaterial = m_FloorMaterial;
+            dt.maybePropertyBlock = props;
             return dt;
         }
 
@@ -1448,6 +1446,9 @@ namespace osc::mi
 
         // cone mesh used to render scene elements
         osc::Mesh m_ConeMesh = ConeGeometry::generate_mesh(1.0f, 2.0f, 16);
+
+        // material used to draw the floor grid
+        MeshBasicMaterial m_FloorMaterial;
 
         // main 3D scene camera
         PolarPerspectiveCamera m_3DSceneCamera = CreateDefaultCamera();

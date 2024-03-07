@@ -5,6 +5,7 @@
 #include <IconsFontAwesome5.h>
 #include <oscar/Graphics/Geometries/AABBGeometry.h>
 #include <oscar/Graphics/Geometries/SphereGeometry.h>
+#include <oscar/Graphics/Materials/MeshBasicMaterial.h>
 #include <oscar/Graphics/Camera.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/Graphics.h>
@@ -112,7 +113,7 @@ public:
         }
 
         // draw mesh
-        m_Material.setColor("uColor", m_IsMousedOver ? Color::green() : Color::red());
+        m_Material.setColor(m_IsMousedOver ? Color::green() : Color::red());
         m_Material.setDepthTested(true);
         Graphics::DrawMesh(m_Mesh, identity<Transform>(), m_Material, m_Camera);
 
@@ -123,7 +124,7 @@ public:
             m.setVerts(m_Tris);
             m.setIndices({0, 1, 2});
 
-            m_Material.setColor("uColor", Color::black());
+            m_Material.setColor(Color::black());
             m_Material.setDepthTested(false);
             Graphics::DrawMesh(m, identity<Transform>(), m_Material, m_Camera);
         }
@@ -131,7 +132,7 @@ public:
         if (m_UseBVH)
         {
             // draw BVH AABBs
-            m_Material.setColor("uColor", Color::black());
+            m_Material.setColor(Color::black());
             m_Material.setDepthTested(true);
             DrawBVH(
                 *App::singleton<SceneCache>(),
@@ -174,14 +175,8 @@ private:
 
     // rendering
     Camera m_Camera;
-    Material m_Material
-    {
-        Shader
-        {
-            App::slurp("shaders/SolidColor.vert"),
-            App::slurp("shaders/SolidColor.frag"),
-        },
-    };
+
+    MeshBasicMaterial m_Material;
     Mesh m_Mesh = LoadMeshViaSimTK(App::resourceFilepath("geometry/hat_ribs.vtp"));
     Mesh m_SphereMesh = SphereGeometry::generate_mesh(1.0f, 12, 12);
     Mesh m_CubeLinesMesh = AABBGeometry::generate_mesh();

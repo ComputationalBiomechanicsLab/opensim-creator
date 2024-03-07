@@ -19,6 +19,7 @@
 #include <oscar/Graphics/GraphicsContext.h>
 #include <oscar/Graphics/GraphicsHelpers.h>
 #include <oscar/Graphics/Material.h>
+#include <oscar/Graphics/Materials.h>
 #include <oscar/Graphics/MaterialPropertyBlock.h>
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Graphics/MeshIndicesView.h>

@@ -322,16 +322,6 @@ SceneRendererParams osc::CalcStandardDarkSceneRenderParams(
     return rv;
 }
 
-Material osc::CreateWireframeOverlayMaterial(
-    ShaderCache& cache)
-{
-    Material material{cache.load("oscar/shaders/SceneRenderer/SolidColor.vert", "oscar/shaders/SceneRenderer/SolidColor.frag")};
-    material.setColor("uDiffuseColor", {0.0f, 0.6f});
-    material.setWireframeMode(true);
-    material.setTransparent(true);
-    return material;
-}
-
 BVH osc::CreateTriangleBVHFromMesh(Mesh const& mesh)
 {
     BVH rv;

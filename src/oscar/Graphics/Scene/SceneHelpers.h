@@ -137,11 +137,6 @@ namespace osc
         Vec2 renderDims
     );
 
-    // returns a material that can draw a mesh's triangles in wireframe-style
-    Material CreateWireframeOverlayMaterial(
-        ShaderCache&
-    );
-
     // returns a triangle BVH for the given triangle mesh, or an empty BVH if the mesh is non-triangular or empty
     BVH CreateTriangleBVHFromMesh(Mesh const&);
 }

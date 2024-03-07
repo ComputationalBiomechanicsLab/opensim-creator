@@ -1,5 +1,6 @@
 #include "ShaderCache.h"
 
+#include <oscar/Graphics/Materials/MeshBasicMaterial.h>
 #include <oscar/Graphics/Shader.h>
 #include <oscar/Platform/ResourceLoader.h>
 #include <oscar/Platform/ResourcePath.h>
@@ -60,7 +61,11 @@ class osc::ShaderCache::Impl final {
 public:
     explicit Impl(ResourceLoader resourceLoader_) :
         m_Loader{std::move(resourceLoader_)}
-    {}
+    {
+        m_WireframeMaterial.setColor({0.0f, 0.6f});
+        m_WireframeMaterial.setWireframeMode(true);
+        m_WireframeMaterial.setTransparent(true);
+    }
 
     Shader const& load(
         ResourcePath const& vertexShader,
@@ -102,9 +107,21 @@ public:
             return guard->emplace_hint(it, key, Shader{vertexShaderSrc, geometryShaderSrc, fragmentShaderSrc})->second;
         }
     }
+
+    MeshBasicMaterial const& basic_material() const
+    {
+        return m_BasicMaterial;
+    }
+
+    MeshBasicMaterial const& wireframe_material() const
+    {
+        return m_WireframeMaterial;
+    }
 private:
     ResourceLoader m_Loader;
     SynchronizedValue<std::unordered_map<ShaderInputs, Shader>> m_Cache;
+    MeshBasicMaterial m_BasicMaterial;
+    MeshBasicMaterial m_WireframeMaterial;
 };
 
 
@@ -132,4 +149,14 @@ Shader const& osc::ShaderCache::load(
     ResourcePath const& fragmentShader)
 {
     return m_Impl->load(vertexShader, geometryShader, fragmentShader);
+}
+
+MeshBasicMaterial const& osc::ShaderCache::basic_material() const
+{
+    return m_Impl->basic_material();
+}
+
+MeshBasicMaterial const& osc::ShaderCache::wireframe_material() const
+{
+    return m_Impl->wireframe_material();
 }

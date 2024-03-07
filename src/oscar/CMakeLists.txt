@@ -92,6 +92,9 @@ add_library(oscar STATIC
     Graphics/Geometries/WireframeGeometry.cpp
     Graphics/Geometries/WireframeGeometry.h
 
+    Graphics/Materials/MeshBasicMaterial.cpp
+    Graphics/Materials/MeshBasicMaterial.h
+
     Graphics/OpenGL/CPUDataTypeOpenGLTraits.h
     Graphics/OpenGL/CPUImageFormatOpenGLTraits.h
     Graphics/OpenGL/Gl.cpp
@@ -137,6 +140,7 @@ add_library(oscar STATIC
     Graphics/GraphicsImplementation.cpp
     Graphics/Material.h
     Graphics/MaterialPropertyBlock.h
+    Graphics/Materials.h
     Graphics/MeshIndicesView.h
     Graphics/Mesh.h
     Graphics/MeshTopology.h

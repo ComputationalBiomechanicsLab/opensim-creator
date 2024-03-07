@@ -1,5 +1,6 @@
 #include "SceneRenderer.h"
 
+#include <oscar/Graphics/Materials/MeshBasicMaterial.h>
 #include <oscar/Graphics/AntiAliasingLevel.h>
 #include <oscar/Graphics/Camera.h>
 #include <oscar/Graphics/Color.h>
@@ -142,8 +143,8 @@ public:
 
         m_SceneColoredElementsMaterial{shaderCache.load("oscar/shaders/SceneRenderer/DrawColoredObjects.vert", "oscar/shaders/SceneRenderer/DrawColoredObjects.frag")},
         m_SceneTexturedElementsMaterial{shaderCache.load("oscar/shaders/SceneRenderer/DrawTexturedObjects.vert", "oscar/shaders/SceneRenderer/DrawTexturedObjects.frag")},
-        m_SolidColorMaterial{shaderCache.load("oscar/shaders/SceneRenderer/SolidColor.vert", "oscar/shaders/SceneRenderer/SolidColor.frag")},
-        m_WireframeMaterial{m_SolidColorMaterial},
+        m_SolidColorMaterial{shaderCache.basic_material()},
+        m_WireframeMaterial{shaderCache.wireframe_material()},
         m_EdgeDetectorMaterial{shaderCache.load("oscar/shaders/SceneRenderer/EdgeDetector.vert", "oscar/shaders/SceneRenderer/EdgeDetector.frag")},
         m_NormalsMaterial{shaderCache.load("oscar/shaders/SceneRenderer/NormalsVisualizer.vert", "oscar/shaders/SceneRenderer/NormalsVisualizer.geom", "oscar/shaders/SceneRenderer/NormalsVisualizer.frag")},
         m_DepthWritingMaterial{shaderCache.load("oscar/shaders/SceneRenderer/DepthMap.vert", "oscar/shaders/SceneRenderer/DepthMap.frag")},
@@ -153,11 +154,10 @@ public:
         m_SceneTexturedElementsMaterial.setVec2("uTextureScale", {200.0f, 200.0f});
         m_SceneTexturedElementsMaterial.setTransparent(true);
 
-        m_WireframeMaterial.setColor("uDiffuseColor", Color::black());
-        m_WireframeMaterial.setWireframeMode(true);
+        m_WireframeMaterial.setColor(Color::black());
 
-        m_RimsSelectedColor.setColor("uDiffuseColor", Color::red());
-        m_RimsHoveredColor.setColor("uDiffuseColor", {0.5, 0.0f, 0.0f, 1.0f});
+        m_RimsSelectedColor.setColor(Color::red());
+        m_RimsHoveredColor.setColor({0.5, 0.0f, 0.0f, 1.0f});
 
         m_EdgeDetectorMaterial.setTransparent(true);
         m_EdgeDetectorMaterial.setDepthTested(false);
@@ -470,13 +470,13 @@ private:
 
     Material m_SceneColoredElementsMaterial;
     Material m_SceneTexturedElementsMaterial;
-    Material m_SolidColorMaterial;
-    Material m_WireframeMaterial;
+    MeshBasicMaterial m_SolidColorMaterial;
+    MeshBasicMaterial m_WireframeMaterial;
     Material m_EdgeDetectorMaterial;
     Material m_NormalsMaterial;
     Material m_DepthWritingMaterial;
-    MaterialPropertyBlock m_RimsSelectedColor;
-    MaterialPropertyBlock m_RimsHoveredColor;
+    MeshBasicMaterial::PropertyBlock m_RimsSelectedColor;
+    MeshBasicMaterial::PropertyBlock m_RimsHoveredColor;
     Mesh m_QuadMesh;
     Texture2D m_ChequerTexture = GenerateChequeredFloorTexture();
     Camera m_Camera;

@@ -3,6 +3,7 @@
 #include <IconsFontAwesome5.h>
 #include <oscar/Formats/Image.h>
 #include <oscar/Graphics/Geometries/PlaneGeometry.h>
+#include <oscar/Graphics/Materials/MeshBasicMaterial.h>
 #include <oscar/Graphics/Camera.h>
 #include <oscar/Graphics/ColorSpace.h>
 #include <oscar/Graphics/Graphics.h>
@@ -314,7 +315,7 @@ public:
     Impl()
     {
         m_Material.setTexture("uTextureSampler", m_BoxTexture);
-        m_WireframeMaterial.setColor("uColor", {0.0f, 0.0f, 0.0f, 0.15f});
+        m_WireframeMaterial.setColor({0.0f, 0.0f, 0.0f, 0.15f});
         m_WireframeMaterial.setTransparent(true);
         m_WireframeMaterial.setWireframeMode(true);
         m_WireframeMaterial.setDepthTested(false);
@@ -513,7 +514,7 @@ private:
     Mesh m_InputGrid = PlaneGeometry::generate_mesh(2.0f, 2.0f, 50, 50);
     Mesh m_OutputGrid = m_InputGrid;
     Material m_Material{m_ShaderCache->load("shaders/TPS2D/Textured.vert", "shaders/TPS2D/Textured.frag")};
-    Material m_WireframeMaterial{m_ShaderCache->load("shaders/SolidColor.vert", "shaders/SolidColor.frag")};
+    MeshBasicMaterial m_WireframeMaterial;
 
     Camera m_Camera;
     std::optional<RenderTexture> m_InputRender;

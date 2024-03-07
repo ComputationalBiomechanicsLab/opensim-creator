@@ -69,7 +69,7 @@ public:
         m_Camera.setPosition({0.0f, 0.0f, -2.5f});
         m_Camera.setDirection({0.0f, 0.0f, 1.0f});
 
-        m_Material.setColor("uColor", Color::red());
+        m_Material.setColor(Color::red());
         m_Material.setWireframeMode(true);
     }
 
@@ -92,10 +92,7 @@ private:
 
     ResourceLoader m_Loader = App::resource_loader();
     Camera m_Camera;
-    Material m_Material{Shader{
-        m_Loader.slurp("oscar_demos/shaders/SolidColor.vert"),
-        m_Loader.slurp("oscar_demos/shaders/SolidColor.frag"),
-    }};
+    MeshBasicMaterial m_Material;
     Mesh m_MeshWithSubmeshes = GenerateMeshWithSubMeshes();
 };
 

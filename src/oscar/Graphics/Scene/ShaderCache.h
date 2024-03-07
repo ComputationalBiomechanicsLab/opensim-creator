@@ -4,6 +4,7 @@
 
 #include <memory>
 
+namespace osc { class MeshBasicMaterial; }
 namespace osc { class ResourceLoader; }
 namespace osc { class Shader; }
 
@@ -28,6 +29,9 @@ namespace osc
             ResourcePath const& geometryShader,
             ResourcePath const& fragmentShader
         );
+
+        MeshBasicMaterial const& basic_material() const;
+        MeshBasicMaterial const& wireframe_material() const;
 
     private:
         class Impl;

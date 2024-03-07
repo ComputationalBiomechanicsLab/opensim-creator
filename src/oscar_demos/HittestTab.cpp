@@ -78,13 +78,6 @@ namespace
         return rv;
     }
 
-    MaterialPropertyBlock GeneratePropertyBlock(Color const& color)
-    {
-        MaterialPropertyBlock p;
-        p.setColor("uColor", color);
-        return p;
-    }
-
     Line GetCameraRay(Camera const& camera)
     {
         return {
@@ -255,18 +248,15 @@ private:
 
     ResourceLoader m_Loader = App::resource_loader();
     Camera m_Camera;
-    Material m_Material{Shader{
-        m_Loader.slurp("oscar_demos/shaders/SolidColor.vert"),
-        m_Loader.slurp("oscar_demos/shaders/SolidColor.frag"),
-    }};
+    MeshBasicMaterial m_Material;
     Mesh m_SphereMesh = SphereGeometry::generate_mesh(1.0f, 12, 12);
     Mesh m_WireframeCubeMesh = AABBGeometry::generate_mesh();
     Mesh m_CircleMesh = CircleGeometry::generate_mesh(1.0f, 36);
     Mesh m_CrosshairMesh = GenerateCrosshairMesh();
     Mesh m_TriangleMesh = GenerateTriangleMesh();
-    MaterialPropertyBlock m_BlackColorMaterialProps = GeneratePropertyBlock({0.0f, 0.0f, 0.0f, 1.0f});
-    MaterialPropertyBlock m_BlueColorMaterialProps = GeneratePropertyBlock({0.0f, 0.0f, 1.0f, 1.0f});
-    MaterialPropertyBlock m_RedColorMaterialProps = GeneratePropertyBlock({1.0f, 0.0f, 0.0f, 1.0f});
+    MeshBasicMaterial::PropertyBlock m_BlackColorMaterialProps{Color{0.0f, 0.0f, 0.0f, 1.0f}};
+    MeshBasicMaterial::PropertyBlock m_BlueColorMaterialProps{Color{0.0f, 0.0f, 1.0f, 1.0f}};
+    MeshBasicMaterial::PropertyBlock m_RedColorMaterialProps{Color{1.0f, 0.0f, 0.0f, 1.0f}};
 
     // scene state
     std::vector<SceneSphere> m_SceneSpheres = GenerateSceneSpheres();
