@@ -30,8 +30,8 @@ namespace osc
             ResourcePath const& fragmentShader
         );
 
-        MeshBasicMaterial const& basic_material() const;
-        MeshBasicMaterial const& wireframe_material() const;
+        MeshBasicMaterial const& basic_material();
+        MeshBasicMaterial const& wireframe_material();
 
     private:
         class Impl;

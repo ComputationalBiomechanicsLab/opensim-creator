@@ -108,12 +108,12 @@ public:
         }
     }
 
-    MeshBasicMaterial const& basic_material() const
+    MeshBasicMaterial const& basic_material()
     {
         return m_BasicMaterial;
     }
 
-    MeshBasicMaterial const& wireframe_material() const
+    MeshBasicMaterial const& wireframe_material()
     {
         return m_WireframeMaterial;
     }
@@ -151,12 +151,12 @@ Shader const& osc::ShaderCache::load(
     return m_Impl->load(vertexShader, geometryShader, fragmentShader);
 }
 
-MeshBasicMaterial const& osc::ShaderCache::basic_material() const
+MeshBasicMaterial const& osc::ShaderCache::basic_material()
 {
     return m_Impl->basic_material();
 }
 
-MeshBasicMaterial const& osc::ShaderCache::wireframe_material() const
+MeshBasicMaterial const& osc::ShaderCache::wireframe_material()
 {
     return m_Impl->wireframe_material();
 }
