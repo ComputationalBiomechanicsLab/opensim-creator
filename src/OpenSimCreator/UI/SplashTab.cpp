@@ -16,7 +16,6 @@
 #include <oscar/Graphics/Scene/SceneCache.h>
 #include <oscar/Graphics/Scene/SceneRenderer.h>
 #include <oscar/Graphics/Scene/SceneRendererParams.h>
-#include <oscar/Graphics/Scene/ShaderCache.h>
 #include <oscar/Graphics/Texture2D.h>
 #include <oscar/Graphics/TextureFilterMode.h>
 #include <oscar/Maths/MathHelpers.h>
@@ -398,10 +397,8 @@ private:
 
     // for rendering the 3D scene
     PolarPerspectiveCamera m_Camera = GetSplashScreenDefaultPolarCamera();
-    SceneRenderer m_SceneRenderer
-    {
-        *App::singleton<SceneCache>(),
-        *App::singleton<ShaderCache>(App::resource_loader()),
+    SceneRenderer m_SceneRenderer{
+        *App::singleton<SceneCache>(App::resource_loader()),
     };
     SceneRendererParams m_LastSceneRendererParams = GetSplashScreenDefaultRenderParams(m_Camera);
 

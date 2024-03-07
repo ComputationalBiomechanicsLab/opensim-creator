@@ -114,8 +114,6 @@ add_library(oscar STATIC
     Graphics/Scene/SceneRenderer.h
     Graphics/Scene/SceneRendererParams.cpp
     Graphics/Scene/SceneRendererParams.h
-    Graphics/Scene/ShaderCache.cpp
-    Graphics/Scene/ShaderCache.h
 
     Graphics/Textures/ChequeredTexture.cpp
     Graphics/Textures/ChequeredTexture.h

@@ -7,7 +7,6 @@
 #include <oscar/Graphics/Scene/SceneHelpers.h>
 #include <oscar/Graphics/Scene/SceneRenderer.h>
 #include <oscar/Graphics/Scene/SceneRendererParams.h>
-#include <oscar/Graphics/Scene/ShaderCache.h>
 #include <oscar/Maths.h>
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/Log.h>
@@ -313,7 +312,7 @@ namespace
 
         return SceneDecoration
         {
-            App::singleton<SceneCache>()->get100x100GridMesh(),
+            App::singleton<SceneCache>(App::resource_loader())->get100x100GridMesh(),
             t,
             color,
             std::string{},
@@ -366,7 +365,7 @@ namespace
             t.position = neckMidpoint;
 
             out(SceneDecoration{
-                App::singleton<SceneCache>()->getCylinderMesh(),
+                App::singleton<SceneCache>(App::resource_loader())->getCylinderMesh(),
                 t,
                 arrow.color,
                 arrow.label,
@@ -382,7 +381,7 @@ namespace
             t.position = headMidpoint;
 
             out(SceneDecoration{
-                App::singleton<SceneCache>()->getConeMesh(),
+                App::singleton<SceneCache>(App::resource_loader())->getConeMesh(),
                 t,
                 arrow.color,
                 arrow.label,
@@ -569,8 +568,7 @@ private:
     PolarPerspectiveCamera m_Camera;
     SceneRendererParams m_LastRendererParams;
     SceneRenderer m_Renderer{
-        *App::singleton<SceneCache>(),
-        *App::singleton<ShaderCache>(App::resource_loader())
+        *App::singleton<SceneCache>(App::resource_loader()),
     };
     bool m_RenderIsMousedOver = false;
 

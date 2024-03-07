@@ -13,13 +13,9 @@ using namespace osc;
 
 class osc::CachedSceneRenderer::Impl final {
 public:
-    Impl(
-        SceneCache& meshCache,
-        ShaderCache& shaderCache) :
-
-        m_SceneRenderer{meshCache, shaderCache}
-    {
-    }
+    explicit Impl(SceneCache& cache) :
+        m_SceneRenderer{cache}
+    {}
 
     RenderTexture& render(
         std::span<SceneDecoration const> decorations,
@@ -46,12 +42,9 @@ private:
 
 // public API (PIMPL)
 
-osc::CachedSceneRenderer::CachedSceneRenderer(
-    SceneCache& meshCache,
-    ShaderCache& shaderCache) :
-    m_Impl{std::make_unique<Impl>(meshCache, shaderCache)}
-{
-}
+osc::CachedSceneRenderer::CachedSceneRenderer(SceneCache& cache) :
+    m_Impl{std::make_unique<Impl>(cache)}
+{}
 
 osc::CachedSceneRenderer::CachedSceneRenderer(CachedSceneRenderer&&) noexcept = default;
 osc::CachedSceneRenderer& osc::CachedSceneRenderer::operator=(CachedSceneRenderer&&) noexcept = default;

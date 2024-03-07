@@ -15,17 +15,13 @@ namespace osc { struct Rect; }
 namespace osc { class RenderTexture; }
 namespace osc { struct SceneDecoration; }
 namespace osc { class SceneCache; }
-namespace osc { class ShaderCache; }
 namespace osc { class IConstModelStatePair; }
 
 namespace osc
 {
     class CachedModelRenderer final {
     public:
-        CachedModelRenderer(
-            std::shared_ptr<SceneCache> const&,
-            ShaderCache&
-        );
+        explicit CachedModelRenderer(std::shared_ptr<SceneCache> const&);
         CachedModelRenderer(CachedModelRenderer const&) = delete;
         CachedModelRenderer(CachedModelRenderer&&) noexcept;
         CachedModelRenderer& operator=(CachedModelRenderer const&) = delete;

@@ -28,7 +28,6 @@
 #include <oscar/Graphics/Scene/SceneHelpers.h>
 #include <oscar/Graphics/Scene/SceneRenderer.h>
 #include <oscar/Graphics/Scene/SceneRendererParams.h>
-#include <oscar/Graphics/Scene/ShaderCache.h>
 #include <oscar/Maths/Angle.h>
 #include <oscar/Maths/CollisionTests.h>
 #include <oscar/Maths/Line.h>
@@ -516,7 +515,7 @@ namespace osc::mi
             DrawableThing dt;
             dt.id = MIIDs::Empty();
             dt.groupId = MIIDs::Empty();
-            dt.mesh = App::singleton<SceneCache>()->get100x100GridMesh();
+            dt.mesh = App::singleton<SceneCache>(App::resource_loader())->get100x100GridMesh();
             dt.transform = t;
             dt.color = m_Colors.gridLines;
             dt.flags = SceneDecorationFlags::None;
@@ -558,7 +557,7 @@ namespace osc::mi
 
         MeshImporterHover doHovertest(std::vector<DrawableThing> const& drawables) const
         {
-            auto cache = App::singleton<SceneCache>();
+            auto cache = App::singleton<SceneCache>(App::resource_loader());
 
             Rect const sceneRect = get3DSceneRect();
             Vec2 const mousePos = ui::GetMousePos();
@@ -1263,7 +1262,7 @@ namespace osc::mi
                 DrawableThing& originCube = appendOut.emplace_back();
                 originCube.id = logicalID;
                 originCube.groupId = groupID;
-                originCube.mesh = App::singleton<SceneCache>()->getBrickMesh();
+                originCube.mesh = App::singleton<SceneCache>(App::resource_loader())->getBrickMesh();
                 originCube.transform = scaled;
                 originCube.color = Color::white();
                 originCube.flags = SceneDecorationFlags::None;
@@ -1292,7 +1291,7 @@ namespace osc::mi
                 DrawableThing& legCube = appendOut.emplace_back();
                 legCube.id = logicalID;
                 legCube.groupId = groupID;
-                legCube.mesh = App::singleton<SceneCache>()->getConeMesh();
+                legCube.mesh = App::singleton<SceneCache>(App::resource_loader())->getConeMesh();
                 legCube.transform = t;
                 legCube.color = color;
                 legCube.flags = SceneDecorationFlags::None;
@@ -1458,8 +1457,7 @@ namespace osc::mi
 
         // renderer that draws the scene
         SceneRenderer m_SceneRenderer{
-            *App::singleton<SceneCache>(),
-            *App::singleton<ShaderCache>(App::resource_loader())
+            *App::singleton<SceneCache>(App::resource_loader()),
         };
 
         // COLORS

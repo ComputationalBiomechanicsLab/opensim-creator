@@ -1,18 +1,23 @@
 #pragma once
 
 #include <oscar/Graphics/Mesh.h>
+#include <oscar/Platform/ResourcePath.h>
 
 #include <functional>
 #include <memory>
 #include <string>
 
 namespace osc { class BVH; }
+namespace osc { class MeshBasicMaterial; }
+namespace osc { class ResourceLoader; }
+namespace osc { class Shader; }
 
 namespace osc
 {
     class SceneCache final {
     public:
         SceneCache();
+        explicit SceneCache(ResourceLoader const&);
         SceneCache(SceneCache const&) = delete;
         SceneCache(SceneCache&&) noexcept;
         SceneCache& operator=(SceneCache const&) = delete;
@@ -39,6 +44,20 @@ namespace osc
         Mesh getTorusMesh(float torusCenterToTubeCenterRadius, float tubeRadius);
 
         BVH const& getBVH(Mesh const&);
+
+        Shader const& load(
+            ResourcePath const& vertexShader,
+            ResourcePath const& fragmentShader
+        );
+
+        Shader const& load(
+            ResourcePath const& vertexShader,
+            ResourcePath const& geometryShader,
+            ResourcePath const& fragmentShader
+        );
+
+        MeshBasicMaterial const& basic_material();
+        MeshBasicMaterial const& wireframe_material();
 
     private:
         class Impl;

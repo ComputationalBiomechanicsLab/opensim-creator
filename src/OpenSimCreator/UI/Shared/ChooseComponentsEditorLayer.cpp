@@ -17,7 +17,6 @@
 #include <oscar/Graphics/Scene/SceneDecorationFlags.h>
 #include <oscar/Graphics/Scene/SceneHelpers.h>
 #include <oscar/Graphics/Scene/SceneRenderer.h>
-#include <oscar/Graphics/Scene/ShaderCache.h>
 #include <oscar/Maths/BVH.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Vec2.h>
@@ -48,7 +47,7 @@ namespace
         {
         }
 
-        std::shared_ptr<SceneCache> meshCache = App::singleton<SceneCache>();
+        std::shared_ptr<SceneCache> meshCache = App::singleton<SceneCache>(App::resource_loader());
         std::shared_ptr<UndoableModelStatePair> model;
         ChooseComponentsEditorLayerParameters popupParams;
         ModelRendererParams renderParams;
@@ -137,7 +136,7 @@ public:
         ChooseComponentsEditorLayerParameters parameters_) :
 
         m_State{std::move(model_), std::move(parameters_)},
-        m_Renderer{*App::singleton<SceneCache>(), *App::singleton<ShaderCache>(App::resource_loader())}
+        m_Renderer{*App::singleton<SceneCache>(App::resource_loader())}
     {}
 
     bool handleKeyboardInputs(

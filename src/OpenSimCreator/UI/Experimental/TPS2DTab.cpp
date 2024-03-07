@@ -9,7 +9,6 @@
 #include <oscar/Graphics/Graphics.h>
 #include <oscar/Graphics/Material.h>
 #include <oscar/Graphics/Mesh.h>
-#include <oscar/Graphics/Scene/ShaderCache.h>
 #include <oscar/Maths/MatFunctions.h>
 #include <oscar/Maths/Mat4.h>
 #include <oscar/Maths/MathHelpers.h>
@@ -499,7 +498,6 @@ private:
     // tab data
     UID m_TabID;
     ResourceLoader m_Loader = App::resource_loader();
-    std::shared_ptr<ShaderCache> m_ShaderCache = App::singleton<ShaderCache>(m_Loader);
 
     // TPS algorithm state
     GUIMouseState m_MouseState = GUIInitialMouseState{};
@@ -513,7 +511,7 @@ private:
     );
     Mesh m_InputGrid = PlaneGeometry{2.0f, 2.0f, 50, 50};
     Mesh m_OutputGrid = m_InputGrid;
-    Material m_Material{m_ShaderCache->load("shaders/TPS2D/Textured.vert", "shaders/TPS2D/Textured.frag")};
+    Material m_Material{Shader{m_Loader.slurp("shaders/TPS2D/Textured.vert"), m_Loader.slurp("shaders/TPS2D/Textured.frag")}};
     MeshBasicMaterial m_WireframeMaterial;
 
     Camera m_Camera;

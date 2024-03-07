@@ -3,7 +3,6 @@
 #include <oscar/Graphics/Scene/SceneCache.h>
 #include <oscar/Graphics/Scene/SceneDecoration.h>
 #include <oscar/Graphics/Scene/SceneRenderer.h>
-#include <oscar/Graphics/Scene/ShaderCache.h>
 #include <oscar/Platform/App.h>
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
@@ -45,8 +44,7 @@ public:
 private:
     SceneRenderer m_Renderer
     {
-        *App::singleton<SceneCache>(),
-        *App::singleton<ShaderCache>(App::resource_loader()),
+        *App::singleton<SceneCache>(App::resource_loader()),
     };
     bool m_IsHovered = false;
     bool m_IsLeftClicked = false;

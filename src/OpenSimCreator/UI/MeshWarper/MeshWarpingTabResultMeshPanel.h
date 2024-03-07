@@ -12,7 +12,6 @@
 #include <oscar/Graphics/Scene/SceneCache.h>
 #include <oscar/Graphics/Scene/SceneDecoration.h>
 #include <oscar/Graphics/Scene/SceneRendererParams.h>
-#include <oscar/Graphics/Scene/ShaderCache.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/PolarPerspectiveCamera.h>
 #include <oscar/Maths/Vec2.h>
@@ -277,10 +276,8 @@ namespace osc
 
         std::shared_ptr<MeshWarpingTabSharedState> m_State;
         PolarPerspectiveCamera m_Camera = CreateCameraFocusedOn(m_State->getResultMesh().getBounds());
-        CachedSceneRenderer m_CachedRenderer
-        {
-            *App::singleton<SceneCache>(),
-            *App::singleton<ShaderCache>(App::resource_loader()),
+        CachedSceneRenderer m_CachedRenderer{
+            *App::singleton<SceneCache>(App::resource_loader()),
         };
         ui::ImGuiItemHittestResult m_LastTextureHittestResult;
         bool m_WireframeMode = true;

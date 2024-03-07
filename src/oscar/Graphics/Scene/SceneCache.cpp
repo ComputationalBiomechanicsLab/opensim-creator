@@ -1,13 +1,19 @@
 #include "SceneCache.h"
 
 #include <oscar/Graphics/Geometries.h>
+#include <oscar/Graphics/Materials/MeshBasicMaterial.h>
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Graphics/Scene/SceneHelpers.h>
+#include <oscar/Graphics/Shader.h>
 #include <oscar/Maths/BVH.h>
+#include <oscar/Platform/FilesystemResourceLoader.h>
 #include <oscar/Platform/Log.h>
+#include <oscar/Platform/ResourceLoader.h>
+#include <oscar/Platform/ResourcePath.h>
 #include <oscar/Utils/HashHelpers.h>
 #include <oscar/Utils/SynchronizedValue.h>
 
+#include <cstddef>
 #include <functional>
 #include <memory>
 #include <string>
@@ -36,6 +42,36 @@ namespace
         float tubeRadius;
     };
 
+    // parameters for a shader, to be used as a key into the shader cache
+    struct ShaderInputs final {
+
+        ShaderInputs(
+            ResourcePath vertexShaderPath_,
+            ResourcePath fragmentShaderPath_) :
+
+            vertexShaderPath{std::move(vertexShaderPath_)},
+            fragmentShaderPath{std::move(fragmentShaderPath_)}
+        {}
+
+        ShaderInputs(
+            ResourcePath vertexShaderPath_,
+            ResourcePath geometryShaderPath_,
+            ResourcePath fragmentShaderPath_) :
+
+            vertexShaderPath{std::move(vertexShaderPath_)},
+            geometryShaderPath{std::move(geometryShaderPath_)},
+            fragmentShaderPath{std::move(fragmentShaderPath_)}
+        {}
+
+        friend bool operator==(ShaderInputs const&, ShaderInputs const&) = default;
+
+        ResourcePath vertexShaderPath;
+        ResourcePath geometryShaderPath;
+        ResourcePath fragmentShaderPath;
+
+        size_t hash = HashOf(vertexShaderPath, geometryShaderPath, fragmentShaderPath);
+    };
+
     Mesh GenerateYToYLineMesh()
     {
         Mesh rv;
@@ -48,6 +84,15 @@ namespace
 }
 
 template<>
+struct std::hash<ShaderInputs> final {
+
+    size_t operator()(ShaderInputs const& inputs) const
+    {
+        return inputs.hash;
+    }
+};
+
+template<>
 struct std::hash<TorusParameters> final {
     size_t operator()(TorusParameters const& p) const
     {
@@ -57,6 +102,71 @@ struct std::hash<TorusParameters> final {
 
 class osc::SceneCache::Impl final {
 public:
+    Impl() :
+        Impl{make_resource_loader<FilesystemResourceLoader>(".")}
+    {}
+
+    explicit Impl(ResourceLoader resourceLoader_) :
+        m_Loader{std::move(resourceLoader_)}
+    {}
+
+    Shader const& load(
+        ResourcePath const& vertexShader,
+        ResourcePath const& fragmentShader)
+    {
+        ShaderInputs const key{vertexShader, fragmentShader};
+
+        auto guard = m_Cache.lock();
+        auto const it = guard->find(key);
+        if (it != guard->end())
+        {
+            return it->second;
+        }
+        else
+        {
+            std::string const vertexShaderSrc = m_Loader.slurp(key.vertexShaderPath);
+            std::string const fragmentShaderSrc = m_Loader.slurp(key.fragmentShaderPath);
+            return guard->emplace_hint(it, key, Shader{vertexShaderSrc, fragmentShaderSrc})->second;
+        }
+    }
+    Shader const& load(
+        ResourcePath const& vertexShader,
+        ResourcePath const& geometryShader,
+        ResourcePath const& fragmentShader)
+    {
+        ShaderInputs const key{vertexShader, geometryShader, fragmentShader};
+
+        auto guard = m_Cache.lock();
+        auto const it = guard->find(key);
+        if (it != guard->end())
+        {
+            return it->second;
+        }
+        else
+        {
+            std::string const vertexShaderSrc = m_Loader.slurp(key.vertexShaderPath);
+            std::string const geometryShaderSrc = m_Loader.slurp(key.geometryShaderPath);
+            std::string const fragmentShaderSrc = m_Loader.slurp(key.fragmentShaderPath);
+            return guard->emplace_hint(it, key, Shader{vertexShaderSrc, geometryShaderSrc, fragmentShaderSrc})->second;
+        }
+    }
+
+    MeshBasicMaterial const& basic_material()
+    {
+        return m_BasicMaterial.emplace();
+    }
+
+    MeshBasicMaterial const& wireframe_material()
+    {
+        if (!m_WireframeMaterial) {
+            m_WireframeMaterial.emplace();
+            m_WireframeMaterial->setColor({0.0f, 0.6f});
+            m_WireframeMaterial->setWireframeMode(true);
+            m_WireframeMaterial->setTransparent(true);
+        }
+        return *m_WireframeMaterial;
+    }
+
     Mesh sphere = SphereGeometry{1.0f, 16, 16};
     Mesh circle = CircleGeometry{1.0f, 16};
     Mesh cylinder = CylinderGeometry{1.0f, 1.0f, 2.0f, 16};
@@ -72,12 +182,21 @@ public:
     SynchronizedValue<std::unordered_map<TorusParameters, Mesh>> torusCache;
     SynchronizedValue<std::unordered_map<std::string, Mesh>> fileCache;
     SynchronizedValue<std::unordered_map<Mesh, std::unique_ptr<BVH>>> bvhCache;
+
+    // shader stuff
+    ResourceLoader m_Loader;
+    SynchronizedValue<std::unordered_map<ShaderInputs, Shader>> m_Cache;
+    std::optional<MeshBasicMaterial> m_BasicMaterial;
+    std::optional<MeshBasicMaterial> m_WireframeMaterial;
 };
 
 osc::SceneCache::SceneCache() :
     m_Impl{std::make_unique<Impl>()}
-{
-}
+{}
+
+osc::SceneCache::SceneCache(ResourceLoader const& loader_) :
+    m_Impl{std::make_unique<Impl>(loader_)}
+{}
 
 osc::SceneCache::SceneCache(SceneCache&&) noexcept = default;
 osc::SceneCache& osc::SceneCache::operator=(SceneCache&&) noexcept = default;
@@ -192,4 +311,29 @@ BVH const& osc::SceneCache::getBVH(Mesh const& mesh)
         it->second = std::make_unique<BVH>(CreateTriangleBVHFromMesh(mesh));
     }
     return *it->second;
+}
+
+Shader const& osc::SceneCache::load(
+    ResourcePath const& vertexShader,
+    ResourcePath const& fragmentShader)
+{
+    return m_Impl->load(vertexShader, fragmentShader);
+}
+
+Shader const& osc::SceneCache::load(
+    ResourcePath const& vertexShader,
+    ResourcePath const& geometryShader,
+    ResourcePath const& fragmentShader)
+{
+    return m_Impl->load(vertexShader, geometryShader, fragmentShader);
+}
+
+MeshBasicMaterial const& osc::SceneCache::basic_material()
+{
+    return m_Impl->basic_material();
+}
+
+MeshBasicMaterial const& osc::SceneCache::wireframe_material()
+{
+    return m_Impl->wireframe_material();
 }

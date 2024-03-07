@@ -516,7 +516,7 @@ bool osc::ActionCopyModelPathToClipboard(UndoableModelStatePair const& uim)
 bool osc::ActionAutoscaleSceneScaleFactor(UndoableModelStatePair& uim)
 {
     float const sf = GetRecommendedScaleFactor(
-        *App::singleton<SceneCache>(),
+        *App::singleton<SceneCache>(App::resource_loader()),
         uim.getModel(),
         uim.getState(),
         OpenSimDecorationOptions{}

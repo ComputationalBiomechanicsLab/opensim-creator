@@ -108,12 +108,9 @@ namespace
 
 class osc::CachedModelRenderer::Impl final {
 public:
-    Impl(
-        std::shared_ptr<SceneCache> const& meshCache,
-        ShaderCache& shaderCache) :
-
-        m_DecorationCache{meshCache},
-        m_Renderer{*meshCache, shaderCache}
+    Impl(std::shared_ptr<SceneCache> const& cache) :
+        m_DecorationCache{cache},
+        m_Renderer{*cache}
     {}
 
     void autoFocusCamera(
@@ -195,13 +192,9 @@ private:
 
 // public API (PIMPL)
 
-osc::CachedModelRenderer::CachedModelRenderer(
-    std::shared_ptr<SceneCache> const& meshCache,
-    ShaderCache& shaderCache) :
-
-    m_Impl{std::make_unique<Impl>(meshCache, shaderCache)}
-{
-}
+osc::CachedModelRenderer::CachedModelRenderer(std::shared_ptr<SceneCache> const& cache) :
+    m_Impl{std::make_unique<Impl>(cache)}
+{}
 osc::CachedModelRenderer::CachedModelRenderer(CachedModelRenderer&&) noexcept = default;
 osc::CachedModelRenderer& osc::CachedModelRenderer::operator=(CachedModelRenderer&&) noexcept = default;
 osc::CachedModelRenderer::~CachedModelRenderer() noexcept = default;

@@ -6,7 +6,6 @@
 #include <memory>
 #include <span>
 
-namespace osc { class ShaderCache; }
 namespace osc { struct SceneDecoration; }
 namespace osc { class SceneCache; }
 namespace osc { struct SceneRendererParams; }
@@ -16,7 +15,7 @@ namespace osc
 {
     class SceneRenderer final {
     public:
-        SceneRenderer(SceneCache&, ShaderCache&);
+        explicit SceneRenderer(SceneCache&);
         SceneRenderer(SceneRenderer const&);
         SceneRenderer(SceneRenderer&&) noexcept;
         SceneRenderer& operator=(SceneRenderer const&) = delete;

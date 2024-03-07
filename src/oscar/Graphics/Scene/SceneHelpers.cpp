@@ -8,7 +8,6 @@
 #include <oscar/Graphics/Scene/SceneCache.h>
 #include <oscar/Graphics/Scene/SceneDecoration.h>
 #include <oscar/Graphics/Scene/SceneRendererParams.h>
-#include <oscar/Graphics/Scene/ShaderCache.h>
 #include <oscar/Maths/AABB.h>
 #include <oscar/Maths/Angle.h>
 #include <oscar/Maths/BVH.h>

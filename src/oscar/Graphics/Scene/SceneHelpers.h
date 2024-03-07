@@ -24,7 +24,6 @@ namespace osc { struct PolarPerspectiveCamera; }
 namespace osc { struct Rect; }
 namespace osc { struct LineSegment; }
 namespace osc { class SceneCache; }
-namespace osc { class ShaderCache; }
 namespace osc { struct Transform; }
 
 namespace osc

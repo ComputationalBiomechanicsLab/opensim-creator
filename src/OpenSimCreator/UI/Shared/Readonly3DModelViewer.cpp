@@ -6,7 +6,6 @@
 
 #include <oscar/Graphics/Scene/SceneCache.h>
 #include <oscar/Graphics/Scene/SceneCollision.h>
-#include <oscar/Graphics/Scene/ShaderCache.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Platform/App.h>
 #include <oscar/UI/IconCache.h>
@@ -180,10 +179,8 @@ private:
 
     // rendering-related data
     ModelRendererParams m_Params;
-    CachedModelRenderer m_CachedModelRenderer
-    {
-        App::singleton<SceneCache>(),
-        *App::singleton<ShaderCache>(App::resource_loader()),
+    CachedModelRenderer m_CachedModelRenderer{
+        App::singleton<SceneCache>(App::resource_loader()),
     };
 
     // only available after rendering the first frame
