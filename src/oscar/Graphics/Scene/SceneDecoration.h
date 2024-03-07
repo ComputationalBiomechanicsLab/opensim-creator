@@ -25,14 +25,14 @@ namespace osc
             return copy;
         }
 
-        SceneDecoration withTransform(Transform const& transform_) const
+        SceneDecoration with_transform(Transform const& transform_) const
         {
             SceneDecoration copy{*this};
             copy.transform = transform_;
             return copy;
         }
 
-        SceneDecoration withColor(Color const& color_) const
+        SceneDecoration with_color(Color const& color_) const
         {
             SceneDecoration copy{*this};
             copy.color = color_;

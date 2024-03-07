@@ -23,7 +23,7 @@ namespace osc
         using iterator = value_type*;
         using const_iterator = value_type const*;
 
-        static constexpr Color halfGrey()
+        static constexpr Color half_grey()
         {
             return {0.5f, 0.5f, 0.5f};
         }
@@ -38,7 +38,7 @@ namespace osc
             return {0.0f, 0.0f, 1.0f};
         }
 
-        static constexpr Color mutedBlue()
+        static constexpr Color muted_blue()
         {
             return {0.06f, 0.53f, 0.98f};
         }
@@ -53,12 +53,12 @@ namespace osc
             return {0.0f, 1.0f, 0.0f};
         }
 
-        static constexpr Color mutedGreen()
+        static constexpr Color muted_green()
         {
             return {0.5f, 1.0f, 0.5f};
         }
 
-        static constexpr Color darkGreen()
+        static constexpr Color dark_green()
         {
             return {0.0f, 0.6f, 0.0f};
         }
@@ -68,7 +68,7 @@ namespace osc
             return {1.0f, 0.0f, 0.0f};
         }
 
-        static constexpr Color mutedRed()
+        static constexpr Color muted_red()
         {
             return {1.0f, 0.5f, 0.5f};
         }
@@ -107,38 +107,31 @@ namespace osc
 
         explicit constexpr Color(value_type v) :
             r{v}, g{v}, b{v}, a(1.0f)
-        {
-        }
+        {}
 
         constexpr Color(value_type v, value_type alpha) :
             r{v}, g{v}, b{v}, a{alpha}
-        {
-        }
+        {}
 
         explicit constexpr Color(Vec<3, value_type> const& v) :
             r{v.x}, g{v.y}, b{v.z}, a(1.0f)
-        {
-        }
+        {}
 
         constexpr Color(Vec<3, value_type> const& v, value_type alpha) :
             r{v.x}, g{v.y}, b{v.z}, a{alpha}
-        {
-        }
+        {}
 
         explicit constexpr Color(Vec<4, value_type> const& v) :
             r{v.x}, g{v.y}, b{v.z}, a{v.w}
-        {
-        }
+        {}
 
         constexpr Color(value_type r_, value_type g_, value_type b_, value_type a_) :
             r{r_}, g{g_}, b{b_}, a{a_}
-        {
-        }
+        {}
 
         constexpr Color(value_type r_, value_type g_, value_type b_) :
             r{r_}, g{g_}, b{b_}, a(1.0f)
-        {
-        }
+        {}
 
         constexpr reference operator[](size_type i)
         {
@@ -211,7 +204,7 @@ namespace osc
             };
         }
 
-        constexpr Color withAlpha(value_type a_) const
+        constexpr Color with_alpha(value_type a_) const
         {
             return Color{r, g, b, a_};
         }

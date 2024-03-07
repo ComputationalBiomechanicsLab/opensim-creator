@@ -274,8 +274,8 @@ private:
     {
         OSC_ASSERT(m_OutputExtractor.getOutputType() == OutputType::Float);
 
-        ImU32 const currentTimeLineColor = ui::ToImU32(Color::yellow().withAlpha(0.6f));
-        ImU32 const hoverTimeLineColor = ui::ToImU32(Color::yellow().withAlpha(0.3f));
+        ImU32 const currentTimeLineColor = ui::ToImU32(Color::yellow().with_alpha(0.6f));
+        ImU32 const hoverTimeLineColor = ui::ToImU32(Color::yellow().with_alpha(0.3f));
 
         // collect data
         ptrdiff_t const nReports = sim.getNumReports();

@@ -61,7 +61,7 @@ private:
     {
         ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {2.0f, 0.0f});
 
-        ui::PushStyleColor(ImGuiCol_Text, Color::darkGreen());
+        ui::PushStyleColor(ImGuiCol_Text, Color::dark_green());
         if (ui::Button(ICON_FA_PLAY))
         {
             ActionStartSimulatingModel(m_MainUIStateAPI, *m_Model);

@@ -193,7 +193,7 @@ namespace osc::mi
         void drawCancelButton()
         {
             ui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
-            ui::PushStyleColor(ImGuiCol_Button, Color::halfGrey());
+            ui::PushStyleColor(ImGuiCol_Button, Color::half_grey());
 
             CStringView const text = ICON_FA_ARROW_LEFT " Cancel (ESC)";
             Vec2 const margin = {25.0f, 35.0f};

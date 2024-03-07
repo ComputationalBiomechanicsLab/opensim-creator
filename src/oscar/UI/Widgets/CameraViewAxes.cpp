@@ -106,7 +106,7 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
             ui::ItemSize(circleBounds);
             if (ui::ItemAdd(circleBounds, id)) {
                 bool const hovered = ui::ItemHoverable(circleBounds, id, ui::GetItemFlags());
-                ImU32 const color = ui::ToImU32(hovered ? Color::white() : baseColor.withAlpha(0.3f));
+                ImU32 const color = ui::ToImU32(hovered ? Color::white() : baseColor.with_alpha(0.3f));
 
                 drawlist.AddCircleFilled(circ.origin, circ.radius, color);
 

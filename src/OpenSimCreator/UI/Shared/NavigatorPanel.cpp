@@ -337,7 +337,7 @@ private:
             }
             else
             {
-                ui::PushStyleColor(ImGuiCol_Text, Color::halfGrey());
+                ui::PushStyleColor(ImGuiCol_Text, Color::half_grey());
                 ++styles;
             }
 

@@ -472,7 +472,7 @@ namespace
         auto const emitTendonCylinder = [&](Vec3 const& p1, Vec3 const& p2)
         {
             Transform const xform = YToYCylinderToSegmentTransform({p1, p2}, tendonUiRadius);
-            rs.consume(muscle, tendonCylinderPrototype.withTransform(xform));
+            rs.consume(muscle, tendonCylinderPrototype.with_transform(xform));
         };
         auto emitFiberSphere = [&](GeometryPathPoint const& p)
         {
@@ -486,7 +486,7 @@ namespace
         auto emitFiberCylinder = [&](Vec3 const& p1, Vec3 const& p2)
         {
             Transform const xform = YToYCylinderToSegmentTransform({p1, p2}, fiberUiRadius);
-            rs.consume(muscle, fiberCylinderPrototype.withTransform(xform));
+            rs.consume(muscle, fiberCylinderPrototype.with_transform(xform));
         };
 
         if (pps.size() == 1)

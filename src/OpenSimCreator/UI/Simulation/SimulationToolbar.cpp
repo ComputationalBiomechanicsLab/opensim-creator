@@ -28,9 +28,9 @@ namespace
         {
         case SimulationStatus::Initializing:
         case SimulationStatus::Running:
-            return Color::mutedBlue();
+            return Color::muted_blue();
         case SimulationStatus::Completed:
-            return Color::darkGreen();
+            return Color::dark_green();
         case SimulationStatus::Cancelled:
         case SimulationStatus::Error:
             return Color::red();

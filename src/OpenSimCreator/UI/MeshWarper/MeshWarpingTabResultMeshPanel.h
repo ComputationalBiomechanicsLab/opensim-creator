@@ -243,7 +243,7 @@ namespace osc
             {
                 decorationConsumer({
                     .mesh = m_State->getScratch().destinationMesh,
-                    .color = Color::red().withAlpha(0.5f),
+                    .color = Color::red().with_alpha(0.5f),
                 });
             }
 

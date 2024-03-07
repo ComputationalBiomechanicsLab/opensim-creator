@@ -308,7 +308,7 @@ private:
         }
         else
         {
-            ui::PushStyleColor(ImGuiCol_Text, Color::halfGrey());
+            ui::PushStyleColor(ImGuiCol_Text, Color::half_grey());
             ui::TextWrapped("No files opened recently. Try:");
             ui::BulletText("Creating a new model (Ctrl+N)");
             ui::BulletText("Opening an existing model (Ctrl+O)");

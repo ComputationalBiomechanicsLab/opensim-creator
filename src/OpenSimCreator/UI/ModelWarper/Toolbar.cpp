@@ -35,7 +35,7 @@ void osc::mow::Toolbar::drawWarpModelButton()
     if (!m_State->canWarpModel()) {
         ui::BeginDisabled();
     }
-    ui::PushStyleColor(ImGuiCol_Button, Color::darkGreen());
+    ui::PushStyleColor(ImGuiCol_Button, Color::dark_green());
     if (ui::Button(ICON_FA_PLAY " Warp Model")) {
         m_State->actionWarpModelAndOpenInModelEditor();
     }
@@ -51,7 +51,7 @@ void osc::mow::Toolbar::drawWarpModelButton()
         ui::TooltipDescriptionText("Warp the model and open the warped model in the model editor");
         if (!m_State->canWarpModel()) {
             ui::TooltipDescriptionSpacer();
-            ui::PushStyleColor(ImGuiCol_Text, Color::mutedRed());
+            ui::PushStyleColor(ImGuiCol_Text, Color::muted_red());
             ui::Text("Cannot warp the model right now: there are errors that need to be fixed. See the checklist panel.");
             ui::PopStyleColor();
         }

@@ -150,7 +150,7 @@ namespace osc
             }
             else if (isHovered)
             {
-                dl.AddCircle(circle.origin, circle.radius + thickness, ui::ToImU32(Color::yellow().withAlpha(0.5f)), 0, thickness);
+                dl.AddCircle(circle.origin, circle.radius + thickness, ui::ToImU32(Color::yellow().with_alpha(0.5f)), 0, thickness);
             }
         }
 
@@ -162,7 +162,7 @@ namespace osc
             Vec2 const direction = normalize(dest.origin - src.origin);
             Vec2 const start = src.origin  + (src.radius  + Vec2{pad, 0.0f})*direction;
             Vec2 const end   = dest.origin - (dest.radius + Vec2{pad, 0.0f})*direction;
-            ImU32 const color = ui::ToImU32(Color::halfGrey());
+            ImU32 const color = ui::ToImU32(Color::half_grey());
             ui::GetWindowDrawList()->AddLine(start, end, color);
 
             // draw triangle on end of connecting line to form an arrow
@@ -240,7 +240,7 @@ namespace osc
                     return m_State->unpairedLandmarkColor;
                 }
             }
-            return Color::halfGrey();
+            return Color::half_grey();
         }
 
         ImGuiTableFlags getTableFlags() const

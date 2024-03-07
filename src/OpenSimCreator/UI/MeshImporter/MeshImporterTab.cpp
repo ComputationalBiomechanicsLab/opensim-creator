@@ -1991,7 +1991,7 @@ private:
         };
 
         ui::SetCursorScreenPos(buttonTopLeft);
-        ui::PushStyleColor(ImGuiCol_Button, Color::darkGreen());
+        ui::PushStyleColor(ImGuiCol_Button, Color::dark_green());
         if (ui::Button(mainButtonText))
         {
             m_Shared->tryCreateOutputModel();

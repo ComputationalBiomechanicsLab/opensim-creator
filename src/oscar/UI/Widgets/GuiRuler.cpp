@@ -42,8 +42,8 @@ void osc::GuiRuler::onDraw(
 
     Vec2 mouseLoc = ui::GetMousePos();
     ImDrawList& dl = *ui::GetWindowDrawList();
-    ImU32 circleMousedOverNothingColor = ui::ToImU32(Color::red().withAlpha(0.6f));
-    ImU32 circleColor = ui::ToImU32(Color::white().withAlpha(0.8f));
+    ImU32 circleMousedOverNothingColor = ui::ToImU32(Color::red().with_alpha(0.6f));
+    ImU32 circleColor = ui::ToImU32(Color::white().with_alpha(0.8f));
     ImU32 lineColor = circleColor;
     ImU32 textBgColor = ui::ToImU32(Color::white());
     ImU32 textColor = ui::ToImU32(Color::black());

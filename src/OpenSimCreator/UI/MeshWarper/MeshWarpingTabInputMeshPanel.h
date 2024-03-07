@@ -366,7 +366,7 @@ namespace osc
             decorationConsumer({
                 .mesh = m_State->landmarkSphere,
                 .transform = {.scale = Vec3{radius}, .position = meshCollisionPosition},
-                .color = color.withAlpha(0.8f),  // faded
+                .color = color.with_alpha(0.8f),  // faded
             });
         }
 

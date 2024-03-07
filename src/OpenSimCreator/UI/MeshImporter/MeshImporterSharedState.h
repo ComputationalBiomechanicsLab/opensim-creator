@@ -1208,7 +1208,7 @@ namespace osc::mi
                     .rotation = xform.rotation,
                     .position = xform.position,
                 },
-                .color = coreColor.withAlpha(coreColor.a * alpha),
+                .color = coreColor.with_alpha(coreColor.a * alpha),
                 .flags = flags,
             });
 
