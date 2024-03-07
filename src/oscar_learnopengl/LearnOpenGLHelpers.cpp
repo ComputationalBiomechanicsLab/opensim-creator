@@ -6,5 +6,5 @@ using namespace osc;
 
 Mesh osc::GenerateLearnOpenGLCubeMesh()
 {
-    return BoxGeometry::generate_mesh();
+    return BoxGeometry{};
 }

@@ -14,7 +14,7 @@
 
 using namespace osc;
 
-Mesh osc::CylinderGeometry::generate_mesh(
+osc::CylinderGeometry::CylinderGeometry(
     float radiusTop,
     float radiusBottom,
     float height,
@@ -152,11 +152,9 @@ Mesh osc::CylinderGeometry::generate_mesh(
         }
     }
 
-    Mesh rv;
-    rv.setVerts(vertices);
-    rv.setNormals(normals);
-    rv.setTexCoords(uvs);
-    rv.setIndices(indices);
-    rv.setSubmeshDescriptors(groups);
-    return rv;
+    m_Mesh.setVerts(vertices);
+    m_Mesh.setNormals(normals);
+    m_Mesh.setTexCoords(uvs);
+    m_Mesh.setIndices(indices);
+    m_Mesh.setSubmeshDescriptors(groups);
 }

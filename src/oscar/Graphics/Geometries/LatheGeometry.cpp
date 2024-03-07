@@ -15,7 +15,7 @@
 using namespace osc;
 using namespace osc::literals;
 
-Mesh osc::LatheGeometry::generate_mesh(
+osc::LatheGeometry::LatheGeometry(
     std::span<Vec2 const> points,
     size_t segments,
     Radians phiStart,
@@ -24,7 +24,7 @@ Mesh osc::LatheGeometry::generate_mesh(
     // this implementation was initially hand-ported from threejs (LatheGeometry)
 
     if (points.size() <= 2) {
-        return Mesh{};  // edge-case: requires at least 2 points
+        return;  // edge-case: requires at least 2 points
     }
 
     phiLength = clamp(phiLength, 0_deg, 360_deg);
@@ -101,10 +101,8 @@ Mesh osc::LatheGeometry::generate_mesh(
         }
     }
 
-    Mesh rv;
-    rv.setVerts(vertices);
-    rv.setNormals(normals);
-    rv.setTexCoords(uvs);
-    rv.setIndices(indices);
-    return rv;
+    m_Mesh.setVerts(vertices);
+    m_Mesh.setNormals(normals);
+    m_Mesh.setTexCoords(uvs);
+    m_Mesh.setIndices(indices);
 }

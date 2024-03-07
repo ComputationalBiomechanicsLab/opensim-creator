@@ -10,7 +10,7 @@
 
 using namespace osc;
 
-Mesh osc::OctahedronGeometry::generate_mesh(float radius, size_t detail)
+osc::OctahedronGeometry::OctahedronGeometry(float radius, size_t detail)
 {
     // implementation ported from threejs (OctahedronGeometry)
 
@@ -25,5 +25,5 @@ Mesh osc::OctahedronGeometry::generate_mesh(float radius, size_t detail)
         1, 3, 4,    1, 4, 2
     });
 
-    return PolyhedronGeometry::generate_mesh(vertices, indices, radius, detail);
+    m_Mesh = PolyhedronGeometry(vertices, indices, radius, detail);
 }

@@ -12,7 +12,7 @@ namespace osc
     // inspired by three.js's `TorusKnotGeometry`
     class TorusKnotGeometry final {
     public:
-        static Mesh generate_mesh(
+        TorusKnotGeometry(
             float torusRadius = 1.0f,
             float tubeRadius = 0.4f,
             size_t numTubularSegments = 64,
@@ -20,5 +20,10 @@ namespace osc
             size_t p = 2,
             size_t q = 3
         );
+
+        Mesh const& mesh() const { return m_Mesh; }
+        operator Mesh const& () const { return m_Mesh; }
+    private:
+        Mesh m_Mesh;
     };
 }

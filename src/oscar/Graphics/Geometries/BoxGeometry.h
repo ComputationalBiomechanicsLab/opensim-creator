@@ -14,7 +14,7 @@ namespace osc
     // inspired by three.js's `BoxGeometry`
     class BoxGeometry final {
     public:
-        static Mesh generate_mesh(
+        BoxGeometry(
             float width = 1.0f,
             float height = 1.0f,
             float depth = 1.0f,
@@ -22,5 +22,10 @@ namespace osc
             size_t heightSegments = 1,
             size_t depthSegments = 1
         );
+
+        Mesh const& mesh() const { return m_Mesh; }
+        operator Mesh const& () const { return m_Mesh; }
+    private:
+        Mesh m_Mesh;
     };
 }

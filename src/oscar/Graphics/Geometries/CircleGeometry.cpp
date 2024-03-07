@@ -14,7 +14,7 @@
 using namespace osc;
 using namespace osc::literals;
 
-Mesh osc::CircleGeometry::generate_mesh(
+osc::CircleGeometry::CircleGeometry(
     float radius,
     size_t segments,
     Radians thetaStart,
@@ -51,10 +51,8 @@ Mesh osc::CircleGeometry::generate_mesh(
         indices.insert(indices.end(), {i, i+1, 0});
     }
 
-    Mesh rv;
-    rv.setVerts(vertices);
-    rv.setNormals(normals);
-    rv.setTexCoords(uvs);
-    rv.setIndices(indices);
-    return rv;
+    m_Mesh.setVerts(vertices);
+    m_Mesh.setNormals(normals);
+    m_Mesh.setTexCoords(uvs);
+    m_Mesh.setIndices(indices);
 }

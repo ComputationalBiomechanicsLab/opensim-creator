@@ -14,7 +14,7 @@
 using namespace osc;
 using namespace osc::literals;
 
-Mesh osc::TorusGeometry::generate_mesh(
+osc::TorusGeometry::TorusGeometry(
     float radius,
     float tube,
     size_t radialSegments,
@@ -64,10 +64,8 @@ Mesh osc::TorusGeometry::generate_mesh(
         }
     }
 
-    Mesh rv;
-    rv.setVerts(vertices);
-    rv.setNormals(normals);
-    rv.setTexCoords(uvs);
-    rv.setIndices(indices);
-    return rv;
+    m_Mesh.setVerts(vertices);
+    m_Mesh.setNormals(normals);
+    m_Mesh.setTexCoords(uvs);
+    m_Mesh.setIndices(indices);
 }

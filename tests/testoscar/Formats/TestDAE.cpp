@@ -26,7 +26,7 @@ TEST(DAE, WriteDecorationsAsDAEWorksForNonEmptyScene)
 {
     DAEMetadata metadata{TESTOSCAR_APPNAME_STRING, TESTOSCAR_APPNAME_STRING};
 
-    SceneDecoration const dec{.mesh = BoxGeometry::generate_mesh(2.0f, 2.0f, 2.0f)};
+    SceneDecoration const dec{.mesh = BoxGeometry{2.0f, 2.0f, 2.0f}};
 
     std::stringstream ss;
     WriteDecorationsAsDAE(ss, {{dec}}, metadata);

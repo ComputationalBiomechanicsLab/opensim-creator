@@ -334,8 +334,8 @@ private:
         m_Loader.open("oscar_learnopengl/textures/container2.png"),
         ColorSpace::sRGB
     );
-    Mesh m_CubeMesh = BoxGeometry::generate_mesh(2.0f, 2.0f, 2.0f);
-    Mesh m_QuadMesh = PlaneGeometry::generate_mesh(2.0f, 2.0f);
+    Mesh m_CubeMesh = BoxGeometry{2.0f, 2.0f, 2.0f};
+    Mesh m_QuadMesh = PlaneGeometry{2.0f, 2.0f};
 
     RenderTexture m_SceneHDRColorOutput;
     RenderTexture m_SceneHDRThresholdedOutput;

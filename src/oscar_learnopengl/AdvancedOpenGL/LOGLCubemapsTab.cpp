@@ -213,7 +213,7 @@ private:
         m_Loader.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Cubemaps/Skybox.vert"),
         m_Loader.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Cubemaps/Skybox.frag"),
     }};
-    Mesh m_Skybox = BoxGeometry::generate_mesh(2.0f, 2.0f, 2.0f);
+    Mesh m_Skybox = BoxGeometry{2.0f, 2.0f, 2.0f};
     Cubemap m_Cubemap = LoadCubemap(m_Loader);
 
     MouseCapturingCamera m_Camera = CreateCameraThatMatchesLearnOpenGL();

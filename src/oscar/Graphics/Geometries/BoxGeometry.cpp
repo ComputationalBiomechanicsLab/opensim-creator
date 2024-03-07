@@ -12,7 +12,7 @@
 
 using namespace osc;
 
-Mesh osc::BoxGeometry::generate_mesh(
+osc::BoxGeometry::BoxGeometry(
     float width,
     float height,
     float depth,
@@ -117,11 +117,9 @@ Mesh osc::BoxGeometry::generate_mesh(
     submeshes.insert(submeshes.begin(), SubMeshDescriptor{0, groupStart, MeshTopology::Triangles});
 
     // build geometry
-    Mesh rv;
-    rv.setVerts(vertices);
-    rv.setNormals(normals);
-    rv.setTexCoords(uvs);
-    rv.setIndices(indices);
-    rv.setSubmeshDescriptors(submeshes);
-    return rv;
+    m_Mesh.setVerts(vertices);
+    m_Mesh.setNormals(normals);
+    m_Mesh.setTexCoords(uvs);
+    m_Mesh.setIndices(indices);
+    m_Mesh.setSubmeshDescriptors(submeshes);
 }

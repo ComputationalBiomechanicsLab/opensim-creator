@@ -9,7 +9,7 @@ namespace osc
 {
     class CylinderGeometry final {
     public:
-        static Mesh generate_mesh(
+        CylinderGeometry(
             float radiusTop = 1.0f,
             float radiusBottom = 1.0f,
             float height = 1.0f,
@@ -19,5 +19,10 @@ namespace osc
             Radians thetaStart = Degrees{0},
             Radians thetaLength = Degrees{360}
         );
+
+        Mesh const& mesh() const { return m_Mesh; }
+        operator Mesh const& () const { return m_Mesh; }
+    private:
+        Mesh m_Mesh;
     };
 }

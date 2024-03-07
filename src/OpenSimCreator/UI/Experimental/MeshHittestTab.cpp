@@ -178,8 +178,8 @@ private:
 
     MeshBasicMaterial m_Material;
     Mesh m_Mesh = LoadMeshViaSimTK(App::resourceFilepath("geometry/hat_ribs.vtp"));
-    Mesh m_SphereMesh = SphereGeometry::generate_mesh(1.0f, 12, 12);
-    Mesh m_CubeLinesMesh = AABBGeometry::generate_mesh();
+    Mesh m_SphereMesh = SphereGeometry{1.0f, 12, 12};
+    Mesh m_CubeLinesMesh = AABBGeometry{};
 
     // other state
     BVH m_MeshBVH = CreateTriangleBVHFromMesh(m_Mesh);

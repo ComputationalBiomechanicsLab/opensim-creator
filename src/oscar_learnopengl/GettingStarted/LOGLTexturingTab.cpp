@@ -13,7 +13,7 @@ namespace
 
     Mesh GenTexturedQuadMesh()
     {
-        Mesh quad = PlaneGeometry::generate_mesh(1.0f, 1.0f, 1, 1);
+        Mesh quad = PlaneGeometry{1.0f, 1.0f, 1, 1};
 
         // transform default quad texture coordinates to exercise wrap modes
         quad.transformTexCoords([](Vec2 coord) { return 2.0f * coord; });

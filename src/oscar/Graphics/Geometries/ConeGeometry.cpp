@@ -8,16 +8,16 @@
 
 using namespace osc;
 
-Mesh osc::ConeGeometry::generate_mesh(
+osc::ConeGeometry::ConeGeometry(
     float radius,
     float height,
     size_t radialSegments,
     size_t heightSegments,
     bool openEnded,
     Radians thetaStart,
-    Radians thetaLength)
-{
-    return CylinderGeometry::generate_mesh(
+    Radians thetaLength) :
+
+    m_Mesh{CylinderGeometry{
         0.0f,
         radius,
         height,
@@ -26,5 +26,5 @@ Mesh osc::ConeGeometry::generate_mesh(
         openEnded,
         thetaStart,
         thetaLength
-    );
-}
+    }}
+{}

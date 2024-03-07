@@ -6,6 +6,11 @@ namespace osc
 {
     class WireframeGeometry final {
     public:
-        static Mesh generate_mesh(Mesh const&);
+        explicit WireframeGeometry(Mesh const&);
+
+        Mesh const& mesh() const { return m_Mesh; }
+        operator Mesh const& () const { return m_Mesh; }
+    private:
+        Mesh m_Mesh;
     };
 }

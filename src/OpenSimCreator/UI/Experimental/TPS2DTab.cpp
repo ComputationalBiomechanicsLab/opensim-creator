@@ -511,7 +511,7 @@ private:
         m_Loader.open("textures/container.jpg"),
         ColorSpace::sRGB
     );
-    Mesh m_InputGrid = PlaneGeometry::generate_mesh(2.0f, 2.0f, 50, 50);
+    Mesh m_InputGrid = PlaneGeometry{2.0f, 2.0f, 50, 50};
     Mesh m_OutputGrid = m_InputGrid;
     Material m_Material{m_ShaderCache->load("shaders/TPS2D/Textured.vert", "shaders/TPS2D/Textured.frag")};
     MeshBasicMaterial m_WireframeMaterial;

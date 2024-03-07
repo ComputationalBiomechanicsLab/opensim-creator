@@ -57,15 +57,15 @@ struct std::hash<TorusParameters> final {
 
 class osc::SceneCache::Impl final {
 public:
-    Mesh sphere = SphereGeometry::generate_mesh(1.0f, 16, 16);
-    Mesh circle = CircleGeometry::generate_mesh(1.0f, 16);
-    Mesh cylinder = CylinderGeometry::generate_mesh(1.0f, 1.0f, 2.0f, 16);
-    Mesh uncappedCylinder = CylinderGeometry::generate_mesh(1.0f, 1.0f, 2.0f, 16, 1, true);
-    Mesh cube = BoxGeometry::generate_mesh(2.0f, 2.0f, 2.0f);
-    Mesh cone = ConeGeometry::generate_mesh(1.0f, 2.0f, 16);
-    Mesh floor = PlaneGeometry::generate_mesh(2.0f, 2.0f, 1, 1);
-    Mesh grid100x100 = GridGeometry::generate_mesh(2.0f, 1000);
-    Mesh cubeWire = AABBGeometry::generate_mesh();
+    Mesh sphere = SphereGeometry{1.0f, 16, 16};
+    Mesh circle = CircleGeometry{1.0f, 16};
+    Mesh cylinder = CylinderGeometry{1.0f, 1.0f, 2.0f, 16};
+    Mesh uncappedCylinder = CylinderGeometry{1.0f, 1.0f, 2.0f, 16, 1, true};
+    Mesh cube = BoxGeometry{2.0f, 2.0f, 2.0f};
+    Mesh cone = ConeGeometry{1.0f, 2.0f, 16};
+    Mesh floor = PlaneGeometry{2.0f, 2.0f, 1, 1};
+    Mesh grid100x100 = GridGeometry{2.0f, 1000};
+    Mesh cubeWire = AABBGeometry{};
     Mesh yLine = GenerateYToYLineMesh();
     Mesh texturedQuad = floor;
 
@@ -177,7 +177,7 @@ Mesh osc::SceneCache::getTorusMesh(float torusCenterToTubeCenterRadius, float tu
 
     if (inserted)
     {
-        it->second = TorusGeometry::generate_mesh(key.torusCenterToTubeCenterRadius, key.tubeRadius, 12, 12, Degrees{360});
+        it->second = TorusGeometry{key.torusCenterToTubeCenterRadius, key.tubeRadius, 12, 12, Degrees{360}};
     }
 
     return it->second;

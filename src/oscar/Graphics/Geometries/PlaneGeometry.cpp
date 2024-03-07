@@ -8,7 +8,7 @@
 
 using namespace osc;
 
-Mesh osc::PlaneGeometry::generate_mesh(
+osc::PlaneGeometry::PlaneGeometry(
     float width,
     float height,
     size_t widthSegments,
@@ -54,10 +54,8 @@ Mesh osc::PlaneGeometry::generate_mesh(
         }
     }
 
-    Mesh m;
-    m.setVerts(vertices);
-    m.setNormals(normals);
-    m.setTexCoords(uvs);
-    m.setIndices(indices);
-    return m;
+    m_Mesh.setVerts(vertices);
+    m_Mesh.setNormals(normals);
+    m_Mesh.setTexCoords(uvs);
+    m_Mesh.setIndices(indices);
 }

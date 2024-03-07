@@ -159,8 +159,8 @@ private:
     Material m_SceneMaterial = CreateSceneMaterial(m_Loader);
     Material m_TonemapMaterial = CreateTonemapMaterial(m_Loader);
     MouseCapturingCamera m_Camera = CreateSceneCamera();
-    Mesh m_CubeMesh = BoxGeometry::generate_mesh(2.0f, 2.0f, 2.0f);
-    Mesh m_QuadMesh = PlaneGeometry::generate_mesh(2.0f, 2.0f);
+    Mesh m_CubeMesh = BoxGeometry{2.0f, 2.0f, 2.0f};
+    Mesh m_QuadMesh = PlaneGeometry{2.0f, 2.0f};
     Transform m_CorridoorTransform = CalcCorridoorTransform();
     RenderTexture m_SceneHDRTexture;
     float m_Exposure = 1.0f;

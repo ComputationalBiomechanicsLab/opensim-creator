@@ -77,7 +77,7 @@ namespace
         );
 
         Camera camera;
-        Graphics::DrawMesh(BoxGeometry::generate_mesh(2.0f, 2.0f, 2.0f), identity<Transform>(), material, camera);
+        Graphics::DrawMesh(BoxGeometry{2.0f, 2.0f, 2.0f}, identity<Transform>(), material, camera);
         camera.renderTo(cubemapRenderTarget);
 
         // TODO: some way of copying it into an `Cubemap` would make sense
@@ -106,7 +106,7 @@ namespace
         );
 
         Camera camera;
-        Graphics::DrawMesh(BoxGeometry::generate_mesh(2.0f, 2.0f, 2.0f), identity<Transform>(), material, camera);
+        Graphics::DrawMesh(BoxGeometry{2.0f, 2.0f, 2.0f}, identity<Transform>(), material, camera);
         camera.renderTo(irradianceCubemap);
 
         // TODO: some way of copying it into an `Cubemap` would make sense
@@ -155,7 +155,7 @@ namespace
             float const roughness = static_cast<float>(mip)/static_cast<float>(maxMipmapLevel);
             material.setFloat("uRoughness", roughness);
 
-            Graphics::DrawMesh(BoxGeometry::generate_mesh(2.0f, 2.0f, 2.0f), identity<Transform>(), material, camera);
+            Graphics::DrawMesh(BoxGeometry{2.0f, 2.0f, 2.0f}, identity<Transform>(), material, camera);
             camera.renderTo(captureRT);
             Graphics::CopyTexture(captureRT, rv, mip);
         }
@@ -174,14 +174,12 @@ namespace
             rl.slurp("oscar_learnopengl/shaders/PBR/ibl_specular/BRDF.frag"),
         }};
 
-        Mesh quad = PlaneGeometry::generate_mesh(2.0f, 2.0f, 1, 1);
-
         // TODO: Graphics::Blit with material
         Camera camera;
         camera.setProjectionMatrixOverride(identity<Mat4>());
         camera.setViewMatrixOverride(identity<Mat4>());
 
-        Graphics::DrawMesh(quad, identity<Transform>(), material, camera);
+        Graphics::DrawMesh(PlaneGeometry{2.0f, 2.0f, 1, 1}, identity<Transform>(), material, camera);
         camera.renderTo(renderTex);
 
         Texture2D rv{
@@ -333,9 +331,9 @@ private:
         m_Loader.slurp("oscar_learnopengl/shaders/PBR/ibl_specular/Skybox.frag"),
     }};
 
-    Mesh m_CubeMesh = BoxGeometry::generate_mesh(2.0f, 2.0f, 2.0f);
+    Mesh m_CubeMesh = BoxGeometry{2.0f, 2.0f, 2.0f};
     Material m_PBRMaterial = CreateMaterial(m_Loader);
-    Mesh m_SphereMesh = SphereGeometry::generate_mesh(1.0f, 64, 64);
+    Mesh m_SphereMesh = SphereGeometry{1.0f, 64, 64};
 
     MouseCapturingCamera m_Camera = CreateCamera();
 

@@ -10,7 +10,7 @@
 
 using namespace osc;
 
-Mesh osc::GridGeometry::generate_mesh(
+osc::GridGeometry::GridGeometry(
     float size,
     size_t divisions)
 {
@@ -53,10 +53,8 @@ Mesh osc::GridGeometry::generate_mesh(
         push({x, +1.0f, z});
     }
 
-    Mesh rv;
-    rv.setTopology(MeshTopology::Lines);
-    rv.setVerts(vertices);
-    rv.setNormals(normals);
-    rv.setIndices(indices);
-    return rv;
+    m_Mesh.setTopology(MeshTopology::Lines);
+    m_Mesh.setVerts(vertices);
+    m_Mesh.setNormals(normals);
+    m_Mesh.setIndices(indices);
 }

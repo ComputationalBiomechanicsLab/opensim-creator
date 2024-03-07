@@ -15,12 +15,13 @@
 
 using namespace osc;
 
-Mesh osc::WireframeGeometry::generate_mesh(Mesh const& mesh)
+osc::WireframeGeometry::WireframeGeometry(Mesh const& mesh)
 {
     static_assert(NumOptions<MeshTopology>() == 2);
 
     if (mesh.getTopology() == MeshTopology::Lines) {
-        return mesh;
+        m_Mesh = mesh;
+        return;
     }
 
     std::unordered_set<LineSegment> edges;
@@ -57,9 +58,7 @@ Mesh osc::WireframeGeometry::generate_mesh(Mesh const& mesh)
         indices.push_back(static_cast<uint32_t>(i));
     }
 
-    Mesh rv;
-    rv.setTopology(MeshTopology::Lines);
-    rv.setVerts(points);
-    rv.setIndices(indices);
-    return rv;
+    m_Mesh.setTopology(MeshTopology::Lines);
+    m_Mesh.setVerts(points);
+    m_Mesh.setIndices(indices);
 }

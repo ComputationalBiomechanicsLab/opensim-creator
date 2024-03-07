@@ -6,6 +6,11 @@ namespace osc
 {
     class ChequeredTexture final {
     public:
-        static Texture2D generate_texture();
+        ChequeredTexture();
+
+        Texture2D const& texture() const { return m_Texture; }
+        operator Texture2D const& () const { return m_Texture; }
+    private:
+        Texture2D m_Texture;
     };
 }

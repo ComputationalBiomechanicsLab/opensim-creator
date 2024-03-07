@@ -15,7 +15,7 @@
 using namespace osc;
 using namespace osc::literals;
 
-Mesh osc::RingGeometry::generate_mesh(
+osc::RingGeometry::RingGeometry(
     float innerRadius,
     float outerRadius,
     size_t thetaSegments,
@@ -69,10 +69,8 @@ Mesh osc::RingGeometry::generate_mesh(
         }
     }
 
-    Mesh rv;
-    rv.setVerts(vertices);
-    rv.setNormals(normals);
-    rv.setTexCoords(uvs);
-    rv.setIndices(indices);
-    return rv;
+    m_Mesh.setVerts(vertices);
+    m_Mesh.setNormals(normals);
+    m_Mesh.setTexCoords(uvs);
+    m_Mesh.setIndices(indices);
 }

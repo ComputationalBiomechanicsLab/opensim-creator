@@ -477,7 +477,7 @@ private:
     MeshBasicMaterial::PropertyBlock m_RimsSelectedColor;
     MeshBasicMaterial::PropertyBlock m_RimsHoveredColor;
     Mesh m_QuadMesh;
-    Texture2D m_ChequerTexture = ChequeredTexture::generate_texture();
+    Texture2D m_ChequerTexture = ChequeredTexture{};
     Camera m_Camera;
     RenderTexture m_RimsTexture;
     RenderTexture m_ShadowMapTexture;

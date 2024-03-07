@@ -10,7 +10,7 @@
 
 using namespace osc;
 
-Mesh osc::IcosahedronGeometry::generate_mesh(float radius, size_t detail)
+osc::IcosahedronGeometry::IcosahedronGeometry(float radius, size_t detail)
 {
     float const t = (1.0f + sqrt(5.0f))/2.0f;
 
@@ -27,5 +27,5 @@ Mesh osc::IcosahedronGeometry::generate_mesh(float radius, size_t detail)
         4, 9,  5,    2, 4,  11,    6,  2,  10,    8,  6, 7,     9, 8, 1,
     });
 
-    return PolyhedronGeometry::generate_mesh(vertices, indices, radius, detail);
+    m_Mesh = PolyhedronGeometry(vertices, indices, radius, detail);
 }

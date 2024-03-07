@@ -18,7 +18,7 @@
 using namespace osc;
 using namespace osc::literals;
 
-Mesh osc::PolyhedronGeometry::generate_mesh(
+osc::PolyhedronGeometry::PolyhedronGeometry(
     std::span<Vec3 const> vertices,
     std::span<uint32_t const> indices,
     float radius,
@@ -184,17 +184,15 @@ Mesh osc::PolyhedronGeometry::generate_mesh(
         meshIndices.push_back(i);
     }
 
-    Mesh rv;
-    rv.setVerts(vertexBuffer);
-    rv.setTexCoords(uvBuffer);
-    rv.setIndices(meshIndices);
+    m_Mesh.setVerts(vertexBuffer);
+    m_Mesh.setTexCoords(uvBuffer);
+    m_Mesh.setIndices(meshIndices);
     if (detail == 0) {
-        rv.recalculateNormals();  // flat-shaded
+        m_Mesh.recalculateNormals();  // flat-shaded
     }
     else {
         auto meshNormals = vertexBuffer;
         for (auto& v : meshNormals) { v = normalize(v); }
-        rv.setNormals(meshNormals);
+        m_Mesh.setNormals(meshNormals);
     }
-    return rv;
 }

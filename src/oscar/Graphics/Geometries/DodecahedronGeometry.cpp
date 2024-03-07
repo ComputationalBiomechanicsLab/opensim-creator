@@ -10,7 +10,7 @@
 
 using namespace osc;
 
-Mesh osc::DodecahedronGeometry::generate_mesh(float radius, size_t detail)
+osc::DodecahedronGeometry::DodecahedronGeometry(float radius, size_t detail)
 {
     // implementation ported from threejs (DodecahedronGeometry)
 
@@ -48,5 +48,5 @@ Mesh osc::DodecahedronGeometry::generate_mesh(float radius, size_t detail)
         1, 12, 14, 	1, 14, 5, 	1, 5, 9
     });
 
-    return PolyhedronGeometry::generate_mesh(vertices, indices, radius, detail);
+    m_Mesh = PolyhedronGeometry{vertices, indices, radius, detail};
 }

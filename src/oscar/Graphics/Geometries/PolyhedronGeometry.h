@@ -16,11 +16,16 @@ namespace osc
     // inspired by three.js's `PolyhedronGeometry`
     class PolyhedronGeometry final {
     public:
-        static Mesh generate_mesh(
+        PolyhedronGeometry(
             std::span<Vec3 const> vertices,
             std::span<uint32_t const> indices,
             float radius,
             size_t detail
         );
+
+        operator Mesh const& () const { return m_Mesh; }
+        Mesh const& mesh() const { return m_Mesh; }
+    private:
+        Mesh m_Mesh;
     };
 }

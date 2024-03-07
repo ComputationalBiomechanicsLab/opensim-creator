@@ -12,11 +12,16 @@ namespace osc
     // (ported from three.js:CircleGeometry)
     class CircleGeometry final {
     public:
-        static Mesh generate_mesh(
+        CircleGeometry(
             float radius = 1.0f,
             size_t segments = 32,
             Radians thetaStart = Degrees{0},
             Radians thetaLength = Degrees{360}
         );
+
+        Mesh const& mesh() const { return m_Mesh; }
+        operator Mesh const& () const { return m_Mesh; }
+    private:
+        Mesh m_Mesh;
     };
 }

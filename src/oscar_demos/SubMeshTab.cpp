@@ -25,10 +25,10 @@ namespace
 
     Mesh GenerateMeshWithSubMeshes()
     {
-        auto const meshes = std::to_array({
-            BoxGeometry::generate_mesh(2.0f, 2.0f, 2.0f),
-            SphereGeometry::generate_mesh(1.0f, 16, 16),
-            CircleGeometry::generate_mesh(1.0f, 32),
+        auto const meshes = std::to_array<Mesh>({
+            BoxGeometry{2.0f, 2.0f, 2.0f},
+            SphereGeometry{1.0f, 16, 16},
+            CircleGeometry{1.0f, 32},
         });
 
         std::vector<Vec3> allVerts;

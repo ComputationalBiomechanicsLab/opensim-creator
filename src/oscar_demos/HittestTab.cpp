@@ -249,9 +249,9 @@ private:
     ResourceLoader m_Loader = App::resource_loader();
     Camera m_Camera;
     MeshBasicMaterial m_Material;
-    Mesh m_SphereMesh = SphereGeometry::generate_mesh(1.0f, 12, 12);
-    Mesh m_WireframeCubeMesh = AABBGeometry::generate_mesh();
-    Mesh m_CircleMesh = CircleGeometry::generate_mesh(1.0f, 36);
+    Mesh m_SphereMesh = SphereGeometry{1.0f, 12, 12};
+    Mesh m_WireframeCubeMesh = AABBGeometry{};
+    Mesh m_CircleMesh = CircleGeometry{1.0f, 36};
     Mesh m_CrosshairMesh = GenerateCrosshairMesh();
     Mesh m_TriangleMesh = GenerateTriangleMesh();
     MeshBasicMaterial::PropertyBlock m_BlackColorMaterialProps{Color{0.0f, 0.0f, 0.0f, 1.0f}};
