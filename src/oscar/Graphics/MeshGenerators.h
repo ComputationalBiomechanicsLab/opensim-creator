@@ -16,9 +16,6 @@ namespace osc
     // generates 2D grid lines at Z == 0, X/Y == [-1,+1]
     Mesh GenerateGridLinesMesh(size_t nticks);
 
-    // generates a single two-point line from (0,-1,0) to (0,+1,0)
-    Mesh GenerateYToYLineMesh();
-
     // generates the *lines* of a cube with [-1,+1] in each dimension
     Mesh GenerateCubeLinesMesh();
 

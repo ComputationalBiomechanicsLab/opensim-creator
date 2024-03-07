@@ -35,16 +35,6 @@ Mesh osc::GenerateGridLinesMesh(size_t n)
     return GridGeometry::generate_mesh(2.0f, n);
 }
 
-Mesh osc::GenerateYToYLineMesh()
-{
-    Mesh rv;
-    rv.setTopology(MeshTopology::Lines);
-    rv.setVerts({{0.0f, -1.0f, 0.0f}, {0.0f, +1.0f, 0.0f}});
-    rv.setNormals({{0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}});  // just give them *something* in-case they are rendered through a shader that requires normals
-    rv.setIndices({0, 1});
-    return rv;
-}
-
 Mesh osc::GenerateCubeLinesMesh()
 {
     return AABBGeometry::generate_mesh();

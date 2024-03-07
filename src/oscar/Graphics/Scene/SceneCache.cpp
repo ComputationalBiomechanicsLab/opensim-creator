@@ -35,6 +35,16 @@ namespace
         float torusCenterToTubeCenterRadius;
         float tubeRadius;
     };
+
+    Mesh GenerateYToYLineMesh()
+    {
+        Mesh rv;
+        rv.setTopology(MeshTopology::Lines);
+        rv.setVerts({{0.0f, -1.0f, 0.0f}, {0.0f, +1.0f, 0.0f}});
+        rv.setNormals({{0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}});  // just give them *something* in-case they are rendered through a shader that requires normals
+        rv.setIndices({0, 1});
+        return rv;
+    }
 }
 
 template<>
