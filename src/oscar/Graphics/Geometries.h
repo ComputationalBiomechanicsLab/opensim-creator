@@ -1,5 +1,6 @@
 #pragma once
 
+#include <oscar/Graphics/Geometries/AABBGeometry.h>
 #include <oscar/Graphics/Geometries/BoxGeometry.h>
 #include <oscar/Graphics/Geometries/CircleGeometry.h>
 #include <oscar/Graphics/Geometries/CylinderGeometry.h>

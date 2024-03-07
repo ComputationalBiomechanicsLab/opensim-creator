@@ -55,6 +55,8 @@ add_library(oscar STATIC
     Graphics/Detail/VertexAttributeList.h
     Graphics/Detail/VertexAttributeTraits.h
 
+    Graphics/Geometries/AABBGeometry.cpp
+    Graphics/Geometries/AABBGeometry.h
     Graphics/Geometries/BoxGeometry.cpp
     Graphics/Geometries/BoxGeometry.h
     Graphics/Geometries/CircleGeometry.cpp

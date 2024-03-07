@@ -47,23 +47,7 @@ Mesh osc::GenerateYToYLineMesh()
 
 Mesh osc::GenerateCubeLinesMesh()
 {
-    Vec3 min = {-1.0f, -1.0f, -1.0f};
-    Vec3 max = { 1.0f,  1.0f,  1.0f};
-
-    Mesh rv;
-    rv.setTopology(MeshTopology::Lines);
-    rv.setVerts({
-        {max.x, max.y, max.z},
-        {min.x, max.y, max.z},
-        {min.x, min.y, max.z},
-        {max.x, min.y, max.z},
-        {max.x, max.y, min.z},
-        {min.x, max.y, min.z},
-        {min.x, min.y, min.z},
-        {max.x, min.y, min.z},
-    });
-    rv.setIndices({0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7});
-    return rv;
+    return AABBGeometry::generate_mesh();
 }
 
 Mesh osc::GenerateTorusKnotMesh(
