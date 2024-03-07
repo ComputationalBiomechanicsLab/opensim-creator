@@ -85,6 +85,8 @@ add_library(oscar STATIC
     Graphics/Geometries/TorusGeometry.h
     Graphics/Geometries/TorusKnotGeometry.cpp
     Graphics/Geometries/TorusKnotGeometry.h
+    Graphics/Geometries/WireframeGeometry.cpp
+    Graphics/Geometries/WireframeGeometry.h
 
     Graphics/OpenGL/CPUDataTypeOpenGLTraits.h
     Graphics/OpenGL/CPUImageFormatOpenGLTraits.h

@@ -15,3 +15,4 @@
 #include <oscar/Graphics/Geometries/TetrahedronGeometry.h>
 #include <oscar/Graphics/Geometries/TorusGeometry.h>
 #include <oscar/Graphics/Geometries/TorusKnotGeometry.h>
+#include <oscar/Graphics/Geometries/WireframeGeometry.h>
