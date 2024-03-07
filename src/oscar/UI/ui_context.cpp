@@ -8,7 +8,7 @@
 #include <oscar/Shims/Cpp20/bit.h>
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
-#include <imgui/backends/imgui_impl_sdl2.h>
+#include <oscar/UI/imgui_impl_sdl2.h>
 #include <oscar/UI/ui_graphics_backend.h>
 #include <oscar/Utils/Perf.h>
 #include <SDL_events.h>

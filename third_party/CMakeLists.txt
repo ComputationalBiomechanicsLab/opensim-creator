@@ -13,14 +13,10 @@ set(OSCDEPS_GET_GLEW ON CACHE BOOL "enable getting glew")
 set(OSCDEPS_GET_ICONFONTCPPHEADERS ON CACHE BOOL "enable gettting IconFontAwesome cpp headers")
 set(OSCDEPS_GET_STB ON CACHE BOOL "enable getting stb headers")
 set(OSCDEPS_GET_NATIVEFILEDIALOG ON CACHE BOOL "enable getting nativefiledialog")
+set(OSCDEPS_GET_IMGUI ON CACHE BOOL "enable getting imgui")
 set(OSCDEPS_GET_IMGUIZMO ON CACHE BOOL "enable getting ImGuizmo")
 set(OSCDEPS_GET_IMPLOT ON CACHE BOOL "enable gettting implot")
 set(OSCDEPS_GET_OPENSIM ON CACHE BOOL "enable getting OpenSim (+its dependencies)")
-
-set(OSCDEPS_EMSCRIPTEN OFF
-    CACHE BOOL
-    "enable special (read: hacky) build steps for emscripten (emsdk) - don't try this unless you know what you're doing ;)"
-)
 
 include(ExternalProject)  # ExternalProject_Add
 include(GNUInstallDirs)  # CMAKE_INSTALL_LIBDIR
@@ -159,22 +155,8 @@ if(${OSCDEPS_GET_NATIVEFILEDIALOG})
     )
 endif()
 
-if (${OSCDEPS_EMSCRIPTEN})
-    # emscripten build cannot depend on sdl (build bug?)
+if (${OSCDEPS_GET_IMGUI})
     ExternalProject_Add(imgui
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/imgui
-
-        # we provide our own cmake for this dependency
-        PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/imgui_emscripten.cmake" <SOURCE_DIR>/CMakeLists.txt
-        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/imguiConfig_emscripten.cmake.in" <SOURCE_DIR>/imguiConfig.cmake.in
-
-        CMAKE_CACHE_ARGS
-            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
-            -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}
-    )
-else()
-    ExternalProject_Add(imgui
-        DEPENDS sdl
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/imgui
 
         # we provide our own cmake for this dependency
