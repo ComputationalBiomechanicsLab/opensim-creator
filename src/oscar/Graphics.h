@@ -22,6 +22,7 @@
 #include <oscar/Graphics/Materials.h>
 #include <oscar/Graphics/MaterialPropertyBlock.h>
 #include <oscar/Graphics/Mesh.h>
+#include <oscar/Graphics/MeshFunctions.h>
 #include <oscar/Graphics/MeshIndicesView.h>
 #include <oscar/Graphics/MeshTopology.h>
 #include <oscar/Graphics/MeshUpdateFlags.h>

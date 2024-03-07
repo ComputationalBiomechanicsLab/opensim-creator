@@ -23,6 +23,7 @@
 #include <oscar/Graphics/GraphicsHelpers.h>
 #include <oscar/Graphics/Material.h>
 #include <oscar/Graphics/Mesh.h>
+#include <oscar/Graphics/MeshFunctions.h>
 #include <oscar/Graphics/MeshTopology.h>
 #include <oscar/Graphics/OpenGL/CPUDataTypeOpenGLTraits.h>
 #include <oscar/Graphics/OpenGL/CPUImageFormatOpenGLTraits.h>

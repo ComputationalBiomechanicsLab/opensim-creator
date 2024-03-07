@@ -8,7 +8,7 @@
 #include <OpenSimCreator/Documents/MeshImporter/Mesh.h>
 #include <OpenSimCreator/Documents/MeshImporter/Station.h>
 
-#include <oscar/Graphics/GraphicsHelpers.h>
+#include <oscar/Graphics/MeshFunctions.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Utils/StdVariantHelpers.h>
 
