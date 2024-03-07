@@ -32,53 +32,7 @@ using namespace osc;
 
 Mesh osc::GenerateGridLinesMesh(size_t n)
 {
-    constexpr float z = 0.0f;
-    constexpr float min = -1.0f;
-    constexpr float max = 1.0f;
-
-    float const stepSize = (max - min) / static_cast<float>(n);
-
-    size_t const nlines = n + 1;
-
-    std::vector<Vec3> vertices;
-    vertices.reserve(4 * nlines);
-    std::vector<uint32_t> indices;
-    indices.reserve(4 * nlines);
-    std::vector<Vec3> normals;
-    normals.reserve(4 * nlines);
-    uint32_t index = 0;
-
-    auto push = [&index, &vertices, &indices, &normals](Vec3 const& pos)
-    {
-        vertices.push_back(pos);
-        indices.push_back(index++);
-        normals.emplace_back(0.0f, 0.0f, 1.0f);
-    };
-
-    // lines parallel to X axis
-    for (size_t i = 0; i < nlines; ++i)
-    {
-        float const y = min + static_cast<float>(i) * stepSize;
-
-        push({-1.0f, y, z});
-        push({+1.0f, y, z});
-    }
-
-    // lines parallel to Y axis
-    for (size_t i = 0; i < nlines; ++i)
-    {
-        float const x = min + static_cast<float>(i) * stepSize;
-
-        push({x, -1.0f, z});
-        push({x, +1.0f, z});
-    }
-
-    Mesh rv;
-    rv.setTopology(MeshTopology::Lines);
-    rv.setVerts(vertices);
-    rv.setNormals(normals);
-    rv.setIndices(indices);
-    return rv;
+    return GridGeometry::generate_mesh(2.0f, n);
 }
 
 Mesh osc::GenerateYToYLineMesh()

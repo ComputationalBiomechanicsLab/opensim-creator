@@ -4,8 +4,8 @@
 
 namespace osc
 {
-	class WireframeGeometry final {
-	public:
-		static Mesh generate_mesh(Mesh const&);
-	};
+    class WireframeGeometry final {
+    public:
+        static Mesh generate_mesh(Mesh const&);
+    };
 }

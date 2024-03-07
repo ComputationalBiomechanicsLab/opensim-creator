@@ -5,6 +5,7 @@
 #include <oscar/Graphics/Geometries/CylinderGeometry.h>
 #include <oscar/Graphics/Geometries/ConeGeometry.h>
 #include <oscar/Graphics/Geometries/DodecahedronGeometry.h>
+#include <oscar/Graphics/Geometries/GridGeometry.h>
 #include <oscar/Graphics/Geometries/IcosahedronGeometry.h>
 #include <oscar/Graphics/Geometries/LatheGeometry.h>
 #include <oscar/Graphics/Geometries/OctahedronGeometry.h>

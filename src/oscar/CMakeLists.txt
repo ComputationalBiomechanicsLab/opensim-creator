@@ -65,6 +65,8 @@ add_library(oscar STATIC
     Graphics/Geometries/ConeGeometry.h
     Graphics/Geometries/DodecahedronGeometry.cpp
     Graphics/Geometries/DodecahedronGeometry.h
+    Graphics/Geometries/GridGeometry.cpp
+    Graphics/Geometries/GridGeometry.h
     Graphics/Geometries/IcosahedronGeometry.cpp
     Graphics/Geometries/IcosahedronGeometry.h
     Graphics/Geometries/LatheGeometry.cpp
