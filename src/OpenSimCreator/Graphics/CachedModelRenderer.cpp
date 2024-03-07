@@ -108,7 +108,7 @@ namespace
 
 class osc::CachedModelRenderer::Impl final {
 public:
-    Impl(std::shared_ptr<SceneCache> const& cache) :
+    explicit Impl(std::shared_ptr<SceneCache> const& cache) :
         m_DecorationCache{cache},
         m_Renderer{*cache}
     {}
