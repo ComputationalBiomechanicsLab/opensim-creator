@@ -71,6 +71,8 @@ add_library(oscar STATIC
     Graphics/Geometries/LatheGeometry.h
     Graphics/Geometries/OctahedronGeometry.cpp
     Graphics/Geometries/OctahedronGeometry.h
+    Graphics/Geometries/PlaneGeometry.cpp
+    Graphics/Geometries/PlaneGeometry.h
     Graphics/Geometries/PolyhedronGeometry.cpp
     Graphics/Geometries/PolyhedronGeometry.h
     Graphics/Geometries/RingGeometry.cpp
