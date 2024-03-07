@@ -345,7 +345,7 @@ TEST(Color, CanGetYellowColor)
 
 TEST(Color, WithAlphaWorksAsExpected)
 {
-    static_assert(Color::white().withAlpha(0.33f) == Color{1.0f, 1.0f, 1.0f, 0.33f});
+    static_assert(Color::white().with_alpha(0.33f) == Color{1.0f, 1.0f, 1.0f, 0.33f});
 }
 
 TEST(Color, ValuePtrConstVersionReturnsAddressOfColor)
