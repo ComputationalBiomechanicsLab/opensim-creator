@@ -144,7 +144,7 @@ private:
 
     ResourceLoader m_Loader = App::resource_loader();
     MouseCapturingCamera m_Camera = CreateCamera();
-    Mesh m_SphereMesh = GenerateSphereMesh(1.0f, 64, 64);
+    Mesh m_SphereMesh = SphereGeometry::generate_mesh(1.0f, 64, 64);
     Material m_PBRMaterial = CreateMaterial(m_Loader);
     PerfPanel m_PerfPanel{"Perf"};
 };

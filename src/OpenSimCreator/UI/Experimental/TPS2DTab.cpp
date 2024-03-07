@@ -2,12 +2,12 @@
 
 #include <IconsFontAwesome5.h>
 #include <oscar/Formats/Image.h>
+#include <oscar/Graphics/Geometries/PlaneGeometry.h>
 #include <oscar/Graphics/Camera.h>
 #include <oscar/Graphics/ColorSpace.h>
 #include <oscar/Graphics/Graphics.h>
 #include <oscar/Graphics/Material.h>
 #include <oscar/Graphics/Mesh.h>
-#include <oscar/Graphics/MeshGenerators.h>
 #include <oscar/Graphics/Scene/ShaderCache.h>
 #include <oscar/Maths/MatFunctions.h>
 #include <oscar/Maths/Mat4.h>
@@ -510,7 +510,7 @@ private:
         m_Loader.open("textures/container.jpg"),
         ColorSpace::sRGB
     );
-    Mesh m_InputGrid = GeneratePlaneMesh(2.0f, 2.0f, 50, 50);
+    Mesh m_InputGrid = PlaneGeometry::generate_mesh(2.0f, 2.0f, 50, 50);
     Mesh m_OutputGrid = m_InputGrid;
     Material m_Material{m_ShaderCache->load("shaders/TPS2D/Textured.vert", "shaders/TPS2D/Textured.frag")};
     Material m_WireframeMaterial{m_ShaderCache->load("shaders/SolidColor.vert", "shaders/SolidColor.frag")};

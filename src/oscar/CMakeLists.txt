@@ -137,8 +137,6 @@ add_library(oscar STATIC
     Graphics/GraphicsImplementation.cpp
     Graphics/Material.h
     Graphics/MaterialPropertyBlock.h
-    Graphics/MeshGenerators.cpp
-    Graphics/MeshGenerators.h
     Graphics/MeshIndicesView.h
     Graphics/Mesh.h
     Graphics/MeshTopology.h

@@ -1,7 +1,7 @@
 #include "SceneCache.h"
 
+#include <oscar/Graphics/Geometries.h>
 #include <oscar/Graphics/Mesh.h>
-#include <oscar/Graphics/MeshGenerators.h>
 #include <oscar/Graphics/Scene/SceneHelpers.h>
 #include <oscar/Maths/BVH.h>
 #include <oscar/Platform/Log.h>
@@ -57,15 +57,15 @@ struct std::hash<TorusParameters> final {
 
 class osc::SceneCache::Impl final {
 public:
-    Mesh sphere = GenerateSphereMesh(1.0f, 16, 16);
-    Mesh circle = GenerateCircleMesh(1.0f, 16);
-    Mesh cylinder = GenerateCylinderMesh(1.0f, 1.0f, 2.0f, 16);
-    Mesh uncappedCylinder = GenerateCylinderMesh(1.0f, 1.0f, 2.0f, 16, 1, true);
-    Mesh cube = GenerateBoxMesh(2.0f, 2.0f, 2.0f);
-    Mesh cone = GenerateConeMesh(1.0f, 2.0f, 16);
-    Mesh floor = GeneratePlaneMesh(2.0f, 2.0f, 1, 1);
-    Mesh grid100x100 = GenerateGridLinesMesh(1000);
-    Mesh cubeWire = GenerateCubeLinesMesh();
+    Mesh sphere = SphereGeometry::generate_mesh(1.0f, 16, 16);
+    Mesh circle = CircleGeometry::generate_mesh(1.0f, 16);
+    Mesh cylinder = CylinderGeometry::generate_mesh(1.0f, 1.0f, 2.0f, 16);
+    Mesh uncappedCylinder = CylinderGeometry::generate_mesh(1.0f, 1.0f, 2.0f, 16, 1, true);
+    Mesh cube = BoxGeometry::generate_mesh(2.0f, 2.0f, 2.0f);
+    Mesh cone = ConeGeometry::generate_mesh(1.0f, 2.0f, 16);
+    Mesh floor = PlaneGeometry::generate_mesh(2.0f, 2.0f, 1, 1);
+    Mesh grid100x100 = GridGeometry::generate_mesh(2.0f, 1000);
+    Mesh cubeWire = AABBGeometry::generate_mesh();
     Mesh yLine = GenerateYToYLineMesh();
     Mesh texturedQuad = floor;
 
@@ -177,7 +177,7 @@ Mesh osc::SceneCache::getTorusMesh(float torusCenterToTubeCenterRadius, float tu
 
     if (inserted)
     {
-        it->second = Mesh{GenerateTorusMesh(key.torusCenterToTubeCenterRadius, key.tubeRadius, 12, 12, Degrees{360})};
+        it->second = TorusGeometry::generate_mesh(key.torusCenterToTubeCenterRadius, key.tubeRadius, 12, 12, Degrees{360});
     }
 
     return it->second;

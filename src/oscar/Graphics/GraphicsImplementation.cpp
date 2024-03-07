@@ -1,5 +1,3 @@
-// these are the things that this file "implements"
-
 #include <oscar/Graphics/AntiAliasingLevel.h>
 #include <oscar/Graphics/Camera.h>
 #include <oscar/Graphics/CameraClearFlags.h>
@@ -19,12 +17,12 @@
 #include <oscar/Graphics/Detail/VertexAttributeFormatTraits.h>
 #include <oscar/Graphics/Detail/VertexAttributeHelpers.h>
 #include <oscar/Graphics/Detail/VertexAttributeList.h>
+#include <oscar/Graphics/Geometries/PlaneGeometry.h>
 #include <oscar/Graphics/Graphics.h>
 #include <oscar/Graphics/GraphicsContext.h>
 #include <oscar/Graphics/GraphicsHelpers.h>
 #include <oscar/Graphics/Material.h>
 #include <oscar/Graphics/Mesh.h>
-#include <oscar/Graphics/MeshGenerators.h>
 #include <oscar/Graphics/MeshTopology.h>
 #include <oscar/Graphics/OpenGL/CPUDataTypeOpenGLTraits.h>
 #include <oscar/Graphics/OpenGL/CPUImageFormatOpenGLTraits.h>
@@ -6583,7 +6581,7 @@ private:
     };
 
     // a generic quad mesh: two triangles covering NDC @ Z=0
-    Mesh m_QuadMesh = GeneratePlaneMesh(2.0f, 2.0f, 1, 1);
+    Mesh m_QuadMesh = PlaneGeometry::generate_mesh(2.0f, 2.0f, 1, 1);
 
     // storage for instance data
     std::vector<float> m_InstanceCPUBuffer;

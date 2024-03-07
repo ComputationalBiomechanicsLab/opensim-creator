@@ -259,9 +259,9 @@ private:
         m_Loader.slurp("oscar_demos/shaders/SolidColor.vert"),
         m_Loader.slurp("oscar_demos/shaders/SolidColor.frag"),
     }};
-    Mesh m_SphereMesh = GenerateSphereMesh(1.0f, 12, 12);
-    Mesh m_WireframeCubeMesh = GenerateCubeLinesMesh();
-    Mesh m_CircleMesh = GenerateCircleMesh(1.0f, 36);
+    Mesh m_SphereMesh = SphereGeometry::generate_mesh(1.0f, 12, 12);
+    Mesh m_WireframeCubeMesh = AABBGeometry::generate_mesh();
+    Mesh m_CircleMesh = CircleGeometry::generate_mesh(1.0f, 36);
     Mesh m_CrosshairMesh = GenerateCrosshairMesh();
     Mesh m_TriangleMesh = GenerateTriangleMesh();
     MaterialPropertyBlock m_BlackColorMaterialProps = GeneratePropertyBlock({0.0f, 0.0f, 0.0f, 1.0f});

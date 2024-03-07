@@ -3,8 +3,8 @@
 #include <testoscar/testoscarconfig.h>
 
 #include <gtest/gtest.h>
+#include <oscar/Graphics/Geometries/BoxGeometry.h>
 #include <oscar/Graphics/Mesh.h>
-#include <oscar/Graphics/MeshGenerators.h>
 #include <oscar/Graphics/Scene/SceneDecoration.h>
 #include <oscar/Utils/StringHelpers.h>
 
@@ -26,7 +26,7 @@ TEST(DAE, WriteDecorationsAsDAEWorksForNonEmptyScene)
 {
     DAEMetadata metadata{TESTOSCAR_APPNAME_STRING, TESTOSCAR_APPNAME_STRING};
 
-    SceneDecoration const dec{.mesh = GenerateBoxMesh(2.0f, 2.0f, 2.0f)};
+    SceneDecoration const dec{.mesh = BoxGeometry::generate_mesh(2.0f, 2.0f, 2.0f)};
 
     std::stringstream ss;
     WriteDecorationsAsDAE(ss, {{dec}}, metadata);

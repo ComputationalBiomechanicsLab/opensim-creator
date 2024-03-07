@@ -1,4 +1,4 @@
-#include <oscar/Graphics/MeshGenerators.h>
+#include <oscar/Graphics/Geometries.h>
 
 #include <gtest/gtest.h>
 #include <oscar/oscar.h>
@@ -8,7 +8,7 @@ using namespace osc::literals;
 
 TEST(GenerateTorusKnotMesh, DefaultCtorWorksFine)
 {
-    Mesh const m = GenerateTorusKnotMesh();
+    Mesh const m = TorusKnotGeometry::generate_mesh();
     ASSERT_TRUE(m.hasVerts());
     ASSERT_TRUE(m.hasNormals());
     ASSERT_TRUE(m.hasTexCoords());
@@ -17,13 +17,13 @@ TEST(GenerateTorusKnotMesh, DefaultCtorWorksFine)
 
 TEST(GenerateTorusKnotMesh, WorksWithOtherArguments)
 {
-    ASSERT_NO_THROW({ GenerateTorusKnotMesh(0.5f, 0.1f, 32, 4, 1, 10); });
-    ASSERT_NO_THROW({ GenerateTorusKnotMesh(0.0f, 100.0f, 1, 3, 4, 2); });
+    ASSERT_NO_THROW({ TorusKnotGeometry::generate_mesh(0.5f, 0.1f, 32, 4, 1, 10); });
+    ASSERT_NO_THROW({ TorusKnotGeometry::generate_mesh(0.0f, 100.0f, 1, 3, 4, 2); });
 }
 
 TEST(GenerateBoxMesh, DefaultCtorWorksFine)
 {
-    Mesh const m = GenerateBoxMesh();
+    Mesh const m = BoxGeometry::generate_mesh();
     ASSERT_TRUE(m.hasVerts());
     ASSERT_TRUE(m.hasNormals());
     ASSERT_TRUE(m.hasTexCoords());
@@ -32,12 +32,12 @@ TEST(GenerateBoxMesh, DefaultCtorWorksFine)
 
 TEST(GenerateBoxMesh, WorksWithNonDefaultArgs)
 {
-    ASSERT_NO_THROW({ GenerateBoxMesh(0.5f, 100.0f, 0.0f, 10, 1, 5); });
+    ASSERT_NO_THROW({ BoxGeometry::generate_mesh(0.5f, 100.0f, 0.0f, 10, 1, 5); });
 }
 
 TEST(GeneratePolyhedronMesh, WorksWithACoupleOfBasicVerts)
 {
-    Mesh const m = GeneratePolyhedronMesh(
+    Mesh const m = PolyhedronGeometry::generate_mesh(
         {{{0.0f, 1.0f, 0.0f}, {1.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}}},
         {{0, 1, 2}},
         5.0f,
@@ -51,7 +51,7 @@ TEST(GeneratePolyhedronMesh, WorksWithACoupleOfBasicVerts)
 
 TEST(GeneratePolyhedronMesh, ReturnsEmptyMeshIfGivenLessThanThreePoints)
 {
-    Mesh const m = GeneratePolyhedronMesh(
+    Mesh const m = PolyhedronGeometry::generate_mesh(
         {{{0.0f, 1.0f, 0.0f}, {1.0f, 0.0f, 1.0f}}},
         {{0, 1}},
         5.0f,
@@ -66,7 +66,7 @@ TEST(GeneratePolyhedronMesh, ReturnsEmptyMeshIfGivenLessThanThreePoints)
 
 TEST(GenerateIcosahedronMesh, DefaultCtorWorksFine)
 {
-    Mesh const m = GenerateIcosahedronMesh();
+    Mesh const m = IcosahedronGeometry::generate_mesh();
     ASSERT_TRUE(m.hasVerts());
     ASSERT_TRUE(m.hasNormals());
     ASSERT_TRUE(m.hasTexCoords());
@@ -75,12 +75,12 @@ TEST(GenerateIcosahedronMesh, DefaultCtorWorksFine)
 
 TEST(GenerateIcosahedronMesh, WorksWithNonDefaultArgs)
 {
-    ASSERT_NO_THROW(GenerateIcosahedronMesh(10.0f, 2));
+    ASSERT_NO_THROW(IcosahedronGeometry::generate_mesh(10.0f, 2));
 }
 
 TEST(GenerateDodecahedronMesh, DefaultCtorWorksFine)
 {
-    Mesh const m = GenerateDodecahedronMesh();
+    Mesh const m = DodecahedronGeometry::generate_mesh();
     ASSERT_TRUE(m.hasVerts());
     ASSERT_TRUE(m.hasNormals());
     ASSERT_TRUE(m.hasTexCoords());
@@ -89,7 +89,7 @@ TEST(GenerateDodecahedronMesh, DefaultCtorWorksFine)
 
 TEST(GenerateDodecahedronMesh, WorksWithNonDefaultArgs)
 {
-    Mesh const m = GenerateDodecahedronMesh(5.0f, 3);
+    Mesh const m = DodecahedronGeometry::generate_mesh(5.0f, 3);
     ASSERT_TRUE(m.hasVerts());
     ASSERT_TRUE(m.hasNormals());
     ASSERT_TRUE(m.hasTexCoords());
@@ -98,7 +98,7 @@ TEST(GenerateDodecahedronMesh, WorksWithNonDefaultArgs)
 
 TEST(GenerateOctahedronMesh, DefaultCtorWorksFine)
 {
-    Mesh const m = GenerateOctahedronMesh();
+    Mesh const m = OctahedronGeometry::generate_mesh();
     ASSERT_TRUE(m.hasVerts());
     ASSERT_TRUE(m.hasNormals());
     ASSERT_TRUE(m.hasTexCoords());
@@ -107,7 +107,7 @@ TEST(GenerateOctahedronMesh, DefaultCtorWorksFine)
 
 TEST(GenerateOctahedronMesh, WorksWithNonDefaultArgs)
 {
-    Mesh const m = GenerateOctahedronMesh(11.0f, 2);
+    Mesh const m = OctahedronGeometry::generate_mesh(11.0f, 2);
     ASSERT_TRUE(m.hasVerts());
     ASSERT_TRUE(m.hasNormals());
     ASSERT_TRUE(m.hasTexCoords());
@@ -116,7 +116,7 @@ TEST(GenerateOctahedronMesh, WorksWithNonDefaultArgs)
 
 TEST(GenerateTetrahedronMesh, DefaultCtorWorksFine)
 {
-    Mesh const m = GenerateTetrahedronMesh();
+    Mesh const m = TetrahedronGeometry::generate_mesh();
     ASSERT_TRUE(m.hasVerts());
     ASSERT_TRUE(m.hasNormals());
     ASSERT_TRUE(m.hasTexCoords());
@@ -125,7 +125,7 @@ TEST(GenerateTetrahedronMesh, DefaultCtorWorksFine)
 
 TEST(GenerateTetrahedronMesh, WorksWithNonDefaultArgs)
 {
-    Mesh const m = GenerateTetrahedronMesh(0.5f, 3);
+    Mesh const m = TetrahedronGeometry::generate_mesh(0.5f, 3);
     ASSERT_TRUE(m.hasVerts());
     ASSERT_TRUE(m.hasNormals());
     ASSERT_TRUE(m.hasTexCoords());
@@ -134,7 +134,7 @@ TEST(GenerateTetrahedronMesh, WorksWithNonDefaultArgs)
 
 TEST(GenerateLatheMesh, DefaultCtorWorksFine)
 {
-    Mesh const m = GenerateLatheMesh();
+    Mesh const m = LatheGeometry::generate_mesh();
     ASSERT_TRUE(m.hasVerts());
     ASSERT_TRUE(m.hasNormals());
     ASSERT_TRUE(m.hasTexCoords());
@@ -143,7 +143,7 @@ TEST(GenerateLatheMesh, DefaultCtorWorksFine)
 
 TEST(GenerateLatheMesh, WorksWithNonDefaultArgs)
 {
-    Mesh const m = GenerateLatheMesh(
+    Mesh const m = LatheGeometry::generate_mesh(
         {{{0.0f, 0.0f}, {1.0f, 1.0f}, {2.0f, 2.0f}, {3.0f, 3.0f}}},
         32,
         45_deg,
@@ -157,7 +157,7 @@ TEST(GenerateLatheMesh, WorksWithNonDefaultArgs)
 
 TEST(GenerateCircleMesh, DefaultCtorWorksFine)
 {
-    Mesh const m = GenerateCircleMesh();
+    Mesh const m = CircleGeometry::generate_mesh();
     ASSERT_TRUE(m.hasVerts());
     ASSERT_TRUE(m.hasNormals());
     ASSERT_TRUE(m.hasTexCoords());
@@ -166,7 +166,7 @@ TEST(GenerateCircleMesh, DefaultCtorWorksFine)
 
 TEST(GenerateCircleMesh, WorksWithNonDefaultArgs)
 {
-    Mesh const m = GenerateCircleMesh(0.5f, 64, 90_deg, 80_deg);
+    Mesh const m = CircleGeometry::generate_mesh(0.5f, 64, 90_deg, 80_deg);
     ASSERT_TRUE(m.hasVerts());
     ASSERT_TRUE(m.hasNormals());
     ASSERT_TRUE(m.hasTexCoords());
@@ -175,7 +175,7 @@ TEST(GenerateCircleMesh, WorksWithNonDefaultArgs)
 
 TEST(GenerateRingMesh, DefaultCtorWorksFine)
 {
-    Mesh const m = GenerateRingMesh();
+    Mesh const m = RingGeometry::generate_mesh();
     ASSERT_TRUE(m.hasVerts());
     ASSERT_TRUE(m.hasNormals());
     ASSERT_TRUE(m.hasTexCoords());
@@ -184,7 +184,7 @@ TEST(GenerateRingMesh, DefaultCtorWorksFine)
 
 TEST(GenerateRingMesh, WorksWithNonDefaultArgs)
 {
-    Mesh const m = GenerateRingMesh(0.1f, 0.2f, 16, 3, 90_deg, 180_deg);
+    Mesh const m = RingGeometry::generate_mesh(0.1f, 0.2f, 16, 3, 90_deg, 180_deg);
     ASSERT_TRUE(m.hasVerts());
     ASSERT_TRUE(m.hasNormals());
     ASSERT_TRUE(m.hasTexCoords());
@@ -193,7 +193,7 @@ TEST(GenerateRingMesh, WorksWithNonDefaultArgs)
 
 TEST(GenerateTorusMesh, DefaultCtorWorksFine)
 {
-    Mesh const m = GenerateTorusMesh();
+    Mesh const m = TorusGeometry::generate_mesh();
     ASSERT_TRUE(m.hasVerts());
     ASSERT_TRUE(m.hasNormals());
     ASSERT_TRUE(m.hasTexCoords());
@@ -202,7 +202,7 @@ TEST(GenerateTorusMesh, DefaultCtorWorksFine)
 
 TEST(GenerateTorusMesh, WorksWithNonDefaultArgs)
 {
-    Mesh const m = GenerateTorusMesh(0.2f, 0.3f, 4, 32, 180_deg);
+    Mesh const m = TorusGeometry::generate_mesh(0.2f, 0.3f, 4, 32, 180_deg);
     ASSERT_TRUE(m.hasVerts());
     ASSERT_TRUE(m.hasNormals());
     ASSERT_TRUE(m.hasTexCoords());
@@ -211,7 +211,7 @@ TEST(GenerateTorusMesh, WorksWithNonDefaultArgs)
 
 TEST(GenerateCylinderMesh, DefaultCtorWorksFine)
 {
-    Mesh const m = GenerateCylinderMesh();
+    Mesh const m = CylinderGeometry::generate_mesh();
     ASSERT_TRUE(m.hasVerts());
     ASSERT_TRUE(m.hasNormals());
     ASSERT_TRUE(m.hasTexCoords());
@@ -220,7 +220,7 @@ TEST(GenerateCylinderMesh, DefaultCtorWorksFine)
 
 TEST(GenerateCylinderMesh, WorksWithNonDefaultArgs)
 {
-    Mesh const m = GenerateCylinderMesh(0.1f, 0.05f, 0.5f, 16, 2, true, 180_deg, 270_deg);
+    Mesh const m = CylinderGeometry::generate_mesh(0.1f, 0.05f, 0.5f, 16, 2, true, 180_deg, 270_deg);
     ASSERT_TRUE(m.hasVerts());
     ASSERT_TRUE(m.hasNormals());
     ASSERT_TRUE(m.hasTexCoords());
@@ -229,7 +229,7 @@ TEST(GenerateCylinderMesh, WorksWithNonDefaultArgs)
 
 TEST(GenerateConeMesh, DefaultCtorWorksFine)
 {
-    Mesh const m = GenerateConeMesh();
+    Mesh const m = ConeGeometry::generate_mesh();
     ASSERT_TRUE(m.hasVerts());
     ASSERT_TRUE(m.hasNormals());
     ASSERT_TRUE(m.hasTexCoords());
@@ -238,7 +238,7 @@ TEST(GenerateConeMesh, DefaultCtorWorksFine)
 
 TEST(GenerateConeMesh, WorksWithNonDefaultArgs)
 {
-    Mesh const m = GenerateConeMesh(0.2f, 500.0f, 4, 3, true, -90_deg, 90_deg);
+    Mesh const m = ConeGeometry::generate_mesh(0.2f, 500.0f, 4, 3, true, -90_deg, 90_deg);
     ASSERT_TRUE(m.hasVerts());
     ASSERT_TRUE(m.hasNormals());
     ASSERT_TRUE(m.hasTexCoords());
@@ -247,7 +247,7 @@ TEST(GenerateConeMesh, WorksWithNonDefaultArgs)
 
 TEST(GeneratePlaneMesh, DefaultCtorWorksFine)
 {
-    Mesh const m = GeneratePlaneMesh();
+    Mesh const m = PlaneGeometry::generate_mesh();
     ASSERT_TRUE(m.hasVerts());
     ASSERT_TRUE(m.hasNormals());
     ASSERT_TRUE(m.hasTexCoords());
@@ -256,7 +256,7 @@ TEST(GeneratePlaneMesh, DefaultCtorWorksFine)
 
 TEST(GeneratePlaneMesh, WorksWithNonDefaultArgs)
 {
-    Mesh const m = GeneratePlaneMesh(0.5f, 2.0f, 4, 4);
+    Mesh const m = PlaneGeometry::generate_mesh(0.5f, 2.0f, 4, 4);
     ASSERT_TRUE(m.hasVerts());
     ASSERT_TRUE(m.hasNormals());
     ASSERT_TRUE(m.hasTexCoords());
@@ -265,7 +265,7 @@ TEST(GeneratePlaneMesh, WorksWithNonDefaultArgs)
 
 TEST(GenerateSphereMesh, DefaultCtorWorksFine)
 {
-    Mesh const m = GenerateSphereMesh();
+    Mesh const m = SphereGeometry::generate_mesh();
     ASSERT_TRUE(m.hasVerts());
     ASSERT_TRUE(m.hasNormals());
     ASSERT_TRUE(m.hasTexCoords());
@@ -274,7 +274,7 @@ TEST(GenerateSphereMesh, DefaultCtorWorksFine)
 
 TEST(GenerateSphereMesh, WorksWithNonDefaultArgs)
 {
-    Mesh const m = GenerateSphereMesh(0.5f, 12, 4, 90_deg, 180_deg, -45_deg, -60_deg);
+    Mesh const m = SphereGeometry::generate_mesh(0.5f, 12, 4, 90_deg, 180_deg, -45_deg, -60_deg);
     ASSERT_TRUE(m.hasVerts());
     ASSERT_TRUE(m.hasNormals());
     ASSERT_TRUE(m.hasTexCoords());

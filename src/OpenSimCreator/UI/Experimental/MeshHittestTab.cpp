@@ -3,12 +3,13 @@
 #include <OpenSimCreator/Graphics/SimTKMeshLoader.h>
 
 #include <IconsFontAwesome5.h>
+#include <oscar/Graphics/Geometries/AABBGeometry.h>
+#include <oscar/Graphics/Geometries/SphereGeometry.h>
 #include <oscar/Graphics/Camera.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/Graphics.h>
 #include <oscar/Graphics/Material.h>
 #include <oscar/Graphics/Mesh.h>
-#include <oscar/Graphics/MeshGenerators.h>
 #include <oscar/Graphics/Scene/SceneCache.h>
 #include <oscar/Graphics/Scene/SceneDecoration.h>
 #include <oscar/Graphics/Scene/SceneHelpers.h>
@@ -182,8 +183,8 @@ private:
         },
     };
     Mesh m_Mesh = LoadMeshViaSimTK(App::resourceFilepath("geometry/hat_ribs.vtp"));
-    Mesh m_SphereMesh = GenerateSphereMesh(1.0f, 12, 12);
-    Mesh m_CubeLinesMesh = GenerateCubeLinesMesh();
+    Mesh m_SphereMesh = SphereGeometry::generate_mesh(1.0f, 12, 12);
+    Mesh m_CubeLinesMesh = AABBGeometry::generate_mesh();
 
     // other state
     BVH m_MeshBVH = CreateTriangleBVHFromMesh(m_Mesh);

@@ -136,7 +136,7 @@ private:
 
     Mesh m_CubeMesh = GenerateLearnOpenGLCubeMesh();
     Mesh m_PlaneMesh = GeneratePlane();
-    Mesh m_QuadMesh = GeneratePlaneMesh(2.0f, 2.0f, 1, 1);
+    Mesh m_QuadMesh = PlaneGeometry::generate_mesh(2.0f, 2.0f, 1, 1);
 
     RenderTexture m_RenderTexture;
     Camera m_ScreenCamera = CreateScreenCamera();

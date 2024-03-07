@@ -16,7 +16,7 @@ namespace
 
     Mesh GenerateCubeSimilarlyToLOGL()
     {
-        return GenerateBoxMesh(1.0f, 1.0f, 1.0f);
+        return BoxGeometry::generate_mesh(1.0f, 1.0f, 1.0f);
     }
 
     Material GenerateUVTestingTextureMappedMaterial(IResourceLoader& rl)

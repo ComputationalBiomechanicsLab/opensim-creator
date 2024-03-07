@@ -209,7 +209,7 @@ private:
         m_Loader.open("oscar_learnopengl/textures/wood.png"),
         ColorSpace::sRGB
     );
-    Mesh m_CubeMesh = GenerateBoxMesh(2.0f, 2.0f, 2.0f);
+    Mesh m_CubeMesh = BoxGeometry::generate_mesh(2.0f, 2.0f, 2.0f);
     std::array<SceneCube, 6> m_SceneCubes = MakeSceneCubes();
     RenderTexture m_DepthTexture = CreateDepthTexture();
     Vec3 m_LightPos = {};
