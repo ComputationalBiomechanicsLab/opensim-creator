@@ -117,6 +117,9 @@ add_library(oscar STATIC
     Graphics/Scene/ShaderCache.cpp
     Graphics/Scene/ShaderCache.h
 
+    Graphics/Textures/ChequeredTexture.cpp
+    Graphics/Textures/ChequeredTexture.h
+
     Graphics/AntiAliasingLevel.cpp
     Graphics/AntiAliasingLevel.h
     Graphics/BlitFlags.h
@@ -168,8 +171,7 @@ add_library(oscar STATIC
     Graphics/TextureDimensionality.h
     Graphics/TextureFilterMode.h
     Graphics/TextureFormat.h
-    Graphics/TextureGenerators.cpp
-    Graphics/TextureGenerators.h
+    Graphics/Textures.h
     Graphics/TextureWrapMode.h
     Graphics/Texture2D.h
     Graphics/Unorm8.h

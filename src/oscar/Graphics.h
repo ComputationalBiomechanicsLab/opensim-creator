@@ -45,7 +45,7 @@
 #include <oscar/Graphics/TextureDimensionality.h>
 #include <oscar/Graphics/TextureFilterMode.h>
 #include <oscar/Graphics/TextureFormat.h>
-#include <oscar/Graphics/TextureGenerators.h>
+#include <oscar/Graphics/Textures.h>
 #include <oscar/Graphics/TextureWrapMode.h>
 #include <oscar/Graphics/Texture2D.h>
 #include <oscar/Graphics/Unorm8.h>

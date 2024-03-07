@@ -1,6 +1,7 @@
 #include "SceneRenderer.h"
 
 #include <oscar/Graphics/Materials/MeshBasicMaterial.h>
+#include <oscar/Graphics/Textures/ChequeredTexture.h>
 #include <oscar/Graphics/AntiAliasingLevel.h>
 #include <oscar/Graphics/Camera.h>
 #include <oscar/Graphics/Color.h>
@@ -15,7 +16,6 @@
 #include <oscar/Graphics/Scene/SceneDecorationFlags.h>
 #include <oscar/Graphics/Scene/SceneRendererParams.h>
 #include <oscar/Graphics/Scene/ShaderCache.h>
-#include <oscar/Graphics/TextureGenerators.h>
 #include <oscar/Maths/Angle.h>
 #include <oscar/Maths/Mat4.h>
 #include <oscar/Maths/MatFunctions.h>
@@ -478,7 +478,7 @@ private:
     MeshBasicMaterial::PropertyBlock m_RimsSelectedColor;
     MeshBasicMaterial::PropertyBlock m_RimsHoveredColor;
     Mesh m_QuadMesh;
-    Texture2D m_ChequerTexture = GenerateChequeredFloorTexture();
+    Texture2D m_ChequerTexture = ChequeredTexture::generate_texture();
     Camera m_Camera;
     RenderTexture m_RimsTexture;
     RenderTexture m_ShadowMapTexture;
