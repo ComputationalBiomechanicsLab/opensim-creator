@@ -22,7 +22,7 @@ namespace osc
 
         bool contains(TPSDocumentElementID const& el) const
         {
-            return m_SelectedSceneElements.find(el) != m_SelectedSceneElements.end();
+            return m_SelectedSceneElements.contains(el);
         }
 
         std::unordered_set<TPSDocumentElementID> const& getUnderlyingSet() const

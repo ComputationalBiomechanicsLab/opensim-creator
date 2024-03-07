@@ -41,8 +41,7 @@ public:
 
     Icon const& getIcon(std::string_view iconName) const
     {
-        auto const it = m_Icons.find(std::string{iconName});
-        if (it != m_Icons.end())
+        if (auto const it = m_Icons.find(std::string{iconName}); it != m_Icons.end())
         {
             return it->second;
         }

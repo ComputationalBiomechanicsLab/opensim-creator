@@ -316,7 +316,7 @@ namespace osc::mi
             {
                 UID id = el.getID();
 
-                if (excludedIDs.find(id) != excludedIDs.end())
+                if (excludedIDs.contains(id))
                 {
                     continue;
                 }
@@ -973,7 +973,7 @@ namespace osc::mi
             {
                 UID refID = el.getCrossReferenceConnecteeID(i);
 
-                if (excludedIDs.find(refID) != excludedIDs.end())
+                if (excludedIDs.contains(refID))
                 {
                     continue;
                 }

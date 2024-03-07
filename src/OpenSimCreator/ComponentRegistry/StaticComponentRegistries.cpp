@@ -609,14 +609,12 @@ namespace
         {
             T const& v = *ptrs[i];
             std::string const& name = v.getConcreteClassName();
-            if (blacklistLut.find(name) != blacklistLut.end())
+            if (blacklistLut.contains(name))
             {
                 continue;  // it's a blacklisted component, hide it in the UI
             }
 
-            auto it = protoLut.find(name);
-
-            if (it != protoLut.end())
+            if (auto it = protoLut.find(name); it != protoLut.end())
             {
                 // it has already been manually created in the prototype LUT - use that
                 std::shared_ptr<T const> p = std::dynamic_pointer_cast<T const>(it->second);

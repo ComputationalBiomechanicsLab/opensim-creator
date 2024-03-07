@@ -127,7 +127,7 @@ R"(# configuration options
     private:
         AppSettingsLookupValue const* lookup(std::string_view key) const
         {
-            if (auto const it = m_Data.find(key); it != m_Data.cend())
+            if (auto const it = m_Data.find(key); it != m_Data.end())
             {
                 return &it->second;
             }

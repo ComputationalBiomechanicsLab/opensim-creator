@@ -727,7 +727,7 @@ std::unique_ptr<OpenSim::Model> osc::mi::CreateOpenSimModelFromMeshImporterDocum
     // note: these bodies may use the non-participating bodies (above) as parents
     for (Joint const& jointEl : doc.iter<Joint>())
     {
-        if (jointEl.getParentID() == MIIDs::Ground() || visitedBodies.find(jointEl.getParentID()) != visitedBodies.end())
+        if (jointEl.getParentID() == MIIDs::Ground() || visitedBodies.contains(jointEl.getParentID()))
         {
             AttachJointRecursive(doc, *model, jointEl, visitedBodies, visitedJoints);
         }

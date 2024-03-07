@@ -302,9 +302,7 @@ public:
 
     bool tryCheckout(ModelStateCommit const& commit)
     {
-        auto it = m_Commits.find(commit.getID());
-
-        if (it == m_Commits.end())
+        if (!m_Commits.contains(commit.getID()))
         {
             return false;  // commit isn't in this model's storage (is it from another model?)
         }

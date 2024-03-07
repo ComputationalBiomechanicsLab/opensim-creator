@@ -96,7 +96,7 @@ namespace osc::mi
         // returns true if the user can (de)select the given element
         bool isSelectable(MIObject const& el) const
         {
-            if (m_Options.maybeElsAttachingTo.find(el.getID()) != m_Options.maybeElsAttachingTo.end())
+            if (m_Options.maybeElsAttachingTo.contains(el.getID()))
             {
                 return false;
             }

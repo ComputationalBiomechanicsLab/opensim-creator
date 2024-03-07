@@ -2934,9 +2934,7 @@ public:
 
     std::optional<ptrdiff_t> findPropertyIndex(std::string_view propertyName) const
     {
-        auto const it = m_Uniforms.find(propertyName);
-
-        if (it != m_Uniforms.end())
+        if (auto const it = m_Uniforms.find(propertyName); it != m_Uniforms.end())
         {
             return static_cast<ptrdiff_t>(std::distance(m_Uniforms.begin(), it));
         }
@@ -7263,8 +7261,7 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterialPropertyBlock(
     {
         for (auto const& [name, value] : els.front().maybePropBlock->m_Impl->m_Values)
         {
-            auto const it = uniforms.find(name);
-            if (it != uniforms.end())
+            if (auto const it = uniforms.find(name); it != uniforms.end())
             {
                 TryBindMaterialValueToShaderElement(it->second, value, textureSlot);
             }
