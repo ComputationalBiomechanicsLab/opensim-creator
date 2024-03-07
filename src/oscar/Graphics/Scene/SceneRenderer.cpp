@@ -139,13 +139,13 @@ class osc::SceneRenderer::Impl final {
 public:
     Impl(SceneCache& cache) :
 
-        m_SceneColoredElementsMaterial{cache.load("oscar/shaders/SceneRenderer/DrawColoredObjects.vert", "oscar/shaders/SceneRenderer/DrawColoredObjects.frag")},
-        m_SceneTexturedElementsMaterial{cache.load("oscar/shaders/SceneRenderer/DrawTexturedObjects.vert", "oscar/shaders/SceneRenderer/DrawTexturedObjects.frag")},
-        m_SolidColorMaterial{cache.basic_material()},
-        m_WireframeMaterial{cache.wireframe_material()},
-        m_EdgeDetectorMaterial{cache.load("oscar/shaders/SceneRenderer/EdgeDetector.vert", "oscar/shaders/SceneRenderer/EdgeDetector.frag")},
-        m_NormalsMaterial{cache.load("oscar/shaders/SceneRenderer/NormalsVisualizer.vert", "oscar/shaders/SceneRenderer/NormalsVisualizer.geom", "oscar/shaders/SceneRenderer/NormalsVisualizer.frag")},
-        m_DepthWritingMaterial{cache.load("oscar/shaders/SceneRenderer/DepthMap.vert", "oscar/shaders/SceneRenderer/DepthMap.frag")},
+        m_SceneColoredElementsMaterial{cache.getShaderResource("oscar/shaders/SceneRenderer/DrawColoredObjects.vert", "oscar/shaders/SceneRenderer/DrawColoredObjects.frag")},
+        m_SceneTexturedElementsMaterial{cache.getShaderResource("oscar/shaders/SceneRenderer/DrawTexturedObjects.vert", "oscar/shaders/SceneRenderer/DrawTexturedObjects.frag")},
+        m_SolidColorMaterial{cache.basicMaterial()},
+        m_WireframeMaterial{cache.wireframeMaterial()},
+        m_EdgeDetectorMaterial{cache.getShaderResource("oscar/shaders/SceneRenderer/EdgeDetector.vert", "oscar/shaders/SceneRenderer/EdgeDetector.frag")},
+        m_NormalsMaterial{cache.getShaderResource("oscar/shaders/SceneRenderer/NormalsVisualizer.vert", "oscar/shaders/SceneRenderer/NormalsVisualizer.geom", "oscar/shaders/SceneRenderer/NormalsVisualizer.frag")},
+        m_DepthWritingMaterial{cache.getShaderResource("oscar/shaders/SceneRenderer/DepthMap.vert", "oscar/shaders/SceneRenderer/DepthMap.frag")},
         m_QuadMesh{cache.getTexturedQuadMesh()}
     {
         m_SceneTexturedElementsMaterial.setTexture("uDiffuseTexture", m_ChequerTexture);

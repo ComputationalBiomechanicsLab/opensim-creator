@@ -151,12 +151,12 @@ public:
         }
     }
 
-    MeshBasicMaterial const& basic_material()
+    MeshBasicMaterial const& basicMaterial()
     {
         return m_BasicMaterial.emplace();
     }
 
-    MeshBasicMaterial const& wireframe_material()
+    MeshBasicMaterial const& wireframeMaterial()
     {
         if (!m_WireframeMaterial) {
             m_WireframeMaterial.emplace();
@@ -202,7 +202,7 @@ osc::SceneCache::SceneCache(SceneCache&&) noexcept = default;
 osc::SceneCache& osc::SceneCache::operator=(SceneCache&&) noexcept = default;
 osc::SceneCache::~SceneCache() noexcept = default;
 
-void osc::SceneCache::clear()
+void osc::SceneCache::clearMeshes()
 {
     m_Impl->fileCache.lock()->clear();
     m_Impl->bvhCache.lock()->clear();
@@ -313,14 +313,14 @@ BVH const& osc::SceneCache::getBVH(Mesh const& mesh)
     return *it->second;
 }
 
-Shader const& osc::SceneCache::load(
+Shader const& osc::SceneCache::getShaderResource(
     ResourcePath const& vertexShader,
     ResourcePath const& fragmentShader)
 {
     return m_Impl->load(vertexShader, fragmentShader);
 }
 
-Shader const& osc::SceneCache::load(
+Shader const& osc::SceneCache::getShaderResource(
     ResourcePath const& vertexShader,
     ResourcePath const& geometryShader,
     ResourcePath const& fragmentShader)
@@ -328,12 +328,12 @@ Shader const& osc::SceneCache::load(
     return m_Impl->load(vertexShader, geometryShader, fragmentShader);
 }
 
-MeshBasicMaterial const& osc::SceneCache::basic_material()
+MeshBasicMaterial const& osc::SceneCache::basicMaterial()
 {
-    return m_Impl->basic_material();
+    return m_Impl->basicMaterial();
 }
 
-MeshBasicMaterial const& osc::SceneCache::wireframe_material()
+MeshBasicMaterial const& osc::SceneCache::wireframeMaterial()
 {
-    return m_Impl->wireframe_material();
+    return m_Impl->wireframeMaterial();
 }

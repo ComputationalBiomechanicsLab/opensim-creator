@@ -177,7 +177,7 @@ namespace osc
         PolarPerspectiveCamera linkedCameraBase = CreateCameraFocusedOn(editedDocument->getScratch().sourceMesh.getBounds());
 
         // wireframe material, used to draw scene elements in a wireframe style
-        MeshBasicMaterial wireframeMaterial = App::singleton<SceneCache>(App::resource_loader())->wireframe_material();
+        MeshBasicMaterial wireframeMaterial = App::singleton<SceneCache>(App::resource_loader())->wireframeMaterial();
 
         // shared sphere mesh (used by rendering code)
         Mesh landmarkSphere = App::singleton<SceneCache>(App::resource_loader())->getSphereMesh();

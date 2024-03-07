@@ -25,7 +25,7 @@ namespace osc
         ~SceneCache() noexcept;
 
         // clear all cached meshes (can be slow: forces a full reload)
-        void clear();
+        void clearMeshes();
 
         // always returns (it will use a dummy cube and print a log error if something fails)
         Mesh get(std::string const& key, std::function<Mesh()> const& getter);
@@ -45,19 +45,19 @@ namespace osc
 
         BVH const& getBVH(Mesh const&);
 
-        Shader const& load(
+        Shader const& getShaderResource(
             ResourcePath const& vertexShader,
             ResourcePath const& fragmentShader
         );
 
-        Shader const& load(
+        Shader const& getShaderResource(
             ResourcePath const& vertexShader,
             ResourcePath const& geometryShader,
             ResourcePath const& fragmentShader
         );
 
-        MeshBasicMaterial const& basic_material();
-        MeshBasicMaterial const& wireframe_material();
+        MeshBasicMaterial const& basicMaterial();
+        MeshBasicMaterial const& wireframeMaterial();
 
     private:
         class Impl;
