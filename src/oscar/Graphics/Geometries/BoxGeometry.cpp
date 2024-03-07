@@ -78,7 +78,7 @@ osc::BoxGeometry::BoxGeometry(
                 normal[w] = dims.z > 0.0f ? 1.0f : -1.0f;
                 normals.push_back(normal);
 
-                uvs.emplace_back(ix/gridX, 1 - (iy/gridY));
+                uvs.emplace_back(static_cast<float>(ix)/static_cast<float>(gridX), 1.0f - static_cast<float>(iy)/static_cast<float>(gridY));
 
                 ++vertexCount;
             }
