@@ -77,6 +77,8 @@ add_library(oscar STATIC
     Graphics/Geometries/PolyhedronGeometry.h
     Graphics/Geometries/RingGeometry.cpp
     Graphics/Geometries/RingGeometry.h
+    Graphics/Geometries/SphereGeometry.cpp
+    Graphics/Geometries/SphereGeometry.h
     Graphics/Geometries/TetrahedronGeometry.cpp
     Graphics/Geometries/TetrahedronGeometry.h
     Graphics/Geometries/TorusGeometry.cpp

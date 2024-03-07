@@ -11,6 +11,7 @@
 #include <oscar/Graphics/Geometries/PlaneGeometry.h>
 #include <oscar/Graphics/Geometries/PolyhedronGeometry.h>
 #include <oscar/Graphics/Geometries/RingGeometry.h>
+#include <oscar/Graphics/Geometries/SphereGeometry.h>
 #include <oscar/Graphics/Geometries/TetrahedronGeometry.h>
 #include <oscar/Graphics/Geometries/TorusGeometry.h>
 #include <oscar/Graphics/Geometries/TorusKnotGeometry.h>
