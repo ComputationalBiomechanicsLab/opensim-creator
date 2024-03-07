@@ -3,7 +3,6 @@
 #include <OpenSimCreator/Utils/SimTKHelpers.h>
 
 #include <Simbody.h>
-#include <oscar/Graphics/GraphicsHelpers.h>
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Maths/GeometricFunctions.h>
 #include <oscar/Maths/MathHelpers.h>

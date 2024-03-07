@@ -17,7 +17,6 @@
 #include <oscar/Graphics/Geometries.h>
 #include <oscar/Graphics/Graphics.h>
 #include <oscar/Graphics/GraphicsContext.h>
-#include <oscar/Graphics/GraphicsHelpers.h>
 #include <oscar/Graphics/Material.h>
 #include <oscar/Graphics/Materials.h>
 #include <oscar/Graphics/MaterialPropertyBlock.h>

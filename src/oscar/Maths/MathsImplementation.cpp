@@ -277,6 +277,27 @@ namespace
         float closest = std::numeric_limits<float>::max();
         return BVH_GetClosestRayIndexedTriangleCollisionRecursive(nodes, prims, verts, indices, ray, closest, 0);
     }
+
+    // describes the direction of each cube face and which direction is "up"
+    // from the perspective of looking at that face from the center of the cube
+    struct CubemapFaceDetails final {
+        Vec3 direction;
+        Vec3 up;
+    };
+    constexpr auto c_CubemapFacesDetails = std::to_array<CubemapFaceDetails>(
+        {
+            {{ 1.0f,  0.0f,  0.0f}, {0.0f, -1.0f,  0.0f}},
+        {{-1.0f,  0.0f,  0.0f}, {0.0f, -1.0f,  0.0f}},
+        {{ 0.0f,  1.0f,  0.0f}, {0.0f,  0.0f,  1.0f}},
+        {{ 0.0f, -1.0f,  0.0f}, {0.0f,  0.0f, -1.0f}},
+        {{ 0.0f,  0.0f,  1.0f}, {0.0f, -1.0f,  0.0f}},
+        {{ 0.0f,  0.0f, -1.0f}, {0.0f, -1.0f,  0.0f}},
+        });
+
+    Mat4 CalcCubemapViewMatrix(CubemapFaceDetails const& faceDetails, Vec3 const& cubeCenter)
+    {
+        return look_at(cubeCenter, cubeCenter + faceDetails.direction, faceDetails.up);
+    }
 }
 
 void osc::BVH::clear()
@@ -1702,4 +1723,18 @@ bool osc::AreOrthogonal(FrameAxis a, FrameAxis b)
 std::ostream& osc::operator<<(std::ostream& o, FrameAxis f)
 {
     return o << ToStringView(f);
+}
+
+std::array<Mat4, 6> osc::CalcCubemapViewProjMatrices(
+    Mat4 const& projectionMatrix,
+    Vec3 cubeCenter)
+{
+    static_assert(std::size(c_CubemapFacesDetails) == 6);
+
+    std::array<Mat4, 6> rv{};
+    for (size_t i = 0; i < 6; ++i)
+    {
+        rv[i] = projectionMatrix * CalcCubemapViewMatrix(c_CubemapFacesDetails[i], cubeCenter);
+    }
+    return rv;
 }

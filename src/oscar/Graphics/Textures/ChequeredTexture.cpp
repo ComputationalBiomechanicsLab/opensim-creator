@@ -4,7 +4,6 @@
 
 #include <oscar/Graphics/Color32.h>
 #include <oscar/Graphics/ColorSpace.h>
-#include <oscar/Graphics/GraphicsHelpers.h>
 #include <oscar/Graphics/Texture2D.h>
 #include <oscar/Graphics/TextureFormat.h>
 #include <oscar/Maths/MathHelpers.h>

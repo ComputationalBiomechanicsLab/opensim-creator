@@ -1,7 +1,6 @@
 #include "PreviewExperimentalDataTab.h"
 
 #include <oscar/Graphics/Color.h>
-#include <oscar/Graphics/GraphicsHelpers.h>
 #include <oscar/Graphics/Scene/SceneCache.h>
 #include <oscar/Graphics/Scene/SceneDecoration.h>
 #include <oscar/Graphics/Scene/SceneDecorationFlags.h>

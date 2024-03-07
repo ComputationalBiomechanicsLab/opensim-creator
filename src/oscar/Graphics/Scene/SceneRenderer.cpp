@@ -6,7 +6,6 @@
 #include <oscar/Graphics/Camera.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/Graphics.h>
-#include <oscar/Graphics/GraphicsHelpers.h>
 #include <oscar/Graphics/Material.h>
 #include <oscar/Graphics/MaterialPropertyBlock.h>
 #include <oscar/Graphics/Mesh.h>

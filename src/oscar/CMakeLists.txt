@@ -138,8 +138,6 @@ add_library(oscar STATIC
     Graphics/Geometries.h
     Graphics/Graphics.h
     Graphics/GraphicsContext.h
-    Graphics/GraphicsHelpers.cpp
-    Graphics/GraphicsHelpers.h
     Graphics/GraphicsImplementation.cpp
     Graphics/Material.h
     Graphics/MaterialPropertyBlock.h

@@ -20,7 +20,6 @@
 #include <oscar/Graphics/Geometries/PlaneGeometry.h>
 #include <oscar/Graphics/Graphics.h>
 #include <oscar/Graphics/GraphicsContext.h>
-#include <oscar/Graphics/GraphicsHelpers.h>
 #include <oscar/Graphics/Material.h>
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Graphics/MeshFunctions.h>
