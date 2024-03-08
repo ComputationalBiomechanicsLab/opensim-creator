@@ -7,6 +7,7 @@
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentNonParticipatingLandmark.h>
 
 #include <oscar/Maths/Vec3.h>
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/EnumHelpers.h>
 #include <oscar/Utils/StringName.h>
 
@@ -62,7 +63,7 @@ namespace
             name += prefix;
             name += std::to_string(i);
 
-            if (std::none_of(ranges::begin(range), ranges::end(range), std::bind_front(HasName<typename Range::value_type>, name)))
+            if (none_of(range, std::bind_front(HasName<typename Range::value_type>, name)))
             {
                 return StringName{std::move(name)};
             }
@@ -97,7 +98,7 @@ namespace
 
     size_t CountFullyPaired(TPSDocument const& doc)
     {
-        return std::count_if(doc.landmarkPairs.begin(), doc.landmarkPairs.end(), osc::IsFullyPaired);
+        return count_if(doc.landmarkPairs, osc::IsFullyPaired);
     }
 }
 
@@ -210,7 +211,7 @@ std::vector<NamedLandmarkPair3D> osc::GetNamedLandmarkPairs(TPSDocument const& d
 size_t osc::CountNumLandmarksForInput(TPSDocument const& doc, TPSDocumentInputIdentifier which)
 {
     auto const hasLocation = [which](TPSDocumentLandmarkPair const& p) { return HasLocation(p, which); };
-    return std::count_if(doc.landmarkPairs.begin(), doc.landmarkPairs.end(), hasLocation);
+    return count_if(doc.landmarkPairs, hasLocation);
 }
 
 // returns the next available unique landmark ID

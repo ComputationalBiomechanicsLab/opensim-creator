@@ -12,6 +12,7 @@
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/Vec3.h>
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/StdVariantHelpers.h>
@@ -28,8 +29,7 @@ using namespace osc;
 
 bool osc::mi::IsAChildAttachmentInAnyJoint(Document const& doc, MIObject const& obj)
 {
-    auto const iterable = doc.iter<Joint>();
-    return std::any_of(iterable.begin(), iterable.end(), [id = obj.getID()](Joint const& j)
+    return any_of(doc.iter<Joint>(), [id = obj.getID()](Joint const& j)
     {
         return j.getChildID() == id;
     });

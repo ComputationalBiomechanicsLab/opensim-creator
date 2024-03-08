@@ -1,6 +1,7 @@
 #include "VertexFormat.h"
 
 #include <oscar/Graphics/VertexAttributeDescriptor.h>
+#include <oscar/Utils/Algorithms.h>
 
 #include <algorithm>
 #include <cstddef>
@@ -27,7 +28,7 @@ osc::VertexFormat::VertexFormat(std::initializer_list<VertexAttributeDescriptor>
         {
             return d.attribute() == attr;
         };
-        if (std::count_if(m_AttributeDescriptions.begin(), m_AttributeDescriptions.end(), hasAttr) > 1)
+        if (count_if(m_AttributeDescriptions, hasAttr) > 1)
         {
             throw std::runtime_error{"Duplicate attributes passed to VertexFormat: each VertexAttribute should be unique"};
         }

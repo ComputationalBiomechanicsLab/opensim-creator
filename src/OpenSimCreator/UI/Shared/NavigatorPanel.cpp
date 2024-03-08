@@ -14,6 +14,7 @@
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/StandardPanelImpl.h>
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/StringHelpers.h>
 
@@ -139,7 +140,7 @@ namespace
 
     bool isSearchHit(std::string const& searchStr, ComponentPath const& cp)
     {
-        return std::any_of(cp.begin(), cp.end(), [&searchStr](OpenSim::Component const* c)
+        return any_of(cp, [&searchStr](OpenSim::Component const* c)
         {
             return ContainsCaseInsensitive(c->getName(), searchStr);
         });

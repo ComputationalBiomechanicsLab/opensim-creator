@@ -7,6 +7,7 @@
 
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Platform/Log.h>
+#include <oscar/Utils/Algorithms.h>
 
 #include <algorithm>
 #include <filesystem>
@@ -211,29 +212,17 @@ size_t osc::mow::ThinPlateSplineMeshWarp::getNumLandmarks() const
 
 size_t osc::mow::ThinPlateSplineMeshWarp::getNumSourceLandmarks() const
 {
-    return std::count_if(
-        m_Landmarks.begin(),
-        m_Landmarks.end(),
-        std::mem_fn(&LandmarkPairing::hasSource)
-    );
+    return count_if(m_Landmarks, std::mem_fn(&LandmarkPairing::hasSource));
 }
 
 size_t osc::mow::ThinPlateSplineMeshWarp::getNumDestinationLandmarks() const
 {
-    return std::count_if(
-        m_Landmarks.begin(),
-        m_Landmarks.end(),
-        std::mem_fn(&LandmarkPairing::hasDestination)
-    );
+    return count_if(m_Landmarks, std::mem_fn(&LandmarkPairing::hasDestination));
 }
 
 size_t osc::mow::ThinPlateSplineMeshWarp::getNumFullyPairedLandmarks() const
 {
-    return std::count_if(
-        m_Landmarks.begin(),
-        m_Landmarks.end(),
-        std::mem_fn(&LandmarkPairing::isFullyPaired)
-    );
+    return count_if(m_Landmarks, std::mem_fn(&LandmarkPairing::isFullyPaired));
 }
 
 size_t osc::mow::ThinPlateSplineMeshWarp::getNumUnpairedLandmarks() const
@@ -258,11 +247,7 @@ bool osc::mow::ThinPlateSplineMeshWarp::hasUnpairedLandmarks() const
 
 bool osc::mow::ThinPlateSplineMeshWarp::hasLandmarkNamed(std::string_view name) const
 {
-    return std::any_of(
-        m_Landmarks.begin(),
-        m_Landmarks.end(),
-        [name](auto const& lm) { return lm.name() == name; }
-    );
+    return any_of(m_Landmarks, [name](auto const& lm) { return lm.name() == name; });
 }
 
 LandmarkPairing const* osc::mow::ThinPlateSplineMeshWarp::tryGetLandmarkPairingByName(std::string_view name) const

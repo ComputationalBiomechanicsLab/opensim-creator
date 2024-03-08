@@ -1,6 +1,7 @@
 #include "MIObject.h"
 
 #include <oscar/Maths/MathHelpers.h>
+#include <oscar/Utils/Algorithms.h>
 
 #include <algorithm>
 
@@ -18,13 +19,8 @@ bool osc::mi::MIObject::isCrossReferencing(
     UID id,
     CrossrefDirection direction) const
 {
-    auto const crossRefs = implGetCrossReferences();
-    return std::any_of(
-        crossRefs.begin(),
-        crossRefs.end(),
-        [id, direction](CrossrefDescriptor const& desc)
-        {
-            return desc.getConnecteeID() == id && (desc.getDirection() & direction);
-        }
-    );
+    return any_of(implGetCrossReferences(), [id, direction](CrossrefDescriptor const& desc)
+    {
+        return desc.getConnecteeID() == id && (desc.getDirection() & direction);
+    });
 }

@@ -11,9 +11,9 @@
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Maths/Vec4.h>
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
 
-#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <vector>
@@ -64,14 +64,10 @@ std::vector<Vec4> osc::CalcTangentVectors(
     // else: there must be enough data to compute the tangents
     //
     // (but, just to keep sane, assert that the mesh data is actually valid)
-    OSC_ASSERT_ALWAYS(std::all_of(
-        indices.begin(),
-        indices.end(),
-        [nVerts = verts.size(), nNormals = normals.size(), nCoords = texCoords.size()](auto index)
-        {
-            return index < nVerts && index < nNormals && index < nCoords;
-        }
-    ) && "the provided mesh contains invalid indices");
+    OSC_ASSERT_ALWAYS(all_of(indices, [nVerts = verts.size(), nNormals = normals.size(), nCoords = texCoords.size()](auto index)
+    {
+        return index < nVerts && index < nNormals && index < nCoords;
+    }) && "the provided mesh contains invalid indices");
 
     // for smooth shading, vertices, normals, texture coordinates, and tangents
     // may be shared by multiple triangles. In this case, the tangents must be

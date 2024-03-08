@@ -15,6 +15,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Platform/os.h>
 #include <oscar/UI/oscimgui.h>
+#include <oscar/Utils/Algorithms.h>
 
 #include <algorithm>
 #include <filesystem>
@@ -202,7 +203,7 @@ private:
     void startSimsIfNecessary()
     {
         int nAvail = static_cast<int>(m_Params.size()) - static_cast<int>(m_Sims.size());
-        int nActive = static_cast<int>(std::count_if(m_Sims.begin(), m_Sims.end(), [](auto const& sim) { return sim.getStatus() == SimulationStatus::Running || sim.getStatus() == SimulationStatus::Initializing; }));
+        int nActive = static_cast<int>(count_if(m_Sims, [](auto const& sim) { return sim.getStatus() == SimulationStatus::Running || sim.getStatus() == SimulationStatus::Initializing; }));
         int nToStart = std::min(nAvail, m_Parallelism - nActive);
 
         if (nToStart <= 0)

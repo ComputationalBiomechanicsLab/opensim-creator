@@ -21,10 +21,10 @@
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Widgets/StandardPopup.h>
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/StringHelpers.h>
 #include <SimTKcommon/SmallMatrix.h>
 
-#include <algorithm>
 #include <cstddef>
 #include <memory>
 #include <optional>
@@ -151,14 +151,10 @@ private:
         OpenSim::Model const& model = m_Uum->getModel();
 
         bool hasName = !m_Name.empty();
-        bool allSocketsAssigned = std::all_of(
-            m_SocketConnecteePaths.begin(),
-            m_SocketConnecteePaths.end(),
-            [&model](OpenSim::ComponentPath const& cp)
-            {
-                return ContainsComponent(model, cp);
-            }
-        );
+        bool allSocketsAssigned = all_of(m_SocketConnecteePaths, [&model](OpenSim::ComponentPath const& cp)
+        {
+            return ContainsComponent(model, cp);
+        });
         bool hasEnoughPathPoints =
             dynamic_cast<OpenSim::PathActuator const*>(m_Proto.get()) == nullptr ||
             m_PathPoints.size() >= 2;
@@ -303,7 +299,7 @@ private:
             {
                 return p.userChoice == GetAbsolutePath(c);
             };
-            if (std::any_of(m_PathPoints.begin(), m_PathPoints.end(), isSameUserChoiceAsComponent))
+            if (any_of(m_PathPoints, isSameUserChoiceAsComponent))
             {
                 continue;  // already selected
             }

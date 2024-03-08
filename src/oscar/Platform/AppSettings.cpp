@@ -340,7 +340,7 @@ R"(# configuration options
         }
 
         // iterate through each part of the given path (e.g. a/b/c)
-        size_t const depth = std::count(tablePath.begin(), tablePath.end(), '/') + 1;
+        size_t const depth = count(tablePath, '/') + 1;
         toml::table* currentTable = &root;
         std::string_view currentPath = tablePath.substr(0, tablePath.find('/'));
 

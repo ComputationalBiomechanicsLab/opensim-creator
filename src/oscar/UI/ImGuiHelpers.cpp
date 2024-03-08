@@ -18,6 +18,7 @@
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/oscimgui_internal.h>
 #include <oscar/UI/ui_graphics_backend.h>
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/UID.h>
 
 #include <algorithm>
@@ -526,7 +527,7 @@ ui::ImGuiItemHittestResult osc::ui::HittestLastImguiItem(float dragThreshold)
 
 bool osc::ui::IsAnyKeyDown(std::span<ImGuiKey const> keys)
 {
-    return std::any_of(keys.begin(), keys.end(), [](ImGuiKey k) { return ui::IsKeyDown(k); });
+    return any_of(keys, [](ImGuiKey k) { return ui::IsKeyDown(k); });
 }
 
 bool osc::ui::IsAnyKeyDown(std::initializer_list<ImGuiKey const> keys)
@@ -536,7 +537,7 @@ bool osc::ui::IsAnyKeyDown(std::initializer_list<ImGuiKey const> keys)
 
 bool osc::ui::IsAnyKeyPressed(std::span<ImGuiKey const> keys)
 {
-    return std::any_of(keys.begin(), keys.end(), [](ImGuiKey k) { return ui::IsKeyPressed(k); });
+    return any_of(keys, [](ImGuiKey k) { return ui::IsKeyPressed(k); });
 }
 bool osc::ui::IsAnyKeyPressed(std::initializer_list<ImGuiKey const> keys)
 {

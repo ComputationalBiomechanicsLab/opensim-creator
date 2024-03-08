@@ -5157,7 +5157,7 @@ private:
             return v > std::numeric_limits<uint16_t>::max();
         };
 
-        if (std::any_of(vs.begin(), vs.end(), isGreaterThanU16Max))
+        if (any_of(vs, isGreaterThanU16Max))
         {
             m_IndicesAre32Bit = true;
             m_NumIndices = vs.size();

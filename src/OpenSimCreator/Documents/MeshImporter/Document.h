@@ -55,6 +55,8 @@ namespace osc::mi
                 ObjectLookup::iterator
             >;
 
+            Iterator() = default;
+
             Iterator(InternalIterator pos_, InternalIterator end_) :
                 m_Pos{pos_},
                 m_End{end_}
@@ -90,6 +92,13 @@ namespace osc::mi
                 return *this;
             }
 
+            Iterator operator++(int)
+            {
+                Iterator copy{*this};
+                ++(*this);
+                return copy;
+            }
+
             reference operator*() const
             {
                 return dynamic_cast<reference>(*m_Pos->second);
@@ -108,8 +117,8 @@ namespace osc::mi
             }
 
         private:
-            InternalIterator m_Pos;
-            InternalIterator m_End;
+            InternalIterator m_Pos{};
+            InternalIterator m_End{};
         };
 
         // helper class for an iterable object with a beginning + end

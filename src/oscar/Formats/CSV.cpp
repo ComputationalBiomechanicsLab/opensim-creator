@@ -1,22 +1,26 @@
 #include "CSV.h"
 
+#include <oscar/Utils/Algorithms.h>
+
 #include <algorithm>
 #include <iostream>
 #include <string>
 #include <string_view>
 #include <utility>
 
+using namespace osc;
+
 // helpers
 namespace
 {
-    bool IsSpecialCSVCharacter(std::string_view::value_type c)
+    constexpr bool IsSpecialCSVCharacter(std::string_view::value_type c)
     {
         return c == ',' || c == '\r' || c == '\n' || c == '"';
     }
 
     bool ShouldBeQuoted(std::string_view v)
     {
-        return std::any_of(v.begin(), v.end(), IsSpecialCSVCharacter);
+        return any_of(v, IsSpecialCSVCharacter);
     }
 }
 

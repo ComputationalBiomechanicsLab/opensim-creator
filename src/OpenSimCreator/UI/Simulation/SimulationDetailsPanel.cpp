@@ -9,6 +9,7 @@
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/StandardPanelImpl.h>
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Perf.h>
 
 #include <filesystem>
@@ -79,7 +80,7 @@ private:
         ui::SameLine();
         ui::DrawHelpMarker("Various statistics collected when the simulation was ran");
         ui::NextColumn();
-        if (std::any_of(outputs.begin(), outputs.end(), [](OutputExtractor const& o) { return o.getOutputType() == OutputType::Float; }))
+        if (any_of(outputs, [](OutputExtractor const& o) { return o.getOutputType() == OutputType::Float; }))
         {
             ui::Button(ICON_FA_SAVE " Save All " ICON_FA_CARET_DOWN);
             if (ui::BeginPopupContextItem("##exportoptions", ImGuiPopupFlags_MouseButtonLeft))
