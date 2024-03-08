@@ -10,6 +10,7 @@
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/imgui_impl_sdl2.h>
 #include <oscar/UI/ui_graphics_backend.h>
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Perf.h>
 #include <SDL_events.h>
 
@@ -33,12 +34,9 @@ namespace
     typename Container::value_type* ToMalloced(Container const& c)
     {
         using value_type = typename Container::value_type;
-        using std::size;
-        using std::begin;
-        using std::end;
 
-        auto* ptr = cpp20::bit_cast<value_type*>(malloc(size(c) * sizeof(value_type)));  // NOLINT(cppcoreguidelines-owning-memory,cppcoreguidelines-no-malloc,hicpp-no-malloc)
-        std::copy(begin(c), end(c), ptr);
+        auto* ptr = cpp20::bit_cast<value_type*>(malloc(std::ranges::size(c) * sizeof(value_type)));  // NOLINT(cppcoreguidelines-owning-memory,cppcoreguidelines-no-malloc,hicpp-no-malloc)
+        copy(c, ptr);
         return ptr;
     }
 

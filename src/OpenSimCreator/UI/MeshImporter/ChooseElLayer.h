@@ -16,6 +16,7 @@
 #include <oscar/Platform/App.h>
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/UID.h>
 #include <SDL_events.h>
@@ -90,7 +91,7 @@ namespace osc::mi
         // returns true if the user has already selected the given scene element
         bool isSelected(MIObject const& el) const
         {
-            return std::find(m_SelectedObjectIDs.begin(), m_SelectedObjectIDs.end(), el.getID()) != m_SelectedObjectIDs.end();
+            return find(m_SelectedObjectIDs, el.getID()) != m_SelectedObjectIDs.end();
         }
 
         // returns true if the user can (de)select the given element

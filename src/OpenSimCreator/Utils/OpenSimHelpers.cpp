@@ -55,6 +55,7 @@
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/Log.h>
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/Perf.h>
@@ -445,7 +446,7 @@ OpenSim::Component const* osc::IsInclusiveChildOf(std::span<OpenSim::Component c
     // TODO: this method signature makes no sense and should be refactored
     for (; c; c = GetOwner(*c))
     {
-        if (auto it = std::find(parents.begin(), parents.end(), c); it != parents.end())
+        if (auto it = find(parents, c); it != parents.end())
         {
             return *it;
         }
@@ -1273,7 +1274,7 @@ void osc::GetAbsolutePathString(OpenSim::Component const& c, std::string& out)
     {
         out[loc++] = '/';
         std::string const& name = els[i]->getName();
-        std::copy(name.begin(), name.end(), out.begin() + loc);
+        copy(name, out.begin() + loc);
         loc += name.size();
     }
 }

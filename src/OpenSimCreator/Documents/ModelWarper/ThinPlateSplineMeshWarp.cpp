@@ -77,7 +77,7 @@ namespace
 
         // handle/pair all elements in `a`
         for (auto& lm : a) {
-            auto const it = std::find_if(b.begin(), b.end(), std::bind_front(SameNameOrBothUnnamed, lm));
+            auto const it = find_if(b, std::bind_front(SameNameOrBothUnnamed, lm));
             std::string name = lm.maybeName ? *std::move(lm.maybeName) : GenerateName(nunnamed++);
 
             if (it != b.end()) {
@@ -252,11 +252,7 @@ bool osc::mow::ThinPlateSplineMeshWarp::hasLandmarkNamed(std::string_view name) 
 
 LandmarkPairing const* osc::mow::ThinPlateSplineMeshWarp::tryGetLandmarkPairingByName(std::string_view name) const
 {
-    auto const it = std::find_if(
-        m_Landmarks.begin(),
-        m_Landmarks.end(),
-        [name](auto const& lm) { return lm.name() == name; }
-    );
+    auto const it = find_if(m_Landmarks, [name](auto const& lm) { return lm.name() == name; });
     return it != m_Landmarks.end() ? &(*it) : nullptr;
 }
 

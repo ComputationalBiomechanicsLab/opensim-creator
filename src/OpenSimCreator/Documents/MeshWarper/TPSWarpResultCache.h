@@ -6,6 +6,7 @@
 
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Maths/Vec3.h>
+#include <oscar/Utils/Algorithms.h>
 
 #include <algorithm>
 #include <span>
@@ -93,11 +94,9 @@ namespace osc
         {
             auto const& docLandmarks = doc.nonParticipatingLandmarks;
 
-            bool const samePositions = std::equal(
-                docLandmarks.begin(),
-                docLandmarks.end(),
-                m_CachedSourceNonParticipatingLandmarks.begin(),
-                m_CachedSourceNonParticipatingLandmarks.end(),
+            bool const samePositions = equal(
+                docLandmarks,
+                m_CachedSourceNonParticipatingLandmarks,
                 [](TPSDocumentNonParticipatingLandmark const& lm, Vec3 const& pos)
                 {
                     return lm.location == pos;

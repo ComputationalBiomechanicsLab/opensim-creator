@@ -3,6 +3,7 @@
 #include <oscar/Platform/os.h>
 #include <oscar/Utils/StringHelpers.h>
 
+#include <algorithm>
 #include <string>
 #include <filesystem>
 #include <fstream>

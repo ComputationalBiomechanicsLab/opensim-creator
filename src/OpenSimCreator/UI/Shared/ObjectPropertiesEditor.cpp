@@ -26,6 +26,7 @@
 #include <oscar/Platform/Log.h>
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/StringHelpers.h>
 #include <oscar/Utils/Typelist.h>
 #include <SimTKcommon/Constants.h>
@@ -1585,9 +1586,8 @@ namespace
                 return nullptr;  // cannot access the property
             }
 
-            auto const it = std::find_if(
-                m_Entries.begin(),
-                m_Entries.end(),
+            auto const it = find_if(
+                m_Entries,
                 [&prop](auto const& entry) { return entry.isCompatibleWith(*prop); }
             );
             if (it == m_Entries.end())

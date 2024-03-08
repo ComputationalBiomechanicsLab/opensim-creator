@@ -1,5 +1,7 @@
 #include "ParamBlock.h"
 
+#include <oscar/Utils/Algorithms.h>
+
 #include <algorithm>
 #include <cstddef>
 #include <memory>
@@ -117,7 +119,7 @@ private:
     static auto find(Range& range, std::string const& name) -> decltype(ranges::data(range))
     {
         auto const hasName = [&name](Param const& el) { return el.name == name; };
-        auto const it = std::find_if(ranges::begin(range), ranges::end(range), hasName);
+        auto const it = find_if(range, hasName);
         return it != range.end() ? &(*it) : nullptr;
     }
 

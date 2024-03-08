@@ -26,6 +26,7 @@
 #include <oscar/UI/ui_context.h>
 #include <oscar/UI/Widgets/SaveChangesPopup.h>
 #include <oscar/UI/Widgets/SaveChangesPopupConfig.h>
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/ParentPtr.h>
@@ -342,7 +343,7 @@ public:
 
     bool implHasUserOutputExtractor(OutputExtractor const& oe) const final
     {
-        return std::find(m_UserOutputExtractors.begin(), m_UserOutputExtractors.end(), oe) != m_UserOutputExtractors.end();
+        return find(m_UserOutputExtractors, oe) != m_UserOutputExtractors.end();
     }
 
     bool implRemoveUserOutputExtractor(OutputExtractor const& oe) final
@@ -575,7 +576,7 @@ private:
 
     ITab* getTabByID(UID id)
     {
-        auto it = std::find_if(m_Tabs.begin(), m_Tabs.end(), [id](auto const& p)
+        auto it = find_if(m_Tabs, [id](auto const& p)
         {
             return p->getID() == id;
         });
@@ -659,7 +660,7 @@ private:
         int lowestDeletedTab = std::numeric_limits<int>::max();
         for (UID id : m_DeletedTabs)
         {
-            auto it = std::find_if(m_Tabs.begin(), m_Tabs.end(), [id](auto const& o) { return o->getID() == id; });
+            auto it = find_if(m_Tabs, [id](auto const& o) { return o->getID() == id; });
 
             if (it != m_Tabs.end())
             {

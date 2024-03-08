@@ -1,5 +1,7 @@
 #include "StringHelpers.h"
 
+#include <oscar/Utils/Algorithms.h>
+
 #include <algorithm>
 #include <array>
 #include <cstddef>
@@ -41,7 +43,7 @@ bool osc::Contains(std::string_view sv, std::string_view substr)
 
 bool osc::Contains(std::string_view sv, std::string_view::value_type c)
 {
-    return std::find(sv.begin(), sv.end(), c) != sv.end();
+    return find(sv, c) != sv.end();
 }
 
 bool osc::ContainsCaseInsensitive(std::string_view sv, std::string_view substr)
@@ -95,7 +97,7 @@ bool osc::IsEqualCaseInsensitive(std::string_view a, std::string_view b)
         return std::tolower(static_cast<std::make_unsigned_t<decltype(c1)>>(c1)) == std::tolower(static_cast<std::make_unsigned_t<decltype(c2)>>(c2));
     };
 
-    return std::equal(a.begin(), a.end(), b.begin(), b.end(), compareChars);
+    return osc::equal(a, b, compareChars);
 }
 
 bool osc::IsValidIdentifier(std::string_view sv)

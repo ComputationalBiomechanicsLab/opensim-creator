@@ -3,6 +3,7 @@
 #include <oscar/Graphics/Scene/SceneDecoration.h>
 #include <oscar/Graphics/Scene/SceneRenderer.h>
 #include <oscar/Graphics/Scene/SceneRendererParams.h>
+#include <oscar/Utils/Algorithms.h>
 
 #include <algorithm>
 #include <memory>
@@ -21,8 +22,7 @@ public:
         std::span<SceneDecoration const> decorations,
         SceneRendererParams const& params)
     {
-        if (params != m_LastRenderingParams ||
-            !std::equal(decorations.begin(), decorations.end(), m_LastDecorationList.cbegin(), m_LastDecorationList.cend()))
+        if (params != m_LastRenderingParams || !equal(decorations, m_LastDecorationList))
         {
             // inputs have changed: cache the new ones and re-render
             m_LastRenderingParams = params;

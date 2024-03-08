@@ -1,5 +1,7 @@
 #include "TabRegistry.h"
 
+#include <oscar/Utils/Algorithms.h>
+
 #include <algorithm>
 #include <memory>
 #include <string>
@@ -27,7 +29,7 @@ public:
 
     std::optional<TabRegistryEntry> getByName(std::string_view name) const
     {
-        auto const it = std::find_if(m_Entries.begin(), m_Entries.end(), [name](TabRegistryEntry const& e)
+        auto const it = find_if(m_Entries, [name](TabRegistryEntry const& e)
         {
             return e.getName() == name;
         });

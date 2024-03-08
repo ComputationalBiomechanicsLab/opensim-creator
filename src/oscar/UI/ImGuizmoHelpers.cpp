@@ -3,6 +3,7 @@
 #include <oscar/Graphics/Color.h>
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/CStringView.h>
 
 #include <IconsFontAwesome5.h>
@@ -17,7 +18,7 @@ bool osc::DrawGizmoModeSelector(ImGuizmo::MODE& mode)
     constexpr auto modes = std::to_array<ImGuizmo::MODE, 2>({ ImGuizmo::LOCAL, ImGuizmo::WORLD });
 
     bool rv = false;
-    int currentMode = static_cast<int>(std::distance(std::begin(modes), std::find(std::begin(modes), std::end(modes), mode)));
+    int currentMode = static_cast<int>(std::distance(std::begin(modes), find(modes, mode)));
     ui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
     ui::SetNextItemWidth(ui::CalcTextSize(modeLabels[0]).x + 40.0f);
     if (ui::Combo("##modeselect", &currentMode, modeLabels.data(), static_cast<int>(modeLabels.size())))

@@ -1328,7 +1328,7 @@ public:
         OSC_ASSERT(data.size() == numBytesPerCubeFace && "incorrect amount of data passed to Cubemap::setPixelData: the data must match the dimensions and texture format of the cubemap");
         OSC_ASSERT(destinationDataEnd <= m_Data.size() && "out of range assignment detected: this should be handled in the constructor");
 
-        std::copy(data.begin(), data.end(), m_Data.begin() + destinationDataStart);
+        copy(data, m_Data.begin() + destinationDataStart);
         m_DataVersion.reset();
     }
 
@@ -1554,7 +1554,7 @@ namespace
 
                     std::span<uint8_t const> src{pixelData.data() + channelStart, sizeof(float)};
                     std::array<uint8_t, sizeof(float)> dest{};
-                    std::copy(src.begin(), src.end(), dest.begin());
+                    copy(src, dest.begin());
 
                     color[channel] = cpp20::bit_cast<float>(dest);
                 }
@@ -1617,7 +1617,7 @@ namespace
 
                     std::span<uint8_t const> src{pixelData.data() + channelStart, sizeof(float)};
                     std::array<uint8_t, sizeof(float)> dest{};
-                    std::copy(src.begin(), src.end(), dest.begin());
+                    copy(src, dest.begin());
                     auto const channelFloat = cpp20::bit_cast<float>(dest);
 
                     color[channel] = Unorm8{channelFloat};
@@ -1839,7 +1839,7 @@ public:
         OSC_ASSERT(pixelData.size() == NumBytesPerPixel(m_Format)*m_Dimensions.x*m_Dimensions.y && "incorrect number of bytes passed to Texture2D::setPixelData");
         OSC_ASSERT(pixelData.size() == m_PixelData.size());
 
-        std::copy(pixelData.begin(), pixelData.end(), m_PixelData.begin());
+        copy(pixelData, m_PixelData.begin());
     }
 
     // non PIMPL method
@@ -5144,7 +5144,7 @@ private:
         m_IndicesAre32Bit = false;
         m_NumIndices = indices.size();
         m_IndicesData.resize((indices.size()+1)/2);
-        std::copy(indices.begin(), indices.end(), &m_IndicesData.front().u16.a);
+        copy(indices, &m_IndicesData.front().u16.a);
 
         rangeCheckIndicesAndRecalculateBounds(flags);
         m_Version->reset();
@@ -5162,7 +5162,7 @@ private:
             m_IndicesAre32Bit = true;
             m_NumIndices = vs.size();
             m_IndicesData.resize(vs.size());
-            std::copy(vs.begin(), vs.end(), &m_IndicesData.front().u32);
+            copy(vs, &m_IndicesData.front().u32);
         }
         else
         {

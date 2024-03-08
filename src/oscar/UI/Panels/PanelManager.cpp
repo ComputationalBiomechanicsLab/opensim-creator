@@ -2,6 +2,7 @@
 
 #include <oscar/UI/Panels/IPanel.h>
 #include <oscar/UI/Panels/ToggleablePanelFlags.h>
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/UID.h>
 
@@ -416,7 +417,7 @@ private:
                 used[instanceNumber] = true;
             }
         }
-        return std::distance(used.begin(), std::find(used.begin(), used.end(), false));
+        return std::distance(used.begin(), find(used, false));
     }
 
     std::string calcPanelName(std::string_view baseName, size_t ithInstance)

@@ -79,7 +79,7 @@ namespace
     >
     auto NullableFindIf(Range& range, UnaryPredicate p) -> decltype(ranges::data(range))
     {
-        auto const it = std::find_if(ranges::begin(range), ranges::end(range), p);
+        auto const it = find_if(range, p);
         return it != range.end() ? &(*it) : nullptr;
     }
 
@@ -312,7 +312,7 @@ bool osc::DeleteElementByID(TPSDocument& doc, TPSDocumentElementID const& id)
     if (id.type == TPSDocumentElementType::Landmark)
     {
         auto& lms = doc.landmarkPairs;
-        auto const it = std::find_if(lms.begin(), lms.end(), std::bind_front(HasUID<TPSDocumentLandmarkPair>, id.uid));
+        auto const it = find_if(lms, std::bind_front(HasUID<TPSDocumentLandmarkPair>, id.uid));
         if (it != doc.landmarkPairs.end())
         {
             UpdLocation(*it, id.input).reset();

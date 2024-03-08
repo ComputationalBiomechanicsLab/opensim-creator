@@ -1,9 +1,9 @@
 #include "LogLevel.h"
 
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/StringHelpers.h>
 
-#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <iterator>
@@ -44,12 +44,10 @@ std::optional<LogLevel> osc::FromIndex(size_t i)
 
 std::optional<LogLevel> osc::TryParseAsLogLevel(std::string_view v)
 {
-    auto const pred = [v](std::string_view el)
+    auto const it = find_if(c_LogLevelStrings, [v](std::string_view el)
     {
         return IsEqualCaseInsensitive(v, el);
-    };
-
-    auto const it = std::find_if(c_LogLevelStrings.begin(), c_LogLevelStrings.end(), pred);
+    });
 
     return it != c_LogLevelStrings.end() ?
         FromIndex(std::distance(c_LogLevelStrings.begin(), it)) :

@@ -38,6 +38,46 @@ namespace osc
     }
 
     template<
+        std::ranges::input_range R1,
+        std::ranges::input_range R2,
+        class Pred = std::ranges::equal_to
+    >
+    constexpr bool equal(R1&& r1, R2&& r2, Pred pred = {})
+        requires std::indirectly_comparable<std::ranges::iterator_t<R1>, std::ranges::iterator_t<R2>, Pred>
+    {
+        return std::equal(std::ranges::begin(r1), std::ranges::end(r1), std::ranges::begin(r2), std::ranges::end(r2), pred);
+    }
+
+    template<
+        std::ranges::input_range R,
+        std::indirect_unary_predicate<std::ranges::iterator_t<R>> Pred
+    >
+    constexpr std::ranges::borrowed_iterator_t<R> find_if(R&& r, Pred pred)
+    {
+        return std::find_if(std::ranges::begin(r), std::ranges::end(r), pred);
+    }
+
+    template<
+        std::ranges::input_range R,
+        class T
+    >
+    constexpr std::ranges::borrowed_iterator_t<R> find(R&& r, T const& value)
+        requires std::indirect_binary_predicate<std::ranges::equal_to, std::ranges::iterator_t<R>, T const*>
+    {
+        return std::find(std::ranges::begin(r), std::ranges::end(r), value);
+    }
+
+    template<
+        std::ranges::input_range R,
+        std::weakly_incrementable O
+    >
+    constexpr void copy(R&& r, O result)  // NOTE: return value differs from C++20's std::ranges::copy
+        requires std::indirectly_copyable<std::ranges::iterator_t<R>, O>
+    {
+        std::copy(std::ranges::begin(r), std::ranges::end(r), result);
+    }
+
+    template<
         std::ranges::input_range R,
         typename T
     >

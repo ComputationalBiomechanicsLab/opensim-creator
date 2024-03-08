@@ -6,6 +6,7 @@
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/VecFunctions.h>
 #include <oscar/Maths/Vec3.h>
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/ParalellizationHelpers.h>
 #include <oscar/Utils/Perf.h>
 
@@ -267,7 +268,7 @@ std::vector<Vec3> osc::ApplyThinPlateWarpToPoints(
 {
     std::vector<Vec3> rv;
     rv.reserve(points.size());
-    std::copy(points.begin(), points.end(), std::back_inserter(rv));
+    copy(points, std::back_inserter(rv));
     ApplyThinPlateWarpToPointsInPlace(coefs, rv, blendingFactor);
     return rv;
 }
