@@ -547,7 +547,7 @@ namespace
                         ToVec3(edge.getStartLocationInGround(state))
                     );
                 };
-                DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
+                DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened, nullptr);
                 ui::EndMenu();
             }
 
@@ -562,7 +562,7 @@ namespace
                     );
                 };
 
-                DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
+                DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened, nullptr);
                 ui::EndMenu();
             }
 
@@ -577,7 +577,7 @@ namespace
                     );
                 };
 
-                DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
+                DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened, nullptr);
                 ui::EndMenu();
             }
 

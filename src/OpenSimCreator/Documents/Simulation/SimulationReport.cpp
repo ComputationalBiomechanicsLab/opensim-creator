@@ -2,6 +2,8 @@
 
 #include <SimTKcommon.h>
 
+#include <oscar/Utils/Algorithms.h>
+
 #include <chrono>
 #include <memory>
 #include <unordered_map>
@@ -46,8 +48,7 @@ public:
 
     std::optional<float> getAuxiliaryValue(UID id) const
     {
-        auto it = m_AuxiliaryValues.find(id);
-        return it != m_AuxiliaryValues.end() ? std::optional<float>{it->second} : std::nullopt;
+        return find_or_optional(m_AuxiliaryValues, id);
     }
 
 private:

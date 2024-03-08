@@ -2,7 +2,7 @@
 
 #include <oscar/Platform/AppSettingValue.h>
 #include <oscar/Platform/AppSettingValueType.h>
-#include <oscar/Utils/At.h>
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/EnumHelpers.h>
 
@@ -17,7 +17,7 @@ size_t osc::OverlayDecorationOptions::getNumOptions() const
 
 bool osc::OverlayDecorationOptions::getOptionValue(ptrdiff_t i) const
 {
-    return m_Flags & At(GetAllOverlayDecorationOptionFlagsMetadata(), i).value;
+    return m_Flags & at(GetAllOverlayDecorationOptionFlagsMetadata(), i).value;
 }
 
 void osc::OverlayDecorationOptions::setOptionValue(ptrdiff_t i, bool v)
@@ -27,12 +27,12 @@ void osc::OverlayDecorationOptions::setOptionValue(ptrdiff_t i, bool v)
 
 CStringView osc::OverlayDecorationOptions::getOptionLabel(ptrdiff_t i) const
 {
-    return At(GetAllOverlayDecorationOptionFlagsMetadata(), i).label;
+    return at(GetAllOverlayDecorationOptionFlagsMetadata(), i).label;
 }
 
 CStringView osc::OverlayDecorationOptions::getOptionGroupLabel(ptrdiff_t i) const
 {
-    return getLabel(At(GetAllOverlayDecorationOptionFlagsMetadata(), i).group);
+    return getLabel(at(GetAllOverlayDecorationOptionFlagsMetadata(), i).group);
 }
 
 bool osc::OverlayDecorationOptions::getDrawXZGrid() const
@@ -107,10 +107,11 @@ void osc::OverlayDecorationOptions::tryUpdFromValues(std::string_view keyPrefix,
 {
     for (size_t i = 0; i < NumFlags<OverlayDecorationOptionFlags>(); ++i)
     {
-        auto const& metadata = At(GetAllOverlayDecorationOptionFlagsMetadata(), i);
-        if (auto const it = lut.find(std::string{keyPrefix}+metadata.id); it != lut.end() && it->second.type() == osc::AppSettingValueType::Bool)
-        {
-            SetOption(m_Flags, metadata.value, it->second.toBool());
+        auto const& metadata = at(GetAllOverlayDecorationOptionFlagsMetadata(), i);
+
+        std::string const key = std::string{keyPrefix}+metadata.id;
+        if (auto const* v = try_find(lut, key); v->type() == osc::AppSettingValueType::Bool) {
+            SetOption(m_Flags, metadata.value, v->toBool());
         }
     }
 }

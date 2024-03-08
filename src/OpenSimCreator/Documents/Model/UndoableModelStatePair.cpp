@@ -8,6 +8,7 @@
 #include <OpenSim/Common/PropertyObjArray.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Platform/Log.h>
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/Perf.h>
 #include <oscar/Utils/UID.h>
@@ -398,8 +399,7 @@ private:
     // try to lookup a commit by its ID
     ModelStateCommit const* tryGetCommitByID(UID id) const
     {
-        auto it = m_Commits.find(id);
-        return it != m_Commits.end() ? &it->second : nullptr;
+        return try_find(m_Commits, id);
     }
 
     ModelStateCommit const& getHeadCommit() const

@@ -494,12 +494,26 @@ void osc::DrawOutputNameColumn(
 
 void osc::DrawWithRespectToMenuContainingMenuPerFrame(
     OpenSim::Component const& root,
-    std::function<void(OpenSim::Frame const&)> const& onFrameMenuOpened)
+    std::function<void(OpenSim::Frame const&)> const& onFrameMenuOpened,
+    OpenSim::Frame const* maybeParent)
 {
     ui::TextDisabled("With Respect to:");
     ui::Separator();
 
     int imguiID = 0;
+
+    if (maybeParent) {
+        ui::PushID(imguiID++);
+        std::stringstream ss;
+        ss << "Parent (" << maybeParent->getName() << ')';
+        if (ui::BeginMenu(std::move(ss).str())) {
+            onFrameMenuOpened(*maybeParent);
+            ui::EndMenu();
+        }
+        ui::PopID();
+        ui::Separator();
+    }
+
     for (OpenSim::Frame const& frame : root.getComponentList<OpenSim::Frame>())
     {
         ui::PushID(imguiID++);
@@ -514,12 +528,22 @@ void osc::DrawWithRespectToMenuContainingMenuPerFrame(
 
 void osc::DrawWithRespectToMenuContainingMenuItemPerFrame(
     OpenSim::Component const& root,
-    std::function<void(OpenSim::Frame const&)> const& onFrameMenuItemClicked)
+    std::function<void(OpenSim::Frame const&)> const& onFrameMenuItemClicked,
+    OpenSim::Frame const* maybeParent = nullptr)
 {
     ui::TextDisabled("With Respect to:");
     ui::Separator();
 
     int imguiID = 0;
+
+    if (maybeParent) {
+        ui::PushID(imguiID++);
+        if (ui::MenuItem("parent")) {
+            onFrameMenuItemClicked(*maybeParent);
+        }
+        ui::PopID();
+    }
+
     for (OpenSim::Frame const& frame : root.getComponentList<OpenSim::Frame>())
     {
         ui::PushID(imguiID++);
@@ -599,7 +623,8 @@ void osc::EndCalculateMenu()
 void osc::DrawCalculatePositionMenu(
     OpenSim::Component const& root,
     SimTK::State const& state,
-    OpenSim::Point const& point)
+    OpenSim::Point const& point,
+    OpenSim::Frame const* maybeParent)
 {
     if (ui::BeginMenu("Position"))
     {
@@ -612,8 +637,21 @@ void osc::DrawCalculatePositionMenu(
             );
         };
 
-        DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
+        DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened, maybeParent);
         ui::EndMenu();
+    }
+}
+
+void osc::DrawCalculateMenu(
+    OpenSim::Component const& root,
+    SimTK::State const& state,
+    OpenSim::Station const& station,
+    CalculateMenuFlags flags)
+{
+    if (BeginCalculateMenu(flags))
+    {
+        DrawCalculatePositionMenu(root, state, station, &station.getParentFrame());
+        EndCalculateMenu();
     }
 }
 
@@ -625,7 +663,7 @@ void osc::DrawCalculateMenu(
 {
     if (BeginCalculateMenu(flags))
     {
-        DrawCalculatePositionMenu(root, state, point);
+        DrawCalculatePositionMenu(root, state, point, nullptr);
         EndCalculateMenu();
     }
 }
@@ -641,7 +679,7 @@ void osc::DrawCalculateTransformMenu(
         {
             DrawFrameInformationExpressedIn(frame, state, otherFrame);
         };
-        DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
+        DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened, TryGetParentFrame(frame));
         ui::EndMenu();
     }
 }
@@ -670,7 +708,7 @@ void osc::DrawCalculateAxisDirectionsMenu(
             ui::SameLine();
             ui::InputVec3("##zdir", z, "%.6f", ImGuiInputTextFlags_ReadOnly);
         };
-        DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
+        DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened, TryGetParentFrame(frame));
         ui::EndMenu();
     }
 }
@@ -688,7 +726,7 @@ void osc::DrawCalculateOriginMenu(
             ui::SameLine();
             ui::InputVec3("##origin", v, "%.6f", ImGuiInputTextFlags_ReadOnly);
         };
-        DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
+        DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened, TryGetParentFrame(frame));
         ui::EndMenu();
     }
 }
@@ -720,7 +758,7 @@ void osc::DrawCalculateOriginMenu(
         {
             DrawPointTranslationInformationWithRespectTo(otherFrame, state, posInGround);
         };
-        DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
+        DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened, TryGetParentFrame(sphere.getFrame()));
 
         ui::EndMenu();
     }
@@ -804,7 +842,7 @@ void osc::DrawCalculateOriginMenu(
         {
             DrawPointTranslationInformationWithRespectTo(otherFrame, state, posInGround);
         };
-        DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
+        DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened, TryGetParentFrame(ellipsoid.getFrame()));
 
         ui::EndMenu();
     }
@@ -857,7 +895,7 @@ void osc::DrawCalculateScaledRadiiDirectionsMenu(
             ui::SameLine();
             ui::InputVec3("##zdir", z, "%.6f", ImGuiInputTextFlags_ReadOnly);
         };
-        DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened);
+        DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened, TryGetParentFrame(ellipsoid.getFrame()));
         ui::EndMenu();
     }
 }

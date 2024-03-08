@@ -2,6 +2,7 @@
 
 #include <oscar/Platform/AppSettingValue.h>
 #include <oscar/Platform/AppSettingValueType.h>
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/EnumHelpers.h>
 
@@ -177,8 +178,8 @@ void osc::OpenSimDecorationOptions::tryUpdFromValues(
     {
         buf.resize(prefixLen);
         buf.insert(prefixLen, v);
-        auto const it = lut.find(buf);
-        return it != lut.end() ? &it->second : nullptr;
+
+        return try_find(lut, buf);
     };
 
     if (auto* appVal = lookup("muscle_decoration_style"); appVal->type() == AppSettingValueType::String)

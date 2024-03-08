@@ -66,6 +66,7 @@
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/Detail/SDL2Helpers.h>
 #include <oscar/Platform/Log.h>
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/Concepts.h>
 #include <oscar/Utils/CStringView.h>
@@ -559,8 +560,7 @@ namespace
 
     ShaderElement const* TryGetValue(FastStringHashtable<ShaderElement> const& m, std::string_view k)
     {
-        auto const it = m.find(k);
-        return it != m.end() ? &it->second : nullptr;
+        return try_find(m, k);
     }
 }
 
@@ -3438,19 +3438,16 @@ private:
     std::optional<TConverted> getValue(std::string_view propertyName) const
         requires std::convertible_to<T, TConverted>
     {
-        auto const it = m_Values.find(propertyName);
+        auto const* value = try_find(m_Values, propertyName);
 
-        if (it == m_Values.end())
+        if (!value) {
+            return std::nullopt;
+        }
+        if (!std::holds_alternative<T>(*value))
         {
             return std::nullopt;
         }
-
-        if (!std::holds_alternative<T>(it->second))
-        {
-            return std::nullopt;
-        }
-
-        return TConverted{std::get<T>(it->second)};
+        return TConverted{std::get<T>(*value)};
     }
 
     template<typename T>
@@ -7261,9 +7258,9 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterialPropertyBlock(
     {
         for (auto const& [name, value] : els.front().maybePropBlock->m_Impl->m_Values)
         {
-            if (auto const it = uniforms.find(name); it != uniforms.end())
+            if (auto const* uniform = try_find(uniforms, name))
             {
-                TryBindMaterialValueToShaderElement(it->second, value, textureSlot);
+                TryBindMaterialValueToShaderElement(*uniform, value, textureSlot);
             }
         }
     }

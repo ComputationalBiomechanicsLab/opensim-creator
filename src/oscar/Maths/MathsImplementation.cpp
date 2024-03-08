@@ -1,7 +1,7 @@
 #include <oscar/Maths.h>
 #include <oscar/Platform/Log.h>
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
-#include <oscar/Utils/At.h>
 #include <oscar/Utils/EnumHelpers.h>
 
 #include <cmath>
@@ -183,13 +183,13 @@ namespace
         {
             // leaf node: check ray-triangle intersection
 
-            BVHPrim const& p = At(prims, node.getFirstPrimOffset());
+            BVHPrim const& p = at(prims, node.getFirstPrimOffset());
 
             Triangle const triangle =
             {
-                At(verts, At(indices, p.getID())),
-                At(verts, At(indices, p.getID()+1)),
-                At(verts, At(indices, p.getID()+2)),
+                at(verts, at(indices, p.getID())),
+                at(verts, at(indices, p.getID()+1)),
+                at(verts, at(indices, p.getID()+2)),
             };
 
             std::optional<RayCollision> const rayTriangleColl = find_collision(ray, triangle);
@@ -244,9 +244,9 @@ namespace
         {
             Triangle const t
             {
-                At(verts, indices[i]),
-                At(verts, indices[i+1]),
-                At(verts, indices[i+2]),
+                at(verts, indices[i]),
+                at(verts, indices[i+1]),
+                at(verts, indices[i+2]),
             };
 
             if (HasAVolume(t))

@@ -2,6 +2,7 @@
 
 #include <OpenSimCreator/Documents/ModelWarper/IMeshWarp.h>
 
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/ClonePtr.h>
 
 #include <concepts>
@@ -32,8 +33,8 @@ namespace osc::mow
     private:
         IMeshWarp const* lookup(std::string const& absPath) const
         {
-            if (auto const it = m_AbsPathToWarpLUT.find(absPath); it != m_AbsPathToWarpLUT.end()) {
-                return it->second.get();
+            if (auto const* ptr = try_find(m_AbsPathToWarpLUT, absPath)) {
+                return ptr->get();
             }
             else {
                 return nullptr;

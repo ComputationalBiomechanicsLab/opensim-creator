@@ -22,7 +22,7 @@
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
-#include <oscar/Utils/At.h>
+#include <oscar/Utils/Algorithms.h>
 
 #include <functional>
 #include <optional>
@@ -226,7 +226,7 @@ std::vector<SceneCollision> osc::GetAllSceneCollisions(
     bvh.forEachRayAABBCollision(ray, [&sceneCache, &decorations, &ray, &rv](BVHCollision sceneCollision)
     {
         // perform ray-triangle intersection tests on the scene collisions
-        SceneDecoration const& decoration = At(decorations, sceneCollision.id);
+        SceneDecoration const& decoration = at(decorations, sceneCollision.id);
         BVH const& decorationBVH = sceneCache.getBVH(decoration.mesh);
 
         std::optional<RayCollision> const maybeCollision = GetClosestWorldspaceRayCollision(

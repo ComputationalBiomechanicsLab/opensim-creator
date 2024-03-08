@@ -20,7 +20,7 @@
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/AppMetadata.h>
 #include <oscar/Platform/os.h>
-#include <oscar/Utils/At.h>
+#include <oscar/Utils/Algorithms.h>
 
 #include <algorithm>
 #include <array>
@@ -413,7 +413,7 @@ void osc::ActionSaveWarpedNonParticipatingLandmarksToCSV(
         for (; !rv && i < locations.size(); ++i)
         {
             std::string name = std::string{doc.nonParticipatingLandmarks.at(i).name};
-            rv = lm::Landmark{std::move(name), At(locations, i)};
+            rv = lm::Landmark{std::move(name), at(locations, i)};
         }
         return rv;
     }, flags);

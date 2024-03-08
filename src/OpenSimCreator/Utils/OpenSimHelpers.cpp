@@ -1729,6 +1729,14 @@ std::optional<std::string> osc::TryGetOrientationalPropertyName(
     }
 }
 
+OpenSim::Frame const* osc::TryGetParentFrame(OpenSim::Frame const& frame)
+{
+    if (auto offset = dynamic_cast<OpenSim::PhysicalOffsetFrame const*>(&frame)) {
+        return &offset->getParentFrame();
+    }
+    return nullptr;
+}
+
 std::optional<ComponentSpatialRepresentation> osc::TryGetSpatialRepresentation(
     OpenSim::Component const& component,
     SimTK::State const& state)

@@ -220,6 +220,18 @@ namespace
         }
     }
 
+    void DrawStationContextualActions(
+        UndoableModelStatePair& uim,
+        OpenSim::Station const& station)
+    {
+        DrawCalculateMenu(
+            uim.getModel(),
+            uim.getState(),
+            station,
+            CalculateMenuFlags::NoCalculatorIcon
+        );
+    }
+
     void DrawPointContextualActions(
         UndoableModelStatePair& uim,
         OpenSim::Point const& point)
@@ -488,6 +500,10 @@ private:
         else if (dynamic_cast<OpenSim::PathActuator const*>(c))
         {
             DrawPathActuatorContextualParams(m_EditorAPI, m_Model, m_Path);
+        }
+        else if (auto const* stationPtr = dynamic_cast<OpenSim::Station const*>(c))
+        {
+            DrawStationContextualActions(*m_Model, *stationPtr);
         }
         else if (auto const* pointPtr = dynamic_cast<OpenSim::Point const*>(c))
         {

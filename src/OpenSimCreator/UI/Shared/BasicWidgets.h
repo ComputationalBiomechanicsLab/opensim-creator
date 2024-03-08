@@ -34,6 +34,7 @@ namespace OpenSim { class Geometry; }
 namespace OpenSim { class Mesh; }
 namespace OpenSim { class Point; }
 namespace OpenSim { class Sphere; }
+namespace OpenSim { class Station; }
 namespace SimTK { class State; }
 
 namespace osc
@@ -60,7 +61,8 @@ namespace osc
     // (i.e. `ui::BeginMenu($FRAME)` returned `true`)
     void DrawWithRespectToMenuContainingMenuPerFrame(
         OpenSim::Component const& root,
-        std::function<void(OpenSim::Frame const&)> const& onFrameMenuOpened
+        std::function<void(OpenSim::Frame const&)> const& onFrameMenuOpened,
+        OpenSim::Frame const* maybeParent
     );
 
     // draws a "With Respect to" menu that prompts the user to click a frame
@@ -70,7 +72,8 @@ namespace osc
     // associated with a frame
     void DrawWithRespectToMenuContainingMenuItemPerFrame(
         OpenSim::Component const& root,
-        std::function<void(OpenSim::Frame const&)> const& onFrameMenuItemClicked
+        std::function<void(OpenSim::Frame const&)> const& onFrameMenuItemClicked,
+        OpenSim::Frame const* maybeParent
     );
 
     void DrawPointTranslationInformationWithRespectTo(
@@ -106,7 +109,14 @@ namespace osc
     void DrawCalculatePositionMenu(
         OpenSim::Component const& root,
         SimTK::State const&,
-        OpenSim::Point const&
+        OpenSim::Point const&,
+        OpenSim::Frame const* maybeParent
+    );
+    void DrawCalculateMenu(
+        OpenSim::Component const& root,
+        SimTK::State const&,
+        OpenSim::Station const&,
+        CalculateMenuFlags = CalculateMenuFlags::None
     );
     void DrawCalculateMenu(
         OpenSim::Component const& root,

@@ -831,6 +831,10 @@ namespace osc
     //      whereas `OpenSim::Station` has no orientation, so this returns `std::nullopt`
     std::optional<std::string> TryGetOrientationalPropertyName(OpenSim::Component const&);
 
+    // tries to return the "parent" of the given frame, if applicable (e.g. if the frame is an
+    // `OffsetFrame<T>` that has a logical parent
+    OpenSim::Frame const* TryGetParentFrame(OpenSim::Frame const&);
+
     // packages up the various useful parts that describe how a component is spatially represented
     //
     // see also (component functions):

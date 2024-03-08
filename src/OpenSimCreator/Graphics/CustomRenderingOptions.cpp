@@ -2,7 +2,7 @@
 
 #include <OpenSimCreator/Graphics/CustomRenderingOptionFlags.h>
 
-#include <oscar/Utils/At.h>
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/EnumHelpers.h>
 
@@ -28,7 +28,7 @@ void osc::CustomRenderingOptions::setOptionValue(ptrdiff_t i, bool v)
 
 CStringView osc::CustomRenderingOptions::getOptionLabel(ptrdiff_t i) const
 {
-    return At(GetAllCustomRenderingOptionFlagsMetadata(), i).label;
+    return at(GetAllCustomRenderingOptionFlagsMetadata(), i).label;
 }
 
 bool osc::CustomRenderingOptions::getDrawFloor() const
@@ -81,11 +81,11 @@ void osc::CustomRenderingOptions::forEachOptionAsAppSettingValue(std::function<v
 
 void osc::CustomRenderingOptions::tryUpdFromValues(std::string_view keyPrefix, std::unordered_map<std::string, AppSettingValue> const& lut)
 {
-    for (auto const& metadata : GetAllCustomRenderingOptionFlagsMetadata())
-    {
-        if (auto const it = lut.find(std::string{keyPrefix} + metadata.id); it != lut.end() && it->second.type() == AppSettingValueType::Bool)
-        {
-            SetOption(m_Flags, metadata.value, it->second.toBool());
+    for (auto const& metadata : GetAllCustomRenderingOptionFlagsMetadata()) {
+
+        std::string key = std::string{keyPrefix} + metadata.id;
+        if (auto const* v = try_find(lut, key); v->type() == AppSettingValueType::Bool) {
+            SetOption(m_Flags, metadata.value, v->toBool());
         }
     }
 }

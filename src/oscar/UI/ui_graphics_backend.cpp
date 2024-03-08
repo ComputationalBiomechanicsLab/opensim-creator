@@ -27,6 +27,7 @@
 #include <oscar/Shims/Cpp20/bit.h>
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/Concepts.h>
 #include <oscar/Utils/CStringView.h>
@@ -239,12 +240,12 @@ namespace
         size_t idx = mesh.getSubMeshCount();
         mesh.pushSubMeshDescriptor(d);
 
-        if (auto it = bd.texturesSubmittedThisFrame.find(ToUID(drawCommand.GetTexID())); it != bd.texturesSubmittedThisFrame.end())
+        if (auto const* texture = try_find(bd.texturesSubmittedThisFrame, ToUID(drawCommand.GetTexID())))
         {
             std::visit(Overload{
                 [&bd](Texture2D const& t) { bd.material.setTexture("uTexture", t); },
                 [&bd](RenderTexture const& t) { bd.material.setRenderTexture("uTexture", t); },
-            }, it->second);
+            }, *texture);
             Graphics::DrawMesh(mesh, identity<Mat4>(), bd.material, bd.camera, std::nullopt, idx);
             bd.camera.renderToScreen();
         }

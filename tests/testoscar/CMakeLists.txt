@@ -72,6 +72,7 @@ add_executable(testoscar
     Shims/Cpp20/TestBit.cpp
     Shims/Cpp23/TestCstddef.cpp
 
+    Utils/TestAlgorithms.cpp
     Utils/TestCStringView.cpp
     Utils/TestEnumHelpers.cpp
     Utils/TestFileChangePoller.cpp

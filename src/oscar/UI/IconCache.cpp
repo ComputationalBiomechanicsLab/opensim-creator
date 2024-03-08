@@ -3,6 +3,7 @@
 #include <oscar/Formats/SVG.h>
 #include <oscar/Platform/ResourceLoader.h>
 #include <oscar/UI/Icon.h>
+#include <oscar/Utils/Algorithms.h>
 
 #include <memory>
 #include <stdexcept>
@@ -41,12 +42,10 @@ public:
 
     Icon const& getIcon(std::string_view iconName) const
     {
-        if (auto const it = m_Icons.find(std::string{iconName}); it != m_Icons.end())
-        {
-            return it->second;
+        if (auto const* icon = try_find(m_Icons, std::string{iconName})) {
+            return *icon;
         }
-        else
-        {
+        else {
             std::stringstream ss;
             ss << "error finding icon: cannot find: " << iconName;
             throw std::runtime_error{std::move(ss).str()};

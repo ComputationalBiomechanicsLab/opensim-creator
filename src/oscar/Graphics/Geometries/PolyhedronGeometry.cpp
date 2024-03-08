@@ -6,8 +6,8 @@
 #include <oscar/Maths/TrigonometricFunctions.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
-#include <oscar/Utils/At.h>
 
 #include <algorithm>
 #include <cstddef>
@@ -85,9 +85,9 @@ osc::PolyhedronGeometry::PolyhedronGeometry(
     {
         // subdivide each input triangle by the given detail
         for (size_t i = 0; i < 3*(indices.size()/3); i += 3) {
-            Vec3 const a = At(vertices, At(indices, i+0));
-            Vec3 const b = At(vertices, At(indices, i+1));
-            Vec3 const c = At(vertices, At(indices, i+2));
+            Vec3 const a = at(vertices, at(indices, i+0));
+            Vec3 const b = at(vertices, at(indices, i+1));
+            Vec3 const c = at(vertices, at(indices, i+2));
             subdivideFace(a, b, c, detail);
         }
     };

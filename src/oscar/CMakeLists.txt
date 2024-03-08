@@ -346,7 +346,7 @@ add_library(oscar STATIC
     UI/ui_graphics_backend.h
     UI/Widgets.h
 
-    Utils/At.h
+    Utils/Algorithms.h
     Utils/Assertions.cpp
     Utils/Assertions.h
     Utils/CircularBuffer.h

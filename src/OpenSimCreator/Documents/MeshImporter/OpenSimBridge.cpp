@@ -40,6 +40,7 @@
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/Log.h>
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/UID.h>
 
 #include <array>
@@ -516,15 +517,11 @@ namespace
             }
             else
             {
-                auto const it = bodyLookup.find(dynamic_cast<OpenSim::Body const*>(parentBodyOrGround));
-                if (it == bodyLookup.end())
-                {
-                    // joint is attached to a body that isn't ground or cached?
-                    continue;
+                if (auto const* body = try_find(bodyLookup, dynamic_cast<OpenSim::Body const*>(parentBodyOrGround))) {
+                    parent = *body;
                 }
-                else
-                {
-                    parent = it->second;
+                else {
+                    continue;  // joint is attached to a body that isn't ground or cached?
                 }
             }
 
@@ -536,15 +533,11 @@ namespace
             }
             else
             {
-                auto const it = bodyLookup.find(dynamic_cast<OpenSim::Body const*>(childBodyOrGround));
-                if (it == bodyLookup.end())
-                {
-                    // joint is attached to a body that isn't ground or cached?
-                    continue;
+                if (auto const* body = try_find(bodyLookup, dynamic_cast<OpenSim::Body const*>(childBodyOrGround))) {
+                    child = *body;
                 }
-                else
-                {
-                    child = it->second;
+                else {
+                    continue;  // joint is attached to a body that isn't ground or cached?
                 }
             }
 
@@ -600,14 +593,11 @@ namespace
             }
             else
             {
-                if (auto const bodyIt = bodyLookup.find(dynamic_cast<OpenSim::Body const*>(frameBodyOrGround)); bodyIt != bodyLookup.end())
-                {
-                    attachment = bodyIt->second;
+                if (auto const* body = try_find(bodyLookup, dynamic_cast<OpenSim::Body const*>(frameBodyOrGround))) {
+                    attachment = *body;
                 }
-                else
-                {
-                    // mesh is attached to something that isn't a ground or a body?
-                    continue;
+                else {
+                    continue;  // mesh is attached to something that isn't a ground or a body?
                 }
             }
 
