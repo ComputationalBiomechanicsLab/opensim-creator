@@ -246,7 +246,6 @@ private:
         m_Camera.renderToScreen();
     }
 
-    ResourceLoader m_Loader = App::resource_loader();
     Camera m_Camera;
     MeshBasicMaterial m_Material;
     Mesh m_SphereMesh = SphereGeometry{1.0f, 12, 12};
@@ -254,9 +253,9 @@ private:
     Mesh m_CircleMesh = CircleGeometry{1.0f, 36};
     Mesh m_CrosshairMesh = GenerateCrosshairMesh();
     Mesh m_TriangleMesh = GenerateTriangleMesh();
-    MeshBasicMaterial::PropertyBlock m_BlackColorMaterialProps{Color{0.0f, 0.0f, 0.0f, 1.0f}};
-    MeshBasicMaterial::PropertyBlock m_BlueColorMaterialProps{Color{0.0f, 0.0f, 1.0f, 1.0f}};
-    MeshBasicMaterial::PropertyBlock m_RedColorMaterialProps{Color{1.0f, 0.0f, 0.0f, 1.0f}};
+    MeshBasicMaterial::PropertyBlock m_BlackColorMaterialProps{Color::black()};
+    MeshBasicMaterial::PropertyBlock m_BlueColorMaterialProps{Color::blue()};
+    MeshBasicMaterial::PropertyBlock m_RedColorMaterialProps{Color::red()};
 
     // scene state
     std::vector<SceneSphere> m_SceneSpheres = GenerateSceneSpheres();

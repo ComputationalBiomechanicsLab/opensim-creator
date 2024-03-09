@@ -1,7 +1,5 @@
 #include "LOGLShadowMappingTab.h"
 
-#include <oscar_learnopengl/MouseCapturingCamera.h>
-
 #include <oscar/oscar.h>
 #include <SDL_events.h>
 

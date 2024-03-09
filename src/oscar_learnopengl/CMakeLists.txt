@@ -63,7 +63,6 @@ add_library(oscar_learnopengl STATIC
     LearnOpenGLTabRegistry.h
     LearnOpenGLTabs.h
     Lighting.h
-    MouseCapturingCamera.h
     PBR.h
 )
 
