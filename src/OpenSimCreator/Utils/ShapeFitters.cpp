@@ -395,7 +395,7 @@ namespace
         // repack vector into compile-time-known array
         OSC_ASSERT(u.size() == 9);
         std::array<double, 9> rv{};
-        copy(u.begin(), u.end(), rv.begin());
+        std::copy(u.begin(), u.end(), rv.begin());
         return rv;
     }
 
