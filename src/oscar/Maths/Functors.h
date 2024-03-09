@@ -1,6 +1,7 @@
 #pragma once
 
 #include <oscar/Maths/Vec.h>
+#include <oscar/Utils/Algorithms.h>
 
 #include <algorithm>
 #include <concepts>
@@ -39,22 +40,10 @@ namespace osc
         return rv;
     }
 
-    template<size_t N, typename T, std::predicate<T const&> UnaryPredicate>
-    constexpr bool all_of(Vec<N, T> const& v, UnaryPredicate p)
-    {
-        return std::all_of(v.begin(), v.end(), p);
-    }
-
     template<size_t N>
     constexpr bool all_of(Vec<N, bool> const& v)
     {
         return all_of(v, std::identity{});
-    }
-
-    template<size_t N, typename T, std::predicate<T const&> UnaryPredicate>
-    constexpr bool any_of(Vec<N, T> const& v, UnaryPredicate p)
-    {
-        return std::any_of(v.begin(), v.end(), p);
     }
 
     template<size_t N>

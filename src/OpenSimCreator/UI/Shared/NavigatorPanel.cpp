@@ -124,7 +124,7 @@ namespace
     bool pathContains(ComponentPath const& p, OpenSim::Component const* c)
     {
         auto end = p.begin() == p.end() ? p.end() : p.end()-1;
-        return std::find(p.begin(), end, c) != end;
+        return find(p.begin(), end, c) != end;
     }
 
     enum class ResponseType {

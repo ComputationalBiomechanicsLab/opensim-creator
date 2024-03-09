@@ -330,12 +330,6 @@ namespace osc
         return map(x, y, std::less_equal<T>{});
     }
 
-    template<size_t L, typename T>
-    constexpr bool lexicographical_compare(Vec<L, T> const& x, Vec<L, T> const& y)
-    {
-        return std::lexicographical_compare(x.begin(), x.end(), y.begin(), y.end());
-    }
-
     template<std::floating_point T>
     bool equal_within_absdiff(T x, T y, T epsilon_v)
     {

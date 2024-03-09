@@ -70,7 +70,7 @@ bool osc::IsStringCaseInsensitiveGreaterThan(std::string_view a, std::string_vie
     //
     //     https://stackoverflow.com/questions/33379846/case-insensitive-sorting-of-an-array-of-strings
 
-    auto [itA, itB] = std::mismatch(a.begin(), a.end(), b.begin(), b.end(), [](auto c1, auto c2)
+    auto [itA, itB] = osc::mismatch(a, b, [](auto c1, auto c2)
     {
         return std::tolower(c1) == std::tolower(c2);
     });
@@ -129,14 +129,14 @@ bool osc::IsValidIdentifier(std::string_view sv)
     }
     else
     {
-        return std::all_of(sv.begin() + 1, sv.end(), isValidTrailingCharacterOfIdentifier);
+        return all_of(sv.begin() + 1, sv.end(), isValidTrailingCharacterOfIdentifier);
     }
 }
 
 std::string_view osc::TrimLeadingAndTrailingWhitespace(std::string_view sv)
 {
-    std::string_view::const_iterator const front = std::find_if_not(sv.begin(), sv.end(), ::isspace);
-    std::string_view::const_iterator const back = std::find_if_not(sv.rbegin(), std::string_view::const_reverse_iterator{front}, ::isspace).base();
+    std::string_view::const_iterator const front = find_if_not(sv, ::isspace);
+    std::string_view::const_iterator const back = find_if_not(sv.rbegin(), std::string_view::const_reverse_iterator{front}, ::isspace).base();
     return {sv.data() + std::distance(sv.begin(), front), static_cast<size_t>(std::distance(front, back))};
 }
 

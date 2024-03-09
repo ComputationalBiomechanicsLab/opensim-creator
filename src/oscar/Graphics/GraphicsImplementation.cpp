@@ -4639,7 +4639,7 @@ namespace
             }
 
             // write els to vertex buffer
-            std::copy(els.begin(), els.end(), iter<T>(attr).begin());
+            copy(els.begin(), els.end(), iter<T>(attr).begin());
         }
 
         template<UserFacingVertexData T, typename UnaryOperation>
@@ -7232,7 +7232,7 @@ void osc::GraphicsBackend::HandleBatchWithSameMesh(
     auto batchIt = els.begin();
     while (batchIt != els.end())
     {
-        auto const batchEnd = std::find_if_not(batchIt, els.end(), RenderObjectHasSubMeshIndex{batchIt->maybeSubMeshIndex});
+        auto const batchEnd = find_if_not(batchIt, els.end(), RenderObjectHasSubMeshIndex{batchIt->maybeSubMeshIndex});
         HandleBatchWithSameSubMesh({batchIt, batchEnd}, ins);
         batchIt = batchEnd;
     }
@@ -7269,7 +7269,7 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterialPropertyBlock(
     auto batchIt = els.begin();
     while (batchIt != els.end())
     {
-        auto const batchEnd = std::find_if_not(batchIt, els.end(), RenderObjectHasMesh{&batchIt->mesh});
+        auto const batchEnd = find_if_not(batchIt, els.end(), RenderObjectHasMesh{&batchIt->mesh});
         HandleBatchWithSameMesh({batchIt, batchEnd}, ins);
         batchIt = batchEnd;
     }
@@ -7362,7 +7362,7 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterial(
     auto batchIt = els.begin();
     while (batchIt != els.end())
     {
-        auto const batchEnd = std::find_if_not(batchIt, els.end(), RenderObjectHasMaterialPropertyBlock{&batchIt->maybePropBlock});
+        auto const batchEnd = find_if_not(batchIt, els.end(), RenderObjectHasMaterialPropertyBlock{&batchIt->maybePropBlock});
         HandleBatchWithSameMaterialPropertyBlock({batchIt, batchEnd}, textureSlot, maybeInstances);
         batchIt = batchEnd;
     }
@@ -7395,7 +7395,7 @@ void osc::GraphicsBackend::DrawRenderObjects(
     auto batchIt = els.begin();
     while (batchIt != els.end())
     {
-        auto const batchEnd = std::find_if_not(batchIt, els.end(), RenderObjectHasMaterial{&batchIt->material});
+        auto const batchEnd = find_if_not(batchIt, els.end(), RenderObjectHasMaterial{&batchIt->material});
         HandleBatchWithSameMaterial(renderPassState, {batchIt, batchEnd});
         batchIt = batchEnd;
     }
@@ -7410,7 +7410,7 @@ void osc::GraphicsBackend::DrawBatchedByOpaqueness(
     auto batchIt = els.begin();
     while (batchIt != els.end())
     {
-        auto const opaqueEnd = std::find_if_not(batchIt, els.end(), IsOpaque);
+        auto const opaqueEnd = find_if_not(batchIt, els.end(), IsOpaque);
 
         if (opaqueEnd != batchIt)
         {
@@ -7424,7 +7424,7 @@ void osc::GraphicsBackend::DrawBatchedByOpaqueness(
         if (opaqueEnd != els.end())
         {
             // [opaqueEnd..els.end()] contains transparent elements
-            auto const transparentEnd = std::find_if(opaqueEnd, els.end(), IsOpaque);
+            auto const transparentEnd = find_if(opaqueEnd, els.end(), IsOpaque);
             gl::Enable(GL_BLEND);
             DrawRenderObjects(renderPassState, {opaqueEnd, transparentEnd});
 
@@ -7467,7 +7467,7 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera, float aspectRa
     auto batchIt = queue.begin();
     while (batchIt != queue.end())
     {
-        auto const depthTestedEnd = std::find_if_not(batchIt, queue.end(), IsDepthTested);
+        auto const depthTestedEnd = find_if_not(batchIt, queue.end(), IsDepthTested);
 
         if (depthTestedEnd != batchIt)
         {
@@ -7483,7 +7483,7 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera, float aspectRa
         {
             // there are >0 not-depth-tested elements that cannot be reordered
 
-            auto const ignoreDepthTestEnd = std::find_if(depthTestedEnd, queue.end(), IsDepthTested);
+            auto const ignoreDepthTestEnd = find_if(depthTestedEnd, queue.end(), IsDepthTested);
 
             // these elements aren't depth-tested and should just be drawn as-is
             gl::Disable(GL_DEPTH_TEST);

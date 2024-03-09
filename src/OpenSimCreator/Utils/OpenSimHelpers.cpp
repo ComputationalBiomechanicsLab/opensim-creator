@@ -177,7 +177,7 @@ namespace
         // move forward through the PFD sequence until a different frame is found
         //
         // the PFD before that one is the effective origin
-        auto const it = std::find_if(
+        auto const it = find_if(
             pfds.begin() + 1,
             pfds.end(),
             [&first = pfds.front()](auto const& pfd) { return &pfd->frame() != &first->frame(); }
@@ -193,7 +193,7 @@ namespace
         // move backward through the PFD sequence until a different frame is found
         //
         // the PFD after that one is the effective insertion
-        auto const rit = std::find_if(
+        auto const rit = find_if(
             pfds.rbegin() + 1,
             pfds.rend(),
             [&last = pfds.back()](auto const& pfd) { return &pfd->frame() != &last->frame(); }

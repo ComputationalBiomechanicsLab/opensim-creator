@@ -1183,7 +1183,7 @@ namespace
                 return nth++ > max;
             };
 
-            auto const backwardIt = std::find_if(m_PreviousPlots.rbegin(), m_PreviousPlots.rend(), isFirstDeleteablePlot);
+            auto const backwardIt = find_if(m_PreviousPlots.rbegin(), m_PreviousPlots.rend(), isFirstDeleteablePlot);
             auto const forwardIt = backwardIt.base();
             ptrdiff_t const idxOfDeleteableEnd = std::distance(m_PreviousPlots.begin(), forwardIt);
 

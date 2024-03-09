@@ -22,7 +22,7 @@ Texture2D osc::ReadSVGIntoTexture(
 {
     // read SVG content into a std::string and parse it
     std::string data;
-    std::copy(
+    copy(
         std::istreambuf_iterator{inputStream},
         std::istreambuf_iterator<std::istream::char_type>{},
         std::back_inserter(data)

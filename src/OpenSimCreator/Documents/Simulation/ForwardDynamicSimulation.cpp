@@ -10,6 +10,7 @@
 #include <OpenSimCreator/Utils/ParamBlock.h>
 
 #include <OpenSim/Simulation/Model/Model.h>
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/SynchronizedValue.h>
 #include <oscar/Utils/SynchronizedValueGuard.h>
 
@@ -174,7 +175,7 @@ private:
             auto guard = const_cast<SynchronizedValue<std::vector<SimulationReport>>&>(m_ReportQueue).lock();
 
             reports.reserve(reports.size() + guard->size());
-            std::copy(
+            copy(
                 std::make_move_iterator(guard->begin()),
                 std::make_move_iterator(guard->end()),
                 std::back_inserter(reports)

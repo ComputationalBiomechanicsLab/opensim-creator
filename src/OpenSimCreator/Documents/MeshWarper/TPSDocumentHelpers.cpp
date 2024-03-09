@@ -72,7 +72,7 @@ namespace
         throw std::runtime_error{"unable to generate a unique name for a scene element"};
     }
 
-    // equivalent of `std::find_if`, but returns a `nullptr` when nothing is found
+    // equivalent of `find_if`, but returns a `nullptr` when nothing is found
     template<
         ranges::range Range,
         std::predicate<typename Range::value_type const&> UnaryPredicate

@@ -1,5 +1,7 @@
 #include "NodePath.h"
 
+#include <oscar/Utils/Algorithms.h>
+
 #include <algorithm>
 #include <stdexcept>
 #include <string>
@@ -67,7 +69,7 @@ namespace
         // newStart..end is equal to what newStart+n..end was before.
         auto const shift = [&pathEnd](Iter newStart, size_t n)
         {
-            std::copy(newStart + n, pathEnd, newStart);
+            copy(newStart + n, pathEnd, newStart);
             pathEnd -= n;
         };
 
@@ -190,7 +192,7 @@ namespace
 
             } else {
                 // non-relative element: skip past the next separator or end
-                cursor = std::find(cursor, pathEnd, NodePath::separator) + 1;
+                cursor = find(cursor, pathEnd, NodePath::separator) + 1;
             }
         }
 
