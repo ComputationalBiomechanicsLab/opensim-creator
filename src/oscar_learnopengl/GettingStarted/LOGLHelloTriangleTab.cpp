@@ -20,7 +20,11 @@ namespace
             { 1.0f, -1.0f, 0.0f},  // bottom-right
             { 0.0f,  1.0f, 0.0f},  // top-middle
         });
-        m.setColors({Color::red(), Color::green(), Color::blue()});
+        m.setColors({
+            Color::red(),
+            Color::green(),
+            Color::blue(),
+        });
         m.setIndices({0, 1, 2});
         return m;
     }

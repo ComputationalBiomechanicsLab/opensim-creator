@@ -1,7 +1,5 @@
 #include "LOGLNormalMappingTab.h"
 
-#include <oscar_learnopengl/LearnOpenGLHelpers.h>
-
 #include <oscar/oscar.h>
 #include <SDL_events.h>
 
@@ -152,7 +150,7 @@ private:
     // rendering state
     Material m_NormalMappingMaterial = CreateNormalMappingMaterial(m_Loader);
     Material m_LightCubeMaterial = CreateLightCubeMaterial(m_Loader);
-    Mesh m_CubeMesh = GenerateLearnOpenGLCubeMesh();
+    Mesh m_CubeMesh = BoxGeometry{};
     Mesh m_QuadMesh = GenerateQuad();
 
     // scene state

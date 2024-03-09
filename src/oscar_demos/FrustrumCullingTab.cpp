@@ -42,7 +42,8 @@ namespace
         for (size_t x = 0; x < cells.x; ++x) {
             for (size_t y = 0; y < cells.y; ++y) {
                 for (size_t z = 0; z < cells.z; ++z) {
-                    Vec3 const pos = bounds.min + dims * (Vec3{x, y, z} / Vec3{cells-1_uz});
+
+                    Vec3 const pos = bounds.min + dims * (Vec3{x, y, z} / Vec3{cells - 1_uz});
 
                     Mesh mesh;
                     std::sample(geoms.begin(), geoms.end(), &mesh, 1, rng);

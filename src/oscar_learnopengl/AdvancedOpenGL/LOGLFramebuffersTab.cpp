@@ -1,7 +1,5 @@
 #include "LOGLFramebuffersTab.h"
 
-#include <oscar_learnopengl/LearnOpenGLHelpers.h>
-
 #include <oscar/oscar.h>
 #include <SDL_events.h>
 
@@ -133,7 +131,7 @@ private:
         ColorSpace::sRGB
     );
 
-    Mesh m_CubeMesh = GenerateLearnOpenGLCubeMesh();
+    Mesh m_CubeMesh = BoxGeometry{};
     Mesh m_PlaneMesh = GeneratePlane();
     Mesh m_QuadMesh = PlaneGeometry{2.0f, 2.0f, 1, 1};
 

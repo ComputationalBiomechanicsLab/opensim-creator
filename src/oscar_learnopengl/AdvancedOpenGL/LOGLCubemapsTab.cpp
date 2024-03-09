@@ -1,7 +1,5 @@
 #include "LOGLCubemapsTab.h"
 
-#include <oscar_learnopengl/LearnOpenGLHelpers.h>
-
 #include <oscar/oscar.h>
 #include <SDL_events.h>
 
@@ -16,7 +14,7 @@ using namespace osc;
 namespace
 {
     constexpr CStringView c_TabStringID = "LearnOpenGL/Cubemaps";
-    constexpr auto c_SkyboxTextureFilenames = std::to_array<CStringView>({
+    constexpr auto c_SkyboxTextureFilenames = std::to_array<std::string_view>({
         "skybox_right.jpg",
         "skybox_left.jpg",
         "skybox_top.jpg",
@@ -25,13 +23,12 @@ namespace
         "skybox_back.jpg",
     });
     static_assert(c_SkyboxTextureFilenames.size() == NumOptions<CubemapFace>());
-    static_assert(c_SkyboxTextureFilenames.size() > 1);
 
     Cubemap LoadCubemap(ResourceLoader& rl)
     {
         // load the first face, so we know the width
         Texture2D t = LoadTexture2DFromImage(
-            rl.open(ResourcePath{"oscar_learnopengl/textures"} / std::string_view{c_SkyboxTextureFilenames.front()}),
+            rl.open(ResourcePath{"oscar_learnopengl/textures"} / c_SkyboxTextureFilenames.front()),
             ColorSpace::sRGB
         );
 
@@ -46,7 +43,7 @@ namespace
         for (CubemapFace f = Next(FirstCubemapFace()); f <= LastCubemapFace(); f = Next(f))
         {
             t = LoadTexture2DFromImage(
-                rl.open(ResourcePath{"oscar_learnopengl/textures"} / std::string_view{c_SkyboxTextureFilenames[ToIndex(f)]}),
+                rl.open(ResourcePath{"oscar_learnopengl/textures"} / c_SkyboxTextureFilenames[ToIndex(f)]),
                 ColorSpace::sRGB
             );
             OSC_ASSERT(t.getDimensions().x == dims.x);
@@ -201,7 +198,7 @@ private:
     std::array<CubeMaterial, 3> m_CubeMaterials = CreateCubeMaterials(m_Loader);
     size_t m_CubeMaterialIndex = 0;
     MaterialPropertyBlock m_CubeProperties;
-    Mesh m_Cube = GenerateLearnOpenGLCubeMesh();
+    Mesh m_Cube = BoxGeometry{};
     Texture2D m_ContainerTexture = LoadTexture2DFromImage(
         m_Loader.open("oscar_learnopengl/textures/container.jpg"),
         ColorSpace::sRGB

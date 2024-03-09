@@ -57,8 +57,6 @@ add_library(oscar_learnopengl STATIC
     AdvancedOpenGL.h
     GettingStarted.h
 
-    LearnOpenGLHelpers.cpp
-    LearnOpenGLHelpers.h
     LearnOpenGLTabRegistry.cpp
     LearnOpenGLTabRegistry.h
     LearnOpenGLTabs.h

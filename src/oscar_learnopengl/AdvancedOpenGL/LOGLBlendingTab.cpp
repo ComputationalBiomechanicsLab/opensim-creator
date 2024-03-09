@@ -1,7 +1,5 @@
 #include "LOGLBlendingTab.h"
 
-#include <oscar_learnopengl/LearnOpenGLHelpers.h>
-
 #include <oscar/oscar.h>
 #include <SDL_events.h>
 
@@ -154,7 +152,7 @@ private:
         m_Loader.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Blending.frag"),
     }};
     Material m_BlendingMaterial = m_OpaqueMaterial;
-    Mesh m_CubeMesh = GenerateLearnOpenGLCubeMesh();
+    Mesh m_CubeMesh = BoxGeometry{};
     Mesh m_PlaneMesh = GeneratePlane();
     Mesh m_TransparentMesh = GenerateTransparent();
     MouseCapturingCamera m_Camera = CreateCameraThatMatchesLearnOpenGL();

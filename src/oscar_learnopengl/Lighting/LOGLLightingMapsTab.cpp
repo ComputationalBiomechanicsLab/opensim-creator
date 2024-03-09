@@ -1,7 +1,5 @@
 #include "LOGLLightingMapsTab.h"
 
-#include <oscar_learnopengl/LearnOpenGLHelpers.h>
-
 #include <oscar/oscar.h>
 #include <SDL_events.h>
 
@@ -111,7 +109,7 @@ private:
         m_Loader.slurp("oscar_learnopengl/shaders/LightCube.vert"),
         m_Loader.slurp("oscar_learnopengl/shaders/LightCube.frag"),
     }};
-    Mesh m_Mesh = GenerateLearnOpenGLCubeMesh();
+    Mesh m_Mesh = BoxGeometry{};
     MouseCapturingCamera m_Camera = CreateCamera();
 
     Transform m_LightTransform = {

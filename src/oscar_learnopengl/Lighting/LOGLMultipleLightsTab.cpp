@@ -1,7 +1,5 @@
 #include "LOGLMultipleLightsTab.h"
 
-#include <oscar_learnopengl/LearnOpenGLHelpers.h>
-
 #include <oscar/oscar.h>
 #include <SDL_events.h>
 
@@ -187,7 +185,7 @@ private:
 
     Material m_MultipleLightsMaterial = CreateMultipleLightsMaterial(m_Loader);
     Material m_LightCubeMaterial = CreateLightCubeMaterial(m_Loader);
-    Mesh m_Mesh = GenerateLearnOpenGLCubeMesh();
+    Mesh m_Mesh = BoxGeometry{};
 
     MouseCapturingCamera m_Camera = CreateCamera();
 
