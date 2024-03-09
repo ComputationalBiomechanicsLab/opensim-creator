@@ -395,7 +395,7 @@ std::vector<OpenSim::Component const*> osc::GetPathElements(OpenSim::Component c
         rv.push_back(p);
     }
 
-    std::reverse(rv.begin(), rv.end());
+    reverse(rv);
 
     return rv;
 }

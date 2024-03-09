@@ -46,7 +46,7 @@ namespace
                     Vec3 const pos = bounds.min + dims * (Vec3{x, y, z} / Vec3{cells - 1_uz});
 
                     Mesh mesh;
-                    std::sample(geoms.begin(), geoms.end(), &mesh, 1, rng);
+                    sample(geoms, &mesh, 1, rng);
 
                     rv.push_back(TransformedMesh{
                         .mesh = mesh,

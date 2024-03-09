@@ -53,6 +53,27 @@ namespace osc
         return std::any_of(std::ranges::begin(r), std::ranges::end(r), pred);
     }
 
+    // see: std::ranges::count
+    template<
+        std::ranges::input_range R,
+        typename T
+    >
+    constexpr typename std::ranges::range_difference_t<R> count(R&& r, T const& value)
+        requires std::indirect_binary_predicate<std::ranges::equal_to, std::ranges::iterator_t<R>, T const*>
+    {
+        return std::count(std::ranges::begin(r), std::ranges::end(r), value);
+    }
+
+    // see: std::ranges::count_if
+    template<
+        std::ranges::input_range R,
+        std::indirect_unary_predicate<std::ranges::iterator_t<R>> Pred
+    >
+    constexpr typename std::ranges::range_difference_t<R> count_if(R&& r, Pred pred)
+    {
+        return std::count_if(std::ranges::begin(r), std::ranges::end(r), pred);
+    }
+
     // see: std::ranges::mismatch
     template<
         std::ranges::input_range R1,
@@ -168,6 +189,28 @@ namespace osc
         return std::find(std::ranges::begin(r), std::ranges::end(r), value);
     }
 
+    // see: std::ranges::contains
+    template<
+        std::input_iterator I,
+        std::sentinel_for<I> S,
+        class T
+    >
+    constexpr bool contains(I first, S last, T const& value)
+    {
+        return find(first, last, value) != last;
+    }
+
+    // see: std::ranges::contains
+    template<
+        std::ranges::forward_range R,
+        class T
+    >
+    constexpr bool contains(R&& r, T const& value)
+        requires std::indirect_binary_predicate<std::ranges::equal_to, std::ranges::iterator_t<R>, T const*>
+    {
+        return contains(std::ranges::begin(r), std::ranges::end(r), value);
+    }
+
     // see: std::ranges::copy
     //
     // NOTE: return value differs from C++20's std::ranges::copy (fix when MacOS supports std::ranges)
@@ -195,25 +238,41 @@ namespace osc
         std::copy(std::ranges::begin(r), std::ranges::end(r), result);
     }
 
-    // see: std::ranges::count
+    // see: std::ranges::fill
+    //
+    // NOTE: return value differs from C++20's std::ranges:fill (fix when MacOS supports std::ranges)
     template<
-        std::ranges::input_range R,
-        typename T
+        typename T,
+        std::ranges::output_range<T const&> R
     >
-    constexpr typename std::ranges::range_difference_t<R> count(R&& r, T const& value)
-        requires std::indirect_binary_predicate<std::ranges::equal_to, std::ranges::iterator_t<R>, T const*>
+    constexpr void fill(R&& r, T const& value)
     {
-        return std::count(std::ranges::begin(r), std::ranges::end(r), value);
+        std::fill(std::ranges::begin(r), std::ranges::end(r), value);
     }
 
-    // see: std::ranges::count_if
+    // see: std::ranges::reverse
+    template<std::ranges::bidirectional_range R>
+    constexpr std::ranges::borrowed_iterator_t<R> reverse(R&& r)
+        requires std::permutable<std::ranges::iterator_t<R>>
+    {
+        auto last = std::ranges::end(r);
+        std::reverse(std::ranges::begin(r), last);
+        return last;
+    }
+
+    // see: std::ranges::sample
     template<
         std::ranges::input_range R,
-        std::indirect_unary_predicate<std::ranges::iterator_t<R>> Pred
+        std::weakly_incrementable O,
+        typename Gen
     >
-    constexpr typename std::ranges::range_difference_t<R> count_if(R&& r, Pred pred)
+    O sample(R&& r, O out, std::ranges::range_difference_t<R> n, Gen&& gen)
+        requires
+            (std::ranges::forward_range<R> || std::random_access_iterator<O>) &&
+             std::indirectly_copyable<std::ranges::iterator_t<R>, O> &&
+             std::uniform_random_bit_generator<std::remove_reference_t<Gen>>
     {
-        return std::count_if(std::ranges::begin(r), std::ranges::end(r), pred);
+        return std::sample(std::ranges::begin(r), std::ranges::end(r), std::move(out), n, std::forward<Gen>(gen));
     }
 
     // osc algorithm: perform bounds-checked indexed access

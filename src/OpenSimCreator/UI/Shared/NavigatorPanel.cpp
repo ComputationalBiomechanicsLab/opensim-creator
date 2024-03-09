@@ -118,13 +118,13 @@ namespace
         }
 
         // reverse to yield parent --> child
-        std::reverse(out.begin(), out.end());
+        reverse(out);
     }
 
     bool pathContains(ComponentPath const& p, OpenSim::Component const* c)
     {
         auto end = p.begin() == p.end() ? p.end() : p.end()-1;
-        return find(p.begin(), end, c) != end;
+        return contains(p.begin(), end, c);
     }
 
     enum class ResponseType {

@@ -343,7 +343,7 @@ public:
 
     bool implHasUserOutputExtractor(OutputExtractor const& oe) const final
     {
-        return find(m_UserOutputExtractors, oe) != m_UserOutputExtractors.end();
+        return contains(m_UserOutputExtractors, oe);
     }
 
     bool implRemoveUserOutputExtractor(OutputExtractor const& oe) final

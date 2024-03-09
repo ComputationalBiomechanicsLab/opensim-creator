@@ -43,7 +43,7 @@ bool osc::Contains(std::string_view sv, std::string_view substr)
 
 bool osc::Contains(std::string_view sv, std::string_view::value_type c)
 {
-    return find(sv, c) != sv.end();
+    return contains(sv, c);
 }
 
 bool osc::ContainsCaseInsensitive(std::string_view sv, std::string_view substr)

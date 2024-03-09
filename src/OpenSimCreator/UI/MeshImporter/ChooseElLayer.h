@@ -91,7 +91,7 @@ namespace osc::mi
         // returns true if the user has already selected the given scene element
         bool isSelected(MIObject const& el) const
         {
-            return find(m_SelectedObjectIDs, el.getID()) != m_SelectedObjectIDs.end();
+            return contains(m_SelectedObjectIDs, el.getID());
         }
 
         // returns true if the user can (de)select the given element
