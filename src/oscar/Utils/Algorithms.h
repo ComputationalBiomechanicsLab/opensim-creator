@@ -275,6 +275,38 @@ namespace osc
         return std::sample(std::ranges::begin(r), std::ranges::end(r), std::move(out), n, std::forward<Gen>(gen));
     }
 
+    // see: std::ranges::min_element
+    template<
+        std::forward_iterator I,
+        std::sentinel_for<I> S,
+        class Proj = std::identity,
+        std::indirect_strict_weak_order<std::projected<I, Proj>> Comp = std::ranges::less
+    >
+    constexpr I min_element(I first, S last, Comp comp = {}, Proj proj = {})
+    {
+        if (first == last) {
+            return last;
+        }
+        auto smallest = first;
+        while (++first != last) {
+            if (std::invoke(comp, std::invoke(proj, *first), std::invoke(proj, *smallest))) {
+                smallest = first;
+            }
+        }
+        return smallest;
+    }
+
+    // see: std::ranges::min_element
+    template<
+        std::ranges::forward_range R,
+        class Proj = std::identity,
+        std::indirect_strict_weak_order<std::projected<std::ranges::iterator_t<R>, Proj>> Comp = std::ranges::less
+    >
+    constexpr std::ranges::borrowed_iterator_t<R> min_element(R&& r, Comp comp = {}, Proj proj = {})
+    {
+        return min_element(std::ranges::begin(r), std::ranges::end(r), std::ref(comp), std::ref(proj));
+    }
+
     // osc algorithm: perform bounds-checked indexed access
     template<std::ranges::random_access_range Range>
     constexpr auto at(Range const& range, typename Range::size_type i) -> decltype(range[i])

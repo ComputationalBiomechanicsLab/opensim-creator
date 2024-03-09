@@ -26,6 +26,7 @@
 #include <oscar/Shims/Cpp20/thread.h>
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/StringHelpers.h>
@@ -1337,7 +1338,7 @@ namespace
     // returns the smallest X value accross all given plot lines - if an X value exists
     std::optional<float> CalcSmallestX(std::span<LineCursor const> cursors)
     {
-        auto it = std::min_element(cursors.begin(), cursors.end(), HasLowerX);
+        auto it = min_element(cursors, HasLowerX);
         return it != cursors.end() ? it->peekX() : std::optional<float>{};
     }
 

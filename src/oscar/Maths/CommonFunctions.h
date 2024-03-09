@@ -124,22 +124,6 @@ namespace osc
         return rv;
     }
 
-    // returns an iterator to the smallest element in `v`
-    template<size_t L, typename T>
-    constexpr typename Vec<L, T>::const_iterator min_element(Vec<L, T> const& v)
-        requires std::is_arithmetic_v<T>
-    {
-        return std::min_element(v.begin(), v.end());
-    }
-
-    // returns an iterator to the smallest element in `v`
-    template<size_t L, typename T>
-    constexpr typename Vec<L, T>::iterator min_element(Vec<L, T>& v)
-        requires std::is_arithmetic_v<T>
-    {
-        return std::min_element(v.begin, v.end());
-    }
-
     // returns the index of the smallest element in `v`
     template<size_t L, typename T>
     constexpr typename Vec<L, T>::size_type min_element_index(Vec<L, T> const& v)

@@ -3,7 +3,6 @@
 #include <oscar/Maths/Vec.h>
 #include <oscar/Utils/Algorithms.h>
 
-#include <algorithm>
 #include <concepts>
 #include <cstddef>
 #include <functional>
@@ -50,12 +49,6 @@ namespace osc
     constexpr bool any_of(Vec<N, bool> const& v)
     {
         return any_of(v, std::identity{});
-    }
-
-    template<size_t N, typename T, std::predicate<T const&> UnaryPredicate>
-    constexpr bool none_of(Vec<N, T> const& v, UnaryPredicate p)
-    {
-        return std::none_of(v.begin(), v.end(), p);
     }
 
     template<size_t N>
