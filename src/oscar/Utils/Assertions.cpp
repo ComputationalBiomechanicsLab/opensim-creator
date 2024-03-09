@@ -15,7 +15,7 @@ void osc::OnAssertionFailure(
     std::string const msg = [&]()
     {
         std::stringstream ss;
-        ss << file << ':' << func << ':' << ':' << line << ": throw_if_not(" << failingCode << ") failed";
+        ss << file << ':' << func << ':' << ':' << line << ": OSC_ASSERT(" << failingCode << ") failed";
         return std::move(ss).str();
     }();
 
