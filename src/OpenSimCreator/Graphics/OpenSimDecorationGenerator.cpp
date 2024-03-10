@@ -33,6 +33,7 @@
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/Log.h>
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Perf.h>
 #include <SimTKcommon.h>
 
@@ -497,8 +498,8 @@ namespace
 
         // else: the path is >= 2 points, so it's possible to measure a traversal
         //       length along it
-        float const tendonLen = std::max(0.0f, static_cast<float>(muscle.getTendonLength(rs.getState()) * 0.5));
-        float const fiberLen = std::max(0.0f, static_cast<float>(muscle.getFiberLength(rs.getState())));
+        float const tendonLen = max(0.0f, static_cast<float>(muscle.getTendonLength(rs.getState()) * 0.5));
+        float const fiberLen = max(0.0f, static_cast<float>(muscle.getFiberLength(rs.getState())));
         float const fiberEnd = tendonLen + fiberLen;
         bool const hasTendonSpheres = tendonLen > 0.0f;
 

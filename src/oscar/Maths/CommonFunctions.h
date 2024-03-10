@@ -31,23 +31,32 @@ namespace osc
         return std::fabs(v);
     }
 
-    template<size_t L, typename T>
+    template<typename T>
+    concept HasAbsFunction = requires (T v) {
+        { abs(v) } -> std::same_as<T>;
+    };
+
+    template<size_t L, HasAbsFunction T>
     Vec<L, T> abs(Vec<L, T> const& v)
-        requires std::is_arithmetic_v<T>
     {
-        return map(v, abs<T>);
+        return map(v, [](T const& el) { return abs(el); });
     }
 
     template<std::floating_point T>
-    T floor(T num)
+    T floor(T v)
     {
-        return std::floor(num);
+        return std::floor(v);
     }
 
-    template<size_t L, std::floating_point T>
+    template<typename T>
+    concept HasFloorFunction = requires (T v) {
+        { floor(v) } -> std::same_as<T>;
+    };
+
+    template<size_t L, HasFloorFunction T>
     Vec<L, T> floor(Vec<L, T> const& v)
     {
-        return map(v, floor<T>);
+        return map(v, [](T const& el) { return floor(el); });
     }
 
     template<std::floating_point T>
@@ -80,19 +89,15 @@ namespace osc
         return CA{mod(CA{x}.count(), CA{y}.count())};
     }
 
-    template<size_t L, typename T>
-    constexpr Vec<L, T> mod(Vec<L, T> const& a, Vec<L, T> const& b)
-        requires std::is_arithmetic_v<T>
-    {
-        return map(a, b, mod<T>);
-    }
+    template<typename T>
+    concept HasModFunction = requires (T v1, T v2) {
+        { mod(v1, v2) } -> std::same_as<T>;
+    };
 
-    // returns the smallest of `a` and `b`
-    template<typename GenType>
-    constexpr GenType min(GenType a, GenType b)
-        requires std::is_arithmetic_v<GenType>
+    template<size_t L, HasModFunction T>
+    constexpr Vec<L, T> mod(Vec<L, T> const& a, Vec<L, T> const& b)
     {
-        return std::min(a, b);
+        return map(a, b, [](T const& av, T const& bv) { return mod(av, bv); });
     }
 
     // returns the smallest of `a` and `b`, accounting for differences in angular units (e.g. 180_deg < 1_turn)
@@ -108,44 +113,16 @@ namespace osc
         return CA{min(CA{x}.count(), CA{y}.count())};
     }
 
-    // returns the smallest element in `v`
-    template<size_t L, typename T>
-    constexpr T min(Vec<L, T> const& v)
-        requires std::is_arithmetic_v<T>
-    {
-        auto it = v.begin();
-        auto const end = v.end();
-        T rv = *it;
-        while (++it != end) {
-            if (*it < rv) {
-                rv = *it;
-            }
-        }
-        return rv;
-    }
-
-    // returns the index of the smallest element in `v`
-    template<size_t L, typename T>
-    constexpr typename Vec<L, T>::size_type min_element_index(Vec<L, T> const& v)
-        requires std::is_arithmetic_v<T>
-    {
-        return std::distance(v.begin(), min_element(v));
-    }
+    template<typename T>
+    concept HasMinFunction = requires(T a, T b) {
+        { min(a, b) } -> std::convertible_to<T>;
+    };
 
     // returns a vector containing `min(a, b)` for each element
-    template<size_t L, typename T>
+    template<size_t L, HasMinFunction T>
     constexpr Vec<L, T> elementwise_min(Vec<L, T> const& a, Vec<L, T> const& b)
-        requires std::is_arithmetic_v<T>
     {
-        return map(a, b, min<T>);
-    }
-
-    // returns the largest of `a` and `b`
-    template<typename GenType>
-    constexpr GenType max(GenType a, GenType b)
-        requires std::is_arithmetic_v<GenType>
-    {
-        return std::max(a, b);
+        return map(a, b, [](T const& a, T const& b) { return min(a, b); });
     }
 
     // returns the largest of `a` and `b`, accounting for differences in angular units (e.g. 180_deg < 1_turn)
@@ -161,52 +138,12 @@ namespace osc
         return CA{max(CA{x}.count(), CA{y}.count())};
     }
 
-    // returns the largest element in `v`
-    template<size_t L, typename T>
-    constexpr T max(Vec<L, T> const& v)
-        requires std::is_arithmetic_v<T>
-    {
-        auto it = v.begin();
-        auto const end = v.end();
-        T rv = *it;
-        while (++it != end) {
-            if (*it > rv) {
-                rv = *it;
-            }
-        }
-        return rv;
-    }
-
-    // returns an iterator to the largest element in `v`
-    template<size_t L, typename T>
-    constexpr typename Vec<L, T>::const_iterator max_element(Vec<L, T> const& v)
-        requires std::is_arithmetic_v<T>
-    {
-        return std::max_element(v.begin(), v.end());
-    }
-
-    // returns an iterator to the largest element in `v`
-    template<size_t L, typename T>
-    constexpr typename Vec<L, T>::iterator max_element(Vec<L, T>& v)
-        requires std::is_arithmetic_v<T>
-    {
-        return std::max_element(v.begin, v.end());
-    }
-
-    // returns the index of the largest element in `v`
-    template<size_t L, typename T>
-    constexpr typename Vec<L, T>::size_type max_element_index(Vec<L, T> const& v)
-        requires std::is_arithmetic_v<T>
-    {
-        return std::distance(v.begin(), max_element(v));
-    }
-
     // returns a vector containing max(a[i], b[i]) for each element
     template<size_t L, typename T>
     constexpr Vec<L, T> elementwise_max(Vec<L, T> const& a, Vec<L, T> const& b)
         requires std::is_arithmetic_v<T>
     {
-        return map(a, b, max<T>);
+        return map(a, b, [](T const& av, T const& bv) { return max(av, bv); });
     }
 
     // clamps `v` between `low` and `high` (inclusive)
@@ -247,15 +184,13 @@ namespace osc
     // clamps each element in `x` between the corresponding elements in `low` and `high`
     template<size_t L, typename T>
     constexpr Vec<L, T> clamp(Vec<L, T> const& v, Vec<L, T> const& low, Vec<L, T> const& high)
-        requires std::is_arithmetic_v<T>
     {
-        return map(v, low, high, clamp<T>);
+        return map(v, low, high, [](T const& vv, T const& lowv, T const& highv) { return clamp(vv, lowv, highv); });
     }
 
     // clamps each element in `x` between `low` and `high`
     template<size_t L, typename T>
     constexpr Vec<L, T> clamp(Vec<L, T> const& v, T const& low, T const& high)
-        requires std::is_arithmetic_v<T>
     {
         return map(v, [&low, &high](T const& el) { return clamp(el, low, high); });
     }
@@ -356,7 +291,7 @@ namespace osc
         // value must be scaled up to the magnitude of the operands if you need
         // a more-correct equality comparison
 
-        T const scaledEpsilon = std::max(static_cast<T>(1.0), x, y) * epsilon_v<T>;
+        T const scaledEpsilon = max(static_cast<T>(1.0), x, y) * epsilon_v<T>;
         return abs(x - y) < scaledEpsilon;
     }
 
@@ -406,7 +341,7 @@ namespace osc
 
     template<typename T>
     constexpr T midpoint(T a, T b)
-        requires std::is_arithmetic_v<T>
+        requires std::is_integral_v<T> || std::is_floating_point_v<T> || std::is_pointer_v<T>
     {
         return std::midpoint(a, b);
     }
@@ -414,7 +349,7 @@ namespace osc
     template<size_t L, typename T>
     Vec<L, T> midpoint(Vec<L, T> const& a, Vec<L, T> const& b)
     {
-        return map(a, b, midpoint<T>);
+        return map(a, b, [](T const& av, T const& bv) { return midpoint(av, bv); });
     }
 
     // returns the centroid of all of the provided vectors, or the zero vector if provided no inputs
@@ -427,11 +362,7 @@ namespace osc
     constexpr Vec<L, T> centroid(Range const& r)
         requires std::is_arithmetic_v<T>
     {
-        using std::begin;
-        using std::end;
-        using std::size;
-
-        return std::reduce(begin(r), end(r)) / static_cast<T>(size(r));
+        return std::reduce(std::ranges::begin(r), std::ranges::end(r)) / static_cast<T>(std::ranges::size(r));
     }
 
     template<size_t L, typename T>

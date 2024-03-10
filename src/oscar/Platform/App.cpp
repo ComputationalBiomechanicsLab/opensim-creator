@@ -16,6 +16,7 @@
 #include <oscar/Platform/Screenshot.h>
 #include <oscar/Platform/os.h>
 #include <oscar/Platform/Detail/SDL2Helpers.h>
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/FilesystemHelpers.h>
 #include <oscar/Utils/Perf.h>
@@ -595,7 +596,7 @@ private:
                 OSC_PERF("App/pumpEvents");
 
                 bool shouldWait = m_InWaitMode && m_NumFramesToPoll <= 0;
-                m_NumFramesToPoll = std::max(0, m_NumFramesToPoll - 1);
+                m_NumFramesToPoll = max(0, m_NumFramesToPoll - 1);
 
                 for (SDL_Event e; shouldWait ? SDL_WaitEventTimeout(&e, 1000) : SDL_PollEvent(&e);)
                 {
@@ -784,7 +785,7 @@ private:
     SynchronizedValue<std::unordered_map<TypeInfoReference, std::shared_ptr<void>>> m_Singletons;
 
     // how many antiAliasingLevel the implementation should actually use
-    AntiAliasingLevel m_CurrentMSXAASamples = std::min(m_GraphicsContext.getMaxAntialiasingLevel(), m_ApplicationConfig.getNumMSXAASamples());
+    AntiAliasingLevel m_CurrentMSXAASamples = min(m_GraphicsContext.getMaxAntialiasingLevel(), m_ApplicationConfig.getNumMSXAASamples());
 
     // set to true if the application should quit
     bool m_QuitRequested = false;

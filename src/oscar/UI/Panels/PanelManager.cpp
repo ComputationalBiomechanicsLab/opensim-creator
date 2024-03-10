@@ -413,7 +413,7 @@ private:
             if (panel.getSpawnablePanelID() == spawnableID)
             {
                 size_t instanceNumber = panel.getInstanceNumber();
-                used.resize(std::max(instanceNumber, used.size()));
+                used.resize(max(instanceNumber, used.size()));
                 used[instanceNumber] = true;
             }
         }

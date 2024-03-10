@@ -15,6 +15,7 @@
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/Perf.h>
 
@@ -73,7 +74,7 @@ namespace
         }
 
         fout << "time," << header << '\n';
-        for (size_t i = 0, len = std::min(times.size(), values.size()); i < len; ++i)
+        for (size_t i = 0, len = min(times.size(), values.size()); i < len; ++i)
         {
             fout << times[i] << ',' << values[i] << '\n';
         }

@@ -127,7 +127,7 @@ namespace
         rv.setWrapMode(TextureWrapMode::Clamp);
         rv.setFilterMode(TextureFilterMode::Mipmap);
 
-        constexpr size_t maxMipmapLevel = static_cast<size_t>(std::max(
+        constexpr size_t maxMipmapLevel = static_cast<size_t>(max(
             0,
             cpp20::bit_width(static_cast<size_t>(levelZeroWidth)) - 1
         ));

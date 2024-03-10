@@ -10,6 +10,7 @@
 
 #include <array>
 #include <cstdint>
+#include <functional>
 #include <iterator>
 #include <optional>
 #include <ranges>
@@ -19,7 +20,7 @@ namespace osc
     // returns the average centroid of the `AABB`
     constexpr Vec3 centroid(AABB const& aabb)
     {
-        return 0.5f * (aabb.min + aabb.max);
+        return centroid({aabb.min, aabb.max});
     }
 
     // returns the widths of the edges of the `AABB`
@@ -81,22 +82,19 @@ namespace osc
     }
 
     // returns an `AABB` that tightly bounds the `Vec3`s (projected from) the range
-    template<std::ranges::input_range Range, class Proj = std::identity>
-    constexpr AABB aabb_of(Range&& range, Proj proj = {})
-        requires std::convertible_to<typename std::projected<std::ranges::iterator_t<Range>, Proj>::value_type, Vec3 const&>
+    template<std::ranges::input_range R, class Proj = std::identity>
+    constexpr AABB aabb_of(R&& r, Proj proj = {})
+        requires std::convertible_to<typename std::projected<std::ranges::iterator_t<R>, Proj>::value_type, Vec3 const&>
     {
-        using std::begin;
-        using std::end;
-
-        auto it = begin(range);
-        auto const en = end(range);
-        if (it == en) {
+        auto it = std::ranges::begin(r);
+        auto const last = std::ranges::end(r);
+        if (it == last) {
             return AABB{};  // empty range
         }
 
-        AABB rv = aabb_of(static_cast<Vec3 const&>(proj(*it)));
-        while (++it != en) {
-            rv = aabb_of(rv, aabb_of(static_cast<Vec3 const&>(proj(*it))));
+        AABB rv = aabb_of(std::invoke(proj, *it));
+        while (++it != last) {
+            rv = aabb_of(rv, aabb_of(std::invoke(proj, *it)));
         }
         return rv;
     }
@@ -106,18 +104,15 @@ namespace osc
     constexpr AABB aabb_of(Range&& range, Proj proj = {})
         requires std::convertible_to<typename std::projected<std::ranges::iterator_t<Range>, Proj>::value_type, AABB const&>
     {
-        using std::begin;
-        using std::end;
-
-        auto it = begin(range);
-        auto const en = end(range);
-        if (it == en) {
+        auto it = std::ranges::begin(range);
+        auto const last = std::ranges::end(range);
+        if (it == last) {
             return AABB{};  // empty range
         }
 
-        AABB rv = proj(*it);
-        while (++it != en) {
-            rv = aabb_of(rv, static_cast<AABB const&>(proj(*it)));
+        AABB rv = std::invoke(proj, *it);
+        while (++it != last) {
+            rv = aabb_of(rv, std::invoke(proj, *it));
         }
         return rv;
     }
@@ -148,20 +143,17 @@ namespace osc
     constexpr std::optional<AABB> maybe_aabb_of(Range&& range, Proj proj = {})
         requires std::convertible_to<typename std::projected<std::ranges::iterator_t<Range>, Proj>::value_type, std::optional<AABB> const&>
     {
-        using std::begin;
-        using std::end;
-
-        auto it = begin(range);
-        auto const en = end(range);
+        auto it = std::ranges::begin(range);
+        auto const last = std::ranges::end(range);
 
         // find first non-nullopt AABB (or the end)
         std::optional<AABB> rv;
-        while (!rv && it != en) {
+        while (!rv && it != last) {
             rv = proj(*it++);
         }
 
         // combine with remainder of range
-        for (; it != en; ++it) {
+        for (; it != last; ++it) {
             rv = aabb_of(proj(*it), *rv);
         }
 

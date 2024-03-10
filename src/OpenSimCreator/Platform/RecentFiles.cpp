@@ -4,6 +4,7 @@
 
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/Log.h>
+#include <oscar/Utils/Algorithms.h>
 
 #include <algorithm>
 #include <chrono>
@@ -132,7 +133,7 @@ void osc::RecentFiles::sync()
     }
 
     // write up-to the first 10 entries
-    size_t const numFilesToWrite = std::min(m_Files.size(), c_MaxRecentFileEntries);
+    size_t const numFilesToWrite = min(m_Files.size(), c_MaxRecentFileEntries);
     for (size_t i = 0; i < numFilesToWrite; ++i)
     {
         RecentFile const& rf = m_Files[i];

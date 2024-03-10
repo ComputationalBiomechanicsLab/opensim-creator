@@ -2,7 +2,7 @@
 
 #include <OpenSimCreator/Documents/ModelWarper/ValidationState.h>
 
-#include <algorithm>
+#include <oscar/Utils/Algorithms.h>
 
 using namespace osc::mow;
 
@@ -10,7 +10,7 @@ ValidationState osc::mow::IValidateable::implState() const
 {
     ValidationState worst = ValidationState::Ok;
     for (auto const& c : validate()) {
-        worst = std::max(worst, c.state());
+        worst = max(worst, c.state());
         if (worst == ValidationState::Error) {
             break;
         }

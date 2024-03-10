@@ -4,6 +4,7 @@
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Simulation/Model/Model.h>
+#include <oscar/Utils/Algorithms.h>
 
 #include <cstddef>
 #include <filesystem>
@@ -108,10 +109,10 @@ ValidationState osc::mow::Document::state() const
 {
     ValidationState rv = ValidationState::Ok;
     for (auto const& mesh : model().getComponentList<OpenSim::Mesh>()) {
-        rv = std::max(rv , state(mesh));
+        rv = max(rv , state(mesh));
     }
     for (auto const& pof : model().getComponentList<OpenSim::PhysicalOffsetFrame>()) {
-        rv = std::max(rv, state(pof));
+        rv = max(rv, state(pof));
     }
     return rv;
 }

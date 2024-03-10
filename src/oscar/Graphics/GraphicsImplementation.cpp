@@ -4065,7 +4065,7 @@ namespace
         using ComponentType = typename VertexAttributeFormatTraits<EncodingFormat>::component_type;
         constexpr auto numComponents = NumComponents(EncodingFormat);
         constexpr auto sizeOfComponent = SizeOfComponent(EncodingFormat);
-        constexpr auto n = std::min(std::tuple_size_v<T>, static_cast<typename T::size_type>(numComponents));
+        constexpr auto n = min(std::tuple_size_v<T>, static_cast<typename T::size_type>(numComponents));
 
         for (typename T::size_type i = 0; i < n; ++i)
         {
@@ -4079,7 +4079,7 @@ namespace
         using ComponentType = typename VertexAttributeFormatTraits<EncodingFormat>::component_type;
         constexpr auto numComponents = NumComponents(EncodingFormat);
         constexpr auto sizeOfComponent = SizeOfComponent(EncodingFormat);
-        constexpr auto n = std::min(std::tuple_size_v<T>, static_cast<typename T::size_type>(numComponents));
+        constexpr auto n = min(std::tuple_size_v<T>, static_cast<typename T::size_type>(numComponents));
 
         T rv{};
         for (typename T::size_type i = 0; i < n; ++i)
@@ -4146,7 +4146,7 @@ namespace
     {
         using SourceCPUFormat = typename VertexAttributeFormatTraits<SourceFormat>::type;
         using DestCPUFormat = typename VertexAttributeFormatTraits<DestinationFormat>::type;
-        constexpr auto n = std::min(std::tuple_size_v<SourceCPUFormat>, std::tuple_size_v<DestCPUFormat>);
+        constexpr auto n = min(std::tuple_size_v<SourceCPUFormat>, std::tuple_size_v<DestCPUFormat>);
 
         auto const decoded = DecodeMany<SourceFormat, SourceCPUFormat>(src.data());
         DestCPUFormat converted{};
@@ -4252,7 +4252,7 @@ namespace
         OSC_ASSERT(src.size() % srcStride == 0);
         OSC_ASSERT(dest.size() % destStride == 0);
 
-        size_t const n = std::min(src.size() / srcStride, dest.size() / destStride);
+        size_t const n = min(src.size() / srcStride, dest.size() / destStride);
 
         auto const reencoders = GetReencoders(srcFormat, destFormat);
         for (size_t i = 0; i < n; ++i)
@@ -6933,7 +6933,7 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(
     case VariantIndex<MaterialValue, std::vector<Color>>():
     {
         auto const& colors = std::get<std::vector<Color>>(v);
-        int32_t const numToAssign = std::min(se.size, static_cast<int32_t>(colors.size()));
+        int32_t const numToAssign = min(se.size, static_cast<int32_t>(colors.size()));
 
         if (numToAssign > 0)
         {
@@ -6971,7 +6971,7 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(
     case VariantIndex<MaterialValue, std::vector<float>>():
     {
         auto const& vals = std::get<std::vector<float>>(v);
-        int32_t const numToAssign = std::min(se.size, static_cast<int32_t>(vals.size()));
+        int32_t const numToAssign = min(se.size, static_cast<int32_t>(vals.size()));
 
         if (numToAssign > 0)
         {
@@ -7003,7 +7003,7 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(
     case VariantIndex<MaterialValue, std::vector<Vec3>>():
     {
         auto const& vals = std::get<std::vector<Vec3>>(v);
-        int32_t const numToAssign = std::min(se.size, static_cast<int32_t>(vals.size()));
+        int32_t const numToAssign = min(se.size, static_cast<int32_t>(vals.size()));
 
         if (numToAssign > 0)
         {
@@ -7044,7 +7044,7 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(
     case VariantIndex<MaterialValue, std::vector<Mat4>>():
     {
         auto const& vals = std::get<std::vector<Mat4>>(v);
-        int32_t const numToAssign = std::min(se.size, static_cast<int32_t>(vals.size()));
+        int32_t const numToAssign = min(se.size, static_cast<int32_t>(vals.size()));
         if (numToAssign > 0)
         {
             // CARE: assigning to uniform arrays should be done in one `glUniform` call
@@ -8132,7 +8132,7 @@ void osc::GraphicsBackend::CopyTexture(
     // related:
     //
     // - https://registry.khronos.org/OpenGL-Refpages/es2.0/xhtml/glTexImage2D.xml
-    size_t const maxMipmapLevel = static_cast<size_t>(std::max(
+    size_t const maxMipmapLevel = static_cast<size_t>(max(
         0,
         cpp20::bit_width(static_cast<size_t>(destinationCubemap.getWidth())) - 1
     ));

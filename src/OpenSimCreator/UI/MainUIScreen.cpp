@@ -668,7 +668,7 @@ private:
                 {
                     (*it)->onUnmount();
                     m_ActiveTabID = UID::empty();
-                    lowestDeletedTab = std::min(lowestDeletedTab, static_cast<int>(std::distance(m_Tabs.begin(), it)));
+                    lowestDeletedTab = min(lowestDeletedTab, static_cast<int>(std::distance(m_Tabs.begin(), it)));
                 }
                 m_Tabs.erase(it);
             }

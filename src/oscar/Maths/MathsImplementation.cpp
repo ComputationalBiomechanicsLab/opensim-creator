@@ -415,7 +415,7 @@ size_t osc::BVH::getMaxDepth() const
         {
             // leaf node: compute its depth and continue traversal (if applicable)
 
-            maxdepth = std::max(maxdepth, stack.size() + 1);
+            maxdepth = max(maxdepth, stack.size() + 1);
 
             if (stack.empty())
             {
@@ -772,7 +772,7 @@ void osc::AutoFocus(PolarPerspectiveCamera& camera, AABB const& elementAABB, flo
     // handles the edge-case of autofocusing an empty model (#552), which is a
     // more common use-case (e.g. for new users and users making human-sized models)
     camera.focusPoint = -s.origin;
-    camera.radius = std::max(s.radius / tan(smallestFOV/2.0), 1.0f);
+    camera.radius = max(s.radius / tan(smallestFOV/2.0), 1.0f);
     camera.rescaleZNearAndZFarBasedOnRadius();
 }
 
@@ -1487,8 +1487,8 @@ std::optional<RayCollision> osc::find_collision(Line const& l, AABB const& bb)
         {
             std::swap(tNear, tFar);
         }
-        t0 = std::max(t0, tNear);
-        t1 = std::min(t1, tFar);
+        t0 = max(t0, tNear);
+        t1 = min(t1, tFar);
 
         if (t0 > t1)
         {

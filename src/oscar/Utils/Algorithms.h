@@ -275,6 +275,135 @@ namespace osc
         return std::sample(std::ranges::begin(r), std::ranges::end(r), std::move(out), n, std::forward<Gen>(gen));
     }
 
+    // see: std::ranges::max
+    template<
+        class T,
+        class Proj = std::identity,
+        std::indirect_strict_weak_order<std::projected<T const*, Proj>> Comp = std::ranges::less
+    >
+    constexpr T const& max(T const& a, T const& b, Comp comp = {}, Proj proj = {})
+    {
+        return std::invoke(comp, std::invoke(proj, a), std::invoke(proj, b)) ? b : a;
+    }
+
+    // see: std::ranges::max
+    template<
+        std::copyable T,
+        class Proj = std::identity,
+        std::indirect_strict_weak_order<std::projected<T const*, Proj>> Comp = std::ranges::less
+    >
+    constexpr T max(std::initializer_list<T> r, Comp comp = {}, Proj proj = {})
+    {
+        return *max_element(r, std::ref(comp), std::ref(proj));
+    }
+
+    // see: std::ranges::max
+    template<
+        std::ranges::input_range R,
+        class Proj = std::identity,
+        std::indirect_strict_weak_order<std::projected<std::ranges::iterator_t<R>, Proj>> Comp = std::ranges::less
+    >
+    constexpr std::ranges::range_value_t<R> max(R&& r, Comp comp = {}, Proj proj = {})
+        requires std::indirectly_copyable_storable<std::ranges::iterator_t<R>, std::ranges::range_value_t<R>*>
+    {
+        using V = std::ranges::range_value_t<R>;
+        if constexpr (std::ranges::forward_range<R>) {
+            return static_cast<V>(*max_element(r, std::ref(comp), std::ref(proj)));
+        }
+        else {
+            auto i = std::ranges::begin(r);
+            auto s = std::ranges::end(r);
+            V biggest(*i);
+            while (++i != s) {
+                if (std::invoke(comp, std::invoke(proj, biggest), std::invoke(proj, *i))) {
+                    biggest = *i;
+                }
+            }
+            return biggest;
+        }
+    }
+
+    // see: std::ranges::max_element
+    template<
+        std::forward_iterator I,
+        std::sentinel_for<I> S,
+        class Proj = std::identity,
+        std::indirect_strict_weak_order<std::projected<I, Proj>> Comp = std::ranges::less
+    >
+    constexpr I max_element(I first, S last, Comp comp = {}, Proj proj = {})
+    {
+        if (first == last) {
+            return last;
+        }
+
+        auto largest = first;
+        while (++first != last) {
+            if (std::invoke(comp, std::invoke(proj, *largest), std::invoke(proj, *first))) {
+                largest = first;
+            }
+        }
+        return largest;
+    }
+
+    // see: std::ranges::max_element
+    template<
+        std::ranges::forward_range R,
+        class Proj = std::identity,
+        std::indirect_strict_weak_order<std::projected<std::ranges::iterator_t<R>, Proj>> Comp = std::ranges::less
+    >
+    constexpr std::ranges::borrowed_iterator_t<R> max_element(R&& r, Comp comp = {}, Proj proj = {})
+    {
+        return max_element(std::ranges::begin(r), std::ranges::end(r), std::ref(comp), std::ref(proj));
+    }
+
+    // see: std::ranges::min
+    template<
+        class T,
+        class Proj = std::identity,
+        std::indirect_strict_weak_order<std::projected<T const*, Proj>> Comp = std::ranges::less
+    >
+    constexpr const T& min(const T& a, const T& b, Comp comp = {}, Proj proj = {})
+    {
+        return std::invoke(comp, std::invoke(proj, b), std::invoke(proj, a)) ? b : a;
+    }
+
+    // see: std::ranges::min
+    template<
+        std::copyable T,
+        class Proj = std::identity,
+        std::indirect_strict_weak_order<std::projected<T const*, Proj>> Comp = std::ranges::less
+    >
+    constexpr T min(std::initializer_list<T> r, Comp comp = {}, Proj proj = {})
+    {
+        return *min_element(r, std::ref(comp), std::ref(proj));
+    }
+
+    // see: std::ranges::min
+    template<
+        std::ranges::input_range R,
+        class Proj = std::identity,
+        std::indirect_strict_weak_order<std::projected<std::ranges::iterator_t<R>, Proj>> Comp = std::ranges::less
+    >
+    constexpr std::ranges::range_value_t<R> min(R&& r, Comp comp = {}, Proj proj = {})
+        requires std::indirectly_copyable_storable<std::ranges::iterator_t<R>, std::ranges::range_value_t<R>*>
+    {
+        using V = std::ranges::range_value_t<R>;
+        if constexpr (std::ranges::forward_range<R>) {
+            return static_cast<V>(*min_element(r, std::ref(comp), std::ref(proj)));
+        }
+        else {
+            auto i = std::ranges::begin(r);
+            auto s = std::ranges::end(r);
+            V m(*i);
+            while (++i != s) {
+                if (std::invoke(comp, std::invoke(proj, *i), std::invoke(proj, m))) {
+                    m = *i;
+                }
+            }
+            return m;
+        }
+    }
+
     // see: std::ranges::min_element
     template<
         std::forward_iterator I,
@@ -305,6 +434,18 @@ namespace osc
     constexpr std::ranges::borrowed_iterator_t<R> min_element(R&& r, Comp comp = {}, Proj proj = {})
     {
         return min_element(std::ranges::begin(r), std::ranges::end(r), std::ref(comp), std::ref(proj));
+    }
+
+    // osc algorithm: returns the index of the largest element in the range
+    template<
+        std::ranges::random_access_range R,
+        class Proj = std::identity,
+        std::indirect_strict_weak_order<std::projected<std::ranges::iterator_t<R>, Proj>> Comp = std::ranges::less
+    >
+    constexpr typename std::ranges::range_size_t<R> max_element_index(R&& r, Comp comp = {}, Proj proj = {})
+    {
+        auto const first = std::ranges::begin(r);
+        return std::distance(first, max_element(first, std::ranges::end(r), std::ref(comp), std::ref(proj)));
     }
 
     // osc algorithm: perform bounds-checked indexed access

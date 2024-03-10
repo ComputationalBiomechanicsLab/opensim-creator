@@ -344,7 +344,7 @@ namespace
         double start = GetFirstXValue(p, c);
         double end = GetLastXValue(p, c);
 
-        return (end - start) / std::max(1, p.getNumRequestedDataPoints() - 1);
+        return (end - start) / max(1, p.getNumRequestedDataPoints() - 1);
     }
 
     // a single data point in the plot, as emitted by a PlottingTask
@@ -909,7 +909,7 @@ namespace
                 }
 
                 // else: append column as ($independent, $dependent[col]) to the plots vector
-                columnsAsPlots.resize(std::max(columnsAsPlots.size(), dependentCol));
+                columnsAsPlots.resize(max(columnsAsPlots.size(), dependentCol));
                 columnsAsPlots[dependentCol-1].push_back({*independentVar, *dependentVar});
             }
         }

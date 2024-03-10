@@ -1,5 +1,7 @@
 #pragma once
 
+#include <oscar/Utils/Algorithms.h>
+
 #include <concepts>
 #include <cstddef>
 #include <future>
@@ -20,7 +22,7 @@ namespace osc
         std::span<T> vals,
         UnaryFunction f)
     {
-        size_t const chunkSize = std::max(minChunkSize, vals.size()/std::thread::hardware_concurrency());
+        size_t const chunkSize = max(minChunkSize, vals.size()/std::thread::hardware_concurrency());
         size_t const nTasks = vals.size()/chunkSize;
 
         if (nTasks > 1)

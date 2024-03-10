@@ -11,6 +11,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Maths/Vec3.h>
+#include <oscar/Utils/Algorithms.h>
 
 #include <array>
 #include <atomic>
@@ -191,7 +192,7 @@ EdgePoints osc::fd::CrossProduct(EdgePoints const& a, EdgePoints const& b)
     SimTK::Vec3 const firstEdge = a.end - a.start;
     SimTK::Vec3 const secondEdge = b.end - b.start;
     SimTK::Vec3 const resultEdge = SimTK::cross(firstEdge, secondEdge).normalize();
-    double const resultEdgeLength = std::min(firstEdge.norm(), secondEdge.norm());
+    double const resultEdgeLength = min(firstEdge.norm(), secondEdge.norm());
 
     return {a.start, a.start + (resultEdgeLength*resultEdge)};
 }

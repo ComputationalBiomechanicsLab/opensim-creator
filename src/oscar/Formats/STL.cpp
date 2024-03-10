@@ -7,6 +7,7 @@
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/os.h>
 #include <oscar/Shims/Cpp20/bit.h>
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/ObjectRepresentation.h>
 
@@ -38,7 +39,7 @@ namespace
         constexpr size_t c_MaxCharsInSTLHeader = c_NumBytesInSTLHeader - 1;  // nul-terminator
 
         std::string const content = CreateHeaderText(metadata);
-        size_t const len = std::min(content.size(), c_MaxCharsInSTLHeader);
+        size_t const len = min(content.size(), c_MaxCharsInSTLHeader);
 
         for (size_t i = 0; i < len; ++i)
         {

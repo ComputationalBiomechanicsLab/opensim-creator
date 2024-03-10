@@ -67,7 +67,7 @@ namespace
     float ShortestEdgeLength(ImRect const& r)
     {
         const Vec2 sz = Size(r);
-        return std::min(sz.x, sz.y);
+        return min(sz.x, sz.y);
     }
 
     ImU32 Brighten(ImU32 color, float factor)

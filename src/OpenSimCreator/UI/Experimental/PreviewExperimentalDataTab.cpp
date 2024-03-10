@@ -15,6 +15,7 @@
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/LogViewerPanel.h>
 #include <oscar/UI/Tabs/StandardTabImpl.h>
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/EnumHelpers.h>
@@ -282,7 +283,7 @@ namespace
             OpenSim::StateVector const& v = *storage.getStateVector(row);
             double t = v.getTime();
             OpenSim::Array<double> const& vs = v.getData();
-            size_t numCols = std::min(static_cast<size_t>(v.getSize()), numDataCols);
+            size_t numCols = min(static_cast<size_t>(v.getSize()), numDataCols);
 
             rv.push_back(t);
             for (size_t col = 0; col < numCols; ++col)

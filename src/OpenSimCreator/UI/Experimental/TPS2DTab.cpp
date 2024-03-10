@@ -19,6 +19,7 @@
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/LogViewerPanel.h>
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/StdVariantHelpers.h>
 #include <Simbody.h>
@@ -340,7 +341,7 @@ public:
         ui::Begin("Input");
         {
             Vec2 const windowDims = ui::GetContentRegionAvail();
-            float const minDim = std::min(windowDims.x, windowDims.y);
+            float const minDim = min(windowDims.x, windowDims.y);
             Vec2i const texDims = Vec2i{minDim, minDim};
 
             renderMesh(m_InputGrid, texDims, m_InputRender);
@@ -365,7 +366,7 @@ public:
         {
             outputWindowPos = ui::GetCursorScreenPos();
             outputWindowDims = ui::GetContentRegionAvail();
-            float const minDim = std::min(outputWindowDims.x, outputWindowDims.y);
+            float const minDim = min(outputWindowDims.x, outputWindowDims.y);
             Vec2i const texDims = Vec2i{minDim, minDim};
 
             {

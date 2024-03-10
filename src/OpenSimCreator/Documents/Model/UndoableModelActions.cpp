@@ -55,6 +55,7 @@
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/FilesystemHelpers.h>
 #include <oscar/Utils/ParentPtr.h>
 #include <oscar/Utils/UID.h>
@@ -1491,8 +1492,8 @@ bool osc::ActionSetCoordinateValue(
             return false;
         }
 
-        double const rangeMin = std::min(mutCoord->getRangeMin(), mutCoord->getRangeMax());
-        double const rangeMax = std::max(mutCoord->getRangeMin(), mutCoord->getRangeMax());
+        double const rangeMin = min(mutCoord->getRangeMin(), mutCoord->getRangeMax());
+        double const rangeMax = max(mutCoord->getRangeMin(), mutCoord->getRangeMax());
 
         if (!(rangeMin <= newValue && newValue <= rangeMax))
         {

@@ -2,7 +2,9 @@
 
 #include <concepts>
 #include <compare>
+#include <ostream>
 #include <numbers>
+#include <string_view>
 #include <type_traits>
 
 namespace osc
@@ -10,12 +12,10 @@ namespace osc
     template<typename T>
     concept AngularUnitTraits = requires(T) {
         { T::radians_per_rep } -> std::convertible_to<double>;
+        { T::unit_label } -> std::convertible_to<std::string_view>;
     };
 
-    /**
-     * Represents a floating point of type `Rep`, which is expressed in the given
-     * `Units`
-     */
+    // Represents a floating point of type `Rep`, which is expressed in the given `Units`
     template<std::floating_point Rep, AngularUnitTraits Units>
     class Angle final {
     public:
@@ -146,10 +146,18 @@ namespace osc
         return CA{lhs} <=> CA{rhs};
     }
 
+    // printing/sertialization support
+    template<std::floating_point Rep, AngularUnitTraits Units>
+    std::ostream& operator<<(std::ostream& o, Angle<Rep, Units> const& v)
+    {
+        return o << v.count() << ' ' << Units::unit_label;
+    }
+
     // radians support
 
     struct RadianAngularUnitTraits final {
         static inline constexpr double radians_per_rep = 1.0;
+        static inline constexpr std::string_view unit_label = "rad";
     };
 
     template<typename T>
@@ -167,6 +175,7 @@ namespace osc
 
     struct DegreesAngularUnitTraits final {
         static inline constexpr double radians_per_rep = std::numbers::pi_v<double>/180.0;
+        static inline constexpr std::string_view unit_label = "deg";
     };
 
     template<typename T>
@@ -184,6 +193,7 @@ namespace osc
 
     struct TurnsAngularUnitTraits final {
         static inline constexpr double radians_per_rep = 2.0*std::numbers::pi_v<double>;
+        static inline constexpr std::string_view unit_label = "turn";
     };
 
     template<typename T>

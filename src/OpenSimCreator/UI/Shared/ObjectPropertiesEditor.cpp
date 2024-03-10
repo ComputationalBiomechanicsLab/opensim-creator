@@ -502,7 +502,7 @@ namespace
 
             // draw `n` editors in right-hand column
             std::optional<std::function<void(OpenSim::AbstractProperty&)>> rv;
-            for (int idx = 0; idx < std::max(m_EditedProperty.size(), 1); ++idx)
+            for (int idx = 0; idx < max(m_EditedProperty.size(), 1); ++idx)
             {
                 ui::PushID(idx);
                 std::optional<std::function<void(OpenSim::AbstractProperty&)>> editorRv = drawIthEditor(idx);
@@ -590,7 +590,7 @@ namespace
 
             // draw `n` editors in right-hand column
             std::optional<std::function<void(OpenSim::AbstractProperty&)>> rv;
-            for (int idx = 0; idx < std::max(m_EditedProperty.size(), 1); ++idx)
+            for (int idx = 0; idx < max(m_EditedProperty.size(), 1); ++idx)
             {
                 ui::PushID(idx);
                 std::optional<std::function<void(OpenSim::AbstractProperty&)>> editorRv = drawIthEditor(idx);
@@ -682,7 +682,7 @@ namespace
 
             // draw `n` editors in right-hand column
             std::optional<std::function<void(OpenSim::AbstractProperty&)>> rv;
-            for (int idx = 0; idx < std::max(m_EditedProperty.size(), 1); ++idx)
+            for (int idx = 0; idx < max(m_EditedProperty.size(), 1); ++idx)
             {
                 ui::PushID(idx);
                 std::optional<std::function<void(OpenSim::AbstractProperty&)>> editorRv = drawIthEditor(idx);
@@ -903,7 +903,7 @@ namespace
 
             // draw `[0, 1]` editors in right-hand column
             std::optional<std::function<void(OpenSim::AbstractProperty&)>> rv;
-            for (int idx = 0; idx < std::max(m_EditedProperty.size(), 1); ++idx)
+            for (int idx = 0; idx < max(m_EditedProperty.size(), 1); ++idx)
             {
                 ui::PushID(idx);
                 std::optional<std::function<void(OpenSim::AbstractProperty&)>> editorRv = drawIthEditor(valueConverter, idx);
@@ -1108,7 +1108,7 @@ namespace
 
             // draw `n` editors in right-hand column
             std::optional<std::function<void(OpenSim::AbstractProperty&)>> rv;
-            for (int idx = 0; idx < std::max(m_EditedProperty.size(), 1); ++idx)
+            for (int idx = 0; idx < max(m_EditedProperty.size(), 1); ++idx)
             {
                 ui::PushID(idx);
                 std::optional<std::function<void(OpenSim::AbstractProperty&)>> editorRv = drawIthEditor(idx);
@@ -1203,7 +1203,7 @@ namespace
 
             // draw `n` editors in right-hand column
             std::optional<std::function<void(OpenSim::AbstractProperty&)>> rv;
-            for (int idx = 0; idx < std::max(m_EditedProperty.size(), 1); ++idx)
+            for (int idx = 0; idx < max(m_EditedProperty.size(), 1); ++idx)
             {
                 ui::PushID(idx);
                 std::optional<std::function<void(OpenSim::AbstractProperty&)>> editorRv = drawIthEditor(idx);
@@ -1296,7 +1296,7 @@ namespace
 
             // draw `n` editors in right-hand column
             std::optional<std::function<void(OpenSim::AbstractProperty&)>> rv;
-            for (int idx = 0; idx < std::max(m_EditedProperty.size(), 1); ++idx)
+            for (int idx = 0; idx < max(m_EditedProperty.size(), 1); ++idx)
             {
                 ui::PushID(idx);
                 std::optional<std::function<void(OpenSim::AbstractProperty&)>> editorRv = drawIthEditor(idx);

@@ -30,6 +30,7 @@
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Tabs/ITabHost.h>
 #include <oscar/UI/Widgets/LogViewer.h>
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/ParentPtr.h>
 #include <SDL_events.h>
@@ -166,7 +167,7 @@ private:
     {
         Rect tabRect = ui::GetMainViewportWorkspaceScreenRect();
         // pretend the attributation bar isn't there (avoid it)
-        tabRect.p2.y -= static_cast<float>(std::max(m_TudLogo.getDimensions().y, m_CziLogo.getDimensions().y)) - 2.0f*ui::GetStyle().WindowPadding.y;
+        tabRect.p2.y -= static_cast<float>(max(m_TudLogo.getDimensions().y, m_CziLogo.getDimensions().y)) - 2.0f*ui::GetStyle().WindowPadding.y;
 
         Vec2 const menuAndTopLogoDims = elementwise_min(dimensions(tabRect), Vec2{m_SplashMenuMaxDims.x, m_SplashMenuMaxDims.y + m_MainAppLogoDims.y + m_TopLogoPadding.y});
         Vec2 const menuAndTopLogoTopLeft = tabRect.p1 + 0.5f*(dimensions(tabRect) - menuAndTopLogoDims);
@@ -359,7 +360,7 @@ private:
         Rect const viewportRect = ui::GetMainViewportWorkspaceScreenRect();
         Vec2 loc = viewportRect.p2;
         loc.x = loc.x - 2.0f*ui::GetStyle().WindowPadding.x - static_cast<float>(m_CziLogo.getDimensions().x) - 2.0f*ui::GetStyle().ItemSpacing.x - static_cast<float>(m_TudLogo.getDimensions().x);
-        loc.y = loc.y - 2.0f*ui::GetStyle().WindowPadding.y - static_cast<float>(std::max(m_CziLogo.getDimensions().y, m_TudLogo.getDimensions().y));
+        loc.y = loc.y - 2.0f*ui::GetStyle().WindowPadding.y - static_cast<float>(max(m_CziLogo.getDimensions().y, m_TudLogo.getDimensions().y));
 
         ui::SetNextWindowPos(loc);
         ui::Begin("##czlogo", nullptr, ui::GetMinimalWindowFlags());

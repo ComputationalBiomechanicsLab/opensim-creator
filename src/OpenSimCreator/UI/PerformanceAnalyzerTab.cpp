@@ -204,7 +204,7 @@ private:
     {
         int nAvail = static_cast<int>(m_Params.size()) - static_cast<int>(m_Sims.size());
         int nActive = static_cast<int>(count_if(m_Sims, [](auto const& sim) { return sim.getStatus() == SimulationStatus::Running || sim.getStatus() == SimulationStatus::Initializing; }));
-        int nToStart = std::min(nAvail, m_Parallelism - nActive);
+        int nToStart = min(nAvail, m_Parallelism - nActive);
 
         if (nToStart <= 0)
         {

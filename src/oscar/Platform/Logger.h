@@ -2,6 +2,7 @@
 
 #include <oscar/Platform/LogSink.h>
 #include <oscar/Platform/LogMessageView.h>
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/CStringView.h>
 
 #include <algorithm>
@@ -50,7 +51,7 @@ namespace osc
                     return;
                 }
 
-                n = std::min(static_cast<size_t>(rv), buf.size()-1);
+                n = min(static_cast<size_t>(rv), buf.size()-1);
             }
             LogMessageView view{m_Name, std::string_view{buf.data(), n}, msgLvl};
 
