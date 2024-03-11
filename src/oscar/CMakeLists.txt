@@ -209,6 +209,7 @@ add_library(oscar STATIC
     Maths/Mat3.h
     Maths/Mat4.h
     Maths/Plane.h
+    Maths/PlaneFunctions.h
     Maths/PointDirection.h
     Maths/PolarPerspectiveCamera.h
     Maths/Qua.h

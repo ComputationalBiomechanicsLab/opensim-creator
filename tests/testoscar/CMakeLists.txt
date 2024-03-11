@@ -47,6 +47,7 @@ add_executable(testoscar
     Maths/TestBVH.cpp
     Maths/TestCommonFunctions.cpp
     Maths/TestFrameAxis.cpp
+    Maths/TestPlaneFunctions.cpp
     Maths/TestTransform.cpp
     Maths/TestUnitVec.cpp
     Maths/TestVec2.cpp
