@@ -38,7 +38,7 @@ TEST(is_in_front_of, ProducesExpectedAnswersInExampleCases)
 
     auto const cases = std::to_array<TestCase>({
           // origin // normal                 // min              // max               // expected
-        {{Vec3{},   Vec3{0.0f, 1.0f, 0.0f}}, {{1.0f, 1.0f, 1.0f}, {2.0f, 2.0f, 2.0f}}, false},
+        {{Vec3{},   Vec3{0.0f, 1.0f, 0.0f}}, {{1.0f, 1.0f, 1.0f}, {2.0f, 2.0f, 2.0f}}, true},
     });
 
     for (auto const& [plane, aabb, expected] : cases) {
