@@ -10,7 +10,7 @@
 
 namespace osc
 {
-    // template adopted from `glm::mat<>`
+    // a column-major matrix containing `C` columns and `R` rows of `T` values
     template<size_t C, size_t R, typename T>
     struct Mat;
 
@@ -35,6 +35,8 @@ namespace osc
         ss << m;
         return std::move(ss).str();
     }
+
+    // when handled as-if it were a tuple, decomposes into its columns (vectors)
 
     template<size_t I, size_t C, size_t R, typename T>
     constexpr typename Mat<C, R, T>::value_type const& get(Mat<C, R, T> const& m)

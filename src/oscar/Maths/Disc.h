@@ -6,6 +6,7 @@
 
 namespace osc
 {
+    // a planar disc in 3D space (see `Circle` for the 2D equivalent)
     struct Disc final {
         Vec3 origin{};
         Vec3 normal = {0.0f, 1.0f, 0.0f};

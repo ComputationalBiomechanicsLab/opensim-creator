@@ -5,5 +5,6 @@
 
 namespace osc
 {
+    // a sequence of euler angles that describe a 3D rotation
     using Eulers = Vec<3, Radians>;
 }

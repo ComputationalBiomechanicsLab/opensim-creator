@@ -3,6 +3,7 @@
 #include <oscar/Maths/Constants.h>
 #include <oscar/Maths/Functors.h>
 #include <oscar/Maths/Vec.h>
+#include <oscar/Utils/Algorithms.h>
 
 #include <algorithm>
 #include <cmath>
@@ -77,39 +78,39 @@ namespace osc
     }
 
     template<typename T>
-    concept HasModFunction = requires (T v1, T v2) {
-        { mod(v1, v2) } -> std::same_as<T>;
+    concept HasModFunction = requires (T x, T y) {
+        { mod(x, y) } -> std::same_as<T>;
     };
 
     template<size_t L, HasModFunction T>
-    constexpr Vec<L, T> mod(Vec<L, T> const& a, Vec<L, T> const& b)
+    constexpr Vec<L, T> mod(Vec<L, T> const& x, Vec<L, T> const& y)
     {
-        return map(a, b, [](T const& av, T const& bv) { return mod(av, bv); });
+        return map(x, y, [](T const& xv, T const& yv) { return mod(xv, yv); });
     }
 
     template<typename T>
-    concept HasMinFunction = requires(T a, T b) {
-        { min(a, b) } -> std::convertible_to<T>;
+    concept HasMinFunction = requires(T x, T y) {
+        { min(x, y) } -> std::convertible_to<T>;
     };
 
     // returns a vector containing `min(a, b)` for each element
     template<size_t L, HasMinFunction T>
-    constexpr Vec<L, T> elementwise_min(Vec<L, T> const& a, Vec<L, T> const& b)
+    constexpr Vec<L, T> elementwise_min(Vec<L, T> const& x, Vec<L, T> const& y)
     {
-        return map(a, b, [](T const& a, T const& b) { return min(a, b); });
+        return map(x, y, [](T const& xv, T const& yv) { return min(xv, yv); });
     }
 
     template<typename T>
-    concept HasMaxFunction = requires(T a, T b) {
-        { max(a, b) } -> std::convertible_to<T>;
+    concept HasMaxFunction = requires(T x, T y) {
+        { max(x, y) } -> std::convertible_to<T>;
     };
 
     // returns a vector containing max(a[i], b[i]) for each element
     template<size_t L, HasMaxFunction T>
-    constexpr Vec<L, T> elementwise_max(Vec<L, T> const& a, Vec<L, T> const& b)
+    constexpr Vec<L, T> elementwise_max(Vec<L, T> const& x, Vec<L, T> const& y)
         requires std::is_arithmetic_v<T>
     {
-        return map(a, b, [](T const& av, T const& bv) { return max(av, bv); });
+        return map(x, y, [](T const& xv, T const& yv) { return max(xv, yv); });
     }
 
     template<typename T>
@@ -119,23 +120,23 @@ namespace osc
 
     // clamps each element in `x` between the corresponding elements in `low` and `high`
     template<size_t L, HasClampFunction T>
-    constexpr Vec<L, T> clamp(Vec<L, T> const& v, Vec<L, T> const& low, Vec<L, T> const& high)
+    constexpr Vec<L, T> clamp(Vec<L, T> const& v, Vec<L, T> const& lo, Vec<L, T> const& hi)
     {
-        return map(v, low, high, [](T const& vv, T const& lowv, T const& highv) { return clamp(vv, lowv, highv); });
+        return map(v, lo, hi, [](T const& vv, T const& lov, T const& hiv) { return clamp(vv, lov, hiv); });
     }
 
     // clamps each element in `x` between `low` and `high`
     template<size_t L, HasClampFunction T>
-    constexpr Vec<L, T> clamp(Vec<L, T> const& v, T const& low, T const& high)
+    constexpr Vec<L, T> clamp(Vec<L, T> const& v, T const& lo, T const& hi)
     {
-        return map(v, [&low, &high](T const& el) { return clamp(el, low, high); });
+        return map(v, [&lo, &hi](T const& vv) { return clamp(vv, lo, hi); });
     }
 
     // clamps `v` between 0.0 and 1.0
-    template<std::floating_point GenType>
-    constexpr GenType saturate(GenType v)
+    template<std::floating_point T>
+    constexpr T saturate(T num)
     {
-        return clamp(v, static_cast<GenType>(0), static_cast<GenType>(1));
+        return clamp(num, static_cast<T>(0), static_cast<T>(1));
     }
 
     // clamps each element in `x` between 0.0 and 1.0
@@ -146,7 +147,11 @@ namespace osc
     }
 
     // linearly interpolates between `a` and `b` with factor `t`
-    template<typename Arithmetic1, typename Arithmetic2, typename Arithmetic3>
+    template<
+        typename Arithmetic1,
+        typename Arithmetic2,
+        typename Arithmetic3
+    >
     constexpr auto lerp(Arithmetic1 const& a, Arithmetic2 const& b, Arithmetic3 const& t)
         requires std::is_arithmetic_v<Arithmetic1> && std::is_arithmetic_v<Arithmetic2> && std::is_arithmetic_v<Arithmetic3>
     {
@@ -154,9 +159,9 @@ namespace osc
     }
 
     // linearly interpolates between each element in `x` and `y` with factor `t`
-    template<size_t L, typename T, typename UInterpolant>
-    constexpr auto lerp(Vec<L, T> const& x, Vec<L, T> const& y, UInterpolant const& t) -> Vec<L, decltype(lerp(x[0], y[0], t))>
-        requires std::is_arithmetic_v<T> && std::is_floating_point_v<UInterpolant>
+    template<size_t L, typename T, typename Arithmetic>
+    constexpr auto lerp(Vec<L, T> const& x, Vec<L, T> const& y, Arithmetic const& t) -> Vec<L, decltype(lerp(x[0], y[0], t))>
+        requires std::is_arithmetic_v<T> && std::is_arithmetic_v<Arithmetic>
     {
         return map(x, y, [&t](T const& xv, T const& yv) { return lerp(xv, yv, t); });
     }
@@ -186,21 +191,21 @@ namespace osc
     }
 
     template<std::floating_point T>
-    bool equal_within_absdiff(T x, T y, T epsilon_v)
+    bool equal_within_absdiff(T x, T y, T absdiff)
     {
-        return abs(x - y) < epsilon_v;
+        return abs(x - y) < absdiff;
     }
 
     template<size_t L, std::floating_point T>
-    Vec<L, bool> equal_within_absdiff(Vec<L, T> const& x, Vec<L, T> const& y, Vec<L, T> const& eps)
+    Vec<L, bool> equal_within_absdiff(Vec<L, T> const& x, Vec<L, T> const& y, Vec<L, T> const& absdiff)
     {
-        return map(x, y, eps, equal_within_absdiff<T>);
+        return map(x, y, absdiff, equal_within_absdiff<T>);
     }
 
     template<size_t L, std::floating_point T>
-    Vec<L, bool> equal_within_absdiff(Vec<L, T> const& x, Vec<L, T> const& y, T const& eps)
+    Vec<L, bool> equal_within_absdiff(Vec<L, T> const& x, Vec<L, T> const& y, T const& absdiff)
     {
-        return elementwise_less(abs(x - y), eps);
+        return elementwise_less(abs(x - y), absdiff);
     }
 
     template<std::floating_point T>
@@ -232,7 +237,7 @@ namespace osc
     }
 
     template<std::floating_point T>
-    bool equal_within_reldiff(T x, T y, T releps)
+    bool equal_within_reldiff(T x, T y, T reldiff)
     {
         // inspired from:
         //
@@ -242,13 +247,13 @@ namespace osc
         //
         // - https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
 
-        return abs(x - y) <= releps * max(abs(x), abs(y));
+        return abs(x - y) <= reldiff * max(abs(x), abs(y));
     }
 
     template<size_t L, std::floating_point T>
-    Vec<L, bool> equal_within_reldiff(Vec<L, T> const& x, Vec<L, T> const& y, T releps)
+    Vec<L, bool> equal_within_reldiff(Vec<L, T> const& x, Vec<L, T> const& y, T reldiff)
     {
-        return map(x, y, Vec<L, T>(releps), equal_within_reldiff<T>);
+        return map(x, y, Vec<L, T>(reldiff), equal_within_reldiff<T>);
     }
 
     template<std::floating_point T>
@@ -283,9 +288,9 @@ namespace osc
     }
 
     template<size_t L, typename T>
-    Vec<L, T> midpoint(Vec<L, T> const& a, Vec<L, T> const& b)
+    Vec<L, T> midpoint(Vec<L, T> const& x, Vec<L, T> const& y)
     {
-        return map(a, b, [](T const& av, T const& bv) { return midpoint(av, bv); });
+        return map(x, y, [](T const& xv, T const& yv) { return midpoint(xv, yv); });
     }
 
     // returns the centroid of all of the provided vectors, or the zero vector if provided no inputs

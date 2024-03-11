@@ -7,6 +7,7 @@
 
 namespace osc
 {
+    // returns the direction of each radii of the ellipsoid
     constexpr std::array<Vec3, 3> radii_directions(Ellipsoid const& e)
     {
         return {

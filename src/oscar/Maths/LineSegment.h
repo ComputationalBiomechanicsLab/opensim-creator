@@ -9,11 +9,13 @@
 
 namespace osc
 {
+    // a finite-length line between two points in 3D space
     struct LineSegment final {
-        Vec3 p1{};
-        Vec3 p2{};
 
         constexpr friend bool operator==(LineSegment const&, LineSegment const&) = default;
+
+        Vec3 p1{};
+        Vec3 p2{};
     };
 
     std::ostream& operator<<(std::ostream&, LineSegment const&);

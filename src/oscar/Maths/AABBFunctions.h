@@ -152,12 +152,12 @@ namespace osc
         // find first non-nullopt AABB (or the end)
         std::optional<AABB> rv;
         while (!rv && it != last) {
-            rv = proj(*it++);
+            rv = std::invoke(proj, *it++);
         }
 
         // combine with remainder of range
         for (; it != last; ++it) {
-            rv = aabb_of(proj(*it), *rv);
+            rv = aabb_of(std::invoke(proj, *it), *rv);
         }
 
         return rv;

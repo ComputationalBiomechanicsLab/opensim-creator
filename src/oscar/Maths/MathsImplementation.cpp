@@ -72,7 +72,7 @@ namespace
             // compute bounding box of remaining (children) prims
             AABB const aabb = aabb_of(
                 std::span<BVHPrim const>{prims.begin() + begin, static_cast<size_t>(n)},
-                [](BVHPrim const& p) { return p.getBounds(); }
+                &BVHPrim::getBounds
             );
 
             // compute slicing position along the longest dimension
@@ -1296,14 +1296,11 @@ std::array<Vec3, 8> osc::corner_vertices(AABB const& aabb)
 
 AABB osc::transform_aabb(AABB const& aabb, Mat4 const& m)
 {
-    auto vertices = corner_vertices(aabb);
-
-    for (Vec3& vertex : vertices) {
-        Vec4 p = m * Vec4{vertex, 1.0f};
-        vertex = Vec3{p / p.w}; // perspective divide
-    }
-
-    return aabb_of(vertices);
+    return aabb_of(corner_vertices(aabb), [&](Vec3 const& vertex)
+    {
+        Vec4 const p = m * Vec4{vertex, 1.0f};
+        return Vec3{p / p.w};  // perspective divide
+    });
 }
 
 AABB osc::transform_aabb(AABB const& aabb, Transform const& t)

@@ -6,7 +6,7 @@
 
 namespace osc
 {
-    // camera that moves freely through space (e.g. FPS games)
+    // a camera that moves freely through 3D space, oriented via Euler angles (e.g. FPS games)
     struct EulerPerspectiveCamera final {
 
         EulerPerspectiveCamera();
