@@ -324,8 +324,8 @@ TEST(OpenSimActions, ActionAddPathWrapToGeometryPathWorksInExampleCase)
     OpenSim::Model& model = um.updModel();
 
     auto& pof = AddModelComponent<OpenSim::PhysicalOffsetFrame>(model, model.getGround(), SimTK::Transform{SimTK::Vec3{0.0, 1.0, 0.0}});
-    auto& body = AddBody(um.updModel(), "body", 1.0f, SimTK::Vec3{}, SimTK::Inertia(0.1));
-    AddJoint<OpenSim::FreeJoint>(um.updModel(), "joint", pof, body);
+    auto& body = AddBody(model, "body", 1.0f, SimTK::Vec3{}, SimTK::Inertia(0.1));
+    AddJoint<OpenSim::FreeJoint>(model, "joint", pof, body);
     auto& path = AddModelComponent<OpenSim::GeometryPath>(model);
     path.appendNewPathPoint("p1_ground", model.getGround(), SimTK::Vec3{});
     path.appendNewPathPoint("p2_body", body, SimTK::Vec3{});
@@ -344,7 +344,7 @@ TEST(OpenSimActions, ActionAddPathWrapToGeometryPathWorksInExampleCase)
     InitializeModel(model);
     auto const& state2 = InitializeState(model);
 
-    ASSERT_TRUE(equal_within_epsilon(path.getLength(state2), 1.0)) << "the wrap object hasn't been added to the model yet";
+    ASSERT_NEAR(path.getLength(state2), 1.0, epsilon_v<double>) << "the wrap object hasn't been added to the model yet";
 
     ActionAddWrapObjectToGeometryPathWraps(um, path, sphere);
 
@@ -357,8 +357,8 @@ TEST(OpenSimActions, ActionRemoveWrapObjectFromGeometryPathWrapsWorksInExampleCa
     OpenSim::Model& model = um.updModel();
 
     auto& pof = AddModelComponent<OpenSim::PhysicalOffsetFrame>(model, model.getGround(), SimTK::Transform{SimTK::Vec3{0.0, 1.0, 0.0}});
-    auto& body = AddBody(um.updModel(), "body", 1.0f, SimTK::Vec3{}, SimTK::Inertia(0.1));
-    AddJoint<OpenSim::FreeJoint>(um.updModel(), "joint", pof, body);
+    auto& body = AddBody(model, "body", 1.0f, SimTK::Vec3{}, SimTK::Inertia(0.1));
+    AddJoint<OpenSim::FreeJoint>(model, "joint", pof, body);
     auto& path = AddModelComponent<OpenSim::GeometryPath>(model);
     path.appendNewPathPoint("p1_ground", model.getGround(), SimTK::Vec3{});
     path.appendNewPathPoint("p2_body", body, SimTK::Vec3{});
@@ -374,5 +374,5 @@ TEST(OpenSimActions, ActionRemoveWrapObjectFromGeometryPathWrapsWorksInExampleCa
 
     ActionRemoveWrapObjectFromGeometryPathWraps(um, path, sphere);
 
-    ASSERT_TRUE(equal_within_epsilon(path.getLength(um.getState()), 1.0))  << "should stop wrapping";
+    ASSERT_NEAR(path.getLength(um.getState()), 1.0, epsilon_v<double>)  << "should stop wrapping";
 }
