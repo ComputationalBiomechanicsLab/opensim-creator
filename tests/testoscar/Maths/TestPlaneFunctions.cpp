@@ -1,6 +1,6 @@
 #include <oscar/Maths/PlaneFunctions.h>
 
-#include <oscar/Maths/CommonFunctions.h>
+#include <oscar/Maths.h>
 #include <gtest/gtest.h>
 
 #include <array>
@@ -25,5 +25,23 @@ TEST(signed_distance_between, ProducesExpectedAnswersInExampleCases)
 
     for (auto const& [plane, point, expected] : cases) {
         ASSERT_NEAR(signed_distance_between(plane, point), expected, epsilon_v<float>);
+    }
+}
+
+TEST(is_in_front_of, ProducesExpectedAnswersInExampleCases)
+{
+    struct TestCase final {
+        Plane plane;
+        AABB aabb;
+        bool expected;
+    };
+
+    auto const cases = std::to_array<TestCase>({
+          // origin // normal                 // min              // max               // expected
+        {{Vec3{},   Vec3{0.0f, 1.0f, 0.0f}}, {{1.0f, 1.0f, 1.0f}, {2.0f, 2.0f, 2.0f}}, false},
+    });
+
+    for (auto const& [plane, aabb, expected] : cases) {
+        ASSERT_EQ(is_in_front_of(plane, aabb), expected) << "plane = " << plane << ", aabb = " << aabb;
     }
 }
