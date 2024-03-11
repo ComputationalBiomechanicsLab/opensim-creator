@@ -302,7 +302,7 @@ TEST(OpenSimModel, DeletingElementFromCoordinateRangeShouldThrowEarly)
 {
     OpenSim::Model model;
 
-    auto body = std::make_unique<OpenSim::Body>("body", 1.0, SimTK::Vec3{}, SimTK::Inertia{});
+    auto body = std::make_unique<OpenSim::Body>("body", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{1.0});
     auto joint = std::make_unique<OpenSim::PinJoint>();
     joint->setName("joint");
     joint->updCoordinate().setName("rotation");
@@ -336,7 +336,7 @@ TEST(OpenSimModel, ReassigningAJointsChildToGroundDoesNotSegfault)
     OpenSim::Model model;
 
     // define model with a body connected to ground via a simple joint
-    auto body = std::make_unique<OpenSim::Body>("body", 1.0, SimTK::Vec3{}, SimTK::Inertia{});
+    auto body = std::make_unique<OpenSim::Body>("body", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{1.0});
     auto joint = std::make_unique<OpenSim::PinJoint>();
     joint->setName("joint");
     joint->updCoordinate().setName("rotation");
@@ -378,7 +378,7 @@ TEST(OpenSimModel, ReassigningAnOffsetFrameForJointChildToParentDoesNotSegfault)
     OpenSim::Model model;
 
     // define model with a body connected to ground via a simple joint
-    auto body = std::make_unique<OpenSim::Body>("body", 1.0, SimTK::Vec3{}, SimTK::Inertia{});
+    auto body = std::make_unique<OpenSim::Body>("body", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{1.0});
     auto joint = std::make_unique<OpenSim::PinJoint>();
     joint->setName("joint");
 

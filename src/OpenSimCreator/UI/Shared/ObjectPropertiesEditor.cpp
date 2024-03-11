@@ -992,7 +992,7 @@ namespace
             // read stored value from edited property
             //
             // care: optional properties have size==0, so perform a range check
-            Vec3 const rawValue = ToVec3(idx < m_EditedProperty.size() ? m_EditedProperty.getValue(idx) : SimTK::Vec3{});
+            Vec3 const rawValue = ToVec3(idx < m_EditedProperty.size() ? m_EditedProperty.getValue(idx) : SimTK::Vec3{0.0});
             Vec3 const editedValue = valueConverter.modelValueToEditedValue(rawValue);
 
             // draw an editor for each component of the Vec3

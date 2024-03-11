@@ -70,7 +70,7 @@ TEST(OpenSimActions, ActionApplyRangeDeletionPropertyEditReturnsFalseToIndicateF
     auto undoableModel = []()
     {
         OpenSim::Model model;
-        auto body = std::make_unique<OpenSim::Body>("body", 1.0, SimTK::Vec3{}, SimTK::Inertia{});
+        auto body = std::make_unique<OpenSim::Body>("body", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{1.0});
         auto joint = std::make_unique<OpenSim::PinJoint>();
         joint->setName("joint");
         joint->updCoordinate().setName("rotation");
@@ -130,7 +130,7 @@ TEST(OpenSimActions, ActionFitSphereToMeshFitsASphereToAMeshInTheModelAndSelects
         std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "TestOpenSimCreator" / "arrow.vtp";
 
     UndoableModelStatePair model;
-    auto& body = AddBody(model.updModel(), std::make_unique<OpenSim::Body>("name", 1.0, SimTK::Vec3{}, SimTK::Inertia{1.0}));
+    auto& body = AddBody(model.updModel(), std::make_unique<OpenSim::Body>("name", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{1.0}));
     body.setMass(1.0);
     auto& mesh = dynamic_cast<OpenSim::Mesh&>(AttachGeometry(body, std::make_unique<OpenSim::Mesh>(geomFile.string())));
     FinalizeConnections(model.updModel());
@@ -149,7 +149,7 @@ TEST(OpenSimActions, ActionFitSphereToMeshAppliesMeshesScaleFactorsCorrectly)
         std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "TestOpenSimCreator" / "arrow.vtp";
 
     UndoableModelStatePair model;
-    auto& body = AddBody(model.updModel(), std::make_unique<OpenSim::Body>("name", 1.0, SimTK::Vec3{}, SimTK::Inertia{1.0}));
+    auto& body = AddBody(model.updModel(), std::make_unique<OpenSim::Body>("name", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{1.0}));
     body.setMass(1.0);
     auto& unscaledMesh = dynamic_cast<OpenSim::Mesh&>(AttachGeometry(body, std::make_unique<OpenSim::Mesh>(geomFile.string())));
     auto& scaledMesh = dynamic_cast<OpenSim::Mesh&>(AttachGeometry(body, std::make_unique<OpenSim::Mesh>(geomFile.string())));
@@ -173,7 +173,7 @@ TEST(OpenSimActions, ActionFitSphereToMeshAppliesMeshesScaleFactorsCorrectly)
 TEST(OpenSimActions, ActionAddParentOffsetFrameToJointWorksInNormalCase)
 {
     UndoableModelStatePair um;
-    auto& body = AddBody(um.updModel(), "bodyname", 1.0, SimTK::Vec3{}, SimTK::Inertia{1.0});
+    auto& body = AddBody(um.updModel(), "bodyname", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{1.0});
     auto& joint = AddJoint<OpenSim::FreeJoint>(um.updModel(), "jname", um.getModel().getGround(), body);
 
     // this should be ok
@@ -201,7 +201,7 @@ TEST(OpenSimActions, ActionAddParentOffsetFrameToJointWorksInNormalCase)
 TEST(OpenSimActions, DISABLED_ActionAddParentOffsetFrameToJointWorksInChainedCase)
 {
     UndoableModelStatePair um;
-    auto& body = AddBody(um.updModel(), "bodyname", 1.0, SimTK::Vec3{}, SimTK::Inertia{1.0});
+    auto& body = AddBody(um.updModel(), "bodyname", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{1.0});
     auto& joint = AddJoint<OpenSim::FreeJoint>(um.updModel(), "jname", um.getModel().getGround(), body);
 
     // this should be ok
@@ -233,7 +233,7 @@ TEST(OpenSimActions, DISABLED_ActionAddParentOffsetFrameToJointWorksInChainedCas
 TEST(OpenSimActions, ActionAddChildOffsetFrameToJointWorksInNormalCase)
 {
     UndoableModelStatePair um;
-    auto& body = AddBody(um.updModel(), "bodyname", 1.0, SimTK::Vec3{}, SimTK::Inertia{1.0});
+    auto& body = AddBody(um.updModel(), "bodyname", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{1.0});
     auto& joint = AddJoint<OpenSim::FreeJoint>(um.updModel(), "jname", um.getModel().getGround(), body);
 
     // this should be ok
@@ -261,7 +261,7 @@ TEST(OpenSimActions, ActionAddChildOffsetFrameToJointWorksInNormalCase)
 TEST(OpenSimActions, DISABLED_ActionAddChildOffsetFrameToJointWorksInChainedCase)
 {
     UndoableModelStatePair um;
-    auto& body = AddBody(um.updModel(), "bodyname", 1.0, SimTK::Vec3{}, SimTK::Inertia{1.0});
+    auto& body = AddBody(um.updModel(), "bodyname", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{1.0});
     auto& joint = AddJoint<OpenSim::FreeJoint>(um.updModel(), "jname", um.getModel().getGround(), body);
 
     // this should be ok
@@ -324,11 +324,11 @@ TEST(OpenSimActions, ActionAddPathWrapToGeometryPathWorksInExampleCase)
     OpenSim::Model& model = um.updModel();
 
     auto& pof = AddModelComponent<OpenSim::PhysicalOffsetFrame>(model, model.getGround(), SimTK::Transform{SimTK::Vec3{0.0, 1.0, 0.0}});
-    auto& body = AddBody(model, "body", 1.0f, SimTK::Vec3{}, SimTK::Inertia(0.1));
+    auto& body = AddBody(model, "body", 1.0f, SimTK::Vec3{0.0}, SimTK::Inertia(0.1));
     AddJoint<OpenSim::FreeJoint>(model, "joint", pof, body);
     auto& path = AddModelComponent<OpenSim::GeometryPath>(model);
-    path.appendNewPathPoint("p1_ground", model.getGround(), SimTK::Vec3{});
-    path.appendNewPathPoint("p2_body", body, SimTK::Vec3{});
+    path.appendNewPathPoint("p1_ground", model.getGround(), SimTK::Vec3{0.0});
+    path.appendNewPathPoint("p2_body", body, SimTK::Vec3{0.0});
 
     FinalizeConnections(model);
     InitializeModel(model);
@@ -357,11 +357,11 @@ TEST(OpenSimActions, ActionRemoveWrapObjectFromGeometryPathWrapsWorksInExampleCa
     OpenSim::Model& model = um.updModel();
 
     auto& pof = AddModelComponent<OpenSim::PhysicalOffsetFrame>(model, model.getGround(), SimTK::Transform{SimTK::Vec3{0.0, 1.0, 0.0}});
-    auto& body = AddBody(model, "body", 1.0f, SimTK::Vec3{}, SimTK::Inertia(0.1));
+    auto& body = AddBody(model, "body", 1.0f, SimTK::Vec3{0.0}, SimTK::Inertia(0.1));
     AddJoint<OpenSim::FreeJoint>(model, "joint", pof, body);
     auto& path = AddModelComponent<OpenSim::GeometryPath>(model);
-    path.appendNewPathPoint("p1_ground", model.getGround(), SimTK::Vec3{});
-    path.appendNewPathPoint("p2_body", body, SimTK::Vec3{});
+    path.appendNewPathPoint("p1_ground", model.getGround(), SimTK::Vec3{0.0});
+    path.appendNewPathPoint("p2_body", body, SimTK::Vec3{0.0});
     auto& sphere = AddWrapObject<OpenSim::WrapSphere>(pof);
     sphere.set_radius(0.25);
     sphere.set_translation({0.001, -0.5, 0.0});  // prevent singularities
