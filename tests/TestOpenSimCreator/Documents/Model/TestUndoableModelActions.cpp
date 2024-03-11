@@ -334,7 +334,7 @@ TEST(OpenSimActions, ActionAddPathWrapToGeometryPathWorksInExampleCase)
     InitializeModel(model);
     auto const& state = InitializeState(model);
 
-    ASSERT_TRUE(equal_within_epsilon(path.getLength(state), 1.0)) << "an uninterupted path should have this length";
+    ASSERT_NEAR(path.getLength(state), 1.0, epsilon_v<double>) << "an uninterrupted path should have this length";
 
     auto& sphere = AddWrapObject<OpenSim::WrapSphere>(pof);
     sphere.set_radius(0.25);
