@@ -103,3 +103,12 @@ TEST(Angle, ScalarDivisionWorksAsExpected)
 {
     static_assert(1_turn/2 == 180_deg);
 }
+
+TEST(Angle, CanUseProjectedClampWithAngles)
+{
+    // just a "it'd be nice to know osc::Angle inter-operates with std::ranges::clamp algs"
+    struct S {
+        Degrees ang;
+    };
+    static_assert(clamp(S{-10_deg}, S{0_deg}, S{180_deg}, {}, &S::ang).ang == S{0_deg}.ang);
+}
