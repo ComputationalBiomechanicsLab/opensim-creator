@@ -4,15 +4,20 @@
 
 #include <OpenSim/Common/AbstractProperty.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Wrap/WrapCylinder.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
+#include <OpenSimCreator/ComponentRegistry/ComponentRegistry.h>
+#include <OpenSimCreator/ComponentRegistry/ComponentRegistryEntry.h>
+#include <OpenSimCreator/ComponentRegistry/StaticComponentRegistries.h>
 #include <OpenSimCreator/Documents/Model/ObjectPropertyEdit.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 #include <gtest/gtest.h>
 #include <oscar/Maths/MathHelpers.h>
+#include <oscar/Utils/Algorithms.h>
 
 #include <functional>
 #include <memory>
@@ -282,4 +287,32 @@ TEST(OpenSimActions, DISABLED_ActionAddChildOffsetFrameToJointWorksInChainedCase
     ASSERT_NE(&child2, &child1);
     ASSERT_TRUE(dynamic_cast<OpenSim::PhysicalOffsetFrame const*>(&child2));
     ASSERT_EQ(&dynamic_cast<OpenSim::PhysicalOffsetFrame const&>(child2).getParentFrame(), &child1);
+}
+
+TEST(OpenSimActions, ActionAddWrapObjectToPhysicalFrameCanAddWrapCylinderToGround)
+{
+    // test one concrete instance (this test isn't coupled to the component registry)
+    UndoableModelStatePair um;
+    auto wrapCylinder = std::make_unique<OpenSim::WrapCylinder>();
+    wrapCylinder->setName("should_be_findable_in_model");
+
+    ASSERT_TRUE(ActionAddWrapObjectToPhysicalFrame(um, um.getModel().getGround().getAbsolutePath(), std::move(wrapCylinder)));
+    ASSERT_TRUE(um.getModel().findComponent("should_be_findable_in_model"));
+}
+
+TEST(OpenSimActions, ActionAddWrapObjectToPhysicalFrameCanAddAllRegisteredWrapObjectsToGround)
+{
+    UndoableModelStatePair um;
+    OpenSim::ComponentPath const groundPath = um.getModel().getGround().getAbsolutePath();
+
+    for (auto const& entry : GetComponentRegistry<OpenSim::WrapObject>()) {
+        ASSERT_TRUE(ActionAddWrapObjectToPhysicalFrame(um, groundPath, entry.instantiate()));
+    }
+
+    size_t numWrapsInModel = 0;
+    for ([[maybe_unused]] auto const& wrap : um.getModel().getComponentList<OpenSim::WrapObject>()) {
+        ++numWrapsInModel;
+    }
+
+    ASSERT_EQ(numWrapsInModel, GetComponentRegistry<OpenSim::WrapObject>().size());
 }

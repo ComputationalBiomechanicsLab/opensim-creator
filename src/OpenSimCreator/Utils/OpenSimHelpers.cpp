@@ -1667,6 +1667,13 @@ OpenSim::PhysicalOffsetFrame& osc::AddFrame(OpenSim::Joint& joint, std::unique_p
     return rv;
 }
 
+OpenSim::WrapObject& osc::AddWrapObject(OpenSim::PhysicalFrame& physFrame, std::unique_ptr<OpenSim::WrapObject> wrapObj)
+{
+    OpenSim::WrapObject& rv = *wrapObj;
+    physFrame.addWrapObject(wrapObj.release());
+    return rv;
+}
+
 OpenSim::Geometry& osc::AttachGeometry(OpenSim::Frame& frame, std::unique_ptr<OpenSim::Geometry> p)
 {
     OpenSim::Geometry& rv = *p;

@@ -5,6 +5,10 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- Right-clicking on a `PhysicalFrame` in the model (incl. `Body`) now shows an `Add` menu that includes
+  the ability to add geometry, offset frames, and wrap objects. Previously: was `Add Geometry` and `Add Offset Frame`,
+  but now there's also the ability to add wrap objects. (#7)
+
 ## [0.5.10] - 2024/03/05
 
 - Updated `opensim-core` to a version which includes `StationDefinedFrame` support:

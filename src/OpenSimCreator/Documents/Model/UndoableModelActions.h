@@ -290,6 +290,14 @@ namespace osc
         std::string& errorOut
     );
 
+    // add the given `OpenSim::WrapObject` to the `WrapObjectSet` of
+    // the `OpenSim::PhysicalFrame` located at `physicalFramePath`
+    bool ActionAddWrapObjectToPhysicalFrame(
+        UndoableModelStatePair&,
+        OpenSim::ComponentPath const& physicalFramePath,
+        std::unique_ptr<OpenSim::WrapObject> wrapObjPtr
+    );
+
     // set the speed of a coordinate
     bool ActionSetCoordinateSpeed(
         UndoableModelStatePair&,

@@ -1377,6 +1377,41 @@ bool osc::ActionAddComponentToModel(UndoableModelStatePair& model, std::unique_p
     }
 }
 
+bool osc::ActionAddWrapObjectToPhysicalFrame(
+    UndoableModelStatePair& model,
+    OpenSim::ComponentPath const& physicalFramePath,
+    std::unique_ptr<OpenSim::WrapObject> wrapObjPtr)
+{
+    OSC_ASSERT(wrapObjPtr != nullptr);
+
+    if (!FindComponent<OpenSim::PhysicalFrame>(model.getModel(), physicalFramePath)) {
+        return false;  // cannot find the `OpenSim::PhysicalFrame` in the model
+    }
+
+    try {
+        OpenSim::Model& mutModel = model.updModel();
+        OpenSim::PhysicalFrame* frame = FindComponentMut<OpenSim::PhysicalFrame>(mutModel, physicalFramePath);
+        OSC_ASSERT_ALWAYS(frame != nullptr && "cannot find the given OpenSim::PhysicalFrame in the model");
+
+        OpenSim::WrapObject& wrapObj = AddWrapObject(*frame, std::move(wrapObjPtr));
+        FinalizeConnections(mutModel);
+        InitializeModel(mutModel);
+        InitializeState(mutModel);
+        model.setSelected(&wrapObj);
+
+        std::stringstream ss;
+        ss << "added " << wrapObj.getName();
+        model.commit(std::move(ss).str());
+
+        return true;
+    }
+    catch (std::exception const& ex) {
+        log_error("error detected while trying to add a wrap object to the model: %s", ex.what());
+        model.rollback();
+        return false;
+    }
+}
+
 bool osc::ActionSetCoordinateSpeed(
     UndoableModelStatePair& model,
     OpenSim::Coordinate const& coord,

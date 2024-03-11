@@ -46,9 +46,11 @@ namespace OpenSim { class Muscle; }
 namespace OpenSim { class Object; }
 namespace OpenSim { template<typename> class Property; }
 namespace OpenSim { template<typename> class ObjectProperty; }
+namespace OpenSim { class PhysicalFrame; }
 namespace OpenSim { class PhysicalOffsetFrame; }
 namespace OpenSim { template<typename, typename> class Set; }
 namespace OpenSim { template<typename> class SimpleProperty; }
+namespace OpenSim { class WrapObject; }
 namespace osc { class UndoableModelStatePair; }
 namespace SimTK { class State; }
 
@@ -763,6 +765,8 @@ namespace osc
     }
 
     OpenSim::PhysicalOffsetFrame& AddFrame(OpenSim::Joint&, std::unique_ptr<OpenSim::PhysicalOffsetFrame>);
+
+    OpenSim::WrapObject& AddWrapObject(OpenSim::PhysicalFrame&, std::unique_ptr<OpenSim::WrapObject>);
 
     template<ClonesToRawPtr T>
     std::unique_ptr<T> Clone(T const& obj)

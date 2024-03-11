@@ -90,6 +90,25 @@ namespace
         }
     }
 
+    // draw the `MenuItem`s for the "Add Wrap Object" menu
+    void DrawAddWrapObjectsToPhysicalFrameMenuItems(
+        IEditorAPI*,
+        std::shared_ptr<UndoableModelStatePair> const& uim,
+        OpenSim::ComponentPath const& physicalFrameAbsPath)
+    {
+        // list each available `WrapObject` as something the user can add
+        auto const& registry = GetComponentRegistry<OpenSim::WrapObject>();
+        for (auto const& entry : registry) {
+            if (ui::MenuItem(entry.name())) {
+                ActionAddWrapObjectToPhysicalFrame(
+                    *uim,
+                    physicalFrameAbsPath,
+                    entry.instantiate()
+                );
+            }
+        }
+    }
+
     // draw contextual actions (buttons, sliders) for a selected physical frame
     void DrawPhysicalFrameContextualActions(
         IEditorAPI* editorAPI,
@@ -106,27 +125,34 @@ namespace
             );
         }
 
-        if (ui::MenuItem("Add Geometry"))
-        {
-            std::function<void(std::unique_ptr<OpenSim::Geometry>)> const callback = [uim, pfPath](auto geom)
-            {
-                ActionAttachGeometryToPhysicalFrame(*uim, pfPath, std::move(geom));
-            };
-            auto p = std::make_unique<SelectGeometryPopup>(
-                "select geometry to attach",
-                App::resourceFilepath("geometry"),
-                callback
-            );
-            p->open();
-            editorAPI->pushPopup(std::move(p));
-        }
-        ui::DrawTooltipIfItemHovered("Add Geometry", "Add geometry to this component. Geometry can be removed by selecting it in the navigator and pressing DELETE");
+        if (ui::BeginMenu("Add")) {
+            if (ui::MenuItem("Geometry")) {
+                std::function<void(std::unique_ptr<OpenSim::Geometry>)> const callback = [uim, pfPath](auto geom)
+                {
+                    ActionAttachGeometryToPhysicalFrame(*uim, pfPath, std::move(geom));
+                };
+                auto p = std::make_unique<SelectGeometryPopup>(
+                    "select geometry to attach",
+                    App::resourceFilepath("geometry"),
+                    callback
+                );
+                p->open();
+                editorAPI->pushPopup(std::move(p));
+            }
+            ui::DrawTooltipIfItemHovered("Add Geometry", "Add geometry to this component. Geometry can be removed by selecting it in the navigator and pressing DELETE");
 
-        if (ui::MenuItem("Add Offset Frame"))
-        {
-            ActionAddOffsetFrameToPhysicalFrame(*uim, pfPath);
+            if (ui::MenuItem("Offset Frame")) {
+                ActionAddOffsetFrameToPhysicalFrame(*uim, pfPath);
+            }
+            ui::DrawTooltipIfItemHovered("Add Offset Frame", "Add an OpenSim::OffsetFrame as a child of this Component. Other components in the model can then connect to this OffsetFrame, rather than the base Component, so that it can connect at some offset that is relative to the parent Component");
+
+            if (ui::BeginMenu("Wrap Object")) {
+                DrawAddWrapObjectsToPhysicalFrameMenuItems(editorAPI, uim, pfPath);
+                ui::EndMenu();
+            }
+
+            ui::EndMenu();
         }
-        ui::DrawTooltipIfItemHovered("Add Offset Frame", "Add an OpenSim::OffsetFrame as a child of this Component. Other components in the model can then connect to this OffsetFrame, rather than the base Component, so that it can connect at some offset that is relative to the parent Component");
     }
 
 

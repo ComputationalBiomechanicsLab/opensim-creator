@@ -348,8 +348,8 @@ namespace
             // deduce (#526)
             "CMC",
 
-            // wrap geometry crash the UI if the user adds it because they implicitly depend on `setFrame`
-            // being called during `generateDecorations` they do not have an API-visible socket
+            // wrap geometry will crash the UI if the user adds it because they implicitly depend on `setFrame`
+            // being called during `generateDecorations`, but they do not have an API-visible socket
             "WrapCylinder",
             "WrapEllipsoid",
             "WrapCylinderObst",
@@ -594,7 +594,7 @@ namespace
     }
 
     template<std::derived_from<OpenSim::Component> T>
-    std::vector<std::shared_ptr<T const>> CreatePrototypeLutT()
+    std::vector<std::shared_ptr<T const>> CreatePrototypeLutT(bool useBlacklist = true)
     {
         OpenSim::ArrayPtrs<T> ptrs;
         OpenSim::Object::getRegisteredObjectsOfGivenType<T>(ptrs);
@@ -609,7 +609,7 @@ namespace
         {
             T const& v = *ptrs[i];
             std::string const& name = v.getConcreteClassName();
-            if (blacklistLut.contains(name))
+            if (useBlacklist && blacklistLut.contains(name))
             {
                 continue;  // it's a blacklisted component, hide it in the UI
             }
@@ -710,9 +710,10 @@ namespace
     template<std::derived_from<OpenSim::Component> T>
     ComponentRegistry<T> CreateRegistry(
         std::string_view name,
-        std::string_view description)
+        std::string_view description,
+        bool useBlacklist = true)
     {
-        return CreateRegistryFromLUT<T>(name, description, CreatePrototypeLutT<T>());
+        return CreateRegistryFromLUT<T>(name, description, CreatePrototypeLutT<T>(useBlacklist));
     }
 
     ComponentRegistry<OpenSim::Component> CreateOtherComponentRegistry(
@@ -786,6 +787,17 @@ ComponentRegistry<OpenSim::Probe> const& osc::GetComponentRegistry()
     static auto const s_StaticReg = CreateRegistry<OpenSim::Probe>(
         "Probe",
         "This class represents a Probe which is designed to query a Vector of model values given system state. This model quantity is specified as a SimTK::Vector by the pure virtual method computeProbeInputs(), which must be specified for each child Probe.  In addition, the Probe model component interface allows <I> operations </I> to be performed on this value (specified by the property: probe_operation), and then have this result scaled (by the scalar property: 'scale_factor'). A controller computes and sets the values of the controls for the actuators under its control."
+    );
+    return s_StaticReg;
+}
+
+template<>
+ComponentRegistry<OpenSim::WrapObject> const& osc::GetComponentRegistry()
+{
+    static auto const s_StaticReg = CreateRegistry<OpenSim::WrapObject>(
+        "WrapObject",
+        "An abstract class that specifies the interface for a wrapping object.",
+        false
     );
     return s_StaticReg;
 }

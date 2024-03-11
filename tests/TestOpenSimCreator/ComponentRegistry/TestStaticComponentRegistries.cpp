@@ -290,3 +290,11 @@ TEST(UngroupedRegistry, CanAddAnyUngroupedComponentWithoutASegfault)
         }
     }
 }
+
+TEST(WrapObjectRegistry, CanInstantiateAllAvailableWrapObjectsWithoutIssue)
+{
+    for (auto const& entry : GetComponentRegistry<OpenSim::WrapObject>()) {
+        ASSERT_FALSE(entry.name().empty());
+        ASSERT_NO_THROW({ entry.instantiate(); });
+    }
+}
