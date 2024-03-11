@@ -17,72 +17,75 @@
 
 namespace osc
 {
-    // returns the average centroid of the `AABB`
+    // returns the average centroid of `aabb`
     constexpr Vec3 centroid(AABB const& aabb)
     {
         return centroid({aabb.min, aabb.max});
     }
 
-    // returns the widths of the edges of the `AABB`
+    // returns the widths of the edges of `aabb`
     constexpr Vec3 dimensions(AABB const& aabb)
     {
         return aabb.max - aabb.min;
     }
 
-    // returns the half-widths of the edges of the `AABB`
+    // returns the half-widths of the edges of `aabb`
     constexpr Vec3 half_widths(AABB const& aabb)
     {
         return 0.5f * dimensions(aabb);
     }
 
-    // returns the volume of the `AABB`
+    // returns the volume of `aabb`
     constexpr float volume(AABB const& aabb)
     {
         Vec3 const dims = dimensions(aabb);
         return dims.x * dims.y * dims.z;
     }
 
-    // returns `true` if the `AABB` has zero width along all of its edges (i.e. min == max)
+    // tests if `aabb` has zero width along all of its edges (i.e. min == max)
     constexpr bool is_point(AABB const& aabb)
     {
         return aabb.min == aabb.max;
     }
 
-    // returns `true` if the `AABB` has zero width along any of its edges
+    // tests if `aabb` has zero width along any of its edges
     constexpr bool has_zero_volume(AABB const& aabb)
     {
         return volume(aabb) == 0.0f;
     }
 
-    // returns the eight corner points of the `AABB`'s cuboid
-    std::array<Vec3, 8> cuboid_vertices(AABB const&);
+    // returns the eight corner vertices of `aabb`
+    std::array<Vec3, 8> corner_vertices(AABB const& aabb);
 
-    // returns an `AABB` that has been transformed by the `Mat4`
-    AABB transform_aabb(AABB const&, Mat4 const&);
+    // returns an `AABB` computed by transforming `aabb` with `m`
+    AABB transform_aabb(AABB const& aabb, Mat4 const& m);
 
-    // returns an `AABB` that has been transformed by the `Transform`
-    AABB transform_aabb(AABB const&, Transform const&);
+    // returns an `AABB` computed by transforming `aabb` with `t`
+    AABB transform_aabb(AABB const& aabb, Transform const& t);
 
-    // returns an `AABB` that tightly bounds the `Vec3`
-    constexpr AABB aabb_of(Vec3 const& v)
+    // returns an `AABB` that tightly bounds `x`
+    constexpr AABB aabb_of(Vec3 const& x)
     {
-        return AABB{.min = v, .max = v};
+        return AABB{.min = x, .max = x};
     }
 
-    // returns an `AABB` that tightly bounds the two `AABB`s (union)
+    // returns an `AABB` that tightly bounds the union of `x` and `y`
     constexpr AABB aabb_of(AABB const& x, AABB const& y)
     {
         return AABB{elementwise_min(x.min, y.min), elementwise_max(x.max, y.max)};
     }
 
-    // returns an `AABB` that tightly bounds the two `AABB`s, or only the second `AABB` if the first is `std::nullopt`
+    // returns an `AABB` that tightly bounds the union of `x` and `y`, or only `y` if `x` is `std::nullopt`
     constexpr AABB aabb_of(std::optional<AABB> const& x, AABB const& y)
     {
         return x ? aabb_of(*x, y) : y;
     }
 
-    // returns an `AABB` that tightly bounds the `Vec3`s (projected from) the range
-    template<std::ranges::input_range R, class Proj = std::identity>
+    // returns an `AABB` that tightly bounds the `Vec3`s projected from `r`
+    template<
+        std::ranges::input_range R,
+        class Proj = std::identity
+    >
     constexpr AABB aabb_of(R&& r, Proj proj = {})
         requires std::convertible_to<typename std::projected<std::ranges::iterator_t<R>, Proj>::value_type, Vec3 const&>
     {
@@ -99,13 +102,13 @@ namespace osc
         return rv;
     }
 
-    // returns an `AABB` that tightly bounds the `AABB`s (projected from) the range
+    // returns an `AABB` that tightly bounds the `AABB`s projected from `r`
     template<std::ranges::input_range Range, class Proj = std::identity>
-    constexpr AABB aabb_of(Range&& range, Proj proj = {})
+    constexpr AABB aabb_of(Range&& r, Proj proj = {})
         requires std::convertible_to<typename std::projected<std::ranges::iterator_t<Range>, Proj>::value_type, AABB const&>
     {
-        auto it = std::ranges::begin(range);
-        auto const last = std::ranges::end(range);
+        auto it = std::ranges::begin(r);
+        auto const last = std::ranges::end(r);
         if (it == last) {
             return AABB{};  // empty range
         }
@@ -119,7 +122,7 @@ namespace osc
 
     // returns an `AABB` that tightly bounds any non-`std::nullopt` `AABB`s in `x` or `y`
     //
-    // returns `std::nullopt` if both `x` and `y` are `std::nullopt`
+    // if both `x` and `y` are `std::nullopt`, returns `std::nullopt`
     constexpr std::optional<AABB> maybe_aabb_of(std::optional<AABB> x, std::optional<AABB> y)
     {
         if (x && y) {
@@ -136,15 +139,15 @@ namespace osc
         }
     }
 
-    // returns an `AABB` that tightly bounds any non-`std::nullopt` `AABB`s (projected from) the range
+    // returns an `AABB` that tightly bounds any non-`std::nullopt` `AABB`s projected from `r`
     //
-    // returns `std::nullopt` if no element in the range returns an `AABB`
+    // if no element in `r` projects an `AABB`, returns `std::nullopt`
     template<std::ranges::input_range Range, class Proj = std::identity>
-    constexpr std::optional<AABB> maybe_aabb_of(Range&& range, Proj proj = {})
+    constexpr std::optional<AABB> maybe_aabb_of(Range&& r, Proj proj = {})
         requires std::convertible_to<typename std::projected<std::ranges::iterator_t<Range>, Proj>::value_type, std::optional<AABB> const&>
     {
-        auto it = std::ranges::begin(range);
-        auto const last = std::ranges::end(range);
+        auto it = std::ranges::begin(r);
+        auto const last = std::ranges::end(r);
 
         // find first non-nullopt AABB (or the end)
         std::optional<AABB> rv;
@@ -161,16 +164,12 @@ namespace osc
     }
 
     // returns a `Rect` in normalized device coordinate (NDC) space that loosely
-    // bounds the given worldspace `AABB`
+    // bounds the worldspace-located `aabb`
     //
-    // - returns `std::nullopt` if the AABB does not lie within the NDC clipping
-    //   bounds (i.e. between (-1, -1) to (1, 1)
-    // - if it does return a rectangle, the AABB is somewhere within the rectangle,
-    //   but it isn't guaranteed to be a good fit (loose bounds)
-    // - this function is mostly useful for figuring out what part of a screen is
-    //   affected by the AABB (e.g. to minimze/skip rendering)
+    // if the AABB does not lie within the NDC clipping bounds (i.e. between (-1, -1)
+    // and (1, 1)), returns `std::nullopt`
     std::optional<Rect> loosely_project_into_ndc(
-        AABB const&,
+        AABB const& aabb,
         Mat4 const& viewMat,
         Mat4 const& projMat,
         float znear,

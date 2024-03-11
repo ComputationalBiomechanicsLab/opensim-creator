@@ -6,6 +6,9 @@
 
 namespace osc
 {
+    // an inner/leaf node of a BVH
+    //
+    // has a spatial and hierarchical bounds, plus an index to a `BVHPrim`
     class BVHNode final {
     public:
         static BVHNode leaf(AABB const& bounds, size_t primOffset)
@@ -22,8 +25,7 @@ namespace osc
         BVHNode(AABB const& bounds_, size_t data_) :
             m_Bounds{bounds_},
             m_Data{data_}
-        {
-        }
+        {}
     public:
         AABB const& getBounds() const
         {
@@ -57,7 +59,7 @@ namespace osc
 
     private:
         static inline constexpr size_t c_LeafMask = static_cast<size_t>(1) << (8*sizeof(size_t) - 1);
-        AABB m_Bounds{};  // union of all AABBs below/including this one
+        AABB m_Bounds{};  // the union of all AABBs below, and including, this node
         size_t m_Data{};
     };
 }

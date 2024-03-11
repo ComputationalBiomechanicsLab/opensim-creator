@@ -17,6 +17,9 @@ namespace osc { struct Line; }
 
 namespace osc
 {
+    // a bounding volume hierarchy (BVH) of numerically IDed AABBs
+    //
+    // the AABBs may be computed from triangles, commonly called a "triangle BVH"
     class BVH final {
     public:
         void clear();
@@ -71,7 +74,7 @@ namespace osc
         void forEachLeafOrInnerNodeUnordered(std::function<void(BVHNode const&)> const&) const;
 
     private:
-        std::vector<BVHNode> m_Nodes;
-        std::vector<BVHPrim> m_Prims;
+        std::vector<BVHNode> m_Nodes;  // nodes in the hierarchy
+        std::vector<BVHPrim> m_Prims;  // primitives (triangles, AABBs) that the nodes reference
     };
 }

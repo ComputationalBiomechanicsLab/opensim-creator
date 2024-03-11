@@ -6,6 +6,9 @@
 
 namespace osc
 {
+    // a primitive (leaf) in the BVH
+    //
+    // IDs and bounds an element from the input data (triangles/AABBs)
     class BVHPrim final {
     public:
         BVHPrim(ptrdiff_t id_, AABB const& bounds_) :

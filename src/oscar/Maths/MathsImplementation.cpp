@@ -1188,7 +1188,7 @@ Sphere osc::BoundingSphereOf(std::span<Vec3 const> points)
 
 Sphere osc::ToSphere(AABB const& aabb)
 {
-    return BoundingSphereOf(cuboid_vertices(aabb));
+    return BoundingSphereOf(corner_vertices(aabb));
 }
 
 Mat4 osc::FromUnitSphereMat4(Sphere const& s)
@@ -1274,7 +1274,7 @@ Mat4 osc::DiscToDiscMat4(Disc const& a, Disc const& b)
     return translator * rotator * scaler;
 }
 
-std::array<Vec3, 8> osc::cuboid_vertices(AABB const& aabb)
+std::array<Vec3, 8> osc::corner_vertices(AABB const& aabb)
 {
     Vec3 d = dimensions(aabb);
 
@@ -1296,7 +1296,7 @@ std::array<Vec3, 8> osc::cuboid_vertices(AABB const& aabb)
 
 AABB osc::transform_aabb(AABB const& aabb, Mat4 const& m)
 {
-    auto vertices = cuboid_vertices(aabb);
+    auto vertices = corner_vertices(aabb);
 
     for (Vec3& vertex : vertices) {
         Vec4 p = m * Vec4{vertex, 1.0f};

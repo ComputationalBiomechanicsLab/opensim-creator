@@ -6,7 +6,7 @@
 
 namespace osc
 {
-    // represents an axis-aligned bounding box (AABB)
+    // an axis-aligned bounding box (AABB) in 3D space
     struct AABB final {
 
         friend bool operator==(AABB const&, AABB const&) = default;

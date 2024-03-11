@@ -7,6 +7,7 @@
 
 namespace osc
 {
+    // a collision between a ray and a leaf of a BVH
     struct BVHCollision final : public RayCollision {
 
         BVHCollision(

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <oscar/Maths/Angle.h>
 #include <oscar/Maths/Constants.h>
 #include <oscar/Maths/Functors.h>
 #include <oscar/Maths/Vec.h>
@@ -20,43 +19,43 @@
 namespace osc
 {
     template<std::signed_integral T>
-    T abs(T v)
+    T abs(T num)
     {
-        return std::abs(v);
+        return std::abs(num);
     }
 
     template<std::floating_point T>
-    T abs(T v)
+    T abs(T num)
     {
-        return std::fabs(v);
+        return std::fabs(num);
     }
 
     template<typename T>
-    concept HasAbsFunction = requires (T v) {
-        { abs(v) } -> std::same_as<T>;
+    concept HasAbsFunction = requires (T x) {
+        { abs(x) } -> std::same_as<T>;
     };
 
     template<size_t L, HasAbsFunction T>
-    Vec<L, T> abs(Vec<L, T> const& v)
+    Vec<L, T> abs(Vec<L, T> const& x)
     {
-        return map(v, [](T const& el) { return abs(el); });
+        return map(x, [](T const& xv) { return abs(xv); });
     }
 
     template<std::floating_point T>
-    T floor(T v)
+    T floor(T num)
     {
-        return std::floor(v);
+        return std::floor(num);
     }
 
     template<typename T>
-    concept HasFloorFunction = requires (T v) {
-        { floor(v) } -> std::same_as<T>;
+    concept HasFloorFunction = requires (T x) {
+        { floor(x) } -> std::same_as<T>;
     };
 
     template<size_t L, HasFloorFunction T>
-    Vec<L, T> floor(Vec<L, T> const& v)
+    Vec<L, T> floor(Vec<L, T> const& x)
     {
-        return map(v, [](T const& el) { return floor(el); });
+        return map(x, [](T const& xv) { return floor(xv); });
     }
 
     template<std::floating_point T>
@@ -77,18 +76,6 @@ namespace osc
         return std::fmod(x, y);
     }
 
-    template<
-        std::floating_point Rep1,
-        AngularUnitTraits Units1,
-        std::floating_point Rep2,
-        AngularUnitTraits Units2
-    >
-    auto mod(Angle<Rep1, Units1> x, Angle<Rep2, Units2> y) -> std::common_type_t<decltype(x), decltype(y)>
-    {
-        using CA = std::common_type_t<decltype(x), decltype(y)>;
-        return CA{mod(CA{x}.count(), CA{y}.count())};
-    }
-
     template<typename T>
     concept HasModFunction = requires (T v1, T v2) {
         { mod(v1, v2) } -> std::same_as<T>;
@@ -98,19 +85,6 @@ namespace osc
     constexpr Vec<L, T> mod(Vec<L, T> const& a, Vec<L, T> const& b)
     {
         return map(a, b, [](T const& av, T const& bv) { return mod(av, bv); });
-    }
-
-    // returns the smallest of `a` and `b`, accounting for differences in angular units (e.g. 180_deg < 1_turn)
-    template<
-        std::floating_point Rep1,
-        AngularUnitTraits Units1,
-        std::floating_point Rep2,
-        AngularUnitTraits Units2
-    >
-    constexpr auto min(Angle<Rep1, Units1> x, Angle<Rep2, Units2> y) -> std::common_type_t<decltype(x), decltype(y)>
-    {
-        using CA = std::common_type_t<decltype(x), decltype(y)>;
-        return CA{min(CA{x}.count(), CA{y}.count())};
     }
 
     template<typename T>
@@ -125,71 +99,33 @@ namespace osc
         return map(a, b, [](T const& a, T const& b) { return min(a, b); });
     }
 
-    // returns the largest of `a` and `b`, accounting for differences in angular units (e.g. 180_deg < 1_turn)
-    template<
-        std::floating_point Rep1,
-        AngularUnitTraits Units1,
-        std::floating_point Rep2,
-        AngularUnitTraits Units2
-    >
-    constexpr auto max(Angle<Rep1, Units1> x, Angle<Rep2, Units2> y) -> std::common_type_t<decltype(x), decltype(y)>
-    {
-        using CA = std::common_type_t<decltype(x), decltype(y)>;
-        return CA{max(CA{x}.count(), CA{y}.count())};
-    }
+    template<typename T>
+    concept HasMaxFunction = requires(T a, T b) {
+        { max(a, b) } -> std::convertible_to<T>;
+    };
 
     // returns a vector containing max(a[i], b[i]) for each element
-    template<size_t L, typename T>
+    template<size_t L, HasMaxFunction T>
     constexpr Vec<L, T> elementwise_max(Vec<L, T> const& a, Vec<L, T> const& b)
         requires std::is_arithmetic_v<T>
     {
         return map(a, b, [](T const& av, T const& bv) { return max(av, bv); });
     }
 
-    // clamps `v` between `low` and `high` (inclusive)
-    template<typename GenType>
-    constexpr GenType clamp(GenType v, GenType low, GenType high)
-        requires std::is_arithmetic_v<GenType>
-    {
-        return std::clamp(v, low, high);
-    }
-
-    // clamps `v` between `low` and `high` (inclusive, all the same unit type)
-    template<std::floating_point Rep, AngularUnitTraits Units>
-    constexpr Angle<Rep, Units> clamp(
-        Angle<Rep, Units> const& v,
-        Angle<Rep, Units> const& min,
-        Angle<Rep, Units> const& max)
-    {
-        return Angle<Rep, Units>{clamp(v.count(), min.count(), max.count())};
-    }
-
-    // clamps `v` between `low` and `high`
-    //
-    // `low` and `high` are converted to the units of `v` before clamping
-    template<
-        std::floating_point Rep,
-        AngularUnitTraits Units,
-        std::convertible_to<Angle<Rep, Units>> AngleMin,
-        std::convertible_to<Angle<Rep, Units>> AngleMax
-    >
-    constexpr Angle<Rep, Units> clamp(
-        Angle<Rep, Units> const& v,
-        AngleMin const& min,
-        AngleMax const& max)
-    {
-        return clamp(v, Angle<Rep, Units>{min}, Angle<Rep, Units>{max});
-    }
+    template<typename T>
+    concept HasClampFunction = requires(T v, T lo, T hi) {
+        { clamp(v, lo, hi) } -> std::convertible_to<T>;
+    };
 
     // clamps each element in `x` between the corresponding elements in `low` and `high`
-    template<size_t L, typename T>
+    template<size_t L, HasClampFunction T>
     constexpr Vec<L, T> clamp(Vec<L, T> const& v, Vec<L, T> const& low, Vec<L, T> const& high)
     {
         return map(v, low, high, [](T const& vv, T const& lowv, T const& highv) { return clamp(vv, lowv, highv); });
     }
 
     // clamps each element in `x` between `low` and `high`
-    template<size_t L, typename T>
+    template<size_t L, HasClampFunction T>
     constexpr Vec<L, T> clamp(Vec<L, T> const& v, T const& low, T const& high)
     {
         return map(v, [&low, &high](T const& el) { return clamp(el, low, high); });
@@ -209,20 +145,20 @@ namespace osc
         return clamp(x, static_cast<T>(0), static_cast<T>(1));
     }
 
-    // linearly interpolates between `x` and `y` with factor `a`
-    template<typename GenType, typename UInterpolant>
-    constexpr GenType lerp(GenType const& x, GenType const& y, UInterpolant const& a)
-        requires std::is_arithmetic_v<GenType> && std::is_floating_point_v<UInterpolant>
+    // linearly interpolates between `a` and `b` with factor `t`
+    template<typename Arithmetic1, typename Arithmetic2, typename Arithmetic3>
+    constexpr auto lerp(Arithmetic1 const& a, Arithmetic2 const& b, Arithmetic3 const& t)
+        requires std::is_arithmetic_v<Arithmetic1> && std::is_arithmetic_v<Arithmetic2> && std::is_arithmetic_v<Arithmetic3>
     {
-        return static_cast<GenType>(static_cast<UInterpolant>(x) * (static_cast<UInterpolant>(1) - a) + static_cast<UInterpolant>(y) * a);
+        return std::lerp(a, b, t);
     }
 
-    // linearly interpolates between each element in `x` and `y` with factor `a`
+    // linearly interpolates between each element in `x` and `y` with factor `t`
     template<size_t L, typename T, typename UInterpolant>
-    constexpr Vec<L, T> lerp(Vec<L, T> const& x, Vec<L, T> const& y, UInterpolant const& a)
+    constexpr auto lerp(Vec<L, T> const& x, Vec<L, T> const& y, UInterpolant const& t) -> Vec<L, decltype(lerp(x[0], y[0], t))>
         requires std::is_arithmetic_v<T> && std::is_floating_point_v<UInterpolant>
     {
-        return Vec<L, T>(Vec<L, UInterpolant>(x) * (static_cast<UInterpolant>(1) - a) + Vec<L, UInterpolant>(y) * a);
+        return map(x, y, [&t](T const& xv, T const& yv) { return lerp(xv, yv, t); });
     }
 
     template<size_t L, typename T>

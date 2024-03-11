@@ -436,6 +436,25 @@ namespace osc
         return min_element(std::ranges::begin(r), std::ranges::end(r), std::ref(comp), std::ref(proj));
     }
 
+    // see: std::ranges::clamp
+    template<
+        class T,
+        class Proj = std::identity,
+        std::indirect_strict_weak_order<std::projected<T const*, Proj>> Comp = std::ranges::less
+    >
+    constexpr T const& clamp(const T& v, const T& lo, const T& hi, Comp comp = {}, Proj proj = {})
+    {
+        auto&& pv = std::invoke(proj, v);
+
+        if (std::invoke(comp, std::forward<decltype(pv)>(pv), std::invoke(proj, lo))) {
+            return lo;
+        }
+        if (std::invoke(comp, std::invoke(proj, hi), std::forward<decltype(pv)>(pv))) {
+            return hi;
+        }
+        return v;
+    }
+
     // osc algorithm: returns the index of the largest element in the range
     template<
         std::ranges::random_access_range R,

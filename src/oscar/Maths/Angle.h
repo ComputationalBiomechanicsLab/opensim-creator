@@ -1,5 +1,7 @@
 #pragma once
 
+#include <oscar/Maths/CommonFunctions.h>
+
 #include <concepts>
 #include <compare>
 #include <ostream>
@@ -15,7 +17,7 @@ namespace osc
         { T::unit_label } -> std::convertible_to<std::string_view>;
     };
 
-    // Represents a floating point of type `Rep`, which is expressed in the given `Units`
+    // a floating point number of type `Rep`, expressed in the given `Units`
     template<std::floating_point Rep, AngularUnitTraits Units>
     class Angle final {
     public:
@@ -220,3 +222,70 @@ struct std::common_type<osc::Angle<Rep1, Units1>, osc::Angle<Rep2, Units2>> {
     using units = typename std::conditional_t<(Units1::radians_per_rep > Units2::radians_per_rep), Units1, Units2>;
     using type = osc::Angle<std::common_type_t<Rep1, Rep2>, units>;
 };
+
+// common math functions support for angles
+namespace osc
+{
+    // `mod` (homogeneous and heterogeneous)
+    template<
+        std::floating_point Rep1,
+        AngularUnitTraits Units1,
+        std::floating_point Rep2,
+        AngularUnitTraits Units2
+    >
+    auto mod(Angle<Rep1, Units1> x, Angle<Rep2, Units2> y) -> std::common_type_t<decltype(x), decltype(y)>
+    {
+        using CA = std::common_type_t<decltype(x), decltype(y)>;
+        return CA{mod(CA{x}.count(), CA{y}.count())};
+    }
+
+    // heterogeneous `min`
+    template<
+        std::floating_point Rep1,
+        AngularUnitTraits Units1,
+        std::floating_point Rep2,
+        AngularUnitTraits Units2
+    >
+    constexpr auto min(Angle<Rep1, Units1> x, Angle<Rep2, Units2> y) -> std::common_type_t<decltype(x), decltype(y)>
+
+        // homogeneous `min` is provided via `std::ranges::min` or `osc::min` algorithms
+        requires (!std::is_same_v<Units1, Units2>)
+    {
+        using CA = std::common_type_t<decltype(x), decltype(y)>;
+        return CA{min(CA{x}.count(), CA{y}.count())};
+    }
+
+    // heterogeneous `max`
+    template<
+        std::floating_point Rep1,
+        AngularUnitTraits Units1,
+        std::floating_point Rep2,
+        AngularUnitTraits Units2
+    >
+    constexpr auto max(Angle<Rep1, Units1> x, Angle<Rep2, Units2> y) -> std::common_type_t<decltype(x), decltype(y)>
+
+        // homogeneous `max` is provided via `std::ranges::max` or `osc::max` algorithms
+        requires (!std::is_same_v<Units1, Units2>)
+    {
+        using CA = std::common_type_t<decltype(x), decltype(y)>;
+        return CA{max(CA{x}.count(), CA{y}.count())};
+    }
+
+    // heterogeneous `clamp`
+    template<
+        std::floating_point Rep,
+        AngularUnitTraits Units,
+        std::convertible_to<Angle<Rep, Units>> AngleMin,
+        std::convertible_to<Angle<Rep, Units>> AngleMax
+    >
+    constexpr Angle<Rep, Units> clamp(
+        Angle<Rep, Units> const& v,
+        AngleMin const& min,
+        AngleMax const& max)
+
+        // homogeneous `clamp` is provided via `std::ranges::clamp` or `osc::clamp` algorithms
+        requires (!std::is_same_v<Angle<Rep, Units>, AngleMin> || !std::is_same_v<Angle<Rep, Units>, AngleMax> || !std::is_same_v<AngleMin, AngleMax>)
+    {
+        return clamp(v, Angle<Rep, Units>{min}, Angle<Rep, Units>{max});
+    }
+}
