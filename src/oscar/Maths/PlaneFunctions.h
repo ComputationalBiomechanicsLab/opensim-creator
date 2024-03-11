@@ -16,7 +16,7 @@ namespace osc
     }
 
     // tests if `aabb` is entirely in front of `plane`
-    constexpr bool is_in_front_of(Plane const& plane, AABB const& aabb)
+    bool is_in_front_of(Plane const& plane, AABB const& aabb)
     {
         // originally found in: https://learnopengl.com/Guest-Articles/2021/Scene/Frustum-Culling
         // which was based on : https://gdbooks.gitbooks.io/3dcollisions/content/Chapter2/static_aabb_plane.html
