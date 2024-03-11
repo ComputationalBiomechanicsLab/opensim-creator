@@ -137,7 +137,7 @@ namespace
 
 class osc::SceneRenderer::Impl final {
 public:
-    Impl(SceneCache& cache) :
+    explicit Impl(SceneCache& cache) :
 
         m_SceneColoredElementsMaterial{cache.getShaderResource("oscar/shaders/SceneRenderer/DrawColoredObjects.vert", "oscar/shaders/SceneRenderer/DrawColoredObjects.frag")},
         m_SceneTexturedElementsMaterial{cache.getShaderResource("oscar/shaders/SceneRenderer/DrawTexturedObjects.vert", "oscar/shaders/SceneRenderer/DrawTexturedObjects.frag")},

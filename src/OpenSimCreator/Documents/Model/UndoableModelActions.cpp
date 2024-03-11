@@ -1390,7 +1390,7 @@ bool osc::ActionAddWrapObjectToPhysicalFrame(
 
     try {
         OpenSim::Model& mutModel = model.updModel();
-        OpenSim::PhysicalFrame* frame = FindComponentMut<OpenSim::PhysicalFrame>(mutModel, physicalFramePath);
+        auto* frame = FindComponentMut<OpenSim::PhysicalFrame>(mutModel, physicalFramePath);
         OSC_ASSERT_ALWAYS(frame != nullptr && "cannot find the given OpenSim::PhysicalFrame in the model");
 
         OpenSim::WrapObject& wrapObj = AddWrapObject(*frame, std::move(wrapObjPtr));
@@ -1419,9 +1419,9 @@ bool osc::ActionAddWrapObjectToGeometryPathWraps(
 {
     try {
         OpenSim::Model& mutModel = model.updModel();
-        OpenSim::GeometryPath* mutGeomPath = FindComponentMut<OpenSim::GeometryPath>(mutModel, geomPath.getAbsolutePath());
+        auto* mutGeomPath = FindComponentMut<OpenSim::GeometryPath>(mutModel, geomPath.getAbsolutePath());
         OSC_ASSERT_ALWAYS(mutGeomPath != nullptr && "cannot find the geometry path in the model");
-        OpenSim::WrapObject* mutWrapObject = FindComponentMut<OpenSim::WrapObject>(mutModel, wrapObject.getAbsolutePath());
+        auto* mutWrapObject = FindComponentMut<OpenSim::WrapObject>(mutModel, wrapObject.getAbsolutePath());
         OSC_ASSERT_ALWAYS(mutWrapObject != nullptr && "cannot find wrap object in the model");
 
         std::stringstream msg;
@@ -1462,9 +1462,9 @@ bool osc::ActionRemoveWrapObjectFromGeometryPathWraps(
 
     try {
         OpenSim::Model& mutModel = model.updModel();
-        OpenSim::GeometryPath* mutGeomPath = FindComponentMut<OpenSim::GeometryPath>(mutModel, geomPath.getAbsolutePath());
+        auto* mutGeomPath = FindComponentMut<OpenSim::GeometryPath>(mutModel, geomPath.getAbsolutePath());
         OSC_ASSERT_ALWAYS(mutGeomPath != nullptr && "cannot find the geometry path in the model");
-        OpenSim::WrapObject* mutWrapObject = FindComponentMut<OpenSim::WrapObject>(mutModel, wrapObject.getAbsolutePath());
+        auto* mutWrapObject = FindComponentMut<OpenSim::WrapObject>(mutModel, wrapObject.getAbsolutePath());
         OSC_ASSERT_ALWAYS(mutWrapObject != nullptr && "cannot find wrap object in the model");
 
         std::stringstream msg;

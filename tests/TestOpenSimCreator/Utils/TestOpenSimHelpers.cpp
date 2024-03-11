@@ -337,7 +337,7 @@ TEST(OpenSimHelpers, GetAllWrapObjectsReferencedByWorksAsExpected)
     InitializeState(m);
 
     for (auto const& [geomAbsPath, expectedWrapObjectNames] : expectedWraps) {
-        OpenSim::GeometryPath const* gp = FindComponent<OpenSim::GeometryPath>(m, geomAbsPath);
+        auto const* gp = FindComponent<OpenSim::GeometryPath>(m, geomAbsPath);
         OSC_ASSERT_ALWAYS(gp != nullptr && "maybe the rajagopal model has changed?");
         for (OpenSim::WrapObject const* wo : GetAllWrapObjectsReferencedBy(*gp)) {
             ASSERT_TRUE(contains(expectedWrapObjectNames, wo->getName()));
