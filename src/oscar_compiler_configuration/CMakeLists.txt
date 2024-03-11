@@ -56,9 +56,6 @@ target_compile_options(oscar_compiler_configuration INTERFACE
         # enable pedantically extra warnings
         -pedantic
 
-        # warn if using an uninitialized variable
-        -Wuninitialized
-
         # warn if an uninitialized variable is initialized by itself
         -Winit-self
 
@@ -142,10 +139,17 @@ target_compile_options(oscar_compiler_configuration INTERFACE
         #   - https://stackoverflow.com/questions/43864881/fno-omit-frame-pointer-equivalent-compiler-option-for-clang
         #   - fixed here: https://reviews.llvm.org/D64294
         -mno-omit-leaf-frame-pointer
+
+        # warn if using an uninitialized variable
+        #
+        # not done on gcc because it produces false-positives
+        -Wuninitialized
     >
 
     # gcc flags
     $<$<CXX_COMPILER_ID:GNU>:
+        # produces false positives?
+        -Wno-maybe-uninitialized
     >
 )
 target_link_options(oscar_compiler_configuration INTERFACE
