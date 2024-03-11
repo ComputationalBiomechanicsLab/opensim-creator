@@ -15,6 +15,8 @@
 #include <gtest/gtest.h>
 #include <oscar/Platform/AppConfig.h>
 #include <oscar/Platform/Log.h>
+#include <oscar/Utils/Algorithms.h>
+#include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/StringHelpers.h>
 
 #include <filesystem>
@@ -313,4 +315,32 @@ TEST(OpenSimHelpers, WriteComponentTopologyGraphAsDotViz)
     ASSERT_TRUE(Contains(rv, R"("/" -> "/child2")"));
     ASSERT_TRUE(Contains(rv, R"("/child2" -> "/child1")"));
     ASSERT_TRUE(Contains(rv, R"(label="sibling")"));
+}
+
+TEST(OpenSimHelpers, GetAllWrapObjectsReferencedByWorksAsExpected)
+{
+    struct ExpectedWrap {
+        OpenSim::ComponentPath geometryPathAbsPath;
+        std::vector<std::string> associatedWrapObjectNames;
+    };
+
+    auto const expectedWraps = std::to_array<ExpectedWrap>({
+        {OpenSim::ComponentPath{"/forceset/psoas_r/path"}, {"PS_at_brim_r"}},
+        {OpenSim::ComponentPath{"/forceset/vasmed_l/path"}, {"KnExt_at_fem_l"}},
+        {OpenSim::ComponentPath{"/forceset/gaslat_r/path"}, {"GasLat_at_shank_r", "Gastroc_at_condyles_r"}},
+    });
+
+    auto const config = LoadOpenSimCreatorConfig();
+    std::filesystem::path modelPath = config.getResourceDir() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
+    OpenSim::Model m{modelPath.string()};
+    InitializeModel(m);
+    InitializeState(m);
+
+    for (auto const& [geomAbsPath, expectedWrapObjectNames] : expectedWraps) {
+        OpenSim::GeometryPath const* gp = FindComponent<OpenSim::GeometryPath>(m, geomAbsPath);
+        OSC_ASSERT_ALWAYS(gp != nullptr && "maybe the rajagopal model has changed?");
+        for (OpenSim::WrapObject const* wo : GetAllWrapObjectsReferencedBy(*gp)) {
+            ASSERT_TRUE(contains(expectedWrapObjectNames, wo->getName()));
+        }
+    }
 }

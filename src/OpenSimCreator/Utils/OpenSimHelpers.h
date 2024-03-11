@@ -526,6 +526,9 @@ namespace osc
     // returns `true` if any modification was made to the model
     bool ActivateAllWrapObjectsIn(OpenSim::Model&);
 
+    // returns pointers to all wrap objects that are referenced by the given `GeometryPath`
+    std::vector<OpenSim::WrapObject const*> GetAllWrapObjectsReferencedBy(OpenSim::GeometryPath const&);
+
     // load an .osim file into an OpenSim model
     std::unique_ptr<UndoableModelStatePair> LoadOsimIntoUndoableModel(std::filesystem::path const&);
 

@@ -1412,6 +1412,79 @@ bool osc::ActionAddWrapObjectToPhysicalFrame(
     }
 }
 
+bool osc::ActionAddWrapObjectToGeometryPathWraps(
+    UndoableModelStatePair& model,
+    OpenSim::GeometryPath const& geomPath,
+    OpenSim::WrapObject const& wrapObject)
+{
+    try {
+        OpenSim::Model& mutModel = model.updModel();
+        OpenSim::GeometryPath* mutGeomPath = FindComponentMut<OpenSim::GeometryPath>(mutModel, geomPath.getAbsolutePath());
+        OSC_ASSERT_ALWAYS(mutGeomPath != nullptr && "cannot find the geometry path in the model");
+        OpenSim::WrapObject* mutWrapObject = FindComponentMut<OpenSim::WrapObject>(mutModel, wrapObject.getAbsolutePath());
+        OSC_ASSERT_ALWAYS(mutWrapObject != nullptr && "cannot find wrap object in the model");
+
+        std::stringstream msg;
+        msg << "added " << mutWrapObject->getName() << " to " << mutGeomPath->getName();
+
+        mutGeomPath->addPathWrap(*mutWrapObject);
+        InitializeModel(mutModel);
+        InitializeState(mutModel);
+
+        model.commit(std::move(msg).str());
+        return true;
+    }
+    catch (std::exception const& ex) {
+        log_error("error detected while trying to add a wrap object to a geometry path: %s", ex.what());
+        model.rollback();
+        return false;
+    }
+}
+
+bool osc::ActionRemoveWrapObjectFromGeometryPathWraps(
+    UndoableModelStatePair& model,
+    OpenSim::GeometryPath const& geomPath,
+    OpenSim::WrapObject const& wrapObject)
+{
+    // search for the wrap object in the geometry path's wrap list
+    std::optional<int> index;
+    for (int i = 0; i < geomPath.getWrapSet().getSize(); ++i) {
+        if (geomPath.getWrapSet().get(i).getWrapObject() == &wrapObject) {
+            index = i;
+            break;
+        }
+    }
+
+    if (!index) {
+        log_info("cannot find the %s in %s: skipping deletion", wrapObject.getName().c_str(), geomPath.getName().c_str());
+        return false;
+    }
+
+    try {
+        OpenSim::Model& mutModel = model.updModel();
+        OpenSim::GeometryPath* mutGeomPath = FindComponentMut<OpenSim::GeometryPath>(mutModel, geomPath.getAbsolutePath());
+        OSC_ASSERT_ALWAYS(mutGeomPath != nullptr && "cannot find the geometry path in the model");
+        OpenSim::WrapObject* mutWrapObject = FindComponentMut<OpenSim::WrapObject>(mutModel, wrapObject.getAbsolutePath());
+        OSC_ASSERT_ALWAYS(mutWrapObject != nullptr && "cannot find wrap object in the model");
+
+        std::stringstream msg;
+        msg << "removed " << mutWrapObject->getName() << " from " << mutGeomPath->getName();
+
+        OSC_ASSERT(index);
+        mutGeomPath->deletePathWrap(model.getState(), *index);
+        InitializeModel(mutModel);
+        InitializeState(mutModel);
+
+        model.commit(std::move(msg).str());
+        return true;
+    }
+    catch (std::exception const& ex) {
+        log_error("error detected while trying to add a wrap object to a geometry path: %s", ex.what());
+        model.rollback();
+        return false;
+    }
+}
+
 bool osc::ActionSetCoordinateSpeed(
     UndoableModelStatePair& model,
     OpenSim::Coordinate const& coord,

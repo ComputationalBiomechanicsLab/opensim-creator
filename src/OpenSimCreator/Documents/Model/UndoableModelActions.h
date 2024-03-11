@@ -19,6 +19,7 @@ namespace OpenSim { class ComponentPath; }
 namespace OpenSim { class ContactGeometry; }
 namespace OpenSim { class Coordinate; }
 namespace OpenSim { class Geometry; }
+namespace OpenSim { class GeometryPath; }
 namespace OpenSim { class Joint; }
 namespace OpenSim { class Object; }
 namespace OpenSim { class Mesh; }
@@ -296,6 +297,24 @@ namespace osc
         UndoableModelStatePair&,
         OpenSim::ComponentPath const& physicalFramePath,
         std::unique_ptr<OpenSim::WrapObject> wrapObjPtr
+    );
+
+    // add the given `OpenSim::WrapObject` to the `OpenSim::GeometryPath`'s
+    // wrap object set, which makes the path wrap around the wrap object
+    bool ActionAddWrapObjectToGeometryPathWraps(
+        UndoableModelStatePair&,
+        OpenSim::GeometryPath const&,
+        OpenSim::WrapObject const&
+    );
+
+    // remove the given `OpenSim::WrapObject` from the `OpenSim::GeometryPath`'s
+    // wrap object set
+    //
+    // does nothing if the `OpenSim::WrapObject` isn't in the path's wrap set
+    bool ActionRemoveWrapObjectFromGeometryPathWraps(
+        UndoableModelStatePair&,
+        OpenSim::GeometryPath const&,
+        OpenSim::WrapObject const&
     );
 
     // set the speed of a coordinate

@@ -5,9 +5,11 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
-- Right-clicking on a `PhysicalFrame` in the model (incl. `Body`) now shows an `Add` menu that includes
-  the ability to add geometry, offset frames, and wrap objects. Previously: was `Add Geometry` and `Add Offset Frame`,
-  but now there's also the ability to add wrap objects. (#7)
+- Right-clicking on a `PhysicalFrame`/`Body` in the model editor now shows an `Add` menu that includes
+  the ability to add geometry, offset frames, and wrap objects. Previously: was `Add Geometry` and
+  `Add Offset Frame` were shown, but now there's also the ability to add wrap objects. (#7)
+- Right-clicking a `GeometryPath` in the model now shows an `Add` menu that includes the ability to add
+  a `PathWrap` to the `GeometryPath`, which is handy in conjunction with the above
 
 ## [0.5.10] - 2024/03/05
 

@@ -1025,6 +1025,18 @@ bool osc::ActivateAllWrapObjectsIn(OpenSim::Model& m)
     return rv;
 }
 
+std::vector<OpenSim::WrapObject const*> osc::GetAllWrapObjectsReferencedBy(OpenSim::GeometryPath const& gp)
+{
+    auto const& wrapSet = gp.getWrapSet();
+
+    std::vector<OpenSim::WrapObject const*> rv;
+    rv.reserve(wrapSet.getSize());
+    for (int i = 0; i < wrapSet.getSize(); ++i) {
+        rv.push_back(wrapSet.get(i).getWrapObject());
+    }
+    return rv;
+}
+
 std::unique_ptr<UndoableModelStatePair> osc::LoadOsimIntoUndoableModel(std::filesystem::path const& p)
 {
     return std::make_unique<UndoableModelStatePair>(p);

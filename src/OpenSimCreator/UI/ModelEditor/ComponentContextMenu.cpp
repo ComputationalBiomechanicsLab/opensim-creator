@@ -99,6 +99,7 @@ namespace
         // list each available `WrapObject` as something the user can add
         auto const& registry = GetComponentRegistry<OpenSim::WrapObject>();
         for (auto const& entry : registry) {
+            ui::PushID(&entry);
             if (ui::MenuItem(entry.name())) {
                 ActionAddWrapObjectToPhysicalFrame(
                     *uim,
@@ -106,6 +107,7 @@ namespace
                     entry.instantiate()
                 );
             }
+            ui::PopID();
         }
     }
 
@@ -327,6 +329,41 @@ namespace
         );
     }
 
+    void DrawPathWrapToggleMenuItems(
+        UndoableModelStatePair& uim,
+        OpenSim::GeometryPath const& gp)
+    {
+        auto const wraps = GetAllWrapObjectsReferencedBy(gp);
+        for (auto const& wo : uim.getModel().getComponentList<OpenSim::WrapObject>()) {
+            bool const enabled = contains(wraps, &wo);
+
+            ui::PushID(&wo);
+            bool selected = enabled;
+            if (ui::MenuItem(wo.getName(), {}, &selected)) {
+                if (enabled) {
+                    ActionRemoveWrapObjectFromGeometryPathWraps(uim, gp, wo);
+                }
+                else {
+                    ActionAddWrapObjectToGeometryPathWraps(uim, gp, wo);
+                }
+            }
+            ui::PopID();
+        }
+    }
+
+    void DrawGeometryPathContextualActions(
+        UndoableModelStatePair& uim,
+        OpenSim::GeometryPath const& geometryPath)
+    {
+        if (ui::BeginMenu("Add")) {
+            if (ui::BeginMenu("Path Wrap")) {
+                DrawPathWrapToggleMenuItems(uim, geometryPath);
+                ui::EndMenu();
+            }
+            ui::EndMenu();
+        }
+    }
+
     bool AnyDescendentInclusiveHasAppearanceProperty(OpenSim::Component const& component)
     {
         OpenSim::Component const* const c = FindFirstDescendentInclusive(
@@ -546,6 +583,10 @@ private:
         else if (auto const* geomPtr = dynamic_cast<OpenSim::Geometry const*>(c))
         {
             DrawGeometryContextualActions(*m_Model, *geomPtr);
+        }
+        else if (auto const* geomPathPtr = dynamic_cast<OpenSim::GeometryPath const*>(c))
+        {
+            DrawGeometryPathContextualActions(*m_Model, *geomPathPtr);
         }
     }
 
