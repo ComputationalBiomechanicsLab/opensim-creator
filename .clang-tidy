@@ -29,6 +29,7 @@ Checks: >
   -google-readability-namespace-comments,
   -google-readability-todo,
   -google-build-using-namespace,
+  -google-readability-avoid-underscore-in-googletest-name,
   hicpp-*,
   -hicpp-uppercase-literal-suffix,
   -hicpp-signed-bitwise,
