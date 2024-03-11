@@ -5,6 +5,7 @@
 #include <OpenSim/Common/AbstractProperty.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Wrap/WrapCylinder.h>
+#include <OpenSim/Simulation/Wrap/WrapSphere.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
@@ -315,4 +316,63 @@ TEST(OpenSimActions, ActionAddWrapObjectToPhysicalFrameCanAddAllRegisteredWrapOb
     }
 
     ASSERT_EQ(numWrapsInModel, GetComponentRegistry<OpenSim::WrapObject>().size());
+}
+
+TEST(OpenSimActions, ActionAddPathWrapToGeometryPathWorksInExampleCase)
+{
+    UndoableModelStatePair um;
+    OpenSim::Model& model = um.updModel();
+
+    auto& pof = AddModelComponent<OpenSim::PhysicalOffsetFrame>(model, model.getGround(), SimTK::Transform{SimTK::Vec3{0.0, 1.0, 0.0}});
+    auto& body = AddBody(um.updModel(), "body", 1.0f, SimTK::Vec3{}, SimTK::Inertia(0.1));
+    AddJoint<OpenSim::FreeJoint>(um.updModel(), "joint", pof, body);
+    auto& path = AddModelComponent<OpenSim::GeometryPath>(model);
+    path.appendNewPathPoint("p1_ground", model.getGround(), SimTK::Vec3{});
+    path.appendNewPathPoint("p2_body", body, SimTK::Vec3{});
+
+    FinalizeConnections(model);
+    InitializeModel(model);
+    auto const& state = InitializeState(model);
+
+    ASSERT_TRUE(equal_within_epsilon(path.getLength(state), 1.0)) << "an uninterupted path should have this length";
+
+    auto& sphere = AddWrapObject<OpenSim::WrapSphere>(pof);
+    sphere.set_radius(0.25);
+    sphere.set_translation({0.001, -0.5, 0.0});  // prevent singularities
+
+    FinalizeConnections(model);
+    InitializeModel(model);
+    auto const& state2 = InitializeState(model);
+
+    ASSERT_TRUE(equal_within_epsilon(path.getLength(state2), 1.0)) << "the wrap object hasn't been added to the model yet";
+
+    ActionAddWrapObjectToGeometryPathWraps(um, path, sphere);
+
+    ASSERT_GT(path.getLength(um.getState()), 1.1)  << "path should start wrapping";
+}
+
+TEST(OpenSimActions, ActionRemoveWrapObjectFromGeometryPathWrapsWorksInExampleCase)
+{
+    UndoableModelStatePair um;
+    OpenSim::Model& model = um.updModel();
+
+    auto& pof = AddModelComponent<OpenSim::PhysicalOffsetFrame>(model, model.getGround(), SimTK::Transform{SimTK::Vec3{0.0, 1.0, 0.0}});
+    auto& body = AddBody(um.updModel(), "body", 1.0f, SimTK::Vec3{}, SimTK::Inertia(0.1));
+    AddJoint<OpenSim::FreeJoint>(um.updModel(), "joint", pof, body);
+    auto& path = AddModelComponent<OpenSim::GeometryPath>(model);
+    path.appendNewPathPoint("p1_ground", model.getGround(), SimTK::Vec3{});
+    path.appendNewPathPoint("p2_body", body, SimTK::Vec3{});
+    auto& sphere = AddWrapObject<OpenSim::WrapSphere>(pof);
+    sphere.set_radius(0.25);
+    sphere.set_translation({0.001, -0.5, 0.0});  // prevent singularities
+    FinalizeConnections(model);  // note: out of order because OpenSim seems to otherwise not notice the addition
+    path.addPathWrap(sphere);
+    InitializeModel(model);
+    InitializeState(model);
+
+    ASSERT_GT(path.getLength(um.getState()), 1.1)  << "initial state of model includes wrapping";
+
+    ActionRemoveWrapObjectFromGeometryPathWraps(um, path, sphere);
+
+    ASSERT_TRUE(equal_within_epsilon(path.getLength(um.getState()), 1.0))  << "should stop wrapping";
 }

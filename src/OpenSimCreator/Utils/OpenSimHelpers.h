@@ -771,6 +771,13 @@ namespace osc
 
     OpenSim::WrapObject& AddWrapObject(OpenSim::PhysicalFrame&, std::unique_ptr<OpenSim::WrapObject>);
 
+    template<std::derived_from<OpenSim::WrapObject> T, typename... Args>
+    T& AddWrapObject(OpenSim::PhysicalFrame& physFrame, Args&&... args)
+        requires std::constructible_from<T, Args&&...>
+    {
+        return static_cast<T&>(AddWrapObject(physFrame, std::make_unique<T>(std::forward<Args>(args)...)));
+    }
+
     template<ClonesToRawPtr T>
     std::unique_ptr<T> Clone(T const& obj)
     {
