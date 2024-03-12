@@ -22,7 +22,7 @@ namespace osc::mow
     // an `IPointWarperFactory` that creates its `IPointWarper` from a thin-plate
     // spline (TPS) warp that's calculated by pairing landmark correspondences that
     // are loaded from CSV files next to mesh files
-    // 
+    //
     // e.g. if possible, this will look for `meshfile.landmarks.csv` and `Destination/meshfile.landmarks.csv`
     //      and then compile a suitable TPS warp from the landmark pairings
     class TPSLandmarkPairWarperFactory final : public IPointWarperFactory {

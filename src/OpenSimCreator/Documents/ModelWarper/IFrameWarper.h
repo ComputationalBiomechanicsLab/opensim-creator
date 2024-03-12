@@ -5,7 +5,7 @@
 namespace osc
 {
     // an interface to an object that can warp a frame (i.e. a rotation + translation transform)
-	class IFrameWarper {
+    class IFrameWarper {
     protected:
         IFrameWarper() = default;
         IFrameWarper(IFrameWarper const&) = default;
@@ -22,5 +22,5 @@ namespace osc
 
     private:
         virtual SimTK::Transform implWarp(SimTK::Transform const&) const = 0;
-	};
+    };
 }
