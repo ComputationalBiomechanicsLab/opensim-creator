@@ -42,7 +42,6 @@ add_library(OpenSimCreator STATIC
     Documents/MeshImporter/CrossrefDescriptor.h
     Documents/MeshImporter/CrossrefDirection.h
     Documents/MeshImporter/Document.cpp
-    "Documents/ModelWarper/ModelWarpDocument.h"
     Documents/MeshImporter/DocumentHelpers.cpp
     Documents/MeshImporter/DocumentHelpers.h
     Documents/MeshImporter/Ground.cpp

@@ -110,9 +110,10 @@ public:
                     if (auto const* mesh = FindComponent<OpenSim::Mesh>(document.model(), it->second.front())) {
                         if (auto const meshWarper = document.findMeshWarp(*mesh)) {
                             // redefine the station's position in the mesh's coordinate system
-                            auto reexpresed = station.getParentFrame().expressVectorInAnotherFrame(warpedModel.getWorkingState(), station.get_location(), mesh->getFrame());
-                            auto warped = ToSimTKVec3(meshWarper->tryCreatePointWarper(document)->warp(ToVec3(reexpresed)));
-                            station.set_location(warped);
+                            auto posInMeshFrame = station.getParentFrame().expressVectorInAnotherFrame(warpedModel.getWorkingState(), station.get_location(), mesh->getFrame());
+                            auto warpedInMeshFrame = ToSimTKVec3(meshWarper->tryCreatePointWarper(document)->warp(ToVec3(posInMeshFrame)));
+                            auto warpedInParentFrame = mesh->getFrame().expressVectorInAnotherFrame(warpedModel.getWorkingState(), warpedInMeshFrame, station.getParentFrame());
+                            station.set_location(warpedInParentFrame);
                         }
                         else {
                             log_warn("no warper available for %s", it->second.front().toString().c_str());
