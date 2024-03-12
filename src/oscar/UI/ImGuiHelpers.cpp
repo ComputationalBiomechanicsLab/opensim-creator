@@ -775,7 +775,7 @@ bool osc::ui::IsMouseInMainViewportWorkspaceScreenRect()
     Vec2 const mousepos = ui::GetMousePos();
     Rect const hitRect = GetMainViewportWorkspaceScreenRect();
 
-    return is_point_in_rect(hitRect, mousepos);
+    return is_intersecting(hitRect, mousepos);
 }
 
 bool osc::ui::BeginMainViewportTopBar(CStringView label, float height, ImGuiWindowFlags flags)

@@ -562,7 +562,7 @@ namespace osc::mi
             Rect const sceneRect = get3DSceneRect();
             Vec2 const mousePos = ui::GetMousePos();
 
-            if (!is_point_in_rect(sceneRect, mousePos))
+            if (!is_intersecting(sceneRect, mousePos))
             {
                 // mouse isn't over the scene render
                 return MeshImporterHover{};

@@ -15,7 +15,7 @@ namespace osc { struct Triangle; }
 
 namespace osc
 {
-    bool is_point_in_rect(Rect const&, Vec2 const&);
+    bool is_intersecting(Rect const&, Vec2 const&);
     std::optional<RayCollision> find_collision(Line const&, Sphere const&);
     std::optional<RayCollision> find_collision(Line const&, AABB const&);
     std::optional<RayCollision> find_collision(Line const&, Plane const&);

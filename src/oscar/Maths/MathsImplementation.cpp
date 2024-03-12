@@ -1453,7 +1453,7 @@ void osc::ApplyWorldspaceRotation(
     t.rotation = normalize(q*t.rotation);
 }
 
-bool osc::is_point_in_rect(Rect const& r, Vec2 const& p)
+bool osc::is_intersecting(Rect const& r, Vec2 const& p)
 {
     Vec2 relPos = p - r.p1;
     Vec2 dims = dimensions(r);

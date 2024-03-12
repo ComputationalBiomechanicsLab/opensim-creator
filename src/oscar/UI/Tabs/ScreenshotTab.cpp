@@ -160,7 +160,7 @@ private:
         {
             Rect const annotationRectScreenSpace = MapRect(imageSourceRect, imageRect, annotation.rect);
             bool const selected = m_SelectedAnnotations.contains(annotation.label);
-            bool const hovered = is_point_in_rect(annotationRectScreenSpace, mousePos);
+            bool const hovered = is_intersecting(annotationRectScreenSpace, mousePos);
 
             Vec4 color = selected ? selectedColor : unselectedColor;
             if (hovered)
