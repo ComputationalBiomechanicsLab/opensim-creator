@@ -20,7 +20,7 @@ namespace osc
     // returns the average centroid of `aabb`
     constexpr Vec3 centroid(AABB const& aabb)
     {
-        return centroid({aabb.min, aabb.max});
+        return 0.5f * (aabb.min + aabb.max);
     }
 
     // returns the widths of the edges of `aabb`

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <oscar/Maths/CommonFunctions.h>
-
+#include <algorithm>
+#include <cmath>
 #include <concepts>
 #include <compare>
 #include <ostream>
@@ -11,6 +11,7 @@
 
 namespace osc
 {
+    // satisfied if `T` has the appropriate shape to be used as a "unit type trait" (e.g. radians)
     template<typename T>
     concept AngularUnitTraits = requires(T) {
         { T::radians_per_rep } -> std::convertible_to<double>;
@@ -31,32 +32,24 @@ namespace osc
             m_Value{static_cast<Rep>(value_)}
         {}
 
-        // implicit unit-conversion constructor
+        // implicitly constructs from an angle expressed in other units
         template<AngularUnitTraits Units2>
         constexpr Angle(Angle<Rep, Units2> const& other) :
             m_Value{static_cast<Rep>(other.count() * (Units2::radians_per_rep/Units::radians_per_rep))}
         {}
 
-        // explicit rep+unit conversion constructor
+        // explicitly constructs from an angle expressed of type `Rep2` expressed in other units
         template<std::convertible_to<Rep> Rep2, AngularUnitTraits Units2>
         explicit constexpr Angle(Angle<Rep2, Units2> const& other) :
             m_Value{static_cast<Rep>(other.count() * (Units2::radians_per_rep/Units::radians_per_rep))}
         {}
 
-        constexpr Rep count() const
-        {
-            return m_Value;
-        }
+        // returns the underlying floating point representation of the angle
+        constexpr Rep count() const { return m_Value; }
 
-        constexpr Angle operator+() const
-        {
-            return Angle{*this};
-        }
+        constexpr Angle operator+() const { return Angle{*this}; }
 
-        constexpr Angle operator-() const
-        {
-            return Angle{-m_Value};
-        }
+        constexpr Angle operator-() const { return Angle{-m_Value}; }
 
         constexpr friend auto operator<=>(Angle const&, Angle const&) = default;
 
@@ -84,16 +77,17 @@ namespace osc
             return Angle{lhs.m_Value * static_cast<Rep>(scalar)};
         }
 
-        // scalar division (only rhs: reciporical units aren't supported)
+        // scalar division (only on the rhs: reciporical angular units aren't supported)
         template<std::convertible_to<Rep> Rep2>
         constexpr friend Angle operator/(Angle const& lhs, Rep2 const& scalar)
         {
             return Angle{lhs.m_Value / static_cast<Rep>(scalar)};
         }
     private:
-        Rep m_Value;
+        Rep m_Value{0};
     };
 
+    // heterogeneously adds two angles (e.g. `90_deg + 1_turn`) by first converting them to a common angle type
     template<
         std::floating_point Rep1,
         AngularUnitTraits Units1,
@@ -108,6 +102,7 @@ namespace osc
         return CA{CA{lhs}.count() + CA{rhs}.count()};
     }
 
+    // heterogeneously subtracts two angles (e.g. `90_deg - 1_turn`) by first converting them to a common angle type
     template<
         std::floating_point Rep1,
         AngularUnitTraits Units1,
@@ -122,7 +117,7 @@ namespace osc
         return CA{CA{lhs}.count() - CA{rhs}.count()};
     }
 
-    // converting equality comparison (e.g. 360_deg == 1_turn)
+    // heterogeneously compares two angles (e.g. `360_deg == 1_turn`) by first converting them to a common type
     template<
         std::floating_point Rep1,
         AngularUnitTraits Units1,
@@ -135,7 +130,7 @@ namespace osc
         return CA{lhs} == CA{rhs};
     }
 
-    // converting ordering comparison (e.g. 180_deg < 1_turn)
+    // heterogeneously three-way compares two angles (e.g. `90_deg < 3_rad`) by first converting them to a common angle type
     template<
         std::floating_point Rep1,
         AngularUnitTraits Units1,
@@ -148,14 +143,34 @@ namespace osc
         return CA{lhs} <=> CA{rhs};
     }
 
-    // printing/sertialization support
+    // writes the angle's value, followed by a space, followed by its units (use `.count()` if you just want the value)
     template<std::floating_point Rep, AngularUnitTraits Units>
     std::ostream& operator<<(std::ostream& o, Angle<Rep, Units> const& v)
     {
         return o << v.count() << ' ' << Units::unit_label;
     }
+}
 
-    // radians support
+// a specialization of `std::common_type` for `osc::Angle`s
+//
+// (similar to how it's specialized for `std::chrono::duration`)
+template<
+    std::floating_point Rep1,
+    osc::AngularUnitTraits Units1,
+    std::floating_point Rep2,
+    osc::AngularUnitTraits Units2
+>
+struct std::common_type<osc::Angle<Rep1, Units1>, osc::Angle<Rep2, Units2>> {
+    // the units of the common type is the "largest" of either
+    using units = typename std::conditional_t<(Units1::radians_per_rep > Units2::radians_per_rep), Units1, Units2>;
+    using type = osc::Angle<std::common_type_t<Rep1, Rep2>, units>;
+};
+
+
+// unit trait implementations for common units (rad, deg, turn)
+namespace osc
+{
+    // radians
 
     struct RadianAngularUnitTraits final {
         static inline constexpr double radians_per_rep = 1.0;
@@ -173,7 +188,7 @@ namespace osc
         constexpr Radians operator""_rad(unsigned long long int radians) { return Radians{radians}; }
     }
 
-    // degrees support
+    // degrees
 
     struct DegreesAngularUnitTraits final {
         static inline constexpr double radians_per_rep = std::numbers::pi_v<double>/180.0;
@@ -191,7 +206,7 @@ namespace osc
         constexpr Degrees operator""_deg(unsigned long long int degrees) { return Degrees{degrees};}
     }
 
-    // turn support
+    // turns
 
     struct TurnsAngularUnitTraits final {
         static inline constexpr double radians_per_rep = 2.0*std::numbers::pi_v<double>;
@@ -210,20 +225,11 @@ namespace osc
     }
 }
 
-// define a specialization for `std::common_type` (similarly to how it's done for std::chrono::duration)
-template<
-    std::floating_point Rep1,
-    osc::AngularUnitTraits Units1,
-    std::floating_point Rep2,
-    osc::AngularUnitTraits Units2
->
-struct std::common_type<osc::Angle<Rep1, Units1>, osc::Angle<Rep2, Units2>> {
-    // the units of the common type is the "largest" of either
-    using units = typename std::conditional_t<(Units1::radians_per_rep > Units2::radians_per_rep), Units1, Units2>;
-    using type = osc::Angle<std::common_type_t<Rep1, Rep2>, units>;
-};
-
-// common math functions support for angles
+// common mathematical functions, and algorithms, for angles
+//
+// note: if a generic algorithm is already available in `<algorithm>`, `<ranges>`, or
+// `<oscar/Utils/Algorithms.h>`, then it shouldn't be here: these are specializations
+// for cases that can't be generically handled (e.g. heterogeneous unit coercion)
 namespace osc
 {
     // `mod` (homogeneous and heterogeneous)
@@ -236,7 +242,7 @@ namespace osc
     auto mod(Angle<Rep1, Units1> x, Angle<Rep2, Units2> y) -> std::common_type_t<decltype(x), decltype(y)>
     {
         using CA = std::common_type_t<decltype(x), decltype(y)>;
-        return CA{mod(CA{x}.count(), CA{y}.count())};
+        return CA{std::fmod(CA{x}.count(), CA{y}.count())};
     }
 
     // heterogeneous `min`
@@ -252,7 +258,7 @@ namespace osc
         requires (!std::is_same_v<Units1, Units2>)
     {
         using CA = std::common_type_t<decltype(x), decltype(y)>;
-        return CA{min(CA{x}.count(), CA{y}.count())};
+        return CA{std::min(CA{x}.count(), CA{y}.count())};
     }
 
     // heterogeneous `max`
@@ -268,7 +274,7 @@ namespace osc
         requires (!std::is_same_v<Units1, Units2>)
     {
         using CA = std::common_type_t<decltype(x), decltype(y)>;
-        return CA{max(CA{x}.count(), CA{y}.count())};
+        return CA{std::max(CA{x}.count(), CA{y}.count())};
     }
 
     // heterogeneous `clamp`
@@ -286,6 +292,6 @@ namespace osc
         // homogeneous `clamp` is provided via `std::ranges::clamp` or `osc::clamp` algorithms
         requires (!std::is_same_v<Angle<Rep, Units>, AngleMin> || !std::is_same_v<Angle<Rep, Units>, AngleMax> || !std::is_same_v<AngleMin, AngleMax>)
     {
-        return clamp(v, Angle<Rep, Units>{min}, Angle<Rep, Units>{max});
+        return std::clamp(v, Angle<Rep, Units>{min}, Angle<Rep, Units>{max});
     }
 }
