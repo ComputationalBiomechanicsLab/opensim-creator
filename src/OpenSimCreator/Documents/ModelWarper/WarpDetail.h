@@ -7,6 +7,7 @@
 
 namespace osc::mow
 {
+    // a user-facing description of some detail of the warping procedure
     class WarpDetail final {
     public:
         WarpDetail(std::string name_, std::string value_) :

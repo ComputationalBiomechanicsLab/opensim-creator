@@ -1,8 +1,8 @@
-#include "ThinPlateSplineMeshWarp.h"
+#include "TPSLandmarkPairWarperFactory.h"
 
 #include <OpenSimCreator/Documents/Landmarks/LandmarkHelpers.h>
-#include <OpenSimCreator/Documents/ModelWarper/Document.h>
-#include <OpenSimCreator/Documents/ModelWarper/ValidationState.h>
+#include <OpenSimCreator/Documents/ModelWarper/ModelWarpDocument.h>
+#include <OpenSimCreator/Documents/ModelWarper/ValidationCheckState.h>
 #include <OpenSimCreator/Utils/TPS3D.h>
 
 #include <oscar/Maths/Vec2.h>
@@ -70,10 +70,10 @@ namespace
         return std::move(ss).str();
     }
 
-    std::vector<LandmarkPairing> PairLandmarks(std::vector<Landmark> a, std::vector<Landmark> b)
+    std::vector<MaybePairedLandmark> PairLandmarks(std::vector<Landmark> a, std::vector<Landmark> b)
     {
         size_t nunnamed = 0;
-        std::vector<LandmarkPairing> rv;
+        std::vector<MaybePairedLandmark> rv;
 
         // handle/pair all elements in `a`
         for (auto& lm : a) {
@@ -98,7 +98,7 @@ namespace
         return rv;
     }
 
-    std::vector<LandmarkPairing> TryLoadPairedLandmarks(
+    std::vector<MaybePairedLandmark> TryLoadPairedLandmarks(
         [[maybe_unused]] std::optional<std::filesystem::path> const& maybeSourceLandmarksCSV,
         [[maybe_unused]] std::optional<std::filesystem::path> const& maybeDestinationLandmarksCSV)
     {
@@ -113,10 +113,10 @@ namespace
         return PairLandmarks(std::move(src), std::move(dest));
     }
 
-    TPSCoefficients3D TryCalcTPSCoefficients(std::span<LandmarkPairing const> maybePairs)
+    TPSCoefficients3D TryCalcTPSCoefficients(std::span<MaybePairedLandmark const> maybePairs)
     {
         TPSCoefficientSolverInputs3D rv;
-        for (LandmarkPairing const& maybePair: maybePairs) {
+        for (MaybePairedLandmark const& maybePair: maybePairs) {
             if (auto pair = maybePair.tryGetPairedLocations()) {
                 rv.landmarks.push_back(*pair);
             }
@@ -125,7 +125,7 @@ namespace
     }
 }
 
-osc::mow::ThinPlateSplineMeshWarp::ThinPlateSplineMeshWarp(
+osc::mow::TPSLandmarkPairWarperFactory::TPSLandmarkPairWarperFactory(
     std::filesystem::path const& osimFileLocation,
     std::filesystem::path const& sourceMeshFilepath) :
 
@@ -140,22 +140,22 @@ osc::mow::ThinPlateSplineMeshWarp::ThinPlateSplineMeshWarp(
     m_TPSCoefficients{make_cow<TPSCoefficients3D>(TryCalcTPSCoefficients(m_Landmarks))}
 {}
 
-std::filesystem::path osc::mow::ThinPlateSplineMeshWarp::getSourceMeshAbsoluteFilepath() const
+std::filesystem::path osc::mow::TPSLandmarkPairWarperFactory::getSourceMeshAbsoluteFilepath() const
 {
     return m_SourceMeshAbsoluteFilepath;
 }
 
-bool osc::mow::ThinPlateSplineMeshWarp::hasSourceLandmarksFilepath() const
+bool osc::mow::TPSLandmarkPairWarperFactory::hasSourceLandmarksFilepath() const
 {
     return m_SourceLandmarksFileExists;
 }
 
-std::filesystem::path osc::mow::ThinPlateSplineMeshWarp::recommendedSourceLandmarksFilepath() const
+std::filesystem::path osc::mow::TPSLandmarkPairWarperFactory::recommendedSourceLandmarksFilepath() const
 {
     return m_ExpectedSourceLandmarksAbsoluteFilepath;
 }
 
-std::optional<std::filesystem::path> osc::mow::ThinPlateSplineMeshWarp::tryGetSourceLandmarksFilepath() const
+std::optional<std::filesystem::path> osc::mow::TPSLandmarkPairWarperFactory::tryGetSourceLandmarksFilepath() const
 {
     if (m_SourceLandmarksFileExists) {
         return m_ExpectedSourceLandmarksAbsoluteFilepath;
@@ -165,17 +165,17 @@ std::optional<std::filesystem::path> osc::mow::ThinPlateSplineMeshWarp::tryGetSo
     }
 }
 
-bool osc::mow::ThinPlateSplineMeshWarp::hasDestinationMeshFilepath() const
+bool osc::mow::TPSLandmarkPairWarperFactory::hasDestinationMeshFilepath() const
 {
     return m_DestinationMeshFileExists;
 }
 
-std::filesystem::path osc::mow::ThinPlateSplineMeshWarp::recommendedDestinationMeshFilepath() const
+std::filesystem::path osc::mow::TPSLandmarkPairWarperFactory::recommendedDestinationMeshFilepath() const
 {
      return m_ExpectedDestinationMeshAbsoluteFilepath;
 }
 
-std::optional<std::filesystem::path> osc::mow::ThinPlateSplineMeshWarp::tryGetDestinationMeshAbsoluteFilepath() const
+std::optional<std::filesystem::path> osc::mow::TPSLandmarkPairWarperFactory::tryGetDestinationMeshAbsoluteFilepath() const
 {
     if (m_DestinationMeshFileExists) {
         return m_ExpectedDestinationMeshAbsoluteFilepath;
@@ -185,17 +185,17 @@ std::optional<std::filesystem::path> osc::mow::ThinPlateSplineMeshWarp::tryGetDe
     }
 }
 
-bool osc::mow::ThinPlateSplineMeshWarp::hasDestinationLandmarksFilepath() const
+bool osc::mow::TPSLandmarkPairWarperFactory::hasDestinationLandmarksFilepath() const
 {
     return m_DestinationLandmarksFileExists;
 }
 
-std::filesystem::path osc::mow::ThinPlateSplineMeshWarp::recommendedDestinationLandmarksFilepath() const
+std::filesystem::path osc::mow::TPSLandmarkPairWarperFactory::recommendedDestinationLandmarksFilepath() const
 {
     return m_ExpectedDestinationLandmarksAbsoluteFilepath;
 }
 
-std::optional<std::filesystem::path> osc::mow::ThinPlateSplineMeshWarp::tryGetDestinationLandmarksFilepath() const
+std::optional<std::filesystem::path> osc::mow::TPSLandmarkPairWarperFactory::tryGetDestinationLandmarksFilepath() const
 {
     if (m_DestinationLandmarksFileExists) {
         return m_ExpectedDestinationLandmarksAbsoluteFilepath;
@@ -205,63 +205,63 @@ std::optional<std::filesystem::path> osc::mow::ThinPlateSplineMeshWarp::tryGetDe
     }
 }
 
-size_t osc::mow::ThinPlateSplineMeshWarp::getNumLandmarks() const
+size_t osc::mow::TPSLandmarkPairWarperFactory::getNumLandmarks() const
 {
     return m_Landmarks.size();
 }
 
-size_t osc::mow::ThinPlateSplineMeshWarp::getNumSourceLandmarks() const
+size_t osc::mow::TPSLandmarkPairWarperFactory::getNumSourceLandmarks() const
 {
-    return count_if(m_Landmarks, std::mem_fn(&LandmarkPairing::hasSource));
+    return count_if(m_Landmarks, std::mem_fn(&MaybePairedLandmark::hasSource));
 }
 
-size_t osc::mow::ThinPlateSplineMeshWarp::getNumDestinationLandmarks() const
+size_t osc::mow::TPSLandmarkPairWarperFactory::getNumDestinationLandmarks() const
 {
-    return count_if(m_Landmarks, std::mem_fn(&LandmarkPairing::hasDestination));
+    return count_if(m_Landmarks, std::mem_fn(&MaybePairedLandmark::hasDestination));
 }
 
-size_t osc::mow::ThinPlateSplineMeshWarp::getNumFullyPairedLandmarks() const
+size_t osc::mow::TPSLandmarkPairWarperFactory::getNumFullyPairedLandmarks() const
 {
-    return count_if(m_Landmarks, std::mem_fn(&LandmarkPairing::isFullyPaired));
+    return count_if(m_Landmarks, std::mem_fn(&MaybePairedLandmark::isFullyPaired));
 }
 
-size_t osc::mow::ThinPlateSplineMeshWarp::getNumUnpairedLandmarks() const
+size_t osc::mow::TPSLandmarkPairWarperFactory::getNumUnpairedLandmarks() const
 {
     return getNumLandmarks() - getNumFullyPairedLandmarks();
 }
 
-bool osc::mow::ThinPlateSplineMeshWarp::hasSourceLandmarks() const
+bool osc::mow::TPSLandmarkPairWarperFactory::hasSourceLandmarks() const
 {
     return getNumSourceLandmarks() > 0;
 }
 
-bool osc::mow::ThinPlateSplineMeshWarp::hasDestinationLandmarks() const
+bool osc::mow::TPSLandmarkPairWarperFactory::hasDestinationLandmarks() const
 {
     return getNumDestinationLandmarks() > 0;
 }
 
-bool osc::mow::ThinPlateSplineMeshWarp::hasUnpairedLandmarks() const
+bool osc::mow::TPSLandmarkPairWarperFactory::hasUnpairedLandmarks() const
 {
     return getNumFullyPairedLandmarks() < getNumLandmarks();
 }
 
-bool osc::mow::ThinPlateSplineMeshWarp::hasLandmarkNamed(std::string_view name) const
+bool osc::mow::TPSLandmarkPairWarperFactory::hasLandmarkNamed(std::string_view name) const
 {
     return any_of(m_Landmarks, [name](auto const& lm) { return lm.name() == name; });
 }
 
-LandmarkPairing const* osc::mow::ThinPlateSplineMeshWarp::tryGetLandmarkPairingByName(std::string_view name) const
+MaybePairedLandmark const* osc::mow::TPSLandmarkPairWarperFactory::tryGetLandmarkPairingByName(std::string_view name) const
 {
     auto const it = find_if(m_Landmarks, [name](auto const& lm) { return lm.name() == name; });
     return it != m_Landmarks.end() ? &(*it) : nullptr;
 }
 
-std::unique_ptr<IMeshWarp> osc::mow::ThinPlateSplineMeshWarp::implClone() const
+std::unique_ptr<IPointWarperFactory> osc::mow::TPSLandmarkPairWarperFactory::implClone() const
 {
-    return std::make_unique<ThinPlateSplineMeshWarp>(*this);
+    return std::make_unique<TPSLandmarkPairWarperFactory>(*this);
 }
 
-std::vector<WarpDetail> osc::mow::ThinPlateSplineMeshWarp::implWarpDetails() const
+std::vector<WarpDetail> osc::mow::TPSLandmarkPairWarperFactory::implWarpDetails() const
 {
     std::vector<WarpDetail> rv;
     rv.emplace_back("source mesh filepath", getSourceMeshAbsoluteFilepath().string());
@@ -278,9 +278,9 @@ std::vector<WarpDetail> osc::mow::ThinPlateSplineMeshWarp::implWarpDetails() con
     return rv;
 }
 
-std::vector<ValidationCheck> osc::mow::ThinPlateSplineMeshWarp::implValidate() const
+std::vector<ValidationCheckResult> osc::mow::TPSLandmarkPairWarperFactory::implValidate() const
 {
-    std::vector<ValidationCheck> rv;
+    std::vector<ValidationCheckResult> rv;
 
     // has a source landmarks file
     {
@@ -313,12 +313,12 @@ std::vector<ValidationCheck> osc::mow::ThinPlateSplineMeshWarp::implValidate() c
     rv.emplace_back("at least three landmarks can be paired between source/destination", getNumFullyPairedLandmarks() >= 3);
 
     // (warning): has no unpaired landmarks
-    rv.emplace_back("there are no unpaired landmarks", getNumUnpairedLandmarks() == 0 ? ValidationState::Ok : ValidationState::Warning);
+    rv.emplace_back("there are no unpaired landmarks", getNumUnpairedLandmarks() == 0 ? ValidationCheckState::Ok : ValidationCheckState::Warning);
 
     return rv;
 }
 
-std::unique_ptr<IPointWarper> osc::mow::ThinPlateSplineMeshWarp::implCompileWarper(Document const& document) const
+std::unique_ptr<IPointWarper> osc::mow::TPSLandmarkPairWarperFactory::implTryCreatePointWarper(ModelWarpDocument const& document) const
 {
     class TPSWarper : public IPointWarper {
     public:

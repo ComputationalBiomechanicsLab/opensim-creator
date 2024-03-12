@@ -4,6 +4,7 @@
 
 namespace osc::mow
 {
+    // an interface to an object that can be cloned at runtime
     template<typename T>
     class ICloneable {
     protected:

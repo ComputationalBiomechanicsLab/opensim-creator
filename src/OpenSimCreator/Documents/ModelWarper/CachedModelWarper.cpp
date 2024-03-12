@@ -6,8 +6,8 @@
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSimCreator/Documents/Model/BasicModelStatePair.h>
-#include <OpenSimCreator/Documents/ModelWarper/Document.h>
 #include <OpenSimCreator/Documents/ModelWarper/InMemoryMesh.h>
+#include <OpenSimCreator/Documents/ModelWarper/ModelWarpDocument.h>
 #include <OpenSimCreator/Utils/SimTKHelpers.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Utils/Assertions.h>
@@ -22,16 +22,16 @@ using namespace osc::mow;
 namespace
 {
     std::unique_ptr<InMemoryMesh> WarpMesh(
-        Document const& document,
+        ModelWarpDocument const& document,
         OpenSim::Model const& model,
         SimTK::State const& state,
         OpenSim::Mesh const& inputMesh,
-        IMeshWarp const& warper)
+        IPointWarperFactory const& warper)
     {
         // TODO: this ignores scale factors
         Mesh mesh = ToOscMesh(model, state, inputMesh);
         auto verts = mesh.getVerts();
-        auto compiled = warper.compileWarper(document);
+        auto compiled = warper.tryCreatePointWarper(document);
         compiled->warpInPlace(verts);
         mesh.setVerts(verts);
         mesh.recalculateNormals();
@@ -59,7 +59,7 @@ namespace
 
 class osc::mow::CachedModelWarper::Impl final {
 public:
-    std::shared_ptr<IConstModelStatePair const> warp(Document const& document)
+    std::shared_ptr<IConstModelStatePair const> warp(ModelWarpDocument const& document)
     {
         if (document != m_PreviousDocument) {
             m_PreviousResult = createWarpedModel(document);
@@ -68,7 +68,7 @@ public:
         return m_PreviousResult;
     }
 
-    std::shared_ptr<IConstModelStatePair const> createWarpedModel(Document const& document)
+    std::shared_ptr<IConstModelStatePair const> createWarpedModel(ModelWarpDocument const& document)
     {
         // copy the model into an editable "warped" version
         OpenSim::Model warpedModel{document.model()};
@@ -101,7 +101,7 @@ public:
         // iterate over each `PathPoint` in the model (incl. muscle points) and warp them by
         // figuring out how each relates to a mesh in the model
         //
-        // TODO: the `osc::mow::Document` should handle figuring out each point's warper, because
+        // TODO: the `osc::mow::ModelWarpDocument` should handle figuring out each point's warper, because
         // there are situations where there isn't a 1:1 relationship between meshes and bodies
         for (auto& station : warpedModel.updComponentList<OpenSim::PathPoint>()) {
             auto baseFramePath = station.getParentFrame().findBaseFrame().getAbsolutePath();
@@ -111,7 +111,7 @@ public:
                         if (auto const meshWarper = document.findMeshWarp(*mesh)) {
                             // redefine the station's position in the mesh's coordinate system
                             auto reexpresed = station.getParentFrame().expressVectorInAnotherFrame(warpedModel.getWorkingState(), station.get_location(), mesh->getFrame());
-                            auto warped = ToSimTKVec3(meshWarper->compileWarper(document)->warp(ToVec3(reexpresed)));
+                            auto warped = ToSimTKVec3(meshWarper->tryCreatePointWarper(document)->warp(ToVec3(reexpresed)));
                             station.set_location(warped);
                         }
                         else {
@@ -139,7 +139,7 @@ public:
         );
     }
 private:
-    std::optional<Document> m_PreviousDocument;
+    std::optional<ModelWarpDocument> m_PreviousDocument;
     std::shared_ptr<IConstModelStatePair const> m_PreviousResult;
 };
 
@@ -150,7 +150,7 @@ osc::mow::CachedModelWarper::CachedModelWarper(CachedModelWarper&&) noexcept = d
 CachedModelWarper& osc::mow::CachedModelWarper::operator=(CachedModelWarper&&) noexcept = default;
 osc::mow::CachedModelWarper::~CachedModelWarper() noexcept = default;
 
-std::shared_ptr<IConstModelStatePair const> osc::mow::CachedModelWarper::warp(Document const& document)
+std::shared_ptr<IConstModelStatePair const> osc::mow::CachedModelWarper::warp(ModelWarpDocument const& document)
 {
     return m_Impl->warp(document);
 }

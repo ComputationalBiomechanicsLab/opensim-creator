@@ -23,7 +23,7 @@ void osc::mow::UIState::actionOpenOsimOrPromptUser(std::optional<std::filesystem
 
     if (path) {
         App::singleton<RecentFiles>()->push_back(*path);
-        m_Document = std::make_shared<Document>(std::move(path).value());
+        m_Document = std::make_shared<ModelWarpDocument>(std::move(path).value());
     }
 }
 

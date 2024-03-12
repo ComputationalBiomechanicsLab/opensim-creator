@@ -12,9 +12,10 @@
 
 namespace osc::mow
 {
-    class LandmarkPairing final {
+    // a possibly-not-completely-paired landmark
+    class MaybePairedLandmark final {
     public:
-        LandmarkPairing(
+        MaybePairedLandmark(
             std::string name_,
             std::optional<Vec3> maybeSourcePos_,
             std::optional<Vec3> maybeDestinationPos_) :

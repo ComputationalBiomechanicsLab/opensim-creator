@@ -1,12 +1,13 @@
 #pragma once
 
-#include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.h>
-#include <OpenSimCreator/Documents/ModelWarper/ValidationState.h>
+#include <OpenSimCreator/Documents/ModelWarper/ValidationCheckResult.h>
+#include <OpenSimCreator/Documents/ModelWarper/ValidationCheckState.h>
 
 #include <vector>
 
 namespace osc::mow
 {
+    // an interface to an object that can be runtime-validated
     class IValidateable {
     protected:
         IValidateable() = default;
@@ -18,10 +19,10 @@ namespace osc::mow
         friend bool operator==(IValidateable const&, IValidateable const&) = default;
     public:
         virtual ~IValidateable() noexcept = default;
-        std::vector<ValidationCheck> validate() const { return implValidate(); }
-        ValidationState state() const { return implState(); }
+        std::vector<ValidationCheckResult> validate() const { return implValidate(); }
+        ValidationCheckState state() const { return implState(); }
     private:
-        virtual std::vector<ValidationCheck> implValidate() const  { return {}; }
-        virtual ValidationState implState() const;  // by default, gets the "worst" entry returned by `validate`
+        virtual std::vector<ValidationCheckResult> implValidate() const  { return {}; }
+        virtual ValidationCheckState implState() const;  // by default, gets the least-valid entry returned by `validate()`
     };
 }

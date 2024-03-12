@@ -6,6 +6,10 @@
 
 namespace osc::mow
 {
+    // a compile-time list of OpenSim types that are specifically handled by the model warper
     template<typename T>
-    concept WarpableOpenSimComponent = IsAnyOf<T, OpenSim::Mesh, OpenSim::PhysicalOffsetFrame>;
+    concept WarpableOpenSimComponent = IsAnyOf<T,
+        OpenSim::Mesh,
+        OpenSim::PhysicalOffsetFrame
+    >;
 }

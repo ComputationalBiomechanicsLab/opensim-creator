@@ -1,7 +1,7 @@
 #include "ChecklistPanel.h"
 
-#include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.h>
-#include <OpenSimCreator/Documents/ModelWarper/ValidationState.h>
+#include <OpenSimCreator/Documents/ModelWarper/ValidationCheckResult.h>
+#include <OpenSimCreator/Documents/ModelWarper/ValidationCheckState.h>
 #include <OpenSimCreator/Documents/ModelWarper/WarpableOpenSimComponent.h>
 #include <OpenSimCreator/UI/ModelWarper/ModelWarperUIHelpers.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>

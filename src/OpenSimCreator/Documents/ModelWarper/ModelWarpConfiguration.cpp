@@ -19,7 +19,4 @@ osc::mow::ModelWarpConfiguration::ModelWarpConfiguration(
             }
         }
     }
-
-    // TODO: go find the model warping configuration file on-disk "near" the osim
-    //       file
 }

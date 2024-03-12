@@ -2,9 +2,9 @@
 
 #include <OpenSimCreator/Documents/Model/IConstModelStatePair.h>
 #include <OpenSimCreator/Documents/ModelWarper/CachedModelWarper.h>
-#include <OpenSimCreator/Documents/ModelWarper/Document.h>
-#include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.h>
-#include <OpenSimCreator/Documents/ModelWarper/ValidationState.h>
+#include <OpenSimCreator/Documents/ModelWarper/ModelWarpDocument.h>
+#include <OpenSimCreator/Documents/ModelWarper/ValidationCheckResult.h>
+#include <OpenSimCreator/Documents/ModelWarper/ValidationCheckState.h>
 #include <OpenSimCreator/Documents/ModelWarper/WarpDetail.h>
 #include <oscar/UI/Tabs/ITabHost.h>
 #include <oscar/Utils/ParentPtr.h>
@@ -32,18 +32,18 @@ namespace osc::mow
         IConstModelStatePair const& modelstate() const { return m_Document->modelstate(); }
 
         std::vector<WarpDetail> details(OpenSim::Mesh const& mesh) const { return m_Document->details(mesh); }
-        std::vector<ValidationCheck> validate(OpenSim::Mesh const& mesh) const { return m_Document->validate(mesh); }
-        ValidationState state(OpenSim::Mesh const& mesh) const { return m_Document->state(mesh); }
+        std::vector<ValidationCheckResult> validate(OpenSim::Mesh const& mesh) const { return m_Document->validate(mesh); }
+        ValidationCheckState state(OpenSim::Mesh const& mesh) const { return m_Document->state(mesh); }
 
         std::vector<WarpDetail> details(OpenSim::PhysicalOffsetFrame const& pof) const { return m_Document->details(pof); }
-        std::vector<ValidationCheck> validate(OpenSim::PhysicalOffsetFrame const& pof) const { return m_Document->validate(pof); }
-        ValidationState state(OpenSim::PhysicalOffsetFrame const& pof) const { return m_Document->state(pof); }
+        std::vector<ValidationCheckResult> validate(OpenSim::PhysicalOffsetFrame const& pof) const { return m_Document->validate(pof); }
+        ValidationCheckState state(OpenSim::PhysicalOffsetFrame const& pof) const { return m_Document->state(pof); }
 
         float getWarpBlendingFactor() const { return m_Document->getWarpBlendingFactor(); }
         void setWarpBlendingFactor(float v) { m_Document->setWarpBlendingFactor(v); }
 
-        ValidationState state() const { return m_Document->state(); }
-        bool canWarpModel() const { return state() != ValidationState::Error; }
+        ValidationCheckState state() const { return m_Document->state(); }
+        bool canWarpModel() const { return state() != ValidationCheckState::Error; }
         std::shared_ptr<IConstModelStatePair const> tryGetWarpedModel()
         {
             if (canWarpModel()) {
@@ -61,7 +61,7 @@ namespace osc::mow
         void actionWarpModelAndOpenInModelEditor();
     private:
         ParentPtr<ITabHost> m_TabHost;
-        std::shared_ptr<Document> m_Document = std::make_shared<Document>();
+        std::shared_ptr<ModelWarpDocument> m_Document = std::make_shared<ModelWarpDocument>();
         CachedModelWarper m_ModelWarper;
     };
 }

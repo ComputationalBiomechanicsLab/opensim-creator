@@ -1,6 +1,6 @@
 #include "ModelWarperUIHelpers.h"
 
-#include <OpenSimCreator/Documents/ModelWarper/ValidationState.h>
+#include <OpenSimCreator/Documents/ModelWarper/ValidationCheckState.h>
 
 #include <IconsFontAwesome5.h>
 #include <oscar/Graphics/Color.h>
@@ -8,16 +8,16 @@
 
 using namespace osc::mow;
 
-EntryStyling osc::mow::ToStyle(ValidationState s)
+EntryStyling osc::mow::ToStyle(ValidationCheckState s)
 {
-    static_assert(NumOptions<ValidationState>() == 3);
+    static_assert(NumOptions<ValidationCheckState>() == 3);
     switch (s) {
-    case ValidationState::Ok:
+    case ValidationCheckState::Ok:
         return {.icon = ICON_FA_CHECK, .color = Color::green()};
-    case ValidationState::Warning:
+    case ValidationCheckState::Warning:
         return {.icon = ICON_FA_EXCLAMATION, .color = Color::orange()};
     default:
-    case ValidationState::Error:
+    case ValidationCheckState::Error:
         return {.icon = ICON_FA_TIMES, .color = Color::red()};
     }
 }

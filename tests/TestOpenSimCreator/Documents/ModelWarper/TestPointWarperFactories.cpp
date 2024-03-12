@@ -1,10 +1,10 @@
-#include <OpenSimCreator/Documents/ModelWarper/MeshWarpLookup.h>
+#include <OpenSimCreator/Documents/ModelWarper/PointWarperFactories.h>
 
 #include <TestOpenSimCreator/TestOpenSimCreatorConfig.h>
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSimCreator/Documents/ModelWarper/ModelWarpConfiguration.h>
-#include <OpenSimCreator/Documents/ModelWarper/ThinPlateSplineMeshWarp.h>
+#include <OpenSimCreator/Documents/ModelWarper/TPSLandmarkPairWarperFactory.h>
 #include <gtest/gtest.h>
 
 #include <filesystem>
@@ -22,7 +22,7 @@ namespace
     }
 }
 
-TEST(MeshWarpLookup, CorrectlyLoadsSimpleCase)
+TEST(PointWarperFactories, CorrectlyLoadsSimpleCase)
 {
     struct Paths final {
         // model
@@ -36,9 +36,9 @@ TEST(MeshWarpLookup, CorrectlyLoadsSimpleCase)
     } paths;
 
     OpenSim::Model const model{paths.osim.string()};
-    MeshWarpLookup const lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
+    PointWarperFactories const lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
     std::string const meshAbsPath = "/bodyset/new_body/new_body_geom_1";
-    auto const* pairing = lut.find<ThinPlateSplineMeshWarp>(meshAbsPath);
+    auto const* pairing = lut.find<TPSLandmarkPairWarperFactory>(meshAbsPath);
 
     // the pairing is found...
     ASSERT_TRUE(pairing);
@@ -97,9 +97,9 @@ TEST(ModelWarpingDocument, CorrectlyLoadsPairedCase)
     } paths;
 
     OpenSim::Model const model{paths.osim.string()};
-    MeshWarpLookup const lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
+    PointWarperFactories const lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
     std::string const meshAbsPath = "/bodyset/new_body/new_body_geom_1";
-    auto const* pairing = lut.find<ThinPlateSplineMeshWarp>(meshAbsPath);
+    auto const* pairing = lut.find<TPSLandmarkPairWarperFactory>(meshAbsPath);
 
     // the pairing is found...
     ASSERT_TRUE(pairing);
@@ -161,9 +161,9 @@ TEST(ModelWarpingDocument, CorrectlyLoadsMissingDestinationLMsCase)
     } paths;
 
     OpenSim::Model const model{paths.osim.string()};
-    MeshWarpLookup const lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
+    PointWarperFactories const lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
     std::string const meshAbsPath = "/bodyset/new_body/new_body_geom_1";
-    auto const* pairing = lut.find<ThinPlateSplineMeshWarp>(meshAbsPath);
+    auto const* pairing = lut.find<TPSLandmarkPairWarperFactory>(meshAbsPath);
 
     // the pairing is found...
     ASSERT_TRUE(pairing);
@@ -227,9 +227,9 @@ TEST(ModelWarpingDocument, CorrectlyLoadsMissingSourceLMsCase)
     } paths;
 
     OpenSim::Model const model{paths.osim.string()};
-    MeshWarpLookup const lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
+    PointWarperFactories const lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
     std::string const meshAbsPath = "/bodyset/new_body/new_body_geom_1";
-    auto const* pairing = lut.find<ThinPlateSplineMeshWarp>(meshAbsPath);
+    auto const* pairing = lut.find<TPSLandmarkPairWarperFactory>(meshAbsPath);
 
     // the pairing is found...
     ASSERT_TRUE(pairing);
@@ -290,9 +290,9 @@ TEST(ModelWarpingDocument, CorrectlyLoadsSimpleUnnamedCase)
     } paths;
 
     OpenSim::Model const model{paths.osim.string()};
-    MeshWarpLookup const lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
+    PointWarperFactories const lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
     std::string const meshAbsPath = "/bodyset/new_body/new_body_geom_1";
-    auto const* pairing = lut.find<ThinPlateSplineMeshWarp>(meshAbsPath);
+    auto const* pairing = lut.find<TPSLandmarkPairWarperFactory>(meshAbsPath);
 
     // the pairing is found...
     ASSERT_TRUE(pairing);
@@ -347,9 +347,9 @@ TEST(ModelWarpingDocument, CorrectlyLoadsSparselyNamedPairedCase)
     } paths;
 
     OpenSim::Model const model{paths.osim.string()};
-    MeshWarpLookup const lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
+    PointWarperFactories const lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
     std::string const meshAbsPath = "/bodyset/new_body/new_body_geom_1";
-    auto const* pairing = lut.find<ThinPlateSplineMeshWarp>(meshAbsPath);
+    auto const* pairing = lut.find<TPSLandmarkPairWarperFactory>(meshAbsPath);
 
     // the pairing is found...
     ASSERT_TRUE(pairing);

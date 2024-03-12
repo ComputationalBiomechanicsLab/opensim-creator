@@ -1,6 +1,6 @@
 #pragma once
 
-#include <OpenSimCreator/Documents/ModelWarper/ValidationState.h>
+#include <OpenSimCreator/Documents/ModelWarper/ValidationCheckState.h>
 
 #include <oscar/Utils/CStringView.h>
 
@@ -9,29 +9,30 @@
 
 namespace osc::mow
 {
-    class ValidationCheck final {
+    // the result of a runtime validation check against part of a model warping input
+    class ValidationCheckResult final {
     public:
-        ValidationCheck(
+        ValidationCheckResult(
             std::string description_,
             bool passOrFail_) :
 
             m_Description{std::move(description_)},
-            m_State{passOrFail_ ? ValidationState::Ok : ValidationState::Error}
+            m_State{passOrFail_ ? ValidationCheckState::Ok : ValidationCheckState::Error}
         {}
 
-        ValidationCheck(
+        ValidationCheckResult(
             std::string description_,
-            ValidationState state_) :
+            ValidationCheckState state_) :
 
             m_Description{std::move(description_)},
             m_State{state_}
         {}
 
         CStringView description() const { return m_Description; }
-        ValidationState state() const { return m_State; }
+        ValidationCheckState state() const { return m_State; }
 
     private:
         std::string m_Description;
-        ValidationState m_State;
+        ValidationCheckState m_State;
     };
 }

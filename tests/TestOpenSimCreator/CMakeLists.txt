@@ -9,10 +9,10 @@ add_executable(TestOpenSimCreator
     Documents/Model/TestUndoableModelActions.cpp
     Documents/Model/TestUndoableModelStatePair.cpp
     Documents/ModelWarper/TestCachedModelWarper.cpp
-    Documents/ModelWarper/TestDocument.cpp
-    Documents/ModelWarper/TestFrameDefinitionLookup.cpp
+    Documents/ModelWarper/TestFrameWarperFactories.cpp
     Documents/ModelWarper/TestInMemoryMesh.cpp
-    Documents/ModelWarper/TestMeshWarpLookup.cpp
+    Documents/ModelWarper/TestModelWarpDocument.cpp
+    Documents/ModelWarper/TestPointWarperFactories.cpp
     Documents/Simulation/TestForwardDynamicSimulation.cpp
     Graphics/TestOpenSimDecorationGenerator.cpp
     Graphics/TestSimTKDecorationGenerator.cpp

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <OpenSimCreator/Documents/ModelWarper/ValidationState.h>
+#include <OpenSimCreator/Documents/ModelWarper/ValidationCheckState.h>
 
 #include <oscar/Graphics/Color.h>
 #include <oscar/Utils/CStringView.h>
@@ -12,5 +12,5 @@ namespace osc::mow
         Color color;
     };
 
-    EntryStyling ToStyle(ValidationState s);
+    EntryStyling ToStyle(ValidationCheckState s);
 }

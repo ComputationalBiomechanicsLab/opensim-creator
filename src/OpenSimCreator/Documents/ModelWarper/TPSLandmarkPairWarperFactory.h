@@ -1,8 +1,8 @@
 #pragma once
 
-#include <OpenSimCreator/Documents/ModelWarper/IMeshWarp.h>
-#include <OpenSimCreator/Documents/ModelWarper/LandmarkPairing.h>
-#include <OpenSimCreator/Documents/ModelWarper/ValidationCheck.h>
+#include <OpenSimCreator/Documents/ModelWarper/IPointWarperFactory.h>
+#include <OpenSimCreator/Documents/ModelWarper/MaybePairedLandmark.h>
+#include <OpenSimCreator/Documents/ModelWarper/ValidationCheckResult.h>
 #include <OpenSimCreator/Documents/ModelWarper/WarpDetail.h>
 #include <OpenSimCreator/Utils/TPS3D.h>
 
@@ -19,9 +19,19 @@
 
 namespace osc::mow
 {
-    class ThinPlateSplineMeshWarp final : public IMeshWarp {
+    // an `IPointWarperFactory` that creates its `IPointWarper` from a thin-plate
+    // spline (TPS) warp that's calculated by pairing landmark correspondences that
+    // are loaded from CSV files next to mesh files
+    // 
+    // e.g. if possible, this will look for `meshfile.landmarks.csv` and `Destination/meshfile.landmarks.csv`
+    //      and then compile a suitable TPS warp from the landmark pairings
+    class TPSLandmarkPairWarperFactory final : public IPointWarperFactory {
     public:
-        ThinPlateSplineMeshWarp(
+
+        // constructs the factory by looking around on-disk for appropriate `.landmarks.csv` files
+        //
+        // use the post-construction validation checks to figure out how sucessful it was
+        TPSLandmarkPairWarperFactory(
             std::filesystem::path const& osimFileLocation,
             std::filesystem::path const& sourceMeshFilepath
         );
@@ -50,13 +60,13 @@ namespace osc::mow
         bool hasUnpairedLandmarks() const;
 
         bool hasLandmarkNamed(std::string_view) const;
-        LandmarkPairing const* tryGetLandmarkPairingByName(std::string_view) const;
+        MaybePairedLandmark const* tryGetLandmarkPairingByName(std::string_view) const;
 
     private:
-        std::unique_ptr<IMeshWarp> implClone() const override;
+        std::unique_ptr<IPointWarperFactory> implClone() const override;
         std::vector<WarpDetail> implWarpDetails() const override;
-        std::vector<ValidationCheck> implValidate() const override;
-        std::unique_ptr<IPointWarper> implCompileWarper(Document const&) const override;
+        std::vector<ValidationCheckResult> implValidate() const override;
+        std::unique_ptr<IPointWarper> implTryCreatePointWarper(ModelWarpDocument const&) const override;
 
         std::filesystem::path m_SourceMeshAbsoluteFilepath;
 
@@ -69,7 +79,7 @@ namespace osc::mow
         std::filesystem::path m_ExpectedDestinationLandmarksAbsoluteFilepath;
         bool m_DestinationLandmarksFileExists;
 
-        std::vector<LandmarkPairing> m_Landmarks;
+        std::vector<MaybePairedLandmark> m_Landmarks;
 
         CopyOnUpdPtr<TPSCoefficients3D> m_TPSCoefficients;
     };

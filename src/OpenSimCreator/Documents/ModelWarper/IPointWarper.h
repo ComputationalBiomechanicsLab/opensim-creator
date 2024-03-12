@@ -7,6 +7,7 @@
 
 namespace osc
 {
+    // an interface to an object that can warp `Vec3`s
     class IPointWarper {
     protected:
         IPointWarper() = default;

@@ -1,4 +1,4 @@
-#include <OpenSimCreator/Documents/ModelWarper/FrameWarpLookup.h>
+#include <OpenSimCreator/Documents/ModelWarper/FrameWarperFactories.h>
 
 #include <TestOpenSimCreator/TestOpenSimCreatorConfig.h>
 

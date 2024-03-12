@@ -1,6 +1,6 @@
 #pragma once
 
-#include <OpenSimCreator/Documents/ModelWarper/IFrameWarp.h>
+#include <OpenSimCreator/Documents/ModelWarper/IFrameWarperFactory.h>
 
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/ClonePtr.h>
@@ -14,23 +14,30 @@ namespace osc::mow { class ModelWarpConfiguration; }
 
 namespace osc::mow
 {
+    // runtime `ComponentAbsPath --> IFrameWarperFactory` lookup that the warping
+    // engine (and UI) use to find (and validate) `IFrameWarperFactory`s that are
+    // associated to components in an OpenSim model
     class FrameWarpLookup final {
     public:
+        // constructs an empty lookup
         FrameWarpLookup() = default;
+
+        // constructs a lookup that, given the inputs, is as populated as possible (i.e.
+        // actually tries to figure out which concrete frame warpers to use, etc.)
         FrameWarpLookup(
             std::filesystem::path const& osimFileLocation,
             OpenSim::Model const&,
             ModelWarpConfiguration const&
         );
 
-        template<std::derived_from<IFrameWarp> FrameWarp = IFrameWarp>
+        template<std::derived_from<IFrameWarperFactory> FrameWarp = IFrameWarperFactory>
         FrameWarp const* find(std::string const& absPath) const
         {
             return dynamic_cast<FrameWarp const*>(lookup(absPath));
         }
 
     private:
-        IFrameWarp const* lookup(std::string const& absPath) const
+        IFrameWarperFactory const* lookup(std::string const& absPath) const
         {
             if (auto const* ptr = try_find(m_AbsPathToWarpLUT, absPath)) {
                 return ptr->get();
@@ -40,6 +47,6 @@ namespace osc::mow
             }
         }
 
-        std::unordered_map<std::string, ClonePtr<IFrameWarp>> m_AbsPathToWarpLUT;
+        std::unordered_map<std::string, ClonePtr<IFrameWarperFactory>> m_AbsPathToWarpLUT;
     };
 }
