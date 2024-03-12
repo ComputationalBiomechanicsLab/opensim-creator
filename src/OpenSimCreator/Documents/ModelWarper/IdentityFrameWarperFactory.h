@@ -18,7 +18,7 @@ namespace osc::mow
         std::vector<WarpDetail> implWarpDetails() const override { return {}; }
         std::vector<ValidationCheckResult> implValidate() const override { return {}; }
         ValidationCheckState implState() const override { return ValidationCheckState::Ok; }
-        std::unique_ptr<IFrameWarper> implTryCreateFrameWarper(ModelWarpDocument const&) const
+        std::unique_ptr<IFrameWarper> implTryCreateFrameWarper(ModelWarpDocument const&) const override
         {
             class IdentityFrameWarper final : public IFrameWarper {
             private:
