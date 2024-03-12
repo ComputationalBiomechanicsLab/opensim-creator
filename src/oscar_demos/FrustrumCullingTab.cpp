@@ -66,7 +66,7 @@ namespace
         std::array<Plane, 6> m_ClippingPlanes;
     };
 
-    Frustum CalcCameraFrustums(Camera const& camera, float aspectRatio)
+    Frustum CalcCameraFrustum(Camera const& camera, float aspectRatio)
     {
         Radians const fovY = camera.getVerticalFOV();
         float const zNear = camera.getNearClippingPlane();
@@ -134,24 +134,25 @@ private:
         float const xmid = midpoint(viewport.p1.x, viewport.p2.x);
         Rect const lhs = {viewport.p1, {xmid, viewport.p2.y}};
         Rect const rhs = {{xmid, viewport.p1.y}, viewport.p2};
-        Frustum frustums = CalcCameraFrustums(m_UserCamera, AspectRatio(lhs));
+        Frustum const frustum = CalcCameraFrustum(m_UserCamera, AspectRatio(lhs));
 
         m_UserCamera.onDraw();  // update from inputs etc.
 
-        // render from user's perspective
+        // render from user's perspective on left-hand side
         for (auto const& dec : m_Decorations) {
             AABB const aabb = transform_aabb(dec.mesh.getBounds(), dec.transform);
-            if (is_inside_frustum(frustums, aabb)) {
+            if (is_inside_frustum(frustum, aabb)) {
                 Graphics::DrawMesh(dec.mesh, dec.transform, m_Material, m_UserCamera, m_BlueMaterialProps);
             }
         }
         m_UserCamera.setPixelRect(lhs);
         m_UserCamera.renderToScreen();
 
-        // render from top-down perspective (show frustrum etc.)
+        // render from top-down perspective on right-hand side
         for (auto const& dec : m_Decorations) {
             AABB const aabb = transform_aabb(dec.mesh.getBounds(), dec.transform);
-            Graphics::DrawMesh(dec.mesh, dec.transform, m_Material, m_TopDownCamera, is_inside_frustum(frustums, aabb) ? m_BlueMaterialProps : m_RedMaterialProps);
+            auto const& props = is_inside_frustum(frustum, aabb) ? m_BlueMaterialProps : m_RedMaterialProps;
+            Graphics::DrawMesh(dec.mesh, dec.transform, m_Material, m_TopDownCamera, props);
         }
         Graphics::DrawMesh(
             SphereGeometry{},
