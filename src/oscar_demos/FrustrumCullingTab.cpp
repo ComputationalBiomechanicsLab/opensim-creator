@@ -61,14 +61,53 @@ namespace
 
         return rv;
     }
+
+    struct Frustum final {
+        std::array<Plane, 6> m_ClippingPlanes;
+    };
+
+    Frustum CalcCameraFrustums(Camera const& camera, float aspectRatio)
+    {
+        Radians const fovY = camera.getVerticalFOV();
+        float const zNear = camera.getNearClippingPlane();
+        float const zFar = camera.getFarClippingPlane();
+        float const halfVSize = zFar * tan(fovY * 0.5f);
+        float const halfHSize = halfVSize * aspectRatio;
+        Vec3 const pos = camera.getPosition();
+        Vec3 const front = camera.getDirection();
+        Vec3 const up = camera.getUpwardsDirection();
+        Vec3 const right = cross(front, up);
+        Vec3 const frontMultnear = zNear * front;
+        Vec3 const frontMultfar = zFar * front;
+
+        return {
+                  // origin           // normal
+            Plane{pos + frontMultnear, -front},                                    // near
+            Plane{pos + frontMultfar,   front},                                    // far
+            Plane{pos               ,  -normalize(cross(frontMultfar - right*halfHSize, up))},  // right
+            Plane{pos               ,  -normalize(cross(up, frontMultfar + right*halfHSize))},  // left
+            Plane{pos               ,  -normalize(cross(right, frontMultfar - up*halfVSize))},  // top
+            Plane{pos               ,  -normalize(cross(frontMultfar + up*halfVSize, right))},  // bottom
+        };
+    }
+
+    // tests if `aabb` lies outside `frustum` (e.g. so cull it)
+    bool is_inside_frustum(Frustum const& frustum, AABB const& aabb)
+    {
+        return !any_of(frustum.m_ClippingPlanes, [&aabb](Plane const& plane) { return is_in_front_of(plane, aabb); });
+    }
 }
 
 class osc::FrustrumCullingTab::Impl final : public StandardTabImpl {
 public:
     Impl() : StandardTabImpl{c_TabStringID}
     {
+        m_UserCamera.setNearClippingPlane(0.1f);
+        m_UserCamera.setFarClippingPlane(10.0f);
         m_TopDownCamera.setPosition({0.0f, 9.5f, 0.0f});
         m_TopDownCamera.setDirection({0.0f, -1.0f, 0.0f});
+        m_TopDownCamera.setNearClippingPlane(0.1f);
+        m_TopDownCamera.setFarClippingPlane(10.0f);
     }
 
 private:
@@ -95,19 +134,24 @@ private:
         float const xmid = midpoint(viewport.p1.x, viewport.p2.x);
         Rect const lhs = {viewport.p1, {xmid, viewport.p2.y}};
         Rect const rhs = {{xmid, viewport.p1.y}, viewport.p2};
+        Frustum frustums = CalcCameraFrustums(m_UserCamera, AspectRatio(lhs));
 
         m_UserCamera.onDraw();  // update from inputs etc.
 
         // render from user's perspective
         for (auto const& dec : m_Decorations) {
-            Graphics::DrawMesh(dec.mesh, dec.transform, m_Material, m_UserCamera, m_BlueMaterialProps);
+            AABB const aabb = transform_aabb(dec.mesh.getBounds(), dec.transform);
+            if (is_inside_frustum(frustums, aabb)) {
+                Graphics::DrawMesh(dec.mesh, dec.transform, m_Material, m_UserCamera, m_BlueMaterialProps);
+            }
         }
         m_UserCamera.setPixelRect(lhs);
         m_UserCamera.renderToScreen();
 
         // render from top-down perspective (show frustrum etc.)
         for (auto const& dec : m_Decorations) {
-            Graphics::DrawMesh(dec.mesh, dec.transform, m_Material, m_TopDownCamera, m_RedMaterialProps);
+            AABB const aabb = transform_aabb(dec.mesh.getBounds(), dec.transform);
+            Graphics::DrawMesh(dec.mesh, dec.transform, m_Material, m_TopDownCamera, is_inside_frustum(frustums, aabb) ? m_BlueMaterialProps : m_RedMaterialProps);
         }
         Graphics::DrawMesh(
             SphereGeometry{},

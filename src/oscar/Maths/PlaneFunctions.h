@@ -16,12 +16,12 @@ namespace osc
     }
 
     // tests if `aabb` is entirely in front of `plane`
-    bool is_in_front_of(Plane const& plane, AABB const& aabb)
+    inline bool is_in_front_of(Plane const& plane, AABB const& aabb)
     {
         // originally found in: https://learnopengl.com/Guest-Articles/2021/Scene/Frustum-Culling
         // which was based on : https://gdbooks.gitbooks.io/3dcollisions/content/Chapter2/static_aabb_plane.html
 
-        float const r = dot(dimensions(aabb), abs(plane.normal));
-        return -r <= signed_distance_between(plane, centroid(aabb));
+        float const r = dot(half_widths(aabb), abs(plane.normal));
+        return signed_distance_between(plane, centroid(aabb)) > r;
     }
 }

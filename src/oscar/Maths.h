@@ -27,6 +27,7 @@
 #include <oscar/Maths/Mat3.h>
 #include <oscar/Maths/Mat4.h>
 #include <oscar/Maths/Plane.h>
+#include <oscar/Maths/PlaneFunctions.h>
 #include <oscar/Maths/PointDirection.h>
 #include <oscar/Maths/PolarPerspectiveCamera.h>
 #include <oscar/Maths/Qua.h>

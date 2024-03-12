@@ -37,11 +37,25 @@ TEST(is_in_front_of, ProducesExpectedAnswersInExampleCases)
     };
 
     auto const cases = std::to_array<TestCase>({
-          // origin // normal                 // min              // max               // expected
-        {{Vec3{},   Vec3{0.0f, 1.0f, 0.0f}}, {{1.0f, 1.0f, 1.0f}, {2.0f, 2.0f, 2.0f}}, true},
+          // origin                   // normal                  // min                 // max                  // is in front of plane?
+        {{Vec3{},                     Vec3{ 0.0f, 1.0f, 0.0f}}, {{ 1.0f,  1.0f,  1.0f}, { 2.0f,  2.0f,  2.0f}}, true},
+        {{Vec3{},                     Vec3{ 0.0f, 1.0f, 0.0f}}, {{-2.0f, -2.0f, -2.0f}, {-1.0f, -1.0f, -1.0f}}, false},
+        {{Vec3{},                     Vec3{ 1.0f, 0.0f, 0.0f}}, {{-2.0f, -2.0f, -2.0f}, {-1.0f, -1.0f, -1.0f}}, false},
+        {{Vec3{},                     Vec3{-1.0f, 0.0f, 0.0f}}, {{-2.0f, -2.0f, -2.0f}, {-1.0f, -1.0f, -1.0f}}, true},
+        {{Vec3{-1.0f, 0.0f, 0.0f},    Vec3{-1.0f, 0.0f, 0.0f}}, {{-2.0f, -2.0f, -2.0f}, {-1.0f, -1.0f, -1.0f}}, false},  // coincident
+        {{Vec3{-0.991f, 0.0f, 0.0f},  Vec3{-1.0f, 0.0f, 0.0f}}, {{-2.0f, -2.0f, -2.0f}, {-1.0f, -1.0f, -1.0f}}, true},
+        {{Vec3{-1.1f, 0.0f, 0.0f},    Vec3{-1.0f, 0.0f, 0.0f}}, {{-2.0f, -2.0f, -2.0f}, {-1.0f, -1.0f, -1.0f}}, false},
+        {{Vec3{-1.9f, 0.0f, 0.0f},    Vec3{-1.0f, 0.0f, 0.0f}}, {{-2.0f, -2.0f, -2.0f}, {-1.0f, -1.0f, -1.0f}}, false},
+        {{Vec3{-1.99f, 0.0f, 0.0f},   Vec3{-1.0f, 0.0f, 0.0f}}, {{-2.0f, -2.0f, -2.0f}, {-1.0f, -1.0f, -1.0f}}, false},
+        {{Vec3{-2.0f, 0.0f, 0.0f},    Vec3{-1.0f, 0.0f, 0.0f}}, {{-2.0f, -2.0f, -2.0f}, {-1.0f, -1.0f, -1.0f}}, false},  // coincident
+        {{Vec3{-2.01f, 0.0f, 0.0f},   Vec3{-1.0f, 0.0f, 0.0f}}, {{-2.0f, -2.0f, -2.0f}, {-1.0f, -1.0f, -1.0f}}, false},
+        {{Vec3{-2.01f, 0.0f, 0.0f},   Vec3{ 1.0f, 0.0f, 0.0f}}, {{-2.0f, -2.0f, -2.0f}, {-1.0f, -1.0f, -1.0f}}, true},
+        {{Vec3{-2.00f, 0.0f, 0.0f},   Vec3{ 1.0f, 0.0f, 0.0f}}, {{-2.0f, -2.0f, -2.0f}, {-1.0f, -1.0f, -1.0f}}, false},  // coincident
     });
 
+
+
     for (auto const& [plane, aabb, expected] : cases) {
-        ASSERT_EQ(is_in_front_of(plane, aabb), expected) << "plane = " << plane << ", aabb = " << aabb;
+        ASSERT_EQ(is_in_front_of(plane, aabb), expected) << "plane = " << plane << ", aabb = " << aabb << " (dimensions = " << dimensions(aabb) << ", half_widths . normal = " << dot(half_widths(aabb), abs(plane.normal)) << ", signed distance = " << signed_distance_between(plane, centroid(aabb)) << ')';
     }
 }
