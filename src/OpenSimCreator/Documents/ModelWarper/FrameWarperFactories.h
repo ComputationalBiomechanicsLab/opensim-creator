@@ -36,6 +36,8 @@ namespace osc::mow
             return dynamic_cast<FrameWarp const*>(lookup(absPath));
         }
 
+        [[nodiscard]] bool empty() const { return m_AbsPathToWarpLUT.empty(); }
+
     private:
         IFrameWarperFactory const* lookup(std::string const& absPath) const
         {

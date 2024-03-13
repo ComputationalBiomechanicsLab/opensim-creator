@@ -14,7 +14,7 @@ using namespace osc::mow;
 
 namespace
 {
-    std::filesystem::path GetFixturesDir()
+    std::filesystem::path ModelWarperFixturesDir()
     {
         auto p = std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources/TestOpenSimCreator/Document/ModelWarper";
         p = std::filesystem::weakly_canonical(p);
@@ -26,7 +26,7 @@ TEST(PointWarperFactories, CorrectlyLoadsSimpleCase)
 {
     struct Paths final {
         // model
-        std::filesystem::path modelDir = GetFixturesDir() / "Simple";
+        std::filesystem::path modelDir = ModelWarperFixturesDir() / "Simple";
         std::filesystem::path osim = modelDir / "model.osim";
 
         // source (mesh + landmarks: conventional, backwards-compatible, OpenSim Geometry dir)
@@ -82,7 +82,7 @@ TEST(ModelWarpingDocument, CorrectlyLoadsPairedCase)
 {
     struct Paths final {
         // model
-        std::filesystem::path modelDir = GetFixturesDir() / "Paired";
+        std::filesystem::path modelDir = ModelWarperFixturesDir() / "Paired";
         std::filesystem::path osim = modelDir / "model.osim";
 
         // source (mesh + landmarks: conventional, backwards-compatible, OpenSim Geometry dir)
@@ -146,7 +146,7 @@ TEST(ModelWarpingDocument, CorrectlyLoadsMissingDestinationLMsCase)
 {
     struct Paths final {
         // model
-        std::filesystem::path modelDir = GetFixturesDir() / "MissingDestinationLMs";
+        std::filesystem::path modelDir = ModelWarperFixturesDir() / "MissingDestinationLMs";
         std::filesystem::path osim = modelDir / "model.osim";
 
         // source (mesh + landmarks: conventional, backwards-compatible, OpenSim Geometry dir)
@@ -212,7 +212,7 @@ TEST(ModelWarpingDocument, CorrectlyLoadsMissingSourceLMsCase)
 {
     struct Paths final {
         // model
-        std::filesystem::path modelDir = GetFixturesDir() / "MissingSourceLMs";
+        std::filesystem::path modelDir = ModelWarperFixturesDir() / "MissingSourceLMs";
         std::filesystem::path osim = modelDir / "model.osim";
 
         // source (mesh + landmarks: conventional, backwards-compatible, OpenSim Geometry dir)
@@ -280,7 +280,7 @@ TEST(ModelWarpingDocument, CorrectlyLoadsSimpleUnnamedCase)
 {
     struct Paths final {
         // model
-        std::filesystem::path modelDir = GetFixturesDir() / "SimpleUnnamed";
+        std::filesystem::path modelDir = ModelWarperFixturesDir() / "SimpleUnnamed";
         std::filesystem::path osim = modelDir / "model.osim";
 
         // source (mesh + landmarks: conventional, backwards-compatible, OpenSim Geometry dir)
@@ -332,7 +332,7 @@ TEST(ModelWarpingDocument, CorrectlyLoadsSparselyNamedPairedCase)
 {
     struct Paths final {
         // model
-        std::filesystem::path modelDir = GetFixturesDir() / "SparselyNamedPaired";
+        std::filesystem::path modelDir = ModelWarperFixturesDir() / "SparselyNamedPaired";
         std::filesystem::path osim = modelDir / "model.osim";
 
         // source (mesh + landmarks: conventional, backwards-compatible, OpenSim Geometry dir)
