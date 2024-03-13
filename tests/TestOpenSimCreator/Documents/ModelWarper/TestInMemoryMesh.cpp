@@ -6,6 +6,7 @@
 #include <oscar/Graphics/Scene/SceneDecoration.h>
 
 using namespace osc;
+using namespace osc::mow;
 
 TEST(InMemoryMesh, CanDefaultConstruct)
 {
