@@ -2,10 +2,14 @@
 
 #include <OpenSimCreator/Documents/ModelWarper/IFrameWarper.h>
 #include <OpenSimCreator/Documents/ModelWarper/IFrameWarperFactory.h>
-
-#include <Simbody.h>
+#include <OpenSimCreator/Documents/ModelWarper/ValidationCheckResult.h>
+#include <OpenSimCreator/Documents/ModelWarper/ValidationCheckState.h>
+#include <OpenSimCreator/Documents/ModelWarper/WarpDetail.h>
 
 #include <memory>
+#include <vector>
+
+namespace osc::mow { class ModelWarpDocument; }
 
 namespace osc::mow
 {
@@ -14,20 +18,10 @@ namespace osc::mow
     // (useful for skipping warping something)
     class IdentityFrameWarperFactory final : public IFrameWarperFactory {
     private:
-        std::unique_ptr<IFrameWarperFactory> implClone() const override { return std::make_unique<IdentityFrameWarperFactory>(*this); }
-        std::vector<WarpDetail> implWarpDetails() const override { return {}; }
-        std::vector<ValidationCheckResult> implValidate() const override { return {}; }
-        ValidationCheckState implState() const override { return ValidationCheckState::Ok; }
-        std::unique_ptr<IFrameWarper> implTryCreateFrameWarper(ModelWarpDocument const&) const override
-        {
-            class IdentityFrameWarper final : public IFrameWarper {
-            private:
-                SimTK::Transform implWarp(SimTK::Transform const& transform) const
-                {
-                    return transform;  // identity
-                }
-            };
-            return std::make_unique<IdentityFrameWarper>();
-        }
+        std::unique_ptr<IFrameWarperFactory> implClone() const override;
+        std::vector<WarpDetail> implWarpDetails() const override;
+        std::vector<ValidationCheckResult> implValidate() const override;
+        ValidationCheckState implState() const override;
+        std::unique_ptr<IFrameWarper> implTryCreateFrameWarper(ModelWarpDocument const&) const override;
     };
 }

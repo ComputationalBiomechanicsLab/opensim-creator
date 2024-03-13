@@ -5,7 +5,7 @@
 #include <array>
 #include <span>
 
-namespace osc
+namespace osc::mow
 {
     // an interface to an object that can warp `Vec3`s
     class IPointWarper {

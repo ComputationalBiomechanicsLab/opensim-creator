@@ -2,7 +2,7 @@
 
 #include <Simbody.h>
 
-namespace osc
+namespace osc::mow
 {
     // an interface to an object that can warp a frame (i.e. a rotation + translation transform)
     class IFrameWarper {

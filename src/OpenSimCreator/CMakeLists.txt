@@ -107,6 +107,7 @@ add_library(OpenSimCreator STATIC
     Documents/ModelWarper/FrameWarperFactories.cpp
     Documents/ModelWarper/FrameWarperFactories.h
     Documents/ModelWarper/ICloneable.h
+    Documents/ModelWarper/IdentityFrameWarperFactory.cpp
     Documents/ModelWarper/IdentityFrameWarperFactory.h
     Documents/ModelWarper/IFrameWarper.h
     Documents/ModelWarper/IFrameWarperFactory.h

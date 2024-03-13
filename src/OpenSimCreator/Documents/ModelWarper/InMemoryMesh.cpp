@@ -6,7 +6,7 @@
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <oscar/Graphics/Scene/SceneDecoration.h>
 
-void osc::InMemoryMesh::implGenerateCustomDecorations(
+void osc::mow::InMemoryMesh::implGenerateCustomDecorations(
     SimTK::State const& state,
     std::function<void(SceneDecoration&&)> const& out) const
 {

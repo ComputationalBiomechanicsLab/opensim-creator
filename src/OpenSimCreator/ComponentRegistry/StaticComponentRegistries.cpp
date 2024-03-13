@@ -87,7 +87,7 @@ namespace
             std::make_shared<PointToPointEdge>(),
             std::make_shared<SphereLandmark>(),
             std::make_shared<OpenSim::StationDefinedFrame>(),
-            std::make_shared<InMemoryMesh>(),
+            std::make_shared<mow::InMemoryMesh>(),
         };
     }
 

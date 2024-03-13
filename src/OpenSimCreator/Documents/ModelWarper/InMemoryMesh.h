@@ -5,7 +5,7 @@
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <oscar/Graphics/Mesh.h>
 
-namespace osc
+namespace osc::mow
 {
     // a custom `OpenSim::Geometry` that uses `osc::Mesh`es
     //
