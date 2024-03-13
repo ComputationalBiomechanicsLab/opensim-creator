@@ -17,14 +17,14 @@ namespace osc::mow
     // runtime `ComponentAbsPath --> IFrameWarperFactory` lookup that the warping
     // engine (and UI) use to find (and validate) `IFrameWarperFactory`s that are
     // associated to components in an OpenSim model
-    class FrameWarpLookup final {
+    class FrameWarperFactories final {
     public:
         // constructs an empty lookup
-        FrameWarpLookup() = default;
+        FrameWarperFactories() = default;
 
         // constructs a lookup that, given the inputs, is as populated as possible (i.e.
         // actually tries to figure out which concrete frame warpers to use, etc.)
-        FrameWarpLookup(
+        FrameWarperFactories(
             std::filesystem::path const& osimFileLocation,
             OpenSim::Model const&,
             ModelWarpConfiguration const&

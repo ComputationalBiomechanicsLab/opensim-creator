@@ -5,7 +5,7 @@
 
 #include <OpenSim/Simulation/Model/Model.h>
 
-osc::mow::FrameWarpLookup::FrameWarpLookup(
+osc::mow::FrameWarperFactories::FrameWarperFactories(
     std::filesystem::path const&,
     OpenSim::Model const& model,
     ModelWarpConfiguration const& config)

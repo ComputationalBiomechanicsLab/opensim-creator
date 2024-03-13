@@ -59,6 +59,6 @@ namespace osc::mow
         CopyOnUpdPtr<BasicModelStatePair> m_ModelState;
         CopyOnUpdPtr<ModelWarpConfiguration> m_ModelWarpConfig;
         CopyOnUpdPtr<PointWarperFactories> m_MeshWarpLookup;
-        CopyOnUpdPtr<FrameWarpLookup> m_FrameWarpLookup;
+        CopyOnUpdPtr<FrameWarperFactories> m_FrameWarpLookup;
     };
 }

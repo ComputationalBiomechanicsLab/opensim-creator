@@ -20,14 +20,14 @@ osc::mow::ModelWarpDocument::ModelWarpDocument() :
     m_ModelState{make_cow<BasicModelStatePair>()},
     m_ModelWarpConfig{make_cow<ModelWarpConfiguration>()},
     m_MeshWarpLookup{make_cow<PointWarperFactories>()},
-    m_FrameWarpLookup{make_cow<FrameWarpLookup>()}
+    m_FrameWarpLookup{make_cow<FrameWarperFactories>()}
 {}
 
 osc::mow::ModelWarpDocument::ModelWarpDocument(std::filesystem::path const& osimFileLocation) :
     m_ModelState{make_cow<BasicModelStatePair>(osimFileLocation)},
     m_ModelWarpConfig{make_cow<ModelWarpConfiguration>(osimFileLocation, m_ModelState->getModel())},
     m_MeshWarpLookup{make_cow<PointWarperFactories>(osimFileLocation, m_ModelState->getModel(), *m_ModelWarpConfig)},
-    m_FrameWarpLookup{make_cow<FrameWarpLookup>(osimFileLocation, m_ModelState->getModel(), *m_ModelWarpConfig)}
+    m_FrameWarpLookup{make_cow<FrameWarperFactories>(osimFileLocation, m_ModelState->getModel(), *m_ModelWarpConfig)}
 {}
 
 osc::mow::ModelWarpDocument::ModelWarpDocument(ModelWarpDocument const&) = default;
