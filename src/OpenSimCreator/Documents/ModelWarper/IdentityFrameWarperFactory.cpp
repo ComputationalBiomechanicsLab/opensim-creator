@@ -25,12 +25,9 @@ std::vector<WarpDetail> osc::mow::IdentityFrameWarperFactory::implWarpDetails() 
 
 std::vector<ValidationCheckResult> osc::mow::IdentityFrameWarperFactory::implValidate() const
 {
-    return {};
-}
-
-ValidationCheckState osc::mow::IdentityFrameWarperFactory::implState() const
-{
-    return ValidationCheckState::Ok;
+    return {
+        ValidationCheckResult{"this is an identity warp (i.e. it ignores warping this frame altogether)", ValidationCheckState::Warning},
+    };
 }
 
 std::unique_ptr<IFrameWarper> osc::mow::IdentityFrameWarperFactory::implTryCreateFrameWarper(ModelWarpDocument const&) const

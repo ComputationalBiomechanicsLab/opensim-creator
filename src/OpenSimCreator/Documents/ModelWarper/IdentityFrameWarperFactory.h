@@ -21,7 +21,6 @@ namespace osc::mow
         std::unique_ptr<IFrameWarperFactory> implClone() const override;
         std::vector<WarpDetail> implWarpDetails() const override;
         std::vector<ValidationCheckResult> implValidate() const override;
-        ValidationCheckState implState() const override;
         std::unique_ptr<IFrameWarper> implTryCreateFrameWarper(ModelWarpDocument const&) const override;
     };
 }
