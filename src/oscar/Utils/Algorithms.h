@@ -50,7 +50,7 @@ namespace osc
     >
     constexpr bool none_of(R&& r, Pred pred)
     {
-        return std::any_of(std::ranges::begin(r), std::ranges::end(r), pred);
+        return std::none_of(std::ranges::begin(r), std::ranges::end(r), pred);
     }
 
     // see: std::ranges::count
