@@ -295,6 +295,7 @@ void osc::ActionSaveNonParticipatingLandmarksToCSV(
         if (it != end) {
             rv = lm::Landmark{std::string{it->name}, it->location};
         }
+        ++it;
         return rv;
     }, flags);
 }

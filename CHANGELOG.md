@@ -10,6 +10,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   `Add Offset Frame` were shown, but now there's also the ability to add wrap objects. (#7)
 - Right-clicking a `GeometryPath` in the model now shows an `Add` menu that includes the ability to add
   a `PathWrap` to the `GeometryPath`, which is handy in conjunction with the above
+- Added `Export > Non-Participating Landmarks to CSV` as an export option to the mesh warper
 
 ## [0.5.10] - 2024/03/05
 
