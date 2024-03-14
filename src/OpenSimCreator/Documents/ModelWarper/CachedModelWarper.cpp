@@ -103,7 +103,36 @@ public:
         //
         // TODO: the `osc::mow::ModelWarpDocument` should handle figuring out each point's warper, because
         // there are situations where there isn't a 1:1 relationship between meshes and bodies
-        for (auto& station : warpedModel.updComponentList<OpenSim::PathPoint>()) {
+        for (auto& pp : warpedModel.updComponentList<OpenSim::PathPoint>()) {
+            auto baseFramePath = pp.getParentFrame().findBaseFrame().getAbsolutePath();
+            if (auto it = baseFrame2meshes.find(baseFramePath); it != baseFrame2meshes.end()) {
+                if (it->second.size() == 1) {
+                    if (auto const* mesh = FindComponent<OpenSim::Mesh>(document.model(), it->second.front())) {
+                        if (auto const meshWarper = document.findMeshWarp(*mesh)) {
+                            // redefine the station's position in the mesh's coordinate system
+                            auto posInMeshFrame = pp.getParentFrame().expressVectorInAnotherFrame(warpedModel.getWorkingState(), pp.get_location(), mesh->getFrame());
+                            auto warpedInMeshFrame = ToSimTKVec3(meshWarper->tryCreatePointWarper(document)->warp(ToVec3(posInMeshFrame)));
+                            auto warpedInParentFrame = mesh->getFrame().expressVectorInAnotherFrame(warpedModel.getWorkingState(), warpedInMeshFrame, pp.getParentFrame());
+                            pp.set_location(warpedInParentFrame);
+                        }
+                        else {
+                            log_warn("no warper available for %s", it->second.front().toString().c_str());
+                        }
+                    }
+                    else {
+                        log_error("cannot find %s in the model: this shouldn't happen", it->second.front().toString().c_str());
+                    }
+                }
+                else {
+                    log_warn("cannot warp %s: there are multiple meshes attached to the same base frame, so it's ambiguous how to warp this point", pp.getName().c_str());
+                }
+            }
+            else {
+                log_warn("cannot warp %s: there don't appear to be any meshes attached to the same base frame?", pp.getName().c_str());
+            }
+        }
+
+        for (auto& station : warpedModel.updComponentList<OpenSim::Station>()) {
             auto baseFramePath = station.getParentFrame().findBaseFrame().getAbsolutePath();
             if (auto it = baseFrame2meshes.find(baseFramePath); it != baseFrame2meshes.end()) {
                 if (it->second.size() == 1) {
@@ -131,6 +160,7 @@ public:
                 log_warn("cannot warp %s: there don't appear to be any meshes attached to the same base frame?", station.getName().c_str());
             }
         }
+
         InitializeModel(warpedModel);
         InitializeState(warpedModel);
 
