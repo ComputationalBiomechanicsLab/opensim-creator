@@ -64,4 +64,20 @@ void osc::mow::Toolbar::drawWarpModelButton()
     if (ui::SliderFloat("blending", &blend, 0.0f, 1.0f)) {
         m_State->setWarpBlendingFactor(blend);
     }
+
+    ui::SameLine();
+    {
+        bool v = m_State->isCameraLinked();
+        if (ui::Checkbox("link cameras", &v)) {
+            m_State->setCameraLinked(v);
+        }
+    }
+
+    ui::SameLine();
+    {
+        bool v = m_State->isOnlyCameraRotationLinked();
+        if (ui::Checkbox("only link rotation", &v)) {
+            m_State->setOnlyCameraRotationLinked(v);
+        }
+    }
 }

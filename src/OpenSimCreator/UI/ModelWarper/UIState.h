@@ -45,7 +45,9 @@ namespace osc::mow
         void setWarpBlendingFactor(float v) { m_Document->setWarpBlendingFactor(v); }
 
         bool isCameraLinked() const { return m_LinkCameras; }
+        void setCameraLinked(bool v) { m_LinkCameras = v; }
         bool isOnlyCameraRotationLinked() const { return m_OnlyLinkRotation; }
+        void setOnlyCameraRotationLinked(bool v) { m_OnlyLinkRotation = v; }
         PolarPerspectiveCamera const& getLinkedCamera() const { return m_LinkedCamera; }
         void setLinkedCamera(PolarPerspectiveCamera const& camera) { m_LinkedCamera = camera; }
 
