@@ -106,6 +106,10 @@ namespace osc
             {
                 ActionSavePairedLandmarksToCSV(m_State->getScratch(), LandmarkCSVFlags::NoNames);
             }
+            if (ui::MenuItem("Non-Participating Landmarks to CSV"))
+            {
+                ActionSaveNonParticipatingLandmarksToCSV(m_State->getScratch());
+            }
         }
 
         std::shared_ptr<MeshWarpingTabSharedState> m_State;

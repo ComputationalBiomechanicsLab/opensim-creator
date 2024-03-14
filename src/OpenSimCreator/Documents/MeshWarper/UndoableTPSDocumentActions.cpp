@@ -272,6 +272,33 @@ void osc::ActionSaveLandmarksToCSV(
     }, flags);
 }
 
+void osc::ActionSaveNonParticipatingLandmarksToCSV(
+    TPSDocument const& doc,
+    lm::LandmarkCSVFlags flags)
+{
+    std::optional<std::filesystem::path> const maybeCSVPath =
+        PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
+    if (!maybeCSVPath)
+    {
+        return;  // user didn't select a save location
+    }
+
+    std::ofstream fout{*maybeCSVPath};
+    if (!fout)
+    {
+        return;  // couldn't open file for writing
+    }
+
+    lm::WriteLandmarksToCSV(fout, [it = doc.nonParticipatingLandmarks.begin(), end = doc.nonParticipatingLandmarks.end()]() mutable
+    {
+        std::optional<lm::Landmark> rv;
+        if (it != end) {
+            rv = lm::Landmark{std::string{it->name}, it->location};
+        }
+        return rv;
+    }, flags);
+}
+
 void osc::ActionSavePairedLandmarksToCSV(TPSDocument const& doc, lm::LandmarkCSVFlags flags)
 {
     std::optional<std::filesystem::path> const maybeCSVPath =

@@ -64,8 +64,11 @@ namespace osc
     // loads non-participating landmarks from a CSV file into the source input
     void ActionLoadNonParticipatingLandmarksFromCSV(UndoableTPSDocument&);
 
-    // saves all source/destination landmarks to a simple headerless CSV file (matches loading)
+    // saves all source/destination landmarks to a CSV file (matches loading)
     void ActionSaveLandmarksToCSV(TPSDocument const&, TPSDocumentInputIdentifier, lm::LandmarkCSVFlags = lm::LandmarkCSVFlags::None);
+
+    // saves non-participating landmarks to a CSV file (matches loading)
+    void ActionSaveNonParticipatingLandmarksToCSV(TPSDocument const&, lm::LandmarkCSVFlags = lm::LandmarkCSVFlags::None);
 
     // saves all pairable landmarks in the TPS document to a user-specified CSV file
     void ActionSavePairedLandmarksToCSV(TPSDocument const&, lm::LandmarkCSVFlags = lm::LandmarkCSVFlags::None);

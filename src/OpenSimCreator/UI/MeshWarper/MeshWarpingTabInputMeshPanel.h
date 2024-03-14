@@ -533,6 +533,14 @@ namespace osc
                 {
                     ActionSaveLandmarksToCSV(m_State->getScratch(), m_DocumentIdentifier, LandmarkCSVFlags::NoHeader | LandmarkCSVFlags::NoNames);
                 }
+                if (ui::MenuItem("Non-Participating Landmarks to CSV"))
+                {
+                    ActionSaveNonParticipatingLandmarksToCSV(m_State->getScratch());
+                }
+                if (ui::MenuItem("Non-Participating Landmark Positions to CSV"))
+                {
+                    ActionSaveNonParticipatingLandmarksToCSV(m_State->getScratch(), LandmarkCSVFlags::NoHeader | LandmarkCSVFlags::NoNames);
+                }
                 ui::EndPopup();
             }
         }

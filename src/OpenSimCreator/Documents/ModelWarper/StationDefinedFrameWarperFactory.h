@@ -13,11 +13,13 @@ namespace osc::mow { class ModelWarpDocument; }
 
 namespace osc::mow
 {
-    // an `IFrameWarperFactory` that produces an `IFrameWarper` that does nothing, because
-    // `StationDefinedFrame`s are automatically warped once the model's `Station`s are warped
+    // an `IFrameWarperFactory` that produces an `IFrameWarper` that does nothing
     //
-    // in contrast to a `IdentityFrameWarperFactory`, does not warn the user - warping this
-    // type of frame is well-defined
+    // - it does nothing because `StationDefinedFrame`s only require that the `IPointWarper`s
+    //   warp all stations in the model (which, by default, they do)
+    //
+    // - in contrast to a `IdentityFrameWarperFactory`, this frame warper does not warn the user
+    //   that there's a problem, because `StationDefinedFrame` warps are well-defined
     class StationDefinedFrameWarperFactory final : public IFrameWarperFactory {
     private:
         std::unique_ptr<IFrameWarperFactory> implClone() const override;
