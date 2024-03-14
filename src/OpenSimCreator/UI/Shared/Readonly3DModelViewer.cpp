@@ -152,6 +152,16 @@ public:
             std::nullopt;
     }
 
+    PolarPerspectiveCamera const& getCamera() const
+    {
+        return m_Params.camera;
+    }
+
+    void setCamera(PolarPerspectiveCamera const& camera)
+    {
+        m_Params.camera = camera;
+    }
+
 private:
     bool drawRulerButton()
     {
@@ -228,4 +238,14 @@ std::optional<SceneCollision> osc::Readonly3DModelViewer::onDraw(IConstModelStat
 std::optional<Rect> osc::Readonly3DModelViewer::getScreenRect() const
 {
     return m_Impl->getScreenRect();
+}
+
+PolarPerspectiveCamera const& osc::Readonly3DModelViewer::getCamera() const
+{
+    return m_Impl->getCamera();
+}
+
+void osc::Readonly3DModelViewer::setCamera(PolarPerspectiveCamera const& camera)
+{
+    m_Impl->setCamera(camera);
 }

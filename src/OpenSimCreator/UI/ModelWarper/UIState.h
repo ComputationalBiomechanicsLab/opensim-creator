@@ -6,6 +6,8 @@
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheckResult.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheckState.h>
 #include <OpenSimCreator/Documents/ModelWarper/WarpDetail.h>
+
+#include <oscar/Maths/PolarPerspectiveCamera.h>
 #include <oscar/UI/Tabs/ITabHost.h>
 #include <oscar/Utils/ParentPtr.h>
 
@@ -42,6 +44,11 @@ namespace osc::mow
         float getWarpBlendingFactor() const { return m_Document->getWarpBlendingFactor(); }
         void setWarpBlendingFactor(float v) { m_Document->setWarpBlendingFactor(v); }
 
+        bool isCameraLinked() const { return m_LinkCameras; }
+        bool isOnlyCameraRotationLinked() const { return m_OnlyLinkRotation; }
+        PolarPerspectiveCamera const& getLinkedCamera() const { return m_LinkedCamera; }
+        void setLinkedCamera(PolarPerspectiveCamera const& camera) { m_LinkedCamera = camera; }
+
         ValidationCheckState state() const { return m_Document->state(); }
         bool canWarpModel() const { return state() != ValidationCheckState::Error; }
         std::shared_ptr<IConstModelStatePair const> tryGetWarpedModel()
@@ -63,5 +70,9 @@ namespace osc::mow
         ParentPtr<ITabHost> m_TabHost;
         std::shared_ptr<ModelWarpDocument> m_Document = std::make_shared<ModelWarpDocument>();
         CachedModelWarper m_ModelWarper;
+
+        bool m_LinkCameras = true;
+        bool m_OnlyLinkRotation = false;
+        PolarPerspectiveCamera m_LinkedCamera;
     };
 }

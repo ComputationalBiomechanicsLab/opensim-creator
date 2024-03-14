@@ -9,6 +9,7 @@
 #include <string_view>
 
 namespace osc { class IConstModelStatePair; }
+namespace osc { struct PolarPerspectiveCamera; }
 
 namespace osc
 {
@@ -44,6 +45,8 @@ namespace osc
         bool isRightClicked() const;
         std::optional<SceneCollision> onDraw(IConstModelStatePair const&);
         std::optional<Rect> getScreenRect() const;
+        PolarPerspectiveCamera const& getCamera() const;
+        void setCamera(PolarPerspectiveCamera const&);
 
     private:
         class Impl;

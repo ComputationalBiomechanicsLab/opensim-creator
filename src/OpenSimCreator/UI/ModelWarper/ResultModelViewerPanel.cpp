@@ -19,6 +19,7 @@ public:
         StandardPanelImpl{panelName_},
         m_State{std::move(state_)}
     {}
+
 private:
     void implBeforeImGuiBegin() final
     {
@@ -33,7 +34,32 @@ private:
     void implDrawContent() final
     {
         if (auto warped = m_State->tryGetWarpedModel()) {
+            if (m_State->isCameraLinked()) {
+                if (m_State->isOnlyCameraRotationLinked()) {
+                    auto camera = m_ModelViewer.getCamera();
+                    camera.phi = m_State->getLinkedCamera().phi;
+                    camera.theta = m_State->getLinkedCamera().theta;
+                    m_ModelViewer.setCamera(camera);
+                }
+                else {
+                    m_ModelViewer.setCamera(m_State->getLinkedCamera());
+                }
+            }
+
             m_ModelViewer.onDraw(*warped);
+
+            // draw may have updated the camera, so flash is back
+            if (m_State->isCameraLinked()) {
+                if (m_State->isOnlyCameraRotationLinked()) {
+                    auto camera = m_State->getLinkedCamera();
+                    camera.phi = m_ModelViewer.getCamera().phi;
+                    camera.theta = m_ModelViewer.getCamera().theta;
+                    m_State->setLinkedCamera(camera);
+                }
+                else {
+                    m_State->setLinkedCamera(m_ModelViewer.getCamera());
+                }
+            }
         }
         else {
             ui::Text("cannot show result: model is not warpable");
