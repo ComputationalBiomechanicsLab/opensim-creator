@@ -4,10 +4,17 @@
 
 #include <gtest/gtest.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+#include <OpenSim/Simulation/Model/StationDefinedFrame.h>
+#include <OpenSimCreator/Documents/ModelWarper/IdentityFrameWarperFactory.h>
+#include <OpenSimCreator/Documents/ModelWarper/IFrameWarperFactory.h>
 #include <OpenSimCreator/Documents/ModelWarper/ModelWarpConfiguration.h>
+#include <OpenSimCreator/Documents/ModelWarper/StationDefinedFrameWarperFactory.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <filesystem>
 
+using namespace osc;
 using namespace osc::mow;
 
 namespace
@@ -43,4 +50,49 @@ TEST(FrameWarperFactories, WhenLoadingModelContainingPofsButNoWarpingConfigDoesN
     ModelWarpConfiguration const config{osimFileLocation, model};
 
     ASSERT_TRUE(FrameWarperFactories(osimFileLocation, model, config).empty());
+}
+
+TEST(FrameWarperFactories, WhenLoadingModelContainingPofsAndDefaultedWarpingPopulatesWarpFactoriesWithIdentityWarps)
+{
+    // tests that if an `.osim` is loaded that contains `OpenSim::PhysicalOffsetFrame`s (PoFs), and there
+    // is also an associated warping configuration that says "identity warp missing data", then the lookup
+    // should give identity warps to the PoFs
+
+    auto const osimFileLocation = ModelWarperFixturesDir() / "PofPairedIdentityWarp" / "model.osim";
+    OpenSim::Model model{osimFileLocation.string()};
+    ModelWarpConfiguration const config{osimFileLocation, model};
+
+    InitializeModel(model);
+    InitializeState(model);
+
+    FrameWarperFactories lookup(osimFileLocation, model, config);
+
+    ASSERT_FALSE(lookup.empty()) << "should populate lookup with identity warps (as specified in the config)";
+    for (auto const& pof : model.getComponentList<OpenSim::PhysicalOffsetFrame>()) {
+        if (IFrameWarperFactory const* factory =  lookup.find(GetAbsolutePathString(pof))) {
+            ASSERT_TRUE(dynamic_cast<IdentityFrameWarperFactory const*>(factory)) << "every PoF should have an identity warp";
+        }
+    }
+}
+
+TEST(FrameWarperFactories, WhenLoadingAModelUsingStationDefinedFramesAssignsStationDefinedFrameWarperToTheFrames)
+{
+    // tests that if an `.osim` is loaded that exclusively uses `OpenSim::StationDefinedFrame`s, then the lookup
+    // is populated with `StationDefinedFrameWarperFactory`s, rather than `IdentityFrameWarperFactory`s, because
+    // the implementation knows that these are safe frames to warp (so the user need not override things, etc.)
+
+    auto const osimFileLocation = ModelWarperFixturesDir() / "StationDefinedFramePaired" / "model.osim";
+    OpenSim::Model model{osimFileLocation.string()};
+    ModelWarpConfiguration const config{osimFileLocation, model};  // note: it has no associated config file
+
+    InitializeModel(model);
+    InitializeState(model);
+
+    FrameWarperFactories lookup(osimFileLocation, model, config);
+    ASSERT_FALSE(lookup.empty()) << "should populate lookup with station defined frame warps (even without a config: this is default behavior)";
+    for (auto const& pof : model.getComponentList<OpenSim::StationDefinedFrame>()) {
+        if (IFrameWarperFactory const* factory =  lookup.find(GetAbsolutePathString(pof))) {
+            ASSERT_TRUE(dynamic_cast<StationDefinedFrameWarperFactory const*>(factory)) << "every SdF should have a StationDefinedFrame warp";
+        }
+    }
 }
