@@ -140,7 +140,7 @@ private:
 
         // render from user's perspective on left-hand side
         for (auto const& dec : m_Decorations) {
-            AABB const aabb = transform_aabb(dec.mesh.getBounds(), dec.transform);
+            AABB const aabb = transform_aabb(dec.transform, dec.mesh.getBounds());
             if (is_inside_frustum(frustum, aabb)) {
                 Graphics::DrawMesh(dec.mesh, dec.transform, m_Material, m_UserCamera, m_BlueMaterialProps);
             }
@@ -150,7 +150,7 @@ private:
 
         // render from top-down perspective on right-hand side
         for (auto const& dec : m_Decorations) {
-            AABB const aabb = transform_aabb(dec.mesh.getBounds(), dec.transform);
+            AABB const aabb = transform_aabb(dec.transform, dec.mesh.getBounds());
             auto const& props = is_inside_frustum(frustum, aabb) ? m_BlueMaterialProps : m_RedMaterialProps;
             Graphics::DrawMesh(dec.mesh, dec.transform, m_Material, m_TopDownCamera, props);
         }

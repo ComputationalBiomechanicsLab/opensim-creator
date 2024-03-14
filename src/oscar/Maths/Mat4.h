@@ -8,9 +8,7 @@
 
 namespace osc
 {
-    // a 4x4 matrix
-    //
-    // implementation initially adapted from `glm::mat4`
+    // a 4x4 column-major matrix
     template<typename T>
     struct Mat<4, 4, T> {
         using col_type = Vec<4, T>;

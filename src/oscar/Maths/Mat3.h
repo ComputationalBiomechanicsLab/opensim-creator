@@ -8,9 +8,7 @@
 
 namespace osc
 {
-    // a 3x3 matrix
-    //
-    // implementation initially adapted from `glm::mat3`
+    // a 3x3 column-major matrix
     template<typename T>
     struct Mat<3, 3, T> {
         using col_type = Vec<3, T>;

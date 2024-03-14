@@ -201,7 +201,7 @@ void osc::DrawLineSegment(
 
 AABB osc::GetWorldspaceAABB(SceneDecoration const& cd)
 {
-    return transform_aabb(cd.mesh.getBounds(), cd.transform);
+    return transform_aabb(cd.transform, cd.mesh.getBounds());
 }
 
 void osc::UpdateSceneBVH(std::span<SceneDecoration const> sceneEls, BVH& bvh)

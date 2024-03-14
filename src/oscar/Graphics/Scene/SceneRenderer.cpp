@@ -48,7 +48,7 @@ namespace
 
     AABB WorldpaceAABB(SceneDecoration const& d)
     {
-        return transform_aabb(d.mesh.getBounds(), d.transform);
+        return transform_aabb(d.transform, d.mesh.getBounds());
     }
 
     struct RimHighlights final {

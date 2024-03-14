@@ -1294,7 +1294,7 @@ std::array<Vec3, 8> osc::corner_vertices(AABB const& aabb)
     return rv;
 }
 
-AABB osc::transform_aabb(AABB const& aabb, Mat4 const& m)
+AABB osc::transform_aabb(Mat4 const& m, AABB const& aabb)
 {
     return aabb_of(corner_vertices(aabb), [&](Vec3 const& vertex)
     {
@@ -1303,7 +1303,7 @@ AABB osc::transform_aabb(AABB const& aabb, Mat4 const& m)
     });
 }
 
-AABB osc::transform_aabb(AABB const& aabb, Transform const& t)
+AABB osc::transform_aabb(Transform const& t, AABB const& aabb)
 {
     // from real-time collision detection (the book)
     //
@@ -1340,7 +1340,7 @@ std::optional<Rect> osc::loosely_project_into_ndc(
     float zfar)
 {
     // create a new AABB in viewspace that bounds the worldspace AABB
-    AABB viewspaceAABB = transform_aabb(aabb, viewMat);
+    AABB viewspaceAABB = transform_aabb(viewMat, aabb);
 
     // z-test the viewspace AABB to see if any part of it it falls within the
     // camera's clipping planes
@@ -1360,7 +1360,7 @@ std::optional<Rect> osc::loosely_project_into_ndc(
     viewspaceAABB.max.z = clamp(viewspaceAABB.max.z, -zfar, -znear);
 
     // transform it into an NDC-aligned NDC-space AABB
-    AABB ndcAABB = transform_aabb(viewspaceAABB, projMat);
+    AABB ndcAABB = transform_aabb(projMat, viewspaceAABB);
 
     // take the X and Y coordinates of that AABB and ensure they are clamped to within bounds
     Rect rv{Vec2{ndcAABB.min}, Vec2{ndcAABB.max}};

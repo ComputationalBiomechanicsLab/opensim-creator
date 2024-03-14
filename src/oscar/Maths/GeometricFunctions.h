@@ -1,6 +1,5 @@
 #pragma once
 
-#include <oscar/Maths/UnitVec.h>
 #include <oscar/Maths/Vec.h>
 
 #include <cmath>
@@ -10,43 +9,41 @@
 
 namespace osc
 {
+    // returns the square root of `num`
     template<std::floating_point T>
-    T sqrt(T v)
+    T sqrt(T num)
     {
-        return std::sqrt(v);
+        return std::sqrt(num);
     }
 
+    // returns the inverse square root of `x` (i.e. `1/sqrt(x)`)
     template<std::floating_point T>
-    constexpr T dot(T a, T b)
+    T inversesqrt(T x)
     {
-        return a * b;
+        return static_cast<T>(1) / sqrt(x);
     }
 
+    // returns the dot product of `x` and `y` (i.e. `x * y`)
     template<typename T>
-    constexpr T dot(Vec<2, T> const& a, Vec<2, T> const& b)
+    constexpr T dot(T x, T y)
         requires std::is_arithmetic_v<T>
     {
-        Vec<2, T> tmp(a * b);
-        return tmp.x + tmp.y;
+        return x * y;
     }
 
-    template<typename T>
-    constexpr T dot(Vec<3, T> const& a, Vec<3, T> const& b)
-        requires std::is_arithmetic_v<T>
+    // returns the dot product of `x` and `y`
+    template<size_t L, typename T>
+    constexpr T dot(Vec<L, T> const& x, Vec<L, T> const& y)
+        requires std::is_arithmetic_v<T> && (L > 0)
     {
-        Vec<3, T> tmp(a * b);
-        return tmp.x + tmp.y + tmp.z;
+        T acc = x[0] * y[0];
+        for (size_t i = 1; i < L; ++i) {
+            acc += x[i] * y[i];
+        }
+        return acc;
     }
 
-    template<typename T>
-    constexpr T dot(Vec<4, T> const& a, Vec<4, T> const& b)
-        requires std::is_arithmetic_v<T>
-    {
-        Vec<4, T> tmp(a * b);
-        return tmp.x + tmp.y + tmp.z + tmp.w;
-    }
-
-    // calculates the cross product of the two vectors
+    // returns the cross product of `x` and `y`
     template<typename T>
     constexpr Vec<3, T> cross(Vec<3, T> const& x, Vec<3, T> const& y)
         requires std::is_arithmetic_v<T>
@@ -56,29 +53,6 @@ namespace osc
             x.z * y.x - y.z * x.x,
             x.x * y.y - y.x * x.y
         );
-    }
-
-    template<std::floating_point T>
-    constexpr UnitVec<3, T> cross(UnitVec<3, T> const& x, UnitVec<3, T> const& y)
-        requires std::is_arithmetic_v<T>
-    {
-        return UnitVec<3, T>::already_normalized(
-            x[1] * y[2] - y[1] * x[2],
-            x[2] * y[0] - y[2] * x[0],
-            x[0] * y[1] - y[0] * x[1]
-        );
-    }
-
-    template<std::floating_point T>
-    T inversesqrt(T x)
-    {
-        return static_cast<T>(1) / sqrt(x);
-    }
-
-    template<size_t L, std::floating_point T>
-    Vec<L, T> normalize(Vec<L, T> const& v)
-    {
-        return v * inversesqrt(dot(v, v));
     }
 
     // returns the length of the provided vector
@@ -93,5 +67,12 @@ namespace osc
     constexpr float length2(Vec<L, T> const& v)
     {
         return dot(v, v);
+    }
+
+    // returns `v` normalized to a length of 1
+    template<size_t L, std::floating_point T>
+    Vec<L, T> normalize(Vec<L, T> const& v)
+    {
+        return v * inversesqrt(dot(v, v));
     }
 }

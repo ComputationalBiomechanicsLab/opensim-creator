@@ -10,8 +10,8 @@
 
 #include <array>
 #include <cstdint>
+#include <concepts>
 #include <functional>
-#include <iterator>
 #include <optional>
 #include <ranges>
 
@@ -58,10 +58,10 @@ namespace osc
     std::array<Vec3, 8> corner_vertices(AABB const& aabb);
 
     // returns an `AABB` computed by transforming `aabb` with `m`
-    AABB transform_aabb(AABB const& aabb, Mat4 const& m);
+    AABB transform_aabb(Mat4 const& m, AABB const& aabb);
 
     // returns an `AABB` computed by transforming `aabb` with `t`
-    AABB transform_aabb(AABB const& aabb, Transform const& t);
+    AABB transform_aabb(Transform const& t, AABB const& aabb);
 
     // returns an `AABB` that tightly bounds `x`
     constexpr AABB aabb_of(Vec3 const& x)
@@ -139,7 +139,7 @@ namespace osc
         }
     }
 
-    // returns an `AABB` that tightly bounds any non-`std::nullopt` `AABB`s projected from `r`
+    // returns an `AABB` that tightly bounds any non-`std::nullopt` `std::optional<AABB>`s projected from `r`
     //
     // if no element in `r` projects an `AABB`, returns `std::nullopt`
     template<std::ranges::input_range Range, class Proj = std::identity>
