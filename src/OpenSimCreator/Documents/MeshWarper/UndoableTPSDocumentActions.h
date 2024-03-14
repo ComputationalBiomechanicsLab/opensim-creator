@@ -5,6 +5,7 @@
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentInputIdentifier.h>
 #include <OpenSimCreator/Documents/MeshWarper/UndoableTPSDocument.h>
 
+#include <oscar/Formats/OBJ.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Utils/UID.h>
 
@@ -74,7 +75,7 @@ namespace osc
     void ActionSavePairedLandmarksToCSV(TPSDocument const&, lm::LandmarkCSVFlags = lm::LandmarkCSVFlags::None);
 
     // prompts the user to save the mesh to an obj file
-    void ActionTrySaveMeshToObjFile(Mesh const&);
+    void ActionTrySaveMeshToObjFile(Mesh const&, ObjWriterFlags);
 
     // prompts the user to save the mesh to an stl file
     void ActionTrySaveMeshToStlFile(Mesh const&);

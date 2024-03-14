@@ -354,7 +354,7 @@ void osc::ActionSavePairedLandmarksToCSV(TPSDocument const& doc, lm::LandmarkCSV
     }
 }
 
-void osc::ActionTrySaveMeshToObjFile(Mesh const& mesh)
+void osc::ActionTrySaveMeshToObjFile(Mesh const& mesh, ObjWriterFlags flags)
 {
     std::optional<std::filesystem::path> const maybeSavePath =
         PromptUserForFileSaveLocationAndAddExtensionIfNecessary("obj");
@@ -383,7 +383,7 @@ void osc::ActionTrySaveMeshToObjFile(Mesh const& mesh)
         outputFileStream,
         mesh,
         objMetadata,
-        ObjWriterFlags::NoWriteNormals  // warping might have screwed them
+        flags
     );
 }
 

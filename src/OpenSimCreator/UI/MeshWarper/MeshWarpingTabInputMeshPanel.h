@@ -519,7 +519,11 @@ namespace osc
             {
                 if (ui::MenuItem("Mesh to OBJ"))
                 {
-                    ActionTrySaveMeshToObjFile(m_State->getScratchMesh(m_DocumentIdentifier));
+                    ActionTrySaveMeshToObjFile(m_State->getScratchMesh(m_DocumentIdentifier), ObjWriterFlags::Default);
+                }
+                if (ui::MenuItem("Mesh to OBJ (no normals)"))
+                {
+                    ActionTrySaveMeshToObjFile(m_State->getScratchMesh(m_DocumentIdentifier), ObjWriterFlags::NoWriteNormals);
                 }
                 if (ui::MenuItem("Mesh to STL"))
                 {
@@ -533,13 +537,16 @@ namespace osc
                 {
                     ActionSaveLandmarksToCSV(m_State->getScratch(), m_DocumentIdentifier, LandmarkCSVFlags::NoHeader | LandmarkCSVFlags::NoNames);
                 }
-                if (ui::MenuItem("Non-Participating Landmarks to CSV"))
+                if (m_DocumentIdentifier == TPSDocumentInputIdentifier::Source)
                 {
-                    ActionSaveNonParticipatingLandmarksToCSV(m_State->getScratch());
-                }
-                if (ui::MenuItem("Non-Participating Landmark Positions to CSV"))
-                {
-                    ActionSaveNonParticipatingLandmarksToCSV(m_State->getScratch(), LandmarkCSVFlags::NoHeader | LandmarkCSVFlags::NoNames);
+                    if (ui::MenuItem("Non-Participating Landmarks to CSV"))
+                    {
+                        ActionSaveNonParticipatingLandmarksToCSV(m_State->getScratch());
+                    }
+                    if (ui::MenuItem("Non-Participating Landmark Positions to CSV"))
+                    {
+                        ActionSaveNonParticipatingLandmarksToCSV(m_State->getScratch(), LandmarkCSVFlags::NoHeader | LandmarkCSVFlags::NoNames);
+                    }
                 }
                 ui::EndPopup();
             }
