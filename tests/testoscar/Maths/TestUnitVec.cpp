@@ -38,3 +38,18 @@ TEST(UnitVec, NormalizesVecArgs)
     ASSERT_EQ(UnitVec3(2.0f, 0.0f, 0.0f), UnitVec3(1.0f, 0.0f, 0.0f));
     ASSERT_EQ(UnitVec3(0.0f, 3.0f, 0.0f), UnitVec3(0.0f, 1.0f, 0.0f));
 }
+
+TEST(UnitVec, AlongXIsConstexprAndWorksAsIntended)
+{
+    static_assert(UnitVec3::along_x() == Vec3{1.0f, 0.0f, 0.0f});
+}
+
+TEST(UnitVec, AlongYIsConstexprAndWorksAsIntended)
+{
+    static_assert(UnitVec3::along_y() == Vec3{0.0f, 1.0f, 0.0f});
+}
+
+TEST(UnitVec, AlongZIsConstexprAndWorksAsIntended)
+{
+    static_assert(UnitVec3::along_z() == Vec3{0.0f, 0.0f, 1.0f});
+}

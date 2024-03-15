@@ -13,7 +13,7 @@ namespace osc::mow
     // a renderable model in-memory without having to write `obj` files or similar (which is
     // required by `OpenSim::Mesh`)
     class InMemoryMesh : public OpenSim::Geometry, public ICustomDecorationGenerator {
-        OpenSim_DECLARE_CONCRETE_OBJECT(InMemoryMesh, OpenSim::Geometry);
+        OpenSim_DECLARE_CONCRETE_OBJECT(InMemoryMesh, OpenSim::Geometry)
     public:
         InMemoryMesh() = default;
         explicit InMemoryMesh(Mesh const& mesh_) : m_OscMesh{mesh_} {}
