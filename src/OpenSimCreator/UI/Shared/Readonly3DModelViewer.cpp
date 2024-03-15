@@ -79,7 +79,7 @@ public:
             ui::UpdatePolarCameraFromImGuiInputs(
                 m_Params.camera,
                 m_MaybeLastHittest->rect,
-                m_CachedModelRenderer.getRootAABB()
+                m_CachedModelRenderer.getBounds()
             );
         }
 
@@ -117,7 +117,7 @@ public:
         bool const edited = DrawViewerImGuiOverlays(
             m_Params,
             m_CachedModelRenderer.getDrawlist(),
-            m_CachedModelRenderer.getRootAABB(),
+            m_CachedModelRenderer.getBounds(),
             hittest.rect,
             *m_IconCache,
             [this]() { return drawRulerButton(); }

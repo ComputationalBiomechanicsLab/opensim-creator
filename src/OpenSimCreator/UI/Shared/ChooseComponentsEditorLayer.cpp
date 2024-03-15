@@ -146,7 +146,7 @@ public:
         return ui::UpdatePolarCameraFromImGuiKeyboardInputs(
             params.updRenderParams().camera,
             state.viewportRect,
-            m_Decorations.bvh.getRootAABB()
+            m_Decorations.bvh.getBounds()
         );
     }
 

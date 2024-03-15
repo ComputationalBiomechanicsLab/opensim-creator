@@ -442,7 +442,7 @@ size_t osc::BVH::getMaxDepth() const
     return maxdepth;
 }
 
-std::optional<AABB> osc::BVH::getRootAABB() const
+std::optional<AABB> osc::BVH::getBounds() const
 {
     return !m_Nodes.empty() ? m_Nodes.front().getBounds() : std::optional<AABB>{};
 }

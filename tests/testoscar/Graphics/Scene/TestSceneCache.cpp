@@ -41,5 +41,5 @@ TEST(SceneMesh, GetBVHOnNonEmptyMeshReturnsExpectedRootNode)
     BVH const& bvh = c.getBVH(m);
 
     ASSERT_FALSE(bvh.empty());
-    ASSERT_EQ(expectedRoot, bvh.getRootAABB());
+    ASSERT_EQ(expectedRoot, bvh.getBounds());
 }

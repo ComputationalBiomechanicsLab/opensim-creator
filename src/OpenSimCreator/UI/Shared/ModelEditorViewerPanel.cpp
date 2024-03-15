@@ -441,7 +441,7 @@ private:
         }
 
         // update state scene AABB
-        m_State.maybeSceneAABB = m_State.getRenderer().getRootAABB();
+        m_State.maybeSceneAABB = m_State.getRenderer().getBounds();
 
         // if hovering in 2D, 3D-hittest the scene
         if (m_RenderIsHovered)

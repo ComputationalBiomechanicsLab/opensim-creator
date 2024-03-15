@@ -65,7 +65,7 @@ namespace osc
 
         // returns the AABB of the root node, or `std::nullopt` if there are no nodes in
         // the tree
-        std::optional<AABB> getRootAABB() const;
+        std::optional<AABB> getBounds() const;
 
         // calls the given function with each leaf node in the tree
         void forEachLeafNode(std::function<void(BVHNode const&)> const&) const;
