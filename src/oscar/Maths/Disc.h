@@ -6,7 +6,7 @@
 
 namespace osc
 {
-    // a planar disc in 3D space
+    // a region in a 3D plane bounded by a circle
     //
     // - see `Circle` for the 2D equivalent of this
     struct Disc final {

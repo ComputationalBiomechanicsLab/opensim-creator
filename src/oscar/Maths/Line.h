@@ -6,9 +6,9 @@
 
 namespace osc
 {
-    // an infinitely long positioned + oriented line in 3D space
+    // an infinitely long object with no width with an origin location and direction in 3D space
     //
-    // - see `LineSegment` for the finite version
+    // - see `LineSegment` for the finite version of this
     // - sometimes called `Ray` in the literature
     struct Line final {
         Vec3 origin{};

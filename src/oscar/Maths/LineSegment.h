@@ -9,7 +9,7 @@
 
 namespace osc
 {
-    // a finite-length line between two points in 3D space
+    // a finite-length line delimited by two endpoints in 3D space
     struct LineSegment final {
 
         constexpr friend bool operator==(LineSegment const&, LineSegment const&) = default;

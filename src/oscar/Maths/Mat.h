@@ -10,7 +10,7 @@
 
 namespace osc
 {
-    // a column-major matrix containing `C` columns and `R` rows of `T` values
+    // a column-major matrix containing `C` columns and `R` rows of type-`T` values
     template<size_t C, size_t R, typename T>
     struct Mat;
 

@@ -4,9 +4,9 @@
 
 namespace osc
 {
-    // a circle in 2D space
+    // a circle positioned at an origin location
     //
-    // - see `Disc` for the 3D equivalent
+    // - see `Disc` for the 3D equivalent of this
     struct Circle final {
         Vec2 origin{};
         float radius = 1.0f;
