@@ -1,11 +1,9 @@
 #pragma once
 
 #include <oscar/Maths/CoordinateAxis.h>
-#include <oscar/Maths/GeometricFunctions.h>
 #include <oscar/Maths/Negative.h>
-#include <oscar/Maths/UnitVec3.h>
 
-#include <optional>
+#include <cstdint>
 #include <type_traits>
 
 namespace osc

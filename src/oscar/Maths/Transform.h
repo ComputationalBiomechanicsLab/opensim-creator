@@ -10,7 +10,7 @@
 
 namespace osc
 {
-    // packaged-up SQT transform (orthogonal scale -> rotate -> translate)
+    // packaged-up SQT transform (scale -> rotate -> translate)
     struct Transform final {
 
         constexpr Transform with_position(Vec3 const& position_) const
