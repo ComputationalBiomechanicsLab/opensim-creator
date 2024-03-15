@@ -149,7 +149,7 @@ target_compile_options(oscar_compiler_configuration INTERFACE
     # gcc flags
     $<$<CXX_COMPILER_ID:GNU>:
         # produces false positives?
-        -Wno-maybe-uninitialized
+        -Wno-uninitialized
     >
 )
 target_link_options(oscar_compiler_configuration INTERFACE
