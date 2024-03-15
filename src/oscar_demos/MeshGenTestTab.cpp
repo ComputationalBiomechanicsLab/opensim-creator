@@ -39,7 +39,6 @@ namespace
             {"circle", cache.getCircleMesh()},
             {"100x100 grid", cache.get100x100GridMesh()},
             {"cube (wire)", cache.getCubeWireMesh()},
-            {"cube2 (wire)", WireframeGeometry{BoxGeometry{2.0f, 2.0f, 2.0f, 1, 1, 1}}},
             {"yline", cache.getYLineMesh()},
             {"quad", cache.getTexturedQuadMesh()},
             {"torus", cache.getTorusMesh(0.9f, 0.1f)},
@@ -50,13 +49,7 @@ namespace
             {"octahedron", OctahedronGeometry{}},
             {"tetrahedron", TetrahedronGeometry{}},
             {"lathe", LatheGeometry{LathePoints(), 3}},
-            {"circle2", CircleGeometry{1.0f, 16}},
             {"ring", RingGeometry{0.5f, 1.0f, 32, 3, Degrees{0}, Degrees{180}}},
-            {"torus2", TorusGeometry{0.9f, 0.1f, 12, 12, Degrees{360}}},
-            {"cylinder2", CylinderGeometry{1.0f, 1.0f, 2.0f, 16, 1}},
-            {"cone2", ConeGeometry{1.0f, 2.0f, 16}},
-            {"plane2", PlaneGeometry{2.0f, 2.0f, 1, 1}},
-            {"sphere2", SphereGeometry{1.0f, 16, 16}},
         };
     }
 }
