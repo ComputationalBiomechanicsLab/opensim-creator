@@ -26,13 +26,39 @@ namespace osc
         using iterator = T const*;
         using const_iterator = T const*;
 
-        // helper: constructs a UnitVec with arguments that are assumed to produce
-        // a normalized underlying vector without checking
+        // returns a UnitVec by constructing the underlying vector and assuming that it is already normalized
         template<typename... Args>
-        constexpr static UnitVec<L, T> already_normalized(Args&&... args)
+        static constexpr UnitVec<L, T> already_normalized(Args&&... args)
             requires std::constructible_from<Vec<L, T>, Args&&...>
         {
             return UnitVec<L, T>(AlreadyNormalizedTag{}, std::forward<Args>(args)...);
+        }
+
+        // returns a unit vector with X = T{1.0}
+        static constexpr UnitVec<L, T> along_x()
+            requires (L >= 1)
+        {
+            Vec<L, T> v{};
+            v.x = T{1.0};
+            return already_normalized(v);
+        }
+
+        // returns a unit vector with Y = T{1.0}
+        static constexpr UnitVec<L, T> along_y()
+            requires (L >= 2)
+        {
+            Vec<L, T> v{};
+            v.y = T{1.0};
+            return already_normalized(v);
+        }
+
+        // returns a unit vector with Z = T{1.0}
+        static constexpr UnitVec<L, T> along_z()
+            requires (L >= 3)
+        {
+            Vec<L, T> v{};
+            v.z = T{1.0};
+            return already_normalized(v);
         }
 
         // constructs a `UnitVec` containing NaNs

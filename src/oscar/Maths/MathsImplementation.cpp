@@ -565,9 +565,9 @@ void osc::PolarPerspectiveCamera::pan(float aspectRatio, Vec2 delta)
     // this assumes the scene is not rotated, so we need to rotate these
     // axes to match the scene's rotation
     Vec4 defaultPanningAx = {xAmt, yAmt, 0.0f, 1.0f};
-    auto rotTheta = rotate(identity<Mat4>(), theta, UnitVec3{0.0f, 1.0f, 0.0f});
+    auto rotTheta = rotate(identity<Mat4>(), theta, UnitVec3::along_y());
     auto thetaVec = UnitVec3{sin(theta), 0.0f, cos(theta)};
-    auto phiAxis = cross(thetaVec, UnitVec3{0.0, 1.0f, 0.0f});
+    auto phiAxis = cross(thetaVec, UnitVec3::along_y());
     auto rotPhi = rotate(identity<Mat4>(), phi, phiAxis);
 
     Vec4 panningAxes = rotPhi * rotTheta * defaultPanningAx;
