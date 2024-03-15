@@ -40,7 +40,7 @@ namespace osc
 
         // constructs a `UnitVec` by constructing the underlying `Vec`, followed by normalizing it
         template<typename... Args>
-        UnitVec(Args&&... args)
+        explicit UnitVec(Args&&... args)
             requires std::constructible_from<Vec<L, T>, Args&&...> :
 
             m_Data{normalize(Vec<L, T>{std::forward<Args>(args)...})}
@@ -62,12 +62,12 @@ namespace osc
 
         constexpr UnitVec operator+() const
         {
-            return UnitVec<3, T>::already_normalized(+m_Data);
+            return UnitVec<L, T>::already_normalized(+m_Data);
         }
 
         constexpr UnitVec operator-() const
         {
-            return UnitVec<3, T>::already_normalized(-m_Data);
+            return UnitVec<L, T>::already_normalized(-m_Data);
         }
 
         friend constexpr bool operator==(UnitVec const&, UnitVec const&) = default;

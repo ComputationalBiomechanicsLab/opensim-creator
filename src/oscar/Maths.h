@@ -11,6 +11,8 @@
 #include <oscar/Maths/CollisionTests.h>
 #include <oscar/Maths/CommonFunctions.h>
 #include <oscar/Maths/Constants.h>
+#include <oscar/Maths/CoordinateAxis.h>
+#include <oscar/Maths/CoordinateDirection.h>
 #include <oscar/Maths/Disc.h>
 #include <oscar/Maths/EasingFunctions.h>
 #include <oscar/Maths/Ellipsoid.h>

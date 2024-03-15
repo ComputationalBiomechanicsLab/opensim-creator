@@ -191,6 +191,8 @@ add_library(oscar STATIC
     Maths/CollisionTests.h
     Maths/CommonFunctions.h
     Maths/Constants.h
+    Maths/CoordinateAxis.h
+    Maths/CoordinateDirection.h
     Maths/Disc.h
     Maths/EasingFunctions.h
     Maths/Ellipsoid.h
@@ -208,6 +210,7 @@ add_library(oscar STATIC
     Maths/MathsImplementation.cpp
     Maths/Mat3.h
     Maths/Mat4.h
+    Maths/Negative.h
     Maths/Plane.h
     Maths/PlaneFunctions.h
     Maths/PointDirection.h

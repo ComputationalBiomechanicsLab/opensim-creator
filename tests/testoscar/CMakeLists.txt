@@ -46,6 +46,8 @@ add_executable(testoscar
     Maths/TestAngle.cpp
     Maths/TestBVH.cpp
     Maths/TestCommonFunctions.cpp
+    Maths/TestCoordinateAxis.cpp
+    Maths/TestCoordinateDirection.cpp
     Maths/TestFrameAxis.cpp
     Maths/TestPlaneFunctions.cpp
     Maths/TestTransform.cpp
