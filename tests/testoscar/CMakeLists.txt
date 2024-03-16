@@ -43,12 +43,14 @@ add_executable(testoscar
     Graphics/TestVertexAttribute.cpp
     Graphics/TestVertexFormat.cpp
 
+    Maths/TestAnalyticPlane.cpp
     Maths/TestAngle.cpp
     Maths/TestBVH.cpp
     Maths/TestCommonFunctions.cpp
     Maths/TestCoordinateAxis.cpp
     Maths/TestCoordinateDirection.cpp
     Maths/TestFrameAxis.cpp
+    Maths/TestFrustum.cpp
     Maths/TestPlaneFunctions.cpp
     Maths/TestTransform.cpp
     Maths/TestUnitVec.cpp
@@ -95,7 +97,7 @@ add_executable(testoscar
     TestingHelpers.cpp
     TestingHelpers.h
     testoscar.cpp  # entry point
- "Maths/TestAnalyticPlane.cpp")
+)
 
 
 configure_file(

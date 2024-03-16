@@ -8,6 +8,7 @@
 #include <oscar/Graphics/Scene/SceneRendererParams.h>
 #include <oscar/Maths/AABB.h>
 #include <oscar/Maths/BVH.h>
+#include <oscar/Maths/Frustum.h>
 #include <oscar/Maths/Line.h>
 #include <oscar/Maths/RayCollision.h>
 #include <oscar/Maths/Vec2.h>
@@ -19,6 +20,7 @@
 
 namespace osc { struct AABB; }
 namespace osc { class BVH; }
+namespace osc { class Camera; }
 namespace osc { class Mesh; }
 namespace osc { struct PolarPerspectiveCamera; }
 namespace osc { struct Rect; }
@@ -138,4 +140,8 @@ namespace osc
 
     // returns a triangle BVH for the given triangle mesh, or an empty BVH if the mesh is non-triangular or empty
     BVH CreateTriangleBVHFromMesh(Mesh const&);
+
+    // returns a `Frustum` that represents the clipping planes of `camera` when rendering to an output that has
+    // an aspect ratio of `aspectRatio`
+    Frustum CalcCameraFrustum(Camera const& camera, float aspectRatio);
 }

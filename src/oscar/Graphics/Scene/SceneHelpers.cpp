@@ -1,6 +1,7 @@
 #include "SceneHelpers.h"
 
 #include <oscar/Graphics/AntiAliasingLevel.h>
+#include <oscar/Graphics/Camera.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Graphics/MeshIndicesView.h>
@@ -12,14 +13,17 @@
 #include <oscar/Maths/Angle.h>
 #include <oscar/Maths/BVH.h>
 #include <oscar/Maths/CollisionTests.h>
+#include <oscar/Maths/GeometricFunctions.h>
 #include <oscar/Maths/Line.h>
 #include <oscar/Maths/LineSegment.h>
 #include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/PlaneFunctions.h>
 #include <oscar/Maths/PolarPerspectiveCamera.h>
 #include <oscar/Maths/Quat.h>
 #include <oscar/Maths/RayCollision.h>
 #include <oscar/Maths/Rect.h>
 #include <oscar/Maths/Transform.h>
+#include <oscar/Maths/TrigonometricFunctions.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Utils/Algorithms.h>
@@ -345,4 +349,29 @@ BVH osc::CreateTriangleBVHFromMesh(Mesh const& mesh)
     }
 
     return rv;
+}
+
+Frustum osc::CalcCameraFrustum(Camera const& camera, float aspectRatio)
+{
+    Radians const fovY = camera.getVerticalFOV();
+    float const zNear = camera.getNearClippingPlane();
+    float const zFar = camera.getFarClippingPlane();
+    float const halfVSize = zFar * tan(fovY * 0.5f);
+    float const halfHSize = halfVSize * aspectRatio;
+    Vec3 const pos = camera.getPosition();
+    Vec3 const front = camera.getDirection();
+    Vec3 const up = camera.getUpwardsDirection();
+    Vec3 const right = cross(front, up);
+    Vec3 const frontMultnear = zNear * front;
+    Vec3 const frontMultfar = zFar * front;
+
+    return {
+        // origin            // normal
+        to_analytic_plane(pos + frontMultnear, -front),                                                 // near
+        to_analytic_plane(pos + frontMultfar ,  front),                                                 // far
+        to_analytic_plane(pos                , -normalize(cross(frontMultfar - right*halfHSize, up))),  // right
+        to_analytic_plane(pos                , -normalize(cross(up, frontMultfar + right*halfHSize))),  // left
+        to_analytic_plane(pos                , -normalize(cross(right, frontMultfar - up*halfVSize))),  // top
+        to_analytic_plane(pos                , -normalize(cross(frontMultfar + up*halfVSize, right))),  // bottom
+    };
 }

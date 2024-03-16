@@ -7,6 +7,7 @@
 
 namespace osc { struct AABB; }
 namespace osc { struct Disc; }
+namespace osc { struct Frustum;}
 namespace osc { struct Line; }
 namespace osc { struct Plane; }
 namespace osc { struct Rect; }
@@ -16,6 +17,7 @@ namespace osc { struct Triangle; }
 namespace osc
 {
     bool is_intersecting(Rect const&, Vec2 const&);
+    bool is_intersecting(Frustum const&, AABB const&);
     std::optional<RayCollision> find_collision(Line const&, Sphere const&);
     std::optional<RayCollision> find_collision(Line const&, AABB const&);
     std::optional<RayCollision> find_collision(Line const&, Plane const&);
