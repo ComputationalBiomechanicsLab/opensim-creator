@@ -95,7 +95,7 @@ add_executable(testoscar
     TestingHelpers.cpp
     TestingHelpers.h
     testoscar.cpp  # entry point
-)
+ "Maths/TestAnalyticPlane.cpp")
 
 
 configure_file(
