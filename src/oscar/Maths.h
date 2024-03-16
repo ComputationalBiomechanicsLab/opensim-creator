@@ -2,6 +2,7 @@
 
 #include <oscar/Maths/AABB.h>
 #include <oscar/Maths/AABBFunctions.h>
+#include <oscar/Maths/AnalyticPlane.h>
 #include <oscar/Maths/Angle.h>
 #include <oscar/Maths/BVH.h>
 #include <oscar/Maths/BVHCollision.h>

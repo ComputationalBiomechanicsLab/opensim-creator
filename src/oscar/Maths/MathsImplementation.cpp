@@ -34,6 +34,13 @@ std::ostream& osc::operator<<(std::ostream& o, AABB const& aabb)
     return o << "AABB(min = " << aabb.min << ", max = " << aabb.max << ')';
 }
 
+// `AnalyticPlane` implementation
+
+std::ostream& osc::operator<<(std::ostream& o, AnalyticPlane const& plane)
+{
+    return o << "AnalyticPlane(distance = " << plane.distance << ", normal = " << plane.normal << ')';
+}
+
 
 // BVH implementation
 

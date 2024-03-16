@@ -182,6 +182,7 @@ add_library(oscar STATIC
 
     Maths/AABB.h
     Maths/AABBFunctions.h
+    Maths/AnalyticPlane.h
     Maths/Angle.h
     Maths/BVH.h
     Maths/BVHCollision.h
