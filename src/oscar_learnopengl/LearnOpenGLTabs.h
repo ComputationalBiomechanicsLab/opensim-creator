@@ -3,6 +3,7 @@
 #include <oscar_learnopengl/AdvancedLighting.h>
 #include <oscar_learnopengl/AdvancedOpenGL.h>
 #include <oscar_learnopengl/GettingStarted.h>
+#include <oscar_learnopengl/Guest.h>
 #include <oscar_learnopengl/Lighting.h>
 #include <oscar_learnopengl/PBR.h>
 
@@ -29,6 +30,8 @@ namespace osc {
         LOGLCoordinateSystemsTab,
         LOGLHelloTriangleTab,
         LOGLTexturingTab,
+
+        LOGLCSMTab,
 
         LOGLBasicLightingTab,
         LOGLLightingMapsTab,
