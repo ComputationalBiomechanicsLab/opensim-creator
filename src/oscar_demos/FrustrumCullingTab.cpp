@@ -99,7 +99,7 @@ private:
         float const xmid = midpoint(viewport.p1.x, viewport.p2.x);
         Rect const lhs = {viewport.p1, {xmid, viewport.p2.y}};
         Rect const rhs = {{xmid, viewport.p1.y}, viewport.p2};
-        Frustum const frustum = CalcCameraFrustum(m_UserCamera, AspectRatio(lhs));
+        FrustumPlanes const frustum = CalcCameraFrustumPlanes(m_UserCamera, AspectRatio(lhs));
 
         m_UserCamera.onDraw();  // update from inputs etc.
 

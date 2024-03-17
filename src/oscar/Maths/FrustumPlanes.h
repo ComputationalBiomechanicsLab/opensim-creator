@@ -7,7 +7,7 @@
 namespace osc
 {
     // represents the 6 clipping planes (pointing outwards) of a camera's frustum
-    struct Frustum final {
+    struct FrustumPlanes final {
         using value_type = AnalyticPlane;
         using size_type = size_t;
         using difference_type = ptrdiff_t;
@@ -18,7 +18,7 @@ namespace osc
         using iterator = AnalyticPlane*;
         using const_iterator = AnalyticPlane const*;
 
-        friend constexpr bool operator==(Frustum const&, Frustum const&) = default;
+        friend constexpr bool operator==(FrustumPlanes const&, FrustumPlanes const&) = default;
 
         constexpr size_t size() const { return 6; }
         constexpr pointer data() { return &p0; }

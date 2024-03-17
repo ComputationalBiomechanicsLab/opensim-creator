@@ -1467,7 +1467,7 @@ bool osc::is_intersecting(Rect const& r, Vec2 const& p)
     return (0.0f <= relPos.x && relPos.x <= dims.x) && (0.0f <= relPos.y && relPos.y <= dims.y);
 }
 
-bool osc::is_intersecting(Frustum const& frustum, AABB const& aabb)
+bool osc::is_intersecting(FrustumPlanes const& frustum, AABB const& aabb)
 {
     return !any_of(frustum, [&aabb](auto const& plane) { return is_in_front_of(plane, aabb); });
 }

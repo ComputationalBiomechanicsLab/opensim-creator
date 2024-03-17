@@ -20,7 +20,7 @@
 #include <oscar/Maths/EulerPerspectiveCamera.h>
 #include <oscar/Maths/Eulers.h>
 #include <oscar/Maths/FrameAxis.h>
-#include <oscar/Maths/Frustum.h>
+#include <oscar/Maths/FrustumPlanes.h>
 #include <oscar/Maths/Functors.h>
 #include <oscar/Maths/GeometricFunctions.h>
 #include <oscar/Maths/Line.h>

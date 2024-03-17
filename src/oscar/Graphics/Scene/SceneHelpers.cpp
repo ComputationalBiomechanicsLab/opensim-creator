@@ -351,7 +351,7 @@ BVH osc::CreateTriangleBVHFromMesh(Mesh const& mesh)
     return rv;
 }
 
-Frustum osc::CalcCameraFrustum(Camera const& camera, float aspectRatio)
+FrustumPlanes osc::CalcCameraFrustumPlanes(Camera const& camera, float aspectRatio)
 {
     Radians const fovY = camera.getVerticalFOV();
     float const zNear = camera.getNearClippingPlane();

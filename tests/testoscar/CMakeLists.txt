@@ -50,7 +50,7 @@ add_executable(testoscar
     Maths/TestCoordinateAxis.cpp
     Maths/TestCoordinateDirection.cpp
     Maths/TestFrameAxis.cpp
-    Maths/TestFrustum.cpp
+    Maths/TestFrustumPlanes.cpp
     Maths/TestPlaneFunctions.cpp
     Maths/TestTransform.cpp
     Maths/TestUnitVec.cpp

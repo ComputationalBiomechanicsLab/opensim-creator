@@ -8,7 +8,7 @@
 #include <oscar/Graphics/Scene/SceneRendererParams.h>
 #include <oscar/Maths/AABB.h>
 #include <oscar/Maths/BVH.h>
-#include <oscar/Maths/Frustum.h>
+#include <oscar/Maths/FrustumPlanes.h>
 #include <oscar/Maths/Line.h>
 #include <oscar/Maths/RayCollision.h>
 #include <oscar/Maths/Vec2.h>
@@ -143,5 +143,5 @@ namespace osc
 
     // returns a `Frustum` that represents the clipping planes of `camera` when rendering to an output that has
     // an aspect ratio of `aspectRatio`
-    Frustum CalcCameraFrustum(Camera const& camera, float aspectRatio);
+    FrustumPlanes CalcCameraFrustumPlanes(Camera const& camera, float aspectRatio);
 }
