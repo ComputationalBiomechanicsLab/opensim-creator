@@ -14,8 +14,8 @@ namespace osc
 
         constexpr friend bool operator==(LineSegment const&, LineSegment const&) = default;
 
-        Vec3 p1{};
-        Vec3 p2{};
+        Vec3 start{};
+        Vec3 end{};
     };
 
     std::ostream& operator<<(std::ostream&, LineSegment const&);
@@ -25,6 +25,6 @@ template<>
 struct std::hash<osc::LineSegment> {
     size_t operator()(osc::LineSegment const& ls) const
     {
-        return osc::HashOf(ls.p1, ls.p2);
+        return osc::HashOf(ls.start, ls.end);
     }
 };

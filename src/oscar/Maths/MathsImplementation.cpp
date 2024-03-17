@@ -796,7 +796,7 @@ std::ostream& osc::operator<<(std::ostream& o, Rect const& r)
 
 std::ostream& osc::operator<<(std::ostream& o, LineSegment const& d)
 {
-    return o << "LineSegment(p1 = " << d.p1 << ", p2 = " << d.p2 << ')';
+    return o << "LineSegment(start = " << d.start << ", end = " << d.end << ')';
 }
 
 
@@ -1379,8 +1379,8 @@ std::optional<Rect> osc::loosely_project_into_ndc(
 
 Mat4 osc::SegmentToSegmentMat4(LineSegment const& a, LineSegment const& b)
 {
-    Vec3 a1ToA2 = a.p2 - a.p1;
-    Vec3 b1ToB2 = b.p2 - b.p1;
+    Vec3 a1ToA2 = a.end - a.start;
+    Vec3 b1ToB2 = b.end - b.start;
 
     float aLen = length(a1ToA2);
     float bLen = length(b1ToB2);
@@ -1388,8 +1388,8 @@ Mat4 osc::SegmentToSegmentMat4(LineSegment const& a, LineSegment const& b)
     Vec3 aDir = a1ToA2 / aLen;
     Vec3 bDir = b1ToB2 / bLen;
 
-    Vec3 aCenter = (a.p1 + a.p2)/2.0f;
-    Vec3 bCenter = (b.p1 + b.p2)/2.0f;
+    Vec3 aCenter = (a.start + a.end)/2.0f;
+    Vec3 bCenter = (b.start + b.end)/2.0f;
 
     // this is essentially LERPing [0,1] onto [1, l] to rescale only
     // along the line's original direction
@@ -1404,8 +1404,8 @@ Mat4 osc::SegmentToSegmentMat4(LineSegment const& a, LineSegment const& b)
 
 Transform osc::SegmentToSegmentTransform(LineSegment const& a, LineSegment const& b)
 {
-    Vec3 aLine = a.p2 - a.p1;
-    Vec3 bLine = b.p2 - b.p1;
+    Vec3 aLine = a.end - a.start;
+    Vec3 bLine = b.end - b.start;
 
     float aLen = length(aLine);
     float bLen = length(bLine);
@@ -1413,8 +1413,8 @@ Transform osc::SegmentToSegmentTransform(LineSegment const& a, LineSegment const
     Vec3 aDir = aLine / aLen;
     Vec3 bDir = bLine / bLen;
 
-    Vec3 aMid = (a.p1 + a.p2)/2.0f;
-    Vec3 bMid = (b.p1 + b.p2)/2.0f;
+    Vec3 aMid = (a.start + a.end)/2.0f;
+    Vec3 bMid = (b.start + b.end)/2.0f;
 
     // for scale: LERP [0,1] onto [1,l] along original direction
     Transform t;

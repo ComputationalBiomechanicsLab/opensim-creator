@@ -40,15 +40,15 @@ osc::WireframeGeometry::WireframeGeometry(Mesh const& mesh)
         };
 
         if (auto ab = orderedEdge(a, b); edges.emplace(ab).second) {
-            points.insert(points.end(), {ab.p1, ab.p2});
+            points.insert(points.end(), {ab.start, ab.end});
         }
 
         if (auto ac = orderedEdge(a, c); edges.emplace(ac).second) {
-            points.insert(points.end(), {ac.p1, ac.p2});
+            points.insert(points.end(), {ac.start, ac.end});
         }
 
         if (auto bc = orderedEdge(b, c); edges.emplace(bc).second) {
-            points.insert(points.end(), {bc.p1, bc.p2});
+            points.insert(points.end(), {bc.start, bc.end});
         }
     });
 
