@@ -209,7 +209,7 @@ namespace
         ForwardDynamicSimulatorParams const& params = input.getParams();
 
         // create + init an integrator
-        auto integ = CreateIntegrator(input.getMultiBodySystem(), params.integratorMethodUsed);
+        auto integ = params.integratorMethodUsed.instantiate(input.getMultiBodySystem());
         integ->setInternalStepLimit(params.integratorStepLimit);
         integ->setMinimumStepSize(params.integratorMinimumStepSize.count());
         integ->setMaximumStepSize(params.integratorMaximumStepSize.count());

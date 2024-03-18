@@ -118,7 +118,7 @@ public:
                 ui::TableNextRow();
                 int column = 0;
                 ui::TableSetColumnIndex(column++);
-                ui::TextUnformatted(GetIntegratorMethodString(m));
+                ui::TextUnformatted(m.label());
                 ui::TableSetColumnIndex(column++);
                 ui::ProgressBar(sim.getProgress());
                 ui::TableSetColumnIndex(column++);
@@ -175,11 +175,10 @@ private:
             }
 
             IntegratorMethod m = std::get<IntegratorMethod>(sim.getParams().findValue("Integrator Method").value());
-            CStringView const integratorMethodStr = GetIntegratorMethodString(m);
             float t = m_WalltimeExtractor.getValueFloat(*sim.getModel(), reports.back());
             float steps = m_StepsTakenExtractor.getValueFloat(*sim.getModel(), reports.back());
 
-            fout << integratorMethodStr << ',' << t << ',' << steps << '\n';
+            fout << m.label() << ',' << t << ',' << steps << '\n';
         }
     }
 
@@ -192,7 +191,7 @@ private:
         ForwardDynamicSimulatorParams params = FromParamBlock(m_BaseParams);
 
         // for now, just permute through integration methods
-        for (IntegratorMethod m : GetAllIntegratorMethods())
+        for (IntegratorMethod m : IntegratorMethod::all())
         {
             params.integratorMethodUsed = m;
             m_Params.push_back(params);

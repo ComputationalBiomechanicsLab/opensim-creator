@@ -53,19 +53,17 @@ namespace
 
     bool DrawEditor(ParamBlock& b, int idx, IntegratorMethod im)
     {
-        std::span<CStringView const> const methodStrings =
-            GetAllIntegratorMethodStrings();
-        auto method = static_cast<size_t>(im);
-
-        if (ui::Combo("##", &method, methodStrings))
-        {
-            b.setValue(idx, static_cast<IntegratorMethod>(method));
-            return true;
+        bool rv = false;
+        if (ui::BeginCombo("##", im.label())) {
+            for (IntegratorMethod m : IntegratorMethod::all()) {
+                if (ui::Selectable(m.label(), m == im)) {
+                    b.setValue(idx, m);
+                    rv = true;
+                }
+            }
+            ui::EndCombo();
         }
-        else
-        {
-            return false;
-        }
+        return rv;
     }
 
     bool DrawEditor(ParamBlock& b, int idx)

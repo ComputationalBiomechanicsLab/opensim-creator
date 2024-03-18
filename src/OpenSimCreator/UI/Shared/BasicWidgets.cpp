@@ -178,7 +178,7 @@ namespace
         }
         else if (std::holds_alternative<IntegratorMethod>(v))
         {
-            ui::Text(GetIntegratorMethodString(std::get<IntegratorMethod>(v)));
+            ui::Text(std::get<IntegratorMethod>(v).label());
         }
         else if (std::holds_alternative<int>(v))
         {

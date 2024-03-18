@@ -33,7 +33,7 @@ namespace
 
 osc::ForwardDynamicSimulatorParams::ForwardDynamicSimulatorParams() :
     finalTime{SimulationClock::start() + SimulationClock::duration{10.0}},
-    integratorMethodUsed{IntegratorMethod::OpenSimManagerDefault},
+    integratorMethodUsed{},
     reportingInterval{1.0/100.0},
     integratorStepLimit{20000},
     integratorMinimumStepSize{1.0e-8},
