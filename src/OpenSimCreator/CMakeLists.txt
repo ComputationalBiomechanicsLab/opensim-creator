@@ -204,6 +204,7 @@ add_library(OpenSimCreator STATIC
     OutputExtractors/MultiBodySystemOutputExtractor.h
     OutputExtractors/OutputExtractor.cpp
     OutputExtractors/OutputExtractor.h
+    OutputExtractors/OutputExtractorDataType.h
 
     Platform/OpenSimCreatorApp.cpp
     Platform/OpenSimCreatorApp.h
@@ -392,7 +393,7 @@ add_library(OpenSimCreator STATIC
     Utils/SimTKHelpers.h
     Utils/TPS3D.cpp
     Utils/TPS3D.h
-)
+ )
 
 # OpenSimCreatorConfig.h
 #

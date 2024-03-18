@@ -28,34 +28,29 @@ namespace osc
             ExtractorFn extractor
         );
 
-        CStringView getName() const final;
-        CStringView getDescription() const final;
+        UID getAuxiliaryDataID() const;
+        ExtractorFn getExtractorFunction() const;
 
-        OutputType getOutputType() const final;
+    private:
+        CStringView implGetName() const final;
+        CStringView implGetDescription() const final;
 
-        float getValueFloat(
-            OpenSim::Component const&,
-            SimulationReport const&
-        ) const final;
+        OutputExtractorDataType implGetOutputType() const final;
 
-        void getValuesFloat(
+        void implGetValuesFloat(
             OpenSim::Component const&,
             std::span<SimulationReport const>,
             std::span<float> overwriteOut
         ) const final;
 
-        std::string getValueString(
+        std::string implGetValueString(
             OpenSim::Component const&,
             SimulationReport const&
         ) const final;
 
-        size_t getHash() const final;
-        bool equals(IOutputExtractor const&) const final;
+        size_t implGetHash() const final;
+        bool implEquals(IOutputExtractor const&) const final;
 
-        UID getAuxiliaryDataID() const;
-        ExtractorFn getExtractorFunction() const;
-
-    private:
         UID m_AuxiliaryDataID;
         std::string m_Name;
         std::string m_Description;

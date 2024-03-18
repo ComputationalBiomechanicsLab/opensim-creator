@@ -21,30 +21,29 @@ namespace osc
     //
     // This is a value-type that can be compared, hashed, etc. for easier usage
     // by other parts of osc (e.g. aggregators, plotters)
-    class OutputExtractor final : public IOutputExtractor {
+    class OutputExtractor final {
     public:
         template<typename SpecificOutput>
         explicit OutputExtractor(SpecificOutput&& output) :
             m_Output{std::make_shared<SpecificOutput>(std::forward<SpecificOutput>(output))}
-        {
-        }
+        {}
 
-        CStringView getName() const final
+        CStringView getName() const
         {
             return m_Output->getName();
         }
 
-        CStringView getDescription() const final
+        CStringView getDescription() const
         {
             return m_Output->getDescription();
         }
 
-        OutputType getOutputType() const final
+        OutputExtractorDataType getOutputType() const
         {
             return m_Output->getOutputType();
         }
 
-        float getValueFloat(OpenSim::Component const& c, SimulationReport const& r) const final
+        float getValueFloat(OpenSim::Component const& c, SimulationReport const& r) const
         {
             return m_Output->getValueFloat(c, r);
         }
@@ -52,24 +51,29 @@ namespace osc
         void getValuesFloat(
             OpenSim::Component const& c,
             std::span<SimulationReport const> reports,
-            std::span<float> overwriteOut) const final
+            std::span<float> overwriteOut) const
         {
             m_Output->getValuesFloat(c, reports, overwriteOut);
         }
 
-        std::string getValueString(OpenSim::Component const& c, SimulationReport const& r) const final
+        std::string getValueString(OpenSim::Component const& c, SimulationReport const& r) const
         {
             return m_Output->getValueString(c, r);
         }
 
-        size_t getHash() const final
+        size_t getHash() const
         {
             return m_Output->getHash();
         }
 
-        bool equals(IOutputExtractor const& other) const final
+        bool equals(IOutputExtractor const& other) const
         {
             return m_Output->equals(other);
+        }
+
+        operator IOutputExtractor const& () const
+        {
+            return *m_Output;
         }
 
         IOutputExtractor const& getInner() const
@@ -85,7 +89,7 @@ namespace osc
         friend std::string to_string(OutputExtractor const&);
         friend struct std::hash<OutputExtractor>;
 
-        std::shared_ptr<IOutputExtractor> m_Output;
+        std::shared_ptr<IOutputExtractor const> m_Output;
     };
 
     std::ostream& operator<<(std::ostream&, OutputExtractor const&);

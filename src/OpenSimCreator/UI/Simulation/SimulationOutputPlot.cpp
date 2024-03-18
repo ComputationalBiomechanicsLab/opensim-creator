@@ -116,7 +116,7 @@ namespace
         ISimulation& sim,
         IOutputExtractor const& output)
     {
-        OSC_ASSERT(output.getOutputType() == OutputType::Float);
+        OSC_ASSERT(output.getOutputType() == OutputExtractorDataType::Float);
 
         std::vector<SimulationReport> reports = sim.getAllSimulationReports();
         std::vector<float> values = PopulateFirstNNumericOutputValues(*sim.getModel(), reports, output);
@@ -150,7 +150,7 @@ namespace
         ISimulation& sim,
         OutputExtractor const& output)
     {
-        OSC_ASSERT(output.getOutputType() == OutputType::Float);
+        OSC_ASSERT(output.getOutputType() == OutputExtractorDataType::Float);
 
         if (ui::MenuItem(ICON_FA_SAVE "Save as CSV"))
         {
@@ -241,18 +241,18 @@ public:
         ISimulation& sim = m_API->updSimulation();
 
         ptrdiff_t const nReports = sim.getNumReports();
-        OutputType outputType = m_OutputExtractor.getOutputType();
+        OutputExtractorDataType outputType = m_OutputExtractor.getOutputType();
 
         if (nReports <= 0)
         {
             ui::Text("no data (yet)");
         }
-        else if (outputType == OutputType::Float)
+        else if (outputType == OutputExtractorDataType::Float)
         {
             ui::SetNextItemWidth(ui::GetContentRegionAvail().x);
             drawFloatOutputPlot(sim);
         }
-        else if (outputType == OutputType::String)
+        else if (outputType == OutputExtractorDataType::String)
         {
             SimulationReport r = m_API->trySelectReportBasedOnScrubbing().value_or(sim.getSimulationReport(nReports - 1));
             ui::TextUnformatted(m_OutputExtractor.getValueString(*sim.getModel(), r));
@@ -273,7 +273,7 @@ public:
 private:
     void drawFloatOutputPlot(ISimulation& sim)
     {
-        OSC_ASSERT(m_OutputExtractor.getOutputType() == OutputType::Float);
+        OSC_ASSERT(m_OutputExtractor.getOutputType() == OutputExtractorDataType::Float);
 
         ImU32 const currentTimeLineColor = ui::ToImU32(Color::yellow().with_alpha(0.6f));
         ImU32 const hoverTimeLineColor = ui::ToImU32(Color::yellow().with_alpha(0.3f));

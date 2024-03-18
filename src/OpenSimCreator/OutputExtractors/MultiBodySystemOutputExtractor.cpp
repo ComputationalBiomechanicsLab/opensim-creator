@@ -60,30 +60,25 @@ osc::MultiBodySystemOutputExtractor::MultiBodySystemOutputExtractor(std::string_
 {
 }
 
-CStringView osc::MultiBodySystemOutputExtractor::getName() const
+CStringView osc::MultiBodySystemOutputExtractor::implGetName() const
 {
     return m_Name;
 }
 
-CStringView osc::MultiBodySystemOutputExtractor::getDescription() const
+CStringView osc::MultiBodySystemOutputExtractor::implGetDescription() const
 {
     return m_Description;
 }
 
-OutputType osc::MultiBodySystemOutputExtractor::getOutputType() const
+OutputExtractorDataType osc::MultiBodySystemOutputExtractor::implGetOutputType() const
 {
-    return OutputType::Float;
+    return OutputExtractorDataType::Float;
 }
 
-float osc::MultiBodySystemOutputExtractor::getValueFloat(OpenSim::Component const&,
-                                                         SimulationReport const& report) const
-{
-    return report.getAuxiliaryValue(m_AuxiliaryDataID).value_or(quiet_nan_v<float>);
-}
-
-void osc::MultiBodySystemOutputExtractor::getValuesFloat(OpenSim::Component const&,
-                                                         std::span<SimulationReport const> reports,
-                                                         std::span<float> out) const
+void osc::MultiBodySystemOutputExtractor::implGetValuesFloat(
+    OpenSim::Component const&,
+    std::span<SimulationReport const> reports,
+    std::span<float> out) const
 {
     OSC_ASSERT_ALWAYS(reports.size() == out.size());
     for (size_t i = 0; i < reports.size(); ++i)
@@ -92,8 +87,9 @@ void osc::MultiBodySystemOutputExtractor::getValuesFloat(OpenSim::Component cons
     }
 }
 
-std::string osc::MultiBodySystemOutputExtractor::getValueString(OpenSim::Component const& c,
-                                                                SimulationReport const& report) const
+std::string osc::MultiBodySystemOutputExtractor::implGetValueString(
+    OpenSim::Component const& c,
+    SimulationReport const& report) const
 {
     return std::to_string(getValueFloat(c, report));
 }
@@ -108,12 +104,12 @@ osc::MultiBodySystemOutputExtractor::ExtractorFn osc::MultiBodySystemOutputExtra
     return m_Extractor;
 }
 
-std::size_t osc::MultiBodySystemOutputExtractor::getHash() const
+std::size_t osc::MultiBodySystemOutputExtractor::implGetHash() const
 {
     return HashOf(m_AuxiliaryDataID, m_Name, m_Description, m_Extractor);
 }
 
-bool osc::MultiBodySystemOutputExtractor::equals(IOutputExtractor const& other) const
+bool osc::MultiBodySystemOutputExtractor::implEquals(IOutputExtractor const& other) const
 {
     if (&other == this)
     {

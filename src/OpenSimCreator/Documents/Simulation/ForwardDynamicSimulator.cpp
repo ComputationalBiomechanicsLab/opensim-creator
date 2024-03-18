@@ -102,32 +102,26 @@ namespace
         {
         }
 
-        CStringView getName() const final
+    private:
+        CStringView implGetName() const final
         {
             return m_Name;
         }
 
-        CStringView getDescription() const final
+        CStringView implGetDescription() const final
         {
             return m_Description;
         }
 
-        OutputType getOutputType() const final
+        OutputExtractorDataType implGetOutputType() const final
         {
-            return OutputType::Float;
+            return OutputExtractorDataType::Float;
         }
 
-        float getValueFloat(OpenSim::Component const& c, SimulationReport const& report) const final
-        {
-            std::span<SimulationReport const> reports(&report, 1);
-            std::array<float, 1> out{};
-            getValuesFloat(c, reports, out);
-            return out.front();
-        }
-
-        void getValuesFloat(OpenSim::Component const&,
-                            std::span<SimulationReport const> reports,
-                            std::span<float> overwriteOut) const final
+        void implGetValuesFloat(
+            OpenSim::Component const&,
+            std::span<SimulationReport const> reports,
+            std::span<float> overwriteOut) const final
         {
             for (size_t i = 0; i < reports.size(); ++i)
             {
@@ -135,17 +129,17 @@ namespace
             }
         }
 
-        std::string getValueString(OpenSim::Component const& c, SimulationReport const& report) const final
+        std::string implGetValueString(OpenSim::Component const& c, SimulationReport const& report) const final
         {
             return std::to_string(getValueFloat(c, report));
         }
 
-        std::size_t getHash() const final
+        std::size_t implGetHash() const final
         {
             return HashOf(m_Name, m_Description, m_UID);
         }
 
-        bool equals(IOutputExtractor const& other) const final
+        bool implEquals(IOutputExtractor const& other) const final
         {
             if (&other == this)
             {

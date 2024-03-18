@@ -80,7 +80,7 @@ private:
         ui::SameLine();
         ui::DrawHelpMarker("Various statistics collected when the simulation was ran");
         ui::NextColumn();
-        if (any_of(outputs, [](OutputExtractor const& o) { return o.getOutputType() == OutputType::Float; }))
+        if (any_of(outputs, [](OutputExtractor const& o) { return o.getOutputType() == OutputExtractorDataType::Float; }))
         {
             ui::Button(ICON_FA_SAVE " Save All " ICON_FA_CARET_DOWN);
             if (ui::BeginPopupContextItem("##exportoptions", ImGuiPopupFlags_MouseButtonLeft))

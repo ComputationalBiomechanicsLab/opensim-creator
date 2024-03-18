@@ -123,29 +123,25 @@ osc::IntegratorOutputExtractor::IntegratorOutputExtractor(std::string_view name,
 {
 }
 
-CStringView osc::IntegratorOutputExtractor::getName() const
+CStringView osc::IntegratorOutputExtractor::implGetName() const
 {
     return m_Name;
 }
 
-CStringView osc::IntegratorOutputExtractor::getDescription() const
+CStringView osc::IntegratorOutputExtractor::implGetDescription() const
 {
     return m_Description;
 }
 
-OutputType osc::IntegratorOutputExtractor::getOutputType() const
+OutputExtractorDataType osc::IntegratorOutputExtractor::implGetOutputType() const
 {
-    return OutputType::Float;
+    return OutputExtractorDataType::Float;
 }
 
-float osc::IntegratorOutputExtractor::getValueFloat(OpenSim::Component const&, SimulationReport const& report) const
-{
-    return report.getAuxiliaryValue(m_AuxiliaryDataID).value_or(quiet_nan_v<float>);
-}
-
-void osc::IntegratorOutputExtractor::getValuesFloat(OpenSim::Component const&,
-                                           std::span<SimulationReport const> reports,
-                                           std::span<float> out) const
+void osc::IntegratorOutputExtractor::implGetValuesFloat(
+    OpenSim::Component const&,
+    std::span<SimulationReport const> reports,
+    std::span<float> out) const
 {
     OSC_ASSERT_ALWAYS(reports.size() == out.size());
     for (size_t i = 0; i < reports.size(); ++i)
@@ -154,7 +150,7 @@ void osc::IntegratorOutputExtractor::getValuesFloat(OpenSim::Component const&,
     }
 }
 
-std::string osc::IntegratorOutputExtractor::getValueString(OpenSim::Component const&, SimulationReport const& report) const
+std::string osc::IntegratorOutputExtractor::implGetValueString(OpenSim::Component const&, SimulationReport const& report) const
 {
     return std::to_string(report.getAuxiliaryValue(m_AuxiliaryDataID).value_or(quiet_nan_v<float>));
 }
@@ -169,12 +165,12 @@ IntegratorOutputExtractor::ExtractorFn osc::IntegratorOutputExtractor::getExtrac
     return m_Extractor;
 }
 
-std::size_t osc::IntegratorOutputExtractor::getHash() const
+std::size_t osc::IntegratorOutputExtractor::implGetHash() const
 {
     return HashOf(m_AuxiliaryDataID, m_Name, m_Description, m_Extractor);
 }
 
-bool osc::IntegratorOutputExtractor::equals(IOutputExtractor const& other) const
+bool osc::IntegratorOutputExtractor::implEquals(IOutputExtractor const& other) const
 {
     if (this == &other)
     {

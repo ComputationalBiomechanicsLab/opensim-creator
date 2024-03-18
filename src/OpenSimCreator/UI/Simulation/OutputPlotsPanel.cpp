@@ -23,7 +23,7 @@ namespace
     {
         for (int i = 0; i < api.getNumUserOutputExtractors(); ++i)
         {
-            if (api.getUserOutputExtractor(i).getOutputType() == OutputType::Float)
+            if (api.getUserOutputExtractor(i).getOutputType() == OutputExtractorDataType::Float)
             {
                 return true;
             }

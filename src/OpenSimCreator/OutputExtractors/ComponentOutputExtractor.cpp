@@ -189,17 +189,9 @@ public:
         return m_ExtractorFunc != nullptr;
     }
 
-    OutputType getOutputType() const
+    OutputExtractorDataType getOutputType() const
     {
-        return m_ExtractorFunc ? OutputType::Float : OutputType::String;
-    }
-
-    float getValueFloat(OpenSim::Component const& c, SimulationReport const& r) const
-    {
-        std::array<float, 1> v{};
-        std::span<SimulationReport const> const reports(&r, 1);
-        getValuesFloat(c, reports, v);
-        return v.front();
+        return m_ExtractorFunc ? OutputExtractorDataType::Float : OutputExtractorDataType::String;
     }
 
     void getValuesFloat(OpenSim::Component const& c,
@@ -340,46 +332,42 @@ OpenSim::ComponentPath const& osc::ComponentOutputExtractor::getComponentAbsPath
     return m_Impl->getComponentAbsPath();
 }
 
-CStringView osc::ComponentOutputExtractor::getName() const
+CStringView osc::ComponentOutputExtractor::implGetName() const
 {
     return m_Impl->getName();
 }
 
-CStringView osc::ComponentOutputExtractor::getDescription() const
+CStringView osc::ComponentOutputExtractor::implGetDescription() const
 {
     return m_Impl->getDescription();
 }
 
-OutputType osc::ComponentOutputExtractor::getOutputType() const
+OutputExtractorDataType osc::ComponentOutputExtractor::implGetOutputType() const
 {
     return m_Impl->getOutputType();
 }
 
-float osc::ComponentOutputExtractor::getValueFloat(OpenSim::Component const& c,
-                                                   SimulationReport const& r) const
-{
-    return m_Impl->getValueFloat(c, r);
-}
-
-void osc::ComponentOutputExtractor::getValuesFloat(OpenSim::Component const& c,
-                                                   std::span<SimulationReport const> reports,
-                                                   std::span<float> out) const
+void osc::ComponentOutputExtractor::implGetValuesFloat(
+    OpenSim::Component const& c,
+    std::span<SimulationReport const> reports,
+    std::span<float> out) const
 {
     m_Impl->getValuesFloat(c, reports, out);
 }
 
-std::string osc::ComponentOutputExtractor::getValueString(OpenSim::Component const& c,
-                                                          SimulationReport const& r) const
+std::string osc::ComponentOutputExtractor::implGetValueString(
+    OpenSim::Component const& c,
+    SimulationReport const& r) const
 {
     return m_Impl->getValueString(c, r);
 }
 
-std::size_t osc::ComponentOutputExtractor::getHash() const
+std::size_t osc::ComponentOutputExtractor::implGetHash() const
 {
     return m_Impl->getHash();
 }
 
-bool osc::ComponentOutputExtractor::equals(IOutputExtractor const& other) const
+bool osc::ComponentOutputExtractor::implEquals(IOutputExtractor const& other) const
 {
     return m_Impl->equals(other);
 }
