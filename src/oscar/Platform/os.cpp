@@ -90,9 +90,9 @@ std::filesystem::path osc::GetUserDataDir(
     return convertSDLPathToStdpath("SDL_GetPrefPath", p.get());
 }
 
-bool osc::SetClipboardText(CStringView sv)
+bool osc::SetClipboardText(CStringView content)
 {
-    return SDL_SetClipboardText(sv.c_str()) == 0;
+    return SDL_SetClipboardText(content.c_str()) == 0;
 }
 
 void osc::SetEnv(CStringView name, CStringView value, bool overwrite)

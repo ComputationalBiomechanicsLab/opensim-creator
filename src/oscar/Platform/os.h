@@ -17,17 +17,15 @@ namespace osc
     std::tm GetSystemCalendarTime();
 
     // returns a `std::tm` populated 'as-if' by calling `std::gmtime(&t)`, but in
-    // an OS-defined threadsafe way
-    //
-    // note: C++20 may make this obsolete (timezone and calendar support)
+    // an implementation-defined threadsafe way
     std::tm GMTimeThreadsafe(std::time_t);
 
-    // returns a `std::string` describing the current value of `errno` in an OS-defined
-    // threadsafe way
+    // returns a `std::string` describing the current value of `errno`, but in
+    // an implementation-defined threadsafe way
     std::string CurrentErrnoAsString();
 
-    // returns a `std::string` describing the given error number, but in an OS-defined
-    // threadsafe way (unlike `strerror()`, which _may_ be undefined)
+    // returns a `std::string` describing the given error number, but in
+    // an implementation-defined threadsafe way
     std::string StrerrorThreadsafe(int errnum);
 
     // returns the full path to the currently-executing application
@@ -41,36 +39,47 @@ namespace osc
         CStringView applicationName
     );
 
-    // writes a backtrace for the calling thread's stack to the log at the specified level
+    // writes a backtrace for the calling thread's stack to the process-wide
+    // log at the specified logging level
     void WriteTracebackToLog(LogLevel);
 
-    // installs a signal handler that prints a backtrace and tries to write a
-    // crash report as `CrashReport_DATE.txt` to `crashDumpDir`
+    // installs a signal handler for crashes (SIGABRT/SIGSEGV, etc.) that will
+    // print a thread backtrace to the process-wide log, followed by trying to
+    // write a crash report as `CrashReport_DATE.txt` to `crashDumpDir`
     //
-    // note: this is a noop on some OSes
+    // note: can be a noop on certain OSes
     void InstallBacktraceHandler(std::filesystem::path const& crashDumpDir);
 
-    // tries to open the specified filepath in the OSes default application for that
-    // path. This function returns immediately: the application is opened in a separate
-    // window.
+    // tries to open the specified filepath in the OS's default application for opening
+    // a path (usually, based on its extension)
     //
-    // how, or what, the OS does is implementation-defined. E.g. Windows opens
-    // filesystem paths by searching the file's extension against a list of default
-    // applications. It opens URLs in the default browser, etc.
+    // - this function returns immediately: the application is opened in a separate
+    //   window
+    //
+    // - how, or what, the OS does is implementation-defined. E.g. on Windows, this
+    //   opens the path by searching the file's extension against a list of default
+    //   applications or, if Windows detects it's a URL, it will open the URL in
+    //   the user's default web browser, etc.
     void OpenPathInOSDefaultApplication(std::filesystem::path const&);
 
     // tries to open the specified URL in the OSes default browser
-    //
-    // how, or what, the OS does is implementation defined.
     void OpenURLInDefaultBrowser(std::string_view);
 
-    // try to copy a string onto the user's clipboard
-    bool SetClipboardText(CStringView);
+    // returns `true` if `content` was sucessfully copied to the user's clipboard
+    bool SetClipboardText(CStringView content);
 
-    // set an environment variable's value (process-wide)
+    // sets an environment variable's value process-wide
+    //
+    // if `overwrite` is `true`, then it overwrites any previous value; otherwise,
+    // it will only set the environment variable if no environment variable with
+    // `name` exists
     void SetEnv(CStringView name, CStringView value, bool overwrite);
 
-    // set the current process to HighDPI mode (must be called before a window is created)
+    // set the current process's HighDPI mode
+    //
+    // - must be called before a window is created
+    // - OS-dependent: some OSes handle this as a window-creation argument, rather
+    //   than as a process-wide function call
     void SetProcessHighDPIMode();
 
     // synchronously prompt a user to select a single file
