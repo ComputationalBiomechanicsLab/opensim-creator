@@ -245,17 +245,15 @@ public:
         OutputExtractorDataType outputType = m_OutputExtractor.getOutputType();
 
         static_assert(NumOptions<OutputExtractorDataType>() == 3);
-        if (nReports <= 0)
-        {
+
+        if (nReports <= 0) {
             ui::Text("no data (yet)");
         }
-        else if (outputType == OutputExtractorDataType::Float)
-        {
+        else if (outputType == OutputExtractorDataType::Float) {
             ui::SetNextItemWidth(ui::GetContentRegionAvail().x);
             drawFloatOutputPlot(sim);
         }
-        else if (outputType == OutputExtractorDataType::String)
-        {
+        else if (outputType == OutputExtractorDataType::String) {
             SimulationReport r = m_API->trySelectReportBasedOnScrubbing().value_or(sim.getSimulationReport(nReports - 1));
             ui::TextUnformatted(m_OutputExtractor.getValueString(*sim.getModel(), r));
 
@@ -266,8 +264,11 @@ public:
                 ui::EndPopup();
             }
         }
-        else
-        {
+        else if (outputType == OutputExtractorDataType::Vec2) {
+            SimulationReport r = m_API->trySelectReportBasedOnScrubbing().value_or(sim.getSimulationReport(nReports - 1));
+            ui::TextUnformatted(m_OutputExtractor.getValueString(*sim.getModel(), r));
+        }
+        else {
             ui::Text("unknown output type");
         }
     }
