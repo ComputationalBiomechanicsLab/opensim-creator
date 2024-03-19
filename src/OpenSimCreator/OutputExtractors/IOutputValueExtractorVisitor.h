@@ -1,6 +1,7 @@
 #pragma once
 
 namespace osc { class IFloatOutputValueExtractor; }
+namespace osc { class IVec2OutputValueExtractor; }
 namespace osc { class IStringOutputValueExtractor; }
 
 namespace osc
@@ -19,6 +20,7 @@ namespace osc
         virtual ~IOutputValueExtractorVisitor() noexcept = default;
 
         virtual void operator()(IFloatOutputValueExtractor const&) = 0;
+        virtual void operator()(IVec2OutputValueExtractor const&) = 0;
         virtual void operator()(IStringOutputValueExtractor const&) = 0;
     };
 }

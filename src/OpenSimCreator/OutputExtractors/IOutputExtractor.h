@@ -2,6 +2,7 @@
 
 #include <OpenSimCreator/OutputExtractors/OutputExtractorDataType.h>
 
+#include <oscar/Maths/Vec2.h>
 #include <oscar/Utils/CStringView.h>
 
 #include <cstddef>
@@ -35,14 +36,25 @@ namespace osc
         OutputExtractorDataType getOutputType() const;
 
         float getValueFloat(
-            OpenSim::Component const& component,
-            SimulationReport const& report
+            OpenSim::Component const&,
+            SimulationReport const&
         ) const;
 
         void getValuesFloat(
             OpenSim::Component const&,
             std::span<SimulationReport const>,
             std::span<float> overwriteOut
+        ) const;
+
+        Vec2 getValueVec2(
+            OpenSim::Component const& component,
+            SimulationReport const& report
+        ) const;
+
+        void getValuesVec2(
+            OpenSim::Component const&,
+            std::span<SimulationReport const>,
+            std::span<Vec2> overwriteOut
         ) const;
 
         std::string getValueString(

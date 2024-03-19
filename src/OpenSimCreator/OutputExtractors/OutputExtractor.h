@@ -45,6 +45,21 @@ namespace osc
             m_Output->getValuesFloat(component, reports, overwriteOut);
         }
 
+        Vec2 getValueVec2(
+            OpenSim::Component const& component,
+            SimulationReport const& report) const
+        {
+            return m_Output->getValueVec2(component, report);
+        }
+
+        void getValuesVec2(
+            OpenSim::Component const& component,
+            std::span<SimulationReport const> report,
+            std::span<Vec2> overwriteOut) const
+        {
+            m_Output->getValuesVec2(component, report, overwriteOut);
+        }
+
         std::string getValueString(OpenSim::Component const& component, SimulationReport const& report) const
         {
             return m_Output->getValueString(component, report);
