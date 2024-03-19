@@ -197,9 +197,16 @@ add_library(OpenSimCreator STATIC
 
     OutputExtractors/ComponentOutputExtractor.cpp
     OutputExtractors/ComponentOutputExtractor.h
+    OutputExtractors/ComponentOutputSubfield.cpp
+    OutputExtractors/ComponentOutputSubfield.h
+    OutputExtractors/IFloatOutputValueExtractor.h
     OutputExtractors/IntegratorOutputExtractor.cpp
     OutputExtractors/IntegratorOutputExtractor.h
+    OutputExtractors/IOutputExtractor.cpp
     OutputExtractors/IOutputExtractor.h
+    OutputExtractors/IOutputValueExtractorVisitor.h
+    OutputExtractors/IStringOutputValueExtractor.h
+    OutputExtractors/LambdaOutputValueExtractorVisitor.h
     OutputExtractors/MultiBodySystemOutputExtractor.cpp
     OutputExtractors/MultiBodySystemOutputExtractor.h
     OutputExtractors/OutputExtractor.cpp

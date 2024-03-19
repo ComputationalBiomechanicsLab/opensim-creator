@@ -23,42 +23,31 @@ namespace osc
     // by other parts of osc (e.g. aggregators, plotters)
     class OutputExtractor final {
     public:
-        template<typename SpecificOutput>
-        explicit OutputExtractor(SpecificOutput&& output) :
-            m_Output{std::make_shared<SpecificOutput>(std::forward<SpecificOutput>(output))}
+        template<typename ConcreteIOutputExtractor>
+        explicit OutputExtractor(ConcreteIOutputExtractor&& output) :
+            m_Output{std::make_shared<ConcreteIOutputExtractor>(std::forward<ConcreteIOutputExtractor>(output))}
         {}
 
-        CStringView getName() const
-        {
-            return m_Output->getName();
-        }
+        CStringView getName() const { return m_Output->getName(); }
+        CStringView getDescription() const { return m_Output->getDescription(); }
+        OutputExtractorDataType getOutputType() const { return m_Output->getOutputType(); }
 
-        CStringView getDescription() const
+        float getValueFloat(OpenSim::Component const& component, SimulationReport const& report) const
         {
-            return m_Output->getDescription();
-        }
-
-        OutputExtractorDataType getOutputType() const
-        {
-            return m_Output->getOutputType();
-        }
-
-        float getValueFloat(OpenSim::Component const& c, SimulationReport const& r) const
-        {
-            return m_Output->getValueFloat(c, r);
+            return m_Output->getValueFloat(component, report);
         }
 
         void getValuesFloat(
-            OpenSim::Component const& c,
+            OpenSim::Component const& component,
             std::span<SimulationReport const> reports,
             std::span<float> overwriteOut) const
         {
-            m_Output->getValuesFloat(c, reports, overwriteOut);
+            m_Output->getValuesFloat(component, reports, overwriteOut);
         }
 
-        std::string getValueString(OpenSim::Component const& c, SimulationReport const& r) const
+        std::string getValueString(OpenSim::Component const& component, SimulationReport const& report) const
         {
-            return m_Output->getValueString(c, r);
+            return m_Output->getValueString(component, report);
         }
 
         size_t getHash() const

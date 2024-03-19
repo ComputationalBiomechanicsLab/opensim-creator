@@ -1,16 +1,16 @@
 #pragma once
 
-#include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
 #include <OpenSimCreator/OutputExtractors/OutputExtractorDataType.h>
 
 #include <oscar/Utils/CStringView.h>
 
-#include <array>
 #include <cstddef>
 #include <span>
 #include <string>
 
 namespace OpenSim { class Component; }
+namespace osc { class IOutputValueExtractorVisitor; }
+namespace osc { class SimulationReport; }
 
 namespace osc
 {
@@ -32,31 +32,23 @@ namespace osc
         CStringView getName() const { return implGetName(); }
         CStringView getDescription() const { return implGetDescription(); }
 
-        OutputExtractorDataType getOutputType() const { return implGetOutputType(); }
+        OutputExtractorDataType getOutputType() const;
+
         float getValueFloat(
             OpenSim::Component const& component,
-            SimulationReport const& report) const
-        {
-            std::span<SimulationReport const> reports(&report, 1);
-            std::array<float, 1> out{};
-            implGetValuesFloat(component, reports, out);
-            return out.front();
-        }
+            SimulationReport const& report
+        ) const;
 
         void getValuesFloat(
-            OpenSim::Component const& component,
-            std::span<SimulationReport const> reports,
-            std::span<float> overwriteOut) const
-        {
-            implGetValuesFloat(component, reports, overwriteOut);
-        }
+            OpenSim::Component const&,
+            std::span<SimulationReport const>,
+            std::span<float> overwriteOut
+        ) const;
 
         std::string getValueString(
-            OpenSim::Component const& component,
-            SimulationReport const& report) const
-        {
-            return implGetValueString(component, report);
-        }
+            OpenSim::Component const&,
+            SimulationReport const&
+        ) const;
 
         size_t getHash() const { return implGetHash(); }
         bool equals(IOutputExtractor const& other) const { return implEquals(other); }
@@ -68,11 +60,7 @@ namespace osc
     private:
         virtual CStringView implGetName() const = 0;
         virtual CStringView implGetDescription() const = 0;
-
-        virtual OutputExtractorDataType implGetOutputType() const = 0;
-        virtual void implGetValuesFloat(OpenSim::Component const&, std::span<SimulationReport const>, std::span<float> overwriteOut) const = 0;
-        virtual std::string implGetValueString(OpenSim::Component const&, SimulationReport const&) const = 0;
-
+        virtual void implAccept(IOutputValueExtractorVisitor&) const = 0;
         virtual size_t implGetHash() const = 0;
         virtual bool implEquals(IOutputExtractor const&) const = 0;
     };

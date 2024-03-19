@@ -1,5 +1,6 @@
 #pragma once
 
+#include <OpenSimCreator/OutputExtractors/IFloatOutputValueExtractor.h>
 #include <OpenSimCreator/OutputExtractors/IOutputExtractor.h>
 #include <OpenSimCreator/OutputExtractors/OutputExtractor.h>
 
@@ -21,38 +22,37 @@ namespace osc
     // a SimTK::MultiBodySystem
     //
     // handy for extracting simulation stats (e.g. num steps taken etc.)
-    class MultiBodySystemOutputExtractor final : public IOutputExtractor {
+    class MultiBodySystemOutputExtractor final :
+        public IOutputExtractor,
+        private IFloatOutputValueExtractor {
     public:
         using ExtractorFn = float (*)(SimTK::MultibodySystem const&);
 
         MultiBodySystemOutputExtractor(
             std::string_view name,
             std::string_view description,
-            ExtractorFn extractor
-        );
+            ExtractorFn extractor) :
 
-        UID getAuxiliaryDataID() const;
-        ExtractorFn getExtractorFunction() const;
+            m_Name{name},
+            m_Description{description},
+            m_Extractor{extractor}
+        {}
+
+        UID getAuxiliaryDataID() const { return m_AuxiliaryDataID; }
+        ExtractorFn getExtractorFunction() const { return m_Extractor; }
 
     private:
-        CStringView implGetName() const final;
-        CStringView implGetDescription() const final;
+        CStringView implGetName() const final { return m_Name; }
+        CStringView implGetDescription() const final { return m_Description; }
+        void implAccept(IOutputValueExtractorVisitor&) const final;
+        size_t implGetHash() const final;
+        bool implEquals(IOutputExtractor const&) const final;
 
-        OutputExtractorDataType implGetOutputType() const final;
-
-        void implGetValuesFloat(
+        void implExtractFloats(
             OpenSim::Component const&,
             std::span<SimulationReport const>,
             std::span<float> overwriteOut
         ) const final;
-
-        std::string implGetValueString(
-            OpenSim::Component const&,
-            SimulationReport const&
-        ) const final;
-
-        size_t implGetHash() const final;
-        bool implEquals(IOutputExtractor const&) const final;
 
     private:
         UID m_AuxiliaryDataID;

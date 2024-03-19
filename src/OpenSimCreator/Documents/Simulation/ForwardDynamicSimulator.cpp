@@ -6,7 +6,9 @@
 #include <OpenSimCreator/Documents/Simulation/SimulationClock.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationStatus.h>
+#include <OpenSimCreator/OutputExtractors/IFloatOutputValueExtractor.h>
 #include <OpenSimCreator/OutputExtractors/IOutputExtractor.h>
+#include <OpenSimCreator/OutputExtractors/IOutputValueExtractorVisitor.h>
 #include <OpenSimCreator/OutputExtractors/IntegratorOutputExtractor.h>
 #include <OpenSimCreator/OutputExtractors/MultiBodySystemOutputExtractor.h>
 
@@ -93,7 +95,7 @@ namespace
         std::atomic<int> m_Status = static_cast<int>(SimulationStatus::Initializing);
     };
 
-    class AuxiliaryVariableOutputExtractor final : public IOutputExtractor {
+    class AuxiliaryVariableOutputExtractor final : public IOutputExtractor, IFloatOutputValueExtractor {
     public:
         AuxiliaryVariableOutputExtractor(std::string name, std::string description, UID uid) :
             m_Name{std::move(name)},
@@ -113,25 +115,9 @@ namespace
             return m_Description;
         }
 
-        OutputExtractorDataType implGetOutputType() const final
+        void implAccept(IOutputValueExtractorVisitor& visitor) const
         {
-            return OutputExtractorDataType::Float;
-        }
-
-        void implGetValuesFloat(
-            OpenSim::Component const&,
-            std::span<SimulationReport const> reports,
-            std::span<float> overwriteOut) const final
-        {
-            for (size_t i = 0; i < reports.size(); ++i)
-            {
-                overwriteOut[i] = reports[i].getAuxiliaryValue(m_UID).value_or(-1337.0f);
-            }
-        }
-
-        std::string implGetValueString(OpenSim::Component const& c, SimulationReport const& report) const final
-        {
-            return std::to_string(getValueFloat(c, report));
+            visitor(*this);
         }
 
         std::size_t implGetHash() const final
@@ -156,6 +142,17 @@ namespace
                 m_Name == otherT->m_Name &&
                 m_Description == otherT->m_Description &&
                 m_UID == otherT->m_UID;
+        }
+
+        void implExtractFloats(
+            OpenSim::Component const&,
+            std::span<SimulationReport const> reports,
+            std::span<float> overwriteOut) const final
+        {
+            for (size_t i = 0; i < reports.size(); ++i)
+            {
+                overwriteOut[i] = reports[i].getAuxiliaryValue(m_UID).value_or(-1337.0f);
+            }
         }
 
     private:

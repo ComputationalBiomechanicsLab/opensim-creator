@@ -1,5 +1,7 @@
 #include "MultiBodySystemOutputExtractor.h"
 
+#include <OpenSimCreator/OutputExtractors/IFloatOutputValueExtractor.h>
+#include <OpenSimCreator/OutputExtractors/IOutputValueExtractorVisitor.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
 
 #include <oscar/Maths/Constants.h>
@@ -51,57 +53,9 @@ namespace
     }
 }
 
-osc::MultiBodySystemOutputExtractor::MultiBodySystemOutputExtractor(std::string_view name,
-                                                                    std::string_view description,
-                                                                    ExtractorFn extractor) :
-    m_Name{name},
-    m_Description{description},
-    m_Extractor{extractor}
+void osc::MultiBodySystemOutputExtractor::implAccept(IOutputValueExtractorVisitor& visitor) const
 {
-}
-
-CStringView osc::MultiBodySystemOutputExtractor::implGetName() const
-{
-    return m_Name;
-}
-
-CStringView osc::MultiBodySystemOutputExtractor::implGetDescription() const
-{
-    return m_Description;
-}
-
-OutputExtractorDataType osc::MultiBodySystemOutputExtractor::implGetOutputType() const
-{
-    return OutputExtractorDataType::Float;
-}
-
-void osc::MultiBodySystemOutputExtractor::implGetValuesFloat(
-    OpenSim::Component const&,
-    std::span<SimulationReport const> reports,
-    std::span<float> out) const
-{
-    OSC_ASSERT_ALWAYS(reports.size() == out.size());
-    for (size_t i = 0; i < reports.size(); ++i)
-    {
-        out[i] = reports[i].getAuxiliaryValue(m_AuxiliaryDataID).value_or(quiet_nan_v<float>);
-    }
-}
-
-std::string osc::MultiBodySystemOutputExtractor::implGetValueString(
-    OpenSim::Component const& c,
-    SimulationReport const& report) const
-{
-    return std::to_string(getValueFloat(c, report));
-}
-
-UID osc::MultiBodySystemOutputExtractor::getAuxiliaryDataID() const
-{
-    return m_AuxiliaryDataID;
-}
-
-osc::MultiBodySystemOutputExtractor::ExtractorFn osc::MultiBodySystemOutputExtractor::getExtractorFunction() const
-{
-    return m_Extractor;
+    visitor(*this);
 }
 
 std::size_t osc::MultiBodySystemOutputExtractor::implGetHash() const
@@ -127,6 +81,18 @@ bool osc::MultiBodySystemOutputExtractor::implEquals(IOutputExtractor const& oth
         m_Name == otherT->m_Name &&
         m_Description == otherT->m_Description &&
         m_Extractor == otherT->m_Extractor;
+}
+
+void osc::MultiBodySystemOutputExtractor::implExtractFloats(
+    OpenSim::Component const&,
+    std::span<SimulationReport const> reports,
+    std::span<float> out) const
+{
+    OSC_ASSERT_ALWAYS(reports.size() == out.size());
+    for (size_t i = 0; i < reports.size(); ++i)
+    {
+        out[i] = reports[i].getAuxiliaryValue(m_AuxiliaryDataID).value_or(quiet_nan_v<float>);
+    }
 }
 
 int osc::GetNumMultiBodySystemOutputExtractors()
