@@ -108,7 +108,9 @@ namespace
         ui::DrawTooltip(o.getTypeName());
     }
 
-    bool DrawOutputWithSubfieldsMenu(IMainUIStateAPI& api, OpenSim::AbstractOutput const& o)
+    bool DrawOutputWithSubfieldsMenu(
+        OpenSim::AbstractOutput const& o,
+        std::function<void(OpenSim::AbstractOutput const&, std::optional<ComponentOutputSubfield>)> const& onUserSelection)
     {
         bool outputAdded = false;
         ComponentOutputSubfield supportedSubfields = GetSupportedSubfields(o);
@@ -122,7 +124,7 @@ namespace
                 {
                     if (auto label = GetOutputSubfieldLabel(f); label && ui::MenuItem(*label))
                     {
-                        api.addUserOutputExtractor(OutputExtractor{ComponentOutputExtractor{o, f}});
+                        onUserSelection(o, f);
                         outputAdded = true;
                     }
                 }
@@ -138,7 +140,9 @@ namespace
         return outputAdded;
     }
 
-    bool DrawOutputWithNoSubfieldsMenuItem(IMainUIStateAPI& api, OpenSim::AbstractOutput const& o)
+    bool DrawOutputWithNoSubfieldsMenuItem(
+        OpenSim::AbstractOutput const& o,
+        std::function<void(OpenSim::AbstractOutput const&, std::optional<ComponentOutputSubfield>)> const& onUserSelection)
     {
         // can only plot top-level of output
 
@@ -146,7 +150,7 @@ namespace
 
         if (ui::MenuItem(("  " + o.getName())))
         {
-            api.addUserOutputExtractor(OutputExtractor{ComponentOutputExtractor{o}});
+            onUserSelection(o, std::nullopt);
             outputAdded = true;
         }
 
@@ -156,18 +160,6 @@ namespace
         }
 
         return outputAdded;
-    }
-
-    bool DrawRequestOutputMenuOrMenuItem(IMainUIStateAPI& api, OpenSim::AbstractOutput const& o)
-    {
-        if (GetSupportedSubfields(o) == ComponentOutputSubfield::None)
-        {
-            return DrawOutputWithNoSubfieldsMenuItem(api, o);
-        }
-        else
-        {
-            return DrawOutputWithSubfieldsMenu(api, o);
-        }
     }
 
     void DrawSimulationParamValue(ParamValue const& v)
@@ -361,7 +353,23 @@ void osc::DrawSelectOwnerMenu(IModelStatePair& model, OpenSim::Component const& 
     }
 }
 
-bool osc::DrawWatchOutputMenu(IMainUIStateAPI& api, OpenSim::Component const& c)
+bool osc::DrawRequestOutputMenuOrMenuItem(
+    OpenSim::AbstractOutput const& o,
+    std::function<void(OpenSim::AbstractOutput const&, std::optional<ComponentOutputSubfield>)> const& onUserSelection)
+{
+    if (GetSupportedSubfields(o) == ComponentOutputSubfield::None)
+    {
+        return DrawOutputWithNoSubfieldsMenuItem(o, onUserSelection);
+    }
+    else
+    {
+        return DrawOutputWithSubfieldsMenu(o, onUserSelection);
+    }
+}
+
+bool osc::DrawWatchOutputMenu(
+    OpenSim::Component const& c,
+    std::function<void(OpenSim::AbstractOutput const&, std::optional<ComponentOutputSubfield>)> const& onUserSelection)
 {
     bool outputAdded = false;
 
@@ -387,7 +395,7 @@ bool osc::DrawWatchOutputMenu(IMainUIStateAPI& api, OpenSim::Component const& c)
             {
                 for (auto const& [name, output] : p->getOutputs())
                 {
-                    if (DrawRequestOutputMenuOrMenuItem(api, *output))
+                    if (DrawRequestOutputMenuOrMenuItem(*output, onUserSelection))
                     {
                         outputAdded = true;
                     }

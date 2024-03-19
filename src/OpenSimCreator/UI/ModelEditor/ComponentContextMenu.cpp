@@ -4,6 +4,8 @@
 #include <OpenSimCreator/ComponentRegistry/StaticComponentRegistries.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <OpenSimCreator/OutputExtractors/ComponentOutputExtractor.h>
+#include <OpenSimCreator/OutputExtractors/OutputExtractor.h>
 #include <OpenSimCreator/UI/ModelEditor/IEditorAPI.h>
 #include <OpenSimCreator/UI/ModelEditor/ModelActionsMenuItems.h>
 #include <OpenSimCreator/UI/ModelEditor/ReassignSocketPopup.h>
@@ -11,6 +13,7 @@
 #include <OpenSimCreator/UI/ModelEditor/SelectComponentPopup.h>
 #include <OpenSimCreator/UI/ModelEditor/SelectGeometryPopup.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
+#include <OpenSimCreator/UI/IMainUIStateAPI.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Common/Component.h>
@@ -430,13 +433,19 @@ private:
         DrawRightClickedComponentContextMenuHeader(*c);
         DrawContextMenuSeparator();
 
-        //DrawSelectOwnerMenu(*m_Model, *c);
-        if (DrawWatchOutputMenu(*m_MainUIStateAPI, *c))
+        DrawWatchOutputMenu(*c, [this](OpenSim::AbstractOutput const& output, std::optional<ComponentOutputSubfield> subfield)
         {
+            if (subfield) {
+                m_MainUIStateAPI->addUserOutputExtractor(OutputExtractor{ComponentOutputExtractor{output, *subfield}});
+            }
+            else {
+                m_MainUIStateAPI->addUserOutputExtractor(OutputExtractor{ComponentOutputExtractor{output}});
+            }
+
             // when the user asks to watch an output, make sure the "Output Watches" panel is
             // open, so that they can immediately see the side-effect of watching an output (#567)
             m_EditorAPI->getPanelManager()->setToggleablePanelActivated("Output Watches", true);
-        }
+        });
 
         if (ui::BeginMenu("Display"))
         {

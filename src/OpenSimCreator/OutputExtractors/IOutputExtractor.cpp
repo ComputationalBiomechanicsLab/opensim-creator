@@ -107,7 +107,7 @@ std::string osc::IOutputExtractor::getValueString(
             std::array<Vec2, 1> out{};
             extractor.extractVec2s(component, reports, out);
             std::stringstream ss;
-            ss << out.front().x << ', ' << out.front().y;
+            ss << out.front().x << ", " << out.front().y;
             rv = std::move(ss).str();
         },
         [&component, &report, &rv](IStringOutputValueExtractor const& extractor)

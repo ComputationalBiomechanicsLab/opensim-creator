@@ -104,6 +104,11 @@ namespace osc
             return implRemoveUserOutputExtractor(o);
         }
 
+        bool overwriteUserOutputExtractor(OutputExtractor const& old, OutputExtractor const& newer)
+        {
+            return implOverwriteUserOutputExtractor(old, newer);
+        }
+
         SimulationModelStatePair* tryGetCurrentSimulationState()
         {
             return implTryGetCurrentSimulationState();
@@ -128,6 +133,7 @@ namespace osc
         virtual void implRemoveUserOutputExtractor(int) = 0;
         virtual bool implHasUserOutputExtractor(OutputExtractor const&) const = 0;
         virtual bool implRemoveUserOutputExtractor(OutputExtractor const&) = 0;
+        virtual bool implOverwriteUserOutputExtractor(OutputExtractor const&, OutputExtractor const&) = 0;
 
         virtual SimulationModelStatePair* implTryGetCurrentSimulationState() = 0;
     };

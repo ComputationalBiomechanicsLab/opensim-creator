@@ -1,5 +1,7 @@
 #pragma once
 
+#include <OpenSimCreator/OutputExtractors/ComponentOutputSubfield.h>
+
 #include <oscar/Maths/AABB.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
@@ -27,6 +29,7 @@ namespace osc { class UndoableModelStatePair; }
 namespace osc { class IModelStatePair; }
 namespace osc { class IOutputExtractor; }
 namespace osc { class SimulationModelStatePair; }
+namespace OpenSim { class AbstractOutput; }
 namespace OpenSim { class Component; }
 namespace OpenSim { class Ellipsoid; }
 namespace OpenSim { class Frame; }
@@ -39,14 +42,33 @@ namespace SimTK { class State; }
 
 namespace osc
 {
-    void DrawComponentHoverTooltip(OpenSim::Component const&);
+    void DrawComponentHoverTooltip(
+        OpenSim::Component const&
+    );
     void DrawNothingRightClickedContextMenuHeader();
-    void DrawContextMenuHeader(CStringView title, CStringView subtitle);
-    void DrawRightClickedComponentContextMenuHeader(OpenSim::Component const&);
+    void DrawContextMenuHeader(
+        CStringView title,
+        CStringView subtitle
+    );
+    void DrawRightClickedComponentContextMenuHeader(
+        OpenSim::Component const&
+    );
     void DrawContextMenuSeparator();
-    void DrawSelectOwnerMenu(IModelStatePair&, OpenSim::Component const&);
-    bool DrawWatchOutputMenu(IMainUIStateAPI&, OpenSim::Component const&);
-    void DrawSimulationParams(ParamBlock const&);
+    void DrawSelectOwnerMenu(
+        IModelStatePair&,
+        OpenSim::Component const&
+    );
+    bool DrawRequestOutputMenuOrMenuItem(
+        OpenSim::AbstractOutput const& o,
+        std::function<void(OpenSim::AbstractOutput const&, std::optional<ComponentOutputSubfield>)> const& onUserSelection
+    );
+    bool DrawWatchOutputMenu(
+        OpenSim::Component const&,
+        std::function<void(OpenSim::AbstractOutput const&, std::optional<ComponentOutputSubfield>)> const& onUserSelection
+    );
+    void DrawSimulationParams(
+        ParamBlock const&
+    );
     void DrawSearchBar(std::string&);
     void DrawOutputNameColumn(
         IOutputExtractor const& output,

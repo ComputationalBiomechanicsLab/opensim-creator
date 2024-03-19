@@ -36,6 +36,9 @@ namespace osc
     std::optional<CStringView> GetOutputSubfieldLabel(ComponentOutputSubfield);
     std::span<ComponentOutputSubfield const> GetAllSupportedOutputSubfields();
 
+    // tests if the output produces numeric values (e.g. float, Vec3, etc. - as opposed to std::string)
+    bool ProducesExtractableNumericValues(OpenSim::AbstractOutput const&);
+
     // returns applicable ComponentOutputSubfield ORed together
     ComponentOutputSubfield GetSupportedSubfields(OpenSim::AbstractOutput const&);
 

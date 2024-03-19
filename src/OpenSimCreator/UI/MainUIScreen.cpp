@@ -351,6 +351,16 @@ public:
         return std::erase(m_UserOutputExtractors, oe) > 0;
     }
 
+    bool implOverwriteUserOutputExtractor(OutputExtractor const& old, OutputExtractor const& newer) final
+    {
+        auto it = find(m_UserOutputExtractors, old);
+        if (it != m_UserOutputExtractors.end()) {
+            *it = newer;
+            return true;
+        }
+        return false;
+    }
+
 private:
 
     ParentPtr<IMainUIStateAPI> getTabHostAPI()

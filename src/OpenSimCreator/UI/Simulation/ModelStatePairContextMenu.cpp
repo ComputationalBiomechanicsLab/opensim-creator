@@ -1,6 +1,8 @@
 #include "ModelStatePairContextMenu.h"
 
 #include <OpenSimCreator/Documents/Model/IModelStatePair.h>
+#include <OpenSimCreator/OutputExtractors/ComponentOutputExtractor.h>
+#include <OpenSimCreator/OutputExtractors/OutputExtractor.h>
 #include <OpenSimCreator/UI/IMainUIStateAPI.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
@@ -63,7 +65,16 @@ public:
         ui::Dummy({0.0f, 3.0f});
 
         DrawSelectOwnerMenu(*m_Model, c);
-        DrawWatchOutputMenu(*m_API, c);
+        DrawWatchOutputMenu(c, [this](OpenSim::AbstractOutput const& output, std::optional<ComponentOutputSubfield> subfield)
+        {
+            if (subfield) {
+                m_API->addUserOutputExtractor(OutputExtractor{ComponentOutputExtractor{output, *subfield}});
+            }
+            else {
+                m_API->addUserOutputExtractor(OutputExtractor{ComponentOutputExtractor{output}});
+            }
+
+        });
         TryDrawCalculateMenu(
             m_Model->getModel(),
             m_Model->getState(),

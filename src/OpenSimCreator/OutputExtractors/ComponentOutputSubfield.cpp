@@ -109,6 +109,19 @@ std::span<ComponentOutputSubfield const> osc::GetAllSupportedOutputSubfields()
     return c_OutputSubfieldsLut;
 }
 
+bool osc::ProducesExtractableNumericValues(OpenSim::AbstractOutput const& ao)
+{
+    if (dynamic_cast<OpenSim::Output<double> const*>(&ao)) {
+        return true;
+    }
+
+    if (dynamic_cast<OpenSim::Output<SimTK::Vec3> const*>(&ao)) {
+        return true;
+    }
+
+    return false;
+}
+
 ComponentOutputSubfield osc::GetSupportedSubfields(OpenSim::AbstractOutput const& ao)
 {
     if (dynamic_cast<OpenSim::Output<SimTK::Vec3> const*>(&ao)) {

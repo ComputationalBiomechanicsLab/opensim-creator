@@ -53,6 +53,10 @@ namespace osc
         {
             return implRemoveUserOutputExtractor(extractor);
         }
+        bool overwriteUserOutputExtractor(OutputExtractor const& old, OutputExtractor const& newer)
+        {
+            return implOverwriteUserOutputExtractor(old, newer);
+        }
 
     private:
         virtual ParamBlock const& implGetSimulationParams() const = 0;
@@ -64,5 +68,6 @@ namespace osc
         virtual void implRemoveUserOutputExtractor(int) = 0;
         virtual bool implHasUserOutputExtractor(OutputExtractor const&) const = 0;
         virtual bool implRemoveUserOutputExtractor(OutputExtractor const&) = 0;
+        virtual bool implOverwriteUserOutputExtractor(OutputExtractor const&, OutputExtractor const&) = 0;
     };
 }

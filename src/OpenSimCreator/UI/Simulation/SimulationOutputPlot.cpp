@@ -3,9 +3,14 @@
 #include <OpenSimCreator/Documents/Simulation/ISimulation.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationClock.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
+#include <OpenSimCreator/OutputExtractors/ComponentOutputExtractor.h>
+#include <OpenSimCreator/OutputExtractors/ComponentOutputSubfield.h>
+#include <OpenSimCreator/OutputExtractors/ConcatenatingOutputExtractor.h>
 #include <OpenSimCreator/OutputExtractors/IOutputExtractor.h>
 #include <OpenSimCreator/OutputExtractors/OutputExtractor.h>
+#include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/UI/Simulation/ISimulatorUIAPI.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <IconsFontAwesome5.h>
 #include <oscar/UI/oscimgui.h>
@@ -24,6 +29,7 @@
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <optional>
 #include <ostream>
 #include <span>
@@ -146,7 +152,47 @@ namespace
         ui::DrawTooltipIfItemHovered("Watch Output", "Watch the selected output. This makes it appear in the 'Output Watches' window in the editor panel and the 'Output Plots' window during a simulation");
     }
 
-    void DrawGenericNumericOutputContextMenuItems(
+    void DrawSelectOtherOutputMenuContent(
+        ISimulatorUIAPI& api,
+        ISimulation& simulation,
+        OutputExtractor const& oneDimensionalOutputExtractor)
+    {
+        int id = 0;
+        for (auto const& component : simulation.getModel()->getComponentList()) {
+            auto const numOutputs = component.getNumOutputs();
+            if (numOutputs <= 0) {
+                continue;
+            }
+
+            std::vector<std::reference_wrapper<OpenSim::AbstractOutput const>> extractableOutputs;
+            extractableOutputs.reserve(numOutputs);  // upper bound
+            for (auto const& [name, output] : component.getOutputs()) {
+                if (ProducesExtractableNumericValues(*output)) {
+                    extractableOutputs.push_back(*output);
+                }
+            }
+
+            if (!extractableOutputs.empty()) {
+                ui::PushID(id++);
+                if (ui::BeginMenu(component.getName())) {
+                    for (OpenSim::AbstractOutput const& output : extractableOutputs) {
+                        ui::PushID(id++);
+                        DrawRequestOutputMenuOrMenuItem(output, [&api, &oneDimensionalOutputExtractor](OpenSim::AbstractOutput const& ao, std::optional<ComponentOutputSubfield> subfield)
+                        {
+                            OutputExtractor rhs = subfield ? OutputExtractor{ComponentOutputExtractor{ao, *subfield}} : OutputExtractor{ComponentOutputExtractor{ao}};
+                            OutputExtractor concatenating = OutputExtractor{ConcatenatingOutputExtractor{oneDimensionalOutputExtractor, rhs}};
+                            api.overwriteUserOutputExtractor(oneDimensionalOutputExtractor, concatenating);
+                        });
+                        ui::PopID();
+                    }
+                    ui::EndMenu();
+                }
+                ui::PopID();
+            }
+        }
+    }
+
+    void DrawFloatOutputContextMenuContent(
         ISimulatorUIAPI& api,
         ISimulation& sim,
         OutputExtractor const& output)
@@ -165,6 +211,12 @@ namespace
             {
                 OpenPathInOSDefaultApplication(p);
             }
+        }
+
+        if (ui::BeginMenu(ICON_FA_CHART_LINE "Plot Against Other Output"))
+        {
+            DrawSelectOtherOutputMenuContent(api, sim, output);
+            ui::EndMenu();
         }
 
         DrawToggleWatchOutputMenuItem(api, output);
@@ -255,7 +307,7 @@ public:
         }
         else if (outputType == OutputExtractorDataType::String) {
             SimulationReport r = m_API->trySelectReportBasedOnScrubbing().value_or(sim.getSimulationReport(nReports - 1));
-            ui::TextUnformatted(m_OutputExtractor.getValueString(*sim.getModel(), r));
+            ui::TextCentered(m_OutputExtractor.getValueString(*sim.getModel(), r));
 
             // draw context menu (if user right clicks)
             if (ui::BeginPopupContextItem("plotcontextmenu"))
@@ -266,7 +318,7 @@ public:
         }
         else if (outputType == OutputExtractorDataType::Vec2) {
             SimulationReport r = m_API->trySelectReportBasedOnScrubbing().value_or(sim.getSimulationReport(nReports - 1));
-            ui::TextUnformatted(m_OutputExtractor.getValueString(*sim.getModel(), r));
+            ui::TextCentered(m_OutputExtractor.getValueString(*sim.getModel(), r));
         }
         else {
             ui::Text("unknown output type");
@@ -334,7 +386,7 @@ private:
         // draw context menu (if user right clicks)
         if (ui::BeginPopupContextItem("plotcontextmenu"))
         {
-            DrawGenericNumericOutputContextMenuItems(*m_API, sim, m_OutputExtractor);
+            DrawFloatOutputContextMenuContent(*m_API, sim, m_OutputExtractor);
             ui::EndPopup();
         }
 

@@ -390,6 +390,11 @@ private:
         return m_Parent->removeUserOutputExtractor(oe);
     }
 
+    bool implOverwriteUserOutputExtractor(OutputExtractor const& old, OutputExtractor const& newer) final
+    {
+        return m_Parent->overwriteUserOutputExtractor(old, newer);
+    }
+
     SimulationModelStatePair* implTryGetCurrentSimulationState() final
     {
         return m_ShownModelState.get();
