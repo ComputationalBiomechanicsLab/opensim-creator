@@ -410,6 +410,14 @@ void osc::ForEachComponent(
     }
 }
 
+void osc::ForEachComponentInclusive(
+    OpenSim::Component const& component,
+    std::function<void(OpenSim::Component const&)> const& f)
+{
+    f(component);
+    ForEachComponent(component, f);
+}
+
 size_t osc::GetNumChildren(OpenSim::Component const& c)
 {
     size_t rv = 0;

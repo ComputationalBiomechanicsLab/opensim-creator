@@ -17,6 +17,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Maths/Vec2.h>
+#include <oscar/Maths/MathHelpers.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
 #include <oscar/UI/ImGuiHelpers.h>
@@ -48,8 +49,7 @@ namespace
 
         std::vector<OutputExtractor> rv;
         rv.reserve(nOutputs);
-        for (int i = 0; i < nOutputs; ++i)
-        {
+        for (int i = 0; i < nOutputs; ++i) {
             rv.push_back(api.getUserOutputExtractor(i));
         }
         return rv;
@@ -65,8 +65,7 @@ namespace
         std::optional<std::filesystem::path> const maybeCSVPath =
             PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
 
-        if (!maybeCSVPath)
-        {
+        if (!maybeCSVPath) {
             return {};  // user probably cancelled out
         }
 
@@ -74,20 +73,17 @@ namespace
 
         std::ofstream fout{csvPath};
 
-        if (!fout)
-        {
+        if (!fout) {
             log_error("%s: error opening file for writing", csvPath.string().c_str());
             return {};  // error opening output file for writing
         }
 
         fout << "time," << header << '\n';
-        for (size_t i = 0, len = min(times.size(), values.size()); i < len; ++i)
-        {
+        for (size_t i = 0, len = min(times.size(), values.size()); i < len; ++i) {
             fout << times[i] << ',' << values[i] << '\n';
         }
 
-        if (!fout)
-        {
+        if (!fout) {
             log_error("%s: error encountered while writing CSV data to file", csvPath.string().c_str());
             return {};  // error writing
         }
@@ -112,8 +108,7 @@ namespace
     {
         std::vector<float> times;
         times.reserve(reports.size());
-        for (SimulationReport const& r : reports)
-        {
+        for (SimulationReport const& r : reports) {
             times.push_back(static_cast<float>(r.getState().getTime()));
         }
         return times;
@@ -138,14 +133,11 @@ namespace
     {
         bool isWatching = api.hasUserOutputExtractor(output);
 
-        if (ui::MenuItem(ICON_FA_EYE " Watch Output", {}, &isWatching))
-        {
-            if (isWatching)
-            {
+        if (ui::MenuItem(ICON_FA_EYE " Watch Output", {}, &isWatching)) {
+            if (isWatching) {
                 api.addUserOutputExtractor(output);
             }
-            else
-            {
+            else {
                 api.removeUserOutputExtractor(output);
             }
         }
@@ -158,10 +150,11 @@ namespace
         OutputExtractor const& oneDimensionalOutputExtractor)
     {
         int id = 0;
-        for (auto const& component : simulation.getModel()->getComponentList()) {
+        ForEachComponentInclusive(*simulation.getModel(), [&](auto const& component)
+        {
             auto const numOutputs = component.getNumOutputs();
             if (numOutputs <= 0) {
-                continue;
+                return;
             }
 
             std::vector<std::reference_wrapper<OpenSim::AbstractOutput const>> extractableOutputs;
@@ -189,7 +182,7 @@ namespace
                 }
                 ui::PopID();
             }
-        }
+        });
     }
 
     void DrawFloatOutputContextMenuContent(
@@ -199,22 +192,18 @@ namespace
     {
         OSC_ASSERT(output.getOutputType() == OutputExtractorDataType::Float);
 
-        if (ui::MenuItem(ICON_FA_SAVE "Save as CSV"))
-        {
+        if (ui::MenuItem(ICON_FA_SAVE "Save as CSV")) {
             TryExportNumericOutputToCSV(sim, output);
         }
 
-        if (ui::MenuItem(ICON_FA_SAVE "Save as CSV (and open)"))
-        {
+        if (ui::MenuItem(ICON_FA_SAVE "Save as CSV (and open)")) {
             std::string p = TryExportNumericOutputToCSV(sim, output);
-            if (!p.empty())
-            {
+            if (!p.empty()) {
                 OpenPathInOSDefaultApplication(p);
             }
         }
 
-        if (ui::BeginMenu(ICON_FA_CHART_LINE "Plot Against Other Output"))
-        {
+        if (ui::BeginMenu(ICON_FA_CHART_LINE "Plot Against Other Output")) {
             DrawSelectOtherOutputMenuContent(api, sim, output);
             ui::EndMenu();
         }
@@ -231,8 +220,7 @@ namespace
         std::optional<std::filesystem::path> const maybeCSVPath =
             PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
 
-        if (!maybeCSVPath)
-        {
+        if (!maybeCSVPath) {
             // user probably cancelled out
             return {};
         }
@@ -240,8 +228,7 @@ namespace
 
         std::ofstream fout{csvPath};
 
-        if (!fout)
-        {
+        if (!fout) {
             log_error("%s: error opening file for writing", csvPath.string().c_str());
             return {};  // error opening output file for writing
         }
@@ -257,21 +244,18 @@ namespace
 
         // data lines
         auto guard = sim.getModel();
-        for (size_t i = 0; i < reports.size(); ++i)
-        {
+        for (size_t i = 0; i < reports.size(); ++i) {
             fout << times.at(i);  // time column
 
             SimulationReport r = reports[i];
-            for (OutputExtractor const& o : outputs)
-            {
+            for (OutputExtractor const& o : outputs) {
                 fout << ',' << o.getValueFloat(*guard, r);
             }
 
             fout << '\n';
         }
 
-        if (!fout)
-        {
+        if (!fout) {
             log_warn("%s: encountered error while writing output data: some of the data may have been written, but maybe not all of it", csvPath.string().c_str());
         }
 
@@ -286,39 +270,26 @@ public:
         m_API{api},
         m_OutputExtractor{std::move(outputExtractor)},
         m_Height{height}
-    {
-    }
+    {}
 
     void onDraw()
     {
-        ISimulation& sim = m_API->updSimulation();
-
-        ptrdiff_t const nReports = sim.getNumReports();
-        OutputExtractorDataType outputType = m_OutputExtractor.getOutputType();
-
         static_assert(NumOptions<OutputExtractorDataType>() == 3);
+
+        ptrdiff_t const nReports = m_API->updSimulation().getNumReports();
+        OutputExtractorDataType outputType = m_OutputExtractor.getOutputType();
 
         if (nReports <= 0) {
             ui::Text("no data (yet)");
         }
         else if (outputType == OutputExtractorDataType::Float) {
-            ui::SetNextItemWidth(ui::GetContentRegionAvail().x);
-            drawFloatOutputPlot(sim);
+            drawFloatOutputUI();
         }
         else if (outputType == OutputExtractorDataType::String) {
-            SimulationReport r = m_API->trySelectReportBasedOnScrubbing().value_or(sim.getSimulationReport(nReports - 1));
-            ui::TextCentered(m_OutputExtractor.getValueString(*sim.getModel(), r));
-
-            // draw context menu (if user right clicks)
-            if (ui::BeginPopupContextItem("plotcontextmenu"))
-            {
-                DrawToggleWatchOutputMenuItem(*m_API, m_OutputExtractor);
-                ui::EndPopup();
-            }
+            drawStringOutputUI();
         }
         else if (outputType == OutputExtractorDataType::Vec2) {
-            SimulationReport r = m_API->trySelectReportBasedOnScrubbing().value_or(sim.getSimulationReport(nReports - 1));
-            ui::TextCentered(m_OutputExtractor.getValueString(*sim.getModel(), r));
+            drawVec2OutputUI();
         }
         else {
             ui::Text("unknown output type");
@@ -326,21 +297,19 @@ public:
     }
 
 private:
-    void drawFloatOutputPlot(ISimulation& sim)
+    void drawFloatOutputUI()
     {
-        OSC_ASSERT(m_OutputExtractor.getOutputType() == OutputExtractorDataType::Float);
+        OSC_ASSERT(m_OutputExtractor.getOutputType() == OutputExtractorDataType::Float && "should've been checked before calling this function");
 
-        ImU32 const currentTimeLineColor = ui::ToImU32(Color::yellow().with_alpha(0.6f));
-        ImU32 const hoverTimeLineColor = ui::ToImU32(Color::yellow().with_alpha(0.3f));
+        ISimulation& sim = m_API->updSimulation();
 
-        // collect data
         ptrdiff_t const nReports = sim.getNumReports();
-        if (nReports <= 0)
-        {
+        if (nReports <= 0) {
             ui::Text("no data (yet)");
             return;
         }
 
+        // collect output data from the `OutputExtractor`
         std::vector<float> buf;
         {
             OSC_PERF("collect output data");
@@ -349,31 +318,33 @@ private:
             m_OutputExtractor.getValuesFloat(*sim.getModel(), reports, buf);
         }
 
-        // draw plot
+        // setup drawing area for drawing
+        ui::SetNextItemWidth(ui::GetContentRegionAvail().x);
         float const plotWidth = ui::GetContentRegionAvail().x;
-        Vec2 plotTopLeft{};
-        Vec2 plotBottomRight{};
+        Rect plotRect{};
 
+        // draw the plot
         {
             OSC_PERF("draw output plot");
 
             ImPlot::PushStyleVar(ImPlotStyleVar_PlotPadding, {0.0f, 0.0f});
             ImPlot::PushStyleVar(ImPlotStyleVar_PlotBorderSize, 0.0f);
             ImPlot::PushStyleVar(ImPlotStyleVar_FitPadding, {0.0f, 1.0f});
+            auto const flags = ImPlotFlags_NoTitle | ImPlotFlags_NoLegend | ImPlotFlags_NoInputs | ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoFrame;
 
-            if (ImPlot::BeginPlot("##", ImVec2(plotWidth, m_Height), ImPlotFlags_NoTitle | ImPlotFlags_NoLegend | ImPlotFlags_NoInputs | ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoFrame))
-            {
+            if (ImPlot::BeginPlot("##", ImVec2(plotWidth, m_Height), flags)) {
                 ImPlot::SetupAxis(ImAxis_X1, nullptr, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_NoMenus | ImPlotAxisFlags_AutoFit);
                 ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_NoMenus | ImPlotAxisFlags_AutoFit);
                 ImPlot::PushStyleColor(ImPlotCol_Line, ImVec4{1.0f, 1.0f, 1.0f, 0.7f});
                 ImPlot::PushStyleColor(ImPlotCol_PlotBg, ImVec4{0.0f, 0.0f, 0.0f, 0.0f});
                 ImPlot::PlotLine("##",
                     buf.data(),
-                    static_cast<int>(buf.size()));
+                    static_cast<int>(buf.size())
+                );
                 ImPlot::PopStyleColor();
                 ImPlot::PopStyleColor();
-                plotTopLeft = ImPlot::GetPlotPos();
-                plotBottomRight = plotTopLeft + Vec2{ImPlot::GetPlotSize()};
+                plotRect.p1 = ImPlot::GetPlotPos();
+                plotRect.p2 = plotRect.p1 + Vec2{ImPlot::GetPlotSize()};
 
                 ImPlot::EndPlot();
             }
@@ -382,10 +353,8 @@ private:
             ImPlot::PopStyleVar();
         }
 
-
-        // draw context menu (if user right clicks)
-        if (ui::BeginPopupContextItem("plotcontextmenu"))
-        {
+        // if the user right-clicks, draw a context menu
+        if (ui::BeginPopupContextItem("plotcontextmenu")) {
             DrawFloatOutputContextMenuContent(*m_API, sim, m_OutputExtractor);
             ui::EndPopup();
         }
@@ -403,34 +372,34 @@ private:
         float simScrubPct = static_cast<float>(static_cast<double>((simScrubTime - simStartTime)/(simEndTime - simStartTime)));
 
         ImDrawList* drawlist = ui::GetWindowDrawList();
+        ImU32 const currentTimeLineColor = ui::ToImU32(Color::yellow().with_alpha(0.6f));
+        ImU32 const hoverTimeLineColor = ui::ToImU32(Color::yellow().with_alpha(0.3f));
 
         // draw a vertical Y line showing the current scrub time over the plots
         {
-            float plotScrubLineX = plotTopLeft.x + simScrubPct*(plotBottomRight.x - plotTopLeft.x);
-            Vec2 p1 = {plotScrubLineX, plotBottomRight.y};
-            Vec2 p2 = {plotScrubLineX, plotTopLeft.y};
+            float plotScrubLineX = plotRect.p1.x + simScrubPct*(dimensions(plotRect).x);
+            Vec2 p1 = {plotScrubLineX, plotRect.p1.y};
+            Vec2 p2 = {plotScrubLineX, plotRect.p2.y};
             drawlist->AddLine(p1, p2, currentTimeLineColor);
         }
 
-        if (ui::IsItemHovered())
-        {
+        if (ui::IsItemHovered()) {
             Vec2 mp = ui::GetMousePos();
-            Vec2 plotLoc = mp - plotTopLeft;
-            float relLoc = plotLoc.x / (plotBottomRight.x - plotTopLeft.x);
+            Vec2 plotLoc = mp - plotRect.p1;
+            float relLoc = plotLoc.x / dimensions(plotRect).x;
             SimulationClock::time_point timeLoc = simStartTime + relLoc*(simEndTime - simStartTime);
 
             // draw vertical line to show current X of their hover
             {
-                Vec2 p1 = {mp.x, plotBottomRight.y};
-                Vec2 p2 = {mp.x, plotTopLeft.y};
+                Vec2 p1 = {mp.x, plotRect.p1.y};
+                Vec2 p2 = {mp.x, plotRect.p2.y};
                 drawlist->AddLine(p1, p2, hoverTimeLineColor);
             }
 
             // show a tooltip of X and Y
             {
                 int step = static_cast<int>((timeLoc - simStartTime) / simTimeStep);
-                if (0 <= step && static_cast<size_t>(step) < buf.size())
-                {
+                if (0 <= step && static_cast<size_t>(step) < buf.size()) {
                     float y = buf[static_cast<size_t>(step)];
                     ui::SetTooltip("(%.2fs, %.4f)", static_cast<float>(timeLoc.time_since_epoch().count()), y);
                 }
@@ -438,10 +407,85 @@ private:
 
             // if the user presses their left mouse while hovering over the plot,
             // change the current sim scrub time to match their press location
-            if (ui::IsMouseDown(ImGuiMouseButton_Left))
-            {
+            if (ui::IsMouseDown(ImGuiMouseButton_Left)) {
                 m_API->setSimulationScrubTime(timeLoc);
             }
+        }
+    }
+
+    void drawStringOutputUI()
+    {
+        ISimulation& sim = m_API->updSimulation();
+        ptrdiff_t const nReports = m_API->updSimulation().getNumReports();
+        SimulationReport r = m_API->trySelectReportBasedOnScrubbing().value_or(sim.getSimulationReport(nReports - 1));
+        ui::TextCentered(m_OutputExtractor.getValueString(*sim.getModel(), r));
+
+        // draw context menu (if user right clicks)
+        if (ui::BeginPopupContextItem("plotcontextmenu")) {
+            DrawToggleWatchOutputMenuItem(*m_API, m_OutputExtractor);
+            ui::EndPopup();
+        }
+    }
+
+    void drawVec2OutputUI()
+    {
+        OSC_ASSERT(m_OutputExtractor.getOutputType() == OutputExtractorDataType::Vec2);
+
+        ISimulation& sim = m_API->updSimulation();
+
+        ptrdiff_t const nReports = sim.getNumReports();
+        if (nReports <= 0) {
+            ui::Text("no data (yet)");
+            return;
+        }
+
+        // collect output data from the `OutputExtractor`
+        std::vector<Vec2> buf;
+        {
+            OSC_PERF("collect output data");
+            std::vector<SimulationReport> reports = sim.getAllSimulationReports();
+            buf.resize(reports.size());
+            m_OutputExtractor.getValuesVec2(*sim.getModel(), reports, buf);
+        }
+
+        // setup drawing area for drawing
+        ui::SetNextItemWidth(ui::GetContentRegionAvail().x);
+        float const plotWidth = ui::GetContentRegionAvail().x;
+        Rect plotRect{};
+
+        // draw the plot
+        {
+            OSC_PERF("draw output plot");
+
+            ImPlot::PushStyleVar(ImPlotStyleVar_PlotPadding, {0.0f, 0.0f});
+            ImPlot::PushStyleVar(ImPlotStyleVar_PlotBorderSize, 0.0f);
+            ImPlot::PushStyleVar(ImPlotStyleVar_FitPadding, {0.0f, 1.0f});
+            auto const flags = ImPlotFlags_NoTitle | ImPlotFlags_NoLegend | ImPlotFlags_NoInputs | ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoFrame;
+
+            if (ImPlot::BeginPlot("##", ImVec2(plotWidth, m_Height), flags)) {
+                ImPlot::SetupAxis(ImAxis_X1, nullptr, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_NoMenus | ImPlotAxisFlags_AutoFit);
+                ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_NoMenus | ImPlotAxisFlags_AutoFit);
+                ImPlot::PushStyleColor(ImPlotCol_Line, ImVec4{1.0f, 1.0f, 1.0f, 0.7f});
+                ImPlot::PushStyleColor(ImPlotCol_PlotBg, ImVec4{0.0f, 0.0f, 0.0f, 0.0f});
+                ImPlot::PlotLine(
+                    "##",
+                    &buf.front().x,
+                    &buf.front().y,
+                    static_cast<int>(buf.size()),
+                    ImPlotInfLinesFlags_None,
+                    0,
+                    sizeof(Vec2)
+                );
+                ImPlot::PopStyleColor();
+                ImPlot::PopStyleColor();
+                plotRect.p1 = ImPlot::GetPlotPos();
+                plotRect.p2 = plotRect.p1 + Vec2{ImPlot::GetPlotSize()};
+
+                ImPlot::EndPlot();
+            }
+            ImPlot::PopStyleVar();
+            ImPlot::PopStyleVar();
+            ImPlot::PopStyleVar();
         }
     }
 
@@ -455,8 +499,7 @@ private:
 
 osc::SimulationOutputPlot::SimulationOutputPlot(ISimulatorUIAPI* api, OutputExtractor outputExtractor, float height) :
     m_Impl{std::make_unique<Impl>(api, std::move(outputExtractor), height)}
-{
-}
+{}
 
 osc::SimulationOutputPlot::SimulationOutputPlot(SimulationOutputPlot&&) noexcept = default;
 osc::SimulationOutputPlot& osc::SimulationOutputPlot::operator=(SimulationOutputPlot&&) noexcept = default;

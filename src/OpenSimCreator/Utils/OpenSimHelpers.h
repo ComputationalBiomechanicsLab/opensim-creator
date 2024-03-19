@@ -265,6 +265,9 @@ namespace osc
     // calls the given function with each subcomponent of the given component
     void ForEachComponent(OpenSim::Component const&, std::function<void(OpenSim::Component const&)> const&);
 
+    // calls the given function with the provided component and each of its subcomponents
+    void ForEachComponentInclusive(OpenSim::Component const&, std::function<void(OpenSim::Component const&)> const&);
+
     // returns the number of children (recursive) of type T under the given component
     template<std::derived_from<OpenSim::Component> T>
     size_t GetNumChildren(OpenSim::Component const& c)
