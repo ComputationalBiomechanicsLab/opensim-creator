@@ -743,6 +743,16 @@ Color osc::ui::ToColor(ImU32 u32color)
     return Color{Vec4{ImGui::ColorConvertU32ToFloat4(u32color)}};
 }
 
+Color osc::ui::ToColor(ImVec4 const& v)
+{
+    return {v.x, v.y, v.z, v.w};
+}
+
+ImVec4 osc::ui::ToImVec4(Color const& color)
+{
+    return ImVec4{Vec4{color}};
+}
+
 ImGuiWindowFlags osc::ui::GetMinimalWindowFlags()
 {
     return

@@ -243,7 +243,15 @@ namespace osc::ui
 
     // convert a color to ImU32 (used by ImGui's drawlist)
     ImU32 ToImU32(Color const&);
+
+    // returns a `Color` converted from the given LDR `ImU32` color
     Color ToColor(ImU32);
+
+    // returns a `Color` converted from the given LDR `ImVec4` color
+    Color ToColor(ImVec4 const&);
+
+    // returns an `ImVec4` converted from the given `Color`
+    ImVec4 ToImVec4(Color const&);
 
     // returns "minimal" window flags (i.e. no title bar, can't move the window - ideal for images etc.)
     ImGuiWindowFlags GetMinimalWindowFlags();

@@ -43,6 +43,9 @@ using namespace osc;
 
 namespace
 {
+    constexpr Color c_CurrentScubTimeColor = Color::yellow().with_alpha(0.6f);
+    constexpr Color c_HoveredScrubTimeColor = Color::yellow().with_alpha(0.3f);
+
     std::vector<OutputExtractor> GetAllUserDesiredOutputs(ISimulatorUIAPI& api)
     {
         int nOutputs = api.getNumUserOutputExtractors();
@@ -372,8 +375,8 @@ private:
         float simScrubPct = static_cast<float>(static_cast<double>((simScrubTime - simStartTime)/(simEndTime - simStartTime)));
 
         ImDrawList* drawlist = ui::GetWindowDrawList();
-        ImU32 const currentTimeLineColor = ui::ToImU32(Color::yellow().with_alpha(0.6f));
-        ImU32 const hoverTimeLineColor = ui::ToImU32(Color::yellow().with_alpha(0.3f));
+        ImU32 const currentTimeLineColor = ui::ToImU32(c_CurrentScubTimeColor);
+        ImU32 const hoverTimeLineColor = ui::ToImU32(c_HoveredScrubTimeColor);
 
         // draw a vertical Y line showing the current scrub time over the plots
         {
@@ -401,7 +404,11 @@ private:
                 int step = static_cast<int>((timeLoc - simStartTime) / simTimeStep);
                 if (0 <= step && static_cast<size_t>(step) < buf.size()) {
                     float y = buf[static_cast<size_t>(step)];
+
+                    // ensure the tooltip doesn't occlude the line
+                    ui::PushStyleColor(ImGuiCol_PopupBg, ui::ToImVec4(ui::ToColor(ui::GetStyle().Colors[ImGuiCol_PopupBg]).with_alpha(0.5f)));
                     ui::SetTooltip("(%.2fs, %.4f)", static_cast<float>(timeLoc.time_since_epoch().count()), y);
+                    ui::PopStyleColor();
                 }
             }
 
@@ -459,8 +466,9 @@ private:
 
             ImPlot::PushStyleVar(ImPlotStyleVar_PlotPadding, {0.0f, 0.0f});
             ImPlot::PushStyleVar(ImPlotStyleVar_PlotBorderSize, 0.0f);
-            ImPlot::PushStyleVar(ImPlotStyleVar_FitPadding, {0.0f, 1.0f});
-            auto const flags = ImPlotFlags_NoTitle | ImPlotFlags_NoLegend | ImPlotFlags_NoInputs | ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoFrame;
+            ImPlot::PushStyleVar(ImPlotStyleVar_FitPadding, {0.1f, 0.1f});
+            ImPlot::PushStyleVar(ImPlotStyleVar_AnnotationPadding, ui::GetStyle().WindowPadding);
+            auto const flags = ImPlotFlags_NoTitle | ImPlotFlags_NoLegend | ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoFrame;
 
             if (ImPlot::BeginPlot("##", ImVec2(plotWidth, m_Height), flags)) {
                 ImPlot::SetupAxis(ImAxis_X1, nullptr, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_NoMenus | ImPlotAxisFlags_AutoFit);
@@ -481,8 +489,26 @@ private:
                 plotRect.p1 = ImPlot::GetPlotPos();
                 plotRect.p2 = plotRect.p1 + Vec2{ImPlot::GetPlotSize()};
 
+                // overlays
+                {
+                    SimulationReport currentReport = m_API->trySelectReportBasedOnScrubbing().value_or(sim.getSimulationReport(nReports - 1));
+                    Vec2d currentVal = m_OutputExtractor.getValueVec2(*sim.getModel(), currentReport);
+                    // ensure the annotation doesn't occlude the line too heavily
+                    auto annotationColor = ui::ToColor(ui::GetStyle().Colors[ImGuiCol_PopupBg]).with_alpha(0.5f);
+                    ImPlot::Annotation(currentVal.x, currentVal.y, ui::ToImVec4(annotationColor), {10.0f, 10.0f}, true, "(%f, %f)", currentVal.x, currentVal.y);
+                    ImPlot::DragPoint(0, &currentVal.x, &currentVal.y, ui::ToImVec4(c_CurrentScubTimeColor), 4.0f, ImPlotDragToolFlags_NoInputs);
+                }
+
+                // TODO: find nearest point to mouse and enable hovering to it etc.
+                // if (ImPlot::IsPlotHovered()) {
+                //    auto [x, y] = ImPlot::GetPlotMousePos();
+                //    ImPlot::Annotation(x, y, ui::ToImVec4(c_HoveredScrubTimeColor), {10.0f, 10.0f}, true, "(%f, %f)", x, y);
+                //    ImPlot::DragPoint(0, &x, &y, ui::ToImVec4(c_HoveredScrubTimeColor), 4.0f, ImPlotDragToolFlags_NoInputs);
+                // }
+
                 ImPlot::EndPlot();
             }
+            ImPlot::PopStyleVar();
             ImPlot::PopStyleVar();
             ImPlot::PopStyleVar();
             ImPlot::PopStyleVar();
