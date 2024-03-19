@@ -17,6 +17,7 @@
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
+#include <oscar/Utils/EnumHelpers.h>
 #include <oscar/Utils/Perf.h>
 
 #include <algorithm>
@@ -243,6 +244,7 @@ public:
         ptrdiff_t const nReports = sim.getNumReports();
         OutputExtractorDataType outputType = m_OutputExtractor.getOutputType();
 
+        static_assert(NumOptions<OutputExtractorDataType>() == 3);
         if (nReports <= 0)
         {
             ui::Text("no data (yet)");
