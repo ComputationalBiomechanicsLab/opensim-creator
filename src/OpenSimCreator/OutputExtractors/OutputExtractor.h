@@ -1,6 +1,7 @@
 #pragma once
 
 #include <OpenSimCreator/OutputExtractors/IOutputExtractor.h>
+#include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
 
 #include <oscar/Utils/CStringView.h>
 
@@ -13,7 +14,6 @@
 
 
 namespace OpenSim { class Component; }
-namespace osc { class SimulationReport; }
 
 namespace osc
 {

@@ -1,8 +1,9 @@
 #pragma once
 
+#include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
+
 #include <span>
 
-namespace osc { class SimulationReport; }
 namespace OpenSim { class Component; }
 
 namespace osc

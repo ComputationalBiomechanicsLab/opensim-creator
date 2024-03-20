@@ -1,10 +1,11 @@
 #pragma once
 
+#include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
+
 #include <oscar/Maths/Vec2.h>
 
 #include <span>
 
-namespace osc { class SimulationReport; }
 namespace OpenSim { class Component; }
 
 namespace osc
