@@ -200,7 +200,6 @@ add_library(oscar STATIC
     Maths/EllipsoidFunctions.h
     Maths/EulerPerspectiveCamera.h
     Maths/Eulers.h
-    Maths/FrameAxis.h
     Maths/FrustumPlanes.h
     Maths/Functors.h
     Maths/GeometricFunctions.h
