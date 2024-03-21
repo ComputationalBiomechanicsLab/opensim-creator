@@ -115,7 +115,7 @@ namespace
             return m_Description;
         }
 
-        void implAccept(IOutputValueExtractorVisitor& visitor) const
+        void implAccept(IOutputValueExtractorVisitor& visitor) const final
         {
             visitor(*this);
         }
@@ -155,7 +155,6 @@ namespace
             }
         }
 
-    private:
         std::string m_Name;
         std::string m_Description;
         UID m_UID;
