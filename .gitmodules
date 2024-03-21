@@ -37,3 +37,6 @@
 [submodule "third_party/unordered_dense"]
 	path = third_party/unordered_dense
 	url = https://github.com/ComputationalBiomechanicsLab/unordered_dense
+[submodule "third_party/assimp"]
+	path = third_party/assimp
+	url = https://github.com/ComputationalBiomechanicsLab/assimp.git
