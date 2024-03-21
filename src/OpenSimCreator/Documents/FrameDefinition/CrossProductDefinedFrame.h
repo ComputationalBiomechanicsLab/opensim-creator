@@ -1,10 +1,10 @@
 #pragma once
 
 #include <OpenSimCreator/Documents/FrameDefinition/Edge.h>
-#include <OpenSimCreator/Documents/FrameDefinition/MaybeNegatedAxis.h>
 
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/Point.h>
+#include <oscar/Maths/CoordinateDirection.h>
 
 #include <string>
 
@@ -111,8 +111,8 @@ namespace osc::fd
         void extendFinalizeFromProperties() final;
 
         struct ParsedAxisArguments final {
-            MaybeNegatedAxis axisEdge;
-            MaybeNegatedAxis otherEdge;
+            CoordinateDirection axisEdge;
+            CoordinateDirection otherEdge;
         };
         ParsedAxisArguments tryParseAxisArgumentsAsOrthogonalAxes() const;
 

@@ -11,7 +11,6 @@ add_library(OpenSimCreator STATIC
     ComponentRegistry/StaticComponentRegistries.cpp
     ComponentRegistry/StaticComponentRegistries.h
 
-    Documents/FrameDefinition/AxisIndex.h
     Documents/FrameDefinition/CrossProductDefinedFrame.cpp
     Documents/FrameDefinition/CrossProductDefinedFrame.h
     Documents/FrameDefinition/CrossProductEdge.cpp
@@ -23,7 +22,6 @@ add_library(OpenSimCreator STATIC
     Documents/FrameDefinition/FrameDefinitionActions.h
     Documents/FrameDefinition/FrameDefinitionHelpers.cpp
     Documents/FrameDefinition/FrameDefinitionHelpers.h
-    Documents/FrameDefinition/MaybeNegatedAxis.h
     Documents/FrameDefinition/MidpointLandmark.cpp
     Documents/FrameDefinition/MidpointLandmark.h
     Documents/FrameDefinition/PointToPointEdge.cpp

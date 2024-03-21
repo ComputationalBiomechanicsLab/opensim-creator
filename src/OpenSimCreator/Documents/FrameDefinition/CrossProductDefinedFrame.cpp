@@ -9,6 +9,7 @@
 #include <OpenSim/Simulation/Model/ModelVisualPreferences.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/Point.h>
+#include <oscar/Maths/CoordinateDirection.h>
 
 #include <array>
 #include <optional>
@@ -48,28 +49,25 @@ void osc::fd::CrossProductDefinedFrame::extendFinalizeFromProperties()
 CrossProductDefinedFrame::ParsedAxisArguments osc::fd::CrossProductDefinedFrame::tryParseAxisArgumentsAsOrthogonalAxes() const
 {
     // ensure `axis_edge_axis` is a correct property value
-    std::optional<MaybeNegatedAxis> const maybeAxisEdge = ParseAxisDimension(get_axis_edge_axis());
-    if (!maybeAxisEdge)
-    {
+    auto const maybeAxisEdge = CoordinateDirection::try_parse(get_axis_edge_axis());
+    if (not maybeAxisEdge) {
         std::stringstream ss;
         ss << getProperty_axis_edge_axis().getName() << ": has an invalid value ('" << get_axis_edge_axis() << "'): permitted values are -x, +x, -y, +y, -z, or +z";
         OPENSIM_THROW_FRMOBJ(OpenSim::Exception, std::move(ss).str());
     }
-    MaybeNegatedAxis const& axisEdge = *maybeAxisEdge;
+    CoordinateDirection const& axisEdge = *maybeAxisEdge;
 
     // ensure `first_cross_product_axis` is a correct property value
-    std::optional<MaybeNegatedAxis> const maybeOtherEdge = ParseAxisDimension(get_first_cross_product_axis());
-    if (!maybeOtherEdge)
-    {
+    auto const maybeOtherEdge = CoordinateDirection::try_parse(get_first_cross_product_axis());
+    if (not maybeOtherEdge) {
         std::stringstream ss;
         ss << getProperty_first_cross_product_axis().getName() << ": has an invalid value ('" << get_first_cross_product_axis() << "'): permitted values are -x, +x, -y, +y, -z, or +z";
         OPENSIM_THROW_FRMOBJ(OpenSim::Exception, std::move(ss).str());
     }
-    MaybeNegatedAxis const& otherEdge = *maybeOtherEdge;
+    CoordinateDirection const& otherEdge = *maybeOtherEdge;
 
     // ensure `axis_edge_axis` is an orthogonal axis to `other_edge_axis`
-    if (!IsOrthogonal(axisEdge, otherEdge))
-    {
+    if (axisEdge.axis() == otherEdge.axis()) {
         std::stringstream ss;
         ss << getProperty_axis_edge_axis().getName() << " (" << get_axis_edge_axis() << ") and " << getProperty_first_cross_product_axis().getName() << " (" << get_first_cross_product_axis() << ") are not orthogonal";
         OPENSIM_THROW_FRMOBJ(OpenSim::Exception, std::move(ss).str());
@@ -94,18 +92,16 @@ SimTK::Transform osc::fd::CrossProductDefinedFrame::calcTransformInGround(SimTK:
     // this is what the algorithm must ultimately compute in order to
     // calculate a change-of-basis (rotation) matrix
     std::array<SimTK::UnitVec3, 3> axes{};
-    static_assert(axes.size() == NumOptions<AxisIndex>());
 
     // assign first axis
-    SimTK::UnitVec3& firstAxisDir = axes.at(ToIndex(axisEdge.axisIndex));
-    firstAxisDir = axisEdge.isNegated ? -axisEdgeDir : axisEdgeDir;
+    SimTK::UnitVec3& firstAxisDir = axes.at(axisEdge.axis().index());
+    firstAxisDir = axisEdge.is_negated() ? -axisEdgeDir : axisEdgeDir;
 
     // compute second axis (via cross product)
-    SimTK::UnitVec3& secondAxisDir = axes.at(ToIndex(otherEdge.axisIndex));
+    SimTK::UnitVec3& secondAxisDir = axes.at(otherEdge.axis().index());
     {
         secondAxisDir = SimTK::UnitVec3{SimTK::cross(axisEdgeDir, otherEdgeDir)};
-        if (otherEdge.isNegated)
-        {
+        if (otherEdge.is_negated()) {
             secondAxisDir = -secondAxisDir;
         }
     }
@@ -120,14 +116,14 @@ SimTK::Transform osc::fd::CrossProductDefinedFrame::calcTransformInGround(SimTK:
         {
             SimTK::UnitVec3 const& firstDir;
             SimTK::UnitVec3 const& secondDir;
-            AxisIndex resultAxisIndex;
+            CoordinateAxis resultAxis;
         };
-        ThirdEdgeOperands const ops = Next(axisEdge.axisIndex) == otherEdge.axisIndex ?
-            ThirdEdgeOperands{firstAxisDir, secondAxisDir, Next(otherEdge.axisIndex)} :
-            ThirdEdgeOperands{secondAxisDir, firstAxisDir, Next(axisEdge.axisIndex)};
+        ThirdEdgeOperands const ops = axisEdge.axis().next() == otherEdge.axis() ?
+            ThirdEdgeOperands{firstAxisDir, secondAxisDir, otherEdge.axis().next()} :
+            ThirdEdgeOperands{secondAxisDir, firstAxisDir, axisEdge.axis().next()};
 
         SimTK::UnitVec3 const thirdAxisDir = SimTK::UnitVec3{SimTK::cross(ops.firstDir, ops.secondDir)};
-        axes.at(ToIndex(ops.resultAxisIndex)) = thirdAxisDir;
+        axes.at(ops.resultAxis.index()) = thirdAxisDir;
     }
 
     // create transform from orthogonal axes and origin

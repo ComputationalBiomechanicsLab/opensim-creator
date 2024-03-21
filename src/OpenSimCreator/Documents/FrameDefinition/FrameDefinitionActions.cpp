@@ -16,6 +16,7 @@
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <oscar/Platform/Log.h>
+#include <oscar/Utils/StringHelpers.h>
 
 #include <memory>
 #include <optional>
@@ -238,7 +239,7 @@ void osc::fd::ActionSwapCrossProductEdgeOperands(
 void osc::fd::ActionAddFrame(
     std::shared_ptr<UndoableModelStatePair> const& model,
     Edge const& firstEdge,
-    MaybeNegatedAxis firstEdgeAxis,
+    CoordinateDirection firstEdgeAxis,
     Edge const& otherEdge,
     OpenSim::Point const& origin)
 {
@@ -247,8 +248,8 @@ void osc::fd::ActionAddFrame(
 
     // create the frame
     auto frame = std::make_unique<CrossProductDefinedFrame>();
-    frame->set_axis_edge_axis(ToString(firstEdgeAxis));
-    frame->set_first_cross_product_axis(ToString(Next(firstEdgeAxis)));
+    frame->set_axis_edge_axis(StreamToString(firstEdgeAxis));
+    frame->set_first_cross_product_axis(StreamToString(firstEdgeAxis.axis().next()));
     frame->connectSocket_axis_edge(firstEdge);
     frame->connectSocket_other_edge(otherEdge);
     frame->connectSocket_origin(origin);

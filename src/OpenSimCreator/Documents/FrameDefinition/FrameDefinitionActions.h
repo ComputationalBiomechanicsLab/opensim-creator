@@ -1,8 +1,7 @@
 #pragma once
 
-#include <OpenSimCreator/Documents/FrameDefinition/MaybeNegatedAxis.h>
-
 #include <OpenSim/Common/ComponentPath.h>
+#include <oscar/Maths/CoordinateDirection.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Utils/ParentPtr.h>
 
@@ -70,7 +69,7 @@ namespace osc::fd
     void ActionAddFrame(
         std::shared_ptr<UndoableModelStatePair> const&,
         Edge const& firstEdge,
-        MaybeNegatedAxis firstEdgeAxis,
+        CoordinateDirection firstEdgeAxis,
         Edge const& otherEdge,
         OpenSim::Point const& origin
     );

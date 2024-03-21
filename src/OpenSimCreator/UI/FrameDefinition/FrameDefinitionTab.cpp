@@ -1,11 +1,9 @@
 #include "FrameDefinitionTab.h"
 
-#include <OpenSimCreator/Documents/FrameDefinition/AxisIndex.h>
 #include <OpenSimCreator/Documents/FrameDefinition/CrossProductEdge.h>
 #include <OpenSimCreator/Documents/FrameDefinition/Edge.h>
 #include <OpenSimCreator/Documents/FrameDefinition/FrameDefinitionActions.h>
 #include <OpenSimCreator/Documents/FrameDefinition/FrameDefinitionHelpers.h>
-#include <OpenSimCreator/Documents/FrameDefinition/MaybeNegatedAxis.h>
 #include <OpenSimCreator/Documents/FrameDefinition/MidpointLandmark.h>
 #include <OpenSimCreator/Documents/FrameDefinition/PointToPointEdge.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
@@ -36,6 +34,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <oscar/Formats/OBJ.h>
 #include <oscar/Graphics/Color.h>
+#include <oscar/Maths/CoordinateDirection.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
@@ -234,7 +233,7 @@ namespace
         ModelEditorViewerPanel& visualizer,
         std::shared_ptr<UndoableModelStatePair> const& model,
         std::string const& firstEdgeAbsPath,
-        MaybeNegatedAxis firstEdgeAxis,
+        CoordinateDirection firstEdgeAxis,
         std::string const& secondEdgeAbsPath)
     {
         ChooseComponentsEditorLayerParameters options;
@@ -297,7 +296,7 @@ namespace
         ModelEditorViewerPanel& visualizer,
         std::shared_ptr<UndoableModelStatePair> const& model,
         Edge const& firstEdge,
-        MaybeNegatedAxis firstEdgeAxis)
+        CoordinateDirection firstEdgeAxis)
     {
         ChooseComponentsEditorLayerParameters options;
         options.popupHeaderText = "choose other edge";
@@ -340,7 +339,7 @@ namespace
         IEditorAPI& editor,
         std::shared_ptr<UndoableModelStatePair> const& model,
         Edge const& firstEdge,
-        MaybeNegatedAxis firstEdgeAxis,
+        CoordinateDirection firstEdgeAxis,
         std::optional<ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent)
     {
         if (!maybeSourceEvent)
@@ -636,7 +635,7 @@ namespace
                     editor,
                     model,
                     edge,
-                    MaybeNegatedAxis{AxisIndex::X, false},
+                    CoordinateDirection::x(),
                     maybeSourceEvent
                 );
             }
@@ -649,7 +648,7 @@ namespace
                     editor,
                     model,
                     edge,
-                    MaybeNegatedAxis{AxisIndex::Y, false},
+                    CoordinateDirection::y(),
                     maybeSourceEvent
                 );
             }
@@ -662,7 +661,7 @@ namespace
                     editor,
                     model,
                     edge,
-                    MaybeNegatedAxis{AxisIndex::Z, false},
+                    CoordinateDirection::z(),
                     maybeSourceEvent
                 );
             }
@@ -677,7 +676,7 @@ namespace
                     editor,
                     model,
                     edge,
-                    MaybeNegatedAxis{AxisIndex::X, true},
+                    CoordinateDirection::minus_x(),
                     maybeSourceEvent
                 );
             }
@@ -690,7 +689,7 @@ namespace
                     editor,
                     model,
                     edge,
-                    MaybeNegatedAxis{AxisIndex::Y, true},
+                    CoordinateDirection::minus_y(),
                     maybeSourceEvent
                 );
             }
@@ -703,7 +702,7 @@ namespace
                     editor,
                     model,
                     edge,
-                    MaybeNegatedAxis{AxisIndex::Z, true},
+                    CoordinateDirection::minus_z(),
                     maybeSourceEvent
                 );
             }
