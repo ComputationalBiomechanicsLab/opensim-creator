@@ -208,7 +208,7 @@ public:
 
         if (!m_Maybe3DViewerModal && m_Shared->isRenderHovered() && !ImGuizmo::IsUsing())
         {
-            ui::UpdatePolarCameraFromImGuiMouseInputs(m_Shared->updCamera(), m_Shared->get3DSceneDims());
+            ui::UpdatePolarCameraFromMouseInputs(m_Shared->updCamera(), m_Shared->get3DSceneDims());
         }
 
         // draw history panel (if enabled)
@@ -841,7 +841,7 @@ private:
         {
             return true;
         }
-        else if (ui::UpdatePolarCameraFromImGuiKeyboardInputs(m_Shared->updCamera(), m_Shared->get3DSceneRect(), calcSceneAABB()))
+        else if (ui::UpdatePolarCameraFromKeyboardInputs(m_Shared->updCamera(), m_Shared->get3DSceneRect(), calcSceneAABB()))
         {
             return true;
         }
@@ -1878,12 +1878,12 @@ private:
         {
             CameraViewAxes axes;
 
-            ImGuiStyle const& style = ui::GetStyle();
+            Vec2 const windowPadding = ui::GetStyleWindowPadding();
             Rect const& r = m_Shared->get3DSceneRect();
             Vec2 const topLeft =
             {
-                r.p1.x + style.WindowPadding.x,
-                r.p2.y - style.WindowPadding.y - axes.dimensions().y,
+                r.p1.x + windowPadding.x,
+                r.p2.y - windowPadding.y - axes.dimensions().y,
             };
             ui::SetCursorScreenPos(topLeft);
             axes.draw(m_Shared->updCamera());

@@ -167,7 +167,7 @@ private:
     {
         Rect tabRect = ui::GetMainViewportWorkspaceScreenRect();
         // pretend the attributation bar isn't there (avoid it)
-        tabRect.p2.y -= static_cast<float>(max(m_TudLogo.getDimensions().y, m_CziLogo.getDimensions().y)) - 2.0f*ui::GetStyle().WindowPadding.y;
+        tabRect.p2.y -= static_cast<float>(max(m_TudLogo.getDimensions().y, m_CziLogo.getDimensions().y)) - 2.0f*ui::GetStyleWindowPadding().y;
 
         Vec2 const menuAndTopLogoDims = elementwise_min(dimensions(tabRect), Vec2{m_SplashMenuMaxDims.x, m_SplashMenuMaxDims.y + m_MainAppLogoDims.y + m_TopLogoPadding.y});
         Vec2 const menuAndTopLogoTopLeft = tabRect.p1 + 0.5f*(dimensions(tabRect) - menuAndTopLogoDims);
@@ -211,7 +211,7 @@ private:
             m_LastSceneRendererParams = params;
         }
 
-        ui::DrawTextureAsImGuiImage(m_SceneRenderer.updRenderTexture());
+        ui::Image(m_SceneRenderer.updRenderTexture());
 
         ui::End();
     }
@@ -222,7 +222,7 @@ private:
 
         ui::SetNextWindowPos(logoRect.p1);
         ui::Begin("##osclogo", nullptr, ui::GetMinimalWindowFlags());
-        ui::DrawTextureAsImGuiImage(m_MainAppLogo, dimensions(logoRect));
+        ui::Image(m_MainAppLogo, dimensions(logoRect));
         ui::End();
     }
 
@@ -359,18 +359,18 @@ private:
     {
         Rect const viewportRect = ui::GetMainViewportWorkspaceScreenRect();
         Vec2 loc = viewportRect.p2;
-        loc.x = loc.x - 2.0f*ui::GetStyle().WindowPadding.x - static_cast<float>(m_CziLogo.getDimensions().x) - 2.0f*ui::GetStyle().ItemSpacing.x - static_cast<float>(m_TudLogo.getDimensions().x);
-        loc.y = loc.y - 2.0f*ui::GetStyle().WindowPadding.y - static_cast<float>(max(m_CziLogo.getDimensions().y, m_TudLogo.getDimensions().y));
+        loc.x = loc.x - 2.0f*ui::GetStyleWindowPadding().x - static_cast<float>(m_CziLogo.getDimensions().x) - 2.0f*ui::GetStyleItemSpacing().x - static_cast<float>(m_TudLogo.getDimensions().x);
+        loc.y = loc.y - 2.0f*ui::GetStyleWindowPadding().y - static_cast<float>(max(m_CziLogo.getDimensions().y, m_TudLogo.getDimensions().y));
 
         ui::SetNextWindowPos(loc);
         ui::Begin("##czlogo", nullptr, ui::GetMinimalWindowFlags());
-        ui::DrawTextureAsImGuiImage(m_CziLogo);
+        ui::Image(m_CziLogo);
         ui::End();
 
-        loc.x += static_cast<float>(m_CziLogo.getDimensions().x) + 2.0f*ui::GetStyle().ItemSpacing.x;
+        loc.x += static_cast<float>(m_CziLogo.getDimensions().x) + 2.0f*ui::GetStyleItemSpacing().x;
         ui::SetNextWindowPos(loc);
         ui::Begin("##tudlogo", nullptr, ui::GetMinimalWindowFlags());
-        ui::DrawTextureAsImGuiImage(m_TudLogo);
+        ui::Image(m_TudLogo);
         ui::End();
     }
 

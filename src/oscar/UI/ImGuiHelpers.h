@@ -27,55 +27,57 @@ namespace osc { class UID; }
 
 namespace osc::ui
 {
-    // applies "dark" theme to current ImGui context
-    void ImGuiApplyDarkTheme();
+    // applies "dark" theme to current UI context
+    void ApplyDarkTheme();
 
-    // updates a polar comera's rotation, position, etc. based on ImGui mouse input state
-    bool UpdatePolarCameraFromImGuiMouseInputs(
+    // updates a polar comera's rotation, position, etc. from UI mouse input state
+    bool UpdatePolarCameraFromMouseInputs(
         PolarPerspectiveCamera&,
         Vec2 viewportDims
     );
-    // updates a polar comera's rotation, position, etc. based on ImGui keyboard input state
-    bool UpdatePolarCameraFromImGuiKeyboardInputs(
-        PolarPerspectiveCamera&,
-        Rect const& viewportRect,
-        std::optional<AABB> maybeSceneAABB
-    );
-    // updates a polar comera's rotation, position, etc. based on ImGui input (mouse+keyboard) state
-    bool UpdatePolarCameraFromImGuiInputs(
+
+    // updates a polar comera's rotation, position, etc. from UI keyboard input state
+    bool UpdatePolarCameraFromKeyboardInputs(
         PolarPerspectiveCamera&,
         Rect const& viewportRect,
         std::optional<AABB> maybeSceneAABB
     );
 
-    void UpdateEulerCameraFromImGuiUserInput(
+    // updates a polar comera's rotation, position, etc. from UI input state (all)
+    bool UpdatePolarCameraFromInputs(
+        PolarPerspectiveCamera&,
+        Rect const& viewportRect,
+        std::optional<AABB> maybeSceneAABB
+    );
+
+    void UpdateCameraFromInputs(
         Camera&,
         Eulers&
     );
 
-    // returns the ImGui content region available in screenspace as a `Rect`
+    // returns the UI content region available in screenspace as a `Rect`
     Rect ContentRegionAvailScreenRect();
 
-    // draws a texutre as a ui::Image
+    // draws a texture within the 2D UI
     //
-    // assumes coords == [(0.0, 1.0), (1.0, 0.0)]
-    void DrawTextureAsImGuiImage(
+    // assumes the texture coordinates are [(0.0, 1.0), (1.0, 0.0)]
+    void Image(
         Texture2D const&
     );
-    void DrawTextureAsImGuiImage(
+    void Image(
         Texture2D const&,
         Vec2 dims
     );
-    void DrawTextureAsImGuiImage(
+    void Image(
         Texture2D const&,
         Vec2 dims,
         Vec2 topLeftCoord,
         Vec2 bottomRightCoord
     );
-    void DrawTextureAsImGuiImage(
+    void Image(
         RenderTexture const&
     );
-    void DrawTextureAsImGuiImage(
+    void Image(
         RenderTexture const&,
         Vec2 dims
     );
@@ -89,7 +91,7 @@ namespace osc::ui
         Vec2 size = {0.0f, 0.0f}
     );
 
-    // draws a texture using a ui::ImageButton
+    // draws a texture within the UI as a clickable button
     bool ImageButton(
         CStringView,
         Texture2D const&,
@@ -105,15 +107,15 @@ namespace osc::ui
     // returns the screenspace bounding rectangle of the last-drawn item
     Rect GetItemRect();
 
-    // hittest the last-drawn ImGui item
-    struct ImGuiItemHittestResult final {
+    // hittest the last-drawn item in the UI
+    struct HittestResult final {
         Rect rect = {};
         bool isHovered = false;
         bool isLeftClickReleasedWithoutDragging = false;
         bool isRightClickReleasedWithoutDragging = false;
     };
-    ImGuiItemHittestResult HittestLastImguiItem();
-    ImGuiItemHittestResult HittestLastImguiItem(float dragThreshold);
+    HittestResult HittestLastItem();
+    HittestResult HittestLastItem(float dragThreshold);
 
     // returns `true` if any scancode in the provided range is currently pressed down
     bool IsAnyKeyDown(std::span<ImGuiKey const>);
@@ -241,10 +243,10 @@ namespace osc::ui
         Radians max
     );
 
-    // convert a color to ImU32 (used by ImGui's drawlist)
+    // returns an `ImU32` converted from the given `Color`
     ImU32 ToImU32(Color const&);
 
-    // returns a `Color` converted from the given LDR `ImU32` color
+    // returns a `Color` converted from the given LDR 8-bit `ImU32` format
     Color ToColor(ImU32);
 
     // returns a `Color` converted from the given LDR `ImVec4` color

@@ -52,8 +52,8 @@ namespace osc
 
             // render it via ImGui and hittest it
             RenderTexture& renderTexture = renderScene(dims);
-            ui::DrawTextureAsImGuiImage(renderTexture);
-            m_LastTextureHittestResult = ui::HittestLastImguiItem();
+            ui::Image(renderTexture);
+            m_LastTextureHittestResult = ui::HittestLastItem();
 
             drawOverlays(m_LastTextureHittestResult.rect);
         }
@@ -77,7 +77,7 @@ namespace osc
             // update camera if user drags it around etc.
             if (m_LastTextureHittestResult.isHovered)
             {
-                if (ui::UpdatePolarCameraFromImGuiMouseInputs(m_Camera, dimensions(m_LastTextureHittestResult.rect)))
+                if (ui::UpdatePolarCameraFromMouseInputs(m_Camera, dimensions(m_LastTextureHittestResult.rect)))
                 {
                     m_State->linkedCameraBase = m_Camera;  // reflects latest modification
                 }
@@ -206,7 +206,7 @@ namespace osc
             ImGuiSliderFlags const flags = ImGuiSliderFlags_Logarithmic;
 
             CStringView const label = "landmark radius";
-            ui::SetNextItemWidth(ui::GetContentRegionAvail().x - ui::CalcTextSize(label).x - ui::GetStyle().ItemInnerSpacing.x - m_State->overlayPadding.x);
+            ui::SetNextItemWidth(ui::GetContentRegionAvail().x - ui::CalcTextSize(label).x - ui::GetStyleItemInnerSpacing().x - m_State->overlayPadding.x);
             ui::SliderFloat(label, &m_LandmarkRadius, 0.0001f, 100.0f, "%.4f", flags);
         }
 
@@ -215,7 +215,7 @@ namespace osc
             ui::SetCursorPosX(m_CursorXAtExportButton);  // align with "export" button in row above
 
             CStringView const label = "blending factor  ";  // deliberate trailing spaces (for alignment with "landmark radius")
-            ui::SetNextItemWidth(ui::GetContentRegionAvail().x - ui::CalcTextSize(label).x - ui::GetStyle().ItemInnerSpacing.x - m_OverlayPadding.x);
+            ui::SetNextItemWidth(ui::GetContentRegionAvail().x - ui::CalcTextSize(label).x - ui::GetStyleItemInnerSpacing().x - m_OverlayPadding.x);
 
             float factor = m_State->getScratch().blendingFactor;
             if (ui::SliderFloat(label, &factor, 0.0f, 1.0f))
@@ -283,7 +283,7 @@ namespace osc
         CachedSceneRenderer m_CachedRenderer{
             *App::singleton<SceneCache>(App::resource_loader()),
         };
-        ui::ImGuiItemHittestResult m_LastTextureHittestResult;
+        ui::HittestResult m_LastTextureHittestResult;
         bool m_WireframeMode = true;
         bool m_ShowDestinationMesh = false;
         Vec2 m_OverlayPadding = {10.0f, 10.0f};

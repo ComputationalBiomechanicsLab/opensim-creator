@@ -40,7 +40,7 @@ namespace osc
         {
             // handle mouse capturing
             if (m_IsMouseCaptured) {
-                ui::UpdateEulerCameraFromImGuiUserInput(*this, m_CameraEulers);
+                ui::UpdateCameraFromInputs(*this, m_CameraEulers);
                 ui::SetMouseCursor(ImGuiMouseCursor_None);
                 App::upd().setShowCursor(false);
             }

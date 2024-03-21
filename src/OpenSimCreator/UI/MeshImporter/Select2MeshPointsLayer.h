@@ -228,7 +228,7 @@ namespace osc::mi
 
             if (isRenderHovered)
             {
-                ui::UpdatePolarCameraFromImGuiMouseInputs(m_Shared->updCamera(), m_Shared->get3DSceneDims());
+                ui::UpdatePolarCameraFromMouseInputs(m_Shared->updCamera(), m_Shared->get3DSceneDims());
             }
         }
 

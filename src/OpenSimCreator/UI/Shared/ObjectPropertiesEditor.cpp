@@ -161,7 +161,7 @@ namespace
     {
         ImDrawList* const l = ui::GetWindowDrawList();
         Vec2 const p = ui::GetCursorScreenPos();
-        float const h = ui::GetTextLineHeight() + 2.0f*ui::GetStyle().FramePadding.y + 2.0f*ui::GetStyle().FrameBorderSize;
+        float const h = ui::GetTextLineHeight() + 2.0f*ui::GetStyleFramePadding().y + 2.0f*ui::GetStyleFrameBorderSize();
         Vec2 const dims = Vec2{4.0f, h};
         l->AddRectFilled(p, p + dims, ui::ToImU32(color));
         ui::SetCursorScreenPos({p.x + 4.0f, p.y});

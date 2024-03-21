@@ -76,7 +76,7 @@ public:
         // handle mouse capturing
         if (m_IsMouseCaptured)
         {
-            ui::UpdateEulerCameraFromImGuiUserInput(m_SceneCamera, m_CameraEulers);
+            ui::UpdateCameraFromInputs(m_SceneCamera, m_CameraEulers);
             ui::SetMouseCursor(ImGuiMouseCursor_None);
             App::upd().setShowCursor(false);
         }

@@ -128,8 +128,8 @@ namespace
         OpenSim::Model const& model,
         SimTK::State const& state)
     {
-        auto color = ui::GetStyle().Colors[ImGuiCol_FrameBg];
-        color.w *= 0.5f;
+        auto color = ui::GetStyleColor(ImGuiCol_FrameBg);
+        color.a *= 0.5f;
 
         ui::PushStyleColor(ImGuiCol_FrameBg, color);
         bool const showingListBox = ui::BeginListBox("##PointsList");

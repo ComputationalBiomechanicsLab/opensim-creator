@@ -56,7 +56,7 @@ public:
 
     void onTick()
     {
-        ui::UpdatePolarCameraFromImGuiMouseInputs(m_PolarCamera, App::get().dims());
+        ui::UpdatePolarCameraFromMouseInputs(m_PolarCamera, App::get().dims());
 
         // handle hittest
         auto raycastStart = std::chrono::high_resolution_clock::now();

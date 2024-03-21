@@ -14,7 +14,7 @@ namespace
 
     void WidgetTitle(CStringView title, Vec2 pos)
     {
-        Vec2 const textTopLeft = pos + Vec2{ui::GetStyle().FramePadding};
+        Vec2 const textTopLeft = pos + ui::GetStyleFramePadding();
         ui::GetWindowDrawList()->AddText(textTopLeft, ui::GetColorU32(ImGuiCol_Text), title.c_str());
     }
 }
@@ -57,8 +57,6 @@ namespace
     {
         ui::PushStyleColor(ImGuiCol_Button, IM_COL32_BLACK_TRANS);
 
-        ImGuiStyle const& style = ui::GetStyle();
-
         float const titleHeight = ui::GetTextLineHeight();
 
         Vec2 const p = ui::GetCursorScreenPos();
@@ -79,10 +77,11 @@ namespace
         WidgetTitle(label, p);
 
         float const toggleHeight = titleHeight * 0.9f;
+        Vec2 const framePadding = ui::GetStyleFramePadding();
         Vec2 const toggleSize = {toggleHeight * 1.75f, toggleHeight};
         Vec2 const togglePos{
-            pMax.x - toggleSize.x - style.FramePadding.x,
-            pMin.y + (titleHeight - toggleSize.y)/2.0f + style.FramePadding.y,
+            pMax.x - toggleSize.x - framePadding.x,
+            pMin.y + (titleHeight - toggleSize.y)/2.0f + framePadding.y,
         };
         DrawToggle(*v, ui::IsItemHovered(), togglePos, toggleSize);
 

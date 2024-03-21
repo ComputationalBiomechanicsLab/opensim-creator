@@ -124,7 +124,7 @@ void osc::ui::context::Init()
     // init ImGui for OpenGL
     graphics_backend::Init();
 
-    ImGuiApplyDarkTheme();
+    ApplyDarkTheme();
 
     // init extra parts (plotting, gizmos, etc.)
     ImPlot::CreateContext();

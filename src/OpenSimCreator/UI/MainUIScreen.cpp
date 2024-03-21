@@ -148,7 +148,7 @@ public:
         }
         else if (ui::context::OnEvent(e))
         {
-            // event was pumped into ImGui - it shouldn't be pumped into the active tab
+            // event was pumped into the UI context - it shouldn't be pumped into the active tab
             m_ShouldRequestRedraw = true;
         }
         else if (e.type == SDL_QUIT)
@@ -409,7 +409,7 @@ private:
     {
         OSC_PERF("MainUIScreen/drawTabBar");
 
-        ui::PushStyleVar(ImGuiStyleVar_FramePadding, Vec2{ui::GetStyle().FramePadding} + 2.0f);
+        ui::PushStyleVar(ImGuiStyleVar_FramePadding, ui::GetStyleFramePadding() + 2.0f);
         ui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, Vec2{5.0f, 0.0f});
         ui::PushStyleVar(ImGuiStyleVar_TabRounding, 10.0f);
         ui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.0f);
@@ -532,8 +532,8 @@ private:
                 // - the tab is faulty in some way
                 // - soak up the exception to prevent the whole application from terminating
                 // - then create a new tab containing the error message, so the user can see the error
-                // - and indicate that ImGui was aggressively reset, because the drawcall may have thrown midway
-                //   through doing stuff in ImGui
+                // - and indicate that the UI was aggressively reset, because the drawcall may have thrown midway
+                //   through rendering the 2D UI
                 UID id = addTab(std::make_unique<ErrorTab>(getTabHostAPI(), ex));
                 selectTab(id);
                 implCloseTab(m_ActiveTabID);
@@ -808,7 +808,7 @@ private:
     // currently-active UI tab
     UID m_ActiveTabID = UID::empty();
 
-    // cached version of active tab name - used to ensure ImGui can re-focus a renamed tab
+    // cached version of active tab name - used to ensure the UI can re-focus a renamed tab
     std::string m_ActiveTabNameLastFrame;
 
     // a tab that should become active next frame
@@ -825,7 +825,7 @@ private:
     // true if the screen should request a redraw from the application
     bool m_ShouldRequestRedraw = false;
 
-    // true if ImGui was aggressively reset by a tab (and, therefore, this screen should reset ImGui)
+    // true if the UI context was aggressively reset by a tab (and, therefore, this screen should reset the UI)
     bool m_ImguiWasAggressivelyReset = false;
 
     // `valid` if the user has requested a screenshot (that hasn't yet been handled)

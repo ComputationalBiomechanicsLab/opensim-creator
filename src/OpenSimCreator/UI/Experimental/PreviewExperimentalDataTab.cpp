@@ -476,12 +476,12 @@ private:
         Vec2 dims = ui::GetContentRegionAvail();
         if (m_RenderIsMousedOver)
         {
-            ui::UpdatePolarCameraFromImGuiMouseInputs(m_Camera, dims);
+            ui::UpdatePolarCameraFromMouseInputs(m_Camera, dims);
         }
 
         if (static_cast<size_t>(m_ActiveRow) < NumRows(*m_Motion))
         {
-            ui::DrawTextureAsImGuiImage(render3DScene(dims), dims);
+            ui::Image(render3DScene(dims), dims);
             m_RenderIsMousedOver = ui::IsItemHovered();
         }
         else

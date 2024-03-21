@@ -186,7 +186,7 @@ private:
         ui::PushStyleColor(ImGuiCol_Button, Color::clear());
         ui::PushStyleColor(ImGuiCol_ButtonActive, Color::clear());
         ui::PushStyleColor(ImGuiCol_ButtonHovered, Color::clear());
-        ui::PushStyleVar(ImGuiStyleVar_FramePadding, {0.0f, ui::GetStyle().FramePadding.y});
+        ui::PushStyleVar(ImGuiStyleVar_FramePadding, {0.0f, ui::GetStyleFramePadding().y});
         if (ui::Button(c.getLocked(m_Model->getState()) ? ICON_FA_LOCK : ICON_FA_UNLOCK))
         {
             bool newValue = !c.getLocked(m_Model->getState());

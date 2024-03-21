@@ -35,7 +35,7 @@ namespace
         case SimulationStatus::Error:
             return Color::red();
         default:
-            return Color{Vec4{ui::GetStyle().Colors[ImGuiCol_Text]}};
+            return ui::GetStyleColor(ImGuiCol_Text);
         }
     }
 }

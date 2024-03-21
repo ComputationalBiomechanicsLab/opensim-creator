@@ -1625,25 +1625,25 @@ namespace
             // parameters visually (#397)
 
             std::string muscleName = Ellipsis(getShared().getPlotParams().getMusclePath().getComponentName(), 15);
-            float muscleNameWidth = ui::CalcTextSize(muscleName).x + 2.0f*ui::GetStyle().FramePadding.x;
+            float muscleNameWidth = ui::CalcTextSize(muscleName).x + 2.0f*ui::GetStyleFramePadding().x;
             std::string outputName = Ellipsis(getShared().getPlotParams().getPlottedOutput().getName(), 15);
-            float outputNameWidth = ui::CalcTextSize(outputName).x + 2.0f*ui::GetStyle().FramePadding.x;
+            float outputNameWidth = ui::CalcTextSize(outputName).x + 2.0f*ui::GetStyleFramePadding().x;
             std::string coordName = Ellipsis(getShared().getPlotParams().getCoordinatePath().getComponentName(), 15);
-            float coordNameWidth = ui::CalcTextSize(coordName).x + 2.0f*ui::GetStyle().FramePadding.x;
+            float coordNameWidth = ui::CalcTextSize(coordName).x + 2.0f*ui::GetStyleFramePadding().x;
 
             float totalWidth =
                 muscleNameWidth +
                 ui::CalcTextSize("'s").x +
-                ui::GetStyle().ItemSpacing.x +
+                ui::GetStyleItemSpacing().x +
                 outputNameWidth +
-                ui::GetStyle().ItemSpacing.x +
+                ui::GetStyleItemSpacing().x +
                 ui::CalcTextSize("vs.").x +
-                ui::GetStyle().ItemSpacing.x +
+                ui::GetStyleItemSpacing().x +
                 coordNameWidth +
-                ui::GetStyle().ItemSpacing.x +
-                ui::GetStyle().FramePadding.x +
+                ui::GetStyleItemSpacing().x +
+                ui::GetStyleFramePadding().x +
                 ui::CalcTextSize(ICON_FA_BARS " Options").x +
-                ui::GetStyle().FramePadding.x;
+                ui::GetStyleFramePadding().x;
 
             float cursorStart = 0.5f*(ui::GetContentRegionAvail().x - totalWidth);
             ui::SetCursorPosX(cursorStart);
@@ -1664,7 +1664,7 @@ namespace
             }
 
             ui::SameLine();
-            ui::SetCursorPosX(ui::GetCursorPosX() - ui::GetStyle().ItemSpacing.x);
+            ui::SetCursorPosX(ui::GetCursorPosX() - ui::GetStyleItemSpacing().x);
             ui::Text("'s");
             ui::SameLine();
             ui::SetNextItemWidth(outputNameWidth);

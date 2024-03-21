@@ -33,7 +33,7 @@ void osc::RedoButton::onDraw()
 
     ui::SameLine();
 
-    ui::PushStyleVar(ImGuiStyleVar_FramePadding, {0.0f, ui::GetStyle().FramePadding.y});
+    ui::PushStyleVar(ImGuiStyleVar_FramePadding, {0.0f, ui::GetStyleFramePadding().y});
     ui::Button(ICON_FA_CARET_DOWN);
     ui::PopStyleVar();
 

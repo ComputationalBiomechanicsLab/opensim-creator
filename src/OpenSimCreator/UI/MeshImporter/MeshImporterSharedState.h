@@ -419,7 +419,7 @@ namespace osc::mi
             m_SceneRenderer.render(decs, p);
 
             // send texture to ImGui
-            ui::DrawTextureAsImGuiImage(m_SceneRenderer.updRenderTexture(), m_SceneRenderer.getDimensions());
+            ui::Image(m_SceneRenderer.updRenderTexture(), m_SceneRenderer.getDimensions());
 
             // handle hittesting, etc.
             setIsRenderHovered(ui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup));

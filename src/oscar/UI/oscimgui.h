@@ -562,6 +562,42 @@ namespace osc::ui
         return ImGui::GetStyle();
     }
 
+    inline Color GetStyleColor(ImGuiCol color)
+    {
+        auto const vec = ImGui::GetStyleColorVec4(color);
+        return {vec.x, vec.y, vec.z, vec.w};
+    }
+
+    inline Vec2 GetStyleFramePadding()
+    {
+        return GetStyle().FramePadding;
+    }
+
+    inline float GetStyleFrameBorderSize()
+    {
+        return GetStyle().FrameBorderSize;
+    }
+
+    inline Vec2 GetStyleWindowPadding()
+    {
+        return GetStyle().WindowPadding;
+    }
+
+    inline Vec2 GetStyleItemSpacing()
+    {
+        return GetStyle().ItemSpacing;
+    }
+
+    inline Vec2 GetStyleItemInnerSpacing()
+    {
+        return GetStyle().ItemInnerSpacing;
+    }
+
+    inline float GetStyleAlpha()
+    {
+        return GetStyle().Alpha;
+    }
+
     inline ImGuiIO& GetIO()
     {
         return ImGui::GetIO();

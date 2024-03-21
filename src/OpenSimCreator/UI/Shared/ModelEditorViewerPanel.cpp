@@ -238,7 +238,7 @@ namespace
             ModelEditorViewerPanelParameters& params,
             ModelEditorViewerPanelState& state) final
         {
-            return ui::UpdatePolarCameraFromImGuiKeyboardInputs(
+            return ui::UpdatePolarCameraFromKeyboardInputs(
                 params.updRenderParams().camera,
                 state.viewportRect,
                 state.maybeSceneAABB
@@ -252,7 +252,7 @@ namespace
             m_IsHandlingMouseInputs = true;
 
             // try updating the camera (mouse panning, etc.)
-            bool rv = ui::UpdatePolarCameraFromImGuiMouseInputs(
+            bool rv = ui::UpdatePolarCameraFromMouseInputs(
                 params.updRenderParams().camera,
                 dimensions(state.viewportRect)
             );
@@ -413,7 +413,7 @@ private:
                 dimensions(m_State.viewportRect),
                 App::get().getCurrentAntiAliasingLevel()
             );
-            ui::DrawTextureAsImGuiImage(
+            ui::Image(
                 sceneTexture,
                 dimensions(m_State.viewportRect)
             );

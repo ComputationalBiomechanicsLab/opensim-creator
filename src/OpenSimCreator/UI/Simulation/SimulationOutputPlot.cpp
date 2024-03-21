@@ -335,11 +335,11 @@ private:
             ImPlot::PushStyleVar(ImPlotStyleVar_FitPadding, {0.0f, 1.0f});
             auto const flags = ImPlotFlags_NoTitle | ImPlotFlags_NoLegend | ImPlotFlags_NoInputs | ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoFrame;
 
-            if (ImPlot::BeginPlot("##", ImVec2(plotWidth, m_Height), flags)) {
+            if (ImPlot::BeginPlot("##", Vec2{plotWidth, m_Height}, flags)) {
                 ImPlot::SetupAxis(ImAxis_X1, nullptr, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_NoMenus | ImPlotAxisFlags_AutoFit);
                 ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_NoMenus | ImPlotAxisFlags_AutoFit);
-                ImPlot::PushStyleColor(ImPlotCol_Line, ImVec4{1.0f, 1.0f, 1.0f, 0.7f});
-                ImPlot::PushStyleColor(ImPlotCol_PlotBg, ImVec4{0.0f, 0.0f, 0.0f, 0.0f});
+                ImPlot::PushStyleColor(ImPlotCol_Line, Vec4{1.0f, 1.0f, 1.0f, 0.7f});
+                ImPlot::PushStyleColor(ImPlotCol_PlotBg, Vec4{0.0f, 0.0f, 0.0f, 0.0f});
                 ImPlot::PlotLine("##",
                     buf.data(),
                     static_cast<int>(buf.size())
@@ -406,7 +406,7 @@ private:
                     float y = buf[static_cast<size_t>(step)];
 
                     // ensure the tooltip doesn't occlude the line
-                    ui::PushStyleColor(ImGuiCol_PopupBg, ui::ToImVec4(ui::ToColor(ui::GetStyle().Colors[ImGuiCol_PopupBg]).with_alpha(0.5f)));
+                    ui::PushStyleColor(ImGuiCol_PopupBg, ui::GetStyleColor(ImGuiCol_PopupBg).with_alpha(0.5f));
                     ui::SetTooltip("(%.2fs, %.4f)", static_cast<float>(timeLoc.time_since_epoch().count()), y);
                     ui::PopStyleColor();
                 }
@@ -467,14 +467,14 @@ private:
             ImPlot::PushStyleVar(ImPlotStyleVar_PlotPadding, {0.0f, 0.0f});
             ImPlot::PushStyleVar(ImPlotStyleVar_PlotBorderSize, 0.0f);
             ImPlot::PushStyleVar(ImPlotStyleVar_FitPadding, {0.1f, 0.1f});
-            ImPlot::PushStyleVar(ImPlotStyleVar_AnnotationPadding, ui::GetStyle().WindowPadding);
+            ImPlot::PushStyleVar(ImPlotStyleVar_AnnotationPadding, ui::GetStyleWindowPadding());
             auto const flags = ImPlotFlags_NoTitle | ImPlotFlags_NoLegend | ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoFrame;
 
-            if (ImPlot::BeginPlot("##", ImVec2(plotWidth, m_Height), flags)) {
+            if (ImPlot::BeginPlot("##", Vec2{plotWidth, m_Height}, flags)) {
                 ImPlot::SetupAxis(ImAxis_X1, nullptr, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_NoMenus | ImPlotAxisFlags_AutoFit);
                 ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_NoMenus | ImPlotAxisFlags_AutoFit);
-                ImPlot::PushStyleColor(ImPlotCol_Line, ImVec4{1.0f, 1.0f, 1.0f, 0.7f});
-                ImPlot::PushStyleColor(ImPlotCol_PlotBg, ImVec4{0.0f, 0.0f, 0.0f, 0.0f});
+                ImPlot::PushStyleColor(ImPlotCol_Line, Vec4{1.0f, 1.0f, 1.0f, 0.7f});
+                ImPlot::PushStyleColor(ImPlotCol_PlotBg, Vec4{0.0f, 0.0f, 0.0f, 0.0f});
                 ImPlot::PlotLine(
                     "##",
                     &buf.front().x,
@@ -494,17 +494,10 @@ private:
                     SimulationReport currentReport = m_API->trySelectReportBasedOnScrubbing().value_or(sim.getSimulationReport(nReports - 1));
                     Vec2d currentVal = m_OutputExtractor.getValueVec2(*sim.getModel(), currentReport);
                     // ensure the annotation doesn't occlude the line too heavily
-                    auto annotationColor = ui::ToColor(ui::GetStyle().Colors[ImGuiCol_PopupBg]).with_alpha(0.5f);
+                    auto annotationColor = ui::GetStyleColor(ImGuiCol_PopupBg).with_alpha(0.5f);
                     ImPlot::Annotation(currentVal.x, currentVal.y, ui::ToImVec4(annotationColor), {10.0f, 10.0f}, true, "(%f, %f)", currentVal.x, currentVal.y);
                     ImPlot::DragPoint(0, &currentVal.x, &currentVal.y, ui::ToImVec4(c_CurrentScubTimeColor), 4.0f, ImPlotDragToolFlags_NoInputs);
                 }
-
-                // TODO: find nearest point to mouse and enable hovering to it etc.
-                // if (ImPlot::IsPlotHovered()) {
-                //    auto [x, y] = ImPlot::GetPlotMousePos();
-                //    ImPlot::Annotation(x, y, ui::ToImVec4(c_HoveredScrubTimeColor), {10.0f, 10.0f}, true, "(%f, %f)", x, y);
-                //    ImPlot::DragPoint(0, &x, &y, ui::ToImVec4(c_HoveredScrubTimeColor), 4.0f, ImPlotDragToolFlags_NoInputs);
-                // }
 
                 ImPlot::EndPlot();
             }

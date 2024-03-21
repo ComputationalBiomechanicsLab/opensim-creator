@@ -98,8 +98,8 @@ namespace osc
 
             // render 3D: draw the scene into the content rect and 2D-hittest it
             RenderTexture& renderTexture = renderScene(contentRectDims, meshCollision, landmarkCollision);
-            ui::DrawTextureAsImGuiImage(renderTexture);
-            m_LastTextureHittestResult = ui::HittestLastImguiItem();
+            ui::Image(renderTexture);
+            m_LastTextureHittestResult = ui::HittestLastItem();
 
             // handle any events due to hovering over, clicking, etc.
             handleInputAndHoverEvents(m_LastTextureHittestResult, meshCollision, landmarkCollision);
@@ -128,7 +128,7 @@ namespace osc
             // if the user interacts with the render, update the camera as necessary
             if (m_LastTextureHittestResult.isHovered)
             {
-                if (ui::UpdatePolarCameraFromImGuiMouseInputs(m_Camera, dimensions(m_LastTextureHittestResult.rect)))
+                if (ui::UpdatePolarCameraFromMouseInputs(m_Camera, dimensions(m_LastTextureHittestResult.rect)))
                 {
                     m_State->linkedCameraBase = m_Camera;  // reflects latest modification
                 }
@@ -371,7 +371,7 @@ namespace osc
 
         // handle any input-related side-effects
         void handleInputAndHoverEvents(
-            ui::ImGuiItemHittestResult const& htResult,
+            ui::HittestResult const& htResult,
             std::optional<RayCollision> const& meshCollision,
             std::optional<MeshWarpingTabHover> const& landmarkCollision)
         {
@@ -571,7 +571,7 @@ namespace osc
             ImGuiSliderFlags const flags = ImGuiSliderFlags_Logarithmic;
 
             CStringView const label = "landmark radius";
-            ui::SetNextItemWidth(ui::GetContentRegionAvail().x - ui::CalcTextSize(label).x - ui::GetStyle().ItemInnerSpacing.x - m_State->overlayPadding.x);
+            ui::SetNextItemWidth(ui::GetContentRegionAvail().x - ui::CalcTextSize(label).x - ui::GetStyleItemInnerSpacing().x - m_State->overlayPadding.x);
             ui::SliderFloat(label, &m_LandmarkRadius, 0.0001f, 100.0f, "%.4f", flags);
         }
 
@@ -589,7 +589,7 @@ namespace osc
         CachedSceneRenderer m_CachedRenderer{
             *App::singleton<SceneCache>(App::resource_loader()),
         };
-        ui::ImGuiItemHittestResult m_LastTextureHittestResult;
+        ui::HittestResult m_LastTextureHittestResult;
         bool m_WireframeMode = true;
         float m_LandmarkRadius = 0.05f;
     };

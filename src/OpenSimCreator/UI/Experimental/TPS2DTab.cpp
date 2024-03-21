@@ -347,8 +347,8 @@ public:
             renderMesh(m_InputGrid, texDims, m_InputRender);
 
             // draw rendered texture via ImGui
-            ui::DrawTextureAsImGuiImage(*m_InputRender, texDims);
-            ui::ImGuiItemHittestResult const ht = ui::HittestLastImguiItem();
+            ui::Image(*m_InputRender, texDims);
+            ui::HittestResult const ht = ui::HittestLastItem();
 
             // draw any 2D overlays etc.
             renderOverlayElements(ht);
@@ -384,7 +384,7 @@ public:
             renderMesh(m_OutputGrid, texDims, m_OutputRender);
 
             // draw rendered texture via ImGui
-            ui::DrawTextureAsImGuiImage(*m_OutputRender, texDims);
+            ui::Image(*m_OutputRender, texDims);
         }
         ui::End();
 
@@ -424,7 +424,7 @@ private:
     }
 
     // render any 2D overlays
-    void renderOverlayElements(ui::ImGuiItemHittestResult const& ht)
+    void renderOverlayElements(ui::HittestResult const& ht)
     {
         ImDrawList* const drawlist = ui::GetWindowDrawList();
 
@@ -454,7 +454,7 @@ private:
     }
 
     // render any mouse-related overlays
-    void renderMouseUIElements(ui::ImGuiItemHittestResult const& ht)
+    void renderMouseUIElements(ui::HittestResult const& ht)
     {
         std::visit(Overload
         {
@@ -464,7 +464,7 @@ private:
     }
 
     // render any mouse-related overlays for when the user hasn't clicked yet
-    void renderMouseUIElements(ui::ImGuiItemHittestResult const& ht, GUIInitialMouseState)
+    void renderMouseUIElements(ui::HittestResult const& ht, GUIInitialMouseState)
     {
         Vec2 const mouseScreenPos = ui::GetMousePos();
         Vec2 const mouseImagePos = mouseScreenPos - ht.rect.p1;
@@ -480,7 +480,7 @@ private:
     }
 
     // render any mouse-related overlays for when the user has clicked once
-    void renderMouseUIElements(ui::ImGuiItemHittestResult const& ht, GUIFirstClickMouseState st)
+    void renderMouseUIElements(ui::HittestResult const& ht, GUIFirstClickMouseState st)
     {
         Vec2 const mouseScreenPos = ui::GetMousePos();
         Vec2 const mouseImagePos = mouseScreenPos - ht.rect.p1;

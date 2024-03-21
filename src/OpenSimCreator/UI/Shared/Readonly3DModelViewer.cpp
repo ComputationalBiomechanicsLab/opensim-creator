@@ -76,7 +76,7 @@ public:
         // inputs: process inputs, if hovering
         if (m_MaybeLastHittest && m_MaybeLastHittest->isHovered)
         {
-            ui::UpdatePolarCameraFromImGuiInputs(
+            ui::UpdatePolarCameraFromInputs(
                 m_Params.camera,
                 m_MaybeLastHittest->rect,
                 m_CachedModelRenderer.getBounds()
@@ -92,13 +92,13 @@ public:
         );
 
         // blit texture as a ui::Image
-        ui::DrawTextureAsImGuiImage(
+        ui::Image(
             m_CachedModelRenderer.updRenderTexture(),
             ui::GetContentRegionAvail()
         );
 
         // update current+retained hittest
-        ui::ImGuiItemHittestResult const hittest = ui::HittestLastImguiItem();
+        ui::HittestResult const hittest = ui::HittestLastItem();
         m_MaybeLastHittest = hittest;
 
         // if allowed, hittest the scene
@@ -194,7 +194,7 @@ private:
     };
 
     // only available after rendering the first frame
-    std::optional<ui::ImGuiItemHittestResult> m_MaybeLastHittest;
+    std::optional<ui::HittestResult> m_MaybeLastHittest;
 
     // overlay-related data
     std::shared_ptr<IconCache> m_IconCache = App::singleton<IconCache>(

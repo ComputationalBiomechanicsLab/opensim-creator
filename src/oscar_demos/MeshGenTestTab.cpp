@@ -67,7 +67,7 @@ private:
         ui::DockSpaceOverViewport(ui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
         if (m_Viewer.isHovered()) {
-            ui::UpdatePolarCameraFromImGuiMouseInputs(m_Camera, App::get().dims());
+            ui::UpdatePolarCameraFromMouseInputs(m_Camera, App::get().dims());
         }
 
         if (ui::Begin("viewer")) {

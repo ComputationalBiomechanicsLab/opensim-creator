@@ -143,7 +143,7 @@ public:
         ModelEditorViewerPanelParameters& params,
         ModelEditorViewerPanelState& state) const
     {
-        return ui::UpdatePolarCameraFromImGuiKeyboardInputs(
+        return ui::UpdatePolarCameraFromKeyboardInputs(
             params.updRenderParams().camera,
             state.viewportRect,
             m_Decorations.bvh.getBounds()
@@ -154,7 +154,7 @@ public:
         ModelEditorViewerPanelParameters& params,
         ModelEditorViewerPanelState& state)
     {
-        bool rv = ui::UpdatePolarCameraFromImGuiMouseInputs(
+        bool rv = ui::UpdatePolarCameraFromMouseInputs(
             params.updRenderParams().camera,
             dimensions(state.viewportRect)
         );
@@ -200,7 +200,7 @@ public:
         m_Renderer.render(m_Decorations.decorations, rendererParameters);
 
         // blit texture as ImGui image
-        ui::DrawTextureAsImGuiImage(
+        ui::Image(
             m_Renderer.updRenderTexture(),
             dimensions(panelState.viewportRect)
         );

@@ -142,7 +142,7 @@ private:
         Rect const windowRect = {screenTopLeft, screenTopLeft + Vec2{ui::GetContentRegionAvail()}};
         Rect const imageRect = ShrinkToFit(windowRect, aspect_ratio(m_Screenshot.image.getDimensions()));
         ui::SetCursorScreenPos(imageRect.p1);
-        ui::DrawTextureAsImGuiImage(m_ImageTexture, dimensions(imageRect));
+        ui::Image(m_ImageTexture, dimensions(imageRect));
         return imageRect;
     }
 

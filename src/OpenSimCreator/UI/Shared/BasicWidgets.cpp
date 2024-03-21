@@ -1184,13 +1184,13 @@ bool osc::DrawCameraControlButtons(
         [&params, drawlist]() { return DrawAdvancedParamsEditor(params, drawlist); },
     };
 
-    auto c = ui::GetStyle().Colors[ImGuiCol_Button];
-    c.w *= 0.9f;
+    auto c = ui::GetStyleColor(ImGuiCol_Button);
+    c.a *= 0.9f;
     ui::PushStyleColor(ImGuiCol_Button, c);
 
-    float const spacing = ui::GetStyle().ItemSpacing.x;
+    float const spacing = ui::GetStyleItemSpacing().x;
     float width = zoomOutButton.dimensions().x + spacing + zoomInButton.dimensions().x + spacing + autoFocusButton.dimensions().x;
-    Vec2 const topleft = {desiredTopCentroid.x - 0.5f*width, desiredTopCentroid.y + 2.0f*ui::GetStyle().ItemSpacing.y};
+    Vec2 const topleft = {desiredTopCentroid.x - 0.5f*width, desiredTopCentroid.y + 2.0f*ui::GetStyleItemSpacing().y};
     ui::SetCursorScreenPos(topleft);
 
     bool edited = false;
@@ -1234,12 +1234,11 @@ bool osc::DrawViewerImGuiOverlays(
     IconCache& iconCache,
     std::function<bool()> const& drawExtraElementsInTop)
 {
-    ImGuiStyle const& style = ui::GetStyle();
-
     bool edited = false;
 
     // draw top-left buttons
-    ui::SetCursorScreenPos(renderRect.p1 + Vec2{style.WindowPadding});
+    Vec2 const windowPadding = ui::GetStyleWindowPadding();
+    ui::SetCursorScreenPos(renderRect.p1 + windowPadding);
     edited = DrawViewerTopButtonRow(params, drawlist, iconCache, drawExtraElementsInTop) || edited;
 
     // draw top-right camera manipulators
@@ -1247,8 +1246,8 @@ bool osc::DrawViewerImGuiOverlays(
     Vec2 const renderDims = dimensions(renderRect);
     Vec2 const axesDims = axes.dimensions();
     Vec2 const axesTopLeft = {
-        renderRect.p1.x + renderDims.x - style.WindowPadding.x - axesDims.x,
-        renderRect.p1.y + style.WindowPadding.y,
+        renderRect.p1.x + renderDims.x - windowPadding.x - axesDims.x,
+        renderRect.p1.y + windowPadding.y,
     };
 
     // draw the bottom overlays
@@ -1276,7 +1275,7 @@ bool osc::BeginToolbar(CStringView label, std::optional<Vec2> padding)
         ui::PushStyleVar(ImGuiStyleVar_WindowPadding, *padding);
     }
 
-    float const height = ui::GetFrameHeight() + 2.0f*ui::GetStyle().WindowPadding.y;
+    float const height = ui::GetFrameHeight() + 2.0f*ui::GetStyleWindowPadding().y;
     ImGuiWindowFlags const flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
     bool open = ui::BeginMainViewportTopBar(label, height, flags);
     if (padding)
@@ -1305,7 +1304,7 @@ void osc::DrawOpenModelButtonWithRecentFilesDropdown(
     }
     ui::DrawTooltipIfItemHovered("Open Model", "Opens an existing osim file in a new tab");
     ui::SameLine();
-    ui::PushStyleVar(ImGuiStyleVar_FramePadding, {1.0f, ui::GetStyle().FramePadding.y});
+    ui::PushStyleVar(ImGuiStyleVar_FramePadding, {1.0f, ui::GetStyleFramePadding().y});
     ui::Button(ICON_FA_CARET_DOWN);
     ui::DrawTooltipIfItemHovered("Open Recent File", "Opens a recently-opened osim file in a new tab");
     ui::PopStyleVar();
@@ -1361,7 +1360,7 @@ void osc::DrawReloadModelButton(UndoableModelStatePair& model)
     if (!HasInputFileName(model.getModel()))
     {
         ui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-        ui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f * ui::GetStyle().Alpha);
+        ui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f * ui::GetStyleAlpha());
     }
 
     if (ui::Button(ICON_FA_RECYCLE))
@@ -1386,7 +1385,7 @@ void osc::DrawUndoButton(UndoableModelStatePair& model)
     {
         ui::PushItemFlag(ImGuiItemFlags_Disabled, true);
         ++itemFlagsPushed;
-        ui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f * ui::GetStyle().Alpha);
+        ui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f * ui::GetStyleAlpha());
         ++styleVarsPushed;
     }
 
@@ -1409,7 +1408,7 @@ void osc::DrawRedoButton(UndoableModelStatePair& model)
     {
         ui::PushItemFlag(ImGuiItemFlags_Disabled, true);
         ++itemFlagsPushed;
-        ui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f * ui::GetStyle().Alpha);
+        ui::PushStyleVar(ImGuiStyleVar_Alpha, 0.5f * ui::GetStyleAlpha());
         ++styleVarsPushed;
     }
 

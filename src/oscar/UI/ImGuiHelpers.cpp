@@ -79,16 +79,18 @@ namespace
     }
 }
 
-void osc::ui::ImGuiApplyDarkTheme()
+void osc::ui::ApplyDarkTheme()
 {
     // see: https://github.com/ocornut/imgui/issues/707
     // this one: https://github.com/ocornut/imgui/issues/707#issuecomment-512669512
 
-    ui::GetStyle().FrameRounding = 0.0f;
-    ui::GetStyle().GrabRounding = 20.0f;
-    ui::GetStyle().GrabMinSize = 10.0f;
+    auto& style = ui::GetStyle();
 
-    auto& colors = ui::GetStyle().Colors;
+    style.FrameRounding = 0.0f;
+    style.GrabRounding = 20.0f;
+    style.GrabMinSize = 10.0f;
+
+    auto& colors = style.Colors;
     colors[ImGuiCol_Text] = ImVec4(0.95f, 0.96f, 0.98f, 1.00f);
     colors[ImGuiCol_TextDisabled] = ImVec4(0.36f, 0.42f, 0.47f, 1.00f);
     colors[ImGuiCol_WindowBg] = ImVec4(0.11f, 0.15f, 0.17f, 1.00f);
@@ -139,7 +141,7 @@ void osc::ui::ImGuiApplyDarkTheme()
     colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.6f);
 }
 
-bool osc::ui::UpdatePolarCameraFromImGuiMouseInputs(
+bool osc::ui::UpdatePolarCameraFromMouseInputs(
     PolarPerspectiveCamera& camera,
     Vec2 viewportDims)
 {
@@ -213,7 +215,7 @@ bool osc::ui::UpdatePolarCameraFromImGuiMouseInputs(
     return modified;
 }
 
-bool osc::ui::UpdatePolarCameraFromImGuiKeyboardInputs(
+bool osc::ui::UpdatePolarCameraFromKeyboardInputs(
     PolarPerspectiveCamera& camera,
     Rect const& viewportRect,
     std::optional<AABB> maybeSceneAABB)
@@ -359,7 +361,7 @@ bool osc::ui::UpdatePolarCameraFromImGuiKeyboardInputs(
     return false;
 }
 
-bool osc::ui::UpdatePolarCameraFromImGuiInputs(
+bool osc::ui::UpdatePolarCameraFromInputs(
     PolarPerspectiveCamera& camera,
     Rect const& viewportRect,
     std::optional<AABB> maybeSceneAABB)
@@ -370,15 +372,15 @@ bool osc::ui::UpdatePolarCameraFromImGuiInputs(
     // we don't check `io.WantCaptureMouse` because clicking/dragging on an ImGui::Image
     // is classed as a mouse interaction
     bool const mouseHandled =
-        UpdatePolarCameraFromImGuiMouseInputs(camera, dimensions(viewportRect));
+        UpdatePolarCameraFromMouseInputs(camera, dimensions(viewportRect));
     bool const keyboardHandled = !io.WantCaptureKeyboard ?
-        UpdatePolarCameraFromImGuiKeyboardInputs(camera, viewportRect, maybeSceneAABB) :
+        UpdatePolarCameraFromKeyboardInputs(camera, viewportRect, maybeSceneAABB) :
         false;
 
     return mouseHandled || keyboardHandled;
 }
 
-void osc::ui::UpdateEulerCameraFromImGuiUserInput(Camera& camera, Eulers& eulers)
+void osc::ui::UpdateCameraFromInputs(Camera& camera, Eulers& eulers)
 {
     Vec3 const front = camera.getDirection();
     Vec3 const up = camera.getUpwardsDirection();
@@ -431,19 +433,19 @@ Rect osc::ui::ContentRegionAvailScreenRect()
     return Rect{topLeft, topLeft + ui::GetContentRegionAvail()};
 }
 
-void osc::ui::DrawTextureAsImGuiImage(Texture2D const& t)
+void osc::ui::Image(Texture2D const& t)
 {
-    DrawTextureAsImGuiImage(t, t.getDimensions());
+    Image(t, t.getDimensions());
 }
 
-void osc::ui::DrawTextureAsImGuiImage(Texture2D const& t, Vec2 dims)
+void osc::ui::Image(Texture2D const& t, Vec2 dims)
 {
     Vec2 const topLeftCoord = {0.0f, 1.0f};
     Vec2 const bottomRightCoord = {1.0f, 0.0f};
-    DrawTextureAsImGuiImage(t, dims, topLeftCoord, bottomRightCoord);
+    Image(t, dims, topLeftCoord, bottomRightCoord);
 }
 
-void osc::ui::DrawTextureAsImGuiImage(
+void osc::ui::Image(
     Texture2D const& t,
     Vec2 dims,
     Vec2 topLeftCoord,
@@ -453,12 +455,12 @@ void osc::ui::DrawTextureAsImGuiImage(
     ImGui::Image(handle, dims, topLeftCoord, bottomRightCoord);
 }
 
-void osc::ui::DrawTextureAsImGuiImage(RenderTexture const& tex)
+void osc::ui::Image(RenderTexture const& tex)
 {
-    return DrawTextureAsImGuiImage(tex, tex.getDimensions());
+    return Image(tex, tex.getDimensions());
 }
 
-void osc::ui::DrawTextureAsImGuiImage(RenderTexture const& t, Vec2 dims)
+void osc::ui::Image(RenderTexture const& t, Vec2 dims)
 {
     Vec2 const uv0 = {0.0f, 1.0f};
     Vec2 const uv1 = {1.0f, 0.0f};
@@ -468,9 +470,7 @@ void osc::ui::DrawTextureAsImGuiImage(RenderTexture const& t, Vec2 dims)
 
 Vec2 osc::ui::CalcButtonSize(CStringView content)
 {
-    Vec2 const padding = ui::GetStyle().FramePadding;
-    Vec2 const contentDims = ui::CalcTextSize(content);
-    return contentDims + 2.0f*padding;
+    return ui::CalcTextSize(content) + 2.0f*ui::GetStyleFramePadding();
 }
 
 float osc::ui::CalcButtonWidth(CStringView content)
@@ -509,14 +509,14 @@ Rect osc::ui::GetItemRect()
     return {ui::GetItemRectMin(), ui::GetItemRectMax()};
 }
 
-ui::ImGuiItemHittestResult osc::ui::HittestLastImguiItem()
+ui::HittestResult osc::ui::HittestLastItem()
 {
-    return HittestLastImguiItem(c_DefaultDragThreshold);
+    return HittestLastItem(c_DefaultDragThreshold);
 }
 
-ui::ImGuiItemHittestResult osc::ui::HittestLastImguiItem(float dragThreshold)
+ui::HittestResult osc::ui::HittestLastItem(float dragThreshold)
 {
-    ImGuiItemHittestResult rv;
+    HittestResult rv;
     rv.rect.p1 = ui::GetItemRectMin();
     rv.rect.p2 = ui::GetItemRectMax();
     rv.isHovered = ui::IsItemHovered();
@@ -801,14 +801,14 @@ bool osc::ui::BeginMainViewportBottomBar(CStringView label)
     // https://github.com/ocornut/imgui/issues/3518
     auto* const viewport = static_cast<ImGuiViewportP*>(static_cast<void*>(ui::GetMainViewport()));
     ImGuiWindowFlags const flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
-    float const height = ui::GetFrameHeight() + ui::GetStyle().WindowPadding.y;
+    float const height = ui::GetFrameHeight() + ui::GetStyleWindowPadding().y;
 
     return ImGui::BeginViewportSideBar(label.c_str(), viewport, ImGuiDir_Down, height, flags);
 }
 
 bool osc::ui::ButtonCentered(CStringView s)
 {
-    float const buttonWidth = ui::CalcTextSize(s).x + 2.0f*ui::GetStyle().FramePadding.x;
+    float const buttonWidth = ui::CalcTextSize(s).x + 2.0f*ui::GetStyleFramePadding().x;
     float const midpoint = ui::GetCursorScreenPos().x + 0.5f*ui::GetContentRegionAvail().x;
     float const buttonStartX = midpoint - 0.5f*buttonWidth;
 

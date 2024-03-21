@@ -156,7 +156,7 @@ namespace osc
 
         void drawConnectingLine(Circle const& src, Circle const& dest)
         {
-            float const pad = ui::GetStyle().ItemInnerSpacing.x;
+            float const pad = ui::GetStyleItemInnerSpacing().x;
 
             // draw connecting line
             Vec2 const direction = normalize(dest.origin - src.origin);
