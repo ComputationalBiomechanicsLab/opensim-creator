@@ -320,22 +320,6 @@ namespace
         return planeSurfacePoint.x*basis1 + planeSurfacePoint.y*basis2;
     }
 
-    // returns `vs` projected onto a plane's 2D surface, where the
-    // plane's surface has basis vectors `basis1` and `basis2`
-    std::vector<Vec2> Project3DPointsOnto2DSurface(
-        std::span<Vec3 const> vs,
-        Vec3 const& basis1,
-        Vec3 const& basis2)
-    {
-        std::vector<Vec2> rv;
-        rv.reserve(vs.size());
-        for (Vec3 const& v : vs)
-        {
-            rv.push_back(Project3DPointOntoPlane(v, basis1, basis2));
-        }
-        return rv;
-    }
-
     // part of solving this algeberic form for an ellipsoid:
     //
     //     - Ax^2 + By^2 + Cz^2 + 2Dxy + 2Exz + 2Fyz + 2Gx + 2Hy + 2Iz + J = 0

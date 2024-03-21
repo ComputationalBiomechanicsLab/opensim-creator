@@ -34,7 +34,7 @@ std::unique_ptr<IFrameWarper> osc::mow::IdentityFrameWarperFactory::implTryCreat
 {
     class IdentityFrameWarper final : public IFrameWarper {
     private:
-        SimTK::Transform implWarp(SimTK::Transform const& transform) const
+        SimTK::Transform implWarp(SimTK::Transform const& transform) const override
         {
             return transform;  // identity
         }

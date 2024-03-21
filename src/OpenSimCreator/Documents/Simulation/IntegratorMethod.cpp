@@ -36,7 +36,9 @@ namespace
         return std::make_unique<Integrator>(system);
     }
 
-    constexpr auto c_IntegratorMethodConstructors = std::to_array({
+    using IntegratorCtor = std::unique_ptr<SimTK::Integrator>(*)(SimTK::System const&);
+
+    constexpr auto c_IntegratorMethodConstructors = std::to_array<IntegratorCtor>({
         make_integrator<SimTK::RungeKuttaMersonIntegrator>,
         make_integrator<SimTK::ExplicitEulerIntegrator>,
         make_integrator<SimTK::RungeKutta2Integrator>,
