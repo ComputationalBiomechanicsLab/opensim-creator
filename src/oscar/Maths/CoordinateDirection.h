@@ -4,6 +4,9 @@
 #include <oscar/Maths/Negative.h>
 
 #include <cstdint>
+#include <optional>
+#include <iosfwd>
+#include <string_view>
 #include <type_traits>
 
 namespace osc
@@ -13,6 +16,13 @@ namespace osc
     // inspired by simbody's `SimTK::CoordinateDirection` class
     class CoordinateDirection final {
     public:
+        // returns a `CoordinateDirection` parsed from a `std::string_view`, the format should be [direction]axis, e.g.:
+        //
+        //     -x, +x, x, -X, +X, X, -y,...
+        //
+        // returns `std::nullopt` if the input string is incorrect
+        static std::optional<CoordinateDirection> try_parse(std::string_view);
+
         // returns a `CoordinateDirection` that represents the positive X direction
         static constexpr CoordinateDirection x()
         {
@@ -64,6 +74,9 @@ namespace osc
         // returns the `CoordinateAxis` that this `CoordinateDirection` points along
         constexpr CoordinateAxis axis() const { return m_Axis; }
 
+        // tests if the `CoordinateDirection` is pointing negatively along its axis
+        constexpr bool is_negated() const { return m_Direction == -1; }
+
         // returns T{-1} if this `CoordinateDirection` points negatively along its axis; otherwise, returns `T{1}`
         template<typename T = float>
         constexpr T direction() const
@@ -88,6 +101,9 @@ namespace osc
         CoordinateAxis m_Axis;
         int8_t m_Direction = 1;
     };
+
+    // writes the `CoordinateDirection` to the ouptut stream in a human-readable form (e.g. "x", "-x")
+    std::ostream& operator<<(std::ostream&, CoordinateDirection);
 
     // returns the equivalent `CoordinateDirection` that `cross(UnitVec3{x}, UnitVec3{y})` would point along,
     // or `x` if both `x` and `y` point along the same axis (i.e. have a zero cross product)

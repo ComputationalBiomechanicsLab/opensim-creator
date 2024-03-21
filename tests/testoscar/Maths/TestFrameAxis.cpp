@@ -1,22 +1,13 @@
 #include <oscar/Maths/FrameAxis.h>
 
 #include <gtest/gtest.h>
+#include <oscar/Utils/StringHelpers.h>
 
 #include <sstream>
 #include <string>
 #include <utility>
 
 using namespace osc;
-
-namespace
-{
-    std::string StreamToString(FrameAxis fa)
-    {
-        std::stringstream ss;
-        ss << fa;
-        return std::move(ss).str();
-    }
-}
 
 TEST(FrameAxis, TryParseAsFrameAxisReturnsNulloptForBlankInput)
 {

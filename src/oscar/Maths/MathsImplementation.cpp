@@ -473,6 +473,70 @@ void osc::BVH::forEachLeafOrInnerNodeUnordered(std::function<void(BVHNode const&
     }
 }
 
+// `CoordinateAxis` implementation
+
+std::optional<CoordinateAxis> osc::CoordinateAxis::try_parse(std::string_view s)
+{
+    if (s.size() != 1) {
+        return std::nullopt;
+    }
+
+    switch (s.front()) {
+    case 'x':
+    case 'X':
+        return CoordinateAxis::x();
+    case 'y':
+    case 'Y':
+        return CoordinateAxis::y();
+    case 'z':
+    case 'Z':
+        return CoordinateAxis::z();
+    default:
+        return std::nullopt;  // invalid character
+    }
+}
+
+std::ostream& osc::operator<<(std::ostream& o, CoordinateAxis axis)
+{
+    switch (axis.index()) {
+    case 0: return o << 'x';
+    case 1: return o << 'y';
+    case 2: return o << 'z';
+    default: return o;
+    }
+}
+
+// `CoordinateDirection` implementation
+
+std::optional<CoordinateDirection> osc::CoordinateDirection::try_parse(std::string_view s)
+{
+    if (s.empty()) {
+        return std::nullopt;  // no input
+    }
+
+    // try to consume the leading sign character (if there is one)
+    bool const negated = s.front() == '-';
+    if (negated or s.front() == '+') {
+        s = s.substr(1);
+    }
+
+    // parse the axis part (x/y/z)
+    auto axis = CoordinateAxis::try_parse(s);
+    if (not axis) {
+        return std::nullopt;
+    }
+
+    return negated ? CoordinateDirection{*axis, Negative{}} : CoordinateDirection{*axis};
+}
+
+std::ostream& osc::operator<<(std::ostream& o, CoordinateDirection direction)
+{
+    if (direction.is_negated()) {
+        o << '-';
+    }
+    return o << direction.axis();
+}
+
 // `Disc` implementation
 
 std::ostream& osc::operator<<(std::ostream& o, Disc const& d)

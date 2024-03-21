@@ -7,6 +7,7 @@
 #include <array>
 #include <cstddef>
 #include <concepts>
+#include <sstream>
 
 using namespace osc;
 using namespace osc::literals;
@@ -136,4 +137,131 @@ TEST(CoordinateDirection, CrossWorksAsExpected)
     static_assert(cross(CoordinateDirection::minus_z(), CoordinateDirection::minus_x()) == CoordinateDirection::y());
     static_assert(cross(CoordinateDirection::minus_z(), CoordinateDirection::y()) == CoordinateDirection::x());
     static_assert(cross(CoordinateDirection::minus_z(), CoordinateDirection::minus_y()) == CoordinateDirection::minus_x());
+}
+
+TEST(CoordinateDirection, try_parse_blank_input_returns_nullopt)
+{
+    ASSERT_EQ(CoordinateDirection::try_parse(""), std::nullopt);
+}
+
+TEST(CoordinateDirection, try_parse_value_initialized_input_returns_nullopt)
+{
+    ASSERT_EQ(CoordinateDirection::try_parse({}), std::nullopt);
+}
+
+// parsing test cases
+namespace
+{
+    struct ParsingTestCase final {
+        std::string_view input;
+        std::optional<CoordinateDirection> expected;
+    };
+
+    constexpr auto c_ParsingTestCases = std::to_array<ParsingTestCase>({
+        // blank/value-initialized
+        {"", std::nullopt},
+        {{}, std::nullopt},
+
+        // x
+        {"x", CoordinateDirection::x()},
+        {"X", CoordinateDirection::x()},
+        {"+x", CoordinateDirection::x()},
+        {"+X", CoordinateDirection::x()},
+        {"-x", CoordinateDirection::minus_x()},
+        {"-X", CoordinateDirection::minus_x()},
+
+        // y
+        {"y", CoordinateDirection::y()},
+        {"Y", CoordinateDirection::y()},
+        {"+y", CoordinateDirection::y()},
+        {"+Y", CoordinateDirection::y()},
+        {"-y", CoordinateDirection::minus_y()},
+        {"-Y", CoordinateDirection::minus_y()},
+
+        // z
+        {"z", CoordinateDirection::z()},
+        {"Z", CoordinateDirection::z()},
+        {"+z", CoordinateDirection::z()},
+        {"+Z", CoordinateDirection::z()},
+        {"-z", CoordinateDirection::minus_z()},
+        {"-Z", CoordinateDirection::minus_z()},
+
+        // just the +/-
+        {"+", std::nullopt},
+        {"-", std::nullopt},
+
+        // invalid suffix
+        {"xenomorph", std::nullopt},
+        {"yelp", std::nullopt},
+        {"zodiac", std::nullopt},
+
+        // invalid suffix after a minus
+        {"-xy", std::nullopt},
+        {"-yz", std::nullopt},
+        {"-zebra", std::nullopt},
+
+        // padding is invalid (the caller should remove it)
+        {" x", std::nullopt},
+        {"x ", std::nullopt},
+    });
+
+    class ParsingTestFixture : public testing::TestWithParam<ParsingTestCase> {};
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    CoordinateDirectionParsingTest,
+    ParsingTestFixture,
+    testing::ValuesIn(c_ParsingTestCases)
+);
+
+TEST_P(ParsingTestFixture, Check)
+{
+    ParsingTestCase const tc =  GetParam();
+    ASSERT_EQ(CoordinateDirection::try_parse(tc.input), tc.expected) << "input = " << tc.input;
+}
+
+// printing test cases
+namespace
+{
+    struct PrintingTestCase final {
+        CoordinateDirection input;
+        std::string_view expected;
+    };
+
+    constexpr auto c_PrintingTestCases = std::to_array<PrintingTestCase>({
+        {CoordinateDirection::x(), "x"},
+        {CoordinateDirection::minus_x(), "-x"},
+        {CoordinateDirection::y(), "y"},
+        {CoordinateDirection::minus_y(), "-y"},
+        {CoordinateDirection::z(), "z"},
+        {CoordinateDirection::minus_z(), "-z"},
+    });
+
+    class PrintingTestFixture : public testing::TestWithParam<PrintingTestCase> {};
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    CoordinateDirectionPrintingTest,
+    PrintingTestFixture,
+    testing::ValuesIn(c_PrintingTestCases)
+);
+
+TEST_P(PrintingTestFixture, Check)
+{
+    PrintingTestCase const tc = GetParam();
+    std::stringstream ss;
+    ss << tc.input;
+    ASSERT_EQ(ss.str(), tc.expected);
+}
+
+TEST(CoordinateDirection, is_negated_WorksAsExpected)
+{
+    static_assert(not CoordinateDirection::x().is_negated());
+    static_assert(CoordinateDirection::minus_x().is_negated());
+
+    static_assert(not CoordinateDirection::y().is_negated());
+    static_assert(CoordinateDirection::minus_y().is_negated());
+
+    static_assert(not CoordinateDirection::z().is_negated());
+    static_assert(CoordinateDirection::minus_z().is_negated());
 }

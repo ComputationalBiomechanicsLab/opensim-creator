@@ -4,7 +4,10 @@
 
 #include <cstdint>
 #include <compare>
+#include <optional>
+#include <iosfwd>
 #include <stdexcept>
+#include <string_view>
 
 namespace osc
 {
@@ -13,6 +16,13 @@ namespace osc
     // inspired by simbody's `SimTK::CoordinateAxis` class
     class CoordinateAxis final {
     public:
+        // returns a `CoordinateAxis` parsed from a `std::string_view`, the format can only be one of:
+        //
+        //     x, X, y, Y, z, Z
+        //
+        // returns `std::nullopt` if the input string is incorrect
+        static std::optional<CoordinateAxis> try_parse(std::string_view);
+
         // returns a `CoordinateAxis` that represents the X axis
         static constexpr CoordinateAxis x()
         {
@@ -69,4 +79,6 @@ namespace osc
 
         uint8_t m_AxisIndex = 0;
     };
+
+    std::ostream& operator<<(std::ostream&, CoordinateAxis);
 }

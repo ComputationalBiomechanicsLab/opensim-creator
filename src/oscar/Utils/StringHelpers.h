@@ -3,6 +3,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <ostream>
+#include <sstream>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -70,4 +72,13 @@ namespace osc
     //      0x02 --> ('0', '2')
     std::pair<char, char> ToHexChars(uint8_t);
     std::optional<uint8_t> TryParseHexCharsAsByte(char, char);
+
+    // returns a string representation of `v` by first streaming it to a `std::stringstream`
+    template<typename T>
+    std::string StreamToString(T const& v)
+    {
+        std::stringstream ss;
+        ss << v;
+        return std::move(ss).str();
+    }
 }

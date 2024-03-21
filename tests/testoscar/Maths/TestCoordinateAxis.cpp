@@ -3,8 +3,12 @@
 #include <gtest/gtest.h>
 #include <oscar/Maths/GeometricFunctions.h>
 #include <oscar/Maths/Vec3.h>
+#include <oscar/Utils/StringHelpers.h>
 
+#include <array>
 #include <concepts>
+#include <optional>
+#include <string_view>
 
 using namespace osc;
 
@@ -65,4 +69,73 @@ TEST(CoordinateAxis, PrevWorksAsExpected)
     static_assert(CoordinateAxis::x().previous() == CoordinateAxis::z());
     static_assert(CoordinateAxis::y().previous() == CoordinateAxis::x());
     static_assert(CoordinateAxis::z().previous() == CoordinateAxis::y());
+}
+
+TEST(CoordinateAxis, StreamingOutputWorksAsExpected)
+{
+    ASSERT_EQ(StreamToString(CoordinateAxis::x()), "x");
+    ASSERT_EQ(StreamToString(CoordinateAxis::y()), "y");
+    ASSERT_EQ(StreamToString(CoordinateAxis::z()), "z");
+}
+
+// parsing test cases
+namespace
+{
+    struct ParsingTestCase final {
+        std::string_view input;
+        std::optional<CoordinateAxis> expected;
+    };
+
+    constexpr auto c_ParsingTestCases = std::to_array<ParsingTestCase>({
+        // blank/value-initialized
+        {"", std::nullopt},
+        {{}, std::nullopt},
+
+        // normal cases
+        {"x", CoordinateAxis::x()},
+        {"X", CoordinateAxis::x()},
+        {"y", CoordinateAxis::y()},
+        {"Y", CoordinateAxis::y()},
+        {"z", CoordinateAxis::z()},
+        {"Z", CoordinateAxis::z()},
+
+        // signed cases should fail: callers should use `CoordinateDirection`
+        {"+", std::nullopt},
+        {"-", std::nullopt},
+        {"+x", std::nullopt},
+        {"+X", std::nullopt},
+        {"-x", std::nullopt},
+        {"-X", std::nullopt},
+        {"+y", std::nullopt},
+        {"+Y", std::nullopt},
+        {"-y", std::nullopt},
+        {"-Y", std::nullopt},
+        {"+z", std::nullopt},
+        {"+Z", std::nullopt},
+        {"-z", std::nullopt},
+        {"-Z", std::nullopt},
+
+        // obviously invalid cases
+        {"xenomorph", std::nullopt},
+        {"yelp", std::nullopt},
+        {"zodiac", std::nullopt},
+
+        // padding is invalid (the caller should remove it)
+        {" x", std::nullopt},
+        {"x ", std::nullopt},
+    });
+
+    class CoordinateAxisParsingTestFixture : public testing::TestWithParam<ParsingTestCase> {};
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    CoordinateAxisParsingTest,
+    CoordinateAxisParsingTestFixture,
+    testing::ValuesIn(c_ParsingTestCases)
+);
+
+TEST_P(CoordinateAxisParsingTestFixture, Check)
+{
+    ParsingTestCase const tc =  GetParam();
+    ASSERT_EQ(CoordinateAxis::try_parse(tc.input), tc.expected) << "input = " << tc.input;
 }
