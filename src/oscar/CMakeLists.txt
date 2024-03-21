@@ -16,6 +16,7 @@ find_package(stb REQUIRED CONFIG)
 find_package(lunasvg REQUIRED CONFIG)
 find_package(tomlplusplus REQUIRED CONFIG)
 find_package(unordered_dense REQUIRED CONFIG)
+find_package(assimp REQUIRED CONFIG)
 
 add_library(oscar STATIC
     DOM/Class.cpp
@@ -437,4 +438,5 @@ target_link_libraries(oscar PUBLIC
     unordered_dense::unordered_dense
     tomlplusplus::tomlplusplus
     lunasvg::lunasvg
+    assimp
 )

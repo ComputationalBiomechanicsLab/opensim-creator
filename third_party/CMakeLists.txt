@@ -17,6 +17,7 @@ set(OSCDEPS_GET_IMGUI ON CACHE BOOL "enable getting imgui")
 set(OSCDEPS_GET_IMGUIZMO ON CACHE BOOL "enable getting ImGuizmo")
 set(OSCDEPS_GET_IMPLOT ON CACHE BOOL "enable gettting implot")
 set(OSCDEPS_GET_OPENSIM ON CACHE BOOL "enable getting OpenSim (+its dependencies)")
+set(OSCDEPS_GET_ASSIMP ON CACHE BOOK "enable getting assimp")
 
 include(ExternalProject)  # ExternalProject_Add
 include(GNUInstallDirs)  # CMAKE_INSTALL_LIBDIR
@@ -229,5 +230,14 @@ if(${OSCDEPS_GET_OPENSIM})
             -DOPENSIM_BUILD_INDIVIDUAL_APPS_DEFAULT:BOOL=OFF
             -DBUILD_TESTING:BOOL=OFF
             -DBUILD_API_EXAMPLES:BOOL=OFF
+    )
+endif()
+
+if(${OSCDEPS_GET_ASSIMP})
+    ExternalProject_Add(assimp
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/assimp
+        CMAKE_CACHE_ARGS
+            -DASSIMP_BUILD_TESTS:BOOL=OFF
+            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
     )
 endif()
