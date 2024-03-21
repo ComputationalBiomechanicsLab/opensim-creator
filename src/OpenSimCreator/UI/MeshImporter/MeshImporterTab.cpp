@@ -1913,7 +1913,7 @@ private:
         {
             if (std::optional<AABB> const sceneAABB = calcSceneAABB())
             {
-                AutoFocus(m_Shared->updCamera(), *sceneAABB, AspectRatio(m_Shared->get3DSceneDims()));
+                AutoFocus(m_Shared->updCamera(), *sceneAABB, aspect_ratio(m_Shared->get3DSceneDims()));
             }
         }
         ui::DrawTooltipIfItemHovered("Autoscale Scene", "Zooms camera to try and fit everything in the scene into the viewer");
@@ -2120,7 +2120,7 @@ private:
         SetImguizmoStyleToOSCStandard();
         bool manipulated = ImGuizmo::Manipulate(
             value_ptr(m_Shared->getCamera().view_matrix()),
-            value_ptr(m_Shared->getCamera().projection_matrix(AspectRatio(sceneRect))),
+            value_ptr(m_Shared->getCamera().projection_matrix(aspect_ratio(sceneRect))),
             m_ImGuizmoState.op,
             m_ImGuizmoState.mode,
             value_ptr(m_ImGuizmoState.mtx),

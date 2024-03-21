@@ -673,7 +673,7 @@ Plane osc::FitPlane(Mesh const& mesh)
     );
 
     // calculate the 2D bounding box in plane-space of all projected vertices
-    Rect const bounds = BoundingRectOf(projectedPoints);
+    Rect const bounds = bounding_rect_of(projectedPoints);
 
     // calculate the midpoint of those bounds in plane-space
     Vec2 const boundsMidpointInPlaneSpace = centroid(bounds);

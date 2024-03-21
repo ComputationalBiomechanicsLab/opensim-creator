@@ -86,7 +86,7 @@ private:
 
             {
                 m_RenderParams.lightDirection = RecommendedLightDirection(m_Camera);
-                m_RenderParams.projectionMatrix = m_Camera.projection_matrix(AspectRatio(m_RenderParams.dimensions));
+                m_RenderParams.projectionMatrix = m_Camera.projection_matrix(aspect_ratio(m_RenderParams.dimensions));
                 m_RenderParams.viewMatrix = m_Camera.view_matrix();
                 m_RenderParams.viewPos = m_Camera.getPos();
                 m_RenderParams.nearClippingPlane = m_Camera.znear;

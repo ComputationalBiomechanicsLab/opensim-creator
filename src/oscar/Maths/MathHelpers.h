@@ -8,6 +8,8 @@
 #include <oscar/Maths/Mat3.h>
 #include <oscar/Maths/Mat4.h>
 #include <oscar/Maths/Quat.h>
+#include <oscar/Maths/Rect.h>
+#include <oscar/Maths/RectFunctions.h>
 #include <oscar/Maths/Sphere.h>
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/Triangle.h>
@@ -30,7 +32,6 @@
 namespace osc { struct Circle; }
 namespace osc { struct Disc; }
 namespace osc { struct Plane; }
-namespace osc { struct Rect; }
 namespace osc { struct LineSegment; }
 namespace osc { struct Tetrahedron; }
 
@@ -40,20 +41,6 @@ namespace osc
 {
     // computes horizontal FoV for a given vertical FoV + aspect ratio
     Radians VerticalToHorizontalFOV(Radians vertical_fov, float aspectRatio);
-
-    // ----- VecX/MatX helpers -----
-
-    // returns the aspect ratio of the vec (effectively: x/y)
-    float AspectRatio(Vec2i);
-
-    // returns the aspect ratio of the vec (effectively: x/y)
-    float AspectRatio(Vec2);
-
-    // returns a transform matrix that rotates dir1 to point in the same direction as dir2
-    Mat4 Dir1ToDir2Xform(Vec3 const& dir1, Vec3 const& dir2);
-
-    // returns euler angles for performing an intrinsic, step-by-step, rotation about X, Y, and then Z
-    Eulers extract_eulers_xyz(Quat const&);
 
     // returns an XY NDC point converted from a screen/viewport point
     //
@@ -96,46 +83,6 @@ namespace osc
         Mat4 const& cameraProjMatrix
     );
 
-    // ----- `Rect` helpers -----
-
-    template<typename T>
-    constexpr T Area(Vec<2, T> const& v) requires std::is_arithmetic_v<T>
-    {
-        return v.x * v.y;
-    }
-
-    // returns the area of the rectangle
-    float Area(Rect const&);
-
-    // returns the dimensions of the rectangle
-    Vec2 dimensions(Rect const&);
-
-    // returns bottom-left point of the rectangle
-    Vec2 BottomLeft(Rect const&);
-
-    // returns the aspect ratio (width/height) of the rectangle
-    float AspectRatio(Rect const&);
-
-    // returns the middle point of the rectangle
-    Vec2 centroid(Rect const&);
-
-    // returns the smallest rectangle that bounds the provided points
-    //
-    // note: no points --> zero-sized rectangle at the origin
-    Rect BoundingRectOf(std::span<Vec2 const>);
-
-    // returns the smallest rectangle that bounds the provided circle
-    Rect BoundingRectOf(Circle const&);
-
-    // returns a rectangle that has been expanded along each edge by the given amount
-    //
-    // (e.g. expand 1.0f adds 1.0f to both the left edge and the right edge)
-    Rect Expand(Rect const&, float);
-    Rect Expand(Rect const&, Vec2);
-
-    // returns a rectangle where both p1 and p2 are clamped between min and max (inclusive)
-    Rect Clamp(Rect const&, Vec2 const& min, Vec2 const& max);
-
     // returns a rect, created by mapping an Normalized Device Coordinates (NDC) rect
     // (i.e. -1.0 to 1.0) within a screenspace viewport (pixel units, topleft == (0, 0))
     Rect NdcRectToScreenspaceViewportRect(Rect const& ndcRect, Rect const& viewport);
@@ -144,20 +91,13 @@ namespace osc
     // ----- `Sphere` helpers -----
 
     // returns a sphere that bounds the given vertices
-    Sphere BoundingSphereOf(std::span<Vec3 const>);
+    Sphere bounding_sphere_of(std::span<Vec3 const>);
 
     // returns a sphere that loosely bounds the given AABB
-    Sphere ToSphere(AABB const&);
+    Sphere bounding_sphere_of(AABB const&);
 
-    // returns an xform that maps an origin centered r=1 sphere into an in-scene sphere
-    Mat4 FromUnitSphereMat4(Sphere const&);
-
-    // returns an xform that maps a sphere to another sphere
-    Mat4 SphereToSphereMat4(Sphere const&, Sphere const&);
-    Transform SphereToSphereTransform(Sphere const&, Sphere const&);
-
-    // returns an AABB that contains the sphere
-    AABB ToAABB(Sphere const&);
+    // returns an AABB that tightly bounds the sphere
+    AABB bounding_aabb_of(Sphere const&);
 
 
     // ----- `Line` helpers -----
@@ -191,6 +131,14 @@ namespace osc
 
     // ----- other -----
 
+    // ----- VecX/MatX helpers -----
+
+    // returns a transform matrix that rotates dir1 to point in the same direction as dir2
+    Mat4 Dir1ToDir2Xform(Vec3 const& dir1, Vec3 const& dir2);
+
+    // returns euler angles for performing an intrinsic, step-by-step, rotation about X, Y, and then Z
+    Eulers extract_eulers_xyz(Quat const&);
+
     Vec3 transform_point(Mat4 const&, Vec3 const&);
 
     // returns the a quaternion equivalent to the given euler angles
@@ -200,7 +148,8 @@ namespace osc
     void ApplyWorldspaceRotation(
         Transform& applicationTarget,
         Eulers const& eulerAngles,
-        Vec3 const& rotationCenter);
+        Vec3 const& rotationCenter
+    );
 
     float volume(Tetrahedron const&);
 

@@ -107,7 +107,7 @@ namespace
         AABB const& casterAABBs,
         Vec3 const& lightDirection)
     {
-        Sphere const casterSphere = ToSphere(casterAABBs);
+        Sphere const casterSphere = bounding_sphere_of(casterAABBs);
         PolarAngles const cameraPolarAngles = CalcPolarAngles(-lightDirection);
 
         // pump sphere+polar information into a polar camera in order to
@@ -354,12 +354,12 @@ private:
         Vec2 const rimThicknessNDC = 2.0f*params.rimThicknessInPixels / Vec2{params.dimensions};
 
         // expand by the rim thickness, so that the output has space for the rims
-        rimRectNDC = Expand(rimRectNDC, rimThicknessNDC);
+        rimRectNDC = expand(rimRectNDC, rimThicknessNDC);
 
         // constrain the result of the above to within clip space
         rimRectNDC = Clamp(rimRectNDC, {-1.0f, -1.0f}, {1.0f, 1.0f});
 
-        if (Area(rimRectNDC) <= 0.0f)
+        if (area(rimRectNDC) <= 0.0f)
         {
             // the scene contains rim-highlighted geometry, but it isn't on-screen
             return std::nullopt;
@@ -442,7 +442,7 @@ private:
         std::optional<AABB> casterAABBs;
         for (SceneDecoration const& dec : decorations) {
             if (dec.flags & SceneDecorationFlags::CastsShadows) {
-                casterAABBs = aabb_of(casterAABBs, WorldpaceAABB(dec));
+                casterAABBs = bounding_aabb_of(casterAABBs, WorldpaceAABB(dec));
                 Graphics::DrawMesh(dec.mesh, dec.transform, m_DepthWritingMaterial, m_Camera);
             }
         }

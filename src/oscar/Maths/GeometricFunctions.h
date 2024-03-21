@@ -75,4 +75,25 @@ namespace osc
     {
         return v * inversesqrt(dot(v, v));
     }
+
+    // returns the aspect ratio of the vector (effectively: FloatingPointResult{x}/FloatingPointResult{y})
+    template<std::integral T, std::floating_point FloatingPointResult = float>
+    constexpr FloatingPointResult aspect_ratio(Vec<2, T> v)
+    {
+        return static_cast<FloatingPointResult>(v.x) / static_cast<FloatingPointResult>(v.y);
+    }
+
+    // returns the aspect ratio of the vector (effectively: x/y)
+    template<std::floating_point T>
+    constexpr T aspect_ratio(Vec<2, T> v)
+    {
+        return v.x / v.y;
+    }
+
+    // returns the area of a 2D rectangle that begins at the origin and ends at `v`
+    template<typename T>
+    constexpr T area(Vec<2, T> const& v) requires std::is_arithmetic_v<T>
+    {
+        return v.x * v.y;
+    }
 }

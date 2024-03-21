@@ -70,7 +70,7 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
         {
             Vec2 const end = origin + metrics.linelen*view;
             Circle const circ = {.origin = end, .radius = metrics.circleRadius};
-            Rect const circleBounds = BoundingRectOf(circ);
+            Rect const circleBounds = bounding_rect_of(circ);
 
             auto const labels = std::to_array<CStringView>({ "X", "Y", "Z" });
             auto const id = ui::GetID(labels[i]);
@@ -98,7 +98,7 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
         {
             Vec2 const end = origin - metrics.linelen*view;
             Circle const circ = {.origin = end, .radius = metrics.circleRadius};
-            Rect const circleBounds = BoundingRectOf(circ);
+            Rect const circleBounds = bounding_rect_of(circ);
 
             auto const labels = std::to_array<CStringView>({ "-X", "-Y", "-Z" });
             auto const id = ui::GetID(labels[i]);

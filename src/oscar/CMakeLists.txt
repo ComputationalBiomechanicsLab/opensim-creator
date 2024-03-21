@@ -221,6 +221,7 @@ add_library(oscar STATIC
     Maths/QuaternionFunctions.h
     Maths/RayCollision.h
     Maths/Rect.h
+    Maths/RectFunctions.h
     Maths/Sphere.h
     Maths/Tetrahedron.h
     Maths/Transform.h
@@ -412,7 +413,7 @@ add_library(oscar STATIC
     UI.h
     Utils.h
     Variant.h
- )
+)
 
 target_include_directories(oscar PUBLIC
 

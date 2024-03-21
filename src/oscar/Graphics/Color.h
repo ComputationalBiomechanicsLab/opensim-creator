@@ -286,17 +286,19 @@ namespace osc
     // multiplying it's luminance (L) by `factor`, and converting it back to RGBA
     Color MultiplyLuminance(Color const& color, float factor);
 
-    template<size_t I>
-    constexpr float const& get(Color const& c)
-    {
-        return c[I];
-    }
+    // when handled as a tuple-like object, a `Color` decomposes into its channels (+alpha)
 
     template<size_t I>
-    constexpr float& get(Color& c)
-    {
-        return c[I];
-    }
+    constexpr float const& get(Color const& c) { return c[I]; }
+
+    template<size_t I>
+    constexpr float& get(Color& c) { return c[I]; }
+
+    template<size_t I>
+    constexpr float&& get(Color&& c) { return std::move(c[I]); }
+
+    template<size_t I>
+    constexpr float const&& get(Color const&& c) { return std::move(c[I]); }
 }
 
 // define compile-time size for Color (same as std::array, std::tuple, Vec, etc.)

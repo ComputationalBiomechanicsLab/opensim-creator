@@ -77,7 +77,7 @@ namespace
             // allocate an appropriate internal node
 
             // compute bounding box of remaining (children) prims
-            AABB const aabb = aabb_of(
+            AABB const aabb = bounding_aabb_of(
                 std::span<BVHPrim const>{prims.begin() + begin, static_cast<size_t>(n)},
                 &BVHPrim::getBounds
             );
@@ -258,7 +258,7 @@ namespace
 
             if (HasAVolume(t))
             {
-                prims.emplace_back(static_cast<ptrdiff_t>(i), aabb_of(t));
+                prims.emplace_back(static_cast<ptrdiff_t>(i), bounding_aabb_of(t));
             }
         }
 
@@ -834,7 +834,7 @@ void osc::Reset(PolarPerspectiveCamera& camera)
 
 void osc::AutoFocus(PolarPerspectiveCamera& camera, AABB const& elementAABB, float aspectRatio)
 {
-    Sphere const s = ToSphere(elementAABB);
+    Sphere const s = bounding_sphere_of(elementAABB);
     Radians const smallestFOV = aspectRatio > 1.0f ? camera.vertical_fov : VerticalToHorizontalFOV(camera.vertical_fov, aspectRatio);
 
     // auto-focus the camera with a minimum radius of 1m
@@ -1033,17 +1033,7 @@ Radians osc::VerticalToHorizontalFOV(Radians vertical_fov, float aspectRatio)
 {
     // https://en.wikipedia.org/wiki/Field_of_view_in_video_games#Field_of_view_calculations
 
-    return 2.0f * atan(tan(vertical_fov / 2.0f) * aspectRatio);
-}
-
-float osc::AspectRatio(Vec2i v)
-{
-    return static_cast<float>(v.x) / static_cast<float>(v.y);
-}
-
-float osc::AspectRatio(Vec2 v)
-{
-    return v.x/v.y;
+    return 2.0f * atan(tan(0.5f * vertical_fov) * aspectRatio);
 }
 
 
@@ -1134,34 +1124,12 @@ Line osc::PerspectiveUnprojectTopLeftScreenPosToWorldRay(
     return rv;
 }
 
-float osc::Area(Rect const& r)
-{
-    auto d = dimensions(r);
-    return d.x * d.y;
-}
-
-Vec2 osc::dimensions(Rect const& r)
-{
-    return abs(r.p2 - r.p1);
-}
-
-Vec2 osc::BottomLeft(Rect const& r)
+Vec2 osc::bottom_left_lh(Rect const& r)
 {
     return Vec2{min(r.p1.x, r.p2.x), max(r.p1.y, r.p2.y)};
 }
 
-float osc::AspectRatio(Rect const& r)
-{
-    Vec2 dims = dimensions(r);
-    return dims.x/dims.y;
-}
-
-Vec2 osc::centroid(Rect const& r)
-{
-    return 0.5f * (r.p1 + r.p2);
-}
-
-Rect osc::BoundingRectOf(std::span<Vec2 const> vs)
+Rect osc::bounding_rect_of(std::span<Vec2 const> vs)
 {
     if (vs.empty())
     {
@@ -1177,13 +1145,13 @@ Rect osc::BoundingRectOf(std::span<Vec2 const> vs)
     return rv;
 }
 
-Rect osc::BoundingRectOf(Circle const& c)
+Rect osc::bounding_rect_of(Circle const& c)
 {
     float const hypot = sqrt(2.0f * c.radius * c.radius);
     return {c.origin - hypot, c.origin + hypot};
 }
 
-Rect osc::Expand(Rect const& rect, float amt)
+Rect osc::expand(Rect const& rect, float amt)
 {
     Rect rv
     {
@@ -1197,7 +1165,7 @@ Rect osc::Expand(Rect const& rect, float amt)
     return rv;
 }
 
-Rect osc::Expand(Rect const& rect, Vec2 amt)
+Rect osc::expand(Rect const& rect, Vec2 amt)
 {
     Rect rv
     {
@@ -1238,7 +1206,7 @@ Rect osc::NdcRectToScreenspaceViewportRect(Rect const& ndcRect, Rect const& view
     return rv;
 }
 
-Sphere osc::BoundingSphereOf(std::span<Vec3 const> points)
+Sphere osc::bounding_sphere_of(std::span<Vec3 const> points)
 {
     // edge-case: no points provided
     if (points.empty())
@@ -1246,7 +1214,7 @@ Sphere osc::BoundingSphereOf(std::span<Vec3 const> points)
         return Sphere{.radius = 0.0f};
     }
 
-    Vec3 const origin = centroid(aabb_of(points));
+    Vec3 const origin = centroid(bounding_aabb_of(points));
 
     float r2 = 0.0f;
     for (Vec3 const& pos : points)
@@ -1257,33 +1225,12 @@ Sphere osc::BoundingSphereOf(std::span<Vec3 const> points)
     return {.origin = origin, .radius = sqrt(r2)};
 }
 
-Sphere osc::ToSphere(AABB const& aabb)
+Sphere osc::bounding_sphere_of(AABB const& aabb)
 {
-    return BoundingSphereOf(corner_vertices(aabb));
+    return bounding_sphere_of(corner_vertices(aabb));
 }
 
-Mat4 osc::FromUnitSphereMat4(Sphere const& s)
-{
-    return translate(identity<Mat4>(), s.origin) * scale(identity<Mat4>(), {s.radius, s.radius, s.radius});
-}
-
-Mat4 osc::SphereToSphereMat4(Sphere const& a, Sphere const& b)
-{
-    float s = b.radius/a.radius;
-    Mat4 scaler = scale(identity<Mat4>(), Vec3{s});
-    Mat4 mover = translate(identity<Mat4>(), b.origin - a.origin);
-    return mover * scaler;
-}
-
-Transform osc::SphereToSphereTransform(Sphere const& a, Sphere const& b)
-{
-    Transform t;
-    t.scale *= (b.radius / a.radius);
-    t.position = b.origin - a.origin;
-    return t;
-}
-
-AABB osc::ToAABB(Sphere const& s)
+AABB osc::bounding_aabb_of(Sphere const& s)
 {
     AABB rv{};
     rv.min = s.origin - s.radius;
@@ -1367,7 +1314,7 @@ std::array<Vec3, 8> osc::corner_vertices(AABB const& aabb)
 
 AABB osc::transform_aabb(Mat4 const& m, AABB const& aabb)
 {
-    return aabb_of(corner_vertices(aabb), [&](Vec3 const& vertex)
+    return bounding_aabb_of(corner_vertices(aabb), [&](Vec3 const& vertex)
     {
         Vec4 const p = m * Vec4{vertex, 1.0f};
         return Vec3{p / p.w};  // perspective divide
@@ -1382,7 +1329,7 @@ AABB osc::transform_aabb(Transform const& t, AABB const& aabb)
 
     Mat3 const m = mat3_cast(t);
 
-    AABB rv = aabb_of(t.position);  // add in the translation
+    AABB rv = bounding_aabb_of(t.position);  // add in the translation
     for (Vec3::size_type i = 0; i < 3; ++i) {
 
         // form extent by summing smaller and larger terms repsectively

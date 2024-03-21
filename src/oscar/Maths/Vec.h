@@ -37,17 +37,19 @@ namespace osc
         return std::move(ss).str();
     }
 
-    template<size_t I, size_t L, typename T>
-    constexpr T const& get(Vec<L, T> const& v)
-    {
-        return v[I];
-    }
+    // when handled as a tuple-like object, a `Vec` decomposes into its elements
 
     template<size_t I, size_t L, typename T>
-    constexpr T& get(Vec<L, T>& v)
-    {
-        return v[I];
-    }
+    constexpr T const& get(Vec<L, T> const& v) { return v[I]; }
+
+    template<size_t I, size_t L, typename T>
+    constexpr T& get(Vec<L, T>& v) { return v[I]; }
+
+    template<size_t I, size_t L, typename T>
+    constexpr T&& get(Vec<L, T>&& v) { return std::move(v[I]); }
+
+    template<size_t I, size_t L, typename T>
+    constexpr T const&& get(Vec<L, T> const&& v) { return std::move(v[I]); }
 }
 
 template<size_t L, typename T>

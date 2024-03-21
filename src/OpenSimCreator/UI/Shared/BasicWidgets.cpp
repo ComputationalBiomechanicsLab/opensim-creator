@@ -1205,7 +1205,7 @@ bool osc::DrawCameraControlButtons(
     }
     ui::SameLine();
     if (autoFocusButton.onDraw() && maybeSceneAABB) {
-        AutoFocus(params.camera, *maybeSceneAABB, AspectRatio(viewerScreenRect));
+        AutoFocus(params.camera, *maybeSceneAABB, aspect_ratio(viewerScreenRect));
         edited = true;
     }
 

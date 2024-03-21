@@ -64,21 +64,21 @@ namespace osc
     AABB transform_aabb(Transform const& t, AABB const& aabb);
 
     // returns an `AABB` that tightly bounds `x`
-    constexpr AABB aabb_of(Vec3 const& x)
+    constexpr AABB bounding_aabb_of(Vec3 const& x)
     {
         return AABB{.min = x, .max = x};
     }
 
     // returns an `AABB` that tightly bounds the union of `x` and `y`
-    constexpr AABB aabb_of(AABB const& x, AABB const& y)
+    constexpr AABB bounding_aabb_of(AABB const& x, AABB const& y)
     {
         return AABB{elementwise_min(x.min, y.min), elementwise_max(x.max, y.max)};
     }
 
     // returns an `AABB` that tightly bounds the union of `x` and `y`, or only `y` if `x` is `std::nullopt`
-    constexpr AABB aabb_of(std::optional<AABB> const& x, AABB const& y)
+    constexpr AABB bounding_aabb_of(std::optional<AABB> const& x, AABB const& y)
     {
-        return x ? aabb_of(*x, y) : y;
+        return x ? bounding_aabb_of(*x, y) : y;
     }
 
     // returns an `AABB` that tightly bounds the `Vec3`s projected from `r`
@@ -86,7 +86,7 @@ namespace osc
         std::ranges::input_range R,
         class Proj = std::identity
     >
-    constexpr AABB aabb_of(R&& r, Proj proj = {})
+    constexpr AABB bounding_aabb_of(R&& r, Proj proj = {})
         requires std::convertible_to<typename std::projected<std::ranges::iterator_t<R>, Proj>::value_type, Vec3 const&>
     {
         auto it = std::ranges::begin(r);
@@ -95,16 +95,16 @@ namespace osc
             return AABB{};  // empty range
         }
 
-        AABB rv = aabb_of(std::invoke(proj, *it));
+        AABB rv = bounding_aabb_of(std::invoke(proj, *it));
         while (++it != last) {
-            rv = aabb_of(rv, aabb_of(std::invoke(proj, *it)));
+            rv = bounding_aabb_of(rv, bounding_aabb_of(std::invoke(proj, *it)));
         }
         return rv;
     }
 
     // returns an `AABB` that tightly bounds the `AABB`s projected from `r`
     template<std::ranges::input_range Range, class Proj = std::identity>
-    constexpr AABB aabb_of(Range&& r, Proj proj = {})
+    constexpr AABB bounding_aabb_of(Range&& r, Proj proj = {})
         requires std::convertible_to<typename std::projected<std::ranges::iterator_t<Range>, Proj>::value_type, AABB const&>
     {
         auto it = std::ranges::begin(r);
@@ -115,7 +115,7 @@ namespace osc
 
         AABB rv = std::invoke(proj, *it);
         while (++it != last) {
-            rv = aabb_of(rv, std::invoke(proj, *it));
+            rv = bounding_aabb_of(rv, std::invoke(proj, *it));
         }
         return rv;
     }
@@ -126,7 +126,7 @@ namespace osc
     constexpr std::optional<AABB> maybe_aabb_of(std::optional<AABB> x, std::optional<AABB> y)
     {
         if (x && y) {
-            return aabb_of(*x, *y);
+            return bounding_aabb_of(*x, *y);
         }
         else if (x) {
             return *x;
@@ -157,7 +157,7 @@ namespace osc
 
         // combine with remainder of range
         for (; it != last; ++it) {
-            rv = aabb_of(std::invoke(proj, *it), *rv);
+            rv = bounding_aabb_of(std::invoke(proj, *it), *rv);
         }
 
         return rv;

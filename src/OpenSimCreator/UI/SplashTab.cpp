@@ -148,7 +148,7 @@ public:
 
     void onDraw()
     {
-        if (Area(ui::GetMainViewportWorkspaceScreenRect()) <= 0.0f)
+        if (area(ui::GetMainViewportWorkspaceScreenRect()) <= 0.0f)
         {
             // edge-case: splash screen is the first rendered frame and ImGui
             //            is being unusual about it
@@ -203,7 +203,7 @@ private:
         SceneRendererParams params{m_LastSceneRendererParams};
         params.dimensions = dimensions(screenRect);
         params.antiAliasingLevel = App::get().getCurrentAntiAliasingLevel();
-        params.projectionMatrix = m_Camera.projection_matrix(AspectRatio(screenRect));
+        params.projectionMatrix = m_Camera.projection_matrix(aspect_ratio(screenRect));
 
         if (params != m_LastSceneRendererParams)
         {

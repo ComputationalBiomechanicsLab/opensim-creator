@@ -109,7 +109,7 @@ public:
             m_Camera.setNearClippingPlane(m_PolarCamera.znear);
             m_Camera.setFarClippingPlane(m_PolarCamera.zfar);
             m_Camera.setViewMatrixOverride(m_PolarCamera.view_matrix());
-            m_Camera.setProjectionMatrixOverride(m_PolarCamera.projection_matrix(AspectRatio(viewportRectDims)));
+            m_Camera.setProjectionMatrixOverride(m_PolarCamera.projection_matrix(aspect_ratio(viewportRectDims)));
         }
 
         // draw mesh

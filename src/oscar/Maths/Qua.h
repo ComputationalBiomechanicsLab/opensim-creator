@@ -269,17 +269,19 @@ namespace osc
         return std::move(ss).str();
     }
 
-    template<size_t I, typename T>
-    constexpr T const& get(Qua<T> const& v)
-    {
-        return v[I];
-    }
+    // when handled as a tuple-like object, a `Quat` decomposes into its elements
 
     template<size_t I, typename T>
-    constexpr T& get(Qua<T>& v)
-    {
-        return v[I];
-    }
+    constexpr T const& get(Qua<T> const& v) { return v[I]; }
+
+    template<size_t I, typename T>
+    constexpr T& get(Qua<T>& v) { return v[I]; }
+
+    template<size_t I, typename T>
+    constexpr T&& get(Qua<T>&& v) { return std::move(v[I]); }
+
+    template<size_t I, typename T>
+    constexpr T const&& get(Qua<T> const&& v) { return std::move(v[I]); }
 }
 
 template<typename T>

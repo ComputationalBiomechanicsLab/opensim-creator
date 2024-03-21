@@ -7532,7 +7532,7 @@ Rect osc::GraphicsBackend::CalcViewportRect(
         *camera.getPixelRect() :
         Rect{{}, targetDims};
 
-    Vec2 const cameraRectBottomLeft = BottomLeft(cameraRect);
+    Vec2 const cameraRectBottomLeft = bottom_left_lh(cameraRect);
     Vec2 const outputDimensions = dimensions(cameraRect);
     Vec2 const topLeft = {cameraRectBottomLeft.x, targetDims.y - cameraRectBottomLeft.y};
 
@@ -7892,7 +7892,7 @@ void osc::GraphicsBackend::RenderCameraQueue(
     {
         std::optional<gl::FrameBuffer> const maybeTmpFBO =
             BindAndClearRenderBuffers(camera, maybeCustomRenderTarget);
-        FlushRenderQueue(camera, AspectRatio(viewportRect));
+        FlushRenderQueue(camera, aspect_ratio(viewportRect));
     }
 
     if (maybeCustomRenderTarget)

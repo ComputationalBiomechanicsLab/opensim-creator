@@ -36,19 +36,19 @@ namespace osc
         return std::move(ss).str();
     }
 
-    // when handled as-if it were a tuple, decomposes into its columns (vectors)
+    // when handled as a tuple-like object, a `Mat` decomposes into its columns (`Vec`s)
 
     template<size_t I, size_t C, size_t R, typename T>
-    constexpr typename Mat<C, R, T>::value_type const& get(Mat<C, R, T> const& m)
-    {
-        return m[I];
-    }
+    constexpr typename Mat<C, R, T>::value_type const& get(Mat<C, R, T> const& m) { return m[I]; }
 
     template<size_t I, size_t C, size_t R, typename T>
-    constexpr typename Mat<C, R, T>::value_type& get(Mat<C, R, T>& m)
-    {
-        return m[I];
-    }
+    constexpr typename Mat<C, R, T>::value_type& get(Mat<C, R, T>& m) { return m[I]; }
+
+    template<size_t I, size_t C, size_t R, typename T>
+    constexpr typename Mat<C, R, T>::value_type&& get(Mat<C, R, T>&& m) { return std::move(m[I]); }
+
+    template<size_t I, size_t C, size_t R, typename T>
+    constexpr typename Mat<C, R, T>::value_type const&& get(Mat<C, R, T> const&& m) { return std::move(m[I]); }
 }
 
 template<size_t C, size_t R, typename T>

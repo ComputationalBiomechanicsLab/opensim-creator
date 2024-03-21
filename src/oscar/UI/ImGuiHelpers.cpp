@@ -251,7 +251,7 @@ bool osc::ui::UpdatePolarCameraFromImGuiKeyboardInputs(
                 AutoFocus(
                     camera,
                     *maybeSceneAABB,
-                    AspectRatio(viewportRect)
+                    aspect_ratio(viewportRect)
                 );
                 return true;
             }
@@ -269,7 +269,7 @@ bool osc::ui::UpdatePolarCameraFromImGuiKeyboardInputs(
             AutoFocus(
                 camera,
                 *maybeSceneAABB,
-                AspectRatio(viewportRect)
+                aspect_ratio(viewportRect)
             );
             return true;
         }
@@ -279,7 +279,7 @@ bool osc::ui::UpdatePolarCameraFromImGuiKeyboardInputs(
         if (ctrlOrSuperDown)
         {
             // pan
-            camera.pan(AspectRatio(viewportRect), {0.0f, -0.1f});
+            camera.pan(aspect_ratio(viewportRect), {0.0f, -0.1f});
         }
         else if (shiftDown)
         {
@@ -296,7 +296,7 @@ bool osc::ui::UpdatePolarCameraFromImGuiKeyboardInputs(
         if (ctrlOrSuperDown)
         {
             // pan
-            camera.pan(AspectRatio(viewportRect), {0.0f, +0.1f});
+            camera.pan(aspect_ratio(viewportRect), {0.0f, +0.1f});
         }
         else if (shiftDown)
         {
@@ -315,7 +315,7 @@ bool osc::ui::UpdatePolarCameraFromImGuiKeyboardInputs(
         if (ctrlOrSuperDown)
         {
             // pan
-            camera.pan(AspectRatio(viewportRect), {-0.1f, 0.0f});
+            camera.pan(aspect_ratio(viewportRect), {-0.1f, 0.0f});
         }
         else if (shiftDown)
         {
@@ -334,7 +334,7 @@ bool osc::ui::UpdatePolarCameraFromImGuiKeyboardInputs(
         if (ctrlOrSuperDown)
         {
             // pan
-            camera.pan(AspectRatio(viewportRect), {+0.1f, 0.0f});
+            camera.pan(aspect_ratio(viewportRect), {+0.1f, 0.0f});
         }
         else if (shiftDown)
         {

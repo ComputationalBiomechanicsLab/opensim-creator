@@ -80,7 +80,7 @@ namespace osc::mi
 
         AABB implCalcBounds(IObjectFinder const&) const final
         {
-            return aabb_of(m_Xform.position);
+            return bounding_aabb_of(m_Xform.position);
         }
 
         UID m_ID;

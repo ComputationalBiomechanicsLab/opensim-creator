@@ -69,7 +69,7 @@ public:
             m_CachedModelRenderer.autoFocusCamera(
                 rs,
                 m_Params,
-                AspectRatio(ui::GetContentRegionAvail())
+                aspect_ratio(ui::GetContentRegionAvail())
             );
         }
 

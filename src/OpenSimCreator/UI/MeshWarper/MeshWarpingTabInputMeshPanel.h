@@ -557,7 +557,7 @@ namespace osc
         {
             if (ui::Button(ICON_FA_EXPAND_ARROWS_ALT))
             {
-                AutoFocus(m_Camera, m_State->getScratchMesh(m_DocumentIdentifier).getBounds(), AspectRatio(m_LastTextureHittestResult.rect));
+                AutoFocus(m_Camera, m_State->getScratchMesh(m_DocumentIdentifier).getBounds(), aspect_ratio(m_LastTextureHittestResult.rect));
                 m_State->linkedCameraBase = m_Camera;
             }
             ui::DrawTooltipIfItemHovered("Autoscale Scene", "Zooms camera to try and fit everything in the scene into the viewer");

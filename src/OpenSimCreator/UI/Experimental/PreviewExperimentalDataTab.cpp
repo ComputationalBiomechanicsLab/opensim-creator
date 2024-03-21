@@ -517,7 +517,7 @@ private:
         params.drawRims = true;
         params.drawFloor = false;
         params.viewMatrix = m_Camera.view_matrix();
-        params.projectionMatrix = m_Camera.projection_matrix(AspectRatio(params.dimensions));
+        params.projectionMatrix = m_Camera.projection_matrix(aspect_ratio(params.dimensions));
         params.nearClippingPlane = m_Camera.znear;
         params.farClippingPlane = m_Camera.zfar;
         params.viewPos = m_Camera.getPos();

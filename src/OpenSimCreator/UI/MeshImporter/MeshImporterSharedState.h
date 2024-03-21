@@ -393,7 +393,7 @@ namespace osc::mi
             p.nearClippingPlane = m_3DSceneCamera.znear;
             p.farClippingPlane = m_3DSceneCamera.zfar;
             p.viewMatrix = m_3DSceneCamera.view_matrix();
-            p.projectionMatrix = m_3DSceneCamera.projection_matrix(AspectRatio(p.dimensions));
+            p.projectionMatrix = m_3DSceneCamera.projection_matrix(aspect_ratio(p.dimensions));
             p.viewPos = m_3DSceneCamera.getPos();
             p.lightDirection = RecommendedLightDirection(m_3DSceneCamera);
             p.lightColor = Color::white();

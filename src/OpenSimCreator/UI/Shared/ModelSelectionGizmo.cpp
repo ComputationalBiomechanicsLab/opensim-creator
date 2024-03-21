@@ -574,7 +574,7 @@ namespace
         SetImguizmoStyleToOSCStandard();
         bool const gizmoWasManipulatedByUser = ImGuizmo::Manipulate(
             value_ptr(camera.view_matrix()),
-            value_ptr(camera.projection_matrix(AspectRatio(viewportRect))),
+            value_ptr(camera.projection_matrix(aspect_ratio(viewportRect))),
             operation,
             mode,
             value_ptr(currentXformInGround),

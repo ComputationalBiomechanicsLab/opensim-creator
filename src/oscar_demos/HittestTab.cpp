@@ -235,7 +235,7 @@ private:
         // draw crosshair overlay
         Graphics::DrawMesh(
             m_CrosshairMesh,
-            m_Camera.getInverseViewProjectionMatrix(AspectRatio(viewport)),
+            m_Camera.getInverseViewProjectionMatrix(aspect_ratio(viewport)),
             m_Material,
             m_Camera,
             m_BlackColorMaterialProps
@@ -260,7 +260,7 @@ private:
     // scene state
     std::vector<SceneSphere> m_SceneSpheres = GenerateSceneSpheres();
     AABB m_SceneSphereAABB = m_SphereMesh.getBounds();
-    Sphere m_SceneSphereBoundingSphere = BoundingSphereOf(m_SphereMesh);
+    Sphere m_SceneSphereBoundingSphere = bounding_sphere_of(m_SphereMesh);
     bool m_IsMouseCaptured = false;
     Eulers m_CameraEulers{};
     bool m_IsShowingAABBs = true;

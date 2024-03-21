@@ -318,7 +318,7 @@ SceneRendererParams osc::CalcStandardDarkSceneRenderParams(
     rv.drawMeshNormals = false;
     rv.drawFloor = false;
     rv.viewMatrix = camera.view_matrix();
-    rv.projectionMatrix = camera.projection_matrix(AspectRatio(renderDims));
+    rv.projectionMatrix = camera.projection_matrix(aspect_ratio(renderDims));
     rv.viewPos = camera.getPos();
     rv.lightDirection = RecommendedLightDirection(camera);
     rv.backgroundColor = {0.1f, 1.0f};

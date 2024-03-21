@@ -34,7 +34,7 @@ TEST(SceneMesh, GetBVHOnNonEmptyMeshReturnsExpectedRootNode)
     m.setVerts(pyramid);
     m.setIndices(pyramidIndices);
 
-    AABB const expectedRoot = aabb_of(pyramid);
+    AABB const expectedRoot = bounding_aabb_of(pyramid);
 
     SceneCache c;
 

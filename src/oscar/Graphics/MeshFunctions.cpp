@@ -168,7 +168,7 @@ Vec3 osc::MassCenter(Mesh const& m)
     return weightedCenterOfMass / totalVolume;
 }
 
-Sphere osc::BoundingSphereOf(Mesh const& mesh)
+Sphere osc::bounding_sphere_of(Mesh const& mesh)
 {
-    return BoundingSphereOf(mesh.getVerts());
+    return bounding_sphere_of(mesh.getVerts());
 }

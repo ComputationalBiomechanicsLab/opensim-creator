@@ -51,7 +51,7 @@ namespace
     // the returned rectangle is in the same space as the target rectangle
     Rect ShrinkToFit(Rect targetRect, float aspectRatio)
     {
-        float const targetAspectRatio = AspectRatio(targetRect);
+        float const targetAspectRatio = aspect_ratio(targetRect);
         float const ratio = targetAspectRatio / aspectRatio;
         Vec2 const targetDims = dimensions(targetRect);
 
@@ -140,7 +140,7 @@ private:
     {
         Vec2 const screenTopLeft = ui::GetCursorScreenPos();
         Rect const windowRect = {screenTopLeft, screenTopLeft + Vec2{ui::GetContentRegionAvail()}};
-        Rect const imageRect = ShrinkToFit(windowRect, AspectRatio(m_Screenshot.image.getDimensions()));
+        Rect const imageRect = ShrinkToFit(windowRect, aspect_ratio(m_Screenshot.image.getDimensions()));
         ui::SetCursorScreenPos(imageRect.p1);
         ui::DrawTextureAsImGuiImage(m_ImageTexture, dimensions(imageRect));
         return imageRect;

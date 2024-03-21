@@ -38,5 +38,5 @@ namespace osc
     );
 
     // returns the bounding sphere of the given mesh
-    Sphere BoundingSphereOf(Mesh const&);
+    Sphere bounding_sphere_of(Mesh const&);
 }

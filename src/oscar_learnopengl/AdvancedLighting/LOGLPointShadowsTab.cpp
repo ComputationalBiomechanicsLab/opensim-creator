@@ -124,7 +124,7 @@ private:
         float const farPlane = 25.0f;
         Mat4 const projectionMatrix = perspective(
             90_deg,
-            AspectRatio(c_ShadowmapDims),
+            aspect_ratio(c_ShadowmapDims),
             nearPlane,
             farPlane
         );
