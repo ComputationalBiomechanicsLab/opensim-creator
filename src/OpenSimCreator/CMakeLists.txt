@@ -1,4 +1,5 @@
 find_package(OpenSim REQUIRED CONFIG)
+find_package(assimp REQUIRED CONFIG)
 
 add_library(OpenSimCreator STATIC
 
@@ -434,6 +435,8 @@ target_link_libraries(OpenSimCreator PUBLIC
     osimTools
     osimLepton
     osimExampleComponents
+
+    assimp::assimp
 )
 
 # additional compile options (on top of `oscar_compiler_configuration`)
