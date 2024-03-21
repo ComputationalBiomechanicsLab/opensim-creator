@@ -661,19 +661,16 @@ Plane osc::FitPlane(Mesh const& mesh)
 
     // eigen analysis to yield [N, B1, B2]
     SimTK::Mat33 const eigenVectors = EigSorted(covarianceMatrix).first;
-    SimTK::Vec3 const& normal = eigenVectors.col(0);
-    SimTK::Vec3 const& basis1 = eigenVectors.col(1);
-    SimTK::Vec3 const& basis2 = eigenVectors.col(2);
+    Vec3 const normal = ToVec3(eigenVectors.col(0));
+    Vec3 const basis1 = ToVec3(eigenVectors.col(1));
+    Vec3 const basis2 = ToVec3(eigenVectors.col(2));
 
-    // project points onto B1 and B2 (plane-space)
-    std::vector<Vec2> const projectedPoints = ::Project3DPointsOnto2DSurface(
-        verticesReduced,
-        ToVec3(basis1),
-        ToVec3(basis2)
-    );
-
-    // calculate the 2D bounding box in plane-space of all projected vertices
-    Rect const bounds = bounding_rect_of(projectedPoints);
+    // project points onto B1 and B2 (plane-space) and calculate the 2D bounding box
+    // of them in plane-spae
+    Rect const bounds = bounding_rect_of(verticesReduced, [&basis1, &basis2](Vec3 const& v)
+    {
+        return Project3DPointOntoPlane(v, basis1, basis2);
+    });
 
     // calculate the midpoint of those bounds in plane-space
     Vec2 const boundsMidpointInPlaneSpace = centroid(bounds);
@@ -681,13 +678,13 @@ Plane osc::FitPlane(Mesh const& mesh)
     // un-project the plane-space midpoint back into mesh-space
     Vec3 const boundsMidPointInReducedSpace = Unproject2DPlanePointInto3D(
         boundsMidpointInPlaneSpace,
-        ToVec3(basis1),
-        ToVec3(basis2)
+        basis1,
+        basis2
     );
     Vec3 const boundsMidPointInMeshSpace = boundsMidPointInReducedSpace + mean;
 
     // return normal and boundsMidPointInMeshSpace
-    return Plane{boundsMidPointInMeshSpace, ToVec3(normal)};
+    return Plane{boundsMidPointInMeshSpace, normal};
 }
 
 Ellipsoid osc::FitEllipsoid(Mesh const& mesh)

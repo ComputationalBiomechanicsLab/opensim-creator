@@ -323,7 +323,7 @@ private:
             }
             return std::nullopt;
         };
-        std::optional<AABB> maybeRimWorldspaceAABB = maybe_aabb_of(decorations, rimAABB);
+        std::optional<AABB> maybeRimWorldspaceAABB = maybe_bounding_aabb_of(decorations, rimAABB);
 
         if (!maybeRimWorldspaceAABB)
         {

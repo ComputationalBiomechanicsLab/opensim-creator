@@ -1129,53 +1129,37 @@ Vec2 osc::bottom_left_lh(Rect const& r)
     return Vec2{min(r.p1.x, r.p2.x), max(r.p1.y, r.p2.y)};
 }
 
-Rect osc::bounding_rect_of(std::span<Vec2 const> vs)
+Rect osc::bounding_rect_of(Circle const& circle)
 {
-    if (vs.empty())
-    {
-        return Rect{};  // edge-case
-    }
-
-    Rect rv{vs.front(), vs.front()};
-    for (auto it = vs.begin()+1; it != vs.end(); ++it)
-    {
-        rv.p1 = elementwise_min(rv.p1, *it);
-        rv.p2 = elementwise_max(rv.p2, *it);
-    }
-    return rv;
+    float const hypot = sqrt(2.0f * circle.radius * circle.radius);
+    return {circle.origin - hypot, circle.origin + hypot};
 }
 
-Rect osc::bounding_rect_of(Circle const& c)
-{
-    float const hypot = sqrt(2.0f * c.radius * c.radius);
-    return {c.origin - hypot, c.origin + hypot};
-}
-
-Rect osc::expand(Rect const& rect, float amt)
+Rect osc::expand(Rect const& rect, float absAmount)
 {
     Rect rv
     {
         elementwise_min(rect.p1, rect.p2),
         elementwise_max(rect.p1, rect.p2)
     };
-    rv.p1.x -= amt;
-    rv.p2.x += amt;
-    rv.p1.y -= amt;
-    rv.p2.y += amt;
+    rv.p1.x -= absAmount;
+    rv.p2.x += absAmount;
+    rv.p1.y -= absAmount;
+    rv.p2.y += absAmount;
     return rv;
 }
 
-Rect osc::expand(Rect const& rect, Vec2 amt)
+Rect osc::expand(Rect const& rect, Vec2 absAmount)
 {
     Rect rv
     {
         elementwise_min(rect.p1, rect.p2),
         elementwise_max(rect.p1, rect.p2)
     };
-    rv.p1.x -= amt.x;
-    rv.p2.x += amt.x;
-    rv.p1.y -= amt.y;
-    rv.p2.y += amt.y;
+    rv.p1.x -= absAmount.x;
+    rv.p2.x += absAmount.x;
+    rv.p1.y -= absAmount.y;
+    rv.p2.y += absAmount.y;
     return rv;
 }
 

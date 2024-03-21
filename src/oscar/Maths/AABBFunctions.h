@@ -69,7 +69,13 @@ namespace osc
         return AABB{.min = x, .max = x};
     }
 
-    // returns an `AABB` that tightly bounds the union of `x` and `y`
+    // returns an `AABB` that tightly bounds both `x` and `y`
+    constexpr AABB bounding_aabb_of(AABB const& x, Vec3 const& y)
+    {
+        return AABB{elementwise_min(x.min, y), elementwise_max(x.max, y)};
+    }
+
+    // returns an `AABB` that tightly bounds both `x` and `y`
     constexpr AABB bounding_aabb_of(AABB const& x, AABB const& y)
     {
         return AABB{elementwise_min(x.min, y.min), elementwise_max(x.max, y.max)};
@@ -97,7 +103,7 @@ namespace osc
 
         AABB rv = bounding_aabb_of(std::invoke(proj, *it));
         while (++it != last) {
-            rv = bounding_aabb_of(rv, bounding_aabb_of(std::invoke(proj, *it)));
+            rv = bounding_aabb_of(rv, std::invoke(proj, *it));
         }
         return rv;
     }
@@ -123,7 +129,7 @@ namespace osc
     // returns an `AABB` that tightly bounds any non-`std::nullopt` `AABB`s in `x` or `y`
     //
     // if both `x` and `y` are `std::nullopt`, returns `std::nullopt`
-    constexpr std::optional<AABB> maybe_aabb_of(std::optional<AABB> x, std::optional<AABB> y)
+    constexpr std::optional<AABB> maybe_bounding_aabb_of(std::optional<AABB> x, std::optional<AABB> y)
     {
         if (x && y) {
             return bounding_aabb_of(*x, *y);
@@ -143,7 +149,7 @@ namespace osc
     //
     // if no element in `r` projects an `AABB`, returns `std::nullopt`
     template<std::ranges::input_range Range, class Proj = std::identity>
-    constexpr std::optional<AABB> maybe_aabb_of(Range&& r, Proj proj = {})
+    constexpr std::optional<AABB> maybe_bounding_aabb_of(Range&& r, Proj proj = {})
         requires std::convertible_to<typename std::projected<std::ranges::iterator_t<Range>, Proj>::value_type, std::optional<AABB> const&>
     {
         auto it = std::ranges::begin(r);

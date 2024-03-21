@@ -1861,7 +1861,7 @@ private:
 
     std::optional<AABB> calcSceneAABB() const
     {
-        return maybe_aabb_of(m_DrawablesBuffer, [](DrawableThing const& drawable) -> std::optional<AABB>
+        return maybe_bounding_aabb_of(m_DrawablesBuffer, [](DrawableThing const& drawable) -> std::optional<AABB>
         {
             if (drawable.id != MIIDs::Empty()) {
                 return calcBounds(drawable);
