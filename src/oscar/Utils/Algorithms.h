@@ -275,6 +275,39 @@ namespace osc
         return std::sample(std::ranges::begin(r), std::ranges::end(r), std::move(out), n, std::forward<Gen>(gen));
     }
 
+    // see: std::ranges::max_element
+    template<
+        std::forward_iterator I,
+        std::sentinel_for<I> S,
+        class Proj = std::identity,
+        std::indirect_strict_weak_order<std::projected<I, Proj>> Comp = std::ranges::less
+    >
+    constexpr I max_element(I first, S last, Comp comp = {}, Proj proj = {})
+    {
+        if (first == last) {
+            return last;
+        }
+
+        auto largest = first;
+        while (++first != last) {
+            if (std::invoke(comp, std::invoke(proj, *largest), std::invoke(proj, *first))) {
+                largest = first;
+            }
+        }
+        return largest;
+    }
+
+    // see: std::ranges::max_element
+    template<
+        std::ranges::forward_range R,
+        class Proj = std::identity,
+        std::indirect_strict_weak_order<std::projected<std::ranges::iterator_t<R>, Proj>> Comp = std::ranges::less
+    >
+    constexpr std::ranges::borrowed_iterator_t<R> max_element(R&& r, Comp comp = {}, Proj proj = {})
+    {
+        return max_element(std::ranges::begin(r), std::ranges::end(r), std::ref(comp), std::ref(proj));
+    }
+
     // see: std::ranges::max
     template<
         class T,
@@ -323,37 +356,36 @@ namespace osc
         }
     }
 
-    // see: std::ranges::max_element
+    // see: std::ranges::min_element
     template<
         std::forward_iterator I,
         std::sentinel_for<I> S,
         class Proj = std::identity,
         std::indirect_strict_weak_order<std::projected<I, Proj>> Comp = std::ranges::less
     >
-    constexpr I max_element(I first, S last, Comp comp = {}, Proj proj = {})
+    constexpr I min_element(I first, S last, Comp comp = {}, Proj proj = {})
     {
         if (first == last) {
             return last;
         }
-
-        auto largest = first;
+        auto smallest = first;
         while (++first != last) {
-            if (std::invoke(comp, std::invoke(proj, *largest), std::invoke(proj, *first))) {
-                largest = first;
+            if (std::invoke(comp, std::invoke(proj, *first), std::invoke(proj, *smallest))) {
+                smallest = first;
             }
         }
-        return largest;
+        return smallest;
     }
 
-    // see: std::ranges::max_element
+    // see: std::ranges::min_element
     template<
         std::ranges::forward_range R,
         class Proj = std::identity,
         std::indirect_strict_weak_order<std::projected<std::ranges::iterator_t<R>, Proj>> Comp = std::ranges::less
     >
-    constexpr std::ranges::borrowed_iterator_t<R> max_element(R&& r, Comp comp = {}, Proj proj = {})
+    constexpr std::ranges::borrowed_iterator_t<R> min_element(R&& r, Comp comp = {}, Proj proj = {})
     {
-        return max_element(std::ranges::begin(r), std::ranges::end(r), std::ref(comp), std::ref(proj));
+        return min_element(std::ranges::begin(r), std::ranges::end(r), std::ref(comp), std::ref(proj));
     }
 
     // see: std::ranges::min
@@ -404,36 +436,153 @@ namespace osc
         }
     }
 
-    // see: std::ranges::min_element
+    // returned by min_max algs (see: `std::ranges:min_max_result`)
+    template<typename T>
+    struct min_max_result final {
+        [[no_unique_address]] T min;
+        [[no_unique_address]] T max;
+
+        template<typename T2>
+        constexpr operator min_max_result<T2>() const&
+            requires std::convertible_to<T const&, T2>
+        {
+            return {min, max};
+        }
+
+        template<typename T2>
+        constexpr operator min_max_result<T2>() &&
+            requires std::convertible_to<T, T2>
+        {
+            return {std::move(min), std::move(max)};
+        }
+    };
+
+    template<typename T>
+    using minmax_result = min_max_result<T>;
+
+    template<typename I>
+    using minmax_element_result = min_max_result<I>;
+
+    // see: std::ranges::minmax_element
     template<
         std::forward_iterator I,
         std::sentinel_for<I> S,
-        class Proj = std::identity,
+        typename Proj = std::identity,
         std::indirect_strict_weak_order<std::projected<I, Proj>> Comp = std::ranges::less
     >
-    constexpr I min_element(I first, S last, Comp comp = {}, Proj proj = {})
+    constexpr minmax_element_result<I> minmax_element(
+        I first,
+        S last,
+        Comp comp = {},
+        Proj proj = {})
     {
-        if (first == last) {
-            return last;
+        auto min = first;
+        auto max = first;
+
+        // handle no range or singular edge-case
+        if (first == last or ++first == last) {
+            return {min, max};
         }
-        auto smallest = first;
+
+        // create minmax invariant from first two elements
+        if (std::invoke(comp, std::invoke(proj, *first), std::invoke(proj, *min))) {
+            min = first;
+        }
+        else {
+            max = first;
+        }
+
+        // loop over each element and reestablish invariant
         while (++first != last) {
-            if (std::invoke(comp, std::invoke(proj, *first), std::invoke(proj, *smallest))) {
-                smallest = first;
+
+            // C++ spec: if several elements are equivalent to the smallest, then the iterator to
+            //           the first such element is returned. If several elements are equivalent to
+            //           the largest element, the iterator to the last such element is returned
+            //
+            // (which is why there's this unusual-looking double-looping going on)
+
+            auto i = first;
+            if (++first == last) {
+                if (std::invoke(comp, std::invoke(proj, *i), std::invoke(proj, *min))) {
+                    min = i;
+                }
+                else if (not std::invoke(comp, std::invoke(proj, *i), std::invoke(proj, *max))) {
+                    max = i;
+                }
+                break;
+            }
+            else {
+                if (std::invoke(comp, std::invoke(proj, *first), std::invoke(proj, *i))) {
+                    if (std::invoke(comp, std::invoke(proj, *first), std::invoke(proj, *min))) {
+                        min = first;
+                    }
+                    if (not std::invoke(comp, std::invoke(proj, *i), std::invoke(proj, *max))) {
+                        max = i;
+                    }
+                }
+                else {
+                    if (std::invoke(comp, std::invoke(proj, *i), std::invoke(proj, *min))) {
+                        min = i;
+                    }
+                    if (not std::invoke(comp, std::invoke(proj, *first), std::invoke(proj, *max))) {
+                        max = first;
+                    }
+                }
             }
         }
-        return smallest;
+
+        return {min, max};
     }
 
-    // see: std::ranges::min_element
+    // see: std::ranges::minmax_element
     template<
         std::ranges::forward_range R,
-        class Proj = std::identity,
+        typename Proj = std::identity,
         std::indirect_strict_weak_order<std::projected<std::ranges::iterator_t<R>, Proj>> Comp = std::ranges::less
     >
-    constexpr std::ranges::borrowed_iterator_t<R> min_element(R&& r, Comp comp = {}, Proj proj = {})
+    constexpr minmax_element_result<std::ranges::borrowed_iterator_t<R>> minmax_element(R&& r, Comp comp = {}, Proj proj = {})
     {
-        return min_element(std::ranges::begin(r), std::ranges::end(r), std::ref(comp), std::ref(proj));
+        return osc::minmax_element(std::ranges::begin(r), std::ranges::end(r), std::ref(comp), std::ref(proj));
+    }
+
+    // see: std::ranges::minmax
+    template<
+        typename T,
+        typename Proj = std::identity,
+        std::indirect_strict_weak_order<std::projected<const T*, Proj>> Comp = std::ranges::less
+    >
+    constexpr minmax_result<const T&> minmax(const T& a, const T& b, Comp comp = {}, Proj proj = {})
+    {
+        if (std::invoke(comp, std::invoke(proj, b), std::invoke(proj, a))) {
+            return {b, a};
+        }
+
+        return {a, b};
+    }
+
+    // see: std::ranges::minmax
+    template<
+        std::copyable T,
+        typename Proj = std::identity,
+        std::indirect_strict_weak_order<std::projected<const T*, Proj>> Comp = std::ranges::less
+    >
+    constexpr minmax_result<T> minmax(std::initializer_list<T> r, Comp comp = {}, Proj proj = {})
+    {
+        auto result = minmax_element(r, std::ref(comp), std::ref(proj));
+        return {*result.min, *result.max};
+    }
+
+    // see: std::ranges::minmax
+    template<
+        std::ranges::input_range R,
+        typename Proj = std::identity,
+        std::indirect_strict_weak_order<std::projected<std::ranges::iterator_t<R>, Proj>> Comp = std::ranges::less
+    >
+    constexpr minmax_result<std::ranges::range_value_t<R>> minmax(R&& r, Comp comp = {}, Proj proj = {})
+        requires std::indirectly_copyable_storable<std::ranges::iterator_t<R>, std::ranges::range_value_t<R>*>
+    {
+        auto result = minmax_element(r, std::ref(comp), std::ref(proj));
+        return {std::move(*result.min), std::move(*result.max)};
     }
 
     // see: std::ranges::clamp

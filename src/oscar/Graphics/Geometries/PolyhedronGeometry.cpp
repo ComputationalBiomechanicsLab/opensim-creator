@@ -141,7 +141,7 @@ osc::PolyhedronGeometry::PolyhedronGeometry(
             float const x0 = uvBuffer[i+0].x;
             float const x1 = uvBuffer[i+1].x;
             float const x2 = uvBuffer[i+2].x;
-            auto const [min, max] = std::minmax({x0, x1, x2});
+            auto const [min, max] = minmax({x0, x1, x2});
 
             // these magic numbers are arbitrary (copied from three.js)
             if (max > 0.9f && min < 0.1f) {

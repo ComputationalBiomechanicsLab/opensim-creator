@@ -131,3 +131,31 @@ TEST(try_find, CanMutateViaReturnedPointer)
     ASSERT_TRUE(try_find(um, 20));
     ASSERT_EQ(*try_find(um, 20), -40);
 }
+
+TEST(min_element, WorksAsExpected)
+{
+    auto const els = std::to_array({1, 5, 8, -4, 13});
+    ASSERT_EQ(min_element(els), els.begin() + 3);
+}
+
+TEST(min, WorksAsExpected)
+{
+    auto const els = std::to_array({1, 5, 8, -4, 13});
+    ASSERT_EQ(min(els), -4);
+}
+
+TEST(minmax_element, WorksAsExpected)
+{
+    auto const els = std::to_array({1, 5, 8, -4, -4, 13, 13, 13});
+    auto const [minit, maxit] = minmax_element(els);
+    ASSERT_EQ(minit, els.begin() + 3);
+    ASSERT_EQ(maxit, els.end() - 1);
+}
+
+TEST(minmax, WorksAsExpected)
+{
+    auto const els = std::to_array({1, 5, 8, -4, -4, 13, 13, 13});
+    auto const [min, max] = minmax(els);
+    ASSERT_EQ(min, -4);
+    ASSERT_EQ(max, 13);
+}

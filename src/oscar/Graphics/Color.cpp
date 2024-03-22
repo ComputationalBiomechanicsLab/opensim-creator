@@ -4,6 +4,7 @@
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Maths/Vec4.h>
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/HashHelpers.h>
 #include <oscar/Utils/StringHelpers.h>
 
@@ -196,7 +197,7 @@ ColorHSLA osc::ToHSLA(Color const& c)
     // - https://stackoverflow.com/questions/39118528/rgb-to-hsl-conversion
 
     auto const [r, g, b, a] = ClampToLDR(c);
-    auto const [min, max] = std::minmax({r, g, b});
+    auto const [min, max] = minmax({r, g, b});
     float const delta = max - min;
 
     float const hue = CalcNormalizedHLSAHue(r, g, b, min, max, delta);
