@@ -265,3 +265,14 @@ TEST(CoordinateDirection, is_negated_WorksAsExpected)
     static_assert(not CoordinateDirection::z().is_negated());
     static_assert(CoordinateDirection::minus_z().is_negated());
 }
+
+TEST(CoordinateDirection, VecReturnsExpectedResults)
+{
+    ASSERT_EQ(CoordinateDirection::x().vec(), Vec3(1.0f, 0.0f, 0.0f));
+    ASSERT_EQ(CoordinateDirection::y().vec(), Vec3(0.0f, 1.0f, 0.0f));
+    ASSERT_EQ(CoordinateDirection::z().vec(), Vec3(0.0f, 0.0f, 1.0f));
+
+    ASSERT_EQ(CoordinateDirection::minus_x().vec(), Vec3(-1.0f, 0.0f, 0.0f));
+    ASSERT_EQ(CoordinateDirection::minus_y().vec(), Vec3(0.0f, -1.0f, 0.0f));
+    ASSERT_EQ(CoordinateDirection::minus_z().vec(), Vec3(0.0f, 0.0f, -1.0f));
+}

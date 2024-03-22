@@ -2,6 +2,7 @@
 
 #include <oscar/Maths/CoordinateAxis.h>
 #include <oscar/Maths/Negative.h>
+#include <oscar/Maths/Vec3.h>
 
 #include <cstdint>
 #include <optional>
@@ -83,6 +84,14 @@ namespace osc
             requires std::is_arithmetic_v<T> && std::is_signed_v<T>
         {
             return static_cast<T>(m_Direction);
+        }
+
+        // returns a direction that points in the direction stored by this `CoordinateDirection`
+        template<typename T = float>
+        constexpr Vec<3, T> vec() const
+            requires std::is_arithmetic_v<T>
+        {
+            return Vec<3, T>{}.with_element(axis().index(), direction<T>());
         }
 
         // returns a `CoordinateDirection` that points along the same `CoordinateAxis`, but with its direction negated

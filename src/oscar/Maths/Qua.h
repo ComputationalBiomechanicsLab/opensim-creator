@@ -35,13 +35,20 @@ namespace osc
 
         static constexpr Qua<T> wxyz(T w, T x, T y, T z) { return Qua<T>(w, x, y, z); }
 
+        // default-constructs a `Qua` with an identity transform
         constexpr Qua() = default;
+
+        // constructs a `Qua` with `w = s` and the xyz of `v`
         constexpr Qua(T s, Vec<3, T> const& v) :
             w{s}, x{v.x}, y{v.y}, z{v.z}
         {}
+
+        // constructs a `Qua` from its wxyz components
         constexpr Qua(T w_, T x_, T y_, T z_) :
             w{w_}, x{x_}, y{y_}, z{z_}
         {}
+
+        // constructs a `Qua` by `static_cast<T>`ing each element in `q`
         template<typename U>
         constexpr explicit Qua(Qua<U> const& q) :
             w{static_cast<T>(q.w)},
@@ -50,7 +57,7 @@ namespace osc
             z{static_cast<T>(q.z)}
         {}
 
-        /// Create a Quaternion from two normalized axis
+        /// constructs a `Qua` from two normalized axis
         ///
         /// @param u A first normalized axis
         /// @param v A second normalized axis
@@ -77,7 +84,7 @@ namespace osc
             *this = normalize(Qua<T>::wxyz(real_part, t.x, t.y, t.z));
         }
 
-        /// Build a Quaternion from euler angles (pitch, yaw, roll), in radians.
+        // constructs a `Qua` from euler angles (pitch, yaw, roll), in radians.
         constexpr explicit Qua(Vec<3, T> const& eulerAngle)
         {
             Vec<3, T> c = cos(eulerAngle * T(0.5));
@@ -89,11 +96,13 @@ namespace osc
             this->z = c.x * c.y * s.z - s.x * s.y * c.z;
         }
 
+        // constructs a `Qua` by decomposing an orthogonal matrix
         explicit Qua(Mat<3, 3, T> const& m)
         {
             *this = quat_cast(m);
         }
 
+        // constructs a `Qua` by decomposing an orthogonal matrix
         explicit Qua(Mat<4, 4, T> const& m)
         {
             *this = quat_cast(m);

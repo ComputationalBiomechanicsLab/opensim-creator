@@ -33,30 +33,27 @@ namespace
 
         auto rng = std::default_random_engine{std::random_device{}()};
         auto dist = std::normal_distribution{0.1f, 0.2f};
-        AABB const bounds = {{-5.0f, -2.0f, -5.0f}, {5.0f, 2.0f, 5.0f}};
+        AABB const bounds = {{-5.0f,  0.0f, -5.0f}, {5.0f, 0.0f, 5.0f}};
         Vec3 const dims = dimensions(bounds);
-        Vec3uz const cells = {10, 3, 10};
+        Vec2uz const cells = {10, 10};
 
         std::vector<TransformedMesh> rv;
-        rv.reserve(cells.x * cells.y * cells.z);
+        rv.reserve(cells.x * cells.y);
 
         for (size_t x = 0; x < cells.x; ++x) {
             for (size_t y = 0; y < cells.y; ++y) {
-                for (size_t z = 0; z < cells.z; ++z) {
 
-                    Vec3 const pos = bounds.min + dims * (Vec3{x, y, z} / Vec3{cells - 1_uz});
+                Vec3 const pos = bounds.min + dims * (Vec3{x, 0.0f, y} / Vec3{cells.x - 1_uz, 1, cells.y - 1_uz});
+                Mesh mesh;
+                sample(geoms, &mesh, 1, rng);
 
-                    Mesh mesh;
-                    sample(geoms, &mesh, 1, rng);
-
-                    rv.push_back(TransformedMesh{
-                        .mesh = mesh,
-                        .transform = {
-                            .scale = Vec3{abs(dist(rng))},
-                            .position = pos,
-                        }
-                    });
-                }
+                rv.push_back(TransformedMesh{
+                    .mesh = mesh,
+                    .transform = {
+                        .scale = Vec3{abs(dist(rng))},
+                        .position = pos,
+                    }
+                });
             }
         }
 
@@ -72,6 +69,14 @@ public:
         m_UserCamera.setFarClippingPlane(100.0f);
         m_Material.setLightPosition(Vec3{5.0f});
         m_Material.setDiffuseColor(Color::orange());
+        m_Decorations.push_back(TransformedMesh{
+            .mesh = PlaneGeometry{},
+            .transform = {
+                .scale = Vec3{10.0f, 10.0f, 1.0f},
+                .rotation = angle_axis(-90_deg, CoordinateDirection::x()),
+                .position = {0.0f, -1.0f, 0.0f},
+            },
+        });
     }
 
 private:
@@ -100,6 +105,7 @@ private:
         for (auto const& decoration : m_Decorations) {
             Graphics::DrawMesh(decoration.mesh, decoration.transform, m_Material, m_UserCamera);
         }
+
         m_UserCamera.setPixelRect(ui::GetMainViewportWorkspaceScreenRect());
         m_UserCamera.renderToScreen();
     }

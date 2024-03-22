@@ -1,8 +1,9 @@
 #pragma once
 
 #include <oscar/Maths/Angle.h>
-#include <oscar/Maths/Constants.h>
 #include <oscar/Maths/CommonFunctions.h>
+#include <oscar/Maths/Constants.h>
+#include <oscar/Maths/CoordinateDirection.h>
 #include <oscar/Maths/Mat3.h>
 #include <oscar/Maths/Mat4.h>
 #include <oscar/Maths/Qua.h>
@@ -164,6 +165,15 @@ namespace osc
     {
         T const s = sin(angle * static_cast<T>(0.5));
         return Qua<T>(cos(angle * static_cast<T>(0.5)), static_cast<Vec<3, T> const&>(axis) * s);
+    }
+
+    template<
+        std::floating_point T,
+        AngularUnitTraits Units
+    >
+    Qua<T> angle_axis(Angle<T, Units> angle, CoordinateDirection direction)
+    {
+        return angle_axis(angle, direction.vec<T>());
     }
 
     // computes the rotation from `src` to `dest`
