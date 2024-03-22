@@ -8,6 +8,8 @@
 
 namespace osc
 {
+    // a material for drawing meshes in a simple (solid-colored) way
+    //
     // naming inspired by three.js's `MeshBasicMaterial`, was called
     // "SolidColorMaterial" in earlier OSCs
     class MeshBasicMaterial final {

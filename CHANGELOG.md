@@ -14,6 +14,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - The mesh warper can now has the option to export source/destination/result meshes in OBJ format
   with/without surface normals (note: Simbody/OpenSim ignore this information, but it's useful if you
   plan on using the OBJ file in other software, e.g. Blender)
+- Internal: more of the UI code was ported from ImGui:: to ui:: to hide an implementation detail
+- Internal: Added `MeshPhongMaterial`, which is handy for graphics development
 
 ## [0.5.10] - 2024/03/05
 
