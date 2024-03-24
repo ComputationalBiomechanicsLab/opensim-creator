@@ -22,9 +22,10 @@ namespace
         Transform transform;
     };
 
+    // returns random 3D decorations for the scene
     std::vector<TransformedMesh> generateDecorations()
     {
-        auto const geoms = std::to_array<Mesh>({
+        auto const possibleGeometries = std::to_array<Mesh>({
             SphereGeometry{},
             TorusKnotGeometry{},
             IcosahedronGeometry{},
@@ -33,25 +34,25 @@ namespace
 
         auto rng = std::default_random_engine{std::random_device{}()};
         auto dist = std::normal_distribution{0.1f, 0.2f};
-        AABB const bounds = {{-5.0f,  0.0f, -5.0f}, {5.0f, 0.0f, 5.0f}};
-        Vec3 const dims = dimensions(bounds);
-        Vec2uz const cells = {10, 10};
+        AABB const gridBounds = {{-5.0f,  0.0f, -5.0f}, {5.0f, 0.0f, 5.0f}};
+        Vec3 const gridDims = dimensions(gridBounds);
+        Vec2uz const gridCells = {10, 10};
 
         std::vector<TransformedMesh> rv;
-        rv.reserve(cells.x * cells.y);
+        rv.reserve(gridCells.x * gridCells.y);
 
-        for (size_t x = 0; x < cells.x; ++x) {
-            for (size_t y = 0; y < cells.y; ++y) {
+        for (size_t x = 0; x < gridCells.x; ++x) {
+            for (size_t y = 0; y < gridCells.y; ++y) {
 
-                Vec3 const pos = bounds.min + dims * (Vec3{x, 0.0f, y} / Vec3{cells.x - 1_uz, 1, cells.y - 1_uz});
+                Vec3 const cellPos = gridBounds.min + gridDims * (Vec3{x, 0.0f, y} / Vec3{gridCells.x - 1_uz, 1, gridCells.y - 1_uz});
                 Mesh mesh;
-                sample(geoms, &mesh, 1, rng);
+                sample(possibleGeometries, &mesh, 1, rng);
 
                 rv.push_back(TransformedMesh{
                     .mesh = mesh,
                     .transform = {
                         .scale = Vec3{abs(dist(rng))},
-                        .position = pos,
+                        .position = cellPos,
                     }
                 });
             }
@@ -60,9 +61,11 @@ namespace
         return rv;
     }
 
+    // represents the 8 corners of a view frustum
     using FrustumCorners = std::array<Vec3, 8>;
 
-    struct OrthoProjInfo final {
+    // represents orthogonal projection parameters
+    struct OrthogonalProjectionParameters final {
         float r = quiet_nan_v<float>;
         float l = quiet_nan_v<float>;
         float b = quiet_nan_v<float>;
@@ -71,70 +74,81 @@ namespace
         float n = quiet_nan_v<float>;
     };
 
-    std::vector<OrthoProjInfo> CalcOrthoProjections(
+    // returns orthogonal projection information for each cascade
+    std::vector<OrthogonalProjectionParameters> CalcOrthoProjections(
         Camera const& camera,
         float aspectRatio,
         UnitVec3)  // TODO: compute light view matrix
     {
-        Mat4 lightView = identity<Mat4>();  // TODO
+        // most of the maths/logic here was ported from an excellently-written ogldev tutorial:
+        //
+        // - https://ogldev.org/www/tutorial49/tutorial49.html
 
-        // see: https://ogldev.org/www/tutorial49/tutorial49.html
-
-        // 0.0 == znear, 1.0 == zfar, pair these to figure out the start/finish of each cascade
+        // normalized means that 0.0 == near and 1.0 == far
+        //
+        // these planes are paired to figure out the near/far planes of each CSM's frustum
         constexpr auto normalizedCascadePlanes = std::to_array({ 0.0f, 1.0f/3.0f, 2.0f/3.0f, 3.0f/3.0f });
 
-        Mat4 const camInv = inverse(camera.getViewMatrix());
-        float const znear = camera.getNearClippingPlane();
-        float const zfar = camera.getFarClippingPlane();
-        Radians const vfov = camera.getVerticalFOV();
-        Radians const hfov = VerticalToHorizontalFOV(vfov, aspectRatio);
-        float const tanHalfVfov = tan(0.5f * vfov);
-        float const tanHalfHfov = tan(0.5f * hfov);
+        Mat4 model2light = identity<Mat4>();  // TODO: need to figure this out
 
-        std::vector<OrthoProjInfo> rv;
+        // precompute necessary values to figure out the corners of the view frustum
+        Mat4 const view2model = inverse(camera.getViewMatrix());
+        float const viewZNear = camera.getNearClippingPlane();
+        float const viewZFar = camera.getFarClippingPlane();
+        Radians const viewVFOV = camera.getVerticalFOV();
+        Radians const viewHFOV = VerticalToHorizontalFOV(viewVFOV, aspectRatio);
+        float const viewTanHalfVFOV = tan(0.5f * viewVFOV);
+        float const viewTanHalfHFOV = tan(0.5f * viewHFOV);
+
+        // calculate `OrthogonalProjectionParameters` for each cascade
+        std::vector<OrthogonalProjectionParameters> rv;
         rv.reserve(normalizedCascadePlanes.size() - 1);
         for (size_t i = 0; i < normalizedCascadePlanes.size()-1; ++i) {
-            float const zCascadeStart = lerp(znear, zfar, normalizedCascadePlanes[i]);
-            float const zCascadeEnd = lerp(znear, zfar, normalizedCascadePlanes[i+1]);
+            float const viewCascadeZNear = lerp(viewZNear, viewZFar, normalizedCascadePlanes[i]);
+            float const viewCascadeZFar = lerp(viewZNear, viewZFar, normalizedCascadePlanes[i+1]);
 
-            float const xn = zCascadeStart * tanHalfHfov;
-            float const xf = zCascadeEnd   * tanHalfHfov;
-            float const yn = zCascadeStart * tanHalfVfov;
-            float const yf = zCascadeEnd   * tanHalfVfov;
+            // imagine a triangle with a point where the viewer is (0,0,0 in view-space) and another
+            // point thats (e.g.) znear away from the viewer: the FOV dictates the angle of the corner
+            // that originates from the viewer
+            float const viewCascadeXNear = viewCascadeZNear * viewTanHalfHFOV;
+            float const viewCascadeXFar  = viewCascadeZFar  * viewTanHalfHFOV;
+            float const viewCascadeYNear = viewCascadeZNear * viewTanHalfVFOV;
+            float const viewCascadeYFar  = viewCascadeZFar  * viewTanHalfVFOV;
 
-            FrustumCorners const frustumCornersWorldSpace = {
+            FrustumCorners const viewFrustumCorners = {
                 // near face
-                Vec3{ xn,  yn, zCascadeStart},
-                Vec3{-xn,  yn, zCascadeStart},
-                Vec3{ xn, -yn, zCascadeStart},
-                Vec3{-xn, -yn, zCascadeStart},
+                Vec3{ viewCascadeXNear,  viewCascadeYNear, viewCascadeZNear},  // top-right
+                Vec3{-viewCascadeXNear,  viewCascadeYNear, viewCascadeZNear},  // top-left
+                Vec3{ viewCascadeXNear, -viewCascadeYNear, viewCascadeZNear},  // bottom-right
+                Vec3{-viewCascadeXNear, -viewCascadeYNear, viewCascadeZNear},  // bottom-left
 
                 // far face
-                Vec3{ xf,  yf, zCascadeEnd},
-                Vec3{-xf,  yf, zCascadeEnd},
-                Vec3{ xf, -yf, zCascadeEnd},
-                Vec3{-xf, -yf, zCascadeEnd},
+                Vec3{ viewCascadeXFar,  viewCascadeYFar, viewCascadeZFar},     // top-right
+                Vec3{-viewCascadeXFar,  viewCascadeYFar, viewCascadeZFar},     // top-left
+                Vec3{ viewCascadeXFar, -viewCascadeYFar, viewCascadeZFar},     // bottom-right
+                Vec3{-viewCascadeXFar, -viewCascadeYFar, viewCascadeZFar},     // bottom-left
             };
 
-            Vec3 minLightViewSpace = Vec3{std::numeric_limits<float>::max()};
-            Vec3 maxLightViewSpace = Vec3{std::numeric_limits<float>::min()};
-            for (Vec3 const& corner : frustumCornersWorldSpace) {
-                Vec3 const cornerViewSpace = transform_point(camInv, corner);
-                Vec3 const cornerLightSpace = transform_point(lightView, cornerViewSpace);
+            // compute the bounds in light-space by projecting each corner into light-space and min-maxing
+            Vec3 lightBoundsMin = Vec3{std::numeric_limits<float>::max()};
+            Vec3 lightBoundsMax = Vec3{std::numeric_limits<float>::min()};
+            for (Vec3 const& viewCorner : viewFrustumCorners) {
+                Vec3 const modelCorner = transform_point(view2model, viewCorner);
+                Vec3 const lightCorner = transform_point(model2light, modelCorner);
 
-                for (Vec3::size_type dim = 0; dim < std::tuple_size_v<Vec3>; ++dim) {
-                    minLightViewSpace[dim] = min(minLightViewSpace[dim], cornerLightSpace[dim]);
-                    maxLightViewSpace[dim] = max(maxLightViewSpace[dim], cornerLightSpace[dim]);
-                }
+                lightBoundsMin = elementwise_min(lightBoundsMin, lightCorner);
+                lightBoundsMax = elementwise_max(lightBoundsMax, lightCorner);
             }
 
-            rv.push_back(OrthoProjInfo{
-                .r = maxLightViewSpace.x,
-                .l = minLightViewSpace.x,
-                .b = minLightViewSpace.y,
-                .t = maxLightViewSpace.y,
-                .f = maxLightViewSpace.z,
-                .n = minLightViewSpace.z,
+            // then use those bounds to compure the orthogonal projection parameters of
+            // the directional light
+            rv.push_back(OrthogonalProjectionParameters{
+                .r = lightBoundsMax.x,
+                .l = lightBoundsMin.x,
+                .b = lightBoundsMin.y,
+                .t = lightBoundsMax.y,
+                .f = lightBoundsMax.z,
+                .n = lightBoundsMin.z,
             });
         }
         return rv;

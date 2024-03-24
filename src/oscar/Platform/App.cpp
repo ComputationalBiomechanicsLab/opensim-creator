@@ -297,7 +297,7 @@ public:
 
     void setCurrentAntiAliasingLevel(AntiAliasingLevel s)
     {
-        m_CurrentMSXAASamples = std::clamp(s, AntiAliasingLevel{1}, getMaxAntiAliasingLevel());
+        m_CurrentMSXAASamples = clamp(s, AntiAliasingLevel{1}, getMaxAntiAliasingLevel());
     }
 
     AntiAliasingLevel getMaxAntiAliasingLevel() const

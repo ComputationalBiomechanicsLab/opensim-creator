@@ -135,14 +135,14 @@ namespace osc
 
     // returns a vector containing `clamp(vv, lowv, hiv)` for each `(vv, lowv, hiv)` in `v`, `low`, and `hi`
     template<size_t L, HasClampFunction T>
-    constexpr Vec<L, T> clamp(Vec<L, T> const& v, Vec<L, T> const& lo, Vec<L, T> const& hi)
+    constexpr Vec<L, T> elementwise_clamp(Vec<L, T> const& v, Vec<L, T> const& lo, Vec<L, T> const& hi)
     {
         return map(v, lo, hi, [](T const& vv, T const& lov, T const& hiv) { return clamp(vv, lov, hiv); });
     }
 
     // returns a vector containing `clamp(vv, lo, hi)` for each `vv` in `v`
     template<size_t L, HasClampFunction T>
-    constexpr Vec<L, T> clamp(Vec<L, T> const& v, T const& lo, T const& hi)
+    constexpr Vec<L, T> elementwise_clamp(Vec<L, T> const& v, T const& lo, T const& hi)
     {
         return map(v, [&lo, &hi](T const& vv) { return clamp(vv, lo, hi); });
     }

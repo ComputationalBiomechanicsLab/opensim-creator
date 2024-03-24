@@ -1167,8 +1167,8 @@ Rect osc::Clamp(Rect const& r, Vec2 const& min, Vec2 const& max)
 {
     return
     {
-        clamp(r.p1, min, max),
-        clamp(r.p2, min, max),
+        elementwise_clamp(r.p1, min, max),
+        elementwise_clamp(r.p2, min, max),
     };
 }
 
@@ -1366,8 +1366,8 @@ std::optional<Rect> osc::loosely_project_into_ndc(
 
     // take the X and Y coordinates of that AABB and ensure they are clamped to within bounds
     Rect rv{Vec2{ndcAABB.min}, Vec2{ndcAABB.max}};
-    rv.p1 = clamp(rv.p1, {-1.0f, -1.0f}, {1.0f, 1.0f});
-    rv.p2 = clamp(rv.p2, {-1.0f, -1.0f}, {1.0f, 1.0f});
+    rv.p1 = elementwise_clamp(rv.p1, {-1.0f, -1.0f}, {1.0f, 1.0f});
+    rv.p2 = elementwise_clamp(rv.p2, {-1.0f, -1.0f}, {1.0f, 1.0f});
 
     return rv;
 }
