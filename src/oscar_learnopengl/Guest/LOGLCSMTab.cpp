@@ -62,16 +62,28 @@ namespace
 
     using FrustumCorners = std::array<Vec3, 8>;
 
-    std::vector<Mat4> CalcOrthoProjections(
+    struct OrthoProjInfo final {
+        float r = quiet_nan_v<float>;
+        float l = quiet_nan_v<float>;
+        float b = quiet_nan_v<float>;
+        float t = quiet_nan_v<float>;
+        float f = quiet_nan_v<float>;
+        float n = quiet_nan_v<float>;
+    };
+
+    std::vector<OrthoProjInfo> CalcOrthoProjections(
         Camera const& camera,
         float aspectRatio,
         UnitVec3)  // TODO: compute light view matrix
     {
+        Mat4 lightView = identity<Mat4>();  // TODO
+
         // see: https://ogldev.org/www/tutorial49/tutorial49.html
 
         // 0.0 == znear, 1.0 == zfar, pair these to figure out the start/finish of each cascade
         constexpr auto normalizedCascadePlanes = std::to_array({ 0.0f, 1.0f/3.0f, 2.0f/3.0f, 3.0f/3.0f });
 
+        Mat4 const camInv = inverse(camera.getViewMatrix());
         float const znear = camera.getNearClippingPlane();
         float const zfar = camera.getFarClippingPlane();
         Radians const vfov = camera.getVerticalFOV();
@@ -79,7 +91,7 @@ namespace
         float const tanHalfVfov = tan(0.5f * vfov);
         float const tanHalfHfov = tan(0.5f * hfov);
 
-        std::vector<Mat4> rv;
+        std::vector<OrthoProjInfo> rv;
         rv.reserve(normalizedCascadePlanes.size() - 1);
         for (size_t i = 0; i < normalizedCascadePlanes.size()-1; ++i) {
             float const zCascadeStart = lerp(znear, zfar, normalizedCascadePlanes[i]);
@@ -103,6 +115,27 @@ namespace
                 Vec3{ xf, -yf, zCascadeEnd},
                 Vec3{-xf, -yf, zCascadeEnd},
             };
+
+            Vec3 minLightViewSpace = Vec3{std::numeric_limits<float>::max()};
+            Vec3 maxLightViewSpace = Vec3{std::numeric_limits<float>::min()};
+            for (Vec3 const& corner : frustumCornersWorldSpace) {
+                Vec3 const cornerViewSpace = transform_point(camInv, corner);
+                Vec3 const cornerLightSpace = transform_point(lightView, cornerViewSpace);
+
+                for (Vec3::size_type dim = 0; dim < std::tuple_size_v<Vec3>; ++dim) {
+                    minLightViewSpace[dim] = min(minLightViewSpace[dim], cornerLightSpace[dim]);
+                    maxLightViewSpace[dim] = max(maxLightViewSpace[dim], cornerLightSpace[dim]);
+                }
+            }
+
+            rv.push_back(OrthoProjInfo{
+                .r = maxLightViewSpace.x,
+                .l = minLightViewSpace.x,
+                .b = minLightViewSpace.y,
+                .t = maxLightViewSpace.y,
+                .f = maxLightViewSpace.z,
+                .n = minLightViewSpace.z,
+            });
         }
         return rv;
     }
