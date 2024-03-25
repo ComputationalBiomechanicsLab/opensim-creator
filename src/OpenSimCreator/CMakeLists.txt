@@ -144,6 +144,7 @@ add_library(OpenSimCreator STATIC
     Documents/Simulation/ISimulation.h
     Documents/Simulation/Simulation.h
     Documents/Simulation/SimulationClock.h
+    Documents/Simulation/SimulationClocks.h
     Documents/Simulation/SimulationModelStatePair.cpp
     Documents/Simulation/SimulationModelStatePair.h
     Documents/Simulation/SimulationReport.cpp

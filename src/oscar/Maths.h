@@ -9,6 +9,7 @@
 #include <oscar/Maths/BVHNode.h>
 #include <oscar/Maths/BVHPrim.h>
 #include <oscar/Maths/Circle.h>
+#include <oscar/Maths/ClosedInterval.h>
 #include <oscar/Maths/CollisionTests.h>
 #include <oscar/Maths/CommonFunctions.h>
 #include <oscar/Maths/Constants.h>
@@ -29,6 +30,8 @@
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Mat3.h>
 #include <oscar/Maths/Mat4.h>
+#include <oscar/Maths/Negative.h>
+#include <oscar/Maths/Normalized.h>
 #include <oscar/Maths/Plane.h>
 #include <oscar/Maths/PlaneFunctions.h>
 #include <oscar/Maths/PointDirection.h>

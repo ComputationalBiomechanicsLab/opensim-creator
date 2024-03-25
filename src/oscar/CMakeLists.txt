@@ -191,6 +191,7 @@ add_library(oscar STATIC
     Maths/BVHNode.h
     Maths/BVHPrim.h
     Maths/Circle.h
+    Maths/ClosedInterval.h
     Maths/CollisionTests.h
     Maths/CommonFunctions.h
     Maths/Constants.h
@@ -214,6 +215,7 @@ add_library(oscar STATIC
     Maths/Mat3.h
     Maths/Mat4.h
     Maths/Negative.h
+    Maths/Normalized.h
     Maths/Plane.h
     Maths/PlaneFunctions.h
     Maths/PointDirection.h
@@ -415,7 +417,7 @@ add_library(oscar STATIC
     UI.h
     Utils.h
     Variant.h
-)
+ )
 
 target_include_directories(oscar PUBLIC
 
