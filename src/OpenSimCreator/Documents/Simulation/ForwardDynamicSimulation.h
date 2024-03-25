@@ -39,10 +39,7 @@ namespace osc
         std::vector<SimulationReport> implGetAllSimulationReports() const final;
 
         SimulationStatus implGetStatus() const final;
-        SimulationClock::time_point implGetCurTime() const final;
-        SimulationClock::time_point implGetStartTime() const final;
-        SimulationClock::time_point implGetEndTime() const final;
-        float implGetProgress() const final;
+        SimulationClocks implGetClocks() const final;
         ParamBlock const& implGetParams() const final;
         std::span<OutputExtractor const> implGetOutputExtractors() const final;
 

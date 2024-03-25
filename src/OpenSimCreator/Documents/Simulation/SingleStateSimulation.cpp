@@ -40,24 +40,9 @@ public:
         return SimulationStatus::Completed;
     }
 
-    SimulationClock::time_point getCurTime() const
+    SimulationClocks getClocks() const
     {
-        return SimulationClock::start();
-    }
-
-    SimulationClock::time_point getStartTime() const
-    {
-        return SimulationClock::start();
-    }
-
-    SimulationClock::time_point getEndTime() const
-    {
-        return SimulationClock::start();
-    }
-
-    float getProgress() const
-    {
-        return 1.0f;
+        return SimulationClocks{SimulationClock::start()};
     }
 
     ParamBlock const& getParams() const
@@ -129,24 +114,9 @@ SimulationStatus osc::SingleStateSimulation::implGetStatus() const
     return m_Impl->getStatus();
 }
 
-SimulationClock::time_point osc::SingleStateSimulation::implGetCurTime() const
+SimulationClocks osc::SingleStateSimulation::implGetClocks() const
 {
-    return m_Impl->getCurTime();
-}
-
-SimulationClock::time_point osc::SingleStateSimulation::implGetStartTime() const
-{
-    return m_Impl->getStartTime();
-}
-
-SimulationClock::time_point osc::SingleStateSimulation::implGetEndTime() const
-{
-    return m_Impl->getEndTime();
-}
-
-float osc::SingleStateSimulation::implGetProgress() const
-{
-    return m_Impl->getProgress();
+    return m_Impl->getClocks();
 }
 
 ParamBlock const& osc::SingleStateSimulation::implGetParams() const

@@ -249,24 +249,9 @@ public:
         return SimulationStatus::Completed;
     }
 
-    SimulationClock::time_point getCurTime() const
+    SimulationClocks getClocks() const
     {
-        return m_End;
-    }
-
-    SimulationClock::time_point getStartTime() const
-    {
-        return m_Start;
-    }
-
-    SimulationClock::time_point getEndTime() const
-    {
-        return m_End;
-    }
-
-    float getProgress() const
-    {
-        return 1.0f;
+        return SimulationClocks{{m_Start, m_End}};
     }
 
     ParamBlock const& getParams() const
@@ -343,24 +328,9 @@ SimulationStatus osc::StoFileSimulation::implGetStatus() const
     return m_Impl->getStatus();
 }
 
-SimulationClock::time_point osc::StoFileSimulation::implGetCurTime() const
+SimulationClocks osc::StoFileSimulation::implGetClocks() const
 {
-    return m_Impl->getCurTime();
-}
-
-SimulationClock::time_point osc::StoFileSimulation::implGetStartTime() const
-{
-    return m_Impl->getStartTime();
-}
-
-SimulationClock::time_point osc::StoFileSimulation::implGetEndTime() const
-{
-    return m_Impl->getEndTime();
-}
-
-float osc::StoFileSimulation::implGetProgress() const
-{
-    return m_Impl->getProgress();
+    return m_Impl->getClocks();
 }
 
 ParamBlock const& osc::StoFileSimulation::implGetParams() const

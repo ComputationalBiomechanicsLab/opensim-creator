@@ -96,6 +96,11 @@ public:
         return m_Simulation.getStatus();
     }
 
+    SimulationClock::time_point getStartTime() const
+    {
+        return SimulationClock::start() + SimulationClock::duration{m_ModelState.lock()->getState().getTime()};
+    }
+
     SimulationClock::time_point getCurTime() const
     {
         popReportsHACK();
@@ -110,22 +115,11 @@ public:
         }
     }
 
-    SimulationClock::time_point getStartTime() const
-    {
-        return SimulationClock::start() + SimulationClock::duration{m_ModelState.lock()->getState().getTime()};
-    }
-
-    SimulationClock::time_point getEndTime() const
-    {
-        return m_Simulation.params().finalTime;
-    }
-
-    float getProgress() const
+    SimulationClocks getClocks() const
     {
         auto start = getStartTime();
-        auto end = getEndTime();
-        auto cur = getCurTime();
-        return static_cast<float>((cur-start)/(end-start));
+        auto end = m_Simulation.params().finalTime;
+        return SimulationClocks{{start, end}, getCurTime()};
     }
 
     ParamBlock const& getParams() const
@@ -244,24 +238,9 @@ SimulationStatus osc::ForwardDynamicSimulation::implGetStatus() const
     return m_Impl->getStatus();
 }
 
-SimulationClock::time_point osc::ForwardDynamicSimulation::implGetCurTime() const
+SimulationClocks osc::ForwardDynamicSimulation::implGetClocks() const
 {
-    return m_Impl->getCurTime();
-}
-
-SimulationClock::time_point osc::ForwardDynamicSimulation::implGetStartTime() const
-{
-    return m_Impl->getStartTime();
-}
-
-SimulationClock::time_point osc::ForwardDynamicSimulation::implGetEndTime() const
-{
-    return m_Impl->getEndTime();
-}
-
-float osc::ForwardDynamicSimulation::implGetProgress() const
-{
-    return m_Impl->getProgress();
+    return m_Impl->getClocks();
 }
 
 ParamBlock const& osc::ForwardDynamicSimulation::implGetParams() const

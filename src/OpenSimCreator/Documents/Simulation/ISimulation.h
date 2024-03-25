@@ -67,22 +67,22 @@ namespace osc
 
         SimulationClock::time_point getCurTime() const
         {
-            return implGetCurTime();
+            return implGetClocks().current();
         }
 
         SimulationClock::time_point getStartTime() const
         {
-            return implGetStartTime();
+            return implGetClocks().start();
         }
 
         SimulationClock::time_point getEndTime() const
         {
-            return implGetEndTime();
+            return implGetClocks().end();
         }
 
         float getProgress() const
         {
-            return implGetProgress();
+            return implGetClocks().progress();
         }
 
         ParamBlock const& getParams() const
@@ -123,10 +123,7 @@ namespace osc
         virtual std::vector<SimulationReport> implGetAllSimulationReports() const = 0;
 
         virtual SimulationStatus implGetStatus() const = 0;
-        virtual SimulationClock::time_point implGetCurTime() const = 0;
-        virtual SimulationClock::time_point implGetStartTime() const = 0;
-        virtual SimulationClock::time_point implGetEndTime() const = 0;
-        virtual float implGetProgress() const = 0;
+        virtual SimulationClocks implGetClocks() const = 0;
         virtual ParamBlock const& implGetParams() const = 0;
         virtual std::span<OutputExtractor const> implGetOutputExtractors() const = 0;
 
