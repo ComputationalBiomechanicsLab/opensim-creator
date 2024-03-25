@@ -7,6 +7,9 @@ namespace SimTK { class State; }
 
 namespace osc
 {
+    // an interface for an object that generates decorations in an OSC-specific custom way
+    //
+    // i.e. if an `OpenSim::Component` implements this, it should take precedence over `Component::generateDecorations`
     class ICustomDecorationGenerator {
     protected:
         ICustomDecorationGenerator() = default;
@@ -17,8 +20,16 @@ namespace osc
     public:
         virtual ~ICustomDecorationGenerator() noexcept = default;
 
-        void generateCustomDecorations(SimTK::State const& state, std::function<void(SceneDecoration&&)> const& callback) const { implGenerateCustomDecorations(state, callback); }
+        void generateCustomDecorations(
+            SimTK::State const& state,
+            std::function<void(SceneDecoration&&)> const& callback) const
+        {
+            implGenerateCustomDecorations(state, callback);
+        }
     private:
-        virtual void implGenerateCustomDecorations(SimTK::State const&, std::function<void(SceneDecoration&&)> const&) const = 0;
+        virtual void implGenerateCustomDecorations(
+            SimTK::State const&,
+            std::function<void(SceneDecoration&&)> const&
+        ) const = 0;
     };
 }

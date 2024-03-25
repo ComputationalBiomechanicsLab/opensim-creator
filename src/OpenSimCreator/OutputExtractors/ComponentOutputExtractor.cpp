@@ -146,11 +146,12 @@ private:
 
 // public API
 
-osc::ComponentOutputExtractor::ComponentOutputExtractor(OpenSim::AbstractOutput const& ao,
-                                                        ComponentOutputSubfield subfield) :
+osc::ComponentOutputExtractor::ComponentOutputExtractor(
+    OpenSim::AbstractOutput const& ao,
+    ComponentOutputSubfield subfield) :
+
     m_Impl{std::make_unique<Impl>(ao, subfield)}
-{
-}
+{}
 osc::ComponentOutputExtractor::ComponentOutputExtractor(ComponentOutputExtractor const&) = default;
 osc::ComponentOutputExtractor::ComponentOutputExtractor(ComponentOutputExtractor&&) noexcept = default;
 osc::ComponentOutputExtractor& osc::ComponentOutputExtractor::operator=(ComponentOutputExtractor const&) = default;
