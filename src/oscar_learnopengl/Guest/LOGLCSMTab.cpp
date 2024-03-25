@@ -78,7 +78,7 @@ namespace
     std::vector<OrthogonalProjectionParameters> CalcOrthoProjections(
         Camera const& camera,
         float aspectRatio,
-        UnitVec3)  // TODO: compute light view matrix
+        UnitVec3 lightDirection)
     {
         // most of the maths/logic here was ported from an excellently-written ogldev tutorial:
         //
@@ -89,10 +89,12 @@ namespace
         // these planes are paired to figure out the near/far planes of each CSM's frustum
         constexpr auto normalizedCascadePlanes = std::to_array({ 0.0f, 1.0f/3.0f, 2.0f/3.0f, 3.0f/3.0f });
 
-        Mat4 model2light = identity<Mat4>();  // TODO: need to figure this out
+        // precompure transforms
+        Mat4 const model2light = look_at({0.0f, 0.0f, 0.0f}, Vec3{lightDirection}, {0.0f, 1.0f, 0.0f});
+        Mat4 const view2model = inverse(camera.getViewMatrix());
+        Mat4 const view2light = model2light * view2model;
 
         // precompute necessary values to figure out the corners of the view frustum
-        Mat4 const view2model = inverse(camera.getViewMatrix());
         float const viewZNear = camera.getNearClippingPlane();
         float const viewZFar = camera.getFarClippingPlane();
         Radians const viewVFOV = camera.getVerticalFOV();
@@ -130,12 +132,10 @@ namespace
             };
 
             // compute the bounds in light-space by projecting each corner into light-space and min-maxing
-            Vec3 lightBoundsMin = Vec3{std::numeric_limits<float>::max()};
-            Vec3 lightBoundsMax = Vec3{std::numeric_limits<float>::min()};
-            for (Vec3 const& viewCorner : viewFrustumCorners) {
-                Vec3 const modelCorner = transform_point(view2model, viewCorner);
-                Vec3 const lightCorner = transform_point(model2light, modelCorner);
-
+            Vec3 lightBoundsMin = transform_point(view2light, viewFrustumCorners.front());
+            Vec3 lightBoundsMax = lightBoundsMin;
+            for (size_t corner = 1; corner < viewFrustumCorners.size(); ++corner) {
+                Vec3 const lightCorner = transform_point(view2light, viewFrustumCorners[corner]);
                 lightBoundsMin = elementwise_min(lightBoundsMin, lightCorner);
                 lightBoundsMax = elementwise_max(lightBoundsMax, lightCorner);
             }
@@ -202,6 +202,11 @@ private:
 
         m_UserCamera.setPixelRect(ui::GetMainViewportWorkspaceScreenRect());
         m_UserCamera.renderToScreen();
+    }
+
+    void drawShadowmaps()
+    {
+        CalcOrthoProjections(m_UserCamera, 1.0f, UnitVec3{0.0f, -1.0f, 0.0f});  // TODO
     }
 
     MouseCapturingCamera m_UserCamera;
