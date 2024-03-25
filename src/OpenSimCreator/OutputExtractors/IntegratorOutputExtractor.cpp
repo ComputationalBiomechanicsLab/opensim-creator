@@ -2,7 +2,7 @@
 
 #include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
 #include <OpenSimCreator/OutputExtractors/IOutputExtractor.h>
-#include <OpenSimCreator/OutputExtractors/IOutputValueExtractorVisitor.h>
+#include <OpenSimCreator/OutputExtractors/OutputValueExtractor.h>
 
 #include <oscar/Maths/Constants.h>
 #include <oscar/Utils/Assertions.h>
@@ -115,9 +115,12 @@ namespace
 
 // public API
 
-void osc::IntegratorOutputExtractor::implAccept(IOutputValueExtractorVisitor& visitor) const
+OutputValueExtractor osc::IntegratorOutputExtractor::implGetOutputValueExtractor(OpenSim::Component const&) const
 {
-    visitor(*this);
+    return OutputValueExtractor{[id = m_AuxiliaryDataID](SimulationReport const& report)
+    {
+        return Variant{report.getAuxiliaryValue(id).value_or(quiet_nan_v<float>)};
+    }};
 }
 
 std::size_t osc::IntegratorOutputExtractor::implGetHash() const
@@ -143,17 +146,6 @@ bool osc::IntegratorOutputExtractor::implEquals(IOutputExtractor const& other) c
         m_Name == otherT->m_Name &&
         m_Description == otherT->m_Description &&
         m_Extractor == otherT->m_Extractor;
-}
-
-void osc::IntegratorOutputExtractor::implExtractFloats(
-    OpenSim::Component const&,
-    std::span<SimulationReport const> reports,
-    std::function<void(float)> const& consumer) const
-{
-    for (size_t i = 0; i < reports.size(); ++i)
-    {
-        consumer(reports[i].getAuxiliaryValue(m_AuxiliaryDataID).value_or(quiet_nan_v<float>));
-    }
 }
 
 int osc::GetNumIntegratorOutputExtractors()

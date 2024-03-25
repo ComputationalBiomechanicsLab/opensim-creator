@@ -2,6 +2,7 @@
 
 #include <oscar/Graphics/Color.h>
 #include <oscar/Maths/VecFunctions.h>
+#include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/EnumHelpers.h>
@@ -79,6 +80,7 @@ osc::Variant::Variant(int v) : m_Data{v} {}
 osc::Variant::Variant(std::string v) : m_Data{std::move(v)} {}
 osc::Variant::Variant(std::string_view v) : m_Data{std::string{v}} {}
 osc::Variant::Variant(StringName const& v) : m_Data{v} {}
+osc::Variant::Variant(Vec2 v) : m_Data{v} {}
 osc::Variant::Variant(Vec3 v) : m_Data{v} {}
 
 VariantType osc::Variant::getType() const
@@ -92,6 +94,7 @@ VariantType osc::Variant::getType() const
         [](int const&) { return VariantType::Int; },
         [](std::string const&) { return VariantType::String; },
         [](StringName const&) { return VariantType::StringName; },
+        [](Vec2 const&) { return VariantType::Vec2; },
         [](Vec3 const&) { return VariantType::Vec3; },
     }, m_Data);
 }
@@ -106,6 +109,7 @@ osc::Variant::operator bool() const
         [](float const& v) { return v != 0.0f; },
         [](int const& v) { return v != 0; },
         [](std::string_view s) { return TryInterpretStringAsBool(s); },
+        [](Vec2 const& v) { return v.x != 0.0f; },
         [](Vec3 const& v) { return v.x != 0.0f; },
     }, m_Data);
 }
@@ -124,6 +128,7 @@ osc::Variant::operator osc::Color() const
             auto const c = TryParseHtmlString(s);
             return c ? *c : Color::black();
         },
+        [](Vec2 const& v) { return Color{v.x, v.y, 0.0f}; },
         [](Vec3 const& v) { return Color{v}; },
     }, m_Data);
 }
@@ -138,6 +143,7 @@ osc::Variant::operator float() const
         [](float const& v) { return v; },
         [](int const& v) { return static_cast<float>(v); },
         [](std::string_view s) { return ToFloatOrZero(s); },
+        [](Vec2 const& v) { return v.x; },
         [](Vec3 const& v) { return v.x; },
     }, m_Data);
 }
@@ -152,6 +158,7 @@ osc::Variant::operator int() const
         [](float const& v) { return static_cast<int>(v); },
         [](int const& v) { return v; },
         [](std::string_view s) { return ToIntOrZero(s); },
+        [](Vec2 const& v) { return static_cast<int>(v.x); },
         [](Vec3 const& v) { return static_cast<int>(v.x); },
     }, m_Data);
 }
@@ -168,6 +175,7 @@ osc::Variant::operator std::string() const
         [](float const& v) { return std::to_string(v); },
         [](int const& v) { return std::to_string(v); },
         [](std::string_view s) { return std::string{s}; },
+        [](Vec2 const& v) { return to_string(v); },
         [](Vec3 const& v) { return to_string(v); },
     }, m_Data);
 }
@@ -182,6 +190,21 @@ osc::Variant::operator osc::StringName() const
     }, m_Data);
 }
 
+osc::Variant::operator osc::Vec2() const
+{
+    return std::visit(Overload
+    {
+        [](std::monostate const&) { return Vec2{}; },
+        [](bool const& v) { return v ? Vec2{1.0f, 1.0f} : Vec2{}; },
+        [](Color const& v) { return Vec2{v.r, v.g}; },
+        [](float const& v) { return Vec2{v}; },
+        [](int const& v) { return Vec2{static_cast<float>(v)}; },
+        [](std::string_view) { return Vec2{}; },
+        [](Vec2 const& v) { return v; },
+        [](Vec3 const& v) { return Vec2{v}; },
+    }, m_Data);
+}
+
 osc::Variant::operator osc::Vec3() const
 {
     return std::visit(Overload
@@ -192,6 +215,7 @@ osc::Variant::operator osc::Vec3() const
         [](float const& v) { return Vec3{v}; },
         [](int const& v) { return Vec3{static_cast<float>(v)}; },
         [](std::string_view) { return Vec3{}; },
+        [](Vec2 const& v) { return Vec3{v, 0.0f}; },
         [](Vec3 const& v) { return v; },
     }, m_Data);
 }

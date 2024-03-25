@@ -2,6 +2,7 @@
 
 #include <OpenSimCreator/OutputExtractors/ComponentOutputSubfield.h>
 #include <OpenSimCreator/OutputExtractors/IOutputExtractor.h>
+#include <OpenSimCreator/OutputExtractors/OutputValueExtractor.h>
 
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/ClonePtr.h>
@@ -32,11 +33,11 @@ namespace osc
     private:
         CStringView implGetName() const final;
         CStringView implGetDescription() const final;
-        void implAccept(IOutputValueExtractorVisitor&) const final;
+        OutputExtractorDataType implGetOutputType() const final;
+        OutputValueExtractor implGetOutputValueExtractor(OpenSim::Component const&) const final;
         size_t implGetHash() const final;
         bool implEquals(IOutputExtractor const&) const final;
 
-    private:
         class Impl;
         ClonePtr<Impl> m_Impl;
     };

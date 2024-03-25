@@ -12,6 +12,7 @@ namespace osc
         Int,
         String,
         StringName,
+        Vec2,
         Vec3,
         NUM_OPTIONS
     };

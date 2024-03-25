@@ -6,9 +6,7 @@
 #include <OpenSimCreator/Documents/Simulation/SimulationClock.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationStatus.h>
-#include <OpenSimCreator/OutputExtractors/IFloatOutputValueExtractor.h>
 #include <OpenSimCreator/OutputExtractors/IOutputExtractor.h>
-#include <OpenSimCreator/OutputExtractors/IOutputValueExtractorVisitor.h>
 #include <OpenSimCreator/OutputExtractors/IntegratorOutputExtractor.h>
 #include <OpenSimCreator/OutputExtractors/MultiBodySystemOutputExtractor.h>
 
@@ -95,7 +93,7 @@ namespace
         std::atomic<int> m_Status = static_cast<int>(SimulationStatus::Initializing);
     };
 
-    class AuxiliaryVariableOutputExtractor final : public IOutputExtractor, IFloatOutputValueExtractor {
+    class AuxiliaryVariableOutputExtractor final : public IOutputExtractor {
     public:
         AuxiliaryVariableOutputExtractor(std::string name, std::string description, UID uid) :
             m_Name{std::move(name)},
@@ -115,9 +113,17 @@ namespace
             return m_Description;
         }
 
-        void implAccept(IOutputValueExtractorVisitor& visitor) const final
+        OutputExtractorDataType implGetOutputType() const final
         {
-            visitor(*this);
+            return OutputExtractorDataType::Float;
+        }
+
+        OutputValueExtractor implGetOutputValueExtractor(OpenSim::Component const&) const final
+        {
+            return OutputValueExtractor{[id = m_UID](SimulationReport const& report)
+            {
+                return Variant{report.getAuxiliaryValue(id).value_or(-1337.0f)};
+            }};
         }
 
         std::size_t implGetHash() const final
@@ -142,16 +148,6 @@ namespace
                 m_Name == otherT->m_Name &&
                 m_Description == otherT->m_Description &&
                 m_UID == otherT->m_UID;
-        }
-
-        void implExtractFloats(
-            OpenSim::Component const&,
-            std::span<SimulationReport const> reports,
-            std::function<void(float)> const& consumer) const final
-        {
-            for (size_t i = 0; i < reports.size(); ++i) {
-                consumer(reports[i].getAuxiliaryValue(m_UID).value_or(-1337.0f));
-            }
         }
 
         std::string m_Name;

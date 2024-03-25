@@ -1,7 +1,6 @@
 #include "ConcatenatingOutputExtractor.h"
 
 #include <OpenSimCreator/OutputExtractors/IOutputExtractor.h>
-#include <OpenSimCreator/OutputExtractors/IOutputValueExtractorVisitor.h>
 #include <OpenSimCreator/OutputExtractors/OutputExtractor.h>
 #include <OpenSimCreator/OutputExtractors/OutputExtractorDataType.h>
 
@@ -62,15 +61,26 @@ osc::ConcatenatingOutputExtractor::ConcatenatingOutputExtractor(
     m_Label{CalcLabel(m_OutputType, m_First, m_Second)}
 {}
 
-void osc::ConcatenatingOutputExtractor::implAccept(IOutputValueExtractorVisitor& visitor) const
+OutputValueExtractor osc::ConcatenatingOutputExtractor::implGetOutputValueExtractor(OpenSim::Component const& comp) const
 {
     static_assert(NumOptions<OutputExtractorDataType>() == 3);
 
     if (m_OutputType == OutputExtractorDataType::Vec2) {
-        visitor(static_cast<IVec2OutputValueExtractor const&>(*this));
+        auto extractor = [lhs = m_First.getOutputValueExtractor(comp), rhs = m_Second.getOutputValueExtractor(comp)](SimulationReport const& report)
+        {
+            float const lv = lhs(report).to<float>();
+            float const rv = rhs(report).to<float>();
+
+            return Variant{Vec2{lv, rv}};
+        };
+        return OutputValueExtractor{std::move(extractor)};
     }
     else {
-        visitor(static_cast<IStringOutputValueExtractor const&>(*this));
+        auto extractor = [lhs = m_First.getOutputValueExtractor(comp), rhs = m_Second.getOutputValueExtractor(comp)](SimulationReport const& report)
+        {
+            return Variant{lhs(report).to<std::string>() + rhs(report).to<std::string>()};
+        };
+        return OutputValueExtractor{std::move(extractor)};
     }
 }
 
@@ -88,52 +98,4 @@ bool osc::ConcatenatingOutputExtractor::implEquals(IOutputExtractor const& other
         return ptr->m_First == m_First && ptr->m_Second == m_Second;
     }
     return false;
-}
-
-void osc::ConcatenatingOutputExtractor::implExtractFloats(
-    OpenSim::Component const& component,
-    std::span<SimulationReport const> reports,
-    std::function<void(Vec2)> const& consumer) const
-{
-    if (m_OutputType != OutputExtractorDataType::Vec2) {
-        return;  // invalid method call
-    }
-
-    // TODO: we can't lazily evaluate each Vec2 with this architecture because there's no
-    //       cheap way of pausing each output extractor (i.e. coroutines), and it is probably
-    //       more expensive to extract using the one-value-at-a-time API
-    //
-    //       so, unfortunately, we have to allocate here, so that each substep has something to
-    //       write to
-
-    std::vector<Vec2> values;
-    values.reserve(reports.size());
-
-    // collect `x`es
-    m_First.getValuesFloat(component, reports, [&values](float v) mutable
-    {
-        values.emplace_back(v, quiet_nan_v<float>);
-    });
-
-    // collect `y`s
-    m_Second.getValuesFloat(component, reports, [&values, i = 0](float v) mutable
-    {
-        values.at(i++).y = v;
-    });
-
-    // push to caller
-    for (Vec2 value : values) {
-        consumer(value);
-    }
-}
-
-std::string osc::ConcatenatingOutputExtractor::implExtractString(
-    OpenSim::Component const& component,
-    SimulationReport const& report) const
-{
-    if (m_OutputType != OutputExtractorDataType::String) {
-        return {};  // invalid method call
-    }
-
-    return m_First.getValueString(component, report) + m_Second.getValueString(component, report);
 }

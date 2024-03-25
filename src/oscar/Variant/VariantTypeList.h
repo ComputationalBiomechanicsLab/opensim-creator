@@ -13,6 +13,7 @@ namespace osc
         VariantType::Int,
         VariantType::String,
         VariantType::StringName,
+        VariantType::Vec2,
         VariantType::Vec3
     >;
 }

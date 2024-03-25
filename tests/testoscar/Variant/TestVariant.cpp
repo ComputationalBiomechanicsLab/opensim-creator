@@ -137,6 +137,18 @@ TEST(Variant, CanImplicitlyConstructFromCStringView)
     static_assert(std::is_convertible_v<CStringView, Variant>);
 }
 
+TEST(Variant, CanExplicitlyConstructFromVec2)
+{
+    Variant v{Vec2{1.0f, 2.0f}};
+    ASSERT_EQ(v.to<Vec2>(), Vec2(1.0f, 2.0f));
+    ASSERT_EQ(v.getType(), VariantType::Vec2);
+}
+
+TEST(Variant, CanImplicitlyConstructFromVec2)
+{
+    static_assert(std::is_convertible_v<Vec2, Variant>);
+}
+
 TEST(Variant, CanExplicitlyConstructFromVec3)
 {
     Variant v{Vec3{1.0f, 2.0f, 3.0f}};
@@ -184,6 +196,11 @@ TEST(Variant, NilValueToStringNameReturnsEmptyStringName)
     ASSERT_EQ(Variant{}.to<StringName>(), StringName{});
 }
 
+TEST(Variant, NilValueToVec2ReturnsZeroedVec2)
+{
+    ASSERT_EQ(Variant{}.to<Vec2>(), Vec2{});
+}
+
 TEST(Variant, NilValueToVec3ReturnsZeroedVec3)
 {
     ASSERT_EQ(Variant{}.to<Vec3>(), Vec3{});
@@ -227,7 +244,13 @@ TEST(Variant, BoolValueToStringNameReturnsEmptyStringName)
     ASSERT_EQ(Variant{true}.to<StringName>(), StringName{});
 }
 
-TEST(Variant, BoolValueToVec3ReturnsExpectedVectors)
+TEST(Variant, BoolValueToVec2ReturnsExpectedVec2s)
+{
+    ASSERT_EQ(Variant(false).to<Vec2>(), Vec2{});
+    ASSERT_EQ(Variant(true).to<Vec2>(), Vec2(1.0f, 1.0f));
+}
+
+TEST(Variant, BoolValueToVec3ReturnsExpectedVec3s)
 {
     ASSERT_EQ(Variant(false).to<Vec3>(), Vec3{});
     ASSERT_EQ(Variant(true).to<Vec3>(), Vec3(1.0f, 1.0f, 1.0f));
@@ -284,6 +307,12 @@ TEST(Variant, ColorValueToStringReturnsExpectedManualExamples)
     ASSERT_EQ(Variant{Color::magenta()}.to<std::string>(), "#ff00ffff");
 }
 
+TEST(Variant, ColorValueToVec2ReturnsFirst2Channels)
+{
+    ASSERT_EQ(Variant(Color(1.0f, 2.0f, 3.0f)).to<Vec2>(), Vec2(1.0f, 2.0f));
+    ASSERT_EQ(Variant(Color::red()).to<Vec2>(), Vec2(1.0f, 0.0f));
+}
+
 TEST(Variant, ColorValueToVec3ReturnsFirst3Channels)
 {
     ASSERT_EQ(Variant(Color(1.0f, 2.0f, 3.0f)).to<Vec3>(), Vec3(1.0f, 2.0f, 3.0f));
@@ -337,6 +366,15 @@ TEST(Variant, FloatValueToStringNameReturnsEmptyStringName)
 {
     ASSERT_EQ(Variant{0.0f}.to<StringName>(), StringName{});
     ASSERT_EQ(Variant{1.0f}.to<StringName>(), StringName{});
+}
+
+TEST(Variant, FloatValueToVec2ReturnsVec2FilledWithFloat)
+{
+    for (float v : std::to_array<float>({-20000.0f, -5.328f, -1.2f, 0.0f, 0.123f, 50.0f, 18000.0f}))
+    {
+        Vec2 const expected = {v, v};
+        ASSERT_EQ(Variant(v).to<Vec2>(), expected);
+    }
 }
 
 TEST(Variant, FloatValueToVec3ReturnsVec3FilledWithFloat)
@@ -397,6 +435,16 @@ TEST(Variant, IntValueToStringNameReturnsEmptyString)
     ASSERT_EQ(Variant{-1}.to<StringName>(), StringName{});
     ASSERT_EQ(Variant{0}.to<StringName>(), StringName{});
     ASSERT_EQ(Variant{1337}.to<StringName>(), StringName{});
+}
+
+TEST(Variant, IntValueToVec2CastsValueToFloatThenPlacesItInAllSlots)
+{
+    for (int v : std::to_array<int>({ -12193, -1212, -738, -12, -1, 0, 1, 18, 1294, 1209849}))
+    {
+        auto const vf = static_cast<float>(v);
+        Vec2 const expected = {vf, vf};
+        ASSERT_EQ(Variant(v).to<Vec2>(), expected);
+    }
 }
 
 TEST(Variant, IntValueToVec3CastsValueToFloatThenPlacesInAllSlots)
@@ -526,6 +574,28 @@ TEST(Variant, StringValueToStringNameReturnsSuppliedStringAsAStringName)
     }
 }
 
+TEST(Variant, StringValueToVec2AlwaysReturnsZeroedVec)
+{
+    auto const inputs = std::to_array<std::string_view>(
+        {
+            "some\tstring",
+            "-1.0",
+            "20e-10",
+            "",
+            "not a number",
+            "  ",
+            "1, 2, 3",
+            "(1, 2, 3)",
+            "[1, 2, 3]",
+            "Vec3(1, 2, 3)",
+        });
+
+    for (auto const& input : inputs)
+    {
+        ASSERT_EQ(Variant{input}.to<Vec2>(), Vec2{});
+    }
+}
+
 TEST(Variant, StringValueToVec3AlwaysReturnsZeroedVec)
 {
     auto const inputs = std::to_array<std::string_view>(
@@ -545,6 +615,116 @@ TEST(Variant, StringValueToVec3AlwaysReturnsZeroedVec)
     for (auto const& input : inputs)
     {
         ASSERT_EQ(Variant{input}.to<Vec3>(), Vec3{});
+    }
+}
+
+TEST(Variant, Vec2ValueToBoolReturnsFalseForZeroVec)
+{
+    ASSERT_EQ(Variant{Vec2{}}.to<bool>(), false);
+}
+
+TEST(Variant, Vec2ValueToBoolReturnsFalseIfXIsZeroRegardlessOfOtherComponents)
+{
+    // why: because it's consistent with the `toInt()` and `toFloat()` behavior, and
+    // one would logically expect `if (v.to<int>())` to behave the same as `if (v.to<bool>())`
+    ASSERT_EQ(Variant{Vec2{0.0f}}.to<bool>(), false);
+    ASSERT_EQ(Variant{Vec2(0.0f, 1000.0f)}.to<bool>(), false);
+    ASSERT_EQ(Variant{Vec2(0.0f, 7.0f)}.to<bool>(), false);
+    ASSERT_EQ(Variant{Vec2(0.0f, 2.0f)}.to<bool>(), false);
+    ASSERT_EQ(Variant{Vec2(0.0f, 1.0f)}.to<bool>(), false);
+    ASSERT_EQ(Variant{Vec2(0.0f, -1.0f)}.to<bool>(), false);
+    static_assert(+0.0f == -0.0f);
+    ASSERT_EQ(Variant{Vec2(-0.0f, 1000.0f)}.to<bool>(), false);  // how fun ;)
+}
+
+TEST(Variant, Vec2ValueToBoolReturnsTrueIfXIsNonZeroRegardlessOfOtherComponents)
+{
+    ASSERT_EQ(Variant{Vec2{1.0f}}.to<bool>(), true);
+    ASSERT_EQ(Variant{Vec2(2.0f, 7.0f)}.to<bool>(), true);
+    ASSERT_EQ(Variant{Vec2(30.0f, 2.0f)}.to<bool>(), true);
+    ASSERT_EQ(Variant{Vec2(-40.0f, 1.0f)}.to<bool>(), true);
+    ASSERT_EQ(Variant{Vec2(std::numeric_limits<float>::quiet_NaN(), -1.0f)}.to<bool>(), true);
+}
+
+TEST(Variant, Vec2ValueToColorExtractsTheElementsIntoRGB)
+{
+    auto const testCases = std::to_array<Vec2>({
+        { 0.0f,   0.0f},
+        { 1.0f,   1.0f},
+        {-1.0f,   7.5f},
+        { 10.0f,  0.5f},
+        { 0.0f,  -0.0f},
+    });
+
+    for (auto const& testCase : testCases)
+    {
+        ASSERT_EQ(Variant{testCase}.to<Color>(), Color(testCase.x, testCase.y, 0.0f));
+    }
+}
+
+TEST(Variant, Vec2ValueToFloatExtractsXToTheFloat)
+{
+    auto const testCases = std::to_array<Vec2>({
+        { 0.0f,   0.0f},
+        { 1.0f,   1.0f},
+        {-1.0f,   7.5f},
+        { 10.0f,  0.5f},
+        { 0.0f,  -0.0f},
+    });
+
+    for (auto const& testCase : testCases) {
+        ASSERT_EQ(Variant{testCase}.to<float>(), testCase.x);
+    }
+}
+
+TEST(Variant, Vec2ValueToIntExtractsXToTheInt)
+{
+    auto const testCases = std::to_array<Vec2>({
+        { 0.0f,   0.0f},
+        { 1.0f,   1.0f},
+        {-1.0f,   7.5f},
+        { 10.0f,  0.5f},
+        { 0.0f,  -0.0f},
+     });
+
+    for (auto const& testCase : testCases) {
+        ASSERT_EQ(Variant{testCase}.to<int>(), static_cast<int>(testCase.x));
+    }
+}
+
+TEST(Variant, Vec2ValueToStringReturnsSameAsDirectlyConvertingVectorToString)
+{
+    auto const testCases = std::to_array<Vec2>({
+        { 0.0f,   0.0f},
+        { 1.0f,   1.0f},
+        {-1.0f,   7.5f},
+        { 10.0f,  0.5f},
+        { 0.0f,  -0.0f},
+    });
+
+    for (auto const& testCase : testCases) {
+        ASSERT_EQ(Variant{testCase}.to<std::string>(), to_string(testCase));
+    }
+}
+
+TEST(Variant, Vec2ValueToStringNameReturnsAnEmptyString)
+{
+    ASSERT_EQ(Variant{Vec2{}}.to<StringName>(), StringName{});
+    ASSERT_EQ(Variant{Vec2(0.0f, -20.0f)}.to<StringName>(), StringName{});
+}
+
+TEST(Variant, Vec2ValueToVec3ReturnsOriginalValue)
+{
+    auto const testCases = std::to_array<Vec2>({
+        { 0.0f,   0.0f},
+        { 1.0f,   1.0f},
+        {-1.0f,   7.5f},
+        { 10.0f,  0.5f},
+        { 0.0f,  -0.0f},
+    });
+
+    for (auto const& testCase : testCases) {
+        ASSERT_EQ(Variant{testCase}.to<Vec2>(), testCase);
     }
 }
 
@@ -694,6 +874,10 @@ TEST(Variant, IsAlwaysEqualToACopyOfItself)
         Variant{"1"},
         Variant{"a string"},
         Variant{StringName{"a string name"}},
+        Variant{Vec2{}},
+        Variant{Vec2{-1.0f}},
+        Variant{Vec2{0.5f}},
+        Variant{Vec2{-0.5f}},
         Variant{Vec3{}},
         Variant{Vec3{1.0f}},
         Variant{Vec3{-1.0f}},
@@ -746,6 +930,11 @@ TEST(Variant, IsNotEqualToOtherValuesEvenIfConversionIsPossible)
         Variant{"1"},
         Variant{"a string"},
         Variant{StringName{"a stringname can be compared to a string, though"}},
+        Variant{Vec2{}},
+        Variant{Vec2{1.0f}},
+        Variant{Vec2{-1.0f}},
+        Variant{Vec2{0.5f}},
+        Variant{Vec2{-0.5f}},
         Variant{Vec3{}},
         Variant{Vec3{1.0f}},
         Variant{Vec3{-1.0f}},
@@ -795,6 +984,11 @@ TEST(Variant, CanHashAVarietyOfTypes)
         Variant{"1"},
         Variant{"a string"},
         Variant{StringName{"a string name"}},
+        Variant{Vec2{}},
+        Variant{Vec2{1.0f}},
+        Variant{Vec2{-1.0f}},
+        Variant{Vec2{0.5f}},
+        Variant{Vec2{-0.5f}},
         Variant{Vec3{}},
         Variant{Vec3{1.0f}},
         Variant{Vec3{-1.0f}},
@@ -837,6 +1031,11 @@ TEST(Variant, FreeFunctionToStringOnVarietyOfTypesReturnsSameAsCallingToStringMe
         Variant{"1"},
         Variant{"a string"},
         Variant{StringName{"a string name"}},
+        Variant{Vec2{}},
+        Variant{Vec2{1.0f}},
+        Variant{Vec2{-1.0f}},
+        Variant{Vec2{0.5f}},
+        Variant{Vec2{-0.5f}},
         Variant{Vec3{}},
         Variant{Vec3{1.0f}},
         Variant{Vec3{-1.0f}},
@@ -879,6 +1078,11 @@ TEST(Variant, StreamingToOutputStreamProducesSameOutputAsToString)
         Variant{"1"},
         Variant{"a string"},
         Variant{StringName{"a string name"}},
+        Variant{Vec2{}},
+        Variant{Vec2{1.0f}},
+        Variant{Vec2{-1.0f}},
+        Variant{Vec2{0.5f}},
+        Variant{Vec2{-0.5f}},
         Variant{Vec3{}},
         Variant{Vec3{1.0f}},
         Variant{Vec3{-1.0f}},

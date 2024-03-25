@@ -24,6 +24,7 @@ TEST(VariantType, ToStringReturnsExpectedResults)
         {VariantType::Int, "Int"},
         {VariantType::String, "String"},
         {VariantType::StringName, "StringName"},
+        {VariantType::Vec2, "Vec2"},
         {VariantType::Vec3, "Vec3"},
     });
     static_assert(NumOptions<VariantType>() == std::tuple_size<decltype(testCases)>());

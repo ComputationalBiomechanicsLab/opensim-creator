@@ -1,20 +1,17 @@
 #pragma once
 
-#include <OpenSimCreator/OutputExtractors/IFloatOutputValueExtractor.h>
 #include <OpenSimCreator/OutputExtractors/IOutputExtractor.h>
 #include <OpenSimCreator/OutputExtractors/OutputExtractor.h>
+#include <OpenSimCreator/OutputExtractors/OutputValueExtractor.h>
 
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/UID.h>
 
 #include <cstddef>
-#include <functional>
-#include <span>
 #include <string>
 #include <string_view>
 
 namespace OpenSim { class Component; }
-namespace osc { class SimulationReport; }
 namespace SimTK { class MultibodySystem; }
 
 namespace osc
@@ -23,9 +20,7 @@ namespace osc
     // a SimTK::MultiBodySystem
     //
     // handy for extracting simulation stats (e.g. num steps taken etc.)
-    class MultiBodySystemOutputExtractor final :
-        public IOutputExtractor,
-        private IFloatOutputValueExtractor {
+    class MultiBodySystemOutputExtractor final : public IOutputExtractor {
     public:
         using ExtractorFn = float (*)(SimTK::MultibodySystem const&);
 
@@ -45,17 +40,11 @@ namespace osc
     private:
         CStringView implGetName() const final { return m_Name; }
         CStringView implGetDescription() const final { return m_Description; }
-        void implAccept(IOutputValueExtractorVisitor&) const final;
+        OutputExtractorDataType implGetOutputType() const final { return OutputExtractorDataType::Float; }
+        OutputValueExtractor implGetOutputValueExtractor(OpenSim::Component const&) const final;
         size_t implGetHash() const final;
         bool implEquals(IOutputExtractor const&) const final;
 
-        void implExtractFloats(
-            OpenSim::Component const&,
-            std::span<SimulationReport const>,
-            std::function<void(float)> const& consumer
-        ) const final;
-
-    private:
         UID m_AuxiliaryDataID;
         std::string m_Name;
         std::string m_Description;

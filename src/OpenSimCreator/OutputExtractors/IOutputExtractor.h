@@ -1,6 +1,7 @@
 #pragma once
 
 #include <OpenSimCreator/OutputExtractors/OutputExtractorDataType.h>
+#include <OpenSimCreator/OutputExtractors/OutputValueExtractor.h>
 
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Utils/CStringView.h>
@@ -17,11 +18,12 @@ namespace osc { class SimulationReport; }
 
 namespace osc
 {
-    // interface for something that can extract data from simulation reports
+    // an interface for something that can produce an output value extractor
+    // for a particular model against multiple states
     //
-    // assumed to be an immutable type (important, because output extractors
-    // might be shared between simulations, threads, etc.) that merely extracts
-    // data from simulation reports
+    // implementors of this interface are assumed to be immutable (important,
+    // because output extractors might be shared between simulations, threads,
+    // etc.)
     class IOutputExtractor {
     protected:
         IOutputExtractor() = default;
@@ -35,7 +37,11 @@ namespace osc
         CStringView getName() const { return implGetName(); }
         CStringView getDescription() const { return implGetDescription(); }
 
-        OutputExtractorDataType getOutputType() const;
+        OutputExtractorDataType getOutputType() const { return implGetOutputType(); }
+        OutputValueExtractor getOutputValueExtractor(OpenSim::Component const& component) const
+        {
+            return implGetOutputValueExtractor(component);
+        }
 
         float getValueFloat(
             OpenSim::Component const&,
@@ -84,7 +90,8 @@ namespace osc
     private:
         virtual CStringView implGetName() const = 0;
         virtual CStringView implGetDescription() const = 0;
-        virtual void implAccept(IOutputValueExtractorVisitor&) const = 0;
+        virtual OutputExtractorDataType implGetOutputType() const = 0;
+        virtual OutputValueExtractor implGetOutputValueExtractor(OpenSim::Component const&) const = 0;
         virtual size_t implGetHash() const = 0;
         virtual bool implEquals(IOutputExtractor const&) const = 0;
     };

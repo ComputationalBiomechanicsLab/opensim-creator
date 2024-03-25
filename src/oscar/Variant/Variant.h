@@ -1,6 +1,7 @@
 #pragma once
 
 #include <oscar/Graphics/Color.h>
+#include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/StringName.h>
@@ -28,6 +29,7 @@ namespace osc
         Variant(std::nullopt_t) = delete;
         Variant(CStringView csv) : Variant{std::string_view{csv}} {}
         Variant(StringName const&);
+        Variant(Vec2);
         Variant(Vec3);
 
         VariantType getType() const;
@@ -39,6 +41,7 @@ namespace osc
         operator int() const;
         operator std::string() const;
         operator StringName() const;
+        operator Vec2() const;
         operator Vec3() const;
 
         // explicit conversion
@@ -66,6 +69,7 @@ namespace osc
             int,
             std::string,
             StringName,
+            Vec2,
             Vec3
         > m_Data;
     };

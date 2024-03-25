@@ -1,48 +1,31 @@
 #pragma once
 
 #include <OpenSimCreator/OutputExtractors/IOutputExtractor.h>
-#include <OpenSimCreator/OutputExtractors/IVec2OutputValueExtractor.h>
-#include <OpenSimCreator/OutputExtractors/IStringOutputValueExtractor.h>
 #include <OpenSimCreator/OutputExtractors/OutputExtractor.h>
+#include <OpenSimCreator/OutputExtractors/OutputExtractorDataType.h>
+#include <OpenSimCreator/OutputExtractors/OutputValueExtractor.h>
 
-#include <oscar/Maths/Vec2.h>
 #include <oscar/Utils/CStringView.h>
 
 #include <cstddef>
-#include <functional>
-#include <span>
 #include <string>
 
 namespace OpenSim { class Component; }
-namespace osc { class SimulationReport; }
 
 namespace osc
 {
     // an output extractor that concatenates the outputs from multiple output extractors
-    class ConcatenatingOutputExtractor final :
-        public IOutputExtractor,
-        private IVec2OutputValueExtractor,
-        private IStringOutputValueExtractor {
+    class ConcatenatingOutputExtractor final : public IOutputExtractor {
     public:
         ConcatenatingOutputExtractor(OutputExtractor first_, OutputExtractor second_);
 
     private:
         CStringView implGetName() const override { return m_Label; }
         CStringView implGetDescription() const override { return {}; }
-        void implAccept(IOutputValueExtractorVisitor&) const override;
+        OutputExtractorDataType implGetOutputType() const override { return m_OutputType; }
+        OutputValueExtractor implGetOutputValueExtractor(OpenSim::Component const&) const override;
         size_t implGetHash() const override;
         bool implEquals(IOutputExtractor const&) const override;
-
-        void implExtractFloats(
-            OpenSim::Component const&,
-            std::span<SimulationReport const>,
-            std::function<void(Vec2)> const& consumer
-        ) const override;
-
-        std::string implExtractString(
-            OpenSim::Component const&,
-            SimulationReport const&
-        ) const override;
 
         OutputExtractor m_First;
         OutputExtractor m_Second;

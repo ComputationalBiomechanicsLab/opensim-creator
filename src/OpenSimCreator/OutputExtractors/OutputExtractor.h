@@ -1,6 +1,7 @@
 #pragma once
 
 #include <OpenSimCreator/OutputExtractors/IOutputExtractor.h>
+#include <OpenSimCreator/OutputExtractors/OutputValueExtractor.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
 
 #include <oscar/Utils/CStringView.h>
@@ -32,6 +33,11 @@ namespace osc
         CStringView getName() const { return m_Output->getName(); }
         CStringView getDescription() const { return m_Output->getDescription(); }
         OutputExtractorDataType getOutputType() const { return m_Output->getOutputType(); }
+
+        OutputValueExtractor getOutputValueExtractor(OpenSim::Component const& component) const
+        {
+            return m_Output->getOutputValueExtractor(component);
+        }
 
         float getValueFloat(OpenSim::Component const& component, SimulationReport const& report) const
         {
