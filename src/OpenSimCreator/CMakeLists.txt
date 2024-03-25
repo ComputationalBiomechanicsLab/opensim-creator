@@ -132,6 +132,7 @@ add_library(OpenSimCreator STATIC
     Documents/ModelWarper/WarpableOpenSimComponent.h
     Documents/ModelWarper/WarpDetail.h
 
+    Documents/Simulation/AuxiliaryValue.h
     Documents/Simulation/ForwardDynamicSimulation.cpp
     Documents/Simulation/ForwardDynamicSimulation.h
     Documents/Simulation/ForwardDynamicSimulator.cpp
@@ -147,6 +148,10 @@ add_library(OpenSimCreator STATIC
     Documents/Simulation/SimulationModelStatePair.h
     Documents/Simulation/SimulationReport.cpp
     Documents/Simulation/SimulationReport.h
+    Documents/Simulation/SimulationReportSequence.cpp
+    Documents/Simulation/SimulationReportSequence.h
+    Documents/Simulation/SimulationReportSequenceCursor.cpp
+    Documents/Simulation/SimulationReportSequenceCursor.h
     Documents/Simulation/SimulationStatus.cpp
     Documents/Simulation/SimulationStatus.h
     Documents/Simulation/SingleStateSimulation.cpp
