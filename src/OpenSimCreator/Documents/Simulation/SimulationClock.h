@@ -20,13 +20,4 @@ namespace osc
             return time_point(duration{0.0});
         }
     };
-
-    // returns a `Simulation::time_point` that is lerped between `a` and `b` by `t`
-    template<typename Arithmetic>
-    constexpr SimulationClock::time_point lerp(SimulationClock::time_point a, SimulationClock::time_point b, Arithmetic const& t)
-        requires std::is_arithmetic_v<Arithmetic>
-    {
-        auto tEpoch = lerp(a.time_since_epoch(), b.time_since_epoch(), t);
-        return SimulationClock::time_point(tEpoch);
-    }
 }

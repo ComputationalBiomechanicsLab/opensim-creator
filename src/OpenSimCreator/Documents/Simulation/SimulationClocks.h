@@ -5,6 +5,7 @@
 #include <oscar/Maths/ClosedInterval.h>
 #include <oscar/Maths/Normalized.h>
 #include <oscar/Utils/Algorithms.h>
+#include <oscar/Utils/ChronoHelpers.h>
 
 namespace osc
 {

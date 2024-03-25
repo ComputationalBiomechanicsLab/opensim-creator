@@ -360,6 +360,7 @@ add_library(oscar STATIC
     Utils/Algorithms.h
     Utils/Assertions.cpp
     Utils/Assertions.h
+    Utils/ChronoHelpers.h
     Utils/CircularBuffer.h
     Utils/ClonePtr.h
     Utils/Concepts.h

@@ -2,6 +2,7 @@
 
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
+#include <oscar/Utils/ChronoHelpers.h>
 #include <oscar/Utils/CircularBuffer.h>
 #include <oscar/Utils/ClonePtr.h>
 #include <oscar/Utils/Concepts.h>
