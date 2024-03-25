@@ -148,12 +148,11 @@ bool osc::IntegratorOutputExtractor::implEquals(IOutputExtractor const& other) c
 void osc::IntegratorOutputExtractor::implExtractFloats(
     OpenSim::Component const&,
     std::span<SimulationReport const> reports,
-    std::span<float> out) const
+    std::function<void(float)> const& consumer) const
 {
-    OSC_ASSERT_ALWAYS(reports.size() == out.size());
     for (size_t i = 0; i < reports.size(); ++i)
     {
-        out[i] = reports[i].getAuxiliaryValue(m_AuxiliaryDataID).value_or(quiet_nan_v<float>);
+        consumer(reports[i].getAuxiliaryValue(m_AuxiliaryDataID).value_or(quiet_nan_v<float>));
     }
 }
 

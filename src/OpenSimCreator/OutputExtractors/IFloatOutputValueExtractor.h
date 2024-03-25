@@ -2,6 +2,7 @@
 
 #include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
 
+#include <functional>
 #include <span>
 
 namespace OpenSim { class Component; }
@@ -22,16 +23,16 @@ namespace osc
         void extractFloats(
             OpenSim::Component const& component,
             std::span<SimulationReport const> reports,
-            std::span<float> overwriteOut) const
+            std::function<void(float)> const& consumer) const
         {
-            implExtractFloats(component, reports, overwriteOut);
+            implExtractFloats(component, reports, consumer);
         }
 
     private:
         virtual void implExtractFloats(
             OpenSim::Component const&,
             std::span<SimulationReport const>,
-            std::span<float> overwriteOut
+            std::function<void(float)> const& consumer
         ) const = 0;
     };
 }

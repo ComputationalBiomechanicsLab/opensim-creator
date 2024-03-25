@@ -6,8 +6,10 @@
 #include <oscar/Utils/CStringView.h>
 
 #include <cstddef>
+#include <functional>
 #include <span>
 #include <string>
+#include <vector>
 
 namespace OpenSim { class Component; }
 namespace osc { class IOutputValueExtractorVisitor; }
@@ -43,7 +45,12 @@ namespace osc
         void getValuesFloat(
             OpenSim::Component const&,
             std::span<SimulationReport const>,
-            std::span<float> overwriteOut
+            std::function<void(float)> const& consumer
+        ) const;
+
+        std::vector<float> slurpValuesFloat(
+            OpenSim::Component const&,
+            std::span<SimulationReport const>
         ) const;
 
         Vec2 getValueVec2(
@@ -54,7 +61,12 @@ namespace osc
         void getValuesVec2(
             OpenSim::Component const&,
             std::span<SimulationReport const>,
-            std::span<Vec2> overwriteOut
+            std::function<void(Vec2)> const& consumer
+        ) const;
+
+        std::vector<Vec2> slurpValuesVec2(
+            OpenSim::Component const&,
+            std::span<SimulationReport const>
         ) const;
 
         std::string getValueString(

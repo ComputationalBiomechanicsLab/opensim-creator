@@ -4,6 +4,7 @@
 
 #include <oscar/Maths/Vec2.h>
 
+#include <functional>
 #include <span>
 
 namespace OpenSim { class Component; }
@@ -24,16 +25,16 @@ namespace osc
         void extractVec2s(
             OpenSim::Component const& component,
             std::span<SimulationReport const> reports,
-            std::span<Vec2> overwriteOut) const
+            std::function<void(Vec2)> const& consumer) const
         {
-            implExtractFloats(component, reports, overwriteOut);
+            implExtractFloats(component, reports, consumer);
         }
 
     private:
         virtual void implExtractFloats(
             OpenSim::Component const&,
             std::span<SimulationReport const>,
-            std::span<Vec2> overwriteOut
+            std::function<void(Vec2)> const& consumer
         ) const = 0;
     };
 }

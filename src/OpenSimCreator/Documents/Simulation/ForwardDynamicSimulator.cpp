@@ -147,11 +147,10 @@ namespace
         void implExtractFloats(
             OpenSim::Component const&,
             std::span<SimulationReport const> reports,
-            std::span<float> overwriteOut) const final
+            std::function<void(float)> const& consumer) const final
         {
-            for (size_t i = 0; i < reports.size(); ++i)
-            {
-                overwriteOut[i] = reports[i].getAuxiliaryValue(m_UID).value_or(-1337.0f);
+            for (size_t i = 0; i < reports.size(); ++i) {
+                consumer(reports[i].getAuxiliaryValue(m_UID).value_or(-1337.0f));
             }
         }
 

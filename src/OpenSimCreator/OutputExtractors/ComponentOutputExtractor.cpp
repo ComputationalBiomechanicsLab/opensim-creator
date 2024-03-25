@@ -107,27 +107,27 @@ public:
     void implExtractFloats(
         OpenSim::Component const& c,
         std::span<SimulationReport const> reports,
-        std::span<float> out) const override
+        std::function<void(float)> const& consumer) const override
     {
         OSC_PERF("ComponentOutputExtractor::getValuesFloat");
-        OSC_ASSERT_ALWAYS(reports.size() == out.size());
 
         OpenSim::AbstractOutput const* const ao = FindOutput(c, m_ComponentAbsPath, m_OutputName);
 
-        if (!ao || typeid(*ao) != *m_OutputType || !m_ExtractorFunc)
-        {
-            // cannot find output
-            // or the type of the output changed
-            // or don't know how to extract a value from the output
-            fill(out, quiet_nan_v<float>);
+        if (!ao || typeid(*ao) != *m_OutputType || !m_ExtractorFunc) {
+            // - cannot find output
+            // - or the type of the output changed
+            // - or don't know how to extract a value from the output
+            //
+            // so fill the output with NaNs to increase the likeliness that we can spot the problem
+            // downstream
+            for (size_t i = 0; i < reports.size(); ++i) {
+                consumer(quiet_nan_v<float>);
+            }
             return;
         }
 
-        OSC_PERF("ComponentOutputExtractor::getValuesFloat");
-
-        for (size_t i = 0; i < reports.size(); ++i)
-        {
-            out[i] = static_cast<float>(m_ExtractorFunc(*ao, reports[i].getState()));
+        for (size_t i = 0; i < reports.size(); ++i) {
+            consumer(static_cast<float>(m_ExtractorFunc(*ao, reports[i].getState())));
         }
     }
 

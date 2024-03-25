@@ -102,8 +102,11 @@ namespace
         IOutputExtractor const& output)
     {
         std::vector<float> rv;
-        rv.resize(reports.size());
-        output.getValuesFloat(model, reports, rv);
+        rv.reserve(reports.size());
+        output.getValuesFloat(model, reports, [&rv](float v)
+        {
+            rv.push_back(v);
+        });
         return rv;
     }
 
@@ -316,9 +319,8 @@ private:
         std::vector<float> buf;
         {
             OSC_PERF("collect output data");
-            std::vector<SimulationReport> reports = sim.getAllSimulationReports();
-            buf.resize(reports.size());
-            m_OutputExtractor.getValuesFloat(*sim.getModel(), reports, buf);
+            std::vector<SimulationReport> const reports = sim.getAllSimulationReports();
+            buf = m_OutputExtractor.slurpValuesFloat(*sim.getModel(), reports);
         }
 
         // setup drawing area for drawing
@@ -451,8 +453,7 @@ private:
         {
             OSC_PERF("collect output data");
             std::vector<SimulationReport> reports = sim.getAllSimulationReports();
-            buf.resize(reports.size());
-            m_OutputExtractor.getValuesVec2(*sim.getModel(), reports, buf);
+            buf = m_OutputExtractor.slurpValuesVec2(*sim.getModel(), reports);
         }
 
         // setup drawing area for drawing

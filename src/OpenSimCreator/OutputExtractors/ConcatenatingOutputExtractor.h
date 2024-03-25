@@ -9,6 +9,7 @@
 #include <oscar/Utils/CStringView.h>
 
 #include <cstddef>
+#include <functional>
 #include <span>
 #include <string>
 
@@ -35,7 +36,7 @@ namespace osc
         void implExtractFloats(
             OpenSim::Component const&,
             std::span<SimulationReport const>,
-            std::span<Vec2> overwriteOut
+            std::function<void(Vec2)> const& consumer
         ) const override;
 
         std::string implExtractString(

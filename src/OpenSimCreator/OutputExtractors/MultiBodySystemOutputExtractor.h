@@ -8,6 +8,7 @@
 #include <oscar/Utils/UID.h>
 
 #include <cstddef>
+#include <functional>
 #include <span>
 #include <string>
 #include <string_view>
@@ -51,7 +52,7 @@ namespace osc
         void implExtractFloats(
             OpenSim::Component const&,
             std::span<SimulationReport const>,
-            std::span<float> overwriteOut
+            std::function<void(float)> const& consumer
         ) const final;
 
     private:

@@ -93,27 +93,37 @@ bool osc::ConcatenatingOutputExtractor::implEquals(IOutputExtractor const& other
 void osc::ConcatenatingOutputExtractor::implExtractFloats(
     OpenSim::Component const& component,
     std::span<SimulationReport const> reports,
-    std::span<Vec2> overwriteOut) const
+    std::function<void(Vec2)> const& consumer) const
 {
     if (m_OutputType != OutputExtractorDataType::Vec2) {
         return;  // invalid method call
     }
 
-    OSC_ASSERT(reports.size() == overwriteOut.size());
+    // TODO: we can't lazily evaluate each Vec2 with this architecture because there's no
+    //       cheap way of pausing each output extractor (i.e. coroutines), and it is probably
+    //       more expensive to extract using the one-value-at-a-time API
+    //
+    //       so, unfortunately, we have to allocate here, so that each substep has something to
+    //       write to
 
-    // TODO: these allocations are entirely because the IOutputExtractor API design
-    //       currently requires a contiguous output, and there's no easy way to use
-    //       the span without some godawful amount of shuffling floats around
+    std::vector<Vec2> values;
+    values.reserve(reports.size());
 
-    std::vector<float> firstOut(overwriteOut.size(), quiet_nan_v<float>);
-    std::vector<float> secondOut(overwriteOut.size(), quiet_nan_v<float>);
+    // collect `x`es
+    m_First.getValuesFloat(component, reports, [&values](float v) mutable
+    {
+        values.emplace_back(v, quiet_nan_v<float>);
+    });
 
-    m_First.getValuesFloat(component, reports, firstOut);
-    m_Second.getValuesFloat(component, reports, secondOut);
+    // collect `y`s
+    m_Second.getValuesFloat(component, reports, [&values, i = 0](float v) mutable
+    {
+        values.at(i++).y = v;
+    });
 
-    for (size_t i = 0; i < overwriteOut.size(); ++i) {
-        overwriteOut[i].x = firstOut[i];
-        overwriteOut[i].y = secondOut[i];
+    // push to caller
+    for (Vec2 value : values) {
+        consumer(value);
     }
 }
 

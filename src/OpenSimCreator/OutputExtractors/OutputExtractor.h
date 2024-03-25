@@ -6,12 +6,13 @@
 #include <oscar/Utils/CStringView.h>
 
 #include <cstddef>
+#include <functional>
 #include <iosfwd>
 #include <memory>
 #include <span>
 #include <string>
 #include <utility>
-
+#include <vector>
 
 namespace OpenSim { class Component; }
 
@@ -40,9 +41,16 @@ namespace osc
         void getValuesFloat(
             OpenSim::Component const& component,
             std::span<SimulationReport const> reports,
-            std::span<float> overwriteOut) const
+            std::function<void(float)> const& consumer) const
         {
-            m_Output->getValuesFloat(component, reports, overwriteOut);
+            m_Output->getValuesFloat(component, reports, consumer);
+        }
+
+        std::vector<float> slurpValuesFloat(
+            OpenSim::Component const& component,
+            std::span<SimulationReport const> reports) const
+        {
+            return m_Output->slurpValuesFloat(component, reports);
         }
 
         Vec2 getValueVec2(
@@ -55,9 +63,16 @@ namespace osc
         void getValuesVec2(
             OpenSim::Component const& component,
             std::span<SimulationReport const> report,
-            std::span<Vec2> overwriteOut) const
+            std::function<void(Vec2)> const& consumer) const
         {
-            m_Output->getValuesVec2(component, report, overwriteOut);
+            m_Output->getValuesVec2(component, report, consumer);
+        }
+
+        std::vector<Vec2> slurpValuesVec2(
+            OpenSim::Component const& component,
+            std::span<SimulationReport const> report) const
+        {
+            return m_Output->slurpValuesVec2(component, report);
         }
 
         std::string getValueString(OpenSim::Component const& component, SimulationReport const& report) const
