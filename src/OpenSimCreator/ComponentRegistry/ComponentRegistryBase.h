@@ -47,6 +47,7 @@ namespace osc
         std::vector<ComponentRegistryEntryBase> m_Entries;
     };
 
+    std::optional<size_t> IndexOf(ComponentRegistryBase const&, std::string_view componentClassName);
     std::optional<size_t> IndexOf(ComponentRegistryBase const&, OpenSim::Component const&);
 
     template<typename T>

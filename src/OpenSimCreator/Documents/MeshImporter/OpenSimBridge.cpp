@@ -237,8 +237,7 @@ namespace
         constexpr auto c_TranslationNames = std::to_array({"_tx", "_ty", "_tz"});
         constexpr auto c_RotationNames = std::to_array({"_rx", "_ry", "_rz"});
 
-        auto const& registry = GetComponentRegistry<OpenSim::Joint>();
-        JointDegreesOfFreedom const dofs = GetDegreesOfFreedom(Get(registry, joint).prototype());
+        JointDegreesOfFreedom const dofs = GetDegreesOfFreedom(joint);
 
         // translations
         for (int i = 0; i < 3; ++i)
@@ -303,7 +302,7 @@ namespace
         childPOF->set_orientation(ToSimTKVec3(extract_eulers_xyz(toChildPofInChild)));
 
         // create a relevant OpenSim::Joint (based on the type index, e.g. could be a FreeJoint)
-        auto jointUniqPtr = At(GetComponentRegistry<OpenSim::Joint>(), joint.getJointTypeIndex()).instantiate();
+        auto jointUniqPtr = Get(GetComponentRegistry<OpenSim::Joint>(), joint.getSpecificTypeName()).instantiate();
 
         // set its name
         std::string const jointName = CalcJointName(joint, *parent.physicalFrame, *child.physicalFrame);
@@ -500,16 +499,6 @@ namespace
                 continue;
             }
 
-            auto const maybeType = IndexOf(GetComponentRegistry<OpenSim::Joint>(), j);
-            if (!maybeType)
-            {
-                // joint has a type the mesh importer doesn't support
-                continue;
-            }
-
-            size_t const type = maybeType.value();
-            std::string const name = j.getName();
-
             UID parent = MIIDs::Empty();
             if (dynamic_cast<OpenSim::Ground const*>(parentBodyOrGround))
             {
@@ -549,7 +538,7 @@ namespace
 
             Transform const xform = decompose_to_transform(parentFrame.getTransformInGround(st));
 
-            auto& jointEl = rv.emplace<Joint>(UID{}, type, name, parent, child, xform);
+            auto& jointEl = rv.emplace<Joint>(UID{}, j.getConcreteClassName(), j.getName(), parent, child, xform);
             jointLookup.emplace(&j, jointEl.getID());
         }
 
@@ -754,9 +743,11 @@ std::unique_ptr<OpenSim::Model> osc::mi::CreateOpenSimModelFromMeshImporterDocum
 Vec3 osc::mi::GetJointAxisLengths(Joint const& joint)
 {
     auto const& registry = GetComponentRegistry<OpenSim::Joint>();
-    JointDegreesOfFreedom const dofs = joint.getJointTypeIndex() < registry.size() ?
-        GetDegreesOfFreedom(registry[joint.getJointTypeIndex()].prototype()) :
-        JointDegreesOfFreedom{};
+
+    JointDegreesOfFreedom dofs{};
+    if (auto const idx = IndexOf(registry, joint.getSpecificTypeName())) {
+        dofs = GetDegreesOfFreedom(registry[*idx].prototype());
+    }
 
     Vec3 rv{};
     for (int i = 0; i < 3; ++i)

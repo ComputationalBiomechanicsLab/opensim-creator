@@ -1,7 +1,5 @@
 #include "Joint.h"
 
-#include <OpenSimCreator/ComponentRegistry/ComponentRegistry.h>
-#include <OpenSimCreator/ComponentRegistry/StaticComponentRegistries.h>
 #include <OpenSimCreator/Documents/MeshImporter/CrossrefDescriptor.h>
 #include <OpenSimCreator/Documents/MeshImporter/CrossrefDirection.h>
 #include <OpenSimCreator/Documents/MeshImporter/MIStrings.h>
@@ -24,20 +22,19 @@ using osc::CStringView;
 
 osc::mi::Joint::Joint(
     UID id,
-    size_t jointTypeIdx,
+    std::string const& jointTypeName,
     std::string const& userAssignedName,  // can be empty
     UID parent,
     UID child,
     Transform const& xform) :
 
     m_ID{id},
-    m_JointTypeIndex{jointTypeIdx},
+    m_JointTypeName{jointTypeName},
     m_UserAssignedName{SanitizeToOpenSimComponentName(userAssignedName)},
     m_Parent{parent},
     m_Child{child},
     m_Xform{xform}
-{
-}
+{}
 
 MIClass osc::mi::Joint::CreateClass()
 {
@@ -60,15 +57,10 @@ std::vector<CrossrefDescriptor> osc::mi::Joint::implGetCrossReferences() const
     };
 }
 
-CStringView osc::mi::Joint::getSpecificTypeName() const
-{
-    return At(GetComponentRegistry<OpenSim::Joint>(), m_JointTypeIndex).name();
-}
-
 std::ostream& osc::mi::Joint::implWriteToStream(std::ostream& o) const
 {
     return o << "Joint(ID = " << m_ID
-        << ", JointTypeIndex = " << m_JointTypeIndex
+        << ", JointTypeName = " << m_JointTypeName
         << ", UserAssignedName = " << m_UserAssignedName
         << ", Parent = " << m_Parent
         << ", Child = " << m_Child

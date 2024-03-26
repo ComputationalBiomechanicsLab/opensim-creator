@@ -24,14 +24,22 @@ namespace osc::mi
     public:
         Joint(
             UID id,
-            size_t jointTypeIdx,
+            std::string const& jointTypeName,
             std::string const& userAssignedName,  // can be empty
             UID parent,
             UID child,
             Transform const& xform
         );
 
-        CStringView getSpecificTypeName() const;
+        CStringView getSpecificTypeName() const
+        {
+            return m_JointTypeName;
+        }
+
+        void setSpecificTypeName(std::string_view newName)
+        {
+            m_JointTypeName = newName;
+        }
 
         UID getParentID() const
         {
@@ -46,16 +54,6 @@ namespace osc::mi
         CStringView getUserAssignedName() const
         {
             return m_UserAssignedName;
-        }
-
-        size_t getJointTypeIndex() const
-        {
-            return m_JointTypeIndex;
-        }
-
-        void setJointTypeIndex(size_t i)
-        {
-            m_JointTypeIndex = i;
         }
 
         Transform getXForm() const
@@ -124,7 +122,7 @@ namespace osc::mi
         }
 
         UID m_ID;
-        size_t m_JointTypeIndex;
+        std::string m_JointTypeName;
         std::string m_UserAssignedName;
         UID m_Parent;  // can be ground
         UID m_Child;

@@ -76,4 +76,15 @@ namespace osc
             throw std::out_of_range{"attempted to get an element from the registry that does not exist"};
         }
     }
+
+    template<typename T>
+    ComponentRegistryEntry<T> const& Get(ComponentRegistry<T> const& registry, std::string_view componentClassName)
+    {
+        if (auto i = IndexOf(registry, componentClassName)) {
+            return registry[*i];
+        }
+        else {
+            throw std::out_of_range{"attempted to get an element from a component registry that does not exist"};
+        }
+    }
 }

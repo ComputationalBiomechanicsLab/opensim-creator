@@ -1,7 +1,5 @@
 #include "UndoableActions.h"
 
-#include <OpenSimCreator/ComponentRegistry/ComponentRegistry.h>
-#include <OpenSimCreator/ComponentRegistry/StaticComponentRegistries.h>
 #include <OpenSimCreator/Documents/MeshImporter/Body.h>
 #include <OpenSimCreator/Documents/MeshImporter/Document.h>
 #include <OpenSimCreator/Documents/MeshImporter/DocumentHelpers.h>
@@ -82,14 +80,13 @@ bool osc::mi::TryCreateJoint(
 {
     Document& doc = udoc.updScratch();
 
-    size_t const jointTypeIdx = *IndexOf<OpenSim::WeldJoint>(GetComponentRegistry<OpenSim::Joint>());
     Vec3 const parentPos = doc.getPosByID(parentID);
     Vec3 const childPos = doc.getPosByID(childID);
     Vec3 const midPoint = midpoint(parentPos, childPos);
 
     auto const& joint = doc.emplace<Joint>(
         UID{},
-        jointTypeIdx,
+        "WeldJoint",
         std::string{},
         parentID,
         childID,

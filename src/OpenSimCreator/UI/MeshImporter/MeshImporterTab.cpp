@@ -1318,14 +1318,14 @@ private:
     // draw the "Joint Type" editor for a `JointEl`
     void drawJointTypeEditor(Joint const& jointEl)
     {
-        size_t currentIdx = jointEl.getJointTypeIndex();
-        auto const& registry = GetComponentRegistry<OpenSim::Joint>();
-        auto const nameAccessor = [&registry](size_t i) { return registry[i].name(); };
-
-        if (ui::Combo("Joint Type", &currentIdx, registry.size(), nameAccessor))
-        {
-            m_Shared->updModelGraph().updByID<Joint>(jointEl.getID()).setJointTypeIndex(currentIdx);
-            m_Shared->commitCurrentModelGraph("changed joint type");
+        if (ui::BeginCombo("Joint Type", jointEl.getSpecificTypeName())) {
+            for (auto const& joint : GetComponentRegistry<OpenSim::Joint>()) {
+                if (ui::Selectable(joint.name(), joint.name() == jointEl.getSpecificTypeName())) {
+                    m_Shared->updModelGraph().updByID<Joint>(jointEl.getID()).setSpecificTypeName(joint.name());
+                    m_Shared->commitCurrentModelGraph("changed joint type");
+                }
+            }
+            ui::EndCombo();
         }
         ui::SameLine();
         ui::DrawHelpMarker("Joint Type", "This is the type of joint that should be added into the OpenSim model. The joint's type dictates what types of motion are permitted around the joint center. See the official OpenSim documentation for an explanation of each joint type.");
