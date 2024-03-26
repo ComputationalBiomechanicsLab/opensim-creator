@@ -50,6 +50,9 @@ namespace osc
         // returns `true` if the model has a known on-disk location
         bool hasFilesystemLocation() const;
 
+        // returns a string representation of the recommended document's name
+        std::string recommendedDocumentName() const;
+
         // returns the full filesystem path of the model's on-disk location, if applicable
         //
         // returns an empty path if the model has not been saved to disk

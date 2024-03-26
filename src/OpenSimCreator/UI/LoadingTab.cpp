@@ -26,6 +26,14 @@
 
 using namespace osc;
 
+namespace
+{
+    std::unique_ptr<UndoableModelStatePair> LoadOsimIntoUndoableModel(std::filesystem::path p)
+    {
+        return std::make_unique<UndoableModelStatePair>(p);
+    }
+}
+
 class osc::LoadingTab::Impl final {
 public:
 

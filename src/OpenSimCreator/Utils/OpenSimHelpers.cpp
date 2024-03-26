@@ -1,6 +1,5 @@
 #include "OpenSimHelpers.h"
 
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
 #include <OpenSimCreator/Utils/SimTKHelpers.h>
 
 #include <OpenSim/Common/Array.h>
@@ -48,8 +47,6 @@
 #include <OpenSim/Simulation/Wrap/PathWrapPoint.h>
 #include <OpenSim/Simulation/Wrap/WrapObject.h>
 #include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
-#include <oscar/Graphics/Scene/SceneCache.h>
-#include <oscar/Graphics/Scene/SceneDecoration.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Plane.h>
 #include <oscar/Maths/Transform.h>
@@ -1045,11 +1042,6 @@ std::vector<OpenSim::WrapObject const*> osc::GetAllWrapObjectsReferencedBy(OpenS
     return rv;
 }
 
-std::unique_ptr<UndoableModelStatePair> osc::LoadOsimIntoUndoableModel(std::filesystem::path const& p)
-{
-    return std::make_unique<UndoableModelStatePair>(p);
-}
-
 void osc::InitializeModel(OpenSim::Model& model)
 {
     OSC_PERF("osc::InitializeModel");
@@ -1098,18 +1090,6 @@ std::optional<size_t> osc::FindJointInParentJointSet(OpenSim::Joint const& joint
         }
     }
     return std::nullopt;
-}
-
-std::string osc::GetRecommendedDocumentName(osc::UndoableModelStatePair const& uim)
-{
-    if (uim.hasFilesystemLocation())
-    {
-        return uim.getFilesystemPath().filename().string();
-    }
-    else
-    {
-        return "untitled.osim";
-    }
 }
 
 std::string osc::GetDisplayName(OpenSim::Geometry const& g)

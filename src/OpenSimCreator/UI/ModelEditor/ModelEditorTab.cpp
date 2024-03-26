@@ -312,7 +312,7 @@ private:
     {
         std::stringstream ss;
         ss << ICON_FA_EDIT << " ";
-        ss << GetRecommendedDocumentName(*m_Model);
+        ss << m_Model->recommendedDocumentName();
         return std::move(ss).str();
     }
 

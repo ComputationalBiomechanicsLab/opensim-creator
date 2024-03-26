@@ -221,6 +221,18 @@ public:
         return !getFilesystemLocation().empty();
     }
 
+    std::string recommendedDocumentName() const
+    {
+        if (hasFilesystemLocation())
+        {
+            return getFilesystemPath().filename().string();
+        }
+        else
+        {
+            return "untitled.osim";
+        }
+    }
+
     std::filesystem::path const& getFilesystemPath() const
     {
         return getFilesystemLocation();
@@ -723,6 +735,11 @@ osc::UndoableModelStatePair::~UndoableModelStatePair() noexcept = default;
 bool osc::UndoableModelStatePair::hasFilesystemLocation() const
 {
     return m_Impl->hasFilesystemLocation();
+}
+
+std::string osc::UndoableModelStatePair::recommendedDocumentName() const
+{
+    return m_Impl->recommendedDocumentName();
 }
 
 std::filesystem::path const& osc::UndoableModelStatePair::getFilesystemPath() const

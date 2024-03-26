@@ -3,7 +3,7 @@
 OpenSim Creator is split into several independent components. The intent of
 each is:
 
-| Component | Description |
+| Directory | Description |
 | - | - |
 | `OpenSimCreator/` | Implements the OpenSim Creator UI by integrating [OpenSim](https://github.com/opensim-org/opensim-core) against `oscar` |
 | `oscar/` | OpenSim-independent framework for creating scientific tooling UIs |

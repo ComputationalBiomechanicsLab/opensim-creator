@@ -51,7 +51,6 @@ namespace OpenSim { class PhysicalOffsetFrame; }
 namespace OpenSim { template<typename, typename> class Set; }
 namespace OpenSim { template<typename> class SimpleProperty; }
 namespace OpenSim { class WrapObject; }
-namespace osc { class UndoableModelStatePair; }
 namespace SimTK { class State; }
 
 // OpenSimHelpers: a collection of various helper functions that are used by `osc`
@@ -532,9 +531,6 @@ namespace osc
     // returns pointers to all wrap objects that are referenced by the given `GeometryPath`
     std::vector<OpenSim::WrapObject const*> GetAllWrapObjectsReferencedBy(OpenSim::GeometryPath const&);
 
-    // load an .osim file into an OpenSim model
-    std::unique_ptr<UndoableModelStatePair> LoadOsimIntoUndoableModel(std::filesystem::path const&);
-
     // fully initialize an OpenSim model (clear connections, finalize properties, remake SimTK::System)
     void InitializeModel(OpenSim::Model&);
 
@@ -558,9 +554,6 @@ namespace osc
 
     // returns optional{index} if joint is found in parent jointset (otherwise: std::nullopt)
     std::optional<size_t> FindJointInParentJointSet(OpenSim::Joint const&);
-
-    // returns a string representation of the recommended document's name
-    std::string GetRecommendedDocumentName(UndoableModelStatePair const&);
 
     // returns user-visible (basic) name of geometry, or underlying file name
     std::string GetDisplayName(OpenSim::Geometry const&);
