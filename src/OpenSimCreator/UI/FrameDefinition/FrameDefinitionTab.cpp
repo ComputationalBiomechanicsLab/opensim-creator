@@ -1,11 +1,11 @@
 #include "FrameDefinitionTab.h"
 
-#include <OpenSimCreator/Documents/FrameDefinition/CrossProductEdge.h>
-#include <OpenSimCreator/Documents/FrameDefinition/Edge.h>
+#include <OpenSimCreator/Documents/CustomComponents/CrossProductEdge.h>
+#include <OpenSimCreator/Documents/CustomComponents/Edge.h>
+#include <OpenSimCreator/Documents/CustomComponents/MidpointLandmark.h>
+#include <OpenSimCreator/Documents/CustomComponents/PointToPointEdge.h>
 #include <OpenSimCreator/Documents/FrameDefinition/FrameDefinitionActions.h>
 #include <OpenSimCreator/Documents/FrameDefinition/FrameDefinitionHelpers.h>
-#include <OpenSimCreator/Documents/FrameDefinition/MidpointLandmark.h>
-#include <OpenSimCreator/Documents/FrameDefinition/PointToPointEdge.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
 #include <OpenSimCreator/UI/FrameDefinition/FrameDefinitionTabToolbar.h>

@@ -1,10 +1,10 @@
 #include "OpenSimCreatorApp.h"
 
 #include <OpenSimCreator/OpenSimCreatorConfig.h>
-#include <OpenSimCreator/Documents/FrameDefinition/CrossProductEdge.h>
-#include <OpenSimCreator/Documents/FrameDefinition/MidpointLandmark.h>
-#include <OpenSimCreator/Documents/FrameDefinition/PointToPointEdge.h>
-#include <OpenSimCreator/Documents/FrameDefinition/SphereLandmark.h>
+#include <OpenSimCreator/Documents/CustomComponents/CrossProductEdge.h>
+#include <OpenSimCreator/Documents/CustomComponents/MidpointLandmark.h>
+#include <OpenSimCreator/Documents/CustomComponents/PointToPointEdge.h>
+#include <OpenSimCreator/Documents/CustomComponents/SphereLandmark.h>
 #include <OpenSimCreator/UI/OpenSimCreatorTabRegistry.h>
 
 #include <OpenSim/Actuators/RegisterTypes_osimActuators.h>

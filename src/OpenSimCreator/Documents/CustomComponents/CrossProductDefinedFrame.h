@@ -1,6 +1,6 @@
 #pragma once
 
-#include <OpenSimCreator/Documents/FrameDefinition/Edge.h>
+#include <OpenSimCreator/Documents/CustomComponents/Edge.h>
 
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/Point.h>

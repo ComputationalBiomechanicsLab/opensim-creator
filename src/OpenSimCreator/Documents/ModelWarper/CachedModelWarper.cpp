@@ -5,8 +5,8 @@
 
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSimCreator/Documents/CustomComponents/InMemoryMesh.h>
 #include <OpenSimCreator/Documents/Model/BasicModelStatePair.h>
-#include <OpenSimCreator/Documents/ModelWarper/InMemoryMesh.h>
 #include <OpenSimCreator/Documents/ModelWarper/ModelWarpDocument.h>
 #include <OpenSimCreator/Utils/SimTKHelpers.h>
 #include <oscar/Platform/Log.h>

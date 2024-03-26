@@ -1,6 +1,6 @@
 #include "FrameDefinitionHelpers.h"
 
-#include <OpenSimCreator/Documents/FrameDefinition/Edge.h>
+#include <OpenSimCreator/Documents/CustomComponents/Edge.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
 #include <OpenSimCreator/Graphics/ModelRendererParams.h>
 #include <OpenSimCreator/Utils/SimTKHelpers.h>

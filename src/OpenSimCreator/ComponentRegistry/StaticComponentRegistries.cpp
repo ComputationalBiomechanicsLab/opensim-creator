@@ -1,11 +1,11 @@
 #include "StaticComponentRegistries.h"
 
 #include <OpenSimCreator/ComponentRegistry/ComponentRegistry.h>
-#include <OpenSimCreator/Documents/FrameDefinition/CrossProductEdge.h>
-#include <OpenSimCreator/Documents/FrameDefinition/MidpointLandmark.h>
-#include <OpenSimCreator/Documents/FrameDefinition/PointToPointEdge.h>
-#include <OpenSimCreator/Documents/FrameDefinition/SphereLandmark.h>
-#include <OpenSimCreator/Documents/ModelWarper/InMemoryMesh.h>
+#include <OpenSimCreator/Documents/CustomComponents/CrossProductEdge.h>
+#include <OpenSimCreator/Documents/CustomComponents/InMemoryMesh.h>
+#include <OpenSimCreator/Documents/CustomComponents/MidpointLandmark.h>
+#include <OpenSimCreator/Documents/CustomComponents/PointToPointEdge.h>
+#include <OpenSimCreator/Documents/CustomComponents/SphereLandmark.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Actuators/ActivationCoordinateActuator.h>

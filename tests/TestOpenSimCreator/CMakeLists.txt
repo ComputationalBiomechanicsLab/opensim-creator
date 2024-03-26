@@ -4,13 +4,13 @@ find_package(GTest REQUIRED CONFIG)
 add_executable(TestOpenSimCreator
 
     ComponentRegistry/TestStaticComponentRegistries.cpp
+    Documents/CustomComponents/TestInMemoryMesh.cpp
     Documents/Landmarks/TestLandmarkHelpers.cpp
     Documents/Model/TestBasicModelStatePair.cpp
     Documents/Model/TestUndoableModelActions.cpp
     Documents/Model/TestUndoableModelStatePair.cpp
     Documents/ModelWarper/TestCachedModelWarper.cpp
     Documents/ModelWarper/TestFrameWarperFactories.cpp
-    Documents/ModelWarper/TestInMemoryMesh.cpp
     Documents/ModelWarper/TestModelWarpDocument.cpp
     Documents/ModelWarper/TestPointWarperFactories.cpp
     Documents/Simulation/TestForwardDynamicSimulation.cpp

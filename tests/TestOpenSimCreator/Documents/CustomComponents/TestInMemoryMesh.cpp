@@ -1,4 +1,4 @@
-#include <OpenSimCreator/Documents/ModelWarper/InMemoryMesh.h>
+#include <OpenSimCreator/Documents/CustomComponents/InMemoryMesh.h>
 
 #include <gtest/gtest.h>
 #include <OpenSim/Simulation/Model/Model.h>

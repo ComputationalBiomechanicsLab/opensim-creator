@@ -11,23 +11,27 @@ add_library(OpenSimCreator STATIC
     ComponentRegistry/StaticComponentRegistries.cpp
     ComponentRegistry/StaticComponentRegistries.h
 
-    Documents/FrameDefinition/CrossProductDefinedFrame.cpp
-    Documents/FrameDefinition/CrossProductDefinedFrame.h
-    Documents/FrameDefinition/CrossProductEdge.cpp
-    Documents/FrameDefinition/CrossProductEdge.h
-    Documents/FrameDefinition/Edge.cpp
-    Documents/FrameDefinition/Edge.h
-    Documents/FrameDefinition/EdgePoints.h
+    Documents/CustomComponents/CrossProductDefinedFrame.cpp
+    Documents/CustomComponents/CrossProductDefinedFrame.h
+    Documents/CustomComponents/CrossProductEdge.cpp
+    Documents/CustomComponents/CrossProductEdge.h
+    Documents/CustomComponents/Edge.cpp
+    Documents/CustomComponents/Edge.h
+    Documents/CustomComponents/EdgePoints.h
+    Documents/CustomComponents/ICustomDecorationGenerator.h
+    Documents/CustomComponents/InMemoryMesh.cpp
+    Documents/CustomComponents/InMemoryMesh.h
+    Documents/CustomComponents/MidpointLandmark.cpp
+    Documents/CustomComponents/MidpointLandmark.h
+    Documents/CustomComponents/PointToPointEdge.cpp
+    Documents/CustomComponents/PointToPointEdge.h
+    Documents/CustomComponents/SphereLandmark.cpp
+    Documents/CustomComponents/SphereLandmark.h
+
     Documents/FrameDefinition/FrameDefinitionActions.cpp
     Documents/FrameDefinition/FrameDefinitionActions.h
     Documents/FrameDefinition/FrameDefinitionHelpers.cpp
     Documents/FrameDefinition/FrameDefinitionHelpers.h
-    Documents/FrameDefinition/MidpointLandmark.cpp
-    Documents/FrameDefinition/MidpointLandmark.h
-    Documents/FrameDefinition/PointToPointEdge.cpp
-    Documents/FrameDefinition/PointToPointEdge.h
-    Documents/FrameDefinition/SphereLandmark.cpp
-    Documents/FrameDefinition/SphereLandmark.h
 
     Documents/Landmarks/Landmark.h
     Documents/Landmarks/LandmarkCSVFlags.h
@@ -109,8 +113,6 @@ add_library(OpenSimCreator STATIC
     Documents/ModelWarper/IdentityFrameWarperFactory.h
     Documents/ModelWarper/IFrameWarper.h
     Documents/ModelWarper/IFrameWarperFactory.h
-    Documents/ModelWarper/InMemoryMesh.cpp
-    Documents/ModelWarper/InMemoryMesh.h
     Documents/ModelWarper/IPointWarper.h
     Documents/ModelWarper/IPointWarperFactory.h
     Documents/ModelWarper/IValidateable.cpp
@@ -172,8 +174,6 @@ add_library(OpenSimCreator STATIC
     Documents/Simulation/SingleStateSimulation.h
     Documents/Simulation/StoFileSimulation.h
     Documents/Simulation/StoFileSimulation.cpp
-
-    Documents/ICustomDecorationGenerator.h
 
     Graphics/CachedModelRenderer.cpp
     Graphics/CachedModelRenderer.h

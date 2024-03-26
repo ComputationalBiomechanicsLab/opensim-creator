@@ -1,6 +1,6 @@
 #pragma once
 
-#include <OpenSimCreator/Documents/FrameDefinition/EdgePoints.h>
+#include <OpenSimCreator/Documents/CustomComponents/EdgePoints.h>
 
 #include <SimTKcommon/internal/DecorativeGeometry.h>
 #include <SimTKcommon/internal/Transform.h>

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <OpenSimCreator/Documents/FrameDefinition/Edge.h>
-#include <OpenSimCreator/Documents/FrameDefinition/EdgePoints.h>
+#include <OpenSimCreator/Documents/CustomComponents/Edge.h>
+#include <OpenSimCreator/Documents/CustomComponents/EdgePoints.h>
 
 #include <Simbody.h>  // TODO: OpenSim's Appearance header doesn't include simbody properly
 #include <OpenSim/Simulation/Model/Appearance.h>
