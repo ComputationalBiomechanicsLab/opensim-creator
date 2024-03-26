@@ -1,8 +1,8 @@
 #include "MainUIScreen.h"
 
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <OpenSimCreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <OpenSimCreator/Documents/Simulation/ForwardDynamicSimulatorParams.h>
-#include <OpenSimCreator/OutputExtractors/OutputExtractor.h>
 #include <OpenSimCreator/UI/IMainUIStateAPI.h>
 #include <OpenSimCreator/UI/LoadingTab.h>
 #include <OpenSimCreator/UI/SplashTab.h>

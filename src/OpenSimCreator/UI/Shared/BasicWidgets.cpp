@@ -3,6 +3,8 @@
 #include <OpenSimCreator/Documents/Model/IModelStatePair.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <OpenSimCreator/Documents/OutputExtractors/ComponentOutputExtractor.h>
+#include <OpenSimCreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <OpenSimCreator/Documents/Simulation/IntegratorMethod.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationModelStatePair.h>
 #include <OpenSimCreator/Graphics/CustomRenderingOptions.h>
@@ -11,8 +13,6 @@
 #include <OpenSimCreator/Graphics/MuscleSizingStyle.h>
 #include <OpenSimCreator/Graphics/OpenSimDecorationGenerator.h>
 #include <OpenSimCreator/Graphics/OpenSimDecorationOptions.h>
-#include <OpenSimCreator/OutputExtractors/ComponentOutputExtractor.h>
-#include <OpenSimCreator/OutputExtractors/OutputExtractor.h>
 #include <OpenSimCreator/Platform/RecentFile.h>
 #include <OpenSimCreator/Platform/RecentFiles.h>
 #include <OpenSimCreator/UI/IMainUIStateAPI.h>

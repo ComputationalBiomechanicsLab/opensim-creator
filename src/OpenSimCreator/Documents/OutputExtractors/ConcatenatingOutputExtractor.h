@@ -1,9 +1,9 @@
 #pragma once
 
-#include <OpenSimCreator/OutputExtractors/IOutputExtractor.h>
-#include <OpenSimCreator/OutputExtractors/OutputExtractor.h>
-#include <OpenSimCreator/OutputExtractors/OutputExtractorDataType.h>
-#include <OpenSimCreator/OutputExtractors/OutputValueExtractor.h>
+#include <OpenSimCreator/Documents/OutputExtractors/IOutputExtractor.h>
+#include <OpenSimCreator/Documents/OutputExtractors/OutputExtractor.h>
+#include <OpenSimCreator/Documents/OutputExtractors/OutputExtractorDataType.h>
+#include <OpenSimCreator/Documents/OutputExtractors/OutputValueExtractor.h>
 
 #include <oscar/Utils/CStringView.h>
 

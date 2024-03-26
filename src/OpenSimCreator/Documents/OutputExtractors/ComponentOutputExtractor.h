@@ -1,8 +1,8 @@
 #pragma once
 
-#include <OpenSimCreator/OutputExtractors/ComponentOutputSubfield.h>
-#include <OpenSimCreator/OutputExtractors/IOutputExtractor.h>
-#include <OpenSimCreator/OutputExtractors/OutputValueExtractor.h>
+#include <OpenSimCreator/Documents/OutputExtractors/ComponentOutputSubfield.h>
+#include <OpenSimCreator/Documents/OutputExtractors/IOutputExtractor.h>
+#include <OpenSimCreator/Documents/OutputExtractors/OutputValueExtractor.h>
 
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/ClonePtr.h>

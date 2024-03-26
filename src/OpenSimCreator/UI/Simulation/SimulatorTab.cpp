@@ -1,12 +1,12 @@
 #include "SimulatorTab.h"
 
+#include <OpenSimCreator/Documents/OutputExtractors/ComponentOutputExtractor.h>
+#include <OpenSimCreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <OpenSimCreator/Documents/Simulation/ISimulation.h>
 #include <OpenSimCreator/Documents/Simulation/Simulation.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationClock.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationModelStatePair.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
-#include <OpenSimCreator/OutputExtractors/ComponentOutputExtractor.h>
-#include <OpenSimCreator/OutputExtractors/OutputExtractor.h>
 #include <OpenSimCreator/UI/IMainUIStateAPI.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/UI/Shared/MainMenu.h>

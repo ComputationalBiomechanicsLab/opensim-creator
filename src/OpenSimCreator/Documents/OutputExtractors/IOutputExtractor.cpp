@@ -1,6 +1,6 @@
 #include "IOutputExtractor.h"
 
-#include <OpenSimCreator/OutputExtractors/OutputValueExtractor.h>
+#include <OpenSimCreator/Documents/OutputExtractors/OutputValueExtractor.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
 
 #include <oscar/Maths/Constants.h>

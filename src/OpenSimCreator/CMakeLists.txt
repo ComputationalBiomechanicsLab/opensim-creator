@@ -132,6 +132,23 @@ add_library(OpenSimCreator STATIC
     Documents/ModelWarper/WarpableOpenSimComponent.h
     Documents/ModelWarper/WarpDetail.h
 
+    Documents/OutputExtractors/ComponentOutputExtractor.cpp
+    Documents/OutputExtractors/ComponentOutputExtractor.h
+    Documents/OutputExtractors/ComponentOutputSubfield.cpp
+    Documents/OutputExtractors/ComponentOutputSubfield.h
+    Documents/OutputExtractors/ConcatenatingOutputExtractor.cpp
+    Documents/OutputExtractors/ConcatenatingOutputExtractor.h
+    Documents/OutputExtractors/IntegratorOutputExtractor.cpp
+    Documents/OutputExtractors/IntegratorOutputExtractor.h
+    Documents/OutputExtractors/IOutputExtractor.cpp
+    Documents/OutputExtractors/IOutputExtractor.h
+    Documents/OutputExtractors/MultiBodySystemOutputExtractor.cpp
+    Documents/OutputExtractors/MultiBodySystemOutputExtractor.h
+    Documents/OutputExtractors/OutputExtractor.cpp
+    Documents/OutputExtractors/OutputExtractor.h
+    Documents/OutputExtractors/OutputExtractorDataType.h
+    Documents/OutputExtractors/OutputValueExtractor.h
+
     Documents/Simulation/AuxiliaryValue.h
     Documents/Simulation/ForwardDynamicSimulation.cpp
     Documents/Simulation/ForwardDynamicSimulation.h
@@ -194,23 +211,6 @@ add_library(OpenSimCreator STATIC
     Graphics/SimTKDecorationGenerator.h
     Graphics/SimTKMeshLoader.cpp
     Graphics/SimTKMeshLoader.h
-
-    OutputExtractors/ComponentOutputExtractor.cpp
-    OutputExtractors/ComponentOutputExtractor.h
-    OutputExtractors/ComponentOutputSubfield.cpp
-    OutputExtractors/ComponentOutputSubfield.h
-    OutputExtractors/ConcatenatingOutputExtractor.cpp
-    OutputExtractors/ConcatenatingOutputExtractor.h
-    OutputExtractors/IntegratorOutputExtractor.cpp
-    OutputExtractors/IntegratorOutputExtractor.h
-    OutputExtractors/IOutputExtractor.cpp
-    OutputExtractors/IOutputExtractor.h
-    OutputExtractors/MultiBodySystemOutputExtractor.cpp
-    OutputExtractors/MultiBodySystemOutputExtractor.h
-    OutputExtractors/OutputExtractor.cpp
-    OutputExtractors/OutputExtractor.h
-    OutputExtractors/OutputExtractorDataType.h
-    OutputExtractors/OutputValueExtractor.h
 
     Platform/OpenSimCreatorApp.cpp
     Platform/OpenSimCreatorApp.h

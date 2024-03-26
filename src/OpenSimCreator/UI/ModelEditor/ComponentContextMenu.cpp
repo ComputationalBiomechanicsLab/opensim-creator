@@ -4,8 +4,8 @@
 #include <OpenSimCreator/ComponentRegistry/StaticComponentRegistries.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
-#include <OpenSimCreator/OutputExtractors/ComponentOutputExtractor.h>
-#include <OpenSimCreator/OutputExtractors/OutputExtractor.h>
+#include <OpenSimCreator/Documents/OutputExtractors/ComponentOutputExtractor.h>
+#include <OpenSimCreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <OpenSimCreator/UI/ModelEditor/IEditorAPI.h>
 #include <OpenSimCreator/UI/ModelEditor/ModelActionsMenuItems.h>
 #include <OpenSimCreator/UI/ModelEditor/ReassignSocketPopup.h>

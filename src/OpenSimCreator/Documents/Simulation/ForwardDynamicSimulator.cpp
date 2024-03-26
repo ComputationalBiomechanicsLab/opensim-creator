@@ -1,14 +1,14 @@
 #include "ForwardDynamicSimulator.h"
 
 #include <OpenSimCreator/Documents/Model/BasicModelStatePair.h>
+#include <OpenSimCreator/Documents/OutputExtractors/IOutputExtractor.h>
+#include <OpenSimCreator/Documents/OutputExtractors/IntegratorOutputExtractor.h>
+#include <OpenSimCreator/Documents/OutputExtractors/MultiBodySystemOutputExtractor.h>
 #include <OpenSimCreator/Documents/Simulation/ForwardDynamicSimulatorParams.h>
 #include <OpenSimCreator/Documents/Simulation/IntegratorMethod.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationClock.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationStatus.h>
-#include <OpenSimCreator/OutputExtractors/IOutputExtractor.h>
-#include <OpenSimCreator/OutputExtractors/IntegratorOutputExtractor.h>
-#include <OpenSimCreator/OutputExtractors/MultiBodySystemOutputExtractor.h>
 
 #include <SimTKsimbody.h>
 #include <OpenSim/Common/Exception.h>

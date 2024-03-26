@@ -1,7 +1,7 @@
 #include "ComponentOutputExtractor.h"
 
-#include <OpenSimCreator/OutputExtractors/IOutputExtractor.h>
-#include <OpenSimCreator/OutputExtractors/OutputValueExtractor.h>
+#include <OpenSimCreator/Documents/OutputExtractors/IOutputExtractor.h>
+#include <OpenSimCreator/Documents/OutputExtractors/OutputValueExtractor.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 

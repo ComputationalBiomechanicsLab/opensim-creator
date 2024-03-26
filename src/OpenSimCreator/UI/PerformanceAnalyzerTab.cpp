@@ -1,12 +1,12 @@
 #include "PerformanceAnalyzerTab.h"
 
 #include <OpenSimCreator/Documents/Model/BasicModelStatePair.h>
+#include <OpenSimCreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <OpenSimCreator/Documents/Simulation/ForwardDynamicSimulation.h>
 #include <OpenSimCreator/Documents/Simulation/ForwardDynamicSimulator.h>
 #include <OpenSimCreator/Documents/Simulation/ForwardDynamicSimulatorParams.h>
 #include <OpenSimCreator/Documents/Simulation/IntegratorMethod.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationStatus.h>
-#include <OpenSimCreator/OutputExtractors/OutputExtractor.h>
 #include <OpenSimCreator/UI/Shared/ParamBlockEditorPopup.h>
 #include <OpenSimCreator/Utils/ParamBlock.h>
 #include <OpenSimCreator/Utils/ParamValue.h>

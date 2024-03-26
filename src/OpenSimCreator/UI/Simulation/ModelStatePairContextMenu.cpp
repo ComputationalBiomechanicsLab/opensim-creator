@@ -1,8 +1,8 @@
 #include "ModelStatePairContextMenu.h"
 
 #include <OpenSimCreator/Documents/Model/IModelStatePair.h>
-#include <OpenSimCreator/OutputExtractors/ComponentOutputExtractor.h>
-#include <OpenSimCreator/OutputExtractors/OutputExtractor.h>
+#include <OpenSimCreator/Documents/OutputExtractors/ComponentOutputExtractor.h>
+#include <OpenSimCreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <OpenSimCreator/UI/IMainUIStateAPI.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>

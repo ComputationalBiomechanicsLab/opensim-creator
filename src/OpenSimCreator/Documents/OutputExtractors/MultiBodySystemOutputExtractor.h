@@ -1,8 +1,8 @@
 #pragma once
 
-#include <OpenSimCreator/OutputExtractors/IOutputExtractor.h>
-#include <OpenSimCreator/OutputExtractors/OutputExtractor.h>
-#include <OpenSimCreator/OutputExtractors/OutputValueExtractor.h>
+#include <OpenSimCreator/Documents/OutputExtractors/IOutputExtractor.h>
+#include <OpenSimCreator/Documents/OutputExtractors/OutputExtractor.h>
+#include <OpenSimCreator/Documents/OutputExtractors/OutputValueExtractor.h>
 
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/UID.h>
@@ -12,16 +12,19 @@
 #include <string_view>
 
 namespace OpenSim { class Component; }
-namespace SimTK { class Integrator; }
+namespace SimTK { class MultibodySystem; }
 
 namespace osc
 {
-    // an output extractor that extracts integrator metadata (e.g. predicted step size)
-    class IntegratorOutputExtractor final : public IOutputExtractor {
+    // an output extractor that uses a free-function to extract a single value from
+    // a SimTK::MultiBodySystem
+    //
+    // handy for extracting simulation stats (e.g. num steps taken etc.)
+    class MultiBodySystemOutputExtractor final : public IOutputExtractor {
     public:
-        using ExtractorFn = float (*)(SimTK::Integrator const&);
+        using ExtractorFn = float (*)(SimTK::MultibodySystem const&);
 
-        IntegratorOutputExtractor(
+        MultiBodySystemOutputExtractor(
             std::string_view name,
             std::string_view description,
             ExtractorFn extractor) :
@@ -37,7 +40,7 @@ namespace osc
     private:
         CStringView implGetName() const final { return m_Name; }
         CStringView implGetDescription() const final { return m_Description; }
-        OutputExtractorDataType implGetOutputType() const override { return OutputExtractorDataType::Float; }
+        OutputExtractorDataType implGetOutputType() const final { return OutputExtractorDataType::Float; }
         OutputValueExtractor implGetOutputValueExtractor(OpenSim::Component const&) const final;
         size_t implGetHash() const final;
         bool implEquals(IOutputExtractor const&) const final;
@@ -48,7 +51,7 @@ namespace osc
         ExtractorFn m_Extractor;
     };
 
-    int GetNumIntegratorOutputExtractors();
-    IntegratorOutputExtractor const& GetIntegratorOutputExtractor(int idx);
-    OutputExtractor GetIntegratorOutputExtractorDynamic(int idx);
+    int GetNumMultiBodySystemOutputExtractors();
+    MultiBodySystemOutputExtractor const& GetMultiBodySystemOutputExtractor(int idx);
+    OutputExtractor GetMultiBodySystemOutputExtractorDynamic(int idx);
 }

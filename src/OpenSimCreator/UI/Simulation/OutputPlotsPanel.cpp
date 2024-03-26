@@ -1,6 +1,6 @@
 #include "OutputPlotsPanel.h"
 
-#include <OpenSimCreator/OutputExtractors/OutputExtractor.h>
+#include <OpenSimCreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <OpenSimCreator/UI/IMainUIStateAPI.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/UI/Simulation/ISimulatorUIAPI.h>

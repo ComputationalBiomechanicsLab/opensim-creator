@@ -1,13 +1,13 @@
 #include "SimulationOutputPlot.h"
 
+#include <OpenSimCreator/Documents/OutputExtractors/ComponentOutputExtractor.h>
+#include <OpenSimCreator/Documents/OutputExtractors/ComponentOutputSubfield.h>
+#include <OpenSimCreator/Documents/OutputExtractors/ConcatenatingOutputExtractor.h>
+#include <OpenSimCreator/Documents/OutputExtractors/IOutputExtractor.h>
+#include <OpenSimCreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <OpenSimCreator/Documents/Simulation/ISimulation.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationClock.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
-#include <OpenSimCreator/OutputExtractors/ComponentOutputExtractor.h>
-#include <OpenSimCreator/OutputExtractors/ComponentOutputSubfield.h>
-#include <OpenSimCreator/OutputExtractors/ConcatenatingOutputExtractor.h>
-#include <OpenSimCreator/OutputExtractors/IOutputExtractor.h>
-#include <OpenSimCreator/OutputExtractors/OutputExtractor.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/UI/Simulation/ISimulatorUIAPI.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>

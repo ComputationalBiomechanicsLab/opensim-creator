@@ -1,12 +1,12 @@
 #include "ForwardDynamicSimulation.h"
 
 #include <OpenSimCreator/Documents/Model/BasicModelStatePair.h>
+#include <OpenSimCreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <OpenSimCreator/Documents/Simulation/ForwardDynamicSimulator.h>
 #include <OpenSimCreator/Documents/Simulation/ForwardDynamicSimulatorParams.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationClock.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationStatus.h>
-#include <OpenSimCreator/OutputExtractors/OutputExtractor.h>
 #include <OpenSimCreator/Utils/ParamBlock.h>
 
 #include <OpenSim/Simulation/Model/Model.h>

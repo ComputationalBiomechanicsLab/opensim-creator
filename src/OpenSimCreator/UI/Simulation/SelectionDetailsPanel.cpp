@@ -1,7 +1,7 @@
 #include "SelectionDetailsPanel.h"
 
+#include <OpenSimCreator/Documents/OutputExtractors/ComponentOutputExtractor.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationModelStatePair.h>
-#include <OpenSimCreator/OutputExtractors/ComponentOutputExtractor.h>
 #include <OpenSimCreator/UI/Simulation/ComponentDetails.h>
 #include <OpenSimCreator/UI/Simulation/ISimulatorUIAPI.h>
 #include <OpenSimCreator/UI/Simulation/SimulationOutputPlot.h>

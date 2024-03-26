@@ -1,6 +1,6 @@
 #pragma once
 
-#include <OpenSimCreator/OutputExtractors/ComponentOutputSubfield.h>
+#include <OpenSimCreator/Documents/OutputExtractors/ComponentOutputSubfield.h>
 
 #include <oscar/Maths/AABB.h>
 #include <oscar/Maths/Vec2.h>
