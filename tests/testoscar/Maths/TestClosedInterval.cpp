@@ -8,15 +8,16 @@ using namespace osc;
 
 TEST(ClosedInterval, CanConstructForInts)
 {
-    ASSERT_NO_THROW({ ClosedInterval(0, 1); });
+    ASSERT_NO_THROW({ ClosedInterval<int>(0, 1); });
 }
 
 TEST(ClosedInterval, ReversingOrderIsAllowed)
 {
-    ASSERT_NO_THROW({ ClosedInterval(1, 0); });
+    ASSERT_NO_THROW({ ClosedInterval<int>(1, 0); });
 }
 
 TEST(ClosedInterval, TimestampsAreAllowed)
 {
-    ASSERT_NO_THROW({ ClosedInterval(std::chrono::system_clock::time_point{}, std::chrono::system_clock::time_point{} + std::chrono::seconds{1}); });
+    using TP = std::chrono::system_clock::time_point;
+    ASSERT_NO_THROW({ ClosedInterval<TP>(TP{}, TP{} + std::chrono::seconds{1}); });
 }
