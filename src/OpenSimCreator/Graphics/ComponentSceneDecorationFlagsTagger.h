@@ -7,6 +7,7 @@ namespace osc { struct SceneDecoration; }
 
 namespace osc
 {
+    // functor class that sets a decoration's flags based on selection logic
     class ComponentSceneDecorationFlagsTagger final {
     public:
         ComponentSceneDecorationFlagsTagger(
