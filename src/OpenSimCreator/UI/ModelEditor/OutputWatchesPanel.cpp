@@ -1,7 +1,7 @@
 #include "OutputWatchesPanel.h"
 
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
-#include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
+#include <OpenSimCreator/Documents/Simulation/BasicStateRef.h>
 #include <OpenSimCreator/OutputExtractors/OutputExtractor.h>
 #include <OpenSimCreator/UI/IMainUIStateAPI.h>
 
@@ -19,34 +19,6 @@
 
 using namespace osc;
 
-namespace
-{
-    struct CachedSimulationReport final {
-        UID sourceModelVersion;
-        UID sourceStateVersion;
-        SimulationReport simulationReport;
-    };
-
-    void UpdateCachedSimulationReportIfNecessary(IConstModelStatePair const& src, CachedSimulationReport& cache)
-    {
-        UID const modelVersion = src.getModelVersion();
-        UID const stateVersion = src.getStateVersion();
-
-        if (cache.sourceModelVersion == modelVersion &&
-            cache.sourceStateVersion == stateVersion)
-        {
-            return;  // it's already up-to-date
-        }
-
-        SimTK::State s = src.getState();
-        src.getModel().realizeReport(s);
-
-        cache.simulationReport = SimulationReport{std::move(s)};
-        cache.sourceModelVersion = modelVersion;
-        cache.sourceStateVersion = stateVersion;
-    }
-}
-
 class osc::OutputWatchesPanel::Impl final : public StandardPanelImpl {
 public:
 
@@ -63,8 +35,6 @@ public:
 private:
     void implDrawContent() final
     {
-        UpdateCachedSimulationReportIfNecessary(*m_Model, m_CachedReport);
-
         if (m_API->getNumUserOutputExtractors() > 0 && ui::BeginTable("##OutputWatchesTable", 2, ImGuiTableFlags_SizingStretchProp))
         {
             ui::TableSetupColumn("Output", ImGuiTableColumnFlags_WidthStretch);
@@ -89,7 +59,7 @@ private:
                 ui::TextUnformatted(o.getName());
 
                 ui::TableSetColumnIndex(column++);
-                ui::TextUnformatted(o.getValueString(m_Model->getModel(), m_CachedReport.simulationReport));
+                ui::TextUnformatted(o.getValueString(m_Model->getModel(), BasicStateRef{m_Model->getState()}));
 
                 ui::PopID();
             }
@@ -104,7 +74,6 @@ private:
 
     ParentPtr<IMainUIStateAPI> m_API;
     std::shared_ptr<UndoableModelStatePair const> m_Model;
-    CachedSimulationReport m_CachedReport;
 };
 
 

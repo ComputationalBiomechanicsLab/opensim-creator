@@ -1,7 +1,7 @@
 #include "StoFileSimulation.h"
 
 #include <OpenSimCreator/Documents/Simulation/SimulationClock.h>
-#include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
+#include <OpenSimCreator/Documents/Simulation/SimulationReportSequence.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationStatus.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 #include <OpenSimCreator/Utils/ParamBlock.h>
@@ -155,7 +155,7 @@ namespace
         return rv;
     }
 
-    std::vector<SimulationReport> ExtractReports(
+    SimulationReportSequence ExtractReports(
         OpenSim::Model& model,
         std::filesystem::path const& stoFilePath)
     {
@@ -179,7 +179,7 @@ namespace
         InitializeModel(model);
         InitializeState(model);
 
-        std::vector<SimulationReport> rv;
+        SimulationReportSequence rv;
         rv.reserve(storage.getSize());
 
         for (int row = 0; row < storage.getSize(); ++row)
@@ -200,11 +200,14 @@ namespace
                 }
             }
 
-            SimulationReport& report = rv.emplace_back(SimTK::State{model.getWorkingState()});
-            SimTK::State& st = report.updStateHACK();
+            // flash working state with latest statevars etc.
+            SimTK::State st = model.getWorkingState();
             st.setTime(sv->getTime());
             model.setStateVariableValues(st, stateValsBuf);
             model.realizeReport(st);
+
+            // append state vars to output sequence
+            rv.emplace_back(std::move(st));
         }
 
         return rv;
@@ -219,7 +222,7 @@ public:
         float fixupScaleFactor) :
 
         m_Model{std::move(model)},
-        m_SimulationReports{ExtractReports(*m_Model, stoFilePath)},
+        m_Reports{ExtractReports(*m_Model, stoFilePath)},
         m_FixupScaleFactor{fixupScaleFactor}
     {
     }
@@ -229,19 +232,9 @@ public:
         return {m_ModelMutex, *m_Model};
     }
 
-    size_t getNumReports() const
+    SimulationReportSequence getReports() const
     {
-        return m_SimulationReports.size();
-    }
-
-    SimulationReport getSimulationReport(ptrdiff_t reportIndex) const
-    {
-        return m_SimulationReports.at(reportIndex);
-    }
-
-    std::vector<SimulationReport> getAllSimulationReports() const
-    {
-        return m_SimulationReports;
+        return m_Reports;
     }
 
     SimulationStatus getStatus() const
@@ -287,9 +280,9 @@ public:
 private:
     mutable std::mutex m_ModelMutex;
     std::unique_ptr<OpenSim::Model> m_Model;
-    std::vector<SimulationReport> m_SimulationReports;
-    SimulationClock::time_point m_Start = m_SimulationReports.empty() ? SimulationClock::start() : m_SimulationReports.front().getTime();
-    SimulationClock::time_point m_End = m_SimulationReports.empty() ? SimulationClock::start() : m_SimulationReports.back().getTime();
+    SimulationReportSequence m_Reports;
+    SimulationClock::time_point m_Start = m_Reports.frontTime();
+    SimulationClock::time_point m_End = m_Reports.backTime();
     ParamBlock m_ParamBlock;
     float m_FixupScaleFactor = 1.0f;
 };
@@ -308,19 +301,9 @@ SynchronizedValueGuard<OpenSim::Model const> osc::StoFileSimulation::implGetMode
     return m_Impl->getModel();
 }
 
-ptrdiff_t osc::StoFileSimulation::implGetNumReports() const
+SimulationReportSequence osc::StoFileSimulation::implGetReports() const
 {
-    return m_Impl->getNumReports();
-}
-
-SimulationReport osc::StoFileSimulation::implGetSimulationReport(ptrdiff_t reportIndex) const
-{
-    return m_Impl->getSimulationReport(reportIndex);
-}
-
-std::vector<SimulationReport> osc::StoFileSimulation::implGetAllSimulationReports() const
-{
-    return m_Impl->getAllSimulationReports();
+    return m_Impl->getReports();
 }
 
 SimulationStatus osc::StoFileSimulation::implGetStatus() const

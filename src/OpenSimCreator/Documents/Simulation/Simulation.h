@@ -2,7 +2,7 @@
 
 #include <OpenSimCreator/Documents/Simulation/ISimulation.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationClock.h>
-#include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
+#include <OpenSimCreator/Documents/Simulation/SimulationReportSequence.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationStatus.h>
 
 #include <oscar/Utils/SynchronizedValueGuard.h>
@@ -33,10 +33,8 @@ namespace osc
         }
 
         SynchronizedValueGuard<OpenSim::Model const> getModel() const { return m_Simulation->getModel(); }
-
         size_t getNumReports() const { return m_Simulation->getNumReports(); }
-        SimulationReport getSimulationReport(ptrdiff_t reportIndex) const { return m_Simulation->getSimulationReport(std::move(reportIndex)); }
-        std::vector<SimulationReport> getAllSimulationReports() const { return m_Simulation->getAllSimulationReports(); }
+        SimulationReportSequence getReports() const { return m_Simulation->getReports(); }
 
         SimulationStatus getStatus() const { return m_Simulation->getStatus(); }
         SimulationClock::time_point getCurTime() { return m_Simulation->getCurTime(); }

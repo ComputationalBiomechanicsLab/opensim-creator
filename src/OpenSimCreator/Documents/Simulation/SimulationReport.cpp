@@ -33,12 +33,7 @@ public:
 
     SimulationClock::time_point getTime() const
     {
-        return SimulationClock::start() + SimulationClock::duration{getState().getTime()};
-    }
-
-    SimTK::State const& getState() const
-    {
-        return m_State;
+        return SimulationClock::start() + SimulationClock::duration{m_State.getTime()};
     }
 
     SimTK::State& updStateHACK()
@@ -49,6 +44,16 @@ public:
     std::optional<float> getAuxiliaryValue(UID id) const
     {
         return find_or_optional(m_AuxiliaryValues, id);
+    }
+
+    std::vector<AuxiliaryValue> getAllAuxiliaryValuesHACK() const
+    {
+        std::vector<AuxiliaryValue> rv;
+        rv.reserve(m_AuxiliaryValues.size());
+        for (auto const& [id, v] : m_AuxiliaryValues) {
+            rv.push_back(AuxiliaryValue{id, v});
+        }
+        return rv;
     }
 
 private:
@@ -83,17 +88,17 @@ SimulationClock::time_point osc::SimulationReport::getTime() const
     return m_Impl->getTime();
 }
 
-SimTK::State const& osc::SimulationReport::getState() const
+SimTK::State&& osc::SimulationReport::stealState() &&
 {
-    return m_Impl->getState();
-}
-
-SimTK::State& osc::SimulationReport::updStateHACK()
-{
-    return m_Impl->updStateHACK();
+    return std::move(m_Impl->updStateHACK());
 }
 
 std::optional<float> osc::SimulationReport::getAuxiliaryValue(UID id) const
 {
     return m_Impl->getAuxiliaryValue(id);
+}
+
+std::vector<AuxiliaryValue> osc::SimulationReport::getAllAuxiliaryValuesHACK() const
+{
+    return m_Impl->getAllAuxiliaryValuesHACK();
 }

@@ -3,7 +3,7 @@
 #include <OpenSimCreator/Documents/Model/BasicModelStatePair.h>
 #include <OpenSimCreator/Documents/Simulation/ISimulation.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationClock.h>
-#include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
+#include <OpenSimCreator/Documents/Simulation/SimulationReportSequence.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationStatus.h>
 
 #include <oscar/Utils/SynchronizedValueGuard.h>
@@ -33,10 +33,7 @@ namespace osc
 
     private:
         SynchronizedValueGuard<OpenSim::Model const> implGetModel() const final;
-
-        ptrdiff_t implGetNumReports() const final;
-        SimulationReport implGetSimulationReport(ptrdiff_t) const final;
-        std::vector<SimulationReport> implGetAllSimulationReports() const final;
+        SimulationReportSequence implGetReports() const final;
 
         SimulationStatus implGetStatus() const final;
         SimulationClocks implGetClocks() const final;

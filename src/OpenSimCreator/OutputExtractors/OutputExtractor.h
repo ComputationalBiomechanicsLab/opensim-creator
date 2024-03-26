@@ -2,7 +2,6 @@
 
 #include <OpenSimCreator/OutputExtractors/IOutputExtractor.h>
 #include <OpenSimCreator/OutputExtractors/OutputValueExtractor.h>
-#include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
 
 #include <oscar/Utils/CStringView.h>
 
@@ -16,6 +15,9 @@
 #include <vector>
 
 namespace OpenSim { class Component; }
+namespace OpenSim { class Model; }
+namespace osc { class ISimulationState; }
+namespace osc { class SimulationReportSequence; }
 
 namespace osc
 {
@@ -39,51 +41,55 @@ namespace osc
             return m_Output->getOutputValueExtractor(component);
         }
 
-        float getValueFloat(OpenSim::Component const& component, SimulationReport const& report) const
+        float getValueFloat(
+            OpenSim::Component const& component,
+            ISimulationState const& state) const
         {
-            return m_Output->getValueFloat(component, report);
+            return m_Output->getValueFloat(component, state);
         }
 
         void getValuesFloat(
-            OpenSim::Component const& component,
-            std::span<SimulationReport const> reports,
+            OpenSim::Model const& model,
+            SimulationReportSequence const& reports,
             std::function<void(float)> const& consumer) const
         {
-            m_Output->getValuesFloat(component, reports, consumer);
+            m_Output->getValuesFloat(model, reports, consumer);
         }
 
         std::vector<float> slurpValuesFloat(
-            OpenSim::Component const& component,
-            std::span<SimulationReport const> reports) const
+            OpenSim::Model const& model,
+            SimulationReportSequence const& reports) const
         {
-            return m_Output->slurpValuesFloat(component, reports);
+            return m_Output->slurpValuesFloat(model, reports);
         }
 
         Vec2 getValueVec2(
             OpenSim::Component const& component,
-            SimulationReport const& report) const
+            ISimulationState const& report) const
         {
             return m_Output->getValueVec2(component, report);
         }
 
         void getValuesVec2(
-            OpenSim::Component const& component,
-            std::span<SimulationReport const> report,
+            OpenSim::Model const& model,
+            SimulationReportSequence const& reports,
             std::function<void(Vec2)> const& consumer) const
         {
-            m_Output->getValuesVec2(component, report, consumer);
+            m_Output->getValuesVec2(model, reports, consumer);
         }
 
         std::vector<Vec2> slurpValuesVec2(
-            OpenSim::Component const& component,
-            std::span<SimulationReport const> report) const
+            OpenSim::Model const& model,
+            SimulationReportSequence const& reports) const
         {
-            return m_Output->slurpValuesVec2(component, report);
+            return m_Output->slurpValuesVec2(model, reports);
         }
 
-        std::string getValueString(OpenSim::Component const& component, SimulationReport const& report) const
+        std::string getValueString(
+            OpenSim::Component const& component,
+            ISimulationState const& state) const
         {
-            return m_Output->getValueString(component, report);
+            return m_Output->getValueString(component, state);
         }
 
         size_t getHash() const

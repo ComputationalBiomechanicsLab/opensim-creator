@@ -3,6 +3,7 @@
 #include <OpenSimCreator/Documents/Model/BasicModelStatePair.h>
 #include <OpenSimCreator/Documents/Simulation/ForwardDynamicSimulatorParams.h>
 #include <OpenSimCreator/Documents/Simulation/IntegratorMethod.h>
+#include <OpenSimCreator/Documents/Simulation/ISimulationState.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationClock.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationStatus.h>
@@ -120,9 +121,9 @@ namespace
 
         OutputValueExtractor implGetOutputValueExtractor(OpenSim::Component const&) const final
         {
-            return OutputValueExtractor{[id = m_UID](SimulationReport const& report)
+            return OutputValueExtractor{[id = m_UID](ISimulationState const& state)
             {
-                return Variant{report.getAuxiliaryValue(id).value_or(-1337.0f)};
+                return Variant{state.findAuxiliaryValue(id).value_or(-1337.0f)};
             }};
         }
 
@@ -225,8 +226,7 @@ namespace
         SimTK::State st = integrator.getState();
         std::unordered_map<UID, float> auxValues;
 
-        // care: state needs to be realized on the simulator thread
-        st.invalidateAllCacheAtOrAbove(SimTK::Stage::Instance);
+        sys.realize(st, SimTK::Stage::Report);
 
         // populate forward dynamic simulator outputs
         {

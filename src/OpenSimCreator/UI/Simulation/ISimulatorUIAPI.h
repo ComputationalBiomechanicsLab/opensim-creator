@@ -1,7 +1,7 @@
 #pragma once
 
 #include <OpenSimCreator/Documents/Simulation/SimulationClock.h>
-#include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
+#include <OpenSimCreator/Documents/Simulation/SimulationReportSequenceCursor.h>
 
 #include <optional>
 
@@ -69,7 +69,7 @@ namespace osc
             implSetSimulationScrubTime(v);
         }
 
-        std::optional<SimulationReport> trySelectReportBasedOnScrubbing()
+        std::optional<SimulationReportSequenceCursor> trySelectReportBasedOnScrubbing()
         {
             return implTrySelectReportBasedOnScrubbing();
         }
@@ -125,7 +125,7 @@ namespace osc
         virtual void implSetSimulationScrubTime(SimulationClock::time_point) = 0;
         virtual void implStepBack() = 0;
         virtual void implStepForward() = 0;
-        virtual std::optional<SimulationReport> implTrySelectReportBasedOnScrubbing() = 0;
+        virtual std::optional<SimulationReportSequenceCursor> implTrySelectReportBasedOnScrubbing() = 0;
 
         virtual int implGetNumUserOutputExtractors() const = 0;
         virtual OutputExtractor const& implGetUserOutputExtractor(int) const = 0;

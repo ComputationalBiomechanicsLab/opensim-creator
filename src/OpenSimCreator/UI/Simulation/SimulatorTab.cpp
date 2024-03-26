@@ -4,7 +4,7 @@
 #include <OpenSimCreator/Documents/Simulation/Simulation.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationClock.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationModelStatePair.h>
-#include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
+#include <OpenSimCreator/Documents/Simulation/SimulationReportSequenceCursor.h>
 #include <OpenSimCreator/OutputExtractors/ComponentOutputExtractor.h>
 #include <OpenSimCreator/OutputExtractors/OutputExtractor.h>
 #include <OpenSimCreator/UI/IMainUIStateAPI.h>
@@ -228,34 +228,14 @@ public:
     }
 
 private:
-    std::optional<SimulationReport> tryFindNthReportAfter(SimulationClock::time_point t, int offset = 0)
+    void  updateScrubCursor()
     {
-        ptrdiff_t const numSimulationReports = m_Simulation->getNumReports();
+        auto t = getSimulationScrubTime();
+        auto reports = m_Simulation->getReports();
 
-        if (numSimulationReports == 0)
-        {
-            return std::nullopt;
-        }
-
-        ptrdiff_t zeroethReportIndex = static_cast<ptrdiff_t>(numSimulationReports) - 1;
-        for (ptrdiff_t i = 0; i < numSimulationReports; ++i)
-        {
-            SimulationReport r = m_Simulation->getSimulationReport(i);
-            if (r.getTime() >= t)
-            {
-                zeroethReportIndex = i;
-                break;
-            }
-        }
-
-        ptrdiff_t const reportIndex = zeroethReportIndex + offset;
-        if (0 <= reportIndex && reportIndex < numSimulationReports)
-        {
-            return m_Simulation->getSimulationReport(reportIndex);
-        }
-        else
-        {
-            return std::nullopt;
+        if (auto i = m_Simulation->getReports().indexOfStateAfterOrIncluding(t)) {
+            m_ScrubCursor.emplace();
+            reports.seek(*m_ScrubCursor, *m_Simulation->getModel(), *i);
         }
     }
 
@@ -313,8 +293,8 @@ private:
 
             SimulationClock::duration const simDur = m_PlaybackSpeed * SimulationClock::duration{wallDur};
             SimulationClock::time_point const simNow = m_PlaybackStartSimtime + simDur;
-            SimulationClock::time_point const simEarliest = m_Simulation->getSimulationReport(0).getTime();
-            SimulationClock::time_point const simLatest = m_Simulation->getSimulationReport(nReports - 1).getTime();
+            SimulationClock::time_point const simEarliest = m_Simulation->getStartTime();
+            SimulationClock::time_point const simLatest = m_Simulation->getCurTime();
 
             if (simNow < simEarliest)
             {
@@ -339,25 +319,22 @@ private:
 
     void implStepBack() final
     {
-        std::optional<SimulationReport> const maybePrev = tryFindNthReportAfter(getSimulationScrubTime(), -1);
-        if (maybePrev)
-        {
-            setSimulationScrubTime(maybePrev->getTime());
+        if (auto t = m_Simulation->getReports().prevTime(getSimulationScrubTime())) {
+            setSimulationScrubTime(*t);
         }
     }
 
     void implStepForward() final
     {
-        std::optional<SimulationReport> const maybeNext = tryFindNthReportAfter(getSimulationScrubTime(), 1);
-        if (maybeNext)
-        {
-            setSimulationScrubTime(maybeNext->getTime());
+        if (auto t = m_Simulation->getReports().nextTime(getSimulationScrubTime())) {
+            setSimulationScrubTime(*t);
         }
     }
 
-    std::optional<SimulationReport> implTrySelectReportBasedOnScrubbing() final
+    std::optional<SimulationReportSequenceCursor> implTrySelectReportBasedOnScrubbing() final
     {
-        return tryFindNthReportAfter(getSimulationScrubTime());
+        updateScrubCursor();
+        return m_ScrubCursor;
     }
 
     int implGetNumUserOutputExtractors() const final
@@ -405,7 +382,7 @@ private:
         m_Toolbar.onDraw();
 
         // only draw content if a simulation report is available
-        std::optional<SimulationReport> maybeReport = trySelectReportBasedOnScrubbing();
+        std::optional<SimulationReportSequenceCursor> maybeReport = trySelectReportBasedOnScrubbing();
         if (maybeReport)
         {
             m_ShownModelState->setSimulation(m_Simulation);
@@ -437,6 +414,9 @@ private:
 
     // underlying simulation being shown
     std::shared_ptr<Simulation> m_Simulation;
+
+    // cached cursor to the currently-scrubbed simulation state
+    std::optional<SimulationReportSequenceCursor> m_ScrubCursor;
 
     // the modelstate that's being shown in the UI, based on scrubbing etc.
     //

@@ -1,6 +1,6 @@
 #include "MultiBodySystemOutputExtractor.h"
 
-#include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
+#include <OpenSimCreator/Documents/Simulation/ISimulationState.h>
 
 #include <oscar/Maths/Constants.h>
 #include <oscar/Utils/Assertions.h>
@@ -53,9 +53,9 @@ namespace
 
 OutputValueExtractor osc::MultiBodySystemOutputExtractor::implGetOutputValueExtractor(OpenSim::Component const&) const
 {
-    return OutputValueExtractor{[id = m_AuxiliaryDataID](SimulationReport const& report)
+    return OutputValueExtractor{[id = m_AuxiliaryDataID](ISimulationState const& state)
     {
-        return report.getAuxiliaryValue(id).value_or(quiet_nan_v<float>);
+        return state.findAuxiliaryValue(id).value_or(quiet_nan_v<float>);
     }};
 }
 

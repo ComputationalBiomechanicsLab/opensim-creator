@@ -1,5 +1,6 @@
 #include "ConcatenatingOutputExtractor.h"
 
+#include <OpenSimCreator/Documents/Simulation/ISimulationState.h>
 #include <OpenSimCreator/OutputExtractors/IOutputExtractor.h>
 #include <OpenSimCreator/OutputExtractors/OutputExtractor.h>
 #include <OpenSimCreator/OutputExtractors/OutputExtractorDataType.h>
@@ -66,19 +67,19 @@ OutputValueExtractor osc::ConcatenatingOutputExtractor::implGetOutputValueExtrac
     static_assert(NumOptions<OutputExtractorDataType>() == 3);
 
     if (m_OutputType == OutputExtractorDataType::Vec2) {
-        auto extractor = [lhs = m_First.getOutputValueExtractor(comp), rhs = m_Second.getOutputValueExtractor(comp)](SimulationReport const& report)
+        auto extractor = [lhs = m_First.getOutputValueExtractor(comp), rhs = m_Second.getOutputValueExtractor(comp)](ISimulationState const& state)
         {
-            float const lv = lhs(report).to<float>();
-            float const rv = rhs(report).to<float>();
+            float const lv = lhs(state).to<float>();
+            float const rv = rhs(state).to<float>();
 
             return Variant{Vec2{lv, rv}};
         };
         return OutputValueExtractor{std::move(extractor)};
     }
     else {
-        auto extractor = [lhs = m_First.getOutputValueExtractor(comp), rhs = m_Second.getOutputValueExtractor(comp)](SimulationReport const& report)
+        auto extractor = [lhs = m_First.getOutputValueExtractor(comp), rhs = m_Second.getOutputValueExtractor(comp)](ISimulationState const& state)
         {
-            return Variant{lhs(report).to<std::string>() + rhs(report).to<std::string>()};
+            return Variant{lhs(state).to<std::string>() + rhs(state).to<std::string>()};
         };
         return OutputValueExtractor{std::move(extractor)};
     }

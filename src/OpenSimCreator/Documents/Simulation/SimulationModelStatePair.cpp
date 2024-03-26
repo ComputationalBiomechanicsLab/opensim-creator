@@ -2,7 +2,7 @@
 
 #include <OpenSimCreator/Documents/Model/BasicModelStatePair.h>
 #include <OpenSimCreator/Documents/Simulation/Simulation.h>
-#include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
+#include <OpenSimCreator/Documents/Simulation/SimulationReportSequenceCursor.h>
 #include <OpenSimCreator/Documents/Simulation/SingleStateSimulation.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
@@ -23,9 +23,9 @@ public:
     {
     }
 
-    Impl(std::shared_ptr<Simulation> simulation, SimulationReport simulationReport) :
+    Impl(std::shared_ptr<Simulation> simulation, SimulationReportSequenceCursor cursor) :
         m_Simulation{std::move(simulation)},
-        m_SimulationReport{std::move(simulationReport)}
+        m_SimulationReport{std::move(cursor)}
     {
     }
 
@@ -41,7 +41,7 @@ public:
 
     SimTK::State const& getState() const
     {
-        return m_SimulationReport.getState();
+        return m_SimulationReport.state();
     }
 
     UID getStateVersion() const
@@ -93,12 +93,12 @@ public:
         }
     }
 
-    SimulationReport getSimulationReport() const
+    SimulationReportSequenceCursor getSimulationReport() const
     {
         return m_SimulationReport;
     }
 
-    void setSimulationReport(SimulationReport r)
+    void setSimulationReport(SimulationReportSequenceCursor r)
     {
         if (r != m_SimulationReport)
         {
@@ -113,7 +113,7 @@ private:
     OpenSim::ComponentPath m_Selected;
     OpenSim::ComponentPath m_Hovered;
     std::shared_ptr<Simulation> m_Simulation;
-    SimulationReport m_SimulationReport;
+    SimulationReportSequenceCursor m_SimulationReport;
 };
 
 
@@ -124,8 +124,8 @@ osc::SimulationModelStatePair::SimulationModelStatePair() :
 {
 }
 
-osc::SimulationModelStatePair::SimulationModelStatePair(std::shared_ptr<Simulation> simulation, SimulationReport report) :
-    m_Impl{std::make_unique<Impl>(std::move(simulation), std::move(report))}
+osc::SimulationModelStatePair::SimulationModelStatePair(std::shared_ptr<Simulation> simulation, SimulationReportSequenceCursor cursor) :
+    m_Impl{std::make_unique<Impl>(std::move(simulation), std::move(cursor))}
 {
 }
 
@@ -143,12 +143,12 @@ void osc::SimulationModelStatePair::setSimulation(std::shared_ptr<Simulation> si
     m_Impl->setSimulation(std::move(sim));
 }
 
-SimulationReport osc::SimulationModelStatePair::getSimulationReport() const
+SimulationReportSequenceCursor osc::SimulationModelStatePair::getSimulationReport() const
 {
     return m_Impl->getSimulationReport();
 }
 
-void osc::SimulationModelStatePair::setSimulationReport(SimulationReport report)
+void osc::SimulationModelStatePair::setSimulationReport(SimulationReportSequenceCursor report)
 {
     m_Impl->setSimulationReport(std::move(report));
 }

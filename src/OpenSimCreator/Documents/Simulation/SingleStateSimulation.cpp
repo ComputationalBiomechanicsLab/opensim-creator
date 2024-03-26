@@ -12,66 +12,29 @@ class osc::SingleStateSimulation::Impl final {
 public:
     explicit Impl(BasicModelStatePair modelState) :
         m_ModelState{std::move(modelState)}
-    {
-    }
+    {}
 
     SynchronizedValueGuard<OpenSim::Model const> getModel() const
     {
         return m_ModelState.lockChild<OpenSim::Model>([](BasicModelStatePair const& ms) -> OpenSim::Model const& { return ms.getModel(); });
     }
 
-    ptrdiff_t getNumReports() const
-    {
-        return 0;
-    }
-
-    SimulationReport getSimulationReport(ptrdiff_t) const
+    SimulationReportSequence getReports() const
     {
         throw std::runtime_error{"invalid method call on a SingleStateSimulation"};
     }
 
-    std::vector<SimulationReport> getAllSimulationReports() const
-    {
-        return {};
-    }
+    SimulationStatus getStatus() const { return SimulationStatus::Completed; }
+    SimulationClocks getClocks() const { return SimulationClocks{SimulationClock::start()}; }
+    ParamBlock const& getParams() const { return m_Params; }
 
-    SimulationStatus getStatus() const
-    {
-        return SimulationStatus::Completed;
-    }
+    std::span<OutputExtractor const> getOutputExtractors() const { return {}; }
 
-    SimulationClocks getClocks() const
-    {
-        return SimulationClocks{SimulationClock::start()};
-    }
+    void requestStop() {}
+    void stop() {}
 
-    ParamBlock const& getParams() const
-    {
-        return m_Params;
-    }
-
-    std::span<OutputExtractor const> getOutputExtractors() const
-    {
-        return {};
-    }
-
-    void requestStop()
-    {
-    }
-
-    void stop()
-    {
-    }
-
-    float getFixupScaleFactor() const
-    {
-        return m_ModelState.lock()->getFixupScaleFactor();
-    }
-
-    void setFixupScaleFactor(float v)
-    {
-        return m_ModelState.lock()->setFixupScaleFactor(v);
-    }
+    float getFixupScaleFactor() const { return m_ModelState.lock()->getFixupScaleFactor(); }
+    void setFixupScaleFactor(float v) { return m_ModelState.lock()->setFixupScaleFactor(v); }
 
 private:
     SynchronizedValue<BasicModelStatePair> m_ModelState;
@@ -94,19 +57,9 @@ SynchronizedValueGuard<OpenSim::Model const> osc::SingleStateSimulation::implGet
     return m_Impl->getModel();
 }
 
-ptrdiff_t osc::SingleStateSimulation::implGetNumReports() const
+SimulationReportSequence osc::SingleStateSimulation::implGetReports() const
 {
-    return m_Impl->getNumReports();
-}
-
-SimulationReport osc::SingleStateSimulation::implGetSimulationReport(ptrdiff_t reportIndex) const
-{
-    return m_Impl->getSimulationReport(reportIndex);
-}
-
-std::vector<SimulationReport> osc::SingleStateSimulation::implGetAllSimulationReports() const
-{
-    return m_Impl->getAllSimulationReports();
+    return m_Impl->getReports();
 }
 
 SimulationStatus osc::SingleStateSimulation::implGetStatus() const

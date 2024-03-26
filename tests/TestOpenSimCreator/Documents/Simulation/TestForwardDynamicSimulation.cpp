@@ -23,7 +23,7 @@ TEST(ForwardDynamicSimulation, CanInitFromBasicModel)
     sim.getModel()->getSystem();
     sim.getModel()->getWorkingState();
     sim.getNumReports();
-    sim.getAllSimulationReports();
+    sim.getReports();
     sim.getStatus();
     sim.getCurTime();
     ASSERT_EQ(sim.getStartTime(), SimulationClock::start());

@@ -46,7 +46,7 @@ private:
             ui::Columns(2);
             ui::Text("num reports");
             ui::NextColumn();
-            ui::Text("%zu", m_Simulation->getNumReports());
+            ui::Text("%zu", m_Simulation->getReports().size());
             ui::NextColumn();
             ui::Columns();
         }

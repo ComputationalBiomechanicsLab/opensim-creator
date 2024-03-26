@@ -1,5 +1,6 @@
 #pragma once
 
+#include <OpenSimCreator/Documents/Simulation/AuxiliaryValue.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationClock.h>
 
 #include <oscar/Utils/UID.h>
@@ -25,9 +26,9 @@ namespace osc
         ~SimulationReport() noexcept;
 
         SimulationClock::time_point getTime() const;
-        SimTK::State const& getState() const;
-        SimTK::State& updStateHACK();  // necessary because of a bug in OpenSim PathWrap
+        SimTK::State&& stealState() &&;
         std::optional<float> getAuxiliaryValue(UID) const;
+        std::vector<AuxiliaryValue> getAllAuxiliaryValuesHACK() const;
 
         friend bool operator==(SimulationReport const&, SimulationReport const&) = default;
     private:

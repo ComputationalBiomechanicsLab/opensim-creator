@@ -1,7 +1,7 @@
 #pragma once
 
 #include <OpenSimCreator/Documents/Model/IModelStatePair.h>
-#include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
+#include <OpenSimCreator/Documents/Simulation/SimulationReportSequenceCursor.h>
 
 #include <oscar/Utils/UID.h>
 
@@ -18,7 +18,7 @@ namespace osc
     class SimulationModelStatePair final : public IModelStatePair {
     public:
         SimulationModelStatePair();
-        SimulationModelStatePair(std::shared_ptr<Simulation>, SimulationReport);
+        SimulationModelStatePair(std::shared_ptr<Simulation>, SimulationReportSequenceCursor);
         SimulationModelStatePair(SimulationModelStatePair const&) = delete;
         SimulationModelStatePair(SimulationModelStatePair&&) noexcept;
         SimulationModelStatePair& operator=(SimulationModelStatePair const&) = delete;
@@ -28,8 +28,8 @@ namespace osc
         std::shared_ptr<Simulation> updSimulation();
         void setSimulation(std::shared_ptr<Simulation>);
 
-        SimulationReport getSimulationReport() const;
-        void setSimulationReport(SimulationReport);
+        SimulationReportSequenceCursor getSimulationReport() const;
+        void setSimulationReport(SimulationReportSequenceCursor);
 
     private:
         OpenSim::Model const& implGetModel() const final;

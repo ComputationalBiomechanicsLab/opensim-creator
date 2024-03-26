@@ -34,12 +34,12 @@ namespace
     ForwardDynamicSimulator MakeSimulation(
         BasicModelStatePair p,
         ForwardDynamicSimulatorParams const& params,
-        SynchronizedValue<std::vector<SimulationReport>>& reportQueue)
+        std::shared_ptr<SynchronizedValue<SimulationReportSequence>>& reports)
     {
-        auto callback = [&](SimulationReport r)
+        auto callback = [reports](SimulationReport r)
         {
-            auto reportsGuard = reportQueue.lock();
-            reportsGuard->push_back(std::move(r));
+            auto guard = reports->lock();
+            guard->emplace_back(std::move(r).stealState(), r.getAllAuxiliaryValuesHACK());
         };
         return ForwardDynamicSimulator{std::move(p), params, std::move(callback)};
     }
@@ -62,33 +62,19 @@ public:
 
     Impl(BasicModelStatePair p, ForwardDynamicSimulatorParams const& params) :
         m_ModelState{std::move(p)},
-        m_Simulation{MakeSimulation(*m_ModelState.lock(), params, m_ReportQueue)},
+        m_Simulation{MakeSimulation(*m_ModelState.lock(), params, m_Reports)},
         m_ParamsAsParamBlock{ToParamBlock(params)},
         m_SimulatorOutputExtractors(GetFdSimulatorOutputExtractorsAsVector())
-    {
-    }
+    {}
 
     SynchronizedValueGuard<OpenSim::Model const> getModel() const
     {
         return m_ModelState.lockChild<OpenSim::Model>([](BasicModelStatePair const& p) -> decltype(auto) { return p.getModel(); });
     }
 
-    ptrdiff_t getNumReports() const
+    SimulationReportSequence getReports() const
     {
-        popReportsHACK();
-        return m_Reports.size();
-    }
-
-    SimulationReport getSimulationReport(ptrdiff_t reportIndex) const
-    {
-        popReportsHACK();
-        return m_Reports.at(reportIndex);
-    }
-
-    std::vector<SimulationReport> getAllSimulationReports() const
-    {
-        popReportsHACK();
-        return m_Reports;
+        return *m_Reports->lock();
     }
 
     SimulationStatus getStatus() const
@@ -103,14 +89,12 @@ public:
 
     SimulationClock::time_point getCurTime() const
     {
-        popReportsHACK();
-
-        if (!m_Reports.empty())
-        {
-            return SimulationClock::start() + SimulationClock::duration{m_Reports.back().getState().getTime()};
+        auto guard = m_Reports->lock();
+        auto size = guard->size();
+        if (size > 0) {
+            return guard->timeOf(size-1);
         }
-        else
-        {
+        else {
             return getStartTime();
         }
     }
@@ -153,49 +137,8 @@ public:
     }
 
 private:
-    // MUST be done from the UI thread
-    //
-    // the reason this insane hack is necessary is because the background thread
-    // requires access to the UI thread's copy of the model in order to perform
-    // the realization step
-    void popReportsHACK() const
-    {
-        auto& reports = const_cast<std::vector<SimulationReport>&>(m_Reports);
-
-        size_t const nReportsBefore = reports.size();
-
-        // pop them onto the local reports queue
-        {
-            auto guard = const_cast<SynchronizedValue<std::vector<SimulationReport>>&>(m_ReportQueue).lock();
-
-            reports.reserve(reports.size() + guard->size());
-            copy(
-                std::make_move_iterator(guard->begin()),
-                std::make_move_iterator(guard->end()),
-                std::back_inserter(reports)
-            );
-            guard->clear();
-        }
-
-        size_t const nReportsAfter = reports.size();
-        size_t const nAdded = nReportsAfter-nReportsBefore;
-
-        if (nAdded <= 0)
-        {
-            return;
-        }
-
-        // ensure all reports are realized on the UI model
-        auto modelLock = m_ModelState.lock();
-        for (auto it = reports.begin() + nReportsBefore; it != reports.end(); ++it)
-        {
-            modelLock->getModel().realizeReport(it->updStateHACK());
-        }
-    }
-
     SynchronizedValue<BasicModelStatePair> m_ModelState;
-    SynchronizedValue<std::vector<SimulationReport>> m_ReportQueue;
-    std::vector<SimulationReport> m_Reports;
+    std::shared_ptr<SynchronizedValue<SimulationReportSequence>> m_Reports = std::make_shared<SynchronizedValue<SimulationReportSequence>>();
     ForwardDynamicSimulator m_Simulation;
     ParamBlock m_ParamsAsParamBlock;
     std::vector<OutputExtractor> m_SimulatorOutputExtractors;
@@ -218,19 +161,9 @@ SynchronizedValueGuard<OpenSim::Model const> osc::ForwardDynamicSimulation::impl
     return m_Impl->getModel();
 }
 
-ptrdiff_t osc::ForwardDynamicSimulation::implGetNumReports() const
+SimulationReportSequence osc::ForwardDynamicSimulation::implGetReports() const
 {
-    return m_Impl->getNumReports();
-}
-
-SimulationReport osc::ForwardDynamicSimulation::implGetSimulationReport(ptrdiff_t reportIndex) const
-{
-    return m_Impl->getSimulationReport(reportIndex);
-}
-
-std::vector<SimulationReport> osc::ForwardDynamicSimulation::implGetAllSimulationReports() const
-{
-    return m_Impl->getAllSimulationReports();
+    return m_Impl->getReports();
 }
 
 SimulationStatus osc::ForwardDynamicSimulation::implGetStatus() const

@@ -5,6 +5,7 @@
 #include <OpenSimCreator/Documents/Simulation/ForwardDynamicSimulator.h>
 #include <OpenSimCreator/Documents/Simulation/ForwardDynamicSimulatorParams.h>
 #include <OpenSimCreator/Documents/Simulation/IntegratorMethod.h>
+#include <OpenSimCreator/Documents/Simulation/SimulationReportSequenceCursor.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationStatus.h>
 #include <OpenSimCreator/OutputExtractors/OutputExtractor.h>
 #include <OpenSimCreator/UI/Shared/ParamBlockEditorPopup.h>
@@ -103,17 +104,19 @@ public:
             ui::TableSetupColumn("NumStepsTaken");
             ui::TableHeadersRow();
 
+            SimulationReportSequenceCursor cursor;
             for (ForwardDynamicSimulation const& sim : m_Sims)
             {
-                auto reports = sim.getAllSimulationReports();
+                auto reports = sim.getReports();
                 if (reports.empty())
                 {
                     continue;
                 }
+                reports.seek(cursor, *sim.getModel(), reports.size()-1);  // seek to end
 
                 IntegratorMethod m = std::get<IntegratorMethod>(sim.getParams().findValue("Integrator Method").value());
-                float t = m_WalltimeExtractor.getValueFloat(*sim.getModel(), reports.back());
-                float steps = m_StepsTakenExtractor.getValueFloat(*sim.getModel(), reports.back());
+                float t = m_WalltimeExtractor.getValueFloat(*sim.getModel(), cursor);
+                float steps = m_StepsTakenExtractor.getValueFloat(*sim.getModel(), cursor);
 
                 ui::TableNextRow();
                 int column = 0;
@@ -166,17 +169,19 @@ private:
 
         fout << "Integrator,Wall Time (sec),NumStepsTaken\n";
 
+        SimulationReportSequenceCursor cursor;
         for (ForwardDynamicSimulation const& sim : m_Sims)
         {
-            auto reports = sim.getAllSimulationReports();
+            auto reports = sim.getReports();
             if (reports.empty())
             {
                 continue;
             }
+            reports.seek(cursor, *sim.getModel(), reports.size()-1);  // seek to end
 
             IntegratorMethod m = std::get<IntegratorMethod>(sim.getParams().findValue("Integrator Method").value());
-            float t = m_WalltimeExtractor.getValueFloat(*sim.getModel(), reports.back());
-            float steps = m_StepsTakenExtractor.getValueFloat(*sim.getModel(), reports.back());
+            float t = m_WalltimeExtractor.getValueFloat(*sim.getModel(), cursor);
+            float steps = m_StepsTakenExtractor.getValueFloat(*sim.getModel(), cursor);
 
             fout << m.label() << ',' << t << ',' << steps << '\n';
         }

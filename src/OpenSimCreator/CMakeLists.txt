@@ -133,6 +133,7 @@ add_library(OpenSimCreator STATIC
     Documents/ModelWarper/WarpDetail.h
 
     Documents/Simulation/AuxiliaryValue.h
+    Documents/Simulation/BasicStateRef.h
     Documents/Simulation/ForwardDynamicSimulation.cpp
     Documents/Simulation/ForwardDynamicSimulation.h
     Documents/Simulation/ForwardDynamicSimulator.cpp
@@ -142,6 +143,7 @@ add_library(OpenSimCreator STATIC
     Documents/Simulation/IntegratorMethod.cpp
     Documents/Simulation/IntegratorMethod.h
     Documents/Simulation/ISimulation.h
+    Documents/Simulation/ISimulationState.h
     Documents/Simulation/Simulation.h
     Documents/Simulation/SimulationClock.h
     Documents/Simulation/SimulationClocks.h

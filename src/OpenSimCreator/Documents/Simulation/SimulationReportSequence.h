@@ -20,9 +20,17 @@ namespace osc
         SimulationReportSequence();
 
         size_t size() const;
+        [[nodiscard]] bool empty() const { return size() == 0; }
+        SimulationClock::time_point frontTime() const;
+        SimulationClock::time_point backTime() const;
+        std::optional<SimulationClock::time_point> prevTime(SimulationClock::time_point) const;
+        std::optional<SimulationClock::time_point> nextTime(SimulationClock::time_point) const;
+        std::optional<size_t> indexOfStateAfterOrIncluding(SimulationClock::time_point) const;
 
-        void emplace_back(SimTK::State const&, std::span<AuxiliaryValue const> auxiliaryValues);
+        void reserve(size_t);
+        void emplace_back(SimTK::State&&, std::span<AuxiliaryValue const> auxiliaryValues = {});
         void seek(SimulationReportSequenceCursor&, OpenSim::Model const&, size_t i) const;
+        SimulationClock::time_point timeOf(size_t i) const;
 
     private:
         class Impl;

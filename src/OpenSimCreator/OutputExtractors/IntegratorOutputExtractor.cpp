@@ -1,6 +1,6 @@
 #include "IntegratorOutputExtractor.h"
 
-#include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
+#include <OpenSimCreator/Documents/Simulation/ISimulationState.h>
 #include <OpenSimCreator/OutputExtractors/IOutputExtractor.h>
 #include <OpenSimCreator/OutputExtractors/OutputValueExtractor.h>
 
@@ -117,9 +117,9 @@ namespace
 
 OutputValueExtractor osc::IntegratorOutputExtractor::implGetOutputValueExtractor(OpenSim::Component const&) const
 {
-    return OutputValueExtractor{[id = m_AuxiliaryDataID](SimulationReport const& report)
+    return OutputValueExtractor{[id = m_AuxiliaryDataID](ISimulationState const& state)
     {
-        return Variant{report.getAuxiliaryValue(id).value_or(quiet_nan_v<float>)};
+        return Variant{state.findAuxiliaryValue(id).value_or(quiet_nan_v<float>)};
     }};
 }
 

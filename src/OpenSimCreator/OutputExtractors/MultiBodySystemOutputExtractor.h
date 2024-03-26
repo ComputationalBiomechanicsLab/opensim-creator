@@ -11,7 +11,7 @@
 #include <string>
 #include <string_view>
 
-namespace OpenSim { class Component; }
+namespace OpenSim { class Model; }
 namespace SimTK { class MultibodySystem; }
 
 namespace osc

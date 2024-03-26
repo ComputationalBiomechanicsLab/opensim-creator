@@ -2,7 +2,8 @@
 
 #include <OpenSimCreator/Documents/Simulation/ISimulation.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationClock.h>
-#include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
+#include <OpenSimCreator/Documents/Simulation/SimulationReportSequence.h>
+#include <OpenSimCreator/Documents/Simulation/SimulationReportSequenceCursor.h>
 #include <OpenSimCreator/OutputExtractors/ComponentOutputExtractor.h>
 #include <OpenSimCreator/OutputExtractors/ComponentOutputSubfield.h>
 #include <OpenSimCreator/OutputExtractors/ConcatenatingOutputExtractor.h>
@@ -98,7 +99,7 @@ namespace
 
     std::vector<float> PopulateFirstNNumericOutputValues(
         OpenSim::Model const& model,
-        std::span<SimulationReport const> reports,
+        SimulationReportSequence const& reports,
         IOutputExtractor const& output)
     {
         std::vector<float> rv;
@@ -110,12 +111,13 @@ namespace
         return rv;
     }
 
-    std::vector<float> PopulateFirstNTimeValues(std::span<SimulationReport const> reports)
+    std::vector<float> PopulateFirstNTimeValues(SimulationReportSequence const& reports)
     {
+        size_t const n = reports.size();
         std::vector<float> times;
-        times.reserve(reports.size());
-        for (SimulationReport const& r : reports) {
-            times.push_back(static_cast<float>(r.getState().getTime()));
+        times.reserve(n);
+        for (size_t i = 0; i < n; ++i) {
+            times.push_back(static_cast<float>(reports.timeOf(i).time_since_epoch().count()));
         }
         return times;
     }
@@ -126,7 +128,7 @@ namespace
     {
         OSC_ASSERT(output.getOutputType() == OutputExtractorDataType::Float);
 
-        std::vector<SimulationReport> reports = sim.getAllSimulationReports();
+        SimulationReportSequence const reports = sim.getReports();
         std::vector<float> values = PopulateFirstNNumericOutputValues(*sim.getModel(), reports, output);
         std::vector<float> times = PopulateFirstNTimeValues(reports);
 
@@ -219,7 +221,7 @@ namespace
 
     std::filesystem::path TryExportOutputsToCSV(ISimulation& sim, std::span<OutputExtractor const> outputs)
     {
-        std::vector<SimulationReport> reports = sim.getAllSimulationReports();
+        SimulationReportSequence const reports = sim.getReports();
         std::vector<float> times = PopulateFirstNTimeValues(reports);
 
         // try prompt user for save location
@@ -250,12 +252,13 @@ namespace
 
         // data lines
         auto guard = sim.getModel();
+        SimulationReportSequenceCursor cursor;
         for (size_t i = 0; i < reports.size(); ++i) {
             fout << times.at(i);  // time column
 
-            SimulationReport r = reports[i];
+            reports.seek(cursor, *guard, i);
             for (OutputExtractor const& o : outputs) {
-                fout << ',' << o.getValueFloat(*guard, r);
+                fout << ',' << o.getValueFloat(*guard, cursor);
             }
 
             fout << '\n';
@@ -319,8 +322,7 @@ private:
         std::vector<float> buf;
         {
             OSC_PERF("collect output data");
-            std::vector<SimulationReport> const reports = sim.getAllSimulationReports();
-            buf = m_OutputExtractor.slurpValuesFloat(*sim.getModel(), reports);
+            buf = m_OutputExtractor.slurpValuesFloat(*sim.getModel(), sim.getReports());
         }
 
         // setup drawing area for drawing
@@ -369,8 +371,8 @@ private:
 
         // figure out mapping between screen space and plot space
 
-        SimulationClock::time_point simStartTime = sim.getSimulationReport(0).getTime();
-        SimulationClock::time_point simEndTime = sim.getSimulationReport(nReports-1).getTime();
+        SimulationClock::time_point simStartTime = sim.getStartTime();
+        SimulationClock::time_point simEndTime = sim.getCurTime();
         SimulationClock::duration simTimeStep = (simEndTime-simStartTime)/nReports;
         SimulationClock::time_point simScrubTime = m_API->getSimulationScrubTime();
 
@@ -426,8 +428,16 @@ private:
     {
         ISimulation& sim = m_API->updSimulation();
         ptrdiff_t const nReports = m_API->updSimulation().getNumReports();
-        SimulationReport r = m_API->trySelectReportBasedOnScrubbing().value_or(sim.getSimulationReport(nReports - 1));
-        ui::TextCentered(m_OutputExtractor.getValueString(*sim.getModel(), r));
+
+        SimulationReportSequenceCursor cursor;
+        if (auto c = m_API->trySelectReportBasedOnScrubbing()) {
+            cursor = *std::move(c);
+        }
+        else {
+            sim.getReports().seek(cursor, *sim.getModel(), nReports-1);
+        }
+
+        ui::TextCentered(m_OutputExtractor.getValueString(*sim.getModel(), cursor));
 
         // draw context menu (if user right clicks)
         if (ui::BeginPopupContextItem("plotcontextmenu")) {
@@ -452,8 +462,7 @@ private:
         std::vector<Vec2> buf;
         {
             OSC_PERF("collect output data");
-            std::vector<SimulationReport> reports = sim.getAllSimulationReports();
-            buf = m_OutputExtractor.slurpValuesVec2(*sim.getModel(), reports);
+            buf = m_OutputExtractor.slurpValuesVec2(*sim.getModel(), sim.getReports());
         }
 
         // setup drawing area for drawing
@@ -492,8 +501,15 @@ private:
 
                 // overlays
                 {
-                    SimulationReport currentReport = m_API->trySelectReportBasedOnScrubbing().value_or(sim.getSimulationReport(nReports - 1));
-                    Vec2d currentVal = m_OutputExtractor.getValueVec2(*sim.getModel(), currentReport);
+                    SimulationReportSequenceCursor cursor;
+                    if (auto c = m_API->trySelectReportBasedOnScrubbing()) {
+                        cursor = *std::move(c);
+                    }
+                    else {
+                        sim.getReports().seek(cursor, *sim.getModel(), nReports-1);
+                    }
+
+                    Vec2d currentVal = m_OutputExtractor.getValueVec2(*sim.getModel(), cursor);
                     // ensure the annotation doesn't occlude the line too heavily
                     auto annotationColor = ui::GetStyleColor(ImGuiCol_PopupBg).with_alpha(0.5f);
                     ImPlot::Annotation(currentVal.x, currentVal.y, ui::ToImVec4(annotationColor), {10.0f, 10.0f}, true, "(%f, %f)", currentVal.x, currentVal.y);

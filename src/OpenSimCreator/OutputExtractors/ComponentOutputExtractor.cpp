@@ -1,8 +1,8 @@
 #include "ComponentOutputExtractor.h"
 
+#include <OpenSimCreator/Documents/Simulation/ISimulationState.h>
 #include <OpenSimCreator/OutputExtractors/IOutputExtractor.h>
 #include <OpenSimCreator/OutputExtractors/OutputValueExtractor.h>
-#include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Common/Component.h>
@@ -45,17 +45,17 @@ namespace
         return std::move(ss).str();
     }
 
-    Variant NaNFloatingPointCallback(SimulationReport const&)
+    Variant NaNFloatingPointCallback(ISimulationState const&)
     {
         return Variant{quiet_nan_v<float>};
     }
 
-    Variant BlankStringCallback(SimulationReport const&)
+    Variant BlankStringCallback(ISimulationState const&)
     {
         return Variant{std::string{}};
     }
 
-    using NullCallbackFnPointer = Variant(*)(SimulationReport const&);
+    using NullCallbackFnPointer = Variant(*)(ISimulationState const&);
 }
 
 class osc::ComponentOutputExtractor::Impl final {
@@ -97,15 +97,15 @@ public:
         }
 
         if (datatype == OutputExtractorDataType::Float) {
-            return OutputValueExtractor{[func = m_ExtractorFunc, ao](SimulationReport const& report)
+            return OutputValueExtractor{[func = m_ExtractorFunc, ao](ISimulationState const& state)
             {
-                return Variant{static_cast<float>(func(*ao, report.getState()))};
+                return Variant{static_cast<float>(func(*ao, state.state()))};
             }};
         }
         else {
-            return OutputValueExtractor{[ao](SimulationReport const& report)
+            return OutputValueExtractor{[ao](ISimulationState const& state)
             {
-                return Variant{ao->getValueAsString(report.getState())};
+                return Variant{ao->getValueAsString(state.state())};
             }};
         }
     }

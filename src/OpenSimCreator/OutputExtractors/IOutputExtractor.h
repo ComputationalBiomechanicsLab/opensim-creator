@@ -13,8 +13,9 @@
 #include <vector>
 
 namespace OpenSim { class Component; }
-namespace osc { class IOutputValueExtractorVisitor; }
-namespace osc { class SimulationReport; }
+namespace OpenSim { class Model; }
+namespace osc { class ISimulationState; }
+namespace osc { class SimulationReportSequence; }
 
 namespace osc
 {
@@ -45,39 +46,39 @@ namespace osc
 
         float getValueFloat(
             OpenSim::Component const&,
-            SimulationReport const&
+            ISimulationState const&
         ) const;
 
         void getValuesFloat(
-            OpenSim::Component const&,
-            std::span<SimulationReport const>,
+            OpenSim::Model const&,
+            SimulationReportSequence const&,
             std::function<void(float)> const& consumer
         ) const;
 
         std::vector<float> slurpValuesFloat(
-            OpenSim::Component const&,
-            std::span<SimulationReport const>
+            OpenSim::Model const&,
+            SimulationReportSequence const&
         ) const;
 
         Vec2 getValueVec2(
-            OpenSim::Component const& component,
-            SimulationReport const& report
+            OpenSim::Component const&,
+            ISimulationState const&
         ) const;
 
         void getValuesVec2(
-            OpenSim::Component const&,
-            std::span<SimulationReport const>,
+            OpenSim::Model const&,
+            SimulationReportSequence const&,
             std::function<void(Vec2)> const& consumer
         ) const;
 
         std::vector<Vec2> slurpValuesVec2(
-            OpenSim::Component const&,
-            std::span<SimulationReport const>
+            OpenSim::Model const&,
+            SimulationReportSequence const&
         ) const;
 
         std::string getValueString(
             OpenSim::Component const&,
-            SimulationReport const&
+            ISimulationState const&
         ) const;
 
         size_t getHash() const { return implGetHash(); }
