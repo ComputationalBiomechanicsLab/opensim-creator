@@ -156,20 +156,28 @@ public:
             // Ctrl+/Super+P operates as a "take a screenshot" request
             m_MaybeScreenshotRequest = App::upd().requestScreenshot();
         }
-        if (e.type == SDL_KEYUP &&
-            e.key.keysym.mod & (KMOD_CTRL | KMOD_GUI) &&
-            e.key.keysym.scancode == SDL_SCANCODE_PAGEUP)
+        if ((e.type == SDL_KEYUP &&
+             e.key.keysym.mod & (KMOD_CTRL | KMOD_GUI) &&
+             e.key.keysym.scancode == SDL_SCANCODE_PAGEUP) ||
+            (e.type == SDL_KEYUP &&
+             e.key.keysym.mod & (KMOD_GUI) &&
+             e.key.keysym.mod & (KMOD_LALT | KMOD_RALT) &&
+             e.key.keysym.scancode == SDL_SCANCODE_LEFT))
         {
-            // Ctrl+/Super+PageUp focuses the tab to the left of the currently active tab
+            // Ctrl+/Super+PageUp (or Command+Option+Left on MacOS) focuses the tab to the left of the currently active tab
             auto it = findTabByID(m_ActiveTabID);
             if (it != m_Tabs.begin() and it != m_Tabs.end()) {
                 --it;  // previous
                 selectTab((*it)->getID());
             }
         }
-        if (e.type == SDL_KEYUP and
-            e.key.keysym.mod & (KMOD_CTRL | KMOD_GUI) and
-            e.key.keysym.scancode == SDL_SCANCODE_PAGEDOWN)
+        if ((e.type == SDL_KEYUP &&
+             e.key.keysym.mod & (KMOD_CTRL | KMOD_GUI) &&
+             e.key.keysym.scancode == SDL_SCANCODE_PAGEDOWN) ||
+            (e.type == SDL_KEYUP &&
+             e.key.keysym.mod & (KMOD_GUI) &&
+             e.key.keysym.mod & (KMOD_LALT | KMOD_RALT) &&
+             e.key.keysym.scancode == SDL_SCANCODE_RIGHT))
         {
             // Ctrl+/Super+PageDown focuses the tab to the right of the currently active tab
             auto it = findTabByID(m_ActiveTabID);
