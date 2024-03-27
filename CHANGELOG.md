@@ -29,6 +29,13 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [0.5.10] - 2024/03/05
 
+0.5.10 adds provisional support for OpenSim::StationDefinedFrame, which has now been added to OpenSim and should
+become widely available with the release of OpenSim 4.6. It also adds more options to the Calculate - primarily so
+that the Fit Analytic Geometry to This can be used to extract similar values to external scripts (e.g. the shape
+fitters from 10.1017/pab.2020.46).
+
+(It also fixes a scrolling bug in the mesh importer that slipped into 0.5.9 - sorry about that)
+
 - Updated `opensim-core` to a version which includes `StationDefinedFrame` support:
   - Upstream feature: https://github.com/opensim-org/opensim-core/pull/3694
   - They let you define an `OpenSim::PhysicalFrame` from stations/landmarks/markers. This more closely
