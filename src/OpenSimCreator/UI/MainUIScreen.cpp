@@ -139,12 +139,44 @@ public:
 
     void onEvent(SDL_Event const& e)
     {
+        if (e.type == SDL_KEYUP or
+            e.type == SDL_MOUSEBUTTONUP or
+            e.type == SDL_MOUSEMOTION) {
+
+            // if the user just potentially changed something via a mouse/keyboard
+            // interaction then the screen should be aggressively redrawn to reduce
+            // and input delays
+            m_ShouldRequestRedraw = true;
+        }
+
         if (e.type == SDL_KEYUP &&
             e.key.keysym.mod & (KMOD_CTRL | KMOD_GUI) &&
             e.key.keysym.scancode == SDL_SCANCODE_P)
         {
             // Ctrl+/Super+P operates as a "take a screenshot" request
             m_MaybeScreenshotRequest = App::upd().requestScreenshot();
+        }
+        if (e.type == SDL_KEYUP &&
+            e.key.keysym.mod & (KMOD_CTRL | KMOD_GUI) &&
+            e.key.keysym.scancode == SDL_SCANCODE_PAGEUP)
+        {
+            // Ctrl+/Super+PageUp focuses the tab to the left of the currently active tab
+            auto it = findTabByID(m_ActiveTabID);
+            if (it != m_Tabs.begin() and it != m_Tabs.end()) {
+                --it;  // previous
+                selectTab((*it)->getID());
+            }
+        }
+        if (e.type == SDL_KEYUP and
+            e.key.keysym.mod & (KMOD_CTRL | KMOD_GUI) and
+            e.key.keysym.scancode == SDL_SCANCODE_PAGEDOWN)
+        {
+            // Ctrl+/Super+PageDown focuses the tab to the right of the currently active tab
+            auto it = findTabByID(m_ActiveTabID);
+            if (it != m_Tabs.end()-1) {
+                ++it;  // next
+                selectTab((*it)->getID());
+            }
         }
         else if (ui::context::OnEvent(e))
         {
@@ -584,13 +616,17 @@ private:
         }
     }
 
-    ITab* getTabByID(UID id)
+    std::vector<std::unique_ptr<ITab>>::iterator findTabByID(UID id)
     {
-        auto it = find_if(m_Tabs, [id](auto const& p)
+        return find_if(m_Tabs, [id](auto const& p)
         {
             return p->getID() == id;
         });
+    }
 
+    ITab* getTabByID(UID id)
+    {
+        auto it = findTabByID(id);
         return it != m_Tabs.end() ? it->get() : nullptr;
     }
 
