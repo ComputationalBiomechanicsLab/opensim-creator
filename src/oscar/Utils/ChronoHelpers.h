@@ -1,7 +1,7 @@
 #pragma once
 
 #include <chrono>
-#include <numeric>
+#include <cmath>
 #include <type_traits>
 
 namespace osc
