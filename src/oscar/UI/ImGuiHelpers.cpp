@@ -39,15 +39,13 @@ namespace
         std::ranges::random_access_range TCollection,
         std::ranges::random_access_range UCollection
     >
+    requires
+        std::convertible_to<typename TCollection::value_type, float> and
+        std::convertible_to<typename UCollection::value_type, float>
     float diff(TCollection const& older, UCollection const& newer, size_t n)
-        requires
-            std::convertible_to<typename TCollection::value_type, float> &&
-            std::convertible_to<typename UCollection::value_type, float>
     {
-        for (size_t i = 0; i < n; ++i)
-        {
-            if (static_cast<float>(older[i]) != static_cast<float>(newer[i]))
-            {
+        for (size_t i = 0; i < n; ++i) {
+            if (static_cast<float>(older[i]) != static_cast<float>(newer[i])) {
                 return newer[i];
             }
         }

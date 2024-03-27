@@ -153,8 +153,8 @@ namespace osc
         size_t getVertexBufferStride() const;
         void setVertexBufferData(std::span<uint8_t const>, MeshUpdateFlags = MeshUpdateFlags::Default);
         template<std::ranges::contiguous_range Range>
+        requires BitCastable<typename Range::value_type>
         void setVertexBufferData(Range const& range, MeshUpdateFlags flags = MeshUpdateFlags::Default)
-            requires BitCastable<typename Range::value_type>
         {
             std::span<uint8_t const> bytes = ViewObjectRepresentations<uint8_t>(range);
             setVertexBufferData(bytes, flags);

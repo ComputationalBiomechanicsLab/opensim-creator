@@ -701,8 +701,8 @@ namespace osc
 
     // constructs a specific (T) model component in the componentset of the model and returns a reference to the component
     template<std::derived_from<OpenSim::ModelComponent> T, typename... Args>
+    requires std::constructible_from<T, Args&&...>
     T& AddModelComponent(OpenSim::Model& model, Args&&... args)
-        requires std::constructible_from<T, Args&&...>
     {
         return AddModelComponent(model, std::make_unique<T>(std::forward<Args>(args)...));
     }
@@ -717,8 +717,8 @@ namespace osc
     }
 
     template<std::derived_from<OpenSim::Component> T, typename... Args>
+    requires std::constructible_from<T, Args&&...>
     T& AddComponent(OpenSim::Component& host, Args&&...args)
-        requires std::constructible_from<T, Args&&...>
     {
         return AddComponent(host, std::make_unique<T>(std::forward<Args>(args)...));
     }
@@ -726,8 +726,8 @@ namespace osc
     OpenSim::Body& AddBody(OpenSim::Model&, std::unique_ptr<OpenSim::Body>);
 
     template<typename... Args>
+    requires std::constructible_from<OpenSim::Body, Args&&...>
     OpenSim::Body& AddBody(OpenSim::Model& model, Args&&... args)
-        requires std::constructible_from<OpenSim::Body, Args&&...>
     {
         auto p = std::make_unique<OpenSim::Body>(std::forward<Args>(args)...);
         return AddBody(model, std::move(p));
@@ -736,8 +736,8 @@ namespace osc
     OpenSim::Joint& AddJoint(OpenSim::Model&, std::unique_ptr<OpenSim::Joint>);
 
     template<std::derived_from<OpenSim::Joint> T, typename... Args>
+    requires std::constructible_from<T, Args&&...>
     T& AddJoint(OpenSim::Model& model, Args&&... args)
-        requires std::constructible_from<T, Args&&...>
     {
         auto p = std::make_unique<T>(std::forward<Args>(args)...);
         return static_cast<T&>(AddJoint(model, std::move(p)));
@@ -746,8 +746,8 @@ namespace osc
     OpenSim::Marker& AddMarker(OpenSim::Model&, std::unique_ptr<OpenSim::Marker>);
 
     template<typename... Args>
+    requires std::constructible_from<OpenSim::Marker, Args&&...>
     OpenSim::Marker& AddMarker(OpenSim::Model& model, Args&&... args)
-        requires std::constructible_from<OpenSim::Marker, Args&&...>
     {
         auto p = std::make_unique<OpenSim::Marker>(std::forward<Args>(args)...);
         return AddMarker(model, std::move(p));
@@ -756,8 +756,8 @@ namespace osc
     OpenSim::Geometry& AttachGeometry(OpenSim::Frame&, std::unique_ptr<OpenSim::Geometry>);
 
     template<std::derived_from<OpenSim::Geometry> T, typename... Args>
+    requires std::constructible_from<T, Args&&...>
     T& AttachGeometry(OpenSim::Frame& frame, Args&&... args)
-        requires std::constructible_from<T, Args&&...>
     {
         auto p = std::make_unique<T>(std::forward<Args>(args)...);
         return static_cast<T&>(AttachGeometry(frame, std::move(p)));
@@ -768,8 +768,8 @@ namespace osc
     OpenSim::WrapObject& AddWrapObject(OpenSim::PhysicalFrame&, std::unique_ptr<OpenSim::WrapObject>);
 
     template<std::derived_from<OpenSim::WrapObject> T, typename... Args>
+    requires std::constructible_from<T, Args&&...>
     T& AddWrapObject(OpenSim::PhysicalFrame& physFrame, Args&&... args)
-        requires std::constructible_from<T, Args&&...>
     {
         return static_cast<T&>(AddWrapObject(physFrame, std::make_unique<T>(std::forward<Args>(args)...)));
     }

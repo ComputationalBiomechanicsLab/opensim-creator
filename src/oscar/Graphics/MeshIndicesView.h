@@ -100,12 +100,10 @@ namespace osc
         {}
 
         template<std::ranges::contiguous_range Range>
-        MeshIndicesView(Range const& range)
-            requires IsAnyOf<typename Range::value_type, uint16_t, uint32_t>
-
-            : MeshIndicesView{std::ranges::data(range), std::ranges::size(range)}
-        {
-        }
+        requires IsAnyOf<typename Range::value_type, uint16_t, uint32_t>
+        MeshIndicesView(Range const& range) :
+            MeshIndicesView{std::ranges::data(range), std::ranges::size(range)}
+        {}
 
         bool isU16() const
         {

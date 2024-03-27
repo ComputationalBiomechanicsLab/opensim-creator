@@ -52,8 +52,8 @@ namespace osc::testing
     }
 
     template<std::ranges::range Range, class UnaryOperation>
+    requires std::invocable<UnaryOperation, typename Range::value_type const&>
     auto MapToVector(Range const& src, UnaryOperation op)
-        requires std::invocable<UnaryOperation, typename Range::value_type const&>
     {
         using std::begin;
         using std::end;

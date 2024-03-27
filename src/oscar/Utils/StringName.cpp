@@ -74,14 +74,13 @@ namespace
     }
 
     template<typename StringLike>
+    requires
+        std::constructible_from<std::string, StringLike&&> and
+        std::convertible_to<StringLike&&, std::string_view>
     StringNameData& PossiblyConstructThenGetData(StringLike&& input)
-        requires
-            std::constructible_from<std::string, StringLike&&> &&
-            std::convertible_to<StringLike&&, std::string_view>
     {
         auto [it, inserted] = GetGlobalStringNameLUT().lock()->emplace(std::forward<StringLike>(input));
-        if (!inserted)
-        {
+        if (not inserted) {
             (*it)->incrementOwnerCount();
         }
         return **it;

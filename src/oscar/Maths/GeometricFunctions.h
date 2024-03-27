@@ -25,16 +25,16 @@ namespace osc
 
     // returns the dot product of `x` and `y` (i.e. `x * y`)
     template<typename T>
+    requires std::is_arithmetic_v<T>
     constexpr T dot(T x, T y)
-        requires std::is_arithmetic_v<T>
     {
         return x * y;
     }
 
     // returns the dot product of `x` and `y`
     template<size_t L, typename T>
+    requires std::is_arithmetic_v<T>
     constexpr T dot(Vec<L, T> const& x, Vec<L, T> const& y)
-        requires std::is_arithmetic_v<T> && (L > 0)
     {
         T acc = x[0] * y[0];
         for (size_t i = 1; i < L; ++i) {
@@ -45,8 +45,8 @@ namespace osc
 
     // returns the cross product of `x` and `y`
     template<typename T>
+    requires std::is_arithmetic_v<T>
     constexpr Vec<3, T> cross(Vec<3, T> const& x, Vec<3, T> const& y)
-        requires std::is_arithmetic_v<T>
     {
         return Vec<3, T>(
             x.y * y.z - y.y * x.z,
@@ -92,7 +92,8 @@ namespace osc
 
     // returns the area of a 2D rectangle that begins at the origin and ends at `v`
     template<typename T>
-    constexpr T area(Vec<2, T> const& v) requires std::is_arithmetic_v<T>
+    requires std::is_arithmetic_v<T>
+    constexpr T area(Vec<2, T> const& v)
     {
         return v.x * v.y;
     }

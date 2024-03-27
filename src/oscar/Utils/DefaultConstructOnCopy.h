@@ -11,16 +11,14 @@ namespace osc
         DefaultConstructOnCopy() = default;
 
         template<typename... Args>
-        DefaultConstructOnCopy(Args&& ...args)
-            requires std::constructible_from<T, Args&&...> :
-
+        requires std::constructible_from<T, Args&&...>
+        DefaultConstructOnCopy(Args&& ...args) :
             m_Value{std::forward<Args>(args)...}
-        {
-        }
+        {}
 
-        DefaultConstructOnCopy(DefaultConstructOnCopy const&) : m_Value{}
-        {
-        }
+        DefaultConstructOnCopy(DefaultConstructOnCopy const&) :
+            m_Value{}
+        {}
 
         DefaultConstructOnCopy(DefaultConstructOnCopy&&) noexcept = default;
 

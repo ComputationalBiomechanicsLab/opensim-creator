@@ -17,13 +17,11 @@ namespace osc::cpp20
         // Creates new thread object and associates it with a thread of execution.
         // The new thread of execution immediately starts executing
         template<typename Function, typename... Args>
-        jthread(Function&& f, Args&&... args)
-            requires std::invocable<Function, stop_token, Args&&...> :
-
+        requires std::invocable<Function, stop_token, Args&&...>
+        jthread(Function&& f, Args&&... args) :
             m_StopSource{},
             m_Thread{std::forward<Function>(f), m_StopSource.get_token(), std::forward<Args>(args)...}
-        {
-        }
+        {}
 
         // threads are non-copyable
         jthread(jthread const&) = delete;

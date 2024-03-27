@@ -65,8 +65,8 @@ namespace osc
         std::ranges::input_range R,
         typename Proj = std::identity
     >
+    requires std::convertible_to<typename std::projected<std::ranges::iterator_t<R>, Proj>::value_type, Vec2 const&>
     constexpr Rect bounding_rect_of(R&& r, Proj proj = {})
-        requires std::convertible_to<typename std::projected<std::ranges::iterator_t<R>, Proj>::value_type, Vec2 const&>
     {
         auto it = std::ranges::begin(r);
         auto const last = std::ranges::end(r);

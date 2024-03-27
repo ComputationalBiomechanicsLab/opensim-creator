@@ -26,8 +26,8 @@ namespace osc
     }
 
     template<ObjectRepresentationByte Byte = std::byte, std::ranges::contiguous_range Range>
+    requires BitCastable<typename Range::value_type>
     constexpr std::span<Byte const> ViewObjectRepresentations(Range const& range)
-        requires BitCastable<typename Range::value_type>
     {
         // this is one of the few cases where `reinterpret_cast` is guaranteed to be safe
         // for _examination_ (i.e. reading)

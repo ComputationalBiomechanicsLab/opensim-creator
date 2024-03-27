@@ -52,9 +52,8 @@ namespace osc
         class UndoRedoEntryData final : public UndoRedoEntryMetadata {
         public:
             template<typename... Args>
-            UndoRedoEntryData(std::string_view message_, Args&&... args)
-                requires std::constructible_from<T, Args&&...> :
-
+            requires std::constructible_from<T, Args&&...>
+            UndoRedoEntryData(std::string_view message_, Args&&... args) :
                 UndoRedoEntryMetadata{std::move(message_)},
                 m_Value{std::forward<Args>(args)...}
             {}
@@ -90,9 +89,8 @@ namespace osc
     class UndoRedoEntry final : public UndoRedoEntryBase {
     public:
         template<typename... Args>
-        UndoRedoEntry(std::string_view message_, Args&&... args)
-            requires std::constructible_from<T, Args&&...> :
-
+        requires std::constructible_from<T, Args&&...>
+        UndoRedoEntry(std::string_view message_, Args&&... args) :
             UndoRedoEntryBase{std::make_shared<detail::UndoRedoEntryData<T>>(std::move(message_), std::forward<Args>(args)...)}
         {}
 
@@ -151,9 +149,8 @@ namespace osc
     class UndoRedo final : public UndoRedoBase {
     public:
         template<typename... Args>
-        UndoRedo(Args&&... args)
-            requires std::constructible_from<T, Args&&...> :
-
+        requires std::constructible_from<T, Args&&...>
+        UndoRedo(Args&&... args) :
             UndoRedoBase(UndoRedoEntry<T>{"created document", std::forward<Args>(args)...}),
             m_Scratch{static_cast<UndoRedoEntry<T> const&>(getHead()).value()}
         {}

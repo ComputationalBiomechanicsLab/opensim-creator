@@ -450,8 +450,8 @@ namespace osc::gl
 
     // set a uniform array of vec3s from a userspace container type (e.g. vector<Vec3>)
     template<std::ranges::contiguous_range Range, size_t N>
+    requires std::same_as<typename Range::value_type, Vec3>
     inline void Uniform(UniformArray<glsl::vec3, N>& u, Range& range)
-        requires std::same_as<typename Range::value_type, Vec3>
     {
         OSC_ASSERT(std::ranges::size(range) == N);
         glUniform3fv(u.geti(), static_cast<GLsizei>(std::ranges::size(range)), ValuePtr(*std::ranges::data(range)));
@@ -485,8 +485,8 @@ namespace osc::gl
     }
 
     template<std::ranges::contiguous_range Range, size_t N>
+    requires std::same_as<typename Range::value_type, Vec2>
     void Uniform(UniformArray<glsl::vec2, N>& u, Range const& range)
-        requires std::same_as<typename Range::value_type, Vec2>
     {
         glUniform2fv(
             u.geti(),

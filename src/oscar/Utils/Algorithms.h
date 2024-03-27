@@ -58,8 +58,8 @@ namespace osc
         std::ranges::input_range R,
         typename T
     >
+    requires std::indirect_binary_predicate<std::ranges::equal_to, std::ranges::iterator_t<R>, T const*>
     constexpr typename std::ranges::range_difference_t<R> count(R&& r, T const& value)
-        requires std::indirect_binary_predicate<std::ranges::equal_to, std::ranges::iterator_t<R>, T const*>
     {
         return std::count(std::ranges::begin(r), std::ranges::end(r), value);
     }
@@ -80,8 +80,8 @@ namespace osc
         std::ranges::input_range R2,
         typename Pred = std::ranges::equal_to
     >
+    requires std::indirectly_comparable<std::ranges::iterator_t<R1>, std::ranges::iterator_t<R2>, Pred>
     constexpr auto mismatch(R1&& r1, R2&& r2, Pred pred = {})
-        requires std::indirectly_comparable<std::ranges::iterator_t<R1>, std::ranges::iterator_t<R2>, Pred>
     {
         return std::mismatch(
             std::ranges::begin(r1),
@@ -98,8 +98,8 @@ namespace osc
         std::ranges::input_range R2,
         class Pred = std::ranges::equal_to
     >
+    requires std::indirectly_comparable<std::ranges::iterator_t<R1>, std::ranges::iterator_t<R2>, Pred>
     constexpr bool equal(R1&& r1, R2&& r2, Pred pred = {})
-        requires std::indirectly_comparable<std::ranges::iterator_t<R1>, std::ranges::iterator_t<R2>, Pred>
     {
         return std::equal(std::ranges::begin(r1), std::ranges::end(r1), std::ranges::begin(r2), std::ranges::end(r2), pred);
     }
@@ -172,8 +172,8 @@ namespace osc
         std::sentinel_for<I> S,
         typename T
     >
+    requires std::indirect_binary_predicate<std::ranges::equal_to, I, T const*>
     constexpr I find(I first, S last, T const& value)
-        requires std::indirect_binary_predicate<std::ranges::equal_to, I, T const*>
     {
         return std::find(first, last, value);
     }
@@ -183,8 +183,8 @@ namespace osc
         std::ranges::input_range R,
         class T
     >
+    requires std::indirect_binary_predicate<std::ranges::equal_to, std::ranges::iterator_t<R>, T const*>
     constexpr std::ranges::borrowed_iterator_t<R> find(R&& r, T const& value)
-        requires std::indirect_binary_predicate<std::ranges::equal_to, std::ranges::iterator_t<R>, T const*>
     {
         return std::find(std::ranges::begin(r), std::ranges::end(r), value);
     }
@@ -205,8 +205,8 @@ namespace osc
         std::ranges::forward_range R,
         class T
     >
+    requires std::indirect_binary_predicate<std::ranges::equal_to, std::ranges::iterator_t<R>, T const*>
     constexpr bool contains(R&& r, T const& value)
-        requires std::indirect_binary_predicate<std::ranges::equal_to, std::ranges::iterator_t<R>, T const*>
     {
         return contains(std::ranges::begin(r), std::ranges::end(r), value);
     }
@@ -219,8 +219,8 @@ namespace osc
         std::sentinel_for<I> S,
         std::weakly_incrementable O
     >
+    requires std::indirectly_copyable<I, O>
     constexpr void copy(I first, S last, O result)
-        requires std::indirectly_copyable<I, O>
     {
         std::copy(first, last, result);
     }
@@ -232,8 +232,8 @@ namespace osc
         std::ranges::input_range R,
         std::weakly_incrementable O
     >
+    requires std::indirectly_copyable<std::ranges::iterator_t<R>, O>
     constexpr void copy(R&& r, O result)
-        requires std::indirectly_copyable<std::ranges::iterator_t<R>, O>
     {
         std::copy(std::ranges::begin(r), std::ranges::end(r), result);
     }
@@ -252,8 +252,8 @@ namespace osc
 
     // see: std::ranges::reverse
     template<std::ranges::bidirectional_range R>
+    requires std::permutable<std::ranges::iterator_t<R>>
     constexpr std::ranges::borrowed_iterator_t<R> reverse(R&& r)
-        requires std::permutable<std::ranges::iterator_t<R>>
     {
         auto last = std::ranges::end(r);
         std::reverse(std::ranges::begin(r), last);
@@ -266,11 +266,11 @@ namespace osc
         std::weakly_incrementable O,
         typename Gen
     >
+    requires
+        (std::ranges::forward_range<R> or std::random_access_iterator<O>) and
+         std::indirectly_copyable<std::ranges::iterator_t<R>, O> and
+         std::uniform_random_bit_generator<std::remove_reference_t<Gen>>
     O sample(R&& r, O out, std::ranges::range_difference_t<R> n, Gen&& gen)
-        requires
-            (std::ranges::forward_range<R> || std::random_access_iterator<O>) &&
-             std::indirectly_copyable<std::ranges::iterator_t<R>, O> &&
-             std::uniform_random_bit_generator<std::remove_reference_t<Gen>>
     {
         return std::sample(std::ranges::begin(r), std::ranges::end(r), std::move(out), n, std::forward<Gen>(gen));
     }
@@ -336,8 +336,8 @@ namespace osc
         class Proj = std::identity,
         std::indirect_strict_weak_order<std::projected<std::ranges::iterator_t<R>, Proj>> Comp = std::ranges::less
     >
+    requires std::indirectly_copyable_storable<std::ranges::iterator_t<R>, std::ranges::range_value_t<R>*>
     constexpr std::ranges::range_value_t<R> max(R&& r, Comp comp = {}, Proj proj = {})
-        requires std::indirectly_copyable_storable<std::ranges::iterator_t<R>, std::ranges::range_value_t<R>*>
     {
         using V = std::ranges::range_value_t<R>;
         if constexpr (std::ranges::forward_range<R>) {
@@ -416,8 +416,8 @@ namespace osc
         class Proj = std::identity,
         std::indirect_strict_weak_order<std::projected<std::ranges::iterator_t<R>, Proj>> Comp = std::ranges::less
     >
+    requires std::indirectly_copyable_storable<std::ranges::iterator_t<R>, std::ranges::range_value_t<R>*>
     constexpr std::ranges::range_value_t<R> min(R&& r, Comp comp = {}, Proj proj = {})
-        requires std::indirectly_copyable_storable<std::ranges::iterator_t<R>, std::ranges::range_value_t<R>*>
     {
         using V = std::ranges::range_value_t<R>;
         if constexpr (std::ranges::forward_range<R>) {
@@ -443,15 +443,15 @@ namespace osc
         [[no_unique_address]] T max;
 
         template<typename T2>
+        requires std::convertible_to<T const&, T2>
         constexpr operator min_max_result<T2>() const&
-            requires std::convertible_to<T const&, T2>
         {
             return {min, max};
         }
 
         template<typename T2>
+        requires std::convertible_to<T, T2>
         constexpr operator min_max_result<T2>() &&
-            requires std::convertible_to<T, T2>
         {
             return {std::move(min), std::move(max)};
         }
@@ -578,8 +578,8 @@ namespace osc
         typename Proj = std::identity,
         std::indirect_strict_weak_order<std::projected<std::ranges::iterator_t<R>, Proj>> Comp = std::ranges::less
     >
+    requires std::indirectly_copyable_storable<std::ranges::iterator_t<R>, std::ranges::range_value_t<R>*>
     constexpr minmax_result<std::ranges::range_value_t<R>> minmax(R&& r, Comp comp = {}, Proj proj = {})
-        requires std::indirectly_copyable_storable<std::ranges::iterator_t<R>, std::ranges::range_value_t<R>*>
     {
         auto result = minmax_element(r, std::ref(comp), std::ref(proj));
         return {std::move(*result.min), std::move(*result.max)};

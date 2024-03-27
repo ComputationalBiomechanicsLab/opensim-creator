@@ -246,51 +246,55 @@ namespace osc
     }
 
     // heterogeneous `min`
+    //
+    // note: homogeneous `min` is provided via `std::ranges::min` or `osc::min` algorithms
     template<
         std::floating_point Rep1,
         AngularUnitTraits Units1,
         std::floating_point Rep2,
         AngularUnitTraits Units2
     >
+    requires (not std::is_same_v<Units1, Units2>)
     constexpr auto min(Angle<Rep1, Units1> x, Angle<Rep2, Units2> y) -> std::common_type_t<decltype(x), decltype(y)>
-
-        // homogeneous `min` is provided via `std::ranges::min` or `osc::min` algorithms
-        requires (!std::is_same_v<Units1, Units2>)
     {
         using CA = std::common_type_t<decltype(x), decltype(y)>;
         return CA{std::min(CA{x}.count(), CA{y}.count())};
     }
 
     // heterogeneous `max`
+    //
+    // note: homogeneous `max` is provided via `std::ranges::max` or `osc::max` algorithms
     template<
         std::floating_point Rep1,
         AngularUnitTraits Units1,
         std::floating_point Rep2,
         AngularUnitTraits Units2
     >
+    requires (not std::is_same_v<Units1, Units2>)
     constexpr auto max(Angle<Rep1, Units1> x, Angle<Rep2, Units2> y) -> std::common_type_t<decltype(x), decltype(y)>
-
-        // homogeneous `max` is provided via `std::ranges::max` or `osc::max` algorithms
-        requires (!std::is_same_v<Units1, Units2>)
     {
         using CA = std::common_type_t<decltype(x), decltype(y)>;
         return CA{std::max(CA{x}.count(), CA{y}.count())};
     }
 
     // heterogeneous `clamp`
+    //
+    // note: homogeneous `clamp` is provided via `std::ranges::clamp` or `osc::clamp` algorithms
     template<
         std::floating_point Rep,
         AngularUnitTraits Units,
         std::convertible_to<Angle<Rep, Units>> AngleMin,
         std::convertible_to<Angle<Rep, Units>> AngleMax
     >
+    requires (
+        not std::is_same_v<Angle<Rep, Units>, AngleMin> or
+        not std::is_same_v<Angle<Rep, Units>, AngleMax> or
+        not std::is_same_v<AngleMin, AngleMax>
+    )
     constexpr Angle<Rep, Units> clamp(
         Angle<Rep, Units> const& v,
         AngleMin const& min,
         AngleMax const& max)
-
-        // homogeneous `clamp` is provided via `std::ranges::clamp` or `osc::clamp` algorithms
-        requires (!std::is_same_v<Angle<Rep, Units>, AngleMin> || !std::is_same_v<Angle<Rep, Units>, AngleMax> || !std::is_same_v<AngleMin, AngleMax>)
     {
         return std::clamp(v, Angle<Rep, Units>{min}, Angle<Rep, Units>{max});
     }

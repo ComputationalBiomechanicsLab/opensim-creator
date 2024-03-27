@@ -21,30 +21,25 @@ namespace osc
 
         // in-place constructor for T
         template<typename... Args>
-        explicit SynchronizedValue(Args&&... args)
-            requires std::constructible_from<T, Args&&...> :
-
+        requires std::constructible_from<T, Args&&...>
+        explicit SynchronizedValue(Args&&... args) :
             m_Mutex{},
             m_Value{std::forward<Args>(args)...}
-        {
-        }
+        {}
 
         SynchronizedValue(SynchronizedValue const& other) :
             m_Mutex{},
             m_Value{*other.lock()}
-        {
-        }
+        {}
 
         SynchronizedValue(SynchronizedValue&& tmp) noexcept :
             m_Mutex{},
             m_Value{std::move(tmp).value()}
-        {
-        }
+        {}
 
         SynchronizedValue& operator=(SynchronizedValue const& other)
         {
-            if (&other != this)
-            {
+            if (&other != this) {
                 *this->lock() = *other.lock();
             }
             return *this;
@@ -52,8 +47,7 @@ namespace osc
 
         SynchronizedValue& operator=(SynchronizedValue&& tmp) noexcept
         {
-            if (&tmp != this)
-            {
+            if (&tmp != this) {
                 *this->lock() = std::move(tmp).value();
             }
             return *this;

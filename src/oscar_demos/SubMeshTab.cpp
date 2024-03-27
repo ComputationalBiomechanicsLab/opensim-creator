@@ -17,8 +17,8 @@ namespace
     constexpr CStringView c_TabStringID = "Demos/SubMeshes";
 
     template<std::ranges::range T, std::ranges::range U>
+    requires std::same_as<typename T::value_type, typename U::value_type>
     void Append(T& out, U els)
-        requires std::same_as<typename T::value_type, typename U::value_type>
     {
         out.insert(out.end(), els.begin(), els.end());
     }

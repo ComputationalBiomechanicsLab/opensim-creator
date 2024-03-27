@@ -28,8 +28,8 @@ namespace osc
 
         // returns a UnitVec by constructing the underlying vector and assuming that it is already normalized
         template<typename... Args>
+        requires std::constructible_from<Vec<L, T>, Args&&...>
         static constexpr UnitVec<L, T> already_normalized(Args&&... args)
-            requires std::constructible_from<Vec<L, T>, Args&&...>
         {
             return UnitVec<L, T>(AlreadyNormalizedTag{}, std::forward<Args>(args)...);
         }
@@ -66,9 +66,8 @@ namespace osc
 
         // constructs a `UnitVec` by constructing the underlying `Vec`, followed by normalizing it
         template<typename... Args>
-        explicit UnitVec(Args&&... args)
-            requires std::constructible_from<Vec<L, T>, Args&&...> :
-
+        requires std::constructible_from<Vec<L, T>, Args&&...>
+        explicit UnitVec(Args&&... args) :
             m_Data{normalize(Vec<L, T>{std::forward<Args>(args)...})}
         {}
 
@@ -104,8 +103,8 @@ namespace osc
 
         // constructs a `UnitVec` by constructing the underlying `Vec` and skips normalization
         template<typename... Args>
-        constexpr explicit UnitVec(AlreadyNormalizedTag, Args&&... args)
-            requires std::constructible_from<Vec<L, T>, Args&&...> :
+        requires std::constructible_from<Vec<L, T>, Args&&...>
+        constexpr explicit UnitVec(AlreadyNormalizedTag, Args&&... args) :
             m_Data{Vec<L, T>{std::forward<Args>(args)...}}
         {}
 

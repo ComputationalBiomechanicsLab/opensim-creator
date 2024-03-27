@@ -29,8 +29,8 @@ namespace osc
             std::derived_from<IResourceLoader> TResourceLoader,
             typename... Args
         >
-        friend ResourceLoader make_resource_loader(Args&&...)
-            requires std::constructible_from<TResourceLoader, Args&&...>;
+        requires std::constructible_from<TResourceLoader, Args&&...>
+        friend ResourceLoader make_resource_loader(Args&&...);
 
         explicit ResourceLoader(
             std::shared_ptr<IResourceLoader> impl_,
@@ -48,8 +48,8 @@ namespace osc
         std::derived_from<IResourceLoader> TResourceLoader,
         typename... Args
     >
+    requires std::constructible_from<TResourceLoader, Args&&...>
     ResourceLoader make_resource_loader(Args&&... args)
-        requires std::constructible_from<TResourceLoader, Args&&...>
     {
         return ResourceLoader{std::make_shared<TResourceLoader>(std::forward<Args>(args)...)};
     }

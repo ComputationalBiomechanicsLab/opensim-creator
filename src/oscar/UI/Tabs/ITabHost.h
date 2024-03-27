@@ -21,8 +21,8 @@ namespace osc
         virtual ~ITabHost() noexcept = default;
 
         template<std::derived_from<ITab> T, typename... Args>
+        requires std::constructible_from<T, Args&&...>
         UID addTab(Args&&... args)
-            requires std::constructible_from<T, Args&&...>
         {
             return addTab(std::make_unique<T>(std::forward<Args>(args)...));
         }
@@ -48,8 +48,8 @@ namespace osc
         }
 
         template<std::derived_from<ITab> T, typename... Args>
+        requires std::constructible_from<T, Args&&...>
         void addAndSelectTab(Args&&... args)
-            requires std::constructible_from<T, Args&&...>
         {
             UID const tabID = addTab<T>(std::forward<Args>(args)...);
             selectTab(tabID);

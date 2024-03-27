@@ -19,22 +19,22 @@
 namespace osc
 {
     template<typename T>
+    requires std::is_arithmetic_v<T>
     constexpr Qua<T> conjugate(Qua<T> const& q)
-        requires std::is_arithmetic_v<T>
     {
         return Qua<T>::wxyz(q.w, -q.x, -q.y, -q.z);
     }
 
     template<typename T>
+    requires std::is_arithmetic_v<T>
     constexpr T dot(Qua<T> const& a, Qua<T> const& b)
-        requires std::is_arithmetic_v<T>
     {
         return (a.w*b.w + a.x*b.x) + (a.y*b.y + a.z*b.z);
     }
 
     template<typename T>
+    requires std::is_arithmetic_v<T>
     constexpr Qua<T> inverse(Qua<T> const& q)
-        requires std::is_arithmetic_v<T>
     {
         return conjugate(q) / dot(q, q);
     }

@@ -38,8 +38,8 @@ namespace osc
     class App {
     public:
         template<std::destructible T, typename... Args>
+        requires std::constructible_from<T, Args&&...>
         static std::shared_ptr<T> singleton(Args&&... args)
-            requires std::constructible_from<T, Args&&...>
         {
             auto const ctor = [argTuple = std::make_tuple(std::forward<Args>(args)...)]() mutable -> std::shared_ptr<void>
             {
@@ -98,8 +98,8 @@ namespace osc
 
         // construct `TScreen` with `Args` and start showing it
         template<std::derived_from<IScreen> TScreen, typename... Args>
+        requires std::constructible_from<TScreen, Args&&...>
         void show(Args&&... args)
-            requires std::constructible_from<TScreen, Args&&...>
         {
             show(std::make_unique<TScreen>(std::forward<Args>(args)...));
         }
@@ -120,8 +120,8 @@ namespace osc
 
         // construct `TScreen` with `Args` then request the app transitions to it
         template<std::derived_from<IScreen> TScreen, typename... Args>
+        requires std::constructible_from<TScreen, Args&&...>
         void requestTransition(Args&&... args)
-            requires std::constructible_from<TScreen, Args&&...>
         {
             requestTransition(std::make_unique<TScreen>(std::forward<Args>(args)...));
         }

@@ -80,16 +80,16 @@ namespace osc
 
         // returns T{-1} if this `CoordinateDirection` points negatively along its axis; otherwise, returns `T{1}`
         template<typename T = float>
+        requires std::is_arithmetic_v<T> and std::is_signed_v<T>
         constexpr T direction() const
-            requires std::is_arithmetic_v<T> && std::is_signed_v<T>
         {
             return static_cast<T>(m_Direction);
         }
 
         // returns a direction that points in the direction stored by this `CoordinateDirection`
         template<typename T = float>
+        requires std::is_arithmetic_v<T>
         constexpr Vec<3, T> vec() const
-            requires std::is_arithmetic_v<T>
         {
             return Vec<3, T>{}.with_element(axis().index(), direction<T>());
         }

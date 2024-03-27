@@ -147,8 +147,8 @@ namespace osc
         }
 
         template<std::derived_from<IPopup> TPopup, class... Args>
+        requires std::constructible_from<TPopup, Args&&...>
         void emplacePopup(Args&&... args)
-            requires std::constructible_from<TPopup, Args&&...>
         {
             auto p = std::make_shared<TPopup>(std::forward<Args>(args)...);
             p->open();

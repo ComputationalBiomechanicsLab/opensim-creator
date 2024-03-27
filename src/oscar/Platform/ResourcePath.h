@@ -11,8 +11,8 @@ namespace osc
     class ResourcePath final {
     public:
         template<typename... Args>
-        ResourcePath(Args&&... args)
-            requires std::constructible_from<std::filesystem::path, Args&&...> :
+        requires std::constructible_from<std::filesystem::path, Args&&...>
+        ResourcePath(Args&&... args) :
             m_Path{std::forward<Args>(args)...}
         {}
 

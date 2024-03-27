@@ -376,8 +376,8 @@ namespace
     }
 
     template<typename VecOrMat>
+    requires BitCastable<typename VecOrMat::element_type>
     std::span<typename VecOrMat::element_type const> ToFloatSpan(VecOrMat const& v)
-        requires BitCastable<typename VecOrMat::element_type>
     {
         return {value_ptr(v), sizeof(VecOrMat)/sizeof(typename VecOrMat::element_type)};
     }
@@ -3435,8 +3435,8 @@ public:
 
 private:
     template<typename T, typename TConverted = T>
+    requires std::convertible_to<T, TConverted>
     std::optional<TConverted> getValue(std::string_view propertyName) const
-        requires std::convertible_to<T, TConverted>
     {
         auto const* value = try_find(m_Values, propertyName);
 
@@ -4285,7 +4285,8 @@ namespace
             {
             }
 
-            AttributeValueProxy& operator=(T const& v) requires (!IsConst)
+            AttributeValueProxy& operator=(T const& v)
+                requires (!IsConst)
             {
                 m_Encoding.encode(m_Data, v);
                 return *this;
@@ -4297,13 +4298,15 @@ namespace
             }
 
             template<typename U>
-            AttributeValueProxy& operator/=(U const& v) requires (!IsConst)
+            requires (!IsConst)
+            AttributeValueProxy& operator/=(U const& v)
             {
                 return *this = (T{*this} /= v);
             }
 
             template<typename U>
-            AttributeValueProxy& operator+=(U const& v) requires (!IsConst)
+            requires (!IsConst)
+            AttributeValueProxy& operator+=(U const& v)
             {
                 return *this = (T{*this} += v);
             }
@@ -4643,8 +4646,8 @@ namespace
         }
 
         template<UserFacingVertexData T, typename UnaryOperation>
+        requires std::invocable<UnaryOperation, T>
         void transformAttribute(VertexAttribute attr, UnaryOperation f)
-            requires std::invocable<UnaryOperation, T>
         {
             for (auto&& proxy : iter<T>(attr))
             {

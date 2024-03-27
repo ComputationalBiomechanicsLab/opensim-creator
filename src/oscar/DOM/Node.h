@@ -79,8 +79,8 @@ namespace osc
         }
 
         template<std::derived_from<Node> TNode, typename... Args>
+        requires std::constructible_from<TNode, Args&&...>
         TNode& emplaceChild(Args&&... args)
-            requires std::constructible_from<TNode, Args&&...>
         {
             return addChild(std::make_unique<TNode>(std::forward<Args>(args)...));
         }

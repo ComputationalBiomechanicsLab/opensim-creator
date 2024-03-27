@@ -277,8 +277,8 @@ namespace osc
         }
 
         template<typename... Args>
+        requires std::constructible_from<T, Args&&...>
         constexpr T& emplace_back(Args&&... args)
-            requires std::constructible_from<T, Args&&...>
         {
             ptrdiff_t new_end = (m_End + 1) % N;
 

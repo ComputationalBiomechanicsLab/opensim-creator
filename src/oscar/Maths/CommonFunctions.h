@@ -121,8 +121,8 @@ namespace osc
 
     // returns a vector containing `max(xv, yv)` for each `(xv, yv)` in `x` and `y`
     template<size_t L, HasMaxFunction T>
+    requires std::is_arithmetic_v<T>
     constexpr Vec<L, T> elementwise_max(Vec<L, T> const& x, Vec<L, T> const& y)
-        requires std::is_arithmetic_v<T>
     {
         return map(x, y, [](T const& xv, T const& yv) { return max(xv, yv); });
     }
@@ -173,8 +173,8 @@ namespace osc
         typename Arithmetic2,
         typename Arithmetic3
     >
+    requires std::is_arithmetic_v<Arithmetic1> and std::is_arithmetic_v<Arithmetic2> and std::is_arithmetic_v<Arithmetic3>
     constexpr auto lerp(Arithmetic1 const& a, Arithmetic2 const& b, Arithmetic3 const& t)
-        requires std::is_arithmetic_v<Arithmetic1> && std::is_arithmetic_v<Arithmetic2> && std::is_arithmetic_v<Arithmetic3>
     {
         return std::lerp(a, b, t);
     }
@@ -187,8 +187,8 @@ namespace osc
 
     // returns a vector containing `lerp(xv, yv, t)` for each `(xv, yv)` in `x` and `y`
     template<size_t L, typename T, typename TInterpolant>
+    requires HasLerpFunction<T, TInterpolant>
     constexpr auto lerp(Vec<L, T> const& x, Vec<L, T> const& y, TInterpolant const& t) -> Vec<L, decltype(lerp(x[0], y[0], t))>
-        requires HasLerpFunction<T, TInterpolant>
     {
         return map(x, y, [&t](T const& xv, T const& yv) { return lerp(xv, yv, t); });
     }
@@ -235,24 +235,24 @@ namespace osc
 
     // tests if the absolute difference between `x` and `y` is less than `absdiff`
     template<typename T>
+    requires HasAbsFunction<T> and LessThanComparable<T>
     bool equal_within_absdiff(T x, T y, T absdiff)
-        requires HasAbsFunction<T> && LessThanComparable<T>
     {
         return abs(x - y) < absdiff;
     }
 
     // returns a vector containing `equal_within_absdiff(xv, yv, absdiffv)` for each `(xv, yv, absdiffv)` in `x`, `y`, and `absdiff`
     template<size_t L, typename T>
+    requires HasAbsFunction<T> and LessThanComparable<T>
     Vec<L, bool> equal_within_absdiff(Vec<L, T> const& x, Vec<L, T> const& y, Vec<L, T> const& absdiff)
-        requires HasAbsFunction<T> && LessThanComparable<T>
     {
         return map(x, y, absdiff, equal_within_absdiff<T>);
     }
 
     // returns a vector containing `equal_within_absdiff(xv, yv, absdiff)` for each `(xv, yv)` in `x` and `y`
     template<size_t L, typename T>
+    requires HasAbsFunction<T> and LessThanComparable<T>
     Vec<L, bool> equal_within_absdiff(Vec<L, T> const& x, Vec<L, T> const& y, T const& absdiff)
-        requires HasAbsFunction<T> && LessThanComparable<T>
     {
         return elementwise_less(abs(x - y), absdiff);
     }
@@ -341,8 +341,8 @@ namespace osc
 
     // returns the midpoint between `a` and `b` while accounting for overflow
     template<typename T>
+    requires std::is_integral_v<T> or std::is_floating_point_v<T> or std::is_pointer_v<T>
     constexpr T midpoint(T a, T b)
-        requires std::is_integral_v<T> || std::is_floating_point_v<T> || std::is_pointer_v<T>
     {
         return std::midpoint(a, b);
     }
@@ -366,16 +366,16 @@ namespace osc
         size_t L = std::tuple_size_v<typename std::ranges::range_value_t<R>>,
         typename T = typename std::ranges::range_value_t<R>::value_type
     >
+    requires std::is_arithmetic_v<T>
     constexpr Vec<L, T> centroid(R const& r)
-        requires std::is_arithmetic_v<T>
     {
         return std::reduce(std::ranges::begin(r), std::ranges::end(r)) / static_cast<T>(std::ranges::size(r));
     }
 
     // returns the arithmetic mean of the provided vectors, or `Vec<L, T>{}/T{0}` if provided no vectors
     template<size_t L, typename T>
+    requires std::is_arithmetic_v<T>
     constexpr Vec<L, T> centroid(std::initializer_list<Vec<L, T>> const& vs)
-        requires std::is_arithmetic_v<T>
     {
         return centroid(std::span<Vec<L, T> const>{vs});
     }

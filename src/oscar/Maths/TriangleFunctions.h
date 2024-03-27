@@ -12,8 +12,8 @@ namespace osc
 {
     // returns `true` if the given three Vec3s could be used to form a triangle
     template<typename T>
+    requires std::is_arithmetic_v<T>
     constexpr bool can_form_triangle(Vec<3, T> const& a, Vec<3, T> const& b, Vec<3, T> const& c)
-        requires std::is_arithmetic_v<T>
     {
         return a != b && a != c && b != c;  // (this also handles NaNs)
     }

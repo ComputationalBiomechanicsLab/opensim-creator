@@ -88,12 +88,9 @@ namespace osc
     }
 
     // returns an `AABB` that tightly bounds the `Vec3`s projected from `r`
-    template<
-        std::ranges::input_range R,
-        class Proj = std::identity
-    >
+    template<std::ranges::input_range R, class Proj = std::identity>
+    requires std::convertible_to<typename std::projected<std::ranges::iterator_t<R>, Proj>::value_type, Vec3 const&>
     constexpr AABB bounding_aabb_of(R&& r, Proj proj = {})
-        requires std::convertible_to<typename std::projected<std::ranges::iterator_t<R>, Proj>::value_type, Vec3 const&>
     {
         auto it = std::ranges::begin(r);
         auto const last = std::ranges::end(r);
@@ -110,8 +107,8 @@ namespace osc
 
     // returns an `AABB` that tightly bounds the `AABB`s projected from `r`
     template<std::ranges::input_range Range, class Proj = std::identity>
+    requires std::convertible_to<typename std::projected<std::ranges::iterator_t<Range>, Proj>::value_type, AABB const&>
     constexpr AABB bounding_aabb_of(Range&& r, Proj proj = {})
-        requires std::convertible_to<typename std::projected<std::ranges::iterator_t<Range>, Proj>::value_type, AABB const&>
     {
         auto it = std::ranges::begin(r);
         auto const last = std::ranges::end(r);
@@ -149,8 +146,8 @@ namespace osc
     //
     // if no element in `r` projects an `AABB`, returns `std::nullopt`
     template<std::ranges::input_range Range, class Proj = std::identity>
+    requires std::convertible_to<typename std::projected<std::ranges::iterator_t<Range>, Proj>::value_type, std::optional<AABB> const&>
     constexpr std::optional<AABB> maybe_bounding_aabb_of(Range&& r, Proj proj = {})
-        requires std::convertible_to<typename std::projected<std::ranges::iterator_t<Range>, Proj>::value_type, std::optional<AABB> const&>
     {
         auto it = std::ranges::begin(r);
         auto const last = std::ranges::end(r);
