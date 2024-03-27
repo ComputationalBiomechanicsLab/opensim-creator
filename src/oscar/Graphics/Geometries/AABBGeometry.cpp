@@ -7,7 +7,7 @@
 
 using namespace osc;
 
-osc::AABBGeometry::AABBGeometry(AABB const& aabb)
+osc::AABBGeometry::AABBGeometry(const AABB& aabb)
 {
     auto [min, max] = aabb;
 

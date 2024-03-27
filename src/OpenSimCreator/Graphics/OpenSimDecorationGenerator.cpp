@@ -111,7 +111,7 @@ namespace
         Color const zeroColor = {50.0f / 255.0f, 50.0f / 255.0f, 166.0f / 255.0f, 1.0f};
         Color const fullColor = {255.0f / 255.0f, 25.0f / 255.0f, 25.0f / 255.0f, 1.0f};
         float const factor = GetMuscleColorFactor(musc, st, s);
-        return Lerp(zeroColor, fullColor, factor);
+        return lerp(zeroColor, fullColor, factor);
     }
 
     // helper: returns the color a muscle should have, based on a variety of options (style, user-defined stuff in OpenSim, etc.)
@@ -760,7 +760,7 @@ namespace
         p.neckThickness = (fixupScaleFactor*0.006f);
         p.color = color;
 
-        DrawArrow(rs.updMeshCache(), p, [&muscle, &rs](SceneDecoration&& d)
+        drawArrow(rs.updMeshCache(), p, [&muscle, &rs](SceneDecoration&& d)
         {
             rs.consume(muscle, std::move(d));
         });
@@ -924,7 +924,7 @@ namespace
         p.neckThickness = fixupScaleFactor*baseRadius*0.6f;
         p.color = Color::yellow();
 
-        DrawArrow(rs.updMeshCache(), p, [&hcf, &rs](SceneDecoration&& d)
+        drawArrow(rs.updMeshCache(), p, [&hcf, &rs](SceneDecoration&& d)
         {
             rs.consume(hcf, std::move(d));
         });
@@ -1117,7 +1117,7 @@ float osc::GetRecommendedScaleFactor(
         1.0f,
         [&aabb](OpenSim::Component const&, SceneDecoration&& dec)
         {
-            aabb = bounding_aabb_of(aabb, GetWorldspaceAABB(dec));
+            aabb = bounding_aabb_of(aabb, getWorldspaceAABB(dec));
         }
     );
 

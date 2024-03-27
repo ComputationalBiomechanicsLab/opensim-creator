@@ -49,7 +49,7 @@
 #include <string>
 #include <unordered_set>
 
-namespace Graphics = osc::Graphics;
+namespace graphics = osc::graphics;
 using namespace osc::testing;
 using namespace osc;
 
@@ -1498,7 +1498,7 @@ TEST_F(Renderer, MeshTopologyAllCanBeWrittenToStream)
 
 TEST_F(Renderer, LoadTexture2DFromImageResourceCanLoadImageFile)
 {
-    Texture2D const t = LoadTexture2DFromImage(
+    Texture2D const t = loadTexture2DFromImage(
         App::load_resource((std::filesystem::path{OSC_BUILD_RESOURCES_DIR} / "testoscar/awesomeface.png").string()),
         ColorSpace::sRGB
     );
@@ -1509,7 +1509,7 @@ TEST_F(Renderer, LoadTexture2DFromImageResourceThrowsIfResourceNotFound)
 {
     ASSERT_ANY_THROW(
     {
-        LoadTexture2DFromImage(
+        loadTexture2DFromImage(
             App::load_resource("textures/doesnt_exist.png"),
             ColorSpace::sRGB
         );
@@ -1541,7 +1541,7 @@ TEST_F(Renderer, DrawMeshDoesNotThrowWithStandardArgs)
     Material const material = GenerateMaterial();
     Camera camera;
 
-    ASSERT_NO_THROW({ Graphics::DrawMesh(mesh, transform, material, camera); });
+    ASSERT_NO_THROW({ graphics::drawMesh(mesh, transform, material, camera); });
 }
 
 TEST_F(Renderer, DrawMeshThrowsIfGivenOutOfBoundsSubMeshIndex)
@@ -1551,7 +1551,7 @@ TEST_F(Renderer, DrawMeshThrowsIfGivenOutOfBoundsSubMeshIndex)
     Material const material = GenerateMaterial();
     Camera camera;
 
-    ASSERT_ANY_THROW({ Graphics::DrawMesh(mesh, transform, material, camera, std::nullopt, 0); });
+    ASSERT_ANY_THROW({ graphics::drawMesh(mesh, transform, material, camera, std::nullopt, 0); });
 }
 
 TEST_F(Renderer, DrawMeshDoesNotThrowIfGivenInBoundsSubMesh)
@@ -1562,5 +1562,5 @@ TEST_F(Renderer, DrawMeshDoesNotThrowIfGivenInBoundsSubMesh)
     Material const material = GenerateMaterial();
     Camera camera;
 
-    ASSERT_NO_THROW({ Graphics::DrawMesh(mesh, transform, material, camera, std::nullopt, 0); });
+    ASSERT_NO_THROW({ graphics::drawMesh(mesh, transform, material, camera, std::nullopt, 0); });
 }

@@ -403,9 +403,9 @@ private:
     };
     SceneRendererParams m_LastSceneRendererParams = GetSplashScreenDefaultRenderParams(m_Camera);
 
-    Texture2D m_MainAppLogo = ReadSVGIntoTexture(App::load_resource("textures/banner.svg"));
-    Texture2D m_CziLogo = ReadSVGIntoTexture(App::load_resource("textures/chanzuckerberg_logo.svg"), 0.5f);
-    Texture2D m_TudLogo = ReadSVGIntoTexture(App::load_resource("textures/tudelft_logo.svg"), 0.5f);
+    Texture2D m_MainAppLogo = readSVGIntoTexture(App::load_resource("textures/banner.svg"));
+    Texture2D m_CziLogo = readSVGIntoTexture(App::load_resource("textures/chanzuckerberg_logo.svg"), 0.5f);
+    Texture2D m_TudLogo = readSVGIntoTexture(App::load_resource("textures/tudelft_logo.svg"), 0.5f);
 
     // dimensions of stuff
     Vec2 m_SplashMenuMaxDims = {640.0f, 512.0f};

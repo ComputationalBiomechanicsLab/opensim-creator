@@ -6,7 +6,7 @@
 #include <stdexcept>
 #include <vector>
 
-void osc::gl::CompileFromSource(ShaderHandle const& s, GLchar const* src)
+void osc::gl::compileFromSource(const ShaderHandle& s, const GLchar* src)
 {
     glShaderSource(s.get(), 1, &src, nullptr);
     glCompileShader(s.get());
@@ -15,8 +15,7 @@ void osc::gl::CompileFromSource(ShaderHandle const& s, GLchar const* src)
     GLint params = GL_FALSE;
     glGetShaderiv(s.get(), GL_COMPILE_STATUS, &params);
 
-    if (params == GL_TRUE)
-    {
+    if (params == GL_TRUE) {
         return;
     }
 
@@ -33,7 +32,7 @@ void osc::gl::CompileFromSource(ShaderHandle const& s, GLchar const* src)
     throw std::runtime_error{std::move(ss).str()};
 }
 
-void osc::gl::LinkProgram(gl::Program& prog)
+void osc::gl::linkProgram(gl::Program& prog)
 {
     glLinkProgram(prog.get());
 
@@ -41,8 +40,7 @@ void osc::gl::LinkProgram(gl::Program& prog)
     GLint linkStatus = GL_FALSE;
     glGetProgramiv(prog.get(), GL_LINK_STATUS, &linkStatus);
 
-    if (linkStatus == GL_TRUE)
-    {
+    if (linkStatus == GL_TRUE) {
         return;
     }
 

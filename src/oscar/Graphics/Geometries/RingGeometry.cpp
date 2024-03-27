@@ -27,8 +27,8 @@ osc::RingGeometry::RingGeometry(
 
     thetaSegments = max(3_uz, thetaSegments);
     phiSegments = max(1_uz, phiSegments);
-    auto const fthetaSegments = static_cast<float>(thetaSegments);
-    auto const fphiSegments = static_cast<float>(phiSegments);
+    const auto fthetaSegments = static_cast<float>(thetaSegments);
+    const auto fphiSegments = static_cast<float>(phiSegments);
 
     std::vector<uint32_t> indices;
     std::vector<Vec3> vertices;
@@ -41,10 +41,10 @@ osc::RingGeometry::RingGeometry(
     // generate vertices, normals, and uvs
     for (size_t j = 0; j <= phiSegments; ++j) {
         for (size_t i = 0; i <= thetaSegments; ++i) {
-            auto const fi = static_cast<float>(i);
+            const auto fi = static_cast<float>(i);
             Radians segment = thetaStart + (fi/fthetaSegments * thetaLength);
 
-            Vec3 const& v = vertices.emplace_back(radius * cos(segment), radius * sin(segment), 0.0f);
+            const Vec3& v = vertices.emplace_back(radius * cos(segment), radius * sin(segment), 0.0f);
             normals.emplace_back(0.0f, 0.0f, 1.0f);
             uvs.emplace_back(
                 (v.x/outerRadius + 1.0f) / 2.0f,
@@ -55,14 +55,14 @@ osc::RingGeometry::RingGeometry(
     }
 
     for (size_t j = 0; j < phiSegments; ++j) {
-        size_t const thetaSegmentLevel = j * (thetaSegments + 1);
+        const size_t thetaSegmentLevel = j * (thetaSegments + 1);
         for (size_t i = 0; i < thetaSegments; ++i) {
             size_t segment = i + thetaSegmentLevel;
 
-            auto const a = static_cast<uint32_t>(segment);
-            auto const b = static_cast<uint32_t>(segment + thetaSegments + 1);
-            auto const c = static_cast<uint32_t>(segment + thetaSegments + 2);
-            auto const d = static_cast<uint32_t>(segment + 1);
+            const auto a = static_cast<uint32_t>(segment);
+            const auto b = static_cast<uint32_t>(segment + thetaSegments + 1);
+            const auto c = static_cast<uint32_t>(segment + thetaSegments + 2);
+            const auto d = static_cast<uint32_t>(segment + 1);
 
             indices.insert(indices.end(), {a, b, d});
             indices.insert(indices.end(), {b, c, d});

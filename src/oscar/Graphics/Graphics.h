@@ -20,72 +20,72 @@ namespace osc { struct Transform; }
 // rendering functions
 //
 // these perform the necessary backend steps to get something useful done
-namespace osc::Graphics
+namespace osc::graphics
 {
     // draw: enqueue drawable elements onto the camera ready for rendering
 
-    void DrawMesh(
-        Mesh const&,
-        Transform const&,
-        Material const&,
+    void drawMesh(
+        const Mesh&,
+        const Transform&,
+        const Material&,
         Camera&,
-        std::optional<MaterialPropertyBlock> const& = std::nullopt,
+        const std::optional<MaterialPropertyBlock>& = std::nullopt,
         std::optional<size_t> maybeSubMeshIndex = std::nullopt
     );
 
-    void DrawMesh(
-        Mesh const&,
-        Mat4 const&,
-        Material const&,
+    void drawMesh(
+        const Mesh&,
+        const Mat4&,
+        const Material&,
         Camera&,
-        std::optional<MaterialPropertyBlock> const& = std::nullopt,
+        const std::optional<MaterialPropertyBlock>& = std::nullopt,
         std::optional<size_t> maybeSubMeshIndex = std::nullopt
     );
 
     // blit: use a shader to copy a GPU texture to a GPU render texture or
     // the screen
 
-    void Blit(
-        Texture2D const&,
+    void blit(
+        const Texture2D&,
         RenderTexture&
     );
 
-    void BlitToScreen(
-        RenderTexture const&,
-        Rect const&,
+    void blitToScreen(
+        const RenderTexture&,
+        const Rect&,
         BlitFlags = BlitFlags::None
     );
 
     // assigns the source RenderTexture to the texture uniform "uTexture"
     //
     // (can be sampler2D or samplerCube, depending on the source RenderTexture)
-    void BlitToScreen(
-        RenderTexture const&,
-        Rect const&,
-        Material const&,
+    void blitToScreen(
+        const RenderTexture&,
+        const Rect&,
+        const Material&,
         BlitFlags = BlitFlags::None
     );
 
-    void BlitToScreen(
-        Texture2D const&,
-        Rect const&
+    void blitToScreen(
+        const Texture2D&,
+        const Rect&
     );
 
     // copy: copy a GPU texture to a (potentially, CPU-accessible) texture
 
-    void CopyTexture(
-        RenderTexture const&,
+    void copyTexture(
+        const RenderTexture&,
         Texture2D&
     );
 
-    void CopyTexture(
-        RenderTexture const&,
+    void copyTexture(
+        const RenderTexture&,
         Texture2D&,
         CubemapFace
     );
 
-    void CopyTexture(
-        RenderTexture const&,
+    void copyTexture(
+        const RenderTexture&,
         Cubemap&,
         size_t mip
     );

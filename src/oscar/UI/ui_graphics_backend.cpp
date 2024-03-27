@@ -41,7 +41,7 @@
 #include <unordered_map>
 #include <variant>
 
-namespace Graphics = osc::Graphics;
+namespace graphics = osc::graphics;
 namespace cpp20 = osc::cpp20;
 using namespace osc;
 
@@ -123,7 +123,7 @@ namespace
         {
             auto const ldrColor = Unorm8{static_cast<uint8_t>(i)};
             float const hdrColor = ldrColor.normalized_value();
-            float const linearHdrColor = ToLinear(hdrColor);
+            float const linearHdrColor = toLinear(hdrColor);
             rv[i] = Unorm8{linearHdrColor}.raw_value();
         }
         return rv;
@@ -246,7 +246,7 @@ namespace
                 [&bd](Texture2D const& t) { bd.material.setTexture("uTexture", t); },
                 [&bd](RenderTexture const& t) { bd.material.setRenderTexture("uTexture", t); },
             }, *texture);
-            Graphics::DrawMesh(mesh, identity<Mat4>(), bd.material, bd.camera, std::nullopt, idx);
+            graphics::drawMesh(mesh, identity<Mat4>(), bd.material, bd.camera, std::nullopt, idx);
             bd.camera.renderToScreen();
         }
     }

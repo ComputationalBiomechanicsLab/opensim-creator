@@ -21,7 +21,7 @@ using namespace osc;
 
 namespace
 {
-    float CalcNormalizedHLSAHue(
+    float calcNormalizedHLSAHue(
         float r,
         float g,
         float b,
@@ -29,26 +29,22 @@ namespace
         float max,
         float delta)
     {
-        if (delta == 0.0f)
-        {
+        if (delta == 0.0f) {
             return 0.0f;
         }
 
         // figure out projection of color onto hue hexagon
         float segment = 0.0f;
         float shift = 0.0f;
-        if (max == r)
-        {
+        if (max == r) {
             segment = (g - b)/delta;
             shift = (segment < 0.0f ? 360.0f/60.0f : 0.0f);
         }
-        else if (max == g)
-        {
+        else if (max == g) {
             segment = (b - r)/delta;
             shift = 120.0f/60.0f;
         }
-        else  // max == b
-        {
+        else {  // max == b
             segment = (r - g)/delta;
             shift = 240.0f/60.0f;
         }
@@ -56,28 +52,24 @@ namespace
         return (segment + shift)/6.0f;  // normalize
     }
 
-    float CalcHLSASaturation(float lightness, float min, float max)
+    float calcHLSASaturation(float lightness, float min, float max)
     {
-        if (lightness == 0.0f)
-        {
+        if (lightness == 0.0f) {
             return 0.0f;
         }
-        else if (lightness <= 0.5f)
-        {
+        else if (lightness <= 0.5f) {
             return 0.5f * (max - min)/lightness;
         }
-        else if (lightness < 1.0f)
-        {
+        else if (lightness < 1.0f) {
             return 0.5f * (max - min)/(1.0f - lightness);
         }
-        else  // lightness == 1.0f
-        {
+        else {  // lightness == 1.0f
             return 0.0f;
         }
     }
 }
 
-std::ostream& osc::operator<<(std::ostream& o, Color const& c)
+std::ostream& osc::operator<<(std::ostream& o, const Color& c)
 {
     return o << "Color(r = " << c.r << ", g = " << c.g << ", b = " << c.b << ", a = " << c.a << ')';
 }
@@ -97,81 +89,74 @@ std::ostream& osc::operator<<(std::ostream& o, Color const& c)
 // - https://registry.khronos.org/OpenGL/extensions/ARB/ARB_framebuffer_sRGB.txt
 //
 // (because I am a lazy bastard)
-float osc::ToLinear(float colorChannelValue)
+float osc::toLinear(float colorChannelValue)
 {
-    if (colorChannelValue <= 0.04045f)
-    {
+    if (colorChannelValue <= 0.04045f) {
         return colorChannelValue / 12.92f;
     }
-    else
-    {
+    else {
         return pow((colorChannelValue + 0.055f) / 1.055f, 2.4f);
     }
 }
 
-float osc::ToSRGB(float colorChannelValue)
+float osc::toSRGB(float colorChannelValue)
 {
-    if (colorChannelValue <= 0.0031308f)
-    {
+    if (colorChannelValue <= 0.0031308f) {
         return colorChannelValue * 12.92f;
     }
-    else
-    {
+    else {
         return pow(colorChannelValue, 1.0f/2.4f)*1.055f - 0.055f;
     }
 }
 
-Color osc::ToLinear(Color const& c)
+Color osc::toLinear(const Color& c)
 {
-    return
-    {
-        ToLinear(c.r),
-        ToLinear(c.g),
-        ToLinear(c.b),
+    return {
+        toLinear(c.r),
+        toLinear(c.g),
+        toLinear(c.b),
         c.a,
     };
 }
 
-Color osc::ToSRGB(Color const& c)
+Color osc::toSRGB(const Color& c)
 {
-    return
-    {
-        ToSRGB(c.r),
-        ToSRGB(c.g),
-        ToSRGB(c.b),
+    return {
+        toSRGB(c.r),
+        toSRGB(c.g),
+        toSRGB(c.b),
         c.a,
     };
 }
 
-Color osc::Lerp(Color const& a, Color const& b, float t)
+Color osc::lerp(const Color& a, const Color& b, float t)
 {
     return Color{lerp(Vec4{a}, Vec4{b}, saturate(t))};
 }
 
-size_t std::hash<osc::Color>::operator()(osc::Color const& color) const
+size_t std::hash<osc::Color>::operator()(const osc::Color& color) const
 {
     return HashOf(color.r, color.g, color.b, color.a);
 }
 
-Color32 osc::ToColor32(Color const& color)
+Color32 osc::toColor32(const Color& color)
 {
-    return ToColor32(static_cast<Vec4>(color));
+    return toColor32(static_cast<Vec4>(color));
 }
 
-Color32 osc::ToColor32(Vec4 const& v)
+Color32 osc::toColor32(const Vec4& v)
 {
     return Color32{v.x, v.y, v.z, v.w};
 }
 
-Color32 osc::ToColor32(float r, float g, float b, float a)
+Color32 osc::toColor32(float r, float g, float b, float a)
 {
     return Color32{r, g, b, a};
 }
 
-Color32 osc::ToColor32(uint32_t v)
+Color32 osc::toColor32(uint32_t v)
 {
-    return Color32
-    {
+    return Color32{
         static_cast<uint8_t>((v >> 24) & 0xff),
         static_cast<uint8_t>((v >> 16) & 0xff),
         static_cast<uint8_t>((v >> 8) & 0xff),
@@ -179,61 +164,58 @@ Color32 osc::ToColor32(uint32_t v)
     };
 }
 
-Color osc::ToColor(Color32 c)
+Color osc::toColor(Color32 c)
 {
     return Color{c.r.normalized_value(), c.g.normalized_value(), c.b.normalized_value(), c.a.normalized_value()};
 }
 
-Color osc::ClampToLDR(Color const& c)
+Color osc::clampToLDR(const Color& c)
 {
     return Color{saturate(Vec4{c})};
 }
 
-ColorHSLA osc::ToHSLA(Color const& c)
+ColorHSLA osc::toHSLA(const Color& c)
 {
     // sources:
     //
     // - https://web.cs.uni-paderborn.de/cgvb/colormaster/web/color-systems/hsl.html
     // - https://stackoverflow.com/questions/39118528/rgb-to-hsl-conversion
 
-    auto const [r, g, b, a] = ClampToLDR(c);
-    auto const [min, max] = minmax({r, g, b});
-    float const delta = max - min;
+    const auto [r, g, b, a] = clampToLDR(c);
+    const auto [min, max] = minmax({r, g, b});
+    const float delta = max - min;
 
-    float const hue = CalcNormalizedHLSAHue(r, g, b, min, max, delta);
-    float const lightness = 0.5f*(min + max);
-    float const saturation = CalcHLSASaturation(lightness, min, max);
+    const float hue = calcNormalizedHLSAHue(r, g, b, min, max, delta);
+    const float lightness = 0.5f*(min + max);
+    const float saturation = calcHLSASaturation(lightness, min, max);
 
     return {hue, saturation, lightness, a};
 }
 
-Color osc::ToColor(ColorHSLA const& c)
+Color osc::toColor(const ColorHSLA& c)
 {
     // see: https://web.cs.uni-paderborn.de/cgvb/colormaster/web/color-systems/hsl.html
 
-    auto const [h, s, l, a] = c;
+    const auto [h, s, l, a] = c;
 
-    if (l <= 0.0f)
-    {
+    if (l <= 0.0f) {
         return Color::black();
     }
 
-    if (l >= 1.0f)
-    {
+    if (l >= 1.0f) {
         return Color::white();
     }
 
-    float const hp = mod(6.0f*h, 6.0f);
-    float const c1 = floor(hp);
-    float const c2 = hp - c1;
-    float const d = l <= 0.5f ? s*l : s*(1.0f - l);
-    float const u1 = l + d;
-    float const u2 = l - d;
-    float const u3 = u1 - (u1 - u2)*c2;
-    float const u4 = u2 + (u1 - u2)*c2;
+    const float hp = mod(6.0f*h, 6.0f);
+    const float c1 = floor(hp);
+    const float c2 = hp - c1;
+    const float d  = l <= 0.5f ? s*l : s*(1.0f - l);
+    const float u1 = l + d;
+    const float u2 = l - d;
+    const float u3 = u1 - (u1 - u2)*c2;
+    const float u4 = u2 + (u1 - u2)*c2;
 
-    switch (static_cast<int>(c1))
-    {
+    switch (static_cast<int>(c1)) {
     default:
     case 0: return {u1, u4, u2, a};
     case 1: return {u3, u1, u2, a};
@@ -244,13 +226,12 @@ Color osc::ToColor(ColorHSLA const& c)
     }
 }
 
-std::string osc::ToHtmlStringRGBA(Color const& c)
+std::string osc::toHtmlStringRGBA(const Color& c)
 {
     std::string rv;
     rv.reserve(9);
     rv.push_back('#');
-    for (auto v : ToColor32(c))
-    {
+    for (auto v : toColor32(c)) {
         auto [nib1, nib2] = ToHexChars(static_cast<uint8_t>(v));
         rv.push_back(nib1);
         rv.push_back(nib2);
@@ -258,7 +239,7 @@ std::string osc::ToHtmlStringRGBA(Color const& c)
     return rv;
 }
 
-std::optional<Color> osc::TryParseHtmlString(std::string_view v)
+std::optional<Color> osc::tryParseHtmlString(std::string_view v)
 {
     if (v.empty())
     {
@@ -269,51 +250,42 @@ std::optional<Color> osc::TryParseHtmlString(std::string_view v)
         return std::nullopt;  // incorrect first character (e.g. should be "#ff0000ff")
     }
 
-    std::string_view const content = v.substr(1);
-    if (content.size() == 6)
-    {
+    const std::string_view content = v.substr(1);
+    if (content.size() == 6) {
         // RGB hex string
         Color rv = Color::black();
-        for (size_t i = 0; i < 3; ++i)
-        {
-            if (auto b = TryParseHexCharsAsByte(content[2*i], content[2*i + 1]))
-            {
+        for (size_t i = 0; i < 3; ++i) {
+            if (auto b = TryParseHexCharsAsByte(content[2*i], content[2*i + 1])) {
                 rv[i] = Unorm8{*b}.normalized_value();
             }
-            else
-            {
+            else {
                 return std::nullopt;
             }
         }
         return rv;
     }
-    else if (content.size() == 8)
-    {
+    else if (content.size() == 8) {
         // RGBA hex string
         Color rv = Color::black();
-        for (size_t i = 0; i < 4; ++i)
-        {
-            if (auto b = TryParseHexCharsAsByte(content[2*i], content[2*i + 1]))
-            {
+        for (size_t i = 0; i < 4; ++i) {
+            if (auto b = TryParseHexCharsAsByte(content[2*i], content[2*i + 1])) {
                 rv[i] = Unorm8{*b}.normalized_value();
             }
-            else
-            {
+            else {
                 return std::nullopt;
             }
         }
         return rv;
     }
-    else
-    {
+    else {
         // invalid hex string
         return std::nullopt;
     }
 }
 
-Color osc::MultiplyLuminance(Color const& c, float factor)
+Color osc::multiplyLuminance(const Color& c, float factor)
 {
-    auto hsla = ToHSLA(c);
+    auto hsla = toHSLA(c);
     hsla.l *= factor;
-    return ToColor(hsla);
+    return toColor(hsla);
 }

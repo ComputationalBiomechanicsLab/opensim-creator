@@ -322,11 +322,11 @@ void osc::ActionSavePairedLandmarksToCSV(TPSDocument const& doc, lm::LandmarkCSV
     {
         if (flags & lm::LandmarkCSVFlags::NoNames)
         {
-            WriteCSVRow(fout, {{"source.x", "source.y", "source.z", "dest.x", "dest.y", "dest.z"}});
+            writeCSVRow(fout, {{"source.x", "source.y", "source.z", "dest.x", "dest.y", "dest.z"}});
         }
         else
         {
-            WriteCSVRow(fout, {{"name", "source.x", "source.y", "source.z", "dest.x", "dest.y", "dest.z"}});
+            writeCSVRow(fout, {{"name", "source.x", "source.y", "source.z", "dest.x", "dest.y", "dest.z"}});
         }
     }
 
@@ -348,7 +348,7 @@ void osc::ActionSavePairedLandmarksToCSV(TPSDocument const& doc, lm::LandmarkCSV
         cols.push_back(to_string(p.destination.y));
         cols.push_back(to_string(p.destination.z));
 
-        WriteCSVRow(fout, cols);
+        writeCSVRow(fout, cols);
 
         cols.clear();
     }
@@ -379,7 +379,7 @@ void osc::ActionTrySaveMeshToObjFile(Mesh const& mesh, ObjWriterFlags flags)
         CalcFullApplicationNameWithVersionAndBuild(appMetadata),
     };
 
-    WriteMeshAsObj(
+    writeMeshAsObj(
         outputFileStream,
         mesh,
         objMetadata,
@@ -412,7 +412,7 @@ void osc::ActionTrySaveMeshToStlFile(Mesh const& mesh)
         CalcFullApplicationNameWithVersionAndBuild(appMetadata),
     };
 
-    WriteMeshAsStl(outputFileStream, mesh, stlMetadata);
+    writeMeshAsStl(outputFileStream, mesh, stlMetadata);
 }
 
 void osc::ActionSaveWarpedNonParticipatingLandmarksToCSV(

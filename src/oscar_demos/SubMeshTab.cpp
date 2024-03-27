@@ -77,7 +77,7 @@ private:
     void implOnDraw() final
     {
         for (size_t subMeshIndex = 0; subMeshIndex < m_MeshWithSubmeshes.getSubMeshCount(); ++subMeshIndex) {
-            Graphics::DrawMesh(
+            graphics::drawMesh(
                 m_MeshWithSubmeshes,
                 identity<Transform>(),
                 m_Material,

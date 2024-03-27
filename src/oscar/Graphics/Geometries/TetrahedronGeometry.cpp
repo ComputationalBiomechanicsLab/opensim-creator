@@ -14,11 +14,11 @@ osc::TetrahedronGeometry::TetrahedronGeometry(float radius, size_t detail)
 {
     // implementation ported from threejs (TetrahedronGeometry)
 
-    auto const vertices = std::to_array<Vec3>({
+    const auto vertices = std::to_array<Vec3>({
         {1, 1, 1}, {-1, -1, 1}, {-1, 1, - 1}, {1, -1, -1},
     });
 
-    auto const indices = std::to_array<uint32_t>({
+    const auto indices = std::to_array<uint32_t>({
         2, 1, 0,    0, 3, 2,    1, 3, 0,    2, 3, 1
     });
 

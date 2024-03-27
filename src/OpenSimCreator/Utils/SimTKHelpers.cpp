@@ -81,7 +81,7 @@ Vec3 osc::ToVec3(SimTK::Vec3 const& v)
     };
 }
 
-Vec4 osc::ToVec4(SimTK::Vec3 const& v, float w)
+Vec4 osc::toVec4(SimTK::Vec3 const& v, float w)
 {
     return Vec4
     {

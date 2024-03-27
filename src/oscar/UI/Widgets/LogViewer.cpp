@@ -17,7 +17,7 @@ using namespace osc;
 
 namespace
 {
-    Color ToColor(LogLevel lvl)
+    Color toColor(LogLevel lvl)
     {
         switch (lvl)
         {
@@ -76,7 +76,7 @@ public:
                 ui::SetNextItemWidth(200.0f);
                 if (ui::BeginCombo("level", ToCStringView(currentLevel)))
                 {
-                    for (LogLevel l = FirstLogLevel(); l <= LastLogLevel(); l = Next(l))
+                    for (LogLevel l = FirstLogLevel(); l <= LastLogLevel(); l = next(l))
                     {
                         bool active = l == currentLevel;
                         if (ui::Selectable(ToCStringView(l), &active))
@@ -120,7 +120,7 @@ public:
         auto const& contentGuard = guardedContent.lock();
         for (LogMessage const& msg : *contentGuard)
         {
-            ui::PushStyleColor(ImGuiCol_Text, ::ToColor(msg.level));
+            ui::PushStyleColor(ImGuiCol_Text, ::toColor(msg.level));
             ui::Text("[%s]", ToCStringView(msg.level).c_str());
             ui::PopStyleColor();
             ui::SameLine();

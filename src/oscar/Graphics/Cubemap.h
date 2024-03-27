@@ -31,9 +31,9 @@ namespace osc
 
         // `data` must match the channel layout, bytes per channel, and
         // width*height of the cubemap, or an exception will be thrown
-        void setPixelData(CubemapFace, std::span<uint8_t const>);
+        void setPixelData(CubemapFace, std::span<const uint8_t>);
 
-        friend bool operator==(Cubemap const&, Cubemap const&) = default;
+        friend bool operator==(const Cubemap&, const Cubemap&) = default;
     private:
         friend class GraphicsBackend;
 

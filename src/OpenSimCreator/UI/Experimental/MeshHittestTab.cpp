@@ -115,7 +115,7 @@ public:
         // draw mesh
         m_Material.setColor(m_IsMousedOver ? Color::green() : Color::red());
         m_Material.setDepthTested(true);
-        Graphics::DrawMesh(m_Mesh, identity<Transform>(), m_Material, m_Camera);
+        graphics::drawMesh(m_Mesh, identity<Transform>(), m_Material, m_Camera);
 
         // draw hit triangle while mousing over
         if (m_IsMousedOver)
@@ -126,7 +126,7 @@ public:
 
             m_Material.setColor(Color::black());
             m_Material.setDepthTested(false);
-            Graphics::DrawMesh(m, identity<Transform>(), m_Material, m_Camera);
+            graphics::drawMesh(m, identity<Transform>(), m_Material, m_Camera);
         }
 
         if (m_UseBVH)
@@ -134,12 +134,12 @@ public:
             // draw BVH AABBs
             m_Material.setColor(Color::black());
             m_Material.setDepthTested(true);
-            DrawBVH(
+            drawBVH(
                 *App::singleton<SceneCache>(),
                 m_MeshBVH,
                 [this](SceneDecoration&& dec)
                 {
-                    Graphics::DrawMesh(m_CubeLinesMesh, dec.transform, m_Material, m_Camera);
+                    graphics::drawMesh(m_CubeLinesMesh, dec.transform, m_Material, m_Camera);
                 }
             );
         }
@@ -182,7 +182,7 @@ private:
     Mesh m_CubeLinesMesh = AABBGeometry{};
 
     // other state
-    BVH m_MeshBVH = CreateTriangleBVHFromMesh(m_Mesh);
+    BVH m_MeshBVH = createTriangleBVHFromMesh(m_Mesh);
     bool m_UseBVH = false;
     Triangle m_Tris;
     std::chrono::microseconds m_RaycastDuration{0};

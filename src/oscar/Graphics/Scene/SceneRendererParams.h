@@ -10,24 +10,24 @@ namespace osc
 {
     struct SceneRendererParams final {
 
-        static constexpr Color DefaultLightColor()
+        static constexpr Color defaultLightColor()
         {
             return {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f};
         }
 
-        static constexpr Color DefaultBackgroundColor()
+        static constexpr Color defaultBackgroundColor()
         {
             return {0.89f, 0.89f, 0.89f};
         }
 
-        static constexpr Vec3 DefaultFloorLocation()
+        static constexpr Vec3 defaultFloorLocation()
         {
             return {0.0f, -0.001f, 0.0f};
         }
 
         SceneRendererParams();
 
-        friend bool operator==(SceneRendererParams const&, SceneRendererParams const&) = default;
+        friend bool operator==(const SceneRendererParams&, const SceneRendererParams&) = default;
 
         Vec2i dimensions;
         AntiAliasingLevel antiAliasingLevel;

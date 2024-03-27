@@ -6,7 +6,7 @@
 #include <array>
 #include <memory>
 
-namespace Graphics = osc::Graphics;
+namespace graphics = osc::graphics;
 using namespace osc::literals;
 using namespace osc;
 
@@ -46,7 +46,7 @@ namespace
     RenderTexture LoadEquirectangularHDRTextureIntoCubemap(
         IResourceLoader& rl)
     {
-        Texture2D hdrTexture = LoadTexture2DFromImage(
+        Texture2D hdrTexture = loadTexture2DFromImage(
             rl.open("oscar_learnopengl/textures/hdr/newport_loft.hdr"),
             ColorSpace::Linear,
             ImageLoadingFlags::FlipVertically
@@ -71,7 +71,7 @@ namespace
         material.setMat4Array("uShadowMatrices", CalcCubemapViewProjMatrices(projectionMatrix, Vec3{}));
 
         Camera camera;
-        Graphics::DrawMesh(BoxGeometry{2.0f, 2.0f, 2.0f}, identity<Transform>(), material, camera);
+        graphics::drawMesh(BoxGeometry{2.0f, 2.0f, 2.0f}, identity<Transform>(), material, camera);
         camera.renderTo(cubemapRenderTarget);
 
         // TODO: some way of copying it into an `osc::Cubemap` would make sense
@@ -97,7 +97,7 @@ namespace
         material.setMat4Array("uShadowMatrices", CalcCubemapViewProjMatrices(captureProjection, Vec3{}));
 
         Camera camera;
-        Graphics::DrawMesh(BoxGeometry{2.0f, 2.0f, 2.0f}, identity<Transform>(), material, camera);
+        graphics::drawMesh(BoxGeometry{2.0f, 2.0f, 2.0f}, identity<Transform>(), material, camera);
         camera.renderTo(irradianceCubemap);
 
         // TODO: some way of copying it into an `osc::Cubemap` would make sense
@@ -175,7 +175,7 @@ private:
                 float const x = (static_cast<float>(col) - static_cast<float>(c_NumCols)/2.0f) * c_CellSpacing;
                 float const y = (static_cast<float>(row) - static_cast<float>(c_NumRows)/2.0f) * c_CellSpacing;
 
-                Graphics::DrawMesh(m_SphereMesh, {.position = {x, y, 0.0f}}, m_PBRMaterial, m_Camera);
+                graphics::drawMesh(m_SphereMesh, {.position = {x, y, 0.0f}}, m_PBRMaterial, m_Camera);
             }
         }
     }
@@ -185,7 +185,7 @@ private:
         m_PBRMaterial.setVec3("uAlbedoColor", {1.0f, 1.0f, 1.0f});
 
         for (Vec3 const& pos : c_LightPositions) {
-            Graphics::DrawMesh(m_SphereMesh, {.scale = Vec3{0.5f}, .position = pos}, m_PBRMaterial, m_Camera);
+            graphics::drawMesh(m_SphereMesh, {.scale = Vec3{0.5f}, .position = pos}, m_PBRMaterial, m_Camera);
         }
     }
 
@@ -193,7 +193,7 @@ private:
     {
         m_BackgroundMaterial.setRenderTexture("uEnvironmentMap", m_ProjectedMap);
         m_BackgroundMaterial.setDepthFunction(DepthFunction::LessOrEqual);  // for skybox depth trick
-        Graphics::DrawMesh(m_CubeMesh, identity<Transform>(), m_BackgroundMaterial, m_Camera);
+        graphics::drawMesh(m_CubeMesh, identity<Transform>(), m_BackgroundMaterial, m_Camera);
         m_Camera.setPixelRect(ui::GetMainViewportWorkspaceScreenRect());
         m_Camera.setClearFlags(CameraClearFlags::Nothing);
         m_Camera.renderToScreen();
@@ -213,7 +213,7 @@ private:
 
     ResourceLoader m_Loader = App::resource_loader();
 
-    Texture2D m_Texture = LoadTexture2DFromImage(
+    Texture2D m_Texture = loadTexture2DFromImage(
         m_Loader.open("oscar_learnopengl/textures/hdr/newport_loft.hdr"),
         ColorSpace::Linear,
         ImageLoadingFlags::FlipVertically

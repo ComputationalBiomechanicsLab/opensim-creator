@@ -30,7 +30,7 @@ namespace
 
         // set uTexture1
         {
-            Texture2D container = LoadTexture2DFromImage(
+            Texture2D container = loadTexture2DFromImage(
                 rl.open("oscar_learnopengl/textures/container.jpg"),
                 ColorSpace::sRGB,
                 ImageLoadingFlags::FlipVertically
@@ -42,7 +42,7 @@ namespace
 
         // set uTexture2
         {
-            Texture2D const face = LoadTexture2DFromImage(
+            Texture2D const face = loadTexture2DFromImage(
                 rl.open("oscar_learnopengl/textures/awesomeface.png"),
                 ColorSpace::sRGB,
                 ImageLoadingFlags::FlipVertically
@@ -71,7 +71,7 @@ public:
 private:
     void implOnDraw() final
     {
-        Graphics::DrawMesh(m_Mesh, identity<Transform>(), m_Material, m_Camera);
+        graphics::drawMesh(m_Mesh, identity<Transform>(), m_Material, m_Camera);
 
         m_Camera.setPixelRect(ui::GetMainViewportWorkspaceScreenRect());
         m_Camera.renderToScreen();

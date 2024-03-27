@@ -23,7 +23,7 @@ osc::CircleGeometry::CircleGeometry(
     // this implementation was initially hand-ported from threejs (CircleGeometry)
 
     segments = max(3_uz, segments);
-    auto const fsegments = static_cast<float>(segments);
+    const auto fsegments = static_cast<float>(segments);
 
     std::vector<uint32_t> indices;
     std::vector<Vec3> vertices;
@@ -37,10 +37,10 @@ osc::CircleGeometry::CircleGeometry(
 
     // not-middle vertices
     for (ptrdiff_t s = 0; s <= static_cast<ptrdiff_t>(segments); ++s) {
-        auto const fs = static_cast<float>(s);
-        auto const segment = thetaStart + (fs/fsegments * thetaLength);
-        auto const cosSeg = cos(segment);
-        auto const sinSeg = sin(segment);
+        const auto fs = static_cast<float>(s);
+        const auto segment = thetaStart + (fs/fsegments * thetaLength);
+        const auto cosSeg = cos(segment);
+        const auto sinSeg = sin(segment);
 
         vertices.emplace_back(radius * cosSeg, radius * sinSeg, 0.0f);
         normals.emplace_back(0.0f, 0.0f, 1.0f);

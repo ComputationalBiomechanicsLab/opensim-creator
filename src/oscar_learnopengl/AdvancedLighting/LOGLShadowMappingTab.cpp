@@ -115,7 +115,7 @@ private:
         m_Camera.setPixelRect(viewportRect);
         m_Camera.renderToScreen();
         m_Camera.setPixelRect(std::nullopt);
-        Graphics::BlitToScreen(m_DepthTexture, Rect{viewportRect.p1, viewportRect.p1 + 200.0f});
+        graphics::blitToScreen(m_DepthTexture, Rect{viewportRect.p1, viewportRect.p1 + 200.0f});
 
         m_SceneMaterial.clearRenderTexture("uShadowMapTexture");
     }
@@ -123,22 +123,22 @@ private:
     void drawMeshesWithMaterial(Material const& material)
     {
         // floor
-        Graphics::DrawMesh(m_PlaneMesh, identity<Transform>(), material, m_Camera);
+        graphics::drawMesh(m_PlaneMesh, identity<Transform>(), material, m_Camera);
 
         // cubes
-        Graphics::DrawMesh(
+        graphics::drawMesh(
             m_CubeMesh,
             {.scale = Vec3{0.5f}, .position = {0.0f, 1.0f, 0.0f}},
             material,
             m_Camera
         );
-        Graphics::DrawMesh(
+        graphics::drawMesh(
             m_CubeMesh,
             {.scale = Vec3{0.5f}, .position = {2.0f, 0.0f, 1.0f}},
             material,
             m_Camera
         );
-        Graphics::DrawMesh(
+        graphics::drawMesh(
             m_CubeMesh,
             Transform{
                 .scale = Vec3{0.25f},
@@ -169,7 +169,7 @@ private:
 
     ResourceLoader m_Loader = App::resource_loader();
     MouseCapturingCamera m_Camera = CreateCamera();
-    Texture2D m_WoodTexture = LoadTexture2DFromImage(
+    Texture2D m_WoodTexture = loadTexture2DFromImage(
         m_Loader.open("oscar_learnopengl/textures/wood.png"),
         ColorSpace::sRGB
     );

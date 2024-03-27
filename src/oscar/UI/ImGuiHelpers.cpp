@@ -70,9 +70,9 @@ namespace
 
     ImU32 Brighten(ImU32 color, float factor)
     {
-        const Color srgb = ui::ToColor(color);
+        const Color srgb = ui::toColor(color);
         const Color brightened = factor * srgb;
-        const Color clamped = ClampToLDR(brightened);
+        const Color clamped = clampToLDR(brightened);
         return ui::ToImU32(clamped);
     }
 }
@@ -736,12 +736,12 @@ ImU32 osc::ui::ToImU32(Color const& color)
     return ui::ColorConvertFloat4ToU32(Vec4{color});
 }
 
-Color osc::ui::ToColor(ImU32 u32color)
+Color osc::ui::toColor(ImU32 u32color)
 {
     return Color{Vec4{ImGui::ColorConvertU32ToFloat4(u32color)}};
 }
 
-Color osc::ui::ToColor(ImVec4 const& v)
+Color osc::ui::toColor(ImVec4 const& v)
 {
     return {v.x, v.y, v.z, v.w};
 }

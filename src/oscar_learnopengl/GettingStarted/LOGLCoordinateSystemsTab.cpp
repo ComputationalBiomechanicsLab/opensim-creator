@@ -47,7 +47,7 @@ namespace
 
         rv.setTexture(
             "uTexture1",
-            LoadTexture2DFromImage(
+            loadTexture2DFromImage(
                 rl.open("oscar_learnopengl/textures/container.jpg"),
                 ColorSpace::sRGB,
                 ImageLoadingFlags::FlipVertically
@@ -56,7 +56,7 @@ namespace
 
         rv.setTexture(
             "uTexture2",
-            LoadTexture2DFromImage(
+            loadTexture2DFromImage(
                 rl.open("oscar_learnopengl/textures/awesomeface.png"),
                 ColorSpace::sRGB,
                 ImageLoadingFlags::FlipVertically
@@ -111,13 +111,13 @@ private:
 
         // draw 3D scene
         if (m_ShowStep1) {
-            Graphics::DrawMesh(m_Mesh, m_Step1Transform, m_Material, m_Camera);
+            graphics::drawMesh(m_Mesh, m_Step1Transform, m_Material, m_Camera);
         }
         else {
             UnitVec3 const axis{1.0f, 0.3f, 0.5f};
 
             for (size_t i = 0; i < c_CubePositions.size(); ++i) {
-                Graphics::DrawMesh(
+                graphics::drawMesh(
                     m_Mesh,
                     Transform{
                         .rotation = angle_axis(i * 20_deg, axis),

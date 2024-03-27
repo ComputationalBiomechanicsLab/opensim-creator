@@ -100,7 +100,7 @@ void osc::lm::ReadLandmarksFromCSV(
     std::function<void(CSVParseWarning)> const& warningConsumer)
 {
     std::vector<std::string> cols;
-    for (size_t line = 0; ReadCSVRowIntoVector(in, cols); ++line)
+    for (size_t line = 0; readCSVRowIntoVector(in, cols); ++line)
     {
         std::visit(Overload
         {
@@ -121,11 +121,11 @@ void osc::lm::WriteLandmarksToCSV(
     {
         if (flags & LandmarkCSVFlags::NoNames)
         {
-            WriteCSVRow(out, {{"x", "y", "z"}});
+            writeCSVRow(out, {{"x", "y", "z"}});
         }
         else
         {
-            WriteCSVRow(out, {{"name", "x", "y", "z"}});
+            writeCSVRow(out, {{"name", "x", "y", "z"}});
         }
     }
 
@@ -139,11 +139,11 @@ void osc::lm::WriteLandmarksToCSV(
 
         if (flags & LandmarkCSVFlags::NoNames)
         {
-            WriteCSVRow(out, {{to_string(x), to_string(y), to_string(z)}});
+            writeCSVRow(out, {{to_string(x), to_string(y), to_string(z)}});
         }
         else
         {
-            WriteCSVRow(out, {{lm->maybeName.value_or("unnamed"), to_string(x), to_string(y), to_string(z)}});
+            writeCSVRow(out, {{lm->maybeName.value_or("unnamed"), to_string(x), to_string(y), to_string(z)}});
         }
     }
 }

@@ -14,13 +14,13 @@ namespace osc
     class CachedSceneRenderer final {
     public:
         CachedSceneRenderer(SceneCache&);
-        CachedSceneRenderer(CachedSceneRenderer const&) = delete;
+        CachedSceneRenderer(const CachedSceneRenderer&) = delete;
         CachedSceneRenderer(CachedSceneRenderer&&) noexcept;
-        CachedSceneRenderer& operator=(CachedSceneRenderer const&) = delete;
+        CachedSceneRenderer& operator=(const CachedSceneRenderer&) = delete;
         CachedSceneRenderer& operator=(CachedSceneRenderer&&) noexcept;
         ~CachedSceneRenderer() noexcept;
 
-        RenderTexture& render(std::span<SceneDecoration const>, SceneRendererParams const&);
+        RenderTexture& render(std::span<const SceneDecoration>, const SceneRendererParams&);
 
     private:
         class Impl;

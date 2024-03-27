@@ -16,7 +16,7 @@
 
 using namespace osc;
 
-Texture2D osc::ReadSVGIntoTexture(
+Texture2D osc::readSVGIntoTexture(
     std::istream& inputStream,
     float scale)
 {
@@ -38,8 +38,7 @@ Texture2D osc::ReadSVGIntoTexture(
     doc->setMatrix(m);
 
     // render to a rescaled bitmap
-    Vec2u32 const bitmapDimensions
-    {
+    const Vec2u32 bitmapDimensions{
         static_cast<uint32_t>(scale*doc->width()),
         static_cast<uint32_t>(scale*doc->height())
     };
@@ -47,8 +46,7 @@ Texture2D osc::ReadSVGIntoTexture(
     bitmap.convertToRGBA();
 
     // return as a GPU-ready texture
-    Texture2D rv
-    {
+    Texture2D rv{
         {bitmap.width(), bitmap.height()},
         TextureFormat::RGBA32,
         ColorSpace::sRGB,

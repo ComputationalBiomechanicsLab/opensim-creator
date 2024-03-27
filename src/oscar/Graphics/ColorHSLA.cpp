@@ -1,8 +1,8 @@
 #include "ColorHSLA.h"
 
-#include <iostream>
+#include <ostream>
 
-std::ostream& osc::operator<<(std::ostream& o, ColorHSLA const& c)
+std::ostream& osc::operator<<(std::ostream& o, const ColorHSLA& c)
 {
     return o << "ColorHSLA(h = " << c.h << ", s = " << c.s << ", l = " << c.l << ", a = " << c.a << ')';
 }

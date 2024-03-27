@@ -17,7 +17,7 @@ TEST(DAE, WriteDecorationsAsDAEWorksForEmptyScene)
     DAEMetadata metadata{TESTOSCAR_APPNAME_STRING, TESTOSCAR_APPNAME_STRING};
 
     std::stringstream ss;
-    WriteDecorationsAsDAE(ss, {}, metadata);
+    writeDecorationsAsDAE(ss, {}, metadata);
 
     ASSERT_FALSE(ss.str().empty());
 }
@@ -29,7 +29,7 @@ TEST(DAE, WriteDecorationsAsDAEWorksForNonEmptyScene)
     SceneDecoration const dec{.mesh = BoxGeometry{2.0f, 2.0f, 2.0f}};
 
     std::stringstream ss;
-    WriteDecorationsAsDAE(ss, {{dec}}, metadata);
+    writeDecorationsAsDAE(ss, {{dec}}, metadata);
 
     ASSERT_FALSE(ss.str().empty());
 }
@@ -40,7 +40,7 @@ TEST(DAE, SetAuthorWritesAuthorToOutput)
     metadata.author = "TestThis";
 
     std::stringstream ss;
-    WriteDecorationsAsDAE(ss, {}, metadata);
+    writeDecorationsAsDAE(ss, {}, metadata);
 
     ASSERT_TRUE(Contains(ss.str(), metadata.author));
 }
@@ -51,7 +51,7 @@ TEST(DAE, SetAuthoringToolsWritesAuthoringToolToOutput)
     metadata.authoringTool = "TestThis";
 
     std::stringstream ss;
-    WriteDecorationsAsDAE(ss, {}, metadata);
+    writeDecorationsAsDAE(ss, {}, metadata);
 
     ASSERT_TRUE(Contains(ss.str(), metadata.authoringTool));
 }

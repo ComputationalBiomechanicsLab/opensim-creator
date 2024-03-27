@@ -16,7 +16,7 @@ using namespace osc;
 
 namespace
 {
-    Texture2D generate_texture()
+    Texture2D generateChequeredTexture()
     {
         constexpr Vec2i chequerDims = {32, 32};
         constexpr Vec2i textureDims = 2 * chequerDims;
@@ -25,18 +25,15 @@ namespace
 
         std::vector<Color32> pixels;
         pixels.reserve(area(textureDims));
-        for (int y = 0; y < textureDims.y; ++y)
-        {
-            bool const yOn = (y / chequerDims.y) % 2 == 0;
-            for (int x = 0; x < textureDims.x; ++x)
-            {
-                bool const xOn = (x / chequerDims.x) % 2 == 0;
+        for (int y = 0; y < textureDims.y; ++y) {
+            const bool yOn = (y / chequerDims.y) % 2 == 0;
+            for (int x = 0; x < textureDims.x; ++x) {
+                const bool xOn = (x / chequerDims.x) % 2 == 0;
                 pixels.push_back(yOn ^ xOn ? onColor : offColor);
             }
         }
 
-        Texture2D rv
-        {
+        Texture2D rv{
             textureDims,
             TextureFormat::RGBA32,
             ColorSpace::sRGB,
@@ -49,5 +46,5 @@ namespace
 }
 
 osc::ChequeredTexture::ChequeredTexture() :
-    m_Texture{generate_texture()}
+    m_Texture{generateChequeredTexture()}
 {}

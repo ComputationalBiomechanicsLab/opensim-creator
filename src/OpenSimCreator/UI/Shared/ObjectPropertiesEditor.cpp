@@ -1328,7 +1328,7 @@ namespace
 
             bool shouldSave = false;
 
-            Color color = ToColor(m_EditedProperty.getValue());
+            Color color = toColor(m_EditedProperty.getValue());
             ui::SetNextItemWidth(ui::GetContentRegionAvail().x);
 
             if (ui::ColorEditRGBA("##coloreditor", color))

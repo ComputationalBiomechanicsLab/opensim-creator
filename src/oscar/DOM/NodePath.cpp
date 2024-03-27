@@ -62,12 +62,12 @@ namespace
         }
 
         // pathEnd is guaranteed to be a NUL terminator since C++11
-        Iter const pathBegin = path.begin();
+        const Iter pathBegin = path.begin();
         Iter pathEnd = path.end();
 
         // helper: shift n chars starting at newStart+n such that, after,
         // newStart..end is equal to what newStart+n..end was before.
-        auto const shift = [&pathEnd](Iter newStart, size_t n)
+        const auto shift = [&pathEnd](Iter newStart, size_t n)
         {
             copy(newStart + n, pathEnd, newStart);
             pathEnd -= n;

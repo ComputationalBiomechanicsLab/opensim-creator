@@ -44,23 +44,23 @@ namespace
 
     Material CreateMaterial(IResourceLoader& rl)
     {
-        Texture2D albedo = LoadTexture2DFromImage(
+        Texture2D albedo = loadTexture2DFromImage(
             rl.open("oscar_learnopengl/textures/pbr/rusted_iron/albedo.png"),
             ColorSpace::sRGB
         );
-        Texture2D normal = LoadTexture2DFromImage(
+        Texture2D normal = loadTexture2DFromImage(
             rl.open("oscar_learnopengl/textures/pbr/rusted_iron/normal.png"),
             ColorSpace::Linear
         );
-        Texture2D metallic = LoadTexture2DFromImage(
+        Texture2D metallic = loadTexture2DFromImage(
             rl.open("oscar_learnopengl/textures/pbr/rusted_iron/metallic.png"),
             ColorSpace::Linear
         );
-        Texture2D roughness = LoadTexture2DFromImage(
+        Texture2D roughness = loadTexture2DFromImage(
             rl.open("oscar_learnopengl/textures/pbr/rusted_iron/roughness.png"),
             ColorSpace::Linear
         );
-        Texture2D ao = LoadTexture2DFromImage(
+        Texture2D ao = loadTexture2DFromImage(
             rl.open("oscar_learnopengl/textures/pbr/rusted_iron/ao.png"),
             ColorSpace::Linear
         );
@@ -128,7 +128,7 @@ private:
             for (int col = 0; col < c_NumCols; ++col) {
                 float const x = (static_cast<float>(col) - static_cast<float>(c_NumCols)/2.0f) * c_CellSpacing;
                 float const y = (static_cast<float>(row) - static_cast<float>(c_NumRows)/2.0f) * c_CellSpacing;
-                Graphics::DrawMesh(m_SphereMesh, {.position = {x, y, 0.0f}}, m_PBRMaterial, m_Camera);
+                graphics::drawMesh(m_SphereMesh, {.position = {x, y, 0.0f}}, m_PBRMaterial, m_Camera);
             }
         }
     }
@@ -136,7 +136,7 @@ private:
     void drawLights()
     {
         for (Vec3 const& pos : c_LightPositions) {
-            Graphics::DrawMesh(m_SphereMesh, {.scale = Vec3{0.5f}, .position = pos}, m_PBRMaterial, m_Camera);
+            graphics::drawMesh(m_SphereMesh, {.scale = Vec3{0.5f}, .position = pos}, m_PBRMaterial, m_Camera);
         }
     }
 

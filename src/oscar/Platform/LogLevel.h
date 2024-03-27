@@ -26,7 +26,7 @@ namespace osc
         return LogLevel::trace;
     }
 
-    constexpr LogLevel Next(LogLevel lvl)
+    constexpr LogLevel next(LogLevel lvl)
     {
         return static_cast<LogLevel>(cpp23::to_underlying(lvl) + 1);
     }

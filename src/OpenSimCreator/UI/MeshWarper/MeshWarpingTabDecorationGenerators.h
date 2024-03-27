@@ -35,8 +35,8 @@ namespace osc
         }
 
         // add grid decorations
-        DrawXZGrid(*sharedState.meshCache, out);
-        DrawXZFloorLines(*sharedState.meshCache, out, 100.0f);
+        drawXZGrid(*sharedState.meshCache, out);
+        drawXZFloorLines(*sharedState.meshCache, out, 100.0f);
     }
 
     // returns the amount by which non-participating landmarks should be scaled w.r.t. pariticpating ones

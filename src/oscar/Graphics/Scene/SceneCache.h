@@ -17,10 +17,10 @@ namespace osc
     class SceneCache final {
     public:
         SceneCache();
-        explicit SceneCache(ResourceLoader const&);
-        SceneCache(SceneCache const&) = delete;
+        explicit SceneCache(const ResourceLoader&);
+        SceneCache(const SceneCache&) = delete;
         SceneCache(SceneCache&&) noexcept;
-        SceneCache& operator=(SceneCache const&) = delete;
+        SceneCache& operator=(const SceneCache&) = delete;
         SceneCache& operator=(SceneCache&&) noexcept;
         ~SceneCache() noexcept;
 
@@ -28,7 +28,7 @@ namespace osc
         void clearMeshes();
 
         // always returns (it will use a dummy cube and print a log error if something fails)
-        Mesh get(std::string const& key, std::function<Mesh()> const& getter);
+        Mesh get(const std::string& key, const std::function<Mesh()>& getter);
 
         Mesh getSphereMesh();
         Mesh getCircleMesh();
@@ -43,21 +43,21 @@ namespace osc
         Mesh getTexturedQuadMesh();
         Mesh getTorusMesh(float torusCenterToTubeCenterRadius, float tubeRadius);
 
-        BVH const& getBVH(Mesh const&);
+        const BVH& getBVH(const Mesh&);
 
-        Shader const& getShaderResource(
-            ResourcePath const& vertexShader,
-            ResourcePath const& fragmentShader
+        const Shader& getShaderResource(
+            const ResourcePath& vertexShader,
+            const ResourcePath& fragmentShader
         );
 
-        Shader const& getShaderResource(
-            ResourcePath const& vertexShader,
-            ResourcePath const& geometryShader,
-            ResourcePath const& fragmentShader
+        const Shader& getShaderResource(
+            const ResourcePath& vertexShader,
+            const ResourcePath& geometryShader,
+            const ResourcePath& fragmentShader
         );
 
-        MeshBasicMaterial const& basicMaterial();
-        MeshBasicMaterial const& wireframeMaterial();
+        const MeshBasicMaterial& basicMaterial();
+        const MeshBasicMaterial& wireframeMaterial();
 
     private:
         class Impl;

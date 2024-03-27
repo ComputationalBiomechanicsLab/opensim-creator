@@ -319,7 +319,7 @@ namespace osc
 
     template<typename T>
     bool decompose(
-        Mat<4, 4, T> const& ModelMatrix,
+        Mat<4, 4, T> const& model_mat4,
         Vec<3, T>& Scale,
         Qua<T>& Orientation,
         Vec<3, T>& Translation,
@@ -330,7 +330,7 @@ namespace osc
         // http://www.opensource.apple.com/source/WebCore/WebCore-514/platform/graphics/transforms/TransformationMatrix.cpp
         // Decomposes the mode matrix to translations,rotation scale components
 
-        Mat<4, 4, T> LocalMatrix(ModelMatrix);
+        Mat<4, 4, T> LocalMatrix(model_mat4);
 
         // Normalize the matrix.
         if (equal_within_epsilon(LocalMatrix[3][3], static_cast<T>(0))) {
@@ -465,12 +465,12 @@ namespace osc
             Orientation.z = root * (Row[0].y - Row[1].x);
         } // End if > 0
         else {
-            static int Next[3] = {1, 2, 0};
+            static int next[3] = {1, 2, 0};
             i = 0;
             if(Row[1].y > Row[0].x) i = 1;
             if(Row[2].z > Row[i][i]) i = 2;
-            j = Next[i];
-            k = Next[j];
+            j = next[i];
+            k = next[j];
 
             int off = 1;
 

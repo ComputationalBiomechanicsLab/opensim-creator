@@ -612,7 +612,7 @@ namespace osc::mi
                     continue;
                 }
 
-                std::optional<RayCollision> const rc = GetClosestWorldspaceRayCollision(
+                std::optional<RayCollision> const rc = getClosestWorldspaceRayCollision(
                     drawable.mesh,
                     cache->getBVH(drawable.mesh),
                     drawable.transform,

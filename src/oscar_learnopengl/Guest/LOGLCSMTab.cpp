@@ -197,7 +197,7 @@ private:
         m_Material.setViewerPosition(m_UserCamera.getPosition());
 
         for (auto const& decoration : m_Decorations) {
-            Graphics::DrawMesh(decoration.mesh, decoration.transform, m_Material, m_UserCamera);
+            graphics::drawMesh(decoration.mesh, decoration.transform, m_Material, m_UserCamera);
         }
 
         m_UserCamera.setPixelRect(ui::GetMainViewportWorkspaceScreenRect());

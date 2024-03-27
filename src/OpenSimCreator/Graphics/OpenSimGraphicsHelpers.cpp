@@ -93,7 +93,7 @@ std::optional<SceneCollision> osc::GetClosestCollision(
     );
 
     // find all collisions along the camera ray
-    std::vector<SceneCollision> const collisions = GetAllSceneCollisions(
+    std::vector<SceneCollision> const collisions = getAllSceneCollisions(
         sceneBVH,
         sceneCache,
         taggedDrawlist,

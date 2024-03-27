@@ -16,7 +16,7 @@ using namespace osc;
 using namespace osc::literals;
 
 osc::LatheGeometry::LatheGeometry(
-    std::span<Vec2 const> points,
+    std::span<const Vec2> points,
     size_t segments,
     Radians phiStart,
     Radians phiLength)
@@ -35,14 +35,14 @@ osc::LatheGeometry::LatheGeometry(
     std::vector<Vec3> initNormals;
     std::vector<Vec3> normals;
 
-    auto const fsegments = static_cast<float>(segments);
-    auto const inverseSegments = 1.0f/fsegments;
+    const auto fsegments = static_cast<float>(segments);
+    const auto inverseSegments = 1.0f/fsegments;
     Vec3 prevNormal{};
 
     // pre-compute normals for initial "meridian"
     {
         // first vertex
-        Vec2 const dv = points[1] - points[0];
+        const Vec2 dv = points[1] - points[0];
         Vec3 normal = {dv.y * 1.0f, -dv.x, dv.y * 0.0f};
 
         initNormals.push_back(normalize(normal));
@@ -50,7 +50,7 @@ osc::LatheGeometry::LatheGeometry(
     }
     // in-between vertices
     for (size_t i = 1; i < points.size()-1; ++i) {
-        Vec2 const dv = points[i+1] - points[i];
+        const Vec2 dv = points[i+1] - points[i];
         Vec3 normal = {dv.y * 1.0f, -dv.x, dv.y * 0.0f};
 
         initNormals.push_back(normalize(normal + prevNormal));
@@ -61,13 +61,13 @@ osc::LatheGeometry::LatheGeometry(
 
     // generate vertices, uvs, and normals
     for (size_t i = 0; i <= segments; ++i) {
-        auto const fi = static_cast<float>(i);
-        auto const phi = phiStart + fi*inverseSegments*phiLength;
-        auto const sinPhi = sin(phi);
-        auto const cosPhi = cos(phi);
+        const auto fi = static_cast<float>(i);
+        const auto phi = phiStart + fi*inverseSegments*phiLength;
+        const auto sinPhi = sin(phi);
+        const auto cosPhi = cos(phi);
 
         for (size_t j = 0; j <= points.size()-1; ++j) {
-            auto const fj = static_cast<float>(j);
+            const auto fj = static_cast<float>(j);
 
             vertices.emplace_back(
                 points[j].x * sinPhi,
@@ -89,12 +89,12 @@ osc::LatheGeometry::LatheGeometry(
     // indices
     for (size_t i = 0; i < segments; ++i) {
         for (size_t j = 0; j < points.size()-1; ++j) {
-            size_t const base = j + i*points.size();
+            const size_t base = j + i*points.size();
 
-            auto const a = static_cast<uint32_t>(base);
-            auto const b = static_cast<uint32_t>(base + points.size());
-            auto const c = static_cast<uint32_t>(base + points.size() + 1);
-            auto const d = static_cast<uint32_t>(base + 1);
+            const auto a = static_cast<uint32_t>(base);
+            const auto b = static_cast<uint32_t>(base + points.size());
+            const auto c = static_cast<uint32_t>(base + points.size() + 1);
+            const auto d = static_cast<uint32_t>(base + 1);
 
             indices.insert(indices.end(), {a, b, d});
             indices.insert(indices.end(), {c, d, b});

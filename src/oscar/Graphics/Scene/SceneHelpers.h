@@ -30,49 +30,49 @@ namespace osc { struct Transform; }
 
 namespace osc
 {
-    void DrawBVH(
+    void drawBVH(
         SceneCache&,
-        BVH const&,
-        std::function<void(SceneDecoration&&)> const&
+        const BVH&,
+        const std::function<void(SceneDecoration&&)>&
     );
 
-    void DrawAABB(
+    void drawAABB(
         SceneCache&,
-        AABB const&,
-        std::function<void(SceneDecoration&&)> const&
+        const AABB&,
+        const std::function<void(SceneDecoration&&)>&
     );
 
-    void DrawAABBs(
+    void drawAABBs(
         SceneCache&,
-        std::span<AABB const>,
-        std::function<void(SceneDecoration&&)> const&
+        std::span<const AABB>,
+        const std::function<void(SceneDecoration&&)>&
     );
 
-    void DrawBVHLeafNodes(
+    void drawBVHLeafNodes(
         SceneCache&,
-        BVH const&,
-        std::function<void(SceneDecoration&&)> const&
+        const BVH&,
+        const std::function<void(SceneDecoration&&)>&
     );
 
-    void DrawXZFloorLines(
+    void drawXZFloorLines(
         SceneCache&,
-        std::function<void(SceneDecoration&&)> const&,
+        const std::function<void(SceneDecoration&&)>&,
         float scale = 1.0f
     );
 
-    void DrawXZGrid(
+    void drawXZGrid(
         SceneCache&,
-        std::function<void(SceneDecoration&&)> const&
+        const std::function<void(SceneDecoration&&)>&
     );
 
-    void DrawXYGrid(
+    void drawXYGrid(
         SceneCache&,
-        std::function<void(SceneDecoration&&)> const&
+        const std::function<void(SceneDecoration&&)>&
     );
 
-    void DrawYZGrid(
+    void drawYZGrid(
         SceneCache&,
-        std::function<void(SceneDecoration&&)> const&
+        const std::function<void(SceneDecoration&&)>&
     );
 
     struct ArrowProperties final {
@@ -83,65 +83,65 @@ namespace osc
         float headThickness{};
         Color color = Color::black();
     };
-    void DrawArrow(
+    void drawArrow(
         SceneCache&,
-        ArrowProperties const&,
-        std::function<void(SceneDecoration&&)> const&
+        const ArrowProperties&,
+        const std::function<void(SceneDecoration&&)>&
     );
 
-    void DrawLineSegment(
+    void drawLineSegment(
         SceneCache&,
-        LineSegment const&,
-        Color const&,
+        const LineSegment&,
+        const Color&,
         float radius,
-        std::function<void(SceneDecoration&&)> const&
+        const std::function<void(SceneDecoration&&)>&
     );
 
-    AABB GetWorldspaceAABB(SceneDecoration const&);
+    AABB getWorldspaceAABB(const SceneDecoration&);
 
     // updates the given BVH with the given component decorations
-    void UpdateSceneBVH(
-        std::span<SceneDecoration const>,
+    void updateSceneBVH(
+        std::span<const SceneDecoration>,
         BVH&
     );
 
     // returns all collisions along a ray
-    std::vector<SceneCollision> GetAllSceneCollisions(
-        BVH const& sceneBVH,
+    std::vector<SceneCollision> getAllSceneCollisions(
+        const BVH& sceneBVH,
         SceneCache&,
-        std::span<SceneDecoration const>,
-        Line const& worldspaceRay
+        std::span<const SceneDecoration>,
+        const Line& worldspaceRay
     );
 
     // returns closest ray-triangle collision in worldspace
-    std::optional<RayCollision> GetClosestWorldspaceRayCollision(
-        Mesh const&,
-        BVH const&,
-        Transform const&,
-        Line const& worldspaceRay
+    std::optional<RayCollision> getClosestWorldspaceRayCollision(
+        const Mesh&,
+        const BVH&,
+        const Transform&,
+        const Line& worldspaceRay
     );
 
     // returns closest ray-triangle collision in worldspace for a given mouse position
     // within the given render rectangle
-    std::optional<RayCollision> GetClosestWorldspaceRayCollision(
-        PolarPerspectiveCamera const&,
-        Mesh const&,
-        BVH const&,
-        Rect const& renderScreenRect,
+    std::optional<RayCollision> getClosestWorldspaceRayCollision(
+        const PolarPerspectiveCamera&,
+        const Mesh&,
+        const BVH&,
+        const Rect& renderScreenRect,
         Vec2 mouseScreenPos
     );
 
     // returns scene rendering parameters for an generic panel
-    SceneRendererParams CalcStandardDarkSceneRenderParams(
-        PolarPerspectiveCamera const&,
+    SceneRendererParams calcStandardDarkSceneRenderParams(
+        const PolarPerspectiveCamera&,
         AntiAliasingLevel,
         Vec2 renderDims
     );
 
     // returns a triangle BVH for the given triangle mesh, or an empty BVH if the mesh is non-triangular or empty
-    BVH CreateTriangleBVHFromMesh(Mesh const&);
+    BVH createTriangleBVHFromMesh(const Mesh&);
 
     // returns a `Frustum` that represents the clipping planes of `camera` when rendering to an output that has
     // an aspect ratio of `aspectRatio`
-    FrustumPlanes CalcCameraFrustumPlanes(Camera const& camera, float aspectRatio);
+    FrustumPlanes calcCameraFrustumPlanes(const Camera& camera, float aspectRatio);
 }

@@ -61,7 +61,7 @@ std::string osc::AppSettingValue::toString() const
     {
         [&rv](std::string const& v) { rv = v; },
         [&rv](bool v) { rv = v ? "true" : "false"; },
-        [&rv](Color const& c) { rv = ToHtmlStringRGBA(c); },
+        [&rv](Color const& c) { rv = toHtmlStringRGBA(c); },
     }, m_Value);
     return rv;
 }
@@ -73,7 +73,7 @@ Color osc::AppSettingValue::toColor() const
     {
         [&rv](std::string const& v)
         {
-            if (auto c = TryParseHtmlString(v))
+            if (auto c = tryParseHtmlString(v))
             {
                 rv = *c;
             }

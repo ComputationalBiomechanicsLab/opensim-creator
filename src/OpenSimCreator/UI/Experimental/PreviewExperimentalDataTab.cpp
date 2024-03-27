@@ -533,7 +533,7 @@ private:
         m_Decorations.push_back(GenerateFloorGrid());
         DecorationConsumer c = [this](SceneDecoration const& d) { m_Decorations.push_back(d); };
         GenerateDecorations(*m_Motion, m_ActiveRow, c);
-        UpdateSceneBVH(m_Decorations, m_SceneBVH);
+        updateSceneBVH(m_Decorations, m_SceneBVH);
     }
 
     void updateScene3DHittest() const

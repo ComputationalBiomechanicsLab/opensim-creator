@@ -149,37 +149,37 @@ namespace
         }
     )";
 
-    CStringView GLStringToCStringView(GLubyte const* stringPtr)
+    CStringView openGLStringToCStringView(const GLubyte* stringPtr)
     {
         using value_type = CStringView::value_type;
 
         static_assert(sizeof(GLubyte) == sizeof(value_type));
         static_assert(alignof(GLubyte) == alignof(value_type));
         if (stringPtr) {
-            return CStringView{std::launder(reinterpret_cast<value_type const*>(stringPtr))};
+            return CStringView{std::launder(reinterpret_cast<const value_type*>(stringPtr))};
         }
         else {
             return CStringView{};
         }
     }
 
-    CStringView GLGetCStringView(GLenum name)
+    CStringView glGetCStringView(GLenum name)
     {
-        return GLStringToCStringView(glGetString(name));
+        return openGLStringToCStringView(glGetString(name));
     }
 
     CStringView GLGetCStringViewi(GLenum name, GLuint index)
     {
-        return GLStringToCStringView(glGetStringi(name, index));
+        return openGLStringToCStringView(glGetStringi(name, index));
     }
 
-    bool IsAlignedAtLeast(void const* ptr, GLint requiredAlignment)
+    bool isAlignedAtLeast(const void* ptr, GLint requiredAlignment)
     {
         return cpp20::bit_cast<intptr_t>(ptr) % requiredAlignment == 0;
     }
 
     // returns the `Name String`s of all extensions that OSC's OpenGL backend might use
-    std::vector<CStringView> GetAllOpenGLExtensionsUsedByOSC()
+    std::vector<CStringView> getAllOpenGLExtensionsUsedByOSC()
     {
         // most entries in this list were initially from a mixture of:
         //
@@ -294,16 +294,16 @@ namespace
         };
     }
 
-    size_t GetNumExtensionsSupportedByBackend()
+    size_t getNumExtensionsSupportedByBackend()
     {
         GLint numExtensionsSupportedByBackend = 0;
         glGetIntegerv(GL_NUM_EXTENSIONS, &numExtensionsSupportedByBackend);
         return numExtensionsSupportedByBackend >= 0 ? static_cast<size_t>(numExtensionsSupportedByBackend) : 0;
     }
 
-    std::vector<CStringView> GetAllExtensionsSupportedByCurrentOpenGLBackend()
+    std::vector<CStringView> getAllExtensionsSupportedByCurrentOpenGLBackend()
     {
-        size_t const numExtensions = GetNumExtensionsSupportedByBackend();
+        const size_t numExtensions = getNumExtensionsSupportedByBackend();
 
         std::vector<CStringView> rv;
         rv.reserve(numExtensions);
@@ -313,7 +313,7 @@ namespace
         return rv;
     }
 
-    void ValidateOpenGLBackendExtensionSupport(LogLevel logLevel)
+    void validateOpenGLBackendExtensionSupport(LogLevel logLevel)
     {
         // note: the OpenGL specification _requires_ that a backend supports
         // (effectively) RGBA, RG, and RED textures with the following data
@@ -331,10 +331,10 @@ namespace
             return;
         }
 
-        std::vector<CStringView> extensionsRequiredByOSC = GetAllOpenGLExtensionsUsedByOSC();
+        std::vector<CStringView> extensionsRequiredByOSC = getAllOpenGLExtensionsUsedByOSC();
         std::sort(extensionsRequiredByOSC.begin(), extensionsRequiredByOSC.end());
 
-        std::vector<CStringView> extensionSupportedByBackend = GetAllExtensionsSupportedByCurrentOpenGLBackend();
+        std::vector<CStringView> extensionSupportedByBackend = getAllExtensionsSupportedByCurrentOpenGLBackend();
         std::sort(extensionSupportedByBackend.begin(), extensionSupportedByBackend.end());
 
         std::vector<CStringView> missingExtensions;
@@ -349,8 +349,7 @@ namespace
 
         if (!missingExtensions.empty()) {
             log_message(logLevel, "OpenGL: the following OpenGL extensions may be missing from the graphics backend: ");
-            for (auto const& missingExtension : missingExtensions)
-            {
+            for (const auto& missingExtension : missingExtensions) {
                 log_message(logLevel, "OpenGL:  - %s", missingExtension.c_str());
             }
             log_message(logLevel, "OpenGL: because extensions may be missing, rendering may behave abnormally");
@@ -358,7 +357,7 @@ namespace
         }
 
         log_message(logLevel, "OpenGL: here is a list of all of the extensions supported by the graphics backend:");
-        for (auto const& ext : extensionSupportedByBackend) {
+        for (const auto& ext : extensionSupportedByBackend) {
             log_message(logLevel, "OpenGL:  - %s", ext.c_str());
         }
     }
@@ -369,15 +368,15 @@ namespace
 namespace
 {
     template<BitCastable T>
-    void PushAsBytes(T const& v, std::vector<uint8_t>& out)
+    void pushAsBytes(const T& v, std::vector<uint8_t>& out)
     {
-        auto const bytes = ViewObjectRepresentation<uint8_t>(v);
+        const auto bytes = ViewObjectRepresentation<uint8_t>(v);
         out.insert(out.end(), bytes.begin(), bytes.end());
     }
 
     template<typename VecOrMat>
     requires BitCastable<typename VecOrMat::element_type>
-    std::span<typename VecOrMat::element_type const> ToFloatSpan(VecOrMat const& v)
+    std::span<const typename VecOrMat::element_type> toFloatSpan(const VecOrMat& v)
     {
         return {value_ptr(v), sizeof(VecOrMat)/sizeof(typename VecOrMat::element_type)};
     }
@@ -408,7 +407,7 @@ namespace
         Cubemap
     >;
 
-    ShaderPropertyType GetShaderType(MaterialValue const& v)
+    ShaderPropertyType getShaderType(const MaterialValue& v)
     {
         switch (v.index()) {
         case VariantIndex<MaterialValue, Color>():
@@ -454,7 +453,7 @@ namespace
 namespace
 {
     // convert a GL shader type to an internal shader type
-    ShaderPropertyType GLShaderTypeToShaderTypeInternal(GLenum e)
+    ShaderPropertyType glShaderTypeToShaderTypeInternal(GLenum e)
     {
         static_assert(NumOptions<ShaderPropertyType>() == 11);
 
@@ -507,7 +506,7 @@ namespace
         }
     }
 
-    std::string NormalizeShaderElementName(std::string_view openGLName)
+    std::string normalizeShaderElementName(std::string_view openGLName)
     {
         std::string s{openGLName};
         auto loc = s.find('[');
@@ -527,15 +526,14 @@ namespace
             location{location_},
             shaderType{shaderType_},
             size{size_}
-        {
-        }
+        {}
 
         int32_t location;
         ShaderPropertyType shaderType;
         int32_t size;
     };
 
-    void PrintShaderElement(std::ostream& o, std::string_view name, ShaderElement const& se)
+    void printShaderElement(std::ostream& o, std::string_view name, const ShaderElement& se)
     {
         o << "ShadeElement(name = " << name << ", location = " << se.location << ", shaderType = " << se.shaderType << ", size = " << se.size << ')';
     }
@@ -558,7 +556,7 @@ namespace
         std::equal_to<>
     >;
 
-    ShaderElement const* TryGetValue(FastStringHashtable<ShaderElement> const& m, std::string_view k)
+    const ShaderElement* tryGetValue(const FastStringHashtable<ShaderElement>& m, std::string_view k)
     {
         return try_find(m, k);
     }
@@ -576,27 +574,27 @@ namespace
     // is important)
     using Mat4OrTransform = std::variant<Mat4, Transform>;
 
-    Mat4 mat4_cast(Mat4OrTransform const& matrixOrTransform)
+    Mat4 mat4_cast(const Mat4OrTransform& matrixOrTransform)
     {
         return std::visit(Overload{
-            [](Mat4 const& matrix) { return matrix; },
-            [](Transform const& transform) { return mat4_cast(transform); }
+            [](const Mat4& matrix) { return matrix; },
+            [](const Transform& transform) { return mat4_cast(transform); }
         }, matrixOrTransform);
     }
 
-    Mat4 ToNormalMat4(Mat4OrTransform const& matrixOrTransform)
+    Mat4 normal_matrix4(const Mat4OrTransform& matrixOrTransform)
     {
         return std::visit(Overload{
-            [](Mat4 const& matrix) { return normal_matrix4(matrix); },
-            [](Transform const& transform) { return normal_matrix_4x4(transform); }
+            [](const Mat4& matrix) { return normal_matrix4(matrix); },
+            [](const Transform& transform) { return normal_matrix_4x4(transform); }
         }, matrixOrTransform);
     }
 
-    Mat3 ToNormalMat3(Mat4OrTransform const& matrixOrTransform)
+    Mat3 normal_matrix(const Mat4OrTransform& matrixOrTransform)
     {
         return std::visit(Overload{
-            [](Mat4 const& matrix) { return normal_matrix(matrix); },
-            [](Transform const& transform) { return normal_matrix(transform); }
+            [](const Mat4& matrix) { return normal_matrix(matrix); },
+            [](const Transform& transform) { return normal_matrix(transform); }
         }, matrixOrTransform);
     }
 
@@ -605,7 +603,7 @@ namespace
 
         RenderObject(
             Mesh mesh_,
-            Transform const& transform_,
+            const Transform& transform_,
             Material material_,
             std::optional<MaterialPropertyBlock> maybePropBlock_,
             std::optional<size_t> maybeSubMeshIndex_) :
@@ -616,12 +614,11 @@ namespace
             transform{transform_},
             worldMidpoint{material.getTransparent() ? transform_point(transform_, centroid(mesh.getBounds())) : Vec3{}},
             maybeSubMeshIndex{maybeSubMeshIndex_}
-        {
-        }
+        {}
 
         RenderObject(
             Mesh mesh_,
-            Mat4 const& transform_,
+            const Mat4& transform_,
             Material material_,
             std::optional<MaterialPropertyBlock> maybePropBlock_,
             std::optional<size_t> maybeSubMeshIndex_) :
@@ -632,8 +629,7 @@ namespace
             transform{transform_},
             worldMidpoint{material.getTransparent() ? transform_ * Vec4{centroid(mesh.getBounds()), 1.0f} : Vec3{}},
             maybeSubMeshIndex{maybeSubMeshIndex_}
-        {
-        }
+        {}
 
         friend void swap(RenderObject& a, RenderObject& b) noexcept
         {
@@ -647,7 +643,7 @@ namespace
             swap(a.maybeSubMeshIndex, b.maybeSubMeshIndex);
         }
 
-        friend bool operator==(RenderObject const&, RenderObject const&) = default;
+        friend bool operator==(const RenderObject&, const RenderObject&) = default;
 
         Material material;
         Mesh mesh;
@@ -658,32 +654,32 @@ namespace
     };
 
     // returns true if the render object is opaque
-    bool IsOpaque(RenderObject const& ro)
+    bool isOpaque(const RenderObject& ro)
     {
         return !ro.material.getTransparent();
     }
 
-    bool IsDepthTested(RenderObject const& ro)
+    bool isDepthTested(const RenderObject& ro)
     {
         return ro.material.getDepthTested();
     }
 
-    Mat4 ModelMatrix(RenderObject const& ro)
+    Mat4 model_mat4(const RenderObject& ro)
     {
         return mat4_cast(ro.transform);
     }
 
-    Mat3 NormalMatrix(RenderObject const& ro)
+    Mat3 normal_matrix(const RenderObject& ro)
     {
-        return ToNormalMat3(ro.transform);
+        return normal_matrix(ro.transform);
     }
 
-    Mat4 NormalMatrix4(RenderObject const& ro)
+    Mat4 normal_matrix4(const RenderObject& ro)
     {
-        return ToNormalMat4(ro.transform);
+        return normal_matrix4(ro.transform);
     }
 
-    Vec3 const& WorldMidpoint(RenderObject const& ro)
+    Vec3 const& worldspace_centroid(const RenderObject& ro)
     {
         return ro.worldMidpoint;
     }
@@ -693,16 +689,16 @@ namespace
     // (handy for depth sorting)
     class RenderObjectIsFartherFrom final {
     public:
-        explicit RenderObjectIsFartherFrom(Vec3 const& pos) : m_Pos{pos} {}
+        explicit RenderObjectIsFartherFrom(const Vec3& pos) : m_Pos{pos} {}
 
-        bool operator()(RenderObject const& a, RenderObject const& b) const
+        bool operator()(const RenderObject& a, const RenderObject& b) const
         {
-            Vec3 const aMidpointWorldSpace = WorldMidpoint(a);
-            Vec3 const bMidpointWorldSpace = WorldMidpoint(b);
-            Vec3 const camera2a = aMidpointWorldSpace - m_Pos;
-            Vec3 const camera2b = bMidpointWorldSpace - m_Pos;
-            float const camera2aDistanceSquared = dot(camera2a, camera2a);
-            float const camera2bDistanceSquared = dot(camera2b, camera2b);
+            const Vec3 aMidpointWorldSpace = worldspace_centroid(a);
+            const Vec3 bMidpointWorldSpace = worldspace_centroid(b);
+            const Vec3 camera2a = aMidpointWorldSpace - m_Pos;
+            const Vec3 camera2b = bMidpointWorldSpace - m_Pos;
+            const float camera2aDistanceSquared = dot(camera2a, camera2a);
+            const float camera2bDistanceSquared = dot(camera2b, camera2b);
             return camera2aDistanceSquared > camera2bDistanceSquared;
         }
     private:
@@ -711,51 +707,51 @@ namespace
 
     class RenderObjectHasMaterial final {
     public:
-        explicit RenderObjectHasMaterial(Material const* material) :
+        explicit RenderObjectHasMaterial(const Material* material) :
             m_Material{material}
         {
             OSC_ASSERT(m_Material != nullptr);
         }
 
-        bool operator()(RenderObject const& ro) const
+        bool operator()(const RenderObject& ro) const
         {
             return ro.material == *m_Material;
         }
     private:
-        Material const* m_Material;
+        const Material* m_Material;
     };
 
     class RenderObjectHasMaterialPropertyBlock final {
     public:
-        explicit RenderObjectHasMaterialPropertyBlock(std::optional<MaterialPropertyBlock> const* mpb) :
+        explicit RenderObjectHasMaterialPropertyBlock(const std::optional<MaterialPropertyBlock>* mpb) :
             m_Mpb{mpb}
         {
             OSC_ASSERT(m_Mpb != nullptr);
         }
 
-        bool operator()(RenderObject const& ro) const
+        bool operator()(const RenderObject& ro) const
         {
             return ro.maybePropBlock == *m_Mpb;
         }
 
     private:
-        std::optional<MaterialPropertyBlock> const* m_Mpb;
+        const std::optional<MaterialPropertyBlock>* m_Mpb;
     };
 
     class RenderObjectHasMesh final {
     public:
-        explicit RenderObjectHasMesh(Mesh const* mesh) :
+        explicit RenderObjectHasMesh(const Mesh* mesh) :
             m_Mesh{mesh}
         {
             OSC_ASSERT(m_Mesh != nullptr);
         }
 
-        bool operator()(RenderObject const& ro) const
+        bool operator()(const RenderObject& ro) const
         {
             return ro.mesh == *m_Mesh;
         }
     private:
-        Mesh const* m_Mesh;
+        const Mesh* m_Mesh;
     };
 
     class RenderObjectHasSubMeshIndex final {
@@ -764,7 +760,7 @@ namespace
             m_MaybeSubMeshIndex{maybeSubMeshIndex_}
         {}
 
-        bool operator()(RenderObject const& ro) const
+        bool operator()(const RenderObject& ro) const
         {
             return ro.maybeSubMeshIndex == m_MaybeSubMeshIndex;
         }
@@ -773,13 +769,13 @@ namespace
     };
 
     // sort a sequence of `RenderObject`s for optimal drawing
-    std::vector<RenderObject>::iterator SortRenderQueue(
+    std::vector<RenderObject>::iterator sortRenderQueue(
         std::vector<RenderObject>::iterator renderQueueBegin,
         std::vector<RenderObject>::iterator renderQueueEnd,
         Vec3 cameraPos)
     {
         // partition the render queue into [opaqueObjects | transparentObjects]
-        auto const opaqueObjectsEnd = std::partition(renderQueueBegin, renderQueueEnd, IsOpaque);
+        const auto opaqueObjectsEnd = std::partition(renderQueueBegin, renderQueueEnd, isOpaque);
 
         // optimize the opaqueObjects partition (it can be reordered safely)
         //
@@ -787,7 +783,7 @@ namespace
         auto materialBatchStart = renderQueueBegin;
         while (materialBatchStart != opaqueObjectsEnd) {
 
-            auto const materialBatchEnd = std::partition(
+            const auto materialBatchEnd = std::partition(
                 materialBatchStart,
                 opaqueObjectsEnd,
                 RenderObjectHasMaterial{&materialBatchStart->material}
@@ -798,7 +794,7 @@ namespace
             auto materialPropBlockBatchStart = materialBatchStart;
             while (materialPropBlockBatchStart != materialBatchEnd) {
 
-                auto const materialPropBlockBatchEnd = std::partition(
+                const auto materialPropBlockBatchEnd = std::partition(
                     materialPropBlockBatchStart,
                     materialBatchEnd,
                     RenderObjectHasMaterialPropertyBlock{&materialPropBlockBatchStart->maybePropBlock}
@@ -809,7 +805,7 @@ namespace
                 auto meshBatchStart = materialPropBlockBatchStart;
                 while (meshBatchStart != materialPropBlockBatchEnd) {
 
-                    auto const meshBatchEnd = std::partition(
+                    const auto meshBatchEnd = std::partition(
                         meshBatchStart,
                         materialPropBlockBatchEnd,
                         RenderObjectHasMesh{&meshBatchStart->mesh}
@@ -820,7 +816,7 @@ namespace
                     auto subMeshBatchStart = meshBatchStart;
                     while (subMeshBatchStart != meshBatchEnd) {
 
-                        auto const subMeshBatchEnd = std::partition(
+                        const auto subMeshBatchEnd = std::partition(
                             subMeshBatchStart,
                             meshBatchEnd,
                             RenderObjectHasSubMeshIndex{subMeshBatchStart->maybeSubMeshIndex}
@@ -844,15 +840,14 @@ namespace
     struct RenderPassState final {
 
         RenderPassState(
-            Vec3 const& cameraPos_,
-            Mat4 const& viewMatrix_,
-            Mat4 const& projectionMatrix_) :
+            const Vec3& cameraPos_,
+            const Mat4& viewMatrix_,
+            const Mat4& projectionMatrix_) :
 
             cameraPos{cameraPos_},
             viewMatrix{viewMatrix_},
             projectionMatrix{projectionMatrix_}
-        {
-        }
+        {}
 
         Vec3 cameraPos;
         Mat4 viewMatrix;
@@ -920,85 +915,85 @@ namespace osc
     public:
         // internal methods
 
-        static void BindToInstancedAttributes(
-            Shader::Impl const& shaderImpl,
+        static void bindToInstancedAttributes(
+            const Shader::Impl& shaderImpl,
             InstancingState& ins
         );
 
-        static void UnbindFromInstancedAttributes(
-            Shader::Impl const& shaderImpl,
+        static void unbindFromInstancedAttributes(
+            const Shader::Impl& shaderImpl,
             InstancingState& ins
         );
 
-        static std::optional<InstancingState> UploadInstanceData(
-            std::span<RenderObject const>,
-            Shader::Impl const& shaderImpl
+        static std::optional<InstancingState> uploadInstanceData(
+            std::span<const RenderObject>,
+            const Shader::Impl& shaderImpl
         );
 
-        static void TryBindMaterialValueToShaderElement(
-            ShaderElement const& se,
-            MaterialValue const& v,
+        static void tryBindMaterialValueToShaderElement(
+            const ShaderElement& se,
+            const MaterialValue& v,
             int32_t& textureSlot
         );
 
-        static void HandleBatchWithSameSubMesh(
-            std::span<RenderObject const>,
+        static void handleBatchWithSameSubMesh(
+            std::span<const RenderObject>,
             std::optional<InstancingState>& ins
         );
 
-        static void HandleBatchWithSameMesh(
-            std::span<RenderObject const>,
+        static void handleBatchWithSameMesh(
+            std::span<const RenderObject>,
             std::optional<InstancingState>& ins
         );
 
-        static void HandleBatchWithSameMaterialPropertyBlock(
-            std::span<RenderObject const>,
+        static void handleBatchWithSameMaterialPropertyBlock(
+            std::span<const RenderObject>,
             int32_t& textureSlot,
             std::optional<InstancingState>& ins
         );
 
-        static void HandleBatchWithSameMaterial(
-            RenderPassState const&,
-            std::span<RenderObject const>
+        static void handleBatchWithSameMaterial(
+            const RenderPassState&,
+            std::span<const RenderObject>
         );
 
-        static void DrawRenderObjects(
-            RenderPassState const&,
-            std::span<RenderObject const>
+        static void drawRenderObjects(
+            const RenderPassState&,
+            std::span<const RenderObject>
         );
 
-        static void DrawBatchedByOpaqueness(
-            RenderPassState const&,
-            std::span<RenderObject const>
+        static void drawBatchedByOpaqueness(
+            const RenderPassState&,
+            std::span<const RenderObject>
         );
 
-        static void ValidateRenderTarget(
+        static void validateRenderTarget(
             RenderTarget&
         );
-        static Rect CalcViewportRect(
+        static Rect calcViewportRect(
             Camera::Impl&,
             RenderTarget* maybeCustomRenderTarget
         );
-        static Rect SetupTopLevelPipelineState(
+        static Rect setupTopLevelPipelineState(
             Camera::Impl&,
             RenderTarget* maybeCustomRenderTarget
         );
-        static std::optional<gl::FrameBuffer> BindAndClearRenderBuffers(
+        static std::optional<gl::FrameBuffer> bindAndClearRenderBuffers(
             Camera::Impl&,
             RenderTarget* maybeCustomRenderTarget
         );
-        static void ResolveRenderBuffers(
+        static void resolveRenderBuffers(
             RenderTarget& maybeCustomRenderTarget
         );
-        static void FlushRenderQueue(
+        static void flushRenderQueue(
             Camera::Impl& camera,
             float aspectRatio
         );
-        static void TeardownTopLevelPipelineState(
+        static void teardownTopLevelPipelineState(
             Camera::Impl&,
             RenderTarget* maybeCustomRenderTarget
         );
-        static void RenderCameraQueue(
+        static void renderCameraQueue(
             Camera::Impl& camera,
             RenderTarget* maybeCustomRenderTarget = nullptr
         );
@@ -1006,60 +1001,60 @@ namespace osc
 
         // public (forwarded) API
 
-        static void DrawMesh(
-            Mesh const&,
-            Transform const&,
-            Material const&,
+        static void drawMesh(
+            const Mesh&,
+            const Transform&,
+            const Material&,
             Camera&,
-            std::optional<MaterialPropertyBlock> const&,
+            const std::optional<MaterialPropertyBlock>&,
             std::optional<size_t>
         );
 
-        static void DrawMesh(
-            Mesh const&,
-            Mat4 const&,
-            Material const&,
+        static void drawMesh(
+            const Mesh&,
+            const Mat4&,
+            const Material&,
             Camera&,
-            std::optional<MaterialPropertyBlock> const&,
+            const std::optional<MaterialPropertyBlock>&,
             std::optional<size_t>
         );
 
-        static void Blit(
-            Texture2D const&,
+        static void blit(
+            const Texture2D&,
             RenderTexture&
         );
 
-        static void BlitToScreen(
-            RenderTexture const&,
-            Rect const&,
+        static void blitToScreen(
+            const RenderTexture&,
+            const Rect&,
             BlitFlags
         );
 
-        static void BlitToScreen(
-            RenderTexture const&,
-            Rect const&,
-            Material const&,
+        static void blitToScreen(
+            const RenderTexture&,
+            const Rect&,
+            const Material&,
             BlitFlags
         );
 
-        static void BlitToScreen(
-            Texture2D const&,
-            Rect const&
+        static void blitToScreen(
+            const Texture2D&,
+            const Rect&
         );
 
-        static void CopyTexture(
-            RenderTexture const&,
+        static void copyTexture(
+            const RenderTexture&,
             Texture2D&
         );
 
-        static void CopyTexture(
-            RenderTexture const&,
+        static void copyTexture(
+            const RenderTexture&,
             Texture2D&,
             CubemapFace
         );
 
-        static void CopyTexture(
-            RenderTexture const&,
+        static void copyTexture(
+            const RenderTexture&,
             Cubemap&,
             size_t
         );
@@ -1070,7 +1065,7 @@ namespace
 {
     // returns the memory alignment of data that is to be copied from the
     // CPU (packed) to the GPU (unpacked)
-    constexpr GLint ToOpenGLUnpackAlignment(TextureFormat format)
+    constexpr GLint toOpenGLUnpackAlignment(TextureFormat format)
     {
         constexpr auto lut = []<TextureFormat... Formats>(OptionList<TextureFormat, Formats...>)
         {
@@ -1082,7 +1077,7 @@ namespace
 
     // returns the format OpenGL will use internally (i.e. on the GPU) to
     // represent the given format+colorspace combo
-    constexpr GLenum ToOpenGLInternalFormat(
+    constexpr GLenum toOpenGLInternalFormat(
         TextureFormat format,
         ColorSpace colorSpace)
     {
@@ -1105,7 +1100,7 @@ namespace
         }
     }
 
-    constexpr GLenum ToOpenGLDataType(CPUDataType t)
+    constexpr GLenum toOpenGLDataType(CPUDataType t)
     {
         constexpr auto lut = []<CPUDataType... DataTypes>(OptionList<CPUDataType, DataTypes...>)
         {
@@ -1115,7 +1110,7 @@ namespace
         return lut.at(ToIndex(t));
     }
 
-    constexpr CPUDataType ToEquivalentCPUDataType(TextureFormat format)
+    constexpr CPUDataType toEquivalentCPUDataType(TextureFormat format)
     {
         constexpr auto lut = []<TextureFormat... Formats>(OptionList<TextureFormat, Formats...>)
         {
@@ -1125,7 +1120,7 @@ namespace
         return lut.at(ToIndex(format));
     }
 
-    constexpr CPUImageFormat ToEquivalentCPUImageFormat(TextureFormat format)
+    constexpr CPUImageFormat toEquivalentCPUImageFormat(TextureFormat format)
     {
         constexpr auto lut = []<TextureFormat... Formats>(OptionList<TextureFormat, Formats...>)
         {
@@ -1135,7 +1130,7 @@ namespace
         return lut.at(ToIndex(format));
     }
 
-    constexpr GLenum ToOpenGLFormat(CPUImageFormat t)
+    constexpr GLenum toOpenGLFormat(CPUImageFormat t)
     {
         constexpr auto lut = []<CPUImageFormat... Formats>(OptionList<CPUImageFormat, Formats...>)
         {
@@ -1145,7 +1140,7 @@ namespace
         return lut.at(ToIndex(t));
     }
 
-    constexpr GLenum ToOpenGLTextureEnum(CubemapFace f)
+    constexpr GLenum toOpenGLTextureEnum(CubemapFace f)
     {
         static_assert(NumOptions<CubemapFace>() == 6);
         static_assert(static_cast<GLenum>(CubemapFace::PositiveX) == 0);
@@ -1155,12 +1150,11 @@ namespace
         return GL_TEXTURE_CUBE_MAP_POSITIVE_X + static_cast<GLenum>(f);
     }
 
-    GLint ToGLTextureTextureWrapParam(TextureWrapMode m)
+    GLint toGLTextureTextureWrapParam(TextureWrapMode m)
     {
         static_assert(NumOptions<TextureWrapMode>() == 3);
 
-        switch (m)
-        {
+        switch (m) {
         case TextureWrapMode::Repeat:
             return GL_REPEAT;
         case TextureWrapMode::Clamp:
@@ -1188,12 +1182,11 @@ namespace
     });
     static_assert(c_TextureFilterModeStrings.size() == NumOptions<TextureFilterMode>());
 
-    GLint ToGLTextureMinFilterParam(TextureFilterMode m)
+    GLint toGLTextureMinFilterParam(TextureFilterMode m)
     {
         static_assert(NumOptions<TextureFilterMode>() == 3);
 
-        switch (m)
-        {
+        switch (m) {
         case TextureFilterMode::Nearest:
             return GL_NEAREST;
         case TextureFilterMode::Linear:
@@ -1205,12 +1198,11 @@ namespace
         }
     }
 
-    GLint ToGLTextureMagFilterParam(TextureFilterMode m)
+    GLint toGLTextureMagFilterParam(TextureFilterMode m)
     {
         static_assert(NumOptions<TextureFilterMode>() == 3);
 
-        switch (m)
-        {
+        switch (m) {
         case TextureFilterMode::Nearest:
             return GL_NEAREST;
         case TextureFilterMode::Linear:
@@ -1245,7 +1237,7 @@ public:
     {
         OSC_ASSERT(m_Width > 0 && "the width of a cubemap must be a positive number");
 
-        size_t const numPixelsPerFace = static_cast<size_t>(m_Width*m_Width)*NumBytesPerPixel(m_Format);
+        const size_t numPixelsPerFace = static_cast<size_t>(m_Width*m_Width)*NumBytesPerPixel(m_Format);
         m_Data.resize(NumOptions<CubemapFace>() * numPixelsPerFace);
     }
 
@@ -1316,13 +1308,13 @@ public:
         m_TextureParamsVersion.reset();
     }
 
-    void setPixelData(CubemapFace face, std::span<uint8_t const> data)
+    void setPixelData(CubemapFace face, std::span<const uint8_t> data)
     {
-        size_t const faceIndex = ToIndex(face);
-        auto const numPixels = static_cast<size_t>(m_Width) * static_cast<size_t>(m_Width);
-        size_t const numBytesPerCubeFace = numPixels * NumBytesPerPixel(m_Format);
-        size_t const destinationDataStart = faceIndex * numBytesPerCubeFace;
-        size_t const destinationDataEnd = destinationDataStart + numBytesPerCubeFace;
+        const size_t faceIndex = ToIndex(face);
+        const auto numPixels = static_cast<size_t>(m_Width) * static_cast<size_t>(m_Width);
+        const size_t numBytesPerCubeFace = numPixels * NumBytesPerPixel(m_Format);
+        const size_t destinationDataStart = faceIndex * numBytesPerCubeFace;
+        const size_t destinationDataEnd = destinationDataStart + numBytesPerCubeFace;
 
         OSC_ASSERT(faceIndex < NumOptions<CubemapFace>() && "invalid cubemap face passed to Cubemap::setPixelData");
         OSC_ASSERT(data.size() == numBytesPerCubeFace && "incorrect amount of data passed to Cubemap::setPixelData: the data must match the dimensions and texture format of the cubemap");
@@ -1354,62 +1346,62 @@ private:
     void uploadPixelData(CubemapOpenGLData& buf)
     {
         // calculate CPU-to-GPU data transfer parameters
-        size_t const numBytesPerPixel = NumBytesPerPixel(m_Format);
-        size_t const numBytesPerRow = m_Width * numBytesPerPixel;
-        size_t const numBytesPerFace = m_Width * numBytesPerRow;
-        size_t const numBytesInCubemap = NumOptions<CubemapFace>() * numBytesPerFace;
-        CPUDataType const cpuDataType = ToEquivalentCPUDataType(m_Format);  // TextureFormat's datatype == CPU format's datatype for cubemaps
-        CPUImageFormat const cpuChannelLayout = ToEquivalentCPUImageFormat(m_Format);  // TextureFormat's layout == CPU formats's layout for cubemaps
-        GLint const unpackAlignment = ToOpenGLUnpackAlignment(m_Format);
+        const size_t numBytesPerPixel = NumBytesPerPixel(m_Format);
+        const size_t numBytesPerRow = m_Width * numBytesPerPixel;
+        const size_t numBytesPerFace = m_Width * numBytesPerRow;
+        const size_t numBytesInCubemap = NumOptions<CubemapFace>() * numBytesPerFace;
+        const CPUDataType cpuDataType = toEquivalentCPUDataType(m_Format);  // TextureFormat's datatype == CPU format's datatype for cubemaps
+        const CPUImageFormat cpuChannelLayout = toEquivalentCPUImageFormat(m_Format);  // TextureFormat's layout == CPU formats's layout for cubemaps
+        const GLint unpackAlignment = toOpenGLUnpackAlignment(m_Format);
 
         // sanity-check before doing anything with OpenGL
         OSC_ASSERT(numBytesPerRow % unpackAlignment == 0 && "the memory alignment of each horizontal line in an OpenGL texture must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
-        OSC_ASSERT(IsAlignedAtLeast(m_Data.data(), unpackAlignment) && "the memory alignment of the supplied pixel memory must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
+        OSC_ASSERT(isAlignedAtLeast(m_Data.data(), unpackAlignment) && "the memory alignment of the supplied pixel memory must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
         OSC_ASSERT(numBytesInCubemap <= m_Data.size() && "the number of bytes in the cubemap (CPU-side) is less than expected: this is a developer bug");
         static_assert(NumOptions<TextureFormat>() == 7, "careful here, glTexImage2D will not accept some formats (e.g. GL_RGBA16F) as the externally-provided format (must be GL_RGBA format with GL_HALF_FLOAT type)");
 
         // upload cubemap to GPU
         static_assert(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z - GL_TEXTURE_CUBE_MAP_POSITIVE_X == 5);
-        gl::BindTexture(buf.texture);
-        gl::PixelStorei(GL_UNPACK_ALIGNMENT, unpackAlignment);
-        for (GLint faceIdx = 0; faceIdx < static_cast<GLint>(NumOptions<CubemapFace>()); ++faceIdx)
-        {
-            size_t const faceBytesBegin = faceIdx * numBytesPerFace;
+        gl::bindTexture(buf.texture);
+        gl::pixelStorei(GL_UNPACK_ALIGNMENT, unpackAlignment);
+        for (GLint faceIdx = 0; faceIdx < static_cast<GLint>(NumOptions<CubemapFace>()); ++faceIdx) {
 
-            gl::TexImage2D(
+            const size_t faceBytesBegin = faceIdx * numBytesPerFace;
+
+            gl::texImage2D(
                 GL_TEXTURE_CUBE_MAP_POSITIVE_X + faceIdx,
                 0,
-                ToOpenGLInternalFormat(m_Format, ColorSpace::sRGB),  // cubemaps are always sRGB
+                toOpenGLInternalFormat(m_Format, ColorSpace::sRGB),  // cubemaps are always sRGB
                 m_Width,
                 m_Width,
                 0,
-                ToOpenGLFormat(cpuChannelLayout),
-                ToOpenGLDataType(cpuDataType),
+                toOpenGLFormat(cpuChannelLayout),
+                toOpenGLDataType(cpuDataType),
                 m_Data.data() + faceBytesBegin
             );
         }
 
-        // generate mips (care: they can be uploaded to with Graphics::CopyTexture)
+        // generate mips (care: they can be uploaded to with graphics::copyTexture)
         glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 
-        gl::BindTexture();
+        gl::bindTexture();
 
         buf.dataVersion = m_DataVersion;
     }
 
     void updateTextureParameters(CubemapOpenGLData& buf)
     {
-        gl::BindTexture(buf.texture);
+        gl::bindTexture(buf.texture);
 
         // set texture parameters
-        gl::TexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, ToGLTextureMagFilterParam(m_FilterMode));
-        gl::TexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, ToGLTextureMinFilterParam(m_FilterMode));
-        gl::TexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, ToGLTextureTextureWrapParam(m_WrapModeU));
-        gl::TexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, ToGLTextureTextureWrapParam(m_WrapModeV));
-        gl::TexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, ToGLTextureTextureWrapParam(m_WrapModeW));
+        gl::texParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, toGLTextureMagFilterParam(m_FilterMode));
+        gl::texParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, toGLTextureMinFilterParam(m_FilterMode));
+        gl::texParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, toGLTextureTextureWrapParam(m_WrapModeU));
+        gl::texParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, toGLTextureTextureWrapParam(m_WrapModeV));
+        gl::texParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, toGLTextureTextureWrapParam(m_WrapModeW));
 
         // cleanup OpenGL binding state
-        gl::BindTexture();
+        gl::bindTexture();
 
         buf.parametersVersion = m_TextureParamsVersion;
     }
@@ -1430,8 +1422,7 @@ private:
 
 osc::Cubemap::Cubemap(int32_t width, TextureFormat format) :
     m_Impl{make_cow<Impl>(width, format)}
-{
-}
+{}
 
 int32_t osc::Cubemap::getWidth() const
 {
@@ -1493,7 +1484,7 @@ TextureFormat osc::Cubemap::getTextureFormat() const
     return m_Impl->getTextureFormat();
 }
 
-void osc::Cubemap::setPixelData(CubemapFace face, std::span<uint8_t const> channelsRowByRow)
+void osc::Cubemap::setPixelData(CubemapFace face, std::span<const uint8_t> channelsRowByRow)
 {
     m_Impl.upd()->setPixelData(face, channelsRowByRow);
 }
@@ -1507,16 +1498,16 @@ void osc::Cubemap::setPixelData(CubemapFace face, std::span<uint8_t const> chann
 
 namespace
 {
-    std::vector<Color> ReadPixelDataAsColor(
-        std::span<uint8_t const> pixelData,
+    std::vector<Color> readPixelDataAsColor(
+        std::span<const uint8_t> pixelData,
         TextureFormat pixelDataFormat)
     {
-        TextureChannelFormat const channelFormat = ChannelFormat(pixelDataFormat);
+        const TextureChannelFormat channelFormat = ChannelFormat(pixelDataFormat);
 
-        size_t const numChannels = NumChannels(pixelDataFormat);
-        size_t const bytesPerChannel = NumBytesPerChannel(channelFormat);
-        size_t const bytesPerPixel = bytesPerChannel * numChannels;
-        size_t const numPixels = pixelData.size() / bytesPerPixel;
+        const size_t numChannels = NumChannels(pixelDataFormat);
+        const size_t bytesPerChannel = NumBytesPerChannel(channelFormat);
+        const size_t bytesPerPixel = bytesPerChannel * numChannels;
+        const size_t numPixels = pixelData.size() / bytesPerPixel;
 
         OSC_ASSERT(pixelData.size() % bytesPerPixel == 0);
 
@@ -1524,35 +1515,30 @@ namespace
         rv.reserve(numPixels);
 
         static_assert(NumOptions<TextureChannelFormat>() == 2);
-        if (channelFormat == TextureChannelFormat::Uint8)
-        {
+        if (channelFormat == TextureChannelFormat::Uint8) {
             // unpack 8-bit channel bytes into floating-point Color channels
-            for (size_t pixel = 0; pixel < numPixels; ++pixel)
-            {
-                size_t const pixelStart = bytesPerPixel * pixel;
+            for (size_t pixel = 0; pixel < numPixels; ++pixel) {
+                const size_t pixelStart = bytesPerPixel * pixel;
 
                 Color color = Color::black();
-                for (size_t channel = 0; channel < numChannels; ++channel)
-                {
-                    size_t const channelStart = pixelStart + channel;
+                for (size_t channel = 0; channel < numChannels; ++channel) {
+                    const size_t channelStart = pixelStart + channel;
                     color[channel] = Unorm8{pixelData[channelStart]}.normalized_value();
                 }
                 rv.push_back(color);
             }
         }
-        else if (channelFormat == TextureChannelFormat::Float32 && bytesPerChannel == sizeof(float))
-        {
+        else if (channelFormat == TextureChannelFormat::Float32 && bytesPerChannel == sizeof(float)) {
             // read 32-bit channel floats into Color channels
-            for (size_t pixel = 0; pixel < numPixels; ++pixel)
-            {
-                size_t const pixelStart = bytesPerPixel * pixel;
+            for (size_t pixel = 0; pixel < numPixels; ++pixel) {
+                const size_t pixelStart = bytesPerPixel * pixel;
 
                 Color color = Color::black();
                 for (size_t channel = 0; channel < numChannels; ++channel)
                 {
-                    size_t const channelStart = pixelStart + channel*bytesPerChannel;
+                    const size_t channelStart = pixelStart + channel*bytesPerChannel;
 
-                    std::span<uint8_t const> src{pixelData.data() + channelStart, sizeof(float)};
+                    std::span<const uint8_t> src{pixelData.data() + channelStart, sizeof(float)};
                     std::array<uint8_t, sizeof(float)> dest{};
                     copy(src, dest.begin());
 
@@ -1561,64 +1547,57 @@ namespace
                 rv.push_back(color);
             }
         }
-        else
-        {
+        else {
             OSC_ASSERT(false && "unsupported texture channel format or bytes per channel detected");
         }
 
         return rv;
     }
 
-    std::vector<Color32> ReadPixelDataAsColor32(
-        std::span<uint8_t const> pixelData,
+    std::vector<Color32> readPixelDataAsColor32(
+        std::span<const uint8_t> pixelData,
         TextureFormat pixelDataFormat)
     {
-        TextureChannelFormat const channelFormat = ChannelFormat(pixelDataFormat);
+        const TextureChannelFormat channelFormat = ChannelFormat(pixelDataFormat);
 
-        size_t const numChannels = NumChannels(pixelDataFormat);
-        size_t const bytesPerChannel = NumBytesPerChannel(channelFormat);
-        size_t const bytesPerPixel = bytesPerChannel * numChannels;
-        size_t const numPixels = pixelData.size() / bytesPerPixel;
+        const size_t numChannels = NumChannels(pixelDataFormat);
+        const size_t bytesPerChannel = NumBytesPerChannel(channelFormat);
+        const size_t bytesPerPixel = bytesPerChannel * numChannels;
+        const size_t numPixels = pixelData.size() / bytesPerPixel;
 
         std::vector<Color32> rv;
         rv.reserve(numPixels);
 
         static_assert(NumOptions<TextureChannelFormat>() == 2);
-        if (channelFormat == TextureChannelFormat::Uint8)
-        {
+        if (channelFormat == TextureChannelFormat::Uint8) {
             // read 8-bit channel bytes into 8-bit Color32 color channels
-            for (size_t pixel = 0; pixel < numPixels; ++pixel)
-            {
-                size_t const pixelStart = bytesPerPixel * pixel;
+            for (size_t pixel = 0; pixel < numPixels; ++pixel) {
+                const size_t pixelStart = bytesPerPixel * pixel;
 
                 Color32 color = {0x00, 0x00, 0x00, 0xff};
-                for (size_t channel = 0; channel < numChannels; ++channel)
-                {
-                    size_t const channelStart = pixelStart + channel;
+                for (size_t channel = 0; channel < numChannels; ++channel) {
+                    const size_t channelStart = pixelStart + channel;
                     color[channel] = pixelData[channelStart];
                 }
                 rv.push_back(color);
             }
         }
-        else
-        {
+        else {
             static_assert(std::is_same_v<Color::value_type, float>);
             OSC_ASSERT(bytesPerChannel == sizeof(float));
 
             // pack 32-bit channel floats into 8-bit Color32 color channels
-            for (size_t pixel = 0; pixel < numPixels; ++pixel)
-            {
-                size_t const pixelStart = bytesPerPixel * pixel;
+            for (size_t pixel = 0; pixel < numPixels; ++pixel) {
+                const size_t pixelStart = bytesPerPixel * pixel;
 
                 Color32 color = {0x00, 0x00, 0x00, 0xff};
-                for (size_t channel = 0; channel < numChannels; ++channel)
-                {
-                    size_t const channelStart = pixelStart + channel*sizeof(float);
+                for (size_t channel = 0; channel < numChannels; ++channel) {
+                    const size_t channelStart = pixelStart + channel*sizeof(float);
 
-                    std::span<uint8_t const> src{pixelData.data() + channelStart, sizeof(float)};
+                    std::span<const uint8_t> src{pixelData.data() + channelStart, sizeof(float)};
                     std::array<uint8_t, sizeof(float)> dest{};
                     copy(src, dest.begin());
-                    auto const channelFloat = cpp20::bit_cast<float>(dest);
+                    const auto channelFloat = cpp20::bit_cast<float>(dest);
 
                     color[channel] = Unorm8{channelFloat};
                 }
@@ -1629,73 +1608,64 @@ namespace
         return rv;
     }
 
-    void EncodePixelsInDesiredFormat(
-        std::span<Color const> pixels,
+    void encodePixelsInDesiredFormat(
+        std::span<const Color> pixels,
         TextureFormat pixelDataFormat,
         std::vector<uint8_t>& pixelData)
     {
-        TextureChannelFormat const channelFormat = ChannelFormat(pixelDataFormat);
+        const TextureChannelFormat channelFormat = ChannelFormat(pixelDataFormat);
 
-        size_t const numChannels = NumChannels(pixelDataFormat);
-        size_t const bytesPerChannel = NumBytesPerChannel(channelFormat);
-        size_t const bytesPerPixel = bytesPerChannel * numChannels;
-        size_t const numPixels = pixels.size();
-        size_t const numOutputBytes = bytesPerPixel * numPixels;
+        const size_t numChannels = NumChannels(pixelDataFormat);
+        const size_t bytesPerChannel = NumBytesPerChannel(channelFormat);
+        const size_t bytesPerPixel = bytesPerChannel * numChannels;
+        const size_t numPixels = pixels.size();
+        const size_t numOutputBytes = bytesPerPixel * numPixels;
 
         pixelData.clear();
         pixelData.reserve(numOutputBytes);
 
         OSC_ASSERT(numChannels <= std::tuple_size_v<Color>);
         static_assert(NumOptions<TextureChannelFormat>() == 2);
-        if (channelFormat == TextureChannelFormat::Uint8)
-        {
+        if (channelFormat == TextureChannelFormat::Uint8) {
             // clamp pixels, convert them to bytes, add them to pixel data buffer
-            for (Color const& pixel : pixels)
-            {
-                for (size_t channel = 0; channel < numChannels; ++channel)
-                {
+            for (const Color& pixel : pixels) {
+                for (size_t channel = 0; channel < numChannels; ++channel) {
                     pixelData.push_back(Unorm8{pixel[channel]}.raw_value());
                 }
             }
         }
-        else
-        {
+        else {
             // write pixels to pixel data buffer as-is (they're floats already)
-            for (Color const& pixel : pixels)
-            {
-                for (size_t channel = 0; channel < numChannels; ++channel)
-                {
-                    PushAsBytes(pixel[channel], pixelData);
+            for (const Color& pixel : pixels) {
+                for (size_t channel = 0; channel < numChannels; ++channel) {
+                    pushAsBytes(pixel[channel], pixelData);
                 }
             }
         }
     }
 
-    void EncodePixels32InDesiredFormat(
-        std::span<Color32 const> pixels,
+    void encodePixels32InDesiredFormat(
+        std::span<const Color32> pixels,
         TextureFormat pixelDataFormat,
         std::vector<uint8_t>& pixelData)
     {
-        TextureChannelFormat const channelFormat = ChannelFormat(pixelDataFormat);
+        const TextureChannelFormat channelFormat = ChannelFormat(pixelDataFormat);
 
-        size_t const numChannels = NumChannels(pixelDataFormat);
-        size_t const bytesPerChannel = NumBytesPerChannel(channelFormat);
-        size_t const bytesPerPixel = bytesPerChannel * numChannels;
-        size_t const numPixels = pixels.size();
-        size_t const numOutputBytes = bytesPerPixel * numPixels;
+        const size_t numChannels = NumChannels(pixelDataFormat);
+        const size_t bytesPerChannel = NumBytesPerChannel(channelFormat);
+        const size_t bytesPerPixel = bytesPerChannel * numChannels;
+        const size_t numPixels = pixels.size();
+        const size_t numOutputBytes = bytesPerPixel * numPixels;
 
         pixelData.clear();
         pixelData.reserve(numOutputBytes);
 
         OSC_ASSERT(numChannels <= Color32::length());
         static_assert(NumOptions<TextureChannelFormat>() == 2);
-        if (channelFormat == TextureChannelFormat::Uint8)
-        {
+        if (channelFormat == TextureChannelFormat::Uint8) {
             // write pixels to pixel data buffer as-is (they're bytes already)
-            for (Color32 const& pixel : pixels)
-            {
-                for (size_t channel = 0; channel < numChannels; ++channel)
-                {
+            for (const Color32& pixel : pixels) {
+                for (size_t channel = 0; channel < numChannels; ++channel) {
                     pixelData.push_back(pixel[channel].raw_value());
                 }
             }
@@ -1703,12 +1673,10 @@ namespace
         else
         {
             // upscale pixels to float32s and write the floats to the pixel buffer
-            for (Color32 const& pixel : pixels)
-            {
-                for (size_t channel = 0; channel < numChannels; ++channel)
-                {
-                    float const pixelFloatVal = Unorm8{pixel[channel]}.normalized_value();
-                    PushAsBytes(pixelFloatVal, pixelData);
+            for (const Color32& pixel : pixels) {
+                for (size_t channel = 0; channel < numChannels; ++channel) {
+                    const float pixelFloatVal = Unorm8{pixel[channel]}.normalized_value();
+                    pushAsBytes(pixelFloatVal, pixelData);
                 }
             }
         }
@@ -1809,32 +1777,32 @@ public:
 
     std::vector<Color> getPixels() const
     {
-        return ReadPixelDataAsColor(m_PixelData, m_Format);
+        return readPixelDataAsColor(m_PixelData, m_Format);
     }
 
-    void setPixels(std::span<Color const> pixels)
+    void setPixels(std::span<const Color> pixels)
     {
         OSC_ASSERT(std::ssize(pixels) == static_cast<ptrdiff_t>(m_Dimensions.x*m_Dimensions.y));
-        EncodePixelsInDesiredFormat(pixels, m_Format, m_PixelData);
+        encodePixelsInDesiredFormat(pixels, m_Format, m_PixelData);
     }
 
     std::vector<Color32> getPixels32() const
     {
-        return ReadPixelDataAsColor32(m_PixelData, m_Format);
+        return readPixelDataAsColor32(m_PixelData, m_Format);
     }
 
-    void setPixels32(std::span<Color32 const> pixels)
+    void setPixels32(std::span<const Color32> pixels)
     {
         OSC_ASSERT(std::ssize(pixels) == static_cast<ptrdiff_t>(m_Dimensions.x*m_Dimensions.y));
-        EncodePixels32InDesiredFormat(pixels, m_Format, m_PixelData);
+        encodePixels32InDesiredFormat(pixels, m_Format, m_PixelData);
     }
 
-    std::span<uint8_t const> getPixelData() const
+    std::span<const uint8_t> getPixelData() const
     {
         return m_PixelData;
     }
 
-    void setPixelData(std::span<uint8_t const> pixelData)
+    void setPixelData(std::span<const uint8_t> pixelData)
     {
         OSC_ASSERT(pixelData.size() == NumBytesPerPixel(m_Format)*m_Dimensions.x*m_Dimensions.y && "incorrect number of bytes passed to Texture2D::setPixelData");
         OSC_ASSERT(pixelData.size() == m_PixelData.size());
@@ -1867,43 +1835,43 @@ private:
     {
         *m_MaybeGPUTexture = Texture2DOpenGLData{};
 
-        size_t const numBytesPerPixel = NumBytesPerPixel(m_Format);
-        size_t const numBytesPerRow = m_Dimensions.x * numBytesPerPixel;
-        GLint const unpackAlignment = ToOpenGLUnpackAlignment(m_Format);
-        CPUDataType const cpuDataType = ToEquivalentCPUDataType(m_Format);  // TextureFormat's datatype == CPU format's datatype for cubemaps
-        CPUImageFormat const cpuChannelLayout = ToEquivalentCPUImageFormat(m_Format);  // TextureFormat's layout == CPU formats's layout for cubemaps
+        const size_t numBytesPerPixel = NumBytesPerPixel(m_Format);
+        const size_t numBytesPerRow = m_Dimensions.x * numBytesPerPixel;
+        const GLint unpackAlignment = toOpenGLUnpackAlignment(m_Format);
+        const CPUDataType cpuDataType = toEquivalentCPUDataType(m_Format);  // TextureFormat's datatype == CPU format's datatype for cubemaps
+        const CPUImageFormat cpuChannelLayout = toEquivalentCPUImageFormat(m_Format);  // TextureFormat's layout == CPU formats's layout for cubemaps
 
         static_assert(NumOptions<TextureFormat>() == 7, "careful here, glTexImage2D will not accept some formats (e.g. GL_RGBA16F) as the externally-provided format (must be GL_RGBA format with GL_HALF_FLOAT type)");
         OSC_ASSERT(numBytesPerRow % unpackAlignment == 0 && "the memory alignment of each horizontal line in an OpenGL texture must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
-        OSC_ASSERT(IsAlignedAtLeast(m_PixelData.data(), unpackAlignment) && "the memory alignment of the supplied pixel memory must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
+        OSC_ASSERT(isAlignedAtLeast(m_PixelData.data(), unpackAlignment) && "the memory alignment of the supplied pixel memory must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
 
         // one-time upload, because pixels cannot be altered
-        gl::BindTexture((*m_MaybeGPUTexture)->texture);
-        gl::PixelStorei(GL_UNPACK_ALIGNMENT, unpackAlignment);
-        gl::TexImage2D(
+        gl::bindTexture((*m_MaybeGPUTexture)->texture);
+        gl::pixelStorei(GL_UNPACK_ALIGNMENT, unpackAlignment);
+        gl::texImage2D(
             GL_TEXTURE_2D,
             0,
-            ToOpenGLInternalFormat(m_Format, m_ColorSpace),
+            toOpenGLInternalFormat(m_Format, m_ColorSpace),
             m_Dimensions.x,
             m_Dimensions.y,
             0,
-            ToOpenGLFormat(cpuChannelLayout),
-            ToOpenGLDataType(cpuDataType),
+            toOpenGLFormat(cpuChannelLayout),
+            toOpenGLDataType(cpuDataType),
             m_PixelData.data()
         );
         glGenerateMipmap(GL_TEXTURE_2D);
-        gl::BindTexture();
+        gl::bindTexture();
     }
 
     void setTextureParams(Texture2DOpenGLData& bufs)
     {
-        gl::BindTexture(bufs.texture);
-        gl::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, ToGLTextureTextureWrapParam(m_WrapModeU));
-        gl::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, ToGLTextureTextureWrapParam(m_WrapModeV));
-        gl::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, ToGLTextureTextureWrapParam(m_WrapModeW));
-        gl::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, ToGLTextureMinFilterParam(m_FilterMode));
-        gl::TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, ToGLTextureMagFilterParam(m_FilterMode));
-        gl::BindTexture();
+        gl::bindTexture(bufs.texture);
+        gl::texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, toGLTextureTextureWrapParam(m_WrapModeU));
+        gl::texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, toGLTextureTextureWrapParam(m_WrapModeV));
+        gl::texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, toGLTextureTextureWrapParam(m_WrapModeW));
+        gl::texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, toGLTextureMinFilterParam(m_FilterMode));
+        gl::texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, toGLTextureMagFilterParam(m_FilterMode));
+        gl::bindTexture();
         bufs.textureParamsVersion = m_TextureParamsVersion;
     }
 
@@ -1959,7 +1927,7 @@ size_t osc::NumBytesPerPixel(TextureFormat format)
 std::optional<TextureFormat> osc::ToTextureFormat(size_t numChannels, TextureChannelFormat channelFormat)
 {
     static_assert(NumOptions<TextureChannelFormat>() == 2);
-    bool const isByteOriented = channelFormat == TextureChannelFormat::Uint8;
+    const bool isByteOriented = channelFormat == TextureChannelFormat::Uint8;
 
     static_assert(NumOptions<TextureFormat>() == 7);
     switch (numChannels) {
@@ -1979,8 +1947,7 @@ std::optional<TextureFormat> osc::ToTextureFormat(size_t numChannels, TextureCha
 size_t osc::NumBytesPerChannel(TextureChannelFormat f)
 {
     static_assert(NumOptions<TextureChannelFormat>() == 2);
-    switch (f)
-    {
+    switch (f) {
     case TextureChannelFormat::Uint8: return 1;
     case TextureChannelFormat::Float32: return 4;
     default: return 1;
@@ -2069,7 +2036,7 @@ std::vector<Color> osc::Texture2D::getPixels() const
     return m_Impl->getPixels();
 }
 
-void osc::Texture2D::setPixels(std::span<Color const> pixels)
+void osc::Texture2D::setPixels(std::span<const Color> pixels)
 {
     m_Impl.upd()->setPixels(pixels);
 }
@@ -2084,17 +2051,17 @@ void osc::Texture2D::setPixels32(std::span<Color32 const> pixels)
     m_Impl.upd()->setPixels32(pixels);
 }
 
-std::span<uint8_t const> osc::Texture2D::getPixelData() const
+std::span<const uint8_t> osc::Texture2D::getPixelData() const
 {
     return m_Impl->getPixelData();
 }
 
-void osc::Texture2D::setPixelData(std::span<uint8_t const> pixelData)
+void osc::Texture2D::setPixelData(std::span<const uint8_t> pixelData)
 {
     m_Impl.upd()->setPixelData(pixelData);
 }
 
-std::ostream& osc::operator<<(std::ostream& o, Texture2D const&)
+std::ostream& osc::operator<<(std::ostream& o, const Texture2D&)
 {
     return o << "Texture2D()";
 }
@@ -2125,17 +2092,15 @@ namespace
     });
     static_assert(c_DepthStencilFormatStrings.size() == NumOptions<DepthStencilFormat>());
 
-    GLenum ToInternalOpenGLColorFormat(
+    GLenum toInternalOpenGLColorFormat(
         RenderBufferType type,
-        RenderTextureDescriptor const& desc)
+        const RenderTextureDescriptor& desc)
     {
         static_assert(NumOptions<RenderBufferType>() == 2, "review code below, which treats RenderBufferType as a bool");
-        if (type == RenderBufferType::Depth)
-        {
+        if (type == RenderBufferType::Depth) {
             return GL_DEPTH24_STENCIL8;
         }
-        else
-        {
+        else {
             static_assert(NumOptions<RenderTextureFormat>() == 6);
             static_assert(NumOptions<RenderTextureReadWrite>() == 2);
 
@@ -2157,21 +2122,19 @@ namespace
         }
     }
 
-    constexpr CPUImageFormat ToEquivalentCPUImageFormat(
+    constexpr CPUImageFormat toEquivalentCPUImageFormat(
         RenderBufferType type,
-        RenderTextureDescriptor const& desc)
+        const RenderTextureDescriptor& desc)
     {
         static_assert(NumOptions<RenderBufferType>() == 2);
         static_assert(NumOptions<DepthStencilFormat>() == 1);
         static_assert(NumOptions<RenderTextureFormat>() == 6);
         static_assert(NumOptions<CPUImageFormat>() == 5);
 
-        if (type == RenderBufferType::Depth)
-        {
+        if (type == RenderBufferType::Depth) {
             return CPUImageFormat::DepthStencil;
         }
-        else
-        {
+        else {
             switch (desc.getColorFormat()) {
             case RenderTextureFormat::Red8:
                 return CPUImageFormat::R8;
@@ -2190,21 +2153,19 @@ namespace
         }
     }
 
-    constexpr CPUDataType ToEquivalentCPUDataType(
+    constexpr CPUDataType toEquivalentCPUDataType(
         RenderBufferType type,
-        RenderTextureDescriptor const& desc)
+        const RenderTextureDescriptor& desc)
     {
         static_assert(NumOptions<RenderBufferType>() == 2);
         static_assert(NumOptions<DepthStencilFormat>() == 1);
         static_assert(NumOptions<RenderTextureFormat>() == 6);
         static_assert(NumOptions<CPUDataType>() == 4);
 
-        if (type == RenderBufferType::Depth)
-        {
+        if (type == RenderBufferType::Depth) {
             return CPUDataType::UnsignedInt24_8;
         }
-        else
-        {
+        else {
             switch (desc.getColorFormat()) {
             case RenderTextureFormat::Red8:
                 return CPUDataType::UnsignedByte;
@@ -2223,7 +2184,7 @@ namespace
         }
     }
 
-    constexpr GLenum ToImageColorFormat(TextureFormat f)
+    constexpr GLenum toImageColorFormat(TextureFormat f)
     {
         constexpr auto lut = []<TextureFormat... Formats>(OptionList<TextureFormat, Formats...>)
         {
@@ -2233,7 +2194,7 @@ namespace
         return lut.at(ToIndex(f));
     }
 
-    constexpr GLint ToImagePixelPackAlignment(TextureFormat f)
+    constexpr GLint toImagePixelPackAlignment(TextureFormat f)
     {
         constexpr auto lut = []<TextureFormat... Formats>(OptionList<TextureFormat, Formats...>)
         {
@@ -2243,7 +2204,7 @@ namespace
         return lut.at(ToIndex(f));
     }
 
-    constexpr GLenum ToImageDataType(TextureFormat)
+    constexpr GLenum toImageDataType(TextureFormat)
     {
         static_assert(NumOptions<TextureFormat>() == 7);
         return GL_UNSIGNED_BYTE;
@@ -2331,7 +2292,7 @@ void osc::RenderTextureDescriptor::setReadWrite(RenderTextureReadWrite rw)
     m_ReadWrite = rw;
 }
 
-std::ostream& osc::operator<<(std::ostream& o, RenderTextureDescriptor const& rtd)
+std::ostream& osc::operator<<(std::ostream& o, const RenderTextureDescriptor& rtd)
 {
     return o <<
         "RenderTextureDescriptor(width = " << rtd.m_Dimensions.x
@@ -2345,7 +2306,7 @@ std::ostream& osc::operator<<(std::ostream& o, RenderTextureDescriptor const& rt
 class osc::RenderBuffer::Impl final {
 public:
     Impl(
-        RenderTextureDescriptor const& descriptor_,
+        const RenderTextureDescriptor& descriptor_,
         RenderBufferType type_) :
 
         m_Descriptor{descriptor_},
@@ -2355,19 +2316,18 @@ public:
         OSC_ASSERT((getDimensionality() != TextureDimensionality::Cube || getAntialiasingLevel() == AntiAliasingLevel::none()) && "cannot construct a Cube renderbuffer that is anti-aliased (not supported by backends like OpenGL)");
     }
 
-    void reformat(RenderTextureDescriptor const& newDescriptor)
+    void reformat(const RenderTextureDescriptor& newDescriptor)
     {
         OSC_ASSERT((newDescriptor.getDimensionality() != TextureDimensionality::Cube || newDescriptor.getDimensions().x == newDescriptor.getDimensions().y) && "cannot reformat a render buffer to a Cube dimensionality with non-square dimensions");
         OSC_ASSERT((newDescriptor.getDimensionality() != TextureDimensionality::Cube || newDescriptor.getAntialiasingLevel() == AntiAliasingLevel::none()) && "cannot reformat a renderbuffer to a Cube dimensionality with is anti-aliased (not supported by backends like OpenGL)");
 
-        if (m_Descriptor != newDescriptor)
-        {
+        if (m_Descriptor != newDescriptor) {
             m_Descriptor = newDescriptor;
             m_MaybeOpenGLData->reset();
         }
     }
 
-    RenderTextureDescriptor const& getDescriptor() const
+    const RenderTextureDescriptor& getDescriptor() const
     {
         return m_Descriptor;
     }
@@ -2499,146 +2459,146 @@ public:
 
     void configureData(SingleSampledTexture& t)
     {
-        Vec2i const dimensions = m_Descriptor.getDimensions();
+        const Vec2i dimensions = m_Descriptor.getDimensions();
 
         // setup resolved texture
-        gl::BindTexture(t.texture2D);
-        gl::TexImage2D(
+        gl::bindTexture(t.texture2D);
+        gl::texImage2D(
             GL_TEXTURE_2D,
             0,
-            ToInternalOpenGLColorFormat(m_BufferType, m_Descriptor),
+            toInternalOpenGLColorFormat(m_BufferType, m_Descriptor),
             dimensions.x,
             dimensions.y,
             0,
-            ToOpenGLFormat(ToEquivalentCPUImageFormat(m_BufferType, m_Descriptor)),
-            ToOpenGLDataType(ToEquivalentCPUDataType(m_BufferType, m_Descriptor)),
+            toOpenGLFormat(toEquivalentCPUImageFormat(m_BufferType, m_Descriptor)),
+            toOpenGLDataType(toEquivalentCPUDataType(m_BufferType, m_Descriptor)),
             nullptr
         );
-        gl::TexParameteri(
+        gl::texParameteri(
             GL_TEXTURE_2D,
             GL_TEXTURE_MIN_FILTER,
             GL_LINEAR
         );
-        gl::TexParameteri(
+        gl::texParameteri(
             GL_TEXTURE_2D,
             GL_TEXTURE_MAG_FILTER,
             GL_LINEAR
         );
-        gl::TexParameteri(
+        gl::texParameteri(
             GL_TEXTURE_2D,
             GL_TEXTURE_WRAP_S,
             GL_CLAMP_TO_EDGE
         );
-        gl::TexParameteri(
+        gl::texParameteri(
             GL_TEXTURE_2D,
             GL_TEXTURE_WRAP_T,
             GL_CLAMP_TO_EDGE
         );
-        gl::TexParameteri(
+        gl::texParameteri(
             GL_TEXTURE_2D,
             GL_TEXTURE_WRAP_R,
             GL_CLAMP_TO_EDGE
         );
-        gl::BindTexture();
+        gl::bindTexture();
     }
 
     void configureData(MultisampledRBOAndResolvedTexture& data)
     {
-        Vec2i const dimensions = m_Descriptor.getDimensions();
+        const Vec2i dimensions = m_Descriptor.getDimensions();
 
         // setup multisampled RBO
-        gl::BindRenderBuffer(data.multisampledRBO);
+        gl::bindRenderBuffer(data.multisampledRBO);
         glRenderbufferStorageMultisample(
             GL_RENDERBUFFER,
             m_Descriptor.getAntialiasingLevel().getU32(),
-            ToInternalOpenGLColorFormat(m_BufferType, m_Descriptor),
+            toInternalOpenGLColorFormat(m_BufferType, m_Descriptor),
             dimensions.x,
             dimensions.y
         );
-        gl::BindRenderBuffer();
+        gl::bindRenderBuffer();
 
         // setup resolved texture
-        gl::BindTexture(data.singleSampledTexture);
-        gl::TexImage2D(
+        gl::bindTexture(data.singleSampledTexture);
+        gl::texImage2D(
             GL_TEXTURE_2D,
             0,
-            ToInternalOpenGLColorFormat(m_BufferType, m_Descriptor),
+            toInternalOpenGLColorFormat(m_BufferType, m_Descriptor),
             dimensions.x,
             dimensions.y,
             0,
-            ToOpenGLFormat(ToEquivalentCPUImageFormat(m_BufferType, m_Descriptor)),
-            ToOpenGLDataType(ToEquivalentCPUDataType(m_BufferType, m_Descriptor)),
+            toOpenGLFormat(toEquivalentCPUImageFormat(m_BufferType, m_Descriptor)),
+            toOpenGLDataType(toEquivalentCPUDataType(m_BufferType, m_Descriptor)),
             nullptr
         );
-        gl::TexParameteri(
+        gl::texParameteri(
             GL_TEXTURE_2D,
             GL_TEXTURE_MIN_FILTER,
             GL_LINEAR
         );
-        gl::TexParameteri(
+        gl::texParameteri(
             GL_TEXTURE_2D,
             GL_TEXTURE_MAG_FILTER,
             GL_LINEAR
         );
-        gl::TexParameteri(
+        gl::texParameteri(
             GL_TEXTURE_2D,
             GL_TEXTURE_WRAP_S,
             GL_CLAMP_TO_EDGE
         );
-        gl::TexParameteri(
+        gl::texParameteri(
             GL_TEXTURE_2D,
             GL_TEXTURE_WRAP_T,
             GL_CLAMP_TO_EDGE
         );
-        gl::TexParameteri(
+        gl::texParameteri(
             GL_TEXTURE_2D,
             GL_TEXTURE_WRAP_R,
             GL_CLAMP_TO_EDGE
         );
-        gl::BindTexture();
+        gl::bindTexture();
     }
 
     void configureData(SingleSampledCubemap& t)
     {
-        Vec2i const dimensions = m_Descriptor.getDimensions();
+        const Vec2i dimensions = m_Descriptor.getDimensions();
 
         // setup resolved texture
-        gl::BindTexture(t.textureCubemap);
+        gl::bindTexture(t.textureCubemap);
         for (int i = 0; i < 6; ++i)
         {
-            gl::TexImage2D(
+            gl::texImage2D(
                 GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
                 0,
-                ToInternalOpenGLColorFormat(m_BufferType, m_Descriptor),
+                toInternalOpenGLColorFormat(m_BufferType, m_Descriptor),
                 dimensions.x,
                 dimensions.y,
                 0,
-                ToOpenGLFormat(ToEquivalentCPUImageFormat(m_BufferType, m_Descriptor)),
-                ToOpenGLDataType(ToEquivalentCPUDataType(m_BufferType, m_Descriptor)),
+                toOpenGLFormat(toEquivalentCPUImageFormat(m_BufferType, m_Descriptor)),
+                toOpenGLDataType(toEquivalentCPUDataType(m_BufferType, m_Descriptor)),
                 nullptr
             );
         }
-        gl::TexParameteri(
+        gl::texParameteri(
             GL_TEXTURE_CUBE_MAP,
             GL_TEXTURE_MIN_FILTER,
             GL_LINEAR
         );
-        gl::TexParameteri(
+        gl::texParameteri(
             GL_TEXTURE_CUBE_MAP,
             GL_TEXTURE_MAG_FILTER,
             GL_LINEAR
         );
-        gl::TexParameteri(
+        gl::texParameteri(
             GL_TEXTURE_CUBE_MAP,
             GL_TEXTURE_WRAP_S,
             GL_CLAMP_TO_EDGE
         );
-        gl::TexParameteri(
+        gl::texParameteri(
             GL_TEXTURE_CUBE_MAP,
             GL_TEXTURE_WRAP_T,
             GL_CLAMP_TO_EDGE
         );
-        gl::TexParameteri(
+        gl::texParameteri(
             GL_TEXTURE_CUBE_MAP,
             GL_TEXTURE_WRAP_R,
             GL_CLAMP_TO_EDGE
@@ -2658,7 +2618,7 @@ private:
 };
 
 osc::RenderBuffer::RenderBuffer(
-    RenderTextureDescriptor const& descriptor_,
+    const RenderTextureDescriptor& descriptor_,
     RenderBufferType type_) :
 
     m_Impl{std::make_unique<Impl>(descriptor_, type_)}
@@ -2678,7 +2638,7 @@ public:
     {
     }
 
-    explicit Impl(RenderTextureDescriptor const& descriptor) :
+    explicit Impl(const RenderTextureDescriptor& descriptor) :
         m_ColorBuffer{std::make_shared<RenderBuffer>(descriptor, RenderBufferType::Color)},
         m_DepthBuffer{std::make_shared<RenderBuffer>(descriptor, RenderBufferType::Depth)}
     {
@@ -2819,7 +2779,7 @@ osc::RenderTexture::RenderTexture(Vec2i dimensions) :
 {
 }
 
-osc::RenderTexture::RenderTexture(RenderTextureDescriptor const& desc) :
+osc::RenderTexture::RenderTexture(const RenderTextureDescriptor& desc) :
     m_Impl{make_cow<Impl>(desc)}
 {
 }
@@ -2884,7 +2844,7 @@ void osc::RenderTexture::setReadWrite(RenderTextureReadWrite rw)
     m_Impl.upd()->setReadWrite(rw);
 }
 
-void osc::RenderTexture::reformat(RenderTextureDescriptor const& d)
+void osc::RenderTexture::reformat(const RenderTextureDescriptor& d)
 {
     m_Impl.upd()->reformat(d);
 }
@@ -2899,7 +2859,7 @@ std::shared_ptr<RenderBuffer> osc::RenderTexture::updDepthBuffer()
     return m_Impl.upd()->updDepthBuffer();
 }
 
-std::ostream& osc::operator<<(std::ostream& o, RenderTexture const&)
+std::ostream& osc::operator<<(std::ostream& o, const RenderTexture&)
 {
     return o << "RenderTexture()";
 }
@@ -2916,13 +2876,13 @@ std::ostream& osc::operator<<(std::ostream& o, RenderTexture const&)
 class osc::Shader::Impl final {
 public:
     Impl(CStringView vertexShader, CStringView fragmentShader) :
-        m_Program{gl::CreateProgramFrom(gl::CompileFromSource<gl::VertexShader>(vertexShader.c_str()), gl::CompileFromSource<gl::FragmentShader>(fragmentShader.c_str()))}
+        m_Program{gl::createProgramFrom(gl::compileFromSource<gl::VertexShader>(vertexShader.c_str()), gl::compileFromSource<gl::FragmentShader>(fragmentShader.c_str()))}
     {
         parseUniformsAndAttributesFromProgram();
     }
 
     Impl(CStringView vertexShader, CStringView geometryShader, CStringView fragmentShader) :
-        m_Program{gl::CreateProgramFrom(gl::CompileFromSource<gl::VertexShader>(vertexShader.c_str()), gl::CompileFromSource<gl::FragmentShader>(fragmentShader.c_str()), gl::CompileFromSource<gl::GeometryShader>(geometryShader.c_str()))}
+        m_Program{gl::createProgramFrom(gl::compileFromSource<gl::VertexShader>(vertexShader.c_str()), gl::compileFromSource<gl::FragmentShader>(fragmentShader.c_str()), gl::compileFromSource<gl::GeometryShader>(geometryShader.c_str()))}
     {
         parseUniformsAndAttributesFromProgram();
     }
@@ -2934,12 +2894,10 @@ public:
 
     std::optional<ptrdiff_t> findPropertyIndex(std::string_view propertyName) const
     {
-        if (auto const it = m_Uniforms.find(propertyName); it != m_Uniforms.end())
-        {
+        if (const auto it = m_Uniforms.find(propertyName); it != m_Uniforms.end()) {
             return static_cast<ptrdiff_t>(std::distance(m_Uniforms.begin(), it));
         }
-        else
-        {
+        else {
             return std::nullopt;
         }
     }
@@ -2960,17 +2918,17 @@ public:
 
     // non-PIMPL APIs
 
-    gl::Program const& getProgram() const
+    const gl::Program& getProgram() const
     {
         return m_Program;
     }
 
-    FastStringHashtable<ShaderElement> const& getUniforms() const
+    const FastStringHashtable<ShaderElement>& getUniforms() const
     {
         return m_Uniforms;
     }
 
-    FastStringHashtable<ShaderElement> const& getAttributes() const
+    const FastStringHashtable<ShaderElement>& getAttributes() const
     {
         return m_Attributes;
     }
@@ -3005,9 +2963,9 @@ private:
 
             static_assert(sizeof(GLint) <= sizeof(int32_t));
             m_Attributes.try_emplace<std::string>(
-                NormalizeShaderElementName(name.data()),
+                normalizeShaderElementName(name.data()),
                 static_cast<int32_t>(glGetAttribLocation(m_Program.get(), name.data())),
-                GLShaderTypeToShaderTypeInternal(type),
+                glShaderTypeToShaderTypeInternal(type),
                 static_cast<int32_t>(size)
             );
         }
@@ -3031,9 +2989,9 @@ private:
 
             static_assert(sizeof(GLint) <= sizeof(int32_t));
             m_Uniforms.try_emplace<std::string>(
-                NormalizeShaderElementName(name.data()),
+                normalizeShaderElementName(name.data()),
                 static_cast<int32_t>(glGetUniformLocation(m_Program.get(), name.data())),
-                GLShaderTypeToShaderTypeInternal(type),
+                glShaderTypeToShaderTypeInternal(type),
                 static_cast<int32_t>(size)
             );
         }
@@ -3041,32 +2999,25 @@ private:
         // cache commonly-used "automatic" shader elements
         //
         // it's a perf optimization: the renderer uses this to skip lookups
-        if (ShaderElement const* e = TryGetValue(m_Uniforms, "uModelMat"))
-        {
+        if (const ShaderElement* e = tryGetValue(m_Uniforms, "uModelMat")) {
             m_MaybeModelMatUniform = *e;
         }
-        if (ShaderElement const* e = TryGetValue(m_Uniforms, "uNormalMat"))
-        {
+        if (const ShaderElement* e = tryGetValue(m_Uniforms, "uNormalMat")) {
             m_MaybeNormalMatUniform = *e;
         }
-        if (ShaderElement const* e = TryGetValue(m_Uniforms, "uViewMat"))
-        {
+        if (const ShaderElement* e = tryGetValue(m_Uniforms, "uViewMat")) {
             m_MaybeViewMatUniform = *e;
         }
-        if (ShaderElement const* e = TryGetValue(m_Uniforms, "uProjMat"))
-        {
+        if (const ShaderElement* e = tryGetValue(m_Uniforms, "uProjMat")) {
             m_MaybeProjMatUniform = *e;
         }
-        if (ShaderElement const* e = TryGetValue(m_Uniforms, "uViewProjMat"))
-        {
+        if (const ShaderElement* e = tryGetValue(m_Uniforms, "uViewProjMat")) {
             m_MaybeViewProjMatUniform = *e;
         }
-        if (ShaderElement const* e = TryGetValue(m_Attributes, "aModelMat"))
-        {
+        if (const ShaderElement* e = tryGetValue(m_Attributes, "aModelMat")) {
             m_MaybeInstancedModelMatAttr = *e;
         }
-        if (ShaderElement const* e = TryGetValue(m_Attributes, "aNormalMat"))
-        {
+        if (const ShaderElement* e = tryGetValue(m_Attributes, "aNormalMat")) {
             m_MaybeInstancedNormalMatAttr = *e;
         }
     }
@@ -3127,17 +3078,16 @@ ShaderPropertyType osc::Shader::getPropertyType(ptrdiff_t propertyIndex) const
     return m_Impl->getPropertyType(propertyIndex);
 }
 
-std::ostream& osc::operator<<(std::ostream& o, Shader const& shader)
+std::ostream& osc::operator<<(std::ostream& o, const Shader& shader)
 {
     o << "Shader(\n";
     {
         o << "    uniforms = [";
 
-        std::string_view const delim = "\n        ";
-        for (auto const& [name, data] : shader.m_Impl->getUniforms())
-        {
+        const std::string_view delim = "\n        ";
+        for (const auto& [name, data] : shader.m_Impl->getUniforms()) {
             o << delim;
-            PrintShaderElement(o, name, data);
+            printShaderElement(o, name, data);
         }
 
         o << "\n    ],\n";
@@ -3146,11 +3096,10 @@ std::ostream& osc::operator<<(std::ostream& o, Shader const& shader)
     {
         o << "    attributes = [";
 
-        std::string_view const delim = "\n        ";
-        for (auto const& [name, data] : shader.m_Impl->getAttributes())
-        {
+        const std::string_view delim = "\n        ";
+        for (const auto& [name, data] : shader.m_Impl->getAttributes()) {
             o << delim;
-            PrintShaderElement(o, name, data);
+            printShaderElement(o, name, data);
         }
 
         o << "\n    ]\n";
@@ -3170,7 +3119,7 @@ std::ostream& osc::operator<<(std::ostream& o, Shader const& shader)
 
 namespace
 {
-    GLenum ToGLDepthFunc(DepthFunction f)
+    GLenum toGLDepthFunc(DepthFunction f)
     {
         static_assert(NumOptions<DepthFunction>() == 2);
 
@@ -3183,7 +3132,7 @@ namespace
         }
     }
 
-    GLenum ToGLCullFaceEnum(CullMode cullMode)
+    GLenum toGLCullFaceEnum(CullMode cullMode)
     {
         static_assert(NumOptions<CullMode>() == 3);
 
@@ -3200,10 +3149,9 @@ namespace
 class osc::Material::Impl final {
 public:
     explicit Impl(Shader shader) : m_Shader{std::move(shader)}
-    {
-    }
+    {}
 
-    Shader const& getShader() const
+    const Shader& getShader() const
     {
         return m_Shader;
     }
@@ -3213,17 +3161,17 @@ public:
         return getValue<Color>(propertyName);
     }
 
-    void setColor(std::string_view propertyName, Color const& color)
+    void setColor(std::string_view propertyName, const Color& color)
     {
         setValue(propertyName, color);
     }
 
-    std::optional<std::span<Color const>> getColorArray(std::string_view propertyName) const
+    std::optional<std::span<const Color>> getColorArray(std::string_view propertyName) const
     {
-        return getValue<std::vector<Color>, std::span<Color const>>(propertyName);
+        return getValue<std::vector<Color>, std::span<const Color>>(propertyName);
     }
 
-    void setColorArray(std::string_view propertyName, std::span<Color const> colors)
+    void setColorArray(std::string_view propertyName, std::span<const Color> colors)
     {
         setValue<std::vector<Color>>(propertyName, std::vector<Color>(colors.begin(), colors.end()));
     }
@@ -3238,12 +3186,12 @@ public:
         setValue(propertyName, value);
     }
 
-    std::optional<std::span<float const>> getFloatArray(std::string_view propertyName) const
+    std::optional<std::span<const float>> getFloatArray(std::string_view propertyName) const
     {
-        return getValue<std::vector<float>, std::span<float const>>(propertyName);
+        return getValue<std::vector<float>, std::span<const float>>(propertyName);
     }
 
-    void setFloatArray(std::string_view propertyName, std::span<float const> v)
+    void setFloatArray(std::string_view propertyName, std::span<const float> v)
     {
         setValue<std::vector<float>>(propertyName, std::vector<float>(v.begin(), v.end()));
     }
@@ -3268,12 +3216,12 @@ public:
         setValue(propertyName, value);
     }
 
-    std::optional<std::span<Vec3 const>> getVec3Array(std::string_view propertyName) const
+    std::optional<std::span<const Vec3>> getVec3Array(std::string_view propertyName) const
     {
-        return getValue<std::vector<Vec3>, std::span<Vec3 const>>(propertyName);
+        return getValue<std::vector<Vec3>, std::span<const Vec3>>(propertyName);
     }
 
-    void setVec3Array(std::string_view propertyName, std::span<Vec3 const> value)
+    void setVec3Array(std::string_view propertyName, std::span<const Vec3> value)
     {
         setValue(propertyName, std::vector<Vec3>(value.begin(), value.end()));
     }
@@ -3293,7 +3241,7 @@ public:
         return getValue<Mat3>(propertyName);
     }
 
-    void setMat3(std::string_view propertyName, Mat3 const& value)
+    void setMat3(std::string_view propertyName, const Mat3& value)
     {
         setValue(propertyName, value);
     }
@@ -3303,17 +3251,17 @@ public:
         return getValue<Mat4>(propertyName);
     }
 
-    void setMat4(std::string_view propertyName, Mat4 const& value)
+    void setMat4(std::string_view propertyName, const Mat4& value)
     {
         setValue(propertyName, value);
     }
 
-    std::optional<std::span<Mat4 const>> getMat4Array(std::string_view propertyName) const
+    std::optional<std::span<const Mat4>> getMat4Array(std::string_view propertyName) const
     {
-        return getValue<std::vector<Mat4>, std::span<Mat4 const>>(propertyName);
+        return getValue<std::vector<Mat4>, std::span<const Mat4>>(propertyName);
     }
 
-    void setMat4Array(std::string_view propertyName, std::span<Mat4 const> mats)
+    void setMat4Array(std::string_view propertyName, std::span<const Mat4> mats)
     {
         setValue(propertyName, std::vector<Mat4>(mats.begin(), mats.end()));
     }
@@ -3438,7 +3386,7 @@ private:
     requires std::convertible_to<T, TConverted>
     std::optional<TConverted> getValue(std::string_view propertyName) const
     {
-        auto const* value = try_find(m_Values, propertyName);
+        const auto* value = try_find(m_Values, propertyName);
 
         if (!value) {
             return std::nullopt;
@@ -3472,7 +3420,7 @@ osc::Material::Material(Shader shader) :
 {
 }
 
-Shader const& osc::Material::getShader() const
+const Shader& osc::Material::getShader() const
 {
     return m_Impl->getShader();
 }
@@ -3482,17 +3430,17 @@ std::optional<Color> osc::Material::getColor(std::string_view propertyName) cons
     return m_Impl->getColor(propertyName);
 }
 
-void osc::Material::setColor(std::string_view propertyName, Color const& color)
+void osc::Material::setColor(std::string_view propertyName, const Color& color)
 {
     m_Impl.upd()->setColor(propertyName, color);
 }
 
-std::optional<std::span<Color const>> osc::Material::getColorArray(std::string_view propertyName) const
+std::optional<std::span<const Color>> osc::Material::getColorArray(std::string_view propertyName) const
 {
     return m_Impl->getColorArray(propertyName);
 }
 
-void osc::Material::setColorArray(std::string_view propertyName, std::span<osc::Color const> colors)
+void osc::Material::setColorArray(std::string_view propertyName, std::span<const Color> colors)
 {
     m_Impl.upd()->setColorArray(propertyName, colors);
 }
@@ -3507,12 +3455,12 @@ void osc::Material::setFloat(std::string_view propertyName, float value)
     m_Impl.upd()->setFloat(propertyName, value);
 }
 
-std::optional<std::span<float const>> osc::Material::getFloatArray(std::string_view propertyName) const
+std::optional<std::span<const float>> osc::Material::getFloatArray(std::string_view propertyName) const
 {
     return m_Impl->getFloatArray(propertyName);
 }
 
-void osc::Material::setFloatArray(std::string_view propertyName, std::span<float const> vs)
+void osc::Material::setFloatArray(std::string_view propertyName, std::span<const float> vs)
 {
     m_Impl.upd()->setFloatArray(propertyName, vs);
 }
@@ -3527,12 +3475,12 @@ void osc::Material::setVec2(std::string_view propertyName, Vec2 value)
     m_Impl.upd()->setVec2(propertyName, value);
 }
 
-std::optional<std::span<Vec3 const>> osc::Material::getVec3Array(std::string_view propertyName) const
+std::optional<std::span<const Vec3>> osc::Material::getVec3Array(std::string_view propertyName) const
 {
     return m_Impl->getVec3Array(propertyName);
 }
 
-void osc::Material::setVec3Array(std::string_view propertyName, std::span<Vec3 const> vs)
+void osc::Material::setVec3Array(std::string_view propertyName, std::span<const Vec3> vs)
 {
     m_Impl.upd()->setVec3Array(propertyName, vs);
 }
@@ -3562,7 +3510,7 @@ std::optional<Mat3> osc::Material::getMat3(std::string_view propertyName) const
     return m_Impl->getMat3(propertyName);
 }
 
-void osc::Material::setMat3(std::string_view propertyName, Mat3 const& mat)
+void osc::Material::setMat3(std::string_view propertyName, const Mat3& mat)
 {
     m_Impl.upd()->setMat3(propertyName, mat);
 }
@@ -3572,17 +3520,17 @@ std::optional<Mat4> osc::Material::getMat4(std::string_view propertyName) const
     return m_Impl->getMat4(propertyName);
 }
 
-void osc::Material::setMat4(std::string_view propertyName, Mat4 const& mat)
+void osc::Material::setMat4(std::string_view propertyName, const Mat4& mat)
 {
     m_Impl.upd()->setMat4(propertyName, mat);
 }
 
-std::optional<std::span<Mat4 const>> osc::Material::getMat4Array(std::string_view propertyName) const
+std::optional<std::span<const Mat4>> osc::Material::getMat4Array(std::string_view propertyName) const
 {
     return m_Impl->getMat4Array(propertyName);
 }
 
-void osc::Material::setMat4Array(std::string_view propertyName, std::span<Mat4 const> mats)
+void osc::Material::setMat4Array(std::string_view propertyName, std::span<const Mat4> mats)
 {
     m_Impl.upd()->setMat4Array(propertyName, mats);
 }
@@ -3702,7 +3650,7 @@ void osc::Material::setCullMode(CullMode newMode)
     m_Impl.upd()->setCullMode(newMode);
 }
 
-std::ostream& osc::operator<<(std::ostream& o, Material const&)
+std::ostream& osc::operator<<(std::ostream& o, const Material&)
 {
     return o << "Material()";
 }
@@ -3771,7 +3719,7 @@ public:
         return getValue<Mat3>(propertyName);
     }
 
-    void setMat3(std::string_view propertyName, Mat3 const& value)
+    void setMat3(std::string_view propertyName, const Mat3& value)
     {
         setValue(propertyName, value);
     }
@@ -3781,7 +3729,7 @@ public:
         return getValue<Mat4>(propertyName);
     }
 
-    void setMat4(std::string_view propertyName, Mat4 const& value)
+    void setMat4(std::string_view propertyName, const Mat4& value)
     {
         setValue(propertyName, value);
     }
@@ -3816,21 +3764,19 @@ public:
         setValue(propertyName, std::move(t));
     }
 
-    friend bool operator==(Impl const&, Impl const&) = default;
+    friend bool operator==(const Impl&, const Impl&) = default;
 
 private:
     template<typename T>
     std::optional<T> getValue(std::string_view propertyName) const
     {
-        auto const it = m_Values.find(propertyName);
+        const auto it = m_Values.find(propertyName);
 
-        if (it == m_Values.end())
-        {
+        if (it == m_Values.end()) {
             return std::nullopt;
         }
 
-        if (!std::holds_alternative<T>(it->second))
-        {
+        if (!std::holds_alternative<T>(it->second)) {
             return std::nullopt;
         }
 
@@ -3851,7 +3797,7 @@ private:
 osc::MaterialPropertyBlock::MaterialPropertyBlock() :
     m_Impl{[]()
     {
-        static CopyOnUpdPtr<Impl> const s_EmptyPropertyBlockImpl = make_cow<Impl>();
+        static const CopyOnUpdPtr<Impl> s_EmptyPropertyBlockImpl = make_cow<Impl>();
         return s_EmptyPropertyBlockImpl;
     }()}
 {
@@ -3872,7 +3818,7 @@ std::optional<Color> osc::MaterialPropertyBlock::getColor(std::string_view prope
     return m_Impl->getColor(propertyName);
 }
 
-void osc::MaterialPropertyBlock::setColor(std::string_view propertyName, Color const& color)
+void osc::MaterialPropertyBlock::setColor(std::string_view propertyName, const Color& color)
 {
     m_Impl.upd()->setColor(propertyName, color);
 }
@@ -3912,7 +3858,7 @@ std::optional<Mat3> osc::MaterialPropertyBlock::getMat3(std::string_view propert
     return m_Impl->getMat3(propertyName);
 }
 
-void osc::MaterialPropertyBlock::setMat3(std::string_view propertyName, Mat3 const& value)
+void osc::MaterialPropertyBlock::setMat3(std::string_view propertyName, const Mat3& value)
 {
     m_Impl.upd()->setMat3(propertyName, value);
 }
@@ -3922,7 +3868,7 @@ std::optional<Mat4> osc::MaterialPropertyBlock::getMat4(std::string_view propert
     return m_Impl->getMat4(propertyName);
 }
 
-void osc::MaterialPropertyBlock::setMat4(std::string_view propertyName, Mat4 const& value)
+void osc::MaterialPropertyBlock::setMat4(std::string_view propertyName, const Mat4& value)
 {
     m_Impl.upd()->setMat4(propertyName, value);
 }
@@ -3957,12 +3903,12 @@ void osc::MaterialPropertyBlock::setTexture(std::string_view propertyName, Textu
     m_Impl.upd()->setTexture(propertyName, std::move(t));
 }
 
-bool osc::operator==(MaterialPropertyBlock const& lhs, MaterialPropertyBlock const& rhs)
+bool osc::operator==(const MaterialPropertyBlock& lhs, const MaterialPropertyBlock& rhs)
 {
     return lhs.m_Impl == rhs.m_Impl || *lhs.m_Impl == *rhs.m_Impl;
 }
 
-std::ostream& osc::operator<<(std::ostream& o, MaterialPropertyBlock const&)
+std::ostream& osc::operator<<(std::ostream& o, const MaterialPropertyBlock&)
 {
     return o << "MaterialPropertyBlock()";
 }
@@ -3991,12 +3937,11 @@ namespace
     static_assert(sizeof(PackedIndex) == sizeof(uint32_t));
     static_assert(alignof(PackedIndex) == alignof(uint32_t));
 
-    GLenum ToOpenGLTopology(MeshTopology t)
+    GLenum toOpenGLTopology(MeshTopology t)
     {
         static_assert(NumOptions<MeshTopology>() == 2);
 
-        switch (t)
-        {
+        switch (t) {
         case MeshTopology::Triangles:
             return GL_TRIANGLES;
         case MeshTopology::Lines:
@@ -4015,66 +3960,65 @@ namespace
     template<typename T>
     concept VertexBufferComponent = IsAnyOf<T, float, Unorm8>;
 
-    // low-level single-component Decode/Encode functions
+    // low-level single-component decode/encode functions
     template<VertexBufferComponent EncodedValue, typename DecodedValue>
-    DecodedValue Decode(std::byte const*);
+    DecodedValue decode(const std::byte*);
 
     template<typename DecodedValue, VertexBufferComponent EncodedValue>
-    void Encode(std::byte*, DecodedValue);
+    void encode(std::byte*, DecodedValue);
 
     template<>
-    float Decode<float, float>(std::byte const* p)
+    float decode<float, float>(const std::byte* p)
     {
-        return *std::launder(reinterpret_cast<float const*>(p));
+        return *std::launder(reinterpret_cast<const float*>(p));
     }
 
     template<>
-    void Encode<float, float>(std::byte* p, float v)
+    void encode<float, float>(std::byte* p, float v)
     {
         *std::launder(reinterpret_cast<float*>(p)) = v;
     }
 
     template<>
-    float Decode<Unorm8, float>(std::byte const* p)
+    float decode<Unorm8, float>(const std::byte* p)
     {
         return Unorm8{*p}.normalized_value();
     }
 
     template<>
-    void Encode<float, Unorm8>(std::byte* p, float v)
+    void encode<float, Unorm8>(std::byte* p, float v)
     {
         *p = Unorm8{v}.byte();
     }
 
     template<>
-    Unorm8 Decode<Unorm8, Unorm8>(std::byte const* p)
+    Unorm8 decode<Unorm8, Unorm8>(const std::byte* p)
     {
         return Unorm8{*p};
     }
 
     template<>
-    void Encode<Unorm8, Unorm8>(std::byte* p, Unorm8 v)
+    void encode<Unorm8, Unorm8>(std::byte* p, Unorm8 v)
     {
         *p = v.byte();
     }
 
-    // mid-level multi-component Decode/Encode functions
+    // mid-level multi-component decode/encode functions
     template<UserFacingVertexData T, VertexAttributeFormat EncodingFormat>
-    void EncodeMany(std::byte* p, T const& v)
+    void encodeMany(std::byte* p, const T& v)
     {
         using ComponentType = typename VertexAttributeFormatTraits<EncodingFormat>::component_type;
         constexpr auto numComponents = NumComponents(EncodingFormat);
         constexpr auto sizeOfComponent = SizeOfComponent(EncodingFormat);
         constexpr auto n = min(std::tuple_size_v<T>, static_cast<typename T::size_type>(numComponents));
 
-        for (typename T::size_type i = 0; i < n; ++i)
-        {
-            Encode<typename T::value_type, ComponentType>(p + i*sizeOfComponent, v[i]);
+        for (typename T::size_type i = 0; i < n; ++i) {
+            encode<typename T::value_type, ComponentType>(p + i*sizeOfComponent, v[i]);
         }
     }
 
     template<VertexAttributeFormat EncodingFormat, UserFacingVertexData T>
-    T DecodeMany(std::byte const* p)
+    T DecodeMany(const std::byte* p)
     {
         using ComponentType = typename VertexAttributeFormatTraits<EncodingFormat>::component_type;
         constexpr auto numComponents = NumComponents(EncodingFormat);
@@ -4084,12 +4028,12 @@ namespace
         T rv{};
         for (typename T::size_type i = 0; i < n; ++i)
         {
-            rv[i] = Decode<ComponentType, typename T::value_type>(p + i*sizeOfComponent);
+            rv[i] = decode<ComponentType, typename T::value_type>(p + i*sizeOfComponent);
         }
         return rv;
     }
 
-    // high-level, compile-time multi-component Decode + Encode definition
+    // high-level, compile-time multi-component decode + encode definition
     template<UserFacingVertexData T>
     class MultiComponentEncoding final {
     public:
@@ -4099,41 +4043,41 @@ namespace
 
             switch (f) {
             case VertexAttributeFormat::Float32x2:
-                m_Encoder = EncodeMany<T, VertexAttributeFormat::Float32x2>;
+                m_Encoder = encodeMany<T, VertexAttributeFormat::Float32x2>;
                 m_Decoder = DecodeMany<VertexAttributeFormat::Float32x2, T>;
                 break;
             case VertexAttributeFormat::Float32x3:
-                m_Encoder = EncodeMany<T, VertexAttributeFormat::Float32x3>;
+                m_Encoder = encodeMany<T, VertexAttributeFormat::Float32x3>;
                 m_Decoder = DecodeMany<VertexAttributeFormat::Float32x3, T>;
                 break;
             default:
             case VertexAttributeFormat::Float32x4:
-                m_Encoder = EncodeMany<T, VertexAttributeFormat::Float32x4>;
+                m_Encoder = encodeMany<T, VertexAttributeFormat::Float32x4>;
                 m_Decoder = DecodeMany<VertexAttributeFormat::Float32x4, T>;
                 break;
             case VertexAttributeFormat::Unorm8x4:
-                m_Encoder = EncodeMany<T, VertexAttributeFormat::Unorm8x4>;
+                m_Encoder = encodeMany<T, VertexAttributeFormat::Unorm8x4>;
                 m_Decoder = DecodeMany<VertexAttributeFormat::Unorm8x4, T>;
                 break;
             }
         }
 
-        void encode(std::byte* b, T const& v) const
+        void encode(std::byte* b, const T& v) const
         {
             m_Encoder(b, v);
         }
 
-        T decode(std::byte const* b) const
+        T decode(const std::byte* b) const
         {
             return m_Decoder(b);
         }
 
-        friend bool operator==(MultiComponentEncoding const&, MultiComponentEncoding const&) = default;
+        friend bool operator==(const MultiComponentEncoding&, const MultiComponentEncoding&) = default;
     private:
-        using Encoder = void(*)(std::byte*, T const&);
+        using Encoder = void(*)(std::byte*, const T&);
         Encoder m_Encoder;
 
-        using Decoder = T(*)(std::byte const*);
+        using Decoder = T(*)(const std::byte*);
         Decoder m_Decoder;
     };
 
@@ -4142,23 +4086,22 @@ namespace
     // decodes in-memory data in a source format, converts it to a desination format, and then
     // writes it to the destination memory
     template<VertexAttributeFormat SourceFormat, VertexAttributeFormat DestinationFormat>
-    void Reencode(std::span<std::byte const> src, std::span<std::byte> dest)
+    void reencode(std::span<const std::byte> src, std::span<std::byte> dest)
     {
         using SourceCPUFormat = typename VertexAttributeFormatTraits<SourceFormat>::type;
         using DestCPUFormat = typename VertexAttributeFormatTraits<DestinationFormat>::type;
         constexpr auto n = min(std::tuple_size_v<SourceCPUFormat>, std::tuple_size_v<DestCPUFormat>);
 
-        auto const decoded = DecodeMany<SourceFormat, SourceCPUFormat>(src.data());
+        const auto decoded = DecodeMany<SourceFormat, SourceCPUFormat>(src.data());
         DestCPUFormat converted{};
-        for (size_t i = 0; i < n; ++i)
-        {
+        for (size_t i = 0; i < n; ++i) {
             converted[i] = typename DestCPUFormat::value_type{decoded[i]};
         }
-        EncodeMany<DestCPUFormat, DestinationFormat>(dest.data(), converted);
+        encodeMany<DestCPUFormat, DestinationFormat>(dest.data(), converted);
     }
 
     // type-erased (i.e. runtime) reencoder function
-    using ReencoderFunction = void(*)(std::span<std::byte const>, std::span<std::byte>);
+    using ReencoderFunction = void(*)(std::span<const std::byte>, std::span<std::byte>);
 
     // compile-time lookup table (LUT) for runtime reencoder functions
     class ReencoderLut final {
@@ -4169,26 +4112,26 @@ namespace
         }
 
         template<VertexAttributeFormat... Formats>
-        static constexpr void WriteEntriesTopLevel(ReencoderLut& lut, OptionList<VertexAttributeFormat, Formats...>)
+        static constexpr void writeEntriesTopLevel(ReencoderLut& lut, OptionList<VertexAttributeFormat, Formats...>)
         {
-            (WriteEntries<Formats, Formats...>(lut), ...);
+            (writeEntries<Formats, Formats...>(lut), ...);
         }
 
         template<VertexAttributeFormat SourceFormat, VertexAttributeFormat... DestinationFormats>
-        static constexpr void WriteEntries(ReencoderLut& lut)
+        static constexpr void writeEntries(ReencoderLut& lut)
         {
-            (WriteEntry<SourceFormat, DestinationFormats>(lut), ...);
+            (writeEntry<SourceFormat, DestinationFormats>(lut), ...);
         }
 
         template<VertexAttributeFormat SourceFormat, VertexAttributeFormat DestinationFormat>
-        static constexpr void WriteEntry(ReencoderLut& lut)
+        static constexpr void writeEntry(ReencoderLut& lut)
         {
-            lut.assign(SourceFormat, DestinationFormat, Reencode<SourceFormat, DestinationFormat>);
+            lut.assign(SourceFormat, DestinationFormat, reencode<SourceFormat, DestinationFormat>);
         }
     public:
         constexpr ReencoderLut()
         {
-            WriteEntriesTopLevel(*this, VertexAttributeFormatList{});
+            writeEntriesTopLevel(*this, VertexAttributeFormatList{});
         }
 
         constexpr void assign(VertexAttributeFormat sourceFormat, VertexAttributeFormat destinationFormat, ReencoderFunction f)
@@ -4196,7 +4139,7 @@ namespace
             m_Storage.at(indexOf(sourceFormat, destinationFormat)) = f;
         }
 
-        constexpr ReencoderFunction const& lookup(VertexAttributeFormat sourceFormat, VertexAttributeFormat destinationFormat) const
+        constexpr const ReencoderFunction& lookup(VertexAttributeFormat sourceFormat, VertexAttributeFormat destinationFormat) const
         {
             return m_Storage.at(indexOf(sourceFormat, destinationFormat));
         }
@@ -4215,15 +4158,13 @@ namespace
         size_t destinationStride;
     };
 
-    std::vector<VertexBufferAttributeReencoder> GetReencoders(VertexFormat const& srcFormat, VertexFormat const& destFormat)
+    std::vector<VertexBufferAttributeReencoder> getReencoders(const VertexFormat& srcFormat, const VertexFormat& destFormat)
     {
         std::vector<VertexBufferAttributeReencoder> rv;
         rv.reserve(destFormat.numAttributes());  // guess
 
-        for (auto const destLayout : destFormat.attributeLayouts())
-        {
-            if (auto const srcLayout = srcFormat.attributeLayout(destLayout.attribute()))
-            {
+        for (const auto destLayout : destFormat.attributeLayouts()) {
+            if (const auto srcLayout = srcFormat.attributeLayout(destLayout.attribute())) {
                 rv.push_back({
                     c_ReencoderLUT.lookup(srcLayout->format(), destLayout.format()),
                     srcLayout->offset(),
@@ -4236,34 +4177,31 @@ namespace
         return rv;
     }
 
-    void ReEncodeVertexBuffer(
-        std::span<std::byte const> src,
-        VertexFormat const& srcFormat,
+    void reEncodeVertexBuffer(
+        std::span<const std::byte> src,
+        const VertexFormat& srcFormat,
         std::span<std::byte> dest,
-        VertexFormat const& destFormat)
+        const VertexFormat& destFormat)
     {
-        size_t const srcStride = srcFormat.stride();
-        size_t const destStride = destFormat.stride();
+        const size_t srcStride = srcFormat.stride();
+        const size_t destStride = destFormat.stride();
 
-        if (srcStride == 0 || destStride == 0)
-        {
+        if (srcStride == 0 || destStride == 0) {
             return;  // no reencoding necessary
         }
         OSC_ASSERT(src.size() % srcStride == 0);
         OSC_ASSERT(dest.size() % destStride == 0);
 
-        size_t const n = min(src.size() / srcStride, dest.size() / destStride);
+        const size_t n = min(src.size() / srcStride, dest.size() / destStride);
 
-        auto const reencoders = GetReencoders(srcFormat, destFormat);
-        for (size_t i = 0; i < n; ++i)
-        {
-            auto const srcData = src.subspan(i*srcStride);
-            auto const destData = dest.subspan(i*destStride);
+        const auto reencoders = getReencoders(srcFormat, destFormat);
+        for (size_t i = 0; i < n; ++i) {
+            const auto srcData = src.subspan(i*srcStride);
+            const auto destData = dest.subspan(i*destStride);
 
-            for (auto const& reencoder : reencoders)
-            {
-                auto const srcAttrData = srcData.subspan(reencoder.sourceOffset, reencoder.sourceStride);
-                auto const destAttrData = destData.subspan(reencoder.destintionOffset, reencoder.destinationStride);
+            for (const auto& reencoder : reencoders) {
+                const auto srcAttrData = srcData.subspan(reencoder.sourceOffset, reencoder.sourceStride);
+                const auto destAttrData = destData.subspan(reencoder.destintionOffset, reencoder.destinationStride);
                 reencoder.reencode(srcAttrData, destAttrData);
             }
         }
@@ -4277,15 +4215,14 @@ namespace
         template<UserFacingVertexData T, bool IsConst>
         class AttributeValueProxy final {
         public:
-            using Byte = std::conditional_t<IsConst, std::byte const, std::byte>;
+            using Byte = std::conditional_t<IsConst, const std::byte, std::byte>;
 
             AttributeValueProxy(Byte* data_, MultiComponentEncoding<T> encoding_) :
                 m_Data{data_},
                 m_Encoding{encoding_}
-            {
-            }
+            {}
 
-            AttributeValueProxy& operator=(T const& v)
+            AttributeValueProxy& operator=(const T& v)
                 requires (!IsConst)
             {
                 m_Encoding.encode(m_Data, v);
@@ -4299,14 +4236,14 @@ namespace
 
             template<typename U>
             requires (!IsConst)
-            AttributeValueProxy& operator/=(U const& v)
+            AttributeValueProxy& operator/=(const U& v)
             {
                 return *this = (T{*this} /= v);
             }
 
             template<typename U>
             requires (!IsConst)
-            AttributeValueProxy& operator+=(U const& v)
+            AttributeValueProxy& operator+=(const U& v)
             {
                 return *this = (T{*this} += v);
             }
@@ -4324,7 +4261,7 @@ namespace
             using reference = value_type;
             using iterator_category = std::random_access_iterator_tag;
 
-            using Byte = std::conditional_t<IsConst, std::byte const, std::byte>;
+            using Byte = std::conditional_t<IsConst, const std::byte, std::byte>;
 
             AttributeValueIterator(
                 Byte* data_,
@@ -4334,8 +4271,7 @@ namespace
                 m_Data{data_},
                 m_Stride{stride_},
                 m_Encoding{encoding_}
-            {
-            }
+            {}
 
             AttributeValueProxy<T, IsConst> operator*() const
             {
@@ -4393,7 +4329,7 @@ namespace
                 return copy;
             }
 
-            difference_type operator-(AttributeValueIterator const& rhs) const
+            difference_type operator-(const AttributeValueIterator& rhs) const
             {
                 return (m_Data - rhs.m_Data) / m_Stride;
             }
@@ -4403,27 +4339,27 @@ namespace
                 return *(*this + n);
             }
 
-            bool operator<(AttributeValueIterator const& rhs) const
+            bool operator<(const AttributeValueIterator& rhs) const
             {
                 return m_Data < rhs.m_Data;
             }
 
-            bool operator>(AttributeValueIterator const& rhs) const
+            bool operator>(const AttributeValueIterator& rhs) const
             {
                 return m_Data > rhs.m_Data;
             }
 
-            bool operator<=(AttributeValueIterator const& rhs) const
+            bool operator<=(const AttributeValueIterator& rhs) const
             {
                 return m_Data <= rhs.m_Data;
             }
 
-            bool operator>=(AttributeValueIterator const& rhs) const
+            bool operator>=(const AttributeValueIterator& rhs) const
             {
                 return m_Data >= rhs.m_Data;
             }
 
-            friend bool operator==(AttributeValueIterator const&, AttributeValueIterator const&) = default;
+            friend bool operator==(const AttributeValueIterator&, const AttributeValueIterator&) = default;
         private:
             Byte* m_Data;
             size_t m_Stride;
@@ -4434,7 +4370,7 @@ namespace
         template<UserFacingVertexData T, bool IsConst>
         class AttributeValueRange final {
         public:
-            using Byte = std::conditional_t<IsConst, std::byte const, std::byte>;
+            using Byte = std::conditional_t<IsConst, const std::byte, std::byte>;
             using iterator = AttributeValueIterator<T, IsConst>;
             using value_type = typename iterator::value_type;
             using difference_type = typename iterator::difference_type;
@@ -4449,8 +4385,7 @@ namespace
                 m_Data{data_},
                 m_Stride{stride_},
                 m_Encoding{format_}
-            {
-            }
+            {}
 
             difference_type size() const
             {
@@ -4485,9 +4420,8 @@ namespace
             template<typename AttrValueRange>
             static value_type at(AttrValueRange&& range, difference_type i)
             {
-                auto const beg = range.begin();
-                if (i >= std::distance(beg, range.end()))
-                {
+                const auto beg = range.begin();
+                if (i >= std::distance(beg, range.end())) {
                     throw std::out_of_range{"an attribute value was out-of-range: this is usually because of out-of-range mesh indices"};
                 }
                 return beg[i];
@@ -4502,7 +4436,7 @@ namespace
         VertexBuffer() = default;
 
         // formatted ctor: make a buffer of the specified size+format
-        VertexBuffer(size_t numVerts, VertexFormat const& format) :
+        VertexBuffer(size_t numVerts, const VertexFormat& format) :
             m_Data(numVerts * format.stride()),
             m_VertexFormat{format}
         {
@@ -4534,12 +4468,12 @@ namespace
             return numVerts() > 0;
         }
 
-        std::span<std::byte const> bytes() const
+        std::span<const std::byte> bytes() const
         {
             return m_Data;
         }
 
-        VertexFormat const& format() const
+        const VertexFormat& format() const
         {
             return m_VertexFormat;
         }
@@ -4557,9 +4491,8 @@ namespace
         template<UserFacingVertexData T>
         auto iter(VertexAttribute attr) const
         {
-            if (auto const layout = m_VertexFormat.attributeLayout(attr))
-            {
-                std::span<std::byte const> offsetSpan{m_Data.data() + layout->offset(), m_Data.size()};
+            if (const auto layout = m_VertexFormat.attributeLayout(attr)) {
+                std::span<const std::byte> offsetSpan{m_Data.data() + layout->offset(), m_Data.size()};
                 return AttributeValueRange<T, true>
                 {
                     offsetSpan,
@@ -4576,8 +4509,7 @@ namespace
         template<UserFacingVertexData T>
         auto iter(VertexAttribute attr)
         {
-            if (auto const layout = m_VertexFormat.attributeLayout(attr))
-            {
+            if (const auto layout = m_VertexFormat.attributeLayout(attr)) {
                 std::span<std::byte> offsetSpan{m_Data.data() + layout->offset(), m_Data.size()};
                 return AttributeValueRange<T, false>
                 {
@@ -4600,7 +4532,7 @@ namespace
         }
 
         template<UserFacingVertexData T>
-        void write(VertexAttribute attr, std::span<T const> els)
+        void write(VertexAttribute attr, std::span<const T> els)
         {
             // edge-case: size == 0 should be treated as "wipe/ignore it"
             if (els.empty()) {
@@ -4667,7 +4599,7 @@ namespace
             return true;
         }
 
-        void setParams(size_t newNumVerts, VertexFormat const& newFormat)
+        void setParams(size_t newNumVerts, const VertexFormat& newFormat)
         {
             if (m_Data.empty())
             {
@@ -4679,7 +4611,7 @@ namespace
             {
                 // initialize a new buffer and re-encode the old one in the new format
                 std::vector<std::byte> newBuf(newNumVerts * newFormat.stride());
-                ReEncodeVertexBuffer(m_Data, m_VertexFormat, newBuf, newFormat);
+                reEncodeVertexBuffer(m_Data, m_VertexFormat, newBuf, newFormat);
                 m_Data = std::move(newBuf);
                 m_VertexFormat = newFormat;
             }
@@ -4694,12 +4626,12 @@ namespace
             }
         }
 
-        void setFormat(VertexFormat const& newFormat)
+        void setFormat(const VertexFormat& newFormat)
         {
             setParams(numVerts(), newFormat);
         }
 
-        void setData(std::span<std::byte const> newData)
+        void setData(std::span<const std::byte> newData)
         {
             OSC_ASSERT(newData.size() == m_Data.size() && "provided data size does not match the size of the vertex buffer");
             m_Data.assign(newData.begin(), newData.end());
@@ -4739,7 +4671,7 @@ public:
         return m_VertexBuffer.read<Vec3>(VertexAttribute::Position);
     }
 
-    void setVerts(std::span<Vec3 const> verts)
+    void setVerts(std::span<const Vec3> verts)
     {
         m_VertexBuffer.write<Vec3>(VertexAttribute::Position, verts);
 
@@ -4747,7 +4679,7 @@ public:
         m_Version->reset();
     }
 
-    void transformVerts(std::function<Vec3(Vec3)> const& f)
+    void transformVerts(const std::function<Vec3(Vec3)>& f)
     {
         m_VertexBuffer.transformAttribute<Vec3>(VertexAttribute::Position, f);
 
@@ -4755,7 +4687,7 @@ public:
         m_Version->reset();
     }
 
-    void transformVerts(Transform const& t)
+    void transformVerts(const Transform& t)
     {
         m_VertexBuffer.transformAttribute<Vec3>(VertexAttribute::Position, [&t](Vec3 v)
         {
@@ -4766,7 +4698,7 @@ public:
         m_Version->reset();
     }
 
-    void transformVerts(Mat4 const& m)
+    void transformVerts(const Mat4& m)
     {
         m_VertexBuffer.transformAttribute<Vec3>(VertexAttribute::Position, [&m](Vec3 v)
         {
@@ -4787,14 +4719,14 @@ public:
         return m_VertexBuffer.read<Vec3>(VertexAttribute::Normal);
     }
 
-    void setNormals(std::span<Vec3 const> normals)
+    void setNormals(std::span<const Vec3> normals)
     {
         m_VertexBuffer.write<Vec3>(VertexAttribute::Normal, normals);
 
         m_Version->reset();
     }
 
-    void transformNormals(std::function<Vec3(Vec3)> const& f)
+    void transformNormals(const std::function<Vec3(Vec3)>& f)
     {
         m_VertexBuffer.transformAttribute<Vec3>(VertexAttribute::Normal, f);
 
@@ -4811,14 +4743,14 @@ public:
         return m_VertexBuffer.read<Vec2>(VertexAttribute::TexCoord0);
     }
 
-    void setTexCoords(std::span<Vec2 const> coords)
+    void setTexCoords(std::span<const Vec2> coords)
     {
         m_VertexBuffer.write<Vec2>(VertexAttribute::TexCoord0, coords);
 
         m_Version->reset();
     }
 
-    void transformTexCoords(std::function<Vec2(Vec2)> const& f)
+    void transformTexCoords(const std::function<Vec2(Vec2)>& f)
     {
         m_VertexBuffer.transformAttribute<Vec2>(VertexAttribute::TexCoord0, f);
 
@@ -4830,7 +4762,7 @@ public:
         return m_VertexBuffer.read<Color>(VertexAttribute::Color);
     }
 
-    void setColors(std::span<Color const> colors)
+    void setColors(std::span<const Color> colors)
     {
         m_VertexBuffer.write<Color>(VertexAttribute::Color, colors);
 
@@ -4842,7 +4774,7 @@ public:
         return m_VertexBuffer.read<Vec4>(VertexAttribute::Tangent);
     }
 
-    void setTangents(std::span<Vec4 const> newTangents)
+    void setTangents(std::span<const Vec4> newTangents)
     {
         m_VertexBuffer.write<Vec4>(VertexAttribute::Tangent, newTangents);
 
@@ -4875,28 +4807,25 @@ public:
         indices.isU16() ? setIndices(indices.toU16Span(), flags) : setIndices(indices.toU32Span(), flags);
     }
 
-    void forEachIndexedVert(std::function<void(Vec3)> const& f) const
+    void forEachIndexedVert(const std::function<void(Vec3)>& f) const
     {
-        auto const positions = m_VertexBuffer.iter<Vec3>(VertexAttribute::Position).begin();
-        for (auto idx : getIndices())
-        {
+        const auto positions = m_VertexBuffer.iter<Vec3>(VertexAttribute::Position).begin();
+        for (auto idx : getIndices()) {
             f(positions[idx]);
         }
     }
 
-    void forEachIndexedTriangle(std::function<void(Triangle)> const& f) const
+    void forEachIndexedTriangle(const std::function<void(Triangle)>& f) const
     {
-        if (m_Topology != MeshTopology::Triangles)
-        {
+        if (m_Topology != MeshTopology::Triangles) {
             return;
         }
 
-        MeshIndicesView const indices = getIndices();
-        size_t const steps = (indices.size() / 3) * 3;
+        const MeshIndicesView indices = getIndices();
+        const size_t steps = (indices.size() / 3) * 3;
 
-        auto const positions = m_VertexBuffer.iter<Vec3>(VertexAttribute::Position).begin();
-        for (size_t i = 0; i < steps; i += 3)
-        {
+        const auto positions = m_VertexBuffer.iter<Vec3>(VertexAttribute::Position).begin();
+        for (size_t i = 0; i < steps; i += 3) {
             f(Triangle{
                 positions[indices[i]],
                 positions[indices[i+1]],
@@ -4907,19 +4836,17 @@ public:
 
     Triangle getTriangleAt(size_t firstIndexOffset) const
     {
-        if (m_Topology != MeshTopology::Triangles)
-        {
+        if (m_Topology != MeshTopology::Triangles) {
             throw std::runtime_error{"cannot call getTriangleAt on a non-triangular-topology mesh"};
         }
 
-        auto const indices = getIndices();
+        const auto indices = getIndices();
 
-        if (firstIndexOffset+2 >= indices.size())
-        {
+        if (firstIndexOffset+2 >= indices.size()) {
             throw std::runtime_error{"provided first index offset is out-of-bounds"};
         }
 
-        auto const verts = m_VertexBuffer.iter<Vec3>(VertexAttribute::Position);
+        const auto verts = m_VertexBuffer.iter<Vec3>(VertexAttribute::Position);
 
         // can use unchecked access here: `indices` are range-checked on writing
         return Triangle{
@@ -4937,7 +4864,7 @@ public:
         return rv;
     }
 
-    AABB const& getBounds() const
+    const AABB& getBounds() const
     {
         return m_AABB;
     }
@@ -4959,12 +4886,12 @@ public:
         return m_SubMeshDescriptors.size();
     }
 
-    void pushSubMeshDescriptor(SubMeshDescriptor const& desc)
+    void pushSubMeshDescriptor(const SubMeshDescriptor& desc)
     {
         m_SubMeshDescriptors.push_back(desc);
     }
 
-    SubMeshDescriptor const& getSubMeshDescriptor(size_t i) const
+    const SubMeshDescriptor& getSubMeshDescriptor(size_t i) const
     {
         return m_SubMeshDescriptors.at(i);
     }
@@ -4979,12 +4906,12 @@ public:
         return m_VertexBuffer.numAttributes();
     }
 
-    VertexFormat const& getVertexAttributes() const
+    const VertexFormat& getVertexAttributes() const
     {
         return m_VertexBuffer.format();
     }
 
-    void setVertexBufferParams(size_t newNumVerts, VertexFormat const& newFormat)
+    void setVertexBufferParams(size_t newNumVerts, const VertexFormat& newFormat)
     {
         m_VertexBuffer.setParams(newNumVerts, newFormat);
 
@@ -4997,7 +4924,7 @@ public:
         return m_VertexBuffer.stride();
     }
 
-    void setVertexBufferData(std::span<uint8_t const> newData, MeshUpdateFlags flags)
+    void setVertexBufferData(std::span<const uint8_t> newData, MeshUpdateFlags flags)
     {
         m_VertexBuffer.setData(std::as_bytes(newData));
 
@@ -5024,20 +4951,20 @@ public:
         // - ++counts[i]
         // - at the end, if counts[i] > 1, then renormalize that normal (it contains a sum)
 
-        auto const indices = getIndices();
-        auto const positions = m_VertexBuffer.iter<Vec3>(VertexAttribute::Position);
+        const auto indices = getIndices();
+        const auto positions = m_VertexBuffer.iter<Vec3>(VertexAttribute::Position);
         auto normals = m_VertexBuffer.iter<Vec3>(VertexAttribute::Normal);
         std::vector<uint16_t> counts(normals.size());
 
         for (size_t i = 0, len = 3*(indices.size()/3); i < len; i+=3) {
             // get triangle indices
-            Vec3uz const idxs = {indices[i], indices[i+1], indices[i+2]};
+            const Vec3uz idxs = {indices[i], indices[i+1], indices[i+2]};
 
             // get triangle
-            Triangle const triangle = {positions[idxs[0]], positions[idxs[1]], positions[idxs[2]]};
+            const Triangle triangle = {positions[idxs[0]], positions[idxs[1]], positions[idxs[2]]};
 
             // calculate + validate triangle normal
-            auto const normal = triangle_normal(triangle).unwrap();
+            const auto normal = triangle_normal(triangle).unwrap();
             if (any_of(isnan(normal))) {
                 continue;  // probably co-located, or invalid: don't accumulate it
             }
@@ -5086,11 +5013,11 @@ public:
 
         // calculate tangents
 
-        auto const vbverts = m_VertexBuffer.iter<Vec3>(VertexAttribute::Position);
-        auto const vbnormals = m_VertexBuffer.iter<Vec3>(VertexAttribute::Normal);
-        auto const vbtexcoords = m_VertexBuffer.iter<Vec2>(VertexAttribute::TexCoord0);
+        const auto vbverts = m_VertexBuffer.iter<Vec3>(VertexAttribute::Position);
+        const auto vbnormals = m_VertexBuffer.iter<Vec3>(VertexAttribute::Normal);
+        const auto vbtexcoords = m_VertexBuffer.iter<Vec2>(VertexAttribute::TexCoord0);
 
-        auto const tangents = CalcTangentVectors(
+        const auto tangents = CalcTangentVectors(
             MeshTopology::Triangles,
             std::vector<Vec3>(vbverts.begin(), vbverts.end()),
             std::vector<Vec3>(vbnormals.begin(), vbnormals.end()),
@@ -5116,20 +5043,20 @@ public:
         size_t n,
         std::optional<size_t> maybeSubMeshIndex)
     {
-        SubMeshDescriptor const descriptor = maybeSubMeshIndex ?
+        const SubMeshDescriptor descriptor = maybeSubMeshIndex ?
             m_SubMeshDescriptors.at(*maybeSubMeshIndex) :         // draw the requested sub-mesh
             SubMeshDescriptor{0, m_NumIndices, m_Topology};       // else: draw the entire mesh as a "sub mesh"
 
         // convert mesh/descriptor data types into OpenGL-compatible formats
-        GLenum const mode = ToOpenGLTopology(descriptor.getTopology());
-        auto const count = static_cast<GLsizei>(descriptor.getIndexCount());
-        GLenum const type = m_IndicesAre32Bit ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT;
+        const GLenum mode = toOpenGLTopology(descriptor.getTopology());
+        const auto count = static_cast<GLsizei>(descriptor.getIndexCount());
+        const GLenum type = m_IndicesAre32Bit ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT;
 
-        size_t const bytesPerIndex = m_IndicesAre32Bit ? sizeof(GLint) : sizeof(GLshort);
-        size_t const firstIndexByteOffset = descriptor.getIndexStart() * bytesPerIndex;
-        void const* indices = cpp20::bit_cast<void*>(firstIndexByteOffset);
+        const size_t bytesPerIndex = m_IndicesAre32Bit ? sizeof(GLint) : sizeof(GLshort);
+        const size_t firstIndexByteOffset = descriptor.getIndexStart() * bytesPerIndex;
+        const void* indices = cpp20::bit_cast<void*>(firstIndexByteOffset);
 
-        auto const instanceCount = static_cast<GLsizei>(n);
+        const auto instanceCount = static_cast<GLsizei>(n);
 
         glDrawElementsInstanced(
             mode,
@@ -5142,7 +5069,7 @@ public:
 
 private:
 
-    void setIndices(std::span<uint16_t const> indices, MeshUpdateFlags flags)
+    void setIndices(std::span<const uint16_t> indices, MeshUpdateFlags flags)
     {
         m_IndicesAre32Bit = false;
         m_NumIndices = indices.size();
@@ -5153,9 +5080,9 @@ private:
         m_Version->reset();
     }
 
-    void setIndices(std::span<std::uint32_t const> vs, MeshUpdateFlags flags)
+    void setIndices(std::span<const uint32_t> vs, MeshUpdateFlags flags)
     {
-        auto const isGreaterThanU16Max = [](uint32_t v)
+        const auto isGreaterThanU16Max = [](uint32_t v)
         {
             return v > std::numeric_limits<uint16_t>::max();
         };
@@ -5188,11 +5115,11 @@ private:
         // note: recalculating bounds will always validate indices anyway, because it's assumed
         //       that the caller's intention is that all indices are valid when computing the
         //       bounds
-        bool const checkIndices = !((flags & MeshUpdateFlags::DontValidateIndices) && (flags & MeshUpdateFlags::DontRecalculateBounds));
+        const bool checkIndices = !((flags & MeshUpdateFlags::DontValidateIndices) && (flags & MeshUpdateFlags::DontRecalculateBounds));
 
         //       ... but it's perfectly reasonable for the caller to only want the indices to be
         //       validated, leaving the bounds untouched
-        bool const recalculateBounds = !(flags & MeshUpdateFlags::DontRecalculateBounds);
+        const bool recalculateBounds = !(flags & MeshUpdateFlags::DontRecalculateBounds);
 
         if (checkIndices && recalculateBounds)
         {
@@ -5248,12 +5175,12 @@ private:
         return lut.at(ToIndex(attr));
     }
 
-    static GLint GetVertexAttributeSize(VertexAttributeFormat const& format)
+    static GLint GetVertexAttributeSize(const VertexAttributeFormat& format)
     {
         return static_cast<GLint>(NumComponents(format));
     }
 
-    static GLenum GetVertexAttributeType(VertexAttributeFormat const& format)
+    static GLenum GetVertexAttributeType(const VertexAttributeFormat& format)
     {
         static_assert(NumOptions<VertexAttributeFormat>() == 4);
 
@@ -5269,7 +5196,7 @@ private:
         }
     }
 
-    static GLboolean GetVertexAttributeNormalized(VertexAttributeFormat const& format)
+    static GLboolean GetVertexAttributeNormalized(const VertexAttributeFormat& format)
     {
         static_assert(NumOptions<VertexAttributeFormat>() == 4);
 
@@ -5285,7 +5212,7 @@ private:
         }
     }
 
-    static void OpenGLBindVertexAttribute(VertexFormat const& format, VertexFormat::VertexAttributeLayout const& layout)
+    static void OpenGLBindVertexAttribute(const VertexFormat& format, const VertexFormat::VertexAttributeLayout& layout)
     {
         glVertexAttribPointer(
             GetVertexAttributeIndex(layout.attribute()),
@@ -5309,11 +5236,11 @@ private:
 
         // upload CPU-side vector data into the GPU-side buffer
         OSC_ASSERT(cpp20::bit_cast<uintptr_t>(m_VertexBuffer.bytes().data()) % alignof(float) == 0);
-        gl::BindBuffer(
+        gl::bindBuffer(
             GL_ARRAY_BUFFER,
             buffers.arrayBuffer
         );
-        gl::BufferData(
+        gl::bufferData(
             GL_ARRAY_BUFFER,
             static_cast<GLsizei>(m_VertexBuffer.bytes().size()),
             m_VertexBuffer.bytes().data(),
@@ -5321,12 +5248,12 @@ private:
         );
 
         // upload CPU-side element data into the GPU-side buffer
-        size_t const eboNumBytes = m_NumIndices * (m_IndicesAre32Bit ? sizeof(uint32_t) : sizeof(uint16_t));
-        gl::BindBuffer(
+        const size_t eboNumBytes = m_NumIndices * (m_IndicesAre32Bit ? sizeof(uint32_t) : sizeof(uint16_t));
+        gl::bindBuffer(
             GL_ELEMENT_ARRAY_BUFFER,
             buffers.indicesBuffer
         );
-        gl::BufferData(
+        gl::bufferData(
             GL_ELEMENT_ARRAY_BUFFER,
             static_cast<GLsizei>(eboNumBytes),
             m_IndicesData.data(),
@@ -5334,14 +5261,14 @@ private:
         );
 
         // configure mesh-level VAO
-        gl::BindVertexArray(buffers.vao);
-        gl::BindBuffer(GL_ARRAY_BUFFER, buffers.arrayBuffer);
-        gl::BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers.indicesBuffer);
+        gl::bindVertexArray(buffers.vao);
+        gl::bindBuffer(GL_ARRAY_BUFFER, buffers.arrayBuffer);
+        gl::bindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers.indicesBuffer);
         for (auto&& layout : m_VertexBuffer.attributeLayouts())
         {
             OpenGLBindVertexAttribute(m_VertexBuffer.format(), layout);
         }
-        gl::BindVertexArray();
+        gl::bindVertexArray();
 
         buffers.dataVersion = *m_Version;
     }
@@ -5396,22 +5323,22 @@ std::vector<Vec3> osc::Mesh::getVerts() const
     return m_Impl->getVerts();
 }
 
-void osc::Mesh::setVerts(std::span<Vec3 const> verts)
+void osc::Mesh::setVerts(std::span<const Vec3> verts)
 {
     m_Impl.upd()->setVerts(verts);
 }
 
-void osc::Mesh::transformVerts(std::function<Vec3(Vec3)> const& f)
+void osc::Mesh::transformVerts(const std::function<Vec3(Vec3)>& f)
 {
     m_Impl.upd()->transformVerts(f);
 }
 
-void osc::Mesh::transformVerts(Transform const& t)
+void osc::Mesh::transformVerts(const Transform& t)
 {
     m_Impl.upd()->transformVerts(t);
 }
 
-void osc::Mesh::transformVerts(Mat4 const& m)
+void osc::Mesh::transformVerts(const Mat4& m)
 {
     m_Impl.upd()->transformVerts(m);
 }
@@ -5426,12 +5353,12 @@ std::vector<Vec3> osc::Mesh::getNormals() const
     return m_Impl->getNormals();
 }
 
-void osc::Mesh::setNormals(std::span<Vec3 const> verts)
+void osc::Mesh::setNormals(std::span<const Vec3> verts)
 {
     m_Impl.upd()->setNormals(verts);
 }
 
-void osc::Mesh::transformNormals(std::function<Vec3(Vec3)> const& f)
+void osc::Mesh::transformNormals(const std::function<Vec3(Vec3)>& f)
 {
     m_Impl.upd()->transformNormals(f);
 }
@@ -5446,12 +5373,12 @@ std::vector<Vec2> osc::Mesh::getTexCoords() const
     return m_Impl->getTexCoords();
 }
 
-void osc::Mesh::setTexCoords(std::span<Vec2 const> coords)
+void osc::Mesh::setTexCoords(std::span<const Vec2> coords)
 {
     m_Impl.upd()->setTexCoords(coords);
 }
 
-void osc::Mesh::transformTexCoords(std::function<Vec2(Vec2)> const& f)
+void osc::Mesh::transformTexCoords(const std::function<Vec2(Vec2)>& f)
 {
     m_Impl.upd()->transformTexCoords(f);
 }
@@ -5461,7 +5388,7 @@ std::vector<Color> osc::Mesh::getColors() const
     return m_Impl->getColors();
 }
 
-void osc::Mesh::setColors(std::span<Color const> colors)
+void osc::Mesh::setColors(std::span<const Color> colors)
 {
     m_Impl.upd()->setColors(colors);
 }
@@ -5471,7 +5398,7 @@ std::vector<Vec4> osc::Mesh::getTangents() const
     return m_Impl->getTangents();
 }
 
-void osc::Mesh::setTangents(std::span<Vec4 const> newTangents)
+void osc::Mesh::setTangents(std::span<const Vec4> newTangents)
 {
     m_Impl.upd()->setTangents(newTangents);
 }
@@ -5491,12 +5418,12 @@ void osc::Mesh::setIndices(MeshIndicesView indices, MeshUpdateFlags flags)
     m_Impl.upd()->setIndices(indices, flags);
 }
 
-void osc::Mesh::forEachIndexedVert(std::function<void(Vec3)> const& f) const
+void osc::Mesh::forEachIndexedVert(const std::function<void(Vec3)>& f) const
 {
     m_Impl->forEachIndexedVert(f);
 }
 
-void osc::Mesh::forEachIndexedTriangle(std::function<void(Triangle)> const& f) const
+void osc::Mesh::forEachIndexedTriangle(const std::function<void(Triangle)>& f) const
 {
     m_Impl->forEachIndexedTriangle(f);
 }
@@ -5511,7 +5438,7 @@ std::vector<Vec3> osc::Mesh::getIndexedVerts() const
     return m_Impl->getIndexedVerts();
 }
 
-AABB const& osc::Mesh::getBounds() const
+const AABB& osc::Mesh::getBounds() const
 {
     return m_Impl->getBounds();
 }
@@ -5526,12 +5453,12 @@ size_t osc::Mesh::getSubMeshCount() const
     return m_Impl->getSubMeshCount();
 }
 
-void osc::Mesh::pushSubMeshDescriptor(SubMeshDescriptor const& desc)
+void osc::Mesh::pushSubMeshDescriptor(const SubMeshDescriptor& desc)
 {
     m_Impl.upd()->pushSubMeshDescriptor(desc);
 }
 
-SubMeshDescriptor const& osc::Mesh::getSubMeshDescriptor(size_t i) const
+const SubMeshDescriptor& osc::Mesh::getSubMeshDescriptor(size_t i) const
 {
     return m_Impl->getSubMeshDescriptor(i);
 }
@@ -5546,12 +5473,12 @@ size_t osc::Mesh::getVertexAttributeCount() const
     return m_Impl->getVertexAttributeCount();
 }
 
-VertexFormat const& osc::Mesh::getVertexAttributes() const
+const VertexFormat& osc::Mesh::getVertexAttributes() const
 {
     return m_Impl->getVertexAttributes();
 }
 
-void osc::Mesh::setVertexBufferParams(size_t n, VertexFormat const& format)
+void osc::Mesh::setVertexBufferParams(size_t n, const VertexFormat& format)
 {
     m_Impl.upd()->setVertexBufferParams(n, format);
 }
@@ -5561,7 +5488,7 @@ size_t osc::Mesh::getVertexBufferStride() const
     return m_Impl->getVertexBufferStride();
 }
 
-void osc::Mesh::setVertexBufferData(std::span<uint8_t const> data, MeshUpdateFlags flags)
+void osc::Mesh::setVertexBufferData(std::span<const uint8_t> data, MeshUpdateFlags flags)
 {
     m_Impl.upd()->setVertexBufferData(data, flags);
 }
@@ -5576,7 +5503,7 @@ void osc::Mesh::recalculateTangents()
     m_Impl.upd()->recalculateTangents();
 }
 
-std::ostream& osc::operator<<(std::ostream& o, Mesh const&)
+std::ostream& osc::operator<<(std::ostream& o, const Mesh&)
 {
     return o << "Mesh()";
 }
@@ -5614,7 +5541,7 @@ public:
         return m_BackgroundColor;
     }
 
-    void setBackgroundColor(Color const& color)
+    void setBackgroundColor(const Color& color)
     {
         m_BackgroundColor = color;
     }
@@ -5704,7 +5631,7 @@ public:
         return m_Position;
     }
 
-    void setPosition(Vec3 const& position)
+    void setPosition(const Vec3& position)
     {
         m_Position = position;
     }
@@ -5714,7 +5641,7 @@ public:
         return m_Rotation;
     }
 
-    void setRotation(Quat const& rotation)
+    void setRotation(const Quat& rotation)
     {
         m_Rotation = rotation;
     }
@@ -5724,7 +5651,7 @@ public:
         return m_Rotation * Vec3{0.0f, 0.0f, -1.0f};
     }
 
-    void setDirection(Vec3 const& d)
+    void setDirection(const Vec3& d)
     {
         m_Rotation = rotation(Vec3{0.0f, 0.0f, -1.0f}, d);
     }
@@ -5773,13 +5700,13 @@ public:
         }
         else
         {
-            float const height = m_OrthographicSize;
-            float const width = height * aspectRatio;
+            const float height = m_OrthographicSize;
+            const float width = height * aspectRatio;
 
-            float const right = 0.5f * width;
-            float const left = -right;
-            float const top = 0.5f * height;
-            float const bottom = -top;
+            const float right = 0.5f * width;
+            const float left = -right;
+            const float top = 0.5f * height;
+            const float bottom = -top;
 
             return ortho(left, right, bottom, top, m_NearClippingPlane, m_FarClippingPlane);
         }
@@ -5807,7 +5734,7 @@ public:
 
     void renderToScreen()
     {
-        GraphicsBackend::RenderCameraQueue(*this);
+        GraphicsBackend::renderCameraQueue(*this);
     }
 
     void renderTo(RenderTexture& renderTexture)
@@ -5832,7 +5759,7 @@ public:
 
                     // ensure clear color matches colorspace of render texture
                     renderTexture.getReadWrite() == RenderTextureReadWrite::sRGB ?
-                        ToLinear(getBackgroundColor()) :
+                        toLinear(getBackgroundColor()) :
                         getBackgroundColor(),
                 },
             },
@@ -5855,10 +5782,10 @@ public:
 
     void renderTo(RenderTarget& renderTarget)
     {
-        GraphicsBackend::RenderCameraQueue(*this, &renderTarget);
+        GraphicsBackend::renderCameraQueue(*this, &renderTarget);
     }
 
-    friend bool operator==(Impl const&, Impl const&) = default;
+    friend bool operator==(const Impl&, const Impl&) = default;
 
 private:
     friend class GraphicsBackend;
@@ -5901,7 +5828,7 @@ Color osc::Camera::getBackgroundColor() const
     return m_Impl->getBackgroundColor();
 }
 
-void osc::Camera::setBackgroundColor(Color const& color)
+void osc::Camera::setBackgroundColor(const Color& color)
 {
     m_Impl.upd()->setBackgroundColor(color);
 }
@@ -5991,7 +5918,7 @@ Vec3 osc::Camera::getPosition() const
     return m_Impl->getPosition();
 }
 
-void osc::Camera::setPosition(Vec3 const& p)
+void osc::Camera::setPosition(const Vec3& p)
 {
     m_Impl.upd()->setPosition(p);
 }
@@ -6001,7 +5928,7 @@ Quat osc::Camera::getRotation() const
     return m_Impl->getRotation();
 }
 
-void osc::Camera::setRotation(Quat const& rotation)
+void osc::Camera::setRotation(const Quat& rotation)
 {
     m_Impl.upd()->setRotation(rotation);
 }
@@ -6011,7 +5938,7 @@ Vec3 osc::Camera::getDirection() const
     return m_Impl->getDirection();
 }
 
-void osc::Camera::setDirection(Vec3 const& d)
+void osc::Camera::setDirection(const Vec3& d)
 {
     m_Impl.upd()->setDirection(d);
 }
@@ -6076,12 +6003,12 @@ void osc::Camera::renderTo(RenderTarget& renderTarget)
     m_Impl.upd()->renderTo(renderTarget);
 }
 
-std::ostream& osc::operator<<(std::ostream& o, Camera const& camera)
+std::ostream& osc::operator<<(std::ostream& o, const Camera& camera)
 {
     return o << "Camera(position = " << camera.getPosition() << ", direction = " << camera.getDirection() << ", projection = " << camera.getCameraProjection() << ')';
 }
 
-bool osc::operator==(Camera const& lhs, Camera const& rhs)
+bool osc::operator==(const Camera& lhs, const Camera& rhs)
 {
     return lhs.m_Impl == rhs.m_Impl || *lhs.m_Impl == *rhs.m_Impl;
 }
@@ -6146,8 +6073,7 @@ namespace
         // initialize GLEW
         //
         // effectively, enables the OpenGL API used by this application
-        if (auto const err = glewInit(); err != GLEW_OK)
-        {
+        if (const auto err = glewInit(); err != GLEW_OK) {
             std::stringstream ss;
             ss << "glewInit() failed: ";
             ss << glewGetErrorString(err);
@@ -6158,10 +6084,9 @@ namespace
         // relies on
         //
         // reports anything missing to the log at the provided log level
-        ValidateOpenGLBackendExtensionSupport(LogLevel::debug);
+        validateOpenGLBackendExtensionSupport(LogLevel::debug);
 
-        for (auto const& capability : c_RequiredOpenGLCapabilities)
-        {
+        for (const auto& capability : c_RequiredOpenGLCapabilities) {
             glEnable(capability.id);
             if (!glIsEnabled(capability.id))
             {
@@ -6183,7 +6108,7 @@ namespace
     }
 
     // returns the maximum numbers of MSXAA antiAliasingLevel the active OpenGL context supports
-    AntiAliasingLevel GetOpenGLMaxMSXAASamples(sdl::GLContext const&)
+    AntiAliasingLevel GetOpenGLMaxMSXAASamples(const sdl::GLContext&)
     {
         GLint v = 1;
         glGetIntegerv(GL_MAX_SAMPLES, &v);
@@ -6315,12 +6240,12 @@ namespace
         GLenum severity,
         GLsizei,
         const GLchar* message,
-        void const*)
+        const void*)
     {
-        LogLevel const lvl = OpenGLDebugSevToLogLvl(severity);
-        CStringView const sourceCStr = OpenGLDebugSrcToStrView(source);
-        CStringView const typeCStr = OpenGLDebugTypeToStrView(type);
-        CStringView const severityCStr = OpenGLDebugSevToStrView(severity);
+        const LogLevel lvl = OpenGLDebugSevToLogLvl(severity);
+        const CStringView sourceCStr = OpenGLDebugSrcToStrView(source);
+        const CStringView typeCStr = OpenGLDebugTypeToStrView(type);
+        const CStringView severityCStr = OpenGLDebugSevToStrView(severity);
 
         log_message(lvl,
             R"(OpenGL Debug message:
@@ -6446,15 +6371,15 @@ public:
         m_DebugModeEnabled = IsOpenGLInDebugMode();
     }
 
-    void clearScreen(Color const& color)
+    void clearScreen(const Color& color)
     {
         // clear color is in sRGB, but the framebuffer is sRGB-corrected (GL_FRAMEBUFFER_SRGB)
         // and assumes that the given colors are in linear space
-        Color const linearColor = ToLinear(color);
+        const Color linearColor = toLinear(color);
 
-        gl::BindFramebuffer(GL_DRAW_FRAMEBUFFER, gl::windowFbo);
-        gl::ClearColor(linearColor.r, linearColor.g, linearColor.b, linearColor.a);
-        gl::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        gl::bindFramebuffer(GL_DRAW_FRAMEBUFFER, gl::windowFbo);
+        gl::clearColor(linearColor.r, linearColor.g, linearColor.b, linearColor.a);
+        gl::clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
     void* updRawGLContextHandleHACK()
@@ -6470,17 +6395,17 @@ public:
     void doSwapBuffers(SDL_Window& window)
     {
         // ensure window FBO is bound (see: SDL_GL_SwapWindow's note about MacOS requiring 0 is bound)
-        gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
+        gl::bindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
 
         // flush outstanding screenshot requests
         if (!m_ActiveScreenshotRequests.empty())
         {
             // copy GPU-side window framebuffer into CPU-side `osc::Image` object
-            Vec2i const dims = App::get().dims();
+            const Vec2i dims = App::get().dims();
 
             std::vector<uint8_t> pixels(static_cast<size_t>(4*dims.x*dims.y));
-            OSC_ASSERT(IsAlignedAtLeast(pixels.data(), 4) && "glReadPixels must be called with a buffer that is aligned to GL_PACK_ALIGNMENT (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
-            gl::PixelStorei(GL_PACK_ALIGNMENT, 4);
+            OSC_ASSERT(isAlignedAtLeast(pixels.data(), 4) && "glReadPixels must be called with a buffer that is aligned to GL_PACK_ALIGNMENT (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
+            gl::pixelStorei(GL_PACK_ALIGNMENT, 4);
             glReadPixels(
                 0,
                 0,
@@ -6514,30 +6439,30 @@ public:
 
     std::string getBackendVendorString() const
     {
-        return std::string{GLGetCStringView(GL_VENDOR)};
+        return std::string{glGetCStringView(GL_VENDOR)};
     }
 
     std::string getBackendRendererString() const
     {
-        return std::string{GLGetCStringView(GL_RENDERER)};
+        return std::string{glGetCStringView(GL_RENDERER)};
     }
 
     std::string getBackendVersionString() const
     {
-        return std::string{GLGetCStringView(GL_VERSION)};
+        return std::string{glGetCStringView(GL_VERSION)};
     }
 
     std::string getBackendShadingLanguageVersionString() const
     {
-        return std::string{GLGetCStringView(GL_SHADING_LANGUAGE_VERSION)};
+        return std::string{glGetCStringView(GL_SHADING_LANGUAGE_VERSION)};
     }
 
-    Material const& getQuadMaterial() const
+    const Material& getQuadMaterial() const
     {
         return m_QuadMaterial;
     }
 
-    Mesh const& getQuadMesh() const
+    const Mesh& getQuadMesh() const
     {
         return m_QuadMesh;
     }
@@ -6638,7 +6563,7 @@ void osc::GraphicsContext::disableDebugMode()
     g_GraphicsContextImpl->disableDebugMode();
 }
 
-void osc::GraphicsContext::clearScreen(Color const& color)
+void osc::GraphicsContext::clearScreen(const Color& color)
 {
     g_GraphicsContextImpl->clearScreen(color);
 }
@@ -6685,78 +6610,78 @@ std::string osc::GraphicsContext::getBackendShadingLanguageVersionString() const
 //
 /////////////////////////////
 
-void osc::Graphics::DrawMesh(
-    Mesh const& mesh,
-    Transform const& transform,
-    Material const& material,
+void osc::graphics::drawMesh(
+    const Mesh& mesh,
+    const Transform& transform,
+    const Material& material,
     Camera& camera,
-    std::optional<MaterialPropertyBlock> const& maybeMaterialPropertyBlock,
+    const std::optional<MaterialPropertyBlock>& maybeMaterialPropertyBlock,
     std::optional<size_t> maybeSubMeshIndex)
 {
-    GraphicsBackend::DrawMesh(mesh, transform, material, camera, maybeMaterialPropertyBlock, maybeSubMeshIndex);
+    GraphicsBackend::drawMesh(mesh, transform, material, camera, maybeMaterialPropertyBlock, maybeSubMeshIndex);
 }
 
-void osc::Graphics::DrawMesh(
-    Mesh const& mesh,
-    Mat4 const& transform,
-    Material const& material,
+void osc::graphics::drawMesh(
+    const Mesh& mesh,
+    const Mat4& transform,
+    const Material& material,
     Camera& camera,
-    std::optional<MaterialPropertyBlock> const& maybeMaterialPropertyBlock,
+    const std::optional<MaterialPropertyBlock>& maybeMaterialPropertyBlock,
     std::optional<size_t> maybeSubMeshIndex)
 {
-    GraphicsBackend::DrawMesh(mesh, transform, material, camera, maybeMaterialPropertyBlock, maybeSubMeshIndex);
+    GraphicsBackend::drawMesh(mesh, transform, material, camera, maybeMaterialPropertyBlock, maybeSubMeshIndex);
 }
 
-void osc::Graphics::Blit(Texture2D const& source, RenderTexture& dest)
+void osc::graphics::blit(const Texture2D& source, RenderTexture& dest)
 {
-    GraphicsBackend::Blit(source, dest);
+    GraphicsBackend::blit(source, dest);
 }
 
-void osc::Graphics::BlitToScreen(
-    RenderTexture const& t,
-    Rect const& rect,
+void osc::graphics::blitToScreen(
+    const RenderTexture& t,
+    const Rect& rect,
     BlitFlags flags)
 {
-    GraphicsBackend::BlitToScreen(t, rect, flags);
+    GraphicsBackend::blitToScreen(t, rect, flags);
 }
 
-void osc::Graphics::BlitToScreen(
-    RenderTexture const& t,
-    Rect const& rect,
-    Material const& material,
+void osc::graphics::blitToScreen(
+    const RenderTexture& t,
+    const Rect& rect,
+    const Material& material,
     BlitFlags flags)
 {
-    GraphicsBackend::BlitToScreen(t, rect, material, flags);
+    GraphicsBackend::blitToScreen(t, rect, material, flags);
 }
 
-void osc::Graphics::BlitToScreen(
-    Texture2D const& t,
-    Rect const& rect)
+void osc::graphics::blitToScreen(
+    const Texture2D& t,
+    const Rect& rect)
 {
-    GraphicsBackend::BlitToScreen(t, rect);
+    GraphicsBackend::blitToScreen(t, rect);
 }
 
-void osc::Graphics::CopyTexture(
-    RenderTexture const& src,
+void osc::graphics::copyTexture(
+    const RenderTexture& src,
     Texture2D& dest)
 {
-    GraphicsBackend::CopyTexture(src, dest);
+    GraphicsBackend::copyTexture(src, dest);
 }
 
-void osc::Graphics::CopyTexture(
-    RenderTexture const& src,
+void osc::graphics::copyTexture(
+    const RenderTexture& src,
     Texture2D& dest,
     CubemapFace face)
 {
-    GraphicsBackend::CopyTexture(src, dest, face);
+    GraphicsBackend::copyTexture(src, dest, face);
 }
 
-void osc::Graphics::CopyTexture(
-    RenderTexture const& sourceRenderTexture,
+void osc::graphics::copyTexture(
+    const RenderTexture& sourceRenderTexture,
     Cubemap& destinationCubemap,
     size_t mip)
 {
-    GraphicsBackend::CopyTexture(sourceRenderTexture, destinationCubemap, mip);
+    GraphicsBackend::copyTexture(sourceRenderTexture, destinationCubemap, mip);
 }
 
 /////////////////////////
@@ -6767,137 +6692,116 @@ void osc::Graphics::CopyTexture(
 
 
 // helper: binds to instanced attributes (per-drawcall)
-void osc::GraphicsBackend::BindToInstancedAttributes(
-        Shader::Impl const& shaderImpl,
-        InstancingState& ins)
+void osc::GraphicsBackend::bindToInstancedAttributes(
+    const Shader::Impl& shaderImpl,
+    InstancingState& ins)
 {
-    gl::BindBuffer(ins.buf);
+    gl::bindBuffer(ins.buf);
 
     size_t byteOffset = 0;
-    if (shaderImpl.m_MaybeInstancedModelMatAttr)
-    {
-        if (shaderImpl.m_MaybeInstancedModelMatAttr->shaderType == ShaderPropertyType::Mat4)
-        {
-            gl::AttributeMat4 const mmtxAttr{shaderImpl.m_MaybeInstancedModelMatAttr->location};
-            gl::VertexAttribPointer(mmtxAttr, false, ins.stride, ins.baseOffset + byteOffset);
-            gl::VertexAttribDivisor(mmtxAttr, 1);
-            gl::EnableVertexAttribArray(mmtxAttr);
+    if (shaderImpl.m_MaybeInstancedModelMatAttr) {
+        if (shaderImpl.m_MaybeInstancedModelMatAttr->shaderType == ShaderPropertyType::Mat4) {
+            const gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedModelMatAttr->location};
+            gl::vertexAttribPointer(mmtxAttr, false, ins.stride, ins.baseOffset + byteOffset);
+            gl::vertexAttribDivisor(mmtxAttr, 1);
+            gl::enableVertexAttribArray(mmtxAttr);
             byteOffset += sizeof(float) * 16;
         }
     }
-    if (shaderImpl.m_MaybeInstancedNormalMatAttr)
-    {
-        if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat4)
-        {
-            gl::AttributeMat4 const mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->location};
-            gl::VertexAttribPointer(mmtxAttr, false, ins.stride, ins.baseOffset + byteOffset);
-            gl::VertexAttribDivisor(mmtxAttr, 1);
-            gl::EnableVertexAttribArray(mmtxAttr);
+    if (shaderImpl.m_MaybeInstancedNormalMatAttr) {
+        if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat4) {
+            const gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->location};
+            gl::vertexAttribPointer(mmtxAttr, false, ins.stride, ins.baseOffset + byteOffset);
+            gl::vertexAttribDivisor(mmtxAttr, 1);
+            gl::enableVertexAttribArray(mmtxAttr);
             // unused: byteOffset += sizeof(float) * 16;
         }
-        else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat3)
-        {
-            gl::AttributeMat3 const mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->location};
-            gl::VertexAttribPointer(mmtxAttr, false, ins.stride, ins.baseOffset + byteOffset);
-            gl::VertexAttribDivisor(mmtxAttr, 1);
-            gl::EnableVertexAttribArray(mmtxAttr);
+        else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat3) {
+            const gl::AttributeMat3 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->location};
+            gl::vertexAttribPointer(mmtxAttr, false, ins.stride, ins.baseOffset + byteOffset);
+            gl::vertexAttribDivisor(mmtxAttr, 1);
+            gl::enableVertexAttribArray(mmtxAttr);
             // unused: byteOffset += sizeof(float) * 9;
         }
     }
 }
 
 // helper: unbinds from instanced attributes (per-drawcall)
-void osc::GraphicsBackend::UnbindFromInstancedAttributes(
-    Shader::Impl const& shaderImpl,
+void osc::GraphicsBackend::unbindFromInstancedAttributes(
+    const Shader::Impl& shaderImpl,
     InstancingState&)
 {
-    if (shaderImpl.m_MaybeInstancedModelMatAttr)
-    {
-        if (shaderImpl.m_MaybeInstancedModelMatAttr->shaderType == ShaderPropertyType::Mat4)
-        {
-            gl::AttributeMat4 const mmtxAttr{shaderImpl.m_MaybeInstancedModelMatAttr->location};
-            gl::DisableVertexAttribArray(mmtxAttr);
+    if (shaderImpl.m_MaybeInstancedModelMatAttr) {
+        if (shaderImpl.m_MaybeInstancedModelMatAttr->shaderType == ShaderPropertyType::Mat4) {
+            const gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedModelMatAttr->location};
+            gl::disableVertexAttribArray(mmtxAttr);
         }
     }
-    if (shaderImpl.m_MaybeInstancedNormalMatAttr)
-    {
-        if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat4)
-        {
-            gl::AttributeMat4 const mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->location};
-            gl::DisableVertexAttribArray(mmtxAttr);
+    if (shaderImpl.m_MaybeInstancedNormalMatAttr) {
+        if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat4) {
+            const gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->location};
+            gl::disableVertexAttribArray(mmtxAttr);
         }
-        else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat3)
-        {
-            gl::AttributeMat3 const mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->location};
-            gl::DisableVertexAttribArray(mmtxAttr);
+        else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat3) {
+            const gl::AttributeMat3 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->location};
+            gl::disableVertexAttribArray(mmtxAttr);
         }
     }
 }
 
 // helper: upload instancing data for a batch
-std::optional<InstancingState> osc::GraphicsBackend::UploadInstanceData(
-    std::span<RenderObject const> renderObjects,
-    Shader::Impl const& shaderImpl)
+std::optional<InstancingState> osc::GraphicsBackend::uploadInstanceData(
+    std::span<const RenderObject> renderObjects,
+    const Shader::Impl& shaderImpl)
 {
     // preemptively upload instancing data
     std::optional<InstancingState> maybeInstancingState;
 
-    if (shaderImpl.m_MaybeInstancedModelMatAttr || shaderImpl.m_MaybeInstancedNormalMatAttr)
-    {
+    if (shaderImpl.m_MaybeInstancedModelMatAttr || shaderImpl.m_MaybeInstancedNormalMatAttr) {
+
         // compute the stride between each instance
         size_t byteStride = 0;
-        if (shaderImpl.m_MaybeInstancedModelMatAttr)
-        {
-            if (shaderImpl.m_MaybeInstancedModelMatAttr->shaderType == ShaderPropertyType::Mat4)
-            {
+        if (shaderImpl.m_MaybeInstancedModelMatAttr) {
+            if (shaderImpl.m_MaybeInstancedModelMatAttr->shaderType == ShaderPropertyType::Mat4) {
                 byteStride += sizeof(float) * 16;
             }
         }
-        if (shaderImpl.m_MaybeInstancedNormalMatAttr)
-        {
-            if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat4)
-            {
+        if (shaderImpl.m_MaybeInstancedNormalMatAttr) {
+            if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat4) {
                 byteStride += sizeof(float) * 16;
             }
-            else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat3)
-            {
+            else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat3) {
                 byteStride += sizeof(float) * 9;
             }
         }
 
         // write the instance data into a CPU-side buffer
 
-        OSC_PERF("GraphicsBackend::UploadInstanceData");
+        OSC_PERF("GraphicsBackend::uploadInstanceData");
         std::vector<float>& buf = g_GraphicsContextImpl->updInstanceCPUBuffer();
         buf.clear();
         buf.reserve(renderObjects.size() * (byteStride/sizeof(float)));
 
         size_t floatOffset = 0;
-        for (RenderObject const& el : renderObjects)
-        {
-            if (shaderImpl.m_MaybeInstancedModelMatAttr)
-            {
-                if (shaderImpl.m_MaybeInstancedModelMatAttr->shaderType == ShaderPropertyType::Mat4)
-                {
-                    Mat4 const m = ModelMatrix(el);
-                    std::span<float const> const els = ToFloatSpan(m);
+        for (const RenderObject& el : renderObjects) {
+            if (shaderImpl.m_MaybeInstancedModelMatAttr) {
+                if (shaderImpl.m_MaybeInstancedModelMatAttr->shaderType == ShaderPropertyType::Mat4) {
+                    const Mat4 m = model_mat4(el);
+                    const std::span<const float> els = toFloatSpan(m);
                     buf.insert(buf.end(), els.begin(), els.end());
                     floatOffset += els.size();
                 }
             }
-            if (shaderImpl.m_MaybeInstancedNormalMatAttr)
-            {
-                if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat4)
-                {
-                    Mat4 const m = NormalMatrix4(el);
-                    std::span<float const> const els = ToFloatSpan(m);
+            if (shaderImpl.m_MaybeInstancedNormalMatAttr) {
+                if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat4) {
+                    const Mat4 m = normal_matrix4(el);
+                    const std::span<const float> els = toFloatSpan(m);
                     buf.insert(buf.end(), els.begin(), els.end());
                     floatOffset += els.size();
                 }
-                else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat3)
-                {
-                    Mat3 const m = NormalMatrix(el);
-                    std::span<float const> const els = ToFloatSpan(m);
+                else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat3) {
+                    const Mat3 m = normal_matrix(el);
+                    const std::span<const float> els = toFloatSpan(m);
                     buf.insert(buf.end(), els.begin(), els.end());
                     floatOffset += els.size();
                 }
@@ -6906,37 +6810,35 @@ std::optional<InstancingState> osc::GraphicsBackend::UploadInstanceData(
         OSC_ASSERT_ALWAYS(sizeof(float)*floatOffset == renderObjects.size() * byteStride);
 
         auto& vbo = maybeInstancingState.emplace(g_GraphicsContextImpl->updInstanceGPUBuffer(), byteStride).buf;
-        vbo.assign(std::span<float const>{buf.data(), floatOffset});
+        vbo.assign(std::span<const float>{buf.data(), floatOffset});
     }
     return maybeInstancingState;
 }
 
-void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(
-    ShaderElement const& se,
-    MaterialValue const& v,
+void osc::GraphicsBackend::tryBindMaterialValueToShaderElement(
+    const ShaderElement& se,
+    const MaterialValue& v,
     int32_t& textureSlot)
 {
-    if (GetShaderType(v) != se.shaderType)
-    {
+    if (getShaderType(v) != se.shaderType) {
         return;  // mismatched types
     }
 
-    switch (v.index())
-    {
+    switch (v.index()) {
     case VariantIndex<MaterialValue, Color>():
     {
         // colors are converted from sRGB to linear when passed to
         // the shader
 
-        Vec4 const linearColor = ToLinear(std::get<Color>(v));
+        const Vec4 linearColor = toLinear(std::get<Color>(v));
         gl::UniformVec4 u{se.location};
         gl::Uniform(u, linearColor);
         break;
     }
     case VariantIndex<MaterialValue, std::vector<Color>>():
     {
-        auto const& colors = std::get<std::vector<Color>>(v);
-        int32_t const numToAssign = min(se.size, static_cast<int32_t>(colors.size()));
+        const auto& colors = std::get<std::vector<Color>>(v);
+        const int32_t numToAssign = min(se.size, static_cast<int32_t>(colors.size()));
 
         if (numToAssign > 0)
         {
@@ -6955,9 +6857,9 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(
 
             std::vector<Vec4> linearColors;
             linearColors.reserve(numToAssign);
-            for (auto const& color : colors)
+            for (const auto& color : colors)
             {
-                linearColors.emplace_back(ToLinear(color));
+                linearColors.emplace_back(toLinear(color));
             }
             static_assert(sizeof(Vec4) == 4*sizeof(float));
             static_assert(alignof(Vec4) <= alignof(float));
@@ -6973,11 +6875,10 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(
     }
     case VariantIndex<MaterialValue, std::vector<float>>():
     {
-        auto const& vals = std::get<std::vector<float>>(v);
-        int32_t const numToAssign = min(se.size, static_cast<int32_t>(vals.size()));
+        const auto& vals = std::get<std::vector<float>>(v);
+        const int32_t numToAssign = min(se.size, static_cast<int32_t>(vals.size()));
 
-        if (numToAssign > 0)
-        {
+        if (numToAssign > 0) {
             // CARE: assigning to uniform arrays should be done in one `glUniform` call
             //
             // although many guides on the internet say it's valid to assign each array
@@ -7005,11 +6906,10 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(
     }
     case VariantIndex<MaterialValue, std::vector<Vec3>>():
     {
-        auto const& vals = std::get<std::vector<Vec3>>(v);
-        int32_t const numToAssign = min(se.size, static_cast<int32_t>(vals.size()));
+        const auto& vals = std::get<std::vector<Vec3>>(v);
+        const int32_t numToAssign = min(se.size, static_cast<int32_t>(vals.size()));
 
-        if (numToAssign > 0)
-        {
+        if (numToAssign > 0) {
             // CARE: assigning to uniform arrays should be done in one `glUniform` call
             //
             // although many guides on the internet say it's valid to assign each array
@@ -7046,10 +6946,9 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(
     }
     case VariantIndex<MaterialValue, std::vector<Mat4>>():
     {
-        auto const& vals = std::get<std::vector<Mat4>>(v);
-        int32_t const numToAssign = min(se.size, static_cast<int32_t>(vals.size()));
-        if (numToAssign > 0)
-        {
+        const auto& vals = std::get<std::vector<Mat4>>(v);
+        const int32_t numToAssign = min(se.size, static_cast<int32_t>(vals.size()));
+        if (numToAssign > 0) {
             // CARE: assigning to uniform arrays should be done in one `glUniform` call
             //
             // although many guides on the internet say it's valid to assign each array
@@ -7082,8 +6981,8 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(
         auto& impl = const_cast<Texture2D::Impl&>(*std::get<Texture2D>(v).m_Impl);
         gl::Texture2D& texture = impl.updTexture();
 
-        gl::ActiveTexture(GL_TEXTURE0 + textureSlot);
-        gl::BindTexture(texture);
+        gl::activeTexture(GL_TEXTURE0 + textureSlot);
+        gl::bindTexture(texture);
         gl::UniformSampler2D u{se.location};
         gl::Uniform(u, textureSlot);
 
@@ -7097,24 +6996,24 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(
             {
                 [&textureSlot, &se](SingleSampledTexture& sst)
             {
-                gl::ActiveTexture(GL_TEXTURE0 + textureSlot);
-                gl::BindTexture(sst.texture2D);
+                gl::activeTexture(GL_TEXTURE0 + textureSlot);
+                gl::bindTexture(sst.texture2D);
                 gl::UniformSampler2D u{se.location};
                 gl::Uniform(u, textureSlot);
                 ++textureSlot;
             },
             [&textureSlot, &se](MultisampledRBOAndResolvedTexture& mst)
             {
-                gl::ActiveTexture(GL_TEXTURE0 + textureSlot);
-                gl::BindTexture(mst.singleSampledTexture);
+                gl::activeTexture(GL_TEXTURE0 + textureSlot);
+                gl::bindTexture(mst.singleSampledTexture);
                 gl::UniformSampler2D u{se.location};
                 gl::Uniform(u, textureSlot);
                 ++textureSlot;
             },
             [&textureSlot, &se](SingleSampledCubemap& cubemap)
             {
-                gl::ActiveTexture(GL_TEXTURE0 + textureSlot);
-                gl::BindTexture(cubemap.textureCubemap);
+                gl::activeTexture(GL_TEXTURE0 + textureSlot);
+                gl::bindTexture(cubemap.textureCubemap);
                 gl::UniformSamplerCube u{se.location};
                 gl::Uniform(u, textureSlot);
                 ++textureSlot;
@@ -7126,10 +7025,10 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(
     case VariantIndex<MaterialValue, Cubemap>():
     {
         auto& impl = const_cast<Cubemap::Impl&>(*std::get<Cubemap>(v).m_Impl);
-        gl::TextureCubemap const& texture = impl.updCubemap();
+        const gl::TextureCubemap& texture = impl.updCubemap();
 
-        gl::ActiveTexture(GL_TEXTURE0 + textureSlot);
-        gl::BindTexture(texture);
+        gl::activeTexture(GL_TEXTURE0 + textureSlot);
+        gl::bindTexture(texture);
         gl::UniformSamplerCube u{se.location};
         gl::Uniform(u, textureSlot);
 
@@ -7149,77 +7048,66 @@ void osc::GraphicsBackend::TryBindMaterialValueToShaderElement(
 //   - MaterialPropertyBlock
 //   - Mesh
 //   - sub-Mesh index (can be std::nullopt, to mean 'the entire mesh')
-void osc::GraphicsBackend::HandleBatchWithSameSubMesh(
-    std::span<RenderObject const> els,
+void osc::GraphicsBackend::handleBatchWithSameSubMesh(
+    std::span<const RenderObject> els,
     std::optional<InstancingState>& ins)
 {
     auto& meshImpl = const_cast<Mesh::Impl&>(*els.front().mesh.m_Impl);
-    Shader::Impl const& shaderImpl = *els.front().material.m_Impl->m_Shader.m_Impl;
-    std::optional<size_t> const maybeSubMeshIndex = els.front().maybeSubMeshIndex;
+    const Shader::Impl& shaderImpl = *els.front().material.m_Impl->m_Shader.m_Impl;
+    const std::optional<size_t> maybeSubMeshIndex = els.front().maybeSubMeshIndex;
 
-    gl::BindVertexArray(meshImpl.updVertexArray());
+    gl::bindVertexArray(meshImpl.updVertexArray());
 
-    if (shaderImpl.m_MaybeModelMatUniform || shaderImpl.m_MaybeNormalMatUniform)
-    {
+    if (shaderImpl.m_MaybeModelMatUniform || shaderImpl.m_MaybeNormalMatUniform) {
         // if the shader requires per-instance uniforms, then we *have* to render one
         // instance at a time
 
-        for (RenderObject const& el : els)
-        {
+        for (const RenderObject& el : els) {
+
             // try binding to uModel (standard)
-            if (shaderImpl.m_MaybeModelMatUniform)
-            {
-                if (shaderImpl.m_MaybeModelMatUniform->shaderType == ShaderPropertyType::Mat4)
-                {
+            if (shaderImpl.m_MaybeModelMatUniform) {
+                if (shaderImpl.m_MaybeModelMatUniform->shaderType == ShaderPropertyType::Mat4) {
                     gl::UniformMat4 u{shaderImpl.m_MaybeModelMatUniform->location};
-                    gl::Uniform(u, ModelMatrix(el));
+                    gl::Uniform(u, model_mat4(el));
                 }
             }
 
             // try binding to uNormalMat (standard)
-            if (shaderImpl.m_MaybeNormalMatUniform)
-            {
-                if (shaderImpl.m_MaybeNormalMatUniform->shaderType == ShaderPropertyType::Mat3)
-                {
+            if (shaderImpl.m_MaybeNormalMatUniform) {
+                if (shaderImpl.m_MaybeNormalMatUniform->shaderType == ShaderPropertyType::Mat3) {
                     gl::UniformMat3 u{shaderImpl.m_MaybeNormalMatUniform->location};
-                    gl::Uniform(u, NormalMatrix(el));
+                    gl::Uniform(u, normal_matrix(el));
                 }
-                else if (shaderImpl.m_MaybeNormalMatUniform->shaderType == ShaderPropertyType::Mat4)
-                {
+                else if (shaderImpl.m_MaybeNormalMatUniform->shaderType == ShaderPropertyType::Mat4) {
                     gl::UniformMat4 u{shaderImpl.m_MaybeNormalMatUniform->location};
-                    gl::Uniform(u, NormalMatrix4(el));
+                    gl::Uniform(u, normal_matrix4(el));
                 }
             }
 
-            if (ins)
-            {
-                BindToInstancedAttributes(shaderImpl, *ins);
+            if (ins) {
+                bindToInstancedAttributes(shaderImpl, *ins);
             }
             meshImpl.drawInstanced(1, maybeSubMeshIndex);
-            if (ins)
-            {
-                UnbindFromInstancedAttributes(shaderImpl, *ins);
+            if (ins) {
+                unbindFromInstancedAttributes(shaderImpl, *ins);
                 ins->baseOffset += 1 * ins->stride;
             }
         }
     }
-    else
-    {
+    else {
         // else: the shader supports instanced data, so we can draw multiple meshes in one call
 
-        if (ins)
-        {
-            BindToInstancedAttributes(shaderImpl, *ins);
+        if (ins) {
+            bindToInstancedAttributes(shaderImpl, *ins);
         }
         meshImpl.drawInstanced(els.size(), maybeSubMeshIndex);
-        if (ins)
-        {
-            UnbindFromInstancedAttributes(shaderImpl, *ins);
+        if (ins) {
+            unbindFromInstancedAttributes(shaderImpl, *ins);
             ins->baseOffset += els.size() * ins->stride;
         }
     }
 
-    gl::BindVertexArray();
+    gl::bindVertexArray();
 }
 
 // helper: draw a batch of `RenderObject`s that have the same:
@@ -7227,16 +7115,15 @@ void osc::GraphicsBackend::HandleBatchWithSameSubMesh(
 //   - Material
 //   - MaterialPropertyBlock
 //   - Mesh
-void osc::GraphicsBackend::HandleBatchWithSameMesh(
-    std::span<RenderObject const> els,
+void osc::GraphicsBackend::handleBatchWithSameMesh(
+    std::span<const RenderObject> els,
     std::optional<InstancingState>& ins)
 {
     // batch by sub-Mesh index
     auto batchIt = els.begin();
-    while (batchIt != els.end())
-    {
-        auto const batchEnd = find_if_not(batchIt, els.end(), RenderObjectHasSubMeshIndex{batchIt->maybeSubMeshIndex});
-        HandleBatchWithSameSubMesh({batchIt, batchEnd}, ins);
+    while (batchIt != els.end()) {
+        const auto batchEnd = find_if_not(batchIt, els.end(), RenderObjectHasSubMeshIndex{batchIt->maybeSubMeshIndex});
+        handleBatchWithSameSubMesh({batchIt, batchEnd}, ins);
         batchIt = batchEnd;
     }
 }
@@ -7245,25 +7132,22 @@ void osc::GraphicsBackend::HandleBatchWithSameMesh(
 //
 //   - Material
 //   - MaterialPropertyBlock
-void osc::GraphicsBackend::HandleBatchWithSameMaterialPropertyBlock(
-    std::span<RenderObject const> els,
+void osc::GraphicsBackend::handleBatchWithSameMaterialPropertyBlock(
+    std::span<const RenderObject> els,
     int32_t& textureSlot,
     std::optional<InstancingState>& ins)
 {
-    OSC_PERF("GraphicsBackend::HandleBatchWithSameMaterialPropertyBlock");
+    OSC_PERF("GraphicsBackend::handleBatchWithSameMaterialPropertyBlock");
 
-    Material::Impl const& matImpl = *els.front().material.m_Impl;
-    Shader::Impl const& shaderImpl = *matImpl.m_Shader.m_Impl;
-    FastStringHashtable<ShaderElement> const& uniforms = shaderImpl.getUniforms();
+    const Material::Impl& matImpl = *els.front().material.m_Impl;
+    const Shader::Impl& shaderImpl = *matImpl.m_Shader.m_Impl;
+    const FastStringHashtable<ShaderElement>& uniforms = shaderImpl.getUniforms();
 
     // bind property block variables (if applicable)
-    if (els.front().maybePropBlock)
-    {
-        for (auto const& [name, value] : els.front().maybePropBlock->m_Impl->m_Values)
-        {
-            if (auto const* uniform = try_find(uniforms, name))
-            {
-                TryBindMaterialValueToShaderElement(*uniform, value, textureSlot);
+    if (els.front().maybePropBlock) {
+        for (const auto& [name, value] : els.front().maybePropBlock->m_Impl->m_Values) {
+            if (const auto* uniform = try_find(uniforms, name)) {
+                tryBindMaterialValueToShaderElement(*uniform, value, textureSlot);
             }
         }
     }
@@ -7272,8 +7156,8 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterialPropertyBlock(
     auto batchIt = els.begin();
     while (batchIt != els.end())
     {
-        auto const batchEnd = find_if_not(batchIt, els.end(), RenderObjectHasMesh{&batchIt->mesh});
-        HandleBatchWithSameMesh({batchIt, batchEnd}, ins);
+        const auto batchEnd = find_if_not(batchIt, els.end(), RenderObjectHasMesh{&batchIt->mesh});
+        handleBatchWithSameMesh({batchIt, batchEnd}, ins);
         batchIt = batchEnd;
     }
 }
@@ -7281,23 +7165,23 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterialPropertyBlock(
 // helper: draw a batch of `RenderObject`s that have the same:
 //
 //   - Material
-void osc::GraphicsBackend::HandleBatchWithSameMaterial(
-    RenderPassState const& renderPassState,
-    std::span<RenderObject const> els)
+void osc::GraphicsBackend::handleBatchWithSameMaterial(
+    const RenderPassState& renderPassState,
+    std::span<const RenderObject> els)
 {
-    OSC_PERF("GraphicsBackend::HandleBatchWithSameMaterial");
+    OSC_PERF("GraphicsBackend::handleBatchWithSameMaterial");
 
-    auto const& matImpl = *els.front().material.m_Impl;
-    auto const& shaderImpl = *matImpl.m_Shader.m_Impl;
-    FastStringHashtable<ShaderElement> const& uniforms = shaderImpl.getUniforms();
+    const auto& matImpl = *els.front().material.m_Impl;
+    const auto& shaderImpl = *matImpl.m_Shader.m_Impl;
+    const FastStringHashtable<ShaderElement>& uniforms = shaderImpl.getUniforms();
 
     // preemptively upload instance data
-    std::optional<InstancingState> maybeInstances = UploadInstanceData(els, shaderImpl);
+    std::optional<InstancingState> maybeInstances = uploadInstanceData(els, shaderImpl);
 
     // updated by various batches (which may bind to textures etc.)
     int32_t textureSlot = 0;
 
-    gl::UseProgram(shaderImpl.getProgram());
+    gl::useProgram(shaderImpl.getProgram());
 
     if (matImpl.getWireframeMode())
     {
@@ -7306,13 +7190,13 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterial(
 
     if (matImpl.getDepthFunction() != DepthFunction::Default)
     {
-        glDepthFunc(ToGLDepthFunc(matImpl.getDepthFunction()));
+        glDepthFunc(toGLDepthFunc(matImpl.getDepthFunction()));
     }
 
     if (matImpl.getCullMode() != CullMode::Off)
     {
         glEnable(GL_CULL_FACE);
-        glCullFace(ToGLCullFaceEnum(matImpl.getCullMode()));
+        glCullFace(toGLCullFaceEnum(matImpl.getCullMode()));
 
         // winding order is assumed to be counter-clockwise
         //
@@ -7352,11 +7236,9 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterial(
         }
 
         // bind material values
-        for (auto const& [name, value] : matImpl.m_Values)
-        {
-            if (ShaderElement const* e = TryGetValue(uniforms, name))
-            {
-                TryBindMaterialValueToShaderElement(*e, value, textureSlot);
+        for (const auto& [name, value] : matImpl.m_Values) {
+            if (const ShaderElement* e = tryGetValue(uniforms, name)) {
+                tryBindMaterialValueToShaderElement(*e, value, textureSlot);
             }
         }
     }
@@ -7365,8 +7247,8 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterial(
     auto batchIt = els.begin();
     while (batchIt != els.end())
     {
-        auto const batchEnd = find_if_not(batchIt, els.end(), RenderObjectHasMaterialPropertyBlock{&batchIt->maybePropBlock});
-        HandleBatchWithSameMaterialPropertyBlock({batchIt, batchEnd}, textureSlot, maybeInstances);
+        const auto batchEnd = find_if_not(batchIt, els.end(), RenderObjectHasMaterialPropertyBlock{&batchIt->maybePropBlock});
+        handleBatchWithSameMaterialPropertyBlock({batchIt, batchEnd}, textureSlot, maybeInstances);
         batchIt = batchEnd;
     }
 
@@ -7378,7 +7260,7 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterial(
 
     if (matImpl.getDepthFunction() != DepthFunction::Default)
     {
-        glDepthFunc(ToGLDepthFunc(DepthFunction::Default));
+        glDepthFunc(toGLDepthFunc(DepthFunction::Default));
     }
 
     if (matImpl.getWireframeMode())
@@ -7388,57 +7270,53 @@ void osc::GraphicsBackend::HandleBatchWithSameMaterial(
 }
 
 // helper: draw a sequence of `RenderObject`s
-void osc::GraphicsBackend::DrawRenderObjects(
-    RenderPassState const& renderPassState,
-    std::span<RenderObject const> els)
+void osc::GraphicsBackend::drawRenderObjects(
+    const RenderPassState& renderPassState,
+    std::span<const RenderObject> els)
 {
-    OSC_PERF("GraphicsBackend::DrawRenderObjects");
+    OSC_PERF("GraphicsBackend::drawRenderObjects");
 
     // batch by material
     auto batchIt = els.begin();
-    while (batchIt != els.end())
-    {
-        auto const batchEnd = find_if_not(batchIt, els.end(), RenderObjectHasMaterial{&batchIt->material});
-        HandleBatchWithSameMaterial(renderPassState, {batchIt, batchEnd});
+    while (batchIt != els.end()) {
+        const auto batchEnd = find_if_not(batchIt, els.end(), RenderObjectHasMaterial{&batchIt->material});
+        handleBatchWithSameMaterial(renderPassState, {batchIt, batchEnd});
         batchIt = batchEnd;
     }
 }
 
-void osc::GraphicsBackend::DrawBatchedByOpaqueness(
-    RenderPassState const& renderPassState,
-    std::span<RenderObject const> els)
+void osc::GraphicsBackend::drawBatchedByOpaqueness(
+    const RenderPassState& renderPassState,
+    std::span<const RenderObject> els)
 {
-    OSC_PERF("GraphicsBackend::DrawBatchedByOpaqueness");
+    OSC_PERF("GraphicsBackend::drawBatchedByOpaqueness");
 
     auto batchIt = els.begin();
-    while (batchIt != els.end())
-    {
-        auto const opaqueEnd = find_if_not(batchIt, els.end(), IsOpaque);
+    while (batchIt != els.end()) {
+        const auto opaqueEnd = find_if_not(batchIt, els.end(), isOpaque);
 
-        if (opaqueEnd != batchIt)
-        {
+        if (opaqueEnd != batchIt) {
             // [batchIt..opaqueEnd] contains opaque elements
-            gl::Disable(GL_BLEND);
-            DrawRenderObjects(renderPassState, {batchIt, opaqueEnd});
+            gl::disable(GL_BLEND);
+            drawRenderObjects(renderPassState, {batchIt, opaqueEnd});
 
             batchIt = opaqueEnd;
         }
 
-        if (opaqueEnd != els.end())
-        {
+        if (opaqueEnd != els.end()) {
             // [opaqueEnd..els.end()] contains transparent elements
-            auto const transparentEnd = find_if(opaqueEnd, els.end(), IsOpaque);
-            gl::Enable(GL_BLEND);
-            DrawRenderObjects(renderPassState, {opaqueEnd, transparentEnd});
+            const auto transparentEnd = find_if(opaqueEnd, els.end(), isOpaque);
+            gl::enable(GL_BLEND);
+            drawRenderObjects(renderPassState, {opaqueEnd, transparentEnd});
 
             batchIt = transparentEnd;
         }
     }
 }
 
-void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera, float aspectRatio)
+void osc::GraphicsBackend::flushRenderQueue(Camera::Impl& camera, float aspectRatio)
 {
-    OSC_PERF("GraphicsBackend::FlushRenderQueue");
+    OSC_PERF("GraphicsBackend::flushRenderQueue");
 
     // flush the render queue in batches based on what's being rendered:
     //
@@ -7457,27 +7335,26 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera, float aspectRa
     }
 
     // precompute any render pass state used by the rendering algs
-    RenderPassState const renderPassState
-    {
+    const RenderPassState renderPassState{
         camera.getPosition(),
         camera.getViewMatrix(),
         camera.getProjectionMatrix(aspectRatio),
     };
 
-    gl::Enable(GL_DEPTH_TEST);
+    gl::enable(GL_DEPTH_TEST);
 
     // draw by reordering depth-tested elements around the not-depth-tested elements
     auto batchIt = queue.begin();
     while (batchIt != queue.end())
     {
-        auto const depthTestedEnd = find_if_not(batchIt, queue.end(), IsDepthTested);
+        const auto depthTestedEnd = find_if_not(batchIt, queue.end(), isDepthTested);
 
         if (depthTestedEnd != batchIt)
         {
             // there are >0 depth-tested elements that are elegible for reordering
 
-            SortRenderQueue(batchIt, depthTestedEnd, renderPassState.cameraPos);
-            DrawBatchedByOpaqueness(renderPassState, {batchIt, depthTestedEnd});
+            sortRenderQueue(batchIt, depthTestedEnd, renderPassState.cameraPos);
+            drawBatchedByOpaqueness(renderPassState, {batchIt, depthTestedEnd});
 
             batchIt = depthTestedEnd;
         }
@@ -7486,12 +7363,12 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera, float aspectRa
         {
             // there are >0 not-depth-tested elements that cannot be reordered
 
-            auto const ignoreDepthTestEnd = find_if(depthTestedEnd, queue.end(), IsDepthTested);
+            const auto ignoreDepthTestEnd = find_if(depthTestedEnd, queue.end(), isDepthTested);
 
             // these elements aren't depth-tested and should just be drawn as-is
-            gl::Disable(GL_DEPTH_TEST);
-            DrawBatchedByOpaqueness(renderPassState, {depthTestedEnd, ignoreDepthTestEnd});
-            gl::Enable(GL_DEPTH_TEST);
+            gl::disable(GL_DEPTH_TEST);
+            drawBatchedByOpaqueness(renderPassState, {depthTestedEnd, ignoreDepthTestEnd});
+            gl::enable(GL_DEPTH_TEST);
 
             batchIt = ignoreDepthTestEnd;
         }
@@ -7501,19 +7378,19 @@ void osc::GraphicsBackend::FlushRenderQueue(Camera::Impl& camera, float aspectRa
     queue.clear();
 }
 
-void osc::GraphicsBackend::ValidateRenderTarget(RenderTarget& renderTarget)
+void osc::GraphicsBackend::validateRenderTarget(RenderTarget& renderTarget)
 {
     // ensure there is at least one color attachment
     OSC_ASSERT(!renderTarget.colors.empty() && "a render target must have one or more color attachments");
 
     OSC_ASSERT(renderTarget.colors.front().buffer != nullptr && "a color attachment must have a non-null render buffer");
-    Vec2i const firstColorBufferDimensions = renderTarget.colors.front().buffer->m_Impl->getDimensions();
-    AntiAliasingLevel const firstColorBufferSamples = renderTarget.colors.front().buffer->m_Impl->getAntialiasingLevel();
+    const Vec2i firstColorBufferDimensions = renderTarget.colors.front().buffer->m_Impl->getDimensions();
+    const AntiAliasingLevel firstColorBufferSamples = renderTarget.colors.front().buffer->m_Impl->getAntialiasingLevel();
 
     // validate other buffers against the first
     for (auto it = renderTarget.colors.begin()+1; it != renderTarget.colors.end(); ++it)
     {
-        RenderTargetColorAttachment const& colorAttachment = *it;
+        const RenderTargetColorAttachment& colorAttachment = *it;
         OSC_ASSERT(colorAttachment.buffer != nullptr);
         OSC_ASSERT(colorAttachment.buffer->m_Impl->getDimensions() == firstColorBufferDimensions);
         OSC_ASSERT(colorAttachment.buffer->m_Impl->getAntialiasingLevel() == firstColorBufferSamples);
@@ -7523,34 +7400,34 @@ void osc::GraphicsBackend::ValidateRenderTarget(RenderTarget& renderTarget)
     OSC_ASSERT(renderTarget.depth.buffer->m_Impl->getAntialiasingLevel() == firstColorBufferSamples);
 }
 
-Rect osc::GraphicsBackend::CalcViewportRect(
+Rect osc::GraphicsBackend::calcViewportRect(
     Camera::Impl& camera,
     RenderTarget* maybeCustomRenderTarget)
 {
-    Vec2 const targetDims = maybeCustomRenderTarget ?
+    const Vec2 targetDims = maybeCustomRenderTarget ?
         Vec2{maybeCustomRenderTarget->colors.front().buffer->m_Impl->getDimensions()} :
         App::get().dims();
 
-    Rect const cameraRect = camera.getPixelRect() ?
+    const Rect cameraRect = camera.getPixelRect() ?
         *camera.getPixelRect() :
         Rect{{}, targetDims};
 
-    Vec2 const cameraRectBottomLeft = bottom_left_lh(cameraRect);
-    Vec2 const outputDimensions = dimensions(cameraRect);
-    Vec2 const topLeft = {cameraRectBottomLeft.x, targetDims.y - cameraRectBottomLeft.y};
+    const Vec2 cameraRectBottomLeft = bottom_left_lh(cameraRect);
+    const Vec2 outputDimensions = dimensions(cameraRect);
+    const Vec2 topLeft = {cameraRectBottomLeft.x, targetDims.y - cameraRectBottomLeft.y};
 
     return Rect{topLeft, topLeft + outputDimensions};
 }
 
-Rect osc::GraphicsBackend::SetupTopLevelPipelineState(
+Rect osc::GraphicsBackend::setupTopLevelPipelineState(
     Camera::Impl& camera,
     RenderTarget* maybeCustomRenderTarget)
 {
-    Rect const viewportRect = CalcViewportRect(camera, maybeCustomRenderTarget);
-    Vec2 const viewportDims = dimensions(viewportRect);
+    const Rect viewportRect = calcViewportRect(camera, maybeCustomRenderTarget);
+    const Vec2 viewportDims = dimensions(viewportRect);
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    gl::Viewport(
+    gl::viewport(
         static_cast<GLsizei>(viewportRect.p1.x),
         static_cast<GLsizei>(viewportRect.p1.y),
         static_cast<GLsizei>(viewportDims.x),
@@ -7559,10 +7436,10 @@ Rect osc::GraphicsBackend::SetupTopLevelPipelineState(
 
     if (camera.m_MaybeScissorRect)
     {
-        Rect const scissorRect = *camera.m_MaybeScissorRect;
-        Vec2i const scissorDims = dimensions(scissorRect);
+        const Rect scissorRect = *camera.m_MaybeScissorRect;
+        const Vec2i scissorDims = dimensions(scissorRect);
 
-        gl::Enable(GL_SCISSOR_TEST);
+        gl::enable(GL_SCISSOR_TEST);
         glScissor(
             static_cast<GLint>(scissorRect.p1.x),
             static_cast<GLint>(scissorRect.p1.y),
@@ -7572,25 +7449,25 @@ Rect osc::GraphicsBackend::SetupTopLevelPipelineState(
     }
     else
     {
-        gl::Disable(GL_SCISSOR_TEST);
+        gl::disable(GL_SCISSOR_TEST);
     }
 
     return viewportRect;
 }
 
-void osc::GraphicsBackend::TeardownTopLevelPipelineState(
+void osc::GraphicsBackend::teardownTopLevelPipelineState(
     Camera::Impl& camera,
     RenderTarget*)
 {
     if (camera.m_MaybeScissorRect)
     {
-        gl::Disable(GL_SCISSOR_TEST);
+        gl::disable(GL_SCISSOR_TEST);
     }
-    gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
-    gl::UseProgram();
+    gl::bindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
+    gl::useProgram();
 }
 
-std::optional<gl::FrameBuffer> osc::GraphicsBackend::BindAndClearRenderBuffers(
+std::optional<gl::FrameBuffer> osc::GraphicsBackend::bindAndClearRenderBuffers(
     Camera::Impl& camera,
     RenderTarget* maybeCustomRenderTarget)
 {
@@ -7603,7 +7480,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::BindAndClearRenderBuffers(
         // buffers and a single depth buffer. Bind them all to one MRT FBO
 
         gl::FrameBuffer& rendererFBO = maybeRenderFBO.emplace();
-        gl::BindFramebuffer(GL_DRAW_FRAMEBUFFER, rendererFBO);
+        gl::bindFramebuffer(GL_DRAW_FRAMEBUFFER, rendererFBO);
 
         // attach color buffers to the FBO
         for (size_t i = 0; i < maybeCustomRenderTarget->colors.size(); ++i)
@@ -7612,7 +7489,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::BindAndClearRenderBuffers(
             {
                 [i](SingleSampledTexture& t)
                 {
-                    gl::FramebufferTexture2D(
+                    gl::framebufferTexture2D(
                         GL_DRAW_FRAMEBUFFER,
                         GL_COLOR_ATTACHMENT0 + static_cast<GLint>(i),
                         t.texture2D,
@@ -7621,7 +7498,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::BindAndClearRenderBuffers(
                 },
                 [i](MultisampledRBOAndResolvedTexture& t)
                 {
-                    gl::FramebufferRenderbuffer(
+                    gl::framebufferRenderbuffer(
                         GL_DRAW_FRAMEBUFFER,
                         GL_COLOR_ATTACHMENT0 + static_cast<GLint>(i),
                         t.multisampledRBO
@@ -7648,7 +7525,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::BindAndClearRenderBuffers(
         {
             [](SingleSampledTexture& t)
             {
-                gl::FramebufferTexture2D(
+                gl::framebufferTexture2D(
                     GL_DRAW_FRAMEBUFFER,
                     GL_DEPTH_STENCIL_ATTACHMENT,
                     t.texture2D,
@@ -7657,7 +7534,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::BindAndClearRenderBuffers(
             },
             [](MultisampledRBOAndResolvedTexture& t)
             {
-                gl::FramebufferRenderbuffer(
+                gl::framebufferRenderbuffer(
                     GL_DRAW_FRAMEBUFFER,
                     GL_DEPTH_STENCIL_ATTACHMENT,
                     t.multisampledRBO
@@ -7681,7 +7558,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::BindAndClearRenderBuffers(
         // Multi-Render Target (MRT) support: tell OpenGL to use all specified
         // render targets when drawing and/or clearing
         {
-            size_t const numColorAttachments = maybeCustomRenderTarget->colors.size();
+            const size_t numColorAttachments = maybeCustomRenderTarget->colors.size();
 
             std::vector<GLenum> attachments;
             attachments.reserve(numColorAttachments);
@@ -7713,39 +7590,39 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::BindAndClearRenderBuffers(
             // if requested, clear depth buffer
             if (maybeCustomRenderTarget->depth.loadAction == RenderBufferLoadAction::Clear)
             {
-                gl::Clear(GL_DEPTH_BUFFER_BIT);
+                gl::clear(GL_DEPTH_BUFFER_BIT);
             }
         }
     }
     else
     {
-        gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
+        gl::bindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
 
         // we're rendering to the window
         if (camera.m_ClearFlags != CameraClearFlags::Nothing)
         {
             // clear window
-            GLenum const clearFlags = camera.m_ClearFlags & CameraClearFlags::SolidColor ?
+            const GLenum clearFlags = camera.m_ClearFlags & CameraClearFlags::SolidColor ?
                 GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT :
                 GL_DEPTH_BUFFER_BIT;
 
             // clear color is in sRGB, but the window's framebuffer is sRGB-corrected
             // and assume that clear colors are in linear space
-            Color const linearColor = ToLinear(camera.m_BackgroundColor);
-            gl::ClearColor(
+            const Color linearColor = toLinear(camera.m_BackgroundColor);
+            gl::clearColor(
                 linearColor.r,
                 linearColor.g,
                 linearColor.b,
                 linearColor.a
             );
-            gl::Clear(clearFlags);
+            gl::clear(clearFlags);
         }
     }
 
     return maybeRenderFBO;
 }
 
-void osc::GraphicsBackend::ResolveRenderBuffers(RenderTarget& renderTarget)
+void osc::GraphicsBackend::resolveRenderBuffers(RenderTarget& renderTarget)
 {
     static_assert(NumOptions<RenderBufferStoreAction>() == 2, "check 'if's etc. in this code");
 
@@ -7753,15 +7630,15 @@ void osc::GraphicsBackend::ResolveRenderBuffers(RenderTarget& renderTarget)
 
     // setup FBOs (reused per color buffer)
     gl::FrameBuffer multisampledReadFBO;
-    gl::BindFramebuffer(GL_READ_FRAMEBUFFER, multisampledReadFBO);
+    gl::bindFramebuffer(GL_READ_FRAMEBUFFER, multisampledReadFBO);
 
     gl::FrameBuffer resolvedDrawFBO;
-    gl::BindFramebuffer(GL_DRAW_FRAMEBUFFER, resolvedDrawFBO);
+    gl::bindFramebuffer(GL_DRAW_FRAMEBUFFER, resolvedDrawFBO);
 
     // resolve each color buffer with a blit
     for (size_t i = 0; i < renderTarget.colors.size(); ++i)
     {
-        RenderTargetColorAttachment const& attachment = renderTarget.colors[i];
+        const RenderTargetColorAttachment& attachment = renderTarget.colors[i];
         RenderBuffer& buffer = *attachment.buffer;
         RenderBufferOpenGLData& bufferOpenGLData = buffer.m_Impl->updRenderBufferData();
 
@@ -7779,16 +7656,16 @@ void osc::GraphicsBackend::ResolveRenderBuffers(RenderTarget& renderTarget)
             },
             [&bufferIsResolveable, i](MultisampledRBOAndResolvedTexture& t)
             {
-                GLint const attachmentLoc = GL_COLOR_ATTACHMENT0 + static_cast<GLint>(i);
+                const GLint attachmentLoc = GL_COLOR_ATTACHMENT0 + static_cast<GLint>(i);
 
-                gl::FramebufferRenderbuffer(
+                gl::framebufferRenderbuffer(
                     GL_READ_FRAMEBUFFER,
                     attachmentLoc,
                     t.multisampledRBO
                 );
                 glReadBuffer(attachmentLoc);
 
-                gl::FramebufferTexture2D(
+                gl::framebufferTexture2D(
                     GL_DRAW_FRAMEBUFFER,
                     attachmentLoc,
                     t.singleSampledTexture,
@@ -7806,8 +7683,8 @@ void osc::GraphicsBackend::ResolveRenderBuffers(RenderTarget& renderTarget)
 
         if (bufferIsResolveable)
         {
-            Vec2i const dimensions = attachment.buffer->m_Impl->getDimensions();
-            gl::BlitFramebuffer(
+            const Vec2i dimensions = attachment.buffer->m_Impl->getDimensions();
+            gl::blitFramebuffer(
                 0,
                 0,
                 dimensions.x,
@@ -7834,14 +7711,14 @@ void osc::GraphicsBackend::ResolveRenderBuffers(RenderTarget& renderTarget)
             },
             [&bufferIsResolveable](MultisampledRBOAndResolvedTexture& t)
             {
-                gl::FramebufferRenderbuffer(
+                gl::framebufferRenderbuffer(
                     GL_READ_FRAMEBUFFER,
                     GL_DEPTH_ATTACHMENT,
                     t.multisampledRBO
                 );
                 glReadBuffer(GL_DEPTH_ATTACHMENT);
 
-                gl::FramebufferTexture2D(
+                gl::framebufferTexture2D(
                     GL_DRAW_FRAMEBUFFER,
                     GL_DEPTH_ATTACHMENT,
                     t.singleSampledTexture,
@@ -7859,8 +7736,8 @@ void osc::GraphicsBackend::ResolveRenderBuffers(RenderTarget& renderTarget)
 
         if (bufferIsResolveable)
         {
-            Vec2i const dimensions = renderTarget.depth.buffer->m_Impl->getDimensions();
-            gl::BlitFramebuffer(
+            const Vec2i dimensions = renderTarget.depth.buffer->m_Impl->getDimensions();
+            gl::blitFramebuffer(
                 0,
                 0,
                 dimensions.x,
@@ -7876,45 +7753,66 @@ void osc::GraphicsBackend::ResolveRenderBuffers(RenderTarget& renderTarget)
     }
 }
 
-void osc::GraphicsBackend::RenderCameraQueue(
+void osc::GraphicsBackend::renderCameraQueue(
     Camera::Impl& camera,
     RenderTarget* maybeCustomRenderTarget)
 {
-    OSC_PERF("GraphicsBackend::RenderCameraQueue");
+    OSC_PERF("GraphicsBackend::renderCameraQueue");
 
     if (maybeCustomRenderTarget)
     {
-        ValidateRenderTarget(*maybeCustomRenderTarget);
+        validateRenderTarget(*maybeCustomRenderTarget);
     }
 
-    Rect const viewportRect = SetupTopLevelPipelineState(
+    const Rect viewportRect = setupTopLevelPipelineState(
         camera,
         maybeCustomRenderTarget
     );
 
     {
-        std::optional<gl::FrameBuffer> const maybeTmpFBO =
-            BindAndClearRenderBuffers(camera, maybeCustomRenderTarget);
-        FlushRenderQueue(camera, aspect_ratio(viewportRect));
+        const std::optional<gl::FrameBuffer> maybeTmpFBO =
+            bindAndClearRenderBuffers(camera, maybeCustomRenderTarget);
+        flushRenderQueue(camera, aspect_ratio(viewportRect));
     }
 
     if (maybeCustomRenderTarget)
     {
-        ResolveRenderBuffers(*maybeCustomRenderTarget);
+        resolveRenderBuffers(*maybeCustomRenderTarget);
     }
 
-    TeardownTopLevelPipelineState(
+    teardownTopLevelPipelineState(
         camera,
         maybeCustomRenderTarget
     );
 }
 
-void osc::GraphicsBackend::DrawMesh(
-    Mesh const& mesh,
-    Transform const& transform,
-    Material const& material,
+void osc::GraphicsBackend::drawMesh(
+    const Mesh& mesh,
+    const Transform& transform,
+    const Material& material,
     Camera& camera,
-    std::optional<MaterialPropertyBlock> const& maybeMaterialPropertyBlock,
+    const std::optional<MaterialPropertyBlock>& maybeMaterialPropertyBlock,
+    std::optional<size_t> maybeSubMeshIndex)
+{
+    if (maybeSubMeshIndex && *maybeSubMeshIndex >= mesh.getSubMeshCount()) {
+        throw std::out_of_range{"the given sub-mesh index was out of range (i.e. the given mesh does not have that many sub-meshes)"};
+    }
+
+    camera.m_Impl.upd()->m_RenderQueue.emplace_back(
+        mesh,
+        transform,
+        material,
+        maybeMaterialPropertyBlock,
+        maybeSubMeshIndex
+    );
+}
+
+void osc::GraphicsBackend::drawMesh(
+    const Mesh& mesh,
+    const Mat4& transform,
+    const Material& material,
+    Camera& camera,
+    const std::optional<MaterialPropertyBlock>& maybeMaterialPropertyBlock,
     std::optional<size_t> maybeSubMeshIndex)
 {
     if (maybeSubMeshIndex && *maybeSubMeshIndex >= mesh.getSubMeshCount())
@@ -7931,30 +7829,8 @@ void osc::GraphicsBackend::DrawMesh(
     );
 }
 
-void osc::GraphicsBackend::DrawMesh(
-    Mesh const& mesh,
-    Mat4 const& transform,
-    Material const& material,
-    Camera& camera,
-    std::optional<MaterialPropertyBlock> const& maybeMaterialPropertyBlock,
-    std::optional<size_t> maybeSubMeshIndex)
-{
-    if (maybeSubMeshIndex && *maybeSubMeshIndex >= mesh.getSubMeshCount())
-    {
-        throw std::out_of_range{"the given sub-mesh index was out of range (i.e. the given mesh does not have that many sub-meshes)"};
-    }
-
-    camera.m_Impl.upd()->m_RenderQueue.emplace_back(
-        mesh,
-        transform,
-        material,
-        maybeMaterialPropertyBlock,
-        maybeSubMeshIndex
-    );
-}
-
-void osc::GraphicsBackend::Blit(
-    Texture2D const& source,
+void osc::GraphicsBackend::blit(
+    const Texture2D& source,
     RenderTexture& dest)
 {
     Camera c;
@@ -7965,22 +7841,22 @@ void osc::GraphicsBackend::Blit(
     Material m = g_GraphicsContextImpl->getQuadMaterial();
     m.setTexture("uTexture", source);
 
-    Graphics::DrawMesh(g_GraphicsContextImpl->getQuadMesh(), Transform{}, m, c);
+    graphics::drawMesh(g_GraphicsContextImpl->getQuadMesh(), Transform{}, m, c);
     c.renderTo(dest);
 }
 
-void osc::GraphicsBackend::BlitToScreen(
-    RenderTexture const& t,
-    Rect const& rect,
+void osc::GraphicsBackend::blitToScreen(
+    const RenderTexture& t,
+    const Rect& rect,
     BlitFlags flags)
 {
-    BlitToScreen(t, rect, g_GraphicsContextImpl->getQuadMaterial(), flags);
+    blitToScreen(t, rect, g_GraphicsContextImpl->getQuadMaterial(), flags);
 }
 
-void osc::GraphicsBackend::BlitToScreen(
-    RenderTexture const& t,
-    Rect const& rect,
-    Material const& material,
+void osc::GraphicsBackend::blitToScreen(
+    const RenderTexture& t,
+    const Rect& rect,
+    const Material& material,
     BlitFlags)
 {
     OSC_ASSERT(g_GraphicsContextImpl);
@@ -7995,14 +7871,14 @@ void osc::GraphicsBackend::BlitToScreen(
 
     Material copy{material};
     copy.setRenderTexture("uTexture", t);
-    Graphics::DrawMesh(g_GraphicsContextImpl->getQuadMesh(), Transform{}, copy, c);
+    graphics::drawMesh(g_GraphicsContextImpl->getQuadMesh(), Transform{}, copy, c);
     c.renderToScreen();
     copy.clearRenderTexture("uTexture");
 }
 
-void osc::GraphicsBackend::BlitToScreen(
-    Texture2D const& t,
-    Rect const& rect)
+void osc::GraphicsBackend::blitToScreen(
+    const Texture2D& t,
+    const Rect& rect)
 {
     OSC_ASSERT(g_GraphicsContextImpl);
 
@@ -8015,20 +7891,20 @@ void osc::GraphicsBackend::BlitToScreen(
 
     Material copy{g_GraphicsContextImpl->getQuadMaterial()};
     copy.setTexture("uTexture", t);
-    Graphics::DrawMesh(g_GraphicsContextImpl->getQuadMesh(), Transform{}, copy, c);
+    graphics::drawMesh(g_GraphicsContextImpl->getQuadMesh(), Transform{}, copy, c);
     c.renderToScreen();
     copy.clearTexture("uTexture");
 }
 
-void osc::GraphicsBackend::CopyTexture(
-    RenderTexture const& src,
+void osc::GraphicsBackend::copyTexture(
+    const RenderTexture& src,
     Texture2D& dest)
 {
-    CopyTexture(src, dest, CubemapFace::PositiveX);
+    copyTexture(src, dest, CubemapFace::PositiveX);
 }
 
-void osc::GraphicsBackend::CopyTexture(
-    RenderTexture const& src,
+void osc::GraphicsBackend::copyTexture(
+    const RenderTexture& src,
     Texture2D& dest,
     CubemapFace face)
 {
@@ -8037,12 +7913,12 @@ void osc::GraphicsBackend::CopyTexture(
 
     // create a source (read) framebuffer for blitting from the source render texture
     gl::FrameBuffer readFBO;
-    gl::BindFramebuffer(GL_READ_FRAMEBUFFER, readFBO);
+    gl::bindFramebuffer(GL_READ_FRAMEBUFFER, readFBO);
     std::visit(Overload  // attach source texture depending on rendertexture's type
     {
         [](SingleSampledTexture& t)
         {
-            gl::FramebufferTexture2D(
+            gl::framebufferTexture2D(
                 GL_READ_FRAMEBUFFER,
                 GL_COLOR_ATTACHMENT0,
                 t.texture2D,
@@ -8051,7 +7927,7 @@ void osc::GraphicsBackend::CopyTexture(
         },
         [](MultisampledRBOAndResolvedTexture& t)
         {
-            gl::FramebufferTexture2D(
+            gl::framebufferTexture2D(
                 GL_READ_FRAMEBUFFER,
                 GL_COLOR_ATTACHMENT0,
                 t.singleSampledTexture,
@@ -8063,7 +7939,7 @@ void osc::GraphicsBackend::CopyTexture(
             glFramebufferTexture2D(
                 GL_READ_FRAMEBUFFER,
                 GL_COLOR_ATTACHMENT0,
-                ToOpenGLTextureEnum(face),
+                toOpenGLTextureEnum(face),
                 t.textureCubemap.get(),
                 0
             );
@@ -8073,8 +7949,8 @@ void osc::GraphicsBackend::CopyTexture(
 
     // create a destination (draw) framebuffer for blitting to the destination render texture
     gl::FrameBuffer drawFBO;
-    gl::BindFramebuffer(GL_DRAW_FRAMEBUFFER, drawFBO);
-    gl::FramebufferTexture2D(
+    gl::bindFramebuffer(GL_DRAW_FRAMEBUFFER, drawFBO);
+    gl::framebufferTexture2D(
         GL_DRAW_FRAMEBUFFER,
         GL_COLOR_ATTACHMENT0,
         dest.m_Impl.upd()->updTexture(),
@@ -8083,7 +7959,7 @@ void osc::GraphicsBackend::CopyTexture(
     glDrawBuffer(GL_COLOR_ATTACHMENT0);
 
     // blit the read framebuffer to the draw framebuffer
-    gl::BlitFramebuffer(
+    gl::blitFramebuffer(
         0,
         0,
         src.getDimensions().x,
@@ -8099,30 +7975,30 @@ void osc::GraphicsBackend::CopyTexture(
     // then download the blitted data into the texture's CPU buffer
     {
         std::vector<uint8_t>& cpuBuffer = dest.m_Impl.upd()->m_PixelData;
-        GLint const packFormat = ToImagePixelPackAlignment(dest.getTextureFormat());
+        const GLint packFormat = toImagePixelPackAlignment(dest.getTextureFormat());
 
-        OSC_ASSERT(IsAlignedAtLeast(cpuBuffer.data(), packFormat) && "glReadPixels must be called with a buffer that is aligned to GL_PACK_ALIGNMENT (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
+        OSC_ASSERT(isAlignedAtLeast(cpuBuffer.data(), packFormat) && "glReadPixels must be called with a buffer that is aligned to GL_PACK_ALIGNMENT (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
         OSC_ASSERT(cpuBuffer.size() == static_cast<ptrdiff_t>(dest.getDimensions().x*dest.getDimensions().y)*NumBytesPerPixel(dest.getTextureFormat()));
 
-        gl::Viewport(0, 0, dest.getDimensions().x, dest.getDimensions().y);
-        gl::BindFramebuffer(GL_READ_FRAMEBUFFER, drawFBO);
+        gl::viewport(0, 0, dest.getDimensions().x, dest.getDimensions().y);
+        gl::bindFramebuffer(GL_READ_FRAMEBUFFER, drawFBO);
         glReadBuffer(GL_COLOR_ATTACHMENT0);
-        gl::PixelStorei(GL_PACK_ALIGNMENT, packFormat);
+        gl::pixelStorei(GL_PACK_ALIGNMENT, packFormat);
         glReadPixels(
             0,
             0,
             dest.getDimensions().x,
             dest.getDimensions().y,
-            ToImageColorFormat(dest.getTextureFormat()),
-            ToImageDataType(dest.getTextureFormat()),
+            toImageColorFormat(dest.getTextureFormat()),
+            toImageDataType(dest.getTextureFormat()),
             cpuBuffer.data()
         );
     }
-    gl::BindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
+    gl::bindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
 }
 
-void osc::GraphicsBackend::CopyTexture(
-    RenderTexture const& sourceRenderTexture,
+void osc::GraphicsBackend::copyTexture(
+    const RenderTexture& sourceRenderTexture,
     Cubemap& destinationCubemap,
     size_t mip)
 {
@@ -8135,7 +8011,7 @@ void osc::GraphicsBackend::CopyTexture(
     // related:
     //
     // - https://registry.khronos.org/OpenGL-Refpages/es2.0/xhtml/glTexImage2D.xml
-    size_t const maxMipmapLevel = static_cast<size_t>(max(
+    const size_t maxMipmapLevel = static_cast<size_t>(max(
         0,
         cpp20::bit_width(static_cast<size_t>(destinationCubemap.getWidth())) - 1
     ));
@@ -8147,16 +8023,16 @@ void osc::GraphicsBackend::CopyTexture(
     for (size_t face = 0; face < 6; ++face)
     {
         gl::FrameBuffer readFBO;
-        gl::BindFramebuffer(GL_READ_FRAMEBUFFER, readFBO);
+        gl::bindFramebuffer(GL_READ_FRAMEBUFFER, readFBO);
         std::visit(Overload  // attach source texture depending on rendertexture's type
         {
             [](SingleSampledTexture&)
             {
-                OSC_ASSERT(false && "cannot call CopyTexture (Cubemap --> Cubemap) with a 2D render");
+                OSC_ASSERT(false && "cannot call copyTexture (Cubemap --> Cubemap) with a 2D render");
             },
             [](MultisampledRBOAndResolvedTexture&)
             {
-                OSC_ASSERT(false && "cannot call CopyTexture (Cubemap --> Cubemap) with a 2D render");
+                OSC_ASSERT(false && "cannot call copyTexture (Cubemap --> Cubemap) with a 2D render");
             },
             [face](SingleSampledCubemap& t)
             {
@@ -8172,7 +8048,7 @@ void osc::GraphicsBackend::CopyTexture(
         glReadBuffer(GL_COLOR_ATTACHMENT0);
 
         gl::FrameBuffer drawFBO;
-        gl::BindFramebuffer(GL_DRAW_FRAMEBUFFER, drawFBO);
+        gl::bindFramebuffer(GL_DRAW_FRAMEBUFFER, drawFBO);
         glFramebufferTexture2D(
             GL_DRAW_FRAMEBUFFER,
             GL_COLOR_ATTACHMENT0,
@@ -8183,7 +8059,7 @@ void osc::GraphicsBackend::CopyTexture(
         glDrawBuffer(GL_COLOR_ATTACHMENT0);
 
         // blit the read framebuffer to the draw framebuffer
-        gl::BlitFramebuffer(
+        gl::blitFramebuffer(
             0,
             0,
             sourceRenderTexture.getDimensions().x,

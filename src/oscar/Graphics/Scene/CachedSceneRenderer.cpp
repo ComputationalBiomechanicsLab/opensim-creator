@@ -19,11 +19,11 @@ public:
     {}
 
     RenderTexture& render(
-        std::span<SceneDecoration const> decorations,
-        SceneRendererParams const& params)
+        std::span<const SceneDecoration> decorations,
+        const SceneRendererParams& params)
     {
-        if (params != m_LastRenderingParams || !equal(decorations, m_LastDecorationList))
-        {
+        if (params != m_LastRenderingParams or not equal(decorations, m_LastDecorationList)) {
+
             // inputs have changed: cache the new ones and re-render
             m_LastRenderingParams = params;
             m_LastDecorationList.assign(decorations.begin(), decorations.end());
@@ -51,8 +51,8 @@ osc::CachedSceneRenderer& osc::CachedSceneRenderer::operator=(CachedSceneRendere
 osc::CachedSceneRenderer::~CachedSceneRenderer() noexcept = default;
 
 RenderTexture& osc::CachedSceneRenderer::render(
-    std::span<SceneDecoration const> decorations,
-    SceneRendererParams const& params)
+    std::span<const SceneDecoration> decorations,
+    const SceneRendererParams& params)
 {
     return m_Impl->render(decorations, params);
 }

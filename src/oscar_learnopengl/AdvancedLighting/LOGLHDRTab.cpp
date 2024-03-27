@@ -23,10 +23,10 @@ namespace
     std::array<Color, c_LightPositions.size()> GetLightColors()
     {
         return std::to_array<Color>({
-            ToSRGB({200.0f, 200.0f, 200.0f, 1.0f}),
-            ToSRGB({0.1f, 0.0f, 0.0f, 1.0f}),
-            ToSRGB({0.0f, 0.0f, 0.2f, 1.0f}),
-            ToSRGB({0.0f, 0.1f, 0.0f, 1.0f}),
+            toSRGB({200.0f, 200.0f, 200.0f, 1.0f}),
+            toSRGB({0.1f, 0.0f, 0.0f, 1.0f}),
+            toSRGB({0.0f, 0.0f, 0.2f, 1.0f}),
+            toSRGB({0.0f, 0.1f, 0.0f, 1.0f}),
         });
     }
 
@@ -49,7 +49,7 @@ namespace
 
     Material CreateSceneMaterial(IResourceLoader& rl)
     {
-        Texture2D woodTexture = LoadTexture2DFromImage(
+        Texture2D woodTexture = loadTexture2DFromImage(
             rl.open("oscar_learnopengl/textures/wood.png"),
             ColorSpace::sRGB
         );
@@ -120,7 +120,7 @@ private:
             m_SceneHDRTexture.reformat(descriptor);
         }
 
-        Graphics::DrawMesh(m_CubeMesh, m_CorridoorTransform, m_SceneMaterial, m_Camera);
+        graphics::drawMesh(m_CubeMesh, m_CorridoorTransform, m_SceneMaterial, m_Camera);
         m_Camera.renderTo(m_SceneHDRTexture);
     }
 
@@ -136,7 +136,7 @@ private:
         m_TonemapMaterial.setBool("uUseTonemap", m_UseTonemap);
         m_TonemapMaterial.setFloat("uExposure", m_Exposure);
 
-        Graphics::DrawMesh(m_QuadMesh, identity<Transform>(), m_TonemapMaterial, orthoCamera);
+        graphics::drawMesh(m_QuadMesh, identity<Transform>(), m_TonemapMaterial, orthoCamera);
         orthoCamera.renderToScreen();
 
         m_TonemapMaterial.clearRenderTexture("uTexture");

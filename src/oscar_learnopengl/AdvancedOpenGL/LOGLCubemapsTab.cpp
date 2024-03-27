@@ -27,7 +27,7 @@ namespace
     Cubemap LoadCubemap(ResourceLoader& rl)
     {
         // load the first face, so we know the width
-        Texture2D t = LoadTexture2DFromImage(
+        Texture2D t = loadTexture2DFromImage(
             rl.open(ResourcePath{"oscar_learnopengl/textures"} / c_SkyboxTextureFilenames.front()),
             ColorSpace::sRGB
         );
@@ -39,10 +39,10 @@ namespace
         static_assert(NumOptions<CubemapFace>() == c_SkyboxTextureFilenames.size());
 
         Cubemap cubemap{dims.x, t.getTextureFormat()};
-        cubemap.setPixelData(FirstCubemapFace(), t.getPixelData());
-        for (CubemapFace f = Next(FirstCubemapFace()); f <= LastCubemapFace(); f = Next(f))
+        cubemap.setPixelData(firstCubemapFace(), t.getPixelData());
+        for (CubemapFace f = next(firstCubemapFace()); f <= lastCubemapFace(); f = next(f))
         {
-            t = LoadTexture2DFromImage(
+            t = loadTexture2DFromImage(
                 rl.open(ResourcePath{"oscar_learnopengl/textures"} / c_SkyboxTextureFilenames[ToIndex(f)]),
                 ColorSpace::sRGB
             );
@@ -152,7 +152,7 @@ private:
     {
         m_CubeProperties.setVec3("uCameraPos", m_Camera.getPosition());
         m_CubeProperties.setFloat("uIOR", m_IOR);
-        Graphics::DrawMesh(
+        graphics::drawMesh(
             m_Cube,
             identity<Transform>(),
             m_CubeMaterials.at(m_CubeMaterialIndex).material,
@@ -166,7 +166,7 @@ private:
     {
         m_Camera.setClearFlags(CameraClearFlags::Nothing);
         m_Camera.setViewMatrixOverride(Mat4{Mat3{m_Camera.getViewMatrix()}});
-        Graphics::DrawMesh(
+        graphics::drawMesh(
             m_Skybox,
             identity<Transform>(),
             m_SkyboxMaterial,
@@ -199,7 +199,7 @@ private:
     size_t m_CubeMaterialIndex = 0;
     MaterialPropertyBlock m_CubeProperties;
     Mesh m_Cube = BoxGeometry{};
-    Texture2D m_ContainerTexture = LoadTexture2DFromImage(
+    Texture2D m_ContainerTexture = loadTexture2DFromImage(
         m_Loader.open("oscar_learnopengl/textures/container.jpg"),
         ColorSpace::sRGB
     );

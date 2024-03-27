@@ -125,7 +125,7 @@ osc::Variant::operator osc::Color() const
         [](int const& v) { return v ? Color::white() : Color::black(); },
         [](std::string_view s)
         {
-            auto const c = TryParseHtmlString(s);
+            auto const c = tryParseHtmlString(s);
             return c ? *c : Color::black();
         },
         [](Vec2 const& v) { return Color{v.x, v.y, 0.0f}; },
@@ -171,7 +171,7 @@ osc::Variant::operator std::string() const
     {
         [](std::monostate const&) { return "<null>"s; },
         [](bool const& v) { return v ? "true"s : "false"s; },
-        [](Color const& v) { return ToHtmlStringRGBA(v); },
+        [](Color const& v) { return toHtmlStringRGBA(v); },
         [](float const& v) { return std::to_string(v); },
         [](int const& v) { return std::to_string(v); },
         [](std::string_view s) { return std::string{s}; },

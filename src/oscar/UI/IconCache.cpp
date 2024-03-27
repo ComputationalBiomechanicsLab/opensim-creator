@@ -25,7 +25,7 @@ public:
 
             if (p.hasExtension(".svg"))
             {
-                Texture2D texture = ReadSVGIntoTexture(
+                Texture2D texture = readSVGIntoTexture(
                     loaderPrefixedAtDirContainingSVGs.open(p),
                     verticalScale
                 );

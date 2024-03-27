@@ -6,10 +6,10 @@ namespace osc
 {
     class WireframeGeometry final {
     public:
-        explicit WireframeGeometry(Mesh const&);
+        explicit WireframeGeometry(const Mesh&);
 
-        Mesh const& mesh() const { return m_Mesh; }
-        operator Mesh const& () const { return m_Mesh; }
+        const Mesh& mesh() const { return m_Mesh; }
+        operator const Mesh& () const { return m_Mesh; }
     private:
         Mesh m_Mesh;
     };

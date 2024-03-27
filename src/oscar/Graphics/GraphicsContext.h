@@ -18,9 +18,9 @@ namespace osc
     class GraphicsContext final {
     public:
         explicit GraphicsContext(SDL_Window&);
-        GraphicsContext(GraphicsContext const&) = delete;
+        GraphicsContext(const GraphicsContext&) = delete;
         GraphicsContext(GraphicsContext&&) noexcept = delete;
-        GraphicsContext& operator=(GraphicsContext const&) = delete;
+        GraphicsContext& operator=(const GraphicsContext&) = delete;
         GraphicsContext& operator=(GraphicsContext&&) noexcept = delete;
         ~GraphicsContext() noexcept;
 
@@ -34,7 +34,7 @@ namespace osc
         void enableDebugMode();
         void disableDebugMode();
 
-        void clearScreen(Color const&);
+        void clearScreen(const Color&);
 
         // HACK: this is needed by ImGui, because it uses OpenGL "in the raw"
         void* updRawGLContextHandleHACK();

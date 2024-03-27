@@ -22,9 +22,9 @@ namespace osc
         std::tm modificationTime;
     };
 
-    void WriteDecorationsAsDAE(
+    void writeDecorationsAsDAE(
         std::ostream&,
-        std::span<SceneDecoration const>,
-        DAEMetadata const&
+        std::span<const SceneDecoration>,
+        const DAEMetadata&
     );
 }

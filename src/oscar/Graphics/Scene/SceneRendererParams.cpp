@@ -13,14 +13,14 @@ osc::SceneRendererParams::SceneRendererParams() :
     projectionMatrix{1.0f},
     viewPos{0.0f, 0.0f, 0.0f},
     lightDirection{-0.34f, -0.25f, 0.05f},
-    lightColor{DefaultLightColor()},
+    lightColor{defaultLightColor()},
     ambientStrength{0.01f},
     diffuseStrength{0.55f},
     specularStrength{0.7f},
     specularShininess{6.0f},
-    backgroundColor{DefaultBackgroundColor()},
+    backgroundColor{defaultBackgroundColor()},
     rimColor{0.95f, 0.35f, 0.0f, 1.0f},
     rimThicknessInPixels{1.0f, 1.0f},
-    floorLocation{DefaultFloorLocation()},
+    floorLocation{defaultFloorLocation()},
     fixupScaleFactor{1.0f}
 {}

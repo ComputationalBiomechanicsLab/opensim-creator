@@ -297,7 +297,7 @@ TEST(Variant, ColorValueToStringReturnsSameAsToHtmlStringRGBA)
 
     for (auto const& color : colors)
     {
-        ASSERT_EQ(Variant(color).to<std::string>(), ToHtmlStringRGBA(color));
+        ASSERT_EQ(Variant(color).to<std::string>(), toHtmlStringRGBA(color));
     }
 }
 
@@ -480,7 +480,7 @@ TEST(Variant, StringValueToColorWorksIfStringIsAValidHTMLColorString)
     ASSERT_EQ(Variant{"#00000000"}.to<Color>(), Color::clear());
     ASSERT_EQ(Variant{"#000000ff"}.to<Color>(), Color::black());
     ASSERT_EQ(Variant{"#000000FF"}.to<Color>(), Color::black());
-    ASSERT_EQ(Variant{"#123456ae"}.to<Color>(), *TryParseHtmlString("#123456ae"));
+    ASSERT_EQ(Variant{"#123456ae"}.to<Color>(), *tryParseHtmlString("#123456ae"));
 }
 
 TEST(Variant, StringValueColorReturnsBlackIfStringIsInvalidHTMLColorString)
@@ -1158,7 +1158,7 @@ TEST(Variant, StringNameValueToColorWorksIfStringIsAValidHTMLColorString)
     ASSERT_EQ(Variant{StringName{"#00000000"}}.to<Color>(), Color::clear());
     ASSERT_EQ(Variant{StringName{"#000000ff"}}.to<Color>(), Color::black());
     ASSERT_EQ(Variant{StringName{"#000000FF"}}.to<Color>(), Color::black());
-    ASSERT_EQ(Variant{StringName{"#123456ae"}}.to<Color>(), *TryParseHtmlString("#123456ae"));
+    ASSERT_EQ(Variant{StringName{"#123456ae"}}.to<Color>(), *tryParseHtmlString("#123456ae"));
 }
 
 TEST(Variant, StringNameValueToColorReturnsBlackIfStringIsInvalidHTMLColorString)

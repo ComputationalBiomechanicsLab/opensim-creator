@@ -16,15 +16,15 @@ namespace osc
     class SceneRenderer final {
     public:
         explicit SceneRenderer(SceneCache&);
-        SceneRenderer(SceneRenderer const&);
+        SceneRenderer(const SceneRenderer&);
         SceneRenderer(SceneRenderer&&) noexcept;
-        SceneRenderer& operator=(SceneRenderer const&) = delete;
+        SceneRenderer& operator=(const SceneRenderer&) = delete;
         SceneRenderer& operator=(SceneRenderer&&) noexcept;
         ~SceneRenderer() noexcept;
 
         Vec2i getDimensions() const;
         AntiAliasingLevel getAntiAliasingLevel() const;
-        void render(std::span<SceneDecoration const>, SceneRendererParams const&);
+        void render(std::span<const SceneDecoration>, const SceneRendererParams&);
         RenderTexture& updRenderTexture();
 
     private:
