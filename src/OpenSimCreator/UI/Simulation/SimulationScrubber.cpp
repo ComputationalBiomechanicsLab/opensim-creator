@@ -102,7 +102,7 @@ private:
             if (ui::Button(ICON_FA_PAUSE)) {
                 m_SimulatorAPI->setSimulationPlaybackState(SimulationUIPlaybackState::Stopped);
             }
-            ui::DrawTooltipIfItemHovered("Pause");
+            ui::DrawTooltipIfItemHovered("Pause (Space)");
         }
         else if (state == SimulationUIPlaybackState::Stopped) {
             // if stopped, show either a REDO button (i.e. re-run from the beginning) or
@@ -113,13 +113,13 @@ private:
                     m_SimulatorAPI->setSimulationScrubTime(tStart);
                     m_SimulatorAPI->setSimulationPlaybackState(SimulationUIPlaybackState::Playing);
                 }
-                ui::DrawTooltipIfItemHovered("Replay");
+                ui::DrawTooltipIfItemHovered("Replay (Space)");
             }
             else {
                 if (ui::Button(ICON_FA_PLAY)) {
                     m_SimulatorAPI->setSimulationPlaybackState(SimulationUIPlaybackState::Playing);  // i.e. unpause
                 }
-                ui::DrawTooltipIfItemHovered("Play");
+                ui::DrawTooltipIfItemHovered("Play (Space)");
             }
         }
     }

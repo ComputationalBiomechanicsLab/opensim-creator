@@ -29,6 +29,7 @@ namespace osc
         CStringView implGetName() const final;
         void implOnMount() final;
         void implOnUnmount() final;
+        bool implOnEvent(SDL_Event const&) final;
         void implOnTick() final;
         void implOnDrawMainMenu() final;
         void implOnDraw() final;

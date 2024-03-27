@@ -38,7 +38,7 @@ namespace osc
         virtual bool implTrySave() { return true; }
         virtual void implOnMount() {}
         virtual void implOnUnmount() {}
-        virtual bool implOnEvent(SDL_Event const&) { return false;}
+        virtual bool implOnEvent(SDL_Event const&) { return false; }
         virtual void implOnTick() {}
         virtual void implOnDrawMainMenu() {}
         virtual void implOnDraw() = 0;

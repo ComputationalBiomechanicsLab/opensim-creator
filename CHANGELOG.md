@@ -17,6 +17,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   with/without surface normals (note: Simbody/OpenSim ignore this information, but it's useful if you
   plan on using the OBJ file in other software, e.g. Blender)
 - Pressing `Ctrl/Super` and `PageUp`/`PageDown` now toggles between each tab
+- Pressing `Space` while in the simulator screen now (un)pauses the simulation
 - There is now a `loop` checkbox in the simulator screen, which will cause playback to loop back from
   the start when playback hits the end of a simulation
 - Internal: more of the UI code was ported from ImGui:: to ui:: to hide an implementation detail

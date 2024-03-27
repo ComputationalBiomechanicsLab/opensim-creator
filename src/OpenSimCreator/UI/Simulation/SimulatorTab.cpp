@@ -35,6 +35,7 @@
 #include <oscar/UI/Panels/PerfPanel.h>
 #include <oscar/UI/Widgets/PopupManager.h>
 #include <oscar/UI/Widgets/WindowMenu.h>
+#include <oscar/Utils/EnumHelpers.h>
 #include <oscar/Utils/ParentPtr.h>
 #include <oscar/Utils/Perf.h>
 
@@ -217,6 +218,17 @@ public:
         m_PanelManager->onTick();
     }
 
+    bool onEvent(SDL_Event const& e)
+    {
+        if (e.type == SDL_KEYDOWN and
+            e.key.keysym.scancode == SDL_SCANCODE_SPACE)
+        {
+            togglePlaybackMode();
+            return true;
+        }
+        return false;
+    }
+
     void onDrawMainMenu()
     {
         m_MainMenuFileTab.onDraw(m_Parent);
@@ -234,6 +246,24 @@ public:
     }
 
 private:
+    void togglePlaybackMode()
+    {
+        static_assert(NumOptions<SimulationUIPlaybackState>() == 2);
+        if (m_PlaybackState == SimulationUIPlaybackState::Playing) {
+            // pause
+            setSimulationPlaybackState(SimulationUIPlaybackState::Stopped);
+        }
+        else if (getSimulationScrubTime() >= m_Simulation->getEndTime()) {
+            // replay
+            setSimulationScrubTime(m_Simulation->getStartTime());
+            setSimulationPlaybackState(SimulationUIPlaybackState::Playing);
+        }
+        else {
+            // unpause
+            setSimulationPlaybackState(SimulationUIPlaybackState::Playing);
+        }
+    }
+
     std::optional<SimulationReport> tryFindNthReportAfter(SimulationClock::time_point t, int offset = 0)
     {
         ptrdiff_t const numSimulationReports = m_Simulation->getNumReports();
@@ -505,6 +535,11 @@ void osc::SimulatorTab::implOnMount()
 void osc::SimulatorTab::implOnUnmount()
 {
     m_Impl->onUnmount();
+}
+
+bool osc::SimulatorTab::implOnEvent(SDL_Event const& e)
+{
+    return m_Impl->onEvent(e);
 }
 
 void osc::SimulatorTab::implOnTick()
