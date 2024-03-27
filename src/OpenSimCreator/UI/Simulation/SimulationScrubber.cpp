@@ -7,6 +7,7 @@
 #include <IconsFontAwesome5.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/Utils/EnumHelpers.h>
 
 #include <memory>
 #include <string>
@@ -36,6 +37,9 @@ public:
         ui::SameLine();
 
         drawForwardsButtons();
+        ui::SameLine();
+
+        drawLoopButton();
         ui::SameLine();
 
         drawPlaybackSpeedSelector();
@@ -70,37 +74,53 @@ private:
         ui::DrawTooltipIfItemHovered("Previous State");
     }
 
+    void drawLoopButton()
+    {
+        static_assert(NumOptions<SimulationUILoopingState>() == 2);
+        bool looping = m_SimulatorAPI->getSimulationLoopingState() == SimulationUILoopingState::Looping;
+        if (ui::Checkbox("loop", &looping)) {
+            if (looping) {
+                m_SimulatorAPI->setSimulationLoopingState(SimulationUILoopingState::Looping);
+            }
+            else {
+                m_SimulatorAPI->setSimulationLoopingState(SimulationUILoopingState::PlayOnce);
+            }
+        }
+    }
+
     void drawPlayOrPauseOrReplayButton()
     {
         SimulationClock::time_point const tStart = m_Simulation->getStartTime();
         SimulationClock::time_point const tEnd = m_Simulation->getEndTime();
         SimulationClock::time_point const tCur = m_SimulatorAPI->getSimulationScrubTime();
+        SimulationUIPlaybackState const state = m_SimulatorAPI->getSimulationPlaybackState();
 
-        // play/pause
-        if (tCur >= tEnd)
-        {
-            if (ui::Button(ICON_FA_REDO))
-            {
-                m_SimulatorAPI->setSimulationScrubTime(tStart);
-                m_SimulatorAPI->setSimulationPlaybackState(true);
-            }
-            ui::DrawTooltipIfItemHovered("Replay");
-        }
-        else if (!m_SimulatorAPI->getSimulationPlaybackState())
-        {
-            if (ui::Button(ICON_FA_PLAY))
-            {
-                m_SimulatorAPI->setSimulationPlaybackState(true);
-            }
-            ui::DrawTooltipIfItemHovered("Play");
-        }
-        else
-        {
-            if (ui::Button(ICON_FA_PAUSE))
-            {
-                m_SimulatorAPI->setSimulationPlaybackState(false);
+        static_assert(NumOptions<SimulationUIPlaybackState>() == 2);
+        if (state == SimulationUIPlaybackState::Playing) {
+            // if playing, the only option is to stop
+
+            if (ui::Button(ICON_FA_PAUSE)) {
+                m_SimulatorAPI->setSimulationPlaybackState(SimulationUIPlaybackState::Stopped);
             }
             ui::DrawTooltipIfItemHovered("Pause");
+        }
+        else if (state == SimulationUIPlaybackState::Stopped) {
+            // if stopped, show either a REDO button (i.e. re-run from the beginning) or
+            // a PLAY button (i.e. un-pause)
+
+            if (tCur >= tEnd) {
+                if (ui::Button(ICON_FA_REDO)) {
+                    m_SimulatorAPI->setSimulationScrubTime(tStart);
+                    m_SimulatorAPI->setSimulationPlaybackState(SimulationUIPlaybackState::Playing);
+                }
+                ui::DrawTooltipIfItemHovered("Replay");
+            }
+            else {
+                if (ui::Button(ICON_FA_PLAY)) {
+                    m_SimulatorAPI->setSimulationPlaybackState(SimulationUIPlaybackState::Playing);  // i.e. unpause
+                }
+                ui::DrawTooltipIfItemHovered("Play");
+            }
         }
     }
 

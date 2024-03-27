@@ -2,6 +2,8 @@
 
 #include <OpenSimCreator/Documents/Simulation/SimulationClock.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
+#include <OpenSimCreator/UI/Simulation/SimulationUIPlaybackState.h>
+#include <OpenSimCreator/UI/Simulation/SimulationUILoopingState.h>
 
 #include <optional>
 
@@ -24,101 +26,43 @@ namespace osc
     public:
         virtual ~ISimulatorUIAPI() noexcept = default;
 
-        ISimulation& updSimulation()
-        {
-            return implUpdSimulation();
-        }
+        ISimulation& updSimulation() { return implUpdSimulation(); }
 
-        bool getSimulationPlaybackState()
-        {
-            return implGetSimulationPlaybackState();
-        }
+        SimulationUIPlaybackState getSimulationPlaybackState() { return implGetSimulationPlaybackState(); }
+        void setSimulationPlaybackState(SimulationUIPlaybackState s) { implSetSimulationPlaybackState(s); }
 
-        void setSimulationPlaybackState(bool v)
-        {
-            implSetSimulationPlaybackState(v);
-        }
+        virtual SimulationUILoopingState getSimulationLoopingState() const { return implGetSimulationLoopingState(); }
+        virtual void setSimulationLoopingState(SimulationUILoopingState s) { implSetSimulationLoopingState(s); }
 
-        float getSimulationPlaybackSpeed()
-        {
-            return implGetSimulationPlaybackSpeed();
-        }
+        float getSimulationPlaybackSpeed() { return implGetSimulationPlaybackSpeed(); }
+        void setSimulationPlaybackSpeed(float v) { implSetSimulationPlaybackSpeed(v); }
 
-        void setSimulationPlaybackSpeed(float v)
-        {
-            implSetSimulationPlaybackSpeed(v);
-        }
+        SimulationClock::time_point getSimulationScrubTime() { return implGetSimulationScrubTime(); }
 
-        SimulationClock::time_point getSimulationScrubTime()
-        {
-            return implGetSimulationScrubTime();
-        }
+        void stepBack() { implStepBack(); }
+        void stepForward() { implStepForward(); }
 
-        void stepBack()
-        {
-            implStepBack();
-        }
+        void setSimulationScrubTime(SimulationClock::time_point t) { implSetSimulationScrubTime(t); }
 
-        void stepForward()
-        {
-            implStepForward();
-        }
+        std::optional<SimulationReport> trySelectReportBasedOnScrubbing() { return implTrySelectReportBasedOnScrubbing(); }
 
-        void setSimulationScrubTime(SimulationClock::time_point v)
-        {
-            implSetSimulationScrubTime(v);
-        }
+        int getNumUserOutputExtractors() const { return implGetNumUserOutputExtractors(); }
+        OutputExtractor const& getUserOutputExtractor(int i) const { return implGetUserOutputExtractor(i); }
+        void addUserOutputExtractor(OutputExtractor const& o) { implAddUserOutputExtractor(o); }
+        void removeUserOutputExtractor(int i) { implRemoveUserOutputExtractor(i); }
+        bool hasUserOutputExtractor(OutputExtractor const& o) { return implHasUserOutputExtractor(o); }
+        bool removeUserOutputExtractor(OutputExtractor const& o) { return implRemoveUserOutputExtractor(o); }
+        bool overwriteUserOutputExtractor(OutputExtractor const& old, OutputExtractor const& newer) { return implOverwriteUserOutputExtractor(old, newer); }
 
-        std::optional<SimulationReport> trySelectReportBasedOnScrubbing()
-        {
-            return implTrySelectReportBasedOnScrubbing();
-        }
-
-        int getNumUserOutputExtractors() const
-        {
-            return implGetNumUserOutputExtractors();
-        }
-
-        OutputExtractor const& getUserOutputExtractor(int i) const
-        {
-            return implGetUserOutputExtractor(i);
-        }
-
-        void addUserOutputExtractor(OutputExtractor const& o)
-        {
-            implAddUserOutputExtractor(o);
-        }
-
-        void removeUserOutputExtractor(int i)
-        {
-            implRemoveUserOutputExtractor(i);
-        }
-
-        bool hasUserOutputExtractor(OutputExtractor const& o)
-        {
-            return implHasUserOutputExtractor(o);
-        }
-
-        bool removeUserOutputExtractor(OutputExtractor const& o)
-        {
-            return implRemoveUserOutputExtractor(o);
-        }
-
-        bool overwriteUserOutputExtractor(OutputExtractor const& old, OutputExtractor const& newer)
-        {
-            return implOverwriteUserOutputExtractor(old, newer);
-        }
-
-        SimulationModelStatePair* tryGetCurrentSimulationState()
-        {
-            return implTryGetCurrentSimulationState();
-        }
+        SimulationModelStatePair* tryGetCurrentSimulationState() { return implTryGetCurrentSimulationState(); }
 
     private:
         virtual ISimulation& implUpdSimulation() = 0;
 
-        virtual bool implGetSimulationPlaybackState() = 0;
-        virtual void implSetSimulationPlaybackState(bool) = 0;
+        virtual SimulationUIPlaybackState implGetSimulationPlaybackState() = 0;
+        virtual void implSetSimulationPlaybackState(SimulationUIPlaybackState) = 0;
+        virtual SimulationUILoopingState implGetSimulationLoopingState() const = 0;
+        virtual void implSetSimulationLoopingState(SimulationUILoopingState) = 0;
         virtual float implGetSimulationPlaybackSpeed() = 0;
         virtual void implSetSimulationPlaybackSpeed(float) = 0;
         virtual SimulationClock::time_point implGetSimulationScrubTime() = 0;

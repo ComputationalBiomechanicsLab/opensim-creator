@@ -17,6 +17,7 @@
 #include <OpenSimCreator/UI/Simulation/SelectionDetailsPanel.h>
 #include <OpenSimCreator/UI/Simulation/SimulationDetailsPanel.h>
 #include <OpenSimCreator/UI/Simulation/SimulationToolbar.h>
+#include <OpenSimCreator/UI/Simulation/SimulationUIPlaybackState.h>
 #include <OpenSimCreator/UI/Simulation/SimulationViewerPanel.h>
 #include <OpenSimCreator/UI/Simulation/SimulationViewerPanelParameters.h>
 #include <OpenSimCreator/UI/Simulation/SimulationViewerRightClickEvent.h>
@@ -192,19 +193,24 @@ public:
 
     void onTick()
     {
-        if (m_IsPlayingBack)
-        {
+        if (m_PlaybackState == SimulationUIPlaybackState::Playing) {
+
             SimulationClock::time_point const playbackPos = implGetSimulationScrubTime();
 
-            if ((m_PlaybackSpeed >= 0.0f && playbackPos < m_Simulation->getEndTime()) ||
-                (m_PlaybackSpeed < 0.0f && playbackPos > m_Simulation->getStartTime()))
-            {
+            if ((m_PlaybackSpeed >= 0.0f and playbackPos < m_Simulation->getEndTime()) ||
+                (m_PlaybackSpeed  < 0.0f and playbackPos > m_Simulation->getStartTime())) {
+
+                // if there's still something to playback, ensure the screen is re-rendered to show it
                 App::upd().requestRedraw();
             }
-            else
-            {
+            else if (m_LoopingState == SimulationUILoopingState::Looping) {
+                // there's nothing to playback, but the UI wants to loop the playback, so loop it
+                setSimulationScrubTime(m_Simulation->getStartTime());
+            }
+            else {
+                // there's nothing to playback, so put playback into the stopped state
                 m_PlaybackStartSimtime = playbackPos;
-                m_IsPlayingBack = false;
+                m_PlaybackState = SimulationUIPlaybackState::Stopped;
             }
         }
 
@@ -264,23 +270,31 @@ private:
         return *m_Simulation;
     }
 
-    bool implGetSimulationPlaybackState() final
+    SimulationUIPlaybackState implGetSimulationPlaybackState() final
     {
-        return m_IsPlayingBack;
+        return m_PlaybackState;
     }
 
-    void implSetSimulationPlaybackState(bool v) final
+    void implSetSimulationPlaybackState(SimulationUIPlaybackState newState) final
     {
-        if (v)
-        {
+        if (newState == SimulationUIPlaybackState::Playing) {
             m_PlaybackStartWallTime = std::chrono::system_clock::now();
-            m_IsPlayingBack = true;
+            m_PlaybackState = newState;
         }
-        else
-        {
+        else {
             m_PlaybackStartSimtime = getSimulationScrubTime();
-            m_IsPlayingBack = false;
+            m_PlaybackState = newState;
         }
+    }
+
+    SimulationUILoopingState implGetSimulationLoopingState() const final
+    {
+        return m_LoopingState;
+    }
+
+    void implSetSimulationLoopingState(SimulationUILoopingState s)
+    {
+        m_LoopingState = s;
     }
 
     float implGetSimulationPlaybackSpeed() final
@@ -295,19 +309,17 @@ private:
 
     SimulationClock::time_point implGetSimulationScrubTime() final
     {
-        if (!m_IsPlayingBack)
-        {
+        if (m_PlaybackState == SimulationUIPlaybackState::Stopped) {
             return m_PlaybackStartSimtime;
         }
-        // map wall time onto sim time
+
+        // else: map the computer's wall time onto simulation time
 
         ptrdiff_t const nReports = m_Simulation->getNumReports();
-        if (nReports <= 0)
-        {
+        if (nReports <= 0) {
             return m_Simulation->getStartTime();
         }
-        else
-        {
+        else {
             std::chrono::system_clock::time_point wallNow = std::chrono::system_clock::now();
             std::chrono::system_clock::duration wallDur = wallNow - m_PlaybackStartWallTime;
 
@@ -316,16 +328,13 @@ private:
             SimulationClock::time_point const simEarliest = m_Simulation->getSimulationReport(0).getTime();
             SimulationClock::time_point const simLatest = m_Simulation->getSimulationReport(nReports - 1).getTime();
 
-            if (simNow < simEarliest)
-            {
+            if (simNow < simEarliest) {
                 return simEarliest;
             }
-            else if (simNow > simLatest)
-            {
+            else if (simNow > simLatest) {
                 return simLatest;
             }
-            else
-            {
+            else {
                 return simNow;
             }
         }
@@ -444,7 +453,8 @@ private:
     std::shared_ptr<SimulationModelStatePair> m_ShownModelState = std::make_shared<SimulationModelStatePair>();
 
     // scrubbing state
-    bool m_IsPlayingBack = true;
+    SimulationUIPlaybackState m_PlaybackState = SimulationUIPlaybackState::Playing;
+    SimulationUILoopingState m_LoopingState = SimulationUILoopingState::PlayOnce;
     float m_PlaybackSpeed = 1.0f;
     SimulationClock::time_point m_PlaybackStartSimtime = m_Simulation->getStartTime();
     std::chrono::system_clock::time_point m_PlaybackStartWallTime = std::chrono::system_clock::now();

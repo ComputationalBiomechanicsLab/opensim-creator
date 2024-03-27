@@ -5,6 +5,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- Right-clicking a 1D plot in the simulator tab now shows a `Plot Against Other Output` option, which
+  lets you create a 2D output by combining two existing model outputs (handy for phase diagrams, etc.)
 - Right-clicking on a `PhysicalFrame`/`Body` in the model editor now shows an `Add` menu that includes
   the ability to add geometry, offset frames, and wrap objects. Previously: was `Add Geometry` and
   `Add Offset Frame` were shown, but now there's also the ability to add wrap objects. (#7)
@@ -15,8 +17,14 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   with/without surface normals (note: Simbody/OpenSim ignore this information, but it's useful if you
   plan on using the OBJ file in other software, e.g. Blender)
 - Pressing `Ctrl/Super` and `PageUp`/`PageDown` now toggles between each tab
+- There is now a `loop` checkbox in the simulator screen, which will cause playback to loop back from
+  the start when playback hits the end of a simulation
 - Internal: more of the UI code was ported from ImGui:: to ui:: to hide an implementation detail
 - Internal: Added `MeshPhongMaterial`, which is handy for graphics development
+- Internal: The `OutputExtractor` APIs were redesigned to support use-cases such as synthesizing
+  outputs at runtime by combining other outputs (`ConcatenatingOutputExtractor`)
+- Internal: The `OutputExtractor` APIs were redesigned to support emitting `string`, `float`, and
+  `Vec2` outputs (previously: only string/float) to facilitate 2D plotting
 
 ## [0.5.10] - 2024/03/05
 
