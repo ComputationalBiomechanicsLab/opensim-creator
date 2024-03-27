@@ -24,16 +24,13 @@ public:
 
         StandardPanelImpl{panelName},
         m_SimulatorUIAPI{simulatorUIAPI}
-    {
-    }
+    {}
 
 private:
     void implDrawContent() final
     {
         SimulationModelStatePair* maybeShownState = m_SimulatorUIAPI->tryGetCurrentSimulationState();
-
-        if (!maybeShownState)
-        {
+        if (!maybeShownState) {
             ui::TextDisabled("(no simulation selected)");
             return;
         }
@@ -41,22 +38,19 @@ private:
         SimulationModelStatePair& ms = *maybeShownState;
 
         OpenSim::Component const* selected = ms.getSelected();
-
-        if (!selected)
-        {
+        if (!selected) {
             ui::TextDisabled("(nothing selected)");
             return;
         }
 
         m_ComponentDetailsWidget.onDraw(ms.getState(), selected);
 
-        if (ui::CollapsingHeader("outputs"))
-        {
-            int imguiID = 0;
+        if (ui::CollapsingHeader("outputs")) {
+            int id = 0;
             ui::Columns(2);
-            for (auto const& [outputName, aoPtr] : selected->getOutputs())
-            {
-                ui::PushID(imguiID++);
+
+            for (auto const& [outputName, aoPtr] : selected->getOutputs()) {
+                ui::PushID(id++);
 
                 ui::Text(outputName);
                 ui::NextColumn();
@@ -81,8 +75,7 @@ private:
 
 osc::SelectionDetailsPanel::SelectionDetailsPanel(std::string_view panelName, ISimulatorUIAPI* simulatorUIAPI) :
     m_Impl{std::make_unique<Impl>(panelName, simulatorUIAPI)}
-{
-}
+{}
 
 osc::SelectionDetailsPanel::SelectionDetailsPanel(SelectionDetailsPanel&&) noexcept = default;
 osc::SelectionDetailsPanel& osc::SelectionDetailsPanel::operator=(SelectionDetailsPanel&&) noexcept = default;
