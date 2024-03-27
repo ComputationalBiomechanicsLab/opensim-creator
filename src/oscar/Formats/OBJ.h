@@ -33,10 +33,10 @@ namespace osc
         std::tm creationTime;
     };
 
-    void WriteMeshAsObj(
+    void writeMeshAsObj(
         std::ostream&,
-        Mesh const&,
-        ObjMetadata const&,
+        const Mesh&,
+        const ObjMetadata&,
         ObjWriterFlags = ObjWriterFlags::Default
     );
 }

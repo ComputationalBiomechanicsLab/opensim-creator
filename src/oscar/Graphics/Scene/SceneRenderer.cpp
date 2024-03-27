@@ -37,7 +37,7 @@ using namespace osc;
 
 namespace
 {
-    Transform GetFloorTransform(Vec3 floorLocation, float fixupScaleFactor)
+    Transform getFloorTransform(Vec3 floorLocation, float fixupScaleFactor)
     {
         return {
             .scale = {100.0f * fixupScaleFactor, 100.0f * fixupScaleFactor, 1.0f},
@@ -46,7 +46,7 @@ namespace
         };
     }
 
-    AABB WorldpaceAABB(SceneDecoration const& d)
+    AABB worldpaceAABB(const SceneDecoration& d)
     {
         return transform_aabb(d.transform, d.mesh.getBounds());
     }
@@ -55,7 +55,7 @@ namespace
 
         RimHighlights(
             Mesh mesh_,
-            Mat4 const& transform_,
+            const Mat4& transform_,
             Material material_) :
 
             mesh{std::move(mesh_)},
@@ -78,7 +78,7 @@ namespace
         Radians phi;
     };
 
-    PolarAngles CalcPolarAngles(Vec3 const& directionFromOrigin)
+    PolarAngles calcPolarAngles(const Vec3& directionFromOrigin)
     {
         // X is left-to-right
         // Y is bottom-to-top
@@ -103,12 +103,12 @@ namespace
         Mat4 projMatrix;
     };
 
-    ShadowCameraMatrices CalcShadowCameraMatrices(
-        AABB const& casterAABBs,
-        Vec3 const& lightDirection)
+    ShadowCameraMatrices calcShadowCameraMatrices(
+        const AABB& casterAABBs,
+        const Vec3& lightDirection)
     {
-        Sphere const casterSphere = bounding_sphere_of(casterAABBs);
-        PolarAngles const cameraPolarAngles = CalcPolarAngles(-lightDirection);
+        const Sphere casterSphere = bounding_sphere_of(casterAABBs);
+        const PolarAngles cameraPolarAngles = calcPolarAngles(-lightDirection);
 
         // pump sphere+polar information into a polar camera in order to
         // calculate the renderer's view/projection matrices
@@ -120,8 +120,8 @@ namespace
         polarCamera.znear = 0.0f;
         polarCamera.zfar = 2.0f * casterSphere.radius;
 
-        Mat4 const viewMat = polarCamera.view_matrix();
-        Mat4 const projMat = ortho(
+        const Mat4 viewMat = polarCamera.view_matrix();
+        const Mat4 projMat = ortho(
             -casterSphere.radius,
             casterSphere.radius,
             -casterSphere.radius,
@@ -172,12 +172,12 @@ public:
     }
 
     void render(
-        std::span<SceneDecoration const> decorations,
-        SceneRendererParams const& params)
+        std::span<const SceneDecoration> decorations,
+        const SceneRendererParams& params)
     {
         // render any other perspectives on the scene (shadows, rim highlights, etc.)
-        std::optional<RimHighlights> const maybeRimHighlights = tryGenerateRimHighlights(decorations, params);
-        std::optional<Shadows> const maybeShadowMap = tryGenerateShadowMap(decorations, params);
+        const std::optional<RimHighlights> maybeRimHighlights = tryGenerateRimHighlights(decorations, params);
+        const std::optional<Shadows> maybeShadowMap = tryGenerateShadowMap(decorations, params);
 
         // setup camera for this render
         m_Camera.reset();
@@ -201,14 +201,12 @@ public:
             m_SceneColoredElementsMaterial.setFloat("uFar", m_Camera.getFarClippingPlane());
 
             // supply shadowmap, if applicable
-            if (maybeShadowMap)
-            {
+            if (maybeShadowMap) {
                 m_SceneColoredElementsMaterial.setBool("uHasShadowMap", true);
                 m_SceneColoredElementsMaterial.setMat4("uLightSpaceMat", maybeShadowMap->lightSpaceMat);
                 m_SceneColoredElementsMaterial.setRenderTexture("uShadowMapTexture", maybeShadowMap->shadowMap);
             }
-            else
-            {
+            else {
                 m_SceneColoredElementsMaterial.setBool("uHasShadowMap", false);
             }
 
@@ -218,30 +216,29 @@ public:
             MaterialPropertyBlock propBlock;
             MaterialPropertyBlock wireframePropBlock;
             Color lastColor = {-1.0f, -1.0f, -1.0f, 0.0f};
-            for (SceneDecoration const& dec : decorations)
-            {
-                if (!(dec.flags & SceneDecorationFlags::NoDrawNormally)) {
+            for (const SceneDecoration& dec : decorations) {
+                if (not (dec.flags & SceneDecorationFlags::NoDrawNormally)) {
                     if (dec.color != lastColor) {
                         propBlock.setColor("uDiffuseColor", dec.color);
                         lastColor = dec.color;
                     }
 
                     if (dec.maybeMaterial) {
-                        Graphics::DrawMesh(dec.mesh, dec.transform, *dec.maybeMaterial, m_Camera, dec.maybeMaterialProps);
+                        graphics::drawMesh(dec.mesh, dec.transform, *dec.maybeMaterial, m_Camera, dec.maybeMaterialProps);
                     }
                     else if (dec.color.a > 0.99f) {
-                        Graphics::DrawMesh(dec.mesh, dec.transform, m_SceneColoredElementsMaterial, m_Camera, propBlock);
+                        graphics::drawMesh(dec.mesh, dec.transform, m_SceneColoredElementsMaterial, m_Camera, propBlock);
                     }
                     else {
-                        Graphics::DrawMesh(dec.mesh, dec.transform, transparentMaterial, m_Camera, propBlock);
+                        graphics::drawMesh(dec.mesh, dec.transform, transparentMaterial, m_Camera, propBlock);
                     }
                 }
 
                 // if a wireframe overlay is requested for the decoration then draw it over the top in
                 // a solid color
                 if (dec.flags & SceneDecorationFlags::WireframeOverlay) {
-                    wireframePropBlock.setColor("uDiffuseColor",MultiplyLuminance(dec.color, 0.5f));
-                    Graphics::DrawMesh(dec.mesh, dec.transform, m_WireframeMaterial, m_Camera, wireframePropBlock);
+                    wireframePropBlock.setColor("uDiffuseColor",multiplyLuminance(dec.color, 0.5f));
+                    graphics::drawMesh(dec.mesh, dec.transform, m_WireframeMaterial, m_Camera, wireframePropBlock);
                 }
 
                 // if normals are requested, render the scene element via a normals geometry shader
@@ -249,13 +246,12 @@ public:
                 // care: this only works for triangles, because normals-drawing material uses a geometry
                 //       shader that assumes triangular input (#792)
                 if (params.drawMeshNormals && dec.mesh.getTopology() == MeshTopology::Triangles) {
-                    Graphics::DrawMesh(dec.mesh, dec.transform, m_NormalsMaterial, m_Camera);
+                    graphics::drawMesh(dec.mesh, dec.transform, m_NormalsMaterial, m_Camera);
                 }
             }
 
             // if a floor is requested, draw a textured floor
-            if (params.drawFloor)
-            {
+            if (params.drawFloor) {
                 m_SceneTexturedElementsMaterial.setVec3("uViewPos", m_Camera.getPosition());
                 m_SceneTexturedElementsMaterial.setVec3("uLightDir", params.lightDirection);
                 m_SceneTexturedElementsMaterial.setColor("uLightColor", params.lightColor);
@@ -267,27 +263,24 @@ public:
                 m_SceneTexturedElementsMaterial.setFloat("uFar", m_Camera.getFarClippingPlane());
 
                 // supply shadowmap, if applicable
-                if (maybeShadowMap)
-                {
+                if (maybeShadowMap) {
                     m_SceneTexturedElementsMaterial.setBool("uHasShadowMap", true);
                     m_SceneTexturedElementsMaterial.setMat4("uLightSpaceMat", maybeShadowMap->lightSpaceMat);
                     m_SceneTexturedElementsMaterial.setRenderTexture("uShadowMapTexture", maybeShadowMap->shadowMap);
                 }
-                else
-                {
+                else {
                     m_SceneTexturedElementsMaterial.setBool("uHasShadowMap", false);
                 }
 
-                Transform const t = GetFloorTransform(params.floorLocation, params.fixupScaleFactor);
+                const Transform t = getFloorTransform(params.floorLocation, params.fixupScaleFactor);
 
-                Graphics::DrawMesh(m_QuadMesh, t, m_SceneTexturedElementsMaterial, m_Camera);
+                graphics::drawMesh(m_QuadMesh, t, m_SceneTexturedElementsMaterial, m_Camera);
             }
         }
 
         // add the rim highlights over the top of the scene texture
-        if (maybeRimHighlights)
-        {
-            Graphics::DrawMesh(maybeRimHighlights->mesh, maybeRimHighlights->transform, maybeRimHighlights->material, m_Camera);
+        if (maybeRimHighlights) {
+            graphics::drawMesh(maybeRimHighlights->mesh, maybeRimHighlights->transform, maybeRimHighlights->material, m_Camera);
         }
 
         m_OutputTexture.setDimensions(params.dimensions);
@@ -307,28 +300,25 @@ public:
 
 private:
     std::optional<RimHighlights> tryGenerateRimHighlights(
-        std::span<SceneDecoration const> decorations,
-        SceneRendererParams const& params)
+        std::span<const SceneDecoration> decorations,
+        const SceneRendererParams& params)
     {
-        if (!params.drawRims)
-        {
+        if (not params.drawRims) {
             return std::nullopt;
         }
 
         // compute the worldspace bounds union of all rim-highlighted geometry
-        auto const rimAABB = [](SceneDecoration const& d) -> std::optional<AABB>
+        const auto rimAABB = [](const SceneDecoration& d) -> std::optional<AABB>
         {
             if (d.flags & (SceneDecorationFlags::IsSelected | SceneDecorationFlags::IsChildOfSelected | SceneDecorationFlags::IsHovered | SceneDecorationFlags::IsChildOfHovered)) {
-                return WorldpaceAABB(d);
+                return worldpaceAABB(d);
             }
             return std::nullopt;
         };
         std::optional<AABB> maybeRimWorldspaceAABB = maybe_bounding_aabb_of(decorations, rimAABB);
 
-        if (!maybeRimWorldspaceAABB)
-        {
-            // the scene does not contain any rim-highlighted geometry
-            return std::nullopt;
+        if (not maybeRimWorldspaceAABB) {
+            return std::nullopt;  // the scene does not contain any rim-highlighted geometry
         }
 
         // figure out if the rims actually appear on the screen and (roughly) where
@@ -340,10 +330,8 @@ private:
             params.farClippingPlane
         );
 
-        if (!maybeRimRectNDC)
-        {
-            // the scene contains rim-highlighted geometry, but it isn't on-screen
-            return std::nullopt;
+        if (not maybeRimRectNDC) {
+            return std::nullopt;  // the scene contains rim-highlighted geometry, but it isn't on-screen
         }
         // else: the scene contains rim-highlighted geometry that may appear on screen
 
@@ -351,7 +339,7 @@ private:
         Rect& rimRectNDC = *maybeRimRectNDC;
 
         // compute rim thickness in each direction (aspect ratio might not be 1:1)
-        Vec2 const rimThicknessNDC = 2.0f*params.rimThicknessInPixels / Vec2{params.dimensions};
+        const Vec2 rimThicknessNDC = 2.0f*params.rimThicknessInPixels / Vec2{params.dimensions};
 
         // expand by the rim thickness, so that the output has space for the rims
         rimRectNDC = expand(rimRectNDC, rimThicknessNDC);
@@ -359,14 +347,12 @@ private:
         // constrain the result of the above to within clip space
         rimRectNDC = Clamp(rimRectNDC, {-1.0f, -1.0f}, {1.0f, 1.0f});
 
-        if (area(rimRectNDC) <= 0.0f)
-        {
-            // the scene contains rim-highlighted geometry, but it isn't on-screen
-            return std::nullopt;
+        if (area(rimRectNDC) <= 0.0f) {
+            return std::nullopt;  // the scene contains rim-highlighted geometry, but it isn't on-screen
         }
 
         // compute rim rectangle in texture coordinates
-        Rect const rimRectUV = NdcRectToScreenspaceViewportRect(rimRectNDC, Rect{{}, {1.0f, 1.0f}});
+        const Rect rimRectUV = NdcRectToScreenspaceViewportRect(rimRectNDC, Rect{{}, {1.0f, 1.0f}});
 
         // compute where the quad needs to eventually be drawn in the scene
         Transform quadMeshToRimsQuad;
@@ -385,15 +371,12 @@ private:
         m_Camera.setBackgroundColor(Color::clear());
 
         // draw all selected geometry in a solid color
-        for (SceneDecoration const& dec : decorations)
-        {
-            if (dec.flags & (SceneDecorationFlags::IsSelected | SceneDecorationFlags::IsChildOfSelected))
-            {
-                Graphics::DrawMesh(dec.mesh, dec.transform, m_SolidColorMaterial, m_Camera, m_RimsSelectedColor);
+        for (const SceneDecoration& dec : decorations) {
+            if (dec.flags & (SceneDecorationFlags::IsSelected | SceneDecorationFlags::IsChildOfSelected)) {
+                graphics::drawMesh(dec.mesh, dec.transform, m_SolidColorMaterial, m_Camera, m_RimsSelectedColor);
             }
-            else if (dec.flags & (SceneDecorationFlags::IsHovered | SceneDecorationFlags::IsChildOfHovered))
-            {
-                Graphics::DrawMesh(dec.mesh, dec.transform, m_SolidColorMaterial, m_Camera, m_RimsHoveredColor);
+            else if (dec.flags & (SceneDecorationFlags::IsHovered | SceneDecorationFlags::IsChildOfHovered)) {
+                graphics::drawMesh(dec.mesh, dec.transform, m_SolidColorMaterial, m_Camera, m_RimsHoveredColor);
             }
         }
 
@@ -417,8 +400,7 @@ private:
         m_EdgeDetectorMaterial.setVec2("uTextureScale", dimensions(rimRectUV));
 
         // return necessary information for rendering the rims
-        return RimHighlights
-        {
+        return RimHighlights{
             m_QuadMesh,
             inverse(params.projectionMatrix * params.viewMatrix) * mat4_cast(quadMeshToRimsQuad),
             m_EdgeDetectorMaterial,
@@ -426,10 +408,10 @@ private:
     }
 
     std::optional<Shadows> tryGenerateShadowMap(
-        std::span<SceneDecoration const> decorations,
-        SceneRendererParams const& params)
+        std::span<const SceneDecoration> decorations,
+        const SceneRendererParams& params)
     {
-        if (!params.drawShadows) {
+        if (not params.drawShadows) {
             return std::nullopt;  // the caller doesn't actually want shadows
         }
 
@@ -440,21 +422,21 @@ private:
         //
         // (also, while doing that, draw each mesh - to prevent multipass)
         std::optional<AABB> casterAABBs;
-        for (SceneDecoration const& dec : decorations) {
+        for (const SceneDecoration& dec : decorations) {
             if (dec.flags & SceneDecorationFlags::CastsShadows) {
-                casterAABBs = bounding_aabb_of(casterAABBs, WorldpaceAABB(dec));
-                Graphics::DrawMesh(dec.mesh, dec.transform, m_DepthWritingMaterial, m_Camera);
+                casterAABBs = bounding_aabb_of(casterAABBs, worldpaceAABB(dec));
+                graphics::drawMesh(dec.mesh, dec.transform, m_DepthWritingMaterial, m_Camera);
             }
         }
 
-        if (!casterAABBs) {
+        if (not casterAABBs) {
             // there are no shadow casters, so there will be no shadows
             m_Camera.reset();
             return std::nullopt;
         }
 
         // compute camera matrices for the orthogonal (direction) camera used for lighting
-        ShadowCameraMatrices const matrices = CalcShadowCameraMatrices(*casterAABBs, params.lightDirection);
+        const ShadowCameraMatrices matrices = calcShadowCameraMatrices(*casterAABBs, params.lightDirection);
 
         m_Camera.setBackgroundColor({1.0f, 0.0f, 0.0f, 0.0f});
         m_Camera.setViewMatrixOverride(matrices.viewMatrix);
@@ -488,13 +470,11 @@ private:
 
 osc::SceneRenderer::SceneRenderer(SceneCache& meshCache) :
     m_Impl{std::make_unique<Impl>(meshCache)}
-{
-}
+{}
 
-osc::SceneRenderer::SceneRenderer(SceneRenderer const& other) :
+osc::SceneRenderer::SceneRenderer(const SceneRenderer& other) :
     m_Impl{std::make_unique<Impl>(*other.m_Impl)}
-{
-}
+{}
 
 osc::SceneRenderer::SceneRenderer(SceneRenderer&&) noexcept = default;
 osc::SceneRenderer& osc::SceneRenderer::operator=(SceneRenderer&&) noexcept = default;
@@ -511,8 +491,8 @@ AntiAliasingLevel osc::SceneRenderer::getAntiAliasingLevel() const
 }
 
 void osc::SceneRenderer::render(
-    std::span<SceneDecoration const> decs,
-    SceneRendererParams const& params)
+    std::span<const SceneDecoration> decs,
+    const SceneRendererParams& params)
 {
     m_Impl->render(decs, params);
 }

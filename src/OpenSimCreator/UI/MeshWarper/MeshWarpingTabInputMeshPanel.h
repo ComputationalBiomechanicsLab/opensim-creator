@@ -75,7 +75,7 @@ namespace osc
             Mesh const& inputMesh = m_State->getScratchMesh(m_DocumentIdentifier);
             BVH const& inputMeshBVH = m_State->getScratchMeshBVH(m_DocumentIdentifier);
             std::optional<RayCollision> const meshCollision = m_LastTextureHittestResult.isHovered ?
-                GetClosestWorldspaceRayCollision(inputMesh, inputMeshBVH, Transform{}, cameraRay) :
+                getClosestWorldspaceRayCollision(inputMesh, inputMeshBVH, Transform{}, cameraRay) :
                 std::nullopt;
 
             // landmark hittest: compute whether the user is hovering over a landmark
@@ -219,7 +219,7 @@ namespace osc
             std::optional<RayCollision> const& maybeMeshCollision,
             std::optional<MeshWarpingTabHover> const& maybeLandmarkCollision)
         {
-            SceneRendererParams const params = CalcStandardDarkSceneRenderParams(
+            SceneRendererParams const params = calcStandardDarkSceneRenderParams(
                 m_Camera,
                 App::get().getCurrentAntiAliasingLevel(),
                 dims
@@ -299,7 +299,7 @@ namespace osc
             }
             if (m_State->isHovered(landmarkID))
             {
-                decoration.color = ToSRGB(ClampToLDR(MultiplyLuminance(ToLinear(decoration.color), 1.2f)));
+                decoration.color = toSRGB(clampToLDR(multiplyLuminance(toLinear(decoration.color), 1.2f)));
                 decoration.flags |= SceneDecorationFlags::IsHovered;
             }
 
@@ -341,7 +341,7 @@ namespace osc
             }
             if (m_State->isHovered(id))
             {
-                decoration.color = ToSRGB(ClampToLDR(MultiplyLuminance(ToLinear(decoration.color), 1.2f)));
+                decoration.color = toSRGB(clampToLDR(multiplyLuminance(toLinear(decoration.color), 1.2f)));
                 decoration.flags |= SceneDecorationFlags::IsHovered;
             }
 

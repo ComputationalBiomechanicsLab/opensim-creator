@@ -18,10 +18,10 @@ namespace osc
 
         using value_type = float;
         using reference = float&;
-        using const_reference = float const&;
+        using const_reference = const float&;
         using size_type = size_t;
         using iterator = value_type*;
-        using const_iterator = value_type const*;
+        using const_iterator = const value_type*;
 
         static constexpr Color half_grey()
         {
@@ -113,15 +113,15 @@ namespace osc
             r{v}, g{v}, b{v}, a{alpha}
         {}
 
-        explicit constexpr Color(Vec<3, value_type> const& v) :
+        explicit constexpr Color(const Vec<3, value_type>& v) :
             r{v.x}, g{v.y}, b{v.z}, a(1.0f)
         {}
 
-        constexpr Color(Vec<3, value_type> const& v, value_type alpha) :
+        constexpr Color(const Vec<3, value_type>& v, value_type alpha) :
             r{v.x}, g{v.y}, b{v.z}, a{alpha}
         {}
 
-        explicit constexpr Color(Vec<4, value_type> const& v) :
+        explicit constexpr Color(const Vec<4, value_type>& v) :
             r{v.x}, g{v.y}, b{v.z}, a{v.w}
         {}
 
@@ -175,9 +175,9 @@ namespace osc
             return Vec4{r, g, b, a};
         }
 
-        friend bool operator==(Color const&, Color const&) = default;
+        friend bool operator==(const Color&, const Color&) = default;
 
-        constexpr friend Color& operator*=(Color& lhs, Color const& rhs)
+        constexpr friend Color& operator*=(Color& lhs, const Color& rhs)
         {
             lhs.r *= rhs.r;
             lhs.g *= rhs.g;
@@ -187,14 +187,14 @@ namespace osc
             return lhs;
         }
 
-        constexpr friend Color operator*(Color const& lhs, Color const& rhs)
+        constexpr friend Color operator*(const Color& lhs, const Color& rhs)
         {
             Color copy{lhs};
             copy *= rhs;
             return copy;
         }
 
-        constexpr friend Color operator*(value_type lhs, Color const& rhs)
+        constexpr friend Color operator*(value_type lhs, const Color& rhs)
         {
             return Color {
                 lhs * rhs.r,
@@ -215,37 +215,37 @@ namespace osc
         value_type a{};
     };
 
-    std::ostream& operator<<(std::ostream&, Color const&);
+    std::ostream& operator<<(std::ostream&, const Color&);
 
     // returns the linear version of one (presumed to be) sRGB color channel value
-    float ToLinear(float colorChannelValue);
+    float toLinear(float colorChannelValue);
 
     // returns the linear version of one (presumed to be) linear color channel value
-    float ToSRGB(float colorChannelValue);
+    float toSRGB(float colorChannelValue);
 
     // returns the linear version of a (presumed to be) sRGB color
-    Color ToLinear(Color const&);
+    Color toLinear(const Color&);
 
     // returns a color that is the (presumed to be) linear color with the sRGB gamma curve applied
-    Color ToSRGB(Color const&);
+    Color toSRGB(const Color&);
 
     // returns a color that is clamped to the low-dynamic range (LDR, i.e. [0, 1])
-    Color ClampToLDR(Color const&);
+    Color clampToLDR(const Color&);
 
     // returns the HSL(A) equivalent of the given (RGBA) color
-    ColorHSLA ToHSLA(Color const&);
+    ColorHSLA toHSLA(const Color&);
 
     // returns the color (RGBA) equivalent of the given HSL color
-    Color ToColor(ColorHSLA const&);
+    Color toColor(const ColorHSLA&);
 
     // returns a Vec4 version of a Color
-    inline Vec4 ToVec4(Color const& c)
+    inline Vec4 toVec4(const Color& c)
     {
         return Vec4{c};
     }
 
     // returns a pointer to the first float element in the color
-    constexpr float const* value_ptr(Color const& color)
+    constexpr const float* value_ptr(const Color& color)
     {
         return &color.r;
     }
@@ -259,14 +259,14 @@ namespace osc
     // linearly interpolates between `a` and `b` by `t`
     //
     // `t` is clamped to [0.0f, 1.0f]. When `t` is 0, returns `a`. When `t` is 1, returns `b`
-    Color Lerp(Color const& a, Color const& b, float t);
+    Color lerp(const Color& a, const Color& b, float t);
 
     // float-/double-based inputs assume normalized color range (i.e. 0 to 1)
-    Color32 ToColor32(Color const&);
-    Color32 ToColor32(Vec4 const&);
-    Color32 ToColor32(float, float, float, float);
-    Color32 ToColor32(uint32_t);  // R at MSB
-    Color ToColor(Color32);
+    Color32 toColor32(const Color&);
+    Color32 toColor32(const Vec4&);
+    Color32 toColor32(float, float, float, float);
+    Color32 toColor32(uint32_t);  // R at MSB
+    Color toColor(Color32);
 
     // returns the color as a hexadecimal string in the format "#rrggbbaa", as
     // commonly-used in web applications, configuration files, etc.
@@ -279,17 +279,17 @@ namespace osc
     //   - black --> "#000000ff"
     //   - clear --> "#00000000"
     //   - etc.
-    std::string ToHtmlStringRGBA(Color const&);
-    std::optional<Color> TryParseHtmlString(std::string_view);
+    std::string toHtmlStringRGBA(const Color&);
+    std::optional<Color> tryParseHtmlString(std::string_view);
 
     // returns a color that is the result of converting the color to HSLA,
     // multiplying it's luminance (L) by `factor`, and converting it back to RGBA
-    Color MultiplyLuminance(Color const& color, float factor);
+    Color multiplyLuminance(const Color& color, float factor);
 
     // when handled as a tuple-like object, a `Color` decomposes into its channels (+alpha)
 
     template<size_t I>
-    constexpr float const& get(Color const& c) { return c[I]; }
+    constexpr const float& get(const Color& c) { return c[I]; }
 
     template<size_t I>
     constexpr float& get(Color& c) { return c[I]; }
@@ -298,7 +298,7 @@ namespace osc
     constexpr float&& get(Color&& c) { return std::move(c[I]); }
 
     template<size_t I>
-    constexpr float const&& get(Color const&& c) { return std::move(c[I]); }
+    constexpr const float&& get(const Color&& c) { return std::move(c[I]); }
 }
 
 // define compile-time size for Color (same as std::array, std::tuple, Vec, etc.)
@@ -315,5 +315,5 @@ struct std::tuple_element<I, osc::Color> {
 // define hashing function for colors
 template<>
 struct std::hash<osc::Color> final {
-    size_t operator()(osc::Color const&) const;
+    size_t operator()(const osc::Color&) const;
 };

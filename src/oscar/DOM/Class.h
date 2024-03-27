@@ -17,21 +17,21 @@ namespace osc
 
         Class(
             std::string_view className_,
-            Class const& parentClass_ = Class{},
-            std::span<PropertyInfo const> propertyList_ = std::span<PropertyInfo const>{}
+            const Class& parentClass_ = Class{},
+            std::span<const PropertyInfo> propertyList_ = std::span<const PropertyInfo>{}
         );
 
-        StringName const& getName() const;
+        const StringName& getName() const;
         std::optional<Class> getParentClass() const;
-        std::span<PropertyInfo const> getPropertyList() const;
-        std::optional<size_t> getPropertyIndex(StringName const& propertyName) const;
+        std::span<const PropertyInfo> getPropertyList() const;
+        std::optional<size_t> getPropertyIndex(const StringName& propertyName) const;
 
-        friend bool operator==(Class const&, Class const&);
+        friend bool operator==(const Class&, const Class&);
 
     private:
         class Impl;
-        std::shared_ptr<Impl const> m_Impl;
+        std::shared_ptr<const Impl> m_Impl;
     };
 
-    bool operator==(Class const&, Class const&);
+    bool operator==(const Class&, const Class&);
 }

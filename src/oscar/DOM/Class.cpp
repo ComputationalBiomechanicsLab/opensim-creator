@@ -21,7 +21,7 @@ using namespace osc;
 
 namespace
 {
-    StringName const& validateAsClassName(StringName const& s)
+    const StringName& validateAsClassName(const StringName& s)
     {
         if (IsValidIdentifier(s)) {
             return s;
@@ -34,7 +34,7 @@ namespace
     }
 
     template<std::copy_constructible T>
-    std::vector<T> concatIntoVector(std::span<T const> a, std::span<T const> b)
+    std::vector<T> concatIntoVector(std::span<const T> a, std::span<const T> b)
     {
         std::vector<T> rv;
         rv.reserve(a.size() + b.size());
@@ -44,7 +44,7 @@ namespace
     }
 
     std::unordered_map<StringName, size_t> createIndexLookupThrowIfDupesDetected(
-        std::span<PropertyInfo const> properties)
+        std::span<const PropertyInfo> properties)
     {
         std::unordered_map<StringName, size_t> rv;
         rv.reserve(properties.size());
@@ -66,8 +66,8 @@ public:
 
     Impl(
         std::string_view className_,
-        Class const& parentClass_,
-        std::span<PropertyInfo const> propertyList_) :
+        const Class& parentClass_,
+        std::span<const PropertyInfo> propertyList_) :
 
         m_ClassName{validateAsClassName(StringName{className_})},
         m_MaybeParentClass{parentClass_},
@@ -75,16 +75,16 @@ public:
         m_PropertyNameToPropertyListIndexMap{createIndexLookupThrowIfDupesDetected(m_PropertyList)}
     {}
 
-    StringName const& getName() const { return m_ClassName; }
+    const StringName& getName() const { return m_ClassName; }
     std::optional<Class> getParentClass() const { return m_MaybeParentClass; }
-    std::span<PropertyInfo const> getPropertyList() const { return m_PropertyList; }
+    std::span<const PropertyInfo> getPropertyList() const { return m_PropertyList; }
 
-    std::optional<size_t> getPropertyIndex(StringName const& propertyName) const
+    std::optional<size_t> getPropertyIndex(const StringName& propertyName) const
     {
         return find_or_optional(m_PropertyNameToPropertyListIndexMap, propertyName);
     }
 
-    friend bool operator==(Impl const&, Impl const&) = default;
+    friend bool operator==(const Impl&, const Impl&) = default;
 
 private:
     StringName m_ClassName{"Object"};
@@ -101,14 +101,14 @@ osc::Class::Class()
 
 osc::Class::Class(
     std::string_view className_,
-    Class const& parentClass_,
-    std::span<PropertyInfo const> propertyList_
+    const Class& parentClass_,
+    std::span<const PropertyInfo> propertyList_
 ) :
     m_Impl{std::make_shared<Impl>(className_, parentClass_, propertyList_)}
 {
 }
 
-StringName const& osc::Class::getName() const
+const StringName& osc::Class::getName() const
 {
     return m_Impl->getName();
 }
@@ -118,17 +118,17 @@ std::optional<Class> osc::Class::getParentClass() const
     return m_Impl->getParentClass();
 }
 
-std::span<PropertyInfo const> osc::Class::getPropertyList() const
+std::span<const PropertyInfo> osc::Class::getPropertyList() const
 {
     return m_Impl->getPropertyList();
 }
 
-std::optional<size_t> osc::Class::getPropertyIndex(StringName const& propertyName) const
+std::optional<size_t> osc::Class::getPropertyIndex(const StringName& propertyName) const
 {
     return m_Impl->getPropertyIndex(propertyName);
 }
 
-bool osc::operator==(Class const& a, Class const& b)
+bool osc::operator==(const Class& a, const Class& b)
 {
     return a.m_Impl == b.m_Impl || *a.m_Impl == *b.m_Impl;
 }

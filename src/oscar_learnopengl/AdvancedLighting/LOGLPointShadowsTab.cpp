@@ -141,7 +141,7 @@ private:
         // render (shadowmapping does not use the camera's view/projection matrices)
         Camera camera;
         for (SceneCube const& cube : m_SceneCubes) {
-            Graphics::DrawMesh(m_CubeMesh, cube.transform, m_ShadowMappingMaterial, camera);
+            graphics::drawMesh(m_CubeMesh, cube.transform, m_ShadowMappingMaterial, camera);
         }
         camera.renderTo(m_DepthTexture);
     }
@@ -161,13 +161,13 @@ private:
             MaterialPropertyBlock mpb;
             mpb.setBool("uReverseNormals", cube.invertNormals);
             material.setRenderTexture("uDepthMap", m_DepthTexture);
-            Graphics::DrawMesh(m_CubeMesh, cube.transform, material, m_SceneCamera, std::move(mpb));
+            graphics::drawMesh(m_CubeMesh, cube.transform, material, m_SceneCamera, std::move(mpb));
             material.clearRenderTexture("uDepthMap");
         }
 
         // also, draw the light as a little cube
         material.setBool("uShadows", m_ShowShadows);
-        Graphics::DrawMesh(m_CubeMesh, {.scale = Vec3{0.1f}, .position = m_LightPos}, material, m_SceneCamera);
+        graphics::drawMesh(m_CubeMesh, {.scale = Vec3{0.1f}, .position = m_LightPos}, material, m_SceneCamera);
 
         m_SceneCamera.setPixelRect(viewportRect);
         m_SceneCamera.renderToScreen();
@@ -203,7 +203,7 @@ private:
     }};
 
     MouseCapturingCamera m_SceneCamera = CreateCamera();
-    Texture2D m_WoodTexture = LoadTexture2DFromImage(
+    Texture2D m_WoodTexture = loadTexture2DFromImage(
         m_Loader.open("oscar_learnopengl/textures/wood.png"),
         ColorSpace::sRGB
     );

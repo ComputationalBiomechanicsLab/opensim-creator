@@ -247,10 +247,10 @@ namespace osc::ui
     ImU32 ToImU32(Color const&);
 
     // returns a `Color` converted from the given LDR 8-bit `ImU32` format
-    Color ToColor(ImU32);
+    Color toColor(ImU32);
 
     // returns a `Color` converted from the given LDR `ImVec4` color
-    Color ToColor(ImVec4 const&);
+    Color toColor(ImVec4 const&);
 
     // returns an `ImVec4` converted from the given `Color`
     ImVec4 ToImVec4(Color const&);

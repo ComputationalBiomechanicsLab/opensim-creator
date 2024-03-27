@@ -55,13 +55,13 @@ namespace
     Material CreateMultipleLightsMaterial(
         IResourceLoader& rl)
     {
-        Texture2D diffuseMap = LoadTexture2DFromImage(
+        Texture2D diffuseMap = loadTexture2DFromImage(
             rl.open("oscar_learnopengl/textures/container2.png"),
             ColorSpace::sRGB,
             ImageLoadingFlags::FlipVertically
         );
 
-        Texture2D specularMap = LoadTexture2DFromImage(
+        Texture2D specularMap = loadTexture2DFromImage(
             rl.open("oscar_learnopengl/textures/container2_specular.png"),
             ColorSpace::sRGB,
             ImageLoadingFlags::FlipVertically
@@ -155,7 +155,7 @@ private:
             Vec3 const& pos = c_CubePositions[i];
             auto const angle = i++ * 20_deg;
 
-            Graphics::DrawMesh(
+            graphics::drawMesh(
                 m_Mesh,
                 {.rotation = angle_axis(angle, axis), .position = pos},
                 m_MultipleLightsMaterial,
@@ -165,7 +165,7 @@ private:
 
         // render lamps
         for (Vec3 const& pos : c_PointLightPositions) {
-            Graphics::DrawMesh(m_Mesh, {.scale = Vec3{0.2f}, .position = pos}, m_LightCubeMaterial, m_Camera);
+            graphics::drawMesh(m_Mesh, {.scale = Vec3{0.2f}, .position = pos}, m_LightCubeMaterial, m_Camera);
         }
 
         // render to output (window)

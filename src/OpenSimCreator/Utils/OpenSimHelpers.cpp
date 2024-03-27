@@ -1157,7 +1157,7 @@ bool osc::TrySetAppearancePropertyIsVisibleTo(OpenSim::Component& c, bool v)
     }
 }
 
-Color osc::ToColor(OpenSim::Appearance const& appearance)
+Color osc::toColor(OpenSim::Appearance const& appearance)
 {
     SimTK::Vec3 const& rgb = appearance.get_color();
     double const a = appearance.get_opacity();
@@ -1175,7 +1175,7 @@ Color osc::GetSuggestedBoneColor()
 {
     Color usualDefault = {232.0f / 255.0f, 216.0f / 255.0f, 200.0f/255.0f, 1.0f};
     float brightenAmount = 0.1f;
-    return Lerp(usualDefault, Color::white(), brightenAmount);
+    return lerp(usualDefault, Color::white(), brightenAmount);
 }
 
 bool osc::IsShowingFrames(OpenSim::Model const& model)

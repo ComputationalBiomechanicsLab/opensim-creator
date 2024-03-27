@@ -31,7 +31,7 @@ namespace
     inline constexpr int c_StbFalse = 0;
 
     // this mutex is required because stbi has global mutable state (e.g. stbi_set_flip_vertically_on_load)
-    auto LockStbiAPI()
+    auto lockStbiAPI()
     {
         static std::mutex s_StbiMutex;
         return std::lock_guard{s_StbiMutex};
@@ -65,59 +65,52 @@ namespace
         }
     };
 
-    Texture2D Load32BitTexture(
+    Texture2D load32BitTexture(
         std::istream& in,
         std::string_view name,
         ColorSpace colorSpace,
         ImageLoadingFlags flags)
     {
-        auto const guard = LockStbiAPI();
+        const auto guard = lockStbiAPI();
 
-        if (flags & ImageLoadingFlags::FlipVertically)
-        {
+        if (flags & ImageLoadingFlags::FlipVertically) {
             stbi_set_flip_vertically_on_load(c_StbTrue);
         }
 
         Vec2i dims{};
         int numChannels = 0;
-        std::unique_ptr<float, decltype(&stbi_image_free)> const pixels =
-        {
+        const std::unique_ptr<float, decltype(&stbi_image_free)> pixels = {
             stbi_loadf_from_callbacks(&c_StbiIStreamCallbacks, &in, &dims.x, &dims.y, &numChannels, 0),
             stbi_image_free,
         };
 
-        if (flags & ImageLoadingFlags::FlipVertically)
-        {
+        if (flags & ImageLoadingFlags::FlipVertically) {
             stbi_set_flip_vertically_on_load(c_StbFalse);
         }
 
-        if (!pixels)
-        {
+        if (!pixels) {
             std::stringstream ss;
             ss << name << ": error loading HDR image: " << stbi_failure_reason();
             throw std::runtime_error{std::move(ss).str()};
         }
 
-        std::optional<TextureFormat> const format = ToTextureFormat(
+        const std::optional<TextureFormat> format = ToTextureFormat(
             static_cast<size_t>(numChannels),
             TextureChannelFormat::Float32
         );
 
-        if (!format)
-        {
+        if (!format) {
             std::stringstream ss;
             ss << name << ": error loading HDR image: no TextureFormat exists for " << numChannels << " floating-point channel images";
             throw std::runtime_error{std::move(ss).str()};
         }
 
-        std::span<float const> const pixelSpan
-        {
+        const std::span<const float> pixelSpan{
             pixels.get(),
             static_cast<size_t>(dims.x*dims.y*numChannels)
         };
 
-        Texture2D rv
-        {
+        Texture2D rv{
             dims,
             *format,
             colorSpace,
@@ -127,53 +120,47 @@ namespace
         return rv;
     }
 
-    Texture2D Load8BitTexture(
+    Texture2D load8BitTexture(
         std::istream& in,
         std::string_view name,
         ColorSpace colorSpace,
         ImageLoadingFlags flags)
     {
-        auto const guard = LockStbiAPI();
+        const auto guard = lockStbiAPI();
 
-        if (flags & ImageLoadingFlags::FlipVertically)
-        {
+        if (flags & ImageLoadingFlags::FlipVertically) {
             stbi_set_flip_vertically_on_load(c_StbTrue);
         }
 
         Vec2i dims{};
         int numChannels = 0;
-        std::unique_ptr<stbi_uc, decltype(&stbi_image_free)> const pixels =
-        {
+        const std::unique_ptr<stbi_uc, decltype(&stbi_image_free)> pixels = {
             stbi_load_from_callbacks(&c_StbiIStreamCallbacks, &in, &dims.x, &dims.y, &numChannels, 0),
             stbi_image_free,
         };
 
-        if (flags & ImageLoadingFlags::FlipVertically)
-        {
+        if (flags & ImageLoadingFlags::FlipVertically) {
             stbi_set_flip_vertically_on_load(c_StbFalse);
         }
 
-        if (!pixels)
-        {
+        if (!pixels) {
             std::stringstream ss;
             ss << name  << ": error loading non-HDR image: " << stbi_failure_reason();
             throw std::runtime_error{std::move(ss).str()};
         }
 
-        std::optional<TextureFormat> const format = ToTextureFormat(
+        const std::optional<TextureFormat> format = ToTextureFormat(
             static_cast<size_t>(numChannels),
             TextureChannelFormat::Uint8
         );
 
-        if (!format)
-        {
+        if (!format) {
             std::stringstream ss;
             ss << name << ": error loading non-HDR image: no TextureFormat exists for " << numChannels << " 8-bit channel images";
             throw std::runtime_error{std::move(ss).str()};
         }
 
-        Texture2D rv
-        {
+        Texture2D rv{
             dims,
             *format,
             colorSpace,
@@ -182,46 +169,46 @@ namespace
         return rv;
     }
 
-    void StbiWriteToOStream(void* context, void* data, int size)
+    void stbiWriteToStdOstream(void* context, void* data, int size)
     {
         std::ostream& out = *reinterpret_cast<std::ostream*>(context);
         if (size > 0) {
-            out.write(std::launder(reinterpret_cast<char const*>(data)), std::streamsize{size});
+            out.write(std::launder(reinterpret_cast<const char*>(data)), std::streamsize{size});
         }
     }
 }
 
-Texture2D osc::LoadTexture2DFromImage(
+Texture2D osc::loadTexture2DFromImage(
     std::istream& in,
     std::string_view name,
     ColorSpace colorSpace,
     ImageLoadingFlags flags)
 {
     // test whether file content is HDR or not
-    auto const originalPos = in.tellg();
-    bool const isHDR = stbi_is_hdr_from_callbacks(&c_StbiIStreamCallbacks, &in) != 0;
+    const auto originalPos = in.tellg();
+    const bool isHDR = stbi_is_hdr_from_callbacks(&c_StbiIStreamCallbacks, &in) != 0;
     in.seekg(originalPos);  // rewind, before reading content
 
     OSC_ASSERT(in.tellg() == originalPos);
 
     return isHDR ?
-        Load32BitTexture(in, name, colorSpace, flags) :
-        Load8BitTexture(in, name, colorSpace, flags);
+        load32BitTexture(in, name, colorSpace, flags) :
+        load8BitTexture(in, name, colorSpace, flags);
 }
 
-void osc::WriteToPNG(
-    Texture2D const& tex,
+void osc::writeToPNG(
+    const Texture2D& tex,
     std::ostream& out)
 {
-    Vec2i const dims = tex.getDimensions();
-    int const stride = 4 * dims.x;
-    std::vector<Color32> const pixels = tex.getPixels32();
+    const Vec2i dims = tex.getDimensions();
+    const int stride = 4 * dims.x;
+    const std::vector<Color32> pixels = tex.getPixels32();
 
-    auto const guard = LockStbiAPI();
+    const auto guard = lockStbiAPI();
 
     stbi_flip_vertically_on_write(c_StbTrue);
-    int const rv = stbi_write_png_to_func(
-        StbiWriteToOStream,
+    const int rv = stbi_write_png_to_func(
+        stbiWriteToStdOstream,
         &out,
         dims.x,
         dims.y,

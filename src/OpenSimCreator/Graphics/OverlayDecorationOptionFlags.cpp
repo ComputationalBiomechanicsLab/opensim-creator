@@ -14,21 +14,21 @@ namespace
             "show_xz_grid",
             "XZ Grid",
             OverlayDecorationOptionGroup::Alignment,
-            OverlayDecorationOptionFlags::DrawXZGrid,
+            OverlayDecorationOptionFlags::drawXZGrid,
         },
         OverlayDecorationOptionFlagsMetadata
         {
             "show_xy_grid",
             "XY Grid",
             OverlayDecorationOptionGroup::Alignment,
-            OverlayDecorationOptionFlags::DrawXYGrid,
+            OverlayDecorationOptionFlags::drawXYGrid,
         },
         OverlayDecorationOptionFlagsMetadata
         {
             "show_yz_grid",
             "YZ Grid",
             OverlayDecorationOptionGroup::Alignment,
-            OverlayDecorationOptionFlags::DrawYZGrid,
+            OverlayDecorationOptionFlags::drawYZGrid,
         },
         OverlayDecorationOptionFlagsMetadata
         {
@@ -42,14 +42,14 @@ namespace
             "show_aabbs",
             "AABBs",
             OverlayDecorationOptionGroup::Development,
-            OverlayDecorationOptionFlags::DrawAABBs,
+            OverlayDecorationOptionFlags::drawAABBs,
         },
         OverlayDecorationOptionFlagsMetadata
         {
             "show_bvh",
             "BVH",
             OverlayDecorationOptionGroup::Development,
-            OverlayDecorationOptionFlags::DrawBVH,
+            OverlayDecorationOptionFlags::drawBVH,
         },
     });
 }

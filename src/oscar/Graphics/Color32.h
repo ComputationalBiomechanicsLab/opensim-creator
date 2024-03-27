@@ -16,9 +16,9 @@ namespace osc
 
         using value_type = Unorm8;
         using reference = value_type&;
-        using const_reference = value_type const&;
+        using const_reference = const value_type&;
         using size_type = size_t;
-        using const_iterator = value_type const*;
+        using const_iterator = const value_type*;
 
         static constexpr size_type length()
         {
@@ -52,7 +52,7 @@ namespace osc
             return &r + length();
         }
 
-        friend bool operator==(Color32 const&, Color32 const&) = default;
+        friend bool operator==(const Color32&, const Color32&) = default;
 
         Unorm8 r{};
         Unorm8 g{};
@@ -61,7 +61,7 @@ namespace osc
     };
 
     template<std::integral T>
-    T to_integer(Color32 const& color32)
+    T to_integer(const Color32& color32)
     {
         return cpp20::bit_cast<T>(color32);
     }
@@ -69,7 +69,7 @@ namespace osc
 
 template<>
 struct std::hash<osc::Color32> final {
-    size_t operator()(osc::Color32 const& color32) const
+    size_t operator()(const osc::Color32& color32) const
     {
         return std::hash<uint32_t>{}(to_integer<uint32_t>(color32));
     }

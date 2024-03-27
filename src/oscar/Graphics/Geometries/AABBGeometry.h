@@ -7,10 +7,10 @@ namespace osc
 {
     class AABBGeometry final {
     public:
-        AABBGeometry(AABB const& = {.min = {-1.0f, -1.0f, -1.0f}, .max = {1.0f, 1.0f, 1.0f}});
+        AABBGeometry(const AABB& = {.min = {-1.0f, -1.0f, -1.0f}, .max = {1.0f, 1.0f, 1.0f}});
 
-        Mesh const& mesh() const { return m_Mesh; }
-        operator Mesh const& () const { return m_Mesh; }
+        const Mesh& mesh() const { return m_Mesh; }
+        operator const Mesh& () const { return m_Mesh; }
     private:
         Mesh m_Mesh;
     };

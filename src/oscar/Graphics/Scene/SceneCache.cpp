@@ -33,10 +33,9 @@ namespace
 
             torusCenterToTubeCenterRadius{torusCenterToTubeCenterRadius_},
             tubeRadius{tubeRadius_}
-        {
-        }
+        {}
 
-        friend bool operator==(TorusParameters const&, TorusParameters const&) = default;
+        friend bool operator==(const TorusParameters&, const TorusParameters&) = default;
 
         float torusCenterToTubeCenterRadius;
         float tubeRadius;
@@ -63,7 +62,7 @@ namespace
             fragmentShaderPath{std::move(fragmentShaderPath_)}
         {}
 
-        friend bool operator==(ShaderInputs const&, ShaderInputs const&) = default;
+        friend bool operator==(const ShaderInputs&, const ShaderInputs&) = default;
 
         ResourcePath vertexShaderPath;
         ResourcePath geometryShaderPath;
@@ -72,7 +71,7 @@ namespace
         size_t hash = HashOf(vertexShaderPath, geometryShaderPath, fragmentShaderPath);
     };
 
-    Mesh GenerateYToYLineMesh()
+    Mesh generateYToYLineMesh()
     {
         Mesh rv;
         rv.setTopology(MeshTopology::Lines);
@@ -86,7 +85,7 @@ namespace
 template<>
 struct std::hash<ShaderInputs> final {
 
-    size_t operator()(ShaderInputs const& inputs) const
+    size_t operator()(const ShaderInputs& inputs) const
     {
         return inputs.hash;
     }
@@ -94,7 +93,7 @@ struct std::hash<ShaderInputs> final {
 
 template<>
 struct std::hash<TorusParameters> final {
-    size_t operator()(TorusParameters const& p) const
+    size_t operator()(const TorusParameters& p) const
     {
         return HashOf(p.torusCenterToTubeCenterRadius, p.tubeRadius);
     }
@@ -110,55 +109,51 @@ public:
         m_Loader{std::move(resourceLoader_)}
     {}
 
-    Shader const& load(
-        ResourcePath const& vertexShader,
-        ResourcePath const& fragmentShader)
+    const Shader& load(
+        const ResourcePath& vertexShader,
+        const ResourcePath& fragmentShader)
     {
-        ShaderInputs const key{vertexShader, fragmentShader};
+        const ShaderInputs key{vertexShader, fragmentShader};
 
         auto guard = m_Cache.lock();
-        auto const it = guard->find(key);
-        if (it != guard->end())
-        {
+        const auto it = guard->find(key);
+        if (it != guard->end()) {
             return it->second;
         }
-        else
-        {
-            std::string const vertexShaderSrc = m_Loader.slurp(key.vertexShaderPath);
-            std::string const fragmentShaderSrc = m_Loader.slurp(key.fragmentShaderPath);
+        else {
+            const std::string vertexShaderSrc = m_Loader.slurp(key.vertexShaderPath);
+            const std::string fragmentShaderSrc = m_Loader.slurp(key.fragmentShaderPath);
             return guard->emplace_hint(it, key, Shader{vertexShaderSrc, fragmentShaderSrc})->second;
         }
     }
-    Shader const& load(
-        ResourcePath const& vertexShader,
-        ResourcePath const& geometryShader,
-        ResourcePath const& fragmentShader)
+    const Shader& load(
+        const ResourcePath& vertexShader,
+        const ResourcePath& geometryShader,
+        const ResourcePath& fragmentShader)
     {
-        ShaderInputs const key{vertexShader, geometryShader, fragmentShader};
+        const ShaderInputs key{vertexShader, geometryShader, fragmentShader};
 
         auto guard = m_Cache.lock();
-        auto const it = guard->find(key);
-        if (it != guard->end())
-        {
+        const auto it = guard->find(key);
+        if (it != guard->end()) {
             return it->second;
         }
-        else
-        {
-            std::string const vertexShaderSrc = m_Loader.slurp(key.vertexShaderPath);
-            std::string const geometryShaderSrc = m_Loader.slurp(key.geometryShaderPath);
-            std::string const fragmentShaderSrc = m_Loader.slurp(key.fragmentShaderPath);
+        else {
+            const std::string vertexShaderSrc = m_Loader.slurp(key.vertexShaderPath);
+            const std::string geometryShaderSrc = m_Loader.slurp(key.geometryShaderPath);
+            const std::string fragmentShaderSrc = m_Loader.slurp(key.fragmentShaderPath);
             return guard->emplace_hint(it, key, Shader{vertexShaderSrc, geometryShaderSrc, fragmentShaderSrc})->second;
         }
     }
 
-    MeshBasicMaterial const& basicMaterial()
+    const MeshBasicMaterial& basicMaterial()
     {
         return m_BasicMaterial.emplace();
     }
 
-    MeshBasicMaterial const& wireframeMaterial()
+    const MeshBasicMaterial& wireframeMaterial()
     {
-        if (!m_WireframeMaterial) {
+        if (not m_WireframeMaterial) {
             m_WireframeMaterial.emplace();
             m_WireframeMaterial->setColor({0.0f, 0.6f});
             m_WireframeMaterial->setWireframeMode(true);
@@ -176,7 +171,7 @@ public:
     Mesh floor = PlaneGeometry{2.0f, 2.0f, 1, 1};
     Mesh grid100x100 = GridGeometry{2.0f, 1000};
     Mesh cubeWire = AABBGeometry{};
-    Mesh yLine = GenerateYToYLineMesh();
+    Mesh yLine = generateYToYLineMesh();
     Mesh texturedQuad = floor;
 
     SynchronizedValue<std::unordered_map<TorusParameters, Mesh>> torusCache;
@@ -194,7 +189,7 @@ osc::SceneCache::SceneCache() :
     m_Impl{std::make_unique<Impl>()}
 {}
 
-osc::SceneCache::SceneCache(ResourceLoader const& loader_) :
+osc::SceneCache::SceneCache(const ResourceLoader& loader_) :
     m_Impl{std::make_unique<Impl>(loader_)}
 {}
 
@@ -210,21 +205,17 @@ void osc::SceneCache::clearMeshes()
 }
 
 Mesh osc::SceneCache::get(
-    std::string const& key,
-    std::function<Mesh()> const& getter)
+    const std::string& key,
+    const std::function<Mesh()>& getter)
 {
     auto guard = m_Impl->fileCache.lock();
 
     auto [it, inserted] = guard->try_emplace(key, m_Impl->cube);
-
-    if (inserted)
-    {
-        try
-        {
+    if (inserted) {
+        try {
             it->second = getter();
         }
-        catch (std::exception const& ex)
-        {
+        catch (const std::exception& ex) {
             log_error("%s: error getting a mesh via a getter: it will be replaced with a dummy cube: %s", key.c_str(), ex.what());
         }
     }
@@ -289,51 +280,48 @@ Mesh osc::SceneCache::getTexturedQuadMesh()
 
 Mesh osc::SceneCache::getTorusMesh(float torusCenterToTubeCenterRadius, float tubeRadius)
 {
-    TorusParameters const key{torusCenterToTubeCenterRadius, tubeRadius};
+    const TorusParameters key{torusCenterToTubeCenterRadius, tubeRadius};
 
     auto guard = m_Impl->torusCache.lock();
     auto [it, inserted] = guard->try_emplace(key, m_Impl->cube);
-
-    if (inserted)
-    {
+    if (inserted) {
         it->second = TorusGeometry{key.torusCenterToTubeCenterRadius, key.tubeRadius, 12, 12, Degrees{360}};
     }
 
     return it->second;
 }
 
-BVH const& osc::SceneCache::getBVH(Mesh const& mesh)
+const BVH& osc::SceneCache::getBVH(const Mesh& mesh)
 {
     auto guard = m_Impl->bvhCache.lock();
     auto [it, inserted] = guard->try_emplace(mesh, nullptr);
-    if (inserted)
-    {
-        it->second = std::make_unique<BVH>(CreateTriangleBVHFromMesh(mesh));
+    if (inserted) {
+        it->second = std::make_unique<BVH>(createTriangleBVHFromMesh(mesh));
     }
     return *it->second;
 }
 
-Shader const& osc::SceneCache::getShaderResource(
-    ResourcePath const& vertexShader,
-    ResourcePath const& fragmentShader)
+const Shader& osc::SceneCache::getShaderResource(
+    const ResourcePath& vertexShader,
+    const ResourcePath& fragmentShader)
 {
     return m_Impl->load(vertexShader, fragmentShader);
 }
 
-Shader const& osc::SceneCache::getShaderResource(
-    ResourcePath const& vertexShader,
-    ResourcePath const& geometryShader,
-    ResourcePath const& fragmentShader)
+const Shader& osc::SceneCache::getShaderResource(
+    const ResourcePath& vertexShader,
+    const ResourcePath& geometryShader,
+    const ResourcePath& fragmentShader)
 {
     return m_Impl->load(vertexShader, geometryShader, fragmentShader);
 }
 
-MeshBasicMaterial const& osc::SceneCache::basicMaterial()
+const MeshBasicMaterial& osc::SceneCache::basicMaterial()
 {
     return m_Impl->basicMaterial();
 }
 
-MeshBasicMaterial const& osc::SceneCache::wireframeMaterial()
+const MeshBasicMaterial& osc::SceneCache::wireframeMaterial()
 {
     return m_Impl->wireframeMaterial();
 }

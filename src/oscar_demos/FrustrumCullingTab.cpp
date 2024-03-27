@@ -99,7 +99,7 @@ private:
         float const xmid = midpoint(viewport.p1.x, viewport.p2.x);
         Rect const lhs = {viewport.p1, {xmid, viewport.p2.y}};
         Rect const rhs = {{xmid, viewport.p1.y}, viewport.p2};
-        FrustumPlanes const frustum = CalcCameraFrustumPlanes(m_UserCamera, aspect_ratio(lhs));
+        FrustumPlanes const frustum = calcCameraFrustumPlanes(m_UserCamera, aspect_ratio(lhs));
 
         m_UserCamera.onDraw();  // update from inputs etc.
 
@@ -107,7 +107,7 @@ private:
         for (auto const& dec : m_Decorations) {
             AABB const aabb = transform_aabb(dec.transform, dec.mesh.getBounds());
             if (is_intersecting(frustum, aabb)) {
-                Graphics::DrawMesh(dec.mesh, dec.transform, m_Material, m_UserCamera, m_BlueMaterialProps);
+                graphics::drawMesh(dec.mesh, dec.transform, m_Material, m_UserCamera, m_BlueMaterialProps);
             }
         }
         m_UserCamera.setPixelRect(lhs);
@@ -117,9 +117,9 @@ private:
         for (auto const& dec : m_Decorations) {
             AABB const aabb = transform_aabb(dec.transform, dec.mesh.getBounds());
             auto const& props = is_intersecting(frustum, aabb) ? m_BlueMaterialProps : m_RedMaterialProps;
-            Graphics::DrawMesh(dec.mesh, dec.transform, m_Material, m_TopDownCamera, props);
+            graphics::drawMesh(dec.mesh, dec.transform, m_Material, m_TopDownCamera, props);
         }
-        Graphics::DrawMesh(
+        graphics::drawMesh(
             SphereGeometry{},
             {.scale = Vec3{0.1f}, .position = m_UserCamera.getPosition()},
             m_Material,

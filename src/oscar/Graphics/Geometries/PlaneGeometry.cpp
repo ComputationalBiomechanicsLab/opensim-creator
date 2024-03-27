@@ -14,14 +14,14 @@ osc::PlaneGeometry::PlaneGeometry(
     size_t widthSegments,
     size_t heightSegments)
 {
-    float const halfWidth = width/2.0f;
-    float const halfHeight = height/2.0f;
-    size_t const gridX = widthSegments;
-    size_t const gridY = heightSegments;
-    size_t const gridX1 = gridX + 1;
-    size_t const gridY1 = gridY + 1;
-    float const segmentWidth = width / static_cast<float>(gridX);
-    float const segmentHeight = height / static_cast<float>(gridY);
+    const float halfWidth = width/2.0f;
+    const float halfHeight = height/2.0f;
+    const size_t gridX = widthSegments;
+    const size_t gridY = heightSegments;
+    const size_t gridX1 = gridX + 1;
+    const size_t gridY1 = gridY + 1;
+    const float segmentWidth = width / static_cast<float>(gridX);
+    const float segmentHeight = height / static_cast<float>(gridY);
 
     std::vector<uint32_t> indices;
     std::vector<Vec3> vertices;
@@ -30,9 +30,9 @@ osc::PlaneGeometry::PlaneGeometry(
 
     // generate vertices, normals, and uvs
     for (size_t iy = 0; iy < gridY1; ++iy) {
-        float const y = static_cast<float>(iy) * segmentHeight - halfHeight;
+        const float y = static_cast<float>(iy) * segmentHeight - halfHeight;
         for (size_t ix = 0; ix < gridX1; ++ix) {
-            float const x = static_cast<float>(ix) * segmentWidth - halfWidth;
+            const float x = static_cast<float>(ix) * segmentWidth - halfWidth;
 
             vertices.emplace_back(x, -y, 0.0f);
             normals.emplace_back(0.0f, 0.0f, 1.0f);
@@ -45,10 +45,10 @@ osc::PlaneGeometry::PlaneGeometry(
 
     for (size_t iy = 0; iy < gridY; ++iy) {
         for (size_t ix = 0; ix < gridX; ++ix) {
-            auto const a = static_cast<uint32_t>((ix + 0) + gridX1*(iy + 0));
-            auto const b = static_cast<uint32_t>((ix + 0) + gridX1*(iy + 1));
-            auto const c = static_cast<uint32_t>((ix + 1) + gridX1*(iy + 1));
-            auto const d = static_cast<uint32_t>((ix + 1) + gridX1*(iy + 0));
+            const auto a = static_cast<uint32_t>((ix + 0) + gridX1*(iy + 0));
+            const auto b = static_cast<uint32_t>((ix + 0) + gridX1*(iy + 1));
+            const auto c = static_cast<uint32_t>((ix + 1) + gridX1*(iy + 1));
+            const auto d = static_cast<uint32_t>((ix + 1) + gridX1*(iy + 0));
             indices.insert(indices.end(), {a, b, d});
             indices.insert(indices.end(), {b, c, d});
         }

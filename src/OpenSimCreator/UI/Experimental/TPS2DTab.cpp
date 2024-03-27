@@ -414,8 +414,8 @@ private:
         RenderTextureDescriptor desc{dims};
         desc.setAntialiasingLevel(App::get().getCurrentAntiAliasingLevel());
         out.emplace(desc);
-        Graphics::DrawMesh(mesh, identity<Transform>(), m_Material, m_Camera);
-        Graphics::DrawMesh(mesh, identity<Transform>(), m_WireframeMaterial, m_Camera);
+        graphics::drawMesh(mesh, identity<Transform>(), m_Material, m_Camera);
+        graphics::drawMesh(mesh, identity<Transform>(), m_WireframeMaterial, m_Camera);
 
         OSC_ASSERT(out.has_value());
         m_Camera.renderTo(*out);
@@ -506,7 +506,7 @@ private:
     float m_BlendingFactor = 1.0f;
 
     // GUI state (rendering, colors, etc.)
-    Texture2D m_BoxTexture = LoadTexture2DFromImage(
+    Texture2D m_BoxTexture = loadTexture2DFromImage(
         m_Loader.open("textures/container.jpg"),
         ColorSpace::sRGB
     );

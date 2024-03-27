@@ -96,17 +96,17 @@ private:
         {
             // cubes
             m_SceneRenderMaterial.setTexture("uTexture1", m_ContainerTexture);
-            Graphics::DrawMesh(m_CubeMesh, {.position = {-1.0f, 0.0f, -1.0f}}, m_SceneRenderMaterial, m_SceneCamera);
-            Graphics::DrawMesh(m_CubeMesh, {.position = { 1.0f, 0.0f, -1.0f}}, m_SceneRenderMaterial, m_SceneCamera);
+            graphics::drawMesh(m_CubeMesh, {.position = {-1.0f, 0.0f, -1.0f}}, m_SceneRenderMaterial, m_SceneCamera);
+            graphics::drawMesh(m_CubeMesh, {.position = { 1.0f, 0.0f, -1.0f}}, m_SceneRenderMaterial, m_SceneCamera);
 
             // floor
             m_SceneRenderMaterial.setTexture("uTexture1", m_MetalTexture);
-            Graphics::DrawMesh(m_PlaneMesh, identity<Transform>(), m_SceneRenderMaterial, m_SceneCamera);
+            graphics::drawMesh(m_PlaneMesh, identity<Transform>(), m_SceneRenderMaterial, m_SceneCamera);
         }
         m_SceneCamera.renderTo(m_RenderTexture);
 
         // render via a effect sampler
-        Graphics::BlitToScreen(m_RenderTexture, viewportRect, m_ScreenMaterial);
+        graphics::blitToScreen(m_RenderTexture, viewportRect, m_ScreenMaterial);
 
         // auxiliary UI
         m_LogViewer.onDraw();
@@ -122,11 +122,11 @@ private:
 
     MouseCapturingCamera m_SceneCamera = CreateSceneCamera();
 
-    Texture2D m_ContainerTexture = LoadTexture2DFromImage(
+    Texture2D m_ContainerTexture = loadTexture2DFromImage(
         m_Loader.open("oscar_learnopengl/textures/container.jpg"),
         ColorSpace::sRGB
     );
-    Texture2D m_MetalTexture = LoadTexture2DFromImage(
+    Texture2D m_MetalTexture = loadTexture2DFromImage(
         m_Loader.open("oscar_learnopengl/textures/metal.png"),
         ColorSpace::sRGB
     );

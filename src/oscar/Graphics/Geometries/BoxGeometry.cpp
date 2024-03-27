@@ -37,7 +37,7 @@ osc::BoxGeometry::BoxGeometry(
     size_t groupStart = 0;
 
     // helper function
-    auto const buildPlane = [&indices, &vertices, &normals, &uvs, &submeshes, &numberOfVertices, &groupStart](
+    const auto buildPlane = [&indices, &vertices, &normals, &uvs, &submeshes, &numberOfVertices, &groupStart](
         Vec3::size_type u,
         Vec3::size_type v,
         Vec3::size_type w,
@@ -47,24 +47,24 @@ osc::BoxGeometry::BoxGeometry(
         size_t gridX,
         size_t gridY)
     {
-        float const segmentWidth = dims.x / static_cast<float>(gridX);
-        float const segmentHeight = dims.y / static_cast<float>(gridY);
+        const float segmentWidth = dims.x / static_cast<float>(gridX);
+        const float segmentHeight = dims.y / static_cast<float>(gridY);
 
-        float const widthHalf = 0.5f * dims.x;
-        float const heightHalf = 0.5f * dims.y;
-        float const depthHalf = 0.5f * dims.z;
+        const float widthHalf = 0.5f * dims.x;
+        const float heightHalf = 0.5f * dims.y;
+        const float depthHalf = 0.5f * dims.z;
 
-        size_t const gridX1 = gridX + 1;
-        size_t const gridY1 = gridY + 1;
+        const size_t gridX1 = gridX + 1;
+        const size_t gridY1 = gridY + 1;
 
         size_t vertexCount = 0;
         size_t groupCount = 0;
 
         // generate vertices, normals, and UVs
         for (size_t iy = 0; iy < gridY1; ++iy) {
-            float const y = static_cast<float>(iy)*segmentHeight - heightHalf;
+            const float y = static_cast<float>(iy)*segmentHeight - heightHalf;
             for (size_t ix = 0; ix < gridX1; ++ix) {
-                float const x = static_cast<float>(ix)*segmentWidth - widthHalf;
+                const float x = static_cast<float>(ix)*segmentWidth - widthHalf;
 
                 Vec3 vertex{};
                 vertex[u] = x*udir;
@@ -87,10 +87,10 @@ osc::BoxGeometry::BoxGeometry(
         // indices (two triangles, or 6 indices, per segment)
         for (size_t iy = 0; iy < gridY; ++iy) {
             for (size_t ix = 0; ix < gridX; ++ix) {
-                auto const a = static_cast<uint32_t>(numberOfVertices +  ix      + (gridX1 *  iy     ));
-                auto const b = static_cast<uint32_t>(numberOfVertices +  ix      + (gridX1 * (iy + 1)));
-                auto const c = static_cast<uint32_t>(numberOfVertices + (ix + 1) + (gridX1 * (iy + 1)));
-                auto const d = static_cast<uint32_t>(numberOfVertices + (ix + 1) + (gridX1 *  iy     ));
+                const auto a = static_cast<uint32_t>(numberOfVertices +  ix      + (gridX1 *  iy     ));
+                const auto b = static_cast<uint32_t>(numberOfVertices +  ix      + (gridX1 * (iy + 1)));
+                const auto c = static_cast<uint32_t>(numberOfVertices + (ix + 1) + (gridX1 * (iy + 1)));
+                const auto d = static_cast<uint32_t>(numberOfVertices + (ix + 1) + (gridX1 *  iy     ));
 
                 indices.insert(indices.end(), {a, b, d});
                 indices.insert(indices.end(), {b, c, d});

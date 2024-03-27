@@ -31,7 +31,7 @@ namespace osc
         void reset();
 
         Color getBackgroundColor() const;
-        void setBackgroundColor(Color const&);
+        void setBackgroundColor(const Color&);
 
         CameraProjection getCameraProjection() const;
         void setCameraProjection(CameraProjection);
@@ -72,18 +72,18 @@ namespace osc
         void setScissorRect(std::optional<Rect>);
 
         Vec3 getPosition() const;
-        void setPosition(Vec3 const&);
+        void setPosition(const Vec3&);
 
         // get rotation (from the assumed "default" rotation of the camera pointing towards -Z, Y is up)
         Quat getRotation() const;
-        void setRotation(Quat const&);
+        void setRotation(const Quat&);
 
         // careful: the camera doesn't *store* a direction vector - it assumes the direction is along -Z,
         // and that +Y is "upwards" and figures out how to rotate from that to your desired direction
         //
         // if you want to "roll" the camera (i.e. Y isn't upwards) then use `setRotation`
         Vec3 getDirection() const;
-        void setDirection(Vec3 const&);
+        void setDirection(const Vec3&);
 
         Vec3 getUpwardsDirection() const;
 
@@ -123,14 +123,14 @@ namespace osc
         }
 
     private:
-        friend bool operator==(Camera const&, Camera const&);
-        friend std::ostream& operator<<(std::ostream&, Camera const&);
+        friend bool operator==(const Camera&, const Camera&);
+        friend std::ostream& operator<<(std::ostream&, const Camera&);
         friend class GraphicsBackend;
 
         class Impl;
         CopyOnUpdPtr<Impl> m_Impl;
     };
 
-    bool operator==(Camera const&, Camera const&);
-    std::ostream& operator<<(std::ostream&, Camera const&);
+    bool operator==(const Camera&, const Camera&);
+    std::ostream& operator<<(std::ostream&, const Camera&);
 }

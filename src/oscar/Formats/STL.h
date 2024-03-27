@@ -18,9 +18,9 @@ namespace osc
         std::tm creationTime;
     };
 
-    void WriteMeshAsStl(
+    void writeMeshAsStl(
         std::ostream&,
-        Mesh const&,
-        StlMetadata const&
+        const Mesh&,
+        const StlMetadata&
     );
 }

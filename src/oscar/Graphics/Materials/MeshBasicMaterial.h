@@ -25,7 +25,7 @@ namespace osc
             std::optional<Color> getColor() const { return m_PropertyBlock.getColor(c_ColorPropName); }
             void setColor(Color c) { m_PropertyBlock.setColor(c_ColorPropName, c); }
 
-            operator MaterialPropertyBlock const& () const { return m_PropertyBlock; }
+            operator const MaterialPropertyBlock& () const { return m_PropertyBlock; }
         private:
             MaterialPropertyBlock m_PropertyBlock;
         };
@@ -44,7 +44,7 @@ namespace osc
         bool getTransparent() const { return m_Material.getTransparent(); }
         void setTransparent(bool v) { m_Material.setTransparent(v); }
 
-        operator Material const& () const { return m_Material; }
+        operator const Material& () const { return m_Material; }
 
     private:
         static constexpr CStringView c_ColorPropName = "uDiffuseColor";

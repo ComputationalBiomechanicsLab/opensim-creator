@@ -76,7 +76,7 @@ TEST(AppSettingValue, ColorValueToStringReturnsSameAsToHtmlStringRGBA)
 
     for (auto const& color : colors)
     {
-        ASSERT_EQ(AppSettingValue{color}.toString(), ToHtmlStringRGBA(color));
+        ASSERT_EQ(AppSettingValue{color}.toString(), toHtmlStringRGBA(color));
     }
 }
 
@@ -94,7 +94,7 @@ TEST(AppSettingValue, StringValueToColorWorksIfStringIsAValidHTMLColorString)
     ASSERT_EQ(AppSettingValue{"#00000000"}.toColor(), Color::clear());
     ASSERT_EQ(AppSettingValue{"#000000ff"}.toColor(), Color::black());
     ASSERT_EQ(AppSettingValue{"#000000FF"}.toColor(), Color::black());
-    ASSERT_EQ(AppSettingValue{"#123456ae"}.toColor(), *TryParseHtmlString("#123456ae"));
+    ASSERT_EQ(AppSettingValue{"#123456ae"}.toColor(), *tryParseHtmlString("#123456ae"));
 }
 
 TEST(AppSettingValue, StringValueColorReturnsWhiteIfStringIsInvalidHTMLColorString)

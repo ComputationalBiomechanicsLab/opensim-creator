@@ -201,7 +201,7 @@ private:
                 throw std::runtime_error{maybeImagePath->string() + ": cannot open for writing"};
             }
             Texture2D outputImage = renderOutputImage();
-            WriteToPNG(outputImage, fout);
+            writeToPNG(outputImage, fout);
             OpenPathInOSDefaultApplication(*maybeImagePath);
         }
     }
@@ -212,7 +212,7 @@ private:
         rt.emplace(RenderTextureDescriptor{m_ImageTexture.getDimensions()});
 
         // blit the screenshot into the output
-        Graphics::Blit(m_ImageTexture, *rt);
+        graphics::blit(m_ImageTexture, *rt);
 
         // draw overlays to a local ImGui drawlist
         ImDrawList drawlist{ui::GetDrawListSharedData()};
@@ -249,7 +249,7 @@ private:
                     colors.reserve(drawlist.VtxBuffer.size());
                     for (ImDrawVert const& vert : drawlist.VtxBuffer)
                     {
-                        Color const linearColor = ui::ToColor(vert.col);
+                        Color const linearColor = ui::toColor(vert.col);
                         colors.push_back(linearColor);
                     }
                     mesh.setColors(colors);
@@ -299,7 +299,7 @@ private:
                     }
                     mesh.setIndices(indices);
                 }
-                Graphics::DrawMesh(mesh, Transform{}, material, c);
+                graphics::drawMesh(mesh, Transform{}, material, c);
             }
 
             OSC_ASSERT(rt.has_value());
@@ -312,7 +312,7 @@ private:
             TextureFormat::RGB24,
             ColorSpace::sRGB,
         };
-        Graphics::CopyTexture(*rt, t);
+        graphics::copyTexture(*rt, t);
         return t;
     }
 

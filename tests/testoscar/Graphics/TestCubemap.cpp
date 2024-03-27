@@ -136,7 +136,7 @@ TEST(Cubemap, SetDataWorksForAnyFaceIfGivenCorrectNumberOfBytes)
     std::array<uint8_t, nPixels> const data = {};
 
     Cubemap cubemap{width, format};
-    for (CubemapFace face = FirstCubemapFace(); face <= LastCubemapFace(); face = Next(face))
+    for (CubemapFace face = firstCubemapFace(); face <= lastCubemapFace(); face = next(face))
     {
         cubemap.setPixelData(face, data);
     }
@@ -151,7 +151,7 @@ TEST(Cubemap, SetDataThrowsIfGivenIncorrectNumberOfBytesForRGBA32)
     std::array<uint8_t, nPixels> const data = {};
 
     Cubemap cubemap{width, format};
-    for (CubemapFace face = FirstCubemapFace(); face <= LastCubemapFace(); face = Next(face))
+    for (CubemapFace face = firstCubemapFace(); face <= lastCubemapFace(); face = next(face))
     {
         ASSERT_ANY_THROW({ cubemap.setPixelData(face, data); });
     }
@@ -166,7 +166,7 @@ TEST(Cubemap, SetDataThrowsIfGivenIncorrectNumberOfBytesForRGB24)
     std::array<uint8_t, nPixels> const data = {};
 
     Cubemap cubemap{width, format};
-    for (CubemapFace face = FirstCubemapFace(); face <= LastCubemapFace(); face = Next(face))
+    for (CubemapFace face = firstCubemapFace(); face <= lastCubemapFace(); face = next(face))
     {
         ASSERT_ANY_THROW({ cubemap.setPixelData(face, data); });
     }
@@ -182,7 +182,7 @@ TEST(Cubemap, SetDataThrowsIfGivenIncorrectNumberOfBytesForWidth)
     std::array<uint8_t, incorrectNPixels> const data = {};
 
     Cubemap cubemap{width, format};
-    for (CubemapFace face = FirstCubemapFace(); face <= LastCubemapFace(); face = Next(face))
+    for (CubemapFace face = firstCubemapFace(); face <= lastCubemapFace(); face = next(face))
     {
         ASSERT_ANY_THROW({ cubemap.setPixelData(face, data); });
     }

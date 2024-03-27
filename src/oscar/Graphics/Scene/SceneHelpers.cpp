@@ -37,10 +37,10 @@ using namespace osc;
 
 namespace
 {
-    void DrawGrid(
+    void drawGrid(
         SceneCache& cache,
-        Quat const& rotation,
-        std::function<void(SceneDecoration&&)> const& out)
+        const Quat& rotation,
+        const std::function<void(SceneDecoration&&)>& out)
     {
         out({
             .mesh = cache.get100x100GridMesh(),
@@ -53,12 +53,12 @@ namespace
     }
 }
 
-void osc::DrawBVH(
+void osc::drawBVH(
     SceneCache& cache,
-    BVH const& sceneBVH,
-    std::function<void(SceneDecoration&&)> const& out)
+    const BVH& sceneBVH,
+    const std::function<void(SceneDecoration&&)>& out)
 {
-    sceneBVH.forEachLeafOrInnerNodeUnordered([cube = cache.getCubeWireMesh(), &out](BVHNode const& node)
+    sceneBVH.forEachLeafOrInnerNodeUnordered([cube = cache.getCubeWireMesh(), &out](const BVHNode& node)
     {
         out({
             .mesh = cube,
@@ -71,22 +71,21 @@ void osc::DrawBVH(
     });
 }
 
-void osc::DrawAABB(
+void osc::drawAABB(
     SceneCache& cache,
-    AABB const& aabb,
-    std::function<void(SceneDecoration&&)> const& out)
+    const AABB& aabb,
+    const std::function<void(SceneDecoration&&)>& out)
 {
-    DrawAABBs(cache, {{aabb}}, out);
+    drawAABBs(cache, {{aabb}}, out);
 }
 
-void osc::DrawAABBs(
+void osc::drawAABBs(
     SceneCache& cache,
-    std::span<AABB const> aabbs,
-    std::function<void(SceneDecoration&&)> const& out)
+    std::span<const AABB> aabbs,
+    const std::function<void(SceneDecoration&&)>& out)
 {
-    Mesh const cube = cache.getCubeWireMesh();
-    for (AABB const& aabb : aabbs)
-    {
+    const Mesh cube = cache.getCubeWireMesh();
+    for (const AABB& aabb : aabbs) {
         out({
             .mesh = cube,
             .transform = {
@@ -98,23 +97,23 @@ void osc::DrawAABBs(
     }
 }
 
-void osc::DrawBVHLeafNodes(
+void osc::drawBVHLeafNodes(
     SceneCache& cache,
-    BVH const& bvh,
-    std::function<void(SceneDecoration&&)> const& out)
+    const BVH& bvh,
+    const std::function<void(SceneDecoration&&)>& out)
 {
-    bvh.forEachLeafNode([&cache, &out](BVHNode const& node)
+    bvh.forEachLeafNode([&cache, &out](const BVHNode& node)
     {
-        DrawAABB(cache, node.getBounds(), out);
+        drawAABB(cache, node.getBounds(), out);
     });
 }
 
-void osc::DrawXZFloorLines(
+void osc::drawXZFloorLines(
     SceneCache& cache,
-    std::function<void(SceneDecoration&&)> const& out,
+    const std::function<void(SceneDecoration&&)>& out,
     float scale)
 {
-    Mesh const yLine = cache.getYLineMesh();
+    const Mesh yLine = cache.getYLineMesh();
 
     // X line
     out({
@@ -137,42 +136,42 @@ void osc::DrawXZFloorLines(
     });
 }
 
-void osc::DrawXZGrid(
+void osc::drawXZGrid(
     SceneCache& cache,
-    std::function<void(SceneDecoration&&)> const& out)
+    const std::function<void(SceneDecoration&&)>& out)
 {
-    Quat const rotation = angle_axis(90_deg, Vec3{1.0f, 0.0f, 0.0f});
-    DrawGrid(cache, rotation, out);
+    const Quat rotation = angle_axis(90_deg, Vec3{1.0f, 0.0f, 0.0f});
+    drawGrid(cache, rotation, out);
 }
 
-void osc::DrawXYGrid(
+void osc::drawXYGrid(
     SceneCache& cache,
-    std::function<void(SceneDecoration&&)> const& out)
+    const std::function<void(SceneDecoration&&)>& out)
 {
-    DrawGrid(cache, identity<Quat>(), out);
+    drawGrid(cache, identity<Quat>(), out);
 }
 
-void osc::DrawYZGrid(
+void osc::drawYZGrid(
     SceneCache& cache,
-    std::function<void(SceneDecoration&&)> const& out)
+    const std::function<void(SceneDecoration&&)>& out)
 {
-    Quat const rotation = angle_axis(90_deg, Vec3{0.0f, 1.0f, 0.0f});
-    DrawGrid(cache, rotation, out);
+    const Quat rotation = angle_axis(90_deg, Vec3{0.0f, 1.0f, 0.0f});
+    drawGrid(cache, rotation, out);
 }
 
-void osc::DrawArrow(
+void osc::drawArrow(
     SceneCache& cache,
-    ArrowProperties const& props,
-    std::function<void(SceneDecoration&&)> const& out)
+    const ArrowProperties& props,
+    const std::function<void(SceneDecoration&&)>& out)
 {
-    Vec3 startToEnd = props.worldspaceEnd - props.worldspaceStart;
-    float const len = length(startToEnd);
-    Vec3 const direction = startToEnd/len;
+    const Vec3 startToEnd = props.worldspaceEnd - props.worldspaceStart;
+    const float len = length(startToEnd);
+    const Vec3 direction = startToEnd/len;
 
-    Vec3 const neckStart = props.worldspaceStart;
-    Vec3 const neckEnd = props.worldspaceStart + (len - props.tipLength)*direction;
-    Vec3 const headStart = neckEnd;
-    Vec3 const headEnd = props.worldspaceEnd;
+    const Vec3 neckStart = props.worldspaceStart;
+    const Vec3 neckEnd = props.worldspaceStart + (len - props.tipLength)*direction;
+    const Vec3 headStart = neckEnd;
+    const Vec3 headEnd = props.worldspaceEnd;
 
     // emit neck cylinder
     out({
@@ -189,12 +188,12 @@ void osc::DrawArrow(
     });
 }
 
-void osc::DrawLineSegment(
+void osc::drawLineSegment(
     SceneCache& cache,
-    LineSegment const& segment,
-    Color const& color,
+    const LineSegment& segment,
+    const Color& color,
     float radius,
-    std::function<void(SceneDecoration&&)> const& out)
+    const std::function<void(SceneDecoration&&)>& out)
 {
     out({
         .mesh = cache.getCylinderMesh(),
@@ -203,45 +202,43 @@ void osc::DrawLineSegment(
     });
 }
 
-AABB osc::GetWorldspaceAABB(SceneDecoration const& cd)
+AABB osc::getWorldspaceAABB(const SceneDecoration& cd)
 {
     return transform_aabb(cd.transform, cd.mesh.getBounds());
 }
 
-void osc::UpdateSceneBVH(std::span<SceneDecoration const> sceneEls, BVH& bvh)
+void osc::updateSceneBVH(std::span<const SceneDecoration> sceneEls, BVH& bvh)
 {
     std::vector<AABB> aabbs;
     aabbs.reserve(sceneEls.size());
-    for (SceneDecoration const& el : sceneEls)
-    {
-        aabbs.push_back(GetWorldspaceAABB(el));
+    for (const SceneDecoration& el : sceneEls) {
+        aabbs.push_back(getWorldspaceAABB(el));
     }
 
     bvh.buildFromAABBs(aabbs);
 }
 
-std::vector<SceneCollision> osc::GetAllSceneCollisions(
-    BVH const& bvh,
+std::vector<SceneCollision> osc::getAllSceneCollisions(
+    const BVH& bvh,
     SceneCache& sceneCache,
-    std::span<SceneDecoration const> decorations,
-    Line const& ray)
+    std::span<const SceneDecoration> decorations,
+    const Line& ray)
 {
     std::vector<SceneCollision> rv;
     bvh.forEachRayAABBCollision(ray, [&sceneCache, &decorations, &ray, &rv](BVHCollision sceneCollision)
     {
         // perform ray-triangle intersection tests on the scene collisions
-        SceneDecoration const& decoration = at(decorations, sceneCollision.id);
-        BVH const& decorationBVH = sceneCache.getBVH(decoration.mesh);
+        const SceneDecoration& decoration = at(decorations, sceneCollision.id);
+        const BVH& decorationBVH = sceneCache.getBVH(decoration.mesh);
 
-        std::optional<RayCollision> const maybeCollision = GetClosestWorldspaceRayCollision(
+        const std::optional<RayCollision> maybeCollision = getClosestWorldspaceRayCollision(
             decoration.mesh,
             decorationBVH,
             decoration.transform,
             ray
         );
 
-        if (maybeCollision)
-        {
+        if (maybeCollision) {
             rv.push_back({
                 .decorationID = decoration.id,
                 .decorationIndex = static_cast<size_t>(sceneCollision.id),
@@ -253,32 +250,30 @@ std::vector<SceneCollision> osc::GetAllSceneCollisions(
     return rv;
 }
 
-std::optional<RayCollision> osc::GetClosestWorldspaceRayCollision(
-    Mesh const& mesh,
-    BVH const& triangleBVH,
-    Transform const& transform,
-    Line const& worldspaceRay)
+std::optional<RayCollision> osc::getClosestWorldspaceRayCollision(
+    const Mesh& mesh,
+    const BVH& triangleBVH,
+    const Transform& transform,
+    const Line& worldspaceRay)
 {
-    if (mesh.getTopology() != MeshTopology::Triangles)
-    {
+    if (mesh.getTopology() != MeshTopology::Triangles) {
         return std::nullopt;
     }
 
     // map the ray into the mesh's modelspace, so that we compute a ray-mesh collision
-    Line const modelspaceRay = InverseTransformLine(worldspaceRay, transform);
+    const Line modelspaceRay = InverseTransformLine(worldspaceRay, transform);
 
     // then perform a ray-AABB (of triangles) collision
     std::optional<RayCollision> rv;
     triangleBVH.forEachRayAABBCollision(modelspaceRay, [&mesh, &transform, &worldspaceRay, &modelspaceRay, &rv](BVHCollision bvhCollision)
     {
         // then perform a ray-triangle collision
-        if (auto triangleCollision = find_collision(modelspaceRay, mesh.getTriangleAt(bvhCollision.id)))
-        {
+        if (auto triangleCollision = find_collision(modelspaceRay, mesh.getTriangleAt(bvhCollision.id))) {
             // map it back into worldspace and check if it's closer
-            Vec3 const locationWorldspace = transform * triangleCollision->position;
-            float const distance = length(locationWorldspace - worldspaceRay.origin);
-            if (!rv || rv->distance > distance)
-            {
+            const Vec3 locationWorldspace = transform * triangleCollision->position;
+            const float distance = length(locationWorldspace - worldspaceRay.origin);
+
+            if (not rv or rv->distance > distance) {
                 // if it's closer, update the return value
                 rv = RayCollision{distance, locationWorldspace};
             }
@@ -287,19 +282,19 @@ std::optional<RayCollision> osc::GetClosestWorldspaceRayCollision(
     return rv;
 }
 
-std::optional<RayCollision> osc::GetClosestWorldspaceRayCollision(
-    PolarPerspectiveCamera const& camera,
-    Mesh const& mesh,
-    BVH const& triangleBVH,
-    Rect const& renderScreenRect,
+std::optional<RayCollision> osc::getClosestWorldspaceRayCollision(
+    const PolarPerspectiveCamera& camera,
+    const Mesh& mesh,
+    const BVH& triangleBVH,
+    const Rect& renderScreenRect,
     Vec2 mouseScreenPos)
 {
-    Line const ray = camera.unprojectTopLeftPosToWorldRay(
+    const Line ray = camera.unprojectTopLeftPosToWorldRay(
         mouseScreenPos - renderScreenRect.p1,
         dimensions(renderScreenRect)
     );
 
-    return GetClosestWorldspaceRayCollision(
+    return getClosestWorldspaceRayCollision(
         mesh,
         triangleBVH,
         identity<Transform>(),
@@ -307,8 +302,8 @@ std::optional<RayCollision> osc::GetClosestWorldspaceRayCollision(
     );
 }
 
-SceneRendererParams osc::CalcStandardDarkSceneRenderParams(
-    PolarPerspectiveCamera const& camera,
+SceneRendererParams osc::calcStandardDarkSceneRenderParams(
+    const PolarPerspectiveCamera& camera,
     AntiAliasingLevel antiAliasingLevel,
     Vec2 renderDims)
 {
@@ -325,45 +320,39 @@ SceneRendererParams osc::CalcStandardDarkSceneRenderParams(
     return rv;
 }
 
-BVH osc::CreateTriangleBVHFromMesh(Mesh const& mesh)
+BVH osc::createTriangleBVHFromMesh(const Mesh& mesh)
 {
+    const auto indices = mesh.getIndices();
+
     BVH rv;
-
-    auto const indices = mesh.getIndices();
-
-    if (indices.empty())
-    {
+    if (indices.empty()) {
         return rv;
     }
-    else if (mesh.getTopology() != MeshTopology::Triangles)
-    {
+    else if (mesh.getTopology() != MeshTopology::Triangles) {
         return rv;
     }
-    else if (indices.isU32())
-    {
+    else if (indices.isU32()) {
         rv.buildFromIndexedTriangles(mesh.getVerts() , indices.toU32Span());
     }
-    else
-    {
+    else {
         rv.buildFromIndexedTriangles(mesh.getVerts(), indices.toU16Span());
     }
-
     return rv;
 }
 
-FrustumPlanes osc::CalcCameraFrustumPlanes(Camera const& camera, float aspectRatio)
+FrustumPlanes osc::calcCameraFrustumPlanes(const Camera& camera, float aspectRatio)
 {
-    Radians const fovY = camera.getVerticalFOV();
-    float const zNear = camera.getNearClippingPlane();
-    float const zFar = camera.getFarClippingPlane();
-    float const halfVSize = zFar * tan(fovY * 0.5f);
-    float const halfHSize = halfVSize * aspectRatio;
-    Vec3 const pos = camera.getPosition();
-    Vec3 const front = camera.getDirection();
-    Vec3 const up = camera.getUpwardsDirection();
-    Vec3 const right = cross(front, up);
-    Vec3 const frontMultnear = zNear * front;
-    Vec3 const frontMultfar = zFar * front;
+    const Radians fovY = camera.getVerticalFOV();
+    const float zNear = camera.getNearClippingPlane();
+    const float zFar = camera.getFarClippingPlane();
+    const float halfVSize = zFar * tan(fovY * 0.5f);
+    const float halfHSize = halfVSize * aspectRatio;
+    const Vec3 pos = camera.getPosition();
+    const Vec3 front = camera.getDirection();
+    const Vec3 up = camera.getUpwardsDirection();
+    const Vec3 right = cross(front, up);
+    const Vec3 frontMultnear = zNear * front;
+    const Vec3 frontMultfar = zFar * front;
 
     return {
         // origin            // normal

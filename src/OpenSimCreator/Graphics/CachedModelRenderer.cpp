@@ -63,7 +63,7 @@ namespace
                     params.decorationOptions,
                     onComponentDecoration
                 );
-                UpdateSceneBVH(m_Drawlist, m_BVH);
+                updateSceneBVH(m_Drawlist, m_BVH);
 
                 auto const onOverlayDecoration = [this](SceneDecoration&& dec)
                 {

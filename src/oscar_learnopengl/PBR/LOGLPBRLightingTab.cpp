@@ -110,7 +110,7 @@ private:
 
                 float const x = (static_cast<float>(col) - static_cast<float>(c_NumCols)/2.0f) * c_CellSpacing;
                 float const y = (static_cast<float>(row) - static_cast<float>(c_NumRows)/2.0f) * c_CellSpacing;
-                Graphics::DrawMesh(m_SphereMesh, {.position = {x, y, 0.0f}}, m_PBRMaterial, m_Camera);
+                graphics::drawMesh(m_SphereMesh, {.position = {x, y, 0.0f}}, m_PBRMaterial, m_Camera);
             }
         }
     }
@@ -120,7 +120,7 @@ private:
         m_PBRMaterial.setVec3("uAlbedoColor", {1.0f, 1.0f, 1.0f});
 
         for (Vec3 const& pos : c_LightPositions) {
-            Graphics::DrawMesh(m_SphereMesh, {.scale = Vec3{0.5f}, .position = pos}, m_PBRMaterial, m_Camera);
+            graphics::drawMesh(m_SphereMesh, {.scale = Vec3{0.5f}, .position = pos}, m_PBRMaterial, m_Camera);
         }
     }
 

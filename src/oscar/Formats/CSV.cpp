@@ -13,38 +13,36 @@ using namespace osc;
 // helpers
 namespace
 {
-    constexpr bool IsSpecialCSVCharacter(std::string_view::value_type c)
+    constexpr bool isSpecialCSVCharacter(std::string_view::value_type c)
     {
-        return c == ',' || c == '\r' || c == '\n' || c == '"';
+        return c == ',' or c == '\r' or c == '\n' or c == '"';
     }
 
-    bool ShouldBeQuoted(std::string_view v)
+    constexpr bool shouldBeQuoted(std::string_view v)
     {
-        return any_of(v, IsSpecialCSVCharacter);
+        return any_of(v, isSpecialCSVCharacter);
     }
 }
 
 // public API
 
-std::optional<std::vector<std::string>> osc::ReadCSVRow(
+std::optional<std::vector<std::string>> osc::readCSVRow(
     std::istream& in)
 {
     std::optional<std::vector<std::string>> cols;
     cols.emplace();
 
-    if (!ReadCSVRowIntoVector(in, *cols))
-    {
+    if (!readCSVRowIntoVector(in, *cols)) {
         cols.reset();
     }
     return cols;
 }
 
-bool osc::ReadCSVRowIntoVector(
+bool osc::readCSVRowIntoVector(
     std::istream& in,
     std::vector<std::string>& out)
 {
-    if (in.eof())
-    {
+    if (in.eof()) {
         return false;
     }
 
@@ -52,106 +50,89 @@ bool osc::ReadCSVRowIntoVector(
     std::string s;
     bool insideQuotes = false;
 
-    while (!in.bad())
-    {
-        auto const c = in.get();
+    while (!in.bad()) {
+        const auto c = in.get();
 
-        if (c == std::istream::traits_type::eof())
-        {
+        if (c == std::istream::traits_type::eof()) {
             // EOF
             cols.push_back(s);
             break;
         }
-        else if (c == '\n' && !insideQuotes)
-        {
+        else if (c == '\n' and not insideQuotes) {
             // standard newline
             cols.push_back(s);
             break;
         }
-        else if (c == '\r' && in.peek() == '\n' && !insideQuotes)
-        {
+        else if (c == '\r' and in.peek() == '\n' and not insideQuotes) {
             // windows newline
 
             in.get();  // skip the \n
             cols.push_back(s);
             break;
         }
-        else if (c == '"' && s.empty() && !insideQuotes)
-        {
+        else if (c == '"' and s.empty() and not insideQuotes) {
             // quote at beginning of quoted column
             insideQuotes = true;
             continue;
         }
-        else if (c == '"' && in.peek() == '"')
-        {
+        else if (c == '"' and in.peek() == '"') {
             // escaped quote
 
             in.get();  // skip the second '"'
             s += '"';
             continue;
         }
-        else if (c == '"' && insideQuotes)
-        {
+        else if (c == '"' and insideQuotes) {
             // quote at end of of quoted column
             insideQuotes = false;
             continue;
         }
-        else if (c == ',' && !insideQuotes)
-        {
+        else if (c == ',' and not insideQuotes) {
             // comma delimiter at end of column
 
             cols.push_back(s);
             s.clear();
             continue;
         }
-        else
-        {
+        else {
             // normal text
             s += static_cast<std::string::value_type>(c);
             continue;
         }
     }
 
-    if (!cols.empty())
-    {
+    if (not cols.empty()) {
         out = std::move(cols);
         return true;
     }
-    else
-    {
+    else {
         return false;
     }
 }
 
-void osc::WriteCSVRow(
+void osc::writeCSVRow(
     std::ostream& out,
-    std::span<std::string const> columns)
+    std::span<const std::string> columns)
 {
     std::string_view delim;
-    for (std::string const& column : columns)
-    {
-        bool const quoted = ShouldBeQuoted(column);
+    for (const auto& column : columns) {
+        const bool quoted = shouldBeQuoted(column);
 
         out << delim;
-        if (quoted)
-        {
+        if (quoted) {
             out << '"';
         }
 
-        for (std::string::value_type c : column)
-        {
-            if (c != '"')
-            {
+        for (std::string::value_type c : column) {
+            if (c != '"') {
                 out << c;
             }
-            else
-            {
+            else {
                 out << '"' << '"';
             }
         }
 
-        if (quoted)
-        {
+        if (quoted) {
             out << '"';
         }
 

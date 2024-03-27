@@ -24,7 +24,7 @@ namespace
             rl.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/FaceCulling.frag"),
         }};
 
-        rv.setTexture("uTexture", LoadTexture2DFromImage(
+        rv.setTexture("uTexture", loadTexture2DFromImage(
             rl.open("oscar_learnopengl/textures/uv_checker.jpg"),
             ColorSpace::sRGB
         ));
@@ -77,7 +77,7 @@ private:
     void drawScene()
     {
         m_Camera.setPixelRect(ui::GetMainViewportWorkspaceScreenRect());
-        Graphics::DrawMesh(m_Cube, identity<Transform>(), m_Material, m_Camera);
+        graphics::drawMesh(m_Cube, identity<Transform>(), m_Material, m_Camera);
         m_Camera.renderToScreen();
     }
 

@@ -24,10 +24,10 @@ namespace
     std::array<Color, c_SceneLightPositions.size()> const& GetSceneLightColors()
     {
         static auto const s_SceneLightColors = std::to_array<Color>({
-            ToSRGB({ 5.0f, 5.0f,  5.0f}),
-            ToSRGB({10.0f, 0.0f,  0.0f}),
-            ToSRGB({ 0.0f, 0.0f, 15.0f}),
-            ToSRGB({ 0.0f, 5.0f,  0.0f}),
+            toSRGB({ 5.0f, 5.0f,  5.0f}),
+            toSRGB({10.0f, 0.0f,  0.0f}),
+            toSRGB({ 0.0f, 0.0f, 15.0f}),
+            toSRGB({ 0.0f, 5.0f,  0.0f}),
         });
         return s_SceneLightColors;
     }
@@ -178,7 +178,7 @@ private:
             MaterialPropertyBlock floorProps;
             floorProps.setTexture("uDiffuseTexture", m_WoodTexture);
 
-            Graphics::DrawMesh(
+            graphics::drawMesh(
                 m_CubeMesh,
                 floorTransform,
                 m_SceneMaterial,
@@ -190,7 +190,7 @@ private:
         MaterialPropertyBlock cubeProps;
         cubeProps.setTexture("uDiffuseTexture", m_ContainerTexture);
         for (auto const& cubeTransform : CreateCubeTransforms()) {
-            Graphics::DrawMesh(
+            graphics::drawMesh(
                 m_CubeMesh,
                 cubeTransform,
                 m_SceneMaterial,
@@ -212,7 +212,7 @@ private:
             MaterialPropertyBlock lightProps;
             lightProps.setColor("uLightColor", sceneLightColors[i]);
 
-            Graphics::DrawMesh(
+            graphics::drawMesh(
                 m_CubeMesh,
                 lightTransform,
                 m_LightboxMaterial,
@@ -256,7 +256,7 @@ private:
         for (RenderTexture& pingPongBuffer : m_PingPongBlurOutputBuffers) {
             m_BlurMaterial.setBool("uHorizontal", horizontal);
             Camera camera;
-            Graphics::DrawMesh(m_QuadMesh, identity<Transform>(), m_BlurMaterial, camera);
+            graphics::drawMesh(m_QuadMesh, identity<Transform>(), m_BlurMaterial, camera);
             camera.renderTo(pingPongBuffer);
             m_BlurMaterial.clearRenderTexture("uInputImage");
 
@@ -272,7 +272,7 @@ private:
         m_FinalCompositingMaterial.setFloat("uExposure", 1.0f);
 
         Camera camera;
-        Graphics::DrawMesh(m_QuadMesh, identity<Transform>(), m_FinalCompositingMaterial, camera);
+        graphics::drawMesh(m_QuadMesh, identity<Transform>(), m_FinalCompositingMaterial, camera);
         camera.setPixelRect(viewportRect);
         camera.renderToScreen();
 
@@ -298,7 +298,7 @@ private:
                 viewportRect.p1 + offset + w,
             };
 
-            Graphics::BlitToScreen(*textures[i], overlayRect);
+            graphics::blitToScreen(*textures[i], overlayRect);
         }
     }
 
@@ -324,11 +324,11 @@ private:
         m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Final.frag"),
     }};
 
-    Texture2D m_WoodTexture = LoadTexture2DFromImage(
+    Texture2D m_WoodTexture = loadTexture2DFromImage(
         m_Loader.open("oscar_learnopengl/textures/wood.png"),
         ColorSpace::sRGB
     );
-    Texture2D m_ContainerTexture = LoadTexture2DFromImage(
+    Texture2D m_ContainerTexture = loadTexture2DFromImage(
         m_Loader.open("oscar_learnopengl/textures/container2.png"),
         ColorSpace::sRGB
     );

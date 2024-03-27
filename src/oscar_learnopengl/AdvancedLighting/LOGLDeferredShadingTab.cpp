@@ -61,7 +61,7 @@ namespace
         auto const generator = [rng = std::default_random_engine{std::random_device{}()}]() mutable
         {
             Color const sRGBColor = GenerateSceneLightColor(rng);
-            Color const linearColor = ToLinear(sRGBColor);
+            Color const linearColor = toLinear(sRGBColor);
             return Vec3{linearColor.r, linearColor.g, linearColor.b};
         };
 
@@ -206,7 +206,7 @@ private:
         renderSceneToGBuffers();
         renderLightingPass();
         renderLightCubes();
-        Graphics::BlitToScreen(m_OutputTexture, viewportRect);
+        graphics::blitToScreen(m_OutputTexture, viewportRect);
         drawGBufferOverlays(viewportRect);
     }
 
@@ -218,7 +218,7 @@ private:
         // render scene cubes
         for (Vec3 const& objectPosition : c_ObjectPositions)
         {
-            Graphics::DrawMesh(
+            graphics::drawMesh(
                 m_CubeMesh,
                 {.scale = Vec3{0.5f}, .position = objectPosition},
                 m_GBuffer.material,
@@ -230,15 +230,15 @@ private:
 
     void drawGBufferOverlays(Rect const& viewportRect) const
     {
-        Graphics::BlitToScreen(
+        graphics::blitToScreen(
             m_GBuffer.albedo,
             Rect{viewportRect.p1, viewportRect.p1 + 200.0f}
         );
-        Graphics::BlitToScreen(
+        graphics::blitToScreen(
             m_GBuffer.normal,
             Rect{viewportRect.p1 + Vec2{200.0f, 0.0f}, viewportRect.p1 + Vec2{200.0f, 0.0f} + 200.0f}
         );
-        Graphics::BlitToScreen(
+        graphics::blitToScreen(
             m_GBuffer.position,
             Rect{viewportRect.p1 + Vec2{400.0f, 0.0f}, viewportRect.p1 + Vec2{400.0f, 0.0f} + 200.0f}
         );
@@ -255,7 +255,7 @@ private:
         m_LightPass.material.setFloat("uLightQuadratic", 1.8f);
         m_LightPass.material.setVec3("uViewPos", m_Camera.getPosition());
 
-        Graphics::DrawMesh(m_QuadMesh, identity<Transform>(), m_LightPass.material, m_Camera);
+        graphics::drawMesh(m_QuadMesh, identity<Transform>(), m_LightPass.material, m_Camera);
 
         m_Camera.renderTo(m_OutputTexture);
 
@@ -270,7 +270,7 @@ private:
 
         for (size_t i = 0; i < m_LightPositions.size(); ++i) {
             m_LightBoxMaterial.setVec3("uLightColor", m_LightColors[i]);
-            Graphics::DrawMesh(m_CubeMesh, {.scale = Vec3{0.125f}, .position = m_LightPositions[i]}, m_LightBoxMaterial, m_Camera);
+            graphics::drawMesh(m_CubeMesh, {.scale = Vec3{0.125f}, .position = m_LightPositions[i]}, m_LightBoxMaterial, m_Camera);
         }
 
         RenderTarget t{
@@ -299,12 +299,12 @@ private:
     MouseCapturingCamera m_Camera = CreateCameraThatMatchesLearnOpenGL();
     Mesh m_CubeMesh = BoxGeometry{2.0f, 2.0f, 2.0f};
     Mesh m_QuadMesh = PlaneGeometry{2.0f, 2.0f};
-    Texture2D m_DiffuseMap = LoadTexture2DFromImage(
+    Texture2D m_DiffuseMap = loadTexture2DFromImage(
         m_Loader.open("oscar_learnopengl/textures/container2.png"),
         ColorSpace::sRGB,
         ImageLoadingFlags::FlipVertically
     );
-    Texture2D m_SpecularMap = LoadTexture2DFromImage(
+    Texture2D m_SpecularMap = loadTexture2DFromImage(
         m_Loader.open("oscar_learnopengl/textures/container2_specular.png"),
         ColorSpace::sRGB,
         ImageLoadingFlags::FlipVertically

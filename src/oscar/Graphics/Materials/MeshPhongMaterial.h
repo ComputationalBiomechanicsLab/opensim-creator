@@ -35,7 +35,7 @@ namespace osc
         float getSpecularShininess() const { return *m_Material.getFloat(c_ShininessPropName); }
         void setSpecularShininess(float v) { m_Material.setFloat(c_ShininessPropName, v); }
 
-        operator Material const& () const { return m_Material; }
+        operator const Material& () const { return m_Material; }
     private:
         static constexpr CStringView c_LightPosPropName = "uLightPos";
         static constexpr CStringView c_ViewPosPropName = "uViewPos";

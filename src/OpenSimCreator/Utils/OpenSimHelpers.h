@@ -572,7 +572,7 @@ namespace osc
     bool TrySetAppearancePropertyIsVisibleTo(OpenSim::Component&, bool);
 
     // returns the color part of the `OpenSim::Appearance` as an `osc::Color`
-    Color ToColor(OpenSim::Appearance const&);
+    Color toColor(OpenSim::Appearance const&);
 
     Color GetSuggestedBoneColor();  // best guess, based on shaders etc.
 

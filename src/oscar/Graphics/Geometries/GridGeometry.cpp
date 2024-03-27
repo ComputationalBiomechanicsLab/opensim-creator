@@ -15,12 +15,12 @@ osc::GridGeometry::GridGeometry(
     size_t divisions)
 {
     constexpr float z = 0.0f;
-    float const min = -size/2.0f;
-    float const max =  size/2.0f;
+    const float min = -size/2.0f;
+    const float max =  size/2.0f;
 
-    float const stepSize = (max - min) / static_cast<float>(divisions);
+    const float stepSize = (max - min) / static_cast<float>(divisions);
 
-    size_t const nlines = divisions + 1;
+    const size_t nlines = divisions + 1;
 
     std::vector<Vec3> vertices;
     vertices.reserve(4 * nlines);
@@ -30,7 +30,7 @@ osc::GridGeometry::GridGeometry(
     normals.reserve(4 * nlines);
     uint32_t index = 0;
 
-    auto push = [&index, &vertices, &indices, &normals](Vec3 const& pos)
+    auto push = [&index, &vertices, &indices, &normals](const Vec3& pos)
     {
         vertices.push_back(pos);
         indices.push_back(index++);
@@ -39,7 +39,7 @@ osc::GridGeometry::GridGeometry(
 
     // lines parallel to X axis
     for (size_t i = 0; i < nlines; ++i) {
-        float const y = min + static_cast<float>(i) * stepSize;
+        const float y = min + static_cast<float>(i) * stepSize;
 
         push({-1.0f, y, z});
         push({+1.0f, y, z});
@@ -47,7 +47,7 @@ osc::GridGeometry::GridGeometry(
 
     // lines parallel to Y axis
     for (size_t i = 0; i < nlines; ++i) {
-        float const x = min + static_cast<float>(i) * stepSize;
+        const float x = min + static_cast<float>(i) * stepSize;
 
         push({x, -1.0f, z});
         push({x, +1.0f, z});

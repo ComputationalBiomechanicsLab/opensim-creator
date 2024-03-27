@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <iomanip>
 #include <iostream>
 #include <limits>
@@ -26,32 +27,30 @@ using namespace osc;
 
 namespace
 {
-    std::string CreateHeaderText(StlMetadata const& metadata)
+    std::string calcHeaderText(const StlMetadata& metadata)
     {
         std::stringstream ss;
         ss << "created " << std::put_time(&metadata.creationTime, "%Y-%m-%d %H:%M:%S") << " by " << metadata.authoringTool;
         return std::move(ss).str();
     }
 
-    void WriteHeader(std::ostream& o, StlMetadata const& metadata)
+    void writeHeader(std::ostream& o, const StlMetadata& metadata)
     {
         constexpr size_t c_NumBytesInSTLHeader = 80;
         constexpr size_t c_MaxCharsInSTLHeader = c_NumBytesInSTLHeader - 1;  // nul-terminator
 
-        std::string const content = CreateHeaderText(metadata);
-        size_t const len = min(content.size(), c_MaxCharsInSTLHeader);
+        const std::string content = calcHeaderText(metadata);
+        const size_t len = min(content.size(), c_MaxCharsInSTLHeader);
 
-        for (size_t i = 0; i < len; ++i)
-        {
+        for (size_t i = 0; i < len; ++i) {
             o << static_cast<uint8_t>(content[i]);
         }
-        for (size_t i = 0; i < c_NumBytesInSTLHeader-len; ++i)
-        {
+        for (size_t i = 0; i < c_NumBytesInSTLHeader-len; ++i) {
             o << static_cast<uint8_t>(0x00);
         }
     }
 
-    void WriteLittleEndianU32(std::ostream& o, uint32_t v)
+    void writeLittleEndianU32(std::ostream& o, uint32_t v)
     {
         o << static_cast<uint8_t>(v & 0xff);
         o << static_cast<uint8_t>((v>>8) & 0xff);
@@ -59,46 +58,45 @@ namespace
         o << static_cast<uint8_t>((v>>24) & 0xff);
     }
 
-    void WriteNumTriangles(std::ostream& o, Mesh const& mesh)
+    void writeNumTriangles(std::ostream& o, const Mesh& mesh)
     {
         OSC_ASSERT(mesh.getNumIndices()/3 <= std::numeric_limits<uint32_t>::max());
-        WriteLittleEndianU32(o, static_cast<uint32_t>(mesh.getNumIndices()/3));
+        writeLittleEndianU32(o, static_cast<uint32_t>(mesh.getNumIndices()/3));
     }
 
-    void WriteFloatIEEE(std::ostream& o, float v)
+    void writeFloatIEEE(std::ostream& o, float v)
     {
         static_assert(std::numeric_limits<float>::is_iec559, "STL files use IEE754 floats");
-        for (std::byte byte : ViewObjectRepresentation(v))
-        {
+        for (std::byte byte : ViewObjectRepresentation(v)) {
             o << static_cast<uint8_t>(byte);
         }
     }
 
-    void WriteVec3IEEE(std::ostream& o, Vec3 const& v)
+    void writeVec3IEEE(std::ostream& o, const Vec3& v)
     {
-        WriteFloatIEEE(o, v.x);
-        WriteFloatIEEE(o, v.y);
-        WriteFloatIEEE(o, v.z);
+        writeFloatIEEE(o, v.x);
+        writeFloatIEEE(o, v.y);
+        writeFloatIEEE(o, v.z);
     }
 
-    void WriteAttributeCount(std::ostream& o)
+    void writeAttributeCount(std::ostream& o)
     {
         o << static_cast<uint8_t>(0x00);
         o << static_cast<uint8_t>(0x00);
     }
 
-    void WriteTriangle(std::ostream& o, Triangle const& triangle)
+    void writeTriangle(std::ostream& o, const Triangle& triangle)
     {
-        WriteVec3IEEE(o, triangle_normal(triangle));
-        WriteVec3IEEE(o, triangle.p0);
-        WriteVec3IEEE(o, triangle.p1);
-        WriteVec3IEEE(o, triangle.p2);
-        WriteAttributeCount(o);
+        writeVec3IEEE(o, triangle_normal(triangle));
+        writeVec3IEEE(o, triangle.p0);
+        writeVec3IEEE(o, triangle.p1);
+        writeVec3IEEE(o, triangle.p2);
+        writeAttributeCount(o);
     }
 
-    void WriteTriangles(std::ostream& o, Mesh const& mesh)
+    void writeTriangles(std::ostream& o, const Mesh& mesh)
     {
-        mesh.forEachIndexedTriangle([&o](Triangle t) { WriteTriangle(o, t); });
+        mesh.forEachIndexedTriangle([&o](Triangle t) { writeTriangle(o, t); });
     }
 }
 
@@ -109,20 +107,18 @@ osc::StlMetadata::StlMetadata(
 
     authoringTool{authoringTool_},
     creationTime{GetSystemCalendarTime()}
-{
-}
+{}
 
-void osc::WriteMeshAsStl(
+void osc::writeMeshAsStl(
     std::ostream& output,
-    Mesh const& mesh,
-    StlMetadata const& metadata)
+    const Mesh& mesh,
+    const StlMetadata& metadata)
 {
-    if (mesh.getTopology() != MeshTopology::Triangles)
-    {
+    if (mesh.getTopology() != MeshTopology::Triangles) {
         return;
     }
 
-    WriteHeader(output, metadata);
-    WriteNumTriangles(output, mesh);
-    WriteTriangles(output, mesh);
+    writeHeader(output, metadata);
+    writeNumTriangles(output, mesh);
+    writeTriangles(output, mesh);
 }

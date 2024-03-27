@@ -15,7 +15,7 @@
 
 using namespace osc;
 
-osc::WireframeGeometry::WireframeGeometry(Mesh const& mesh)
+osc::WireframeGeometry::WireframeGeometry(const Mesh& mesh)
 {
     static_assert(NumOptions<MeshTopology>() == 2);
 
@@ -30,11 +30,11 @@ osc::WireframeGeometry::WireframeGeometry(Mesh const& mesh)
     std::vector<Vec3> points;
     points.reserve(mesh.getNumIndices());  // (guess)
 
-    mesh.forEachIndexedTriangle([&edges, &points](Triangle const& triangle)
+    mesh.forEachIndexedTriangle([&edges, &points](const Triangle& triangle)
     {
-        auto [a, b, c] = triangle;
+        const auto [a, b, c] = triangle;
 
-        auto const orderedEdge = [](Vec3 p1, Vec3 p2)
+        const auto orderedEdge = [](Vec3 p1, Vec3 p2)
         {
             return lexicographical_compare(p1, p2) ? LineSegment{p1, p2} : LineSegment{p2, p1};
         };

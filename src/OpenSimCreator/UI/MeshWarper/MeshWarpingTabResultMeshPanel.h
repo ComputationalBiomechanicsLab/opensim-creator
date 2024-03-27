@@ -270,7 +270,7 @@ namespace osc
         RenderTexture& renderScene(Vec2 dims)
         {
             std::vector<SceneDecoration> const decorations = generateDecorations();
-            SceneRendererParams const params = CalcStandardDarkSceneRenderParams(
+            SceneRendererParams const params = calcStandardDarkSceneRenderParams(
                 m_Camera,
                 App::get().getCurrentAntiAliasingLevel(),
                 dims

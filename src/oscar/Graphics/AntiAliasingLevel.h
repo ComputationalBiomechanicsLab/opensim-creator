@@ -42,7 +42,7 @@ namespace osc
             return *this;
         }
 
-        friend auto operator<=>(AntiAliasingLevel const&, AntiAliasingLevel const&) = default;
+        friend auto operator<=>(const AntiAliasingLevel&, const AntiAliasingLevel&) = default;
     private:
         uint32_t m_Value = 1;
     };

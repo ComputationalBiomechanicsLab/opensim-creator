@@ -21,8 +21,8 @@ namespace osc
         public:
             using difference_type = ptrdiff_t;
             using value_type = std::string_view;
-            using pointer = std::string_view const*;
-            using reference = std::string_view const&;
+            using pointer = const std::string_view*;
+            using reference = const std::string_view&;
             using iterator_category = std::forward_iterator_tag;
 
             reference operator*() const
@@ -49,7 +49,7 @@ namespace osc
                 return copy;
             }
 
-            friend bool operator==(Iterator const&, Iterator const&) = default;
+            friend bool operator==(const Iterator&, const Iterator&) = default;
 
         private:
             friend class NodePath;
@@ -98,7 +98,7 @@ namespace osc
             return Iterator{};
         }
 
-        friend bool operator==(NodePath const&, NodePath const&) = default;
+        friend bool operator==(const NodePath&, const NodePath&) = default;
     private:
         std::string m_ParsedPath;
     };
@@ -106,7 +106,7 @@ namespace osc
 
 template<>
 struct std::hash<osc::NodePath> final {
-    size_t operator()(osc::NodePath const& np) const
+    size_t operator()(const osc::NodePath& np) const
     {
         return std::hash<std::string_view>{}(np);
     }

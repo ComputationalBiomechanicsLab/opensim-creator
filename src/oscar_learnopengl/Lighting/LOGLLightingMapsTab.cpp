@@ -24,13 +24,13 @@ namespace
 
     Material CreateLightMappingMaterial(IResourceLoader& rl)
     {
-        Texture2D diffuseMap = LoadTexture2DFromImage(
+        Texture2D diffuseMap = loadTexture2DFromImage(
             rl.open("oscar_learnopengl/textures/container2.png"),
             ColorSpace::sRGB,
             ImageLoadingFlags::FlipVertically
         );
 
-        Texture2D specularMap = LoadTexture2DFromImage(
+        Texture2D specularMap = loadTexture2DFromImage(
             rl.open("oscar_learnopengl/textures/container2_specular.png"),
             ColorSpace::sRGB,
             ImageLoadingFlags::FlipVertically
@@ -83,11 +83,11 @@ private:
         m_LightingMapsMaterial.setFloat("uLightDiffuse", m_LightDiffuse);
         m_LightingMapsMaterial.setFloat("uLightSpecular", m_LightSpecular);
         m_LightingMapsMaterial.setFloat("uMaterialShininess", m_MaterialShininess);
-        Graphics::DrawMesh(m_Mesh, identity<Transform>(), m_LightingMapsMaterial, m_Camera);
+        graphics::drawMesh(m_Mesh, identity<Transform>(), m_LightingMapsMaterial, m_Camera);
 
         // draw lamp
         m_LightCubeMaterial.setColor("uLightColor", Color::white());
-        Graphics::DrawMesh(m_Mesh, m_LightTransform, m_LightCubeMaterial, m_Camera);
+        graphics::drawMesh(m_Mesh, m_LightTransform, m_LightCubeMaterial, m_Camera);
 
         // render 3D scene
         m_Camera.setPixelRect(ui::GetMainViewportWorkspaceScreenRect());

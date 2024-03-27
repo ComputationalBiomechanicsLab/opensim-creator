@@ -14,31 +14,31 @@ void osc::GenerateOverlayDecorations(
 {
     if (params.getDrawAABBs())
     {
-        DrawBVHLeafNodes(meshCache, sceneBVH, out);
+        drawBVHLeafNodes(meshCache, sceneBVH, out);
     }
 
     if (params.getDrawBVH())
     {
-        DrawBVH(meshCache, sceneBVH, out);
+        drawBVH(meshCache, sceneBVH, out);
     }
 
     if (params.getDrawXZGrid())
     {
-        DrawXZGrid(meshCache, out);
+        drawXZGrid(meshCache, out);
     }
 
     if (params.getDrawXYGrid())
     {
-        DrawXYGrid(meshCache, out);
+        drawXYGrid(meshCache, out);
     }
 
     if (params.getDrawYZGrid())
     {
-        DrawYZGrid(meshCache, out);
+        drawYZGrid(meshCache, out);
     }
 
     if (params.getDrawAxisLines())
     {
-        DrawXZFloorLines(meshCache, out);
+        drawXZFloorLines(meshCache, out);
     }
 }

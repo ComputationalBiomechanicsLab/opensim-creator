@@ -113,7 +113,7 @@ namespace
             onModelDecoration
         );
 
-        UpdateSceneBVH(out.decorations, out.bvh);
+        updateSceneBVH(out.decorations, out.bvh);
 
         auto const onOverlayDecoration = [&](SceneDecoration&& decoration)
         {

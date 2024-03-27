@@ -128,7 +128,7 @@ TEST(Color, Vec4ConstructorIsConstexpr)
 TEST(Color, ToVec4ExplicitlyConvertsToVec4)
 {
     Color const c = {0.75, 0.75, 0.75, 1.0f};
-    Vec4 const v = ToVec4(c);
+    Vec4 const v = toVec4(c);
 
     ASSERT_EQ(v.x, c.r);
     ASSERT_EQ(v.y, c.g);
@@ -214,7 +214,7 @@ TEST(Color, CanBeMutablyMultiplied)
 TEST(Color, ToLinearReturnsLinearizedVersionOfOneColorChannel)
 {
     float const sRGBColor = 0.02f;
-    float const linearColor = ToLinear(sRGBColor);
+    float const linearColor = toLinear(sRGBColor);
 
     // we don't test what the actual equation is, just that low
     // sRGB colors map to higher linear colors (i.e. they are
@@ -225,7 +225,7 @@ TEST(Color, ToLinearReturnsLinearizedVersionOfOneColorChannel)
 TEST(Color, ToSRGBReturnsSRGBVersionOfOneColorChannel)
 {
     float const linearColor = 0.4f;
-    float const sRGBColor = ToSRGB(linearColor);
+    float const sRGBColor = toSRGB(linearColor);
 
     // we don't test what the actual equation is, just that low-ish
     // linear colors are less than the equivalent sRGB color (because
@@ -236,29 +236,29 @@ TEST(Color, ToSRGBReturnsSRGBVersionOfOneColorChannel)
 TEST(Color, ToLinearReturnsLinearizedVersionOfColor)
 {
     Color const sRGBColor = {0.5f, 0.5f, 0.5f, 0.5f};
-    Color const linearColor = ToLinear(sRGBColor);
+    Color const linearColor = toLinear(sRGBColor);
 
-    ASSERT_EQ(linearColor.r, ToLinear(sRGBColor.r));
-    ASSERT_EQ(linearColor.g, ToLinear(sRGBColor.g));
-    ASSERT_EQ(linearColor.b, ToLinear(sRGBColor.b));
+    ASSERT_EQ(linearColor.r, toLinear(sRGBColor.r));
+    ASSERT_EQ(linearColor.g, toLinear(sRGBColor.g));
+    ASSERT_EQ(linearColor.b, toLinear(sRGBColor.b));
     ASSERT_EQ(linearColor.a, sRGBColor.a);
 }
 
 TEST(Color, ToSRGBReturnsColorWithGammaCurveApplied)
 {
     Color const linearColor = {0.25f, 0.25f, 0.25f, 0.6f};
-    Color const sRGBColor = ToSRGB(linearColor);
+    Color const sRGBColor = toSRGB(linearColor);
 
-    ASSERT_EQ(sRGBColor.r, ToSRGB(linearColor.r));
-    ASSERT_EQ(sRGBColor.g, ToSRGB(linearColor.g));
-    ASSERT_EQ(sRGBColor.b, ToSRGB(linearColor.b));
+    ASSERT_EQ(sRGBColor.r, toSRGB(linearColor.r));
+    ASSERT_EQ(sRGBColor.g, toSRGB(linearColor.g));
+    ASSERT_EQ(sRGBColor.b, toSRGB(linearColor.b));
     ASSERT_EQ(sRGBColor.a, linearColor.a);
 }
 
 TEST(Color, ToLinearFollowedByToSRGBEffectivelyReuturnsOriginalColor)
 {
     Color const originalColor = {0.1f, 0.1f, 0.1f, 0.5f};
-    Color const converted = ToSRGB(ToLinear(originalColor));
+    Color const converted = toSRGB(toLinear(originalColor));
 
     constexpr float tolerance = 0.0001f;
     ASSERT_NEAR(originalColor.r, converted.r, tolerance);
@@ -278,7 +278,7 @@ TEST(Color, ToColor32ReturnsRgba32VersionOfTheColor)
         static_cast<uint8_t>(color.a * static_cast<float>(0xff)),
     };
 
-    Color32 const got = ToColor32(color);
+    Color32 const got = toColor32(color);
 
     ASSERT_EQ(expected.r, got.r);
     ASSERT_EQ(expected.g, got.g);
@@ -290,22 +290,22 @@ TEST(Color, ToColor32ClampsHDRValues)
 {
     Color const color = {1.5f, 0.0f, 2.0f, 1.0f};
     Color32 const expected = {0xff, 0x00, 0xff, 0xff};
-    ASSERT_EQ(ToColor32(color), expected);
+    ASSERT_EQ(toColor32(color), expected);
 }
 
 TEST(Color, ToColor32ClampsNegativeValues)
 {
     Color const color = {-1.0f, 0.0f, 1.0f, 1.0f};
     Color32 const expected = {0x00, 0x00, 0xff, 0xff};
-    ASSERT_EQ(ToColor32(color), expected);
+    ASSERT_EQ(toColor32(color), expected);
 }
 
 TEST(Color, ToColorFromColor32ReturnsExpectedOutputs)
 {
-    ASSERT_EQ(ToColor(Color32(0xff, 0x00, 0x00, 0xff)), Color(1.0f, 0.0f, 0.0f, 1.0f));
-    ASSERT_EQ(ToColor(Color32(0x00, 0xff, 0x00, 0xff)), Color(0.0f, 1.0f, 0.0f, 1.0f));
-    ASSERT_EQ(ToColor(Color32(0x00, 0x00, 0xff, 0xff)), Color(0.0f, 0.0f, 1.0f, 1.0f));
-    ASSERT_EQ(ToColor(Color32(0x00, 0xff, 0xff, 0x00)), Color(0.0f, 1.0f, 1.0f, 0.0f));
+    ASSERT_EQ(toColor(Color32(0xff, 0x00, 0x00, 0xff)), Color(1.0f, 0.0f, 0.0f, 1.0f));
+    ASSERT_EQ(toColor(Color32(0x00, 0xff, 0x00, 0xff)), Color(0.0f, 1.0f, 0.0f, 1.0f));
+    ASSERT_EQ(toColor(Color32(0x00, 0x00, 0xff, 0xff)), Color(0.0f, 0.0f, 1.0f, 1.0f));
+    ASSERT_EQ(toColor(Color32(0x00, 0xff, 0xff, 0x00)), Color(0.0f, 1.0f, 1.0f, 0.0f));
 }
 
 TEST(Color, CanGetBlackColor)
@@ -365,7 +365,7 @@ TEST(Color, LerpWithZeroReturnsFirstColor)
     Color const a = Color::red();
     Color const b = Color::blue();
 
-    ASSERT_EQ(Lerp(a, b, 0.0f), a);
+    ASSERT_EQ(lerp(a, b, 0.0f), a);
 }
 
 TEST(Color, LerpWithOneReturnsSecondColor)
@@ -373,7 +373,7 @@ TEST(Color, LerpWithOneReturnsSecondColor)
     Color const a = Color::red();
     Color const b = Color::blue();
 
-    ASSERT_EQ(Lerp(a, b, 1.0f), b);
+    ASSERT_EQ(lerp(a, b, 1.0f), b);
 }
 
 TEST(Color, LerpBelowZeroReturnsFirstColor)
@@ -383,7 +383,7 @@ TEST(Color, LerpBelowZeroReturnsFirstColor)
     Color const a = Color::red();
     Color const b = Color::blue();
 
-    ASSERT_EQ(Lerp(a, b, -1.0f), a);
+    ASSERT_EQ(lerp(a, b, -1.0f), a);
 }
 
 TEST(Color, LerpAboveOneReturnsSecondColor)
@@ -393,7 +393,7 @@ TEST(Color, LerpAboveOneReturnsSecondColor)
     Color const a = Color::red();
     Color const b = Color::blue();
 
-    ASSERT_EQ(Lerp(a, b, 2.0f), b);
+    ASSERT_EQ(lerp(a, b, 2.0f), b);
 }
 
 TEST(Color, LerpBetweenTheTwoColorsReturnsExpectedResult)
@@ -403,7 +403,7 @@ TEST(Color, LerpBetweenTheTwoColorsReturnsExpectedResult)
     float const t = 0.5f;
     float const tolerance = 0.0001f;
 
-    Color const rv = Lerp(a, b, t);
+    Color const rv = lerp(a, b, t);
 
     for (size_t i = 0; i < 4; ++i)
     {
@@ -421,52 +421,52 @@ TEST(Color, CanBeHashed)
 
 TEST(Color, ToHtmlStringRGBAReturnsExpectedValues)
 {
-    ASSERT_EQ(ToHtmlStringRGBA(Color::red()), "#ff0000ff");
-    ASSERT_EQ(ToHtmlStringRGBA(Color::green()), "#00ff00ff");
-    ASSERT_EQ(ToHtmlStringRGBA(Color::blue()), "#0000ffff");
-    ASSERT_EQ(ToHtmlStringRGBA(Color::black()), "#000000ff");
-    ASSERT_EQ(ToHtmlStringRGBA(Color::clear()), "#00000000");
-    ASSERT_EQ(ToHtmlStringRGBA(Color::white()), "#ffffffff");
-    ASSERT_EQ(ToHtmlStringRGBA(Color::yellow()), "#ffff00ff");
-    ASSERT_EQ(ToHtmlStringRGBA(Color::cyan()), "#00ffffff");
-    ASSERT_EQ(ToHtmlStringRGBA(Color::magenta()), "#ff00ffff");
+    ASSERT_EQ(toHtmlStringRGBA(Color::red()), "#ff0000ff");
+    ASSERT_EQ(toHtmlStringRGBA(Color::green()), "#00ff00ff");
+    ASSERT_EQ(toHtmlStringRGBA(Color::blue()), "#0000ffff");
+    ASSERT_EQ(toHtmlStringRGBA(Color::black()), "#000000ff");
+    ASSERT_EQ(toHtmlStringRGBA(Color::clear()), "#00000000");
+    ASSERT_EQ(toHtmlStringRGBA(Color::white()), "#ffffffff");
+    ASSERT_EQ(toHtmlStringRGBA(Color::yellow()), "#ffff00ff");
+    ASSERT_EQ(toHtmlStringRGBA(Color::cyan()), "#00ffffff");
+    ASSERT_EQ(toHtmlStringRGBA(Color::magenta()), "#ff00ffff");
 
     // ... and HDR values are LDR clamped
-    ASSERT_EQ(ToHtmlStringRGBA(Color(1.5f, 1.5f, 0.0f, 1.0f)), "#ffff00ff");
+    ASSERT_EQ(toHtmlStringRGBA(Color(1.5f, 1.5f, 0.0f, 1.0f)), "#ffff00ff");
 
     // ... and negative values are clamped
-    ASSERT_EQ(ToHtmlStringRGBA(Color(-1.0f, 0.0f, 0.0f, 1.0f)), "#000000ff");
+    ASSERT_EQ(toHtmlStringRGBA(Color(-1.0f, 0.0f, 0.0f, 1.0f)), "#000000ff");
 }
 
 TEST(Color, TryParseHtmlStringReturnsExpectedValues)
 {
     // when caller specifies all channels
-    ASSERT_EQ(TryParseHtmlString("#ff0000ff"), Color::red());
-    ASSERT_EQ(TryParseHtmlString("#00ff00ff"), Color::green());
-    ASSERT_EQ(TryParseHtmlString("#0000ffff"), Color::blue());
-    ASSERT_EQ(TryParseHtmlString("#000000ff"), Color::black());
-    ASSERT_EQ(TryParseHtmlString("#ffff00ff"), Color::yellow());
-    ASSERT_EQ(TryParseHtmlString("#00000000"), Color::clear());
+    ASSERT_EQ(tryParseHtmlString("#ff0000ff"), Color::red());
+    ASSERT_EQ(tryParseHtmlString("#00ff00ff"), Color::green());
+    ASSERT_EQ(tryParseHtmlString("#0000ffff"), Color::blue());
+    ASSERT_EQ(tryParseHtmlString("#000000ff"), Color::black());
+    ASSERT_EQ(tryParseHtmlString("#ffff00ff"), Color::yellow());
+    ASSERT_EQ(tryParseHtmlString("#00000000"), Color::clear());
 
     // no colorspace conversion occurs on intermediate values (e.g. no sRGB-to-linear)
-    ASSERT_EQ(TryParseHtmlString("#110000ff"), Color((1.0f*16.0f + 1.0f)/255.0f, 0.0f, 0.0f, 1.0f));
+    ASSERT_EQ(tryParseHtmlString("#110000ff"), Color((1.0f*16.0f + 1.0f)/255.0f, 0.0f, 0.0f, 1.0f));
 
     // when caller specifies 3 channels, assume alpha == 1.0
-    ASSERT_EQ(TryParseHtmlString("#ff0000"), Color::red());
-    ASSERT_EQ(TryParseHtmlString("#000000"), Color::black());
+    ASSERT_EQ(tryParseHtmlString("#ff0000"), Color::red());
+    ASSERT_EQ(tryParseHtmlString("#000000"), Color::black());
 
     // unparseable input
-    ASSERT_EQ(TryParseHtmlString("not a color"), std::nullopt);
-    ASSERT_EQ(TryParseHtmlString(" #ff0000ff"), std::nullopt);  // caller handles whitespace
-    ASSERT_EQ(TryParseHtmlString("ff0000ff"), std::nullopt);  // caller must put the # prefix before the string
-    ASSERT_EQ(TryParseHtmlString("red"), std::nullopt);  // literal color strings (e.g. as in Unity) aren't supported (yet)
+    ASSERT_EQ(tryParseHtmlString("not a color"), std::nullopt);
+    ASSERT_EQ(tryParseHtmlString(" #ff0000ff"), std::nullopt);  // caller handles whitespace
+    ASSERT_EQ(tryParseHtmlString("ff0000ff"), std::nullopt);  // caller must put the # prefix before the string
+    ASSERT_EQ(tryParseHtmlString("red"), std::nullopt);  // literal color strings (e.g. as in Unity) aren't supported (yet)
 }
 
 TEST(Color, ToHSLAWorksAsExpected)
 {
     for (auto const& [rgba, expected] : c_RGBAToHSLACases)
     {
-        auto const got = ToHSLA(rgba);
+        auto const got = toHSLA(rgba);
         ASSERT_NEAR(got.h, expected.h/360.0f, c_HLSLConversionTolerance);
         ASSERT_NEAR(got.s, expected.s, c_HLSLConversionTolerance);
         ASSERT_NEAR(got.l, expected.l, c_HLSLConversionTolerance);
@@ -481,7 +481,7 @@ TEST(Color, HSLAToColorWorksAsExpected)
         auto normalized = tc.expectedOutput;
         normalized.h /= 360.0f;
 
-        auto const got = ToColor(normalized);
+        auto const got = toColor(normalized);
         ASSERT_NEAR(got.r, tc.input.r, c_HLSLConversionTolerance) << tc << ", got = " << got;
         ASSERT_NEAR(got.g, tc.input.g, c_HLSLConversionTolerance) << tc << ", got = " << got;
         ASSERT_NEAR(got.b, tc.input.b, c_HLSLConversionTolerance) << tc << ", got = " << got;

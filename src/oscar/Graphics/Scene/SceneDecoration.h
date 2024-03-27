@@ -16,23 +16,23 @@ namespace osc
     // represents a renderable decoration for a component in a model
     struct SceneDecoration final {
 
-        friend bool operator==(SceneDecoration const&, SceneDecoration const&) = default;
+        friend bool operator==(const SceneDecoration&, const SceneDecoration&) = default;
 
-        SceneDecoration with_position(Vec3 const& position_) const
+        SceneDecoration with_position(const Vec3& position_) const
         {
             SceneDecoration copy{*this};
             copy.transform.position = position_;
             return copy;
         }
 
-        SceneDecoration with_transform(Transform const& transform_) const
+        SceneDecoration with_transform(const Transform& transform_) const
         {
             SceneDecoration copy{*this};
             copy.transform = transform_;
             return copy;
         }
 
-        SceneDecoration with_color(Color const& color_) const
+        SceneDecoration with_color(const Color& color_) const
         {
             SceneDecoration copy{*this};
             copy.color = color_;

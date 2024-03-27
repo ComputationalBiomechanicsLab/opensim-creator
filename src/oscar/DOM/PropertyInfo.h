@@ -26,7 +26,7 @@ namespace osc
             Variant defaultValue_
         );
 
-        StringName const& getName() const
+        const StringName& getName() const
         {
             return m_Name;
         }
@@ -36,12 +36,12 @@ namespace osc
             return m_DefaultValue.getType();
         }
 
-        Variant const& getDefaultValue() const
+        const Variant& getDefaultValue() const
         {
             return m_DefaultValue;
         }
 
-        friend bool operator==(PropertyInfo const&, PropertyInfo const&) = default;
+        friend bool operator==(const PropertyInfo&, const PropertyInfo&) = default;
 
     private:
         StringName m_Name;

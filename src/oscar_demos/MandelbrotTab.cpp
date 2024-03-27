@@ -58,7 +58,7 @@ private:
         m_Material.setVec2("uRescale", {1.0f, 1.0f});
         m_Material.setVec2("uOffset", {});
         m_Material.setInt("uNumIterations", m_NumIterations);
-        Graphics::DrawMesh(m_QuadMesh, identity<Transform>(), m_Material, m_Camera);
+        graphics::drawMesh(m_QuadMesh, identity<Transform>(), m_Material, m_Camera);
         m_Camera.setPixelRect(m_MainViewportWorkspaceScreenRect);
         m_Camera.renderToScreen();
     }

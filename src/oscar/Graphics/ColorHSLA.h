@@ -11,5 +11,5 @@ namespace osc
         float a = 0.0f;
     };
 
-    std::ostream& operator<<(std::ostream&, ColorHSLA const&);
+    std::ostream& operator<<(std::ostream&, const ColorHSLA&);
 }
