@@ -303,7 +303,7 @@ void osc::WriteTracebackToLog(LogLevel lvl)
 
     for (int i = 0; i < size; ++i)
     {
-        log_message(lvl, "%s", messages.get_mesh()[i]);
+        log_message(lvl, "%s", messages.get()[i]);
     }
 }
 
@@ -363,7 +363,7 @@ namespace
         /* skip first stack frame (points here) */
         for (int i = 1; i < size; ++i)
         {
-            std::cerr << "    #" << std::setw(2) << i << ' ' << messages.get_mesh()[i] << '\n';
+            std::cerr << "    #" << std::setw(2) << i << ' ' << messages.get()[i] << '\n';
         }
 #endif
     }
@@ -489,7 +489,7 @@ void osc::WriteTracebackToLog(LogLevel lvl)
 
     for (int i = 0; i < size; ++i)
     {
-        log_message(lvl, "%s", messages.get_mesh()[i]);
+        log_message(lvl, "%s", messages.get()[i]);
     }
 }
 
