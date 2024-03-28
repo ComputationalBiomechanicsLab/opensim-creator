@@ -121,21 +121,21 @@ private:
         // cubes
         {
             m_OpaqueMaterial.setTexture("uTexture", m_MarbleTexture);
-            graphics::drawMesh(m_CubeMesh, {.position = {-1.0f, 0.0f, -1.0f}}, m_OpaqueMaterial, m_Camera);
-            graphics::drawMesh(m_CubeMesh, {.position = { 1.0f, 0.0f, -1.0f}}, m_OpaqueMaterial, m_Camera);
+            graphics::draw(m_CubeMesh, {.position = {-1.0f, 0.0f, -1.0f}}, m_OpaqueMaterial, m_Camera);
+            graphics::draw(m_CubeMesh, {.position = { 1.0f, 0.0f, -1.0f}}, m_OpaqueMaterial, m_Camera);
         }
 
         // floor
         {
             m_OpaqueMaterial.setTexture("uTexture", m_MetalTexture);
-            graphics::drawMesh(m_PlaneMesh, identity<Transform>(), m_OpaqueMaterial, m_Camera);
+            graphics::draw(m_PlaneMesh, identity<Transform>(), m_OpaqueMaterial, m_Camera);
         }
 
         // windows
         {
             m_BlendingMaterial.setTexture("uTexture", m_WindowTexture);
             for (Vec3 const& windowLocation : c_WindowLocations) {
-                graphics::drawMesh(m_TransparentMesh, {.position = windowLocation}, m_BlendingMaterial, m_Camera);
+                graphics::draw(m_TransparentMesh, {.position = windowLocation}, m_BlendingMaterial, m_Camera);
             }
         }
 
@@ -156,15 +156,15 @@ private:
     Mesh m_PlaneMesh = GeneratePlane();
     Mesh m_TransparentMesh = GenerateTransparent();
     MouseCapturingCamera m_Camera = CreateCameraThatMatchesLearnOpenGL();
-    Texture2D m_MarbleTexture = loadTexture2DFromImage(
+    Texture2D m_MarbleTexture = load_texture2D_from_image(
         m_Loader.open("oscar_learnopengl/textures/marble.jpg"),
         ColorSpace::sRGB
     );
-    Texture2D m_MetalTexture = loadTexture2DFromImage(
+    Texture2D m_MetalTexture = load_texture2D_from_image(
         m_Loader.open("oscar_learnopengl/textures/metal.png"),
         ColorSpace::sRGB
     );
-    Texture2D m_WindowTexture = loadTexture2DFromImage(
+    Texture2D m_WindowTexture = load_texture2D_from_image(
         m_Loader.open("oscar_learnopengl/textures/window.png"),
         ColorSpace::sRGB
     );

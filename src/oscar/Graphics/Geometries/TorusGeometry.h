@@ -11,16 +11,16 @@ namespace osc
     class TorusGeometry final {
     public:
         TorusGeometry(
-            float radius = 1.0f,
-            float tube = 0.4f,
-            size_t radialSegments = 12,
-            size_t tubularSegments = 48,
+            float inner_radius = 1.0f,
+            float tube_radius = 0.4f,
+            size_t num_radial_segments = 12,
+            size_t num_tubular_segments = 48,
             Radians arc = Degrees{360}
         );
 
-        const Mesh& mesh() const { return m_Mesh; }
-        operator const Mesh& () const { return m_Mesh; }
+        const Mesh& mesh() const { return mesh_; }
+        operator const Mesh& () const { return mesh_; }
     private:
-        Mesh m_Mesh;
+        Mesh mesh_;
     };
 }

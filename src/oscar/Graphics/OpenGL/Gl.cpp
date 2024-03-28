@@ -6,7 +6,7 @@
 #include <stdexcept>
 #include <vector>
 
-void osc::gl::compileFromSource(const ShaderHandle& s, const GLchar* src)
+void osc::gl::compile_from_source(const ShaderHandle& s, const GLchar* src)
 {
     glShaderSource(s.get(), 1, &src, nullptr);
     glCompileShader(s.get());
@@ -21,38 +21,37 @@ void osc::gl::compileFromSource(const ShaderHandle& s, const GLchar* src)
 
     // else: there were compile errors
 
-    GLint logLen = 0;
-    glGetShaderiv(s.get(), GL_INFO_LOG_LENGTH, &logLen);
+    GLint log_length = 0;
+    glGetShaderiv(s.get(), GL_INFO_LOG_LENGTH, &log_length);
 
-    std::vector<GLchar> errMessageBytes(logLen);
-    glGetShaderInfoLog(s.get(), logLen, &logLen, errMessageBytes.data());
+    std::vector<GLchar> error_message_bytes(log_length);
+    glGetShaderInfoLog(s.get(), log_length, &log_length, error_message_bytes.data());
 
     std::stringstream ss;
-    ss << "gl::CompilesShader failed: " << errMessageBytes.data();
+    ss << "glCompileShader failed: " << error_message_bytes.data();
     throw std::runtime_error{std::move(ss).str()};
 }
 
-void osc::gl::linkProgram(gl::Program& prog)
+void osc::gl::link_program(gl::Program& prog)
 {
     glLinkProgram(prog.get());
 
     // check for link errors
-    GLint linkStatus = GL_FALSE;
-    glGetProgramiv(prog.get(), GL_LINK_STATUS, &linkStatus);
+    GLint link_status = GL_FALSE;
+    glGetProgramiv(prog.get(), GL_LINK_STATUS, &link_status);
 
-    if (linkStatus == GL_TRUE) {
+    if (link_status == GL_TRUE) {
         return;
     }
 
     // else: there were link errors
-    GLint logLen = 0;
-    glGetProgramiv(prog.get(), GL_INFO_LOG_LENGTH, &logLen);
+    GLint log_length = 0;
+    glGetProgramiv(prog.get(), GL_INFO_LOG_LENGTH, &log_length);
 
-    std::vector<GLchar> errMessageBytes(logLen);
-    glGetProgramInfoLog(prog.get(), static_cast<GLsizei>(errMessageBytes.size()), nullptr, errMessageBytes.data());
+    std::vector<GLchar> error_message_bytes(log_length);
+    glGetProgramInfoLog(prog.get(), static_cast<GLsizei>(error_message_bytes.size()), nullptr, error_message_bytes.data());
 
     std::stringstream ss;
-    ss << "OpenGL: glLinkProgram() failed: ";
-    ss << errMessageBytes.data();
+    ss << "OpenGL: glLinkProgram() failed: " << error_message_bytes.data();
     throw std::runtime_error{ss.str()};
 }

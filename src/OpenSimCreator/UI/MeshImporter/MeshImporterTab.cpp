@@ -1390,7 +1390,7 @@ private:
             CalcFullApplicationNameWithVersionAndBuild(appMetadata),
         };
 
-        writeMeshAsObj(
+        write_as_obj(
             outputFileStream,
             mesh,
             objMetadata,
@@ -1429,7 +1429,7 @@ private:
             CalcFullApplicationNameWithVersionAndBuild(appMetadata),
         };
 
-        writeMeshAsStl(outputFileStream, mesh, stlMetadata);
+        write_as_stl(outputFileStream, mesh, stlMetadata);
     }
 
     void drawSaveMeshMenu(Mesh const& el)

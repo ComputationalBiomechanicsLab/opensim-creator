@@ -22,48 +22,48 @@ namespace osc
 
         // directly sets a property's value in this object
         //
-        // mostly useful for `implCustomSetter`, because it allows implementations
+        // mostly useful for `impl_custom_setter`, because it allows implementations
         // to (e.g.) coerce property values
-        void setPropertyValueRaw(const StringName& propertyName, const Variant& newPropertyValue);
+        void set_property_value_raw(const StringName& property_name, const Variant& value);
     public:
 
         // gets the `Class` (osc) of the `Object` type (C++)
         //
         // derived types that inherit from `Object` (C++) should ensure that
         // their associated `Class` (osc) this `Class` as the parent.
-        static const Class& getClassStatic();
+        static const Class& klass_static();
 
         virtual ~Object() noexcept = default;
 
-        std::string toString() const
+        std::string to_string() const
         {
-            return implToString();
+            return impl_to_string();
         }
 
         std::unique_ptr<Object> clone() const
         {
-            return implClone();
+            return impl_clone();
         }
 
-        const Class& getClass() const
+        const Class& klass() const
         {
-            return m_Class;
+            return klass_;
         }
 
-        size_t getNumProperties() const;
-        const StringName& getPropertyName(size_t propertyIndex) const;
+        size_t num_properties() const;
+        const StringName& property_name(size_t property_index) const;
 
-        std::optional<size_t> getPropertyIndex(const StringName& propertyName) const;
-        const Variant* tryGetPropertyDefaultValue(const StringName& propertyName) const;
-        const Variant& getPropertyDefaultValue(const StringName& propertyName) const;
-        const Variant* tryGetPropertyValue(const StringName& propertyName) const;
-        const Variant& getPropertyValue(const StringName& propertyName) const;
-        bool trySetPropertyValue(const StringName& propertyName, const Variant& newPropertyValue);
-        void setPropertyValue(const StringName& propertyName, const Variant& newPropertyValue);
+        std::optional<size_t> property_index(const StringName& property_name) const;
+        const Variant* property_default_value(const StringName& property_name) const;
+        const Variant& property_default_value_or_throw(const StringName& property_name) const;
+        const Variant* property_value(const StringName& property_name) const;
+        const Variant& property_value_or_throw(const StringName& property_name) const;
+        bool set_property_value(const StringName& property_name, const Variant& value);
+        void set_property_value_or_throw(const StringName& property_name, const Variant& value);
 
     private:
-        virtual std::string implToString() const;
-        virtual std::unique_ptr<Object> implClone() const = 0;
+        virtual std::string impl_to_string() const;
+        virtual std::unique_ptr<Object> impl_clone() const = 0;
 
         // override this method to implement custom behavior when a property is set on
         // this object
@@ -73,14 +73,14 @@ namespace osc
         //
         // - return `false` if your implementation did not handle the `set` call and, therefore,
         //   `Object` should handle it instead
-        virtual bool implCustomSetter(const StringName& propertyName, const Variant& newPropertyValue);
+        virtual bool impl_custom_property_setter(const StringName& property_name, const Variant& value);
 
-        Class m_Class;
-        std::vector<Variant> m_PropertyValues;
+        Class klass_;
+        std::vector<Variant> property_values_;
     };
 
     inline std::string to_string(const Object& o)
     {
-        return o.toString();
+        return o.to_string();
     }
 }

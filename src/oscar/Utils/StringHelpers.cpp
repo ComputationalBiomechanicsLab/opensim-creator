@@ -100,7 +100,7 @@ bool osc::IsEqualCaseInsensitive(std::string_view a, std::string_view b)
     return osc::equal(a, b, compareChars);
 }
 
-bool osc::IsValidIdentifier(std::string_view sv)
+bool osc::is_valid_identifier(std::string_view sv)
 {
     // helpers
     auto const isValidFirstCharacterOfIdentifier = [](std::string_view::value_type c)

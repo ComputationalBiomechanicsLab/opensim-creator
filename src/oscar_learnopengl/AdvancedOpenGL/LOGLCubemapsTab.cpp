@@ -27,7 +27,7 @@ namespace
     Cubemap LoadCubemap(ResourceLoader& rl)
     {
         // load the first face, so we know the width
-        Texture2D t = loadTexture2DFromImage(
+        Texture2D t = load_texture2D_from_image(
             rl.open(ResourcePath{"oscar_learnopengl/textures"} / c_SkyboxTextureFilenames.front()),
             ColorSpace::sRGB
         );
@@ -42,7 +42,7 @@ namespace
         cubemap.setPixelData(firstCubemapFace(), t.getPixelData());
         for (CubemapFace f = next(firstCubemapFace()); f <= lastCubemapFace(); f = next(f))
         {
-            t = loadTexture2DFromImage(
+            t = load_texture2D_from_image(
                 rl.open(ResourcePath{"oscar_learnopengl/textures"} / c_SkyboxTextureFilenames[ToIndex(f)]),
                 ColorSpace::sRGB
             );
@@ -152,7 +152,7 @@ private:
     {
         m_CubeProperties.setVec3("uCameraPos", m_Camera.getPosition());
         m_CubeProperties.setFloat("uIOR", m_IOR);
-        graphics::drawMesh(
+        graphics::draw(
             m_Cube,
             identity<Transform>(),
             m_CubeMaterials.at(m_CubeMaterialIndex).material,
@@ -166,7 +166,7 @@ private:
     {
         m_Camera.setClearFlags(CameraClearFlags::Nothing);
         m_Camera.setViewMatrixOverride(Mat4{Mat3{m_Camera.getViewMatrix()}});
-        graphics::drawMesh(
+        graphics::draw(
             m_Skybox,
             identity<Transform>(),
             m_SkyboxMaterial,
@@ -199,7 +199,7 @@ private:
     size_t m_CubeMaterialIndex = 0;
     MaterialPropertyBlock m_CubeProperties;
     Mesh m_Cube = BoxGeometry{};
-    Texture2D m_ContainerTexture = loadTexture2DFromImage(
+    Texture2D m_ContainerTexture = load_texture2D_from_image(
         m_Loader.open("oscar_learnopengl/textures/container.jpg"),
         ColorSpace::sRGB
     );

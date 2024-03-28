@@ -17,7 +17,7 @@ TEST(Image, LoadTexture2DFromImageRespectsSRGBColorSpace)
 {
     auto const path = std::filesystem::path{OSC_BUILD_RESOURCES_DIR} / "testoscar" / "awesomeface.png";
 
-    Texture2D const rv = loadTexture2DFromImage(ResourceStream{path}, ColorSpace::sRGB);
+    Texture2D const rv = load_texture2D_from_image(ResourceStream{path}, ColorSpace::sRGB);
 
     ASSERT_EQ(rv.getColorSpace(), ColorSpace::sRGB);
 }
@@ -26,7 +26,7 @@ TEST(Image, LoadTexture2DFromImageRespectsLinearColorSpace)
 {
     auto const path = std::filesystem::path{OSC_BUILD_RESOURCES_DIR} / "testoscar" / "awesomeface.png";
 
-    Texture2D const rv = loadTexture2DFromImage(ResourceStream{path}, ColorSpace::Linear);
+    Texture2D const rv = load_texture2D_from_image(ResourceStream{path}, ColorSpace::Linear);
 
     ASSERT_EQ(rv.getColorSpace(), ColorSpace::Linear);
 }

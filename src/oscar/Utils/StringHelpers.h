@@ -34,7 +34,7 @@ namespace osc
     // - (sorry UTF8ers)
     //
     // (i.e. it would be a valid identifier in, say, a scripting language or tree)
-    bool IsValidIdentifier(std::string_view sv);
+    bool is_valid_identifier(std::string_view sv);
 
     // returns a substring of `sv` without leading/trailing whitespace
     std::string_view TrimLeadingAndTrailingWhitespace(std::string_view sv);

@@ -37,7 +37,7 @@ TEST(NodePath, WhenDefaultConstructedBeginEqualsEnd)
 
 TEST(NodePath, WhenDefaultConstructedIsNonAbsolute)
 {
-    ASSERT_FALSE(NodePath().isAbsolute());
+    ASSERT_FALSE(NodePath().is_absolute());
 }
 
 TEST(NodePath, WhenDefaultConstructedComparesEqualToEmptyStringView)
@@ -70,7 +70,7 @@ TEST(NodePath, WhenConstructedFromSingleElementReturnsNonEmpty)
 
 TEST(NodePath, WhenConstructedFromSingleElementReturnsNotAbsolute)
 {
-    ASSERT_FALSE(NodePath("el").isAbsolute());
+    ASSERT_FALSE(NodePath("el").is_absolute());
 }
 
 TEST(NodePath, WhenConstructedFromSingleElementBeginNotEqualToEnd)
@@ -122,7 +122,7 @@ TEST(NodePath, WhenConstructedFromSingleElementWhenLeadingSlashReturnsNonEmpty)
 
 TEST(NodePath, WhenConstructedFromSingleElementWithLeadingSlashReturnsIsAbsolute)
 {
-    ASSERT_TRUE(NodePath("/el").isAbsolute());
+    ASSERT_TRUE(NodePath("/el").is_absolute());
 }
 
 TEST(NodePath, WhenConstructedFromSingleElementWithLeadingSlashComparesEqualToEquivalentStringView)
@@ -152,7 +152,7 @@ TEST(NodePath, WhenConstructedFromSingleElementWithLeadingSlashHashesToEquivalen
 
 TEST(NodePath, WhenConstructedFromTwoElementsWithNoLeadingSlashIsNotAbsolute)
 {
-    ASSERT_FALSE(NodePath("a/b").isAbsolute());
+    ASSERT_FALSE(NodePath("a/b").is_absolute());
 }
 
 TEST(NodePath, WhenConstructedFromTwoElementsWithNoLeadingSlashHasIteratorDistanceOfTwo)
@@ -183,7 +183,7 @@ TEST(NodePath, WhenConstructedFromTwoElementsWithNoLeadingSlashHashesToSameAsStr
 
 TEST(NodePath, WhenConstructedFromTwoElementsWithLeadingSlashIsAbsolute)
 {
-    ASSERT_TRUE(NodePath("/a/b").isAbsolute());
+    ASSERT_TRUE(NodePath("/a/b").is_absolute());
 }
 
 TEST(NodePath, WhenConstructedFromTwoElementsWithLeadingSlashHasIteratorDistanceOfTwo)

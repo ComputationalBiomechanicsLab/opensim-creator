@@ -9,9 +9,9 @@ namespace osc
     public:
         AABBGeometry(const AABB& = {.min = {-1.0f, -1.0f, -1.0f}, .max = {1.0f, 1.0f, 1.0f}});
 
-        const Mesh& mesh() const { return m_Mesh; }
-        operator const Mesh& () const { return m_Mesh; }
+        const Mesh& mesh() const { return mesh_; }
+        operator const Mesh& () const { return mesh_; }
     private:
-        Mesh m_Mesh;
+        Mesh mesh_;
     };
 }

@@ -35,7 +35,7 @@ ComponentDetails::Response osc::ComponentDetails::onDraw(
     {
         ui::Columns(2);
 
-        ui::Text("getName()");
+        ui::Text("name()");
         ui::NextColumn();
         ui::Text(c.getName());
         ui::NextColumn();
@@ -45,7 +45,7 @@ ComponentDetails::Response osc::ComponentDetails::onDraw(
         ui::Text(c.getAuthors());
         ui::NextColumn();
 
-        ui::Text("getOwner().getName()");
+        ui::Text("getOwner().name()");
         ui::NextColumn();
         ui::Text(TryGetOwnerName(c).value_or("N/A (no owner)"));
         ui::NextColumn();

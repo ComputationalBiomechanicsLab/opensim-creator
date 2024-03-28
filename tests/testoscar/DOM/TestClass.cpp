@@ -28,9 +28,9 @@ namespace
 TEST(Class, DefaultConstructorReturnsClassNameOfObjectNoParentClassNoProperties)
 {
     Class c;
-    ASSERT_EQ(c.getName(), "Object");
-    ASSERT_EQ(c.getParentClass(), std::nullopt);
-    ASSERT_TRUE(c.getPropertyList().empty());
+    ASSERT_EQ(c.name(), "Object");
+    ASSERT_EQ(c.parent_class(), std::nullopt);
+    ASSERT_TRUE(c.properties().empty());
 }
 
 TEST(Class, ConstructorDoesNotThrowForSimpleValidArguments)
@@ -134,13 +134,13 @@ TEST(Class, ConstructorThrowsIfGivenPropertyInfoThatIsDuplicatedInGrandparent)
 TEST(Class, GetNameReturnsNameProvidedViaConstructor)
 {
     StringName const className{"SomeClass"};
-    ASSERT_EQ(Class{className}.getName(), className);
+    ASSERT_EQ(Class{className}.name(), className);
 }
 
 TEST(Class, GetParentClassReturnsParentClassProvidedViaConstructor)
 {
     Class const parentClass{"ParentClass"};
-    ASSERT_EQ(Class("SomeClass", parentClass).getParentClass(), parentClass);
+    ASSERT_EQ(Class("SomeClass", parentClass).parent_class(), parentClass);
 }
 
 TEST(Class, GetPropertyListReturnsProvidedPropertyListForAClassWithNoParents)
@@ -154,7 +154,7 @@ TEST(Class, GetPropertyListReturnsProvidedPropertyListForAClassWithNoParents)
     });
 
     Class const someClass{"SomeClass", Class{}, propList};
-    std::span<PropertyInfo const> const returnedList = someClass.getPropertyList();
+    std::span<PropertyInfo const> const returnedList = someClass.properties();
 
     ASSERT_TRUE(std::equal(propList.begin(), propList.end(), returnedList.begin(), returnedList.end()));
 }
@@ -177,7 +177,7 @@ TEST(Class, GetPropertyListReturnsBaseClassPropertiesFollowedByDerivedClassPrope
     });
     Class const derivedClass{"DerivedClass", baseClass, derivedPropList};
 
-    auto const returnedPropList = derivedClass.getPropertyList();
+    auto const returnedPropList = derivedClass.properties();
     auto const expectedPropList = Concat(basePropList, derivedPropList);
 
     ASSERT_TRUE(std::equal(returnedPropList.begin(), returnedPropList.end(), expectedPropList.begin(), expectedPropList.end()));
@@ -203,11 +203,11 @@ TEST(Class, GetPropertyIndexReturnsExpectedIndices)
 
     for (size_t i = 0; i < baseProps.size(); ++i)
     {
-        ASSERT_EQ(derivedClass.getPropertyIndex(baseProps[i].getName()), i);
+        ASSERT_EQ(derivedClass.property_index(baseProps[i].name()), i);
     }
     for (size_t i = 0; i < derivedProps.size(); ++i)
     {
-        ASSERT_EQ(derivedClass.getPropertyIndex(derivedProps[i].getName()), baseProps.size() + i);
+        ASSERT_EQ(derivedClass.property_index(derivedProps[i].name()), baseProps.size() + i);
     }
 }
 

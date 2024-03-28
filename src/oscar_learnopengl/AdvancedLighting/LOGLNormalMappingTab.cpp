@@ -58,11 +58,11 @@ namespace
 
     Material CreateNormalMappingMaterial(IResourceLoader& rl)
     {
-        Texture2D diffuseMap = loadTexture2DFromImage(
+        Texture2D diffuseMap = load_texture2D_from_image(
             rl.open("oscar_learnopengl/textures/brickwall.jpg"),
             ColorSpace::sRGB
         );
-        Texture2D normalMap = loadTexture2DFromImage(
+        Texture2D normalMap = load_texture2D_from_image(
             rl.open("oscar_learnopengl/textures/brickwall_normal.jpg"),
             ColorSpace::Linear
         );
@@ -128,13 +128,13 @@ private:
             m_NormalMappingMaterial.setVec3("uLightWorldPos", m_LightTransform.position);
             m_NormalMappingMaterial.setVec3("uViewWorldPos", m_Camera.getPosition());
             m_NormalMappingMaterial.setBool("uEnableNormalMapping", m_IsNormalMappingEnabled);
-            graphics::drawMesh(m_QuadMesh, m_QuadTransform, m_NormalMappingMaterial, m_Camera);
+            graphics::draw(m_QuadMesh, m_QuadTransform, m_NormalMappingMaterial, m_Camera);
         }
 
         // draw light source cube
         {
             m_LightCubeMaterial.setColor("uLightColor", Color::white());
-            graphics::drawMesh(m_CubeMesh, m_LightTransform, m_LightCubeMaterial, m_Camera);
+            graphics::draw(m_CubeMesh, m_LightTransform, m_LightCubeMaterial, m_Camera);
         }
 
         m_Camera.setPixelRect(ui::GetMainViewportWorkspaceScreenRect());

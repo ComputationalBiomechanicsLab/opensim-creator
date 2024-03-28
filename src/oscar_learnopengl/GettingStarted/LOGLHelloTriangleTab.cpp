@@ -55,7 +55,7 @@ public:
 private:
     void implOnDraw() final
     {
-        graphics::drawMesh(m_TriangleMesh, identity<Transform>(), m_Material, m_Camera);
+        graphics::draw(m_TriangleMesh, identity<Transform>(), m_Material, m_Camera);
 
         m_Camera.setPixelRect(ui::GetMainViewportWorkspaceScreenRect());
         m_Camera.renderToScreen();

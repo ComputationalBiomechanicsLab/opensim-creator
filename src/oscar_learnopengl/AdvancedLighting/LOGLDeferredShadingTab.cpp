@@ -218,7 +218,7 @@ private:
         // render scene cubes
         for (Vec3 const& objectPosition : c_ObjectPositions)
         {
-            graphics::drawMesh(
+            graphics::draw(
                 m_CubeMesh,
                 {.scale = Vec3{0.5f}, .position = objectPosition},
                 m_GBuffer.material,
@@ -255,7 +255,7 @@ private:
         m_LightPass.material.setFloat("uLightQuadratic", 1.8f);
         m_LightPass.material.setVec3("uViewPos", m_Camera.getPosition());
 
-        graphics::drawMesh(m_QuadMesh, identity<Transform>(), m_LightPass.material, m_Camera);
+        graphics::draw(m_QuadMesh, identity<Transform>(), m_LightPass.material, m_Camera);
 
         m_Camera.renderTo(m_OutputTexture);
 
@@ -270,7 +270,7 @@ private:
 
         for (size_t i = 0; i < m_LightPositions.size(); ++i) {
             m_LightBoxMaterial.setVec3("uLightColor", m_LightColors[i]);
-            graphics::drawMesh(m_CubeMesh, {.scale = Vec3{0.125f}, .position = m_LightPositions[i]}, m_LightBoxMaterial, m_Camera);
+            graphics::draw(m_CubeMesh, {.scale = Vec3{0.125f}, .position = m_LightPositions[i]}, m_LightBoxMaterial, m_Camera);
         }
 
         RenderTarget t{
@@ -299,12 +299,12 @@ private:
     MouseCapturingCamera m_Camera = CreateCameraThatMatchesLearnOpenGL();
     Mesh m_CubeMesh = BoxGeometry{2.0f, 2.0f, 2.0f};
     Mesh m_QuadMesh = PlaneGeometry{2.0f, 2.0f};
-    Texture2D m_DiffuseMap = loadTexture2DFromImage(
+    Texture2D m_DiffuseMap = load_texture2D_from_image(
         m_Loader.open("oscar_learnopengl/textures/container2.png"),
         ColorSpace::sRGB,
         ImageLoadingFlags::FlipVertically
     );
-    Texture2D m_SpecularMap = loadTexture2DFromImage(
+    Texture2D m_SpecularMap = load_texture2D_from_image(
         m_Loader.open("oscar_learnopengl/textures/container2_specular.png"),
         ColorSpace::sRGB,
         ImageLoadingFlags::FlipVertically

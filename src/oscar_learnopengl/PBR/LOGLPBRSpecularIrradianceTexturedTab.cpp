@@ -42,7 +42,7 @@ namespace
 
     RenderTexture LoadEquirectangularHDRTextureIntoCubemap(ResourceLoader& rl)
     {
-        Texture2D hdrTexture = loadTexture2DFromImage(
+        Texture2D hdrTexture = load_texture2D_from_image(
             rl.open("oscar_learnopengl/textures/hdr/newport_loft.hdr"),
             ColorSpace::Linear,
             ImageLoadingFlags::FlipVertically
@@ -67,7 +67,7 @@ namespace
         material.setMat4Array("uShadowMatrices", CalcCubemapViewProjMatrices(projectionMatrix, Vec3{}));
 
         Camera camera;
-        graphics::drawMesh(BoxGeometry{2.0f, 2.0f, 2.0f}, identity<Transform>(), material, camera);
+        graphics::draw(BoxGeometry{2.0f, 2.0f, 2.0f}, identity<Transform>(), material, camera);
         camera.renderTo(cubemapRenderTarget);
 
         // TODO: some way of copying it into an `Cubemap` would make sense
@@ -93,7 +93,7 @@ namespace
         material.setMat4Array("uShadowMatrices", CalcCubemapViewProjMatrices(captureProjection, Vec3{}));
 
         Camera camera;
-        graphics::drawMesh(BoxGeometry{2.0f, 2.0f, 2.0f}, identity<Transform>(), material, camera);
+        graphics::draw(BoxGeometry{2.0f, 2.0f, 2.0f}, identity<Transform>(), material, camera);
         camera.renderTo(irradianceCubemap);
 
         // TODO: some way of copying it into an `Cubemap` would make sense
@@ -142,7 +142,7 @@ namespace
             float const roughness = static_cast<float>(mip)/static_cast<float>(maxMipmapLevel);
             material.setFloat("uRoughness", roughness);
 
-            graphics::drawMesh(BoxGeometry{2.0f, 2.0f, 2.0f}, identity<Transform>(), material, camera);
+            graphics::draw(BoxGeometry{2.0f, 2.0f, 2.0f}, identity<Transform>(), material, camera);
             camera.renderTo(captureRT);
             graphics::copyTexture(captureRT, rv, mip);
         }
@@ -158,7 +158,7 @@ namespace
         camera.setProjectionMatrixOverride(identity<Mat4>());
         camera.setViewMatrixOverride(identity<Mat4>());
 
-        graphics::drawMesh(
+        graphics::draw(
             PlaneGeometry{2.0f, 2.0f, 1, 1},
             identity<Transform>(),
             Material{Shader{
@@ -195,11 +195,11 @@ namespace
 
     struct IBLSpecularObjectTextures final {
         explicit IBLSpecularObjectTextures(ResourceLoader loader_) :
-            albedoMap{loadTexture2DFromImage(loader_.open("albedo.png"), ColorSpace::sRGB)},
-            normalMap{loadTexture2DFromImage(loader_.open("normal.png"), ColorSpace::Linear)},
-            metallicMap{loadTexture2DFromImage(loader_.open("metallic.png"), ColorSpace::Linear)},
-            roughnessMap{loadTexture2DFromImage(loader_.open("roughness.png"), ColorSpace::Linear)},
-            aoMap{loadTexture2DFromImage(loader_.open("ao.png"), ColorSpace::Linear)}
+            albedoMap{load_texture2D_from_image(loader_.open("albedo.png"), ColorSpace::sRGB)},
+            normalMap{load_texture2D_from_image(loader_.open("normal.png"), ColorSpace::Linear)},
+            metallicMap{load_texture2D_from_image(loader_.open("metallic.png"), ColorSpace::Linear)},
+            roughnessMap{load_texture2D_from_image(loader_.open("roughness.png"), ColorSpace::Linear)},
+            aoMap{load_texture2D_from_image(loader_.open("ao.png"), ColorSpace::Linear)}
         {}
 
         Texture2D albedoMap;
@@ -280,7 +280,7 @@ private:
         Vec3 pos = {-5.0f, 0.0f, 2.0f};
         for (IBLSpecularObjectTextures const& t : m_ObjectTextures) {
             setMaterialMaps(m_PBRMaterial, t);
-            graphics::drawMesh(m_SphereMesh, {.position = pos}, m_PBRMaterial, m_Camera);
+            graphics::draw(m_SphereMesh, {.position = pos}, m_PBRMaterial, m_Camera);
             pos.x += 2.0f;
         }
     }
@@ -288,7 +288,7 @@ private:
     void drawLights()
     {
         for (Vec3 const& pos : c_LightPositions) {
-            graphics::drawMesh(
+            graphics::draw(
                 m_SphereMesh,
                 {.scale = Vec3{0.5f}, .position = pos},
                 m_PBRMaterial,
@@ -302,7 +302,7 @@ private:
         m_BackgroundMaterial.setRenderTexture("uEnvironmentMap", m_ProjectedMap);
         m_BackgroundMaterial.setDepthFunction(DepthFunction::LessOrEqual);  // for skybox depth trick
 
-        graphics::drawMesh(m_CubeMesh, identity<Transform>(), m_BackgroundMaterial, m_Camera);
+        graphics::draw(m_CubeMesh, identity<Transform>(), m_BackgroundMaterial, m_Camera);
 
         m_Camera.setClearFlags(CameraClearFlags::Nothing);
         m_Camera.renderTo(m_OutputRender);
@@ -311,7 +311,7 @@ private:
 
     ResourceLoader m_Loader = App::resource_loader();
 
-    Texture2D m_Texture = loadTexture2DFromImage(
+    Texture2D m_Texture = load_texture2D_from_image(
         m_Loader.open("oscar_learnopengl/textures/hdr/newport_loft.hdr"),
         ColorSpace::Linear,
         ImageLoadingFlags::FlipVertically

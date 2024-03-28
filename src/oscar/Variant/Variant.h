@@ -32,7 +32,7 @@ namespace osc
         Variant(Vec2);
         Variant(Vec3);
 
-        VariantType getType() const;
+        VariantType type() const;
 
         // implicit conversions
         operator bool() const;

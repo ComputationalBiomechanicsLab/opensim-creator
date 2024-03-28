@@ -13,7 +13,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <iomanip>
-#include <iostream>
+#include <ostream>
 #include <span>
 #include <sstream>
 #include <string>
@@ -27,46 +27,46 @@ namespace
 {
     struct DAEGeometry final {
 
-        DAEGeometry(std::string geometryID_, Mesh mesh_) :
-            geometryID{std::move(geometryID_)},
+        DAEGeometry(std::string geometry_id_, Mesh mesh_) :
+            geometry_id{std::move(geometry_id_)},
             mesh{std::move(mesh_)}
         {}
 
-        std::string geometryID;
+        std::string geometry_id;
         Mesh mesh;
     };
 
     struct DAEMaterial final {
 
         DAEMaterial(
-            std::string materialID_,
+            std::string material_id_,
             const Color& color_) :
 
-            materialID{std::move(materialID_)},
+            material_id{std::move(material_id_)},
             color{color_}
         {}
 
-        std::string materialID;
+        std::string material_id;
         Color color;
     };
 
     struct DAEInstance final {
 
         DAEInstance(
-            std::string instanceID_,
-            std::string geometryID_,
-            std::string materialID_,
+            std::string instance_id_,
+            std::string geometry_id_,
+            std::string material_id_,
             const Transform& transform_) :
 
-            instanceID{std::move(instanceID_)},
-            geometryID{std::move(geometryID_)},
-            materialID{std::move(materialID_)},
+            instance_id{std::move(instance_id_)},
+            geometry_id{std::move(geometry_id_)},
+            material_id{std::move(material_id_)},
             transform{transform_}
         {}
 
-        std::string instanceID;
-        std::string geometryID;
-        std::string materialID;
+        std::string instance_id;
+        std::string geometry_id;
+        std::string material_id;
         Transform transform;
     };
 
@@ -78,42 +78,42 @@ namespace
         std::vector<DAEInstance> instances;
     };
 
-    DAESceneGraph toDAESceneGraph(std::span<const SceneDecoration> els)
+    DAESceneGraph to_dae_scene_graph(std::span<const SceneDecoration> decorations)
     {
         DAESceneGraph rv;
 
-        size_t latestMesh = 0;
-        size_t latestMaterial = 0;
-        std::unordered_map<Mesh, std::string> mesh2id;
-        std::unordered_map<Color, std::string> color2materialid;
-        size_t latestInstance = 0;
+        std::unordered_map<Mesh, std::string> mesh_to_id;
+        std::unordered_map<Color, std::string> color_to_material_id;
+        size_t latest_mesh = 0;
+        size_t latest_material = 0;
+        size_t latest_instance = 0;
 
-        for (const SceneDecoration& el : els) {
-            if (el.mesh.getTopology() != MeshTopology::Triangles) {
+        for (const SceneDecoration& dec : decorations) {
+            if (dec.mesh.getTopology() != MeshTopology::Triangles) {
                 continue;  // unsupported
             }
 
-            auto [meshIt, meshInserted] = mesh2id.try_emplace(el.mesh, std::string{});
-            if (meshInserted) {
+            auto [mesh_iter, mesh_inserted] = mesh_to_id.try_emplace(dec.mesh, std::string{});
+            if (mesh_inserted) {
                 std::stringstream id;
-                id << "mesh_" << latestMesh++;
-                meshIt->second = std::move(id).str();
+                id << "mesh_" << latest_mesh++;
+                mesh_iter->second = std::move(id).str();
 
-                rv.geometries.emplace_back(meshIt->second, meshIt->first);
+                rv.geometries.emplace_back(mesh_iter->second, mesh_iter->first);
             }
 
-            auto [materialIt, materialInserted] = color2materialid.try_emplace(el.color, std::string{});
-            if (materialInserted) {
+            auto [material_iter, material_inserted] = color_to_material_id.try_emplace(dec.color, std::string{});
+            if (material_inserted) {
                 std::stringstream id;
-                id << "material_" << latestMaterial++;
-                materialIt->second = std::move(id).str();
+                id << "material_" << latest_material++;
+                material_iter->second = std::move(id).str();
 
-                rv.materials.emplace_back(materialIt->second, materialIt->first);
+                rv.materials.emplace_back(material_iter->second, material_iter->first);
             }
 
-            std::stringstream instanceID;
-            instanceID << "instance_" << latestInstance++;
-            rv.instances.emplace_back(std::move(instanceID).str(), meshIt->second, materialIt->second, el.transform);
+            std::stringstream instance_id;
+            instance_id << "instance_" << latest_instance++;
+            rv.instances.emplace_back(std::move(instance_id).str(), mesh_iter->second, material_iter->second, dec.transform);
         }
 
         return rv;
@@ -123,17 +123,17 @@ namespace
 // graph-writing stuff
 namespace
 {
-    std::span<const float> toFloatSpan(std::span<const Vec2> s)
+    std::span<const float> to_float_span(std::span<const Vec2> s)
     {
         return {value_ptr(s[0]), 2 * s.size()};
     }
 
-    std::span<const float> toFloatSpan(std::span<const Vec3> s)
+    std::span<const float> to_float_span(std::span<const Vec3> s)
     {
         return {value_ptr(s[0]), 3 * s.size()};
     }
 
-    std::span<const float> toFloatSpan(const Color& v)
+    std::span<const float> to_float_span(const Color& v)
     {
         return {value_ptr(v), 4};
     }
@@ -151,41 +151,41 @@ namespace
         return out;
     }
 
-    void writeXMLHeader(std::ostream& o)
+    void write_header(std::ostream& o)
     {
         o << R"(<?xml version="1.0" encoding="utf-8"?>)";
         o << '\n';
     }
 
-    void writeCOLLADARootNodeBEGIN(std::ostream& o)
+    void write_collada_root_node_begin(std::ostream& o)
     {
         o << R"(<COLLADA xmlns = "http://www.collada.org/2005/11/COLLADASchema" version = "1.4.1" xmlns:xsi = "http://www.w3.org/2001/XMLSchema-instance">)";
         o << '\n';
     }
 
-    void writeCOLLADARootNodeEND(std::ostream& o)
+    void write_collada_root_node_end(std::ostream& o)
     {
         o << R"(</COLLADA>)";
         o << '\n';
     }
 
-    void writeTopLevelAssetBlock(std::ostream& o, const DAEMetadata& metadata)
+    void write_top_level_asset_node(std::ostream& o, const DAEMetadata& metadata)
     {
         o << "  <asset>\n";
         o << "    <contributor>\n";
         o << "      <author>" << metadata.author << "</author>\n";
-        o << "      <authoring_tool>" << metadata.authoringTool << "</authoring_tool>\n";
+        o << "      <authoring_tool>" << metadata.authoring_tool << "</authoring_tool>\n";
         o << "    </contributor>\n";
-        o << "    <created>" << std::put_time(&metadata.creationTime, "%Y-%m-%d %H:%M:%S") << "</created>\n";
-        o << "    <modified>" << std::put_time(&metadata.modificationTime, "%Y-%m-%d %H:%M:%S") << "</modified>\n";
+        o << "    <created>" << std::put_time(&metadata.creation_time, "%Y-%m-%d %H:%M:%S") << "</created>\n";
+        o << "    <modified>" << std::put_time(&metadata.modification_time, "%Y-%m-%d %H:%M:%S") << "</modified>\n";
         o << "    <unit name=\"meter\" meter=\"1\" />\n";
         o << "    <up_axis>Y_UP</up_axis>\n";
         o << "  </asset>\n";
     }
 
-    void writeEffect(std::ostream& o, const DAEMaterial& material)
+    void write_effect_node(std::ostream& o, const DAEMaterial& material)
     {
-        o << "    <effect id=\"" << material.materialID << "-effect\">\n";
+        o << "    <effect id=\"" << material.material_id << "-effect\">\n";
         o << "      <profile_COMMON>\n";
         o << "        <technique sid=\"common\">\n";
         o << "          <lambert>\n";
@@ -193,7 +193,7 @@ namespace
         o << "              <color sid=\"emission\">0 0 0 1</color>\n";
         o << "            </emission>\n";
         o << "            <diffuse>\n";
-        o << "              <color sid=\"diffuse\">" << toFloatSpan(material.color) << "</color>\n";
+        o << "              <color sid=\"diffuse\">" << to_float_span(material.color) << "</color>\n";
         o << "            </diffuse>\n";
         o << "            <reflectivity>\n";
         o << "              <float sid=\"specular\">0.0</float>\n";
@@ -204,41 +204,41 @@ namespace
         o << "    </effect>\n";
     }
 
-    void writeLibraryEffects(std::ostream& o, std::span<const DAEMaterial> materials)
+    void write_library_effects_node(std::ostream& o, std::span<const DAEMaterial> materials)
     {
         o << "  <library_effects>\n";
         for (const DAEMaterial& material : materials) {
-            writeEffect(o, material);
+            write_effect_node(o, material);
         }
         o << "  </library_effects>\n";
     }
 
-    void writeMaterial(std::ostream& o, const DAEMaterial& material)
+    void write_material_node(std::ostream& o, const DAEMaterial& material)
     {
-        o << "    <material id=\"" << material.materialID << "-material\" name=\"" << material.materialID << "\">\n";
-        o << "      <instance_effect url=\"#" << material.materialID << "-effect\"/>\n";
+        o << "    <material id=\"" << material.material_id << "-material\" name=\"" << material.material_id << "\">\n";
+        o << "      <instance_effect url=\"#" << material.material_id << "-effect\"/>\n";
         o << "    </material>\n";
     }
 
-    void writeLibraryMaterials(std::ostream& o, std::span<const DAEMaterial> materials)
+    void write_library_materials_node(std::ostream& o, std::span<const DAEMaterial> materials)
     {
         o << "  <library_materials>\n";
         for (const DAEMaterial& material : materials) {
-            writeMaterial(o, material);
+            write_material_node(o, material);
         }
         o << "  </library_materials>\n";
     }
 
-    void writeMeshPositionsSource(std::ostream& o, const DAEGeometry& geom)
+    void write_mesh_positions_source_node(std::ostream& o, const DAEGeometry& geom)
     {
         const auto vals = geom.mesh.getVerts();
-        const size_t floatCount = 3 * vals.size();
-        const size_t vertCount = vals.size();
+        const size_t num_floats = 3 * vals.size();
+        const size_t num_verts = vals.size();
 
-        o << "        <source id=\"" << geom.geometryID << "-positions\">\n";
-        o << "          <float_array id=\"" << geom.geometryID << "-positions-array\" count=\"" << floatCount << "\">" << toFloatSpan(vals) << "</float_array>\n";
+        o << "        <source id=\"" << geom.geometry_id << "-positions\">\n";
+        o << "          <float_array id=\"" << geom.geometry_id << "-positions-array\" count=\"" << num_floats << "\">" << to_float_span(vals) << "</float_array>\n";
         o << "          <technique_common>\n";
-        o << "            <accessor source=\"#" << geom.geometryID << "-positions-array\" count=\"" << vertCount << "\" stride=\"3\">\n";
+        o << "            <accessor source=\"#" << geom.geometry_id << "-positions-array\" count=\"" << num_verts << "\" stride=\"3\">\n";
         o << "              <param name=\"X\" type=\"float\"/>\n";
         o << "              <param name=\"Y\" type=\"float\"/>\n";
         o << "              <param name=\"Z\" type=\"float\"/>\n";
@@ -247,16 +247,16 @@ namespace
         o << "        </source>\n";
     }
 
-    void writeMeshNormalsSource(std::ostream& o, const DAEGeometry& geom)
+    void write_mesh_normals_source_node(std::ostream& o, const DAEGeometry& geom)
     {
         const auto vals = geom.mesh.getNormals();
-        const size_t floatCount = 3 * vals.size();
-        const size_t normalCount = vals.size();
+        const size_t num_floats = 3 * vals.size();
+        const size_t num_normals = vals.size();
 
-        o << "        <source id=\""  << geom.geometryID << "-normals\">\n";
-        o << "          <float_array id=\"" << geom.geometryID << "-normals-array\" count=\"" << floatCount << "\">" << toFloatSpan(vals) << "</float_array>\n";
+        o << "        <source id=\""  << geom.geometry_id << "-normals\">\n";
+        o << "          <float_array id=\"" << geom.geometry_id << "-normals-array\" count=\"" << num_floats << "\">" << to_float_span(vals) << "</float_array>\n";
         o << "          <technique_common>\n";
-        o << "            <accessor source=\"#" << geom.geometryID << "-normals-array\" count=\"" << normalCount << "\" stride=\"3\">\n";
+        o << "            <accessor source=\"#" << geom.geometry_id << "-normals-array\" count=\"" << num_normals << "\" stride=\"3\">\n";
         o << "              <param name=\"X\" type=\"float\"/>\n";
         o << "              <param name=\"Y\" type=\"float\"/>\n";
         o << "              <param name=\"Z\" type=\"float\"/>\n";
@@ -265,16 +265,16 @@ namespace
         o << "        </source>\n";
     }
 
-    void writeMeshTextureCoordsSource(std::ostream& o, const DAEGeometry& geom)
+    void write_mesh_texture_coordinates_source_node(std::ostream& o, const DAEGeometry& geom)
     {
         const auto vals = geom.mesh.getTexCoords();
-        const size_t floatCount = 2 * vals.size();
-        const size_t coordCount = vals.size();
+        const size_t num_floats = 2 * vals.size();
+        const size_t num_uvs = vals.size();
 
-        o << "        <source id=\"" << geom.geometryID << "-map-0\">\n";
-        o << "          <float_array id=\"" << geom.geometryID << "-map-0-array\" count=\"" << floatCount << "\">" << toFloatSpan(vals) <<  "</float_array>\n";
+        o << "        <source id=\"" << geom.geometry_id << "-map-0\">\n";
+        o << "          <float_array id=\"" << geom.geometry_id << "-map-0-array\" count=\"" << num_floats << "\">" << to_float_span(vals) <<  "</float_array>\n";
         o << "          <technique_common>\n";
-        o << "            <accessor source=\"#" << geom.geometryID << "-map-0-array\" count=\"" << coordCount << "\" stride=\"2\">\n";
+        o << "            <accessor source=\"#" << geom.geometry_id << "-map-0-array\" count=\"" << num_uvs << "\" stride=\"2\">\n";
         o << "              <param name=\"S\" type=\"float\"/>\n";
         o << "              <param name=\"T\" type=\"float\"/>\n";
         o << "            </accessor>\n";
@@ -282,25 +282,25 @@ namespace
         o << "        </source>\n";
     }
 
-    void writeMeshVertices(std::ostream& o, const DAEGeometry& geom)
+    void write_mesh_vertices_node(std::ostream& o, const DAEGeometry& geom)
     {
-        o << "        <vertices id=\"" << geom.geometryID << "-vertices\">\n";
-        o << R"(           <input semantic="POSITION" source="#)" << geom.geometryID << "-positions\"/>\n";
+        o << "        <vertices id=\"" << geom.geometry_id << "-vertices\">\n";
+        o << R"(           <input semantic="POSITION" source="#)" << geom.geometry_id << "-positions\"/>\n";
         o << "        </vertices>\n";
     }
 
-    void writeMeshTriangles(std::ostream& o, const DAEGeometry& geom)
+    void write_mesh_triangles_node(std::ostream& o, const DAEGeometry& geom)
     {
         const auto indices = geom.mesh.getIndices();
-        const size_t numTriangles = indices.size() / 3;
+        const size_t num_triangles = indices.size() / 3;
 
-        o << "        <triangles count=\"" << numTriangles << "\">\n";
-        o << R"(            <input semantic="VERTEX" source="#)" << geom.geometryID << "-vertices\" offset=\"0\" />\n";
+        o << "        <triangles count=\"" << num_triangles << "\">\n";
+        o << R"(            <input semantic="VERTEX" source="#)" << geom.geometry_id << "-vertices\" offset=\"0\" />\n";
         if (geom.mesh.hasNormals()) {
-            o << R"(            <input semantic="NORMAL" source="#)" << geom.geometryID << "-normals\" offset=\"0\" />\n";
+            o << R"(            <input semantic="NORMAL" source="#)" << geom.geometry_id << "-normals\" offset=\"0\" />\n";
         }
         if (geom.mesh.hasTexCoords()) {
-            o << R"(            <input semantic="TEXCOORD" source="#)" << geom.geometryID << "-map-0\" offset=\"0\" set=\"0\"/>\n";
+            o << R"(            <input semantic="TEXCOORD" source="#)" << geom.geometry_id << "-map-0\" offset=\"0\" set=\"0\"/>\n";
         }
 
         o << "          <p>";
@@ -313,42 +313,42 @@ namespace
         o << "        </triangles>\n";
     }
 
-    void writeMesh(std::ostream& o, const DAEGeometry& geom)
+    void write_mesh_node(std::ostream& o, const DAEGeometry& geom)
     {
         o << R"(      <mesh>)";
         o << '\n';
 
-        writeMeshPositionsSource(o, geom);
+        write_mesh_positions_source_node(o, geom);
         if (geom.mesh.hasNormals()) {
-            writeMeshNormalsSource(o, geom);
+            write_mesh_normals_source_node(o, geom);
         }
         if (geom.mesh.hasTexCoords()) {
-            writeMeshTextureCoordsSource(o, geom);
+            write_mesh_texture_coordinates_source_node(o, geom);
         }
-        writeMeshVertices(o, geom);
-        writeMeshTriangles(o, geom);
+        write_mesh_vertices_node(o, geom);
+        write_mesh_triangles_node(o, geom);
 
         o << R"(      </mesh>)";
         o << '\n';
     }
 
-    void writeGeometry(std::ostream& o, const DAEGeometry& geom)
+    void write_geometry_node(std::ostream& o, const DAEGeometry& geom)
     {
-        o << "    <geometry id=\"" << geom.geometryID << "\" name=\"" << geom.geometryID << "\">\n";
-        writeMesh(o, geom);
+        o << "    <geometry id=\"" << geom.geometry_id << "\" name=\"" << geom.geometry_id << "\">\n";
+        write_mesh_node(o, geom);
         o << "    </geometry>\n";
     }
 
-    void writeLibraryGeometries(std::ostream& o, std::span<const DAEGeometry> geoms)
+    void write_library_geometries_node(std::ostream& o, std::span<const DAEGeometry> geoms)
     {
         o << "  <library_geometries>\n";
         for (const DAEGeometry& geom : geoms) {
-            writeGeometry(o, geom);
+            write_geometry_node(o, geom);
         }
         o << "  </library_geometries>\n";
     }
 
-    void writeTransformMatrix(std::ostream& o, const Transform& t)
+    void write_matrix_node(std::ostream& o, const Transform& t)
     {
         const Mat4 m = mat4_cast(t);
 
@@ -366,38 +366,38 @@ namespace
         o << '\n';
     }
 
-    void writeInstanceGeometryBindMaterial(std::ostream& o, const DAEInstance& instance)
+    void write_instance_bind_material_node(std::ostream& o, const DAEInstance& instance)
     {
         o << "          <bind_material>\n";
         o << "            <technique_common>\n";
-        o << "              <instance_material symbol=\"" << instance.materialID << "-material\" target=\"#" << instance.materialID << "-material\" />\n";
+        o << "              <instance_material symbol=\"" << instance.material_id << "-material\" target=\"#" << instance.material_id << "-material\" />\n";
         o << "            </technique_common>\n";
         o << "          </bind_material>\n";
     }
 
-    void writeNodeInstanceGeometry(std::ostream& o, const DAEInstance& instance)
+    void write_instance_geometry_node(std::ostream& o, const DAEInstance& instance)
     {
-        o << "        <instance_geometry url=\"#" << instance.geometryID << "\" name=\"" << instance.geometryID << "\">\n";
-        writeInstanceGeometryBindMaterial(o, instance);
+        o << "        <instance_geometry url=\"#" << instance.geometry_id << "\" name=\"" << instance.geometry_id << "\">\n";
+        write_instance_bind_material_node(o, instance);
         o << "        </instance_geometry>\n";
     }
 
-    void writeSceneNode(std::ostream& o, const DAEInstance& instance)
+    void write_scene_node(std::ostream& o, const DAEInstance& instance)
     {
-        o << "      <node id=\"" << instance.instanceID << "\" name=\"" << instance.instanceID << "\" type=\"NODE\">\n";
-        writeTransformMatrix(o, instance.transform);
-        writeNodeInstanceGeometry(o, instance);
+        o << "      <node id=\"" << instance.instance_id << "\" name=\"" << instance.instance_id << "\" type=\"NODE\">\n";
+        write_matrix_node(o, instance.transform);
+        write_instance_geometry_node(o, instance);
         o << "      </node>\n";
     }
 
-    void writeMainScene(std::ostream& o, const DAESceneGraph& graph)
+    void write_library_visual_scenes_node(std::ostream& o, const DAESceneGraph& graph)
     {
         o << R"(  <library_visual_scenes>
     <visual_scene id="Scene" name="Scene">)";
         o << '\n';
 
         for (const DAEInstance& ins : graph.instances) {
-            writeSceneNode(o, ins);
+            write_scene_node(o, ins);
         }
 
         o << R"(    </visual_scene>
@@ -407,30 +407,29 @@ namespace
 }
 
 
-// public API
-
 osc::DAEMetadata::DAEMetadata(
     std::string_view author_,
-    std::string_view authoringTool_) :
+    std::string_view authoring_tool_) :
+
     author{author_},
-    authoringTool{authoringTool_},
-    creationTime{GetSystemCalendarTime()},
-    modificationTime{creationTime}
+    authoring_tool{authoring_tool_},
+    creation_time{GetSystemCalendarTime()},
+    modification_time{creation_time}
 {}
 
-void osc::writeDecorationsAsDAE(
+void osc::write_as_dae(
     std::ostream& o,
     std::span<const SceneDecoration> els,
     const DAEMetadata& metadata)
 {
-    const DAESceneGraph graph = toDAESceneGraph(els);
+    const DAESceneGraph graph = to_dae_scene_graph(els);
 
-    writeXMLHeader(o);
-    writeCOLLADARootNodeBEGIN(o);
-    writeTopLevelAssetBlock(o, metadata);
-    writeLibraryEffects(o, graph.materials);
-    writeLibraryMaterials(o, graph.materials);
-    writeLibraryGeometries(o, graph.geometries);
-    writeMainScene(o, graph);
-    writeCOLLADARootNodeEND(o);
+    write_header(o);
+    write_collada_root_node_begin(o);
+    write_top_level_asset_node(o, metadata);
+    write_library_effects_node(o, graph.materials);
+    write_library_materials_node(o, graph.materials);
+    write_library_geometries_node(o, graph.geometries);
+    write_library_visual_scenes_node(o, graph);
+    write_collada_root_node_end(o);
 }

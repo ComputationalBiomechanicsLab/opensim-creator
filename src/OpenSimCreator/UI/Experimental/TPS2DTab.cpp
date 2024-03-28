@@ -315,10 +315,10 @@ public:
     Impl()
     {
         m_Material.setTexture("uTextureSampler", m_BoxTexture);
-        m_WireframeMaterial.setColor({0.0f, 0.0f, 0.0f, 0.15f});
-        m_WireframeMaterial.setTransparent(true);
-        m_WireframeMaterial.setWireframeMode(true);
-        m_WireframeMaterial.setDepthTested(false);
+        m_WireframeMaterial.set_color({0.0f, 0.0f, 0.0f, 0.15f});
+        m_WireframeMaterial.set_transparent(true);
+        m_WireframeMaterial.set_wireframe(true);
+        m_WireframeMaterial.set_depth_tested(false);
         m_Camera.setViewMatrixOverride(identity<Mat4>());
         m_Camera.setProjectionMatrixOverride(identity<Mat4>());
         m_Camera.setBackgroundColor(Color::white());
@@ -414,8 +414,8 @@ private:
         RenderTextureDescriptor desc{dims};
         desc.setAntialiasingLevel(App::get().getCurrentAntiAliasingLevel());
         out.emplace(desc);
-        graphics::drawMesh(mesh, identity<Transform>(), m_Material, m_Camera);
-        graphics::drawMesh(mesh, identity<Transform>(), m_WireframeMaterial, m_Camera);
+        graphics::draw(mesh, identity<Transform>(), m_Material, m_Camera);
+        graphics::draw(mesh, identity<Transform>(), m_WireframeMaterial, m_Camera);
 
         OSC_ASSERT(out.has_value());
         m_Camera.renderTo(*out);
@@ -506,7 +506,7 @@ private:
     float m_BlendingFactor = 1.0f;
 
     // GUI state (rendering, colors, etc.)
-    Texture2D m_BoxTexture = loadTexture2DFromImage(
+    Texture2D m_BoxTexture = load_texture2D_from_image(
         m_Loader.open("textures/container.jpg"),
         ColorSpace::sRGB
     );

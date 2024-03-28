@@ -14,37 +14,27 @@ namespace osc
         PropertyInfo() = default;
 
         PropertyInfo(
-            std::string_view name_,
-            Variant defaultValue_) :
+            std::string_view name,
+            Variant default_value) :
 
-            PropertyInfo{StringName{name_}, std::move(defaultValue_)}
-        {
-        }
+            PropertyInfo{StringName{name}, std::move(default_value)}
+        {}
 
         PropertyInfo(
-            StringName name_,
-            Variant defaultValue_
+            StringName name,
+            Variant default_value
         );
 
-        const StringName& getName() const
-        {
-            return m_Name;
-        }
+        const StringName& name() const { return name_; }
 
-        VariantType getType() const
-        {
-            return m_DefaultValue.getType();
-        }
+        VariantType type() const { return default_value_.type(); }
 
-        const Variant& getDefaultValue() const
-        {
-            return m_DefaultValue;
-        }
+        const Variant& default_value() const { return default_value_; }
 
         friend bool operator==(const PropertyInfo&, const PropertyInfo&) = default;
 
     private:
-        StringName m_Name;
-        Variant m_DefaultValue;
+        StringName name_;
+        Variant default_value_;
     };
 }

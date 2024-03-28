@@ -57,7 +57,7 @@ TEST(Variant, CanExplicitlyContructFromBool)
     Variant vtrue{true};
     ASSERT_EQ(vtrue.to<bool>(), true);
 
-    ASSERT_EQ(vtrue.getType(), VariantType::Bool);
+    ASSERT_EQ(vtrue.type(), VariantType::Bool);
 }
 
 TEST(Variant, CanImplicitlyConstructFromBool)
@@ -69,7 +69,7 @@ TEST(Variant, CanExplicitlyConstructFromColor)
 {
     Variant v{Color::red()};
     ASSERT_EQ(v.to<Color>(), Color::red());
-    ASSERT_EQ(v.getType(), VariantType::Color);
+    ASSERT_EQ(v.type(), VariantType::Color);
 }
 
 TEST(Variant, CanImplicitlyConstructFromColor)
@@ -81,7 +81,7 @@ TEST(Variant, CanExplicityConstructFromFloat)
 {
     Variant v{1.0f};
     ASSERT_EQ(v.to<float>(), 1.0f);
-    ASSERT_EQ(v.getType(), VariantType::Float);
+    ASSERT_EQ(v.type(), VariantType::Float);
 }
 
 TEST(Variant, CanImplicitlyConstructFromFloat)
@@ -93,7 +93,7 @@ TEST(Variant, CanExplicitlyConstructFromInt)
 {
     Variant v{5};
     ASSERT_EQ(v.to<int>(), 5);
-    ASSERT_EQ(v.getType(), VariantType::Int);
+    ASSERT_EQ(v.type(), VariantType::Int);
 }
 
 TEST(Variant, CanImplicitlyConstructFromInt)
@@ -105,7 +105,7 @@ TEST(Variant, CanExplicitlyConstructFromStringRValue)
 {
     Variant v{std::string{"stringrval"}};
     ASSERT_EQ(v.to<std::string>(), "stringrval");
-    ASSERT_EQ(v.getType(), VariantType::String);
+    ASSERT_EQ(v.type(), VariantType::String);
 }
 
 TEST(Variant, CanImplicitlyConstructFromStringRValue)
@@ -117,7 +117,7 @@ TEST(Variant, CanExplicitlyConstructFromStringLiteral)
 {
     Variant v{"cstringliteral"};
     ASSERT_EQ(v.to<std::string>(), "cstringliteral");
-    ASSERT_EQ(v.getType(), VariantType::String);
+    ASSERT_EQ(v.type(), VariantType::String);
 }
 
 TEST(Variant, CanImplicitlyConstructFromStringLiteral)
@@ -129,7 +129,7 @@ TEST(Variant, CanExplicitlyConstructFromCStringView)
 {
     Variant v{CStringView{"cstringview"}};
     ASSERT_EQ(v.to<std::string>(), "cstringview");
-    ASSERT_EQ(v.getType(), VariantType::String);
+    ASSERT_EQ(v.type(), VariantType::String);
 }
 
 TEST(Variant, CanImplicitlyConstructFromCStringView)
@@ -141,7 +141,7 @@ TEST(Variant, CanExplicitlyConstructFromVec2)
 {
     Variant v{Vec2{1.0f, 2.0f}};
     ASSERT_EQ(v.to<Vec2>(), Vec2(1.0f, 2.0f));
-    ASSERT_EQ(v.getType(), VariantType::Vec2);
+    ASSERT_EQ(v.type(), VariantType::Vec2);
 }
 
 TEST(Variant, CanImplicitlyConstructFromVec2)
@@ -153,7 +153,7 @@ TEST(Variant, CanExplicitlyConstructFromVec3)
 {
     Variant v{Vec3{1.0f, 2.0f, 3.0f}};
     ASSERT_EQ(v.to<Vec3>(), Vec3(1.0f, 2.0f, 3.0f));
-    ASSERT_EQ(v.getType(), VariantType::Vec3);
+    ASSERT_EQ(v.type(), VariantType::Vec3);
 }
 
 TEST(Variant, CanImplicitlyConstructFromVec3)
@@ -163,7 +163,7 @@ TEST(Variant, CanImplicitlyConstructFromVec3)
 
 TEST(Variant, DefaultConstructedValueIsNil)
 {
-    ASSERT_EQ(Variant{}.getType(), VariantType::Nil);
+    ASSERT_EQ(Variant{}.type(), VariantType::Nil);
 }
 
 TEST(Variant, NilValueToBoolReturnsFalse)
@@ -1122,7 +1122,7 @@ TEST(Variant, HashesForStringValuesMatchStdStringEtc)
 
 TEST(Variant, ConstructingFromstringNameMakesGetTypeReturnStringNameType)
 {
-    ASSERT_EQ(Variant(StringName{"s"}).getType(), VariantType::StringName);
+    ASSERT_EQ(Variant(StringName{"s"}).type(), VariantType::StringName);
 }
 
 TEST(Variant, ConstructedFromSameStringNameComparesEquivalent)

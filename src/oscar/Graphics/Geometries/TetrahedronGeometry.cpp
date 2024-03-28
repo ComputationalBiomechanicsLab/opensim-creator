@@ -10,7 +10,7 @@
 
 using namespace osc;
 
-osc::TetrahedronGeometry::TetrahedronGeometry(float radius, size_t detail)
+osc::TetrahedronGeometry::TetrahedronGeometry(float radius, size_t detail_level)
 {
     // implementation ported from threejs (TetrahedronGeometry)
 
@@ -22,5 +22,5 @@ osc::TetrahedronGeometry::TetrahedronGeometry(float radius, size_t detail)
         2, 1, 0,    0, 3, 2,    1, 3, 0,    2, 3, 1
     });
 
-    m_Mesh = PolyhedronGeometry(vertices, indices, radius, detail);
+    mesh_ = PolyhedronGeometry(vertices, indices, radius, detail_level);
 }

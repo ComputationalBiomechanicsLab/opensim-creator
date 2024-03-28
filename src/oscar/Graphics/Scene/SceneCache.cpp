@@ -155,9 +155,9 @@ public:
     {
         if (not m_WireframeMaterial) {
             m_WireframeMaterial.emplace();
-            m_WireframeMaterial->setColor({0.0f, 0.6f});
-            m_WireframeMaterial->setWireframeMode(true);
-            m_WireframeMaterial->setTransparent(true);
+            m_WireframeMaterial->set_color({0.0f, 0.6f});
+            m_WireframeMaterial->set_wireframe(true);
+            m_WireframeMaterial->set_transparent(true);
         }
         return *m_WireframeMaterial;
     }
@@ -212,12 +212,7 @@ Mesh osc::SceneCache::get(
 
     auto [it, inserted] = guard->try_emplace(key, m_Impl->cube);
     if (inserted) {
-        try {
-            it->second = getter();
-        }
-        catch (const std::exception& ex) {
-            log_error("%s: error getting a mesh via a getter: it will be replaced with a dummy cube: %s", key.c_str(), ex.what());
-        }
+        it->second = getter();
     }
 
     return it->second;

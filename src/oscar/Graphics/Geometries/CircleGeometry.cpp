@@ -16,14 +16,14 @@ using namespace osc::literals;
 
 osc::CircleGeometry::CircleGeometry(
     float radius,
-    size_t segments,
-    Radians thetaStart,
-    Radians thetaLength)
+    size_t num_segments,
+    Radians theta_start,
+    Radians theta_length)
 {
     // this implementation was initially hand-ported from threejs (CircleGeometry)
 
-    segments = max(3_uz, segments);
-    const auto fsegments = static_cast<float>(segments);
+    num_segments = max(3_uz, num_segments);
+    const auto fnum_segments = static_cast<float>(num_segments);
 
     std::vector<uint32_t> indices;
     std::vector<Vec3> vertices;
@@ -36,23 +36,23 @@ osc::CircleGeometry::CircleGeometry(
     uvs.emplace_back(0.5f, 0.5f);
 
     // not-middle vertices
-    for (ptrdiff_t s = 0; s <= static_cast<ptrdiff_t>(segments); ++s) {
+    for (ptrdiff_t s = 0; s <= static_cast<ptrdiff_t>(num_segments); ++s) {
         const auto fs = static_cast<float>(s);
-        const auto segment = thetaStart + (fs/fsegments * thetaLength);
-        const auto cosSeg = cos(segment);
-        const auto sinSeg = sin(segment);
+        const auto segment = theta_start + (fs/fnum_segments * theta_length);
+        const auto cos_segment = cos(segment);
+        const auto sin_segment = sin(segment);
 
-        vertices.emplace_back(radius * cosSeg, radius * sinSeg, 0.0f);
+        vertices.emplace_back(radius * cos_segment, radius * sin_segment, 0.0f);
         normals.emplace_back(0.0f, 0.0f, 1.0f);
-        uvs.emplace_back((cosSeg + 1.0f) / 2.0f, (sinSeg + 1.0f) / 2.0f);
+        uvs.emplace_back((cos_segment + 1.0f) / 2.0f, (sin_segment + 1.0f) / 2.0f);
     }
 
-    for (uint32_t i = 1; i <= static_cast<uint32_t>(segments); ++i) {
+    for (uint32_t i = 1; i <= static_cast<uint32_t>(num_segments); ++i) {
         indices.insert(indices.end(), {i, i+1, 0});
     }
 
-    m_Mesh.setVerts(vertices);
-    m_Mesh.setNormals(normals);
-    m_Mesh.setTexCoords(uvs);
-    m_Mesh.setIndices(indices);
+    mesh_.setVerts(vertices);
+    mesh_.setNormals(normals);
+    mesh_.setTexCoords(uvs);
+    mesh_.setIndices(indices);
 }

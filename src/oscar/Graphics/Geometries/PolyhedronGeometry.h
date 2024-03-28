@@ -11,21 +11,21 @@ namespace osc
 {
     // generates a 3D solid with flat faces by projecting triangle faces (`indicies`
     // indexes into `vertices` for each triangle) onto a sphere, followed by dividing
-    // them up to the desired level of detail
+    // them up to the desired level of detail_level
     //
     // inspired by three.js's `PolyhedronGeometry`
     class PolyhedronGeometry final {
     public:
         PolyhedronGeometry(
-            std::span<Vec3 const> vertices,
-            std::span<uint32_t const> indices,
+            std::span<const Vec3> vertices,
+            std::span<const uint32_t> indices,
             float radius,
-            size_t detail
+            size_t detail_level
         );
 
-        operator const Mesh& () const { return m_Mesh; }
-        const Mesh& mesh() const { return m_Mesh; }
+        operator const Mesh& () const { return mesh_; }
+        const Mesh& mesh() const { return mesh_; }
     private:
-        Mesh m_Mesh;
+        Mesh mesh_;
     };
 }

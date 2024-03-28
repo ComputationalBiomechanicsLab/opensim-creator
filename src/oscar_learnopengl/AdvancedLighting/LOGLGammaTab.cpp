@@ -74,7 +74,7 @@ namespace
 
     Material CreateFloorMaterial(IResourceLoader& rl)
     {
-        Texture2D woodTexture = loadTexture2DFromImage(
+        Texture2D woodTexture = load_texture2D_from_image(
             rl.open("oscar_learnopengl/textures/wood.png"),
             ColorSpace::sRGB
         );
@@ -127,7 +127,7 @@ private:
 
         // render scene
         m_Material.setVec3("uViewPos", m_Camera.getPosition());
-        graphics::drawMesh(m_PlaneMesh, identity<Transform>(), m_Material, m_Camera);
+        graphics::draw(m_PlaneMesh, identity<Transform>(), m_Material, m_Camera);
         m_Camera.renderToScreen();
     }
 

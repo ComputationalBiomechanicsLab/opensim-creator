@@ -8,7 +8,7 @@ using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_VertexShaderSrc = R"(
+    constexpr CStringView c_vertex_shader_src = R"(
 #version 330 core
 
 uniform mat4 uModelMat;
@@ -29,7 +29,7 @@ void main()
     gl_Position = uViewProjMat * vec4(FragPos, 1.0);
 }
 )";
-    constexpr CStringView c_FragmentShaderSrc = R"(
+    constexpr CStringView c_fragment_shader_src = R"(
 #version 330 core
 
 uniform vec3 uLightPos;
@@ -68,13 +68,13 @@ void main()
 }
 
 osc::MeshPhongMaterial::MeshPhongMaterial() :
-    m_Material{Shader{c_VertexShaderSrc, c_FragmentShaderSrc}}
+    m_Material{Shader{c_vertex_shader_src, c_fragment_shader_src}}
 {
-    setLightPosition({1.0f, 1.0f, 1.0f});
-    setViewerPosition({0.0f, 0.0f, 0.0f});
-    setLightColor(Color::white());
-    setAmbientColor({0.1f, 0.1f, 0.1f});
-    setDiffuseColor(Color::blue());
-    setSpecularColor({0.1f, 0.1f, 0.1f});
-    setSpecularShininess(32.0f);
+    set_light_position({1.0f, 1.0f, 1.0f});
+    set_viewer_position({0.0f, 0.0f, 0.0f});
+    set_light_color(Color::white());
+    set_ambient_color({0.1f, 0.1f, 0.1f});
+    set_diffuse_color(Color::blue());
+    set_specular_color({0.1f, 0.1f, 0.1f});
+    set_specular_shininess(32.0f);
 }

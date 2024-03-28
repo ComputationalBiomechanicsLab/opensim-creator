@@ -14,23 +14,23 @@ osc::DodecahedronGeometry::DodecahedronGeometry(float radius, size_t detail)
 {
     // implementation ported from threejs (DodecahedronGeometry)
 
-    const float t = (1.0f + sqrt(5.0f))/2.0f;
+    const float t = 0.5f * (1.0f + sqrt(5.0f));
     const float r = 1.0f/t;
 
     const auto vertices = std::to_array<Vec3>({
-        {-1.0f, -1.0f, -1.0f}, {-1.0f, -1.0f, 1.0f},
-        {-1.0f,  1.0f, -1.0f}, {-1.0f,  1.0f, 1.0f},
-        { 1.0f, -1.0f, -1.0f}, { 1.0f, -1.0f, 1.0f},
-        { 1.0f,  1.0f, -1.0f}, { 1.0f,  1.0f, 1.0f},
+        {-1.0f, -1.0f, -1.0f}, {-1.0f, -1.0f,  1.0f},
+        {-1.0f,  1.0f, -1.0f}, {-1.0f,  1.0f,  1.0f},
+        { 1.0f, -1.0f, -1.0f}, { 1.0f, -1.0f,  1.0f},
+        { 1.0f,  1.0f, -1.0f}, { 1.0f,  1.0f,  1.0f},
 
-        { 0.0f, -r, -t}      , {0.0f, -r, t},
-        {0, r, - t},           {0, r, t},
+        { 0.0f, -r,    -t   }, { 0.0f, -r,     t   },
+        { 0.0f,  r,    -t   }, { 0.0f,  r,     t   },
 
-        {-r, -t, 0}, {-r, t, 0},
-        {r, -t, 0}, {r, t, 0},
+        {-r,    -t,     0.0f}, {-r,     t,     0.0f},
+        { r,    -t,     0.0f}, { r,     t,     0.0f},
 
-        {-t, 0, -r}, {t, 0, -r},
-        {-t, 0, r}, {t, 0, r},
+        {-t,     0.0f, -r   }, { t,     0.0f, -r   },
+        {-t,     0.0f,  r   }, { t,     0.0f,  r   },
     });
 
     const auto indices = std::to_array<uint32_t>({
@@ -48,5 +48,5 @@ osc::DodecahedronGeometry::DodecahedronGeometry(float radius, size_t detail)
         1, 12, 14, 	1, 14, 5, 	1, 5, 9
     });
 
-    m_Mesh = PolyhedronGeometry{vertices, indices, radius, detail};
+    mesh_ = PolyhedronGeometry{vertices, indices, radius, detail};
 }

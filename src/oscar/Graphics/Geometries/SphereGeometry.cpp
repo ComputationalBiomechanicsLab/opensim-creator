@@ -15,20 +15,20 @@ using namespace osc::literals;
 
 osc::SphereGeometry::SphereGeometry(
     float radius,
-    size_t widthSegments,
-    size_t heightSegments,
-    Radians phiStart,
-    Radians phiLength,
-    Radians thetaStart,
-    Radians thetaLength)
+    size_t num_width_segments,
+    size_t num_height_segments,
+    Radians phi_start,
+    Radians phi_length,
+    Radians theta_start,
+    Radians theta_length)
 {
     // implementation was initially hand-ported from three.js (SphereGeometry)
 
-    widthSegments = max(3_uz, widthSegments);
-    heightSegments = max(2_uz, heightSegments);
-    const auto fwidthSegments = static_cast<float>(widthSegments);
-    const auto fheightSegments = static_cast<float>(heightSegments);
-    const auto thetaEnd = min(thetaStart + thetaLength, 180_deg);
+    num_width_segments = max(3_uz, num_width_segments);
+    num_height_segments = max(2_uz, num_height_segments);
+    const auto fnum_width_segments = static_cast<float>(num_width_segments);
+    const auto fnum_height_segments = static_cast<float>(num_height_segments);
+    const auto theta_end = min(theta_start + theta_length, 180_deg);
 
     uint32_t index = 0;
     std::vector<std::vector<uint32_t>> grid;
@@ -39,54 +39,54 @@ osc::SphereGeometry::SphereGeometry(
     std::vector<Vec2> uvs;
 
     // generate vertices, normals, and uvs
-    for (size_t iy = 0; iy <= heightSegments; ++iy) {
-        std::vector<uint32_t> verticesRow;
-        const float v = static_cast<float>(iy) / fheightSegments;
+    for (size_t iy = 0; iy <= num_height_segments; ++iy) {
+        std::vector<uint32_t> row_vertices;
+        const float v = static_cast<float>(iy) / fnum_height_segments;
 
         // edge-case: poles
-        float uOffset = 0.0f;
-        if (iy == 0 && thetaStart == 0_deg) {
-            uOffset = 0.5f / fwidthSegments;
+        float u_offset = 0.0f;
+        if (iy == 0 and theta_start == 0_deg) {
+            u_offset = 0.5f / fnum_width_segments;
         }
-        else if (iy == heightSegments && thetaEnd == 180_deg) {
-            uOffset = -0.5f / fwidthSegments;
+        else if (iy == num_height_segments and theta_end == 180_deg) {
+            u_offset = -0.5f / fnum_width_segments;
         }
 
-        for (size_t ix = 0; ix <= widthSegments; ++ix) {
-            const float u = static_cast<float>(ix) / fwidthSegments;
+        for (size_t ix = 0; ix <= num_width_segments; ++ix) {
+            const float u = static_cast<float>(ix) / fnum_width_segments;
 
             const Vec3& vertex = vertices.emplace_back(
-                -radius * cos(phiStart + u*phiLength) * sin(thetaStart + v*thetaLength),
-                radius * cos(thetaStart + v*thetaLength),
-                radius * sin(phiStart + u*phiLength) * sin(thetaStart + v*thetaLength)
+                -radius * cos(phi_start   + u*phi_length)    * sin(theta_start + v*theta_length),
+                 radius * cos(theta_start + v*theta_length),
+                 radius * sin(phi_start   + u*phi_length)    * sin(theta_start + v*theta_length)
             );
             normals.push_back(normalize(vertex));
-            uvs.emplace_back(u + uOffset, 1.0f - v);
+            uvs.emplace_back(u + u_offset, 1.0f - v);
 
-            verticesRow.push_back(index++);
+            row_vertices.push_back(index++);
         }
-        grid.push_back(std::move(verticesRow));
+        grid.push_back(std::move(row_vertices));
     }
 
     // generate indices
-    for (size_t iy = 0; iy < heightSegments; ++iy) {
-        for (size_t ix = 0; ix < widthSegments; ++ix) {
+    for (size_t iy = 0; iy < num_height_segments; ++iy) {
+        for (size_t ix = 0; ix < num_width_segments; ++ix) {
             const uint32_t a = grid.at(iy  ).at(ix+1);
             const uint32_t b = grid.at(iy  ).at(ix);
             const uint32_t c = grid.at(iy+1).at(ix);
             const uint32_t d = grid.at(iy+1).at(ix+1);
 
-            if (iy != 0 || thetaStart > 0_deg) {
+            if (iy != 0 or theta_start > 0_deg) {
                 indices.insert(indices.end(), {a, b, d});
             }
-            if (iy != (heightSegments-1) || thetaEnd < 180_deg) {
+            if (iy != (num_height_segments-1) or theta_end < 180_deg) {
                 indices.insert(indices.end(), {b, c, d});
             }
         }
     }
 
-    m_Mesh.setVerts(vertices);
-    m_Mesh.setNormals(normals);
-    m_Mesh.setTexCoords(uvs);
-    m_Mesh.setIndices(indices);
+    mesh_.setVerts(vertices);
+    mesh_.setNormals(normals);
+    mesh_.setTexCoords(uvs);
+    mesh_.setIndices(indices);
 }

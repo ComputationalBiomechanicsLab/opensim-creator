@@ -27,17 +27,18 @@ using namespace osc;
 
 namespace
 {
-    inline constexpr int c_StbTrue = 1;
-    inline constexpr int c_StbFalse = 0;
+    inline constexpr int c_stb_true = 1;
+    inline constexpr int c_stb_false = 0;
 
     // this mutex is required because stbi has global mutable state (e.g. stbi_set_flip_vertically_on_load)
-    auto lockStbiAPI()
+    auto lock_stbi_api()
     {
-        static std::mutex s_StbiMutex;
-        return std::lock_guard{s_StbiMutex};
+        static std::mutex s_stbi_mutex;
+        return std::lock_guard{s_stbi_mutex};
     }
 
-    constexpr stbi_io_callbacks c_StbiIStreamCallbacks = {
+    // IO callbacks for `stbi`, so that it is compatible with (e.g.) virtual filesystems
+    constexpr stbi_io_callbacks c_stbi_stream_callbacks = {
 
         .read = [](void* user, char* data, int size) -> int
         {
@@ -65,107 +66,98 @@ namespace
         }
     };
 
-    Texture2D load32BitTexture(
+    Texture2D load_32bit_texture(
         std::istream& in,
         std::string_view name,
-        ColorSpace colorSpace,
+        ColorSpace color_space,
         ImageLoadingFlags flags)
     {
-        const auto guard = lockStbiAPI();
+        const auto guard = lock_stbi_api();
 
         if (flags & ImageLoadingFlags::FlipVertically) {
-            stbi_set_flip_vertically_on_load(c_StbTrue);
+            stbi_set_flip_vertically_on_load(c_stb_true);
         }
 
         Vec2i dims{};
-        int numChannels = 0;
+        int num_channels = 0;
         const std::unique_ptr<float, decltype(&stbi_image_free)> pixels = {
-            stbi_loadf_from_callbacks(&c_StbiIStreamCallbacks, &in, &dims.x, &dims.y, &numChannels, 0),
+            stbi_loadf_from_callbacks(&c_stbi_stream_callbacks, &in, &dims.x, &dims.y, &num_channels, 0),
             stbi_image_free,
         };
 
         if (flags & ImageLoadingFlags::FlipVertically) {
-            stbi_set_flip_vertically_on_load(c_StbFalse);
+            stbi_set_flip_vertically_on_load(c_stb_false);
         }
 
-        if (!pixels) {
+        if (not pixels) {
             std::stringstream ss;
             ss << name << ": error loading HDR image: " << stbi_failure_reason();
             throw std::runtime_error{std::move(ss).str()};
         }
 
         const std::optional<TextureFormat> format = ToTextureFormat(
-            static_cast<size_t>(numChannels),
+            static_cast<size_t>(num_channels),
             TextureChannelFormat::Float32
         );
 
-        if (!format) {
+        if (not format) {
             std::stringstream ss;
-            ss << name << ": error loading HDR image: no TextureFormat exists for " << numChannels << " floating-point channel images";
+            ss << name << ": error loading HDR image: no TextureFormat exists for " << num_channels << " floating-point channel images";
             throw std::runtime_error{std::move(ss).str()};
         }
 
-        const std::span<const float> pixelSpan{
+        const std::span<const float> pixel_span{
             pixels.get(),
-            static_cast<size_t>(dims.x*dims.y*numChannels)
+            static_cast<size_t>(dims.x*dims.y*num_channels)
         };
 
-        Texture2D rv{
-            dims,
-            *format,
-            colorSpace,
-        };
-        rv.setPixelData(ViewObjectRepresentations<uint8_t>(pixelSpan));
-
+        Texture2D rv{dims, *format, color_space};
+        rv.setPixelData(ViewObjectRepresentations<uint8_t>(pixel_span));
         return rv;
     }
 
-    Texture2D load8BitTexture(
+    Texture2D load_8bit_texture(
         std::istream& in,
         std::string_view name,
-        ColorSpace colorSpace,
+        ColorSpace color_space,
         ImageLoadingFlags flags)
     {
-        const auto guard = lockStbiAPI();
+        const auto guard = lock_stbi_api();
 
         if (flags & ImageLoadingFlags::FlipVertically) {
-            stbi_set_flip_vertically_on_load(c_StbTrue);
+            stbi_set_flip_vertically_on_load(c_stb_true);
         }
 
         Vec2i dims{};
-        int numChannels = 0;
+        int num_channels = 0;
         const std::unique_ptr<stbi_uc, decltype(&stbi_image_free)> pixels = {
-            stbi_load_from_callbacks(&c_StbiIStreamCallbacks, &in, &dims.x, &dims.y, &numChannels, 0),
+            stbi_load_from_callbacks(&c_stbi_stream_callbacks, &in, &dims.x, &dims.y, &num_channels, 0),
             stbi_image_free,
         };
 
         if (flags & ImageLoadingFlags::FlipVertically) {
-            stbi_set_flip_vertically_on_load(c_StbFalse);
+            stbi_set_flip_vertically_on_load(c_stb_false);
         }
 
-        if (!pixels) {
+        if (not pixels) {
             std::stringstream ss;
             ss << name  << ": error loading non-HDR image: " << stbi_failure_reason();
             throw std::runtime_error{std::move(ss).str()};
         }
 
         const std::optional<TextureFormat> format = ToTextureFormat(
-            static_cast<size_t>(numChannels),
+            static_cast<size_t>(num_channels),
             TextureChannelFormat::Uint8
         );
 
-        if (!format) {
+        if (not format) {
             std::stringstream ss;
-            ss << name << ": error loading non-HDR image: no TextureFormat exists for " << numChannels << " 8-bit channel images";
+            ss << name << ": error loading non-HDR image: no TextureFormat exists for " << num_channels << " 8-bit channel images";
             throw std::runtime_error{std::move(ss).str()};
         }
 
-        Texture2D rv{
-            dims,
-            *format,
-            colorSpace,
-        };
-        rv.setPixelData({pixels.get(), static_cast<size_t>(dims.x*dims.y*numChannels)});
+        Texture2D rv{dims, *format, color_space};
+        rv.setPixelData({pixels.get(), static_cast<size_t>(dims.x*dims.y*num_channels)});
         return rv;
     }
 
@@ -178,25 +170,25 @@ namespace
     }
 }
 
-Texture2D osc::loadTexture2DFromImage(
+Texture2D osc::load_texture2D_from_image(
     std::istream& in,
     std::string_view name,
-    ColorSpace colorSpace,
+    ColorSpace color_space,
     ImageLoadingFlags flags)
 {
     // test whether file content is HDR or not
-    const auto originalPos = in.tellg();
-    const bool isHDR = stbi_is_hdr_from_callbacks(&c_StbiIStreamCallbacks, &in) != 0;
-    in.seekg(originalPos);  // rewind, before reading content
+    const auto original_cursor_pos = in.tellg();
+    const bool is_hdr = stbi_is_hdr_from_callbacks(&c_stbi_stream_callbacks, &in) != 0;
+    in.seekg(original_cursor_pos);  // rewind, before reading content
 
-    OSC_ASSERT(in.tellg() == originalPos);
+    OSC_ASSERT(in.tellg() == original_cursor_pos);
 
-    return isHDR ?
-        load32BitTexture(in, name, colorSpace, flags) :
-        load8BitTexture(in, name, colorSpace, flags);
+    return is_hdr ?
+        load_32bit_texture(in, name, color_space, flags) :
+        load_8bit_texture(in, name, color_space, flags);
 }
 
-void osc::writeToPNG(
+void osc::write_to_png(
     const Texture2D& tex,
     std::ostream& out)
 {
@@ -204,9 +196,9 @@ void osc::writeToPNG(
     const int stride = 4 * dims.x;
     const std::vector<Color32> pixels = tex.getPixels32();
 
-    const auto guard = lockStbiAPI();
+    const auto guard = lock_stbi_api();
 
-    stbi_flip_vertically_on_write(c_StbTrue);
+    stbi_flip_vertically_on_write(c_stb_true);
     const int rv = stbi_write_png_to_func(
         stbiWriteToStdOstream,
         &out,
@@ -216,9 +208,7 @@ void osc::writeToPNG(
         pixels.data(),
         stride
     );
-    stbi_flip_vertically_on_write(c_StbFalse);
+    stbi_flip_vertically_on_write(c_stb_false);
 
     OSC_ASSERT(rv != 0);
-
-    // (dtor drops guard here)
 }

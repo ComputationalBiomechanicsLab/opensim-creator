@@ -201,7 +201,7 @@ private:
                 throw std::runtime_error{maybeImagePath->string() + ": cannot open for writing"};
             }
             Texture2D outputImage = renderOutputImage();
-            writeToPNG(outputImage, fout);
+            write_to_png(outputImage, fout);
             OpenPathInOSDefaultApplication(*maybeImagePath);
         }
     }
@@ -299,7 +299,7 @@ private:
                     }
                     mesh.setIndices(indices);
                 }
-                graphics::drawMesh(mesh, Transform{}, material, c);
+                graphics::draw(mesh, Transform{}, material, c);
             }
 
             OSC_ASSERT(rt.has_value());

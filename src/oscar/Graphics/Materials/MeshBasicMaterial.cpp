@@ -8,7 +8,7 @@ using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_VertexShaderSrc = R"(
+    constexpr CStringView c_vertex_shader_src = R"(
 #version 330 core
 
 uniform mat4 uViewProjMat;
@@ -22,7 +22,7 @@ void main()
     gl_Position = uViewProjMat * aModelMat * vec4(aPos, 1.0);
 }
 )";
-    constexpr CStringView c_FragmentShaderSrc = R"(
+    constexpr CStringView c_fragment_shader_src = R"(
 #version 330 core
 
 uniform vec4 uDiffuseColor;
@@ -36,7 +36,7 @@ void main()
 }
 
 osc::MeshBasicMaterial::MeshBasicMaterial() :
-    m_Material{Shader{c_VertexShaderSrc, c_FragmentShaderSrc}}
+    m_Material{Shader{c_vertex_shader_src, c_fragment_shader_src}}
 {
-    setColor(Color::black());
+    set_color(Color::black());
 }

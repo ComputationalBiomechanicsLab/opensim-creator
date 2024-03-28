@@ -10,11 +10,11 @@
 
 namespace osc
 {
-    // loads the given (named) image stream into a Texture2D
+    // loads the given (named) image stream into a `Texture2D`
     //
     // throws if the image data isn't representable as a GPU texture (e.g. because it has
     // an incorrect number of color channels)
-    Texture2D loadTexture2DFromImage(
+    Texture2D load_texture2D_from_image(
         std::istream&,
         std::string_view name,
         ColorSpace,
@@ -22,12 +22,12 @@ namespace osc
     );
 
     template<NamedInputStream Stream>
-    Texture2D loadTexture2DFromImage(
+    Texture2D load_texture2D_from_image(
         Stream&& stream,
         ColorSpace colorSpace,
         ImageLoadingFlags flags = ImageLoadingFlags::None)
     {
-        return loadTexture2DFromImage(
+        return load_texture2D_from_image(
             std::forward<Stream>(stream),
             stream.name(),
             colorSpace,
@@ -35,7 +35,7 @@ namespace osc
         );
     }
 
-    void writeToPNG(
+    void write_to_png(
         const Texture2D&,
         std::ostream&
     );

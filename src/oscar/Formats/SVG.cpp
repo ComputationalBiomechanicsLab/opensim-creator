@@ -16,14 +16,12 @@
 
 using namespace osc;
 
-Texture2D osc::readSVGIntoTexture(
-    std::istream& inputStream,
-    float scale)
+Texture2D osc::load_texture2D_from_svg(std::istream& in, float scale)
 {
-    // read SVG content into a std::string and parse it
+    // read SVG content into a `std::string` and parse it
     std::string data;
     copy(
-        std::istreambuf_iterator{inputStream},
+        std::istreambuf_iterator{in},
         std::istreambuf_iterator<std::istream::char_type>{},
         std::back_inserter(data)
     );
@@ -38,11 +36,11 @@ Texture2D osc::readSVGIntoTexture(
     doc->setMatrix(m);
 
     // render to a rescaled bitmap
-    const Vec2u32 bitmapDimensions{
+    const Vec2u32 bitmap_dimensions{
         static_cast<uint32_t>(scale*doc->width()),
         static_cast<uint32_t>(scale*doc->height())
     };
-    lunasvg::Bitmap bitmap = doc->renderToBitmap(bitmapDimensions.x, bitmapDimensions.y, 0x00000000);
+    lunasvg::Bitmap bitmap = doc->renderToBitmap(bitmap_dimensions.x, bitmap_dimensions.y, 0x00000000);
     bitmap.convertToRGBA();
 
     // return as a GPU-ready texture

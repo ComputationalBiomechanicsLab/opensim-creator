@@ -14,26 +14,26 @@ namespace osc
     public:
         MeshPhongMaterial();
 
-        Vec3 getLightPosition() const { return *m_Material.getVec3(c_LightPosPropName); }
-        void setLightPosition(Vec3 v) { m_Material.setVec3(c_LightPosPropName, v); }
+        Vec3 light_position() const { return *m_Material.getVec3(c_LightPosPropName); }
+        void set_light_position(Vec3 v) { m_Material.setVec3(c_LightPosPropName, v); }
 
-        Vec3 getViewerPosition() const { return *m_Material.getVec3(c_ViewPosPropName); }
-        void setViewerPosition(Vec3 v) { m_Material.setVec3(c_ViewPosPropName, v); }
+        Vec3 viewer_position() const { return *m_Material.getVec3(c_ViewPosPropName); }
+        void set_viewer_position(Vec3 v) { m_Material.setVec3(c_ViewPosPropName, v); }
 
-        Color getLightColor() const { return *m_Material.getColor(c_LightColorPropName); }
-        void setLightColor(Color c) { m_Material.setColor(c_LightColorPropName, c); }
+        Color light_color() const { return *m_Material.getColor(c_LightColorPropName); }
+        void set_light_color(Color c) { m_Material.setColor(c_LightColorPropName, c); }
 
-        Color getAmbientColor() const { return *m_Material.getColor(c_AmbientColorPropName); }
-        void setAmbientColor(Color c) { m_Material.setColor(c_AmbientColorPropName, c); }
+        Color ambient_color() const { return *m_Material.getColor(c_AmbientColorPropName); }
+        void set_ambient_color(Color c) { m_Material.setColor(c_AmbientColorPropName, c); }
 
-        Color getDiffuseColor() const { return *m_Material.getColor(c_DiffuseColorPropName); }
-        void setDiffuseColor(Color c) { m_Material.setColor(c_DiffuseColorPropName, c); }
+        Color diffuse_color() const { return *m_Material.getColor(c_DiffuseColorPropName); }
+        void set_diffuse_color(Color c) { m_Material.setColor(c_DiffuseColorPropName, c); }
 
-        Color getSpecularColor() const { return *m_Material.getColor(c_SpecularColorPropName); }
-        void setSpecularColor(Color c) { m_Material.setColor(c_SpecularColorPropName, c); }
+        Color specular_color() const { return *m_Material.getColor(c_SpecularColorPropName); }
+        void set_specular_color(Color c) { m_Material.setColor(c_SpecularColorPropName, c); }
 
-        float getSpecularShininess() const { return *m_Material.getFloat(c_ShininessPropName); }
-        void setSpecularShininess(float v) { m_Material.setFloat(c_ShininessPropName, v); }
+        float specular_shininess() const { return *m_Material.getFloat(c_ShininessPropName); }
+        void set_specular_shininess(float v) { m_Material.setFloat(c_ShininessPropName, v); }
 
         operator const Material& () const { return m_Material; }
     private:

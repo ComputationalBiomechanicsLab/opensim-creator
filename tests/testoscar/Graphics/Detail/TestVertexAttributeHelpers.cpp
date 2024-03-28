@@ -9,5 +9,5 @@ using namespace osc::detail;
 
 TEST(VertexAttributeHelpers, DefaultFormatWorks)
 {
-    static_assert(DefaultFormat(VertexAttribute::Position) == VertexAttributeFormat::Float32x3);
+    static_assert(default_format(VertexAttribute::Position) == VertexAttributeFormat::Float32x3);
 }

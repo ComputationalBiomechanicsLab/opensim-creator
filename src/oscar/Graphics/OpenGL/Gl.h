@@ -29,25 +29,22 @@ namespace osc::gl
     // the OpenGL API
     class OpenGlException final : public std::exception {
     public:
-        OpenGlException(std::string s) : m_Msg{std::move(s)}
+        OpenGlException(std::string message) : message_{std::move(message)}
         {}
 
-        const char* what() const noexcept final
-        {
-            return m_Msg.c_str();
-        }
+        const char* what() const final { return message_.c_str(); }
 
     private:
-        std::string m_Msg;
+        std::string message_;
     };
 
     // a moveable handle to an OpenGL shader
     class ShaderHandle {
     public:
         explicit ShaderHandle(GLenum type) :
-            m_ShaderHandle{glCreateShader(type)}
+            shader_handle_{glCreateShader(type)}
         {
-            if (m_ShaderHandle == c_EmptyShaderSenteniel) {
+            if (shader_handle_ == c_empty_shader_sentinel) {
                 throw OpenGlException{"glCreateShader() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
             }
         }
@@ -55,33 +52,33 @@ namespace osc::gl
         ShaderHandle(const ShaderHandle&) = delete;
 
         ShaderHandle(ShaderHandle&& tmp) noexcept :
-            m_ShaderHandle{std::exchange(tmp.m_ShaderHandle, c_EmptyShaderSenteniel)}
+            shader_handle_{std::exchange(tmp.shader_handle_, c_empty_shader_sentinel)}
         {}
 
         ShaderHandle& operator=(const ShaderHandle&) = delete;
 
         ShaderHandle& operator=(ShaderHandle&& tmp) noexcept
         {
-            std::swap(m_ShaderHandle, tmp.m_ShaderHandle);
+            std::swap(shader_handle_, tmp.shader_handle_);
             return *this;
         }
 
         ~ShaderHandle() noexcept
         {
-            if (m_ShaderHandle != c_EmptyShaderSenteniel) {
-                glDeleteShader(m_ShaderHandle);
+            if (shader_handle_ != c_empty_shader_sentinel) {
+                glDeleteShader(shader_handle_);
             }
         }
 
-        GLuint get() const { return m_ShaderHandle; }
+        GLuint get() const { return shader_handle_; }
 
     private:
-        static constexpr GLuint c_EmptyShaderSenteniel = 0;
-        GLuint m_ShaderHandle;
+        static constexpr GLuint c_empty_shader_sentinel = 0;
+        GLuint shader_handle_;
     };
 
     // compile a shader from source
-    void compileFromSource(const ShaderHandle&, const GLchar* src);
+    void compile_from_source(const ShaderHandle&, const GLchar* src);
 
     // a shader of a particular type (e.g. GL_FRAGMENT_SHADER) that owns a
     // shader handle
@@ -90,15 +87,15 @@ namespace osc::gl
     public:
         static constexpr GLuint type = ShaderType;
 
-        Shader() : m_ShaderHandle{type} {}
+        Shader() : shader_handle_{type} {}
 
-        GLuint get() const { return m_ShaderHandle.get(); }
+        GLuint get() const { return shader_handle_.get(); }
 
-        ShaderHandle& handle() { return m_ShaderHandle; }
-        const ShaderHandle& handle() const { return m_ShaderHandle; }
+        ShaderHandle& handle() { return shader_handle_; }
+        const ShaderHandle& handle() const { return shader_handle_; }
 
     private:
-        ShaderHandle m_ShaderHandle;
+        ShaderHandle shader_handle_;
     };
 
     class VertexShader : public Shader<GL_VERTEX_SHADER> {};
@@ -106,19 +103,19 @@ namespace osc::gl
     class GeometryShader : public Shader<GL_GEOMETRY_SHADER> {};
 
     template<typename TShader>
-    inline TShader compileFromSource(const GLchar* src)
+    inline TShader compile_from_source(const GLchar* src)
     {
         TShader rv;
-        compileFromSource(rv.handle(), src);
+        compile_from_source(rv.handle(), src);
         return rv;
     }
 
     // an OpenGL program (i.e. n shaders linked into one pipeline)
     class Program final {
     public:
-        Program() : m_ProgramHandle{glCreateProgram()}
+        Program() : program_handle_{glCreateProgram()}
         {
-            if (m_ProgramHandle == c_EmptyProgramSenteniel) {
+            if (program_handle_ == c_empty_program_sentinel) {
                 throw OpenGlException{"glCreateProgram() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
             }
         }
@@ -126,103 +123,103 @@ namespace osc::gl
         Program(const Program&) = delete;
 
         Program(Program&& tmp) noexcept :
-            m_ProgramHandle{std::exchange(tmp.m_ProgramHandle, c_EmptyProgramSenteniel)}
+            program_handle_{std::exchange(tmp.program_handle_, c_empty_program_sentinel)}
         {}
 
         Program& operator=(const Program&) = delete;
 
         Program& operator=(Program&& tmp) noexcept
         {
-            std::swap(m_ProgramHandle, tmp.m_ProgramHandle);
+            std::swap(program_handle_, tmp.program_handle_);
             return *this;
         }
 
         ~Program() noexcept
         {
-            if (m_ProgramHandle != c_EmptyProgramSenteniel) {
-                glDeleteProgram(m_ProgramHandle);
+            if (program_handle_ != c_empty_program_sentinel) {
+                glDeleteProgram(program_handle_);
             }
         }
 
-        GLuint get() const { return m_ProgramHandle; }
+        GLuint get() const { return program_handle_; }
 
     private:
-        static constexpr GLuint c_EmptyProgramSenteniel = 0;
-        GLuint m_ProgramHandle;
+        static constexpr GLuint c_empty_program_sentinel = 0;
+        GLuint program_handle_;
     };
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glUseProgram.xhtml
-    inline void useProgram(const Program& p)
+    inline void use_program(const Program& program)
     {
-        glUseProgram(p.get());
+        glUseProgram(program.get());
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glUseProgram.xhtml
-    inline void useProgram()
+    inline void use_program()
     {
         glUseProgram(static_cast<GLuint>(0));
     }
 
-    inline void attachShader(Program& p, const ShaderHandle& sh)
+    inline void attach_shader(Program& program, const ShaderHandle& shader)
     {
-        glAttachShader(p.get(), sh.get());
+        glAttachShader(program.get(), shader.get());
     }
 
     template<GLuint ShaderType>
-    inline void attachShader(Program& p, const Shader<ShaderType>& s)
+    inline void attach_shader(Program& program, const Shader<ShaderType>& shader)
     {
-        glAttachShader(p.get(), s.get());
+        glAttachShader(program.get(), shader.get());
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glLinkProgram.xhtml
-    void linkProgram(Program& prog);
+    void link_program(Program&);
 
-    inline gl::Program createProgramFrom(
-        const VertexShader& vs,
-        const FragmentShader& fs)
+    inline gl::Program create_program_from(
+        const VertexShader& vertex_shader,
+        const FragmentShader& fragment_shader)
     {
-        gl::Program p;
-        attachShader(p, vs);
-        attachShader(p, fs);
-        linkProgram(p);
-        return p;
+        gl::Program program;
+        attach_shader(program, vertex_shader);
+        attach_shader(program, fragment_shader);
+        link_program(program);
+        return program;
     }
 
-    inline gl::Program createProgramFrom(
-        const VertexShader& vs,
-        const FragmentShader& fs,
-        const GeometryShader& gs)
+    inline gl::Program create_program_from(
+        const VertexShader& vertex_shader,
+        const FragmentShader& fragment_shader,
+        const GeometryShader& geometry_shader)
     {
-        gl::Program p;
-        attachShader(p, vs);
-        attachShader(p, fs);
-        attachShader(p, gs);
-        linkProgram(p);
-        return p;
+        gl::Program program;
+        attach_shader(program, vertex_shader);
+        attach_shader(program, fragment_shader);
+        attach_shader(program, geometry_shader);
+        link_program(program);
+        return program;
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glGetUniformLocation.xhtml
     //     - throws on error
-    [[nodiscard]] inline GLint getUniformLocation(
-        const Program& p,
-        const GLchar* name)
+    [[nodiscard]] inline GLint get_uniform_location(
+        const Program& program,
+        const GLchar* uniform_name)
     {
-        const GLint handle = glGetUniformLocation(p.get(), name);
-        if (handle == -1) {
-            throw OpenGlException{std::string{"glGetUniformLocation() failed: cannot get "} + name};
+        const GLint location = glGetUniformLocation(program.get(), uniform_name);
+        if (location == -1) {
+            throw OpenGlException{std::string{"glGetUniformLocation() failed: cannot get "} + uniform_name};
         }
-        return handle;
+        return location;
     }
 
-    [[nodiscard]] inline GLint getAttribLocation(
-        const Program& p,
-        const GLchar* name)
+    [[nodiscard]] inline GLint get_attribute_location(
+        const Program& program,
+        const GLchar* attribute_name)
     {
-        const GLint handle = glGetAttribLocation(p.get(), name);
-        if (handle == -1) {
-            throw OpenGlException{std::string{"glGetAttribLocation() failed: cannot get "} + name};
+        const GLint location = glGetAttribLocation(program.get(), attribute_name);
+        if (location == -1) {
+            throw OpenGlException{std::string{"glGetAttribLocation() failed: cannot get "} + attribute_name};
         }
-        return handle;
+        return location;
     }
 
     // metadata for GLSL data types that are typically bound from the CPU via (e.g.)
@@ -255,17 +252,17 @@ namespace osc::gl
         struct mat4 final {
             static constexpr GLint size = 16;
             static constexpr GLenum type = GL_FLOAT;
-            static constexpr size_t elementsPerLocation = 4;
+            static constexpr size_t elements_per_location = 4;
         };
         struct mat3 final {
             static constexpr GLint size = 9;
             static constexpr GLenum type = GL_FLOAT;
-            static constexpr size_t elementsPerLocation = 3;
+            static constexpr size_t elements_per_location = 3;
         };
         struct mat4x3 final {
             static constexpr GLint size = 12;
             static constexpr GLenum type = GL_FLOAT;
-            static constexpr size_t elementsPerLocation = 3;
+            static constexpr size_t elements_per_location = 3;
         };
     }
 
@@ -275,25 +272,25 @@ namespace osc::gl
     class Uniform_ {
     public:
         constexpr Uniform_(GLint _location) :
-            m_UniformLocation{_location}
+            uniform_location_{_location}
         {}
 
-        Uniform_(const Program& p, const GLchar* name) :
-            m_UniformLocation{getUniformLocation(p, name)}
+        Uniform_(const Program& program, const GLchar* uniform_name) :
+            uniform_location_{get_uniform_location(program, uniform_name)}
         {}
 
         [[nodiscard]] constexpr GLuint get() const
         {
-            return static_cast<GLuint>(m_UniformLocation);
+            return static_cast<GLuint>(uniform_location_);
         }
 
         [[nodiscard]] constexpr GLint geti() const
         {
-            return m_UniformLocation;
+            return uniform_location_;
         }
 
     private:
-        GLint m_UniformLocation;
+        GLint uniform_location_;
     };
 
     class UniformFloat : public Uniform_<glsl::float_> {
@@ -331,56 +328,56 @@ namespace osc::gl
     };
 
     // set the value of a `float` uniform in the currently bound program
-    inline void Uniform(UniformFloat& u, GLfloat value)
+    inline void Uniform(UniformFloat& uniform, GLfloat value)
     {
-        glUniform1f(u.geti(), value);
+        glUniform1f(uniform.geti(), value);
     }
 
     // set the value of an `GLint` uniform in the currently bound program
-    inline void Uniform(UniformInt& u, GLint value)
+    inline void Uniform(UniformInt& uniform, GLint value)
     {
-        glUniform1i(u.geti(), value);
+        glUniform1i(uniform.geti(), value);
     }
 
     // set the value of an array-like uniform `GLint`
-    inline void Uniform(const UniformInt& u, GLsizei n, const GLint* data)
+    inline void Uniform(const UniformInt& uniform, GLsizei num_elements, const GLint* data)
     {
-        glUniform1iv(u.geti(), n, data);
+        glUniform1iv(uniform.geti(), num_elements, data);
     }
 
     // set the value of a `vec3` uniform
-    inline void Uniform(UniformVec3& u, float x, float y, float z)
+    inline void Uniform(UniformVec3& uniform, float x, float y, float z)
     {
-        glUniform3f(u.geti(), x, y, z);
+        glUniform3f(uniform.geti(), x, y, z);
     }
 
     // set the value of a `vec3` uniform
-    inline void Uniform(UniformVec3& u, const float vs[3])
+    inline void Uniform(UniformVec3& uniform, const float values[3])
     {
-        glUniform3fv(u.geti(), 1, vs);
+        glUniform3fv(uniform.geti(), 1, values);
     }
 
     // set the value of a `sampler2D` uniform
-    inline void Uniform(UniformSampler2D& u, GLint v)
+    inline void Uniform(UniformSampler2D& uniform, GLint value)
     {
-        glUniform1i(u.geti(), v);
+        glUniform1i(uniform.geti(), value);
     }
 
-    inline void Uniform(UniformSamplerCube& u, GLint v)
+    inline void Uniform(UniformSamplerCube& uniform, GLint value)
     {
-        glUniform1i(u.geti(), v);
+        glUniform1i(uniform.geti(), value);
     }
 
     // set the value of an `sampler2DMS` uniform
-    inline void Uniform(UniformSampler2DMS& u, GLint v)
+    inline void Uniform(UniformSampler2DMS& uniform, GLint value)
     {
-        glUniform1i(u.geti(), v);
+        glUniform1i(uniform.geti(), value);
     }
 
     // set the value of a `bool` uniform
-    inline void Uniform(UniformBool& u, bool v)
+    inline void Uniform(UniformBool& u, bool value)
     {
-        glUniform1i(u.geti(), v);
+        glUniform1i(u.geti(), value);
     }
 
     // a uniform that points to a statically-sized array of values in the shader
@@ -390,59 +387,57 @@ namespace osc::gl
     // assign sequences of values to uniform arrays)
     template<typename TGlsl, size_t N>
     class UniformArray final : public Uniform_<TGlsl> {
-        static_assert(N >= 0);
-
     public:
         constexpr UniformArray(GLint location) :
             Uniform_<TGlsl>{location}
         {}
 
-        UniformArray(const Program& p, const GLchar* name) :
-            Uniform_<TGlsl>{p, name}
+        UniformArray(const Program& program, const GLchar* uniform_name) :
+            Uniform_<TGlsl>{program, uniform_name}
         {}
 
         [[nodiscard]] constexpr size_t size() const { return N; }
     };
 
-    inline void Uniform(UniformMat3& u, const Mat3& mat)
+    inline void Uniform(UniformMat3& uniform, const Mat3& mat)
     {
-        glUniformMatrix3fv(u.geti(), 1, false, value_ptr(mat));
+        glUniformMatrix3fv(uniform.geti(), 1, false, value_ptr(mat));
     }
 
-    inline void Uniform(UniformVec4& u, const Vec4& v)
+    inline void Uniform(UniformVec4& uniform, const Vec4& vec)
     {
-        glUniform4fv(u.geti(), 1, value_ptr(v));
+        glUniform4fv(uniform.geti(), 1, value_ptr(vec));
     }
 
-    inline void Uniform(UniformVec3& u, const Vec3& v)
+    inline void Uniform(UniformVec3& uniform, const Vec3& vec)
     {
-        glUniform3fv(u.geti(), 1, value_ptr(v));
+        glUniform3fv(uniform.geti(), 1, value_ptr(vec));
     }
 
-    inline void Uniform(UniformVec3& u, std::span<const Vec3> vs)
+    inline void Uniform(UniformVec3& uniform, std::span<const Vec3> vectors)
     {
         static_assert(sizeof(Vec3) == 3 * sizeof(GLfloat));
-        glUniform3fv(u.geti(), static_cast<GLsizei>(vs.size()), value_ptr(vs.front()));
+        glUniform3fv(uniform.geti(), static_cast<GLsizei>(vectors.size()), value_ptr(vectors.front()));
     }
 
     // set a uniform array of vec3s from a userspace container type (e.g. vector<Vec3>)
-    template<std::ranges::contiguous_range Range, size_t N>
-    requires std::same_as<typename Range::value_type, Vec3>
-    inline void Uniform(UniformArray<glsl::vec3, N>& u, Range& range)
+    template<std::ranges::contiguous_range R, size_t N>
+    requires std::same_as<typename R::value_type, Vec3>
+    inline void Uniform(UniformArray<glsl::vec3, N>& uniform, R& range)
     {
         OSC_ASSERT(std::ranges::size(range) == N);
-        glUniform3fv(u.geti(), static_cast<GLsizei>(std::ranges::size(range)), ValuePtr(*std::ranges::data(range)));
+        glUniform3fv(uniform.geti(), static_cast<GLsizei>(std::ranges::size(range)), ValuePtr(*std::ranges::data(range)));
     }
 
-    inline void Uniform(UniformMat4& u, const Mat4& mat)
+    inline void Uniform(UniformMat4& uniform, const Mat4& mat)
     {
-        glUniformMatrix4fv(u.geti(), 1, false, value_ptr(mat));
+        glUniformMatrix4fv(uniform.geti(), 1, false, value_ptr(mat));
     }
 
-    inline void Uniform(UniformMat4& u, std::span<const Mat4> ms)
+    inline void Uniform(UniformMat4& uniform, std::span<const Mat4> matrices)
     {
         static_assert(sizeof(Mat4) == 16 * sizeof(GLfloat));
-        glUniformMatrix4fv(u.geti(), static_cast<GLsizei>(ms.size()), false, value_ptr(ms.front()));
+        glUniformMatrix4fv(uniform.geti(), static_cast<GLsizei>(matrices.size()), false, value_ptr(matrices.front()));
     }
 
     inline void Uniform(UniformVec2& u, const Vec2& v)
@@ -450,23 +445,23 @@ namespace osc::gl
         glUniform2fv(u.geti(), 1, value_ptr(v));
     }
 
-    inline void Uniform(UniformVec2& u, std::span<const Vec2> vs)
+    inline void Uniform(UniformVec2& uniform, std::span<const Vec2> vectors)
     {
         static_assert(sizeof(Vec2) == 2 * sizeof(GLfloat));
 
         glUniform2fv(
-            u.geti(),
-            static_cast<GLsizei>(vs.size()),
-            value_ptr(vs.front())
+            uniform.geti(),
+            static_cast<GLsizei>(vectors.size()),
+            value_ptr(vectors.front())
         );
     }
 
-    template<std::ranges::contiguous_range Range, size_t N>
-    requires std::same_as<typename Range::value_type, Vec2>
-    void Uniform(UniformArray<glsl::vec2, N>& u, const Range& range)
+    template<std::ranges::contiguous_range R, size_t N>
+    requires std::same_as<typename R::value_type, Vec2>
+    void Uniform(UniformArray<glsl::vec2, N>& uniform, const R& range)
     {
         glUniform2fv(
-            u.geti(),
+            uniform.geti(),
             static_cast<GLsizei>(std::ranges::size(range)),
             ValuePtr(std::ranges::data(range))
         );
@@ -480,25 +475,25 @@ namespace osc::gl
         using glsl_type = TGlsl;
 
         constexpr Attribute(GLint location) :
-            m_AttributeLocation{location}
+            attribute_location_{location}
         {}
 
-        Attribute(const Program& p, const GLchar* name) :
-            m_AttributeLocation{getAttribLocation(p, name)}
+        Attribute(const Program& program, const GLchar* attribute_name) :
+            attribute_location_{get_attribute_location(program, attribute_name)}
         {}
 
         [[nodiscard]] constexpr GLuint get() const
         {
-            return static_cast<GLuint>(m_AttributeLocation);
+            return static_cast<GLuint>(attribute_location_);
         }
 
         [[nodiscard]] constexpr GLint geti() const
         {
-            return m_AttributeLocation;
+            return attribute_location_;
         }
 
     private:
-        GLint m_AttributeLocation;
+        GLint attribute_location_;
     };
 
     // utility defs for attributes typically used in downstream code
@@ -517,8 +512,8 @@ namespace osc::gl
     // this is a higher-level version of `glVertexAttribPointer`, because it
     // also "magically" handles attributes that span multiple locations (e.g. mat4)
     template<typename TGlsl, GLenum SourceType = TGlsl::type>
-    inline void vertexAttribPointer(
-        const Attribute<TGlsl>& attr,
+    inline void vertex_attrib_pointer(
+        const Attribute<TGlsl>& attribute,
         bool normalized,
         size_t stride,
         size_t offset)
@@ -530,7 +525,7 @@ namespace osc::gl
 
         if constexpr (TGlsl::size <= 4) {
             glVertexAttribPointer(
-                attr.get(),
+                attribute.get(),
                 TGlsl::size,
                 SourceType,
                 normgl,
@@ -539,14 +534,14 @@ namespace osc::gl
             );
         }
         else if constexpr (SourceType == GL_FLOAT) {
-            for (size_t i = 0; i < TGlsl::size / TGlsl::elementsPerLocation; ++i) {
+            for (size_t i = 0; i < TGlsl::size / TGlsl::elements_per_location; ++i) {
                 glVertexAttribPointer(
-                    attr.get() + static_cast<GLuint>(i),
-                    TGlsl::elementsPerLocation,
+                    attribute.get() + static_cast<GLuint>(i),
+                    TGlsl::elements_per_location,
                     SourceType,
                     normgl,
                     stridegl,
-                    cpp20::bit_cast<void*>(offset + (i * TGlsl::elementsPerLocation * sizeof(float)))
+                    cpp20::bit_cast<void*>(offset + (i * TGlsl::elements_per_location * sizeof(float)))
                 );
             }
         }
@@ -560,16 +555,16 @@ namespace osc::gl
     // this is a higher-level version of `glEnableVertexAttribArray`, because it
     // also "magically" handles attributes that span multiple locations (e.g. mat4)
     template<typename TGlsl>
-    inline void enableVertexAttribArray(const Attribute<TGlsl>& loc)
+    inline void enable_vertex_attrib_array(const Attribute<TGlsl>& attribute)
     {
         static_assert(TGlsl::size <= 4 or TGlsl::type == GL_FLOAT);
 
         if constexpr (TGlsl::size <= 4) {
-            glEnableVertexAttribArray(loc.get());
+            glEnableVertexAttribArray(attribute.get());
         }
         else if constexpr (TGlsl::type == GL_FLOAT) {
-            for (size_t i = 0; i < TGlsl::size / TGlsl::elementsPerLocation; ++i) {
-                glEnableVertexAttribArray(loc.get() + static_cast<GLuint>(i));
+            for (size_t i = 0; i < TGlsl::size / TGlsl::elements_per_location; ++i) {
+                glEnableVertexAttribArray(attribute.get() + static_cast<GLuint>(i));
             }
         }
 
@@ -577,7 +572,7 @@ namespace osc::gl
     }
 
     template<typename TGlsl>
-    inline void disableVertexAttribArray(const Attribute<TGlsl>& loc)
+    inline void disable_vertex_attrib_array(const Attribute<TGlsl>& loc)
     {
         static_assert(TGlsl::size <= 4 or TGlsl::type == GL_FLOAT);
 
@@ -585,7 +580,7 @@ namespace osc::gl
             glDisableVertexAttribArray(loc.get());
         }
         else if constexpr (TGlsl::type == GL_FLOAT) {
-            for (size_t i = 0; i < TGlsl::size / TGlsl::elementsPerLocation; ++i) {
+            for (size_t i = 0; i < TGlsl::size / TGlsl::elements_per_location; ++i) {
                 glDisableVertexAttribArray(loc.get() + static_cast<GLuint>(i));
             }
         }
@@ -599,15 +594,15 @@ namespace osc::gl
     // this is a higher-level version of `glVertexAttribDivisor`, because it
     // also "magically" handles attributes that span multiple locations (e.g. mat4)
     template<typename TGlsl>
-    inline void vertexAttribDivisor(const Attribute<TGlsl>& loc, GLuint divisor)
+    inline void vertex_attrib_divisor(const Attribute<TGlsl>& loc, GLuint divisor)
     {
-        static_assert(TGlsl::size <= 4 || TGlsl::type == GL_FLOAT);
+        static_assert(TGlsl::size <= 4 or TGlsl::type == GL_FLOAT);
 
         if constexpr (TGlsl::size <= 4) {
             glVertexAttribDivisor(loc.get(), divisor);
         }
         else if constexpr (TGlsl::type == GL_FLOAT) {
-            for (size_t i = 0; i < TGlsl::size / TGlsl::elementsPerLocation; ++i) {
+            for (size_t i = 0; i < TGlsl::size / TGlsl::elements_per_location; ++i) {
                 glVertexAttribDivisor(loc.get() + static_cast<GLuint>(i), divisor);
             }
         }
@@ -618,9 +613,9 @@ namespace osc::gl
     public:
         BufferHandle()
         {
-            glGenBuffers(1, &m_BufferHandle);
+            glGenBuffers(1, &buffer_handle_);
 
-            if (m_BufferHandle == c_EmptyBufferHandleSenteniel) {
+            if (buffer_handle_ == c_empty_buffer_handle_sentinel) {
                 throw OpenGlException{"glGenBuffers() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
             }
         }
@@ -628,29 +623,29 @@ namespace osc::gl
         BufferHandle(const BufferHandle&) = delete;
 
         BufferHandle(BufferHandle&& tmp) noexcept :
-            m_BufferHandle{std::exchange(tmp.m_BufferHandle, c_EmptyBufferHandleSenteniel)}
+            buffer_handle_{std::exchange(tmp.buffer_handle_, c_empty_buffer_handle_sentinel)}
         {}
 
         BufferHandle& operator=(const BufferHandle&) = delete;
 
         BufferHandle& operator=(BufferHandle&& tmp) noexcept
         {
-            std::swap(m_BufferHandle, tmp.m_BufferHandle);
+            std::swap(buffer_handle_, tmp.buffer_handle_);
             return *this;
         }
 
         ~BufferHandle() noexcept
         {
-            if (m_BufferHandle != c_EmptyBufferHandleSenteniel) {
-                glDeleteBuffers(1, &m_BufferHandle);
+            if (buffer_handle_ != c_empty_buffer_handle_sentinel) {
+                glDeleteBuffers(1, &buffer_handle_);
             }
         }
 
-        GLuint get() const { return m_BufferHandle; }
+        GLuint get() const { return buffer_handle_; }
 
     private:
-        static constexpr GLuint c_EmptyBufferHandleSenteniel = static_cast<GLuint>(-1);
-        GLuint m_BufferHandle;
+        static constexpr GLuint c_empty_buffer_handle_sentinel = static_cast<GLuint>(-1);
+        GLuint buffer_handle_;
     };
 
     // a buffer handle that is locked against a particular type (e.g. GL_ELEMENT_ARRAY_BUFFER)
@@ -663,24 +658,24 @@ namespace osc::gl
     };
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindBuffer.xhtml
-    inline void bindBuffer(GLenum target, const BufferHandle& handle)
+    inline void bind_buffer(GLenum target, const BufferHandle& handle)
     {
         glBindBuffer(target, handle.get());
     }
 
     template<GLenum TBuffer>
-    inline void bindBuffer(const TypedBufferHandle<TBuffer>& handle)
+    inline void bind_buffer(const TypedBufferHandle<TBuffer>& handle)
     {
         glBindBuffer(TBuffer, handle.get());
     }
 
     template<GLenum TBuffer>
-    inline void unbindBuffer(const TypedBufferHandle<TBuffer>&)
+    inline void unbind_buffer(const TypedBufferHandle<TBuffer>&)
     {
         glBindBuffer(TBuffer, 0);
     }
 
-    inline void bufferData(GLenum target, GLsizeiptr size, const void* data, GLenum usage)
+    inline void buffer_data(GLenum target, GLsizeiptr size, const void* data, GLenum usage)
     {
         glBufferData(target, size, data, usage);
     }
@@ -699,11 +694,11 @@ namespace osc::gl
         using value_type = T;
         static constexpr GLenum BufferType = TBuffer;
 
-        template<std::ranges::contiguous_range Range>
-        void assign(const Range& range)
+        template<std::ranges::contiguous_range R>
+        void assign(const R& range)
         {
-            bindBuffer(*this);
-            bufferData(BufferType, sizeof(T) * std::ranges::size(range), std::ranges::data(range), Usage);
+            bind_buffer(*this);
+            buffer_data(BufferType, sizeof(T) * std::ranges::size(range), std::ranges::data(range), Usage);
         }
     };
 
@@ -726,32 +721,32 @@ namespace osc::gl
     };
 
     template<typename Buffer>
-    inline void bindBuffer(const Buffer& buf)
+    inline void bind_buffer(const Buffer& buffer)
     {
-        glBindBuffer(Buffer::BufferType, buf.get());
+        glBindBuffer(Buffer::BufferType, buffer.get());
     }
 
     // returns an OpenGL enum that describes the provided (integral) type
     // argument, so that the index type to an element-based drawcall can
     // be computed at compile-time
     template<std::unsigned_integral T>
-    inline constexpr GLenum indexType();
+    inline constexpr GLenum index_type();
 
     template<>
-    inline constexpr GLenum indexType<uint8_t>() { return GL_UNSIGNED_BYTE; }
+    inline constexpr GLenum index_type<uint8_t>() { return GL_UNSIGNED_BYTE; }
 
     template<>
-    inline constexpr GLenum indexType<uint16_t>() { return GL_UNSIGNED_SHORT; }
+    inline constexpr GLenum index_type<uint16_t>() { return GL_UNSIGNED_SHORT; }
 
     template<>
-    inline constexpr GLenum indexType<uint32_t>() { return GL_UNSIGNED_INT; }
+    inline constexpr GLenum index_type<uint32_t>() { return GL_UNSIGNED_INT; }
 
     // utility overload of index_type specifically for EBOs (the most common
     // use-case in downstream code)
     template<typename T>
-    inline constexpr GLenum indexType(const gl::ElementArrayBuffer<T>&)
+    inline constexpr GLenum index_type(const gl::ElementArrayBuffer<T>&)
     {
-        return indexType<T>();
+        return index_type<T>();
     }
 
     // a handle to an OpenGL VAO with RAII semantics for glGenVertexArrays etc.
@@ -759,8 +754,8 @@ namespace osc::gl
     public:
         VertexArray()
         {
-            glGenVertexArrays(1, &m_VaoHandle);
-            if (m_VaoHandle == c_EmptyVAOHandleSenteniel) {
+            glGenVertexArrays(1, &vao_handle_);
+            if (vao_handle_ == c_empty_vao_sentinel) {
                 throw OpenGlException{"glGenVertexArrays() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
             }
         }
@@ -768,39 +763,39 @@ namespace osc::gl
         VertexArray(const VertexArray&) = delete;
 
         VertexArray(VertexArray&& tmp) noexcept :
-            m_VaoHandle{std::exchange(tmp.m_VaoHandle, c_EmptyVAOHandleSenteniel)}
+            vao_handle_{std::exchange(tmp.vao_handle_, c_empty_vao_sentinel)}
         {}
 
         VertexArray& operator=(const VertexArray&) = delete;
 
         VertexArray& operator=(VertexArray&& tmp) noexcept
         {
-            std::swap(m_VaoHandle, tmp.m_VaoHandle);
+            std::swap(vao_handle_, tmp.vao_handle_);
             return *this;
         }
 
         ~VertexArray() noexcept
         {
-            if (m_VaoHandle != c_EmptyVAOHandleSenteniel) {
-                glDeleteVertexArrays(1, &m_VaoHandle);
+            if (vao_handle_ != c_empty_vao_sentinel) {
+                glDeleteVertexArrays(1, &vao_handle_);
             }
         }
 
-        GLuint get() const { return m_VaoHandle; }
+        GLuint get() const { return vao_handle_; }
 
     private:
-        static constexpr GLuint c_EmptyVAOHandleSenteniel = std::numeric_limits<GLuint>::max();
-        GLuint m_VaoHandle;
+        static constexpr GLuint c_empty_vao_sentinel = std::numeric_limits<GLuint>::max();
+        GLuint vao_handle_;
     };
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindVertexArray.xhtml
-    inline void bindVertexArray(const VertexArray& vao)
+    inline void bind_vertex_array(const VertexArray& vao)
     {
         glBindVertexArray(vao.get());
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindVertexArray.xhtml
-    inline void bindVertexArray()
+    inline void bind_vertex_array()
     {
         glBindVertexArray(static_cast<GLuint>(0));
     }
@@ -810,8 +805,8 @@ namespace osc::gl
     public:
         TextureHandle()
         {
-            glGenTextures(1, &m_TextureHandle);
-            if (m_TextureHandle == c_EmptyTextureHandleSenteniel) {
+            glGenTextures(1, &texture_handle_);
+            if (texture_handle_ == c_empty_texture_handle_sentinel) {
                 throw OpenGlException{"glGenTextures() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
             }
         }
@@ -819,44 +814,44 @@ namespace osc::gl
         TextureHandle(const TextureHandle&) = delete;
 
         TextureHandle(TextureHandle&& tmp) noexcept :
-            m_TextureHandle{std::exchange(tmp.m_TextureHandle, c_EmptyTextureHandleSenteniel)}
+            texture_handle_{std::exchange(tmp.texture_handle_, c_empty_texture_handle_sentinel)}
         {}
 
         TextureHandle& operator=(const TextureHandle&) = delete;
 
         TextureHandle& operator=(TextureHandle&& tmp) noexcept
         {
-            std::swap(m_TextureHandle, tmp.m_TextureHandle);
+            std::swap(texture_handle_, tmp.texture_handle_);
             return *this;
         }
 
         ~TextureHandle() noexcept
         {
-            if (m_TextureHandle != c_EmptyTextureHandleSenteniel) {
-                glDeleteTextures(1, &m_TextureHandle);
+            if (texture_handle_ != c_empty_texture_handle_sentinel) {
+                glDeleteTextures(1, &texture_handle_);
             }
         }
 
-        GLuint get() const { return m_TextureHandle; }
+        GLuint get() const { return texture_handle_; }
     private:
-        static constexpr GLuint c_EmptyTextureHandleSenteniel = static_cast<GLuint>(-1);
-        GLuint m_TextureHandle;
+        static constexpr GLuint c_empty_texture_handle_sentinel = static_cast<GLuint>(-1);
+        GLuint texture_handle_;
     };
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glActiveTexture.xhtml
-    inline void activeTexture(GLenum texture)
+    inline void active_texture(GLenum texture)
     {
         glActiveTexture(texture);
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindTexture.xhtml
-    inline void bindTexture(GLenum target, const TextureHandle& texture)
+    inline void bind_texture(GLenum target, const TextureHandle& texture)
     {
         glBindTexture(target, texture.get());
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindTexture.xhtml
-    inline void bindTexture()
+    inline void bind_texture()
     {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
@@ -869,21 +864,21 @@ namespace osc::gl
 
         [[nodiscard]] constexpr GLuint get() const
         {
-            return m_TextureHandle.get();
+            return texture_handle_.get();
         }
 
         constexpr const TextureHandle& handle() const
         {
-            return m_TextureHandle;
+            return texture_handle_;
         }
 
         constexpr TextureHandle& handle()
         {
-            return m_TextureHandle;
+            return texture_handle_;
         }
 
     private:
-        TextureHandle m_TextureHandle;
+        TextureHandle texture_handle_;
     };
 
     class Texture2D : public Texture<GL_TEXTURE_2D> {};
@@ -891,9 +886,9 @@ namespace osc::gl
     class Texture2DMultisample : public Texture<GL_TEXTURE_2D_MULTISAMPLE> {};
 
     template<typename Texture>
-    inline void bindTexture(const Texture& t)
+    inline void bind_texture(const Texture& texture)
     {
-        glBindTexture(t.type, t.get());
+        glBindTexture(texture.type, texture.get());
     }
 
     // moveable RAII handle to an OpenGL framebuffer (i.e. a render target)
@@ -901,8 +896,8 @@ namespace osc::gl
     public:
         FrameBuffer()
         {
-            glGenFramebuffers(1, &m_FboHandle);
-            if (m_FboHandle == c_EmptyFBOSenteniel) {
+            glGenFramebuffers(1, &fbo_handle_);
+            if (fbo_handle_ == c_empty_fbo_sentinel) {
                 throw OpenGlException{"glGenFramebuffers() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
             }
         }
@@ -910,42 +905,42 @@ namespace osc::gl
         FrameBuffer(const FrameBuffer&) = delete;
 
         FrameBuffer(FrameBuffer&& tmp) noexcept :
-            m_FboHandle{std::exchange(tmp.m_FboHandle, c_EmptyFBOSenteniel)}
+            fbo_handle_{std::exchange(tmp.fbo_handle_, c_empty_fbo_sentinel)}
         {}
 
         FrameBuffer& operator=(const FrameBuffer&) = delete;
 
         FrameBuffer& operator=(FrameBuffer&& tmp) noexcept
         {
-            std::swap(m_FboHandle, tmp.m_FboHandle);
+            std::swap(fbo_handle_, tmp.fbo_handle_);
             return *this;
         }
 
         ~FrameBuffer() noexcept
         {
-            if (m_FboHandle != c_EmptyFBOSenteniel) {
-                glDeleteFramebuffers(1, &m_FboHandle);
+            if (fbo_handle_ != c_empty_fbo_sentinel) {
+                glDeleteFramebuffers(1, &fbo_handle_);
             }
         }
 
-        GLuint get() const { return m_FboHandle; }
+        GLuint get() const { return fbo_handle_; }
 
     private:
-        static constexpr GLuint c_EmptyFBOSenteniel = static_cast<GLuint>(-1);
-        GLuint m_FboHandle;
+        static constexpr GLuint c_empty_fbo_sentinel = static_cast<GLuint>(-1);
+        GLuint fbo_handle_;
     };
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindFramebuffer.xhtml
-    inline void bindFramebuffer(GLenum target, const FrameBuffer& fb)
+    inline void bind_framebuffer(GLenum target, const FrameBuffer& framebuffer)
     {
-        glBindFramebuffer(target, fb.get());
+        glBindFramebuffer(target, framebuffer.get());
     }
 
     // bind to the main Window FBO for the current OpenGL context
-    struct WindowFbo final {};
-    static constexpr WindowFbo windowFbo{};
+    struct WindowFramebuffer final {};
+    static constexpr WindowFramebuffer window_framebuffer{};
 
-    inline void bindFramebuffer(GLenum target, WindowFbo)
+    inline void bind_framebuffer(GLenum target, WindowFramebuffer)
     {
         glBindFramebuffer(target, 0);
     }
@@ -953,9 +948,9 @@ namespace osc::gl
     // assign a 2D texture to the framebuffer (so that subsequent draws/reads
     // to/from the FBO use the texture)
     template<typename Texture>
-    inline void framebufferTexture2D(GLenum target, GLenum attachment, const Texture& t, GLint level)
+    inline void framebuffer_texture2D(GLenum target, GLenum attachment, const Texture& texture, GLint level)
     {
-        glFramebufferTexture2D(target, attachment, t.type, t.get(), level);
+        glFramebufferTexture2D(target, attachment, texture.type, texture.get(), level);
     }
 
     // moveable RAII handle to an OpenGL render buffer
@@ -963,8 +958,8 @@ namespace osc::gl
     public:
         RenderBuffer()
         {
-            glGenRenderbuffers(1, &m_RenderBuffer);
-            if (m_RenderBuffer == c_EmptyRenderBufferSenteniel) {
+            glGenRenderbuffers(1, &rbo_handle_);
+            if (rbo_handle_ == c_empty_rbo_sentinel) {
                 throw OpenGlException{"glGenRenderBuffers() failed: this could mean that your GPU/system is out of memory, or that your OpenGL driver is invalid in some way"};
             }
         }
@@ -972,7 +967,7 @@ namespace osc::gl
         RenderBuffer(const RenderBuffer&) = delete;
 
         RenderBuffer(RenderBuffer&& tmp) noexcept :
-            m_RenderBuffer{std::exchange(tmp.m_RenderBuffer, c_EmptyRenderBufferSenteniel)}
+            rbo_handle_{std::exchange(tmp.rbo_handle_, c_empty_rbo_sentinel)}
         {
         }
 
@@ -980,43 +975,43 @@ namespace osc::gl
 
         RenderBuffer& operator=(RenderBuffer&& tmp) noexcept
         {
-            std::swap(m_RenderBuffer, tmp.m_RenderBuffer);
+            std::swap(rbo_handle_, tmp.rbo_handle_);
             return *this;
         }
 
         ~RenderBuffer() noexcept
         {
-            if (m_RenderBuffer != c_EmptyRenderBufferSenteniel) {
-                glDeleteRenderbuffers(1, &m_RenderBuffer);
+            if (rbo_handle_ != c_empty_rbo_sentinel) {
+                glDeleteRenderbuffers(1, &rbo_handle_);
             }
         }
 
-        GLuint get() const { return m_RenderBuffer; }
+        GLuint get() const { return rbo_handle_; }
     private:
-        // khronos: glDeleteRenderBuffers: "The name zero is reserved by the GL and is silently ignored"
-        static constexpr GLuint c_EmptyRenderBufferSenteniel = 0;
-        GLuint m_RenderBuffer;
+        // khronos: glDeleteRenderBuffers: "The uniform_name zero is reserved by the GL and is silently ignored"
+        static constexpr GLuint c_empty_rbo_sentinel = 0;
+        GLuint rbo_handle_;
     };
 
     // https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glBindRenderbuffer.xml
-    inline void bindRenderBuffer(RenderBuffer& rb)
+    inline void bind_renderbuffer(RenderBuffer& renderbuffer)
     {
-        glBindRenderbuffer(GL_RENDERBUFFER, rb.get());
+        glBindRenderbuffer(GL_RENDERBUFFER, renderbuffer.get());
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glBindRenderbuffer.xml
-    inline void bindRenderBuffer()
+    inline void bind_renderbuffer()
     {
         glBindRenderbuffer(GL_RENDERBUFFER, 0);
     }
 
-    inline void framebufferRenderbuffer(GLenum target, GLenum attachment, const RenderBuffer& rb)
+    inline void framebuffer_renderbuffer(GLenum target, GLenum attachment, const RenderBuffer& renderbuffer)
     {
-        glFramebufferRenderbuffer(target, attachment, GL_RENDERBUFFER, rb.get());
+        glFramebufferRenderbuffer(target, attachment, GL_RENDERBUFFER, renderbuffer.get());
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glRenderbufferStorage.xhtml
-    inline void renderbufferStorage(GLenum target, GLenum internalformat, GLsizei width, GLsizei height)
+    inline void renderbuffer_storage(GLenum target, GLenum internalformat, GLsizei width, GLsizei height)
     {
         glRenderbufferStorage(target, internalformat, width, height);
     }
@@ -1028,38 +1023,38 @@ namespace osc::gl
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDrawArrays.xhtml
-    inline void drawArrays(GLenum mode, GLint first, GLsizei count)
+    inline void draw_arrays(GLenum mode, GLint first, GLsizei count)
     {
         glDrawArrays(mode, first, count);
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDrawArraysInstanced.xhtml
-    inline void drawArraysInstanced(GLenum mode, GLint first, GLsizei count, GLsizei instancecount)
+    inline void draw_arrays_instanced(GLenum mode, GLint first, GLsizei count, GLsizei instancecount)
     {
         glDrawArraysInstanced(mode, first, count, instancecount);
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glVertexAttribDivisor.xhtml
     template<typename Attribute>
-    inline void vertexAttribDivisor(Attribute loc, GLuint divisor)
+    inline void vertex_attrib_divisor(Attribute loc, GLuint divisor)
     {
         glVertexAttribDivisor(loc.get(), divisor);
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glDrawElements.xhtml
-    inline void drawElements(GLenum mode, GLsizei count, GLenum type, const void* indices)
+    inline void draw_elements(GLenum mode, GLsizei count, GLenum type, const void* indices)
     {
         glDrawElements(mode, count, type, indices);
     }
 
-    inline void clearColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha)
+    inline void clear_color(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha)
     {
         glClearColor(red, green, blue, alpha);
     }
 
-    inline void clearColor(const Vec4& v)
+    inline void clear_color(const Vec4& v)
     {
-        clearColor(v[0], v[1], v[2], v[3]);
+        clear_color(v[0], v[1], v[2], v[3]);
     }
 
     inline void viewport(GLint x, GLint y, GLsizei w, GLsizei h)
@@ -1068,12 +1063,12 @@ namespace osc::gl
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glTexParameter.xhtml
-    inline void texParameteri(GLenum target, GLenum pname, GLint param)
+    inline void tex_parameter_i(GLenum target, GLenum pname, GLint param)
     {
         glTexParameteri(target, pname, param);
     }
 
-    inline void texImage2D(
+    inline void tex_image2D(
         GLenum target,
         GLint level,
         GLint internalformat,
@@ -1099,18 +1094,18 @@ namespace osc::gl
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glTexParameter.xhtml
     template<typename Texture>
-    inline void textureParameteri(const Texture& texture, GLenum pname, GLint param)
+    inline void texture_parameter_i(const Texture& texture, GLenum pname, GLint param)
     {
         glTextureParameteri(texture.raw_handle(), pname, param);
     }
 
-    inline bool isCurrentFboComplete()
+    inline bool is_currently_bound_fbo_complete()
     {
         return glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
     }
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBlitFramebuffer.xhtml
-    inline void blitFramebuffer(
+    inline void blit_framebuffer(
         GLint srcX0,
         GLint srcY0,
         GLint srcX1,
@@ -1136,21 +1131,21 @@ namespace osc::gl
         );
     }
 
-    inline void drawBuffer(GLenum mode)
+    inline void draw_buffer(GLenum mode)
     {
         glDrawBuffer(mode);
     }
 
-    inline GLint getInteger(GLenum pname)
+    inline GLint get_integer(GLenum pname)
     {
         GLint out;
         glGetIntegerv(pname, &out);
         return out;
     }
 
-    inline GLenum getEnum(GLenum pname)
+    inline GLenum get_enum(GLenum pname)
     {
-        return static_cast<GLenum>(getInteger(pname));
+        return static_cast<GLenum>(get_integer(pname));
     }
 
     inline void enable(GLenum cap)
@@ -1163,7 +1158,7 @@ namespace osc::gl
         glDisable(cap);
     }
 
-    inline void pixelStorei(GLenum name, GLint param)
+    inline void pixel_store_i(GLenum name, GLint param)
     {
         glPixelStorei(name, param);
     }

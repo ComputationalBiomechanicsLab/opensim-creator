@@ -9,15 +9,15 @@
 #include <utility>
 
 osc::PropertyInfo::PropertyInfo(
-    StringName name_,
-    Variant defaultValue_) :
-    m_Name{std::move(name_)},
-    m_DefaultValue{std::move(defaultValue_)}
+    StringName name,
+    Variant default_value) :
+
+    name_{std::move(name)},
+    default_value_{std::move(default_value)}
 {
-    if (!IsValidIdentifier(m_Name))
-    {
+    if (not is_valid_identifier(name_)) {
         std::stringstream ss;
-        ss << m_Name << ": is not a valid name for a property (must be an identifier)";
+        ss << name_ << ": is not a valid name for a property (must be an identifier)";
         throw std::runtime_error{std::move(ss).str()};
     }
 }

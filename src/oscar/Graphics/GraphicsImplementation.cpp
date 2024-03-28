@@ -1001,7 +1001,7 @@ namespace osc
 
         // public (forwarded) API
 
-        static void drawMesh(
+        static void draw(
             const Mesh&,
             const Transform&,
             const Material&,
@@ -1010,7 +1010,7 @@ namespace osc
             std::optional<size_t>
         );
 
-        static void drawMesh(
+        static void draw(
             const Mesh&,
             const Mat4&,
             const Material&,
@@ -1362,13 +1362,13 @@ private:
 
         // upload cubemap to GPU
         static_assert(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z - GL_TEXTURE_CUBE_MAP_POSITIVE_X == 5);
-        gl::bindTexture(buf.texture);
-        gl::pixelStorei(GL_UNPACK_ALIGNMENT, unpackAlignment);
+        gl::bind_texture(buf.texture);
+        gl::pixel_store_i(GL_UNPACK_ALIGNMENT, unpackAlignment);
         for (GLint faceIdx = 0; faceIdx < static_cast<GLint>(NumOptions<CubemapFace>()); ++faceIdx) {
 
             const size_t faceBytesBegin = faceIdx * numBytesPerFace;
 
-            gl::texImage2D(
+            gl::tex_image2D(
                 GL_TEXTURE_CUBE_MAP_POSITIVE_X + faceIdx,
                 0,
                 toOpenGLInternalFormat(m_Format, ColorSpace::sRGB),  // cubemaps are always sRGB
@@ -1384,24 +1384,24 @@ private:
         // generate mips (care: they can be uploaded to with graphics::copyTexture)
         glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 
-        gl::bindTexture();
+        gl::bind_texture();
 
         buf.dataVersion = m_DataVersion;
     }
 
     void updateTextureParameters(CubemapOpenGLData& buf)
     {
-        gl::bindTexture(buf.texture);
+        gl::bind_texture(buf.texture);
 
         // set texture parameters
-        gl::texParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, toGLTextureMagFilterParam(m_FilterMode));
-        gl::texParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, toGLTextureMinFilterParam(m_FilterMode));
-        gl::texParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, toGLTextureTextureWrapParam(m_WrapModeU));
-        gl::texParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, toGLTextureTextureWrapParam(m_WrapModeV));
-        gl::texParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, toGLTextureTextureWrapParam(m_WrapModeW));
+        gl::tex_parameter_i(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, toGLTextureMagFilterParam(m_FilterMode));
+        gl::tex_parameter_i(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, toGLTextureMinFilterParam(m_FilterMode));
+        gl::tex_parameter_i(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, toGLTextureTextureWrapParam(m_WrapModeU));
+        gl::tex_parameter_i(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, toGLTextureTextureWrapParam(m_WrapModeV));
+        gl::tex_parameter_i(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, toGLTextureTextureWrapParam(m_WrapModeW));
 
         // cleanup OpenGL binding state
-        gl::bindTexture();
+        gl::bind_texture();
 
         buf.parametersVersion = m_TextureParamsVersion;
     }
@@ -1846,9 +1846,9 @@ private:
         OSC_ASSERT(isAlignedAtLeast(m_PixelData.data(), unpackAlignment) && "the memory alignment of the supplied pixel memory must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
 
         // one-time upload, because pixels cannot be altered
-        gl::bindTexture((*m_MaybeGPUTexture)->texture);
-        gl::pixelStorei(GL_UNPACK_ALIGNMENT, unpackAlignment);
-        gl::texImage2D(
+        gl::bind_texture((*m_MaybeGPUTexture)->texture);
+        gl::pixel_store_i(GL_UNPACK_ALIGNMENT, unpackAlignment);
+        gl::tex_image2D(
             GL_TEXTURE_2D,
             0,
             toOpenGLInternalFormat(m_Format, m_ColorSpace),
@@ -1860,18 +1860,18 @@ private:
             m_PixelData.data()
         );
         glGenerateMipmap(GL_TEXTURE_2D);
-        gl::bindTexture();
+        gl::bind_texture();
     }
 
     void setTextureParams(Texture2DOpenGLData& bufs)
     {
-        gl::bindTexture(bufs.texture);
-        gl::texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, toGLTextureTextureWrapParam(m_WrapModeU));
-        gl::texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, toGLTextureTextureWrapParam(m_WrapModeV));
-        gl::texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, toGLTextureTextureWrapParam(m_WrapModeW));
-        gl::texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, toGLTextureMinFilterParam(m_FilterMode));
-        gl::texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, toGLTextureMagFilterParam(m_FilterMode));
-        gl::bindTexture();
+        gl::bind_texture(bufs.texture);
+        gl::tex_parameter_i(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, toGLTextureTextureWrapParam(m_WrapModeU));
+        gl::tex_parameter_i(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, toGLTextureTextureWrapParam(m_WrapModeV));
+        gl::tex_parameter_i(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, toGLTextureTextureWrapParam(m_WrapModeW));
+        gl::tex_parameter_i(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, toGLTextureMinFilterParam(m_FilterMode));
+        gl::tex_parameter_i(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, toGLTextureMagFilterParam(m_FilterMode));
+        gl::bind_texture();
         bufs.textureParamsVersion = m_TextureParamsVersion;
     }
 
@@ -2462,8 +2462,8 @@ public:
         const Vec2i dimensions = m_Descriptor.getDimensions();
 
         // setup resolved texture
-        gl::bindTexture(t.texture2D);
-        gl::texImage2D(
+        gl::bind_texture(t.texture2D);
+        gl::tex_image2D(
             GL_TEXTURE_2D,
             0,
             toInternalOpenGLColorFormat(m_BufferType, m_Descriptor),
@@ -2474,32 +2474,32 @@ public:
             toOpenGLDataType(toEquivalentCPUDataType(m_BufferType, m_Descriptor)),
             nullptr
         );
-        gl::texParameteri(
+        gl::tex_parameter_i(
             GL_TEXTURE_2D,
             GL_TEXTURE_MIN_FILTER,
             GL_LINEAR
         );
-        gl::texParameteri(
+        gl::tex_parameter_i(
             GL_TEXTURE_2D,
             GL_TEXTURE_MAG_FILTER,
             GL_LINEAR
         );
-        gl::texParameteri(
+        gl::tex_parameter_i(
             GL_TEXTURE_2D,
             GL_TEXTURE_WRAP_S,
             GL_CLAMP_TO_EDGE
         );
-        gl::texParameteri(
+        gl::tex_parameter_i(
             GL_TEXTURE_2D,
             GL_TEXTURE_WRAP_T,
             GL_CLAMP_TO_EDGE
         );
-        gl::texParameteri(
+        gl::tex_parameter_i(
             GL_TEXTURE_2D,
             GL_TEXTURE_WRAP_R,
             GL_CLAMP_TO_EDGE
         );
-        gl::bindTexture();
+        gl::bind_texture();
     }
 
     void configureData(MultisampledRBOAndResolvedTexture& data)
@@ -2507,7 +2507,7 @@ public:
         const Vec2i dimensions = m_Descriptor.getDimensions();
 
         // setup multisampled RBO
-        gl::bindRenderBuffer(data.multisampledRBO);
+        gl::bind_renderbuffer(data.multisampledRBO);
         glRenderbufferStorageMultisample(
             GL_RENDERBUFFER,
             m_Descriptor.getAntialiasingLevel().getU32(),
@@ -2515,11 +2515,11 @@ public:
             dimensions.x,
             dimensions.y
         );
-        gl::bindRenderBuffer();
+        gl::bind_renderbuffer();
 
         // setup resolved texture
-        gl::bindTexture(data.singleSampledTexture);
-        gl::texImage2D(
+        gl::bind_texture(data.singleSampledTexture);
+        gl::tex_image2D(
             GL_TEXTURE_2D,
             0,
             toInternalOpenGLColorFormat(m_BufferType, m_Descriptor),
@@ -2530,32 +2530,32 @@ public:
             toOpenGLDataType(toEquivalentCPUDataType(m_BufferType, m_Descriptor)),
             nullptr
         );
-        gl::texParameteri(
+        gl::tex_parameter_i(
             GL_TEXTURE_2D,
             GL_TEXTURE_MIN_FILTER,
             GL_LINEAR
         );
-        gl::texParameteri(
+        gl::tex_parameter_i(
             GL_TEXTURE_2D,
             GL_TEXTURE_MAG_FILTER,
             GL_LINEAR
         );
-        gl::texParameteri(
+        gl::tex_parameter_i(
             GL_TEXTURE_2D,
             GL_TEXTURE_WRAP_S,
             GL_CLAMP_TO_EDGE
         );
-        gl::texParameteri(
+        gl::tex_parameter_i(
             GL_TEXTURE_2D,
             GL_TEXTURE_WRAP_T,
             GL_CLAMP_TO_EDGE
         );
-        gl::texParameteri(
+        gl::tex_parameter_i(
             GL_TEXTURE_2D,
             GL_TEXTURE_WRAP_R,
             GL_CLAMP_TO_EDGE
         );
-        gl::bindTexture();
+        gl::bind_texture();
     }
 
     void configureData(SingleSampledCubemap& t)
@@ -2563,10 +2563,10 @@ public:
         const Vec2i dimensions = m_Descriptor.getDimensions();
 
         // setup resolved texture
-        gl::bindTexture(t.textureCubemap);
+        gl::bind_texture(t.textureCubemap);
         for (int i = 0; i < 6; ++i)
         {
-            gl::texImage2D(
+            gl::tex_image2D(
                 GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
                 0,
                 toInternalOpenGLColorFormat(m_BufferType, m_Descriptor),
@@ -2578,27 +2578,27 @@ public:
                 nullptr
             );
         }
-        gl::texParameteri(
+        gl::tex_parameter_i(
             GL_TEXTURE_CUBE_MAP,
             GL_TEXTURE_MIN_FILTER,
             GL_LINEAR
         );
-        gl::texParameteri(
+        gl::tex_parameter_i(
             GL_TEXTURE_CUBE_MAP,
             GL_TEXTURE_MAG_FILTER,
             GL_LINEAR
         );
-        gl::texParameteri(
+        gl::tex_parameter_i(
             GL_TEXTURE_CUBE_MAP,
             GL_TEXTURE_WRAP_S,
             GL_CLAMP_TO_EDGE
         );
-        gl::texParameteri(
+        gl::tex_parameter_i(
             GL_TEXTURE_CUBE_MAP,
             GL_TEXTURE_WRAP_T,
             GL_CLAMP_TO_EDGE
         );
-        gl::texParameteri(
+        gl::tex_parameter_i(
             GL_TEXTURE_CUBE_MAP,
             GL_TEXTURE_WRAP_R,
             GL_CLAMP_TO_EDGE
@@ -2876,13 +2876,13 @@ std::ostream& osc::operator<<(std::ostream& o, const RenderTexture&)
 class osc::Shader::Impl final {
 public:
     Impl(CStringView vertexShader, CStringView fragmentShader) :
-        m_Program{gl::createProgramFrom(gl::compileFromSource<gl::VertexShader>(vertexShader.c_str()), gl::compileFromSource<gl::FragmentShader>(fragmentShader.c_str()))}
+        m_Program{gl::create_program_from(gl::compile_from_source<gl::VertexShader>(vertexShader.c_str()), gl::compile_from_source<gl::FragmentShader>(fragmentShader.c_str()))}
     {
         parseUniformsAndAttributesFromProgram();
     }
 
     Impl(CStringView vertexShader, CStringView geometryShader, CStringView fragmentShader) :
-        m_Program{gl::createProgramFrom(gl::compileFromSource<gl::VertexShader>(vertexShader.c_str()), gl::compileFromSource<gl::FragmentShader>(fragmentShader.c_str()), gl::compileFromSource<gl::GeometryShader>(geometryShader.c_str()))}
+        m_Program{gl::create_program_from(gl::compile_from_source<gl::VertexShader>(vertexShader.c_str()), gl::compile_from_source<gl::FragmentShader>(fragmentShader.c_str()), gl::compile_from_source<gl::GeometryShader>(geometryShader.c_str()))}
     {
         parseUniformsAndAttributesFromProgram();
     }
@@ -4008,9 +4008,9 @@ namespace
     void encodeMany(std::byte* p, const T& v)
     {
         using ComponentType = typename VertexAttributeFormatTraits<EncodingFormat>::component_type;
-        constexpr auto numComponents = NumComponents(EncodingFormat);
-        constexpr auto sizeOfComponent = SizeOfComponent(EncodingFormat);
-        constexpr auto n = min(std::tuple_size_v<T>, static_cast<typename T::size_type>(numComponents));
+        constexpr auto nComponents = num_components_in(EncodingFormat);
+        constexpr auto sizeOfComponent = component_size(EncodingFormat);
+        constexpr auto n = min(std::tuple_size_v<T>, static_cast<typename T::size_type>(nComponents));
 
         for (typename T::size_type i = 0; i < n; ++i) {
             encode<typename T::value_type, ComponentType>(p + i*sizeOfComponent, v[i]);
@@ -4021,9 +4021,9 @@ namespace
     T DecodeMany(const std::byte* p)
     {
         using ComponentType = typename VertexAttributeFormatTraits<EncodingFormat>::component_type;
-        constexpr auto numComponents = NumComponents(EncodingFormat);
-        constexpr auto sizeOfComponent = SizeOfComponent(EncodingFormat);
-        constexpr auto n = min(std::tuple_size_v<T>, static_cast<typename T::size_type>(numComponents));
+        constexpr auto nComponents = num_components_in(EncodingFormat);
+        constexpr auto sizeOfComponent = component_size(EncodingFormat);
+        constexpr auto n = min(std::tuple_size_v<T>, static_cast<typename T::size_type>(nComponents));
 
         T rv{};
         for (typename T::size_type i = 0; i < n; ++i)
@@ -4564,7 +4564,7 @@ namespace
             {
                 // reformat
                 VertexFormat newFormat{m_VertexFormat};
-                newFormat.insert({attr, DefaultFormat(attr)});
+                newFormat.insert({attr, default_format(attr)});
                 setParams(els.size(), newFormat);
             }
             else if (els.size() != numVerts())
@@ -5177,7 +5177,7 @@ private:
 
     static GLint GetVertexAttributeSize(const VertexAttributeFormat& format)
     {
-        return static_cast<GLint>(NumComponents(format));
+        return static_cast<GLint>(num_components_in(format));
     }
 
     static GLenum GetVertexAttributeType(const VertexAttributeFormat& format)
@@ -5236,11 +5236,11 @@ private:
 
         // upload CPU-side vector data into the GPU-side buffer
         OSC_ASSERT(cpp20::bit_cast<uintptr_t>(m_VertexBuffer.bytes().data()) % alignof(float) == 0);
-        gl::bindBuffer(
+        gl::bind_buffer(
             GL_ARRAY_BUFFER,
             buffers.arrayBuffer
         );
-        gl::bufferData(
+        gl::buffer_data(
             GL_ARRAY_BUFFER,
             static_cast<GLsizei>(m_VertexBuffer.bytes().size()),
             m_VertexBuffer.bytes().data(),
@@ -5249,11 +5249,11 @@ private:
 
         // upload CPU-side element data into the GPU-side buffer
         const size_t eboNumBytes = m_NumIndices * (m_IndicesAre32Bit ? sizeof(uint32_t) : sizeof(uint16_t));
-        gl::bindBuffer(
+        gl::bind_buffer(
             GL_ELEMENT_ARRAY_BUFFER,
             buffers.indicesBuffer
         );
-        gl::bufferData(
+        gl::buffer_data(
             GL_ELEMENT_ARRAY_BUFFER,
             static_cast<GLsizei>(eboNumBytes),
             m_IndicesData.data(),
@@ -5261,14 +5261,14 @@ private:
         );
 
         // configure mesh-level VAO
-        gl::bindVertexArray(buffers.vao);
-        gl::bindBuffer(GL_ARRAY_BUFFER, buffers.arrayBuffer);
-        gl::bindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers.indicesBuffer);
+        gl::bind_vertex_array(buffers.vao);
+        gl::bind_buffer(GL_ARRAY_BUFFER, buffers.arrayBuffer);
+        gl::bind_buffer(GL_ELEMENT_ARRAY_BUFFER, buffers.indicesBuffer);
         for (auto&& layout : m_VertexBuffer.attributeLayouts())
         {
             OpenGLBindVertexAttribute(m_VertexBuffer.format(), layout);
         }
-        gl::bindVertexArray();
+        gl::bind_vertex_array();
 
         buffers.dataVersion = *m_Version;
     }
@@ -6377,8 +6377,8 @@ public:
         // and assumes that the given colors are in linear space
         const Color linearColor = toLinear(color);
 
-        gl::bindFramebuffer(GL_DRAW_FRAMEBUFFER, gl::windowFbo);
-        gl::clearColor(linearColor.r, linearColor.g, linearColor.b, linearColor.a);
+        gl::bind_framebuffer(GL_DRAW_FRAMEBUFFER, gl::window_framebuffer);
+        gl::clear_color(linearColor.r, linearColor.g, linearColor.b, linearColor.a);
         gl::clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
@@ -6395,7 +6395,7 @@ public:
     void doSwapBuffers(SDL_Window& window)
     {
         // ensure window FBO is bound (see: SDL_GL_SwapWindow's note about MacOS requiring 0 is bound)
-        gl::bindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
+        gl::bind_framebuffer(GL_FRAMEBUFFER, gl::window_framebuffer);
 
         // flush outstanding screenshot requests
         if (!m_ActiveScreenshotRequests.empty())
@@ -6405,7 +6405,7 @@ public:
 
             std::vector<uint8_t> pixels(static_cast<size_t>(4*dims.x*dims.y));
             OSC_ASSERT(isAlignedAtLeast(pixels.data(), 4) && "glReadPixels must be called with a buffer that is aligned to GL_PACK_ALIGNMENT (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
-            gl::pixelStorei(GL_PACK_ALIGNMENT, 4);
+            gl::pixel_store_i(GL_PACK_ALIGNMENT, 4);
             glReadPixels(
                 0,
                 0,
@@ -6610,7 +6610,7 @@ std::string osc::GraphicsContext::getBackendShadingLanguageVersionString() const
 //
 /////////////////////////////
 
-void osc::graphics::drawMesh(
+void osc::graphics::draw(
     const Mesh& mesh,
     const Transform& transform,
     const Material& material,
@@ -6618,10 +6618,10 @@ void osc::graphics::drawMesh(
     const std::optional<MaterialPropertyBlock>& maybeMaterialPropertyBlock,
     std::optional<size_t> maybeSubMeshIndex)
 {
-    GraphicsBackend::drawMesh(mesh, transform, material, camera, maybeMaterialPropertyBlock, maybeSubMeshIndex);
+    GraphicsBackend::draw(mesh, transform, material, camera, maybeMaterialPropertyBlock, maybeSubMeshIndex);
 }
 
-void osc::graphics::drawMesh(
+void osc::graphics::draw(
     const Mesh& mesh,
     const Mat4& transform,
     const Material& material,
@@ -6629,7 +6629,7 @@ void osc::graphics::drawMesh(
     const std::optional<MaterialPropertyBlock>& maybeMaterialPropertyBlock,
     std::optional<size_t> maybeSubMeshIndex)
 {
-    GraphicsBackend::drawMesh(mesh, transform, material, camera, maybeMaterialPropertyBlock, maybeSubMeshIndex);
+    GraphicsBackend::draw(mesh, transform, material, camera, maybeMaterialPropertyBlock, maybeSubMeshIndex);
 }
 
 void osc::graphics::blit(const Texture2D& source, RenderTexture& dest)
@@ -6696,31 +6696,31 @@ void osc::GraphicsBackend::bindToInstancedAttributes(
     const Shader::Impl& shaderImpl,
     InstancingState& ins)
 {
-    gl::bindBuffer(ins.buf);
+    gl::bind_buffer(ins.buf);
 
     size_t byteOffset = 0;
     if (shaderImpl.m_MaybeInstancedModelMatAttr) {
         if (shaderImpl.m_MaybeInstancedModelMatAttr->shaderType == ShaderPropertyType::Mat4) {
             const gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedModelMatAttr->location};
-            gl::vertexAttribPointer(mmtxAttr, false, ins.stride, ins.baseOffset + byteOffset);
-            gl::vertexAttribDivisor(mmtxAttr, 1);
-            gl::enableVertexAttribArray(mmtxAttr);
+            gl::vertex_attrib_pointer(mmtxAttr, false, ins.stride, ins.baseOffset + byteOffset);
+            gl::vertex_attrib_divisor(mmtxAttr, 1);
+            gl::enable_vertex_attrib_array(mmtxAttr);
             byteOffset += sizeof(float) * 16;
         }
     }
     if (shaderImpl.m_MaybeInstancedNormalMatAttr) {
         if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat4) {
             const gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->location};
-            gl::vertexAttribPointer(mmtxAttr, false, ins.stride, ins.baseOffset + byteOffset);
-            gl::vertexAttribDivisor(mmtxAttr, 1);
-            gl::enableVertexAttribArray(mmtxAttr);
+            gl::vertex_attrib_pointer(mmtxAttr, false, ins.stride, ins.baseOffset + byteOffset);
+            gl::vertex_attrib_divisor(mmtxAttr, 1);
+            gl::enable_vertex_attrib_array(mmtxAttr);
             // unused: byteOffset += sizeof(float) * 16;
         }
         else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat3) {
             const gl::AttributeMat3 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->location};
-            gl::vertexAttribPointer(mmtxAttr, false, ins.stride, ins.baseOffset + byteOffset);
-            gl::vertexAttribDivisor(mmtxAttr, 1);
-            gl::enableVertexAttribArray(mmtxAttr);
+            gl::vertex_attrib_pointer(mmtxAttr, false, ins.stride, ins.baseOffset + byteOffset);
+            gl::vertex_attrib_divisor(mmtxAttr, 1);
+            gl::enable_vertex_attrib_array(mmtxAttr);
             // unused: byteOffset += sizeof(float) * 9;
         }
     }
@@ -6734,17 +6734,17 @@ void osc::GraphicsBackend::unbindFromInstancedAttributes(
     if (shaderImpl.m_MaybeInstancedModelMatAttr) {
         if (shaderImpl.m_MaybeInstancedModelMatAttr->shaderType == ShaderPropertyType::Mat4) {
             const gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedModelMatAttr->location};
-            gl::disableVertexAttribArray(mmtxAttr);
+            gl::disable_vertex_attrib_array(mmtxAttr);
         }
     }
     if (shaderImpl.m_MaybeInstancedNormalMatAttr) {
         if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat4) {
             const gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->location};
-            gl::disableVertexAttribArray(mmtxAttr);
+            gl::disable_vertex_attrib_array(mmtxAttr);
         }
         else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat3) {
             const gl::AttributeMat3 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->location};
-            gl::disableVertexAttribArray(mmtxAttr);
+            gl::disable_vertex_attrib_array(mmtxAttr);
         }
     }
 }
@@ -6981,8 +6981,8 @@ void osc::GraphicsBackend::tryBindMaterialValueToShaderElement(
         auto& impl = const_cast<Texture2D::Impl&>(*std::get<Texture2D>(v).m_Impl);
         gl::Texture2D& texture = impl.updTexture();
 
-        gl::activeTexture(GL_TEXTURE0 + textureSlot);
-        gl::bindTexture(texture);
+        gl::active_texture(GL_TEXTURE0 + textureSlot);
+        gl::bind_texture(texture);
         gl::UniformSampler2D u{se.location};
         gl::Uniform(u, textureSlot);
 
@@ -6996,24 +6996,24 @@ void osc::GraphicsBackend::tryBindMaterialValueToShaderElement(
             {
                 [&textureSlot, &se](SingleSampledTexture& sst)
             {
-                gl::activeTexture(GL_TEXTURE0 + textureSlot);
-                gl::bindTexture(sst.texture2D);
+                gl::active_texture(GL_TEXTURE0 + textureSlot);
+                gl::bind_texture(sst.texture2D);
                 gl::UniformSampler2D u{se.location};
                 gl::Uniform(u, textureSlot);
                 ++textureSlot;
             },
             [&textureSlot, &se](MultisampledRBOAndResolvedTexture& mst)
             {
-                gl::activeTexture(GL_TEXTURE0 + textureSlot);
-                gl::bindTexture(mst.singleSampledTexture);
+                gl::active_texture(GL_TEXTURE0 + textureSlot);
+                gl::bind_texture(mst.singleSampledTexture);
                 gl::UniformSampler2D u{se.location};
                 gl::Uniform(u, textureSlot);
                 ++textureSlot;
             },
             [&textureSlot, &se](SingleSampledCubemap& cubemap)
             {
-                gl::activeTexture(GL_TEXTURE0 + textureSlot);
-                gl::bindTexture(cubemap.textureCubemap);
+                gl::active_texture(GL_TEXTURE0 + textureSlot);
+                gl::bind_texture(cubemap.textureCubemap);
                 gl::UniformSamplerCube u{se.location};
                 gl::Uniform(u, textureSlot);
                 ++textureSlot;
@@ -7027,8 +7027,8 @@ void osc::GraphicsBackend::tryBindMaterialValueToShaderElement(
         auto& impl = const_cast<Cubemap::Impl&>(*std::get<Cubemap>(v).m_Impl);
         const gl::TextureCubemap& texture = impl.updCubemap();
 
-        gl::activeTexture(GL_TEXTURE0 + textureSlot);
-        gl::bindTexture(texture);
+        gl::active_texture(GL_TEXTURE0 + textureSlot);
+        gl::bind_texture(texture);
         gl::UniformSamplerCube u{se.location};
         gl::Uniform(u, textureSlot);
 
@@ -7056,7 +7056,7 @@ void osc::GraphicsBackend::handleBatchWithSameSubMesh(
     const Shader::Impl& shaderImpl = *els.front().material.m_Impl->m_Shader.m_Impl;
     const std::optional<size_t> maybeSubMeshIndex = els.front().maybeSubMeshIndex;
 
-    gl::bindVertexArray(meshImpl.updVertexArray());
+    gl::bind_vertex_array(meshImpl.updVertexArray());
 
     if (shaderImpl.m_MaybeModelMatUniform || shaderImpl.m_MaybeNormalMatUniform) {
         // if the shader requires per-instance uniforms, then we *have* to render one
@@ -7107,7 +7107,7 @@ void osc::GraphicsBackend::handleBatchWithSameSubMesh(
         }
     }
 
-    gl::bindVertexArray();
+    gl::bind_vertex_array();
 }
 
 // helper: draw a batch of `RenderObject`s that have the same:
@@ -7181,7 +7181,7 @@ void osc::GraphicsBackend::handleBatchWithSameMaterial(
     // updated by various batches (which may bind to textures etc.)
     int32_t textureSlot = 0;
 
-    gl::useProgram(shaderImpl.getProgram());
+    gl::use_program(shaderImpl.getProgram());
 
     if (matImpl.getWireframeMode())
     {
@@ -7463,8 +7463,8 @@ void osc::GraphicsBackend::teardownTopLevelPipelineState(
     {
         gl::disable(GL_SCISSOR_TEST);
     }
-    gl::bindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
-    gl::useProgram();
+    gl::bind_framebuffer(GL_FRAMEBUFFER, gl::window_framebuffer);
+    gl::use_program();
 }
 
 std::optional<gl::FrameBuffer> osc::GraphicsBackend::bindAndClearRenderBuffers(
@@ -7480,7 +7480,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::bindAndClearRenderBuffers(
         // buffers and a single depth buffer. Bind them all to one MRT FBO
 
         gl::FrameBuffer& rendererFBO = maybeRenderFBO.emplace();
-        gl::bindFramebuffer(GL_DRAW_FRAMEBUFFER, rendererFBO);
+        gl::bind_framebuffer(GL_DRAW_FRAMEBUFFER, rendererFBO);
 
         // attach color buffers to the FBO
         for (size_t i = 0; i < maybeCustomRenderTarget->colors.size(); ++i)
@@ -7489,7 +7489,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::bindAndClearRenderBuffers(
             {
                 [i](SingleSampledTexture& t)
                 {
-                    gl::framebufferTexture2D(
+                    gl::framebuffer_texture2D(
                         GL_DRAW_FRAMEBUFFER,
                         GL_COLOR_ATTACHMENT0 + static_cast<GLint>(i),
                         t.texture2D,
@@ -7498,7 +7498,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::bindAndClearRenderBuffers(
                 },
                 [i](MultisampledRBOAndResolvedTexture& t)
                 {
-                    gl::framebufferRenderbuffer(
+                    gl::framebuffer_renderbuffer(
                         GL_DRAW_FRAMEBUFFER,
                         GL_COLOR_ATTACHMENT0 + static_cast<GLint>(i),
                         t.multisampledRBO
@@ -7525,7 +7525,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::bindAndClearRenderBuffers(
         {
             [](SingleSampledTexture& t)
             {
-                gl::framebufferTexture2D(
+                gl::framebuffer_texture2D(
                     GL_DRAW_FRAMEBUFFER,
                     GL_DEPTH_STENCIL_ATTACHMENT,
                     t.texture2D,
@@ -7534,7 +7534,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::bindAndClearRenderBuffers(
             },
             [](MultisampledRBOAndResolvedTexture& t)
             {
-                gl::framebufferRenderbuffer(
+                gl::framebuffer_renderbuffer(
                     GL_DRAW_FRAMEBUFFER,
                     GL_DEPTH_STENCIL_ATTACHMENT,
                     t.multisampledRBO
@@ -7582,7 +7582,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::bindAndClearRenderBuffers(
                     glClearBufferfv(
                         GL_COLOR,
                         static_cast<GLint>(i),
-                        value_ptr(static_cast<Vec4>(colorAttachment.clearColor))
+                        value_ptr(static_cast<Vec4>(colorAttachment.clear_color))
                     );
                 }
             }
@@ -7596,7 +7596,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::bindAndClearRenderBuffers(
     }
     else
     {
-        gl::bindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
+        gl::bind_framebuffer(GL_FRAMEBUFFER, gl::window_framebuffer);
 
         // we're rendering to the window
         if (camera.m_ClearFlags != CameraClearFlags::Nothing)
@@ -7609,7 +7609,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::bindAndClearRenderBuffers(
             // clear color is in sRGB, but the window's framebuffer is sRGB-corrected
             // and assume that clear colors are in linear space
             const Color linearColor = toLinear(camera.m_BackgroundColor);
-            gl::clearColor(
+            gl::clear_color(
                 linearColor.r,
                 linearColor.g,
                 linearColor.b,
@@ -7630,10 +7630,10 @@ void osc::GraphicsBackend::resolveRenderBuffers(RenderTarget& renderTarget)
 
     // setup FBOs (reused per color buffer)
     gl::FrameBuffer multisampledReadFBO;
-    gl::bindFramebuffer(GL_READ_FRAMEBUFFER, multisampledReadFBO);
+    gl::bind_framebuffer(GL_READ_FRAMEBUFFER, multisampledReadFBO);
 
     gl::FrameBuffer resolvedDrawFBO;
-    gl::bindFramebuffer(GL_DRAW_FRAMEBUFFER, resolvedDrawFBO);
+    gl::bind_framebuffer(GL_DRAW_FRAMEBUFFER, resolvedDrawFBO);
 
     // resolve each color buffer with a blit
     for (size_t i = 0; i < renderTarget.colors.size(); ++i)
@@ -7658,14 +7658,14 @@ void osc::GraphicsBackend::resolveRenderBuffers(RenderTarget& renderTarget)
             {
                 const GLint attachmentLoc = GL_COLOR_ATTACHMENT0 + static_cast<GLint>(i);
 
-                gl::framebufferRenderbuffer(
+                gl::framebuffer_renderbuffer(
                     GL_READ_FRAMEBUFFER,
                     attachmentLoc,
                     t.multisampledRBO
                 );
                 glReadBuffer(attachmentLoc);
 
-                gl::framebufferTexture2D(
+                gl::framebuffer_texture2D(
                     GL_DRAW_FRAMEBUFFER,
                     attachmentLoc,
                     t.singleSampledTexture,
@@ -7684,7 +7684,7 @@ void osc::GraphicsBackend::resolveRenderBuffers(RenderTarget& renderTarget)
         if (bufferIsResolveable)
         {
             const Vec2i dimensions = attachment.buffer->m_Impl->getDimensions();
-            gl::blitFramebuffer(
+            gl::blit_framebuffer(
                 0,
                 0,
                 dimensions.x,
@@ -7711,14 +7711,14 @@ void osc::GraphicsBackend::resolveRenderBuffers(RenderTarget& renderTarget)
             },
             [&bufferIsResolveable](MultisampledRBOAndResolvedTexture& t)
             {
-                gl::framebufferRenderbuffer(
+                gl::framebuffer_renderbuffer(
                     GL_READ_FRAMEBUFFER,
                     GL_DEPTH_ATTACHMENT,
                     t.multisampledRBO
                 );
                 glReadBuffer(GL_DEPTH_ATTACHMENT);
 
-                gl::framebufferTexture2D(
+                gl::framebuffer_texture2D(
                     GL_DRAW_FRAMEBUFFER,
                     GL_DEPTH_ATTACHMENT,
                     t.singleSampledTexture,
@@ -7737,7 +7737,7 @@ void osc::GraphicsBackend::resolveRenderBuffers(RenderTarget& renderTarget)
         if (bufferIsResolveable)
         {
             const Vec2i dimensions = renderTarget.depth.buffer->m_Impl->getDimensions();
-            gl::blitFramebuffer(
+            gl::blit_framebuffer(
                 0,
                 0,
                 dimensions.x,
@@ -7786,7 +7786,7 @@ void osc::GraphicsBackend::renderCameraQueue(
     );
 }
 
-void osc::GraphicsBackend::drawMesh(
+void osc::GraphicsBackend::draw(
     const Mesh& mesh,
     const Transform& transform,
     const Material& material,
@@ -7807,7 +7807,7 @@ void osc::GraphicsBackend::drawMesh(
     );
 }
 
-void osc::GraphicsBackend::drawMesh(
+void osc::GraphicsBackend::draw(
     const Mesh& mesh,
     const Mat4& transform,
     const Material& material,
@@ -7841,7 +7841,7 @@ void osc::GraphicsBackend::blit(
     Material m = g_GraphicsContextImpl->getQuadMaterial();
     m.setTexture("uTexture", source);
 
-    graphics::drawMesh(g_GraphicsContextImpl->getQuadMesh(), Transform{}, m, c);
+    graphics::draw(g_GraphicsContextImpl->getQuadMesh(), Transform{}, m, c);
     c.renderTo(dest);
 }
 
@@ -7871,7 +7871,7 @@ void osc::GraphicsBackend::blitToScreen(
 
     Material copy{material};
     copy.setRenderTexture("uTexture", t);
-    graphics::drawMesh(g_GraphicsContextImpl->getQuadMesh(), Transform{}, copy, c);
+    graphics::draw(g_GraphicsContextImpl->getQuadMesh(), Transform{}, copy, c);
     c.renderToScreen();
     copy.clearRenderTexture("uTexture");
 }
@@ -7891,7 +7891,7 @@ void osc::GraphicsBackend::blitToScreen(
 
     Material copy{g_GraphicsContextImpl->getQuadMaterial()};
     copy.setTexture("uTexture", t);
-    graphics::drawMesh(g_GraphicsContextImpl->getQuadMesh(), Transform{}, copy, c);
+    graphics::draw(g_GraphicsContextImpl->getQuadMesh(), Transform{}, copy, c);
     c.renderToScreen();
     copy.clearTexture("uTexture");
 }
@@ -7913,12 +7913,12 @@ void osc::GraphicsBackend::copyTexture(
 
     // create a source (read) framebuffer for blitting from the source render texture
     gl::FrameBuffer readFBO;
-    gl::bindFramebuffer(GL_READ_FRAMEBUFFER, readFBO);
+    gl::bind_framebuffer(GL_READ_FRAMEBUFFER, readFBO);
     std::visit(Overload  // attach source texture depending on rendertexture's type
     {
         [](SingleSampledTexture& t)
         {
-            gl::framebufferTexture2D(
+            gl::framebuffer_texture2D(
                 GL_READ_FRAMEBUFFER,
                 GL_COLOR_ATTACHMENT0,
                 t.texture2D,
@@ -7927,7 +7927,7 @@ void osc::GraphicsBackend::copyTexture(
         },
         [](MultisampledRBOAndResolvedTexture& t)
         {
-            gl::framebufferTexture2D(
+            gl::framebuffer_texture2D(
                 GL_READ_FRAMEBUFFER,
                 GL_COLOR_ATTACHMENT0,
                 t.singleSampledTexture,
@@ -7949,8 +7949,8 @@ void osc::GraphicsBackend::copyTexture(
 
     // create a destination (draw) framebuffer for blitting to the destination render texture
     gl::FrameBuffer drawFBO;
-    gl::bindFramebuffer(GL_DRAW_FRAMEBUFFER, drawFBO);
-    gl::framebufferTexture2D(
+    gl::bind_framebuffer(GL_DRAW_FRAMEBUFFER, drawFBO);
+    gl::framebuffer_texture2D(
         GL_DRAW_FRAMEBUFFER,
         GL_COLOR_ATTACHMENT0,
         dest.m_Impl.upd()->updTexture(),
@@ -7959,7 +7959,7 @@ void osc::GraphicsBackend::copyTexture(
     glDrawBuffer(GL_COLOR_ATTACHMENT0);
 
     // blit the read framebuffer to the draw framebuffer
-    gl::blitFramebuffer(
+    gl::blit_framebuffer(
         0,
         0,
         src.getDimensions().x,
@@ -7981,9 +7981,9 @@ void osc::GraphicsBackend::copyTexture(
         OSC_ASSERT(cpuBuffer.size() == static_cast<ptrdiff_t>(dest.getDimensions().x*dest.getDimensions().y)*NumBytesPerPixel(dest.getTextureFormat()));
 
         gl::viewport(0, 0, dest.getDimensions().x, dest.getDimensions().y);
-        gl::bindFramebuffer(GL_READ_FRAMEBUFFER, drawFBO);
+        gl::bind_framebuffer(GL_READ_FRAMEBUFFER, drawFBO);
         glReadBuffer(GL_COLOR_ATTACHMENT0);
-        gl::pixelStorei(GL_PACK_ALIGNMENT, packFormat);
+        gl::pixel_store_i(GL_PACK_ALIGNMENT, packFormat);
         glReadPixels(
             0,
             0,
@@ -7994,7 +7994,7 @@ void osc::GraphicsBackend::copyTexture(
             cpuBuffer.data()
         );
     }
-    gl::bindFramebuffer(GL_FRAMEBUFFER, gl::windowFbo);
+    gl::bind_framebuffer(GL_FRAMEBUFFER, gl::window_framebuffer);
 }
 
 void osc::GraphicsBackend::copyTexture(
@@ -8023,7 +8023,7 @@ void osc::GraphicsBackend::copyTexture(
     for (size_t face = 0; face < 6; ++face)
     {
         gl::FrameBuffer readFBO;
-        gl::bindFramebuffer(GL_READ_FRAMEBUFFER, readFBO);
+        gl::bind_framebuffer(GL_READ_FRAMEBUFFER, readFBO);
         std::visit(Overload  // attach source texture depending on rendertexture's type
         {
             [](SingleSampledTexture&)
@@ -8048,7 +8048,7 @@ void osc::GraphicsBackend::copyTexture(
         glReadBuffer(GL_COLOR_ATTACHMENT0);
 
         gl::FrameBuffer drawFBO;
-        gl::bindFramebuffer(GL_DRAW_FRAMEBUFFER, drawFBO);
+        gl::bind_framebuffer(GL_DRAW_FRAMEBUFFER, drawFBO);
         glFramebufferTexture2D(
             GL_DRAW_FRAMEBUFFER,
             GL_COLOR_ATTACHMENT0,
@@ -8059,7 +8059,7 @@ void osc::GraphicsBackend::copyTexture(
         glDrawBuffer(GL_COLOR_ATTACHMENT0);
 
         // blit the read framebuffer to the draw framebuffer
-        gl::blitFramebuffer(
+        gl::blit_framebuffer(
             0,
             0,
             sourceRenderTexture.getDimensions().x,

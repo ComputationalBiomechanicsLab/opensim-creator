@@ -878,14 +878,14 @@ namespace
 
         // try to read header row
         std::vector<std::string> headers;
-        if (!readCSVRowIntoVector(inputFileStream, headers))
+        if (!read_csv_row_into_vector(inputFileStream, headers))
         {
             return {};  // no CSV data (headers) in top row
         }
 
         // map each CSV row from [$independent, ...$dependent] -> [($independent, $dependent[i])]
         std::vector<std::vector<PlotDataPoint>> columnsAsPlots;
-        for (std::vector<std::string> row; readCSVRowIntoVector(inputFileStream, row);)
+        for (std::vector<std::string> row; read_csv_row_into_vector(inputFileStream, row);)
         {
             if (row.size() < 2)
             {
@@ -964,7 +964,7 @@ namespace
         }
 
         // write header
-        writeCSVRow(
+        write_csv_row(
             fileOutputStream,
             std::to_array({ ComputePlotXAxisTitle(params, coord), ComputePlotYAxisTitle(params) })
         );
@@ -973,7 +973,7 @@ namespace
         auto lock = plot.lockDataPoints();
         for (PlotDataPoint const& p : *lock)
         {
-            writeCSVRow(
+            write_csv_row(
                 fileOutputStream,
                 std::to_array({ std::to_string(p.x), std::to_string(p.y) })
             );
@@ -1359,7 +1359,7 @@ namespace
         }
 
         // write header
-        writeCSVRow(outputFileStream, GetAllCSVHeaders(coord, params, lines));
+        write_csv_row(outputFileStream, GetAllCSVHeaders(coord, params, lines));
 
         // get incrementable cursors to all curves in the plot
         std::vector<LineCursor> cursors = GetCursorsToAllPlotLines(lines);
@@ -1401,7 +1401,7 @@ namespace
                 }
             }
 
-            writeCSVRow(outputFileStream, cols);
+            write_csv_row(outputFileStream, cols);
 
             maybeX = maybeNextX;
             maybeNextX = std::nullopt;
