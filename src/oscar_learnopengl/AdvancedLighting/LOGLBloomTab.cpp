@@ -24,10 +24,10 @@ namespace
     std::array<Color, c_SceneLightPositions.size()> const& GetSceneLightColors()
     {
         static auto const s_SceneLightColors = std::to_array<Color>({
-            toSRGB({ 5.0f, 5.0f,  5.0f}),
-            toSRGB({10.0f, 0.0f,  0.0f}),
-            toSRGB({ 0.0f, 0.0f, 15.0f}),
-            toSRGB({ 0.0f, 5.0f,  0.0f}),
+            to_srgb_colorspace({ 5.0f, 5.0f,  5.0f}),
+            to_srgb_colorspace({10.0f, 0.0f,  0.0f}),
+            to_srgb_colorspace({ 0.0f, 0.0f, 15.0f}),
+            to_srgb_colorspace({ 0.0f, 5.0f,  0.0f}),
         });
         return s_SceneLightColors;
     }
@@ -86,10 +86,10 @@ namespace
     MouseCapturingCamera CreateCameraThatMatchesLearnOpenGL()
     {
         MouseCapturingCamera rv;
-        rv.setPosition({0.0f, 0.5f, 5.0f});
-        rv.setNearClippingPlane(0.1f);
-        rv.setFarClippingPlane(100.0f);
-        rv.setBackgroundColor({0.0f, 0.0f, 0.0f, 1.0f});
+        rv.set_position({0.0f, 0.5f, 5.0f});
+        rv.set_near_clipping_plane(0.1f);
+        rv.set_far_clipping_plane(100.0f);
+        rv.set_background_color({0.0f, 0.0f, 0.0f, 1.0f});
         return rv;
     }
 }
@@ -140,7 +140,7 @@ private:
 
     void reformatAllTextures(Rect const& viewportRect)
     {
-        Vec2 const viewportDims = dimensions(viewportRect);
+        Vec2 const viewportDims = dimensions_of(viewportRect);
         AntiAliasingLevel const msxaaSamples = App::get().getCurrentAntiAliasingLevel();
 
         RenderTextureDescriptor textureDescription{viewportDims};
@@ -167,7 +167,7 @@ private:
 
     void drawSceneCubesToCamera()
     {
-        m_SceneMaterial.setVec3("uViewWorldPos", m_Camera.getPosition());
+        m_SceneMaterial.setVec3("uViewWorldPos", m_Camera.position());
 
         // draw floor
         {
@@ -245,7 +245,7 @@ private:
                 RenderBufferStoreAction::DontCare,
             },
         };
-        m_Camera.renderTo(mrt);
+        m_Camera.render_to(mrt);
     }
 
     void renderBlurredBrightness()
@@ -257,7 +257,7 @@ private:
             m_BlurMaterial.setBool("uHorizontal", horizontal);
             Camera camera;
             graphics::draw(m_QuadMesh, identity<Transform>(), m_BlurMaterial, camera);
-            camera.renderTo(pingPongBuffer);
+            camera.render_to(pingPongBuffer);
             m_BlurMaterial.clearRenderTexture("uInputImage");
 
             horizontal = !horizontal;
@@ -273,8 +273,8 @@ private:
 
         Camera camera;
         graphics::draw(m_QuadMesh, identity<Transform>(), m_FinalCompositingMaterial, camera);
-        camera.setPixelRect(viewportRect);
-        camera.renderToScreen();
+        camera.set_pixel_rect(viewportRect);
+        camera.render_to_screen();
 
         m_FinalCompositingMaterial.clearRenderTexture("uBloomBlur");
         m_FinalCompositingMaterial.clearRenderTexture("uHDRSceneRender");
@@ -298,7 +298,7 @@ private:
                 viewportRect.p1 + offset + w,
             };
 
-            graphics::blitToScreen(*textures[i], overlayRect);
+            graphics::blit_to_screen(*textures[i], overlayRect);
         }
     }
 

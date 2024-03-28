@@ -66,7 +66,7 @@ namespace osc
         BVH const& getScratchMeshBVH(TPSDocumentInputIdentifier which)
         {
             Mesh const& mesh = getScratchMesh(which);
-            return meshCache->getBVH(mesh);
+            return meshCache->get_bvh(mesh);
         }
 
         // returns a (potentially cached) post-TPS-warp mesh
@@ -177,10 +177,10 @@ namespace osc
         PolarPerspectiveCamera linkedCameraBase = CreateCameraFocusedOn(editedDocument->getScratch().sourceMesh.getBounds());
 
         // wireframe material, used to draw scene elements in a wireframe style
-        MeshBasicMaterial wireframeMaterial = App::singleton<SceneCache>(App::resource_loader())->wireframeMaterial();
+        MeshBasicMaterial wireframe_material = App::singleton<SceneCache>(App::resource_loader())->wireframe_material();
 
         // shared sphere mesh (used by rendering code)
-        Mesh landmarkSphere = App::singleton<SceneCache>(App::resource_loader())->getSphereMesh();
+        Mesh landmarkSphere = App::singleton<SceneCache>(App::resource_loader())->sphere_mesh();
 
         // current user selection
         MeshWaringTabUserSelection userSelection;

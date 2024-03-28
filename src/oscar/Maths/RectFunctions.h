@@ -14,7 +14,7 @@ namespace osc { struct Circle; }
 namespace osc
 {
     // returns the dimensions of `rect`
-    inline Vec2 dimensions(Rect const& rect)
+    inline Vec2 dimensions_of(Rect const& rect)
     {
         return abs(rect.p2 - rect.p1);
     }
@@ -22,14 +22,14 @@ namespace osc
     // returns the area of `rect`
     inline float area(Rect const& rect)
     {
-        auto const [x, y] = dimensions(rect);
+        auto const [x, y] = dimensions_of(rect);
         return x * y;
     }
 
     // returns the aspect ratio of `rect`
     inline float aspect_ratio(Rect const& rect)
     {
-        auto const [x, y] = dimensions(rect);
+        auto const [x, y] = dimensions_of(rect);
         return x / y;
     }
 
@@ -91,5 +91,5 @@ namespace osc
     Rect expand(Rect const& rect, Vec2 absAmount);
 
     // returns a `Rect` that has its bounds clamped between `min` and `max` (inclusive)
-    Rect Clamp(Rect const&, Vec2 const& min, Vec2 const& max);
+    Rect clamp(Rect const&, Vec2 const& min, Vec2 const& max);
 }

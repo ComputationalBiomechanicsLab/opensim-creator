@@ -382,7 +382,7 @@ private:
 
         // draw a vertical Y line showing the current scrub time over the plots
         {
-            float plotScrubLineX = plotRect.p1.x + simScrubPct*(dimensions(plotRect).x);
+            float plotScrubLineX = plotRect.p1.x + simScrubPct*(dimensions_of(plotRect).x);
             Vec2 p1 = {plotScrubLineX, plotRect.p1.y};
             Vec2 p2 = {plotScrubLineX, plotRect.p2.y};
             drawlist->AddLine(p1, p2, currentTimeLineColor);
@@ -391,7 +391,7 @@ private:
         if (ui::IsItemHovered()) {
             Vec2 mp = ui::GetMousePos();
             Vec2 plotLoc = mp - plotRect.p1;
-            float relLoc = plotLoc.x / dimensions(plotRect).x;
+            float relLoc = plotLoc.x / dimensions_of(plotRect).x;
             SimulationClock::time_point timeLoc = simStartTime + relLoc*(simEndTime - simStartTime);
 
             // draw vertical line to show current X of their hover

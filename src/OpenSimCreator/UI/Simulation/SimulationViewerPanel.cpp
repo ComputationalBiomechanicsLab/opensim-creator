@@ -60,7 +60,7 @@ private:
         std::optional<SceneCollision> const maybeCollision = m_Viewer.onDraw(msp);
 
         OpenSim::Component const* maybeHover = maybeCollision ?
-            FindComponent(msp.getModel(), maybeCollision->decorationID) :
+            FindComponent(msp.getModel(), maybeCollision->decoration_id) :
             nullptr;
 
         // care: this code must check whether the hover != current hover (even if

@@ -10,9 +10,9 @@
 #include <string_view>
 #include <vector>
 
-using osc::TryParseHexCharsAsByte;
+using osc::try_parse_hex_chars_as_byte;
 using osc::TrimLeadingAndTrailingWhitespace;
-using osc::ToHexChars;
+using osc::to_hex_chars;
 using osc::is_valid_identifier;
 
 TEST(Algorithms, TrimLeadingAndTrailingWhitespaceWorksAsExpected)
@@ -182,7 +182,7 @@ TEST_P(FromCharsStripWhitespace, Check)
     std::optional<float> rv = osc::FromCharsStripWhitespace(c.input);
     ASSERT_EQ(rv, c.expectedOutput);
 }
-TEST(ToHexChars, ReturnsExpectedResultsWhenComparedToAlternateImplementation)
+TEST(to_hex_chars, ReturnsExpectedResultsWhenComparedToAlternateImplementation)
 {
     // test by comparing with
     for (size_t i = 0; i <= static_cast<size_t>(std::numeric_limits<uint8_t>::max()); ++i)
@@ -194,14 +194,14 @@ TEST(ToHexChars, ReturnsExpectedResultsWhenComparedToAlternateImplementation)
         char const msc = static_cast<char>(msn <= 9 ? '0' + msn : 'a' + (msn-10));
         char const lsc = static_cast<char>(lsn <= 9 ? '0' + lsn : 'a' + (lsn-10));
 
-        auto [a, b] = ToHexChars(v);
+        auto [a, b] = to_hex_chars(v);
 
         ASSERT_EQ(a, msc);
         ASSERT_EQ(b, lsc);
     }
 }
 
-TEST(ToHexChars, ReturnsExpectedResults)
+TEST(to_hex_chars, ReturnsExpectedResults)
 {
     struct TestCase final {
         uint8_t input;
@@ -222,37 +222,37 @@ TEST(ToHexChars, ReturnsExpectedResults)
 
     for (TestCase const& tc : testCases)
     {
-        ASSERT_EQ(ToHexChars(tc.input), tc.expectedOutput);
+        ASSERT_EQ(to_hex_chars(tc.input), tc.expectedOutput);
     }
 }
 
-TEST(TryParseHexCharsAsByte, ReturnsExpectedResults)
+TEST(try_parse_hex_chars_as_byte, ReturnsExpectedResults)
 {
     // parseable cases
-    ASSERT_EQ(TryParseHexCharsAsByte('0', '0'), 0x00);
-    ASSERT_EQ(TryParseHexCharsAsByte('0', '1'), 0x01);
-    ASSERT_EQ(TryParseHexCharsAsByte('1', '0'), 0x10);
-    ASSERT_EQ(TryParseHexCharsAsByte('1', '1'), 0x11);
-    ASSERT_EQ(TryParseHexCharsAsByte('f', 'a'), 0xfa);
-    ASSERT_EQ(TryParseHexCharsAsByte('b', 'e'), 0xbe);
+    ASSERT_EQ(try_parse_hex_chars_as_byte('0', '0'), 0x00);
+    ASSERT_EQ(try_parse_hex_chars_as_byte('0', '1'), 0x01);
+    ASSERT_EQ(try_parse_hex_chars_as_byte('1', '0'), 0x10);
+    ASSERT_EQ(try_parse_hex_chars_as_byte('1', '1'), 0x11);
+    ASSERT_EQ(try_parse_hex_chars_as_byte('f', 'a'), 0xfa);
+    ASSERT_EQ(try_parse_hex_chars_as_byte('b', 'e'), 0xbe);
 
     // case insensitivity
-    ASSERT_EQ(TryParseHexCharsAsByte('B', 'e'), 0xbe);
-    ASSERT_EQ(TryParseHexCharsAsByte('b', 'E'), 0xbe);
-    ASSERT_EQ(TryParseHexCharsAsByte('B', 'C'), 0xbc);
-    ASSERT_EQ(TryParseHexCharsAsByte('F', 'A'), 0xfa);
+    ASSERT_EQ(try_parse_hex_chars_as_byte('B', 'e'), 0xbe);
+    ASSERT_EQ(try_parse_hex_chars_as_byte('b', 'E'), 0xbe);
+    ASSERT_EQ(try_parse_hex_chars_as_byte('B', 'C'), 0xbc);
+    ASSERT_EQ(try_parse_hex_chars_as_byte('F', 'A'), 0xfa);
 
     // interesting edge-case from std::strol that we shouldn't allow
-    ASSERT_EQ(TryParseHexCharsAsByte('0', 'x'), std::nullopt);
-    ASSERT_EQ(TryParseHexCharsAsByte('0', 'X'), std::nullopt);
-    ASSERT_EQ(TryParseHexCharsAsByte('0', '8'), 0x08);
-    ASSERT_EQ(TryParseHexCharsAsByte('-', '1'), std::nullopt);
+    ASSERT_EQ(try_parse_hex_chars_as_byte('0', 'x'), std::nullopt);
+    ASSERT_EQ(try_parse_hex_chars_as_byte('0', 'X'), std::nullopt);
+    ASSERT_EQ(try_parse_hex_chars_as_byte('0', '8'), 0x08);
+    ASSERT_EQ(try_parse_hex_chars_as_byte('-', '1'), std::nullopt);
 
     // invalid input
-    ASSERT_EQ(TryParseHexCharsAsByte(' ', 'a'), std::nullopt);
-    ASSERT_EQ(TryParseHexCharsAsByte('x', 'a'), std::nullopt);
-    ASSERT_EQ(TryParseHexCharsAsByte('a', '?'), std::nullopt);
-    ASSERT_EQ(TryParseHexCharsAsByte('\\', '5'), std::nullopt);
+    ASSERT_EQ(try_parse_hex_chars_as_byte(' ', 'a'), std::nullopt);
+    ASSERT_EQ(try_parse_hex_chars_as_byte('x', 'a'), std::nullopt);
+    ASSERT_EQ(try_parse_hex_chars_as_byte('a', '?'), std::nullopt);
+    ASSERT_EQ(try_parse_hex_chars_as_byte('\\', '5'), std::nullopt);
 }
 
 TEST(StringHelpers, IsValidIdentifierReturnsTrueForTypicalIdentifiers)

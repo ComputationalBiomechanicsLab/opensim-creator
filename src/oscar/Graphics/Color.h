@@ -218,28 +218,28 @@ namespace osc
     std::ostream& operator<<(std::ostream&, const Color&);
 
     // returns the linear version of one (presumed to be) sRGB color channel value
-    float toLinear(float colorChannelValue);
+    float to_linear_colorspace(float colorChannelValue);
 
     // returns the linear version of one (presumed to be) linear color channel value
-    float toSRGB(float colorChannelValue);
+    float to_srgb_colorspace(float colorChannelValue);
 
     // returns the linear version of a (presumed to be) sRGB color
-    Color toLinear(const Color&);
+    Color to_linear_colorspace(const Color&);
 
     // returns a color that is the (presumed to be) linear color with the sRGB gamma curve applied
-    Color toSRGB(const Color&);
+    Color to_srgb_colorspace(const Color&);
 
     // returns a color that is clamped to the low-dynamic range (LDR, i.e. [0, 1])
-    Color clampToLDR(const Color&);
+    Color clamp_to_ldr(const Color&);
 
     // returns the HSL(A) equivalent of the given (RGBA) color
-    ColorHSLA toHSLA(const Color&);
+    ColorHSLA to_hsla_color(const Color&);
 
     // returns the color (RGBA) equivalent of the given HSL color
-    Color toColor(const ColorHSLA&);
+    Color to_color(const ColorHSLA&);
 
     // returns a Vec4 version of a Color
-    inline Vec4 toVec4(const Color& c)
+    inline Vec4 to_vec4(const Color& c)
     {
         return Vec4{c};
     }
@@ -262,11 +262,11 @@ namespace osc
     Color lerp(const Color& a, const Color& b, float t);
 
     // float-/double-based inputs assume normalized color range (i.e. 0 to 1)
-    Color32 toColor32(const Color&);
-    Color32 toColor32(const Vec4&);
-    Color32 toColor32(float, float, float, float);
-    Color32 toColor32(uint32_t);  // R at MSB
-    Color toColor(Color32);
+    Color32 to_color32(const Color&);
+    Color32 to_color32(const Vec4&);
+    Color32 to_color32(float, float, float, float);
+    Color32 to_color32(uint32_t);  // R at MSB
+    Color to_color(Color32);
 
     // returns the color as a hexadecimal string in the format "#rrggbbaa", as
     // commonly-used in web applications, configuration files, etc.
@@ -279,12 +279,12 @@ namespace osc
     //   - black --> "#000000ff"
     //   - clear --> "#00000000"
     //   - etc.
-    std::string toHtmlStringRGBA(const Color&);
-    std::optional<Color> tryParseHtmlString(std::string_view);
+    std::string to_html_string_rgba(const Color&);
+    std::optional<Color> try_parse_html_color_string(std::string_view);
 
     // returns a color that is the result of converting the color to HSLA,
     // multiplying it's luminance (L) by `factor`, and converting it back to RGBA
-    Color multiplyLuminance(const Color& color, float factor);
+    Color multiply_luminance(const Color& color, float factor);
 
     // when handled as a tuple-like object, a `Color` decomposes into its channels (+alpha)
 

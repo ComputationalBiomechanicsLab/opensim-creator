@@ -32,8 +32,8 @@ namespace
     Camera CreateSceneCamera()
     {
         Camera rv;
-        rv.setViewMatrixOverride(identity<Mat4>());
-        rv.setProjectionMatrixOverride(identity<Mat4>());
+        rv.set_view_matrix_override(identity<Mat4>());
+        rv.set_projection_matrix_override(identity<Mat4>());
         return rv;
     }
 
@@ -57,8 +57,8 @@ private:
     {
         graphics::draw(m_TriangleMesh, identity<Transform>(), m_Material, m_Camera);
 
-        m_Camera.setPixelRect(ui::GetMainViewportWorkspaceScreenRect());
-        m_Camera.renderToScreen();
+        m_Camera.set_pixel_rect(ui::GetMainViewportWorkspaceScreenRect());
+        m_Camera.render_to_screen();
     }
 
     ResourceLoader m_Loader = App::resource_loader();

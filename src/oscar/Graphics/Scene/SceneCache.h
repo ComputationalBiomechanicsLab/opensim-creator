@@ -25,39 +25,39 @@ namespace osc
         ~SceneCache() noexcept;
 
         // clear all cached meshes (can be slow: forces a full reload)
-        void clearMeshes();
+        void clear_meshes();
 
         // always returns (it will use a dummy cube and print a log error if something fails)
-        Mesh get(const std::string& key, const std::function<Mesh()>& getter);
+        Mesh get_mesh(const std::string& key, const std::function<Mesh()>& getter);
 
-        Mesh getSphereMesh();
-        Mesh getCircleMesh();
-        Mesh getCylinderMesh();
-        Mesh getUncappedCylinderMesh();
-        Mesh getBrickMesh();
-        Mesh getConeMesh();
-        Mesh getFloorMesh();
-        Mesh get100x100GridMesh();
-        Mesh getCubeWireMesh();
-        Mesh getYLineMesh();
-        Mesh getTexturedQuadMesh();
-        Mesh getTorusMesh(float torusCenterToTubeCenterRadius, float tubeRadius);
+        Mesh sphere_mesh();
+        Mesh circle_mesh();
+        Mesh cylinder_mesh();
+        Mesh uncapped_cylinder_mesh();
+        Mesh brick_mesh();
+        Mesh cone_mesh();
+        Mesh floor_mesh();
+        Mesh grid_mesh();
+        Mesh cube_wireframe_mesh();
+        Mesh yline_mesh();
+        Mesh quad_mesh();
+        Mesh torus_mesh(float tube_center_radius, float tube_radius);
 
-        const BVH& getBVH(const Mesh&);
+        const BVH& get_bvh(const Mesh&);
 
-        const Shader& getShaderResource(
-            const ResourcePath& vertexShader,
-            const ResourcePath& fragmentShader
+        const Shader& get_shader(
+            const ResourcePath& vertex_shader_path,
+            const ResourcePath& fragment_shader_path
         );
 
-        const Shader& getShaderResource(
-            const ResourcePath& vertexShader,
-            const ResourcePath& geometryShader,
-            const ResourcePath& fragmentShader
+        const Shader& get_shader(
+            const ResourcePath& vertex_shader_path,
+            const ResourcePath& geometry_shader_path,
+            const ResourcePath& fragment_shader_path
         );
 
-        const MeshBasicMaterial& basicMaterial();
-        const MeshBasicMaterial& wireframeMaterial();
+        const MeshBasicMaterial& basic_material();
+        const MeshBasicMaterial& wireframe_material();
 
     private:
         class Impl;

@@ -42,18 +42,18 @@ namespace
     MouseCapturingCamera CreateSceneCamera()
     {
         MouseCapturingCamera rv;
-        rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setVerticalFOV(45_deg);
-        rv.setNearClippingPlane(0.1f);
-        rv.setFarClippingPlane(100.0f);
+        rv.set_position({0.0f, 0.0f, 3.0f});
+        rv.set_vertical_fov(45_deg);
+        rv.set_near_clipping_plane(0.1f);
+        rv.set_far_clipping_plane(100.0f);
         return rv;
     }
 
     Camera CreateScreenCamera()
     {
         Camera rv;
-        rv.setViewMatrixOverride(identity<Mat4>());
-        rv.setProjectionMatrixOverride(identity<Mat4>());
+        rv.set_view_matrix_override(identity<Mat4>());
+        rv.set_projection_matrix_override(identity<Mat4>());
         return rv;
     }
 }
@@ -88,7 +88,7 @@ private:
 
         // setup render texture
         Rect viewportRect = ui::GetMainViewportWorkspaceScreenRect();
-        Vec2 viewportRectDims = dimensions(viewportRect);
+        Vec2 viewportRectDims = dimensions_of(viewportRect);
         m_RenderTexture.setDimensions(viewportRectDims);
         m_RenderTexture.setAntialiasingLevel(App::get().getCurrentAntiAliasingLevel());
 
@@ -103,10 +103,10 @@ private:
             m_SceneRenderMaterial.setTexture("uTexture1", m_MetalTexture);
             graphics::draw(m_PlaneMesh, identity<Transform>(), m_SceneRenderMaterial, m_SceneCamera);
         }
-        m_SceneCamera.renderTo(m_RenderTexture);
+        m_SceneCamera.render_to(m_RenderTexture);
 
         // render via a effect sampler
-        graphics::blitToScreen(m_RenderTexture, viewportRect, m_ScreenMaterial);
+        graphics::blit_to_screen(m_RenderTexture, viewportRect, m_ScreenMaterial);
 
         // auxiliary UI
         m_LogViewer.onDraw();

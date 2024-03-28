@@ -115,7 +115,7 @@ namespace
     // it's here, rather than in an external resource file, because it is eagerly
     // loaded while the graphics backend is initialized (i.e. potentially before
     // the application is fully loaded)
-    constexpr CStringView c_QuadVertexShaderSrc = R"(
+    constexpr CStringView c_quad_vertex_shader_src = R"(
         #version 330 core
 
         layout (location = 0) in vec3 aPos;
@@ -135,7 +135,7 @@ namespace
     // it's here, rather than in an external resource file, because it is eagerly
     // loaded while the graphics backend is initialized (i.e. potentially before
     // the application is fully loaded)
-    constexpr CStringView c_QuadFragmentShaderSrc = R"(
+    constexpr CStringView c_quad_fragment_shader_src = R"(
         #version 330 core
 
         uniform sampler2D uTexture;
@@ -1241,22 +1241,22 @@ public:
         m_Data.resize(NumOptions<CubemapFace>() * numPixelsPerFace);
     }
 
-    int32_t getWidth() const
+    int32_t width() const
     {
         return m_Width;
     }
 
-    TextureFormat getTextureFormat() const
+    TextureFormat texture_format() const
     {
         return m_Format;
     }
 
-    TextureWrapMode getWrapMode() const
+    TextureWrapMode wrap_mode() const
     {
         return m_WrapModeU;
     }
 
-    void setWrapMode(TextureWrapMode wm)
+    void set_wrap_mode(TextureWrapMode wm)
     {
         m_WrapModeU = wm;
         m_WrapModeV = wm;
@@ -1264,51 +1264,51 @@ public:
         m_TextureParamsVersion.reset();
     }
 
-    TextureWrapMode getWrapModeU() const
+    TextureWrapMode get_wrap_mode_u() const
     {
         return m_WrapModeU;
     }
 
-    void setWrapModeU(TextureWrapMode wm)
+    void set_wrap_mode_u(TextureWrapMode wm)
     {
         m_WrapModeU = wm;
         m_TextureParamsVersion.reset();
     }
 
-    TextureWrapMode getWrapModeV() const
+    TextureWrapMode get_wrap_mode_v() const
     {
         return m_WrapModeV;
     }
 
-    void setWrapModeV(TextureWrapMode wm)
+    void set_wrap_mode_v(TextureWrapMode wm)
     {
         m_WrapModeV = wm;
         m_TextureParamsVersion.reset();
     }
 
-    TextureWrapMode getWrapModeW() const
+    TextureWrapMode wrap_mode_w() const
     {
         return m_WrapModeW;
     }
 
-    void setWrapModeW(TextureWrapMode wm)
+    void set_wrap_mode_w(TextureWrapMode wm)
     {
         m_WrapModeW = wm;
         m_TextureParamsVersion.reset();
     }
 
-    TextureFilterMode getFilterMode() const
+    TextureFilterMode filter_mode() const
     {
         return m_FilterMode;
     }
 
-    void setFilterMode(TextureFilterMode fm)
+    void set_filter_mode(TextureFilterMode fm)
     {
         m_FilterMode = fm;
         m_TextureParamsVersion.reset();
     }
 
-    void setPixelData(CubemapFace face, std::span<const uint8_t> data)
+    void set_pixel_data(CubemapFace face, std::span<const uint8_t> data)
     {
         const size_t faceIndex = ToIndex(face);
         const auto numPixels = static_cast<size_t>(m_Width) * static_cast<size_t>(m_Width);
@@ -1316,8 +1316,8 @@ public:
         const size_t destinationDataStart = faceIndex * numBytesPerCubeFace;
         const size_t destinationDataEnd = destinationDataStart + numBytesPerCubeFace;
 
-        OSC_ASSERT(faceIndex < NumOptions<CubemapFace>() && "invalid cubemap face passed to Cubemap::setPixelData");
-        OSC_ASSERT(data.size() == numBytesPerCubeFace && "incorrect amount of data passed to Cubemap::setPixelData: the data must match the dimensions and texture format of the cubemap");
+        OSC_ASSERT(faceIndex < NumOptions<CubemapFace>() && "invalid cubemap face passed to Cubemap::set_pixel_data");
+        OSC_ASSERT(data.size() == numBytesPerCubeFace && "incorrect amount of data passed to Cubemap::set_pixel_data: the data must match the dimensions and texture format of the cubemap");
         OSC_ASSERT(destinationDataEnd <= m_Data.size() && "out of range assignment detected: this should be handled in the constructor");
 
         copy(data, m_Data.begin() + destinationDataStart);
@@ -1421,72 +1421,72 @@ private:
 };
 
 osc::Cubemap::Cubemap(int32_t width, TextureFormat format) :
-    m_Impl{make_cow<Impl>(width, format)}
+    impl_{make_cow<Impl>(width, format)}
 {}
 
-int32_t osc::Cubemap::getWidth() const
+int32_t osc::Cubemap::width() const
 {
-    return m_Impl->getWidth();
+    return impl_->width();
 }
 
-TextureWrapMode osc::Cubemap::getWrapMode() const
+TextureWrapMode osc::Cubemap::wrap_mode() const
 {
-    return m_Impl->getWrapMode();
+    return impl_->wrap_mode();
 }
 
-void osc::Cubemap::setWrapMode(TextureWrapMode wm)
+void osc::Cubemap::set_wrap_mode(TextureWrapMode wm)
 {
-    m_Impl.upd()->setWrapMode(wm);
+    impl_.upd()->set_wrap_mode(wm);
 }
 
-TextureWrapMode osc::Cubemap::getWrapModeU() const
+TextureWrapMode osc::Cubemap::wrap_mode_u() const
 {
-    return m_Impl->getWrapModeU();
+    return impl_->get_wrap_mode_u();
 }
 
-void osc::Cubemap::setWrapModeU(TextureWrapMode wm)
+void osc::Cubemap::set_wrap_mode_u(TextureWrapMode wm)
 {
-    m_Impl.upd()->setWrapModeU(wm);
+    impl_.upd()->set_wrap_mode_u(wm);
 }
 
-TextureWrapMode osc::Cubemap::getWrapModeV() const
+TextureWrapMode osc::Cubemap::wrap_mode_v() const
 {
-    return m_Impl->getWrapModeV();
+    return impl_->get_wrap_mode_v();
 }
 
-void osc::Cubemap::setWrapModeV(TextureWrapMode wm)
+void osc::Cubemap::set_wrap_mode_v(TextureWrapMode wm)
 {
-    m_Impl.upd()->setWrapModeV(wm);
+    impl_.upd()->set_wrap_mode_v(wm);
 }
 
-TextureWrapMode osc::Cubemap::getWrapModeW() const
+TextureWrapMode osc::Cubemap::wrap_mode_w() const
 {
-    return m_Impl->getWrapModeW();
+    return impl_->wrap_mode_w();
 }
 
-void osc::Cubemap::setWrapModeW(TextureWrapMode wm)
+void osc::Cubemap::set_wrap_mode_w(TextureWrapMode wm)
 {
-    m_Impl.upd()->setWrapModeW(wm);
+    impl_.upd()->set_wrap_mode_w(wm);
 }
 
-TextureFilterMode osc::Cubemap::getFilterMode() const
+TextureFilterMode osc::Cubemap::filter_mode() const
 {
-    return m_Impl->getFilterMode();
+    return impl_->filter_mode();
 }
 
-void osc::Cubemap::setFilterMode(TextureFilterMode fm)
+void osc::Cubemap::set_filter_mode(TextureFilterMode fm)
 {
-    m_Impl.upd()->setFilterMode(fm);
+    impl_.upd()->set_filter_mode(fm);
 }
 
-TextureFormat osc::Cubemap::getTextureFormat() const
+TextureFormat osc::Cubemap::texture_format() const
 {
-    return m_Impl->getTextureFormat();
+    return impl_->texture_format();
 }
 
-void osc::Cubemap::setPixelData(CubemapFace face, std::span<const uint8_t> channelsRowByRow)
+void osc::Cubemap::set_pixel_data(CubemapFace face, std::span<const uint8_t> channelsRowByRow)
 {
-    m_Impl.upd()->setPixelData(face, channelsRowByRow);
+    impl_.upd()->set_pixel_data(face, channelsRowByRow);
 }
 
 
@@ -1708,7 +1708,7 @@ public:
         return m_Dimensions;
     }
 
-    TextureFormat getTextureFormat() const
+    TextureFormat texture_format() const
     {
         return m_Format;
     }
@@ -1718,58 +1718,58 @@ public:
         return m_ColorSpace;
     }
 
-    TextureWrapMode getWrapMode() const
+    TextureWrapMode wrap_mode() const
     {
-        return getWrapModeU();
+        return get_wrap_mode_u();
     }
 
-    void setWrapMode(TextureWrapMode twm)
+    void set_wrap_mode(TextureWrapMode twm)
     {
-        setWrapModeU(twm);
-        setWrapModeV(twm);
-        setWrapModeW(twm);
+        set_wrap_mode_u(twm);
+        set_wrap_mode_v(twm);
+        set_wrap_mode_w(twm);
         m_TextureParamsVersion.reset();
     }
 
-    TextureWrapMode getWrapModeU() const
+    TextureWrapMode get_wrap_mode_u() const
     {
         return m_WrapModeU;
     }
 
-    void setWrapModeU(TextureWrapMode twm)
+    void set_wrap_mode_u(TextureWrapMode twm)
     {
         m_WrapModeU = twm;
         m_TextureParamsVersion.reset();
     }
 
-    TextureWrapMode getWrapModeV() const
+    TextureWrapMode get_wrap_mode_v() const
     {
         return m_WrapModeV;
     }
 
-    void setWrapModeV(TextureWrapMode twm)
+    void set_wrap_mode_v(TextureWrapMode twm)
     {
         m_WrapModeV = twm;
         m_TextureParamsVersion.reset();
     }
 
-    TextureWrapMode getWrapModeW() const
+    TextureWrapMode wrap_mode_w() const
     {
         return m_WrapModeW;
     }
 
-    void setWrapModeW(TextureWrapMode twm)
+    void set_wrap_mode_w(TextureWrapMode twm)
     {
         m_WrapModeW = twm;
         m_TextureParamsVersion.reset();
     }
 
-    TextureFilterMode getFilterMode() const
+    TextureFilterMode filter_mode() const
     {
         return m_FilterMode;
     }
 
-    void setFilterMode(TextureFilterMode tfm)
+    void set_filter_mode(TextureFilterMode tfm)
     {
         m_FilterMode = tfm;
         m_TextureParamsVersion.reset();
@@ -1802,9 +1802,9 @@ public:
         return m_PixelData;
     }
 
-    void setPixelData(std::span<const uint8_t> pixelData)
+    void set_pixel_data(std::span<const uint8_t> pixelData)
     {
-        OSC_ASSERT(pixelData.size() == NumBytesPerPixel(m_Format)*m_Dimensions.x*m_Dimensions.y && "incorrect number of bytes passed to Texture2D::setPixelData");
+        OSC_ASSERT(pixelData.size() == NumBytesPerPixel(m_Format)*m_Dimensions.x*m_Dimensions.y && "incorrect number of bytes passed to Texture2D::set_pixel_data");
         OSC_ASSERT(pixelData.size() == m_PixelData.size());
 
         copy(pixelData, m_PixelData.begin());
@@ -1971,9 +1971,9 @@ Vec2i osc::Texture2D::getDimensions() const
     return m_Impl->getDimensions();
 }
 
-TextureFormat osc::Texture2D::getTextureFormat() const
+TextureFormat osc::Texture2D::texture_format() const
 {
-    return m_Impl->getTextureFormat();
+    return m_Impl->texture_format();
 }
 
 ColorSpace osc::Texture2D::getColorSpace() const
@@ -1981,54 +1981,54 @@ ColorSpace osc::Texture2D::getColorSpace() const
     return m_Impl->getColorSpace();
 }
 
-TextureWrapMode osc::Texture2D::getWrapMode() const
+TextureWrapMode osc::Texture2D::wrap_mode() const
 {
-    return m_Impl->getWrapMode();
+    return m_Impl->wrap_mode();
 }
 
-void osc::Texture2D::setWrapMode(TextureWrapMode twm)
+void osc::Texture2D::set_wrap_mode(TextureWrapMode twm)
 {
-    m_Impl.upd()->setWrapMode(twm);
+    m_Impl.upd()->set_wrap_mode(twm);
 }
 
-TextureWrapMode osc::Texture2D::getWrapModeU() const
+TextureWrapMode osc::Texture2D::wrap_mode_u() const
 {
-    return m_Impl->getWrapModeU();
+    return m_Impl->get_wrap_mode_u();
 }
 
-void osc::Texture2D::setWrapModeU(TextureWrapMode twm)
+void osc::Texture2D::set_wrap_mode_u(TextureWrapMode twm)
 {
-    m_Impl.upd()->setWrapModeU(twm);
+    m_Impl.upd()->set_wrap_mode_u(twm);
 }
 
-TextureWrapMode osc::Texture2D::getWrapModeV() const
+TextureWrapMode osc::Texture2D::wrap_mode_v() const
 {
-    return m_Impl->getWrapModeV();
+    return m_Impl->get_wrap_mode_v();
 }
 
-void osc::Texture2D::setWrapModeV(TextureWrapMode twm)
+void osc::Texture2D::set_wrap_mode_v(TextureWrapMode twm)
 {
-    m_Impl.upd()->setWrapModeV(twm);
+    m_Impl.upd()->set_wrap_mode_v(twm);
 }
 
-TextureWrapMode osc::Texture2D::getWrapModeW() const
+TextureWrapMode osc::Texture2D::wrap_mode_w() const
 {
-    return m_Impl->getWrapModeW();
+    return m_Impl->wrap_mode_w();
 }
 
-void osc::Texture2D::setWrapModeW(TextureWrapMode twm)
+void osc::Texture2D::set_wrap_mode_w(TextureWrapMode twm)
 {
-    m_Impl.upd()->setWrapModeW(twm);
+    m_Impl.upd()->set_wrap_mode_w(twm);
 }
 
-TextureFilterMode osc::Texture2D::getFilterMode() const
+TextureFilterMode osc::Texture2D::filter_mode() const
 {
-    return m_Impl->getFilterMode();
+    return m_Impl->filter_mode();
 }
 
-void osc::Texture2D::setFilterMode(TextureFilterMode twm)
+void osc::Texture2D::set_filter_mode(TextureFilterMode twm)
 {
-    m_Impl.upd()->setFilterMode(twm);
+    m_Impl.upd()->set_filter_mode(twm);
 }
 
 std::vector<Color> osc::Texture2D::getPixels() const
@@ -2056,9 +2056,9 @@ std::span<const uint8_t> osc::Texture2D::getPixelData() const
     return m_Impl->getPixelData();
 }
 
-void osc::Texture2D::setPixelData(std::span<const uint8_t> pixelData)
+void osc::Texture2D::set_pixel_data(std::span<const uint8_t> pixelData)
 {
-    m_Impl.upd()->setPixelData(pixelData);
+    m_Impl.upd()->set_pixel_data(pixelData);
 }
 
 std::ostream& osc::operator<<(std::ostream& o, const Texture2D&)
@@ -2510,7 +2510,7 @@ public:
         gl::bind_renderbuffer(data.multisampledRBO);
         glRenderbufferStorageMultisample(
             GL_RENDERBUFFER,
-            m_Descriptor.getAntialiasingLevel().getU32(),
+            m_Descriptor.getAntialiasingLevel().get_as<GLsizei>(),
             toInternalOpenGLColorFormat(m_BufferType, m_Descriptor),
             dimensions.x,
             dimensions.y
@@ -5536,132 +5536,132 @@ public:
         m_RenderQueue = std::move(newImpl.m_RenderQueue);
     }
 
-    Color getBackgroundColor() const
+    Color background_color() const
     {
         return m_BackgroundColor;
     }
 
-    void setBackgroundColor(const Color& color)
+    void set_background_color(const Color& color)
     {
         m_BackgroundColor = color;
     }
 
-    CameraProjection getCameraProjection() const
+    CameraProjection camera_projection() const
     {
         return m_CameraProjection;
     }
 
-    void setCameraProjection(CameraProjection projection)
+    void set_camera_projection(CameraProjection projection)
     {
         m_CameraProjection = projection;
     }
 
-    float getOrthographicSize() const
+    float orthographic_size() const
     {
         return m_OrthographicSize;
     }
 
-    void setOrthographicSize(float size)
+    void set_orthographic_size(float size)
     {
         m_OrthographicSize = size;
     }
 
-    Radians getVerticalFOV() const
+    Radians vertical_fov() const
     {
         return m_PerspectiveFov;
     }
 
-    void setVerticalFOV(Radians size)
+    void set_vertical_fov(Radians size)
     {
         m_PerspectiveFov = size;
     }
 
-    float getNearClippingPlane() const
+    float near_clipping_plane() const
     {
         return m_NearClippingPlane;
     }
 
-    void setNearClippingPlane(float distance)
+    void set_near_clipping_plane(float distance)
     {
         m_NearClippingPlane = distance;
     }
 
-    float getFarClippingPlane() const
+    float get_far_clipping_plane() const
     {
         return m_FarClippingPlane;
     }
 
-    void setFarClippingPlane(float distance)
+    void set_far_clipping_plane(float distance)
     {
         m_FarClippingPlane = distance;
     }
 
-    CameraClearFlags getClearFlags() const
+    CameraClearFlags clear_flags() const
     {
         return m_ClearFlags;
     }
 
-    void setClearFlags(CameraClearFlags flags)
+    void set_clear_flags(CameraClearFlags flags)
     {
         m_ClearFlags = flags;
     }
 
-    std::optional<Rect> getPixelRect() const
+    std::optional<Rect> pixel_rect() const
     {
         return m_MaybeScreenPixelRect;
     }
 
-    void setPixelRect(std::optional<Rect> maybePixelRect)
+    void set_pixel_rect(std::optional<Rect> maybePixelRect)
     {
         m_MaybeScreenPixelRect = maybePixelRect;
     }
 
-    std::optional<Rect> getScissorRect() const
+    std::optional<Rect> scissor_rect() const
     {
         return m_MaybeScissorRect;
     }
 
-    void setScissorRect(std::optional<Rect> maybeScissorRect)
+    void set_scissor_rect(std::optional<Rect> maybeScissorRect)
     {
         m_MaybeScissorRect = maybeScissorRect;
     }
 
-    Vec3 getPosition() const
+    Vec3 position() const
     {
         return m_Position;
     }
 
-    void setPosition(const Vec3& position)
+    void set_position(const Vec3& position)
     {
         m_Position = position;
     }
 
-    Quat getRotation() const
+    Quat rotation() const
     {
         return m_Rotation;
     }
 
-    void setRotation(const Quat& rotation)
+    void set_rotation(const Quat& rotation)
     {
         m_Rotation = rotation;
     }
 
-    Vec3 getDirection() const
+    Vec3 direction() const
     {
         return m_Rotation * Vec3{0.0f, 0.0f, -1.0f};
     }
 
-    void setDirection(const Vec3& d)
+    void set_direction(const Vec3& d)
     {
-        m_Rotation = rotation(Vec3{0.0f, 0.0f, -1.0f}, d);
+        m_Rotation = osc::rotation(Vec3{0.0f, 0.0f, -1.0f}, d);
     }
 
-    Vec3 getUpwardsDirection() const
+    Vec3 upwards_direction() const
     {
         return m_Rotation * Vec3{0.0f, 1.0f, 0.0f};
     }
 
-    Mat4 getViewMatrix() const
+    Mat4 view_matrix() const
     {
         if (m_MaybeViewMatrixOverride)
         {
@@ -5669,21 +5669,21 @@ public:
         }
         else
         {
-            return look_at(m_Position, m_Position + getDirection(), getUpwardsDirection());
+            return look_at(m_Position, m_Position + direction(), upwards_direction());
         }
     }
 
-    std::optional<Mat4> getViewMatrixOverride() const
+    std::optional<Mat4> view_matrix_override() const
     {
         return m_MaybeViewMatrixOverride;
     }
 
-    void setViewMatrixOverride(std::optional<Mat4> maybeViewMatrixOverride)
+    void set_view_matrix_override(std::optional<Mat4> maybeViewMatrixOverride)
     {
         m_MaybeViewMatrixOverride = maybeViewMatrixOverride;
     }
 
-    Mat4 getProjectionMatrix(float aspectRatio) const
+    Mat4 projection_matrix(float aspectRatio) const
     {
         if (m_MaybeProjectionMatrixOverride)
         {
@@ -5712,32 +5712,32 @@ public:
         }
     }
 
-    std::optional<Mat4> getProjectionMatrixOverride() const
+    std::optional<Mat4> projection_matrix_override() const
     {
         return m_MaybeProjectionMatrixOverride;
     }
 
-    void setProjectionMatrixOverride(std::optional<Mat4> maybeProjectionMatrixOverride)
+    void set_projection_matrix_override(std::optional<Mat4> maybeProjectionMatrixOverride)
     {
         m_MaybeProjectionMatrixOverride = maybeProjectionMatrixOverride;
     }
 
-    Mat4 getViewProjectionMatrix(float aspectRatio) const
+    Mat4 view_projection_matrix(float aspectRatio) const
     {
-        return getProjectionMatrix(aspectRatio) * getViewMatrix();
+        return projection_matrix(aspectRatio) * view_matrix();
     }
 
-    Mat4 getInverseViewProjectionMatrix(float aspectRatio) const
+    Mat4 inverse_view_projection_matrix(float aspectRatio) const
     {
-        return inverse(getViewProjectionMatrix(aspectRatio));
+        return inverse(view_projection_matrix(aspectRatio));
     }
 
-    void renderToScreen()
+    void render_to_screen()
     {
         GraphicsBackend::renderCameraQueue(*this);
     }
 
-    void renderTo(RenderTexture& renderTexture)
+    void render_to(RenderTexture& renderTexture)
     {
         static_assert(CameraClearFlags::All == (CameraClearFlags::SolidColor | CameraClearFlags::Depth));
         static_assert(NumOptions<RenderTextureReadWrite>() == 2);
@@ -5751,7 +5751,7 @@ public:
                     renderTexture.updColorBuffer(),
 
                     // load the color buffer based on this camera's clear flags
-                    getClearFlags() & CameraClearFlags::SolidColor ?
+                    clear_flags() & CameraClearFlags::SolidColor ?
                         RenderBufferLoadAction::Clear :
                         RenderBufferLoadAction::Load,
 
@@ -5759,8 +5759,8 @@ public:
 
                     // ensure clear color matches colorspace of render texture
                     renderTexture.getReadWrite() == RenderTextureReadWrite::sRGB ?
-                        toLinear(getBackgroundColor()) :
-                        getBackgroundColor(),
+                        to_linear_colorspace(background_color()) :
+                        background_color(),
                 },
             },
             RenderTargetDepthAttachment
@@ -5769,7 +5769,7 @@ public:
                 renderTexture.updDepthBuffer(),
 
                 // load the depth buffer based on this camera's clear flags
-                getClearFlags() & CameraClearFlags::Depth ?
+                clear_flags() & CameraClearFlags::Depth ?
                     RenderBufferLoadAction::Clear :
                     RenderBufferLoadAction::Load,
 
@@ -5777,10 +5777,10 @@ public:
             },
         };
 
-        renderTo(renderTargetThatWritesToRenderTexture);
+        render_to(renderTargetThatWritesToRenderTexture);
     }
 
-    void renderTo(RenderTarget& renderTarget)
+    void render_to(RenderTarget& renderTarget)
     {
         GraphicsBackend::renderCameraQueue(*this, &renderTarget);
     }
@@ -5814,203 +5814,203 @@ std::ostream& osc::operator<<(std::ostream& o, CameraProjection cp)
 }
 
 osc::Camera::Camera() :
-    m_Impl{make_cow<Impl>()}
+    impl_{make_cow<Impl>()}
 {
 }
 
 void osc::Camera::reset()
 {
-    m_Impl.upd()->reset();
+    impl_.upd()->reset();
 }
 
-Color osc::Camera::getBackgroundColor() const
+Color osc::Camera::background_color() const
 {
-    return m_Impl->getBackgroundColor();
+    return impl_->background_color();
 }
 
-void osc::Camera::setBackgroundColor(const Color& color)
+void osc::Camera::set_background_color(const Color& color)
 {
-    m_Impl.upd()->setBackgroundColor(color);
+    impl_.upd()->set_background_color(color);
 }
 
-CameraProjection osc::Camera::getCameraProjection() const
+CameraProjection osc::Camera::camera_projection() const
 {
-    return m_Impl->getCameraProjection();
+    return impl_->camera_projection();
 }
 
-void osc::Camera::setCameraProjection(CameraProjection projection)
+void osc::Camera::set_camera_projection(CameraProjection projection)
 {
-    m_Impl.upd()->setCameraProjection(projection);
+    impl_.upd()->set_camera_projection(projection);
 }
 
-float osc::Camera::getOrthographicSize() const
+float osc::Camera::orthographic_size() const
 {
-    return m_Impl->getOrthographicSize();
+    return impl_->orthographic_size();
 }
 
-void osc::Camera::setOrthographicSize(float sz)
+void osc::Camera::set_orthographic_size(float sz)
 {
-    m_Impl.upd()->setOrthographicSize(sz);
+    impl_.upd()->set_orthographic_size(sz);
 }
 
-Radians osc::Camera::getVerticalFOV() const
+Radians osc::Camera::vertical_fov() const
 {
-    return m_Impl->getVerticalFOV();
+    return impl_->vertical_fov();
 }
 
-void osc::Camera::setVerticalFOV(Radians vertical_fov)
+void osc::Camera::set_vertical_fov(Radians vertical_fov)
 {
-    m_Impl.upd()->setVerticalFOV(vertical_fov);
+    impl_.upd()->set_vertical_fov(vertical_fov);
 }
 
-float osc::Camera::getNearClippingPlane() const
+float osc::Camera::near_clipping_plane() const
 {
-    return m_Impl->getNearClippingPlane();
+    return impl_->near_clipping_plane();
 }
 
-void osc::Camera::setNearClippingPlane(float d)
+void osc::Camera::set_near_clipping_plane(float d)
 {
-    m_Impl.upd()->setNearClippingPlane(d);
+    impl_.upd()->set_near_clipping_plane(d);
 }
 
-float osc::Camera::getFarClippingPlane() const
+float osc::Camera::get_far_clipping_plane() const
 {
-    return m_Impl->getFarClippingPlane();
+    return impl_->get_far_clipping_plane();
 }
 
-void osc::Camera::setFarClippingPlane(float d)
+void osc::Camera::set_far_clipping_plane(float d)
 {
-    m_Impl.upd()->setFarClippingPlane(d);
+    impl_.upd()->set_far_clipping_plane(d);
 }
 
-CameraClearFlags osc::Camera::getClearFlags() const
+CameraClearFlags osc::Camera::clear_flags() const
 {
-    return m_Impl->getClearFlags();
+    return impl_->clear_flags();
 }
 
-void osc::Camera::setClearFlags(CameraClearFlags flags)
+void osc::Camera::set_clear_flags(CameraClearFlags flags)
 {
-    m_Impl.upd()->setClearFlags(flags);
+    impl_.upd()->set_clear_flags(flags);
 }
 
-std::optional<Rect> osc::Camera::getPixelRect() const
+std::optional<Rect> osc::Camera::pixel_rect() const
 {
-    return m_Impl->getPixelRect();
+    return impl_->pixel_rect();
 }
 
-void osc::Camera::setPixelRect(std::optional<Rect> maybePixelRect)
+void osc::Camera::set_pixel_rect(std::optional<Rect> maybePixelRect)
 {
-    m_Impl.upd()->setPixelRect(maybePixelRect);
+    impl_.upd()->set_pixel_rect(maybePixelRect);
 }
 
-std::optional<Rect> osc::Camera::getScissorRect() const
+std::optional<Rect> osc::Camera::scissor_rect() const
 {
-    return m_Impl->getScissorRect();
+    return impl_->scissor_rect();
 }
 
-void osc::Camera::setScissorRect(std::optional<Rect> maybeScissorRect)
+void osc::Camera::set_scissor_rect(std::optional<Rect> maybeScissorRect)
 {
-    m_Impl.upd()->setScissorRect(maybeScissorRect);
+    impl_.upd()->set_scissor_rect(maybeScissorRect);
 }
 
-Vec3 osc::Camera::getPosition() const
+Vec3 osc::Camera::position() const
 {
-    return m_Impl->getPosition();
+    return impl_->position();
 }
 
-void osc::Camera::setPosition(const Vec3& p)
+void osc::Camera::set_position(const Vec3& p)
 {
-    m_Impl.upd()->setPosition(p);
+    impl_.upd()->set_position(p);
 }
 
-Quat osc::Camera::getRotation() const
+Quat osc::Camera::rotation() const
 {
-    return m_Impl->getRotation();
+    return impl_->rotation();
 }
 
-void osc::Camera::setRotation(const Quat& rotation)
+void osc::Camera::set_rotation(const Quat& rotation)
 {
-    m_Impl.upd()->setRotation(rotation);
+    impl_.upd()->set_rotation(rotation);
 }
 
-Vec3 osc::Camera::getDirection() const
+Vec3 osc::Camera::direction() const
 {
-    return m_Impl->getDirection();
+    return impl_->direction();
 }
 
-void osc::Camera::setDirection(const Vec3& d)
+void osc::Camera::set_direction(const Vec3& d)
 {
-    m_Impl.upd()->setDirection(d);
+    impl_.upd()->set_direction(d);
 }
 
-Vec3 osc::Camera::getUpwardsDirection() const
+Vec3 osc::Camera::upwards_direction() const
 {
-    return m_Impl->getUpwardsDirection();
+    return impl_->upwards_direction();
 }
 
-Mat4 osc::Camera::getViewMatrix() const
+Mat4 osc::Camera::view_matrix() const
 {
-    return m_Impl->getViewMatrix();
+    return impl_->view_matrix();
 }
 
-std::optional<Mat4> osc::Camera::getViewMatrixOverride() const
+std::optional<Mat4> osc::Camera::view_matrix_override() const
 {
-    return m_Impl->getViewMatrixOverride();
+    return impl_->view_matrix_override();
 }
 
-void osc::Camera::setViewMatrixOverride(std::optional<Mat4> maybeViewMatrixOverride)
+void osc::Camera::set_view_matrix_override(std::optional<Mat4> maybeViewMatrixOverride)
 {
-    m_Impl.upd()->setViewMatrixOverride(maybeViewMatrixOverride);
+    impl_.upd()->set_view_matrix_override(maybeViewMatrixOverride);
 }
 
-Mat4 osc::Camera::getProjectionMatrix(float aspectRatio) const
+Mat4 osc::Camera::projection_matrix(float aspectRatio) const
 {
-    return m_Impl->getProjectionMatrix(aspectRatio);
+    return impl_->projection_matrix(aspectRatio);
 }
 
-std::optional<Mat4> osc::Camera::getProjectionMatrixOverride() const
+std::optional<Mat4> osc::Camera::projection_matrix_override() const
 {
-    return m_Impl->getProjectionMatrixOverride();
+    return impl_->projection_matrix_override();
 }
 
-void osc::Camera::setProjectionMatrixOverride(std::optional<Mat4> maybeProjectionMatrixOverride)
+void osc::Camera::set_projection_matrix_override(std::optional<Mat4> maybeProjectionMatrixOverride)
 {
-    m_Impl.upd()->setProjectionMatrixOverride(maybeProjectionMatrixOverride);
+    impl_.upd()->set_projection_matrix_override(maybeProjectionMatrixOverride);
 }
 
-Mat4 osc::Camera::getViewProjectionMatrix(float aspectRatio) const
+Mat4 osc::Camera::view_projection_matrix(float aspectRatio) const
 {
-    return m_Impl->getViewProjectionMatrix(aspectRatio);
+    return impl_->view_projection_matrix(aspectRatio);
 }
 
-Mat4 osc::Camera::getInverseViewProjectionMatrix(float aspectRatio) const
+Mat4 osc::Camera::inverse_view_projection_matrix(float aspectRatio) const
 {
-    return m_Impl->getInverseViewProjectionMatrix(aspectRatio);
+    return impl_->inverse_view_projection_matrix(aspectRatio);
 }
 
-void osc::Camera::renderToScreen()
+void osc::Camera::render_to_screen()
 {
-    m_Impl.upd()->renderToScreen();
+    impl_.upd()->render_to_screen();
 }
 
-void osc::Camera::renderTo(RenderTexture& renderTexture)
+void osc::Camera::render_to(RenderTexture& renderTexture)
 {
-    m_Impl.upd()->renderTo(renderTexture);
+    impl_.upd()->render_to(renderTexture);
 }
 
-void osc::Camera::renderTo(RenderTarget& renderTarget)
+void osc::Camera::render_to(RenderTarget& renderTarget)
 {
-    m_Impl.upd()->renderTo(renderTarget);
+    impl_.upd()->render_to(renderTarget);
 }
 
 std::ostream& osc::operator<<(std::ostream& o, const Camera& camera)
 {
-    return o << "Camera(position = " << camera.getPosition() << ", direction = " << camera.getDirection() << ", projection = " << camera.getCameraProjection() << ')';
+    return o << "Camera(position = " << camera.position() << ", direction = " << camera.direction() << ", projection = " << camera.camera_projection() << ')';
 }
 
 bool osc::operator==(const Camera& lhs, const Camera& rhs)
 {
-    return lhs.m_Impl == rhs.m_Impl || *lhs.m_Impl == *rhs.m_Impl;
+    return lhs.impl_ == rhs.impl_ || *lhs.impl_ == *rhs.impl_;
 }
 
 
@@ -6312,17 +6312,17 @@ public:
         m_QuadMaterial.setDepthTested(false);  // it's for fullscreen rendering
     }
 
-    AntiAliasingLevel getMaxAntialiasingLevel() const
+    AntiAliasingLevel max_antialiasing_level() const
     {
         return m_MaxMSXAASamples;
     }
 
-    bool isVsyncEnabled() const
+    bool is_vsync_enabled() const
     {
         return m_VSyncEnabled;
     }
 
-    void enableVsync()
+    void enable_vsync()
     {
         if (SDL_GL_SetSwapInterval(-1) == 0)
         {
@@ -6337,18 +6337,18 @@ public:
         m_VSyncEnabled = SDL_GL_GetSwapInterval() != 0;
     }
 
-    void disableVsync()
+    void disable_vsync()
     {
         SDL_GL_SetSwapInterval(0);
         m_VSyncEnabled = SDL_GL_GetSwapInterval() != 0;
     }
 
-    bool isInDebugMode() const
+    bool is_in_debug_mode() const
     {
         return m_DebugModeEnabled;
     }
 
-    void enableDebugMode()
+    void enable_debug_mode()
     {
         if (IsOpenGLInDebugMode())
         {
@@ -6359,7 +6359,7 @@ public:
         EnableOpenGLDebugMessages();
         m_DebugModeEnabled = IsOpenGLInDebugMode();
     }
-    void disableDebugMode()
+    void disable_debug_mode()
     {
         if (!IsOpenGLInDebugMode())
         {
@@ -6371,28 +6371,28 @@ public:
         m_DebugModeEnabled = IsOpenGLInDebugMode();
     }
 
-    void clearScreen(const Color& color)
+    void clear_screen(const Color& color)
     {
         // clear color is in sRGB, but the framebuffer is sRGB-corrected (GL_FRAMEBUFFER_SRGB)
         // and assumes that the given colors are in linear space
-        const Color linearColor = toLinear(color);
+        const Color linearColor = to_linear_colorspace(color);
 
         gl::bind_framebuffer(GL_DRAW_FRAMEBUFFER, gl::window_framebuffer);
         gl::clear_color(linearColor.r, linearColor.g, linearColor.b, linearColor.a);
         gl::clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
-    void* updRawGLContextHandleHACK()
+    void* upd_raw_opengl_context_handle_HACK()
     {
         return m_GLContext.get();
     }
 
-    std::future<Texture2D> requestScreenshot()
+    std::future<Texture2D> request_screenshot()
     {
         return m_ActiveScreenshotRequests.emplace_back().get_future();
     }
 
-    void doSwapBuffers(SDL_Window& window)
+    void swap_buffers(SDL_Window& window)
     {
         // ensure window FBO is bound (see: SDL_GL_SwapWindow's note about MacOS requiring 0 is bound)
         gl::bind_framebuffer(GL_FRAMEBUFFER, gl::window_framebuffer);
@@ -6422,7 +6422,7 @@ public:
                 TextureFormat::RGBA32,
                 ColorSpace::sRGB
             };
-            screenshot.setPixelData(pixels);
+            screenshot.set_pixel_data(pixels);
 
             // copy image to requests [0..n-2]
             for (ptrdiff_t i = 0, len = std::ssize(m_ActiveScreenshotRequests)-1; i < len; ++i)
@@ -6437,22 +6437,22 @@ public:
         SDL_GL_SwapWindow(&window);
     }
 
-    std::string getBackendVendorString() const
+    std::string backend_vendor_string() const
     {
         return std::string{glGetCStringView(GL_VENDOR)};
     }
 
-    std::string getBackendRendererString() const
+    std::string backend_renderer_string() const
     {
         return std::string{glGetCStringView(GL_RENDERER)};
     }
 
-    std::string getBackendVersionString() const
+    std::string backend_version_string() const
     {
         return std::string{glGetCStringView(GL_VERSION)};
     }
 
-    std::string getBackendShadingLanguageVersionString() const
+    std::string backend_shading_language_version_string() const
     {
         return std::string{glGetCStringView(GL_SHADING_LANGUAGE_VERSION)};
     }
@@ -6498,8 +6498,8 @@ private:
     {
         Shader
         {
-            c_QuadVertexShaderSrc,
-            c_QuadFragmentShaderSrc,
+            c_quad_vertex_shader_src,
+            c_quad_fragment_shader_src,
         }
     };
 
@@ -6528,79 +6528,79 @@ osc::GraphicsContext::~GraphicsContext() noexcept
     g_GraphicsContextImpl.reset();
 }
 
-AntiAliasingLevel osc::GraphicsContext::getMaxAntialiasingLevel() const
+AntiAliasingLevel osc::GraphicsContext::max_antialiasing_level() const
 {
-    return g_GraphicsContextImpl->getMaxAntialiasingLevel();
+    return g_GraphicsContextImpl->max_antialiasing_level();
 }
 
-bool osc::GraphicsContext::isVsyncEnabled() const
+bool osc::GraphicsContext::is_vsync_enabled() const
 {
-    return g_GraphicsContextImpl->isVsyncEnabled();
+    return g_GraphicsContextImpl->is_vsync_enabled();
 }
 
-void osc::GraphicsContext::enableVsync()
+void osc::GraphicsContext::enable_vsync()
 {
-    g_GraphicsContextImpl->enableVsync();
+    g_GraphicsContextImpl->enable_vsync();
 }
 
-void osc::GraphicsContext::disableVsync()
+void osc::GraphicsContext::disable_vsync()
 {
-    g_GraphicsContextImpl->disableVsync();
+    g_GraphicsContextImpl->disable_vsync();
 }
 
-bool osc::GraphicsContext::isInDebugMode() const
+bool osc::GraphicsContext::is_in_debug_mode() const
 {
-    return g_GraphicsContextImpl->isInDebugMode();
+    return g_GraphicsContextImpl->is_in_debug_mode();
 }
 
-void osc::GraphicsContext::enableDebugMode()
+void osc::GraphicsContext::enable_debug_mode()
 {
-    g_GraphicsContextImpl->enableDebugMode();
+    g_GraphicsContextImpl->enable_debug_mode();
 }
 
-void osc::GraphicsContext::disableDebugMode()
+void osc::GraphicsContext::disable_debug_mode()
 {
-    g_GraphicsContextImpl->disableDebugMode();
+    g_GraphicsContextImpl->disable_debug_mode();
 }
 
-void osc::GraphicsContext::clearScreen(const Color& color)
+void osc::GraphicsContext::clear_screen(const Color& color)
 {
-    g_GraphicsContextImpl->clearScreen(color);
+    g_GraphicsContextImpl->clear_screen(color);
 }
 
-void* osc::GraphicsContext::updRawGLContextHandleHACK()
+void* osc::GraphicsContext::upd_raw_opengl_context_handle_HACK()
 {
-    return g_GraphicsContextImpl->updRawGLContextHandleHACK();
+    return g_GraphicsContextImpl->upd_raw_opengl_context_handle_HACK();
 }
 
-void osc::GraphicsContext::doSwapBuffers(SDL_Window& window)
+void osc::GraphicsContext::swap_buffers(SDL_Window& window)
 {
-    g_GraphicsContextImpl->doSwapBuffers(window);
+    g_GraphicsContextImpl->swap_buffers(window);
 }
 
-std::future<Texture2D> osc::GraphicsContext::requestScreenshot()
+std::future<Texture2D> osc::GraphicsContext::request_screenshot()
 {
-    return g_GraphicsContextImpl->requestScreenshot();
+    return g_GraphicsContextImpl->request_screenshot();
 }
 
-std::string osc::GraphicsContext::getBackendVendorString() const
+std::string osc::GraphicsContext::backend_vendor_string() const
 {
-    return g_GraphicsContextImpl->getBackendVendorString();
+    return g_GraphicsContextImpl->backend_vendor_string();
 }
 
-std::string osc::GraphicsContext::getBackendRendererString() const
+std::string osc::GraphicsContext::backend_renderer_string() const
 {
-    return g_GraphicsContextImpl->getBackendRendererString();
+    return g_GraphicsContextImpl->backend_renderer_string();
 }
 
-std::string osc::GraphicsContext::getBackendVersionString() const
+std::string osc::GraphicsContext::backend_version_string() const
 {
-    return g_GraphicsContextImpl->getBackendVersionString();
+    return g_GraphicsContextImpl->backend_version_string();
 }
 
-std::string osc::GraphicsContext::getBackendShadingLanguageVersionString() const
+std::string osc::GraphicsContext::backend_shading_language_version_string() const
 {
-    return g_GraphicsContextImpl->getBackendShadingLanguageVersionString();
+    return g_GraphicsContextImpl->backend_shading_language_version_string();
 }
 
 
@@ -6637,7 +6637,7 @@ void osc::graphics::blit(const Texture2D& source, RenderTexture& dest)
     GraphicsBackend::blit(source, dest);
 }
 
-void osc::graphics::blitToScreen(
+void osc::graphics::blit_to_screen(
     const RenderTexture& t,
     const Rect& rect,
     BlitFlags flags)
@@ -6645,7 +6645,7 @@ void osc::graphics::blitToScreen(
     GraphicsBackend::blitToScreen(t, rect, flags);
 }
 
-void osc::graphics::blitToScreen(
+void osc::graphics::blit_to_screen(
     const RenderTexture& t,
     const Rect& rect,
     const Material& material,
@@ -6654,21 +6654,21 @@ void osc::graphics::blitToScreen(
     GraphicsBackend::blitToScreen(t, rect, material, flags);
 }
 
-void osc::graphics::blitToScreen(
+void osc::graphics::blit_to_screen(
     const Texture2D& t,
     const Rect& rect)
 {
     GraphicsBackend::blitToScreen(t, rect);
 }
 
-void osc::graphics::copyTexture(
+void osc::graphics::copy_texture(
     const RenderTexture& src,
     Texture2D& dest)
 {
     GraphicsBackend::copyTexture(src, dest);
 }
 
-void osc::graphics::copyTexture(
+void osc::graphics::copy_texture(
     const RenderTexture& src,
     Texture2D& dest,
     CubemapFace face)
@@ -6676,7 +6676,7 @@ void osc::graphics::copyTexture(
     GraphicsBackend::copyTexture(src, dest, face);
 }
 
-void osc::graphics::copyTexture(
+void osc::graphics::copy_texture(
     const RenderTexture& sourceRenderTexture,
     Cubemap& destinationCubemap,
     size_t mip)
@@ -6830,7 +6830,7 @@ void osc::GraphicsBackend::tryBindMaterialValueToShaderElement(
         // colors are converted from sRGB to linear when passed to
         // the shader
 
-        const Vec4 linearColor = toLinear(std::get<Color>(v));
+        const Vec4 linearColor = to_linear_colorspace(std::get<Color>(v));
         gl::UniformVec4 u{se.location};
         gl::Uniform(u, linearColor);
         break;
@@ -6859,7 +6859,7 @@ void osc::GraphicsBackend::tryBindMaterialValueToShaderElement(
             linearColors.reserve(numToAssign);
             for (const auto& color : colors)
             {
-                linearColors.emplace_back(toLinear(color));
+                linearColors.emplace_back(to_linear_colorspace(color));
             }
             static_assert(sizeof(Vec4) == 4*sizeof(float));
             static_assert(alignof(Vec4) <= alignof(float));
@@ -7024,7 +7024,7 @@ void osc::GraphicsBackend::tryBindMaterialValueToShaderElement(
     }
     case VariantIndex<MaterialValue, Cubemap>():
     {
-        auto& impl = const_cast<Cubemap::Impl&>(*std::get<Cubemap>(v).m_Impl);
+        auto& impl = const_cast<Cubemap::Impl&>(*std::get<Cubemap>(v).impl_);
         const gl::TextureCubemap& texture = impl.updCubemap();
 
         gl::active_texture(GL_TEXTURE0 + textureSlot);
@@ -7336,9 +7336,9 @@ void osc::GraphicsBackend::flushRenderQueue(Camera::Impl& camera, float aspectRa
 
     // precompute any render pass state used by the rendering algs
     const RenderPassState renderPassState{
-        camera.getPosition(),
-        camera.getViewMatrix(),
-        camera.getProjectionMatrix(aspectRatio),
+        camera.position(),
+        camera.view_matrix(),
+        camera.projection_matrix(aspectRatio),
     };
 
     gl::enable(GL_DEPTH_TEST);
@@ -7408,12 +7408,12 @@ Rect osc::GraphicsBackend::calcViewportRect(
         Vec2{maybeCustomRenderTarget->colors.front().buffer->m_Impl->getDimensions()} :
         App::get().dims();
 
-    const Rect cameraRect = camera.getPixelRect() ?
-        *camera.getPixelRect() :
+    const Rect cameraRect = camera.pixel_rect() ?
+        *camera.pixel_rect() :
         Rect{{}, targetDims};
 
     const Vec2 cameraRectBottomLeft = bottom_left_lh(cameraRect);
-    const Vec2 outputDimensions = dimensions(cameraRect);
+    const Vec2 outputDimensions = dimensions_of(cameraRect);
     const Vec2 topLeft = {cameraRectBottomLeft.x, targetDims.y - cameraRectBottomLeft.y};
 
     return Rect{topLeft, topLeft + outputDimensions};
@@ -7424,7 +7424,7 @@ Rect osc::GraphicsBackend::setupTopLevelPipelineState(
     RenderTarget* maybeCustomRenderTarget)
 {
     const Rect viewportRect = calcViewportRect(camera, maybeCustomRenderTarget);
-    const Vec2 viewportDims = dimensions(viewportRect);
+    const Vec2 viewportDims = dimensions_of(viewportRect);
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     gl::viewport(
@@ -7437,7 +7437,7 @@ Rect osc::GraphicsBackend::setupTopLevelPipelineState(
     if (camera.m_MaybeScissorRect)
     {
         const Rect scissorRect = *camera.m_MaybeScissorRect;
-        const Vec2i scissorDims = dimensions(scissorRect);
+        const Vec2i scissorDims = dimensions_of(scissorRect);
 
         gl::enable(GL_SCISSOR_TEST);
         glScissor(
@@ -7608,7 +7608,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::bindAndClearRenderBuffers(
 
             // clear color is in sRGB, but the window's framebuffer is sRGB-corrected
             // and assume that clear colors are in linear space
-            const Color linearColor = toLinear(camera.m_BackgroundColor);
+            const Color linearColor = to_linear_colorspace(camera.m_BackgroundColor);
             gl::clear_color(
                 linearColor.r,
                 linearColor.g,
@@ -7798,7 +7798,7 @@ void osc::GraphicsBackend::draw(
         throw std::out_of_range{"the given sub-mesh index was out of range (i.e. the given mesh does not have that many sub-meshes)"};
     }
 
-    camera.m_Impl.upd()->m_RenderQueue.emplace_back(
+    camera.impl_.upd()->m_RenderQueue.emplace_back(
         mesh,
         transform,
         material,
@@ -7820,7 +7820,7 @@ void osc::GraphicsBackend::draw(
         throw std::out_of_range{"the given sub-mesh index was out of range (i.e. the given mesh does not have that many sub-meshes)"};
     }
 
-    camera.m_Impl.upd()->m_RenderQueue.emplace_back(
+    camera.impl_.upd()->m_RenderQueue.emplace_back(
         mesh,
         transform,
         material,
@@ -7834,15 +7834,15 @@ void osc::GraphicsBackend::blit(
     RenderTexture& dest)
 {
     Camera c;
-    c.setBackgroundColor(Color::clear());
-    c.setProjectionMatrixOverride(identity<Mat4>());
-    c.setViewMatrixOverride(identity<Mat4>());
+    c.set_background_color(Color::clear());
+    c.set_projection_matrix_override(identity<Mat4>());
+    c.set_view_matrix_override(identity<Mat4>());
 
     Material m = g_GraphicsContextImpl->getQuadMaterial();
     m.setTexture("uTexture", source);
 
     graphics::draw(g_GraphicsContextImpl->getQuadMesh(), Transform{}, m, c);
-    c.renderTo(dest);
+    c.render_to(dest);
 }
 
 void osc::GraphicsBackend::blitToScreen(
@@ -7863,16 +7863,16 @@ void osc::GraphicsBackend::blitToScreen(
     OSC_ASSERT(t.m_Impl->hasBeenRenderedTo() && "the input texture has not been rendered to");
 
     Camera c;
-    c.setBackgroundColor(Color::clear());
-    c.setPixelRect(rect);
-    c.setProjectionMatrixOverride(identity<Mat4>());
-    c.setViewMatrixOverride(identity<Mat4>());
-    c.setClearFlags(CameraClearFlags::Nothing);
+    c.set_background_color(Color::clear());
+    c.set_pixel_rect(rect);
+    c.set_projection_matrix_override(identity<Mat4>());
+    c.set_view_matrix_override(identity<Mat4>());
+    c.set_clear_flags(CameraClearFlags::Nothing);
 
     Material copy{material};
     copy.setRenderTexture("uTexture", t);
     graphics::draw(g_GraphicsContextImpl->getQuadMesh(), Transform{}, copy, c);
-    c.renderToScreen();
+    c.render_to_screen();
     copy.clearRenderTexture("uTexture");
 }
 
@@ -7883,16 +7883,16 @@ void osc::GraphicsBackend::blitToScreen(
     OSC_ASSERT(g_GraphicsContextImpl);
 
     Camera c;
-    c.setBackgroundColor(Color::clear());
-    c.setPixelRect(rect);
-    c.setProjectionMatrixOverride(identity<Mat4>());
-    c.setViewMatrixOverride(identity<Mat4>());
-    c.setClearFlags(CameraClearFlags::Nothing);
+    c.set_background_color(Color::clear());
+    c.set_pixel_rect(rect);
+    c.set_projection_matrix_override(identity<Mat4>());
+    c.set_view_matrix_override(identity<Mat4>());
+    c.set_clear_flags(CameraClearFlags::Nothing);
 
     Material copy{g_GraphicsContextImpl->getQuadMaterial()};
     copy.setTexture("uTexture", t);
     graphics::draw(g_GraphicsContextImpl->getQuadMesh(), Transform{}, copy, c);
-    c.renderToScreen();
+    c.render_to_screen();
     copy.clearTexture("uTexture");
 }
 
@@ -7975,10 +7975,10 @@ void osc::GraphicsBackend::copyTexture(
     // then download the blitted data into the texture's CPU buffer
     {
         std::vector<uint8_t>& cpuBuffer = dest.m_Impl.upd()->m_PixelData;
-        const GLint packFormat = toImagePixelPackAlignment(dest.getTextureFormat());
+        const GLint packFormat = toImagePixelPackAlignment(dest.texture_format());
 
         OSC_ASSERT(isAlignedAtLeast(cpuBuffer.data(), packFormat) && "glReadPixels must be called with a buffer that is aligned to GL_PACK_ALIGNMENT (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
-        OSC_ASSERT(cpuBuffer.size() == static_cast<ptrdiff_t>(dest.getDimensions().x*dest.getDimensions().y)*NumBytesPerPixel(dest.getTextureFormat()));
+        OSC_ASSERT(cpuBuffer.size() == static_cast<ptrdiff_t>(dest.getDimensions().x*dest.getDimensions().y)*NumBytesPerPixel(dest.texture_format()));
 
         gl::viewport(0, 0, dest.getDimensions().x, dest.getDimensions().y);
         gl::bind_framebuffer(GL_READ_FRAMEBUFFER, drawFBO);
@@ -7989,8 +7989,8 @@ void osc::GraphicsBackend::copyTexture(
             0,
             dest.getDimensions().x,
             dest.getDimensions().y,
-            toImageColorFormat(dest.getTextureFormat()),
-            toImageDataType(dest.getTextureFormat()),
+            toImageColorFormat(dest.texture_format()),
+            toImageDataType(dest.texture_format()),
             cpuBuffer.data()
         );
     }
@@ -8013,7 +8013,7 @@ void osc::GraphicsBackend::copyTexture(
     // - https://registry.khronos.org/OpenGL-Refpages/es2.0/xhtml/glTexImage2D.xml
     const size_t maxMipmapLevel = static_cast<size_t>(max(
         0,
-        cpp20::bit_width(static_cast<size_t>(destinationCubemap.getWidth())) - 1
+        cpp20::bit_width(static_cast<size_t>(destinationCubemap.width())) - 1
     ));
 
     OSC_ASSERT(sourceRenderTexture.getDimensionality() == TextureDimensionality::Cube && "provided render texture must be a cubemap to call this method");
@@ -8053,7 +8053,7 @@ void osc::GraphicsBackend::copyTexture(
             GL_DRAW_FRAMEBUFFER,
             GL_COLOR_ATTACHMENT0,
             GL_TEXTURE_CUBE_MAP_POSITIVE_X + static_cast<GLenum>(face),
-            destinationCubemap.m_Impl.upd()->updCubemap().get(),
+            destinationCubemap.impl_.upd()->updCubemap().get(),
             static_cast<GLint>(mip)
         );
         glDrawBuffer(GL_COLOR_ATTACHMENT0);
@@ -8066,8 +8066,8 @@ void osc::GraphicsBackend::copyTexture(
             sourceRenderTexture.getDimensions().y,
             0,
             0,
-            destinationCubemap.getWidth() / (1<<mip),
-            destinationCubemap.getWidth() / (1<<mip),
+            destinationCubemap.width() / (1<<mip),
+            destinationCubemap.width() / (1<<mip),
             GL_COLOR_BUFFER_BIT,
             GL_LINEAR  // the two texture may have different dimensions (avoid GL_NEAREST)
         );

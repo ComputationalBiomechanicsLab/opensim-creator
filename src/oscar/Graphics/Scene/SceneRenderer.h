@@ -22,13 +22,13 @@ namespace osc
         SceneRenderer& operator=(SceneRenderer&&) noexcept;
         ~SceneRenderer() noexcept;
 
-        Vec2i getDimensions() const;
-        AntiAliasingLevel getAntiAliasingLevel() const;
+        Vec2i dimensions() const;
+        AntiAliasingLevel antialiasing_level() const;
         void render(std::span<const SceneDecoration>, const SceneRendererParams&);
-        RenderTexture& updRenderTexture();
+        RenderTexture& upd_render_texture();
 
     private:
         class Impl;
-        std::unique_ptr<Impl> m_Impl;
+        std::unique_ptr<Impl> impl_;
     };
 }

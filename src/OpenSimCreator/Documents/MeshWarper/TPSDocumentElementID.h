@@ -28,6 +28,6 @@ template<>
 struct std::hash<osc::TPSDocumentElementID> final {
     size_t operator()(osc::TPSDocumentElementID const& el) const
     {
-        return osc::HashOf(el.uid, el.type, el.input);
+        return osc::hash_of(el.uid, el.type, el.input);
     }
 };

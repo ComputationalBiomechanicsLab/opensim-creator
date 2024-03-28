@@ -192,12 +192,12 @@ namespace
             return m_MeshCache;
         }
 
-        Mesh const& getSphereMesh() const
+        Mesh const& sphere_mesh() const
         {
             return m_SphereMesh;
         }
 
-        Mesh const& getUncappedCylinderMesh() const
+        Mesh const& uncapped_cylinder_mesh() const
         {
             return m_UncappedCylinderMesh;
         }
@@ -302,8 +302,8 @@ namespace
 
     private:
         SceneCache& m_MeshCache;
-        Mesh m_SphereMesh = m_MeshCache.getSphereMesh();
-        Mesh m_UncappedCylinderMesh = m_MeshCache.getUncappedCylinderMesh();
+        Mesh m_SphereMesh = m_MeshCache.sphere_mesh();
+        Mesh m_UncappedCylinderMesh = m_MeshCache.uncapped_cylinder_mesh();
         OpenSim::Model const& m_Model;
         OpenSim::ModelDisplayHints const& m_ModelDisplayHints = m_Model.getDisplayHints();
         bool m_ShowPathPoints = m_ModelDisplayHints.get_show_path_points();
@@ -332,8 +332,8 @@ namespace
 
         rs.consume(p2p, SceneDecoration
         {
-            .mesh = rs.updMeshCache().getCylinderMesh(),
-            .transform = YToYCylinderToSegmentTransform({p1, p2}, radius),
+            .mesh = rs.updMeshCache().cylinder_mesh(),
+            .transform = cylinder_to_line_segment_transform({p1, p2}, radius),
             .color = {0.7f, 0.7f, 0.7f, 1.0f},
             .flags = SceneDecorationFlags::CastsShadows,
         });
@@ -352,7 +352,7 @@ namespace
 
         rs.consume(s, SceneDecoration
         {
-            .mesh = rs.getSphereMesh(),
+            .mesh = rs.sphere_mesh(),
             .transform = xform,
             .color = Color::red(),
             .flags = SceneDecorationFlags::CastsShadows,
@@ -369,7 +369,7 @@ namespace
 
         rs.consume(scapuloJoint, SceneDecoration
         {
-            .mesh = rs.getSphereMesh(),
+            .mesh = rs.sphere_mesh(),
             .transform = t,
             .color = {1.0f, 1.0f, 0.0f, 0.2f},
             .flags = SceneDecorationFlags::CastsShadows,
@@ -390,7 +390,7 @@ namespace
 
             rs.consume(b, SceneDecoration
             {
-                .mesh = rs.getSphereMesh(),
+                .mesh = rs.sphere_mesh(),
                 .transform = t,
                 .color = Color::black(),
                 .flags = SceneDecorationFlags::CastsShadows,
@@ -436,27 +436,27 @@ namespace
 
         SceneDecoration const tendonSpherePrototype =
         {
-            .mesh = rs.getSphereMesh(),
+            .mesh = rs.sphere_mesh(),
             .transform = {.scale = Vec3{tendonUiRadius}},
             .color = tendonColor,
             .flags = SceneDecorationFlags::CastsShadows,
         };
         SceneDecoration const tendonCylinderPrototype =
         {
-            .mesh = rs.getUncappedCylinderMesh(),
+            .mesh = rs.uncapped_cylinder_mesh(),
             .color = tendonColor,
             .flags = SceneDecorationFlags::CastsShadows,
         };
         SceneDecoration const fiberSpherePrototype =
         {
-            .mesh = rs.getSphereMesh(),
+            .mesh = rs.sphere_mesh(),
             .transform = {.scale = Vec3{fiberUiRadius}},
             .color = fiberColor,
             .flags = SceneDecorationFlags::CastsShadows,
         };
         SceneDecoration const fiberCylinderPrototype =
         {
-            .mesh = rs.getUncappedCylinderMesh(),
+            .mesh = rs.uncapped_cylinder_mesh(),
             .color = fiberColor,
             .flags = SceneDecorationFlags::CastsShadows,
         };
@@ -472,7 +472,7 @@ namespace
         };
         auto const emitTendonCylinder = [&](Vec3 const& p1, Vec3 const& p2)
         {
-            Transform const xform = YToYCylinderToSegmentTransform({p1, p2}, tendonUiRadius);
+            Transform const xform = cylinder_to_line_segment_transform({p1, p2}, tendonUiRadius);
             rs.consume(muscle, tendonCylinderPrototype.with_transform(xform));
         };
         auto emitFiberSphere = [&](GeometryPathPoint const& p)
@@ -486,7 +486,7 @@ namespace
         };
         auto emitFiberCylinder = [&](Vec3 const& p1, Vec3 const& p2)
         {
-            Transform const xform = YToYCylinderToSegmentTransform({p1, p2}, fiberUiRadius);
+            Transform const xform = cylinder_to_line_segment_transform({p1, p2}, fiberUiRadius);
             rs.consume(muscle, fiberCylinderPrototype.with_transform(xform));
         };
 
@@ -635,7 +635,7 @@ namespace
 
             rs.consume(c, SceneDecoration
             {
-                .mesh = rs.getSphereMesh(),
+                .mesh = rs.sphere_mesh(),
                 .transform =
                 {
                     // ensure the sphere directionally tries to line up with the cylinders, to make
@@ -656,8 +656,8 @@ namespace
         {
             rs.consume(hittestTarget, SceneDecoration
             {
-                .mesh = rs.getUncappedCylinderMesh(),
-                .transform = YToYCylinderToSegmentTransform({p1, p2}, radius),
+                .mesh = rs.uncapped_cylinder_mesh(),
+                .transform = cylinder_to_line_segment_transform({p1, p2}, radius),
                 .color  = color,
                 .flags = SceneDecorationFlags::CastsShadows,
             });
@@ -753,14 +753,14 @@ namespace
         float const fixupScaleFactor = rs.getFixupScaleFactor();
 
         ArrowProperties p;
-        p.worldspaceStart = loaPointDirection.point;
-        p.worldspaceEnd = loaPointDirection.point + (fixupScaleFactor*0.1f)*loaPointDirection.direction;
-        p.tipLength = (fixupScaleFactor*0.015f);
+        p.worldspace_start = loaPointDirection.point;
+        p.worldspace_end = loaPointDirection.point + (fixupScaleFactor*0.1f)*loaPointDirection.direction;
+        p.tip_length = (fixupScaleFactor*0.015f);
         p.headThickness = (fixupScaleFactor*0.01f);
         p.neckThickness = (fixupScaleFactor*0.006f);
         p.color = color;
 
-        drawArrow(rs.updMeshCache(), p, [&muscle, &rs](SceneDecoration&& d)
+        draw_arrow(rs.updMeshCache(), p, [&muscle, &rs](SceneDecoration&& d)
         {
             rs.consume(muscle, std::move(d));
         });
@@ -914,17 +914,17 @@ namespace
         float const fixupScaleFactor = rs.getFixupScaleFactor();
         float const lenScale = 0.0025f;
         float const baseRadius = 0.025f;
-        float const tipLength = 0.1f*length((fixupScaleFactor*lenScale)*maybeContact->force);
+        float const tip_length = 0.1f*length((fixupScaleFactor*lenScale)*maybeContact->force);
 
         ArrowProperties p;
-        p.worldspaceStart = maybeContact->point;
-        p.worldspaceEnd = maybeContact->point + (fixupScaleFactor*lenScale)*maybeContact->force;
-        p.tipLength = tipLength;
+        p.worldspace_start = maybeContact->point;
+        p.worldspace_end = maybeContact->point + (fixupScaleFactor*lenScale)*maybeContact->force;
+        p.tip_length = tip_length;
         p.headThickness = fixupScaleFactor*baseRadius;
         p.neckThickness = fixupScaleFactor*baseRadius*0.6f;
         p.color = Color::yellow();
 
-        drawArrow(rs.updMeshCache(), p, [&hcf, &rs](SceneDecoration&& d)
+        draw_arrow(rs.updMeshCache(), p, [&hcf, &rs](SceneDecoration&& d)
         {
             rs.consume(hcf, std::move(d));
         });
@@ -1117,7 +1117,7 @@ float osc::GetRecommendedScaleFactor(
         1.0f,
         [&aabb](OpenSim::Component const&, SceneDecoration&& dec)
         {
-            aabb = bounding_aabb_of(aabb, getWorldspaceAABB(dec));
+            aabb = bounding_aabb_of(aabb, get_worldspace_aabb(dec));
         }
     );
 
@@ -1130,7 +1130,7 @@ float osc::GetRecommendedScaleFactor(
     // what the smallest scale factor that would cause that dimension
     // to be >=1 cm (roughly the length of a frame leg in OSC's
     // decoration generator)
-    float longest = max(dimensions(*aabb));
+    float longest = max(dimensions_of(*aabb));
     float rv = 1.0f;
     while (longest < 0.01)
     {

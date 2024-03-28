@@ -20,7 +20,7 @@ public:
         m_Renderer.render(els, params);
 
         // emit the texture to ImGui
-        ui::Image(m_Renderer.updRenderTexture(), m_Renderer.getDimensions());
+        ui::Image(m_Renderer.upd_render_texture(), m_Renderer.dimensions());
         m_IsHovered = ui::IsItemHovered();
         m_IsLeftClicked = ui::IsItemHovered() && ui::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left);
         m_IsRightClicked = ui::IsItemHovered() && ui::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right);

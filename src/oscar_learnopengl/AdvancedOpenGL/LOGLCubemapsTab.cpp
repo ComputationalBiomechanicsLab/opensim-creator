@@ -38,18 +38,20 @@ namespace
         // load all face data into the cubemap
         static_assert(NumOptions<CubemapFace>() == c_SkyboxTextureFilenames.size());
 
-        Cubemap cubemap{dims.x, t.getTextureFormat()};
-        cubemap.setPixelData(firstCubemapFace(), t.getPixelData());
-        for (CubemapFace f = next(firstCubemapFace()); f <= lastCubemapFace(); f = next(f))
+        const auto faces = make_option_iterable<CubemapFace>();
+        auto face_iterator = faces.begin();
+        Cubemap cubemap{dims.x, t.texture_format()};
+        cubemap.set_pixel_data(*face_iterator++, t.getPixelData());
+        for (; face_iterator != faces.end(); ++face_iterator)
         {
             t = load_texture2D_from_image(
-                rl.open(ResourcePath{"oscar_learnopengl/textures"} / c_SkyboxTextureFilenames[ToIndex(f)]),
+                rl.open(ResourcePath{"oscar_learnopengl/textures"} / c_SkyboxTextureFilenames[ToIndex(*face_iterator)]),
                 ColorSpace::sRGB
             );
             OSC_ASSERT(t.getDimensions().x == dims.x);
             OSC_ASSERT(t.getDimensions().y == dims.x);
-            OSC_ASSERT(t.getTextureFormat() == cubemap.getTextureFormat());
-            cubemap.setPixelData(f, t.getPixelData());
+            OSC_ASSERT(t.texture_format() == cubemap.texture_format());
+            cubemap.set_pixel_data(*face_iterator, t.getPixelData());
         }
 
         return cubemap;
@@ -58,11 +60,11 @@ namespace
     MouseCapturingCamera CreateCameraThatMatchesLearnOpenGL()
     {
         MouseCapturingCamera rv;
-        rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setVerticalFOV(45_deg);
-        rv.setNearClippingPlane(0.1f);
-        rv.setFarClippingPlane(100.0f);
-        rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
+        rv.set_position({0.0f, 0.0f, 3.0f});
+        rv.set_vertical_fov(45_deg);
+        rv.set_near_clipping_plane(0.1f);
+        rv.set_far_clipping_plane(100.0f);
+        rv.set_background_color({0.1f, 0.1f, 0.1f, 1.0f});
         return rv;
     }
 
@@ -141,7 +143,7 @@ private:
         m_Camera.onDraw();
 
         // clear screen and ensure camera has correct pixel rect
-        m_Camera.setPixelRect(ui::GetMainViewportWorkspaceScreenRect());
+        m_Camera.set_pixel_rect(ui::GetMainViewportWorkspaceScreenRect());
 
         drawInSceneCube();
         drawSkybox();
@@ -150,7 +152,7 @@ private:
 
     void drawInSceneCube()
     {
-        m_CubeProperties.setVec3("uCameraPos", m_Camera.getPosition());
+        m_CubeProperties.setVec3("uCameraPos", m_Camera.position());
         m_CubeProperties.setFloat("uIOR", m_IOR);
         graphics::draw(
             m_Cube,
@@ -159,22 +161,22 @@ private:
             m_Camera,
             m_CubeProperties
         );
-        m_Camera.renderToScreen();
+        m_Camera.render_to_screen();
     }
 
     void drawSkybox()
     {
-        m_Camera.setClearFlags(CameraClearFlags::Nothing);
-        m_Camera.setViewMatrixOverride(Mat4{Mat3{m_Camera.getViewMatrix()}});
+        m_Camera.set_clear_flags(CameraClearFlags::Nothing);
+        m_Camera.set_view_matrix_override(Mat4{Mat3{m_Camera.view_matrix()}});
         graphics::draw(
             m_Skybox,
             identity<Transform>(),
             m_SkyboxMaterial,
             m_Camera
         );
-        m_Camera.renderToScreen();
-        m_Camera.setViewMatrixOverride(std::nullopt);
-        m_Camera.setClearFlags(CameraClearFlags::Default);
+        m_Camera.render_to_screen();
+        m_Camera.set_view_matrix_override(std::nullopt);
+        m_Camera.set_clear_flags(CameraClearFlags::Default);
     }
 
     void draw2DUI()

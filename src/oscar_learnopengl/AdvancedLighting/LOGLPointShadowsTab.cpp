@@ -63,11 +63,11 @@ namespace
     MouseCapturingCamera CreateCamera()
     {
         MouseCapturingCamera rv;
-        rv.setPosition({0.0f, 0.0f, 5.0f});
-        rv.setVerticalFOV(45_deg);
-        rv.setNearClippingPlane(0.1f);
-        rv.setFarClippingPlane(100.0f);
-        rv.setBackgroundColor(Color::clear());
+        rv.set_position({0.0f, 0.0f, 5.0f});
+        rv.set_vertical_fov(45_deg);
+        rv.set_near_clipping_plane(0.1f);
+        rv.set_far_clipping_plane(100.0f);
+        rv.set_background_color(Color::clear());
         return rv;
     }
 }
@@ -143,7 +143,7 @@ private:
         for (SceneCube const& cube : m_SceneCubes) {
             graphics::draw(m_CubeMesh, cube.transform, m_ShadowMappingMaterial, camera);
         }
-        camera.renderTo(m_DepthTexture);
+        camera.render_to(m_DepthTexture);
     }
 
     void drawShadowmappedSceneToScreen(Rect const& viewportRect)
@@ -153,7 +153,7 @@ private:
         // set shared material params
         material.setTexture("uDiffuseTexture", m_WoodTexture);
         material.setVec3("uLightPos", m_LightPos);
-        material.setVec3("uViewPos", m_SceneCamera.getPosition());
+        material.setVec3("uViewPos", m_SceneCamera.position());
         material.setFloat("uFarPlane", 25.0f);
         material.setBool("uShadows", m_ShowShadows);
 
@@ -169,9 +169,9 @@ private:
         material.setBool("uShadows", m_ShowShadows);
         graphics::draw(m_CubeMesh, {.scale = Vec3{0.1f}, .position = m_LightPos}, material, m_SceneCamera);
 
-        m_SceneCamera.setPixelRect(viewportRect);
-        m_SceneCamera.renderToScreen();
-        m_SceneCamera.setPixelRect(std::nullopt);
+        m_SceneCamera.set_pixel_rect(viewportRect);
+        m_SceneCamera.render_to_screen();
+        m_SceneCamera.set_pixel_rect(std::nullopt);
     }
 
     void draw2DUI()

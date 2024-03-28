@@ -188,7 +188,7 @@ void osc::StandardPopup::setModal(bool v)
 void osc::StandardPopup::setRect(Rect const& rect)
 {
     m_MaybePosition = rect.p1;
-    m_Dimensions = dimensions(rect);
+    m_Dimensions = dimensions_of(rect);
 }
 
 void osc::StandardPopup::setDimensions(Vec2 d)
@@ -196,7 +196,7 @@ void osc::StandardPopup::setDimensions(Vec2 d)
     m_Dimensions = d;
 }
 
-void osc::StandardPopup::setPosition(std::optional<Vec2> p)
+void osc::StandardPopup::set_position(std::optional<Vec2> p)
 {
     m_MaybePosition = p;
 }

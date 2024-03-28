@@ -64,7 +64,7 @@ namespace osc
 
     PolarPerspectiveCamera CreateCameraWithRadius(float);
     PolarPerspectiveCamera CreateCameraFocusedOn(AABB const&);
-    Vec3 RecommendedLightDirection(PolarPerspectiveCamera const&);
+    Vec3 recommended_light_direction(PolarPerspectiveCamera const&);
     void FocusAlongAxis(PolarPerspectiveCamera&, size_t, bool negate = false);
     void FocusAlongX(PolarPerspectiveCamera&);
     void FocusAlongMinusX(PolarPerspectiveCamera&);

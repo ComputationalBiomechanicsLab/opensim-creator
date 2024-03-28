@@ -37,13 +37,13 @@ using namespace osc;
 
 namespace
 {
-    void drawGrid(
+    void draw_grid(
         SceneCache& cache,
         const Quat& rotation,
         const std::function<void(SceneDecoration&&)>& out)
     {
         out({
-            .mesh = cache.get100x100GridMesh(),
+            .mesh = cache.grid_mesh(),
             .transform = {
                 .scale = Vec3{50.0f, 50.0f, 1.0f},
                 .rotation = rotation,
@@ -53,12 +53,12 @@ namespace
     }
 }
 
-void osc::drawBVH(
+void osc::draw_bvh(
     SceneCache& cache,
-    const BVH& sceneBVH,
+    const BVH& scene_bvh,
     const std::function<void(SceneDecoration&&)>& out)
 {
-    sceneBVH.forEachLeafOrInnerNodeUnordered([cube = cache.getCubeWireMesh(), &out](const BVHNode& node)
+    scene_bvh.forEachLeafOrInnerNodeUnordered([cube = cache.cube_wireframe_mesh(), &out](const BVHNode& node)
     {
         out({
             .mesh = cube,
@@ -71,20 +71,20 @@ void osc::drawBVH(
     });
 }
 
-void osc::drawAABB(
+void osc::draw_aabb(
     SceneCache& cache,
     const AABB& aabb,
     const std::function<void(SceneDecoration&&)>& out)
 {
-    drawAABBs(cache, {{aabb}}, out);
+    draw_aabbs(cache, {{aabb}}, out);
 }
 
-void osc::drawAABBs(
+void osc::draw_aabbs(
     SceneCache& cache,
     std::span<const AABB> aabbs,
     const std::function<void(SceneDecoration&&)>& out)
 {
-    const Mesh cube = cache.getCubeWireMesh();
+    const Mesh cube = cache.cube_wireframe_mesh();
     for (const AABB& aabb : aabbs) {
         out({
             .mesh = cube,
@@ -97,27 +97,27 @@ void osc::drawAABBs(
     }
 }
 
-void osc::drawBVHLeafNodes(
+void osc::draw_bvh_leaf_nodes(
     SceneCache& cache,
     const BVH& bvh,
     const std::function<void(SceneDecoration&&)>& out)
 {
     bvh.forEachLeafNode([&cache, &out](const BVHNode& node)
     {
-        drawAABB(cache, node.getBounds(), out);
+        draw_aabb(cache, node.getBounds(), out);
     });
 }
 
-void osc::drawXZFloorLines(
+void osc::draw_xz_floor_lines(
     SceneCache& cache,
     const std::function<void(SceneDecoration&&)>& out,
     float scale)
 {
-    const Mesh yLine = cache.getYLineMesh();
+    const Mesh y_line = cache.yline_mesh();
 
     // X line
     out({
-        .mesh = yLine,
+        .mesh = y_line,
         .transform = {
             .scale = Vec3{scale},
             .rotation = angle_axis(90_deg, Vec3{0.0f, 0.0f, 1.0f}),
@@ -127,7 +127,7 @@ void osc::drawXZFloorLines(
 
     // Z line
     out({
-        .mesh = yLine,
+        .mesh = y_line,
         .transform = {
             .scale = Vec3{scale},
             .rotation = angle_axis(90_deg, Vec3{1.0f, 0.0f, 0.0f}),
@@ -136,191 +136,191 @@ void osc::drawXZFloorLines(
     });
 }
 
-void osc::drawXZGrid(
+void osc::draw_xz_grid(
     SceneCache& cache,
     const std::function<void(SceneDecoration&&)>& out)
 {
     const Quat rotation = angle_axis(90_deg, Vec3{1.0f, 0.0f, 0.0f});
-    drawGrid(cache, rotation, out);
+    draw_grid(cache, rotation, out);
 }
 
-void osc::drawXYGrid(
+void osc::draw_xy_grid(
     SceneCache& cache,
     const std::function<void(SceneDecoration&&)>& out)
 {
-    drawGrid(cache, identity<Quat>(), out);
+    draw_grid(cache, identity<Quat>(), out);
 }
 
-void osc::drawYZGrid(
+void osc::draw_yz_grid(
     SceneCache& cache,
     const std::function<void(SceneDecoration&&)>& out)
 {
     const Quat rotation = angle_axis(90_deg, Vec3{0.0f, 1.0f, 0.0f});
-    drawGrid(cache, rotation, out);
+    draw_grid(cache, rotation, out);
 }
 
-void osc::drawArrow(
+void osc::draw_arrow(
     SceneCache& cache,
     const ArrowProperties& props,
     const std::function<void(SceneDecoration&&)>& out)
 {
-    const Vec3 startToEnd = props.worldspaceEnd - props.worldspaceStart;
-    const float len = length(startToEnd);
-    const Vec3 direction = startToEnd/len;
+    const Vec3 start_to_end = props.worldspace_end - props.worldspace_start;
+    const float len = length(start_to_end);
+    const Vec3 direction = start_to_end/len;
 
-    const Vec3 neckStart = props.worldspaceStart;
-    const Vec3 neckEnd = props.worldspaceStart + (len - props.tipLength)*direction;
-    const Vec3 headStart = neckEnd;
-    const Vec3 headEnd = props.worldspaceEnd;
+    const Vec3 neck_start = props.worldspace_start;
+    const Vec3 neck_end = props.worldspace_start + (len - props.tip_length)*direction;
+    const Vec3 head_start = neck_end;
+    const Vec3 head_end = props.worldspace_end;
 
     // emit neck cylinder
     out({
-        .mesh = cache.getCylinderMesh(),
-        .transform = YToYCylinderToSegmentTransform({neckStart, neckEnd}, props.neckThickness),
-        .color = props.color
+        .mesh = cache.cylinder_mesh(),
+        .transform = cylinder_to_line_segment_transform({neck_start, neck_end}, props.neckThickness),
+        .color = props.color,
     });
 
     // emit head cone
     out({
-        .mesh = cache.getConeMesh(),
-        .transform = YToYCylinderToSegmentTransform({headStart, headEnd}, props.headThickness),
-        .color = props.color
+        .mesh = cache.cone_mesh(),
+        .transform = cylinder_to_line_segment_transform({head_start, head_end}, props.headThickness),
+        .color = props.color,
     });
 }
 
-void osc::drawLineSegment(
+void osc::draw_line_segment(
     SceneCache& cache,
-    const LineSegment& segment,
+    const LineSegment& line_segment,
     const Color& color,
     float radius,
     const std::function<void(SceneDecoration&&)>& out)
 {
     out({
-        .mesh = cache.getCylinderMesh(),
-        .transform = YToYCylinderToSegmentTransform(segment, radius),
+        .mesh = cache.cylinder_mesh(),
+        .transform = cylinder_to_line_segment_transform(line_segment, radius),
         .color = color,
     });
 }
 
-AABB osc::getWorldspaceAABB(const SceneDecoration& cd)
+AABB osc::get_worldspace_aabb(const SceneDecoration& decoration)
 {
-    return transform_aabb(cd.transform, cd.mesh.getBounds());
+    return transform_aabb(decoration.transform, decoration.mesh.getBounds());
 }
 
-void osc::updateSceneBVH(std::span<const SceneDecoration> sceneEls, BVH& bvh)
+void osc::update_scene_bvh(std::span<const SceneDecoration> decorations, BVH& bvh)
 {
     std::vector<AABB> aabbs;
-    aabbs.reserve(sceneEls.size());
-    for (const SceneDecoration& el : sceneEls) {
-        aabbs.push_back(getWorldspaceAABB(el));
+    aabbs.reserve(decorations.size());
+    for (const SceneDecoration& decoration : decorations) {
+        aabbs.push_back(get_worldspace_aabb(decoration));
     }
 
     bvh.buildFromAABBs(aabbs);
 }
 
-std::vector<SceneCollision> osc::getAllSceneCollisions(
-    const BVH& bvh,
-    SceneCache& sceneCache,
+std::vector<SceneCollision> osc::get_all_ray_collisions_with_scene(
+    const BVH& scene_bvh,
+    SceneCache& cache,
     std::span<const SceneDecoration> decorations,
-    const Line& ray)
+    const Line& worldspace_ray)
 {
     std::vector<SceneCollision> rv;
-    bvh.forEachRayAABBCollision(ray, [&sceneCache, &decorations, &ray, &rv](BVHCollision sceneCollision)
+    scene_bvh.forEachRayAABBCollision(worldspace_ray, [&cache, &decorations, &worldspace_ray, &rv](BVHCollision scene_collision)
     {
         // perform ray-triangle intersection tests on the scene collisions
-        const SceneDecoration& decoration = at(decorations, sceneCollision.id);
-        const BVH& decorationBVH = sceneCache.getBVH(decoration.mesh);
+        const SceneDecoration& decoration = at(decorations, scene_collision.id);
+        const BVH& decoration_triangle_bvh = cache.get_bvh(decoration.mesh);
 
-        const std::optional<RayCollision> maybeCollision = getClosestWorldspaceRayCollision(
+        const std::optional<RayCollision> maybe_triangle_collision = get_closest_worldspace_ray_triangle_collision(
             decoration.mesh,
-            decorationBVH,
+            decoration_triangle_bvh,
             decoration.transform,
-            ray
+            worldspace_ray
         );
 
-        if (maybeCollision) {
+        if (maybe_triangle_collision) {
             rv.push_back({
-                .decorationID = decoration.id,
-                .decorationIndex = static_cast<size_t>(sceneCollision.id),
-                .worldspaceLocation = maybeCollision->position,
-                .distanceFromRayOrigin = maybeCollision->distance,
+                .decoration_id = decoration.id,
+                .decoration_index = static_cast<size_t>(scene_collision.id),
+                .worldspace_location = maybe_triangle_collision->position,
+                .distance_from_ray_origin = maybe_triangle_collision->distance,
             });
         }
     });
     return rv;
 }
 
-std::optional<RayCollision> osc::getClosestWorldspaceRayCollision(
+std::optional<RayCollision> osc::get_closest_worldspace_ray_triangle_collision(
     const Mesh& mesh,
-    const BVH& triangleBVH,
+    const BVH& triangle_bvh,
     const Transform& transform,
-    const Line& worldspaceRay)
+    const Line& worldspace_ray)
 {
     if (mesh.getTopology() != MeshTopology::Triangles) {
         return std::nullopt;
     }
 
     // map the ray into the mesh's modelspace, so that we compute a ray-mesh collision
-    const Line modelspaceRay = InverseTransformLine(worldspaceRay, transform);
+    const Line modespace_ray = inverse_transform_line(worldspace_ray, transform);
 
     // then perform a ray-AABB (of triangles) collision
     std::optional<RayCollision> rv;
-    triangleBVH.forEachRayAABBCollision(modelspaceRay, [&mesh, &transform, &worldspaceRay, &modelspaceRay, &rv](BVHCollision bvhCollision)
+    triangle_bvh.forEachRayAABBCollision(modespace_ray, [&mesh, &transform, &worldspace_ray, &modespace_ray, &rv](BVHCollision modelspace_bvh_collision)
     {
         // then perform a ray-triangle collision
-        if (auto triangleCollision = find_collision(modelspaceRay, mesh.getTriangleAt(bvhCollision.id))) {
+        if (auto modelspace_triangle_collision = find_collision(modespace_ray, mesh.getTriangleAt(modelspace_bvh_collision.id))) {
             // map it back into worldspace and check if it's closer
-            const Vec3 locationWorldspace = transform * triangleCollision->position;
-            const float distance = length(locationWorldspace - worldspaceRay.origin);
+            const Vec3 worldspace_location = transform * modelspace_triangle_collision->position;
+            const float distance = length(worldspace_location - worldspace_ray.origin);
 
             if (not rv or rv->distance > distance) {
                 // if it's closer, update the return value
-                rv = RayCollision{distance, locationWorldspace};
+                rv = RayCollision{distance, worldspace_location};
             }
         }
     });
     return rv;
 }
 
-std::optional<RayCollision> osc::getClosestWorldspaceRayCollision(
+std::optional<RayCollision> osc::get_closest_worldspace_ray_triangle_collision(
     const PolarPerspectiveCamera& camera,
     const Mesh& mesh,
-    const BVH& triangleBVH,
-    const Rect& renderScreenRect,
-    Vec2 mouseScreenPos)
+    const BVH& triangle_bvh,
+    const Rect& screen_render_rect,
+    Vec2 screen_mouse_pos)
 {
     const Line ray = camera.unprojectTopLeftPosToWorldRay(
-        mouseScreenPos - renderScreenRect.p1,
-        dimensions(renderScreenRect)
+        screen_mouse_pos - screen_render_rect.p1,
+        dimensions_of(screen_render_rect)
     );
 
-    return getClosestWorldspaceRayCollision(
+    return get_closest_worldspace_ray_triangle_collision(
         mesh,
-        triangleBVH,
+        triangle_bvh,
         identity<Transform>(),
         ray
     );
 }
 
-SceneRendererParams osc::calcStandardDarkSceneRenderParams(
+SceneRendererParams osc::calc_standard_dark_scene_render_params(
     const PolarPerspectiveCamera& camera,
-    AntiAliasingLevel antiAliasingLevel,
-    Vec2 renderDims)
+    AntiAliasingLevel aa_level,
+    Vec2 render_dims)
 {
     SceneRendererParams rv;
-    rv.dimensions = renderDims;
-    rv.antiAliasingLevel = antiAliasingLevel;
-    rv.drawMeshNormals = false;
-    rv.drawFloor = false;
-    rv.viewMatrix = camera.view_matrix();
-    rv.projectionMatrix = camera.projection_matrix(aspect_ratio(renderDims));
-    rv.viewPos = camera.getPos();
-    rv.lightDirection = RecommendedLightDirection(camera);
-    rv.backgroundColor = {0.1f, 1.0f};
+    rv.dimensions = render_dims;
+    rv.antialiasing_level = aa_level;
+    rv.draw_mesh_normals = false;
+    rv.draw_floor = false;
+    rv.view_matrix = camera.view_matrix();
+    rv.projection_matrix = camera.projection_matrix(aspect_ratio(render_dims));
+    rv.view_pos = camera.getPos();
+    rv.light_direction = recommended_light_direction(camera);
+    rv.background_color = {0.1f, 1.0f};
     return rv;
 }
 
-BVH osc::createTriangleBVHFromMesh(const Mesh& mesh)
+BVH osc::create_triangle_bvh(const Mesh& mesh)
 {
     const auto indices = mesh.getIndices();
 
@@ -340,27 +340,27 @@ BVH osc::createTriangleBVHFromMesh(const Mesh& mesh)
     return rv;
 }
 
-FrustumPlanes osc::calcCameraFrustumPlanes(const Camera& camera, float aspectRatio)
+FrustumPlanes osc::calc_frustum_planes(const Camera& camera, float aspect_ratio)
 {
-    const Radians fovY = camera.getVerticalFOV();
-    const float zNear = camera.getNearClippingPlane();
-    const float zFar = camera.getFarClippingPlane();
-    const float halfVSize = zFar * tan(fovY * 0.5f);
-    const float halfHSize = halfVSize * aspectRatio;
-    const Vec3 pos = camera.getPosition();
-    const Vec3 front = camera.getDirection();
-    const Vec3 up = camera.getUpwardsDirection();
+    const Radians fov_y = camera.vertical_fov();
+    const float z_near = camera.near_clipping_plane();
+    const float z_far = camera.get_far_clipping_plane();
+    const float half_v_size = z_far * tan(fov_y * 0.5f);
+    const float half_h_size = half_v_size * aspect_ratio;
+    const Vec3 pos = camera.position();
+    const Vec3 front = camera.direction();
+    const Vec3 up = camera.upwards_direction();
     const Vec3 right = cross(front, up);
-    const Vec3 frontMultnear = zNear * front;
-    const Vec3 frontMultfar = zFar * front;
+    const Vec3 front_mult_near = z_near * front;
+    const Vec3 front_mult_far = z_far * front;
 
     return {
-        // origin            // normal
-        to_analytic_plane(pos + frontMultnear, -front),                                                 // near
-        to_analytic_plane(pos + frontMultfar ,  front),                                                 // far
-        to_analytic_plane(pos                , -normalize(cross(frontMultfar - right*halfHSize, up))),  // right
-        to_analytic_plane(pos                , -normalize(cross(up, frontMultfar + right*halfHSize))),  // left
-        to_analytic_plane(pos                , -normalize(cross(right, frontMultfar - up*halfVSize))),  // top
-        to_analytic_plane(pos                , -normalize(cross(frontMultfar + up*halfVSize, right))),  // bottom
+                          // origin              // normal
+        to_analytic_plane(pos + front_mult_near, -front                                                   ),  // near
+        to_analytic_plane(pos + front_mult_far ,  front                                                   ),  // far
+        to_analytic_plane(pos                  , -normalize(cross(front_mult_far - right*half_h_size, up))),  // right
+        to_analytic_plane(pos                  , -normalize(cross(up, front_mult_far + right*half_h_size))),  // left
+        to_analytic_plane(pos                  , -normalize(cross(right, front_mult_far - up*half_v_size))),  // top
+        to_analytic_plane(pos                  , -normalize(cross(front_mult_far + up*half_v_size, right))),  // bottom
     };
 }

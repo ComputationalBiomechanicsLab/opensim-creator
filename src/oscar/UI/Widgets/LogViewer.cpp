@@ -17,7 +17,7 @@ using namespace osc;
 
 namespace
 {
-    Color toColor(LogLevel lvl)
+    Color to_color(LogLevel lvl)
     {
         switch (lvl)
         {
@@ -120,7 +120,7 @@ public:
         auto const& contentGuard = guardedContent.lock();
         for (LogMessage const& msg : *contentGuard)
         {
-            ui::PushStyleColor(ImGuiCol_Text, ::toColor(msg.level));
+            ui::PushStyleColor(ImGuiCol_Text, ::to_color(msg.level));
             ui::Text("[%s]", ToCStringView(msg.level).c_str());
             ui::PopStyleColor();
             ui::SameLine();

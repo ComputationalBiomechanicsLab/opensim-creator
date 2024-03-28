@@ -23,10 +23,10 @@ namespace
     std::array<Color, c_LightPositions.size()> GetLightColors()
     {
         return std::to_array<Color>({
-            toSRGB({200.0f, 200.0f, 200.0f, 1.0f}),
-            toSRGB({0.1f, 0.0f, 0.0f, 1.0f}),
-            toSRGB({0.0f, 0.0f, 0.2f, 1.0f}),
-            toSRGB({0.0f, 0.1f, 0.0f, 1.0f}),
+            to_srgb_colorspace({200.0f, 200.0f, 200.0f, 1.0f}),
+            to_srgb_colorspace({0.1f, 0.0f, 0.0f, 1.0f}),
+            to_srgb_colorspace({0.0f, 0.0f, 0.2f, 1.0f}),
+            to_srgb_colorspace({0.0f, 0.1f, 0.0f, 1.0f}),
         });
     }
 
@@ -38,11 +38,11 @@ namespace
     MouseCapturingCamera CreateSceneCamera()
     {
         MouseCapturingCamera rv;
-        rv.setPosition({0.0f, 0.0f, 5.0f});
-        rv.setVerticalFOV(45_deg);
-        rv.setNearClippingPlane(0.1f);
-        rv.setFarClippingPlane(100.0f);
-        rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
+        rv.set_position({0.0f, 0.0f, 5.0f});
+        rv.set_vertical_fov(45_deg);
+        rv.set_near_clipping_plane(0.1f);
+        rv.set_far_clipping_plane(100.0f);
+        rv.set_background_color({0.1f, 0.1f, 0.1f, 1.0f});
         rv.eulers() = {0_deg, 180_deg, 0_deg};
         return rv;
     }
@@ -110,7 +110,7 @@ private:
         // reformat intermediate HDR texture to match tab dimensions etc.
         {
             Rect const viewportRect = ui::GetMainViewportWorkspaceScreenRect();
-            RenderTextureDescriptor descriptor{dimensions(viewportRect)};
+            RenderTextureDescriptor descriptor{dimensions_of(viewportRect)};
             descriptor.setAntialiasingLevel(App::get().getCurrentAntiAliasingLevel());
             if (m_Use16BitFormat)
             {
@@ -121,23 +121,23 @@ private:
         }
 
         graphics::draw(m_CubeMesh, m_CorridoorTransform, m_SceneMaterial, m_Camera);
-        m_Camera.renderTo(m_SceneHDRTexture);
+        m_Camera.render_to(m_SceneHDRTexture);
     }
 
     void drawHDRTextureViaTonemapperToScreen()
     {
         Camera orthoCamera;
-        orthoCamera.setBackgroundColor(Color::clear());
-        orthoCamera.setPixelRect(ui::GetMainViewportWorkspaceScreenRect());
-        orthoCamera.setProjectionMatrixOverride(identity<Mat4>());
-        orthoCamera.setViewMatrixOverride(identity<Mat4>());
+        orthoCamera.set_background_color(Color::clear());
+        orthoCamera.set_pixel_rect(ui::GetMainViewportWorkspaceScreenRect());
+        orthoCamera.set_projection_matrix_override(identity<Mat4>());
+        orthoCamera.set_view_matrix_override(identity<Mat4>());
 
         m_TonemapMaterial.setRenderTexture("uTexture", m_SceneHDRTexture);
         m_TonemapMaterial.setBool("uUseTonemap", m_UseTonemap);
         m_TonemapMaterial.setFloat("uExposure", m_Exposure);
 
         graphics::draw(m_QuadMesh, identity<Transform>(), m_TonemapMaterial, orthoCamera);
-        orthoCamera.renderToScreen();
+        orthoCamera.render_to_screen();
 
         m_TonemapMaterial.clearRenderTexture("uTexture");
     }
@@ -148,7 +148,7 @@ private:
         ui::Checkbox("use tonemapping", &m_UseTonemap);
         ui::Checkbox("use 16-bit colors", &m_Use16BitFormat);
         ui::InputFloat("exposure", &m_Exposure);
-        ui::Text("pos = %f,%f,%f", m_Camera.getPosition().x, m_Camera.getPosition().y, m_Camera.getPosition().z);
+        ui::Text("pos = %f,%f,%f", m_Camera.position().x, m_Camera.position().y, m_Camera.position().z);
         ui::Text("eulers = %f,%f,%f", m_Camera.eulers().x.count(), m_Camera.eulers().y.count(), m_Camera.eulers().z.count());
         ui::End();
     }

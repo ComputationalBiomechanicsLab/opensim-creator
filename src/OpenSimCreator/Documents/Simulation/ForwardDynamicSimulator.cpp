@@ -128,7 +128,7 @@ namespace
 
         std::size_t implGetHash() const final
         {
-            return HashOf(m_Name, m_Description, m_UID);
+            return hash_of(m_Name, m_Description, m_UID);
         }
 
         bool implEquals(IOutputExtractor const& other) const final

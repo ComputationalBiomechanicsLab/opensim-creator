@@ -302,49 +302,49 @@ public:
 
     AntiAliasingLevel getMaxAntiAliasingLevel() const
     {
-        return m_GraphicsContext.getMaxAntialiasingLevel();
+        return m_GraphicsContext.max_antialiasing_level();
     }
 
-    bool isInDebugMode() const
+    bool is_in_debug_mode() const
     {
-        return m_GraphicsContext.isInDebugMode();
+        return m_GraphicsContext.is_in_debug_mode();
     }
 
-    void enableDebugMode()
+    void enable_debug_mode()
     {
-        m_GraphicsContext.enableDebugMode();
+        m_GraphicsContext.enable_debug_mode();
     }
 
-    void disableDebugMode()
+    void disable_debug_mode()
     {
-        m_GraphicsContext.disableDebugMode();
+        m_GraphicsContext.disable_debug_mode();
     }
 
-    bool isVsyncEnabled() const
+    bool is_vsync_enabled() const
     {
-        return m_GraphicsContext.isVsyncEnabled();
+        return m_GraphicsContext.is_vsync_enabled();
     }
 
     void setVsync(bool v)
     {
         if (v)
         {
-            m_GraphicsContext.enableVsync();
+            m_GraphicsContext.enable_vsync();
         }
         else
         {
-            m_GraphicsContext.disableVsync();
+            m_GraphicsContext.disable_vsync();
         }
     }
 
-    void enableVsync()
+    void enable_vsync()
     {
-        m_GraphicsContext.enableVsync();
+        m_GraphicsContext.enable_vsync();
     }
 
-    void disableVsync()
+    void disable_vsync()
     {
-        m_GraphicsContext.disableVsync();
+        m_GraphicsContext.disable_vsync();
     }
 
     void addFrameAnnotation(std::string_view label, Rect screenRect)
@@ -352,7 +352,7 @@ public:
         m_FrameAnnotations.push_back(ScreenshotAnnotation{std::string{label}, screenRect});
     }
 
-    std::future<Screenshot> requestScreenshot()
+    std::future<Screenshot> request_screenshot()
     {
         AnnotatedScreenshotRequest& req = m_ActiveAnnotatedScreenshotRequests.emplace_back(m_FrameCounter, requestScreenshotTexture());
         return req.resultPromise.get_future();
@@ -360,22 +360,22 @@ public:
 
     std::string getGraphicsBackendVendorString() const
     {
-        return m_GraphicsContext.getBackendVendorString();
+        return m_GraphicsContext.backend_vendor_string();
     }
 
     std::string getGraphicsBackendRendererString() const
     {
-        return m_GraphicsContext.getBackendRendererString();
+        return m_GraphicsContext.backend_renderer_string();
     }
 
     std::string getGraphicsBackendVersionString() const
     {
-        return m_GraphicsContext.getBackendVersionString();
+        return m_GraphicsContext.backend_version_string();
     }
 
     std::string getGraphicsBackendShadingLanguageVersionString() const
     {
-        return m_GraphicsContext.getBackendShadingLanguageVersionString();
+        return m_GraphicsContext.backend_shading_language_version_string();
     }
 
     size_t getFrameCount() const
@@ -432,9 +432,9 @@ public:
         SDL_PushEvent(&e);
     }
 
-    void clearScreen(Color const& color)
+    void clear_screen(Color const& color)
     {
-        m_GraphicsContext.clearScreen(color);
+        m_GraphicsContext.clear_screen(color);
     }
 
     void setMainWindowSubTitle(std::string_view sv)
@@ -516,9 +516,9 @@ public:
         return m_GraphicsContext;
     }
 
-    void* updRawGLContextHandleHACK()
+    void* upd_raw_opengl_context_handle_HACK()
     {
-        return m_GraphicsContext.updRawGLContextHandleHACK();
+        return m_GraphicsContext.upd_raw_opengl_context_handle_HACK();
     }
 
 private:
@@ -529,7 +529,7 @@ private:
 
     std::future<Texture2D> requestScreenshotTexture()
     {
-        return m_GraphicsContext.requestScreenshot();
+        return m_GraphicsContext.request_screenshot();
     }
 
     // perform a screen transntion between two top-level `IScreen`s
@@ -669,8 +669,8 @@ private:
 
             // "present" the rendered screen to the user (can block on VSYNC)
             {
-                OSC_PERF("App/doSwapBuffers");
-                m_GraphicsContext.doSwapBuffers(*m_MainWindow);
+                OSC_PERF("App/swap_buffers");
+                m_GraphicsContext.swap_buffers(*m_MainWindow);
             }
 
             // handle annotated screenshot requests (if any)
@@ -785,7 +785,7 @@ private:
     SynchronizedValue<std::unordered_map<TypeInfoReference, std::shared_ptr<void>>> m_Singletons;
 
     // how many antiAliasingLevel the implementation should actually use
-    AntiAliasingLevel m_CurrentMSXAASamples = min(m_GraphicsContext.getMaxAntialiasingLevel(), m_ApplicationConfig.getNumMSXAASamples());
+    AntiAliasingLevel m_CurrentMSXAASamples = min(m_GraphicsContext.max_antialiasing_level(), m_ApplicationConfig.getNumMSXAASamples());
 
     // set to true if the application should quit
     bool m_QuitRequested = false;
@@ -942,24 +942,24 @@ AntiAliasingLevel osc::App::getMaxAntiAliasingLevel() const
     return m_Impl->getMaxAntiAliasingLevel();
 }
 
-bool osc::App::isInDebugMode() const
+bool osc::App::is_in_debug_mode() const
 {
-    return m_Impl->isInDebugMode();
+    return m_Impl->is_in_debug_mode();
 }
 
-void osc::App::enableDebugMode()
+void osc::App::enable_debug_mode()
 {
-    m_Impl->enableDebugMode();
+    m_Impl->enable_debug_mode();
 }
 
-void osc::App::disableDebugMode()
+void osc::App::disable_debug_mode()
 {
-    m_Impl->disableDebugMode();
+    m_Impl->disable_debug_mode();
 }
 
-bool osc::App::isVsyncEnabled() const
+bool osc::App::is_vsync_enabled() const
 {
-    return m_Impl->isVsyncEnabled();
+    return m_Impl->is_vsync_enabled();
 }
 
 void osc::App::setVsync(bool v)
@@ -967,14 +967,14 @@ void osc::App::setVsync(bool v)
     m_Impl->setVsync(v);
 }
 
-void osc::App::enableVsync()
+void osc::App::enable_vsync()
 {
-    m_Impl->enableVsync();
+    m_Impl->enable_vsync();
 }
 
-void osc::App::disableVsync()
+void osc::App::disable_vsync()
 {
-    m_Impl->disableVsync();
+    m_Impl->disable_vsync();
 }
 
 void osc::App::addFrameAnnotation(std::string_view label, Rect screenRect)
@@ -982,9 +982,9 @@ void osc::App::addFrameAnnotation(std::string_view label, Rect screenRect)
     m_Impl->addFrameAnnotation(label, screenRect);
 }
 
-std::future<Screenshot> osc::App::requestScreenshot()
+std::future<Screenshot> osc::App::request_screenshot()
 {
-    return m_Impl->requestScreenshot();
+    return m_Impl->request_screenshot();
 }
 
 std::string osc::App::getGraphicsBackendVendorString() const
@@ -1057,9 +1057,9 @@ void osc::App::requestRedraw()
     m_Impl->requestRedraw();
 }
 
-void osc::App::clearScreen(Color const& color)
+void osc::App::clear_screen(Color const& color)
 {
-    m_Impl->clearScreen(color);
+    m_Impl->clear_screen(color);
 }
 
 void osc::App::setMainWindowSubTitle(std::string_view sv)
@@ -1114,5 +1114,5 @@ SDL_Window* osc::App::updUndleryingWindow()
 
 void* osc::App::updUnderlyingOpenGLContext()
 {
-    return m_Impl->updGraphicsContext().updRawGLContextHandleHACK();
+    return m_Impl->updGraphicsContext().upd_raw_opengl_context_handle_HACK();
 }

@@ -59,12 +59,12 @@ TEST(AntiAliasingLevel, LessThanWorksAsExpected)
 
 TEST(AntiAliasingLevel, GetU32ReturnsExpectedValues)
 {
-    static_assert(AntiAliasingLevel{-1}.getU32() == 1u);
-    static_assert(AntiAliasingLevel{1}.getU32() == 1u);
-    static_assert(AntiAliasingLevel{2}.getU32() == 2u);
-    static_assert(AntiAliasingLevel{3}.getU32() == 2u);
-    static_assert(AntiAliasingLevel{4}.getU32() == 4u);
-    static_assert(AntiAliasingLevel{8}.getU32() == 8u);
+    static_assert(AntiAliasingLevel{-1}.get_as<uint32_t>() == 1u);
+    static_assert(AntiAliasingLevel{1}.get_as<uint32_t>() == 1u);
+    static_assert(AntiAliasingLevel{2}.get_as<uint32_t>() == 2u);
+    static_assert(AntiAliasingLevel{3}.get_as<uint32_t>() == 2u);
+    static_assert(AntiAliasingLevel{4}.get_as<uint32_t>() == 4u);
+    static_assert(AntiAliasingLevel{8}.get_as<uint32_t>() == 8u);
 }
 
 TEST(AntiAliasingLevel, CanStreamToOutput)

@@ -31,21 +31,21 @@ SceneRendererParams osc::CalcSceneRendererParams(
     {
         params.dimensions = viewportDims;
     }
-    params.antiAliasingLevel = antiAliasingLevel;
-    params.lightDirection = RecommendedLightDirection(renderParams.camera);
-    params.drawFloor = renderParams.renderingOptions.getDrawFloor();
-    params.viewMatrix = renderParams.camera.view_matrix();
-    params.projectionMatrix = renderParams.camera.projection_matrix(aspect_ratio(viewportDims));
-    params.nearClippingPlane = renderParams.camera.znear;
-    params.farClippingPlane = renderParams.camera.zfar;
-    params.viewPos = renderParams.camera.getPos();
-    params.fixupScaleFactor = fixupScaleFactor;
-    params.drawRims = renderParams.renderingOptions.getDrawSelectionRims();
-    params.drawMeshNormals = renderParams.renderingOptions.getDrawMeshNormals();
-    params.drawShadows = renderParams.renderingOptions.getDrawShadows();
-    params.lightColor = renderParams.lightColor;
-    params.backgroundColor = renderParams.backgroundColor;
-    params.floorLocation = renderParams.floorLocation;
+    params.antialiasing_level = antiAliasingLevel;
+    params.light_direction = recommended_light_direction(renderParams.camera);
+    params.draw_floor = renderParams.renderingOptions.getDrawFloor();
+    params.view_matrix = renderParams.camera.view_matrix();
+    params.projection_matrix = renderParams.camera.projection_matrix(aspect_ratio(viewportDims));
+    params.near_clipping_plane = renderParams.camera.znear;
+    params.far_clipping_plane = renderParams.camera.zfar;
+    params.view_pos = renderParams.camera.getPos();
+    params.fixup_scale_factor = fixupScaleFactor;
+    params.draw_rims = renderParams.renderingOptions.getDrawSelectionRims();
+    params.draw_mesh_normals = renderParams.renderingOptions.getDrawMeshNormals();
+    params.draw_shadows = renderParams.renderingOptions.getDrawShadows();
+    params.light_color = renderParams.lightColor;
+    params.background_color = renderParams.backgroundColor;
+    params.floor_location = renderParams.floorLocation;
     return params;
 }
 
@@ -89,11 +89,11 @@ std::optional<SceneCollision> osc::GetClosestCollision(
     Vec2 const mouseRenderPos = mouseScreenPos - viewportScreenRect.p1;
     Line const worldspaceCameraRay = camera.unprojectTopLeftPosToWorldRay(
         mouseRenderPos,
-        dimensions(viewportScreenRect)
+        dimensions_of(viewportScreenRect)
     );
 
     // find all collisions along the camera ray
-    std::vector<SceneCollision> const collisions = getAllSceneCollisions(
+    std::vector<SceneCollision> const collisions = get_all_ray_collisions_with_scene(
         sceneBVH,
         sceneCache,
         taggedDrawlist,
@@ -104,12 +104,12 @@ std::optional<SceneCollision> osc::GetClosestCollision(
     SceneCollision const* closestCollision = nullptr;
     for (SceneCollision const& c : collisions)
     {
-        if (closestCollision && c.distanceFromRayOrigin > closestCollision->distanceFromRayOrigin)
+        if (closestCollision && c.distance_from_ray_origin > closestCollision->distance_from_ray_origin)
         {
             continue;  // it's further away than the current closest collision
         }
 
-        SceneDecoration const& decoration = taggedDrawlist[c.decorationIndex];
+        SceneDecoration const& decoration = taggedDrawlist[c.decoration_index];
 
         if (decoration.id.empty())
         {

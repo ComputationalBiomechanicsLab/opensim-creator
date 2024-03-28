@@ -61,7 +61,7 @@ namespace
         auto const generator = [rng = std::default_random_engine{std::random_device{}()}]() mutable
         {
             Color const sRGBColor = GenerateSceneLightColor(rng);
-            Color const linearColor = toLinear(sRGBColor);
+            Color const linearColor = to_linear_colorspace(sRGBColor);
             return Vec3{linearColor.r, linearColor.g, linearColor.b};
         };
 
@@ -89,11 +89,11 @@ namespace
     MouseCapturingCamera CreateCameraThatMatchesLearnOpenGL()
     {
         MouseCapturingCamera rv;
-        rv.setPosition({0.0f, 0.5f, 5.0f});
-        rv.setVerticalFOV(45_deg);
-        rv.setNearClippingPlane(0.1f);
-        rv.setFarClippingPlane(100.0f);
-        rv.setBackgroundColor(Color::black());
+        rv.set_position({0.0f, 0.5f, 5.0f});
+        rv.set_vertical_fov(45_deg);
+        rv.set_near_clipping_plane(0.1f);
+        rv.set_far_clipping_plane(100.0f);
+        rv.set_background_color(Color::black());
         return rv;
     }
 
@@ -193,7 +193,7 @@ private:
     void draw3DScene()
     {
         Rect const viewportRect = ui::GetMainViewportWorkspaceScreenRect();
-        Vec2 const viewportDims = dimensions(viewportRect);
+        Vec2 const viewportDims = dimensions_of(viewportRect);
         AntiAliasingLevel const antiAliasingLevel = App::get().getCurrentAntiAliasingLevel();
 
         // ensure textures/buffers have correct dimensions
@@ -206,7 +206,7 @@ private:
         renderSceneToGBuffers();
         renderLightingPass();
         renderLightCubes();
-        graphics::blitToScreen(m_OutputTexture, viewportRect);
+        graphics::blit_to_screen(m_OutputTexture, viewportRect);
         drawGBufferOverlays(viewportRect);
     }
 
@@ -225,20 +225,20 @@ private:
                 m_Camera
             );
         }
-        m_Camera.renderTo(m_GBuffer.renderTarget);
+        m_Camera.render_to(m_GBuffer.renderTarget);
     }
 
     void drawGBufferOverlays(Rect const& viewportRect) const
     {
-        graphics::blitToScreen(
+        graphics::blit_to_screen(
             m_GBuffer.albedo,
             Rect{viewportRect.p1, viewportRect.p1 + 200.0f}
         );
-        graphics::blitToScreen(
+        graphics::blit_to_screen(
             m_GBuffer.normal,
             Rect{viewportRect.p1 + Vec2{200.0f, 0.0f}, viewportRect.p1 + Vec2{200.0f, 0.0f} + 200.0f}
         );
-        graphics::blitToScreen(
+        graphics::blit_to_screen(
             m_GBuffer.position,
             Rect{viewportRect.p1 + Vec2{400.0f, 0.0f}, viewportRect.p1 + Vec2{400.0f, 0.0f} + 200.0f}
         );
@@ -253,11 +253,11 @@ private:
         m_LightPass.material.setVec3Array("uLightColors", m_LightColors);
         m_LightPass.material.setFloat("uLightLinear", 0.7f);
         m_LightPass.material.setFloat("uLightQuadratic", 1.8f);
-        m_LightPass.material.setVec3("uViewPos", m_Camera.getPosition());
+        m_LightPass.material.setVec3("uViewPos", m_Camera.position());
 
         graphics::draw(m_QuadMesh, identity<Transform>(), m_LightPass.material, m_Camera);
 
-        m_Camera.renderTo(m_OutputTexture);
+        m_Camera.render_to(m_OutputTexture);
 
         m_LightPass.material.clearRenderTexture("uPositionTex");
         m_LightPass.material.clearRenderTexture("uNormalTex");
@@ -288,7 +288,7 @@ private:
                 RenderBufferStoreAction::DontCare,
             },
         };
-        m_Camera.renderTo(t);
+        m_Camera.render_to(t);
     }
 
     ResourceLoader m_Loader = App::resource_loader();

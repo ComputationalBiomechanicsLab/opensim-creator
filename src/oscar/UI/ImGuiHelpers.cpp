@@ -70,9 +70,9 @@ namespace
 
     ImU32 Brighten(ImU32 color, float factor)
     {
-        const Color srgb = ui::toColor(color);
+        const Color srgb = ui::to_color(color);
         const Color brightened = factor * srgb;
-        const Color clamped = clampToLDR(brightened);
+        const Color clamped = clamp_to_ldr(brightened);
         return ui::ToImU32(clamped);
     }
 }
@@ -370,7 +370,7 @@ bool osc::ui::UpdatePolarCameraFromInputs(
     // we don't check `io.WantCaptureMouse` because clicking/dragging on an ImGui::Image
     // is classed as a mouse interaction
     bool const mouseHandled =
-        UpdatePolarCameraFromMouseInputs(camera, dimensions(viewportRect));
+        UpdatePolarCameraFromMouseInputs(camera, dimensions_of(viewportRect));
     bool const keyboardHandled = !io.WantCaptureKeyboard ?
         UpdatePolarCameraFromKeyboardInputs(camera, viewportRect, maybeSceneAABB) :
         false;
@@ -380,8 +380,8 @@ bool osc::ui::UpdatePolarCameraFromInputs(
 
 void osc::ui::UpdateCameraFromInputs(Camera& camera, Eulers& eulers)
 {
-    Vec3 const front = camera.getDirection();
-    Vec3 const up = camera.getUpwardsDirection();
+    Vec3 const front = camera.direction();
+    Vec3 const up = camera.upwards_direction();
     Vec3 const right = cross(front, up);
     Vec2 const mouseDelta = ui::GetIO().MouseDelta;
 
@@ -390,7 +390,7 @@ void osc::ui::UpdateCameraFromInputs(Camera& camera, Eulers& eulers)
     Radians const sensitivity{0.005f};
 
     // keyboard: changes camera position
-    Vec3 pos = camera.getPosition();
+    Vec3 pos = camera.position();
     if (ui::IsKeyDown(ImGuiKey_W))
     {
         pos += displacement * front;
@@ -415,14 +415,14 @@ void osc::ui::UpdateCameraFromInputs(Camera& camera, Eulers& eulers)
     {
         pos -= displacement * up;
     }
-    camera.setPosition(pos);
+    camera.set_position(pos);
 
     eulers.x += sensitivity * -mouseDelta.y;
     eulers.x = clamp(eulers.x, -90_deg + 0.1_rad, 90_deg - 0.1_rad);
     eulers.y += sensitivity * -mouseDelta.x;
     eulers.y = mod(eulers.y, 360_deg);
 
-    camera.setRotation(WorldspaceRotation(eulers));
+    camera.set_rotation(WorldspaceRotation(eulers));
 }
 
 Rect osc::ui::ContentRegionAvailScreenRect()
@@ -736,12 +736,12 @@ ImU32 osc::ui::ToImU32(Color const& color)
     return ui::ColorConvertFloat4ToU32(Vec4{color});
 }
 
-Color osc::ui::toColor(ImU32 u32color)
+Color osc::ui::to_color(ImU32 u32color)
 {
     return Color{Vec4{ImGui::ColorConvertU32ToFloat4(u32color)}};
 }
 
-Color osc::ui::toColor(ImVec4 const& v)
+Color osc::ui::to_color(ImVec4 const& v)
 {
     return {v.x, v.y, v.z, v.w};
 }

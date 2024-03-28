@@ -16,15 +16,15 @@ namespace osc
     }
 
     template<Hashable T>
-    size_t HashOf(T const& v)
+    size_t hash_of(T const& v)
     {
         return std::hash<T>{}(v);
     }
 
     template<Hashable T, Hashable... Ts>
-    size_t HashOf(T const& v, Ts const&... vs)
+    size_t hash_of(T const& v, Ts const&... vs)
     {
-        return HashCombine(HashOf(v), HashOf(vs...));
+        return HashCombine(hash_of(v), hash_of(vs...));
     }
 
     template<typename Range>

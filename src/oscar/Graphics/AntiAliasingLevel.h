@@ -2,6 +2,7 @@
 
 #include <oscar/Shims/Cpp20/bit.h>
 
+#include <concepts>
 #include <iosfwd>
 #include <string>
 
@@ -22,29 +23,24 @@ namespace osc
         constexpr AntiAliasingLevel() = default;
 
         explicit constexpr AntiAliasingLevel(int value) :
-            m_Value{value > 1 ? uint32_t(1) << (cpp20::bit_width(static_cast<unsigned>(value))-1) : 1}
-        {
-        }
+            value_{value > 1 ? uint32_t(1) << (cpp20::bit_width(static_cast<unsigned>(value))-1) : 1}
+        {}
 
-        constexpr int32_t getI32() const
+        template<std::integral T>
+        constexpr T get_as() const
         {
-            return static_cast<int32_t>(m_Value);
-        }
-
-        constexpr uint32_t getU32() const
-        {
-            return m_Value;
+            return static_cast<int32_t>(value_);
         }
 
         constexpr AntiAliasingLevel& operator++()
         {
-            m_Value <<= 1;
+            value_ <<= 1;
             return *this;
         }
 
         friend auto operator<=>(const AntiAliasingLevel&, const AntiAliasingLevel&) = default;
     private:
-        uint32_t m_Value = 1;
+        uint32_t value_ = 1;
     };
 
     std::ostream& operator<<(std::ostream&, AntiAliasingLevel);

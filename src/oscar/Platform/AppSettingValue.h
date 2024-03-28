@@ -40,7 +40,7 @@ namespace osc
         AppSettingValueType type() const;
         bool toBool() const;
         std::string toString() const;
-        Color toColor() const;
+        Color to_color() const;
 
         friend bool operator==(AppSettingValue const&, AppSettingValue const&) = default;
 

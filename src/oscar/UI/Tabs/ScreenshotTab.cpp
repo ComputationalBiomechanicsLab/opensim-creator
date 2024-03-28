@@ -53,7 +53,7 @@ namespace
     {
         float const targetAspectRatio = aspect_ratio(targetRect);
         float const ratio = targetAspectRatio / aspectRatio;
-        Vec2 const targetDims = dimensions(targetRect);
+        Vec2 const targetDims = dimensions_of(targetRect);
 
         if (ratio >= 1.0f)
         {
@@ -73,7 +73,7 @@ namespace
 
     Rect MapRect(Rect const& sourceRect, Rect const& targetRect, Rect const& rect)
     {
-        Vec2 const scale = dimensions(targetRect) / dimensions(sourceRect);
+        Vec2 const scale = dimensions_of(targetRect) / dimensions_of(sourceRect);
 
         return Rect
         {
@@ -89,7 +89,7 @@ public:
         StandardTabImpl{ICON_FA_COOKIE " ScreenshotTab"},
         m_Screenshot{std::move(screenshot)}
     {
-        m_ImageTexture.setFilterMode(TextureFilterMode::Mipmap);
+        m_ImageTexture.set_filter_mode(TextureFilterMode::Mipmap);
     }
 
 private:
@@ -142,7 +142,7 @@ private:
         Rect const windowRect = {screenTopLeft, screenTopLeft + Vec2{ui::GetContentRegionAvail()}};
         Rect const imageRect = ShrinkToFit(windowRect, aspect_ratio(m_Screenshot.image.getDimensions()));
         ui::SetCursorScreenPos(imageRect.p1);
-        ui::Image(m_ImageTexture, dimensions(imageRect));
+        ui::Image(m_ImageTexture, dimensions_of(imageRect));
         return imageRect;
     }
 
@@ -249,7 +249,7 @@ private:
                     colors.reserve(drawlist.VtxBuffer.size());
                     for (ImDrawVert const& vert : drawlist.VtxBuffer)
                     {
-                        Color const linearColor = ui::toColor(vert.col);
+                        Color const linearColor = ui::to_color(vert.col);
                         colors.push_back(linearColor);
                     }
                     mesh.setColors(colors);
@@ -267,7 +267,7 @@ private:
             };
 
             Camera c;
-            c.setViewMatrixOverride(identity<Mat4>());
+            c.set_view_matrix_override(identity<Mat4>());
 
             {
                 // project screenspace overlays into NDC
@@ -282,9 +282,9 @@ private:
                     { 0.0f,         0.0f,        -1.0f,   0.0f },
                     { (R+L)/(L-R),  (T+B)/(B-T),  0.0f,   1.0f },
                 };
-                c.setProjectionMatrixOverride(proj);
+                c.set_projection_matrix_override(proj);
             }
-            c.setClearFlags(CameraClearFlags::Nothing);
+            c.set_clear_flags(CameraClearFlags::Nothing);
 
             for (int cmdIdx = 0; cmdIdx < drawlist.CmdBuffer.Size; ++cmdIdx)
             {
@@ -303,7 +303,7 @@ private:
             }
 
             OSC_ASSERT(rt.has_value());
-            c.renderTo(*rt);
+            c.render_to(*rt);
         }
 
         Texture2D t
@@ -312,7 +312,7 @@ private:
             TextureFormat::RGB24,
             ColorSpace::sRGB,
         };
-        graphics::copyTexture(*rt, t);
+        graphics::copy_texture(*rt, t);
         return t;
     }
 

@@ -36,11 +36,11 @@ namespace
     MouseCapturingCamera CreateCamera()
     {
         MouseCapturingCamera rv;
-        rv.setPosition({0.0f, 0.0f, 20.0f});
-        rv.setVerticalFOV(45_deg);
-        rv.setNearClippingPlane(0.1f);
-        rv.setFarClippingPlane(100.0f);
-        rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
+        rv.set_position({0.0f, 0.0f, 20.0f});
+        rv.set_vertical_fov(45_deg);
+        rv.set_near_clipping_plane(0.1f);
+        rv.set_far_clipping_plane(100.0f);
+        rv.set_background_color({0.1f, 0.1f, 0.1f, 1.0f});
         return rv;
     }
 
@@ -52,8 +52,8 @@ namespace
             ColorSpace::Linear,
             ImageLoadingFlags::FlipVertically
         );
-        hdrTexture.setWrapMode(TextureWrapMode::Clamp);
-        hdrTexture.setFilterMode(TextureFilterMode::Linear);
+        hdrTexture.set_wrap_mode(TextureWrapMode::Clamp);
+        hdrTexture.set_filter_mode(TextureFilterMode::Linear);
 
         RenderTexture cubemapRenderTarget{{512, 512}};
         cubemapRenderTarget.setDimensionality(TextureDimensionality::Cube);
@@ -76,7 +76,7 @@ namespace
 
         Camera camera;
         graphics::draw(BoxGeometry{2.0f, 2.0f, 2.0f}, identity<Transform>(), material, camera);
-        camera.renderTo(cubemapRenderTarget);
+        camera.render_to(cubemapRenderTarget);
 
         // TODO: some way of copying it into an `Cubemap` would make sense
         return cubemapRenderTarget;
@@ -105,7 +105,7 @@ namespace
 
         Camera camera;
         graphics::draw(BoxGeometry{2.0f, 2.0f, 2.0f}, identity<Transform>(), material, camera);
-        camera.renderTo(irradianceCubemap);
+        camera.render_to(irradianceCubemap);
 
         // TODO: some way of copying it into an `Cubemap` would make sense
         return irradianceCubemap;
@@ -135,8 +135,8 @@ namespace
         Camera camera;
 
         Cubemap rv{levelZeroWidth, TextureFormat::RGBFloat};  // TODO: add support for TextureFormat:::RGFloat16
-        rv.setWrapMode(TextureWrapMode::Clamp);
-        rv.setFilterMode(TextureFilterMode::Mipmap);
+        rv.set_wrap_mode(TextureWrapMode::Clamp);
+        rv.set_filter_mode(TextureFilterMode::Mipmap);
 
         size_t const maxMipmapLevel = static_cast<size_t>(max(
             0,
@@ -154,8 +154,8 @@ namespace
             material.setFloat("uRoughness", roughness);
 
             graphics::draw(BoxGeometry{2.0f, 2.0f, 2.0f}, identity<Transform>(), material, camera);
-            camera.renderTo(captureRT);
-            graphics::copyTexture(captureRT, rv, mip);
+            camera.render_to(captureRT);
+            graphics::copy_texture(captureRT, rv, mip);
         }
 
         return rv;
@@ -174,11 +174,11 @@ namespace
 
         // TODO: graphics::blit with material
         Camera camera;
-        camera.setProjectionMatrixOverride(identity<Mat4>());
-        camera.setViewMatrixOverride(identity<Mat4>());
+        camera.set_projection_matrix_override(identity<Mat4>());
+        camera.set_view_matrix_override(identity<Mat4>());
 
         graphics::draw(PlaneGeometry{2.0f, 2.0f, 1, 1}, identity<Transform>(), material, camera);
-        camera.renderTo(renderTex);
+        camera.render_to(renderTex);
 
         Texture2D rv{
             {512, 512},
@@ -187,7 +187,7 @@ namespace
             TextureWrapMode::Clamp,
             TextureFilterMode::Linear,
         };
-        graphics::copyTexture(renderTex, rv);
+        graphics::copy_texture(renderTex, rv);
         return rv;
     }
 
@@ -229,31 +229,31 @@ private:
     void implOnDraw() final
     {
         Rect const outputRect = ui::GetMainViewportWorkspaceScreenRect();
-        m_OutputRender.setDimensions(dimensions(outputRect));
+        m_OutputRender.setDimensions(dimensions_of(outputRect));
         m_OutputRender.setAntialiasingLevel(App::get().getCurrentAntiAliasingLevel());
 
         m_Camera.onDraw();
         draw3DRender();
         drawBackground();
-        graphics::blitToScreen(m_OutputRender, outputRect);
+        graphics::blit_to_screen(m_OutputRender, outputRect);
         draw2DUI();
         m_PerfPanel.onDraw();
     }
 
     void draw3DRender()
     {
-        m_PBRMaterial.setVec3("uCameraWorldPos", m_Camera.getPosition());
+        m_PBRMaterial.setVec3("uCameraWorldPos", m_Camera.position());
         m_PBRMaterial.setVec3Array("uLightPositions", c_LightPositions);
         m_PBRMaterial.setVec3Array("uLightColors", c_LightRadiances);
         m_PBRMaterial.setRenderTexture("uIrradianceMap", m_IrradianceMap);
         m_PBRMaterial.setCubemap("uPrefilterMap", m_PrefilterMap);
-        m_PBRMaterial.setFloat("uMaxReflectionLOD", static_cast<float>(cpp20::bit_width(static_cast<size_t>(m_PrefilterMap.getWidth()) - 1)));
+        m_PBRMaterial.setFloat("uMaxReflectionLOD", static_cast<float>(cpp20::bit_width(static_cast<size_t>(m_PrefilterMap.width()) - 1)));
         m_PBRMaterial.setTexture("uBRDFLut", m_BRDFLookup);
 
         drawSpheres();
         drawLights();
 
-        m_Camera.renderTo(m_OutputRender);
+        m_Camera.render_to(m_OutputRender);
     }
 
     void drawSpheres()
@@ -294,9 +294,9 @@ private:
         m_BackgroundMaterial.setRenderTexture("uEnvironmentMap", m_ProjectedMap);
         m_BackgroundMaterial.setDepthFunction(DepthFunction::LessOrEqual);  // for skybox depth trick
         graphics::draw(m_CubeMesh, identity<Transform>(), m_BackgroundMaterial, m_Camera);
-        m_Camera.setClearFlags(CameraClearFlags::Nothing);
-        m_Camera.renderTo(m_OutputRender);
-        m_Camera.setClearFlags(CameraClearFlags::Default);
+        m_Camera.set_clear_flags(CameraClearFlags::Nothing);
+        m_Camera.render_to(m_OutputRender);
+        m_Camera.set_clear_flags(CameraClearFlags::Default);
     }
 
     void draw2DUI()

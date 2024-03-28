@@ -254,7 +254,7 @@ namespace
             // try updating the camera (mouse panning, etc.)
             bool rv = ui::UpdatePolarCameraFromMouseInputs(
                 params.updRenderParams().camera,
-                dimensions(state.viewportRect)
+                dimensions_of(state.viewportRect)
             );
 
             if (ui::IsDraggingWithAnyMouseButtonDown())
@@ -309,7 +309,7 @@ namespace
                     std::string{state.getPanelName()},
                     state.viewportRect,
                     state.maybeHoveredComponentAbsPath.toString(),
-                    state.maybeBaseLayerHittest ? std::optional<Vec3>{state.maybeBaseLayerHittest->worldspaceLocation} : std::nullopt,
+                    state.maybeBaseLayerHittest ? std::optional<Vec3>{state.maybeBaseLayerHittest->worldspace_location} : std::nullopt,
                 };
                 params.callOnRightClickHandler(e);
             }
@@ -410,12 +410,12 @@ private:
             RenderTexture& sceneTexture = m_State.updRenderer().onDraw(
                 *m_Parameters.getModelSharedPtr(),
                 m_Parameters.getRenderParams(),
-                dimensions(m_State.viewportRect),
+                dimensions_of(m_State.viewportRect),
                 App::get().getCurrentAntiAliasingLevel()
             );
             ui::Image(
                 sceneTexture,
-                dimensions(m_State.viewportRect)
+                dimensions_of(m_State.viewportRect)
             );
 
             // care: hittesting is done here, rather than using ui::IsWindowHovered, because
@@ -460,7 +460,7 @@ private:
         // if there's a 3D-hit, transform it into an OpenSim-hit
         if (m_State.maybeBaseLayerHittest)
         {
-            m_State.maybeHoveredComponentAbsPath = m_State.maybeBaseLayerHittest->decorationID;
+            m_State.maybeHoveredComponentAbsPath = m_State.maybeBaseLayerHittest->decoration_id;
         }
         else
         {
@@ -525,7 +525,7 @@ private:
             // buttons, widgets, etc.)
             ui::SetNextWindowPos(m_State.viewportRect.p1);
             std::string const childID = std::to_string(std::distance(it, m_Layers.end()));
-            if (ui::BeginChild(childID, dimensions(m_State.viewportRect), ImGuiChildFlags_None, windowFlags))
+            if (ui::BeginChild(childID, dimensions_of(m_State.viewportRect), ImGuiChildFlags_None, windowFlags))
             {
                 layer.onDraw(m_Parameters, m_State);
                 ui::EndChild();

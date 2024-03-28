@@ -561,8 +561,8 @@ namespace
         ImGuizmo::SetRect(
             viewportRect.p1.x,
             viewportRect.p1.y,
-            dimensions(viewportRect).x,
-            dimensions(viewportRect).y
+            dimensions_of(viewportRect).x,
+            dimensions_of(viewportRect).y
         );
         ImGuizmo::SetDrawlist(ui::GetWindowDrawList());
         ImGuizmo::AllowAxisFlip(false);

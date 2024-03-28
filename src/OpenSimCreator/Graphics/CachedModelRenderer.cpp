@@ -63,7 +63,7 @@ namespace
                     params.decorationOptions,
                     onComponentDecoration
                 );
-                updateSceneBVH(m_Drawlist, m_BVH);
+                update_scene_bvh(m_Drawlist, m_BVH);
 
                 auto const onOverlayDecoration = [this](SceneDecoration&& dec)
                 {
@@ -150,12 +150,12 @@ public:
             m_PrevRendererParams = rendererParameters;
         }
 
-        return m_Renderer.updRenderTexture();
+        return m_Renderer.upd_render_texture();
     }
 
     RenderTexture& updRenderTexture()
     {
-        return m_Renderer.updRenderTexture();
+        return m_Renderer.upd_render_texture();
     }
 
     std::span<SceneDecoration const> getDrawlist() const

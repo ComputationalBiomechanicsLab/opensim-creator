@@ -81,8 +81,8 @@ namespace
     Line GetCameraRay(Camera const& camera)
     {
         return {
-            camera.getPosition(),
-            camera.getDirection(),
+            camera.position(),
+            camera.direction(),
         };
     }
 }
@@ -91,7 +91,7 @@ class osc::HittestTab::Impl final : public StandardTabImpl {
 public:
     Impl() : StandardTabImpl{c_TabStringID}
     {
-        m_Camera.setBackgroundColor({1.0f, 1.0f, 1.0f, 0.0f});
+        m_Camera.set_background_color({1.0f, 1.0f, 1.0f, 0.0f});
     }
 
 private:
@@ -235,15 +235,15 @@ private:
         // draw crosshair overlay
         graphics::draw(
             m_CrosshairMesh,
-            m_Camera.getInverseViewProjectionMatrix(aspect_ratio(viewport)),
+            m_Camera.inverse_view_projection_matrix(aspect_ratio(viewport)),
             m_Material,
             m_Camera,
             m_BlackColorMaterialProps
         );
 
         // draw scene to screen
-        m_Camera.setPixelRect(viewport);
-        m_Camera.renderToScreen();
+        m_Camera.set_pixel_rect(viewport);
+        m_Camera.render_to_screen();
     }
 
     Camera m_Camera;

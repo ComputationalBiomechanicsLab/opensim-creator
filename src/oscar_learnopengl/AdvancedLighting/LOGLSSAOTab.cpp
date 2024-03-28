@@ -20,11 +20,11 @@ namespace
     MouseCapturingCamera CreateCameraWithSameParamsAsLearnOpenGL()
     {
         MouseCapturingCamera rv;
-        rv.setPosition({0.0f, 0.0f, 5.0f});
-        rv.setVerticalFOV(45_deg);
-        rv.setNearClippingPlane(0.1f);
-        rv.setFarClippingPlane(50.0f);
-        rv.setBackgroundColor(Color::black());
+        rv.set_position({0.0f, 0.0f, 5.0f});
+        rv.set_vertical_fov(45_deg);
+        rv.set_near_clipping_plane(0.1f);
+        rv.set_far_clipping_plane(50.0f);
+        rv.set_background_color(Color::black());
         return rv;
     }
 
@@ -82,7 +82,7 @@ namespace
             TextureWrapMode::Repeat,
             TextureFilterMode::Linear,
         };
-        rv.setPixelData(ViewObjectRepresentations<uint8_t>(pixels));
+        rv.set_pixel_data(view_object_representations<uint8_t>(pixels));
         return rv;
     }
 
@@ -159,7 +159,7 @@ private:
     void draw3DScene()
     {
         Rect const viewportRect = ui::GetMainViewportWorkspaceScreenRect();
-        Vec2 const viewportDims = dimensions(viewportRect);
+        Vec2 const viewportDims = dimensions_of(viewportRect);
         AntiAliasingLevel const antiAliasingLevel = AntiAliasingLevel::none();
 
         // ensure textures/buffers have correct dimensions
@@ -174,7 +174,7 @@ private:
         renderSSAOPass(viewportRect);
         renderBlurPass();
         renderLightingPass();
-        graphics::blitToScreen(m_Lighting.outputTexture, viewportRect);
+        graphics::blit_to_screen(m_Lighting.outputTexture, viewportRect);
         drawOverlays(viewportRect);
     }
 
@@ -202,7 +202,7 @@ private:
             );
         }
 
-        m_Camera.renderTo(m_GBuffer.renderTarget);
+        m_Camera.render_to(m_GBuffer.renderTarget);
     }
 
     void renderSSAOPass(Rect const& viewportRect)
@@ -211,13 +211,13 @@ private:
         m_SSAO.material.setRenderTexture("uNormalTex", m_GBuffer.normal);
         m_SSAO.material.setTexture("uNoiseTex", m_NoiseTexture);
         m_SSAO.material.setVec3Array("uSamples", m_SampleKernel);
-        m_SSAO.material.setVec2("uNoiseScale", dimensions(viewportRect) / Vec2{m_NoiseTexture.getDimensions()});
+        m_SSAO.material.setVec2("uNoiseScale", dimensions_of(viewportRect) / Vec2{m_NoiseTexture.getDimensions()});
         m_SSAO.material.setInt("uKernelSize", static_cast<int32_t>(m_SampleKernel.size()));
         m_SSAO.material.setFloat("uRadius", 0.5f);
         m_SSAO.material.setFloat("uBias", 0.125f);
 
         graphics::draw(m_QuadMesh, identity<Transform>(), m_SSAO.material, m_Camera);
-        m_Camera.renderTo(m_SSAO.outputTexture);
+        m_Camera.render_to(m_SSAO.outputTexture);
 
         m_SSAO.material.clearRenderTexture("uPositionTex");
         m_SSAO.material.clearRenderTexture("uNormalTex");
@@ -228,7 +228,7 @@ private:
         m_Blur.material.setRenderTexture("uSSAOTex", m_SSAO.outputTexture);
 
         graphics::draw(m_QuadMesh, identity<Transform>(), m_Blur.material, m_Camera);
-        m_Camera.renderTo(m_Blur.outputTexture);
+        m_Camera.render_to(m_Blur.outputTexture);
 
         m_Blur.material.clearRenderTexture("uSSAOTex");
     }
@@ -245,7 +245,7 @@ private:
         m_Lighting.material.setFloat("uLightQuadratic", 0.032f);
 
         graphics::draw(m_QuadMesh, identity<Transform>(), m_Lighting.material, m_Camera);
-        m_Camera.renderTo(m_Lighting.outputTexture);
+        m_Camera.render_to(m_Lighting.outputTexture);
 
         m_Lighting.material.clearRenderTexture("uPositionTex");
         m_Lighting.material.clearRenderTexture("uNormalTex");
@@ -269,7 +269,7 @@ private:
             Vec2 const offset = {static_cast<float>(i)*w, 0.0f};
             Rect const overlayRect{viewportRect.p1 + offset, viewportRect.p1 + offset + w};
 
-            graphics::blitToScreen(*textures[i], overlayRect);
+            graphics::blit_to_screen(*textures[i], overlayRect);
         }
     }
 

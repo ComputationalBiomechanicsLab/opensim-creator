@@ -15,8 +15,8 @@ namespace
     Camera CreateIdentityCamera()
     {
         Camera camera;
-        camera.setViewMatrixOverride(identity<Mat4>());
-        camera.setProjectionMatrixOverride(identity<Mat4>());
+        camera.set_view_matrix_override(identity<Mat4>());
+        camera.set_projection_matrix_override(identity<Mat4>());
         return camera;
     }
 }
@@ -59,8 +59,8 @@ private:
         m_Material.setVec2("uOffset", {});
         m_Material.setInt("uNumIterations", m_NumIterations);
         graphics::draw(m_QuadMesh, identity<Transform>(), m_Material, m_Camera);
-        m_Camera.setPixelRect(m_MainViewportWorkspaceScreenRect);
-        m_Camera.renderToScreen();
+        m_Camera.set_pixel_rect(m_MainViewportWorkspaceScreenRect);
+        m_Camera.render_to_screen();
     }
 
     void applyZoom(Vec2, float)

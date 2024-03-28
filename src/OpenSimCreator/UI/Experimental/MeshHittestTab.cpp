@@ -41,7 +41,7 @@ public:
 
     Impl()
     {
-        m_Camera.setBackgroundColor(Color::white());
+        m_Camera.set_background_color(Color::white());
     }
 
     UID getID() const
@@ -62,7 +62,7 @@ public:
         auto raycastStart = std::chrono::high_resolution_clock::now();
 
         Rect r = ui::GetMainViewportWorkspaceScreenRect();
-        Vec2 d = dimensions(r);
+        Vec2 d = dimensions_of(r);
         m_Ray = m_PolarCamera.unprojectTopLeftPosToWorldRay(Vec2{ui::GetMousePos()} - r.p1, d);
 
         m_IsMousedOver = false;
@@ -101,15 +101,15 @@ public:
         // setup scene
         {
             Rect const viewportRect = ui::GetMainViewportWorkspaceScreenRect();
-            Vec2 const viewportRectDims = dimensions(viewportRect);
-            m_Camera.setPixelRect(viewportRect);
+            Vec2 const viewportRectDims = dimensions_of(viewportRect);
+            m_Camera.set_pixel_rect(viewportRect);
 
             // update real scene camera from constrained polar camera
-            m_Camera.setPosition(m_PolarCamera.getPos());
-            m_Camera.setNearClippingPlane(m_PolarCamera.znear);
-            m_Camera.setFarClippingPlane(m_PolarCamera.zfar);
-            m_Camera.setViewMatrixOverride(m_PolarCamera.view_matrix());
-            m_Camera.setProjectionMatrixOverride(m_PolarCamera.projection_matrix(aspect_ratio(viewportRectDims)));
+            m_Camera.set_position(m_PolarCamera.getPos());
+            m_Camera.set_near_clipping_plane(m_PolarCamera.znear);
+            m_Camera.set_far_clipping_plane(m_PolarCamera.zfar);
+            m_Camera.set_view_matrix_override(m_PolarCamera.view_matrix());
+            m_Camera.set_projection_matrix_override(m_PolarCamera.projection_matrix(aspect_ratio(viewportRectDims)));
         }
 
         // draw mesh
@@ -134,7 +134,7 @@ public:
             // draw BVH AABBs
             m_Material.set_color(Color::black());
             m_Material.set_depth_tested(true);
-            drawBVH(
+            draw_bvh(
                 *App::singleton<SceneCache>(),
                 m_MeshBVH,
                 [this](SceneDecoration&& dec)
@@ -145,7 +145,7 @@ public:
         }
 
         // draw scene onto viewport
-        m_Camera.renderToScreen();
+        m_Camera.render_to_screen();
 
         // auxiliary 2D UI
         // printout stats
@@ -154,7 +154,7 @@ public:
             ui::Checkbox("BVH", &m_UseBVH);
             ui::Text("%" PRId64 " microseconds", static_cast<int64_t>(m_RaycastDuration.count()));
             auto r = m_Ray;
-            ui::Text("camerapos = (%.2f, %.2f, %.2f)", m_Camera.getPosition().x, m_Camera.getPosition().y, m_Camera.getPosition().z);
+            ui::Text("camerapos = (%.2f, %.2f, %.2f)", m_Camera.position().x, m_Camera.position().y, m_Camera.position().z);
             ui::Text("origin = (%.2f, %.2f, %.2f), direction = (%.2f, %.2f, %.2f)", r.origin.x, r.origin.y, r.origin.z, r.direction.x, r.direction.y, r.direction.z);
             if (m_IsMousedOver)
             {
@@ -182,7 +182,7 @@ private:
     Mesh m_CubeLinesMesh = AABBGeometry{};
 
     // other state
-    BVH m_MeshBVH = createTriangleBVHFromMesh(m_Mesh);
+    BVH m_MeshBVH = create_triangle_bvh(m_Mesh);
     bool m_UseBVH = false;
     Triangle m_Tris;
     std::chrono::microseconds m_RaycastDuration{0};

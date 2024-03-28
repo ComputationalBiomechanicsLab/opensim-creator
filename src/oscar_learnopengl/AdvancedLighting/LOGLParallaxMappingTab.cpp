@@ -48,10 +48,10 @@ namespace
     MouseCapturingCamera CreateCamera()
     {
         MouseCapturingCamera rv;
-        rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setVerticalFOV(45_deg);
-        rv.setNearClippingPlane(0.1f);
-        rv.setFarClippingPlane(100.0f);
+        rv.set_position({0.0f, 0.0f, 3.0f});
+        rv.set_vertical_fov(45_deg);
+        rv.set_near_clipping_plane(0.1f);
+        rv.set_far_clipping_plane(100.0f);
         return rv;
     }
 
@@ -116,12 +116,12 @@ private:
         m_Camera.onDraw();
 
         // clear screen and ensure camera has correct pixel rect
-        App::upd().clearScreen({0.1f, 0.1f, 0.1f, 1.0f});
+        App::upd().clear_screen({0.1f, 0.1f, 0.1f, 1.0f});
 
         // draw normal-mapped quad
         {
             m_ParallaxMappingMaterial.setVec3("uLightWorldPos", m_LightTransform.position);
-            m_ParallaxMappingMaterial.setVec3("uViewWorldPos", m_Camera.getPosition());
+            m_ParallaxMappingMaterial.setVec3("uViewWorldPos", m_Camera.position());
             m_ParallaxMappingMaterial.setBool("uEnableMapping", m_IsMappingEnabled);
             graphics::draw(m_QuadMesh, m_QuadTransform, m_ParallaxMappingMaterial, m_Camera);
         }
@@ -132,8 +132,8 @@ private:
             graphics::draw(m_CubeMesh, m_LightTransform, m_LightCubeMaterial, m_Camera);
         }
 
-        m_Camera.setPixelRect(ui::GetMainViewportWorkspaceScreenRect());
-        m_Camera.renderToScreen();
+        m_Camera.set_pixel_rect(ui::GetMainViewportWorkspaceScreenRect());
+        m_Camera.render_to_screen();
 
         ui::Begin("controls");
         ui::Checkbox("normal mapping", &m_IsMappingEnabled);

@@ -127,12 +127,12 @@ namespace osc::mi
             setXform(lookup, getXForm(lookup).with_scale(newScale));
         }
 
-        Quat getRotation(IObjectFinder const& lookup) const
+        Quat rotation(IObjectFinder const& lookup) const
         {
             return getXForm(lookup).rotation;
         }
 
-        void setRotation(IObjectFinder const& lookup, Quat const& newRotation)
+        void set_rotation(IObjectFinder const& lookup, Quat const& newRotation)
         {
             setXform(lookup, getXForm(lookup).with_rotation(newRotation));
         }

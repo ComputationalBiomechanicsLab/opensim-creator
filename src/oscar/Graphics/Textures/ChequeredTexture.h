@@ -8,9 +8,9 @@ namespace osc
     public:
         ChequeredTexture();
 
-        const Texture2D& texture() const { return m_Texture; }
-        operator const Texture2D& () const { return m_Texture; }
+        const Texture2D& texture() const { return texture_; }
+        operator const Texture2D& () const { return texture_; }
     private:
-        Texture2D m_Texture;
+        Texture2D texture_;
     };
 }

@@ -112,7 +112,7 @@ public:
 
     size_t getHash() const
     {
-        return HashOf(m_ComponentAbsPath.toString(), m_OutputName, m_Label, m_OutputTypeid, m_ExtractorFunc);
+        return hash_of(m_ComponentAbsPath.toString(), m_OutputName, m_Label, m_OutputTypeid, m_ExtractorFunc);
     }
 
     bool equals(IOutputExtractor const& other)

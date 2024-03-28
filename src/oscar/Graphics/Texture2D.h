@@ -29,20 +29,20 @@ namespace osc
         );
 
         Vec2i getDimensions() const;
-        TextureFormat getTextureFormat() const;
+        TextureFormat texture_format() const;
         ColorSpace getColorSpace() const;
 
-        TextureWrapMode getWrapMode() const;  // same as getWrapModeU
-        void setWrapMode(TextureWrapMode);  // sets all axes
-        TextureWrapMode getWrapModeU() const;
-        void setWrapModeU(TextureWrapMode);
-        TextureWrapMode getWrapModeV() const;
-        void setWrapModeV(TextureWrapMode);
-        TextureWrapMode getWrapModeW() const;
-        void setWrapModeW(TextureWrapMode);
+        TextureWrapMode wrap_mode() const;  // same as wrap_mode_u
+        void set_wrap_mode(TextureWrapMode);  // sets all axes
+        TextureWrapMode wrap_mode_u() const;
+        void set_wrap_mode_u(TextureWrapMode);
+        TextureWrapMode wrap_mode_v() const;
+        void set_wrap_mode_v(TextureWrapMode);
+        TextureWrapMode wrap_mode_w() const;
+        void set_wrap_mode_w(TextureWrapMode);
 
-        TextureFilterMode getFilterMode() const;
-        void setFilterMode(TextureFilterMode);
+        TextureFilterMode filter_mode() const;
+        void set_filter_mode(TextureFilterMode);
 
         // - must contain pixels row-by-row
         // - the size of the span must equal the width*height of the texture
@@ -62,10 +62,10 @@ namespace osc
 
         // - must contain pixel _data_ row-by-row
         // - the size of the data span must be equal to:
-        //     - width*height*NumBytesPerPixel(getTextureFormat())
+        //     - width*height*NumBytesPerPixel(texture_format())
         // - will not perform any internal conversion of the data (it's a memcpy)
         std::span<uint8_t const> getPixelData() const;
-        void setPixelData(std::span<uint8_t const>);
+        void set_pixel_data(std::span<uint8_t const>);
 
         friend void swap(Texture2D& a, Texture2D& b) noexcept
         {

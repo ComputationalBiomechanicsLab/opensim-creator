@@ -57,7 +57,7 @@ private:
 
     void implOnDraw() override
     {
-        App::upd().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
+        App::upd().clear_screen({0.0f, 0.0f, 0.0f, 0.0f});
         ui::context::NewFrame();
         m_CurrentTab->onDraw();
         ui::context::Render();

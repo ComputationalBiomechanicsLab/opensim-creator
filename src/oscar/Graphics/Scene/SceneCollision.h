@@ -10,9 +10,9 @@ namespace osc
 {
     // describes a collision between a ray and a decoration in the scene
     struct SceneCollision final {
-        std::string decorationID;
-        size_t decorationIndex = 0;
-        Vec3 worldspaceLocation{};
-        float distanceFromRayOrigin = std::numeric_limits<float>::max();
+        std::string decoration_id;
+        size_t decoration_index = 0;
+        Vec3 worldspace_location{};
+        float distance_from_ray_origin = std::numeric_limits<float>::max();
     };
 }

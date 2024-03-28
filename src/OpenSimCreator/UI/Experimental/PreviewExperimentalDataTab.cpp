@@ -313,7 +313,7 @@ namespace
 
         return SceneDecoration
         {
-            App::singleton<SceneCache>(App::resource_loader())->get100x100GridMesh(),
+            App::singleton<SceneCache>(App::resource_loader())->grid_mesh(),
             t,
             color,
             std::string{},
@@ -366,7 +366,7 @@ namespace
             t.position = neckMidpoint;
 
             out(SceneDecoration{
-                App::singleton<SceneCache>(App::resource_loader())->getCylinderMesh(),
+                App::singleton<SceneCache>(App::resource_loader())->cylinder_mesh(),
                 t,
                 arrow.color,
                 arrow.label,
@@ -382,7 +382,7 @@ namespace
             t.position = headMidpoint;
 
             out(SceneDecoration{
-                App::singleton<SceneCache>(App::resource_loader())->getConeMesh(),
+                App::singleton<SceneCache>(App::resource_loader())->cone_mesh(),
                 t,
                 arrow.color,
                 arrow.label,
@@ -506,24 +506,24 @@ private:
             m_LastRendererParams = params;
         }
 
-        return m_Renderer.updRenderTexture();
+        return m_Renderer.upd_render_texture();
     }
 
     SceneRendererParams generateRenderParams(Vec2 dims) const
     {
         SceneRendererParams params{m_LastRendererParams};
         params.dimensions = dims;
-        params.antiAliasingLevel = App::get().getCurrentAntiAliasingLevel();
-        params.drawRims = true;
-        params.drawFloor = false;
-        params.viewMatrix = m_Camera.view_matrix();
-        params.projectionMatrix = m_Camera.projection_matrix(aspect_ratio(params.dimensions));
-        params.nearClippingPlane = m_Camera.znear;
-        params.farClippingPlane = m_Camera.zfar;
-        params.viewPos = m_Camera.getPos();
-        params.lightDirection = osc::RecommendedLightDirection(m_Camera);
-        params.lightColor = Color::white();
-        params.backgroundColor = {96.0f / 255.0f, 96.0f / 255.0f, 96.0f / 255.0f, 1.0f};
+        params.antialiasing_level = App::get().getCurrentAntiAliasingLevel();
+        params.draw_rims = true;
+        params.draw_floor = false;
+        params.view_matrix = m_Camera.view_matrix();
+        params.projection_matrix = m_Camera.projection_matrix(aspect_ratio(params.dimensions));
+        params.near_clipping_plane = m_Camera.znear;
+        params.far_clipping_plane = m_Camera.zfar;
+        params.view_pos = m_Camera.getPos();
+        params.light_direction = osc::recommended_light_direction(m_Camera);
+        params.light_color = Color::white();
+        params.background_color = {96.0f / 255.0f, 96.0f / 255.0f, 96.0f / 255.0f, 1.0f};
         return params;
     }
 
@@ -533,7 +533,7 @@ private:
         m_Decorations.push_back(GenerateFloorGrid());
         DecorationConsumer c = [this](SceneDecoration const& d) { m_Decorations.push_back(d); };
         GenerateDecorations(*m_Motion, m_ActiveRow, c);
-        updateSceneBVH(m_Decorations, m_SceneBVH);
+        update_scene_bvh(m_Decorations, m_SceneBVH);
     }
 
     void updateScene3DHittest() const

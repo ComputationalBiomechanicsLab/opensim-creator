@@ -912,12 +912,12 @@ private:
         // rotation editor
         if (e.canChangeRotation())
         {
-            Eulers eulers = euler_angles(normalize(e.getRotation(m_Shared->getModelGraph())));
+            Eulers eulers = euler_angles(normalize(e.rotation(m_Shared->getModelGraph())));
 
             if (ui::InputAngle3("Rotation", eulers, "%.6f"))
             {
                 Quat quatRads = osc::WorldspaceRotation(eulers);
-                mg.updByID(e.getID()).setRotation(mg, quatRads);
+                mg.updByID(e.getID()).set_rotation(mg, quatRads);
             }
             if (ui::IsItemDeactivatedAfterEdit())
             {
@@ -2110,8 +2110,8 @@ private:
         ImGuizmo::SetRect(
             sceneRect.p1.x,
             sceneRect.p1.y,
-            dimensions(sceneRect).x,
-            dimensions(sceneRect).y
+            dimensions_of(sceneRect).x,
+            dimensions_of(sceneRect).y
         );
         ImGuizmo::SetDrawlist(ui::GetWindowDrawList());
         ImGuizmo::AllowAxisFlip(false);  // user's didn't like this feature in UX sessions

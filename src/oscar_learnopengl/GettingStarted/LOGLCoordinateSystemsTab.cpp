@@ -30,11 +30,11 @@ namespace
     MouseCapturingCamera CreateCameraThatMatchesLearnOpenGL()
     {
         MouseCapturingCamera rv;
-        rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setVerticalFOV(45_deg);
-        rv.setNearClippingPlane(0.1f);
-        rv.setFarClippingPlane(100.0f);
-        rv.setBackgroundColor({0.2f, 0.3f, 0.3f, 1.0f});
+        rv.set_position({0.0f, 0.0f, 3.0f});
+        rv.set_vertical_fov(45_deg);
+        rv.set_near_clipping_plane(0.1f);
+        rv.set_far_clipping_plane(100.0f);
+        rv.set_background_color({0.2f, 0.3f, 0.3f, 1.0f});
         return rv;
     }
 
@@ -107,7 +107,7 @@ private:
     void draw3DScene()
     {
         // clear screen and ensure camera has correct pixel rect
-        m_Camera.setPixelRect(ui::GetMainViewportWorkspaceScreenRect());
+        m_Camera.set_pixel_rect(ui::GetMainViewportWorkspaceScreenRect());
 
         // draw 3D scene
         if (m_ShowStep1) {
@@ -129,7 +129,7 @@ private:
             }
         }
 
-        m_Camera.renderToScreen();
+        m_Camera.render_to_screen();
     }
 
     void draw2DUI()
@@ -140,7 +140,7 @@ private:
             ui::Text("mouse captured (esc to uncapture)");
         }
 
-        Vec3 const cameraPos = m_Camera.getPosition();
+        Vec3 const cameraPos = m_Camera.position();
         ui::Text("camera pos = (%f, %f, %f)", cameraPos.x, cameraPos.y, cameraPos.z);
         Eulers const cameraEulers = m_Camera.eulers();
         ui::Text("camera eulers = (%f, %f, %f)", cameraEulers.x.count(), cameraEulers.y.count(), cameraEulers.z.count());

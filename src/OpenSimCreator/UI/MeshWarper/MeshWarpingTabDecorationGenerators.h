@@ -30,13 +30,13 @@ namespace osc
         {
             out({
                 .mesh = tpsSourceOrDestinationMesh,
-                .maybeMaterial = sharedState.wireframeMaterial,
+                .maybe_material = sharedState.wireframe_material,
             });
         }
 
         // add grid decorations
-        drawXZGrid(*sharedState.meshCache, out);
-        drawXZFloorLines(*sharedState.meshCache, out, 100.0f);
+        draw_xz_grid(*sharedState.meshCache, out);
+        draw_xz_floor_lines(*sharedState.meshCache, out, 100.0f);
     }
 
     // returns the amount by which non-participating landmarks should be scaled w.r.t. pariticpating ones

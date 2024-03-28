@@ -61,19 +61,19 @@ std::string osc::AppSettingValue::toString() const
     {
         [&rv](std::string const& v) { rv = v; },
         [&rv](bool v) { rv = v ? "true" : "false"; },
-        [&rv](Color const& c) { rv = toHtmlStringRGBA(c); },
+        [&rv](Color const& c) { rv = to_html_string_rgba(c); },
     }, m_Value);
     return rv;
 }
 
-Color osc::AppSettingValue::toColor() const
+Color osc::AppSettingValue::to_color() const
 {
     Color rv = Color::white();
     std::visit(Overload
     {
         [&rv](std::string const& v)
         {
-            if (auto c = tryParseHtmlString(v))
+            if (auto c = try_parse_html_color_string(v))
             {
                 rv = *c;
             }

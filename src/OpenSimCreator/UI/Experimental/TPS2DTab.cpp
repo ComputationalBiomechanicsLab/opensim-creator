@@ -315,13 +315,13 @@ public:
     Impl()
     {
         m_Material.setTexture("uTextureSampler", m_BoxTexture);
-        m_WireframeMaterial.set_color({0.0f, 0.0f, 0.0f, 0.15f});
-        m_WireframeMaterial.set_transparent(true);
-        m_WireframeMaterial.set_wireframe(true);
-        m_WireframeMaterial.set_depth_tested(false);
-        m_Camera.setViewMatrixOverride(identity<Mat4>());
-        m_Camera.setProjectionMatrixOverride(identity<Mat4>());
-        m_Camera.setBackgroundColor(Color::white());
+        wireframe_material_.set_color({0.0f, 0.0f, 0.0f, 0.15f});
+        wireframe_material_.set_transparent(true);
+        wireframe_material_.set_wireframe(true);
+        wireframe_material_.set_depth_tested(false);
+        m_Camera.set_view_matrix_override(identity<Mat4>());
+        m_Camera.set_projection_matrix_override(identity<Mat4>());
+        m_Camera.set_background_color(Color::white());
     }
 
     UID getID() const
@@ -415,10 +415,10 @@ private:
         desc.setAntialiasingLevel(App::get().getCurrentAntiAliasingLevel());
         out.emplace(desc);
         graphics::draw(mesh, identity<Transform>(), m_Material, m_Camera);
-        graphics::draw(mesh, identity<Transform>(), m_WireframeMaterial, m_Camera);
+        graphics::draw(mesh, identity<Transform>(), wireframe_material_, m_Camera);
 
         OSC_ASSERT(out.has_value());
-        m_Camera.renderTo(*out);
+        m_Camera.render_to(*out);
 
         OSC_ASSERT(out.has_value() && "the camera should've given the render texture back to the caller");
     }
@@ -431,8 +431,8 @@ private:
         // render all fully-established landmark pairs
         for (LandmarkPair2D const& p : m_LandmarkPairs)
         {
-            Vec2 const p1 = ht.rect.p1 + (dimensions(ht.rect) * NDCPointToTopLeftRelPos(p.src));
-            Vec2 const p2 = ht.rect.p1 + (dimensions(ht.rect) * NDCPointToTopLeftRelPos(p.dest));
+            Vec2 const p1 = ht.rect.p1 + (dimensions_of(ht.rect) * NDCPointToTopLeftRelPos(p.src));
+            Vec2 const p2 = ht.rect.p1 + (dimensions_of(ht.rect) * NDCPointToTopLeftRelPos(p.dest));
 
             drawlist->AddLine(p1, p2, m_ConnectionLineColor, 5.0f);
             drawlist->AddRectFilled(p1 - 12.0f, p1 + 12.0f, m_SrcSquareColor);
@@ -444,7 +444,7 @@ private:
         {
             GUIFirstClickMouseState const& st = std::get<GUIFirstClickMouseState>(m_MouseState);
 
-            Vec2 const p1 = ht.rect.p1 + (dimensions(ht.rect) * NDCPointToTopLeftRelPos(st.srcNDCPos));
+            Vec2 const p1 = ht.rect.p1 + (dimensions_of(ht.rect) * NDCPointToTopLeftRelPos(st.srcNDCPos));
             Vec2 const p2 = ui::GetMousePos();
 
             drawlist->AddLine(p1, p2, m_ConnectionLineColor, 5.0f);
@@ -468,7 +468,7 @@ private:
     {
         Vec2 const mouseScreenPos = ui::GetMousePos();
         Vec2 const mouseImagePos = mouseScreenPos - ht.rect.p1;
-        Vec2 const mouseImageRelPos = mouseImagePos / dimensions(ht.rect);
+        Vec2 const mouseImageRelPos = mouseImagePos / dimensions_of(ht.rect);
         Vec2 const mouseImageNDCPos = TopleftRelPosToNDCPoint(mouseImageRelPos);
 
         ui::DrawTooltipBodyOnly(to_string(mouseImageNDCPos));
@@ -484,7 +484,7 @@ private:
     {
         Vec2 const mouseScreenPos = ui::GetMousePos();
         Vec2 const mouseImagePos = mouseScreenPos - ht.rect.p1;
-        Vec2 const mouseImageRelPos = mouseImagePos / dimensions(ht.rect);
+        Vec2 const mouseImageRelPos = mouseImagePos / dimensions_of(ht.rect);
         Vec2 const mouseImageNDCPos = TopleftRelPosToNDCPoint(mouseImageRelPos);
 
         ui::DrawTooltipBodyOnly(to_string(mouseImageNDCPos) + "*");
@@ -513,7 +513,7 @@ private:
     Mesh m_InputGrid = PlaneGeometry{2.0f, 2.0f, 50, 50};
     Mesh m_OutputGrid = m_InputGrid;
     Material m_Material{Shader{m_Loader.slurp("shaders/TPS2D/Textured.vert"), m_Loader.slurp("shaders/TPS2D/Textured.frag")}};
-    MeshBasicMaterial m_WireframeMaterial;
+    MeshBasicMaterial wireframe_material_;
 
     Camera m_Camera;
     std::optional<RenderTexture> m_InputRender;

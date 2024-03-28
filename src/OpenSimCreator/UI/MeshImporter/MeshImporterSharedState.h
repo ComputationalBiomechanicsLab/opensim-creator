@@ -386,19 +386,19 @@ namespace osc::mi
         {
             // setup rendering params
             SceneRendererParams p;
-            p.dimensions = dimensions(get3DSceneRect());
-            p.antiAliasingLevel = App::get().getCurrentAntiAliasingLevel();
-            p.drawRims = true;
-            p.drawFloor = false;
-            p.nearClippingPlane = m_3DSceneCamera.znear;
-            p.farClippingPlane = m_3DSceneCamera.zfar;
-            p.viewMatrix = m_3DSceneCamera.view_matrix();
-            p.projectionMatrix = m_3DSceneCamera.projection_matrix(aspect_ratio(p.dimensions));
-            p.viewPos = m_3DSceneCamera.getPos();
-            p.lightDirection = RecommendedLightDirection(m_3DSceneCamera);
-            p.lightColor = Color::white();
-            p.ambientStrength *= 1.5f;
-            p.backgroundColor = getColorSceneBackground();
+            p.dimensions = dimensions_of(get3DSceneRect());
+            p.antialiasing_level = App::get().getCurrentAntiAliasingLevel();
+            p.draw_rims = true;
+            p.draw_floor = false;
+            p.near_clipping_plane = m_3DSceneCamera.znear;
+            p.far_clipping_plane = m_3DSceneCamera.zfar;
+            p.view_matrix = m_3DSceneCamera.view_matrix();
+            p.projection_matrix = m_3DSceneCamera.projection_matrix(aspect_ratio(p.dimensions));
+            p.view_pos = m_3DSceneCamera.getPos();
+            p.light_direction = recommended_light_direction(m_3DSceneCamera);
+            p.light_color = Color::white();
+            p.ambient_strength *= 1.5f;
+            p.background_color = getColorSceneBackground();
 
             std::vector<SceneDecoration> decs;
             decs.reserve(drawables.size());
@@ -410,16 +410,16 @@ namespace osc::mi
                     dt.color,
                     std::string{},
                     dt.flags,
-                    dt.maybeMaterial,
+                    dt.maybe_material,
                     dt.maybePropertyBlock
                 });
             }
 
             // render
-            m_SceneRenderer.render(decs, p);
+            scene_renderer_.render(decs, p);
 
             // send texture to ImGui
-            ui::Image(m_SceneRenderer.updRenderTexture(), m_SceneRenderer.getDimensions());
+            ui::Image(scene_renderer_.upd_render_texture(), scene_renderer_.dimensions());
 
             // handle hittesting, etc.
             setIsRenderHovered(ui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup));
@@ -437,7 +437,7 @@ namespace osc::mi
 
         Vec2 get3DSceneDims() const
         {
-            return dimensions(m_3DSceneRect);
+            return dimensions_of(m_3DSceneRect);
         }
 
         PolarPerspectiveCamera const& getCamera() const
@@ -506,7 +506,7 @@ namespace osc::mi
 
         DrawableThing generateFloorDrawable() const
         {
-            Transform t = getFloorTransform();
+            Transform t = calc_floor_transform();
             t.scale *= 0.5f;
 
             auto props = MeshBasicMaterial::PropertyBlock{};
@@ -515,11 +515,11 @@ namespace osc::mi
             DrawableThing dt;
             dt.id = MIIDs::Empty();
             dt.groupId = MIIDs::Empty();
-            dt.mesh = App::singleton<SceneCache>(App::resource_loader())->get100x100GridMesh();
+            dt.mesh = App::singleton<SceneCache>(App::resource_loader())->grid_mesh();
             dt.transform = t;
             dt.color = m_Colors.gridLines;
             dt.flags = SceneDecorationFlags::None;
-            dt.maybeMaterial = m_FloorMaterial;
+            dt.maybe_material = m_FloorMaterial;
             dt.maybePropertyBlock = props;
             return dt;
         }
@@ -568,7 +568,7 @@ namespace osc::mi
                 return MeshImporterHover{};
             }
 
-            Vec2 const sceneDims = dimensions(sceneRect);
+            Vec2 const sceneDims = dimensions_of(sceneRect);
             Vec2 const relMousePos = mousePos - sceneRect.p1;
 
             Line const ray = getCamera().unprojectTopLeftPosToWorldRay(relMousePos, sceneDims);
@@ -612,9 +612,9 @@ namespace osc::mi
                     continue;
                 }
 
-                std::optional<RayCollision> const rc = getClosestWorldspaceRayCollision(
+                std::optional<RayCollision> const rc = get_closest_worldspace_ray_triangle_collision(
                     drawable.mesh,
-                    cache->getBVH(drawable.mesh),
+                    cache->get_bvh(drawable.mesh),
                     drawable.transform,
                     ray
                 );
@@ -1163,7 +1163,7 @@ namespace osc::mi
             m_VisibilityFlags.stationConnectionLines = newIsShowing;
         }
 
-        Transform getFloorTransform() const
+        Transform calc_floor_transform() const
         {
             return {
                 .scale = {m_SceneScaleFactor * 100.0f, m_SceneScaleFactor * 100.0f, 1.0f},
@@ -1262,7 +1262,7 @@ namespace osc::mi
                 DrawableThing& originCube = appendOut.emplace_back();
                 originCube.id = logicalID;
                 originCube.groupId = groupID;
-                originCube.mesh = App::singleton<SceneCache>(App::resource_loader())->getBrickMesh();
+                originCube.mesh = App::singleton<SceneCache>(App::resource_loader())->brick_mesh();
                 originCube.transform = scaled;
                 originCube.color = Color::white();
                 originCube.flags = SceneDecorationFlags::None;
@@ -1291,7 +1291,7 @@ namespace osc::mi
                 DrawableThing& legCube = appendOut.emplace_back();
                 legCube.id = logicalID;
                 legCube.groupId = groupID;
-                legCube.mesh = App::singleton<SceneCache>(App::resource_loader())->getConeMesh();
+                legCube.mesh = App::singleton<SceneCache>(App::resource_loader())->cone_mesh();
                 legCube.transform = t;
                 legCube.color = color;
                 legCube.flags = SceneDecorationFlags::None;
@@ -1456,7 +1456,7 @@ namespace osc::mi
         Rect m_3DSceneRect = {};
 
         // renderer that draws the scene
-        SceneRenderer m_SceneRenderer{
+        SceneRenderer scene_renderer_{
             *App::singleton<SceneCache>(App::resource_loader()),
         };
 

@@ -48,10 +48,10 @@ TEST(Texture2D, DefaultConstructorCreatesRGBATextureWithExpectedColorSpaceEtc)
     Texture2D t{Vec2i(1, 1)};
 
     ASSERT_EQ(t.getDimensions(), Vec2i(1, 1));
-    ASSERT_EQ(t.getTextureFormat(), TextureFormat::RGBA32);
+    ASSERT_EQ(t.texture_format(), TextureFormat::RGBA32);
     ASSERT_EQ(t.getColorSpace(), ColorSpace::sRGB);
-    ASSERT_EQ(t.getWrapMode(), TextureWrapMode::Repeat);
-    ASSERT_EQ(t.getFilterMode(), TextureFilterMode::Linear);
+    ASSERT_EQ(t.wrap_mode(), TextureWrapMode::Repeat);
+    ASSERT_EQ(t.filter_mode(), TextureFilterMode::Linear);
 }
 
 TEST(Texture2D, CanSetPixels32OnDefaultConstructedTexture)
@@ -92,8 +92,8 @@ TEST(Texture2D, SetPixelDataThrowsIfNumberOfPixelBytesDoesNotMatchDimensions)
 
     Texture2D t{dimensions};
 
-    ASSERT_EQ(t.getTextureFormat(), TextureFormat::RGBA32);  // sanity check
-    ASSERT_ANY_THROW({ t.setPixelData(ViewObjectRepresentations<uint8_t>(incorrectPixels)); });
+    ASSERT_EQ(t.texture_format(), TextureFormat::RGBA32);  // sanity check
+    ASSERT_ANY_THROW({ t.set_pixel_data(view_object_representations<uint8_t>(incorrectPixels)); });
 }
 
 TEST(Texture2D, SetPixelDataDoesNotThrowWhenGivenValidNumberOfPixelBytes)
@@ -103,9 +103,9 @@ TEST(Texture2D, SetPixelDataDoesNotThrowWhenGivenValidNumberOfPixelBytes)
 
     Texture2D t{dimensions};
 
-    ASSERT_EQ(t.getTextureFormat(), TextureFormat::RGBA32);  // sanity check
+    ASSERT_EQ(t.texture_format(), TextureFormat::RGBA32);  // sanity check
 
-    t.setPixelData(ViewObjectRepresentations<uint8_t>(pixels));
+    t.set_pixel_data(view_object_representations<uint8_t>(pixels));
 }
 
 TEST(Texture2D, SetPixelDataWorksFineFor8BitSingleChannelData)
@@ -114,7 +114,7 @@ TEST(Texture2D, SetPixelDataWorksFineFor8BitSingleChannelData)
     std::vector<uint8_t> const singleChannelPixels(static_cast<size_t>(dimensions.x * dimensions.y));
 
     Texture2D t{dimensions, TextureFormat::R8};
-    t.setPixelData(singleChannelPixels);  // shouldn't throw
+    t.set_pixel_data(singleChannelPixels);  // shouldn't throw
 }
 
 TEST(Texture2D, SetPixelDataWith8BitSingleChannelDataFollowedByGetPixelsBlanksOutGreenAndRed)
@@ -125,7 +125,7 @@ TEST(Texture2D, SetPixelDataWith8BitSingleChannelDataFollowedByGetPixelsBlanksOu
     std::vector<uint8_t> const singleChannelPixels(static_cast<size_t>(dimensions.x * dimensions.y), color);
 
     Texture2D t{dimensions, TextureFormat::R8};
-    t.setPixelData(singleChannelPixels);
+    t.set_pixel_data(singleChannelPixels);
 
     for (Color const& c : t.getPixels())
     {
@@ -140,7 +140,7 @@ TEST(Texture2D, SetPixelDataWith8BitSingleChannelDataFollowedByGetPixels32Blanks
     std::vector<uint8_t> const singleChannelPixels(static_cast<size_t>(dimensions.x * dimensions.y), color);
 
     Texture2D t{dimensions, TextureFormat::R8};
-    t.setPixelData(singleChannelPixels);
+    t.set_pixel_data(singleChannelPixels);
 
     for (Color32 const& c : t.getPixels32())
     {
@@ -156,9 +156,9 @@ TEST(Texture2D, SetPixelDataWith32BitFloatingPointValuesFollowedByGetPixelDataRe
     std::vector<Vec4> const rgbaFloatPixels(static_cast<size_t>(dimensions.x * dimensions.y), color);
 
     Texture2D t(dimensions, TextureFormat::RGBAFloat);
-    t.setPixelData(ViewObjectRepresentations<uint8_t>(rgbaFloatPixels));
+    t.set_pixel_data(view_object_representations<uint8_t>(rgbaFloatPixels));
 
-    ASSERT_TRUE(ContainersEqual(t.getPixelData(), ViewObjectRepresentations<uint8_t>(rgbaFloatPixels)));
+    ASSERT_TRUE(ContainersEqual(t.getPixelData(), view_object_representations<uint8_t>(rgbaFloatPixels)));
 }
 
 TEST(Texture2D, SetPixelDataWith32BitFloatingPointValuesFollowedByGetPixelsReturnsSameValues)
@@ -168,7 +168,7 @@ TEST(Texture2D, SetPixelDataWith32BitFloatingPointValuesFollowedByGetPixelsRetur
     std::vector<Color> const rgbaFloatPixels(static_cast<size_t>(dimensions.x * dimensions.y), hdrColor);
 
     Texture2D t(dimensions, TextureFormat::RGBAFloat);
-    t.setPixelData(ViewObjectRepresentations<uint8_t>(rgbaFloatPixels));
+    t.set_pixel_data(view_object_representations<uint8_t>(rgbaFloatPixels));
 
     ASSERT_EQ(t.getPixels(), rgbaFloatPixels);  // because the texture holds 32-bit floats
 }
@@ -278,7 +278,7 @@ TEST(Texture2D, GetWrapModeReturnsRepeatedByDefault)
 {
     Texture2D t = GenerateTexture();
 
-    ASSERT_EQ(t.getWrapMode(), TextureWrapMode::Repeat);
+    ASSERT_EQ(t.wrap_mode(), TextureWrapMode::Repeat);
 }
 
 TEST(Texture2D, SetWrapModeMakesSubsequentGetWrapModeReturnNewWrapMode)
@@ -287,11 +287,11 @@ TEST(Texture2D, SetWrapModeMakesSubsequentGetWrapModeReturnNewWrapMode)
 
     TextureWrapMode wm = TextureWrapMode::Mirror;
 
-    ASSERT_NE(t.getWrapMode(), wm);
+    ASSERT_NE(t.wrap_mode(), wm);
 
-    t.setWrapMode(wm);
+    t.set_wrap_mode(wm);
 
-    ASSERT_EQ(t.getWrapMode(), wm);
+    ASSERT_EQ(t.wrap_mode(), wm);
 }
 
 TEST(Texture2D, SetWrapModeCausesGetWrapModeUToAlsoReturnNewWrapMode)
@@ -300,12 +300,12 @@ TEST(Texture2D, SetWrapModeCausesGetWrapModeUToAlsoReturnNewWrapMode)
 
     TextureWrapMode wm = TextureWrapMode::Mirror;
 
-    ASSERT_NE(t.getWrapMode(), wm);
-    ASSERT_NE(t.getWrapModeU(), wm);
+    ASSERT_NE(t.wrap_mode(), wm);
+    ASSERT_NE(t.wrap_mode_u(), wm);
 
-    t.setWrapMode(wm);
+    t.set_wrap_mode(wm);
 
-    ASSERT_EQ(t.getWrapModeU(), wm);
+    ASSERT_EQ(t.wrap_mode_u(), wm);
 }
 
 TEST(Texture2D, SetWrapModeUCausesGetWrapModeUToReturnValue)
@@ -314,11 +314,11 @@ TEST(Texture2D, SetWrapModeUCausesGetWrapModeUToReturnValue)
 
     TextureWrapMode wm = TextureWrapMode::Mirror;
 
-    ASSERT_NE(t.getWrapModeU(), wm);
+    ASSERT_NE(t.wrap_mode_u(), wm);
 
-    t.setWrapModeU(wm);
+    t.set_wrap_mode_u(wm);
 
-    ASSERT_EQ(t.getWrapModeU(), wm);
+    ASSERT_EQ(t.wrap_mode_u(), wm);
 }
 
 TEST(Texture2D, SetWrapModeVCausesGetWrapModeVToReturnValue)
@@ -327,11 +327,11 @@ TEST(Texture2D, SetWrapModeVCausesGetWrapModeVToReturnValue)
 
     TextureWrapMode wm = TextureWrapMode::Mirror;
 
-    ASSERT_NE(t.getWrapModeV(), wm);
+    ASSERT_NE(t.wrap_mode_v(), wm);
 
-    t.setWrapModeV(wm);
+    t.set_wrap_mode_v(wm);
 
-    ASSERT_EQ(t.getWrapModeV(), wm);
+    ASSERT_EQ(t.wrap_mode_v(), wm);
 }
 
 TEST(Texture2D, SetWrapModeWCausesGetWrapModeWToReturnValue)
@@ -340,11 +340,11 @@ TEST(Texture2D, SetWrapModeWCausesGetWrapModeWToReturnValue)
 
     TextureWrapMode wm = TextureWrapMode::Mirror;
 
-    ASSERT_NE(t.getWrapModeW(), wm);
+    ASSERT_NE(t.wrap_mode_w(), wm);
 
-    t.setWrapModeW(wm);
+    t.set_wrap_mode_w(wm);
 
-    ASSERT_EQ(t.getWrapModeW(), wm);
+    ASSERT_EQ(t.wrap_mode_w(), wm);
 }
 
 TEST(Texture2D, SetFilterModeCausesGetFilterModeToReturnValue)
@@ -353,11 +353,11 @@ TEST(Texture2D, SetFilterModeCausesGetFilterModeToReturnValue)
 
     TextureFilterMode tfm = TextureFilterMode::Nearest;
 
-    ASSERT_NE(t.getFilterMode(), tfm);
+    ASSERT_NE(t.filter_mode(), tfm);
 
-    t.setFilterMode(tfm);
+    t.set_filter_mode(tfm);
 
-    ASSERT_EQ(t.getFilterMode(), tfm);
+    ASSERT_EQ(t.filter_mode(), tfm);
 }
 
 TEST(Texture2D, SetFilterModeMipmapReturnsMipmapOnGetFilterMode)
@@ -366,11 +366,11 @@ TEST(Texture2D, SetFilterModeMipmapReturnsMipmapOnGetFilterMode)
 
     TextureFilterMode tfm = TextureFilterMode::Mipmap;
 
-    ASSERT_NE(t.getFilterMode(), tfm);
+    ASSERT_NE(t.filter_mode(), tfm);
 
-    t.setFilterMode(tfm);
+    t.set_filter_mode(tfm);
 
-    ASSERT_EQ(t.getFilterMode(), tfm);
+    ASSERT_EQ(t.filter_mode(), tfm);
 }
 
 TEST(Texture2D, CanBeComparedForEquality)
@@ -414,9 +414,9 @@ TEST(Texture2D, ChangingWrapModeMakesCopyUnequal)
     TextureWrapMode wm = TextureWrapMode::Clamp;
 
     ASSERT_EQ(t1, t2);
-    ASSERT_NE(t2.getWrapMode(), wm);
+    ASSERT_NE(t2.wrap_mode(), wm);
 
-    t2.setWrapMode(wm);
+    t2.set_wrap_mode(wm);
 
     ASSERT_NE(t1, t2);
 }
@@ -428,9 +428,9 @@ TEST(Texture2D, ChangingWrapModeUMakesCopyUnequal)
     TextureWrapMode wm = TextureWrapMode::Clamp;
 
     ASSERT_EQ(t1, t2);
-    ASSERT_NE(t2.getWrapModeU(), wm);
+    ASSERT_NE(t2.wrap_mode_u(), wm);
 
-    t2.setWrapModeU(wm);
+    t2.set_wrap_mode_u(wm);
 
     ASSERT_NE(t1, t2);
 }
@@ -442,9 +442,9 @@ TEST(Texture2D, ChangingWrapModeVMakesCopyUnequal)
     TextureWrapMode wm = TextureWrapMode::Clamp;
 
     ASSERT_EQ(t1, t2);
-    ASSERT_NE(t2.getWrapModeV(), wm);
+    ASSERT_NE(t2.wrap_mode_v(), wm);
 
-    t2.setWrapModeV(wm);
+    t2.set_wrap_mode_v(wm);
 
     ASSERT_NE(t1, t2);
 }
@@ -456,9 +456,9 @@ TEST(Texture2D, ChangingWrapModeWMakesCopyUnequal)
     TextureWrapMode wm = TextureWrapMode::Clamp;
 
     ASSERT_EQ(t1, t2);
-    ASSERT_NE(t2.getWrapModeW(), wm);
+    ASSERT_NE(t2.wrap_mode_w(), wm);
 
-    t2.setWrapModeW(wm);
+    t2.set_wrap_mode_w(wm);
 
     ASSERT_NE(t1, t2);
 }
@@ -470,9 +470,9 @@ TEST(Texture2D, ChangingFilterModeMakesCopyUnequal)
     TextureFilterMode fm = TextureFilterMode::Nearest;
 
     ASSERT_EQ(t1, t2);
-    ASSERT_NE(t2.getFilterMode(), fm);
+    ASSERT_NE(t2.filter_mode(), fm);
 
-    t2.setFilterMode(fm);
+    t2.set_filter_mode(fm);
 
     ASSERT_NE(t1, t2);
 }

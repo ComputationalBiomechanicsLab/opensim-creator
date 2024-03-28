@@ -84,32 +84,32 @@ namespace
         return decompose_to_transform(body2ground * decoration2body).with_scale(GetScaleFactors(g));
     }
 
-    size_t HashOf(SimTK::Vec3 const& v)
+    size_t hash_of(SimTK::Vec3 const& v)
     {
-        return osc::HashOf(v[0], v[1], v[2]);
+        return osc::hash_of(v[0], v[1], v[2]);
     }
 
-    size_t HashOf(SimTK::PolygonalMesh const& mesh)
+    size_t hash_of(SimTK::PolygonalMesh const& mesh)
     {
         size_t hash = 0;
 
         // combine vertex data into hash
         int const numVerts = mesh.getNumVertices();
-        hash = osc::HashCombine(hash, osc::HashOf(numVerts));
+        hash = osc::HashCombine(hash, osc::hash_of(numVerts));
         for (int vert = 0; vert < numVerts; ++vert)
         {
-            hash = HashCombine(hash, HashOf(mesh.getVertexPosition(vert)));
+            hash = HashCombine(hash, hash_of(mesh.getVertexPosition(vert)));
         }
 
         // combine face indices into mesh
         int const numFaces = mesh.getNumFaces();
-        hash = osc::HashCombine(hash, osc::HashOf(numFaces));
+        hash = osc::HashCombine(hash, osc::hash_of(numFaces));
         for (int face = 0; face < numFaces; ++face)
         {
             int const numVertsInFace = mesh.getNumVerticesForFace(face);
             for (int faceVert = 0; faceVert < numVertsInFace; ++faceVert)
             {
-                hash = osc::HashCombine(hash, osc::HashOf(mesh.getFaceVertex(face, faceVert)));
+                hash = osc::HashCombine(hash, osc::hash_of(mesh.getFaceVertex(face, faceVert)));
             }
         }
 
@@ -158,11 +158,11 @@ namespace
 
             float const thickness = c_LineThickness * m_FixupScaleFactor;
 
-            Transform cylinderXform = YToYCylinderToSegmentTransform({p1, p2}, thickness);
+            Transform cylinderXform = cylinder_to_line_segment_transform({p1, p2}, thickness);
             cylinderXform.scale *= t.scale;
 
             m_Consumer({
-                .mesh = m_MeshCache.getCylinderMesh(),
+                .mesh = m_MeshCache.cylinder_mesh(),
                 .transform = cylinderXform,
                 .color = GetColor(d),
                 .flags = GetFlags(d),
@@ -175,7 +175,7 @@ namespace
             t.scale *= ToVec3(d.getHalfLengths());
 
             m_Consumer({
-                .mesh = m_MeshCache.getBrickMesh(),
+                .mesh = m_MeshCache.brick_mesh(),
                 .transform = t,
                 .color = GetColor(d),
                 .flags = GetFlags(d),
@@ -191,7 +191,7 @@ namespace
             t.scale *= Vec3{radius, halfHeight , radius};
 
             m_Consumer({
-                .mesh = m_MeshCache.getCylinderMesh(),
+                .mesh = m_MeshCache.cylinder_mesh(),
                 .transform = t,
                 .color = GetColor(d),
                 .flags = GetFlags(d),
@@ -206,7 +206,7 @@ namespace
             t.scale *= Vec3{radius, radius, 1.0f};
 
             m_Consumer({
-                .mesh = m_MeshCache.getCircleMesh(),
+                .mesh = m_MeshCache.circle_mesh(),
                 .transform = t,
                 .color = GetColor(d),
                 .flags = GetFlags(d),
@@ -219,7 +219,7 @@ namespace
             t.scale *= m_FixupScaleFactor * static_cast<float>(d.getRadius());
 
             m_Consumer({
-                .mesh = m_MeshCache.getSphereMesh(),
+                .mesh = m_MeshCache.sphere_mesh(),
                 .transform = t,
                 .color = GetColor(d),
                 .flags = GetFlags(d),
@@ -232,7 +232,7 @@ namespace
             t.scale *= ToVec3(d.getRadii());
 
             m_Consumer({
-                .mesh = m_MeshCache.getSphereMesh(),
+                .mesh = m_MeshCache.sphere_mesh(),
                 .transform = t,
                 .color = GetColor(d),
                 .flags = GetFlags(d),
@@ -249,7 +249,7 @@ namespace
                 Transform const sphereXform = t.with_scale(radius);
 
                 m_Consumer({
-                    .mesh = m_MeshCache.getSphereMesh(),
+                    .mesh = m_MeshCache.sphere_mesh(),
                     .transform = sphereXform,
                     .color = Color::white(),
                     .flags = GetFlags(d),
@@ -271,13 +271,13 @@ namespace
                     t.position,
                     t.position + (legLen * axisLengths[axis] * transform_direction(t, direction))
                 };
-                Transform const legXform = YToYCylinderToSegmentTransform(line, legThickness);
+                Transform const legXform = cylinder_to_line_segment_transform(line, legThickness);
 
                 Color color = {0.0f, 0.0f, 0.0f, 1.0f};
                 color[axis] = 1.0f;
 
                 m_Consumer({
-                    .mesh = m_MeshCache.getCylinderMesh(),
+                    .mesh = m_MeshCache.cylinder_mesh(),
                     .transform = legXform,
                     .color = color,
                     .flags = flags,
@@ -304,11 +304,11 @@ namespace
             //
             // (and, yes, hash isn't equality, but it's closer than relying on memory
             //  addresses)
-            std::string const id = std::to_string(HashOf(d.getMesh()));
+            std::string const id = std::to_string(hash_of(d.getMesh()));
             auto const meshLoaderFunc = [&d]() { return ToOscMesh(d.getMesh()); };
 
             m_Consumer({
-                .mesh = m_MeshCache.get(id, meshLoaderFunc),
+                .mesh = m_MeshCache.get_mesh(id, meshLoaderFunc),
                 .transform = ToOscTransform(d),
                 .color = GetColor(d),
                 .flags = GetFlags(d),
@@ -321,7 +321,7 @@ namespace
             auto const meshLoader = [&d](){ return ToOscMesh(d.getMesh()); };
 
             m_Consumer({
-                .mesh = m_MeshCache.get(path, meshLoader),
+                .mesh = m_MeshCache.get_mesh(path, meshLoader),
                 .transform = ToOscTransform(d),
                 .color = GetColor(d),
                 .flags = GetFlags(d),
@@ -353,16 +353,16 @@ namespace
 
             // emit neck cylinder
             m_Consumer({
-                .mesh = m_MeshCache.getCylinderMesh(),
-                .transform = YToYCylinderToSegmentTransform({neckStart, neckEnd}, neckThickness),
+                .mesh = m_MeshCache.cylinder_mesh(),
+                .transform = cylinder_to_line_segment_transform({neckStart, neckEnd}, neckThickness),
                 .color = color,
                 .flags = flags,
             });
 
             // emit head cone
             m_Consumer({
-                .mesh = m_MeshCache.getConeMesh(),
-                .transform = YToYCylinderToSegmentTransform({headStart, headEnd}, headThickness),
+                .mesh = m_MeshCache.cone_mesh(),
+                .transform = cylinder_to_line_segment_transform({headStart, headEnd}, headThickness),
                 .color = color,
                 .flags = flags,
             });
@@ -370,11 +370,11 @@ namespace
 
         void implementTorusGeometry(SimTK::DecorativeTorus const& d) final
         {
-            auto const torusCenterToTubeCenterRadius = static_cast<float>(d.getTorusRadius());
-            auto const tubeRadius = static_cast<float>(d.getTubeRadius());
+            auto const tube_center_radius = static_cast<float>(d.getTorusRadius());
+            auto const tube_radius = static_cast<float>(d.getTubeRadius());
 
             m_Consumer({
-                .mesh = m_MeshCache.getTorusMesh(torusCenterToTubeCenterRadius, tubeRadius),
+                .mesh = m_MeshCache.torus_mesh(tube_center_radius, tube_radius),
                 .transform = ToOscTransform(d),
                 .color = GetColor(d),
                 .flags = GetFlags(d),
@@ -394,11 +394,11 @@ namespace
             auto const radius = static_cast<float>(d.getBaseRadius());
             auto const height = static_cast<float>(d.getHeight());
 
-            Transform coneXform = YToYCylinderToSegmentTransform({pos, pos + height*direction}, radius);
+            Transform coneXform = cylinder_to_line_segment_transform({pos, pos + height*direction}, radius);
             coneXform.scale *= t.scale;
 
             m_Consumer({
-                .mesh = m_MeshCache.getConeMesh(),
+                .mesh = m_MeshCache.cone_mesh(),
                 .transform = coneXform,
                 .color = GetColor(d),
                 .flags = GetFlags(d),

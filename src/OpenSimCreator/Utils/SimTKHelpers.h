@@ -28,7 +28,7 @@ namespace osc
 
     // converters: from SimTK types to osc
     Vec3 ToVec3(SimTK::Vec3 const&);
-    Vec4 toVec4(SimTK::Vec3 const&, float w = 1.0f);
+    Vec4 to_vec4(SimTK::Vec3 const&, float w = 1.0f);
     Mat4 ToMat4x4(SimTK::Transform const&);
     Mat3 ToMat3(SimTK::Mat33 const&);
     Mat4 mat4_cast(SimTK::Rotation const&);

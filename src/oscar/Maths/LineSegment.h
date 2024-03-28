@@ -25,6 +25,6 @@ template<>
 struct std::hash<osc::LineSegment> {
     size_t operator()(osc::LineSegment const& ls) const
     {
-        return osc::HashOf(ls.start, ls.end);
+        return osc::hash_of(ls.start, ls.end);
     }
 };

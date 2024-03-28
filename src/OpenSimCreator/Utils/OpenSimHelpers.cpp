@@ -1157,7 +1157,7 @@ bool osc::TrySetAppearancePropertyIsVisibleTo(OpenSim::Component& c, bool v)
     }
 }
 
-Color osc::toColor(OpenSim::Appearance const& appearance)
+Color osc::to_color(OpenSim::Appearance const& appearance)
 {
     SimTK::Vec3 const& rgb = appearance.get_color();
     double const a = appearance.get_opacity();

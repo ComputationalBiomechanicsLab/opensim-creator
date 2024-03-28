@@ -106,7 +106,7 @@ namespace osc
     Line TransformLine(Line const&, Mat4 const&);
 
     // returns a line that has been transformed by the inverse of the supplied transform
-    Line InverseTransformLine(Line const&, Transform const&);
+    Line inverse_transform_line(Line const&, Transform const&);
 
 
     // ----- `Disc` helpers -----
@@ -124,7 +124,7 @@ namespace osc
     Transform SegmentToSegmentTransform(LineSegment const&, LineSegment const&);
 
     // returns a transform that maps a Y-to-Y (bottom-to-top) cylinder to a segment with the given radius
-    Transform YToYCylinderToSegmentTransform(LineSegment const&, float radius);
+    Transform cylinder_to_line_segment_transform(LineSegment const&, float radius);
 
     // returns a transform that maps a Y-to-Y (bottom-to-top) cone to a segment with the given radius
     Transform YToYConeToSegmentTransform(LineSegment const&, float radius);

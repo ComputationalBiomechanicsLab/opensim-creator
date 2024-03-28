@@ -83,7 +83,7 @@ namespace
             );
 
             // compute slicing position along the longest dimension
-            auto const longestDimIdx = max_element_index(dimensions(aabb));
+            auto const longestDimIdx = max_element_index(dimensions_of(aabb));
             float const midpointX2 = aabb.min[longestDimIdx] + aabb.max[longestDimIdx];
 
             // returns true if a given primitive is below the midpoint along the dim
@@ -693,7 +693,7 @@ Vec3 osc::PolarPerspectiveCamera::getPos() const
 
 Vec2 osc::PolarPerspectiveCamera::projectOntoScreenRect(Vec3 const& worldspaceLoc, Rect const& screenRect) const
 {
-    Vec2 dims = dimensions(screenRect);
+    Vec2 dims = dimensions_of(screenRect);
     Mat4 MV = projection_matrix(dims.x/dims.y) * view_matrix();
 
     Vec4 ndc = MV * Vec4{worldspaceLoc, 1.0f};
@@ -736,7 +736,7 @@ PolarPerspectiveCamera osc::CreateCameraFocusedOn(AABB const& aabb)
     return rv;
 }
 
-Vec3 osc::RecommendedLightDirection(PolarPerspectiveCamera const& c)
+Vec3 osc::recommended_light_direction(PolarPerspectiveCamera const& c)
 {
     // theta should track with the camera, so that the scene is always
     // illuminated from the viewer's perspective (#275)
@@ -1163,7 +1163,7 @@ Rect osc::expand(Rect const& rect, Vec2 absAmount)
     return rv;
 }
 
-Rect osc::Clamp(Rect const& r, Vec2 const& min, Vec2 const& max)
+Rect osc::clamp(Rect const& r, Vec2 const& min, Vec2 const& max)
 {
     return
     {
@@ -1174,7 +1174,7 @@ Rect osc::Clamp(Rect const& r, Vec2 const& min, Vec2 const& max)
 
 Rect osc::NdcRectToScreenspaceViewportRect(Rect const& ndcRect, Rect const& viewport)
 {
-    Vec2 const viewportDims = dimensions(viewport);
+    Vec2 const viewportDims = dimensions_of(viewport);
 
     // remap [-1, 1] into [0, viewportDims]
     Rect rv
@@ -1230,7 +1230,7 @@ Line osc::TransformLine(Line const& l, Mat4 const& m)
     return rv;
 }
 
-Line osc::InverseTransformLine(Line const& l, Transform const& t)
+Line osc::inverse_transform_line(Line const& l, Transform const& t)
 {
     return Line
     {
@@ -1278,7 +1278,7 @@ Mat4 osc::DiscToDiscMat4(Disc const& a, Disc const& b)
 
 std::array<Vec3, 8> osc::corner_vertices(AABB const& aabb)
 {
-    Vec3 d = dimensions(aabb);
+    Vec3 d = dimensions_of(aabb);
 
     std::array<Vec3, 8> rv{};
     rv[0] = aabb.min;
@@ -1420,7 +1420,7 @@ Transform osc::SegmentToSegmentTransform(LineSegment const& a, LineSegment const
     return t;
 }
 
-Transform osc::YToYCylinderToSegmentTransform(LineSegment const& s, float radius)
+Transform osc::cylinder_to_line_segment_transform(LineSegment const& s, float radius)
 {
     LineSegment cylinderLine{{0.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}};
     Transform t = SegmentToSegmentTransform(cylinderLine, s);
@@ -1431,7 +1431,7 @@ Transform osc::YToYCylinderToSegmentTransform(LineSegment const& s, float radius
 
 Transform osc::YToYConeToSegmentTransform(LineSegment const& s, float radius)
 {
-    return YToYCylinderToSegmentTransform(s, radius);
+    return cylinder_to_line_segment_transform(s, radius);
 }
 
 Vec3 osc::transform_point(Mat4 const& m, Vec3 const& p)
@@ -1458,7 +1458,7 @@ void osc::ApplyWorldspaceRotation(
 bool osc::is_intersecting(Rect const& r, Vec2 const& p)
 {
     Vec2 relPos = p - r.p1;
-    Vec2 dims = dimensions(r);
+    Vec2 dims = dimensions_of(r);
     return (0.0f <= relPos.x && relPos.x <= dims.x) && (0.0f <= relPos.y && relPos.y <= dims.y);
 }
 

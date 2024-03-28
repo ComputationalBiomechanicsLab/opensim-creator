@@ -24,7 +24,7 @@ private:
 
         Mat4 view = m_SceneCamera.view_matrix();
         Rect viewportRect = ui::GetMainViewportWorkspaceScreenRect();
-        Vec2 dims = dimensions(viewportRect);
+        Vec2 dims = dimensions_of(viewportRect);
         Mat4 projection = m_SceneCamera.projection_matrix(aspect_ratio(dims));
 
         ImGuizmo::SetRect(viewportRect.p1.x, viewportRect.p1.y, dims.x, dims.y);

@@ -44,11 +44,11 @@ namespace
     MouseCapturingCamera CreateCamera()
     {
         MouseCapturingCamera rv;
-        rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setVerticalFOV(45_deg);
-        rv.setNearClippingPlane(0.1f);
-        rv.setFarClippingPlane(100.0f);
-        rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
+        rv.set_position({0.0f, 0.0f, 3.0f});
+        rv.set_vertical_fov(45_deg);
+        rv.set_near_clipping_plane(0.1f);
+        rv.set_far_clipping_plane(100.0f);
+        rv.set_background_color({0.1f, 0.1f, 0.1f, 1.0f});
         return rv;
     }
 
@@ -144,10 +144,10 @@ private:
         // clear screen and ensure camera has correct pixel rect
 
         // setup per-frame material vals
-        m_MultipleLightsMaterial.setVec3("uViewPos", m_Camera.getPosition());
+        m_MultipleLightsMaterial.setVec3("uViewPos", m_Camera.position());
         m_MultipleLightsMaterial.setFloat("uMaterialShininess", m_MaterialShininess);
-        m_MultipleLightsMaterial.setVec3("uSpotLightPosition", m_Camera.getPosition());
-        m_MultipleLightsMaterial.setVec3("uSpotLightDirection", m_Camera.getDirection());
+        m_MultipleLightsMaterial.setVec3("uSpotLightPosition", m_Camera.position());
+        m_MultipleLightsMaterial.setVec3("uSpotLightDirection", m_Camera.direction());
 
         // render containers
         UnitVec3 const axis{1.0f, 0.3f, 0.5f};
@@ -169,8 +169,8 @@ private:
         }
 
         // render to output (window)
-        m_Camera.setPixelRect(ui::GetMainViewportWorkspaceScreenRect());
-        m_Camera.renderToScreen();
+        m_Camera.set_pixel_rect(ui::GetMainViewportWorkspaceScreenRect());
+        m_Camera.render_to_screen();
 
         // render auxiliary UI
         ui::Begin("controls");

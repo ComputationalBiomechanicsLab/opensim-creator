@@ -125,7 +125,7 @@ OutputValueExtractor osc::IntegratorOutputExtractor::implGetOutputValueExtractor
 
 std::size_t osc::IntegratorOutputExtractor::implGetHash() const
 {
-    return HashOf(m_AuxiliaryDataID, m_Name, m_Description, m_Extractor);
+    return hash_of(m_AuxiliaryDataID, m_Name, m_Description, m_Extractor);
 }
 
 bool osc::IntegratorOutputExtractor::implEquals(IOutputExtractor const& other) const

@@ -30,66 +30,66 @@ namespace osc { struct Transform; }
 
 namespace osc
 {
-    void drawBVH(
+    void draw_bvh(
         SceneCache&,
         const BVH&,
         const std::function<void(SceneDecoration&&)>&
     );
 
-    void drawAABB(
+    void draw_aabb(
         SceneCache&,
         const AABB&,
         const std::function<void(SceneDecoration&&)>&
     );
 
-    void drawAABBs(
+    void draw_aabbs(
         SceneCache&,
         std::span<const AABB>,
         const std::function<void(SceneDecoration&&)>&
     );
 
-    void drawBVHLeafNodes(
+    void draw_bvh_leaf_nodes(
         SceneCache&,
         const BVH&,
         const std::function<void(SceneDecoration&&)>&
     );
 
-    void drawXZFloorLines(
+    void draw_xz_floor_lines(
         SceneCache&,
         const std::function<void(SceneDecoration&&)>&,
         float scale = 1.0f
     );
 
-    void drawXZGrid(
+    void draw_xz_grid(
         SceneCache&,
         const std::function<void(SceneDecoration&&)>&
     );
 
-    void drawXYGrid(
+    void draw_xy_grid(
         SceneCache&,
         const std::function<void(SceneDecoration&&)>&
     );
 
-    void drawYZGrid(
+    void draw_yz_grid(
         SceneCache&,
         const std::function<void(SceneDecoration&&)>&
     );
 
     struct ArrowProperties final {
-        Vec3 worldspaceStart{};
-        Vec3 worldspaceEnd{};
-        float tipLength{};
+        Vec3 worldspace_start{};
+        Vec3 worldspace_end{};
+        float tip_length{};
         float neckThickness{};
         float headThickness{};
         Color color = Color::black();
     };
-    void drawArrow(
+    void draw_arrow(
         SceneCache&,
         const ArrowProperties&,
         const std::function<void(SceneDecoration&&)>&
     );
 
-    void drawLineSegment(
+    void draw_line_segment(
         SceneCache&,
         const LineSegment&,
         const Color&,
@@ -97,51 +97,51 @@ namespace osc
         const std::function<void(SceneDecoration&&)>&
     );
 
-    AABB getWorldspaceAABB(const SceneDecoration&);
+    AABB get_worldspace_aabb(const SceneDecoration&);
 
     // updates the given BVH with the given component decorations
-    void updateSceneBVH(
+    void update_scene_bvh(
         std::span<const SceneDecoration>,
         BVH&
     );
 
     // returns all collisions along a ray
-    std::vector<SceneCollision> getAllSceneCollisions(
-        const BVH& sceneBVH,
+    std::vector<SceneCollision> get_all_ray_collisions_with_scene(
+        const BVH& scene_bvh,
         SceneCache&,
         std::span<const SceneDecoration>,
-        const Line& worldspaceRay
+        const Line& worldspace_ray
     );
 
     // returns closest ray-triangle collision in worldspace
-    std::optional<RayCollision> getClosestWorldspaceRayCollision(
+    std::optional<RayCollision> get_closest_worldspace_ray_triangle_collision(
         const Mesh&,
-        const BVH&,
+        const BVH& triangle_bvh,
         const Transform&,
-        const Line& worldspaceRay
+        const Line& worldspace_ray
     );
 
     // returns closest ray-triangle collision in worldspace for a given mouse position
     // within the given render rectangle
-    std::optional<RayCollision> getClosestWorldspaceRayCollision(
+    std::optional<RayCollision> get_closest_worldspace_ray_triangle_collision(
         const PolarPerspectiveCamera&,
         const Mesh&,
-        const BVH&,
-        const Rect& renderScreenRect,
-        Vec2 mouseScreenPos
+        const BVH& triangle_bvh,
+        const Rect& screen_render_rect,
+        Vec2 screen_mouse_pos
     );
 
     // returns scene rendering parameters for an generic panel
-    SceneRendererParams calcStandardDarkSceneRenderParams(
+    SceneRendererParams calc_standard_dark_scene_render_params(
         const PolarPerspectiveCamera&,
         AntiAliasingLevel,
-        Vec2 renderDims
+        Vec2 render_dims
     );
 
     // returns a triangle BVH for the given triangle mesh, or an empty BVH if the mesh is non-triangular or empty
-    BVH createTriangleBVHFromMesh(const Mesh&);
+    BVH create_triangle_bvh(const Mesh&);
 
-    // returns a `Frustum` that represents the clipping planes of `camera` when rendering to an output that has
-    // an aspect ratio of `aspectRatio`
-    FrustumPlanes calcCameraFrustumPlanes(const Camera& camera, float aspectRatio);
+    // returns `FrustumPlanes` that represent the clipping planes of `camera` when rendering to an
+    // output that has an aspect ratio of `aspect_ratio`
+    FrustumPlanes calc_frustum_planes(const Camera& camera, float aspect_ratio);
 }

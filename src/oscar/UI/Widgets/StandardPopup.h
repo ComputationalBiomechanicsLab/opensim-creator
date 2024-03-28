@@ -40,7 +40,7 @@ namespace osc
         void setModal(bool);
         void setRect(Rect const&);
         void setDimensions(Vec2);
-        void setPosition(std::optional<Vec2>);
+        void set_position(std::optional<Vec2>);
 
     private:
         // this standard implementation supplies these

@@ -582,7 +582,7 @@ namespace
         struct KeyHasher final {
             size_t operator()(Key const& k) const
             {
-                return HashOf(std::get<0>(k), std::get<1>(k), std::get<2>(k));
+                return hash_of(std::get<0>(k), std::get<1>(k), std::get<2>(k));
             }
         };
 
