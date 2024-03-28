@@ -39,10 +39,11 @@ namespace osc
         // HACK: this is needed by ImGui, because it uses OpenGL "in the raw"
         void* upd_raw_opengl_context_handle_HACK();
 
-        // returns a future that asynchronously yields a complete screenshot of the next frame
+        // returns a future that asynchronously yields a complete screenshot of the next complete frame
         std::future<Texture2D> request_screenshot();
 
-        // execure the "swap chain" operation, which makes the current backbuffer the frontbuffer,
+        // execute the "swap chain" operation, which makes the current backbuffer the frontbuffer and
+        // the frontbuffer the backbuffer
         void swap_buffers(SDL_Window&);
 
         // human-readable identifier strings: useful for printouts/debugging

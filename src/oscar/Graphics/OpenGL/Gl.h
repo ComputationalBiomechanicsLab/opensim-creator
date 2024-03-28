@@ -32,7 +32,7 @@ namespace osc::gl
         OpenGlException(std::string message) : message_{std::move(message)}
         {}
 
-        const char* what() const final { return message_.c_str(); }
+        const char* what() const noexcept final { return message_.c_str(); }
 
     private:
         std::string message_;
