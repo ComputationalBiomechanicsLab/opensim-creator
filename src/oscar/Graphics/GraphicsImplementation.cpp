@@ -149,7 +149,7 @@ namespace
         }
     )";
 
-    CStringView openGLStringToCStringView(const GLubyte* stringPtr)
+    CStringView opengl_string_to_cstringview(const GLubyte* stringPtr)
     {
         using value_type = CStringView::value_type;
 
@@ -165,12 +165,12 @@ namespace
 
     CStringView glGetCStringView(GLenum name)
     {
-        return openGLStringToCStringView(glGetString(name));
+        return opengl_string_to_cstringview(glGetString(name));
     }
 
     CStringView GLGetCStringViewi(GLenum name, GLuint index)
     {
-        return openGLStringToCStringView(glGetStringi(name, index));
+        return opengl_string_to_cstringview(glGetStringi(name, index));
     }
 
     bool isAlignedAtLeast(const void* ptr, GLint requiredAlignment)
