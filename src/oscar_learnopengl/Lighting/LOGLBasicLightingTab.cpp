@@ -15,11 +15,11 @@ namespace
     MouseCapturingCamera CreateCameraThatMatchesLearnOpenGL()
     {
         MouseCapturingCamera rv;
-        rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setVerticalFOV(45_deg);
-        rv.setNearClippingPlane(0.1f);
-        rv.setFarClippingPlane(100.0f);
-        rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
+        rv.set_position({0.0f, 0.0f, 3.0f});
+        rv.set_vertical_fov(45_deg);
+        rv.set_near_clipping_plane(0.1f);
+        rv.set_far_clipping_plane(100.0f);
+        rv.set_background_color({0.1f, 0.1f, 0.1f, 1.0f});
         return rv;
     }
 }
@@ -52,13 +52,13 @@ private:
         m_Camera.onDraw();
 
         // clear screen and ensure camera has correct pixel rect
-        m_Camera.setPixelRect(ui::GetMainViewportWorkspaceScreenRect());
+        m_Camera.set_pixel_rect(ui::GetMainViewportWorkspaceScreenRect());
 
         // draw cube
         m_LightingMaterial.setColor("uObjectColor", m_ObjectColor);
         m_LightingMaterial.setColor("uLightColor", m_LightColor);
         m_LightingMaterial.setVec3("uLightPos", m_LightTransform.position);
-        m_LightingMaterial.setVec3("uViewPos", m_Camera.getPosition());
+        m_LightingMaterial.setVec3("uViewPos", m_Camera.position());
         m_LightingMaterial.setFloat("uAmbientStrength", m_AmbientStrength);
         m_LightingMaterial.setFloat("uDiffuseStrength", m_DiffuseStrength);
         m_LightingMaterial.setFloat("uSpecularStrength", m_SpecularStrength);
@@ -69,7 +69,7 @@ private:
         graphics::draw(m_CubeMesh, m_LightTransform, m_LightCubeMaterial, m_Camera);
 
         // render to output (window)
-        m_Camera.renderToScreen();
+        m_Camera.render_to_screen();
 
         // render auxiliary UI
         ui::Begin("controls");

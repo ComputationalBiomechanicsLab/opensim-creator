@@ -27,31 +27,31 @@ namespace osc
     public:
         Camera();
 
-        // reset to default parameters
+        // resets the camera to default parameters
         void reset();
 
-        Color getBackgroundColor() const;
-        void setBackgroundColor(const Color&);
+        Color background_color() const;
+        void set_background_color(const Color&);
 
-        CameraProjection getCameraProjection() const;
-        void setCameraProjection(CameraProjection);
+        CameraProjection camera_projection() const;
+        void set_camera_projection(CameraProjection);
 
         // only used if CameraProjection == Orthographic
-        float getOrthographicSize() const;
-        void setOrthographicSize(float);
+        float orthographic_size() const;
+        void set_orthographic_size(float);
 
         // only used if CameraProjection == Perspective
-        Radians getVerticalFOV() const;
-        void setVerticalFOV(Radians);
+        Radians vertical_fov() const;
+        void set_vertical_fov(Radians);
 
-        float getNearClippingPlane() const;
-        void setNearClippingPlane(float);
+        float near_clipping_plane() const;
+        void set_near_clipping_plane(float);
 
-        float getFarClippingPlane() const;
-        void setFarClippingPlane(float);
+        float get_far_clipping_plane() const;
+        void set_far_clipping_plane(float);
 
-        CameraClearFlags getClearFlags() const;
-        void setClearFlags(CameraClearFlags);
+        CameraClearFlags clear_flags() const;
+        void set_clear_flags(CameraClearFlags);
 
         // where on the screen/texture that the camera should render the viewport to
         //
@@ -59,8 +59,8 @@ namespace osc
         //
         // if this is not specified, the camera will render to the full extents of the given
         // render output (entire screen, or entire render texture)
-        std::optional<Rect> getPixelRect() const;
-        void setPixelRect(std::optional<Rect>);
+        std::optional<Rect> pixel_rect() const;
+        void set_pixel_rect(std::optional<Rect>);
 
         // scissor testing
         //
@@ -68,58 +68,58 @@ namespace osc
         // these bounds. It's useful when (e.g.) running an expensive fragment shader (e.g.
         // image processing kernels) where you know that only a certain subspace is actually
         // interesting (e.g. rim-highlighting only selected elements)
-        std::optional<Rect> getScissorRect() const;  // std::nullopt if not scissor testing
-        void setScissorRect(std::optional<Rect>);
+        std::optional<Rect> scissor_rect() const;  // std::nullopt if not scissor testing
+        void set_scissor_rect(std::optional<Rect>);
 
-        Vec3 getPosition() const;
-        void setPosition(const Vec3&);
+        Vec3 position() const;
+        void set_position(const Vec3&);
 
         // get rotation (from the assumed "default" rotation of the camera pointing towards -Z, Y is up)
-        Quat getRotation() const;
-        void setRotation(const Quat&);
+        Quat rotation() const;
+        void set_rotation(const Quat&);
 
         // careful: the camera doesn't *store* a direction vector - it assumes the direction is along -Z,
         // and that +Y is "upwards" and figures out how to rotate from that to your desired direction
         //
         // if you want to "roll" the camera (i.e. Y isn't upwards) then use `setRotation`
-        Vec3 getDirection() const;
-        void setDirection(const Vec3&);
+        Vec3 direction() const;
+        void set_direction(const Vec3&);
 
-        Vec3 getUpwardsDirection() const;
+        Vec3 upwards_direction() const;
 
         // get view matrix
         //
         // the caller can manually override the view matrix, which can be handy in certain
         // rendering scenarios
-        Mat4 getViewMatrix() const;
-        std::optional<Mat4> getViewMatrixOverride() const;
-        void setViewMatrixOverride(std::optional<Mat4>);
+        Mat4 view_matrix() const;
+        std::optional<Mat4> view_matrix_override() const;
+        void set_view_matrix_override(std::optional<Mat4>);
 
         // projection matrix
         //
         // the caller can manually override the projection matrix, which can be handy in certain
         // rendering scenarios.
-        Mat4 getProjectionMatrix(float aspectRatio) const;
-        std::optional<Mat4> getProjectionMatrixOverride() const;
-        void setProjectionMatrixOverride(std::optional<Mat4>);
+        Mat4 projection_matrix(float aspectRatio) const;
+        std::optional<Mat4> projection_matrix_override() const;
+        void set_projection_matrix_override(std::optional<Mat4>);
 
-        // returns the equivalent of getProjectionMatrix(aspectRatio) * getViewMatrix()
-        Mat4 getViewProjectionMatrix(float aspectRatio) const;
+        // returns the equivalent of projection_matrix(aspectRatio) * view_matrix()
+        Mat4 view_projection_matrix(float aspectRatio) const;
 
-        // returns the equivalent of inverse(getViewProjectionMatrix(aspectRatio))
-        Mat4 getInverseViewProjectionMatrix(float aspectRatio) const;
+        // returns the equivalent of inverse(view_projection_matrix(aspectRatio))
+        Mat4 inverse_view_projection_matrix(float aspectRatio) const;
 
         // flushes any rendering commands that were queued against this camera
         //
         // after this call completes, the output texture, or screen, should contain
         // the rendered geometry
-        void renderToScreen();
-        void renderTo(RenderTexture&);
-        void renderTo(RenderTarget&);
+        void render_to_screen();
+        void render_to(RenderTexture&);
+        void render_to(RenderTarget&);
 
         friend void swap(Camera& a, Camera& b) noexcept
         {
-            swap(a.m_Impl, b.m_Impl);
+            swap(a.impl_, b.impl_);
         }
 
     private:
@@ -128,7 +128,7 @@ namespace osc
         friend class GraphicsBackend;
 
         class Impl;
-        CopyOnUpdPtr<Impl> m_Impl;
+        CopyOnUpdPtr<Impl> impl_;
     };
 
     bool operator==(const Camera&, const Camera&);

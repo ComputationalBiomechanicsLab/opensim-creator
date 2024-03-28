@@ -14,30 +14,30 @@ namespace osc
     public:
         Cubemap(int32_t width, TextureFormat format);
 
-        int32_t getWidth() const;
-        TextureFormat getTextureFormat() const;
+        int32_t width() const;
+        TextureFormat texture_format() const;
 
-        TextureWrapMode getWrapMode() const;  // same as getWrapModeU
-        void setWrapMode(TextureWrapMode);  // sets all axes
-        TextureWrapMode getWrapModeU() const;
-        void setWrapModeU(TextureWrapMode);
-        TextureWrapMode getWrapModeV() const;
-        void setWrapModeV(TextureWrapMode);
-        TextureWrapMode getWrapModeW() const;
-        void setWrapModeW(TextureWrapMode);
+        TextureWrapMode wrap_mode() const;  // same as wrap_mode_u
+        void set_wrap_mode(TextureWrapMode);  // sets all axes
+        TextureWrapMode wrap_mode_u() const;
+        void set_wrap_mode_u(TextureWrapMode);
+        TextureWrapMode wrap_mode_v() const;
+        void set_wrap_mode_v(TextureWrapMode);
+        TextureWrapMode wrap_mode_w() const;
+        void set_wrap_mode_w(TextureWrapMode);
 
-        TextureFilterMode getFilterMode() const;
-        void setFilterMode(TextureFilterMode);
+        TextureFilterMode filter_mode() const;
+        void set_filter_mode(TextureFilterMode);
 
         // `data` must match the channel layout, bytes per channel, and
         // width*height of the cubemap, or an exception will be thrown
-        void setPixelData(CubemapFace, std::span<const uint8_t>);
+        void set_pixel_data(CubemapFace, std::span<const uint8_t>);
 
         friend bool operator==(const Cubemap&, const Cubemap&) = default;
     private:
         friend class GraphicsBackend;
 
         class Impl;
-        CopyOnUpdPtr<Impl> m_Impl;
+        CopyOnUpdPtr<Impl> impl_;
     };
 }

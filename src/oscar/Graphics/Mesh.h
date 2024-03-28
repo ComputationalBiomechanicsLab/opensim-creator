@@ -156,7 +156,7 @@ namespace osc
         requires BitCastable<typename Range::value_type>
         void setVertexBufferData(Range const& range, MeshUpdateFlags flags = MeshUpdateFlags::Default)
         {
-            std::span<uint8_t const> bytes = ViewObjectRepresentations<uint8_t>(range);
+            std::span<uint8_t const> bytes = view_object_representations<uint8_t>(range);
             setVertexBufferData(bytes, flags);
         }
 

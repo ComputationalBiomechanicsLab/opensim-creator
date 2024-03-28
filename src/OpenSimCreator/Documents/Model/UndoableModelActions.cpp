@@ -651,7 +651,7 @@ bool osc::ActionReloadOsimFromDisk(UndoableModelStatePair& uim, SceneCache& mesh
         // mesh files are immediately visible after reloading
         //
         // this is useful for users that are actively editing the meshes of the model file
-        meshCache.clearMeshes();
+        meshCache.clear_meshes();
 
         return true;
     }

@@ -109,8 +109,8 @@ namespace
             TextureFormat::RGBA32,
             ColorSpace::Linear,
         };
-        rv.setPixelData({pixelData, numBytes});
-        rv.setFilterMode(TextureFilterMode::Linear);
+        rv.set_pixel_data({pixelData, numBytes});
+        rv.set_filter_mode(TextureFilterMode::Linear);
 
         return rv;
     }
@@ -123,7 +123,7 @@ namespace
         {
             auto const ldrColor = Unorm8{static_cast<uint8_t>(i)};
             float const hdrColor = ldrColor.normalized_value();
-            float const linearHdrColor = toLinear(hdrColor);
+            float const linearHdrColor = to_linear_colorspace(hdrColor);
             rv[i] = Unorm8{linearHdrColor}.raw_value();
         }
         return rv;
@@ -206,7 +206,7 @@ namespace
             { (R+L)/(L-R),  (T+B)/(B-T),  0.0f,   1.0f },
         };
 
-        camera.setProjectionMatrixOverride(projMat);
+        camera.set_projection_matrix_override(projMat);
     }
 
     void RenderDrawCommand(
@@ -230,10 +230,10 @@ namespace
         }
 
         // setup clipping rectangle
-        bd.camera.setClearFlags(CameraClearFlags::Nothing);
+        bd.camera.set_clear_flags(CameraClearFlags::Nothing);
         Vec2 minflip{clip_min.x, (drawData.FramebufferScale.y * drawData.DisplaySize.y) - clip_max.y};
         Vec2 maxflip{clip_max.x, (drawData.FramebufferScale.y * drawData.DisplaySize.y) - clip_min.y};
-        bd.camera.setScissorRect(Rect{minflip, maxflip});
+        bd.camera.set_scissor_rect(Rect{minflip, maxflip});
 
         // setup submesh description
         SubMeshDescriptor d{drawCommand.IdxOffset, drawCommand.ElemCount, MeshTopology::Triangles};
@@ -247,7 +247,7 @@ namespace
                 [&bd](RenderTexture const& t) { bd.material.setRenderTexture("uTexture", t); },
             }, *texture);
             graphics::draw(mesh, identity<Mat4>(), bd.material, bd.camera, std::nullopt, idx);
-            bd.camera.renderToScreen();
+            bd.camera.render_to_screen();
         }
     }
 

@@ -40,7 +40,7 @@ TEST(AppSettingValue, CanExplicitlyContructFromBool)
 TEST(AppSettingValue, CanExplicitlyConstructFromColor)
 {
     AppSettingValue v{Color::red()};
-    ASSERT_EQ(v.toColor(), Color::red());
+    ASSERT_EQ(v.to_color(), Color::red());
 }
 
 TEST(AppSettingValue, BoolValueToStringReturnsExpectedStrings)
@@ -76,7 +76,7 @@ TEST(AppSettingValue, ColorValueToStringReturnsSameAsToHtmlStringRGBA)
 
     for (auto const& color : colors)
     {
-        ASSERT_EQ(AppSettingValue{color}.toString(), toHtmlStringRGBA(color));
+        ASSERT_EQ(AppSettingValue{color}.toString(), to_html_string_rgba(color));
     }
 }
 
@@ -88,16 +88,16 @@ TEST(AppSettingValue, ColorValueToStringReturnsExpectedManualExamples)
 
 TEST(AppSettingValue, StringValueToColorWorksIfStringIsAValidHTMLColorString)
 {
-    ASSERT_EQ(AppSettingValue{"#ff0000ff"}.toColor(), Color::red());
-    ASSERT_EQ(AppSettingValue{"#00ff00ff"}.toColor(), Color::green());
-    ASSERT_EQ(AppSettingValue{"#ffffffff"}.toColor(), Color::white());
-    ASSERT_EQ(AppSettingValue{"#00000000"}.toColor(), Color::clear());
-    ASSERT_EQ(AppSettingValue{"#000000ff"}.toColor(), Color::black());
-    ASSERT_EQ(AppSettingValue{"#000000FF"}.toColor(), Color::black());
-    ASSERT_EQ(AppSettingValue{"#123456ae"}.toColor(), *tryParseHtmlString("#123456ae"));
+    ASSERT_EQ(AppSettingValue{"#ff0000ff"}.to_color(), Color::red());
+    ASSERT_EQ(AppSettingValue{"#00ff00ff"}.to_color(), Color::green());
+    ASSERT_EQ(AppSettingValue{"#ffffffff"}.to_color(), Color::white());
+    ASSERT_EQ(AppSettingValue{"#00000000"}.to_color(), Color::clear());
+    ASSERT_EQ(AppSettingValue{"#000000ff"}.to_color(), Color::black());
+    ASSERT_EQ(AppSettingValue{"#000000FF"}.to_color(), Color::black());
+    ASSERT_EQ(AppSettingValue{"#123456ae"}.to_color(), *try_parse_html_color_string("#123456ae"));
 }
 
 TEST(AppSettingValue, StringValueColorReturnsWhiteIfStringIsInvalidHTMLColorString)
 {
-    ASSERT_EQ(AppSettingValue{"not a color"}.toColor(), Color::white());
+    ASSERT_EQ(AppSettingValue{"not a color"}.to_color(), Color::white());
 }

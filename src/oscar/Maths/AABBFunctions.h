@@ -24,7 +24,7 @@ namespace osc
     }
 
     // returns the widths of the edges of `aabb`
-    constexpr Vec3 dimensions(AABB const& aabb)
+    constexpr Vec3 dimensions_of(AABB const& aabb)
     {
         return aabb.max - aabb.min;
     }
@@ -32,13 +32,13 @@ namespace osc
     // returns the half-widths of the edges of `aabb`
     constexpr Vec3 half_widths(AABB const& aabb)
     {
-        return 0.5f * dimensions(aabb);
+        return 0.5f * dimensions_of(aabb);
     }
 
     // returns the volume of `aabb`
     constexpr float volume(AABB const& aabb)
     {
-        Vec3 const dims = dimensions(aabb);
+        Vec3 const dims = dimensions_of(aabb);
         return dims.x * dims.y * dims.z;
     }
 

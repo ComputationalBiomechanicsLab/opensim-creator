@@ -15,10 +15,10 @@ namespace
     MouseCapturingCamera CreateCamera()
     {
         MouseCapturingCamera rv;
-        rv.setPosition({0.0f, 0.0f, 3.0f});
-        rv.setVerticalFOV(45_deg);
-        rv.setNearClippingPlane(0.1f);
-        rv.setFarClippingPlane(100.0f);
+        rv.set_position({0.0f, 0.0f, 3.0f});
+        rv.set_vertical_fov(45_deg);
+        rv.set_near_clipping_plane(0.1f);
+        rv.set_far_clipping_plane(100.0f);
         return rv;
     }
 
@@ -74,10 +74,10 @@ private:
         m_Camera.onDraw();
 
         // clear screen and ensure camera has correct pixel rect
-        App::upd().clearScreen({0.1f, 0.1f, 0.1f, 1.0f});
+        App::upd().clear_screen({0.1f, 0.1f, 0.1f, 1.0f});
 
         // draw cube
-        m_LightingMapsMaterial.setVec3("uViewPos", m_Camera.getPosition());
+        m_LightingMapsMaterial.setVec3("uViewPos", m_Camera.position());
         m_LightingMapsMaterial.setVec3("uLightPos", m_LightTransform.position);
         m_LightingMapsMaterial.setFloat("uLightAmbient", m_LightAmbient);
         m_LightingMapsMaterial.setFloat("uLightDiffuse", m_LightDiffuse);
@@ -90,8 +90,8 @@ private:
         graphics::draw(m_Mesh, m_LightTransform, m_LightCubeMaterial, m_Camera);
 
         // render 3D scene
-        m_Camera.setPixelRect(ui::GetMainViewportWorkspaceScreenRect());
-        m_Camera.renderToScreen();
+        m_Camera.set_pixel_rect(ui::GetMainViewportWorkspaceScreenRect());
+        m_Camera.render_to_screen();
 
         // render 2D UI
         ui::Begin("controls");

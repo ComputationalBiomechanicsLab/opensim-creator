@@ -16,7 +16,7 @@ TEST(SceneMesh, GetBVHOnEmptyMeshReturnsEmptyBVH)
 {
     SceneCache c;
     Mesh m;
-    BVH const& bvh = c.getBVH(m);
+    BVH const& bvh = c.get_bvh(m);
     ASSERT_TRUE(bvh.empty());
 }
 
@@ -38,7 +38,7 @@ TEST(SceneMesh, GetBVHOnNonEmptyMeshReturnsExpectedRootNode)
 
     SceneCache c;
 
-    BVH const& bvh = c.getBVH(m);
+    BVH const& bvh = c.get_bvh(m);
 
     ASSERT_FALSE(bvh.empty());
     ASSERT_EQ(expectedRoot, bvh.getBounds());

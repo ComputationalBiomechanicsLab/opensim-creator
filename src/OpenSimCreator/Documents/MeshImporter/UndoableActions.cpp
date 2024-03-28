@@ -385,7 +385,7 @@ bool osc::mi::TryCopyOrientation(
         return false;
     }
 
-    obj->setRotation(doc, otherObj->getRotation(doc));
+    obj->set_rotation(doc, otherObj->rotation(doc));
     udoc.commitScratch("reoriented " + obj->getLabel());
 
     return true;

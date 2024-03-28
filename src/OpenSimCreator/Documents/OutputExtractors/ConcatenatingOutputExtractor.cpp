@@ -86,7 +86,7 @@ OutputValueExtractor osc::ConcatenatingOutputExtractor::implGetOutputValueExtrac
 
 size_t osc::ConcatenatingOutputExtractor::implGetHash() const
 {
-    return HashOf(m_First, m_Second);
+    return hash_of(m_First, m_Second);
 }
 
 bool osc::ConcatenatingOutputExtractor::implEquals(IOutputExtractor const& other) const

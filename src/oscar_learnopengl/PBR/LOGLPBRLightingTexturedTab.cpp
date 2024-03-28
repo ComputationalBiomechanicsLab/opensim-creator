@@ -34,11 +34,11 @@ namespace
     MouseCapturingCamera CreateCamera()
     {
         MouseCapturingCamera rv;
-        rv.setPosition({0.0f, 0.0f, 20.0f});
-        rv.setVerticalFOV(45_deg);
-        rv.setNearClippingPlane(0.1f);
-        rv.setFarClippingPlane(100.0f);
-        rv.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
+        rv.set_position({0.0f, 0.0f, 20.0f});
+        rv.set_vertical_fov(45_deg);
+        rv.set_near_clipping_plane(0.1f);
+        rv.set_far_clipping_plane(100.0f);
+        rv.set_background_color({0.1f, 0.1f, 0.1f, 1.0f});
         return rv;
     }
 
@@ -112,14 +112,14 @@ private:
 
     void draw3DRender()
     {
-        m_Camera.setPixelRect(ui::GetMainViewportWorkspaceScreenRect());
+        m_Camera.set_pixel_rect(ui::GetMainViewportWorkspaceScreenRect());
 
-        m_PBRMaterial.setVec3("uCameraWorldPosition", m_Camera.getPosition());
+        m_PBRMaterial.setVec3("uCameraWorldPosition", m_Camera.position());
 
         drawSpheres();
         drawLights();
 
-        m_Camera.renderToScreen();
+        m_Camera.render_to_screen();
     }
 
     void drawSpheres()

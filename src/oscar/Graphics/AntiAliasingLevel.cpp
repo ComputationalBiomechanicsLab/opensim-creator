@@ -7,7 +7,7 @@
 
 std::ostream& osc::operator<<(std::ostream& o, AntiAliasingLevel level)
 {
-    return o << level.getU32() << 'x';
+    return o << level.get_as<uint32_t>() << 'x';
 }
 
 std::string osc::to_string(AntiAliasingLevel level)

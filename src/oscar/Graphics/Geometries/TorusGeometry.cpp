@@ -15,7 +15,7 @@ using namespace osc;
 using namespace osc::literals;
 
 osc::TorusGeometry::TorusGeometry(
-    float inner_radius,
+    float tube_center_radius,
     float tube_radius,
     size_t num_radial_segments,
     size_t num_tubular_segments,
@@ -39,13 +39,13 @@ osc::TorusGeometry::TorusGeometry(
             const Radians v = fj/fnum_radial_segments * 360_deg;
 
             const Vec3& vertex = vertices.emplace_back(
-                (inner_radius + tube_radius * cos(v)) * cos(u),
-                (inner_radius + tube_radius * cos(v)) * sin(u),
+                (tube_center_radius + tube_radius * cos(v)) * cos(u),
+                (tube_center_radius + tube_radius * cos(v)) * sin(u),
                 tube_radius * sin(v)
             );
             normals.push_back(UnitVec3{
-                vertex.x - inner_radius*cos(u),
-                vertex.y - inner_radius*sin(u),
+                vertex.x - tube_center_radius*cos(u),
+                vertex.y - tube_center_radius*sin(u),
                 vertex.z - 0.0f,
             });
             uvs.emplace_back(fi/fnum_tubular_segments, fj/fnum_radial_segments);

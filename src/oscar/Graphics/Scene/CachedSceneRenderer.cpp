@@ -14,36 +14,36 @@ using namespace osc;
 
 class osc::CachedSceneRenderer::Impl final {
 public:
-    explicit Impl(SceneCache& cache) :
-        m_SceneRenderer{cache}
+    explicit Impl(SceneCache& scene_cache) :
+        scene_renderer_{scene_cache}
     {}
 
     RenderTexture& render(
         std::span<const SceneDecoration> decorations,
         const SceneRendererParams& params)
     {
-        if (params != m_LastRenderingParams or not equal(decorations, m_LastDecorationList)) {
+        if (params != last_rendering_params_ or not equal(decorations, last_decoration_list_)) {
 
             // inputs have changed: cache the new ones and re-render
-            m_LastRenderingParams = params;
-            m_LastDecorationList.assign(decorations.begin(), decorations.end());
-            m_SceneRenderer.render(m_LastDecorationList, m_LastRenderingParams);
+            last_rendering_params_ = params;
+            last_decoration_list_.assign(decorations.begin(), decorations.end());
+            scene_renderer_.render(last_decoration_list_, last_rendering_params_);
         }
 
-        return m_SceneRenderer.updRenderTexture();
+        return scene_renderer_.upd_render_texture();
     }
 
 private:
-    SceneRendererParams m_LastRenderingParams;
-    std::vector<SceneDecoration> m_LastDecorationList;
-    SceneRenderer m_SceneRenderer;
+    SceneRendererParams last_rendering_params_;
+    std::vector<SceneDecoration> last_decoration_list_;
+    SceneRenderer scene_renderer_;
 };
 
 
 // public API (PIMPL)
 
-osc::CachedSceneRenderer::CachedSceneRenderer(SceneCache& cache) :
-    m_Impl{std::make_unique<Impl>(cache)}
+osc::CachedSceneRenderer::CachedSceneRenderer(SceneCache& scene_cache) :
+    m_Impl{std::make_unique<Impl>(scene_cache)}
 {}
 
 osc::CachedSceneRenderer::CachedSceneRenderer(CachedSceneRenderer&&) noexcept = default;

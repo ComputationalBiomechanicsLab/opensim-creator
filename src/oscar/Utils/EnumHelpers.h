@@ -55,13 +55,13 @@ namespace osc
         class Iterator {
         public:
             using difference_type = ptrdiff_t;
-            using value_type = decltype(Proj{}(std::declval<TEnum>()));
+            using value_type = std::remove_cvref_t<decltype(Proj{}(std::declval<TEnum>()))>;
             using pointer = void;
             using reference = value_type;
             using iterator_category = std::forward_iterator_tag;
 
             Iterator() = default;
-            Iterator(Proj& proj_, TEnum current_) : m_Current{current_}, m_Proj{&proj_} {}
+            Iterator(Proj const& proj_, TEnum current_) : m_Current{current_}, m_Proj{&proj_} {}
 
             friend bool operator==(Iterator const&, Iterator const&) = default;
 
@@ -84,7 +84,7 @@ namespace osc
             }
         private:
             TEnum m_Current = static_cast<TEnum>(0);
-            Proj* m_Proj = nullptr;
+            Proj const* m_Proj = nullptr;
         };
 
         using value_type = decltype(Proj{}(std::declval<TEnum>()));
@@ -95,8 +95,10 @@ namespace osc
             m_Proj{proj}
         {}
 
-        Iterator begin() { return Iterator{m_Proj, static_cast<TEnum>(0)}; }
-        Iterator end() { return Iterator{m_Proj, TEnum::NUM_OPTIONS}; }
+        auto front() const { return std::invoke(m_Proj, static_cast<TEnum>(0)); }
+        auto back() const { return std::invoke(m_Proj, static_cast<TEnum>(cpp23::to_underlying(TEnum::NUM_OPTIONS)-1)); }
+        Iterator begin() const { return Iterator{m_Proj, static_cast<TEnum>(0)}; }
+        Iterator end() const { return Iterator{m_Proj, TEnum::NUM_OPTIONS}; }
 
     private:
         Proj m_Proj;
@@ -104,7 +106,7 @@ namespace osc
 
     // returns a `DenselyPackedOptionsIterable` that, when iterated, projects each enum value via `proj`
     template<DenselyPackedOptionsEnum TEnum, typename Proj = std::identity>
-    constexpr DenselyPackedOptionsIterable<TEnum, Proj> make_option_iterable(Proj&& proj)
+    constexpr DenselyPackedOptionsIterable<TEnum, Proj> make_option_iterable(Proj&& proj = {})
     {
         return DenselyPackedOptionsIterable<TEnum, Proj>(std::forward<Proj>(proj));
     }

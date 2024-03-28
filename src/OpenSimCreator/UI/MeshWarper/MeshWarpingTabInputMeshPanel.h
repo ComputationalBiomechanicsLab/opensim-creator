@@ -65,7 +65,7 @@ namespace osc
         {
             // compute top-level UI variables (render rect, mouse pos, etc.)
             Rect const contentRect = ui::ContentRegionAvailScreenRect();
-            Vec2 const contentRectDims = dimensions(contentRect);
+            Vec2 const contentRectDims = dimensions_of(contentRect);
             Vec2 const mousePos = ui::GetMousePos();
 
             // un-project mouse's (2D) location into the 3D scene as a ray
@@ -75,7 +75,7 @@ namespace osc
             Mesh const& inputMesh = m_State->getScratchMesh(m_DocumentIdentifier);
             BVH const& inputMeshBVH = m_State->getScratchMeshBVH(m_DocumentIdentifier);
             std::optional<RayCollision> const meshCollision = m_LastTextureHittestResult.isHovered ?
-                getClosestWorldspaceRayCollision(inputMesh, inputMeshBVH, Transform{}, cameraRay) :
+                get_closest_worldspace_ray_triangle_collision(inputMesh, inputMeshBVH, Transform{}, cameraRay) :
                 std::nullopt;
 
             // landmark hittest: compute whether the user is hovering over a landmark
@@ -128,7 +128,7 @@ namespace osc
             // if the user interacts with the render, update the camera as necessary
             if (m_LastTextureHittestResult.isHovered)
             {
-                if (ui::UpdatePolarCameraFromMouseInputs(m_Camera, dimensions(m_LastTextureHittestResult.rect)))
+                if (ui::UpdatePolarCameraFromMouseInputs(m_Camera, dimensions_of(m_LastTextureHittestResult.rect)))
                 {
                     m_State->linkedCameraBase = m_Camera;  // reflects latest modification
                 }
@@ -219,7 +219,7 @@ namespace osc
             std::optional<RayCollision> const& maybeMeshCollision,
             std::optional<MeshWarpingTabHover> const& maybeLandmarkCollision)
         {
-            SceneRendererParams const params = calcStandardDarkSceneRenderParams(
+            SceneRendererParams const params = calc_standard_dark_scene_render_params(
                 m_Camera,
                 App::get().getCurrentAntiAliasingLevel(),
                 dims
@@ -299,7 +299,7 @@ namespace osc
             }
             if (m_State->isHovered(landmarkID))
             {
-                decoration.color = toSRGB(clampToLDR(multiplyLuminance(toLinear(decoration.color), 1.2f)));
+                decoration.color = to_srgb_colorspace(clamp_to_ldr(multiply_luminance(to_linear_colorspace(decoration.color), 1.2f)));
                 decoration.flags |= SceneDecorationFlags::IsHovered;
             }
 
@@ -341,7 +341,7 @@ namespace osc
             }
             if (m_State->isHovered(id))
             {
-                decoration.color = toSRGB(clampToLDR(multiplyLuminance(toLinear(decoration.color), 1.2f)));
+                decoration.color = to_srgb_colorspace(clamp_to_ldr(multiply_luminance(to_linear_colorspace(decoration.color), 1.2f)));
                 decoration.flags |= SceneDecorationFlags::IsHovered;
             }
 

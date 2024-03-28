@@ -113,7 +113,7 @@ namespace
             onModelDecoration
         );
 
-        updateSceneBVH(out.decorations, out.bvh);
+        update_scene_bvh(out.decorations, out.bvh);
 
         auto const onOverlayDecoration = [&](SceneDecoration&& decoration)
         {
@@ -156,7 +156,7 @@ public:
     {
         bool rv = ui::UpdatePolarCameraFromMouseInputs(
             params.updRenderParams().camera,
-            dimensions(state.viewportRect)
+            dimensions_of(state.viewportRect)
         );
 
         if (ui::IsDraggingWithAnyMouseButtonDown())
@@ -191,7 +191,7 @@ public:
         GenerateChooseComponentsDecorations(m_State, m_Decorations);
         SceneRendererParams const rendererParameters = CalcSceneRendererParams(
             m_State.renderParams,
-            dimensions(panelState.viewportRect),
+            dimensions_of(panelState.viewportRect),
             App::get().getCurrentAntiAliasingLevel(),
             m_State.model->getFixupScaleFactor()
         );
@@ -201,8 +201,8 @@ public:
 
         // blit texture as ImGui image
         ui::Image(
-            m_Renderer.updRenderTexture(),
-            dimensions(panelState.viewportRect)
+            m_Renderer.upd_render_texture(),
+            dimensions_of(panelState.viewportRect)
         );
 
         // do hovertest
@@ -218,7 +218,7 @@ public:
             );
             if (collision)
             {
-                m_State.hoveredComponent = collision->decorationID;
+                m_State.hoveredComponent = collision->decoration_id;
             }
             else
             {

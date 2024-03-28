@@ -27,10 +27,10 @@ public:
 
     Impl()
     {
-        m_SceneCamera.setPosition({0.0f, 0.0f, 3.0f});
-        m_SceneCamera.setVerticalFOV(45_deg);
-        m_SceneCamera.setNearClippingPlane(0.1f);
-        m_SceneCamera.setFarClippingPlane(100.0f);
+        m_SceneCamera.set_position({0.0f, 0.0f, 3.0f});
+        m_SceneCamera.set_vertical_fov(45_deg);
+        m_SceneCamera.set_near_clipping_plane(0.1f);
+        m_SceneCamera.set_far_clipping_plane(100.0f);
     }
 
     UID getID() const
@@ -85,12 +85,12 @@ public:
             ui::SetMouseCursor(ImGuiMouseCursor_Arrow);
             App::upd().setShowCursor(true);
         }
-        m_SceneCamera.setPixelRect(ui::GetMainViewportWorkspaceScreenRect());
+        m_SceneCamera.set_pixel_rect(ui::GetMainViewportWorkspaceScreenRect());
 
         m_SceneMaterial.setColor("uDiffuseColor", m_MeshColor);
         graphics::draw(m_Mesh, identity<Transform>(), m_SceneMaterial, m_SceneCamera);
         graphics::draw(m_Mesh, identity<Transform>(), m_NormalsMaterial, m_SceneCamera);
-        m_SceneCamera.renderToScreen();
+        m_SceneCamera.render_to_screen();
     }
 
 private:

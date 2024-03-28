@@ -1,6 +1,7 @@
 #include <oscar/Graphics/Cubemap.h>
 
 #include <gtest/gtest.h>
+#include <oscar/Utils/EnumHelpers.h>
 
 #include <array>
 #include <cstdint>
@@ -44,8 +45,8 @@ TEST(Cubemap, CanBeCopyAssigned)
     Cubemap second{2, TextureFormat::RGB24};
     second = first;
 
-    ASSERT_EQ(second.getWidth(), first.getWidth());
-    ASSERT_EQ(second.getTextureFormat(), first.getTextureFormat());
+    ASSERT_EQ(second.width(), first.width());
+    ASSERT_EQ(second.texture_format(), first.texture_format());
 }
 
 static_assert(std::is_nothrow_assignable_v<Cubemap, Cubemap&&>);
@@ -63,8 +64,8 @@ TEST(Cubemap, CanBeMoveAssigned)
 
     ASSERT_NE(firstWidth, secondWidth);
     ASSERT_NE(firstFormat, secondFormat);
-    ASSERT_EQ(second.getWidth(), firstWidth);
-    ASSERT_EQ(second.getTextureFormat(), firstFormat);
+    ASSERT_EQ(second.width(), firstWidth);
+    ASSERT_EQ(second.texture_format(), firstFormat);
 }
 
 static_assert(std::is_nothrow_destructible_v<Cubemap>);
@@ -90,7 +91,7 @@ TEST(Cubemap, MutatingACopyMakesItNotEqual)
 
     Cubemap copy{cubemap};
     std::array<uint8_t, 4> const data = {};
-    copy.setPixelData(CubemapFace::PositiveX, data);
+    copy.set_pixel_data(CubemapFace::PositiveX, data);
 
     ASSERT_NE(cubemap, copy);
 }
@@ -116,7 +117,7 @@ TEST(Cubemap, GetWidthReturnsConstructedWidth)
     int32_t const width = 4;
     Cubemap const cubemap{width, TextureFormat::RGBA32};
 
-    ASSERT_EQ(cubemap.getWidth(), width);
+    ASSERT_EQ(cubemap.width(), width);
 }
 
 TEST(Cubemap, GetFormatReturnsConstructedFormat)
@@ -124,7 +125,7 @@ TEST(Cubemap, GetFormatReturnsConstructedFormat)
     TextureFormat const format = TextureFormat::RGB24;
     Cubemap const cubemap{1, format};
 
-    ASSERT_EQ(cubemap.getTextureFormat(), format);
+    ASSERT_EQ(cubemap.texture_format(), format);
 }
 
 TEST(Cubemap, SetDataWorksForAnyFaceIfGivenCorrectNumberOfBytes)
@@ -136,9 +137,9 @@ TEST(Cubemap, SetDataWorksForAnyFaceIfGivenCorrectNumberOfBytes)
     std::array<uint8_t, nPixels> const data = {};
 
     Cubemap cubemap{width, format};
-    for (CubemapFace face = firstCubemapFace(); face <= lastCubemapFace(); face = next(face))
+    for (CubemapFace face : make_option_iterable<CubemapFace>())
     {
-        cubemap.setPixelData(face, data);
+        cubemap.set_pixel_data(face, data);
     }
 }
 
@@ -151,9 +152,9 @@ TEST(Cubemap, SetDataThrowsIfGivenIncorrectNumberOfBytesForRGBA32)
     std::array<uint8_t, nPixels> const data = {};
 
     Cubemap cubemap{width, format};
-    for (CubemapFace face = firstCubemapFace(); face <= lastCubemapFace(); face = next(face))
+    for (CubemapFace face : make_option_iterable<CubemapFace>())
     {
-        ASSERT_ANY_THROW({ cubemap.setPixelData(face, data); });
+        ASSERT_ANY_THROW({ cubemap.set_pixel_data(face, data); });
     }
 }
 
@@ -166,9 +167,9 @@ TEST(Cubemap, SetDataThrowsIfGivenIncorrectNumberOfBytesForRGB24)
     std::array<uint8_t, nPixels> const data = {};
 
     Cubemap cubemap{width, format};
-    for (CubemapFace face = firstCubemapFace(); face <= lastCubemapFace(); face = next(face))
+    for (CubemapFace face : make_option_iterable<CubemapFace>())
     {
-        ASSERT_ANY_THROW({ cubemap.setPixelData(face, data); });
+        ASSERT_ANY_THROW({ cubemap.set_pixel_data(face, data); });
     }
 }
 
@@ -182,9 +183,9 @@ TEST(Cubemap, SetDataThrowsIfGivenIncorrectNumberOfBytesForWidth)
     std::array<uint8_t, incorrectNPixels> const data = {};
 
     Cubemap cubemap{width, format};
-    for (CubemapFace face = firstCubemapFace(); face <= lastCubemapFace(); face = next(face))
+    for (CubemapFace face : make_option_iterable<CubemapFace>())
     {
-        ASSERT_ANY_THROW({ cubemap.setPixelData(face, data); });
+        ASSERT_ANY_THROW({ cubemap.set_pixel_data(face, data); });
     }
 }
 
@@ -195,82 +196,82 @@ TEST(Cubemap, SetPixelDataWorksWithFloatingPointTextureFormats)
 
 TEST(Cubemap, GetWrapModeInitiallyReturnsRepeatedByDefault)
 {
-    ASSERT_EQ(Cubemap(1, TextureFormat::RGBA32).getWrapMode(), TextureWrapMode::Repeat);
+    ASSERT_EQ(Cubemap(1, TextureFormat::RGBA32).wrap_mode(), TextureWrapMode::Repeat);
 }
 
 TEST(Cubemap, SetWrapModeUpdatesWrapMode)
 {
     Cubemap cm{1, TextureFormat::RGBA32};
-    ASSERT_EQ(cm.getWrapMode(), TextureWrapMode::Repeat);
-    cm.setWrapMode(TextureWrapMode::Clamp);
-    ASSERT_EQ(cm.getWrapMode(), TextureWrapMode::Clamp);
+    ASSERT_EQ(cm.wrap_mode(), TextureWrapMode::Repeat);
+    cm.set_wrap_mode(TextureWrapMode::Clamp);
+    ASSERT_EQ(cm.wrap_mode(), TextureWrapMode::Clamp);
 }
 
 TEST(Cubemap, SetWrapModeSetsAllAxes)
 {
     Cubemap cm{1, TextureFormat::RGBA32};
-    ASSERT_EQ(cm.getWrapMode(), TextureWrapMode::Repeat);
-    ASSERT_EQ(cm.getWrapModeU(), TextureWrapMode::Repeat);
-    ASSERT_EQ(cm.getWrapModeV(), TextureWrapMode::Repeat);
-    ASSERT_EQ(cm.getWrapModeW(), TextureWrapMode::Repeat);
-    cm.setWrapMode(TextureWrapMode::Clamp);
-    ASSERT_EQ(cm.getWrapMode(), TextureWrapMode::Clamp);
-    ASSERT_EQ(cm.getWrapModeU(), TextureWrapMode::Clamp);
-    ASSERT_EQ(cm.getWrapModeV(), TextureWrapMode::Clamp);
-    ASSERT_EQ(cm.getWrapModeW(), TextureWrapMode::Clamp);
+    ASSERT_EQ(cm.wrap_mode(), TextureWrapMode::Repeat);
+    ASSERT_EQ(cm.wrap_mode_u(), TextureWrapMode::Repeat);
+    ASSERT_EQ(cm.wrap_mode_v(), TextureWrapMode::Repeat);
+    ASSERT_EQ(cm.wrap_mode_w(), TextureWrapMode::Repeat);
+    cm.set_wrap_mode(TextureWrapMode::Clamp);
+    ASSERT_EQ(cm.wrap_mode(), TextureWrapMode::Clamp);
+    ASSERT_EQ(cm.wrap_mode_u(), TextureWrapMode::Clamp);
+    ASSERT_EQ(cm.wrap_mode_v(), TextureWrapMode::Clamp);
+    ASSERT_EQ(cm.wrap_mode_w(), TextureWrapMode::Clamp);
 }
 
 TEST(Cubemap, SetWrapModeUSetsUAxisAndGetWrapModeRv)
 {
     Cubemap cm{1, TextureFormat::RGBA32};
-    ASSERT_EQ(cm.getWrapMode(), TextureWrapMode::Repeat);
-    ASSERT_EQ(cm.getWrapModeU(), TextureWrapMode::Repeat);
-    ASSERT_EQ(cm.getWrapModeV(), TextureWrapMode::Repeat);
-    ASSERT_EQ(cm.getWrapModeW(), TextureWrapMode::Repeat);
-    cm.setWrapModeU(TextureWrapMode::Clamp);
-    ASSERT_EQ(cm.getWrapMode(), TextureWrapMode::Clamp);
-    ASSERT_EQ(cm.getWrapModeU(), TextureWrapMode::Clamp);
-    ASSERT_EQ(cm.getWrapModeV(), TextureWrapMode::Repeat);
-    ASSERT_EQ(cm.getWrapModeW(), TextureWrapMode::Repeat);
+    ASSERT_EQ(cm.wrap_mode(), TextureWrapMode::Repeat);
+    ASSERT_EQ(cm.wrap_mode_u(), TextureWrapMode::Repeat);
+    ASSERT_EQ(cm.wrap_mode_v(), TextureWrapMode::Repeat);
+    ASSERT_EQ(cm.wrap_mode_w(), TextureWrapMode::Repeat);
+    cm.set_wrap_mode_u(TextureWrapMode::Clamp);
+    ASSERT_EQ(cm.wrap_mode(), TextureWrapMode::Clamp);
+    ASSERT_EQ(cm.wrap_mode_u(), TextureWrapMode::Clamp);
+    ASSERT_EQ(cm.wrap_mode_v(), TextureWrapMode::Repeat);
+    ASSERT_EQ(cm.wrap_mode_w(), TextureWrapMode::Repeat);
 }
 
 TEST(Cubemap, SetWrapModeVOnlySetsVAxis)
 {
     Cubemap cm{1, TextureFormat::RGBA32};
-    ASSERT_EQ(cm.getWrapMode(), TextureWrapMode::Repeat);
-    ASSERT_EQ(cm.getWrapModeU(), TextureWrapMode::Repeat);
-    ASSERT_EQ(cm.getWrapModeV(), TextureWrapMode::Repeat);
-    ASSERT_EQ(cm.getWrapModeW(), TextureWrapMode::Repeat);
-    cm.setWrapModeV(TextureWrapMode::Clamp);
-    ASSERT_EQ(cm.getWrapMode(), TextureWrapMode::Repeat);
-    ASSERT_EQ(cm.getWrapModeU(), TextureWrapMode::Repeat);
-    ASSERT_EQ(cm.getWrapModeV(), TextureWrapMode::Clamp);
-    ASSERT_EQ(cm.getWrapModeW(), TextureWrapMode::Repeat);
+    ASSERT_EQ(cm.wrap_mode(), TextureWrapMode::Repeat);
+    ASSERT_EQ(cm.wrap_mode_u(), TextureWrapMode::Repeat);
+    ASSERT_EQ(cm.wrap_mode_v(), TextureWrapMode::Repeat);
+    ASSERT_EQ(cm.wrap_mode_w(), TextureWrapMode::Repeat);
+    cm.set_wrap_mode_v(TextureWrapMode::Clamp);
+    ASSERT_EQ(cm.wrap_mode(), TextureWrapMode::Repeat);
+    ASSERT_EQ(cm.wrap_mode_u(), TextureWrapMode::Repeat);
+    ASSERT_EQ(cm.wrap_mode_v(), TextureWrapMode::Clamp);
+    ASSERT_EQ(cm.wrap_mode_w(), TextureWrapMode::Repeat);
 }
 
 TEST(Cubemap, SetWrapModeWOnlySetsWAxis)
 {
     Cubemap cm{1, TextureFormat::RGBA32};
-    ASSERT_EQ(cm.getWrapMode(), TextureWrapMode::Repeat);
-    ASSERT_EQ(cm.getWrapModeU(), TextureWrapMode::Repeat);
-    ASSERT_EQ(cm.getWrapModeV(), TextureWrapMode::Repeat);
-    ASSERT_EQ(cm.getWrapModeW(), TextureWrapMode::Repeat);
-    cm.setWrapModeW(TextureWrapMode::Clamp);
-    ASSERT_EQ(cm.getWrapMode(), TextureWrapMode::Repeat);
-    ASSERT_EQ(cm.getWrapModeU(), TextureWrapMode::Repeat);
-    ASSERT_EQ(cm.getWrapModeV(), TextureWrapMode::Repeat);
-    ASSERT_EQ(cm.getWrapModeW(), TextureWrapMode::Clamp);
+    ASSERT_EQ(cm.wrap_mode(), TextureWrapMode::Repeat);
+    ASSERT_EQ(cm.wrap_mode_u(), TextureWrapMode::Repeat);
+    ASSERT_EQ(cm.wrap_mode_v(), TextureWrapMode::Repeat);
+    ASSERT_EQ(cm.wrap_mode_w(), TextureWrapMode::Repeat);
+    cm.set_wrap_mode_w(TextureWrapMode::Clamp);
+    ASSERT_EQ(cm.wrap_mode(), TextureWrapMode::Repeat);
+    ASSERT_EQ(cm.wrap_mode_u(), TextureWrapMode::Repeat);
+    ASSERT_EQ(cm.wrap_mode_v(), TextureWrapMode::Repeat);
+    ASSERT_EQ(cm.wrap_mode_w(), TextureWrapMode::Clamp);
 }
 
 TEST(Cubemap, GetFilterModeInitiallyReturnsMipmap)
 {
-    ASSERT_EQ(Cubemap(1, TextureFormat::RGBA32).getFilterMode(), TextureFilterMode::Mipmap);
+    ASSERT_EQ(Cubemap(1, TextureFormat::RGBA32).filter_mode(), TextureFilterMode::Mipmap);
 }
 
 TEST(Cubemap, SetFilterModeUpdatesFilterMode)
 {
     Cubemap cm{1, TextureFormat::RGBA32};
-    ASSERT_EQ(cm.getFilterMode(), TextureFilterMode::Mipmap);
-    cm.setFilterMode(TextureFilterMode::Nearest);
-    ASSERT_EQ(cm.getFilterMode(), TextureFilterMode::Nearest);
+    ASSERT_EQ(cm.filter_mode(), TextureFilterMode::Mipmap);
+    cm.set_filter_mode(TextureFilterMode::Nearest);
+    ASSERT_EQ(cm.filter_mode(), TextureFilterMode::Nearest);
 }

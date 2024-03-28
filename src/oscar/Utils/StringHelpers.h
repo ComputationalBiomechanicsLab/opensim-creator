@@ -70,8 +70,8 @@ namespace osc
     // e.g. 0x00 --> ('0', '0')
     //      0xf0 --> ('f', '0')
     //      0x02 --> ('0', '2')
-    std::pair<char, char> ToHexChars(uint8_t);
-    std::optional<uint8_t> TryParseHexCharsAsByte(char, char);
+    std::pair<char, char> to_hex_chars(uint8_t);
+    std::optional<uint8_t> try_parse_hex_chars_as_byte(char, char);
 
     // returns a string representation of `v` by first streaming it to a `std::stringstream`
     template<typename T>

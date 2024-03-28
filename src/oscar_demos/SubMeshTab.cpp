@@ -63,11 +63,11 @@ class osc::SubMeshTab::Impl final : public StandardTabImpl {
 public:
     Impl() : StandardTabImpl{c_TabStringID}
     {
-        m_Camera.setBackgroundColor(Color::white());
-        m_Camera.setNearClippingPlane(0.1f);
-        m_Camera.setFarClippingPlane(5.0f);
-        m_Camera.setPosition({0.0f, 0.0f, -2.5f});
-        m_Camera.setDirection({0.0f, 0.0f, 1.0f});
+        m_Camera.set_background_color(Color::white());
+        m_Camera.set_near_clipping_plane(0.1f);
+        m_Camera.set_far_clipping_plane(5.0f);
+        m_Camera.set_position({0.0f, 0.0f, -2.5f});
+        m_Camera.set_direction({0.0f, 0.0f, 1.0f});
 
         m_Material.set_color(Color::red());
         m_Material.set_wireframe(true);
@@ -86,8 +86,8 @@ private:
                 subMeshIndex
             );
         }
-        m_Camera.setPixelRect(ui::GetMainViewportWorkspaceScreenRect());
-        m_Camera.renderToScreen();
+        m_Camera.set_pixel_rect(ui::GetMainViewportWorkspaceScreenRect());
+        m_Camera.render_to_screen();
     }
 
     ResourceLoader m_Loader = App::resource_loader();

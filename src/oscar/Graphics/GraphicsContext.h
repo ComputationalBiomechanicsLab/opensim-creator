@@ -24,32 +24,32 @@ namespace osc
         GraphicsContext& operator=(GraphicsContext&&) noexcept = delete;
         ~GraphicsContext() noexcept;
 
-        AntiAliasingLevel getMaxAntialiasingLevel() const;
+        AntiAliasingLevel max_antialiasing_level() const;
 
-        bool isVsyncEnabled() const;
-        void enableVsync();
-        void disableVsync();
+        bool is_vsync_enabled() const;
+        void enable_vsync();
+        void disable_vsync();
 
-        bool isInDebugMode() const;
-        void enableDebugMode();
-        void disableDebugMode();
+        bool is_in_debug_mode() const;
+        void enable_debug_mode();
+        void disable_debug_mode();
 
-        void clearScreen(const Color&);
+        void clear_screen(const Color&);
 
         // HACK: this is needed by ImGui, because it uses OpenGL "in the raw"
-        void* updRawGLContextHandleHACK();
+        void* upd_raw_opengl_context_handle_HACK();
 
         // returns a future that asynchronously yields a complete screenshot of the next frame
-        std::future<Texture2D> requestScreenshot();
+        std::future<Texture2D> request_screenshot();
 
         // execure the "swap chain" operation, which makes the current backbuffer the frontbuffer,
-        void doSwapBuffers(SDL_Window&);
+        void swap_buffers(SDL_Window&);
 
         // human-readable identifier strings: useful for printouts/debugging
-        std::string getBackendVendorString() const;
-        std::string getBackendRendererString() const;
-        std::string getBackendVersionString() const;
-        std::string getBackendShadingLanguageVersionString() const;
+        std::string backend_vendor_string() const;
+        std::string backend_renderer_string() const;
+        std::string backend_version_string() const;
+        std::string backend_shading_language_version_string() const;
 
         class Impl;
     private:

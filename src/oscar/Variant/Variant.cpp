@@ -125,7 +125,7 @@ osc::Variant::operator osc::Color() const
         [](int const& v) { return v ? Color::white() : Color::black(); },
         [](std::string_view s)
         {
-            auto const c = tryParseHtmlString(s);
+            auto const c = try_parse_html_color_string(s);
             return c ? *c : Color::black();
         },
         [](Vec2 const& v) { return Color{v.x, v.y, 0.0f}; },
@@ -171,7 +171,7 @@ osc::Variant::operator std::string() const
     {
         [](std::monostate const&) { return "<null>"s; },
         [](bool const& v) { return v ? "true"s : "false"s; },
-        [](Color const& v) { return toHtmlStringRGBA(v); },
+        [](Color const& v) { return to_html_string_rgba(v); },
         [](float const& v) { return std::to_string(v); },
         [](int const& v) { return std::to_string(v); },
         [](std::string_view s) { return std::string{s}; },
@@ -262,7 +262,7 @@ size_t std::hash<osc::Variant>::operator()(Variant const& v) const
     // but osc's Variant doesn't need to support this edge-case, and transparent hashing of
     // the contents can be handy when you want behavior like:
     //
-    //     HashOf(Variant) == HashOf(std::string) == HashOf(std::string_view) == HashOf(StringName)...
+    //     hash_of(Variant) == hash_of(std::string) == hash_of(std::string_view) == hash_of(StringName)...
 
     return std::visit(Overload
     {

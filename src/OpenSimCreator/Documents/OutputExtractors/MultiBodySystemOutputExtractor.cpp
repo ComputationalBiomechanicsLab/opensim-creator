@@ -61,7 +61,7 @@ OutputValueExtractor osc::MultiBodySystemOutputExtractor::implGetOutputValueExtr
 
 std::size_t osc::MultiBodySystemOutputExtractor::implGetHash() const
 {
-    return HashOf(m_AuxiliaryDataID, m_Name, m_Description, m_Extractor);
+    return hash_of(m_AuxiliaryDataID, m_Name, m_Description, m_Extractor);
 }
 
 bool osc::MultiBodySystemOutputExtractor::implEquals(IOutputExtractor const& other) const

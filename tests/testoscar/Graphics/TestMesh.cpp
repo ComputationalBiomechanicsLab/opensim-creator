@@ -1735,7 +1735,7 @@ TEST(Mesh, SetVertexBufferParamsCanBeUsedToReformatToU8NormFormat)
     });
 
     auto const expected = MapToVector(colors, [](Color const& c) {
-        return toColor(toColor32(c));
+        return to_color(to_color32(c));
     });
 
     ASSERT_EQ(m.getColors(), expected);
@@ -1862,7 +1862,7 @@ TEST(Mesh, SetVertexBufferDataWorksAsExpectedForImguiStyleCase)
     };
     std::vector<SimilarToImGuiVert> const data(16);
     auto const expectedVerts = MapToVector(data, [](auto const& v) { return Vec3{v.pos, 0.0f}; });
-    auto const expectedColors = MapToVector(data, [](auto const& v) { return toColor(v.col); });
+    auto const expectedColors = MapToVector(data, [](auto const& v) { return to_color(v.col); });
     auto const expectedTexCoords = MapToVector(data, [](auto const& v) { return v.uv; });
 
     Mesh m;

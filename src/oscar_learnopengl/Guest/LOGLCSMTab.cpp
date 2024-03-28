@@ -35,7 +35,7 @@ namespace
         auto rng = std::default_random_engine{std::random_device{}()};
         auto dist = std::normal_distribution{0.1f, 0.2f};
         AABB const gridBounds = {{-5.0f,  0.0f, -5.0f}, {5.0f, 0.0f, 5.0f}};
-        Vec3 const gridDims = dimensions(gridBounds);
+        Vec3 const gridDims = dimensions_of(gridBounds);
         Vec2uz const gridCells = {10, 10};
 
         std::vector<TransformedMesh> rv;
@@ -91,13 +91,13 @@ namespace
 
         // precompure transforms
         Mat4 const model2light = look_at({0.0f, 0.0f, 0.0f}, Vec3{lightDirection}, {0.0f, 1.0f, 0.0f});
-        Mat4 const view2model = inverse(camera.getViewMatrix());
+        Mat4 const view2model = inverse(camera.view_matrix());
         Mat4 const view2light = model2light * view2model;
 
         // precompute necessary values to figure out the corners of the view frustum
-        float const viewZNear = camera.getNearClippingPlane();
-        float const viewZFar = camera.getFarClippingPlane();
-        Radians const viewVFOV = camera.getVerticalFOV();
+        float const viewZNear = camera.near_clipping_plane();
+        float const viewZFar = camera.get_far_clipping_plane();
+        Radians const viewVFOV = camera.vertical_fov();
         Radians const viewHFOV = VerticalToHorizontalFOV(viewVFOV, aspectRatio);
         float const viewTanHalfVFOV = tan(0.5f * viewVFOV);
         float const viewTanHalfHFOV = tan(0.5f * viewHFOV);
@@ -159,8 +159,8 @@ class osc::LOGLCSMTab::Impl final : public StandardTabImpl {
 public:
     Impl() : StandardTabImpl{c_TabStringID}
     {
-        m_UserCamera.setNearClippingPlane(0.1f);
-        m_UserCamera.setFarClippingPlane(100.0f);
+        m_UserCamera.set_near_clipping_plane(0.1f);
+        m_UserCamera.set_far_clipping_plane(100.0f);
         m_Material.set_light_position(Vec3{5.0f});
         m_Material.set_diffuse_color(Color::orange());
         m_Decorations.push_back(TransformedMesh{
@@ -194,14 +194,14 @@ private:
     void implOnDraw() final
     {
         m_UserCamera.onDraw();  // update from inputs etc.
-        m_Material.set_viewer_position(m_UserCamera.getPosition());
+        m_Material.set_viewer_position(m_UserCamera.position());
 
         for (auto const& decoration : m_Decorations) {
             graphics::draw(decoration.mesh, decoration.transform, m_Material, m_UserCamera);
         }
 
-        m_UserCamera.setPixelRect(ui::GetMainViewportWorkspaceScreenRect());
-        m_UserCamera.renderToScreen();
+        m_UserCamera.set_pixel_rect(ui::GetMainViewportWorkspaceScreenRect());
+        m_UserCamera.render_to_screen();
     }
 
     void drawShadowmaps()

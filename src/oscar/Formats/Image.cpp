@@ -112,7 +112,7 @@ namespace
         };
 
         Texture2D rv{dims, *format, color_space};
-        rv.setPixelData(ViewObjectRepresentations<uint8_t>(pixel_span));
+        rv.set_pixel_data(view_object_representations<uint8_t>(pixel_span));
         return rv;
     }
 
@@ -157,7 +157,7 @@ namespace
         }
 
         Texture2D rv{dims, *format, color_space};
-        rv.setPixelData({pixels.get(), static_cast<size_t>(dims.x*dims.y*num_channels)});
+        rv.set_pixel_data({pixels.get(), static_cast<size_t>(dims.x*dims.y*num_channels)});
         return rv;
     }
 

@@ -31,17 +31,17 @@ namespace
         SceneCache cache;
 
         return {
-            {"sphere", cache.getSphereMesh()},
-            {"cylinder", cache.getCylinderMesh()},
-            {"brick", cache.getBrickMesh()},
-            {"cone", cache.getConeMesh()},
-            {"floor", cache.getFloorMesh()},
-            {"circle", cache.getCircleMesh()},
-            {"100x100 grid", cache.get100x100GridMesh()},
-            {"cube (wire)", cache.getCubeWireMesh()},
-            {"yline", cache.getYLineMesh()},
-            {"quad", cache.getTexturedQuadMesh()},
-            {"torus", cache.getTorusMesh(0.9f, 0.1f)},
+            {"sphere", cache.sphere_mesh()},
+            {"cylinder", cache.cylinder_mesh()},
+            {"brick", cache.brick_mesh()},
+            {"cone", cache.cone_mesh()},
+            {"floor", cache.floor_mesh()},
+            {"circle", cache.circle_mesh()},
+            {"100x100 grid", cache.grid_mesh()},
+            {"cube (wire)", cache.cube_wireframe_mesh()},
+            {"yline", cache.yline_mesh()},
+            {"quad", cache.quad_mesh()},
+            {"torus", cache.torus_mesh(0.9f, 0.1f)},
             {"torusknot", TorusKnotGeometry{}},
             {"box", BoxGeometry{2.0f, 2.0f, 2.0f, 1, 1, 1}},
             {"icosahedron", IcosahedronGeometry{}},
@@ -82,17 +82,17 @@ private:
 
             Vec2 contentRegion = ui::GetContentRegionAvail();
             m_RenderParams.dimensions = elementwise_max(contentRegion, {0.0f, 0.0f});
-            m_RenderParams.antiAliasingLevel = App::get().getCurrentAntiAliasingLevel();
+            m_RenderParams.antialiasing_level = App::get().getCurrentAntiAliasingLevel();
 
             {
-                m_RenderParams.lightDirection = RecommendedLightDirection(m_Camera);
-                m_RenderParams.projectionMatrix = m_Camera.projection_matrix(aspect_ratio(m_RenderParams.dimensions));
-                m_RenderParams.viewMatrix = m_Camera.view_matrix();
-                m_RenderParams.viewPos = m_Camera.getPos();
-                m_RenderParams.nearClippingPlane = m_Camera.znear;
-                m_RenderParams.farClippingPlane = m_Camera.zfar;
-                m_RenderParams.drawFloor = false;
-                m_RenderParams.drawMeshNormals = true;
+                m_RenderParams.light_direction = recommended_light_direction(m_Camera);
+                m_RenderParams.projection_matrix = m_Camera.projection_matrix(aspect_ratio(m_RenderParams.dimensions));
+                m_RenderParams.view_matrix = m_Camera.view_matrix();
+                m_RenderParams.view_pos = m_Camera.getPos();
+                m_RenderParams.near_clipping_plane = m_Camera.znear;
+                m_RenderParams.far_clipping_plane = m_Camera.zfar;
+                m_RenderParams.draw_floor = false;
+                m_RenderParams.draw_mesh_normals = true;
 
                 m_Viewer.onDraw({{SceneDecoration{
                     .mesh = m_AllMeshes[m_CurrentMesh],

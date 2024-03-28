@@ -52,19 +52,19 @@ namespace
         params.overlayOptions.tryUpdFromValues(std::string{prefix} + "overlays/", values);
         params.renderingOptions.tryUpdFromValues(std::string{prefix} + "graphics/", values);
         if (auto const* v = try_find(values, std::string{prefix} + "light_color")) {
-            params.lightColor = v->toColor();
+            params.lightColor = v->to_color();
         }
         if (auto const* v = try_find(values,std::string{prefix} + "background_color")) {
-            params.backgroundColor = v->toColor();
+            params.backgroundColor = v->to_color();
         }
         // TODO: floorLocation
     }
 }
 
 osc::ModelRendererParams::ModelRendererParams() :
-    lightColor{SceneRendererParams::defaultLightColor()},
-    backgroundColor{SceneRendererParams::defaultBackgroundColor()},
-    floorLocation{SceneRendererParams::defaultFloorLocation()},
+    lightColor{SceneRendererParams::default_light_color()},
+    backgroundColor{SceneRendererParams::default_background_color()},
+    floorLocation{SceneRendererParams::default_floor_location()},
     camera{CreateCameraWithRadius(5.0f)}
 {
 }

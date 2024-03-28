@@ -48,7 +48,7 @@ private:
             }
         }
         {
-            bool vsync = App::get().isVsyncEnabled();
+            bool vsync = App::get().is_vsync_enabled();
             if (ui::Checkbox("VSYNC", &vsync))
             {
                 App::upd().setVsync(vsync);

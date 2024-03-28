@@ -51,6 +51,6 @@ Texture2D osc::load_texture2D_from_svg(std::istream& in, float scale)
         TextureWrapMode::Clamp,
         TextureFilterMode::Nearest,
     };
-    rv.setPixelData({bitmap.data(), static_cast<size_t>(bitmap.width()*bitmap.height()*4)});
+    rv.set_pixel_data({bitmap.data(), static_cast<size_t>(bitmap.width()*bitmap.height()*4)});
     return rv;
 }

@@ -16,35 +16,35 @@ using namespace osc;
 
 namespace
 {
-    Texture2D generateChequeredTexture()
+    Texture2D generate_chequer_texture()
     {
-        constexpr Vec2i chequerDims = {32, 32};
-        constexpr Vec2i textureDims = 2 * chequerDims;
-        constexpr Color32 onColor = {0xff, 0xff, 0xff, 0xff};
-        constexpr Color32 offColor = {0xf3, 0xf3, 0xf3, 0xff};
+        constexpr Vec2i chequer_dims = {32, 32};
+        constexpr Vec2i texture_dims = 2 * chequer_dims;
+        constexpr Color32 on_color = {0xff, 0xff, 0xff, 0xff};
+        constexpr Color32 off_color = {0xf3, 0xf3, 0xf3, 0xff};
 
         std::vector<Color32> pixels;
-        pixels.reserve(area(textureDims));
-        for (int y = 0; y < textureDims.y; ++y) {
-            const bool yOn = (y / chequerDims.y) % 2 == 0;
-            for (int x = 0; x < textureDims.x; ++x) {
-                const bool xOn = (x / chequerDims.x) % 2 == 0;
-                pixels.push_back(yOn ^ xOn ? onColor : offColor);
+        pixels.reserve(area(texture_dims));
+        for (int y = 0; y < texture_dims.y; ++y) {
+            const bool y_on = (y / chequer_dims.y) % 2 == 0;
+            for (int x = 0; x < texture_dims.x; ++x) {
+                const bool x_on = (x / chequer_dims.x) % 2 == 0;
+                pixels.push_back(y_on ^ x_on ? on_color : off_color);
             }
         }
 
         Texture2D rv{
-            textureDims,
+            texture_dims,
             TextureFormat::RGBA32,
             ColorSpace::sRGB,
             TextureWrapMode::Repeat,
             TextureFilterMode::Mipmap,
         };
-        rv.setPixelData(ViewObjectRepresentations<uint8_t>(pixels));
+        rv.set_pixel_data(view_object_representations<uint8_t>(pixels));
         return rv;
     }
 }
 
 osc::ChequeredTexture::ChequeredTexture() :
-    m_Texture{generateChequeredTexture()}
+    texture_{generate_chequer_texture()}
 {}

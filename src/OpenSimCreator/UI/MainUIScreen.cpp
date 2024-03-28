@@ -154,7 +154,7 @@ public:
             e.key.keysym.scancode == SDL_SCANCODE_P)
         {
             // Ctrl+/Super+P operates as a "take a screenshot" request
-            m_MaybeScreenshotRequest = App::upd().requestScreenshot();
+            m_MaybeScreenshotRequest = App::upd().request_screenshot();
         }
         if ((e.type == SDL_KEYUP &&
              e.key.keysym.mod & (KMOD_CTRL | KMOD_GUI) &&
@@ -310,8 +310,8 @@ public:
         OSC_PERF("MainUIScreen/draw");
 
         {
-            OSC_PERF("MainUIScreen/clearScreen");
-            App::upd().clearScreen({0.0f, 0.0f, 0.0f, 0.0f});
+            OSC_PERF("MainUIScreen/clear_screen");
+            App::upd().clear_screen({0.0f, 0.0f, 0.0f, 0.0f});
         }
 
         ui::context::NewFrame();

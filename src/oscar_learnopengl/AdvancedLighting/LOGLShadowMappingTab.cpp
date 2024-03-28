@@ -52,9 +52,9 @@ namespace
     MouseCapturingCamera CreateCamera()
     {
         MouseCapturingCamera cam;
-        cam.setPosition({-2.0f, 1.0f, 0.0f});
-        cam.setNearClippingPlane(0.1f);
-        cam.setFarClippingPlane(100.0f);
+        cam.set_position({-2.0f, 1.0f, 0.0f});
+        cam.set_near_clipping_plane(0.1f);
+        cam.set_far_clipping_plane(100.0f);
         return cam;
     }
 
@@ -103,19 +103,19 @@ private:
 
         renderShadowsToDepthTexture();
 
-        m_Camera.setBackgroundColor({0.1f, 0.1f, 0.1f, 1.0f});
+        m_Camera.set_background_color({0.1f, 0.1f, 0.1f, 1.0f});
 
         m_SceneMaterial.setVec3("uLightWorldPos", m_LightPos);
-        m_SceneMaterial.setVec3("uViewWorldPos", m_Camera.getPosition());
+        m_SceneMaterial.setVec3("uViewWorldPos", m_Camera.position());
         m_SceneMaterial.setMat4("uLightSpaceMat", m_LatestLightSpaceMatrix);
         m_SceneMaterial.setTexture("uDiffuseTexture", m_WoodTexture);
         m_SceneMaterial.setRenderTexture("uShadowMapTexture", m_DepthTexture);
 
         drawMeshesWithMaterial(m_SceneMaterial);
-        m_Camera.setPixelRect(viewportRect);
-        m_Camera.renderToScreen();
-        m_Camera.setPixelRect(std::nullopt);
-        graphics::blitToScreen(m_DepthTexture, Rect{viewportRect.p1, viewportRect.p1 + 200.0f});
+        m_Camera.set_pixel_rect(viewportRect);
+        m_Camera.render_to_screen();
+        m_Camera.set_pixel_rect(std::nullopt);
+        graphics::blit_to_screen(m_DepthTexture, Rect{viewportRect.p1, viewportRect.p1 + 200.0f});
 
         m_SceneMaterial.clearRenderTexture("uShadowMapTexture");
     }
@@ -160,11 +160,11 @@ private:
 
         drawMeshesWithMaterial(m_DepthMaterial);
 
-        m_Camera.setViewMatrixOverride(lightViewMatrix);
-        m_Camera.setProjectionMatrixOverride(lightProjMatrix);
-        m_Camera.renderTo(m_DepthTexture);
-        m_Camera.setViewMatrixOverride(std::nullopt);
-        m_Camera.setProjectionMatrixOverride(std::nullopt);
+        m_Camera.set_view_matrix_override(lightViewMatrix);
+        m_Camera.set_projection_matrix_override(lightProjMatrix);
+        m_Camera.render_to(m_DepthTexture);
+        m_Camera.set_view_matrix_override(std::nullopt);
+        m_Camera.set_projection_matrix_override(std::nullopt);
     }
 
     ResourceLoader m_Loader = App::resource_loader();

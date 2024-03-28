@@ -1243,7 +1243,7 @@ bool osc::DrawViewerImGuiOverlays(
 
     // draw top-right camera manipulators
     CameraViewAxes axes;
-    Vec2 const renderDims = dimensions(renderRect);
+    Vec2 const renderDims = dimensions_of(renderRect);
     Vec2 const axesDims = axes.dimensions();
     Vec2 const axesTopLeft = {
         renderRect.p1.x + renderDims.x - windowPadding.x - axesDims.x,

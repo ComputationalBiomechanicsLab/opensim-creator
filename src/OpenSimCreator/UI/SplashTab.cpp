@@ -57,14 +57,14 @@ namespace
     SceneRendererParams GetSplashScreenDefaultRenderParams(PolarPerspectiveCamera const& camera)
     {
         SceneRendererParams rv;
-        rv.drawRims = false;
-        rv.viewMatrix = camera.view_matrix();
-        rv.nearClippingPlane = camera.znear;
-        rv.farClippingPlane = camera.zfar;
-        rv.viewPos = camera.getPos();
-        rv.lightDirection = {-0.34f, -0.25f, 0.05f};
-        rv.lightColor = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f, 1.0f};
-        rv.backgroundColor = {0.89f, 0.89f, 0.89f, 1.0f};
+        rv.draw_rims = false;
+        rv.view_matrix = camera.view_matrix();
+        rv.near_clipping_plane = camera.znear;
+        rv.far_clipping_plane = camera.zfar;
+        rv.view_pos = camera.getPos();
+        rv.light_direction = {-0.34f, -0.25f, 0.05f};
+        rv.light_color = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f, 1.0f};
+        rv.background_color = {0.89f, 0.89f, 0.89f, 1.0f};
         return rv;
     }
 
@@ -99,9 +99,9 @@ public:
     explicit Impl(ParentPtr<IMainUIStateAPI> const& parent_) :
         m_Parent{parent_}
     {
-        m_MainAppLogo.setFilterMode(TextureFilterMode::Linear);
-        m_CziLogo.setFilterMode(TextureFilterMode::Linear);
-        m_TudLogo.setFilterMode(TextureFilterMode::Linear);
+        m_MainAppLogo.set_filter_mode(TextureFilterMode::Linear);
+        m_CziLogo.set_filter_mode(TextureFilterMode::Linear);
+        m_TudLogo.set_filter_mode(TextureFilterMode::Linear);
     }
 
     UID getID() const
@@ -169,8 +169,8 @@ private:
         // pretend the attributation bar isn't there (avoid it)
         tabRect.p2.y -= static_cast<float>(max(m_TudLogo.getDimensions().y, m_CziLogo.getDimensions().y)) - 2.0f*ui::GetStyleWindowPadding().y;
 
-        Vec2 const menuAndTopLogoDims = elementwise_min(dimensions(tabRect), Vec2{m_SplashMenuMaxDims.x, m_SplashMenuMaxDims.y + m_MainAppLogoDims.y + m_TopLogoPadding.y});
-        Vec2 const menuAndTopLogoTopLeft = tabRect.p1 + 0.5f*(dimensions(tabRect) - menuAndTopLogoDims);
+        Vec2 const menuAndTopLogoDims = elementwise_min(dimensions_of(tabRect), Vec2{m_SplashMenuMaxDims.x, m_SplashMenuMaxDims.y + m_MainAppLogoDims.y + m_TopLogoPadding.y});
+        Vec2 const menuAndTopLogoTopLeft = tabRect.p1 + 0.5f*(dimensions_of(tabRect) - menuAndTopLogoDims);
         Vec2 const menuDims = {menuAndTopLogoDims.x, menuAndTopLogoDims.y - m_MainAppLogoDims.y - m_TopLogoPadding.y};
         Vec2 const menuTopLeft = Vec2{menuAndTopLogoTopLeft.x, menuAndTopLogoTopLeft.y + m_MainAppLogoDims.y + m_TopLogoPadding.y};
 
@@ -182,7 +182,7 @@ private:
         Rect const mmr = calcMainMenuRect();
         Vec2 const topLeft
         {
-            mmr.p1.x + dimensions(mmr).x/2.0f - m_MainAppLogoDims.x/2.0f,
+            mmr.p1.x + dimensions_of(mmr).x/2.0f - m_MainAppLogoDims.x/2.0f,
             mmr.p1.y - m_TopLogoPadding.y - m_MainAppLogoDims.y,
         };
 
@@ -194,24 +194,24 @@ private:
         Rect const screenRect = ui::GetMainViewportWorkspaceScreenRect();
 
         ui::SetNextWindowPos(screenRect.p1);
-        ui::SetNextWindowSize(dimensions(screenRect));
+        ui::SetNextWindowSize(dimensions_of(screenRect));
 
         ui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0.0f, 0.0f });
         ui::Begin("##splashscreenbackground", nullptr, ui::GetMinimalWindowFlags());
         ui::PopStyleVar();
 
         SceneRendererParams params{m_LastSceneRendererParams};
-        params.dimensions = dimensions(screenRect);
-        params.antiAliasingLevel = App::get().getCurrentAntiAliasingLevel();
-        params.projectionMatrix = m_Camera.projection_matrix(aspect_ratio(screenRect));
+        params.dimensions = dimensions_of(screenRect);
+        params.antialiasing_level = App::get().getCurrentAntiAliasingLevel();
+        params.projection_matrix = m_Camera.projection_matrix(aspect_ratio(screenRect));
 
         if (params != m_LastSceneRendererParams)
         {
-            m_SceneRenderer.render({}, params);
+            scene_renderer_.render({}, params);
             m_LastSceneRendererParams = params;
         }
 
-        ui::Image(m_SceneRenderer.updRenderTexture());
+        ui::Image(scene_renderer_.upd_render_texture());
 
         ui::End();
     }
@@ -222,7 +222,7 @@ private:
 
         ui::SetNextWindowPos(logoRect.p1);
         ui::Begin("##osclogo", nullptr, ui::GetMinimalWindowFlags());
-        ui::Image(m_MainAppLogo, dimensions(logoRect));
+        ui::Image(m_MainAppLogo, dimensions_of(logoRect));
         ui::End();
     }
 
@@ -231,8 +231,8 @@ private:
         // center the menu window
         Rect const mmr = calcMainMenuRect();
         ui::SetNextWindowPos(mmr.p1);
-        ui::SetNextWindowSize({dimensions(mmr).x, -1.0f});
-        ui::SetNextWindowSizeConstraints(dimensions(mmr), dimensions(mmr));
+        ui::SetNextWindowSize({dimensions_of(mmr).x, -1.0f});
+        ui::SetNextWindowSizeConstraints(dimensions_of(mmr), dimensions_of(mmr));
 
         if (ui::Begin("Splash screen", nullptr, ImGuiWindowFlags_NoTitleBar))
         {
@@ -398,7 +398,7 @@ private:
 
     // for rendering the 3D scene
     PolarPerspectiveCamera m_Camera = GetSplashScreenDefaultPolarCamera();
-    SceneRenderer m_SceneRenderer{
+    SceneRenderer scene_renderer_{
         *App::singleton<SceneCache>(App::resource_loader()),
     };
     SceneRendererParams m_LastSceneRendererParams = GetSplashScreenDefaultRenderParams(m_Camera);

@@ -77,7 +77,7 @@ namespace osc
             // update camera if user drags it around etc.
             if (m_LastTextureHittestResult.isHovered)
             {
-                if (ui::UpdatePolarCameraFromMouseInputs(m_Camera, dimensions(m_LastTextureHittestResult.rect)))
+                if (ui::UpdatePolarCameraFromMouseInputs(m_Camera, dimensions_of(m_LastTextureHittestResult.rect)))
                 {
                     m_State->linkedCameraBase = m_Camera;  // reflects latest modification
                 }
@@ -270,7 +270,7 @@ namespace osc
         RenderTexture& renderScene(Vec2 dims)
         {
             std::vector<SceneDecoration> const decorations = generateDecorations();
-            SceneRendererParams const params = calcStandardDarkSceneRenderParams(
+            SceneRendererParams const params = calc_standard_dark_scene_render_params(
                 m_Camera,
                 App::get().getCurrentAntiAliasingLevel(),
                 dims

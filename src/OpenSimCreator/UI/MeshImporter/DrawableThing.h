@@ -24,7 +24,7 @@ namespace osc::mi
         Transform transform{};
         Color color = Color::black();
         SceneDecorationFlags flags = SceneDecorationFlags::None;
-        std::optional<Material> maybeMaterial{};
+        std::optional<Material> maybe_material{};
         std::optional<MaterialPropertyBlock> maybePropertyBlock{};
     };
 

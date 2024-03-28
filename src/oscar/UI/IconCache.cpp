@@ -29,7 +29,7 @@ public:
                     loaderPrefixedAtDirContainingSVGs.open(p),
                     verticalScale
                 );
-                texture.setFilterMode(TextureFilterMode::Nearest);
+                texture.set_filter_mode(TextureFilterMode::Nearest);
 
                 m_Icons.try_emplace(
                     p.stem(),

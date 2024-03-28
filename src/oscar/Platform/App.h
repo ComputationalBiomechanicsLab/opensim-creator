@@ -162,25 +162,25 @@ namespace osc
         //
         // other parts of the application can use this to decide whether to render
         // extra debug elements, etc.
-        bool isInDebugMode() const;
-        void enableDebugMode();
-        void disableDebugMode();
+        bool is_in_debug_mode() const;
+        void enable_debug_mode();
+        void disable_debug_mode();
 
         // returns true if VSYNC has been enabled in the graphics layer
-        bool isVsyncEnabled() const;
+        bool is_vsync_enabled() const;
         void setVsync(bool);
-        void enableVsync();
-        void disableVsync();
+        void enable_vsync();
+        void disable_vsync();
 
         // add an annotation to the current frame
         //
-        // the annotation is added to the data returned by `App::requestScreenshot`
+        // the annotation is added to the data returned by `App::request_screenshot`
         void addFrameAnnotation(std::string_view label, Rect screenRect);
 
         // returns a future that asynchronously yields a complete annotated screenshot of the next frame
         //
         // client code can submit annotations with `App::addFrameAnnotation`
-        std::future<Screenshot> requestScreenshot();
+        std::future<Screenshot> request_screenshot();
 
         // returns human-readable strings representing (parts of) the graphics backend (e.g. OpenGL)
         std::string getGraphicsBackendVendorString() const;
@@ -220,7 +220,7 @@ namespace osc
         void requestRedraw();  // threadsafe: used to make a waiting loop redraw
 
         // fill all pixels in the screen with the given color
-        void clearScreen(Color const&);
+        void clear_screen(Color const&);
 
         // sets the main window's subtitle (e.g. document name)
         void setMainWindowSubTitle(std::string_view);

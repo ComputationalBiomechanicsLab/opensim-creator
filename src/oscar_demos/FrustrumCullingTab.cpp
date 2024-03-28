@@ -33,7 +33,7 @@ namespace
         auto rng = std::default_random_engine{std::random_device{}()};
         auto dist = std::normal_distribution{0.1f, 0.1f};
         AABB const bounds = {{-5.0f, -2.0f, -5.0f}, {5.0f, 2.0f, 5.0f}};
-        Vec3 const dims = dimensions(bounds);
+        Vec3 const dims = dimensions_of(bounds);
         Vec3uz const cells = {10, 3, 10};
 
         std::vector<TransformedMesh> rv;
@@ -67,12 +67,12 @@ class osc::FrustrumCullingTab::Impl final : public StandardTabImpl {
 public:
     Impl() : StandardTabImpl{c_TabStringID}
     {
-        m_UserCamera.setNearClippingPlane(0.1f);
-        m_UserCamera.setFarClippingPlane(10.0f);
-        m_TopDownCamera.setPosition({0.0f, 9.5f, 0.0f});
-        m_TopDownCamera.setDirection({0.0f, -1.0f, 0.0f});
-        m_TopDownCamera.setNearClippingPlane(0.1f);
-        m_TopDownCamera.setFarClippingPlane(10.0f);
+        m_UserCamera.set_near_clipping_plane(0.1f);
+        m_UserCamera.set_far_clipping_plane(10.0f);
+        m_TopDownCamera.set_position({0.0f, 9.5f, 0.0f});
+        m_TopDownCamera.set_direction({0.0f, -1.0f, 0.0f});
+        m_TopDownCamera.set_near_clipping_plane(0.1f);
+        m_TopDownCamera.set_far_clipping_plane(10.0f);
     }
 
 private:
@@ -99,7 +99,7 @@ private:
         float const xmid = midpoint(viewport.p1.x, viewport.p2.x);
         Rect const lhs = {viewport.p1, {xmid, viewport.p2.y}};
         Rect const rhs = {{xmid, viewport.p1.y}, viewport.p2};
-        FrustumPlanes const frustum = calcCameraFrustumPlanes(m_UserCamera, aspect_ratio(lhs));
+        FrustumPlanes const frustum = calc_frustum_planes(m_UserCamera, aspect_ratio(lhs));
 
         m_UserCamera.onDraw();  // update from inputs etc.
 
@@ -110,8 +110,8 @@ private:
                 graphics::draw(dec.mesh, dec.transform, m_Material, m_UserCamera, m_BlueMaterialProps);
             }
         }
-        m_UserCamera.setPixelRect(lhs);
-        m_UserCamera.renderToScreen();
+        m_UserCamera.set_pixel_rect(lhs);
+        m_UserCamera.render_to_screen();
 
         // render from top-down perspective on right-hand side
         for (auto const& dec : m_Decorations) {
@@ -121,15 +121,15 @@ private:
         }
         graphics::draw(
             SphereGeometry{},
-            {.scale = Vec3{0.1f}, .position = m_UserCamera.getPosition()},
+            {.scale = Vec3{0.1f}, .position = m_UserCamera.position()},
             m_Material,
             m_TopDownCamera,
             m_GreenMaterialProps
         );
-        m_TopDownCamera.setPixelRect(rhs);
-        m_TopDownCamera.setScissorRect(rhs);
-        m_TopDownCamera.setBackgroundColor({0.1f, 1.0f});
-        m_TopDownCamera.renderToScreen();
+        m_TopDownCamera.set_pixel_rect(rhs);
+        m_TopDownCamera.set_scissor_rect(rhs);
+        m_TopDownCamera.set_background_color({0.1f, 1.0f});
+        m_TopDownCamera.render_to_screen();
     }
 
     MouseCapturingCamera m_UserCamera;

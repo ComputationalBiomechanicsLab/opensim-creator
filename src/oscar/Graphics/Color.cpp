@@ -21,7 +21,7 @@ using namespace osc;
 
 namespace
 {
-    float calcNormalizedHLSAHue(
+    float calc_normalized_hsla_hue(
         float r,
         float g,
         float b,
@@ -52,7 +52,7 @@ namespace
         return (segment + shift)/6.0f;  // normalize
     }
 
-    float calcHLSASaturation(float lightness, float min, float max)
+    float calc_hsla_saturation(float lightness, float min, float max)
     {
         if (lightness == 0.0f) {
             return 0.0f;
@@ -89,42 +89,42 @@ std::ostream& osc::operator<<(std::ostream& o, const Color& c)
 // - https://registry.khronos.org/OpenGL/extensions/ARB/ARB_framebuffer_sRGB.txt
 //
 // (because I am a lazy bastard)
-float osc::toLinear(float colorChannelValue)
+float osc::to_linear_colorspace(float color_channel_value)
 {
-    if (colorChannelValue <= 0.04045f) {
-        return colorChannelValue / 12.92f;
+    if (color_channel_value <= 0.04045f) {
+        return color_channel_value / 12.92f;
     }
     else {
-        return pow((colorChannelValue + 0.055f) / 1.055f, 2.4f);
+        return pow((color_channel_value + 0.055f) / 1.055f, 2.4f);
     }
 }
 
-float osc::toSRGB(float colorChannelValue)
+float osc::to_srgb_colorspace(float color_channel_value)
 {
-    if (colorChannelValue <= 0.0031308f) {
-        return colorChannelValue * 12.92f;
+    if (color_channel_value <= 0.0031308f) {
+        return color_channel_value * 12.92f;
     }
     else {
-        return pow(colorChannelValue, 1.0f/2.4f)*1.055f - 0.055f;
+        return pow(color_channel_value, 1.0f/2.4f)*1.055f - 0.055f;
     }
 }
 
-Color osc::toLinear(const Color& c)
+Color osc::to_linear_colorspace(const Color& c)
 {
     return {
-        toLinear(c.r),
-        toLinear(c.g),
-        toLinear(c.b),
+        to_linear_colorspace(c.r),
+        to_linear_colorspace(c.g),
+        to_linear_colorspace(c.b),
         c.a,
     };
 }
 
-Color osc::toSRGB(const Color& c)
+Color osc::to_srgb_colorspace(const Color& c)
 {
     return {
-        toSRGB(c.r),
-        toSRGB(c.g),
-        toSRGB(c.b),
+        to_srgb_colorspace(c.r),
+        to_srgb_colorspace(c.g),
+        to_srgb_colorspace(c.b),
         c.a,
     };
 }
@@ -136,25 +136,25 @@ Color osc::lerp(const Color& a, const Color& b, float t)
 
 size_t std::hash<osc::Color>::operator()(const osc::Color& color) const
 {
-    return HashOf(color.r, color.g, color.b, color.a);
+    return hash_of(color.r, color.g, color.b, color.a);
 }
 
-Color32 osc::toColor32(const Color& color)
+Color32 osc::to_color32(const Color& color)
 {
-    return toColor32(static_cast<Vec4>(color));
+    return to_color32(static_cast<Vec4>(color));
 }
 
-Color32 osc::toColor32(const Vec4& v)
+Color32 osc::to_color32(const Vec4& v)
 {
     return Color32{v.x, v.y, v.z, v.w};
 }
 
-Color32 osc::toColor32(float r, float g, float b, float a)
+Color32 osc::to_color32(float r, float g, float b, float a)
 {
     return Color32{r, g, b, a};
 }
 
-Color32 osc::toColor32(uint32_t v)
+Color32 osc::to_color32(uint32_t v)
 {
     return Color32{
         static_cast<uint8_t>((v >> 24) & 0xff),
@@ -164,35 +164,35 @@ Color32 osc::toColor32(uint32_t v)
     };
 }
 
-Color osc::toColor(Color32 c)
+Color osc::to_color(Color32 c)
 {
     return Color{c.r.normalized_value(), c.g.normalized_value(), c.b.normalized_value(), c.a.normalized_value()};
 }
 
-Color osc::clampToLDR(const Color& c)
+Color osc::clamp_to_ldr(const Color& c)
 {
     return Color{saturate(Vec4{c})};
 }
 
-ColorHSLA osc::toHSLA(const Color& c)
+ColorHSLA osc::to_hsla_color(const Color& c)
 {
     // sources:
     //
     // - https://web.cs.uni-paderborn.de/cgvb/colormaster/web/color-systems/hsl.html
     // - https://stackoverflow.com/questions/39118528/rgb-to-hsl-conversion
 
-    const auto [r, g, b, a] = clampToLDR(c);
+    const auto [r, g, b, a] = clamp_to_ldr(c);
     const auto [min, max] = minmax({r, g, b});
     const float delta = max - min;
 
-    const float hue = calcNormalizedHLSAHue(r, g, b, min, max, delta);
+    const float hue = calc_normalized_hsla_hue(r, g, b, min, max, delta);
     const float lightness = 0.5f*(min + max);
-    const float saturation = calcHLSASaturation(lightness, min, max);
+    const float saturation = calc_hsla_saturation(lightness, min, max);
 
     return {hue, saturation, lightness, a};
 }
 
-Color osc::toColor(const ColorHSLA& c)
+Color osc::to_color(const ColorHSLA& c)
 {
     // see: https://web.cs.uni-paderborn.de/cgvb/colormaster/web/color-systems/hsl.html
 
@@ -226,20 +226,20 @@ Color osc::toColor(const ColorHSLA& c)
     }
 }
 
-std::string osc::toHtmlStringRGBA(const Color& c)
+std::string osc::to_html_string_rgba(const Color& c)
 {
     std::string rv;
     rv.reserve(9);
     rv.push_back('#');
-    for (auto v : toColor32(c)) {
-        auto [nib1, nib2] = ToHexChars(static_cast<uint8_t>(v));
-        rv.push_back(nib1);
-        rv.push_back(nib2);
+    for (auto channel : to_color32(c)) {
+        auto [nibble_1, nibble_2] = to_hex_chars(static_cast<uint8_t>(channel));
+        rv.push_back(nibble_1);
+        rv.push_back(nibble_2);
     }
     return rv;
 }
 
-std::optional<Color> osc::tryParseHtmlString(std::string_view v)
+std::optional<Color> osc::try_parse_html_color_string(std::string_view v)
 {
     if (v.empty())
     {
@@ -255,7 +255,7 @@ std::optional<Color> osc::tryParseHtmlString(std::string_view v)
         // RGB hex string
         Color rv = Color::black();
         for (size_t i = 0; i < 3; ++i) {
-            if (auto b = TryParseHexCharsAsByte(content[2*i], content[2*i + 1])) {
+            if (auto b = try_parse_hex_chars_as_byte(content[2*i], content[2*i + 1])) {
                 rv[i] = Unorm8{*b}.normalized_value();
             }
             else {
@@ -268,7 +268,7 @@ std::optional<Color> osc::tryParseHtmlString(std::string_view v)
         // RGBA hex string
         Color rv = Color::black();
         for (size_t i = 0; i < 4; ++i) {
-            if (auto b = TryParseHexCharsAsByte(content[2*i], content[2*i + 1])) {
+            if (auto b = try_parse_hex_chars_as_byte(content[2*i], content[2*i + 1])) {
                 rv[i] = Unorm8{*b}.normalized_value();
             }
             else {
@@ -283,9 +283,9 @@ std::optional<Color> osc::tryParseHtmlString(std::string_view v)
     }
 }
 
-Color osc::multiplyLuminance(const Color& c, float factor)
+Color osc::multiply_luminance(const Color& c, float factor)
 {
-    auto hsla = toHSLA(c);
+    auto hsla = to_hsla_color(c);
     hsla.l *= factor;
-    return toColor(hsla);
+    return to_color(hsla);
 }

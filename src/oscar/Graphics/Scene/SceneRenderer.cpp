@@ -1,6 +1,7 @@
 #include "SceneRenderer.h"
 
 #include <oscar/Graphics/Materials/MeshBasicMaterial.h>
+#include <oscar/Graphics/Scene/SceneHelpers.h>
 #include <oscar/Graphics/Textures/ChequeredTexture.h>
 #include <oscar/Graphics/AntiAliasingLevel.h>
 #include <oscar/Graphics/Camera.h>
@@ -37,18 +38,13 @@ using namespace osc;
 
 namespace
 {
-    Transform getFloorTransform(Vec3 floorLocation, float fixupScaleFactor)
+    Transform calc_floor_transform(Vec3 floor_origin, float fixup_scale_factor)
     {
         return {
-            .scale = {100.0f * fixupScaleFactor, 100.0f * fixupScaleFactor, 1.0f},
+            .scale = {100.0f * fixup_scale_factor, 100.0f * fixup_scale_factor, 1.0f},
             .rotation = angle_axis(-90_deg, Vec3{1.0f, 0.0f, 0.0f}),
-            .position = floorLocation,
+            .position = floor_origin,
         };
-    }
-
-    AABB worldpaceAABB(const SceneDecoration& d)
-    {
-        return transform_aabb(d.transform, d.mesh.getBounds());
     }
 
     struct RimHighlights final {
@@ -69,8 +65,8 @@ namespace
     };
 
     struct Shadows final {
-        RenderTexture shadowMap;
-        Mat4 lightSpaceMat;
+        RenderTexture shadow_map;
+        Mat4 lightspace_mat;
     };
 
     struct PolarAngles final {
@@ -78,7 +74,7 @@ namespace
         Radians phi;
     };
 
-    PolarAngles calcPolarAngles(const Vec3& directionFromOrigin)
+    PolarAngles calc_polar_angles(const Vec3& direction_from_origin)
     {
         // X is left-to-right
         // Y is bottom-to-top
@@ -93,44 +89,44 @@ namespace
         // |     0 |   pi/2 |  0 |  1 |  0 |
 
         return {
-            .theta = osc::atan2(directionFromOrigin.x, directionFromOrigin.z),
-            .phi = osc::asin(directionFromOrigin.y),
+            .theta = osc::atan2(direction_from_origin.x, direction_from_origin.z),
+            .phi = osc::asin(direction_from_origin.y),
         };
     }
 
     struct ShadowCameraMatrices final {
-        Mat4 viewMatrix;
-        Mat4 projMatrix;
+        Mat4 view_mat;
+        Mat4 projection_mat;
     };
 
-    ShadowCameraMatrices calcShadowCameraMatrices(
-        const AABB& casterAABBs,
-        const Vec3& lightDirection)
+    ShadowCameraMatrices calc_shadow_camera_matrices(
+        const AABB& shadowcasters_aabb,
+        const Vec3& light_direction)
     {
-        const Sphere casterSphere = bounding_sphere_of(casterAABBs);
-        const PolarAngles cameraPolarAngles = calcPolarAngles(-lightDirection);
+        const Sphere shadowcasters_sphere = bounding_sphere_of(shadowcasters_aabb);
+        const PolarAngles camera_polar_angles = calc_polar_angles(-light_direction);
 
         // pump sphere+polar information into a polar camera in order to
         // calculate the renderer's view/projection matrices
-        PolarPerspectiveCamera polarCamera;
-        polarCamera.focusPoint = -casterSphere.origin;
-        polarCamera.phi = cameraPolarAngles.phi;
-        polarCamera.theta = cameraPolarAngles.theta;
-        polarCamera.radius = casterSphere.radius;
-        polarCamera.znear = 0.0f;
-        polarCamera.zfar = 2.0f * casterSphere.radius;
+        PolarPerspectiveCamera camera;
+        camera.focusPoint = -shadowcasters_sphere.origin;
+        camera.phi = camera_polar_angles.phi;
+        camera.theta = camera_polar_angles.theta;
+        camera.radius = shadowcasters_sphere.radius;
+        camera.znear = 0.0f;
+        camera.zfar = 2.0f * shadowcasters_sphere.radius;
 
-        const Mat4 viewMat = polarCamera.view_matrix();
-        const Mat4 projMat = ortho(
-            -casterSphere.radius,
-            casterSphere.radius,
-            -casterSphere.radius,
-            casterSphere.radius,
+        const Mat4 view_mat = camera.view_matrix();
+        const Mat4 projection_mat = ortho(
+            -shadowcasters_sphere.radius,
+            shadowcasters_sphere.radius,
+            -shadowcasters_sphere.radius,
+            shadowcasters_sphere.radius,
             0.0f,
-            2.0f*casterSphere.radius
+            2.0f*shadowcasters_sphere.radius
         );
 
-        return ShadowCameraMatrices{viewMat, projMat};
+        return ShadowCameraMatrices{view_mat, projection_mat};
     }
 }
 
@@ -139,36 +135,36 @@ class osc::SceneRenderer::Impl final {
 public:
     explicit Impl(SceneCache& cache) :
 
-        m_SceneColoredElementsMaterial{cache.getShaderResource("oscar/shaders/SceneRenderer/DrawColoredObjects.vert", "oscar/shaders/SceneRenderer/DrawColoredObjects.frag")},
-        m_SceneTexturedElementsMaterial{cache.getShaderResource("oscar/shaders/SceneRenderer/DrawTexturedObjects.vert", "oscar/shaders/SceneRenderer/DrawTexturedObjects.frag")},
-        m_SolidColorMaterial{cache.basicMaterial()},
-        m_WireframeMaterial{cache.wireframeMaterial()},
-        m_EdgeDetectorMaterial{cache.getShaderResource("oscar/shaders/SceneRenderer/EdgeDetector.vert", "oscar/shaders/SceneRenderer/EdgeDetector.frag")},
-        m_NormalsMaterial{cache.getShaderResource("oscar/shaders/SceneRenderer/NormalsVisualizer.vert", "oscar/shaders/SceneRenderer/NormalsVisualizer.geom", "oscar/shaders/SceneRenderer/NormalsVisualizer.frag")},
-        m_DepthWritingMaterial{cache.getShaderResource("oscar/shaders/SceneRenderer/DepthMap.vert", "oscar/shaders/SceneRenderer/DepthMap.frag")},
-        m_QuadMesh{cache.getTexturedQuadMesh()}
+        scene_colored_els_material_{cache.get_shader("oscar/shaders/SceneRenderer/DrawColoredObjects.vert", "oscar/shaders/SceneRenderer/DrawColoredObjects.frag")},
+        scene_textured_els_material_{cache.get_shader("oscar/shaders/SceneRenderer/DrawTexturedObjects.vert", "oscar/shaders/SceneRenderer/DrawTexturedObjects.frag")},
+        solid_color_material_{cache.basic_material()},
+        wireframe_material_{cache.wireframe_material()},
+        edge_detection_material_{cache.get_shader("oscar/shaders/SceneRenderer/EdgeDetector.vert", "oscar/shaders/SceneRenderer/EdgeDetector.frag")},
+        normals_material_{cache.get_shader("oscar/shaders/SceneRenderer/NormalsVisualizer.vert", "oscar/shaders/SceneRenderer/NormalsVisualizer.geom", "oscar/shaders/SceneRenderer/NormalsVisualizer.frag")},
+        depth_writer_material_{cache.get_shader("oscar/shaders/SceneRenderer/DepthMap.vert", "oscar/shaders/SceneRenderer/DepthMap.frag")},
+        quad_mesh_{cache.quad_mesh()}
     {
-        m_SceneTexturedElementsMaterial.setTexture("uDiffuseTexture", m_ChequerTexture);
-        m_SceneTexturedElementsMaterial.setVec2("uTextureScale", {200.0f, 200.0f});
-        m_SceneTexturedElementsMaterial.setTransparent(true);
+        scene_textured_els_material_.setTexture("uDiffuseTexture", chequered_texture_);
+        scene_textured_els_material_.setVec2("uTextureScale", {200.0f, 200.0f});
+        scene_textured_els_material_.setTransparent(true);
 
-        m_WireframeMaterial.set_color(Color::black());
+        wireframe_material_.set_color(Color::black());
 
-        m_RimsSelectedColor.set_color(Color::red());
-        m_RimsHoveredColor.set_color({0.5, 0.0f, 0.0f, 1.0f});
+        rims_selected_properties_.set_color(Color::red());
+        rims_hovered_properties_.set_color({0.5, 0.0f, 0.0f, 1.0f});
 
-        m_EdgeDetectorMaterial.setTransparent(true);
-        m_EdgeDetectorMaterial.setDepthTested(false);
+        edge_detection_material_.setTransparent(true);
+        edge_detection_material_.setDepthTested(false);
     }
 
-    Vec2i getDimensions() const
+    Vec2i dimensions() const
     {
-        return m_OutputTexture.getDimensions();
+        return output_rendertexture_.getDimensions();
     }
 
-    AntiAliasingLevel getAntiAliasingLevel() const
+    AntiAliasingLevel antialiasing_level() const
     {
-        return m_OutputTexture.getAntialiasingLevel();
+        return output_rendertexture_.getAntialiasingLevel();
     }
 
     void render(
@@ -176,329 +172,329 @@ public:
         const SceneRendererParams& params)
     {
         // render any other perspectives on the scene (shadows, rim highlights, etc.)
-        const std::optional<RimHighlights> maybeRimHighlights = tryGenerateRimHighlights(decorations, params);
-        const std::optional<Shadows> maybeShadowMap = tryGenerateShadowMap(decorations, params);
+        const std::optional<RimHighlights> maybe_rims = try_generate_rims(decorations, params);
+        const std::optional<Shadows> maybe_shadowmap = try_generate_shadowmap(decorations, params);
 
         // setup camera for this render
-        m_Camera.reset();
-        m_Camera.setPosition(params.viewPos);
-        m_Camera.setNearClippingPlane(params.nearClippingPlane);
-        m_Camera.setFarClippingPlane(params.farClippingPlane);
-        m_Camera.setViewMatrixOverride(params.viewMatrix);
-        m_Camera.setProjectionMatrixOverride(params.projectionMatrix);
-        m_Camera.setBackgroundColor(params.backgroundColor);
+        camera_.reset();
+        camera_.set_position(params.view_pos);
+        camera_.set_near_clipping_plane(params.near_clipping_plane);
+        camera_.set_far_clipping_plane(params.far_clipping_plane);
+        camera_.set_view_matrix_override(params.view_matrix);
+        camera_.set_projection_matrix_override(params.projection_matrix);
+        camera_.set_background_color(params.background_color);
 
         // draw the the scene
         {
-            m_SceneColoredElementsMaterial.setVec3("uViewPos", m_Camera.getPosition());
-            m_SceneColoredElementsMaterial.setVec3("uLightDir", params.lightDirection);
-            m_SceneColoredElementsMaterial.setColor("uLightColor", params.lightColor);
-            m_SceneColoredElementsMaterial.setFloat("uAmbientStrength", params.ambientStrength);
-            m_SceneColoredElementsMaterial.setFloat("uDiffuseStrength", params.diffuseStrength);
-            m_SceneColoredElementsMaterial.setFloat("uSpecularStrength", params.specularStrength);
-            m_SceneColoredElementsMaterial.setFloat("uShininess", params.specularShininess);
-            m_SceneColoredElementsMaterial.setFloat("uNear", m_Camera.getNearClippingPlane());
-            m_SceneColoredElementsMaterial.setFloat("uFar", m_Camera.getFarClippingPlane());
+            scene_colored_els_material_.setVec3("uViewPos", camera_.position());
+            scene_colored_els_material_.setVec3("uLightDir", params.light_direction);
+            scene_colored_els_material_.setColor("uLightColor", params.light_color);
+            scene_colored_els_material_.setFloat("uAmbientStrength", params.ambient_strength);
+            scene_colored_els_material_.setFloat("uDiffuseStrength", params.diffuse_strength);
+            scene_colored_els_material_.setFloat("uSpecularStrength", params.specular_strength);
+            scene_colored_els_material_.setFloat("uShininess", params.specular_shininess);
+            scene_colored_els_material_.setFloat("uNear", camera_.near_clipping_plane());
+            scene_colored_els_material_.setFloat("uFar", camera_.get_far_clipping_plane());
 
             // supply shadowmap, if applicable
-            if (maybeShadowMap) {
-                m_SceneColoredElementsMaterial.setBool("uHasShadowMap", true);
-                m_SceneColoredElementsMaterial.setMat4("uLightSpaceMat", maybeShadowMap->lightSpaceMat);
-                m_SceneColoredElementsMaterial.setRenderTexture("uShadowMapTexture", maybeShadowMap->shadowMap);
+            if (maybe_shadowmap) {
+                scene_colored_els_material_.setBool("uHasShadowMap", true);
+                scene_colored_els_material_.setMat4("uLightSpaceMat", maybe_shadowmap->lightspace_mat);
+                scene_colored_els_material_.setRenderTexture("uShadowMapTexture", maybe_shadowmap->shadow_map);
             }
             else {
-                m_SceneColoredElementsMaterial.setBool("uHasShadowMap", false);
+                scene_colored_els_material_.setBool("uHasShadowMap", false);
             }
 
-            Material transparentMaterial = m_SceneColoredElementsMaterial;
-            transparentMaterial.setTransparent(true);
+            Material transparent_material = scene_colored_els_material_;
+            transparent_material.setTransparent(true);
 
-            MaterialPropertyBlock propBlock;
-            MaterialPropertyBlock wireframePropBlock;
-            Color lastColor = {-1.0f, -1.0f, -1.0f, 0.0f};
+            MaterialPropertyBlock prop_block;
+            MaterialPropertyBlock wireframe_prop_block;
+            Color previous_color = {-1.0f, -1.0f, -1.0f, 0.0f};
             for (const SceneDecoration& dec : decorations) {
                 if (not (dec.flags & SceneDecorationFlags::NoDrawNormally)) {
-                    if (dec.color != lastColor) {
-                        propBlock.setColor("uDiffuseColor", dec.color);
-                        lastColor = dec.color;
+                    if (dec.color != previous_color) {
+                        prop_block.setColor("uDiffuseColor", dec.color);
+                        previous_color = dec.color;
                     }
 
-                    if (dec.maybeMaterial) {
-                        graphics::draw(dec.mesh, dec.transform, *dec.maybeMaterial, m_Camera, dec.maybeMaterialProps);
+                    if (dec.maybe_material) {
+                        graphics::draw(dec.mesh, dec.transform, *dec.maybe_material, camera_, dec.maybe_material_props);
                     }
                     else if (dec.color.a > 0.99f) {
-                        graphics::draw(dec.mesh, dec.transform, m_SceneColoredElementsMaterial, m_Camera, propBlock);
+                        graphics::draw(dec.mesh, dec.transform, scene_colored_els_material_, camera_, prop_block);
                     }
                     else {
-                        graphics::draw(dec.mesh, dec.transform, transparentMaterial, m_Camera, propBlock);
+                        graphics::draw(dec.mesh, dec.transform, transparent_material, camera_, prop_block);
                     }
                 }
 
                 // if a wireframe overlay is requested for the decoration then draw it over the top in
                 // a solid color
                 if (dec.flags & SceneDecorationFlags::WireframeOverlay) {
-                    wireframePropBlock.setColor("uDiffuseColor",multiplyLuminance(dec.color, 0.5f));
-                    graphics::draw(dec.mesh, dec.transform, m_WireframeMaterial, m_Camera, wireframePropBlock);
+                    wireframe_prop_block.setColor("uDiffuseColor", multiply_luminance(dec.color, 0.5f));
+                    graphics::draw(dec.mesh, dec.transform, wireframe_material_, camera_, wireframe_prop_block);
                 }
 
                 // if normals are requested, render the scene element via a normals geometry shader
                 //
                 // care: this only works for triangles, because normals-drawing material uses a geometry
                 //       shader that assumes triangular input (#792)
-                if (params.drawMeshNormals && dec.mesh.getTopology() == MeshTopology::Triangles) {
-                    graphics::draw(dec.mesh, dec.transform, m_NormalsMaterial, m_Camera);
+                if (params.draw_mesh_normals && dec.mesh.getTopology() == MeshTopology::Triangles) {
+                    graphics::draw(dec.mesh, dec.transform, normals_material_, camera_);
                 }
             }
 
             // if a floor is requested, draw a textured floor
-            if (params.drawFloor) {
-                m_SceneTexturedElementsMaterial.setVec3("uViewPos", m_Camera.getPosition());
-                m_SceneTexturedElementsMaterial.setVec3("uLightDir", params.lightDirection);
-                m_SceneTexturedElementsMaterial.setColor("uLightColor", params.lightColor);
-                m_SceneTexturedElementsMaterial.setFloat("uAmbientStrength", 0.7f);
-                m_SceneTexturedElementsMaterial.setFloat("uDiffuseStrength", 0.4f);
-                m_SceneTexturedElementsMaterial.setFloat("uSpecularStrength", 0.4f);
-                m_SceneTexturedElementsMaterial.setFloat("uShininess", 8.0f);
-                m_SceneTexturedElementsMaterial.setFloat("uNear", m_Camera.getNearClippingPlane());
-                m_SceneTexturedElementsMaterial.setFloat("uFar", m_Camera.getFarClippingPlane());
+            if (params.draw_floor) {
+                scene_textured_els_material_.setVec3("uViewPos", camera_.position());
+                scene_textured_els_material_.setVec3("uLightDir", params.light_direction);
+                scene_textured_els_material_.setColor("uLightColor", params.light_color);
+                scene_textured_els_material_.setFloat("uAmbientStrength", 0.7f);
+                scene_textured_els_material_.setFloat("uDiffuseStrength", 0.4f);
+                scene_textured_els_material_.setFloat("uSpecularStrength", 0.4f);
+                scene_textured_els_material_.setFloat("uShininess", 8.0f);
+                scene_textured_els_material_.setFloat("uNear", camera_.near_clipping_plane());
+                scene_textured_els_material_.setFloat("uFar", camera_.get_far_clipping_plane());
 
                 // supply shadowmap, if applicable
-                if (maybeShadowMap) {
-                    m_SceneTexturedElementsMaterial.setBool("uHasShadowMap", true);
-                    m_SceneTexturedElementsMaterial.setMat4("uLightSpaceMat", maybeShadowMap->lightSpaceMat);
-                    m_SceneTexturedElementsMaterial.setRenderTexture("uShadowMapTexture", maybeShadowMap->shadowMap);
+                if (maybe_shadowmap) {
+                    scene_textured_els_material_.setBool("uHasShadowMap", true);
+                    scene_textured_els_material_.setMat4("uLightSpaceMat", maybe_shadowmap->lightspace_mat);
+                    scene_textured_els_material_.setRenderTexture("uShadowMapTexture", maybe_shadowmap->shadow_map);
                 }
                 else {
-                    m_SceneTexturedElementsMaterial.setBool("uHasShadowMap", false);
+                    scene_textured_els_material_.setBool("uHasShadowMap", false);
                 }
 
-                const Transform t = getFloorTransform(params.floorLocation, params.fixupScaleFactor);
+                const Transform t = calc_floor_transform(params.floor_location, params.fixup_scale_factor);
 
-                graphics::draw(m_QuadMesh, t, m_SceneTexturedElementsMaterial, m_Camera);
+                graphics::draw(quad_mesh_, t, scene_textured_els_material_, camera_);
             }
         }
 
         // add the rim highlights over the top of the scene texture
-        if (maybeRimHighlights) {
-            graphics::draw(maybeRimHighlights->mesh, maybeRimHighlights->transform, maybeRimHighlights->material, m_Camera);
+        if (maybe_rims) {
+            graphics::draw(maybe_rims->mesh, maybe_rims->transform, maybe_rims->material, camera_);
         }
 
-        m_OutputTexture.setDimensions(params.dimensions);
-        m_OutputTexture.setAntialiasingLevel(params.antiAliasingLevel);
-        m_Camera.renderTo(m_OutputTexture);
+        output_rendertexture_.setDimensions(params.dimensions);
+        output_rendertexture_.setAntialiasingLevel(params.antialiasing_level);
+        camera_.render_to(output_rendertexture_);
 
         // prevents copies on next frame
-        m_EdgeDetectorMaterial.clearRenderTexture("uScreenTexture");
-        m_SceneTexturedElementsMaterial.clearRenderTexture("uShadowMapTexture");
-        m_SceneColoredElementsMaterial.clearRenderTexture("uShadowMapTexture");
+        edge_detection_material_.clearRenderTexture("uScreenTexture");
+        scene_textured_els_material_.clearRenderTexture("uShadowMapTexture");
+        scene_colored_els_material_.clearRenderTexture("uShadowMapTexture");
     }
 
-    RenderTexture& updRenderTexture()
+    RenderTexture& upd_render_texture()
     {
-        return m_OutputTexture;
+        return output_rendertexture_;
     }
 
 private:
-    std::optional<RimHighlights> tryGenerateRimHighlights(
+    std::optional<RimHighlights> try_generate_rims(
         std::span<const SceneDecoration> decorations,
         const SceneRendererParams& params)
     {
-        if (not params.drawRims) {
+        if (not params.draw_rims) {
             return std::nullopt;
         }
 
         // compute the worldspace bounds union of all rim-highlighted geometry
-        const auto rimAABB = [](const SceneDecoration& d) -> std::optional<AABB>
+        const auto rim_aabb_of = [](const SceneDecoration& d) -> std::optional<AABB>
         {
             if (d.flags & (SceneDecorationFlags::IsSelected | SceneDecorationFlags::IsChildOfSelected | SceneDecorationFlags::IsHovered | SceneDecorationFlags::IsChildOfHovered)) {
-                return worldpaceAABB(d);
+                return get_worldspace_aabb(d);
             }
             return std::nullopt;
         };
-        std::optional<AABB> maybeRimWorldspaceAABB = maybe_bounding_aabb_of(decorations, rimAABB);
 
-        if (not maybeRimWorldspaceAABB) {
+        const std::optional<AABB> maybe_rim_worldspace_aabb = maybe_bounding_aabb_of(decorations, rim_aabb_of);
+        if (not maybe_rim_worldspace_aabb) {
             return std::nullopt;  // the scene does not contain any rim-highlighted geometry
         }
 
         // figure out if the rims actually appear on the screen and (roughly) where
-        std::optional<Rect> maybeRimRectNDC = loosely_project_into_ndc(
-            *maybeRimWorldspaceAABB,
-            params.viewMatrix,
-            params.projectionMatrix,
-            params.nearClippingPlane,
-            params.farClippingPlane
+        std::optional<Rect> maybe_rim_ndc_rect = loosely_project_into_ndc(
+            *maybe_rim_worldspace_aabb,
+            params.view_matrix,
+            params.projection_matrix,
+            params.near_clipping_plane,
+            params.far_clipping_plane
         );
-
-        if (not maybeRimRectNDC) {
+        if (not maybe_rim_ndc_rect) {
             return std::nullopt;  // the scene contains rim-highlighted geometry, but it isn't on-screen
         }
         // else: the scene contains rim-highlighted geometry that may appear on screen
 
         // the rims appear on the screen and are loosely bounded (in NDC) by the returned rect
-        Rect& rimRectNDC = *maybeRimRectNDC;
+        Rect& rim_ndc_rect = *maybe_rim_ndc_rect;
 
         // compute rim thickness in each direction (aspect ratio might not be 1:1)
-        const Vec2 rimThicknessNDC = 2.0f*params.rimThicknessInPixels / Vec2{params.dimensions};
+        const Vec2 rim_ndc_thickness = 2.0f*params.rim_thickness_in_pixels / Vec2{params.dimensions};
 
         // expand by the rim thickness, so that the output has space for the rims
-        rimRectNDC = expand(rimRectNDC, rimThicknessNDC);
+        rim_ndc_rect = expand(rim_ndc_rect, rim_ndc_thickness);
 
         // constrain the result of the above to within clip space
-        rimRectNDC = Clamp(rimRectNDC, {-1.0f, -1.0f}, {1.0f, 1.0f});
+        rim_ndc_rect = clamp(rim_ndc_rect, {-1.0f, -1.0f}, {1.0f, 1.0f});
 
-        if (area(rimRectNDC) <= 0.0f) {
+        if (area(rim_ndc_rect) <= 0.0f) {
             return std::nullopt;  // the scene contains rim-highlighted geometry, but it isn't on-screen
         }
 
         // compute rim rectangle in texture coordinates
-        const Rect rimRectUV = NdcRectToScreenspaceViewportRect(rimRectNDC, Rect{{}, {1.0f, 1.0f}});
+        const Rect rim_rect_uv = NdcRectToScreenspaceViewportRect(rim_ndc_rect, Rect{{}, {1.0f, 1.0f}});
 
         // compute where the quad needs to eventually be drawn in the scene
-        Transform quadMeshToRimsQuad;
-        quadMeshToRimsQuad.position = {centroid(rimRectNDC), 0.0f};
-        quadMeshToRimsQuad.scale = {0.5f * dimensions(rimRectNDC), 1.0f};
+        Transform quad_mesh_to_rims_quad{
+            .scale = {0.5f * dimensions_of(rim_ndc_rect), 1.0f},
+            .position = {centroid(rim_ndc_rect), 0.0f},
+        };
 
         // rendering:
 
         // setup scene camera
-        m_Camera.reset();
-        m_Camera.setPosition(params.viewPos);
-        m_Camera.setNearClippingPlane(params.nearClippingPlane);
-        m_Camera.setFarClippingPlane(params.farClippingPlane);
-        m_Camera.setViewMatrixOverride(params.viewMatrix);
-        m_Camera.setProjectionMatrixOverride(params.projectionMatrix);
-        m_Camera.setBackgroundColor(Color::clear());
+        camera_.reset();
+        camera_.set_position(params.view_pos);
+        camera_.set_near_clipping_plane(params.near_clipping_plane);
+        camera_.set_far_clipping_plane(params.far_clipping_plane);
+        camera_.set_view_matrix_override(params.view_matrix);
+        camera_.set_projection_matrix_override(params.projection_matrix);
+        camera_.set_background_color(Color::clear());
 
         // draw all selected geometry in a solid color
         for (const SceneDecoration& dec : decorations) {
 
             if (dec.flags & (SceneDecorationFlags::IsSelected | SceneDecorationFlags::IsChildOfSelected)) {
-                graphics::draw(dec.mesh, dec.transform, m_SolidColorMaterial, m_Camera, m_RimsSelectedColor);
+                graphics::draw(dec.mesh, dec.transform, solid_color_material_, camera_, rims_selected_properties_);
             }
             else if (dec.flags & (SceneDecorationFlags::IsHovered | SceneDecorationFlags::IsChildOfHovered)) {
-                graphics::draw(dec.mesh, dec.transform, m_SolidColorMaterial, m_Camera, m_RimsHoveredColor);
+                graphics::draw(dec.mesh, dec.transform, solid_color_material_, camera_, rims_hovered_properties_);
             }
         }
 
         // configure the off-screen solid-colored texture
         RenderTextureDescriptor desc{params.dimensions};
-        desc.setAntialiasingLevel(params.antiAliasingLevel);
+        desc.setAntialiasingLevel(params.antialiasing_level);
         desc.setColorFormat(RenderTextureFormat::ARGB32);  // care: don't use RED: causes an explosion on some Intel machines (#418)
-        m_RimsTexture.reformat(desc);
+        rims_rendertexture_.reformat(desc);
 
         // render to the off-screen solid-colored texture
-        m_Camera.renderTo(m_RimsTexture);
+        camera_.render_to(rims_rendertexture_);
 
         // configure a material that draws the off-screen colored texture on-screen
         //
         // the off-screen texture is rendered as a quad via an edge-detection kernel
         // that transforms the solid shapes into "rims"
-        m_EdgeDetectorMaterial.setRenderTexture("uScreenTexture", m_RimsTexture);
-        m_EdgeDetectorMaterial.setColor("uRimRgba", params.rimColor);
-        m_EdgeDetectorMaterial.setVec2("uRimThickness", 0.5f*rimThicknessNDC);
-        m_EdgeDetectorMaterial.setVec2("uTextureOffset", rimRectUV.p1);
-        m_EdgeDetectorMaterial.setVec2("uTextureScale", dimensions(rimRectUV));
+        edge_detection_material_.setRenderTexture("uScreenTexture", rims_rendertexture_);
+        edge_detection_material_.setColor("uRimRgba", params.rim_color);
+        edge_detection_material_.setVec2("uRimThickness", 0.5f*rim_ndc_thickness);
+        edge_detection_material_.setVec2("uTextureOffset", rim_rect_uv.p1);
+        edge_detection_material_.setVec2("uTextureScale", dimensions_of(rim_rect_uv));
 
         // return necessary information for rendering the rims
         return RimHighlights{
-            m_QuadMesh,
-            inverse(params.projectionMatrix * params.viewMatrix) * mat4_cast(quadMeshToRimsQuad),
-            m_EdgeDetectorMaterial,
+            quad_mesh_,
+            inverse(params.projection_matrix * params.view_matrix) * mat4_cast(quad_mesh_to_rims_quad),
+            edge_detection_material_,
         };
     }
 
-    std::optional<Shadows> tryGenerateShadowMap(
+    std::optional<Shadows> try_generate_shadowmap(
         std::span<const SceneDecoration> decorations,
         const SceneRendererParams& params)
     {
-        if (not params.drawShadows) {
+        if (not params.draw_shadows) {
             return std::nullopt;  // the caller doesn't actually want shadows
         }
 
         // setup scene camera
-        m_Camera.reset();
+        camera_.reset();
 
         // compute the bounds of everything that casts a shadow
         //
         // (also, while doing that, draw each mesh - to prevent multipass)
-        std::optional<AABB> casterAABBs;
+        std::optional<AABB> shadowcaster_aabbs;
         for (const SceneDecoration& dec : decorations) {
             if (dec.flags & SceneDecorationFlags::CastsShadows) {
-                casterAABBs = bounding_aabb_of(casterAABBs, worldpaceAABB(dec));
-                graphics::draw(dec.mesh, dec.transform, m_DepthWritingMaterial, m_Camera);
+                shadowcaster_aabbs = bounding_aabb_of(shadowcaster_aabbs, get_worldspace_aabb(dec));
+                graphics::draw(dec.mesh, dec.transform, depth_writer_material_, camera_);
             }
         }
 
-        if (not casterAABBs) {
+        if (not shadowcaster_aabbs) {
             // there are no shadow casters, so there will be no shadows
-            m_Camera.reset();
+            camera_.reset();
             return std::nullopt;
         }
 
         // compute camera matrices for the orthogonal (direction) camera used for lighting
-        const ShadowCameraMatrices matrices = calcShadowCameraMatrices(*casterAABBs, params.lightDirection);
+        const ShadowCameraMatrices matrices = calc_shadow_camera_matrices(*shadowcaster_aabbs, params.light_direction);
 
-        m_Camera.setBackgroundColor({1.0f, 0.0f, 0.0f, 0.0f});
-        m_Camera.setViewMatrixOverride(matrices.viewMatrix);
-        m_Camera.setProjectionMatrixOverride(matrices.projMatrix);
-        m_ShadowMapTexture.setDimensions({1024, 1024});
-        m_ShadowMapTexture.setReadWrite(RenderTextureReadWrite::Linear);  // it's writing distances
-        m_Camera.renderTo(m_ShadowMapTexture);
+        camera_.set_background_color({1.0f, 0.0f, 0.0f, 0.0f});
+        camera_.set_view_matrix_override(matrices.view_mat);
+        camera_.set_projection_matrix_override(matrices.projection_mat);
+        shadowmap_rendertexture_.setDimensions({1024, 1024});
+        shadowmap_rendertexture_.setReadWrite(RenderTextureReadWrite::Linear);  // it's writing distances
+        camera_.render_to(shadowmap_rendertexture_);
 
-        return Shadows{m_ShadowMapTexture, matrices.projMatrix * matrices.viewMatrix};
+        return Shadows{shadowmap_rendertexture_, matrices.projection_mat * matrices.view_mat};
     }
 
-    Material m_SceneColoredElementsMaterial;
-    Material m_SceneTexturedElementsMaterial;
-    MeshBasicMaterial m_SolidColorMaterial;
-    MeshBasicMaterial m_WireframeMaterial;
-    Material m_EdgeDetectorMaterial;
-    Material m_NormalsMaterial;
-    Material m_DepthWritingMaterial;
-    MeshBasicMaterial::PropertyBlock m_RimsSelectedColor;
-    MeshBasicMaterial::PropertyBlock m_RimsHoveredColor;
-    Mesh m_QuadMesh;
-    Texture2D m_ChequerTexture = ChequeredTexture{};
-    Camera m_Camera;
-    RenderTexture m_RimsTexture;
-    RenderTexture m_ShadowMapTexture;
-    RenderTexture m_OutputTexture;
+    Material scene_colored_els_material_;
+    Material scene_textured_els_material_;
+    MeshBasicMaterial solid_color_material_;
+    MeshBasicMaterial wireframe_material_;
+    Material edge_detection_material_;
+    Material normals_material_;
+    Material depth_writer_material_;
+    MeshBasicMaterial::PropertyBlock rims_selected_properties_;
+    MeshBasicMaterial::PropertyBlock rims_hovered_properties_;
+    Mesh quad_mesh_;
+    Texture2D chequered_texture_ = ChequeredTexture{};
+    Camera camera_;
+    RenderTexture rims_rendertexture_;
+    RenderTexture shadowmap_rendertexture_;
+    RenderTexture output_rendertexture_;
 };
 
 
 // public API (PIMPL)
 
 osc::SceneRenderer::SceneRenderer(SceneCache& meshCache) :
-    m_Impl{std::make_unique<Impl>(meshCache)}
+    impl_{std::make_unique<Impl>(meshCache)}
 {}
 
 osc::SceneRenderer::SceneRenderer(const SceneRenderer& other) :
-    m_Impl{std::make_unique<Impl>(*other.m_Impl)}
+    impl_{std::make_unique<Impl>(*other.impl_)}
 {}
 
 osc::SceneRenderer::SceneRenderer(SceneRenderer&&) noexcept = default;
 osc::SceneRenderer& osc::SceneRenderer::operator=(SceneRenderer&&) noexcept = default;
 osc::SceneRenderer::~SceneRenderer() noexcept = default;
 
-Vec2i osc::SceneRenderer::getDimensions() const
+Vec2i osc::SceneRenderer::dimensions() const
 {
-    return m_Impl->getDimensions();
+    return impl_->dimensions();
 }
 
-AntiAliasingLevel osc::SceneRenderer::getAntiAliasingLevel() const
+AntiAliasingLevel osc::SceneRenderer::antialiasing_level() const
 {
-    return m_Impl->getAntiAliasingLevel();
+    return impl_->antialiasing_level();
 }
 
 void osc::SceneRenderer::render(
     std::span<const SceneDecoration> decs,
     const SceneRendererParams& params)
 {
-    m_Impl->render(decs, params);
+    impl_->render(decs, params);
 }
 
-RenderTexture& osc::SceneRenderer::updRenderTexture()
+RenderTexture& osc::SceneRenderer::upd_render_texture()
 {
-    return m_Impl->updRenderTexture();
+    return impl_->upd_render_texture();
 }

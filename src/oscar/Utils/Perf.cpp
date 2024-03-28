@@ -19,7 +19,7 @@ namespace
         std::string_view filename,
         unsigned int line)
     {
-        return HashOf(label, filename, line);
+        return hash_of(label, filename, line);
     }
 
     SynchronizedValue<std::unordered_map<size_t, PerfMeasurement>>& GetMeasurementStorage()

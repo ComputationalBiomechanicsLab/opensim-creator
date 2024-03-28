@@ -30,7 +30,7 @@ namespace osc::graphics
         const Material&,
         Camera&,
         const std::optional<MaterialPropertyBlock>& = std::nullopt,
-        std::optional<size_t> maybeSubMeshIndex = std::nullopt
+        std::optional<size_t> maybe_submesh_index = std::nullopt
     );
 
     void draw(
@@ -39,7 +39,7 @@ namespace osc::graphics
         const Material&,
         Camera&,
         const std::optional<MaterialPropertyBlock>& = std::nullopt,
-        std::optional<size_t> maybeSubMeshIndex = std::nullopt
+        std::optional<size_t> maybe_submesh_index = std::nullopt
     );
 
     // blit: use a shader to copy a GPU texture to a GPU render texture or
@@ -50,7 +50,7 @@ namespace osc::graphics
         RenderTexture&
     );
 
-    void blitToScreen(
+    void blit_to_screen(
         const RenderTexture&,
         const Rect&,
         BlitFlags = BlitFlags::None
@@ -59,32 +59,32 @@ namespace osc::graphics
     // assigns the source RenderTexture to the texture uniform "uTexture"
     //
     // (can be sampler2D or samplerCube, depending on the source RenderTexture)
-    void blitToScreen(
+    void blit_to_screen(
         const RenderTexture&,
         const Rect&,
         const Material&,
         BlitFlags = BlitFlags::None
     );
 
-    void blitToScreen(
+    void blit_to_screen(
         const Texture2D&,
         const Rect&
     );
 
     // copy: copy a GPU texture to a (potentially, CPU-accessible) texture
 
-    void copyTexture(
+    void copy_texture(
         const RenderTexture&,
         Texture2D&
     );
 
-    void copyTexture(
+    void copy_texture(
         const RenderTexture&,
         Texture2D&,
         CubemapFace
     );
 
-    void copyTexture(
+    void copy_texture(
         const RenderTexture&,
         Cubemap&,
         size_t mip
