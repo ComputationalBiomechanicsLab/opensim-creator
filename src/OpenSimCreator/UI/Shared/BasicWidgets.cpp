@@ -99,7 +99,7 @@ namespace
             CalcFullApplicationNameWithVersionAndBuild(appMetadata),
         };
 
-        writeDecorationsAsDAE(outfile, scene, daeMetadata);
+        write_as_dae(outfile, scene, daeMetadata);
         log_info("wrote scene as a DAE file to %s", daePath.string().c_str());
     }
 
@@ -232,7 +232,7 @@ namespace
             CalcFullApplicationNameWithVersionAndBuild(appMetadata),
         };
 
-        writeMeshAsObj(
+        write_as_obj(
             outputFileStream,
             oscMesh,
             objMetadata,
@@ -280,7 +280,7 @@ namespace
             CalcFullApplicationNameWithVersionAndBuild(appMetadata),
         };
 
-        writeMeshAsStl(outputFileStream, oscMesh, stlMetadata);
+        write_as_stl(outputFileStream, oscMesh, stlMetadata);
     }
 }
 

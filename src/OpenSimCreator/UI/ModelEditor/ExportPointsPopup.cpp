@@ -473,7 +473,7 @@ namespace
             std::to_string(position[2]),
         });
 
-        writeCSVRow(out, columns);
+        write_csv_row(out, columns);
     }
 
     void WritePointsAsCSVTo(
@@ -496,7 +496,7 @@ namespace
         );
 
         // write header row
-        writeCSVRow(
+        write_csv_row(
             out,
             std::to_array<std::string>({ "Name", "X", "Y", "Z" })
         );

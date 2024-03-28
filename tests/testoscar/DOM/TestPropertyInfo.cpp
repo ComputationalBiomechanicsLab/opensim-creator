@@ -10,9 +10,9 @@ using namespace osc;
 TEST(PropertyInfo, DefaultConstructedPropertyInfoHasNoNameAndNilDefaultValue)
 {
     PropertyInfo info;
-    ASSERT_EQ(info.getName(), "");
-    ASSERT_EQ(info.getType(), VariantType::Nil);
-    ASSERT_EQ(info.getDefaultValue(), Variant{});
+    ASSERT_EQ(info.name(), "");
+    ASSERT_EQ(info.type(), VariantType::Nil);
+    ASSERT_EQ(info.default_value(), Variant{});
 }
 
 TEST(PropertyInfo, CanConstructFromStringNameAndVariant)
@@ -23,7 +23,7 @@ TEST(PropertyInfo, CanConstructFromStringNameAndVariant)
 TEST(PropertyInfo, GetNameReturnsSuppliedName)
 {
     PropertyInfo const desc{"suppliedName", Variant{1.0f}};
-    ASSERT_EQ(desc.getName(), "suppliedName");
+    ASSERT_EQ(desc.name(), "suppliedName");
 }
 
 TEST(PropertyInfo, CanConstructFromStringRValue)
@@ -34,7 +34,7 @@ TEST(PropertyInfo, CanConstructFromStringRValue)
 TEST(PropertyInfo, GetTypeReturnsSuppliedType)
 {
     PropertyInfo const desc{"name", Variant{1.0f}};
-    ASSERT_EQ(desc.getType(), VariantType::Float);
+    ASSERT_EQ(desc.type(), VariantType::Float);
 }
 
 TEST(PropertyInfo, ComparesEquivalentWhenGivenSameInformation)

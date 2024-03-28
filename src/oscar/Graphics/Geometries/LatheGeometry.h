@@ -17,14 +17,14 @@ namespace osc
     public:
         LatheGeometry(
             std::span<const Vec2> points = std::vector<Vec2>{{0.0f, -0.5f}, {0.5f, 0.0f}, {0.0f, 0.5f}},
-            size_t segments = 12,
-            Radians phiStart = Degrees{0},
-            Radians phiLength = Degrees{360}
+            size_t num_segments = 12,
+            Radians phi_start = Degrees{0},
+            Radians phi_length = Degrees{360}
         );
 
-        const Mesh& mesh() const { return m_Mesh; }
-        operator const Mesh& () const { return m_Mesh; }
+        const Mesh& mesh() const { return mesh_; }
+        operator const Mesh& () const { return mesh_; }
     private:
-        Mesh m_Mesh;
+        Mesh mesh_;
     };
 }

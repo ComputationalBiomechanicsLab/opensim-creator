@@ -12,7 +12,7 @@ using namespace osc;
 
 osc::IcosahedronGeometry::IcosahedronGeometry(float radius, size_t detail)
 {
-    const float t = (1.0f + sqrt(5.0f))/2.0f;
+    const float t = 0.5f * (1.0f + sqrt(5.0f));
 
     const auto vertices = std::to_array<Vec3>({
         {-1.0f,  t,     0.0f}, {1.0f, t,    0.0f}, {-1.0f, -t,     0.0f}, { 1.0f, -t,     0.0f},
@@ -27,5 +27,5 @@ osc::IcosahedronGeometry::IcosahedronGeometry(float radius, size_t detail)
         4, 9,  5,    2, 4,  11,    6,  2,  10,    8,  6, 7,     9, 8, 1,
     });
 
-    m_Mesh = PolyhedronGeometry(vertices, indices, radius, detail);
+    mesh_ = PolyhedronGeometry(vertices, indices, radius, detail);
 }

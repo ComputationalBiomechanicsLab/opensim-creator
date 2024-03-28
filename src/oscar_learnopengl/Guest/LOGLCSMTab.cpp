@@ -161,8 +161,8 @@ public:
     {
         m_UserCamera.setNearClippingPlane(0.1f);
         m_UserCamera.setFarClippingPlane(100.0f);
-        m_Material.setLightPosition(Vec3{5.0f});
-        m_Material.setDiffuseColor(Color::orange());
+        m_Material.set_light_position(Vec3{5.0f});
+        m_Material.set_diffuse_color(Color::orange());
         m_Decorations.push_back(TransformedMesh{
             .mesh = PlaneGeometry{},
             .transform = {
@@ -194,10 +194,10 @@ private:
     void implOnDraw() final
     {
         m_UserCamera.onDraw();  // update from inputs etc.
-        m_Material.setViewerPosition(m_UserCamera.getPosition());
+        m_Material.set_viewer_position(m_UserCamera.getPosition());
 
         for (auto const& decoration : m_Decorations) {
-            graphics::drawMesh(decoration.mesh, decoration.transform, m_Material, m_UserCamera);
+            graphics::draw(decoration.mesh, decoration.transform, m_Material, m_UserCamera);
         }
 
         m_UserCamera.setPixelRect(ui::GetMainViewportWorkspaceScreenRect());

@@ -11,14 +11,14 @@ namespace osc
 {
     struct StlMetadata final {
         explicit StlMetadata(
-            std::string_view authoringTool_
+            std::string_view authoring_tool_
         );
 
-        std::string authoringTool;
-        std::tm creationTime;
+        std::string authoring_tool;
+        std::tm creation_time;
     };
 
-    void writeMeshAsStl(
+    void write_as_stl(
         std::ostream&,
         const Mesh&,
         const StlMetadata&

@@ -152,10 +152,10 @@ public:
         m_SceneTexturedElementsMaterial.setVec2("uTextureScale", {200.0f, 200.0f});
         m_SceneTexturedElementsMaterial.setTransparent(true);
 
-        m_WireframeMaterial.setColor(Color::black());
+        m_WireframeMaterial.set_color(Color::black());
 
-        m_RimsSelectedColor.setColor(Color::red());
-        m_RimsHoveredColor.setColor({0.5, 0.0f, 0.0f, 1.0f});
+        m_RimsSelectedColor.set_color(Color::red());
+        m_RimsHoveredColor.set_color({0.5, 0.0f, 0.0f, 1.0f});
 
         m_EdgeDetectorMaterial.setTransparent(true);
         m_EdgeDetectorMaterial.setDepthTested(false);
@@ -224,13 +224,13 @@ public:
                     }
 
                     if (dec.maybeMaterial) {
-                        graphics::drawMesh(dec.mesh, dec.transform, *dec.maybeMaterial, m_Camera, dec.maybeMaterialProps);
+                        graphics::draw(dec.mesh, dec.transform, *dec.maybeMaterial, m_Camera, dec.maybeMaterialProps);
                     }
                     else if (dec.color.a > 0.99f) {
-                        graphics::drawMesh(dec.mesh, dec.transform, m_SceneColoredElementsMaterial, m_Camera, propBlock);
+                        graphics::draw(dec.mesh, dec.transform, m_SceneColoredElementsMaterial, m_Camera, propBlock);
                     }
                     else {
-                        graphics::drawMesh(dec.mesh, dec.transform, transparentMaterial, m_Camera, propBlock);
+                        graphics::draw(dec.mesh, dec.transform, transparentMaterial, m_Camera, propBlock);
                     }
                 }
 
@@ -238,7 +238,7 @@ public:
                 // a solid color
                 if (dec.flags & SceneDecorationFlags::WireframeOverlay) {
                     wireframePropBlock.setColor("uDiffuseColor",multiplyLuminance(dec.color, 0.5f));
-                    graphics::drawMesh(dec.mesh, dec.transform, m_WireframeMaterial, m_Camera, wireframePropBlock);
+                    graphics::draw(dec.mesh, dec.transform, m_WireframeMaterial, m_Camera, wireframePropBlock);
                 }
 
                 // if normals are requested, render the scene element via a normals geometry shader
@@ -246,7 +246,7 @@ public:
                 // care: this only works for triangles, because normals-drawing material uses a geometry
                 //       shader that assumes triangular input (#792)
                 if (params.drawMeshNormals && dec.mesh.getTopology() == MeshTopology::Triangles) {
-                    graphics::drawMesh(dec.mesh, dec.transform, m_NormalsMaterial, m_Camera);
+                    graphics::draw(dec.mesh, dec.transform, m_NormalsMaterial, m_Camera);
                 }
             }
 
@@ -274,13 +274,13 @@ public:
 
                 const Transform t = getFloorTransform(params.floorLocation, params.fixupScaleFactor);
 
-                graphics::drawMesh(m_QuadMesh, t, m_SceneTexturedElementsMaterial, m_Camera);
+                graphics::draw(m_QuadMesh, t, m_SceneTexturedElementsMaterial, m_Camera);
             }
         }
 
         // add the rim highlights over the top of the scene texture
         if (maybeRimHighlights) {
-            graphics::drawMesh(maybeRimHighlights->mesh, maybeRimHighlights->transform, maybeRimHighlights->material, m_Camera);
+            graphics::draw(maybeRimHighlights->mesh, maybeRimHighlights->transform, maybeRimHighlights->material, m_Camera);
         }
 
         m_OutputTexture.setDimensions(params.dimensions);
@@ -372,11 +372,12 @@ private:
 
         // draw all selected geometry in a solid color
         for (const SceneDecoration& dec : decorations) {
+
             if (dec.flags & (SceneDecorationFlags::IsSelected | SceneDecorationFlags::IsChildOfSelected)) {
-                graphics::drawMesh(dec.mesh, dec.transform, m_SolidColorMaterial, m_Camera, m_RimsSelectedColor);
+                graphics::draw(dec.mesh, dec.transform, m_SolidColorMaterial, m_Camera, m_RimsSelectedColor);
             }
             else if (dec.flags & (SceneDecorationFlags::IsHovered | SceneDecorationFlags::IsChildOfHovered)) {
-                graphics::drawMesh(dec.mesh, dec.transform, m_SolidColorMaterial, m_Camera, m_RimsHoveredColor);
+                graphics::draw(dec.mesh, dec.transform, m_SolidColorMaterial, m_Camera, m_RimsHoveredColor);
             }
         }
 
@@ -425,7 +426,7 @@ private:
         for (const SceneDecoration& dec : decorations) {
             if (dec.flags & SceneDecorationFlags::CastsShadows) {
                 casterAABBs = bounding_aabb_of(casterAABBs, worldpaceAABB(dec));
-                graphics::drawMesh(dec.mesh, dec.transform, m_DepthWritingMaterial, m_Camera);
+                graphics::draw(dec.mesh, dec.transform, m_DepthWritingMaterial, m_Camera);
             }
         }
 

@@ -22,7 +22,7 @@ TEST(RenderTargetColorAttachment, CanConstructFromPartsOfRenderTexture)
     ASSERT_EQ(attachment.buffer, renderTex.updColorBuffer());
     ASSERT_EQ(attachment.loadAction, RenderBufferLoadAction::Clear);
     ASSERT_EQ(attachment.storeAction, RenderBufferStoreAction::Resolve);
-    ASSERT_EQ(attachment.clearColor, Color::red());
+    ASSERT_EQ(attachment.clear_color, Color::red());
 }
 
 TEST(RenderTargetColorAttachment, ConstructingWithNullptrThrowsException)
@@ -117,7 +117,7 @@ TEST(RenderTargetColorAttachment, EqualityReturnsFalseIfSomethingIsModified)
     {
         RenderTargetColorAttachment copy = attachment;
         ASSERT_EQ(copy, attachment);
-        copy.clearColor = Color::green();
+        copy.clear_color = Color::green();
         ASSERT_NE(copy, attachment);
     }
 }

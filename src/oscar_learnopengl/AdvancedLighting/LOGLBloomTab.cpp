@@ -178,7 +178,7 @@ private:
             MaterialPropertyBlock floorProps;
             floorProps.setTexture("uDiffuseTexture", m_WoodTexture);
 
-            graphics::drawMesh(
+            graphics::draw(
                 m_CubeMesh,
                 floorTransform,
                 m_SceneMaterial,
@@ -190,7 +190,7 @@ private:
         MaterialPropertyBlock cubeProps;
         cubeProps.setTexture("uDiffuseTexture", m_ContainerTexture);
         for (auto const& cubeTransform : CreateCubeTransforms()) {
-            graphics::drawMesh(
+            graphics::draw(
                 m_CubeMesh,
                 cubeTransform,
                 m_SceneMaterial,
@@ -212,7 +212,7 @@ private:
             MaterialPropertyBlock lightProps;
             lightProps.setColor("uLightColor", sceneLightColors[i]);
 
-            graphics::drawMesh(
+            graphics::draw(
                 m_CubeMesh,
                 lightTransform,
                 m_LightboxMaterial,
@@ -256,7 +256,7 @@ private:
         for (RenderTexture& pingPongBuffer : m_PingPongBlurOutputBuffers) {
             m_BlurMaterial.setBool("uHorizontal", horizontal);
             Camera camera;
-            graphics::drawMesh(m_QuadMesh, identity<Transform>(), m_BlurMaterial, camera);
+            graphics::draw(m_QuadMesh, identity<Transform>(), m_BlurMaterial, camera);
             camera.renderTo(pingPongBuffer);
             m_BlurMaterial.clearRenderTexture("uInputImage");
 
@@ -272,7 +272,7 @@ private:
         m_FinalCompositingMaterial.setFloat("uExposure", 1.0f);
 
         Camera camera;
-        graphics::drawMesh(m_QuadMesh, identity<Transform>(), m_FinalCompositingMaterial, camera);
+        graphics::draw(m_QuadMesh, identity<Transform>(), m_FinalCompositingMaterial, camera);
         camera.setPixelRect(viewportRect);
         camera.renderToScreen();
 
@@ -324,11 +324,11 @@ private:
         m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/bloom/Final.frag"),
     }};
 
-    Texture2D m_WoodTexture = loadTexture2DFromImage(
+    Texture2D m_WoodTexture = load_texture2D_from_image(
         m_Loader.open("oscar_learnopengl/textures/wood.png"),
         ColorSpace::sRGB
     );
-    Texture2D m_ContainerTexture = loadTexture2DFromImage(
+    Texture2D m_ContainerTexture = load_texture2D_from_image(
         m_Loader.open("oscar_learnopengl/textures/container2.png"),
         ColorSpace::sRGB
     );

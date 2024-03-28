@@ -17,9 +17,9 @@ using namespace osc::literals;
 
 osc::LatheGeometry::LatheGeometry(
     std::span<const Vec2> points,
-    size_t segments,
-    Radians phiStart,
-    Radians phiLength)
+    size_t num_segments,
+    Radians phi_start,
+    Radians phi_length)
 {
     // this implementation was initially hand-ported from threejs (LatheGeometry)
 
@@ -27,67 +27,67 @@ osc::LatheGeometry::LatheGeometry(
         return;  // edge-case: requires at least 2 points
     }
 
-    phiLength = clamp(phiLength, 0_deg, 360_deg);
+    phi_length = clamp(phi_length, 0_deg, 360_deg);
 
     std::vector<uint32_t> indices;
     std::vector<Vec3> vertices;
     std::vector<Vec2> uvs;
-    std::vector<Vec3> initNormals;
+    std::vector<Vec3> init_normals;
     std::vector<Vec3> normals;
 
-    const auto fsegments = static_cast<float>(segments);
-    const auto inverseSegments = 1.0f/fsegments;
-    Vec3 prevNormal{};
+    const auto fnum_segments = static_cast<float>(num_segments);
+    const auto recip_num_segments = 1.0f/fnum_segments;
+    Vec3 previous_normal{};
 
     // pre-compute normals for initial "meridian"
     {
         // first vertex
         const Vec2 dv = points[1] - points[0];
-        Vec3 normal = {dv.y * 1.0f, -dv.x, dv.y * 0.0f};
+        const Vec3 normal = {dv.y * 1.0f, -dv.x, dv.y * 0.0f};
 
-        initNormals.push_back(normalize(normal));
-        prevNormal = normal;
+        init_normals.push_back(normalize(normal));
+        previous_normal = normal;
     }
     // in-between vertices
     for (size_t i = 1; i < points.size()-1; ++i) {
         const Vec2 dv = points[i+1] - points[i];
-        Vec3 normal = {dv.y * 1.0f, -dv.x, dv.y * 0.0f};
+        const Vec3 normal = {dv.y * 1.0f, -dv.x, dv.y * 0.0f};
 
-        initNormals.push_back(normalize(normal + prevNormal));
-        prevNormal = normal;
+        init_normals.push_back(normalize(normal + previous_normal));
+        previous_normal = normal;
     }
     // last vertex
-    initNormals.push_back(prevNormal);
+    init_normals.push_back(previous_normal);
 
     // generate vertices, uvs, and normals
-    for (size_t i = 0; i <= segments; ++i) {
+    for (size_t i = 0; i <= num_segments; ++i) {
         const auto fi = static_cast<float>(i);
-        const auto phi = phiStart + fi*inverseSegments*phiLength;
-        const auto sinPhi = sin(phi);
-        const auto cosPhi = cos(phi);
+        const auto phi = phi_start + fi*recip_num_segments*phi_length;
+        const auto sin_phi = sin(phi);
+        const auto cos_phi = cos(phi);
 
         for (size_t j = 0; j <= points.size()-1; ++j) {
             const auto fj = static_cast<float>(j);
 
             vertices.emplace_back(
-                points[j].x * sinPhi,
+                points[j].x * sin_phi,
                 points[j].y,
-                points[j].x * cosPhi
+                points[j].x * cos_phi
             );
             uvs.emplace_back(
-                fi / fsegments,
+                fi / fnum_segments,
                 fj / static_cast<float>(points.size()-1)
             );
             normals.emplace_back(
-                initNormals[j].x * sinPhi,
-                initNormals[j].y,
-                initNormals[j].x * cosPhi
+                init_normals[j].x * sin_phi,
+                init_normals[j].y,
+                init_normals[j].x * cos_phi
             );
         }
     }
 
     // indices
-    for (size_t i = 0; i < segments; ++i) {
+    for (size_t i = 0; i < num_segments; ++i) {
         for (size_t j = 0; j < points.size()-1; ++j) {
             const size_t base = j + i*points.size();
 
@@ -101,8 +101,8 @@ osc::LatheGeometry::LatheGeometry(
         }
     }
 
-    m_Mesh.setVerts(vertices);
-    m_Mesh.setNormals(normals);
-    m_Mesh.setTexCoords(uvs);
-    m_Mesh.setIndices(indices);
+    mesh_.setVerts(vertices);
+    mesh_.setNormals(normals);
+    mesh_.setTexCoords(uvs);
+    mesh_.setIndices(indices);
 }

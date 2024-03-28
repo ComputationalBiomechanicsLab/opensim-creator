@@ -10,17 +10,17 @@ namespace osc
     class RingGeometry final {
     public:
         RingGeometry(
-            float innerRadius = 0.5f,
-            float outerRadius = 1.0f,
-            size_t thetaSegments = 32,
-            size_t phiSegments = 1,
-            Radians thetaStart = Degrees{0},
-            Radians thetaLength = Degrees{360}
+            float inner_radius = 0.5f,
+            float outer_radius = 1.0f,
+            size_t num_theta_segments = 32,
+            size_t num_phi_segments = 1,
+            Radians theta_start = Degrees{0},
+            Radians theta_length = Degrees{360}
         );
 
-        const Mesh& mesh() const { return m_Mesh; }
-        operator const Mesh& () const { return m_Mesh; }
+        const Mesh& mesh() const { return mesh_; }
+        operator const Mesh& () const { return mesh_; }
     private:
-        Mesh m_Mesh;
+        Mesh mesh_;
     };
 }

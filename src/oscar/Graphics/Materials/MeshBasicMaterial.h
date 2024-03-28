@@ -19,30 +19,30 @@ namespace osc
             PropertyBlock() = default;
             explicit PropertyBlock(Color color)
             {
-                m_PropertyBlock.setColor(c_ColorPropName, color);
+                property_block_.setColor(c_ColorPropName, color);
             }
 
-            std::optional<Color> getColor() const { return m_PropertyBlock.getColor(c_ColorPropName); }
-            void setColor(Color c) { m_PropertyBlock.setColor(c_ColorPropName, c); }
+            std::optional<Color> color() const { return property_block_.getColor(c_ColorPropName); }
+            void set_color(Color c) { property_block_.setColor(c_ColorPropName, c); }
 
-            operator const MaterialPropertyBlock& () const { return m_PropertyBlock; }
+            operator const MaterialPropertyBlock& () const { return property_block_; }
         private:
-            MaterialPropertyBlock m_PropertyBlock;
+            MaterialPropertyBlock property_block_;
         };
 
         MeshBasicMaterial();
 
-        Color getColor() const { return *m_Material.getColor(c_ColorPropName); }
-        void setColor(Color c) { m_Material.setColor(c_ColorPropName, c); }
+        Color color() const { return *m_Material.getColor(c_ColorPropName); }
+        void set_color(Color c) { m_Material.setColor(c_ColorPropName, c); }
 
-        bool getWireframeMode() const { return m_Material.getWireframeMode(); }
-        void setWireframeMode(bool v) { m_Material.setWireframeMode(v); }
+        bool wireframe() const { return m_Material.getWireframeMode(); }
+        void set_wireframe(bool v) { m_Material.setWireframeMode(v); }
 
-        bool getDepthTested() const { return m_Material.getDepthTested(); }
-        void setDepthTested(bool v) { m_Material.setDepthTested(v); }
+        bool depth_tested() const { return m_Material.getDepthTested(); }
+        void set_depth_tested(bool v) { m_Material.setDepthTested(v); }
 
-        bool getTransparent() const { return m_Material.getTransparent(); }
-        void setTransparent(bool v) { m_Material.setTransparent(v); }
+        bool transparent() const { return m_Material.getTransparent(); }
+        void set_transparent(bool v) { m_Material.setTransparent(v); }
 
         operator const Material& () const { return m_Material; }
 

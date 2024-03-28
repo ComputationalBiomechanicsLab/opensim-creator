@@ -12,22 +12,22 @@ using namespace osc;
 
 osc::GridGeometry::GridGeometry(
     float size,
-    size_t divisions)
+    size_t num_divisions)
 {
     constexpr float z = 0.0f;
-    const float min = -size/2.0f;
-    const float max =  size/2.0f;
+    const float min = -0.5f*size;
+    const float max =  0.5f*size;
 
-    const float stepSize = (max - min) / static_cast<float>(divisions);
+    const float step_size = (max - min) / static_cast<float>(num_divisions);
 
-    const size_t nlines = divisions + 1;
+    const size_t num_lines = num_divisions + 1;
 
     std::vector<Vec3> vertices;
-    vertices.reserve(4 * nlines);
+    vertices.reserve(4 * num_lines);
     std::vector<uint32_t> indices;
-    indices.reserve(4 * nlines);
+    indices.reserve(4 * num_lines);
     std::vector<Vec3> normals;
-    normals.reserve(4 * nlines);
+    normals.reserve(4 * num_lines);
     uint32_t index = 0;
 
     auto push = [&index, &vertices, &indices, &normals](const Vec3& pos)
@@ -38,23 +38,23 @@ osc::GridGeometry::GridGeometry(
     };
 
     // lines parallel to X axis
-    for (size_t i = 0; i < nlines; ++i) {
-        const float y = min + static_cast<float>(i) * stepSize;
+    for (size_t i = 0; i < num_lines; ++i) {
+        const float y = min + static_cast<float>(i) * step_size;
 
         push({-1.0f, y, z});
         push({+1.0f, y, z});
     }
 
     // lines parallel to Y axis
-    for (size_t i = 0; i < nlines; ++i) {
-        const float x = min + static_cast<float>(i) * stepSize;
+    for (size_t i = 0; i < num_lines; ++i) {
+        const float x = min + static_cast<float>(i) * step_size;
 
         push({x, -1.0f, z});
         push({x, +1.0f, z});
     }
 
-    m_Mesh.setTopology(MeshTopology::Lines);
-    m_Mesh.setVerts(vertices);
-    m_Mesh.setNormals(normals);
-    m_Mesh.setIndices(indices);
+    mesh_.setTopology(MeshTopology::Lines);
+    mesh_.setVerts(vertices);
+    mesh_.setNormals(normals);
+    mesh_.setIndices(indices);
 }

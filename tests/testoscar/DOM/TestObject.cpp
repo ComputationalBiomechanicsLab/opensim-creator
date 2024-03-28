@@ -40,7 +40,7 @@ namespace
             return lhs.m_Data == rhs.m_Data;
         }
     private:
-        std::unique_ptr<Object> implClone() const override
+        std::unique_ptr<Object> impl_clone() const override
         {
             return std::make_unique<MinimalObjectImpl>(*this);
         }
@@ -55,12 +55,12 @@ namespace
         {
         }
     private:
-        std::string implToString() const final
+        std::string impl_to_string() const final
         {
             return m_ReturnedString;
         }
 
-        std::unique_ptr<Object> implClone() const override
+        std::unique_ptr<Object> impl_clone() const override
         {
             return std::make_unique<ObjectWithCustomToStringOverride>(*this);
         }
@@ -75,7 +75,7 @@ namespace
         {
         }
     private:
-        std::unique_ptr<Object> implClone() const override
+        std::unique_ptr<Object> impl_clone() const override
         {
             return std::make_unique<ObjectWithGivenProperties>(*this);
         }
@@ -92,7 +92,7 @@ namespace
         {
         }
     private:
-        std::unique_ptr<Object> implClone() const override
+        std::unique_ptr<Object> impl_clone() const override
         {
             return std::make_unique<ObjectWithcustomSetPropertyStrategy>(*this);
         }
@@ -113,12 +113,12 @@ TEST(Object, MinimalObjectImplCanDefaultConstruct)
 
 TEST(Object, MinimalObjectImplCanCallToString)
 {
-    ASSERT_NO_THROW({ MinimalObjectImpl{}.toString(); });
+    ASSERT_NO_THROW({ MinimalObjectImpl{}.to_string(); });
 }
 
 TEST(Object, MinimalObjectImplToStringReturnsNonEmptyString)
 {
-    ASSERT_FALSE(MinimalObjectImpl{}.toString().empty());
+    ASSERT_FALSE(MinimalObjectImpl{}.to_string().empty());
 }
 
 TEST(Object, MinimalObjectImplCanClone)
@@ -134,7 +134,7 @@ TEST(Object, MinimalObjectImplCloneReturnsExpectedClone)
 
 TEST(Object, MinimalObjectImplGetNumPropertiesReturnsZero)
 {
-    ASSERT_EQ(MinimalObjectImpl{}.getNumProperties(), 0);
+    ASSERT_EQ(MinimalObjectImpl{}.num_properties(), 0);
 }
 
 TEST(Object, MinimalObjectImplGetPropertyNameIsBoundsChecked)
@@ -145,49 +145,49 @@ TEST(Object, MinimalObjectImplGetPropertyNameIsBoundsChecked)
 
 TEST(Object, MinimalObjectImplGetPropertyIndexReturnsFalsey)
 {
-    ASSERT_FALSE(MinimalObjectImpl().getPropertyIndex("non-existent"));
+    ASSERT_FALSE(MinimalObjectImpl().property_index("non-existent"));
 }
 
 TEST(Object, MinimalObjectImplTryGetPropertyDefaultValueReturnsFalsey)
 {
-    ASSERT_FALSE(MinimalObjectImpl{}.tryGetPropertyDefaultValue("non-existent"));
+    ASSERT_FALSE(MinimalObjectImpl{}.property_default_value("non-existent"));
 }
 
 TEST(Object, MinimalObjectImplGetPropertyDefaultValueThrowsWithNonExistentName)
 {
-    ASSERT_ANY_THROW({ MinimalObjectImpl{}.getPropertyDefaultValue("non-existent"); });
+    ASSERT_ANY_THROW({ MinimalObjectImpl{}.property_default_value_or_throw("non-existent"); });
 }
 
 TEST(Object, MinimalObjectImplTryGetPropertyValueReturnsFalsey)
 {
-    ASSERT_FALSE(MinimalObjectImpl().tryGetPropertyValue("non-existent"));
+    ASSERT_FALSE(MinimalObjectImpl().property_value("non-existent"));
 }
 
 TEST(Object, MinimalObjectImplGetPropertyValueThrowsForNonExistentPropertyName)
 {
-    ASSERT_ANY_THROW({ MinimalObjectImpl{}.getPropertyValue("non-existent"); });
+    ASSERT_ANY_THROW({ MinimalObjectImpl{}.property_value_or_throw("non-existent"); });
 }
 
 TEST(Object, MinimalObjectImplTrySetPropertyValueReturnsFalseyForNonExistentPropertyName)
 {
-    ASSERT_FALSE(MinimalObjectImpl().trySetPropertyValue("non-existent", Variant{true}));
+    ASSERT_FALSE(MinimalObjectImpl().set_property_value("non-existent", Variant{true}));
 }
 
 TEST(Object, MinimalObjectImplSetPropertyValueThrowsForNonExistentPropertyName)
 {
-    ASSERT_ANY_THROW({ MinimalObjectImpl{}.setPropertyValue("non-existent", Variant{false}); });
+    ASSERT_ANY_THROW({ MinimalObjectImpl{}.set_property_value_or_throw("non-existent", Variant{false}); });
 }
 
 TEST(Object, MinimalObjectToStringFreeFunctionReturnsSameAsToStringMemberFunction)
 {
     MinimalObjectImpl const obj;
-    ASSERT_EQ(to_string(obj), obj.toString());
+    ASSERT_EQ(to_string(obj), obj.to_string());
 }
 
 TEST(Object, ObjectWithCustomToStringOverrideReturnsExpectedString)
 {
     std::string_view const expected = "some-injected-string";
-    ASSERT_EQ(ObjectWithCustomToStringOverride{expected}.toString(), expected);
+    ASSERT_EQ(ObjectWithCustomToStringOverride{expected}.to_string(), expected);
     ASSERT_EQ(to_string(ObjectWithCustomToStringOverride{expected}), expected);
 }
 
@@ -201,7 +201,7 @@ TEST(Object, ObjectWithGivenPropertiesWhenClonedReturnsSameNumProperties)
     });
     ObjectWithGivenProperties const orig{descriptions};
     auto const clone = static_cast<Object const&>(orig).clone();
-    ASSERT_EQ(orig.getNumProperties(), clone->getNumProperties());
+    ASSERT_EQ(orig.num_properties(), clone->num_properties());
 }
 
 TEST(Object, ObjectWithGivenPropertiesWhenClonedHasPropertyNamesInSameOrder)
@@ -215,8 +215,8 @@ TEST(Object, ObjectWithGivenPropertiesWhenClonedHasPropertyNamesInSameOrder)
     ObjectWithGivenProperties const orig{descriptions};
     auto const clone = static_cast<Object const&>(orig).clone();
 
-    ASSERT_EQ(orig.getNumProperties(), clone->getNumProperties());
-    for (size_t i = 0; i < orig.getNumProperties(); ++i)
+    ASSERT_EQ(orig.num_properties(), clone->num_properties());
+    for (size_t i = 0; i < orig.num_properties(); ++i)
     {
         ASSERT_EQ(orig.getPropertyName(i), clone->getPropertyName(i));
     }
@@ -233,11 +233,11 @@ TEST(Object, ObjectWithGivenPropertiesWhenClonedHasSamePropertyValues)
     auto const newIntValue = Variant{40};
 
     ObjectWithGivenProperties orig{descriptions};
-    orig.setPropertyValue("intprop", newIntValue);
-    ASSERT_EQ(orig.getPropertyValue("intprop"), newIntValue);
+    orig.set_property_value_or_throw("intprop", newIntValue);
+    ASSERT_EQ(orig.property_value_or_throw("intprop"), newIntValue);
 
     auto const clone = static_cast<Object const&>(orig).clone();
-    ASSERT_EQ(clone->getPropertyValue("intprop"), newIntValue);
+    ASSERT_EQ(clone->property_value_or_throw("intprop"), newIntValue);
 }
 
 TEST(Object, ObjectWithGivenPropertiesWhenClonedHasSamePropertyNames)
@@ -253,7 +253,7 @@ TEST(Object, ObjectWithGivenPropertiesWhenClonedHasSamePropertyNames)
 
     for (PropertyInfo const& description : descriptions)
     {
-        ASSERT_TRUE(clone->getPropertyIndex(description.getName()));
+        ASSERT_TRUE(clone->property_index(description.name()));
     }
 }
 
@@ -270,7 +270,7 @@ TEST(Object, ObjectWithGivenPropertiesWhenClonedHasSameDefaultValues)
 
     for (PropertyInfo const& description : descriptions)
     {
-        ASSERT_EQ(clone->getPropertyDefaultValue(description.getName()), description.getDefaultValue());
+        ASSERT_EQ(clone->property_default_value_or_throw(description.name()), description.default_value());
     }
 }
 
@@ -278,7 +278,7 @@ TEST(Object, GetNumPropertiesReturnsZeroWhenProvidedEmptySpan)
 {
     std::array<PropertyInfo, 0> descriptions{};
     ObjectWithGivenProperties const a{descriptions};
-    ASSERT_EQ(a.getNumProperties(), 0);
+    ASSERT_EQ(a.num_properties(), 0);
 }
 
 TEST(Object, GetNumPropertiesReturnsOneWhenProvidedOneProperty)
@@ -288,7 +288,7 @@ TEST(Object, GetNumPropertiesReturnsOneWhenProvidedOneProperty)
         {"someprop", Variant{false}},
     });
     ObjectWithGivenProperties const a{descriptions};
-    ASSERT_EQ(a.getNumProperties(), 1);
+    ASSERT_EQ(a.num_properties(), 1);
 }
 
 TEST(Object, GetNumPropertiesReturnsTwoWhenProvidedTwoProperties)
@@ -299,7 +299,7 @@ TEST(Object, GetNumPropertiesReturnsTwoWhenProvidedTwoProperties)
         {"somecolor", Variant{Color::red()}},
     });
     ObjectWithGivenProperties const a{descriptions};
-    ASSERT_EQ(a.getNumProperties(), 2);
+    ASSERT_EQ(a.num_properties(), 2);
 }
 
 TEST(Object, GetNumPropertiesReturnsThreeWhenProvidedThreeProperties)
@@ -311,7 +311,7 @@ TEST(Object, GetNumPropertiesReturnsThreeWhenProvidedThreeProperties)
         {"somestring", Variant{"boring"}},
     });
     ObjectWithGivenProperties const a{descriptions};
-    ASSERT_EQ(a.getNumProperties(), 3);
+    ASSERT_EQ(a.num_properties(), 3);
 }
 
 TEST(Object, GetNumPropertiesReturnsTwoWhenProvidedThreePropertyDescriptionsWithADuplicatedName)
@@ -323,7 +323,7 @@ TEST(Object, GetNumPropertiesReturnsTwoWhenProvidedThreePropertyDescriptionsWith
         {"a", Variant{"boring"}},
     });
     ObjectWithGivenProperties const a{descriptions};
-    ASSERT_EQ(a.getNumProperties(), 2);
+    ASSERT_EQ(a.num_properties(), 2);
 }
 
 TEST(Object, GetNumPropertiesReturnsTheFirstProvidedPropertyDescriptionWhenGivenDuplicateNames)
@@ -335,7 +335,7 @@ TEST(Object, GetNumPropertiesReturnsTheFirstProvidedPropertyDescriptionWhenGiven
         {"a", Variant{"boring"}},
     });
     ObjectWithGivenProperties const a{descriptions};
-    ASSERT_TRUE(a.getPropertyValue("a").getType() == VariantType::Bool);
+    ASSERT_TRUE(a.property_value_or_throw("a").type() == VariantType::Bool);
 }
 
 TEST(Object, GetPropertyNameReturnsPropertiesInTheProvidedOrder)
@@ -353,10 +353,10 @@ TEST(Object, GetPropertyNameReturnsPropertiesInTheProvidedOrder)
     });
     ObjectWithGivenProperties const a{descriptions};
 
-    ASSERT_EQ(a.getNumProperties(), descriptions.size());
+    ASSERT_EQ(a.num_properties(), descriptions.size());
     for (size_t i = 0; i < descriptions.size(); ++i)
     {
-        ASSERT_EQ(a.getPropertyName(i), descriptions.at(i).getName());
+        ASSERT_EQ(a.getPropertyName(i), descriptions.at(i).name());
     }
 }
 
@@ -367,7 +367,7 @@ TEST(Object, GetPropertyIndexReturnsNulloptForInvalidName)
         {"a", Variant{false}},
     });
     ObjectWithGivenProperties const a{descriptions};
-    ASSERT_EQ(a.getPropertyIndex("non-existent"), std::nullopt);
+    ASSERT_EQ(a.property_index("non-existent"), std::nullopt);
 }
 
 TEST(Object, GetPropertyIndexReturnsExpectedIndexForCorrectName)
@@ -378,8 +378,8 @@ TEST(Object, GetPropertyIndexReturnsExpectedIndexForCorrectName)
         {"b", Variant{false}},
     });
     ObjectWithGivenProperties const a{descriptions};
-    ASSERT_EQ(a.getPropertyIndex("a"), 0);
-    ASSERT_EQ(a.getPropertyIndex("b"), 1);
+    ASSERT_EQ(a.property_index("a"), 0);
+    ASSERT_EQ(a.property_index("b"), 1);
 }
 
 TEST(Object, TryGetPropertyDefaultValueReturnsNullptrForInvalidName)
@@ -390,7 +390,7 @@ TEST(Object, TryGetPropertyDefaultValueReturnsNullptrForInvalidName)
         {"b", Variant{false}},
     });
     ObjectWithGivenProperties const a{descriptions};
-    ASSERT_EQ(a.tryGetPropertyDefaultValue("non-existent"), nullptr);
+    ASSERT_EQ(a.property_default_value("non-existent"), nullptr);
 }
 
 TEST(Object, TryGetPropertyDefaultValueReturnsNonNullptrForCorrectName)
@@ -401,8 +401,8 @@ TEST(Object, TryGetPropertyDefaultValueReturnsNonNullptrForCorrectName)
         {"b", Variant{false}},
     });
     ObjectWithGivenProperties const a{descriptions};
-    ASSERT_NE(a.tryGetPropertyDefaultValue("a"), nullptr);
-    ASSERT_NE(a.tryGetPropertyDefaultValue("b"), nullptr);
+    ASSERT_NE(a.property_default_value("a"), nullptr);
+    ASSERT_NE(a.property_default_value("b"), nullptr);
 }
 
 TEST(Object, TryGetPropertyDefaultValueReturnsNonNullptrToCorrectValueForCorrectName)
@@ -413,8 +413,8 @@ TEST(Object, TryGetPropertyDefaultValueReturnsNonNullptrToCorrectValueForCorrect
         {"b", Variant{-1}},
     });
     ObjectWithGivenProperties const a{descriptions};
-    ASSERT_NE(a.tryGetPropertyDefaultValue("a"), nullptr);
-    ASSERT_EQ(*a.tryGetPropertyDefaultValue("a"), Variant{1337});
+    ASSERT_NE(a.property_default_value("a"), nullptr);
+    ASSERT_EQ(*a.property_default_value("a"), Variant{1337});
 }
 
 TEST(Object, GetPropertyDefaultValueThrowsForInvalidName)
@@ -425,7 +425,7 @@ TEST(Object, GetPropertyDefaultValueThrowsForInvalidName)
         {"b", Variant{-1}},
     });
     ObjectWithGivenProperties const a{descriptions};
-    ASSERT_ANY_THROW({ a.getPropertyDefaultValue("non-existent"); });
+    ASSERT_ANY_THROW({ a.property_default_value_or_throw("non-existent"); });
 }
 
 TEST(Object, GetPropertyDefaultValueDoesNotThrowForCorrectName)
@@ -436,7 +436,7 @@ TEST(Object, GetPropertyDefaultValueDoesNotThrowForCorrectName)
         {"b", Variant{-1}},
     });
     ObjectWithGivenProperties const a{descriptions};
-    ASSERT_EQ(a.getPropertyDefaultValue("a"), Variant{1337});
+    ASSERT_EQ(a.property_default_value_or_throw("a"), Variant{1337});
 }
 
 TEST(Object, TryGetPropertyValueReturnsNullptrForInvalidName)
@@ -447,7 +447,7 @@ TEST(Object, TryGetPropertyValueReturnsNullptrForInvalidName)
         {"b", Variant{false}},
     });
     ObjectWithGivenProperties const a{descriptions};
-    ASSERT_EQ(a.tryGetPropertyValue("non-existent"), nullptr);
+    ASSERT_EQ(a.property_value("non-existent"), nullptr);
 }
 
 TEST(Object, TryGetPropertyValueReturnsNonNullptrForValidName)
@@ -458,8 +458,8 @@ TEST(Object, TryGetPropertyValueReturnsNonNullptrForValidName)
         {"b", Variant{false}},
     });
     ObjectWithGivenProperties const a{descriptions};
-    ASSERT_NE(a.tryGetPropertyValue("a"), nullptr);
-    ASSERT_NE(a.tryGetPropertyValue("b"), nullptr);
+    ASSERT_NE(a.property_value("a"), nullptr);
+    ASSERT_NE(a.property_value("b"), nullptr);
 }
 
 TEST(Object, TryGetPropertyValueReturnsDefaultValueWhenValueHasNotBeenSet)
@@ -470,8 +470,8 @@ TEST(Object, TryGetPropertyValueReturnsDefaultValueWhenValueHasNotBeenSet)
         {"b", Variant{false}},
     });
     ObjectWithGivenProperties const a{descriptions};
-    ASSERT_TRUE(a.tryGetPropertyValue("a"));
-    ASSERT_EQ(*a.tryGetPropertyValue("a"), Variant{1337});
+    ASSERT_TRUE(a.property_value("a"));
+    ASSERT_EQ(*a.property_value("a"), Variant{1337});
 }
 
 TEST(Object, TryGetPropertyValueReturnsNewValueAfterTheValueHasBeenSet)
@@ -485,11 +485,11 @@ TEST(Object, TryGetPropertyValueReturnsNewValueAfterTheValueHasBeenSet)
     });
 
     ObjectWithGivenProperties a{descriptions};
-    ASSERT_TRUE(a.tryGetPropertyValue("b"));
-    ASSERT_EQ(*a.tryGetPropertyValue("b"), oldValue);
-    a.trySetPropertyValue("b", newValue);
-    ASSERT_TRUE(a.tryGetPropertyValue("b"));
-    ASSERT_EQ(*a.tryGetPropertyValue("b"), newValue);
+    ASSERT_TRUE(a.property_value("b"));
+    ASSERT_EQ(*a.property_value("b"), oldValue);
+    a.set_property_value("b", newValue);
+    ASSERT_TRUE(a.property_value("b"));
+    ASSERT_EQ(*a.property_value("b"), newValue);
 }
 
 TEST(Object, GetPropertyValueThrowsIfGivenNonExistentPropertyName)
@@ -500,7 +500,7 @@ TEST(Object, GetPropertyValueThrowsIfGivenNonExistentPropertyName)
         {"b", Variant{false}},
     });
     ObjectWithGivenProperties const a{descriptions};
-    ASSERT_ANY_THROW({ a.getPropertyValue("a"); });
+    ASSERT_ANY_THROW({ a.property_value_or_throw("a"); });
 }
 
 TEST(Object, GetPropertyValueReturnsValueIfGivenExistentPropertyName)
@@ -511,7 +511,7 @@ TEST(Object, GetPropertyValueReturnsValueIfGivenExistentPropertyName)
         {"b", Variant{"second"}},
     });
     ObjectWithGivenProperties const a{descriptions};
-    ASSERT_EQ(a.getPropertyValue("a"), Variant{"second"});
+    ASSERT_EQ(a.property_value_or_throw("a"), Variant{"second"});
 }
 
 TEST(Object, GetPropertyValueReturnsNewValueAfterSettingValue)
@@ -525,9 +525,9 @@ TEST(Object, GetPropertyValueReturnsNewValueAfterSettingValue)
     });
 
     ObjectWithGivenProperties a{descriptions};
-    ASSERT_EQ(a.getPropertyValue("b"), oldValue);
-    a.trySetPropertyValue("b", newValue);
-    ASSERT_EQ(a.getPropertyValue("b"), newValue);
+    ASSERT_EQ(a.property_value_or_throw("b"), oldValue);
+    a.set_property_value("b", newValue);
+    ASSERT_EQ(a.property_value_or_throw("b"), newValue);
 }
 
 TEST(Object, TrySetPropertyValueReturnsFalseForNonExistentProperty)
@@ -538,7 +538,7 @@ TEST(Object, TrySetPropertyValueReturnsFalseForNonExistentProperty)
         {"b", Variant{"second"}},
     });
     ObjectWithGivenProperties a{descriptions};
-    ASSERT_FALSE(a.trySetPropertyValue("non-existent", Variant{"doesnt-matter"}));
+    ASSERT_FALSE(a.set_property_value("non-existent", Variant{"doesnt-matter"}));
 }
 
 TEST(Object, TrySetPropertyValueReturnsFalseIfVariantTypeMismatches)
@@ -549,7 +549,7 @@ TEST(Object, TrySetPropertyValueReturnsFalseIfVariantTypeMismatches)
         {"b", Variant{100}},
     });
     ObjectWithGivenProperties a{descriptions};
-    ASSERT_FALSE(a.trySetPropertyValue("b", Variant{"not-an-int"}));
+    ASSERT_FALSE(a.set_property_value("b", Variant{"not-an-int"}));
 }
 
 TEST(Object, TrySetPropertyValueReturnsTrueForCorrectPropertyNameAndType)
@@ -560,7 +560,7 @@ TEST(Object, TrySetPropertyValueReturnsTrueForCorrectPropertyNameAndType)
         {"b", Variant{100}},
     });
     ObjectWithGivenProperties a{descriptions};
-    ASSERT_TRUE(a.trySetPropertyValue("a", Variant{"new-string"}));
+    ASSERT_TRUE(a.set_property_value("a", Variant{"new-string"}));
 }
 
 TEST(Object, TrySetPropertyAfterReturningTrueMeansThatGetPropertyReturnsNewValue)
@@ -574,9 +574,9 @@ TEST(Object, TrySetPropertyAfterReturningTrueMeansThatGetPropertyReturnsNewValue
     });
 
     ObjectWithGivenProperties a{descriptions};
-    ASSERT_EQ(a.getPropertyValue("a"), oldValue);
-    ASSERT_TRUE(a.trySetPropertyValue("a", newValue));
-    ASSERT_EQ(a.getPropertyValue("a"), newValue);
+    ASSERT_EQ(a.property_value_or_throw("a"), oldValue);
+    ASSERT_TRUE(a.set_property_value("a", newValue));
+    ASSERT_EQ(a.property_value_or_throw("a"), newValue);
 }
 
 TEST(Object, TrySetPropertyAfterReturningTrueMakesTryGetPropertyvalueReturnNewValue)
@@ -590,11 +590,11 @@ TEST(Object, TrySetPropertyAfterReturningTrueMakesTryGetPropertyvalueReturnNewVa
     });
 
     ObjectWithGivenProperties a{descriptions};
-    ASSERT_TRUE(a.tryGetPropertyValue("a"));
-    ASSERT_EQ(*a.tryGetPropertyValue("a"), oldValue);
-    ASSERT_TRUE(a.trySetPropertyValue("a", newValue));
-    ASSERT_TRUE(a.tryGetPropertyValue("a"));
-    ASSERT_EQ(*a.tryGetPropertyValue("a"), newValue);
+    ASSERT_TRUE(a.property_value("a"));
+    ASSERT_EQ(*a.property_value("a"), oldValue);
+    ASSERT_TRUE(a.set_property_value("a", newValue));
+    ASSERT_TRUE(a.property_value("a"));
+    ASSERT_EQ(*a.property_value("a"), newValue);
 }
 
 TEST(Object, SetPropertyValueThrowsAnExceptionForNonExistentPropertyName)
@@ -606,7 +606,7 @@ TEST(Object, SetPropertyValueThrowsAnExceptionForNonExistentPropertyName)
     });
     ObjectWithGivenProperties a{descriptions};
 
-    ASSERT_ANY_THROW({ a.setPropertyValue("doesnt-exist", Variant{"doesnt-matter"}); });
+    ASSERT_ANY_THROW({ a.set_property_value_or_throw("doesnt-exist", Variant{"doesnt-matter"}); });
 }
 
 TEST(Object, SetPropertyValueThrowsIfGivenAMismatchedVariantType)
@@ -618,7 +618,7 @@ TEST(Object, SetPropertyValueThrowsIfGivenAMismatchedVariantType)
     });
     ObjectWithGivenProperties a{descriptions};
 
-    ASSERT_ANY_THROW({ a.setPropertyValue("b", Variant{"not-a-number"}); });
+    ASSERT_ANY_THROW({ a.set_property_value_or_throw("b", Variant{"not-a-number"}); });
 }
 
 TEST(Object, SetPropertyValueDoesntThrowIfGivenValidArguments)
@@ -630,7 +630,7 @@ TEST(Object, SetPropertyValueDoesntThrowIfGivenValidArguments)
     });
     ObjectWithGivenProperties a{descriptions};
 
-    ASSERT_NO_THROW({ a.setPropertyValue("b", Variant{200}); });
+    ASSERT_NO_THROW({ a.set_property_value_or_throw("b", Variant{200}); });
 }
 
 TEST(Object, SetPropertyValueWithValidArgumentsMakesGetPropertyValueReturnNewValue)
@@ -644,16 +644,16 @@ TEST(Object, SetPropertyValueWithValidArgumentsMakesGetPropertyValueReturnNewVal
     });
 
     ObjectWithGivenProperties a{descriptions};
-    ASSERT_EQ(a.getPropertyValue("a"), oldValue);
-    ASSERT_NO_THROW({ a.setPropertyValue("a", newValue); });
-    ASSERT_EQ(a.getPropertyValue("a"), newValue);
+    ASSERT_EQ(a.property_value_or_throw("a"), oldValue);
+    ASSERT_NO_THROW({ a.set_property_value_or_throw("a", newValue); });
+    ASSERT_EQ(a.property_value_or_throw("a"), newValue);
 }
 
 // TODO: with implCustomPropertyGetter:
 //
-// - tryGetPropertyValue returns getter value if non-nullptr
-// - getPropertyValue returns getter value if non-nullptr
-// - tryGetPropertyValue returns "normal" value if nullptr
-// - getPropertyValue returns "normal" value if nullptr
+// - property_value returns getter value if non-nullptr
+// - property_value_or_throw returns getter value if non-nullptr
+// - property_value returns "normal" value if nullptr
+// - property_value_or_throw returns "normal" value if nullptr
 
 */

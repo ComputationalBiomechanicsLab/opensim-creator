@@ -13,17 +13,17 @@ namespace osc
     class TorusKnotGeometry final {
     public:
         TorusKnotGeometry(
-            float torusRadius = 1.0f,
-            float tubeRadius = 0.4f,
-            size_t numTubularSegments = 64,
-            size_t numRadialSegments = 8,
+            float torus_radius = 1.0f,
+            float tube_radius = 0.4f,
+            size_t num_tubular_segments = 64,
+            size_t num_radial_segments = 8,
             size_t p = 2,
             size_t q = 3
         );
 
-        const Mesh& mesh() const { return m_Mesh; }
-        operator const Mesh& () const { return m_Mesh; }
+        const Mesh& mesh() const { return mesh_; }
+        operator const Mesh& () const { return mesh_; }
     private:
-        Mesh m_Mesh;
+        Mesh mesh_;
     };
 }

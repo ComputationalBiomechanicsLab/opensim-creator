@@ -10,7 +10,7 @@
 
 namespace osc::detail
 {
-    constexpr VertexAttributeFormat DefaultFormat(VertexAttribute attr)
+    constexpr VertexAttributeFormat default_format(VertexAttribute attr)
     {
         constexpr auto lut = []<VertexAttribute... Attrs>(OptionList<VertexAttribute, Attrs...>) {
             return std::to_array({ VertexAttributeTraits<Attrs>::default_format... });

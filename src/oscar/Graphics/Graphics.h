@@ -24,7 +24,7 @@ namespace osc::graphics
 {
     // draw: enqueue drawable elements onto the camera ready for rendering
 
-    void drawMesh(
+    void draw(
         const Mesh&,
         const Transform&,
         const Material&,
@@ -33,7 +33,7 @@ namespace osc::graphics
         std::optional<size_t> maybeSubMeshIndex = std::nullopt
     );
 
-    void drawMesh(
+    void draw(
         const Mesh&,
         const Mat4&,
         const Material&,

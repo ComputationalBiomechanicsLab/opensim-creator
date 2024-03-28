@@ -25,20 +25,14 @@ namespace osc
             using reference = const std::string_view&;
             using iterator_category = std::forward_iterator_tag;
 
-            reference operator*() const
-            {
-                return m_Current;
-            }
+            reference operator*() const { return current_; }
 
-            pointer operator->() const
-            {
-                return &m_Current;
-            }
+            pointer operator->() const { return &current_; }
 
             Iterator& operator++()
             {
-                m_Current = m_Remaining.substr(0, m_Remaining.find(separator));
-                m_Remaining = m_Current.size() == m_Remaining.size() ? std::string_view{} : m_Remaining.substr(m_Current.size()+1);
+                current_ = remaining_.substr(0, remaining_.find(separator));
+                remaining_ = current_.size() == remaining_.size() ? std::string_view{} : remaining_.substr(current_.size()+1);
                 return *this;
             }
 
@@ -57,13 +51,12 @@ namespace osc
             Iterator() = default;
 
             Iterator(std::string_view path) :
-                m_Current{path.substr(0, path.find(separator))},
-                m_Remaining{m_Current.size() == path.size() ? std::string_view{} : path.substr(m_Current.size()+1)}
-            {
-            }
+                current_{path.substr(0, path.find(separator))},
+                remaining_{current_.size() == path.size() ? std::string_view{} : path.substr(current_.size()+1)}
+            {}
 
-            std::string_view m_Current;
-            std::string_view m_Remaining;
+            std::string_view current_;
+            std::string_view remaining_;
         };
 
         using value_type = std::string_view;
@@ -75,22 +68,22 @@ namespace osc
 
         [[nodiscard]] bool empty() const
         {
-            return m_ParsedPath.empty();
+            return parsed_path_.empty();
         }
 
-        bool isAbsolute() const
+        bool is_absolute() const
         {
-            return !m_ParsedPath.empty() && m_ParsedPath.front() == separator;
+            return !parsed_path_.empty() and parsed_path_.front() == separator;
         }
 
         operator std::string_view () const
         {
-            return m_ParsedPath;
+            return parsed_path_;
         }
 
         Iterator begin() const
         {
-            return Iterator{isAbsolute() ? std::string_view{m_ParsedPath}.substr(1) : m_ParsedPath};
+            return Iterator{is_absolute() ? std::string_view{parsed_path_}.substr(1) : parsed_path_};
         }
 
         Iterator end() const
@@ -100,7 +93,7 @@ namespace osc
 
         friend bool operator==(const NodePath&, const NodePath&) = default;
     private:
-        std::string m_ParsedPath;
+        std::string parsed_path_;
     };
 }
 

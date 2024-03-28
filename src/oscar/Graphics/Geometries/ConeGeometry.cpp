@@ -11,20 +11,20 @@ using namespace osc;
 osc::ConeGeometry::ConeGeometry(
     float radius,
     float height,
-    size_t radialSegments,
-    size_t heightSegments,
-    bool openEnded,
-    Radians thetaStart,
-    Radians thetaLength) :
+    size_t num_radial_segments,
+    size_t num_height_segments,
+    bool open_ended,
+    Radians theta_start,
+    Radians theta_length) :
 
-    m_Mesh{CylinderGeometry{
+    mesh_{CylinderGeometry{
         0.0f,
         radius,
         height,
-        radialSegments,
-        heightSegments,
-        openEnded,
-        thetaStart,
-        thetaLength
+        num_radial_segments,
+        num_height_segments,
+        open_ended,
+        theta_start,
+        theta_length
     }}
 {}

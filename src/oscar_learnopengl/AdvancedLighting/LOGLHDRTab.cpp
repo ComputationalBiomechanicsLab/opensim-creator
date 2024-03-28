@@ -49,7 +49,7 @@ namespace
 
     Material CreateSceneMaterial(IResourceLoader& rl)
     {
-        Texture2D woodTexture = loadTexture2DFromImage(
+        Texture2D woodTexture = load_texture2D_from_image(
             rl.open("oscar_learnopengl/textures/wood.png"),
             ColorSpace::sRGB
         );
@@ -120,7 +120,7 @@ private:
             m_SceneHDRTexture.reformat(descriptor);
         }
 
-        graphics::drawMesh(m_CubeMesh, m_CorridoorTransform, m_SceneMaterial, m_Camera);
+        graphics::draw(m_CubeMesh, m_CorridoorTransform, m_SceneMaterial, m_Camera);
         m_Camera.renderTo(m_SceneHDRTexture);
     }
 
@@ -136,7 +136,7 @@ private:
         m_TonemapMaterial.setBool("uUseTonemap", m_UseTonemap);
         m_TonemapMaterial.setFloat("uExposure", m_Exposure);
 
-        graphics::drawMesh(m_QuadMesh, identity<Transform>(), m_TonemapMaterial, orthoCamera);
+        graphics::draw(m_QuadMesh, identity<Transform>(), m_TonemapMaterial, orthoCamera);
         orthoCamera.renderToScreen();
 
         m_TonemapMaterial.clearRenderTexture("uTexture");

@@ -107,7 +107,7 @@ private:
         for (auto const& dec : m_Decorations) {
             AABB const aabb = transform_aabb(dec.transform, dec.mesh.getBounds());
             if (is_intersecting(frustum, aabb)) {
-                graphics::drawMesh(dec.mesh, dec.transform, m_Material, m_UserCamera, m_BlueMaterialProps);
+                graphics::draw(dec.mesh, dec.transform, m_Material, m_UserCamera, m_BlueMaterialProps);
             }
         }
         m_UserCamera.setPixelRect(lhs);
@@ -117,9 +117,9 @@ private:
         for (auto const& dec : m_Decorations) {
             AABB const aabb = transform_aabb(dec.transform, dec.mesh.getBounds());
             auto const& props = is_intersecting(frustum, aabb) ? m_BlueMaterialProps : m_RedMaterialProps;
-            graphics::drawMesh(dec.mesh, dec.transform, m_Material, m_TopDownCamera, props);
+            graphics::draw(dec.mesh, dec.transform, m_Material, m_TopDownCamera, props);
         }
-        graphics::drawMesh(
+        graphics::draw(
             SphereGeometry{},
             {.scale = Vec3{0.1f}, .position = m_UserCamera.getPosition()},
             m_Material,

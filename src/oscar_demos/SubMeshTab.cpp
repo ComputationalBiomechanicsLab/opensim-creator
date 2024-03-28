@@ -69,15 +69,15 @@ public:
         m_Camera.setPosition({0.0f, 0.0f, -2.5f});
         m_Camera.setDirection({0.0f, 0.0f, 1.0f});
 
-        m_Material.setColor(Color::red());
-        m_Material.setWireframeMode(true);
+        m_Material.set_color(Color::red());
+        m_Material.set_wireframe(true);
     }
 
 private:
     void implOnDraw() final
     {
         for (size_t subMeshIndex = 0; subMeshIndex < m_MeshWithSubmeshes.getSubMeshCount(); ++subMeshIndex) {
-            graphics::drawMesh(
+            graphics::draw(
                 m_MeshWithSubmeshes,
                 identity<Transform>(),
                 m_Material,

@@ -123,22 +123,22 @@ private:
     void drawMeshesWithMaterial(Material const& material)
     {
         // floor
-        graphics::drawMesh(m_PlaneMesh, identity<Transform>(), material, m_Camera);
+        graphics::draw(m_PlaneMesh, identity<Transform>(), material, m_Camera);
 
         // cubes
-        graphics::drawMesh(
+        graphics::draw(
             m_CubeMesh,
             {.scale = Vec3{0.5f}, .position = {0.0f, 1.0f, 0.0f}},
             material,
             m_Camera
         );
-        graphics::drawMesh(
+        graphics::draw(
             m_CubeMesh,
             {.scale = Vec3{0.5f}, .position = {2.0f, 0.0f, 1.0f}},
             material,
             m_Camera
         );
-        graphics::drawMesh(
+        graphics::draw(
             m_CubeMesh,
             Transform{
                 .scale = Vec3{0.25f},
@@ -169,7 +169,7 @@ private:
 
     ResourceLoader m_Loader = App::resource_loader();
     MouseCapturingCamera m_Camera = CreateCamera();
-    Texture2D m_WoodTexture = loadTexture2DFromImage(
+    Texture2D m_WoodTexture = load_texture2D_from_image(
         m_Loader.open("oscar_learnopengl/textures/wood.png"),
         ColorSpace::sRGB
     );

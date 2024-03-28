@@ -83,7 +83,7 @@ osc::Variant::Variant(StringName const& v) : m_Data{v} {}
 osc::Variant::Variant(Vec2 v) : m_Data{v} {}
 osc::Variant::Variant(Vec3 v) : m_Data{v} {}
 
-VariantType osc::Variant::getType() const
+VariantType osc::Variant::type() const
 {
     return std::visit(Overload
     {

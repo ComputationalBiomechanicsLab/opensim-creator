@@ -20,6 +20,6 @@ namespace osc
 
         friend bool operator==(RenderTargetColorAttachment const&, RenderTargetColorAttachment const&) = default;
 
-        Color clearColor;
+        Color clear_color;
     };
 }

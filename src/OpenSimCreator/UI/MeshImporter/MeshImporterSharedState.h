@@ -84,7 +84,7 @@ namespace osc::mi
 
         explicit MeshImporterSharedState(std::vector<std::filesystem::path> meshFiles)
         {
-            m_FloorMaterial.setTransparent(true);
+            m_FloorMaterial.set_transparent(true);
             pushMeshLoadRequests(std::move(meshFiles));
         }
 
@@ -510,7 +510,7 @@ namespace osc::mi
             t.scale *= 0.5f;
 
             auto props = MeshBasicMaterial::PropertyBlock{};
-            props.setColor(m_Colors.gridLines);
+            props.set_color(m_Colors.gridLines);
 
             DrawableThing dt;
             dt.id = MIIDs::Empty();

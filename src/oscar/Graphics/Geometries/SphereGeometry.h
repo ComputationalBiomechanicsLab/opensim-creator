@@ -11,17 +11,17 @@ namespace osc
     public:
         SphereGeometry(
             float radius = 1.0f,
-            size_t widthSegments = 32,
-            size_t heightSegments = 16,
-            Radians phiStart = Degrees{0},
-            Radians phiLength = Degrees{360},
-            Radians thetaStart = Degrees{0},
-            Radians thetaLength = Degrees{180}
+            size_t num_width_segments = 32,
+            size_t num_height_segments = 16,
+            Radians phi_start = Degrees{0},
+            Radians phi_length = Degrees{360},
+            Radians theta_start = Degrees{0},
+            Radians theta_length = Degrees{180}
         );
 
-        const Mesh& mesh() const { return m_Mesh; }
-        operator const Mesh& () const { return m_Mesh; }
+        const Mesh& mesh() const { return mesh_; }
+        operator const Mesh& () const { return mesh_; }
     private:
-        Mesh m_Mesh;
+        Mesh mesh_;
     };
 }

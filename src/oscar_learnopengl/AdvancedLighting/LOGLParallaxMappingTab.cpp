@@ -57,15 +57,15 @@ namespace
 
     Material CreateParallaxMappingMaterial(IResourceLoader& rl)
     {
-        Texture2D diffuseMap = loadTexture2DFromImage(
+        Texture2D diffuseMap = load_texture2D_from_image(
             rl.open("oscar_learnopengl/textures/bricks2.jpg"),
             ColorSpace::sRGB
         );
-        Texture2D normalMap = loadTexture2DFromImage(
+        Texture2D normalMap = load_texture2D_from_image(
             rl.open("oscar_learnopengl/textures/bricks2_normal.jpg"),
             ColorSpace::Linear
         );
-        Texture2D displacementMap = loadTexture2DFromImage(
+        Texture2D displacementMap = load_texture2D_from_image(
             rl.open("oscar_learnopengl/textures/bricks2_disp.jpg"),
             ColorSpace::Linear
         );
@@ -123,13 +123,13 @@ private:
             m_ParallaxMappingMaterial.setVec3("uLightWorldPos", m_LightTransform.position);
             m_ParallaxMappingMaterial.setVec3("uViewWorldPos", m_Camera.getPosition());
             m_ParallaxMappingMaterial.setBool("uEnableMapping", m_IsMappingEnabled);
-            graphics::drawMesh(m_QuadMesh, m_QuadTransform, m_ParallaxMappingMaterial, m_Camera);
+            graphics::draw(m_QuadMesh, m_QuadTransform, m_ParallaxMappingMaterial, m_Camera);
         }
 
         // draw light source cube
         {
             m_LightCubeMaterial.setColor("uLightColor", Color::white());
-            graphics::drawMesh(m_CubeMesh, m_LightTransform, m_LightCubeMaterial, m_Camera);
+            graphics::draw(m_CubeMesh, m_LightTransform, m_LightCubeMaterial, m_Camera);
         }
 
         m_Camera.setPixelRect(ui::GetMainViewportWorkspaceScreenRect());

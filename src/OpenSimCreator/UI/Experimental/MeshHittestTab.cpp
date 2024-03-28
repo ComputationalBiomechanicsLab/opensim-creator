@@ -113,9 +113,9 @@ public:
         }
 
         // draw mesh
-        m_Material.setColor(m_IsMousedOver ? Color::green() : Color::red());
-        m_Material.setDepthTested(true);
-        graphics::drawMesh(m_Mesh, identity<Transform>(), m_Material, m_Camera);
+        m_Material.set_color(m_IsMousedOver ? Color::green() : Color::red());
+        m_Material.set_depth_tested(true);
+        graphics::draw(m_Mesh, identity<Transform>(), m_Material, m_Camera);
 
         // draw hit triangle while mousing over
         if (m_IsMousedOver)
@@ -124,22 +124,22 @@ public:
             m.setVerts(m_Tris);
             m.setIndices({0, 1, 2});
 
-            m_Material.setColor(Color::black());
-            m_Material.setDepthTested(false);
-            graphics::drawMesh(m, identity<Transform>(), m_Material, m_Camera);
+            m_Material.set_color(Color::black());
+            m_Material.set_depth_tested(false);
+            graphics::draw(m, identity<Transform>(), m_Material, m_Camera);
         }
 
         if (m_UseBVH)
         {
             // draw BVH AABBs
-            m_Material.setColor(Color::black());
-            m_Material.setDepthTested(true);
+            m_Material.set_color(Color::black());
+            m_Material.set_depth_tested(true);
             drawBVH(
                 *App::singleton<SceneCache>(),
                 m_MeshBVH,
                 [this](SceneDecoration&& dec)
                 {
-                    graphics::drawMesh(m_CubeLinesMesh, dec.transform, m_Material, m_Camera);
+                    graphics::draw(m_CubeLinesMesh, dec.transform, m_Material, m_Camera);
                 }
             );
         }

@@ -6,7 +6,7 @@
 
 namespace osc
 {
-    Texture2D readSVGIntoTexture(
+    Texture2D load_texture2D_from_svg(
         std::istream&,
         float scale = 1.0f
     );

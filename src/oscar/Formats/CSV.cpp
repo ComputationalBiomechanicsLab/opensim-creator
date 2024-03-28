@@ -13,32 +13,30 @@ using namespace osc;
 // helpers
 namespace
 {
-    constexpr bool isSpecialCSVCharacter(std::string_view::value_type c)
+    constexpr bool is_special_csv_char(std::string_view::value_type c)
     {
         return c == ',' or c == '\r' or c == '\n' or c == '"';
     }
 
-    constexpr bool shouldBeQuoted(std::string_view v)
+    constexpr bool should_be_quoted(std::string_view v)
     {
-        return any_of(v, isSpecialCSVCharacter);
+        return any_of(v, is_special_csv_char);
     }
 }
 
-// public API
-
-std::optional<std::vector<std::string>> osc::readCSVRow(
+std::optional<std::vector<std::string>> osc::read_csv_row(
     std::istream& in)
 {
     std::optional<std::vector<std::string>> cols;
     cols.emplace();
 
-    if (!readCSVRowIntoVector(in, *cols)) {
+    if (not read_csv_row_into_vector(in, *cols)) {
         cols.reset();
     }
     return cols;
 }
 
-bool osc::readCSVRowIntoVector(
+bool osc::read_csv_row_into_vector(
     std::istream& in,
     std::vector<std::string>& out)
 {
@@ -48,9 +46,9 @@ bool osc::readCSVRowIntoVector(
 
     std::vector<std::string> cols;
     std::string s;
-    bool insideQuotes = false;
+    bool inside_quotes = false;
 
-    while (!in.bad()) {
+    while (not in.bad()) {
         const auto c = in.get();
 
         if (c == std::istream::traits_type::eof()) {
@@ -58,21 +56,21 @@ bool osc::readCSVRowIntoVector(
             cols.push_back(s);
             break;
         }
-        else if (c == '\n' and not insideQuotes) {
+        else if (c == '\n' and not inside_quotes) {
             // standard newline
             cols.push_back(s);
             break;
         }
-        else if (c == '\r' and in.peek() == '\n' and not insideQuotes) {
+        else if (c == '\r' and in.peek() == '\n' and not inside_quotes) {
             // windows newline
 
             in.get();  // skip the \n
             cols.push_back(s);
             break;
         }
-        else if (c == '"' and s.empty() and not insideQuotes) {
+        else if (c == '"' and s.empty() and not inside_quotes) {
             // quote at beginning of quoted column
-            insideQuotes = true;
+            inside_quotes = true;
             continue;
         }
         else if (c == '"' and in.peek() == '"') {
@@ -82,12 +80,12 @@ bool osc::readCSVRowIntoVector(
             s += '"';
             continue;
         }
-        else if (c == '"' and insideQuotes) {
+        else if (c == '"' and inside_quotes) {
             // quote at end of of quoted column
-            insideQuotes = false;
+            inside_quotes = false;
             continue;
         }
-        else if (c == ',' and not insideQuotes) {
+        else if (c == ',' and not inside_quotes) {
             // comma delimiter at end of column
 
             cols.push_back(s);
@@ -110,13 +108,13 @@ bool osc::readCSVRowIntoVector(
     }
 }
 
-void osc::writeCSVRow(
+void osc::write_csv_row(
     std::ostream& out,
     std::span<const std::string> columns)
 {
     std::string_view delim;
     for (const auto& column : columns) {
-        const bool quoted = shouldBeQuoted(column);
+        const bool quoted = should_be_quoted(column);
 
         out << delim;
         if (quoted) {

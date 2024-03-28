@@ -183,7 +183,7 @@ private:
         // render cube
         {
             m_GBuffer.material.setBool("uInvertedNormals", true);
-            graphics::drawMesh(
+            graphics::draw(
                 m_CubeMesh,
                 {.scale = Vec3{7.5f}, .position = {0.0f, 7.0f, 0.0f}},
                 m_GBuffer.material,
@@ -194,7 +194,7 @@ private:
         // render sphere
         {
             m_GBuffer.material.setBool("uInvertedNormals", false);
-            graphics::drawMesh(
+            graphics::draw(
                 m_SphereMesh,
                 {.position = {0.0f, 0.5f, 0.0f}},
                 m_GBuffer.material,
@@ -216,7 +216,7 @@ private:
         m_SSAO.material.setFloat("uRadius", 0.5f);
         m_SSAO.material.setFloat("uBias", 0.125f);
 
-        graphics::drawMesh(m_QuadMesh, identity<Transform>(), m_SSAO.material, m_Camera);
+        graphics::draw(m_QuadMesh, identity<Transform>(), m_SSAO.material, m_Camera);
         m_Camera.renderTo(m_SSAO.outputTexture);
 
         m_SSAO.material.clearRenderTexture("uPositionTex");
@@ -227,7 +227,7 @@ private:
     {
         m_Blur.material.setRenderTexture("uSSAOTex", m_SSAO.outputTexture);
 
-        graphics::drawMesh(m_QuadMesh, identity<Transform>(), m_Blur.material, m_Camera);
+        graphics::draw(m_QuadMesh, identity<Transform>(), m_Blur.material, m_Camera);
         m_Camera.renderTo(m_Blur.outputTexture);
 
         m_Blur.material.clearRenderTexture("uSSAOTex");
@@ -244,7 +244,7 @@ private:
         m_Lighting.material.setFloat("uLightLinear", 0.09f);
         m_Lighting.material.setFloat("uLightQuadratic", 0.032f);
 
-        graphics::drawMesh(m_QuadMesh, identity<Transform>(), m_Lighting.material, m_Camera);
+        graphics::draw(m_QuadMesh, identity<Transform>(), m_Lighting.material, m_Camera);
         m_Camera.renderTo(m_Lighting.outputTexture);
 
         m_Lighting.material.clearRenderTexture("uPositionTex");

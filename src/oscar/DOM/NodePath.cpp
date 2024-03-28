@@ -11,8 +11,8 @@ using namespace osc;
 
 namespace
 {
-    constexpr std::string_view c_NewInvalidChars{"\\*+ \t\n"};
-    constexpr std::string::value_type c_NUL = {};
+    constexpr std::string_view c_invalid_chars = "\\*+ \t\n";
+    constexpr std::string::value_type c_nul = {};
 
     // Returns a normalized form of `path`. A normalized path string is
     // guaranteed to:
@@ -56,21 +56,20 @@ namespace
         //       increase L1 misses.
 
         // assert that `path` contains no invalid chars
-        if (path.find_first_of(c_NewInvalidChars) != std::string::npos)
-        {
+        if (path.find_first_of(c_invalid_chars) != std::string::npos) {
             throw std::runtime_error{path + ": The supplied path contains invalid characters."};
         }
 
-        // pathEnd is guaranteed to be a NUL terminator since C++11
-        const Iter pathBegin = path.begin();
-        Iter pathEnd = path.end();
+        // path_end is guaranteed to be a NUL terminator since C++11
+        const Iter path_begin = path.begin();
+        Iter path_end = path.end();
 
-        // helper: shift n chars starting at newStart+n such that, after,
-        // newStart..end is equal to what newStart+n..end was before.
-        const auto shift = [&pathEnd](Iter newStart, size_t n)
+        // helper: shift n chars starting at new_start+n such that, after,
+        // new_start..end is equal to what new_start+n..end was before.
+        const auto shift = [&path_end](Iter new_start, size_t n)
         {
-            copy(newStart + n, pathEnd, newStart);
-            pathEnd -= n;
+            copy(new_start + n, path_end, new_start);
+            path_end -= n;
         };
 
         // helper: grab 3 lookahead chars, using NUL as a senteniel to
@@ -80,46 +79,42 @@ namespace
         //   code below needs to be able to detect the upcoming input
         //   pattern "..[/\0]"
         struct Lookahead { Value a, b, c; };
-        auto getLookahead = [](ConstIter start, ConstIter end)
+        const auto get_lookahead = [](ConstIter start, ConstIter end)
         {
-            return Lookahead
-            {
-                start < end - 0 ? start[0] : c_NUL,
-                start < end - 1 ? start[1] : c_NUL,
-                start < end - 2 ? start[2] : c_NUL,
+            return Lookahead{
+                start < end - 0 ? start[0] : c_nul,
+                start < end - 1 ? start[1] : c_nul,
+                start < end - 2 ? start[2] : c_nul,
             };
         };
 
         // remove duplicate adjacent separators
-        for (Iter it = pathBegin; it != pathEnd; ++it)
-        {
-            Lookahead l = getLookahead(it, pathEnd);
-            if (l.a == NodePath::separator && l.b == NodePath::separator)
-            {
+        for (Iter it = path_begin; it != path_end; ++it) {
+            const Lookahead l = get_lookahead(it, path_end);
+            if (l.a == NodePath::separator and l.b == NodePath::separator) {
                 shift(it--, 1);
             }
         }
 
-        bool isAbsolute = *pathBegin == NodePath::separator;
-        Iter cursor = isAbsolute ? pathBegin + 1 : pathBegin;
+        const bool is_absolute = *path_begin == NodePath::separator;
+        Iter cursor = is_absolute ? path_begin + 1 : path_begin;
 
         // skip/dereference relative elements *at the start of a path*
         {
-            Lookahead l = getLookahead(cursor, pathEnd);
+            Lookahead l = get_lookahead(cursor, path_end);
             while (l.a == '.') {
                 switch (l.b) {
                 case NodePath::separator:
                     shift(cursor, 2);
                     break;
-                case c_NUL:
+                case c_nul:
                     shift(cursor, 1);
                     break;
                 case '.': {
-                    if (l.c == NodePath::separator|| l.c == c_NUL) {
+                    if (l.c == NodePath::separator or l.c == c_nul) {
                         // starts with '..' element: only allowed if the path
                         // is relative
-                        if (isAbsolute)
-                        {
+                        if (is_absolute) {
                             throw std::runtime_error{path + ": is an invalid path: it is absolute, but starts with relative elements."};
                         }
 
@@ -143,11 +138,11 @@ namespace
                     break;
                 }
 
-                l = getLookahead(cursor, pathEnd);
+                l = get_lookahead(cursor, path_end);
             }
         }
 
-        Iter contentStart = cursor;
+        const Iter content_start = cursor;
 
         // invariants:
         //
@@ -157,42 +152,40 @@ namespace
         // - `path` contains no duplicate adjacent separators
         // - `[0..offset]` is normalized path string, but may contain a
         //   trailing slash
-        // - `[contentStart..offset] is the normalized *content* of the path
+        // - `[content_start..offset] is the normalized *content* of the path
         //   string
 
-        while (cursor < pathEnd) {
-            Lookahead l = getLookahead(cursor, pathEnd);
+        while (cursor < path_end) {
+            const Lookahead l = get_lookahead(cursor, path_end);
 
-            if (l.a == '.' && (l.b == c_NUL || l.b == NodePath::separator)) {
+            if (l.a == '.' and (l.b == c_nul or l.b == NodePath::separator)) {
                 // handle '.' (if found)
-                size_t charsInCurEl = l.b == NodePath::separator ? 2 : 1;
-                shift(cursor, charsInCurEl);
+                size_t num_chars_in_current_el = l.b == NodePath::separator ? 2 : 1;
+                shift(cursor, num_chars_in_current_el);
 
-            } else if (l.a == '.' && l.b == '.' && (l.c == c_NUL || l.c == NodePath::separator)) {
+            } else if (l.a == '.' and l.b == '.' and (l.c == c_nul or l.c == NodePath::separator)) {
                 // handle '..' (if found)
 
-                if (cursor == contentStart)
-                {
+                if (cursor == content_start) {
                     throw std::runtime_error{path + ": cannot handle '..' element in a path string: dereferencing this would hop above the root of the path."};
                 }
 
                 // search backwards for previous separator
-                Iter prevSeparator = cursor - 2;
-                while (prevSeparator > contentStart && *prevSeparator != NodePath::separator)
-                {
-                    --prevSeparator;
+                Iter prev_separator = cursor - 2;
+                while (prev_separator > content_start and *prev_separator != NodePath::separator) {
+                    --prev_separator;
                 }
 
-                Iter prevStart = prevSeparator <= contentStart ? contentStart : prevSeparator + 1;
-                size_t charsInCurEl = (l.c == NodePath::separator) ? 3 : 2;
-                size_t charsInPrevEl = cursor - prevStart;
+                const Iter prev_start = prev_separator <= content_start ? content_start : prev_separator + 1;
+                const size_t num_chars_in_current_el = (l.c == NodePath::separator) ? 3 : 2;
+                const size_t num_chars_in_previous_el = cursor - prev_start;
 
-                cursor = prevStart;
-                shift(cursor, charsInPrevEl + charsInCurEl);
+                cursor = prev_start;
+                shift(cursor, num_chars_in_previous_el + num_chars_in_current_el);
 
             } else {
                 // non-relative element: skip past the next separator or end
-                cursor = find(cursor, pathEnd, NodePath::separator) + 1;
+                cursor = find(cursor, path_end, NodePath::separator) + 1;
             }
         }
 
@@ -201,21 +194,19 @@ namespace
         //   string is only a slash. However, the input path wasnt initially an
         //   absolute path, so the output should be "", not "/"
         {
-            Iter beg = isAbsolute ? pathBegin + 1 : pathBegin;
-            if (pathEnd - beg > 0 && pathEnd[-1] == NodePath::separator)
-            {
-                --pathEnd;
+            const Iter beg = is_absolute ? path_begin + 1 : path_begin;
+            if (path_end - beg > 0 and path_end[-1] == NodePath::separator) {
+                --path_end;
             }
         }
 
         // resize output to only contain the normalized range
-        path.resize(pathEnd - pathBegin);
+        path.resize(path_end - path_begin);
 
         return path;
     }
 }
 
 osc::NodePath::NodePath(std::string_view p) :
-    m_ParsedPath{normalize(std::string{p})}
-{
-}
+    parsed_path_{normalize(std::string{p})}
+{}

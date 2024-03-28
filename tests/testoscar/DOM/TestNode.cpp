@@ -30,7 +30,7 @@ namespace
             return lhs.m_Data == rhs.m_Data;
         }
     private:
-        std::unique_ptr<Node> implClone() const override { return std::make_unique<MinimalNodeImpl>(*this); }
+        std::unique_ptr<Node> impl_clone() const override { return std::make_unique<MinimalNodeImpl>(*this); }
 
         int m_Data = RandomInt();
     };
@@ -42,7 +42,7 @@ namespace
             return lhs.m_Data == rhs.m_Data;
         }
     private:
-        std::unique_ptr<Node> implClone() const final { return std::make_unique<DifferentMinimalNodeImpl>(*this); }
+        std::unique_ptr<Node> impl_clone() const final { return std::make_unique<DifferentMinimalNodeImpl>(*this); }
         int m_Data = RandomInt();
     };
 
@@ -51,7 +51,7 @@ namespace
         explicit NodeWithCtorArg(int arg) : m_Arg{arg} {}
         int arg() const { return m_Arg; }
     private:
-        std::unique_ptr<Node> implClone() const final { return std::make_unique<NodeWithCtorArg>(*this); }
+        std::unique_ptr<Node> impl_clone() const final { return std::make_unique<NodeWithCtorArg>(*this); }
 
         int m_Arg;
     };
@@ -65,7 +65,7 @@ namespace
                 lhs.m_DerivedData == rhs.m_DerivedData;
         }
     private:
-        std::unique_ptr<Node> implClone() const override { return std::make_unique<DerivedFromMinimalNodeImpl>(*this); }
+        std::unique_ptr<Node> impl_clone() const override { return std::make_unique<DerivedFromMinimalNodeImpl>(*this); }
 
         int m_DerivedData = RandomInt();
     };
@@ -74,10 +74,10 @@ namespace
     public:
         explicit NodeWithName(std::string_view name)
         {
-            setName(name);
+            set_name(name);
         }
     private:
-        std::unique_ptr<Node> implClone() const final { return std::make_unique<NodeWithName>(*this); }
+        std::unique_ptr<Node> impl_clone() const final { return std::make_unique<NodeWithName>(*this); }
     };
 }
 
@@ -109,152 +109,152 @@ TEST(Node, VirtualCloneOfMinimalExampleWorksAsExpected)
 
 TEST(Node, NameOfMinimalExampleDefaultsToSomethingNonEmpty)
 {
-    ASSERT_FALSE(MinimalNodeImpl{}.getName().empty());
+    ASSERT_FALSE(MinimalNodeImpl{}.name().empty());
 }
 
 TEST(Node, SetNameOfMinimalExampleWorksAsExpected)
 {
     MinimalNodeImpl node;
-    node.setName("newName");
-    ASSERT_EQ(node.getName(), "newName"sv);
+    node.set_name("newName");
+    ASSERT_EQ(node.name(), "newName"sv);
 }
 
 TEST(Node, GetParentOfMinimalExampleIsFalsey)
 {
-    ASSERT_FALSE(MinimalNodeImpl{}.getParent());
+    ASSERT_FALSE(MinimalNodeImpl{}.parent());
 }
 
 TEST(Node, GetParentOfMinimalExampleTypedIsFalsey)
 {
-    ASSERT_FALSE(MinimalNodeImpl{}.getParent<MinimalNodeImpl>());
+    ASSERT_FALSE(MinimalNodeImpl{}.parent<MinimalNodeImpl>());
 }
 
 TEST(Node, UpdParentOfMinimalExampleIsFalsey)
 {
-    ASSERT_FALSE(MinimalNodeImpl{}.updParent());
+    ASSERT_FALSE(MinimalNodeImpl{}.upd_parent());
 }
 
 TEST(Node, UpdParentOfMinimalExampleTypedIsFalsey)
 {
-    ASSERT_FALSE(MinimalNodeImpl{}.updParent<MinimalNodeImpl>());
+    ASSERT_FALSE(MinimalNodeImpl{}.upd_parent<MinimalNodeImpl>());
 }
 
 TEST(Node, GetNumChildrenOfMinimalExampleIsZero)
 {
-    ASSERT_EQ(MinimalNodeImpl{}.getNumChildren(), 0);
+    ASSERT_EQ(MinimalNodeImpl{}.num_children(), 0);
 }
 
 TEST(Node, GetChildOfMinimalExampleReturnsFalsey)
 {
-    ASSERT_FALSE(MinimalNodeImpl{}.getChild(0));
-    ASSERT_FALSE(MinimalNodeImpl{}.getChild(1));  // i.e. bounds-checked
+    ASSERT_FALSE(MinimalNodeImpl{}.child(0));
+    ASSERT_FALSE(MinimalNodeImpl{}.child(1));  // i.e. bounds-checked
 }
 
 TEST(Node, GetChildOfMinimalExampleTypedReturnsFalsey)
 {
-    ASSERT_FALSE(MinimalNodeImpl{}.getChild<MinimalNodeImpl>(0));
-    ASSERT_FALSE(MinimalNodeImpl{}.getChild<MinimalNodeImpl>(1));  // i.e. bounds-checked
+    ASSERT_FALSE(MinimalNodeImpl{}.child<MinimalNodeImpl>(0));
+    ASSERT_FALSE(MinimalNodeImpl{}.child<MinimalNodeImpl>(1));  // i.e. bounds-checked
 }
 
 TEST(Node, UpdChildOfMinimalExampleReturnsFalsey)
 {
-    ASSERT_FALSE(MinimalNodeImpl{}.updChild(0));
-    ASSERT_FALSE(MinimalNodeImpl{}.updChild(1));  // i.e. bounds-checked
+    ASSERT_FALSE(MinimalNodeImpl{}.upd_child(0));
+    ASSERT_FALSE(MinimalNodeImpl{}.upd_child(1));  // i.e. bounds-checked
 }
 
 TEST(Node, UpdChildOfMinimalExampleTypedReturnsFalsey)
 {
-    ASSERT_FALSE(MinimalNodeImpl{}.updChild<MinimalNodeImpl>(0));
-    ASSERT_FALSE(MinimalNodeImpl{}.updChild<MinimalNodeImpl>(1));  // i.e. bounds-checked
+    ASSERT_FALSE(MinimalNodeImpl{}.upd_child<MinimalNodeImpl>(0));
+    ASSERT_FALSE(MinimalNodeImpl{}.upd_child<MinimalNodeImpl>(1));  // i.e. bounds-checked
 }
 
 TEST(Node, AddChildToMinimalExampleFollowedByGetParentReturnsTheParent)
 {
     MinimalNodeImpl parent;
-    MinimalNodeImpl& child = parent.addChild(std::make_unique<MinimalNodeImpl>());
+    MinimalNodeImpl& child = parent.add_child(std::make_unique<MinimalNodeImpl>());
 
-    ASSERT_EQ(child.getParent(), &parent);
+    ASSERT_EQ(child.parent(), &parent);
 }
 
 TEST(Node, AddChildToMinimalExampleFollowedByGetParentTypedReturnsTheParent)
 {
     MinimalNodeImpl parent;
-    MinimalNodeImpl& child = parent.addChild(std::make_unique<MinimalNodeImpl>());
+    MinimalNodeImpl& child = parent.add_child(std::make_unique<MinimalNodeImpl>());
 
-    ASSERT_EQ(child.getParent<MinimalNodeImpl>(), &parent);
+    ASSERT_EQ(child.parent<MinimalNodeImpl>(), &parent);
 }
 
 TEST(Node, AddChildToMinimalExampleFollowedByGetParentOfDifferentTypeReturnsFalsey)
 {
     MinimalNodeImpl parent;
-    MinimalNodeImpl& child = parent.addChild(std::make_unique<MinimalNodeImpl>());
+    MinimalNodeImpl& child = parent.add_child(std::make_unique<MinimalNodeImpl>());
 
-    ASSERT_FALSE(child.getParent<DifferentMinimalNodeImpl>());
+    ASSERT_FALSE(child.parent<DifferentMinimalNodeImpl>());
 }
 
 TEST(Node, AddChildOfDifferentTypeToMinimalExampleFollowedByGetParentOfOriginalTypeReturnsFalsey)
 {
     MinimalNodeImpl parent;
-    DifferentMinimalNodeImpl& child = parent.addChild(std::make_unique<DifferentMinimalNodeImpl>());
+    DifferentMinimalNodeImpl& child = parent.add_child(std::make_unique<DifferentMinimalNodeImpl>());
 
-    ASSERT_FALSE(child.getParent<MinimalNodeImpl>());
+    ASSERT_FALSE(child.parent<MinimalNodeImpl>());
 }
 
 TEST(Node, AddChildOfDerivedTypeToMinimalExampleFollowedByGetParentOfBaseTypeReturnsTruey)
 {
     DerivedFromMinimalNodeImpl parent;
-    MinimalNodeImpl& child = parent.addChild(std::make_unique<MinimalNodeImpl>());
+    MinimalNodeImpl& child = parent.add_child(std::make_unique<MinimalNodeImpl>());
 
-    ASSERT_TRUE(child.getParent<MinimalNodeImpl>());
+    ASSERT_TRUE(child.parent<MinimalNodeImpl>());
 }
 
 TEST(Node, AddChildToMinimalExampleFollowedByUpdParentReturnsTheParent)
 {
     MinimalNodeImpl parent;
-    MinimalNodeImpl& child = parent.addChild(std::make_unique<MinimalNodeImpl>());
+    MinimalNodeImpl& child = parent.add_child(std::make_unique<MinimalNodeImpl>());
 
-    ASSERT_EQ(child.updParent(), &parent);
+    ASSERT_EQ(child.upd_parent(), &parent);
 }
 
 TEST(Node, AddChildToMinimalExampleFollowedByUpdParentTypedReturnsTheParent)
 {
     MinimalNodeImpl parent;
-    MinimalNodeImpl& child = parent.addChild(std::make_unique<MinimalNodeImpl>());
+    MinimalNodeImpl& child = parent.add_child(std::make_unique<MinimalNodeImpl>());
 
-    ASSERT_EQ(child.updParent<MinimalNodeImpl>(), &parent);
+    ASSERT_EQ(child.upd_parent<MinimalNodeImpl>(), &parent);
 }
 
 TEST(Node, AddChildToMinimalExampleFollowedByUpdParentOfDifferentTypeReturnsFalsey)
 {
     MinimalNodeImpl parent;
-    MinimalNodeImpl& child = parent.addChild(std::make_unique<MinimalNodeImpl>());
+    MinimalNodeImpl& child = parent.add_child(std::make_unique<MinimalNodeImpl>());
 
-    ASSERT_FALSE(child.updParent<DifferentMinimalNodeImpl>());
+    ASSERT_FALSE(child.upd_parent<DifferentMinimalNodeImpl>());
 }
 
 TEST(Node, AddChildOfDifferentTypeToMinimalExampleFollowedByUpdParentOfOriginalTypeReturnsFalsey)
 {
     MinimalNodeImpl parent;
-    DifferentMinimalNodeImpl& child = parent.addChild(std::make_unique<DifferentMinimalNodeImpl>());
+    DifferentMinimalNodeImpl& child = parent.add_child(std::make_unique<DifferentMinimalNodeImpl>());
 
-    ASSERT_FALSE(child.updParent<MinimalNodeImpl>());
+    ASSERT_FALSE(child.upd_parent<MinimalNodeImpl>());
 }
 
 TEST(Node, AddChildOfDerivedTypeToMinimalExampleFollowedByUpdParentOfBaseTypeReturnsTruey)
 {
     DerivedFromMinimalNodeImpl parent;
-    MinimalNodeImpl& child = parent.addChild(std::make_unique<MinimalNodeImpl>());
+    MinimalNodeImpl& child = parent.add_child(std::make_unique<MinimalNodeImpl>());
 
-    ASSERT_TRUE(child.updParent<MinimalNodeImpl>());
+    ASSERT_TRUE(child.upd_parent<MinimalNodeImpl>());
 }
 
 TEST(Node, AddChildToMinimalExampleFollowedByGetNumChildrenReturns1)
 {
     MinimalNodeImpl parent;
-    MinimalNodeImpl& child = parent.addChild(std::make_unique<MinimalNodeImpl>());
+    MinimalNodeImpl& child = parent.add_child(std::make_unique<MinimalNodeImpl>());
 
-    ASSERT_EQ(parent.getNumChildren(), 1);
-    ASSERT_EQ(child.getNumChildren(), 1);
+    ASSERT_EQ(parent.num_children(), 1);
+    ASSERT_EQ(child.num_children(), 1);
 }
 
 TEST(Node, AddChildDoesNotChangeChildsName)
@@ -263,13 +263,13 @@ TEST(Node, AddChildDoesNotChangeChildsName)
     auto const& child = [&parent]()
     {
         auto up = std::make_unique<MinimalNodeImpl>();
-        up->setName("newname");
+        up->set_name("newname");
         auto* ptr = up.get();
-        parent.addChild(std::move(up));
+        parent.add_child(std::move(up));
         return *ptr;
     }();
 
-    ASSERT_EQ(child.getName(), "newname"sv);
+    ASSERT_EQ(child.name(), "newname"sv);
 }
 
 TEST(Node, AddChildWithSameNameAsParentDoesNotChangeName)
@@ -277,131 +277,131 @@ TEST(Node, AddChildWithSameNameAsParentDoesNotChangeName)
     auto const name = "somename"sv;
 
     MinimalNodeImpl parent;
-    parent.setName(name);
-    ASSERT_EQ(parent.getName(), name);
+    parent.set_name(name);
+    ASSERT_EQ(parent.name(), name);
 
     auto const& child = [&parent, &name]()
     {
         auto up = std::make_unique<MinimalNodeImpl>();
-        up->setName(name);
+        up->set_name(name);
         auto* ptr = up.get();
-        parent.addChild(std::move(up));
+        parent.add_child(std::move(up));
         return *ptr;
     }();
 
-    ASSERT_EQ(parent.getName(), child.getName());
+    ASSERT_EQ(parent.name(), child.name());
 }
 
 TEST(Node, AddChildFollowedByGetChildReturnsChild)
 {
     MinimalNodeImpl parent;
-    MinimalNodeImpl& child = parent.addChild(std::make_unique<MinimalNodeImpl>());
+    MinimalNodeImpl& child = parent.add_child(std::make_unique<MinimalNodeImpl>());
 
-    ASSERT_EQ(parent.getChild(0), &child);
+    ASSERT_EQ(parent.child(0), &child);
 }
 
 TEST(Node, AddChildFollowedByGetChildTypedReturnsChild)
 {
     MinimalNodeImpl parent;
-    MinimalNodeImpl& child = parent.addChild(std::make_unique<MinimalNodeImpl>());
+    MinimalNodeImpl& child = parent.add_child(std::make_unique<MinimalNodeImpl>());
 
-    ASSERT_EQ(parent.getChild<MinimalNodeImpl>(0), &child);
+    ASSERT_EQ(parent.child<MinimalNodeImpl>(0), &child);
 }
 
 TEST(Node, AddChildFollowedByGetChildOfDifferentTypeReturnsFalsey)
 {
     MinimalNodeImpl parent;
-    parent.addChild(std::make_unique<MinimalNodeImpl>());
+    parent.add_child(std::make_unique<MinimalNodeImpl>());
 
-    ASSERT_FALSE(parent.getChild<DifferentMinimalNodeImpl>(0));
+    ASSERT_FALSE(parent.child<DifferentMinimalNodeImpl>(0));
 }
 
 TEST(Node, AddDifferentChildFollowedByGetChildOfFirstTypeReturnsFalsey)
 {
     MinimalNodeImpl parent;
-    parent.addChild(std::make_unique<DifferentMinimalNodeImpl>());
+    parent.add_child(std::make_unique<DifferentMinimalNodeImpl>());
 
-    ASSERT_FALSE(parent.getChild<MinimalNodeImpl>(0));
+    ASSERT_FALSE(parent.child<MinimalNodeImpl>(0));
 }
 
 TEST(Node, AddDerivedChildFollowedByGetDerivedClassReturnsTruey)
 {
     MinimalNodeImpl parent;
-    parent.addChild(std::make_unique<DerivedFromMinimalNodeImpl>());
+    parent.add_child(std::make_unique<DerivedFromMinimalNodeImpl>());
 
-    ASSERT_TRUE(parent.getChild<DerivedFromMinimalNodeImpl>(0));
+    ASSERT_TRUE(parent.child<DerivedFromMinimalNodeImpl>(0));
 }
 
 TEST(Node, AddDerivedChildFollowedByGetBaseClassReturnsTruey)
 {
     MinimalNodeImpl parent;
-    parent.addChild(std::make_unique<DerivedFromMinimalNodeImpl>());
+    parent.add_child(std::make_unique<DerivedFromMinimalNodeImpl>());
 
-    ASSERT_TRUE(parent.getChild<MinimalNodeImpl>(0));
+    ASSERT_TRUE(parent.child<MinimalNodeImpl>(0));
 }
 
 TEST(Node, AddBaseChildFollowedByGetDerivedClassReturnsFalsey)
 {
     MinimalNodeImpl parent;
-    parent.addChild(std::make_unique<MinimalNodeImpl>());
+    parent.add_child(std::make_unique<MinimalNodeImpl>());
 
-    ASSERT_TRUE(parent.getChild<DerivedFromMinimalNodeImpl>(0));
+    ASSERT_TRUE(parent.child<DerivedFromMinimalNodeImpl>(0));
 }
 
 TEST(Node, AddChildFollowedByUpdChildReturnsChild)
 {
     MinimalNodeImpl parent;
-    MinimalNodeImpl& child = parent.addChild(std::make_unique<MinimalNodeImpl>());
+    MinimalNodeImpl& child = parent.add_child(std::make_unique<MinimalNodeImpl>());
 
-    ASSERT_EQ(parent.updChild(0), &child);
+    ASSERT_EQ(parent.upd_child(0), &child);
 }
 
 TEST(Node, AddChildFollowedByUpdChildTypedReturnsChild)
 {
     MinimalNodeImpl parent;
-    MinimalNodeImpl& child = parent.addChild(std::make_unique<MinimalNodeImpl>());
+    MinimalNodeImpl& child = parent.add_child(std::make_unique<MinimalNodeImpl>());
 
-    ASSERT_EQ(parent.updChild<MinimalNodeImpl>(0), &child);
+    ASSERT_EQ(parent.upd_child<MinimalNodeImpl>(0), &child);
 }
 
 TEST(Node, AddChildFollowedByUpdChildOfDifferentTypeReturnsFalsey)
 {
     MinimalNodeImpl parent;
-    parent.addChild(std::make_unique<MinimalNodeImpl>());
+    parent.add_child(std::make_unique<MinimalNodeImpl>());
 
-    ASSERT_FALSE(parent.updChild<DifferentMinimalNodeImpl>(0));
+    ASSERT_FALSE(parent.upd_child<DifferentMinimalNodeImpl>(0));
 }
 
 TEST(Node, AddDifferentChildFollowedByUpdChildOfFirstTypeReturnsFalsey)
 {
     MinimalNodeImpl parent;
-    parent.addChild(std::make_unique<DifferentMinimalNodeImpl>());
+    parent.add_child(std::make_unique<DifferentMinimalNodeImpl>());
 
-    ASSERT_FALSE(parent.updChild<MinimalNodeImpl>(0));
+    ASSERT_FALSE(parent.upd_child<MinimalNodeImpl>(0));
 }
 
 TEST(Node, AddDerivedChildFollowedByUpdDerivedClassReturnsTruey)
 {
     MinimalNodeImpl parent;
-    parent.addChild(std::make_unique<DerivedFromMinimalNodeImpl>());
+    parent.add_child(std::make_unique<DerivedFromMinimalNodeImpl>());
 
-    ASSERT_TRUE(parent.updChild<DerivedFromMinimalNodeImpl>(0));
+    ASSERT_TRUE(parent.upd_child<DerivedFromMinimalNodeImpl>(0));
 }
 
 TEST(Node, AddDerivedChildFollowedByUpdBaseClassReturnsTruey)
 {
     MinimalNodeImpl parent;
-    parent.addChild(std::make_unique<DerivedFromMinimalNodeImpl>());
+    parent.add_child(std::make_unique<DerivedFromMinimalNodeImpl>());
 
-    ASSERT_TRUE(parent.updChild<MinimalNodeImpl>(0));
+    ASSERT_TRUE(parent.upd_child<MinimalNodeImpl>(0));
 }
 
 TEST(Node, AddBaseChildFollowedByUpdDerivedClassReturnsFalsey)
 {
     MinimalNodeImpl parent;
-    parent.addChild(std::make_unique<MinimalNodeImpl>());
+    parent.add_child(std::make_unique<MinimalNodeImpl>());
 
-    ASSERT_TRUE(parent.updChild<DerivedFromMinimalNodeImpl>(0));
+    ASSERT_TRUE(parent.upd_child<DerivedFromMinimalNodeImpl>(0));
 }
 
 TEST(Node, EmplaceChildBehavesEssentiallyIdentiallyToAddChild)
@@ -409,34 +409,34 @@ TEST(Node, EmplaceChildBehavesEssentiallyIdentiallyToAddChild)
     // test basic logic
     {
         MinimalNodeImpl parent;
-        auto& child = parent.emplaceChild<MinimalNodeImpl>();
+        auto& child = parent.emplace_child<MinimalNodeImpl>();
 
-        ASSERT_EQ(parent.getNumChildren(), 1);
-        ASSERT_EQ(parent.getChild(0), &child);
-        ASSERT_FALSE(parent.getChild(1));
-        ASSERT_EQ(parent.getChild<MinimalNodeImpl>(0), &child);
-        ASSERT_FALSE(parent.getChild<MinimalNodeImpl>(1));
-        ASSERT_EQ(parent.updChild(0), &child);
-        ASSERT_FALSE(parent.updChild(1));
-        ASSERT_EQ(parent.updChild<MinimalNodeImpl>(0), &child);
-        ASSERT_FALSE(parent.updChild<MinimalNodeImpl>(1));
+        ASSERT_EQ(parent.num_children(), 1);
+        ASSERT_EQ(parent.child(0), &child);
+        ASSERT_FALSE(parent.child(1));
+        ASSERT_EQ(parent.child<MinimalNodeImpl>(0), &child);
+        ASSERT_FALSE(parent.child<MinimalNodeImpl>(1));
+        ASSERT_EQ(parent.upd_child(0), &child);
+        ASSERT_FALSE(parent.upd_child(1));
+        ASSERT_EQ(parent.upd_child<MinimalNodeImpl>(0), &child);
+        ASSERT_FALSE(parent.upd_child<MinimalNodeImpl>(1));
     }
 
     {
         DerivedFromMinimalNodeImpl parent;
-        MinimalNodeImpl& child = parent.emplaceChild<MinimalNodeImpl>();
+        MinimalNodeImpl& child = parent.emplace_child<MinimalNodeImpl>();
 
-        ASSERT_EQ(child.getParent(), &parent);
-        ASSERT_TRUE(child.getParent<DerivedFromMinimalNodeImpl>());
+        ASSERT_EQ(child.parent(), &parent);
+        ASSERT_TRUE(child.parent<DerivedFromMinimalNodeImpl>());
     }
 
     {
         MinimalNodeImpl parent;
-        auto& child = parent.emplaceChild<DerivedFromMinimalNodeImpl>();
+        auto& child = parent.emplace_child<DerivedFromMinimalNodeImpl>();
 
-        ASSERT_EQ(child.getParent(), &parent);
-        ASSERT_TRUE(child.getParent<MinimalNodeImpl>());
-        ASSERT_FALSE(child.getParent<DerivedFromMinimalNodeImpl>());
+        ASSERT_EQ(child.parent(), &parent);
+        ASSERT_TRUE(child.parent<MinimalNodeImpl>());
+        ASSERT_FALSE(child.parent<DerivedFromMinimalNodeImpl>());
     }
 }
 
@@ -445,52 +445,52 @@ TEST(Node, EmplaceChildForwardsArgs)
     int const arg = 1337;
 
     MinimalNodeImpl parent;
-    auto& child = parent.emplaceChild<NodeWithCtorArg>(arg);
+    auto& child = parent.emplace_child<NodeWithCtorArg>(arg);
 
     ASSERT_EQ(child.arg(), arg);
 }
 
 TEST(Node, RemoveChildReturnsFalseIfIndexOutOfBounds)
 {
-    ASSERT_FALSE(MinimalNodeImpl{}.removeChild(0));
+    ASSERT_FALSE(MinimalNodeImpl{}.remove_child(0));
 }
 
 TEST(Node, RemoveChildReturnsFalseIfGivenInvalidName)
 {
-    ASSERT_FALSE(MinimalNodeImpl{}.removeChild("invalidname"));
+    ASSERT_FALSE(MinimalNodeImpl{}.remove_child("invalidname"));
 }
 
 TEST(Node, RemoveChildReturnsFalseIfGivenInvalidNode)
 {
     MinimalNodeImpl notAChild{};
-    ASSERT_FALSE(MinimalNodeImpl{}.removeChild(notAChild));
+    ASSERT_FALSE(MinimalNodeImpl{}.remove_child(notAChild));
 }
 
 TEST(Node, RemoveChildByIndexReturnsTrueIfChildExists)
 {
     MinimalNodeImpl parent;
-    parent.emplaceChild<MinimalNodeImpl>();
+    parent.emplace_child<MinimalNodeImpl>();
 
-    ASSERT_EQ(parent.getNumChildren(), 1);
-    ASSERT_TRUE(parent.removeChild(0));
-    ASSERT_EQ(parent.getNumChildren(), 0);
+    ASSERT_EQ(parent.num_children(), 1);
+    ASSERT_TRUE(parent.remove_child(0));
+    ASSERT_EQ(parent.num_children(), 0);
 }
 
 TEST(Node, RemoveChildByIndexReturnsFalseIfItHasChildrenButIsMisIndexed)
 {
     MinimalNodeImpl parent;
-    parent.emplaceChild<MinimalNodeImpl>();
-    ASSERT_FALSE(parent.removeChild(1));
+    parent.emplace_child<MinimalNodeImpl>();
+    ASSERT_FALSE(parent.remove_child(1));
 }
 
 TEST(Node, RemoveChildByReferenceReturnsTrueIfChildExists)
 {
     MinimalNodeImpl parent;
-    auto& child = parent.emplaceChild<MinimalNodeImpl>();
+    auto& child = parent.emplace_child<MinimalNodeImpl>();
 
-    ASSERT_EQ(parent.getNumChildren(), 1);
-    ASSERT_TRUE(parent.removeChild(child));
-    ASSERT_EQ(parent.getNumChildren(), 0);
+    ASSERT_EQ(parent.num_children(), 1);
+    ASSERT_TRUE(parent.remove_child(child));
+    ASSERT_EQ(parent.num_children(), 0);
 
     // careful: child is now dead
 }
@@ -500,46 +500,46 @@ TEST(Node, RemoveChildByReferenceReturnsFalseIfReferenceIsntInTree)
     MinimalNodeImpl parent;
     MinimalNodeImpl someOtherNode;
 
-    ASSERT_FALSE(parent.removeChild(someOtherNode));
+    ASSERT_FALSE(parent.remove_child(someOtherNode));
 }
 
 TEST(Node, RemoveChildByReferenceReturnsFalseIfReferenceIsParentRatherThanChild)
 {
     MinimalNodeImpl parent;
-    auto& child = parent.emplaceChild<MinimalNodeImpl>();
+    auto& child = parent.emplace_child<MinimalNodeImpl>();
 
-    ASSERT_FALSE(child.removeChild(parent));
+    ASSERT_FALSE(child.remove_child(parent));
 }
 
 TEST(Node, RemoveChildByReferenceReturnsFalseIfOtherNodeIsASibling)
 {
     MinimalNodeImpl parent;
-    auto& child = parent.emplaceChild<MinimalNodeImpl>();
-    auto& sibling = parent.emplaceChild<MinimalNodeImpl>();
+    auto& child = parent.emplace_child<MinimalNodeImpl>();
+    auto& sibling = parent.emplace_child<MinimalNodeImpl>();
 
-    ASSERT_EQ(parent.getNumChildren(), 2);
-    ASSERT_FALSE(child.removeChild(sibling));
+    ASSERT_EQ(parent.num_children(), 2);
+    ASSERT_FALSE(child.remove_child(sibling));
 }
 
 TEST(Node, RemoveChildByReferenceReturnsFalseIfNodeIsDeeperDescendent)
 {
     MinimalNodeImpl grandparent;
-    auto& parent = grandparent.emplaceChild<MinimalNodeImpl>();
-    auto& child = parent.emplaceChild<MinimalNodeImpl>();
+    auto& parent = grandparent.emplace_child<MinimalNodeImpl>();
+    auto& child = parent.emplace_child<MinimalNodeImpl>();
 
-    ASSERT_EQ(grandparent.getNumChildren(), 1);
-    ASSERT_EQ(parent.getNumChildren(), 1);
-    ASSERT_EQ(child.getNumChildren(), 0);
+    ASSERT_EQ(grandparent.num_children(), 1);
+    ASSERT_EQ(parent.num_children(), 1);
+    ASSERT_EQ(child.num_children(), 0);
     {
-        ASSERT_FALSE(grandparent.removeChild(child));
+        ASSERT_FALSE(grandparent.remove_child(child));
     }
-    ASSERT_EQ(child.getNumChildren(), 0);
-    ASSERT_EQ(parent.getNumChildren(), 1);
-    ASSERT_EQ(grandparent.getNumChildren(), 1);
+    ASSERT_EQ(child.num_children(), 0);
+    ASSERT_EQ(parent.num_children(), 1);
+    ASSERT_EQ(grandparent.num_children(), 1);
 
-    ASSERT_TRUE(parent.removeChild(child));
-    ASSERT_EQ(grandparent.getNumChildren(), 1);
-    ASSERT_EQ(parent.getNumChildren(), 0);
+    ASSERT_TRUE(parent.remove_child(child));
+    ASSERT_EQ(grandparent.num_children(), 1);
+    ASSERT_EQ(parent.num_children(), 0);
 }
 
 TEST(Node, RemoveChildByNameReturnsFalseyIfGivenNonExistentChildName)
@@ -547,11 +547,11 @@ TEST(Node, RemoveChildByNameReturnsFalseyIfGivenNonExistentChildName)
     auto const notAName = "somenode"sv;
 
     MinimalNodeImpl parent;
-    parent.emplaceChild<MinimalNodeImpl>();
+    parent.emplace_child<MinimalNodeImpl>();
 
-    ASSERT_EQ(parent.getNumChildren(), 1);
-    ASSERT_FALSE(parent.removeChild(notAName));
-    ASSERT_EQ(parent.getNumChildren(), 1);
+    ASSERT_EQ(parent.num_children(), 1);
+    ASSERT_FALSE(parent.remove_child(notAName));
+    ASSERT_EQ(parent.num_children(), 1);
 }
 
 TEST(Node, RemoveChildByNameReturnsTrueyAndRemovesNodeIfGivenAChildName)
@@ -559,11 +559,11 @@ TEST(Node, RemoveChildByNameReturnsTrueyAndRemovesNodeIfGivenAChildName)
     auto const name = "somenode"sv;
 
     MinimalNodeImpl parent;
-    parent.emplaceChild<NodeWithName>(name);
+    parent.emplace_child<NodeWithName>(name);
 
-    ASSERT_EQ(parent.getNumChildren(), 1);
-    ASSERT_TRUE(parent.removeChild(name));
-    ASSERT_EQ(parent.getNumChildren(), 0);
+    ASSERT_EQ(parent.num_children(), 1);
+    ASSERT_TRUE(parent.remove_child(name));
+    ASSERT_EQ(parent.num_children(), 0);
 }
 
 TEST(Node, SetNameOfChildCausesGetChildByNameToWorkWithNewName)
@@ -571,78 +571,78 @@ TEST(Node, SetNameOfChildCausesGetChildByNameToWorkWithNewName)
     auto const newName = "somenewname"sv;
 
     MinimalNodeImpl parent;
-    auto& child = parent.emplaceChild<MinimalNodeImpl>();
-    std::string const oldName{child.getName()};
+    auto& child = parent.emplace_child<MinimalNodeImpl>();
+    std::string const oldName{child.name()};
 
-    ASSERT_NE(child.getName(), newName);
-    ASSERT_TRUE(parent.getChild(oldName));
-    child.setName(newName);
-    ASSERT_FALSE(parent.getChild(oldName));
-    ASSERT_TRUE(parent.getChild(newName));
+    ASSERT_NE(child.name(), newName);
+    ASSERT_TRUE(parent.child(oldName));
+    child.set_name(newName);
+    ASSERT_FALSE(parent.child(oldName));
+    ASSERT_TRUE(parent.child(newName));
 }
 
 TEST(Node, GetAbsolutePathOfRootNodeReturnsForwardSlash)
 {
     MinimalNodeImpl root;
-    ASSERT_EQ(root.getAbsolutePath(), "/"sv);
+    ASSERT_EQ(root.absolute_path(), "/"sv);
 }
 
 TEST(Node, GetAbsolutePathOfRootWithChildStillReturnsForwardSlash)
 {
     MinimalNodeImpl root;
-    root.emplaceChild<MinimalNodeImpl>();
-    ASSERT_EQ(root.getNumChildren(), 1);
-    ASSERT_EQ(root.getAbsolutePath(), "/"sv);
+    root.emplace_child<MinimalNodeImpl>();
+    ASSERT_EQ(root.num_children(), 1);
+    ASSERT_EQ(root.absolute_path(), "/"sv);
 }
 
 TEST(Node, GetAbsolutePathOfChildReturnsExpectedAbsolutePath)
 {
     NodeWithName a{"a"};
-    auto const& b = a.emplaceChild<NodeWithName>("b");
+    auto const& b = a.emplace_child<NodeWithName>("b");
 
-    ASSERT_EQ(b.getAbsolutePath(), "/a/b"sv);
+    ASSERT_EQ(b.absolute_path(), "/a/b"sv);
 }
 
 TEST(Node, GetAbsolutePathOfGrandchildReturnsExpectedAbsolutePath)
 {
     NodeWithName a{"a"};
-    auto const& c = a.emplaceChild<NodeWithName>("b").emplaceChild<NodeWithName>("c");
+    auto const& c = a.emplace_child<NodeWithName>("b").emplace_child<NodeWithName>("c");
 
-    ASSERT_EQ(c.getAbsolutePath(), "/a/b/c"sv);
+    ASSERT_EQ(c.absolute_path(), "/a/b/c"sv);
 }
 
 TEST(Node, GetAbsolutePathToGreatGrandchildReturnsExpectedAbsolutePath)
 {
     NodeWithName a{"a"};
-    auto const& d = a.emplaceChild<NodeWithName>("b").emplaceChild<NodeWithName>("c").emplaceChild<NodeWithName>("d");
+    auto const& d = a.emplace_child<NodeWithName>("b").emplace_child<NodeWithName>("c").emplace_child<NodeWithName>("d");
 
-    ASSERT_EQ(d.getAbsolutePath(), "/a/b/c/d"sv);
+    ASSERT_EQ(d.absolute_path(), "/a/b/c/d"sv);
 }
 
 TEST(Node, GetAbsolutePathToRootChangesIfNameIsChanged)
 {
     NodeWithName root{"root"};
-    root.setName("new");
+    root.set_name("new");
 
-    ASSERT_EQ(root.getAbsolutePath(), "/new"sv);
+    ASSERT_EQ(root.absolute_path(), "/new"sv);
 }
 
 TEST(Node, GetAbsolutePathToChildChangesIfChildNameIsChanged)
 {
     NodeWithName a{"a"};
-    auto& child = a.emplaceChild<NodeWithName>("b");
+    auto& child = a.emplace_child<NodeWithName>("b");
 
-    child.setName("new");
-    ASSERT_EQ(child.getAbsolutePath(), "/a/new"sv);
+    child.set_name("new");
+    ASSERT_EQ(child.absolute_path(), "/a/new"sv);
 }
 
 TEST(Node, GetAbsolutePathToChildChangesIfRootNameIsChanged)
 {
     NodeWithName a{"a"};
-    auto& child = a.emplaceChild<NodeWithName>("b");
-    a.setName("new");
+    auto& child = a.emplace_child<NodeWithName>("b");
+    a.set_name("new");
 
-    ASSERT_EQ(child.getAbsolutePath(), "/new/b"sv);
+    ASSERT_EQ(child.absolute_path(), "/new/b"sv);
 }
 
 TEST(Node, FindReturnsRootIfPassedRootPath)
@@ -661,7 +661,7 @@ TEST(Node, FindReturnsRootIfPassedIdentityPath)
 TEST(Node, FindReturnsExpectedPathsForSingleChild)
 {
     NodeWithName a{"a"};
-    auto& b = a.emplaceChild<NodeWithName>("b");
+    auto& b = a.emplace_child<NodeWithName>("b");
 
     ASSERT_EQ(a.find("b"_np), &b);
     ASSERT_EQ(a.find("/b"_np), &b);
@@ -678,8 +678,8 @@ TEST(Node, FindReturnsExpectedPathsForSingleChild)
 TEST(Node, FindReturnsExpectedPathsForGrandchild)
 {
     NodeWithName a{"a"};
-    auto& b = a.emplaceChild<NodeWithName>("b");
-    auto& c = b.emplaceChild<NodeWithName>("c");
+    auto& b = a.emplace_child<NodeWithName>("b");
+    auto& c = b.emplace_child<NodeWithName>("c");
 
     struct TestCase final {
         TestCase(
@@ -752,7 +752,7 @@ TEST(Node, FindReturnsExpectedPathsForGrandchild)
 
 TEST(Node, GetNumPropertiesReturnsZeroForMinimalExample)
 {
-    ASSERT_EQ(MinimalNodeImpl{}.getNumProperties(), 0);
+    ASSERT_EQ(MinimalNodeImpl{}.num_properties(), 0);
 }
 
 TEST(Node, HasPropertyReturnsFalseForMinimalExample)
@@ -768,23 +768,23 @@ TEST(Node, GetPropertyNameByIndexReturnsFalseyForMinimalExample)
 
 TEST(Node, GetPropertyValueByIndexReturnsFalseyForMinimalExample)
 {
-    ASSERT_FALSE(MinimalNodeImpl{}.getPropertyValue(0));
-    ASSERT_FALSE(MinimalNodeImpl{}.getPropertyValue(1));
+    ASSERT_FALSE(MinimalNodeImpl{}.property_value_or_throw(0));
+    ASSERT_FALSE(MinimalNodeImpl{}.property_value_or_throw(1));
 }
 
 TEST(Node, GetPropertyValueByNameReturnsFalseyForMinimalExample)
 {
-    ASSERT_FALSE(MinimalNodeImpl{}.getPropertyValue("something"));
+    ASSERT_FALSE(MinimalNodeImpl{}.property_value_or_throw("something"));
 }
 
 TEST(Node, SetPropertyValueByIndexReturnsFalseForMinimalExample)
 {
-    ASSERT_FALSE(MinimalNodeImpl{}.setPropertyValue(0, osc::Variant(true)));
+    ASSERT_FALSE(MinimalNodeImpl{}.set_property_value_or_throw(0, osc::Variant(true)));
 }
 
 TEST(Node, SetPropertyValueByNameReturnsFalseForMinimalExample)
 {
-    ASSERT_FALSE(MinimalNodeImpl{}.setPropertyValue("someprop", osc::Variant(true)));
+    ASSERT_FALSE(MinimalNodeImpl{}.set_property_value_or_throw("someprop", osc::Variant(true)));
 }
 
 */

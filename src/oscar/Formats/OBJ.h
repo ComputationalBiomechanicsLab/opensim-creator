@@ -2,7 +2,6 @@
 
 #include <oscar/Shims/Cpp23/utility.h>
 
-#include <cstdint>
 #include <ctime>
 #include <iosfwd>
 #include <string>
@@ -12,7 +11,7 @@ namespace osc { class Mesh; }
 
 namespace osc
 {
-    enum class ObjWriterFlags : uint32_t {
+    enum class ObjWriterFlags {
         None           = 0,
         NoWriteNormals = 1<<0,
 
@@ -26,14 +25,14 @@ namespace osc
 
     struct ObjMetadata final {
         explicit ObjMetadata(
-            std::string_view authoringTool_
+            std::string_view authoring_tool_
         );
 
-        std::string authoringTool;
-        std::tm creationTime;
+        std::string authoring_tool;
+        std::tm creation_time;
     };
 
-    void writeMeshAsObj(
+    void write_as_obj(
         std::ostream&,
         const Mesh&,
         const ObjMetadata&,

@@ -15,57 +15,57 @@ using namespace osc;
 using namespace osc::literals;
 
 osc::TorusGeometry::TorusGeometry(
-    float radius,
-    float tube,
-    size_t radialSegments,
-    size_t tubularSegments,
+    float inner_radius,
+    float tube_radius,
+    size_t num_radial_segments,
+    size_t num_tubular_segments,
     Radians arc)
 {
     // (ported from three.js/TorusGeometry)
 
-    const auto fradialSegments = static_cast<float>(radialSegments);
-    const auto ftubularSegments = static_cast<float>(tubularSegments);
+    const auto fnum_radial_segments = static_cast<float>(num_radial_segments);
+    const auto fnum_tubular_segments = static_cast<float>(num_tubular_segments);
 
     std::vector<uint32_t> indices;
-    std::vector<Vec3>  vertices;
+    std::vector<Vec3> vertices;
     std::vector<Vec3> normals;
     std::vector<Vec2> uvs;
 
-    for (size_t j = 0; j <= radialSegments; ++j) {
+    for (size_t j = 0; j <= num_radial_segments; ++j) {
         const auto fj = static_cast<float>(j);
-        for (size_t i = 0; i <= tubularSegments; ++i) {
+        for (size_t i = 0; i <= num_tubular_segments; ++i) {
             const auto fi = static_cast<float>(i);
-            const Radians u = fi/ftubularSegments * arc;
-            const Radians v = fj/fradialSegments * 360_deg;
+            const Radians u = fi/fnum_tubular_segments * arc;
+            const Radians v = fj/fnum_radial_segments * 360_deg;
 
             const Vec3& vertex = vertices.emplace_back(
-                (radius + tube * cos(v)) * cos(u),
-                (radius + tube * cos(v)) * sin(u),
-                tube * sin(v)
+                (inner_radius + tube_radius * cos(v)) * cos(u),
+                (inner_radius + tube_radius * cos(v)) * sin(u),
+                tube_radius * sin(v)
             );
             normals.push_back(UnitVec3{
-                vertex.x - radius*cos(u),
-                vertex.y - radius*sin(u),
+                vertex.x - inner_radius*cos(u),
+                vertex.y - inner_radius*sin(u),
                 vertex.z - 0.0f,
             });
-            uvs.emplace_back(fi/ftubularSegments, fj/fradialSegments);
+            uvs.emplace_back(fi/fnum_tubular_segments, fj/fnum_radial_segments);
         }
     }
 
-    for (size_t j = 1; j <= radialSegments; ++j) {
-        for (size_t i = 1; i <= tubularSegments; ++i) {
-            const auto a = static_cast<uint32_t>((tubularSegments + 1)*(j + 0) + i - 1);
-            const auto b = static_cast<uint32_t>((tubularSegments + 1)*(j - 1) + i - 1);
-            const auto c = static_cast<uint32_t>((tubularSegments + 1)*(j - 1) + i);
-            const auto d = static_cast<uint32_t>((tubularSegments + 1)*(j + 0) + i);
+    for (size_t j = 1; j <= num_radial_segments; ++j) {
+        for (size_t i = 1; i <= num_tubular_segments; ++i) {
+            const auto a = static_cast<uint32_t>((num_tubular_segments + 1)*(j + 0) + i - 1);
+            const auto b = static_cast<uint32_t>((num_tubular_segments + 1)*(j - 1) + i - 1);
+            const auto c = static_cast<uint32_t>((num_tubular_segments + 1)*(j - 1) + i);
+            const auto d = static_cast<uint32_t>((num_tubular_segments + 1)*(j + 0) + i);
 
             indices.insert(indices.end(), {a, b, d});
             indices.insert(indices.end(), {b, c, d});
         }
     }
 
-    m_Mesh.setVerts(vertices);
-    m_Mesh.setNormals(normals);
-    m_Mesh.setTexCoords(uvs);
-    m_Mesh.setIndices(indices);
+    mesh_.setVerts(vertices);
+    mesh_.setNormals(normals);
+    mesh_.setTexCoords(uvs);
+    mesh_.setIndices(indices);
 }

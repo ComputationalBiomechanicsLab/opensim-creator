@@ -6,5 +6,5 @@
 
 size_t osc::VertexAttributeDescriptor::stride() const
 {
-    return detail::StrideOf(m_Format);
+    return detail::stride_of(m_Format);
 }

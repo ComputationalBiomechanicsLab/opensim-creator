@@ -71,7 +71,7 @@ namespace
         }
     };
 
-    constexpr CStringView c_VertexShaderSrc = R"(
+    constexpr CStringView c_vertex_shader_src = R"(
         #version 330 core
 
         uniform mat4 uViewProjMat;
@@ -114,7 +114,7 @@ namespace
         }
     )";
 
-    constexpr CStringView c_FragmentShaderSrc = R"(
+    constexpr CStringView c_fragment_shader_src = R"(
         #version 330 core
 
         uniform bool uHasShadowMap = false;
@@ -386,7 +386,7 @@ namespace
 
     Material GenerateMaterial()
     {
-        Shader shader{c_VertexShaderSrc, c_FragmentShaderSrc};
+        Shader shader{c_vertex_shader_src, c_fragment_shader_src};
         return Material{shader};
     }
 
@@ -420,7 +420,7 @@ TEST_F(Renderer, ShaderTypeCanBeIteratedOverAndAllCanBeStreamed)
 
 TEST_F(Renderer, ShaderCanBeConstructedFromVertexAndFragmentShaderSource)
 {
-    Shader s{c_VertexShaderSrc, c_FragmentShaderSrc};
+    Shader s{c_vertex_shader_src, c_fragment_shader_src};
 }
 
 TEST_F(Renderer, ShaderCanBeConstructedFromVertexGeometryAndFragmentShaderSources)
@@ -430,35 +430,35 @@ TEST_F(Renderer, ShaderCanBeConstructedFromVertexGeometryAndFragmentShaderSource
 
 TEST_F(Renderer, ShaderCanBeCopyConstructed)
 {
-    Shader s{c_VertexShaderSrc, c_FragmentShaderSrc};
+    Shader s{c_vertex_shader_src, c_fragment_shader_src};
     Shader{s};
 }
 
 TEST_F(Renderer, ShaderCanBeMoveConstructed)
 {
-    Shader s{c_VertexShaderSrc, c_FragmentShaderSrc};
+    Shader s{c_vertex_shader_src, c_fragment_shader_src};
     Shader copy{std::move(s)};
 }
 
 TEST_F(Renderer, ShaderCanBeCopyAssigned)
 {
-    Shader s1{c_VertexShaderSrc, c_FragmentShaderSrc};
-    Shader s2{c_VertexShaderSrc, c_FragmentShaderSrc};
+    Shader s1{c_vertex_shader_src, c_fragment_shader_src};
+    Shader s2{c_vertex_shader_src, c_fragment_shader_src};
 
     s1 = s2;
 }
 
 TEST_F(Renderer, ShaderCanBeMoveAssigned)
 {
-    Shader s1{c_VertexShaderSrc, c_FragmentShaderSrc};
-    Shader s2{c_VertexShaderSrc, c_FragmentShaderSrc};
+    Shader s1{c_vertex_shader_src, c_fragment_shader_src};
+    Shader s2{c_vertex_shader_src, c_fragment_shader_src};
 
     s1 = std::move(s2);
 }
 
 TEST_F(Renderer, ShaderThatIsCopyConstructedEqualsSrcShader)
 {
-    Shader s{c_VertexShaderSrc, c_FragmentShaderSrc};
+    Shader s{c_vertex_shader_src, c_fragment_shader_src};
     Shader copy{s}; // NOLINT(performance-unnecessary-copy-initialization)
 
     ASSERT_EQ(s, copy);
@@ -466,15 +466,15 @@ TEST_F(Renderer, ShaderThatIsCopyConstructedEqualsSrcShader)
 
 TEST_F(Renderer, ShadersThatDifferCompareNotEqual)
 {
-    Shader s1{c_VertexShaderSrc, c_FragmentShaderSrc};
-    Shader s2{c_VertexShaderSrc, c_FragmentShaderSrc};
+    Shader s1{c_vertex_shader_src, c_fragment_shader_src};
+    Shader s2{c_vertex_shader_src, c_fragment_shader_src};
 
     ASSERT_NE(s1, s2);
 }
 
 TEST_F(Renderer, ShaderCanBeWrittenToOutputStream)
 {
-    Shader s{c_VertexShaderSrc, c_FragmentShaderSrc};
+    Shader s{c_vertex_shader_src, c_fragment_shader_src};
 
     std::stringstream ss;
     ss << s;  // shouldn't throw etc.
@@ -487,7 +487,7 @@ TEST_F(Renderer, ShaderOutputStreamContainsExpectedInfo)
     // this test is flakey, but is just ensuring that the string printout has enough information
     // to help debugging etc.
 
-    Shader s{c_VertexShaderSrc, c_FragmentShaderSrc};
+    Shader s{c_vertex_shader_src, c_fragment_shader_src};
 
     std::stringstream ss;
     ss << s;
@@ -501,7 +501,7 @@ TEST_F(Renderer, ShaderOutputStreamContainsExpectedInfo)
 
 TEST_F(Renderer, ShaderFindPropertyIndexCanFindAllExpectedProperties)
 {
-    Shader s{c_VertexShaderSrc, c_FragmentShaderSrc};
+    Shader s{c_vertex_shader_src, c_fragment_shader_src};
 
     for (auto const& propName : c_ExpectedPropertyNames)
     {
@@ -511,13 +511,13 @@ TEST_F(Renderer, ShaderFindPropertyIndexCanFindAllExpectedProperties)
 TEST_F(Renderer, ShaderHasExpectedNumberOfProperties)
 {
     // (effectively, number of properties == number of uniforms)
-    Shader s{c_VertexShaderSrc, c_FragmentShaderSrc};
+    Shader s{c_vertex_shader_src, c_fragment_shader_src};
     ASSERT_EQ(s.getPropertyCount(), c_ExpectedPropertyNames.size());
 }
 
 TEST_F(Renderer, ShaderIteratingOverPropertyIndicesForNameReturnsValidPropertyName)
 {
-    Shader s{c_VertexShaderSrc, c_FragmentShaderSrc};
+    Shader s{c_vertex_shader_src, c_fragment_shader_src};
 
     std::unordered_set<std::string> allPropNames;
     for (auto const& sv : c_ExpectedPropertyNames)
@@ -536,7 +536,7 @@ TEST_F(Renderer, ShaderIteratingOverPropertyIndicesForNameReturnsValidPropertyNa
 
 TEST_F(Renderer, ShaderGetPropertyNameReturnsGivenPropertyName)
 {
-    Shader s{c_VertexShaderSrc, c_FragmentShaderSrc};
+    Shader s{c_vertex_shader_src, c_fragment_shader_src};
 
     for (auto const& propName : c_ExpectedPropertyNames)
     {
@@ -555,7 +555,7 @@ TEST_F(Renderer, ShaderGetPropertyNameStillWorksIfTheUniformIsAnArray)
 
 TEST_F(Renderer, ShaderGetPropertyTypeReturnsExpectedType)
 {
-    Shader s{c_VertexShaderSrc, c_FragmentShaderSrc};
+    Shader s{c_vertex_shader_src, c_fragment_shader_src};
 
     for (size_t i = 0; i < c_ExpectedPropertyNames.size(); ++i)
     {
@@ -633,7 +633,7 @@ TEST_F(Renderer, MaterialThatIsCopyAssignedEqualsSourceMaterial)
 
 TEST_F(Renderer, MaterialGetShaderReturnsSuppliedShader)
 {
-    Shader shader{c_VertexShaderSrc, c_FragmentShaderSrc};
+    Shader shader{c_vertex_shader_src, c_fragment_shader_src};
     Material material{shader};
 
     ASSERT_EQ(material.getShader(), shader);
@@ -1498,7 +1498,7 @@ TEST_F(Renderer, MeshTopologyAllCanBeWrittenToStream)
 
 TEST_F(Renderer, LoadTexture2DFromImageResourceCanLoadImageFile)
 {
-    Texture2D const t = loadTexture2DFromImage(
+    Texture2D const t = load_texture2D_from_image(
         App::load_resource((std::filesystem::path{OSC_BUILD_RESOURCES_DIR} / "testoscar/awesomeface.png").string()),
         ColorSpace::sRGB
     );
@@ -1509,7 +1509,7 @@ TEST_F(Renderer, LoadTexture2DFromImageResourceThrowsIfResourceNotFound)
 {
     ASSERT_ANY_THROW(
     {
-        loadTexture2DFromImage(
+        load_texture2D_from_image(
             App::load_resource("textures/doesnt_exist.png"),
             ColorSpace::sRGB
         );
@@ -1541,7 +1541,7 @@ TEST_F(Renderer, DrawMeshDoesNotThrowWithStandardArgs)
     Material const material = GenerateMaterial();
     Camera camera;
 
-    ASSERT_NO_THROW({ graphics::drawMesh(mesh, transform, material, camera); });
+    ASSERT_NO_THROW({ graphics::draw(mesh, transform, material, camera); });
 }
 
 TEST_F(Renderer, DrawMeshThrowsIfGivenOutOfBoundsSubMeshIndex)
@@ -1551,7 +1551,7 @@ TEST_F(Renderer, DrawMeshThrowsIfGivenOutOfBoundsSubMeshIndex)
     Material const material = GenerateMaterial();
     Camera camera;
 
-    ASSERT_ANY_THROW({ graphics::drawMesh(mesh, transform, material, camera, std::nullopt, 0); });
+    ASSERT_ANY_THROW({ graphics::draw(mesh, transform, material, camera, std::nullopt, 0); });
 }
 
 TEST_F(Renderer, DrawMeshDoesNotThrowIfGivenInBoundsSubMesh)
@@ -1562,5 +1562,5 @@ TEST_F(Renderer, DrawMeshDoesNotThrowIfGivenInBoundsSubMesh)
     Material const material = GenerateMaterial();
     Camera camera;
 
-    ASSERT_NO_THROW({ graphics::drawMesh(mesh, transform, material, camera, std::nullopt, 0); });
+    ASSERT_NO_THROW({ graphics::draw(mesh, transform, material, camera, std::nullopt, 0); });
 }

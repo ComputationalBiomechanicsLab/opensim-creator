@@ -25,5 +25,5 @@ osc::OctahedronGeometry::OctahedronGeometry(float radius, size_t detail)
         1, 3, 4,    1, 4, 2
     });
 
-    m_Mesh = PolyhedronGeometry(vertices, indices, radius, detail);
+    mesh_ = PolyhedronGeometry(vertices, indices, radius, detail);
 }

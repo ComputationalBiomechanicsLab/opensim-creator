@@ -14,14 +14,14 @@ namespace osc
     public:
         CircleGeometry(
             float radius = 1.0f,
-            size_t segments = 32,
-            Radians thetaStart = Degrees{0},
-            Radians thetaLength = Degrees{360}
+            size_t num_segments = 32,
+            Radians theta_start = Degrees{0},
+            Radians theta_length = Degrees{360}
         );
 
-        const Mesh& mesh() const { return m_Mesh; }
-        operator const Mesh& () const { return m_Mesh; }
+        const Mesh& mesh() const { return mesh_; }
+        operator const Mesh& () const { return mesh_; }
     private:
-        Mesh m_Mesh;
+        Mesh mesh_;
     };
 }

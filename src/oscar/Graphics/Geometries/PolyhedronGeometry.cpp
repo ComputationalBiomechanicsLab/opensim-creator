@@ -22,56 +22,56 @@ osc::PolyhedronGeometry::PolyhedronGeometry(
     std::span<const Vec3> vertices,
     std::span<const uint32_t> indices,
     float radius,
-    size_t detail)
+    size_t detail_level)
 {
-    std::vector<Vec3> vertexBuffer;
-    std::vector<Vec2> uvBuffer;
+    std::vector<Vec3> generated_vertices;
+    std::vector<Vec2> uvs;
 
-    const auto subdivideFace = [&vertexBuffer](Vec3 a, Vec3 b, Vec3 c, size_t detail)
+    const auto subdivide_face = [&generated_vertices](Vec3 a, Vec3 b, Vec3 c, size_t detail)
     {
-        const auto cols = detail + 1;
-        const auto fcols = static_cast<float>(cols);
+        const auto num_cols = detail + 1;
+        const auto fnum_cols = static_cast<float>(num_cols);
 
         // we use this multidimensional array as a data structure for creating the subdivision
         std::vector<std::vector<Vec3>> v;
-        v.reserve(cols+1);
+        v.reserve(num_cols+1);
 
-        for (size_t i = 0; i <= cols; ++i) {
+        for (size_t i = 0; i <= num_cols; ++i) {
             const auto fi = static_cast<float>(i);
-            const Vec3 aj = lerp(a, c, fi/fcols);
-            const Vec3 bj = lerp(b, c, fi/fcols);
+            const Vec3 aj = lerp(a, c, fi/fnum_cols);
+            const Vec3 bj = lerp(b, c, fi/fnum_cols);
 
-            const auto rows = cols - i;
-            const auto frows = static_cast<float>(rows);
+            const auto num_rows = num_cols - i;
+            const auto fnum_rows = static_cast<float>(num_rows);
 
-            v.emplace_back().reserve(rows+1);
-            for (size_t j = 0; j <= rows; ++j) {
+            v.emplace_back().reserve(num_rows+1);
+            for (size_t j = 0; j <= num_rows; ++j) {
                 v.at(i).emplace_back();
 
                 const auto fj = static_cast<float>(j);
-                if (j == 0 && i == cols) {
+                if (j == 0 and i == num_cols) {
                     v.at(i).at(j) = aj;
                 }
                 else {
-                    v.at(i).at(j) = lerp(aj, bj, fj/frows);
+                    v.at(i).at(j) = lerp(aj, bj, fj/fnum_rows);
                 }
             }
         }
 
         // construct all of the faces
-        for (size_t i = 0; i < cols; ++i) {
-            for (size_t j = 0; j < 2*(cols-i) - 1; ++j) {
+        for (size_t i = 0; i < num_cols; ++i) {
+            for (size_t j = 0; j < 2*(num_cols-i) - 1; ++j) {
                 const size_t k = j/2;
 
                 if (j % 2 == 0) {
-                    vertexBuffer.insert(vertexBuffer.end(), {
+                    generated_vertices.insert(generated_vertices.end(), {
                         v.at(i).at(k+1),
                         v.at(i+1).at(k),
                         v.at(i).at(k),
                     });
                 }
                 else {
-                    vertexBuffer.insert(vertexBuffer.end(), {
+                    generated_vertices.insert(generated_vertices.end(), {
                         v.at(i).at(k+1),
                         v.at(i+1).at(k+1),
                         v.at(i+1).at(k),
@@ -81,20 +81,20 @@ osc::PolyhedronGeometry::PolyhedronGeometry(
         }
     };
 
-    const auto subdivide = [&subdivideFace, &vertices, &indices](size_t detail)
+    const auto subdivide = [&subdivide_face, &vertices, &indices](size_t detail)
     {
-        // subdivide each input triangle by the given detail
+        // subdivide each input triangle by the given detail_level
         for (size_t i = 0; i < 3*(indices.size()/3); i += 3) {
             const Vec3 a = at(vertices, at(indices, i+0));
             const Vec3 b = at(vertices, at(indices, i+1));
             const Vec3 c = at(vertices, at(indices, i+2));
-            subdivideFace(a, b, c, detail);
+            subdivide_face(a, b, c, detail);
         }
     };
 
-    const auto applyRadius = [&vertexBuffer](float radius)
+    const auto apply_radius = [&generated_vertices](float radius)
     {
-        for (Vec3& v : vertexBuffer) {
+        for (Vec3& v : generated_vertices) {
             v = radius * normalize(v);
         }
     };
@@ -105,54 +105,54 @@ osc::PolyhedronGeometry::PolyhedronGeometry(
         return atan2(v.z, -v.x);
     };
 
-    const auto correctUV = [](Vec2& uv, const Vec3& vector, Radians azimuth)
+    const auto correct_uv = [](Vec2& uv, const Vec3& vector, Radians azimuth)
     {
-        if ((azimuth < 0_rad) && (uv.x == 1.0f)) {
+        if ((azimuth < 0_rad) and (uv.x == 1.0f)) {
             uv.x -= 1.0f;
         }
-        if ((vector.x == 0.0f) && (vector.z == 0.0f)) {
+        if ((vector.x == 0.0f) and (vector.z == 0.0f)) {
             uv.x = Turns{azimuth + 0.5_turn}.count();
         }
     };
 
-    const auto correctUVs = [&vertexBuffer, &uvBuffer, &azimuth, &correctUV]()
+    const auto correct_uvs = [&generated_vertices, &uvs, &azimuth, &correct_uv]()
     {
-        OSC_ASSERT(vertexBuffer.size() == uvBuffer.size());
-        OSC_ASSERT(vertexBuffer.size() % 3 == 0);
+        OSC_ASSERT(generated_vertices.size() == uvs.size());
+        OSC_ASSERT(generated_vertices.size() % 3 == 0);
 
-        for (size_t i = 0; i < 3*(vertexBuffer.size()/3); i += 3) {
-            const Vec3 a = vertexBuffer[i+0];
-            const Vec3 b = vertexBuffer[i+1];
-            const Vec3 c = vertexBuffer[i+2];
+        for (size_t i = 0; i < 3*(generated_vertices.size()/3); i += 3) {
+            const Vec3 a = generated_vertices[i+0];
+            const Vec3 b = generated_vertices[i+1];
+            const Vec3 c = generated_vertices[i+2];
 
             const auto azi = azimuth(centroid({a, b, c}));
 
-            correctUV(uvBuffer[i+0], a, azi);
-            correctUV(uvBuffer[i+1], b, azi);
-            correctUV(uvBuffer[i+2], c, azi);
+            correct_uv(uvs[i+0], a, azi);
+            correct_uv(uvs[i+1], b, azi);
+            correct_uv(uvs[i+2], c, azi);
         }
     };
 
-    const auto correctSeam = [&uvBuffer]()
+    const auto correct_seam = [&uvs]()
     {
         // handle case when face straddles the seam, see mrdoob/three.js#3269
-        OSC_ASSERT(uvBuffer.size() % 3 == 0);
-        for (size_t i = 0; i < 3*(uvBuffer.size()/3); i += 3) {
-            const float x0 = uvBuffer[i+0].x;
-            const float x1 = uvBuffer[i+1].x;
-            const float x2 = uvBuffer[i+2].x;
+        OSC_ASSERT(uvs.size() % 3 == 0);
+        for (size_t i = 0; i < 3*(uvs.size()/3); i += 3) {
+            const float x0 = uvs[i+0].x;
+            const float x1 = uvs[i+1].x;
+            const float x2 = uvs[i+2].x;
             const auto [min, max] = minmax({x0, x1, x2});
 
             // these magic numbers are arbitrary (copied from three.js)
-            if (max > 0.9f && min < 0.1f) {
-                if (x0 < 0.2f) { uvBuffer[i+0] += 1.0f; }
-                if (x1 < 0.2f) { uvBuffer[i+1] += 1.0f; }
-                if (x2 < 0.2f) { uvBuffer[i+2] += 1.0f; }
+            if (max > 0.9f and min < 0.1f) {
+                if (x0 < 0.2f) { uvs[i+0] += 1.0f; }
+                if (x1 < 0.2f) { uvs[i+1] += 1.0f; }
+                if (x2 < 0.2f) { uvs[i+2] += 1.0f; }
             }
         }
     };
 
-    const auto generateUVs = [&vertexBuffer, &uvBuffer, &azimuth, &correctUVs, &correctSeam]()
+    const auto generate_uvs = [&generated_vertices, &uvs, &azimuth, &correct_uvs, &correct_seam]()
     {
         // returns angle above the XZ plane
         const auto inclination = [](const Vec3& v) -> Radians
@@ -160,39 +160,43 @@ osc::PolyhedronGeometry::PolyhedronGeometry(
             return atan2(-v.y, length(Vec2{v.x, v.z}));
         };
 
-        for (const Vec3& v : vertexBuffer) {
-            uvBuffer.emplace_back(
+        for (const Vec3& v : generated_vertices) {
+            uvs.emplace_back(
                 Turns{azimuth(v) + 0.5_turn}.count(),
                 Turns{2.0f*inclination(v) + 0.5_turn}.count()
             );
         }
 
-        correctUVs();
-        correctSeam();
+        correct_uvs();
+        correct_seam();
     };
 
-    subdivide(detail);
-    applyRadius(radius);
-    generateUVs();
+    subdivide(detail_level);
+    apply_radius(radius);
+    generate_uvs();
 
-    OSC_ASSERT(vertexBuffer.size() == uvBuffer.size());
-    OSC_ASSERT(vertexBuffer.size() % 3 == 0);
+    OSC_ASSERT(generated_vertices.size() == uvs.size());
+    OSC_ASSERT(generated_vertices.size() % 3 == 0);
 
-    std::vector<uint32_t> meshIndices;
-    meshIndices.reserve(vertexBuffer.size());
-    for (uint32_t i = 0; i < static_cast<uint32_t>(vertexBuffer.size()); ++i) {
-        meshIndices.push_back(i);
+    std::vector<uint32_t> generated_indices;
+    generated_indices.reserve(generated_vertices.size());
+    for (uint32_t i = 0; i < static_cast<uint32_t>(generated_vertices.size()); ++i) {
+        generated_indices.push_back(i);
     }
 
-    m_Mesh.setVerts(vertexBuffer);
-    m_Mesh.setTexCoords(uvBuffer);
-    m_Mesh.setIndices(meshIndices);
-    if (detail == 0) {
-        m_Mesh.recalculateNormals();  // flat-shaded
+    mesh_.setVerts(generated_vertices);
+    mesh_.setTexCoords(uvs);
+    mesh_.setIndices(generated_indices);
+    if (detail_level == 0) {
+        // flat-shade
+        mesh_.recalculateNormals();
     }
     else {
-        auto meshNormals = vertexBuffer;
-        for (auto& v : meshNormals) { v = normalize(v); }
-        m_Mesh.setNormals(meshNormals);
+        // smooth-shade
+        auto normals = generated_vertices;
+        for (auto& v : normals) {
+            v = normalize(v);
+        }
+        mesh_.setNormals(normals);
     }
 }

@@ -2,11 +2,9 @@
 
 #include <oscar/Shims/Cpp23/utility.h>
 
-#include <cstdint>
-
 namespace osc
 {
-    enum class ImageLoadingFlags : uint32_t {
+    enum class ImageLoadingFlags {
         None = 0,
 
         // BEWARE: this flips pixels vertically (in Y) but leaves the pixel's

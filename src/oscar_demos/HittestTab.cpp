@@ -165,7 +165,7 @@ private:
         // render spheres
         for (SceneSphere const& sphere : m_SceneSpheres) {
 
-            graphics::drawMesh(
+            graphics::draw(
                 m_SphereMesh,
                 {.position = sphere.pos},
                 m_Material,
@@ -176,7 +176,7 @@ private:
             // draw sphere AABBs
             if (m_IsShowingAABBs) {
 
-                graphics::drawMesh(
+                graphics::draw(
                     m_WireframeCubeMesh,
                     {.scale = half_widths(m_SceneSphereAABB), .position = sphere.pos},
                     m_Material,
@@ -204,7 +204,7 @@ private:
                 .radius = 1.0f,
             };
 
-            graphics::drawMesh(
+            graphics::draw(
                 m_CircleMesh,
                 DiscToDiscMat4(meshDisc, sceneDisc),
                 m_Material,
@@ -221,7 +221,7 @@ private:
                 Triangle{c_TriangleVerts.at(0), c_TriangleVerts.at(1), c_TriangleVerts.at(2)}
             );
 
-            graphics::drawMesh(
+            graphics::draw(
                 m_TriangleMesh,
                 identity<Transform>(),
                 m_Material,
@@ -233,7 +233,7 @@ private:
         Rect const viewport = ui::GetMainViewportWorkspaceScreenRect();
 
         // draw crosshair overlay
-        graphics::drawMesh(
+        graphics::draw(
             m_CrosshairMesh,
             m_Camera.getInverseViewProjectionMatrix(aspect_ratio(viewport)),
             m_Material,

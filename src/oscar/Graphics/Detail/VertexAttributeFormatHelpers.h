@@ -10,7 +10,7 @@
 
 namespace osc::detail
 {
-    constexpr size_t StrideOf(VertexAttributeFormat f)
+    constexpr size_t stride_of(VertexAttributeFormat f)
     {
         constexpr auto lut = []<VertexAttributeFormat... Formats>(OptionList<VertexAttributeFormat, Formats...>) {
             return std::to_array({ VertexAttributeFormatTraits<Formats>::stride... });
@@ -19,7 +19,7 @@ namespace osc::detail
         return lut.at(ToIndex(f));
     }
 
-    constexpr size_t NumComponents(VertexAttributeFormat f)
+    constexpr size_t num_components_in(VertexAttributeFormat f)
     {
         constexpr auto lut = []<VertexAttributeFormat... Formats>(OptionList<VertexAttributeFormat, Formats...>) {
             return std::to_array({ VertexAttributeFormatTraits<Formats>::num_components... });
@@ -28,7 +28,7 @@ namespace osc::detail
         return lut.at(ToIndex(f));
     }
 
-    constexpr size_t SizeOfComponent(VertexAttributeFormat f)
+    constexpr size_t component_size(VertexAttributeFormat f)
     {
         constexpr auto lut = []<VertexAttributeFormat... Formats>(OptionList<VertexAttributeFormat, Formats...>) {
             return std::to_array({ VertexAttributeFormatTraits<Formats>::component_size... });

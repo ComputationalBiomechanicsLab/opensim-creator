@@ -13,16 +13,16 @@ namespace osc
     struct DAEMetadata final {
         DAEMetadata(
             std::string_view author_,
-            std::string_view authoringTool_
+            std::string_view authoring_tool_
         );
 
         std::string author;
-        std::string authoringTool;
-        std::tm creationTime;
-        std::tm modificationTime;
+        std::string authoring_tool;
+        std::tm creation_time;
+        std::tm modification_time;
     };
 
-    void writeDecorationsAsDAE(
+    void write_as_dae(
         std::ostream&,
         std::span<const SceneDecoration>,
         const DAEMetadata&

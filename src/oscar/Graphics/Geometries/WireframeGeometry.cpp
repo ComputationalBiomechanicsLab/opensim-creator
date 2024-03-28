@@ -20,45 +20,45 @@ osc::WireframeGeometry::WireframeGeometry(const Mesh& mesh)
     static_assert(NumOptions<MeshTopology>() == 2);
 
     if (mesh.getTopology() == MeshTopology::Lines) {
-        m_Mesh = mesh;
+        mesh_ = mesh;
         return;
     }
 
     std::unordered_set<LineSegment> edges;
     edges.reserve(mesh.getNumIndices());  // (guess)
 
-    std::vector<Vec3> points;
-    points.reserve(mesh.getNumIndices());  // (guess)
+    std::vector<Vec3> vertices;
+    vertices.reserve(mesh.getNumIndices());  // (guess)
 
-    mesh.forEachIndexedTriangle([&edges, &points](const Triangle& triangle)
+    mesh.forEachIndexedTriangle([&edges, &vertices](const Triangle& triangle)
     {
         const auto [a, b, c] = triangle;
 
-        const auto orderedEdge = [](Vec3 p1, Vec3 p2)
+        const auto ordered_edge = [](Vec3 p1, Vec3 p2)
         {
             return lexicographical_compare(p1, p2) ? LineSegment{p1, p2} : LineSegment{p2, p1};
         };
 
-        if (auto ab = orderedEdge(a, b); edges.emplace(ab).second) {
-            points.insert(points.end(), {ab.start, ab.end});
+        if (auto ab = ordered_edge(a, b); edges.emplace(ab).second) {
+            vertices.insert(vertices.end(), {ab.start, ab.end});
         }
 
-        if (auto ac = orderedEdge(a, c); edges.emplace(ac).second) {
-            points.insert(points.end(), {ac.start, ac.end});
+        if (auto ac = ordered_edge(a, c); edges.emplace(ac).second) {
+            vertices.insert(vertices.end(), {ac.start, ac.end});
         }
 
-        if (auto bc = orderedEdge(b, c); edges.emplace(bc).second) {
-            points.insert(points.end(), {bc.start, bc.end});
+        if (auto bc = ordered_edge(b, c); edges.emplace(bc).second) {
+            vertices.insert(vertices.end(), {bc.start, bc.end});
         }
     });
 
     std::vector<uint32_t> indices;
-    indices.reserve(points.size());
-    for (size_t i = 0; i < points.size(); ++i) {
+    indices.reserve(vertices.size());
+    for (size_t i = 0; i < vertices.size(); ++i) {
         indices.push_back(static_cast<uint32_t>(i));
     }
 
-    m_Mesh.setTopology(MeshTopology::Lines);
-    m_Mesh.setVerts(points);
-    m_Mesh.setIndices(indices);
+    mesh_.setTopology(MeshTopology::Lines);
+    mesh_.setVerts(vertices);
+    mesh_.setIndices(indices);
 }

@@ -6,43 +6,43 @@
 
 #include <cstddef>
 #include <iomanip>
-#include <iostream>
+#include <ostream>
 #include <string_view>
 
 using namespace osc;
 
 namespace
 {
-    void writeHeader(std::ostream& o, const ObjMetadata& metadata)
+    void write_header(std::ostream& o, const ObjMetadata& metadata)
     {
-        o << "# " << metadata.authoringTool << '\n';
-        o << "# created: " << std::put_time(&metadata.creationTime, "%Y-%m-%d %H:%M:%S") << '\n';
+        o << "# " << metadata.authoring_tool << '\n';
+        o << "# created: " << std::put_time(&metadata.creation_time, "%Y-%m-%d %H:%M:%S") << '\n';
     }
 
-    std::ostream& writeVec3(std::ostream& o, const Vec3& v)
+    std::ostream& write_vec3(std::ostream& o, const Vec3& v)
     {
         return o << v.x << ' ' << v.y << ' ' << v.z;
     }
 
-    void writeVertices(std::ostream& o, const Mesh& mesh)
+    void write_vertices(std::ostream& o, const Mesh& mesh)
     {
         for (const Vec3& v : mesh.getVerts()) {
             o << "v ";
-            writeVec3(o, v);
+            write_vec3(o, v);
             o << '\n';
         }
     }
 
-    void writeNormals(std::ostream& o, const Mesh& mesh)
+    void write_normals(std::ostream& o, const Mesh& mesh)
     {
         for (const Vec3& v : mesh.getNormals()) {
             o << "vn ";
-            writeVec3(o, v);
+            write_vec3(o, v);
             o << '\n';
         }
     }
 
-    void writeFaces(std::ostream& o, const Mesh& mesh, ObjWriterFlags flags)
+    void write_faces(std::ostream& o, const Mesh& mesh, ObjWriterFlags flags)
     {
         if (mesh.getTopology() != MeshTopology::Triangles) {
             return;
@@ -66,24 +66,23 @@ namespace
     }
 }
 
-// public API
 
-osc::ObjMetadata::ObjMetadata(std::string_view authoringTool_) :
-    authoringTool{authoringTool_},
-    creationTime{GetSystemCalendarTime()}
+osc::ObjMetadata::ObjMetadata(std::string_view authoring_tool_) :
+    authoring_tool{authoring_tool_},
+    creation_time{GetSystemCalendarTime()}
 {}
 
 
-void osc::writeMeshAsObj(
+void osc::write_as_obj(
     std::ostream& out,
     const Mesh& mesh,
     const ObjMetadata& metadata,
     ObjWriterFlags flags)
 {
-    writeHeader(out, metadata);
-    writeVertices(out, mesh);
+    write_header(out, metadata);
+    write_vertices(out, mesh);
     if (not (flags & ObjWriterFlags::NoWriteNormals)) {
-        writeNormals(out, mesh);
+        write_normals(out, mesh);
     }
-    writeFaces(out, mesh, flags);
+    write_faces(out, mesh, flags);
 }

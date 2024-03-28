@@ -246,7 +246,7 @@ namespace
                 [&bd](Texture2D const& t) { bd.material.setTexture("uTexture", t); },
                 [&bd](RenderTexture const& t) { bd.material.setRenderTexture("uTexture", t); },
             }, *texture);
-            graphics::drawMesh(mesh, identity<Mat4>(), bd.material, bd.camera, std::nullopt, idx);
+            graphics::draw(mesh, identity<Mat4>(), bd.material, bd.camera, std::nullopt, idx);
             bd.camera.renderToScreen();
         }
     }

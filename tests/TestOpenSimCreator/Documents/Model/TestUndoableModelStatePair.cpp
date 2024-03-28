@@ -68,7 +68,7 @@ TEST(UndoableModelStatePair, CanLoadAndRenderAllUserFacingExampleFiles)
             // and all decorations can be exported to a DAE format
             NullOStream stream;
             DAEMetadata const metadata{TESTOPENSIMCREATOR_APPNAME_STRING, TESTOPENSIMCREATOR_APPNAME_STRING};
-            writeDecorationsAsDAE(stream, decorations, metadata);
+            write_as_dae(stream, decorations, metadata);
 
             // and content is actually written to the DAE stream
             ASSERT_TRUE(stream.wasWrittenTo());

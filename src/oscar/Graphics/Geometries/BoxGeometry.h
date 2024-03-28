@@ -18,14 +18,14 @@ namespace osc
             float width = 1.0f,
             float height = 1.0f,
             float depth = 1.0f,
-            size_t widthSegments = 1,
-            size_t heightSegments = 1,
-            size_t depthSegments = 1
+            size_t num_width_segments = 1,
+            size_t num_height_segments = 1,
+            size_t num_depth_segments = 1
         );
 
-        const Mesh& mesh() const { return m_Mesh; }
-        operator const Mesh& () const { return m_Mesh; }
+        const Mesh& mesh() const { return mesh_; }
+        operator const Mesh& () const { return mesh_; }
     private:
-        Mesh m_Mesh;
+        Mesh mesh_;
     };
 }

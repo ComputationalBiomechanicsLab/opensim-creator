@@ -13,7 +13,7 @@
 using osc::TryParseHexCharsAsByte;
 using osc::TrimLeadingAndTrailingWhitespace;
 using osc::ToHexChars;
-using osc::IsValidIdentifier;
+using osc::is_valid_identifier;
 
 TEST(Algorithms, TrimLeadingAndTrailingWhitespaceWorksAsExpected)
 {
@@ -274,7 +274,7 @@ TEST(StringHelpers, IsValidIdentifierReturnsTrueForTypicalIdentifiers)
 
     for (auto const& testCase : testCases)
     {
-        ASSERT_TRUE(IsValidIdentifier(testCase)) << testCase;
+        ASSERT_TRUE(is_valid_identifier(testCase)) << testCase;
     }
 }
 
@@ -294,13 +294,13 @@ TEST(StringHelpers, IsValidIdentifierReturnsFalseWhenGivenAnIdentifierWithLeadin
 
     for (auto const& testCase : testCases)
     {
-        ASSERT_FALSE(IsValidIdentifier(testCase)) << testCase;
+        ASSERT_FALSE(is_valid_identifier(testCase)) << testCase;
     }
 }
 
 TEST(StringHelpers, IsValidIdentifierReturnsFalseIfGivenAnEmptyString)
 {
-    ASSERT_FALSE(IsValidIdentifier(std::string_view{}));
+    ASSERT_FALSE(is_valid_identifier(std::string_view{}));
 }
 
 TEST(StringHelpers, IsValidIdentifierReturnsFalseWhenGivenIdentifiersWithInvalidASCIICharacters)
@@ -309,15 +309,15 @@ TEST(StringHelpers, IsValidIdentifierReturnsFalseWhenGivenIdentifiersWithInvalid
     {
         {
             std::string const leading = c + std::string{"leading"};
-            ASSERT_FALSE(IsValidIdentifier(leading)) << leading;
+            ASSERT_FALSE(is_valid_identifier(leading)) << leading;
         }
         {
             std::string const trailing = std::string{"trailing"} + c;
-            ASSERT_FALSE(IsValidIdentifier(trailing)) << trailing;
+            ASSERT_FALSE(is_valid_identifier(trailing)) << trailing;
         }
         {
             std::string const inner = std::string{"inner"} + c + std::string{"usage"};
-            ASSERT_FALSE(IsValidIdentifier(inner)) << inner;
+            ASSERT_FALSE(is_valid_identifier(inner)) << inner;
         }
     };
 
