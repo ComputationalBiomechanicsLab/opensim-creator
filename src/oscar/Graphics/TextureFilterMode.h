@@ -2,7 +2,6 @@
 
 #include <iosfwd>
 
-// note: implementation is in `GraphicsImplementation.cpp`
 namespace osc
 {
     // how sampling should handle when the sampling location falls between multiple textels

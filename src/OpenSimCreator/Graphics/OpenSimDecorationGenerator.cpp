@@ -756,8 +756,8 @@ namespace
         p.worldspace_start = loaPointDirection.point;
         p.worldspace_end = loaPointDirection.point + (fixupScaleFactor*0.1f)*loaPointDirection.direction;
         p.tip_length = (fixupScaleFactor*0.015f);
-        p.headThickness = (fixupScaleFactor*0.01f);
-        p.neckThickness = (fixupScaleFactor*0.006f);
+        p.head_thickness = (fixupScaleFactor*0.01f);
+        p.neck_thickness = (fixupScaleFactor*0.006f);
         p.color = color;
 
         draw_arrow(rs.updMeshCache(), p, [&muscle, &rs](SceneDecoration&& d)
@@ -920,8 +920,8 @@ namespace
         p.worldspace_start = maybeContact->point;
         p.worldspace_end = maybeContact->point + (fixupScaleFactor*lenScale)*maybeContact->force;
         p.tip_length = tip_length;
-        p.headThickness = fixupScaleFactor*baseRadius;
-        p.neckThickness = fixupScaleFactor*baseRadius*0.6f;
+        p.head_thickness = fixupScaleFactor*baseRadius;
+        p.neck_thickness = fixupScaleFactor*baseRadius*0.6f;
         p.color = Color::yellow();
 
         draw_arrow(rs.updMeshCache(), p, [&hcf, &rs](SceneDecoration&& d)

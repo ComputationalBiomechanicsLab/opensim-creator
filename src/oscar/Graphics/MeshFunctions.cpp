@@ -160,7 +160,7 @@ Vec3 osc::MassCenter(Mesh const& m)
         Vec3 const referencePoint{};
         Tetrahedron const tetrahedron{referencePoint, t.p0, t.p1, t.p2};
         double const v = volume(tetrahedron);
-        Vec3d const centerOfMass = centroid(tetrahedron);
+        Vec3d const centerOfMass = centroid_of(tetrahedron);
 
         totalVolume += v;
         weightedCenterOfMass += v * centerOfMass;

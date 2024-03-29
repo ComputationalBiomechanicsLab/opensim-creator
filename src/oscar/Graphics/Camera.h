@@ -16,7 +16,6 @@
 namespace osc { class RenderTexture; }
 namespace osc { struct RenderTarget; }
 
-// note: implementation is in `GraphicsImplementation.cpp`
 namespace osc
 {
     // camera

@@ -16,8 +16,7 @@ namespace osc
             m_IndexStart{indexStart_},
             m_IndexCount{indexCount_},
             m_Topology{topology_}
-        {
-        }
+        {}
 
         size_t getIndexStart() const
         {

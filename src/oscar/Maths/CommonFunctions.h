@@ -367,7 +367,7 @@ namespace osc
         typename T = typename std::ranges::range_value_t<R>::value_type
     >
     requires std::is_arithmetic_v<T>
-    constexpr Vec<L, T> centroid(R const& r)
+    constexpr Vec<L, T> centroid_of(R const& r)
     {
         return std::reduce(std::ranges::begin(r), std::ranges::end(r)) / static_cast<T>(std::ranges::size(r));
     }
@@ -375,8 +375,8 @@ namespace osc
     // returns the arithmetic mean of the provided vectors, or `Vec<L, T>{}/T{0}` if provided no vectors
     template<size_t L, typename T>
     requires std::is_arithmetic_v<T>
-    constexpr Vec<L, T> centroid(std::initializer_list<Vec<L, T>> const& vs)
+    constexpr Vec<L, T> centroid_of(std::initializer_list<Vec<L, T>> const& vs)
     {
-        return centroid(std::span<Vec<L, T> const>{vs});
+        return centroid_of(std::span<Vec<L, T> const>{vs});
     }
 }

@@ -33,60 +33,60 @@ namespace osc
     void draw_bvh(
         SceneCache&,
         const BVH&,
-        const std::function<void(SceneDecoration&&)>&
+        const std::function<void(SceneDecoration&&)>& out
     );
 
     void draw_aabb(
         SceneCache&,
         const AABB&,
-        const std::function<void(SceneDecoration&&)>&
+        const std::function<void(SceneDecoration&&)>& out
     );
 
     void draw_aabbs(
         SceneCache&,
         std::span<const AABB>,
-        const std::function<void(SceneDecoration&&)>&
+        const std::function<void(SceneDecoration&&)>& out
     );
 
     void draw_bvh_leaf_nodes(
         SceneCache&,
         const BVH&,
-        const std::function<void(SceneDecoration&&)>&
+        const std::function<void(SceneDecoration&&)>& out
     );
 
     void draw_xz_floor_lines(
         SceneCache&,
-        const std::function<void(SceneDecoration&&)>&,
+        const std::function<void(SceneDecoration&&)>& out,
         float scale = 1.0f
     );
 
     void draw_xz_grid(
         SceneCache&,
-        const std::function<void(SceneDecoration&&)>&
+        const std::function<void(SceneDecoration&&)>& out
     );
 
     void draw_xy_grid(
         SceneCache&,
-        const std::function<void(SceneDecoration&&)>&
+        const std::function<void(SceneDecoration&&)>& out
     );
 
     void draw_yz_grid(
         SceneCache&,
-        const std::function<void(SceneDecoration&&)>&
+        const std::function<void(SceneDecoration&&)>& out
     );
 
     struct ArrowProperties final {
         Vec3 worldspace_start{};
         Vec3 worldspace_end{};
         float tip_length{};
-        float neckThickness{};
-        float headThickness{};
+        float neck_thickness{};
+        float head_thickness{};
         Color color = Color::black();
     };
     void draw_arrow(
         SceneCache&,
         const ArrowProperties&,
-        const std::function<void(SceneDecoration&&)>&
+        const std::function<void(SceneDecoration&&)>& out
     );
 
     void draw_line_segment(
@@ -94,7 +94,7 @@ namespace osc
         const LineSegment&,
         const Color&,
         float radius,
-        const std::function<void(SceneDecoration&&)>&
+        const std::function<void(SceneDecoration&&)>& out
     );
 
     AABB get_worldspace_aabb(const SceneDecoration&);
@@ -105,7 +105,7 @@ namespace osc
         BVH&
     );
 
-    // returns all collisions along a ray
+    // returns all collisions along `worldspace_ray`
     std::vector<SceneCollision> get_all_ray_collisions_with_scene(
         const BVH& scene_bvh,
         SceneCache&,
@@ -113,7 +113,7 @@ namespace osc
         const Line& worldspace_ray
     );
 
-    // returns closest ray-triangle collision in worldspace
+    // returns closest ray-triangle collision along `worldspace_ray`
     std::optional<RayCollision> get_closest_worldspace_ray_triangle_collision(
         const Mesh&,
         const BVH& triangle_bvh,

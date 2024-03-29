@@ -166,7 +166,12 @@ Color32 osc::to_color32(uint32_t v)
 
 Color osc::to_color(Color32 c)
 {
-    return Color{c.r.normalized_value(), c.g.normalized_value(), c.b.normalized_value(), c.a.normalized_value()};
+    return Color{
+        c.r.normalized_value(),
+        c.g.normalized_value(),
+        c.b.normalized_value(),
+        c.a.normalized_value(),
+    };
 }
 
 Color osc::clamp_to_ldr(const Color& c)

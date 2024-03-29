@@ -1198,7 +1198,7 @@ Sphere osc::bounding_sphere_of(std::span<Vec3 const> points)
         return Sphere{.radius = 0.0f};
     }
 
-    Vec3 const origin = centroid(bounding_aabb_of(points));
+    Vec3 const origin = centroid_of(bounding_aabb_of(points));
 
     float r2 = 0.0f;
     for (Vec3 const& pos : points)

@@ -125,7 +125,7 @@ osc::PolyhedronGeometry::PolyhedronGeometry(
             const Vec3 b = generated_vertices[i+1];
             const Vec3 c = generated_vertices[i+2];
 
-            const auto azi = azimuth(centroid({a, b, c}));
+            const auto azi = azimuth(centroid_of({a, b, c}));
 
             correct_uv(uvs[i+0], a, azi);
             correct_uv(uvs[i+1], b, azi);

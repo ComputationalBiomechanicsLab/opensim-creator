@@ -20,7 +20,6 @@
 #include <span>
 #include <string_view>
 
-// note: implementation is in `GraphicsImplementation.cpp`
 namespace osc
 {
     class Material final {

@@ -657,7 +657,7 @@ Plane osc::FitPlane(Mesh const& mesh)
     });
 
     // calculate the midpoint of those bounds in plane-space
-    Vec2 const boundsMidpointInPlaneSpace = centroid(bounds);
+    Vec2 const boundsMidpointInPlaneSpace = centroid_of(bounds);
 
     // un-project the plane-space midpoint back into mesh-space
     Vec3 const boundsMidPointInReducedSpace = Unproject2DPlanePointInto3D(

@@ -43,7 +43,7 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
     // calculate widget screen-space metrics
     Vec2 const topLeft = ui::GetCursorScreenPos();
     Rect const bounds = {topLeft, topLeft + metrics.dimensions};
-    Vec2 const origin = centroid(bounds);
+    Vec2 const origin = centroid_of(bounds);
 
     // figure out rendering order (back-to-front)
     Mat4 const viewMtx = camera.view_matrix();

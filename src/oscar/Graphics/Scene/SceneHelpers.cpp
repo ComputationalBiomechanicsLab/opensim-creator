@@ -64,7 +64,7 @@ void osc::draw_bvh(
             .mesh = cube,
             .transform = {
                 .scale = half_widths(node.getBounds()),
-                .position = centroid(node.getBounds()),
+                .position = centroid_of(node.getBounds()),
             },
             .color = Color::black(),
         });
@@ -90,7 +90,7 @@ void osc::draw_aabbs(
             .mesh = cube,
             .transform = {
                 .scale = half_widths(aabb),
-                .position = centroid(aabb),
+                .position = centroid_of(aabb),
             },
             .color = Color::black(),
         });
@@ -176,14 +176,14 @@ void osc::draw_arrow(
     // emit neck cylinder
     out({
         .mesh = cache.cylinder_mesh(),
-        .transform = cylinder_to_line_segment_transform({neck_start, neck_end}, props.neckThickness),
+        .transform = cylinder_to_line_segment_transform({neck_start, neck_end}, props.neck_thickness),
         .color = props.color,
     });
 
     // emit head cone
     out({
         .mesh = cache.cone_mesh(),
-        .transform = cylinder_to_line_segment_transform({head_start, head_end}, props.headThickness),
+        .transform = cylinder_to_line_segment_transform({head_start, head_end}, props.head_thickness),
         .color = props.color,
     });
 }

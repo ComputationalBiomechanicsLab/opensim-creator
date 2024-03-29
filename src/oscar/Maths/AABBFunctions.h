@@ -18,7 +18,7 @@
 namespace osc
 {
     // returns the average centroid of `aabb`
-    constexpr Vec3 centroid(AABB const& aabb)
+    constexpr Vec3 centroid_of(AABB const& aabb)
     {
         return 0.5f * (aabb.min + aabb.max);
     }

@@ -20,7 +20,7 @@ namespace osc
     }
 
     // returns the area of `rect`
-    inline float area(Rect const& rect)
+    inline float area_of(Rect const& rect)
     {
         auto const [x, y] = dimensions_of(rect);
         return x * y;
@@ -34,7 +34,7 @@ namespace osc
     }
 
     // returns the middle point of `rect`
-    constexpr Vec2 centroid(Rect const& rect)
+    constexpr Vec2 centroid_of(Rect const& rect)
     {
         return 0.5f * (rect.p1 + rect.p2);
     }

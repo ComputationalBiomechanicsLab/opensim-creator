@@ -995,7 +995,7 @@ private:
                 {
                     if (ui::MenuItem(ICON_FA_BORDER_ALL " at bounds center"))
                     {
-                        Vec3 const location = centroid(mesh->calcBounds());
+                        Vec3 const location = centroid_of(mesh->calcBounds());
                         AddBody(m_Shared->updCommittableModelGraph(), location, mesh->getID());
                     }
                     ui::DrawTooltipIfItemHovered("Add Body", MIStrings::c_BodyDescription);
@@ -1068,7 +1068,7 @@ private:
                     {
                         if (ui::MenuItem(ICON_FA_BORDER_ALL " at bounds center"))
                         {
-                            AddStationAtLocation(m_Shared->updCommittableModelGraph(), el, centroid(el.calcBounds(m_Shared->getModelGraph())));
+                            AddStationAtLocation(m_Shared->updCommittableModelGraph(), el, centroid_of(el.calcBounds(m_Shared->getModelGraph())));
                         }
                         ui::DrawTooltipIfItemHovered("Add Station", MIStrings::c_StationDescription);
                     }
@@ -1108,7 +1108,7 @@ private:
     {
         if (ui::MenuItem(ICON_FA_CAMERA " Focus camera on this"))
         {
-            m_Shared->focusCameraOn(centroid(el.calcBounds(m_Shared->getModelGraph())));
+            m_Shared->focusCameraOn(centroid_of(el.calcBounds(m_Shared->getModelGraph())));
         }
         ui::DrawTooltipIfItemHovered("Focus camera on this scene element", "Focuses the scene camera on this element. This is useful for tracking the camera around that particular object in the scene");
 

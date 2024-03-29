@@ -9,7 +9,6 @@
 struct SDL_Window;
 namespace osc { struct Color; }
 
-// note: implementation is in `GraphicsImplementation.cpp`
 namespace osc
 {
     // graphics context
@@ -36,7 +35,7 @@ namespace osc
 
         void clear_screen(const Color&);
 
-        // HACK: this is needed by ImGui, because it uses OpenGL "in the raw"
+        // HACK: this is needed by ImGui's SDL backend, because it uses OpenGL "in the raw"
         void* upd_raw_opengl_context_handle_HACK();
 
         // returns a future that asynchronously yields a complete screenshot of the next complete frame

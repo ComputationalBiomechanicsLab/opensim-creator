@@ -330,8 +330,8 @@ namespace
         Vec3 p0 = {};
         Vec3 p1 = {};
         Color color = Color::white();
-        float neckThickness = 0.025f;
-        float headThickness = 0.05f;
+        float neck_thickness = 0.025f;
+        float head_thickness = 0.05f;
         float percentageHead = 0.15f;
         std::string label;
     };
@@ -361,7 +361,7 @@ namespace
         // emit neck (note: meshes have a height of 2 in mesh-space)
         {
             Transform t;
-            t.scale = {arrow.neckThickness, 0.5f * neckLength, arrow.neckThickness};
+            t.scale = {arrow.neck_thickness, 0.5f * neckLength, arrow.neck_thickness};
             t.rotation = rotation;
             t.position = neckMidpoint;
 
@@ -377,7 +377,7 @@ namespace
         // emit head (note: meshes have a height of 2 in mesh-space)
         {
             Transform t;
-            t.scale = {arrow.headThickness, 0.5f * headLength, arrow.headThickness};
+            t.scale = {arrow.head_thickness, 0.5f * headLength, arrow.head_thickness};
             t.rotation = rotation;
             t.position = headMidpoint;
 

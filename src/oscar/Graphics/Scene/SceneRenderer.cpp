@@ -342,7 +342,7 @@ private:
         // constrain the result of the above to within clip space
         rim_ndc_rect = clamp(rim_ndc_rect, {-1.0f, -1.0f}, {1.0f, 1.0f});
 
-        if (area(rim_ndc_rect) <= 0.0f) {
+        if (area_of(rim_ndc_rect) <= 0.0f) {
             return std::nullopt;  // the scene contains rim-highlighted geometry, but it isn't on-screen
         }
 
@@ -352,7 +352,7 @@ private:
         // compute where the quad needs to eventually be drawn in the scene
         Transform quad_mesh_to_rims_quad{
             .scale = {0.5f * dimensions_of(rim_ndc_rect), 1.0f},
-            .position = {centroid(rim_ndc_rect), 0.0f},
+            .position = {centroid_of(rim_ndc_rect), 0.0f},
         };
 
         // rendering:

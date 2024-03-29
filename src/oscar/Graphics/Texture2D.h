@@ -14,7 +14,6 @@
 #include <span>
 #include <vector>
 
-// note: implementation is in `GraphicsImplementation.cpp`
 namespace osc
 {
     // a handle to a 2D texture that can be rendered by the graphics backend

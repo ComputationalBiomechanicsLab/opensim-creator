@@ -259,7 +259,7 @@ bool osc::mi::TryTranslateToMeshBoundsCenter(
         return false;
     }
 
-    Vec3 const boundsMidpoint = centroid(mesh->calcBounds());
+    Vec3 const boundsMidpoint = centroid_of(mesh->calcBounds());
 
     obj->setPos(doc, boundsMidpoint);
     udoc.commitScratch("moved " + obj->getLabel());

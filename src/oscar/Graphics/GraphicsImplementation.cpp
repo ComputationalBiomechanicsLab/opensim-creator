@@ -612,7 +612,7 @@ namespace
             mesh{std::move(mesh_)},
             maybePropBlock{std::move(maybePropBlock_)},
             transform{transform_},
-            worldMidpoint{material.getTransparent() ? transform_point(transform_, centroid(mesh.getBounds())) : Vec3{}},
+            worldMidpoint{material.getTransparent() ? transform_point(transform_, centroid_of(mesh.getBounds())) : Vec3{}},
             maybeSubMeshIndex{maybeSubMeshIndex_}
         {}
 
@@ -627,7 +627,7 @@ namespace
             mesh{std::move(mesh_)},
             maybePropBlock{std::move(maybePropBlock_)},
             transform{transform_},
-            worldMidpoint{material.getTransparent() ? transform_ * Vec4{centroid(mesh.getBounds()), 1.0f} : Vec3{}},
+            worldMidpoint{material.getTransparent() ? transform_ * Vec4{centroid_of(mesh.getBounds()), 1.0f} : Vec3{}},
             maybeSubMeshIndex{maybeSubMeshIndex_}
         {}
 

@@ -148,7 +148,7 @@ public:
 
     void onDraw()
     {
-        if (area(ui::GetMainViewportWorkspaceScreenRect()) <= 0.0f)
+        if (area_of(ui::GetMainViewportWorkspaceScreenRect()) <= 0.0f)
         {
             // edge-case: splash screen is the first rendered frame and ImGui
             //            is being unusual about it

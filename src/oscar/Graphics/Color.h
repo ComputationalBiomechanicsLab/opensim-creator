@@ -15,7 +15,6 @@
 namespace osc
 {
     struct Color final {
-
         using value_type = float;
         using reference = float&;
         using const_reference = const float&;
@@ -196,7 +195,7 @@ namespace osc
 
         constexpr friend Color operator*(value_type lhs, const Color& rhs)
         {
-            return Color {
+            return Color{
                 lhs * rhs.r,
                 lhs * rhs.g,
                 lhs * rhs.b,
@@ -256,7 +255,7 @@ namespace osc
         return &color.r;
     }
 
-    // linearly interpolates between `a` and `b` by `t`
+    // linearly interpolates all color channels and alpha of `a` and `b` by `t`
     //
     // `t` is clamped to [0.0f, 1.0f]. When `t` is 0, returns `a`. When `t` is 1, returns `b`
     Color lerp(const Color& a, const Color& b, float t);
@@ -282,11 +281,11 @@ namespace osc
     std::string to_html_string_rgba(const Color&);
     std::optional<Color> try_parse_html_color_string(std::string_view);
 
-    // returns a color that is the result of converting the color to HSLA,
-    // multiplying it's luminance (L) by `factor`, and converting it back to RGBA
+    // returns a color that is the result of converting `color` to HSLA,
+    // multiplying its luminance (L) by `factor`, and converting it back to RGBA
     Color multiply_luminance(const Color& color, float factor);
 
-    // when handled as a tuple-like object, a `Color` decomposes into its channels (+alpha)
+    // when handled as a tuple-like object, a `Color` decomposes into its channels (incl. alpha)
 
     template<size_t I>
     constexpr const float& get(const Color& c) { return c[I]; }

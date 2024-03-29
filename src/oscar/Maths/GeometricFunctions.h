@@ -93,7 +93,7 @@ namespace osc
     // returns the area of a 2D rectangle that begins at the origin and ends at `v`
     template<typename T>
     requires std::is_arithmetic_v<T>
-    constexpr T area(Vec<2, T> const& v)
+    constexpr T area_of(Vec<2, T> const& v)
     {
         return v.x * v.y;
     }

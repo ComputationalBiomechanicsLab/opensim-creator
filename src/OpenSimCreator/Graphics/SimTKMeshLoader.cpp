@@ -119,13 +119,13 @@ Mesh osc::ToOscMesh(SimTK::PolygonalMesh const& mesh)
             // polygon: triangulate each edge with a centroid
 
             // compute+add centroid vertex
-            Vec3 centroid{};
+            Vec3 centroid_of{};
             for (int vert = 0; vert < numFaceVerts; ++vert) {
-                centroid += vertices.at(mesh.getFaceVertex(face, vert));
+                centroid_of += vertices.at(mesh.getFaceVertex(face, vert));
             }
-            centroid /= static_cast<float>(numFaceVerts);
+            centroid_of /= static_cast<float>(numFaceVerts);
             auto const centroidIdx = static_cast<uint32_t>(vertices.size());
-            vertices.push_back(centroid);
+            vertices.push_back(centroid_of);
 
             // triangulate polygon loop
             for (int vert = 0; vert < numFaceVerts-1; ++vert) {

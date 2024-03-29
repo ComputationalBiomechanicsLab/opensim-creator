@@ -345,8 +345,8 @@ namespace
             Vec3 const headStart = neckEnd;
             Vec3 const headEnd = end;
 
-            float const neckThickness = m_FixupScaleFactor * static_cast<float>(d.getLineThickness());
-            float const headThickness = 1.75f * neckThickness;
+            float const neck_thickness = m_FixupScaleFactor * static_cast<float>(d.getLineThickness());
+            float const head_thickness = 1.75f * neck_thickness;
 
             Color const color = GetColor(d);
             auto const flags = GetFlags(d);
@@ -354,7 +354,7 @@ namespace
             // emit neck cylinder
             m_Consumer({
                 .mesh = m_MeshCache.cylinder_mesh(),
-                .transform = cylinder_to_line_segment_transform({neckStart, neckEnd}, neckThickness),
+                .transform = cylinder_to_line_segment_transform({neckStart, neckEnd}, neck_thickness),
                 .color = color,
                 .flags = flags,
             });
@@ -362,7 +362,7 @@ namespace
             // emit head cone
             m_Consumer({
                 .mesh = m_MeshCache.cone_mesh(),
-                .transform = cylinder_to_line_segment_transform({headStart, headEnd}, headThickness),
+                .transform = cylinder_to_line_segment_transform({headStart, headEnd}, head_thickness),
                 .color = color,
                 .flags = flags,
             });

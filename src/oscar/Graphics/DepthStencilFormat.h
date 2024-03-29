@@ -2,7 +2,6 @@
 
 #include <iosfwd>
 
-// note: implementation is in `GraphicsImplementation.cpp`
 namespace osc
 {
     enum class DepthStencilFormat {

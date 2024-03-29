@@ -24,7 +24,7 @@ namespace
         constexpr Color32 off_color = {0xf3, 0xf3, 0xf3, 0xff};
 
         std::vector<Color32> pixels;
-        pixels.reserve(area(texture_dims));
+        pixels.reserve(area_of(texture_dims));
         for (int y = 0; y < texture_dims.y; ++y) {
             const bool y_on = (y / chequer_dims.y) % 2 == 0;
             for (int x = 0; x < texture_dims.x; ++x) {
