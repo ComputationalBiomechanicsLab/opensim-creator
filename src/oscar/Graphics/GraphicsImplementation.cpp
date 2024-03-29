@@ -6832,7 +6832,7 @@ void osc::GraphicsBackend::tryBindMaterialValueToShaderElement(
 
         const Vec4 linearColor = to_linear_colorspace(std::get<Color>(v));
         gl::UniformVec4 u{se.location};
-        gl::Uniform(u, linearColor);
+        gl::set_uniform(u, linearColor);
         break;
     }
     case VariantIndex<MaterialValue, std::vector<Color>>():
@@ -6870,7 +6870,7 @@ void osc::GraphicsBackend::tryBindMaterialValueToShaderElement(
     case VariantIndex<MaterialValue, float>():
     {
         gl::UniformFloat u{se.location};
-        gl::Uniform(u, std::get<float>(v));
+        gl::set_uniform(u, std::get<float>(v));
         break;
     }
     case VariantIndex<MaterialValue, std::vector<float>>():
@@ -6895,13 +6895,13 @@ void osc::GraphicsBackend::tryBindMaterialValueToShaderElement(
     case VariantIndex<MaterialValue, Vec2>():
     {
         gl::UniformVec2 u{se.location};
-        gl::Uniform(u, std::get<Vec2>(v));
+        gl::set_uniform(u, std::get<Vec2>(v));
         break;
     }
     case VariantIndex<MaterialValue, Vec3>():
     {
         gl::UniformVec3 u{se.location};
-        gl::Uniform(u, std::get<Vec3>(v));
+        gl::set_uniform(u, std::get<Vec3>(v));
         break;
     }
     case VariantIndex<MaterialValue, std::vector<Vec3>>():
@@ -6929,19 +6929,19 @@ void osc::GraphicsBackend::tryBindMaterialValueToShaderElement(
     case VariantIndex<MaterialValue, Vec4>():
     {
         gl::UniformVec4 u{se.location};
-        gl::Uniform(u, std::get<Vec4>(v));
+        gl::set_uniform(u, std::get<Vec4>(v));
         break;
     }
     case VariantIndex<MaterialValue, Mat3>():
     {
         gl::UniformMat3 u{se.location};
-        gl::Uniform(u, std::get<Mat3>(v));
+        gl::set_uniform(u, std::get<Mat3>(v));
         break;
     }
     case VariantIndex<MaterialValue, Mat4>():
     {
         gl::UniformMat4 u{se.location};
-        gl::Uniform(u, std::get<Mat4>(v));
+        gl::set_uniform(u, std::get<Mat4>(v));
         break;
     }
     case VariantIndex<MaterialValue, std::vector<Mat4>>():
@@ -6967,13 +6967,13 @@ void osc::GraphicsBackend::tryBindMaterialValueToShaderElement(
     case VariantIndex<MaterialValue, int32_t>():
     {
         gl::UniformInt u{se.location};
-        gl::Uniform(u, std::get<int32_t>(v));
+        gl::set_uniform(u, std::get<int32_t>(v));
         break;
     }
     case VariantIndex<MaterialValue, bool>():
     {
         gl::UniformBool u{se.location};
-        gl::Uniform(u, std::get<bool>(v));
+        gl::set_uniform(u, std::get<bool>(v));
         break;
     }
     case VariantIndex<MaterialValue, Texture2D>():
@@ -6984,7 +6984,7 @@ void osc::GraphicsBackend::tryBindMaterialValueToShaderElement(
         gl::active_texture(GL_TEXTURE0 + textureSlot);
         gl::bind_texture(texture);
         gl::UniformSampler2D u{se.location};
-        gl::Uniform(u, textureSlot);
+        gl::set_uniform(u, textureSlot);
 
         ++textureSlot;
         break;
@@ -6999,7 +6999,7 @@ void osc::GraphicsBackend::tryBindMaterialValueToShaderElement(
                 gl::active_texture(GL_TEXTURE0 + textureSlot);
                 gl::bind_texture(sst.texture2D);
                 gl::UniformSampler2D u{se.location};
-                gl::Uniform(u, textureSlot);
+                gl::set_uniform(u, textureSlot);
                 ++textureSlot;
             },
             [&textureSlot, &se](MultisampledRBOAndResolvedTexture& mst)
@@ -7007,7 +7007,7 @@ void osc::GraphicsBackend::tryBindMaterialValueToShaderElement(
                 gl::active_texture(GL_TEXTURE0 + textureSlot);
                 gl::bind_texture(mst.singleSampledTexture);
                 gl::UniformSampler2D u{se.location};
-                gl::Uniform(u, textureSlot);
+                gl::set_uniform(u, textureSlot);
                 ++textureSlot;
             },
             [&textureSlot, &se](SingleSampledCubemap& cubemap)
@@ -7015,7 +7015,7 @@ void osc::GraphicsBackend::tryBindMaterialValueToShaderElement(
                 gl::active_texture(GL_TEXTURE0 + textureSlot);
                 gl::bind_texture(cubemap.textureCubemap);
                 gl::UniformSamplerCube u{se.location};
-                gl::Uniform(u, textureSlot);
+                gl::set_uniform(u, textureSlot);
                 ++textureSlot;
             },
             }, const_cast<RenderTexture::Impl&>(*std::get<RenderTexture>(v).m_Impl).getColorRenderBufferData());
@@ -7030,7 +7030,7 @@ void osc::GraphicsBackend::tryBindMaterialValueToShaderElement(
         gl::active_texture(GL_TEXTURE0 + textureSlot);
         gl::bind_texture(texture);
         gl::UniformSamplerCube u{se.location};
-        gl::Uniform(u, textureSlot);
+        gl::set_uniform(u, textureSlot);
 
         ++textureSlot;
         break;
@@ -7068,7 +7068,7 @@ void osc::GraphicsBackend::handleBatchWithSameSubMesh(
             if (shaderImpl.m_MaybeModelMatUniform) {
                 if (shaderImpl.m_MaybeModelMatUniform->shaderType == ShaderPropertyType::Mat4) {
                     gl::UniformMat4 u{shaderImpl.m_MaybeModelMatUniform->location};
-                    gl::Uniform(u, model_mat4(el));
+                    gl::set_uniform(u, model_mat4(el));
                 }
             }
 
@@ -7076,11 +7076,11 @@ void osc::GraphicsBackend::handleBatchWithSameSubMesh(
             if (shaderImpl.m_MaybeNormalMatUniform) {
                 if (shaderImpl.m_MaybeNormalMatUniform->shaderType == ShaderPropertyType::Mat3) {
                     gl::UniformMat3 u{shaderImpl.m_MaybeNormalMatUniform->location};
-                    gl::Uniform(u, normal_matrix(el));
+                    gl::set_uniform(u, normal_matrix(el));
                 }
                 else if (shaderImpl.m_MaybeNormalMatUniform->shaderType == ShaderPropertyType::Mat4) {
                     gl::UniformMat4 u{shaderImpl.m_MaybeNormalMatUniform->location};
-                    gl::Uniform(u, normal_matrix4(el));
+                    gl::set_uniform(u, normal_matrix4(el));
                 }
             }
 
@@ -7212,7 +7212,7 @@ void osc::GraphicsBackend::handleBatchWithSameMaterial(
             if (shaderImpl.m_MaybeViewMatUniform->shaderType == ShaderPropertyType::Mat4)
             {
                 gl::UniformMat4 u{shaderImpl.m_MaybeViewMatUniform->location};
-                gl::Uniform(u, renderPassState.viewMatrix);
+                gl::set_uniform(u, renderPassState.viewMatrix);
             }
         }
 
@@ -7222,7 +7222,7 @@ void osc::GraphicsBackend::handleBatchWithSameMaterial(
             if (shaderImpl.m_MaybeProjMatUniform->shaderType == ShaderPropertyType::Mat4)
             {
                 gl::UniformMat4 u{shaderImpl.m_MaybeProjMatUniform->location};
-                gl::Uniform(u, renderPassState.projectionMatrix);
+                gl::set_uniform(u, renderPassState.projectionMatrix);
             }
         }
 
@@ -7231,7 +7231,7 @@ void osc::GraphicsBackend::handleBatchWithSameMaterial(
             if (shaderImpl.m_MaybeViewProjMatUniform->shaderType == ShaderPropertyType::Mat4)
             {
                 gl::UniformMat4 u{shaderImpl.m_MaybeViewProjMatUniform->location};
-                gl::Uniform(u, renderPassState.viewProjectionMatrix);
+                gl::set_uniform(u, renderPassState.viewProjectionMatrix);
             }
         }
 

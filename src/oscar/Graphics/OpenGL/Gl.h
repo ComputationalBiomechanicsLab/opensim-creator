@@ -328,54 +328,54 @@ namespace osc::gl
     };
 
     // set the value of a `float` uniform in the currently bound program
-    inline void Uniform(UniformFloat& uniform, GLfloat value)
+    inline void set_uniform(UniformFloat& uniform, GLfloat value)
     {
         glUniform1f(uniform.geti(), value);
     }
 
     // set the value of an `GLint` uniform in the currently bound program
-    inline void Uniform(UniformInt& uniform, GLint value)
+    inline void set_uniform(UniformInt& uniform, GLint value)
     {
         glUniform1i(uniform.geti(), value);
     }
 
     // set the value of an array-like uniform `GLint`
-    inline void Uniform(const UniformInt& uniform, GLsizei num_elements, const GLint* data)
+    inline void set_uniform(const UniformInt& uniform, GLsizei num_elements, const GLint* data)
     {
         glUniform1iv(uniform.geti(), num_elements, data);
     }
 
     // set the value of a `vec3` uniform
-    inline void Uniform(UniformVec3& uniform, float x, float y, float z)
+    inline void set_uniform(UniformVec3& uniform, float x, float y, float z)
     {
         glUniform3f(uniform.geti(), x, y, z);
     }
 
     // set the value of a `vec3` uniform
-    inline void Uniform(UniformVec3& uniform, const float values[3])
+    inline void set_uniform(UniformVec3& uniform, const float values[3])
     {
         glUniform3fv(uniform.geti(), 1, values);
     }
 
     // set the value of a `sampler2D` uniform
-    inline void Uniform(UniformSampler2D& uniform, GLint value)
+    inline void set_uniform(UniformSampler2D& uniform, GLint value)
     {
         glUniform1i(uniform.geti(), value);
     }
 
-    inline void Uniform(UniformSamplerCube& uniform, GLint value)
+    inline void set_uniform(UniformSamplerCube& uniform, GLint value)
     {
         glUniform1i(uniform.geti(), value);
     }
 
     // set the value of an `sampler2DMS` uniform
-    inline void Uniform(UniformSampler2DMS& uniform, GLint value)
+    inline void set_uniform(UniformSampler2DMS& uniform, GLint value)
     {
         glUniform1i(uniform.geti(), value);
     }
 
     // set the value of a `bool` uniform
-    inline void Uniform(UniformBool& u, bool value)
+    inline void set_uniform(UniformBool& u, bool value)
     {
         glUniform1i(u.geti(), value);
     }
@@ -399,22 +399,22 @@ namespace osc::gl
         [[nodiscard]] constexpr size_t size() const { return N; }
     };
 
-    inline void Uniform(UniformMat3& uniform, const Mat3& mat)
+    inline void set_uniform(UniformMat3& uniform, const Mat3& mat)
     {
         glUniformMatrix3fv(uniform.geti(), 1, false, value_ptr(mat));
     }
 
-    inline void Uniform(UniformVec4& uniform, const Vec4& vec)
+    inline void set_uniform(UniformVec4& uniform, const Vec4& vec)
     {
         glUniform4fv(uniform.geti(), 1, value_ptr(vec));
     }
 
-    inline void Uniform(UniformVec3& uniform, const Vec3& vec)
+    inline void set_uniform(UniformVec3& uniform, const Vec3& vec)
     {
         glUniform3fv(uniform.geti(), 1, value_ptr(vec));
     }
 
-    inline void Uniform(UniformVec3& uniform, std::span<const Vec3> vectors)
+    inline void set_uniform(UniformVec3& uniform, std::span<const Vec3> vectors)
     {
         static_assert(sizeof(Vec3) == 3 * sizeof(GLfloat));
         glUniform3fv(uniform.geti(), static_cast<GLsizei>(vectors.size()), value_ptr(vectors.front()));
@@ -423,29 +423,29 @@ namespace osc::gl
     // set a uniform array of vec3s from a userspace container type (e.g. vector<Vec3>)
     template<std::ranges::contiguous_range R, size_t N>
     requires std::same_as<typename R::value_type, Vec3>
-    inline void Uniform(UniformArray<glsl::vec3, N>& uniform, R& range)
+    inline void set_uniform(UniformArray<glsl::vec3, N>& uniform, R& range)
     {
         OSC_ASSERT(std::ranges::size(range) == N);
         glUniform3fv(uniform.geti(), static_cast<GLsizei>(std::ranges::size(range)), ValuePtr(*std::ranges::data(range)));
     }
 
-    inline void Uniform(UniformMat4& uniform, const Mat4& mat)
+    inline void set_uniform(UniformMat4& uniform, const Mat4& mat)
     {
         glUniformMatrix4fv(uniform.geti(), 1, false, value_ptr(mat));
     }
 
-    inline void Uniform(UniformMat4& uniform, std::span<const Mat4> matrices)
+    inline void set_uniform(UniformMat4& uniform, std::span<const Mat4> matrices)
     {
         static_assert(sizeof(Mat4) == 16 * sizeof(GLfloat));
         glUniformMatrix4fv(uniform.geti(), static_cast<GLsizei>(matrices.size()), false, value_ptr(matrices.front()));
     }
 
-    inline void Uniform(UniformVec2& u, const Vec2& v)
+    inline void set_uniform(UniformVec2& u, const Vec2& v)
     {
         glUniform2fv(u.geti(), 1, value_ptr(v));
     }
 
-    inline void Uniform(UniformVec2& uniform, std::span<const Vec2> vectors)
+    inline void set_uniform(UniformVec2& uniform, std::span<const Vec2> vectors)
     {
         static_assert(sizeof(Vec2) == 2 * sizeof(GLfloat));
 
@@ -458,7 +458,7 @@ namespace osc::gl
 
     template<std::ranges::contiguous_range R, size_t N>
     requires std::same_as<typename R::value_type, Vec2>
-    void Uniform(UniformArray<glsl::vec2, N>& uniform, const R& range)
+    void set_uniform(UniformArray<glsl::vec2, N>& uniform, const R& range)
     {
         glUniform2fv(
             uniform.geti(),
