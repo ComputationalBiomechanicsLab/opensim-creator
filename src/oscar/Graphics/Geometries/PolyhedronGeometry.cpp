@@ -193,7 +193,7 @@ osc::PolyhedronGeometry::PolyhedronGeometry(
     }
     else {
         // smooth-shade
-        auto normals = generated_vertices;
+        auto normals{generated_vertices};
         for (auto& v : normals) {
             v = normalize(v);
         }

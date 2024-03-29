@@ -17,7 +17,8 @@ namespace osc
             std::string_view name,
             Variant default_value) :
 
-            PropertyInfo{StringName{name}, std::move(default_value)}
+            PropertyInfo{StringName{name},
+            std::move(default_value)}
         {}
 
         PropertyInfo(

@@ -108,8 +108,8 @@ osc::BoxGeometry::BoxGeometry(
     // build each side of the box
     build_plane(2, 1, 0, -1.0f, -1.0f, {depth, height,  width},  num_depth_segments, num_height_segments);  // px
     build_plane(2, 1, 0,  1.0f, -1.0f, {depth, height, -width},  num_depth_segments, num_height_segments);  // nx
-    build_plane(0, 2, 1,  1.0f,  1.0f, {width, depth,   height}, num_width_segments, num_depth_segments);   // py
-    build_plane(0, 2, 1,  1.0f, -1.0f, {width, depth,  -height}, num_width_segments, num_depth_segments);   // ny
+    build_plane(0, 2, 1,  1.0f,  1.0f, {width, depth,   height}, num_width_segments, num_depth_segments );  // py
+    build_plane(0, 2, 1,  1.0f, -1.0f, {width, depth,  -height}, num_width_segments, num_depth_segments );  // ny
     build_plane(0, 1, 2,  1.0f, -1.0f, {width, height,  depth},  num_width_segments, num_height_segments);  // pz
     build_plane(0, 1, 2, -1.0f, -1.0f, {width, height, -depth},  num_width_segments, num_height_segments);  // nz
 

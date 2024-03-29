@@ -18,7 +18,7 @@ using namespace osc;
 
 Texture2D osc::load_texture2D_from_svg(std::istream& in, float scale)
 {
-    // read SVG content into a `std::string` and parse it
+    // read SVG content into a `std::string`
     std::string data;
     copy(
         std::istreambuf_iterator{in},
@@ -26,7 +26,7 @@ Texture2D osc::load_texture2D_from_svg(std::istream& in, float scale)
         std::back_inserter(data)
     );
 
-    // parse data into SVG document
+    // parse the `std::string` as an SVG document
     std::unique_ptr<lunasvg::Document> doc = lunasvg::Document::loadFromData(data);
     OSC_ASSERT(doc != nullptr && "error loading SVG document");
 

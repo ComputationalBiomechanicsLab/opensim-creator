@@ -30,14 +30,16 @@ namespace
     inline constexpr int c_stb_true = 1;
     inline constexpr int c_stb_false = 0;
 
-    // this mutex is required because stbi has global mutable state (e.g. stbi_set_flip_vertically_on_load)
+    // this mutex is required because stbi has global mutable state (e.g. `stbi_set_flip_vertically_on_load`)
     auto lock_stbi_api()
     {
         static std::mutex s_stbi_mutex;
         return std::lock_guard{s_stbi_mutex};
     }
 
-    // IO callbacks for `stbi`, so that it is compatible with (e.g.) virtual filesystems
+    // OSC-specific IO callbacks for `stbi`, to make it compatible with (e.g.) virtual filesystems
+    //
+    // assumes the caller knows to set the user data `void*` ptr to an `std::istream`
     constexpr stbi_io_callbacks c_stbi_stream_callbacks = {
 
         .read = [](void* user, char* data, int size) -> int
@@ -161,7 +163,7 @@ namespace
         return rv;
     }
 
-    void stbiWriteToStdOstream(void* context, void* data, int size)
+    void osc_stbi_write_via_std_ostream(void* context, void* data, int size)
     {
         std::ostream& out = *reinterpret_cast<std::ostream*>(context);
         if (size > 0) {
@@ -189,18 +191,18 @@ Texture2D osc::load_texture2D_from_image(
 }
 
 void osc::write_to_png(
-    const Texture2D& tex,
+    const Texture2D& texture,
     std::ostream& out)
 {
-    const Vec2i dims = tex.getDimensions();
+    const Vec2i dims = texture.getDimensions();
     const int stride = 4 * dims.x;
-    const std::vector<Color32> pixels = tex.getPixels32();
+    const std::vector<Color32> pixels = texture.getPixels32();
 
     const auto guard = lock_stbi_api();
 
     stbi_flip_vertically_on_write(c_stb_true);
     const int rv = stbi_write_png_to_func(
-        stbiWriteToStdOstream,
+        osc_stbi_write_via_std_ostream,
         &out,
         dims.x,
         dims.y,

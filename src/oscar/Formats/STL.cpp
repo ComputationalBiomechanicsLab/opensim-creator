@@ -50,7 +50,7 @@ namespace
         }
     }
 
-    void write_little_endian(std::ostream& o, uint32_t v)
+    void write_u32_little_endian(std::ostream& o, uint32_t v)
     {
         o << static_cast<uint8_t>(v & 0xff);
         o << static_cast<uint8_t>((v>>8) & 0xff);
@@ -61,7 +61,7 @@ namespace
     void write_num_triangles(std::ostream& o, const Mesh& mesh)
     {
         OSC_ASSERT(mesh.getNumIndices()/3 <= std::numeric_limits<uint32_t>::max());
-        write_little_endian(o, static_cast<uint32_t>(mesh.getNumIndices()/3));
+        write_u32_little_endian(o, static_cast<uint32_t>(mesh.getNumIndices()/3));
     }
 
     void write_float_ieee754(std::ostream& o, float v)

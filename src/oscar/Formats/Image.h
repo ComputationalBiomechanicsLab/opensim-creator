@@ -24,13 +24,13 @@ namespace osc
     template<NamedInputStream Stream>
     Texture2D load_texture2D_from_image(
         Stream&& stream,
-        ColorSpace colorSpace,
+        ColorSpace color_space,
         ImageLoadingFlags flags = ImageLoadingFlags::None)
     {
         return load_texture2D_from_image(
             std::forward<Stream>(stream),
             stream.name(),
-            colorSpace,
+            color_space,
             flags
         );
     }

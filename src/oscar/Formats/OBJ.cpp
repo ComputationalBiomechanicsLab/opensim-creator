@@ -48,7 +48,7 @@ namespace
             return;
         }
 
-        auto view = mesh.getIndices();
+        const auto view = mesh.getIndices();
         for (ptrdiff_t i = 0; i < std::ssize(view)-2; i += 3) {
             // vertex indices start at 1 in OBJ
             const uint32_t i0 = view[i]+1;
@@ -71,7 +71,6 @@ osc::ObjMetadata::ObjMetadata(std::string_view authoring_tool_) :
     authoring_tool{authoring_tool_},
     creation_time{GetSystemCalendarTime()}
 {}
-
 
 void osc::write_as_obj(
     std::ostream& out,

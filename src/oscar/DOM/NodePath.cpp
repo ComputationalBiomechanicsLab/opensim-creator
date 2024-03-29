@@ -60,12 +60,12 @@ namespace
             throw std::runtime_error{path + ": The supplied path contains invalid characters."};
         }
 
-        // path_end is guaranteed to be a NUL terminator since C++11
+        // `path_end` is guaranteed to be a NUL terminator since C++11
         const Iter path_begin = path.begin();
         Iter path_end = path.end();
 
-        // helper: shift n chars starting at new_start+n such that, after,
-        // new_start..end is equal to what new_start+n..end was before.
+        // helper: shift `n` chars starting at `new_start+n` such that, after,
+        // `new_start..end` is equal to what `new_start+n..end` was before.
         const auto shift = [&path_end](Iter new_start, size_t n)
         {
             copy(new_start + n, path_end, new_start);
@@ -147,12 +147,12 @@ namespace
         // invariants:
         //
         // - the root path element (if any) has been skipped
-        // - `contentStart` points to the start of the non-relative content of
+        // - `content_start` points to the start of the non-relative content of
         //   the supplied path string
         // - `path` contains no duplicate adjacent separators
         // - `[0..offset]` is normalized path string, but may contain a
         //   trailing slash
-        // - `[content_start..offset] is the normalized *content* of the path
+        // - `[content_start..offset]` is the normalized *content* of the path
         //   string
 
         while (cursor < path_end) {
