@@ -71,7 +71,7 @@ namespace
 
 osc::Variant::Variant() : m_Data{std::monostate{}}
 {
-    static_assert(std::variant_size_v<decltype(m_Data)> == NumOptions<VariantType>());
+    static_assert(std::variant_size_v<decltype(m_Data)> == num_options<VariantType>());
 }
 osc::Variant::Variant(bool v) : m_Data{v} {}
 osc::Variant::Variant(Color v) : m_Data{v} {}

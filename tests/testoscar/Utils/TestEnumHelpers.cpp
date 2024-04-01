@@ -4,16 +4,16 @@
 
 using namespace osc;
 
-TEST(NumOptions, ReturnsValueOfNUMOPTIONSEnumMember)
+TEST(num_options, ReturnsValueOfNUMOPTIONSEnumMember)
 {
     enum class SomeEnum { First, Second, Third, NUM_OPTIONS };
-    static_assert(NumOptions<SomeEnum>() == 3);
+    static_assert(num_options<SomeEnum>() == 3);
 }
 
-TEST(NumOptions, ReturnsValueOfNUMOPTIONSWhenCustomized)
+TEST(num_options, ReturnsValueOfNUMOPTIONSWhenCustomized)
 {
     enum class SomeCustomizedEnum { First, Second, Third, NUM_OPTIONS = 58 };
-    static_assert(NumOptions<SomeCustomizedEnum>() == 58);
+    static_assert(num_options<SomeCustomizedEnum>() == 58);
 }
 
 TEST(NumFlags, ReturnsValueOfNUMFLAGSEnumMember)

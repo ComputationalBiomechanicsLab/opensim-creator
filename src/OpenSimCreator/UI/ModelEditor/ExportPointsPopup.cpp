@@ -168,7 +168,7 @@ namespace
         {
             if (CanExtractPointInfoFrom(component, state) && predicate(component))
             {
-                static_assert(NumOptions<SelectionState>() == 2u);
+                static_assert(num_options<SelectionState>() == 2u);
                 switch (selectionState)
                 {
                 case SelectionState::Selected:
@@ -596,7 +596,7 @@ private:
 
         if (ui::Button(ICON_FA_UPLOAD " Export to CSV"))
         {
-            static_assert(NumOptions<ExportStepReturn>() == 3, "review error handling");
+            static_assert(num_options<ExportStepReturn>() == 3, "review error handling");
             ExportStepReturn const rv = ActionPromptUserForSaveLocationAndExportPoints(
                 m_Model->getModel(),
                 m_Model->getState(),

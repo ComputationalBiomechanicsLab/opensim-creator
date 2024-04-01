@@ -67,7 +67,7 @@ namespace
     void write_float_ieee754(std::ostream& o, float v)
     {
         static_assert(std::numeric_limits<float>::is_iec559, "STL files use IEE754 floats");
-        for (std::byte byte : ViewObjectRepresentation(v)) {
+        for (std::byte byte : view_object_representation(v)) {
             o << static_cast<uint8_t>(byte);
         }
     }

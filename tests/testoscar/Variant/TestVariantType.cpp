@@ -27,7 +27,7 @@ TEST(VariantType, ToStringReturnsExpectedResults)
         {VariantType::Vec2, "Vec2"},
         {VariantType::Vec3, "Vec3"},
     });
-    static_assert(NumOptions<VariantType>() == std::tuple_size<decltype(testCases)>());
+    static_assert(num_options<VariantType>() == std::tuple_size<decltype(testCases)>());
 
     for (auto const& tc : testCases)
     {

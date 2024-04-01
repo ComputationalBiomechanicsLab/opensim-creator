@@ -410,7 +410,7 @@ TEST_F(Renderer, ShaderTypeCanStreamToString)
 
 TEST_F(Renderer, ShaderTypeCanBeIteratedOverAndAllCanBeStreamed)
 {
-    for (size_t i = 0; i < NumOptions<ShaderPropertyType>(); ++i)
+    for (size_t i = 0; i < num_options<ShaderPropertyType>(); ++i)
     {
         // shouldn't crash - if it does then we've missed a case somewhere
         std::stringstream ss;
@@ -1484,7 +1484,7 @@ TEST_F(Renderer, MaterialPropertyBlockPrintingToOutputStreamMentionsMaterialProp
 
 TEST_F(Renderer, MeshTopologyAllCanBeWrittenToStream)
 {
-    for (size_t i = 0; i < NumOptions<MeshTopology>(); ++i)
+    for (size_t i = 0; i < num_options<MeshTopology>(); ++i)
     {
         auto const mt = static_cast<MeshTopology>(i);
 
@@ -1518,7 +1518,7 @@ TEST_F(Renderer, LoadTexture2DFromImageResourceThrowsIfResourceNotFound)
 
 TEST_F(Renderer, RenderTextureFormatCanBeIteratedOverAndStreamedToString)
 {
-    for (size_t i = 0; i < NumOptions<RenderTextureFormat>(); ++i)
+    for (size_t i = 0; i < num_options<RenderTextureFormat>(); ++i)
     {
         std::stringstream ss;
         ss << static_cast<RenderTextureFormat>(i);  // shouldn't throw
@@ -1527,7 +1527,7 @@ TEST_F(Renderer, RenderTextureFormatCanBeIteratedOverAndStreamedToString)
 
 TEST_F(Renderer, DepthStencilFormatCanBeIteratedOverAndStreamedToString)
 {
-    for (size_t i = 0; i < NumOptions<DepthStencilFormat>(); ++i)
+    for (size_t i = 0; i < num_options<DepthStencilFormat>(); ++i)
     {
         std::stringstream ss;
         ss << static_cast<DepthStencilFormat>(i);  // shouldn't throw

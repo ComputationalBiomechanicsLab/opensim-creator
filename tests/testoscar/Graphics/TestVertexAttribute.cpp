@@ -21,7 +21,7 @@ TEST(VertexAttribute, OrderMatchesAttributeLayout)
         VertexAttribute::Color,
         VertexAttribute::TexCoord0,
     });
-    static_assert(std::tuple_size_v<decltype(order)> == NumOptions<VertexAttribute>());
+    static_assert(std::tuple_size_v<decltype(order)> == num_options<VertexAttribute>());
 
     ASSERT_TRUE(std::is_sorted(order.begin(), order.end()));
 }

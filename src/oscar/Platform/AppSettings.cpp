@@ -380,7 +380,7 @@ R"(# configuration options
         std::string_view key,
         AppSettingValue const& value)
     {
-        static_assert(NumOptions<AppSettingValueType>() == 3);
+        static_assert(num_options<AppSettingValueType>() == 3);
 
         switch (value.type())
         {
@@ -454,7 +454,7 @@ R"(# configuration options
                 return std::nullopt;
             }
 
-            static_assert(NumOptions<AppSettingScope>() == 2);
+            static_assert(num_options<AppSettingScope>() == 2);
             switch (*scope)
             {
             case AppSettingScope::System:

@@ -44,14 +44,14 @@ namespace osc
     // returns the (mutable) source/destination of the given landmark pair, if available
     inline std::optional<Vec3>& UpdLocation(TPSDocumentLandmarkPair& landmarkPair, TPSDocumentInputIdentifier which)
     {
-        static_assert(NumOptions<TPSDocumentInputIdentifier>() == 2);
+        static_assert(num_options<TPSDocumentInputIdentifier>() == 2);
         return which == TPSDocumentInputIdentifier::Source ? landmarkPair.maybeSourceLocation : landmarkPair.maybeDestinationLocation;
     }
 
     // returns the source/destination of the given landmark pair, if available
     inline std::optional<Vec3> const& GetLocation(TPSDocumentLandmarkPair const& landmarkPair, TPSDocumentInputIdentifier which)
     {
-        static_assert(NumOptions<TPSDocumentInputIdentifier>() == 2);
+        static_assert(num_options<TPSDocumentInputIdentifier>() == 2);
         return which == TPSDocumentInputIdentifier::Source ? landmarkPair.maybeSourceLocation : landmarkPair.maybeDestinationLocation;
     }
 
@@ -64,14 +64,14 @@ namespace osc
     // returns the (mutable) source/destination mesh in the given document
     inline Mesh& UpdMesh(TPSDocument& doc, TPSDocumentInputIdentifier which)
     {
-        static_assert(NumOptions<TPSDocumentInputIdentifier>() == 2);
+        static_assert(num_options<TPSDocumentInputIdentifier>() == 2);
         return which == TPSDocumentInputIdentifier::Source ? doc.sourceMesh : doc.destinationMesh;
     }
 
     // returns the source/destination mesh in the given document
     inline Mesh const& GetMesh(TPSDocument const& doc, TPSDocumentInputIdentifier which)
     {
-        static_assert(NumOptions<TPSDocumentInputIdentifier>() == 2);
+        static_assert(num_options<TPSDocumentInputIdentifier>() == 2);
         return which == TPSDocumentInputIdentifier::Source ? doc.sourceMesh : doc.destinationMesh;
     }
 

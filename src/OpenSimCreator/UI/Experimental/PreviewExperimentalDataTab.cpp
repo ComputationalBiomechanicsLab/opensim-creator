@@ -56,7 +56,7 @@ namespace
         "Orientation",
         "Unknown",
     });
-    static_assert(c_ColumnDataTypeStrings.size() == NumOptions<ColumnDataType>());
+    static_assert(c_ColumnDataTypeStrings.size() == num_options<ColumnDataType>());
 
     // the number of floating-point values the column is backed by
     constexpr auto c_ColumnDataSizes = std::to_array<int>({
@@ -66,7 +66,7 @@ namespace
         4,
         1,
     });
-    static_assert(c_ColumnDataSizes.size() == NumOptions<ColumnDataType>());
+    static_assert(c_ColumnDataSizes.size() == num_options<ColumnDataType>());
 
     // returns the number of floating-point values the column is backed by
     constexpr int NumElementsIn(ColumnDataType dt)

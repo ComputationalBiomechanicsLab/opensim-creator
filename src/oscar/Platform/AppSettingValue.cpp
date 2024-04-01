@@ -12,7 +12,7 @@ using namespace osc;
 
 AppSettingValueType osc::AppSettingValue::type() const
 {
-    static_assert(std::variant_size_v<decltype(m_Value)> == NumOptions<AppSettingValueType>());
+    static_assert(std::variant_size_v<decltype(m_Value)> == num_options<AppSettingValueType>());
 
     AppSettingValueType rv = AppSettingValueType::String;
     std::visit(Overload

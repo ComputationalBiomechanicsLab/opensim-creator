@@ -17,7 +17,7 @@ using namespace osc;
 
 osc::WireframeGeometry::WireframeGeometry(const Mesh& mesh)
 {
-    static_assert(NumOptions<MeshTopology>() == 2);
+    static_assert(num_options<MeshTopology>() == 2);
 
     if (mesh.getTopology() == MeshTopology::Lines) {
         mesh_ = mesh;

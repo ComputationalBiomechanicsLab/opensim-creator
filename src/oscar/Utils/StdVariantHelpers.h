@@ -29,7 +29,7 @@ namespace osc
 
     // returns the index of the given variant type
     template<typename Variant, typename T>
-    [[nodiscard]] constexpr size_t VariantIndex()
+    [[nodiscard]] constexpr size_t variant_index()
     {
         return detail::VariantIndexImpl<Variant, T>();
     }

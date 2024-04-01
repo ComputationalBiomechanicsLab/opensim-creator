@@ -14,7 +14,7 @@ static_assert(std::is_same_v<std::underlying_type_t<TextureFormat>, int32_t>);
 
 TEST(TextureFormat, NumChannelsReturnsExpectedValues)
 {
-    static_assert(NumOptions<TextureFormat>() == 7);
+    static_assert(num_options<TextureFormat>() == 7);
 
     ASSERT_EQ(NumChannels(TextureFormat::R8), 1);
     ASSERT_EQ(NumChannels(TextureFormat::RG16), 2);
@@ -27,7 +27,7 @@ TEST(TextureFormat, NumChannelsReturnsExpectedValues)
 
 TEST(TextureFormat, ChannelFormatReturnsExpectedValues)
 {
-    static_assert(NumOptions<TextureFormat>() == 7);
+    static_assert(num_options<TextureFormat>() == 7);
 
     ASSERT_EQ(ChannelFormat(TextureFormat::R8), TextureChannelFormat::Uint8);
     ASSERT_EQ(ChannelFormat(TextureFormat::RG16), TextureChannelFormat::Uint8);
@@ -40,7 +40,7 @@ TEST(TextureFormat, ChannelFormatReturnsExpectedValues)
 
 TEST(TextureFormat, NumBytesPerPixelReturnsExpectedValues)
 {
-    static_assert(NumOptions<TextureFormat>() == 7);
+    static_assert(num_options<TextureFormat>() == 7);
 
     ASSERT_EQ(NumBytesPerPixel(TextureFormat::R8), 1);
     ASSERT_EQ(NumBytesPerPixel(TextureFormat::RG16), 2);
@@ -53,7 +53,7 @@ TEST(TextureFormat, NumBytesPerPixelReturnsExpectedValues)
 
 TEST(TextureFormat, ToTextureFormatReturnsExpectedValues)
 {
-    static_assert(NumOptions<TextureFormat>() == 7);
+    static_assert(num_options<TextureFormat>() == 7);
 
     ASSERT_EQ(ToTextureFormat(1, TextureChannelFormat::Uint8), TextureFormat::R8);
     ASSERT_EQ(ToTextureFormat(2, TextureChannelFormat::Uint8), TextureFormat::RG16);

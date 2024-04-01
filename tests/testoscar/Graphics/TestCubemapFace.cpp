@@ -6,7 +6,7 @@
 namespace cpp23 = osc::cpp23;
 using namespace osc;
 
-static_assert(NumOptions<CubemapFace>() == 6);
+static_assert(num_options<CubemapFace>() == 6);
 
 // the sequence of faces is important, because OpenGL defines a texture target
 // macro (e.g. GL_TEXTURE_CUBE_MAP_POSITIVE_X, GL_TEXTURE_CUBE_MAP_POSITIVE_Y)

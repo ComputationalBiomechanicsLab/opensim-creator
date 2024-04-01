@@ -50,7 +50,7 @@ namespace
             MuscleColoringStyle::FiberLength,
         },
     });
-    static_assert(c_Metadata.size() == NumOptions<MuscleColoringStyle>());
+    static_assert(c_Metadata.size() == num_options<MuscleColoringStyle>());
 }
 
 std::span<MuscleColoringStyleMetadata const> osc::GetAllMuscleColoringStyleMetadata()

@@ -124,7 +124,7 @@ TPSDocumentNonParticipatingLandmark* osc::FindNonParticipatingLandmark(TPSDocume
 
 TPSDocumentElement const* osc::FindElement(TPSDocument const& doc, TPSDocumentElementID const& id)
 {
-    static_assert(NumOptions<TPSDocumentElementType>() == 2);
+    static_assert(num_options<TPSDocumentElementType>() == 2);
 
     switch (id.type) {
     case TPSDocumentElementType::Landmark:
@@ -307,7 +307,7 @@ void osc::AddNonParticipatingLandmark(
 
 bool osc::DeleteElementByID(TPSDocument& doc, TPSDocumentElementID const& id)
 {
-    static_assert(NumOptions<TPSDocumentElementType>() == 2);
+    static_assert(num_options<TPSDocumentElementType>() == 2);
 
     if (id.type == TPSDocumentElementType::Landmark)
     {

@@ -52,12 +52,12 @@ namespace
 
 CStringView osc::IntegratorMethod::label() const
 {
-    static_assert(c_IntegratorMethodOptionStrings.size() == NumOptions<IntegratorMethodOption>());
+    static_assert(c_IntegratorMethodOptionStrings.size() == num_options<IntegratorMethodOption>());
     return c_IntegratorMethodOptionStrings[ToIndex(m_Option)];
 }
 
 std::unique_ptr<SimTK::Integrator> osc::IntegratorMethod::instantiate(SimTK::System const& system) const
 {
-    static_assert(c_IntegratorMethodConstructors.size() == NumOptions<IntegratorMethodOption>());
+    static_assert(c_IntegratorMethodConstructors.size() == num_options<IntegratorMethodOption>());
     return c_IntegratorMethodConstructors[ToIndex(m_Option)](system);
 }

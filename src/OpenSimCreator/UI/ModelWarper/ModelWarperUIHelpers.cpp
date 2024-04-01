@@ -10,7 +10,7 @@ using namespace osc::mow;
 
 EntryStyling osc::mow::ToStyle(ValidationCheckState s)
 {
-    static_assert(NumOptions<ValidationCheckState>() == 3);
+    static_assert(num_options<ValidationCheckState>() == 3);
     switch (s) {
     case ValidationCheckState::Ok:
         return {.icon = ICON_FA_CHECK, .color = Color::green()};

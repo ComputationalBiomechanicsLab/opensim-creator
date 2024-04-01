@@ -23,7 +23,7 @@ namespace osc
 
     // returns the number of options in `TEnum` (effectively, returns `NUM_OPTIONS`)
     template<DenselyPackedOptionsEnum TEnum>
-    constexpr size_t NumOptions()
+    constexpr size_t num_options()
     {
         return static_cast<size_t>(TEnum::NUM_OPTIONS);
     }
@@ -33,7 +33,7 @@ namespace osc
     // - the caller must instantiate this template with each option
     template<DenselyPackedOptionsEnum TEnum, TEnum... TEnumOptions>
     struct OptionList {
-        static_assert(sizeof...(TEnumOptions) == NumOptions<TEnum>());
+        static_assert(sizeof...(TEnumOptions) == num_options<TEnum>());
     };
 
     // returns the value of `v` casted to a `size_t` (i.e. `v` should probably satisfy

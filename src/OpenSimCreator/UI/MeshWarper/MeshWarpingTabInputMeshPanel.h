@@ -577,7 +577,7 @@ namespace osc
 
         bool isUserPlacingNonParticipatingLandmark() const
         {
-            static_assert(NumOptions<TPSDocumentInputIdentifier>() == 2);
+            static_assert(num_options<TPSDocumentInputIdentifier>() == 2);
             bool const isSourceMesh = m_DocumentIdentifier == TPSDocumentInputIdentifier::Source;
             bool const isCtrlPressed = ui::IsAnyKeyDown({ImGuiKey_LeftCtrl, ImGuiKey_RightCtrl});
             return isSourceMesh && isCtrlPressed;

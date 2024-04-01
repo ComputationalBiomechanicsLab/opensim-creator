@@ -18,7 +18,7 @@ namespace
         SimulationStatus::Cancelled,
         SimulationStatus::Error,
     });
-    static_assert(c_SimulatorStatuses.size() == NumOptions<SimulationStatus>());
+    static_assert(c_SimulatorStatuses.size() == num_options<SimulationStatus>());
 
     constexpr auto c_SimulatorStatusStrings = std::to_array<CStringView>(
     {
@@ -28,7 +28,7 @@ namespace
         "Cancelled",
         "Error",
     });
-    static_assert(c_SimulatorStatusStrings.size() == NumOptions<SimulationStatus>());
+    static_assert(c_SimulatorStatusStrings.size() == num_options<SimulationStatus>());
 }
 
 

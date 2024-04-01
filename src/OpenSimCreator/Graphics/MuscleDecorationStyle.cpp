@@ -32,7 +32,7 @@ namespace
             MuscleDecorationStyle::Hidden,
         },
     });
-    static_assert(c_Metadata.size() == NumOptions<MuscleDecorationStyle>());
+    static_assert(c_Metadata.size() == num_options<MuscleDecorationStyle>());
 }
 
 std::span<MuscleDecorationStyleMetadata const> osc::GetAllMuscleDecorationStyleMetadata()

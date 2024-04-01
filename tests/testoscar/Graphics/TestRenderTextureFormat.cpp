@@ -11,7 +11,7 @@ using namespace osc;
 
 TEST(RenderTextureFormat, AnyValueCanBePrintedToStream)
 {
-    for (size_t i = 0; i < NumOptions<RenderTextureFormat>(); ++i)
+    for (size_t i = 0; i < num_options<RenderTextureFormat>(); ++i)
     {
         auto const format = static_cast<RenderTextureFormat>(i);
         std::stringstream ss;

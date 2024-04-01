@@ -62,7 +62,7 @@ namespace osc
             }
             else
             {
-                static_assert(NumOptions<TPSDocumentInputIdentifier>() == 2);
+                static_assert(num_options<TPSDocumentInputIdentifier>() == 2);
                 ui::TextDisabled("(Click: add a landmark)");
             }
         }

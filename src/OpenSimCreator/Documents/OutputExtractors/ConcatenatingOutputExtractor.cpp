@@ -21,7 +21,7 @@ namespace
 {
     OutputExtractorDataType CalcOutputType(OutputExtractor const& a, OutputExtractor const& b)
     {
-        static_assert(NumOptions<OutputExtractorDataType>() == 3);
+        static_assert(num_options<OutputExtractorDataType>() == 3);
 
         OutputExtractorDataType const aType = a.getOutputType();
         OutputExtractorDataType const bType = b.getOutputType();
@@ -36,7 +36,7 @@ namespace
 
     std::string CalcLabel(OutputExtractorDataType concatenatedType, OutputExtractor const& a, OutputExtractor const& b)
     {
-        static_assert(NumOptions<OutputExtractorDataType>() == 3);
+        static_assert(num_options<OutputExtractorDataType>() == 3);
 
         if (concatenatedType == OutputExtractorDataType::Vec2) {
             std::stringstream ss;
@@ -63,7 +63,7 @@ osc::ConcatenatingOutputExtractor::ConcatenatingOutputExtractor(
 
 OutputValueExtractor osc::ConcatenatingOutputExtractor::implGetOutputValueExtractor(OpenSim::Component const& comp) const
 {
-    static_assert(NumOptions<OutputExtractorDataType>() == 3);
+    static_assert(num_options<OutputExtractorDataType>() == 3);
 
     if (m_OutputType == OutputExtractorDataType::Vec2) {
         auto extractor = [lhs = m_First.getOutputValueExtractor(comp), rhs = m_Second.getOutputValueExtractor(comp)](SimulationReport const& report)

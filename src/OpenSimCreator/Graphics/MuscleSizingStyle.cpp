@@ -25,7 +25,7 @@ namespace
             MuscleSizingStyle::PcsaDerived,
         },
     });
-    static_assert(c_Metadata.size() == NumOptions<MuscleSizingStyle>());
+    static_assert(c_Metadata.size() == num_options<MuscleSizingStyle>());
 }
 
 std::span<MuscleSizingStyleMetadata const> osc::GetAllMuscleSizingStyleMetadata()

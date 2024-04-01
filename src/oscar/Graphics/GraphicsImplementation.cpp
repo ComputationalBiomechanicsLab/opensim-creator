@@ -149,44 +149,44 @@ namespace
         }
     )";
 
-    CStringView opengl_string_to_cstringview(const GLubyte* stringPtr)
+    CStringView opengl_string_to_cstringview(const GLubyte* string_ptr)
     {
         using value_type = CStringView::value_type;
 
         static_assert(sizeof(GLubyte) == sizeof(value_type));
         static_assert(alignof(GLubyte) == alignof(value_type));
-        if (stringPtr) {
-            return CStringView{std::launder(reinterpret_cast<const value_type*>(stringPtr))};
+        if (string_ptr) {
+            return CStringView{std::launder(reinterpret_cast<const value_type*>(string_ptr))};
         }
         else {
             return CStringView{};
         }
     }
 
-    CStringView glGetCStringView(GLenum name)
+    CStringView opengl_get_cstringview(GLenum name)
     {
         return opengl_string_to_cstringview(glGetString(name));
     }
 
-    CStringView GLGetCStringViewi(GLenum name, GLuint index)
+    CStringView opengl_get_cstringviewi(GLenum name, GLuint index)
     {
         return opengl_string_to_cstringview(glGetStringi(name, index));
     }
 
-    bool isAlignedAtLeast(const void* ptr, GLint requiredAlignment)
+    bool is_aligned_at_least(const void* ptr, GLint required_alignment)
     {
-        return cpp20::bit_cast<intptr_t>(ptr) % requiredAlignment == 0;
+        return cpp20::bit_cast<intptr_t>(ptr) % required_alignment == 0;
     }
 
-    // returns the `Name String`s of all extensions that OSC's OpenGL backend might use
-    std::vector<CStringView> getAllOpenGLExtensionsUsedByOSC()
+    // returns the name strings of all extensions that the OpenGL backend may use
+    std::vector<CStringView> get_all_opengl_extensions_used_by_opengl_backend()
     {
         // most entries in this list were initially from a mixture of:
         //
         // - https://www.khronos.org/opengl/wiki/History_of_OpenGL (lists historical extension changes)
         // - Khronos official pages
 
-        // this list isn't comprehensive, it's just things that I reakon the OSC backend
+        // this list isn't comprehensive, it's just things that I reakon the OpenGL backend
         // wants, so that, at runtime, the graphics backend can emit user-facing warning
         // messages so that it's a little bit easier to spot production bugs
 
@@ -294,26 +294,26 @@ namespace
         };
     }
 
-    size_t getNumExtensionsSupportedByBackend()
+    size_t get_num_extensions_supported_by_opengl_backend()
     {
-        GLint numExtensionsSupportedByBackend = 0;
-        glGetIntegerv(GL_NUM_EXTENSIONS, &numExtensionsSupportedByBackend);
-        return numExtensionsSupportedByBackend >= 0 ? static_cast<size_t>(numExtensionsSupportedByBackend) : 0;
+        GLint rv = 0;
+        glGetIntegerv(GL_NUM_EXTENSIONS, &rv);
+        return rv >= 0 ? static_cast<size_t>(rv) : 0;
     }
 
-    std::vector<CStringView> getAllExtensionsSupportedByCurrentOpenGLBackend()
+    std::vector<CStringView> get_extensions_supported_by_opengl_backend()
     {
-        const size_t numExtensions = getNumExtensionsSupportedByBackend();
+        const size_t num_extensions = get_num_extensions_supported_by_opengl_backend();
 
         std::vector<CStringView> rv;
-        rv.reserve(numExtensions);
-        for (size_t i = 0; i < numExtensions; ++i) {
-            rv.emplace_back(GLGetCStringViewi(GL_EXTENSIONS, static_cast<GLuint>(i)));
+        rv.reserve(num_extensions);
+        for (size_t i = 0; i < num_extensions; ++i) {
+            rv.emplace_back(opengl_get_cstringviewi(GL_EXTENSIONS, static_cast<GLuint>(i)));
         }
         return rv;
     }
 
-    void validateOpenGLBackendExtensionSupport(LogLevel logLevel)
+    void validate_opengl_backend_extension_support(LogLevel logging_level)
     {
         // note: the OpenGL specification _requires_ that a backend supports
         // (effectively) RGBA, RG, and RED textures with the following data
@@ -327,38 +327,38 @@ namespace
         //
         // see "Required Formats" in: https://www.khronos.org/opengl/wiki/Image_Format
 
-        if (logLevel < log_level()) {
+        if (logging_level < log_level()) {
             return;
         }
 
-        std::vector<CStringView> extensionsRequiredByOSC = getAllOpenGLExtensionsUsedByOSC();
-        std::sort(extensionsRequiredByOSC.begin(), extensionsRequiredByOSC.end());
+        std::vector<CStringView> extensions_needed = get_all_opengl_extensions_used_by_opengl_backend();
+        std::sort(extensions_needed.begin(), extensions_needed.end());
 
-        std::vector<CStringView> extensionSupportedByBackend = getAllExtensionsSupportedByCurrentOpenGLBackend();
-        std::sort(extensionSupportedByBackend.begin(), extensionSupportedByBackend.end());
+        std::vector<CStringView> extensions_available = get_extensions_supported_by_opengl_backend();
+        std::sort(extensions_available.begin(), extensions_available.end());
 
-        std::vector<CStringView> missingExtensions;
-        missingExtensions.reserve(extensionsRequiredByOSC.size());  // pessimistic guess
+        std::vector<CStringView> extensions_missing;
+        extensions_missing.reserve(extensions_needed.size());  // pessimistic guess
         std::set_difference(
-            extensionsRequiredByOSC.begin(),
-            extensionsRequiredByOSC.end(),
-            extensionSupportedByBackend.begin(),
-            extensionSupportedByBackend.end(),
-            std::back_inserter(missingExtensions)
+            extensions_needed.begin(),
+            extensions_needed.end(),
+            extensions_available.begin(),
+            extensions_available.end(),
+            std::back_inserter(extensions_missing)
         );
 
-        if (!missingExtensions.empty()) {
-            log_message(logLevel, "OpenGL: the following OpenGL extensions may be missing from the graphics backend: ");
-            for (const auto& missingExtension : missingExtensions) {
-                log_message(logLevel, "OpenGL:  - %s", missingExtension.c_str());
+        if (not extensions_missing.empty()) {
+            log_message(logging_level, "OpenGL: the following OpenGL extensions may be missing from the graphics backend: ");
+            for (const auto& extension : extensions_missing) {
+                log_message(logging_level, "OpenGL:  - %s", extension.c_str());
             }
-            log_message(logLevel, "OpenGL: because extensions may be missing, rendering may behave abnormally");
-            log_message(logLevel, "OpenGL: note: some graphics engines can mis-report an extension as missing");
+            log_message(logging_level, "OpenGL: because extensions may be missing, rendering may behave abnormally");
+            log_message(logging_level, "OpenGL: note: some graphics engines can mis-report an extension as missing");
         }
 
-        log_message(logLevel, "OpenGL: here is a list of all of the extensions supported by the graphics backend:");
-        for (const auto& ext : extensionSupportedByBackend) {
-            log_message(logLevel, "OpenGL:  - %s", ext.c_str());
+        log_message(logging_level, "OpenGL: here is a list of all of the extensions supported by the graphics backend:");
+        for (const auto& extension : extensions_available) {
+            log_message(logging_level, "OpenGL:  - %s", extension.c_str());
         }
     }
 }
@@ -368,15 +368,15 @@ namespace
 namespace
 {
     template<BitCastable T>
-    void pushAsBytes(const T& v, std::vector<uint8_t>& out)
+    void push_as_bytes(const T& v, std::vector<uint8_t>& out)
     {
-        const auto bytes = ViewObjectRepresentation<uint8_t>(v);
+        const auto bytes = view_object_representation<uint8_t>(v);
         out.insert(out.end(), bytes.begin(), bytes.end());
     }
 
     template<typename VecOrMat>
     requires BitCastable<typename VecOrMat::element_type>
-    std::span<const typename VecOrMat::element_type> toFloatSpan(const VecOrMat& v)
+    std::span<const typename VecOrMat::element_type> to_float_span(const VecOrMat& v)
     {
         return {value_ptr(v), sizeof(VecOrMat)/sizeof(typename VecOrMat::element_type)};
     }
@@ -407,41 +407,41 @@ namespace
         Cubemap
     >;
 
-    ShaderPropertyType getShaderType(const MaterialValue& v)
+    ShaderPropertyType get_shader_type(const MaterialValue& material_val)
     {
-        switch (v.index()) {
-        case VariantIndex<MaterialValue, Color>():
-        case VariantIndex<MaterialValue, std::vector<Color>>():
+        switch (material_val.index()) {
+        case variant_index<MaterialValue, Color>():
+        case variant_index<MaterialValue, std::vector<Color>>():
             return ShaderPropertyType::Vec4;
-        case VariantIndex<MaterialValue, Vec2>():
+        case variant_index<MaterialValue, Vec2>():
             return ShaderPropertyType::Vec2;
-        case VariantIndex<MaterialValue, float>():
-        case VariantIndex<MaterialValue, std::vector<float>>():
+        case variant_index<MaterialValue, float>():
+        case variant_index<MaterialValue, std::vector<float>>():
             return ShaderPropertyType::Float;
-        case VariantIndex<MaterialValue, Vec3>():
-        case VariantIndex<MaterialValue, std::vector<Vec3>>():
+        case variant_index<MaterialValue, Vec3>():
+        case variant_index<MaterialValue, std::vector<Vec3>>():
             return ShaderPropertyType::Vec3;
-        case VariantIndex<MaterialValue, Vec4>():
+        case variant_index<MaterialValue, Vec4>():
             return ShaderPropertyType::Vec4;
-        case VariantIndex<MaterialValue, Mat3>():
+        case variant_index<MaterialValue, Mat3>():
             return ShaderPropertyType::Mat3;
-        case VariantIndex<MaterialValue, Mat4>():
-        case VariantIndex<MaterialValue, std::vector<Mat4>>():
+        case variant_index<MaterialValue, Mat4>():
+        case variant_index<MaterialValue, std::vector<Mat4>>():
             return ShaderPropertyType::Mat4;
-        case VariantIndex<MaterialValue, int32_t>():
+        case variant_index<MaterialValue, int32_t>():
             return ShaderPropertyType::Int;
-        case VariantIndex<MaterialValue, bool>():
+        case variant_index<MaterialValue, bool>():
             return ShaderPropertyType::Bool;
-        case VariantIndex<MaterialValue, Texture2D>():
+        case variant_index<MaterialValue, Texture2D>():
             return ShaderPropertyType::Sampler2D;
-        case VariantIndex<MaterialValue, RenderTexture>(): {
+        case variant_index<MaterialValue, RenderTexture>(): {
 
-            static_assert(NumOptions<TextureDimensionality>() == 2);
-            return std::get<RenderTexture>(v).getDimensionality() == TextureDimensionality::Tex2D ?
+            static_assert(num_options<TextureDimensionality>() == 2);
+            return std::get<RenderTexture>(material_val).getDimensionality() == TextureDimensionality::Tex2D ?
                 ShaderPropertyType::Sampler2D :
                 ShaderPropertyType::SamplerCube;
         }
-        case VariantIndex<MaterialValue, Cubemap>():
+        case variant_index<MaterialValue, Cubemap>():
             return ShaderPropertyType::SamplerCube;
         default:
             return ShaderPropertyType::Unknown;
@@ -453,9 +453,9 @@ namespace
 namespace
 {
     // convert a GL shader type to an internal shader type
-    ShaderPropertyType glShaderTypeToShaderTypeInternal(GLenum e)
+    ShaderPropertyType opengl_shader_type_to_osc_shader_type(GLenum e)
     {
-        static_assert(NumOptions<ShaderPropertyType>() == 11);
+        static_assert(num_options<ShaderPropertyType>() == 11);
 
         switch (e) {
         case GL_FLOAT:
@@ -506,9 +506,9 @@ namespace
         }
     }
 
-    std::string normalizeShaderElementName(std::string_view openGLName)
+    std::string normalize_shader_element_name(std::string_view opengl_name)
     {
-        std::string s{openGLName};
+        std::string s{opengl_name};
         auto loc = s.find('[');
         if (loc != std::string::npos) {
             s.erase(loc);
@@ -520,22 +520,22 @@ namespace
     struct ShaderElement final {
         ShaderElement(
             int32_t location_,
-            ShaderPropertyType shaderType_,
+            ShaderPropertyType shader_type_,
             int32_t size_) :
 
             location{location_},
-            shaderType{shaderType_},
+            shader_type{shader_type_},
             size{size_}
         {}
 
         int32_t location;
-        ShaderPropertyType shaderType;
+        ShaderPropertyType shader_type;
         int32_t size;
     };
 
-    void printShaderElement(std::ostream& o, std::string_view name, const ShaderElement& se)
+    void print_shader_element(std::ostream& o, std::string_view name, const ShaderElement& se)
     {
-        o << "ShadeElement(name = " << name << ", location = " << se.location << ", shaderType = " << se.shaderType << ", size = " << se.size << ')';
+        o << "ShadeElement(name = " << name << ", location = " << se.location << ", shader_type = " << se.shader_type << ", size = " << se.size << ')';
     }
 
     // see: ankerl/unordered_dense documentation for heterogeneous lookups
@@ -574,28 +574,28 @@ namespace
     // is important)
     using Mat4OrTransform = std::variant<Mat4, Transform>;
 
-    Mat4 mat4_cast(const Mat4OrTransform& matrixOrTransform)
+    Mat4 mat4_cast(const Mat4OrTransform& mat4_or_transform)
     {
         return std::visit(Overload{
-            [](const Mat4& matrix) { return matrix; },
+            [](const Mat4& mat4) { return mat4; },
             [](const Transform& transform) { return mat4_cast(transform); }
-        }, matrixOrTransform);
+        }, mat4_or_transform);
     }
 
-    Mat4 normal_matrix4(const Mat4OrTransform& matrixOrTransform)
+    Mat4 normal_matrix4(const Mat4OrTransform& mat4_or_transform)
     {
         return std::visit(Overload{
-            [](const Mat4& matrix) { return normal_matrix4(matrix); },
+            [](const Mat4& mat4) { return normal_matrix4(mat4); },
             [](const Transform& transform) { return normal_matrix_4x4(transform); }
-        }, matrixOrTransform);
+        }, mat4_or_transform);
     }
 
-    Mat3 normal_matrix(const Mat4OrTransform& matrixOrTransform)
+    Mat3 normal_matrix(const Mat4OrTransform& mat4_or_transform)
     {
         return std::visit(Overload{
-            [](const Mat4& matrix) { return normal_matrix(matrix); },
+            [](const Mat4& mat4) { return normal_matrix(mat4); },
             [](const Transform& transform) { return normal_matrix(transform); }
-        }, matrixOrTransform);
+        }, mat4_or_transform);
     }
 
     // this is what is stored in the renderer's render queue
@@ -605,30 +605,30 @@ namespace
             Mesh mesh_,
             const Transform& transform_,
             Material material_,
-            std::optional<MaterialPropertyBlock> maybePropBlock_,
-            std::optional<size_t> maybeSubMeshIndex_) :
+            std::optional<MaterialPropertyBlock> maybe_prop_block_,
+            std::optional<size_t> maybe_submesh_index_) :
 
             material{std::move(material_)},
             mesh{std::move(mesh_)},
-            maybePropBlock{std::move(maybePropBlock_)},
+            maybe_prop_block{std::move(maybe_prop_block_)},
             transform{transform_},
-            worldMidpoint{material.getTransparent() ? transform_point(transform_, centroid_of(mesh.getBounds())) : Vec3{}},
-            maybeSubMeshIndex{maybeSubMeshIndex_}
+            world_centroid{material.getTransparent() ? transform_point(transform_, centroid_of(mesh.getBounds())) : Vec3{}},
+            maybe_submesh_index{maybe_submesh_index_}
         {}
 
         RenderObject(
             Mesh mesh_,
             const Mat4& transform_,
             Material material_,
-            std::optional<MaterialPropertyBlock> maybePropBlock_,
-            std::optional<size_t> maybeSubMeshIndex_) :
+            std::optional<MaterialPropertyBlock> maybe_prop_block_,
+            std::optional<size_t> maybe_submesh_index_) :
 
             material{std::move(material_)},
             mesh{std::move(mesh_)},
-            maybePropBlock{std::move(maybePropBlock_)},
+            maybe_prop_block{std::move(maybe_prop_block_)},
             transform{transform_},
-            worldMidpoint{material.getTransparent() ? transform_ * Vec4{centroid_of(mesh.getBounds()), 1.0f} : Vec3{}},
-            maybeSubMeshIndex{maybeSubMeshIndex_}
+            world_centroid{material.getTransparent() ? transform_ * Vec4{centroid_of(mesh.getBounds()), 1.0f} : Vec3{}},
+            maybe_submesh_index{maybe_submesh_index_}
         {}
 
         friend void swap(RenderObject& a, RenderObject& b) noexcept
@@ -637,24 +637,24 @@ namespace
 
             swap(a.material, b.material);
             swap(a.mesh, b.mesh);
-            swap(a.maybePropBlock, b.maybePropBlock);
+            swap(a.maybe_prop_block, b.maybe_prop_block);
             swap(a.transform, b.transform);
-            swap(a.worldMidpoint, b.worldMidpoint);
-            swap(a.maybeSubMeshIndex, b.maybeSubMeshIndex);
+            swap(a.world_centroid, b.world_centroid);
+            swap(a.maybe_submesh_index, b.maybe_submesh_index);
         }
 
         friend bool operator==(const RenderObject&, const RenderObject&) = default;
 
         Material material;
         Mesh mesh;
-        std::optional<MaterialPropertyBlock> maybePropBlock;
+        std::optional<MaterialPropertyBlock> maybe_prop_block;
         Mat4OrTransform transform;
-        Vec3 worldMidpoint;
-        std::optional<size_t> maybeSubMeshIndex;
+        Vec3 world_centroid;
+        std::optional<size_t> maybe_submesh_index;
     };
 
     // returns true if the render object is opaque
-    bool isOpaque(const RenderObject& ro)
+    bool is_opaque(const RenderObject& ro)
     {
         return !ro.material.getTransparent();
     }
@@ -681,7 +681,7 @@ namespace
 
     Vec3 const& worldspace_centroid(const RenderObject& ro)
     {
-        return ro.worldMidpoint;
+        return ro.world_centroid;
     }
 
     // function object that returns true if the first argument is farther from the second
@@ -689,36 +689,34 @@ namespace
     // (handy for depth sorting)
     class RenderObjectIsFartherFrom final {
     public:
-        explicit RenderObjectIsFartherFrom(const Vec3& pos) : m_Pos{pos} {}
+        explicit RenderObjectIsFartherFrom(const Vec3& pos) : pos_{pos} {}
 
         bool operator()(const RenderObject& a, const RenderObject& b) const
         {
-            const Vec3 aMidpointWorldSpace = worldspace_centroid(a);
-            const Vec3 bMidpointWorldSpace = worldspace_centroid(b);
-            const Vec3 camera2a = aMidpointWorldSpace - m_Pos;
-            const Vec3 camera2b = bMidpointWorldSpace - m_Pos;
-            const float camera2aDistanceSquared = dot(camera2a, camera2a);
-            const float camera2bDistanceSquared = dot(camera2b, camera2b);
-            return camera2aDistanceSquared > camera2bDistanceSquared;
+            const Vec3 centroid_a = worldspace_centroid(a);
+            const Vec3 centroid_b = worldspace_centroid(b);
+            const Vec3 pos_to_a = centroid_a - pos_;
+            const Vec3 pos_to_b = centroid_b - pos_;
+            return length2(pos_to_a) > length2(pos_to_b);
         }
     private:
-        Vec3 m_Pos;
+        Vec3 pos_;
     };
 
     class RenderObjectHasMaterial final {
     public:
         explicit RenderObjectHasMaterial(const Material* material) :
-            m_Material{material}
+            material_{material}
         {
-            OSC_ASSERT(m_Material != nullptr);
+            OSC_ASSERT(material_ != nullptr);
         }
 
         bool operator()(const RenderObject& ro) const
         {
-            return ro.material == *m_Material;
+            return ro.material == *material_;
         }
     private:
-        const Material* m_Material;
+        const Material* material_;
     };
 
     class RenderObjectHasMaterialPropertyBlock final {
@@ -731,7 +729,7 @@ namespace
 
         bool operator()(const RenderObject& ro) const
         {
-            return ro.maybePropBlock == *m_Mpb;
+            return ro.maybe_prop_block == *m_Mpb;
         }
 
     private:
@@ -762,7 +760,7 @@ namespace
 
         bool operator()(const RenderObject& ro) const
         {
-            return ro.maybeSubMeshIndex == m_MaybeSubMeshIndex;
+            return ro.maybe_submesh_index == m_MaybeSubMeshIndex;
         }
     private:
         std::optional<size_t> m_MaybeSubMeshIndex;
@@ -775,7 +773,7 @@ namespace
         Vec3 cameraPos)
     {
         // partition the render queue into [opaqueObjects | transparentObjects]
-        const auto opaqueObjectsEnd = std::partition(renderQueueBegin, renderQueueEnd, isOpaque);
+        const auto opaqueObjectsEnd = std::partition(renderQueueBegin, renderQueueEnd, is_opaque);
 
         // optimize the opaqueObjects partition (it can be reordered safely)
         //
@@ -797,7 +795,7 @@ namespace
                 const auto materialPropBlockBatchEnd = std::partition(
                     materialPropBlockBatchStart,
                     materialBatchEnd,
-                    RenderObjectHasMaterialPropertyBlock{&materialPropBlockBatchStart->maybePropBlock}
+                    RenderObjectHasMaterialPropertyBlock{&materialPropBlockBatchStart->maybe_prop_block}
                 );
 
                 // third, batch `RenderObject`s with the same `Material` and `MaterialPropertyBlock`s
@@ -819,7 +817,7 @@ namespace
                         const auto subMeshBatchEnd = std::partition(
                             subMeshBatchStart,
                             meshBatchEnd,
-                            RenderObjectHasSubMeshIndex{subMeshBatchStart->maybeSubMeshIndex}
+                            RenderObjectHasSubMeshIndex{subMeshBatchStart->maybe_submesh_index}
                         );
                         subMeshBatchStart = subMeshBatchEnd;
                     }
@@ -1091,7 +1089,7 @@ namespace
             return std::to_array({ TextureFormatOpenGLTraits<Formats>::internal_format_linear... });
         }(TextureFormatList{});
 
-        static_assert(NumOptions<ColorSpace>() == 2);
+        static_assert(num_options<ColorSpace>() == 2);
         if (colorSpace == ColorSpace::sRGB) {
             return srgbLUT.at(ToIndex(format));
         }
@@ -1142,7 +1140,7 @@ namespace
 
     constexpr GLenum toOpenGLTextureEnum(CubemapFace f)
     {
-        static_assert(NumOptions<CubemapFace>() == 6);
+        static_assert(num_options<CubemapFace>() == 6);
         static_assert(static_cast<GLenum>(CubemapFace::PositiveX) == 0);
         static_assert(static_cast<GLenum>(CubemapFace::NegativeZ) == 5);
         static_assert(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z - GL_TEXTURE_CUBE_MAP_POSITIVE_X == 5);
@@ -1152,7 +1150,7 @@ namespace
 
     GLint toGLTextureTextureWrapParam(TextureWrapMode m)
     {
-        static_assert(NumOptions<TextureWrapMode>() == 3);
+        static_assert(num_options<TextureWrapMode>() == 3);
 
         switch (m) {
         case TextureWrapMode::Repeat:
@@ -1172,7 +1170,7 @@ namespace
         "Clamp",
         "Mirror",
     });
-    static_assert(c_TextureWrapModeStrings.size() == NumOptions<TextureWrapMode>());
+    static_assert(c_TextureWrapModeStrings.size() == num_options<TextureWrapMode>());
 
     constexpr auto c_TextureFilterModeStrings = std::to_array<CStringView>(
     {
@@ -1180,11 +1178,11 @@ namespace
         "Linear",
         "Mipmap",
     });
-    static_assert(c_TextureFilterModeStrings.size() == NumOptions<TextureFilterMode>());
+    static_assert(c_TextureFilterModeStrings.size() == num_options<TextureFilterMode>());
 
     GLint toGLTextureMinFilterParam(TextureFilterMode m)
     {
-        static_assert(NumOptions<TextureFilterMode>() == 3);
+        static_assert(num_options<TextureFilterMode>() == 3);
 
         switch (m) {
         case TextureFilterMode::Nearest:
@@ -1200,7 +1198,7 @@ namespace
 
     GLint toGLTextureMagFilterParam(TextureFilterMode m)
     {
-        static_assert(NumOptions<TextureFilterMode>() == 3);
+        static_assert(num_options<TextureFilterMode>() == 3);
 
         switch (m) {
         case TextureFilterMode::Nearest:
@@ -1238,7 +1236,7 @@ public:
         OSC_ASSERT(m_Width > 0 && "the width of a cubemap must be a positive number");
 
         const size_t numPixelsPerFace = static_cast<size_t>(m_Width*m_Width)*NumBytesPerPixel(m_Format);
-        m_Data.resize(NumOptions<CubemapFace>() * numPixelsPerFace);
+        m_Data.resize(num_options<CubemapFace>() * numPixelsPerFace);
     }
 
     int32_t width() const
@@ -1316,7 +1314,7 @@ public:
         const size_t destinationDataStart = faceIndex * numBytesPerCubeFace;
         const size_t destinationDataEnd = destinationDataStart + numBytesPerCubeFace;
 
-        OSC_ASSERT(faceIndex < NumOptions<CubemapFace>() && "invalid cubemap face passed to Cubemap::set_pixel_data");
+        OSC_ASSERT(faceIndex < num_options<CubemapFace>() && "invalid cubemap face passed to Cubemap::set_pixel_data");
         OSC_ASSERT(data.size() == numBytesPerCubeFace && "incorrect amount of data passed to Cubemap::set_pixel_data: the data must match the dimensions and texture format of the cubemap");
         OSC_ASSERT(destinationDataEnd <= m_Data.size() && "out of range assignment detected: this should be handled in the constructor");
 
@@ -1349,22 +1347,22 @@ private:
         const size_t numBytesPerPixel = NumBytesPerPixel(m_Format);
         const size_t numBytesPerRow = m_Width * numBytesPerPixel;
         const size_t numBytesPerFace = m_Width * numBytesPerRow;
-        const size_t numBytesInCubemap = NumOptions<CubemapFace>() * numBytesPerFace;
+        const size_t numBytesInCubemap = num_options<CubemapFace>() * numBytesPerFace;
         const CPUDataType cpuDataType = toEquivalentCPUDataType(m_Format);  // TextureFormat's datatype == CPU format's datatype for cubemaps
         const CPUImageFormat cpuChannelLayout = toEquivalentCPUImageFormat(m_Format);  // TextureFormat's layout == CPU formats's layout for cubemaps
         const GLint unpackAlignment = toOpenGLUnpackAlignment(m_Format);
 
         // sanity-check before doing anything with OpenGL
         OSC_ASSERT(numBytesPerRow % unpackAlignment == 0 && "the memory alignment of each horizontal line in an OpenGL texture must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
-        OSC_ASSERT(isAlignedAtLeast(m_Data.data(), unpackAlignment) && "the memory alignment of the supplied pixel memory must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
+        OSC_ASSERT(is_aligned_at_least(m_Data.data(), unpackAlignment) && "the memory alignment of the supplied pixel memory must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
         OSC_ASSERT(numBytesInCubemap <= m_Data.size() && "the number of bytes in the cubemap (CPU-side) is less than expected: this is a developer bug");
-        static_assert(NumOptions<TextureFormat>() == 7, "careful here, glTexImage2D will not accept some formats (e.g. GL_RGBA16F) as the externally-provided format (must be GL_RGBA format with GL_HALF_FLOAT type)");
+        static_assert(num_options<TextureFormat>() == 7, "careful here, glTexImage2D will not accept some formats (e.g. GL_RGBA16F) as the externally-provided format (must be GL_RGBA format with GL_HALF_FLOAT type)");
 
         // upload cubemap to GPU
         static_assert(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z - GL_TEXTURE_CUBE_MAP_POSITIVE_X == 5);
         gl::bind_texture(buf.texture);
         gl::pixel_store_i(GL_UNPACK_ALIGNMENT, unpackAlignment);
-        for (GLint faceIdx = 0; faceIdx < static_cast<GLint>(NumOptions<CubemapFace>()); ++faceIdx) {
+        for (GLint faceIdx = 0; faceIdx < static_cast<GLint>(num_options<CubemapFace>()); ++faceIdx) {
 
             const size_t faceBytesBegin = faceIdx * numBytesPerFace;
 
@@ -1514,7 +1512,7 @@ namespace
         std::vector<Color> rv;
         rv.reserve(numPixels);
 
-        static_assert(NumOptions<TextureChannelFormat>() == 2);
+        static_assert(num_options<TextureChannelFormat>() == 2);
         if (channelFormat == TextureChannelFormat::Uint8) {
             // unpack 8-bit channel bytes into floating-point Color channels
             for (size_t pixel = 0; pixel < numPixels; ++pixel) {
@@ -1568,7 +1566,7 @@ namespace
         std::vector<Color32> rv;
         rv.reserve(numPixels);
 
-        static_assert(NumOptions<TextureChannelFormat>() == 2);
+        static_assert(num_options<TextureChannelFormat>() == 2);
         if (channelFormat == TextureChannelFormat::Uint8) {
             // read 8-bit channel bytes into 8-bit Color32 color channels
             for (size_t pixel = 0; pixel < numPixels; ++pixel) {
@@ -1625,7 +1623,7 @@ namespace
         pixelData.reserve(numOutputBytes);
 
         OSC_ASSERT(numChannels <= std::tuple_size_v<Color>);
-        static_assert(NumOptions<TextureChannelFormat>() == 2);
+        static_assert(num_options<TextureChannelFormat>() == 2);
         if (channelFormat == TextureChannelFormat::Uint8) {
             // clamp pixels, convert them to bytes, add them to pixel data buffer
             for (const Color& pixel : pixels) {
@@ -1638,7 +1636,7 @@ namespace
             // write pixels to pixel data buffer as-is (they're floats already)
             for (const Color& pixel : pixels) {
                 for (size_t channel = 0; channel < numChannels; ++channel) {
-                    pushAsBytes(pixel[channel], pixelData);
+                    push_as_bytes(pixel[channel], pixelData);
                 }
             }
         }
@@ -1661,7 +1659,7 @@ namespace
         pixelData.reserve(numOutputBytes);
 
         OSC_ASSERT(numChannels <= Color32::length());
-        static_assert(NumOptions<TextureChannelFormat>() == 2);
+        static_assert(num_options<TextureChannelFormat>() == 2);
         if (channelFormat == TextureChannelFormat::Uint8) {
             // write pixels to pixel data buffer as-is (they're bytes already)
             for (const Color32& pixel : pixels) {
@@ -1676,7 +1674,7 @@ namespace
             for (const Color32& pixel : pixels) {
                 for (size_t channel = 0; channel < numChannels; ++channel) {
                     const float pixelFloatVal = Unorm8{pixel[channel]}.normalized_value();
-                    pushAsBytes(pixelFloatVal, pixelData);
+                    push_as_bytes(pixelFloatVal, pixelData);
                 }
             }
         }
@@ -1841,9 +1839,9 @@ private:
         const CPUDataType cpuDataType = toEquivalentCPUDataType(m_Format);  // TextureFormat's datatype == CPU format's datatype for cubemaps
         const CPUImageFormat cpuChannelLayout = toEquivalentCPUImageFormat(m_Format);  // TextureFormat's layout == CPU formats's layout for cubemaps
 
-        static_assert(NumOptions<TextureFormat>() == 7, "careful here, glTexImage2D will not accept some formats (e.g. GL_RGBA16F) as the externally-provided format (must be GL_RGBA format with GL_HALF_FLOAT type)");
+        static_assert(num_options<TextureFormat>() == 7, "careful here, glTexImage2D will not accept some formats (e.g. GL_RGBA16F) as the externally-provided format (must be GL_RGBA format with GL_HALF_FLOAT type)");
         OSC_ASSERT(numBytesPerRow % unpackAlignment == 0 && "the memory alignment of each horizontal line in an OpenGL texture must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
-        OSC_ASSERT(isAlignedAtLeast(m_PixelData.data(), unpackAlignment) && "the memory alignment of the supplied pixel memory must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
+        OSC_ASSERT(is_aligned_at_least(m_PixelData.data(), unpackAlignment) && "the memory alignment of the supplied pixel memory must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
 
         // one-time upload, because pixels cannot be altered
         gl::bind_texture((*m_MaybeGPUTexture)->texture);
@@ -1926,10 +1924,10 @@ size_t osc::NumBytesPerPixel(TextureFormat format)
 
 std::optional<TextureFormat> osc::ToTextureFormat(size_t numChannels, TextureChannelFormat channelFormat)
 {
-    static_assert(NumOptions<TextureChannelFormat>() == 2);
+    static_assert(num_options<TextureChannelFormat>() == 2);
     const bool isByteOriented = channelFormat == TextureChannelFormat::Uint8;
 
-    static_assert(NumOptions<TextureFormat>() == 7);
+    static_assert(num_options<TextureFormat>() == 7);
     switch (numChannels) {
     case 1:
         return isByteOriented ? TextureFormat::R8 : std::optional<TextureFormat>{};
@@ -1946,7 +1944,7 @@ std::optional<TextureFormat> osc::ToTextureFormat(size_t numChannels, TextureCha
 
 size_t osc::NumBytesPerChannel(TextureChannelFormat f)
 {
-    static_assert(NumOptions<TextureChannelFormat>() == 2);
+    static_assert(num_options<TextureChannelFormat>() == 2);
     switch (f) {
     case TextureChannelFormat::Uint8: return 1;
     case TextureChannelFormat::Float32: return 4;
@@ -2085,24 +2083,24 @@ namespace
 
         "Depth",
     });
-    static_assert(c_RenderTextureFormatStrings.size() == NumOptions<RenderTextureFormat>());
+    static_assert(c_RenderTextureFormatStrings.size() == num_options<RenderTextureFormat>());
 
     constexpr auto c_DepthStencilFormatStrings = std::to_array<CStringView>({
         "D24_UNorm_S8_UInt",
     });
-    static_assert(c_DepthStencilFormatStrings.size() == NumOptions<DepthStencilFormat>());
+    static_assert(c_DepthStencilFormatStrings.size() == num_options<DepthStencilFormat>());
 
     GLenum toInternalOpenGLColorFormat(
         RenderBufferType type,
         const RenderTextureDescriptor& desc)
     {
-        static_assert(NumOptions<RenderBufferType>() == 2, "review code below, which treats RenderBufferType as a bool");
+        static_assert(num_options<RenderBufferType>() == 2, "review code below, which treats RenderBufferType as a bool");
         if (type == RenderBufferType::Depth) {
             return GL_DEPTH24_STENCIL8;
         }
         else {
-            static_assert(NumOptions<RenderTextureFormat>() == 6);
-            static_assert(NumOptions<RenderTextureReadWrite>() == 2);
+            static_assert(num_options<RenderTextureFormat>() == 6);
+            static_assert(num_options<RenderTextureReadWrite>() == 2);
 
             switch (desc.getColorFormat()) {
             case RenderTextureFormat::Red8:
@@ -2126,10 +2124,10 @@ namespace
         RenderBufferType type,
         const RenderTextureDescriptor& desc)
     {
-        static_assert(NumOptions<RenderBufferType>() == 2);
-        static_assert(NumOptions<DepthStencilFormat>() == 1);
-        static_assert(NumOptions<RenderTextureFormat>() == 6);
-        static_assert(NumOptions<CPUImageFormat>() == 5);
+        static_assert(num_options<RenderBufferType>() == 2);
+        static_assert(num_options<DepthStencilFormat>() == 1);
+        static_assert(num_options<RenderTextureFormat>() == 6);
+        static_assert(num_options<CPUImageFormat>() == 5);
 
         if (type == RenderBufferType::Depth) {
             return CPUImageFormat::DepthStencil;
@@ -2157,10 +2155,10 @@ namespace
         RenderBufferType type,
         const RenderTextureDescriptor& desc)
     {
-        static_assert(NumOptions<RenderBufferType>() == 2);
-        static_assert(NumOptions<DepthStencilFormat>() == 1);
-        static_assert(NumOptions<RenderTextureFormat>() == 6);
-        static_assert(NumOptions<CPUDataType>() == 4);
+        static_assert(num_options<RenderBufferType>() == 2);
+        static_assert(num_options<DepthStencilFormat>() == 1);
+        static_assert(num_options<RenderTextureFormat>() == 6);
+        static_assert(num_options<CPUDataType>() == 4);
 
         if (type == RenderBufferType::Depth) {
             return CPUDataType::UnsignedInt24_8;
@@ -2206,7 +2204,7 @@ namespace
 
     constexpr GLenum toImageDataType(TextureFormat)
     {
-        static_assert(NumOptions<TextureFormat>() == 7);
+        static_assert(num_options<TextureFormat>() == 7);
         return GL_UNSIGNED_BYTE;
     }
 }
@@ -2436,7 +2434,7 @@ public:
     {
         // dispatch _which_ texture handles are created based on render buffer params
 
-        static_assert(NumOptions<TextureDimensionality>() == 2);
+        static_assert(num_options<TextureDimensionality>() == 2);
         if (getDimensionality() == TextureDimensionality::Tex2D)
         {
             if (m_Descriptor.getAntialiasingLevel() <= AntiAliasingLevel{1})
@@ -2913,7 +2911,7 @@ public:
     {
         auto it = m_Uniforms.begin();
         std::advance(it, i);
-        return it->second.shaderType;
+        return it->second.shader_type;
     }
 
     // non-PIMPL APIs
@@ -2963,9 +2961,9 @@ private:
 
             static_assert(sizeof(GLint) <= sizeof(int32_t));
             m_Attributes.try_emplace<std::string>(
-                normalizeShaderElementName(name.data()),
+                normalize_shader_element_name(name.data()),
                 static_cast<int32_t>(glGetAttribLocation(m_Program.get(), name.data())),
-                glShaderTypeToShaderTypeInternal(type),
+                opengl_shader_type_to_osc_shader_type(type),
                 static_cast<int32_t>(size)
             );
         }
@@ -2989,9 +2987,9 @@ private:
 
             static_assert(sizeof(GLint) <= sizeof(int32_t));
             m_Uniforms.try_emplace<std::string>(
-                normalizeShaderElementName(name.data()),
+                normalize_shader_element_name(name.data()),
                 static_cast<int32_t>(glGetUniformLocation(m_Program.get(), name.data())),
-                glShaderTypeToShaderTypeInternal(type),
+                opengl_shader_type_to_osc_shader_type(type),
                 static_cast<int32_t>(size)
             );
         }
@@ -3038,14 +3036,14 @@ private:
 };
 
 
-std::ostream& osc::operator<<(std::ostream& o, ShaderPropertyType shaderType)
+std::ostream& osc::operator<<(std::ostream& o, ShaderPropertyType shader_type)
 {
     constexpr auto lut = []<ShaderPropertyType... Types>(OptionList<ShaderPropertyType, Types...>)
     {
         return std::to_array({ ShaderPropertyTypeTraits<Types>::name... });
     }(ShaderPropertyTypeList{});
 
-    return o << lut.at(ToIndex(shaderType));
+    return o << lut.at(ToIndex(shader_type));
 }
 
 osc::Shader::Shader(CStringView vertexShader, CStringView fragmentShader) :
@@ -3087,7 +3085,7 @@ std::ostream& osc::operator<<(std::ostream& o, const Shader& shader)
         const std::string_view delim = "\n        ";
         for (const auto& [name, data] : shader.m_Impl->getUniforms()) {
             o << delim;
-            printShaderElement(o, name, data);
+            print_shader_element(o, name, data);
         }
 
         o << "\n    ],\n";
@@ -3099,7 +3097,7 @@ std::ostream& osc::operator<<(std::ostream& o, const Shader& shader)
         const std::string_view delim = "\n        ";
         for (const auto& [name, data] : shader.m_Impl->getAttributes()) {
             o << delim;
-            printShaderElement(o, name, data);
+            print_shader_element(o, name, data);
         }
 
         o << "\n    ]\n";
@@ -3121,7 +3119,7 @@ namespace
 {
     GLenum toGLDepthFunc(DepthFunction f)
     {
-        static_assert(NumOptions<DepthFunction>() == 2);
+        static_assert(num_options<DepthFunction>() == 2);
 
         switch (f) {
         case DepthFunction::LessOrEqual:
@@ -3134,7 +3132,7 @@ namespace
 
     GLenum toGLCullFaceEnum(CullMode cullMode)
     {
-        static_assert(NumOptions<CullMode>() == 3);
+        static_assert(num_options<CullMode>() == 3);
 
         switch (cullMode) {
         case CullMode::Front:
@@ -3927,7 +3925,7 @@ namespace
         "Triangles",
         "Lines",
     });
-    static_assert(c_MeshTopologyStrings.size() == NumOptions<MeshTopology>());
+    static_assert(c_MeshTopologyStrings.size() == num_options<MeshTopology>());
 
     union PackedIndex {
         uint32_t u32;
@@ -3939,7 +3937,7 @@ namespace
 
     GLenum toOpenGLTopology(MeshTopology t)
     {
-        static_assert(NumOptions<MeshTopology>() == 2);
+        static_assert(num_options<MeshTopology>() == 2);
 
         switch (t) {
         case MeshTopology::Triangles:
@@ -4039,7 +4037,7 @@ namespace
     public:
         explicit MultiComponentEncoding(VertexAttributeFormat f)
         {
-            static_assert(NumOptions<VertexAttributeFormat>() == 4);
+            static_assert(num_options<VertexAttributeFormat>() == 4);
 
             switch (f) {
             case VertexAttributeFormat::Float32x2:
@@ -4108,7 +4106,7 @@ namespace
     private:
         static constexpr size_t indexOf(VertexAttributeFormat sourceFormat, VertexAttributeFormat destinationFormat)
         {
-            return static_cast<size_t>(sourceFormat)*NumOptions<VertexAttributeFormat>() + static_cast<size_t>(destinationFormat);
+            return static_cast<size_t>(sourceFormat)*num_options<VertexAttributeFormat>() + static_cast<size_t>(destinationFormat);
         }
 
         template<VertexAttributeFormat... Formats>
@@ -4145,7 +4143,7 @@ namespace
         }
 
     private:
-        std::array<ReencoderFunction, NumOptions<VertexAttributeFormat>()*NumOptions<VertexAttributeFormat>()> m_Storage{};
+        std::array<ReencoderFunction, num_options<VertexAttributeFormat>()*num_options<VertexAttributeFormat>()> m_Storage{};
     };
 
     constexpr ReencoderLut c_ReencoderLUT;
@@ -5041,10 +5039,10 @@ public:
 
     void drawInstanced(
         size_t n,
-        std::optional<size_t> maybeSubMeshIndex)
+        std::optional<size_t> maybe_submesh_index)
     {
-        const SubMeshDescriptor descriptor = maybeSubMeshIndex ?
-            m_SubMeshDescriptors.at(*maybeSubMeshIndex) :         // draw the requested sub-mesh
+        const SubMeshDescriptor descriptor = maybe_submesh_index ?
+            m_SubMeshDescriptors.at(*maybe_submesh_index) :         // draw the requested sub-mesh
             SubMeshDescriptor{0, m_NumIndices, m_Topology};       // else: draw the entire mesh as a "sub mesh"
 
         // convert mesh/descriptor data types into OpenGL-compatible formats
@@ -5182,7 +5180,7 @@ private:
 
     static GLenum GetVertexAttributeType(const VertexAttributeFormat& format)
     {
-        static_assert(NumOptions<VertexAttributeFormat>() == 4);
+        static_assert(num_options<VertexAttributeFormat>() == 4);
 
         switch (format) {
         case VertexAttributeFormat::Float32x2:
@@ -5198,7 +5196,7 @@ private:
 
     static GLboolean GetVertexAttributeNormalized(const VertexAttributeFormat& format)
     {
-        static_assert(NumOptions<VertexAttributeFormat>() == 4);
+        static_assert(num_options<VertexAttributeFormat>() == 4);
 
         switch (format) {
         case VertexAttributeFormat::Float32x2:
@@ -5523,7 +5521,7 @@ namespace
         "Perspective",
         "Orthographic",
     });
-    static_assert(c_CameraProjectionStrings.size() == NumOptions<CameraProjection>());
+    static_assert(c_CameraProjectionStrings.size() == num_options<CameraProjection>());
 }
 
 class osc::Camera::Impl final {
@@ -5740,7 +5738,7 @@ public:
     void render_to(RenderTexture& renderTexture)
     {
         static_assert(CameraClearFlags::All == (CameraClearFlags::SolidColor | CameraClearFlags::Depth));
-        static_assert(NumOptions<RenderTextureReadWrite>() == 2);
+        static_assert(num_options<RenderTextureReadWrite>() == 2);
 
         RenderTarget renderTargetThatWritesToRenderTexture
         {
@@ -6084,7 +6082,7 @@ namespace
         // relies on
         //
         // reports anything missing to the log at the provided log level
-        validateOpenGLBackendExtensionSupport(LogLevel::debug);
+        validate_opengl_backend_extension_support(LogLevel::debug);
 
         for (const auto& capability : c_RequiredOpenGLCapabilities) {
             glEnable(capability.id);
@@ -6404,7 +6402,7 @@ public:
             const Vec2i dims = App::get().dims();
 
             std::vector<uint8_t> pixels(static_cast<size_t>(4*dims.x*dims.y));
-            OSC_ASSERT(isAlignedAtLeast(pixels.data(), 4) && "glReadPixels must be called with a buffer that is aligned to GL_PACK_ALIGNMENT (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
+            OSC_ASSERT(is_aligned_at_least(pixels.data(), 4) && "glReadPixels must be called with a buffer that is aligned to GL_PACK_ALIGNMENT (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
             gl::pixel_store_i(GL_PACK_ALIGNMENT, 4);
             glReadPixels(
                 0,
@@ -6439,22 +6437,22 @@ public:
 
     std::string backend_vendor_string() const
     {
-        return std::string{glGetCStringView(GL_VENDOR)};
+        return std::string{opengl_get_cstringview(GL_VENDOR)};
     }
 
     std::string backend_renderer_string() const
     {
-        return std::string{glGetCStringView(GL_RENDERER)};
+        return std::string{opengl_get_cstringview(GL_RENDERER)};
     }
 
     std::string backend_version_string() const
     {
-        return std::string{glGetCStringView(GL_VERSION)};
+        return std::string{opengl_get_cstringview(GL_VERSION)};
     }
 
     std::string backend_shading_language_version_string() const
     {
-        return std::string{glGetCStringView(GL_SHADING_LANGUAGE_VERSION)};
+        return std::string{opengl_get_cstringview(GL_SHADING_LANGUAGE_VERSION)};
     }
 
     const Material& getQuadMaterial() const
@@ -6616,9 +6614,9 @@ void osc::graphics::draw(
     const Material& material,
     Camera& camera,
     const std::optional<MaterialPropertyBlock>& maybeMaterialPropertyBlock,
-    std::optional<size_t> maybeSubMeshIndex)
+    std::optional<size_t> maybe_submesh_index)
 {
-    GraphicsBackend::draw(mesh, transform, material, camera, maybeMaterialPropertyBlock, maybeSubMeshIndex);
+    GraphicsBackend::draw(mesh, transform, material, camera, maybeMaterialPropertyBlock, maybe_submesh_index);
 }
 
 void osc::graphics::draw(
@@ -6627,9 +6625,9 @@ void osc::graphics::draw(
     const Material& material,
     Camera& camera,
     const std::optional<MaterialPropertyBlock>& maybeMaterialPropertyBlock,
-    std::optional<size_t> maybeSubMeshIndex)
+    std::optional<size_t> maybe_submesh_index)
 {
-    GraphicsBackend::draw(mesh, transform, material, camera, maybeMaterialPropertyBlock, maybeSubMeshIndex);
+    GraphicsBackend::draw(mesh, transform, material, camera, maybeMaterialPropertyBlock, maybe_submesh_index);
 }
 
 void osc::graphics::blit(const Texture2D& source, RenderTexture& dest)
@@ -6700,7 +6698,7 @@ void osc::GraphicsBackend::bindToInstancedAttributes(
 
     size_t byteOffset = 0;
     if (shaderImpl.m_MaybeInstancedModelMatAttr) {
-        if (shaderImpl.m_MaybeInstancedModelMatAttr->shaderType == ShaderPropertyType::Mat4) {
+        if (shaderImpl.m_MaybeInstancedModelMatAttr->shader_type == ShaderPropertyType::Mat4) {
             const gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedModelMatAttr->location};
             gl::vertex_attrib_pointer(mmtxAttr, false, ins.stride, ins.baseOffset + byteOffset);
             gl::vertex_attrib_divisor(mmtxAttr, 1);
@@ -6709,14 +6707,14 @@ void osc::GraphicsBackend::bindToInstancedAttributes(
         }
     }
     if (shaderImpl.m_MaybeInstancedNormalMatAttr) {
-        if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat4) {
+        if (shaderImpl.m_MaybeInstancedNormalMatAttr->shader_type == ShaderPropertyType::Mat4) {
             const gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->location};
             gl::vertex_attrib_pointer(mmtxAttr, false, ins.stride, ins.baseOffset + byteOffset);
             gl::vertex_attrib_divisor(mmtxAttr, 1);
             gl::enable_vertex_attrib_array(mmtxAttr);
             // unused: byteOffset += sizeof(float) * 16;
         }
-        else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat3) {
+        else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shader_type == ShaderPropertyType::Mat3) {
             const gl::AttributeMat3 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->location};
             gl::vertex_attrib_pointer(mmtxAttr, false, ins.stride, ins.baseOffset + byteOffset);
             gl::vertex_attrib_divisor(mmtxAttr, 1);
@@ -6732,17 +6730,17 @@ void osc::GraphicsBackend::unbindFromInstancedAttributes(
     InstancingState&)
 {
     if (shaderImpl.m_MaybeInstancedModelMatAttr) {
-        if (shaderImpl.m_MaybeInstancedModelMatAttr->shaderType == ShaderPropertyType::Mat4) {
+        if (shaderImpl.m_MaybeInstancedModelMatAttr->shader_type == ShaderPropertyType::Mat4) {
             const gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedModelMatAttr->location};
             gl::disable_vertex_attrib_array(mmtxAttr);
         }
     }
     if (shaderImpl.m_MaybeInstancedNormalMatAttr) {
-        if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat4) {
+        if (shaderImpl.m_MaybeInstancedNormalMatAttr->shader_type == ShaderPropertyType::Mat4) {
             const gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->location};
             gl::disable_vertex_attrib_array(mmtxAttr);
         }
-        else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat3) {
+        else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shader_type == ShaderPropertyType::Mat3) {
             const gl::AttributeMat3 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->location};
             gl::disable_vertex_attrib_array(mmtxAttr);
         }
@@ -6762,15 +6760,15 @@ std::optional<InstancingState> osc::GraphicsBackend::uploadInstanceData(
         // compute the stride between each instance
         size_t byteStride = 0;
         if (shaderImpl.m_MaybeInstancedModelMatAttr) {
-            if (shaderImpl.m_MaybeInstancedModelMatAttr->shaderType == ShaderPropertyType::Mat4) {
+            if (shaderImpl.m_MaybeInstancedModelMatAttr->shader_type == ShaderPropertyType::Mat4) {
                 byteStride += sizeof(float) * 16;
             }
         }
         if (shaderImpl.m_MaybeInstancedNormalMatAttr) {
-            if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat4) {
+            if (shaderImpl.m_MaybeInstancedNormalMatAttr->shader_type == ShaderPropertyType::Mat4) {
                 byteStride += sizeof(float) * 16;
             }
-            else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat3) {
+            else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shader_type == ShaderPropertyType::Mat3) {
                 byteStride += sizeof(float) * 9;
             }
         }
@@ -6785,23 +6783,23 @@ std::optional<InstancingState> osc::GraphicsBackend::uploadInstanceData(
         size_t floatOffset = 0;
         for (const RenderObject& el : renderObjects) {
             if (shaderImpl.m_MaybeInstancedModelMatAttr) {
-                if (shaderImpl.m_MaybeInstancedModelMatAttr->shaderType == ShaderPropertyType::Mat4) {
+                if (shaderImpl.m_MaybeInstancedModelMatAttr->shader_type == ShaderPropertyType::Mat4) {
                     const Mat4 m = model_mat4(el);
-                    const std::span<const float> els = toFloatSpan(m);
+                    const std::span<const float> els = to_float_span(m);
                     buf.insert(buf.end(), els.begin(), els.end());
                     floatOffset += els.size();
                 }
             }
             if (shaderImpl.m_MaybeInstancedNormalMatAttr) {
-                if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat4) {
+                if (shaderImpl.m_MaybeInstancedNormalMatAttr->shader_type == ShaderPropertyType::Mat4) {
                     const Mat4 m = normal_matrix4(el);
-                    const std::span<const float> els = toFloatSpan(m);
+                    const std::span<const float> els = to_float_span(m);
                     buf.insert(buf.end(), els.begin(), els.end());
                     floatOffset += els.size();
                 }
-                else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shaderType == ShaderPropertyType::Mat3) {
+                else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shader_type == ShaderPropertyType::Mat3) {
                     const Mat3 m = normal_matrix(el);
-                    const std::span<const float> els = toFloatSpan(m);
+                    const std::span<const float> els = to_float_span(m);
                     buf.insert(buf.end(), els.begin(), els.end());
                     floatOffset += els.size();
                 }
@@ -6820,12 +6818,12 @@ void osc::GraphicsBackend::tryBindMaterialValueToShaderElement(
     const MaterialValue& v,
     int32_t& textureSlot)
 {
-    if (getShaderType(v) != se.shaderType) {
+    if (get_shader_type(v) != se.shader_type) {
         return;  // mismatched types
     }
 
     switch (v.index()) {
-    case VariantIndex<MaterialValue, Color>():
+    case variant_index<MaterialValue, Color>():
     {
         // colors are converted from sRGB to linear when passed to
         // the shader
@@ -6835,7 +6833,7 @@ void osc::GraphicsBackend::tryBindMaterialValueToShaderElement(
         gl::set_uniform(u, linearColor);
         break;
     }
-    case VariantIndex<MaterialValue, std::vector<Color>>():
+    case variant_index<MaterialValue, std::vector<Color>>():
     {
         const auto& colors = std::get<std::vector<Color>>(v);
         const int32_t numToAssign = min(se.size, static_cast<int32_t>(colors.size()));
@@ -6867,13 +6865,13 @@ void osc::GraphicsBackend::tryBindMaterialValueToShaderElement(
         }
         break;
     }
-    case VariantIndex<MaterialValue, float>():
+    case variant_index<MaterialValue, float>():
     {
         gl::UniformFloat u{se.location};
         gl::set_uniform(u, std::get<float>(v));
         break;
     }
-    case VariantIndex<MaterialValue, std::vector<float>>():
+    case variant_index<MaterialValue, std::vector<float>>():
     {
         const auto& vals = std::get<std::vector<float>>(v);
         const int32_t numToAssign = min(se.size, static_cast<int32_t>(vals.size()));
@@ -6892,19 +6890,19 @@ void osc::GraphicsBackend::tryBindMaterialValueToShaderElement(
         }
         break;
     }
-    case VariantIndex<MaterialValue, Vec2>():
+    case variant_index<MaterialValue, Vec2>():
     {
         gl::UniformVec2 u{se.location};
         gl::set_uniform(u, std::get<Vec2>(v));
         break;
     }
-    case VariantIndex<MaterialValue, Vec3>():
+    case variant_index<MaterialValue, Vec3>():
     {
         gl::UniformVec3 u{se.location};
         gl::set_uniform(u, std::get<Vec3>(v));
         break;
     }
-    case VariantIndex<MaterialValue, std::vector<Vec3>>():
+    case variant_index<MaterialValue, std::vector<Vec3>>():
     {
         const auto& vals = std::get<std::vector<Vec3>>(v);
         const int32_t numToAssign = min(se.size, static_cast<int32_t>(vals.size()));
@@ -6926,25 +6924,25 @@ void osc::GraphicsBackend::tryBindMaterialValueToShaderElement(
         }
         break;
     }
-    case VariantIndex<MaterialValue, Vec4>():
+    case variant_index<MaterialValue, Vec4>():
     {
         gl::UniformVec4 u{se.location};
         gl::set_uniform(u, std::get<Vec4>(v));
         break;
     }
-    case VariantIndex<MaterialValue, Mat3>():
+    case variant_index<MaterialValue, Mat3>():
     {
         gl::UniformMat3 u{se.location};
         gl::set_uniform(u, std::get<Mat3>(v));
         break;
     }
-    case VariantIndex<MaterialValue, Mat4>():
+    case variant_index<MaterialValue, Mat4>():
     {
         gl::UniformMat4 u{se.location};
         gl::set_uniform(u, std::get<Mat4>(v));
         break;
     }
-    case VariantIndex<MaterialValue, std::vector<Mat4>>():
+    case variant_index<MaterialValue, std::vector<Mat4>>():
     {
         const auto& vals = std::get<std::vector<Mat4>>(v);
         const int32_t numToAssign = min(se.size, static_cast<int32_t>(vals.size()));
@@ -6964,19 +6962,19 @@ void osc::GraphicsBackend::tryBindMaterialValueToShaderElement(
         }
         break;
     }
-    case VariantIndex<MaterialValue, int32_t>():
+    case variant_index<MaterialValue, int32_t>():
     {
         gl::UniformInt u{se.location};
         gl::set_uniform(u, std::get<int32_t>(v));
         break;
     }
-    case VariantIndex<MaterialValue, bool>():
+    case variant_index<MaterialValue, bool>():
     {
         gl::UniformBool u{se.location};
         gl::set_uniform(u, std::get<bool>(v));
         break;
     }
-    case VariantIndex<MaterialValue, Texture2D>():
+    case variant_index<MaterialValue, Texture2D>():
     {
         auto& impl = const_cast<Texture2D::Impl&>(*std::get<Texture2D>(v).m_Impl);
         gl::Texture2D& texture = impl.updTexture();
@@ -6989,9 +6987,9 @@ void osc::GraphicsBackend::tryBindMaterialValueToShaderElement(
         ++textureSlot;
         break;
     }
-    case VariantIndex<MaterialValue, RenderTexture>():
+    case variant_index<MaterialValue, RenderTexture>():
     {
-        static_assert(NumOptions<TextureDimensionality>() == 2);
+        static_assert(num_options<TextureDimensionality>() == 2);
         std::visit(Overload
             {
                 [&textureSlot, &se](SingleSampledTexture& sst)
@@ -7022,7 +7020,7 @@ void osc::GraphicsBackend::tryBindMaterialValueToShaderElement(
 
         break;
     }
-    case VariantIndex<MaterialValue, Cubemap>():
+    case variant_index<MaterialValue, Cubemap>():
     {
         auto& impl = const_cast<Cubemap::Impl&>(*std::get<Cubemap>(v).impl_);
         const gl::TextureCubemap& texture = impl.updCubemap();
@@ -7054,7 +7052,7 @@ void osc::GraphicsBackend::handleBatchWithSameSubMesh(
 {
     auto& meshImpl = const_cast<Mesh::Impl&>(*els.front().mesh.m_Impl);
     const Shader::Impl& shaderImpl = *els.front().material.m_Impl->m_Shader.m_Impl;
-    const std::optional<size_t> maybeSubMeshIndex = els.front().maybeSubMeshIndex;
+    const std::optional<size_t> maybe_submesh_index = els.front().maybe_submesh_index;
 
     gl::bind_vertex_array(meshImpl.updVertexArray());
 
@@ -7066,7 +7064,7 @@ void osc::GraphicsBackend::handleBatchWithSameSubMesh(
 
             // try binding to uModel (standard)
             if (shaderImpl.m_MaybeModelMatUniform) {
-                if (shaderImpl.m_MaybeModelMatUniform->shaderType == ShaderPropertyType::Mat4) {
+                if (shaderImpl.m_MaybeModelMatUniform->shader_type == ShaderPropertyType::Mat4) {
                     gl::UniformMat4 u{shaderImpl.m_MaybeModelMatUniform->location};
                     gl::set_uniform(u, model_mat4(el));
                 }
@@ -7074,11 +7072,11 @@ void osc::GraphicsBackend::handleBatchWithSameSubMesh(
 
             // try binding to uNormalMat (standard)
             if (shaderImpl.m_MaybeNormalMatUniform) {
-                if (shaderImpl.m_MaybeNormalMatUniform->shaderType == ShaderPropertyType::Mat3) {
+                if (shaderImpl.m_MaybeNormalMatUniform->shader_type == ShaderPropertyType::Mat3) {
                     gl::UniformMat3 u{shaderImpl.m_MaybeNormalMatUniform->location};
                     gl::set_uniform(u, normal_matrix(el));
                 }
-                else if (shaderImpl.m_MaybeNormalMatUniform->shaderType == ShaderPropertyType::Mat4) {
+                else if (shaderImpl.m_MaybeNormalMatUniform->shader_type == ShaderPropertyType::Mat4) {
                     gl::UniformMat4 u{shaderImpl.m_MaybeNormalMatUniform->location};
                     gl::set_uniform(u, normal_matrix4(el));
                 }
@@ -7087,7 +7085,7 @@ void osc::GraphicsBackend::handleBatchWithSameSubMesh(
             if (ins) {
                 bindToInstancedAttributes(shaderImpl, *ins);
             }
-            meshImpl.drawInstanced(1, maybeSubMeshIndex);
+            meshImpl.drawInstanced(1, maybe_submesh_index);
             if (ins) {
                 unbindFromInstancedAttributes(shaderImpl, *ins);
                 ins->baseOffset += 1 * ins->stride;
@@ -7100,7 +7098,7 @@ void osc::GraphicsBackend::handleBatchWithSameSubMesh(
         if (ins) {
             bindToInstancedAttributes(shaderImpl, *ins);
         }
-        meshImpl.drawInstanced(els.size(), maybeSubMeshIndex);
+        meshImpl.drawInstanced(els.size(), maybe_submesh_index);
         if (ins) {
             unbindFromInstancedAttributes(shaderImpl, *ins);
             ins->baseOffset += els.size() * ins->stride;
@@ -7122,7 +7120,7 @@ void osc::GraphicsBackend::handleBatchWithSameMesh(
     // batch by sub-Mesh index
     auto batchIt = els.begin();
     while (batchIt != els.end()) {
-        const auto batchEnd = find_if_not(batchIt, els.end(), RenderObjectHasSubMeshIndex{batchIt->maybeSubMeshIndex});
+        const auto batchEnd = find_if_not(batchIt, els.end(), RenderObjectHasSubMeshIndex{batchIt->maybe_submesh_index});
         handleBatchWithSameSubMesh({batchIt, batchEnd}, ins);
         batchIt = batchEnd;
     }
@@ -7144,8 +7142,8 @@ void osc::GraphicsBackend::handleBatchWithSameMaterialPropertyBlock(
     const FastStringHashtable<ShaderElement>& uniforms = shaderImpl.getUniforms();
 
     // bind property block variables (if applicable)
-    if (els.front().maybePropBlock) {
-        for (const auto& [name, value] : els.front().maybePropBlock->m_Impl->m_Values) {
+    if (els.front().maybe_prop_block) {
+        for (const auto& [name, value] : els.front().maybe_prop_block->m_Impl->m_Values) {
             if (const auto* uniform = try_find(uniforms, name)) {
                 tryBindMaterialValueToShaderElement(*uniform, value, textureSlot);
             }
@@ -7209,7 +7207,7 @@ void osc::GraphicsBackend::handleBatchWithSameMaterial(
         // try binding to uView (standard)
         if (shaderImpl.m_MaybeViewMatUniform)
         {
-            if (shaderImpl.m_MaybeViewMatUniform->shaderType == ShaderPropertyType::Mat4)
+            if (shaderImpl.m_MaybeViewMatUniform->shader_type == ShaderPropertyType::Mat4)
             {
                 gl::UniformMat4 u{shaderImpl.m_MaybeViewMatUniform->location};
                 gl::set_uniform(u, renderPassState.viewMatrix);
@@ -7219,7 +7217,7 @@ void osc::GraphicsBackend::handleBatchWithSameMaterial(
         // try binding to uProjection (standard)
         if (shaderImpl.m_MaybeProjMatUniform)
         {
-            if (shaderImpl.m_MaybeProjMatUniform->shaderType == ShaderPropertyType::Mat4)
+            if (shaderImpl.m_MaybeProjMatUniform->shader_type == ShaderPropertyType::Mat4)
             {
                 gl::UniformMat4 u{shaderImpl.m_MaybeProjMatUniform->location};
                 gl::set_uniform(u, renderPassState.projectionMatrix);
@@ -7228,7 +7226,7 @@ void osc::GraphicsBackend::handleBatchWithSameMaterial(
 
         if (shaderImpl.m_MaybeViewProjMatUniform)
         {
-            if (shaderImpl.m_MaybeViewProjMatUniform->shaderType == ShaderPropertyType::Mat4)
+            if (shaderImpl.m_MaybeViewProjMatUniform->shader_type == ShaderPropertyType::Mat4)
             {
                 gl::UniformMat4 u{shaderImpl.m_MaybeViewProjMatUniform->location};
                 gl::set_uniform(u, renderPassState.viewProjectionMatrix);
@@ -7247,7 +7245,7 @@ void osc::GraphicsBackend::handleBatchWithSameMaterial(
     auto batchIt = els.begin();
     while (batchIt != els.end())
     {
-        const auto batchEnd = find_if_not(batchIt, els.end(), RenderObjectHasMaterialPropertyBlock{&batchIt->maybePropBlock});
+        const auto batchEnd = find_if_not(batchIt, els.end(), RenderObjectHasMaterialPropertyBlock{&batchIt->maybe_prop_block});
         handleBatchWithSameMaterialPropertyBlock({batchIt, batchEnd}, textureSlot, maybeInstances);
         batchIt = batchEnd;
     }
@@ -7293,7 +7291,7 @@ void osc::GraphicsBackend::drawBatchedByOpaqueness(
 
     auto batchIt = els.begin();
     while (batchIt != els.end()) {
-        const auto opaqueEnd = find_if_not(batchIt, els.end(), isOpaque);
+        const auto opaqueEnd = find_if_not(batchIt, els.end(), is_opaque);
 
         if (opaqueEnd != batchIt) {
             // [batchIt..opaqueEnd] contains opaque elements
@@ -7305,7 +7303,7 @@ void osc::GraphicsBackend::drawBatchedByOpaqueness(
 
         if (opaqueEnd != els.end()) {
             // [opaqueEnd..els.end()] contains transparent elements
-            const auto transparentEnd = find_if(opaqueEnd, els.end(), isOpaque);
+            const auto transparentEnd = find_if(opaqueEnd, els.end(), is_opaque);
             gl::enable(GL_BLEND);
             drawRenderObjects(renderPassState, {opaqueEnd, transparentEnd});
 
@@ -7571,7 +7569,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::bindAndClearRenderBuffers(
 
         // if requested, clear the buffers
         {
-            static_assert(NumOptions<RenderBufferLoadAction>() == 2);
+            static_assert(num_options<RenderBufferLoadAction>() == 2);
 
             // if requested, clear color buffers
             for (size_t i = 0; i < maybeCustomRenderTarget->colors.size(); ++i)
@@ -7624,7 +7622,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::bindAndClearRenderBuffers(
 
 void osc::GraphicsBackend::resolveRenderBuffers(RenderTarget& renderTarget)
 {
-    static_assert(NumOptions<RenderBufferStoreAction>() == 2, "check 'if's etc. in this code");
+    static_assert(num_options<RenderBufferStoreAction>() == 2, "check 'if's etc. in this code");
 
     OSC_PERF("RenderTexture::resolveBuffers");
 
@@ -7792,9 +7790,9 @@ void osc::GraphicsBackend::draw(
     const Material& material,
     Camera& camera,
     const std::optional<MaterialPropertyBlock>& maybeMaterialPropertyBlock,
-    std::optional<size_t> maybeSubMeshIndex)
+    std::optional<size_t> maybe_submesh_index)
 {
-    if (maybeSubMeshIndex && *maybeSubMeshIndex >= mesh.getSubMeshCount()) {
+    if (maybe_submesh_index && *maybe_submesh_index >= mesh.getSubMeshCount()) {
         throw std::out_of_range{"the given sub-mesh index was out of range (i.e. the given mesh does not have that many sub-meshes)"};
     }
 
@@ -7803,7 +7801,7 @@ void osc::GraphicsBackend::draw(
         transform,
         material,
         maybeMaterialPropertyBlock,
-        maybeSubMeshIndex
+        maybe_submesh_index
     );
 }
 
@@ -7813,9 +7811,9 @@ void osc::GraphicsBackend::draw(
     const Material& material,
     Camera& camera,
     const std::optional<MaterialPropertyBlock>& maybeMaterialPropertyBlock,
-    std::optional<size_t> maybeSubMeshIndex)
+    std::optional<size_t> maybe_submesh_index)
 {
-    if (maybeSubMeshIndex && *maybeSubMeshIndex >= mesh.getSubMeshCount())
+    if (maybe_submesh_index && *maybe_submesh_index >= mesh.getSubMeshCount())
     {
         throw std::out_of_range{"the given sub-mesh index was out of range (i.e. the given mesh does not have that many sub-meshes)"};
     }
@@ -7825,7 +7823,7 @@ void osc::GraphicsBackend::draw(
         transform,
         material,
         maybeMaterialPropertyBlock,
-        maybeSubMeshIndex
+        maybe_submesh_index
     );
 }
 
@@ -7977,7 +7975,7 @@ void osc::GraphicsBackend::copyTexture(
         std::vector<uint8_t>& cpuBuffer = dest.m_Impl.upd()->m_PixelData;
         const GLint packFormat = toImagePixelPackAlignment(dest.texture_format());
 
-        OSC_ASSERT(isAlignedAtLeast(cpuBuffer.data(), packFormat) && "glReadPixels must be called with a buffer that is aligned to GL_PACK_ALIGNMENT (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
+        OSC_ASSERT(is_aligned_at_least(cpuBuffer.data(), packFormat) && "glReadPixels must be called with a buffer that is aligned to GL_PACK_ALIGNMENT (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
         OSC_ASSERT(cpuBuffer.size() == static_cast<ptrdiff_t>(dest.getDimensions().x*dest.getDimensions().y)*NumBytesPerPixel(dest.texture_format()));
 
         gl::viewport(0, 0, dest.getDimensions().x, dest.getDimensions().y);

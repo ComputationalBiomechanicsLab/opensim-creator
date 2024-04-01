@@ -280,7 +280,7 @@ public:
 
     void onDraw()
     {
-        static_assert(NumOptions<OutputExtractorDataType>() == 3);
+        static_assert(num_options<OutputExtractorDataType>() == 3);
 
         ptrdiff_t const nReports = m_API->updSimulation().getNumReports();
         OutputExtractorDataType outputType = m_OutputExtractor.getOutputType();
