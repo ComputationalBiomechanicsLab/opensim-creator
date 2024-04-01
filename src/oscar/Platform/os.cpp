@@ -269,9 +269,9 @@ std::tm osc::GMTimeThreadsafe(std::time_t t)
 
 std::string osc::StrerrorThreadsafe(int errnum)
 {
-    std::array<char, 1024> buf{};
+    std::array<char, 1024> buffer{};
 
-    auto* maybeErr = strerror_r(errnum, buf.data(), buf.size());
+    auto* maybeErr = strerror_r(errnum, buffer.data(), buffer.size());
     if (std::is_same_v<int, decltype(maybeErr)> && !maybeErr)
     {
         log_warn("a call to strerror_r failed with error code %i", maybeErr);
@@ -282,8 +282,8 @@ std::string osc::StrerrorThreadsafe(int errnum)
         static_cast<void>(maybeErr);
     }
 
-    std::string rv{buf.data()};
-    if (rv.size() == buf.size())
+    std::string rv{buffer.data()};
+    if (rv.size() == buffer.size())
     {
         log_warn("a call to strerror_r returned an error string that was as big as the buffer: an OS error message may have been truncated!");
     }
@@ -467,12 +467,12 @@ std::tm osc::GMTimeThreadsafe(std::time_t t)
 
 std::string osc::StrerrorThreadsafe(int errnum)
 {
-    std::array<char, 512> buf{};
-    if (strerror_r(errnum, buf.data(), buf.size()) == ERANGE)
+    std::array<char, 512> buffer{};
+    if (strerror_r(errnum, buffer.data(), buffer.size()) == ERANGE)
     {
         log_warn("a call to strerror_r returned ERANGE: an OS error message may have been truncated!");
     }
-    return std::string{buf.data()};
+    return std::string{buffer.data()};
 }
 
 

@@ -566,7 +566,7 @@ namespace
 {
     // transform storage: either as a matrix or a transform
     //
-    // calling code is allowed to submit transforms as either Transform (preferred) or
+    // calling code is allowed to submit transforms as either a `Transform` (preferred) or a
     // `Mat4` (can be handier)
     //
     // these need to be stored as-is, because that's the smallest possible representation and
@@ -659,7 +659,7 @@ namespace
         return !ro.material.getTransparent();
     }
 
-    bool isDepthTested(const RenderObject& ro)
+    bool is_depth_tested(const RenderObject& ro)
     {
         return ro.material.getDepthTested();
     }
@@ -722,154 +722,155 @@ namespace
     class RenderObjectHasMaterialPropertyBlock final {
     public:
         explicit RenderObjectHasMaterialPropertyBlock(const std::optional<MaterialPropertyBlock>* mpb) :
-            m_Mpb{mpb}
+            mpb_{mpb}
         {
-            OSC_ASSERT(m_Mpb != nullptr);
+            OSC_ASSERT(mpb_ != nullptr);
         }
 
         bool operator()(const RenderObject& ro) const
         {
-            return ro.maybe_prop_block == *m_Mpb;
+            return ro.maybe_prop_block == *mpb_;
         }
 
     private:
-        const std::optional<MaterialPropertyBlock>* m_Mpb;
+        const std::optional<MaterialPropertyBlock>* mpb_;
     };
 
     class RenderObjectHasMesh final {
     public:
         explicit RenderObjectHasMesh(const Mesh* mesh) :
-            m_Mesh{mesh}
+            mesh_{mesh}
         {
-            OSC_ASSERT(m_Mesh != nullptr);
+            OSC_ASSERT(mesh_ != nullptr);
         }
 
         bool operator()(const RenderObject& ro) const
         {
-            return ro.mesh == *m_Mesh;
+            return ro.mesh == *mesh_;
         }
     private:
-        const Mesh* m_Mesh;
+        const Mesh* mesh_;
     };
 
     class RenderObjectHasSubMeshIndex final {
     public:
-        explicit RenderObjectHasSubMeshIndex(std::optional<size_t> maybeSubMeshIndex_) :
-            m_MaybeSubMeshIndex{maybeSubMeshIndex_}
+        explicit RenderObjectHasSubMeshIndex(std::optional<size_t> maybe_submesh_index) :
+            maybe_submesh_index_{maybe_submesh_index}
         {}
 
         bool operator()(const RenderObject& ro) const
         {
-            return ro.maybe_submesh_index == m_MaybeSubMeshIndex;
+            return ro.maybe_submesh_index == maybe_submesh_index_;
         }
     private:
-        std::optional<size_t> m_MaybeSubMeshIndex;
+        std::optional<size_t> maybe_submesh_index_;
     };
 
     // sort a sequence of `RenderObject`s for optimal drawing
-    std::vector<RenderObject>::iterator sortRenderQueue(
-        std::vector<RenderObject>::iterator renderQueueBegin,
-        std::vector<RenderObject>::iterator renderQueueEnd,
-        Vec3 cameraPos)
+    std::vector<RenderObject>::iterator sort_render_queue(
+        std::vector<RenderObject>::iterator queue_begin,
+        std::vector<RenderObject>::iterator queue_end,
+        Vec3 camera_pos)
     {
-        // partition the render queue into [opaqueObjects | transparentObjects]
-        const auto opaqueObjectsEnd = std::partition(renderQueueBegin, renderQueueEnd, is_opaque);
+        // partition the render queue into `[opaque_objs | transparent_objs]`
+        const auto opaque_objs_end = std::partition(queue_begin, queue_end, is_opaque);
 
-        // optimize the opaqueObjects partition (it can be reordered safely)
+        // optimize the `opaque_objs` partition (it can be reordered safely)
         //
-        // first, batch opaqueObjects into `RenderObject`s that have the same `Material`
-        auto materialBatchStart = renderQueueBegin;
-        while (materialBatchStart != opaqueObjectsEnd) {
+        // first, batch `opaque_objs` into `RenderObject`s that have the same `Material`
+        auto material_batch_start = queue_begin;
+        while (material_batch_start != opaque_objs_end) {
 
-            const auto materialBatchEnd = std::partition(
-                materialBatchStart,
-                opaqueObjectsEnd,
-                RenderObjectHasMaterial{&materialBatchStart->material}
+            const auto material_batch_end = std::partition(
+                material_batch_start,
+                opaque_objs_end,
+                RenderObjectHasMaterial{&material_batch_start->material}
             );
 
             // second, batch `RenderObject`s with the same `Material` into sub-batches
             // with the same `MaterialPropertyBlock`
-            auto materialPropBlockBatchStart = materialBatchStart;
-            while (materialPropBlockBatchStart != materialBatchEnd) {
+            auto props_batch_start = material_batch_start;
+            while (props_batch_start != material_batch_end) {
 
-                const auto materialPropBlockBatchEnd = std::partition(
-                    materialPropBlockBatchStart,
-                    materialBatchEnd,
-                    RenderObjectHasMaterialPropertyBlock{&materialPropBlockBatchStart->maybe_prop_block}
+                const auto props_batch_end = std::partition(
+                    props_batch_start,
+                    material_batch_end,
+                    RenderObjectHasMaterialPropertyBlock{&props_batch_start->maybe_prop_block}
                 );
 
                 // third, batch `RenderObject`s with the same `Material` and `MaterialPropertyBlock`s
                 // into sub-batches with the same `Mesh`
-                auto meshBatchStart = materialPropBlockBatchStart;
-                while (meshBatchStart != materialPropBlockBatchEnd) {
+                auto mesh_batch_start = props_batch_start;
+                while (mesh_batch_start != props_batch_end) {
 
-                    const auto meshBatchEnd = std::partition(
-                        meshBatchStart,
-                        materialPropBlockBatchEnd,
-                        RenderObjectHasMesh{&meshBatchStart->mesh}
+                    const auto mesh_batch_end = std::partition(
+                        mesh_batch_start,
+                        props_batch_end,
+                        RenderObjectHasMesh{&mesh_batch_start->mesh}
                     );
 
                     // fourth, batch `RenderObject`s with the same `Material`, `MaterialPropertyBlock`,
                     // and `Mesh` into sub-batches with the same sub-mesh index
-                    auto subMeshBatchStart = meshBatchStart;
-                    while (subMeshBatchStart != meshBatchEnd) {
+                    auto submesh_batch_start = mesh_batch_start;
+                    while (submesh_batch_start != mesh_batch_end) {
 
-                        const auto subMeshBatchEnd = std::partition(
-                            subMeshBatchStart,
-                            meshBatchEnd,
-                            RenderObjectHasSubMeshIndex{subMeshBatchStart->maybe_submesh_index}
+                        const auto submesh_batch_end = std::partition(
+                            submesh_batch_start,
+                            mesh_batch_end,
+                            RenderObjectHasSubMeshIndex{submesh_batch_start->maybe_submesh_index}
                         );
-                        subMeshBatchStart = subMeshBatchEnd;
+
+                        submesh_batch_start = submesh_batch_end;
                     }
-                    meshBatchStart = meshBatchEnd;
+                    mesh_batch_start = mesh_batch_end;
                 }
-                materialPropBlockBatchStart = materialPropBlockBatchEnd;
+                props_batch_start = props_batch_end;
             }
-            materialBatchStart = materialBatchEnd;
+            material_batch_start = material_batch_end;
         }
 
         // sort the transparent partition by distance from camera (back-to-front)
-        std::sort(opaqueObjectsEnd, renderQueueEnd, RenderObjectIsFartherFrom{cameraPos});
+        std::sort(opaque_objs_end, queue_end, RenderObjectIsFartherFrom{camera_pos});
 
-        return opaqueObjectsEnd;
+        return opaque_objs_end;
     }
 
     // top-level state for a single call to `render`
     struct RenderPassState final {
 
         RenderPassState(
-            const Vec3& cameraPos_,
-            const Mat4& viewMatrix_,
-            const Mat4& projectionMatrix_) :
+            const Vec3& camera_pos_,
+            const Mat4& view_matrix_,
+            const Mat4& projection_matrix_) :
 
-            cameraPos{cameraPos_},
-            viewMatrix{viewMatrix_},
-            projectionMatrix{projectionMatrix_}
+            camera_pos{camera_pos_},
+            view_matrix{view_matrix_},
+            projection_matrix{projection_matrix_}
         {}
 
-        Vec3 cameraPos;
-        Mat4 viewMatrix;
-        Mat4 projectionMatrix;
-        Mat4 viewProjectionMatrix = projectionMatrix * viewMatrix;
+        Vec3 camera_pos;
+        Mat4 view_matrix;
+        Mat4 projection_matrix;
+        Mat4 view_projection_matrix = projection_matrix * view_matrix;
     };
 
-    // the OpenGL data associated with an Texture2D
+    // the OpenGL data associated with a `Texture2D`
     struct Texture2DOpenGLData final {
         gl::Texture2D texture;
-        UID textureParamsVersion;
+        UID texture_params_version;
     };
 
 
-    // the OpenGL data associated with an osc::RenderBuffer
+    // the OpenGL data associated with a `RenderBuffer`
     struct SingleSampledTexture final {
         gl::Texture2D texture2D;
     };
     struct MultisampledRBOAndResolvedTexture final {
-        gl::RenderBuffer multisampledRBO;
-        gl::Texture2D singleSampledTexture;
+        gl::RenderBuffer multisampled_rbo;
+        gl::Texture2D single_sampled_texture2D;
     };
     struct SingleSampledCubemap final {
-        gl::TextureCubemap textureCubemap;
+        gl::TextureCubemap cubemap;
     };
     using RenderBufferOpenGLData = std::variant<
         SingleSampledTexture,
@@ -877,11 +878,11 @@ namespace
         SingleSampledCubemap
     >;
 
-    // the OpenGL data associated with an Mesh
+    // the OpenGL data associated with a `Mesh`
     struct MeshOpenGLData final {
-        UID dataVersion;
-        gl::TypedBufferHandle<GL_ARRAY_BUFFER> arrayBuffer;
-        gl::TypedBufferHandle<GL_ELEMENT_ARRAY_BUFFER> indicesBuffer;
+        UID data_version;
+        gl::TypedBufferHandle<GL_ARRAY_BUFFER> array_buffer;
+        gl::TypedBufferHandle<GL_ELEMENT_ARRAY_BUFFER> indices_buffer;
         gl::VertexArray vao;
     };
 
@@ -890,13 +891,13 @@ namespace
             gl::ArrayBuffer<float, GL_STREAM_DRAW>& buf_,
             size_t stride_) :
 
-            buf{buf_},
+            buffer{buf_},
             stride{stride_}
         {}
 
-        gl::ArrayBuffer<float, GL_STREAM_DRAW>& buf;
+        gl::ArrayBuffer<float, GL_STREAM_DRAW>& buffer;
         size_t stride = 0;
-        size_t baseOffset = 0;
+        size_t base_offset = 0;
     };
 }
 
@@ -1820,7 +1821,7 @@ public:
 
         Texture2DOpenGLData& bufs = **m_MaybeGPUTexture;
 
-        if (bufs.textureParamsVersion != m_TextureParamsVersion)
+        if (bufs.texture_params_version != m_TextureParamsVersion)
         {
             setTextureParams(bufs);
         }
@@ -1870,7 +1871,7 @@ private:
         gl::tex_parameter_i(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, toGLTextureMinFilterParam(m_FilterMode));
         gl::tex_parameter_i(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, toGLTextureMagFilterParam(m_FilterMode));
         gl::bind_texture();
-        bufs.textureParamsVersion = m_TextureParamsVersion;
+        bufs.texture_params_version = m_TextureParamsVersion;
     }
 
     friend class GraphicsBackend;
@@ -2505,7 +2506,7 @@ public:
         const Vec2i dimensions = m_Descriptor.getDimensions();
 
         // setup multisampled RBO
-        gl::bind_renderbuffer(data.multisampledRBO);
+        gl::bind_renderbuffer(data.multisampled_rbo);
         glRenderbufferStorageMultisample(
             GL_RENDERBUFFER,
             m_Descriptor.getAntialiasingLevel().get_as<GLsizei>(),
@@ -2516,7 +2517,7 @@ public:
         gl::bind_renderbuffer();
 
         // setup resolved texture
-        gl::bind_texture(data.singleSampledTexture);
+        gl::bind_texture(data.single_sampled_texture2D);
         gl::tex_image2D(
             GL_TEXTURE_2D,
             0,
@@ -2561,7 +2562,7 @@ public:
         const Vec2i dimensions = m_Descriptor.getDimensions();
 
         // setup resolved texture
-        gl::bind_texture(t.textureCubemap);
+        gl::bind_texture(t.cubemap);
         for (int i = 0; i < 6; ++i)
         {
             gl::tex_image2D(
@@ -5030,7 +5031,7 @@ public:
 
     gl::VertexArray& updVertexArray()
     {
-        if (!*m_MaybeGPUBuffers || (*m_MaybeGPUBuffers)->dataVersion != *m_Version)
+        if (!*m_MaybeGPUBuffers || (*m_MaybeGPUBuffers)->data_version != *m_Version)
         {
             uploadToGPU();
         }
@@ -5236,7 +5237,7 @@ private:
         OSC_ASSERT(cpp20::bit_cast<uintptr_t>(m_VertexBuffer.bytes().data()) % alignof(float) == 0);
         gl::bind_buffer(
             GL_ARRAY_BUFFER,
-            buffers.arrayBuffer
+            buffers.array_buffer
         );
         gl::buffer_data(
             GL_ARRAY_BUFFER,
@@ -5249,7 +5250,7 @@ private:
         const size_t eboNumBytes = m_NumIndices * (m_IndicesAre32Bit ? sizeof(uint32_t) : sizeof(uint16_t));
         gl::bind_buffer(
             GL_ELEMENT_ARRAY_BUFFER,
-            buffers.indicesBuffer
+            buffers.indices_buffer
         );
         gl::buffer_data(
             GL_ELEMENT_ARRAY_BUFFER,
@@ -5260,15 +5261,15 @@ private:
 
         // configure mesh-level VAO
         gl::bind_vertex_array(buffers.vao);
-        gl::bind_buffer(GL_ARRAY_BUFFER, buffers.arrayBuffer);
-        gl::bind_buffer(GL_ELEMENT_ARRAY_BUFFER, buffers.indicesBuffer);
+        gl::bind_buffer(GL_ARRAY_BUFFER, buffers.array_buffer);
+        gl::bind_buffer(GL_ELEMENT_ARRAY_BUFFER, buffers.indices_buffer);
         for (auto&& layout : m_VertexBuffer.attributeLayouts())
         {
             OpenGLBindVertexAttribute(m_VertexBuffer.format(), layout);
         }
         gl::bind_vertex_array();
 
-        buffers.dataVersion = *m_Version;
+        buffers.data_version = *m_Version;
     }
 
     DefaultConstructOnCopy<UID> m_Version;
@@ -6694,13 +6695,13 @@ void osc::GraphicsBackend::bindToInstancedAttributes(
     const Shader::Impl& shaderImpl,
     InstancingState& ins)
 {
-    gl::bind_buffer(ins.buf);
+    gl::bind_buffer(ins.buffer);
 
     size_t byteOffset = 0;
     if (shaderImpl.m_MaybeInstancedModelMatAttr) {
         if (shaderImpl.m_MaybeInstancedModelMatAttr->shader_type == ShaderPropertyType::Mat4) {
             const gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedModelMatAttr->location};
-            gl::vertex_attrib_pointer(mmtxAttr, false, ins.stride, ins.baseOffset + byteOffset);
+            gl::vertex_attrib_pointer(mmtxAttr, false, ins.stride, ins.base_offset + byteOffset);
             gl::vertex_attrib_divisor(mmtxAttr, 1);
             gl::enable_vertex_attrib_array(mmtxAttr);
             byteOffset += sizeof(float) * 16;
@@ -6709,14 +6710,14 @@ void osc::GraphicsBackend::bindToInstancedAttributes(
     if (shaderImpl.m_MaybeInstancedNormalMatAttr) {
         if (shaderImpl.m_MaybeInstancedNormalMatAttr->shader_type == ShaderPropertyType::Mat4) {
             const gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->location};
-            gl::vertex_attrib_pointer(mmtxAttr, false, ins.stride, ins.baseOffset + byteOffset);
+            gl::vertex_attrib_pointer(mmtxAttr, false, ins.stride, ins.base_offset + byteOffset);
             gl::vertex_attrib_divisor(mmtxAttr, 1);
             gl::enable_vertex_attrib_array(mmtxAttr);
             // unused: byteOffset += sizeof(float) * 16;
         }
         else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shader_type == ShaderPropertyType::Mat3) {
             const gl::AttributeMat3 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->location};
-            gl::vertex_attrib_pointer(mmtxAttr, false, ins.stride, ins.baseOffset + byteOffset);
+            gl::vertex_attrib_pointer(mmtxAttr, false, ins.stride, ins.base_offset + byteOffset);
             gl::vertex_attrib_divisor(mmtxAttr, 1);
             gl::enable_vertex_attrib_array(mmtxAttr);
             // unused: byteOffset += sizeof(float) * 9;
@@ -6807,7 +6808,7 @@ std::optional<InstancingState> osc::GraphicsBackend::uploadInstanceData(
         }
         OSC_ASSERT_ALWAYS(sizeof(float)*floatOffset == renderObjects.size() * byteStride);
 
-        auto& vbo = maybeInstancingState.emplace(g_GraphicsContextImpl->updInstanceGPUBuffer(), byteStride).buf;
+        auto& vbo = maybeInstancingState.emplace(g_GraphicsContextImpl->updInstanceGPUBuffer(), byteStride).buffer;
         vbo.assign(std::span<const float>{buf.data(), floatOffset});
     }
     return maybeInstancingState;
@@ -7003,7 +7004,7 @@ void osc::GraphicsBackend::tryBindMaterialValueToShaderElement(
             [&textureSlot, &se](MultisampledRBOAndResolvedTexture& mst)
             {
                 gl::active_texture(GL_TEXTURE0 + textureSlot);
-                gl::bind_texture(mst.singleSampledTexture);
+                gl::bind_texture(mst.single_sampled_texture2D);
                 gl::UniformSampler2D u{se.location};
                 gl::set_uniform(u, textureSlot);
                 ++textureSlot;
@@ -7011,7 +7012,7 @@ void osc::GraphicsBackend::tryBindMaterialValueToShaderElement(
             [&textureSlot, &se](SingleSampledCubemap& cubemap)
             {
                 gl::active_texture(GL_TEXTURE0 + textureSlot);
-                gl::bind_texture(cubemap.textureCubemap);
+                gl::bind_texture(cubemap.cubemap);
                 gl::UniformSamplerCube u{se.location};
                 gl::set_uniform(u, textureSlot);
                 ++textureSlot;
@@ -7088,7 +7089,7 @@ void osc::GraphicsBackend::handleBatchWithSameSubMesh(
             meshImpl.drawInstanced(1, maybe_submesh_index);
             if (ins) {
                 unbindFromInstancedAttributes(shaderImpl, *ins);
-                ins->baseOffset += 1 * ins->stride;
+                ins->base_offset += 1 * ins->stride;
             }
         }
     }
@@ -7101,7 +7102,7 @@ void osc::GraphicsBackend::handleBatchWithSameSubMesh(
         meshImpl.drawInstanced(els.size(), maybe_submesh_index);
         if (ins) {
             unbindFromInstancedAttributes(shaderImpl, *ins);
-            ins->baseOffset += els.size() * ins->stride;
+            ins->base_offset += els.size() * ins->stride;
         }
     }
 
@@ -7210,7 +7211,7 @@ void osc::GraphicsBackend::handleBatchWithSameMaterial(
             if (shaderImpl.m_MaybeViewMatUniform->shader_type == ShaderPropertyType::Mat4)
             {
                 gl::UniformMat4 u{shaderImpl.m_MaybeViewMatUniform->location};
-                gl::set_uniform(u, renderPassState.viewMatrix);
+                gl::set_uniform(u, renderPassState.view_matrix);
             }
         }
 
@@ -7220,7 +7221,7 @@ void osc::GraphicsBackend::handleBatchWithSameMaterial(
             if (shaderImpl.m_MaybeProjMatUniform->shader_type == ShaderPropertyType::Mat4)
             {
                 gl::UniformMat4 u{shaderImpl.m_MaybeProjMatUniform->location};
-                gl::set_uniform(u, renderPassState.projectionMatrix);
+                gl::set_uniform(u, renderPassState.projection_matrix);
             }
         }
 
@@ -7229,7 +7230,7 @@ void osc::GraphicsBackend::handleBatchWithSameMaterial(
             if (shaderImpl.m_MaybeViewProjMatUniform->shader_type == ShaderPropertyType::Mat4)
             {
                 gl::UniformMat4 u{shaderImpl.m_MaybeViewProjMatUniform->location};
-                gl::set_uniform(u, renderPassState.viewProjectionMatrix);
+                gl::set_uniform(u, renderPassState.view_projection_matrix);
             }
         }
 
@@ -7345,13 +7346,13 @@ void osc::GraphicsBackend::flushRenderQueue(Camera::Impl& camera, float aspectRa
     auto batchIt = queue.begin();
     while (batchIt != queue.end())
     {
-        const auto depthTestedEnd = find_if_not(batchIt, queue.end(), isDepthTested);
+        const auto depthTestedEnd = find_if_not(batchIt, queue.end(), is_depth_tested);
 
         if (depthTestedEnd != batchIt)
         {
             // there are >0 depth-tested elements that are elegible for reordering
 
-            sortRenderQueue(batchIt, depthTestedEnd, renderPassState.cameraPos);
+            sort_render_queue(batchIt, depthTestedEnd, renderPassState.camera_pos);
             drawBatchedByOpaqueness(renderPassState, {batchIt, depthTestedEnd});
 
             batchIt = depthTestedEnd;
@@ -7361,7 +7362,7 @@ void osc::GraphicsBackend::flushRenderQueue(Camera::Impl& camera, float aspectRa
         {
             // there are >0 not-depth-tested elements that cannot be reordered
 
-            const auto ignoreDepthTestEnd = find_if(depthTestedEnd, queue.end(), isDepthTested);
+            const auto ignoreDepthTestEnd = find_if(depthTestedEnd, queue.end(), is_depth_tested);
 
             // these elements aren't depth-tested and should just be drawn as-is
             gl::disable(GL_DEPTH_TEST);
@@ -7499,7 +7500,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::bindAndClearRenderBuffers(
                     gl::framebuffer_renderbuffer(
                         GL_DRAW_FRAMEBUFFER,
                         GL_COLOR_ATTACHMENT0 + static_cast<GLint>(i),
-                        t.multisampledRBO
+                        t.multisampled_rbo
                     );
                 },
 #ifdef EMSCRIPTEN
@@ -7510,7 +7511,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::bindAndClearRenderBuffers(
                     glFramebufferTexture(
                         GL_DRAW_FRAMEBUFFER,
                         GL_COLOR_ATTACHMENT0 + static_cast<GLint>(i),
-                        t.textureCubemap.get(),
+                        t.cubemap.get(),
                         0
                     );
                 }
@@ -7535,7 +7536,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::bindAndClearRenderBuffers(
                 gl::framebuffer_renderbuffer(
                     GL_DRAW_FRAMEBUFFER,
                     GL_DEPTH_STENCIL_ATTACHMENT,
-                    t.multisampledRBO
+                    t.multisampled_rbo
                 );
             },
 #ifdef EMSCRIPTEN
@@ -7546,7 +7547,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::bindAndClearRenderBuffers(
                 glFramebufferTexture(
                     GL_DRAW_FRAMEBUFFER,
                     GL_DEPTH_STENCIL_ATTACHMENT,
-                    t.textureCubemap.get(),
+                    t.cubemap.get(),
                     0
                 );
             }
@@ -7659,14 +7660,14 @@ void osc::GraphicsBackend::resolveRenderBuffers(RenderTarget& renderTarget)
                 gl::framebuffer_renderbuffer(
                     GL_READ_FRAMEBUFFER,
                     attachmentLoc,
-                    t.multisampledRBO
+                    t.multisampled_rbo
                 );
                 glReadBuffer(attachmentLoc);
 
                 gl::framebuffer_texture2D(
                     GL_DRAW_FRAMEBUFFER,
                     attachmentLoc,
-                    t.singleSampledTexture,
+                    t.single_sampled_texture2D,
                     0
                 );
                 glDrawBuffer(attachmentLoc);
@@ -7712,14 +7713,14 @@ void osc::GraphicsBackend::resolveRenderBuffers(RenderTarget& renderTarget)
                 gl::framebuffer_renderbuffer(
                     GL_READ_FRAMEBUFFER,
                     GL_DEPTH_ATTACHMENT,
-                    t.multisampledRBO
+                    t.multisampled_rbo
                 );
                 glReadBuffer(GL_DEPTH_ATTACHMENT);
 
                 gl::framebuffer_texture2D(
                     GL_DRAW_FRAMEBUFFER,
                     GL_DEPTH_ATTACHMENT,
-                    t.singleSampledTexture,
+                    t.single_sampled_texture2D,
                     0
                 );
                 glDrawBuffer(GL_DEPTH_ATTACHMENT);
@@ -7928,7 +7929,7 @@ void osc::GraphicsBackend::copyTexture(
             gl::framebuffer_texture2D(
                 GL_READ_FRAMEBUFFER,
                 GL_COLOR_ATTACHMENT0,
-                t.singleSampledTexture,
+                t.single_sampled_texture2D,
                 0
             );
         },
@@ -7938,7 +7939,7 @@ void osc::GraphicsBackend::copyTexture(
                 GL_READ_FRAMEBUFFER,
                 GL_COLOR_ATTACHMENT0,
                 toOpenGLTextureEnum(face),
-                t.textureCubemap.get(),
+                t.cubemap.get(),
                 0
             );
         }
@@ -8038,7 +8039,7 @@ void osc::GraphicsBackend::copyTexture(
                     GL_READ_FRAMEBUFFER,
                     GL_COLOR_ATTACHMENT0,
                     GL_TEXTURE_CUBE_MAP_POSITIVE_X + static_cast<GLenum>(face),
-                    t.textureCubemap.get(),
+                    t.cubemap.get(),
                     0
                 );
             }
