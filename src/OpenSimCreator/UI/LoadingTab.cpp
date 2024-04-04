@@ -28,7 +28,7 @@ using namespace osc;
 
 namespace
 {
-    std::unique_ptr<UndoableModelStatePair> LoadOsimIntoUndoableModel(std::filesystem::path p)
+    std::unique_ptr<UndoableModelStatePair> LoadOsimIntoUndoableModel(std::filesystem::path const& p)
     {
         return std::make_unique<UndoableModelStatePair>(p);
     }

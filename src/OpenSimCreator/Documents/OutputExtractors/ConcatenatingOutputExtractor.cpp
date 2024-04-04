@@ -68,8 +68,8 @@ OutputValueExtractor osc::ConcatenatingOutputExtractor::implGetOutputValueExtrac
     if (m_OutputType == OutputExtractorDataType::Vec2) {
         auto extractor = [lhs = m_First.getOutputValueExtractor(comp), rhs = m_Second.getOutputValueExtractor(comp)](SimulationReport const& report)
         {
-            float const lv = lhs(report).to<float>();
-            float const rv = rhs(report).to<float>();
+            auto const lv = lhs(report).to<float>();
+            auto const rv = rhs(report).to<float>();
 
             return Variant{Vec2{lv, rv}};
         };

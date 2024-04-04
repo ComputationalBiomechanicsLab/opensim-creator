@@ -18,18 +18,17 @@
 
 using osc::mi::CrossrefDescriptor;
 using osc::mi::MIClass;
-using osc::CStringView;
 
 osc::mi::Joint::Joint(
     UID id,
-    std::string const& jointTypeName,
+    std::string jointTypeName,
     std::string const& userAssignedName,  // can be empty
     UID parent,
     UID child,
     Transform const& xform) :
 
     m_ID{id},
-    m_JointTypeName{jointTypeName},
+    m_JointTypeName{std::move(jointTypeName)},
     m_UserAssignedName{SanitizeToOpenSimComponentName(userAssignedName)},
     m_Parent{parent},
     m_Child{child},

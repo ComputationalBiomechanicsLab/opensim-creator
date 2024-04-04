@@ -24,7 +24,7 @@ namespace osc::mi
     public:
         Joint(
             UID id,
-            std::string const& jointTypeName,
+            std::string jointTypeName,
             std::string const& userAssignedName,  // can be empty
             UID parent,
             UID child,
