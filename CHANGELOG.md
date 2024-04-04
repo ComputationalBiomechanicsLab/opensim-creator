@@ -5,18 +5,26 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+## [0.5.11] - 2024/04/04
+
+0.5.11 adds support for adding wrap objects to a model in the model editor, along with associating the
+wrap object with a `GeometryPath`. It also adds support for creating 2D plots, which is handy for creating
+phase diagrams during simulation.
+
 - Right-clicking a 1D plot in the simulator tab now shows a `Plot Against Other Output` option, which
   lets you create a 2D output by combining two existing model outputs (handy for phase diagrams, etc.)
 - Right-clicking on a `PhysicalFrame`/`Body` in the model editor now shows an `Add` menu that includes
   the ability to add geometry, offset frames, and wrap objects. Previously: was `Add Geometry` and
   `Add Offset Frame` were shown, but now there's also the ability to add wrap objects. (#7)
 - Right-clicking a `GeometryPath` in the model now shows an `Add` menu that includes the ability to add
-  a `PathWrap` to the `GeometryPath`, which is handy in conjunction with the above
+  a `PathWrap` to the `GeometryPath`, which is handy in conjunction with the above.
 - Added `Export > Non-Participating Landmarks to CSV` as an export option to the mesh warper
 - The mesh warper can now has the option to export source/destination/result meshes in OBJ format
   with/without surface normals (note: Simbody/OpenSim ignore this information, but it's useful if you
   plan on using the OBJ file in other software, e.g. Blender)
-- Pressing `Ctrl/Super` and `PageUp`/`PageDown` now toggles between each tab. Alternatively, you can press (WindowsKey or Command) + (Alt or Option) + (Left or Right) for the same behavior (matches how MacOS apps tend to handle tabs)
+- Pressing `Ctrl/Super` and `PageUp`/`PageDown` now toggles between each tab. Alternatively, you can
+  press (WindowsKey or Command) + (Alt or Option) + (Left or Right) for the same behavior (matches how
+  MacOS apps tend to handle tab navigation)
 - Pressing `Space` while in the simulator screen now (un)pauses the simulation
 - There is now a `loop` checkbox in the simulator screen, which will cause playback to loop back from
   the start when playback hits the end of a simulation
