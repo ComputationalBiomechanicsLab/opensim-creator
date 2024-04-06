@@ -9,6 +9,6 @@ TEST(TextureChannelFormat, NumBytesPerChannelReturnsExpectedValues)
 {
     static_assert(num_options<TextureChannelFormat>() == 2);
 
-    ASSERT_EQ(NumBytesPerChannel(TextureChannelFormat::Uint8), 1);
-    ASSERT_EQ(NumBytesPerChannel(TextureChannelFormat::Float32), 4);
+    ASSERT_EQ(num_bytes_per_channel_in(TextureChannelFormat::Uint8), 1);
+    ASSERT_EQ(num_bytes_per_channel_in(TextureChannelFormat::Float32), 4);
 }

@@ -20,8 +20,8 @@ namespace osc
         NUM_OPTIONS,
     };
 
-    size_t NumChannels(TextureFormat);
-    TextureChannelFormat ChannelFormat(TextureFormat);
-    size_t NumBytesPerPixel(TextureFormat);
-    std::optional<TextureFormat> ToTextureFormat(size_t numChannels, TextureChannelFormat);
+    size_t num_channels_in(TextureFormat);
+    TextureChannelFormat channel_format_of(TextureFormat);
+    size_t num_bytes_per_pixel_in(TextureFormat);
+    std::optional<TextureFormat> to_texture_format(size_t numChannels, TextureChannelFormat);
 }

@@ -10,5 +10,5 @@ namespace osc
         NUM_OPTIONS,
     };
 
-    size_t NumBytesPerChannel(TextureChannelFormat);
+    size_t num_bytes_per_channel_in(TextureChannelFormat);
 }

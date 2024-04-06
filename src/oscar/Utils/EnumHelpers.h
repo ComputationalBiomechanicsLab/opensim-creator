@@ -39,7 +39,7 @@ namespace osc
     // returns the value of `v` casted to a `size_t` (i.e. `v` should probably satisfy
     // `DenselyPackedOptionsEnum` for this to work
     template<DenselyPackedOptionsEnum TEnum>
-    constexpr size_t ToIndex(TEnum v)
+    constexpr size_t to_index(TEnum v)
     {
         return static_cast<size_t>(cpp23::to_underlying(v));
     }

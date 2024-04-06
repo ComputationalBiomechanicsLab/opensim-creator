@@ -45,7 +45,7 @@ namespace
         for (; face_iterator != faces.end(); ++face_iterator)
         {
             t = load_texture2D_from_image(
-                rl.open(ResourcePath{"oscar_learnopengl/textures"} / c_SkyboxTextureFilenames[ToIndex(*face_iterator)]),
+                rl.open(ResourcePath{"oscar_learnopengl/textures"} / c_SkyboxTextureFilenames[to_index(*face_iterator)]),
                 ColorSpace::sRGB
             );
             OSC_ASSERT(t.getDimensions().x == dims.x);

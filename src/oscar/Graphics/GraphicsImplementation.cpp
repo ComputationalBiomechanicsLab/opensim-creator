@@ -555,11 +555,6 @@ namespace
         transparent_string_hash,
         std::equal_to<>
     >;
-
-    const ShaderElement* tryGetValue(const FastStringHashtable<ShaderElement>& m, std::string_view k)
-    {
-        return try_find(m, k);
-    }
 }
 
 namespace
@@ -901,100 +896,93 @@ namespace
     };
 }
 
-
-//////////////////////////////////
-//
-// backend declaration
-//
-//////////////////////////////////
-
 namespace osc
 {
     class GraphicsBackend final {
     public:
         // internal methods
 
-        static void bindToInstancedAttributes(
-            const Shader::Impl& shaderImpl,
-            InstancingState& ins
+        static void bind_to_instanced_attributes(
+            const Shader::Impl&,
+            InstancingState&
         );
 
-        static void unbindFromInstancedAttributes(
-            const Shader::Impl& shaderImpl,
-            InstancingState& ins
+        static void unbind_from_instanced_attributes(
+            const Shader::Impl&,
+            InstancingState&
         );
 
-        static std::optional<InstancingState> uploadInstanceData(
+        static std::optional<InstancingState> upload_instance_data(
             std::span<const RenderObject>,
-            const Shader::Impl& shaderImpl
+            const Shader::Impl&
         );
 
-        static void tryBindMaterialValueToShaderElement(
-            const ShaderElement& se,
-            const MaterialValue& v,
-            int32_t& textureSlot
+        static void try_bind_material_value_to_shader_element(
+            const ShaderElement&,
+            const MaterialValue&,
+            int32_t& texture_slot
         );
 
-        static void handleBatchWithSameSubMesh(
+        static void handle_batch_with_same_submesh(
             std::span<const RenderObject>,
-            std::optional<InstancingState>& ins
+            std::optional<InstancingState>& instancing_state
         );
 
-        static void handleBatchWithSameMesh(
+        static void handle_batch_with_same_mesh(
             std::span<const RenderObject>,
-            std::optional<InstancingState>& ins
+            std::optional<InstancingState>& instancing_state
         );
 
-        static void handleBatchWithSameMaterialPropertyBlock(
+        static void handle_batch_with_same_material_property_block(
             std::span<const RenderObject>,
-            int32_t& textureSlot,
-            std::optional<InstancingState>& ins
+            int32_t& texture_slot,
+            std::optional<InstancingState>& instancing_state
         );
 
-        static void handleBatchWithSameMaterial(
+        static void handle_batch_with_same_material(
             const RenderPassState&,
             std::span<const RenderObject>
         );
 
-        static void drawRenderObjects(
+        static void draw_render_objects(
             const RenderPassState&,
             std::span<const RenderObject>
         );
 
-        static void drawBatchedByOpaqueness(
+        static void draw_batched_by_opaqueness(
             const RenderPassState&,
             std::span<const RenderObject>
         );
 
-        static void validateRenderTarget(
+        static void validate_render_target(
             RenderTarget&
         );
-        static Rect calcViewportRect(
+        static Rect calc_viewport_bounds(
             Camera::Impl&,
-            RenderTarget* maybeCustomRenderTarget
+            RenderTarget* maybe_custom_render_target
         );
-        static Rect setupTopLevelPipelineState(
+        static Rect setup_top_level_pipeline_state(
             Camera::Impl&,
-            RenderTarget* maybeCustomRenderTarget
+            RenderTarget* maybe_custom_render_target
         );
-        static std::optional<gl::FrameBuffer> bindAndClearRenderBuffers(
+        static std::optional<gl::FrameBuffer> bind_and_clear_render_buffers(
             Camera::Impl&,
-            RenderTarget* maybeCustomRenderTarget
+            RenderTarget* maybe_custom_render_target
         );
-        static void resolveRenderBuffers(
-            RenderTarget& maybeCustomRenderTarget
+        static void resolve_render_buffers(
+            RenderTarget& maybe_custom_render_target
         );
-        static void flushRenderQueue(
+        static void flush_render_queue(
             Camera::Impl& camera,
-            float aspectRatio
+            float aspect_ratio
         );
-        static void teardownTopLevelPipelineState(
+        static void teardown_top_level_pipeline_state(
             Camera::Impl&,
-            RenderTarget* maybeCustomRenderTarget
+            RenderTarget* maybe_custom_render_target
         );
-        static void renderCameraQueue(
+        static void render_camera_queue(
             Camera::Impl& camera,
-            RenderTarget* maybeCustomRenderTarget = nullptr
+            RenderTarget* maybe_custom_render_target = nullptr
         );
 
 
@@ -1023,36 +1011,36 @@ namespace osc
             RenderTexture&
         );
 
-        static void blitToScreen(
+        static void blit_to_screen(
             const RenderTexture&,
             const Rect&,
             BlitFlags
         );
 
-        static void blitToScreen(
+        static void blit_to_screen(
             const RenderTexture&,
             const Rect&,
             const Material&,
             BlitFlags
         );
 
-        static void blitToScreen(
+        static void blit_to_screen(
             const Texture2D&,
             const Rect&
         );
 
-        static void copyTexture(
+        static void copy_texture(
             const RenderTexture&,
             Texture2D&
         );
 
-        static void copyTexture(
+        static void copy_texture(
             const RenderTexture&,
             Texture2D&,
             CubemapFace
         );
 
-        static void copyTexture(
+        static void copy_texture(
             const RenderTexture&,
             Cubemap&,
             size_t
@@ -1064,96 +1052,94 @@ namespace
 {
     // returns the memory alignment of data that is to be copied from the
     // CPU (packed) to the GPU (unpacked)
-    constexpr GLint toOpenGLUnpackAlignment(TextureFormat format)
+    constexpr GLint opengl_unpack_alignment_of(TextureFormat texture_format)
     {
         constexpr auto lut = []<TextureFormat... Formats>(OptionList<TextureFormat, Formats...>)
         {
             return std::to_array({ TextureFormatOpenGLTraits<Formats>::unpack_alignment... });
         }(TextureFormatList{});
 
-        return lut.at(ToIndex(format));
+        return lut.at(to_index(texture_format));
     }
 
     // returns the format OpenGL will use internally (i.e. on the GPU) to
     // represent the given format+colorspace combo
-    constexpr GLenum toOpenGLInternalFormat(
-        TextureFormat format,
-        ColorSpace colorSpace)
+    constexpr GLenum opengl_internal_format_of(TextureFormat texture_format, ColorSpace color_space)
     {
-        constexpr auto srgbLUT = []<TextureFormat... Formats>(OptionList<TextureFormat, Formats...>)
+        constexpr auto srgb_lut = []<TextureFormat... Formats>(OptionList<TextureFormat, Formats...>)
         {
             return std::to_array({ TextureFormatOpenGLTraits<Formats>::internal_format_srgb... });
         }(TextureFormatList{});
 
-        constexpr auto linearLUT = []<TextureFormat... Formats>(OptionList<TextureFormat, Formats...>)
+        constexpr auto linear_lut = []<TextureFormat... Formats>(OptionList<TextureFormat, Formats...>)
         {
             return std::to_array({ TextureFormatOpenGLTraits<Formats>::internal_format_linear... });
         }(TextureFormatList{});
 
         static_assert(num_options<ColorSpace>() == 2);
-        if (colorSpace == ColorSpace::sRGB) {
-            return srgbLUT.at(ToIndex(format));
+        if (color_space == ColorSpace::sRGB) {
+            return srgb_lut.at(to_index(texture_format));
         }
         else {
-            return linearLUT.at(ToIndex(format));
+            return linear_lut.at(to_index(texture_format));
         }
     }
 
-    constexpr GLenum toOpenGLDataType(CPUDataType t)
+    constexpr GLenum opengl_data_type_of(CPUDataType cpu_datatype)
     {
         constexpr auto lut = []<CPUDataType... DataTypes>(OptionList<CPUDataType, DataTypes...>)
         {
             return std::to_array({ CPUDataTypeOpenGLTraits<DataTypes>::opengl_data_type... });
         }(CPUDataTypeList{});
 
-        return lut.at(ToIndex(t));
+        return lut.at(to_index(cpu_datatype));
     }
 
-    constexpr CPUDataType toEquivalentCPUDataType(TextureFormat format)
+    constexpr CPUDataType equivalent_cpu_datatype_of(TextureFormat texture_format)
     {
         constexpr auto lut = []<TextureFormat... Formats>(OptionList<TextureFormat, Formats...>)
         {
             return std::to_array({ TextureFormatTraits<Formats>::equivalent_cpu_datatype... });
         }(TextureFormatList{});
 
-        return lut.at(ToIndex(format));
+        return lut.at(to_index(texture_format));
     }
 
-    constexpr CPUImageFormat toEquivalentCPUImageFormat(TextureFormat format)
+    constexpr CPUImageFormat equivalent_cpu_image_format_of(TextureFormat texture_format)
     {
         constexpr auto lut = []<TextureFormat... Formats>(OptionList<TextureFormat, Formats...>)
         {
             return std::to_array({ TextureFormatTraits<Formats>::equivalent_cpu_image_format... });
         }(TextureFormatList{});
 
-        return lut.at(ToIndex(format));
+        return lut.at(to_index(texture_format));
     }
 
-    constexpr GLenum toOpenGLFormat(CPUImageFormat t)
+    constexpr GLenum opengl_format_of(CPUImageFormat cpu_format)
     {
         constexpr auto lut = []<CPUImageFormat... Formats>(OptionList<CPUImageFormat, Formats...>)
         {
             return std::to_array({ CPUImageFormatOpenGLTraits<Formats>::opengl_format... });
         }(CPUImageFormatList{});
 
-        return lut.at(ToIndex(t));
+        return lut.at(to_index(cpu_format));
     }
 
-    constexpr GLenum toOpenGLTextureEnum(CubemapFace f)
+    constexpr GLenum to_opengl_texture_cubemap_enum(CubemapFace cubemap_face)
     {
         static_assert(num_options<CubemapFace>() == 6);
         static_assert(static_cast<GLenum>(CubemapFace::PositiveX) == 0);
         static_assert(static_cast<GLenum>(CubemapFace::NegativeZ) == 5);
         static_assert(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z - GL_TEXTURE_CUBE_MAP_POSITIVE_X == 5);
 
-        return GL_TEXTURE_CUBE_MAP_POSITIVE_X + static_cast<GLenum>(f);
+        return GL_TEXTURE_CUBE_MAP_POSITIVE_X + static_cast<GLenum>(cubemap_face);
     }
 
-    GLint toGLTextureTextureWrapParam(TextureWrapMode m)
+    GLint to_opengl_texturewrap_enum(TextureWrapMode texture_wrap_mode)
     {
         static_assert(num_options<TextureWrapMode>() == 3);
 
-        switch (m) {
+        switch (texture_wrap_mode) {
         case TextureWrapMode::Repeat:
             return GL_REPEAT;
         case TextureWrapMode::Clamp:
@@ -1165,258 +1151,248 @@ namespace
         }
     }
 
-    constexpr auto c_TextureWrapModeStrings = std::to_array<CStringView>(
+    constexpr auto c_texture_wrap_mode_strings = std::to_array<CStringView>(
     {
         "Repeat",
         "Clamp",
         "Mirror",
     });
-    static_assert(c_TextureWrapModeStrings.size() == num_options<TextureWrapMode>());
+    static_assert(c_texture_wrap_mode_strings.size() == num_options<TextureWrapMode>());
 
-    constexpr auto c_TextureFilterModeStrings = std::to_array<CStringView>(
+    constexpr auto c_texture_filter_mode_strings = std::to_array<CStringView>(
     {
         "Nearest",
         "Linear",
         "Mipmap",
     });
-    static_assert(c_TextureFilterModeStrings.size() == num_options<TextureFilterMode>());
+    static_assert(c_texture_filter_mode_strings.size() == num_options<TextureFilterMode>());
 
-    GLint toGLTextureMinFilterParam(TextureFilterMode m)
+    GLint to_opengl_texture_min_filter_param(TextureFilterMode texture_filter_mode)
     {
         static_assert(num_options<TextureFilterMode>() == 3);
 
-        switch (m) {
-        case TextureFilterMode::Nearest:
-            return GL_NEAREST;
-        case TextureFilterMode::Linear:
-            return GL_LINEAR;
-        case TextureFilterMode::Mipmap:
-            return GL_LINEAR_MIPMAP_LINEAR;
-        default:
-            return GL_LINEAR;
+        switch (texture_filter_mode) {
+        case TextureFilterMode::Nearest: return GL_NEAREST;
+        case TextureFilterMode::Linear:  return GL_LINEAR;
+        case TextureFilterMode::Mipmap:  return GL_LINEAR_MIPMAP_LINEAR;
+        default:                         return GL_LINEAR;
         }
     }
 
-    GLint toGLTextureMagFilterParam(TextureFilterMode m)
+    GLint to_opengl_texture_mag_filter_param(TextureFilterMode texture_filter_mode)
     {
         static_assert(num_options<TextureFilterMode>() == 3);
 
-        switch (m) {
-        case TextureFilterMode::Nearest:
-            return GL_NEAREST;
-        case TextureFilterMode::Linear:
-        case TextureFilterMode::Mipmap:
-        default:
-            return GL_LINEAR;
+        switch (texture_filter_mode) {
+        case TextureFilterMode::Nearest: return GL_NEAREST;
+        case TextureFilterMode::Linear:  return GL_LINEAR;
+        case TextureFilterMode::Mipmap:  return GL_LINEAR;
+        default:                         return GL_LINEAR;
         }
     }
 }
 
-//////////////////////////////////
-//
-// cubemap stuff
-//
-//////////////////////////////////
-
 namespace
 {
-    // the OpenGL data associated with an Texture2D
+    // the OpenGL data associated with a `Texture2D`
     struct CubemapOpenGLData final {
         gl::TextureCubemap texture;
-        UID dataVersion;
-        UID parametersVersion;
+        UID source_data_version;
+        UID source_params_version;
     };
 }
 
 class osc::Cubemap::Impl final {
 public:
     Impl(int32_t width, TextureFormat format) :
-        m_Width{width},
-        m_Format{format}
+        width_{width},
+        format_{format}
     {
-        OSC_ASSERT(m_Width > 0 && "the width of a cubemap must be a positive number");
+        OSC_ASSERT(width_ > 0 && "the width of a cubemap must be a positive number");
 
-        const size_t numPixelsPerFace = static_cast<size_t>(m_Width*m_Width)*NumBytesPerPixel(m_Format);
-        m_Data.resize(num_options<CubemapFace>() * numPixelsPerFace);
+        const size_t num_bytes_per_pixel = num_bytes_per_pixel_in(format_);
+        const size_t num_pixels_per_face = static_cast<size_t>(width_*width_);
+        const size_t num_bytes_per_face = num_bytes_per_pixel * num_pixels_per_face;
+        data_.resize(num_options<CubemapFace>() * num_bytes_per_face);
     }
 
     int32_t width() const
     {
-        return m_Width;
+        return width_;
     }
 
     TextureFormat texture_format() const
     {
-        return m_Format;
+        return format_;
     }
 
     TextureWrapMode wrap_mode() const
     {
-        return m_WrapModeU;
+        return wrap_mode_u_;
     }
 
-    void set_wrap_mode(TextureWrapMode wm)
+    void set_wrap_mode(TextureWrapMode new_wrap_mode)
     {
-        m_WrapModeU = wm;
-        m_WrapModeV = wm;
-        m_WrapModeW = wm;
-        m_TextureParamsVersion.reset();
+        wrap_mode_u_ = new_wrap_mode;
+        wrap_mode_v_ = new_wrap_mode;
+        wrap_mode_w_ = new_wrap_mode;
+        texture_params_version_.reset();
     }
 
     TextureWrapMode get_wrap_mode_u() const
     {
-        return m_WrapModeU;
+        return wrap_mode_u_;
     }
 
-    void set_wrap_mode_u(TextureWrapMode wm)
+    void set_wrap_mode_u(TextureWrapMode new_wrap_mode_u)
     {
-        m_WrapModeU = wm;
-        m_TextureParamsVersion.reset();
+        wrap_mode_u_ = new_wrap_mode_u;
+        texture_params_version_.reset();
     }
 
     TextureWrapMode get_wrap_mode_v() const
     {
-        return m_WrapModeV;
+        return wrap_mode_v_;
     }
 
-    void set_wrap_mode_v(TextureWrapMode wm)
+    void set_wrap_mode_v(TextureWrapMode new_wrap_mode_v)
     {
-        m_WrapModeV = wm;
-        m_TextureParamsVersion.reset();
+        wrap_mode_v_ = new_wrap_mode_v;
+        texture_params_version_.reset();
     }
 
     TextureWrapMode wrap_mode_w() const
     {
-        return m_WrapModeW;
+        return wrap_mode_w_;
     }
 
-    void set_wrap_mode_w(TextureWrapMode wm)
+    void set_wrap_mode_w(TextureWrapMode new_wrap_mode_w)
     {
-        m_WrapModeW = wm;
-        m_TextureParamsVersion.reset();
+        wrap_mode_w_ = new_wrap_mode_w;
+        texture_params_version_.reset();
     }
 
     TextureFilterMode filter_mode() const
     {
-        return m_FilterMode;
+        return filter_mode_;
     }
 
-    void set_filter_mode(TextureFilterMode fm)
+    void set_filter_mode(TextureFilterMode new_filter_mode)
     {
-        m_FilterMode = fm;
-        m_TextureParamsVersion.reset();
+        filter_mode_ = new_filter_mode;
+        texture_params_version_.reset();
     }
 
     void set_pixel_data(CubemapFace face, std::span<const uint8_t> data)
     {
-        const size_t faceIndex = ToIndex(face);
-        const auto numPixels = static_cast<size_t>(m_Width) * static_cast<size_t>(m_Width);
-        const size_t numBytesPerCubeFace = numPixels * NumBytesPerPixel(m_Format);
-        const size_t destinationDataStart = faceIndex * numBytesPerCubeFace;
-        const size_t destinationDataEnd = destinationDataStart + numBytesPerCubeFace;
+        const size_t face_index = to_index(face);
+        const auto num_pixels_per_face = static_cast<size_t>(width_) * static_cast<size_t>(width_);
+        const size_t num_bytes_per_face = num_pixels_per_face * num_bytes_per_pixel_in(format_);
+        const size_t destination_data_begin = face_index * num_bytes_per_face;
+        const size_t destination_data_end = destination_data_begin + num_bytes_per_face;
 
-        OSC_ASSERT(faceIndex < num_options<CubemapFace>() && "invalid cubemap face passed to Cubemap::set_pixel_data");
-        OSC_ASSERT(data.size() == numBytesPerCubeFace && "incorrect amount of data passed to Cubemap::set_pixel_data: the data must match the dimensions and texture format of the cubemap");
-        OSC_ASSERT(destinationDataEnd <= m_Data.size() && "out of range assignment detected: this should be handled in the constructor");
+        OSC_ASSERT(face_index < num_options<CubemapFace>() && "invalid cubemap face passed to Cubemap::set_pixel_data");
+        OSC_ASSERT(data.size() == num_bytes_per_face && "incorrect amount of data passed to Cubemap::set_pixel_data: the data must match the dimensions and texture format of the cubemap");
+        OSC_ASSERT(destination_data_end <= data_.size() && "out of range assignment detected: this should be handled in the constructor");
 
-        copy(data, m_Data.begin() + destinationDataStart);
-        m_DataVersion.reset();
+        copy(data, data_.begin() + destination_data_begin);
+        data_version_.reset();
     }
 
-    gl::TextureCubemap& updCubemap()
+    gl::TextureCubemap& upd_cubemap()
     {
-        if (!*m_MaybeGPUTexture) {
-            *m_MaybeGPUTexture = CubemapOpenGLData{};
+        if (not *maybe_gpu_texture_) {
+            *maybe_gpu_texture_ = CubemapOpenGLData{};
         }
 
-        CubemapOpenGLData& buf = **m_MaybeGPUTexture;
+        CubemapOpenGLData& opengl_data = **maybe_gpu_texture_;
 
-        if (buf.dataVersion != m_DataVersion) {
-            uploadPixelData(buf);
+        if (opengl_data.source_data_version != data_version_) {
+            upload_to_gpu(opengl_data);
         }
 
-        if (buf.parametersVersion != m_TextureParamsVersion) {
-            updateTextureParameters(buf);
+        if (opengl_data.source_params_version != texture_params_version_) {
+            update_opengl_texture_params(opengl_data);
         }
 
-        return buf.texture;
+        return opengl_data.texture;
     }
 private:
-    void uploadPixelData(CubemapOpenGLData& buf)
+    void upload_to_gpu(CubemapOpenGLData& opengl_data)
     {
         // calculate CPU-to-GPU data transfer parameters
-        const size_t numBytesPerPixel = NumBytesPerPixel(m_Format);
-        const size_t numBytesPerRow = m_Width * numBytesPerPixel;
-        const size_t numBytesPerFace = m_Width * numBytesPerRow;
-        const size_t numBytesInCubemap = num_options<CubemapFace>() * numBytesPerFace;
-        const CPUDataType cpuDataType = toEquivalentCPUDataType(m_Format);  // TextureFormat's datatype == CPU format's datatype for cubemaps
-        const CPUImageFormat cpuChannelLayout = toEquivalentCPUImageFormat(m_Format);  // TextureFormat's layout == CPU formats's layout for cubemaps
-        const GLint unpackAlignment = toOpenGLUnpackAlignment(m_Format);
+        const size_t num_bytes_per_pixel = num_bytes_per_pixel_in(format_);
+        const size_t num_bytes_per_row = width_ * num_bytes_per_pixel;
+        const size_t num_bytes_per_face = width_ * num_bytes_per_row;
+        const size_t num_bytes_in_cubemap = num_options<CubemapFace>() * num_bytes_per_face;
+        const CPUDataType cpu_data_type = equivalent_cpu_datatype_of(format_);  // TextureFormat's datatype == CPU format's datatype for cubemaps
+        const CPUImageFormat cpu_channel_layout = equivalent_cpu_image_format_of(format_);  // TextureFormat's layout == CPU formats's layout for cubemaps
+        const GLint opengl_unpack_alignment = opengl_unpack_alignment_of(format_);
 
         // sanity-check before doing anything with OpenGL
-        OSC_ASSERT(numBytesPerRow % unpackAlignment == 0 && "the memory alignment of each horizontal line in an OpenGL texture must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
-        OSC_ASSERT(is_aligned_at_least(m_Data.data(), unpackAlignment) && "the memory alignment of the supplied pixel memory must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
-        OSC_ASSERT(numBytesInCubemap <= m_Data.size() && "the number of bytes in the cubemap (CPU-side) is less than expected: this is a developer bug");
+        OSC_ASSERT(num_bytes_per_row % opengl_unpack_alignment == 0 && "the memory alignment of each horizontal line in an OpenGL texture must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
+        OSC_ASSERT(is_aligned_at_least(data_.data(), opengl_unpack_alignment) && "the memory alignment of the supplied pixel memory must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
+        OSC_ASSERT(num_bytes_in_cubemap <= data_.size() && "the number of bytes in the cubemap (CPU-side) is less than expected: this is an implementation bug that should be reported");
         static_assert(num_options<TextureFormat>() == 7, "careful here, glTexImage2D will not accept some formats (e.g. GL_RGBA16F) as the externally-provided format (must be GL_RGBA format with GL_HALF_FLOAT type)");
 
         // upload cubemap to GPU
         static_assert(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z - GL_TEXTURE_CUBE_MAP_POSITIVE_X == 5);
-        gl::bind_texture(buf.texture);
-        gl::pixel_store_i(GL_UNPACK_ALIGNMENT, unpackAlignment);
-        for (GLint faceIdx = 0; faceIdx < static_cast<GLint>(num_options<CubemapFace>()); ++faceIdx) {
+        gl::bind_texture(opengl_data.texture);
+        gl::pixel_store_i(GL_UNPACK_ALIGNMENT, opengl_unpack_alignment);
+        for (GLint face_index = 0; face_index < static_cast<GLint>(num_options<CubemapFace>()); ++face_index) {
 
-            const size_t faceBytesBegin = faceIdx * numBytesPerFace;
+            const size_t face_bytes_begin = face_index * num_bytes_per_face;
 
             gl::tex_image2D(
-                GL_TEXTURE_CUBE_MAP_POSITIVE_X + faceIdx,
+                GL_TEXTURE_CUBE_MAP_POSITIVE_X + face_index,
                 0,
-                toOpenGLInternalFormat(m_Format, ColorSpace::sRGB),  // cubemaps are always sRGB
-                m_Width,
-                m_Width,
+                opengl_internal_format_of(format_, ColorSpace::sRGB),  // cubemaps are always sRGB
+                width_,
+                width_,
                 0,
-                toOpenGLFormat(cpuChannelLayout),
-                toOpenGLDataType(cpuDataType),
-                m_Data.data() + faceBytesBegin
+                opengl_format_of(cpu_channel_layout),
+                opengl_data_type_of(cpu_data_type),
+                data_.data() + face_bytes_begin
             );
         }
 
-        // generate mips (care: they can be uploaded to with graphics::copyTexture)
+        // generate mips (care: they can be uploaded to with graphics::copy_texture)
         glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 
         gl::bind_texture();
 
-        buf.dataVersion = m_DataVersion;
+        opengl_data.source_data_version = data_version_;
     }
 
-    void updateTextureParameters(CubemapOpenGLData& buf)
+    void update_opengl_texture_params(CubemapOpenGLData& opengl_data)
     {
-        gl::bind_texture(buf.texture);
+        gl::bind_texture(opengl_data.texture);
 
         // set texture parameters
-        gl::tex_parameter_i(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, toGLTextureMagFilterParam(m_FilterMode));
-        gl::tex_parameter_i(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, toGLTextureMinFilterParam(m_FilterMode));
-        gl::tex_parameter_i(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, toGLTextureTextureWrapParam(m_WrapModeU));
-        gl::tex_parameter_i(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, toGLTextureTextureWrapParam(m_WrapModeV));
-        gl::tex_parameter_i(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, toGLTextureTextureWrapParam(m_WrapModeW));
+        gl::tex_parameter_i(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, to_opengl_texture_mag_filter_param(filter_mode_));
+        gl::tex_parameter_i(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, to_opengl_texture_min_filter_param(filter_mode_));
+        gl::tex_parameter_i(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, to_opengl_texturewrap_enum(wrap_mode_u_));
+        gl::tex_parameter_i(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, to_opengl_texturewrap_enum(wrap_mode_v_));
+        gl::tex_parameter_i(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, to_opengl_texturewrap_enum(wrap_mode_w_));
 
         // cleanup OpenGL binding state
         gl::bind_texture();
 
-        buf.parametersVersion = m_TextureParamsVersion;
+        opengl_data.source_params_version = texture_params_version_;
     }
 
-    int32_t m_Width;
-    TextureFormat m_Format;
-    std::vector<uint8_t> m_Data;
-    UID m_DataVersion;
+    int32_t width_;
+    TextureFormat format_;
+    std::vector<uint8_t> data_;
+    UID data_version_;
 
-    TextureWrapMode m_WrapModeU = TextureWrapMode::Repeat;
-    TextureWrapMode m_WrapModeV = TextureWrapMode::Repeat;
-    TextureWrapMode m_WrapModeW = TextureWrapMode::Repeat;
-    TextureFilterMode m_FilterMode = TextureFilterMode::Mipmap;
-    UID m_TextureParamsVersion;
+    TextureWrapMode wrap_mode_u_ = TextureWrapMode::Repeat;
+    TextureWrapMode wrap_mode_v_ = TextureWrapMode::Repeat;
+    TextureWrapMode wrap_mode_w_ = TextureWrapMode::Repeat;
+    TextureFilterMode filter_mode_ = TextureFilterMode::Mipmap;
+    UID texture_params_version_;
 
-    DefaultConstructOnCopy<std::optional<CubemapOpenGLData>> m_MaybeGPUTexture;
+    DefaultConstructOnCopy<std::optional<CubemapOpenGLData>> maybe_gpu_texture_;
 };
 
 osc::Cubemap::Cubemap(int32_t width, TextureFormat format) :
@@ -1488,60 +1464,55 @@ void osc::Cubemap::set_pixel_data(CubemapFace face, std::span<const uint8_t> cha
     impl_.upd()->set_pixel_data(face, channelsRowByRow);
 }
 
-
-//////////////////////////////////
-//
-// texture stuff
-//
-//////////////////////////////////
-
 namespace
 {
-    std::vector<Color> readPixelDataAsColor(
-        std::span<const uint8_t> pixelData,
-        TextureFormat pixelDataFormat)
+    std::vector<Color> convert_pixel_bytes_to_color(
+        std::span<const uint8_t> pixel_bytes,
+        TextureFormat pixel_format)
     {
-        const TextureChannelFormat channelFormat = ChannelFormat(pixelDataFormat);
+        const TextureChannelFormat channel_format = channel_format_of(pixel_format);
 
-        const size_t numChannels = NumChannels(pixelDataFormat);
-        const size_t bytesPerChannel = NumBytesPerChannel(channelFormat);
-        const size_t bytesPerPixel = bytesPerChannel * numChannels;
-        const size_t numPixels = pixelData.size() / bytesPerPixel;
+        const size_t num_channels = num_channels_in(pixel_format);
+        const size_t num_bytes_per_channel = num_bytes_per_channel_in(channel_format);
+        const size_t num_bytes_per_pixel = num_bytes_per_channel * num_channels;
+        const size_t num_pixels = pixel_bytes.size() / num_bytes_per_pixel;
 
-        OSC_ASSERT(pixelData.size() % bytesPerPixel == 0);
+        OSC_ASSERT(pixel_bytes.size() % num_bytes_per_pixel == 0);
 
         std::vector<Color> rv;
-        rv.reserve(numPixels);
+        rv.reserve(num_pixels);
 
         static_assert(num_options<TextureChannelFormat>() == 2);
-        if (channelFormat == TextureChannelFormat::Uint8) {
+        if (channel_format == TextureChannelFormat::Uint8) {
+
             // unpack 8-bit channel bytes into floating-point Color channels
-            for (size_t pixel = 0; pixel < numPixels; ++pixel) {
-                const size_t pixelStart = bytesPerPixel * pixel;
+            for (size_t pixel = 0; pixel < num_pixels; ++pixel) {
+                const size_t pixel_begin = num_bytes_per_pixel * pixel;
 
                 Color color = Color::black();
-                for (size_t channel = 0; channel < numChannels; ++channel) {
-                    const size_t channelStart = pixelStart + channel;
-                    color[channel] = Unorm8{pixelData[channelStart]}.normalized_value();
+                for (size_t channel = 0; channel < num_channels; ++channel) {
+                    const size_t channel_begin = pixel_begin + channel;
+                    color[channel] = Unorm8{pixel_bytes[channel_begin]}.normalized_value();
                 }
                 rv.push_back(color);
             }
         }
-        else if (channelFormat == TextureChannelFormat::Float32 && bytesPerChannel == sizeof(float)) {
+        else if (channel_format == TextureChannelFormat::Float32 and num_bytes_per_channel == sizeof(float)) {
+
             // read 32-bit channel floats into Color channels
-            for (size_t pixel = 0; pixel < numPixels; ++pixel) {
-                const size_t pixelStart = bytesPerPixel * pixel;
+            for (size_t pixel = 0; pixel < num_pixels; ++pixel) {
+                const size_t pixel_begin = num_bytes_per_pixel * pixel;
 
                 Color color = Color::black();
-                for (size_t channel = 0; channel < numChannels; ++channel)
+                for (size_t channel = 0; channel < num_channels; ++channel)
                 {
-                    const size_t channelStart = pixelStart + channel*bytesPerChannel;
+                    const size_t channel_begin = pixel_begin + channel*num_bytes_per_channel;
 
-                    std::span<const uint8_t> src{pixelData.data() + channelStart, sizeof(float)};
-                    std::array<uint8_t, sizeof(float)> dest{};
-                    copy(src, dest.begin());
+                    std::span<const uint8_t> channel_span{pixel_bytes.data() + channel_begin, sizeof(float)};
+                    std::array<uint8_t, sizeof(float)> tmp_array{};
+                    copy(channel_span, tmp_array.begin());
 
-                    color[channel] = cpp20::bit_cast<float>(dest);
+                    color[channel] = cpp20::bit_cast<float>(tmp_array);
                 }
                 rv.push_back(color);
             }
@@ -1553,50 +1524,51 @@ namespace
         return rv;
     }
 
-    std::vector<Color32> readPixelDataAsColor32(
-        std::span<const uint8_t> pixelData,
-        TextureFormat pixelDataFormat)
+    std::vector<Color32> convert_pixel_bytes_to_color32(
+        std::span<const uint8_t> pixel_bytes,
+        TextureFormat pixel_format)
     {
-        const TextureChannelFormat channelFormat = ChannelFormat(pixelDataFormat);
+        const TextureChannelFormat channel_format = channel_format_of(pixel_format);
 
-        const size_t numChannels = NumChannels(pixelDataFormat);
-        const size_t bytesPerChannel = NumBytesPerChannel(channelFormat);
-        const size_t bytesPerPixel = bytesPerChannel * numChannels;
-        const size_t numPixels = pixelData.size() / bytesPerPixel;
+        const size_t num_channels = num_channels_in(pixel_format);
+        const size_t num_bytes_per_channel = num_bytes_per_channel_in(channel_format);
+        const size_t num_bytes_per_pixel = num_bytes_per_channel * num_channels;
+        const size_t num_pixels = pixel_bytes.size() / num_bytes_per_pixel;
 
         std::vector<Color32> rv;
-        rv.reserve(numPixels);
+        rv.reserve(num_pixels);
 
         static_assert(num_options<TextureChannelFormat>() == 2);
-        if (channelFormat == TextureChannelFormat::Uint8) {
+        if (channel_format == TextureChannelFormat::Uint8) {
+
             // read 8-bit channel bytes into 8-bit Color32 color channels
-            for (size_t pixel = 0; pixel < numPixels; ++pixel) {
-                const size_t pixelStart = bytesPerPixel * pixel;
+            for (size_t pixel = 0; pixel < num_pixels; ++pixel) {
+                const size_t pixel_begin = num_bytes_per_pixel * pixel;
 
                 Color32 color = {0x00, 0x00, 0x00, 0xff};
-                for (size_t channel = 0; channel < numChannels; ++channel) {
-                    const size_t channelStart = pixelStart + channel;
-                    color[channel] = pixelData[channelStart];
+                for (size_t channel = 0; channel < num_channels; ++channel) {
+                    const size_t channel_begin = pixel_begin + channel;
+                    color[channel] = pixel_bytes[channel_begin];
                 }
                 rv.push_back(color);
             }
         }
         else {
             static_assert(std::is_same_v<Color::value_type, float>);
-            OSC_ASSERT(bytesPerChannel == sizeof(float));
+            OSC_ASSERT(num_bytes_per_channel == sizeof(float));
 
             // pack 32-bit channel floats into 8-bit Color32 color channels
-            for (size_t pixel = 0; pixel < numPixels; ++pixel) {
-                const size_t pixelStart = bytesPerPixel * pixel;
+            for (size_t pixel = 0; pixel < num_pixels; ++pixel) {
+                const size_t pixel_begin = num_bytes_per_pixel * pixel;
 
                 Color32 color = {0x00, 0x00, 0x00, 0xff};
-                for (size_t channel = 0; channel < numChannels; ++channel) {
-                    const size_t channelStart = pixelStart + channel*sizeof(float);
+                for (size_t channel = 0; channel < num_channels; ++channel) {
+                    const size_t channel_begin = pixel_begin + channel*sizeof(float);
 
-                    std::span<const uint8_t> src{pixelData.data() + channelStart, sizeof(float)};
-                    std::array<uint8_t, sizeof(float)> dest{};
-                    copy(src, dest.begin());
-                    const auto channelFloat = cpp20::bit_cast<float>(dest);
+                    std::span<const uint8_t> channel_span{pixel_bytes.data() + channel_begin, sizeof(float)};
+                    std::array<uint8_t, sizeof(float)> tmp_array{};
+                    copy(channel_span, tmp_array.begin());
+                    const auto channelFloat = cpp20::bit_cast<float>(tmp_array);
 
                     color[channel] = Unorm8{channelFloat};
                 }
@@ -1607,75 +1579,76 @@ namespace
         return rv;
     }
 
-    void encodePixelsInDesiredFormat(
-        std::span<const Color> pixels,
-        TextureFormat pixelDataFormat,
-        std::vector<uint8_t>& pixelData)
+    void convert_colors_to_pixel_bytes(
+        std::span<const Color> colors,
+        TextureFormat desired_pixel_format,
+        std::vector<uint8_t>& pixel_bytes_out)
     {
-        const TextureChannelFormat channelFormat = ChannelFormat(pixelDataFormat);
+        const TextureChannelFormat channel_format = channel_format_of(desired_pixel_format);
 
-        const size_t numChannels = NumChannels(pixelDataFormat);
-        const size_t bytesPerChannel = NumBytesPerChannel(channelFormat);
-        const size_t bytesPerPixel = bytesPerChannel * numChannels;
-        const size_t numPixels = pixels.size();
-        const size_t numOutputBytes = bytesPerPixel * numPixels;
+        const size_t num_channels = num_channels_in(desired_pixel_format);
+        const size_t num_bytes_per_channel = num_bytes_per_channel_in(channel_format);
+        const size_t num_bytes_per_pixel = num_bytes_per_channel * num_channels;
+        const size_t num_pixels = colors.size();
+        const size_t num_output_bytes = num_bytes_per_pixel * num_pixels;
 
-        pixelData.clear();
-        pixelData.reserve(numOutputBytes);
+        pixel_bytes_out.clear();
+        pixel_bytes_out.reserve(num_output_bytes);
 
-        OSC_ASSERT(numChannels <= std::tuple_size_v<Color>);
+        OSC_ASSERT(num_channels <= std::tuple_size_v<Color>);
         static_assert(num_options<TextureChannelFormat>() == 2);
-        if (channelFormat == TextureChannelFormat::Uint8) {
+        if (channel_format == TextureChannelFormat::Uint8) {
+
             // clamp pixels, convert them to bytes, add them to pixel data buffer
-            for (const Color& pixel : pixels) {
-                for (size_t channel = 0; channel < numChannels; ++channel) {
-                    pixelData.push_back(Unorm8{pixel[channel]}.raw_value());
+            for (const Color& color : colors) {
+                for (size_t channel = 0; channel < num_channels; ++channel) {
+                    pixel_bytes_out.push_back(Unorm8{color[channel]}.raw_value());
                 }
             }
         }
         else {
             // write pixels to pixel data buffer as-is (they're floats already)
-            for (const Color& pixel : pixels) {
-                for (size_t channel = 0; channel < numChannels; ++channel) {
-                    push_as_bytes(pixel[channel], pixelData);
+            for (const Color& color : colors) {
+                for (size_t channel = 0; channel < num_channels; ++channel) {
+                    push_as_bytes(color[channel], pixel_bytes_out);
                 }
             }
         }
     }
 
-    void encodePixels32InDesiredFormat(
-        std::span<const Color32> pixels,
-        TextureFormat pixelDataFormat,
-        std::vector<uint8_t>& pixelData)
+    void convert_color32s_to_pixel_bytes(
+        std::span<const Color32> colors,
+        TextureFormat desired_pixel_format,
+        std::vector<uint8_t>& pixel_data_out)
     {
-        const TextureChannelFormat channelFormat = ChannelFormat(pixelDataFormat);
+        const TextureChannelFormat channel_format = channel_format_of(desired_pixel_format);
 
-        const size_t numChannels = NumChannels(pixelDataFormat);
-        const size_t bytesPerChannel = NumBytesPerChannel(channelFormat);
-        const size_t bytesPerPixel = bytesPerChannel * numChannels;
-        const size_t numPixels = pixels.size();
-        const size_t numOutputBytes = bytesPerPixel * numPixels;
+        const size_t num_channels = num_channels_in(desired_pixel_format);
+        const size_t num_bytes_per_channel = num_bytes_per_channel_in(channel_format);
+        const size_t num_bytes_per_pixel = num_bytes_per_channel * num_channels;
+        const size_t num_pixels = colors.size();
+        const size_t num_output_bytes = num_bytes_per_pixel * num_pixels;
 
-        pixelData.clear();
-        pixelData.reserve(numOutputBytes);
+        pixel_data_out.clear();
+        pixel_data_out.reserve(num_output_bytes);
 
-        OSC_ASSERT(numChannels <= Color32::length());
+        OSC_ASSERT(num_channels <= Color32::length());
         static_assert(num_options<TextureChannelFormat>() == 2);
-        if (channelFormat == TextureChannelFormat::Uint8) {
+        if (channel_format == TextureChannelFormat::Uint8) {
             // write pixels to pixel data buffer as-is (they're bytes already)
-            for (const Color32& pixel : pixels) {
-                for (size_t channel = 0; channel < numChannels; ++channel) {
-                    pixelData.push_back(pixel[channel].raw_value());
+            for (const Color32& color : colors) {
+                for (size_t channel = 0; channel < num_channels; ++channel) {
+                    pixel_data_out.push_back(color[channel].raw_value());
                 }
             }
         }
         else
         {
             // upscale pixels to float32s and write the floats to the pixel buffer
-            for (const Color32& pixel : pixels) {
-                for (size_t channel = 0; channel < numChannels; ++channel) {
-                    const float pixelFloatVal = Unorm8{pixel[channel]}.normalized_value();
-                    push_as_bytes(pixelFloatVal, pixelData);
+            for (const Color32& color : colors) {
+                for (size_t channel = 0; channel < num_channels; ++channel) {
+                    const float pixelFloatVal = Unorm8{color[channel]}.normalized_value();
+                    push_as_bytes(pixelFloatVal, pixel_data_out);
                 }
             }
         }
@@ -1687,34 +1660,34 @@ public:
     Impl(
         Vec2i dimensions,
         TextureFormat format,
-        ColorSpace colorSpace,
-        TextureWrapMode wrapMode,
-        TextureFilterMode filterMode) :
+        ColorSpace color_space,
+        TextureWrapMode wrap_mode,
+        TextureFilterMode filter_mode) :
 
-        m_Dimensions{dimensions},
-        m_Format{format},
-        m_ColorSpace{colorSpace},
-        m_WrapModeU{wrapMode},
-        m_WrapModeV{wrapMode},
-        m_WrapModeW{wrapMode},
-        m_FilterMode{filterMode}
+        dimensions_{dimensions},
+        format_{format},
+        color_space_{color_space},
+        wrap_mode_u_{wrap_mode},
+        wrap_mode_v_{wrap_mode},
+        wrap_mode_w_{wrap_mode},
+        filter_mode_{filter_mode}
     {
-        OSC_ASSERT(m_Dimensions.x > 0 && m_Dimensions.y > 0);
+        OSC_ASSERT(dimensions_.x > 0 and dimensions_.y > 0);
     }
 
     Vec2i getDimensions() const
     {
-        return m_Dimensions;
+        return dimensions_;
     }
 
     TextureFormat texture_format() const
     {
-        return m_Format;
+        return format_;
     }
 
     ColorSpace getColorSpace() const
     {
-        return m_ColorSpace;
+        return color_space_;
     }
 
     TextureWrapMode wrap_mode() const
@@ -1722,231 +1695,226 @@ public:
         return get_wrap_mode_u();
     }
 
-    void set_wrap_mode(TextureWrapMode twm)
+    void set_wrap_mode(TextureWrapMode new_wrap_mode)
     {
-        set_wrap_mode_u(twm);
-        set_wrap_mode_v(twm);
-        set_wrap_mode_w(twm);
-        m_TextureParamsVersion.reset();
+        set_wrap_mode_u(new_wrap_mode);
+        set_wrap_mode_v(new_wrap_mode);
+        set_wrap_mode_w(new_wrap_mode);
+        texture_params_version_.reset();
     }
 
     TextureWrapMode get_wrap_mode_u() const
     {
-        return m_WrapModeU;
+        return wrap_mode_u_;
     }
 
-    void set_wrap_mode_u(TextureWrapMode twm)
+    void set_wrap_mode_u(TextureWrapMode new_wrap_mode_u)
     {
-        m_WrapModeU = twm;
-        m_TextureParamsVersion.reset();
+        wrap_mode_u_ = new_wrap_mode_u;
+        texture_params_version_.reset();
     }
 
     TextureWrapMode get_wrap_mode_v() const
     {
-        return m_WrapModeV;
+        return wrap_mode_v_;
     }
 
-    void set_wrap_mode_v(TextureWrapMode twm)
+    void set_wrap_mode_v(TextureWrapMode new_wrap_mode_v)
     {
-        m_WrapModeV = twm;
-        m_TextureParamsVersion.reset();
+        wrap_mode_v_ = new_wrap_mode_v;
+        texture_params_version_.reset();
     }
 
     TextureWrapMode wrap_mode_w() const
     {
-        return m_WrapModeW;
+        return wrap_mode_w_;
     }
 
-    void set_wrap_mode_w(TextureWrapMode twm)
+    void set_wrap_mode_w(TextureWrapMode new_wrap_mode_w)
     {
-        m_WrapModeW = twm;
-        m_TextureParamsVersion.reset();
+        wrap_mode_w_ = new_wrap_mode_w;
+        texture_params_version_.reset();
     }
 
     TextureFilterMode filter_mode() const
     {
-        return m_FilterMode;
+        return filter_mode_;
     }
 
-    void set_filter_mode(TextureFilterMode tfm)
+    void set_filter_mode(TextureFilterMode new_filter_mode)
     {
-        m_FilterMode = tfm;
-        m_TextureParamsVersion.reset();
+        filter_mode_ = new_filter_mode;
+        texture_params_version_.reset();
     }
 
     std::vector<Color> getPixels() const
     {
-        return readPixelDataAsColor(m_PixelData, m_Format);
+        return convert_pixel_bytes_to_color(pixel_data_, format_);
     }
 
     void setPixels(std::span<const Color> pixels)
     {
-        OSC_ASSERT(std::ssize(pixels) == static_cast<ptrdiff_t>(m_Dimensions.x*m_Dimensions.y));
-        encodePixelsInDesiredFormat(pixels, m_Format, m_PixelData);
+        OSC_ASSERT(std::ssize(pixels) == static_cast<ptrdiff_t>(dimensions_.x*dimensions_.y));
+        convert_colors_to_pixel_bytes(pixels, format_, pixel_data_);
     }
 
     std::vector<Color32> getPixels32() const
     {
-        return readPixelDataAsColor32(m_PixelData, m_Format);
+        return convert_pixel_bytes_to_color32(pixel_data_, format_);
     }
 
     void setPixels32(std::span<const Color32> pixels)
     {
-        OSC_ASSERT(std::ssize(pixels) == static_cast<ptrdiff_t>(m_Dimensions.x*m_Dimensions.y));
-        encodePixels32InDesiredFormat(pixels, m_Format, m_PixelData);
+        OSC_ASSERT(std::ssize(pixels) == static_cast<ptrdiff_t>(dimensions_.x*dimensions_.y));
+        convert_color32s_to_pixel_bytes(pixels, format_, pixel_data_);
     }
 
     std::span<const uint8_t> getPixelData() const
     {
-        return m_PixelData;
+        return pixel_data_;
     }
 
     void set_pixel_data(std::span<const uint8_t> pixelData)
     {
-        OSC_ASSERT(pixelData.size() == NumBytesPerPixel(m_Format)*m_Dimensions.x*m_Dimensions.y && "incorrect number of bytes passed to Texture2D::set_pixel_data");
-        OSC_ASSERT(pixelData.size() == m_PixelData.size());
+        OSC_ASSERT(pixelData.size() == num_bytes_per_pixel_in(format_)*dimensions_.x*dimensions_.y && "incorrect number of bytes passed to Texture2D::set_pixel_data");
+        OSC_ASSERT(pixelData.size() == pixel_data_.size());
 
-        copy(pixelData, m_PixelData.begin());
+        copy(pixelData, pixel_data_.begin());
     }
 
     // non PIMPL method
 
     gl::Texture2D& updTexture()
     {
-        if (!*m_MaybeGPUTexture)
+        if (!*maybe_opengl_data_)
         {
-            uploadToGPU();
+            upload_to_gpu();
         }
-        OSC_ASSERT(*m_MaybeGPUTexture);
+        OSC_ASSERT(*maybe_opengl_data_);
 
-        Texture2DOpenGLData& bufs = **m_MaybeGPUTexture;
+        Texture2DOpenGLData& bufs = **maybe_opengl_data_;
 
-        if (bufs.texture_params_version != m_TextureParamsVersion)
+        if (bufs.texture_params_version != texture_params_version_)
         {
-            setTextureParams(bufs);
+            update_opengl_texture_params(bufs);
         }
 
         return bufs.texture;
     }
 
 private:
-    void uploadToGPU()
+    void upload_to_gpu()
     {
-        *m_MaybeGPUTexture = Texture2DOpenGLData{};
+        *maybe_opengl_data_ = Texture2DOpenGLData{};
 
-        const size_t numBytesPerPixel = NumBytesPerPixel(m_Format);
-        const size_t numBytesPerRow = m_Dimensions.x * numBytesPerPixel;
-        const GLint unpackAlignment = toOpenGLUnpackAlignment(m_Format);
-        const CPUDataType cpuDataType = toEquivalentCPUDataType(m_Format);  // TextureFormat's datatype == CPU format's datatype for cubemaps
-        const CPUImageFormat cpuChannelLayout = toEquivalentCPUImageFormat(m_Format);  // TextureFormat's layout == CPU formats's layout for cubemaps
+        const size_t num_bytes_per_pixel = num_bytes_per_pixel_in(format_);
+        const size_t num_bytes_per_row = dimensions_.x * num_bytes_per_pixel;
+        const GLint unpack_alignment = opengl_unpack_alignment_of(format_);
+        const CPUDataType cpu_data_type = equivalent_cpu_datatype_of(format_);  // TextureFormat's datatype == CPU format's datatype for cubemaps
+        const CPUImageFormat cpu_channel_layout = equivalent_cpu_image_format_of(format_);  // TextureFormat's layout == CPU formats's layout for cubemaps
 
         static_assert(num_options<TextureFormat>() == 7, "careful here, glTexImage2D will not accept some formats (e.g. GL_RGBA16F) as the externally-provided format (must be GL_RGBA format with GL_HALF_FLOAT type)");
-        OSC_ASSERT(numBytesPerRow % unpackAlignment == 0 && "the memory alignment of each horizontal line in an OpenGL texture must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
-        OSC_ASSERT(is_aligned_at_least(m_PixelData.data(), unpackAlignment) && "the memory alignment of the supplied pixel memory must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
+        OSC_ASSERT(num_bytes_per_row % unpack_alignment == 0 && "the memory alignment of each horizontal line in an OpenGL texture must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
+        OSC_ASSERT(is_aligned_at_least(pixel_data_.data(), unpack_alignment) && "the memory alignment of the supplied pixel memory must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
 
         // one-time upload, because pixels cannot be altered
-        gl::bind_texture((*m_MaybeGPUTexture)->texture);
-        gl::pixel_store_i(GL_UNPACK_ALIGNMENT, unpackAlignment);
+        gl::bind_texture((*maybe_opengl_data_)->texture);
+        gl::pixel_store_i(GL_UNPACK_ALIGNMENT, unpack_alignment);
         gl::tex_image2D(
             GL_TEXTURE_2D,
             0,
-            toOpenGLInternalFormat(m_Format, m_ColorSpace),
-            m_Dimensions.x,
-            m_Dimensions.y,
+            opengl_internal_format_of(format_, color_space_),
+            dimensions_.x,
+            dimensions_.y,
             0,
-            toOpenGLFormat(cpuChannelLayout),
-            toOpenGLDataType(cpuDataType),
-            m_PixelData.data()
+            opengl_format_of(cpu_channel_layout),
+            opengl_data_type_of(cpu_data_type),
+            pixel_data_.data()
         );
         glGenerateMipmap(GL_TEXTURE_2D);
         gl::bind_texture();
     }
 
-    void setTextureParams(Texture2DOpenGLData& bufs)
+    void update_opengl_texture_params(Texture2DOpenGLData& bufs)
     {
         gl::bind_texture(bufs.texture);
-        gl::tex_parameter_i(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, toGLTextureTextureWrapParam(m_WrapModeU));
-        gl::tex_parameter_i(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, toGLTextureTextureWrapParam(m_WrapModeV));
-        gl::tex_parameter_i(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, toGLTextureTextureWrapParam(m_WrapModeW));
-        gl::tex_parameter_i(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, toGLTextureMinFilterParam(m_FilterMode));
-        gl::tex_parameter_i(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, toGLTextureMagFilterParam(m_FilterMode));
+        gl::tex_parameter_i(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, to_opengl_texturewrap_enum(wrap_mode_u_));
+        gl::tex_parameter_i(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, to_opengl_texturewrap_enum(wrap_mode_v_));
+        gl::tex_parameter_i(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, to_opengl_texturewrap_enum(wrap_mode_w_));
+        gl::tex_parameter_i(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, to_opengl_texture_min_filter_param(filter_mode_));
+        gl::tex_parameter_i(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, to_opengl_texture_mag_filter_param(filter_mode_));
         gl::bind_texture();
-        bufs.texture_params_version = m_TextureParamsVersion;
+        bufs.texture_params_version = texture_params_version_;
     }
 
     friend class GraphicsBackend;
 
-    Vec2i m_Dimensions;
-    TextureFormat m_Format;
-    ColorSpace m_ColorSpace;
-    TextureWrapMode m_WrapModeU = TextureWrapMode::Repeat;
-    TextureWrapMode m_WrapModeV = TextureWrapMode::Repeat;
-    TextureWrapMode m_WrapModeW = TextureWrapMode::Repeat;
-    TextureFilterMode m_FilterMode = TextureFilterMode::Nearest;
-    std::vector<uint8_t> m_PixelData = std::vector<uint8_t>(NumBytesPerPixel(m_Format) * m_Dimensions.x * m_Dimensions.y, 0xff);
-    UID m_TextureParamsVersion;
-    DefaultConstructOnCopy<std::optional<Texture2DOpenGLData>> m_MaybeGPUTexture;
+    Vec2i dimensions_;
+    TextureFormat format_;
+    ColorSpace color_space_;
+    TextureWrapMode wrap_mode_u_ = TextureWrapMode::Repeat;
+    TextureWrapMode wrap_mode_v_ = TextureWrapMode::Repeat;
+    TextureWrapMode wrap_mode_w_ = TextureWrapMode::Repeat;
+    TextureFilterMode filter_mode_ = TextureFilterMode::Nearest;
+    std::vector<uint8_t> pixel_data_ = std::vector<uint8_t>(num_bytes_per_pixel_in(format_) * dimensions_.x * dimensions_.y, 0xff);
+    UID texture_params_version_;
+    DefaultConstructOnCopy<std::optional<Texture2DOpenGLData>> maybe_opengl_data_;
 };
 
 std::ostream& osc::operator<<(std::ostream& o, TextureWrapMode twm)
 {
-    return o << c_TextureWrapModeStrings.at(static_cast<size_t>(twm));
+    return o << c_texture_wrap_mode_strings.at(static_cast<size_t>(twm));
 }
 
 std::ostream& osc::operator<<(std::ostream& o, TextureFilterMode twm)
 {
-    return o << c_TextureFilterModeStrings.at(static_cast<size_t>(twm));
+    return o << c_texture_filter_mode_strings.at(static_cast<size_t>(twm));
 }
 
-size_t osc::NumChannels(TextureFormat format)
+size_t osc::num_channels_in(TextureFormat format)
 {
     constexpr auto lut = []<TextureFormat... Formats>(OptionList<TextureFormat, Formats...>)
     {
         return std::to_array({ TextureFormatTraits<Formats>::num_channels... });
     }(TextureFormatList{});
 
-    return lut.at(ToIndex(format));
+    return lut.at(to_index(format));
 }
 
-TextureChannelFormat osc::ChannelFormat(TextureFormat f)
+TextureChannelFormat osc::channel_format_of(TextureFormat f)
 {
     constexpr auto lut = []<TextureFormat... Formats>(OptionList<TextureFormat, Formats...>)
     {
         return std::to_array({ TextureFormatTraits<Formats>::channel_format... });
     }(TextureFormatList{});
 
-    return lut.at(ToIndex(f));
+    return lut.at(to_index(f));
 }
 
-size_t osc::NumBytesPerPixel(TextureFormat format)
+size_t osc::num_bytes_per_pixel_in(TextureFormat format)
 {
-    return NumChannels(format) * NumBytesPerChannel(ChannelFormat(format));
+    return num_channels_in(format) * num_bytes_per_channel_in(channel_format_of(format));
 }
 
-std::optional<TextureFormat> osc::ToTextureFormat(size_t numChannels, TextureChannelFormat channelFormat)
+std::optional<TextureFormat> osc::to_texture_format(size_t num_channels, TextureChannelFormat channel_format)
 {
     static_assert(num_options<TextureChannelFormat>() == 2);
-    const bool isByteOriented = channelFormat == TextureChannelFormat::Uint8;
+    const bool format_is_byte_oriented = channel_format == TextureChannelFormat::Uint8;
 
     static_assert(num_options<TextureFormat>() == 7);
-    switch (numChannels) {
-    case 1:
-        return isByteOriented ? TextureFormat::R8 : std::optional<TextureFormat>{};
-    case 2:
-        return isByteOriented ? TextureFormat::RG16 : TextureFormat::RGFloat;
-    case 3:
-        return isByteOriented ? TextureFormat::RGB24 : TextureFormat::RGBFloat;
-    case 4:
-        return isByteOriented ? TextureFormat::RGBA32 : TextureFormat::RGBAFloat;
-    default:
-        return std::nullopt;
+    switch (num_channels) {
+    case 1: return format_is_byte_oriented ? TextureFormat::R8     : std::optional<TextureFormat>{};
+    case 2: return format_is_byte_oriented ? TextureFormat::RG16   : TextureFormat::RGFloat;
+    case 3: return format_is_byte_oriented ? TextureFormat::RGB24  : TextureFormat::RGBFloat;
+    case 4: return format_is_byte_oriented ? TextureFormat::RGBA32 : TextureFormat::RGBAFloat;
+    default: return std::nullopt;
     }
 }
 
-size_t osc::NumBytesPerChannel(TextureChannelFormat f)
+size_t osc::num_bytes_per_channel_in(TextureChannelFormat channel_format)
 {
     static_assert(num_options<TextureChannelFormat>() == 2);
-    switch (f) {
+    switch (channel_format) {
     case TextureChannelFormat::Uint8: return 1;
     case TextureChannelFormat::Float32: return 4;
     default: return 1;
@@ -1956,14 +1924,12 @@ size_t osc::NumBytesPerChannel(TextureChannelFormat f)
 osc::Texture2D::Texture2D(
     Vec2i dimensions,
     TextureFormat format,
-    ColorSpace colorSpace,
-    TextureWrapMode wrapMode,
-    TextureFilterMode filterMode) :
+    ColorSpace color_space,
+    TextureWrapMode wrap_mode,
+    TextureFilterMode filter_mode) :
 
-    m_Impl{make_cow<Impl>(dimensions, format, colorSpace, wrapMode, filterMode)}
-{
-}
-
+    m_Impl{make_cow<Impl>(dimensions, format, color_space, wrap_mode, filter_mode)}
+{}
 
 Vec2i osc::Texture2D::getDimensions() const
 {
@@ -1985,9 +1951,9 @@ TextureWrapMode osc::Texture2D::wrap_mode() const
     return m_Impl->wrap_mode();
 }
 
-void osc::Texture2D::set_wrap_mode(TextureWrapMode twm)
+void osc::Texture2D::set_wrap_mode(TextureWrapMode new_wrap_mode)
 {
-    m_Impl.upd()->set_wrap_mode(twm);
+    m_Impl.upd()->set_wrap_mode(new_wrap_mode);
 }
 
 TextureWrapMode osc::Texture2D::wrap_mode_u() const
@@ -1995,9 +1961,9 @@ TextureWrapMode osc::Texture2D::wrap_mode_u() const
     return m_Impl->get_wrap_mode_u();
 }
 
-void osc::Texture2D::set_wrap_mode_u(TextureWrapMode twm)
+void osc::Texture2D::set_wrap_mode_u(TextureWrapMode new_wrap_mode_u)
 {
-    m_Impl.upd()->set_wrap_mode_u(twm);
+    m_Impl.upd()->set_wrap_mode_u(new_wrap_mode_u);
 }
 
 TextureWrapMode osc::Texture2D::wrap_mode_v() const
@@ -2005,9 +1971,9 @@ TextureWrapMode osc::Texture2D::wrap_mode_v() const
     return m_Impl->get_wrap_mode_v();
 }
 
-void osc::Texture2D::set_wrap_mode_v(TextureWrapMode twm)
+void osc::Texture2D::set_wrap_mode_v(TextureWrapMode new_wrap_mode_v)
 {
-    m_Impl.upd()->set_wrap_mode_v(twm);
+    m_Impl.upd()->set_wrap_mode_v(new_wrap_mode_v);
 }
 
 TextureWrapMode osc::Texture2D::wrap_mode_w() const
@@ -2015,9 +1981,9 @@ TextureWrapMode osc::Texture2D::wrap_mode_w() const
     return m_Impl->wrap_mode_w();
 }
 
-void osc::Texture2D::set_wrap_mode_w(TextureWrapMode twm)
+void osc::Texture2D::set_wrap_mode_w(TextureWrapMode new_wrap_mode_w)
 {
-    m_Impl.upd()->set_wrap_mode_w(twm);
+    m_Impl.upd()->set_wrap_mode_w(new_wrap_mode_w);
 }
 
 TextureFilterMode osc::Texture2D::filter_mode() const
@@ -2025,9 +1991,9 @@ TextureFilterMode osc::Texture2D::filter_mode() const
     return m_Impl->filter_mode();
 }
 
-void osc::Texture2D::set_filter_mode(TextureFilterMode twm)
+void osc::Texture2D::set_filter_mode(TextureFilterMode filter_mode)
 {
-    m_Impl.upd()->set_filter_mode(twm);
+    m_Impl.upd()->set_filter_mode(filter_mode);
 }
 
 std::vector<Color> osc::Texture2D::getPixels() const
@@ -2065,16 +2031,9 @@ std::ostream& osc::operator<<(std::ostream& o, const Texture2D&)
     return o << "Texture2D()";
 }
 
-
-//////////////////////////////////
-//
-// render texture
-//
-//////////////////////////////////
-
 namespace
 {
-    constexpr auto c_RenderTextureFormatStrings = std::to_array<CStringView>({
+    constexpr auto c_render_texture_format_strings = std::to_array<CStringView>({
         "Red8",
         "ARGB32",
 
@@ -2084,31 +2043,31 @@ namespace
 
         "Depth",
     });
-    static_assert(c_RenderTextureFormatStrings.size() == num_options<RenderTextureFormat>());
+    static_assert(c_render_texture_format_strings.size() == num_options<RenderTextureFormat>());
 
-    constexpr auto c_DepthStencilFormatStrings = std::to_array<CStringView>({
+    constexpr auto c_depth_stencil_format_strings = std::to_array<CStringView>({
         "D24_UNorm_S8_UInt",
     });
-    static_assert(c_DepthStencilFormatStrings.size() == num_options<DepthStencilFormat>());
+    static_assert(c_depth_stencil_format_strings.size() == num_options<DepthStencilFormat>());
 
-    GLenum toInternalOpenGLColorFormat(
-        RenderBufferType type,
-        const RenderTextureDescriptor& desc)
+    GLenum to_opengl_internal_color_format_enum(
+        RenderBufferType buffer_type,
+        const RenderTextureDescriptor& descriptor)
     {
         static_assert(num_options<RenderBufferType>() == 2, "review code below, which treats RenderBufferType as a bool");
-        if (type == RenderBufferType::Depth) {
+        if (buffer_type == RenderBufferType::Depth) {
             return GL_DEPTH24_STENCIL8;
         }
         else {
             static_assert(num_options<RenderTextureFormat>() == 6);
             static_assert(num_options<RenderTextureReadWrite>() == 2);
 
-            switch (desc.getColorFormat()) {
+            switch (descriptor.getColorFormat()) {
             case RenderTextureFormat::Red8:
                 return GL_RED;
             default:
             case RenderTextureFormat::ARGB32:
-                return desc.getReadWrite() == RenderTextureReadWrite::sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8;
+                return descriptor.getReadWrite() == RenderTextureReadWrite::sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8;
             case RenderTextureFormat::RGFloat16:
                 return GL_RG16F;
             case RenderTextureFormat::RGBFloat16:
@@ -2121,7 +2080,7 @@ namespace
         }
     }
 
-    constexpr CPUImageFormat toEquivalentCPUImageFormat(
+    constexpr CPUImageFormat equivalent_cpu_image_format_of(
         RenderBufferType type,
         const RenderTextureDescriptor& desc)
     {
@@ -2152,8 +2111,8 @@ namespace
         }
     }
 
-    constexpr CPUDataType toEquivalentCPUDataType(
-        RenderBufferType type,
+    constexpr CPUDataType equivalent_cpu_datatype_of(
+        RenderBufferType buffer_type,
         const RenderTextureDescriptor& desc)
     {
         static_assert(num_options<RenderBufferType>() == 2);
@@ -2161,7 +2120,7 @@ namespace
         static_assert(num_options<RenderTextureFormat>() == 6);
         static_assert(num_options<CPUDataType>() == 4);
 
-        if (type == RenderBufferType::Depth) {
+        if (buffer_type == RenderBufferType::Depth) {
             return CPUDataType::UnsignedInt24_8;
         }
         else {
@@ -2183,27 +2142,27 @@ namespace
         }
     }
 
-    constexpr GLenum toImageColorFormat(TextureFormat f)
+    constexpr GLenum to_opengl_image_color_format_enum(TextureFormat format)
     {
         constexpr auto lut = []<TextureFormat... Formats>(OptionList<TextureFormat, Formats...>)
         {
             return std::to_array({ TextureFormatOpenGLTraits<Formats>::image_color_format... });
         }(TextureFormatList{});
 
-        return lut.at(ToIndex(f));
+        return lut.at(to_index(format));
     }
 
-    constexpr GLint toImagePixelPackAlignment(TextureFormat f)
+    constexpr GLint to_opengl_image_pixel_pack_alignment(TextureFormat format)
     {
         constexpr auto lut = []<TextureFormat... Formats>(OptionList<TextureFormat, Formats...>)
         {
             return std::to_array({ TextureFormatOpenGLTraits<Formats>::pixel_pack_alignment... });
         }(TextureFormatList{});
 
-        return lut.at(ToIndex(f));
+        return lut.at(to_index(format));
     }
 
-    constexpr GLenum toImageDataType(TextureFormat)
+    constexpr GLenum to_opengl_image_data_type_enum(TextureFormat)
     {
         static_assert(num_options<TextureFormat>() == 7);
         return GL_UNSIGNED_BYTE;
@@ -2212,93 +2171,92 @@ namespace
 
 std::ostream& osc::operator<<(std::ostream& o, RenderTextureFormat f)
 {
-    return o << c_RenderTextureFormatStrings.at(static_cast<size_t>(f));
+    return o << c_render_texture_format_strings.at(static_cast<size_t>(f));
 }
 
 std::ostream& osc::operator<<(std::ostream& o, DepthStencilFormat f)
 {
-    return o << c_DepthStencilFormatStrings.at(static_cast<size_t>(f));
+    return o << c_depth_stencil_format_strings.at(static_cast<size_t>(f));
 }
 
 osc::RenderTextureDescriptor::RenderTextureDescriptor(Vec2i dimensions) :
-    m_Dimensions{elementwise_max(dimensions, Vec2i{0, 0})},
-    m_Dimension{TextureDimensionality::Tex2D},
-    m_AnialiasingLevel{1},
-    m_ColorFormat{RenderTextureFormat::ARGB32},
-    m_DepthStencilFormat{DepthStencilFormat::D24_UNorm_S8_UInt},
-    m_ReadWrite{RenderTextureReadWrite::Default}
-{
-}
+    dimensions_{elementwise_max(dimensions, Vec2i{0, 0})},
+    dimensionality_{TextureDimensionality::Tex2D},
+    antialiasing_level_{1},
+    color_format_{RenderTextureFormat::ARGB32},
+    depth_stencil_format_{DepthStencilFormat::D24_UNorm_S8_UInt},
+    read_write_{RenderTextureReadWrite::Default}
+{}
 
 Vec2i osc::RenderTextureDescriptor::getDimensions() const
 {
-    return m_Dimensions;
+    return dimensions_;
 }
 
-void osc::RenderTextureDescriptor::setDimensions(Vec2i d)
+void osc::RenderTextureDescriptor::setDimensions(Vec2i new_dimensions)
 {
-    OSC_ASSERT(d.x >= 0 && d.y >= 0);
-    m_Dimensions = d;
+    OSC_ASSERT(new_dimensions.x >= 0 and new_dimensions.y >= 0);
+    dimensions_ = new_dimensions;
 }
 
 TextureDimensionality osc::RenderTextureDescriptor::getDimensionality() const
 {
-    return m_Dimension;
+    return dimensionality_;
 }
 
-void osc::RenderTextureDescriptor::setDimensionality(TextureDimensionality newDimension)
+void osc::RenderTextureDescriptor::setDimensionality(TextureDimensionality new_dimensionality)
 {
-    m_Dimension = newDimension;
+    dimensionality_ = new_dimensionality;
 }
 
 AntiAliasingLevel osc::RenderTextureDescriptor::getAntialiasingLevel() const
 {
-    return m_AnialiasingLevel;
+    return antialiasing_level_;
 }
 
-void osc::RenderTextureDescriptor::setAntialiasingLevel(AntiAliasingLevel level)
+void osc::RenderTextureDescriptor::setAntialiasingLevel(AntiAliasingLevel new_aa_level)
 {
-    m_AnialiasingLevel = level;
+    antialiasing_level_ = new_aa_level;
 }
 
 RenderTextureFormat osc::RenderTextureDescriptor::getColorFormat() const
 {
-    return m_ColorFormat;
+    return color_format_;
 }
 
-void osc::RenderTextureDescriptor::setColorFormat(RenderTextureFormat f)
+void osc::RenderTextureDescriptor::setColorFormat(RenderTextureFormat new_color_format)
 {
-    m_ColorFormat = f;
+    color_format_ = new_color_format;
 }
 
 DepthStencilFormat osc::RenderTextureDescriptor::getDepthStencilFormat() const
 {
-    return m_DepthStencilFormat;
+    return depth_stencil_format_;
 }
 
-void osc::RenderTextureDescriptor::setDepthStencilFormat(DepthStencilFormat f)
+void osc::RenderTextureDescriptor::setDepthStencilFormat(DepthStencilFormat new_depth_stencil_format)
 {
-    m_DepthStencilFormat = f;
+    depth_stencil_format_ = new_depth_stencil_format;
 }
 
 RenderTextureReadWrite osc::RenderTextureDescriptor::getReadWrite() const
 {
-    return m_ReadWrite;
+    return read_write_;
 }
 
-void osc::RenderTextureDescriptor::setReadWrite(RenderTextureReadWrite rw)
+void osc::RenderTextureDescriptor::setReadWrite(RenderTextureReadWrite new_read_write)
 {
-    m_ReadWrite = rw;
+    read_write_ = new_read_write;
 }
 
-std::ostream& osc::operator<<(std::ostream& o, const RenderTextureDescriptor& rtd)
+std::ostream& osc::operator<<(std::ostream& o, const RenderTextureDescriptor& descriptor)
 {
     return o <<
-        "RenderTextureDescriptor(width = " << rtd.m_Dimensions.x
-        << ", height = " << rtd.m_Dimensions.y
-        << ", aa = " << rtd.m_AnialiasingLevel
-        << ", colorFormat = " << rtd.m_ColorFormat
-        << ", depthFormat = " << rtd.m_DepthStencilFormat
+        "RenderTextureDescriptor(width = " << descriptor.dimensions_.x
+        << ", height = " << descriptor.dimensions_.y
+        << ", aa = " << descriptor.antialiasing_level_
+        << ", colorFormat = " << descriptor.color_format_
+        << ", depthFormat = " << descriptor.depth_stencil_format_
         << ")";
 }
 
@@ -2465,12 +2423,12 @@ public:
         gl::tex_image2D(
             GL_TEXTURE_2D,
             0,
-            toInternalOpenGLColorFormat(m_BufferType, m_Descriptor),
+            to_opengl_internal_color_format_enum(m_BufferType, m_Descriptor),
             dimensions.x,
             dimensions.y,
             0,
-            toOpenGLFormat(toEquivalentCPUImageFormat(m_BufferType, m_Descriptor)),
-            toOpenGLDataType(toEquivalentCPUDataType(m_BufferType, m_Descriptor)),
+            opengl_format_of(equivalent_cpu_image_format_of(m_BufferType, m_Descriptor)),
+            opengl_data_type_of(equivalent_cpu_datatype_of(m_BufferType, m_Descriptor)),
             nullptr
         );
         gl::tex_parameter_i(
@@ -2510,7 +2468,7 @@ public:
         glRenderbufferStorageMultisample(
             GL_RENDERBUFFER,
             m_Descriptor.getAntialiasingLevel().get_as<GLsizei>(),
-            toInternalOpenGLColorFormat(m_BufferType, m_Descriptor),
+            to_opengl_internal_color_format_enum(m_BufferType, m_Descriptor),
             dimensions.x,
             dimensions.y
         );
@@ -2521,12 +2479,12 @@ public:
         gl::tex_image2D(
             GL_TEXTURE_2D,
             0,
-            toInternalOpenGLColorFormat(m_BufferType, m_Descriptor),
+            to_opengl_internal_color_format_enum(m_BufferType, m_Descriptor),
             dimensions.x,
             dimensions.y,
             0,
-            toOpenGLFormat(toEquivalentCPUImageFormat(m_BufferType, m_Descriptor)),
-            toOpenGLDataType(toEquivalentCPUDataType(m_BufferType, m_Descriptor)),
+            opengl_format_of(equivalent_cpu_image_format_of(m_BufferType, m_Descriptor)),
+            opengl_data_type_of(equivalent_cpu_datatype_of(m_BufferType, m_Descriptor)),
             nullptr
         );
         gl::tex_parameter_i(
@@ -2568,12 +2526,12 @@ public:
             gl::tex_image2D(
                 GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
                 0,
-                toInternalOpenGLColorFormat(m_BufferType, m_Descriptor),
+                to_opengl_internal_color_format_enum(m_BufferType, m_Descriptor),
                 dimensions.x,
                 dimensions.y,
                 0,
-                toOpenGLFormat(toEquivalentCPUImageFormat(m_BufferType, m_Descriptor)),
-                toOpenGLDataType(toEquivalentCPUDataType(m_BufferType, m_Descriptor)),
+                opengl_format_of(equivalent_cpu_image_format_of(m_BufferType, m_Descriptor)),
+                opengl_data_type_of(equivalent_cpu_datatype_of(m_BufferType, m_Descriptor)),
                 nullptr
             );
         }
@@ -2998,25 +2956,25 @@ private:
         // cache commonly-used "automatic" shader elements
         //
         // it's a perf optimization: the renderer uses this to skip lookups
-        if (const ShaderElement* e = tryGetValue(m_Uniforms, "uModelMat")) {
+        if (const ShaderElement* e = try_find(m_Uniforms, "uModelMat")) {
             m_MaybeModelMatUniform = *e;
         }
-        if (const ShaderElement* e = tryGetValue(m_Uniforms, "uNormalMat")) {
+        if (const ShaderElement* e = try_find(m_Uniforms, "uNormalMat")) {
             m_MaybeNormalMatUniform = *e;
         }
-        if (const ShaderElement* e = tryGetValue(m_Uniforms, "uViewMat")) {
+        if (const ShaderElement* e = try_find(m_Uniforms, "uViewMat")) {
             m_MaybeViewMatUniform = *e;
         }
-        if (const ShaderElement* e = tryGetValue(m_Uniforms, "uProjMat")) {
+        if (const ShaderElement* e = try_find(m_Uniforms, "uProjMat")) {
             m_MaybeProjMatUniform = *e;
         }
-        if (const ShaderElement* e = tryGetValue(m_Uniforms, "uViewProjMat")) {
+        if (const ShaderElement* e = try_find(m_Uniforms, "uViewProjMat")) {
             m_MaybeViewProjMatUniform = *e;
         }
-        if (const ShaderElement* e = tryGetValue(m_Attributes, "aModelMat")) {
+        if (const ShaderElement* e = try_find(m_Attributes, "aModelMat")) {
             m_MaybeInstancedModelMatAttr = *e;
         }
-        if (const ShaderElement* e = tryGetValue(m_Attributes, "aNormalMat")) {
+        if (const ShaderElement* e = try_find(m_Attributes, "aNormalMat")) {
             m_MaybeInstancedNormalMatAttr = *e;
         }
     }
@@ -3044,7 +3002,7 @@ std::ostream& osc::operator<<(std::ostream& o, ShaderPropertyType shader_type)
         return std::to_array({ ShaderPropertyTypeTraits<Types>::name... });
     }(ShaderPropertyTypeList{});
 
-    return o << lut.at(ToIndex(shader_type));
+    return o << lut.at(to_index(shader_type));
 }
 
 osc::Shader::Shader(CStringView vertexShader, CStringView fragmentShader) :
@@ -5171,7 +5129,7 @@ private:
             return std::to_array({ VertexAttributeTraits<Attrs>::shader_location... });
         }(VertexAttributeList{});
 
-        return lut.at(ToIndex(attr));
+        return lut.at(to_index(attr));
     }
 
     static GLint GetVertexAttributeSize(const VertexAttributeFormat& format)
@@ -5682,7 +5640,7 @@ public:
         m_MaybeViewMatrixOverride = maybeViewMatrixOverride;
     }
 
-    Mat4 projection_matrix(float aspectRatio) const
+    Mat4 projection_matrix(float aspect_ratio) const
     {
         if (m_MaybeProjectionMatrixOverride)
         {
@@ -5692,7 +5650,7 @@ public:
         {
             return perspective(
                 m_PerspectiveFov,
-                aspectRatio,
+                aspect_ratio,
                 m_NearClippingPlane,
                 m_FarClippingPlane
             );
@@ -5700,7 +5658,7 @@ public:
         else
         {
             const float height = m_OrthographicSize;
-            const float width = height * aspectRatio;
+            const float width = height * aspect_ratio;
 
             const float right = 0.5f * width;
             const float left = -right;
@@ -5721,19 +5679,19 @@ public:
         m_MaybeProjectionMatrixOverride = maybeProjectionMatrixOverride;
     }
 
-    Mat4 view_projection_matrix(float aspectRatio) const
+    Mat4 view_projection_matrix(float aspect_ratio) const
     {
-        return projection_matrix(aspectRatio) * view_matrix();
+        return projection_matrix(aspect_ratio) * view_matrix();
     }
 
-    Mat4 inverse_view_projection_matrix(float aspectRatio) const
+    Mat4 inverse_view_projection_matrix(float aspect_ratio) const
     {
-        return inverse(view_projection_matrix(aspectRatio));
+        return inverse(view_projection_matrix(aspect_ratio));
     }
 
     void render_to_screen()
     {
-        GraphicsBackend::renderCameraQueue(*this);
+        GraphicsBackend::render_camera_queue(*this);
     }
 
     void render_to(RenderTexture& renderTexture)
@@ -5781,7 +5739,7 @@ public:
 
     void render_to(RenderTarget& renderTarget)
     {
-        GraphicsBackend::renderCameraQueue(*this, &renderTarget);
+        GraphicsBackend::render_camera_queue(*this, &renderTarget);
     }
 
     friend bool operator==(const Impl&, const Impl&) = default;
@@ -5962,9 +5920,9 @@ void osc::Camera::set_view_matrix_override(std::optional<Mat4> maybeViewMatrixOv
     impl_.upd()->set_view_matrix_override(maybeViewMatrixOverride);
 }
 
-Mat4 osc::Camera::projection_matrix(float aspectRatio) const
+Mat4 osc::Camera::projection_matrix(float aspect_ratio) const
 {
-    return impl_->projection_matrix(aspectRatio);
+    return impl_->projection_matrix(aspect_ratio);
 }
 
 std::optional<Mat4> osc::Camera::projection_matrix_override() const
@@ -5977,14 +5935,14 @@ void osc::Camera::set_projection_matrix_override(std::optional<Mat4> maybeProjec
     impl_.upd()->set_projection_matrix_override(maybeProjectionMatrixOverride);
 }
 
-Mat4 osc::Camera::view_projection_matrix(float aspectRatio) const
+Mat4 osc::Camera::view_projection_matrix(float aspect_ratio) const
 {
-    return impl_->view_projection_matrix(aspectRatio);
+    return impl_->view_projection_matrix(aspect_ratio);
 }
 
-Mat4 osc::Camera::inverse_view_projection_matrix(float aspectRatio) const
+Mat4 osc::Camera::inverse_view_projection_matrix(float aspect_ratio) const
 {
-    return impl_->inverse_view_projection_matrix(aspectRatio);
+    return impl_->inverse_view_projection_matrix(aspect_ratio);
 }
 
 void osc::Camera::render_to_screen()
@@ -6641,7 +6599,7 @@ void osc::graphics::blit_to_screen(
     const Rect& rect,
     BlitFlags flags)
 {
-    GraphicsBackend::blitToScreen(t, rect, flags);
+    GraphicsBackend::blit_to_screen(t, rect, flags);
 }
 
 void osc::graphics::blit_to_screen(
@@ -6650,21 +6608,21 @@ void osc::graphics::blit_to_screen(
     const Material& material,
     BlitFlags flags)
 {
-    GraphicsBackend::blitToScreen(t, rect, material, flags);
+    GraphicsBackend::blit_to_screen(t, rect, material, flags);
 }
 
 void osc::graphics::blit_to_screen(
     const Texture2D& t,
     const Rect& rect)
 {
-    GraphicsBackend::blitToScreen(t, rect);
+    GraphicsBackend::blit_to_screen(t, rect);
 }
 
 void osc::graphics::copy_texture(
     const RenderTexture& src,
     Texture2D& dest)
 {
-    GraphicsBackend::copyTexture(src, dest);
+    GraphicsBackend::copy_texture(src, dest);
 }
 
 void osc::graphics::copy_texture(
@@ -6672,7 +6630,7 @@ void osc::graphics::copy_texture(
     Texture2D& dest,
     CubemapFace face)
 {
-    GraphicsBackend::copyTexture(src, dest, face);
+    GraphicsBackend::copy_texture(src, dest, face);
 }
 
 void osc::graphics::copy_texture(
@@ -6680,7 +6638,7 @@ void osc::graphics::copy_texture(
     Cubemap& destinationCubemap,
     size_t mip)
 {
-    GraphicsBackend::copyTexture(sourceRenderTexture, destinationCubemap, mip);
+    GraphicsBackend::copy_texture(sourceRenderTexture, destinationCubemap, mip);
 }
 
 /////////////////////////
@@ -6691,33 +6649,33 @@ void osc::graphics::copy_texture(
 
 
 // helper: binds to instanced attributes (per-drawcall)
-void osc::GraphicsBackend::bindToInstancedAttributes(
-    const Shader::Impl& shaderImpl,
-    InstancingState& ins)
+void osc::GraphicsBackend::bind_to_instanced_attributes(
+    const Shader::Impl& shader_impl,
+    InstancingState& instancing_state)
 {
-    gl::bind_buffer(ins.buffer);
+    gl::bind_buffer(instancing_state.buffer);
 
     size_t byteOffset = 0;
-    if (shaderImpl.m_MaybeInstancedModelMatAttr) {
-        if (shaderImpl.m_MaybeInstancedModelMatAttr->shader_type == ShaderPropertyType::Mat4) {
-            const gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedModelMatAttr->location};
-            gl::vertex_attrib_pointer(mmtxAttr, false, ins.stride, ins.base_offset + byteOffset);
+    if (shader_impl.m_MaybeInstancedModelMatAttr) {
+        if (shader_impl.m_MaybeInstancedModelMatAttr->shader_type == ShaderPropertyType::Mat4) {
+            const gl::AttributeMat4 mmtxAttr{shader_impl.m_MaybeInstancedModelMatAttr->location};
+            gl::vertex_attrib_pointer(mmtxAttr, false, instancing_state.stride, instancing_state.base_offset + byteOffset);
             gl::vertex_attrib_divisor(mmtxAttr, 1);
             gl::enable_vertex_attrib_array(mmtxAttr);
             byteOffset += sizeof(float) * 16;
         }
     }
-    if (shaderImpl.m_MaybeInstancedNormalMatAttr) {
-        if (shaderImpl.m_MaybeInstancedNormalMatAttr->shader_type == ShaderPropertyType::Mat4) {
-            const gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->location};
-            gl::vertex_attrib_pointer(mmtxAttr, false, ins.stride, ins.base_offset + byteOffset);
+    if (shader_impl.m_MaybeInstancedNormalMatAttr) {
+        if (shader_impl.m_MaybeInstancedNormalMatAttr->shader_type == ShaderPropertyType::Mat4) {
+            const gl::AttributeMat4 mmtxAttr{shader_impl.m_MaybeInstancedNormalMatAttr->location};
+            gl::vertex_attrib_pointer(mmtxAttr, false, instancing_state.stride, instancing_state.base_offset + byteOffset);
             gl::vertex_attrib_divisor(mmtxAttr, 1);
             gl::enable_vertex_attrib_array(mmtxAttr);
             // unused: byteOffset += sizeof(float) * 16;
         }
-        else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shader_type == ShaderPropertyType::Mat3) {
-            const gl::AttributeMat3 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->location};
-            gl::vertex_attrib_pointer(mmtxAttr, false, ins.stride, ins.base_offset + byteOffset);
+        else if (shader_impl.m_MaybeInstancedNormalMatAttr->shader_type == ShaderPropertyType::Mat3) {
+            const gl::AttributeMat3 mmtxAttr{shader_impl.m_MaybeInstancedNormalMatAttr->location};
+            gl::vertex_attrib_pointer(mmtxAttr, false, instancing_state.stride, instancing_state.base_offset + byteOffset);
             gl::vertex_attrib_divisor(mmtxAttr, 1);
             gl::enable_vertex_attrib_array(mmtxAttr);
             // unused: byteOffset += sizeof(float) * 9;
@@ -6726,50 +6684,50 @@ void osc::GraphicsBackend::bindToInstancedAttributes(
 }
 
 // helper: unbinds from instanced attributes (per-drawcall)
-void osc::GraphicsBackend::unbindFromInstancedAttributes(
-    const Shader::Impl& shaderImpl,
+void osc::GraphicsBackend::unbind_from_instanced_attributes(
+    const Shader::Impl& shader_impl,
     InstancingState&)
 {
-    if (shaderImpl.m_MaybeInstancedModelMatAttr) {
-        if (shaderImpl.m_MaybeInstancedModelMatAttr->shader_type == ShaderPropertyType::Mat4) {
-            const gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedModelMatAttr->location};
+    if (shader_impl.m_MaybeInstancedModelMatAttr) {
+        if (shader_impl.m_MaybeInstancedModelMatAttr->shader_type == ShaderPropertyType::Mat4) {
+            const gl::AttributeMat4 mmtxAttr{shader_impl.m_MaybeInstancedModelMatAttr->location};
             gl::disable_vertex_attrib_array(mmtxAttr);
         }
     }
-    if (shaderImpl.m_MaybeInstancedNormalMatAttr) {
-        if (shaderImpl.m_MaybeInstancedNormalMatAttr->shader_type == ShaderPropertyType::Mat4) {
-            const gl::AttributeMat4 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->location};
+    if (shader_impl.m_MaybeInstancedNormalMatAttr) {
+        if (shader_impl.m_MaybeInstancedNormalMatAttr->shader_type == ShaderPropertyType::Mat4) {
+            const gl::AttributeMat4 mmtxAttr{shader_impl.m_MaybeInstancedNormalMatAttr->location};
             gl::disable_vertex_attrib_array(mmtxAttr);
         }
-        else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shader_type == ShaderPropertyType::Mat3) {
-            const gl::AttributeMat3 mmtxAttr{shaderImpl.m_MaybeInstancedNormalMatAttr->location};
+        else if (shader_impl.m_MaybeInstancedNormalMatAttr->shader_type == ShaderPropertyType::Mat3) {
+            const gl::AttributeMat3 mmtxAttr{shader_impl.m_MaybeInstancedNormalMatAttr->location};
             gl::disable_vertex_attrib_array(mmtxAttr);
         }
     }
 }
 
 // helper: upload instancing data for a batch
-std::optional<InstancingState> osc::GraphicsBackend::uploadInstanceData(
+std::optional<InstancingState> osc::GraphicsBackend::upload_instance_data(
     std::span<const RenderObject> renderObjects,
-    const Shader::Impl& shaderImpl)
+    const Shader::Impl& shader_impl)
 {
     // preemptively upload instancing data
     std::optional<InstancingState> maybeInstancingState;
 
-    if (shaderImpl.m_MaybeInstancedModelMatAttr || shaderImpl.m_MaybeInstancedNormalMatAttr) {
+    if (shader_impl.m_MaybeInstancedModelMatAttr || shader_impl.m_MaybeInstancedNormalMatAttr) {
 
         // compute the stride between each instance
         size_t byteStride = 0;
-        if (shaderImpl.m_MaybeInstancedModelMatAttr) {
-            if (shaderImpl.m_MaybeInstancedModelMatAttr->shader_type == ShaderPropertyType::Mat4) {
+        if (shader_impl.m_MaybeInstancedModelMatAttr) {
+            if (shader_impl.m_MaybeInstancedModelMatAttr->shader_type == ShaderPropertyType::Mat4) {
                 byteStride += sizeof(float) * 16;
             }
         }
-        if (shaderImpl.m_MaybeInstancedNormalMatAttr) {
-            if (shaderImpl.m_MaybeInstancedNormalMatAttr->shader_type == ShaderPropertyType::Mat4) {
+        if (shader_impl.m_MaybeInstancedNormalMatAttr) {
+            if (shader_impl.m_MaybeInstancedNormalMatAttr->shader_type == ShaderPropertyType::Mat4) {
                 byteStride += sizeof(float) * 16;
             }
-            else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shader_type == ShaderPropertyType::Mat3) {
+            else if (shader_impl.m_MaybeInstancedNormalMatAttr->shader_type == ShaderPropertyType::Mat3) {
                 byteStride += sizeof(float) * 9;
             }
         }
@@ -6783,22 +6741,22 @@ std::optional<InstancingState> osc::GraphicsBackend::uploadInstanceData(
 
         size_t floatOffset = 0;
         for (const RenderObject& el : renderObjects) {
-            if (shaderImpl.m_MaybeInstancedModelMatAttr) {
-                if (shaderImpl.m_MaybeInstancedModelMatAttr->shader_type == ShaderPropertyType::Mat4) {
+            if (shader_impl.m_MaybeInstancedModelMatAttr) {
+                if (shader_impl.m_MaybeInstancedModelMatAttr->shader_type == ShaderPropertyType::Mat4) {
                     const Mat4 m = model_mat4(el);
                     const std::span<const float> els = to_float_span(m);
                     buf.insert(buf.end(), els.begin(), els.end());
                     floatOffset += els.size();
                 }
             }
-            if (shaderImpl.m_MaybeInstancedNormalMatAttr) {
-                if (shaderImpl.m_MaybeInstancedNormalMatAttr->shader_type == ShaderPropertyType::Mat4) {
+            if (shader_impl.m_MaybeInstancedNormalMatAttr) {
+                if (shader_impl.m_MaybeInstancedNormalMatAttr->shader_type == ShaderPropertyType::Mat4) {
                     const Mat4 m = normal_matrix4(el);
                     const std::span<const float> els = to_float_span(m);
                     buf.insert(buf.end(), els.begin(), els.end());
                     floatOffset += els.size();
                 }
-                else if (shaderImpl.m_MaybeInstancedNormalMatAttr->shader_type == ShaderPropertyType::Mat3) {
+                else if (shader_impl.m_MaybeInstancedNormalMatAttr->shader_type == ShaderPropertyType::Mat3) {
                     const Mat3 m = normal_matrix(el);
                     const std::span<const float> els = to_float_span(m);
                     buf.insert(buf.end(), els.begin(), els.end());
@@ -6814,10 +6772,10 @@ std::optional<InstancingState> osc::GraphicsBackend::uploadInstanceData(
     return maybeInstancingState;
 }
 
-void osc::GraphicsBackend::tryBindMaterialValueToShaderElement(
+void osc::GraphicsBackend::try_bind_material_value_to_shader_element(
     const ShaderElement& se,
     const MaterialValue& v,
-    int32_t& textureSlot)
+    int32_t& texture_slot)
 {
     if (get_shader_type(v) != se.shader_type) {
         return;  // mismatched types
@@ -6980,12 +6938,12 @@ void osc::GraphicsBackend::tryBindMaterialValueToShaderElement(
         auto& impl = const_cast<Texture2D::Impl&>(*std::get<Texture2D>(v).m_Impl);
         gl::Texture2D& texture = impl.updTexture();
 
-        gl::active_texture(GL_TEXTURE0 + textureSlot);
+        gl::active_texture(GL_TEXTURE0 + texture_slot);
         gl::bind_texture(texture);
         gl::UniformSampler2D u{se.location};
-        gl::set_uniform(u, textureSlot);
+        gl::set_uniform(u, texture_slot);
 
-        ++textureSlot;
+        ++texture_slot;
         break;
     }
     case variant_index<MaterialValue, RenderTexture>():
@@ -6993,29 +6951,29 @@ void osc::GraphicsBackend::tryBindMaterialValueToShaderElement(
         static_assert(num_options<TextureDimensionality>() == 2);
         std::visit(Overload
             {
-                [&textureSlot, &se](SingleSampledTexture& sst)
+                [&texture_slot, &se](SingleSampledTexture& sst)
             {
-                gl::active_texture(GL_TEXTURE0 + textureSlot);
+                gl::active_texture(GL_TEXTURE0 + texture_slot);
                 gl::bind_texture(sst.texture2D);
                 gl::UniformSampler2D u{se.location};
-                gl::set_uniform(u, textureSlot);
-                ++textureSlot;
+                gl::set_uniform(u, texture_slot);
+                ++texture_slot;
             },
-            [&textureSlot, &se](MultisampledRBOAndResolvedTexture& mst)
+            [&texture_slot, &se](MultisampledRBOAndResolvedTexture& mst)
             {
-                gl::active_texture(GL_TEXTURE0 + textureSlot);
+                gl::active_texture(GL_TEXTURE0 + texture_slot);
                 gl::bind_texture(mst.single_sampled_texture2D);
                 gl::UniformSampler2D u{se.location};
-                gl::set_uniform(u, textureSlot);
-                ++textureSlot;
+                gl::set_uniform(u, texture_slot);
+                ++texture_slot;
             },
-            [&textureSlot, &se](SingleSampledCubemap& cubemap)
+            [&texture_slot, &se](SingleSampledCubemap& cubemap)
             {
-                gl::active_texture(GL_TEXTURE0 + textureSlot);
+                gl::active_texture(GL_TEXTURE0 + texture_slot);
                 gl::bind_texture(cubemap.cubemap);
                 gl::UniformSamplerCube u{se.location};
-                gl::set_uniform(u, textureSlot);
-                ++textureSlot;
+                gl::set_uniform(u, texture_slot);
+                ++texture_slot;
             },
             }, const_cast<RenderTexture::Impl&>(*std::get<RenderTexture>(v).m_Impl).getColorRenderBufferData());
 
@@ -7024,14 +6982,14 @@ void osc::GraphicsBackend::tryBindMaterialValueToShaderElement(
     case variant_index<MaterialValue, Cubemap>():
     {
         auto& impl = const_cast<Cubemap::Impl&>(*std::get<Cubemap>(v).impl_);
-        const gl::TextureCubemap& texture = impl.updCubemap();
+        const gl::TextureCubemap& texture = impl.upd_cubemap();
 
-        gl::active_texture(GL_TEXTURE0 + textureSlot);
+        gl::active_texture(GL_TEXTURE0 + texture_slot);
         gl::bind_texture(texture);
         gl::UniformSamplerCube u{se.location};
-        gl::set_uniform(u, textureSlot);
+        gl::set_uniform(u, texture_slot);
 
-        ++textureSlot;
+        ++texture_slot;
         break;
     }
     default:
@@ -7047,62 +7005,62 @@ void osc::GraphicsBackend::tryBindMaterialValueToShaderElement(
 //   - MaterialPropertyBlock
 //   - Mesh
 //   - sub-Mesh index (can be std::nullopt, to mean 'the entire mesh')
-void osc::GraphicsBackend::handleBatchWithSameSubMesh(
+void osc::GraphicsBackend::handle_batch_with_same_submesh(
     std::span<const RenderObject> els,
-    std::optional<InstancingState>& ins)
+    std::optional<InstancingState>& instancing_state)
 {
     auto& meshImpl = const_cast<Mesh::Impl&>(*els.front().mesh.m_Impl);
-    const Shader::Impl& shaderImpl = *els.front().material.m_Impl->m_Shader.m_Impl;
+    const Shader::Impl& shader_impl = *els.front().material.m_Impl->m_Shader.m_Impl;
     const std::optional<size_t> maybe_submesh_index = els.front().maybe_submesh_index;
 
     gl::bind_vertex_array(meshImpl.updVertexArray());
 
-    if (shaderImpl.m_MaybeModelMatUniform || shaderImpl.m_MaybeNormalMatUniform) {
+    if (shader_impl.m_MaybeModelMatUniform || shader_impl.m_MaybeNormalMatUniform) {
         // if the shader requires per-instance uniforms, then we *have* to render one
         // instance at a time
 
         for (const RenderObject& el : els) {
 
             // try binding to uModel (standard)
-            if (shaderImpl.m_MaybeModelMatUniform) {
-                if (shaderImpl.m_MaybeModelMatUniform->shader_type == ShaderPropertyType::Mat4) {
-                    gl::UniformMat4 u{shaderImpl.m_MaybeModelMatUniform->location};
+            if (shader_impl.m_MaybeModelMatUniform) {
+                if (shader_impl.m_MaybeModelMatUniform->shader_type == ShaderPropertyType::Mat4) {
+                    gl::UniformMat4 u{shader_impl.m_MaybeModelMatUniform->location};
                     gl::set_uniform(u, model_mat4(el));
                 }
             }
 
             // try binding to uNormalMat (standard)
-            if (shaderImpl.m_MaybeNormalMatUniform) {
-                if (shaderImpl.m_MaybeNormalMatUniform->shader_type == ShaderPropertyType::Mat3) {
-                    gl::UniformMat3 u{shaderImpl.m_MaybeNormalMatUniform->location};
+            if (shader_impl.m_MaybeNormalMatUniform) {
+                if (shader_impl.m_MaybeNormalMatUniform->shader_type == ShaderPropertyType::Mat3) {
+                    gl::UniformMat3 u{shader_impl.m_MaybeNormalMatUniform->location};
                     gl::set_uniform(u, normal_matrix(el));
                 }
-                else if (shaderImpl.m_MaybeNormalMatUniform->shader_type == ShaderPropertyType::Mat4) {
-                    gl::UniformMat4 u{shaderImpl.m_MaybeNormalMatUniform->location};
+                else if (shader_impl.m_MaybeNormalMatUniform->shader_type == ShaderPropertyType::Mat4) {
+                    gl::UniformMat4 u{shader_impl.m_MaybeNormalMatUniform->location};
                     gl::set_uniform(u, normal_matrix4(el));
                 }
             }
 
-            if (ins) {
-                bindToInstancedAttributes(shaderImpl, *ins);
+            if (instancing_state) {
+                bind_to_instanced_attributes(shader_impl, *instancing_state);
             }
             meshImpl.drawInstanced(1, maybe_submesh_index);
-            if (ins) {
-                unbindFromInstancedAttributes(shaderImpl, *ins);
-                ins->base_offset += 1 * ins->stride;
+            if (instancing_state) {
+                unbind_from_instanced_attributes(shader_impl, *instancing_state);
+                instancing_state->base_offset += 1 * instancing_state->stride;
             }
         }
     }
     else {
         // else: the shader supports instanced data, so we can draw multiple meshes in one call
 
-        if (ins) {
-            bindToInstancedAttributes(shaderImpl, *ins);
+        if (instancing_state) {
+            bind_to_instanced_attributes(shader_impl, *instancing_state);
         }
         meshImpl.drawInstanced(els.size(), maybe_submesh_index);
-        if (ins) {
-            unbindFromInstancedAttributes(shaderImpl, *ins);
-            ins->base_offset += els.size() * ins->stride;
+        if (instancing_state) {
+            unbind_from_instanced_attributes(shader_impl, *instancing_state);
+            instancing_state->base_offset += els.size() * instancing_state->stride;
         }
     }
 
@@ -7114,15 +7072,15 @@ void osc::GraphicsBackend::handleBatchWithSameSubMesh(
 //   - Material
 //   - MaterialPropertyBlock
 //   - Mesh
-void osc::GraphicsBackend::handleBatchWithSameMesh(
+void osc::GraphicsBackend::handle_batch_with_same_mesh(
     std::span<const RenderObject> els,
-    std::optional<InstancingState>& ins)
+    std::optional<InstancingState>& instancing_state)
 {
     // batch by sub-Mesh index
     auto batchIt = els.begin();
     while (batchIt != els.end()) {
         const auto batchEnd = find_if_not(batchIt, els.end(), RenderObjectHasSubMeshIndex{batchIt->maybe_submesh_index});
-        handleBatchWithSameSubMesh({batchIt, batchEnd}, ins);
+        handle_batch_with_same_submesh({batchIt, batchEnd}, instancing_state);
         batchIt = batchEnd;
     }
 }
@@ -7131,22 +7089,22 @@ void osc::GraphicsBackend::handleBatchWithSameMesh(
 //
 //   - Material
 //   - MaterialPropertyBlock
-void osc::GraphicsBackend::handleBatchWithSameMaterialPropertyBlock(
+void osc::GraphicsBackend::handle_batch_with_same_material_property_block(
     std::span<const RenderObject> els,
-    int32_t& textureSlot,
-    std::optional<InstancingState>& ins)
+    int32_t& texture_slot,
+    std::optional<InstancingState>& instancing_state)
 {
-    OSC_PERF("GraphicsBackend::handleBatchWithSameMaterialPropertyBlock");
+    OSC_PERF("GraphicsBackend::handle_batch_with_same_material_property_block");
 
     const Material::Impl& matImpl = *els.front().material.m_Impl;
-    const Shader::Impl& shaderImpl = *matImpl.m_Shader.m_Impl;
-    const FastStringHashtable<ShaderElement>& uniforms = shaderImpl.getUniforms();
+    const Shader::Impl& shader_impl = *matImpl.m_Shader.m_Impl;
+    const FastStringHashtable<ShaderElement>& uniforms = shader_impl.getUniforms();
 
     // bind property block variables (if applicable)
     if (els.front().maybe_prop_block) {
         for (const auto& [name, value] : els.front().maybe_prop_block->m_Impl->m_Values) {
             if (const auto* uniform = try_find(uniforms, name)) {
-                tryBindMaterialValueToShaderElement(*uniform, value, textureSlot);
+                try_bind_material_value_to_shader_element(*uniform, value, texture_slot);
             }
         }
     }
@@ -7156,7 +7114,7 @@ void osc::GraphicsBackend::handleBatchWithSameMaterialPropertyBlock(
     while (batchIt != els.end())
     {
         const auto batchEnd = find_if_not(batchIt, els.end(), RenderObjectHasMesh{&batchIt->mesh});
-        handleBatchWithSameMesh({batchIt, batchEnd}, ins);
+        handle_batch_with_same_mesh({batchIt, batchEnd}, instancing_state);
         batchIt = batchEnd;
     }
 }
@@ -7164,23 +7122,23 @@ void osc::GraphicsBackend::handleBatchWithSameMaterialPropertyBlock(
 // helper: draw a batch of `RenderObject`s that have the same:
 //
 //   - Material
-void osc::GraphicsBackend::handleBatchWithSameMaterial(
+void osc::GraphicsBackend::handle_batch_with_same_material(
     const RenderPassState& renderPassState,
     std::span<const RenderObject> els)
 {
-    OSC_PERF("GraphicsBackend::handleBatchWithSameMaterial");
+    OSC_PERF("GraphicsBackend::handle_batch_with_same_material");
 
     const auto& matImpl = *els.front().material.m_Impl;
-    const auto& shaderImpl = *matImpl.m_Shader.m_Impl;
-    const FastStringHashtable<ShaderElement>& uniforms = shaderImpl.getUniforms();
+    const auto& shader_impl = *matImpl.m_Shader.m_Impl;
+    const FastStringHashtable<ShaderElement>& uniforms = shader_impl.getUniforms();
 
     // preemptively upload instance data
-    std::optional<InstancingState> maybeInstances = uploadInstanceData(els, shaderImpl);
+    std::optional<InstancingState> maybeInstances = upload_instance_data(els, shader_impl);
 
     // updated by various batches (which may bind to textures etc.)
-    int32_t textureSlot = 0;
+    int32_t texture_slot = 0;
 
-    gl::use_program(shaderImpl.getProgram());
+    gl::use_program(shader_impl.getProgram());
 
     if (matImpl.getWireframeMode())
     {
@@ -7206,38 +7164,38 @@ void osc::GraphicsBackend::handleBatchWithSameMaterial(
     // bind material variables
     {
         // try binding to uView (standard)
-        if (shaderImpl.m_MaybeViewMatUniform)
+        if (shader_impl.m_MaybeViewMatUniform)
         {
-            if (shaderImpl.m_MaybeViewMatUniform->shader_type == ShaderPropertyType::Mat4)
+            if (shader_impl.m_MaybeViewMatUniform->shader_type == ShaderPropertyType::Mat4)
             {
-                gl::UniformMat4 u{shaderImpl.m_MaybeViewMatUniform->location};
+                gl::UniformMat4 u{shader_impl.m_MaybeViewMatUniform->location};
                 gl::set_uniform(u, renderPassState.view_matrix);
             }
         }
 
         // try binding to uProjection (standard)
-        if (shaderImpl.m_MaybeProjMatUniform)
+        if (shader_impl.m_MaybeProjMatUniform)
         {
-            if (shaderImpl.m_MaybeProjMatUniform->shader_type == ShaderPropertyType::Mat4)
+            if (shader_impl.m_MaybeProjMatUniform->shader_type == ShaderPropertyType::Mat4)
             {
-                gl::UniformMat4 u{shaderImpl.m_MaybeProjMatUniform->location};
+                gl::UniformMat4 u{shader_impl.m_MaybeProjMatUniform->location};
                 gl::set_uniform(u, renderPassState.projection_matrix);
             }
         }
 
-        if (shaderImpl.m_MaybeViewProjMatUniform)
+        if (shader_impl.m_MaybeViewProjMatUniform)
         {
-            if (shaderImpl.m_MaybeViewProjMatUniform->shader_type == ShaderPropertyType::Mat4)
+            if (shader_impl.m_MaybeViewProjMatUniform->shader_type == ShaderPropertyType::Mat4)
             {
-                gl::UniformMat4 u{shaderImpl.m_MaybeViewProjMatUniform->location};
+                gl::UniformMat4 u{shader_impl.m_MaybeViewProjMatUniform->location};
                 gl::set_uniform(u, renderPassState.view_projection_matrix);
             }
         }
 
         // bind material values
         for (const auto& [name, value] : matImpl.m_Values) {
-            if (const ShaderElement* e = tryGetValue(uniforms, name)) {
-                tryBindMaterialValueToShaderElement(*e, value, textureSlot);
+            if (const ShaderElement* e = try_find(uniforms, name)) {
+                try_bind_material_value_to_shader_element(*e, value, texture_slot);
             }
         }
     }
@@ -7247,7 +7205,7 @@ void osc::GraphicsBackend::handleBatchWithSameMaterial(
     while (batchIt != els.end())
     {
         const auto batchEnd = find_if_not(batchIt, els.end(), RenderObjectHasMaterialPropertyBlock{&batchIt->maybe_prop_block});
-        handleBatchWithSameMaterialPropertyBlock({batchIt, batchEnd}, textureSlot, maybeInstances);
+        handle_batch_with_same_material_property_block({batchIt, batchEnd}, texture_slot, maybeInstances);
         batchIt = batchEnd;
     }
 
@@ -7269,26 +7227,26 @@ void osc::GraphicsBackend::handleBatchWithSameMaterial(
 }
 
 // helper: draw a sequence of `RenderObject`s
-void osc::GraphicsBackend::drawRenderObjects(
+void osc::GraphicsBackend::draw_render_objects(
     const RenderPassState& renderPassState,
     std::span<const RenderObject> els)
 {
-    OSC_PERF("GraphicsBackend::drawRenderObjects");
+    OSC_PERF("GraphicsBackend::draw_render_objects");
 
     // batch by material
     auto batchIt = els.begin();
     while (batchIt != els.end()) {
         const auto batchEnd = find_if_not(batchIt, els.end(), RenderObjectHasMaterial{&batchIt->material});
-        handleBatchWithSameMaterial(renderPassState, {batchIt, batchEnd});
+        handle_batch_with_same_material(renderPassState, {batchIt, batchEnd});
         batchIt = batchEnd;
     }
 }
 
-void osc::GraphicsBackend::drawBatchedByOpaqueness(
+void osc::GraphicsBackend::draw_batched_by_opaqueness(
     const RenderPassState& renderPassState,
     std::span<const RenderObject> els)
 {
-    OSC_PERF("GraphicsBackend::drawBatchedByOpaqueness");
+    OSC_PERF("GraphicsBackend::draw_batched_by_opaqueness");
 
     auto batchIt = els.begin();
     while (batchIt != els.end()) {
@@ -7297,7 +7255,7 @@ void osc::GraphicsBackend::drawBatchedByOpaqueness(
         if (opaqueEnd != batchIt) {
             // [batchIt..opaqueEnd] contains opaque elements
             gl::disable(GL_BLEND);
-            drawRenderObjects(renderPassState, {batchIt, opaqueEnd});
+            draw_render_objects(renderPassState, {batchIt, opaqueEnd});
 
             batchIt = opaqueEnd;
         }
@@ -7306,16 +7264,16 @@ void osc::GraphicsBackend::drawBatchedByOpaqueness(
             // [opaqueEnd..els.end()] contains transparent elements
             const auto transparentEnd = find_if(opaqueEnd, els.end(), is_opaque);
             gl::enable(GL_BLEND);
-            drawRenderObjects(renderPassState, {opaqueEnd, transparentEnd});
+            draw_render_objects(renderPassState, {opaqueEnd, transparentEnd});
 
             batchIt = transparentEnd;
         }
     }
 }
 
-void osc::GraphicsBackend::flushRenderQueue(Camera::Impl& camera, float aspectRatio)
+void osc::GraphicsBackend::flush_render_queue(Camera::Impl& camera, float aspect_ratio)
 {
-    OSC_PERF("GraphicsBackend::flushRenderQueue");
+    OSC_PERF("GraphicsBackend::flush_render_queue");
 
     // flush the render queue in batches based on what's being rendered:
     //
@@ -7337,7 +7295,7 @@ void osc::GraphicsBackend::flushRenderQueue(Camera::Impl& camera, float aspectRa
     const RenderPassState renderPassState{
         camera.position(),
         camera.view_matrix(),
-        camera.projection_matrix(aspectRatio),
+        camera.projection_matrix(aspect_ratio),
     };
 
     gl::enable(GL_DEPTH_TEST);
@@ -7353,7 +7311,7 @@ void osc::GraphicsBackend::flushRenderQueue(Camera::Impl& camera, float aspectRa
             // there are >0 depth-tested elements that are elegible for reordering
 
             sort_render_queue(batchIt, depthTestedEnd, renderPassState.camera_pos);
-            drawBatchedByOpaqueness(renderPassState, {batchIt, depthTestedEnd});
+            draw_batched_by_opaqueness(renderPassState, {batchIt, depthTestedEnd});
 
             batchIt = depthTestedEnd;
         }
@@ -7366,7 +7324,7 @@ void osc::GraphicsBackend::flushRenderQueue(Camera::Impl& camera, float aspectRa
 
             // these elements aren't depth-tested and should just be drawn as-is
             gl::disable(GL_DEPTH_TEST);
-            drawBatchedByOpaqueness(renderPassState, {depthTestedEnd, ignoreDepthTestEnd});
+            draw_batched_by_opaqueness(renderPassState, {depthTestedEnd, ignoreDepthTestEnd});
             gl::enable(GL_DEPTH_TEST);
 
             batchIt = ignoreDepthTestEnd;
@@ -7377,7 +7335,7 @@ void osc::GraphicsBackend::flushRenderQueue(Camera::Impl& camera, float aspectRa
     queue.clear();
 }
 
-void osc::GraphicsBackend::validateRenderTarget(RenderTarget& renderTarget)
+void osc::GraphicsBackend::validate_render_target(RenderTarget& renderTarget)
 {
     // ensure there is at least one color attachment
     OSC_ASSERT(!renderTarget.colors.empty() && "a render target must have one or more color attachments");
@@ -7399,12 +7357,12 @@ void osc::GraphicsBackend::validateRenderTarget(RenderTarget& renderTarget)
     OSC_ASSERT(renderTarget.depth.buffer->m_Impl->getAntialiasingLevel() == firstColorBufferSamples);
 }
 
-Rect osc::GraphicsBackend::calcViewportRect(
+Rect osc::GraphicsBackend::calc_viewport_bounds(
     Camera::Impl& camera,
-    RenderTarget* maybeCustomRenderTarget)
+    RenderTarget* maybe_custom_render_target)
 {
-    const Vec2 targetDims = maybeCustomRenderTarget ?
-        Vec2{maybeCustomRenderTarget->colors.front().buffer->m_Impl->getDimensions()} :
+    const Vec2 targetDims = maybe_custom_render_target ?
+        Vec2{maybe_custom_render_target->colors.front().buffer->m_Impl->getDimensions()} :
         App::get().dims();
 
     const Rect cameraRect = camera.pixel_rect() ?
@@ -7418,11 +7376,11 @@ Rect osc::GraphicsBackend::calcViewportRect(
     return Rect{topLeft, topLeft + outputDimensions};
 }
 
-Rect osc::GraphicsBackend::setupTopLevelPipelineState(
+Rect osc::GraphicsBackend::setup_top_level_pipeline_state(
     Camera::Impl& camera,
-    RenderTarget* maybeCustomRenderTarget)
+    RenderTarget* maybe_custom_render_target)
 {
-    const Rect viewportRect = calcViewportRect(camera, maybeCustomRenderTarget);
+    const Rect viewportRect = calc_viewport_bounds(camera, maybe_custom_render_target);
     const Vec2 viewportDims = dimensions_of(viewportRect);
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -7454,7 +7412,7 @@ Rect osc::GraphicsBackend::setupTopLevelPipelineState(
     return viewportRect;
 }
 
-void osc::GraphicsBackend::teardownTopLevelPipelineState(
+void osc::GraphicsBackend::teardown_top_level_pipeline_state(
     Camera::Impl& camera,
     RenderTarget*)
 {
@@ -7466,14 +7424,14 @@ void osc::GraphicsBackend::teardownTopLevelPipelineState(
     gl::use_program();
 }
 
-std::optional<gl::FrameBuffer> osc::GraphicsBackend::bindAndClearRenderBuffers(
+std::optional<gl::FrameBuffer> osc::GraphicsBackend::bind_and_clear_render_buffers(
     Camera::Impl& camera,
-    RenderTarget* maybeCustomRenderTarget)
+    RenderTarget* maybe_custom_render_target)
 {
     // if necessary, create pass-specific FBO
     std::optional<gl::FrameBuffer> maybeRenderFBO;
 
-    if (maybeCustomRenderTarget)
+    if (maybe_custom_render_target)
     {
         // caller wants to render to a custom render target of `n` color
         // buffers and a single depth buffer. Bind them all to one MRT FBO
@@ -7482,7 +7440,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::bindAndClearRenderBuffers(
         gl::bind_framebuffer(GL_DRAW_FRAMEBUFFER, rendererFBO);
 
         // attach color buffers to the FBO
-        for (size_t i = 0; i < maybeCustomRenderTarget->colors.size(); ++i)
+        for (size_t i = 0; i < maybe_custom_render_target->colors.size(); ++i)
         {
             std::visit(Overload
             {
@@ -7516,7 +7474,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::bindAndClearRenderBuffers(
                     );
                 }
 #endif
-            }, maybeCustomRenderTarget->colors[i].buffer->m_Impl->updRenderBufferData());
+            }, maybe_custom_render_target->colors[i].buffer->m_Impl->updRenderBufferData());
         }
 
         // attach depth buffer to the FBO
@@ -7552,12 +7510,12 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::bindAndClearRenderBuffers(
                 );
             }
 #endif
-        }, maybeCustomRenderTarget->depth.buffer->m_Impl->updRenderBufferData());
+        }, maybe_custom_render_target->depth.buffer->m_Impl->updRenderBufferData());
 
         // Multi-Render Target (MRT) support: tell OpenGL to use all specified
         // render targets when drawing and/or clearing
         {
-            const size_t numColorAttachments = maybeCustomRenderTarget->colors.size();
+            const size_t numColorAttachments = maybe_custom_render_target->colors.size();
 
             std::vector<GLenum> attachments;
             attachments.reserve(numColorAttachments);
@@ -7573,9 +7531,9 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::bindAndClearRenderBuffers(
             static_assert(num_options<RenderBufferLoadAction>() == 2);
 
             // if requested, clear color buffers
-            for (size_t i = 0; i < maybeCustomRenderTarget->colors.size(); ++i)
+            for (size_t i = 0; i < maybe_custom_render_target->colors.size(); ++i)
             {
-                RenderTargetColorAttachment& colorAttachment = maybeCustomRenderTarget->colors[i];
+                RenderTargetColorAttachment& colorAttachment = maybe_custom_render_target->colors[i];
                 if (colorAttachment.loadAction == RenderBufferLoadAction::Clear)
                 {
                     glClearBufferfv(
@@ -7587,7 +7545,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::bindAndClearRenderBuffers(
             }
 
             // if requested, clear depth buffer
-            if (maybeCustomRenderTarget->depth.loadAction == RenderBufferLoadAction::Clear)
+            if (maybe_custom_render_target->depth.loadAction == RenderBufferLoadAction::Clear)
             {
                 gl::clear(GL_DEPTH_BUFFER_BIT);
             }
@@ -7621,7 +7579,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::bindAndClearRenderBuffers(
     return maybeRenderFBO;
 }
 
-void osc::GraphicsBackend::resolveRenderBuffers(RenderTarget& renderTarget)
+void osc::GraphicsBackend::resolve_render_buffers(RenderTarget& renderTarget)
 {
     static_assert(num_options<RenderBufferStoreAction>() == 2, "check 'if's etc. in this code");
 
@@ -7752,36 +7710,36 @@ void osc::GraphicsBackend::resolveRenderBuffers(RenderTarget& renderTarget)
     }
 }
 
-void osc::GraphicsBackend::renderCameraQueue(
+void osc::GraphicsBackend::render_camera_queue(
     Camera::Impl& camera,
-    RenderTarget* maybeCustomRenderTarget)
+    RenderTarget* maybe_custom_render_target)
 {
-    OSC_PERF("GraphicsBackend::renderCameraQueue");
+    OSC_PERF("GraphicsBackend::render_camera_queue");
 
-    if (maybeCustomRenderTarget)
+    if (maybe_custom_render_target)
     {
-        validateRenderTarget(*maybeCustomRenderTarget);
+        validate_render_target(*maybe_custom_render_target);
     }
 
-    const Rect viewportRect = setupTopLevelPipelineState(
+    const Rect viewportRect = setup_top_level_pipeline_state(
         camera,
-        maybeCustomRenderTarget
+        maybe_custom_render_target
     );
 
     {
         const std::optional<gl::FrameBuffer> maybeTmpFBO =
-            bindAndClearRenderBuffers(camera, maybeCustomRenderTarget);
-        flushRenderQueue(camera, aspect_ratio(viewportRect));
+            bind_and_clear_render_buffers(camera, maybe_custom_render_target);
+        flush_render_queue(camera, aspect_ratio(viewportRect));
     }
 
-    if (maybeCustomRenderTarget)
+    if (maybe_custom_render_target)
     {
-        resolveRenderBuffers(*maybeCustomRenderTarget);
+        resolve_render_buffers(*maybe_custom_render_target);
     }
 
-    teardownTopLevelPipelineState(
+    teardown_top_level_pipeline_state(
         camera,
-        maybeCustomRenderTarget
+        maybe_custom_render_target
     );
 }
 
@@ -7844,15 +7802,15 @@ void osc::GraphicsBackend::blit(
     c.render_to(dest);
 }
 
-void osc::GraphicsBackend::blitToScreen(
+void osc::GraphicsBackend::blit_to_screen(
     const RenderTexture& t,
     const Rect& rect,
     BlitFlags flags)
 {
-    blitToScreen(t, rect, g_GraphicsContextImpl->getQuadMaterial(), flags);
+    blit_to_screen(t, rect, g_GraphicsContextImpl->getQuadMaterial(), flags);
 }
 
-void osc::GraphicsBackend::blitToScreen(
+void osc::GraphicsBackend::blit_to_screen(
     const RenderTexture& t,
     const Rect& rect,
     const Material& material,
@@ -7875,7 +7833,7 @@ void osc::GraphicsBackend::blitToScreen(
     copy.clearRenderTexture("uTexture");
 }
 
-void osc::GraphicsBackend::blitToScreen(
+void osc::GraphicsBackend::blit_to_screen(
     const Texture2D& t,
     const Rect& rect)
 {
@@ -7895,14 +7853,14 @@ void osc::GraphicsBackend::blitToScreen(
     copy.clearTexture("uTexture");
 }
 
-void osc::GraphicsBackend::copyTexture(
+void osc::GraphicsBackend::copy_texture(
     const RenderTexture& src,
     Texture2D& dest)
 {
-    copyTexture(src, dest, CubemapFace::PositiveX);
+    copy_texture(src, dest, CubemapFace::PositiveX);
 }
 
-void osc::GraphicsBackend::copyTexture(
+void osc::GraphicsBackend::copy_texture(
     const RenderTexture& src,
     Texture2D& dest,
     CubemapFace face)
@@ -7938,7 +7896,7 @@ void osc::GraphicsBackend::copyTexture(
             glFramebufferTexture2D(
                 GL_READ_FRAMEBUFFER,
                 GL_COLOR_ATTACHMENT0,
-                toOpenGLTextureEnum(face),
+                to_opengl_texture_cubemap_enum(face),
                 t.cubemap.get(),
                 0
             );
@@ -7973,11 +7931,11 @@ void osc::GraphicsBackend::copyTexture(
 
     // then download the blitted data into the texture's CPU buffer
     {
-        std::vector<uint8_t>& cpuBuffer = dest.m_Impl.upd()->m_PixelData;
-        const GLint packFormat = toImagePixelPackAlignment(dest.texture_format());
+        std::vector<uint8_t>& cpuBuffer = dest.m_Impl.upd()->pixel_data_;
+        const GLint packFormat = to_opengl_image_pixel_pack_alignment(dest.texture_format());
 
         OSC_ASSERT(is_aligned_at_least(cpuBuffer.data(), packFormat) && "glReadPixels must be called with a buffer that is aligned to GL_PACK_ALIGNMENT (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
-        OSC_ASSERT(cpuBuffer.size() == static_cast<ptrdiff_t>(dest.getDimensions().x*dest.getDimensions().y)*NumBytesPerPixel(dest.texture_format()));
+        OSC_ASSERT(cpuBuffer.size() == static_cast<ptrdiff_t>(dest.getDimensions().x*dest.getDimensions().y)*num_bytes_per_pixel_in(dest.texture_format()));
 
         gl::viewport(0, 0, dest.getDimensions().x, dest.getDimensions().y);
         gl::bind_framebuffer(GL_READ_FRAMEBUFFER, drawFBO);
@@ -7988,15 +7946,15 @@ void osc::GraphicsBackend::copyTexture(
             0,
             dest.getDimensions().x,
             dest.getDimensions().y,
-            toImageColorFormat(dest.texture_format()),
-            toImageDataType(dest.texture_format()),
+            to_opengl_image_color_format_enum(dest.texture_format()),
+            to_opengl_image_data_type_enum(dest.texture_format()),
             cpuBuffer.data()
         );
     }
     gl::bind_framebuffer(GL_FRAMEBUFFER, gl::window_framebuffer);
 }
 
-void osc::GraphicsBackend::copyTexture(
+void osc::GraphicsBackend::copy_texture(
     const RenderTexture& sourceRenderTexture,
     Cubemap& destinationCubemap,
     size_t mip)
@@ -8027,11 +7985,11 @@ void osc::GraphicsBackend::copyTexture(
         {
             [](SingleSampledTexture&)
             {
-                OSC_ASSERT(false && "cannot call copyTexture (Cubemap --> Cubemap) with a 2D render");
+                OSC_ASSERT(false && "cannot call copy_texture (Cubemap --> Cubemap) with a 2D render");
             },
             [](MultisampledRBOAndResolvedTexture&)
             {
-                OSC_ASSERT(false && "cannot call copyTexture (Cubemap --> Cubemap) with a 2D render");
+                OSC_ASSERT(false && "cannot call copy_texture (Cubemap --> Cubemap) with a 2D render");
             },
             [face](SingleSampledCubemap& t)
             {
@@ -8052,7 +8010,7 @@ void osc::GraphicsBackend::copyTexture(
             GL_DRAW_FRAMEBUFFER,
             GL_COLOR_ATTACHMENT0,
             GL_TEXTURE_CUBE_MAP_POSITIVE_X + static_cast<GLenum>(face),
-            destinationCubemap.impl_.upd()->updCubemap().get(),
+            destinationCubemap.impl_.upd()->upd_cubemap().get(),
             static_cast<GLint>(mip)
         );
         glDrawBuffer(GL_COLOR_ATTACHMENT0);

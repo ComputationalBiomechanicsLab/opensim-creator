@@ -97,7 +97,7 @@ namespace
             throw std::runtime_error{std::move(ss).str()};
         }
 
-        const std::optional<TextureFormat> format = ToTextureFormat(
+        const std::optional<TextureFormat> format = to_texture_format(
             static_cast<size_t>(num_channels),
             TextureChannelFormat::Float32
         );
@@ -147,7 +147,7 @@ namespace
             throw std::runtime_error{std::move(ss).str()};
         }
 
-        const std::optional<TextureFormat> format = ToTextureFormat(
+        const std::optional<TextureFormat> format = to_texture_format(
             static_cast<size_t>(num_channels),
             TextureChannelFormat::Uint8
         );

@@ -16,6 +16,6 @@ namespace osc::detail
             return std::to_array({ VertexAttributeTraits<Attrs>::default_format... });
         }(VertexAttributeList{});
 
-        return lut.at(ToIndex(attr));
+        return lut.at(to_index(attr));
     }
 }

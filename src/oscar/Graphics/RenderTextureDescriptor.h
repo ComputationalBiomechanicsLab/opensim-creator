@@ -43,12 +43,12 @@ namespace osc
         friend std::ostream& operator<<(std::ostream&, RenderTextureDescriptor const&);
         friend class GraphicsBackend;
 
-        Vec2i m_Dimensions;
-        TextureDimensionality m_Dimension;
-        AntiAliasingLevel m_AnialiasingLevel;
-        RenderTextureFormat m_ColorFormat;
-        DepthStencilFormat m_DepthStencilFormat;
-        RenderTextureReadWrite m_ReadWrite;
+        Vec2i dimensions_;
+        TextureDimensionality dimensionality_;
+        AntiAliasingLevel antialiasing_level_;
+        RenderTextureFormat color_format_;
+        DepthStencilFormat depth_stencil_format_;
+        RenderTextureReadWrite read_write_;
     };
 
     std::ostream& operator<<(std::ostream&, RenderTextureDescriptor const&);
