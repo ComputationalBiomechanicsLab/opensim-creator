@@ -3500,99 +3500,99 @@ public:
 
     std::optional<Color> getColor(std::string_view property_name) const
     {
-        return getValue<Color>(property_name);
+        return get_value<Color>(property_name);
     }
 
     void setColor(std::string_view property_name, Color const& color)
     {
-        setValue(property_name, color);
+        set_value(property_name, color);
     }
 
     std::optional<float> getFloat(std::string_view property_name) const
     {
-        return getValue<float>(property_name);
+        return get_value<float>(property_name);
     }
 
     void setFloat(std::string_view property_name, float value)
     {
-        setValue(property_name, value);
+        set_value(property_name, value);
     }
 
     std::optional<Vec3> getVec3(std::string_view property_name) const
     {
-        return getValue<Vec3>(property_name);
+        return get_value<Vec3>(property_name);
     }
 
     void setVec3(std::string_view property_name, Vec3 vec)
     {
-        setValue(property_name, vec);
+        set_value(property_name, vec);
     }
 
     std::optional<Vec4> getVec4(std::string_view property_name) const
     {
-        return getValue<Vec4>(property_name);
+        return get_value<Vec4>(property_name);
     }
 
     void setVec4(std::string_view property_name, Vec4 value)
     {
-        setValue(property_name, value);
+        set_value(property_name, value);
     }
 
     std::optional<Mat3> getMat3(std::string_view property_name) const
     {
-        return getValue<Mat3>(property_name);
+        return get_value<Mat3>(property_name);
     }
 
     void setMat3(std::string_view property_name, const Mat3& mat)
     {
-        setValue(property_name, mat);
+        set_value(property_name, mat);
     }
 
     std::optional<Mat4> getMat4(std::string_view property_name) const
     {
-        return getValue<Mat4>(property_name);
+        return get_value<Mat4>(property_name);
     }
 
     void setMat4(std::string_view property_name, const Mat4& mat)
     {
-        setValue(property_name, mat);
+        set_value(property_name, mat);
     }
 
     std::optional<int32_t> getInt(std::string_view property_name) const
     {
-        return getValue<int32_t>(property_name);
+        return get_value<int32_t>(property_name);
     }
 
     void setInt(std::string_view property_name, int32_t value)
     {
-        setValue(property_name, value);
+        set_value(property_name, value);
     }
 
     std::optional<bool> getBool(std::string_view property_name) const
     {
-        return getValue<bool>(property_name);
+        return get_value<bool>(property_name);
     }
 
     void setBool(std::string_view property_name, bool value)
     {
-        setValue(property_name, value);
+        set_value(property_name, value);
     }
 
     std::optional<Texture2D> getTexture(std::string_view property_name) const
     {
-        return getValue<Texture2D>(property_name);
+        return get_value<Texture2D>(property_name);
     }
 
     void setTexture(std::string_view property_name, Texture2D texture)
     {
-        setValue(property_name, std::move(texture));
+        set_value(property_name, std::move(texture));
     }
 
     friend bool operator==(const Impl&, const Impl&) = default;
 
 private:
     template<typename T>
-    std::optional<T> getValue(std::string_view property_name) const
+    std::optional<T> get_value(std::string_view property_name) const
     {
         const auto it = values_.find(property_name);
 
@@ -3607,7 +3607,7 @@ private:
     }
 
     template<typename T>
-    void setValue(std::string_view property_name, T&& value)
+    void set_value(std::string_view property_name, T&& value)
     {
         values_.insert_or_assign(property_name, std::forward<T>(value));
     }
