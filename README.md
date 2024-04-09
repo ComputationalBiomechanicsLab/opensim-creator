@@ -57,7 +57,7 @@ requires being logged into GitHub; otherwise, you won't see download links).
 
 ### Windows
 
-- Download a `exe` [release](../../releases)
+- Download an `exe` [release](../../releases)
 - Run the `.exe` installer, continue past any security warnings
 - Follow the familiar `next`, `next`, `finish` wizard
 - Run `OpenSimCreator` by typing `OpenSimCreator` in your start menu, or browse to `C:\Program Files\OpenSimCreator\`.
@@ -69,7 +69,7 @@ requires being logged into GitHub; otherwise, you won't see download links).
 - Drag `osc` into your `Applications` directory.
 - Browse to the `Applications` directory in `Finder`
 - Right-click the `osc` application, click `open`, continue past any security warnings to run `osc` for the first time
-- After running it the first time, you can boot it as normal (e.g. `Super+Space`, `osc`, `Enter`)
+- After running it the first time, you can boot it as normal (e.g. `Command+Space`, `osc`, `Enter`)
 
 ### Debian/Ubuntu
 
@@ -94,7 +94,7 @@ requires being logged into GitHub; otherwise, you won't see download links).
     1. Download+install it from https://git-scm.com/downloads
     2. Make sure to add it to the `PATH`. Usually, the installer asks if you want this. If it doesn't ask, then you may need to add it manually (google: "Modify windows PATH", add your `git` install: `C:\Program Files\Git\bin`)
     3. Verify it's installed by opening a terminal (`Shift+Right-Click` -> `Open Powershell window here`) and run `git`
-2. Get `Visual Studio 17 2022`:
+2. Get C++20-compatible compiler (`Visual Studio 17 2022`):
     1. Download+install it from https://visualstudio.microsoft.com/downloads/
     2. Make sure to select C/C++ development in the installer wizard when it asks you what parts you would like to install
 3. Get `cmake`:
@@ -121,8 +121,9 @@ requires being logged into GitHub; otherwise, you won't see download links).
     1. Go to https://brew.sh/ and follow installation instructions
 2. Get `git`: 
     1. Can be installed via `brew`: `brew install git`
-3. Get `clang`:
-    1. Install XCode via the app store, or use `brew` to install `clang` (e.g. `brew install clang`)
+3. Get C++20-compatible compiler (e.g. `clang` via brew, or newer XCodes):
+    1. OpenSim Creator is a C++20 project, so you'll have to use a more recent XCode (>14), or
+       install a newer `clang` from brew (e.g. `brew install clang`)
 4. Get `cmake`:
     1. Can be installed via `brew`: `brew install cmake`
 5. Get `python` and `pip` (*optional*: you only need this if you want to build documentation):
@@ -130,7 +131,9 @@ requires being logged into GitHub; otherwise, you won't see download links).
 6. Build OpenSim Creator in a terminal:
     1. Clone `opensim-creator`: `git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator`
     2. `cd` into the source dir: `cd opensim-creator`
-    3. Run the build script: `scripts/build_mac.sh` (**warning**: can take a long time)
+    3. If you have multiple C++ compilers, make sure that the `CC` and `CXX` environment variables
+       point to compilers that are compatible with C++20. E.g. `export CXX=$(brew --prefix llvm@15)/bin/clang++`
+    4. Run the build script: `scripts/build_mac.sh` (**warning**: can take a long time)
 6. Done:
     1. The `osc-build` directory should contain the built installer
 
@@ -138,8 +141,11 @@ requires being logged into GitHub; otherwise, you won't see download links).
 
 1. Get `git`:
     1. Install `git` via your package manager (e.g. `apt-get install git`)
-2. Get `c++`:
+2. Get C++20-compatible compiler:
     1. Install `g++`/`clang++` via your package manager (e.g. `apt-get install g++`)
+    2. Make sure either of them are new enough to compile C++20
+    3. If they aren't new enough, most Linux OSes provide a way to install a newer compiler
+       toolchain (e.g. `apt-get install g++-11`)
 3. Get `cmake`:
     1. Install `cmake` via your package manager (e.g. `apt-get install cmake`)
 4. Get `python` and `pip` (*optional*: you only need this if you want to build documentation):
@@ -147,7 +153,9 @@ requires being logged into GitHub; otherwise, you won't see download links).
 5. Build OpenSim Creator in a terminal:
     1. Clone `opensim-creator`: `git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator`
     2. `cd` into the source dir: `cd opensim-creator`
-    3. Run the build script: `scripts/build_debian-buster.sh`
+    3. If you have multiple C++ compilers, make sure that the `CC` and `CXX` environment variables point to
+       compilers that are compatible with C++20. E.g. `export CXX=g++-12`
+    4. Run the build script: `scripts/build_debian-buster.sh`
 6. Done:
     1. The `osc-build` directory should contain the built installer
 
@@ -157,10 +165,12 @@ These are some generic tips that might be handy when setting up your own develop
 
 ### Visual Studio 2022
 
-- Run [build_windows.py](scripts/build_windows.py) (described above) to get a complete build.
+- Run [build_windows.py --skip-osc](scripts/build_windows.py) (described above) to get a complete build of
+  OSC's dependencies.
 - In Visual Studio 2020, open `opensim-creator` as a folder project
 - Later versions of Visual Studio (i.e. 2017+) should have in-built CMake support that automatically detects that the folder is a CMake project
 - Right-click the `CMakeLists.txt` file to edit settings or build the project
+  - You may need to set your configure command arguments to point to the dependencies install (e.g. `-DCMAKE_PREFIX_PATH=$(projectDir)/osc-dependencies-install`)
 - Use the `Switch between solutions and available views` button in the `Solution Explorer` hierarchy tab to switch to the `CMake Targets View`
 - Right-click the `osc` CMake target and `Set As Startup Project`, so that pressing `F5` will then build+run `osc.exe`
 - (optional): switch the solution explorer view to a `Folder View` after doing this: the CMake view is crap for developing osc
