@@ -458,26 +458,17 @@ namespace
         static_assert(num_options<ShaderPropertyType>() == 11);
 
         switch (e) {
-        case GL_FLOAT:
-            return ShaderPropertyType::Float;
-        case GL_FLOAT_VEC2:
-            return ShaderPropertyType::Vec2;
-        case GL_FLOAT_VEC3:
-            return ShaderPropertyType::Vec3;
-        case GL_FLOAT_VEC4:
-            return ShaderPropertyType::Vec4;
-        case GL_FLOAT_MAT3:
-            return ShaderPropertyType::Mat3;
-        case GL_FLOAT_MAT4:
-            return ShaderPropertyType::Mat4;
-        case GL_INT:
-            return ShaderPropertyType::Int;
-        case GL_BOOL:
-            return ShaderPropertyType::Bool;
-        case GL_SAMPLER_2D:
-            return ShaderPropertyType::Sampler2D;
-        case GL_SAMPLER_CUBE:
-            return ShaderPropertyType::SamplerCube;
+        case GL_FLOAT:        return ShaderPropertyType::Float;
+        case GL_FLOAT_VEC2:   return ShaderPropertyType::Vec2;
+        case GL_FLOAT_VEC3:   return ShaderPropertyType::Vec3;
+        case GL_FLOAT_VEC4:   return ShaderPropertyType::Vec4;
+        case GL_FLOAT_MAT3:   return ShaderPropertyType::Mat3;
+        case GL_FLOAT_MAT4:   return ShaderPropertyType::Mat4;
+        case GL_INT:          return ShaderPropertyType::Int;
+        case GL_BOOL:         return ShaderPropertyType::Bool;
+        case GL_SAMPLER_2D:   return ShaderPropertyType::Sampler2D;
+        case GL_SAMPLER_CUBE: return ShaderPropertyType::SamplerCube;
+
         case GL_INT_VEC2:
         case GL_INT_VEC3:
         case GL_INT_VEC4:
@@ -1231,11 +1222,11 @@ public:
         return wrap_mode_u_;
     }
 
-    void set_wrap_mode(TextureWrapMode new_wrap_mode)
+    void set_wrap_mode(TextureWrapMode wrap_mode)
     {
-        wrap_mode_u_ = new_wrap_mode;
-        wrap_mode_v_ = new_wrap_mode;
-        wrap_mode_w_ = new_wrap_mode;
+        wrap_mode_u_ = wrap_mode;
+        wrap_mode_v_ = wrap_mode;
+        wrap_mode_w_ = wrap_mode;
         texture_params_version_.reset();
     }
 
@@ -1244,9 +1235,9 @@ public:
         return wrap_mode_u_;
     }
 
-    void set_wrap_mode_u(TextureWrapMode new_wrap_mode_u)
+    void set_wrap_mode_u(TextureWrapMode wrap_mode_u)
     {
-        wrap_mode_u_ = new_wrap_mode_u;
+        wrap_mode_u_ = wrap_mode_u;
         texture_params_version_.reset();
     }
 
@@ -1255,9 +1246,9 @@ public:
         return wrap_mode_v_;
     }
 
-    void set_wrap_mode_v(TextureWrapMode new_wrap_mode_v)
+    void set_wrap_mode_v(TextureWrapMode wrap_mode_v)
     {
-        wrap_mode_v_ = new_wrap_mode_v;
+        wrap_mode_v_ = wrap_mode_v;
         texture_params_version_.reset();
     }
 
@@ -1266,9 +1257,9 @@ public:
         return wrap_mode_w_;
     }
 
-    void set_wrap_mode_w(TextureWrapMode new_wrap_mode_w)
+    void set_wrap_mode_w(TextureWrapMode wrap_mode_w)
     {
-        wrap_mode_w_ = new_wrap_mode_w;
+        wrap_mode_w_ = wrap_mode_w;
         texture_params_version_.reset();
     }
 
@@ -1277,9 +1268,9 @@ public:
         return filter_mode_;
     }
 
-    void set_filter_mode(TextureFilterMode new_filter_mode)
+    void set_filter_mode(TextureFilterMode filter_mode)
     {
-        filter_mode_ = new_filter_mode;
+        filter_mode_ = filter_mode;
         texture_params_version_.reset();
     }
 
@@ -1695,11 +1686,11 @@ public:
         return get_wrap_mode_u();
     }
 
-    void set_wrap_mode(TextureWrapMode new_wrap_mode)
+    void set_wrap_mode(TextureWrapMode wrap_mode)
     {
-        set_wrap_mode_u(new_wrap_mode);
-        set_wrap_mode_v(new_wrap_mode);
-        set_wrap_mode_w(new_wrap_mode);
+        set_wrap_mode_u(wrap_mode);
+        set_wrap_mode_v(wrap_mode);
+        set_wrap_mode_w(wrap_mode);
         texture_params_version_.reset();
     }
 
@@ -1708,9 +1699,9 @@ public:
         return wrap_mode_u_;
     }
 
-    void set_wrap_mode_u(TextureWrapMode new_wrap_mode_u)
+    void set_wrap_mode_u(TextureWrapMode wrap_mode_u)
     {
-        wrap_mode_u_ = new_wrap_mode_u;
+        wrap_mode_u_ = wrap_mode_u;
         texture_params_version_.reset();
     }
 
@@ -1719,9 +1710,9 @@ public:
         return wrap_mode_v_;
     }
 
-    void set_wrap_mode_v(TextureWrapMode new_wrap_mode_v)
+    void set_wrap_mode_v(TextureWrapMode wrap_mode_v)
     {
-        wrap_mode_v_ = new_wrap_mode_v;
+        wrap_mode_v_ = wrap_mode_v;
         texture_params_version_.reset();
     }
 
@@ -1730,9 +1721,9 @@ public:
         return wrap_mode_w_;
     }
 
-    void set_wrap_mode_w(TextureWrapMode new_wrap_mode_w)
+    void set_wrap_mode_w(TextureWrapMode wrap_mode_w)
     {
-        wrap_mode_w_ = new_wrap_mode_w;
+        wrap_mode_w_ = wrap_mode_w;
         texture_params_version_.reset();
     }
 
@@ -1741,9 +1732,9 @@ public:
         return filter_mode_;
     }
 
-    void set_filter_mode(TextureFilterMode new_filter_mode)
+    void set_filter_mode(TextureFilterMode filter_mode)
     {
-        filter_mode_ = new_filter_mode;
+        filter_mode_ = filter_mode;
         texture_params_version_.reset();
     }
 
@@ -1786,8 +1777,7 @@ public:
 
     gl::Texture2D& updTexture()
     {
-        if (!*maybe_opengl_data_)
-        {
+        if (not *maybe_opengl_data_) {
             upload_to_gpu();
         }
         OSC_ASSERT(*maybe_opengl_data_);
@@ -1915,9 +1905,9 @@ size_t osc::num_bytes_per_channel_in(TextureChannelFormat channel_format)
 {
     static_assert(num_options<TextureChannelFormat>() == 2);
     switch (channel_format) {
-    case TextureChannelFormat::Uint8: return 1;
+    case TextureChannelFormat::Uint8:   return 1;
     case TextureChannelFormat::Float32: return 4;
-    default: return 1;
+    default:                            return 1;
     }
 }
 
@@ -1951,9 +1941,9 @@ TextureWrapMode osc::Texture2D::wrap_mode() const
     return m_Impl->wrap_mode();
 }
 
-void osc::Texture2D::set_wrap_mode(TextureWrapMode new_wrap_mode)
+void osc::Texture2D::set_wrap_mode(TextureWrapMode wrap_mode)
 {
-    m_Impl.upd()->set_wrap_mode(new_wrap_mode);
+    m_Impl.upd()->set_wrap_mode(wrap_mode);
 }
 
 TextureWrapMode osc::Texture2D::wrap_mode_u() const
@@ -1961,9 +1951,9 @@ TextureWrapMode osc::Texture2D::wrap_mode_u() const
     return m_Impl->get_wrap_mode_u();
 }
 
-void osc::Texture2D::set_wrap_mode_u(TextureWrapMode new_wrap_mode_u)
+void osc::Texture2D::set_wrap_mode_u(TextureWrapMode wrap_mode_u)
 {
-    m_Impl.upd()->set_wrap_mode_u(new_wrap_mode_u);
+    m_Impl.upd()->set_wrap_mode_u(wrap_mode_u);
 }
 
 TextureWrapMode osc::Texture2D::wrap_mode_v() const
@@ -1971,9 +1961,9 @@ TextureWrapMode osc::Texture2D::wrap_mode_v() const
     return m_Impl->get_wrap_mode_v();
 }
 
-void osc::Texture2D::set_wrap_mode_v(TextureWrapMode new_wrap_mode_v)
+void osc::Texture2D::set_wrap_mode_v(TextureWrapMode wrap_mode_v)
 {
-    m_Impl.upd()->set_wrap_mode_v(new_wrap_mode_v);
+    m_Impl.upd()->set_wrap_mode_v(wrap_mode_v);
 }
 
 TextureWrapMode osc::Texture2D::wrap_mode_w() const
@@ -1981,9 +1971,9 @@ TextureWrapMode osc::Texture2D::wrap_mode_w() const
     return m_Impl->wrap_mode_w();
 }
 
-void osc::Texture2D::set_wrap_mode_w(TextureWrapMode new_wrap_mode_w)
+void osc::Texture2D::set_wrap_mode_w(TextureWrapMode wrap_mode_w)
 {
-    m_Impl.upd()->set_wrap_mode_w(new_wrap_mode_w);
+    m_Impl.upd()->set_wrap_mode_w(wrap_mode_w);
 }
 
 TextureFilterMode osc::Texture2D::filter_mode() const
@@ -2021,9 +2011,9 @@ std::span<const uint8_t> osc::Texture2D::getPixelData() const
     return m_Impl->getPixelData();
 }
 
-void osc::Texture2D::set_pixel_data(std::span<const uint8_t> pixelData)
+void osc::Texture2D::set_pixel_data(std::span<const uint8_t> pixel_data)
 {
-    m_Impl.upd()->set_pixel_data(pixelData);
+    m_Impl.upd()->set_pixel_data(pixel_data);
 }
 
 std::ostream& osc::operator<<(std::ostream& o, const Texture2D&)
@@ -2063,19 +2053,13 @@ namespace
             static_assert(num_options<RenderTextureReadWrite>() == 2);
 
             switch (descriptor.getColorFormat()) {
-            case RenderTextureFormat::Red8:
-                return GL_RED;
-            default:
-            case RenderTextureFormat::ARGB32:
-                return descriptor.getReadWrite() == RenderTextureReadWrite::sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8;
-            case RenderTextureFormat::RGFloat16:
-                return GL_RG16F;
-            case RenderTextureFormat::RGBFloat16:
-                return GL_RGB16F;
-            case RenderTextureFormat::ARGBFloat16:
-                return GL_RGBA16F;
-            case RenderTextureFormat::Depth:
-                return GL_R32F;
+            case RenderTextureFormat::Red8:        return GL_RED;
+            case RenderTextureFormat::ARGB32:      return descriptor.getReadWrite() == RenderTextureReadWrite::sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8;
+            case RenderTextureFormat::RGFloat16:   return GL_RG16F;
+            case RenderTextureFormat::RGBFloat16:  return GL_RGB16F;
+            case RenderTextureFormat::ARGBFloat16: return GL_RGBA16F;
+            case RenderTextureFormat::Depth:       return GL_R32F;
+            default:                               return descriptor.getReadWrite() == RenderTextureReadWrite::sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8;
             }
         }
     }
@@ -2094,19 +2078,13 @@ namespace
         }
         else {
             switch (desc.getColorFormat()) {
-            case RenderTextureFormat::Red8:
-                return CPUImageFormat::R8;
-            default:
-            case RenderTextureFormat::ARGB32:
-                return CPUImageFormat::RGBA;
-            case RenderTextureFormat::RGFloat16:
-                return CPUImageFormat::RG;
-            case RenderTextureFormat::RGBFloat16:
-                return CPUImageFormat::RGB;
-            case RenderTextureFormat::ARGBFloat16:
-                return CPUImageFormat::RGBA;
-            case RenderTextureFormat::Depth:
-                return CPUImageFormat::R8;
+            case RenderTextureFormat::Red8:        return CPUImageFormat::R8;
+            case RenderTextureFormat::ARGB32:      return CPUImageFormat::RGBA;
+            case RenderTextureFormat::RGFloat16:   return CPUImageFormat::RG;
+            case RenderTextureFormat::RGBFloat16:  return CPUImageFormat::RGB;
+            case RenderTextureFormat::ARGBFloat16: return CPUImageFormat::RGBA;
+            case RenderTextureFormat::Depth:       return CPUImageFormat::R8;
+            default:                               return CPUImageFormat::RGBA;
             }
         }
     }
@@ -2125,19 +2103,13 @@ namespace
         }
         else {
             switch (desc.getColorFormat()) {
-            case RenderTextureFormat::Red8:
-                return CPUDataType::UnsignedByte;
-            default:
-            case RenderTextureFormat::ARGB32:
-                return CPUDataType::UnsignedByte;
-            case RenderTextureFormat::RGFloat16:
-                return CPUDataType::HalfFloat;
-            case RenderTextureFormat::RGBFloat16:
-                return CPUDataType::HalfFloat;
-            case RenderTextureFormat::ARGBFloat16:
-                return CPUDataType::HalfFloat;
-            case RenderTextureFormat::Depth:
-                return CPUDataType::Float;
+            case RenderTextureFormat::Red8:        return CPUDataType::UnsignedByte;
+            case RenderTextureFormat::ARGB32:      return CPUDataType::UnsignedByte;
+            case RenderTextureFormat::RGFloat16:   return CPUDataType::HalfFloat;
+            case RenderTextureFormat::RGBFloat16:  return CPUDataType::HalfFloat;
+            case RenderTextureFormat::ARGBFloat16: return CPUDataType::HalfFloat;
+            case RenderTextureFormat::Depth:       return CPUDataType::Float;
+            default:                               return CPUDataType::UnsignedByte;
             }
         }
     }
@@ -2193,10 +2165,10 @@ Vec2i osc::RenderTextureDescriptor::getDimensions() const
     return dimensions_;
 }
 
-void osc::RenderTextureDescriptor::setDimensions(Vec2i new_dimensions)
+void osc::RenderTextureDescriptor::setDimensions(Vec2i dimensions)
 {
-    OSC_ASSERT(new_dimensions.x >= 0 and new_dimensions.y >= 0);
-    dimensions_ = new_dimensions;
+    OSC_ASSERT(dimensions.x >= 0 and dimensions.y >= 0);
+    dimensions_ = dimensions;
 }
 
 TextureDimensionality osc::RenderTextureDescriptor::getDimensionality() const
@@ -2204,9 +2176,9 @@ TextureDimensionality osc::RenderTextureDescriptor::getDimensionality() const
     return dimensionality_;
 }
 
-void osc::RenderTextureDescriptor::setDimensionality(TextureDimensionality new_dimensionality)
+void osc::RenderTextureDescriptor::setDimensionality(TextureDimensionality dimensionality)
 {
-    dimensionality_ = new_dimensionality;
+    dimensionality_ = dimensionality;
 }
 
 AntiAliasingLevel osc::RenderTextureDescriptor::getAntialiasingLevel() const
@@ -2214,9 +2186,9 @@ AntiAliasingLevel osc::RenderTextureDescriptor::getAntialiasingLevel() const
     return antialiasing_level_;
 }
 
-void osc::RenderTextureDescriptor::setAntialiasingLevel(AntiAliasingLevel new_aa_level)
+void osc::RenderTextureDescriptor::setAntialiasingLevel(AntiAliasingLevel aa_level)
 {
-    antialiasing_level_ = new_aa_level;
+    antialiasing_level_ = aa_level;
 }
 
 RenderTextureFormat osc::RenderTextureDescriptor::getColorFormat() const
@@ -2224,9 +2196,9 @@ RenderTextureFormat osc::RenderTextureDescriptor::getColorFormat() const
     return color_format_;
 }
 
-void osc::RenderTextureDescriptor::setColorFormat(RenderTextureFormat new_color_format)
+void osc::RenderTextureDescriptor::setColorFormat(RenderTextureFormat color_format)
 {
-    color_format_ = new_color_format;
+    color_format_ = color_format;
 }
 
 DepthStencilFormat osc::RenderTextureDescriptor::getDepthStencilFormat() const
@@ -2234,9 +2206,9 @@ DepthStencilFormat osc::RenderTextureDescriptor::getDepthStencilFormat() const
     return depth_stencil_format_;
 }
 
-void osc::RenderTextureDescriptor::setDepthStencilFormat(DepthStencilFormat new_depth_stencil_format)
+void osc::RenderTextureDescriptor::setDepthStencilFormat(DepthStencilFormat depth_stencil_format)
 {
-    depth_stencil_format_ = new_depth_stencil_format;
+    depth_stencil_format_ = depth_stencil_format;
 }
 
 RenderTextureReadWrite osc::RenderTextureDescriptor::getReadWrite() const
@@ -2244,9 +2216,9 @@ RenderTextureReadWrite osc::RenderTextureDescriptor::getReadWrite() const
     return read_write_;
 }
 
-void osc::RenderTextureDescriptor::setReadWrite(RenderTextureReadWrite new_read_write)
+void osc::RenderTextureDescriptor::setReadWrite(RenderTextureReadWrite read_write)
 {
-    read_write_ = new_read_write;
+    read_write_ = read_write;
 }
 
 std::ostream& osc::operator<<(std::ostream& o, const RenderTextureDescriptor& descriptor)
@@ -2273,13 +2245,13 @@ public:
         OSC_ASSERT((getDimensionality() != TextureDimensionality::Cube or getAntialiasingLevel() == AntiAliasingLevel::none()) && "cannot construct a Cube renderbuffer that is anti-aliased (not supported by backends like OpenGL)");
     }
 
-    void reformat(const RenderTextureDescriptor& new_descriptor)
+    void reformat(const RenderTextureDescriptor& descriptor)
     {
-        OSC_ASSERT((new_descriptor.getDimensionality() != TextureDimensionality::Cube or new_descriptor.getDimensions().x == new_descriptor.getDimensions().y) && "cannot reformat a render buffer to a Cube dimensionality with non-square dimensions");
-        OSC_ASSERT((new_descriptor.getDimensionality() != TextureDimensionality::Cube or new_descriptor.getAntialiasingLevel() == AntiAliasingLevel::none()) && "cannot reformat a renderbuffer to a Cube dimensionality with is anti-aliased (not supported by backends like OpenGL)");
+        OSC_ASSERT((descriptor.getDimensionality() != TextureDimensionality::Cube or descriptor.getDimensions().x == descriptor.getDimensions().y) && "cannot reformat a render buffer to a Cube dimensionality with non-square dimensions");
+        OSC_ASSERT((descriptor.getDimensionality() != TextureDimensionality::Cube or descriptor.getAntialiasingLevel() == AntiAliasingLevel::none()) && "cannot reformat a renderbuffer to a Cube dimensionality with is anti-aliased (not supported by backends like OpenGL)");
 
-        if (descriptor_ != new_descriptor) {
-            descriptor_ = new_descriptor;
+        if (descriptor_ != descriptor) {
+            descriptor_ = descriptor;
             maybe_opengl_data_->reset();
         }
     }
@@ -2294,12 +2266,12 @@ public:
         return descriptor_.getDimensions();
     }
 
-    void setDimensions(Vec2i new_dimensions)
+    void setDimensions(Vec2i dimensions)
     {
-        OSC_ASSERT((getDimensionality() != TextureDimensionality::Cube or new_dimensions.x == new_dimensions.y) && "cannot set a cubemap to have non-square dimensions");
+        OSC_ASSERT((getDimensionality() != TextureDimensionality::Cube or dimensions.x == dimensions.y) && "cannot set a cubemap to have non-square dimensions");
 
-        if (new_dimensions != getDimensions()) {
-            descriptor_.setDimensions(new_dimensions);
+        if (dimensions != getDimensions()) {
+            descriptor_.setDimensions(dimensions);
             maybe_opengl_data_->reset();
         }
     }
@@ -2309,13 +2281,13 @@ public:
         return descriptor_.getDimensionality();
     }
 
-    void setDimensionality(TextureDimensionality new_dimensionality)
+    void setDimensionality(TextureDimensionality dimensionality)
     {
-        OSC_ASSERT((new_dimensionality != TextureDimensionality::Cube or getDimensions().x == getDimensions().y) && "cannot set dimensionality to Cube for non-square render buffer");
-        OSC_ASSERT((new_dimensionality != TextureDimensionality::Cube or getAntialiasingLevel() == AntiAliasingLevel{1}) && "cannot set dimensionality to Cube for an anti-aliased render buffer (not supported by backends like OpenGL)");
+        OSC_ASSERT((dimensionality != TextureDimensionality::Cube or getDimensions().x == getDimensions().y) && "cannot set dimensionality to Cube for non-square render buffer");
+        OSC_ASSERT((dimensionality != TextureDimensionality::Cube or getAntialiasingLevel() == AntiAliasingLevel{1}) && "cannot set dimensionality to Cube for an anti-aliased render buffer (not supported by backends like OpenGL)");
 
-        if (new_dimensionality != getDimensionality()) {
-            descriptor_.setDimensionality(new_dimensionality);
+        if (dimensionality != getDimensionality()) {
+            descriptor_.setDimensionality(dimensionality);
             maybe_opengl_data_->reset();
         }
     }
@@ -2325,10 +2297,10 @@ public:
         return descriptor_.getColorFormat();
     }
 
-    void setColorFormat(RenderTextureFormat new_format)
+    void setColorFormat(RenderTextureFormat format)
     {
-        if (new_format != getColorFormat()) {
-            descriptor_.setColorFormat(new_format);
+        if (format != getColorFormat()) {
+            descriptor_.setColorFormat(format);
             maybe_opengl_data_->reset();
         }
     }
@@ -2338,12 +2310,12 @@ public:
         return descriptor_.getAntialiasingLevel();
     }
 
-    void setAntialiasingLevel(AntiAliasingLevel new_aa_level)
+    void setAntialiasingLevel(AntiAliasingLevel aa_level)
     {
-        OSC_ASSERT((getDimensionality() != TextureDimensionality::Cube or new_aa_level == AntiAliasingLevel{1}) && "cannot set anti-aliasing level >1 on a cube render buffer (it is not supported by backends like OpenGL)");
+        OSC_ASSERT((getDimensionality() != TextureDimensionality::Cube or aa_level == AntiAliasingLevel{1}) && "cannot set anti-aliasing level >1 on a cube render buffer (it is not supported by backends like OpenGL)");
 
-        if (new_aa_level != getAntialiasingLevel()) {
-            descriptor_.setAntialiasingLevel(new_aa_level);
+        if (aa_level != getAntialiasingLevel()) {
+            descriptor_.setAntialiasingLevel(aa_level);
             maybe_opengl_data_->reset();
         }
     }
@@ -2353,10 +2325,10 @@ public:
         return descriptor_.getDepthStencilFormat();
     }
 
-    void setDepthStencilFormat(DepthStencilFormat new_depth_stencil_format)
+    void setDepthStencilFormat(DepthStencilFormat depth_stencil_format)
     {
-        if (new_depth_stencil_format != getDepthStencilFormat()) {
-            descriptor_.setDepthStencilFormat(new_depth_stencil_format);
+        if (depth_stencil_format != getDepthStencilFormat()) {
+            descriptor_.setDepthStencilFormat(depth_stencil_format);
             maybe_opengl_data_->reset();
         }
     }
@@ -2366,10 +2338,10 @@ public:
         return descriptor_.getReadWrite();
     }
 
-    void setReadWrite(RenderTextureReadWrite new_read_write)
+    void setReadWrite(RenderTextureReadWrite read_write)
     {
-        if (new_read_write != descriptor_.getReadWrite()) {
-            descriptor_.setReadWrite(new_read_write);
+        if (read_write != descriptor_.getReadWrite()) {
+            descriptor_.setReadWrite(read_write);
             maybe_opengl_data_->reset();
         }
     }
@@ -2532,11 +2504,11 @@ public:
         return color_buffer_->m_Impl->getDimensions();
     }
 
-    void setDimensions(Vec2i new_dimensions)
+    void setDimensions(Vec2i dimensions)
     {
-        if (new_dimensions != getDimensions()) {
-            color_buffer_->m_Impl->setDimensions(new_dimensions);
-            depth_buffer_->m_Impl->setDimensions(new_dimensions);
+        if (dimensions != getDimensions()) {
+            color_buffer_->m_Impl->setDimensions(dimensions);
+            depth_buffer_->m_Impl->setDimensions(dimensions);
         }
     }
 
@@ -2545,11 +2517,11 @@ public:
         return color_buffer_->m_Impl->getDimensionality();
     }
 
-    void setDimensionality(TextureDimensionality new_dimensionality)
+    void setDimensionality(TextureDimensionality dimensionality)
     {
-        if (new_dimensionality != getDimensionality()) {
-            color_buffer_->m_Impl->setDimensionality(new_dimensionality);
-            depth_buffer_->m_Impl->setDimensionality(new_dimensionality);
+        if (dimensionality != getDimensionality()) {
+            color_buffer_->m_Impl->setDimensionality(dimensionality);
+            depth_buffer_->m_Impl->setDimensionality(dimensionality);
         }
     }
 
@@ -2558,11 +2530,11 @@ public:
         return color_buffer_->m_Impl->getColorFormat();
     }
 
-    void setColorFormat(RenderTextureFormat new_color_format)
+    void setColorFormat(RenderTextureFormat color_format)
     {
-        if (new_color_format != getColorFormat()) {
-            color_buffer_->m_Impl->setColorFormat(new_color_format);
-            depth_buffer_->m_Impl->setColorFormat(new_color_format);
+        if (color_format != getColorFormat()) {
+            color_buffer_->m_Impl->setColorFormat(color_format);
+            depth_buffer_->m_Impl->setColorFormat(color_format);
         }
     }
 
@@ -2571,11 +2543,11 @@ public:
         return color_buffer_->m_Impl->getAntialiasingLevel();
     }
 
-    void setAntialiasingLevel(AntiAliasingLevel new_aa_level)
+    void setAntialiasingLevel(AntiAliasingLevel aa_level)
     {
-        if (new_aa_level != getAntialiasingLevel()) {
-            color_buffer_->m_Impl->setAntialiasingLevel(new_aa_level);
-            depth_buffer_->m_Impl->setAntialiasingLevel(new_aa_level);
+        if (aa_level != getAntialiasingLevel()) {
+            color_buffer_->m_Impl->setAntialiasingLevel(aa_level);
+            depth_buffer_->m_Impl->setAntialiasingLevel(aa_level);
         }
     }
 
@@ -2584,11 +2556,11 @@ public:
         return color_buffer_->m_Impl->getDepthStencilFormat();
     }
 
-    void setDepthStencilFormat(DepthStencilFormat new_depth_stencil_format)
+    void setDepthStencilFormat(DepthStencilFormat depth_stencil_format)
     {
-        if (new_depth_stencil_format != getDepthStencilFormat()) {
-            color_buffer_->m_Impl->setDepthStencilFormat(new_depth_stencil_format);
-            depth_buffer_->m_Impl->setDepthStencilFormat(new_depth_stencil_format);
+        if (depth_stencil_format != getDepthStencilFormat()) {
+            color_buffer_->m_Impl->setDepthStencilFormat(depth_stencil_format);
+            depth_buffer_->m_Impl->setDepthStencilFormat(depth_stencil_format);
         }
     }
 
@@ -2597,19 +2569,19 @@ public:
         return color_buffer_->m_Impl->getReadWrite();
     }
 
-    void setReadWrite(RenderTextureReadWrite new_read_write)
+    void setReadWrite(RenderTextureReadWrite read_write)
     {
-        if (new_read_write != getReadWrite()) {
-            color_buffer_->m_Impl->setReadWrite(new_read_write);
-            depth_buffer_->m_Impl->setReadWrite(new_read_write);
+        if (read_write != getReadWrite()) {
+            color_buffer_->m_Impl->setReadWrite(read_write);
+            depth_buffer_->m_Impl->setReadWrite(read_write);
         }
     }
 
-    void reformat(RenderTextureDescriptor const& new_format_description)
+    void reformat(RenderTextureDescriptor const& format_description)
     {
-        if (new_format_description != color_buffer_->m_Impl->getDescriptor()) {
-            color_buffer_->m_Impl->reformat(new_format_description);
-            depth_buffer_->m_Impl->reformat(new_format_description);
+        if (format_description != color_buffer_->m_Impl->getDescriptor()) {
+            color_buffer_->m_Impl->reformat(format_description);
+            depth_buffer_->m_Impl->reformat(format_description);
         }
     }
 
@@ -2672,9 +2644,9 @@ TextureDimensionality osc::RenderTexture::getDimensionality() const
     return m_Impl->getDimensionality();
 }
 
-void osc::RenderTexture::setDimensionality(TextureDimensionality new_dimensionality)
+void osc::RenderTexture::setDimensionality(TextureDimensionality dimensionality)
 {
-    m_Impl.upd()->setDimensionality(new_dimensionality);
+    m_Impl.upd()->setDimensionality(dimensionality);
 }
 
 RenderTextureFormat osc::RenderTexture::getColorFormat() const
@@ -2682,9 +2654,9 @@ RenderTextureFormat osc::RenderTexture::getColorFormat() const
     return m_Impl->getColorFormat();
 }
 
-void osc::RenderTexture::setColorFormat(RenderTextureFormat new_format)
+void osc::RenderTexture::setColorFormat(RenderTextureFormat format)
 {
-    m_Impl.upd()->setColorFormat(new_format);
+    m_Impl.upd()->setColorFormat(format);
 }
 
 AntiAliasingLevel osc::RenderTexture::getAntialiasingLevel() const
@@ -2692,9 +2664,9 @@ AntiAliasingLevel osc::RenderTexture::getAntialiasingLevel() const
     return m_Impl->getAntialiasingLevel();
 }
 
-void osc::RenderTexture::setAntialiasingLevel(AntiAliasingLevel new_aa_level)
+void osc::RenderTexture::setAntialiasingLevel(AntiAliasingLevel aa_level)
 {
-    m_Impl.upd()->setAntialiasingLevel(new_aa_level);
+    m_Impl.upd()->setAntialiasingLevel(aa_level);
 }
 
 DepthStencilFormat osc::RenderTexture::getDepthStencilFormat() const
@@ -2702,9 +2674,9 @@ DepthStencilFormat osc::RenderTexture::getDepthStencilFormat() const
     return m_Impl->getDepthStencilFormat();
 }
 
-void osc::RenderTexture::setDepthStencilFormat(DepthStencilFormat new_depth_stencil_format)
+void osc::RenderTexture::setDepthStencilFormat(DepthStencilFormat depth_stencil_format)
 {
-    m_Impl.upd()->setDepthStencilFormat(new_depth_stencil_format);
+    m_Impl.upd()->setDepthStencilFormat(depth_stencil_format);
 }
 
 RenderTextureReadWrite osc::RenderTexture::getReadWrite() const
@@ -2712,14 +2684,14 @@ RenderTextureReadWrite osc::RenderTexture::getReadWrite() const
     return m_Impl->getReadWrite();
 }
 
-void osc::RenderTexture::setReadWrite(RenderTextureReadWrite new_read_write)
+void osc::RenderTexture::setReadWrite(RenderTextureReadWrite read_write)
 {
-    m_Impl.upd()->setReadWrite(new_read_write);
+    m_Impl.upd()->setReadWrite(read_write);
 }
 
-void osc::RenderTexture::reformat(const RenderTextureDescriptor& new_format_description)
+void osc::RenderTexture::reformat(const RenderTextureDescriptor& format_description)
 {
-    m_Impl.upd()->reformat(new_format_description);
+    m_Impl.upd()->reformat(format_description);
 }
 
 std::shared_ptr<RenderBuffer> osc::RenderTexture::updColorBuffer()
@@ -3020,9 +2992,9 @@ public:
         return get_value<Color>(property_name);
     }
 
-    void setColor(std::string_view property_name, const Color& new_value)
+    void setColor(std::string_view property_name, const Color& color)
     {
-        set_value(property_name, new_value);
+        set_value(property_name, color);
     }
 
     std::optional<std::span<const Color>> getColorArray(std::string_view property_name) const
@@ -3030,9 +3002,9 @@ public:
         return get_value<std::vector<Color>, std::span<const Color>>(property_name);
     }
 
-    void setColorArray(std::string_view property_name, std::span<const Color> new_values)
+    void setColorArray(std::string_view property_name, std::span<const Color> colors)
     {
-        set_value<std::vector<Color>>(property_name, std::vector<Color>(new_values.begin(), new_values.end()));
+        set_value<std::vector<Color>>(property_name, std::vector<Color>(colors.begin(), colors.end()));
     }
 
     std::optional<float> getFloat(std::string_view property_name) const
@@ -3040,9 +3012,9 @@ public:
         return get_value<float>(property_name);
     }
 
-    void setFloat(std::string_view property_name, float new_value)
+    void setFloat(std::string_view property_name, float value)
     {
-        set_value(property_name, new_value);
+        set_value(property_name, value);
     }
 
     std::optional<std::span<const float>> getFloatArray(std::string_view property_name) const
@@ -3050,9 +3022,9 @@ public:
         return get_value<std::vector<float>, std::span<const float>>(property_name);
     }
 
-    void setFloatArray(std::string_view property_name, std::span<const float> new_values)
+    void setFloatArray(std::string_view property_name, std::span<const float> values)
     {
-        set_value<std::vector<float>>(property_name, std::vector<float>(new_values.begin(), new_values.end()));
+        set_value<std::vector<float>>(property_name, std::vector<float>(values.begin(), values.end()));
     }
 
     std::optional<Vec2> getVec2(std::string_view property_name) const
@@ -3060,9 +3032,9 @@ public:
         return get_value<Vec2>(property_name);
     }
 
-    void setVec2(std::string_view property_name, Vec2 new_value)
+    void setVec2(std::string_view property_name, Vec2 vec)
     {
-        set_value(property_name, new_value);
+        set_value(property_name, vec);
     }
 
     std::optional<Vec3> getVec3(std::string_view property_name) const
@@ -3070,9 +3042,9 @@ public:
         return get_value<Vec3>(property_name);
     }
 
-    void setVec3(std::string_view property_name, Vec3 new_value)
+    void setVec3(std::string_view property_name, Vec3 vec)
     {
-        set_value(property_name, new_value);
+        set_value(property_name, vec);
     }
 
     std::optional<std::span<const Vec3>> getVec3Array(std::string_view property_name) const
@@ -3080,9 +3052,9 @@ public:
         return get_value<std::vector<Vec3>, std::span<const Vec3>>(property_name);
     }
 
-    void setVec3Array(std::string_view property_name, std::span<const Vec3> new_values)
+    void setVec3Array(std::string_view property_name, std::span<const Vec3> vecs)
     {
-        set_value(property_name, std::vector<Vec3>(new_values.begin(), new_values.end()));
+        set_value(property_name, std::vector<Vec3>(vecs.begin(), vecs.end()));
     }
 
     std::optional<Vec4> getVec4(std::string_view property_name) const
@@ -3090,9 +3062,9 @@ public:
         return get_value<Vec4>(property_name);
     }
 
-    void setVec4(std::string_view property_name, Vec4 new_value)
+    void setVec4(std::string_view property_name, Vec4 vec)
     {
-        set_value(property_name, new_value);
+        set_value(property_name, vec);
     }
 
     std::optional<Mat3> getMat3(std::string_view property_name) const
@@ -3100,9 +3072,9 @@ public:
         return get_value<Mat3>(property_name);
     }
 
-    void setMat3(std::string_view property_name, const Mat3& new_value)
+    void setMat3(std::string_view property_name, const Mat3& mat)
     {
-        set_value(property_name, new_value);
+        set_value(property_name, mat);
     }
 
     std::optional<Mat4> getMat4(std::string_view property_name) const
@@ -3110,9 +3082,9 @@ public:
         return get_value<Mat4>(property_name);
     }
 
-    void setMat4(std::string_view property_name, const Mat4& new_value)
+    void setMat4(std::string_view property_name, const Mat4& mat)
     {
-        set_value(property_name, new_value);
+        set_value(property_name, mat);
     }
 
     std::optional<std::span<const Mat4>> getMat4Array(std::string_view property_name) const
@@ -3120,9 +3092,9 @@ public:
         return get_value<std::vector<Mat4>, std::span<const Mat4>>(property_name);
     }
 
-    void setMat4Array(std::string_view property_name, std::span<const Mat4> new_values)
+    void setMat4Array(std::string_view property_name, std::span<const Mat4> mats)
     {
-        set_value(property_name, std::vector<Mat4>(new_values.begin(), new_values.end()));
+        set_value(property_name, std::vector<Mat4>(mats.begin(), mats.end()));
     }
 
     std::optional<int32_t> getInt(std::string_view property_name) const
@@ -3130,9 +3102,9 @@ public:
         return get_value<int32_t>(property_name);
     }
 
-    void setInt(std::string_view property_name, int32_t new_value)
+    void setInt(std::string_view property_name, int32_t value)
     {
-        set_value(property_name, new_value);
+        set_value(property_name, value);
     }
 
     std::optional<bool> getBool(std::string_view property_name) const
@@ -3140,9 +3112,9 @@ public:
         return get_value<bool>(property_name);
     }
 
-    void setBool(std::string_view property_name, bool new_value)
+    void setBool(std::string_view property_name, bool value)
     {
-        set_value(property_name, new_value);
+        set_value(property_name, value);
     }
 
     std::optional<Texture2D> getTexture(std::string_view property_name) const
@@ -3150,9 +3122,9 @@ public:
         return get_value<Texture2D>(property_name);
     }
 
-    void setTexture(std::string_view property_name, Texture2D new_value)
+    void setTexture(std::string_view property_name, Texture2D texture)
     {
-        set_value(property_name, std::move(new_value));
+        set_value(property_name, std::move(texture));
     }
 
     void clearTexture(std::string_view property_name)
@@ -3165,9 +3137,9 @@ public:
         return get_value<RenderTexture>(property_name);
     }
 
-    void setRenderTexture(std::string_view property_name, RenderTexture new_value)
+    void setRenderTexture(std::string_view property_name, RenderTexture render_texture)
     {
-        set_value(property_name, std::move(new_value));
+        set_value(property_name, std::move(render_texture));
     }
 
     void clearRenderTexture(std::string_view property_name)
@@ -3180,9 +3152,9 @@ public:
         return get_value<Cubemap>(property_name);
     }
 
-    void setCubemap(std::string_view property_name, Cubemap new_value)
+    void setCubemap(std::string_view property_name, Cubemap cubemap)
     {
-        set_value(property_name, std::move(new_value));
+        set_value(property_name, std::move(cubemap));
     }
 
     void clearCubemap(std::string_view property_name)
@@ -3195,9 +3167,9 @@ public:
         return is_transparent_;
     }
 
-    void setTransparent(bool new_transparent)
+    void setTransparent(bool value)
     {
-        is_transparent_ = new_transparent;
+        is_transparent_ = value;
     }
 
     bool getDepthTested() const
@@ -3205,9 +3177,9 @@ public:
         return is_depth_tested_;
     }
 
-    void setDepthTested(bool new_depth_tested)
+    void setDepthTested(bool value)
     {
-        is_depth_tested_ = new_depth_tested;
+        is_depth_tested_ = value;
     }
 
     DepthFunction getDepthFunction() const
@@ -3215,9 +3187,9 @@ public:
         return depth_function_;
     }
 
-    void setDepthFunction(DepthFunction new_depth_function)
+    void setDepthFunction(DepthFunction depth_function)
     {
-        depth_function_ = new_depth_function;
+        depth_function_ = depth_function;
     }
 
     bool getWireframeMode() const
@@ -3225,9 +3197,9 @@ public:
         return is_wireframe_mode_;
     }
 
-    void setWireframeMode(bool new_wireframe_mode)
+    void setWireframeMode(bool value)
     {
-        is_wireframe_mode_ = new_wireframe_mode;
+        is_wireframe_mode_ = value;
     }
 
     CullMode getCullMode() const
@@ -3235,9 +3207,9 @@ public:
         return cull_mode_;
     }
 
-    void setCullMode(CullMode new_cull_mode)
+    void setCullMode(CullMode cull_mode)
     {
-        cull_mode_ = new_cull_mode;
+        cull_mode_ = cull_mode;
     }
 
 private:
@@ -3258,9 +3230,9 @@ private:
     }
 
     template<typename T>
-    void set_value(std::string_view property_name, T&& new_value)
+    void set_value(std::string_view property_name, T&& value)
     {
-        values_.insert_or_assign(property_name, std::forward<T>(new_value));
+        values_.insert_or_assign(property_name, std::forward<T>(value));
     }
 
     friend class GraphicsBackend;
@@ -3288,9 +3260,9 @@ std::optional<Color> osc::Material::getColor(std::string_view property_name) con
     return m_Impl->getColor(property_name);
 }
 
-void osc::Material::setColor(std::string_view property_name, const Color& new_value)
+void osc::Material::setColor(std::string_view property_name, const Color& color)
 {
-    m_Impl.upd()->setColor(property_name, new_value);
+    m_Impl.upd()->setColor(property_name, color);
 }
 
 std::optional<std::span<const Color>> osc::Material::getColorArray(std::string_view property_name) const
@@ -3298,9 +3270,9 @@ std::optional<std::span<const Color>> osc::Material::getColorArray(std::string_v
     return m_Impl->getColorArray(property_name);
 }
 
-void osc::Material::setColorArray(std::string_view property_name, std::span<const Color> new_colors)
+void osc::Material::setColorArray(std::string_view property_name, std::span<const Color> colors)
 {
-    m_Impl.upd()->setColorArray(property_name, new_colors);
+    m_Impl.upd()->setColorArray(property_name, colors);
 }
 
 std::optional<float> osc::Material::getFloat(std::string_view property_name) const
@@ -3308,9 +3280,9 @@ std::optional<float> osc::Material::getFloat(std::string_view property_name) con
     return m_Impl->getFloat(property_name);
 }
 
-void osc::Material::setFloat(std::string_view property_name, float new_value)
+void osc::Material::setFloat(std::string_view property_name, float value)
 {
-    m_Impl.upd()->setFloat(property_name, new_value);
+    m_Impl.upd()->setFloat(property_name, value);
 }
 
 std::optional<std::span<const float>> osc::Material::getFloatArray(std::string_view property_name) const
@@ -3318,9 +3290,9 @@ std::optional<std::span<const float>> osc::Material::getFloatArray(std::string_v
     return m_Impl->getFloatArray(property_name);
 }
 
-void osc::Material::setFloatArray(std::string_view property_name, std::span<const float> new_values)
+void osc::Material::setFloatArray(std::string_view property_name, std::span<const float> values)
 {
-    m_Impl.upd()->setFloatArray(property_name, new_values);
+    m_Impl.upd()->setFloatArray(property_name, values);
 }
 
 std::optional<Vec2> osc::Material::getVec2(std::string_view property_name) const
@@ -3328,9 +3300,9 @@ std::optional<Vec2> osc::Material::getVec2(std::string_view property_name) const
     return m_Impl->getVec2(property_name);
 }
 
-void osc::Material::setVec2(std::string_view property_name, Vec2 new_value)
+void osc::Material::setVec2(std::string_view property_name, Vec2 vec)
 {
-    m_Impl.upd()->setVec2(property_name, new_value);
+    m_Impl.upd()->setVec2(property_name, vec);
 }
 
 std::optional<std::span<const Vec3>> osc::Material::getVec3Array(std::string_view property_name) const
@@ -3338,9 +3310,9 @@ std::optional<std::span<const Vec3>> osc::Material::getVec3Array(std::string_vie
     return m_Impl->getVec3Array(property_name);
 }
 
-void osc::Material::setVec3Array(std::string_view property_name, std::span<const Vec3> new_values)
+void osc::Material::setVec3Array(std::string_view property_name, std::span<const Vec3> vecs)
 {
-    m_Impl.upd()->setVec3Array(property_name, new_values);
+    m_Impl.upd()->setVec3Array(property_name, vecs);
 }
 
 std::optional<Vec3> osc::Material::getVec3(std::string_view property_name) const
@@ -3348,9 +3320,9 @@ std::optional<Vec3> osc::Material::getVec3(std::string_view property_name) const
     return m_Impl->getVec3(property_name);
 }
 
-void osc::Material::setVec3(std::string_view property_name, Vec3 new_value)
+void osc::Material::setVec3(std::string_view property_name, Vec3 vec)
 {
-    m_Impl.upd()->setVec3(property_name, new_value);
+    m_Impl.upd()->setVec3(property_name, vec);
 }
 
 std::optional<Vec4> osc::Material::getVec4(std::string_view property_name) const
@@ -3358,9 +3330,9 @@ std::optional<Vec4> osc::Material::getVec4(std::string_view property_name) const
     return m_Impl->getVec4(property_name);
 }
 
-void osc::Material::setVec4(std::string_view property_name, Vec4 new_value)
+void osc::Material::setVec4(std::string_view property_name, Vec4 vec)
 {
-    m_Impl.upd()->setVec4(property_name, new_value);
+    m_Impl.upd()->setVec4(property_name, vec);
 }
 
 std::optional<Mat3> osc::Material::getMat3(std::string_view property_name) const
@@ -3368,9 +3340,9 @@ std::optional<Mat3> osc::Material::getMat3(std::string_view property_name) const
     return m_Impl->getMat3(property_name);
 }
 
-void osc::Material::setMat3(std::string_view property_name, const Mat3& new_value)
+void osc::Material::setMat3(std::string_view property_name, const Mat3& mat)
 {
-    m_Impl.upd()->setMat3(property_name, new_value);
+    m_Impl.upd()->setMat3(property_name, mat);
 }
 
 std::optional<Mat4> osc::Material::getMat4(std::string_view property_name) const
@@ -3378,9 +3350,9 @@ std::optional<Mat4> osc::Material::getMat4(std::string_view property_name) const
     return m_Impl->getMat4(property_name);
 }
 
-void osc::Material::setMat4(std::string_view property_name, const Mat4& new_value)
+void osc::Material::setMat4(std::string_view property_name, const Mat4& mat)
 {
-    m_Impl.upd()->setMat4(property_name, new_value);
+    m_Impl.upd()->setMat4(property_name, mat);
 }
 
 std::optional<std::span<const Mat4>> osc::Material::getMat4Array(std::string_view property_name) const
@@ -3388,9 +3360,9 @@ std::optional<std::span<const Mat4>> osc::Material::getMat4Array(std::string_vie
     return m_Impl->getMat4Array(property_name);
 }
 
-void osc::Material::setMat4Array(std::string_view property_name, std::span<const Mat4> new_values)
+void osc::Material::setMat4Array(std::string_view property_name, std::span<const Mat4> mats)
 {
-    m_Impl.upd()->setMat4Array(property_name, new_values);
+    m_Impl.upd()->setMat4Array(property_name, mats);
 }
 
 std::optional<int32_t> osc::Material::getInt(std::string_view property_name) const
@@ -3398,9 +3370,9 @@ std::optional<int32_t> osc::Material::getInt(std::string_view property_name) con
     return m_Impl->getInt(property_name);
 }
 
-void osc::Material::setInt(std::string_view property_name, int32_t new_value)
+void osc::Material::setInt(std::string_view property_name, int32_t value)
 {
-    m_Impl.upd()->setInt(property_name, new_value);
+    m_Impl.upd()->setInt(property_name, value);
 }
 
 std::optional<bool> osc::Material::getBool(std::string_view property_name) const
@@ -3408,9 +3380,9 @@ std::optional<bool> osc::Material::getBool(std::string_view property_name) const
     return m_Impl->getBool(property_name);
 }
 
-void osc::Material::setBool(std::string_view property_name, bool new_value)
+void osc::Material::setBool(std::string_view property_name, bool value)
 {
-    m_Impl.upd()->setBool(property_name, new_value);
+    m_Impl.upd()->setBool(property_name, value);
 }
 
 std::optional<Texture2D> osc::Material::getTexture(std::string_view property_name) const
@@ -3418,9 +3390,9 @@ std::optional<Texture2D> osc::Material::getTexture(std::string_view property_nam
     return m_Impl->getTexture(property_name);
 }
 
-void osc::Material::setTexture(std::string_view property_name, Texture2D new_value)
+void osc::Material::setTexture(std::string_view property_name, Texture2D texture)
 {
-    m_Impl.upd()->setTexture(property_name, std::move(new_value));
+    m_Impl.upd()->setTexture(property_name, std::move(texture));
 }
 
 void osc::Material::clearTexture(std::string_view property_name)
@@ -3433,9 +3405,9 @@ std::optional<RenderTexture> osc::Material::getRenderTexture(std::string_view pr
     return m_Impl->getRenderTexture(property_name);
 }
 
-void osc::Material::setRenderTexture(std::string_view property_name, RenderTexture new_value)
+void osc::Material::setRenderTexture(std::string_view property_name, RenderTexture render_texture)
 {
-    m_Impl.upd()->setRenderTexture(property_name, std::move(new_value));
+    m_Impl.upd()->setRenderTexture(property_name, std::move(render_texture));
 }
 
 void osc::Material::clearRenderTexture(std::string_view property_name)
@@ -3448,9 +3420,9 @@ std::optional<Cubemap> osc::Material::getCubemap(std::string_view property_name)
     return m_Impl->getCubemap(property_name);
 }
 
-void osc::Material::setCubemap(std::string_view property_name, Cubemap new_value)
+void osc::Material::setCubemap(std::string_view property_name, Cubemap cubemap)
 {
-    m_Impl.upd()->setCubemap(property_name, std::move(new_value));
+    m_Impl.upd()->setCubemap(property_name, std::move(cubemap));
 }
 
 void osc::Material::clearCubemap(std::string_view property_name)
@@ -3463,9 +3435,9 @@ bool osc::Material::getTransparent() const
     return m_Impl->getTransparent();
 }
 
-void osc::Material::setTransparent(bool new_transparent)
+void osc::Material::setTransparent(bool value)
 {
-    m_Impl.upd()->setTransparent(new_transparent);
+    m_Impl.upd()->setTransparent(value);
 }
 
 bool osc::Material::getDepthTested() const
@@ -3473,9 +3445,9 @@ bool osc::Material::getDepthTested() const
     return m_Impl->getDepthTested();
 }
 
-void osc::Material::setDepthTested(bool new_depth_tested)
+void osc::Material::setDepthTested(bool value)
 {
-    m_Impl.upd()->setDepthTested(new_depth_tested);
+    m_Impl.upd()->setDepthTested(value);
 }
 
 DepthFunction osc::Material::getDepthFunction() const
@@ -3483,9 +3455,9 @@ DepthFunction osc::Material::getDepthFunction() const
     return m_Impl->getDepthFunction();
 }
 
-void osc::Material::setDepthFunction(DepthFunction new_depth_function)
+void osc::Material::setDepthFunction(DepthFunction depth_function)
 {
-    m_Impl.upd()->setDepthFunction(new_depth_function);
+    m_Impl.upd()->setDepthFunction(depth_function);
 }
 
 bool osc::Material::getWireframeMode() const
@@ -3493,9 +3465,9 @@ bool osc::Material::getWireframeMode() const
     return m_Impl->getWireframeMode();
 }
 
-void osc::Material::setWireframeMode(bool new_wireframe_mode)
+void osc::Material::setWireframeMode(bool value)
 {
-    m_Impl.upd()->setWireframeMode(new_wireframe_mode);
+    m_Impl.upd()->setWireframeMode(value);
 }
 
 CullMode osc::Material::getCullMode() const
@@ -3503,9 +3475,9 @@ CullMode osc::Material::getCullMode() const
     return m_Impl->getCullMode();
 }
 
-void osc::Material::setCullMode(CullMode new_cull_mode)
+void osc::Material::setCullMode(CullMode cull_mode)
 {
-    m_Impl.upd()->setCullMode(new_cull_mode);
+    m_Impl.upd()->setCullMode(cull_mode);
 }
 
 std::ostream& osc::operator<<(std::ostream& o, const Material&)
@@ -3518,117 +3490,116 @@ class osc::MaterialPropertyBlock::Impl final {
 public:
     void clear()
     {
-        m_Values.clear();
+        values_.clear();
     }
 
     bool isEmpty() const
     {
-        return m_Values.empty();
+        return values_.empty();
     }
 
-    std::optional<Color> getColor(std::string_view propertyName) const
+    std::optional<Color> getColor(std::string_view property_name) const
     {
-        return getValue<Color>(propertyName);
+        return getValue<Color>(property_name);
     }
 
-    void setColor(std::string_view propertyName, Color const& color)
+    void setColor(std::string_view property_name, Color const& color)
     {
-        setValue(propertyName, color);
+        setValue(property_name, color);
     }
 
-    std::optional<float> getFloat(std::string_view propertyName) const
+    std::optional<float> getFloat(std::string_view property_name) const
     {
-        return getValue<float>(propertyName);
+        return getValue<float>(property_name);
     }
 
-    void setFloat(std::string_view propertyName, float value)
+    void setFloat(std::string_view property_name, float value)
     {
-        setValue(propertyName, value);
+        setValue(property_name, value);
     }
 
-    std::optional<Vec3> getVec3(std::string_view propertyName) const
+    std::optional<Vec3> getVec3(std::string_view property_name) const
     {
-        return getValue<Vec3>(propertyName);
+        return getValue<Vec3>(property_name);
     }
 
-    void setVec3(std::string_view propertyName, Vec3 value)
+    void setVec3(std::string_view property_name, Vec3 vec)
     {
-        setValue(propertyName, value);
+        setValue(property_name, vec);
     }
 
-    std::optional<Vec4> getVec4(std::string_view propertyName) const
+    std::optional<Vec4> getVec4(std::string_view property_name) const
     {
-        return getValue<Vec4>(propertyName);
+        return getValue<Vec4>(property_name);
     }
 
-    void setVec4(std::string_view propertyName, Vec4 value)
+    void setVec4(std::string_view property_name, Vec4 value)
     {
-        setValue(propertyName, value);
+        setValue(property_name, value);
     }
 
-    std::optional<Mat3> getMat3(std::string_view propertyName) const
+    std::optional<Mat3> getMat3(std::string_view property_name) const
     {
-        return getValue<Mat3>(propertyName);
+        return getValue<Mat3>(property_name);
     }
 
-    void setMat3(std::string_view propertyName, const Mat3& value)
+    void setMat3(std::string_view property_name, const Mat3& mat)
     {
-        setValue(propertyName, value);
+        setValue(property_name, mat);
     }
 
-    std::optional<Mat4> getMat4(std::string_view propertyName) const
+    std::optional<Mat4> getMat4(std::string_view property_name) const
     {
-        return getValue<Mat4>(propertyName);
+        return getValue<Mat4>(property_name);
     }
 
-    void setMat4(std::string_view propertyName, const Mat4& value)
+    void setMat4(std::string_view property_name, const Mat4& mat)
     {
-        setValue(propertyName, value);
+        setValue(property_name, mat);
     }
 
-    std::optional<int32_t> getInt(std::string_view propertyName) const
+    std::optional<int32_t> getInt(std::string_view property_name) const
     {
-        return getValue<int32_t>(propertyName);
+        return getValue<int32_t>(property_name);
     }
 
-    void setInt(std::string_view propertyName, int32_t value)
+    void setInt(std::string_view property_name, int32_t value)
     {
-        setValue(propertyName, value);
+        setValue(property_name, value);
     }
 
-    std::optional<bool> getBool(std::string_view propertyName) const
+    std::optional<bool> getBool(std::string_view property_name) const
     {
-        return getValue<bool>(propertyName);
+        return getValue<bool>(property_name);
     }
 
-    void setBool(std::string_view propertyName, bool value)
+    void setBool(std::string_view property_name, bool value)
     {
-        setValue(propertyName, value);
+        setValue(property_name, value);
     }
 
-    std::optional<Texture2D> getTexture(std::string_view propertyName) const
+    std::optional<Texture2D> getTexture(std::string_view property_name) const
     {
-        return getValue<Texture2D>(propertyName);
+        return getValue<Texture2D>(property_name);
     }
 
-    void setTexture(std::string_view propertyName, Texture2D t)
+    void setTexture(std::string_view property_name, Texture2D texture)
     {
-        setValue(propertyName, std::move(t));
+        setValue(property_name, std::move(texture));
     }
 
     friend bool operator==(const Impl&, const Impl&) = default;
 
 private:
     template<typename T>
-    std::optional<T> getValue(std::string_view propertyName) const
+    std::optional<T> getValue(std::string_view property_name) const
     {
-        const auto it = m_Values.find(propertyName);
+        const auto it = values_.find(property_name);
 
-        if (it == m_Values.end()) {
+        if (it == values_.end()) {
             return std::nullopt;
         }
-
-        if (!std::holds_alternative<T>(it->second)) {
+        if (not std::holds_alternative<T>(it->second)) {
             return std::nullopt;
         }
 
@@ -3636,21 +3607,21 @@ private:
     }
 
     template<typename T>
-    void setValue(std::string_view propertyName, T&& v)
+    void setValue(std::string_view property_name, T&& value)
     {
-        m_Values.insert_or_assign(propertyName, std::forward<T>(v));
+        values_.insert_or_assign(property_name, std::forward<T>(value));
     }
 
     friend class GraphicsBackend;
 
-    FastStringHashtable<MaterialValue> m_Values;
+    FastStringHashtable<MaterialValue> values_;
 };
 
 osc::MaterialPropertyBlock::MaterialPropertyBlock() :
     m_Impl{[]()
     {
-        static const CopyOnUpdPtr<Impl> s_EmptyPropertyBlockImpl = make_cow<Impl>();
-        return s_EmptyPropertyBlockImpl;
+        static const CopyOnUpdPtr<Impl> s_empty_property_block_impl = make_cow<Impl>();
+        return s_empty_property_block_impl;
     }()}
 {
 }
@@ -3665,94 +3636,94 @@ bool osc::MaterialPropertyBlock::isEmpty() const
     return m_Impl->isEmpty();
 }
 
-std::optional<Color> osc::MaterialPropertyBlock::getColor(std::string_view propertyName) const
+std::optional<Color> osc::MaterialPropertyBlock::getColor(std::string_view property_name) const
 {
-    return m_Impl->getColor(propertyName);
+    return m_Impl->getColor(property_name);
 }
 
-void osc::MaterialPropertyBlock::setColor(std::string_view propertyName, const Color& color)
+void osc::MaterialPropertyBlock::setColor(std::string_view property_name, const Color& color)
 {
-    m_Impl.upd()->setColor(propertyName, color);
+    m_Impl.upd()->setColor(property_name, color);
 }
 
-std::optional<float> osc::MaterialPropertyBlock::getFloat(std::string_view propertyName) const
+std::optional<float> osc::MaterialPropertyBlock::getFloat(std::string_view property_name) const
 {
-    return m_Impl->getFloat(propertyName);
+    return m_Impl->getFloat(property_name);
 }
 
-void osc::MaterialPropertyBlock::setFloat(std::string_view propertyName, float value)
+void osc::MaterialPropertyBlock::setFloat(std::string_view property_name, float value)
 {
-    m_Impl.upd()->setFloat(propertyName, value);
+    m_Impl.upd()->setFloat(property_name, value);
 }
 
-std::optional<Vec3> osc::MaterialPropertyBlock::getVec3(std::string_view propertyName) const
+std::optional<Vec3> osc::MaterialPropertyBlock::getVec3(std::string_view property_name) const
 {
-    return m_Impl->getVec3(propertyName);
+    return m_Impl->getVec3(property_name);
 }
 
-void osc::MaterialPropertyBlock::setVec3(std::string_view propertyName, Vec3 value)
+void osc::MaterialPropertyBlock::setVec3(std::string_view property_name, Vec3 value)
 {
-    m_Impl.upd()->setVec3(propertyName, value);
+    m_Impl.upd()->setVec3(property_name, value);
 }
 
-std::optional<Vec4> osc::MaterialPropertyBlock::getVec4(std::string_view propertyName) const
+std::optional<Vec4> osc::MaterialPropertyBlock::getVec4(std::string_view property_name) const
 {
-    return m_Impl->getVec4(propertyName);
+    return m_Impl->getVec4(property_name);
 }
 
-void osc::MaterialPropertyBlock::setVec4(std::string_view propertyName, Vec4 value)
+void osc::MaterialPropertyBlock::setVec4(std::string_view property_name, Vec4 value)
 {
-    m_Impl.upd()->setVec4(propertyName, value);
+    m_Impl.upd()->setVec4(property_name, value);
 }
 
-std::optional<Mat3> osc::MaterialPropertyBlock::getMat3(std::string_view propertyName) const
+std::optional<Mat3> osc::MaterialPropertyBlock::getMat3(std::string_view property_name) const
 {
-    return m_Impl->getMat3(propertyName);
+    return m_Impl->getMat3(property_name);
 }
 
-void osc::MaterialPropertyBlock::setMat3(std::string_view propertyName, const Mat3& value)
+void osc::MaterialPropertyBlock::setMat3(std::string_view property_name, const Mat3& value)
 {
-    m_Impl.upd()->setMat3(propertyName, value);
+    m_Impl.upd()->setMat3(property_name, value);
 }
 
-std::optional<Mat4> osc::MaterialPropertyBlock::getMat4(std::string_view propertyName) const
+std::optional<Mat4> osc::MaterialPropertyBlock::getMat4(std::string_view property_name) const
 {
-    return m_Impl->getMat4(propertyName);
+    return m_Impl->getMat4(property_name);
 }
 
-void osc::MaterialPropertyBlock::setMat4(std::string_view propertyName, const Mat4& value)
+void osc::MaterialPropertyBlock::setMat4(std::string_view property_name, const Mat4& value)
 {
-    m_Impl.upd()->setMat4(propertyName, value);
+    m_Impl.upd()->setMat4(property_name, value);
 }
 
-std::optional<int32_t> osc::MaterialPropertyBlock::getInt(std::string_view propertyName) const
+std::optional<int32_t> osc::MaterialPropertyBlock::getInt(std::string_view property_name) const
 {
-    return m_Impl->getInt(propertyName);
+    return m_Impl->getInt(property_name);
 }
 
-void osc::MaterialPropertyBlock::setInt(std::string_view propertyName, int32_t value)
+void osc::MaterialPropertyBlock::setInt(std::string_view property_name, int32_t value)
 {
-    m_Impl.upd()->setInt(propertyName, value);
+    m_Impl.upd()->setInt(property_name, value);
 }
 
-std::optional<bool> osc::MaterialPropertyBlock::getBool(std::string_view propertyName) const
+std::optional<bool> osc::MaterialPropertyBlock::getBool(std::string_view property_name) const
 {
-    return m_Impl->getBool(propertyName);
+    return m_Impl->getBool(property_name);
 }
 
-void osc::MaterialPropertyBlock::setBool(std::string_view propertyName, bool value)
+void osc::MaterialPropertyBlock::setBool(std::string_view property_name, bool value)
 {
-    m_Impl.upd()->setBool(propertyName, value);
+    m_Impl.upd()->setBool(property_name, value);
 }
 
-std::optional<Texture2D> osc::MaterialPropertyBlock::getTexture(std::string_view propertyName) const
+std::optional<Texture2D> osc::MaterialPropertyBlock::getTexture(std::string_view property_name) const
 {
-    return m_Impl->getTexture(propertyName);
+    return m_Impl->getTexture(property_name);
 }
 
-void osc::MaterialPropertyBlock::setTexture(std::string_view propertyName, Texture2D t)
+void osc::MaterialPropertyBlock::setTexture(std::string_view property_name, Texture2D texture)
 {
-    m_Impl.upd()->setTexture(propertyName, std::move(t));
+    m_Impl.upd()->setTexture(property_name, std::move(texture));
 }
 
 bool osc::operator==(const MaterialPropertyBlock& lhs, const MaterialPropertyBlock& rhs)
@@ -3765,21 +3736,14 @@ std::ostream& osc::operator<<(std::ostream& o, const MaterialPropertyBlock&)
     return o << "MaterialPropertyBlock()";
 }
 
-
-//////////////////////////////////
-//
-// mesh stuff
-//
-//////////////////////////////////
-
 namespace
 {
-    constexpr auto c_MeshTopologyStrings = std::to_array<CStringView>(
+    constexpr auto c_mesh_topology_strings = std::to_array<CStringView>(
     {
         "Triangles",
         "Lines",
     });
-    static_assert(c_MeshTopologyStrings.size() == num_options<MeshTopology>());
+    static_assert(c_mesh_topology_strings.size() == num_options<MeshTopology>());
 
     union PackedIndex {
         uint32_t u32;
@@ -3789,17 +3753,14 @@ namespace
     static_assert(sizeof(PackedIndex) == sizeof(uint32_t));
     static_assert(alignof(PackedIndex) == alignof(uint32_t));
 
-    GLenum toOpenGLTopology(MeshTopology t)
+    GLenum to_opengl_topology_enum(MeshTopology mesh_topology)
     {
         static_assert(num_options<MeshTopology>() == 2);
 
-        switch (t) {
-        case MeshTopology::Triangles:
-            return GL_TRIANGLES;
-        case MeshTopology::Lines:
-            return GL_LINES;
-        default:
-            return GL_TRIANGLES;
+        switch (mesh_topology) {
+        case MeshTopology::Triangles: return GL_TRIANGLES;
+        case MeshTopology::Lines:     return GL_LINES;
+        default:                      return GL_TRIANGLES;
         }
     }
 
@@ -3857,30 +3818,29 @@ namespace
 
     // mid-level multi-component decode/encode functions
     template<UserFacingVertexData T, VertexAttributeFormat EncodingFormat>
-    void encodeMany(std::byte* p, const T& v)
+    void encode_many(std::byte* ptr, const T& values)
     {
         using ComponentType = typename VertexAttributeFormatTraits<EncodingFormat>::component_type;
-        constexpr auto nComponents = num_components_in(EncodingFormat);
-        constexpr auto sizeOfComponent = component_size(EncodingFormat);
-        constexpr auto n = min(std::tuple_size_v<T>, static_cast<typename T::size_type>(nComponents));
+        constexpr auto num_components = num_components_in(EncodingFormat);
+        constexpr auto sizeof_component = component_size(EncodingFormat);
+        constexpr auto n = min(std::tuple_size_v<T>, static_cast<typename T::size_type>(num_components));
 
         for (typename T::size_type i = 0; i < n; ++i) {
-            encode<typename T::value_type, ComponentType>(p + i*sizeOfComponent, v[i]);
+            encode<typename T::value_type, ComponentType>(ptr + i*sizeof_component, values[i]);
         }
     }
 
     template<VertexAttributeFormat EncodingFormat, UserFacingVertexData T>
-    T DecodeMany(const std::byte* p)
+    T decode_many(const std::byte* ptr)
     {
         using ComponentType = typename VertexAttributeFormatTraits<EncodingFormat>::component_type;
-        constexpr auto nComponents = num_components_in(EncodingFormat);
-        constexpr auto sizeOfComponent = component_size(EncodingFormat);
-        constexpr auto n = min(std::tuple_size_v<T>, static_cast<typename T::size_type>(nComponents));
+        constexpr auto num_components = num_components_in(EncodingFormat);
+        constexpr auto sizeof_component = component_size(EncodingFormat);
+        constexpr auto n = min(std::tuple_size_v<T>, static_cast<typename T::size_type>(num_components));
 
         T rv{};
-        for (typename T::size_type i = 0; i < n; ++i)
-        {
-            rv[i] = decode<ComponentType, typename T::value_type>(p + i*sizeOfComponent);
+        for (typename T::size_type i = 0; i < n; ++i) {
+            rv[i] = decode<ComponentType, typename T::value_type>(ptr + i*sizeof_component);
         }
         return rv;
     }
@@ -3889,48 +3849,48 @@ namespace
     template<UserFacingVertexData T>
     class MultiComponentEncoding final {
     public:
-        explicit MultiComponentEncoding(VertexAttributeFormat f)
+        explicit MultiComponentEncoding(VertexAttributeFormat attribute_format)
         {
             static_assert(num_options<VertexAttributeFormat>() == 4);
 
-            switch (f) {
+            switch (attribute_format) {
             case VertexAttributeFormat::Float32x2:
-                m_Encoder = encodeMany<T, VertexAttributeFormat::Float32x2>;
-                m_Decoder = DecodeMany<VertexAttributeFormat::Float32x2, T>;
+                encoder_ = encode_many<T, VertexAttributeFormat::Float32x2>;
+                decoder_ = decode_many<VertexAttributeFormat::Float32x2, T>;
                 break;
             case VertexAttributeFormat::Float32x3:
-                m_Encoder = encodeMany<T, VertexAttributeFormat::Float32x3>;
-                m_Decoder = DecodeMany<VertexAttributeFormat::Float32x3, T>;
+                encoder_ = encode_many<T, VertexAttributeFormat::Float32x3>;
+                decoder_ = decode_many<VertexAttributeFormat::Float32x3, T>;
                 break;
             default:
             case VertexAttributeFormat::Float32x4:
-                m_Encoder = encodeMany<T, VertexAttributeFormat::Float32x4>;
-                m_Decoder = DecodeMany<VertexAttributeFormat::Float32x4, T>;
+                encoder_ = encode_many<T, VertexAttributeFormat::Float32x4>;
+                decoder_ = decode_many<VertexAttributeFormat::Float32x4, T>;
                 break;
             case VertexAttributeFormat::Unorm8x4:
-                m_Encoder = encodeMany<T, VertexAttributeFormat::Unorm8x4>;
-                m_Decoder = DecodeMany<VertexAttributeFormat::Unorm8x4, T>;
+                encoder_ = encode_many<T, VertexAttributeFormat::Unorm8x4>;
+                decoder_ = decode_many<VertexAttributeFormat::Unorm8x4, T>;
                 break;
             }
         }
 
-        void encode(std::byte* b, const T& v) const
+        void encode(std::byte* ptr, const T& values) const
         {
-            m_Encoder(b, v);
+            encoder_(ptr, values);
         }
 
-        T decode(const std::byte* b) const
+        T decode(const std::byte* ptr) const
         {
-            return m_Decoder(b);
+            return decoder_(ptr);
         }
 
         friend bool operator==(const MultiComponentEncoding&, const MultiComponentEncoding&) = default;
     private:
         using Encoder = void(*)(std::byte*, const T&);
-        Encoder m_Encoder;
+        Encoder encoder_;
 
         using Decoder = T(*)(const std::byte*);
-        Decoder m_Decoder;
+        Decoder decoder_;
     };
 
     // a single compile-time reencoding function
@@ -3938,18 +3898,18 @@ namespace
     // decodes in-memory data in a source format, converts it to a desination format, and then
     // writes it to the destination memory
     template<VertexAttributeFormat SourceFormat, VertexAttributeFormat DestinationFormat>
-    void reencode(std::span<const std::byte> src, std::span<std::byte> dest)
+    void reencode_many(std::span<const std::byte> src, std::span<std::byte> dest)
     {
         using SourceCPUFormat = typename VertexAttributeFormatTraits<SourceFormat>::type;
         using DestCPUFormat = typename VertexAttributeFormatTraits<DestinationFormat>::type;
         constexpr auto n = min(std::tuple_size_v<SourceCPUFormat>, std::tuple_size_v<DestCPUFormat>);
 
-        const auto decoded = DecodeMany<SourceFormat, SourceCPUFormat>(src.data());
+        const auto decoded = decode_many<SourceFormat, SourceCPUFormat>(src.data());
         DestCPUFormat converted{};
         for (size_t i = 0; i < n; ++i) {
             converted[i] = typename DestCPUFormat::value_type{decoded[i]};
         }
-        encodeMany<DestCPUFormat, DestinationFormat>(dest.data(), converted);
+        encode_many<DestCPUFormat, DestinationFormat>(dest.data(), converted);
     }
 
     // type-erased (i.e. runtime) reencoder function
@@ -3958,103 +3918,111 @@ namespace
     // compile-time lookup table (LUT) for runtime reencoder functions
     class ReencoderLut final {
     private:
-        static constexpr size_t indexOf(VertexAttributeFormat sourceFormat, VertexAttributeFormat destinationFormat)
+        static constexpr size_t index_of(VertexAttributeFormat source_format, VertexAttributeFormat destination_format)
         {
-            return static_cast<size_t>(sourceFormat)*num_options<VertexAttributeFormat>() + static_cast<size_t>(destinationFormat);
+            return static_cast<size_t>(source_format)*num_options<VertexAttributeFormat>() + static_cast<size_t>(destination_format);
         }
 
         template<VertexAttributeFormat... Formats>
-        static constexpr void writeEntriesTopLevel(ReencoderLut& lut, OptionList<VertexAttributeFormat, Formats...>)
+        static constexpr void write_entries_top_level(ReencoderLut& lut, OptionList<VertexAttributeFormat, Formats...>)
         {
-            (writeEntries<Formats, Formats...>(lut), ...);
+            (write_entries<Formats, Formats...>(lut), ...);
         }
 
         template<VertexAttributeFormat SourceFormat, VertexAttributeFormat... DestinationFormats>
-        static constexpr void writeEntries(ReencoderLut& lut)
+        static constexpr void write_entries(ReencoderLut& lut)
         {
-            (writeEntry<SourceFormat, DestinationFormats>(lut), ...);
+            (write_entry<SourceFormat, DestinationFormats>(lut), ...);
         }
 
         template<VertexAttributeFormat SourceFormat, VertexAttributeFormat DestinationFormat>
-        static constexpr void writeEntry(ReencoderLut& lut)
+        static constexpr void write_entry(ReencoderLut& lut)
         {
-            lut.assign(SourceFormat, DestinationFormat, reencode<SourceFormat, DestinationFormat>);
+            lut.assign(SourceFormat, DestinationFormat, reencode_many<SourceFormat, DestinationFormat>);
         }
     public:
         constexpr ReencoderLut()
         {
-            writeEntriesTopLevel(*this, VertexAttributeFormatList{});
+            write_entries_top_level(*this, VertexAttributeFormatList{});
         }
 
-        constexpr void assign(VertexAttributeFormat sourceFormat, VertexAttributeFormat destinationFormat, ReencoderFunction f)
+        constexpr void assign(
+            VertexAttributeFormat source_format,
+            VertexAttributeFormat destination_format,
+            ReencoderFunction reencoder_function)
         {
-            m_Storage.at(indexOf(sourceFormat, destinationFormat)) = f;
+            storage_.at(index_of(source_format, destination_format)) = reencoder_function;
         }
 
-        constexpr const ReencoderFunction& lookup(VertexAttributeFormat sourceFormat, VertexAttributeFormat destinationFormat) const
+        constexpr const ReencoderFunction& lookup(
+            VertexAttributeFormat source_format,
+            VertexAttributeFormat destination_format) const
         {
-            return m_Storage.at(indexOf(sourceFormat, destinationFormat));
+            return storage_.at(index_of(source_format, destination_format));
         }
 
     private:
-        std::array<ReencoderFunction, num_options<VertexAttributeFormat>()*num_options<VertexAttributeFormat>()> m_Storage{};
+        std::array<ReencoderFunction, num_options<VertexAttributeFormat>()*num_options<VertexAttributeFormat>()> storage_{};
     };
 
-    constexpr ReencoderLut c_ReencoderLUT;
+    constexpr ReencoderLut c_reencoder_lut;
 
     struct VertexBufferAttributeReencoder final {
-        ReencoderFunction reencode;
-        size_t sourceOffset;
-        size_t sourceStride;
-        size_t destintionOffset;
-        size_t destinationStride;
+        ReencoderFunction reencoder_function;
+        size_t source_offset;
+        size_t source_stride;
+        size_t destination_offset;
+        size_t destination_stride;
     };
 
-    std::vector<VertexBufferAttributeReencoder> getReencoders(const VertexFormat& srcFormat, const VertexFormat& destFormat)
+    std::vector<VertexBufferAttributeReencoder> get_attribute_reencoders(
+        const VertexFormat& source_format,
+        const VertexFormat& destination_format)
     {
         std::vector<VertexBufferAttributeReencoder> rv;
-        rv.reserve(destFormat.numAttributes());  // guess
+        rv.reserve(destination_format.numAttributes());  // guess
 
-        for (const auto destLayout : destFormat.attributeLayouts()) {
-            if (const auto srcLayout = srcFormat.attributeLayout(destLayout.attribute())) {
+        for (const auto destination_layout : destination_format.attributeLayouts()) {
+            if (const auto source_layout = source_format.attributeLayout(destination_layout.attribute())) {
                 rv.push_back({
-                    c_ReencoderLUT.lookup(srcLayout->format(), destLayout.format()),
-                    srcLayout->offset(),
-                    srcLayout->stride(),
-                    destLayout.offset(),
-                    destLayout.stride(),
+                    c_reencoder_lut.lookup(source_layout->format(), destination_layout.format()),
+                    source_layout->offset(),
+                    source_layout->stride(),
+                    destination_layout.offset(),
+                    destination_layout.stride(),
                 });
             }
         }
         return rv;
     }
 
-    void reEncodeVertexBuffer(
-        std::span<const std::byte> src,
-        const VertexFormat& srcFormat,
-        std::span<std::byte> dest,
-        const VertexFormat& destFormat)
+    void reencode_vertex_buffer(
+        std::span<const std::byte> source_bytes,
+        const VertexFormat& source_format,
+        std::span<std::byte> destination_bytes,
+        const VertexFormat& destination_format)
     {
-        const size_t srcStride = srcFormat.stride();
-        const size_t destStride = destFormat.stride();
+        const size_t source_stride = source_format.stride();
+        const size_t destination_stride = destination_format.stride();
 
-        if (srcStride == 0 || destStride == 0) {
+        if (source_stride == 0 or destination_stride == 0) {
             return;  // no reencoding necessary
         }
-        OSC_ASSERT(src.size() % srcStride == 0);
-        OSC_ASSERT(dest.size() % destStride == 0);
 
-        const size_t n = min(src.size() / srcStride, dest.size() / destStride);
+        OSC_ASSERT(source_bytes.size() % source_stride == 0);
+        OSC_ASSERT(destination_bytes.size() % destination_stride == 0);
 
-        const auto reencoders = getReencoders(srcFormat, destFormat);
+        const size_t n = min(source_bytes.size() / source_stride, destination_bytes.size() / destination_stride);
+
+        const auto reencoders = get_attribute_reencoders(source_format, destination_format);
         for (size_t i = 0; i < n; ++i) {
-            const auto srcData = src.subspan(i*srcStride);
-            const auto destData = dest.subspan(i*destStride);
+            const auto source_vertex_data = source_bytes.subspan(i*source_stride);
+            const auto destination_vertex_data = destination_bytes.subspan(i*destination_stride);
 
             for (const auto& reencoder : reencoders) {
-                const auto srcAttrData = srcData.subspan(reencoder.sourceOffset, reencoder.sourceStride);
-                const auto destAttrData = destData.subspan(reencoder.destintionOffset, reencoder.destinationStride);
-                reencoder.reencode(srcAttrData, destAttrData);
+                const auto source_attr_data = source_vertex_data.subspan(reencoder.source_offset, reencoder.source_stride);
+                const auto destination_attr_data = destination_vertex_data.subspan(reencoder.destination_offset, reencoder.destination_stride);
+                reencoder.reencoder_function(source_attr_data, destination_attr_data);
             }
         }
     }
@@ -4069,39 +4037,39 @@ namespace
         public:
             using Byte = std::conditional_t<IsConst, const std::byte, std::byte>;
 
-            AttributeValueProxy(Byte* data_, MultiComponentEncoding<T> encoding_) :
-                m_Data{data_},
-                m_Encoding{encoding_}
+            AttributeValueProxy(Byte* data, MultiComponentEncoding<T> encoding) :
+                data_{data},
+                encoding_{encoding}
             {}
 
-            AttributeValueProxy& operator=(const T& v)
-                requires (!IsConst)
+            AttributeValueProxy& operator=(const T& value)
+                requires (not IsConst)
             {
-                m_Encoding.encode(m_Data, v);
+                encoding_.encode(data_, value);
                 return *this;
             }
 
             operator T () const  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
             {
-                return m_Encoding.decode(m_Data);
+                return encoding_.decode(data_);
             }
 
             template<typename U>
-            requires (!IsConst)
-            AttributeValueProxy& operator/=(const U& v)
+            requires (not IsConst)
+            AttributeValueProxy& operator/=(const U& value)
             {
-                return *this = (T{*this} /= v);
+                return *this = (T{*this} /= value);
             }
 
             template<typename U>
-            requires (!IsConst)
-            AttributeValueProxy& operator+=(const U& v)
+            requires (not IsConst)
+            AttributeValueProxy& operator+=(const U& value)
             {
-                return *this = (T{*this} += v);
+                return *this = (T{*this} += value);
             }
         private:
-            Byte* m_Data;
-            MultiComponentEncoding<T> m_Encoding;
+            Byte* data_;
+            MultiComponentEncoding<T> encoding_;
         };
 
         // iterator for vertex buffer's contents (via encoders/decoders)
@@ -4116,18 +4084,18 @@ namespace
             using Byte = std::conditional_t<IsConst, const std::byte, std::byte>;
 
             AttributeValueIterator(
-                Byte* data_,
-                size_t stride_,
-                MultiComponentEncoding<T> encoding_) :
+                Byte* data,
+                size_t stride,
+                MultiComponentEncoding<T> encoding) :
 
-                m_Data{data_},
-                m_Stride{stride_},
-                m_Encoding{encoding_}
+                data_{data},
+                stride_{stride},
+                encoding_{encoding}
             {}
 
             AttributeValueProxy<T, IsConst> operator*() const
             {
-                return AttributeValueProxy<T, IsConst>{m_Data, m_Encoding};
+                return AttributeValueProxy<T, IsConst>{data_, encoding_};
             }
 
             AttributeValueIterator& operator++()
@@ -4158,7 +4126,7 @@ namespace
 
             AttributeValueIterator& operator+=(difference_type i)
             {
-                m_Data += i*m_Stride;
+                data_ += i*stride_;
                 return *this;
             }
 
@@ -4171,7 +4139,7 @@ namespace
 
             AttributeValueIterator& operator-=(difference_type i)
             {
-                m_Data -= i*m_Stride;
+                data_ -= i*stride_;
             }
 
             AttributeValueIterator operator-(difference_type i)
@@ -4183,7 +4151,7 @@ namespace
 
             difference_type operator-(const AttributeValueIterator& rhs) const
             {
-                return (m_Data - rhs.m_Data) / m_Stride;
+                return (data_ - rhs.data_) / stride_;
             }
 
             AttributeValueProxy<T, IsConst> operator[](difference_type n) const
@@ -4193,29 +4161,29 @@ namespace
 
             bool operator<(const AttributeValueIterator& rhs) const
             {
-                return m_Data < rhs.m_Data;
+                return data_ < rhs.data_;
             }
 
             bool operator>(const AttributeValueIterator& rhs) const
             {
-                return m_Data > rhs.m_Data;
+                return data_ > rhs.data_;
             }
 
             bool operator<=(const AttributeValueIterator& rhs) const
             {
-                return m_Data <= rhs.m_Data;
+                return data_ <= rhs.data_;
             }
 
             bool operator>=(const AttributeValueIterator& rhs) const
             {
-                return m_Data >= rhs.m_Data;
+                return data_ >= rhs.data_;
             }
 
             friend bool operator==(const AttributeValueIterator&, const AttributeValueIterator&) = default;
         private:
-            Byte* m_Data;
-            size_t m_Stride;
-            MultiComponentEncoding<T> m_Encoding;
+            Byte* data_;
+            size_t stride_;
+            MultiComponentEncoding<T> encoding_;
         };
 
         // range (C++20) for vertex buffer's contents
@@ -4230,13 +4198,13 @@ namespace
             AttributeValueRange() = default;
 
             AttributeValueRange(
-                std::span<Byte> data_,
-                size_t stride_,
-                VertexAttributeFormat format_) :
+                std::span<Byte> data,
+                size_t stride,
+                VertexAttributeFormat format) :
 
-                m_Data{data_},
-                m_Stride{stride_},
-                m_Encoding{format_}
+                data_{data},
+                stride_{stride},
+                encoding_{format}
             {}
 
             difference_type size() const
@@ -4246,12 +4214,12 @@ namespace
 
             iterator begin() const
             {
-                return {m_Data.data(), m_Stride, m_Encoding};
+                return {data_.data(), stride_, encoding_};
             }
 
             iterator end() const
             {
-                return {m_Data.data() + m_Data.size(), m_Stride, m_Encoding};
+                return {data_.data() + data_.size(), stride_, encoding_};
             }
 
             value_type at(difference_type i) const
@@ -4279,218 +4247,205 @@ namespace
                 return beg[i];
             }
 
-            std::span<Byte> m_Data{};
-            size_t m_Stride = 1;  // care: divide by zero in an iterator is UB
-            MultiComponentEncoding<T> m_Encoding{VertexAttributeFormat::Float32x3};  // dummy, for default ctor
+            std::span<Byte> data_{};
+            size_t stride_ = 1;  // care: divide by zero in an iterator is UB
+            MultiComponentEncoding<T> encoding_{VertexAttributeFormat::Float32x3};  // dummy, for default ctor
         };
 
         // default ctor: make an empty buffer
         VertexBuffer() = default;
 
         // formatted ctor: make a buffer of the specified size+format
-        VertexBuffer(size_t numVerts, const VertexFormat& format) :
-            m_Data(numVerts * format.stride()),
-            m_VertexFormat{format}
-        {
-        }
+        VertexBuffer(size_t num_verts, const VertexFormat& format) :
+            data_(num_verts * format.stride()),
+            vertex_format_{format}
+        {}
 
         void clear()
         {
-            m_Data.clear();
-            m_VertexFormat.clear();
+            data_.clear();
+            vertex_format_.clear();
         }
 
-        size_t numVerts() const
+        size_t num_verts() const
         {
-            return !m_VertexFormat.empty() ? (m_Data.size() / m_VertexFormat.stride()) : 0;
+            return !vertex_format_.empty() ? (data_.size() / vertex_format_.stride()) : 0;
         }
 
-        size_t numAttributes() const
+        size_t num_attributes() const
         {
-            return m_VertexFormat.numAttributes();
+            return vertex_format_.numAttributes();
         }
 
         size_t stride() const
         {
-            return m_VertexFormat.stride();
+            return vertex_format_.stride();
         }
 
-        [[nodiscard]] bool hasVerts() const
+        [[nodiscard]] bool has_verts() const
         {
-            return numVerts() > 0;
+            return num_verts() > 0;
         }
 
         std::span<const std::byte> bytes() const
         {
-            return m_Data;
+            return data_;
         }
 
         const VertexFormat& format() const
         {
-            return m_VertexFormat;
+            return vertex_format_;
         }
 
-        auto attributeLayouts() const
+        auto attribute_layouts() const
         {
-            return m_VertexFormat.attributeLayouts();
+            return vertex_format_.attributeLayouts();
         }
 
-        bool hasAttribute(VertexAttribute attr) const
+        bool has_attribute(VertexAttribute attribute) const
         {
-            return m_VertexFormat.contains(attr);
+            return vertex_format_.contains(attribute);
         }
 
         template<UserFacingVertexData T>
-        auto iter(VertexAttribute attr) const
+        auto iter(VertexAttribute attribute) const
         {
-            if (const auto layout = m_VertexFormat.attributeLayout(attr)) {
-                std::span<const std::byte> offsetSpan{m_Data.data() + layout->offset(), m_Data.size()};
-                return AttributeValueRange<T, true>
-                {
-                    offsetSpan,
-                    m_VertexFormat.stride(),
+            if (const auto layout = vertex_format_.attributeLayout(attribute)) {
+                std::span<const std::byte> offset_span{data_.data() + layout->offset(), data_.size()};
+
+                return AttributeValueRange<T, true>{
+                    offset_span,
+                    vertex_format_.stride(),
                     layout->format(),
                 };
             }
-            else
-            {
+            else {
                 return AttributeValueRange<T, true>{};
             }
         }
 
         template<UserFacingVertexData T>
-        auto iter(VertexAttribute attr)
+        auto iter(VertexAttribute attribute)
         {
-            if (const auto layout = m_VertexFormat.attributeLayout(attr)) {
-                std::span<std::byte> offsetSpan{m_Data.data() + layout->offset(), m_Data.size()};
-                return AttributeValueRange<T, false>
-                {
-                    offsetSpan,
-                    m_VertexFormat.stride(),
+            if (const auto layout = vertex_format_.attributeLayout(attribute)) {
+                std::span<std::byte> offset_span{data_.data() + layout->offset(), data_.size()};
+                return AttributeValueRange<T, false>{
+                    offset_span,
+                    vertex_format_.stride(),
                     layout->format(),
                 };
             }
-            else
-            {
+            else {
                 return AttributeValueRange<T, false>{};
             }
         }
 
         template<UserFacingVertexData T>
-        std::vector<T> read(VertexAttribute attr) const
+        std::vector<T> read(VertexAttribute attribute) const
         {
-            auto range = iter<T>(attr);
+            auto range = iter<T>(attribute);
             return std::vector<T>(range.begin(), range.end());
         }
 
         template<UserFacingVertexData T>
-        void write(VertexAttribute attr, std::span<const T> els)
+        void write(VertexAttribute attribute, std::span<const T> values)
         {
             // edge-case: size == 0 should be treated as "wipe/ignore it"
-            if (els.empty()) {
-                if (m_VertexFormat.contains(attr)) {
-                    VertexFormat newFormat{m_VertexFormat};
-                    newFormat.erase(attr);
-                    setParams(numVerts(), newFormat);
+            if (values.empty()) {
+                if (vertex_format_.contains(attribute)) {
+                    VertexFormat new_format{vertex_format_};
+                    new_format.erase(attribute);
+                    set_params(num_verts(), new_format);
                 }
                 return;  // ignore/wipe
             }
 
-            if (attr != VertexAttribute::Position)
-            {
-                if (els.size() != numVerts())
-                {
+            if (attribute != VertexAttribute::Position) {
+                if (values.size() != num_verts()) {
                     // non-`Position` attributes must be size-matched
                     return;
                 }
 
-                if (!m_VertexFormat.contains(VertexAttribute::Position))
-                {
+                if (not vertex_format_.contains(VertexAttribute::Position)) {
                     // callers must've already assigned `Position` before this
                     // function is able to assign additional attributes
                     return;
                 }
             }
 
-            if (!m_VertexFormat.contains(attr))
-            {
+            if (not vertex_format_.contains(attribute)) {
                 // reformat
-                VertexFormat newFormat{m_VertexFormat};
-                newFormat.insert({attr, default_format(attr)});
-                setParams(els.size(), newFormat);
+                VertexFormat new_format{vertex_format_};
+                new_format.insert({attribute, default_format(attribute)});
+                set_params(values.size(), new_format);
             }
-            else if (els.size() != numVerts())
-            {
+            else if (values.size() != num_verts()) {
                 // resize
-                setParams(els.size(), m_VertexFormat);
+                set_params(values.size(), vertex_format_);
             }
 
             // write els to vertex buffer
-            copy(els.begin(), els.end(), iter<T>(attr).begin());
+            copy(values.begin(), values.end(), iter<T>(attribute).begin());
         }
 
         template<UserFacingVertexData T, typename UnaryOperation>
         requires std::invocable<UnaryOperation, T>
-        void transformAttribute(VertexAttribute attr, UnaryOperation f)
+        void transform_attribute(VertexAttribute attribute, UnaryOperation f)
         {
-            for (auto&& proxy : iter<T>(attr))
-            {
+            for (auto&& proxy : iter<T>(attribute)) {
                 proxy = f(proxy);
             }
         }
 
-        bool emplaceAttributeDescriptor(VertexAttributeDescriptor desc)
+        bool emplace_attribute_descriptor(VertexAttributeDescriptor descriptor)
         {
-            if (hasAttribute(desc.attribute())) {
+            if (has_attribute(descriptor.attribute())) {
                 return false;
             }
 
             auto copy = format();
-            copy.insert(desc);
-            setFormat(copy);
+            copy.insert(descriptor);
+            set_format(copy);
             return true;
         }
 
-        void setParams(size_t newNumVerts, const VertexFormat& newFormat)
+        void set_params(size_t new_num_verts, const VertexFormat& new_format)
         {
-            if (m_Data.empty())
-            {
+            if (data_.empty()) {
                 // zero-initialize the buffer in the "new" format
-                m_Data.resize(newNumVerts * newFormat.stride());
-                m_VertexFormat = newFormat;
+                data_.resize(new_num_verts * new_format.stride());
+                vertex_format_ = new_format;
             }
-            if (newFormat != m_VertexFormat)
-            {
+
+            if (new_format != vertex_format_) {
                 // initialize a new buffer and re-encode the old one in the new format
-                std::vector<std::byte> newBuf(newNumVerts * newFormat.stride());
-                reEncodeVertexBuffer(m_Data, m_VertexFormat, newBuf, newFormat);
-                m_Data = std::move(newBuf);
-                m_VertexFormat = newFormat;
+                std::vector<std::byte> new_buffer(new_num_verts * new_format.stride());
+                reencode_vertex_buffer(data_, vertex_format_, new_buffer, new_format);
+                data_ = std::move(new_buffer);
+                vertex_format_ = new_format;
             }
-            else if (newNumVerts != numVerts())
-            {
+            else if (new_num_verts != num_verts()) {
                 // resize (zero-initialized, if growing) the buffer
-                m_Data.resize(newNumVerts * m_VertexFormat.stride());
+                data_.resize(new_num_verts * vertex_format_.stride());
             }
-            else
-            {
+            else {
                 // no change in format or size, do nothing
             }
         }
 
-        void setFormat(const VertexFormat& newFormat)
+        void set_format(const VertexFormat& new_format)
         {
-            setParams(numVerts(), newFormat);
+            set_params(num_verts(), new_format);
         }
 
-        void setData(std::span<const std::byte> newData)
+        void set_data(std::span<const std::byte> data)
         {
-            OSC_ASSERT(newData.size() == m_Data.size() && "provided data size does not match the size of the vertex buffer");
-            m_Data.assign(newData.begin(), newData.end());
+            OSC_ASSERT(data.size() == data_.size() && "provided data size does not match the size of the vertex buffer");
+            data_.assign(data.begin(), data.end());
         }
     private:
-        std::vector<std::byte> m_Data;
-        VertexFormat m_VertexFormat;
+        std::vector<std::byte> data_;
+        VertexFormat vertex_format_;
     };
 }
 
@@ -4510,12 +4465,12 @@ public:
 
     size_t getNumVerts() const
     {
-        return m_VertexBuffer.numVerts();
+        return m_VertexBuffer.num_verts();
     }
 
     bool hasVerts() const
     {
-        return m_VertexBuffer.hasVerts();
+        return m_VertexBuffer.has_verts();
     }
 
     std::vector<Vec3> getVerts() const
@@ -4533,7 +4488,7 @@ public:
 
     void transformVerts(const std::function<Vec3(Vec3)>& f)
     {
-        m_VertexBuffer.transformAttribute<Vec3>(VertexAttribute::Position, f);
+        m_VertexBuffer.transform_attribute<Vec3>(VertexAttribute::Position, f);
 
         rangeCheckIndicesAndRecalculateBounds();
         m_Version->reset();
@@ -4541,7 +4496,7 @@ public:
 
     void transformVerts(const Transform& t)
     {
-        m_VertexBuffer.transformAttribute<Vec3>(VertexAttribute::Position, [&t](Vec3 v)
+        m_VertexBuffer.transform_attribute<Vec3>(VertexAttribute::Position, [&t](Vec3 v)
         {
             return t * v;
         });
@@ -4552,7 +4507,7 @@ public:
 
     void transformVerts(const Mat4& m)
     {
-        m_VertexBuffer.transformAttribute<Vec3>(VertexAttribute::Position, [&m](Vec3 v)
+        m_VertexBuffer.transform_attribute<Vec3>(VertexAttribute::Position, [&m](Vec3 v)
         {
             return Vec3{m * Vec4{v, 1.0f}};
         });
@@ -4563,7 +4518,7 @@ public:
 
     bool hasNormals() const
     {
-        return m_VertexBuffer.hasAttribute(VertexAttribute::Normal);
+        return m_VertexBuffer.has_attribute(VertexAttribute::Normal);
     }
 
     std::vector<Vec3> getNormals() const
@@ -4580,14 +4535,14 @@ public:
 
     void transformNormals(const std::function<Vec3(Vec3)>& f)
     {
-        m_VertexBuffer.transformAttribute<Vec3>(VertexAttribute::Normal, f);
+        m_VertexBuffer.transform_attribute<Vec3>(VertexAttribute::Normal, f);
 
         m_Version->reset();
     }
 
     bool hasTexCoords() const
     {
-        return m_VertexBuffer.hasAttribute(VertexAttribute::TexCoord0);
+        return m_VertexBuffer.has_attribute(VertexAttribute::TexCoord0);
     }
 
     std::vector<Vec2> getTexCoords() const
@@ -4604,7 +4559,7 @@ public:
 
     void transformTexCoords(const std::function<Vec2(Vec2)>& f)
     {
-        m_VertexBuffer.transformAttribute<Vec2>(VertexAttribute::TexCoord0, f);
+        m_VertexBuffer.transform_attribute<Vec2>(VertexAttribute::TexCoord0, f);
 
         m_Version->reset();
     }
@@ -4755,7 +4710,7 @@ public:
 
     size_t getVertexAttributeCount() const
     {
-        return m_VertexBuffer.numAttributes();
+        return m_VertexBuffer.num_attributes();
     }
 
     const VertexFormat& getVertexAttributes() const
@@ -4765,7 +4720,7 @@ public:
 
     void setVertexBufferParams(size_t newNumVerts, const VertexFormat& newFormat)
     {
-        m_VertexBuffer.setParams(newNumVerts, newFormat);
+        m_VertexBuffer.set_params(newNumVerts, newFormat);
 
         rangeCheckIndicesAndRecalculateBounds();
         m_Version->reset();
@@ -4778,7 +4733,7 @@ public:
 
     void setVertexBufferData(std::span<const uint8_t> newData, MeshUpdateFlags flags)
     {
-        m_VertexBuffer.setData(std::as_bytes(newData));
+        m_VertexBuffer.set_data(std::as_bytes(newData));
 
         rangeCheckIndicesAndRecalculateBounds(flags);
         m_Version->reset();
@@ -4792,7 +4747,7 @@ public:
         }
 
         // ensure the vertex buffer has a normal attribute
-        m_VertexBuffer.emplaceAttributeDescriptor({VertexAttribute::Normal, VertexAttributeFormat::Float32x3});
+        m_VertexBuffer.emplace_attribute_descriptor({VertexAttribute::Normal, VertexAttributeFormat::Float32x3});
 
         // calculate normals from triangle faces:
         //
@@ -4847,11 +4802,11 @@ public:
             // if the mesh isn't triangle-based, do nothing
             return;
         }
-        if (!m_VertexBuffer.hasAttribute(VertexAttribute::Normal)) {
+        if (!m_VertexBuffer.has_attribute(VertexAttribute::Normal)) {
             // if the mesh doesn't have normals, do nothing
             return;
         }
-        if (!m_VertexBuffer.hasAttribute(VertexAttribute::TexCoord0)) {
+        if (!m_VertexBuffer.has_attribute(VertexAttribute::TexCoord0)) {
             // if the mesh doesn't have texture coordinates, do nothing
             return;
         }
@@ -4861,7 +4816,7 @@ public:
         }
 
         // ensure the vertex buffer has space for tangents
-        m_VertexBuffer.emplaceAttributeDescriptor({ VertexAttribute::Tangent, VertexAttributeFormat::Float32x3 });
+        m_VertexBuffer.emplace_attribute_descriptor({ VertexAttribute::Tangent, VertexAttributeFormat::Float32x3 });
 
         // calculate tangents
 
@@ -4900,7 +4855,7 @@ public:
             SubMeshDescriptor{0, m_NumIndices, m_Topology};       // else: draw the entire mesh as a "sub mesh"
 
         // convert mesh/descriptor data types into OpenGL-compatible formats
-        const GLenum mode = toOpenGLTopology(descriptor.getTopology());
+        const GLenum mode = to_opengl_topology_enum(descriptor.getTopology());
         const auto count = static_cast<GLsizei>(descriptor.getIndexCount());
         const GLenum type = m_IndicesAre32Bit ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT;
 
@@ -5008,7 +4963,7 @@ private:
         {
             for (auto meshIndex : getIndices())
             {
-                OSC_ASSERT(meshIndex < m_VertexBuffer.numVerts() && "a mesh index is out of bounds");
+                OSC_ASSERT(meshIndex < m_VertexBuffer.num_verts() && "a mesh index is out of bounds");
             }
         }
         else
@@ -5116,7 +5071,7 @@ private:
         gl::bind_vertex_array(buffers.vao);
         gl::bind_buffer(GL_ARRAY_BUFFER, buffers.array_buffer);
         gl::bind_buffer(GL_ELEMENT_ARRAY_BUFFER, buffers.indices_buffer);
-        for (auto&& layout : m_VertexBuffer.attributeLayouts())
+        for (auto&& layout : m_VertexBuffer.attribute_layouts())
         {
             OpenGLBindVertexAttribute(m_VertexBuffer.format(), layout);
         }
@@ -5142,7 +5097,7 @@ private:
 
 std::ostream& osc::operator<<(std::ostream& o, MeshTopology mt)
 {
-    return o << c_MeshTopologyStrings.at(static_cast<size_t>(mt));
+    return o << c_mesh_topology_strings.at(static_cast<size_t>(mt));
 }
 
 osc::Mesh::Mesh() :
@@ -6997,7 +6952,7 @@ void osc::GraphicsBackend::handle_batch_with_same_material_property_block(
 
     // bind property block variables (if applicable)
     if (els.front().maybe_prop_block) {
-        for (const auto& [name, value] : els.front().maybe_prop_block->m_Impl->m_Values) {
+        for (const auto& [name, value] : els.front().maybe_prop_block->m_Impl->values_) {
             if (const auto* uniform = try_find(uniforms, name)) {
                 try_bind_material_value_to_shader_element(*uniform, value, texture_slot);
             }
