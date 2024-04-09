@@ -4269,7 +4269,7 @@ namespace
 
         size_t num_verts() const
         {
-            return !vertex_format_.empty() ? (data_.size() / vertex_format_.stride()) : 0;
+            return vertex_format_.empty() ? 0 : (data_.size() / vertex_format_.stride());
         }
 
         size_t num_attributes() const
@@ -4454,184 +4454,186 @@ public:
 
     MeshTopology getTopology() const
     {
-        return m_Topology;
+        return topology_;
     }
 
-    void setTopology(MeshTopology newTopology)
+    void setTopology(MeshTopology topology)
     {
-        m_Topology = newTopology;
-        m_Version->reset();
+        topology_ = topology;
+        version_->reset();
     }
 
     size_t getNumVerts() const
     {
-        return m_VertexBuffer.num_verts();
+        return vertex_buffer_.num_verts();
     }
 
     bool hasVerts() const
     {
-        return m_VertexBuffer.has_verts();
+        return vertex_buffer_.has_verts();
     }
 
     std::vector<Vec3> getVerts() const
     {
-        return m_VertexBuffer.read<Vec3>(VertexAttribute::Position);
+        return vertex_buffer_.read<Vec3>(VertexAttribute::Position);
     }
 
     void setVerts(std::span<const Vec3> verts)
     {
-        m_VertexBuffer.write<Vec3>(VertexAttribute::Position, verts);
+        vertex_buffer_.write<Vec3>(VertexAttribute::Position, verts);
 
-        rangeCheckIndicesAndRecalculateBounds();
-        m_Version->reset();
+        range_check_indices_and_recalculate_bounds();
+        version_->reset();
     }
 
     void transformVerts(const std::function<Vec3(Vec3)>& f)
     {
-        m_VertexBuffer.transform_attribute<Vec3>(VertexAttribute::Position, f);
+        vertex_buffer_.transform_attribute<Vec3>(VertexAttribute::Position, f);
 
-        rangeCheckIndicesAndRecalculateBounds();
-        m_Version->reset();
+        range_check_indices_and_recalculate_bounds();
+        version_->reset();
     }
 
     void transformVerts(const Transform& t)
     {
-        m_VertexBuffer.transform_attribute<Vec3>(VertexAttribute::Position, [&t](Vec3 v)
+        vertex_buffer_.transform_attribute<Vec3>(VertexAttribute::Position, [&t](Vec3 v)
         {
             return t * v;
         });
 
-        rangeCheckIndicesAndRecalculateBounds();
-        m_Version->reset();
+        range_check_indices_and_recalculate_bounds();
+        version_->reset();
     }
 
     void transformVerts(const Mat4& m)
     {
-        m_VertexBuffer.transform_attribute<Vec3>(VertexAttribute::Position, [&m](Vec3 v)
+        vertex_buffer_.transform_attribute<Vec3>(VertexAttribute::Position, [&m](Vec3 v)
         {
             return Vec3{m * Vec4{v, 1.0f}};
         });
 
-        rangeCheckIndicesAndRecalculateBounds();
-        m_Version->reset();
+        range_check_indices_and_recalculate_bounds();
+        version_->reset();
     }
 
     bool hasNormals() const
     {
-        return m_VertexBuffer.has_attribute(VertexAttribute::Normal);
+        return vertex_buffer_.has_attribute(VertexAttribute::Normal);
     }
 
     std::vector<Vec3> getNormals() const
     {
-        return m_VertexBuffer.read<Vec3>(VertexAttribute::Normal);
+        return vertex_buffer_.read<Vec3>(VertexAttribute::Normal);
     }
 
     void setNormals(std::span<const Vec3> normals)
     {
-        m_VertexBuffer.write<Vec3>(VertexAttribute::Normal, normals);
+        vertex_buffer_.write<Vec3>(VertexAttribute::Normal, normals);
 
-        m_Version->reset();
+        version_->reset();
     }
 
     void transformNormals(const std::function<Vec3(Vec3)>& f)
     {
-        m_VertexBuffer.transform_attribute<Vec3>(VertexAttribute::Normal, f);
+        vertex_buffer_.transform_attribute<Vec3>(VertexAttribute::Normal, f);
 
-        m_Version->reset();
+        version_->reset();
     }
 
     bool hasTexCoords() const
     {
-        return m_VertexBuffer.has_attribute(VertexAttribute::TexCoord0);
+        return vertex_buffer_.has_attribute(VertexAttribute::TexCoord0);
     }
 
     std::vector<Vec2> getTexCoords() const
     {
-        return m_VertexBuffer.read<Vec2>(VertexAttribute::TexCoord0);
+        return vertex_buffer_.read<Vec2>(VertexAttribute::TexCoord0);
     }
 
     void setTexCoords(std::span<const Vec2> coords)
     {
-        m_VertexBuffer.write<Vec2>(VertexAttribute::TexCoord0, coords);
+        vertex_buffer_.write<Vec2>(VertexAttribute::TexCoord0, coords);
 
-        m_Version->reset();
+        version_->reset();
     }
 
     void transformTexCoords(const std::function<Vec2(Vec2)>& f)
     {
-        m_VertexBuffer.transform_attribute<Vec2>(VertexAttribute::TexCoord0, f);
+        vertex_buffer_.transform_attribute<Vec2>(VertexAttribute::TexCoord0, f);
 
-        m_Version->reset();
+        version_->reset();
     }
 
     std::vector<Color> getColors() const
     {
-        return m_VertexBuffer.read<Color>(VertexAttribute::Color);
+        return vertex_buffer_.read<Color>(VertexAttribute::Color);
     }
 
     void setColors(std::span<const Color> colors)
     {
-        m_VertexBuffer.write<Color>(VertexAttribute::Color, colors);
+        vertex_buffer_.write<Color>(VertexAttribute::Color, colors);
 
-        m_Version.reset();
+        version_.reset();
     }
 
     std::vector<Vec4> getTangents() const
     {
-        return m_VertexBuffer.read<Vec4>(VertexAttribute::Tangent);
+        return vertex_buffer_.read<Vec4>(VertexAttribute::Tangent);
     }
 
-    void setTangents(std::span<const Vec4> newTangents)
+    void setTangents(std::span<const Vec4> tangents)
     {
-        m_VertexBuffer.write<Vec4>(VertexAttribute::Tangent, newTangents);
+        vertex_buffer_.write<Vec4>(VertexAttribute::Tangent, tangents);
 
-        m_Version->reset();
+        version_->reset();
     }
 
     size_t getNumIndices() const
     {
-        return m_NumIndices;
+        return num_indices_;
     }
 
     MeshIndicesView getIndices() const
     {
-        if (m_NumIndices <= 0)
-        {
+        if (num_indices_ <= 0) {
             return {};
         }
-        else if (m_IndicesAre32Bit)
-        {
-            return {&m_IndicesData.front().u32, m_NumIndices};
+        else if (indices_are_32bit_) {
+            return {&indices_data_.front().u32, num_indices_};
         }
-        else
-        {
-            return {&m_IndicesData.front().u16.a, m_NumIndices};
+        else {  // indices are 16-bit
+            return {&indices_data_.front().u16.a, num_indices_};
         }
     }
 
     void setIndices(MeshIndicesView indices, MeshUpdateFlags flags)
     {
-        indices.isU16() ? setIndices(indices.toU16Span(), flags) : setIndices(indices.toU32Span(), flags);
+        if (indices.isU16()) {
+            set_indices(indices.toU16Span(), flags);
+        }
+        else {
+            set_indices(indices.toU32Span(), flags);
+        }
     }
 
     void forEachIndexedVert(const std::function<void(Vec3)>& f) const
     {
-        const auto positions = m_VertexBuffer.iter<Vec3>(VertexAttribute::Position).begin();
-        for (auto idx : getIndices()) {
-            f(positions[idx]);
+        const auto positions = vertex_buffer_.iter<Vec3>(VertexAttribute::Position).begin();
+        for (auto index : getIndices()) {
+            f(positions[index]);
         }
     }
 
     void forEachIndexedTriangle(const std::function<void(Triangle)>& f) const
     {
-        if (m_Topology != MeshTopology::Triangles) {
+        if (topology_ != MeshTopology::Triangles) {
             return;
         }
 
         const MeshIndicesView indices = getIndices();
         const size_t steps = (indices.size() / 3) * 3;
 
-        const auto positions = m_VertexBuffer.iter<Vec3>(VertexAttribute::Position).begin();
+        const auto positions = vertex_buffer_.iter<Vec3>(VertexAttribute::Position).begin();
         for (size_t i = 0; i < steps; i += 3) {
             f(Triangle{
                 positions[indices[i]],
@@ -4641,25 +4643,25 @@ public:
         }
     }
 
-    Triangle getTriangleAt(size_t firstIndexOffset) const
+    Triangle getTriangleAt(size_t first_index_offset) const
     {
-        if (m_Topology != MeshTopology::Triangles) {
+        if (topology_ != MeshTopology::Triangles) {
             throw std::runtime_error{"cannot call getTriangleAt on a non-triangular-topology mesh"};
         }
 
         const auto indices = getIndices();
 
-        if (firstIndexOffset+2 >= indices.size()) {
+        if (first_index_offset+2 >= indices.size()) {
             throw std::runtime_error{"provided first index offset is out-of-bounds"};
         }
 
-        const auto verts = m_VertexBuffer.iter<Vec3>(VertexAttribute::Position);
+        const auto verts = vertex_buffer_.iter<Vec3>(VertexAttribute::Position);
 
         // can use unchecked access here: `indices` are range-checked on writing
         return Triangle{
-            verts[indices[firstIndexOffset+0]],
-            verts[indices[firstIndexOffset+1]],
-            verts[indices[firstIndexOffset+2]],
+            verts[indices[first_index_offset+0]],
+            verts[indices[first_index_offset+1]],
+            verts[indices[first_index_offset+2]],
         };
     }
 
@@ -4673,70 +4675,70 @@ public:
 
     const AABB& getBounds() const
     {
-        return m_AABB;
+        return aabb_;
     }
 
     void clear()
     {
-        m_Version->reset();
-        m_Topology = MeshTopology::Triangles;
-        m_VertexBuffer.clear();
-        m_IndicesAre32Bit = false;
-        m_NumIndices = 0;
-        m_IndicesData.clear();
-        m_AABB = {};
-        m_SubMeshDescriptors.clear();
+        version_->reset();
+        topology_ = MeshTopology::Triangles;
+        vertex_buffer_.clear();
+        indices_are_32bit_ = false;
+        num_indices_ = 0;
+        indices_data_.clear();
+        aabb_ = {};
+        submesh_descriptors_.clear();
     }
 
     size_t getSubMeshCount() const
     {
-        return m_SubMeshDescriptors.size();
+        return submesh_descriptors_.size();
     }
 
-    void pushSubMeshDescriptor(const SubMeshDescriptor& desc)
+    void pushSubMeshDescriptor(const SubMeshDescriptor& descriptor)
     {
-        m_SubMeshDescriptors.push_back(desc);
+        submesh_descriptors_.push_back(descriptor);
     }
 
     const SubMeshDescriptor& getSubMeshDescriptor(size_t i) const
     {
-        return m_SubMeshDescriptors.at(i);
+        return submesh_descriptors_.at(i);
     }
 
     void clearSubMeshDescriptors()
     {
-        m_SubMeshDescriptors.clear();
+        submesh_descriptors_.clear();
     }
 
     size_t getVertexAttributeCount() const
     {
-        return m_VertexBuffer.num_attributes();
+        return vertex_buffer_.num_attributes();
     }
 
     const VertexFormat& getVertexAttributes() const
     {
-        return m_VertexBuffer.format();
+        return vertex_buffer_.format();
     }
 
-    void setVertexBufferParams(size_t newNumVerts, const VertexFormat& newFormat)
+    void setVertexBufferParams(size_t num_vertices, const VertexFormat& format)
     {
-        m_VertexBuffer.set_params(newNumVerts, newFormat);
+        vertex_buffer_.set_params(num_vertices, format);
 
-        rangeCheckIndicesAndRecalculateBounds();
-        m_Version->reset();
+        range_check_indices_and_recalculate_bounds();
+        version_->reset();
     }
 
     size_t getVertexBufferStride() const
     {
-        return m_VertexBuffer.stride();
+        return vertex_buffer_.stride();
     }
 
-    void setVertexBufferData(std::span<const uint8_t> newData, MeshUpdateFlags flags)
+    void setVertexBufferData(std::span<const uint8_t> data, MeshUpdateFlags update_flags)
     {
-        m_VertexBuffer.set_data(std::as_bytes(newData));
+        vertex_buffer_.set_data(std::as_bytes(data));
 
-        rangeCheckIndicesAndRecalculateBounds(flags);
-        m_Version->reset();
+        range_check_indices_and_recalculate_bounds(update_flags);
+        version_->reset();
     }
 
     void recalculateNormals()
@@ -4747,7 +4749,7 @@ public:
         }
 
         // ensure the vertex buffer has a normal attribute
-        m_VertexBuffer.emplace_attribute_descriptor({VertexAttribute::Normal, VertexAttributeFormat::Float32x3});
+        vertex_buffer_.emplace_attribute_descriptor({VertexAttribute::Normal, VertexAttributeFormat::Float32x3});
 
         // calculate normals from triangle faces:
         //
@@ -4759,8 +4761,8 @@ public:
         // - at the end, if counts[i] > 1, then renormalize that normal (it contains a sum)
 
         const auto indices = getIndices();
-        const auto positions = m_VertexBuffer.iter<Vec3>(VertexAttribute::Position);
-        auto normals = m_VertexBuffer.iter<Vec3>(VertexAttribute::Normal);
+        const auto positions = vertex_buffer_.iter<Vec3>(VertexAttribute::Position);
+        auto normals = vertex_buffer_.iter<Vec3>(VertexAttribute::Normal);
         std::vector<uint16_t> counts(normals.size());
 
         for (size_t i = 0, len = 3*(indices.size()/3); i < len; i+=3) {
@@ -4802,27 +4804,27 @@ public:
             // if the mesh isn't triangle-based, do nothing
             return;
         }
-        if (!m_VertexBuffer.has_attribute(VertexAttribute::Normal)) {
+        if (not vertex_buffer_.has_attribute(VertexAttribute::Normal)) {
             // if the mesh doesn't have normals, do nothing
             return;
         }
-        if (!m_VertexBuffer.has_attribute(VertexAttribute::TexCoord0)) {
+        if (not vertex_buffer_.has_attribute(VertexAttribute::TexCoord0)) {
             // if the mesh doesn't have texture coordinates, do nothing
             return;
         }
-        if (m_IndicesData.empty()) {
+        if (indices_data_.empty()) {
             // if the mesh has no indices, do nothing
             return;
         }
 
         // ensure the vertex buffer has space for tangents
-        m_VertexBuffer.emplace_attribute_descriptor({ VertexAttribute::Tangent, VertexAttributeFormat::Float32x3 });
+        vertex_buffer_.emplace_attribute_descriptor({ VertexAttribute::Tangent, VertexAttributeFormat::Float32x3 });
 
         // calculate tangents
 
-        const auto vbverts = m_VertexBuffer.iter<Vec3>(VertexAttribute::Position);
-        const auto vbnormals = m_VertexBuffer.iter<Vec3>(VertexAttribute::Normal);
-        const auto vbtexcoords = m_VertexBuffer.iter<Vec2>(VertexAttribute::TexCoord0);
+        const auto vbverts = vertex_buffer_.iter<Vec3>(VertexAttribute::Position);
+        const auto vbnormals = vertex_buffer_.iter<Vec3>(VertexAttribute::Normal);
+        const auto vbtexcoords = vertex_buffer_.iter<Vec2>(VertexAttribute::TexCoord0);
 
         const auto tangents = CalcTangentVectors(
             MeshTopology::Triangles,
@@ -4832,18 +4834,17 @@ public:
             getIndices()
         );
 
-        m_VertexBuffer.write<Vec4>(VertexAttribute::Tangent, tangents);
+        vertex_buffer_.write<Vec4>(VertexAttribute::Tangent, tangents);
     }
 
     // non-PIMPL methods
 
-    gl::VertexArray& updVertexArray()
+    gl::VertexArray& upd_vertex_array()
     {
-        if (!*m_MaybeGPUBuffers || (*m_MaybeGPUBuffers)->data_version != *m_Version)
-        {
-            uploadToGPU();
+        if (not *maybe_gpu_data_ or (*maybe_gpu_data_)->data_version != *version_) {
+            upload_to_gpu();
         }
-        return (*m_MaybeGPUBuffers)->vao;
+        return (*maybe_gpu_data_)->vao;
     }
 
     void drawInstanced(
@@ -4851,128 +4852,115 @@ public:
         std::optional<size_t> maybe_submesh_index)
     {
         const SubMeshDescriptor descriptor = maybe_submesh_index ?
-            m_SubMeshDescriptors.at(*maybe_submesh_index) :         // draw the requested sub-mesh
-            SubMeshDescriptor{0, m_NumIndices, m_Topology};       // else: draw the entire mesh as a "sub mesh"
+            submesh_descriptors_.at(*maybe_submesh_index) :         // draw the requested sub-mesh
+            SubMeshDescriptor{0, num_indices_, topology_};       // else: draw the entire mesh as a "sub mesh"
 
         // convert mesh/descriptor data types into OpenGL-compatible formats
         const GLenum mode = to_opengl_topology_enum(descriptor.getTopology());
-        const auto count = static_cast<GLsizei>(descriptor.getIndexCount());
-        const GLenum type = m_IndicesAre32Bit ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT;
+        const auto num_indices = static_cast<GLsizei>(descriptor.getIndexCount());
+        const GLenum type = indices_are_32bit_ ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT;
 
-        const size_t bytesPerIndex = m_IndicesAre32Bit ? sizeof(GLint) : sizeof(GLshort);
-        const size_t firstIndexByteOffset = descriptor.getIndexStart() * bytesPerIndex;
-        const void* indices = cpp20::bit_cast<void*>(firstIndexByteOffset);
+        const size_t num_bytes_per_index = indices_are_32bit_ ? sizeof(GLint) : sizeof(GLshort);
+        const size_t first_index_byte_offset = descriptor.getIndexStart() * num_bytes_per_index;
 
-        const auto instanceCount = static_cast<GLsizei>(n);
+        const auto num_instances = static_cast<GLsizei>(n);
 
         glDrawElementsInstanced(
             mode,
-            count,
+            num_indices,
             type,
-            indices,
-            instanceCount
+            cpp20::bit_cast<void*>(first_index_byte_offset),
+            num_instances
         );
     }
 
 private:
 
-    void setIndices(std::span<const uint16_t> indices, MeshUpdateFlags flags)
+    void set_indices(std::span<const uint16_t> indices, MeshUpdateFlags flags)
     {
-        m_IndicesAre32Bit = false;
-        m_NumIndices = indices.size();
-        m_IndicesData.resize((indices.size()+1)/2);
-        copy(indices, &m_IndicesData.front().u16.a);
+        indices_are_32bit_ = false;
+        num_indices_ = indices.size();
+        indices_data_.resize((indices.size()+1)/2);
+        copy(indices, &indices_data_.front().u16.a);
 
-        rangeCheckIndicesAndRecalculateBounds(flags);
-        m_Version->reset();
+        range_check_indices_and_recalculate_bounds(flags);
+        version_->reset();
     }
 
-    void setIndices(std::span<const uint32_t> vs, MeshUpdateFlags flags)
+    void set_indices(std::span<const uint32_t> indices, MeshUpdateFlags flags)
     {
         const auto isGreaterThanU16Max = [](uint32_t v)
         {
             return v > std::numeric_limits<uint16_t>::max();
         };
 
-        if (any_of(vs, isGreaterThanU16Max))
-        {
-            m_IndicesAre32Bit = true;
-            m_NumIndices = vs.size();
-            m_IndicesData.resize(vs.size());
-            copy(vs, &m_IndicesData.front().u32);
+        if (any_of(indices, isGreaterThanU16Max)) {
+            indices_are_32bit_ = true;
+            num_indices_ = indices.size();
+            indices_data_.resize(indices.size());
+            copy(indices, &indices_data_.front().u32);
         }
-        else
-        {
-            m_IndicesAre32Bit = false;
-            m_NumIndices = vs.size();
-            m_IndicesData.resize((vs.size()+1)/2);
-            for (size_t i = 0; i < vs.size(); ++i)
-            {
-                (&m_IndicesData.front().u16.a)[i] = static_cast<uint16_t>(vs[i]);
+        else {
+            indices_are_32bit_ = false;
+            num_indices_ = indices.size();
+            indices_data_.resize((indices.size()+1)/2);
+            for (size_t i = 0; i < indices.size(); ++i) {
+                (&indices_data_.front().u16.a)[i] = static_cast<uint16_t>(indices[i]);
             }
         }
 
-        rangeCheckIndicesAndRecalculateBounds(flags);
-        m_Version->reset();
+        range_check_indices_and_recalculate_bounds(flags);
+        version_->reset();
     }
 
-    void rangeCheckIndicesAndRecalculateBounds(
+    void range_check_indices_and_recalculate_bounds(
         MeshUpdateFlags flags = MeshUpdateFlags::Default)
     {
         // note: recalculating bounds will always validate indices anyway, because it's assumed
         //       that the caller's intention is that all indices are valid when computing the
         //       bounds
-        const bool checkIndices = !((flags & MeshUpdateFlags::DontValidateIndices) && (flags & MeshUpdateFlags::DontRecalculateBounds));
+        const bool should_check_indices = not ((flags & MeshUpdateFlags::DontValidateIndices) and (flags & MeshUpdateFlags::DontRecalculateBounds));
 
         //       ... but it's perfectly reasonable for the caller to only want the indices to be
         //       validated, leaving the bounds untouched
-        const bool recalculateBounds = !(flags & MeshUpdateFlags::DontRecalculateBounds);
+        const bool should_recalculate_bounds = not (flags & MeshUpdateFlags::DontRecalculateBounds);
 
-        if (checkIndices && recalculateBounds)
-        {
-            if (m_NumIndices == 0)
-            {
-                m_AABB = {};
+        if (should_check_indices and should_recalculate_bounds) {
+            if (num_indices_ == 0) {
+                aabb_ = {};
                 return;
             }
 
             // recalculate bounds while also checking indices
-            m_AABB.min =
-            {
+            aabb_.min = {
                 std::numeric_limits<float>::max(),
                 std::numeric_limits<float>::max(),
                 std::numeric_limits<float>::max(),
             };
-
-            m_AABB.max =
-            {
+            aabb_.max = {
                 std::numeric_limits<float>::lowest(),
                 std::numeric_limits<float>::lowest(),
                 std::numeric_limits<float>::lowest(),
             };
 
-            auto range = m_VertexBuffer.iter<Vec3>(VertexAttribute::Position);
-            for (auto idx : getIndices())
-            {
-                Vec3 pos = range.at(idx);  // bounds-check index
-                m_AABB.min = elementwise_min(m_AABB.min, pos);
-                m_AABB.max = elementwise_max(m_AABB.max, pos);
+            auto vertices = vertex_buffer_.iter<Vec3>(VertexAttribute::Position);
+            for (auto index : getIndices()) {
+                Vec3 pos = vertices.at(index);  // bounds-check index
+                aabb_.min = elementwise_min(aabb_.min, pos);
+                aabb_.max = elementwise_max(aabb_.max, pos);
             }
         }
-        else if (checkIndices && !recalculateBounds)
-        {
-            for (auto meshIndex : getIndices())
-            {
-                OSC_ASSERT(meshIndex < m_VertexBuffer.num_verts() && "a mesh index is out of bounds");
+        else if (should_check_indices and not should_recalculate_bounds) {
+            for (auto meshIndex : getIndices()) {
+                OSC_ASSERT(meshIndex < vertex_buffer_.num_verts() && "a mesh index is out of bounds");
             }
         }
-        else
-        {
+        else {
             return;  // do nothing
         }
     }
 
-    static GLuint GetVertexAttributeIndex(VertexAttribute attr)
+    static GLuint shader_location_of(VertexAttribute attr)
     {
         auto constexpr lut = []<VertexAttribute... Attrs>(OptionList<VertexAttribute, Attrs...>)
         {
@@ -4982,88 +4970,72 @@ private:
         return lut.at(to_index(attr));
     }
 
-    static GLint GetVertexAttributeSize(const VertexAttributeFormat& format)
-    {
-        return static_cast<GLint>(num_components_in(format));
-    }
-
-    static GLenum GetVertexAttributeType(const VertexAttributeFormat& format)
+    static GLenum to_opengl_attribute_type_enum(const VertexAttributeFormat& format)
     {
         static_assert(num_options<VertexAttributeFormat>() == 4);
 
         switch (format) {
-        case VertexAttributeFormat::Float32x2:
-        case VertexAttributeFormat::Float32x3:
-        case VertexAttributeFormat::Float32x4:
-            return GL_FLOAT;
-        case VertexAttributeFormat::Unorm8x4:
-            return GL_UNSIGNED_BYTE;
-        default:
-            throw std::runtime_error{"nyi"};
+        case VertexAttributeFormat::Float32x2: return GL_FLOAT;
+        case VertexAttributeFormat::Float32x3: return GL_FLOAT;
+        case VertexAttributeFormat::Float32x4: return GL_FLOAT;
+        case VertexAttributeFormat::Unorm8x4:  return GL_UNSIGNED_BYTE;
+        default:                               throw std::runtime_error{"nyi"};
         }
     }
 
-    static GLboolean GetVertexAttributeNormalized(const VertexAttributeFormat& format)
+    static GLboolean is_normalized_attribute_type(const VertexAttributeFormat& format)
     {
         static_assert(num_options<VertexAttributeFormat>() == 4);
 
         switch (format) {
-        case VertexAttributeFormat::Float32x2:
-        case VertexAttributeFormat::Float32x3:
-        case VertexAttributeFormat::Float32x4:
-            return GL_FALSE;
-        case VertexAttributeFormat::Unorm8x4:
-            return GL_TRUE;
-        default:
-            throw std::runtime_error{"nyi"};
+        case VertexAttributeFormat::Float32x2: return GL_FALSE;
+        case VertexAttributeFormat::Float32x3: return GL_FALSE;
+        case VertexAttributeFormat::Float32x4: return GL_FALSE;
+        case VertexAttributeFormat::Unorm8x4:  return GL_TRUE;
+        default:                               throw std::runtime_error{"nyi"};
         }
     }
 
-    static void OpenGLBindVertexAttribute(const VertexFormat& format, const VertexFormat::VertexAttributeLayout& layout)
+    static void opengl_bind_vertex_attribute(
+        const VertexFormat& format,
+        const VertexFormat::VertexAttributeLayout& layout)
     {
         glVertexAttribPointer(
-            GetVertexAttributeIndex(layout.attribute()),
-            GetVertexAttributeSize(layout.format()),
-            GetVertexAttributeType(layout.format()),
-            GetVertexAttributeNormalized(layout.format()),
+            shader_location_of(layout.attribute()),
+            static_cast<GLint>(num_components_in(layout.format())),
+            to_opengl_attribute_type_enum(layout.format()),
+            is_normalized_attribute_type(layout.format()),
             static_cast<GLsizei>(format.stride()),
             cpp20::bit_cast<void*>(layout.offset())
         );
-        glEnableVertexAttribArray(GetVertexAttributeIndex(layout.attribute()));
+        glEnableVertexAttribArray(shader_location_of(layout.attribute()));
     }
 
-    void uploadToGPU()
+    void upload_to_gpu()
     {
         // allocate GPU-side buffers (or re-use the last ones)
-        if (!(*m_MaybeGPUBuffers))
-        {
-            *m_MaybeGPUBuffers = MeshOpenGLData{};
+        if (not *maybe_gpu_data_) {
+            *maybe_gpu_data_ = MeshOpenGLData{};
         }
-        MeshOpenGLData& buffers = **m_MaybeGPUBuffers;
+        MeshOpenGLData& buffers = **maybe_gpu_data_;
 
         // upload CPU-side vector data into the GPU-side buffer
-        OSC_ASSERT(cpp20::bit_cast<uintptr_t>(m_VertexBuffer.bytes().data()) % alignof(float) == 0);
-        gl::bind_buffer(
-            GL_ARRAY_BUFFER,
-            buffers.array_buffer
-        );
+        OSC_ASSERT(cpp20::bit_cast<uintptr_t>(vertex_buffer_.bytes().data()) % alignof(float) == 0);
+        gl::bind_buffer(GL_ARRAY_BUFFER, buffers.array_buffer);
         gl::buffer_data(
             GL_ARRAY_BUFFER,
-            static_cast<GLsizei>(m_VertexBuffer.bytes().size()),
-            m_VertexBuffer.bytes().data(),
+            static_cast<GLsizei>(vertex_buffer_.bytes().size()),
+            vertex_buffer_.bytes().data(),
             GL_STATIC_DRAW
         );
 
         // upload CPU-side element data into the GPU-side buffer
-        const size_t eboNumBytes = m_NumIndices * (m_IndicesAre32Bit ? sizeof(uint32_t) : sizeof(uint16_t));
-        gl::bind_buffer(
-            GL_ELEMENT_ARRAY_BUFFER,
-            buffers.indices_buffer
-        );
+        const size_t eboNumBytes = num_indices_ * (indices_are_32bit_ ? sizeof(uint32_t) : sizeof(uint16_t));
+        gl::bind_buffer(GL_ELEMENT_ARRAY_BUFFER, buffers.indices_buffer);
         gl::buffer_data(
             GL_ELEMENT_ARRAY_BUFFER,
             static_cast<GLsizei>(eboNumBytes),
-            m_IndicesData.data(),
+            indices_data_.data(),
             GL_STATIC_DRAW
         );
 
@@ -5071,39 +5043,37 @@ private:
         gl::bind_vertex_array(buffers.vao);
         gl::bind_buffer(GL_ARRAY_BUFFER, buffers.array_buffer);
         gl::bind_buffer(GL_ELEMENT_ARRAY_BUFFER, buffers.indices_buffer);
-        for (auto&& layout : m_VertexBuffer.attribute_layouts())
-        {
-            OpenGLBindVertexAttribute(m_VertexBuffer.format(), layout);
+        for (auto&& layout : vertex_buffer_.attribute_layouts()) {
+            opengl_bind_vertex_attribute(vertex_buffer_.format(), layout);
         }
         gl::bind_vertex_array();
 
-        buffers.data_version = *m_Version;
+        buffers.data_version = *version_;
     }
 
-    DefaultConstructOnCopy<UID> m_Version;
-    MeshTopology m_Topology = MeshTopology::Triangles;
-    VertexBuffer m_VertexBuffer;
+    DefaultConstructOnCopy<UID> version_;
+    MeshTopology topology_ = MeshTopology::Triangles;
+    VertexBuffer vertex_buffer_;
 
-    bool m_IndicesAre32Bit = false;
-    size_t m_NumIndices = 0;
-    std::vector<PackedIndex> m_IndicesData;
+    bool indices_are_32bit_ = false;
+    size_t num_indices_ = 0;
+    std::vector<PackedIndex> indices_data_;
 
-    AABB m_AABB = {};
+    AABB aabb_ = {};
 
-    std::vector<SubMeshDescriptor> m_SubMeshDescriptors;
+    std::vector<SubMeshDescriptor> submesh_descriptors_;
 
-    DefaultConstructOnCopy<std::optional<MeshOpenGLData>> m_MaybeGPUBuffers;
+    DefaultConstructOnCopy<std::optional<MeshOpenGLData>> maybe_gpu_data_;
 };
 
-std::ostream& osc::operator<<(std::ostream& o, MeshTopology mt)
+std::ostream& osc::operator<<(std::ostream& o, MeshTopology topology)
 {
-    return o << c_mesh_topology_strings.at(static_cast<size_t>(mt));
+    return o << c_mesh_topology_strings.at(to_index(topology));
 }
 
 osc::Mesh::Mesh() :
     m_Impl{make_cow<Impl>()}
-{
-}
+{}
 
 MeshTopology osc::Mesh::getTopology() const
 {
@@ -5140,14 +5110,14 @@ void osc::Mesh::transformVerts(const std::function<Vec3(Vec3)>& f)
     m_Impl.upd()->transformVerts(f);
 }
 
-void osc::Mesh::transformVerts(const Transform& t)
+void osc::Mesh::transformVerts(const Transform& transform)
 {
-    m_Impl.upd()->transformVerts(t);
+    m_Impl.upd()->transformVerts(transform);
 }
 
-void osc::Mesh::transformVerts(const Mat4& m)
+void osc::Mesh::transformVerts(const Mat4& mat)
 {
-    m_Impl.upd()->transformVerts(m);
+    m_Impl.upd()->transformVerts(mat);
 }
 
 bool osc::Mesh::hasNormals() const
@@ -5160,9 +5130,9 @@ std::vector<Vec3> osc::Mesh::getNormals() const
     return m_Impl->getNormals();
 }
 
-void osc::Mesh::setNormals(std::span<const Vec3> verts)
+void osc::Mesh::setNormals(std::span<const Vec3> normals)
 {
-    m_Impl.upd()->setNormals(verts);
+    m_Impl.upd()->setNormals(normals);
 }
 
 void osc::Mesh::transformNormals(const std::function<Vec3(Vec3)>& f)
@@ -5180,9 +5150,9 @@ std::vector<Vec2> osc::Mesh::getTexCoords() const
     return m_Impl->getTexCoords();
 }
 
-void osc::Mesh::setTexCoords(std::span<const Vec2> coords)
+void osc::Mesh::setTexCoords(std::span<const Vec2> tex_coords)
 {
-    m_Impl.upd()->setTexCoords(coords);
+    m_Impl.upd()->setTexCoords(tex_coords);
 }
 
 void osc::Mesh::transformTexCoords(const std::function<Vec2(Vec2)>& f)
@@ -5205,9 +5175,9 @@ std::vector<Vec4> osc::Mesh::getTangents() const
     return m_Impl->getTangents();
 }
 
-void osc::Mesh::setTangents(std::span<const Vec4> newTangents)
+void osc::Mesh::setTangents(std::span<const Vec4> tangents)
 {
-    m_Impl.upd()->setTangents(newTangents);
+    m_Impl.upd()->setTangents(tangents);
 }
 
 size_t osc::Mesh::getNumIndices() const
@@ -5235,9 +5205,9 @@ void osc::Mesh::forEachIndexedTriangle(const std::function<void(Triangle)>& f) c
     m_Impl->forEachIndexedTriangle(f);
 }
 
-Triangle osc::Mesh::getTriangleAt(size_t firstIndexOffset) const
+Triangle osc::Mesh::getTriangleAt(size_t first_index_offset) const
 {
-    return m_Impl->getTriangleAt(firstIndexOffset);
+    return m_Impl->getTriangleAt(first_index_offset);
 }
 
 std::vector<Vec3> osc::Mesh::getIndexedVerts() const
@@ -5260,9 +5230,9 @@ size_t osc::Mesh::getSubMeshCount() const
     return m_Impl->getSubMeshCount();
 }
 
-void osc::Mesh::pushSubMeshDescriptor(const SubMeshDescriptor& desc)
+void osc::Mesh::pushSubMeshDescriptor(const SubMeshDescriptor& descriptor)
 {
-    m_Impl.upd()->pushSubMeshDescriptor(desc);
+    m_Impl.upd()->pushSubMeshDescriptor(descriptor);
 }
 
 const SubMeshDescriptor& osc::Mesh::getSubMeshDescriptor(size_t i) const
@@ -5315,22 +5285,15 @@ std::ostream& osc::operator<<(std::ostream& o, const Mesh&)
     return o << "Mesh()";
 }
 
-
-//////////////////////////////////
-//
-// camera stuff
-//
-//////////////////////////////////
-
 namespace
 {
     // LUT for human-readable form of the above
-    constexpr auto c_CameraProjectionStrings = std::to_array<CStringView>(
+    constexpr auto c_camera_projection_strings = std::to_array<CStringView>(
     {
         "Perspective",
         "Orthographic",
     });
-    static_assert(c_CameraProjectionStrings.size() == num_options<CameraProjection>());
+    static_assert(c_camera_projection_strings.size() == num_options<CameraProjection>());
 }
 
 class osc::Camera::Impl final {
@@ -5338,176 +5301,172 @@ public:
 
     void reset()
     {
-        Impl newImpl;
-        std::swap(*this, newImpl);
-        m_RenderQueue = std::move(newImpl.m_RenderQueue);
+        Impl new_impl;
+        std::swap(*this, new_impl);
+        render_queue_ = std::move(new_impl.render_queue_);
     }
 
     Color background_color() const
     {
-        return m_BackgroundColor;
+        return background_color_;
     }
 
     void set_background_color(const Color& color)
     {
-        m_BackgroundColor = color;
+        background_color_ = color;
     }
 
     CameraProjection camera_projection() const
     {
-        return m_CameraProjection;
+        return camera_projection_;
     }
 
     void set_camera_projection(CameraProjection projection)
     {
-        m_CameraProjection = projection;
+        camera_projection_ = projection;
     }
 
     float orthographic_size() const
     {
-        return m_OrthographicSize;
+        return orthographic_size_;
     }
 
     void set_orthographic_size(float size)
     {
-        m_OrthographicSize = size;
+        orthographic_size_ = size;
     }
 
     Radians vertical_fov() const
     {
-        return m_PerspectiveFov;
+        return perspective_fov_;
     }
 
     void set_vertical_fov(Radians size)
     {
-        m_PerspectiveFov = size;
+        perspective_fov_ = size;
     }
 
     float near_clipping_plane() const
     {
-        return m_NearClippingPlane;
+        return near_clipping_plane_;
     }
 
     void set_near_clipping_plane(float distance)
     {
-        m_NearClippingPlane = distance;
+        near_clipping_plane_ = distance;
     }
 
     float get_far_clipping_plane() const
     {
-        return m_FarClippingPlane;
+        return far_clipping_plane_;
     }
 
     void set_far_clipping_plane(float distance)
     {
-        m_FarClippingPlane = distance;
+        far_clipping_plane_ = distance;
     }
 
     CameraClearFlags clear_flags() const
     {
-        return m_ClearFlags;
+        return clear_flags_;
     }
 
     void set_clear_flags(CameraClearFlags flags)
     {
-        m_ClearFlags = flags;
+        clear_flags_ = flags;
     }
 
     std::optional<Rect> pixel_rect() const
     {
-        return m_MaybeScreenPixelRect;
+        return maybe_screen_pixel_rect_;
     }
 
-    void set_pixel_rect(std::optional<Rect> maybePixelRect)
+    void set_pixel_rect(std::optional<Rect> maybe_pixel_rect)
     {
-        m_MaybeScreenPixelRect = maybePixelRect;
+        maybe_screen_pixel_rect_ = maybe_pixel_rect;
     }
 
     std::optional<Rect> scissor_rect() const
     {
-        return m_MaybeScissorRect;
+        return maybe_scissor_rect_;
     }
 
-    void set_scissor_rect(std::optional<Rect> maybeScissorRect)
+    void set_scissor_rect(std::optional<Rect> maybe_scissor_rect)
     {
-        m_MaybeScissorRect = maybeScissorRect;
+        maybe_scissor_rect_ = maybe_scissor_rect;
     }
 
     Vec3 position() const
     {
-        return m_Position;
+        return position_;
     }
 
     void set_position(const Vec3& position)
     {
-        m_Position = position;
+        position_ = position;
     }
 
     Quat rotation() const
     {
-        return m_Rotation;
+        return rotation_;
     }
 
     void set_rotation(const Quat& rotation)
     {
-        m_Rotation = rotation;
+        rotation_ = rotation;
     }
 
     Vec3 direction() const
     {
-        return m_Rotation * Vec3{0.0f, 0.0f, -1.0f};
+        return rotation_ * Vec3{0.0f, 0.0f, -1.0f};
     }
 
-    void set_direction(const Vec3& d)
+    void set_direction(const Vec3& direction)
     {
-        m_Rotation = osc::rotation(Vec3{0.0f, 0.0f, -1.0f}, d);
+        rotation_ = osc::rotation(Vec3{0.0f, 0.0f, -1.0f}, direction);
     }
 
     Vec3 upwards_direction() const
     {
-        return m_Rotation * Vec3{0.0f, 1.0f, 0.0f};
+        return rotation_ * Vec3{0.0f, 1.0f, 0.0f};
     }
 
     Mat4 view_matrix() const
     {
-        if (m_MaybeViewMatrixOverride)
-        {
-            return *m_MaybeViewMatrixOverride;
+        if (maybe_view_matrix_override_) {
+            return *maybe_view_matrix_override_;
         }
-        else
-        {
-            return look_at(m_Position, m_Position + direction(), upwards_direction());
+        else {
+            return look_at(position_, position_ + direction(), upwards_direction());
         }
     }
 
     std::optional<Mat4> view_matrix_override() const
     {
-        return m_MaybeViewMatrixOverride;
+        return maybe_view_matrix_override_;
     }
 
-    void set_view_matrix_override(std::optional<Mat4> maybeViewMatrixOverride)
+    void set_view_matrix_override(std::optional<Mat4> maybe_view_matrix_override)
     {
-        m_MaybeViewMatrixOverride = maybeViewMatrixOverride;
+        maybe_view_matrix_override_ = maybe_view_matrix_override;
     }
 
     Mat4 projection_matrix(float aspect_ratio) const
     {
-        if (m_MaybeProjectionMatrixOverride)
-        {
-            return *m_MaybeProjectionMatrixOverride;
+        if (maybe_projection_matrix_override_) {
+            return *maybe_projection_matrix_override_;
         }
-        else if (m_CameraProjection == CameraProjection::Perspective)
-        {
+        else if (camera_projection_ == CameraProjection::Perspective) {
             return perspective(
-                m_PerspectiveFov,
+                perspective_fov_,
                 aspect_ratio,
-                m_NearClippingPlane,
-                m_FarClippingPlane
+                near_clipping_plane_,
+                far_clipping_plane_
             );
         }
         else
         {
-            const float height = m_OrthographicSize;
+            const float height = orthographic_size_;
             const float width = height * aspect_ratio;
 
             const float right = 0.5f * width;
@@ -5515,18 +5474,18 @@ public:
             const float top = 0.5f * height;
             const float bottom = -top;
 
-            return ortho(left, right, bottom, top, m_NearClippingPlane, m_FarClippingPlane);
+            return ortho(left, right, bottom, top, near_clipping_plane_, far_clipping_plane_);
         }
     }
 
     std::optional<Mat4> projection_matrix_override() const
     {
-        return m_MaybeProjectionMatrixOverride;
+        return maybe_projection_matrix_override_;
     }
 
-    void set_projection_matrix_override(std::optional<Mat4> maybeProjectionMatrixOverride)
+    void set_projection_matrix_override(std::optional<Mat4> maybe_projection_matrix_override)
     {
-        m_MaybeProjectionMatrixOverride = maybeProjectionMatrixOverride;
+        maybe_projection_matrix_override_ = maybe_projection_matrix_override;
     }
 
     Mat4 view_projection_matrix(float aspect_ratio) const
@@ -5544,18 +5503,18 @@ public:
         GraphicsBackend::render_camera_queue(*this);
     }
 
-    void render_to(RenderTexture& renderTexture)
+    void render_to(RenderTexture& render_texture)
     {
         static_assert(CameraClearFlags::All == (CameraClearFlags::SolidColor | CameraClearFlags::Depth));
         static_assert(num_options<RenderTextureReadWrite>() == 2);
 
-        RenderTarget renderTargetThatWritesToRenderTexture
+        RenderTarget render_target
         {
             {
                 RenderTargetColorAttachment
                 {
                     // attach to render texture's color buffer
-                    renderTexture.updColorBuffer(),
+                    render_texture.updColorBuffer(),
 
                     // load the color buffer based on this camera's clear flags
                     clear_flags() & CameraClearFlags::SolidColor ?
@@ -5565,7 +5524,7 @@ public:
                     RenderBufferStoreAction::Resolve,
 
                     // ensure clear color matches colorspace of render texture
-                    renderTexture.getReadWrite() == RenderTextureReadWrite::sRGB ?
+                    render_texture.getReadWrite() == RenderTextureReadWrite::sRGB ?
                         to_linear_colorspace(background_color()) :
                         background_color(),
                 },
@@ -5573,7 +5532,7 @@ public:
             RenderTargetDepthAttachment
             {
                 // attach to the render texture's depth buffer
-                renderTexture.updDepthBuffer(),
+                render_texture.updDepthBuffer(),
 
                 // load the depth buffer based on this camera's clear flags
                 clear_flags() & CameraClearFlags::Depth ?
@@ -5584,12 +5543,12 @@ public:
             },
         };
 
-        render_to(renderTargetThatWritesToRenderTexture);
+        render_to(render_target);
     }
 
-    void render_to(RenderTarget& renderTarget)
+    void render_to(RenderTarget& render_target)
     {
-        GraphicsBackend::render_camera_queue(*this, &renderTarget);
+        GraphicsBackend::render_camera_queue(*this, &render_target);
     }
 
     friend bool operator==(const Impl&, const Impl&) = default;
@@ -5597,33 +5556,32 @@ public:
 private:
     friend class GraphicsBackend;
 
-    Color m_BackgroundColor = Color::clear();
-    CameraProjection m_CameraProjection = CameraProjection::Perspective;
-    float m_OrthographicSize = 2.0f;
-    Radians m_PerspectiveFov = 90_deg;
-    float m_NearClippingPlane = 1.0f;
-    float m_FarClippingPlane = -1.0f;
-    CameraClearFlags m_ClearFlags = CameraClearFlags::Default;
-    std::optional<Rect> m_MaybeScreenPixelRect = std::nullopt;
-    std::optional<Rect> m_MaybeScissorRect = std::nullopt;
-    Vec3 m_Position = {};
-    Quat m_Rotation = identity<Quat>();
-    std::optional<Mat4> m_MaybeViewMatrixOverride;
-    std::optional<Mat4> m_MaybeProjectionMatrixOverride;
-    std::vector<RenderObject> m_RenderQueue;
+    Color background_color_ = Color::clear();
+    CameraProjection camera_projection_ = CameraProjection::Perspective;
+    float orthographic_size_ = 2.0f;
+    Radians perspective_fov_ = 90_deg;
+    float near_clipping_plane_ = 1.0f;
+    float far_clipping_plane_ = -1.0f;
+    CameraClearFlags clear_flags_ = CameraClearFlags::Default;
+    std::optional<Rect> maybe_screen_pixel_rect_ = std::nullopt;
+    std::optional<Rect> maybe_scissor_rect_ = std::nullopt;
+    Vec3 position_ = {};
+    Quat rotation_ = identity<Quat>();
+    std::optional<Mat4> maybe_view_matrix_override_;
+    std::optional<Mat4> maybe_projection_matrix_override_;
+    std::vector<RenderObject> render_queue_;
 };
 
 
 
-std::ostream& osc::operator<<(std::ostream& o, CameraProjection cp)
+std::ostream& osc::operator<<(std::ostream& o, CameraProjection camera_projection)
 {
-    return o << c_CameraProjectionStrings.at(static_cast<size_t>(cp));
+    return o << c_camera_projection_strings.at(to_index(camera_projection));
 }
 
 osc::Camera::Camera() :
     impl_{make_cow<Impl>()}
-{
-}
+{}
 
 void osc::Camera::reset()
 {
@@ -5645,9 +5603,9 @@ CameraProjection osc::Camera::camera_projection() const
     return impl_->camera_projection();
 }
 
-void osc::Camera::set_camera_projection(CameraProjection projection)
+void osc::Camera::set_camera_projection(CameraProjection camera_projection)
 {
-    impl_.upd()->set_camera_projection(projection);
+    impl_.upd()->set_camera_projection(camera_projection);
 }
 
 float osc::Camera::orthographic_size() const
@@ -5655,9 +5613,9 @@ float osc::Camera::orthographic_size() const
     return impl_->orthographic_size();
 }
 
-void osc::Camera::set_orthographic_size(float sz)
+void osc::Camera::set_orthographic_size(float size)
 {
-    impl_.upd()->set_orthographic_size(sz);
+    impl_.upd()->set_orthographic_size(size);
 }
 
 Radians osc::Camera::vertical_fov() const
@@ -5675,9 +5633,9 @@ float osc::Camera::near_clipping_plane() const
     return impl_->near_clipping_plane();
 }
 
-void osc::Camera::set_near_clipping_plane(float d)
+void osc::Camera::set_near_clipping_plane(float near_clipping_plane)
 {
-    impl_.upd()->set_near_clipping_plane(d);
+    impl_.upd()->set_near_clipping_plane(near_clipping_plane);
 }
 
 float osc::Camera::get_far_clipping_plane() const
@@ -5685,9 +5643,9 @@ float osc::Camera::get_far_clipping_plane() const
     return impl_->get_far_clipping_plane();
 }
 
-void osc::Camera::set_far_clipping_plane(float d)
+void osc::Camera::set_far_clipping_plane(float far_clipping_plane)
 {
-    impl_.upd()->set_far_clipping_plane(d);
+    impl_.upd()->set_far_clipping_plane(far_clipping_plane);
 }
 
 CameraClearFlags osc::Camera::clear_flags() const
@@ -6863,7 +6821,7 @@ void osc::GraphicsBackend::handle_batch_with_same_submesh(
     const Shader::Impl& shader_impl = *els.front().material.m_Impl->shader_.m_Impl;
     const std::optional<size_t> maybe_submesh_index = els.front().maybe_submesh_index;
 
-    gl::bind_vertex_array(meshImpl.updVertexArray());
+    gl::bind_vertex_array(meshImpl.upd_vertex_array());
 
     if (shader_impl.maybe_model_mat_uniform_ || shader_impl.maybe_normal_mat_uniform_) {
         // if the shader requires per-instance uniforms, then we *have* to render one
@@ -7134,7 +7092,7 @@ void osc::GraphicsBackend::flush_render_queue(Camera::Impl& camera, float aspect
     //   - material property block
     //   - mesh
 
-    std::vector<RenderObject>& queue = camera.m_RenderQueue;
+    std::vector<RenderObject>& queue = camera.render_queue_;
 
     if (queue.empty())
     {
@@ -7241,9 +7199,9 @@ Rect osc::GraphicsBackend::setup_top_level_pipeline_state(
         static_cast<GLsizei>(viewportDims.y)
     );
 
-    if (camera.m_MaybeScissorRect)
+    if (camera.maybe_scissor_rect_)
     {
-        const Rect scissorRect = *camera.m_MaybeScissorRect;
+        const Rect scissorRect = *camera.maybe_scissor_rect_;
         const Vec2i scissorDims = dimensions_of(scissorRect);
 
         gl::enable(GL_SCISSOR_TEST);
@@ -7266,7 +7224,7 @@ void osc::GraphicsBackend::teardown_top_level_pipeline_state(
     Camera::Impl& camera,
     RenderTarget*)
 {
-    if (camera.m_MaybeScissorRect)
+    if (camera.maybe_scissor_rect_)
     {
         gl::disable(GL_SCISSOR_TEST);
     }
@@ -7406,16 +7364,16 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::bind_and_clear_render_buffe
         gl::bind_framebuffer(GL_FRAMEBUFFER, gl::window_framebuffer);
 
         // we're rendering to the window
-        if (camera.m_ClearFlags != CameraClearFlags::Nothing)
+        if (camera.clear_flags_ != CameraClearFlags::Nothing)
         {
             // clear window
-            const GLenum clearFlags = camera.m_ClearFlags & CameraClearFlags::SolidColor ?
+            const GLenum clearFlags = camera.clear_flags_ & CameraClearFlags::SolidColor ?
                 GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT :
                 GL_DEPTH_BUFFER_BIT;
 
             // clear color is in sRGB, but the window's framebuffer is sRGB-corrected
             // and assume that clear colors are in linear space
-            const Color linearColor = to_linear_colorspace(camera.m_BackgroundColor);
+            const Color linearColor = to_linear_colorspace(camera.background_color_);
             gl::clear_color(
                 linearColor.r,
                 linearColor.g,
@@ -7605,7 +7563,7 @@ void osc::GraphicsBackend::draw(
         throw std::out_of_range{"the given sub-mesh index was out of range (i.e. the given mesh does not have that many sub-meshes)"};
     }
 
-    camera.impl_.upd()->m_RenderQueue.emplace_back(
+    camera.impl_.upd()->render_queue_.emplace_back(
         mesh,
         transform,
         material,
@@ -7627,7 +7585,7 @@ void osc::GraphicsBackend::draw(
         throw std::out_of_range{"the given sub-mesh index was out of range (i.e. the given mesh does not have that many sub-meshes)"};
     }
 
-    camera.impl_.upd()->m_RenderQueue.emplace_back(
+    camera.impl_.upd()->render_queue_.emplace_back(
         mesh,
         transform,
         material,
