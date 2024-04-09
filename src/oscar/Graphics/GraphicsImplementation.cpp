@@ -2255,220 +2255,190 @@ std::ostream& osc::operator<<(std::ostream& o, const RenderTextureDescriptor& de
         "RenderTextureDescriptor(width = " << descriptor.dimensions_.x
         << ", height = " << descriptor.dimensions_.y
         << ", aa = " << descriptor.antialiasing_level_
-        << ", colorFormat = " << descriptor.color_format_
-        << ", depthFormat = " << descriptor.depth_stencil_format_
+        << ", color_format = " << descriptor.color_format_
+        << ", depth_stencil_format = " << descriptor.depth_stencil_format_
         << ")";
 }
 
 class osc::RenderBuffer::Impl final {
 public:
     Impl(
-        const RenderTextureDescriptor& descriptor_,
-        RenderBufferType type_) :
+        const RenderTextureDescriptor& descriptor,
+        RenderBufferType type) :
 
-        m_Descriptor{descriptor_},
-        m_BufferType{type_}
+        descriptor_{descriptor},
+        buffer_type_{type}
     {
-        OSC_ASSERT((getDimensionality() != TextureDimensionality::Cube || getDimensions().x == getDimensions().y) && "cannot construct a Cube renderbuffer with non-square dimensions");
-        OSC_ASSERT((getDimensionality() != TextureDimensionality::Cube || getAntialiasingLevel() == AntiAliasingLevel::none()) && "cannot construct a Cube renderbuffer that is anti-aliased (not supported by backends like OpenGL)");
+        OSC_ASSERT((getDimensionality() != TextureDimensionality::Cube or getDimensions().x == getDimensions().y) && "cannot construct a Cube renderbuffer with non-square dimensions");
+        OSC_ASSERT((getDimensionality() != TextureDimensionality::Cube or getAntialiasingLevel() == AntiAliasingLevel::none()) && "cannot construct a Cube renderbuffer that is anti-aliased (not supported by backends like OpenGL)");
     }
 
-    void reformat(const RenderTextureDescriptor& newDescriptor)
+    void reformat(const RenderTextureDescriptor& new_descriptor)
     {
-        OSC_ASSERT((newDescriptor.getDimensionality() != TextureDimensionality::Cube || newDescriptor.getDimensions().x == newDescriptor.getDimensions().y) && "cannot reformat a render buffer to a Cube dimensionality with non-square dimensions");
-        OSC_ASSERT((newDescriptor.getDimensionality() != TextureDimensionality::Cube || newDescriptor.getAntialiasingLevel() == AntiAliasingLevel::none()) && "cannot reformat a renderbuffer to a Cube dimensionality with is anti-aliased (not supported by backends like OpenGL)");
+        OSC_ASSERT((new_descriptor.getDimensionality() != TextureDimensionality::Cube or new_descriptor.getDimensions().x == new_descriptor.getDimensions().y) && "cannot reformat a render buffer to a Cube dimensionality with non-square dimensions");
+        OSC_ASSERT((new_descriptor.getDimensionality() != TextureDimensionality::Cube or new_descriptor.getAntialiasingLevel() == AntiAliasingLevel::none()) && "cannot reformat a renderbuffer to a Cube dimensionality with is anti-aliased (not supported by backends like OpenGL)");
 
-        if (m_Descriptor != newDescriptor) {
-            m_Descriptor = newDescriptor;
-            m_MaybeOpenGLData->reset();
+        if (descriptor_ != new_descriptor) {
+            descriptor_ = new_descriptor;
+            maybe_opengl_data_->reset();
         }
     }
 
     const RenderTextureDescriptor& getDescriptor() const
     {
-        return m_Descriptor;
+        return descriptor_;
     }
 
     Vec2i getDimensions() const
     {
-        return m_Descriptor.getDimensions();
+        return descriptor_.getDimensions();
     }
 
-    void setDimensions(Vec2i newDims)
+    void setDimensions(Vec2i new_dimensions)
     {
-        OSC_ASSERT((getDimensionality() != TextureDimensionality::Cube || newDims.x == newDims.y) && "cannot set a cubemap to have non-square dimensions");
+        OSC_ASSERT((getDimensionality() != TextureDimensionality::Cube or new_dimensions.x == new_dimensions.y) && "cannot set a cubemap to have non-square dimensions");
 
-        if (newDims != getDimensions())
-        {
-            m_Descriptor.setDimensions(newDims);
-            m_MaybeOpenGLData->reset();
+        if (new_dimensions != getDimensions()) {
+            descriptor_.setDimensions(new_dimensions);
+            maybe_opengl_data_->reset();
         }
     }
 
     TextureDimensionality getDimensionality() const
     {
-        return m_Descriptor.getDimensionality();
+        return descriptor_.getDimensionality();
     }
 
-    void setDimensionality(TextureDimensionality newDimension)
+    void setDimensionality(TextureDimensionality new_dimensionality)
     {
-        OSC_ASSERT((newDimension != TextureDimensionality::Cube || getDimensions().x == getDimensions().y) && "cannot set dimensionality to Cube for non-square render buffer");
-        OSC_ASSERT((newDimension != TextureDimensionality::Cube || getAntialiasingLevel() == AntiAliasingLevel{1}) && "cannot set dimensionality to Cube for an anti-aliased render buffer (not supported by backends like OpenGL)");
+        OSC_ASSERT((new_dimensionality != TextureDimensionality::Cube or getDimensions().x == getDimensions().y) && "cannot set dimensionality to Cube for non-square render buffer");
+        OSC_ASSERT((new_dimensionality != TextureDimensionality::Cube or getAntialiasingLevel() == AntiAliasingLevel{1}) && "cannot set dimensionality to Cube for an anti-aliased render buffer (not supported by backends like OpenGL)");
 
-        if (newDimension != getDimensionality())
-        {
-            m_Descriptor.setDimensionality(newDimension);
-            m_MaybeOpenGLData->reset();
+        if (new_dimensionality != getDimensionality()) {
+            descriptor_.setDimensionality(new_dimensionality);
+            maybe_opengl_data_->reset();
         }
     }
 
     RenderTextureFormat getColorFormat() const
     {
-        return m_Descriptor.getColorFormat();
+        return descriptor_.getColorFormat();
     }
 
-    void setColorFormat(RenderTextureFormat newFormat)
+    void setColorFormat(RenderTextureFormat new_format)
     {
-        if (newFormat != getColorFormat())
-        {
-            m_Descriptor.setColorFormat(newFormat);
-            m_MaybeOpenGLData->reset();
+        if (new_format != getColorFormat()) {
+            descriptor_.setColorFormat(new_format);
+            maybe_opengl_data_->reset();
         }
     }
 
     AntiAliasingLevel getAntialiasingLevel() const
     {
-        return m_Descriptor.getAntialiasingLevel();
+        return descriptor_.getAntialiasingLevel();
     }
 
-    void setAntialiasingLevel(AntiAliasingLevel newLevel)
+    void setAntialiasingLevel(AntiAliasingLevel new_aa_level)
     {
-        OSC_ASSERT((getDimensionality() != TextureDimensionality::Cube || newLevel == AntiAliasingLevel{1}) && "cannot set anti-aliasing level >1 on a cube render buffer (it is not supported by backends like OpenGL)");
+        OSC_ASSERT((getDimensionality() != TextureDimensionality::Cube or new_aa_level == AntiAliasingLevel{1}) && "cannot set anti-aliasing level >1 on a cube render buffer (it is not supported by backends like OpenGL)");
 
-        if (newLevel != getAntialiasingLevel())
-        {
-            m_Descriptor.setAntialiasingLevel(newLevel);
-            m_MaybeOpenGLData->reset();
+        if (new_aa_level != getAntialiasingLevel()) {
+            descriptor_.setAntialiasingLevel(new_aa_level);
+            maybe_opengl_data_->reset();
         }
     }
 
     DepthStencilFormat getDepthStencilFormat() const
     {
-        return m_Descriptor.getDepthStencilFormat();
+        return descriptor_.getDepthStencilFormat();
     }
 
-    void setDepthStencilFormat(DepthStencilFormat newDepthStencilFormat)
+    void setDepthStencilFormat(DepthStencilFormat new_depth_stencil_format)
     {
-        if (newDepthStencilFormat != getDepthStencilFormat())
-        {
-            m_Descriptor.setDepthStencilFormat(newDepthStencilFormat);
-            m_MaybeOpenGLData->reset();
+        if (new_depth_stencil_format != getDepthStencilFormat()) {
+            descriptor_.setDepthStencilFormat(new_depth_stencil_format);
+            maybe_opengl_data_->reset();
         }
     }
 
     RenderTextureReadWrite getReadWrite() const
     {
-        return m_Descriptor.getReadWrite();
+        return descriptor_.getReadWrite();
     }
 
-    void setReadWrite(RenderTextureReadWrite newReadWrite)
+    void setReadWrite(RenderTextureReadWrite new_read_write)
     {
-        if (newReadWrite != m_Descriptor.getReadWrite())
-        {
-            m_Descriptor.setReadWrite(newReadWrite);
-            m_MaybeOpenGLData->reset();
+        if (new_read_write != descriptor_.getReadWrite()) {
+            descriptor_.setReadWrite(new_read_write);
+            maybe_opengl_data_->reset();
         }
     }
 
-    RenderBufferOpenGLData& updRenderBufferData()
+    RenderBufferOpenGLData& upd_opengl_data()
     {
-        if (!*m_MaybeOpenGLData)
-        {
-            uploadToGPU();
+        if (not *maybe_opengl_data_) {
+            upload_to_gpu();
         }
-        return **m_MaybeOpenGLData;
+        return **maybe_opengl_data_;
     }
 
-    void uploadToGPU()
+    void upload_to_gpu()
     {
         // dispatch _which_ texture handles are created based on render buffer params
 
         static_assert(num_options<TextureDimensionality>() == 2);
-        if (getDimensionality() == TextureDimensionality::Tex2D)
-        {
-            if (m_Descriptor.getAntialiasingLevel() <= AntiAliasingLevel{1})
-            {
-                auto& t = std::get<SingleSampledTexture>((*m_MaybeOpenGLData).emplace(SingleSampledTexture{}));
-                configureData(t);
+
+        if (getDimensionality() == TextureDimensionality::Tex2D) {
+            if (descriptor_.getAntialiasingLevel() <= AntiAliasingLevel{1}) {
+                auto& t = std::get<SingleSampledTexture>((*maybe_opengl_data_).emplace(SingleSampledTexture{}));
+                configure_texture(t);
             }
-            else
-            {
-                auto& t = std::get<MultisampledRBOAndResolvedTexture>((*m_MaybeOpenGLData).emplace(MultisampledRBOAndResolvedTexture{}));
-                configureData(t);
+            else {
+                auto& t = std::get<MultisampledRBOAndResolvedTexture>((*maybe_opengl_data_).emplace(MultisampledRBOAndResolvedTexture{}));
+                configure_texture(t);
             }
         }
-        else
-        {
-            auto& t = std::get<SingleSampledCubemap>((*m_MaybeOpenGLData).emplace(SingleSampledCubemap{}));
-            configureData(t);
+        else {
+            auto& t = std::get<SingleSampledCubemap>((*maybe_opengl_data_).emplace(SingleSampledCubemap{}));
+            configure_texture(t);
         }
     }
 
-    void configureData(SingleSampledTexture& t)
+    void configure_texture(SingleSampledTexture& t)
     {
-        const Vec2i dimensions = m_Descriptor.getDimensions();
+        const Vec2i dimensions = descriptor_.getDimensions();
 
         // setup resolved texture
         gl::bind_texture(t.texture2D);
         gl::tex_image2D(
             GL_TEXTURE_2D,
             0,
-            to_opengl_internal_color_format_enum(m_BufferType, m_Descriptor),
+            to_opengl_internal_color_format_enum(buffer_type_, descriptor_),
             dimensions.x,
             dimensions.y,
             0,
-            opengl_format_of(equivalent_cpu_image_format_of(m_BufferType, m_Descriptor)),
-            opengl_data_type_of(equivalent_cpu_datatype_of(m_BufferType, m_Descriptor)),
+            opengl_format_of(equivalent_cpu_image_format_of(buffer_type_, descriptor_)),
+            opengl_data_type_of(equivalent_cpu_datatype_of(buffer_type_, descriptor_)),
             nullptr
         );
-        gl::tex_parameter_i(
-            GL_TEXTURE_2D,
-            GL_TEXTURE_MIN_FILTER,
-            GL_LINEAR
-        );
-        gl::tex_parameter_i(
-            GL_TEXTURE_2D,
-            GL_TEXTURE_MAG_FILTER,
-            GL_LINEAR
-        );
-        gl::tex_parameter_i(
-            GL_TEXTURE_2D,
-            GL_TEXTURE_WRAP_S,
-            GL_CLAMP_TO_EDGE
-        );
-        gl::tex_parameter_i(
-            GL_TEXTURE_2D,
-            GL_TEXTURE_WRAP_T,
-            GL_CLAMP_TO_EDGE
-        );
-        gl::tex_parameter_i(
-            GL_TEXTURE_2D,
-            GL_TEXTURE_WRAP_R,
-            GL_CLAMP_TO_EDGE
-        );
+        gl::tex_parameter_i(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        gl::tex_parameter_i(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        gl::tex_parameter_i(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        gl::tex_parameter_i(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        gl::tex_parameter_i(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
         gl::bind_texture();
     }
 
-    void configureData(MultisampledRBOAndResolvedTexture& data)
+    void configure_texture(MultisampledRBOAndResolvedTexture& data)
     {
-        const Vec2i dimensions = m_Descriptor.getDimensions();
+        const Vec2i dimensions = descriptor_.getDimensions();
 
         // setup multisampled RBO
         gl::bind_renderbuffer(data.multisampled_rbo);
         glRenderbufferStorageMultisample(
             GL_RENDERBUFFER,
-            m_Descriptor.getAntialiasingLevel().get_as<GLsizei>(),
-            to_opengl_internal_color_format_enum(m_BufferType, m_Descriptor),
+            descriptor_.getAntialiasingLevel().get_as<GLsizei>(),
+            to_opengl_internal_color_format_enum(buffer_type_, descriptor_),
             dimensions.x,
             dimensions.y
         );
@@ -2479,45 +2449,25 @@ public:
         gl::tex_image2D(
             GL_TEXTURE_2D,
             0,
-            to_opengl_internal_color_format_enum(m_BufferType, m_Descriptor),
+            to_opengl_internal_color_format_enum(buffer_type_, descriptor_),
             dimensions.x,
             dimensions.y,
             0,
-            opengl_format_of(equivalent_cpu_image_format_of(m_BufferType, m_Descriptor)),
-            opengl_data_type_of(equivalent_cpu_datatype_of(m_BufferType, m_Descriptor)),
+            opengl_format_of(equivalent_cpu_image_format_of(buffer_type_, descriptor_)),
+            opengl_data_type_of(equivalent_cpu_datatype_of(buffer_type_, descriptor_)),
             nullptr
         );
-        gl::tex_parameter_i(
-            GL_TEXTURE_2D,
-            GL_TEXTURE_MIN_FILTER,
-            GL_LINEAR
-        );
-        gl::tex_parameter_i(
-            GL_TEXTURE_2D,
-            GL_TEXTURE_MAG_FILTER,
-            GL_LINEAR
-        );
-        gl::tex_parameter_i(
-            GL_TEXTURE_2D,
-            GL_TEXTURE_WRAP_S,
-            GL_CLAMP_TO_EDGE
-        );
-        gl::tex_parameter_i(
-            GL_TEXTURE_2D,
-            GL_TEXTURE_WRAP_T,
-            GL_CLAMP_TO_EDGE
-        );
-        gl::tex_parameter_i(
-            GL_TEXTURE_2D,
-            GL_TEXTURE_WRAP_R,
-            GL_CLAMP_TO_EDGE
-        );
+        gl::tex_parameter_i(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        gl::tex_parameter_i(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        gl::tex_parameter_i(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        gl::tex_parameter_i(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        gl::tex_parameter_i(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
         gl::bind_texture();
     }
 
-    void configureData(SingleSampledCubemap& t)
+    void configure_texture(SingleSampledCubemap& t)
     {
-        const Vec2i dimensions = m_Descriptor.getDimensions();
+        const Vec2i dimensions = descriptor_.getDimensions();
 
         // setup resolved texture
         gl::bind_texture(t.cubemap);
@@ -2526,52 +2476,32 @@ public:
             gl::tex_image2D(
                 GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
                 0,
-                to_opengl_internal_color_format_enum(m_BufferType, m_Descriptor),
+                to_opengl_internal_color_format_enum(buffer_type_, descriptor_),
                 dimensions.x,
                 dimensions.y,
                 0,
-                opengl_format_of(equivalent_cpu_image_format_of(m_BufferType, m_Descriptor)),
-                opengl_data_type_of(equivalent_cpu_datatype_of(m_BufferType, m_Descriptor)),
+                opengl_format_of(equivalent_cpu_image_format_of(buffer_type_, descriptor_)),
+                opengl_data_type_of(equivalent_cpu_datatype_of(buffer_type_, descriptor_)),
                 nullptr
             );
         }
-        gl::tex_parameter_i(
-            GL_TEXTURE_CUBE_MAP,
-            GL_TEXTURE_MIN_FILTER,
-            GL_LINEAR
-        );
-        gl::tex_parameter_i(
-            GL_TEXTURE_CUBE_MAP,
-            GL_TEXTURE_MAG_FILTER,
-            GL_LINEAR
-        );
-        gl::tex_parameter_i(
-            GL_TEXTURE_CUBE_MAP,
-            GL_TEXTURE_WRAP_S,
-            GL_CLAMP_TO_EDGE
-        );
-        gl::tex_parameter_i(
-            GL_TEXTURE_CUBE_MAP,
-            GL_TEXTURE_WRAP_T,
-            GL_CLAMP_TO_EDGE
-        );
-        gl::tex_parameter_i(
-            GL_TEXTURE_CUBE_MAP,
-            GL_TEXTURE_WRAP_R,
-            GL_CLAMP_TO_EDGE
-        );
+        gl::tex_parameter_i(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        gl::tex_parameter_i(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        gl::tex_parameter_i(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        gl::tex_parameter_i(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        gl::tex_parameter_i(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
         glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     }
 
-    bool hasBeenRenderedTo() const
+    bool has_been_rendered_to() const
     {
-        return m_MaybeOpenGLData->has_value();
+        return maybe_opengl_data_->has_value();
     }
 
 private:
-    RenderTextureDescriptor m_Descriptor;
-    RenderBufferType m_BufferType;
-    DefaultConstructOnCopy<std::optional<RenderBufferOpenGLData>> m_MaybeOpenGLData;
+    RenderTextureDescriptor descriptor_;
+    RenderBufferType buffer_type_;
+    DefaultConstructOnCopy<std::optional<RenderBufferOpenGLData>> maybe_opengl_data_;
 };
 
 osc::RenderBuffer::RenderBuffer(
@@ -2579,167 +2509,153 @@ osc::RenderBuffer::RenderBuffer(
     RenderBufferType type_) :
 
     m_Impl{std::make_unique<Impl>(descriptor_, type_)}
-{
-}
+{}
 
 osc::RenderBuffer::~RenderBuffer() noexcept = default;
 
 class osc::RenderTexture::Impl final {
 public:
     Impl() : Impl{Vec2i{1, 1}}
-    {
-    }
+    {}
 
     explicit Impl(Vec2i dimensions) :
         Impl{RenderTextureDescriptor{dimensions}}
-    {
-    }
+    {}
 
     explicit Impl(const RenderTextureDescriptor& descriptor) :
-        m_ColorBuffer{std::make_shared<RenderBuffer>(descriptor, RenderBufferType::Color)},
-        m_DepthBuffer{std::make_shared<RenderBuffer>(descriptor, RenderBufferType::Depth)}
-    {
-    }
+        color_buffer_{std::make_shared<RenderBuffer>(descriptor, RenderBufferType::Color)},
+        depth_buffer_{std::make_shared<RenderBuffer>(descriptor, RenderBufferType::Depth)}
+    {}
 
     Vec2i getDimensions() const
     {
-        return m_ColorBuffer->m_Impl->getDimensions();
+        return color_buffer_->m_Impl->getDimensions();
     }
 
-    void setDimensions(Vec2i newDims)
+    void setDimensions(Vec2i new_dimensions)
     {
-        if (newDims != getDimensions())
-        {
-            m_ColorBuffer->m_Impl->setDimensions(newDims);
-            m_DepthBuffer->m_Impl->setDimensions(newDims);
+        if (new_dimensions != getDimensions()) {
+            color_buffer_->m_Impl->setDimensions(new_dimensions);
+            depth_buffer_->m_Impl->setDimensions(new_dimensions);
         }
     }
 
     TextureDimensionality getDimensionality() const
     {
-        return m_ColorBuffer->m_Impl->getDimensionality();
+        return color_buffer_->m_Impl->getDimensionality();
     }
 
-    void setDimensionality(TextureDimensionality newDimension)
+    void setDimensionality(TextureDimensionality new_dimensionality)
     {
-        if (newDimension != getDimensionality())
-        {
-            m_ColorBuffer->m_Impl->setDimensionality(newDimension);
-            m_DepthBuffer->m_Impl->setDimensionality(newDimension);
+        if (new_dimensionality != getDimensionality()) {
+            color_buffer_->m_Impl->setDimensionality(new_dimensionality);
+            depth_buffer_->m_Impl->setDimensionality(new_dimensionality);
         }
     }
 
     RenderTextureFormat getColorFormat() const
     {
-        return m_ColorBuffer->m_Impl->getColorFormat();
+        return color_buffer_->m_Impl->getColorFormat();
     }
 
-    void setColorFormat(RenderTextureFormat newFormat)
+    void setColorFormat(RenderTextureFormat new_color_format)
     {
-        if (newFormat != getColorFormat())
-        {
-            m_ColorBuffer->m_Impl->setColorFormat(newFormat);
-            m_DepthBuffer->m_Impl->setColorFormat(newFormat);
+        if (new_color_format != getColorFormat()) {
+            color_buffer_->m_Impl->setColorFormat(new_color_format);
+            depth_buffer_->m_Impl->setColorFormat(new_color_format);
         }
     }
 
     AntiAliasingLevel getAntialiasingLevel() const
     {
-        return m_ColorBuffer->m_Impl->getAntialiasingLevel();
+        return color_buffer_->m_Impl->getAntialiasingLevel();
     }
 
-    void setAntialiasingLevel(AntiAliasingLevel newLevel)
+    void setAntialiasingLevel(AntiAliasingLevel new_aa_level)
     {
-        if (newLevel != getAntialiasingLevel())
-        {
-            m_ColorBuffer->m_Impl->setAntialiasingLevel(newLevel);
-            m_DepthBuffer->m_Impl->setAntialiasingLevel(newLevel);
+        if (new_aa_level != getAntialiasingLevel()) {
+            color_buffer_->m_Impl->setAntialiasingLevel(new_aa_level);
+            depth_buffer_->m_Impl->setAntialiasingLevel(new_aa_level);
         }
     }
 
     DepthStencilFormat getDepthStencilFormat() const
     {
-        return m_ColorBuffer->m_Impl->getDepthStencilFormat();
+        return color_buffer_->m_Impl->getDepthStencilFormat();
     }
 
-    void setDepthStencilFormat(DepthStencilFormat newFormat)
+    void setDepthStencilFormat(DepthStencilFormat new_depth_stencil_format)
     {
-        if (newFormat != getDepthStencilFormat())
-        {
-            m_ColorBuffer->m_Impl->setDepthStencilFormat(newFormat);
-            m_DepthBuffer->m_Impl->setDepthStencilFormat(newFormat);
+        if (new_depth_stencil_format != getDepthStencilFormat()) {
+            color_buffer_->m_Impl->setDepthStencilFormat(new_depth_stencil_format);
+            depth_buffer_->m_Impl->setDepthStencilFormat(new_depth_stencil_format);
         }
     }
 
     RenderTextureReadWrite getReadWrite() const
     {
-        return m_ColorBuffer->m_Impl->getReadWrite();
+        return color_buffer_->m_Impl->getReadWrite();
     }
 
-    void setReadWrite(RenderTextureReadWrite rw)
+    void setReadWrite(RenderTextureReadWrite new_read_write)
     {
-        if (rw != getReadWrite())
-        {
-            m_ColorBuffer->m_Impl->setReadWrite(rw);
-            m_DepthBuffer->m_Impl->setReadWrite(rw);
+        if (new_read_write != getReadWrite()) {
+            color_buffer_->m_Impl->setReadWrite(new_read_write);
+            depth_buffer_->m_Impl->setReadWrite(new_read_write);
         }
     }
 
-    void reformat(RenderTextureDescriptor const& d)
+    void reformat(RenderTextureDescriptor const& new_format_description)
     {
-        if (d != m_ColorBuffer->m_Impl->getDescriptor())
-        {
-            m_ColorBuffer->m_Impl->reformat(d);
-            m_DepthBuffer->m_Impl->reformat(d);
+        if (new_format_description != color_buffer_->m_Impl->getDescriptor()) {
+            color_buffer_->m_Impl->reformat(new_format_description);
+            depth_buffer_->m_Impl->reformat(new_format_description);
         }
     }
 
     RenderBufferOpenGLData& getColorRenderBufferData()
     {
-        return m_ColorBuffer->m_Impl->updRenderBufferData();
+        return color_buffer_->m_Impl->upd_opengl_data();
     }
 
     RenderBufferOpenGLData& getDepthStencilRenderBufferData()
     {
-        return m_DepthBuffer->m_Impl->updRenderBufferData();
+        return depth_buffer_->m_Impl->upd_opengl_data();
     }
 
-    bool hasBeenRenderedTo() const
+    bool has_been_rendered_to() const
     {
-        return m_ColorBuffer->m_Impl->hasBeenRenderedTo();
+        return color_buffer_->m_Impl->has_been_rendered_to();
     }
 
     std::shared_ptr<RenderBuffer> updColorBuffer()
     {
-        return m_ColorBuffer;
+        return color_buffer_;
     }
 
     std::shared_ptr<RenderBuffer> updDepthBuffer()
     {
-        return m_DepthBuffer;
+        return depth_buffer_;
     }
 
 private:
     friend class GraphicsBackend;
 
-    std::shared_ptr<RenderBuffer> m_ColorBuffer;
-    std::shared_ptr<RenderBuffer> m_DepthBuffer;
+    std::shared_ptr<RenderBuffer> color_buffer_;
+    std::shared_ptr<RenderBuffer> depth_buffer_;
 };
 
 osc::RenderTexture::RenderTexture() :
     m_Impl{make_cow<Impl>()}
-{
-}
+{}
 
 osc::RenderTexture::RenderTexture(Vec2i dimensions) :
     m_Impl{make_cow<Impl>(dimensions)}
-{
-}
+{}
 
-osc::RenderTexture::RenderTexture(const RenderTextureDescriptor& desc) :
-    m_Impl{make_cow<Impl>(desc)}
-{
-}
+osc::RenderTexture::RenderTexture(const RenderTextureDescriptor& descriptor) :
+    m_Impl{make_cow<Impl>(descriptor)}
+{}
 
 Vec2i osc::RenderTexture::getDimensions() const
 {
@@ -2756,9 +2672,9 @@ TextureDimensionality osc::RenderTexture::getDimensionality() const
     return m_Impl->getDimensionality();
 }
 
-void osc::RenderTexture::setDimensionality(TextureDimensionality newDimension)
+void osc::RenderTexture::setDimensionality(TextureDimensionality new_dimensionality)
 {
-    m_Impl.upd()->setDimensionality(newDimension);
+    m_Impl.upd()->setDimensionality(new_dimensionality);
 }
 
 RenderTextureFormat osc::RenderTexture::getColorFormat() const
@@ -2766,9 +2682,9 @@ RenderTextureFormat osc::RenderTexture::getColorFormat() const
     return m_Impl->getColorFormat();
 }
 
-void osc::RenderTexture::setColorFormat(RenderTextureFormat format)
+void osc::RenderTexture::setColorFormat(RenderTextureFormat new_format)
 {
-    m_Impl.upd()->setColorFormat(format);
+    m_Impl.upd()->setColorFormat(new_format);
 }
 
 AntiAliasingLevel osc::RenderTexture::getAntialiasingLevel() const
@@ -2776,9 +2692,9 @@ AntiAliasingLevel osc::RenderTexture::getAntialiasingLevel() const
     return m_Impl->getAntialiasingLevel();
 }
 
-void osc::RenderTexture::setAntialiasingLevel(AntiAliasingLevel level)
+void osc::RenderTexture::setAntialiasingLevel(AntiAliasingLevel new_aa_level)
 {
-    m_Impl.upd()->setAntialiasingLevel(level);
+    m_Impl.upd()->setAntialiasingLevel(new_aa_level);
 }
 
 DepthStencilFormat osc::RenderTexture::getDepthStencilFormat() const
@@ -2786,9 +2702,9 @@ DepthStencilFormat osc::RenderTexture::getDepthStencilFormat() const
     return m_Impl->getDepthStencilFormat();
 }
 
-void osc::RenderTexture::setDepthStencilFormat(DepthStencilFormat format)
+void osc::RenderTexture::setDepthStencilFormat(DepthStencilFormat new_depth_stencil_format)
 {
-    m_Impl.upd()->setDepthStencilFormat(format);
+    m_Impl.upd()->setDepthStencilFormat(new_depth_stencil_format);
 }
 
 RenderTextureReadWrite osc::RenderTexture::getReadWrite() const
@@ -2796,14 +2712,14 @@ RenderTextureReadWrite osc::RenderTexture::getReadWrite() const
     return m_Impl->getReadWrite();
 }
 
-void osc::RenderTexture::setReadWrite(RenderTextureReadWrite rw)
+void osc::RenderTexture::setReadWrite(RenderTextureReadWrite new_read_write)
 {
-    m_Impl.upd()->setReadWrite(rw);
+    m_Impl.upd()->setReadWrite(new_read_write);
 }
 
-void osc::RenderTexture::reformat(const RenderTextureDescriptor& d)
+void osc::RenderTexture::reformat(const RenderTextureDescriptor& new_format_description)
 {
-    m_Impl.upd()->reformat(d);
+    m_Impl.upd()->reformat(new_format_description);
 }
 
 std::shared_ptr<RenderBuffer> osc::RenderTexture::updColorBuffer()
@@ -2822,37 +2738,43 @@ std::ostream& osc::operator<<(std::ostream& o, const RenderTexture&)
 }
 
 
-
-
-//////////////////////////////////
-//
-// shader stuff
-//
-//////////////////////////////////
-
 class osc::Shader::Impl final {
 public:
-    Impl(CStringView vertexShader, CStringView fragmentShader) :
-        m_Program{gl::create_program_from(gl::compile_from_source<gl::VertexShader>(vertexShader.c_str()), gl::compile_from_source<gl::FragmentShader>(fragmentShader.c_str()))}
+    Impl(
+        CStringView vertex_shader_src,
+        CStringView fragment_shader_src) :
+
+        program_{gl::create_program_from(
+            gl::compile_from_source<gl::VertexShader>(vertex_shader_src.c_str()),
+            gl::compile_from_source<gl::FragmentShader>(fragment_shader_src.c_str())
+        )}
     {
         parseUniformsAndAttributesFromProgram();
     }
 
-    Impl(CStringView vertexShader, CStringView geometryShader, CStringView fragmentShader) :
-        m_Program{gl::create_program_from(gl::compile_from_source<gl::VertexShader>(vertexShader.c_str()), gl::compile_from_source<gl::FragmentShader>(fragmentShader.c_str()), gl::compile_from_source<gl::GeometryShader>(geometryShader.c_str()))}
+    Impl(
+        CStringView vertex_shader_src,
+        CStringView geometry_shader_src,
+        CStringView fragment_shader_src) :
+
+        program_{gl::create_program_from(
+            gl::compile_from_source<gl::VertexShader>(vertex_shader_src.c_str()),
+            gl::compile_from_source<gl::FragmentShader>(fragment_shader_src.c_str()),
+            gl::compile_from_source<gl::GeometryShader>(geometry_shader_src.c_str())
+        )}
     {
         parseUniformsAndAttributesFromProgram();
     }
 
     size_t getPropertyCount() const
     {
-        return m_Uniforms.size();
+        return uniforms_.size();
     }
 
-    std::optional<ptrdiff_t> findPropertyIndex(std::string_view propertyName) const
+    std::optional<ptrdiff_t> findPropertyIndex(std::string_view property_name) const
     {
-        if (const auto it = m_Uniforms.find(propertyName); it != m_Uniforms.end()) {
-            return static_cast<ptrdiff_t>(std::distance(m_Uniforms.begin(), it));
+        if (const auto it = uniforms_.find(property_name); it != uniforms_.end()) {
+            return static_cast<ptrdiff_t>(std::distance(uniforms_.begin(), it));
         }
         else {
             return std::nullopt;
@@ -2861,14 +2783,14 @@ public:
 
     std::string_view getPropertyName(ptrdiff_t i) const
     {
-        auto it = m_Uniforms.begin();
+        auto it = uniforms_.begin();
         std::advance(it, i);
         return it->first;
     }
 
     ShaderPropertyType getPropertyType(ptrdiff_t i) const
     {
-        auto it = m_Uniforms.begin();
+        auto it = uniforms_.begin();
         std::advance(it, i);
         return it->second.shader_type;
     }
@@ -2877,40 +2799,40 @@ public:
 
     const gl::Program& getProgram() const
     {
-        return m_Program;
+        return program_;
     }
 
     const FastStringHashtable<ShaderElement>& getUniforms() const
     {
-        return m_Uniforms;
+        return uniforms_;
     }
 
     const FastStringHashtable<ShaderElement>& getAttributes() const
     {
-        return m_Attributes;
+        return attributes_;
     }
 
 private:
     void parseUniformsAndAttributesFromProgram()
     {
-        constexpr GLsizei c_ShaderMaxNameLength = 128;
+        constexpr GLsizei c_shader_max_name_length = 128;
 
-        GLint numAttrs = 0;
-        glGetProgramiv(m_Program.get(), GL_ACTIVE_ATTRIBUTES, &numAttrs);
+        GLint num_attrs = 0;
+        glGetProgramiv(program_.get(), GL_ACTIVE_ATTRIBUTES, &num_attrs);
 
-        GLint numUniforms = 0;
-        glGetProgramiv(m_Program.get(), GL_ACTIVE_UNIFORMS, &numUniforms);
+        GLint num_uniforms = 0;
+        glGetProgramiv(program_.get(), GL_ACTIVE_UNIFORMS, &num_uniforms);
 
-        m_Attributes.reserve(numAttrs);
-        for (GLint i = 0; i < numAttrs; i++)
-        {
-            GLint size = 0; // size of the variable
-            GLenum type = 0; // type of the variable (float, vec3 or mat4, etc)
-            std::array<GLchar, c_ShaderMaxNameLength> name{}; // variable name in GLSL
-            GLsizei length = 0; // name length
+        attributes_.reserve(num_attrs);
+        for (GLint attr_idx = 0; attr_idx < num_attrs; attr_idx++) {
+
+            GLint size = 0;                                       // size of the variable
+            GLenum type = 0;                                      // type of the variable (float, vec3 or mat4, etc)
+            std::array<GLchar, c_shader_max_name_length> name{};  // variable name in GLSL
+            GLsizei length = 0;                                   // name length
             glGetActiveAttrib(
-                m_Program.get() ,
-                static_cast<GLuint>(i),
+                program_.get() ,
+                static_cast<GLuint>(attr_idx),
                 static_cast<GLsizei>(name.size()),
                 &length,
                 &size,
@@ -2919,24 +2841,23 @@ private:
             );
 
             static_assert(sizeof(GLint) <= sizeof(int32_t));
-            m_Attributes.try_emplace<std::string>(
+            attributes_.try_emplace<std::string>(
                 normalize_shader_element_name(name.data()),
-                static_cast<int32_t>(glGetAttribLocation(m_Program.get(), name.data())),
+                static_cast<int32_t>(glGetAttribLocation(program_.get(), name.data())),
                 opengl_shader_type_to_osc_shader_type(type),
                 static_cast<int32_t>(size)
             );
         }
 
-        m_Uniforms.reserve(numUniforms);
-        for (GLint i = 0; i < numUniforms; i++)
-        {
-            GLint size = 0; // size of the variable
-            GLenum type = 0; // type of the variable (float, vec3 or mat4, etc)
-            std::array<GLchar, c_ShaderMaxNameLength> name{}; // variable name in GLSL
-            GLsizei length = 0; // name length
+        uniforms_.reserve(num_uniforms);
+        for (GLint uniform_idx = 0; uniform_idx < num_uniforms; uniform_idx++) {
+            GLint size = 0;                                       // size of the variable
+            GLenum type = 0;                                      // type of the variable (float, vec3 or mat4, etc)
+            std::array<GLchar, c_shader_max_name_length> name{};  // variable name in GLSL
+            GLsizei length = 0;                                   // name length
             glGetActiveUniform(
-                m_Program.get(),
-                static_cast<GLuint>(i),
+                program_.get(),
+                static_cast<GLuint>(uniform_idx),
                 static_cast<GLsizei>(name.size()),
                 &length,
                 &size,
@@ -2945,9 +2866,9 @@ private:
             );
 
             static_assert(sizeof(GLint) <= sizeof(int32_t));
-            m_Uniforms.try_emplace<std::string>(
+            uniforms_.try_emplace<std::string>(
                 normalize_shader_element_name(name.data()),
-                static_cast<int32_t>(glGetUniformLocation(m_Program.get(), name.data())),
+                static_cast<int32_t>(glGetUniformLocation(program_.get(), name.data())),
                 opengl_shader_type_to_osc_shader_type(type),
                 static_cast<int32_t>(size)
             );
@@ -2956,42 +2877,28 @@ private:
         // cache commonly-used "automatic" shader elements
         //
         // it's a perf optimization: the renderer uses this to skip lookups
-        if (const ShaderElement* e = try_find(m_Uniforms, "uModelMat")) {
-            m_MaybeModelMatUniform = *e;
-        }
-        if (const ShaderElement* e = try_find(m_Uniforms, "uNormalMat")) {
-            m_MaybeNormalMatUniform = *e;
-        }
-        if (const ShaderElement* e = try_find(m_Uniforms, "uViewMat")) {
-            m_MaybeViewMatUniform = *e;
-        }
-        if (const ShaderElement* e = try_find(m_Uniforms, "uProjMat")) {
-            m_MaybeProjMatUniform = *e;
-        }
-        if (const ShaderElement* e = try_find(m_Uniforms, "uViewProjMat")) {
-            m_MaybeViewProjMatUniform = *e;
-        }
-        if (const ShaderElement* e = try_find(m_Attributes, "aModelMat")) {
-            m_MaybeInstancedModelMatAttr = *e;
-        }
-        if (const ShaderElement* e = try_find(m_Attributes, "aNormalMat")) {
-            m_MaybeInstancedNormalMatAttr = *e;
-        }
+        maybe_model_mat_uniform_ = find_or_optional(uniforms_, "uModelMat");
+        maybe_normal_mat_uniform_ = find_or_optional(uniforms_, "uNormalMat");
+        maybe_view_mat_uniform_ = find_or_optional(uniforms_, "uViewMat");
+        maybe_proj_mat_uniform_ = find_or_optional(uniforms_, "uProjMat");
+        maybe_view_proj_mat_uniform_ = find_or_optional(uniforms_, "uViewProjMat");
+        maybe_instanced_model_mat_attr_ = find_or_optional(attributes_, "aModelMat");
+        maybe_instanced_normal_mat_attr_ = find_or_optional(attributes_, "aNormalMat");
     }
 
     friend class GraphicsBackend;
 
-    UID m_UID;
-    gl::Program m_Program;
-    FastStringHashtable<ShaderElement> m_Uniforms;
-    FastStringHashtable<ShaderElement> m_Attributes;
-    std::optional<ShaderElement> m_MaybeModelMatUniform;
-    std::optional<ShaderElement> m_MaybeNormalMatUniform;
-    std::optional<ShaderElement> m_MaybeViewMatUniform;
-    std::optional<ShaderElement> m_MaybeProjMatUniform;
-    std::optional<ShaderElement> m_MaybeViewProjMatUniform;
-    std::optional<ShaderElement> m_MaybeInstancedModelMatAttr;
-    std::optional<ShaderElement> m_MaybeInstancedNormalMatAttr;
+    UID id_;
+    gl::Program program_;
+    FastStringHashtable<ShaderElement> uniforms_;
+    FastStringHashtable<ShaderElement> attributes_;
+    std::optional<ShaderElement> maybe_model_mat_uniform_;
+    std::optional<ShaderElement> maybe_normal_mat_uniform_;
+    std::optional<ShaderElement> maybe_view_mat_uniform_;
+    std::optional<ShaderElement> maybe_proj_mat_uniform_;
+    std::optional<ShaderElement> maybe_view_proj_mat_uniform_;
+    std::optional<ShaderElement> maybe_instanced_model_mat_attr_;
+    std::optional<ShaderElement> maybe_instanced_normal_mat_attr_;
 };
 
 
@@ -3005,34 +2912,39 @@ std::ostream& osc::operator<<(std::ostream& o, ShaderPropertyType shader_type)
     return o << lut.at(to_index(shader_type));
 }
 
-osc::Shader::Shader(CStringView vertexShader, CStringView fragmentShader) :
-    m_Impl{make_cow<Impl>(vertexShader, fragmentShader)}
-{
-}
+osc::Shader::Shader(
+    CStringView vertex_shader_src,
+    CStringView fragment_shader_src) :
 
-osc::Shader::Shader(CStringView vertexShader, CStringView geometryShader, CStringView fragmentShader) :
-    m_Impl{make_cow<Impl>(vertexShader, geometryShader, fragmentShader)}
-{
-}
+    m_Impl{make_cow<Impl>(vertex_shader_src, fragment_shader_src)}
+{}
+
+osc::Shader::Shader(
+    CStringView vertex_shader_src,
+    CStringView geometry_shader_src,
+    CStringView fragment_shader_src) :
+
+    m_Impl{make_cow<Impl>(vertex_shader_src, geometry_shader_src, fragment_shader_src)}
+{}
 
 size_t osc::Shader::getPropertyCount() const
 {
     return m_Impl->getPropertyCount();
 }
 
-std::optional<ptrdiff_t> osc::Shader::findPropertyIndex(std::string_view propertyName) const
+std::optional<ptrdiff_t> osc::Shader::findPropertyIndex(std::string_view property_name) const
 {
-    return m_Impl->findPropertyIndex(propertyName);
+    return m_Impl->findPropertyIndex(property_name);
 }
 
-std::string_view osc::Shader::getPropertyName(ptrdiff_t propertyIndex) const
+std::string_view osc::Shader::getPropertyName(ptrdiff_t property_index) const
 {
-    return m_Impl->getPropertyName(propertyIndex);
+    return m_Impl->getPropertyName(property_index);
 }
 
-ShaderPropertyType osc::Shader::getPropertyType(ptrdiff_t propertyIndex) const
+ShaderPropertyType osc::Shader::getPropertyType(ptrdiff_t property_index) const
 {
-    return m_Impl->getPropertyType(propertyIndex);
+    return m_Impl->getPropertyType(property_index);
 }
 
 std::ostream& osc::operator<<(std::ostream& o, const Shader& shader)
@@ -3067,288 +2979,278 @@ std::ostream& osc::operator<<(std::ostream& o, const Shader& shader)
     return o;
 }
 
-
-//////////////////////////////////
-//
-// material stuff
-//
-//////////////////////////////////
-
 namespace
 {
-    GLenum toGLDepthFunc(DepthFunction f)
+    GLenum to_opengl_depth_function_enum(DepthFunction depth_function)
     {
         static_assert(num_options<DepthFunction>() == 2);
 
-        switch (f) {
-        case DepthFunction::LessOrEqual:
-            return GL_LEQUAL;
-        case DepthFunction::Less:
-        default:
-            return GL_LESS;
+        switch (depth_function) {
+        case DepthFunction::LessOrEqual: return GL_LEQUAL;
+        case DepthFunction::Less:        return GL_LESS;
+        default:                         return GL_LESS;
         }
     }
 
-    GLenum toGLCullFaceEnum(CullMode cullMode)
+    GLenum to_opengl_cull_face_enum(CullMode cull_mode)
     {
         static_assert(num_options<CullMode>() == 3);
 
-        switch (cullMode) {
-        case CullMode::Front:
-            return GL_FRONT;
-        case CullMode::Back:
-        default:
-            return GL_BACK;
+        switch (cull_mode) {
+        case CullMode::Front: return GL_FRONT;
+        case CullMode::Back:  return GL_BACK;
+        default:              return GL_BACK;
         }
     }
 }
 
 class osc::Material::Impl final {
 public:
-    explicit Impl(Shader shader) : m_Shader{std::move(shader)}
+    explicit Impl(Shader shader) :
+        shader_{std::move(shader)}
     {}
 
     const Shader& getShader() const
     {
-        return m_Shader;
+        return shader_;
     }
 
-    std::optional<Color> getColor(std::string_view propertyName) const
+    std::optional<Color> getColor(std::string_view property_name) const
     {
-        return getValue<Color>(propertyName);
+        return get_value<Color>(property_name);
     }
 
-    void setColor(std::string_view propertyName, const Color& color)
+    void setColor(std::string_view property_name, const Color& new_value)
     {
-        setValue(propertyName, color);
+        set_value(property_name, new_value);
     }
 
-    std::optional<std::span<const Color>> getColorArray(std::string_view propertyName) const
+    std::optional<std::span<const Color>> getColorArray(std::string_view property_name) const
     {
-        return getValue<std::vector<Color>, std::span<const Color>>(propertyName);
+        return get_value<std::vector<Color>, std::span<const Color>>(property_name);
     }
 
-    void setColorArray(std::string_view propertyName, std::span<const Color> colors)
+    void setColorArray(std::string_view property_name, std::span<const Color> new_values)
     {
-        setValue<std::vector<Color>>(propertyName, std::vector<Color>(colors.begin(), colors.end()));
+        set_value<std::vector<Color>>(property_name, std::vector<Color>(new_values.begin(), new_values.end()));
     }
 
-    std::optional<float> getFloat(std::string_view propertyName) const
+    std::optional<float> getFloat(std::string_view property_name) const
     {
-        return getValue<float>(propertyName);
+        return get_value<float>(property_name);
     }
 
-    void setFloat(std::string_view propertyName, float value)
+    void setFloat(std::string_view property_name, float new_value)
     {
-        setValue(propertyName, value);
+        set_value(property_name, new_value);
     }
 
-    std::optional<std::span<const float>> getFloatArray(std::string_view propertyName) const
+    std::optional<std::span<const float>> getFloatArray(std::string_view property_name) const
     {
-        return getValue<std::vector<float>, std::span<const float>>(propertyName);
+        return get_value<std::vector<float>, std::span<const float>>(property_name);
     }
 
-    void setFloatArray(std::string_view propertyName, std::span<const float> v)
+    void setFloatArray(std::string_view property_name, std::span<const float> new_values)
     {
-        setValue<std::vector<float>>(propertyName, std::vector<float>(v.begin(), v.end()));
+        set_value<std::vector<float>>(property_name, std::vector<float>(new_values.begin(), new_values.end()));
     }
 
-    std::optional<Vec2> getVec2(std::string_view propertyName) const
+    std::optional<Vec2> getVec2(std::string_view property_name) const
     {
-        return getValue<Vec2>(propertyName);
+        return get_value<Vec2>(property_name);
     }
 
-    void setVec2(std::string_view propertyName, Vec2 value)
+    void setVec2(std::string_view property_name, Vec2 new_value)
     {
-        setValue(propertyName, value);
+        set_value(property_name, new_value);
     }
 
-    std::optional<Vec3> getVec3(std::string_view propertyName) const
+    std::optional<Vec3> getVec3(std::string_view property_name) const
     {
-        return getValue<Vec3>(propertyName);
+        return get_value<Vec3>(property_name);
     }
 
-    void setVec3(std::string_view propertyName, Vec3 value)
+    void setVec3(std::string_view property_name, Vec3 new_value)
     {
-        setValue(propertyName, value);
+        set_value(property_name, new_value);
     }
 
-    std::optional<std::span<const Vec3>> getVec3Array(std::string_view propertyName) const
+    std::optional<std::span<const Vec3>> getVec3Array(std::string_view property_name) const
     {
-        return getValue<std::vector<Vec3>, std::span<const Vec3>>(propertyName);
+        return get_value<std::vector<Vec3>, std::span<const Vec3>>(property_name);
     }
 
-    void setVec3Array(std::string_view propertyName, std::span<const Vec3> value)
+    void setVec3Array(std::string_view property_name, std::span<const Vec3> new_values)
     {
-        setValue(propertyName, std::vector<Vec3>(value.begin(), value.end()));
+        set_value(property_name, std::vector<Vec3>(new_values.begin(), new_values.end()));
     }
 
-    std::optional<Vec4> getVec4(std::string_view propertyName) const
+    std::optional<Vec4> getVec4(std::string_view property_name) const
     {
-        return getValue<Vec4>(propertyName);
+        return get_value<Vec4>(property_name);
     }
 
-    void setVec4(std::string_view propertyName, Vec4 value)
+    void setVec4(std::string_view property_name, Vec4 new_value)
     {
-        setValue(propertyName, value);
+        set_value(property_name, new_value);
     }
 
-    std::optional<Mat3> getMat3(std::string_view propertyName) const
+    std::optional<Mat3> getMat3(std::string_view property_name) const
     {
-        return getValue<Mat3>(propertyName);
+        return get_value<Mat3>(property_name);
     }
 
-    void setMat3(std::string_view propertyName, const Mat3& value)
+    void setMat3(std::string_view property_name, const Mat3& new_value)
     {
-        setValue(propertyName, value);
+        set_value(property_name, new_value);
     }
 
-    std::optional<Mat4> getMat4(std::string_view propertyName) const
+    std::optional<Mat4> getMat4(std::string_view property_name) const
     {
-        return getValue<Mat4>(propertyName);
+        return get_value<Mat4>(property_name);
     }
 
-    void setMat4(std::string_view propertyName, const Mat4& value)
+    void setMat4(std::string_view property_name, const Mat4& new_value)
     {
-        setValue(propertyName, value);
+        set_value(property_name, new_value);
     }
 
-    std::optional<std::span<const Mat4>> getMat4Array(std::string_view propertyName) const
+    std::optional<std::span<const Mat4>> getMat4Array(std::string_view property_name) const
     {
-        return getValue<std::vector<Mat4>, std::span<const Mat4>>(propertyName);
+        return get_value<std::vector<Mat4>, std::span<const Mat4>>(property_name);
     }
 
-    void setMat4Array(std::string_view propertyName, std::span<const Mat4> mats)
+    void setMat4Array(std::string_view property_name, std::span<const Mat4> new_values)
     {
-        setValue(propertyName, std::vector<Mat4>(mats.begin(), mats.end()));
+        set_value(property_name, std::vector<Mat4>(new_values.begin(), new_values.end()));
     }
 
-    std::optional<int32_t> getInt(std::string_view propertyName) const
+    std::optional<int32_t> getInt(std::string_view property_name) const
     {
-        return getValue<int32_t>(propertyName);
+        return get_value<int32_t>(property_name);
     }
 
-    void setInt(std::string_view propertyName, int32_t value)
+    void setInt(std::string_view property_name, int32_t new_value)
     {
-        setValue(propertyName, value);
+        set_value(property_name, new_value);
     }
 
-    std::optional<bool> getBool(std::string_view propertyName) const
+    std::optional<bool> getBool(std::string_view property_name) const
     {
-        return getValue<bool>(propertyName);
+        return get_value<bool>(property_name);
     }
 
-    void setBool(std::string_view propertyName, bool value)
+    void setBool(std::string_view property_name, bool new_value)
     {
-        setValue(propertyName, value);
+        set_value(property_name, new_value);
     }
 
-    std::optional<Texture2D> getTexture(std::string_view propertyName) const
+    std::optional<Texture2D> getTexture(std::string_view property_name) const
     {
-        return getValue<Texture2D>(propertyName);
+        return get_value<Texture2D>(property_name);
     }
 
-    void setTexture(std::string_view propertyName, Texture2D t)
+    void setTexture(std::string_view property_name, Texture2D new_value)
     {
-        setValue(propertyName, std::move(t));
+        set_value(property_name, std::move(new_value));
     }
 
-    void clearTexture(std::string_view propertyName)
+    void clearTexture(std::string_view property_name)
     {
-        m_Values.erase(propertyName);
+        values_.erase(property_name);
     }
 
-    std::optional<RenderTexture> getRenderTexture(std::string_view propertyName) const
+    std::optional<RenderTexture> getRenderTexture(std::string_view property_name) const
     {
-        return getValue<RenderTexture>(propertyName);
+        return get_value<RenderTexture>(property_name);
     }
 
-    void setRenderTexture(std::string_view propertyName, RenderTexture t)
+    void setRenderTexture(std::string_view property_name, RenderTexture new_value)
     {
-        setValue(propertyName, std::move(t));
+        set_value(property_name, std::move(new_value));
     }
 
-    void clearRenderTexture(std::string_view propertyName)
+    void clearRenderTexture(std::string_view property_name)
     {
-        m_Values.erase(propertyName);
+        values_.erase(property_name);
     }
 
-    std::optional<Cubemap> getCubemap(std::string_view propertyName) const
+    std::optional<Cubemap> getCubemap(std::string_view property_name) const
     {
-        return getValue<Cubemap>(propertyName);
+        return get_value<Cubemap>(property_name);
     }
 
-    void setCubemap(std::string_view propertyName, Cubemap cubemap)
+    void setCubemap(std::string_view property_name, Cubemap new_value)
     {
-        setValue(propertyName, std::move(cubemap));
+        set_value(property_name, std::move(new_value));
     }
 
-    void clearCubemap(std::string_view propertyName)
+    void clearCubemap(std::string_view property_name)
     {
-        m_Values.erase(propertyName);
+        values_.erase(property_name);
     }
 
     bool getTransparent() const
     {
-        return m_IsTransparent;
+        return is_transparent_;
     }
 
-    void setTransparent(bool v)
+    void setTransparent(bool new_transparent)
     {
-        m_IsTransparent = v;
+        is_transparent_ = new_transparent;
     }
 
     bool getDepthTested() const
     {
-        return m_IsDepthTested;
+        return is_depth_tested_;
     }
 
-    void setDepthTested(bool v)
+    void setDepthTested(bool new_depth_tested)
     {
-        m_IsDepthTested = v;
+        is_depth_tested_ = new_depth_tested;
     }
 
     DepthFunction getDepthFunction() const
     {
-        return m_DepthFunction;
+        return depth_function_;
     }
 
-    void setDepthFunction(DepthFunction f)
+    void setDepthFunction(DepthFunction new_depth_function)
     {
-        m_DepthFunction = f;
+        depth_function_ = new_depth_function;
     }
 
     bool getWireframeMode() const
     {
-        return m_IsWireframeMode;
+        return is_wireframe_mode_;
     }
 
-    void setWireframeMode(bool v)
+    void setWireframeMode(bool new_wireframe_mode)
     {
-        m_IsWireframeMode = v;
+        is_wireframe_mode_ = new_wireframe_mode;
     }
 
     CullMode getCullMode() const
     {
-        return m_CullMode;
+        return cull_mode_;
     }
 
-    void setCullMode(CullMode newCullMode)
+    void setCullMode(CullMode new_cull_mode)
     {
-        m_CullMode = newCullMode;
+        cull_mode_ = new_cull_mode;
     }
 
 private:
     template<typename T, typename TConverted = T>
     requires std::convertible_to<T, TConverted>
-    std::optional<TConverted> getValue(std::string_view propertyName) const
+    std::optional<TConverted> get_value(std::string_view property_name) const
     {
-        const auto* value = try_find(m_Values, propertyName);
+        const auto* value = try_find(values_, property_name);
 
-        if (!value) {
+        if (not value) {
             return std::nullopt;
         }
-        if (!std::holds_alternative<T>(*value))
+        if (not std::holds_alternative<T>(*value))
         {
             return std::nullopt;
         }
@@ -3356,205 +3258,204 @@ private:
     }
 
     template<typename T>
-    void setValue(std::string_view propertyName, T&& v)
+    void set_value(std::string_view property_name, T&& new_value)
     {
-        m_Values.insert_or_assign(propertyName, std::forward<T>(v));
+        values_.insert_or_assign(property_name, std::forward<T>(new_value));
     }
 
     friend class GraphicsBackend;
 
-    Shader m_Shader;
-    FastStringHashtable<MaterialValue> m_Values;
-    bool m_IsTransparent = false;
-    bool m_IsDepthTested = true;
-    bool m_IsWireframeMode = false;
-    DepthFunction m_DepthFunction = DepthFunction::Default;
-    CullMode m_CullMode = CullMode::Default;
+    Shader shader_;
+    FastStringHashtable<MaterialValue> values_;
+    bool is_transparent_ = false;
+    bool is_depth_tested_ = true;
+    bool is_wireframe_mode_ = false;
+    DepthFunction depth_function_ = DepthFunction::Default;
+    CullMode cull_mode_ = CullMode::Default;
 };
 
 osc::Material::Material(Shader shader) :
     m_Impl{make_cow<Impl>(std::move(shader))}
-{
-}
+{}
 
 const Shader& osc::Material::getShader() const
 {
     return m_Impl->getShader();
 }
 
-std::optional<Color> osc::Material::getColor(std::string_view propertyName) const
+std::optional<Color> osc::Material::getColor(std::string_view property_name) const
 {
-    return m_Impl->getColor(propertyName);
+    return m_Impl->getColor(property_name);
 }
 
-void osc::Material::setColor(std::string_view propertyName, const Color& color)
+void osc::Material::setColor(std::string_view property_name, const Color& new_value)
 {
-    m_Impl.upd()->setColor(propertyName, color);
+    m_Impl.upd()->setColor(property_name, new_value);
 }
 
-std::optional<std::span<const Color>> osc::Material::getColorArray(std::string_view propertyName) const
+std::optional<std::span<const Color>> osc::Material::getColorArray(std::string_view property_name) const
 {
-    return m_Impl->getColorArray(propertyName);
+    return m_Impl->getColorArray(property_name);
 }
 
-void osc::Material::setColorArray(std::string_view propertyName, std::span<const Color> colors)
+void osc::Material::setColorArray(std::string_view property_name, std::span<const Color> new_colors)
 {
-    m_Impl.upd()->setColorArray(propertyName, colors);
+    m_Impl.upd()->setColorArray(property_name, new_colors);
 }
 
-std::optional<float> osc::Material::getFloat(std::string_view propertyName) const
+std::optional<float> osc::Material::getFloat(std::string_view property_name) const
 {
-    return m_Impl->getFloat(propertyName);
+    return m_Impl->getFloat(property_name);
 }
 
-void osc::Material::setFloat(std::string_view propertyName, float value)
+void osc::Material::setFloat(std::string_view property_name, float new_value)
 {
-    m_Impl.upd()->setFloat(propertyName, value);
+    m_Impl.upd()->setFloat(property_name, new_value);
 }
 
-std::optional<std::span<const float>> osc::Material::getFloatArray(std::string_view propertyName) const
+std::optional<std::span<const float>> osc::Material::getFloatArray(std::string_view property_name) const
 {
-    return m_Impl->getFloatArray(propertyName);
+    return m_Impl->getFloatArray(property_name);
 }
 
-void osc::Material::setFloatArray(std::string_view propertyName, std::span<const float> vs)
+void osc::Material::setFloatArray(std::string_view property_name, std::span<const float> new_values)
 {
-    m_Impl.upd()->setFloatArray(propertyName, vs);
+    m_Impl.upd()->setFloatArray(property_name, new_values);
 }
 
-std::optional<Vec2> osc::Material::getVec2(std::string_view propertyName) const
+std::optional<Vec2> osc::Material::getVec2(std::string_view property_name) const
 {
-    return m_Impl->getVec2(propertyName);
+    return m_Impl->getVec2(property_name);
 }
 
-void osc::Material::setVec2(std::string_view propertyName, Vec2 value)
+void osc::Material::setVec2(std::string_view property_name, Vec2 new_value)
 {
-    m_Impl.upd()->setVec2(propertyName, value);
+    m_Impl.upd()->setVec2(property_name, new_value);
 }
 
-std::optional<std::span<const Vec3>> osc::Material::getVec3Array(std::string_view propertyName) const
+std::optional<std::span<const Vec3>> osc::Material::getVec3Array(std::string_view property_name) const
 {
-    return m_Impl->getVec3Array(propertyName);
+    return m_Impl->getVec3Array(property_name);
 }
 
-void osc::Material::setVec3Array(std::string_view propertyName, std::span<const Vec3> vs)
+void osc::Material::setVec3Array(std::string_view property_name, std::span<const Vec3> new_values)
 {
-    m_Impl.upd()->setVec3Array(propertyName, vs);
+    m_Impl.upd()->setVec3Array(property_name, new_values);
 }
 
-std::optional<Vec3> osc::Material::getVec3(std::string_view propertyName) const
+std::optional<Vec3> osc::Material::getVec3(std::string_view property_name) const
 {
-    return m_Impl->getVec3(propertyName);
+    return m_Impl->getVec3(property_name);
 }
 
-void osc::Material::setVec3(std::string_view propertyName, Vec3 value)
+void osc::Material::setVec3(std::string_view property_name, Vec3 new_value)
 {
-    m_Impl.upd()->setVec3(propertyName, value);
+    m_Impl.upd()->setVec3(property_name, new_value);
 }
 
-std::optional<Vec4> osc::Material::getVec4(std::string_view propertyName) const
+std::optional<Vec4> osc::Material::getVec4(std::string_view property_name) const
 {
-    return m_Impl->getVec4(propertyName);
+    return m_Impl->getVec4(property_name);
 }
 
-void osc::Material::setVec4(std::string_view propertyName, Vec4 value)
+void osc::Material::setVec4(std::string_view property_name, Vec4 new_value)
 {
-    m_Impl.upd()->setVec4(propertyName, value);
+    m_Impl.upd()->setVec4(property_name, new_value);
 }
 
-std::optional<Mat3> osc::Material::getMat3(std::string_view propertyName) const
+std::optional<Mat3> osc::Material::getMat3(std::string_view property_name) const
 {
-    return m_Impl->getMat3(propertyName);
+    return m_Impl->getMat3(property_name);
 }
 
-void osc::Material::setMat3(std::string_view propertyName, const Mat3& mat)
+void osc::Material::setMat3(std::string_view property_name, const Mat3& new_value)
 {
-    m_Impl.upd()->setMat3(propertyName, mat);
+    m_Impl.upd()->setMat3(property_name, new_value);
 }
 
-std::optional<Mat4> osc::Material::getMat4(std::string_view propertyName) const
+std::optional<Mat4> osc::Material::getMat4(std::string_view property_name) const
 {
-    return m_Impl->getMat4(propertyName);
+    return m_Impl->getMat4(property_name);
 }
 
-void osc::Material::setMat4(std::string_view propertyName, const Mat4& mat)
+void osc::Material::setMat4(std::string_view property_name, const Mat4& new_value)
 {
-    m_Impl.upd()->setMat4(propertyName, mat);
+    m_Impl.upd()->setMat4(property_name, new_value);
 }
 
-std::optional<std::span<const Mat4>> osc::Material::getMat4Array(std::string_view propertyName) const
+std::optional<std::span<const Mat4>> osc::Material::getMat4Array(std::string_view property_name) const
 {
-    return m_Impl->getMat4Array(propertyName);
+    return m_Impl->getMat4Array(property_name);
 }
 
-void osc::Material::setMat4Array(std::string_view propertyName, std::span<const Mat4> mats)
+void osc::Material::setMat4Array(std::string_view property_name, std::span<const Mat4> new_values)
 {
-    m_Impl.upd()->setMat4Array(propertyName, mats);
+    m_Impl.upd()->setMat4Array(property_name, new_values);
 }
 
-std::optional<int32_t> osc::Material::getInt(std::string_view propertyName) const
+std::optional<int32_t> osc::Material::getInt(std::string_view property_name) const
 {
-    return m_Impl->getInt(propertyName);
+    return m_Impl->getInt(property_name);
 }
 
-void osc::Material::setInt(std::string_view propertyName, int32_t value)
+void osc::Material::setInt(std::string_view property_name, int32_t new_value)
 {
-    m_Impl.upd()->setInt(propertyName, value);
+    m_Impl.upd()->setInt(property_name, new_value);
 }
 
-std::optional<bool> osc::Material::getBool(std::string_view propertyName) const
+std::optional<bool> osc::Material::getBool(std::string_view property_name) const
 {
-    return m_Impl->getBool(propertyName);
+    return m_Impl->getBool(property_name);
 }
 
-void osc::Material::setBool(std::string_view propertyName, bool value)
+void osc::Material::setBool(std::string_view property_name, bool new_value)
 {
-    m_Impl.upd()->setBool(propertyName, value);
+    m_Impl.upd()->setBool(property_name, new_value);
 }
 
-std::optional<Texture2D> osc::Material::getTexture(std::string_view propertyName) const
+std::optional<Texture2D> osc::Material::getTexture(std::string_view property_name) const
 {
-    return m_Impl->getTexture(propertyName);
+    return m_Impl->getTexture(property_name);
 }
 
-void osc::Material::setTexture(std::string_view propertyName, Texture2D t)
+void osc::Material::setTexture(std::string_view property_name, Texture2D new_value)
 {
-    m_Impl.upd()->setTexture(propertyName, std::move(t));
+    m_Impl.upd()->setTexture(property_name, std::move(new_value));
 }
 
-void osc::Material::clearTexture(std::string_view propertyName)
+void osc::Material::clearTexture(std::string_view property_name)
 {
-    m_Impl.upd()->clearTexture(propertyName);
+    m_Impl.upd()->clearTexture(property_name);
 }
 
-std::optional<RenderTexture> osc::Material::getRenderTexture(std::string_view propertyName) const
+std::optional<RenderTexture> osc::Material::getRenderTexture(std::string_view property_name) const
 {
-    return m_Impl->getRenderTexture(propertyName);
+    return m_Impl->getRenderTexture(property_name);
 }
 
-void osc::Material::setRenderTexture(std::string_view propertyName, RenderTexture t)
+void osc::Material::setRenderTexture(std::string_view property_name, RenderTexture new_value)
 {
-    m_Impl.upd()->setRenderTexture(propertyName, std::move(t));
+    m_Impl.upd()->setRenderTexture(property_name, std::move(new_value));
 }
 
-void osc::Material::clearRenderTexture(std::string_view propertyName)
+void osc::Material::clearRenderTexture(std::string_view property_name)
 {
-    m_Impl.upd()->clearRenderTexture(propertyName);
+    m_Impl.upd()->clearRenderTexture(property_name);
 }
 
-std::optional<Cubemap> osc::Material::getCubemap(std::string_view propertyName) const
+std::optional<Cubemap> osc::Material::getCubemap(std::string_view property_name) const
 {
-    return m_Impl->getCubemap(propertyName);
+    return m_Impl->getCubemap(property_name);
 }
 
-void osc::Material::setCubemap(std::string_view propertyName, Cubemap cubemap)
+void osc::Material::setCubemap(std::string_view property_name, Cubemap new_value)
 {
-    m_Impl.upd()->setCubemap(propertyName, std::move(cubemap));
+    m_Impl.upd()->setCubemap(property_name, std::move(new_value));
 }
 
-void osc::Material::clearCubemap(std::string_view propertyName)
+void osc::Material::clearCubemap(std::string_view property_name)
 {
-    m_Impl.upd()->clearCubemap(propertyName);
+    m_Impl.upd()->clearCubemap(property_name);
 }
 
 bool osc::Material::getTransparent() const
@@ -3562,9 +3463,9 @@ bool osc::Material::getTransparent() const
     return m_Impl->getTransparent();
 }
 
-void osc::Material::setTransparent(bool v)
+void osc::Material::setTransparent(bool new_transparent)
 {
-    m_Impl.upd()->setTransparent(v);
+    m_Impl.upd()->setTransparent(new_transparent);
 }
 
 bool osc::Material::getDepthTested() const
@@ -3572,9 +3473,9 @@ bool osc::Material::getDepthTested() const
     return m_Impl->getDepthTested();
 }
 
-void osc::Material::setDepthTested(bool v)
+void osc::Material::setDepthTested(bool new_depth_tested)
 {
-    m_Impl.upd()->setDepthTested(v);
+    m_Impl.upd()->setDepthTested(new_depth_tested);
 }
 
 DepthFunction osc::Material::getDepthFunction() const
@@ -3582,9 +3483,9 @@ DepthFunction osc::Material::getDepthFunction() const
     return m_Impl->getDepthFunction();
 }
 
-void osc::Material::setDepthFunction(DepthFunction f)
+void osc::Material::setDepthFunction(DepthFunction new_depth_function)
 {
-    m_Impl.upd()->setDepthFunction(f);
+    m_Impl.upd()->setDepthFunction(new_depth_function);
 }
 
 bool osc::Material::getWireframeMode() const
@@ -3592,9 +3493,9 @@ bool osc::Material::getWireframeMode() const
     return m_Impl->getWireframeMode();
 }
 
-void osc::Material::setWireframeMode(bool v)
+void osc::Material::setWireframeMode(bool new_wireframe_mode)
 {
-    m_Impl.upd()->setWireframeMode(v);
+    m_Impl.upd()->setWireframeMode(new_wireframe_mode);
 }
 
 CullMode osc::Material::getCullMode() const
@@ -3602,9 +3503,9 @@ CullMode osc::Material::getCullMode() const
     return m_Impl->getCullMode();
 }
 
-void osc::Material::setCullMode(CullMode newMode)
+void osc::Material::setCullMode(CullMode new_cull_mode)
 {
-    m_Impl.upd()->setCullMode(newMode);
+    m_Impl.upd()->setCullMode(new_cull_mode);
 }
 
 std::ostream& osc::operator<<(std::ostream& o, const Material&)
@@ -3612,12 +3513,6 @@ std::ostream& osc::operator<<(std::ostream& o, const Material&)
     return o << "Material()";
 }
 
-
-//////////////////////////////////
-//
-// material property block stuff
-//
-//////////////////////////////////
 
 class osc::MaterialPropertyBlock::Impl final {
 public:
@@ -6656,25 +6551,25 @@ void osc::GraphicsBackend::bind_to_instanced_attributes(
     gl::bind_buffer(instancing_state.buffer);
 
     size_t byteOffset = 0;
-    if (shader_impl.m_MaybeInstancedModelMatAttr) {
-        if (shader_impl.m_MaybeInstancedModelMatAttr->shader_type == ShaderPropertyType::Mat4) {
-            const gl::AttributeMat4 mmtxAttr{shader_impl.m_MaybeInstancedModelMatAttr->location};
+    if (shader_impl.maybe_instanced_model_mat_attr_) {
+        if (shader_impl.maybe_instanced_model_mat_attr_->shader_type == ShaderPropertyType::Mat4) {
+            const gl::AttributeMat4 mmtxAttr{shader_impl.maybe_instanced_model_mat_attr_->location};
             gl::vertex_attrib_pointer(mmtxAttr, false, instancing_state.stride, instancing_state.base_offset + byteOffset);
             gl::vertex_attrib_divisor(mmtxAttr, 1);
             gl::enable_vertex_attrib_array(mmtxAttr);
             byteOffset += sizeof(float) * 16;
         }
     }
-    if (shader_impl.m_MaybeInstancedNormalMatAttr) {
-        if (shader_impl.m_MaybeInstancedNormalMatAttr->shader_type == ShaderPropertyType::Mat4) {
-            const gl::AttributeMat4 mmtxAttr{shader_impl.m_MaybeInstancedNormalMatAttr->location};
+    if (shader_impl.maybe_instanced_normal_mat_attr_) {
+        if (shader_impl.maybe_instanced_normal_mat_attr_->shader_type == ShaderPropertyType::Mat4) {
+            const gl::AttributeMat4 mmtxAttr{shader_impl.maybe_instanced_normal_mat_attr_->location};
             gl::vertex_attrib_pointer(mmtxAttr, false, instancing_state.stride, instancing_state.base_offset + byteOffset);
             gl::vertex_attrib_divisor(mmtxAttr, 1);
             gl::enable_vertex_attrib_array(mmtxAttr);
             // unused: byteOffset += sizeof(float) * 16;
         }
-        else if (shader_impl.m_MaybeInstancedNormalMatAttr->shader_type == ShaderPropertyType::Mat3) {
-            const gl::AttributeMat3 mmtxAttr{shader_impl.m_MaybeInstancedNormalMatAttr->location};
+        else if (shader_impl.maybe_instanced_normal_mat_attr_->shader_type == ShaderPropertyType::Mat3) {
+            const gl::AttributeMat3 mmtxAttr{shader_impl.maybe_instanced_normal_mat_attr_->location};
             gl::vertex_attrib_pointer(mmtxAttr, false, instancing_state.stride, instancing_state.base_offset + byteOffset);
             gl::vertex_attrib_divisor(mmtxAttr, 1);
             gl::enable_vertex_attrib_array(mmtxAttr);
@@ -6688,19 +6583,19 @@ void osc::GraphicsBackend::unbind_from_instanced_attributes(
     const Shader::Impl& shader_impl,
     InstancingState&)
 {
-    if (shader_impl.m_MaybeInstancedModelMatAttr) {
-        if (shader_impl.m_MaybeInstancedModelMatAttr->shader_type == ShaderPropertyType::Mat4) {
-            const gl::AttributeMat4 mmtxAttr{shader_impl.m_MaybeInstancedModelMatAttr->location};
+    if (shader_impl.maybe_instanced_model_mat_attr_) {
+        if (shader_impl.maybe_instanced_model_mat_attr_->shader_type == ShaderPropertyType::Mat4) {
+            const gl::AttributeMat4 mmtxAttr{shader_impl.maybe_instanced_model_mat_attr_->location};
             gl::disable_vertex_attrib_array(mmtxAttr);
         }
     }
-    if (shader_impl.m_MaybeInstancedNormalMatAttr) {
-        if (shader_impl.m_MaybeInstancedNormalMatAttr->shader_type == ShaderPropertyType::Mat4) {
-            const gl::AttributeMat4 mmtxAttr{shader_impl.m_MaybeInstancedNormalMatAttr->location};
+    if (shader_impl.maybe_instanced_normal_mat_attr_) {
+        if (shader_impl.maybe_instanced_normal_mat_attr_->shader_type == ShaderPropertyType::Mat4) {
+            const gl::AttributeMat4 mmtxAttr{shader_impl.maybe_instanced_normal_mat_attr_->location};
             gl::disable_vertex_attrib_array(mmtxAttr);
         }
-        else if (shader_impl.m_MaybeInstancedNormalMatAttr->shader_type == ShaderPropertyType::Mat3) {
-            const gl::AttributeMat3 mmtxAttr{shader_impl.m_MaybeInstancedNormalMatAttr->location};
+        else if (shader_impl.maybe_instanced_normal_mat_attr_->shader_type == ShaderPropertyType::Mat3) {
+            const gl::AttributeMat3 mmtxAttr{shader_impl.maybe_instanced_normal_mat_attr_->location};
             gl::disable_vertex_attrib_array(mmtxAttr);
         }
     }
@@ -6714,20 +6609,20 @@ std::optional<InstancingState> osc::GraphicsBackend::upload_instance_data(
     // preemptively upload instancing data
     std::optional<InstancingState> maybeInstancingState;
 
-    if (shader_impl.m_MaybeInstancedModelMatAttr || shader_impl.m_MaybeInstancedNormalMatAttr) {
+    if (shader_impl.maybe_instanced_model_mat_attr_ || shader_impl.maybe_instanced_normal_mat_attr_) {
 
         // compute the stride between each instance
         size_t byteStride = 0;
-        if (shader_impl.m_MaybeInstancedModelMatAttr) {
-            if (shader_impl.m_MaybeInstancedModelMatAttr->shader_type == ShaderPropertyType::Mat4) {
+        if (shader_impl.maybe_instanced_model_mat_attr_) {
+            if (shader_impl.maybe_instanced_model_mat_attr_->shader_type == ShaderPropertyType::Mat4) {
                 byteStride += sizeof(float) * 16;
             }
         }
-        if (shader_impl.m_MaybeInstancedNormalMatAttr) {
-            if (shader_impl.m_MaybeInstancedNormalMatAttr->shader_type == ShaderPropertyType::Mat4) {
+        if (shader_impl.maybe_instanced_normal_mat_attr_) {
+            if (shader_impl.maybe_instanced_normal_mat_attr_->shader_type == ShaderPropertyType::Mat4) {
                 byteStride += sizeof(float) * 16;
             }
-            else if (shader_impl.m_MaybeInstancedNormalMatAttr->shader_type == ShaderPropertyType::Mat3) {
+            else if (shader_impl.maybe_instanced_normal_mat_attr_->shader_type == ShaderPropertyType::Mat3) {
                 byteStride += sizeof(float) * 9;
             }
         }
@@ -6741,22 +6636,22 @@ std::optional<InstancingState> osc::GraphicsBackend::upload_instance_data(
 
         size_t floatOffset = 0;
         for (const RenderObject& el : renderObjects) {
-            if (shader_impl.m_MaybeInstancedModelMatAttr) {
-                if (shader_impl.m_MaybeInstancedModelMatAttr->shader_type == ShaderPropertyType::Mat4) {
+            if (shader_impl.maybe_instanced_model_mat_attr_) {
+                if (shader_impl.maybe_instanced_model_mat_attr_->shader_type == ShaderPropertyType::Mat4) {
                     const Mat4 m = model_mat4(el);
                     const std::span<const float> els = to_float_span(m);
                     buf.insert(buf.end(), els.begin(), els.end());
                     floatOffset += els.size();
                 }
             }
-            if (shader_impl.m_MaybeInstancedNormalMatAttr) {
-                if (shader_impl.m_MaybeInstancedNormalMatAttr->shader_type == ShaderPropertyType::Mat4) {
+            if (shader_impl.maybe_instanced_normal_mat_attr_) {
+                if (shader_impl.maybe_instanced_normal_mat_attr_->shader_type == ShaderPropertyType::Mat4) {
                     const Mat4 m = normal_matrix4(el);
                     const std::span<const float> els = to_float_span(m);
                     buf.insert(buf.end(), els.begin(), els.end());
                     floatOffset += els.size();
                 }
-                else if (shader_impl.m_MaybeInstancedNormalMatAttr->shader_type == ShaderPropertyType::Mat3) {
+                else if (shader_impl.maybe_instanced_normal_mat_attr_->shader_type == ShaderPropertyType::Mat3) {
                     const Mat3 m = normal_matrix(el);
                     const std::span<const float> els = to_float_span(m);
                     buf.insert(buf.end(), els.begin(), els.end());
@@ -7010,33 +6905,33 @@ void osc::GraphicsBackend::handle_batch_with_same_submesh(
     std::optional<InstancingState>& instancing_state)
 {
     auto& meshImpl = const_cast<Mesh::Impl&>(*els.front().mesh.m_Impl);
-    const Shader::Impl& shader_impl = *els.front().material.m_Impl->m_Shader.m_Impl;
+    const Shader::Impl& shader_impl = *els.front().material.m_Impl->shader_.m_Impl;
     const std::optional<size_t> maybe_submesh_index = els.front().maybe_submesh_index;
 
     gl::bind_vertex_array(meshImpl.updVertexArray());
 
-    if (shader_impl.m_MaybeModelMatUniform || shader_impl.m_MaybeNormalMatUniform) {
+    if (shader_impl.maybe_model_mat_uniform_ || shader_impl.maybe_normal_mat_uniform_) {
         // if the shader requires per-instance uniforms, then we *have* to render one
         // instance at a time
 
         for (const RenderObject& el : els) {
 
             // try binding to uModel (standard)
-            if (shader_impl.m_MaybeModelMatUniform) {
-                if (shader_impl.m_MaybeModelMatUniform->shader_type == ShaderPropertyType::Mat4) {
-                    gl::UniformMat4 u{shader_impl.m_MaybeModelMatUniform->location};
+            if (shader_impl.maybe_model_mat_uniform_) {
+                if (shader_impl.maybe_model_mat_uniform_->shader_type == ShaderPropertyType::Mat4) {
+                    gl::UniformMat4 u{shader_impl.maybe_model_mat_uniform_->location};
                     gl::set_uniform(u, model_mat4(el));
                 }
             }
 
             // try binding to uNormalMat (standard)
-            if (shader_impl.m_MaybeNormalMatUniform) {
-                if (shader_impl.m_MaybeNormalMatUniform->shader_type == ShaderPropertyType::Mat3) {
-                    gl::UniformMat3 u{shader_impl.m_MaybeNormalMatUniform->location};
+            if (shader_impl.maybe_normal_mat_uniform_) {
+                if (shader_impl.maybe_normal_mat_uniform_->shader_type == ShaderPropertyType::Mat3) {
+                    gl::UniformMat3 u{shader_impl.maybe_normal_mat_uniform_->location};
                     gl::set_uniform(u, normal_matrix(el));
                 }
-                else if (shader_impl.m_MaybeNormalMatUniform->shader_type == ShaderPropertyType::Mat4) {
-                    gl::UniformMat4 u{shader_impl.m_MaybeNormalMatUniform->location};
+                else if (shader_impl.maybe_normal_mat_uniform_->shader_type == ShaderPropertyType::Mat4) {
+                    gl::UniformMat4 u{shader_impl.maybe_normal_mat_uniform_->location};
                     gl::set_uniform(u, normal_matrix4(el));
                 }
             }
@@ -7097,7 +6992,7 @@ void osc::GraphicsBackend::handle_batch_with_same_material_property_block(
     OSC_PERF("GraphicsBackend::handle_batch_with_same_material_property_block");
 
     const Material::Impl& matImpl = *els.front().material.m_Impl;
-    const Shader::Impl& shader_impl = *matImpl.m_Shader.m_Impl;
+    const Shader::Impl& shader_impl = *matImpl.shader_.m_Impl;
     const FastStringHashtable<ShaderElement>& uniforms = shader_impl.getUniforms();
 
     // bind property block variables (if applicable)
@@ -7129,7 +7024,7 @@ void osc::GraphicsBackend::handle_batch_with_same_material(
     OSC_PERF("GraphicsBackend::handle_batch_with_same_material");
 
     const auto& matImpl = *els.front().material.m_Impl;
-    const auto& shader_impl = *matImpl.m_Shader.m_Impl;
+    const auto& shader_impl = *matImpl.shader_.m_Impl;
     const FastStringHashtable<ShaderElement>& uniforms = shader_impl.getUniforms();
 
     // preemptively upload instance data
@@ -7147,13 +7042,13 @@ void osc::GraphicsBackend::handle_batch_with_same_material(
 
     if (matImpl.getDepthFunction() != DepthFunction::Default)
     {
-        glDepthFunc(toGLDepthFunc(matImpl.getDepthFunction()));
+        glDepthFunc(to_opengl_depth_function_enum(matImpl.getDepthFunction()));
     }
 
     if (matImpl.getCullMode() != CullMode::Off)
     {
         glEnable(GL_CULL_FACE);
-        glCullFace(toGLCullFaceEnum(matImpl.getCullMode()));
+        glCullFace(to_opengl_cull_face_enum(matImpl.getCullMode()));
 
         // winding order is assumed to be counter-clockwise
         //
@@ -7164,36 +7059,36 @@ void osc::GraphicsBackend::handle_batch_with_same_material(
     // bind material variables
     {
         // try binding to uView (standard)
-        if (shader_impl.m_MaybeViewMatUniform)
+        if (shader_impl.maybe_view_mat_uniform_)
         {
-            if (shader_impl.m_MaybeViewMatUniform->shader_type == ShaderPropertyType::Mat4)
+            if (shader_impl.maybe_view_mat_uniform_->shader_type == ShaderPropertyType::Mat4)
             {
-                gl::UniformMat4 u{shader_impl.m_MaybeViewMatUniform->location};
+                gl::UniformMat4 u{shader_impl.maybe_view_mat_uniform_->location};
                 gl::set_uniform(u, renderPassState.view_matrix);
             }
         }
 
         // try binding to uProjection (standard)
-        if (shader_impl.m_MaybeProjMatUniform)
+        if (shader_impl.maybe_proj_mat_uniform_)
         {
-            if (shader_impl.m_MaybeProjMatUniform->shader_type == ShaderPropertyType::Mat4)
+            if (shader_impl.maybe_proj_mat_uniform_->shader_type == ShaderPropertyType::Mat4)
             {
-                gl::UniformMat4 u{shader_impl.m_MaybeProjMatUniform->location};
+                gl::UniformMat4 u{shader_impl.maybe_proj_mat_uniform_->location};
                 gl::set_uniform(u, renderPassState.projection_matrix);
             }
         }
 
-        if (shader_impl.m_MaybeViewProjMatUniform)
+        if (shader_impl.maybe_view_proj_mat_uniform_)
         {
-            if (shader_impl.m_MaybeViewProjMatUniform->shader_type == ShaderPropertyType::Mat4)
+            if (shader_impl.maybe_view_proj_mat_uniform_->shader_type == ShaderPropertyType::Mat4)
             {
-                gl::UniformMat4 u{shader_impl.m_MaybeViewProjMatUniform->location};
+                gl::UniformMat4 u{shader_impl.maybe_view_proj_mat_uniform_->location};
                 gl::set_uniform(u, renderPassState.view_projection_matrix);
             }
         }
 
         // bind material values
-        for (const auto& [name, value] : matImpl.m_Values) {
+        for (const auto& [name, value] : matImpl.values_) {
             if (const ShaderElement* e = try_find(uniforms, name)) {
                 try_bind_material_value_to_shader_element(*e, value, texture_slot);
             }
@@ -7217,7 +7112,7 @@ void osc::GraphicsBackend::handle_batch_with_same_material(
 
     if (matImpl.getDepthFunction() != DepthFunction::Default)
     {
-        glDepthFunc(toGLDepthFunc(DepthFunction::Default));
+        glDepthFunc(to_opengl_depth_function_enum(DepthFunction::Default));
     }
 
     if (matImpl.getWireframeMode())
@@ -7474,7 +7369,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::bind_and_clear_render_buffe
                     );
                 }
 #endif
-            }, maybe_custom_render_target->colors[i].buffer->m_Impl->updRenderBufferData());
+            }, maybe_custom_render_target->colors[i].buffer->m_Impl->upd_opengl_data());
         }
 
         // attach depth buffer to the FBO
@@ -7510,7 +7405,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::bind_and_clear_render_buffe
                 );
             }
 #endif
-        }, maybe_custom_render_target->depth.buffer->m_Impl->updRenderBufferData());
+        }, maybe_custom_render_target->depth.buffer->m_Impl->upd_opengl_data());
 
         // Multi-Render Target (MRT) support: tell OpenGL to use all specified
         // render targets when drawing and/or clearing
@@ -7597,7 +7492,7 @@ void osc::GraphicsBackend::resolve_render_buffers(RenderTarget& renderTarget)
     {
         const RenderTargetColorAttachment& attachment = renderTarget.colors[i];
         RenderBuffer& buffer = *attachment.buffer;
-        RenderBufferOpenGLData& bufferOpenGLData = buffer.m_Impl->updRenderBufferData();
+        RenderBufferOpenGLData& bufferOpenGLData = buffer.m_Impl->upd_opengl_data();
 
         if (attachment.storeAction != RenderBufferStoreAction::Resolve)
         {
@@ -7689,7 +7584,7 @@ void osc::GraphicsBackend::resolve_render_buffers(RenderTarget& renderTarget)
             {
                 // don't resolve: it's single-sampled
             }
-        }, renderTarget.depth.buffer->m_Impl->updRenderBufferData());
+        }, renderTarget.depth.buffer->m_Impl->upd_opengl_data());
 
         if (bufferIsResolveable)
         {
@@ -7817,7 +7712,7 @@ void osc::GraphicsBackend::blit_to_screen(
     BlitFlags)
 {
     OSC_ASSERT(g_GraphicsContextImpl);
-    OSC_ASSERT(t.m_Impl->hasBeenRenderedTo() && "the input texture has not been rendered to");
+    OSC_ASSERT(t.m_Impl->has_been_rendered_to() && "the input texture has not been rendered to");
 
     Camera c;
     c.set_background_color(Color::clear());
@@ -7866,7 +7761,7 @@ void osc::GraphicsBackend::copy_texture(
     CubemapFace face)
 {
     OSC_ASSERT(g_GraphicsContextImpl);
-    OSC_ASSERT(src.m_Impl->hasBeenRenderedTo() && "the input texture has not been rendered to");
+    OSC_ASSERT(src.m_Impl->has_been_rendered_to() && "the input texture has not been rendered to");
 
     // create a source (read) framebuffer for blitting from the source render texture
     gl::FrameBuffer readFBO;
