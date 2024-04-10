@@ -10,12 +10,12 @@ namespace osc
     class RenderBuffer final {
     public:
         RenderBuffer(
-            RenderTextureDescriptor const&,
+            const RenderTextureDescriptor&,
             RenderBufferType
         );
-        RenderBuffer(RenderBuffer const&) = delete;
+        RenderBuffer(const RenderBuffer&) = delete;
         RenderBuffer(RenderBuffer&&) noexcept = delete;
-        RenderBuffer& operator=(RenderBuffer const&) = delete;
+        RenderBuffer& operator=(const RenderBuffer&) = delete;
         RenderBuffer& operator=(RenderBuffer&&) noexcept = delete;
         ~RenderBuffer() noexcept;
 
@@ -24,6 +24,6 @@ namespace osc
         friend class RenderTexture;
 
         class Impl;
-        std::unique_ptr<Impl> m_Impl;
+        std::unique_ptr<Impl> impl_;
     };
 }

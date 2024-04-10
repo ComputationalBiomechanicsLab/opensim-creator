@@ -23,7 +23,7 @@ namespace osc
 
     class MeshIndicesView final {
     private:
-        using U32PtrOrU16Ptr = std::variant<uint16_t const*, uint32_t const*>;
+        using U32PtrOrU16Ptr = std::variant<const uint16_t*, const uint32_t*>;
     public:
         class Iterator final {
         public:
@@ -35,17 +35,17 @@ namespace osc
 
             Iterator() = default;
 
-            explicit Iterator(U32PtrOrU16Ptr ptr) : m_Ptr{ptr}
+            explicit Iterator(U32PtrOrU16Ptr ptr) : ptr_{ptr}
             {}
 
             value_type operator*() const
             {
                 return std::visit(Overload{
-                    [](auto const* ptr) { return static_cast<value_type>(*ptr); }
-                }, m_Ptr);
+                    [](const auto* ptr) { return static_cast<value_type>(*ptr); }
+                }, ptr_);
             }
 
-            friend bool operator==(Iterator const&, Iterator const&) = default;
+            friend bool operator==(const Iterator&, const Iterator&) = default;
 
             Iterator& operator++()
             {
@@ -63,18 +63,18 @@ namespace osc
             {
                 std::visit(Overload{
                     [v](auto& ptr) { ptr += v; }
-                }, m_Ptr);
+                }, ptr_);
                 return *this;
             }
 
             value_type operator[](difference_type v) const
             {
                 return std::visit(Overload{
-                    [v](auto const* ptr) { return static_cast<value_type>(ptr[v]); }
-                }, m_Ptr);
+                    [v](const auto* ptr) { return static_cast<value_type>(ptr[v]); }
+                }, ptr_);
             }
         private:
-            U32PtrOrU16Ptr m_Ptr{static_cast<uint16_t const*>(nullptr)};
+            U32PtrOrU16Ptr ptr_{static_cast<const uint16_t*>(nullptr)};
         };
 
         using value_type = uint32_t;
@@ -89,30 +89,30 @@ namespace osc
 
         MeshIndicesView() = default;
 
-        MeshIndicesView(uint16_t const* ptr, size_t size) :
-            m_Ptr{ptr},
-            m_Size{size}
+        MeshIndicesView(const uint16_t* ptr, size_t size) :
+            ptr_{ptr},
+            size_{size}
         {}
 
-        MeshIndicesView(uint32_t const* ptr, size_t size) :
-            m_Ptr{ptr},
-            m_Size{size}
+        MeshIndicesView(const uint32_t* ptr, size_t size) :
+            ptr_{ptr},
+            size_{size}
         {}
 
         template<std::ranges::contiguous_range Range>
         requires IsAnyOf<typename Range::value_type, uint16_t, uint32_t>
-        MeshIndicesView(Range const& range) :
+        MeshIndicesView(const Range& range) :
             MeshIndicesView{std::ranges::data(range), std::ranges::size(range)}
         {}
 
-        bool isU16() const
+        bool is_uint16() const
         {
-            return std::holds_alternative<uint16_t const*>(m_Ptr);
+            return std::holds_alternative<const uint16_t*>(ptr_);
         }
 
-        bool isU32() const
+        bool is_uint32() const
         {
-            return std::holds_alternative<uint32_t const*>(m_Ptr);
+            return std::holds_alternative<const uint32_t*>(ptr_);
         }
 
         [[nodiscard]] bool empty() const
@@ -122,46 +122,46 @@ namespace osc
 
         size_type size() const
         {
-            return m_Size;
+            return size_;
         }
 
-        std::span<uint16_t const> toU16Span() const
+        std::span<const uint16_t> to_uint16_span() const
         {
-            return {std::get<uint16_t const*>(m_Ptr), m_Size};
+            return {std::get<const uint16_t*>(ptr_), size_};
         }
 
-        std::span<uint32_t const> toU32Span() const
+        std::span<const uint32_t> to_uint32_span() const
         {
-            return {std::get<uint32_t const*>(m_Ptr), m_Size};
+            return {std::get<const uint32_t*>(ptr_), size_};
         }
 
-        value_type operator[](size_type i) const
+        value_type operator[](size_type pos) const
         {
-            return begin()[i];
+            return begin()[pos];
         }
 
-        value_type at(size_type i) const
+        value_type at(size_type pos) const
         {
-            if (i >= size()) {
+            if (pos >= size()) {
                 throw std::out_of_range{"attempted to access a MeshIndicesView with an invalid index"};
             }
-            return this->operator[](i);
+            return this->operator[](pos);
         }
 
         Iterator begin() const
         {
-            return Iterator{m_Ptr};
+            return Iterator{ptr_};
         }
 
         Iterator end() const
         {
             return std::visit(Overload{
-                [size = m_Size](auto const* ptr) { return Iterator{ptr + size}; },
-            }, m_Ptr);
+                [size = size_](const auto* ptr) { return Iterator{ptr + size}; },
+            }, ptr_);
         }
 
     private:
-        U32PtrOrU16Ptr m_Ptr{static_cast<uint16_t const*>(nullptr)};
-        size_t m_Size = 0;
+        U32PtrOrU16Ptr ptr_{static_cast<const uint16_t*>(nullptr)};
+        size_t size_ = 0;
     };
 }

@@ -307,7 +307,7 @@ private:
         const auto rim_aabb_of = [](const SceneDecoration& d) -> std::optional<AABB>
         {
             if (d.flags & (SceneDecorationFlags::IsSelected | SceneDecorationFlags::IsChildOfSelected | SceneDecorationFlags::IsHovered | SceneDecorationFlags::IsChildOfHovered)) {
-                return get_worldspace_aabb(d);
+                return worldspace_bounds_of(d);
             }
             return std::nullopt;
         };
@@ -421,7 +421,7 @@ private:
         std::optional<AABB> shadowcaster_aabbs;
         for (const SceneDecoration& dec : decorations) {
             if (dec.flags & SceneDecorationFlags::CastsShadows) {
-                shadowcaster_aabbs = bounding_aabb_of(shadowcaster_aabbs, get_worldspace_aabb(dec));
+                shadowcaster_aabbs = bounding_aabb_of(shadowcaster_aabbs, worldspace_bounds_of(dec));
                 graphics::draw(dec.mesh, dec.transform, depth_writer_material_, camera_);
             }
         }

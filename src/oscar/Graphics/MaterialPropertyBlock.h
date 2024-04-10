@@ -13,7 +13,6 @@
 #include <optional>
 #include <string_view>
 
-// note: implementation is in `GraphicsImplementation.cpp`
 namespace osc
 {
     // material property block

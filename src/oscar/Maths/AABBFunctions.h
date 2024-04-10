@@ -30,7 +30,7 @@ namespace osc
     }
 
     // returns the half-widths of the edges of `aabb`
-    constexpr Vec3 half_widths(AABB const& aabb)
+    constexpr Vec3 half_widths_of(AABB const& aabb)
     {
         return 0.5f * dimensions_of(aabb);
     }

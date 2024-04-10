@@ -15,10 +15,10 @@ namespace osc
             std::shared_ptr<RenderBuffer>,
             RenderBufferLoadAction,
             RenderBufferStoreAction,
-            Color clearColor_
+            Color clear_color_
         );
 
-        friend bool operator==(RenderTargetColorAttachment const&, RenderTargetColorAttachment const&) = default;
+        friend bool operator==(const RenderTargetColorAttachment&, const RenderTargetColorAttachment&) = default;
 
         Color clear_color;
     };

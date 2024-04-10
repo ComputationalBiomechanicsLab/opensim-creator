@@ -12,7 +12,6 @@
 
 namespace osc { class RenderBuffer; }
 
-// note: implementation is in `GraphicsImplementation.cpp`
 namespace osc
 {
     // render texture
@@ -22,7 +21,7 @@ namespace osc
     public:
         RenderTexture();
         explicit RenderTexture(Vec2i dimensions);
-        explicit RenderTexture(RenderTextureDescriptor const&);
+        explicit RenderTexture(const RenderTextureDescriptor&);
 
         Vec2i getDimensions() const;
         void setDimensions(Vec2i);
@@ -42,7 +41,7 @@ namespace osc
         RenderTextureReadWrite getReadWrite() const;
         void setReadWrite(RenderTextureReadWrite);
 
-        void reformat(RenderTextureDescriptor const& d);
+        void reformat(const RenderTextureDescriptor&);
 
         std::shared_ptr<RenderBuffer> updColorBuffer();
         std::shared_ptr<RenderBuffer> updDepthBuffer();
@@ -52,9 +51,9 @@ namespace osc
             swap(a.m_Impl, b.m_Impl);
         }
 
-        friend bool operator==(RenderTexture const&, RenderTexture const&) = default;
+        friend bool operator==(const RenderTexture&, const RenderTexture&) = default;
 
-        friend std::ostream& operator<<(std::ostream&, RenderTexture const&);
+        friend std::ostream& operator<<(std::ostream&, const RenderTexture&);
     private:
         friend class GraphicsBackend;
 
@@ -62,5 +61,5 @@ namespace osc
         CopyOnUpdPtr<Impl> m_Impl;
     };
 
-    std::ostream& operator<<(std::ostream&, RenderTexture const&);
+    std::ostream& operator<<(std::ostream&, const RenderTexture&);
 }

@@ -63,7 +63,7 @@ void osc::draw_bvh(
         out({
             .mesh = cube,
             .transform = {
-                .scale = half_widths(node.bounds()),
+                .scale = half_widths_of(node.bounds()),
                 .position = centroid_of(node.bounds()),
             },
             .color = Color::black(),
@@ -89,7 +89,7 @@ void osc::draw_aabbs(
         out({
             .mesh = cube,
             .transform = {
-                .scale = half_widths(aabb),
+                .scale = half_widths_of(aabb),
                 .position = centroid_of(aabb),
             },
             .color = Color::black(),
@@ -202,7 +202,7 @@ void osc::draw_line_segment(
     });
 }
 
-AABB osc::get_worldspace_aabb(const SceneDecoration& decoration)
+AABB osc::worldspace_bounds_of(const SceneDecoration& decoration)
 {
     return transform_aabb(decoration.transform, decoration.mesh.bounds());
 }
@@ -212,7 +212,7 @@ void osc::update_scene_bvh(std::span<const SceneDecoration> decorations, BVH& bv
     std::vector<AABB> aabbs;
     aabbs.reserve(decorations.size());
     for (const SceneDecoration& decoration : decorations) {
-        aabbs.push_back(get_worldspace_aabb(decoration));
+        aabbs.push_back(worldspace_bounds_of(decoration));
     }
 
     bvh.buildFromAABBs(aabbs);
@@ -331,11 +331,11 @@ BVH osc::create_triangle_bvh(const Mesh& mesh)
     else if (mesh.topology() != MeshTopology::Triangles) {
         return rv;
     }
-    else if (indices.isU32()) {
-        rv.buildFromIndexedTriangles(mesh.vertices() , indices.toU32Span());
+    else if (indices.is_uint32()) {
+        rv.buildFromIndexedTriangles(mesh.vertices() , indices.to_uint32_span());
     }
     else {
-        rv.buildFromIndexedTriangles(mesh.vertices(), indices.toU16Span());
+        rv.buildFromIndexedTriangles(mesh.vertices(), indices.to_uint16_span());
     }
     return rv;
 }

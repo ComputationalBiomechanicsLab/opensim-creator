@@ -178,7 +178,7 @@ private:
 
                 graphics::draw(
                     m_WireframeCubeMesh,
-                    {.scale = half_widths(m_SceneSphereAABB), .position = sphere.pos},
+                    {.scale = half_widths_of(m_SceneSphereAABB), .position = sphere.pos},
                     m_Material,
                     m_Camera,
                     m_BlackColorMaterialProps

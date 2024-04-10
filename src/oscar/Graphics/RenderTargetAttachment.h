@@ -10,15 +10,15 @@ namespace osc
 {
     struct RenderTargetAttachment {
         RenderTargetAttachment(
-            std::shared_ptr<RenderBuffer> buffer_,
-            RenderBufferLoadAction loadAction_,
-            RenderBufferStoreAction storeAction_
+            std::shared_ptr<RenderBuffer>,
+            RenderBufferLoadAction,
+            RenderBufferStoreAction
         );
 
-        friend bool operator==(RenderTargetAttachment const&, RenderTargetAttachment const&) = default;
+        friend bool operator==(const RenderTargetAttachment&, const RenderTargetAttachment&) = default;
 
         std::shared_ptr<RenderBuffer> buffer;
-        RenderBufferLoadAction loadAction;
-        RenderBufferStoreAction storeAction;
+        RenderBufferLoadAction load_action;
+        RenderBufferStoreAction store_action;
     };
 }

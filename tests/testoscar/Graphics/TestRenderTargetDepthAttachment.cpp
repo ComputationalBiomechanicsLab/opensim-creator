@@ -20,8 +20,8 @@ TEST(RenderTargetDepthAttachment, CanConstructFromPartsOfRenderTexture)
     };
 
     ASSERT_EQ(attachment.buffer, renderTex.updDepthBuffer());
-    ASSERT_EQ(attachment.loadAction, RenderBufferLoadAction::Clear);
-    ASSERT_EQ(attachment.storeAction, RenderBufferStoreAction::Resolve);
+    ASSERT_EQ(attachment.load_action, RenderBufferLoadAction::Clear);
+    ASSERT_EQ(attachment.store_action, RenderBufferStoreAction::Resolve);
 }
 
 TEST(RenderTargetDepthAttachment, ConstructingWithNullptrThrowsException)
@@ -95,7 +95,7 @@ TEST(RenderTargetDepthAttachment, EqualityReturnsFalseIfSomethingIsModified)
     {
         RenderTargetDepthAttachment copy = attachment;
         ASSERT_EQ(copy, attachment);
-        copy.loadAction = RenderBufferLoadAction::Load;
+        copy.load_action = RenderBufferLoadAction::Load;
         ASSERT_NE(copy, attachment);
     }
 
@@ -103,7 +103,7 @@ TEST(RenderTargetDepthAttachment, EqualityReturnsFalseIfSomethingIsModified)
     {
         RenderTargetDepthAttachment copy = attachment;
         ASSERT_EQ(copy, attachment);
-        copy.storeAction = RenderBufferStoreAction::DontCare;
+        copy.store_action = RenderBufferStoreAction::DontCare;
         ASSERT_NE(copy, attachment);
     }
 }

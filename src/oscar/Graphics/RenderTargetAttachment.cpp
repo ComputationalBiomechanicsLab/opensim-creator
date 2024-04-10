@@ -6,12 +6,12 @@
 
 osc::RenderTargetAttachment::RenderTargetAttachment(
     std::shared_ptr<RenderBuffer> buffer_,
-    RenderBufferLoadAction loadAction_,
-    RenderBufferStoreAction storeAction_) :
+    RenderBufferLoadAction load_action_,
+    RenderBufferStoreAction store_action_) :
 
     buffer{std::move(buffer_)},
-    loadAction{loadAction_},
-    storeAction{storeAction_}
+    load_action{load_action_},
+    store_action{store_action_}
 {
     OSC_ASSERT(buffer != nullptr);
 }

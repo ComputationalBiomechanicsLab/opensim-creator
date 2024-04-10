@@ -31,7 +31,6 @@ namespace osc { class SubMeshDescriptor; }
 namespace osc { struct Transform; }
 namespace osc { class VertexFormat; }
 
-// note: implementation is in `GraphicsImplementation.cpp`
 namespace osc
 {
     class Mesh final {
