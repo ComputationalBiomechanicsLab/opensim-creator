@@ -89,7 +89,7 @@ namespace
         size_t latest_instance = 0;
 
         for (const SceneDecoration& dec : decorations) {
-            if (dec.mesh.getTopology() != MeshTopology::Triangles) {
+            if (dec.mesh.topology() != MeshTopology::Triangles) {
                 continue;  // unsupported
             }
 
@@ -231,14 +231,14 @@ namespace
 
     void write_mesh_positions_source_node(std::ostream& o, const DAEGeometry& geom)
     {
-        const auto vals = geom.mesh.getVerts();
+        const auto vals = geom.mesh.vertices();
         const size_t num_floats = 3 * vals.size();
-        const size_t num_verts = vals.size();
+        const size_t num_vertices = vals.size();
 
         o << "        <source id=\"" << geom.geometry_id << "-positions\">\n";
         o << "          <float_array id=\"" << geom.geometry_id << "-positions-array\" count=\"" << num_floats << "\">" << to_float_span(vals) << "</float_array>\n";
         o << "          <technique_common>\n";
-        o << "            <accessor source=\"#" << geom.geometry_id << "-positions-array\" count=\"" << num_verts << "\" stride=\"3\">\n";
+        o << "            <accessor source=\"#" << geom.geometry_id << "-positions-array\" count=\"" << num_vertices << "\" stride=\"3\">\n";
         o << "              <param name=\"X\" type=\"float\"/>\n";
         o << "              <param name=\"Y\" type=\"float\"/>\n";
         o << "              <param name=\"Z\" type=\"float\"/>\n";
@@ -249,7 +249,7 @@ namespace
 
     void write_mesh_normals_source_node(std::ostream& o, const DAEGeometry& geom)
     {
-        const auto vals = geom.mesh.getNormals();
+        const auto vals = geom.mesh.normals();
         const size_t num_floats = 3 * vals.size();
         const size_t num_normals = vals.size();
 
@@ -267,7 +267,7 @@ namespace
 
     void write_mesh_texture_coordinates_source_node(std::ostream& o, const DAEGeometry& geom)
     {
-        const auto vals = geom.mesh.getTexCoords();
+        const auto vals = geom.mesh.tex_coords();
         const size_t num_floats = 2 * vals.size();
         const size_t num_uvs = vals.size();
 
@@ -291,15 +291,15 @@ namespace
 
     void write_mesh_triangles_node(std::ostream& o, const DAEGeometry& geom)
     {
-        const auto indices = geom.mesh.getIndices();
+        const auto indices = geom.mesh.indices();
         const size_t num_triangles = indices.size() / 3;
 
         o << "        <triangles count=\"" << num_triangles << "\">\n";
         o << R"(            <input semantic="VERTEX" source="#)" << geom.geometry_id << "-vertices\" offset=\"0\" />\n";
-        if (geom.mesh.hasNormals()) {
+        if (geom.mesh.has_normals()) {
             o << R"(            <input semantic="NORMAL" source="#)" << geom.geometry_id << "-normals\" offset=\"0\" />\n";
         }
-        if (geom.mesh.hasTexCoords()) {
+        if (geom.mesh.has_tex_coords()) {
             o << R"(            <input semantic="TEXCOORD" source="#)" << geom.geometry_id << "-map-0\" offset=\"0\" set=\"0\"/>\n";
         }
 
@@ -319,10 +319,10 @@ namespace
         o << '\n';
 
         write_mesh_positions_source_node(o, geom);
-        if (geom.mesh.hasNormals()) {
+        if (geom.mesh.has_normals()) {
             write_mesh_normals_source_node(o, geom);
         }
-        if (geom.mesh.hasTexCoords()) {
+        if (geom.mesh.has_tex_coords()) {
             write_mesh_texture_coordinates_source_node(o, geom);
         }
         write_mesh_vertices_node(o, geom);

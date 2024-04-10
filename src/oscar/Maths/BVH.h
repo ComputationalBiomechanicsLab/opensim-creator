@@ -28,22 +28,22 @@ namespace osc
         //
         // prim.getID() will refer to the index of the first vertex in the triangle
         void buildFromIndexedTriangles(
-            std::span<Vec3 const> verts,
+            std::span<Vec3 const> vertices,
             std::span<uint16_t const> indices
         );
         void buildFromIndexedTriangles(
-            std::span<Vec3 const> verts,
+            std::span<Vec3 const> vertices,
             std::span<uint32_t const> indices
         );
 
         // returns the location of the closest ray-triangle collision along the ray, if any
         std::optional<BVHCollision> getClosestRayIndexedTriangleCollision(
-            std::span<Vec3 const> verts,
+            std::span<Vec3 const> vertices,
             std::span<uint16_t const> indices,
             Line const&
         ) const;
         std::optional<BVHCollision> getClosestRayIndexedTriangleCollision(
-            std::span<Vec3 const> verts,
+            std::span<Vec3 const> vertices,
             std::span<uint32_t const> indices,
             Line const&
         ) const;
@@ -65,7 +65,7 @@ namespace osc
 
         // returns the AABB of the root node, or `std::nullopt` if there are no nodes in
         // the tree
-        std::optional<AABB> getBounds() const;
+        std::optional<AABB> bounds() const;
 
         // calls the given function with each leaf node in the tree
         void forEachLeafNode(std::function<void(BVHNode const&)> const&) const;

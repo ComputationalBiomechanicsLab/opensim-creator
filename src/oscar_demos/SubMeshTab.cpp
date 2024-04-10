@@ -38,23 +38,23 @@ namespace
 
         for (auto const& mesh : meshes) {
             size_t firstVert = allVerts.size();
-            Append(allVerts, mesh.getVerts());
-            Append(allNormals, mesh.getNormals());
+            Append(allVerts, mesh.vertices());
+            Append(allNormals, mesh.normals());
 
             size_t firstIndex = allIndices.size();
-            for (auto index : mesh.getIndices()) {
+            for (auto index : mesh.indices()) {
                 allIndices.push_back(static_cast<uint32_t>(firstVert + index));
             }
             size_t nIndices = allIndices.size() - firstIndex;
 
-            allDescriptors.emplace_back(firstIndex, nIndices, mesh.getTopology());
+            allDescriptors.emplace_back(firstIndex, nIndices, mesh.topology());
         }
 
         Mesh rv;
-        rv.setVerts(allVerts);
-        rv.setNormals(allNormals);
-        rv.setIndices(allIndices);
-        rv.setSubmeshDescriptors(allDescriptors);
+        rv.set_vertices(allVerts);
+        rv.set_normals(allNormals);
+        rv.set_indices(allIndices);
+        rv.set_submesh_descriptors(allDescriptors);
         return rv;
     }
 }
@@ -76,7 +76,7 @@ public:
 private:
     void implOnDraw() final
     {
-        for (size_t subMeshIndex = 0; subMeshIndex < m_MeshWithSubmeshes.getSubMeshCount(); ++subMeshIndex) {
+        for (size_t subMeshIndex = 0; subMeshIndex < m_MeshWithSubmeshes.num_submesh_descriptors(); ++subMeshIndex) {
             graphics::draw(
                 m_MeshWithSubmeshes,
                 identity<Transform>(),

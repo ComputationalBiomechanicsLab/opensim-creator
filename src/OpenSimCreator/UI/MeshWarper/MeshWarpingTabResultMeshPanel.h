@@ -127,15 +127,15 @@ namespace osc
 
                 ui::TableNextRow();
                 ui::TableSetColumnIndex(0);
-                ui::Text("# verts");
+                ui::Text("# vertices");
                 ui::TableSetColumnIndex(1);
-                ui::Text("%zu", m_State->getResultMesh().getNumVerts());
+                ui::Text("%zu", m_State->getResultMesh().num_vertices());
 
                 ui::TableNextRow();
                 ui::TableSetColumnIndex(0);
                 ui::Text("# triangles");
                 ui::TableSetColumnIndex(1);
-                ui::Text("%zu", m_State->getResultMesh().getNumIndices()/3);
+                ui::Text("%zu", m_State->getResultMesh().num_indices()/3);
 
                 ui::EndTable();
             }
@@ -187,7 +187,7 @@ namespace osc
             {
                 AutoFocus(
                     m_Camera,
-                    m_State->getResultMesh().getBounds(),
+                    m_State->getResultMesh().bounds(),
                     aspect_ratio(m_LastTextureHittestResult.rect)
                 );
                 m_State->linkedCameraBase = m_Camera;
@@ -279,7 +279,7 @@ namespace osc
         }
 
         std::shared_ptr<MeshWarpingTabSharedState> m_State;
-        PolarPerspectiveCamera m_Camera = CreateCameraFocusedOn(m_State->getResultMesh().getBounds());
+        PolarPerspectiveCamera m_Camera = CreateCameraFocusedOn(m_State->getResultMesh().bounds());
         CachedSceneRenderer m_CachedRenderer{
             *App::singleton<SceneCache>(App::resource_loader()),
         };

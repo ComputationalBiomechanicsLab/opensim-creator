@@ -253,10 +253,10 @@ Mesh osc::ApplyThinPlateWarpToMesh(TPSCoefficients3D const& coefs, Mesh const& m
     // copy out the vertices
 
     // parallelize function evaluation, because the mesh may contain *a lot* of
-    // verts and the TPS equation may contain *a lot* of coefficients
-    auto verts = rv.getVerts();
-    ApplyThinPlateWarpToPointsInPlace(coefs, verts, blendingFactor);
-    rv.setVerts(verts);
+    // vertices and the TPS equation may contain *a lot* of coefficients
+    auto vertices = rv.vertices();
+    ApplyThinPlateWarpToPointsInPlace(coefs, vertices, blendingFactor);
+    rv.set_vertices(vertices);
 
     return rv;
 }

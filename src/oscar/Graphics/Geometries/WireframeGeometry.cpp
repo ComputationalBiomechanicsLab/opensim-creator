@@ -19,18 +19,18 @@ osc::WireframeGeometry::WireframeGeometry(const Mesh& mesh)
 {
     static_assert(num_options<MeshTopology>() == 2);
 
-    if (mesh.getTopology() == MeshTopology::Lines) {
+    if (mesh.topology() == MeshTopology::Lines) {
         mesh_ = mesh;
         return;
     }
 
     std::unordered_set<LineSegment> edges;
-    edges.reserve(mesh.getNumIndices());  // (guess)
+    edges.reserve(mesh.num_indices());  // (guess)
 
     std::vector<Vec3> vertices;
-    vertices.reserve(mesh.getNumIndices());  // (guess)
+    vertices.reserve(mesh.num_indices());  // (guess)
 
-    mesh.forEachIndexedTriangle([&edges, &vertices](const Triangle& triangle)
+    mesh.for_each_indexed_triangle([&edges, &vertices](const Triangle& triangle)
     {
         const auto [a, b, c] = triangle;
 
@@ -58,7 +58,7 @@ osc::WireframeGeometry::WireframeGeometry(const Mesh& mesh)
         indices.push_back(static_cast<uint32_t>(i));
     }
 
-    mesh_.setTopology(MeshTopology::Lines);
-    mesh_.setVerts(vertices);
-    mesh_.setIndices(indices);
+    mesh_.set_topology(MeshTopology::Lines);
+    mesh_.set_vertices(vertices);
+    mesh_.set_indices(indices);
 }

@@ -232,15 +232,15 @@ private:
             // upload vertex positions/colors
             Mesh mesh;
             {
-                // verts
+                // vertices
                 {
-                    std::vector<Vec3> verts;
-                    verts.reserve(drawlist.VtxBuffer.size());
+                    std::vector<Vec3> vertices;
+                    vertices.reserve(drawlist.VtxBuffer.size());
                     for (ImDrawVert const& vert : drawlist.VtxBuffer)
                     {
-                        verts.emplace_back(vert.pos.x, vert.pos.y, 0.0f);
+                        vertices.emplace_back(vert.pos.x, vert.pos.y, 0.0f);
                     }
-                    mesh.setVerts(verts);
+                    mesh.set_vertices(vertices);
                 }
 
                 // colors
@@ -252,7 +252,7 @@ private:
                         Color const linearColor = ui::to_color(vert.col);
                         colors.push_back(linearColor);
                     }
-                    mesh.setColors(colors);
+                    mesh.set_colors(colors);
                 }
             }
 
@@ -297,7 +297,7 @@ private:
                     {
                         indices.push_back(drawlist.IdxBuffer[static_cast<int>(i)]);
                     }
-                    mesh.setIndices(indices);
+                    mesh.set_indices(indices);
                 }
                 graphics::draw(mesh, Transform{}, material, c);
             }

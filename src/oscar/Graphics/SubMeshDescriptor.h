@@ -28,7 +28,7 @@ namespace osc
             return m_IndexCount;
         }
 
-        MeshTopology getTopology() const
+        MeshTopology topology() const
         {
             return m_Topology;
         }

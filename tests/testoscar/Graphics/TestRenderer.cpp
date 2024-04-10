@@ -1557,7 +1557,7 @@ TEST_F(Renderer, DrawMeshThrowsIfGivenOutOfBoundsSubMeshIndex)
 TEST_F(Renderer, DrawMeshDoesNotThrowIfGivenInBoundsSubMesh)
 {
     Mesh mesh;
-    mesh.pushSubMeshDescriptor({0, 0, MeshTopology::Triangles});
+    mesh.push_submesh_descriptor({0, 0, MeshTopology::Triangles});
     Transform const transform = identity<Transform>();
     Material const material = GenerateMaterial();
     Camera camera;

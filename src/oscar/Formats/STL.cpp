@@ -60,8 +60,8 @@ namespace
 
     void write_num_triangles(std::ostream& o, const Mesh& mesh)
     {
-        OSC_ASSERT(mesh.getNumIndices()/3 <= std::numeric_limits<uint32_t>::max());
-        write_u32_little_endian(o, static_cast<uint32_t>(mesh.getNumIndices()/3));
+        OSC_ASSERT(mesh.num_indices()/3 <= std::numeric_limits<uint32_t>::max());
+        write_u32_little_endian(o, static_cast<uint32_t>(mesh.num_indices()/3));
     }
 
     void write_float_ieee754(std::ostream& o, float v)
@@ -96,7 +96,7 @@ namespace
 
     void write_triangles(std::ostream& o, const Mesh& mesh)
     {
-        mesh.forEachIndexedTriangle([&o](Triangle t) { write_triangle(o, t); });
+        mesh.for_each_indexed_triangle([&o](Triangle t) { write_triangle(o, t); });
     }
 }
 
@@ -113,7 +113,7 @@ void osc::write_as_stl(
     const Mesh& mesh,
     const StlMetadata& metadata)
 {
-    if (mesh.getTopology() != MeshTopology::Triangles) {
+    if (mesh.topology() != MeshTopology::Triangles) {
         return;
     }
 

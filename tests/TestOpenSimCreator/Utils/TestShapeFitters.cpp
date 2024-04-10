@@ -31,7 +31,7 @@ TEST(FitSphere, ReturnsUnitSphereWhenGivenAnEmptyMesh)
     Mesh const emptyMesh;
     Sphere const sphereFit = FitSphere(emptyMesh);
 
-    ASSERT_FALSE(emptyMesh.hasVerts());
+    ASSERT_FALSE(emptyMesh.has_vertices());
     ASSERT_EQ(sphereFit.origin, Vec3(0.0f, 0.0f, 0.0f));
     ASSERT_EQ(sphereFit.radius, 1.0f);
 }
@@ -54,7 +54,7 @@ TEST(FitSphere, ReturnsRoughlyExpectedParametersWhenGivenATransformedSphere)
     t.rotation = angle_axis(45_deg, UnitVec3{1.0f, 1.0f, 0.0f});
 
     Mesh sphereMesh = SphereGeometry{1.0f, 16, 16};
-    sphereMesh.transformVerts(t);
+    sphereMesh.transform_vertices(t);
 
     Sphere const sphereFit = FitSphere(sphereMesh);
 
@@ -100,7 +100,7 @@ TEST(FitPlane, ReturnsUnitPlanePointingUpInYIfGivenAnEmptyMesh)
     Mesh const emptyMesh;
     Plane const planeFit = FitPlane(emptyMesh);
 
-    ASSERT_FALSE(emptyMesh.hasVerts());
+    ASSERT_FALSE(emptyMesh.has_vertices());
     ASSERT_EQ(planeFit.origin, Vec3(0.0f, 0.0f, 0.0f));
     ASSERT_EQ(planeFit.normal, Vec3(0.0f, 1.0f, 0.0f));
 }
@@ -192,13 +192,13 @@ TEST(FitEllipsoid, DISABLED_ThrowsErrorIfGivenLessThan9Points)
 {
     auto const generateMeshWithNPoints = [](size_t n)
     {
-        std::vector<Vec3> verts(n);
+        std::vector<Vec3> vertices(n);
         std::vector<uint16_t> indices(n);
         std::iota(indices.begin(), indices.end(), static_cast<uint16_t>(0));
 
         Mesh m;
-        m.setVerts(verts);
-        m.setIndices(indices);
+        m.set_vertices(vertices);
+        m.set_indices(indices);
         return m;
     };
 

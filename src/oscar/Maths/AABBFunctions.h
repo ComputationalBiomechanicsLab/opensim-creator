@@ -36,7 +36,7 @@ namespace osc
     }
 
     // returns the volume of `aabb`
-    constexpr float volume(AABB const& aabb)
+    constexpr float volume_of(AABB const& aabb)
     {
         Vec3 const dims = dimensions_of(aabb);
         return dims.x * dims.y * dims.z;
@@ -51,7 +51,7 @@ namespace osc
     // tests if `aabb` has zero width along any of its edges
     constexpr bool has_zero_volume(AABB const& aabb)
     {
-        return volume(aabb) == 0.0f;
+        return volume_of(aabb) == 0.0f;
     }
 
     // returns the eight corner vertices of `aabb`

@@ -31,6 +31,6 @@ TEST(InMemoryMesh, DefaultConstructedEmitsABlankMesh)
     });
 
     ASSERT_EQ(nEmitted, 1);
-    ASSERT_EQ(latestDecoration.mesh.getNumVerts(), 0);
-    ASSERT_EQ(latestDecoration.mesh.getNumIndices(), 0);
+    ASSERT_EQ(latestDecoration.mesh.num_vertices(), 0);
+    ASSERT_EQ(latestDecoration.mesh.num_indices(), 0);
 }

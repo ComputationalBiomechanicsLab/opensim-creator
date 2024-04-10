@@ -40,84 +40,84 @@ namespace osc
 
         // affects how the backend renderer ultimately renders this mesh data
         // (e.g. would tell the OpenGL backend to draw with GL_LINES vs. GL_TRIANGLES)
-        MeshTopology getTopology() const;
-        void setTopology(MeshTopology);
+        MeshTopology topology() const;
+        void set_topology(MeshTopology);
 
         // vertex data: reassigning this causes attributes (normals, texture
         //              coordinates, colors, and tangents) to be resized
-        bool hasVerts() const;
-        size_t getNumVerts() const;
-        std::vector<Vec3> getVerts() const;
-        void setVerts(std::span<Vec3 const>);
-        void setVerts(std::initializer_list<Vec3> il)
+        bool has_vertices() const;
+        size_t num_vertices() const;
+        std::vector<Vec3> vertices() const;
+        void set_vertices(std::span<const Vec3>);
+        void set_vertices(std::initializer_list<Vec3> il)
         {
-            setVerts(std::span<Vec3 const>{il});
+            set_vertices(std::span<const Vec3>{il});
         }
-        void transformVerts(std::function<Vec3(Vec3)> const&);
-        void transformVerts(Transform const&);
-        void transformVerts(Mat4 const&);
+        void transform_vertices(const std::function<Vec3(Vec3)>&);
+        void transform_vertices(const Transform&);
+        void transform_vertices(const Mat4&);
 
         // attribute: you can only set an equal amount of normals to the number of
         //            vertices (or zero, which means "clear them")
-        bool hasNormals() const;
-        std::vector<Vec3> getNormals() const;
-        void setNormals(std::span<Vec3 const>);
-        void setNormals(std::initializer_list<Vec3> il)
+        bool has_normals() const;
+        std::vector<Vec3> normals() const;
+        void set_normals(std::span<const Vec3>);
+        void set_normals(std::initializer_list<Vec3> il)
         {
-            setNormals(std::span<Vec3 const>{il});
+            set_normals(std::span<const Vec3>{il});
         }
-        void transformNormals(std::function<Vec3(Vec3)> const&);
+        void transform_normals(const std::function<Vec3(Vec3)>&);
 
         // attribute: you can only set an equal amount of texture coordinates to
         //            the number of vertices (or zero, which means "clear them")
-        bool hasTexCoords() const;
-        std::vector<Vec2> getTexCoords() const;
-        void setTexCoords(std::span<Vec2 const>);
-        void setTexCoords(std::initializer_list<Vec2> il)
+        bool has_tex_coords() const;
+        std::vector<Vec2> tex_coords() const;
+        void set_tex_coords(std::span<const Vec2>);
+        void set_tex_coords(std::initializer_list<Vec2> il)
         {
-            setTexCoords(std::span<Vec2 const>{il});
+            set_tex_coords(std::span<const Vec2>{il});
         }
-        void transformTexCoords(std::function<Vec2(Vec2)> const&);
+        void transform_tex_coords(const std::function<Vec2(Vec2)>&);
 
         // attribute: you can only set an equal amount of colors to the number of
         //            vertices (or zero, which means "clear them")
-        std::vector<Color> getColors() const;
-        void setColors(std::span<Color const>);
-        void setColors(std::initializer_list<Color> il)
+        std::vector<Color> colors() const;
+        void set_colors(std::span<const Color>);
+        void set_colors(std::initializer_list<Color> il)
         {
-            setColors(std::span<Color const>{il});
+            set_colors(std::span<const Color>{il});
         }
 
         // attribute: you can only set an equal amount of tangents to the number of
         //            vertices (or zero, which means "clear them")
-        std::vector<Vec4> getTangents() const;
-        void setTangents(std::span<Vec4 const>);
-        void setTangents(std::initializer_list<Vec4> il)
+        std::vector<Vec4> tangents() const;
+        void set_tangents(std::span<const Vec4>);
+        void set_tangents(std::initializer_list<Vec4> il)
         {
-            setTangents(std::span<Vec4 const>{il});
+            set_tangents(std::span<const Vec4>{il});
         }
 
         // indices into the vertex data: tells the backend which primatives
         // to draw in which order from the underlying vertex buffer
         //
         // all meshes _must_ be indexed: even if you're just drawing a single triangle
-        size_t getNumIndices() const;
-        MeshIndicesView getIndices() const;
-        void setIndices(MeshIndicesView, MeshUpdateFlags = MeshUpdateFlags::Default);
-        void setIndices(std::initializer_list<uint32_t> il)
+        size_t num_indices() const;
+        MeshIndicesView indices() const;
+        void set_indices(MeshIndicesView, MeshUpdateFlags = MeshUpdateFlags::Default);
+        void set_indices(std::initializer_list<uint32_t> il)
         {
-            setIndices(MeshIndicesView{il});
+            set_indices(MeshIndicesView{il});
         }
-        void forEachIndexedVert(std::function<void(Vec3)> const&) const;
-        void forEachIndexedTriangle(std::function<void(Triangle)> const&) const;
-        Triangle getTriangleAt(size_t firstIndexOffset) const;
-        std::vector<Vec3> getIndexedVerts() const;
+        void for_each_indexed_vert(const std::function<void(Vec3)>&) const;
+        void for_each_indexed_triangle(const std::function<void(Triangle)>&) const;
+        Triangle get_triangle_at(size_t first_index_offset) const;
+        std::vector<Vec3> indexed_vertices() const;
 
         // local-space bounds of the mesh
         //
-        // automatically recalculated from the indexed data whenever `setVerts`,
-        // `setIndices`, or `setVertexBufferData` is called
-        AABB const& getBounds() const;
+        // automatically recalculated from the indexed data whenever `set_vertices`,
+        // `set_indices`, or `set_vertex_buffer_data` is called
+        const AABB& bounds() const;
 
         // clear all data in the mesh, such that the mesh then behaves as-if it were
         // just default-initialized
@@ -129,35 +129,35 @@ namespace osc
         // meshes. This is handy if (e.g.) you want to upload all of your mesh data
         // in one shot, or if you want to apply different materials to different parts
         // of the mesh, without having to create a bunch of separate vertex buffers
-        size_t getSubMeshCount() const;
-        void pushSubMeshDescriptor(SubMeshDescriptor const&);
-        SubMeshDescriptor const& getSubMeshDescriptor(size_t) const;
+        size_t num_submesh_descriptors() const;
+        void push_submesh_descriptor(const SubMeshDescriptor&);
+        const SubMeshDescriptor& submesh_descriptor_at(size_t) const;
         template<std::ranges::input_range Range>
-        void setSubmeshDescriptors(Range const& range)
+        void set_submesh_descriptors(const Range& range)
         {
-            clearSubMeshDescriptors();
-            for (auto const& desc : range) {
-                pushSubMeshDescriptor(desc);
+            clear_submesh_descriptors();
+            for (const auto& desc : range) {
+                push_submesh_descriptor(desc);
             }
         }
-        void clearSubMeshDescriptors();
+        void clear_submesh_descriptors();
 
         // advanced api: vertex attribute querying/layout/reformatting
         //
         // enables working with the actual layout of data on the CPU/GPU, so that
         // callers can (e.g.) upload all of their vertex data in one shot (rather than
         // calling each of the 'basic' methods above one-by-one, etc.)
-        size_t getVertexAttributeCount() const;
-        VertexFormat const& getVertexAttributes() const;
-        void setVertexBufferParams(size_t n, VertexFormat const&);
-        size_t getVertexBufferStride() const;
-        void setVertexBufferData(std::span<uint8_t const>, MeshUpdateFlags = MeshUpdateFlags::Default);
+        size_t num_vertex_attributes() const;
+        const VertexFormat& vertex_format() const;
+        void set_vertex_buffer_params(size_t num_vertices, const VertexFormat&);
+        size_t vertex_buffer_stride() const;
+        void set_vertex_buffer_data(std::span<const uint8_t>, MeshUpdateFlags = MeshUpdateFlags::Default);
         template<std::ranges::contiguous_range Range>
         requires BitCastable<typename Range::value_type>
-        void setVertexBufferData(Range const& range, MeshUpdateFlags flags = MeshUpdateFlags::Default)
+        void set_vertex_buffer_data(const Range& range, MeshUpdateFlags flags = MeshUpdateFlags::Default)
         {
-            std::span<uint8_t const> bytes = view_object_representations<uint8_t>(range);
-            setVertexBufferData(bytes, flags);
+            std::span<const uint8_t> bytes = view_object_representations<uint8_t>(range);
+            set_vertex_buffer_data(bytes, flags);
         }
 
         // recalculates the normals of the mesh from its triangles
@@ -165,7 +165,7 @@ namespace osc
         // - does nothing if the mesh's topology is != MeshTopology::Triangles
         // - the normals of shared vertices are averaged (i.e. smooth-shaded)
         // - creates a normal vertex attribute if tangents aren't assigned yet
-        void recalculateNormals();
+        void recalculate_normals();
 
         // recalculates the tangents of the mesh from its triangles + normals + texture coordinates
         //
@@ -173,15 +173,15 @@ namespace osc
         // - does nothing if the mesh has no normals
         // - does nothing if the mesh has no texture coordinates
         // - creates a tangent vertex attribute if tangents aren't assigned yet
-        void recalculateTangents();
+        void recalculate_tangents();
 
         friend void swap(Mesh& a, Mesh& b) noexcept
         {
             swap(a.m_Impl, b.m_Impl);
         }
 
-        friend bool operator==(Mesh const&, Mesh const&) = default;
-        friend std::ostream& operator<<(std::ostream&, Mesh const&);
+        friend bool operator==(const Mesh&, const Mesh&) = default;
+        friend std::ostream& operator<<(std::ostream&, const Mesh&);
     private:
         friend class GraphicsBackend;
         friend struct std::hash<Mesh>;
@@ -190,12 +190,12 @@ namespace osc
         CopyOnUpdPtr<Impl> m_Impl;
     };
 
-    std::ostream& operator<<(std::ostream&, Mesh const&);
+    std::ostream& operator<<(std::ostream&, const Mesh&);
 }
 
 template<>
 struct std::hash<osc::Mesh> final {
-    size_t operator()(osc::Mesh const& mesh) const
+    size_t operator()(const osc::Mesh& mesh) const
     {
         return std::hash<osc::CopyOnUpdPtr<osc::Mesh::Impl>>{}(mesh.m_Impl);
     }

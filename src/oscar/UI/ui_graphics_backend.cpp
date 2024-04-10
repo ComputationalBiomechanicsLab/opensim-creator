@@ -237,8 +237,8 @@ namespace
 
         // setup submesh description
         SubMeshDescriptor d{drawCommand.IdxOffset, drawCommand.ElemCount, MeshTopology::Triangles};
-        size_t idx = mesh.getSubMeshCount();
-        mesh.pushSubMeshDescriptor(d);
+        size_t idx = mesh.num_submesh_descriptors();
+        mesh.push_submesh_descriptor(d);
 
         if (auto const* texture = try_find(bd.texturesSubmittedThisFrame, ToUID(drawCommand.GetTexID())))
         {
@@ -277,13 +277,13 @@ namespace
 
         Mesh& mesh = bd.mesh;
         mesh.clear();
-        mesh.setVertexBufferParams(drawList.VtxBuffer.Size, {
+        mesh.set_vertex_buffer_params(drawList.VtxBuffer.Size, {
             {VertexAttribute::Position,  VertexAttributeFormat::Float32x2},
             {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
             {VertexAttribute::Color,     VertexAttributeFormat::Unorm8x4},
         });
-        mesh.setVertexBufferData(std::span<ImDrawVert>{drawList.VtxBuffer.Data, static_cast<size_t>(drawList.VtxBuffer.Size)});
-        mesh.setIndices({drawList.IdxBuffer.Data, static_cast<size_t>(drawList.IdxBuffer.size())}, MeshUpdateFlags::DontRecalculateBounds | MeshUpdateFlags::DontValidateIndices);
+        mesh.set_vertex_buffer_data(std::span<ImDrawVert>{drawList.VtxBuffer.Data, static_cast<size_t>(drawList.VtxBuffer.Size)});
+        mesh.set_indices({drawList.IdxBuffer.Data, static_cast<size_t>(drawList.IdxBuffer.size())}, MeshUpdateFlags::DontRecalculateBounds | MeshUpdateFlags::DontValidateIndices);
 
         // iterate through command buffer
         for (int i = 0; i < drawList.CmdBuffer.Size; ++i)

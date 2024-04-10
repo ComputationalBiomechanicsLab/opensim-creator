@@ -211,7 +211,7 @@ namespace
         Mesh oscMesh = ToOscMesh(model, state, openSimMesh);
 
         // bake transform into mesh data
-        oscMesh.transformVerts(CalcTransformWithRespectTo(openSimMesh, frame, state));
+        oscMesh.transform_vertices(CalcTransformWithRespectTo(openSimMesh, frame, state));
 
         // write transformed mesh to output
         std::ofstream outputFileStream
@@ -259,7 +259,7 @@ namespace
         Mesh oscMesh = ToOscMesh(model, state, openSimMesh);
 
         // bake transform into mesh data
-        oscMesh.transformVerts(CalcTransformWithRespectTo(openSimMesh, frame, state));
+        oscMesh.transform_vertices(CalcTransformWithRespectTo(openSimMesh, frame, state));
 
         // write transformed mesh to output
         std::ofstream outputFileStream

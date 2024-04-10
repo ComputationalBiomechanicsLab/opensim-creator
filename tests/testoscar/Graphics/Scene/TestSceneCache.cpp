@@ -31,8 +31,8 @@ TEST(SceneMesh, GetBVHOnNonEmptyMeshReturnsExpectedRootNode)
     auto const pyramidIndices = std::to_array<uint16_t>({0, 1, 2});
 
     Mesh m;
-    m.setVerts(pyramid);
-    m.setIndices(pyramidIndices);
+    m.set_vertices(pyramid);
+    m.set_indices(pyramidIndices);
 
     AABB const expectedRoot = bounding_aabb_of(pyramid);
 
@@ -41,5 +41,5 @@ TEST(SceneMesh, GetBVHOnNonEmptyMeshReturnsExpectedRootNode)
     BVH const& bvh = c.get_bvh(m);
 
     ASSERT_FALSE(bvh.empty());
-    ASSERT_EQ(expectedRoot, bvh.getBounds());
+    ASSERT_EQ(expectedRoot, bvh.bounds());
 }

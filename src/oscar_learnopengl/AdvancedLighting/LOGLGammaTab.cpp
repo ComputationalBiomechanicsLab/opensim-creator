@@ -30,7 +30,7 @@ namespace
     Mesh GeneratePlane()
     {
         Mesh rv;
-        rv.setVerts({
+        rv.set_vertices({
             { 10.0f, -0.5f,  10.0f},
             {-10.0f, -0.5f,  10.0f},
             {-10.0f, -0.5f, -10.0f},
@@ -39,7 +39,7 @@ namespace
             {-10.0f, -0.5f, -10.0f},
             { 10.0f, -0.5f, -10.0f},
         });
-        rv.setTexCoords({
+        rv.set_tex_coords({
             {10.0f, 0.0f},
             {0.0f,  0.0f},
             {0.0f,  10.0f},
@@ -48,7 +48,7 @@ namespace
             {0.0f,  10.0f},
             {10.0f, 10.0f},
         });
-        rv.setNormals({
+        rv.set_normals({
             {0.0f, 1.0f, 0.0f},
             {0.0f, 1.0f, 0.0f},
             {0.0f, 1.0f, 0.0f},
@@ -57,7 +57,7 @@ namespace
             {0.0f, 1.0f, 0.0f},
             {0.0f, 1.0f, 0.0f},
         });
-        rv.setIndices({0, 2, 1, 3, 5, 4});
+        rv.set_indices({0, 2, 1, 3, 5, 4});
         return rv;
     }
 

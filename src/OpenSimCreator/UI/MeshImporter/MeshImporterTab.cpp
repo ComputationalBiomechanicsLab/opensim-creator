@@ -1452,7 +1452,7 @@ private:
                         Mat4 const meshVertToMIObjectVert = inverse_mat4_cast(MIObjectToGround) * mat4_cast(meshVertToGround);
 
                         osc::Mesh mesh = el.getMeshData();
-                        mesh.transformVerts(meshVertToMIObjectVert);
+                        mesh.transform_vertices(meshVertToMIObjectVert);
                         actionPromptUserToSaveMeshAsOBJ(mesh);
                     }
 
@@ -1463,7 +1463,7 @@ private:
                         Mat4 const meshVertToMIObjectVert = inverse_mat4_cast(MIObjectToGround) * mat4_cast(meshVertToGround);
 
                         osc::Mesh mesh = el.getMeshData();
-                        mesh.transformVerts(meshVertToMIObjectVert);
+                        mesh.transform_vertices(meshVertToMIObjectVert);
                         actionPromptUserToSaveMeshAsSTL(mesh);
                     }
 
@@ -1767,7 +1767,7 @@ private:
 
         if (ui::BeginPopupContextItem("##addpainttoscenepopup", ImGuiPopupFlags_MouseButtonLeft))
         {
-            std::span<Color const> colors = m_Shared->getColors();
+            std::span<Color const> colors = m_Shared->colors();
             std::span<char const* const> labels = m_Shared->getColorLabels();
             OSC_ASSERT(colors.size() == labels.size() && "every color should have a label");
 

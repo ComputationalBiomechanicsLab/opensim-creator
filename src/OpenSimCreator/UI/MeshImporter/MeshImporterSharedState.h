@@ -460,7 +460,7 @@ namespace osc::mi
             m_3DSceneCamera.focusPoint = -focusPoint;
         }
 
-        std::span<Color const> getColors() const
+        std::span<Color const> colors() const
         {
             static_assert(offsetof(Colors, ground) == 0);
             static_assert(sizeof(Colors) % sizeof(Color) == 0);

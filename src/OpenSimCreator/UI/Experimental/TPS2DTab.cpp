@@ -292,7 +292,7 @@ namespace
     Mesh ApplyThinPlateWarpToMesh(ThinPlateWarper2D const& t, Mesh const& mesh)
     {
         Mesh rv = mesh;
-        rv.transformVerts([&t](Vec3 v) { return Vec3{t.transform(v), v.z}; });
+        rv.transform_vertices([&t](Vec3 v) { return Vec3{t.transform(v), v.z}; });
         return rv;
     }
 }

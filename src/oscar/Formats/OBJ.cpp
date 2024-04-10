@@ -26,7 +26,7 @@ namespace
 
     void write_vertices(std::ostream& o, const Mesh& mesh)
     {
-        for (const Vec3& v : mesh.getVerts()) {
+        for (const Vec3& v : mesh.vertices()) {
             o << "v ";
             write_vec3(o, v);
             o << '\n';
@@ -35,7 +35,7 @@ namespace
 
     void write_normals(std::ostream& o, const Mesh& mesh)
     {
-        for (const Vec3& v : mesh.getNormals()) {
+        for (const Vec3& v : mesh.normals()) {
             o << "vn ";
             write_vec3(o, v);
             o << '\n';
@@ -44,11 +44,11 @@ namespace
 
     void write_faces(std::ostream& o, const Mesh& mesh, ObjWriterFlags flags)
     {
-        if (mesh.getTopology() != MeshTopology::Triangles) {
+        if (mesh.topology() != MeshTopology::Triangles) {
             return;
         }
 
-        const auto view = mesh.getIndices();
+        const auto view = mesh.indices();
         for (ptrdiff_t i = 0; i < std::ssize(view)-2; i += 3) {
             // vertex indices start at 1 in OBJ
             const uint32_t i0 = view[i]+1;

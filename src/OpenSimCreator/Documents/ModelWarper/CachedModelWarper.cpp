@@ -30,11 +30,11 @@ namespace
     {
         // TODO: this ignores scale factors
         Mesh mesh = ToOscMesh(model, state, inputMesh);
-        auto verts = mesh.getVerts();
+        auto vertices = mesh.vertices();
         auto compiled = warper.tryCreatePointWarper(document);
-        compiled->warpInPlace(verts);
-        mesh.setVerts(verts);
-        mesh.recalculateNormals();
+        compiled->warpInPlace(vertices);
+        mesh.set_vertices(vertices);
+        mesh.recalculate_normals();
         return std::make_unique<InMemoryMesh>(mesh);
     }
 

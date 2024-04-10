@@ -99,7 +99,7 @@ SimTK::DecorativeMesh osc::fd::CreateParallelogramMesh(
 {
     SimTK::PolygonalMesh polygonalMesh;
     {
-        auto const verts = std::to_array(
+        auto const vertices = std::to_array(
         {
             origin,
             origin + firstEdge,
@@ -108,8 +108,8 @@ SimTK::DecorativeMesh osc::fd::CreateParallelogramMesh(
         });
 
         SimTK::Array_<int> face;
-        face.reserve(static_cast<decltype(face)::size_type>(verts.size()));
-        for (SimTK::Vec3 const& vert : verts)
+        face.reserve(static_cast<decltype(face)::size_type>(vertices.size()));
+        for (SimTK::Vec3 const& vert : vertices)
         {
             face.push_back(polygonalMesh.addVertex(vert));
         }

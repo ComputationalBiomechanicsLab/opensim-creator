@@ -20,24 +20,24 @@
 
 using namespace osc;
 
-Vec3 osc::average_centroid_of(Mesh const& m)
+Vec3 osc::average_centroid_of(const Mesh& mesh)
 {
-    Vec3 accumulator{};
+    Vec3d accumulator{};
     size_t i = 0;
-    m.forEachIndexedVert([&accumulator, &i](Vec3 v)
+    mesh.for_each_indexed_vert([&accumulator, &i](Vec3 v)
     {
         accumulator += v;
         ++i;
     });
-    return accumulator / static_cast<float>(i);
+    return Vec3{accumulator / static_cast<double>(i)};
 }
 
 std::vector<Vec4> osc::calc_tangent_vectors(
-    MeshTopology const& topology,
-    std::span<Vec3 const> verts,
-    std::span<Vec3 const> normals,
-    std::span<Vec2 const> texCoords,
-    MeshIndicesView const& indices)
+    const MeshTopology& topology,
+    std::span<const Vec3> vertices,
+    std::span<const Vec3> normals,
+    std::span<const Vec2> tex_coords,
+    const MeshIndicesView& indices)
 {
     // related:
     //
@@ -53,20 +53,20 @@ std::vector<Vec4> osc::calc_tangent_vectors(
 
     // edge-case: there's insufficient topological/normal/coordinate data, so
     //            return fallback-filled ({1,0,0,1}) vector
-    if (topology != MeshTopology::Triangles ||
-        normals.empty() ||
-        texCoords.empty()) {
+    if (topology != MeshTopology::Triangles or
+        normals.empty() or
+        tex_coords.empty()) {
 
-        rv.assign(verts.size(), {1.0f, 0.0f, 0.0f, 1.0f});
+        rv.assign(vertices.size(), {1.0f, 0.0f, 0.0f, 1.0f});
         return rv;
     }
 
     // else: there must be enough data to compute the tangents
     //
     // (but, just to keep sane, assert that the mesh data is actually valid)
-    OSC_ASSERT_ALWAYS(all_of(indices, [nVerts = verts.size(), nNormals = normals.size(), nCoords = texCoords.size()](auto index)
+    OSC_ASSERT_ALWAYS(all_of(indices, [num_verts = vertices.size(), num_normals = normals.size(), num_tex_coords = tex_coords.size()](auto index)
     {
-        return index < nVerts && index < nNormals && index < nCoords;
+        return index < num_verts and index < num_normals and index < num_tex_coords;
     }) && "the provided mesh contains invalid indices");
 
     // for smooth shading, vertices, normals, texture coordinates, and tangents
@@ -76,64 +76,64 @@ std::vector<Vec4> osc::calc_tangent_vectors(
     // - initialize all tangent vectors to `{0,0,0,0}`s
     // - initialize a weights vector filled with `0`s
     // - every time a tangent vector is computed:
-    //     - accumulate a new average: `tangents[i] = (weights[i]*tangents[i] + newTangent)/weights[i]+1;`
+    //     - accumulate a new average: `tangents[i] = (weights[i]*tangents[i] + new_tangent)/weights[i]+1;`
     //     - increment weight: `weights[i]++`
-    rv.assign(verts.size(), {0.0f, 0.0f, 0.0f, 0.0f});
-    std::vector<uint16_t> weights(verts.size(), 0);
-    auto const accumulateTangent = [&rv, &weights](auto i, Vec4 const& newTangent)
+    rv.assign(vertices.size(), {0.0f, 0.0f, 0.0f, 0.0f});
+    std::vector<uint16_t> weights(vertices.size(), 0);
+    const auto accumulate_tangent = [&rv, &weights](auto i, const Vec4& new_tangent)
     {
-        rv[i] = (static_cast<float>(weights[i])*rv[i] + newTangent)/(static_cast<float>(weights[i]+1));
+        rv[i] = (static_cast<float>(weights[i])*rv[i] + new_tangent)/(static_cast<float>(weights[i]+1));
         weights[i]++;
     };
 
     // compute tangent vectors from triangle primitives
-    for (ptrdiff_t triBegin = 0, end = std::ssize(indices)-2; triBegin < end; triBegin += 3) {
+    for (ptrdiff_t triangle_begin = 0, end = std::ssize(indices)-2; triangle_begin < end; triangle_begin += 3) {
 
         // compute edge vectors in object and tangent (UV) space
-        Vec3 const e1 = verts[indices[triBegin+1]] - verts[indices[triBegin+0]];
-        Vec3 const e2 = verts[indices[triBegin+2]] - verts[indices[triBegin+0]];
-        Vec2 const dUV1 = texCoords[indices[triBegin+1]] - texCoords[indices[triBegin+0]];  // delta UV for edge 1
-        Vec2 const dUV2 = texCoords[indices[triBegin+2]] - texCoords[indices[triBegin+0]];
+        const Vec3 e1 = vertices[indices[triangle_begin+1]] - vertices[indices[triangle_begin+0]];
+        const Vec3 e2 = vertices[indices[triangle_begin+2]] - vertices[indices[triangle_begin+0]];
+        const Vec2 delta_uv1 = tex_coords[indices[triangle_begin+1]] - tex_coords[indices[triangle_begin+0]];
+        const Vec2 delta_uv2 = tex_coords[indices[triangle_begin+2]] - tex_coords[indices[triangle_begin+0]];
 
         // this is effectively inline-ing a matrix inversion + multiplication, see:
         //
         // - https://www.cs.utexas.edu/~fussell/courses/cs384g-spring2016/lectures/normal_mapping_tangent.pdf
         // - https://learnopengl.com/Advanced-Lighting/Normal-Mapping
-        float const invDeterminant = 1.0f/(dUV1.x*dUV2.y - dUV2.x*dUV1.y);
-        Vec3 const tangent = invDeterminant * Vec3{
-            dUV2.y*e1.x - dUV1.y*e2.x,
-            dUV2.y*e1.y - dUV1.y*e2.y,
-            dUV2.y*e1.z - dUV1.y*e2.z,
+        const float inv_determinant = 1.0f/(delta_uv1.x*delta_uv2.y - delta_uv2.x*delta_uv1.y);
+        const Vec3 tangent = inv_determinant * Vec3{
+            delta_uv2.y*e1.x - delta_uv1.y*e2.x,
+            delta_uv2.y*e1.y - delta_uv1.y*e2.y,
+            delta_uv2.y*e1.z - delta_uv1.y*e2.z,
         };
-        Vec3 const bitangent = invDeterminant * Vec3{
-            -dUV2.x*e1.x + dUV1.x*e2.x,
-            -dUV2.x*e1.y + dUV1.x*e2.y,
-            -dUV2.x*e1.z + dUV1.x*e2.z,
+        const Vec3 bitangent = inv_determinant * Vec3{
+            -delta_uv2.x*e1.x + delta_uv1.x*e2.x,
+            -delta_uv2.x*e1.y + delta_uv1.x*e2.y,
+            -delta_uv2.x*e1.z + delta_uv1.x*e2.z,
         };
 
         // care: due to smooth shading, each normal may not actually be orthogonal
         // to the triangle's surface
-        for (ptrdiff_t iVert = 0; iVert < 3; ++iVert) {
-            auto const triVertIndex = indices[triBegin + iVert];
+        for (ptrdiff_t ith_vertex = 0; ith_vertex < 3; ++ith_vertex) {
+            const auto triangle_vertex_index = indices[triangle_begin + ith_vertex];
 
             // Gram-Schmidt orthogonalization (w.r.t. the stored normal)
-            Vec3 const normal = normalize(normals[triVertIndex]);
-            Vec3 const orthoTangent = normalize(tangent - dot(normal, tangent)*normal);
-            Vec3 const orthoBitangent = normalize(bitangent - (dot(orthoTangent, bitangent)*orthoTangent) - (dot(normal, bitangent)*normal));
+            const Vec3 normal = normalize(normals[triangle_vertex_index]);
+            const Vec3 ortho_tangent = normalize(tangent - dot(normal, tangent)*normal);
+            const Vec3 ortho_bitangent = normalize(bitangent - (dot(ortho_tangent, bitangent)*ortho_tangent) - (dot(normal, bitangent)*normal));
 
             // this algorithm doesn't produce bitangents. Instead, it writes the
             // "direction" (flip) of the bitangent w.r.t. `cross(normal, tangent)`
             //
             // (the shader can recompute the bitangent from: `cross(normal, tangent) * w`)
-            float const w = dot(cross(normal, orthoTangent), orthoBitangent);
+            const float w = dot(cross(normal, ortho_tangent), ortho_bitangent);
 
-            accumulateTangent(triVertIndex, Vec4{orthoTangent, w});
+            accumulate_tangent(triangle_vertex_index, Vec4{ortho_tangent, w});
         }
     }
     return rv;
 }
 
-Vec3 osc::mass_center_of(Mesh const& m)
+Vec3 osc::mass_center_of(const Mesh& mesh)
 {
     // hastily implemented from: http://forums.cgsociety.org/t/how-to-calculate-center-of-mass-for-triangular-mesh/1309966
     //
@@ -149,26 +149,26 @@ Vec3 osc::mass_center_of(Mesh const& m)
     // submits an invalid mesh, this calculation could potentially produce a
     // volume that's *way* off
 
-    if (m.getTopology() != MeshTopology::Triangles || m.getNumVerts() < 3) {
+    if (mesh.topology() != MeshTopology::Triangles or mesh.num_vertices() < 3) {
         return {0.0f, 0.0f, 0.0f};
     }
 
-    double totalVolume = 0.0f;
-    Vec3d weightedCenterOfMass{};
-    m.forEachIndexedTriangle([&totalVolume, &weightedCenterOfMass](Triangle t)
+    double total_volume = 0.0f;
+    Vec3d weighted_com{};
+    mesh.for_each_indexed_triangle([&total_volume, &weighted_com](Triangle t)
     {
-        Vec3 const referencePoint{};
-        Tetrahedron const tetrahedron{referencePoint, t.p0, t.p1, t.p2};
-        double const v = volume(tetrahedron);
-        Vec3d const centerOfMass = centroid_of(tetrahedron);
+        const Vec3 reference_point{};
+        const Tetrahedron tetrahedron{reference_point, t.p0, t.p1, t.p2};
+        const double v = volume_of(tetrahedron);
+        const Vec3d com = centroid_of(tetrahedron);
 
-        totalVolume += v;
-        weightedCenterOfMass += v * centerOfMass;
+        total_volume += v;
+        weighted_com += v * com;
     });
-    return weightedCenterOfMass / totalVolume;
+    return weighted_com / total_volume;
 }
 
-Sphere osc::bounding_sphere_of(Mesh const& mesh)
+Sphere osc::bounding_sphere_of(const Mesh& mesh)
 {
-    return bounding_sphere_of(mesh.getVerts());
+    return bounding_sphere_of(mesh.vertices());
 }

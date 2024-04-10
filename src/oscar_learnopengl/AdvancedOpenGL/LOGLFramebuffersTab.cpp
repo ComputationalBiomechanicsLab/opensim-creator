@@ -17,7 +17,7 @@ namespace
     Mesh GeneratePlane()
     {
         Mesh rv;
-        rv.setVerts({
+        rv.set_vertices({
             { 5.0f, -0.5f,  5.0f},
             {-5.0f, -0.5f,  5.0f},
             {-5.0f, -0.5f, -5.0f},
@@ -26,7 +26,7 @@ namespace
             {-5.0f, -0.5f, -5.0f},
             { 5.0f, -0.5f, -5.0f},
         });
-        rv.setTexCoords({
+        rv.set_tex_coords({
             {2.0f, 0.0f},
             {0.0f, 0.0f},
             {0.0f, 2.0f},
@@ -35,7 +35,7 @@ namespace
             {0.0f, 2.0f},
             {2.0f, 2.0f},
         });
-        rv.setIndices({0, 2, 1,    3, 5, 4});
+        rv.set_indices({0, 2, 1,    3, 5, 4});
         return rv;
     }
 

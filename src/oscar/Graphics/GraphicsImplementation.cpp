@@ -598,7 +598,7 @@ namespace
             mesh{std::move(mesh_)},
             maybe_prop_block{std::move(maybe_prop_block_)},
             transform{transform_},
-            world_centroid{material.is_transparent() ? transform_point(transform_, centroid_of(mesh.getBounds())) : Vec3{}},
+            world_centroid{material.is_transparent() ? transform_point(transform_, centroid_of(mesh.bounds())) : Vec3{}},
             maybe_submesh_index{maybe_submesh_index_}
         {}
 
@@ -613,7 +613,7 @@ namespace
             mesh{std::move(mesh_)},
             maybe_prop_block{std::move(maybe_prop_block_)},
             transform{transform_},
-            world_centroid{material.is_transparent() ? transform_ * Vec4{centroid_of(mesh.getBounds()), 1.0f} : Vec3{}},
+            world_centroid{material.is_transparent() ? transform_ * Vec4{centroid_of(mesh.bounds()), 1.0f} : Vec3{}},
             maybe_submesh_index{maybe_submesh_index_}
         {}
 
@@ -4256,8 +4256,8 @@ namespace
         VertexBuffer() = default;
 
         // formatted ctor: make a buffer of the specified size+format
-        VertexBuffer(size_t num_verts, const VertexFormat& format) :
-            data_(num_verts * format.stride()),
+        VertexBuffer(size_t num_vertices, const VertexFormat& format) :
+            data_(num_vertices * format.stride()),
             vertex_format_{format}
         {}
 
@@ -4267,7 +4267,7 @@ namespace
             vertex_format_.clear();
         }
 
-        size_t num_verts() const
+        size_t num_vertices() const
         {
             return vertex_format_.empty() ? 0 : (data_.size() / vertex_format_.stride());
         }
@@ -4282,9 +4282,9 @@ namespace
             return vertex_format_.stride();
         }
 
-        [[nodiscard]] bool has_verts() const
+        [[nodiscard]] bool has_vertices() const
         {
-            return num_verts() > 0;
+            return num_vertices() > 0;
         }
 
         std::span<const std::byte> bytes() const
@@ -4355,13 +4355,13 @@ namespace
                 if (vertex_format_.contains(attribute)) {
                     VertexFormat new_format{vertex_format_};
                     new_format.erase(attribute);
-                    set_params(num_verts(), new_format);
+                    set_params(num_vertices(), new_format);
                 }
                 return;  // ignore/wipe
             }
 
             if (attribute != VertexAttribute::Position) {
-                if (values.size() != num_verts()) {
+                if (values.size() != num_vertices()) {
                     // non-`Position` attributes must be size-matched
                     return;
                 }
@@ -4379,7 +4379,7 @@ namespace
                 new_format.insert({attribute, default_format(attribute)});
                 set_params(values.size(), new_format);
             }
-            else if (values.size() != num_verts()) {
+            else if (values.size() != num_vertices()) {
                 // resize
                 set_params(values.size(), vertex_format_);
             }
@@ -4424,7 +4424,7 @@ namespace
                 data_ = std::move(new_buffer);
                 vertex_format_ = new_format;
             }
-            else if (new_num_verts != num_verts()) {
+            else if (new_num_verts != num_vertices()) {
                 // resize (zero-initialized, if growing) the buffer
                 data_.resize(new_num_verts * vertex_format_.stride());
             }
@@ -4435,7 +4435,7 @@ namespace
 
         void set_format(const VertexFormat& new_format)
         {
-            set_params(num_verts(), new_format);
+            set_params(num_vertices(), new_format);
         }
 
         void set_data(std::span<const std::byte> data)
@@ -4452,33 +4452,33 @@ namespace
 class osc::Mesh::Impl final {
 public:
 
-    MeshTopology getTopology() const
+    MeshTopology topology() const
     {
         return topology_;
     }
 
-    void setTopology(MeshTopology topology)
+    void set_topology(MeshTopology topology)
     {
         topology_ = topology;
         version_->reset();
     }
 
-    size_t getNumVerts() const
+    size_t num_vertices() const
     {
-        return vertex_buffer_.num_verts();
+        return vertex_buffer_.num_vertices();
     }
 
-    bool hasVerts() const
+    bool has_vertices() const
     {
-        return vertex_buffer_.has_verts();
+        return vertex_buffer_.has_vertices();
     }
 
-    std::vector<Vec3> getVerts() const
+    std::vector<Vec3> verts() const
     {
         return vertex_buffer_.read<Vec3>(VertexAttribute::Position);
     }
 
-    void setVerts(std::span<const Vec3> verts)
+    void set_vertices(std::span<const Vec3> verts)
     {
         vertex_buffer_.write<Vec3>(VertexAttribute::Position, verts);
 
@@ -4486,7 +4486,7 @@ public:
         version_->reset();
     }
 
-    void transformVerts(const std::function<Vec3(Vec3)>& f)
+    void transform_vertices(const std::function<Vec3(Vec3)>& f)
     {
         vertex_buffer_.transform_attribute<Vec3>(VertexAttribute::Position, f);
 
@@ -4494,7 +4494,7 @@ public:
         version_->reset();
     }
 
-    void transformVerts(const Transform& t)
+    void transform_vertices(const Transform& t)
     {
         vertex_buffer_.transform_attribute<Vec3>(VertexAttribute::Position, [&t](Vec3 v)
         {
@@ -4505,7 +4505,7 @@ public:
         version_->reset();
     }
 
-    void transformVerts(const Mat4& m)
+    void transform_vertices(const Mat4& m)
     {
         vertex_buffer_.transform_attribute<Vec3>(VertexAttribute::Position, [&m](Vec3 v)
         {
@@ -4516,84 +4516,84 @@ public:
         version_->reset();
     }
 
-    bool hasNormals() const
+    bool has_normals() const
     {
         return vertex_buffer_.has_attribute(VertexAttribute::Normal);
     }
 
-    std::vector<Vec3> getNormals() const
+    std::vector<Vec3> normals() const
     {
         return vertex_buffer_.read<Vec3>(VertexAttribute::Normal);
     }
 
-    void setNormals(std::span<const Vec3> normals)
+    void set_normals(std::span<const Vec3> normals)
     {
         vertex_buffer_.write<Vec3>(VertexAttribute::Normal, normals);
 
         version_->reset();
     }
 
-    void transformNormals(const std::function<Vec3(Vec3)>& f)
+    void transform_normals(const std::function<Vec3(Vec3)>& f)
     {
         vertex_buffer_.transform_attribute<Vec3>(VertexAttribute::Normal, f);
 
         version_->reset();
     }
 
-    bool hasTexCoords() const
+    bool has_tex_coords() const
     {
         return vertex_buffer_.has_attribute(VertexAttribute::TexCoord0);
     }
 
-    std::vector<Vec2> getTexCoords() const
+    std::vector<Vec2> tex_coords() const
     {
         return vertex_buffer_.read<Vec2>(VertexAttribute::TexCoord0);
     }
 
-    void setTexCoords(std::span<const Vec2> coords)
+    void set_tex_coords(std::span<const Vec2> coords)
     {
         vertex_buffer_.write<Vec2>(VertexAttribute::TexCoord0, coords);
 
         version_->reset();
     }
 
-    void transformTexCoords(const std::function<Vec2(Vec2)>& f)
+    void transform_tex_coords(const std::function<Vec2(Vec2)>& f)
     {
         vertex_buffer_.transform_attribute<Vec2>(VertexAttribute::TexCoord0, f);
 
         version_->reset();
     }
 
-    std::vector<Color> getColors() const
+    std::vector<Color> colors() const
     {
         return vertex_buffer_.read<Color>(VertexAttribute::Color);
     }
 
-    void setColors(std::span<const Color> colors)
+    void set_colors(std::span<const Color> colors)
     {
         vertex_buffer_.write<Color>(VertexAttribute::Color, colors);
 
         version_.reset();
     }
 
-    std::vector<Vec4> getTangents() const
+    std::vector<Vec4> tangents() const
     {
         return vertex_buffer_.read<Vec4>(VertexAttribute::Tangent);
     }
 
-    void setTangents(std::span<const Vec4> tangents)
+    void set_tangents(std::span<const Vec4> tangents)
     {
         vertex_buffer_.write<Vec4>(VertexAttribute::Tangent, tangents);
 
         version_->reset();
     }
 
-    size_t getNumIndices() const
+    size_t num_indices() const
     {
         return num_indices_;
     }
 
-    MeshIndicesView getIndices() const
+    MeshIndicesView indices() const
     {
         if (num_indices_ <= 0) {
             return {};
@@ -4606,7 +4606,7 @@ public:
         }
     }
 
-    void setIndices(MeshIndicesView indices, MeshUpdateFlags flags)
+    void set_indices(MeshIndicesView indices, MeshUpdateFlags flags)
     {
         if (indices.isU16()) {
             set_indices(indices.toU16Span(), flags);
@@ -4616,42 +4616,42 @@ public:
         }
     }
 
-    void forEachIndexedVert(const std::function<void(Vec3)>& f) const
+    void for_each_indexed_vert(const std::function<void(Vec3)>& f) const
     {
         const auto positions = vertex_buffer_.iter<Vec3>(VertexAttribute::Position).begin();
-        for (auto index : getIndices()) {
+        for (auto index : indices()) {
             f(positions[index]);
         }
     }
 
-    void forEachIndexedTriangle(const std::function<void(Triangle)>& f) const
+    void for_each_indexed_triangle(const std::function<void(Triangle)>& f) const
     {
         if (topology_ != MeshTopology::Triangles) {
             return;
         }
 
-        const MeshIndicesView indices = getIndices();
-        const size_t steps = (indices.size() / 3) * 3;
+        const MeshIndicesView mesh_indices = indices();
+        const size_t steps = (mesh_indices.size() / 3) * 3;
 
         const auto positions = vertex_buffer_.iter<Vec3>(VertexAttribute::Position).begin();
         for (size_t i = 0; i < steps; i += 3) {
             f(Triangle{
-                positions[indices[i]],
-                positions[indices[i+1]],
-                positions[indices[i+2]],
+                positions[mesh_indices[i]],
+                positions[mesh_indices[i+1]],
+                positions[mesh_indices[i+2]],
             });
         }
     }
 
-    Triangle getTriangleAt(size_t first_index_offset) const
+    Triangle get_triangle_at(size_t first_index_offset) const
     {
         if (topology_ != MeshTopology::Triangles) {
-            throw std::runtime_error{"cannot call getTriangleAt on a non-triangular-topology mesh"};
+            throw std::runtime_error{"cannot call get_triangle_at on a non-triangular-topology mesh"};
         }
 
-        const auto indices = getIndices();
+        const auto mesh_indices = indices();
 
-        if (first_index_offset+2 >= indices.size()) {
+        if (first_index_offset+2 >= mesh_indices.size()) {
             throw std::runtime_error{"provided first index offset is out-of-bounds"};
         }
 
@@ -4659,17 +4659,17 @@ public:
 
         // can use unchecked access here: `indices` are range-checked on writing
         return Triangle{
-            verts[indices[first_index_offset+0]],
-            verts[indices[first_index_offset+1]],
-            verts[indices[first_index_offset+2]],
+            verts[mesh_indices[first_index_offset+0]],
+            verts[mesh_indices[first_index_offset+1]],
+            verts[mesh_indices[first_index_offset+2]],
         };
     }
 
-    std::vector<Vec3> getIndexedVerts() const
+    std::vector<Vec3> indexed_vertices() const
     {
         std::vector<Vec3> rv;
-        rv.reserve(getNumIndices());
-        forEachIndexedVert([&rv](Vec3 v) { rv.push_back(v); });
+        rv.reserve(num_indices());
+        for_each_indexed_vert([&rv](Vec3 v) { rv.push_back(v); });
         return rv;
     }
 
@@ -4690,37 +4690,37 @@ public:
         submesh_descriptors_.clear();
     }
 
-    size_t getSubMeshCount() const
+    size_t num_submesh_descriptors() const
     {
         return submesh_descriptors_.size();
     }
 
-    void pushSubMeshDescriptor(const SubMeshDescriptor& descriptor)
+    void push_submesh_descriptor(const SubMeshDescriptor& descriptor)
     {
         submesh_descriptors_.push_back(descriptor);
     }
 
-    const SubMeshDescriptor& getSubMeshDescriptor(size_t i) const
+    const SubMeshDescriptor& submesh_descriptor_at(size_t i) const
     {
         return submesh_descriptors_.at(i);
     }
 
-    void clearSubMeshDescriptors()
+    void clear_submesh_descriptors()
     {
         submesh_descriptors_.clear();
     }
 
-    size_t getVertexAttributeCount() const
+    size_t num_vertex_attributes() const
     {
         return vertex_buffer_.num_attributes();
     }
 
-    const VertexFormat& getVertexAttributes() const
+    const VertexFormat& vertex_format() const
     {
         return vertex_buffer_.format();
     }
 
-    void setVertexBufferParams(size_t num_vertices, const VertexFormat& format)
+    void set_vertex_buffer_params(size_t num_vertices, const VertexFormat& format)
     {
         vertex_buffer_.set_params(num_vertices, format);
 
@@ -4728,12 +4728,12 @@ public:
         version_->reset();
     }
 
-    size_t getVertexBufferStride() const
+    size_t vertex_buffer_stride() const
     {
         return vertex_buffer_.stride();
     }
 
-    void setVertexBufferData(std::span<const uint8_t> data, MeshUpdateFlags update_flags)
+    void set_vertex_buffer_data(std::span<const uint8_t> data, MeshUpdateFlags update_flags)
     {
         vertex_buffer_.set_data(std::as_bytes(data));
 
@@ -4741,9 +4741,9 @@ public:
         version_->reset();
     }
 
-    void recalculateNormals()
+    void recalculate_normals()
     {
-        if (getTopology() != MeshTopology::Triangles) {
+        if (topology() != MeshTopology::Triangles) {
             // if the mesh isn't triangle-based, do nothing
             return;
         }
@@ -4760,14 +4760,14 @@ public:
         // - ++counts[i]
         // - at the end, if counts[i] > 1, then renormalize that normal (it contains a sum)
 
-        const auto indices = getIndices();
+        const auto mesh_indices = indices();
         const auto positions = vertex_buffer_.iter<Vec3>(VertexAttribute::Position);
         auto normals = vertex_buffer_.iter<Vec3>(VertexAttribute::Normal);
         std::vector<uint16_t> counts(normals.size());
 
-        for (size_t i = 0, len = 3*(indices.size()/3); i < len; i+=3) {
+        for (size_t i = 0, len = 3*(mesh_indices.size()/3); i < len; i+=3) {
             // get triangle indices
-            const Vec3uz idxs = {indices[i], indices[i+1], indices[i+2]};
+            const Vec3uz idxs = {mesh_indices[i], mesh_indices[i+1], mesh_indices[i+2]};
 
             // get triangle
             const Triangle triangle = {positions[idxs[0]], positions[idxs[1]], positions[idxs[2]]};
@@ -4798,9 +4798,9 @@ public:
         }
     }
 
-    void recalculateTangents()
+    void recalculate_tangents()
     {
-        if (getTopology() != MeshTopology::Triangles) {
+        if (topology() != MeshTopology::Triangles) {
             // if the mesh isn't triangle-based, do nothing
             return;
         }
@@ -4831,7 +4831,7 @@ public:
             std::vector<Vec3>(vbverts.begin(), vbverts.end()),
             std::vector<Vec3>(vbnormals.begin(), vbnormals.end()),
             std::vector<Vec2>(vbtexcoords.begin(), vbtexcoords.end()),
-            getIndices()
+            indices()
         );
 
         vertex_buffer_.write<Vec4>(VertexAttribute::Tangent, tangents);
@@ -4856,7 +4856,7 @@ public:
             SubMeshDescriptor{0, num_indices_, topology_};       // else: draw the entire mesh as a "sub mesh"
 
         // convert mesh/descriptor data types into OpenGL-compatible formats
-        const GLenum mode = to_opengl_topology_enum(descriptor.getTopology());
+        const GLenum mode = to_opengl_topology_enum(descriptor.topology());
         const auto num_indices = static_cast<GLsizei>(descriptor.getIndexCount());
         const GLenum type = indices_are_32bit_ ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT;
 
@@ -4944,15 +4944,15 @@ private:
             };
 
             auto vertices = vertex_buffer_.iter<Vec3>(VertexAttribute::Position);
-            for (auto index : getIndices()) {
+            for (auto index : indices()) {
                 Vec3 pos = vertices.at(index);  // bounds-check index
                 aabb_.min = elementwise_min(aabb_.min, pos);
                 aabb_.max = elementwise_max(aabb_.max, pos);
             }
         }
         else if (should_check_indices and not should_recalculate_bounds) {
-            for (auto meshIndex : getIndices()) {
-                OSC_ASSERT(meshIndex < vertex_buffer_.num_verts() && "a mesh index is out of bounds");
+            for (auto meshIndex : indices()) {
+                OSC_ASSERT(meshIndex < vertex_buffer_.num_vertices() && "a mesh index is out of bounds");
             }
         }
         else {
@@ -5075,147 +5075,147 @@ osc::Mesh::Mesh() :
     m_Impl{make_cow<Impl>()}
 {}
 
-MeshTopology osc::Mesh::getTopology() const
+MeshTopology osc::Mesh::topology() const
 {
-    return m_Impl->getTopology();
+    return m_Impl->topology();
 }
 
-void osc::Mesh::setTopology(MeshTopology topology)
+void osc::Mesh::set_topology(MeshTopology topology)
 {
-    m_Impl.upd()->setTopology(topology);
+    m_Impl.upd()->set_topology(topology);
 }
 
-size_t osc::Mesh::getNumVerts() const
+size_t osc::Mesh::num_vertices() const
 {
-    return m_Impl->getNumVerts();
+    return m_Impl->num_vertices();
 }
 
-bool osc::Mesh::hasVerts() const
+bool osc::Mesh::has_vertices() const
 {
-    return m_Impl->hasVerts();
+    return m_Impl->has_vertices();
 }
 
-std::vector<Vec3> osc::Mesh::getVerts() const
+std::vector<Vec3> osc::Mesh::vertices() const
 {
-    return m_Impl->getVerts();
+    return m_Impl->verts();
 }
 
-void osc::Mesh::setVerts(std::span<const Vec3> verts)
+void osc::Mesh::set_vertices(std::span<const Vec3> verts)
 {
-    m_Impl.upd()->setVerts(verts);
+    m_Impl.upd()->set_vertices(verts);
 }
 
-void osc::Mesh::transformVerts(const std::function<Vec3(Vec3)>& f)
+void osc::Mesh::transform_vertices(const std::function<Vec3(Vec3)>& f)
 {
-    m_Impl.upd()->transformVerts(f);
+    m_Impl.upd()->transform_vertices(f);
 }
 
-void osc::Mesh::transformVerts(const Transform& transform)
+void osc::Mesh::transform_vertices(const Transform& transform)
 {
-    m_Impl.upd()->transformVerts(transform);
+    m_Impl.upd()->transform_vertices(transform);
 }
 
-void osc::Mesh::transformVerts(const Mat4& mat)
+void osc::Mesh::transform_vertices(const Mat4& mat)
 {
-    m_Impl.upd()->transformVerts(mat);
+    m_Impl.upd()->transform_vertices(mat);
 }
 
-bool osc::Mesh::hasNormals() const
+bool osc::Mesh::has_normals() const
 {
-    return m_Impl->hasNormals();
+    return m_Impl->has_normals();
 }
 
-std::vector<Vec3> osc::Mesh::getNormals() const
+std::vector<Vec3> osc::Mesh::normals() const
 {
-    return m_Impl->getNormals();
+    return m_Impl->normals();
 }
 
-void osc::Mesh::setNormals(std::span<const Vec3> normals)
+void osc::Mesh::set_normals(std::span<const Vec3> normals)
 {
-    m_Impl.upd()->setNormals(normals);
+    m_Impl.upd()->set_normals(normals);
 }
 
-void osc::Mesh::transformNormals(const std::function<Vec3(Vec3)>& f)
+void osc::Mesh::transform_normals(const std::function<Vec3(Vec3)>& f)
 {
-    m_Impl.upd()->transformNormals(f);
+    m_Impl.upd()->transform_normals(f);
 }
 
-bool osc::Mesh::hasTexCoords() const
+bool osc::Mesh::has_tex_coords() const
 {
-    return m_Impl->hasTexCoords();
+    return m_Impl->has_tex_coords();
 }
 
-std::vector<Vec2> osc::Mesh::getTexCoords() const
+std::vector<Vec2> osc::Mesh::tex_coords() const
 {
-    return m_Impl->getTexCoords();
+    return m_Impl->tex_coords();
 }
 
-void osc::Mesh::setTexCoords(std::span<const Vec2> tex_coords)
+void osc::Mesh::set_tex_coords(std::span<const Vec2> tex_coords)
 {
-    m_Impl.upd()->setTexCoords(tex_coords);
+    m_Impl.upd()->set_tex_coords(tex_coords);
 }
 
-void osc::Mesh::transformTexCoords(const std::function<Vec2(Vec2)>& f)
+void osc::Mesh::transform_tex_coords(const std::function<Vec2(Vec2)>& f)
 {
-    m_Impl.upd()->transformTexCoords(f);
+    m_Impl.upd()->transform_tex_coords(f);
 }
 
-std::vector<Color> osc::Mesh::getColors() const
+std::vector<Color> osc::Mesh::colors() const
 {
-    return m_Impl->getColors();
+    return m_Impl->colors();
 }
 
-void osc::Mesh::setColors(std::span<const Color> colors)
+void osc::Mesh::set_colors(std::span<const Color> colors)
 {
-    m_Impl.upd()->setColors(colors);
+    m_Impl.upd()->set_colors(colors);
 }
 
-std::vector<Vec4> osc::Mesh::getTangents() const
+std::vector<Vec4> osc::Mesh::tangents() const
 {
-    return m_Impl->getTangents();
+    return m_Impl->tangents();
 }
 
-void osc::Mesh::setTangents(std::span<const Vec4> tangents)
+void osc::Mesh::set_tangents(std::span<const Vec4> tangents)
 {
-    m_Impl.upd()->setTangents(tangents);
+    m_Impl.upd()->set_tangents(tangents);
 }
 
-size_t osc::Mesh::getNumIndices() const
+size_t osc::Mesh::num_indices() const
 {
-    return m_Impl->getNumIndices();
+    return m_Impl->num_indices();
 }
 
-MeshIndicesView osc::Mesh::getIndices() const
+MeshIndicesView osc::Mesh::indices() const
 {
-    return m_Impl->getIndices();
+    return m_Impl->indices();
 }
 
-void osc::Mesh::setIndices(MeshIndicesView indices, MeshUpdateFlags flags)
+void osc::Mesh::set_indices(MeshIndicesView indices, MeshUpdateFlags flags)
 {
-    m_Impl.upd()->setIndices(indices, flags);
+    m_Impl.upd()->set_indices(indices, flags);
 }
 
-void osc::Mesh::forEachIndexedVert(const std::function<void(Vec3)>& f) const
+void osc::Mesh::for_each_indexed_vert(const std::function<void(Vec3)>& f) const
 {
-    m_Impl->forEachIndexedVert(f);
+    m_Impl->for_each_indexed_vert(f);
 }
 
-void osc::Mesh::forEachIndexedTriangle(const std::function<void(Triangle)>& f) const
+void osc::Mesh::for_each_indexed_triangle(const std::function<void(Triangle)>& f) const
 {
-    m_Impl->forEachIndexedTriangle(f);
+    m_Impl->for_each_indexed_triangle(f);
 }
 
-Triangle osc::Mesh::getTriangleAt(size_t first_index_offset) const
+Triangle osc::Mesh::get_triangle_at(size_t first_index_offset) const
 {
-    return m_Impl->getTriangleAt(first_index_offset);
+    return m_Impl->get_triangle_at(first_index_offset);
 }
 
-std::vector<Vec3> osc::Mesh::getIndexedVerts() const
+std::vector<Vec3> osc::Mesh::indexed_vertices() const
 {
-    return m_Impl->getIndexedVerts();
+    return m_Impl->indexed_vertices();
 }
 
-const AABB& osc::Mesh::getBounds() const
+const AABB& osc::Mesh::bounds() const
 {
     return m_Impl->getBounds();
 }
@@ -5225,59 +5225,59 @@ void osc::Mesh::clear()
     m_Impl.upd()->clear();
 }
 
-size_t osc::Mesh::getSubMeshCount() const
+size_t osc::Mesh::num_submesh_descriptors() const
 {
-    return m_Impl->getSubMeshCount();
+    return m_Impl->num_submesh_descriptors();
 }
 
-void osc::Mesh::pushSubMeshDescriptor(const SubMeshDescriptor& descriptor)
+void osc::Mesh::push_submesh_descriptor(const SubMeshDescriptor& descriptor)
 {
-    m_Impl.upd()->pushSubMeshDescriptor(descriptor);
+    m_Impl.upd()->push_submesh_descriptor(descriptor);
 }
 
-const SubMeshDescriptor& osc::Mesh::getSubMeshDescriptor(size_t i) const
+const SubMeshDescriptor& osc::Mesh::submesh_descriptor_at(size_t i) const
 {
-    return m_Impl->getSubMeshDescriptor(i);
+    return m_Impl->submesh_descriptor_at(i);
 }
 
-void osc::Mesh::clearSubMeshDescriptors()
+void osc::Mesh::clear_submesh_descriptors()
 {
-    m_Impl.upd()->clearSubMeshDescriptors();
+    m_Impl.upd()->clear_submesh_descriptors();
 }
 
-size_t osc::Mesh::getVertexAttributeCount() const
+size_t osc::Mesh::num_vertex_attributes() const
 {
-    return m_Impl->getVertexAttributeCount();
+    return m_Impl->num_vertex_attributes();
 }
 
-const VertexFormat& osc::Mesh::getVertexAttributes() const
+const VertexFormat& osc::Mesh::vertex_format() const
 {
-    return m_Impl->getVertexAttributes();
+    return m_Impl->vertex_format();
 }
 
-void osc::Mesh::setVertexBufferParams(size_t n, const VertexFormat& format)
+void osc::Mesh::set_vertex_buffer_params(size_t n, const VertexFormat& format)
 {
-    m_Impl.upd()->setVertexBufferParams(n, format);
+    m_Impl.upd()->set_vertex_buffer_params(n, format);
 }
 
-size_t osc::Mesh::getVertexBufferStride() const
+size_t osc::Mesh::vertex_buffer_stride() const
 {
-    return m_Impl->getVertexBufferStride();
+    return m_Impl->vertex_buffer_stride();
 }
 
-void osc::Mesh::setVertexBufferData(std::span<const uint8_t> data, MeshUpdateFlags flags)
+void osc::Mesh::set_vertex_buffer_data(std::span<const uint8_t> data, MeshUpdateFlags flags)
 {
-    m_Impl.upd()->setVertexBufferData(data, flags);
+    m_Impl.upd()->set_vertex_buffer_data(data, flags);
 }
 
-void osc::Mesh::recalculateNormals()
+void osc::Mesh::recalculate_normals()
 {
-    m_Impl.upd()->recalculateNormals();
+    m_Impl.upd()->recalculate_normals();
 }
 
-void osc::Mesh::recalculateTangents()
+void osc::Mesh::recalculate_tangents()
 {
-    m_Impl.upd()->recalculateTangents();
+    m_Impl.upd()->recalculate_tangents();
 }
 
 std::ostream& osc::operator<<(std::ostream& o, const Mesh&)
@@ -7466,7 +7466,7 @@ void osc::GraphicsBackend::draw(
     const std::optional<MaterialPropertyBlock>& maybe_material_property_block,
     std::optional<size_t> maybe_submesh_index)
 {
-    if (maybe_submesh_index and *maybe_submesh_index >= mesh.getSubMeshCount()) {
+    if (maybe_submesh_index and *maybe_submesh_index >= mesh.num_submesh_descriptors()) {
         throw std::out_of_range{"the given sub-mesh index was out of range (i.e. the given mesh does not have that many sub-meshes)"};
     }
 
@@ -7487,7 +7487,7 @@ void osc::GraphicsBackend::draw(
     const std::optional<MaterialPropertyBlock>& maybe_material_property_block,
     std::optional<size_t> maybe_submesh_index)
 {
-    if (maybe_submesh_index and *maybe_submesh_index >= mesh.getSubMeshCount()) {
+    if (maybe_submesh_index and *maybe_submesh_index >= mesh.num_submesh_descriptors()) {
         throw std::out_of_range{"the given sub-mesh index was out of range (i.e. the given mesh does not have that many sub-meshes)"};
     }
 

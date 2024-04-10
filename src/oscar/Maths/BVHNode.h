@@ -27,7 +27,7 @@ namespace osc
             m_Data{data_}
         {}
     public:
-        AABB const& getBounds() const
+        AABB const& bounds() const
         {
             return m_Bounds;
         }

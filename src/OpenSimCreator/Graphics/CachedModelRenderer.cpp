@@ -89,7 +89,7 @@ namespace
 
         std::span<SceneDecoration const> getDrawlist() const { return m_Drawlist; }
         BVH const& getBVH() const { return m_BVH; }
-        std::optional<AABB> getAABB() const { return m_BVH.getBounds(); }
+        std::optional<AABB> getAABB() const { return m_BVH.bounds(); }
         SceneCache& updSceneCache() const
         {
             // TODO: technically (imo) this breaks `const`
@@ -163,7 +163,7 @@ public:
         return m_DecorationCache.getDrawlist();
     }
 
-    std::optional<AABB> getBounds() const
+    std::optional<AABB> bounds() const
     {
         return m_DecorationCache.getAABB();
     }
@@ -231,9 +231,9 @@ std::span<SceneDecoration const> osc::CachedModelRenderer::getDrawlist() const
     return m_Impl->getDrawlist();
 }
 
-std::optional<AABB> osc::CachedModelRenderer::getBounds() const
+std::optional<AABB> osc::CachedModelRenderer::bounds() const
 {
-    return m_Impl->getBounds();
+    return m_Impl->bounds();
 }
 
 std::optional<SceneCollision> osc::CachedModelRenderer::getClosestCollision(

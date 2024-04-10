@@ -105,7 +105,7 @@ private:
 
         // render from user's perspective on left-hand side
         for (auto const& dec : m_Decorations) {
-            AABB const aabb = transform_aabb(dec.transform, dec.mesh.getBounds());
+            AABB const aabb = transform_aabb(dec.transform, dec.mesh.bounds());
             if (is_intersecting(frustum, aabb)) {
                 graphics::draw(dec.mesh, dec.transform, m_Material, m_UserCamera, m_BlueMaterialProps);
             }
@@ -115,7 +115,7 @@ private:
 
         // render from top-down perspective on right-hand side
         for (auto const& dec : m_Decorations) {
-            AABB const aabb = transform_aabb(dec.transform, dec.mesh.getBounds());
+            AABB const aabb = transform_aabb(dec.transform, dec.mesh.bounds());
             auto const& props = is_intersecting(frustum, aabb) ? m_BlueMaterialProps : m_RedMaterialProps;
             graphics::draw(dec.mesh, dec.transform, m_Material, m_TopDownCamera, props);
         }

@@ -15,17 +15,17 @@ namespace
     Mesh GenerateTriangleMesh()
     {
         Mesh m;
-        m.setVerts({
+        m.set_vertices({
             {-1.0f, -1.0f, 0.0f},  // bottom-left
             { 1.0f, -1.0f, 0.0f},  // bottom-right
             { 0.0f,  1.0f, 0.0f},  // top-middle
         });
-        m.setColors({
+        m.set_colors({
             Color::red(),
             Color::green(),
             Color::blue(),
         });
-        m.setIndices({0, 1, 2});
+        m.set_indices({0, 1, 2});
         return m;
     }
 

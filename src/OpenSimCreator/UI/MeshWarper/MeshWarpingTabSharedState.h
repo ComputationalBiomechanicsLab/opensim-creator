@@ -174,7 +174,7 @@ namespace osc
         bool onlyLinkRotation = false;
 
         // shared linked camera
-        PolarPerspectiveCamera linkedCameraBase = CreateCameraFocusedOn(editedDocument->getScratch().sourceMesh.getBounds());
+        PolarPerspectiveCamera linkedCameraBase = CreateCameraFocusedOn(editedDocument->getScratch().sourceMesh.bounds());
 
         // wireframe material, used to draw scene elements in a wireframe style
         MeshBasicMaterial wireframe_material = App::singleton<SceneCache>(App::resource_loader())->wireframe_material();

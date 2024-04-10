@@ -22,7 +22,7 @@ namespace osc
             return m_ID;
         }
 
-        AABB const& getBounds() const
+        AABB const& bounds() const
         {
             return m_Bounds;
         }

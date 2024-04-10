@@ -26,8 +26,8 @@ TEST(SubMeshDescriptor, GetIndexCountReturnsSecondCtorArgument)
 
 TEST(SubMeshDescriptor, GetTopologyReturnsThirdCtorArgument)
 {
-    ASSERT_EQ(SubMeshDescriptor(0, 2, MeshTopology::Lines).getTopology(), MeshTopology::Lines);
-    ASSERT_EQ(SubMeshDescriptor(73, 489, MeshTopology::Triangles).getTopology(), MeshTopology::Triangles);
+    ASSERT_EQ(SubMeshDescriptor(0, 2, MeshTopology::Lines).topology(), MeshTopology::Lines);
+    ASSERT_EQ(SubMeshDescriptor(73, 489, MeshTopology::Triangles).topology(), MeshTopology::Triangles);
 }
 
 TEST(SubMeshDescriptor, CopiesCompareEqual)

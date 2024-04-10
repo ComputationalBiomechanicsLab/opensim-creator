@@ -63,8 +63,8 @@ void osc::draw_bvh(
         out({
             .mesh = cube,
             .transform = {
-                .scale = half_widths(node.getBounds()),
-                .position = centroid_of(node.getBounds()),
+                .scale = half_widths(node.bounds()),
+                .position = centroid_of(node.bounds()),
             },
             .color = Color::black(),
         });
@@ -104,7 +104,7 @@ void osc::draw_bvh_leaf_nodes(
 {
     bvh.forEachLeafNode([&cache, &out](const BVHNode& node)
     {
-        draw_aabb(cache, node.getBounds(), out);
+        draw_aabb(cache, node.bounds(), out);
     });
 }
 
@@ -204,7 +204,7 @@ void osc::draw_line_segment(
 
 AABB osc::get_worldspace_aabb(const SceneDecoration& decoration)
 {
-    return transform_aabb(decoration.transform, decoration.mesh.getBounds());
+    return transform_aabb(decoration.transform, decoration.mesh.bounds());
 }
 
 void osc::update_scene_bvh(std::span<const SceneDecoration> decorations, BVH& bvh)
@@ -256,7 +256,7 @@ std::optional<RayCollision> osc::get_closest_worldspace_ray_triangle_collision(
     const Transform& transform,
     const Line& worldspace_ray)
 {
-    if (mesh.getTopology() != MeshTopology::Triangles) {
+    if (mesh.topology() != MeshTopology::Triangles) {
         return std::nullopt;
     }
 
@@ -268,7 +268,7 @@ std::optional<RayCollision> osc::get_closest_worldspace_ray_triangle_collision(
     triangle_bvh.forEachRayAABBCollision(modespace_ray, [&mesh, &transform, &worldspace_ray, &modespace_ray, &rv](BVHCollision modelspace_bvh_collision)
     {
         // then perform a ray-triangle collision
-        if (auto modelspace_triangle_collision = find_collision(modespace_ray, mesh.getTriangleAt(modelspace_bvh_collision.id))) {
+        if (auto modelspace_triangle_collision = find_collision(modespace_ray, mesh.get_triangle_at(modelspace_bvh_collision.id))) {
             // map it back into worldspace and check if it's closer
             const Vec3 worldspace_location = transform * modelspace_triangle_collision->position;
             const float distance = length(worldspace_location - worldspace_ray.origin);
@@ -322,20 +322,20 @@ SceneRendererParams osc::calc_standard_dark_scene_render_params(
 
 BVH osc::create_triangle_bvh(const Mesh& mesh)
 {
-    const auto indices = mesh.getIndices();
+    const auto indices = mesh.indices();
 
     BVH rv;
     if (indices.empty()) {
         return rv;
     }
-    else if (mesh.getTopology() != MeshTopology::Triangles) {
+    else if (mesh.topology() != MeshTopology::Triangles) {
         return rv;
     }
     else if (indices.isU32()) {
-        rv.buildFromIndexedTriangles(mesh.getVerts() , indices.toU32Span());
+        rv.buildFromIndexedTriangles(mesh.vertices() , indices.toU32Span());
     }
     else {
-        rv.buildFromIndexedTriangles(mesh.getVerts(), indices.toU16Span());
+        rv.buildFromIndexedTriangles(mesh.vertices(), indices.toU16Span());
     }
     return rv;
 }

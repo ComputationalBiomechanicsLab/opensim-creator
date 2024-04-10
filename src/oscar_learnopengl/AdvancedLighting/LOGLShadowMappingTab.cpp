@@ -18,7 +18,7 @@ namespace
     Mesh GeneratePlaneMeshLOGL()
     {
         Mesh rv;
-        rv.setVerts({
+        rv.set_vertices({
             { 25.0f, -0.5f,  25.0f},
             {-25.0f, -0.5f,  25.0f},
             {-25.0f, -0.5f, -25.0f},
@@ -27,7 +27,7 @@ namespace
             {-25.0f, -0.5f, -25.0f},
             { 25.0f, -0.5f, -25.0f},
         });
-        rv.setNormals({
+        rv.set_normals({
             {0.0f, 1.0f, 0.0f},
             {0.0f, 1.0f, 0.0f},
             {0.0f, 1.0f, 0.0f},
@@ -36,7 +36,7 @@ namespace
             {0.0f, 1.0f, 0.0f},
             {0.0f, 1.0f, 0.0f},
         });
-        rv.setTexCoords({
+        rv.set_tex_coords({
             {25.0f,  0.0f},
             {0.0f,  0.0f},
             {0.0f, 25.0f},
@@ -45,7 +45,7 @@ namespace
             {0.0f, 25.0f},
             {25.0f, 25.0f},
         });
-        rv.setIndices({0, 1, 2, 3, 4, 5});
+        rv.set_indices({0, 1, 2, 3, 4, 5});
         return rv;
     }
 

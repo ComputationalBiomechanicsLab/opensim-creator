@@ -51,8 +51,8 @@ osc::CircleGeometry::CircleGeometry(
         indices.insert(indices.end(), {i, i+1, 0});
     }
 
-    mesh_.setVerts(vertices);
-    mesh_.setNormals(normals);
-    mesh_.setTexCoords(uvs);
-    mesh_.setIndices(indices);
+    mesh_.set_vertices(vertices);
+    mesh_.set_normals(normals);
+    mesh_.set_tex_coords(uvs);
+    mesh_.set_indices(indices);
 }

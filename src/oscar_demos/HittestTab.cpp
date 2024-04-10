@@ -56,8 +56,8 @@ namespace
     Mesh GenerateCrosshairMesh()
     {
         Mesh rv;
-        rv.setTopology(MeshTopology::Lines);
-        rv.setVerts({
+        rv.set_topology(MeshTopology::Lines);
+        rv.set_vertices({
             // -X to +X
             {-0.05f, 0.0f, 0.0f},
             {+0.05f, 0.0f, 0.0f},
@@ -66,15 +66,15 @@ namespace
             {0.0f, -0.05f, 0.0f},
             {0.0f, +0.05f, 0.0f},
         });
-        rv.setIndices({0, 1, 2, 3});
+        rv.set_indices({0, 1, 2, 3});
         return rv;
     }
 
     Mesh GenerateTriangleMesh()
     {
         Mesh rv;
-        rv.setVerts(c_TriangleVerts);
-        rv.setIndices({0, 1, 2});
+        rv.set_vertices(c_TriangleVerts);
+        rv.set_indices({0, 1, 2});
         return rv;
     }
 
@@ -259,7 +259,7 @@ private:
 
     // scene state
     std::vector<SceneSphere> m_SceneSpheres = GenerateSceneSpheres();
-    AABB m_SceneSphereAABB = m_SphereMesh.getBounds();
+    AABB m_SceneSphereAABB = m_SphereMesh.bounds();
     Sphere m_SceneSphereBoundingSphere = bounding_sphere_of(m_SphereMesh);
     bool m_IsMouseCaptured = false;
     Eulers m_CameraEulers{};

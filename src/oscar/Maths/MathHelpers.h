@@ -151,7 +151,7 @@ namespace osc
         Vec3 const& rotationCenter
     );
 
-    float volume(Tetrahedron const&);
+    float volume_of(Tetrahedron const&);
 
     // returns arrays that transforms cube faces from worldspace to projection
     // space such that the observer is looking at each face of the cube from

@@ -63,7 +63,7 @@ namespace
         {
             // recursion bottomed out: create a leaf node
             nodes.push_back(BVHNode::leaf(
-                prims.at(begin).getBounds(),
+                prims.at(begin).bounds(),
                 begin
             ));
             return;
@@ -79,7 +79,7 @@ namespace
             // compute bounding box of remaining (children) prims
             AABB const aabb = bounding_aabb_of(
                 std::span<BVHPrim const>{prims.begin() + begin, static_cast<size_t>(n)},
-                &BVHPrim::getBounds
+                &BVHPrim::bounds
             );
 
             // compute slicing position along the longest dimension
@@ -89,7 +89,7 @@ namespace
             // returns true if a given primitive is below the midpoint along the dim
             auto const isBelowMidpoint = [longestDimIdx, midpointX2](BVHPrim const& p)
             {
-                float const primMidpointX2 = p.getBounds().min[longestDimIdx] + p.getBounds().max[longestDimIdx];
+                float const primMidpointX2 = p.bounds().min[longestDimIdx] + p.bounds().max[longestDimIdx];
                 return primMidpointX2 <= midpointX2;
             };
 
@@ -139,7 +139,7 @@ namespace
         BVHNode const& node = nodes[nodeidx];
 
         // check ray-AABB intersection with the BVH node
-        std::optional<RayCollision> res = find_collision(ray, node.getBounds());
+        std::optional<RayCollision> res = find_collision(ray, node.bounds());
 
         if (!res)
         {
@@ -167,14 +167,14 @@ namespace
     std::optional<BVHCollision> BVH_GetClosestRayIndexedTriangleCollisionRecursive(
         std::span<BVHNode const> nodes,
         std::span<BVHPrim const> prims,
-        std::span<Vec3 const> verts,
+        std::span<Vec3 const> vertices,
         std::span<TIndex const> indices,
         Line const& ray,
         float& closest,
         ptrdiff_t nodeidx)
     {
         BVHNode const& node = nodes[nodeidx];
-        std::optional<RayCollision> const res = find_collision(ray, node.getBounds());
+        std::optional<RayCollision> const res = find_collision(ray, node.bounds());
 
         if (!res)
         {
@@ -194,9 +194,9 @@ namespace
 
             Triangle const triangle =
             {
-                at(verts, at(indices, p.getID())),
-                at(verts, at(indices, p.getID()+1)),
-                at(verts, at(indices, p.getID()+2)),
+                at(vertices, at(indices, p.getID())),
+                at(vertices, at(indices, p.getID()+1)),
+                at(vertices, at(indices, p.getID()+2)),
             };
 
             std::optional<RayCollision> const rayTriangleColl = find_collision(ray, triangle);
@@ -216,7 +216,7 @@ namespace
         std::optional<BVHCollision> const lhs = BVH_GetClosestRayIndexedTriangleCollisionRecursive(
             nodes,
             prims,
-            verts,
+            vertices,
             indices,
             ray,
             closest,
@@ -225,7 +225,7 @@ namespace
         std::optional<BVHCollision> const rhs = BVH_GetClosestRayIndexedTriangleCollisionRecursive(
             nodes,
             prims,
-            verts,
+            vertices,
             indices,
             ray,
             closest,
@@ -238,7 +238,7 @@ namespace
     void BuildFromIndexedTriangles(
         std::vector<BVHNode>& nodes,
         std::vector<BVHPrim>& prims,
-        std::span<Vec3 const> verts,
+        std::span<Vec3 const> vertices,
         std::span<TIndex const> indices)
     {
         // clear out any old data
@@ -251,9 +251,9 @@ namespace
         {
             Triangle const t
             {
-                at(verts, indices[i]),
-                at(verts, indices[i+1]),
-                at(verts, indices[i+2]),
+                at(vertices, indices[i]),
+                at(vertices, indices[i+1]),
+                at(vertices, indices[i+2]),
             };
 
             if (HasAVolume(t))
@@ -272,7 +272,7 @@ namespace
     std::optional<BVHCollision> GetClosestRayIndexedTriangleCollision(
         std::span<BVHNode const> nodes,
         std::span<BVHPrim const> prims,
-        std::span<Vec3 const> verts,
+        std::span<Vec3 const> vertices,
         std::span<TIndex const> indices,
         Line const& ray)
     {
@@ -282,7 +282,7 @@ namespace
         }
 
         float closest = std::numeric_limits<float>::max();
-        return BVH_GetClosestRayIndexedTriangleCollisionRecursive(nodes, prims, verts, indices, ray, closest, 0);
+        return BVH_GetClosestRayIndexedTriangleCollisionRecursive(nodes, prims, vertices, indices, ray, closest, 0);
     }
 
     // describes the direction of each cube face and which direction is "up"
@@ -313,49 +313,49 @@ void osc::BVH::clear()
     m_Prims.clear();
 }
 
-void osc::BVH::buildFromIndexedTriangles(std::span<Vec3 const> verts, std::span<uint16_t const> indices)
+void osc::BVH::buildFromIndexedTriangles(std::span<Vec3 const> vertices, std::span<uint16_t const> indices)
 {
     BuildFromIndexedTriangles<uint16_t>(
         m_Nodes,
         m_Prims,
-        verts,
+        vertices,
         indices
     );
 }
 
-void osc::BVH::buildFromIndexedTriangles(std::span<Vec3 const> verts, std::span<uint32_t const> indices)
+void osc::BVH::buildFromIndexedTriangles(std::span<Vec3 const> vertices, std::span<uint32_t const> indices)
 {
     BuildFromIndexedTriangles<uint32_t>(
         m_Nodes,
         m_Prims,
-        verts,
+        vertices,
         indices
     );
 }
 
 std::optional<BVHCollision> osc::BVH::getClosestRayIndexedTriangleCollision(
-    std::span<Vec3 const> verts,
+    std::span<Vec3 const> vertices,
     std::span<uint16_t const> indices,
     Line const& line) const
 {
     return GetClosestRayIndexedTriangleCollision<uint16_t>(
         m_Nodes,
         m_Prims,
-        verts,
+        vertices,
         indices,
         line
     );
 }
 
 std::optional<BVHCollision> osc::BVH::getClosestRayIndexedTriangleCollision(
-    std::span<Vec3 const> verts,
+    std::span<Vec3 const> vertices,
     std::span<uint32_t const> indices,
     Line const& line) const
 {
     return GetClosestRayIndexedTriangleCollision<uint32_t>(
         m_Nodes,
         m_Prims,
-        verts,
+        vertices,
         indices,
         line
     );
@@ -449,9 +449,9 @@ size_t osc::BVH::getMaxDepth() const
     return maxdepth;
 }
 
-std::optional<AABB> osc::BVH::getBounds() const
+std::optional<AABB> osc::BVH::bounds() const
 {
-    return !m_Nodes.empty() ? m_Nodes.front().getBounds() : std::optional<AABB>{};
+    return !m_Nodes.empty() ? m_Nodes.front().bounds() : std::optional<AABB>{};
 }
 
 void osc::BVH::forEachLeafNode(std::function<void(BVHNode const&)> const& f) const
@@ -875,7 +875,7 @@ std::ostream& osc::operator<<(std::ostream& o, Sphere const& s)
 // `Tetrahedron` implementatioon
 
 // returns the volume of a given tetrahedron, defined as 4 points in space
-float osc::volume(Tetrahedron const& t)
+float osc::volume_of(Tetrahedron const& t)
 {
     // sources:
     //

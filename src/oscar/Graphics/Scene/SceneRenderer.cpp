@@ -241,7 +241,7 @@ public:
                 //
                 // care: this only works for triangles, because normals-drawing material uses a geometry
                 //       shader that assumes triangular input (#792)
-                if (params.draw_mesh_normals && dec.mesh.getTopology() == MeshTopology::Triangles) {
+                if (params.draw_mesh_normals && dec.mesh.topology() == MeshTopology::Triangles) {
                     graphics::draw(dec.mesh, dec.transform, normals_material_, camera_);
                 }
             }

@@ -70,7 +70,7 @@ public:
         {
             m_MeshBVH.forEachRayAABBCollision(m_Ray, [this](BVHCollision const& aabbColl)
             {
-                Triangle const triangle = m_Mesh.getTriangleAt(aabbColl.id);
+                Triangle const triangle = m_Mesh.get_triangle_at(aabbColl.id);
                 if (auto triangleColl = find_collision(m_Ray, triangle))
                 {
                     m_IsMousedOver = true;
@@ -80,7 +80,7 @@ public:
         }
         else
         {
-            m_Mesh.forEachIndexedTriangle([this](Triangle triangle)
+            m_Mesh.for_each_indexed_triangle([this](Triangle triangle)
             {
                 if (auto const hit = find_collision(m_Ray, triangle))
                 {
@@ -121,8 +121,8 @@ public:
         if (m_IsMousedOver)
         {
             Mesh m;
-            m.setVerts(m_Tris);
-            m.setIndices({0, 1, 2});
+            m.set_vertices(m_Tris);
+            m.set_indices({0, 1, 2});
 
             m_Material.set_color(Color::black());
             m_Material.set_depth_tested(false);

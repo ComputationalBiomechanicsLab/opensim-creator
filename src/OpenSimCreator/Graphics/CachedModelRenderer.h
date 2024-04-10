@@ -43,7 +43,7 @@ namespace osc
         RenderTexture& updRenderTexture();
 
         std::span<SceneDecoration const> getDrawlist() const;
-        std::optional<AABB> getBounds() const;
+        std::optional<AABB> bounds() const;
         std::optional<SceneCollision> getClosestCollision(
             ModelRendererParams const&,
             Vec2 mouseScreenPos,

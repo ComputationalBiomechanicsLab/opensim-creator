@@ -85,7 +85,7 @@ Mesh osc::ToOscMesh(SimTK::PolygonalMesh const& mesh)
 
     // build up the index list while triangulating any n>3 faces
     //
-    // (pushes injected triangulation verts to the end - assumes the mesh is optimized later)
+    // (pushes injected triangulation vertices to the end - assumes the mesh is optimized later)
     for (int face = 0, faces = mesh.getNumFaces(); face < faces; ++face) {
         int const numFaceVerts = mesh.getNumVerticesForFace(face);
 
@@ -143,9 +143,9 @@ Mesh osc::ToOscMesh(SimTK::PolygonalMesh const& mesh)
     }
 
     Mesh rv;
-    rv.setVerts(vertices);
-    rv.setIndices(indices);
-    rv.recalculateNormals();
+    rv.set_vertices(vertices);
+    rv.set_indices(indices);
+    rv.recalculate_normals();
     return rv;
 }
 

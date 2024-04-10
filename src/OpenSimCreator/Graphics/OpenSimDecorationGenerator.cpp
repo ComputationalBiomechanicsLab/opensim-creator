@@ -1096,7 +1096,7 @@ Mesh osc::ToOscMeshBakeScaleFactors(
     OpenSim::Mesh const& mesh)
 {
     Mesh rv = ToOscMesh(model, state, mesh);
-    rv.transformVerts({.scale =  ToVec3(mesh.get_scale_factors())});
+    rv.transform_vertices({.scale =  ToVec3(mesh.get_scale_factors())});
 
     return rv;
 }
