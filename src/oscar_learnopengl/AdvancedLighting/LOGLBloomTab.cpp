@@ -99,8 +99,8 @@ public:
 
     Impl() : StandardTabImpl{c_TabStringID}
     {
-        m_SceneMaterial.setVec3Array("uLightPositions", c_SceneLightPositions);
-        m_SceneMaterial.setColorArray("uLightColors", GetSceneLightColors());
+        m_SceneMaterial.set_vec3_array("uLightPositions", c_SceneLightPositions);
+        m_SceneMaterial.set_color_array("uLightColors", GetSceneLightColors());
     }
 
 private:
@@ -167,7 +167,7 @@ private:
 
     void drawSceneCubesToCamera()
     {
-        m_SceneMaterial.setVec3("uViewWorldPos", m_Camera.position());
+        m_SceneMaterial.set_vec3("uViewWorldPos", m_Camera.position());
 
         // draw floor
         {
@@ -176,7 +176,7 @@ private:
             floorTransform = scale(floorTransform, Vec3(12.5f, 0.5f, 12.5f));
 
             MaterialPropertyBlock floorProps;
-            floorProps.setTexture("uDiffuseTexture", m_WoodTexture);
+            floorProps.set_texture("uDiffuseTexture", m_WoodTexture);
 
             graphics::draw(
                 m_CubeMesh,
@@ -188,7 +188,7 @@ private:
         }
 
         MaterialPropertyBlock cubeProps;
-        cubeProps.setTexture("uDiffuseTexture", m_ContainerTexture);
+        cubeProps.set_texture("uDiffuseTexture", m_ContainerTexture);
         for (auto const& cubeTransform : CreateCubeTransforms()) {
             graphics::draw(
                 m_CubeMesh,
@@ -210,7 +210,7 @@ private:
             lightTransform = scale(lightTransform, Vec3(0.25f));
 
             MaterialPropertyBlock lightProps;
-            lightProps.setColor("uLightColor", sceneLightColors[i]);
+            lightProps.set_color("uLightColor", sceneLightColors[i]);
 
             graphics::draw(
                 m_CubeMesh,
@@ -250,15 +250,15 @@ private:
 
     void renderBlurredBrightness()
     {
-        m_BlurMaterial.setRenderTexture("uInputImage", m_SceneHDRThresholdedOutput);
+        m_BlurMaterial.set_render_texture("uInputImage", m_SceneHDRThresholdedOutput);
 
         bool horizontal = false;
         for (RenderTexture& pingPongBuffer : m_PingPongBlurOutputBuffers) {
-            m_BlurMaterial.setBool("uHorizontal", horizontal);
+            m_BlurMaterial.set_bool("uHorizontal", horizontal);
             Camera camera;
             graphics::draw(m_QuadMesh, identity<Transform>(), m_BlurMaterial, camera);
             camera.render_to(pingPongBuffer);
-            m_BlurMaterial.clearRenderTexture("uInputImage");
+            m_BlurMaterial.clear_render_texture("uInputImage");
 
             horizontal = !horizontal;
         }
@@ -266,18 +266,18 @@ private:
 
     void renderCombinedScene(Rect const& viewportRect)
     {
-        m_FinalCompositingMaterial.setRenderTexture("uHDRSceneRender", m_SceneHDRColorOutput);
-        m_FinalCompositingMaterial.setRenderTexture("uBloomBlur", m_PingPongBlurOutputBuffers[0]);
-        m_FinalCompositingMaterial.setBool("uBloom", true);
-        m_FinalCompositingMaterial.setFloat("uExposure", 1.0f);
+        m_FinalCompositingMaterial.set_render_texture("uHDRSceneRender", m_SceneHDRColorOutput);
+        m_FinalCompositingMaterial.set_render_texture("uBloomBlur", m_PingPongBlurOutputBuffers[0]);
+        m_FinalCompositingMaterial.set_bool("uBloom", true);
+        m_FinalCompositingMaterial.set_float("uExposure", 1.0f);
 
         Camera camera;
         graphics::draw(m_QuadMesh, identity<Transform>(), m_FinalCompositingMaterial, camera);
         camera.set_pixel_rect(viewportRect);
         camera.render_to_screen();
 
-        m_FinalCompositingMaterial.clearRenderTexture("uBloomBlur");
-        m_FinalCompositingMaterial.clearRenderTexture("uHDRSceneRender");
+        m_FinalCompositingMaterial.clear_render_texture("uBloomBlur");
+        m_FinalCompositingMaterial.clear_render_texture("uHDRSceneRender");
     }
 
     void drawOverlays(Rect const& viewportRect)

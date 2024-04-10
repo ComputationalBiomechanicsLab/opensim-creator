@@ -162,10 +162,10 @@ namespace
 
         OscarImguiBackendData()
         {
-            material.setTransparent(true);
-            material.setCullMode(CullMode::Off);
-            material.setDepthTested(false);
-            material.setWireframeMode(false);
+            material.set_transparent(true);
+            material.set_cull_mode(CullMode::Off);
+            material.set_depth_tested(false);
+            material.set_wireframe(false);
         }
 
         UID fontTextureID;
@@ -243,8 +243,8 @@ namespace
         if (auto const* texture = try_find(bd.texturesSubmittedThisFrame, ToUID(drawCommand.GetTexID())))
         {
             std::visit(Overload{
-                [&bd](Texture2D const& t) { bd.material.setTexture("uTexture", t); },
-                [&bd](RenderTexture const& t) { bd.material.setRenderTexture("uTexture", t); },
+                [&bd](Texture2D const& t) { bd.material.set_texture("uTexture", t); },
+                [&bd](RenderTexture const& t) { bd.material.set_render_texture("uTexture", t); },
             }, *texture);
             graphics::draw(mesh, identity<Mat4>(), bd.material, bd.camera, std::nullopt, idx);
             bd.camera.render_to_screen();

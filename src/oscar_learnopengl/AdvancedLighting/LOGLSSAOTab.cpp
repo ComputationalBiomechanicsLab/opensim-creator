@@ -182,7 +182,7 @@ private:
     {
         // render cube
         {
-            m_GBuffer.material.setBool("uInvertedNormals", true);
+            m_GBuffer.material.set_bool("uInvertedNormals", true);
             graphics::draw(
                 m_CubeMesh,
                 {.scale = Vec3{7.5f}, .position = {0.0f, 7.0f, 0.0f}},
@@ -193,7 +193,7 @@ private:
 
         // render sphere
         {
-            m_GBuffer.material.setBool("uInvertedNormals", false);
+            m_GBuffer.material.set_bool("uInvertedNormals", false);
             graphics::draw(
                 m_SphereMesh,
                 {.position = {0.0f, 0.5f, 0.0f}},
@@ -207,50 +207,50 @@ private:
 
     void renderSSAOPass(Rect const& viewportRect)
     {
-        m_SSAO.material.setRenderTexture("uPositionTex", m_GBuffer.position);
-        m_SSAO.material.setRenderTexture("uNormalTex", m_GBuffer.normal);
-        m_SSAO.material.setTexture("uNoiseTex", m_NoiseTexture);
-        m_SSAO.material.setVec3Array("uSamples", m_SampleKernel);
-        m_SSAO.material.setVec2("uNoiseScale", dimensions_of(viewportRect) / Vec2{m_NoiseTexture.getDimensions()});
-        m_SSAO.material.setInt("uKernelSize", static_cast<int32_t>(m_SampleKernel.size()));
-        m_SSAO.material.setFloat("uRadius", 0.5f);
-        m_SSAO.material.setFloat("uBias", 0.125f);
+        m_SSAO.material.set_render_texture("uPositionTex", m_GBuffer.position);
+        m_SSAO.material.set_render_texture("uNormalTex", m_GBuffer.normal);
+        m_SSAO.material.set_texture("uNoiseTex", m_NoiseTexture);
+        m_SSAO.material.set_vec3_array("uSamples", m_SampleKernel);
+        m_SSAO.material.set_vec2("uNoiseScale", dimensions_of(viewportRect) / Vec2{m_NoiseTexture.getDimensions()});
+        m_SSAO.material.set_int("uKernelSize", static_cast<int32_t>(m_SampleKernel.size()));
+        m_SSAO.material.set_float("uRadius", 0.5f);
+        m_SSAO.material.set_float("uBias", 0.125f);
 
         graphics::draw(m_QuadMesh, identity<Transform>(), m_SSAO.material, m_Camera);
         m_Camera.render_to(m_SSAO.outputTexture);
 
-        m_SSAO.material.clearRenderTexture("uPositionTex");
-        m_SSAO.material.clearRenderTexture("uNormalTex");
+        m_SSAO.material.clear_render_texture("uPositionTex");
+        m_SSAO.material.clear_render_texture("uNormalTex");
     }
 
     void renderBlurPass()
     {
-        m_Blur.material.setRenderTexture("uSSAOTex", m_SSAO.outputTexture);
+        m_Blur.material.set_render_texture("uSSAOTex", m_SSAO.outputTexture);
 
         graphics::draw(m_QuadMesh, identity<Transform>(), m_Blur.material, m_Camera);
         m_Camera.render_to(m_Blur.outputTexture);
 
-        m_Blur.material.clearRenderTexture("uSSAOTex");
+        m_Blur.material.clear_render_texture("uSSAOTex");
     }
 
     void renderLightingPass()
     {
-        m_Lighting.material.setRenderTexture("uPositionTex", m_GBuffer.position);
-        m_Lighting.material.setRenderTexture("uNormalTex", m_GBuffer.normal);
-        m_Lighting.material.setRenderTexture("uAlbedoTex", m_GBuffer.albedo);
-        m_Lighting.material.setRenderTexture("uSSAOTex", m_SSAO.outputTexture);
-        m_Lighting.material.setVec3("uLightPosition", m_LightPosition);
-        m_Lighting.material.setColor("uLightColor", m_LightColor);
-        m_Lighting.material.setFloat("uLightLinear", 0.09f);
-        m_Lighting.material.setFloat("uLightQuadratic", 0.032f);
+        m_Lighting.material.set_render_texture("uPositionTex", m_GBuffer.position);
+        m_Lighting.material.set_render_texture("uNormalTex", m_GBuffer.normal);
+        m_Lighting.material.set_render_texture("uAlbedoTex", m_GBuffer.albedo);
+        m_Lighting.material.set_render_texture("uSSAOTex", m_SSAO.outputTexture);
+        m_Lighting.material.set_vec3("uLightPosition", m_LightPosition);
+        m_Lighting.material.set_color("uLightColor", m_LightColor);
+        m_Lighting.material.set_float("uLightLinear", 0.09f);
+        m_Lighting.material.set_float("uLightQuadratic", 0.032f);
 
         graphics::draw(m_QuadMesh, identity<Transform>(), m_Lighting.material, m_Camera);
         m_Camera.render_to(m_Lighting.outputTexture);
 
-        m_Lighting.material.clearRenderTexture("uPositionTex");
-        m_Lighting.material.clearRenderTexture("uNormalTex");
-        m_Lighting.material.clearRenderTexture("uAlbedoTex");
-        m_Lighting.material.clearRenderTexture("uSSAOTex");
+        m_Lighting.material.clear_render_texture("uPositionTex");
+        m_Lighting.material.clear_render_texture("uNormalTex");
+        m_Lighting.material.clear_render_texture("uAlbedoTex");
+        m_Lighting.material.clear_render_texture("uSSAOTex");
     }
 
     void drawOverlays(Rect const& viewportRect)

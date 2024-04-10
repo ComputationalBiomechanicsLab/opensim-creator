@@ -83,9 +83,9 @@ namespace
             rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/Gamma.vert"),
             rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/Gamma.frag"),
         }};
-        rv.setTexture("uFloorTexture", woodTexture);
-        rv.setVec3Array("uLightPositions", c_LightPositions);
-        rv.setColorArray("uLightColors", c_LightColors);
+        rv.set_texture("uFloorTexture", woodTexture);
+        rv.set_vec3_array("uLightPositions", c_LightPositions);
+        rv.set_color_array("uLightColors", c_LightColors);
         return rv;
     }
 }
@@ -126,7 +126,7 @@ private:
         m_Camera.set_pixel_rect(ui::GetMainViewportWorkspaceScreenRect());
 
         // render scene
-        m_Material.setVec3("uViewPos", m_Camera.position());
+        m_Material.set_vec3("uViewPos", m_Camera.position());
         graphics::draw(m_PlaneMesh, identity<Transform>(), m_Material, m_Camera);
         m_Camera.render_to_screen();
     }

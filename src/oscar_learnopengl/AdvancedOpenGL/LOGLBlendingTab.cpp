@@ -88,7 +88,7 @@ class osc::LOGLBlendingTab::Impl final : public StandardTabImpl {
 public:
     Impl() : StandardTabImpl{c_TabStringID}
     {
-        m_BlendingMaterial.setTransparent(true);
+        m_BlendingMaterial.set_transparent(true);
         m_LogViewer.open();
         m_PerfPanel.open();
     }
@@ -120,20 +120,20 @@ private:
 
         // cubes
         {
-            m_OpaqueMaterial.setTexture("uTexture", m_MarbleTexture);
+            m_OpaqueMaterial.set_texture("uTexture", m_MarbleTexture);
             graphics::draw(m_CubeMesh, {.position = {-1.0f, 0.0f, -1.0f}}, m_OpaqueMaterial, m_Camera);
             graphics::draw(m_CubeMesh, {.position = { 1.0f, 0.0f, -1.0f}}, m_OpaqueMaterial, m_Camera);
         }
 
         // floor
         {
-            m_OpaqueMaterial.setTexture("uTexture", m_MetalTexture);
+            m_OpaqueMaterial.set_texture("uTexture", m_MetalTexture);
             graphics::draw(m_PlaneMesh, identity<Transform>(), m_OpaqueMaterial, m_Camera);
         }
 
         // windows
         {
-            m_BlendingMaterial.setTexture("uTexture", m_WindowTexture);
+            m_BlendingMaterial.set_texture("uTexture", m_WindowTexture);
             for (Vec3 const& windowLocation : c_WindowLocations) {
                 graphics::draw(m_TransparentMesh, {.position = windowLocation}, m_BlendingMaterial, m_Camera);
             }

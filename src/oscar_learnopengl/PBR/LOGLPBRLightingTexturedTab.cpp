@@ -69,13 +69,13 @@ namespace
             rl.slurp("oscar_learnopengl/shaders/PBR/lighting_textured/PBR.vert"),
             rl.slurp("oscar_learnopengl/shaders/PBR/lighting_textured/PBR.frag"),
         }};
-        rv.setTexture("uAlbedoMap", albedo);
-        rv.setTexture("uNormalMap", normal);
-        rv.setTexture("uMetallicMap", metallic);
-        rv.setTexture("uRoughnessMap", roughness);
-        rv.setTexture("uAOMap", ao);
-        rv.setVec3Array("uLightWorldPositions", c_LightPositions);
-        rv.setVec3Array("uLightRadiances", c_LightRadiances);
+        rv.set_texture("uAlbedoMap", albedo);
+        rv.set_texture("uNormalMap", normal);
+        rv.set_texture("uMetallicMap", metallic);
+        rv.set_texture("uRoughnessMap", roughness);
+        rv.set_texture("uAOMap", ao);
+        rv.set_vec3_array("uLightWorldPositions", c_LightPositions);
+        rv.set_vec3_array("uLightRadiances", c_LightRadiances);
         return rv;
     }
 }
@@ -114,7 +114,7 @@ private:
     {
         m_Camera.set_pixel_rect(ui::GetMainViewportWorkspaceScreenRect());
 
-        m_PBRMaterial.setVec3("uCameraWorldPosition", m_Camera.position());
+        m_PBRMaterial.set_vec3("uCameraWorldPosition", m_Camera.position());
 
         drawSpheres();
         drawLights();

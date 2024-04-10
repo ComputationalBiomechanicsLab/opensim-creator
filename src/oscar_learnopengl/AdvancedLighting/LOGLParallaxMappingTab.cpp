@@ -74,10 +74,10 @@ namespace
             rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/ParallaxMapping.vert"),
             rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/ParallaxMapping.frag"),
         }};
-        rv.setTexture("uDiffuseMap", diffuseMap);
-        rv.setTexture("uNormalMap", normalMap);
-        rv.setTexture("uDisplacementMap", displacementMap);
-        rv.setFloat("uHeightScale", 0.1f);
+        rv.set_texture("uDiffuseMap", diffuseMap);
+        rv.set_texture("uNormalMap", normalMap);
+        rv.set_texture("uDisplacementMap", displacementMap);
+        rv.set_float("uHeightScale", 0.1f);
         return rv;
     }
 
@@ -120,15 +120,15 @@ private:
 
         // draw normal-mapped quad
         {
-            m_ParallaxMappingMaterial.setVec3("uLightWorldPos", m_LightTransform.position);
-            m_ParallaxMappingMaterial.setVec3("uViewWorldPos", m_Camera.position());
-            m_ParallaxMappingMaterial.setBool("uEnableMapping", m_IsMappingEnabled);
+            m_ParallaxMappingMaterial.set_vec3("uLightWorldPos", m_LightTransform.position);
+            m_ParallaxMappingMaterial.set_vec3("uViewWorldPos", m_Camera.position());
+            m_ParallaxMappingMaterial.set_bool("uEnableMapping", m_IsMappingEnabled);
             graphics::draw(m_QuadMesh, m_QuadTransform, m_ParallaxMappingMaterial, m_Camera);
         }
 
         // draw light source cube
         {
-            m_LightCubeMaterial.setColor("uLightColor", Color::white());
+            m_LightCubeMaterial.set_color("uLightColor", Color::white());
             graphics::draw(m_CubeMesh, m_LightTransform, m_LightCubeMaterial, m_Camera);
         }
 

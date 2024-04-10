@@ -45,7 +45,7 @@ namespace
             rl.slurp("oscar_learnopengl/shaders/GettingStarted/CoordinateSystems.frag"),
         }};
 
-        rv.setTexture(
+        rv.set_texture(
             "uTexture1",
             load_texture2D_from_image(
                 rl.open("oscar_learnopengl/textures/container.jpg"),
@@ -54,7 +54,7 @@ namespace
             )
         );
 
-        rv.setTexture(
+        rv.set_texture(
             "uTexture2",
             load_texture2D_from_image(
                 rl.open("oscar_learnopengl/textures/awesomeface.png"),

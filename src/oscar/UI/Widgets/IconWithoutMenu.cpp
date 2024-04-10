@@ -30,7 +30,7 @@ Vec2 osc::IconWithoutMenu::dimensions() const
 
 bool osc::IconWithoutMenu::onDraw()
 {
-    bool const rv = ui::ImageButton(m_ButtonID, m_Icon.getTexture(), m_Icon.getDimensions(), m_Icon.getTextureCoordinates());
+    bool const rv = ui::ImageButton(m_ButtonID, m_Icon.get_texture(), m_Icon.getDimensions(), m_Icon.getTextureCoordinates());
     ui::DrawTooltipIfItemHovered(m_Title, m_Description);
     return rv;
 }

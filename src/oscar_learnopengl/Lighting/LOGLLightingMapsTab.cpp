@@ -40,8 +40,8 @@ namespace
             rl.slurp("oscar_learnopengl/shaders/Lighting/LightingMaps.vert"),
             rl.slurp("oscar_learnopengl/shaders/Lighting/LightingMaps.frag"),
         }};
-        rv.setTexture("uMaterialDiffuse", diffuseMap);
-        rv.setTexture("uMaterialSpecular", specularMap);
+        rv.set_texture("uMaterialDiffuse", diffuseMap);
+        rv.set_texture("uMaterialSpecular", specularMap);
         return rv;
     }
 }
@@ -77,16 +77,16 @@ private:
         App::upd().clear_screen({0.1f, 0.1f, 0.1f, 1.0f});
 
         // draw cube
-        m_LightingMapsMaterial.setVec3("uViewPos", m_Camera.position());
-        m_LightingMapsMaterial.setVec3("uLightPos", m_LightTransform.position);
-        m_LightingMapsMaterial.setFloat("uLightAmbient", m_LightAmbient);
-        m_LightingMapsMaterial.setFloat("uLightDiffuse", m_LightDiffuse);
-        m_LightingMapsMaterial.setFloat("uLightSpecular", m_LightSpecular);
-        m_LightingMapsMaterial.setFloat("uMaterialShininess", m_MaterialShininess);
+        m_LightingMapsMaterial.set_vec3("uViewPos", m_Camera.position());
+        m_LightingMapsMaterial.set_vec3("uLightPos", m_LightTransform.position);
+        m_LightingMapsMaterial.set_float("uLightAmbient", m_LightAmbient);
+        m_LightingMapsMaterial.set_float("uLightDiffuse", m_LightDiffuse);
+        m_LightingMapsMaterial.set_float("uLightSpecular", m_LightSpecular);
+        m_LightingMapsMaterial.set_float("uMaterialShininess", m_MaterialShininess);
         graphics::draw(m_Mesh, identity<Transform>(), m_LightingMapsMaterial, m_Camera);
 
         // draw lamp
-        m_LightCubeMaterial.setColor("uLightColor", Color::white());
+        m_LightCubeMaterial.set_color("uLightColor", Color::white());
         graphics::draw(m_Mesh, m_LightTransform, m_LightCubeMaterial, m_Camera);
 
         // render 3D scene

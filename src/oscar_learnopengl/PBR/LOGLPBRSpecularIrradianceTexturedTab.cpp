@@ -63,8 +63,8 @@ namespace
             rl.slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/EquirectangularToCubemap.geom"),
             rl.slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/EquirectangularToCubemap.frag"),
         }};
-        material.setTexture("uEquirectangularMap", hdrTexture);
-        material.setMat4Array("uShadowMatrices", CalcCubemapViewProjMatrices(projectionMatrix, Vec3{}));
+        material.set_texture("uEquirectangularMap", hdrTexture);
+        material.set_mat4_array("uShadowMatrices", CalcCubemapViewProjMatrices(projectionMatrix, Vec3{}));
 
         Camera camera;
         graphics::draw(BoxGeometry{2.0f, 2.0f, 2.0f}, identity<Transform>(), material, camera);
@@ -89,8 +89,8 @@ namespace
             rl.slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/IrradianceConvolution.geom"),
             rl.slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/IrradianceConvolution.frag"),
         }};
-        material.setRenderTexture("uEnvironmentMap", skybox);
-        material.setMat4Array("uShadowMatrices", CalcCubemapViewProjMatrices(captureProjection, Vec3{}));
+        material.set_render_texture("uEnvironmentMap", skybox);
+        material.set_mat4_array("uShadowMatrices", CalcCubemapViewProjMatrices(captureProjection, Vec3{}));
 
         Camera camera;
         graphics::draw(BoxGeometry{2.0f, 2.0f, 2.0f}, identity<Transform>(), material, camera);
@@ -118,8 +118,8 @@ namespace
             rl.slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/Prefilter.geom"),
             rl.slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/Prefilter.frag"),
         }};
-        material.setRenderTexture("uEnvironmentMap", environmentMap);
-        material.setMat4Array("uShadowMatrices", CalcCubemapViewProjMatrices(captureProjection, Vec3{}));
+        material.set_render_texture("uEnvironmentMap", environmentMap);
+        material.set_mat4_array("uShadowMatrices", CalcCubemapViewProjMatrices(captureProjection, Vec3{}));
 
         Camera camera;
 
@@ -140,7 +140,7 @@ namespace
             captureRT.setDimensions({static_cast<int>(mipWidth), static_cast<int>(mipWidth)});
 
             float const roughness = static_cast<float>(mip)/static_cast<float>(maxMipmapLevel);
-            material.setFloat("uRoughness", roughness);
+            material.set_float("uRoughness", roughness);
 
             graphics::draw(BoxGeometry{2.0f, 2.0f, 2.0f}, identity<Transform>(), material, camera);
             camera.render_to(captureRT);
@@ -189,7 +189,7 @@ namespace
             rl.slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/PBR.vert"),
             rl.slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/PBR.frag"),
         }};
-        rv.setFloat("uAO", 1.0f);
+        rv.set_float("uAO", 1.0f);
         return rv;
     }
 
@@ -257,22 +257,22 @@ private:
 
     void setCommonMaterialProps()
     {
-        m_PBRMaterial.setVec3("uCameraWorldPos", m_Camera.position());
-        m_PBRMaterial.setVec3Array("uLightPositions", c_LightPositions);
-        m_PBRMaterial.setVec3Array("uLightColors", c_LightRadiances);
-        m_PBRMaterial.setRenderTexture("uIrradianceMap", m_IrradianceMap);
-        m_PBRMaterial.setCubemap("uPrefilterMap", m_PrefilterMap);
-        m_PBRMaterial.setFloat("uMaxReflectionLOD", static_cast<float>(cpp20::bit_width(static_cast<size_t>(m_PrefilterMap.width()) - 1)));
-        m_PBRMaterial.setTexture("uBRDFLut", m_BRDFLookup);
+        m_PBRMaterial.set_vec3("uCameraWorldPos", m_Camera.position());
+        m_PBRMaterial.set_vec3_array("uLightPositions", c_LightPositions);
+        m_PBRMaterial.set_vec3_array("uLightColors", c_LightRadiances);
+        m_PBRMaterial.set_render_texture("uIrradianceMap", m_IrradianceMap);
+        m_PBRMaterial.set_cubemap("uPrefilterMap", m_PrefilterMap);
+        m_PBRMaterial.set_float("uMaxReflectionLOD", static_cast<float>(cpp20::bit_width(static_cast<size_t>(m_PrefilterMap.width()) - 1)));
+        m_PBRMaterial.set_texture("uBRDFLut", m_BRDFLookup);
     }
 
     void setMaterialMaps(Material& mat, IBLSpecularObjectTextures const& ts)
     {
-        mat.setTexture("uAlbedoMap", ts.albedoMap);
-        mat.setTexture("uNormalMap", ts.normalMap);
-        mat.setTexture("uMetallicMap", ts.metallicMap);
-        mat.setTexture("uRoughnessMap", ts.roughnessMap);
-        mat.setTexture("uAOMap", ts.aoMap);
+        mat.set_texture("uAlbedoMap", ts.albedoMap);
+        mat.set_texture("uNormalMap", ts.normalMap);
+        mat.set_texture("uMetallicMap", ts.metallicMap);
+        mat.set_texture("uRoughnessMap", ts.roughnessMap);
+        mat.set_texture("uAOMap", ts.aoMap);
     }
 
     void drawSpheres()
@@ -299,8 +299,8 @@ private:
 
     void drawBackground()
     {
-        m_BackgroundMaterial.setRenderTexture("uEnvironmentMap", m_ProjectedMap);
-        m_BackgroundMaterial.setDepthFunction(DepthFunction::LessOrEqual);  // for skybox depth trick
+        m_BackgroundMaterial.set_render_texture("uEnvironmentMap", m_ProjectedMap);
+        m_BackgroundMaterial.set_depth_function(DepthFunction::LessOrEqual);  // for skybox depth trick
 
         graphics::draw(m_CubeMesh, identity<Transform>(), m_BackgroundMaterial, m_Camera);
 

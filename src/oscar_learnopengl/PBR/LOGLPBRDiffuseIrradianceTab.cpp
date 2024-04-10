@@ -67,8 +67,8 @@ namespace
             rl.slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/EquirectangularToCubemap.geom"),
             rl.slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/EquirectangularToCubemap.frag"),
         }};
-        material.setTexture("uEquirectangularMap", hdrTexture);
-        material.setMat4Array("uShadowMatrices", CalcCubemapViewProjMatrices(projectionMatrix, Vec3{}));
+        material.set_texture("uEquirectangularMap", hdrTexture);
+        material.set_mat4_array("uShadowMatrices", CalcCubemapViewProjMatrices(projectionMatrix, Vec3{}));
 
         Camera camera;
         graphics::draw(BoxGeometry{2.0f, 2.0f, 2.0f}, identity<Transform>(), material, camera);
@@ -93,8 +93,8 @@ namespace
             rl.slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/Convolution.geom"),
             rl.slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/Convolution.frag"),
         }};
-        material.setRenderTexture("uEnvironmentMap", skybox);
-        material.setMat4Array("uShadowMatrices", CalcCubemapViewProjMatrices(captureProjection, Vec3{}));
+        material.set_render_texture("uEnvironmentMap", skybox);
+        material.set_mat4_array("uShadowMatrices", CalcCubemapViewProjMatrices(captureProjection, Vec3{}));
 
         Camera camera;
         graphics::draw(BoxGeometry{2.0f, 2.0f, 2.0f}, identity<Transform>(), material, camera);
@@ -110,7 +110,7 @@ namespace
             rl.slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/PBR.vert"),
             rl.slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/PBR.frag"),
         }};
-        rv.setFloat("uAO", 1.0f);
+        rv.set_float("uAO", 1.0f);
         return rv;
     }
 }
@@ -150,10 +150,10 @@ private:
     {
         m_Camera.set_pixel_rect(ui::GetMainViewportWorkspaceScreenRect());
 
-        m_PBRMaterial.setVec3("uCameraWorldPos", m_Camera.position());
-        m_PBRMaterial.setVec3Array("uLightPositions", c_LightPositions);
-        m_PBRMaterial.setVec3Array("uLightColors", c_LightRadiances);
-        m_PBRMaterial.setRenderTexture("uIrradianceMap", m_IrradianceMap);
+        m_PBRMaterial.set_vec3("uCameraWorldPos", m_Camera.position());
+        m_PBRMaterial.set_vec3_array("uLightPositions", c_LightPositions);
+        m_PBRMaterial.set_vec3_array("uLightColors", c_LightRadiances);
+        m_PBRMaterial.set_render_texture("uIrradianceMap", m_IrradianceMap);
 
         drawSpheres();
         drawLights();
@@ -163,14 +163,14 @@ private:
 
     void drawSpheres()
     {
-        m_PBRMaterial.setVec3("uAlbedoColor", {0.5f, 0.0f, 0.0f});
+        m_PBRMaterial.set_vec3("uAlbedoColor", {0.5f, 0.0f, 0.0f});
 
         for (int row = 0; row < c_NumRows; ++row) {
-            m_PBRMaterial.setFloat("uMetallicity", static_cast<float>(row) / static_cast<float>(c_NumRows));
+            m_PBRMaterial.set_float("uMetallicity", static_cast<float>(row) / static_cast<float>(c_NumRows));
 
             for (int col = 0; col < c_NumCols; ++col) {
                 float const normalizedCol = static_cast<float>(col) / static_cast<float>(c_NumCols);
-                m_PBRMaterial.setFloat("uRoughness", clamp(normalizedCol, 0.005f, 1.0f));
+                m_PBRMaterial.set_float("uRoughness", clamp(normalizedCol, 0.005f, 1.0f));
 
                 float const x = (static_cast<float>(col) - static_cast<float>(c_NumCols)/2.0f) * c_CellSpacing;
                 float const y = (static_cast<float>(row) - static_cast<float>(c_NumRows)/2.0f) * c_CellSpacing;
@@ -182,7 +182,7 @@ private:
 
     void drawLights()
     {
-        m_PBRMaterial.setVec3("uAlbedoColor", {1.0f, 1.0f, 1.0f});
+        m_PBRMaterial.set_vec3("uAlbedoColor", {1.0f, 1.0f, 1.0f});
 
         for (Vec3 const& pos : c_LightPositions) {
             graphics::draw(m_SphereMesh, {.scale = Vec3{0.5f}, .position = pos}, m_PBRMaterial, m_Camera);
@@ -191,8 +191,8 @@ private:
 
     void drawBackground()
     {
-        m_BackgroundMaterial.setRenderTexture("uEnvironmentMap", m_ProjectedMap);
-        m_BackgroundMaterial.setDepthFunction(DepthFunction::LessOrEqual);  // for skybox depth trick
+        m_BackgroundMaterial.set_render_texture("uEnvironmentMap", m_ProjectedMap);
+        m_BackgroundMaterial.set_depth_function(DepthFunction::LessOrEqual);  // for skybox depth trick
         graphics::draw(m_CubeMesh, identity<Transform>(), m_BackgroundMaterial, m_Camera);
         m_Camera.set_pixel_rect(ui::GetMainViewportWorkspaceScreenRect());
         m_Camera.set_clear_flags(CameraClearFlags::Nothing);
@@ -203,9 +203,9 @@ private:
     void draw2DUI()
     {
         if (ui::Begin("Controls")) {
-            float ao = m_PBRMaterial.getFloat("uAO").value_or(1.0f);
+            float ao = m_PBRMaterial.get_float("uAO").value_or(1.0f);
             if (ui::SliderFloat("ao", &ao, 0.0f, 1.0f)) {
-                m_PBRMaterial.setFloat("uAO", ao);
+                m_PBRMaterial.set_float("uAO", ao);
             }
         }
         ui::End();

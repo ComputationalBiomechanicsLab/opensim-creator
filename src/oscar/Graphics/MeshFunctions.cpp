@@ -20,7 +20,7 @@
 
 using namespace osc;
 
-Vec3 osc::AverageCenterpoint(Mesh const& m)
+Vec3 osc::average_centroid_of(Mesh const& m)
 {
     Vec3 accumulator{};
     size_t i = 0;
@@ -32,7 +32,7 @@ Vec3 osc::AverageCenterpoint(Mesh const& m)
     return accumulator / static_cast<float>(i);
 }
 
-std::vector<Vec4> osc::CalcTangentVectors(
+std::vector<Vec4> osc::calc_tangent_vectors(
     MeshTopology const& topology,
     std::span<Vec3 const> verts,
     std::span<Vec3 const> normals,
@@ -133,7 +133,7 @@ std::vector<Vec4> osc::CalcTangentVectors(
     return rv;
 }
 
-Vec3 osc::MassCenter(Mesh const& m)
+Vec3 osc::mass_center_of(Mesh const& m)
 {
     // hastily implemented from: http://forums.cgsociety.org/t/how-to-calculate-center-of-mass-for-triangular-mesh/1309966
     //

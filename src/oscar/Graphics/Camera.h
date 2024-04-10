@@ -46,7 +46,7 @@ namespace osc
         float near_clipping_plane() const;
         void set_near_clipping_plane(float);
 
-        float get_far_clipping_plane() const;
+        float far_clipping_plane() const;
         void set_far_clipping_plane(float);
 
         CameraClearFlags clear_flags() const;

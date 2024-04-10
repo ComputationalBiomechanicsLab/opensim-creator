@@ -58,10 +58,10 @@ namespace
             rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Scene.vert"),
             rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Scene.frag"),
         }};
-        rv.setVec3Array("uSceneLightPositions", c_LightPositions);
-        rv.setColorArray("uSceneLightColors", GetLightColors());
-        rv.setTexture("uDiffuseTexture", woodTexture);
-        rv.setBool("uInverseNormals", true);
+        rv.set_vec3_array("uSceneLightPositions", c_LightPositions);
+        rv.set_color_array("uSceneLightColors", GetLightColors());
+        rv.set_texture("uDiffuseTexture", woodTexture);
+        rv.set_bool("uInverseNormals", true);
         return rv;
     }
 
@@ -132,14 +132,14 @@ private:
         orthoCamera.set_projection_matrix_override(identity<Mat4>());
         orthoCamera.set_view_matrix_override(identity<Mat4>());
 
-        m_TonemapMaterial.setRenderTexture("uTexture", m_SceneHDRTexture);
-        m_TonemapMaterial.setBool("uUseTonemap", m_UseTonemap);
-        m_TonemapMaterial.setFloat("uExposure", m_Exposure);
+        m_TonemapMaterial.set_render_texture("uTexture", m_SceneHDRTexture);
+        m_TonemapMaterial.set_bool("uUseTonemap", m_UseTonemap);
+        m_TonemapMaterial.set_float("uExposure", m_Exposure);
 
         graphics::draw(m_QuadMesh, identity<Transform>(), m_TonemapMaterial, orthoCamera);
         orthoCamera.render_to_screen();
 
-        m_TonemapMaterial.clearRenderTexture("uTexture");
+        m_TonemapMaterial.clear_render_texture("uTexture");
     }
 
     void draw2DUI()

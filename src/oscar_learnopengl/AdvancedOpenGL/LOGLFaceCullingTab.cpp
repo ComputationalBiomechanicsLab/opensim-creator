@@ -24,7 +24,7 @@ namespace
             rl.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/FaceCulling.frag"),
         }};
 
-        rv.setTexture("uTexture", load_texture2D_from_image(
+        rv.set_texture("uTexture", load_texture2D_from_image(
             rl.open("oscar_learnopengl/textures/uv_checker.jpg"),
             ColorSpace::sRGB
         ));
@@ -85,13 +85,13 @@ private:
     {
         ui::Begin("controls");
         if (ui::Button("off")) {
-            m_Material.setCullMode(CullMode::Off);
+            m_Material.set_cull_mode(CullMode::Off);
         }
         if (ui::Button("back")) {
-            m_Material.setCullMode(CullMode::Back);
+            m_Material.set_cull_mode(CullMode::Back);
         }
         if (ui::Button("front")) {
-            m_Material.setCullMode(CullMode::Front);
+            m_Material.set_cull_mode(CullMode::Front);
         }
         ui::End();
     }

@@ -144,17 +144,17 @@ public:
         depth_writer_material_{cache.get_shader("oscar/shaders/SceneRenderer/DepthMap.vert", "oscar/shaders/SceneRenderer/DepthMap.frag")},
         quad_mesh_{cache.quad_mesh()}
     {
-        scene_textured_els_material_.setTexture("uDiffuseTexture", chequered_texture_);
-        scene_textured_els_material_.setVec2("uTextureScale", {200.0f, 200.0f});
-        scene_textured_els_material_.setTransparent(true);
+        scene_textured_els_material_.set_texture("uDiffuseTexture", chequered_texture_);
+        scene_textured_els_material_.set_vec2("uTextureScale", {200.0f, 200.0f});
+        scene_textured_els_material_.set_transparent(true);
 
         wireframe_material_.set_color(Color::black());
 
         rims_selected_properties_.set_color(Color::red());
         rims_hovered_properties_.set_color({0.5, 0.0f, 0.0f, 1.0f});
 
-        edge_detection_material_.setTransparent(true);
-        edge_detection_material_.setDepthTested(false);
+        edge_detection_material_.set_transparent(true);
+        edge_detection_material_.set_depth_tested(false);
     }
 
     Vec2i dimensions() const
@@ -186,28 +186,28 @@ public:
 
         // draw the the scene
         {
-            scene_colored_els_material_.setVec3("uViewPos", camera_.position());
-            scene_colored_els_material_.setVec3("uLightDir", params.light_direction);
-            scene_colored_els_material_.setColor("uLightColor", params.light_color);
-            scene_colored_els_material_.setFloat("uAmbientStrength", params.ambient_strength);
-            scene_colored_els_material_.setFloat("uDiffuseStrength", params.diffuse_strength);
-            scene_colored_els_material_.setFloat("uSpecularStrength", params.specular_strength);
-            scene_colored_els_material_.setFloat("uShininess", params.specular_shininess);
-            scene_colored_els_material_.setFloat("uNear", camera_.near_clipping_plane());
-            scene_colored_els_material_.setFloat("uFar", camera_.get_far_clipping_plane());
+            scene_colored_els_material_.set_vec3("uViewPos", camera_.position());
+            scene_colored_els_material_.set_vec3("uLightDir", params.light_direction);
+            scene_colored_els_material_.set_color("uLightColor", params.light_color);
+            scene_colored_els_material_.set_float("uAmbientStrength", params.ambient_strength);
+            scene_colored_els_material_.set_float("uDiffuseStrength", params.diffuse_strength);
+            scene_colored_els_material_.set_float("uSpecularStrength", params.specular_strength);
+            scene_colored_els_material_.set_float("uShininess", params.specular_shininess);
+            scene_colored_els_material_.set_float("uNear", camera_.near_clipping_plane());
+            scene_colored_els_material_.set_float("uFar", camera_.far_clipping_plane());
 
             // supply shadowmap, if applicable
             if (maybe_shadowmap) {
-                scene_colored_els_material_.setBool("uHasShadowMap", true);
-                scene_colored_els_material_.setMat4("uLightSpaceMat", maybe_shadowmap->lightspace_mat);
-                scene_colored_els_material_.setRenderTexture("uShadowMapTexture", maybe_shadowmap->shadow_map);
+                scene_colored_els_material_.set_bool("uHasShadowMap", true);
+                scene_colored_els_material_.set_mat4("uLightSpaceMat", maybe_shadowmap->lightspace_mat);
+                scene_colored_els_material_.set_render_texture("uShadowMapTexture", maybe_shadowmap->shadow_map);
             }
             else {
-                scene_colored_els_material_.setBool("uHasShadowMap", false);
+                scene_colored_els_material_.set_bool("uHasShadowMap", false);
             }
 
             Material transparent_material = scene_colored_els_material_;
-            transparent_material.setTransparent(true);
+            transparent_material.set_transparent(true);
 
             MaterialPropertyBlock prop_block;
             MaterialPropertyBlock wireframe_prop_block;
@@ -215,7 +215,7 @@ public:
             for (const SceneDecoration& dec : decorations) {
                 if (not (dec.flags & SceneDecorationFlags::NoDrawNormally)) {
                     if (dec.color != previous_color) {
-                        prop_block.setColor("uDiffuseColor", dec.color);
+                        prop_block.set_color("uDiffuseColor", dec.color);
                         previous_color = dec.color;
                     }
 
@@ -233,7 +233,7 @@ public:
                 // if a wireframe overlay is requested for the decoration then draw it over the top in
                 // a solid color
                 if (dec.flags & SceneDecorationFlags::WireframeOverlay) {
-                    wireframe_prop_block.setColor("uDiffuseColor", multiply_luminance(dec.color, 0.5f));
+                    wireframe_prop_block.set_color("uDiffuseColor", multiply_luminance(dec.color, 0.5f));
                     graphics::draw(dec.mesh, dec.transform, wireframe_material_, camera_, wireframe_prop_block);
                 }
 
@@ -248,24 +248,24 @@ public:
 
             // if a floor is requested, draw a textured floor
             if (params.draw_floor) {
-                scene_textured_els_material_.setVec3("uViewPos", camera_.position());
-                scene_textured_els_material_.setVec3("uLightDir", params.light_direction);
-                scene_textured_els_material_.setColor("uLightColor", params.light_color);
-                scene_textured_els_material_.setFloat("uAmbientStrength", 0.7f);
-                scene_textured_els_material_.setFloat("uDiffuseStrength", 0.4f);
-                scene_textured_els_material_.setFloat("uSpecularStrength", 0.4f);
-                scene_textured_els_material_.setFloat("uShininess", 8.0f);
-                scene_textured_els_material_.setFloat("uNear", camera_.near_clipping_plane());
-                scene_textured_els_material_.setFloat("uFar", camera_.get_far_clipping_plane());
+                scene_textured_els_material_.set_vec3("uViewPos", camera_.position());
+                scene_textured_els_material_.set_vec3("uLightDir", params.light_direction);
+                scene_textured_els_material_.set_color("uLightColor", params.light_color);
+                scene_textured_els_material_.set_float("uAmbientStrength", 0.7f);
+                scene_textured_els_material_.set_float("uDiffuseStrength", 0.4f);
+                scene_textured_els_material_.set_float("uSpecularStrength", 0.4f);
+                scene_textured_els_material_.set_float("uShininess", 8.0f);
+                scene_textured_els_material_.set_float("uNear", camera_.near_clipping_plane());
+                scene_textured_els_material_.set_float("uFar", camera_.far_clipping_plane());
 
                 // supply shadowmap, if applicable
                 if (maybe_shadowmap) {
-                    scene_textured_els_material_.setBool("uHasShadowMap", true);
-                    scene_textured_els_material_.setMat4("uLightSpaceMat", maybe_shadowmap->lightspace_mat);
-                    scene_textured_els_material_.setRenderTexture("uShadowMapTexture", maybe_shadowmap->shadow_map);
+                    scene_textured_els_material_.set_bool("uHasShadowMap", true);
+                    scene_textured_els_material_.set_mat4("uLightSpaceMat", maybe_shadowmap->lightspace_mat);
+                    scene_textured_els_material_.set_render_texture("uShadowMapTexture", maybe_shadowmap->shadow_map);
                 }
                 else {
-                    scene_textured_els_material_.setBool("uHasShadowMap", false);
+                    scene_textured_els_material_.set_bool("uHasShadowMap", false);
                 }
 
                 const Transform t = calc_floor_transform(params.floor_location, params.fixup_scale_factor);
@@ -284,9 +284,9 @@ public:
         camera_.render_to(output_rendertexture_);
 
         // prevents copies on next frame
-        edge_detection_material_.clearRenderTexture("uScreenTexture");
-        scene_textured_els_material_.clearRenderTexture("uShadowMapTexture");
-        scene_colored_els_material_.clearRenderTexture("uShadowMapTexture");
+        edge_detection_material_.clear_render_texture("uScreenTexture");
+        scene_textured_els_material_.clear_render_texture("uShadowMapTexture");
+        scene_colored_els_material_.clear_render_texture("uShadowMapTexture");
     }
 
     RenderTexture& upd_render_texture()
@@ -390,11 +390,11 @@ private:
         //
         // the off-screen texture is rendered as a quad via an edge-detection kernel
         // that transforms the solid shapes into "rims"
-        edge_detection_material_.setRenderTexture("uScreenTexture", rims_rendertexture_);
-        edge_detection_material_.setColor("uRimRgba", params.rim_color);
-        edge_detection_material_.setVec2("uRimThickness", 0.5f*rim_ndc_thickness);
-        edge_detection_material_.setVec2("uTextureOffset", rim_rect_uv.p1);
-        edge_detection_material_.setVec2("uTextureScale", dimensions_of(rim_rect_uv));
+        edge_detection_material_.set_render_texture("uScreenTexture", rims_rendertexture_);
+        edge_detection_material_.set_color("uRimRgba", params.rim_color);
+        edge_detection_material_.set_vec2("uRimThickness", 0.5f*rim_ndc_thickness);
+        edge_detection_material_.set_vec2("uTextureOffset", rim_rect_uv.p1);
+        edge_detection_material_.set_vec2("uTextureScale", dimensions_of(rim_rect_uv));
 
         // return necessary information for rendering the rims
         return RimHighlights{

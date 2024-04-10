@@ -286,7 +286,7 @@ bool osc::mi::TryTranslateToMeshMassCenter(
         return false;
     }
 
-    obj->setPos(doc, MassCenter(*mesh));
+    obj->setPos(doc, mass_center_of(*mesh));
     udoc.commitScratch("moved " + obj->getLabel());
 
     return true;

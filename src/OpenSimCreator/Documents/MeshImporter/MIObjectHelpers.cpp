@@ -58,12 +58,12 @@ std::array<MIClass, std::variant_size_v<SceneElVariant>> const& osc::mi::GetScen
 
 Vec3 osc::mi::AverageCenter(Mesh const& el)
 {
-    Vec3 const centerpointInModelSpace = AverageCenterpoint(el.getMeshData());
+    Vec3 const centerpointInModelSpace = average_centroid_of(el.getMeshData());
     return el.getXForm() * centerpointInModelSpace;
 }
 
-Vec3 osc::mi::MassCenter(Mesh const& el)
+Vec3 osc::mi::mass_center_of(Mesh const& el)
 {
-    Vec3 const massCenterInModelSpace = MassCenter(el.getMeshData());
+    Vec3 const massCenterInModelSpace = mass_center_of(el.getMeshData());
     return el.getXForm() * massCenterInModelSpace;
 }

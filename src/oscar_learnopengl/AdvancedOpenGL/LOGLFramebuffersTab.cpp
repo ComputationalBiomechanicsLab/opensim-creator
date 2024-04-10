@@ -95,12 +95,12 @@ private:
         // render scene
         {
             // cubes
-            m_SceneRenderMaterial.setTexture("uTexture1", m_ContainerTexture);
+            m_SceneRenderMaterial.set_texture("uTexture1", m_ContainerTexture);
             graphics::draw(m_CubeMesh, {.position = {-1.0f, 0.0f, -1.0f}}, m_SceneRenderMaterial, m_SceneCamera);
             graphics::draw(m_CubeMesh, {.position = { 1.0f, 0.0f, -1.0f}}, m_SceneRenderMaterial, m_SceneCamera);
 
             // floor
-            m_SceneRenderMaterial.setTexture("uTexture1", m_MetalTexture);
+            m_SceneRenderMaterial.set_texture("uTexture1", m_MetalTexture);
             graphics::draw(m_PlaneMesh, identity<Transform>(), m_SceneRenderMaterial, m_SceneCamera);
         }
         m_SceneCamera.render_to(m_RenderTexture);

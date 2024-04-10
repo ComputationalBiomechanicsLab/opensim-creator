@@ -71,8 +71,8 @@ namespace
             rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/NormalMapping.vert"),
             rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/NormalMapping.frag"),
         }};
-        rv.setTexture("uDiffuseMap", diffuseMap);
-        rv.setTexture("uNormalMap", normalMap);
+        rv.set_texture("uDiffuseMap", diffuseMap);
+        rv.set_texture("uNormalMap", normalMap);
 
         return rv;
     }
@@ -125,15 +125,15 @@ private:
 
         // draw normal-mapped quad
         {
-            m_NormalMappingMaterial.setVec3("uLightWorldPos", m_LightTransform.position);
-            m_NormalMappingMaterial.setVec3("uViewWorldPos", m_Camera.position());
-            m_NormalMappingMaterial.setBool("uEnableNormalMapping", m_IsNormalMappingEnabled);
+            m_NormalMappingMaterial.set_vec3("uLightWorldPos", m_LightTransform.position);
+            m_NormalMappingMaterial.set_vec3("uViewWorldPos", m_Camera.position());
+            m_NormalMappingMaterial.set_bool("uEnableNormalMapping", m_IsNormalMappingEnabled);
             graphics::draw(m_QuadMesh, m_QuadTransform, m_NormalMappingMaterial, m_Camera);
         }
 
         // draw light source cube
         {
-            m_LightCubeMaterial.setColor("uLightColor", Color::white());
+            m_LightCubeMaterial.set_color("uLightColor", Color::white());
             graphics::draw(m_CubeMesh, m_LightTransform, m_LightCubeMaterial, m_Camera);
         }
 

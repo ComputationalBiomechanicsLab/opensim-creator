@@ -105,11 +105,11 @@ private:
 
         m_Camera.set_background_color({0.1f, 0.1f, 0.1f, 1.0f});
 
-        m_SceneMaterial.setVec3("uLightWorldPos", m_LightPos);
-        m_SceneMaterial.setVec3("uViewWorldPos", m_Camera.position());
-        m_SceneMaterial.setMat4("uLightSpaceMat", m_LatestLightSpaceMatrix);
-        m_SceneMaterial.setTexture("uDiffuseTexture", m_WoodTexture);
-        m_SceneMaterial.setRenderTexture("uShadowMapTexture", m_DepthTexture);
+        m_SceneMaterial.set_vec3("uLightWorldPos", m_LightPos);
+        m_SceneMaterial.set_vec3("uViewWorldPos", m_Camera.position());
+        m_SceneMaterial.set_mat4("uLightSpaceMat", m_LatestLightSpaceMatrix);
+        m_SceneMaterial.set_texture("uDiffuseTexture", m_WoodTexture);
+        m_SceneMaterial.set_render_texture("uShadowMapTexture", m_DepthTexture);
 
         drawMeshesWithMaterial(m_SceneMaterial);
         m_Camera.set_pixel_rect(viewportRect);
@@ -117,7 +117,7 @@ private:
         m_Camera.set_pixel_rect(std::nullopt);
         graphics::blit_to_screen(m_DepthTexture, Rect{viewportRect.p1, viewportRect.p1 + 200.0f});
 
-        m_SceneMaterial.clearRenderTexture("uShadowMapTexture");
+        m_SceneMaterial.clear_render_texture("uShadowMapTexture");
     }
 
     void drawMeshesWithMaterial(Material const& material)

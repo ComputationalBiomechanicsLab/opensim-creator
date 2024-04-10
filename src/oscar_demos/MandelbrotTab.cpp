@@ -55,9 +55,9 @@ private:
     {
         m_MainViewportWorkspaceScreenRect = ui::GetMainViewportWorkspaceScreenRect();
 
-        m_Material.setVec2("uRescale", {1.0f, 1.0f});
-        m_Material.setVec2("uOffset", {});
-        m_Material.setInt("uNumIterations", m_NumIterations);
+        m_Material.set_vec2("uRescale", {1.0f, 1.0f});
+        m_Material.set_vec2("uOffset", {});
+        m_Material.set_int("uNumIterations", m_NumIterations);
         graphics::draw(m_QuadMesh, identity<Transform>(), m_Material, m_Camera);
         m_Camera.set_pixel_rect(m_MainViewportWorkspaceScreenRect);
         m_Camera.render_to_screen();

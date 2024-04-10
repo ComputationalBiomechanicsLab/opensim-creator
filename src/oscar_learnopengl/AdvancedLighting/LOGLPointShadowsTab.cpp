@@ -134,9 +134,9 @@ private:
             CalcCubemapViewProjMatrices(projectionMatrix, m_LightPos);
 
         // pass data to material
-        m_ShadowMappingMaterial.setMat4Array("uShadowMatrices", shadowMatrices);
-        m_ShadowMappingMaterial.setVec3("uLightPos", m_LightPos);
-        m_ShadowMappingMaterial.setFloat("uFarPlane", farPlane);
+        m_ShadowMappingMaterial.set_mat4_array("uShadowMatrices", shadowMatrices);
+        m_ShadowMappingMaterial.set_vec3("uLightPos", m_LightPos);
+        m_ShadowMappingMaterial.set_float("uFarPlane", farPlane);
 
         // render (shadowmapping does not use the camera's view/projection matrices)
         Camera camera;
@@ -151,22 +151,22 @@ private:
         Material material = m_UseSoftShadows ? m_SoftSceneMaterial : m_SceneMaterial;
 
         // set shared material params
-        material.setTexture("uDiffuseTexture", m_WoodTexture);
-        material.setVec3("uLightPos", m_LightPos);
-        material.setVec3("uViewPos", m_SceneCamera.position());
-        material.setFloat("uFarPlane", 25.0f);
-        material.setBool("uShadows", m_ShowShadows);
+        material.set_texture("uDiffuseTexture", m_WoodTexture);
+        material.set_vec3("uLightPos", m_LightPos);
+        material.set_vec3("uViewPos", m_SceneCamera.position());
+        material.set_float("uFarPlane", 25.0f);
+        material.set_bool("uShadows", m_ShowShadows);
 
         for (SceneCube const& cube : m_SceneCubes) {
             MaterialPropertyBlock mpb;
-            mpb.setBool("uReverseNormals", cube.invertNormals);
-            material.setRenderTexture("uDepthMap", m_DepthTexture);
+            mpb.set_bool("uReverseNormals", cube.invertNormals);
+            material.set_render_texture("uDepthMap", m_DepthTexture);
             graphics::draw(m_CubeMesh, cube.transform, material, m_SceneCamera, std::move(mpb));
-            material.clearRenderTexture("uDepthMap");
+            material.clear_render_texture("uDepthMap");
         }
 
         // also, draw the light as a little cube
-        material.setBool("uShadows", m_ShowShadows);
+        material.set_bool("uShadows", m_ShowShadows);
         graphics::draw(m_CubeMesh, {.scale = Vec3{0.1f}, .position = m_LightPos}, material, m_SceneCamera);
 
         m_SceneCamera.set_pixel_rect(viewportRect);

@@ -48,7 +48,7 @@ namespace
             rl.slurp("oscar_learnopengl/shaders/PBR/lighting/PBR.vert"),
             rl.slurp("oscar_learnopengl/shaders/PBR/lighting/PBR.frag"),
         }};
-        rv.setFloat("uAO", 1.0f);
+        rv.set_float("uAO", 1.0f);
         return rv;
     }
 }
@@ -87,9 +87,9 @@ private:
     {
         m_Camera.set_pixel_rect(ui::GetMainViewportWorkspaceScreenRect());
 
-        m_PBRMaterial.setVec3("uCameraWorldPos", m_Camera.position());
-        m_PBRMaterial.setVec3Array("uLightPositions", c_LightPositions);
-        m_PBRMaterial.setVec3Array("uLightColors", c_LightRadiances);
+        m_PBRMaterial.set_vec3("uCameraWorldPos", m_Camera.position());
+        m_PBRMaterial.set_vec3_array("uLightPositions", c_LightPositions);
+        m_PBRMaterial.set_vec3_array("uLightColors", c_LightRadiances);
 
         drawSpheres();
         drawLights();
@@ -99,14 +99,14 @@ private:
 
     void drawSpheres()
     {
-        m_PBRMaterial.setVec3("uAlbedoColor", {0.5f, 0.0f, 0.0f});
+        m_PBRMaterial.set_vec3("uAlbedoColor", {0.5f, 0.0f, 0.0f});
 
         for (int row = 0; row < c_NumRows; ++row) {
-            m_PBRMaterial.setFloat("uMetallicity", static_cast<float>(row) / static_cast<float>(c_NumRows));
+            m_PBRMaterial.set_float("uMetallicity", static_cast<float>(row) / static_cast<float>(c_NumRows));
 
             for (int col = 0; col < c_NumCols; ++col) {
                 float const normalizedCol = static_cast<float>(col) / static_cast<float>(c_NumCols);
-                m_PBRMaterial.setFloat("uRoughness", clamp(normalizedCol, 0.005f, 1.0f));
+                m_PBRMaterial.set_float("uRoughness", clamp(normalizedCol, 0.005f, 1.0f));
 
                 float const x = (static_cast<float>(col) - static_cast<float>(c_NumCols)/2.0f) * c_CellSpacing;
                 float const y = (static_cast<float>(row) - static_cast<float>(c_NumRows)/2.0f) * c_CellSpacing;
@@ -117,7 +117,7 @@ private:
 
     void drawLights()
     {
-        m_PBRMaterial.setVec3("uAlbedoColor", {1.0f, 1.0f, 1.0f});
+        m_PBRMaterial.set_vec3("uAlbedoColor", {1.0f, 1.0f, 1.0f});
 
         for (Vec3 const& pos : c_LightPositions) {
             graphics::draw(m_SphereMesh, {.scale = Vec3{0.5f}, .position = pos}, m_PBRMaterial, m_Camera);

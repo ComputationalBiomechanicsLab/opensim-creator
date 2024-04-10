@@ -22,5 +22,5 @@ namespace osc::mi
     std::array<MIClass, std::variant_size_v<SceneElVariant>> const& GetSceneElClasses();
 
     Vec3 AverageCenter(Mesh const&);
-    Vec3 MassCenter(Mesh const&);
+    Vec3 mass_center_of(Mesh const&);
 }

@@ -19,7 +19,7 @@ namespace osc
         {
         }
 
-        Texture2D const& getTexture() const
+        Texture2D const& get_texture() const
         {
             return m_Texture;
         }

@@ -55,17 +55,17 @@ private:
         m_Camera.set_pixel_rect(ui::GetMainViewportWorkspaceScreenRect());
 
         // draw cube
-        m_LightingMaterial.setColor("uObjectColor", m_ObjectColor);
-        m_LightingMaterial.setColor("uLightColor", m_LightColor);
-        m_LightingMaterial.setVec3("uLightPos", m_LightTransform.position);
-        m_LightingMaterial.setVec3("uViewPos", m_Camera.position());
-        m_LightingMaterial.setFloat("uAmbientStrength", m_AmbientStrength);
-        m_LightingMaterial.setFloat("uDiffuseStrength", m_DiffuseStrength);
-        m_LightingMaterial.setFloat("uSpecularStrength", m_SpecularStrength);
+        m_LightingMaterial.set_color("uObjectColor", m_ObjectColor);
+        m_LightingMaterial.set_color("uLightColor", m_LightColor);
+        m_LightingMaterial.set_vec3("uLightPos", m_LightTransform.position);
+        m_LightingMaterial.set_vec3("uViewPos", m_Camera.position());
+        m_LightingMaterial.set_float("uAmbientStrength", m_AmbientStrength);
+        m_LightingMaterial.set_float("uDiffuseStrength", m_DiffuseStrength);
+        m_LightingMaterial.set_float("uSpecularStrength", m_SpecularStrength);
         graphics::draw(m_CubeMesh, identity<Transform>(), m_LightingMaterial, m_Camera);
 
         // draw lamp
-        m_LightCubeMaterial.setColor("uLightColor", m_LightColor);
+        m_LightCubeMaterial.set_color("uLightColor", m_LightColor);
         graphics::draw(m_CubeMesh, m_LightTransform, m_LightCubeMaterial, m_Camera);
 
         // render to output (window)

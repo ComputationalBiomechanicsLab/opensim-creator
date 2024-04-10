@@ -314,7 +314,7 @@ public:
 
     Impl()
     {
-        m_Material.setTexture("uTextureSampler", m_BoxTexture);
+        m_Material.set_texture("uTextureSampler", m_BoxTexture);
         wireframe_material_.set_color({0.0f, 0.0f, 0.0f, 0.15f});
         wireframe_material_.set_transparent(true);
         wireframe_material_.set_wireframe(true);

@@ -212,8 +212,8 @@ private:
 
     void renderSceneToGBuffers()
     {
-        m_GBuffer.material.setTexture("uDiffuseMap", m_DiffuseMap);
-        m_GBuffer.material.setTexture("uSpecularMap", m_SpecularMap);
+        m_GBuffer.material.set_texture("uDiffuseMap", m_DiffuseMap);
+        m_GBuffer.material.set_texture("uSpecularMap", m_SpecularMap);
 
         // render scene cubes
         for (Vec3 const& objectPosition : c_ObjectPositions)
@@ -246,22 +246,22 @@ private:
 
     void renderLightingPass()
     {
-        m_LightPass.material.setRenderTexture("uPositionTex", m_GBuffer.position);
-        m_LightPass.material.setRenderTexture("uNormalTex", m_GBuffer.normal);
-        m_LightPass.material.setRenderTexture("uAlbedoTex", m_GBuffer.albedo);
-        m_LightPass.material.setVec3Array("uLightPositions", m_LightPositions);
-        m_LightPass.material.setVec3Array("uLightColors", m_LightColors);
-        m_LightPass.material.setFloat("uLightLinear", 0.7f);
-        m_LightPass.material.setFloat("uLightQuadratic", 1.8f);
-        m_LightPass.material.setVec3("uViewPos", m_Camera.position());
+        m_LightPass.material.set_render_texture("uPositionTex", m_GBuffer.position);
+        m_LightPass.material.set_render_texture("uNormalTex", m_GBuffer.normal);
+        m_LightPass.material.set_render_texture("uAlbedoTex", m_GBuffer.albedo);
+        m_LightPass.material.set_vec3_array("uLightPositions", m_LightPositions);
+        m_LightPass.material.set_vec3_array("uLightColors", m_LightColors);
+        m_LightPass.material.set_float("uLightLinear", 0.7f);
+        m_LightPass.material.set_float("uLightQuadratic", 1.8f);
+        m_LightPass.material.set_vec3("uViewPos", m_Camera.position());
 
         graphics::draw(m_QuadMesh, identity<Transform>(), m_LightPass.material, m_Camera);
 
         m_Camera.render_to(m_OutputTexture);
 
-        m_LightPass.material.clearRenderTexture("uPositionTex");
-        m_LightPass.material.clearRenderTexture("uNormalTex");
-        m_LightPass.material.clearRenderTexture("uAlbedoTex");
+        m_LightPass.material.clear_render_texture("uPositionTex");
+        m_LightPass.material.clear_render_texture("uNormalTex");
+        m_LightPass.material.clear_render_texture("uAlbedoTex");
     }
 
     void renderLightCubes()
@@ -269,7 +269,7 @@ private:
         OSC_ASSERT(m_LightPositions.size() == m_LightColors.size());
 
         for (size_t i = 0; i < m_LightPositions.size(); ++i) {
-            m_LightBoxMaterial.setVec3("uLightColor", m_LightColors[i]);
+            m_LightBoxMaterial.set_vec3("uLightColor", m_LightColors[i]);
             graphics::draw(m_CubeMesh, {.scale = Vec3{0.125f}, .position = m_LightPositions[i]}, m_LightBoxMaterial, m_Camera);
         }
 

@@ -20,16 +20,16 @@ namespace osc
     // - the mesh volume has a constant density
     // - the mesh is entirely enclosed
     // - all mesh normals are correct
-    Vec3 MassCenter(Mesh const&);
+    Vec3 mass_center_of(Mesh const&);
 
     // returns the average centerpoint of all vertices in a mesh
-    Vec3 AverageCenterpoint(Mesh const&);
+    Vec3 average_centroid_of(Mesh const&);
 
     // returns tangent vectors for the given (presumed, mesh) data
     //
     // the 4th (w) component of each vector indicates the flip direction
     // of the corresponding bitangent vector (i.e. bitangent = cross(normal, tangent) * w)
-    std::vector<Vec4> CalcTangentVectors(
+    std::vector<Vec4> calc_tangent_vectors(
         MeshTopology const&,
         std::span<Vec3 const> verts,
         std::span<Vec3 const> normals,

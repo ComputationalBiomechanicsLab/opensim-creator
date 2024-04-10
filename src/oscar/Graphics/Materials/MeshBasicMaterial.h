@@ -19,11 +19,11 @@ namespace osc
             PropertyBlock() = default;
             explicit PropertyBlock(Color color)
             {
-                property_block_.setColor(c_ColorPropName, color);
+                property_block_.set_color(c_ColorPropName, color);
             }
 
-            std::optional<Color> color() const { return property_block_.getColor(c_ColorPropName); }
-            void set_color(Color c) { property_block_.setColor(c_ColorPropName, c); }
+            std::optional<Color> color() const { return property_block_.get_color(c_ColorPropName); }
+            void set_color(Color c) { property_block_.set_color(c_ColorPropName, c); }
 
             operator const MaterialPropertyBlock& () const { return property_block_; }
         private:
@@ -32,17 +32,17 @@ namespace osc
 
         MeshBasicMaterial();
 
-        Color color() const { return *m_Material.getColor(c_ColorPropName); }
-        void set_color(Color c) { m_Material.setColor(c_ColorPropName, c); }
+        Color color() const { return *m_Material.get_color(c_ColorPropName); }
+        void set_color(Color c) { m_Material.set_color(c_ColorPropName, c); }
 
-        bool wireframe() const { return m_Material.getWireframeMode(); }
-        void set_wireframe(bool v) { m_Material.setWireframeMode(v); }
+        bool wireframe() const { return m_Material.is_wireframe(); }
+        void set_wireframe(bool v) { m_Material.set_wireframe(v); }
 
-        bool depth_tested() const { return m_Material.getDepthTested(); }
-        void set_depth_tested(bool v) { m_Material.setDepthTested(v); }
+        bool depth_tested() const { return m_Material.is_depth_tested(); }
+        void set_depth_tested(bool v) { m_Material.set_depth_tested(v); }
 
-        bool transparent() const { return m_Material.getTransparent(); }
-        void set_transparent(bool v) { m_Material.setTransparent(v); }
+        bool transparent() const { return m_Material.is_transparent(); }
+        void set_transparent(bool v) { m_Material.set_transparent(v); }
 
         operator const Material& () const { return m_Material; }
 

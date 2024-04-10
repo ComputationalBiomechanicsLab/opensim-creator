@@ -106,8 +106,8 @@ public:
     Impl() : StandardTabImpl{c_TabStringID}
     {
         for (CubeMaterial& cubeMat : m_CubeMaterials) {
-            cubeMat.material.setTexture("uTexture", m_ContainerTexture);
-            cubeMat.material.setCubemap("uSkybox", m_Cubemap);
+            cubeMat.material.set_texture("uTexture", m_ContainerTexture);
+            cubeMat.material.set_cubemap("uSkybox", m_Cubemap);
         }
 
         // set the depth function to LessOrEqual because the skybox shader
@@ -116,8 +116,8 @@ public:
         // the highest possible depth, so that it fails an early depth
         // test if anything is drawn over it in the scene (reduces
         // fragment shader pressure)
-        m_SkyboxMaterial.setCubemap("uSkybox", m_Cubemap);
-        m_SkyboxMaterial.setDepthFunction(DepthFunction::LessOrEqual);
+        m_SkyboxMaterial.set_cubemap("uSkybox", m_Cubemap);
+        m_SkyboxMaterial.set_depth_function(DepthFunction::LessOrEqual);
     }
 
 private:
@@ -152,8 +152,8 @@ private:
 
     void drawInSceneCube()
     {
-        m_CubeProperties.setVec3("uCameraPos", m_Camera.position());
-        m_CubeProperties.setFloat("uIOR", m_IOR);
+        m_CubeProperties.set_vec3("uCameraPos", m_Camera.position());
+        m_CubeProperties.set_float("uIOR", m_IOR);
         graphics::draw(
             m_Cube,
             identity<Transform>(),

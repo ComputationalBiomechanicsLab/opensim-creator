@@ -1009,7 +1009,7 @@ private:
 
                     if (ui::MenuItem(ICON_FA_WEIGHT " at mesh mass center"))
                     {
-                        Vec3 const location = MassCenter(*mesh);
+                        Vec3 const location = mass_center_of(*mesh);
                         AddBody(m_Shared->updCommittableModelGraph(), location, mesh->getID());
                     }
                     ui::DrawTooltipIfItemHovered("Add body", MIStrings::c_BodyDescription);

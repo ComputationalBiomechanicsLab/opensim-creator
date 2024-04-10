@@ -25,37 +25,37 @@ namespace osc
         MaterialPropertyBlock();
 
         void clear();
-        bool isEmpty() const;
+        [[nodiscard]] bool empty() const;
 
         // note: this differs from merely setting a vec4, because it is assumed
         // that the provided color is in sRGB and needs to be converted to a
         // linear color in the shader
-        std::optional<Color> getColor(std::string_view propertyName) const;
-        void setColor(std::string_view propertyName, Color const&);
+        std::optional<Color> get_color(std::string_view property_name) const;
+        void set_color(std::string_view property_name, const Color&);
 
-        std::optional<float> getFloat(std::string_view propertyName) const;
-        void setFloat(std::string_view propertyName, float);
+        std::optional<float> get_float(std::string_view property_name) const;
+        void set_float(std::string_view property_name, float);
 
-        std::optional<Vec3> getVec3(std::string_view propertyName) const;
-        void setVec3(std::string_view propertyName, Vec3);
+        std::optional<Vec3> get_vec3(std::string_view property_name) const;
+        void set_vec3(std::string_view property_name, Vec3);
 
-        std::optional<Vec4> getVec4(std::string_view propertyName) const;
-        void setVec4(std::string_view propertyName, Vec4);
+        std::optional<Vec4> get_vec4(std::string_view property_name) const;
+        void set_vec4(std::string_view property_name, Vec4);
 
-        std::optional<Mat3> getMat3(std::string_view propertyName) const;
-        void setMat3(std::string_view propertyName, Mat3 const&);
+        std::optional<Mat3> get_mat3(std::string_view property_name) const;
+        void set_mat3(std::string_view property_name, const Mat3&);
 
-        std::optional<Mat4> getMat4(std::string_view propertyName) const;
-        void setMat4(std::string_view propertyName, Mat4 const&);
+        std::optional<Mat4> get_mat4(std::string_view property_name) const;
+        void set_mat4(std::string_view property_name, const Mat4&);
 
-        std::optional<int32_t> getInt(std::string_view propertyName) const;
-        void setInt(std::string_view, int32_t);
+        std::optional<int32_t> get_int(std::string_view property_name) const;
+        void set_int(std::string_view, int32_t);
 
-        std::optional<bool> getBool(std::string_view propertyName) const;
-        void setBool(std::string_view propertyName, bool);
+        std::optional<bool> get_bool(std::string_view property_name) const;
+        void set_bool(std::string_view property_name, bool);
 
-        std::optional<Texture2D> getTexture(std::string_view propertyName) const;
-        void setTexture(std::string_view, Texture2D);
+        std::optional<Texture2D> get_texture(std::string_view property_name) const;
+        void set_texture(std::string_view, Texture2D);
 
         friend void swap(MaterialPropertyBlock& a, MaterialPropertyBlock& b) noexcept
         {
@@ -63,14 +63,14 @@ namespace osc
         }
 
     private:
-        friend bool operator==(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
-        friend std::ostream& operator<<(std::ostream&, MaterialPropertyBlock const&);
+        friend bool operator==(const MaterialPropertyBlock&, const MaterialPropertyBlock&);
+        friend std::ostream& operator<<(std::ostream&, const MaterialPropertyBlock&);
         friend class GraphicsBackend;
 
         class Impl;
         CopyOnUpdPtr<Impl> m_Impl;
     };
 
-    bool operator==(MaterialPropertyBlock const&, MaterialPropertyBlock const&);
-    std::ostream& operator<<(std::ostream&, MaterialPropertyBlock const&);
+    bool operator==(const MaterialPropertyBlock&, const MaterialPropertyBlock&);
+    std::ostream& operator<<(std::ostream&, const MaterialPropertyBlock&);
 }
