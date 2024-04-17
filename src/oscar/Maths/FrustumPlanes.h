@@ -12,13 +12,13 @@ namespace osc
         using size_type = size_t;
         using difference_type = ptrdiff_t;
         using reference = AnalyticPlane&;
-        using const_reference = AnalyticPlane const&;
+        using const_reference = const AnalyticPlane&;
         using pointer = AnalyticPlane*;
-        using const_pointer = AnalyticPlane const*;
+        using const_pointer = const AnalyticPlane*;
         using iterator = AnalyticPlane*;
-        using const_iterator = AnalyticPlane const*;
+        using const_iterator = const AnalyticPlane*;
 
-        friend constexpr bool operator==(FrustumPlanes const&, FrustumPlanes const&) = default;
+        friend constexpr bool operator==(const FrustumPlanes&, const FrustumPlanes&) = default;
 
         constexpr size_t size() const { return 6; }
         constexpr pointer data() { return &p0; }

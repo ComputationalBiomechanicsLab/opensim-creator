@@ -62,7 +62,7 @@ namespace
     {
         RenderTexture rv;
         RenderTextureDescriptor shadowmapDescriptor{Vec2i{1024, 1024}};
-        shadowmapDescriptor.setReadWrite(RenderTextureReadWrite::Linear);
+        shadowmapDescriptor.set_read_write(RenderTextureReadWrite::Linear);
         rv.reformat(shadowmapDescriptor);
         return rv;
     }

@@ -437,7 +437,7 @@ namespace
         case variant_index<MaterialValue, RenderTexture>(): {
 
             static_assert(num_options<TextureDimensionality>() == 2);
-            return std::get<RenderTexture>(material_val).getDimensionality() == TextureDimensionality::Tex2D ?
+            return std::get<RenderTexture>(material_val).dimensionality() == TextureDimensionality::Tex2D ?
                 ShaderPropertyType::Sampler2D :
                 ShaderPropertyType::SamplerCube;
         }
@@ -1666,7 +1666,7 @@ public:
         OSC_ASSERT(dimensions_.x > 0 and dimensions_.y > 0);
     }
 
-    Vec2i getDimensions() const
+    Vec2i dimensions() const
     {
         return dimensions_;
     }
@@ -1676,7 +1676,7 @@ public:
         return format_;
     }
 
-    ColorSpace getColorSpace() const
+    ColorSpace color_space() const
     {
         return color_space_;
     }
@@ -1738,29 +1738,29 @@ public:
         texture_params_version_.reset();
     }
 
-    std::vector<Color> getPixels() const
+    std::vector<Color> pixels() const
     {
         return convert_pixel_bytes_to_color(pixel_data_, format_);
     }
 
-    void setPixels(std::span<const Color> pixels)
+    void set_pixels(std::span<const Color> pixels)
     {
         OSC_ASSERT(std::ssize(pixels) == static_cast<ptrdiff_t>(dimensions_.x*dimensions_.y));
         convert_colors_to_pixel_bytes(pixels, format_, pixel_data_);
     }
 
-    std::vector<Color32> getPixels32() const
+    std::vector<Color32> pixels32() const
     {
         return convert_pixel_bytes_to_color32(pixel_data_, format_);
     }
 
-    void setPixels32(std::span<const Color32> pixels)
+    void set_pixels32(std::span<const Color32> pixels)
     {
         OSC_ASSERT(std::ssize(pixels) == static_cast<ptrdiff_t>(dimensions_.x*dimensions_.y));
         convert_color32s_to_pixel_bytes(pixels, format_, pixel_data_);
     }
 
-    std::span<const uint8_t> getPixelData() const
+    std::span<const uint8_t> pixel_data() const
     {
         return pixel_data_;
     }
@@ -1921,9 +1921,9 @@ osc::Texture2D::Texture2D(
     m_Impl{make_cow<Impl>(dimensions, format, color_space, wrap_mode, filter_mode)}
 {}
 
-Vec2i osc::Texture2D::getDimensions() const
+Vec2i osc::Texture2D::dimensions() const
 {
-    return m_Impl->getDimensions();
+    return m_Impl->dimensions();
 }
 
 TextureFormat osc::Texture2D::texture_format() const
@@ -1931,9 +1931,9 @@ TextureFormat osc::Texture2D::texture_format() const
     return m_Impl->texture_format();
 }
 
-ColorSpace osc::Texture2D::getColorSpace() const
+ColorSpace osc::Texture2D::color_space() const
 {
-    return m_Impl->getColorSpace();
+    return m_Impl->color_space();
 }
 
 TextureWrapMode osc::Texture2D::wrap_mode() const
@@ -1986,29 +1986,29 @@ void osc::Texture2D::set_filter_mode(TextureFilterMode filter_mode)
     m_Impl.upd()->set_filter_mode(filter_mode);
 }
 
-std::vector<Color> osc::Texture2D::getPixels() const
+std::vector<Color> osc::Texture2D::pixels() const
 {
-    return m_Impl->getPixels();
+    return m_Impl->pixels();
 }
 
-void osc::Texture2D::setPixels(std::span<const Color> pixels)
+void osc::Texture2D::set_pixels(std::span<const Color> pixels)
 {
-    m_Impl.upd()->setPixels(pixels);
+    m_Impl.upd()->set_pixels(pixels);
 }
 
-std::vector<Color32> osc::Texture2D::getPixels32() const
+std::vector<Color32> osc::Texture2D::pixels32() const
 {
-    return m_Impl->getPixels32();
+    return m_Impl->pixels32();
 }
 
-void osc::Texture2D::setPixels32(std::span<Color32 const> pixels)
+void osc::Texture2D::set_pixels32(std::span<Color32 const> pixels)
 {
-    m_Impl.upd()->setPixels32(pixels);
+    m_Impl.upd()->set_pixels32(pixels);
 }
 
-std::span<const uint8_t> osc::Texture2D::getPixelData() const
+std::span<const uint8_t> osc::Texture2D::pixel_data() const
 {
-    return m_Impl->getPixelData();
+    return m_Impl->pixel_data();
 }
 
 void osc::Texture2D::set_pixel_data(std::span<const uint8_t> pixel_data)
@@ -2052,14 +2052,14 @@ namespace
             static_assert(num_options<RenderTextureFormat>() == 6);
             static_assert(num_options<RenderTextureReadWrite>() == 2);
 
-            switch (descriptor.getColorFormat()) {
+            switch (descriptor.color_format()) {
             case RenderTextureFormat::Red8:        return GL_RED;
-            case RenderTextureFormat::ARGB32:      return descriptor.getReadWrite() == RenderTextureReadWrite::sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8;
+            case RenderTextureFormat::ARGB32:      return descriptor.read_write() == RenderTextureReadWrite::sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8;
             case RenderTextureFormat::RGFloat16:   return GL_RG16F;
             case RenderTextureFormat::RGBFloat16:  return GL_RGB16F;
             case RenderTextureFormat::ARGBFloat16: return GL_RGBA16F;
             case RenderTextureFormat::Depth:       return GL_R32F;
-            default:                               return descriptor.getReadWrite() == RenderTextureReadWrite::sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8;
+            default:                               return descriptor.read_write() == RenderTextureReadWrite::sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8;
             }
         }
     }
@@ -2077,7 +2077,7 @@ namespace
             return CPUImageFormat::DepthStencil;
         }
         else {
-            switch (desc.getColorFormat()) {
+            switch (desc.color_format()) {
             case RenderTextureFormat::Red8:        return CPUImageFormat::R8;
             case RenderTextureFormat::ARGB32:      return CPUImageFormat::RGBA;
             case RenderTextureFormat::RGFloat16:   return CPUImageFormat::RG;
@@ -2102,7 +2102,7 @@ namespace
             return CPUDataType::UnsignedInt24_8;
         }
         else {
-            switch (desc.getColorFormat()) {
+            switch (desc.color_format()) {
             case RenderTextureFormat::Red8:        return CPUDataType::UnsignedByte;
             case RenderTextureFormat::ARGB32:      return CPUDataType::UnsignedByte;
             case RenderTextureFormat::RGFloat16:   return CPUDataType::HalfFloat;
@@ -2160,63 +2160,63 @@ osc::RenderTextureDescriptor::RenderTextureDescriptor(Vec2i dimensions) :
     read_write_{RenderTextureReadWrite::Default}
 {}
 
-Vec2i osc::RenderTextureDescriptor::getDimensions() const
+Vec2i osc::RenderTextureDescriptor::dimensions() const
 {
     return dimensions_;
 }
 
-void osc::RenderTextureDescriptor::setDimensions(Vec2i dimensions)
+void osc::RenderTextureDescriptor::set_dimensions(Vec2i dimensions)
 {
     OSC_ASSERT(dimensions.x >= 0 and dimensions.y >= 0);
     dimensions_ = dimensions;
 }
 
-TextureDimensionality osc::RenderTextureDescriptor::getDimensionality() const
+TextureDimensionality osc::RenderTextureDescriptor::dimensionality() const
 {
     return dimensionality_;
 }
 
-void osc::RenderTextureDescriptor::setDimensionality(TextureDimensionality dimensionality)
+void osc::RenderTextureDescriptor::set_dimensionality(TextureDimensionality dimensionality)
 {
     dimensionality_ = dimensionality;
 }
 
-AntiAliasingLevel osc::RenderTextureDescriptor::getAntialiasingLevel() const
+AntiAliasingLevel osc::RenderTextureDescriptor::anti_aliasing_level() const
 {
     return antialiasing_level_;
 }
 
-void osc::RenderTextureDescriptor::setAntialiasingLevel(AntiAliasingLevel aa_level)
+void osc::RenderTextureDescriptor::set_anti_aliasing_level(AntiAliasingLevel aa_level)
 {
     antialiasing_level_ = aa_level;
 }
 
-RenderTextureFormat osc::RenderTextureDescriptor::getColorFormat() const
+RenderTextureFormat osc::RenderTextureDescriptor::color_format() const
 {
     return color_format_;
 }
 
-void osc::RenderTextureDescriptor::setColorFormat(RenderTextureFormat color_format)
+void osc::RenderTextureDescriptor::set_color_format(RenderTextureFormat color_format)
 {
     color_format_ = color_format;
 }
 
-DepthStencilFormat osc::RenderTextureDescriptor::getDepthStencilFormat() const
+DepthStencilFormat osc::RenderTextureDescriptor::depth_stencil_format() const
 {
     return depth_stencil_format_;
 }
 
-void osc::RenderTextureDescriptor::setDepthStencilFormat(DepthStencilFormat depth_stencil_format)
+void osc::RenderTextureDescriptor::set_depth_stencil_format(DepthStencilFormat depth_stencil_format)
 {
     depth_stencil_format_ = depth_stencil_format;
 }
 
-RenderTextureReadWrite osc::RenderTextureDescriptor::getReadWrite() const
+RenderTextureReadWrite osc::RenderTextureDescriptor::read_write() const
 {
     return read_write_;
 }
 
-void osc::RenderTextureDescriptor::setReadWrite(RenderTextureReadWrite read_write)
+void osc::RenderTextureDescriptor::set_read_write(RenderTextureReadWrite read_write)
 {
     read_write_ = read_write;
 }
@@ -2241,14 +2241,14 @@ public:
         descriptor_{descriptor},
         buffer_type_{type}
     {
-        OSC_ASSERT((getDimensionality() != TextureDimensionality::Cube or getDimensions().x == getDimensions().y) && "cannot construct a Cube renderbuffer with non-square dimensions");
-        OSC_ASSERT((getDimensionality() != TextureDimensionality::Cube or getAntialiasingLevel() == AntiAliasingLevel::none()) && "cannot construct a Cube renderbuffer that is anti-aliased (not supported by backends like OpenGL)");
+        OSC_ASSERT((dimensionality() != TextureDimensionality::Cube or dimensions().x == dimensions().y) && "cannot construct a Cube renderbuffer with non-square dimensions");
+        OSC_ASSERT((dimensionality() != TextureDimensionality::Cube or anti_aliasing_level() == AntiAliasingLevel::none()) && "cannot construct a Cube renderbuffer that is anti-aliased (not supported by backends like OpenGL)");
     }
 
     void reformat(const RenderTextureDescriptor& descriptor)
     {
-        OSC_ASSERT((descriptor.getDimensionality() != TextureDimensionality::Cube or descriptor.getDimensions().x == descriptor.getDimensions().y) && "cannot reformat a render buffer to a Cube dimensionality with non-square dimensions");
-        OSC_ASSERT((descriptor.getDimensionality() != TextureDimensionality::Cube or descriptor.getAntialiasingLevel() == AntiAliasingLevel::none()) && "cannot reformat a renderbuffer to a Cube dimensionality with is anti-aliased (not supported by backends like OpenGL)");
+        OSC_ASSERT((descriptor.dimensionality() != TextureDimensionality::Cube or descriptor.dimensions().x == descriptor.dimensions().y) && "cannot reformat a render buffer to a Cube dimensionality with non-square dimensions");
+        OSC_ASSERT((descriptor.dimensionality() != TextureDimensionality::Cube or descriptor.anti_aliasing_level() == AntiAliasingLevel::none()) && "cannot reformat a renderbuffer to a Cube dimensionality with is anti-aliased (not supported by backends like OpenGL)");
 
         if (descriptor_ != descriptor) {
             descriptor_ = descriptor;
@@ -2261,87 +2261,87 @@ public:
         return descriptor_;
     }
 
-    Vec2i getDimensions() const
+    Vec2i dimensions() const
     {
-        return descriptor_.getDimensions();
+        return descriptor_.dimensions();
     }
 
-    void setDimensions(Vec2i dimensions)
+    void set_dimensions(Vec2i dims)
     {
-        OSC_ASSERT((getDimensionality() != TextureDimensionality::Cube or dimensions.x == dimensions.y) && "cannot set a cubemap to have non-square dimensions");
+        OSC_ASSERT((dimensionality() != TextureDimensionality::Cube or dims.x == dims.y) && "cannot set a cubemap to have non-square dimensions");
 
-        if (dimensions != getDimensions()) {
-            descriptor_.setDimensions(dimensions);
+        if (dims != dimensions()) {
+            descriptor_.set_dimensions(dims);
             maybe_opengl_data_->reset();
         }
     }
 
-    TextureDimensionality getDimensionality() const
+    TextureDimensionality dimensionality() const
     {
-        return descriptor_.getDimensionality();
+        return descriptor_.dimensionality();
     }
 
-    void setDimensionality(TextureDimensionality dimensionality)
+    void set_dimensionality(TextureDimensionality new_dimensionality)
     {
-        OSC_ASSERT((dimensionality != TextureDimensionality::Cube or getDimensions().x == getDimensions().y) && "cannot set dimensionality to Cube for non-square render buffer");
-        OSC_ASSERT((dimensionality != TextureDimensionality::Cube or getAntialiasingLevel() == AntiAliasingLevel{1}) && "cannot set dimensionality to Cube for an anti-aliased render buffer (not supported by backends like OpenGL)");
+        OSC_ASSERT((new_dimensionality != TextureDimensionality::Cube or dimensions().x == dimensions().y) && "cannot set dimensionality to Cube for non-square render buffer");
+        OSC_ASSERT((new_dimensionality != TextureDimensionality::Cube or anti_aliasing_level() == AntiAliasingLevel{1}) && "cannot set dimensionality to Cube for an anti-aliased render buffer (not supported by backends like OpenGL)");
 
-        if (dimensionality != getDimensionality()) {
-            descriptor_.setDimensionality(dimensionality);
+        if (new_dimensionality != dimensionality()) {
+            descriptor_.set_dimensionality(new_dimensionality);
             maybe_opengl_data_->reset();
         }
     }
 
-    RenderTextureFormat getColorFormat() const
+    RenderTextureFormat color_format() const
     {
-        return descriptor_.getColorFormat();
+        return descriptor_.color_format();
     }
 
-    void setColorFormat(RenderTextureFormat format)
+    void set_color_format(RenderTextureFormat new_color_format)
     {
-        if (format != getColorFormat()) {
-            descriptor_.setColorFormat(format);
+        if (new_color_format != color_format()) {
+            descriptor_.set_color_format(new_color_format);
             maybe_opengl_data_->reset();
         }
     }
 
-    AntiAliasingLevel getAntialiasingLevel() const
+    AntiAliasingLevel anti_aliasing_level() const
     {
-        return descriptor_.getAntialiasingLevel();
+        return descriptor_.anti_aliasing_level();
     }
 
-    void setAntialiasingLevel(AntiAliasingLevel aa_level)
+    void set_anti_aliasing_level(AntiAliasingLevel aa_level)
     {
-        OSC_ASSERT((getDimensionality() != TextureDimensionality::Cube or aa_level == AntiAliasingLevel{1}) && "cannot set anti-aliasing level >1 on a cube render buffer (it is not supported by backends like OpenGL)");
+        OSC_ASSERT((dimensionality() != TextureDimensionality::Cube or aa_level == AntiAliasingLevel{1}) && "cannot set anti-aliasing level >1 on a cube render buffer (it is not supported by backends like OpenGL)");
 
-        if (aa_level != getAntialiasingLevel()) {
-            descriptor_.setAntialiasingLevel(aa_level);
+        if (aa_level != anti_aliasing_level()) {
+            descriptor_.set_anti_aliasing_level(aa_level);
             maybe_opengl_data_->reset();
         }
     }
 
-    DepthStencilFormat getDepthStencilFormat() const
+    DepthStencilFormat depth_stencil_format() const
     {
-        return descriptor_.getDepthStencilFormat();
+        return descriptor_.depth_stencil_format();
     }
 
-    void setDepthStencilFormat(DepthStencilFormat depth_stencil_format)
+    void set_depth_stencil_format(DepthStencilFormat new_depth_stencil_format)
     {
-        if (depth_stencil_format != getDepthStencilFormat()) {
-            descriptor_.setDepthStencilFormat(depth_stencil_format);
+        if (new_depth_stencil_format != depth_stencil_format()) {
+            descriptor_.set_depth_stencil_format(new_depth_stencil_format);
             maybe_opengl_data_->reset();
         }
     }
 
-    RenderTextureReadWrite getReadWrite() const
+    RenderTextureReadWrite read_write() const
     {
-        return descriptor_.getReadWrite();
+        return descriptor_.read_write();
     }
 
-    void setReadWrite(RenderTextureReadWrite read_write)
+    void set_read_write(RenderTextureReadWrite new_read_write)
     {
-        if (read_write != descriptor_.getReadWrite()) {
-            descriptor_.setReadWrite(read_write);
+        if (new_read_write != descriptor_.read_write()) {
+            descriptor_.set_read_write(new_read_write);
             maybe_opengl_data_->reset();
         }
     }
@@ -2360,8 +2360,8 @@ public:
 
         static_assert(num_options<TextureDimensionality>() == 2);
 
-        if (getDimensionality() == TextureDimensionality::Tex2D) {
-            if (descriptor_.getAntialiasingLevel() <= AntiAliasingLevel{1}) {
+        if (dimensionality() == TextureDimensionality::Tex2D) {
+            if (descriptor_.anti_aliasing_level() <= AntiAliasingLevel{1}) {
                 auto& t = std::get<SingleSampledTexture>((*maybe_opengl_data_).emplace(SingleSampledTexture{}));
                 configure_texture(t);
             }
@@ -2378,7 +2378,7 @@ public:
 
     void configure_texture(SingleSampledTexture& t)
     {
-        const Vec2i dimensions = descriptor_.getDimensions();
+        const Vec2i dimensions = descriptor_.dimensions();
 
         // setup resolved texture
         gl::bind_texture(t.texture2D);
@@ -2403,13 +2403,13 @@ public:
 
     void configure_texture(MultisampledRBOAndResolvedTexture& data)
     {
-        const Vec2i dimensions = descriptor_.getDimensions();
+        const Vec2i dimensions = descriptor_.dimensions();
 
         // setup multisampled RBO
         gl::bind_renderbuffer(data.multisampled_rbo);
         glRenderbufferStorageMultisample(
             GL_RENDERBUFFER,
-            descriptor_.getAntialiasingLevel().get_as<GLsizei>(),
+            descriptor_.anti_aliasing_level().get_as<GLsizei>(),
             to_opengl_internal_color_format_enum(buffer_type_, descriptor_),
             dimensions.x,
             dimensions.y
@@ -2439,7 +2439,7 @@ public:
 
     void configure_texture(SingleSampledCubemap& t)
     {
-        const Vec2i dimensions = descriptor_.getDimensions();
+        const Vec2i dimensions = descriptor_.dimensions();
 
         // setup resolved texture
         gl::bind_texture(t.cubemap);
@@ -2499,81 +2499,81 @@ public:
         depth_buffer_{std::make_shared<RenderBuffer>(descriptor, RenderBufferType::Depth)}
     {}
 
-    Vec2i getDimensions() const
+    Vec2i dimensions() const
     {
-        return color_buffer_->impl_->getDimensions();
+        return color_buffer_->impl_->dimensions();
     }
 
-    void setDimensions(Vec2i dimensions)
+    void set_dimensions(Vec2i new_dimensions)
     {
-        if (dimensions != getDimensions()) {
-            color_buffer_->impl_->setDimensions(dimensions);
-            depth_buffer_->impl_->setDimensions(dimensions);
+        if (new_dimensions != dimensions()) {
+            color_buffer_->impl_->set_dimensions(new_dimensions);
+            depth_buffer_->impl_->set_dimensions(new_dimensions);
         }
     }
 
-    TextureDimensionality getDimensionality() const
+    TextureDimensionality dimensionality() const
     {
-        return color_buffer_->impl_->getDimensionality();
+        return color_buffer_->impl_->dimensionality();
     }
 
-    void setDimensionality(TextureDimensionality dimensionality)
+    void set_dimensionality(TextureDimensionality new_dimensionality)
     {
-        if (dimensionality != getDimensionality()) {
-            color_buffer_->impl_->setDimensionality(dimensionality);
-            depth_buffer_->impl_->setDimensionality(dimensionality);
+        if (new_dimensionality != dimensionality()) {
+            color_buffer_->impl_->set_dimensionality(new_dimensionality);
+            depth_buffer_->impl_->set_dimensionality(new_dimensionality);
         }
     }
 
-    RenderTextureFormat getColorFormat() const
+    RenderTextureFormat color_format() const
     {
-        return color_buffer_->impl_->getColorFormat();
+        return color_buffer_->impl_->color_format();
     }
 
-    void setColorFormat(RenderTextureFormat color_format)
+    void set_color_format(RenderTextureFormat new_color_format)
     {
-        if (color_format != getColorFormat()) {
-            color_buffer_->impl_->setColorFormat(color_format);
-            depth_buffer_->impl_->setColorFormat(color_format);
+        if (new_color_format != color_format()) {
+            color_buffer_->impl_->set_color_format(new_color_format);
+            depth_buffer_->impl_->set_color_format(new_color_format);
         }
     }
 
-    AntiAliasingLevel getAntialiasingLevel() const
+    AntiAliasingLevel anti_aliasing_level() const
     {
-        return color_buffer_->impl_->getAntialiasingLevel();
+        return color_buffer_->impl_->anti_aliasing_level();
     }
 
-    void setAntialiasingLevel(AntiAliasingLevel aa_level)
+    void set_anti_aliasing_level(AntiAliasingLevel aa_level)
     {
-        if (aa_level != getAntialiasingLevel()) {
-            color_buffer_->impl_->setAntialiasingLevel(aa_level);
-            depth_buffer_->impl_->setAntialiasingLevel(aa_level);
+        if (aa_level != anti_aliasing_level()) {
+            color_buffer_->impl_->set_anti_aliasing_level(aa_level);
+            depth_buffer_->impl_->set_anti_aliasing_level(aa_level);
         }
     }
 
-    DepthStencilFormat getDepthStencilFormat() const
+    DepthStencilFormat depth_stencil_format() const
     {
-        return color_buffer_->impl_->getDepthStencilFormat();
+        return color_buffer_->impl_->depth_stencil_format();
     }
 
-    void setDepthStencilFormat(DepthStencilFormat depth_stencil_format)
+    void set_depth_stencil_format(DepthStencilFormat new_depth_stencil_format)
     {
-        if (depth_stencil_format != getDepthStencilFormat()) {
-            color_buffer_->impl_->setDepthStencilFormat(depth_stencil_format);
-            depth_buffer_->impl_->setDepthStencilFormat(depth_stencil_format);
+        if (new_depth_stencil_format != depth_stencil_format()) {
+            color_buffer_->impl_->set_depth_stencil_format(new_depth_stencil_format);
+            depth_buffer_->impl_->set_depth_stencil_format(new_depth_stencil_format);
         }
     }
 
-    RenderTextureReadWrite getReadWrite() const
+    RenderTextureReadWrite read_write() const
     {
-        return color_buffer_->impl_->getReadWrite();
+        return color_buffer_->impl_->read_write();
     }
 
-    void setReadWrite(RenderTextureReadWrite read_write)
+    void set_read_write(RenderTextureReadWrite new_read_write)
     {
-        if (read_write != getReadWrite()) {
-            color_buffer_->impl_->setReadWrite(read_write);
-            depth_buffer_->impl_->setReadWrite(read_write);
+        if (new_read_write != read_write()) {
+            color_buffer_->impl_->set_read_write(new_read_write);
+            depth_buffer_->impl_->set_read_write(new_read_write);
         }
     }
 
@@ -2600,12 +2600,12 @@ public:
         return color_buffer_->impl_->has_been_rendered_to();
     }
 
-    std::shared_ptr<RenderBuffer> updColorBuffer()
+    std::shared_ptr<RenderBuffer> upd_color_buffer()
     {
         return color_buffer_;
     }
 
-    std::shared_ptr<RenderBuffer> updDepthBuffer()
+    std::shared_ptr<RenderBuffer> upd_depth_buffer()
     {
         return depth_buffer_;
     }
@@ -2629,64 +2629,64 @@ osc::RenderTexture::RenderTexture(const RenderTextureDescriptor& descriptor) :
     m_Impl{make_cow<Impl>(descriptor)}
 {}
 
-Vec2i osc::RenderTexture::getDimensions() const
+Vec2i osc::RenderTexture::dimensions() const
 {
-    return m_Impl->getDimensions();
+    return m_Impl->dimensions();
 }
 
-void osc::RenderTexture::setDimensions(Vec2i d)
+void osc::RenderTexture::set_dimensions(Vec2i d)
 {
-    m_Impl.upd()->setDimensions(d);
+    m_Impl.upd()->set_dimensions(d);
 }
 
-TextureDimensionality osc::RenderTexture::getDimensionality() const
+TextureDimensionality osc::RenderTexture::dimensionality() const
 {
-    return m_Impl->getDimensionality();
+    return m_Impl->dimensionality();
 }
 
-void osc::RenderTexture::setDimensionality(TextureDimensionality dimensionality)
+void osc::RenderTexture::set_dimensionality(TextureDimensionality dimensionality)
 {
-    m_Impl.upd()->setDimensionality(dimensionality);
+    m_Impl.upd()->set_dimensionality(dimensionality);
 }
 
-RenderTextureFormat osc::RenderTexture::getColorFormat() const
+RenderTextureFormat osc::RenderTexture::color_format() const
 {
-    return m_Impl->getColorFormat();
+    return m_Impl->color_format();
 }
 
-void osc::RenderTexture::setColorFormat(RenderTextureFormat format)
+void osc::RenderTexture::set_color_format(RenderTextureFormat format)
 {
-    m_Impl.upd()->setColorFormat(format);
+    m_Impl.upd()->set_color_format(format);
 }
 
-AntiAliasingLevel osc::RenderTexture::getAntialiasingLevel() const
+AntiAliasingLevel osc::RenderTexture::anti_aliasing_level() const
 {
-    return m_Impl->getAntialiasingLevel();
+    return m_Impl->anti_aliasing_level();
 }
 
-void osc::RenderTexture::setAntialiasingLevel(AntiAliasingLevel aa_level)
+void osc::RenderTexture::set_anti_aliasing_level(AntiAliasingLevel aa_level)
 {
-    m_Impl.upd()->setAntialiasingLevel(aa_level);
+    m_Impl.upd()->set_anti_aliasing_level(aa_level);
 }
 
-DepthStencilFormat osc::RenderTexture::getDepthStencilFormat() const
+DepthStencilFormat osc::RenderTexture::depth_stencil_format() const
 {
-    return m_Impl->getDepthStencilFormat();
+    return m_Impl->depth_stencil_format();
 }
 
-void osc::RenderTexture::setDepthStencilFormat(DepthStencilFormat depth_stencil_format)
+void osc::RenderTexture::set_depth_stencil_format(DepthStencilFormat depth_stencil_format)
 {
-    m_Impl.upd()->setDepthStencilFormat(depth_stencil_format);
+    m_Impl.upd()->set_depth_stencil_format(depth_stencil_format);
 }
 
-RenderTextureReadWrite osc::RenderTexture::getReadWrite() const
+RenderTextureReadWrite osc::RenderTexture::read_write() const
 {
-    return m_Impl->getReadWrite();
+    return m_Impl->read_write();
 }
 
-void osc::RenderTexture::setReadWrite(RenderTextureReadWrite read_write)
+void osc::RenderTexture::set_read_write(RenderTextureReadWrite read_write)
 {
-    m_Impl.upd()->setReadWrite(read_write);
+    m_Impl.upd()->set_read_write(read_write);
 }
 
 void osc::RenderTexture::reformat(const RenderTextureDescriptor& format_description)
@@ -2694,14 +2694,14 @@ void osc::RenderTexture::reformat(const RenderTextureDescriptor& format_descript
     m_Impl.upd()->reformat(format_description);
 }
 
-std::shared_ptr<RenderBuffer> osc::RenderTexture::updColorBuffer()
+std::shared_ptr<RenderBuffer> osc::RenderTexture::upd_color_buffer()
 {
-    return m_Impl.upd()->updColorBuffer();
+    return m_Impl.upd()->upd_color_buffer();
 }
 
-std::shared_ptr<RenderBuffer> osc::RenderTexture::updDepthBuffer()
+std::shared_ptr<RenderBuffer> osc::RenderTexture::upd_depth_buffer()
 {
-    return m_Impl.upd()->updDepthBuffer();
+    return m_Impl.upd()->upd_depth_buffer();
 }
 
 std::ostream& osc::operator<<(std::ostream& o, const RenderTexture&)
@@ -2738,12 +2738,12 @@ public:
         parseUniformsAndAttributesFromProgram();
     }
 
-    size_t getPropertyCount() const
+    size_t num_properties() const
     {
         return uniforms_.size();
     }
 
-    std::optional<ptrdiff_t> findPropertyIndex(std::string_view property_name) const
+    std::optional<ptrdiff_t> property_index(std::string_view property_name) const
     {
         if (const auto it = uniforms_.find(property_name); it != uniforms_.end()) {
             return static_cast<ptrdiff_t>(std::distance(uniforms_.begin(), it));
@@ -2753,14 +2753,14 @@ public:
         }
     }
 
-    std::string_view getPropertyName(ptrdiff_t i) const
+    std::string_view property_name(ptrdiff_t i) const
     {
         auto it = uniforms_.begin();
         std::advance(it, i);
         return it->first;
     }
 
-    ShaderPropertyType getPropertyType(ptrdiff_t i) const
+    ShaderPropertyType property_type(ptrdiff_t i) const
     {
         auto it = uniforms_.begin();
         std::advance(it, i);
@@ -2899,24 +2899,24 @@ osc::Shader::Shader(
     m_Impl{make_cow<Impl>(vertex_shader_src, geometry_shader_src, fragment_shader_src)}
 {}
 
-size_t osc::Shader::getPropertyCount() const
+size_t osc::Shader::num_properties() const
 {
-    return m_Impl->getPropertyCount();
+    return m_Impl->num_properties();
 }
 
-std::optional<ptrdiff_t> osc::Shader::findPropertyIndex(std::string_view property_name) const
+std::optional<ptrdiff_t> osc::Shader::property_index(std::string_view property_name) const
 {
-    return m_Impl->findPropertyIndex(property_name);
+    return m_Impl->property_index(property_name);
 }
 
-std::string_view osc::Shader::getPropertyName(ptrdiff_t property_index) const
+std::string_view osc::Shader::property_name(ptrdiff_t property_index) const
 {
-    return m_Impl->getPropertyName(property_index);
+    return m_Impl->property_name(property_index);
 }
 
-ShaderPropertyType osc::Shader::getPropertyType(ptrdiff_t property_index) const
+ShaderPropertyType osc::Shader::property_type(ptrdiff_t property_index) const
 {
-    return m_Impl->getPropertyType(property_index);
+    return m_Impl->property_type(property_index);
 }
 
 std::ostream& osc::operator<<(std::ostream& o, const Shader& shader)
@@ -5514,7 +5514,7 @@ public:
                 RenderTargetColorAttachment
                 {
                     // attach to render texture's color buffer
-                    render_texture.updColorBuffer(),
+                    render_texture.upd_color_buffer(),
 
                     // load the color buffer based on this camera's clear flags
                     clear_flags() & CameraClearFlags::SolidColor ?
@@ -5524,7 +5524,7 @@ public:
                     RenderBufferStoreAction::Resolve,
 
                     // ensure clear color matches colorspace of render texture
-                    render_texture.getReadWrite() == RenderTextureReadWrite::sRGB ?
+                    render_texture.read_write() == RenderTextureReadWrite::sRGB ?
                         to_linear_colorspace(background_color()) :
                         background_color(),
                 },
@@ -5532,7 +5532,7 @@ public:
             RenderTargetDepthAttachment
             {
                 // attach to the render texture's depth buffer
-                render_texture.updDepthBuffer(),
+                render_texture.upd_depth_buffer(),
 
                 // load the depth buffer based on this camera's clear flags
                 clear_flags() & CameraClearFlags::Depth ?
@@ -7071,19 +7071,19 @@ void osc::GraphicsBackend::validate_render_target(RenderTarget& render_target)
     OSC_ASSERT(not render_target.colors.empty() && "a render target must have one or more color attachments");
 
     OSC_ASSERT(render_target.colors.front().buffer != nullptr && "a color attachment must have a non-null render buffer");
-    const Vec2i first_color_buffer_dimensions = render_target.colors.front().buffer->impl_->getDimensions();
-    const AntiAliasingLevel first_color_buffer_samples = render_target.colors.front().buffer->impl_->getAntialiasingLevel();
+    const Vec2i first_color_buffer_dimensions = render_target.colors.front().buffer->impl_->dimensions();
+    const AntiAliasingLevel first_color_buffer_samples = render_target.colors.front().buffer->impl_->anti_aliasing_level();
 
     // validate other buffers against the first
     for (auto it = render_target.colors.begin()+1; it != render_target.colors.end(); ++it) {
         const RenderTargetColorAttachment& colorAttachment = *it;
         OSC_ASSERT(colorAttachment.buffer != nullptr);
-        OSC_ASSERT(colorAttachment.buffer->impl_->getDimensions() == first_color_buffer_dimensions);
-        OSC_ASSERT(colorAttachment.buffer->impl_->getAntialiasingLevel() == first_color_buffer_samples);
+        OSC_ASSERT(colorAttachment.buffer->impl_->dimensions() == first_color_buffer_dimensions);
+        OSC_ASSERT(colorAttachment.buffer->impl_->anti_aliasing_level() == first_color_buffer_samples);
     }
     OSC_ASSERT(render_target.depth.buffer != nullptr);
-    OSC_ASSERT(render_target.depth.buffer->impl_->getDimensions() == first_color_buffer_dimensions);
-    OSC_ASSERT(render_target.depth.buffer->impl_->getAntialiasingLevel() == first_color_buffer_samples);
+    OSC_ASSERT(render_target.depth.buffer->impl_->dimensions() == first_color_buffer_dimensions);
+    OSC_ASSERT(render_target.depth.buffer->impl_->anti_aliasing_level() == first_color_buffer_samples);
 }
 
 Rect osc::GraphicsBackend::calc_viewport_bounds(
@@ -7091,7 +7091,7 @@ Rect osc::GraphicsBackend::calc_viewport_bounds(
     RenderTarget* maybe_custom_render_target)
 {
     const Vec2 target_dimensions = maybe_custom_render_target ?
-        Vec2{maybe_custom_render_target->colors.front().buffer->impl_->getDimensions()} :
+        Vec2{maybe_custom_render_target->colors.front().buffer->impl_->dimensions()} :
         App::get().dims();
 
     const Rect camera_pixel_rect = camera.pixel_rect() ?
@@ -7358,7 +7358,7 @@ void osc::GraphicsBackend::resolve_render_buffers(RenderTarget& render_target)
         }, buffer_opengl_data);
 
         if (can_resolve_buffer) {
-            const Vec2i dimensions = attachment.buffer->impl_->getDimensions();
+            const Vec2i dimensions = attachment.buffer->impl_->dimensions();
             gl::blit_framebuffer(
                 0,
                 0,
@@ -7410,7 +7410,7 @@ void osc::GraphicsBackend::resolve_render_buffers(RenderTarget& render_target)
 
         if (can_resolve_buffer)
         {
-            const Vec2i dimensions = render_target.depth.buffer->impl_->getDimensions();
+            const Vec2i dimensions = render_target.depth.buffer->impl_->dimensions();
             gl::blit_framebuffer(
                 0,
                 0,
@@ -7633,12 +7633,12 @@ void osc::GraphicsBackend::copy_texture(
     gl::blit_framebuffer(
         0,
         0,
-        source.getDimensions().x,
-        source.getDimensions().y,
+        source.dimensions().x,
+        source.dimensions().y,
         0,
         0,
-        destination.getDimensions().x,
-        destination.getDimensions().y,
+        destination.dimensions().x,
+        destination.dimensions().y,
         GL_COLOR_BUFFER_BIT,
         GL_LINEAR  // the two texture may have different dimensions (avoid GL_NEAREST)
     );
@@ -7649,17 +7649,17 @@ void osc::GraphicsBackend::copy_texture(
         const GLint pack_format = to_opengl_image_pixel_pack_alignment(destination.texture_format());
 
         OSC_ASSERT(is_aligned_at_least(cpu_buffer.data(), pack_format) && "glReadPixels must be called with a buffer that is aligned to GL_PACK_ALIGNMENT (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
-        OSC_ASSERT(cpu_buffer.size() == static_cast<ptrdiff_t>(destination.getDimensions().x*destination.getDimensions().y)*num_bytes_per_pixel_in(destination.texture_format()));
+        OSC_ASSERT(cpu_buffer.size() == static_cast<ptrdiff_t>(destination.dimensions().x*destination.dimensions().y)*num_bytes_per_pixel_in(destination.texture_format()));
 
-        gl::viewport(0, 0, destination.getDimensions().x, destination.getDimensions().y);
+        gl::viewport(0, 0, destination.dimensions().x, destination.dimensions().y);
         gl::bind_framebuffer(GL_READ_FRAMEBUFFER, draw_fbo);
         glReadBuffer(GL_COLOR_ATTACHMENT0);
         gl::pixel_store_i(GL_PACK_ALIGNMENT, pack_format);
         glReadPixels(
             0,
             0,
-            destination.getDimensions().x,
-            destination.getDimensions().y,
+            destination.dimensions().x,
+            destination.dimensions().y,
             to_opengl_image_color_format_enum(destination.texture_format()),
             to_opengl_image_data_type_enum(destination.texture_format()),
             cpu_buffer.data()
@@ -7687,7 +7687,7 @@ void osc::GraphicsBackend::copy_texture(
         cpp20::bit_width(static_cast<size_t>(destination.width())) - 1
     ));
 
-    OSC_ASSERT(source.getDimensionality() == TextureDimensionality::Cube && "provided render texture must be a cubemap to call this method");
+    OSC_ASSERT(source.dimensionality() == TextureDimensionality::Cube && "provided render texture must be a cubemap to call this method");
     OSC_ASSERT(mip <= max_mipmap_level);
 
     // blit each face of the source cubemap into the output cubemap
@@ -7732,8 +7732,8 @@ void osc::GraphicsBackend::copy_texture(
         gl::blit_framebuffer(
             0,
             0,
-            source.getDimensions().x,
-            source.getDimensions().y,
+            source.dimensions().x,
+            source.dimensions().y,
             0,
             0,
             destination.width() / (1<<mip),

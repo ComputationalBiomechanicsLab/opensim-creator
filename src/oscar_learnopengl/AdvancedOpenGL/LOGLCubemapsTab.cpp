@@ -32,7 +32,7 @@ namespace
             ColorSpace::sRGB
         );
 
-        Vec2i const dims = t.getDimensions();
+        Vec2i const dims = t.dimensions();
         OSC_ASSERT(dims.x == dims.y);
 
         // load all face data into the cubemap
@@ -41,17 +41,17 @@ namespace
         const auto faces = make_option_iterable<CubemapFace>();
         auto face_iterator = faces.begin();
         Cubemap cubemap{dims.x, t.texture_format()};
-        cubemap.set_pixel_data(*face_iterator++, t.getPixelData());
+        cubemap.set_pixel_data(*face_iterator++, t.pixel_data());
         for (; face_iterator != faces.end(); ++face_iterator)
         {
             t = load_texture2D_from_image(
                 rl.open(ResourcePath{"oscar_learnopengl/textures"} / c_SkyboxTextureFilenames[to_index(*face_iterator)]),
                 ColorSpace::sRGB
             );
-            OSC_ASSERT(t.getDimensions().x == dims.x);
-            OSC_ASSERT(t.getDimensions().y == dims.x);
+            OSC_ASSERT(t.dimensions().x == dims.x);
+            OSC_ASSERT(t.dimensions().y == dims.x);
             OSC_ASSERT(t.texture_format() == cubemap.texture_format());
-            cubemap.set_pixel_data(*face_iterator, t.getPixelData());
+            cubemap.set_pixel_data(*face_iterator, t.pixel_data());
         }
 
         return cubemap;

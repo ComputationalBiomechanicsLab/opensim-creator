@@ -14,12 +14,12 @@ TEST(RenderTargetDepthAttachment, CanConstructFromPartsOfRenderTexture)
 
     RenderTargetDepthAttachment attachment
     {
-        renderTex.updDepthBuffer(),
+        renderTex.upd_depth_buffer(),
         RenderBufferLoadAction::Clear,
         RenderBufferStoreAction::Resolve,
     };
 
-    ASSERT_EQ(attachment.buffer, renderTex.updDepthBuffer());
+    ASSERT_EQ(attachment.buffer, renderTex.upd_depth_buffer());
     ASSERT_EQ(attachment.load_action, RenderBufferLoadAction::Clear);
     ASSERT_EQ(attachment.store_action, RenderBufferStoreAction::Resolve);
 }
@@ -42,7 +42,7 @@ TEST(RenderTargetDepthAttachment, EqualityReturnsTrueForCopies)
     RenderTexture renderTex;
     RenderTargetDepthAttachment attachment
     {
-        renderTex.updColorBuffer(),
+        renderTex.upd_color_buffer(),
         RenderBufferLoadAction::Clear,
         RenderBufferStoreAction::Resolve,
     };
@@ -57,14 +57,14 @@ TEST(RenderTargetDepthAttachment, EqualityReturnsTrueForSeperatelyConstructedBut
 
     RenderTargetDepthAttachment a
     {
-        renderTex.updColorBuffer(),
+        renderTex.upd_color_buffer(),
         RenderBufferLoadAction::Clear,
         RenderBufferStoreAction::Resolve,
     };
 
     RenderTargetDepthAttachment b
     {
-        renderTex.updColorBuffer(),
+        renderTex.upd_color_buffer(),
         RenderBufferLoadAction::Clear,
         RenderBufferStoreAction::Resolve,
     };
@@ -78,7 +78,7 @@ TEST(RenderTargetDepthAttachment, EqualityReturnsFalseIfSomethingIsModified)
     RenderTexture secondRenderTex;
     RenderTargetDepthAttachment attachment
     {
-        firstRenderTex.updColorBuffer(),
+        firstRenderTex.upd_color_buffer(),
         RenderBufferLoadAction::Clear,
         RenderBufferStoreAction::Resolve,
     };
@@ -87,7 +87,7 @@ TEST(RenderTargetDepthAttachment, EqualityReturnsFalseIfSomethingIsModified)
     {
         RenderTargetDepthAttachment copy = attachment;
         ASSERT_EQ(copy, attachment);
-        copy.buffer = secondRenderTex.updColorBuffer();
+        copy.buffer = secondRenderTex.upd_color_buffer();
         ASSERT_NE(copy, attachment);
     }
 

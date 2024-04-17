@@ -20,14 +20,14 @@ TEST(RenderTextureDescriptor, CoercesNegativeWidthsToZero)
 {
     RenderTextureDescriptor d{{-1, 1}};
 
-    ASSERT_EQ(d.getDimensions().x, 0);
+    ASSERT_EQ(d.dimensions().x, 0);
 }
 
 TEST(RenderTextureDescriptor, CoercesNegativeHeightsToZero)
 {
     RenderTextureDescriptor d{{1, -1}};
 
-    ASSERT_EQ(d.getDimensions().y, 0);
+    ASSERT_EQ(d.dimensions().y, 0);
 }
 
 TEST(RenderTextureDescriptor, CanBeCopyConstructed)
@@ -47,7 +47,7 @@ TEST(RenderTextureDescriptor, GetWidthReturnsConstructedWith)
 {
     int width = 1;
     RenderTextureDescriptor d1{{width, 1}};
-    ASSERT_EQ(d1.getDimensions().x, width);
+    ASSERT_EQ(d1.dimensions().x, width);
 }
 
 TEST(RenderTextureDescriptor, SetWithFollowedByGetWithReturnsSetWidth)
@@ -56,42 +56,42 @@ TEST(RenderTextureDescriptor, SetWithFollowedByGetWithReturnsSetWidth)
 
 
     int newWidth = 31;
-    Vec2i d = d1.getDimensions();
+    Vec2i d = d1.dimensions();
     d.x = newWidth;
 
-    d1.setDimensions(d);
-    ASSERT_EQ(d1.getDimensions(), d);
+    d1.set_dimensions(d);
+    ASSERT_EQ(d1.dimensions(), d);
 }
 
 TEST(RenderTextureDescriptor, SetWidthNegativeValueThrows)
 {
     RenderTextureDescriptor d1{{1, 1}};
-    ASSERT_ANY_THROW({ d1.setDimensions({-1, 1}); });
+    ASSERT_ANY_THROW({ d1.set_dimensions({-1, 1}); });
 }
 
 TEST(RenderTextureDescriptor, GetHeightReturnsConstructedHeight)
 {
     int height = 1;
     RenderTextureDescriptor d1{{1, height}};
-    ASSERT_EQ(d1.getDimensions().y, height);
+    ASSERT_EQ(d1.dimensions().y, height);
 }
 
 TEST(RenderTextureDescriptor, SetHeightFollowedByGetHeightReturnsSetHeight)
 {
     RenderTextureDescriptor d1{{1, 1}};
 
-    Vec2i d = d1.getDimensions();
+    Vec2i d = d1.dimensions();
     d.y = 31;
 
-    d1.setDimensions(d);
+    d1.set_dimensions(d);
 
-    ASSERT_EQ(d1.getDimensions(), d);
+    ASSERT_EQ(d1.dimensions(), d);
 }
 
 TEST(RenderTextureDescriptor, GetAntialiasingLevelInitiallyReturns1)
 {
     RenderTextureDescriptor d1{{1, 1}};
-    ASSERT_EQ(d1.getAntialiasingLevel(), AntiAliasingLevel{1});
+    ASSERT_EQ(d1.anti_aliasing_level(), AntiAliasingLevel{1});
 }
 
 TEST(RenderTextureDescriptor, SetAntialiasingLevelMakesGetAntialiasingLevelReturnValue)
@@ -99,62 +99,62 @@ TEST(RenderTextureDescriptor, SetAntialiasingLevelMakesGetAntialiasingLevelRetur
     AntiAliasingLevel newAntialiasingLevel{4};
 
     RenderTextureDescriptor d1{{1, 1}};
-    d1.setAntialiasingLevel(newAntialiasingLevel);
-    ASSERT_EQ(d1.getAntialiasingLevel(), newAntialiasingLevel);
+    d1.set_anti_aliasing_level(newAntialiasingLevel);
+    ASSERT_EQ(d1.anti_aliasing_level(), newAntialiasingLevel);
 }
 
 TEST(RenderTextureDescriptor, GetColorFormatReturnsARGB32ByDefault)
 {
     RenderTextureDescriptor d1{{1, 1}};
-    ASSERT_EQ(d1.getColorFormat(), RenderTextureFormat::ARGB32);
+    ASSERT_EQ(d1.color_format(), RenderTextureFormat::ARGB32);
 }
 
 TEST(RenderTextureDescriptor, SetColorFormatMakesGetColorFormatReturnTheFormat)
 {
     RenderTextureDescriptor d{{1, 1}};
 
-    ASSERT_EQ(d.getColorFormat(), RenderTextureFormat::ARGB32);
+    ASSERT_EQ(d.color_format(), RenderTextureFormat::ARGB32);
 
-    d.setColorFormat(RenderTextureFormat::Red8);
+    d.set_color_format(RenderTextureFormat::Red8);
 
-    ASSERT_EQ(d.getColorFormat(), RenderTextureFormat::Red8);
+    ASSERT_EQ(d.color_format(), RenderTextureFormat::Red8);
 }
 
 TEST(RenderTextureDescriptor, GetDepthStencilFormatReturnsDefaultValue)
 {
     RenderTextureDescriptor d1{{1, 1}};
-    ASSERT_EQ(d1.getDepthStencilFormat(), DepthStencilFormat::D24_UNorm_S8_UInt);
+    ASSERT_EQ(d1.depth_stencil_format(), DepthStencilFormat::D24_UNorm_S8_UInt);
 }
 
 TEST(RenderTextureDescriptor, StandardCtorGetReadWriteReturnsDefaultValue)
 {
     RenderTextureDescriptor d1{{1, 1}};
-    ASSERT_EQ(d1.getReadWrite(), RenderTextureReadWrite::Default);
+    ASSERT_EQ(d1.read_write(), RenderTextureReadWrite::Default);
 }
 
 TEST(RenderTextureDescriptor, SetReadWriteMakesGetReadWriteReturnNewValue)
 {
     RenderTextureDescriptor d1{{1, 1}};
-    ASSERT_EQ(d1.getReadWrite(), RenderTextureReadWrite::Default);
+    ASSERT_EQ(d1.read_write(), RenderTextureReadWrite::Default);
 
-    d1.setReadWrite(RenderTextureReadWrite::Linear);
+    d1.set_read_write(RenderTextureReadWrite::Linear);
 
-    ASSERT_EQ(d1.getReadWrite(), RenderTextureReadWrite::Linear);
+    ASSERT_EQ(d1.read_write(), RenderTextureReadWrite::Linear);
 }
 
 TEST(RenderTextureDescriptor, GetDimensionReturns2DOnConstruction)
 {
     RenderTextureDescriptor d1{{1, 1}};
 
-    ASSERT_EQ(d1.getDimensionality(), TextureDimensionality::Tex2D);
+    ASSERT_EQ(d1.dimensionality(), TextureDimensionality::Tex2D);
 }
 
 TEST(RenderTextureDescriptor, SetDimensionCausesGetDimensionToReturnTheSetDimension)
 {
     RenderTextureDescriptor d1{{1, 1}};
-    d1.setDimensionality(TextureDimensionality::Cube);
+    d1.set_dimensionality(TextureDimensionality::Cube);
 
-    ASSERT_EQ(d1.getDimensionality(), TextureDimensionality::Cube);
+    ASSERT_EQ(d1.dimensionality(), TextureDimensionality::Cube);
 }
 
 TEST(RenderTextureDescriptor, SetDimensionChangesDescriptorEquality)
@@ -164,7 +164,7 @@ TEST(RenderTextureDescriptor, SetDimensionChangesDescriptorEquality)
 
     ASSERT_EQ(d1, d2);
 
-    d1.setDimensionality(TextureDimensionality::Cube);
+    d1.set_dimensionality(TextureDimensionality::Cube);
 
     ASSERT_NE(d1, d2);
 }
@@ -175,18 +175,18 @@ TEST(RenderTextureDescriptor, SetDimensionToCubeOnRectangularDimensionsCausesNoE
     // allows changing the dimension independently from changing the dimensions without
     // throwing an error, so that code like:
     //
-    // desc.setDimensionality(TextureDimensionality::Cube);
-    // desc.setDimensions({2,2});
+    // desc.set_dimensionality(TextureDimensionality::Cube);
+    // desc.set_dimensions({2,2});
     //
     // is permitted, even though the first line might create an "invalid" descriptor
 
     RenderTextureDescriptor rect{{1, 2}};
-    rect.setDimensionality(TextureDimensionality::Cube);
+    rect.set_dimensionality(TextureDimensionality::Cube);
 
     // also permitted
     RenderTextureDescriptor initiallySquare{{1, 1}};
-    initiallySquare.setDimensions({1, 2});
-    initiallySquare.setDimensionality(TextureDimensionality::Cube);
+    initiallySquare.set_dimensions({1, 2});
+    initiallySquare.set_dimensionality(TextureDimensionality::Cube);
 }
 
 TEST(RenderTextureDescriptor, SetReadWriteChangesEquality)
@@ -196,7 +196,7 @@ TEST(RenderTextureDescriptor, SetReadWriteChangesEquality)
 
     ASSERT_EQ(d1, d2);
 
-    d2.setReadWrite(RenderTextureReadWrite::Linear);
+    d2.set_read_write(RenderTextureReadWrite::Linear);
 
     ASSERT_NE(d1, d2);
 }
@@ -222,7 +222,7 @@ TEST(RenderTextureDescriptor, SetDimensionsWidthMakesItCompareNotEqual)
     RenderTextureDescriptor d1{{1, 1}};
     RenderTextureDescriptor d2{{1, 1}};
 
-    d2.setDimensions({2, 1});
+    d2.set_dimensions({2, 1});
 
     ASSERT_NE(d1, d2);
 }
@@ -232,7 +232,7 @@ TEST(RenderTextureDescriptor, SetDimensionsHeightMakesItCompareNotEqual)
     RenderTextureDescriptor d1{{1, 1}};
     RenderTextureDescriptor d2{{1, 1}};
 
-    d2.setDimensions({1, 2});
+    d2.set_dimensions({1, 2});
 
     ASSERT_NE(d1, d2);
 }
@@ -242,7 +242,7 @@ TEST(RenderTextureDescriptor, SetAntialiasingLevelMakesItCompareNotEqual)
     RenderTextureDescriptor d1{{1, 1}};
     RenderTextureDescriptor d2{{1, 1}};
 
-    d2.setAntialiasingLevel(AntiAliasingLevel{2});
+    d2.set_anti_aliasing_level(AntiAliasingLevel{2});
 
     ASSERT_NE(d1, d2);
 }
@@ -252,7 +252,7 @@ TEST(RenderTextureDescriptor, SetAntialiasingLevelToSameValueComparesEqual)
     RenderTextureDescriptor d1{{1, 1}};
     RenderTextureDescriptor d2{{1, 1}};
 
-    d2.setAntialiasingLevel(d2.getAntialiasingLevel());
+    d2.set_anti_aliasing_level(d2.anti_aliasing_level());
 
     ASSERT_EQ(d1, d2);
 }

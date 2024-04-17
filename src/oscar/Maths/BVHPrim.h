@@ -11,24 +11,16 @@ namespace osc
     // IDs and bounds an element from the input data (triangles/AABBs)
     class BVHPrim final {
     public:
-        BVHPrim(ptrdiff_t id_, AABB const& bounds_) :
-            m_ID{id_},
-            m_Bounds{bounds_}
-        {
-        }
+        BVHPrim(ptrdiff_t id, const AABB& bounds) :
+            id_{id},
+            bounds_{bounds}
+        {}
 
-        ptrdiff_t getID() const
-        {
-            return m_ID;
-        }
-
-        AABB const& bounds() const
-        {
-            return m_Bounds;
-        }
+        ptrdiff_t id() const { return id_; }
+        const AABB& bounds() const { return bounds_; }
 
     private:
-        ptrdiff_t m_ID{};
-        AABB m_Bounds{};
+        ptrdiff_t id_{};
+        AABB bounds_{};
     };
 }

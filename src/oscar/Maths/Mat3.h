@@ -20,11 +20,11 @@ namespace osc
         using size_type = size_t;
         using difference_type = ptrdiff_t;
         using reference = col_type&;
-        using const_reference = col_type const&;
+        using const_reference = const col_type&;
         using pointer = col_type*;
-        using const_pointer = col_type const*;
+        using const_pointer = const col_type*;
         using iterator = col_type*;
-        using const_iterator = col_type const*;
+        using const_iterator = const col_type*;
 
         constexpr Mat() = default;
 
@@ -49,9 +49,9 @@ namespace osc
         {}
 
         constexpr Mat(
-            col_type const& v0,
-            col_type const& v1,
-            col_type const& v2) :
+            const col_type& v0,
+            const col_type& v1,
+            const col_type& v2) :
 
             value{v0, v1, v2}
         {}
@@ -74,9 +74,9 @@ namespace osc
 
         template<typename V1, typename V2, typename V3>
         constexpr Mat(
-            Vec<3, V1> const& v1,
-            Vec<3, V2> const& v2,
-            Vec<3, V3> const& v3) :
+            const Vec<3, V1>& v1,
+            const Vec<3, V2>& v2,
+            const Vec<3, V3>& v3) :
 
             value{
                 col_type{v1},
@@ -86,7 +86,7 @@ namespace osc
         {}
 
         template<typename U>
-        explicit constexpr Mat(Mat<3, 3, U> const& m) :
+        explicit constexpr Mat(const Mat<3, 3, U>& m) :
             value{
                 col_type{m[0]},
                 col_type{m[1]},
@@ -94,7 +94,7 @@ namespace osc
             }
         {}
 
-        explicit constexpr Mat(Mat<4, 4, T> const& m) :
+        explicit constexpr Mat(const Mat<4, 4, T>& m) :
             value{
                 col_type{m[0]},
                 col_type{m[1]},
@@ -103,7 +103,7 @@ namespace osc
         {}
 
         template<typename U>
-        Mat<3, 3, T>& operator=(Mat<3, 3, U> const& m)
+        Mat<3, 3, T>& operator=(const Mat<3, 3, U>& m)
         {
             this->value[0] = m[0];
             this->value[1] = m[1];
@@ -121,7 +121,7 @@ namespace osc
         constexpr reference operator[](size_type i) { return begin()[i]; }
         constexpr const_reference operator[](size_type i) const { return begin()[i]; }
 
-        friend constexpr bool operator==(Mat const&, Mat const&) = default;
+        friend constexpr bool operator==(const Mat&, const Mat&) = default;
 
         template<typename U>
         Mat<3, 3, T>& operator+=(U s)
@@ -133,7 +133,7 @@ namespace osc
         }
 
         template<typename U>
-        Mat<3, 3, T>& operator+=(Mat<3, 3, U> const& m)
+        Mat<3, 3, T>& operator+=(const Mat<3, 3, U>& m)
         {
             this->value[0] += m[0];
             this->value[1] += m[1];
@@ -151,7 +151,7 @@ namespace osc
         }
 
         template<typename U>
-        Mat<3, 3, T>& operator-=(Mat<3, 3, U> const& m)
+        Mat<3, 3, T>& operator-=(const Mat<3, 3, U>& m)
         {
             this->value[0] -= m[0];
             this->value[1] -= m[1];
@@ -169,7 +169,7 @@ namespace osc
         }
 
         template<typename U>
-        Mat<3, 3, T>& operator*=(Mat<3, 3, U> const& m)
+        Mat<3, 3, T>& operator*=(const Mat<3, 3, U>& m)
         {
             return (*this = *this * m);
         }
@@ -184,7 +184,7 @@ namespace osc
         }
 
         template<typename U>
-        Mat<3, 3, T>& operator/=(Mat<3, 3, U> const& m)
+        Mat<3, 3, T>& operator/=(const Mat<3, 3, U>& m)
         {
             return *this /= inverse(m);
         }
@@ -224,67 +224,67 @@ namespace osc
     };
 
     template<typename T>
-    Mat<3, 3, T> operator+(Mat<3, 3, T> const& m)
+    Mat<3, 3, T> operator+(const Mat<3, 3, T>& m)
     {
         return m;
     }
 
     template<typename T>
-    Mat<3, 3, T> operator-(Mat<3, 3, T> const& m)
+    Mat<3, 3, T> operator-(const Mat<3, 3, T>& m)
     {
         return Mat<3, 3, T>{-m[0], -m[1], -m[2]};
     }
 
     template<typename T>
-    Mat<3, 3, T> operator+(Mat<3, 3, T> const& m, T scalar)
+    Mat<3, 3, T> operator+(const Mat<3, 3, T>& m, T scalar)
     {
         return Mat<3, 3, T>{m[0] + scalar, m[1] + scalar, m[2] + scalar};
     }
 
     template<typename T>
-    Mat<3, 3, T> operator+(T scalar, Mat<3, 3, T> const& m)
+    Mat<3, 3, T> operator+(T scalar, const Mat<3, 3, T>& m)
     {
         return Mat<3, 3, T>{scalar + m[0], scalar + m[1], scalar + m[2]};
     }
 
     template<typename T>
-    Mat<3, 3, T> operator+(Mat<3, 3, T> const& m1, Mat<3, 3, T> const& m2)
+    Mat<3, 3, T> operator+(const Mat<3, 3, T>& m1, const Mat<3, 3, T>& m2)
     {
         return Mat<3, 3, T>{m1[0] + m2[0], m1[1] + m2[1], m1[2] + m2[2]};
     }
 
     template<typename T>
-    Mat<3, 3, T> operator-(Mat<3, 3, T> const& m, T scalar)
+    Mat<3, 3, T> operator-(const Mat<3, 3, T>& m, T scalar)
     {
         return Mat<3, 3, T>{m[0] - scalar, m[1] - scalar, m[2] - scalar};
     }
 
     template<typename T>
-    Mat<3, 3, T> operator-(T scalar, Mat<3, 3, T> const& m)
+    Mat<3, 3, T> operator-(T scalar, const Mat<3, 3, T>& m)
     {
         return Mat<3, 3, T>{scalar - m[0], scalar - m[1], scalar - m[2]};
     }
 
     template<typename T>
-    Mat<3, 3, T> operator-(Mat<3, 3, T> const& m1, Mat<3, 3, T> const& m2)
+    Mat<3, 3, T> operator-(const Mat<3, 3, T>& m1, const Mat<3, 3, T>& m2)
     {
         return Mat<3, 3, T>{m1[0] - m2[0], m1[1] - m2[1], m1[2] - m2[2]};
     }
 
     template<typename T>
-    Mat<3, 3, T> operator*(Mat<3, 3, T> const& m, T scalar)
+    Mat<3, 3, T> operator*(const Mat<3, 3, T>& m, T scalar)
     {
         return Mat<3, 3, T>{m[0] * scalar, m[1] * scalar, m[2] * scalar};
     }
 
     template<typename T>
-    Mat<3, 3, T> operator*(T scalar, Mat<3, 3, T> const& m)
+    Mat<3, 3, T> operator*(T scalar, const Mat<3, 3, T>& m)
     {
         return Mat<3, 3, T>{scalar * m[0], scalar * m[1], scalar * m[2]};
     }
 
     template<typename T>
-    typename Mat<3, 3, T>::col_type operator*(Mat<3, 3, T> const& m, typename Mat<3, 3, T>::row_type const& v)
+    typename Mat<3, 3, T>::col_type operator*(const Mat<3, 3, T>& m, const typename Mat<3, 3, T>::row_type& v)
     {
         return typename Mat<3, 3, T>::col_type(
             m[0][0] * v.x + m[1][0] * v.y + m[2][0] * v.z,
@@ -294,7 +294,7 @@ namespace osc
     }
 
     template<typename T>
-    typename Mat<3, 3, T>::row_type operator*(typename Mat<3, 3, T>::col_type const& v, Mat<3, 3, T> const& m)
+    typename Mat<3, 3, T>::row_type operator*(const typename Mat<3, 3, T>::col_type& v, const Mat<3, 3, T>& m)
     {
         return typename Mat<3, 3, T>::row_type(
             m[0][0] * v.x + m[0][1] * v.y + m[0][2] * v.z,
@@ -304,27 +304,27 @@ namespace osc
     }
 
     template<typename T>
-    Mat<3, 3, T> operator*(Mat<3, 3, T> const& m1, Mat<3, 3, T> const& m2)
+    Mat<3, 3, T> operator*(const Mat<3, 3, T>& m1, const Mat<3, 3, T>& m2)
     {
-        T const SrcA00 = m1[0][0];
-        T const SrcA01 = m1[0][1];
-        T const SrcA02 = m1[0][2];
-        T const SrcA10 = m1[1][0];
-        T const SrcA11 = m1[1][1];
-        T const SrcA12 = m1[1][2];
-        T const SrcA20 = m1[2][0];
-        T const SrcA21 = m1[2][1];
-        T const SrcA22 = m1[2][2];
+        const T SrcA00 = m1[0][0];
+        const T SrcA01 = m1[0][1];
+        const T SrcA02 = m1[0][2];
+        const T SrcA10 = m1[1][0];
+        const T SrcA11 = m1[1][1];
+        const T SrcA12 = m1[1][2];
+        const T SrcA20 = m1[2][0];
+        const T SrcA21 = m1[2][1];
+        const T SrcA22 = m1[2][2];
 
-        T const SrcB00 = m2[0][0];
-        T const SrcB01 = m2[0][1];
-        T const SrcB02 = m2[0][2];
-        T const SrcB10 = m2[1][0];
-        T const SrcB11 = m2[1][1];
-        T const SrcB12 = m2[1][2];
-        T const SrcB20 = m2[2][0];
-        T const SrcB21 = m2[2][1];
-        T const SrcB22 = m2[2][2];
+        const T SrcB00 = m2[0][0];
+        const T SrcB01 = m2[0][1];
+        const T SrcB02 = m2[0][2];
+        const T SrcB10 = m2[1][0];
+        const T SrcB11 = m2[1][1];
+        const T SrcB12 = m2[1][2];
+        const T SrcB20 = m2[2][0];
+        const T SrcB21 = m2[2][1];
+        const T SrcB22 = m2[2][2];
 
         Mat<3, 3, T> Result;
         Result[0][0] = SrcA00 * SrcB00 + SrcA10 * SrcB01 + SrcA20 * SrcB02;
@@ -340,31 +340,31 @@ namespace osc
     }
 
     template<typename T>
-    Mat<3, 3, T> operator/(Mat<3, 3, T> const& m, T scalar)
+    Mat<3, 3, T> operator/(const Mat<3, 3, T>& m, T scalar)
     {
         return Mat<3, 3, T>{m[0] / scalar, m[1] / scalar, m[2] / scalar};
     }
 
     template<typename T>
-    Mat<3, 3, T> operator/(T scalar, Mat<3, 3, T> const& m)
+    Mat<3, 3, T> operator/(T scalar, const Mat<3, 3, T>& m)
     {
         return Mat<3, 3, T>{scalar / m[0], scalar / m[1], scalar / m[2]};
     }
 
     template<typename T>
-    typename Mat<3, 3, T>::col_type operator/(Mat<3, 3, T> const& m, typename Mat<3, 3, T>::row_type const& v)
+    typename Mat<3, 3, T>::col_type operator/(const Mat<3, 3, T>& m, const typename Mat<3, 3, T>::row_type& v)
     {
         return inverse(m) * v;
     }
 
     template<typename T>
-    typename Mat<3, 3, T>::row_type operator/(typename Mat<3, 3, T>::col_type const& v, Mat<3, 3, T> const& m)
+    typename Mat<3, 3, T>::row_type operator/(const typename Mat<3, 3, T>::col_type& v, const Mat<3, 3, T>& m)
     {
         return v * inverse(m);
     }
 
     template<typename T>
-    Mat<3, 3, T> operator/(Mat<3, 3, T> const& m1, Mat<3, 3, T> const& m2)
+    Mat<3, 3, T> operator/(const Mat<3, 3, T>& m1, const Mat<3, 3, T>& m2)
     {
         Mat<3, 3, T> m1_copy{m1};
         return m1_copy /= m2;

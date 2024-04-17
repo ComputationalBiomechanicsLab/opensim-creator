@@ -19,7 +19,7 @@ TEST(Image, LoadTexture2DFromImageRespectsSRGBColorSpace)
 
     Texture2D const rv = load_texture2D_from_image(ResourceStream{path}, ColorSpace::sRGB);
 
-    ASSERT_EQ(rv.getColorSpace(), ColorSpace::sRGB);
+    ASSERT_EQ(rv.color_space(), ColorSpace::sRGB);
 }
 
 TEST(Image, LoadTexture2DFromImageRespectsLinearColorSpace)
@@ -28,5 +28,5 @@ TEST(Image, LoadTexture2DFromImageRespectsLinearColorSpace)
 
     Texture2D const rv = load_texture2D_from_image(ResourceStream{path}, ColorSpace::Linear);
 
-    ASSERT_EQ(rv.getColorSpace(), ColorSpace::Linear);
+    ASSERT_EQ(rv.color_space(), ColorSpace::Linear);
 }

@@ -140,7 +140,7 @@ TEST(Object, MinimalObjectImplGetNumPropertiesReturnsZero)
 TEST(Object, MinimalObjectImplGetPropertyNameIsBoundsChecked)
 {
     constexpr int c_OutOfBoundsIndex = 0;
-    ASSERT_ANY_THROW({ MinimalObjectImpl{}.getPropertyName(c_OutOfBoundsIndex); });
+    ASSERT_ANY_THROW({ MinimalObjectImpl{}.property_name(c_OutOfBoundsIndex); });
 }
 
 TEST(Object, MinimalObjectImplGetPropertyIndexReturnsFalsey)
@@ -218,7 +218,7 @@ TEST(Object, ObjectWithGivenPropertiesWhenClonedHasPropertyNamesInSameOrder)
     ASSERT_EQ(orig.num_properties(), clone->num_properties());
     for (size_t i = 0; i < orig.num_properties(); ++i)
     {
-        ASSERT_EQ(orig.getPropertyName(i), clone->getPropertyName(i));
+        ASSERT_EQ(orig.property_name(i), clone->property_name(i));
     }
 }
 
@@ -356,7 +356,7 @@ TEST(Object, GetPropertyNameReturnsPropertiesInTheProvidedOrder)
     ASSERT_EQ(a.num_properties(), descriptions.size());
     for (size_t i = 0; i < descriptions.size(); ++i)
     {
-        ASSERT_EQ(a.getPropertyName(i), descriptions.at(i).name());
+        ASSERT_EQ(a.property_name(i), descriptions.at(i).name());
     }
 }
 

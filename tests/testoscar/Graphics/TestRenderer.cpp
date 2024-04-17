@@ -380,7 +380,7 @@ namespace
     Texture2D GenerateTexture()
     {
         Texture2D rv{Vec2i{2, 2}};
-        rv.setPixels(std::vector<Color>(4, Color::red()));
+        rv.set_pixels(std::vector<Color>(4, Color::red()));
         return rv;
     }
 
@@ -505,14 +505,14 @@ TEST_F(Renderer, ShaderFindPropertyIndexCanFindAllExpectedProperties)
 
     for (auto const& propName : c_ExpectedPropertyNames)
     {
-        ASSERT_TRUE(s.findPropertyIndex(std::string{propName}));
+        ASSERT_TRUE(s.property_index(std::string{propName}));
     }
 }
 TEST_F(Renderer, ShaderHasExpectedNumberOfProperties)
 {
     // (effectively, number of properties == number of uniforms)
     Shader s{c_vertex_shader_src, c_fragment_shader_src};
-    ASSERT_EQ(s.getPropertyCount(), c_ExpectedPropertyNames.size());
+    ASSERT_EQ(s.num_properties(), c_ExpectedPropertyNames.size());
 }
 
 TEST_F(Renderer, ShaderIteratingOverPropertyIndicesForNameReturnsValidPropertyName)
@@ -526,9 +526,9 @@ TEST_F(Renderer, ShaderIteratingOverPropertyIndicesForNameReturnsValidPropertyNa
     }
     std::unordered_set<std::string> returnedPropNames;
 
-    for (size_t i = 0, len = s.getPropertyCount(); i < len; ++i)
+    for (size_t i = 0, len = s.num_properties(); i < len; ++i)
     {
-        returnedPropNames.insert(std::string{s.getPropertyName(i)});
+        returnedPropNames.insert(std::string{s.property_name(i)});
     }
 
     ASSERT_EQ(allPropNames, returnedPropNames);
@@ -540,17 +540,17 @@ TEST_F(Renderer, ShaderGetPropertyNameReturnsGivenPropertyName)
 
     for (auto const& propName : c_ExpectedPropertyNames)
     {
-        std::optional<size_t> idx = s.findPropertyIndex(propName);
+        std::optional<size_t> idx = s.property_index(propName);
         ASSERT_TRUE(idx);
-        ASSERT_EQ(s.getPropertyName(*idx), propName);
+        ASSERT_EQ(s.property_name(*idx), propName);
     }
 }
 
 TEST_F(Renderer, ShaderGetPropertyNameStillWorksIfTheUniformIsAnArray)
 {
     Shader s{c_VertexShaderWithArray, c_FragmentShaderWithArray};
-    ASSERT_FALSE(s.findPropertyIndex("uFragColor[0]").has_value()) << "shouldn't expose 'raw' name";
-    ASSERT_TRUE(s.findPropertyIndex("uFragColor").has_value()) << "should work, because the backend should normalize array-like uniforms to the original name (not uFragColor[0])";
+    ASSERT_FALSE(s.property_index("uFragColor[0]").has_value()) << "shouldn't expose 'raw' name";
+    ASSERT_TRUE(s.property_index("uFragColor").has_value()) << "should work, because the backend should normalize array-like uniforms to the original name (not uFragColor[0])";
 }
 
 TEST_F(Renderer, ShaderGetPropertyTypeReturnsExpectedType)
@@ -563,19 +563,19 @@ TEST_F(Renderer, ShaderGetPropertyTypeReturnsExpectedType)
         auto const& propName = c_ExpectedPropertyNames[i];
         ShaderPropertyType expectedType = c_ExpectedPropertyTypes[i];
 
-        std::optional<size_t> idx = s.findPropertyIndex(std::string{propName});
+        std::optional<size_t> idx = s.property_index(std::string{propName});
         ASSERT_TRUE(idx);
-        ASSERT_EQ(s.getPropertyType(*idx), expectedType);
+        ASSERT_EQ(s.property_type(*idx), expectedType);
     }
 }
 
 TEST_F(Renderer, ShaderGetPropertyForCubemapReturnsExpectedType)
 {
     Shader shader{c_CubemapVertexShader, c_CubemapFragmentShader};
-    std::optional<size_t> index = shader.findPropertyIndex("skybox");
+    std::optional<size_t> index = shader.property_index("skybox");
 
     ASSERT_TRUE(index.has_value());
-    ASSERT_EQ(shader.getPropertyType(*index), ShaderPropertyType::SamplerCube);
+    ASSERT_EQ(shader.property_type(*index), ShaderPropertyType::SamplerCube);
 }
 
 TEST_F(Renderer, MaterialCanBeConstructed)
@@ -1502,7 +1502,7 @@ TEST_F(Renderer, LoadTexture2DFromImageResourceCanLoadImageFile)
         App::load_resource((std::filesystem::path{OSC_BUILD_RESOURCES_DIR} / "testoscar/awesomeface.png").string()),
         ColorSpace::sRGB
     );
-    ASSERT_EQ(t.getDimensions(), Vec2i(512, 512));
+    ASSERT_EQ(t.dimensions(), Vec2i(512, 512));
 }
 
 TEST_F(Renderer, LoadTexture2DFromImageResourceThrowsIfResourceNotFound)

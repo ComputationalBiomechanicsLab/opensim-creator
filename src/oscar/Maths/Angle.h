@@ -28,19 +28,19 @@ namespace osc
 
         // explicitly constructs the angle from a raw value in the given units
         template<std::convertible_to<Rep> Rep2>
-        constexpr explicit Angle(Rep2 const& value_) :
+        constexpr explicit Angle(const Rep2& value_) :
             m_Value{static_cast<Rep>(value_)}
         {}
 
         // implicitly constructs from an angle expressed in other units
         template<AngularUnitTraits Units2>
-        constexpr Angle(Angle<Rep, Units2> const& other) :
+        constexpr Angle(const Angle<Rep, Units2>& other) :
             m_Value{static_cast<Rep>(other.count() * (Units2::radians_per_rep/Units::radians_per_rep))}
         {}
 
         // explicitly constructs from an angle expressed of type `Rep2` expressed in other units
         template<std::convertible_to<Rep> Rep2, AngularUnitTraits Units2>
-        explicit constexpr Angle(Angle<Rep2, Units2> const& other) :
+        explicit constexpr Angle(const Angle<Rep2, Units2>& other) :
             m_Value{static_cast<Rep>(other.count() * (Units2::radians_per_rep/Units::radians_per_rep))}
         {}
 
@@ -51,15 +51,15 @@ namespace osc
 
         constexpr Angle operator-() const { return Angle{-m_Value}; }
 
-        constexpr friend auto operator<=>(Angle const&, Angle const&) = default;
+        constexpr friend auto operator<=>(const Angle&, const Angle&) = default;
 
-        constexpr friend Angle& operator+=(Angle& lhs, Angle const& rhs)
+        constexpr friend Angle& operator+=(Angle& lhs, const Angle& rhs)
         {
             lhs.m_Value += rhs.m_Value;
             return lhs;
         }
 
-        constexpr friend Angle& operator-=(Angle& lhs, Angle const& rhs)
+        constexpr friend Angle& operator-=(Angle& lhs, const Angle& rhs)
         {
             lhs.m_Value -= rhs.m_Value;
             return lhs;
@@ -67,19 +67,19 @@ namespace osc
 
         // scalar multiplication (both lhs and rhs)
         template<std::convertible_to<Rep> Rep2>
-        constexpr friend Angle operator*(Rep2 const& scalar, Angle const& rhs)
+        constexpr friend Angle operator*(const Rep2& scalar, const Angle& rhs)
         {
             return Angle{static_cast<Rep>(scalar) * rhs.m_Value};
         }
         template<std::convertible_to<Rep> Rep2>
-        constexpr friend Angle operator*(Angle const& lhs, Rep2 const& scalar)
+        constexpr friend Angle operator*(const Angle& lhs, const Rep2& scalar)
         {
             return Angle{lhs.m_Value * static_cast<Rep>(scalar)};
         }
 
         // scalar division (only on the rhs: reciporical angular units aren't supported)
         template<std::convertible_to<Rep> Rep2>
-        constexpr friend Angle operator/(Angle const& lhs, Rep2 const& scalar)
+        constexpr friend Angle operator/(const Angle& lhs, const Rep2& scalar)
         {
             return Angle{lhs.m_Value / static_cast<Rep>(scalar)};
         }
@@ -95,8 +95,8 @@ namespace osc
         AngularUnitTraits Units2
     >
     constexpr typename std::common_type_t<Angle<Rep1, Units1>, Angle<Rep2, Units2>> operator+(
-        Angle<Rep1, Units1> const& lhs,
-        Angle<Rep2, Units2> const& rhs)
+        const Angle<Rep1, Units1>& lhs,
+        const Angle<Rep2, Units2>& rhs)
     {
         using CA = std::common_type_t<Angle<Rep1, Units1>, Angle<Rep2, Units2>>;
         return CA{CA{lhs}.count() + CA{rhs}.count()};
@@ -110,8 +110,8 @@ namespace osc
         AngularUnitTraits Units2
     >
     constexpr typename std::common_type_t<Angle<Rep1, Units1>, Angle<Rep2, Units2>> operator-(
-        Angle<Rep1, Units1> const& lhs,
-        Angle<Rep2, Units2> const& rhs)
+        const Angle<Rep1, Units1>& lhs,
+        const Angle<Rep2, Units2>& rhs)
     {
         using CA = std::common_type_t<Angle<Rep1, Units1>, Angle<Rep2, Units2>>;
         return CA{CA{lhs}.count() - CA{rhs}.count()};
@@ -124,7 +124,7 @@ namespace osc
         std::floating_point Rep2,
         AngularUnitTraits Units2
     >
-    constexpr bool operator==(Angle<Rep1, Units1> const& lhs, Angle<Rep2, Units2> const& rhs)
+    constexpr bool operator==(const Angle<Rep1, Units1>& lhs, const Angle<Rep2, Units2>& rhs)
     {
         using CA = std::common_type_t<Angle<Rep1, Units1>, Angle<Rep2, Units2>>;
         return CA{lhs} == CA{rhs};
@@ -137,7 +137,7 @@ namespace osc
         std::floating_point Rep2,
         AngularUnitTraits Units2
     >
-    constexpr auto operator<=>(Angle<Rep1, Units1> const& lhs, Angle<Rep2, Units2> const& rhs)
+    constexpr auto operator<=>(const Angle<Rep1, Units1>& lhs, const Angle<Rep2, Units2>& rhs)
     {
         using CA = std::common_type_t<Angle<Rep1, Units1>, Angle<Rep2, Units2>>;
         return CA{lhs} <=> CA{rhs};
@@ -145,7 +145,7 @@ namespace osc
 
     // writes the angle's value, followed by a space, followed by its units (use `.count()` if you just want the value)
     template<std::floating_point Rep, AngularUnitTraits Units>
-    std::ostream& operator<<(std::ostream& o, Angle<Rep, Units> const& v)
+    std::ostream& operator<<(std::ostream& o, const Angle<Rep, Units>& v)
     {
         return o << v.count() << ' ' << Units::unit_label;
     }
@@ -292,9 +292,9 @@ namespace osc
         not std::is_same_v<AngleMin, AngleMax>
     )
     constexpr Angle<Rep, Units> clamp(
-        Angle<Rep, Units> const& v,
-        AngleMin const& min,
-        AngleMax const& max)
+        const Angle<Rep, Units>& v,
+        const AngleMin& min,
+        const AngleMax& max)
     {
         return std::clamp(v, Angle<Rep, Units>{min}, Angle<Rep, Units>{max});
     }

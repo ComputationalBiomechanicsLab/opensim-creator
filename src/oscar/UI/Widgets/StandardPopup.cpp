@@ -191,7 +191,7 @@ void osc::StandardPopup::setRect(Rect const& rect)
     m_Dimensions = dimensions_of(rect);
 }
 
-void osc::StandardPopup::setDimensions(Vec2 d)
+void osc::StandardPopup::set_dimensions(Vec2 d)
 {
     m_Dimensions = d;
 }

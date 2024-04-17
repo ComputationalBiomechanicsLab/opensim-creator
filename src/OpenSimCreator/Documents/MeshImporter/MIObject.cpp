@@ -11,7 +11,7 @@ void osc::mi::MIObject::applyRotation(
     Vec3 const& rotationCenter)
 {
     Transform t = getXForm(lookup);
-    ApplyWorldspaceRotation(t, eulerAngles, rotationCenter);
+    apply_worldspace_rotation(t, eulerAngles, rotationCenter);
     setXform(lookup, t);
 }
 

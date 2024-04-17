@@ -19,7 +19,7 @@ TEST(RenderTarget, CtorWorksAsExpected)
     {
         RenderTargetColorAttachment
         {
-            renderTexture.updColorBuffer(),
+            renderTexture.upd_color_buffer(),
             RenderBufferLoadAction::Load,
             RenderBufferStoreAction::DontCare,
             Color::blue(),
@@ -28,7 +28,7 @@ TEST(RenderTarget, CtorWorksAsExpected)
 
     RenderTargetDepthAttachment depth
     {
-        renderTexture.updDepthBuffer(),
+        renderTexture.upd_depth_buffer(),
         RenderBufferLoadAction::Clear,
         RenderBufferStoreAction::Resolve,
     };

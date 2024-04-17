@@ -23,28 +23,28 @@ namespace osc
         explicit RenderTexture(Vec2i dimensions);
         explicit RenderTexture(const RenderTextureDescriptor&);
 
-        Vec2i getDimensions() const;
-        void setDimensions(Vec2i);
+        Vec2i dimensions() const;
+        void set_dimensions(Vec2i);
 
-        TextureDimensionality getDimensionality() const;
-        void setDimensionality(TextureDimensionality);
+        TextureDimensionality dimensionality() const;
+        void set_dimensionality(TextureDimensionality);
 
-        RenderTextureFormat getColorFormat() const;
-        void setColorFormat(RenderTextureFormat);
+        RenderTextureFormat color_format() const;
+        void set_color_format(RenderTextureFormat);
 
-        AntiAliasingLevel getAntialiasingLevel() const;
-        void setAntialiasingLevel(AntiAliasingLevel);
+        AntiAliasingLevel anti_aliasing_level() const;
+        void set_anti_aliasing_level(AntiAliasingLevel);
 
-        DepthStencilFormat getDepthStencilFormat() const;
-        void setDepthStencilFormat(DepthStencilFormat);
+        DepthStencilFormat depth_stencil_format() const;
+        void set_depth_stencil_format(DepthStencilFormat);
 
-        RenderTextureReadWrite getReadWrite() const;
-        void setReadWrite(RenderTextureReadWrite);
+        RenderTextureReadWrite read_write() const;
+        void set_read_write(RenderTextureReadWrite);
 
         void reformat(const RenderTextureDescriptor&);
 
-        std::shared_ptr<RenderBuffer> updColorBuffer();
-        std::shared_ptr<RenderBuffer> updDepthBuffer();
+        std::shared_ptr<RenderBuffer> upd_color_buffer();
+        std::shared_ptr<RenderBuffer> upd_depth_buffer();
 
         friend void swap(RenderTexture& a, RenderTexture& b) noexcept
         {

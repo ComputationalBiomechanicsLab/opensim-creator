@@ -206,7 +206,7 @@ private:
 
             graphics::draw(
                 m_CircleMesh,
-                DiscToDiscMat4(meshDisc, sceneDisc),
+                mat4_transform_between(meshDisc, sceneDisc),
                 m_Material,
                 m_Camera,
                 maybeCollision ? m_BlueColorMaterialProps : m_RedColorMaterialProps

@@ -34,7 +34,7 @@ namespace osc
     // returns the dot product of `x` and `y`
     template<size_t L, typename T>
     requires std::is_arithmetic_v<T>
-    constexpr T dot(Vec<L, T> const& x, Vec<L, T> const& y)
+    constexpr T dot(const Vec<L, T>& x, const Vec<L, T>& y)
     {
         T acc = x[0] * y[0];
         for (size_t i = 1; i < L; ++i) {
@@ -46,7 +46,7 @@ namespace osc
     // returns the cross product of `x` and `y`
     template<typename T>
     requires std::is_arithmetic_v<T>
-    constexpr Vec<3, T> cross(Vec<3, T> const& x, Vec<3, T> const& y)
+    constexpr Vec<3, T> cross(const Vec<3, T>& x, const Vec<3, T>& y)
     {
         return Vec<3, T>(
             x.y * y.z - y.y * x.z,
@@ -57,21 +57,21 @@ namespace osc
 
     // returns the length of the provided vector
     template<size_t L, std::floating_point T>
-    float length(Vec<L, T> const& v)
+    float length(const Vec<L, T>& v)
     {
         return sqrt(dot(v, v));
     }
 
     // returns the squared length of the provided vector
     template<size_t L, std::floating_point T>
-    constexpr float length2(Vec<L, T> const& v)
+    constexpr float length2(const Vec<L, T>& v)
     {
         return dot(v, v);
     }
 
     // returns `v` normalized to a length of 1
     template<size_t L, std::floating_point T>
-    Vec<L, T> normalize(Vec<L, T> const& v)
+    Vec<L, T> normalize(const Vec<L, T>& v)
     {
         return v * inversesqrt(dot(v, v));
     }
@@ -93,7 +93,7 @@ namespace osc
     // returns the area of a 2D rectangle that begins at the origin and ends at `v`
     template<typename T>
     requires std::is_arithmetic_v<T>
-    constexpr T area_of(Vec<2, T> const& v)
+    constexpr T area_of(const Vec<2, T>& v)
     {
         return v.x * v.y;
     }

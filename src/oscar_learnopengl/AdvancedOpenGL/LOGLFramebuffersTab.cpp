@@ -89,8 +89,8 @@ private:
         // setup render texture
         Rect viewportRect = ui::GetMainViewportWorkspaceScreenRect();
         Vec2 viewportRectDims = dimensions_of(viewportRect);
-        m_RenderTexture.setDimensions(viewportRectDims);
-        m_RenderTexture.setAntialiasingLevel(App::get().getCurrentAntiAliasingLevel());
+        m_RenderTexture.set_dimensions(viewportRectDims);
+        m_RenderTexture.set_anti_aliasing_level(App::get().getCurrentAntiAliasingLevel());
 
         // render scene
         {

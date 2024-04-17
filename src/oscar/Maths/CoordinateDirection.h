@@ -64,26 +64,26 @@ namespace osc
         constexpr CoordinateDirection() = default;
 
         // constructs a `CoordinateDirection` that points positively along `axis`
-        constexpr CoordinateDirection(CoordinateAxis axis) : m_Axis{axis} {}
+        constexpr CoordinateDirection(CoordinateAxis axis) : axis_{axis} {}
 
         // constructs a `CoordinateDirection` that points negatively along `axis`
-        constexpr CoordinateDirection(CoordinateAxis axis, Negative) : m_Axis{axis}, m_Direction{-1} {}
+        constexpr CoordinateDirection(CoordinateAxis axis, Negative) : axis_{axis}, direction_{-1} {}
 
         // `CoordinateDirection`s are equality comparable and totally ordered as -X < +X < -Y < +Y < -Z < +Z
-        friend constexpr auto operator<=>(CoordinateDirection const&, CoordinateDirection const&) = default;
+        friend constexpr auto operator<=>(const CoordinateDirection&, const CoordinateDirection&) = default;
 
         // returns the `CoordinateAxis` that this `CoordinateDirection` points along
-        constexpr CoordinateAxis axis() const { return m_Axis; }
+        constexpr CoordinateAxis axis() const { return axis_; }
 
         // tests if the `CoordinateDirection` is pointing negatively along its axis
-        constexpr bool is_negated() const { return m_Direction == -1; }
+        constexpr bool is_negated() const { return direction_ == -1; }
 
         // returns T{-1} if this `CoordinateDirection` points negatively along its axis; otherwise, returns `T{1}`
         template<typename T = float>
         requires std::is_arithmetic_v<T> and std::is_signed_v<T>
         constexpr T direction() const
         {
-            return static_cast<T>(m_Direction);
+            return static_cast<T>(direction_);
         }
 
         // returns a direction that points in the direction stored by this `CoordinateDirection`
@@ -97,18 +97,18 @@ namespace osc
         // returns a `CoordinateDirection` that points along the same `CoordinateAxis`, but with its direction negated
         constexpr CoordinateDirection operator-() const
         {
-            return CoordinateDirection{m_Axis, static_cast<int8_t>(-1 * m_Direction)};
+            return CoordinateDirection{axis_, static_cast<int8_t>(-1 * direction_)};
         }
     private:
         friend constexpr CoordinateDirection cross(CoordinateDirection, CoordinateDirection);
 
         explicit constexpr CoordinateDirection(CoordinateAxis axis, int8_t direction) :
-            m_Axis{axis},
-            m_Direction{direction}
+            axis_{axis},
+            direction_{direction}
         {}
 
-        CoordinateAxis m_Axis;
-        int8_t m_Direction = 1;
+        CoordinateAxis axis_;
+        int8_t direction_ = 1;
     };
 
     // writes the `CoordinateDirection` to the ouptut stream in a human-readable form (e.g. "x", "-x")

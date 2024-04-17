@@ -144,15 +144,15 @@ private:
         AntiAliasingLevel const msxaaSamples = App::get().getCurrentAntiAliasingLevel();
 
         RenderTextureDescriptor textureDescription{viewportDims};
-        textureDescription.setAntialiasingLevel(msxaaSamples);
-        textureDescription.setColorFormat(RenderTextureFormat::DefaultHDR);
+        textureDescription.set_anti_aliasing_level(msxaaSamples);
+        textureDescription.set_color_format(RenderTextureFormat::DefaultHDR);
 
         // direct render targets are multisampled HDR textures
         m_SceneHDRColorOutput.reformat(textureDescription);
         m_SceneHDRThresholdedOutput.reformat(textureDescription);
 
         // intermediate buffers are single-sampled HDR textures
-        textureDescription.setAntialiasingLevel(AntiAliasingLevel::none());
+        textureDescription.set_anti_aliasing_level(AntiAliasingLevel::none());
         for (RenderTexture& pingPongBuffer : m_PingPongBlurOutputBuffers) {
             pingPongBuffer.reformat(textureDescription);
         }
@@ -227,20 +227,20 @@ private:
         RenderTarget mrt{
             {
                 RenderTargetColorAttachment{
-                    m_SceneHDRColorOutput.updColorBuffer(),
+                    m_SceneHDRColorOutput.upd_color_buffer(),
                     RenderBufferLoadAction::Clear,
                     RenderBufferStoreAction::Resolve,
                     Color::clear(),
                 },
                 RenderTargetColorAttachment{
-                    m_SceneHDRThresholdedOutput.updColorBuffer(),
+                    m_SceneHDRThresholdedOutput.upd_color_buffer(),
                     RenderBufferLoadAction::Clear,
                     RenderBufferStoreAction::Resolve,
                     Color::clear(),
                 },
             },
             RenderTargetDepthAttachment{
-                m_SceneHDRThresholdedOutput.updDepthBuffer(),
+                m_SceneHDRThresholdedOutput.upd_depth_buffer(),
                 RenderBufferLoadAction::Clear,
                 RenderBufferStoreAction::DontCare,
             },

@@ -15,5 +15,5 @@ namespace osc
         float radius = 1.0f;
     };
 
-    std::ostream& operator<<(std::ostream&, Disc const&);
+    std::ostream& operator<<(std::ostream&, const Disc&);
 }

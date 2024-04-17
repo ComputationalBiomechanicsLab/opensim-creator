@@ -24,9 +24,9 @@ namespace osc
             return m_Texture;
         }
 
-        Vec2i getDimensions() const
+        Vec2i dimensions() const
         {
-            return m_Texture.getDimensions();
+            return m_Texture.dimensions();
         }
 
         Rect const& getTextureCoordinates() const

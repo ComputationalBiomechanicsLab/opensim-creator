@@ -10,22 +10,21 @@ namespace osc
     class VertexAttributeDescriptor {
     public:
         VertexAttributeDescriptor(
-            VertexAttribute attribute_,
-            VertexAttributeFormat format_) :
+            VertexAttribute attribute,
+            VertexAttributeFormat format) :
 
-            m_Attribute{attribute_},
-            m_Format{format_}
-        {
-        }
+            attribute_{attribute},
+            format_{format}
+        {}
 
-        friend bool operator==(VertexAttributeDescriptor const&, VertexAttributeDescriptor const&) = default;
+        friend bool operator==(const VertexAttributeDescriptor&, const VertexAttributeDescriptor&) = default;
 
-        VertexAttribute attribute() const { return m_Attribute; }
-        VertexAttributeFormat format() const { return m_Format; }
+        VertexAttribute attribute() const { return attribute_; }
+        VertexAttributeFormat format() const { return format_; }
         size_t stride() const;
 
     private:
-        VertexAttribute m_Attribute;
-        VertexAttributeFormat m_Format;
+        VertexAttribute attribute_;
+        VertexAttributeFormat format_;
     };
 }

@@ -17,17 +17,16 @@ namespace osc
         // i.e. it's a `VertexAttributeDescriptor` that has a known offset within `VertexFormat`
         class VertexAttributeLayout final : public VertexAttributeDescriptor {
         public:
-            VertexAttributeLayout(VertexAttributeDescriptor const& description_, size_t offset_) :
-                VertexAttributeDescriptor{description_},
-                m_Offset{offset_}
-            {
-            }
+            VertexAttributeLayout(const VertexAttributeDescriptor& descriptor, size_t offset) :
+                VertexAttributeDescriptor{descriptor},
+                offset_{offset}
+            {}
 
-            friend bool operator==(VertexAttributeLayout const&, VertexAttributeLayout const&) = default;
+            friend bool operator==(const VertexAttributeLayout&, const VertexAttributeLayout&) = default;
 
-            size_t offset() const { return m_Offset; }
+            size_t offset() const { return offset_; }
         private:
-            size_t m_Offset;
+            size_t offset_;
         };
 
         // iterates over each attribute's layout within `VertexFormat`
@@ -42,17 +41,16 @@ namespace osc
                 std::vector<VertexAttributeDescriptor>::const_iterator iter_) :
 
                 m_Iter{iter_}
-            {
-            }
+            {}
 
-            friend bool operator==(VertexAttributeLayoutIterator const& lhs, VertexAttributeLayoutIterator const& rhs)
+            friend bool operator==(const VertexAttributeLayoutIterator& lhs, const VertexAttributeLayoutIterator& rhs)
             {
                 return lhs.m_Iter == rhs.m_Iter;
             }
 
             VertexAttributeLayoutIterator& operator++()
             {
-                m_Offset += m_Iter->stride();
+                offset_ += m_Iter->stride();
                 ++m_Iter;
                 return *this;
             }
@@ -66,10 +64,10 @@ namespace osc
 
             reference operator*() const
             {
-                return VertexAttributeLayout{*m_Iter, m_Offset};
+                return VertexAttributeLayout{*m_Iter, offset_};
             }
         private:
-            size_t m_Offset = 0;
+            size_t offset_ = 0;
             std::vector<VertexAttributeDescriptor>::const_iterator m_Iter;
         };
 
@@ -77,22 +75,21 @@ namespace osc
         class VertexAttributeLayoutRange final {
         public:
             explicit VertexAttributeLayoutRange(
-                std::vector<VertexAttributeDescriptor> const& descriptions_) :
-                m_Descriptions{&descriptions_}
-            {
-            }
+                const std::vector<VertexAttributeDescriptor>& descriptions) :
+                descriptions_{&descriptions}
+            {}
 
             VertexAttributeLayoutIterator begin() const
             {
-                return VertexAttributeLayoutIterator{m_Descriptions->begin()};
+                return VertexAttributeLayoutIterator{descriptions_->begin()};
             }
 
             VertexAttributeLayoutIterator end() const
             {
-                return VertexAttributeLayoutIterator{m_Descriptions->end()};
+                return VertexAttributeLayoutIterator{descriptions_->end()};
             }
         private:
-            std::vector<VertexAttributeDescriptor> const* m_Descriptions;
+            const std::vector<VertexAttributeDescriptor>* descriptions_;
         };
 
         // constructs an "empty" format
@@ -104,7 +101,7 @@ namespace osc
         // - be provided in the same order as `VertexAttribute` (e.g. `Position`, then `Normal`, then `Color`, etc.)
         VertexFormat(std::initializer_list<VertexAttributeDescriptor>);
 
-        friend bool operator==(VertexFormat const&, VertexFormat const&) = default;
+        friend bool operator==(const VertexFormat&, const VertexFormat&) = default;
 
         void clear()
         {
@@ -118,10 +115,8 @@ namespace osc
 
         bool contains(VertexAttribute attr) const
         {
-            for (auto const& desc : m_AttributeDescriptions)
-            {
-                if (desc.attribute() == attr)
-                {
+            for (const auto& desc : m_AttributeDescriptions) {
+                if (desc.attribute() == attr) {
                     return true;
                 }
             }
@@ -140,10 +135,8 @@ namespace osc
 
         std::optional<VertexAttributeLayout> attributeLayout(VertexAttribute attr) const
         {
-            for (VertexAttributeLayout l : attributeLayouts())
-            {
-                if (l.attribute() == attr)
-                {
+            for (VertexAttributeLayout l : attributeLayouts()) {
+                if (l.attribute() == attr) {
                     return l;
                 }
             }
@@ -152,15 +145,15 @@ namespace osc
 
         size_t stride() const
         {
-            return m_Stride;
+            return stride_;
         }
 
-        void insert(VertexAttributeDescriptor const&);
+        void insert(const VertexAttributeDescriptor&);
         void erase(VertexAttribute);
     private:
-        size_t computeStride() const;
+        size_t calc_stride() const;
 
         std::vector<VertexAttributeDescriptor> m_AttributeDescriptions;
-        size_t m_Stride = 0;
+        size_t stride_ = 0;
     };
 }

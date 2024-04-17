@@ -16,27 +16,27 @@ namespace osc
     public:
         Unorm8() = default;
 
-        consteval Unorm8(int literalValue) :
-            m_Value{static_cast<uint8_t>(literalValue)}
+        consteval Unorm8(int literal) :
+            value_{static_cast<uint8_t>(literal)}
         {
-            if (literalValue > std::numeric_limits<uint8_t>::max()) {
+            if (literal > std::numeric_limits<uint8_t>::max()) {
                 throw std::runtime_error{"provided value is too large"};
             }
         }
 
-        constexpr Unorm8(uint8_t rawValue) :
-            m_Value{rawValue}
+        constexpr Unorm8(uint8_t raw_value) :
+            value_{raw_value}
         {}
 
-        constexpr Unorm8(std::byte rawValue) :
-            m_Value{static_cast<uint8_t>(rawValue)}
+        constexpr Unorm8(std::byte raw_value) :
+            value_{static_cast<uint8_t>(raw_value)}
         {}
 
-        constexpr Unorm8(float normalizedValue) :
-            m_Value{toNormalizedUint8(normalizedValue)}
+        constexpr Unorm8(float normalized_value) :
+            value_{toNormalizedUint8(normalized_value)}
         {}
 
-        friend auto operator<=>(Unorm8 const&, Unorm8 const&) = default;
+        friend auto operator<=>(const Unorm8&, const Unorm8&) = default;
 
         explicit constexpr operator float() const
         {
@@ -50,26 +50,26 @@ namespace osc
 
         constexpr uint8_t raw_value() const
         {
-            return m_Value;
+            return value_;
         }
 
         constexpr float normalized_value() const
         {
-            return (1.0f/255.0f) * static_cast<float>(m_Value);
+            return (1.0f/255.0f) * static_cast<float>(value_);
         }
 
         constexpr std::byte byte() const
         {
-            return static_cast<std::byte>(m_Value);
+            return static_cast<std::byte>(value_);
         }
     private:
         static constexpr uint8_t toNormalizedUint8(float v)
         {
             // care: NaN should return 0.0f
-            float const saturated = v > 0.0f ? (v < 1.0f ? v : 1.0f) : 0.0f;
+            const float saturated = v > 0.0f ? (v < 1.0f ? v : 1.0f) : 0.0f;
             return static_cast<uint8_t>(255.0f * saturated);
         }
 
-        uint8_t m_Value;
+        uint8_t value_;
     };
 }

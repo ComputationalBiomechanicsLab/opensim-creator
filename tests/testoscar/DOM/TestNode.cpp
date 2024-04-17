@@ -762,8 +762,8 @@ TEST(Node, HasPropertyReturnsFalseForMinimalExample)
 
 TEST(Node, GetPropertyNameByIndexReturnsFalseyForMinimalExample)
 {
-    ASSERT_FALSE(MinimalNodeImpl{}.getPropertyName(0));
-    ASSERT_FALSE(MinimalNodeImpl{}.getPropertyName(1));
+    ASSERT_FALSE(MinimalNodeImpl{}.property_name(0));
+    ASSERT_FALSE(MinimalNodeImpl{}.property_name(1));
 }
 
 TEST(Node, GetPropertyValueByIndexReturnsFalseyForMinimalExample)

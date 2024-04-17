@@ -15,7 +15,7 @@ namespace osc
     struct Mat;
 
     template<size_t C, size_t R, typename T>
-    std::ostream& operator<<(std::ostream& o, Mat<C, R, T> const& m)
+    std::ostream& operator<<(std::ostream& o, const Mat<C, R, T>& m)
     {
         for (size_t row = 0; row < R; ++row) {
             std::string_view delim;
@@ -29,7 +29,7 @@ namespace osc
     }
 
     template<size_t C, size_t R, typename T>
-    std::string to_string(Mat<C, R, T> const& m)
+    std::string to_string(const Mat<C, R, T>& m)
     {
         std::stringstream ss;
         ss << m;
@@ -39,7 +39,7 @@ namespace osc
     // when handled as a tuple-like object, a `Mat` decomposes into its columns (`Vec`s)
 
     template<size_t I, size_t C, size_t R, typename T>
-    constexpr typename Mat<C, R, T>::value_type const& get(Mat<C, R, T> const& m) { return m[I]; }
+    constexpr const typename Mat<C, R, T>::value_type& get(const Mat<C, R, T>& m) { return m[I]; }
 
     template<size_t I, size_t C, size_t R, typename T>
     constexpr typename Mat<C, R, T>::value_type& get(Mat<C, R, T>& m) { return m[I]; }
@@ -48,7 +48,7 @@ namespace osc
     constexpr typename Mat<C, R, T>::value_type&& get(Mat<C, R, T>&& m) { return std::move(m[I]); }
 
     template<size_t I, size_t C, size_t R, typename T>
-    constexpr typename Mat<C, R, T>::value_type const&& get(Mat<C, R, T> const&& m) { return std::move(m[I]); }
+    constexpr const typename Mat<C, R, T>::value_type&& get(const Mat<C, R, T>&& m) { return std::move(m[I]); }
 }
 
 template<size_t C, size_t R, typename T>

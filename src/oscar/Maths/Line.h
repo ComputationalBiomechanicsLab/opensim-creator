@@ -15,5 +15,5 @@ namespace osc
         Vec3 direction = {0.0f, 1.0f, 0.0f};
     };
 
-    std::ostream& operator<<(std::ostream&, Line const&);
+    std::ostream& operator<<(std::ostream&, const Line&);
 }

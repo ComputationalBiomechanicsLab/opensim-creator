@@ -916,7 +916,7 @@ private:
 
             if (ui::InputAngle3("Rotation", eulers, "%.6f"))
             {
-                Quat quatRads = osc::WorldspaceRotation(eulers);
+                Quat quatRads = osc::to_worldspace_rotation_quat(eulers);
                 mg.updByID(e.getID()).set_rotation(mg, quatRads);
             }
             if (ui::IsItemDeactivatedAfterEdit())

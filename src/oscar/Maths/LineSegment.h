@@ -12,18 +12,18 @@ namespace osc
     // a finite-length line delimited by two endpoints in 3D space
     struct LineSegment final {
 
-        constexpr friend bool operator==(LineSegment const&, LineSegment const&) = default;
+        constexpr friend bool operator==(const LineSegment&, const LineSegment&) = default;
 
         Vec3 start{};
         Vec3 end{};
     };
 
-    std::ostream& operator<<(std::ostream&, LineSegment const&);
+    std::ostream& operator<<(std::ostream&, const LineSegment&);
 }
 
 template<>
 struct std::hash<osc::LineSegment> {
-    size_t operator()(osc::LineSegment const& ls) const
+    size_t operator()(const osc::LineSegment& ls) const
     {
         return osc::hash_of(ls.start, ls.end);
     }

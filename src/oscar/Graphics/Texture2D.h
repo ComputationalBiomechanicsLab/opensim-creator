@@ -27,9 +27,9 @@ namespace osc
             TextureFilterMode = TextureFilterMode::Linear
         );
 
-        Vec2i getDimensions() const;
+        Vec2i dimensions() const;
         TextureFormat texture_format() const;
-        ColorSpace getColorSpace() const;
+        ColorSpace color_space() const;
 
         TextureWrapMode wrap_mode() const;  // same as wrap_mode_u
         void set_wrap_mode(TextureWrapMode);  // sets all axes
@@ -46,40 +46,40 @@ namespace osc
         // - must contain pixels row-by-row
         // - the size of the span must equal the width*height of the texture
         // - may internally convert the provided `Color` structs into the format
-        //   of the texture, so don't expect `getPixels` to necessarily return
+        //   of the texture, so don't expect `pixels` to necessarily return
         //   exactly the same values as provided
-        std::vector<Color> getPixels() const;
-        void setPixels(std::span<Color const>);
+        std::vector<Color> pixels() const;
+        void set_pixels(std::span<const Color>);
 
         // - must contain pixels row-by-row
         // - the size of the span must equal the width*height of the texture
         // - may internally convert the provided `Color` structs into the format
-        //   of the texture, so don't expect `getPixels` to necessarily return
+        //   of the texture, so don't expect `pixels` to necessarily return
         //   exactly the same values as provided
-        std::vector<Color32> getPixels32() const;
-        void setPixels32(std::span<Color32 const>);
+        std::vector<Color32> pixels32() const;
+        void set_pixels32(std::span<const Color32>);
 
         // - must contain pixel _data_ row-by-row
         // - the size of the data span must be equal to:
         //     - width*height*NumBytesPerPixel(texture_format())
         // - will not perform any internal conversion of the data (it's a memcpy)
-        std::span<uint8_t const> getPixelData() const;
-        void set_pixel_data(std::span<uint8_t const>);
+        std::span<const uint8_t> pixel_data() const;
+        void set_pixel_data(std::span<const uint8_t>);
 
         friend void swap(Texture2D& a, Texture2D& b) noexcept
         {
             swap(a.m_Impl, b.m_Impl);
         }
 
-        friend bool operator==(Texture2D const&, Texture2D const&) = default;
+        friend bool operator==(const Texture2D&, const Texture2D&) = default;
 
     private:
-        friend std::ostream& operator<<(std::ostream&, Texture2D const&);
+        friend std::ostream& operator<<(std::ostream&, const Texture2D&);
         friend class GraphicsBackend;
 
         class Impl;
         CopyOnUpdPtr<Impl> m_Impl;
     };
 
-    std::ostream& operator<<(std::ostream&, Texture2D const&);
+    std::ostream& operator<<(std::ostream&, const Texture2D&);
 }

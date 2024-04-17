@@ -8,5 +8,5 @@ TEST(BVH, GetMaxDepthReturns0OnDefaultConstruction)
 {
     BVH bvh;
 
-    ASSERT_EQ(bvh.getMaxDepth(), 0);
+    ASSERT_EQ(bvh.max_depth(), 0);
 }

@@ -9,7 +9,6 @@
 #include <optional>
 #include <string_view>
 
-// note: implementation is in `GraphicsImplementation.cpp`
 namespace osc
 {
     // a handle to a shader
@@ -17,36 +16,36 @@ namespace osc
     public:
         // throws on compile error
         Shader(
-            CStringView vertexShader,
-            CStringView fragmentShader
+            CStringView vertex_shader_src,
+            CStringView fragment_shader_src
         );
 
         // throws on compile error
         Shader(
-            CStringView vertexShader,
-            CStringView geometryShader,
-            CStringView fragmentShader
+            CStringView vertex_shader_src,
+            CStringView geometry_shader_src,
+            CStringView fragment_shader_src
         );
 
-        size_t getPropertyCount() const;
-        std::optional<ptrdiff_t> findPropertyIndex(std::string_view propertyName) const;
-        std::string_view getPropertyName(ptrdiff_t) const;
-        ShaderPropertyType getPropertyType(ptrdiff_t) const;
+        size_t num_properties() const;
+        std::optional<ptrdiff_t> property_index(std::string_view propertyName) const;
+        std::string_view property_name(ptrdiff_t) const;
+        ShaderPropertyType property_type(ptrdiff_t) const;
 
         friend void swap(Shader& a, Shader& b) noexcept
         {
             swap(a.m_Impl, b.m_Impl);
         }
 
-        friend bool operator==(Shader const&, Shader const&) = default;
+        friend bool operator==(const Shader&, const Shader&) = default;
 
     private:
-        friend std::ostream& operator<<(std::ostream&, Shader const&);
+        friend std::ostream& operator<<(std::ostream&, const Shader&);
         friend class GraphicsBackend;
 
         class Impl;
         CopyOnUpdPtr<Impl> m_Impl;
     };
 
-    std::ostream& operator<<(std::ostream&, Shader const&);
+    std::ostream& operator<<(std::ostream&, const Shader&);
 }

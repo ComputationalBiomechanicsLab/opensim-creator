@@ -140,7 +140,7 @@ private:
     {
         Vec2 const screenTopLeft = ui::GetCursorScreenPos();
         Rect const windowRect = {screenTopLeft, screenTopLeft + Vec2{ui::GetContentRegionAvail()}};
-        Rect const imageRect = ShrinkToFit(windowRect, aspect_ratio(m_Screenshot.image.getDimensions()));
+        Rect const imageRect = ShrinkToFit(windowRect, aspect_ratio(m_Screenshot.image.dimensions()));
         ui::SetCursorScreenPos(imageRect.p1);
         ui::Image(m_ImageTexture, dimensions_of(imageRect));
         return imageRect;
@@ -154,7 +154,7 @@ private:
     {
         Vec2 const mousePos = ui::GetMousePos();
         bool const leftClickReleased = ui::IsMouseReleased(ImGuiMouseButton_Left);
-        Rect const imageSourceRect = {{0.0f, 0.0f}, m_Screenshot.image.getDimensions()};
+        Rect const imageSourceRect = {{0.0f, 0.0f}, m_Screenshot.image.dimensions()};
 
         for (ScreenshotAnnotation const& annotation : m_Screenshot.annotations)
         {
@@ -209,7 +209,7 @@ private:
     Texture2D renderOutputImage()
     {
         std::optional<RenderTexture> rt;
-        rt.emplace(RenderTextureDescriptor{m_ImageTexture.getDimensions()});
+        rt.emplace(RenderTextureDescriptor{m_ImageTexture.dimensions()});
 
         // blit the screenshot into the output
         graphics::blit(m_ImageTexture, *rt);
@@ -222,7 +222,7 @@ private:
         outlineColor.a = 1.0f;
         drawOverlays(
             drawlist,
-            Rect{{0.0f, 0.0f}, m_ImageTexture.getDimensions()},
+            Rect{{0.0f, 0.0f}, m_ImageTexture.dimensions()},
             {0.0f, 0.0f, 0.0f, 0.0f},
             outlineColor
         );
@@ -272,9 +272,9 @@ private:
             {
                 // project screenspace overlays into NDC
                 float L = 0.0f;
-                float R = static_cast<float>(m_ImageTexture.getDimensions().x);
+                float R = static_cast<float>(m_ImageTexture.dimensions().x);
                 float T = 0.0f;
-                float B = static_cast<float>(m_ImageTexture.getDimensions().y);
+                float B = static_cast<float>(m_ImageTexture.dimensions().y);
                 Mat4 const proj =
                 {
                     { 2.0f/(R-L),   0.0f,         0.0f,   0.0f },
@@ -308,7 +308,7 @@ private:
 
         Texture2D t
         {
-            rt->getDimensions(),
+            rt->dimensions(),
             TextureFormat::RGB24,
             ColorSpace::sRGB,
         };

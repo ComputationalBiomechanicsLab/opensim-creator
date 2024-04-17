@@ -25,12 +25,12 @@ osc::IconWithoutMenu::IconWithoutMenu(
 Vec2 osc::IconWithoutMenu::dimensions() const
 {
     Vec2 const padding = ui::GetStyleFramePadding();
-    return Vec2{m_Icon.getDimensions()} + 2.0f*padding;
+    return Vec2{m_Icon.dimensions()} + 2.0f*padding;
 }
 
 bool osc::IconWithoutMenu::onDraw()
 {
-    bool const rv = ui::ImageButton(m_ButtonID, m_Icon.get_texture(), m_Icon.getDimensions(), m_Icon.getTextureCoordinates());
+    bool const rv = ui::ImageButton(m_ButtonID, m_Icon.get_texture(), m_Icon.dimensions(), m_Icon.getTextureCoordinates());
     ui::DrawTooltipIfItemHovered(m_Title, m_Description);
     return rv;
 }

@@ -14,33 +14,33 @@ namespace osc
     class RenderTextureDescriptor final {
     public:
         RenderTextureDescriptor(Vec2i dimensions);
-        RenderTextureDescriptor(RenderTextureDescriptor const&) = default;
+        RenderTextureDescriptor(const RenderTextureDescriptor&) = default;
         RenderTextureDescriptor(RenderTextureDescriptor&&) noexcept = default;
-        RenderTextureDescriptor& operator=(RenderTextureDescriptor const&) = default;
+        RenderTextureDescriptor& operator=(const RenderTextureDescriptor&) = default;
         RenderTextureDescriptor& operator=(RenderTextureDescriptor&&) noexcept = default;
         ~RenderTextureDescriptor() noexcept = default;
 
-        Vec2i getDimensions() const;
-        void setDimensions(Vec2i);
+        Vec2i dimensions() const;
+        void set_dimensions(Vec2i);
 
-        TextureDimensionality getDimensionality() const;
-        void setDimensionality(TextureDimensionality);
+        TextureDimensionality dimensionality() const;
+        void set_dimensionality(TextureDimensionality);
 
-        AntiAliasingLevel getAntialiasingLevel() const;
-        void setAntialiasingLevel(AntiAliasingLevel);
+        AntiAliasingLevel anti_aliasing_level() const;
+        void set_anti_aliasing_level(AntiAliasingLevel);
 
-        RenderTextureFormat getColorFormat() const;
-        void setColorFormat(RenderTextureFormat);
+        RenderTextureFormat color_format() const;
+        void set_color_format(RenderTextureFormat);
 
-        DepthStencilFormat getDepthStencilFormat() const;
-        void setDepthStencilFormat(DepthStencilFormat);
+        DepthStencilFormat depth_stencil_format() const;
+        void set_depth_stencil_format(DepthStencilFormat);
 
-        RenderTextureReadWrite getReadWrite() const;
-        void setReadWrite(RenderTextureReadWrite);
+        RenderTextureReadWrite read_write() const;
+        void set_read_write(RenderTextureReadWrite);
 
-        friend bool operator==(RenderTextureDescriptor const&, RenderTextureDescriptor const&) = default;
+        friend bool operator==(const RenderTextureDescriptor&, const RenderTextureDescriptor&) = default;
     private:
-        friend std::ostream& operator<<(std::ostream&, RenderTextureDescriptor const&);
+        friend std::ostream& operator<<(std::ostream&, const RenderTextureDescriptor&);
         friend class GraphicsBackend;
 
         Vec2i dimensions_;
@@ -51,5 +51,5 @@ namespace osc
         RenderTextureReadWrite read_write_;
     };
 
-    std::ostream& operator<<(std::ostream&, RenderTextureDescriptor const&);
+    std::ostream& operator<<(std::ostream&, const RenderTextureDescriptor&);
 }

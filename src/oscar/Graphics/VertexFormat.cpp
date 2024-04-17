@@ -33,7 +33,7 @@ osc::VertexFormat::VertexFormat(std::initializer_list<VertexAttributeDescriptor>
             throw std::runtime_error{"Duplicate attributes passed to VertexFormat: each VertexAttribute should be unique"};
         }
     }
-    m_Stride = computeStride();
+    stride_ = calc_stride();
 }
 
 void osc::VertexFormat::insert(VertexAttributeDescriptor const& desc)
@@ -62,7 +62,7 @@ void osc::VertexFormat::insert(VertexAttributeDescriptor const& desc)
     {
         m_AttributeDescriptions.insert(it, desc);
     }
-    m_Stride = computeStride();
+    stride_ = calc_stride();
 }
 
 void osc::VertexFormat::erase(VertexAttribute attr)
@@ -75,10 +75,10 @@ void osc::VertexFormat::erase(VertexAttribute attr)
     }
 
     std::erase_if(m_AttributeDescriptions, [attr](auto const& desc) { return desc.attribute() == attr; });
-    m_Stride = computeStride();
+    stride_ = calc_stride();
 }
 
-size_t osc::VertexFormat::computeStride() const
+size_t osc::VertexFormat::calc_stride() const
 {
     size_t rv = 0;
     for (auto const& desc : m_AttributeDescriptions)

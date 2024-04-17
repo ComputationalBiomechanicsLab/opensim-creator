@@ -159,12 +159,12 @@ public:
 
     Vec2i dimensions() const
     {
-        return output_rendertexture_.getDimensions();
+        return output_rendertexture_.dimensions();
     }
 
     AntiAliasingLevel antialiasing_level() const
     {
-        return output_rendertexture_.getAntialiasingLevel();
+        return output_rendertexture_.anti_aliasing_level();
     }
 
     void render(
@@ -279,8 +279,8 @@ public:
             graphics::draw(maybe_rims->mesh, maybe_rims->transform, maybe_rims->material, camera_);
         }
 
-        output_rendertexture_.setDimensions(params.dimensions);
-        output_rendertexture_.setAntialiasingLevel(params.antialiasing_level);
+        output_rendertexture_.set_dimensions(params.dimensions);
+        output_rendertexture_.set_anti_aliasing_level(params.antialiasing_level);
         camera_.render_to(output_rendertexture_);
 
         // prevents copies on next frame
@@ -347,7 +347,7 @@ private:
         }
 
         // compute rim rectangle in texture coordinates
-        const Rect rim_rect_uv = NdcRectToScreenspaceViewportRect(rim_ndc_rect, Rect{{}, {1.0f, 1.0f}});
+        const Rect rim_rect_uv = ndc_rect_to_screenspace_viewport_rect(rim_ndc_rect, Rect{{}, {1.0f, 1.0f}});
 
         // compute where the quad needs to eventually be drawn in the scene
         Transform quad_mesh_to_rims_quad{
@@ -379,8 +379,8 @@ private:
 
         // configure the off-screen solid-colored texture
         RenderTextureDescriptor desc{params.dimensions};
-        desc.setAntialiasingLevel(params.antialiasing_level);
-        desc.setColorFormat(RenderTextureFormat::ARGB32);  // care: don't use RED: causes an explosion on some Intel machines (#418)
+        desc.set_anti_aliasing_level(params.antialiasing_level);
+        desc.set_color_format(RenderTextureFormat::ARGB32);  // care: don't use RED: causes an explosion on some Intel machines (#418)
         rims_rendertexture_.reformat(desc);
 
         // render to the off-screen solid-colored texture
@@ -438,8 +438,8 @@ private:
         camera_.set_background_color({1.0f, 0.0f, 0.0f, 0.0f});
         camera_.set_view_matrix_override(matrices.view_mat);
         camera_.set_projection_matrix_override(matrices.projection_mat);
-        shadowmap_rendertexture_.setDimensions({1024, 1024});
-        shadowmap_rendertexture_.setReadWrite(RenderTextureReadWrite::Linear);  // it's writing distances
+        shadowmap_rendertexture_.set_dimensions({1024, 1024});
+        shadowmap_rendertexture_.set_read_write(RenderTextureReadWrite::Linear);  // it's writing distances
         camera_.render_to(shadowmap_rendertexture_);
 
         return Shadows{shadowmap_rendertexture_, matrices.projection_mat * matrices.view_mat};

@@ -58,7 +58,7 @@ void osc::draw_bvh(
     const BVH& scene_bvh,
     const std::function<void(SceneDecoration&&)>& out)
 {
-    scene_bvh.forEachLeafOrInnerNodeUnordered([cube = cache.cube_wireframe_mesh(), &out](const BVHNode& node)
+    scene_bvh.for_each_leaf_or_inner_node([cube = cache.cube_wireframe_mesh(), &out](const BVHNode& node)
     {
         out({
             .mesh = cube,
@@ -102,7 +102,7 @@ void osc::draw_bvh_leaf_nodes(
     const BVH& bvh,
     const std::function<void(SceneDecoration&&)>& out)
 {
-    bvh.forEachLeafNode([&cache, &out](const BVHNode& node)
+    bvh.for_each_leaf_node([&cache, &out](const BVHNode& node)
     {
         draw_aabb(cache, node.bounds(), out);
     });
@@ -215,7 +215,7 @@ void osc::update_scene_bvh(std::span<const SceneDecoration> decorations, BVH& bv
         aabbs.push_back(worldspace_bounds_of(decoration));
     }
 
-    bvh.buildFromAABBs(aabbs);
+    bvh.build_from_aabbs(aabbs);
 }
 
 std::vector<SceneCollision> osc::get_all_ray_collisions_with_scene(
@@ -225,7 +225,7 @@ std::vector<SceneCollision> osc::get_all_ray_collisions_with_scene(
     const Line& worldspace_ray)
 {
     std::vector<SceneCollision> rv;
-    scene_bvh.forEachRayAABBCollision(worldspace_ray, [&cache, &decorations, &worldspace_ray, &rv](BVHCollision scene_collision)
+    scene_bvh.for_each_ray_aabb_collision(worldspace_ray, [&cache, &decorations, &worldspace_ray, &rv](BVHCollision scene_collision)
     {
         // perform ray-triangle intersection tests on the scene collisions
         const SceneDecoration& decoration = at(decorations, scene_collision.id);
@@ -265,7 +265,7 @@ std::optional<RayCollision> osc::get_closest_worldspace_ray_triangle_collision(
 
     // then perform a ray-AABB (of triangles) collision
     std::optional<RayCollision> rv;
-    triangle_bvh.forEachRayAABBCollision(modespace_ray, [&mesh, &transform, &worldspace_ray, &modespace_ray, &rv](BVHCollision modelspace_bvh_collision)
+    triangle_bvh.for_each_ray_aabb_collision(modespace_ray, [&mesh, &transform, &worldspace_ray, &modespace_ray, &rv](BVHCollision modelspace_bvh_collision)
     {
         // then perform a ray-triangle collision
         if (auto modelspace_triangle_collision = find_collision(modespace_ray, mesh.get_triangle_at(modelspace_bvh_collision.id))) {
@@ -332,10 +332,10 @@ BVH osc::create_triangle_bvh(const Mesh& mesh)
         return rv;
     }
     else if (indices.is_uint32()) {
-        rv.buildFromIndexedTriangles(mesh.vertices() , indices.to_uint32_span());
+        rv.build_from_indexed_triangles(mesh.vertices() , indices.to_uint32_span());
     }
     else {
-        rv.buildFromIndexedTriangles(mesh.vertices(), indices.to_uint16_span());
+        rv.build_from_indexed_triangles(mesh.vertices(), indices.to_uint16_span());
     }
     return rv;
 }

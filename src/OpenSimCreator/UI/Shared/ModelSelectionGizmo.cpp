@@ -360,7 +360,7 @@ namespace
             OpenSim::Frame const& parent = pof.getParentFrame();
             SimTK::State const& state = getState();
 
-            Quat const deltaRotationInGround = WorldspaceRotation(m_IsChildFrameOfJoint ? -deltaEulerRadiansInGround : deltaEulerRadiansInGround);
+            Quat const deltaRotationInGround = to_worldspace_rotation_quat(m_IsChildFrameOfJoint ? -deltaEulerRadiansInGround : deltaEulerRadiansInGround);
             Quat const oldRotationInGround = ToQuat(pof.getRotationInGround(state));
             Quat const parentRotationInGround = ToQuat(parent.getRotationInGround(state));
             Quat const newRotationInGround = normalize(deltaRotationInGround * oldRotationInGround);
@@ -432,7 +432,7 @@ namespace
             OpenSim::Frame const& parent = wrapObj.getFrame();
             SimTK::State const& state = getState();
 
-            Quat const deltaRotationInGround = WorldspaceRotation(deltaEulerRadiansInGround);
+            Quat const deltaRotationInGround = to_worldspace_rotation_quat(deltaEulerRadiansInGround);
             Quat const oldRotationInGround = ToQuat(parent.getTransformInGround(state).R() * wrapObj.getTransform().R());
             Quat const parentRotationInGround = ToQuat(parent.getRotationInGround(state));
             Quat const newRotationInGround = normalize(deltaRotationInGround * oldRotationInGround);
@@ -503,7 +503,7 @@ namespace
             OpenSim::Frame const& parent = contactGeom.getFrame();
             SimTK::State const& state = getState();
 
-            Quat const deltaRotationInGround = WorldspaceRotation(deltaEulerRadiansInGround);
+            Quat const deltaRotationInGround = to_worldspace_rotation_quat(deltaEulerRadiansInGround);
             Quat const oldRotationInGround = ToQuat(parent.getTransformInGround(state).R() * contactGeom.getTransform().R());
             Quat const parentRotationInGround = ToQuat(parent.getRotationInGround(state));
             Quat const newRotationInGround = normalize(deltaRotationInGround * oldRotationInGround);

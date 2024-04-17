@@ -97,7 +97,7 @@ namespace
     RenderTexture RenderTextureWithColorFormat(RenderTextureFormat f)
     {
         RenderTexture rv;
-        rv.setColorFormat(f);
+        rv.set_color_format(f);
         return rv;
     }
 
@@ -211,7 +211,7 @@ private:
         m_SSAO.material.set_render_texture("uNormalTex", m_GBuffer.normal);
         m_SSAO.material.set_texture("uNoiseTex", m_NoiseTexture);
         m_SSAO.material.set_vec3_array("uSamples", m_SampleKernel);
-        m_SSAO.material.set_vec2("uNoiseScale", dimensions_of(viewportRect) / Vec2{m_NoiseTexture.getDimensions()});
+        m_SSAO.material.set_vec2("uNoiseScale", dimensions_of(viewportRect) / Vec2{m_NoiseTexture.dimensions()});
         m_SSAO.material.set_int("uKernelSize", static_cast<int32_t>(m_SampleKernel.size()));
         m_SSAO.material.set_float("uRadius", 0.5f);
         m_SSAO.material.set_float("uBias", 0.125f);
@@ -293,26 +293,26 @@ private:
         RenderTarget renderTarget{
             {
                 RenderTargetColorAttachment{
-                    albedo.updColorBuffer(),
+                    albedo.upd_color_buffer(),
                     RenderBufferLoadAction::Load,
                     RenderBufferStoreAction::Resolve,
                     Color::black(),
                 },
                 RenderTargetColorAttachment{
-                    normal.updColorBuffer(),
+                    normal.upd_color_buffer(),
                     RenderBufferLoadAction::Load,
                     RenderBufferStoreAction::Resolve,
                     Color::black(),
                 },
                 RenderTargetColorAttachment{
-                    position.updColorBuffer(),
+                    position.upd_color_buffer(),
                     RenderBufferLoadAction::Load,
                     RenderBufferStoreAction::Resolve,
                     Color::black(),
                 },
             },
             RenderTargetDepthAttachment{
-                albedo.updDepthBuffer(),
+                albedo.upd_depth_buffer(),
                 RenderBufferLoadAction::Clear,
                 RenderBufferStoreAction::DontCare,
             },
@@ -321,10 +321,10 @@ private:
         void reformat(Vec2 dims, AntiAliasingLevel antiAliasingLevel)
         {
             RenderTextureDescriptor desc{dims};
-            desc.setAntialiasingLevel(antiAliasingLevel);
+            desc.set_anti_aliasing_level(antiAliasingLevel);
 
             for (RenderTexture* tex : {&albedo, &normal, &position}) {
-                desc.setColorFormat(tex->getColorFormat());
+                desc.set_color_format(tex->color_format());
                 tex->reformat(desc);
             }
         }
@@ -336,8 +336,8 @@ private:
 
         void reformat(Vec2 dims, AntiAliasingLevel antiAliasingLevel)
         {
-            outputTexture.setDimensions(dims);
-            outputTexture.setAntialiasingLevel(antiAliasingLevel);
+            outputTexture.set_dimensions(dims);
+            outputTexture.set_anti_aliasing_level(antiAliasingLevel);
         }
     } m_SSAO;
 
@@ -347,8 +347,8 @@ private:
 
         void reformat(Vec2 dims, AntiAliasingLevel antiAliasingLevel)
         {
-            outputTexture.setDimensions(dims);
-            outputTexture.setAntialiasingLevel(antiAliasingLevel);
+            outputTexture.set_dimensions(dims);
+            outputTexture.set_anti_aliasing_level(antiAliasingLevel);
         }
     } m_Blur;
 
@@ -358,8 +358,8 @@ private:
 
         void reformat(Vec2 dims, AntiAliasingLevel antiAliasingLevel)
         {
-            outputTexture.setDimensions(dims);
-            outputTexture.setAntialiasingLevel(antiAliasingLevel);
+            outputTexture.set_dimensions(dims);
+            outputTexture.set_anti_aliasing_level(antiAliasingLevel);
         }
     } m_Lighting;
 

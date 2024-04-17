@@ -54,9 +54,9 @@ namespace
     RenderTexture CreateDepthTexture()
     {
         RenderTextureDescriptor desc{c_ShadowmapDims};
-        desc.setDimensionality(TextureDimensionality::Cube);
-        desc.setReadWrite(RenderTextureReadWrite::Linear);
-        desc.setColorFormat(RenderTextureFormat::Depth);
+        desc.set_dimensionality(TextureDimensionality::Cube);
+        desc.set_read_write(RenderTextureReadWrite::Linear);
+        desc.set_color_format(RenderTextureFormat::Depth);
         return RenderTexture{desc};
     }
 

@@ -14,11 +14,11 @@ namespace osc
     //   practical rendering contexts
     struct AnalyticPlane final {
 
-        friend constexpr bool operator==(AnalyticPlane const&, AnalyticPlane const&) = default;
+        friend constexpr bool operator==(const AnalyticPlane&, const AnalyticPlane&) = default;
 
         float distance = 0.0f;
         Vec3 normal = {0.0f, 1.0f, 0.0f};
     };
 
-    std::ostream& operator<<(std::ostream&, AnalyticPlane const&);
+    std::ostream& operator<<(std::ostream&, const AnalyticPlane&);
 }

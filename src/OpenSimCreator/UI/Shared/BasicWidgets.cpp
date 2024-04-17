@@ -1433,7 +1433,7 @@ void osc::DrawUndoAndRedoButtons(UndoableModelStatePair& model)
 void osc::DrawToggleFramesButton(UndoableModelStatePair& model, IconCache& icons)
 {
     Icon const& icon = icons.getIcon(IsShowingFrames(model.getModel()) ? "frame_colored" : "frame_bw");
-    if (ui::ImageButton("##toggleframes", icon.get_texture(), icon.getDimensions(), icon.getTextureCoordinates()))
+    if (ui::ImageButton("##toggleframes", icon.get_texture(), icon.dimensions(), icon.getTextureCoordinates()))
     {
         ActionToggleFrames(model);
     }
@@ -1443,7 +1443,7 @@ void osc::DrawToggleFramesButton(UndoableModelStatePair& model, IconCache& icons
 void osc::DrawToggleMarkersButton(UndoableModelStatePair& model, IconCache& icons)
 {
     Icon const& icon = icons.getIcon(IsShowingMarkers(model.getModel()) ? "marker_colored" : "marker");
-    if (ui::ImageButton("##togglemarkers", icon.get_texture(), icon.getDimensions(), icon.getTextureCoordinates()))
+    if (ui::ImageButton("##togglemarkers", icon.get_texture(), icon.dimensions(), icon.getTextureCoordinates()))
     {
         ActionToggleMarkers(model);
     }
@@ -1453,7 +1453,7 @@ void osc::DrawToggleMarkersButton(UndoableModelStatePair& model, IconCache& icon
 void osc::DrawToggleWrapGeometryButton(UndoableModelStatePair& model, IconCache& icons)
 {
     Icon const& icon = icons.getIcon(IsShowingWrapGeometry(model.getModel()) ? "wrap_colored" : "wrap");
-    if (ui::ImageButton("##togglewrapgeom", icon.get_texture(), icon.getDimensions(), icon.getTextureCoordinates()))
+    if (ui::ImageButton("##togglewrapgeom", icon.get_texture(), icon.dimensions(), icon.getTextureCoordinates()))
     {
         ActionToggleWrapGeometry(model);
     }
@@ -1463,7 +1463,7 @@ void osc::DrawToggleWrapGeometryButton(UndoableModelStatePair& model, IconCache&
 void osc::DrawToggleContactGeometryButton(UndoableModelStatePair& model, IconCache& icons)
 {
     Icon const& icon = icons.getIcon(IsShowingContactGeometry(model.getModel()) ? "contact_colored" : "contact");
-    if (ui::ImageButton("##togglecontactgeom", icon.get_texture(), icon.getDimensions(), icon.getTextureCoordinates()))
+    if (ui::ImageButton("##togglecontactgeom", icon.get_texture(), icon.dimensions(), icon.getTextureCoordinates()))
     {
         ActionToggleContactGeometry(model);
     }

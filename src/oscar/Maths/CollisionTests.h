@@ -16,11 +16,11 @@ namespace osc { struct Triangle; }
 
 namespace osc
 {
-    bool is_intersecting(Rect const&, Vec2 const&);
-    bool is_intersecting(FrustumPlanes const&, AABB const&);
-    std::optional<RayCollision> find_collision(Line const&, Sphere const&);
-    std::optional<RayCollision> find_collision(Line const&, AABB const&);
-    std::optional<RayCollision> find_collision(Line const&, Plane const&);
-    std::optional<RayCollision> find_collision(Line const&, Disc const&);
-    std::optional<RayCollision> find_collision(Line const&, Triangle const&);
+    bool is_intersecting(const Rect&, const Vec2&);
+    bool is_intersecting(const FrustumPlanes&, const AABB&);
+    std::optional<RayCollision> find_collision(const Line&, const Sphere&);
+    std::optional<RayCollision> find_collision(const Line&, const AABB&);
+    std::optional<RayCollision> find_collision(const Line&, const Plane&);
+    std::optional<RayCollision> find_collision(const Line&, const Disc&);
+    std::optional<RayCollision> find_collision(const Line&, const Triangle&);
 }

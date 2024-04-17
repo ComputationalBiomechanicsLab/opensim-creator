@@ -29,14 +29,14 @@ using namespace osc;
 
 // `AABB` implementation
 
-std::ostream& osc::operator<<(std::ostream& o, AABB const& aabb)
+std::ostream& osc::operator<<(std::ostream& o, const AABB& aabb)
 {
     return o << "AABB(min = " << aabb.min << ", max = " << aabb.max << ')';
 }
 
 // `AnalyticPlane` implementation
 
-std::ostream& osc::operator<<(std::ostream& o, AnalyticPlane const& plane)
+std::ostream& osc::operator<<(std::ostream& o, const AnalyticPlane& plane)
 {
     return o << "AnalyticPlane(distance = " << plane.distance << ", normal = " << plane.normal << ')';
 }
@@ -47,20 +47,19 @@ std::ostream& osc::operator<<(std::ostream& o, AnalyticPlane const& plane)
 // BVH helpers
 namespace
 {
-    bool HasAVolume(Triangle const& t)
+    bool has_nonzero_volume(const Triangle& t)
     {
-        return !(t.p0 == t.p1 || t.p0 == t.p2 || t.p1 == t.p2);
+        return not (t.p0 == t.p1 or t.p0 == t.p2 or t.p1 == t.p2);
     }
 
     // recursively build the BVH
-    void BVH_RecursiveBuild(
+    void bvh_recursive_build(
         std::vector<BVHNode>& nodes,
         std::vector<BVHPrim>& prims,
         ptrdiff_t const begin,
         ptrdiff_t const n)
     {
-        if (n == 1)
-        {
+        if (n == 1) {
             // recursion bottomed out: create a leaf node
             nodes.push_back(BVHNode::leaf(
                 prims.at(begin).bounds(),
@@ -72,39 +71,38 @@ namespace
         // else: n >= 2, so partition the data appropriately and allocate an internal node
 
         ptrdiff_t midpoint = -1;
-        ptrdiff_t internalNodeLoc = -1;
+        ptrdiff_t internal_node_loc = -1;
         {
             // allocate an appropriate internal node
 
             // compute bounding box of remaining (children) prims
-            AABB const aabb = bounding_aabb_of(
-                std::span<BVHPrim const>{prims.begin() + begin, static_cast<size_t>(n)},
+            const AABB aabb = bounding_aabb_of(
+                std::span<const BVHPrim>{prims.begin() + begin, static_cast<size_t>(n)},
                 &BVHPrim::bounds
             );
 
             // compute slicing position along the longest dimension
-            auto const longestDimIdx = max_element_index(dimensions_of(aabb));
-            float const midpointX2 = aabb.min[longestDimIdx] + aabb.max[longestDimIdx];
+            const auto longest_dim_index = max_element_index(dimensions_of(aabb));
+            const float midpoint_x2 = aabb.min[longest_dim_index] + aabb.max[longest_dim_index];
 
             // returns true if a given primitive is below the midpoint along the dim
-            auto const isBelowMidpoint = [longestDimIdx, midpointX2](BVHPrim const& p)
+            const auto is_below_midpoint = [longest_dim_index, midpoint_x2](const BVHPrim& p)
             {
-                float const primMidpointX2 = p.bounds().min[longestDimIdx] + p.bounds().max[longestDimIdx];
-                return primMidpointX2 <= midpointX2;
+                const float prim_midpoint_x2 = p.bounds().min[longest_dim_index] + p.bounds().max[longest_dim_index];
+                return prim_midpoint_x2 <= midpoint_x2;
             };
 
             // partition prims into above/below the midpoint
-            ptrdiff_t const end = begin + n;
-            auto const it = std::partition(prims.begin() + begin, prims.begin() + end, isBelowMidpoint);
+            const ptrdiff_t end = begin + n;
+            const auto it = std::partition(prims.begin() + begin, prims.begin() + end, is_below_midpoint);
 
             midpoint = std::distance(prims.begin(), it);
-            if (midpoint == begin || midpoint == end)
-            {
+            if (midpoint == begin or midpoint == end) {
                 // edge-case: failed to spacially partition: just naievely partition
                 midpoint = begin + n/2;
             }
 
-            internalNodeLoc = static_cast<ptrdiff_t>(nodes.size());
+            internal_node_loc = static_cast<ptrdiff_t>(nodes.size());
 
             // push the internal node
             nodes.push_back(BVHNode::node(
@@ -114,106 +112,97 @@ namespace
         }
 
         // build left-hand subtree
-        BVH_RecursiveBuild(nodes, prims, begin, midpoint-begin);
+        bvh_recursive_build(nodes, prims, begin, midpoint-begin);
 
         // the left-hand build allocated nodes for the left hand side contiguously in memory
-        ptrdiff_t numLhsNodes = (static_cast<ptrdiff_t>(nodes.size()) - 1) - internalNodeLoc;
-        OSC_ASSERT(numLhsNodes > 0);
-        nodes[internalNodeLoc].setNumLhsNodes(numLhsNodes);
+        ptrdiff_t num_lhs_nodes = (static_cast<ptrdiff_t>(nodes.size()) - 1) - internal_node_loc;
+        OSC_ASSERT(num_lhs_nodes > 0);
+        nodes[internal_node_loc].set_num_lhs_nodes(num_lhs_nodes);
 
         // build right node
-        BVH_RecursiveBuild(nodes, prims, midpoint, (begin + n) - midpoint);
-        OSC_ASSERT(internalNodeLoc+numLhsNodes < static_cast<ptrdiff_t>(nodes.size()));
+        bvh_recursive_build(nodes, prims, midpoint, (begin + n) - midpoint);
+        OSC_ASSERT(internal_node_loc+num_lhs_nodes < static_cast<ptrdiff_t>(nodes.size()));
     }
 
     // returns true if something hit (recursively)
     //
     // populates outparam with all AABB hits in depth-first order
-    bool BVH_ForEachRayAABBCollisionsRecursive(
-        std::span<BVHNode const> nodes,
-        std::span<BVHPrim const> prims,
-        Line const& ray,
+    bool bvh_for_each_ray_aabb_collisions_recursive(
+        std::span<const BVHNode> nodes,
+        std::span<const BVHPrim> prims,
+        const Line& ray,
         ptrdiff_t nodeidx,
-        std::function<void(BVHCollision)> const& callback)
+        const std::function<void(BVHCollision)>& callback)
     {
-        BVHNode const& node = nodes[nodeidx];
+        const BVHNode& node = nodes[nodeidx];
 
         // check ray-AABB intersection with the BVH node
-        std::optional<RayCollision> res = find_collision(ray, node.bounds());
-
-        if (!res)
-        {
+        const std::optional<RayCollision> maybe_collision = find_collision(ray, node.bounds());
+        if (not maybe_collision) {
             return false;  // no intersection with this node at all
         }
 
-        if (node.isLeaf())
-        {
+        if (node.is_leaf()) {
             // it's a leaf node, so we've sucessfully found the AABB that intersected
             callback(BVHCollision{
-                res->distance,
-                res->position,
-                prims[node.getFirstPrimOffset()].getID(),
+                maybe_collision->distance,
+                maybe_collision->position,
+                prims[node.first_prim_offset()].id(),
             });
             return true;
         }
 
         // else: we've "hit" an internal node and need to recurse to find the leaf
-        bool const lhs = BVH_ForEachRayAABBCollisionsRecursive(nodes, prims, ray, nodeidx+1, callback);
-        bool const rhs = BVH_ForEachRayAABBCollisionsRecursive(nodes, prims, ray, nodeidx+node.getNumLhsNodes()+1, callback);
+        const bool lhs = bvh_for_each_ray_aabb_collisions_recursive(nodes, prims, ray, nodeidx+1, callback);
+        const bool rhs = bvh_for_each_ray_aabb_collisions_recursive(nodes, prims, ray, nodeidx+node.num_lhs_nodes()+1, callback);
         return lhs || rhs;
     }
 
     template<std::unsigned_integral TIndex>
-    std::optional<BVHCollision> BVH_GetClosestRayIndexedTriangleCollisionRecursive(
-        std::span<BVHNode const> nodes,
-        std::span<BVHPrim const> prims,
-        std::span<Vec3 const> vertices,
-        std::span<TIndex const> indices,
-        Line const& ray,
+    std::optional<BVHCollision> bvh_get_closest_ray_indexed_triangle_collision_recursive(
+        std::span<const BVHNode> nodes,
+        std::span<const BVHPrim> prims,
+        std::span<const Vec3> vertices,
+        std::span<const TIndex> indices,
+        const Line& ray,
         float& closest,
         ptrdiff_t nodeidx)
     {
-        BVHNode const& node = nodes[nodeidx];
-        std::optional<RayCollision> const res = find_collision(ray, node.bounds());
+        const BVHNode& node = nodes[nodeidx];
+        const std::optional<RayCollision> node_collision = find_collision(ray, node.bounds());
 
-        if (!res)
-        {
+        if (not node_collision) {
             return std::nullopt;  // didn't hit this node at all
         }
 
-        if (res->distance > closest)
-        {
+        if (node_collision->distance > closest) {
             return std::nullopt;  // this AABB can't contain something closer
         }
 
-        if (node.isLeaf())
-        {
+        if (node.is_leaf()) {
             // leaf node: check ray-triangle intersection
 
-            BVHPrim const& p = at(prims, node.getFirstPrimOffset());
+            const BVHPrim& p = at(prims, node.first_prim_offset());
 
-            Triangle const triangle =
-            {
-                at(vertices, at(indices, p.getID())),
-                at(vertices, at(indices, p.getID()+1)),
-                at(vertices, at(indices, p.getID()+2)),
+            const Triangle triangle = {
+                at(vertices, at(indices, p.id())),
+                at(vertices, at(indices, p.id()+1)),
+                at(vertices, at(indices, p.id()+2)),
             };
 
-            std::optional<RayCollision> const rayTriangleColl = find_collision(ray, triangle);
+            const std::optional<RayCollision> triangle_collision = find_collision(ray, triangle);
 
-            if (rayTriangleColl && rayTriangleColl->distance < closest)
-            {
-                closest = rayTriangleColl->distance;
-                return BVHCollision{rayTriangleColl->distance, rayTriangleColl->position, p.getID()};
+            if (triangle_collision and triangle_collision->distance < closest) {
+                closest = triangle_collision->distance;
+                return BVHCollision{triangle_collision->distance, triangle_collision->position, p.id()};
             }
-            else
-            {
+            else {
                 return std::nullopt;  // it didn't collide with the triangle
             }
         }
 
-        // else: internal node: recurse
-        std::optional<BVHCollision> const lhs = BVH_GetClosestRayIndexedTriangleCollisionRecursive(
+        // else: `is_node`, so recurse
+        const std::optional<BVHCollision> lhs = bvh_get_closest_ray_indexed_triangle_collision_recursive(
             nodes,
             prims,
             vertices,
@@ -222,67 +211,63 @@ namespace
             closest,
             nodeidx+1
         );
-        std::optional<BVHCollision> const rhs = BVH_GetClosestRayIndexedTriangleCollisionRecursive(
+        const std::optional<BVHCollision> rhs = bvh_get_closest_ray_indexed_triangle_collision_recursive(
             nodes,
             prims,
             vertices,
             indices,
             ray,
             closest,
-            nodeidx+node.getNumLhsNodes()+1
+            nodeidx+node.num_lhs_nodes()+1
         );
+
         return rhs ? rhs : lhs;
     }
 
     template<std::unsigned_integral TIndex>
-    void BuildFromIndexedTriangles(
+    void bvh_build_from_indexed_triangles(
         std::vector<BVHNode>& nodes,
         std::vector<BVHPrim>& prims,
-        std::span<Vec3 const> vertices,
-        std::span<TIndex const> indices)
+        std::span<const Vec3> vertices,
+        std::span<const TIndex> indices)
     {
         // clear out any old data
         nodes.clear();
         prims.clear();
 
         // build up the prim list for each triangle
-        prims.reserve(indices.size()/3);  // good guess
-        for (size_t i = 0; (i+2) < indices.size(); i += 3)
-        {
-            Triangle const t
-            {
+        prims.reserve(indices.size()/3);  // guess: upper limit
+        for (size_t i = 0; (i+2) < indices.size(); i += 3) {
+            const Triangle triangle {
                 at(vertices, indices[i]),
                 at(vertices, indices[i+1]),
                 at(vertices, indices[i+2]),
             };
 
-            if (HasAVolume(t))
-            {
-                prims.emplace_back(static_cast<ptrdiff_t>(i), bounding_aabb_of(t));
+            if (has_nonzero_volume(triangle)) {
+                prims.emplace_back(static_cast<ptrdiff_t>(i), bounding_aabb_of(triangle));
             }
         }
 
-        if (!prims.empty())
-        {
-            BVH_RecursiveBuild(nodes, prims, 0, static_cast<ptrdiff_t>(prims.size()));
+        if (not prims.empty()) {
+            bvh_recursive_build(nodes, prims, 0, static_cast<ptrdiff_t>(prims.size()));
         }
     }
 
     template<std::unsigned_integral TIndex>
-    std::optional<BVHCollision> GetClosestRayIndexedTriangleCollision(
-        std::span<BVHNode const> nodes,
-        std::span<BVHPrim const> prims,
-        std::span<Vec3 const> vertices,
-        std::span<TIndex const> indices,
-        Line const& ray)
+    std::optional<BVHCollision> bvh_get_closest_ray_indexed_triangle_collision(
+        std::span<const BVHNode> nodes,
+        std::span<const BVHPrim> prims,
+        std::span<const Vec3> vertices,
+        std::span<const TIndex> indices,
+        const Line& ray)
     {
-        if (nodes.empty() || prims.empty() || indices.empty())
-        {
+        if (nodes.empty() or prims.empty() or indices.empty()) {
             return std::nullopt;
         }
 
         float closest = std::numeric_limits<float>::max();
-        return BVH_GetClosestRayIndexedTriangleCollisionRecursive(nodes, prims, vertices, indices, ray, closest, 0);
+        return bvh_get_closest_ray_indexed_triangle_collision_recursive(nodes, prims, vertices, indices, ray, closest, 0);
     }
 
     // describes the direction of each cube face and which direction is "up"
@@ -291,114 +276,104 @@ namespace
         Vec3 direction;
         Vec3 up;
     };
-    constexpr auto c_CubemapFacesDetails = std::to_array<CubemapFaceDetails>(
-        {
-            {{ 1.0f,  0.0f,  0.0f}, {0.0f, -1.0f,  0.0f}},
+    constexpr auto c_CubemapFacesDetails = std::to_array<CubemapFaceDetails>({
+        {{ 1.0f,  0.0f,  0.0f}, {0.0f, -1.0f,  0.0f}},
         {{-1.0f,  0.0f,  0.0f}, {0.0f, -1.0f,  0.0f}},
         {{ 0.0f,  1.0f,  0.0f}, {0.0f,  0.0f,  1.0f}},
         {{ 0.0f, -1.0f,  0.0f}, {0.0f,  0.0f, -1.0f}},
         {{ 0.0f,  0.0f,  1.0f}, {0.0f, -1.0f,  0.0f}},
         {{ 0.0f,  0.0f, -1.0f}, {0.0f, -1.0f,  0.0f}},
-        });
+    });
 
-    Mat4 CalcCubemapViewMatrix(CubemapFaceDetails const& faceDetails, Vec3 const& cubeCenter)
+    Mat4 calc_cubemap_view_matrix(const CubemapFaceDetails& face_details, const Vec3& cube_center)
     {
-        return look_at(cubeCenter, cubeCenter + faceDetails.direction, faceDetails.up);
+        return look_at(cube_center, cube_center + face_details.direction, face_details.up);
     }
 }
 
 void osc::BVH::clear()
 {
-    m_Nodes.clear();
-    m_Prims.clear();
+    nodes_.clear();
+    prims_.clear();
 }
 
-void osc::BVH::buildFromIndexedTriangles(std::span<Vec3 const> vertices, std::span<uint16_t const> indices)
+void osc::BVH::build_from_indexed_triangles(std::span<const Vec3> vertices, std::span<const uint16_t> indices)
 {
-    BuildFromIndexedTriangles<uint16_t>(
-        m_Nodes,
-        m_Prims,
+    bvh_build_from_indexed_triangles<uint16_t>(
+        nodes_,
+        prims_,
         vertices,
         indices
     );
 }
 
-void osc::BVH::buildFromIndexedTriangles(std::span<Vec3 const> vertices, std::span<uint32_t const> indices)
+void osc::BVH::build_from_indexed_triangles(std::span<const Vec3> vertices, std::span<const uint32_t> indices)
 {
-    BuildFromIndexedTriangles<uint32_t>(
-        m_Nodes,
-        m_Prims,
+    bvh_build_from_indexed_triangles<uint32_t>(
+        nodes_,
+        prims_,
         vertices,
         indices
     );
 }
 
-std::optional<BVHCollision> osc::BVH::getClosestRayIndexedTriangleCollision(
-    std::span<Vec3 const> vertices,
-    std::span<uint16_t const> indices,
-    Line const& line) const
+std::optional<BVHCollision> osc::BVH::closest_ray_indexed_triangle_collision(
+    std::span<const Vec3> vertices,
+    std::span<const uint16_t> indices,
+    const Line& line) const
 {
-    return GetClosestRayIndexedTriangleCollision<uint16_t>(
-        m_Nodes,
-        m_Prims,
+    return bvh_get_closest_ray_indexed_triangle_collision<uint16_t>(
+        nodes_,
+        prims_,
         vertices,
         indices,
         line
     );
 }
 
-std::optional<BVHCollision> osc::BVH::getClosestRayIndexedTriangleCollision(
-    std::span<Vec3 const> vertices,
-    std::span<uint32_t const> indices,
-    Line const& line) const
+std::optional<BVHCollision> osc::BVH::closest_ray_indexed_triangle_collision(
+    std::span<const Vec3> vertices,
+    std::span<const uint32_t> indices,
+    const Line& line) const
 {
-    return GetClosestRayIndexedTriangleCollision<uint32_t>(
-        m_Nodes,
-        m_Prims,
+    return bvh_get_closest_ray_indexed_triangle_collision<uint32_t>(
+        nodes_,
+        prims_,
         vertices,
         indices,
         line
     );
 }
 
-void osc::BVH::buildFromAABBs(std::span<AABB const> aabbs)
+void osc::BVH::build_from_aabbs(std::span<const AABB> aabbs)
 {
     // clear out any old data
     clear();
 
     // build up prim list for each AABB (just copy the AABB)
-    m_Prims.reserve(aabbs.size());  // good guess
-    for (ptrdiff_t i = 0; i < std::ssize(aabbs); ++i)
-    {
-        if (!is_point(aabbs[i]))
-        {
-            m_Prims.emplace_back(static_cast<ptrdiff_t>(i), aabbs[i]);
+    prims_.reserve(aabbs.size());  // good guess
+    for (ptrdiff_t i = 0; i < ssize(aabbs); ++i) {
+        if (not is_point(aabbs[i])) {
+            prims_.emplace_back(i, aabbs[i]);
         }
     }
 
-    if (!m_Prims.empty())
-    {
-        BVH_RecursiveBuild(
-            m_Nodes,
-            m_Prims,
-            0,
-            std::ssize(m_Prims)
-        );
+    if (not prims_.empty()) {
+        bvh_recursive_build(nodes_, prims_, 0, ssize(prims_));
     }
 }
 
-void osc::BVH::forEachRayAABBCollision(
-    Line const& ray,
-    std::function<void(BVHCollision)> const& callback) const
+void osc::BVH::for_each_ray_aabb_collision(
+    const Line& ray,
+    const std::function<void(BVHCollision)>& callback) const
 {
-    if (m_Nodes.empty() || m_Prims.empty())
-    {
+    if (nodes_.empty() or prims_.empty()) {
         return;
     }
 
-    BVH_ForEachRayAABBCollisionsRecursive(
-        m_Nodes,
-        m_Prims,
+    bvh_for_each_ray_aabb_collisions_recursive(
+        nodes_,
+        prims_,
         ray,
         0,
         callback
@@ -407,37 +382,32 @@ void osc::BVH::forEachRayAABBCollision(
 
 bool osc::BVH::empty() const
 {
-    return m_Nodes.empty();
+    return nodes_.empty();
 }
 
-size_t osc::BVH::getMaxDepth() const
+size_t osc::BVH::max_depth() const
 {
     size_t cur = 0;
     size_t maxdepth = 0;
     std::stack<size_t> stack;
 
-    while (cur < m_Nodes.size())
-    {
-        if (m_Nodes[cur].isLeaf())
-        {
+    while (cur < nodes_.size()) {
+        if (nodes_[cur].is_leaf()) {
             // leaf node: compute its depth and continue traversal (if applicable)
 
             maxdepth = max(maxdepth, stack.size() + 1);
 
-            if (stack.empty())
-            {
+            if (stack.empty()) {
                 break;  // nowhere to traverse to: exit
             }
-            else
-            {
+            else {
                 // traverse up to a parent node and try the right-hand side
-                size_t const next = stack.top();
+                const size_t next = stack.top();
                 stack.pop();
-                cur = next + m_Nodes[next].getNumLhsNodes() + 1;
+                cur = next + nodes_[next].num_lhs_nodes() + 1;
             }
         }
-        else
-        {
+        else {
             // internal node: push into the (right-hand) history stack and then
             //                traverse to the left-hand side
 
@@ -451,24 +421,21 @@ size_t osc::BVH::getMaxDepth() const
 
 std::optional<AABB> osc::BVH::bounds() const
 {
-    return !m_Nodes.empty() ? m_Nodes.front().bounds() : std::optional<AABB>{};
+    return !nodes_.empty() ? nodes_.front().bounds() : std::optional<AABB>{};
 }
 
-void osc::BVH::forEachLeafNode(std::function<void(BVHNode const&)> const& f) const
+void osc::BVH::for_each_leaf_node(const std::function<void(const BVHNode&)>& f) const
 {
-    for (BVHNode const& node : m_Nodes)
-    {
-        if (node.isLeaf())
-        {
+    for (const BVHNode& node : nodes_) {
+        if (node.is_leaf()) {
             f(node);
         }
     }
 }
 
-void osc::BVH::forEachLeafOrInnerNodeUnordered(std::function<void(BVHNode const&)> const& f) const
+void osc::BVH::for_each_leaf_or_inner_node(const std::function<void(const BVHNode&)>& f) const
 {
-    for (BVHNode const& node : m_Nodes)
-    {
+    for (const BVHNode& node : nodes_) {
         f(node);
     }
 }
@@ -515,7 +482,7 @@ std::optional<CoordinateDirection> osc::CoordinateDirection::try_parse(std::stri
     }
 
     // try to consume the leading sign character (if there is one)
-    bool const negated = s.front() == '-';
+    const bool negated = s.front() == '-';
     if (negated or s.front() == '+') {
         s = s.substr(1);
     }
@@ -539,7 +506,7 @@ std::ostream& osc::operator<<(std::ostream& o, CoordinateDirection direction)
 
 // `Disc` implementation
 
-std::ostream& osc::operator<<(std::ostream& o, Disc const& d)
+std::ostream& osc::operator<<(std::ostream& o, const Disc& d)
 {
     return o << "Disc(origin = " << d.origin << ", normal = " << d.normal << ", radius = " << d.radius << ')';
 }
@@ -549,8 +516,7 @@ std::ostream& osc::operator<<(std::ostream& o, Disc const& d)
 
 Vec3 osc::EulerPerspectiveCamera::front() const
 {
-    return normalize(Vec3
-    {
+    return normalize(Vec3{
         cos(yaw) * cos(pitch),
         sin(pitch),
         sin(yaw) * cos(pitch),
@@ -580,7 +546,7 @@ Mat4 osc::EulerPerspectiveCamera::projection_matrix(float aspectRatio) const
 
 // `Line` implementation
 
-std::ostream& osc::operator<<(std::ostream& o, Line const& l)
+std::ostream& osc::operator<<(std::ostream& o, const Line& l)
 {
     return o << "Line(origin = " << l.origin << ", direction = " << l.direction << ')';
 }
@@ -588,7 +554,7 @@ std::ostream& osc::operator<<(std::ostream& o, Line const& l)
 
 // `Plane` implementation
 
-std::ostream& osc::operator<<(std::ostream& o, Plane const& p)
+std::ostream& osc::operator<<(std::ostream& o, const Plane& p)
 {
     return o << "Plane(origin = " << p.origin << ", normal = " << p.normal << ')';
 }
@@ -616,32 +582,31 @@ osc::PolarPerspectiveCamera::PolarPerspectiveCamera() :
     vertical_fov{35_deg},
     znear{0.1f},
     zfar{100.0f}
-{
-}
+{}
 
 void osc::PolarPerspectiveCamera::reset()
 {
     *this = {};
 }
 
-void osc::PolarPerspectiveCamera::pan(float aspectRatio, Vec2 delta)
+void osc::PolarPerspectiveCamera::pan(float aspect_ratio, Vec2 delta)
 {
-    auto horizontalFOV = VerticalToHorizontalFOV(vertical_fov, aspectRatio);
+    const auto horizontal_fov = vertial_to_horizontal_fov(vertical_fov, aspect_ratio);
 
     // how much panning is done depends on how far the camera is from the
     // origin (easy, with polar coordinates) *and* the FoV of the camera.
-    float xAmt = delta.x * (2.0f * tan(horizontalFOV / 2.0f) * radius);
-    float yAmt = -delta.y * (2.0f * tan(vertical_fov / 2.0f) * radius);
+    const float x_amount =  delta.x * (2.0f * tan(horizontal_fov / 2.0f) * radius);
+    const float y_amount = -delta.y * (2.0f * tan(vertical_fov / 2.0f) * radius);
 
     // this assumes the scene is not rotated, so we need to rotate these
     // axes to match the scene's rotation
-    Vec4 defaultPanningAx = {xAmt, yAmt, 0.0f, 1.0f};
-    auto rotTheta = rotate(identity<Mat4>(), theta, UnitVec3::along_y());
-    auto thetaVec = UnitVec3{sin(theta), 0.0f, cos(theta)};
-    auto phiAxis = cross(thetaVec, UnitVec3::along_y());
-    auto rotPhi = rotate(identity<Mat4>(), phi, phiAxis);
+    const Vec4 default_panning_axis = {x_amount, y_amount, 0.0f, 1.0f};
+    const Mat4 rotation_theta = rotate(identity<Mat4>(), theta, UnitVec3::along_y());
+    const UnitVec3 theta_vec = UnitVec3{sin(theta), 0.0f, cos(theta)};
+    const UnitVec3 phi_axis = cross(theta_vec, UnitVec3::along_y());
+    const Mat4 rotation_phi = rotate(identity<Mat4>(), phi, phi_axis);
 
-    Vec4 panningAxes = rotPhi * rotTheta * defaultPanningAx;
+    const Vec4 panningAxes = rotation_phi * rotation_theta * default_panning_axis;
     focusPoint += Vec3{panningAxes};
 }
 
@@ -714,7 +679,7 @@ Line osc::PolarPerspectiveCamera::unprojectTopLeftPosToWorldRay(Vec2 pos, Vec2 d
     Mat4 const viewMatrix = view_matrix();
     Mat4 const projectionMatrix = projection_matrix(dims.x/dims.y);
 
-    return PerspectiveUnprojectTopLeftScreenPosToWorldRay(
+    return perspective_unproject_topleft_screen_pos_to_world_ray(
         pos / dims,
         this->getPos(),
         viewMatrix,
@@ -835,7 +800,7 @@ void osc::Reset(PolarPerspectiveCamera& camera)
 void osc::AutoFocus(PolarPerspectiveCamera& camera, AABB const& elementAABB, float aspectRatio)
 {
     Sphere const s = bounding_sphere_of(elementAABB);
-    Radians const smallestFOV = aspectRatio > 1.0f ? camera.vertical_fov : VerticalToHorizontalFOV(camera.vertical_fov, aspectRatio);
+    Radians const smallestFOV = aspectRatio > 1.0f ? camera.vertical_fov : vertial_to_horizontal_fov(camera.vertical_fov, aspectRatio);
 
     // auto-focus the camera with a minimum radius of 1m
     //
@@ -1029,7 +994,7 @@ namespace
 
 // MathHelpers
 
-Radians osc::VerticalToHorizontalFOV(Radians vertical_fov, float aspectRatio)
+Radians osc::vertial_to_horizontal_fov(Radians vertical_fov, float aspectRatio)
 {
     // https://en.wikipedia.org/wiki/Field_of_view_in_video_games#Field_of_view_calculations
 
@@ -1037,7 +1002,7 @@ Radians osc::VerticalToHorizontalFOV(Radians vertical_fov, float aspectRatio)
 }
 
 
-Mat4 osc::Dir1ToDir2Xform(Vec3 const& dir1, Vec3 const& dir2)
+Mat4 osc::mat4_transform_between_directions(Vec3 const& dir1, Vec3 const& dir2)
 {
     // this is effectively a rewrite of glm::rotation(vec3 const&, vec3 const& dest);
 
@@ -1082,32 +1047,32 @@ Eulers osc::extract_eulers_xyz(Quat const& q)
     return extract_eulers_xyz(mat4_cast(q));
 }
 
-Vec2 osc::TopleftRelPosToNDCPoint(Vec2 relpos)
+Vec2 osc::topleft_relative_pos_to_ndc_point(Vec2 relpos)
 {
     relpos.y = 1.0f - relpos.y;
     return 2.0f*relpos - 1.0f;
 }
 
-Vec2 osc::NDCPointToTopLeftRelPos(Vec2 ndcPos)
+Vec2 osc::ndc_point_to_topleft_relative_pos(Vec2 ndcPos)
 {
     ndcPos = (ndcPos + 1.0f) * 0.5f;
     ndcPos.y = 1.0f - ndcPos.y;
     return ndcPos;
 }
 
-Vec4 osc::TopleftRelPosToNDCCube(Vec2 relpos)
+Vec4 osc::topleft_relative_pos_to_ndc_cube(Vec2 relpos)
 {
-    return {TopleftRelPosToNDCPoint(relpos), -1.0f, 1.0f};
+    return {topleft_relative_pos_to_ndc_point(relpos), -1.0f, 1.0f};
 }
 
-Line osc::PerspectiveUnprojectTopLeftScreenPosToWorldRay(
+Line osc::perspective_unproject_topleft_screen_pos_to_world_ray(
     Vec2 relpos,
     Vec3 cameraWorldspaceOrigin,
     Mat4 const& viewMatrix,
     Mat4 const& projMatrix)
 {
     // position of point, as if it were on the front of the 3D NDC cube
-    Vec4 lineOriginNDC = TopleftRelPosToNDCCube(relpos);
+    Vec4 lineOriginNDC = topleft_relative_pos_to_ndc_cube(relpos);
 
     Vec4 lineOriginView = inverse(projMatrix) * lineOriginNDC;
     lineOriginView /= lineOriginView.w;  // perspective divide
@@ -1172,7 +1137,7 @@ Rect osc::clamp(Rect const& r, Vec2 const& min, Vec2 const& max)
     };
 }
 
-Rect osc::NdcRectToScreenspaceViewportRect(Rect const& ndcRect, Rect const& viewport)
+Rect osc::ndc_rect_to_screenspace_viewport_rect(Rect const& ndcRect, Rect const& viewport)
 {
     Vec2 const viewportDims = dimensions_of(viewport);
 
@@ -1222,7 +1187,7 @@ AABB osc::bounding_aabb_of(Sphere const& s)
     return rv;
 }
 
-Line osc::TransformLine(Line const& l, Mat4 const& m)
+Line osc::transform_line(Line const& l, Mat4 const& m)
 {
     Line rv{};
     rv.direction = m * Vec4{l.direction, 0.0f};
@@ -1239,7 +1204,7 @@ Line osc::inverse_transform_line(Line const& l, Transform const& t)
     };
 }
 
-Mat4 osc::DiscToDiscMat4(Disc const& a, Disc const& b)
+Mat4 osc::mat4_transform_between(Disc const& a, Disc const& b)
 {
     // this is essentially LERPing [0,1] onto [1, l] to rescale only
     // along the line's original direction
@@ -1372,7 +1337,7 @@ std::optional<Rect> osc::loosely_project_into_ndc(
     return rv;
 }
 
-Mat4 osc::SegmentToSegmentMat4(LineSegment const& a, LineSegment const& b)
+Mat4 osc::mat4_transform_between(LineSegment const& a, LineSegment const& b)
 {
     Vec3 a1ToA2 = a.end - a.start;
     Vec3 b1ToB2 = b.end - b.start;
@@ -1391,13 +1356,13 @@ Mat4 osc::SegmentToSegmentMat4(LineSegment const& a, LineSegment const& b)
     float s = bLen/aLen;
     Vec3 scaler = Vec3{1.0f, 1.0f, 1.0f} + (s-1.0f)*aDir;
 
-    Mat4 rotate = Dir1ToDir2Xform(aDir, bDir);
+    Mat4 rotate = mat4_transform_between_directions(aDir, bDir);
     Mat4 move = translate(identity<Mat4>(), bCenter - aCenter);
 
     return move * rotate * scale(identity<Mat4>(), scaler);
 }
 
-Transform osc::SegmentToSegmentTransform(LineSegment const& a, LineSegment const& b)
+Transform osc::transform_between(LineSegment const& a, LineSegment const& b)
 {
     Vec3 aLine = a.end - a.start;
     Vec3 bLine = b.end - b.start;
@@ -1423,13 +1388,13 @@ Transform osc::SegmentToSegmentTransform(LineSegment const& a, LineSegment const
 Transform osc::cylinder_to_line_segment_transform(LineSegment const& s, float radius)
 {
     LineSegment cylinderLine{{0.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}};
-    Transform t = SegmentToSegmentTransform(cylinderLine, s);
+    Transform t = transform_between(cylinderLine, s);
     t.scale.x = radius;
     t.scale.z = radius;
     return t;
 }
 
-Transform osc::YToYConeToSegmentTransform(LineSegment const& s, float radius)
+Transform osc::y_to_y_cone_to_segment_transform(LineSegment const& s, float radius)
 {
     return cylinder_to_line_segment_transform(s, radius);
 }
@@ -1439,18 +1404,18 @@ Vec3 osc::transform_point(Mat4 const& m, Vec3 const& p)
     return Vec3{m * Vec4{p, 1.0f}};
 }
 
-Quat osc::WorldspaceRotation(Eulers const& eulers)
+Quat osc::to_worldspace_rotation_quat(Eulers const& eulers)
 {
     static_assert(std::is_same_v<Eulers::value_type, Radians>);
     return normalize(Quat{Vec3{eulers.x.count(), eulers.y.count(), eulers.z.count()}});
 }
 
-void osc::ApplyWorldspaceRotation(
+void osc::apply_worldspace_rotation(
     Transform& t,
     Eulers const& eulerAngles,
     Vec3 const& rotationCenter)
 {
-    Quat q = WorldspaceRotation(eulerAngles);
+    Quat q = to_worldspace_rotation_quat(eulerAngles);
     t.position = q*(t.position - rotationCenter) + rotationCenter;
     t.rotation = normalize(q*t.rotation);
 }
@@ -1673,7 +1638,7 @@ std::array<Mat4, 6> osc::CalcCubemapViewProjMatrices(
     std::array<Mat4, 6> rv{};
     for (size_t i = 0; i < 6; ++i)
     {
-        rv[i] = projectionMatrix * CalcCubemapViewMatrix(c_CubemapFacesDetails[i], cubeCenter);
+        rv[i] = projectionMatrix * calc_cubemap_view_matrix(c_CubemapFacesDetails[i], cubeCenter);
     }
     return rv;
 }

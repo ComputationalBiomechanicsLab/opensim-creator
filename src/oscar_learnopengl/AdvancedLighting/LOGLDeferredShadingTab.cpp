@@ -82,7 +82,7 @@ namespace
     RenderTexture RenderTextureWithColorFormat(RenderTextureFormat f)
     {
         RenderTexture rv;
-        rv.setColorFormat(f);
+        rv.set_color_format(f);
         return rv;
     }
 
@@ -110,19 +110,19 @@ namespace
         RenderTarget renderTarget{
             {
                 RenderTargetColorAttachment{
-                    albedo.updColorBuffer(),
+                    albedo.upd_color_buffer(),
                     RenderBufferLoadAction::Clear,
                     RenderBufferStoreAction::Resolve,
                     Color::black(),
                 },
                 RenderTargetColorAttachment{
-                    normal.updColorBuffer(),
+                    normal.upd_color_buffer(),
                     RenderBufferLoadAction::Clear,
                     RenderBufferStoreAction::Resolve,
                     Color::black(),
                 },
                 RenderTargetColorAttachment{
-                    position.updColorBuffer(),
+                    position.upd_color_buffer(),
                     RenderBufferLoadAction::Clear,
                     RenderBufferStoreAction::Resolve,
                     Color::black(),
@@ -130,7 +130,7 @@ namespace
             },
 
             RenderTargetDepthAttachment{
-                albedo.updDepthBuffer(),
+                albedo.upd_depth_buffer(),
                 RenderBufferLoadAction::Clear,
                 RenderBufferStoreAction::DontCare,
             },
@@ -139,10 +139,10 @@ namespace
         void reformat(Vec2 dims, AntiAliasingLevel antiAliasingLevel)
         {
             RenderTextureDescriptor desc{dims};
-            desc.setAntialiasingLevel(antiAliasingLevel);
+            desc.set_anti_aliasing_level(antiAliasingLevel);
 
             for (RenderTexture* tex : {&albedo, &normal, &position}) {
-                desc.setColorFormat(tex->getColorFormat());
+                desc.set_color_format(tex->color_format());
                 tex->reformat(desc);
             }
         }
@@ -199,8 +199,8 @@ private:
         // ensure textures/buffers have correct dimensions
         {
             m_GBuffer.reformat(viewportDims, antiAliasingLevel);
-            m_OutputTexture.setDimensions(viewportDims);
-            m_OutputTexture.setAntialiasingLevel(antiAliasingLevel);
+            m_OutputTexture.set_dimensions(viewportDims);
+            m_OutputTexture.set_anti_aliasing_level(antiAliasingLevel);
         }
 
         renderSceneToGBuffers();
@@ -276,14 +276,14 @@ private:
         RenderTarget t{
             {
                 RenderTargetColorAttachment{
-                    m_OutputTexture.updColorBuffer(),
+                    m_OutputTexture.upd_color_buffer(),
                     RenderBufferLoadAction::Load,
                     RenderBufferStoreAction::Resolve,
                     Color::clear(),
                 },
             },
             RenderTargetDepthAttachment{
-                m_GBuffer.albedo.updDepthBuffer(),
+                m_GBuffer.albedo.upd_depth_buffer(),
                 RenderBufferLoadAction::Load,
                 RenderBufferStoreAction::DontCare,
             },

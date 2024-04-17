@@ -45,39 +45,39 @@ namespace osc
         constexpr CoordinateAxis() = default;
 
         // constructs a `CoordinateAxis` from a runtime integer that must be 0, 1, or 2, representing X, Y, or Z axis
-        explicit constexpr CoordinateAxis(int i) :
-            m_AxisIndex{static_cast<uint8_t>(i)}
+        explicit constexpr CoordinateAxis(int axis_index) :
+            axis_index_{static_cast<uint8_t>(axis_index)}
         {
-            OSC_ASSERT(0 <= i && i <= 2 && "out-of-range index given to a CoordinateAxis");
+            OSC_ASSERT(0 <= axis_index && axis_index <= 2 && "out-of-range index given to a CoordinateAxis");
         }
 
         // `CoordinateAxis`es are equality-comparable and totally ordered as X < Y < Z
-        friend constexpr auto operator<=>(CoordinateAxis const&, CoordinateAxis const&) = default;
+        friend constexpr auto operator<=>(const CoordinateAxis&, const CoordinateAxis&) = default;
 
         // returns the index of the axis (i.e. X == 0, Y == 1, Z == 2)
         constexpr size_t index() const
         {
-            return static_cast<size_t>(m_AxisIndex);
+            return static_cast<size_t>(axis_index_);
         }
 
         // returns the previous axis in the ring sequence X -> Y -> Z -> X...
         constexpr CoordinateAxis previous() const
         {
-            return CoordinateAxis{static_cast<uint8_t>((m_AxisIndex + 2) % 3), SkipRangeCheck{}};
+            return CoordinateAxis{static_cast<uint8_t>((axis_index_ + 2) % 3), SkipRangeCheck{}};
         }
 
         // returns the next axis in the ring sequence X -> Y -> Z -> X...
         constexpr CoordinateAxis next() const
         {
-            return CoordinateAxis{static_cast<uint8_t>((m_AxisIndex + 1) % 3), SkipRangeCheck{}};
+            return CoordinateAxis{static_cast<uint8_t>((axis_index_ + 1) % 3), SkipRangeCheck{}};
         }
     private:
         struct SkipRangeCheck {};
         explicit constexpr CoordinateAxis(uint8_t v, SkipRangeCheck) :
-            m_AxisIndex{v}
+            axis_index_{v}
         {}
 
-        uint8_t m_AxisIndex = 0;
+        uint8_t axis_index_ = 0;
     };
 
     std::ostream& operator<<(std::ostream&, CoordinateAxis);

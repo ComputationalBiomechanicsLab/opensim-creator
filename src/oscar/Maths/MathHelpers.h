@@ -40,7 +40,7 @@ namespace osc { struct Tetrahedron; }
 namespace osc
 {
     // computes horizontal FoV for a given vertical FoV + aspect ratio
-    Radians VerticalToHorizontalFOV(Radians vertical_fov, float aspectRatio);
+    Radians vertial_to_horizontal_fov(Radians vertical_fov, float aspect_ratio);
 
     // returns an XY NDC point converted from a screen/viewport point
     //
@@ -48,7 +48,7 @@ namespace osc
     // - input screen point has range: (0,0) is top-left, (1, 1) is bottom-right
     // - output NDC point has origin in middle, Y goes up
     // - output NDC point has range: (-1, 1) is top-left, (1, -1) is bottom-right
-    Vec2 TopleftRelPosToNDCPoint(Vec2 relpos);
+    Vec2 topleft_relative_pos_to_ndc_point(Vec2 relative_pos);
 
     // returns an XY top-left relative point converted from the given NDC point
     //
@@ -56,7 +56,7 @@ namespace osc
     // - input NDC point has range: (-1, -1) for top-left, (1, -1) is bottom-right
     // - output point has origin in the top-left, Y goes down
     // - output point has range: (0, 0) for top-left, (1, 1) for bottom-right
-    Vec2 NDCPointToTopLeftRelPos(Vec2 ndcPos);
+    Vec2 ndc_point_to_topleft_relative_pos(Vec2 ndc_pos);
 
     // returns an NDC affine point vector (i.e. {x, y, z, 1.0}) converted from a screen/viewport point
     //
@@ -66,98 +66,98 @@ namespace osc
     // - output NDC point has range -1 to +1 in each dimension
     // - output assumes Z is "at the front of the cube" (Z = -1.0f)
     // - output will therefore be: {xNDC, yNDC, -1.0f, 1.0f}
-    Vec4 TopleftRelPosToNDCCube(Vec2 relpos);
+    Vec4 topleft_relative_pos_to_ndc_cube(Vec2 relative_pos);
 
     // "un-project" a screen/viewport point into 3D world-space, assuming a
     // perspective camera
     //
     // - input screen point has origin in top-left, Y goes down
     // - input screen point has range: (0,0) is top-left, (1, 1) is bottom-right
-    // - `cameraWorldspaceOrigin` is the location of the camera in world space
-    // - `cameraViewMatrix` transforms points from world-space to view-space
-    // - `cameraProjMatrix` transforms points from view-space to world-space
-    Line PerspectiveUnprojectTopLeftScreenPosToWorldRay(
-        Vec2 relpos,
-        Vec3 cameraWorldspaceOrigin,
-        Mat4 const& cameraViewMatrix,
-        Mat4 const& cameraProjMatrix
+    // - `camera_worldspace_origin` is the location of the camera in world space
+    // - `camera_view_matrix` transforms points from world-space to view-space
+    // - `camera_proj_matrix` transforms points from view-space to world-space
+    Line perspective_unproject_topleft_screen_pos_to_world_ray(
+        Vec2 relative_pos,
+        Vec3 camera_worldspace_origin,
+        const Mat4& camera_view_matrix,
+        const Mat4& camera_proj_matrix
     );
 
     // returns a rect, created by mapping an Normalized Device Coordinates (NDC) rect
     // (i.e. -1.0 to 1.0) within a screenspace viewport (pixel units, topleft == (0, 0))
-    Rect NdcRectToScreenspaceViewportRect(Rect const& ndcRect, Rect const& viewport);
+    Rect ndc_rect_to_screenspace_viewport_rect(const Rect& ndc_rect, const Rect& viewport);
 
 
     // ----- `Sphere` helpers -----
 
     // returns a sphere that bounds the given vertices
-    Sphere bounding_sphere_of(std::span<Vec3 const>);
+    Sphere bounding_sphere_of(std::span<const Vec3>);
 
     // returns a sphere that loosely bounds the given AABB
-    Sphere bounding_sphere_of(AABB const&);
+    Sphere bounding_sphere_of(const AABB&);
 
     // returns an AABB that tightly bounds the sphere
-    AABB bounding_aabb_of(Sphere const&);
+    AABB bounding_aabb_of(const Sphere&);
 
 
     // ----- `Line` helpers -----
 
     // returns a line that has been transformed by the supplied transform matrix
-    Line TransformLine(Line const&, Mat4 const&);
+    Line transform_line(const Line&, const Mat4&);
 
     // returns a line that has been transformed by the inverse of the supplied transform
-    Line inverse_transform_line(Line const&, Transform const&);
+    Line inverse_transform_line(const Line&, const Transform&);
 
 
     // ----- `Disc` helpers -----
 
     // returns an xform that maps a disc to another disc
-    Mat4 DiscToDiscMat4(Disc const&, Disc const&);
+    Mat4 mat4_transform_between(const Disc&, const Disc&);
 
 
     // ----- `Segment` helpers -----
 
     // returns a transform matrix that maps a path segment to another path segment
-    Mat4 SegmentToSegmentMat4(LineSegment const&, LineSegment const&);
+    Mat4 mat4_transform_between(const LineSegment&, const LineSegment&);
 
     // returns a transform that maps a path segment to another path segment
-    Transform SegmentToSegmentTransform(LineSegment const&, LineSegment const&);
+    Transform transform_between(const LineSegment&, const LineSegment&);
 
     // returns a transform that maps a Y-to-Y (bottom-to-top) cylinder to a segment with the given radius
-    Transform cylinder_to_line_segment_transform(LineSegment const&, float radius);
+    Transform cylinder_to_line_segment_transform(const LineSegment&, float radius);
 
     // returns a transform that maps a Y-to-Y (bottom-to-top) cone to a segment with the given radius
-    Transform YToYConeToSegmentTransform(LineSegment const&, float radius);
+    Transform y_to_y_cone_to_segment_transform(const LineSegment&, float radius);
 
     // ----- other -----
 
     // ----- VecX/MatX helpers -----
 
     // returns a transform matrix that rotates dir1 to point in the same direction as dir2
-    Mat4 Dir1ToDir2Xform(Vec3 const& dir1, Vec3 const& dir2);
+    Mat4 mat4_transform_between_directions(const Vec3& dir1, const Vec3& dir2);
 
     // returns euler angles for performing an intrinsic, step-by-step, rotation about X, Y, and then Z
-    Eulers extract_eulers_xyz(Quat const&);
+    Eulers extract_eulers_xyz(const Quat&);
 
-    Vec3 transform_point(Mat4 const&, Vec3 const&);
+    Vec3 transform_point(const Mat4&, const Vec3&);
 
     // returns the a quaternion equivalent to the given euler angles
-    Quat WorldspaceRotation(Eulers const&);
+    Quat to_worldspace_rotation_quat(const Eulers&);
 
     // applies a world-space rotation to the transform
-    void ApplyWorldspaceRotation(
-        Transform& applicationTarget,
-        Eulers const& eulerAngles,
-        Vec3 const& rotationCenter
+    void apply_worldspace_rotation(
+        Transform& application_target,
+        const Eulers& euler_angles,
+        const Vec3& rotation_center
     );
 
-    float volume_of(Tetrahedron const&);
+    float volume_of(const Tetrahedron&);
 
     // returns arrays that transforms cube faces from worldspace to projection
     // space such that the observer is looking at each face of the cube from
     // the center of the cube
     std::array<Mat4, 6> CalcCubemapViewProjMatrices(
-        Mat4 const& projectionMatrix,
-        Vec3 cubeCenter
+        const Mat4& projection_matrix,
+        Vec3 cube_center
     );
 }

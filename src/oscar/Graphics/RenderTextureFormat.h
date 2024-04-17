@@ -2,7 +2,6 @@
 
 #include <iosfwd>
 
-// note: implementation is in `GraphicsImplementation.cpp`
 namespace osc
 {
     // format of the "color" (albedo) part of a render

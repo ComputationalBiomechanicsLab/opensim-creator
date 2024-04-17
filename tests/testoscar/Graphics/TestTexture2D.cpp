@@ -27,7 +27,7 @@ namespace
     Texture2D GenerateTexture()
     {
         Texture2D rv{Vec2i{2, 2}};
-        rv.setPixels(std::vector<Color>(4, Color::red()));
+        rv.set_pixels(std::vector<Color>(4, Color::red()));
         return rv;
     }
 }
@@ -47,9 +47,9 @@ TEST(Texture2D, DefaultConstructorCreatesRGBATextureWithExpectedColorSpaceEtc)
 {
     Texture2D t{Vec2i(1, 1)};
 
-    ASSERT_EQ(t.getDimensions(), Vec2i(1, 1));
+    ASSERT_EQ(t.dimensions(), Vec2i(1, 1));
     ASSERT_EQ(t.texture_format(), TextureFormat::RGBA32);
-    ASSERT_EQ(t.getColorSpace(), ColorSpace::sRGB);
+    ASSERT_EQ(t.color_space(), ColorSpace::sRGB);
     ASSERT_EQ(t.wrap_mode(), TextureWrapMode::Repeat);
     ASSERT_EQ(t.filter_mode(), TextureFilterMode::Linear);
 }
@@ -60,10 +60,10 @@ TEST(Texture2D, CanSetPixels32OnDefaultConstructedTexture)
     std::vector<Color32> const pixels(static_cast<size_t>(dimensions.x * dimensions.y));
 
     Texture2D t{dimensions};
-    t.setPixels32(pixels);
+    t.set_pixels32(pixels);
 
-    ASSERT_EQ(t.getDimensions(), dimensions);
-    ASSERT_EQ(t.getPixels32(), pixels);
+    ASSERT_EQ(t.dimensions(), dimensions);
+    ASSERT_EQ(t.pixels32(), pixels);
 }
 
 TEST(Texture2D, SetPixelsThrowsIfNumberOfPixelsDoesNotMatchDimensions)
@@ -73,7 +73,7 @@ TEST(Texture2D, SetPixelsThrowsIfNumberOfPixelsDoesNotMatchDimensions)
 
     Texture2D t{dimensions};
 
-    ASSERT_ANY_THROW({ t.setPixels(incorrectPixels); });
+    ASSERT_ANY_THROW({ t.set_pixels(incorrectPixels); });
 }
 
 TEST(Texture2D, SetPixels32ThrowsIfNumberOfPixelsDoesNotMatchDimensions)
@@ -82,7 +82,7 @@ TEST(Texture2D, SetPixels32ThrowsIfNumberOfPixelsDoesNotMatchDimensions)
     std::vector<Color32> const incorrectPixels(dimensions.x * dimensions.y + 1);
 
     Texture2D t{dimensions};
-    ASSERT_ANY_THROW({ t.setPixels32(incorrectPixels); });
+    ASSERT_ANY_THROW({ t.set_pixels32(incorrectPixels); });
 }
 
 TEST(Texture2D, SetPixelDataThrowsIfNumberOfPixelBytesDoesNotMatchDimensions)
@@ -127,7 +127,7 @@ TEST(Texture2D, SetPixelDataWith8BitSingleChannelDataFollowedByGetPixelsBlanksOu
     Texture2D t{dimensions, TextureFormat::R8};
     t.set_pixel_data(singleChannelPixels);
 
-    for (Color const& c : t.getPixels())
+    for (Color const& c : t.pixels())
     {
         ASSERT_EQ(c, Color(colorFloat, 0.0f, 0.0f, 1.0f));
     }
@@ -142,7 +142,7 @@ TEST(Texture2D, SetPixelDataWith8BitSingleChannelDataFollowedByGetPixels32Blanks
     Texture2D t{dimensions, TextureFormat::R8};
     t.set_pixel_data(singleChannelPixels);
 
-    for (Color32 const& c : t.getPixels32())
+    for (Color32 const& c : t.pixels32())
     {
         Color32 expected{color, 0x00, 0x00, 0xff};
         ASSERT_EQ(c, expected);
@@ -158,7 +158,7 @@ TEST(Texture2D, SetPixelDataWith32BitFloatingPointValuesFollowedByGetPixelDataRe
     Texture2D t(dimensions, TextureFormat::RGBAFloat);
     t.set_pixel_data(view_object_representations<uint8_t>(rgbaFloatPixels));
 
-    ASSERT_TRUE(ContainersEqual(t.getPixelData(), view_object_representations<uint8_t>(rgbaFloatPixels)));
+    ASSERT_TRUE(ContainersEqual(t.pixel_data(), view_object_representations<uint8_t>(rgbaFloatPixels)));
 }
 
 TEST(Texture2D, SetPixelDataWith32BitFloatingPointValuesFollowedByGetPixelsReturnsSameValues)
@@ -170,7 +170,7 @@ TEST(Texture2D, SetPixelDataWith32BitFloatingPointValuesFollowedByGetPixelsRetur
     Texture2D t(dimensions, TextureFormat::RGBAFloat);
     t.set_pixel_data(view_object_representations<uint8_t>(rgbaFloatPixels));
 
-    ASSERT_EQ(t.getPixels(), rgbaFloatPixels);  // because the texture holds 32-bit floats
+    ASSERT_EQ(t.pixels(), rgbaFloatPixels);  // because the texture holds 32-bit floats
 }
 
 TEST(Texture2D, SetPixelsOnAn8BitTextureLDRClampsTheColorValues)
@@ -181,9 +181,9 @@ TEST(Texture2D, SetPixelsOnAn8BitTextureLDRClampsTheColorValues)
 
     Texture2D t(dimensions, TextureFormat::RGBA32);  // note: not HDR
 
-    t.setPixels(hdrPixels);
+    t.set_pixels(hdrPixels);
 
-    ASSERT_NE(t.getPixels(), hdrPixels);  // because the impl had to convert them
+    ASSERT_NE(t.pixels(), hdrPixels);  // because the impl had to convert them
 }
 
 TEST(Texture2D, SetPixels32OnAn8BitTextureDoesntConvert)
@@ -194,9 +194,9 @@ TEST(Texture2D, SetPixels32OnAn8BitTextureDoesntConvert)
 
     Texture2D t(dimensions, TextureFormat::RGBA32);  // note: matches pixel format
 
-    t.setPixels32(pixels32);
+    t.set_pixels32(pixels32);
 
-    ASSERT_EQ(t.getPixels32(), pixels32);  // because no conversion was required
+    ASSERT_EQ(t.pixels32(), pixels32);  // because no conversion was required
 }
 
 TEST(Texture2D, SetPixels32OnA32BitTextureDoesntDetectablyChangeValues)
@@ -207,9 +207,9 @@ TEST(Texture2D, SetPixels32OnA32BitTextureDoesntDetectablyChangeValues)
 
     Texture2D t(dimensions, TextureFormat::RGBAFloat);  // note: higher precision than input
 
-    t.setPixels32(pixels32);
+    t.set_pixels32(pixels32);
 
-    ASSERT_EQ(t.getPixels32(), pixels32);  // because, although conversion happened, it was _from_ a higher precision
+    ASSERT_EQ(t.pixels32(), pixels32);  // because, although conversion happened, it was _from_ a higher precision
 }
 
 TEST(Texture2D, CanCopyConstruct)
@@ -247,7 +247,7 @@ TEST(Texture2D, GetWidthReturnsSuppliedWidth)
 
     Texture2D t{{width, height}};
 
-    ASSERT_EQ(t.getDimensions().x, width);
+    ASSERT_EQ(t.dimensions().x, width);
 }
 
 TEST(Texture2D, GetHeightReturnsSuppliedHeight)
@@ -257,21 +257,21 @@ TEST(Texture2D, GetHeightReturnsSuppliedHeight)
 
     Texture2D t{{width, height}};
 
-    ASSERT_EQ(t.getDimensions().y, height);
+    ASSERT_EQ(t.dimensions().y, height);
 }
 
 TEST(Texture2D, GetColorSpaceReturnsProvidedColorSpaceIfSRGB)
 {
     Texture2D t{{1, 1}, TextureFormat::RGBA32, ColorSpace::sRGB};
 
-    ASSERT_EQ(t.getColorSpace(), ColorSpace::sRGB);
+    ASSERT_EQ(t.color_space(), ColorSpace::sRGB);
 }
 
 TEST(Texture2D, GetColorSpaceReturnsProvidedColorSpaceIfLinear)
 {
     Texture2D t{{1, 1}, TextureFormat::RGBA32, ColorSpace::Linear};
 
-    ASSERT_EQ(t.getColorSpace(), ColorSpace::Linear);
+    ASSERT_EQ(t.color_space(), ColorSpace::Linear);
 }
 
 TEST(Texture2D, GetWrapModeReturnsRepeatedByDefault)

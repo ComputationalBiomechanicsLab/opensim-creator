@@ -56,8 +56,8 @@ namespace
         hdrTexture.set_filter_mode(TextureFilterMode::Linear);
 
         RenderTexture cubemapRenderTarget{{512, 512}};
-        cubemapRenderTarget.setDimensionality(TextureDimensionality::Cube);
-        cubemapRenderTarget.setColorFormat(RenderTextureFormat::RGBFloat16);
+        cubemapRenderTarget.set_dimensionality(TextureDimensionality::Cube);
+        cubemapRenderTarget.set_color_format(RenderTextureFormat::RGBFloat16);
 
         // create a 90 degree cube cone projection matrix
         Mat4 const projectionMatrix = perspective(90_deg, 1.0f, 0.1f, 10.0f);
@@ -87,8 +87,8 @@ namespace
         RenderTexture const& skybox)
     {
         RenderTexture irradianceCubemap{{32, 32}};
-        irradianceCubemap.setDimensionality(TextureDimensionality::Cube);
-        irradianceCubemap.setColorFormat(RenderTextureFormat::RGBFloat16);
+        irradianceCubemap.set_dimensionality(TextureDimensionality::Cube);
+        irradianceCubemap.set_color_format(RenderTextureFormat::RGBFloat16);
 
         Mat4 const captureProjection = perspective(90_deg, 1.0f, 0.1f, 10.0f);
 
@@ -119,8 +119,8 @@ namespace
         static_assert(cpp20::popcount(static_cast<unsigned>(levelZeroWidth)) == 1);
 
         RenderTexture captureRT{{levelZeroWidth, levelZeroWidth}};
-        captureRT.setDimensionality(TextureDimensionality::Cube);
-        captureRT.setColorFormat(RenderTextureFormat::RGBFloat16);
+        captureRT.set_dimensionality(TextureDimensionality::Cube);
+        captureRT.set_color_format(RenderTextureFormat::RGBFloat16);
 
         Mat4 const captureProjection = perspective(90_deg, 1.0f, 0.1f, 10.0f);
 
@@ -148,7 +148,7 @@ namespace
         // LOD of the cubemap's mipmaps
         for (size_t mip = 0; mip <= maxMipmapLevel; ++mip) {
             size_t const mipWidth = levelZeroWidth >> mip;
-            captureRT.setDimensions({static_cast<int>(mipWidth), static_cast<int>(mipWidth)});
+            captureRT.set_dimensions({static_cast<int>(mipWidth), static_cast<int>(mipWidth)});
 
             float const roughness = static_cast<float>(mip)/static_cast<float>(maxMipmapLevel);
             material.set_float("uRoughness", roughness);
@@ -165,7 +165,7 @@ namespace
         IResourceLoader& rl)
     {
         RenderTexture renderTex{{512, 512}};
-        renderTex.setColorFormat(RenderTextureFormat::RGFloat16);
+        renderTex.set_color_format(RenderTextureFormat::RGFloat16);
 
         Material material{Shader{
             rl.slurp("oscar_learnopengl/shaders/PBR/ibl_specular/BRDF.vert"),
@@ -229,8 +229,8 @@ private:
     void implOnDraw() final
     {
         Rect const outputRect = ui::GetMainViewportWorkspaceScreenRect();
-        m_OutputRender.setDimensions(dimensions_of(outputRect));
-        m_OutputRender.setAntialiasingLevel(App::get().getCurrentAntiAliasingLevel());
+        m_OutputRender.set_dimensions(dimensions_of(outputRect));
+        m_OutputRender.set_anti_aliasing_level(App::get().getCurrentAntiAliasingLevel());
 
         m_Camera.onDraw();
         draw3DRender();

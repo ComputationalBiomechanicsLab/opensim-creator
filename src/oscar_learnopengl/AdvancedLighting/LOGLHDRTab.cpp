@@ -111,10 +111,10 @@ private:
         {
             Rect const viewportRect = ui::GetMainViewportWorkspaceScreenRect();
             RenderTextureDescriptor descriptor{dimensions_of(viewportRect)};
-            descriptor.setAntialiasingLevel(App::get().getCurrentAntiAliasingLevel());
+            descriptor.set_anti_aliasing_level(App::get().getCurrentAntiAliasingLevel());
             if (m_Use16BitFormat)
             {
-                descriptor.setColorFormat(RenderTextureFormat::ARGBFloat16);
+                descriptor.set_color_format(RenderTextureFormat::ARGBFloat16);
             }
 
             m_SceneHDRTexture.reformat(descriptor);

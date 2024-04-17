@@ -13,13 +13,13 @@ TEST(RenderTargetColorAttachment, CanConstructFromPartsOfRenderTexture)
     RenderTexture renderTex;
     RenderTargetColorAttachment attachment
     {
-        renderTex.updColorBuffer(),
+        renderTex.upd_color_buffer(),
         RenderBufferLoadAction::Clear,
         RenderBufferStoreAction::Resolve,
         Color::red(),
     };
 
-    ASSERT_EQ(attachment.buffer, renderTex.updColorBuffer());
+    ASSERT_EQ(attachment.buffer, renderTex.upd_color_buffer());
     ASSERT_EQ(attachment.load_action, RenderBufferLoadAction::Clear);
     ASSERT_EQ(attachment.store_action, RenderBufferStoreAction::Resolve);
     ASSERT_EQ(attachment.clear_color, Color::red());
@@ -44,7 +44,7 @@ TEST(RenderTargetColorAttachment, EqualityReturnsTrueForCopies)
     RenderTexture renderTex;
     RenderTargetColorAttachment attachment
     {
-        renderTex.updColorBuffer(),
+        renderTex.upd_color_buffer(),
         RenderBufferLoadAction::Clear,
         RenderBufferStoreAction::Resolve,
         Color::red(),
@@ -60,7 +60,7 @@ TEST(RenderTargetColorAttachment, EqualityReturnsTrueForSeperatelyConstructedBut
 
     RenderTargetColorAttachment a
     {
-        renderTex.updColorBuffer(),
+        renderTex.upd_color_buffer(),
         RenderBufferLoadAction::Clear,
         RenderBufferStoreAction::Resolve,
         Color::red(),
@@ -68,7 +68,7 @@ TEST(RenderTargetColorAttachment, EqualityReturnsTrueForSeperatelyConstructedBut
 
     RenderTargetColorAttachment b
     {
-        renderTex.updColorBuffer(),
+        renderTex.upd_color_buffer(),
         RenderBufferLoadAction::Clear,
         RenderBufferStoreAction::Resolve,
         Color::red(),
@@ -83,7 +83,7 @@ TEST(RenderTargetColorAttachment, EqualityReturnsFalseIfSomethingIsModified)
     RenderTexture secondRenderTex;
     RenderTargetColorAttachment attachment
     {
-        firstRenderTex.updColorBuffer(),
+        firstRenderTex.upd_color_buffer(),
         RenderBufferLoadAction::Clear,
         RenderBufferStoreAction::Resolve,
         Color::red(),
@@ -93,7 +93,7 @@ TEST(RenderTargetColorAttachment, EqualityReturnsFalseIfSomethingIsModified)
     {
         RenderTargetColorAttachment copy = attachment;
         ASSERT_EQ(copy, attachment);
-        copy.buffer = secondRenderTex.updColorBuffer();
+        copy.buffer = secondRenderTex.upd_color_buffer();
         ASSERT_NE(copy, attachment);
     }
 

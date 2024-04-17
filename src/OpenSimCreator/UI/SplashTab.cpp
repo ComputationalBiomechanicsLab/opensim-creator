@@ -167,7 +167,7 @@ private:
     {
         Rect tabRect = ui::GetMainViewportWorkspaceScreenRect();
         // pretend the attributation bar isn't there (avoid it)
-        tabRect.p2.y -= static_cast<float>(max(m_TudLogo.getDimensions().y, m_CziLogo.getDimensions().y)) - 2.0f*ui::GetStyleWindowPadding().y;
+        tabRect.p2.y -= static_cast<float>(max(m_TudLogo.dimensions().y, m_CziLogo.dimensions().y)) - 2.0f*ui::GetStyleWindowPadding().y;
 
         Vec2 const menuAndTopLogoDims = elementwise_min(dimensions_of(tabRect), Vec2{m_SplashMenuMaxDims.x, m_SplashMenuMaxDims.y + m_MainAppLogoDims.y + m_TopLogoPadding.y});
         Vec2 const menuAndTopLogoTopLeft = tabRect.p1 + 0.5f*(dimensions_of(tabRect) - menuAndTopLogoDims);
@@ -359,15 +359,15 @@ private:
     {
         Rect const viewportRect = ui::GetMainViewportWorkspaceScreenRect();
         Vec2 loc = viewportRect.p2;
-        loc.x = loc.x - 2.0f*ui::GetStyleWindowPadding().x - static_cast<float>(m_CziLogo.getDimensions().x) - 2.0f*ui::GetStyleItemSpacing().x - static_cast<float>(m_TudLogo.getDimensions().x);
-        loc.y = loc.y - 2.0f*ui::GetStyleWindowPadding().y - static_cast<float>(max(m_CziLogo.getDimensions().y, m_TudLogo.getDimensions().y));
+        loc.x = loc.x - 2.0f*ui::GetStyleWindowPadding().x - static_cast<float>(m_CziLogo.dimensions().x) - 2.0f*ui::GetStyleItemSpacing().x - static_cast<float>(m_TudLogo.dimensions().x);
+        loc.y = loc.y - 2.0f*ui::GetStyleWindowPadding().y - static_cast<float>(max(m_CziLogo.dimensions().y, m_TudLogo.dimensions().y));
 
         ui::SetNextWindowPos(loc);
         ui::Begin("##czlogo", nullptr, ui::GetMinimalWindowFlags());
         ui::Image(m_CziLogo);
         ui::End();
 
-        loc.x += static_cast<float>(m_CziLogo.getDimensions().x) + 2.0f*ui::GetStyleItemSpacing().x;
+        loc.x += static_cast<float>(m_CziLogo.dimensions().x) + 2.0f*ui::GetStyleItemSpacing().x;
         ui::SetNextWindowPos(loc);
         ui::Begin("##tudlogo", nullptr, ui::GetMinimalWindowFlags());
         ui::Image(m_TudLogo);
@@ -409,7 +409,7 @@ private:
 
     // dimensions of stuff
     Vec2 m_SplashMenuMaxDims = {640.0f, 512.0f};
-    Vec2 m_MainAppLogoDims =  m_MainAppLogo.getDimensions();
+    Vec2 m_MainAppLogoDims =  m_MainAppLogo.dimensions();
     Vec2 m_TopLogoPadding = {25.0f, 35.0f};
 
     // UI state

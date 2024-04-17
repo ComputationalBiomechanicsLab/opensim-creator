@@ -412,7 +412,7 @@ private:
     void renderMesh(Mesh const& mesh, Vec2i dims, std::optional<RenderTexture>& out)
     {
         RenderTextureDescriptor desc{dims};
-        desc.setAntialiasingLevel(App::get().getCurrentAntiAliasingLevel());
+        desc.set_anti_aliasing_level(App::get().getCurrentAntiAliasingLevel());
         out.emplace(desc);
         graphics::draw(mesh, identity<Transform>(), m_Material, m_Camera);
         graphics::draw(mesh, identity<Transform>(), wireframe_material_, m_Camera);
@@ -431,8 +431,8 @@ private:
         // render all fully-established landmark pairs
         for (LandmarkPair2D const& p : m_LandmarkPairs)
         {
-            Vec2 const p1 = ht.rect.p1 + (dimensions_of(ht.rect) * NDCPointToTopLeftRelPos(p.src));
-            Vec2 const p2 = ht.rect.p1 + (dimensions_of(ht.rect) * NDCPointToTopLeftRelPos(p.dest));
+            Vec2 const p1 = ht.rect.p1 + (dimensions_of(ht.rect) * ndc_point_to_topleft_relative_pos(p.src));
+            Vec2 const p2 = ht.rect.p1 + (dimensions_of(ht.rect) * ndc_point_to_topleft_relative_pos(p.dest));
 
             drawlist->AddLine(p1, p2, m_ConnectionLineColor, 5.0f);
             drawlist->AddRectFilled(p1 - 12.0f, p1 + 12.0f, m_SrcSquareColor);
@@ -444,7 +444,7 @@ private:
         {
             GUIFirstClickMouseState const& st = std::get<GUIFirstClickMouseState>(m_MouseState);
 
-            Vec2 const p1 = ht.rect.p1 + (dimensions_of(ht.rect) * NDCPointToTopLeftRelPos(st.srcNDCPos));
+            Vec2 const p1 = ht.rect.p1 + (dimensions_of(ht.rect) * ndc_point_to_topleft_relative_pos(st.srcNDCPos));
             Vec2 const p2 = ui::GetMousePos();
 
             drawlist->AddLine(p1, p2, m_ConnectionLineColor, 5.0f);
@@ -469,7 +469,7 @@ private:
         Vec2 const mouseScreenPos = ui::GetMousePos();
         Vec2 const mouseImagePos = mouseScreenPos - ht.rect.p1;
         Vec2 const mouseImageRelPos = mouseImagePos / dimensions_of(ht.rect);
-        Vec2 const mouseImageNDCPos = TopleftRelPosToNDCPoint(mouseImageRelPos);
+        Vec2 const mouseImageNDCPos = topleft_relative_pos_to_ndc_point(mouseImageRelPos);
 
         ui::DrawTooltipBodyOnly(to_string(mouseImageNDCPos));
 
@@ -485,7 +485,7 @@ private:
         Vec2 const mouseScreenPos = ui::GetMousePos();
         Vec2 const mouseImagePos = mouseScreenPos - ht.rect.p1;
         Vec2 const mouseImageRelPos = mouseImagePos / dimensions_of(ht.rect);
-        Vec2 const mouseImageNDCPos = TopleftRelPosToNDCPoint(mouseImageRelPos);
+        Vec2 const mouseImageNDCPos = topleft_relative_pos_to_ndc_point(mouseImageRelPos);
 
         ui::DrawTooltipBodyOnly(to_string(mouseImageNDCPos) + "*");
 

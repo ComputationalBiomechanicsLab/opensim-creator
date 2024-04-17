@@ -11,55 +11,55 @@ namespace osc
     // has a spatial and hierarchical bounds, plus an index to a `BVHPrim`
     class BVHNode final {
     public:
-        static BVHNode leaf(AABB const& bounds, size_t primOffset)
+        static BVHNode leaf(const AABB& bounds, size_t first_prim_offset)
         {
-            return BVHNode{bounds, primOffset | c_LeafMask};
+            return BVHNode{bounds, first_prim_offset | c_leaf_mask};
         }
 
-        static BVHNode node(AABB const& bounds, size_t numLhs)
+        static BVHNode node(const AABB& bounds, size_t num_lhs_children)
         {
-            return BVHNode{bounds, numLhs & ~c_LeafMask};
+            return BVHNode{bounds, num_lhs_children & ~c_leaf_mask};
         }
 
     private:
-        BVHNode(AABB const& bounds_, size_t data_) :
-            m_Bounds{bounds_},
-            m_Data{data_}
+        BVHNode(const AABB& bounds, size_t data) :
+            bounds_{bounds},
+            data_{data}
         {}
     public:
-        AABB const& bounds() const
+        const AABB& bounds() const
         {
-            return m_Bounds;
+            return bounds_;
         }
 
-        bool isLeaf() const
+        bool is_leaf() const
         {
-            return (m_Data & c_LeafMask) > 0;
+            return (data_ & c_leaf_mask) > 0;
         }
 
-        bool isNode() const
+        bool is_node() const
         {
-            return !isLeaf();
+            return !is_leaf();
         }
 
-        size_t getNumLhsNodes() const
+        size_t num_lhs_nodes() const
         {
-            return m_Data & ~c_LeafMask;
+            return data_ & ~c_leaf_mask;
         }
 
-        void setNumLhsNodes(size_t n)
+        void set_num_lhs_nodes(size_t n)
         {
-            m_Data = n & ~c_LeafMask;
+            data_ = n & ~c_leaf_mask;
         }
 
-        size_t getFirstPrimOffset() const
+        size_t first_prim_offset() const
         {
-            return m_Data & ~c_LeafMask;
+            return data_ & ~c_leaf_mask;
         }
 
     private:
-        static inline constexpr size_t c_LeafMask = static_cast<size_t>(1) << (8*sizeof(size_t) - 1);
-        AABB m_Bounds{};  // the union of all AABBs below, and including, this node
-        size_t m_Data{};
+        static inline constexpr size_t c_leaf_mask = static_cast<size_t>(1) << (8*sizeof(size_t) - 1);
+        AABB bounds_{};  // the union of all AABBs below, and including, this node
+        size_t data_{};
     };
 }

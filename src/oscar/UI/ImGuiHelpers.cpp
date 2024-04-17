@@ -422,7 +422,7 @@ void osc::ui::UpdateCameraFromInputs(Camera& camera, Eulers& eulers)
     eulers.y += sensitivity * -mouseDelta.x;
     eulers.y = mod(eulers.y, 360_deg);
 
-    camera.set_rotation(WorldspaceRotation(eulers));
+    camera.set_rotation(to_worldspace_rotation_quat(eulers));
 }
 
 Rect osc::ui::ContentRegionAvailScreenRect()
@@ -433,7 +433,7 @@ Rect osc::ui::ContentRegionAvailScreenRect()
 
 void osc::ui::Image(Texture2D const& t)
 {
-    Image(t, t.getDimensions());
+    Image(t, t.dimensions());
 }
 
 void osc::ui::Image(Texture2D const& t, Vec2 dims)
@@ -455,7 +455,7 @@ void osc::ui::Image(
 
 void osc::ui::Image(RenderTexture const& tex)
 {
-    return Image(tex, tex.getDimensions());
+    return Image(tex, tex.dimensions());
 }
 
 void osc::ui::Image(RenderTexture const& t, Vec2 dims)

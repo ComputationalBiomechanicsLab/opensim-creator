@@ -39,7 +39,7 @@ namespace osc
         bool isModal() const;
         void setModal(bool);
         void setRect(Rect const&);
-        void setDimensions(Vec2);
+        void set_dimensions(Vec2);
         void set_position(std::optional<Vec2>);
 
     private:
