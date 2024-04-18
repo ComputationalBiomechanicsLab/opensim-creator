@@ -124,13 +124,13 @@ public:
 
     void onMount()
     {
-        App::upd().makeMainEventLoopWaiting();
+        App::upd().make_main_loop_waiting();
         m_PopupManager.onMount();
     }
 
     void onUnmount()
     {
-        App::upd().makeMainEventLoopPolling();
+        App::upd().make_main_loop_polling();
     }
 
     bool onEvent(SDL_Event const& e)
@@ -154,7 +154,7 @@ public:
 
     void onTick()
     {
-        auto const dt = static_cast<float>(App::get().getFrameDeltaSinceLastFrame().count());
+        auto const dt = static_cast<float>(App::get().frame_delta_since_last_frame().count());
 
         m_Shared->tick(dt);
 
@@ -280,7 +280,7 @@ private:
     void implRequestPop(MeshImporterUILayer&) final
     {
         m_Maybe3DViewerModal.reset();
-        App::upd().requestRedraw();
+        App::upd().request_redraw();
     }
 
     // try to select *only* what is currently hovered
@@ -786,7 +786,7 @@ private:
         else if (ctrlOrSuperDown && ui::IsKeyPressed(ImGuiKey_Q))
         {
             // Ctrl+Q: quit application
-            App::upd().requestQuit();
+            App::upd().request_quit();
             return true;
         }
         else if (ctrlOrSuperDown && ui::IsKeyPressed(ImGuiKey_A))
@@ -1384,7 +1384,7 @@ private:
             return;
         }
 
-        AppMetadata const& appMetadata = App::get().getMetadata();
+        AppMetadata const& appMetadata = App::get().metadata();
         ObjMetadata const objMetadata
         {
             CalcFullApplicationNameWithVersionAndBuild(appMetadata),
@@ -1423,7 +1423,7 @@ private:
             return;
         }
 
-        AppMetadata const& appMetadata = App::get().getMetadata();
+        AppMetadata const& appMetadata = App::get().metadata();
         StlMetadata const stlMetadata
         {
             CalcFullApplicationNameWithVersionAndBuild(appMetadata),
@@ -1683,7 +1683,7 @@ private:
             {
                 m_MaybeOpenedContextMenu = MeshImporterHover{id, {}};
                 ui::OpenPopup("##maincontextmenu");
-                App::upd().requestRedraw();
+                App::upd().request_redraw();
             }
         }
 
@@ -2140,7 +2140,7 @@ private:
         if (wasUsingLastFrame && !isUsingThisFrame)
         {
             m_Shared->commitCurrentModelGraph("manipulated selection");
-            App::upd().requestRedraw();
+            App::upd().request_redraw();
         }
 
         // if no manipulation happened this frame, exit early
@@ -2353,7 +2353,7 @@ private:
 
             if (ui::MenuItem(ICON_FA_TIMES_CIRCLE " Quit", "Ctrl+Q"))
             {
-                App::upd().requestQuit();
+                App::upd().request_quit();
             }
 
             ui::EndMenu();

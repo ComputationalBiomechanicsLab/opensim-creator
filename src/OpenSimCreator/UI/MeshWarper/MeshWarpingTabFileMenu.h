@@ -60,7 +60,7 @@ namespace osc
 
             if (ui::MenuItem(ICON_FA_TIMES_CIRCLE " Quit", "Ctrl+Q"))
             {
-                App::upd().requestQuit();
+                App::upd().request_quit();
             }
         }
 

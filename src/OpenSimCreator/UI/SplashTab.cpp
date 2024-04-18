@@ -121,12 +121,12 @@ public:
         // used files etc. (#618)
         m_MainMenuFileTab = MainMenuFileTab{};
 
-        App::upd().makeMainEventLoopWaiting();
+        App::upd().make_main_loop_waiting();
     }
 
     void onUnmount()
     {
-        App::upd().makeMainEventLoopPolling();
+        App::upd().make_main_loop_polling();
     }
 
     bool onEvent(SDL_Event const& e)
@@ -202,7 +202,7 @@ private:
 
         SceneRendererParams params{m_LastSceneRendererParams};
         params.dimensions = dimensions_of(screenRect);
-        params.antialiasing_level = App::get().getCurrentAntiAliasingLevel();
+        params.antialiasing_level = App::get().anti_aliasing_level();
         params.projection_matrix = m_Camera.projection_matrix(aspect_ratio(screenRect));
 
         if (params != m_LastSceneRendererParams)
@@ -269,10 +269,10 @@ private:
         {
             m_Parent->addAndSelectTab<mi::MeshImporterTab>(m_Parent);
         }
-        App::upd().addFrameAnnotation("SplashTab/ImportMeshesMenuItem", ui::GetItemRect());
+        App::upd().add_frame_annotation("SplashTab/ImportMeshesMenuItem", ui::GetItemRect());
         if (ui::MenuItem(ICON_FA_BOOK " Open Documentation"))
         {
-            OpenPathInOSDefaultApplication(App::get().getConfig().getHTMLDocsDir() / "index.html");
+            OpenPathInOSDefaultApplication(App::get().config().getHTMLDocsDir() / "index.html");
         }
     }
 
@@ -388,7 +388,7 @@ private:
 
         ImDrawList* const dl = ui::GetForegroundDrawList();
         ImU32 const color = ui::ToImU32(Color::black());
-        std::string const text = CalcFullApplicationNameWithVersionAndBuild(App::get().getMetadata());
+        std::string const text = CalcFullApplicationNameWithVersionAndBuild(App::get().metadata());
         dl->AddText(pos, color, text.c_str());
     }
 

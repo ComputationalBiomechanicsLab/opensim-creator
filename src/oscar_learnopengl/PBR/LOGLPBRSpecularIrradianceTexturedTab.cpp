@@ -218,14 +218,14 @@ public:
 private:
     void implOnMount() final
     {
-        App::upd().makeMainEventLoopPolling();
+        App::upd().make_main_loop_polling();
         m_Camera.onMount();
     }
 
     void implOnUnmount() final
     {
         m_Camera.onUnmount();
-        App::upd().makeMainEventLoopWaiting();
+        App::upd().make_main_loop_waiting();
     }
 
     bool implOnEvent(SDL_Event const& e) final
@@ -237,7 +237,7 @@ private:
     {
         Rect const outputRect = ui::GetMainViewportWorkspaceScreenRect();
         m_OutputRender.set_dimensions(dimensions_of(outputRect));
-        m_OutputRender.set_anti_aliasing_level(App::get().getCurrentAntiAliasingLevel());
+        m_OutputRender.set_anti_aliasing_level(App::get().anti_aliasing_level());
 
         m_Camera.onDraw();
         draw3DRender();

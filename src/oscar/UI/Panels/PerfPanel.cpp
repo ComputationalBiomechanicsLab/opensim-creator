@@ -41,17 +41,17 @@ private:
         ui::Columns();
 
         {
-            bool waiting = App::get().isMainLoopWaiting();
+            bool waiting = App::get().is_main_loop_waiting();
             if (ui::Checkbox("waiting", &waiting))
             {
-                App::upd().setMainLoopWaiting(waiting);
+                App::upd().set_main_loop_waiting(waiting);
             }
         }
         {
             bool vsync = App::get().is_vsync_enabled();
             if (ui::Checkbox("VSYNC", &vsync))
             {
-                App::upd().setVsync(vsync);
+                App::upd().set_vsync(vsync);
             }
         }
         if (ui::Button("clear measurements"))

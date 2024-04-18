@@ -35,7 +35,7 @@ osc::mi::MeshLoadResponse osc::mi::respondToMeshloadRequest(MeshLoadRequest msg)
     }
 
     // ensure the UI thread redraws after the mesh is loaded
-    App::upd().requestRedraw();
+    App::upd().request_redraw();
 
     return MeshLoadOKResponse{msg.preferredAttachmentPoint, std::move(loadedMeshes)};
 }

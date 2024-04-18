@@ -221,7 +221,7 @@ namespace osc
         {
             SceneRendererParams const params = calc_standard_dark_scene_render_params(
                 m_Camera,
-                App::get().getCurrentAntiAliasingLevel(),
+                App::get().anti_aliasing_level(),
                 dims
             );
             std::vector<SceneDecoration> const decorations = generateDecorations(maybeMeshCollision, maybeLandmarkCollision);

@@ -76,14 +76,14 @@ public:
 private:
     void implOnMount() final
     {
-        App::upd().makeMainEventLoopPolling();
+        App::upd().make_main_loop_polling();
         m_Camera.onMount();
     }
 
     void implOnUnmount() final
     {
         m_Camera.onUnmount();
-        App::upd().makeMainEventLoopWaiting();
+        App::upd().make_main_loop_waiting();
     }
 
     bool implOnEvent(SDL_Event const& e) final
@@ -93,7 +93,7 @@ private:
 
     void implOnTick() final
     {
-        double const dt = App::get().getFrameDeltaSinceAppStartup().count();
+        double const dt = App::get().frame_delta_since_startup().count();
         m_Step1Transform.rotation = angle_axis(50_deg * dt, UnitVec3{0.5f, 1.0f, 0.0f});
     }
 

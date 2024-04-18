@@ -513,7 +513,7 @@ private:
     {
         SceneRendererParams params{m_LastRendererParams};
         params.dimensions = dims;
-        params.antialiasing_level = App::get().getCurrentAntiAliasingLevel();
+        params.antialiasing_level = App::get().anti_aliasing_level();
         params.draw_rims = true;
         params.draw_floor = false;
         params.view_matrix = m_Camera.view_matrix();

@@ -176,14 +176,14 @@ public:
 private:
     void implOnMount() final
     {
-        App::upd().makeMainEventLoopPolling();
+        App::upd().make_main_loop_polling();
         m_UserCamera.onMount();
     }
 
     void implOnUnmount() final
     {
         m_UserCamera.onUnmount();
-        App::upd().makeMainEventLoopWaiting();
+        App::upd().make_main_loop_waiting();
     }
 
     bool implOnEvent(SDL_Event const& e) final

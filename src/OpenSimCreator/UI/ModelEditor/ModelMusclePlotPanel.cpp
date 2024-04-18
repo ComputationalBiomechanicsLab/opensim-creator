@@ -652,7 +652,7 @@ namespace
             }
 
             // something happened on a background thread, the UI thread should probably redraw
-            App::upd().requestRedraw();
+            App::upd().request_redraw();
         }
 
         bool getIsLocked() const

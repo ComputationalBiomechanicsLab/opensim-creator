@@ -373,7 +373,7 @@ void osc::ActionTrySaveMeshToObjFile(Mesh const& mesh, ObjWriterFlags flags)
         return;  // couldn't open for writing
     }
 
-    AppMetadata const& appMetadata = App::get().getMetadata();
+    AppMetadata const& appMetadata = App::get().metadata();
     ObjMetadata const objMetadata
     {
         CalcFullApplicationNameWithVersionAndBuild(appMetadata),
@@ -406,7 +406,7 @@ void osc::ActionTrySaveMeshToStlFile(Mesh const& mesh)
         return;  // couldn't open for writing
     }
 
-    AppMetadata const& appMetadata = App::get().getMetadata();
+    AppMetadata const& appMetadata = App::get().metadata();
     StlMetadata const stlMetadata
     {
         CalcFullApplicationNameWithVersionAndBuild(appMetadata),

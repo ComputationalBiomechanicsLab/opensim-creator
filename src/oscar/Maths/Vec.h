@@ -17,11 +17,11 @@ namespace osc
     struct Vec;
 
     template<size_t L, typename T>
-    std::ostream& operator<<(std::ostream& o, Vec<L, T> const& v)
+    std::ostream& operator<<(std::ostream& o, const Vec<L, T>& v)
     {
         o << "Vec" << L << '(';
         std::string_view delim;
-        for (T const& el : v) {
+        for (const T& el : v) {
             o << delim << el;
             delim = ", ";
         }
@@ -30,7 +30,7 @@ namespace osc
     }
 
     template<size_t L, typename T>
-    std::string to_string(Vec<L, T> const& v)
+    std::string to_string(const Vec<L, T>& v)
     {
         std::stringstream ss;
         ss << v;
@@ -40,7 +40,7 @@ namespace osc
     // when handled as a tuple-like object, a `Vec` decomposes into its elements
 
     template<size_t I, size_t L, typename T>
-    constexpr T const& get(Vec<L, T> const& v) { return v[I]; }
+    constexpr const T& get(const Vec<L, T>& v) { return v[I]; }
 
     template<size_t I, size_t L, typename T>
     constexpr T& get(Vec<L, T>& v) { return v[I]; }
@@ -49,7 +49,7 @@ namespace osc
     constexpr T&& get(Vec<L, T>&& v) { return std::move(v[I]); }
 
     template<size_t I, size_t L, typename T>
-    constexpr T const&& get(Vec<L, T> const&& v) { return std::move(v[I]); }
+    constexpr const T&& get(const Vec<L, T>&& v) { return std::move(v[I]); }
 }
 
 template<size_t L, typename T>
@@ -64,7 +64,7 @@ struct std::tuple_element<I, osc::Vec<L, T>> {
 
 template<size_t L, typename T>
 struct std::hash<osc::Vec<L, T>> final {
-    size_t operator()(osc::Vec<L, T> const& v) const
+    size_t operator()(const osc::Vec<L, T>& v) const
     {
         return osc::HashRange(v);
     }

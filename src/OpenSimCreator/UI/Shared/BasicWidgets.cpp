@@ -92,7 +92,7 @@ namespace
             return;
         }
 
-        AppMetadata const& appMetadata = App::get().getMetadata();
+        AppMetadata const& appMetadata = App::get().metadata();
         DAEMetadata daeMetadata
         {
             GetBestHumanReadableApplicationName(appMetadata),
@@ -226,7 +226,7 @@ namespace
             return;
         }
 
-        AppMetadata const& appMetadata = App::get().getMetadata();
+        AppMetadata const& appMetadata = App::get().metadata();
         ObjMetadata const objMetadata
         {
             CalcFullApplicationNameWithVersionAndBuild(appMetadata),
@@ -274,7 +274,7 @@ namespace
             return;
         }
 
-        AppMetadata const& appMetadata = App::get().getMetadata();
+        AppMetadata const& appMetadata = App::get().metadata();
         StlMetadata const stlMetadata
         {
             CalcFullApplicationNameWithVersionAndBuild(appMetadata),

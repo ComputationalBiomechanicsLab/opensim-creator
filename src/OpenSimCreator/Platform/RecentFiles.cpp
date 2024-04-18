@@ -93,7 +93,7 @@ namespace
 }
 
 osc::RecentFiles::RecentFiles() :
-    m_DiskLocation{GetRecentFilesFilePath(App::get().getUserDataDirPath())},
+    m_DiskLocation{GetRecentFilesFilePath(App::get().user_data_dir())},
     m_Files{LoadRecentFilesFile(m_DiskLocation)}
 {
 }

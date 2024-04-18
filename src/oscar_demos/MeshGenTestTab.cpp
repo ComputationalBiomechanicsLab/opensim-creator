@@ -67,7 +67,7 @@ private:
         ui::DockSpaceOverViewport(ui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
         if (m_Viewer.isHovered()) {
-            ui::UpdatePolarCameraFromMouseInputs(m_Camera, App::get().dims());
+            ui::UpdatePolarCameraFromMouseInputs(m_Camera, App::get().dimensions());
         }
 
         if (ui::Begin("viewer")) {
@@ -82,7 +82,7 @@ private:
 
             Vec2 contentRegion = ui::GetContentRegionAvail();
             m_RenderParams.dimensions = elementwise_max(contentRegion, {0.0f, 0.0f});
-            m_RenderParams.antialiasing_level = App::get().getCurrentAntiAliasingLevel();
+            m_RenderParams.antialiasing_level = App::get().anti_aliasing_level();
 
             {
                 m_RenderParams.light_direction = recommended_light_direction(m_Camera);

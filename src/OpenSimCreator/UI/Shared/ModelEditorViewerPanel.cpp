@@ -154,7 +154,7 @@ namespace
                     renderParamsBefore,
                     renderParamsAfter,
                     GetSettingsKeyPrefixForPanel(m_PanelName),
-                    App::upd().updConfig()
+                    App::upd().upd_config()
                 );
             }
 
@@ -411,7 +411,7 @@ private:
                 *m_Parameters.getModelSharedPtr(),
                 m_Parameters.getRenderParams(),
                 dimensions_of(m_State.viewportRect),
-                App::get().getCurrentAntiAliasingLevel()
+                App::get().anti_aliasing_level()
             );
             ui::Image(
                 sceneTexture,

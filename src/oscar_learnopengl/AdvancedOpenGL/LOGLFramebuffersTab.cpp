@@ -67,14 +67,14 @@ public:
 private:
     void implOnMount() final
     {
-        App::upd().makeMainEventLoopPolling();
+        App::upd().make_main_loop_polling();
         m_SceneCamera.onMount();
     }
 
     void implOnUnmount() final
     {
         m_SceneCamera.onUnmount();
-        App::upd().makeMainEventLoopWaiting();
+        App::upd().make_main_loop_waiting();
     }
 
     bool implOnEvent(SDL_Event const& e) final
@@ -90,7 +90,7 @@ private:
         Rect viewportRect = ui::GetMainViewportWorkspaceScreenRect();
         Vec2 viewportRectDims = dimensions_of(viewportRect);
         m_RenderTexture.set_dimensions(viewportRectDims);
-        m_RenderTexture.set_anti_aliasing_level(App::get().getCurrentAntiAliasingLevel());
+        m_RenderTexture.set_anti_aliasing_level(App::get().anti_aliasing_level());
 
         // render scene
         {

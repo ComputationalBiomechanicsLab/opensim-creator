@@ -168,7 +168,7 @@ public:
 
     void onMount()
     {
-        App::upd().makeMainEventLoopWaiting();
+        App::upd().make_main_loop_waiting();
         m_TabName = computeTabName();
         m_PopupManager.onMount();
         m_PanelManager->onMount();
@@ -177,7 +177,7 @@ public:
     void onUnmount()
     {
         m_PanelManager->onUnmount();
-        App::upd().makeMainEventLoopPolling();
+        App::upd().make_main_loop_polling();
     }
 
     bool onEvent(SDL_Event const& e)

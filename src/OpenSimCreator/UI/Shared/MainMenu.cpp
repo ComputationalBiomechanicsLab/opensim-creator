@@ -41,7 +41,7 @@ osc::MainMenuFileTab::MainMenuFileTab() :
     exampleOsimFiles
     {
         FindFilesWithExtensionsRecursive(
-            App::resourceFilepath("models"),
+            App::resource_filepath("models"),
             std::to_array({std::string_view{".osim"}})
         )
     }
@@ -216,13 +216,13 @@ void osc::MainMenuFileTab::onDraw(
     {
         api->addAndSelectTab<mi::MeshImporterTab>(api);
     }
-    App::upd().addFrameAnnotation("MainMenu/ImportMeshesMenuItem", ui::GetItemRect());
+    App::upd().add_frame_annotation("MainMenu/ImportMeshesMenuItem", ui::GetItemRect());
 
 
 
     if (ui::MenuItem(ICON_FA_TIMES_CIRCLE " Quit", "Ctrl+Q"))
     {
-        App::upd().requestQuit();
+        App::upd().request_quit();
     }
 
     ui::EndMenu();
@@ -257,8 +257,8 @@ void osc::MainMenuAboutTab::onDraw()
         ui::DrawHelpMarker("the level of MultiSample Anti-Aliasing to use. This only affects 3D renders *within* the UI, not the whole UI (panels etc. will not be affected)");
         ui::NextColumn();
         {
-            AntiAliasingLevel const current = App::get().getCurrentAntiAliasingLevel();
-            AntiAliasingLevel const max = App::get().getMaxAntiAliasingLevel();
+            AntiAliasingLevel const current = App::get().anti_aliasing_level();
+            AntiAliasingLevel const max = App::get().max_anti_aliasing_level();
 
             if (ui::BeginCombo("##msxaa", to_string(current)))
             {
@@ -267,7 +267,7 @@ void osc::MainMenuAboutTab::onDraw()
                     bool selected = l == current;
                     if (ui::Selectable(to_string(l), &selected))
                     {
-                        App::upd().setCurrentAntiAliasingLevel(l);
+                        App::upd().set_anti_aliasing_level(l);
                     }
                 }
                 ui::EndCombo();
@@ -280,15 +280,15 @@ void osc::MainMenuAboutTab::onDraw()
 
         if (ui::Button(ICON_FA_EXPAND " fullscreen"))
         {
-            App::upd().makeFullscreen();
+            App::upd().make_fullscreen();
         }
         if (ui::Button(ICON_FA_EXPAND " windowed fullscreen"))
         {
-            App::upd().makeWindowedFullscreen();
+            App::upd().make_windowed_fullscreen();
         }
         if (ui::Button(ICON_FA_WINDOW_RESTORE " windowed"))
         {
-            App::upd().makeWindowed();
+            App::upd().make_windowed();
         }
         ui::NextColumn();
 
@@ -317,7 +317,7 @@ void osc::MainMenuAboutTab::onDraw()
     ui::Separator();
     ui::Dummy({0.0f, 0.5f});
     {
-        AppMetadata const& metadata = App::get().getMetadata();
+        AppMetadata const& metadata = App::get().metadata();
 
         ui::Columns(2);
 
@@ -333,22 +333,22 @@ void osc::MainMenuAboutTab::onDraw()
 
         ui::TextUnformatted("GRAPHICS_VENDOR");
         ui::NextColumn();
-        ui::Text(App::get().getGraphicsBackendVendorString());
+        ui::Text(App::get().graphics_backend_vendor_string());
         ui::NextColumn();
 
         ui::TextUnformatted("GRAPHICS_RENDERER");
         ui::NextColumn();
-        ui::Text(App::get().getGraphicsBackendRendererString());
+        ui::Text(App::get().graphics_backend_renderer_string());
         ui::NextColumn();
 
         ui::TextUnformatted("GRAPHICS_RENDERER_VERSION");
         ui::NextColumn();
-        ui::Text(App::get().getGraphicsBackendVersionString());
+        ui::Text(App::get().graphics_backend_version_string());
         ui::NextColumn();
 
         ui::TextUnformatted("GRAPHICS_SHADER_VERSION");
         ui::NextColumn();
-        ui::Text(App::get().getGraphicsBackendShadingLanguageVersionString());
+        ui::Text(App::get().graphics_backend_shading_language_version_string());
         ui::NextColumn();
 
         ui::Columns(1);
@@ -371,7 +371,7 @@ void osc::MainMenuAboutTab::onDraw()
         ui::PushID(id++);
         if (ui::Button(ICON_FA_FOLDER " open"))
         {
-            OpenPathInOSDefaultApplication(App::get().getExecutableDirPath());
+            OpenPathInOSDefaultApplication(App::get().executable_dir());
         }
         ui::PopID();
         ui::NextColumn();
@@ -382,7 +382,7 @@ void osc::MainMenuAboutTab::onDraw()
         ui::NextColumn();
         ui::PushID(id++);
         if (ui::Button(ICON_FA_FOLDER " open")) {
-            OpenPathInOSDefaultApplication(App::get().getUserDataDirPath());
+            OpenPathInOSDefaultApplication(App::get().user_data_dir());
         }
         ui::PopID();
         ui::NextColumn();
@@ -423,13 +423,13 @@ void osc::MainMenuAboutTab::onDraw()
         ui::PushID(id++);
         if (ui::Button(ICON_FA_LINK " open"))
         {
-            OpenPathInOSDefaultApplication(App::get().getConfig().getHTMLDocsDir() / "index.html");
+            OpenPathInOSDefaultApplication(App::get().config().getHTMLDocsDir() / "index.html");
         }
         ui::DrawTooltipBodyOnlyIfItemHovered("this will open the (locally installed) documentation in a separate browser window");
         ui::PopID();
         ui::NextColumn();
 
-        if (auto repoURL = App::get().getMetadata().tryGetRepositoryURL())
+        if (auto repoURL = App::get().metadata().tryGetRepositoryURL())
         {
             ui::TextUnformatted("OpenSim Creator Repository");
             ui::NextColumn();

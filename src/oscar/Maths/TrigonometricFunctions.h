@@ -22,7 +22,7 @@ namespace osc
     }
 
     template<size_t L, std::floating_point T>
-    Vec<L, T> sin(Vec<L, T> const& v)
+    Vec<L, T> sin(const Vec<L, T>& v)
     {
         return map(v, sin<T>);
     }
@@ -40,7 +40,7 @@ namespace osc
     }
 
     template<size_t L, std::floating_point T>
-    Vec<L, T> cos(Vec<L, T> const& v)
+    Vec<L, T> cos(const Vec<L, T>& v)
     {
         return map(v, cos<T>);
     }
@@ -58,7 +58,7 @@ namespace osc
     }
 
     template<size_t L, std::floating_point T>
-    Vec<L, T> tan(Vec<L, T> const& v)
+    Vec<L, T> tan(const Vec<L, T>& v)
     {
         return elementwise_map(v, tan);
     }

@@ -88,7 +88,7 @@ public:
             rs,
             m_Params,
             ui::GetContentRegionAvail(),
-            App::get().getCurrentAntiAliasingLevel()
+            App::get().anti_aliasing_level()
         );
 
         // blit texture as a ui::Image
@@ -129,7 +129,7 @@ public:
                 renderParamsBefore,
                 renderParamsAfter,
                 GetSettingsKeyPrefixForPanel(m_ParentPanelName),
-                App::upd().updConfig()
+                App::upd().upd_config()
             );
         }
 

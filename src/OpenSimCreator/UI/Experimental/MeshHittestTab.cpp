@@ -56,7 +56,7 @@ public:
 
     void onTick()
     {
-        ui::UpdatePolarCameraFromMouseInputs(m_PolarCamera, App::get().dims());
+        ui::UpdatePolarCameraFromMouseInputs(m_PolarCamera, App::get().dimensions());
 
         // handle hittest
         auto raycastStart = std::chrono::high_resolution_clock::now();
@@ -177,7 +177,7 @@ private:
     Camera m_Camera;
 
     MeshBasicMaterial m_Material;
-    Mesh m_Mesh = LoadMeshViaSimTK(App::resourceFilepath("geometry/hat_ribs.vtp"));
+    Mesh m_Mesh = LoadMeshViaSimTK(App::resource_filepath("geometry/hat_ribs.vtp"));
     Mesh m_SphereMesh = SphereGeometry{1.0f, 12, 12};
     Mesh m_CubeLinesMesh = AABBGeometry{};
 

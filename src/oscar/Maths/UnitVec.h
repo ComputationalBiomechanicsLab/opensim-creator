@@ -19,12 +19,12 @@ namespace osc
         using element_type = T;
         using size_type = size_t;
         using difference_type = ptrdiff_t;
-        using reference = T const&;
-        using const_reference = T const&;
-        using pointer = T const*;
-        using const_pointer = T const*;
-        using iterator = T const*;
-        using const_iterator = T const*;
+        using reference = const T&;
+        using const_reference = const T&;
+        using pointer = const T*;
+        using const_pointer = const T*;
+        using iterator = const T*;
+        using const_iterator = const T*;
 
         // returns a UnitVec by constructing the underlying vector and assuming that it is already normalized
         template<typename... Args>
@@ -68,34 +68,34 @@ namespace osc
         template<typename... Args>
         requires std::constructible_from<Vec<L, T>, Args&&...>
         explicit UnitVec(Args&&... args) :
-            m_Data{normalize(Vec<L, T>{std::forward<Args>(args)...})}
+            data_{normalize(Vec<L, T>{std::forward<Args>(args)...})}
         {}
 
         // implicit conversion to the underlying (normalized) vector
-        constexpr operator Vec<L, T> const& () const { return m_Data; }
+        constexpr operator const Vec<L, T>& () const { return data_; }
 
         // explicit conversion to the underlying (normalized) vector
         //
         // this is sometimes necessary when (e.g.) the compiler can't deduce the conversion
-        constexpr Vec<L, T> const& unwrap() const { return m_Data; }
+        constexpr const Vec<L, T>& unwrap() const { return data_; }
 
         constexpr size_type size() const { return L; }
-        constexpr const_pointer data() const { return m_Data.data(); }
+        constexpr const_pointer data() const { return data_.data(); }
         constexpr const_iterator begin() const { return data(); }
         constexpr const_iterator end() const { return data() + size(); }
         constexpr const_reference operator[](size_type i) const { return begin()[i]; }
 
         constexpr UnitVec operator+() const
         {
-            return UnitVec<L, T>::already_normalized(+m_Data);
+            return UnitVec<L, T>::already_normalized(+data_);
         }
 
         constexpr UnitVec operator-() const
         {
-            return UnitVec<L, T>::already_normalized(-m_Data);
+            return UnitVec<L, T>::already_normalized(-data_);
         }
 
-        friend constexpr bool operator==(UnitVec const&, UnitVec const&) = default;
+        friend constexpr bool operator==(const UnitVec&, const UnitVec&) = default;
 
     private:
         // tag struct that says "the provided data is already normalized, so skip normalization"
@@ -105,15 +105,15 @@ namespace osc
         template<typename... Args>
         requires std::constructible_from<Vec<L, T>, Args&&...>
         constexpr explicit UnitVec(AlreadyNormalizedTag, Args&&... args) :
-            m_Data{Vec<L, T>{std::forward<Args>(args)...}}
+            data_{Vec<L, T>{std::forward<Args>(args)...}}
         {}
 
-        Vec<L, T> m_Data{quiet_nan_v<T>};
+        Vec<L, T> data_{quiet_nan_v<T>};
     };
 
     template<size_t L, std::floating_point T>
-    constexpr Vec<L, T> operator*(T s, UnitVec<L, T> const& v)
+    constexpr Vec<L, T> operator*(T s, const UnitVec<L, T>& v)
     {
-        return s * static_cast<Vec<L, T> const&>(v);
+        return s * static_cast<const Vec<L, T>&>(v);
     }
 }

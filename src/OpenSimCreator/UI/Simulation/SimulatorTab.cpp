@@ -181,7 +181,7 @@ public:
 
     void onMount()
     {
-        App::upd().makeMainEventLoopWaiting();
+        App::upd().make_main_loop_waiting();
         m_PopupManager.onMount();
         m_PanelManager->onMount();
     }
@@ -189,7 +189,7 @@ public:
     void onUnmount()
     {
         m_PanelManager->onUnmount();
-        App::upd().makeMainEventLoopPolling();
+        App::upd().make_main_loop_polling();
     }
 
     void onTick()
@@ -202,7 +202,7 @@ public:
                 (m_PlaybackSpeed  < 0.0f and playbackPos > m_Simulation->getStartTime())) {
 
                 // if there's still something to playback, ensure the screen is re-rendered to show it
-                App::upd().requestRedraw();
+                App::upd().request_redraw();
             }
             else if (m_LoopingState == SimulationUILoopingState::Looping) {
                 // there's nothing to playback, but the UI wants to loop the playback, so loop it

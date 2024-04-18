@@ -247,45 +247,45 @@ namespace osc
     template<typename T>
     constexpr Mat<3, 3, T> transpose(const Mat<3, 3, T>& m)
     {
-        Mat<3, 3, T> Result;
-        Result[0][0] = m[0][0];
-        Result[0][1] = m[1][0];
-        Result[0][2] = m[2][0];
+        Mat<3, 3, T> rv;
+        rv[0][0] = m[0][0];
+        rv[0][1] = m[1][0];
+        rv[0][2] = m[2][0];
 
-        Result[1][0] = m[0][1];
-        Result[1][1] = m[1][1];
-        Result[1][2] = m[2][1];
+        rv[1][0] = m[0][1];
+        rv[1][1] = m[1][1];
+        rv[1][2] = m[2][1];
 
-        Result[2][0] = m[0][2];
-        Result[2][1] = m[1][2];
-        Result[2][2] = m[2][2];
-        return Result;
+        rv[2][0] = m[0][2];
+        rv[2][1] = m[1][2];
+        rv[2][2] = m[2][2];
+        return rv;
     }
 
     template<typename T>
     Mat<4, 4, T> transpose(const Mat<4, 4, T>& m)
     {
-        Mat<4, 4, T> Result;
-        Result[0][0] = m[0][0];
-        Result[0][1] = m[1][0];
-        Result[0][2] = m[2][0];
-        Result[0][3] = m[3][0];
+        Mat<4, 4, T> rv;
+        rv[0][0] = m[0][0];
+        rv[0][1] = m[1][0];
+        rv[0][2] = m[2][0];
+        rv[0][3] = m[3][0];
 
-        Result[1][0] = m[0][1];
-        Result[1][1] = m[1][1];
-        Result[1][2] = m[2][1];
-        Result[1][3] = m[3][1];
+        rv[1][0] = m[0][1];
+        rv[1][1] = m[1][1];
+        rv[1][2] = m[2][1];
+        rv[1][3] = m[3][1];
 
-        Result[2][0] = m[0][2];
-        Result[2][1] = m[1][2];
-        Result[2][2] = m[2][2];
-        Result[2][3] = m[3][2];
+        rv[2][0] = m[0][2];
+        rv[2][1] = m[1][2];
+        rv[2][2] = m[2][2];
+        rv[2][3] = m[3][2];
 
-        Result[3][0] = m[0][3];
-        Result[3][1] = m[1][3];
-        Result[3][2] = m[2][3];
-        Result[3][3] = m[3][3];
-        return Result;
+        rv[3][0] = m[0][3];
+        rv[3][1] = m[1][3];
+        rv[3][2] = m[2][3];
+        rv[3][3] = m[3][3];
+        return rv;
     }
 
     // returns euler angles for performing an intrinsic, step-by-step, rotation about X, Y, and then Z

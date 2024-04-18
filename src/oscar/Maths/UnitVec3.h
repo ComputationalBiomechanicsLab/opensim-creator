@@ -13,7 +13,7 @@ namespace osc
     //
     // (specialization: this implementation "knows" the product should already be normalized)
     template<std::floating_point T>
-    constexpr UnitVec<3, T> cross(UnitVec<3, T> const& x, UnitVec<3, T> const& y)
+    constexpr UnitVec<3, T> cross(const UnitVec<3, T>& x, const UnitVec<3, T>& y)
     {
         return UnitVec<3, T>::already_normalized(
             x[1] * y[2] - y[1] * x[2],

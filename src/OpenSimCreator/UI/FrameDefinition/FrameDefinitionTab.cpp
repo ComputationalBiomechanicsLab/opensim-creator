@@ -1099,7 +1099,7 @@ public:
 
     void onMount()
     {
-        App::upd().makeMainEventLoopWaiting();
+        App::upd().make_main_loop_waiting();
         m_PanelManager->onMount();
         m_PopupManager.onMount();
     }
@@ -1107,7 +1107,7 @@ public:
     void onUnmount()
     {
         m_PanelManager->onUnmount();
-        App::upd().makeMainEventLoopPolling();
+        App::upd().make_main_loop_polling();
     }
 
     bool onEvent(SDL_Event const& e)

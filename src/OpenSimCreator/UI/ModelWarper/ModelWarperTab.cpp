@@ -66,14 +66,14 @@ public:
 private:
     void implOnMount() final
     {
-        App::upd().makeMainEventLoopWaiting();
+        App::upd().make_main_loop_waiting();
         m_PanelManager->onMount();
     }
 
     void implOnUnmount() final
     {
         m_PanelManager->onUnmount();
-        App::upd().makeMainEventLoopWaiting();
+        App::upd().make_main_loop_waiting();
     }
 
     bool implOnEvent(SDL_Event const&) final

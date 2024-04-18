@@ -29,7 +29,7 @@ public:
         // called when the app receives an event from the operating system
 
         if (e.type == SDL_QUIT) {
-            App::upd().requestQuit();
+            App::upd().request_quit();
             return;
         }
         else if (ui::context::OnEvent(e)) {

@@ -67,7 +67,7 @@ private:
             ActionStartSimulatingModel(m_MainUIStateAPI, *m_Model);
         }
         ui::PopStyleColor();
-        App::upd().addFrameAnnotation("Simulate Button", ui::GetItemRect());
+        App::upd().add_frame_annotation("Simulate Button", ui::GetItemRect());
         ui::DrawTooltipIfItemHovered("Simulate Model", "Run a forward-dynamic simulation of the model");
 
         ui::SameLine();

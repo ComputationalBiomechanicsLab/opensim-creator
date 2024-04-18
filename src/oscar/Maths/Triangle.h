@@ -12,11 +12,11 @@ namespace osc
         using size_type = size_t;
         using difference_type = ptrdiff_t;
         using reference = value_type&;
-        using const_reference = value_type const&;
+        using const_reference = const value_type&;
         using pointer = value_type*;
-        using const_pointer = value_type const*;
+        using const_pointer = const value_type*;
         using iterator = value_type*;
-        using const_iterator = value_type const*;
+        using const_iterator = const value_type*;
 
         constexpr size_type size() const { return 3; }
         constexpr pointer data() { return &p0; }
@@ -28,7 +28,7 @@ namespace osc
         constexpr reference operator[](size_type i) { return begin()[i]; }
         constexpr const_reference operator[](size_type i) const { return begin()[i]; }
 
-        friend bool operator==(Triangle const&, Triangle const&) = default;
+        friend bool operator==(const Triangle&, const Triangle&) = default;
 
         value_type p0{};
         value_type p1{};

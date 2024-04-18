@@ -192,7 +192,7 @@ public:
         SceneRendererParams const rendererParameters = CalcSceneRendererParams(
             m_State.renderParams,
             dimensions_of(panelState.viewportRect),
-            App::get().getCurrentAntiAliasingLevel(),
+            App::get().anti_aliasing_level(),
             m_State.model->getFixupScaleFactor()
         );
 

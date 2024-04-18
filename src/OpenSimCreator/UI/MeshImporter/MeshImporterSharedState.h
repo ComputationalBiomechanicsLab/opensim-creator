@@ -387,7 +387,7 @@ namespace osc::mi
             // setup rendering params
             SceneRendererParams p;
             p.dimensions = dimensions_of(get3DSceneRect());
-            p.antialiasing_level = App::get().getCurrentAntiAliasingLevel();
+            p.antialiasing_level = App::get().anti_aliasing_level();
             p.draw_rims = true;
             p.draw_floor = false;
             p.near_clipping_plane = m_3DSceneCamera.znear;

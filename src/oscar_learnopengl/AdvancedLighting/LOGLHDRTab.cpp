@@ -82,14 +82,14 @@ public:
 private:
     void implOnMount() final
     {
-        App::upd().makeMainEventLoopPolling();
+        App::upd().make_main_loop_polling();
         m_Camera.onMount();
     }
 
     void implOnUnmount() final
     {
         m_Camera.onUnmount();
-        App::upd().makeMainEventLoopWaiting();
+        App::upd().make_main_loop_waiting();
     }
 
     bool implOnEvent(SDL_Event const& e) final
@@ -111,7 +111,7 @@ private:
         {
             Rect const viewportRect = ui::GetMainViewportWorkspaceScreenRect();
             RenderTextureDescriptor descriptor{dimensions_of(viewportRect)};
-            descriptor.set_anti_aliasing_level(App::get().getCurrentAntiAliasingLevel());
+            descriptor.set_anti_aliasing_level(App::get().anti_aliasing_level());
             if (m_Use16BitFormat)
             {
                 descriptor.set_color_format(RenderTextureFormat::ARGBFloat16);

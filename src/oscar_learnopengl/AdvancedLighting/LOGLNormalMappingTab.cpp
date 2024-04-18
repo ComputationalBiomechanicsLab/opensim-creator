@@ -110,7 +110,7 @@ private:
     void implOnTick() final
     {
         // rotate the quad over time
-        AppClock::duration const dt = App::get().getFrameDeltaSinceAppStartup();
+        AppClock::duration const dt = App::get().frame_delta_since_startup();
         auto const angle = Degrees{-10.0 * dt.count()};
         auto const axis = UnitVec3{1.0f, 0.0f, 1.0f};
         m_QuadTransform.rotation = angle_axis(angle, axis);

@@ -59,7 +59,7 @@ public:
 
     void onTick()
     {
-        auto const dt = static_cast<float>(App::get().getFrameDeltaSinceLastFrame().count());
+        auto const dt = static_cast<float>(App::get().frame_delta_since_last_frame().count());
 
         // tick the progress bar up a little bit
         m_LoadingProgress += (dt * (1.0f - m_LoadingProgress))/2.0f;

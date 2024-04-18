@@ -169,14 +169,14 @@ public:
 private:
     void implOnMount() final
     {
-        App::upd().makeMainEventLoopPolling();
+        App::upd().make_main_loop_polling();
         m_Camera.onMount();
     }
 
     void implOnUnmount() final
     {
         m_Camera.onUnmount();
-        App::upd().makeMainEventLoopWaiting();
+        App::upd().make_main_loop_waiting();
     }
 
     bool implOnEvent(SDL_Event const& e) final
@@ -194,7 +194,7 @@ private:
     {
         Rect const viewportRect = ui::GetMainViewportWorkspaceScreenRect();
         Vec2 const viewportDims = dimensions_of(viewportRect);
-        AntiAliasingLevel const antiAliasingLevel = App::get().getCurrentAntiAliasingLevel();
+        AntiAliasingLevel const antiAliasingLevel = App::get().anti_aliasing_level();
 
         // ensure textures/buffers have correct dimensions
         {

@@ -359,7 +359,7 @@ namespace osc::mi
             if (m_AnimationFraction < 1.0f)
             {
                 m_AnimationFraction = saturate(m_AnimationFraction + 0.5f*dt);
-                App::upd().requestRedraw();
+                App::upd().request_redraw();
             }
         }
 

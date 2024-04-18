@@ -13,13 +13,13 @@ namespace osc
         void onMount()
         {
             m_IsMouseCaptured = true;
-            App::upd().setShowCursor(false);
+            App::upd().set_show_cursor(false);
         }
 
         void onUnmount()
         {
             m_IsMouseCaptured = false;
-            App::upd().setShowCursor(true);
+            App::upd().set_show_cursor(true);
         }
 
         bool onEvent(SDL_Event const& e)
@@ -42,11 +42,11 @@ namespace osc
             if (m_IsMouseCaptured) {
                 ui::UpdateCameraFromInputs(*this, m_CameraEulers);
                 ui::SetMouseCursor(ImGuiMouseCursor_None);
-                App::upd().setShowCursor(false);
+                App::upd().set_show_cursor(false);
             }
             else {
                 ui::SetMouseCursor(ImGuiMouseCursor_Arrow);
-                App::upd().setShowCursor(true);
+                App::upd().set_show_cursor(true);
             }
         }
 

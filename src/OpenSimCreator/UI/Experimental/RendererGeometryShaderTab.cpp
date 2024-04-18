@@ -45,15 +45,15 @@ public:
 
     void onMount()
     {
-        App::upd().makeMainEventLoopPolling();
+        App::upd().make_main_loop_polling();
         m_IsMouseCaptured = true;
     }
 
     void onUnmount()
     {
         m_IsMouseCaptured = false;
-        App::upd().setShowCursor(true);
-        App::upd().makeMainEventLoopWaiting();
+        App::upd().set_show_cursor(true);
+        App::upd().make_main_loop_waiting();
     }
 
     bool onEvent(SDL_Event const& e)
@@ -78,12 +78,12 @@ public:
         {
             ui::UpdateCameraFromInputs(m_SceneCamera, m_CameraEulers);
             ui::SetMouseCursor(ImGuiMouseCursor_None);
-            App::upd().setShowCursor(false);
+            App::upd().set_show_cursor(false);
         }
         else
         {
             ui::SetMouseCursor(ImGuiMouseCursor_Arrow);
-            App::upd().setShowCursor(true);
+            App::upd().set_show_cursor(true);
         }
         m_SceneCamera.set_pixel_rect(ui::GetMainViewportWorkspaceScreenRect());
 
@@ -115,7 +115,7 @@ private:
         },
     };
 
-    Mesh m_Mesh = LoadMeshViaSimTK(App::resourceFilepath("geometry/hat_ribs_scap.vtp"));
+    Mesh m_Mesh = LoadMeshViaSimTK(App::resource_filepath("geometry/hat_ribs_scap.vtp"));
     Camera m_SceneCamera;
     bool m_IsMouseCaptured = false;
     Eulers m_CameraEulers = {};

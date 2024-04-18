@@ -31,14 +31,13 @@ namespace osc::sdl
     public:
         explicit Context(Uint32 flags)
         {
-            if (SDL_Init(flags) != 0)
-            {
+            if (SDL_Init(flags) != 0) {
                 throw std::runtime_error{std::string{"SDL_Init: failed: "} + SDL_GetError()};
             }
         }
-        Context(Context const&) = delete;
+        Context(const Context&) = delete;
         Context(Context&&) noexcept = delete;
-        Context& operator=(Context const&) = delete;
+        Context& operator=(const Context&) = delete;
         Context& operator=(Context&&) noexcept = delete;
         ~Context() noexcept
         {
@@ -57,38 +56,30 @@ namespace osc::sdl
     //     https://wiki.libsdl.org/SDL_DestroyWindow
     class Window final {
     public:
-        Window(Window const&) = delete;
+        Window(const Window&) = delete;
         Window(Window&& tmp) noexcept :
-            m_WindowHandle{std::exchange(tmp.m_WindowHandle, nullptr)}
-        {
-        }
-        Window& operator=(Window const&) = delete;
+            window_handle_{std::exchange(tmp.window_handle_, nullptr)}
+        {}
+        Window& operator=(const Window&) = delete;
         Window& operator=(Window&&) noexcept = delete;
         ~Window() noexcept
         {
-            if (m_WindowHandle)
-            {
-                SDL_DestroyWindow(m_WindowHandle);
+            if (window_handle_) {
+                SDL_DestroyWindow(window_handle_);
             }
         }
 
-        SDL_Window* get() const
-        {
-            return m_WindowHandle;
-        }
+        SDL_Window* get() const { return window_handle_; }
 
-        SDL_Window& operator*() const
-        {
-            return *m_WindowHandle;
-        }
+        SDL_Window& operator*() const { return *window_handle_; }
 
     private:
         friend Window CreateWindoww(CStringView title, int x, int y, int w, int h, Uint32 flags);
-        Window(SDL_Window * _ptr) : m_WindowHandle{_ptr}
-        {
-        }
+        Window(SDL_Window * _ptr) :
+            window_handle_{_ptr}
+        {}
 
-        SDL_Window* m_WindowHandle;
+        SDL_Window* window_handle_;
     };
 
     // RAII'ed version of SDL_CreateWindow
@@ -100,8 +91,7 @@ namespace osc::sdl
     {
         SDL_Window* const win = SDL_CreateWindow(title.c_str(), x, y, w, h, flags);
 
-        if (win == nullptr)
-        {
+        if (win == nullptr) {
             throw std::runtime_error{std::string{"SDL_CreateWindow failed: "} + SDL_GetError()};
         }
 
@@ -112,42 +102,36 @@ namespace osc::sdl
     //     https://wiki.libsdl.org/SDL_GL_DeleteContext
     class GLContext final {
     public:
-        GLContext(GLContext const&) = delete;
+        GLContext(const GLContext&) = delete;
         GLContext(GLContext&& tmp) noexcept :
-            m_ContextHandle{std::exchange(tmp.m_ContextHandle, nullptr)}
-        {
-        }
-        GLContext& operator=(GLContext const&) = delete;
+            context_handle_{std::exchange(tmp.context_handle_, nullptr)}
+        {}
+        GLContext& operator=(const GLContext&) = delete;
         GLContext& operator=(GLContext&&) = delete;
         ~GLContext() noexcept
         {
-            if (m_ContextHandle)
-            {
-                SDL_GL_DeleteContext(m_ContextHandle);
+            if (context_handle_) {
+                SDL_GL_DeleteContext(context_handle_);
             }
         }
 
-        SDL_GLContext get()
-        {
-            return m_ContextHandle;
-        }
+        SDL_GLContext get() { return context_handle_; }
 
     private:
         friend GLContext GL_CreateContext(SDL_Window* w);
-        GLContext(SDL_GLContext _ctx) : m_ContextHandle{_ctx}
-        {
-        }
+        GLContext(SDL_GLContext _ctx) :
+            context_handle_{_ctx}
+        {}
 
-        SDL_GLContext m_ContextHandle;
+        SDL_GLContext context_handle_;
     };
 
     // https://wiki.libsdl.org/SDL_GL_CreateContext
     inline GLContext GL_CreateContext(SDL_Window* w)
     {
-        SDL_GLContext const ctx = SDL_GL_CreateContext(w);
+        const SDL_GLContext ctx = SDL_GL_CreateContext(w);
 
-        if (ctx == nullptr)
-        {
+        if (ctx == nullptr) {
             throw std::runtime_error{std::string{"SDL_GL_CreateContext failed: "} + SDL_GetError()};
         }
 

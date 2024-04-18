@@ -47,18 +47,17 @@ using namespace osc;
 
 namespace
 {
-    App* g_ApplicationGlobal = nullptr;
+    App* g_app_global = nullptr;
 
-    void Sdl_GL_SetAttributeOrThrow(
-        SDL_GLattr attr,
-        CStringView attrReadableName,
-        int value,
-        CStringView valueReadableName)
+    void sdl_gl_set_attribute_or_throw(
+        SDL_GLattr attribute,
+        CStringView attribute_readable_name,
+        int new_attribute_value,
+        CStringView value_readable_name)
     {
-        if (SDL_GL_SetAttribute(attr, value))
-        {
+        if (SDL_GL_SetAttribute(attribute, new_attribute_value)) {
             std::stringstream msg;
-            msg << "SDL_GL_SetAttribute failed when setting " << attrReadableName << " = " << valueReadableName << ": " << SDL_GetError();
+            msg << "SDL_GL_SetAttribute failed when setting " << attribute_readable_name << " = " << value_readable_name << ": " << SDL_GetError();
             throw std::runtime_error{std::move(msg).str()};
         }
     }
@@ -68,32 +67,31 @@ namespace
     // useful if the application fails in prod: can provide some basic backtrace
     // info that users can paste into an issue or something, which is *a lot* more
     // information than "yeah, it's broke"
-    bool EnsureBacktraceHandlerEnabled(std::filesystem::path const& crashDumpDir)
+    bool ensure_backtrace_handler_enabled(const std::filesystem::path& crash_dump_dir)
     {
         log_info("enabling backtrace handler");
-        InstallBacktraceHandler(crashDumpDir);
+        InstallBacktraceHandler(crash_dump_dir);
         return true;
     }
 
-    bool ConfigureApplicationLog(AppConfig const& config)
+    bool configure_application_log(const AppConfig& config)
     {
-        if (auto logger = defaultLogger())
-        {
+        if (auto logger = defaultLogger()) {
             logger->set_level(config.getRequestedLogLevel());
         }
         return true;
     }
 
     // initialize the main application window
-    sdl::Window CreateMainAppWindow(AppConfig const& config, CStringView applicationName)
+    sdl::Window create_main_app_window(const AppConfig& config, CStringView application_name)
     {
         log_info("initializing main application window");
 
-        Sdl_GL_SetAttributeOrThrow(SDL_GL_CONTEXT_PROFILE_MASK, "SDL_GL_CONTEXT_PROFILE_MASK", SDL_GL_CONTEXT_PROFILE_CORE, "SDL_GL_CONTEXT_PROFILE_CORE");
-        Sdl_GL_SetAttributeOrThrow(SDL_GL_CONTEXT_MAJOR_VERSION, "SDL_GL_CONTEXT_MAJOR_VERSION", 3, "3");
-        Sdl_GL_SetAttributeOrThrow(SDL_GL_CONTEXT_MINOR_VERSION, "SDL_GL_CONTEXT_MINOR_VERSION", 3, "3");
-        Sdl_GL_SetAttributeOrThrow(SDL_GL_CONTEXT_FLAGS, "SDL_GL_CONTEXT_FLAGS", SDL_GL_CONTEXT_DEBUG_FLAG, "SDL_GL_CONTEXT_DEBUG_FLAG");
-        Sdl_GL_SetAttributeOrThrow(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, "SDL_GL_FRAMEBUFFER_SRGB_CAPABLE", 1, "1");
+        sdl_gl_set_attribute_or_throw(SDL_GL_CONTEXT_PROFILE_MASK, "SDL_GL_CONTEXT_PROFILE_MASK", SDL_GL_CONTEXT_PROFILE_CORE, "SDL_GL_CONTEXT_PROFILE_CORE");
+        sdl_gl_set_attribute_or_throw(SDL_GL_CONTEXT_MAJOR_VERSION, "SDL_GL_CONTEXT_MAJOR_VERSION", 3, "3");
+        sdl_gl_set_attribute_or_throw(SDL_GL_CONTEXT_MINOR_VERSION, "SDL_GL_CONTEXT_MINOR_VERSION", 3, "3");
+        sdl_gl_set_attribute_or_throw(SDL_GL_CONTEXT_FLAGS, "SDL_GL_CONTEXT_FLAGS", SDL_GL_CONTEXT_DEBUG_FLAG, "SDL_GL_CONTEXT_DEBUG_FLAG");
+        sdl_gl_set_attribute_or_throw(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, "SDL_GL_FRAMEBUFFER_SRGB_CAPABLE", 1, "1");
 
         // careful about setting resolution, position, etc. - some people have *very* shitty
         // screens on their laptop (e.g. ultrawide, sub-HD, minus space for the start bar, can
@@ -103,43 +101,42 @@ namespace
         constexpr int width = 800;
         constexpr int height = 600;
 
-        Uint32 flags =
-            SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED;
-        if (auto v = config.getValue("experimental_feature_flags/high_dpi_mode"); v && v->toBool()) {
+        Uint32 flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED;
+        if (auto v = config.getValue("experimental_feature_flags/high_dpi_mode"); v and v->toBool()) {
             flags |= SDL_WINDOW_ALLOW_HIGHDPI;
             SetProcessHighDPIMode();
         }
 
-        return sdl::CreateWindoww(applicationName, x, y, width, height, flags);
+        return sdl::CreateWindoww(application_name, x, y, width, height, flags);
     }
 
-    AppClock::duration ConvertPerfTicksToFClockDuration(Uint64 ticks, Uint64 frequency)
+    AppClock::duration convert_perf_ticks_to_appclock_duration(Uint64 ticks, Uint64 frequency)
     {
-        auto const dticks = static_cast<double>(ticks);
-        auto const dfrequency = static_cast<double>(frequency);
-        auto const duration = static_cast<AppClock::rep>(dticks/dfrequency);
+        const auto dticks = static_cast<double>(ticks);
+        const auto dfrequency = static_cast<double>(frequency);
+        const auto duration = static_cast<AppClock::rep>(dticks/dfrequency);
 
         return AppClock::duration{duration};
     }
 
-    AppClock::time_point ConvertPerfCounterToFClock(Uint64 ticks, Uint64 frequency)
+    AppClock::time_point convert_perf_counter_to_appclock(Uint64 ticks, Uint64 frequency)
     {
-        return AppClock::time_point{ConvertPerfTicksToFClockDuration(ticks, frequency)};
+        return AppClock::time_point{convert_perf_ticks_to_appclock_duration(ticks, frequency)};
     }
 
-    std::filesystem::path GetCurrentExeDirAndLogIt()
+    std::filesystem::path get_current_exe_dir_and_log_it()
     {
-        auto rv = CurrentExeDir();
+        const auto rv = CurrentExeDir();
         log_info("executable directory: %s", rv.string().c_str());
         return rv;
     }
 
     // computes the user's data directory and also logs it to the console for user-facing feedback
-    std::filesystem::path GetUserDataDirAndLogIt(
-        CStringView organizationName,
-        CStringView applicationName)
+    std::filesystem::path get_current_user_dir_and_log_it(
+        CStringView organization_name,
+        CStringView application_name)
     {
-        auto rv = GetUserDataDir(organizationName, applicationName);
+        const auto rv = GetUserDataDir(organization_name, application_name);
         log_info("user data directory: %s", rv.string().c_str());
         return rv;
     }
@@ -149,57 +146,52 @@ namespace
 {
     // an "active" request for an annotated screenshot
     //
-    // has a data depencency on the backend first providing a "raw" image, which is then
-    // tagged with annotations
+    // has a data dependency on the backend first providing a "raw" image, which
+    // is then tagged with annotations
     struct AnnotatedScreenshotRequest final {
 
         AnnotatedScreenshotRequest(
-            size_t frameRequested_,
-            std::future<Texture2D> underlyingFuture_) :
+            size_t frame_requested_,
+            std::future<Texture2D> underlying_future_) :
 
-            frameRequested{frameRequested_},
-            underlyingScreenshotFuture{std::move(underlyingFuture_)}
-        {
-        }
+            frame_requested{frame_requested_},
+            underlying_future{std::move(underlying_future_)}
+        {}
 
         // the frame on which the screenshot was requested
-        size_t frameRequested;
+        size_t frame_requested;
 
         // underlying (to-be-waited-on) future for the screenshot
-        std::future<Texture2D> underlyingScreenshotFuture;
+        std::future<Texture2D> underlying_future;
 
         // our promise to the caller, who is waiting for an annotated image
-        std::promise<Screenshot> resultPromise;
+        std::promise<Screenshot> result_promise;
 
         // annotations made during the requested frame (if any)
         std::vector<ScreenshotAnnotation> annotations;
     };
 
-    // wrapper class for storing std::type_info as a hashable type
+    // wrapper class for storing std::type_info as a hash-able type
     class TypeInfoReference final {
     public:
-        explicit TypeInfoReference(std::type_info const& typeInfo) :
+        explicit TypeInfoReference(const std::type_info& typeInfo) :
             m_TypeInfo{&typeInfo}
-        {
-        }
+        {}
 
-        std::type_info const& get() const
-        {
-            return *m_TypeInfo;
-        }
+        const std::type_info& get() const { return *m_TypeInfo; }
 
-        friend bool operator==(TypeInfoReference const& lhs, TypeInfoReference const& rhs)
+        friend bool operator==(const TypeInfoReference& lhs, const TypeInfoReference& rhs)
         {
             return lhs.get() == rhs.get();
         }
     private:
-        std::type_info const* m_TypeInfo;
+        const std::type_info* m_TypeInfo;
     };
 }
 
 template<>
 struct std::hash<TypeInfoReference> final {
-    size_t operator()(TypeInfoReference const& ref) const
+    size_t operator()(const TypeInfoReference& ref) const
     {
         return ref.get().hash_code();
     }
@@ -210,422 +202,382 @@ struct std::hash<TypeInfoReference> final {
 // this is what "booting the application" actually initializes
 class osc::App::Impl final {
 public:
-    explicit Impl(AppMetadata const& metadata_) :  // NOLINT(modernize-pass-by-value)
-        m_Metadata{metadata_}
-    {
-    }
+    explicit Impl(const AppMetadata& metadata) :  // NOLINT(modernize-pass-by-value)
+        metadata_{metadata}
+    {}
 
-    AppMetadata const& getMetadata() const
-    {
-        return m_Metadata;
-    }
+    const AppMetadata& metadata() const { return metadata_; }
+    const std::filesystem::path& executable_dir() const { return executable_dir_; }
+    const std::filesystem::path& user_data_dir() const { return user_data_dir_; }
 
-    std::filesystem::path const& getExecutableDirPath() const
+    void show(std::unique_ptr<IScreen> screen)
     {
-        return m_ExecutableDirPath;
-    }
+        log_info("showing screen %s", screen->getName().c_str());
 
-    std::filesystem::path const& getUserDataDirPath() const
-    {
-        return m_UserDataDirPath;
-    }
-
-    void show(std::unique_ptr<IScreen> s)
-    {
-        log_info("showing screen %s", s->getName().c_str());
-
-        if (m_CurrentScreen)
-        {
-            throw std::runtime_error{"tried to call App::show when a screen is already being shown: you should use `requestTransition` instead"};
+        if (screen_) {
+            throw std::runtime_error{"tried to call App::show when a screen is already being shown: you should use `request_transition` instead"};
         }
 
-        m_CurrentScreen = std::move(s);
-        m_NextScreen.reset();
+        screen_ = std::move(screen);
+        next_screen_.reset();
 
         // ensure retained screens are destroyed when exiting this guarded path
         //
         // this means callers can call .show multiple times on the same app
-        ScopeGuard const g{[this]()
+        const ScopeGuard g{[this]()
         {
-            m_CurrentScreen.reset();
-            m_NextScreen.reset();
+            screen_.reset();
+            next_screen_.reset();
         }};
 
-        mainLoopUnguarded();
+        run_main_loop_unguarded();
     }
 
-    void requestTransition(std::unique_ptr<IScreen> s)
+    void request_transition(std::unique_ptr<IScreen> screen)
     {
-        m_NextScreen = std::move(s);
+        next_screen_ = std::move(screen);
     }
 
-    void requestQuit()
+    void request_quit()
     {
-        m_QuitRequested = true;
+        quit_requested_ = true;
     }
 
-    Vec2 dims() const
+    Vec2 dimensions() const
     {
-        return Vec2{sdl::GetWindowSizeInPixels(m_MainWindow.get())};
+        return Vec2{sdl::GetWindowSizeInPixels(main_window_.get())};
     }
 
-    void setShowCursor(bool v)
+    void set_show_cursor(bool v)
     {
         SDL_ShowCursor(v ? SDL_ENABLE : SDL_DISABLE);
-        SDL_SetWindowGrab(m_MainWindow.get(), v ? SDL_FALSE : SDL_TRUE);
+        SDL_SetWindowGrab(main_window_.get(), v ? SDL_FALSE : SDL_TRUE);
     }
 
-    void makeFullscreen()
+    void make_fullscreen()
     {
-        SDL_SetWindowFullscreen(m_MainWindow.get(), SDL_WINDOW_FULLSCREEN);
+        SDL_SetWindowFullscreen(main_window_.get(), SDL_WINDOW_FULLSCREEN);
     }
 
-    void makeWindowedFullscreen()
+    void make_windowed_fullscreen()
     {
-        SDL_SetWindowFullscreen(m_MainWindow.get(), SDL_WINDOW_FULLSCREEN_DESKTOP);
+        SDL_SetWindowFullscreen(main_window_.get(), SDL_WINDOW_FULLSCREEN_DESKTOP);
     }
 
-    void makeWindowed()
+    void make_windowed()
     {
-        SDL_SetWindowFullscreen(m_MainWindow.get(), 0);
+        SDL_SetWindowFullscreen(main_window_.get(), 0);
     }
 
-    AntiAliasingLevel getCurrentAntiAliasingLevel() const
+    AntiAliasingLevel anti_aliasing_level() const
     {
-        return m_CurrentMSXAASamples;
+        return antialiasing_level_;
     }
 
-    void setCurrentAntiAliasingLevel(AntiAliasingLevel s)
+    void set_anti_aliasing_level(AntiAliasingLevel s)
     {
-        m_CurrentMSXAASamples = clamp(s, AntiAliasingLevel{1}, getMaxAntiAliasingLevel());
+        antialiasing_level_ = clamp(s, AntiAliasingLevel{1}, max_anti_aliasing_level());
     }
 
-    AntiAliasingLevel getMaxAntiAliasingLevel() const
+    AntiAliasingLevel max_anti_aliasing_level() const
     {
-        return m_GraphicsContext.max_antialiasing_level();
+        return graphics_context_.max_antialiasing_level();
     }
 
     bool is_in_debug_mode() const
     {
-        return m_GraphicsContext.is_in_debug_mode();
+        return graphics_context_.is_in_debug_mode();
     }
 
     void enable_debug_mode()
     {
-        m_GraphicsContext.enable_debug_mode();
+        graphics_context_.enable_debug_mode();
     }
 
     void disable_debug_mode()
     {
-        m_GraphicsContext.disable_debug_mode();
+        graphics_context_.disable_debug_mode();
     }
 
     bool is_vsync_enabled() const
     {
-        return m_GraphicsContext.is_vsync_enabled();
+        return graphics_context_.is_vsync_enabled();
     }
 
-    void setVsync(bool v)
+    void set_vsync(bool v)
     {
-        if (v)
-        {
-            m_GraphicsContext.enable_vsync();
+        if (v) {
+            graphics_context_.enable_vsync();
         }
-        else
-        {
-            m_GraphicsContext.disable_vsync();
+        else {
+            graphics_context_.disable_vsync();
         }
     }
 
     void enable_vsync()
     {
-        m_GraphicsContext.enable_vsync();
+        graphics_context_.enable_vsync();
     }
 
     void disable_vsync()
     {
-        m_GraphicsContext.disable_vsync();
+        graphics_context_.disable_vsync();
     }
 
-    void addFrameAnnotation(std::string_view label, Rect screenRect)
+    void add_frame_annotation(std::string_view label, Rect screen_rect)
     {
-        m_FrameAnnotations.push_back(ScreenshotAnnotation{std::string{label}, screenRect});
+        frame_annotations_.push_back(ScreenshotAnnotation{std::string{label}, screen_rect});
     }
 
     std::future<Screenshot> request_screenshot()
     {
-        AnnotatedScreenshotRequest& req = m_ActiveAnnotatedScreenshotRequests.emplace_back(m_FrameCounter, requestScreenshotTexture());
-        return req.resultPromise.get_future();
+        AnnotatedScreenshotRequest& req = active_screenshot_requests_.emplace_back(frame_counter_, request_screenshot_texture());
+        return req.result_promise.get_future();
     }
 
-    std::string getGraphicsBackendVendorString() const
+    std::string graphics_backend_vendor_string() const
     {
-        return m_GraphicsContext.backend_vendor_string();
+        return graphics_context_.backend_vendor_string();
     }
 
-    std::string getGraphicsBackendRendererString() const
+    std::string graphics_backend_renderer_string() const
     {
-        return m_GraphicsContext.backend_renderer_string();
+        return graphics_context_.backend_renderer_string();
     }
 
-    std::string getGraphicsBackendVersionString() const
+    std::string graphics_backend_version_string() const
     {
-        return m_GraphicsContext.backend_version_string();
+        return graphics_context_.backend_version_string();
     }
 
-    std::string getGraphicsBackendShadingLanguageVersionString() const
+    std::string graphics_backend_shading_language_version_string() const
     {
-        return m_GraphicsContext.backend_shading_language_version_string();
+        return graphics_context_.backend_shading_language_version_string();
     }
 
-    size_t getFrameCount() const
+    size_t num_frames_drawn() const
     {
-        return m_FrameCounter;
+        return frame_counter_;
     }
 
-    AppClock::time_point getAppStartupTime() const
+    AppClock::time_point startup_time() const
     {
-        return m_AppStartupTime;
+        return startup_time_;
     }
 
-    AppClock::duration getFrameDeltaSinceAppStartup() const
+    AppClock::duration frame_delta_since_startup() const
     {
-        return m_FrameStartTime - m_AppStartupTime;
+        return frame_start_time_ - startup_time_;
     }
 
-    AppClock::time_point getFrameStartTime() const
+    AppClock::time_point frame_start_time() const
     {
-        return m_FrameStartTime;
+        return frame_start_time_;
     }
 
-    AppClock::duration getFrameDeltaSinceLastFrame() const
+    AppClock::duration frame_delta_since_last_frame() const
     {
-        return m_TimeSinceLastFrame;
+        return time_since_last_frame_;
     }
 
-    bool isMainLoopWaiting() const
+    bool is_main_loop_waiting() const
     {
-        return m_InWaitMode;
+        return is_in_wait_mode_;
     }
 
-    void setMainLoopWaiting(bool v)
+    void set_main_loop_waiting(bool v)
     {
-        m_InWaitMode = v;
-        requestRedraw();
+        is_in_wait_mode_ = v;
+        request_redraw();
     }
 
-    void makeMainEventLoopWaiting()
+    void make_main_loop_waiting()
     {
-        setMainLoopWaiting(true);
+        set_main_loop_waiting(true);
     }
 
-    void makeMainEventLoopPolling()
+    void make_main_loop_polling()
     {
-        setMainLoopWaiting(false);
+        set_main_loop_waiting(false);
     }
 
-    void requestRedraw()
+    void request_redraw()
     {
         SDL_Event e{};
         e.type = SDL_USEREVENT;
-        m_NumFramesToPoll += 2;  // immediate rendering can require rendering 2 frames before it shows something
+        num_frames_to_poll_ += 2;  // immediate rendering can require rendering 2 frames before it shows something
         SDL_PushEvent(&e);
     }
 
-    void clear_screen(Color const& color)
+    void clear_screen(const Color& color)
     {
-        m_GraphicsContext.clear_screen(color);
+        graphics_context_.clear_screen(color);
     }
 
-    void setMainWindowSubTitle(std::string_view sv)
+    void set_main_window_subtitle(std::string_view sv)
     {
-        // use global + mutex to prevent hopping into the OS too much
-        static SynchronizedValue<std::string> s_CurrentWindowSubTitle;
+        auto lock = main_window_subtitle_.lock();
 
-        auto lock = s_CurrentWindowSubTitle.lock();
-
-        if (sv == *lock)
-        {
+        if (sv == *lock) {
             return;
         }
 
         *lock = sv;
 
-        std::string const newTitle = sv.empty() ?
-            std::string{GetBestHumanReadableApplicationName(m_Metadata)} :
-            (std::string{sv} + " - " + GetBestHumanReadableApplicationName(m_Metadata));
+        const std::string new_title = sv.empty() ?
+            std::string{GetBestHumanReadableApplicationName(metadata_)} :
+            (std::string{sv} + " - " + GetBestHumanReadableApplicationName(metadata_));
 
-        SDL_SetWindowTitle(m_MainWindow.get(), newTitle.c_str());
+        SDL_SetWindowTitle(main_window_.get(), new_title.c_str());
     }
 
-    void unsetMainWindowSubTitle()
+    void unset_main_window_subtitle()
     {
-        setMainWindowSubTitle({});
+        set_main_window_subtitle({});
     }
 
-    AppConfig const& getConfig() const
+    const AppConfig& get_config() const { return config_; }
+
+    AppConfig& upd_config() { return config_; }
+
+    ResourceLoader& upd_resource_loader()
     {
-        return m_ApplicationConfig;
+        return resource_loader_;
     }
 
-    AppConfig& updConfig()
+    std::filesystem::path get_resource_filepath(const ResourcePath& rp) const
     {
-        return m_ApplicationConfig;
+        return std::filesystem::weakly_canonical(config_.getResourceDir() / rp.string());
     }
 
-    ResourceLoader& updResourceLoader()
+    std::string slurp_resource(const ResourcePath& rp)
     {
-        return m_AppResourceLoader;
+        return resource_loader_.slurp(rp);
     }
 
-    std::filesystem::path getResourceFilepath(ResourcePath const& rp) const
+    ResourceStream load_resource(const ResourcePath& rp)
     {
-        return std::filesystem::weakly_canonical(m_ApplicationConfig.getResourceDir() / rp.string());
+        return resource_loader_.open(rp);
     }
 
-    std::string slurpResource(ResourcePath const& rp)
+    std::shared_ptr<void> upd_singleton(
+        const std::type_info& type_info,
+        const std::function<std::shared_ptr<void>()>& ctor)
     {
-        return m_AppResourceLoader.slurp(rp);
-    }
-
-    ResourceStream loadResource(ResourcePath const& rp)
-    {
-        return m_AppResourceLoader.open(rp);
-    }
-
-    std::shared_ptr<void> updSingleton(
-        std::type_info const& typeinfo,
-        std::function<std::shared_ptr<void>()> const& ctor)
-    {
-        auto lock = m_Singletons.lock();
-        auto const [it, inserted] = lock->try_emplace(TypeInfoReference{typeinfo}, nullptr);
-        if (inserted)
-        {
+        auto lock = singletons_.lock();
+        const auto [it, inserted] = lock->try_emplace(TypeInfoReference{type_info}, nullptr);
+        if (inserted) {
             it->second = ctor();
         }
         return it->second;
     }
 
-    sdl::Window& updWindow()
-    {
-        return m_MainWindow;
-    }
+    sdl::Window& upd_window() { return main_window_; }
 
-    GraphicsContext& updGraphicsContext()
-    {
-        return m_GraphicsContext;
-    }
+    GraphicsContext& upd_graphics_context() { return graphics_context_; }
 
     void* upd_raw_opengl_context_handle_HACK()
     {
-        return m_GraphicsContext.upd_raw_opengl_context_handle_HACK();
+        return graphics_context_.upd_raw_opengl_context_handle_HACK();
     }
 
 private:
-    bool isWindowFocused() const
+    bool is_window_focused() const
     {
-        return (SDL_GetWindowFlags(m_MainWindow.get()) & SDL_WINDOW_INPUT_FOCUS) != 0u;
+        return (SDL_GetWindowFlags(main_window_.get()) & SDL_WINDOW_INPUT_FOCUS) != 0u;
     }
 
-    std::future<Texture2D> requestScreenshotTexture()
+    std::future<Texture2D> request_screenshot_texture()
     {
-        return m_GraphicsContext.request_screenshot();
+        return graphics_context_.request_screenshot();
     }
 
     // perform a screen transntion between two top-level `IScreen`s
-    void transitionToNextScreen()
+    void transition_to_next_screen()
     {
-        if (!m_NextScreen)
-        {
+        if (not next_screen_) {
             return;
         }
 
-        log_info("unmounting screen %s", m_CurrentScreen->getName().c_str());
+        log_info("unmounting screen %s", screen_->getName().c_str());
 
-        try
-        {
-            m_CurrentScreen->onUnmount();
+        try {
+            screen_->onUnmount();
         }
-        catch (std::exception const& ex)
-        {
-            log_error("error unmounting screen %s: %s", m_CurrentScreen->getName().c_str(), ex.what());
-            m_CurrentScreen.reset();
+        catch (const std::exception& ex) {
+            log_error("error unmounting screen %s: %s", screen_->getName().c_str(), ex.what());
+            screen_.reset();
             throw;
         }
 
-        m_CurrentScreen.reset();
-        m_CurrentScreen = std::move(m_NextScreen);
+        screen_.reset();
+        screen_ = std::move(next_screen_);
 
         // the next screen might need to draw a couple of frames
         // to "warm up" (e.g. because it's using an immediate ui)
-        m_NumFramesToPoll = 2;
+        num_frames_to_poll_ = 2;
 
-        log_info("mounting screen %s", m_CurrentScreen->getName().c_str());
-        m_CurrentScreen->onMount();
-        log_info("transitioned main screen to %s", m_CurrentScreen->getName().c_str());
+        log_info("mounting screen %s", screen_->getName().c_str());
+        screen_->onMount();
+        log_info("transitioned main screen to %s", screen_->getName().c_str());
     }
 
     // the main application loop
     //
     // this is what he application enters when it `show`s the first screen
-    void mainLoopUnguarded()
+    void run_main_loop_unguarded()
     {
         // perform initial screen mount
-        m_CurrentScreen->onMount();
+        screen_->onMount();
 
         // ensure current screen is unmounted and the quitting flag is reset when
         // exiting the main loop
-        ScopeGuard const onQuitGuard{[this]()
+        const ScopeGuard on_quit_guard{[this]()
         {
-            if (m_CurrentScreen) {
-                m_CurrentScreen->onUnmount();
+            if (screen_) {
+                screen_->onUnmount();
             }
-            m_QuitRequested = false;
+            quit_requested_ = false;
         }};
 
         // reset counters
-        m_AppCounter = SDL_GetPerformanceCounter();
-        m_FrameCounter = 0;
-        m_FrameStartTime = ConvertPerfCounterToFClock(m_AppCounter, m_AppCounterFq);
-        m_TimeSinceLastFrame = AppClock::duration{1.0f/60.0f};  // (estimated value for first frame)
+        perf_counter_ = SDL_GetPerformanceCounter();
+        frame_counter_ = 0;
+        frame_start_time_ = convert_perf_counter_to_appclock(perf_counter_, perf_counter_frequency_);
+        time_since_last_frame_ = AppClock::duration{1.0f/60.0f};  // (estimated value for first frame)
 
-        while (true)  // gameloop
-        {
+        while (true) {  // game loop pattern
+
             // pump events
             {
                 OSC_PERF("App/pumpEvents");
 
-                bool shouldWait = m_InWaitMode && m_NumFramesToPoll <= 0;
-                m_NumFramesToPoll = max(0, m_NumFramesToPoll - 1);
+                bool shouldWait = is_in_wait_mode_ and num_frames_to_poll_ <= 0;
+                num_frames_to_poll_ = max(0, num_frames_to_poll_ - 1);
 
-                for (SDL_Event e; shouldWait ? SDL_WaitEventTimeout(&e, 1000) : SDL_PollEvent(&e);)
-                {
+                for (SDL_Event e; shouldWait ? SDL_WaitEventTimeout(&e, 1000) : SDL_PollEvent(&e);) {
                     shouldWait = false;
 
-                    if (e.type == SDL_WINDOWEVENT)
-                    {
+                    if (e.type == SDL_WINDOWEVENT) {
                         // window was resized and should be drawn a couple of times quickly
                         // to ensure any immediate UIs in screens are updated
-                        m_NumFramesToPoll = 2;
+                        num_frames_to_poll_ = 2;
                     }
 
                     // let screen handle the event
-                    m_CurrentScreen->onEvent(e);
+                    screen_->onEvent(e);
 
-                    if (m_QuitRequested)
-                    {
+                    if (quit_requested_) {
                         // screen requested application quit, so exit this function
                         return;
                     }
 
-                    if (m_NextScreen)
-                    {
+                    if (next_screen_) {
                         // screen requested a new screen, so perform the transition
-                        transitionToNextScreen();
+                        transition_to_next_screen();
                     }
 
-                    if (e.type == SDL_DROPTEXT || e.type == SDL_DROPFILE)
-                    {
+                    if (e.type == SDL_DROPTEXT or e.type == SDL_DROPFILE) {
                         SDL_free(e.drop.file);  // SDL documentation mandates that the caller frees this
                     }
                 }
@@ -633,76 +585,72 @@ private:
 
             // update clocks
             {
-                auto counter = SDL_GetPerformanceCounter();
+                const auto counter = SDL_GetPerformanceCounter();
+                const Uint64 delta_ticks = counter - perf_counter_;
 
-                Uint64 deltaTicks = counter - m_AppCounter;
-
-                m_AppCounter = counter;
-                m_FrameStartTime = ConvertPerfCounterToFClock(counter, m_AppCounterFq);
-                m_TimeSinceLastFrame = ConvertPerfTicksToFClockDuration(deltaTicks, m_AppCounterFq);
+                perf_counter_ = counter;
+                frame_start_time_ = convert_perf_counter_to_appclock(counter, perf_counter_frequency_);
+                time_since_last_frame_ = convert_perf_ticks_to_appclock_duration(delta_ticks, perf_counter_frequency_);
             }
 
             // "tick" the screen
             {
                 OSC_PERF("App/onTick");
-                m_CurrentScreen->onTick();
+                screen_->onTick();
             }
 
-            if (m_QuitRequested)
-            {
+            if (quit_requested_) {
                 // screen requested application quit, so exit this function
                 return;
             }
 
-            if (m_NextScreen)
-            {
+            if (next_screen_) {
                 // screen requested a new screen, so perform the transition
-                transitionToNextScreen();
+                transition_to_next_screen();
                 continue;
             }
 
             // "draw" the screen into the window framebuffer
             {
                 OSC_PERF("App/onDraw");
-                m_CurrentScreen->onDraw();
+                screen_->onDraw();
             }
 
             // "present" the rendered screen to the user (can block on VSYNC)
             {
                 OSC_PERF("App/swap_buffers");
-                m_GraphicsContext.swap_buffers(*m_MainWindow);
+                graphics_context_.swap_buffers(*main_window_);
             }
 
             // handle annotated screenshot requests (if any)
             {
                 // save this frame's annotations into the requests, if necessary
-                for (AnnotatedScreenshotRequest& req : m_ActiveAnnotatedScreenshotRequests)
+                for (AnnotatedScreenshotRequest& req : active_screenshot_requests_)
                 {
-                    if (req.frameRequested == m_FrameCounter)
-                    {
-                        req.annotations = m_FrameAnnotations;
+                    if (req.frame_requested == frame_counter_) {
+                        req.annotations = frame_annotations_;
                     }
                 }
-                m_FrameAnnotations.clear();  // this frame's annotations are now saved (if necessary)
+                frame_annotations_.clear();  // this frame's annotations are now saved (if necessary)
 
                 // complete any requests for which screenshot data has arrived
-                for (AnnotatedScreenshotRequest& req : m_ActiveAnnotatedScreenshotRequests)
-                {
-                    if (req.underlyingScreenshotFuture.valid() &&
-                        req.underlyingScreenshotFuture.wait_for(std::chrono::seconds{0}) == std::future_status::ready)
-                    {
+                for (AnnotatedScreenshotRequest& req : active_screenshot_requests_) {
+
+                    if (req.underlying_future.valid() and
+                        req.underlying_future.wait_for(std::chrono::seconds{0}) == std::future_status::ready) {
+
                         // screenshot is ready: create an annotated screenshot and send it to
                         // the caller
-                        req.resultPromise.set_value(Screenshot{req.underlyingScreenshotFuture.get(), std::move(req.annotations)});
+                        req.result_promise.set_value(Screenshot{req.underlying_future.get(), std::move(req.annotations)});
                     }
                 }
 
                 // gc any invalid (i.e. handled) requests
                 std::erase_if(
-                    m_ActiveAnnotatedScreenshotRequests,
-                    [](AnnotatedScreenshotRequest const& req)
+                    active_screenshot_requests_,
+                    [](const AnnotatedScreenshotRequest& req)
                     {
-                        return !req.underlyingScreenshotFuture.valid();
+                        return not req.underlying_future.valid();
                     }
                 );
             }
@@ -710,157 +658,157 @@ private:
             // care: only update the frame counter here because the above methods
             // and checks depend on it being consistient throughout a single crank
             // of the application loop
-            ++m_FrameCounter;
+            ++frame_counter_;
 
-            if (m_QuitRequested)
-            {
+            if (quit_requested_) {
                 // screen requested application quit, so exit this function
                 return;
             }
 
-            if (m_NextScreen)
-            {
+            if (next_screen_) {
                 // screen requested a new screen, so perform the transition
-                transitionToNextScreen();
+                transition_to_next_screen();
                 continue;
             }
         }
     }
 
     // immutable application metadata (can be provided at runtime via ctor)
-    AppMetadata m_Metadata;
+    AppMetadata metadata_;
 
     // path to the directory that the application's executable is contained within
-    std::filesystem::path m_ExecutableDirPath = GetCurrentExeDirAndLogIt();
+    std::filesystem::path executable_dir_ = get_current_exe_dir_and_log_it();
 
     // path to the write-able user data directory
-    std::filesystem::path m_UserDataDirPath = GetUserDataDirAndLogIt(
-        m_Metadata.getOrganizationName(),
-        m_Metadata.getApplicationName()
+    std::filesystem::path user_data_dir_ = get_current_user_dir_and_log_it(
+        metadata_.getOrganizationName(),
+        metadata_.getApplicationName()
     );
 
     // top-level application configuration
-    AppConfig m_ApplicationConfig{
-        m_Metadata.getOrganizationName(),
-        m_Metadata.getApplicationName()
+    AppConfig config_{
+        metadata_.getOrganizationName(),
+        metadata_.getApplicationName()
     };
 
     // ensure the application log is configured according to the given configuration file
-    bool m_ApplicationLogIsConfigured = ConfigureApplicationLog(m_ApplicationConfig);
+    bool log_is_configured_ = configure_application_log(config_);
 
     // enable the stack backtrace handler (if necessary - once per process)
-    bool m_IsBacktraceHandlerInstalled = EnsureBacktraceHandlerEnabled(m_UserDataDirPath);
+    bool backtrace_handler_is_installed_ = ensure_backtrace_handler_enabled(user_data_dir_);
 
     // top-level runtime resource loader
-    ResourceLoader m_AppResourceLoader = make_resource_loader<FilesystemResourceLoader>(m_ApplicationConfig.getResourceDir());
+    ResourceLoader resource_loader_ = make_resource_loader<FilesystemResourceLoader>(config_.getResourceDir());
 
     // init SDL context (windowing, etc.)
-    sdl::Context m_SDLContext{SDL_INIT_VIDEO};
+    sdl::Context sdl_context_{SDL_INIT_VIDEO};
 
     // init main application window
-    sdl::Window m_MainWindow = CreateMainAppWindow(m_ApplicationConfig, GetBestHumanReadableApplicationName(m_Metadata));
+    sdl::Window main_window_ = create_main_app_window(config_, GetBestHumanReadableApplicationName(metadata_));
+
+    // cache for the current (caller-set) window subtitle
+    SynchronizedValue<std::string> main_window_subtitle_;
 
     // init graphics context
-    GraphicsContext m_GraphicsContext{*m_MainWindow};
+    GraphicsContext graphics_context_{*main_window_};
 
     // get performance counter frequency (for the delta clocks)
-    Uint64 m_AppCounterFq = SDL_GetPerformanceFrequency();
+    Uint64 perf_counter_frequency_ = SDL_GetPerformanceFrequency();
 
     // current performance counter value (recorded once per frame)
-    Uint64 m_AppCounter = 0;
+    Uint64 perf_counter_ = 0;
 
     // number of frames the application has drawn
-    size_t m_FrameCounter = 0;
+    size_t frame_counter_ = 0;
 
     // when the application started up (set now)
-    AppClock::time_point m_AppStartupTime = ConvertPerfCounterToFClock(SDL_GetPerformanceCounter(), m_AppCounterFq);
+    AppClock::time_point startup_time_ = convert_perf_counter_to_appclock(SDL_GetPerformanceCounter(), perf_counter_frequency_);
 
     // when the current frame started (set each frame)
-    AppClock::time_point m_FrameStartTime = m_AppStartupTime;
+    AppClock::time_point frame_start_time_ = startup_time_;
 
     // time since the frame before the current frame (set each frame)
-    AppClock::duration m_TimeSinceLastFrame = {};
+    AppClock::duration time_since_last_frame_ = {};
 
     // global cache of application-wide singletons (usually, for caching)
-    SynchronizedValue<std::unordered_map<TypeInfoReference, std::shared_ptr<void>>> m_Singletons;
+    SynchronizedValue<std::unordered_map<TypeInfoReference, std::shared_ptr<void>>> singletons_;
 
     // how many antiAliasingLevel the implementation should actually use
-    AntiAliasingLevel m_CurrentMSXAASamples = min(m_GraphicsContext.max_antialiasing_level(), m_ApplicationConfig.getNumMSXAASamples());
+    AntiAliasingLevel antialiasing_level_ = min(graphics_context_.max_antialiasing_level(), config_.getNumMSXAASamples());
 
     // set to true if the application should quit
-    bool m_QuitRequested = false;
+    bool quit_requested_ = false;
 
     // set to true if the main loop should pause on events
     //
     // CAREFUL: this makes the app event-driven
-    bool m_InWaitMode = false;
+    bool is_in_wait_mode_ = false;
 
     // set >0 to force that `n` frames are polling-driven: even in waiting mode
-    int32_t m_NumFramesToPoll = 0;
+    int32_t num_frames_to_poll_ = 0;
 
     // current screen being shown (if any)
-    std::unique_ptr<IScreen> m_CurrentScreen;
+    std::unique_ptr<IScreen> screen_;
 
     // the *next* screen the application should show
-    std::unique_ptr<IScreen> m_NextScreen;
+    std::unique_ptr<IScreen> next_screen_;
 
     // frame annotations made during this frame
-    std::vector<ScreenshotAnnotation> m_FrameAnnotations;
+    std::vector<ScreenshotAnnotation> frame_annotations_;
 
     // any active promises for an annotated frame
-    std::vector<AnnotatedScreenshotRequest> m_ActiveAnnotatedScreenshotRequests;
+    std::vector<AnnotatedScreenshotRequest> active_screenshot_requests_;
 };
 
 // public API
 
 App& osc::App::upd()
 {
-    OSC_ASSERT(g_ApplicationGlobal && "App is not initialized: have you constructed a (singleton) instance of App?");
-    return *g_ApplicationGlobal;
+    OSC_ASSERT(g_app_global && "App is not initialized: have you constructed a (singleton) instance of App?");
+    return *g_app_global;
 }
 
-App const& osc::App::get()
+const App& osc::App::get()
 {
-    OSC_ASSERT(g_ApplicationGlobal && "App is not initialized: have you constructed a (singleton) instance of App?");
-    return *g_ApplicationGlobal;
+    OSC_ASSERT(g_app_global && "App is not initialized: have you constructed a (singleton) instance of App?");
+    return *g_app_global;
 }
 
-AppConfig const& osc::App::config()
+const AppConfig& osc::App::config()
 {
-    return get().getConfig();
+    return get().get_config();
 }
 
-std::filesystem::path osc::App::resourceFilepath(ResourcePath const& rp)
+std::filesystem::path osc::App::resource_filepath(const ResourcePath& rp)
 {
-    return get().getResourceFilepath(rp);
+    return get().get_resource_filepath(rp);
 }
 
-std::string osc::App::slurp(ResourcePath const& rp)
+std::string osc::App::slurp(const ResourcePath& rp)
 {
-    return upd().slurpResource(rp);
+    return upd().slurp_resource(rp);
 }
 
-ResourceStream osc::App::load_resource(ResourcePath const& rp)
+ResourceStream osc::App::load_resource(const ResourcePath& rp)
 {
-    return upd().loadResource(rp);
+    return upd().go_load_resource(rp);
 }
 
 ResourceLoader& osc::App::resource_loader()
 {
-    return upd().updResourceLoader();
+    return upd().upd_resource_loader();
 }
 
 osc::App::App() :
     App{AppMetadata{}}
-{
-}
+{}
 
-osc::App::App(AppMetadata const& metadata)
+osc::App::App(const AppMetadata& metadata)
 {
-    OSC_ASSERT(!g_ApplicationGlobal && "cannot instantiate multiple `App` instances at the same time");
+    OSC_ASSERT(g_app_global == nullptr && "cannot instantiate multiple `App` instances at the same time");
 
-    m_Impl = std::make_unique<Impl>(metadata);
-    g_ApplicationGlobal = this;
+    impl_ = std::make_unique<Impl>(metadata);
+    g_app_global = this;
 }
 
 osc::App::App(App&&) noexcept = default;
@@ -869,250 +817,252 @@ App& osc::App::operator=(App&&) noexcept = default;
 
 osc::App::~App() noexcept
 {
-    g_ApplicationGlobal = nullptr;
+    g_app_global = nullptr;
 }
 
-AppMetadata const& osc::App::getMetadata() const
+const AppMetadata& osc::App::metadata() const
 {
-    return m_Impl->getMetadata();
+    return impl_->metadata();
 }
 
-std::filesystem::path const& osc::App::getExecutableDirPath() const
+const std::filesystem::path& osc::App::executable_dir() const
 {
-    return m_Impl->getExecutableDirPath();
+    return impl_->executable_dir();
 }
 
-std::filesystem::path const& osc::App::getUserDataDirPath() const
+const std::filesystem::path& osc::App::user_data_dir() const
 {
-    return m_Impl->getUserDataDirPath();
+    return impl_->user_data_dir();
 }
 
 void osc::App::show(std::unique_ptr<IScreen> s)
 {
-    m_Impl->show(std::move(s));
+    impl_->show(std::move(s));
 }
 
-void osc::App::requestTransition(std::unique_ptr<IScreen> s)
+void osc::App::request_transition(std::unique_ptr<IScreen> s)
 {
-    m_Impl->requestTransition(std::move(s));
+    impl_->request_transition(std::move(s));
 }
 
-void osc::App::requestQuit()
+void osc::App::request_quit()
 {
-    m_Impl->requestQuit();
+    impl_->request_quit();
 }
 
-Vec2 osc::App::dims() const
+Vec2 osc::App::dimensions() const
 {
-    return m_Impl->dims();
+    return impl_->dimensions();
 }
 
-void osc::App::setShowCursor(bool v)
+void osc::App::set_show_cursor(bool v)
 {
-    m_Impl->setShowCursor(v);
+    impl_->set_show_cursor(v);
 }
 
-void osc::App::makeFullscreen()
+void osc::App::make_fullscreen()
 {
-    m_Impl->makeFullscreen();
+    impl_->make_fullscreen();
 }
 
-void osc::App::makeWindowedFullscreen()
+void osc::App::make_windowed_fullscreen()
 {
-    m_Impl->makeWindowedFullscreen();
+    impl_->make_windowed_fullscreen();
 }
 
-void osc::App::makeWindowed()
+void osc::App::make_windowed()
 {
-    m_Impl->makeWindowed();
+    impl_->make_windowed();
 }
 
-AntiAliasingLevel osc::App::getCurrentAntiAliasingLevel() const
+AntiAliasingLevel osc::App::anti_aliasing_level() const
 {
-    return m_Impl->getCurrentAntiAliasingLevel();
+    return impl_->anti_aliasing_level();
 }
 
-void osc::App::setCurrentAntiAliasingLevel(AntiAliasingLevel s)
+void osc::App::set_anti_aliasing_level(AntiAliasingLevel s)
 {
-    m_Impl->setCurrentAntiAliasingLevel(s);
+    impl_->set_anti_aliasing_level(s);
 }
 
-AntiAliasingLevel osc::App::getMaxAntiAliasingLevel() const
+AntiAliasingLevel osc::App::max_anti_aliasing_level() const
 {
-    return m_Impl->getMaxAntiAliasingLevel();
+    return impl_->max_anti_aliasing_level();
 }
 
 bool osc::App::is_in_debug_mode() const
 {
-    return m_Impl->is_in_debug_mode();
+    return impl_->is_in_debug_mode();
 }
 
 void osc::App::enable_debug_mode()
 {
-    m_Impl->enable_debug_mode();
+    impl_->enable_debug_mode();
 }
 
 void osc::App::disable_debug_mode()
 {
-    m_Impl->disable_debug_mode();
+    impl_->disable_debug_mode();
 }
 
 bool osc::App::is_vsync_enabled() const
 {
-    return m_Impl->is_vsync_enabled();
+    return impl_->is_vsync_enabled();
 }
 
-void osc::App::setVsync(bool v)
+void osc::App::set_vsync(bool v)
 {
-    m_Impl->setVsync(v);
+    impl_->set_vsync(v);
 }
 
 void osc::App::enable_vsync()
 {
-    m_Impl->enable_vsync();
+    impl_->enable_vsync();
 }
 
 void osc::App::disable_vsync()
 {
-    m_Impl->disable_vsync();
+    impl_->disable_vsync();
 }
 
-void osc::App::addFrameAnnotation(std::string_view label, Rect screenRect)
+void osc::App::add_frame_annotation(std::string_view label, Rect screen_rect)
 {
-    m_Impl->addFrameAnnotation(label, screenRect);
+    impl_->add_frame_annotation(label, screen_rect);
 }
 
 std::future<Screenshot> osc::App::request_screenshot()
 {
-    return m_Impl->request_screenshot();
+    return impl_->request_screenshot();
 }
 
-std::string osc::App::getGraphicsBackendVendorString() const
+std::string osc::App::graphics_backend_vendor_string() const
 {
-    return m_Impl->getGraphicsBackendVendorString();
+    return impl_->graphics_backend_vendor_string();
 }
 
-std::string osc::App::getGraphicsBackendRendererString() const
+std::string osc::App::graphics_backend_renderer_string() const
 {
-    return m_Impl->getGraphicsBackendRendererString();
+    return impl_->graphics_backend_renderer_string();
 }
 
-std::string osc::App::getGraphicsBackendVersionString() const
+std::string osc::App::graphics_backend_version_string() const
 {
-    return m_Impl->getGraphicsBackendVersionString();
+    return impl_->graphics_backend_version_string();
 }
 
-std::string osc::App::getGraphicsBackendShadingLanguageVersionString() const
+std::string osc::App::graphics_backend_shading_language_version_string() const
 {
-    return m_Impl->getGraphicsBackendShadingLanguageVersionString();
+    return impl_->graphics_backend_shading_language_version_string();
 }
 
-size_t osc::App::getFrameCount() const
+size_t osc::App::num_frames_drawn() const
 {
-    return m_Impl->getFrameCount();
+    return impl_->num_frames_drawn();
 }
 
-AppClock::time_point osc::App::getAppStartupTime() const
+AppClock::time_point osc::App::startup_time() const
 {
-    return m_Impl->getAppStartupTime();
+    return impl_->startup_time();
 }
 
-AppClock::duration osc::App::getFrameDeltaSinceAppStartup() const
+AppClock::duration osc::App::frame_delta_since_startup() const
 {
-    return m_Impl->getFrameDeltaSinceAppStartup();
+    return impl_->frame_delta_since_startup();
 }
 
-AppClock::time_point osc::App::getFrameStartTime() const
+AppClock::time_point osc::App::frame_start_time() const
 {
-    return m_Impl->getFrameStartTime();
+    return impl_->frame_start_time();
 }
 
-AppClock::duration osc::App::getFrameDeltaSinceLastFrame() const
+AppClock::duration osc::App::frame_delta_since_last_frame() const
 {
-    return m_Impl->getFrameDeltaSinceLastFrame();
+    return impl_->frame_delta_since_last_frame();
 }
 
-bool osc::App::isMainLoopWaiting() const
+bool osc::App::is_main_loop_waiting() const
 {
-    return m_Impl->isMainLoopWaiting();
+    return impl_->is_main_loop_waiting();
 }
 
-void osc::App::setMainLoopWaiting(bool v)
+void osc::App::set_main_loop_waiting(bool v)
 {
-    m_Impl->setMainLoopWaiting(v);
+    impl_->set_main_loop_waiting(v);
 }
 
-void osc::App::makeMainEventLoopWaiting()
+void osc::App::make_main_loop_waiting()
 {
-    m_Impl->makeMainEventLoopWaiting();
+    impl_->make_main_loop_waiting();
 }
 
-void osc::App::makeMainEventLoopPolling()
+void osc::App::make_main_loop_polling()
 {
-    m_Impl->makeMainEventLoopPolling();
+    impl_->make_main_loop_polling();
 }
 
-void osc::App::requestRedraw()
+void osc::App::request_redraw()
 {
-    m_Impl->requestRedraw();
+    impl_->request_redraw();
 }
 
-void osc::App::clear_screen(Color const& color)
+void osc::App::clear_screen(const Color& color)
 {
-    m_Impl->clear_screen(color);
+    impl_->clear_screen(color);
 }
 
-void osc::App::setMainWindowSubTitle(std::string_view sv)
+void osc::App::set_main_window_subtitle(std::string_view sv)
 {
-    m_Impl->setMainWindowSubTitle(sv);
+    impl_->set_main_window_subtitle(sv);
 }
 
-void osc::App::unsetMainWindowSubTitle()
+void osc::App::unset_main_window_subtitle()
 {
-    m_Impl->unsetMainWindowSubTitle();
+    impl_->unset_main_window_subtitle();
 }
 
-AppConfig const& osc::App::getConfig() const
+const AppConfig& osc::App::get_config() const
 {
-    return m_Impl->getConfig();
+    return impl_->get_config();
 }
 
-AppConfig& osc::App::updConfig()
+AppConfig& osc::App::upd_config()
 {
-    return m_Impl->updConfig();
+    return impl_->upd_config();
 }
 
-ResourceLoader& osc::App::updResourceLoader()
+ResourceLoader& osc::App::upd_resource_loader()
 {
-    return m_Impl->updResourceLoader();
+    return impl_->upd_resource_loader();
 }
 
-std::filesystem::path osc::App::getResourceFilepath(ResourcePath const& rp) const
+std::filesystem::path osc::App::get_resource_filepath(const ResourcePath& rp) const
 {
-    return m_Impl->getResourceFilepath(rp);
+    return impl_->get_resource_filepath(rp);
 }
 
-std::string osc::App::slurpResource(ResourcePath const& rp)
+std::string osc::App::slurp_resource(const ResourcePath& rp)
 {
-    return m_Impl->slurpResource(rp);
+    return impl_->slurp_resource(rp);
 }
 
-ResourceStream osc::App::loadResource(ResourcePath const& rp)
+ResourceStream osc::App::go_load_resource(const ResourcePath& rp)
 {
-    return m_Impl->loadResource(rp);
+    return impl_->load_resource(rp);
 }
 
-std::shared_ptr<void> osc::App::updSingleton(std::type_info const& typeInfo, std::function<std::shared_ptr<void>()> const& ctor)
+std::shared_ptr<void> osc::App::upd_singleton(
+    const std::type_info& type_info,
+    const std::function<std::shared_ptr<void>()>& ctor)
 {
-    return m_Impl->updSingleton(typeInfo, ctor);
+    return impl_->upd_singleton(type_info, ctor);
 }
 
-SDL_Window* osc::App::updUndleryingWindow()
+SDL_Window* osc::App::upd_underlying_window()
 {
-    return m_Impl->updWindow().get();
+    return impl_->upd_window().get();
 }
 
-void* osc::App::updUnderlyingOpenGLContext()
+void* osc::App::upd_underlying_opengl_context()
 {
-    return m_Impl->updGraphicsContext().upd_raw_opengl_context_handle_HACK();
+    return impl_->upd_graphics_context().upd_raw_opengl_context_handle_HACK();
 }

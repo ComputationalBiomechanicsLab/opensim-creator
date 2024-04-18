@@ -30,12 +30,12 @@ private:
         m_CurrentTab = m_RegistryEntry.createTab(ParentPtr<Impl>{shared_from_this()});
         ui::context::Init();
         m_CurrentTab->onMount();
-        App::upd().makeMainEventLoopPolling();
+        App::upd().make_main_loop_polling();
     }
 
     void implOnUnmount() override
     {
-        App::upd().makeMainEventLoopWaiting();
+        App::upd().make_main_loop_waiting();
         m_CurrentTab->onUnmount();
         ui::context::Shutdown();
     }
@@ -64,9 +64,9 @@ private:
 
         ++m_FramesShown;
         if (m_FramesShown >= m_MinFramesShown &&
-            App::get().getFrameStartTime() >= m_CloseTime) {
+            App::get().frame_start_time() >= m_CloseTime) {
 
-            App::upd().requestQuit();
+            App::upd().request_quit();
         }
     }
 
@@ -80,7 +80,7 @@ private:
     size_t m_MinFramesShown = 2;
     size_t m_FramesShown = 0;
     AppClock::duration m_MinOpenDuration = AppSeconds{0};
-    AppClock::time_point m_CloseTime = App::get().getFrameStartTime() + m_MinOpenDuration;
+    AppClock::time_point m_CloseTime = App::get().frame_start_time() + m_MinOpenDuration;
 };
 
 osc::TabTestingScreen::TabTestingScreen(TabRegistryEntry const& registryEntry) :

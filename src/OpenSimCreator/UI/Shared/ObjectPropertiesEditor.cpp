@@ -328,7 +328,7 @@ namespace
         }
         ui::PopStyleVar();
         rv.shouldSave = ui::ItemValueShouldBeSaved();
-        App::upd().addFrameAnnotation(frameAnnotationLabel, ui::GetItemRect());
+        App::upd().add_frame_annotation(frameAnnotationLabel, ui::GetItemRect());
         ui::DrawTooltipIfItemHovered("Step Size", "You can right-click to adjust the step size of the buttons");
         DrawStepSizeEditor(stepSize);
 
@@ -546,7 +546,7 @@ namespace
             }
 
             // globally annotate the editor rect, for downstream screenshot automation
-            App::upd().addFrameAnnotation("ObjectPropertiesEditor::StringEditor/" + m_EditedProperty.getName(), ui::GetItemRect());
+            App::upd().add_frame_annotation("ObjectPropertiesEditor::StringEditor/" + m_EditedProperty.getName(), ui::GetItemRect());
 
             if (ui::ItemValueShouldBeSaved())
             {
@@ -727,7 +727,7 @@ namespace
             }
 
             // globally annotate the editor rect, for downstream screenshot automation
-            App::upd().addFrameAnnotation("ObjectPropertiesEditor::BoolEditor/" + m_EditedProperty.getName(), ui::GetItemRect());
+            App::upd().add_frame_annotation("ObjectPropertiesEditor::BoolEditor/" + m_EditedProperty.getName(), ui::GetItemRect());
 
             if (edited || ui::ItemValueShouldBeSaved())
             {
@@ -1057,7 +1057,7 @@ namespace
                 {
                     m_OrientationValsAreInRadians = !m_OrientationValsAreInRadians;
                 }
-                App::upd().addFrameAnnotation("ObjectPropertiesEditor::OrientationToggle/" + m_EditedProperty.getName(), ui::GetItemRect());
+                App::upd().add_frame_annotation("ObjectPropertiesEditor::OrientationToggle/" + m_EditedProperty.getName(), ui::GetItemRect());
                 ui::DrawTooltipBodyOnlyIfItemHovered("This quantity is edited in radians (click to switch to degrees)");
             }
             else
@@ -1066,7 +1066,7 @@ namespace
                 {
                     m_OrientationValsAreInRadians = !m_OrientationValsAreInRadians;
                 }
-                App::upd().addFrameAnnotation("ObjectPropertiesEditor::OrientationToggle/" + m_EditedProperty.getName(), ui::GetItemRect());
+                App::upd().add_frame_annotation("ObjectPropertiesEditor::OrientationToggle/" + m_EditedProperty.getName(), ui::GetItemRect());
                 ui::DrawTooltipBodyOnlyIfItemHovered("This quantity is edited in degrees (click to switch to radians)");
             }
         }
@@ -1157,7 +1157,7 @@ namespace
                     m_EditedProperty.updValue(idx)[3*i + 2] = static_cast<double>(rawValue[3*i + 2]);
                 }
                 shouldSave = shouldSave || ui::ItemValueShouldBeSaved();
-                App::upd().addFrameAnnotation("ObjectPropertiesEditor::Vec6Editor/" + m_EditedProperty.getName(), ui::GetItemRect());
+                App::upd().add_frame_annotation("ObjectPropertiesEditor::Vec6Editor/" + m_EditedProperty.getName(), ui::GetItemRect());
 
                 ui::PopID();
             }
@@ -1248,7 +1248,7 @@ namespace
             }
 
             // globally annotate the editor rect, for downstream screenshot automation
-            App::upd().addFrameAnnotation("ObjectPropertiesEditor::IntEditor/" + m_EditedProperty.getName(), ui::GetItemRect());
+            App::upd().add_frame_annotation("ObjectPropertiesEditor::IntEditor/" + m_EditedProperty.getName(), ui::GetItemRect());
 
             if (edited || ui::ItemValueShouldBeSaved())
             {

@@ -98,7 +98,7 @@ public:
 
             // if the application configuration has requested that a specific tab should be opened,
             // then try looking it up and open it
-            if (auto tab = LoadConfigurationDefinedTabIfNecessary(App::get().getConfig(), *App::singleton<TabRegistry>(), getTabHostAPI()))
+            if (auto tab = LoadConfigurationDefinedTabIfNecessary(App::get().config(), *App::singleton<TabRegistry>(), getTabHostAPI()))
             {
                 addTab(std::move(tab));
             }
@@ -239,7 +239,7 @@ public:
                 // - and the UI isn't currently showing a save prompt
                 // - then it's safe to outright quit the application from this screen
 
-                App::upd().requestQuit();
+                App::upd().request_quit();
             }
         }
         else if (ITab* active = getActiveTab())
@@ -331,7 +331,7 @@ public:
 
             ui::context::Shutdown();
             ui::context::Init();
-            App::upd().requestRedraw();
+            App::upd().request_redraw();
             m_ImguiWasAggressivelyReset = false;
 
             return;
@@ -344,7 +344,7 @@ public:
 
         if (m_ShouldRequestRedraw)
         {
-            App::upd().requestRedraw();
+            App::upd().request_redraw();
             m_ShouldRequestRedraw = false;
         }
     }
@@ -372,7 +372,7 @@ public:
     void implAddUserOutputExtractor(OutputExtractor const& output) final
     {
         m_UserOutputExtractors.push_back(output);
-        App::upd().updConfig().setIsPanelEnabled("Output Watches", true);
+        App::upd().upd_config().setIsPanelEnabled("Output Watches", true);
     }
 
     void implRemoveUserOutputExtractor(int idx) final
@@ -680,7 +680,7 @@ private:
             nukeDeletedTabs();
             if (m_QuitRequested)
             {
-                App::upd().requestQuit();
+                App::upd().request_quit();
             }
             return true;
         }
@@ -696,7 +696,7 @@ private:
         nukeDeletedTabs();
         if (m_QuitRequested)
         {
-            App::upd().requestQuit();
+            App::upd().request_quit();
         }
         return true;
     }

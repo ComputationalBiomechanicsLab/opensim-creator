@@ -412,7 +412,7 @@ private:
     void renderMesh(Mesh const& mesh, Vec2i dims, std::optional<RenderTexture>& out)
     {
         RenderTextureDescriptor desc{dims};
-        desc.set_anti_aliasing_level(App::get().getCurrentAntiAliasingLevel());
+        desc.set_anti_aliasing_level(App::get().anti_aliasing_level());
         out.emplace(desc);
         graphics::draw(mesh, identity<Transform>(), m_Material, m_Camera);
         graphics::draw(mesh, identity<Transform>(), wireframe_material_, m_Camera);

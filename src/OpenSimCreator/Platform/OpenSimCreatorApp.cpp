@@ -232,6 +232,6 @@ bool osc::GlobalInitOpenSim(AppConfig const& config)
 osc::OpenSimCreatorApp::OpenSimCreatorApp() :
     App{GetOpenSimCreatorAppMetadata()}
 {
-    GlobalInitOpenSim(getConfig());
+    GlobalInitOpenSim(config());
     InitializeTabRegistry(*singleton<TabRegistry>());
 }

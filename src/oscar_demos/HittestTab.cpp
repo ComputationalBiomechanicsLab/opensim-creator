@@ -97,15 +97,15 @@ public:
 private:
     void implOnMount() final
     {
-        App::upd().makeMainEventLoopPolling();
+        App::upd().make_main_loop_polling();
         m_IsMouseCaptured = true;
     }
 
     void implOnUnmount() final
     {
         m_IsMouseCaptured = false;
-        App::upd().makeMainEventLoopWaiting();
-        App::upd().setShowCursor(true);
+        App::upd().make_main_loop_waiting();
+        App::upd().set_show_cursor(true);
     }
 
     bool implOnEvent(SDL_Event const& e) final
@@ -155,11 +155,11 @@ private:
         if (m_IsMouseCaptured) {
             ui::UpdateCameraFromInputs(m_Camera, m_CameraEulers);
             ui::SetMouseCursor(ImGuiMouseCursor_None);
-            App::upd().setShowCursor(false);
+            App::upd().set_show_cursor(false);
         }
         else {
             ui::SetMouseCursor(ImGuiMouseCursor_Arrow);
-            App::upd().setShowCursor(true);
+            App::upd().set_show_cursor(true);
         }
 
         // render spheres

@@ -17,7 +17,7 @@
 namespace osc
 {
     // returns a 3x3 transform matrix equivalent to the provided transform (ignores position)
-    constexpr Mat3 mat3_cast(Transform const& t)
+    constexpr Mat3 mat3_cast(const Transform& t)
     {
         Mat3 rv = mat3_cast(t.rotation);
 
@@ -37,7 +37,7 @@ namespace osc
     }
 
     // returns a 4x4 transform matrix equivalent to the provided transform
-    constexpr Mat4 mat4_cast(Transform const& t)
+    constexpr Mat4 mat4_cast(const Transform& t)
     {
         Mat4 rv = mat4_cast(t.rotation);
 
@@ -61,23 +61,23 @@ namespace osc
     }
 
     // returns a 4x4 transform matrix equivalent to the inverse of the provided transform
-    inline Mat4 inverse_mat4_cast(Transform const& t)
+    inline Mat4 inverse_mat4_cast(const Transform& t)
     {
-        Mat4 translater = translate(identity<Mat4>(), -t.position);
-        Mat4 rotater = mat4_cast(conjugate(t.rotation));
-        Mat4 scaler = scale(identity<Mat4>(), 1.0f/t.scale);
+        const Mat4 translator = translate(identity<Mat4>(), -t.position);
+        const Mat4 rotator = mat4_cast(conjugate(t.rotation));
+        const Mat4 scaler = scale(identity<Mat4>(), 1.0f/t.scale);
 
-        return scaler * rotater * translater;
+        return scaler * rotator * translator;
     }
 
     // returns a 3x3 normal matrix for the provided transform
-    constexpr Mat3 normal_matrix(Transform const& t)
+    constexpr Mat3 normal_matrix(const Transform& t)
     {
         return adjugate(transpose(mat3_cast(t)));
     }
 
     // returns a 4x4 normal matrix for the provided transform
-    constexpr Mat4 normal_matrix_4x4(Transform const& t)
+    constexpr Mat4 normal_matrix_4x4(const Transform& t)
     {
         return adjugate(transpose(mat3_cast(t)));
     }
@@ -87,12 +87,12 @@ namespace osc
     // - not all 4x4 matrices can be expressed as an `Transform` (e.g. those containing skews)
     // - uses matrix decomposition to break up the provided matrix
     // - throws if decomposition of the provided matrix is not possible
-    inline Transform decompose_to_transform(Mat4 const& m)
+    inline Transform decompose_to_transform(const Mat4& m)
     {
         Transform rv;
         Vec3 skew;
         Vec4 perspective;
-        if (!decompose(m, rv.scale, rv.rotation, rv.position, skew, perspective)) {
+        if (not decompose(m, rv.scale, rv.rotation, rv.position, skew, perspective)) {
             throw std::runtime_error{"failed to decompose a matrix into scale, rotation, etc."};
         }
         return rv;
@@ -101,27 +101,27 @@ namespace osc
     // returns a unit-length vector that is the equivalent of the provided direction vector after applying the transform
     //
     // effectively, apply the Transform but ignore the `position` (translation) component
-    inline Vec3 transform_direction(Transform const& t, Vec3 const& localDir)
+    inline Vec3 transform_direction(const Transform& t, const Vec3& direction)
     {
-        return normalize(t.rotation * (t.scale * localDir));
+        return normalize(t.rotation * (t.scale * direction));
     }
 
     // returns a unit-length vector that is the equivalent of the provided direction vector after applying the inverse of the transform
     //
     // effectively, apply the inverse transform but ignore the `position` (translation) component
-    inline Vec3 inverse_transform_direction(Transform const& t, Vec3 const& direction)
+    inline Vec3 inverse_transform_direction(const Transform& t, const Vec3& direction)
     {
         return normalize((conjugate(t.rotation) * direction) / t.scale);
     }
 
     // returns a vector that is the equivalent of the provided vector after applying the transform
-    constexpr Vec3 transform_point(Transform const& t, Vec3 p)
+    constexpr Vec3 transform_point(const Transform& t, Vec3 p)
     {
         return t * p;
     }
 
     // returns a vector that is the equivalent of the provided vector after applying the inverse of the transform
-    constexpr Vec3 inverse_transform_point(Transform const& t, Vec3 p)
+    constexpr Vec3 inverse_transform_point(const Transform& t, Vec3 p)
     {
         p -= t.position;
         p = conjugate(t.rotation) * p;
@@ -143,7 +143,7 @@ namespace osc
     // rotation rotates around y', and the third rotation rotates around z''
     //
     // see: https://en.wikipedia.org/wiki/Euler_angles#Conventions_by_intrinsic_rotations
-    inline Eulers extract_eulers_xyz(Transform const& t)
+    inline Eulers extract_eulers_xyz(const Transform& t)
     {
         return extract_eulers_xyz(mat4_cast(t.rotation));
     }
@@ -155,23 +155,23 @@ namespace osc
     // to a moving body (the thing being rotated)
     //
     // see: https://en.wikipedia.org/wiki/Euler_angles#Conventions_by_extrinsic_rotations
-    inline Eulers extract_extrinsic_eulers_xyz(Transform const& t)
+    inline Eulers extract_extrinsic_eulers_xyz(const Transform& t)
     {
         return euler_angles(t.rotation);
     }
 
     // returns the provided transform, but rotated such that the given axis, as expressed
     // in the original transform, will instead point along the new direction
-    inline Transform point_axis_along(Transform const& t, int axisIndex, Vec3 const& newDirection)
+    inline Transform point_axis_along(const Transform& t, int axis_index, const Vec3& new_direction)
     {
-        Vec3 beforeDir{};
-        beforeDir[axisIndex] = 1.0f;
-        beforeDir = t.rotation * beforeDir;
+        Vec3 old_direction{};
+        old_direction[axis_index] = 1.0f;
+        old_direction = t.rotation * old_direction;
 
-        Quat const rotBeforeToAfter = rotation(beforeDir, newDirection);
-        Quat const newRotation = normalize(rotBeforeToAfter * t.rotation);
+        const Quat rotation_old_to_new = rotation(old_direction, new_direction);
+        const Quat new_rotation = normalize(rotation_old_to_new * t.rotation);
 
-        return t.with_rotation(newRotation);
+        return t.with_rotation(new_rotation);
     }
 
     // returns the provided transform, but rotated such that the given axis, as expressed
@@ -179,20 +179,20 @@ namespace osc
     //
     // alternate explanation: "performs the shortest (angular) rotation of the given
     // transform such that the given axis points towards a point in the same space"
-    inline Transform point_axis_towards(Transform const& t, int axisIndex, Vec3 const& location)
+    inline Transform point_axis_towards(const Transform& t, int axis_index, const Vec3& location)
     {
-        return point_axis_along(t, axisIndex, normalize(location - t.position));
+        return point_axis_along(t, axis_index, normalize(location - t.position));
     }
 
     // returns the provided transform, but intrinsically rotated along the given axis by
     // the given number of radians
-    inline Transform rotate_axis(Transform const& t, int axisIndex, Radians angle)
+    inline Transform rotate_axis(const Transform& t, int axis_index, Radians angle)
     {
         Vec3 ax{};
-        ax[axisIndex] = 1.0f;
+        ax[axis_index] = 1.0f;
         ax = t.rotation * ax;
 
-        Quat const q = angle_axis(angle, ax);
+        const Quat q = angle_axis(angle, ax);
 
         return t.with_rotation(normalize(q * t.rotation));
     }

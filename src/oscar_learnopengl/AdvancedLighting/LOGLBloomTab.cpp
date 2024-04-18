@@ -106,14 +106,14 @@ public:
 private:
     void implOnMount() final
     {
-        App::upd().makeMainEventLoopPolling();
+        App::upd().make_main_loop_polling();
         m_Camera.onMount();
     }
 
     void implOnUnmount() final
     {
         m_Camera.onUnmount();
-        App::upd().makeMainEventLoopWaiting();
+        App::upd().make_main_loop_waiting();
     }
 
     bool implOnEvent(SDL_Event const& e) final
@@ -141,7 +141,7 @@ private:
     void reformatAllTextures(Rect const& viewportRect)
     {
         Vec2 const viewportDims = dimensions_of(viewportRect);
-        AntiAliasingLevel const msxaaSamples = App::get().getCurrentAntiAliasingLevel();
+        AntiAliasingLevel const msxaaSamples = App::get().anti_aliasing_level();
 
         RenderTextureDescriptor textureDescription{viewportDims};
         textureDescription.set_anti_aliasing_level(msxaaSamples);

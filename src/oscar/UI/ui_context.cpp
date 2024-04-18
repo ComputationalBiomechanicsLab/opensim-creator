@@ -76,7 +76,7 @@ void osc::ui::context::Init()
 
         // CARE: the reason this filepath is `static` is because ImGui requires that
         // the string outlives the ImGui context
-        static std::string const s_UserImguiIniFilePath = (App::get().getUserDataDirPath() / "imgui.ini").string();
+        static std::string const s_UserImguiIniFilePath = (App::get().user_data_dir() / "imgui.ini").string();
 
         ImGui::LoadIniSettingsFromDisk(s_UserImguiIniFilePath.c_str());
         io.IniFilename = s_UserImguiIniFilePath.c_str();
@@ -91,7 +91,7 @@ void osc::ui::context::Init()
         // if the user explicitly enabled high_dpi_mode...
         if (auto v = App::config().getValue("experimental_feature_flags/high_dpi_mode"); v && v->toBool()) {
             // and SDL is able to get the DPI of the given window...
-            if (SDL_GetDisplayDPI(SDL_GetWindowDisplayIndex(App::upd().updUndleryingWindow()), &dpi, &hdpi, &vdpi) == 0) {
+            if (SDL_GetDisplayDPI(SDL_GetWindowDisplayIndex(App::upd().upd_underlying_window()), &dpi, &hdpi, &vdpi) == 0) {
                 return dpi / 96.0f;  // then calculate the scaling factor
             }
         }
@@ -117,8 +117,8 @@ void osc::ui::context::Init()
 
     // init ImGui for SDL2 /w OpenGL
     ImGui_ImplSDL2_InitForOpenGL(
-        App::upd().updUndleryingWindow(),
-        App::upd().updUnderlyingOpenGLContext()
+        App::upd().upd_underlying_window(),
+        App::upd().upd_underlying_opengl_context()
     );
 
     // init ImGui for OpenGL

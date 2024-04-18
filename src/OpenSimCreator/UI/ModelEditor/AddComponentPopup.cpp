@@ -172,7 +172,7 @@ private:
         ui::NextColumn();
 
         ui::InputString("##componentname", m_Name);
-        App::upd().addFrameAnnotation("AddComponentPopup::ComponentNameInput", ui::GetItemRect());
+        App::upd().add_frame_annotation("AddComponentPopup::ComponentNameInput", ui::GetItemRect());
 
         ui::NextColumn();
 
@@ -275,7 +275,7 @@ private:
 
             if (selected)
             {
-                App::upd().addFrameAnnotation(c.toString(), selectableRect);
+                App::upd().add_frame_annotation(c.toString(), selectableRect);
             }
         }
 

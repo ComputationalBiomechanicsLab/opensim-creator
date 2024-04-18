@@ -139,7 +139,7 @@ namespace
                 };
                 auto p = std::make_unique<SelectGeometryPopup>(
                     "select geometry to attach",
-                    App::resourceFilepath("geometry"),
+                    App::resource_filepath("geometry"),
                     callback
                 );
                 p->open();

@@ -80,14 +80,14 @@ public:
 private:
     void implOnMount() final
     {
-        App::upd().makeMainEventLoopPolling();
+        App::upd().make_main_loop_polling();
         m_SceneCamera.onMount();
     }
 
     void implOnUnmount() final
     {
         m_SceneCamera.onUnmount();
-        App::upd().makeMainEventLoopWaiting();
+        App::upd().make_main_loop_waiting();
     }
 
     bool implOnEvent(SDL_Event const& e) final
@@ -98,7 +98,7 @@ private:
     void implOnTick() final
     {
         // move light position over time
-        double const seconds = App::get().getFrameDeltaSinceAppStartup().count();
+        double const seconds = App::get().frame_delta_since_startup().count();
         m_LightPos.x = static_cast<float>(3.0 * sin(0.5 * seconds));
     }
 
