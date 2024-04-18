@@ -146,7 +146,7 @@ namespace
         //
         // when an osim file contains relative geometry path (e.g. "sphere.vtp"), the
         // OpenSim implementation will look in these directories for that file
-        std::filesystem::path geometryDir = config.getResourceDir() / "geometry";
+        std::filesystem::path geometryDir = config.resource_directory() / "geometry";
         log_info("registering OpenSim geometry search path to use osc resources");
         OpenSim::ModelVisualizer::addDirToGeometrySearchPaths(geometryDir.string());
         log_info("added geometry search path entry: %s", geometryDir.string().c_str());
@@ -215,7 +215,7 @@ AppMetadata osc::GetOpenSimCreatorAppMetadata()
 AppConfig osc::LoadOpenSimCreatorConfig()
 {
     auto metadata = GetOpenSimCreatorAppMetadata();
-    return AppConfig{metadata.getOrganizationName(), metadata.getApplicationName()};
+    return AppConfig{metadata.organization_name(), metadata.application_name()};
 }
 
 bool osc::GlobalInitOpenSim()

@@ -15,53 +15,48 @@ namespace osc
     class AppConfig final {
     public:
         class Impl;
-    public:
+
         AppConfig(
-            std::string_view organizationName_,
-            std::string_view applicationName_
+            std::string_view organization_name,
+            std::string_view application_name
         );
-        AppConfig(AppConfig const&) = delete;
+        AppConfig(const AppConfig&) = delete;
         AppConfig(AppConfig&&) noexcept;
-        AppConfig& operator=(AppConfig const&) = delete;
+        AppConfig& operator=(const AppConfig&) = delete;
         AppConfig& operator=(AppConfig&&) noexcept;
         ~AppConfig() noexcept;
 
         // returns canonicalized path to the given resource key (e.g. a/b/c)
-        std::filesystem::path getResourcePath(std::string_view k) const;
+        std::filesystem::path resource_path(std::string_view) const;
 
         // get the full path to the runtime `resources/` dir
-        std::filesystem::path const& getResourceDir() const;
+        const std::filesystem::path& resource_directory() const;
 
         // get the full path to the runtime `html/` dir for the documentation
-        std::filesystem::path const& getHTMLDocsDir() const;
+        const std::filesystem::path& html_docs_directory() const;
 
         // returns true if the implementation should allow multiple viewports
-        bool isMultiViewportEnabled() const;
+        bool is_multi_viewport_enabled() const;
 
         // get number of MSXAA antiAliasingLevel 3D viewports should use
-        AntiAliasingLevel getNumMSXAASamples() const;
+        AntiAliasingLevel anti_aliasing_level() const;
 
         // get if a given UI panel is enabled or not
-        bool getIsPanelEnabled(std::string const& panelName) const;
-        void setIsPanelEnabled(std::string const& panelName, bool);
+        bool is_panel_enabled(const std::string& panel_name) const;
+        void set_panel_enabled(const std::string& panel_name, bool);
 
         // get the name of a tab that should be opened upon booting (overriding default behavior)
-        std::optional<std::string> getInitialTabOverride() const;
+        std::optional<std::string> initial_tab_override() const;
 
         // get the user-requested log level that the application should be initialized with
-        LogLevel getRequestedLogLevel() const;
+        LogLevel log_level() const;
 
         // get/set arbitrary runtime configuration values that should be persisted between
         // application sessions
-        std::optional<AppSettingValue> getValue(
-            std::string_view key
-        ) const;
-        void setValue(
-            std::string_view key,
-            AppSettingValue value
-        );
+        std::optional<AppSettingValue> find_value(std::string_view key) const;
+        void set_value(std::string_view key, AppSettingValue value);
 
     private:
-        std::unique_ptr<Impl> m_Impl;
+        std::unique_ptr<Impl> impl_;
     };
 }

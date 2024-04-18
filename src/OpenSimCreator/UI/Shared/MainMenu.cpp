@@ -323,12 +323,12 @@ void osc::MainMenuAboutTab::onDraw()
 
         ui::TextUnformatted("VERSION");
         ui::NextColumn();
-        ui::TextUnformatted(metadata.tryGetVersionString().value_or("(not known)"));
+        ui::TextUnformatted(metadata.maybe_version_string().value_or("(not known)"));
         ui::NextColumn();
 
         ui::TextUnformatted("BUILD_ID");
         ui::NextColumn();
-        ui::TextUnformatted(metadata.tryGetBuildID().value_or("(not known)"));
+        ui::TextUnformatted(metadata.maybe_build_id().value_or("(not known)"));
         ui::NextColumn();
 
         ui::TextUnformatted("GRAPHICS_VENDOR");
@@ -423,13 +423,13 @@ void osc::MainMenuAboutTab::onDraw()
         ui::PushID(id++);
         if (ui::Button(ICON_FA_LINK " open"))
         {
-            OpenPathInOSDefaultApplication(App::get().config().getHTMLDocsDir() / "index.html");
+            OpenPathInOSDefaultApplication(App::get().config().html_docs_directory() / "index.html");
         }
         ui::DrawTooltipBodyOnlyIfItemHovered("this will open the (locally installed) documentation in a separate browser window");
         ui::PopID();
         ui::NextColumn();
 
-        if (auto repoURL = App::get().metadata().tryGetRepositoryURL())
+        if (auto repoURL = App::get().metadata().maybe_repository_url())
         {
             ui::TextUnformatted("OpenSim Creator Repository");
             ui::NextColumn();

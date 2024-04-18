@@ -72,7 +72,7 @@ TEST(OpenSimHelpers, DISABLED_CanSwapACustomJointForAFreeJoint)
     auto const config = LoadOpenSimCreatorConfig();
     GlobalInitOpenSim(config);  // ensure muscles are available etc.
 
-    std::filesystem::path modelPath = config.getResourceDir() / "models" / "Leg39" / "leg39.osim";
+    std::filesystem::path modelPath = config.resource_directory() / "models" / "Leg39" / "leg39.osim";
 
     UndoableModelStatePair model{std::make_unique<OpenSim::Model>(modelPath.string())};
 
@@ -149,7 +149,7 @@ TEST(OpenSimHelpers, GetAbsolutePathStringWithOutparamWorksForModel)
 TEST(OpenSimHelpers, GetAbsolutePathStringReturnsSameResultAsOpenSimVersionForComplexModel)
 {
     auto const config = LoadOpenSimCreatorConfig();
-    std::filesystem::path modelPath = config.getResourceDir() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
+    std::filesystem::path modelPath = config.resource_directory() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
     OpenSim::Model m{modelPath.string()};
     std::string outparam;
@@ -165,7 +165,7 @@ TEST(OpenSimHelpers, GetAbsolutePathStringReturnsSameResultAsOpenSimVersionForCo
 TEST(OpenSimHelpers, GetAbsolutePathReturnsSameResultAsOpenSimVersionForComplexModel)
 {
     auto const config = LoadOpenSimCreatorConfig();
-    std::filesystem::path modelPath = config.getResourceDir() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
+    std::filesystem::path modelPath = config.resource_directory() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
     OpenSim::Model m{modelPath.string()};
     for (OpenSim::Component const& c : m.getComponentList())
@@ -182,7 +182,7 @@ TEST(OpenSimHelpers, GetAbsolutePathOrEmptyReuturnsEmptyIfPassedANullptr)
 TEST(OpenSimHelpers, GetAbsolutePathOrEmptyReuturnsSameResultAsOpenSimVersionForComplexModel)
 {
     auto const config = LoadOpenSimCreatorConfig();
-    std::filesystem::path modelPath = config.getResourceDir() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
+    std::filesystem::path modelPath = config.resource_directory() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
     OpenSim::Model m{modelPath.string()};
     for (OpenSim::Component const& c : m.getComponentList())
@@ -196,7 +196,7 @@ TEST(OpenSimHelpers, GetAbsolutePathOrEmptyReuturnsSameResultAsOpenSimVersionFor
 TEST(OpenSimHelpers, CanTryToDeleteEveryComponentFromComplicatedModelWithNoFaultsOrExceptions)
 {
     auto const config = LoadOpenSimCreatorConfig();
-    std::filesystem::path modelPath = config.getResourceDir() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
+    std::filesystem::path modelPath = config.resource_directory() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
     OpenSim::Model const originalModel{modelPath.string()};
     OpenSim::Model modifiedModel{originalModel};
@@ -331,7 +331,7 @@ TEST(OpenSimHelpers, GetAllWrapObjectsReferencedByWorksAsExpected)
     });
 
     auto const config = LoadOpenSimCreatorConfig();
-    std::filesystem::path modelPath = config.getResourceDir() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
+    std::filesystem::path modelPath = config.resource_directory() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
     OpenSim::Model m{modelPath.string()};
     InitializeModel(m);
     InitializeState(m);

@@ -77,7 +77,7 @@ void osc::UpdModelRendererParamsFrom(
     auto values = ToValues(keyPrefix, params);
     for (auto& [k, v] : values)
     {
-        if (auto configV = config.getValue(k))
+        if (auto configV = config.find_value(k))
         {
             v = *configV;
         }
@@ -97,7 +97,7 @@ void osc::SaveModelRendererParamsDifference(
     for (auto const& [aK, aV] : aVals) {
         if (auto const* bV = try_find(bVals, aK)) {
             if (*bV != aV) {
-                config.setValue(aK, *bV);
+                config.set_value(aK, *bV);
             }
         }
     }

@@ -9,77 +9,48 @@ namespace osc
 {
     class AppMetadata final {
     public:
-        AppMetadata() :
-            m_OrganizationName{"oscarorg"},
-            m_ApplicationName{"oscar"}
-        {
-        }
+        AppMetadata() = default;
 
         AppMetadata(
-            CStringView organizationName_,
-            CStringView applicationName_) :
+            CStringView organization_name,
+            CStringView application_name) :
 
-            m_OrganizationName{organizationName_},
-            m_ApplicationName{applicationName_}
-        {
-        }
+            organization_name_{organization_name},
+            application_name_{application_name}
+        {}
 
         AppMetadata(
-            CStringView organizationName_,
-            CStringView applicationName_,
-            CStringView longApplicationName_,
-            CStringView versionString_,
-            CStringView buildID_,
-            CStringView repositoryURL_) :
+            CStringView organization_name,
+            CStringView application_name,
+            CStringView long_application_name,
+            CStringView version_string,
+            CStringView build_id,
+            CStringView repository_url) :
 
-            m_OrganizationName{organizationName_},
-            m_ApplicationName{applicationName_},
-            m_LongApplicationName{longApplicationName_},
-            m_VersionString{versionString_},
-            m_BuildID{buildID_},
-            m_RepositoryURL{repositoryURL_}
-        {
-        }
+            organization_name_{organization_name},
+            application_name_{application_name},
+            long_application_name_{long_application_name},
+            version_string_{version_string},
+            build_id_{build_id},
+            repository_url_{repository_url}
+        {}
 
-        CStringView getOrganizationName() const
-        {
-            return m_OrganizationName;
-        }
-
-        CStringView getApplicationName() const
-        {
-            return m_ApplicationName;
-        }
-
-        std::optional<CStringView> tryGetLongApplicationName() const
-        {
-            return m_LongApplicationName;
-        }
-
-        std::optional<CStringView> tryGetVersionString() const
-        {
-            return m_VersionString;
-        }
-
-        std::optional<CStringView> tryGetBuildID() const
-        {
-            return m_BuildID;
-        }
-
-        std::optional<CStringView> tryGetRepositoryURL() const
-        {
-            return m_RepositoryURL;
-        }
+        CStringView organization_name() const { return organization_name_; }
+        CStringView application_name() const { return application_name_; }
+        std::optional<CStringView> maybe_long_application_name() const { return long_application_name_; }
+        std::optional<CStringView> maybe_version_string() const { return version_string_; }
+        std::optional<CStringView> maybe_build_id() const { return build_id_; }
+        std::optional<CStringView> maybe_repository_url() const { return repository_url_; }
 
     private:
-        std::string m_OrganizationName;
-        std::string m_ApplicationName;
-        std::optional<std::string> m_LongApplicationName;
-        std::optional<std::string> m_VersionString;
-        std::optional<std::string> m_BuildID;
-        std::optional<std::string> m_RepositoryURL;
+        std::string organization_name_ = "oscarorg";
+        std::string application_name_ = "oscar";
+        std::optional<std::string> long_application_name_;
+        std::optional<std::string> version_string_;
+        std::optional<std::string> build_id_;
+        std::optional<std::string> repository_url_;
     };
 
-    std::string CalcFullApplicationNameWithVersionAndBuild(AppMetadata const&);
-    CStringView GetBestHumanReadableApplicationName(AppMetadata const&);
+    std::string calc_full_application_name_with_version_and_build_id(const AppMetadata&);
+    CStringView calc_human_readable_application_name(const AppMetadata&);
 }

@@ -1387,7 +1387,7 @@ private:
         AppMetadata const& appMetadata = App::get().metadata();
         ObjMetadata const objMetadata
         {
-            CalcFullApplicationNameWithVersionAndBuild(appMetadata),
+            calc_full_application_name_with_version_and_build_id(appMetadata),
         };
 
         write_as_obj(
@@ -1426,7 +1426,7 @@ private:
         AppMetadata const& appMetadata = App::get().metadata();
         StlMetadata const stlMetadata
         {
-            CalcFullApplicationNameWithVersionAndBuild(appMetadata),
+            calc_full_application_name_with_version_and_build_id(appMetadata),
         };
 
         write_as_stl(outputFileStream, mesh, stlMetadata);

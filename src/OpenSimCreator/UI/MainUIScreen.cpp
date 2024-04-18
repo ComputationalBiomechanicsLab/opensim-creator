@@ -55,7 +55,7 @@ namespace
         TabRegistry const& tabRegistry,
         ParentPtr<ITabHost> const& api)
     {
-        if (std::optional<std::string> maybeRequestedTab = config.getInitialTabOverride())
+        if (std::optional<std::string> maybeRequestedTab = config.initial_tab_override())
         {
             if (std::optional<TabRegistryEntry> maybeEntry = tabRegistry.getByName(*maybeRequestedTab))
             {
@@ -372,7 +372,7 @@ public:
     void implAddUserOutputExtractor(OutputExtractor const& output) final
     {
         m_UserOutputExtractors.push_back(output);
-        App::upd().upd_config().setIsPanelEnabled("Output Watches", true);
+        App::upd().upd_config().set_panel_enabled("Output Watches", true);
     }
 
     void implRemoveUserOutputExtractor(int idx) final

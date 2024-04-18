@@ -77,7 +77,7 @@ namespace
     bool configure_application_log(const AppConfig& config)
     {
         if (auto logger = defaultLogger()) {
-            logger->set_level(config.getRequestedLogLevel());
+            logger->set_level(config.log_level());
         }
         return true;
     }
@@ -102,7 +102,7 @@ namespace
         constexpr int height = 600;
 
         Uint32 flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED;
-        if (auto v = config.getValue("experimental_feature_flags/high_dpi_mode"); v and v->toBool()) {
+        if (auto v = config.find_value("experimental_feature_flags/high_dpi_mode"); v and v->toBool()) {
             flags |= SDL_WINDOW_ALLOW_HIGHDPI;
             SetProcessHighDPIMode();
         }
@@ -425,8 +425,8 @@ public:
         *lock = sv;
 
         const std::string new_title = sv.empty() ?
-            std::string{GetBestHumanReadableApplicationName(metadata_)} :
-            (std::string{sv} + " - " + GetBestHumanReadableApplicationName(metadata_));
+            std::string{calc_human_readable_application_name(metadata_)} :
+            (std::string{sv} + " - " + calc_human_readable_application_name(metadata_));
 
         SDL_SetWindowTitle(main_window_.get(), new_title.c_str());
     }
@@ -447,7 +447,7 @@ public:
 
     std::filesystem::path get_resource_filepath(const ResourcePath& rp) const
     {
-        return std::filesystem::weakly_canonical(config_.getResourceDir() / rp.string());
+        return std::filesystem::weakly_canonical(config_.resource_directory() / rp.string());
     }
 
     std::string slurp_resource(const ResourcePath& rp)
@@ -681,14 +681,14 @@ private:
 
     // path to the write-able user data directory
     std::filesystem::path user_data_dir_ = get_current_user_dir_and_log_it(
-        metadata_.getOrganizationName(),
-        metadata_.getApplicationName()
+        metadata_.organization_name(),
+        metadata_.application_name()
     );
 
     // top-level application configuration
     AppConfig config_{
-        metadata_.getOrganizationName(),
-        metadata_.getApplicationName()
+        metadata_.organization_name(),
+        metadata_.application_name()
     };
 
     // ensure the application log is configured according to the given configuration file
@@ -698,13 +698,13 @@ private:
     bool backtrace_handler_is_installed_ = ensure_backtrace_handler_enabled(user_data_dir_);
 
     // top-level runtime resource loader
-    ResourceLoader resource_loader_ = make_resource_loader<FilesystemResourceLoader>(config_.getResourceDir());
+    ResourceLoader resource_loader_ = make_resource_loader<FilesystemResourceLoader>(config_.resource_directory());
 
     // init SDL context (windowing, etc.)
     sdl::Context sdl_context_{SDL_INIT_VIDEO};
 
     // init main application window
-    sdl::Window main_window_ = create_main_app_window(config_, GetBestHumanReadableApplicationName(metadata_));
+    sdl::Window main_window_ = create_main_app_window(config_, calc_human_readable_application_name(metadata_));
 
     // cache for the current (caller-set) window subtitle
     SynchronizedValue<std::string> main_window_subtitle_;
@@ -734,7 +734,7 @@ private:
     SynchronizedValue<std::unordered_map<TypeInfoReference, std::shared_ptr<void>>> singletons_;
 
     // how many antiAliasingLevel the implementation should actually use
-    AntiAliasingLevel antialiasing_level_ = min(graphics_context_.max_antialiasing_level(), config_.getNumMSXAASamples());
+    AntiAliasingLevel antialiasing_level_ = min(graphics_context_.max_antialiasing_level(), config_.anti_aliasing_level());
 
     // set to true if the application should quit
     bool quit_requested_ = false;

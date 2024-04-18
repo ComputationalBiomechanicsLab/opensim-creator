@@ -272,7 +272,7 @@ private:
         App::upd().add_frame_annotation("SplashTab/ImportMeshesMenuItem", ui::GetItemRect());
         if (ui::MenuItem(ICON_FA_BOOK " Open Documentation"))
         {
-            OpenPathInOSDefaultApplication(App::get().config().getHTMLDocsDir() / "index.html");
+            OpenPathInOSDefaultApplication(App::get().config().html_docs_directory() / "index.html");
         }
     }
 
@@ -388,7 +388,7 @@ private:
 
         ImDrawList* const dl = ui::GetForegroundDrawList();
         ImU32 const color = ui::ToImU32(Color::black());
-        std::string const text = CalcFullApplicationNameWithVersionAndBuild(App::get().metadata());
+        std::string const text = calc_full_application_name_with_version_and_build_id(App::get().metadata());
         dl->AddText(pos, color, text.c_str());
     }
 

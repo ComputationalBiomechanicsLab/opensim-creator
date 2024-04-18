@@ -89,7 +89,7 @@ void osc::ui::context::Init()
         float vdpi{};
 
         // if the user explicitly enabled high_dpi_mode...
-        if (auto v = App::config().getValue("experimental_feature_flags/high_dpi_mode"); v && v->toBool()) {
+        if (auto v = App::config().find_value("experimental_feature_flags/high_dpi_mode"); v && v->toBool()) {
             // and SDL is able to get the DPI of the given window...
             if (SDL_GetDisplayDPI(SDL_GetWindowDisplayIndex(App::upd().upd_underlying_window()), &dpi, &hdpi, &vdpi) == 0) {
                 return dpi / 96.0f;  // then calculate the scaling factor
