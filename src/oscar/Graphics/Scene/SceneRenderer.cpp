@@ -109,7 +109,7 @@ namespace
         // pump sphere+polar information into a polar camera in order to
         // calculate the renderer's view/projection matrices
         PolarPerspectiveCamera camera;
-        camera.focusPoint = -shadowcasters_sphere.origin;
+        camera.focus_point = -shadowcasters_sphere.origin;
         camera.phi = camera_polar_angles.phi;
         camera.theta = camera_polar_angles.theta;
         camera.radius = shadowcasters_sphere.radius;

@@ -83,7 +83,7 @@ void osc::GuiRuler::onDraw(
     }
     else if (m_State == State::WaitingForSecondPoint)
     {
-        Vec2 startScreenPos = sceneCamera.projectOntoScreenRect(m_StartWorldPos, renderRect);
+        Vec2 startScreenPos = sceneCamera.project_onto_screen_rect(m_StartWorldPos, renderRect);
 
         if (maybeMouseover)
         {

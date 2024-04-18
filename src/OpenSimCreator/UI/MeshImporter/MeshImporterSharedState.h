@@ -290,7 +290,7 @@ namespace osc::mi
 
         Vec2 worldPosToScreenPos(Vec3 const& worldPos) const
         {
-            return getCamera().projectOntoScreenRect(worldPos, get3DSceneRect());
+            return getCamera().project_onto_screen_rect(worldPos, get3DSceneRect());
         }
 
         void drawConnectionLine(
@@ -394,7 +394,7 @@ namespace osc::mi
             p.far_clipping_plane = m_3DSceneCamera.zfar;
             p.view_matrix = m_3DSceneCamera.view_matrix();
             p.projection_matrix = m_3DSceneCamera.projection_matrix(aspect_ratio(p.dimensions));
-            p.view_pos = m_3DSceneCamera.getPos();
+            p.view_pos = m_3DSceneCamera.position();
             p.light_direction = recommended_light_direction(m_3DSceneCamera);
             p.light_color = Color::white();
             p.ambient_strength *= 1.5f;
@@ -457,7 +457,7 @@ namespace osc::mi
 
         void focusCameraOn(Vec3 const& focusPoint)
         {
-            m_3DSceneCamera.focusPoint = -focusPoint;
+            m_3DSceneCamera.focus_point = -focusPoint;
         }
 
         std::span<Color const> colors() const
@@ -571,7 +571,7 @@ namespace osc::mi
             Vec2 const sceneDims = dimensions_of(sceneRect);
             Vec2 const relMousePos = mousePos - sceneRect.p1;
 
-            Line const ray = getCamera().unprojectTopLeftPosToWorldRay(relMousePos, sceneDims);
+            Line const ray = getCamera().unproject_topleft_pos_to_world_ray(relMousePos, sceneDims);
             bool const hittestMeshes = isMeshesInteractable();
             bool const hittestBodies = isBodiesInteractable();
             bool const hittestJointCenters = isJointCentersInteractable();

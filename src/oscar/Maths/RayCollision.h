@@ -7,7 +7,7 @@ namespace osc
     struct RayCollision {
         RayCollision() = default;
 
-        RayCollision(float distance_, Vec3 const& position_) :
+        RayCollision(float distance_, const Vec3& position_) :
             distance{distance_},
             position{position_}
         {}

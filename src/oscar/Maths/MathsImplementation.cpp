@@ -56,8 +56,8 @@ namespace
     void bvh_recursive_build(
         std::vector<BVHNode>& nodes,
         std::vector<BVHPrim>& prims,
-        ptrdiff_t const begin,
-        ptrdiff_t const n)
+        const ptrdiff_t begin,
+        const ptrdiff_t n)
     {
         if (n == 1) {
             // recursion bottomed out: create a leaf node
@@ -115,7 +115,7 @@ namespace
         bvh_recursive_build(nodes, prims, begin, midpoint-begin);
 
         // the left-hand build allocated nodes for the left hand side contiguously in memory
-        ptrdiff_t num_lhs_nodes = (static_cast<ptrdiff_t>(nodes.size()) - 1) - internal_node_loc;
+        const ptrdiff_t num_lhs_nodes = (static_cast<ptrdiff_t>(nodes.size()) - 1) - internal_node_loc;
         OSC_ASSERT(num_lhs_nodes > 0);
         nodes[internal_node_loc].set_num_lhs_nodes(num_lhs_nodes);
 
@@ -153,9 +153,9 @@ namespace
         }
 
         // else: we've "hit" an internal node and need to recurse to find the leaf
-        const bool lhs = bvh_for_each_ray_aabb_collisions_recursive(nodes, prims, ray, nodeidx+1, callback);
-        const bool rhs = bvh_for_each_ray_aabb_collisions_recursive(nodes, prims, ray, nodeidx+node.num_lhs_nodes()+1, callback);
-        return lhs || rhs;
+        const bool lhs_hit = bvh_for_each_ray_aabb_collisions_recursive(nodes, prims, ray, nodeidx+1, callback);
+        const bool rhs_hit = bvh_for_each_ray_aabb_collisions_recursive(nodes, prims, ray, nodeidx+node.num_lhs_nodes()+1, callback);
+        return lhs_hit or rhs_hit;
     }
 
     template<std::unsigned_integral TIndex>
@@ -421,7 +421,10 @@ size_t osc::BVH::max_depth() const
 
 std::optional<AABB> osc::BVH::bounds() const
 {
-    return !nodes_.empty() ? nodes_.front().bounds() : std::optional<AABB>{};
+    if (nodes_.empty()) {
+        return std::nullopt;
+    }
+    return nodes_.front().bounds();
 }
 
 void osc::BVH::for_each_leaf_node(const std::function<void(const BVHNode&)>& f) const
@@ -488,7 +491,7 @@ std::optional<CoordinateDirection> osc::CoordinateDirection::try_parse(std::stri
     }
 
     // parse the axis part (x/y/z)
-    auto axis = CoordinateAxis::try_parse(s);
+    const auto axis = CoordinateAxis::try_parse(s);
     if (not axis) {
         return std::nullopt;
     }
@@ -538,9 +541,9 @@ Mat4 osc::EulerPerspectiveCamera::view_matrix() const
     return look_at(origin, origin + front(), up());
 }
 
-Mat4 osc::EulerPerspectiveCamera::projection_matrix(float aspectRatio) const
+Mat4 osc::EulerPerspectiveCamera::projection_matrix(float aspect_ratio) const
 {
-    return perspective(vertical_fov, aspectRatio, znear, zfar);
+    return perspective(vertical_fov, aspect_ratio, znear, zfar);
 }
 
 
@@ -566,9 +569,9 @@ namespace
 {
     Vec3 PolarToCartesian(Vec3 focus, float radius, Radians theta, Radians phi)
     {
-        float x = radius * sin(theta) * cos(phi);
-        float y = radius * sin(phi);
-        float z = radius * cos(theta) * cos(phi);
+        const float x = radius * sin(theta) * cos(phi);
+        const float y = radius * sin(phi);
+        const float z = radius * cos(theta) * cos(phi);
 
         return -focus + Vec3{x, y, z};
     }
@@ -578,7 +581,7 @@ osc::PolarPerspectiveCamera::PolarPerspectiveCamera() :
     radius{1.0f},
     theta{45_deg},
     phi{45_deg},
-    focusPoint{0.0f, 0.0f, 0.0f},
+    focus_point{0.0f, 0.0f, 0.0f},
     vertical_fov{35_deg},
     znear{0.1f},
     zfar{100.0f}
@@ -607,7 +610,7 @@ void osc::PolarPerspectiveCamera::pan(float aspect_ratio, Vec2 delta)
     const Mat4 rotation_phi = rotate(identity<Mat4>(), phi, phi_axis);
 
     const Vec4 panningAxes = rotation_phi * rotation_theta * default_panning_axis;
-    focusPoint += Vec3{panningAxes};
+    focus_point += Vec3{panningAxes};
 }
 
 void osc::PolarPerspectiveCamera::drag(Vec2 delta)
@@ -616,7 +619,7 @@ void osc::PolarPerspectiveCamera::drag(Vec2 delta)
     phi += 360_deg * delta.y;
 }
 
-void osc::PolarPerspectiveCamera::rescaleZNearAndZFarBasedOnRadius()
+void osc::PolarPerspectiveCamera::rescale_znear_and_zfar_based_on_radius()
 {
     // znear and zfar are only really dicated by the camera's radius, because
     // the radius is effectively the distance from the camera's focal point
@@ -635,55 +638,54 @@ Mat4 osc::PolarPerspectiveCamera::view_matrix() const
     // this maths is a complete shitshow and I apologize. It just happens to work for now. It's a polar coordinate
     // system that shifts the world based on the camera pan
 
-    auto rotTheta = rotate(identity<Mat4>(), -theta, Vec3{0.0f, 1.0f, 0.0f});
-    auto thetaVec = normalize(Vec3{sin(theta), 0.0f, cos(theta)});
-    auto phiAxis = cross(thetaVec, Vec3{0.0, 1.0f, 0.0f});
-    auto rotPhi = rotate(identity<Mat4>(), -phi, phiAxis);
-    auto panTranslate = translate(identity<Mat4>(), focusPoint);
+    const Mat4 theta_rotation = rotate(identity<Mat4>(), -theta, Vec3{0.0f, 1.0f, 0.0f});
+    const Vec3 theta_vec = normalize(Vec3{sin(theta), 0.0f, cos(theta)});
+    const Vec3 phi_axis = cross(theta_vec, Vec3{0.0, 1.0f, 0.0f});
+    const Mat4 phi_rotation = rotate(identity<Mat4>(), -phi, phi_axis);
+    const Mat4 pan_translation = translate(identity<Mat4>(), focus_point);
     return look_at(
         Vec3(0.0f, 0.0f, radius),
         Vec3(0.0f, 0.0f, 0.0f),
-        Vec3{0.0f, 1.0f, 0.0f}) * rotTheta * rotPhi * panTranslate;
+        Vec3{0.0f, 1.0f, 0.0f}) * theta_rotation * phi_rotation * pan_translation;
 }
 
-Mat4 osc::PolarPerspectiveCamera::projection_matrix(float aspectRatio) const
+Mat4 osc::PolarPerspectiveCamera::projection_matrix(float aspect_ratio) const
 {
-    return perspective(vertical_fov, aspectRatio, znear, zfar);
+    return perspective(vertical_fov, aspect_ratio, znear, zfar);
 }
 
-Vec3 osc::PolarPerspectiveCamera::getPos() const
+Vec3 osc::PolarPerspectiveCamera::position() const
 {
-    return PolarToCartesian(focusPoint, radius, theta, phi);
+    return PolarToCartesian(focus_point, radius, theta, phi);
 }
 
-Vec2 osc::PolarPerspectiveCamera::projectOntoScreenRect(Vec3 const& worldspaceLoc, Rect const& screenRect) const
+Vec2 osc::PolarPerspectiveCamera::project_onto_screen_rect(
+    const Vec3& worldspace_location,
+    const Rect& screen_rect) const
 {
-    Vec2 dims = dimensions_of(screenRect);
-    Mat4 MV = projection_matrix(dims.x/dims.y) * view_matrix();
+    const Vec2 screen_dims = dimensions_of(screen_rect);
+    const Mat4 MV = projection_matrix(screen_dims.x/screen_dims.y) * view_matrix();
 
-    Vec4 ndc = MV * Vec4{worldspaceLoc, 1.0f};
+    Vec4 ndc = MV * Vec4{worldspace_location, 1.0f};
     ndc /= ndc.w;  // perspective divide
 
     Vec2 ndc2D;
     ndc2D = {ndc.x, -ndc.y};        // [-1, 1], Y points down
     ndc2D += 1.0f;                  // [0, 2]
     ndc2D *= 0.5f;                  // [0, 1]
-    ndc2D *= dims;                  // [0, w]
-    ndc2D += screenRect.p1;         // [x, x + w]
+    ndc2D *= screen_dims;           // [0, w]
+    ndc2D += screen_rect.p1;        // [x, x + w]
 
     return ndc2D;
 }
 
-Line osc::PolarPerspectiveCamera::unprojectTopLeftPosToWorldRay(Vec2 pos, Vec2 dims) const
+Line osc::PolarPerspectiveCamera::unproject_topleft_pos_to_world_ray(Vec2 pos, Vec2 dims) const
 {
-    Mat4 const viewMatrix = view_matrix();
-    Mat4 const projectionMatrix = projection_matrix(dims.x/dims.y);
-
     return perspective_unproject_topleft_screen_pos_to_world_ray(
         pos / dims,
-        this->getPos(),
-        viewMatrix,
-        projectionMatrix
+        this->position(),
+        view_matrix(),
+        projection_matrix(dims.x/dims.y)
     );
 }
 
@@ -694,14 +696,14 @@ PolarPerspectiveCamera osc::CreateCameraWithRadius(float r)
     return rv;
 }
 
-PolarPerspectiveCamera osc::CreateCameraFocusedOn(AABB const& aabb)
+PolarPerspectiveCamera osc::CreateCameraFocusedOn(const AABB& aabb)
 {
     PolarPerspectiveCamera rv;
     AutoFocus(rv, aabb);
     return rv;
 }
 
-Vec3 osc::recommended_light_direction(PolarPerspectiveCamera const& c)
+Vec3 osc::recommended_light_direction(const PolarPerspectiveCamera& c)
 {
     // theta should track with the camera, so that the scene is always
     // illuminated from the viewer's perspective (#275)
@@ -713,15 +715,15 @@ Vec3 osc::recommended_light_direction(PolarPerspectiveCamera const& c)
     // (#318, #168) and, if the camera is too angled relative to the PoV, it's
     // possible to see angled parts of the scene be illuminated from the back (which
     // should be impossible)
-    Radians const theta = c.theta + 22.5_deg;
+    const Radians theta = c.theta + 22.5_deg;
 
     // #549: phi shouldn't track with the camera, because changing the "height"/"slope"
     // of the camera with shadow rendering (#10) looks bizzare
-    Radians const phi = 45_deg;
+    const Radians phi = 45_deg;
 
-    Vec3 const p = PolarToCartesian(c.focusPoint, c.radius, theta, phi);
+    const Vec3 p = PolarToCartesian(c.focus_point, c.radius, theta, phi);
 
-    return normalize(-c.focusPoint - p);
+    return normalize(-c.focus_point - p);
 }
 
 void osc::FocusAlongAxis(PolarPerspectiveCamera& camera, size_t axis, bool negate)
@@ -797,25 +799,28 @@ void osc::Reset(PolarPerspectiveCamera& camera)
     camera.phi = 45_deg;
 }
 
-void osc::AutoFocus(PolarPerspectiveCamera& camera, AABB const& elementAABB, float aspectRatio)
+void osc::AutoFocus(
+    PolarPerspectiveCamera& camera,
+    const AABB& element_aabb,
+    float aspect_ratio)
 {
-    Sphere const s = bounding_sphere_of(elementAABB);
-    Radians const smallestFOV = aspectRatio > 1.0f ? camera.vertical_fov : vertial_to_horizontal_fov(camera.vertical_fov, aspectRatio);
+    const Sphere s = bounding_sphere_of(element_aabb);
+    const Radians smallest_fov = aspect_ratio > 1.0f ? camera.vertical_fov : vertial_to_horizontal_fov(camera.vertical_fov, aspect_ratio);
 
     // auto-focus the camera with a minimum radius of 1m
     //
     // this will break autofocusing on very small models (e.g. insect legs) but
     // handles the edge-case of autofocusing an empty model (#552), which is a
     // more common use-case (e.g. for new users and users making human-sized models)
-    camera.focusPoint = -s.origin;
-    camera.radius = max(s.radius / tan(smallestFOV/2.0), 1.0f);
-    camera.rescaleZNearAndZFarBasedOnRadius();
+    camera.focus_point = -s.origin;
+    camera.radius = max(s.radius / tan(smallest_fov/2.0), 1.0f);
+    camera.rescale_znear_and_zfar_based_on_radius();
 }
 
 
 // `Rect` implementation
 
-std::ostream& osc::operator<<(std::ostream& o, Rect const& r)
+std::ostream& osc::operator<<(std::ostream& o, const Rect& r)
 {
     return o << "Rect(p1 = " << r.p1 << ", p2 = " << r.p2 << ")";
 }
@@ -823,7 +828,7 @@ std::ostream& osc::operator<<(std::ostream& o, Rect const& r)
 
 // `Segment` implementation
 
-std::ostream& osc::operator<<(std::ostream& o, LineSegment const& d)
+std::ostream& osc::operator<<(std::ostream& o, const LineSegment& d)
 {
     return o << "LineSegment(start = " << d.start << ", end = " << d.end << ')';
 }
@@ -831,7 +836,7 @@ std::ostream& osc::operator<<(std::ostream& o, LineSegment const& d)
 
 // `Sphere` implementation
 
-std::ostream& osc::operator<<(std::ostream& o, Sphere const& s)
+std::ostream& osc::operator<<(std::ostream& o, const Sphere& s)
 {
     return o << "Sphere(origin = " << s.origin << ", radius = " << s.radius << ')';
 }
@@ -840,15 +845,14 @@ std::ostream& osc::operator<<(std::ostream& o, Sphere const& s)
 // `Tetrahedron` implementatioon
 
 // returns the volume of a given tetrahedron, defined as 4 points in space
-float osc::volume_of(Tetrahedron const& t)
+float osc::volume_of(const Tetrahedron& t)
 {
     // sources:
     //
     // http://forums.cgsociety.org/t/how-to-calculate-center-of-mass-for-triangular-mesh/1309966
     // https://stackoverflow.com/questions/9866452/calculate-volume-of-any-tetrahedron-given-4-points
 
-    Mat4 const m
-    {
+    const Mat4 m{
         Vec4{t[0], 1.0f},
         Vec4{t[1], 1.0f},
         Vec4{t[2], 1.0f},
@@ -873,21 +877,20 @@ namespace
     // solve a quadratic formula
     //
     // only real-valued results supported - no complex-plane results
-    QuadraticFormulaResult solveQuadratic(float a, float b, float c)
+    QuadraticFormulaResult solve_quadratic(float a, float b, float c)
     {
         QuadraticFormulaResult res{};
 
         // b2 - 4ac
-        float const discriminant = b*b - 4.0f*a*c;
+        const float discriminant = b*b - 4.0f*a*c;
 
-        if (discriminant < 0.0f)
-        {
+        if (discriminant < 0.0f) {
             res.computeable = false;
             return res;
         }
 
         // q = -1/2 * (b +- sqrt(b2 - 4ac))
-        float const q = -0.5f * (b + copysign(sqrt(discriminant), b));
+        const float q = -0.5f * (b + copysign(sqrt(discriminant), b));
 
         // you might be wondering why this doesn't just compute a textbook
         // version of the quadratic equation (-b +- sqrt(disc))/2a
@@ -936,11 +939,11 @@ namespace
         return res;
     }
 
-    std::optional<RayCollision> GetRayCollisionSphereAnalytic(Sphere const& s, Line const& l)
+    std::optional<RayCollision> find_collision_analytic(const Sphere& s, const Line& l)
     {
         // see: https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-sphere-intersection
 
-        Vec3 L = l.origin - s.origin;
+        const Vec3 L = l.origin - s.origin;
 
         // coefficients of the quadratic implicit:
         //
@@ -960,29 +963,25 @@ namespace
         // if the quadratic has solutions, then there must exist one or two
         // `t`s that are points on the sphere's surface.
 
-        float a = dot(l.direction, l.direction);  // always == 1.0f if d is normalized
-        float b = 2.0f * dot(l.direction, L);
-        float c = dot(L, L) - dot(s.radius, s.radius);
+        const float a = dot(l.direction, l.direction);  // always == 1.0f if d is normalized
+        const float b = 2.0f * dot(l.direction, L);
+        const float c = dot(L, L) - dot(s.radius, s.radius);
 
-        auto [ok, t0, t1] = solveQuadratic(a, b, c);
+        auto [ok, t0, t1] = solve_quadratic(a, b, c);
 
-        if (!ok)
-        {
+        if (not ok) {
             return std::nullopt;
         }
 
         // ensure X0 < X1
-        if (t0 > t1)
-        {
+        if (t0 > t1) {
             std::swap(t0, t1);
         }
 
         // ensure it's in front
-        if (t0 < 0.0f)
-        {
+        if (t0 < 0.0f) {
             t0 = t1;
-            if (t0 < 0.0f)
-            {
+            if (t0 < 0.0f) {
                 return std::nullopt;
             }
         }
@@ -994,158 +993,148 @@ namespace
 
 // MathHelpers
 
-Radians osc::vertial_to_horizontal_fov(Radians vertical_fov, float aspectRatio)
+Radians osc::vertial_to_horizontal_fov(Radians vertical_fov, float aspect_ratio)
 {
     // https://en.wikipedia.org/wiki/Field_of_view_in_video_games#Field_of_view_calculations
 
-    return 2.0f * atan(tan(0.5f * vertical_fov) * aspectRatio);
+    return 2.0f * atan(tan(0.5f * vertical_fov) * aspect_ratio);
 }
 
 
-Mat4 osc::mat4_transform_between_directions(Vec3 const& dir1, Vec3 const& dir2)
+Mat4 osc::mat4_transform_between_directions(const Vec3& dir1, const Vec3& dir2)
 {
-    // this is effectively a rewrite of glm::rotation(vec3 const&, vec3 const& dest);
+    const float cos_theta = dot(dir1, dir2);
 
-    float const cosTheta = dot(dir1, dir2);
-
-    if(cosTheta >= static_cast<float>(1.0f) - epsilon_v<float>)
-    {
+    if (cos_theta >= static_cast<float>(1.0f) - epsilon_v<float>) {
         // `a` and `b` point in the same direction: return identity transform
         return identity<Mat4>();
     }
 
     Radians theta{};
-    Vec3 rotationAxis{};
-    if(cosTheta < static_cast<float>(-1.0f) + epsilon_v<float>)
-    {
+    Vec3 rotation_axis{};
+    if (cos_theta < static_cast<float>(-1.0f) + epsilon_v<float>) {
         // `a` and `b` point in opposite directions
         //
         // - there is no "ideal" rotation axis
         // - so we try "guessing" one and hope it's good (then try another if it isn't)
 
-        rotationAxis = cross(Vec3{0.0f, 0.0f, 1.0f}, dir1);
-        if (length2(rotationAxis) < epsilon_v<float>)
-        {
+        rotation_axis = cross(Vec3{0.0f, 0.0f, 1.0f}, dir1);
+        if (length2(rotation_axis) < epsilon_v<float>) {
             // bad luck: they were parallel - use a different axis
-            rotationAxis = cross(Vec3{1.0f, 0.0f, 0.0f}, dir1);
+            rotation_axis = cross(Vec3{1.0f, 0.0f, 0.0f}, dir1);
         }
 
         theta = 180_deg;
-        rotationAxis = normalize(rotationAxis);
+        rotation_axis = normalize(rotation_axis);
     }
-    else
-    {
-        theta = acos(cosTheta);
-        rotationAxis = normalize(cross(dir1, dir2));
+    else {
+        theta = acos(cos_theta);
+        rotation_axis = normalize(cross(dir1, dir2));
     }
 
-    return rotate(identity<Mat4>(), theta, rotationAxis);
+    return rotate(identity<Mat4>(), theta, rotation_axis);
 }
 
-Eulers osc::extract_eulers_xyz(Quat const& q)
+Eulers osc::extract_eulers_xyz(const Quat& q)
 {
     return extract_eulers_xyz(mat4_cast(q));
 }
 
-Vec2 osc::topleft_relative_pos_to_ndc_point(Vec2 relpos)
+Vec2 osc::topleft_relative_pos_to_ndc_point(Vec2 relative_pos)
 {
-    relpos.y = 1.0f - relpos.y;
-    return 2.0f*relpos - 1.0f;
+    relative_pos.y = 1.0f - relative_pos.y;
+    return 2.0f*relative_pos - 1.0f;
 }
 
-Vec2 osc::ndc_point_to_topleft_relative_pos(Vec2 ndcPos)
+Vec2 osc::ndc_point_to_topleft_relative_pos(Vec2 ndc_pos)
 {
-    ndcPos = (ndcPos + 1.0f) * 0.5f;
-    ndcPos.y = 1.0f - ndcPos.y;
-    return ndcPos;
+    ndc_pos = (ndc_pos + 1.0f) * 0.5f;
+    ndc_pos.y = 1.0f - ndc_pos.y;
+    return ndc_pos;
 }
 
-Vec4 osc::topleft_relative_pos_to_ndc_cube(Vec2 relpos)
+Vec4 osc::topleft_relative_pos_to_ndc_cube(Vec2 relative_pos)
 {
-    return {topleft_relative_pos_to_ndc_point(relpos), -1.0f, 1.0f};
+    return {topleft_relative_pos_to_ndc_point(relative_pos), -1.0f, 1.0f};
 }
 
 Line osc::perspective_unproject_topleft_screen_pos_to_world_ray(
-    Vec2 relpos,
-    Vec3 cameraWorldspaceOrigin,
-    Mat4 const& viewMatrix,
-    Mat4 const& projMatrix)
+    Vec2 relative_pos,
+    Vec3 camera_worldspace_origin,
+    const Mat4& camera_view_matrix,
+    const Mat4& camera_proj_matrix)
 {
     // position of point, as if it were on the front of the 3D NDC cube
-    Vec4 lineOriginNDC = topleft_relative_pos_to_ndc_cube(relpos);
+    const Vec4 line_origin_ndc = topleft_relative_pos_to_ndc_cube(relative_pos);
 
-    Vec4 lineOriginView = inverse(projMatrix) * lineOriginNDC;
-    lineOriginView /= lineOriginView.w;  // perspective divide
+    Vec4 line_origin_view = inverse(camera_proj_matrix) * line_origin_ndc;
+    line_origin_view /= line_origin_view.w;  // perspective divide
 
     // location of mouse in worldspace
-    Vec3 lineOriginWorld = Vec3{inverse(viewMatrix) * lineOriginView};
+    const Vec3 line_origin_world = Vec3{inverse(camera_view_matrix) * line_origin_view};
 
     // direction vector from camera to mouse location (i.e. the projection)
-    Vec3 lineDirWorld = normalize(lineOriginWorld - cameraWorldspaceOrigin);
+    const Vec3 line_direction_world = normalize(line_origin_world - camera_worldspace_origin);
 
-    Line rv{};
-    rv.direction = lineDirWorld;
-    rv.origin = lineOriginWorld;
-    return rv;
+    return Line{
+        .origin = line_origin_world,
+        .direction = line_direction_world,
+    };
 }
 
-Vec2 osc::bottom_left_lh(Rect const& r)
+Vec2 osc::bottom_left_lh(const Rect& r)
 {
     return Vec2{min(r.p1.x, r.p2.x), max(r.p1.y, r.p2.y)};
 }
 
-Rect osc::bounding_rect_of(Circle const& circle)
+Rect osc::bounding_rect_of(const Circle& circle)
 {
-    float const hypot = sqrt(2.0f * circle.radius * circle.radius);
+    const float hypot = sqrt(2.0f * circle.radius * circle.radius);
     return {circle.origin - hypot, circle.origin + hypot};
 }
 
-Rect osc::expand(Rect const& rect, float absAmount)
+Rect osc::expand(const Rect& rect, float abs_amount)
 {
-    Rect rv
-    {
+    Rect rv{
         elementwise_min(rect.p1, rect.p2),
         elementwise_max(rect.p1, rect.p2)
     };
-    rv.p1.x -= absAmount;
-    rv.p2.x += absAmount;
-    rv.p1.y -= absAmount;
-    rv.p2.y += absAmount;
+    rv.p1.x -= abs_amount;
+    rv.p2.x += abs_amount;
+    rv.p1.y -= abs_amount;
+    rv.p2.y += abs_amount;
     return rv;
 }
 
-Rect osc::expand(Rect const& rect, Vec2 absAmount)
+Rect osc::expand(const Rect& rect, Vec2 abs_amount)
 {
-    Rect rv
-    {
+    Rect rv{
         elementwise_min(rect.p1, rect.p2),
         elementwise_max(rect.p1, rect.p2)
     };
-    rv.p1.x -= absAmount.x;
-    rv.p2.x += absAmount.x;
-    rv.p1.y -= absAmount.y;
-    rv.p2.y += absAmount.y;
+    rv.p1.x -= abs_amount.x;
+    rv.p2.x += abs_amount.x;
+    rv.p1.y -= abs_amount.y;
+    rv.p2.y += abs_amount.y;
     return rv;
 }
 
-Rect osc::clamp(Rect const& r, Vec2 const& min, Vec2 const& max)
+Rect osc::clamp(const Rect& r, const Vec2& min, const Vec2& max)
 {
-    return
-    {
+    return{
         elementwise_clamp(r.p1, min, max),
         elementwise_clamp(r.p2, min, max),
     };
 }
 
-Rect osc::ndc_rect_to_screenspace_viewport_rect(Rect const& ndcRect, Rect const& viewport)
+Rect osc::ndc_rect_to_screenspace_viewport_rect(const Rect& ndc_rect, const Rect& viewport)
 {
-    Vec2 const viewportDims = dimensions_of(viewport);
+    const Vec2 viewport_dimensions = dimensions_of(viewport);
 
-    // remap [-1, 1] into [0, viewportDims]
-    Rect rv
-    {
-        0.5f * (ndcRect.p1 + 1.0f) * viewportDims,
-        0.5f * (ndcRect.p2 + 1.0f) * viewportDims,
+    // remap [-1, 1] into [0, viewport_dimensions]
+    Rect rv{
+        0.5f * (ndc_rect.p1 + 1.0f) * viewport_dimensions,
+        0.5f * (ndc_rect.p2 + 1.0f) * viewport_dimensions,
     };
 
     // offset by viewport's top-left
@@ -1155,31 +1144,29 @@ Rect osc::ndc_rect_to_screenspace_viewport_rect(Rect const& ndcRect, Rect const&
     return rv;
 }
 
-Sphere osc::bounding_sphere_of(std::span<Vec3 const> points)
+Sphere osc::bounding_sphere_of(std::span<const Vec3> points)
 {
     // edge-case: no points provided
-    if (points.empty())
-    {
+    if (points.empty()) {
         return Sphere{.radius = 0.0f};
     }
 
-    Vec3 const origin = centroid_of(bounding_aabb_of(points));
+    const Vec3 origin = centroid_of(bounding_aabb_of(points));
 
     float r2 = 0.0f;
-    for (Vec3 const& pos : points)
-    {
+    for (const Vec3& pos : points) {
         r2 = max(r2, length2(pos - origin));
     }
 
     return {.origin = origin, .radius = sqrt(r2)};
 }
 
-Sphere osc::bounding_sphere_of(AABB const& aabb)
+Sphere osc::bounding_sphere_of(const AABB& aabb)
 {
     return bounding_sphere_of(corner_vertices(aabb));
 }
 
-AABB osc::bounding_aabb_of(Sphere const& s)
+AABB osc::bounding_aabb_of(const Sphere& s)
 {
     AABB rv{};
     rv.min = s.origin - s.radius;
@@ -1187,7 +1174,7 @@ AABB osc::bounding_aabb_of(Sphere const& s)
     return rv;
 }
 
-Line osc::transform_line(Line const& l, Mat4 const& m)
+Line osc::transform_line(const Line& l, const Mat4& m)
 {
     Line rv{};
     rv.direction = m * Vec4{l.direction, 0.0f};
@@ -1195,22 +1182,21 @@ Line osc::transform_line(Line const& l, Mat4 const& m)
     return rv;
 }
 
-Line osc::inverse_transform_line(Line const& l, Transform const& t)
+Line osc::inverse_transform_line(const Line& l, const Transform& t)
 {
-    return Line
-    {
+    return Line{
         inverse_transform_point(t, l.origin),
         inverse_transform_direction(t, l.direction),
     };
 }
 
-Mat4 osc::mat4_transform_between(Disc const& a, Disc const& b)
+Mat4 osc::mat4_transform_between(const Disc& a, const Disc& b)
 {
     // this is essentially LERPing [0,1] onto [1, l] to rescale only
     // along the line's original direction
 
     // scale factor
-    float s = b.radius/a.radius;
+    const float s = b.radius/a.radius;
 
     // LERP the axes as follows
     //
@@ -1220,71 +1206,68 @@ Mat4 osc::mat4_transform_between(Disc const& a, Disc const& b)
     // - 1-N is sin(theta) of each axis to the normal
     // - LERP is 1.0f + (s - 1.0f)*V, where V is how perpendiular each axis is
 
-    Vec3 scalers = 1.0f + ((s - 1.0f) * abs(1.0f - a.normal));
-    Mat4 scaler = scale(identity<Mat4>(), scalers);
+    const Vec3 scalers = 1.0f + ((s - 1.0f) * abs(1.0f - a.normal));
+    const Mat4 scaler = scale(identity<Mat4>(), scalers);
 
-    float cosTheta = dot(a.normal, b.normal);
+    float cos_theta = dot(a.normal, b.normal);
     Mat4 rotator;
-    if (cosTheta > 0.9999f)
-    {
+    if (cos_theta > 0.9999f) {
         rotator = identity<Mat4>();
     }
-    else
-    {
-        Radians theta = acos(cosTheta);
-        Vec3 axis = cross(a.normal, b.normal);
+    else {
+        const Radians theta = acos(cos_theta);
+        const Vec3 axis = cross(a.normal, b.normal);
         rotator = rotate(identity<Mat4>(), theta, axis);
     }
 
-    Mat4 translator = translate(identity<Mat4>(), b.origin-a.origin);
+    const Mat4 translator = translate(identity<Mat4>(), b.origin-a.origin);
 
     return translator * rotator * scaler;
 }
 
-std::array<Vec3, 8> osc::corner_vertices(AABB const& aabb)
+std::array<Vec3, 8> osc::corner_vertices(const AABB& aabb)
 {
-    Vec3 d = dimensions_of(aabb);
+    Vec3 dims = dimensions_of(aabb);
 
     std::array<Vec3, 8> rv{};
     rv[0] = aabb.min;
     rv[1] = aabb.max;
     size_t pos = 2;
-    for (Vec3::size_type i = 0; i < 3; ++i)
-    {
+    for (Vec3::size_type i = 0; i < 3; ++i) {
         Vec3 min = aabb.min;
-        min[i] += d[i];
+        min[i] += dims[i];
         Vec3 max = aabb.max;
-        max[i] -= d[i];
+        max[i] -= dims[i];
         rv[pos++] = min;
         rv[pos++] = max;
     }
     return rv;
 }
 
-AABB osc::transform_aabb(Mat4 const& m, AABB const& aabb)
+AABB osc::transform_aabb(const Mat4& m, const AABB& aabb)
 {
-    return bounding_aabb_of(corner_vertices(aabb), [&](Vec3 const& vertex)
+    return bounding_aabb_of(corner_vertices(aabb), [&](const Vec3& vertex)
     {
-        Vec4 const p = m * Vec4{vertex, 1.0f};
+        const Vec4 p = m * Vec4{vertex, 1.0f};
         return Vec3{p / p.w};  // perspective divide
     });
 }
 
-AABB osc::transform_aabb(Transform const& t, AABB const& aabb)
+AABB osc::transform_aabb(const Transform& t, const AABB& aabb)
 {
     // from real-time collision detection (the book)
     //
     // screenshot: https://twitter.com/Herschel/status/1188613724665335808
 
-    Mat3 const m = mat3_cast(t);
+    const Mat3 m = mat3_cast(t);
 
     AABB rv = bounding_aabb_of(t.position);  // add in the translation
     for (Vec3::size_type i = 0; i < 3; ++i) {
 
-        // form extent by summing smaller and larger terms repsectively
+        // form extent by summing smaller and larger terms respectively
         for (Vec3::size_type j = 0; j < 3; ++j) {
-            float const e = m[j][i] * aabb.min[j];
-            float const f = m[j][i] * aabb.max[j];
+            const float e = m[j][i] * aabb.min[j];
+            const float f = m[j][i] * aabb.max[j];
 
             if (e < f) {
                 rv.min[i] += e;
@@ -1300,14 +1283,14 @@ AABB osc::transform_aabb(Transform const& t, AABB const& aabb)
 }
 
 std::optional<Rect> osc::loosely_project_into_ndc(
-    AABB const& aabb,
-    Mat4 const& viewMat,
-    Mat4 const& projMat,
+    const AABB& aabb,
+    const Mat4& view_mat,
+    const Mat4& proj_mat,
     float znear,
     float zfar)
 {
     // create a new AABB in viewspace that bounds the worldspace AABB
-    AABB viewspaceAABB = transform_aabb(viewMat, aabb);
+    AABB viewspace_aabb = transform_aabb(view_mat, aabb);
 
     // z-test the viewspace AABB to see if any part of it it falls within the
     // camera's clipping planes
@@ -1315,96 +1298,95 @@ std::optional<Rect> osc::loosely_project_into_ndc(
     // care: znear and zfar are usually defined as positive distances from the
     //       camera but viewspace points along -Z
 
-    if (viewspaceAABB.min.z > -znear && viewspaceAABB.max.z > -znear) {
+    if (viewspace_aabb.min.z > -znear and viewspace_aabb.max.z > -znear) {
         return std::nullopt;  // AABB out of NDC bounds
     }
-    if (viewspaceAABB.min.z < -zfar && viewspaceAABB.max.z < -zfar) {
+    if (viewspace_aabb.min.z < -zfar and viewspace_aabb.max.z < -zfar) {
         return std::nullopt;  // AABB out of NDC bounds
     }
 
     // clamp the viewspace AABB to within the camera's clipping planes
-    viewspaceAABB.min.z = clamp(viewspaceAABB.min.z, -zfar, -znear);
-    viewspaceAABB.max.z = clamp(viewspaceAABB.max.z, -zfar, -znear);
+    viewspace_aabb.min.z = clamp(viewspace_aabb.min.z, -zfar, -znear);
+    viewspace_aabb.max.z = clamp(viewspace_aabb.max.z, -zfar, -znear);
 
     // transform it into an NDC-aligned NDC-space AABB
-    AABB ndcAABB = transform_aabb(projMat, viewspaceAABB);
+    const AABB ndc_aabb = transform_aabb(proj_mat, viewspace_aabb);
 
     // take the X and Y coordinates of that AABB and ensure they are clamped to within bounds
-    Rect rv{Vec2{ndcAABB.min}, Vec2{ndcAABB.max}};
+    Rect rv{Vec2{ndc_aabb.min}, Vec2{ndc_aabb.max}};
     rv.p1 = elementwise_clamp(rv.p1, {-1.0f, -1.0f}, {1.0f, 1.0f});
     rv.p2 = elementwise_clamp(rv.p2, {-1.0f, -1.0f}, {1.0f, 1.0f});
 
     return rv;
 }
 
-Mat4 osc::mat4_transform_between(LineSegment const& a, LineSegment const& b)
+Mat4 osc::mat4_transform_between(const LineSegment& a, const LineSegment& b)
 {
-    Vec3 a1ToA2 = a.end - a.start;
-    Vec3 b1ToB2 = b.end - b.start;
+    const Vec3 a1_to_a2 = a.end - a.start;
+    const Vec3 b1_to_b2 = b.end - b.start;
 
-    float aLen = length(a1ToA2);
-    float bLen = length(b1ToB2);
+    const float a_length = length(a1_to_a2);
+    const float b_length = length(b1_to_b2);
 
-    Vec3 aDir = a1ToA2 / aLen;
-    Vec3 bDir = b1ToB2 / bLen;
+    const Vec3 a_direction = a1_to_a2 / a_length;
+    const Vec3 b_direction = b1_to_b2 / b_length;
 
-    Vec3 aCenter = (a.start + a.end)/2.0f;
-    Vec3 bCenter = (b.start + b.end)/2.0f;
+    const Vec3 a_center = (a.start + a.end)/2.0f;
+    const Vec3 b_center = (b.start + b.end)/2.0f;
 
     // this is essentially LERPing [0,1] onto [1, l] to rescale only
     // along the line's original direction
-    float s = bLen/aLen;
-    Vec3 scaler = Vec3{1.0f, 1.0f, 1.0f} + (s-1.0f)*aDir;
+    const float s = b_length/a_length;
+    const Vec3 scaler = Vec3{1.0f, 1.0f, 1.0f} + (s-1.0f)*a_direction;
 
-    Mat4 rotate = mat4_transform_between_directions(aDir, bDir);
-    Mat4 move = translate(identity<Mat4>(), bCenter - aCenter);
+    const Mat4 rotate = mat4_transform_between_directions(a_direction, b_direction);
+    const Mat4 move = translate(identity<Mat4>(), b_center - a_center);
 
     return move * rotate * scale(identity<Mat4>(), scaler);
 }
 
-Transform osc::transform_between(LineSegment const& a, LineSegment const& b)
+Transform osc::transform_between(const LineSegment& a, const LineSegment& b)
 {
-    Vec3 aLine = a.end - a.start;
-    Vec3 bLine = b.end - b.start;
+    const Vec3 a1_to_a2 = a.end - a.start;
+    const Vec3 b1_to_b2 = b.end - b.start;
 
-    float aLen = length(aLine);
-    float bLen = length(bLine);
+    const float a_length = length(a1_to_a2);
+    const float b_length = length(b1_to_b2);
 
-    Vec3 aDir = aLine / aLen;
-    Vec3 bDir = bLine / bLen;
+    const Vec3 a_direction = a1_to_a2 / a_length;
+    const Vec3 b_direction = b1_to_b2 / b_length;
 
-    Vec3 aMid = (a.start + a.end)/2.0f;
-    Vec3 bMid = (b.start + b.end)/2.0f;
+    const Vec3 a_center = (a.start + a.end)/2.0f;
+    const Vec3 b_center = (b.start + b.end)/2.0f;
 
     // for scale: LERP [0,1] onto [1,l] along original direction
-    Transform t;
-    t.rotation = rotation(aDir, bDir);
-    t.scale = Vec3{1.0f, 1.0f, 1.0f} + ((bLen/aLen - 1.0f)*aDir);
-    t.position = bMid - aMid;
-
-    return t;
+    return Transform{
+        .scale = Vec3{1.0f, 1.0f, 1.0f} + ((b_length/a_length - 1.0f)*a_direction),
+        .rotation = rotation(a_direction, b_direction),
+        .position = b_center - a_center,
+    };
 }
 
-Transform osc::cylinder_to_line_segment_transform(LineSegment const& s, float radius)
+Transform osc::cylinder_to_line_segment_transform(const LineSegment& s, float radius)
 {
-    LineSegment cylinderLine{{0.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}};
-    Transform t = transform_between(cylinderLine, s);
+    const LineSegment cylinder_line{{0.0f, -1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}};
+    Transform t = transform_between(cylinder_line, s);
     t.scale.x = radius;
     t.scale.z = radius;
     return t;
 }
 
-Transform osc::y_to_y_cone_to_segment_transform(LineSegment const& s, float radius)
+Transform osc::y_to_y_cone_to_segment_transform(const LineSegment& s, float radius)
 {
     return cylinder_to_line_segment_transform(s, radius);
 }
 
-Vec3 osc::transform_point(Mat4 const& m, Vec3 const& p)
+Vec3 osc::transform_point(const Mat4& m, const Vec3& p)
 {
     return Vec3{m * Vec4{p, 1.0f}};
 }
 
-Quat osc::to_worldspace_rotation_quat(Eulers const& eulers)
+Quat osc::to_worldspace_rotation_quat(const Eulers& eulers)
 {
     static_assert(std::is_same_v<Eulers::value_type, Radians>);
     return normalize(Quat{Vec3{eulers.x.count(), eulers.y.count(), eulers.z.count()}});
@@ -1412,32 +1394,35 @@ Quat osc::to_worldspace_rotation_quat(Eulers const& eulers)
 
 void osc::apply_worldspace_rotation(
     Transform& t,
-    Eulers const& eulerAngles,
-    Vec3 const& rotationCenter)
+    const Eulers& euler_angles,
+    const Vec3& rotation_center)
 {
-    Quat q = to_worldspace_rotation_quat(eulerAngles);
-    t.position = q*(t.position - rotationCenter) + rotationCenter;
+    Quat q = to_worldspace_rotation_quat(euler_angles);
+    t.position = q*(t.position - rotation_center) + rotation_center;
     t.rotation = normalize(q*t.rotation);
 }
 
-bool osc::is_intersecting(Rect const& r, Vec2 const& p)
+bool osc::is_intersecting(const Rect& r, const Vec2& p)
 {
-    Vec2 relPos = p - r.p1;
-    Vec2 dims = dimensions_of(r);
-    return (0.0f <= relPos.x && relPos.x <= dims.x) && (0.0f <= relPos.y && relPos.y <= dims.y);
+    const Vec2 relative_pos = p - r.p1;
+    const Vec2 rect_dims = dimensions_of(r);
+
+    return
+        (0.0f <= relative_pos.x and relative_pos.x <= rect_dims.x) and
+        (0.0f <= relative_pos.y and relative_pos.y <= rect_dims.y);
 }
 
-bool osc::is_intersecting(FrustumPlanes const& frustum, AABB const& aabb)
+bool osc::is_intersecting(const FrustumPlanes& frustum, const AABB& aabb)
 {
-    return !any_of(frustum, [&aabb](auto const& plane) { return is_in_front_of(plane, aabb); });
+    return not any_of(frustum, [&aabb](const auto& plane) { return is_in_front_of(plane, aabb); });
 }
 
-std::optional<RayCollision> osc::find_collision(Line const& l, Sphere const& s)
+std::optional<RayCollision> osc::find_collision(const Line& line, const Sphere& sphere)
 {
-    return GetRayCollisionSphereAnalytic(s, l);
+    return find_collision_analytic(sphere, line);
 }
 
-std::optional<RayCollision> osc::find_collision(Line const& l, AABB const& bb)
+std::optional<RayCollision> osc::find_collision(const Line& line, const AABB& aabb)
 {
     // intersect the ray with each axis-aligned slab for each dimension
     //
@@ -1445,30 +1430,28 @@ std::optional<RayCollision> osc::find_collision(Line const& l, AABB const& bb)
     //      in (e.g.) X, then Y, then Z, and intersect those interactions such
     //      that if the intersection is ever empty (or, negative here) then there
     //      is no intersection
+
     float t0 = std::numeric_limits<float>::lowest();
     float t1 = std::numeric_limits<float>::max();
-    for (Vec3::size_type i = 0; i < 3; ++i)
-    {
-        float invDir = 1.0f / l.direction[i];
-        float tNear = (bb.min[i] - l.origin[i]) * invDir;
-        float tFar = (bb.max[i] - l.origin[i]) * invDir;
-        if (tNear > tFar)
-        {
-            std::swap(tNear, tFar);
+    for (Vec3::size_type i = 0; i < 3; ++i) {
+        const float inv_dir = 1.0f / line.direction[i];
+        float t_near = (aabb.min[i] - line.origin[i]) * inv_dir;
+        float t_far = (aabb.max[i] - line.origin[i]) * inv_dir;
+        if (t_near > t_far) {
+            std::swap(t_near, t_far);
         }
-        t0 = max(t0, tNear);
-        t1 = min(t1, tFar);
+        t0 = max(t0, t_near);
+        t1 = min(t1, t_far);
 
-        if (t0 > t1)
-        {
+        if (t0 > t1) {
             return std::nullopt;
         }
     }
 
-    return RayCollision{t0, l.origin + t0*l.direction};
+    return RayCollision{t0, line.origin + t0*line.direction};
 }
 
-std::optional<RayCollision> osc::find_collision(Line const& l, Plane const& p)
+std::optional<RayCollision> osc::find_collision(const Line& line, const Plane& plane)
 {
     // see: https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-plane-and-ray-disk-intersection
     //
@@ -1493,67 +1476,59 @@ std::optional<RayCollision> osc::find_collision(Line const& l, Plane const& p)
     //
     // equation: t = dot(P0 - O, n) / dot(D, n)
 
-    float denominator = dot(p.normal, l.direction);
+    const float denominator = dot(plane.normal, line.direction);
 
-    if (abs(denominator) > 1e-6)
-    {
-        float numerator = dot(p.origin - l.origin, p.normal);
-        float distance = numerator / denominator;
-        return RayCollision{distance, l.origin + distance*l.direction};
+    if (abs(denominator) > 1e-6) {
+        const float numerator = dot(plane.origin - line.origin, plane.normal);
+        const float distance = numerator / denominator;
+        return RayCollision{distance, line.origin + distance*line.direction};
     }
-    else
-    {
+    else {
         // the line is *very* parallel to the plane, which could cause
         // some divide-by-zero havok: pretend it didn't intersect
         return std::nullopt;
     }
 }
 
-std::optional<RayCollision> osc::find_collision(Line const& l, Disc const& d)
+std::optional<RayCollision> osc::find_collision(const Line& line, const Disc& disc)
 {
     // see: https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-plane-and-ray-disk-intersection
 
     // think of this as a ray-plane intersection test with the additional
     // constraint that the ray has to be within the radius of the disc
 
-    Plane p{};
-    p.origin = d.origin;
-    p.normal = d.normal;
+    const std::optional<RayCollision> plane_collision =
+        find_collision(line, Plane{.origin = disc.origin, .normal = disc.normal});
 
-    std::optional<RayCollision> maybePlaneCollision = find_collision(l, p);
-
-    if (!maybePlaneCollision)
-    {
+    if (not plane_collision) {
         return std::nullopt;
     }
 
     // figure out whether the plane hit is within the disc's radius
-    Vec3 v = maybePlaneCollision->position - d.origin;
-    float const d2 = dot(v, v);
-    float const r2 = dot(d.radius, d.radius);
+    const Vec3 v = plane_collision->position - disc.origin;
+    const float d2 = dot(v, v);
+    const float r2 = dot(disc.radius, disc.radius);
 
-    if (d2 > r2)
-    {
+    if (d2 > r2) {
         return std::nullopt;
     }
 
-    return maybePlaneCollision;
+    return plane_collision;
 }
 
-std::optional<RayCollision> osc::find_collision(Line const& l, Triangle const& tri)
+std::optional<RayCollision> osc::find_collision(const Line& line, const Triangle& triangle)
 {
     // see: https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/ray-triangle-intersection-geometric-solution
 
     // compute triangle normal
-    Vec3 N = triangle_normal(tri);
+    const Vec3 N = triangle_normal(triangle);
 
     // compute dot product between normal and ray
-    float NdotR = dot(N, l.direction);
+    const float NdotR = dot(N, line.direction);
 
     // if the dot product is small, then the ray is probably very parallel to
     // the triangle (or, perpendicular to the normal) and doesn't intersect
-    if (abs(NdotR) < epsilon_v<float>)
-    {
+    if (abs(NdotR) < epsilon_v<float>) {
         return std::nullopt;
     }
 
@@ -1561,7 +1536,7 @@ std::optional<RayCollision> osc::find_collision(Line const& l, Triangle const& t
     // - N is a normal to the plane
     // - N.v[0] is the projection of v[0] onto N and indicates how long along N to go to hit some
     //   other point on the plane
-    float D = dot(N, tri.p0);
+    const float D = dot(N, triangle.p0);
 
     // ok, that's one side of the equation
     //
@@ -1576,47 +1551,44 @@ std::optional<RayCollision> osc::find_collision(Line const& l, Triangle const& t
     //     (D - O.N)/(R.N) = t
     //
     // tah-dah: we have the ray distance
-    float t = -(dot(N, l.origin) - D) / NdotR;
+    const float t = -(dot(N, line.origin) - D) / NdotR;
 
     // if triangle plane is behind line then return early
-    if (t < 0.0f)
-    {
+    if (t < 0.0f) {
         return std::nullopt;
     }
 
     // intersection point on triangle plane, computed from line equation
-    Vec3 P = l.origin + t*l.direction;
+    const Vec3 P = line.origin + t*line.direction;
 
     // figure out if that point is inside the triangle's bounds using the
     // "inside-outside" test
 
     // test each triangle edge: {0, 1}, {1, 2}, {2, 0}
-    for (size_t i = 0; i < 3; ++i)
-    {
-        Vec3 const& start = tri[i];
-        Vec3 const& end = tri[(i+1)%3];
+    for (size_t i = 0; i < 3; ++i) {
+        const Vec3& start = triangle[i];
+        const Vec3& end = triangle[(i+1)%3];
 
         // corner[n] to corner[n+1]
-        Vec3 e = end - start;
+        const Vec3 e = end - start;
 
         // corner[n] to P
-        Vec3 c = P - start;
+        const Vec3 c = P - start;
 
         // cross product of the above indicates whether the vectors are
         // clockwise or anti-clockwise with respect to eachover. It's a
         // right-handed coord system, so anti-clockwise produces a vector
         // that points in same direction as normal
-        Vec3 ax = cross(e, c);
+        const Vec3 ax = cross(e, c);
 
         // if the dot product of that axis with the normal is <0.0f then
         // the point was "outside"
-        if (dot(ax, N) < 0.0f)
-        {
+        if (dot(ax, N) < 0.0f) {
             return std::nullopt;
         }
     }
 
-    return RayCollision{t, l.origin + t*l.direction};
+    return RayCollision{t, line.origin + t*line.direction};
 }
 
 float osc::ease_out_elastic(float x)
@@ -1624,20 +1596,19 @@ float osc::ease_out_elastic(float x)
     // adopted from: https://easings.net/#easeOutElastic
 
     constexpr float c4 = 2.0f*pi_v<float> / 3.0f;
-    float const normalized = saturate(x);
+    const float normalized = saturate(x);
 
     return pow(2.0f, -5.0f*normalized) * sin((normalized*10.0f - 0.75f) * c4) + 1.0f;
 }
 
-std::array<Mat4, 6> osc::CalcCubemapViewProjMatrices(
-    Mat4 const& projectionMatrix,
+std::array<Mat4, 6> osc::calc_cubemap_view_proj_matrices(
+    const Mat4& projectionMatrix,
     Vec3 cubeCenter)
 {
     static_assert(std::size(c_CubemapFacesDetails) == 6);
 
     std::array<Mat4, 6> rv{};
-    for (size_t i = 0; i < 6; ++i)
-    {
+    for (size_t i = 0; i < 6; ++i) {
         rv[i] = projectionMatrix * calc_cubemap_view_matrix(c_CubemapFacesDetails[i], cubeCenter);
     }
     return rv;

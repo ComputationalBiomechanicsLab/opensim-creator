@@ -289,7 +289,7 @@ std::optional<RayCollision> osc::get_closest_worldspace_ray_triangle_collision(
     const Rect& screen_render_rect,
     Vec2 screen_mouse_pos)
 {
-    const Line ray = camera.unprojectTopLeftPosToWorldRay(
+    const Line ray = camera.unproject_topleft_pos_to_world_ray(
         screen_mouse_pos - screen_render_rect.p1,
         dimensions_of(screen_render_rect)
     );
@@ -314,7 +314,7 @@ SceneRendererParams osc::calc_standard_dark_scene_render_params(
     rv.draw_floor = false;
     rv.view_matrix = camera.view_matrix();
     rv.projection_matrix = camera.projection_matrix(aspect_ratio(render_dims));
-    rv.view_pos = camera.getPos();
+    rv.view_pos = camera.position();
     rv.light_direction = recommended_light_direction(camera);
     rv.background_color = {0.1f, 1.0f};
     return rv;

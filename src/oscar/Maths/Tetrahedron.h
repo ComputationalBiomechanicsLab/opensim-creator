@@ -12,11 +12,11 @@ namespace osc
         using size_type = size_t;
         using difference_type = ptrdiff_t;
         using reference = Vec3&;
-        using const_reference = Vec3 const&;
+        using const_reference = const Vec3&;
         using pointer = Vec3*;
-        using const_pointer = Vec3 const*;
+        using const_pointer = const Vec3*;
         using iterator = Vec3*;
-        using const_iterator = Vec3 const*;
+        using const_iterator = const Vec3*;
 
         constexpr size_t size() const { return 4; }
         constexpr pointer data() { return &p0; }

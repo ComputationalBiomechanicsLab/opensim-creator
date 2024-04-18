@@ -13,17 +13,17 @@ namespace osc
     // packaged-up SQT transform (scale -> rotate -> translate)
     struct Transform final {
 
-        constexpr Transform with_position(Vec3 const& position_) const
+        constexpr Transform with_position(const Vec3& position_) const
         {
             return Transform{.scale = scale, .rotation = rotation, .position = position_};
         }
 
-        constexpr Transform with_rotation(Quat const& rotation_) const
+        constexpr Transform with_rotation(const Quat& rotation_) const
         {
             return Transform{.scale = scale, .rotation = rotation_, .position = position};
         }
 
-        constexpr Transform with_scale(Vec3 const& scale_) const
+        constexpr Transform with_scale(const Vec3& scale_) const
         {
             return Transform{.scale = scale_, .rotation = rotation, .position = position};
         }
@@ -33,7 +33,7 @@ namespace osc
             return Transform{.scale = Vec3{scale_}, .rotation = rotation, .position = position};
         }
 
-        friend bool operator==(Transform const&, Transform const&) = default;
+        friend bool operator==(const Transform&, const Transform&) = default;
 
         Vec3 scale{1.0f};
         Quat rotation{};
@@ -41,12 +41,12 @@ namespace osc
     };
 
     // applies the transform to a point vector (equivalent to `TransformPoint`)
-    constexpr Vec3 operator*(Transform const& t, Vec3 p)
+    constexpr Vec3 operator*(const Transform& t, Vec3 point)
     {
-        p *= t.scale;
-        p = t.rotation * p;
-        p += t.position;
-        return p;
+        point *= t.scale;
+        point  = t.rotation * point;
+        point += t.position;
+        return point;
     }
 
     template<typename T>
@@ -58,12 +58,12 @@ namespace osc
         return Transform{};
     }
 
-    inline std::ostream& operator<<(std::ostream& o, Transform const& t)
+    inline std::ostream& operator<<(std::ostream& o, const Transform& t)
     {
         return o << "Transform(position = " << t.position << ", rotation = " << t.rotation << ", scale = " << t.scale << ')';
     }
 
-    inline std::string to_string(Transform const& t)
+    inline std::string to_string(const Transform& t)
     {
         std::stringstream ss;
         ss << t;

@@ -26,11 +26,11 @@ namespace osc
         using size_type = size_t;
         using difference_type = ptrdiff_t;
         using reference = T&;
-        using const_reference = T const&;
+        using const_reference = const T&;
         using pointer = T*;
-        using const_pointer = T const*;
+        using const_pointer = const T*;
         using iterator = T*;
-        using const_iterator = T const*;
+        using const_iterator = const T*;
         using type = Qua<T>;
 
         static constexpr Qua<T> wxyz(T w, T x, T y, T z) { return Qua<T>(w, x, y, z); }
@@ -39,7 +39,7 @@ namespace osc
         constexpr Qua() = default;
 
         // constructs a `Qua` with `w = s` and the xyz of `v`
-        constexpr Qua(T s, Vec<3, T> const& v) :
+        constexpr Qua(T s, const Vec<3, T>& v) :
             w{s}, x{v.x}, y{v.y}, z{v.z}
         {}
 
@@ -50,7 +50,7 @@ namespace osc
 
         // constructs a `Qua` by `static_cast<T>`ing each element in `q`
         template<typename U>
-        constexpr explicit Qua(Qua<U> const& q) :
+        constexpr explicit Qua(const Qua<U>& q) :
             w{static_cast<T>(q.w)},
             x{static_cast<T>(q.x)},
             y{static_cast<T>(q.y)},
@@ -63,7 +63,7 @@ namespace osc
         /// @param v A second normalized axis
         /// @see gtc_Quaternion
         /// @see http://lolengine.net/blog/2013/09/18/beautiful-maths-Quaternion-from-Vectors
-        Qua(Vec<3, T> const& u, Vec<3, T> const& v)
+        Qua(const Vec<3, T>& u, const Vec<3, T>& v)
         {
             T norm_u_norm_v = sqrt(dot(u, u) * dot(v, v));
             T real_part = norm_u_norm_v + dot(u, v);
@@ -85,7 +85,7 @@ namespace osc
         }
 
         // constructs a `Qua` from euler angles (pitch, yaw, roll), in radians.
-        constexpr explicit Qua(Vec<3, T> const& eulerAngle)
+        constexpr explicit Qua(const Vec<3, T>& eulerAngle)
         {
             Vec<3, T> c = cos(eulerAngle * T(0.5));
             Vec<3, T> s = sin(eulerAngle * T(0.5));
@@ -97,13 +97,13 @@ namespace osc
         }
 
         // constructs a `Qua` by decomposing an orthogonal matrix
-        explicit Qua(Mat<3, 3, T> const& m)
+        explicit Qua(const Mat<3, 3, T>& m)
         {
             *this = quat_cast(m);
         }
 
         // constructs a `Qua` by decomposing an orthogonal matrix
-        explicit Qua(Mat<4, 4, T> const& m)
+        explicit Qua(const Mat<4, 4, T>& m)
         {
             *this = quat_cast(m);
         }
@@ -118,10 +118,10 @@ namespace osc
         constexpr reference operator[](size_type i) { return begin()[i]; }
         constexpr const_reference operator[](size_type i) const { return begin()[i]; }
 
-        friend constexpr bool operator==(Qua const&, Qua const&) = default;
+        friend constexpr bool operator==(const Qua&, const Qua&) = default;
 
         template<typename U>
-        constexpr Qua<T>& operator=(Qua<U> const& q)
+        constexpr Qua<T>& operator=(const Qua<U>& q)
         {
             this->w = static_cast<T>(q.w);
             this->x = static_cast<T>(q.x);
@@ -131,7 +131,7 @@ namespace osc
         }
 
         template<typename U>
-        constexpr Qua<T>& operator+=(Qua<U> const& q)
+        constexpr Qua<T>& operator+=(const Qua<U>& q)
         {
             this->w += static_cast<T>(q.w);
             this->x += static_cast<T>(q.x);
@@ -141,7 +141,7 @@ namespace osc
         }
 
         template<typename U>
-        constexpr Qua<T>& operator-=(Qua<U> const& q)
+        constexpr Qua<T>& operator-=(const Qua<U>& q)
         {
             this->w -= static_cast<T>(q.w);
             this->x -= static_cast<T>(q.x);
@@ -151,7 +151,7 @@ namespace osc
         }
 
         template<typename U>
-        constexpr Qua<T>& operator*=(Qua<U> const& r)
+        constexpr Qua<T>& operator*=(const Qua<U>& r)
         {
             Qua<T> const p(*this);
             Qua<T> const q(r);
@@ -189,89 +189,89 @@ namespace osc
     };
 
     template<typename T>
-    constexpr Qua<T> operator+(Qua<T> const& q)
+    constexpr Qua<T> operator+(const Qua<T>& q)
     {
         return q;
     }
 
     template<typename T>
-    constexpr Qua<T> operator-(Qua<T> const& q)
+    constexpr Qua<T> operator-(const Qua<T>& q)
     {
         return Qua<T>::wxyz(-q.w, -q.x, -q.y, -q.z);
     }
 
     template<typename T>
-    constexpr Qua<T> operator+(Qua<T> const& q, Qua<T> const& p)
+    constexpr Qua<T> operator+(const Qua<T>& q, const Qua<T>& p)
     {
         return Qua<T>(q) += p;
     }
 
     template<typename T>
-    constexpr Qua<T> operator-(Qua<T> const& q, Qua<T> const& p)
+    constexpr Qua<T> operator-(const Qua<T>& q, const Qua<T>& p)
     {
         return Qua<T>(q) -= p;
     }
 
     template<typename T>
-    constexpr Qua<T> operator*(Qua<T> const& q, Qua<T> const& p)
+    constexpr Qua<T> operator*(const Qua<T>& q, const Qua<T>& p)
     {
         return Qua<T>(q) *= p;
     }
 
     template<typename T>
-    constexpr Vec<3, T> operator*(Qua<T> const& q, Vec<3, T> const& v)
+    constexpr Vec<3, T> operator*(const Qua<T>& q, const Vec<3, T>& v)
     {
-        Vec<3, T> const QuatVector(q.x, q.y, q.z);
-        Vec<3, T> const uv(cross(QuatVector, v));
-        Vec<3, T> const uuv(cross(QuatVector, uv));
+        const Vec<3, T> QuatVector(q.x, q.y, q.z);
+        const Vec<3, T> uv(cross(QuatVector, v));
+        const Vec<3, T> uuv(cross(QuatVector, uv));
 
         return v + ((uv * q.w) + uuv) * static_cast<T>(2);
     }
 
     template<typename T>
-    constexpr Vec<3, T> operator*(Vec<3, T> const& v, Qua<T> const& q)
+    constexpr Vec<3, T> operator*(const Vec<3, T>& v, const Qua<T>& q)
     {
         return inverse(q) * v;
     }
 
     template<typename T>
-    constexpr Vec<4, T> operator*(Qua<T> const& q, Vec<4, T> const& v)
+    constexpr Vec<4, T> operator*(const Qua<T>& q, const Vec<4, T>& v)
     {
         return Vec<4, T>(q * Vec<3, T>(v), v.w);
     }
 
     template<typename T>
-    constexpr Vec<4, T> operator*(Vec<4, T> const& v, Qua<T> const& q)
+    constexpr Vec<4, T> operator*(const Vec<4, T>& v, const Qua<T>& q)
     {
         return inverse(q) * v;
     }
 
     template<typename T>
-    constexpr Qua<T> operator*(Qua<T> const& q, T const& s)
+    constexpr Qua<T> operator*(const Qua<T>& q, const T& s)
     {
         return Qua<T>::wxyz(q.w * s, q.x * s, q.y * s, q.z * s);
     }
 
     template<typename T>
-    constexpr Qua<T> operator*(T const& s, Qua<T> const& q)
+    constexpr Qua<T> operator*(const T& s, const Qua<T>& q)
     {
         return q * s;
     }
 
     template<typename T>
-    constexpr Qua<T> operator/(Qua<T> const& q, T const& s)
+    constexpr Qua<T> operator/(const Qua<T>& q, const T& s)
     {
         return Qua<T>::wxyz(q.w / s, q.x / s, q.y / s, q.z / s);
     }
 
     template<typename T>
-    std::ostream& operator<<(std::ostream& o, Qua<T> const& v)
+    std::ostream& operator<<(std::ostream& o, const Qua<T>& v)
     {
         return o << "Quat(" << v.w << ", " << v.x << ", " << v.y << ", " << v.z << ')';
     }
 
     template<typename T>
-    std::string to_string(Qua<T> const& v)
+    std::string to_string(const Qua<T>& v)
     {
         std::stringstream ss;
         ss << v;
@@ -281,7 +281,7 @@ namespace osc
     // when handled as a tuple-like object, a `Quat` decomposes into its elements
 
     template<size_t I, typename T>
-    constexpr T const& get(Qua<T> const& v) { return v[I]; }
+    constexpr const T& get(const Qua<T>& v) { return v[I]; }
 
     template<size_t I, typename T>
     constexpr T& get(Qua<T>& v) { return v[I]; }
@@ -290,7 +290,7 @@ namespace osc
     constexpr T&& get(Qua<T>&& v) { return std::move(v[I]); }
 
     template<size_t I, typename T>
-    constexpr T const&& get(Qua<T> const&& v) { return std::move(v[I]); }
+    constexpr const T&& get(const Qua<T>&& v) { return std::move(v[I]); }
 }
 
 template<typename T>

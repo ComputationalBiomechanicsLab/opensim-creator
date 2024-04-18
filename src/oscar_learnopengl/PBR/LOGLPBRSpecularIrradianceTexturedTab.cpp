@@ -64,7 +64,7 @@ namespace
             rl.slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/EquirectangularToCubemap.frag"),
         }};
         material.set_texture("uEquirectangularMap", hdrTexture);
-        material.set_mat4_array("uShadowMatrices", CalcCubemapViewProjMatrices(projectionMatrix, Vec3{}));
+        material.set_mat4_array("uShadowMatrices", calc_cubemap_view_proj_matrices(projectionMatrix, Vec3{}));
 
         Camera camera;
         graphics::draw(BoxGeometry{2.0f, 2.0f, 2.0f}, identity<Transform>(), material, camera);
@@ -90,7 +90,7 @@ namespace
             rl.slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/IrradianceConvolution.frag"),
         }};
         material.set_render_texture("uEnvironmentMap", skybox);
-        material.set_mat4_array("uShadowMatrices", CalcCubemapViewProjMatrices(captureProjection, Vec3{}));
+        material.set_mat4_array("uShadowMatrices", calc_cubemap_view_proj_matrices(captureProjection, Vec3{}));
 
         Camera camera;
         graphics::draw(BoxGeometry{2.0f, 2.0f, 2.0f}, identity<Transform>(), material, camera);
@@ -119,7 +119,7 @@ namespace
             rl.slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/Prefilter.frag"),
         }};
         material.set_render_texture("uEnvironmentMap", environmentMap);
-        material.set_mat4_array("uShadowMatrices", CalcCubemapViewProjMatrices(captureProjection, Vec3{}));
+        material.set_mat4_array("uShadowMatrices", calc_cubemap_view_proj_matrices(captureProjection, Vec3{}));
 
         Camera camera;
 

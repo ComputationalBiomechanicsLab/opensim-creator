@@ -207,7 +207,7 @@ bool osc::ui::UpdatePolarCameraFromMouseInputs(
 
     if (modified)
     {
-        camera.rescaleZNearAndZFarBasedOnRadius();
+        camera.rescale_znear_and_zfar_based_on_radius();
     }
 
     return modified;

@@ -356,7 +356,7 @@ public:
 
     void focusOn(Vec3 const& pos)
     {
-        m_Parameters.updRenderParams().camera.focusPoint = -pos;
+        m_Parameters.updRenderParams().camera.focus_point = -pos;
     }
 
 private:

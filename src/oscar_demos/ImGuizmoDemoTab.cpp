@@ -50,7 +50,7 @@ private:
     PolarPerspectiveCamera m_SceneCamera = []()
     {
         PolarPerspectiveCamera rv;
-        rv.focusPoint = {0.0f, 0.0f, 0.0f};
+        rv.focus_point = {0.0f, 0.0f, 0.0f};
         rv.phi = 1_rad;
         rv.theta = 0_rad;
         rv.radius = 5.0f;

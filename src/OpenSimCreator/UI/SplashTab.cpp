@@ -61,7 +61,7 @@ namespace
         rv.view_matrix = camera.view_matrix();
         rv.near_clipping_plane = camera.znear;
         rv.far_clipping_plane = camera.zfar;
-        rv.view_pos = camera.getPos();
+        rv.view_pos = camera.position();
         rv.light_direction = {-0.34f, -0.25f, 0.05f};
         rv.light_color = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f, 1.0f};
         rv.background_color = {0.89f, 0.89f, 0.89f, 1.0f};

@@ -173,8 +173,8 @@ namespace osc
     // and (1, 1)), returns `std::nullopt`
     std::optional<Rect> loosely_project_into_ndc(
         const AABB& aabb,
-        const Mat4& viewMat,
-        const Mat4& projMat,
+        const Mat4& view_mat,
+        const Mat4& proj_mat,
         float znear,
         float zfar
     );

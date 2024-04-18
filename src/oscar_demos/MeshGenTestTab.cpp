@@ -88,7 +88,7 @@ private:
                 m_RenderParams.light_direction = recommended_light_direction(m_Camera);
                 m_RenderParams.projection_matrix = m_Camera.projection_matrix(aspect_ratio(m_RenderParams.dimensions));
                 m_RenderParams.view_matrix = m_Camera.view_matrix();
-                m_RenderParams.view_pos = m_Camera.getPos();
+                m_RenderParams.view_pos = m_Camera.position();
                 m_RenderParams.near_clipping_plane = m_Camera.znear;
                 m_RenderParams.far_clipping_plane = m_Camera.zfar;
                 m_RenderParams.draw_floor = false;

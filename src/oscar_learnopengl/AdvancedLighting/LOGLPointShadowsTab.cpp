@@ -131,7 +131,7 @@ private:
 
         // have the cone point toward all 6 faces of the cube
         auto const shadowMatrices =
-            CalcCubemapViewProjMatrices(projectionMatrix, m_LightPos);
+            calc_cubemap_view_proj_matrices(projectionMatrix, m_LightPos);
 
         // pass data to material
         m_ShadowMappingMaterial.set_mat4_array("uShadowMatrices", shadowMatrices);

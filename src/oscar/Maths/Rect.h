@@ -8,11 +8,11 @@ namespace osc
 {
     struct Rect final {
 
-        friend bool operator==(Rect const&, Rect const&) = default;
+        friend bool operator==(const Rect&, const Rect&) = default;
 
         Vec2 p1{};
         Vec2 p2{};
     };
 
-    std::ostream& operator<<(std::ostream&, Rect const&);
+    std::ostream& operator<<(std::ostream&, const Rect&);
 }

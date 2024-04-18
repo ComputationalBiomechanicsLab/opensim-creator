@@ -69,7 +69,7 @@ namespace osc
             Vec2 const mousePos = ui::GetMousePos();
 
             // un-project mouse's (2D) location into the 3D scene as a ray
-            Line const cameraRay = m_Camera.unprojectTopLeftPosToWorldRay(mousePos - contentRect.p1, contentRectDims);
+            Line const cameraRay = m_Camera.unproject_topleft_pos_to_world_ray(mousePos - contentRect.p1, contentRectDims);
 
             // mesh hittest: compute whether the user is hovering over the mesh (affects rendering)
             Mesh const& inputMesh = m_State->getScratchMesh(m_DocumentIdentifier);

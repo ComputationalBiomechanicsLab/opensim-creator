@@ -20,38 +20,38 @@ namespace osc
 {
     template<typename T>
     requires std::is_arithmetic_v<T>
-    constexpr Qua<T> conjugate(Qua<T> const& q)
+    constexpr Qua<T> conjugate(const Qua<T>& q)
     {
         return Qua<T>::wxyz(q.w, -q.x, -q.y, -q.z);
     }
 
     template<typename T>
     requires std::is_arithmetic_v<T>
-    constexpr T dot(Qua<T> const& a, Qua<T> const& b)
+    constexpr T dot(const Qua<T>& a, const Qua<T>& b)
     {
         return (a.w*b.w + a.x*b.x) + (a.y*b.y + a.z*b.z);
     }
 
     template<typename T>
     requires std::is_arithmetic_v<T>
-    constexpr Qua<T> inverse(Qua<T> const& q)
+    constexpr Qua<T> inverse(const Qua<T>& q)
     {
         return conjugate(q) / dot(q, q);
     }
 
     template<typename T>
-    T length(Qua<T> const& q)
+    T length(const Qua<T>& q)
     {
         return sqrt(dot(q, q));
     }
 
     // returns a normalized version of the provided argument
     template<std::floating_point T>
-    Qua<T> normalize(Qua<T> const& q)
+    Qua<T> normalize(const Qua<T>& q)
     {
-        T len = length(q);
+        const T len = length(q);
 
-        if(len <= static_cast<T>(0)) {  // uh oh
+        if (len <= static_cast<T>(0)) {  // uh oh
             return Qua<T>::wxyz(
                 static_cast<T>(1),
                 static_cast<T>(0),
@@ -60,88 +60,87 @@ namespace osc
             );
         }
 
-        T oneOverLen = static_cast<T>(1) / len;
-        return Qua<T>::wxyz(q.w * oneOverLen, q.x * oneOverLen, q.y * oneOverLen, q.z * oneOverLen);
+        const T one_over_len = static_cast<T>(1) / len;
+        return Qua<T>::wxyz(q.w * one_over_len, q.x * one_over_len, q.y * one_over_len, q.z * one_over_len);
     }
 
     template<typename T>
-    Qua<T> quat_cast(Mat<3, 3, T> const& m)
+    Qua<T> quat_cast(const Mat<3, 3, T>& m)
     {
-        T fourXSquaredMinus1 = m[0][0] - m[1][1] - m[2][2];
-        T fourYSquaredMinus1 = m[1][1] - m[0][0] - m[2][2];
-        T fourZSquaredMinus1 = m[2][2] - m[0][0] - m[1][1];
-        T fourWSquaredMinus1 = m[0][0] + m[1][1] + m[2][2];
+        const T four_x_squared_minus_1 = m[0][0] - m[1][1] - m[2][2];
+        const T four_y_squared_minus_1 = m[1][1] - m[0][0] - m[2][2];
+        const T four_z_squared_minus_1 = m[2][2] - m[0][0] - m[1][1];
+        const T four_w_squared_minus_1 = m[0][0] + m[1][1] + m[2][2];
 
-        int biggestIndex = 0;
-        T fourBiggestSquaredMinus1 = fourWSquaredMinus1;
-        if(fourXSquaredMinus1 > fourBiggestSquaredMinus1)
-        {
-            fourBiggestSquaredMinus1 = fourXSquaredMinus1;
-            biggestIndex = 1;
+        int biggest_index = 0;
+        T four_biggest_squared_minus_1 = four_w_squared_minus_1;
+        if (four_x_squared_minus_1 > four_biggest_squared_minus_1) {
+            four_biggest_squared_minus_1 = four_x_squared_minus_1;
+            biggest_index = 1;
         }
-        if(fourYSquaredMinus1 > fourBiggestSquaredMinus1)
-        {
-            fourBiggestSquaredMinus1 = fourYSquaredMinus1;
-            biggestIndex = 2;
+        if (four_y_squared_minus_1 > four_biggest_squared_minus_1) {
+            four_biggest_squared_minus_1 = four_y_squared_minus_1;
+            biggest_index = 2;
         }
-        if(fourZSquaredMinus1 > fourBiggestSquaredMinus1)
-        {
-            fourBiggestSquaredMinus1 = fourZSquaredMinus1;
-            biggestIndex = 3;
+        if (four_z_squared_minus_1 > four_biggest_squared_minus_1) {
+            four_biggest_squared_minus_1 = four_z_squared_minus_1;
+            biggest_index = 3;
         }
 
-        T biggestVal = sqrt(fourBiggestSquaredMinus1 + static_cast<T>(1)) * static_cast<T>(0.5);
-        T mult = static_cast<T>(0.25) / biggestVal;
+        const T biggest_val = sqrt(four_biggest_squared_minus_1 + static_cast<T>(1)) * static_cast<T>(0.5);
+        const T mult = static_cast<T>(0.25) / biggest_val;
 
-        switch(biggestIndex) {
+        switch(biggest_index) {
         default:
         case 0:
-            return Qua<T>::wxyz(biggestVal, (m[1][2] - m[2][1]) * mult, (m[2][0] - m[0][2]) * mult, (m[0][1] - m[1][0]) * mult);
+            return Qua<T>::wxyz(biggest_val, (m[1][2] - m[2][1]) * mult, (m[2][0] - m[0][2]) * mult, (m[0][1] - m[1][0]) * mult);
         case 1:
-            return Qua<T>::wxyz((m[1][2] - m[2][1]) * mult, biggestVal, (m[0][1] + m[1][0]) * mult, (m[2][0] + m[0][2]) * mult);
+            return Qua<T>::wxyz((m[1][2] - m[2][1]) * mult, biggest_val, (m[0][1] + m[1][0]) * mult, (m[2][0] + m[0][2]) * mult);
         case 2:
-            return Qua<T>::wxyz((m[2][0] - m[0][2]) * mult, (m[0][1] + m[1][0]) * mult, biggestVal, (m[1][2] + m[2][1]) * mult);
+            return Qua<T>::wxyz((m[2][0] - m[0][2]) * mult, (m[0][1] + m[1][0]) * mult, biggest_val, (m[1][2] + m[2][1]) * mult);
         case 3:
-            return Qua<T>::wxyz((m[0][1] - m[1][0]) * mult, (m[2][0] + m[0][2]) * mult, (m[1][2] + m[2][1]) * mult, biggestVal);
+            return Qua<T>::wxyz((m[0][1] - m[1][0]) * mult, (m[2][0] + m[0][2]) * mult, (m[1][2] + m[2][1]) * mult, biggest_val);
         }
     }
 
     template<typename T>
-    Qua<T> quat_cast(Mat<4, 4, T> const& m)
+    Qua<T> quat_cast(const Mat<4, 4, T>& m)
     {
         return quat_cast(Mat<3, 3, T>(m));
     }
 
     template<typename T>
-    constexpr Mat<3, 3, T> mat3_cast(Qua<T> const& q)
+    constexpr Mat<3, 3, T> mat3_cast(const Qua<T>& q)
     {
-        Mat<3, 3, T> Result(T(1));
-        T qxx(q.x * q.x);
-        T qyy(q.y * q.y);
-        T qzz(q.z * q.z);
-        T qxz(q.x * q.z);
-        T qxy(q.x * q.y);
-        T qyz(q.y * q.z);
-        T qwx(q.w * q.x);
-        T qwy(q.w * q.y);
-        T qwz(q.w * q.z);
+        const T qxx(q.x * q.x);
+        const T qyy(q.y * q.y);
+        const T qzz(q.z * q.z);
+        const T qxz(q.x * q.z);
+        const T qxy(q.x * q.y);
+        const T qyz(q.y * q.z);
+        const T qwx(q.w * q.x);
+        const T qwy(q.w * q.y);
+        const T qwz(q.w * q.z);
 
-        Result[0][0] = T(1) - T(2) * (qyy +  qzz);
-        Result[0][1] = T(2) * (qxy + qwz);
-        Result[0][2] = T(2) * (qxz - qwy);
+        Mat<3, 3, T> rv(T(1));
 
-        Result[1][0] = T(2) * (qxy - qwz);
-        Result[1][1] = T(1) - T(2) * (qxx +  qzz);
-        Result[1][2] = T(2) * (qyz + qwx);
+        rv[0][0] = T(1) - T(2) * (qyy +  qzz);
+        rv[0][1] = T(2) * (qxy + qwz);
+        rv[0][2] = T(2) * (qxz - qwy);
 
-        Result[2][0] = T(2) * (qxz + qwy);
-        Result[2][1] = T(2) * (qyz - qwx);
-        Result[2][2] = T(1) - T(2) * (qxx +  qyy);
-        return Result;
+        rv[1][0] = T(2) * (qxy - qwz);
+        rv[1][1] = T(1) - T(2) * (qxx +  qzz);
+        rv[1][2] = T(2) * (qyz + qwx);
+
+        rv[2][0] = T(2) * (qxz + qwy);
+        rv[2][1] = T(2) * (qyz - qwx);
+        rv[2][2] = T(1) - T(2) * (qxx +  qyy);
+
+        return rv;
     }
 
     template<typename T>
-    constexpr Mat<4, 4, T> mat4_cast(Qua<T> const& q)
+    constexpr Mat<4, 4, T> mat4_cast(const Qua<T>& q)
     {
         return Mat<4, 4, T>(mat3_cast(q));
     }
@@ -160,11 +159,12 @@ namespace osc
     template<
         std::floating_point T,
         AngularUnitTraits Units,
-        std::convertible_to<Vec<3, T> const&> Veclike>
+        std::convertible_to<const Vec<3, T>&> Veclike
+    >
     Qua<T> angle_axis(Angle<T, Units> angle, Veclike&& axis)
     {
-        T const s = sin(angle * static_cast<T>(0.5));
-        return Qua<T>(cos(angle * static_cast<T>(0.5)), static_cast<Vec<3, T> const&>(axis) * s);
+        const T s = sin(angle * static_cast<T>(0.5));
+        return Qua<T>(cos(angle * static_cast<T>(0.5)), static_cast<const Vec<3, T>&>(axis) * s);
     }
 
     template<
@@ -176,53 +176,51 @@ namespace osc
         return angle_axis(angle, direction.vec<T>());
     }
 
-    // computes the rotation from `src` to `dest`
+    // computes the rotation from `origin` to `destination`
     template<typename T>
-    Qua<T> rotation(Vec<3, T> const& orig, Vec<3, T> const& dest)
+    Qua<T> rotation(const Vec<3, T>& origin, const Vec<3, T>& destination)
     {
-        T cosTheta = dot(orig, dest);
-        Vec<3, T> rotationAxis;
-
-        if(cosTheta >= static_cast<T>(1) - epsilon_v<T>) {
-            // orig and dest point in the same direction
+        const T cos_theta = dot(origin, destination);
+        if (cos_theta >= static_cast<T>(1) - epsilon_v<T>) {
+            // origin and destination point in the same direction
             return quat_identity<T>();
         }
 
-        if(cosTheta < static_cast<T>(-1) + epsilon_v<T>) {
+        Vec<3, T> rotation_axis;
+        if (cos_theta < static_cast<T>(-1) + epsilon_v<T>) {
             // special case when vectors in opposite directions :
             // there is no "ideal" rotation axis
             // So guess one; any will do as long as it's perpendicular to start
             // This implementation favors a rotation around the Up axis (Y),
             // since it's often what you want to do.
-            rotationAxis = cross(Vec<3, T>(0, 0, 1), orig);
-            if(length2(rotationAxis) < epsilon_v<T>) { // bad luck, they were parallel, try again!
-                rotationAxis = cross(Vec<3, T>(1, 0, 0), orig);
+            rotation_axis = cross(Vec<3, T>(0, 0, 1), origin);
+            if (length2(rotation_axis) < epsilon_v<T>) { // bad luck, they were parallel, try again!
+                rotation_axis = cross(Vec<3, T>(1, 0, 0), origin);
             }
 
-            rotationAxis = normalize(rotationAxis);
-            return angle_axis(Degrees{180}, rotationAxis);
+            rotation_axis = normalize(rotation_axis);
+            return angle_axis(Degrees{180}, rotation_axis);
         }
 
         // Implementation from Stan Melax's Game Programming Gems 1 article
-        rotationAxis = cross(orig, dest);
+        rotation_axis = cross(origin, destination);
 
-        T s = sqrt((T(1) + cosTheta) * static_cast<T>(2));
-        T invs = static_cast<T>(1) / s;
+        const T s = sqrt((T(1) + cos_theta) * static_cast<T>(2));
+        const T invs = static_cast<T>(1) / s;
 
         return Qua<T>::wxyz(
             s * static_cast<T>(0.5f),
-            rotationAxis.x * invs,
-            rotationAxis.y * invs,
-            rotationAxis.z * invs
+            rotation_axis.x * invs,
+            rotation_axis.y * invs,
+            rotation_axis.z * invs
         );
     }
 
     template<typename T>
-    RadiansT<T> pitch(Qua<T> const& q)
+    RadiansT<T> pitch(const Qua<T>& q)
     {
-        //return T(atan(T(2) * (q.y * q.z + q.w * q.x), q.w * q.w - q.x * q.x - q.y * q.y + q.z * q.z));
-        T const y = static_cast<T>(2) * (q.y * q.z + q.w * q.x);
-        T const x = q.w * q.w - q.x * q.x - q.y * q.y + q.z * q.z;
+        const T y = static_cast<T>(2) * (q.y * q.z + q.w * q.x);
+        const T x = q.w * q.w - q.x * q.x - q.y * q.y + q.z * q.z;
 
         if (all_of(equal_within_epsilon(Vec<2, T>(x, y), Vec<2, T>(0)))) {
             //avoid atan2(0,0) - handle singularity - Matiis
@@ -233,16 +231,16 @@ namespace osc
     }
 
     template<typename T>
-    RadiansT<T> yaw(Qua<T> const& q)
+    RadiansT<T> yaw(const Qua<T>& q)
     {
         return asin(clamp(static_cast<T>(-2) * (q.x * q.z - q.w * q.y), static_cast<T>(-1), static_cast<T>(1)));
     }
 
     template<typename T>
-    RadiansT<T> roll(Qua<T> const& q)
+    RadiansT<T> roll(const Qua<T>& q)
     {
-        T const y = static_cast<T>(2) * (q.x * q.y + q.w * q.z);
-        T const x = q.w * q.w + q.x * q.x - q.y * q.y - q.z * q.z;
+        const T y = static_cast<T>(2) * (q.x * q.y + q.w * q.z);
+        const T x = q.w * q.w + q.x * q.x - q.y * q.y - q.z * q.z;
 
         if (all_of(equal_within_epsilon(Vec<2, T>(x, y), Vec<2, T>(0)))) {
             //avoid atan2(0,0) - handle singularity - Matiis
@@ -253,7 +251,7 @@ namespace osc
     }
 
     template<typename T>
-    Vec<3, RadiansT<T>> euler_angles(Qua<T> const& x)
+    Vec<3, RadiansT<T>> euler_angles(const Qua<T>& x)
     {
         return Vec<3, RadiansT<T>>(pitch(x), yaw(x), roll(x));
     }

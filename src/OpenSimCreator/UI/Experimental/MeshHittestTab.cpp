@@ -63,7 +63,7 @@ public:
 
         Rect r = ui::GetMainViewportWorkspaceScreenRect();
         Vec2 d = dimensions_of(r);
-        m_Ray = m_PolarCamera.unprojectTopLeftPosToWorldRay(Vec2{ui::GetMousePos()} - r.p1, d);
+        m_Ray = m_PolarCamera.unproject_topleft_pos_to_world_ray(Vec2{ui::GetMousePos()} - r.p1, d);
 
         m_IsMousedOver = false;
         if (m_UseBVH)
@@ -105,7 +105,7 @@ public:
             m_Camera.set_pixel_rect(viewportRect);
 
             // update real scene camera from constrained polar camera
-            m_Camera.set_position(m_PolarCamera.getPos());
+            m_Camera.set_position(m_PolarCamera.position());
             m_Camera.set_near_clipping_plane(m_PolarCamera.znear);
             m_Camera.set_far_clipping_plane(m_PolarCamera.zfar);
             m_Camera.set_view_matrix_override(m_PolarCamera.view_matrix());

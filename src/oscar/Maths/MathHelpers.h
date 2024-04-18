@@ -156,7 +156,7 @@ namespace osc
     // returns arrays that transforms cube faces from worldspace to projection
     // space such that the observer is looking at each face of the cube from
     // the center of the cube
-    std::array<Mat4, 6> CalcCubemapViewProjMatrices(
+    std::array<Mat4, 6> calc_cubemap_view_proj_matrices(
         const Mat4& projection_matrix,
         Vec3 cube_center
     );

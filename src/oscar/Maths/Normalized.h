@@ -13,19 +13,19 @@ namespace osc
     class Normalized final {
     public:
         constexpr Normalized() = default;
-        constexpr Normalized(T v) : m_Value{saturate(v)} {}
+        constexpr Normalized(T value) : value_{saturate(value)} {}
 
-        friend bool operator==(Normalized const&, Normalized const&) = default;
-        friend auto operator<=>(Normalized const&, Normalized const&) = default;
+        friend bool operator==(const Normalized&, const Normalized&) = default;
+        friend auto operator<=>(const Normalized&, const Normalized&) = default;
 
-        constexpr T const& get() const { return m_Value; }
-        constexpr operator T const& () const { return m_Value; }
+        constexpr const T& get() const { return value_; }
+        constexpr operator const T& () const { return value_; }
     private:
-        T m_Value{};
+        T value_{};
     };
 
     template<std::floating_point T>
-    std::ostream& operator<<(std::ostream& o, Normalized<T> const& v)
+    std::ostream& operator<<(std::ostream& o, const Normalized<T>& v)
     {
         return o << v.get();
     }

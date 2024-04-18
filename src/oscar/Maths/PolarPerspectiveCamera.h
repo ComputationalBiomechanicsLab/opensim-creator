@@ -26,11 +26,11 @@ namespace osc
         //      have a delta.x of 0.5f
 
         // pan: pan along the current view plane
-        void pan(float aspectRatio, Vec2 mouseDelta);
+        void pan(float aspect_ratio, Vec2 mouse_delta);
 
         // drag: spin the view around the origin, such that the distance between
         //       the camera and the origin remains constant
-        void drag(Vec2 mouseDelta);
+        void drag(Vec2 mouse_delta);
 
         // autoscale znear and zfar based on the camera's distance from what it's looking at
         //
@@ -38,33 +38,33 @@ namespace osc
         // both the culling planes of the camera *and* rescales the Z values of elements
         // in the scene. If the znear-to-zfar range is too large then Z-fighting will happen
         // and the scene will look wrong.
-        void rescaleZNearAndZFarBasedOnRadius();
+        void rescale_znear_and_zfar_based_on_radius();
 
         Mat4 view_matrix() const;
-        Mat4 projection_matrix(float aspectRatio) const;
+        Mat4 projection_matrix(float aspect_ratio) const;
 
         // project's a worldspace coordinate onto a screen-space rectangle
-        Vec2 projectOntoScreenRect(Vec3 const& worldspaceLoc, Rect const& screenRect) const;
+        Vec2 project_onto_screen_rect(const Vec3& worldspace_location, const Rect& screen_rect) const;
 
-        Vec3 getPos() const;
+        Vec3 position() const;
 
         // converts a `pos` (top-left) in the output `dims` into a line in worldspace by unprojection
-        Line unprojectTopLeftPosToWorldRay(Vec2 pos, Vec2 dims) const;
+        Line unproject_topleft_pos_to_world_ray(Vec2 pos, Vec2 dims) const;
 
-        friend bool operator==(PolarPerspectiveCamera const&, PolarPerspectiveCamera const&) = default;
+        friend bool operator==(const PolarPerspectiveCamera&, const PolarPerspectiveCamera&) = default;
 
         float radius;
         Radians theta;
         Radians phi;
-        Vec3 focusPoint;
+        Vec3 focus_point;
         Radians vertical_fov;
         float znear;
         float zfar;
     };
 
     PolarPerspectiveCamera CreateCameraWithRadius(float);
-    PolarPerspectiveCamera CreateCameraFocusedOn(AABB const&);
-    Vec3 recommended_light_direction(PolarPerspectiveCamera const&);
+    PolarPerspectiveCamera CreateCameraFocusedOn(const AABB&);
+    Vec3 recommended_light_direction(const PolarPerspectiveCamera&);
     void FocusAlongAxis(PolarPerspectiveCamera&, size_t, bool negate = false);
     void FocusAlongX(PolarPerspectiveCamera&);
     void FocusAlongMinusX(PolarPerspectiveCamera&);
@@ -75,5 +75,5 @@ namespace osc
     void ZoomIn(PolarPerspectiveCamera&);
     void ZoomOut(PolarPerspectiveCamera&);
     void Reset(PolarPerspectiveCamera&);
-    void AutoFocus(PolarPerspectiveCamera&, AABB const& elementAABB, float aspectRatio = 1.0f);
+    void AutoFocus(PolarPerspectiveCamera&, const AABB& element_aabb, float aspect_ratio = 1.0f);
 }

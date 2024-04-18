@@ -38,7 +38,7 @@ SceneRendererParams osc::CalcSceneRendererParams(
     params.projection_matrix = renderParams.camera.projection_matrix(aspect_ratio(viewportDims));
     params.near_clipping_plane = renderParams.camera.znear;
     params.far_clipping_plane = renderParams.camera.zfar;
-    params.view_pos = renderParams.camera.getPos();
+    params.view_pos = renderParams.camera.position();
     params.fixup_scale_factor = fixupScaleFactor;
     params.draw_rims = renderParams.renderingOptions.getDrawSelectionRims();
     params.draw_mesh_normals = renderParams.renderingOptions.getDrawMeshNormals();
@@ -87,7 +87,7 @@ std::optional<SceneCollision> osc::GetClosestCollision(
 
     // un-project 2D mouse cursor into 3D scene as a ray
     Vec2 const mouseRenderPos = mouseScreenPos - viewportScreenRect.p1;
-    Line const worldspaceCameraRay = camera.unprojectTopLeftPosToWorldRay(
+    Line const worldspaceCameraRay = camera.unproject_topleft_pos_to_world_ray(
         mouseRenderPos,
         dimensions_of(viewportScreenRect)
     );

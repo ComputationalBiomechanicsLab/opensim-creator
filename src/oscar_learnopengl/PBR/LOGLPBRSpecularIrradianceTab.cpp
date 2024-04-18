@@ -71,7 +71,7 @@ namespace
         material.set_texture("uEquirectangularMap", hdrTexture);
         material.set_mat4_array(
             "uShadowMatrices",
-            CalcCubemapViewProjMatrices(projectionMatrix, Vec3{})
+            calc_cubemap_view_proj_matrices(projectionMatrix, Vec3{})
         );
 
         Camera camera;
@@ -100,7 +100,7 @@ namespace
         material.set_render_texture("uEnvironmentMap", skybox);
         material.set_mat4_array(
             "uShadowMatrices",
-            CalcCubemapViewProjMatrices(captureProjection, Vec3{})
+            calc_cubemap_view_proj_matrices(captureProjection, Vec3{})
         );
 
         Camera camera;
@@ -130,7 +130,7 @@ namespace
             rl.slurp("oscar_learnopengl/shaders/PBR/ibl_specular/Prefilter.frag"),
         }};
         material.set_render_texture("uEnvironmentMap", environmentMap);
-        material.set_mat4_array("uShadowMatrices", CalcCubemapViewProjMatrices(captureProjection, Vec3{}));
+        material.set_mat4_array("uShadowMatrices", calc_cubemap_view_proj_matrices(captureProjection, Vec3{}));
 
         Camera camera;
 

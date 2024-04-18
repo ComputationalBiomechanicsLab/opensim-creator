@@ -520,7 +520,7 @@ private:
         params.projection_matrix = m_Camera.projection_matrix(aspect_ratio(params.dimensions));
         params.near_clipping_plane = m_Camera.znear;
         params.far_clipping_plane = m_Camera.zfar;
-        params.view_pos = m_Camera.getPos();
+        params.view_pos = m_Camera.position();
         params.light_direction = osc::recommended_light_direction(m_Camera);
         params.light_color = Color::white();
         params.background_color = {96.0f / 255.0f, 96.0f / 255.0f, 96.0f / 255.0f, 1.0f};

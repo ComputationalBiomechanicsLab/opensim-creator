@@ -1084,9 +1084,9 @@ bool osc::DrawAdvancedParamsEditor(
     edited = ui::InputMetersFloat("znear", params.camera.znear) || edited;
     edited = ui::InputMetersFloat("zfar", params.camera.zfar) || edited;
     ui::NewLine();
-    edited = ui::SliderMetersFloat("pan_x", params.camera.focusPoint.x, -100.0f, 100.0f) || edited;
-    edited = ui::SliderMetersFloat("pan_y", params.camera.focusPoint.y, -100.0f, 100.0f) || edited;
-    edited = ui::SliderMetersFloat("pan_z", params.camera.focusPoint.z, -100.0f, 100.0f) || edited;
+    edited = ui::SliderMetersFloat("pan_x", params.camera.focus_point.x, -100.0f, 100.0f) || edited;
+    edited = ui::SliderMetersFloat("pan_y", params.camera.focus_point.y, -100.0f, 100.0f) || edited;
+    edited = ui::SliderMetersFloat("pan_z", params.camera.focus_point.z, -100.0f, 100.0f) || edited;
 
     ui::Dummy({0.0f, 10.0f});
     ui::Text("advanced scene properties:");

@@ -19,5 +19,5 @@ namespace osc
         Vec3 normal{0.0f, 1.0f, 0.0f};
     };
 
-    std::ostream& operator<<(std::ostream&, Plane const&);
+    std::ostream& operator<<(std::ostream&, const Plane&);
 }
