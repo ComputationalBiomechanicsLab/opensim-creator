@@ -111,7 +111,7 @@ void osc::OverlayDecorationOptions::tryUpdFromValues(std::string_view keyPrefix,
 
         std::string const key = std::string{keyPrefix}+metadata.id;
         if (auto const* v = try_find(lut, key); v->type() == osc::AppSettingValueType::Bool) {
-            SetOption(m_Flags, metadata.value, v->toBool());
+            SetOption(m_Flags, metadata.value, v->to_bool());
         }
     }
 }

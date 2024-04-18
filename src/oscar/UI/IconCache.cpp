@@ -18,7 +18,7 @@ class osc::IconCache::Impl final {
 public:
     Impl(ResourceLoader& loaderPrefixedAtDirContainingSVGs, float verticalScale)
     {
-        auto it = loaderPrefixedAtDirContainingSVGs.iterateDirectory(".");
+        auto it = loaderPrefixedAtDirContainingSVGs.iterate_directory(".");
 
         for (auto el = it(); el; el = it()) {
             ResourcePath const& p = *el;

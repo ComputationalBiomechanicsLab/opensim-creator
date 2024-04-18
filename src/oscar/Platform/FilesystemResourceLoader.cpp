@@ -11,32 +11,32 @@ using namespace osc;
 
 namespace
 {
-    std::filesystem::path CalcFullPath(std::filesystem::path const& root, ResourcePath const& subpath)
+    std::filesystem::path calc_full_path(const std::filesystem::path& root, const ResourcePath& subpath)
     {
         return std::filesystem::weakly_canonical(root / subpath.string());
     }
 }
 
-ResourceStream osc::FilesystemResourceLoader::implOpen(ResourcePath const& p)
+ResourceStream osc::FilesystemResourceLoader::impl_open(const ResourcePath& p)
 {
     if (log_level() <= LogLevel::debug) {
         log_debug("opening %s", p.string().c_str());
     }
-    return ResourceStream{CalcFullPath(m_Root, p)};
+    return ResourceStream{calc_full_path(root_directory_, p)};
 }
 
-std::function<std::optional<ResourceDirectoryEntry>()> osc::FilesystemResourceLoader::implIterateDirectory(ResourcePath const& p)
+std::function<std::optional<ResourceDirectoryEntry>()> osc::FilesystemResourceLoader::impl_iterate_directory(const ResourcePath& p)
 {
     using std::begin;
     using std::end;
 
-    std::filesystem::path dirRoot = CalcFullPath(m_Root, p);
-    std::filesystem::directory_iterator iterable{dirRoot};
-    return [p, dirRoot, beg = begin(iterable), en = end(iterable)]() mutable -> std::optional<ResourceDirectoryEntry>
+    const std::filesystem::path full_path = calc_full_path(root_directory_, p);
+    const std::filesystem::directory_iterator iterable{full_path};
+    return [p, full_path, beg = begin(iterable), en = end(iterable)]() mutable -> std::optional<ResourceDirectoryEntry>
     {
         if (beg != en) {
-            auto relpath = std::filesystem::relative(beg->path(), dirRoot);
-            ResourceDirectoryEntry rv{relpath.string(), beg->is_directory()};
+            const auto relative_path = std::filesystem::relative(beg->path(), full_path);
+            ResourceDirectoryEntry rv{relative_path.string(), beg->is_directory()};
             ++beg;
             return rv;
         } else {

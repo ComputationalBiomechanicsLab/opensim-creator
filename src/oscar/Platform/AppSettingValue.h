@@ -12,39 +12,34 @@ namespace osc
 {
     class AppSettingValue final {
     public:
-        explicit AppSettingValue(std::string value_) :
-            m_Value{std::move(value_)}
-        {
-        }
+        explicit AppSettingValue(std::string value) :
+            value_{value}
+        {}
 
-        explicit AppSettingValue(char const* value_) :
-            m_Value{std::string{value_}}
-        {
-        }
+        explicit AppSettingValue(const char* value) :
+            value_{std::string{value}}
+        {}
 
-        explicit AppSettingValue(CStringView value_) :
-            m_Value{std::string{value_}}
-        {
-        }
+        explicit AppSettingValue(CStringView value) :
+            value_{std::string{value}}
+        {}
 
-        explicit AppSettingValue(bool value_) :
-            m_Value{value_}
-        {
-        }
+        explicit AppSettingValue(bool value) :
+            value_{value}
+        {}
 
-        explicit AppSettingValue(Color const& value_) :
-            m_Value{value_}
-        {
-        }
+        explicit AppSettingValue(const Color& value) :
+            value_{value}
+        {}
 
         AppSettingValueType type() const;
-        bool toBool() const;
-        std::string toString() const;
+        bool to_bool() const;
+        std::string to_string() const;
         Color to_color() const;
 
-        friend bool operator==(AppSettingValue const&, AppSettingValue const&) = default;
+        friend bool operator==(const AppSettingValue&, const AppSettingValue&) = default;
 
     private:
-        std::variant<std::string, bool, Color> m_Value;
+        std::variant<std::string, bool, Color> value_;
     };
 }

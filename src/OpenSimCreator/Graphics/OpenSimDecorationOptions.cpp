@@ -187,7 +187,7 @@ void osc::OpenSimDecorationOptions::tryUpdFromValues(
         auto const metadata = GetAllMuscleDecorationStyleMetadata();
         auto const it = find_if(metadata, [appVal](auto const& m)
         {
-            return appVal->toString() == m.id;
+            return appVal->to_string() == m.id;
         });
         if (it != metadata.end())
         {
@@ -200,7 +200,7 @@ void osc::OpenSimDecorationOptions::tryUpdFromValues(
         auto const metadata = GetAllMuscleColoringStyleMetadata();
         auto const it = find_if(metadata, [appVal](auto const& m)
         {
-            return appVal->toString() == m.id;
+            return appVal->to_string() == m.id;
         });
         if (it != metadata.end())
         {
@@ -213,7 +213,7 @@ void osc::OpenSimDecorationOptions::tryUpdFromValues(
         auto const metadata = GetAllMuscleSizingStyleMetadata();
         auto const it = find_if(metadata, [appVal](auto const& m)
         {
-            return appVal->toString() == m.id;
+            return appVal->to_string() == m.id;
         });
         if (it != metadata.end())
         {
@@ -226,7 +226,7 @@ void osc::OpenSimDecorationOptions::tryUpdFromValues(
         auto const& metadata = GetIthOptionMetadata(i);
         if (auto* appVal = lookup(metadata.id); appVal->type() == AppSettingValueType::Bool)
         {
-            bool const v = appVal->toBool();
+            bool const v = appVal->to_bool();
             SetOption(m_Flags, GetIthOption(i), v);
         }
     }

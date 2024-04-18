@@ -14,24 +14,24 @@ namespace osc
     class IResourceLoader {
     protected:
         IResourceLoader() = default;
-        IResourceLoader(IResourceLoader const&) = default;
+        IResourceLoader(const IResourceLoader&) = default;
         IResourceLoader(IResourceLoader&&) noexcept = default;
-        IResourceLoader& operator=(IResourceLoader const&) = default;
+        IResourceLoader& operator=(const IResourceLoader&) = default;
         IResourceLoader& operator=(IResourceLoader&&) noexcept = default;
     public:
         virtual ~IResourceLoader() noexcept = default;
 
-        ResourceStream open(ResourcePath const& p) { return implOpen(p); }
-        std::string slurp(ResourcePath const&);
+        ResourceStream open(const ResourcePath& p) { return impl_open(p); }
+        std::string slurp(const ResourcePath&);
 
-        std::function<std::optional<ResourceDirectoryEntry>()> iterateDirectory(ResourcePath const& p)
+        std::function<std::optional<ResourceDirectoryEntry>()> iterate_directory(const ResourcePath& p)
         {
-            return implIterateDirectory(p);
+            return impl_iterate_directory(p);
         }
 
     private:
-        virtual ResourceStream implOpen(ResourcePath const&) = 0;
-        virtual std::function<std::optional<ResourceDirectoryEntry>()> implIterateDirectory(ResourcePath const&)
+        virtual ResourceStream impl_open(const ResourcePath&) = 0;
+        virtual std::function<std::optional<ResourceDirectoryEntry>()> impl_iterate_directory(const ResourcePath&)
         {
             // i.e. "can't iterate anything"
             return []() { return std::nullopt; };

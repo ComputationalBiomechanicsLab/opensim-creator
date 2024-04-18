@@ -90,7 +90,7 @@ bool osc::IsStringCaseInsensitiveGreaterThan(std::string_view a, std::string_vie
     return std::tolower(*itA) < std::tolower(*itB);
 }
 
-bool osc::IsEqualCaseInsensitive(std::string_view a, std::string_view b)
+bool osc::is_equal_case_insensitive(std::string_view a, std::string_view b)
 {
     auto const compareChars = [](std::string_view::value_type c1, std::string_view::value_type c2)
     {

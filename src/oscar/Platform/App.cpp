@@ -102,7 +102,7 @@ namespace
         constexpr int height = 600;
 
         Uint32 flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED;
-        if (auto v = config.find_value("experimental_feature_flags/high_dpi_mode"); v and v->toBool()) {
+        if (auto v = config.find_value("experimental_feature_flags/high_dpi_mode"); v and v->to_bool()) {
             flags |= SDL_WINDOW_ALLOW_HIGHDPI;
             SetProcessHighDPIMode();
         }

@@ -96,7 +96,7 @@ namespace
             return rv;
         }
 
-        if (!IsEqualCaseInsensitive(storage.getColumnLabels()[0], "time"))
+        if (!is_equal_case_insensitive(storage.getColumnLabels()[0], "time"))
         {
             throw std::runtime_error{"the provided STO file does not contain a 'time' column as its first column: it cannot be processed"};
         }

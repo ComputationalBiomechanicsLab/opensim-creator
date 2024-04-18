@@ -46,7 +46,7 @@ std::optional<LogLevel> osc::TryParseAsLogLevel(std::string_view v)
 {
     auto const it = find_if(c_LogLevelStrings, [v](std::string_view el)
     {
-        return IsEqualCaseInsensitive(v, el);
+        return is_equal_case_insensitive(v, el);
     });
 
     return it != c_LogLevelStrings.end() ?

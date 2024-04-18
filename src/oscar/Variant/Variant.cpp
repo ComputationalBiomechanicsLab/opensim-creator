@@ -29,11 +29,11 @@ namespace
         {
             return false;
         }
-        else if (IsEqualCaseInsensitive(s, "false"))
+        else if (is_equal_case_insensitive(s, "false"))
         {
             return false;
         }
-        else if (IsEqualCaseInsensitive(s, "0"))
+        else if (is_equal_case_insensitive(s, "0"))
         {
             return false;
         }

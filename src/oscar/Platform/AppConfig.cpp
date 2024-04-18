@@ -73,7 +73,7 @@ namespace
         else {
             config_file_dir = CurrentExeDir().parent_path();  // assume the `bin/` dir is one-up from the config
         }
-        const std::filesystem::path configured_resources_dir{resources_dir_setting_value->toString()};
+        const std::filesystem::path configured_resources_dir{resources_dir_setting_value->to_string()};
         const auto resolved_resource_dir = std::filesystem::weakly_canonical(config_file_dir / configured_resources_dir);
 
         if (not std::filesystem::exists(resolved_resource_dir)) {
@@ -96,7 +96,7 @@ namespace
 
         if (const auto config_location = settings.find_value_filesystem_source(docs_key)) {
             const std::filesystem::path config_dir = config_location->parent_path();
-            const std::filesystem::path docs_location = std::filesystem::weakly_canonical(config_dir / docs_setting_value->toString());
+            const std::filesystem::path docs_location = std::filesystem::weakly_canonical(config_dir / docs_setting_value->to_string());
             if (std::filesystem::exists(docs_location)) {
                 return docs_location;
             }
@@ -111,7 +111,7 @@ namespace
         return settings
             .find_value("experimental_feature_flags/multiple_viewports")
             .value_or(AppSettingValue{false})
-            .toBool();
+            .to_bool();
     }
 
     std::unordered_map<std::string, bool> get_default_panel_states(const AppSettings&)
@@ -134,7 +134,7 @@ namespace
     std::optional<std::string> get_initial_tab_name(const AppSettings& settings)
     {
         if (const auto v = settings.find_value("initial_tab")) {
-            return v->toString();
+            return v->to_string();
         }
         else {
             return std::nullopt;
@@ -144,7 +144,7 @@ namespace
     LogLevel get_log_level(const AppSettings& settings)
     {
         if (const auto v = settings.find_value("log_level")) {
-            return TryParseAsLogLevel(v->toString()).value_or(LogLevel::DEFAULT);
+            return TryParseAsLogLevel(v->to_string()).value_or(LogLevel::DEFAULT);
         }
         else {
             return LogLevel::DEFAULT;

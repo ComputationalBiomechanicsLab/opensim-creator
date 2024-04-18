@@ -334,12 +334,12 @@ R"(# configuration options
 
         switch (value.type()) {
         case AppSettingValueType::Bool:
-            table.insert(key, value.toBool());
+            table.insert(key, value.to_bool());
             break;
         case AppSettingValueType::String:
         case AppSettingValueType::Color:
         default:
-            table.insert(key, value.toString());
+            table.insert(key, value.to_string());
             break;
         }
     }

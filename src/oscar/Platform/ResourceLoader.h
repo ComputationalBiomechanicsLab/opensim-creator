@@ -22,7 +22,7 @@ namespace osc
         std::string slurp(ResourcePath const& p) { return m_Impl->slurp(m_Prefix / p); }
         ResourceLoader withPrefix(ResourcePath const& prefix) const { return ResourceLoader{m_Impl, m_Prefix / prefix}; }
         ResourceLoader withPrefix(std::string_view sv) { return withPrefix(ResourcePath{sv}); }
-        std::function<std::optional<ResourceDirectoryEntry>()> iterateDirectory(ResourcePath const& p) { return m_Impl->iterateDirectory(m_Prefix / p); }
+        std::function<std::optional<ResourceDirectoryEntry>()> iterate_directory(ResourcePath const& p) { return m_Impl->iterate_directory(m_Prefix / p); }
 
     private:
         template<

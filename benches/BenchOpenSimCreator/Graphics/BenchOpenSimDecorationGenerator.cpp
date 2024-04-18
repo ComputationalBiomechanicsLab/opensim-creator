@@ -18,7 +18,7 @@ static void BM_OpenSimRenderRajagopalDecorations(benchmark::State& state)
 {
     RegisterTypes_osimActuators();
     auto config = osc::LoadOpenSimCreatorConfig();
-    std::filesystem::path modelPath = config.getResourceDir() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
+    std::filesystem::path modelPath = config.resource_directory() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
     OpenSim::Model model{modelPath.string()};
     osc::InitializeModel(model);
     SimTK::State const& modelState = osc::InitializeState(model);

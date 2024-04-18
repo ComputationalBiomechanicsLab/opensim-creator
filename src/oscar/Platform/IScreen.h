@@ -15,9 +15,9 @@ namespace osc
     class IScreen {
     protected:
         IScreen() = default;
-        IScreen(IScreen const&) = default;
+        IScreen(const IScreen&) = default;
         IScreen(IScreen&&) noexcept = default;
-        IScreen& operator=(IScreen const&) = default;
+        IScreen& operator=(const IScreen&) = default;
         IScreen& operator=(IScreen&&) noexcept = default;
     public:
         virtual ~IScreen() noexcept = default;
@@ -30,7 +30,6 @@ namespace osc
         void onDraw() { implOnDraw(); }
 
     private:
-
         // returns the name of the screen (handy for debugging/logging)
         virtual CStringView implGetName() const
         {

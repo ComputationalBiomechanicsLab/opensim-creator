@@ -24,7 +24,7 @@ namespace osc
     bool IsStringCaseInsensitiveGreaterThan(std::string_view a, std::string_view b);
 
     // returns true if `a` is equal to `b` (case-insensitive)
-    bool IsEqualCaseInsensitive(std::string_view a, std::string_view b);
+    bool is_equal_case_insensitive(std::string_view a, std::string_view b);
 
     // returns true if:
     //

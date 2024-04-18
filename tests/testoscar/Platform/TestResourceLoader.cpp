@@ -25,13 +25,13 @@ namespace
             m_State{std::move(state_)}
         {}
     private:
-        ResourceStream implOpen(ResourcePath const& p) override
+        ResourceStream impl_open(ResourcePath const& p) override
         {
             m_State->lastOpenCallArg = p;
             return ResourceStream{};
         }
 
-        std::function<std::optional<ResourceDirectoryEntry>()> implIterateDirectory(ResourcePath const&) override
+        std::function<std::optional<ResourceDirectoryEntry>()> impl_iterate_directory(ResourcePath const&) override
         {
             return []() { return std::nullopt; };
         }

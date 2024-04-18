@@ -784,7 +784,7 @@ namespace
         // returns `true` if the Vec3 property is edited in radians
         bool isPropertyEditedInRadians() const
         {
-            return IsEqualCaseInsensitive(m_EditedProperty.getName(), "orientation");
+            return is_equal_case_insensitive(m_EditedProperty.getName(), "orientation");
         }
 
         // if the Vec3 property has a parent frame, returns a transform that maps the Vec3
