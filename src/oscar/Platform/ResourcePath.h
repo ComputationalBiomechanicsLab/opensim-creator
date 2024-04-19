@@ -13,47 +13,47 @@ namespace osc
         template<typename... Args>
         requires std::constructible_from<std::filesystem::path, Args&&...>
         ResourcePath(Args&&... args) :
-            m_Path{std::forward<Args>(args)...}
+            path_{std::forward<Args>(args)...}
         {}
 
         std::string string() const
         {
-            return m_Path.string();
+            return path_.string();
         }
 
-        bool hasExtension(std::string_view ext) const
+        bool has_extension(std::string_view ext) const
         {
-            return m_Path.extension() == ext;
+            return path_.extension() == ext;
         }
 
         std::string stem() const
         {
-            return m_Path.stem().string();
+            return path_.stem().string();
         }
 
-        friend bool operator==(ResourcePath const&, ResourcePath const&) = default;
-        friend ResourcePath operator/(ResourcePath const& lhs, ResourcePath const& rhs)
+        friend bool operator==(const ResourcePath&, const ResourcePath&) = default;
+        friend ResourcePath operator/(const ResourcePath& lhs, const ResourcePath& rhs)
         {
-            return ResourcePath{lhs.m_Path / rhs.m_Path};
+            return ResourcePath{lhs.path_ / rhs.path_};
         }
-        friend ResourcePath operator/(ResourcePath const& lhs, std::string_view rhs)
+        friend ResourcePath operator/(const ResourcePath& lhs, std::string_view rhs)
         {
-            return ResourcePath{lhs.m_Path / rhs};
+            return ResourcePath{lhs.path_ / rhs};
         }
-        friend std::ostream& operator<<(std::ostream& os, ResourcePath const& p)
+        friend std::ostream& operator<<(std::ostream& os, const ResourcePath& p)
         {
-            return os << p.m_Path;
+            return os << p.path_;
         }
     private:
         friend struct std::hash<osc::ResourcePath>;
-        std::filesystem::path m_Path;
+        std::filesystem::path path_;
     };
 }
 
 template<>
 struct std::hash<osc::ResourcePath> final {
-    size_t operator()(osc::ResourcePath const& p) const
+    size_t operator()(const osc::ResourcePath& p) const
     {
-        return std::filesystem::hash_value(p.m_Path);
+        return std::filesystem::hash_value(p.path_);
     }
 };

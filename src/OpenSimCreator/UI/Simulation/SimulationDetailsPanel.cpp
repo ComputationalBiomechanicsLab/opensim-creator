@@ -39,7 +39,7 @@ private:
             ui::Dummy({0.0f, 1.0f});
             ui::TextUnformatted("info:");
             ui::SameLine();
-            ui::DrawHelpMarker("Top-level info about the simulation");
+            ui::DrawHelpMarker("Top-log_level_ info about the simulation");
             ui::Separator();
             ui::Dummy({0.0f, 2.0f});
 

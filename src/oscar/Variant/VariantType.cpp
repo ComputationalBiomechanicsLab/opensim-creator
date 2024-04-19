@@ -15,8 +15,8 @@ std::string osc::to_string(VariantType v)
         return std::to_array({ VariantTypeTraits<Types>::name... });
     }(VariantTypeList{});
 
-    size_t const idx = to_index(v);
-    if (idx < std::size(lut)) {
+    const size_t idx = to_index(v);
+    if (idx < size(lut)) {
         return std::string{lut[idx]};
     }
     else {

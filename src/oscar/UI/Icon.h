@@ -12,14 +12,14 @@ namespace osc
     public:
         Icon(
             Texture2D texture_,
-            Rect const& textureCoordinates_) :
+            const Rect& textureCoordinates_) :
 
             m_Texture{std::move(texture_)},
             m_TextureCoordinates{textureCoordinates_}
         {
         }
 
-        Texture2D const& get_texture() const
+        const Texture2D& get_texture() const
         {
             return m_Texture;
         }
@@ -29,7 +29,7 @@ namespace osc
             return m_Texture.dimensions();
         }
 
-        Rect const& getTextureCoordinates() const
+        const Rect& getTextureCoordinates() const
         {
             return m_TextureCoordinates;
         }

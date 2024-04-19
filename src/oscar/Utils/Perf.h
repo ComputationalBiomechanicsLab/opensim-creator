@@ -36,7 +36,7 @@ namespace osc
             }
             PerfTimer(PerfTimer const&) = delete;
             PerfTimer(PerfTimer&&) noexcept = delete;
-            PerfTimer& operator=(PerfTimer const&) = delete;
+            PerfTimer& operator=(const PerfTimer&) = delete;
             PerfTimer& operator=(PerfTimer&&) noexcept = delete;
             ~PerfTimer() noexcept
             {
@@ -52,5 +52,5 @@ namespace osc
 #define OSC_PERF_TOKENPASTE(x, y) x##y
 #define OSC_PERF_TOKENPASTE2(x, y) OSC_PERF_TOKENPASTE(x, y)
 #define OSC_PERF(label) \
-    static size_t const OSC_PERF_TOKENPASTE2(s_TimerID, __LINE__) = osc::detail::AllocateMeasurementID(label, osc::ExtractFilename(__FILE__), __LINE__); \
-    osc::detail::PerfTimer const OSC_PERF_TOKENPASTE2(timer, __LINE__) (OSC_PERF_TOKENPASTE2(s_TimerID, __LINE__));
+    static const size_t OSC_PERF_TOKENPASTE2(s_TimerID, __LINE__) = osc::detail::AllocateMeasurementID(label, osc::ExtractFilename(__FILE__), __LINE__); \
+    const osc::detail::PerfTimer OSC_PERF_TOKENPASTE2(timer, __LINE__) (OSC_PERF_TOKENPASTE2(s_TimerID, __LINE__));

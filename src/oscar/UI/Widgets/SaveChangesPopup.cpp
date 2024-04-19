@@ -54,10 +54,9 @@ private:
 
 // public API (PIMPL)
 
-osc::SaveChangesPopup::SaveChangesPopup(SaveChangesPopupConfig const& config) :
+osc::SaveChangesPopup::SaveChangesPopup(const SaveChangesPopupConfig& config) :
     m_Impl{std::make_unique<Impl>(config)}
-{
-}
+{}
 
 osc::SaveChangesPopup::SaveChangesPopup(SaveChangesPopup&&) noexcept = default;
 osc::SaveChangesPopup& osc::SaveChangesPopup::operator=(SaveChangesPopup&&) noexcept = default;

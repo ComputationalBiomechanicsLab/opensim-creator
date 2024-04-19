@@ -22,11 +22,11 @@ namespace osc
             }
             StringNameData(StringNameData const&) = delete;
             StringNameData(StringNameData&&) noexcept = delete;
-            StringNameData& operator=(StringNameData const&) = delete;
+            StringNameData& operator=(const StringNameData&) = delete;
             StringNameData& operator=(StringNameData&&) noexcept = delete;
             ~StringNameData() noexcept = default;
 
-            std::string const& value() const
+            const std::string& value() const
             {
                 return m_Value;
             }
@@ -69,10 +69,10 @@ namespace osc
         explicit StringName();
         explicit StringName(std::string&&);
         explicit StringName(std::string_view);
-        explicit StringName(char const* ptr) : StringName{std::string_view{ptr}} {}
+        explicit StringName(const char* ptr) : StringName{std::string_view{ptr}} {}
         explicit StringName(std::nullptr_t) = delete;
 
-        StringName(StringName const& other) noexcept :
+        StringName(const StringName& other) noexcept :
             m_Data{other.m_Data}
         {
             m_Data->incrementOwnerCount();
@@ -84,7 +84,7 @@ namespace osc
             m_Data->incrementOwnerCount();
         }
 
-        StringName& operator=(StringName const& other) noexcept
+        StringName& operator=(const StringName& other) noexcept
         {
             if (other == *this)
             {
@@ -137,12 +137,12 @@ namespace osc
             return m_Data->value().back();
         }
 
-        value_type const* data() const noexcept
+        const value_type* data() const noexcept
         {
             return m_Data->value().data();
         }
 
-        value_type const* c_str() const noexcept
+        const value_type* c_str() const noexcept
         {
             return m_Data->value().c_str();
         }
@@ -192,16 +192,16 @@ namespace osc
             std::swap(m_Data, other.m_Data);
         }
 
-        friend bool operator==(StringName const&, StringName const&) noexcept = default;
+        friend bool operator==(const StringName&, const StringName&) noexcept = default;
 
         template<std::convertible_to<std::string_view> StringLike>
-        friend bool operator==(StringName const& lhs, StringLike const& rhs)
+        friend bool operator==(const StringName& lhs, const StringLike& rhs)
         {
             return std::string_view{lhs} == std::string_view{rhs};
         }
 
         template<std::convertible_to<std::string_view> StringLike>
-        friend auto operator<=>(StringName const& lhs, StringLike const& rhs)
+        friend auto operator<=>(const StringName& lhs, const StringLike& rhs)
         {
             return cpp20::ThreeWayComparison(std::string_view{lhs}, std::string_view{rhs});
         }
@@ -211,12 +211,12 @@ namespace osc
         detail::StringNameData* m_Data;
     };
 
-    std::ostream& operator<<(std::ostream&, StringName const&);
+    std::ostream& operator<<(std::ostream&, const StringName&);
 }
 
 template<>
 struct std::hash<osc::StringName> final {
-    size_t operator()(osc::StringName const& str) const
+    size_t operator()(const osc::StringName& str) const
     {
         return str.m_Data->hash();
     }

@@ -8,9 +8,9 @@ namespace osc
     class IPanel {
     protected:
         IPanel() = default;
-        IPanel(IPanel const&) = default;
+        IPanel(const IPanel&) = default;
         IPanel(IPanel&&) noexcept = default;
-        IPanel& operator=(IPanel const&) = default;
+        IPanel& operator=(const IPanel&) = default;
         IPanel& operator=(IPanel&&) noexcept = default;
     public:
         virtual ~IPanel() noexcept = default;

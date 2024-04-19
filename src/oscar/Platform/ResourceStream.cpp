@@ -9,11 +9,10 @@
 
 namespace
 {
-    std::unique_ptr<std::istream> OpenFileStreamOrThrow(std::filesystem::path const& path)
+    std::unique_ptr<std::istream> open_stream_or_throw(const std::filesystem::path& path)
     {
         auto rv = std::make_unique<std::ifstream>(path, std::ios::binary | std::ios::in);
-        if (!(*rv))
-        {
+        if (not (*rv)) {
             std::stringstream ss;
             ss << path << ": failed to load ResourceStream";
             throw std::runtime_error{std::move(ss).str()};
@@ -23,11 +22,11 @@ namespace
 }
 
 osc::ResourceStream::ResourceStream() :
-    m_Name{"nullstream"},
-    m_Handle{std::make_unique<std::ifstream>()}
+    name_{"nullstream"},
+    handle_{std::make_unique<std::ifstream>()}
 {}
 
-osc::ResourceStream::ResourceStream(std::filesystem::path const& path_) :
-    m_Name{path_.filename().string()},
-    m_Handle{OpenFileStreamOrThrow(path_)}
+osc::ResourceStream::ResourceStream(const std::filesystem::path& path_) :
+    name_{path_.filename().string()},
+    handle_{open_stream_or_throw(path_)}
 {}

@@ -17,31 +17,10 @@ namespace osc
         err,
         critical,
         off,
-        NUM_LEVELS,
+        NUM_OPTIONS,
         DEFAULT = info,
     };
 
-    constexpr LogLevel FirstLogLevel()
-    {
-        return LogLevel::trace;
-    }
-
-    constexpr LogLevel next(LogLevel lvl)
-    {
-        return static_cast<LogLevel>(cpp23::to_underlying(lvl) + 1);
-    }
-
-    constexpr LogLevel LastLogLevel()
-    {
-        return LogLevel::critical;
-    }
-
-    constexpr size_t ToIndex(LogLevel level)
-    {
-        return static_cast<size_t>(level);
-    }
-
-    std::optional<LogLevel> FromIndex(size_t);
-    CStringView ToCStringView(LogLevel);
-    std::optional<LogLevel> TryParseAsLogLevel(std::string_view);
+    CStringView to_cstringview(LogLevel);
+    std::optional<LogLevel> try_parse_as_log_level(std::string_view);
 }

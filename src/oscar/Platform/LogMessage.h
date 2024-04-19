@@ -15,15 +15,14 @@ namespace osc
 
         LogMessage() = default;
 
-        LogMessage(LogMessageView const& view) :
-            loggerName{view.loggerName},
+        LogMessage(const LogMessageView& view) :
+            logger_name{view.logger_name},
             time{view.time},
             payload{view.payload},
             level{view.level}
-        {
-        }
+        {}
 
-        std::string loggerName;
+        std::string logger_name;
         std::chrono::system_clock::time_point time;
         std::string payload;
         LogLevel level;

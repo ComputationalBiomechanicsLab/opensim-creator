@@ -55,7 +55,7 @@ namespace osc
             ui::Image(renderTexture);
             m_LastTextureHittestResult = ui::HittestLastItem();
 
-            drawOverlays(m_LastTextureHittestResult.rect);
+            drawOverlays(m_LastTextureHittestResult.item_rect);
         }
 
         void updateCamera()
@@ -75,9 +75,9 @@ namespace osc
             }
 
             // update camera if user drags it around etc.
-            if (m_LastTextureHittestResult.isHovered)
+            if (m_LastTextureHittestResult.is_hovered)
             {
-                if (ui::UpdatePolarCameraFromMouseInputs(m_Camera, dimensions_of(m_LastTextureHittestResult.rect)))
+                if (ui::UpdatePolarCameraFromMouseInputs(m_Camera, dimensions_of(m_LastTextureHittestResult.item_rect)))
                 {
                     m_State->linkedCameraBase = m_Camera;  // reflects latest modification
                 }
@@ -188,7 +188,7 @@ namespace osc
                 AutoFocus(
                     m_Camera,
                     m_State->getResultMesh().bounds(),
-                    aspect_ratio(m_LastTextureHittestResult.rect)
+                    aspect_ratio(m_LastTextureHittestResult.item_rect)
                 );
                 m_State->linkedCameraBase = m_Camera;
             }

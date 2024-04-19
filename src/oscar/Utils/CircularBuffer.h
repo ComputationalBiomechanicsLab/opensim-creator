@@ -23,8 +23,8 @@ namespace osc
         public:
             using difference_type = ptrdiff_t;
             using value_type = T;
-            using pointer = typename std::conditional_t<IsConst, T const*, T*>;
-            using reference = typename std::conditional_t<IsConst, T const&, T&>;
+            using pointer = typename std::conditional_t<IsConst, const T*, T*>;
+            using reference = typename std::conditional_t<IsConst, const T&, T&>;
             using iterator_category = std::random_access_iterator_tag;
 
             constexpr Iterator(pointer _data, ptrdiff_t _pos) :
@@ -55,7 +55,7 @@ namespace osc
 
             // EqualityComparable
 
-            constexpr friend auto operator<=>(Iterator const&, Iterator const&) = default;
+            constexpr friend auto operator<=>(const Iterator&, const Iterator&) = default;
 
             // LegacyInputIterator
 
@@ -126,7 +126,7 @@ namespace osc
                 return copy;
             }
 
-            constexpr difference_type operator-(Iterator const& other) const
+            constexpr difference_type operator-(const Iterator& other) const
             {
                 return pos - other.pos;
             }
@@ -142,22 +142,22 @@ namespace osc
         };
 
         Iterator(T*, ptrdiff_t) -> Iterator<false>;
-        Iterator(T const*, ptrdiff_t) -> Iterator<true>;
+        Iterator(const T*, ptrdiff_t) -> Iterator<true>;
 
     public:
         using value_type = T;
         using size_type = size_t;
         using reference = T&;
-        using const_reference = T const&;
+        using const_reference = const T&;
         using iterator = Iterator<false>;
         using const_iterator = Iterator<true>;
         using reverse_iterator = std::reverse_iterator<iterator>;
         using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
         CircularBuffer() = default;
-        CircularBuffer(CircularBuffer const&) = delete;
+        CircularBuffer(const CircularBuffer&) = delete;
         CircularBuffer(CircularBuffer&&) noexcept = delete;
-        CircularBuffer& operator=(CircularBuffer const&) = delete;
+        CircularBuffer& operator=(const CircularBuffer&) = delete;
         CircularBuffer& operator=(CircularBuffer&&) noexcept = delete;
         ~CircularBuffer() noexcept
         {
@@ -304,7 +304,7 @@ namespace osc
             return *constructed_el;
         }
 
-        constexpr void push_back(T const& v)
+        constexpr void push_back(const T& v)
         {
             emplace_back(v);
         }
@@ -365,7 +365,7 @@ namespace osc
 
         template<typename CircularBuf>
         static constexpr auto iterator_at(CircularBuf& buf, ptrdiff_t pos) {
-            using Value = std::conditional_t<std::is_const_v<CircularBuf>, T const, T>;
+            using Value = std::conditional_t<std::is_const_v<CircularBuf>, const T, T>;
 
             static_assert(alignof(Value) == alignof(typename decltype(buf.m_RawStorage)::value_type));
             static_assert(sizeof(Value) == sizeof(typename decltype(buf.m_RawStorage)::value_type));

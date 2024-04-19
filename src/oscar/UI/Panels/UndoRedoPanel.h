@@ -16,9 +16,9 @@ namespace osc
         static void DrawContent(UndoRedoBase&);
 
         UndoRedoPanel(std::string_view panelName, std::shared_ptr<UndoRedoBase>);
-        UndoRedoPanel(UndoRedoPanel const&) = delete;
+        UndoRedoPanel(const UndoRedoPanel&) = delete;
         UndoRedoPanel(UndoRedoPanel&&) noexcept;
-        UndoRedoPanel& operator=(UndoRedoPanel const&) = delete;
+        UndoRedoPanel& operator=(const UndoRedoPanel&) = delete;
         UndoRedoPanel& operator=(UndoRedoPanel&&) noexcept;
         ~UndoRedoPanel() noexcept;
 

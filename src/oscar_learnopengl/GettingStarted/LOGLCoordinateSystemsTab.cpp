@@ -77,18 +77,18 @@ private:
     void implOnMount() final
     {
         App::upd().make_main_loop_polling();
-        m_Camera.onMount();
+        m_Camera.on_mount();
     }
 
     void implOnUnmount() final
     {
-        m_Camera.onUnmount();
+        m_Camera.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
     bool implOnEvent(SDL_Event const& e) final
     {
-        return m_Camera.onEvent(e);
+        return m_Camera.on_event(e);
     }
 
     void implOnTick() final
@@ -99,7 +99,7 @@ private:
 
     void implOnDraw() final
     {
-        m_Camera.onDraw();
+        m_Camera.on_draw();
         draw3DScene();
         draw2DUI();
     }
@@ -136,7 +136,7 @@ private:
     {
         ui::Begin("Tutorial Step");
         ui::Checkbox("step1", &m_ShowStep1);
-        if (m_Camera.isCapturingMouse()) {
+        if (m_Camera.is_capturing_mouse()) {
             ui::Text("mouse captured (esc to uncapture)");
         }
 

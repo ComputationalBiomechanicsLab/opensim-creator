@@ -75,7 +75,7 @@ namespace osc
 
     // returns a string representation of `v` by first streaming it to a `std::stringstream`
     template<typename T>
-    std::string StreamToString(T const& v)
+    std::string StreamToString(const T& v)
     {
         std::stringstream ss;
         ss << v;

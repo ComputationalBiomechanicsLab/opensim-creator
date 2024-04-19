@@ -84,7 +84,7 @@ public:
         }
         catch (std::exception const& ex)
         {
-            log_info("LoadingScreen::onTick: exception thrown while loading model: %s", ex.what());
+            log_info("LoadingScreen::on_tick: exception thrown while loading model: %s", ex.what());
             m_LoadingErrorMsg = ex.what();
             return;
         }

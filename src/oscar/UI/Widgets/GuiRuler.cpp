@@ -17,25 +17,22 @@
 #include <utility>
 
 void osc::GuiRuler::onDraw(
-    PolarPerspectiveCamera const& sceneCamera,
-    Rect const& renderRect,
+    const PolarPerspectiveCamera& sceneCamera,
+    const Rect& renderRect,
     std::optional<SceneCollision> maybeMouseover)
 {
-    if (m_State == State::Inactive)
-    {
+    if (m_State == State::Inactive) {
         return;
     }
 
     // users can exit measuring through these actions
-    if (ui::IsKeyDown(ImGuiKey_Escape) || ui::IsMouseReleased(ImGuiMouseButton_Right))
-    {
+    if (ui::IsKeyDown(ImGuiKey_Escape) or ui::IsMouseReleased(ImGuiMouseButton_Right)) {
         stopMeasuring();
         return;
     }
 
     // users can "finish" the measurement through these actions
-    if (m_State == State::WaitingForSecondPoint && ui::IsMouseReleased(ImGuiMouseButton_Left))
-    {
+    if (m_State == State::WaitingForSecondPoint and ui::IsMouseReleased(ImGuiMouseButton_Left)) {
         stopMeasuring();
         return;
     }
@@ -50,7 +47,7 @@ void osc::GuiRuler::onDraw(
     float circleRadius = 5.0f;
     float lineThickness = 3.0f;
 
-    auto drawTooltipWithBg = [&dl, &textBgColor, &textColor](Vec2 const& pos, CStringView tooltipText)
+    auto drawTooltipWithBg = [&dl, &textBgColor, &textColor](const Vec2& pos, CStringView tooltipText)
     {
         Vec2 sz = ui::CalcTextSize(tooltipText);
         float bgPad = 5.0f;
@@ -100,7 +97,7 @@ void osc::GuiRuler::onDraw(
 
             // label the line's length
             {
-                std::string const lineLenLabel = [&lineWorldLen]()
+                const std::string lineLenLabel = [&lineWorldLen]()
                 {
                     std::stringstream ss;
                     ss << std::setprecision(5) << lineWorldLen;

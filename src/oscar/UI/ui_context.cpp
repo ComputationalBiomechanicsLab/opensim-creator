@@ -25,13 +25,13 @@ namespace ranges = std::ranges;
 
 namespace
 {
-    constexpr auto c_IconRanges = std::to_array<ImWchar>({ ICON_MIN_FA, ICON_MAX_FA, 0 });
+    constexpr auto c_icon_ranges = std::to_array<ImWchar>({ ICON_MIN_FA, ICON_MAX_FA, 0 });
 
     // this is necessary because ImGui will take ownership, but will free the
     // font atlas with `free`, rather than `delete`, which memory sanitizers
     // like libASAN dislike (`malloc`/`free`, or `new`/`delete` - no mixes)
     template<ranges::contiguous_range Container>
-    typename Container::value_type* ToMalloced(Container const& c)
+    typename Container::value_type* to_malloced_copy(const Container& c)
     {
         using value_type = typename Container::value_type;
 
@@ -40,24 +40,24 @@ namespace
         return ptr;
     }
 
-    void AddResourceAsFont(
-        ImFontConfig const& config,
+    void add_resource_as_font(
+        const ImFontConfig& config,
         ImFontAtlas& atlas,
-        ResourcePath const& path,
-        ImWchar const* glyphRanges = nullptr)
+        const ResourcePath& path,
+        const ImWchar* glyph_ranges = nullptr)
     {
-        std::string baseFontData = App::slurp(path);
+        const std::string base_font_data = App::slurp(path);
         atlas.AddFontFromMemoryTTF(
-            ToMalloced(baseFontData),  // ImGui takes ownership
-            static_cast<int>(baseFontData.size()) + 1,  // +1 for NUL
+            to_malloced_copy(base_font_data),  // ImGui takes ownership
+            static_cast<int>(base_font_data.size()) + 1,  // +1 for NUL
             config.SizePixels,
             &config,
-            glyphRanges
+            glyph_ranges
         );
     }
 }
 
-void osc::ui::context::Init()
+void osc::ui::context::init()
 {
     // init ImGui top-level context
     ImGui::CreateContext();
@@ -71,25 +71,25 @@ void osc::ui::context::Init()
     // load application-level ImGui config, then the user one,
     // so that the user config takes precedence
     {
-        std::string const defaultINIData = App::slurp("imgui_base_config.ini");
-        ImGui::LoadIniSettingsFromMemory(defaultINIData.data(), defaultINIData.size());
+        const std::string base_ini_data = App::slurp("imgui_base_config.ini");
+        ImGui::LoadIniSettingsFromMemory(base_ini_data.data(), base_ini_data.size());
 
         // CARE: the reason this filepath is `static` is because ImGui requires that
         // the string outlives the ImGui context
-        static std::string const s_UserImguiIniFilePath = (App::get().user_data_dir() / "imgui.ini").string();
+        static const std::string s_user_imgui_ini_file_path = (App::get().user_data_dir() / "imgui.ini").string();
 
-        ImGui::LoadIniSettingsFromDisk(s_UserImguiIniFilePath.c_str());
-        io.IniFilename = s_UserImguiIniFilePath.c_str();
+        ImGui::LoadIniSettingsFromDisk(s_user_imgui_ini_file_path.c_str());
+        io.IniFilename = s_user_imgui_ini_file_path.c_str();
     }
 
-    float dpiScaleFactor = [&]()
+    float dpi_scale_factor = [&]()
     {
         float dpi{};
         float hdpi{};
         float vdpi{};
 
         // if the user explicitly enabled high_dpi_mode...
-        if (auto v = App::config().find_value("experimental_feature_flags/high_dpi_mode"); v && v->to_bool()) {
+        if (auto v = App::config().find_value("experimental_feature_flags/high_dpi_mode"); v and v->to_bool()) {
             // and SDL is able to get the DPI of the given window...
             if (SDL_GetDisplayDPI(SDL_GetWindowDisplayIndex(App::upd().upd_underlying_window()), &dpi, &hdpi, &vdpi) == 0) {
                 return dpi / 96.0f;  // then calculate the scaling factor
@@ -98,21 +98,21 @@ void osc::ui::context::Init()
         return 1.0f;  // else: assume it's an unscaled 96dpi screen
     }();
 
-    ImFontConfig baseConfig;
-    baseConfig.SizePixels = dpiScaleFactor*15.0f;
-    baseConfig.PixelSnapH = true;
-    baseConfig.OversampleH = 2;
-    baseConfig.OversampleV = 2;
-    baseConfig.FontDataOwnedByAtlas = true;
-    AddResourceAsFont(baseConfig, *io.Fonts, "oscar/fonts/Ruda-Bold.ttf");
+    ImFontConfig base_config;
+    base_config.SizePixels = dpi_scale_factor*15.0f;
+    base_config.PixelSnapH = true;
+    base_config.OversampleH = 2;
+    base_config.OversampleV = 2;
+    base_config.FontDataOwnedByAtlas = true;
+    add_resource_as_font(base_config, *io.Fonts, "oscar/fonts/Ruda-Bold.ttf");
 
     // add FontAwesome icon support
     {
-        ImFontConfig config = baseConfig;
+        ImFontConfig config = base_config;
         config.MergeMode = true;
         config.GlyphMinAdvanceX = floor(1.5f * config.SizePixels);
         config.GlyphMaxAdvanceX = floor(1.5f * config.SizePixels);
-        AddResourceAsFont(config, *io.Fonts, "oscar/fonts/fa-solid-900.ttf", c_IconRanges.data());
+        add_resource_as_font(config, *io.Fonts, "oscar/fonts/fa-solid-900.ttf", c_icon_ranges.data());
     }
 
     // init ImGui for SDL2 /w OpenGL
@@ -122,7 +122,7 @@ void osc::ui::context::Init()
     );
 
     // init ImGui for OpenGL
-    graphics_backend::Init();
+    graphics_backend::init();
 
     ApplyDarkTheme();
 
@@ -130,39 +130,37 @@ void osc::ui::context::Init()
     ImPlot::CreateContext();
 }
 
-void osc::ui::context::Shutdown()
+void osc::ui::context::shutdown()
 {
     ImPlot::DestroyContext();
 
-    graphics_backend::Shutdown();
+    graphics_backend::shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
 }
 
-bool osc::ui::context::OnEvent(SDL_Event const& e)
+bool osc::ui::context::on_event(const SDL_Event& e)
 {
     ImGui_ImplSDL2_ProcessEvent(&e);
 
-    ImGuiIO const& io  = ui::GetIO();
+    const ImGuiIO& io  = ui::GetIO();
 
-    bool handledByImgui = false;
+    bool event_handled_by_imgui = false;
 
-    if (io.WantCaptureKeyboard && (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP))
-    {
-        handledByImgui = true;
+    if (io.WantCaptureKeyboard and (e.type == SDL_KEYDOWN or e.type == SDL_KEYUP)) {
+        event_handled_by_imgui = true;
     }
 
-    if (io.WantCaptureMouse && (e.type == SDL_MOUSEWHEEL || e.type == SDL_MOUSEMOTION || e.type == SDL_MOUSEBUTTONUP || e.type == SDL_MOUSEBUTTONDOWN))
-    {
-        handledByImgui = true;
+    if (io.WantCaptureMouse and (e.type == SDL_MOUSEWHEEL or e.type == SDL_MOUSEMOTION or e.type == SDL_MOUSEBUTTONUP or e.type == SDL_MOUSEBUTTONDOWN)) {
+        event_handled_by_imgui = true;
     }
 
-    return handledByImgui;
+    return event_handled_by_imgui;
 }
 
-void osc::ui::context::NewFrame()
+void osc::ui::context::on_start_new_frame()
 {
-    graphics_backend::NewFrame();
+    graphics_backend::on_start_new_frame();
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
 
@@ -170,15 +168,15 @@ void osc::ui::context::NewFrame()
     ImGuizmo::BeginFrame();
 }
 
-void osc::ui::context::Render()
+void osc::ui::context::render()
 {
     {
-        OSC_PERF("ImGuiRender/Render");
+        OSC_PERF("ImGuiRender/render");
         ImGui::Render();
     }
 
     {
         OSC_PERF("ImGuiRender/ImGui_ImplOscarGfx_RenderDrawData");
-        graphics_backend::RenderDrawData(ImGui::GetDrawData());
+        graphics_backend::render(ImGui::GetDrawData());
     }
 }

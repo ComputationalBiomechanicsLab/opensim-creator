@@ -12,7 +12,7 @@ void osc::OnAssertionFailure(
     std::string_view file,
     unsigned int line)
 {
-    std::string const msg = [&]()
+    const std::string msg = [&]()
     {
         std::stringstream ss;
         ss << file << ':' << func << ':' << ':' << line << ": OSC_ASSERT(" << failingCode << ") failed";

@@ -68,23 +68,23 @@ private:
     void implOnMount() final
     {
         App::upd().make_main_loop_polling();
-        m_SceneCamera.onMount();
+        m_SceneCamera.on_mount();
     }
 
     void implOnUnmount() final
     {
-        m_SceneCamera.onUnmount();
+        m_SceneCamera.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
     bool implOnEvent(SDL_Event const& e) final
     {
-        return m_SceneCamera.onEvent(e);
+        return m_SceneCamera.on_event(e);
     }
 
     void implOnDraw() final
     {
-        m_SceneCamera.onDraw();
+        m_SceneCamera.on_draw();
 
         // setup render texture
         Rect viewportRect = ui::GetMainViewportWorkspaceScreenRect();

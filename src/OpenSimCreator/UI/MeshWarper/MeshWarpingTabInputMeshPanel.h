@@ -74,12 +74,12 @@ namespace osc
             // mesh hittest: compute whether the user is hovering over the mesh (affects rendering)
             Mesh const& inputMesh = m_State->getScratchMesh(m_DocumentIdentifier);
             BVH const& inputMeshBVH = m_State->getScratchMeshBVH(m_DocumentIdentifier);
-            std::optional<RayCollision> const meshCollision = m_LastTextureHittestResult.isHovered ?
+            std::optional<RayCollision> const meshCollision = m_LastTextureHittestResult.is_hovered ?
                 get_closest_worldspace_ray_triangle_collision(inputMesh, inputMeshBVH, Transform{}, cameraRay) :
                 std::nullopt;
 
             // landmark hittest: compute whether the user is hovering over a landmark
-            std::optional<MeshWarpingTabHover> landmarkCollision = m_LastTextureHittestResult.isHovered ?
+            std::optional<MeshWarpingTabHover> landmarkCollision = m_LastTextureHittestResult.is_hovered ?
                 getMouseLandmarkCollisions(cameraRay) :
                 std::nullopt;
 
@@ -105,7 +105,7 @@ namespace osc
             handleInputAndHoverEvents(m_LastTextureHittestResult, meshCollision, landmarkCollision);
 
             // render 2D: draw any 2D overlays over the 3D render
-            draw2DOverlayUI(m_LastTextureHittestResult.rect);
+            draw2DOverlayUI(m_LastTextureHittestResult.item_rect);
         }
 
         // update the 3D camera from user inputs/external data
@@ -126,9 +126,9 @@ namespace osc
             }
 
             // if the user interacts with the render, update the camera as necessary
-            if (m_LastTextureHittestResult.isHovered)
+            if (m_LastTextureHittestResult.is_hovered)
             {
-                if (ui::UpdatePolarCameraFromMouseInputs(m_Camera, dimensions_of(m_LastTextureHittestResult.rect)))
+                if (ui::UpdatePolarCameraFromMouseInputs(m_Camera, dimensions_of(m_LastTextureHittestResult.item_rect)))
                 {
                     m_State->linkedCameraBase = m_Camera;  // reflects latest modification
                 }
@@ -376,7 +376,7 @@ namespace osc
             std::optional<MeshWarpingTabHover> const& landmarkCollision)
         {
             // event: if the user left-clicks and something is hovered, select it; otherwise, add a landmark
-            if (htResult.isLeftClickReleasedWithoutDragging)
+            if (htResult.is_left_click_released_without_dragging)
             {
                 if (landmarkCollision && landmarkCollision->isHoveringASceneElement())
                 {
@@ -401,7 +401,7 @@ namespace osc
             }
 
             // event: if the user right-clicks on a landmark then open the context menu for that landmark
-            if (htResult.isRightClickReleasedWithoutDragging)
+            if (htResult.is_right_click_released_without_dragging)
             {
                 if (landmarkCollision && landmarkCollision->isHoveringASceneElement())
                 {
@@ -415,7 +415,7 @@ namespace osc
 
             // event: if the user is hovering the render while something is selected and the user
             // presses delete then the landmarks should be deleted
-            if (htResult.isHovered && ui::IsAnyKeyPressed({ImGuiKey_Delete, ImGuiKey_Backspace}))
+            if (htResult.is_hovered && ui::IsAnyKeyPressed({ImGuiKey_Delete, ImGuiKey_Backspace}))
             {
                 ActionDeleteSceneElementsByID(
                     m_State->updUndoable(),
@@ -557,7 +557,7 @@ namespace osc
         {
             if (ui::Button(ICON_FA_EXPAND_ARROWS_ALT))
             {
-                AutoFocus(m_Camera, m_State->getScratchMesh(m_DocumentIdentifier).bounds(), aspect_ratio(m_LastTextureHittestResult.rect));
+                AutoFocus(m_Camera, m_State->getScratchMesh(m_DocumentIdentifier).bounds(), aspect_ratio(m_LastTextureHittestResult.item_rect));
                 m_State->linkedCameraBase = m_Camera;
             }
             ui::DrawTooltipIfItemHovered("Autoscale Scene", "Zooms camera to try and fit everything in the scene into the viewer");

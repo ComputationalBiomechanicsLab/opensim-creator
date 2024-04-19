@@ -9,8 +9,7 @@
 
 osc::RedoButton::RedoButton(std::shared_ptr<UndoRedoBase> undoRedo_) :
     m_UndoRedo{std::move(undoRedo_)}
-{
-}
+{}
 
 osc::RedoButton::~RedoButton() noexcept = default;
 

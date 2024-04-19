@@ -21,9 +21,9 @@ public:
         auto it = loaderPrefixedAtDirContainingSVGs.iterate_directory(".");
 
         for (auto el = it(); el; el = it()) {
-            ResourcePath const& p = *el;
+            const ResourcePath& p = *el;
 
-            if (p.hasExtension(".svg"))
+            if (p.has_extension(".svg"))
             {
                 Texture2D texture = load_texture2D_from_svg(
                     loaderPrefixedAtDirContainingSVGs.open(p),
@@ -40,9 +40,9 @@ public:
         }
     }
 
-    Icon const& getIcon(std::string_view iconName) const
+    const Icon& getIcon(std::string_view iconName) const
     {
-        if (auto const* icon = try_find(m_Icons, std::string{iconName})) {
+        if (const auto* icon = try_find(m_Icons, std::string{iconName})) {
             return *icon;
         }
         else {
@@ -67,7 +67,7 @@ osc::IconCache::IconCache(IconCache&&) noexcept = default;
 osc::IconCache& osc::IconCache::operator=(IconCache&&) noexcept = default;
 osc::IconCache::~IconCache() noexcept = default;
 
-Icon const& osc::IconCache::getIcon(std::string_view iconName) const
+const Icon& osc::IconCache::getIcon(std::string_view iconName) const
 {
     return m_Impl->getIcon(iconName);
 }

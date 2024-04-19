@@ -16,21 +16,21 @@ namespace osc
     public:
         TabRegistryEntry(
             CStringView name_,
-            std::function<std::unique_ptr<ITab>(ParentPtr<ITabHost> const&)> constructor_
+            std::function<std::unique_ptr<ITab>(const ParentPtr<ITabHost>&)> constructor_
         );
-        TabRegistryEntry(TabRegistryEntry const&);
+        TabRegistryEntry(const TabRegistryEntry&);
         TabRegistryEntry(TabRegistryEntry&&) noexcept;
-        TabRegistryEntry& operator=(TabRegistryEntry const&);
+        TabRegistryEntry& operator=(const TabRegistryEntry&);
         TabRegistryEntry& operator=(TabRegistryEntry&&) noexcept;
         ~TabRegistryEntry() noexcept;
 
         CStringView getName() const;
-        std::unique_ptr<ITab> createTab(ParentPtr<ITabHost> const&) const;
+        std::unique_ptr<ITab> createTab(const ParentPtr<ITabHost>&) const;
 
     private:
         class Impl;
         std::shared_ptr<Impl> m_Impl;
     };
 
-    bool operator<(TabRegistryEntry const&, TabRegistryEntry const&);
+    bool operator<(const TabRegistryEntry&, const TabRegistryEntry&);
 }

@@ -11,9 +11,9 @@ namespace osc
     class PerfPanel final : public IPanel {
     public:
         explicit PerfPanel(std::string_view panelName);
-        PerfPanel(PerfPanel const&) = delete;
+        PerfPanel(const PerfPanel&) = delete;
         PerfPanel(PerfPanel&&) noexcept;
-        PerfPanel& operator=(PerfPanel const&) = delete;
+        PerfPanel& operator=(const PerfPanel&) = delete;
         PerfPanel& operator=(PerfPanel&&) noexcept;
         ~PerfPanel() noexcept;
 

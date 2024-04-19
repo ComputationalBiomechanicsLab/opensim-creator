@@ -12,17 +12,17 @@ namespace osc
         LogMessageView() = default;
 
         LogMessageView(
-            std::string_view loggerName_,
+            std::string_view logger_name_,
             std::string_view payload_,
             LogLevel level_) :
-            loggerName{loggerName_},
+
+            logger_name{logger_name_},
             time{std::chrono::system_clock::now()},
             payload{payload_},
             level{level_}
-        {
-        }
+        {}
 
-        std::string_view loggerName;
+        std::string_view logger_name;
         std::chrono::system_clock::time_point time;
         std::string_view payload;
         LogLevel level;

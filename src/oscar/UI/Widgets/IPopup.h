@@ -5,9 +5,9 @@ namespace osc
     class IPopup {
     protected:
         IPopup() = default;
-        IPopup(IPopup const&) = default;
+        IPopup(const IPopup&) = default;
         IPopup(IPopup&&) noexcept = default;
-        IPopup& operator=(IPopup const&) = default;
+        IPopup& operator=(const IPopup&) = default;
         IPopup& operator=(IPopup&&) noexcept = default;
 
     public:

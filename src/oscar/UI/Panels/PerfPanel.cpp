@@ -16,7 +16,7 @@ using namespace osc;
 
 namespace
 {
-    bool LexographicallyHighestLabel(PerfMeasurement const& a, PerfMeasurement const& b)
+    bool LexographicallyHighestLabel(const PerfMeasurement& a, const PerfMeasurement& b)
     {
         return std::string_view{a.getLabel()} > std::string_view{b.getLabel()};
     }
@@ -81,10 +81,9 @@ private:
             ui::TableSetupColumn("Total Duration");
             ui::TableHeadersRow();
 
-            for (PerfMeasurement const& pm : measurements)
-            {
-                if (pm.getCallCount() <= 0)
-                {
+            for (const PerfMeasurement& pm : measurements) {
+
+                if (pm.getCallCount() <= 0) {
                     continue;
                 }
 

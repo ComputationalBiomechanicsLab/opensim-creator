@@ -7,9 +7,9 @@ namespace osc
     class LogViewer final {
     public:
         LogViewer();
-        LogViewer(LogViewer const&) = delete;
+        LogViewer(const LogViewer&) = delete;
         LogViewer(LogViewer&&) noexcept;
-        LogViewer& operator=(LogViewer const&) = delete;
+        LogViewer& operator=(const LogViewer&) = delete;
         LogViewer& operator=(LogViewer&&) noexcept;
         ~LogViewer() noexcept;
 

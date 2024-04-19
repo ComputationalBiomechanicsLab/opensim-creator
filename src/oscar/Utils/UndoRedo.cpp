@@ -11,11 +11,10 @@
 using namespace osc;
 
 osc::UndoRedoBase::UndoRedoBase(UndoRedoEntryBase initialCommit_) : m_Head{std::move(initialCommit_)}
-{
-}
-osc::UndoRedoBase::UndoRedoBase(UndoRedoBase const&) = default;
+{}
+osc::UndoRedoBase::UndoRedoBase(const UndoRedoBase&) = default;
 osc::UndoRedoBase::UndoRedoBase(UndoRedoBase&&) noexcept = default;
-osc::UndoRedoBase& osc::UndoRedoBase::operator=(UndoRedoBase const&) = default;
+osc::UndoRedoBase& osc::UndoRedoBase::operator=(const UndoRedoBase&) = default;
 osc::UndoRedoBase& osc::UndoRedoBase::operator=(UndoRedoBase&&) noexcept = default;
 osc::UndoRedoBase::~UndoRedoBase() noexcept = default;
 
@@ -26,7 +25,7 @@ void osc::UndoRedoBase::commitScratch(std::string_view commitMsg)
     m_Redo.clear();
 }
 
-UndoRedoEntryBase const& osc::UndoRedoBase::getHead() const
+const UndoRedoEntryBase& osc::UndoRedoBase::getHead() const
 {
     return m_Head;
 }
@@ -46,7 +45,7 @@ ptrdiff_t osc::UndoRedoBase::getNumUndoEntriesi() const
     return static_cast<ptrdiff_t>(getNumUndoEntries());
 }
 
-osc::UndoRedoEntryBase const& osc::UndoRedoBase::getUndoEntry(ptrdiff_t i) const
+const osc::UndoRedoEntryBase& osc::UndoRedoBase::getUndoEntry(ptrdiff_t i) const
 {
     OSC_ASSERT(i < std::ssize(m_Undo));
     return m_Undo.rbegin()[i];
@@ -59,8 +58,8 @@ void osc::UndoRedoBase::undoTo(ptrdiff_t nthEntry)
         return;  // out of bounds: ignore request
     }
 
-    UndoRedoEntryBase const oldHead = m_Head;
-    UndoRedoEntryBase const newHead = m_Undo.rbegin()[nthEntry];
+    const UndoRedoEntryBase oldHead = m_Head;
+    const UndoRedoEntryBase newHead = m_Undo.rbegin()[nthEntry];
 
     // push old head onto the redo stack
     m_Redo.push_back(oldHead);
@@ -94,7 +93,7 @@ ptrdiff_t osc::UndoRedoBase::getNumRedoEntriesi() const
     return static_cast<ptrdiff_t>(getNumRedoEntries());
 }
 
-UndoRedoEntryBase const& osc::UndoRedoBase::getRedoEntry(ptrdiff_t i) const
+const UndoRedoEntryBase& osc::UndoRedoBase::getRedoEntry(ptrdiff_t i) const
 {
     OSC_ASSERT(i < std::ssize(m_Redo));
     return m_Redo.rbegin()[i];
@@ -112,8 +111,8 @@ void osc::UndoRedoBase::redoTo(ptrdiff_t nthEntry)
         return;  // out of bounds: ignore request
     }
 
-    UndoRedoEntryBase const oldHead = m_Head;
-    UndoRedoEntryBase const newHead = m_Redo.rbegin()[nthEntry];
+    const UndoRedoEntryBase oldHead = m_Head;
+    const UndoRedoEntryBase newHead = m_Redo.rbegin()[nthEntry];
 
     // push old head onto the undo stack
     m_Undo.push_back(oldHead);

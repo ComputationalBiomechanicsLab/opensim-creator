@@ -48,7 +48,7 @@ namespace osc
     // write a crash report as `CrashReport_DATE.txt` to `crashDumpDir`
     //
     // note: can be a noop on certain OSes
-    void InstallBacktraceHandler(std::filesystem::path const& crashDumpDir);
+    void InstallBacktraceHandler(const std::filesystem::path& crashDumpDir);
 
     // tries to open the specified filepath in the OS's default application for opening
     // a path (usually, based on its extension)
@@ -60,7 +60,7 @@ namespace osc
     //   opens the path by searching the file's extension against a list of default
     //   applications or, if Windows detects it's a URL, it will open the URL in
     //   the user's default web browser, etc.
-    void OpenPathInOSDefaultApplication(std::filesystem::path const&);
+    void OpenPathInOSDefaultApplication(const std::filesystem::path&);
 
     // tries to open the specified URL in the OSes default browser
     void OpenURLInDefaultBrowser(std::string_view);

@@ -55,23 +55,23 @@ private:
     void implOnMount() final
     {
         App::upd().make_main_loop_polling();
-        m_Camera.onMount();
+        m_Camera.on_mount();
     }
 
     void implOnUnmount() final
     {
-        m_Camera.onUnmount();
+        m_Camera.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
     bool implOnEvent(SDL_Event const& e) final
     {
-        return m_Camera.onEvent(e);
+        return m_Camera.on_event(e);
     }
 
     void implOnDraw() final
     {
-        m_Camera.onDraw();
+        m_Camera.on_draw();
 
         // clear screen and ensure camera has correct pixel rect
         App::upd().clear_screen({0.1f, 0.1f, 0.1f, 1.0f});

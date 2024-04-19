@@ -19,18 +19,17 @@ osc::IconWithoutMenu::IconWithoutMenu(
     m_Title{title},
     m_ButtonID{"##" + m_Title},
     m_Description{description}
-{
-}
+{}
 
 Vec2 osc::IconWithoutMenu::dimensions() const
 {
-    Vec2 const padding = ui::GetStyleFramePadding();
+    const Vec2 padding = ui::GetStyleFramePadding();
     return Vec2{m_Icon.dimensions()} + 2.0f*padding;
 }
 
 bool osc::IconWithoutMenu::onDraw()
 {
-    bool const rv = ui::ImageButton(m_ButtonID, m_Icon.get_texture(), m_Icon.dimensions(), m_Icon.getTextureCoordinates());
+    const bool rv = ui::ImageButton(m_ButtonID, m_Icon.get_texture(), m_Icon.dimensions(), m_Icon.getTextureCoordinates());
     ui::DrawTooltipIfItemHovered(m_Title, m_Description);
     return rv;
 }

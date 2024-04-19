@@ -212,18 +212,18 @@ private:
     void implOnMount() final
     {
         App::upd().make_main_loop_polling();
-        m_Camera.onMount();
+        m_Camera.on_mount();
     }
 
     void implOnUnmount() final
     {
-        m_Camera.onUnmount();
+        m_Camera.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
     bool implOnEvent(SDL_Event const& e) final
     {
-        return m_Camera.onEvent(e);
+        return m_Camera.on_event(e);
     }
 
     void implOnDraw() final
@@ -232,7 +232,7 @@ private:
         m_OutputRender.set_dimensions(dimensions_of(outputRect));
         m_OutputRender.set_anti_aliasing_level(App::get().anti_aliasing_level());
 
-        m_Camera.onDraw();
+        m_Camera.on_draw();
         draw3DRender();
         drawBackground();
         graphics::blit_to_screen(m_OutputRender, outputRect);

@@ -10,8 +10,7 @@
 
 osc::StandardPopup::StandardPopup(std::string_view popupName) :
     StandardPopup{popupName, {512.0f, 0.0f}, ImGuiWindowFlags_AlwaysAutoResize}
-{
-}
+{}
 
 osc::StandardPopup::StandardPopup(
     std::string_view popupName,
@@ -27,8 +26,7 @@ osc::StandardPopup::StandardPopup(
     m_JustOpened{false},
     m_IsOpen{false},
     m_IsModal{true}
-{
-}
+{}
 
 bool osc::StandardPopup::implIsOpen() const
 {
@@ -99,7 +97,7 @@ bool osc::StandardPopup::implBeginPopup()
 
         // try to begin the modal window
         implBeforeImguiBeginPopup();
-        bool const opened = ui::BeginPopupModal(m_PopupName, nullptr, m_PopupFlags);
+        const bool opened = ui::BeginPopupModal(m_PopupName, nullptr, m_PopupFlags);
         implAfterImguiBeginPopup();
 
         if (!opened)
@@ -127,7 +125,7 @@ bool osc::StandardPopup::implBeginPopup()
 
         // try to begin the popup window
         implBeforeImguiBeginPopup();
-        bool const opened = ui::BeginPopup(m_PopupName, m_PopupFlags);
+        const bool opened = ui::BeginPopup(m_PopupName, m_PopupFlags);
         implAfterImguiBeginPopup();
 
         // try to show popup
@@ -185,7 +183,7 @@ void osc::StandardPopup::setModal(bool v)
     m_IsModal = v;
 }
 
-void osc::StandardPopup::setRect(Rect const& rect)
+void osc::StandardPopup::setRect(const Rect& rect)
 {
     m_MaybePosition = rect.p1;
     m_Dimensions = dimensions_of(rect);

@@ -22,8 +22,8 @@ namespace osc
         std::span<T> vals,
         UnaryFunction f)
     {
-        size_t const chunkSize = max(minChunkSize, vals.size()/std::thread::hardware_concurrency());
-        size_t const nTasks = vals.size()/chunkSize;
+        const size_t chunkSize = max(minChunkSize, vals.size()/std::thread::hardware_concurrency());
+        const size_t nTasks = vals.size()/chunkSize;
 
         if (nTasks > 1)
         {
@@ -32,8 +32,8 @@ namespace osc
 
             for (size_t i = 0; i < nTasks-1; ++i)
             {
-                size_t const chunkBegin = i * chunkSize;
-                size_t const chunkEnd = (i+1) * chunkSize;
+                const size_t chunkBegin = i * chunkSize;
+                const size_t chunkEnd = (i+1) * chunkSize;
                 tasks.push_back(std::async(std::launch::async, [vals, f, chunkBegin, chunkEnd]()
                 {
                     for (size_t j = chunkBegin; j < chunkEnd; ++j)
@@ -45,8 +45,8 @@ namespace osc
 
             // last worker must also handle the remainder
             {
-                size_t const chunkBegin = (nTasks-1) * chunkSize;
-                size_t const chunkEnd = vals.size();
+                const size_t chunkBegin = (nTasks-1) * chunkSize;
+                const size_t chunkEnd = vals.size();
                 tasks.push_back(std::async(std::launch::async, [vals, f, chunkBegin, chunkEnd]()
                 {
                     for (size_t i = chunkBegin; i < chunkEnd; ++i)

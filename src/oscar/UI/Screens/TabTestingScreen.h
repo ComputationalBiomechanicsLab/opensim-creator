@@ -13,17 +13,17 @@ namespace osc
     class TabTestingScreen final : public IScreen {
     public:
         explicit TabTestingScreen(TabRegistryEntry const&);
-        TabTestingScreen(TabTestingScreen const&) = delete;
+        TabTestingScreen(const TabTestingScreen&) = delete;
         TabTestingScreen(TabTestingScreen&&) noexcept = default;
-        TabTestingScreen& operator=(TabTestingScreen const&) = delete;
+        TabTestingScreen& operator=(const TabTestingScreen&) = delete;
         TabTestingScreen& operator=(TabTestingScreen&&) noexcept = default;
         ~TabTestingScreen() noexcept override = default;
     private:
-        void implOnMount() override;
-        void implOnUnmount() override;
-        void implOnEvent(SDL_Event const&) override;
-        void implOnTick() override;
-        void implOnDraw() override;
+        void impl_on_mount() override;
+        void impl_on_unmount() override;
+        void impl_on_event(const SDL_Event&) override;
+        void impl_on_tick() override;
+        void impl_on_draw() override;
 
         class Impl;
         std::shared_ptr<Impl> m_Impl;

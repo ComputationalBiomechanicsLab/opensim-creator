@@ -10,10 +10,10 @@ struct ImDrawData;
 
 namespace osc::ui::graphics_backend
 {
-    bool Init();
-    void Shutdown();
-    void NewFrame();
-    void RenderDrawData(ImDrawData*);
-    ImTextureID AllocateTextureID(Texture2D const&);
-    ImTextureID AllocateTextureID(RenderTexture const&);
+    bool init();
+    void shutdown();
+    void on_start_new_frame();
+    void render(ImDrawData*);
+    ImTextureID allocate_texture_for_current_frame(const Texture2D&);
+    ImTextureID allocate_texture_for_current_frame(const RenderTexture&);
 }

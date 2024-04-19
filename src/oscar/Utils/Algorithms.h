@@ -58,8 +58,8 @@ namespace osc
         std::ranges::input_range R,
         typename T
     >
-    requires std::indirect_binary_predicate<std::ranges::equal_to, std::ranges::iterator_t<R>, T const*>
-    constexpr typename std::ranges::range_difference_t<R> count(R&& r, T const& value)
+    requires std::indirect_binary_predicate<std::ranges::equal_to, std::ranges::iterator_t<R>, const T*>
+    constexpr typename std::ranges::range_difference_t<R> count(R&& r, const T& value)
     {
         return std::count(std::ranges::begin(r), std::ranges::end(r), value);
     }
@@ -172,8 +172,8 @@ namespace osc
         std::sentinel_for<I> S,
         typename T
     >
-    requires std::indirect_binary_predicate<std::ranges::equal_to, I, T const*>
-    constexpr I find(I first, S last, T const& value)
+    requires std::indirect_binary_predicate<std::ranges::equal_to, I, const T*>
+    constexpr I find(I first, S last, const T& value)
     {
         return std::find(first, last, value);
     }
@@ -183,8 +183,8 @@ namespace osc
         std::ranges::input_range R,
         class T
     >
-    requires std::indirect_binary_predicate<std::ranges::equal_to, std::ranges::iterator_t<R>, T const*>
-    constexpr std::ranges::borrowed_iterator_t<R> find(R&& r, T const& value)
+    requires std::indirect_binary_predicate<std::ranges::equal_to, std::ranges::iterator_t<R>, const T*>
+    constexpr std::ranges::borrowed_iterator_t<R> find(R&& r, const T& value)
     {
         return std::find(std::ranges::begin(r), std::ranges::end(r), value);
     }
@@ -195,7 +195,7 @@ namespace osc
         std::sentinel_for<I> S,
         class T
     >
-    constexpr bool contains(I first, S last, T const& value)
+    constexpr bool contains(I first, S last, const T& value)
     {
         return find(first, last, value) != last;
     }
@@ -205,8 +205,8 @@ namespace osc
         std::ranges::forward_range R,
         class T
     >
-    requires std::indirect_binary_predicate<std::ranges::equal_to, std::ranges::iterator_t<R>, T const*>
-    constexpr bool contains(R&& r, T const& value)
+    requires std::indirect_binary_predicate<std::ranges::equal_to, std::ranges::iterator_t<R>, const T*>
+    constexpr bool contains(R&& r, const T& value)
     {
         return contains(std::ranges::begin(r), std::ranges::end(r), value);
     }
@@ -243,9 +243,9 @@ namespace osc
     // NOTE: return value differs from C++20's std::ranges:fill (fix when MacOS supports std::ranges)
     template<
         typename T,
-        std::ranges::output_range<T const&> R
+        std::ranges::output_range<const T&> R
     >
-    constexpr void fill(R&& r, T const& value)
+    constexpr void fill(R&& r, const T& value)
     {
         std::fill(std::ranges::begin(r), std::ranges::end(r), value);
     }
@@ -312,9 +312,9 @@ namespace osc
     template<
         class T,
         class Proj = std::identity,
-        std::indirect_strict_weak_order<std::projected<T const*, Proj>> Comp = std::ranges::less
+        std::indirect_strict_weak_order<std::projected<const T*, Proj>> Comp = std::ranges::less
     >
-    constexpr T const& max(T const& a, T const& b, Comp comp = {}, Proj proj = {})
+    constexpr const T& max(const T& a, const T& b, Comp comp = {}, Proj proj = {})
     {
         return std::invoke(comp, std::invoke(proj, a), std::invoke(proj, b)) ? b : a;
     }
@@ -323,7 +323,7 @@ namespace osc
     template<
         std::copyable T,
         class Proj = std::identity,
-        std::indirect_strict_weak_order<std::projected<T const*, Proj>> Comp = std::ranges::less
+        std::indirect_strict_weak_order<std::projected<const T*, Proj>> Comp = std::ranges::less
     >
     constexpr T max(std::initializer_list<T> r, Comp comp = {}, Proj proj = {})
     {
@@ -392,7 +392,7 @@ namespace osc
     template<
         class T,
         class Proj = std::identity,
-        std::indirect_strict_weak_order<std::projected<T const*, Proj>> Comp = std::ranges::less
+        std::indirect_strict_weak_order<std::projected<const T*, Proj>> Comp = std::ranges::less
     >
     constexpr const T& min(const T& a, const T& b, Comp comp = {}, Proj proj = {})
     {
@@ -403,7 +403,7 @@ namespace osc
     template<
         std::copyable T,
         class Proj = std::identity,
-        std::indirect_strict_weak_order<std::projected<T const*, Proj>> Comp = std::ranges::less
+        std::indirect_strict_weak_order<std::projected<const T*, Proj>> Comp = std::ranges::less
     >
     constexpr T min(std::initializer_list<T> r, Comp comp = {}, Proj proj = {})
     {
@@ -443,8 +443,8 @@ namespace osc
         [[no_unique_address]] T max;
 
         template<typename T2>
-        requires std::convertible_to<T const&, T2>
-        constexpr operator min_max_result<T2>() const&
+        requires std::convertible_to<const T&, T2>
+        constexpr operator min_max_result<T2>() const &
         {
             return {min, max};
         }
@@ -589,9 +589,9 @@ namespace osc
     template<
         class T,
         class Proj = std::identity,
-        std::indirect_strict_weak_order<std::projected<T const*, Proj>> Comp = std::ranges::less
+        std::indirect_strict_weak_order<std::projected<const T*, Proj>> Comp = std::ranges::less
     >
-    constexpr T const& clamp(const T& v, const T& lo, const T& hi, Comp comp = {}, Proj proj = {})
+    constexpr const T& clamp(const T& v, const T& lo, const T& hi, Comp comp = {}, Proj proj = {})
     {
         auto&& pv = std::invoke(proj, v);
 
@@ -612,27 +612,25 @@ namespace osc
     >
     constexpr typename std::ranges::range_size_t<R> max_element_index(R&& r, Comp comp = {}, Proj proj = {})
     {
-        auto const first = std::ranges::begin(r);
+        const auto first = std::ranges::begin(r);
         return std::distance(first, max_element(first, std::ranges::end(r), std::ref(comp), std::ref(proj)));
     }
 
     // osc algorithm: perform bounds-checked indexed access
     template<std::ranges::random_access_range Range>
-    constexpr auto at(Range const& range, typename Range::size_type i) -> decltype(range[i])
+    constexpr auto at(const Range& range, typename Range::size_type i) -> decltype(range[i])
     {
-        if (i < std::ranges::size(range))
-        {
+        if (i < std::ranges::size(range)) {
             return range[i];
         }
-        else
-        {
+        else {
             throw std::out_of_range{"out of bounds index given to a container"};
         }
     }
 
     // osc algorithm: returns a `std::optional<T>` containing the value located at `key`, or `std::nullopt` if no such element exists in `container`
     template<AssociativeContainer T, typename Key>
-    std::optional<typename T::mapped_type> find_or_optional(T const& container, Key const& key)
+    std::optional<typename T::mapped_type> find_or_optional(const T& container, const Key& key)
     {
         if (auto it = container.find(key); it != container.end()) {
             return it->second;
@@ -642,7 +640,7 @@ namespace osc
 
     // osc algorithm: returns a pointer to the element at `key`, or `nullptr` if no such element exists in `container`
     template<AssociativeContainer T, typename Key>
-    typename T::mapped_type const* try_find(T const& container, Key const& key)
+    typename const T::mapped_type* try_find(const T& container, const Key& key)
     {
         if (auto it = container.find(key); it != container.end()) {
             return &it->second;
@@ -652,7 +650,7 @@ namespace osc
 
     // osc algorithm: returns a mutable pointer to the element at `key`, or `nullptr` if no such element exists in `container`
     template<AssociativeContainer T, typename Key>
-    typename T::mapped_type* try_find(T& container, Key const& key)
+    typename T::mapped_type* try_find(T& container, const Key& key)
     {
         if (auto it = container.find(key); it != container.end()) {
             return &it->second;

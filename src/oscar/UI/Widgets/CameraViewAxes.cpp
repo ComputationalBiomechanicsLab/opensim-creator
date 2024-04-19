@@ -38,20 +38,20 @@ Vec2 osc::CameraViewAxes::dimensions() const
 bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
 {
     // calculate widget metrics
-    auto const metrics = AxesMetrics{};
+    const auto metrics = AxesMetrics{};
 
     // calculate widget screen-space metrics
-    Vec2 const topLeft = ui::GetCursorScreenPos();
-    Rect const bounds = {topLeft, topLeft + metrics.dimensions};
-    Vec2 const origin = centroid_of(bounds);
+    const Vec2 topLeft = ui::GetCursorScreenPos();
+    const Rect bounds = {topLeft, topLeft + metrics.dimensions};
+    const Vec2 origin = centroid_of(bounds);
 
     // figure out rendering order (back-to-front)
-    Mat4 const viewMtx = camera.view_matrix();
+    const Mat4 viewMtx = camera.view_matrix();
     auto order = std::to_array<Vec4::size_type>({0, 1, 2});
     std::sort(order.begin(), order.end(), [&viewMtx](auto a, auto b)
     {
-        float const aDepth = (viewMtx * Vec4{}.with_element(a, 1.0f)).z;
-        float const bDepth = (viewMtx * Vec4{}.with_element(b, 1.0f)).z;
+        const float aDepth = (viewMtx * Vec4{}.with_element(a, 1.0f)).z;
+        const float bDepth = (viewMtx * Vec4{}.with_element(b, 1.0f)).z;
         return aDepth < bDepth;
     });
 
@@ -68,20 +68,20 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
 
         // draw line from origin to end with a labelled (clickable) circle ending
         {
-            Vec2 const end = origin + metrics.linelen*view;
-            Circle const circ = {.origin = end, .radius = metrics.circleRadius};
-            Rect const circleBounds = bounding_rect_of(circ);
+            const Vec2 end = origin + metrics.linelen*view;
+            const Circle circ = {.origin = end, .radius = metrics.circleRadius};
+            const Rect circleBounds = bounding_rect_of(circ);
 
-            auto const labels = std::to_array<CStringView>({ "X", "Y", "Z" });
-            auto const id = ui::GetID(labels[i]);
+            const auto labels = std::to_array<CStringView>({ "X", "Y", "Z" });
+            const auto id = ui::GetID(labels[i]);
             ui::SetCursorScreenPos(circleBounds.p1);
             ui::ItemSize(circleBounds);
             if (ui::ItemAdd(circleBounds, id)) {
-                Vec2 const labelSize = ui::CalcTextSize(labels[i]);
+                const Vec2 labelSize = ui::CalcTextSize(labels[i]);
 
-                bool const hovered = ui::ItemHoverable(circleBounds, id, ui::GetItemFlags());
-                ImU32 const color = ui::ToImU32(hovered ? Color::white() : baseColor);
-                ImU32 const textColor = ui::ToImU32(hovered ? Color::black() : Color::white());
+                const bool hovered = ui::ItemHoverable(circleBounds, id, ui::GetItemFlags());
+                const ImU32 color = ui::ToImU32(hovered ? Color::white() : baseColor);
+                const ImU32 textColor = ui::ToImU32(hovered ? Color::black() : Color::white());
 
                 drawlist.AddLine(origin, end, color, 3.0f);
                 drawlist.AddCircleFilled(circ.origin, circ.radius, color);
@@ -96,17 +96,17 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
 
         // negative axes: draw a faded (clickable) circle ending - no line
         {
-            Vec2 const end = origin - metrics.linelen*view;
-            Circle const circ = {.origin = end, .radius = metrics.circleRadius};
-            Rect const circleBounds = bounding_rect_of(circ);
+            const Vec2 end = origin - metrics.linelen*view;
+            const Circle circ = {.origin = end, .radius = metrics.circleRadius};
+            const Rect circleBounds = bounding_rect_of(circ);
 
-            auto const labels = std::to_array<CStringView>({ "-X", "-Y", "-Z" });
-            auto const id = ui::GetID(labels[i]);
+            const auto labels = std::to_array<CStringView>({ "-X", "-Y", "-Z" });
+            const auto id = ui::GetID(labels[i]);
             ui::SetCursorScreenPos(circleBounds.p1);
             ui::ItemSize(circleBounds);
             if (ui::ItemAdd(circleBounds, id)) {
-                bool const hovered = ui::ItemHoverable(circleBounds, id, ui::GetItemFlags());
-                ImU32 const color = ui::ToImU32(hovered ? Color::white() : baseColor.with_alpha(0.3f));
+                const bool hovered = ui::ItemHoverable(circleBounds, id, ui::GetItemFlags());
+                const ImU32 color = ui::ToImU32(hovered ? Color::white() : baseColor.with_alpha(0.3f));
 
                 drawlist.AddCircleFilled(circ.origin, circ.radius, color);
 

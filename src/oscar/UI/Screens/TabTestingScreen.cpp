@@ -25,24 +25,24 @@ public:
     {}
 
 private:
-    void implOnMount() override
+    void impl_on_mount() override
     {
         m_CurrentTab = m_RegistryEntry.createTab(ParentPtr<Impl>{shared_from_this()});
-        ui::context::Init();
+        ui::context::init();
         m_CurrentTab->onMount();
         App::upd().make_main_loop_polling();
     }
 
-    void implOnUnmount() override
+    void impl_on_unmount() override
     {
         App::upd().make_main_loop_waiting();
         m_CurrentTab->onUnmount();
-        ui::context::Shutdown();
+        ui::context::shutdown();
     }
 
-    void implOnEvent(SDL_Event const& e) override
+    void impl_on_event(const SDL_Event& e) override
     {
-        ui::context::OnEvent(e);
+        ui::context::on_event(e);
         m_CurrentTab->onEvent(e);
 
         if (e.type == SDL_QUIT) {
@@ -50,17 +50,17 @@ private:
         }
     }
 
-    void implOnTick() override
+    void impl_on_tick() override
     {
         m_CurrentTab->onTick();
     }
 
-    void implOnDraw() override
+    void impl_on_draw() override
     {
         App::upd().clear_screen({0.0f, 0.0f, 0.0f, 0.0f});
-        ui::context::NewFrame();
+        ui::context::on_start_new_frame();
         m_CurrentTab->onDraw();
-        ui::context::Render();
+        ui::context::render();
 
         ++m_FramesShown;
         if (m_FramesShown >= m_MinFramesShown &&
@@ -83,11 +83,11 @@ private:
     AppClock::time_point m_CloseTime = App::get().frame_start_time() + m_MinOpenDuration;
 };
 
-osc::TabTestingScreen::TabTestingScreen(TabRegistryEntry const& registryEntry) :
+osc::TabTestingScreen::TabTestingScreen(const TabRegistryEntry& registryEntry) :
     m_Impl{std::make_shared<Impl>(registryEntry)}
 {}
-void osc::TabTestingScreen::implOnMount() { m_Impl->onMount(); }
-void osc::TabTestingScreen::implOnUnmount() { m_Impl->onUnmount(); }
-void osc::TabTestingScreen::implOnEvent(SDL_Event const& e) { m_Impl->onEvent(e); }
-void osc::TabTestingScreen::implOnTick() { m_Impl->onTick(); }
-void osc::TabTestingScreen::implOnDraw() { m_Impl->onDraw(); }
+void osc::TabTestingScreen::impl_on_mount() { m_Impl->on_mount(); }
+void osc::TabTestingScreen::impl_on_unmount() { m_Impl->on_unmount(); }
+void osc::TabTestingScreen::impl_on_event(const SDL_Event& e) { m_Impl->on_event(e); }
+void osc::TabTestingScreen::impl_on_tick() { m_Impl->on_tick(); }
+void osc::TabTestingScreen::impl_on_draw() { m_Impl->on_draw(); }

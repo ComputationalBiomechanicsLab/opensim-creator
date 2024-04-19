@@ -17,10 +17,10 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit CookiecutterTab(ParentPtr<ITabHost> const&);
-        CookiecutterTab(CookiecutterTab const&) = delete;
+        explicit CookiecutterTab(const ParentPtr<ITabHost>&);
+        CookiecutterTab(const CookiecutterTab&) = delete;
         CookiecutterTab(CookiecutterTab&&) noexcept;
-        CookiecutterTab& operator=(CookiecutterTab const&) = delete;
+        CookiecutterTab& operator=(const CookiecutterTab&) = delete;
         CookiecutterTab& operator=(CookiecutterTab&&) noexcept;
         ~CookiecutterTab() noexcept override;
 
@@ -29,7 +29,7 @@ namespace osc
         CStringView implGetName() const final;
         void implOnMount() final;
         void implOnUnmount() final;
-        bool implOnEvent(SDL_Event const&) final;
+        bool implOnEvent(const SDL_Event&) final;
         void implOnTick() final;
         void implOnDrawMainMenu() final;
         void implOnDraw() final;

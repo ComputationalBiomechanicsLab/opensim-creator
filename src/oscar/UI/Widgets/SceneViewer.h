@@ -12,13 +12,13 @@ namespace osc
     class SceneViewer final {
     public:
         SceneViewer();
-        SceneViewer(SceneViewer const&) = delete;
+        SceneViewer(const SceneViewer&) = delete;
         SceneViewer(SceneViewer&&) noexcept;
-        SceneViewer& operator=(SceneViewer const&) = delete;
+        SceneViewer& operator=(const SceneViewer&) = delete;
         SceneViewer& operator=(SceneViewer&&) noexcept;
         ~SceneViewer() noexcept;
 
-        void onDraw(std::span<SceneDecoration const>, SceneRendererParams const&);
+        void onDraw(std::span<const SceneDecoration>, const SceneRendererParams&);
 
         bool isHovered() const;
         bool isLeftClicked() const;

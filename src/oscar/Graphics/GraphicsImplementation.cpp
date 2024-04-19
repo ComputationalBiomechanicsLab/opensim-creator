@@ -2312,7 +2312,7 @@ public:
 
     void set_anti_aliasing_level(AntiAliasingLevel aa_level)
     {
-        OSC_ASSERT((dimensionality() != TextureDimensionality::Cube or aa_level == AntiAliasingLevel{1}) && "cannot set anti-aliasing level >1 on a cube render buffer (it is not supported by backends like OpenGL)");
+        OSC_ASSERT((dimensionality() != TextureDimensionality::Cube or aa_level == AntiAliasingLevel{1}) && "cannot set anti-aliasing log_level_ >1 on a cube render buffer (it is not supported by backends like OpenGL)");
 
         if (aa_level != anti_aliasing_level()) {
             descriptor_.set_anti_aliasing_level(aa_level);

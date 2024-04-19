@@ -76,7 +76,7 @@ namespace
 
     bool configure_application_log(const AppConfig& config)
     {
-        if (auto logger = defaultLogger()) {
+        if (auto logger = global_default_logger()) {
             logger->set_level(config.log_level());
         }
         return true;
@@ -212,7 +212,7 @@ public:
 
     void show(std::unique_ptr<IScreen> screen)
     {
-        log_info("showing screen %s", screen->getName().c_str());
+        log_info("showing screen %s", screen->name().c_str());
 
         if (screen_) {
             throw std::runtime_error{"tried to call App::show when a screen is already being shown: you should use `request_transition` instead"};
@@ -499,13 +499,13 @@ private:
             return;
         }
 
-        log_info("unmounting screen %s", screen_->getName().c_str());
+        log_info("unmounting screen %s", screen_->name().c_str());
 
         try {
-            screen_->onUnmount();
+            screen_->on_unmount();
         }
         catch (const std::exception& ex) {
-            log_error("error unmounting screen %s: %s", screen_->getName().c_str(), ex.what());
+            log_error("error unmounting screen %s: %s", screen_->name().c_str(), ex.what());
             screen_.reset();
             throw;
         }
@@ -517,9 +517,9 @@ private:
         // to "warm up" (e.g. because it's using an immediate ui)
         num_frames_to_poll_ = 2;
 
-        log_info("mounting screen %s", screen_->getName().c_str());
-        screen_->onMount();
-        log_info("transitioned main screen to %s", screen_->getName().c_str());
+        log_info("mounting screen %s", screen_->name().c_str());
+        screen_->on_mount();
+        log_info("transitioned main screen to %s", screen_->name().c_str());
     }
 
     // the main application loop
@@ -528,14 +528,14 @@ private:
     void run_main_loop_unguarded()
     {
         // perform initial screen mount
-        screen_->onMount();
+        screen_->on_mount();
 
         // ensure current screen is unmounted and the quitting flag is reset when
         // exiting the main loop
         const ScopeGuard on_quit_guard{[this]()
         {
             if (screen_) {
-                screen_->onUnmount();
+                screen_->on_unmount();
             }
             quit_requested_ = false;
         }};
@@ -565,7 +565,7 @@ private:
                     }
 
                     // let screen handle the event
-                    screen_->onEvent(e);
+                    screen_->on_event(e);
 
                     if (quit_requested_) {
                         // screen requested application quit, so exit this function
@@ -595,8 +595,8 @@ private:
 
             // "tick" the screen
             {
-                OSC_PERF("App/onTick");
-                screen_->onTick();
+                OSC_PERF("App/on_tick");
+                screen_->on_tick();
             }
 
             if (quit_requested_) {
@@ -612,8 +612,8 @@ private:
 
             // "draw" the screen into the window framebuffer
             {
-                OSC_PERF("App/onDraw");
-                screen_->onDraw();
+                OSC_PERF("App/on_draw");
+                screen_->on_draw();
             }
 
             // "present" the rendered screen to the user (can block on VSYNC)

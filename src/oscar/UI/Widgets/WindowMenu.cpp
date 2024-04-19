@@ -9,8 +9,7 @@
 
 osc::WindowMenu::WindowMenu(std::shared_ptr<PanelManager> panelManager) :
     m_PanelManager{std::move(panelManager)}
-{
-}
+{}
 osc::WindowMenu::WindowMenu(WindowMenu&&) noexcept = default;
 osc::WindowMenu& osc::WindowMenu::operator=(WindowMenu&&) noexcept = default;
 osc::WindowMenu::~WindowMenu() noexcept = default;
@@ -34,7 +33,7 @@ void osc::WindowMenu::drawContent()
     for (size_t i = 0; i < manager.getNumToggleablePanels(); ++i)
     {
         bool activated = manager.isToggleablePanelActivated(i);
-        CStringView const name = manager.getToggleablePanelName(i);
+        const CStringView name = manager.getToggleablePanelName(i);
         if (ui::MenuItem(name, {}, &activated))
         {
             manager.setToggleablePanelActivated(i, activated);
@@ -49,7 +48,7 @@ void osc::WindowMenu::drawContent()
         for (size_t i = 0; i < manager.getNumDynamicPanels(); ++i)
         {
             bool activated = true;
-            CStringView const name = manager.getDynamicPanelName(i);
+            const CStringView name = manager.getDynamicPanelName(i);
             if (ui::MenuItem(name, {}, &activated))
             {
                 manager.deactivateDynamicPanel(i);
@@ -67,9 +66,8 @@ void osc::WindowMenu::drawContent()
         {
             for (size_t i = 0; i < manager.getNumSpawnablePanels(); ++i)
             {
-                CStringView const name = manager.getSpawnablePanelBaseName(i);
-                if (ui::MenuItem(name))
-                {
+                const CStringView name = manager.getSpawnablePanelBaseName(i);
+                if (ui::MenuItem(name)) {
                     manager.createDynamicPanel(i);
                 }
             }

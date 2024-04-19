@@ -18,11 +18,10 @@ using namespace osc;
 
 class osc::ErrorTab::Impl final : public StandardTabImpl {
 public:
-    explicit Impl(std::exception const& ex) :
+    explicit Impl(const std::exception& ex) :
         StandardTabImpl{ICON_FA_SPIDER " Error"},
         m_ErrorMessage{ex.what()}
-    {
-    }
+    {}
 
 private:
     void implOnDraw() final
@@ -71,10 +70,9 @@ private:
 
 // public API
 
-osc::ErrorTab::ErrorTab(ParentPtr<ITabHost> const&, std::exception const& ex) :
+osc::ErrorTab::ErrorTab(const ParentPtr<ITabHost>&, const std::exception& ex) :
     m_Impl{std::make_unique<Impl>(ex)}
-{
-}
+{}
 
 osc::ErrorTab::ErrorTab(ErrorTab&&) noexcept = default;
 osc::ErrorTab& osc::ErrorTab::operator=(ErrorTab&&) noexcept = default;

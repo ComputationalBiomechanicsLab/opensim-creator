@@ -9,9 +9,9 @@ namespace osc
     class WindowMenu final {
     public:
         explicit WindowMenu(std::shared_ptr<PanelManager>);
-        WindowMenu(WindowMenu const&) = delete;
+        WindowMenu(const WindowMenu&) = delete;
         WindowMenu(WindowMenu&&) noexcept;
-        WindowMenu& operator=(WindowMenu const&) = delete;
+        WindowMenu& operator=(const WindowMenu&) = delete;
         WindowMenu& operator=(WindowMenu&&) noexcept;
         ~WindowMenu() noexcept;
 

@@ -19,111 +19,100 @@ namespace osc
 {
     class Logger final {
     public:
-        Logger(std::string _name) :
-            m_Name{std::move(_name)},
-            m_Sinks()
+        explicit Logger(std::string name) :
+            name_{std::move(name)}
         {}
 
-        Logger(std::string _name, std::shared_ptr<LogSink> _sink) :
-            m_Name{std::move(_name)},
-            m_Sinks{_sink}
+        Logger(std::string name, std::shared_ptr<LogSink> sink) :
+            name_{std::move(name)},
+            log_sinks_{std::move(sink)}
         {}
 
-        void log_message(LogLevel msgLvl, CStringView fmt, ...)
+        void log_message(LogLevel message_log_level, CStringView fmt, ...)
         {
-            if (msgLvl < level)
-            {
-                return;
+            if (message_log_level < log_level_) {
+                return;  // the message's level is too low for this logger
             }
 
-            // create a not-allocated view of the log message that
-            // the sinks _may_ consume
-            std::vector<char> buf(2048);
+            auto it = find_if(log_sinks_, [message_log_level](const auto& sink) { return sink->should_log(message_log_level); });
+            if (it == log_sinks_.end()) {
+                return;  // no sink in this logger will consume the message
+            }
+
+            // else: there exists at least one sink that wants the message
+
+            // format the format string with the arguments
+            std::vector<char> formatted_buffer(2048);
             size_t n = 0;
             {
                 va_list args;
                 va_start(args, fmt);
-                int rv = std::vsnprintf(buf.data(), buf.size(), fmt.c_str(), args);
+                int rv = std::vsnprintf(formatted_buffer.data(), formatted_buffer.size(), fmt.c_str(), args);
                 va_end(args);
 
-                if (rv <= 0)
-                {
-                    return;
+                if (rv <= 0) {
+                    return;  // formatting error: exit early
                 }
 
-                n = min(static_cast<size_t>(rv), buf.size()-1);
+                n = min(static_cast<size_t>(rv), formatted_buffer.size()-1);
             }
-            LogMessageView view{m_Name, std::string_view{buf.data(), n}, msgLvl};
 
-            // sink it
-            for (auto& sink : m_Sinks)
-            {
-                if (sink->shouldLog(view.level))
-                {
-                    sink->log_message(view);
+            // create a readonly view of the message that sinks _may_ consume
+            LogMessageView view{name_, std::string_view{formatted_buffer.data(), n}, message_log_level};
+
+            // sink the message
+            for (; it != log_sinks_.end(); ++it) {
+                if ((*it)->should_log(view.level)) {
+                    (*it)->log_message(view);
                 }
             }
         }
 
         template<typename... Args>
-        void log_trace(CStringView fmt, Args const&... args)
+        void log_trace(CStringView fmt, const Args&... args)
         {
             log_message(LogLevel::trace, fmt, args...);
         }
 
         template<typename... Args>
-        void log_debug(CStringView fmt, Args const&... args)
+        void log_debug(CStringView fmt, const Args&... args)
         {
             log_message(LogLevel::debug, fmt, args...);
         }
 
         template<typename... Args>
-        void log_info(CStringView fmt, Args const&... args)
+        void log_info(CStringView fmt, const Args&... args)
         {
             log_message(LogLevel::info, fmt, args...);
         }
 
         template<typename... Args>
-        void log_warn(CStringView fmt, Args const&... args)
+        void log_warn(CStringView fmt, const Args&... args)
         {
             log_message(LogLevel::warn, fmt, args...);
         }
 
         template<typename... Args>
-        void log_error(CStringView fmt, Args const&... args)
+        void log_error(CStringView fmt, const Args&... args)
         {
             log_message(LogLevel::err, fmt, args...);
         }
 
         template<typename... Args>
-        void log_critical(CStringView fmt, Args const&... args)
+        void log_critical(CStringView fmt, const Args&... args)
         {
             log_message(LogLevel::critical, fmt, args...);
         }
 
-        [[nodiscard]] std::vector<std::shared_ptr<LogSink>> const& sinks() const
-        {
-            return m_Sinks;
-        }
+        const std::vector<std::shared_ptr<LogSink>>& sinks() const { return log_sinks_; }
+        std::vector<std::shared_ptr<LogSink>>& sinks() { return log_sinks_; }
 
-        [[nodiscard]] std::vector<std::shared_ptr<LogSink>>& sinks()
-        {
-            return m_Sinks;
-        }
-
-        [[nodiscard]] LogLevel get_level() const
-        {
-            return level;
-        }
-
-        void set_level(LogLevel level_)
-        {
-            level = level_;
-        }
+        LogLevel level() const { return log_level_; }
+        void set_level(LogLevel level_) { log_level_ = level_; }
 
     private:
-        std::string m_Name;
-        std::vector<std::shared_ptr<LogSink>> m_Sinks;
-        LogLevel level = LogLevel::DEFAULT;
+        std::string name_;
+        std::vector<std::shared_ptr<LogSink>> log_sinks_;
+        LogLevel log_level_ = LogLevel::DEFAULT;
     };
 }

@@ -29,7 +29,7 @@ private:
     {
     }
 
-    bool implOnEvent(SDL_Event const&) final
+    bool implOnEvent(const SDL_Event&) final
     {
         return false;
     }
@@ -55,10 +55,9 @@ osc::CStringView osc::CookiecutterTab::id()
     return c_TabStringID;
 }
 
-osc::CookiecutterTab::CookiecutterTab(ParentPtr<ITabHost> const&) :
+osc::CookiecutterTab::CookiecutterTab(const ParentPtr<ITabHost>&) :
     m_Impl{std::make_unique<Impl>()}
-{
-}
+{}
 
 osc::CookiecutterTab::CookiecutterTab(CookiecutterTab&&) noexcept = default;
 osc::CookiecutterTab& osc::CookiecutterTab::operator=(CookiecutterTab&&) noexcept = default;

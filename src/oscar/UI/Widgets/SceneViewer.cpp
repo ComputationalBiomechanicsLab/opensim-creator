@@ -14,8 +14,8 @@ class osc::SceneViewer::Impl final {
 public:
 
     void onDraw(
-        std::span<SceneDecoration const> els,
-        SceneRendererParams const& params)
+        std::span<const SceneDecoration> els,
+        const SceneRendererParams& params)
     {
         m_Renderer.render(els, params);
 
@@ -63,7 +63,7 @@ osc::SceneViewer::SceneViewer(SceneViewer&&) noexcept = default;
 osc::SceneViewer& osc::SceneViewer::operator=(SceneViewer&&) noexcept = default;
 osc::SceneViewer::~SceneViewer() noexcept = default;
 
-void osc::SceneViewer::onDraw(std::span<SceneDecoration const> els, SceneRendererParams const& params)
+void osc::SceneViewer::onDraw(std::span<const SceneDecoration> els, const SceneRendererParams& params)
 {
     m_Impl->onDraw(els, params);
 }

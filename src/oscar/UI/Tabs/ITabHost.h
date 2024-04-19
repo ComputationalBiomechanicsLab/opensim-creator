@@ -13,9 +13,9 @@ namespace osc
     class ITabHost {
     protected:
         ITabHost() = default;
-        ITabHost(ITabHost const&) = default;
+        ITabHost(const ITabHost&) = default;
         ITabHost(ITabHost&&) noexcept = default;
-        ITabHost& operator=(ITabHost const&) = default;
+        ITabHost& operator=(const ITabHost&) = default;
         ITabHost& operator=(ITabHost&&) noexcept = default;
     public:
         virtual ~ITabHost() noexcept = default;
@@ -51,7 +51,7 @@ namespace osc
         requires std::constructible_from<T, Args&&...>
         void addAndSelectTab(Args&&... args)
         {
-            UID const tabID = addTab<T>(std::forward<Args>(args)...);
+            const UID tabID = addTab<T>(std::forward<Args>(args)...);
             selectTab(tabID);
         }
 

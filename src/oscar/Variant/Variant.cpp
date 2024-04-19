@@ -55,7 +55,7 @@ namespace
         {
             return std::stof(s, &pos);
         }
-        catch (std::exception const&)
+        catch (const std::exception&)
         {
             return 0.0f;
         }
@@ -79,7 +79,7 @@ osc::Variant::Variant(float v) : m_Data{v} {}
 osc::Variant::Variant(int v) : m_Data{v} {}
 osc::Variant::Variant(std::string v) : m_Data{std::move(v)} {}
 osc::Variant::Variant(std::string_view v) : m_Data{std::string{v}} {}
-osc::Variant::Variant(StringName const& v) : m_Data{v} {}
+osc::Variant::Variant(const StringName& v) : m_Data{v} {}
 osc::Variant::Variant(Vec2 v) : m_Data{v} {}
 osc::Variant::Variant(Vec3 v) : m_Data{v} {}
 
@@ -87,15 +87,15 @@ VariantType osc::Variant::type() const
 {
     return std::visit(Overload
     {
-        [](std::monostate const&) { return VariantType::Nil; },
-        [](bool const&) { return VariantType::Bool; },
-        [](Color const&) { return VariantType::Color; },
-        [](float const&) { return VariantType::Float; },
-        [](int const&) { return VariantType::Int; },
-        [](std::string const&) { return VariantType::String; },
-        [](StringName const&) { return VariantType::StringName; },
-        [](Vec2 const&) { return VariantType::Vec2; },
-        [](Vec3 const&) { return VariantType::Vec3; },
+        [](const std::monostate&) { return VariantType::Nil; },
+        [](const bool&) { return VariantType::Bool; },
+        [](const Color&) { return VariantType::Color; },
+        [](const float&) { return VariantType::Float; },
+        [](const int&) { return VariantType::Int; },
+        [](const std::string&) { return VariantType::String; },
+        [](const StringName&) { return VariantType::StringName; },
+        [](const Vec2&) { return VariantType::Vec2; },
+        [](const Vec3&) { return VariantType::Vec3; },
     }, m_Data);
 }
 
@@ -103,14 +103,14 @@ osc::Variant::operator bool() const
 {
     return std::visit(Overload
     {
-        [](std::monostate const&) { return false; },
-        [](bool const& v) { return v; },
-        [](Color const& v) { return v.r != 0.0f; },
-        [](float const& v) { return v != 0.0f; },
-        [](int const& v) { return v != 0; },
+        [](const std::monostate&) { return false; },
+        [](const bool& v) { return v; },
+        [](const Color& v) { return v.r != 0.0f; },
+        [](const float& v) { return v != 0.0f; },
+        [](const int& v) { return v != 0; },
         [](std::string_view s) { return TryInterpretStringAsBool(s); },
-        [](Vec2 const& v) { return v.x != 0.0f; },
-        [](Vec3 const& v) { return v.x != 0.0f; },
+        [](const Vec2& v) { return v.x != 0.0f; },
+        [](const Vec3& v) { return v.x != 0.0f; },
     }, m_Data);
 }
 
@@ -118,18 +118,18 @@ osc::Variant::operator osc::Color() const
 {
     return std::visit(Overload
     {
-        [](std::monostate const&) { return Color::black(); },
-        [](bool const& v) { return v ? Color::white() : Color::black(); },
-        [](Color const& v) { return v; },
-        [](float const& v) { return Color{v}; },
-        [](int const& v) { return v ? Color::white() : Color::black(); },
+        [](const std::monostate&) { return Color::black(); },
+        [](const bool& v) { return v ? Color::white() : Color::black(); },
+        [](const Color& v) { return v; },
+        [](const float& v) { return Color{v}; },
+        [](const int& v) { return v ? Color::white() : Color::black(); },
         [](std::string_view s)
         {
-            auto const c = try_parse_html_color_string(s);
+            const auto c = try_parse_html_color_string(s);
             return c ? *c : Color::black();
         },
-        [](Vec2 const& v) { return Color{v.x, v.y, 0.0f}; },
-        [](Vec3 const& v) { return Color{v}; },
+        [](const Vec2& v) { return Color{v.x, v.y, 0.0f}; },
+        [](const Vec3& v) { return Color{v}; },
     }, m_Data);
 }
 
@@ -137,14 +137,14 @@ osc::Variant::operator float() const
 {
     return std::visit(Overload
     {
-        [](std::monostate const&) { return 0.0f; },
-        [](bool const& v) { return v ? 1.0f : 0.0f; },
-        [](Color const& v) { return v.r; },
-        [](float const& v) { return v; },
-        [](int const& v) { return static_cast<float>(v); },
+        [](const std::monostate&) { return 0.0f; },
+        [](const bool& v) { return v ? 1.0f : 0.0f; },
+        [](const Color& v) { return v.r; },
+        [](const float& v) { return v; },
+        [](const int& v) { return static_cast<float>(v); },
         [](std::string_view s) { return ToFloatOrZero(s); },
-        [](Vec2 const& v) { return v.x; },
-        [](Vec3 const& v) { return v.x; },
+        [](const Vec2& v) { return v.x; },
+        [](const Vec3& v) { return v.x; },
     }, m_Data);
 }
 
@@ -152,14 +152,14 @@ osc::Variant::operator int() const
 {
     return std::visit(Overload
     {
-        [](std::monostate const&) { return 0; },
-        [](bool const& v) { return v ? 1 : 0; },
-        [](Color const& v) { return static_cast<int>(v.r); },
-        [](float const& v) { return static_cast<int>(v); },
-        [](int const& v) { return v; },
+        [](const std::monostate&) { return 0; },
+        [](const bool& v) { return v ? 1 : 0; },
+        [](const Color& v) { return static_cast<int>(v.r); },
+        [](const float& v) { return static_cast<int>(v); },
+        [](const int& v) { return v; },
         [](std::string_view s) { return ToIntOrZero(s); },
-        [](Vec2 const& v) { return static_cast<int>(v.x); },
-        [](Vec3 const& v) { return static_cast<int>(v.x); },
+        [](const Vec2& v) { return static_cast<int>(v.x); },
+        [](const Vec3& v) { return static_cast<int>(v.x); },
     }, m_Data);
 }
 
@@ -169,14 +169,14 @@ osc::Variant::operator std::string() const
 
     return std::visit(Overload
     {
-        [](std::monostate const&) { return "<null>"s; },
-        [](bool const& v) { return v ? "true"s : "false"s; },
-        [](Color const& v) { return to_html_string_rgba(v); },
-        [](float const& v) { return std::to_string(v); },
-        [](int const& v) { return std::to_string(v); },
+        [](const std::monostate&) { return "<null>"s; },
+        [](const bool& v) { return v ? "true"s : "false"s; },
+        [](const Color& v) { return to_html_string_rgba(v); },
+        [](const float& v) { return std::to_string(v); },
+        [](const int& v) { return std::to_string(v); },
         [](std::string_view s) { return std::string{s}; },
-        [](Vec2 const& v) { return to_string(v); },
-        [](Vec3 const& v) { return to_string(v); },
+        [](const Vec2& v) { return to_string(v); },
+        [](const Vec3& v) { return to_string(v); },
     }, m_Data);
 }
 
@@ -184,9 +184,9 @@ osc::Variant::operator osc::StringName() const
 {
     return std::visit(Overload
     {
-        [](std::string const& s) { return StringName{s}; },
-        [](StringName const& sn) { return sn; },
-        [](auto const&) { return StringName{}; },
+        [](const std::string& s) { return StringName{s}; },
+        [](const StringName& sn) { return sn; },
+        [](const auto&) { return StringName{}; },
     }, m_Data);
 }
 
@@ -194,14 +194,14 @@ osc::Variant::operator osc::Vec2() const
 {
     return std::visit(Overload
     {
-        [](std::monostate const&) { return Vec2{}; },
-        [](bool const& v) { return v ? Vec2{1.0f, 1.0f} : Vec2{}; },
-        [](Color const& v) { return Vec2{v.r, v.g}; },
-        [](float const& v) { return Vec2{v}; },
-        [](int const& v) { return Vec2{static_cast<float>(v)}; },
+        [](const std::monostate&) { return Vec2{}; },
+        [](const bool& v) { return v ? Vec2{1.0f, 1.0f} : Vec2{}; },
+        [](const Color& v) { return Vec2{v.r, v.g}; },
+        [](const float& v) { return Vec2{v}; },
+        [](const int& v) { return Vec2{static_cast<float>(v)}; },
         [](std::string_view) { return Vec2{}; },
-        [](Vec2 const& v) { return v; },
-        [](Vec3 const& v) { return Vec2{v}; },
+        [](const Vec2& v) { return v; },
+        [](const Vec3& v) { return Vec2{v}; },
     }, m_Data);
 }
 
@@ -209,18 +209,18 @@ osc::Variant::operator osc::Vec3() const
 {
     return std::visit(Overload
     {
-        [](std::monostate const&) { return Vec3{}; },
-        [](bool const& v) { return v ? Vec3{1.0f, 1.0f, 1.0f} : Vec3{}; },
-        [](Color const& v) { return Vec3{v.r, v.g, v.b}; },
-        [](float const& v) { return Vec3{v}; },
-        [](int const& v) { return Vec3{static_cast<float>(v)}; },
+        [](const std::monostate&) { return Vec3{}; },
+        [](const bool& v) { return v ? Vec3{1.0f, 1.0f, 1.0f} : Vec3{}; },
+        [](const Color& v) { return Vec3{v.r, v.g, v.b}; },
+        [](const float& v) { return Vec3{v}; },
+        [](const int& v) { return Vec3{static_cast<float>(v)}; },
         [](std::string_view) { return Vec3{}; },
-        [](Vec2 const& v) { return Vec3{v, 0.0f}; },
-        [](Vec3 const& v) { return v; },
+        [](const Vec2& v) { return Vec3{v, 0.0f}; },
+        [](const Vec3& v) { return v; },
     }, m_Data);
 }
 
-bool osc::operator==(Variant const& lhs, Variant const& rhs)
+bool osc::operator==(const Variant& lhs, const Variant& rhs)
 {
     // StringName vs. string is transparent w.r.t. comparison - even though they are
     // different entries in the std::variant
@@ -239,17 +239,17 @@ bool osc::operator==(Variant const& lhs, Variant const& rhs)
     }
 }
 
-std::string osc::to_string(Variant const& v)
+std::string osc::to_string(const Variant& v)
 {
     return v.to<std::string>();
 }
 
-std::ostream& osc::operator<<(std::ostream& o, Variant const& v)
+std::ostream& osc::operator<<(std::ostream& o, const Variant& v)
 {
     return o << to_string(v);
 }
 
-size_t std::hash<osc::Variant>::operator()(Variant const& v) const
+size_t std::hash<osc::Variant>::operator()(const Variant& v) const
 {
     // note: you might be wondering why this isn't `std::hash<std::variant>{}(v.m_Data)`
     //
@@ -266,7 +266,7 @@ size_t std::hash<osc::Variant>::operator()(Variant const& v) const
 
     return std::visit(Overload
     {
-        [](auto const& inner)
+        [](const auto& inner)
         {
             return std::hash<std::remove_cv_t<std::remove_reference_t<decltype(inner)>>>{}(inner);
         },

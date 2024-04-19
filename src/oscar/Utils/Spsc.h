@@ -59,9 +59,9 @@ namespace osc::spsc
             ++m_Impl->m_NumSenders;
         }
     public:
-        Sender(Sender const&) = delete;
+        Sender(const Sender&) = delete;
         Sender(Sender&&) noexcept = default;
-        Sender& operator=(Sender const&) = delete;
+        Sender& operator=(const Sender&) = delete;
         Sender& operator=(Sender&&) noexcept = default;
 
         ~Sender() noexcept
@@ -103,7 +103,7 @@ namespace osc::spsc
     public:
         Receiver(Receiver const&) = delete;
         Receiver(Receiver&&) noexcept = default;
-        Receiver& operator=(Receiver const&) = delete;
+        Receiver& operator=(const Receiver&) = delete;
         Receiver& operator=(Receiver&&) noexcept = default;
         ~Receiver() noexcept
         {

@@ -11,9 +11,9 @@ namespace osc
     class PopupManager final {
     public:
         PopupManager();
-        PopupManager(PopupManager const&) = delete;
+        PopupManager(const PopupManager&) = delete;
         PopupManager(PopupManager&&) noexcept;
-        PopupManager& operator=(PopupManager const&) = delete;
+        PopupManager& operator=(const PopupManager&) = delete;
         PopupManager& operator=(PopupManager&&) noexcept;
         ~PopupManager() noexcept;
 

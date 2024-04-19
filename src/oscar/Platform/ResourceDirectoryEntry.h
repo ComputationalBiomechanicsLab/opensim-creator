@@ -8,16 +8,16 @@ namespace osc
 {
     class ResourceDirectoryEntry final {
     public:
-        ResourceDirectoryEntry(ResourcePath path_, bool isDirectory_) :
-            m_Path{std::move(path_)},
-            m_IsDirectory{isDirectory_}
+        ResourceDirectoryEntry(ResourcePath path, bool is_directory) :
+            path_{std::move(path)},
+            is_directory_{is_directory}
         {}
 
-        ResourcePath const& path() const { return m_Path; }
-        operator ResourcePath const& () const { return m_Path; }
-        bool is_directory() const { return m_IsDirectory; }
+        const ResourcePath& path() const { return path_; }
+        operator const ResourcePath& () const { return path_; }
+        bool is_directory() const { return is_directory_; }
     private:
-        ResourcePath m_Path;
-        bool m_IsDirectory;
+        ResourcePath path_;
+        bool is_directory_;
     };
 }

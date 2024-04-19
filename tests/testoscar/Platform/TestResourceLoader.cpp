@@ -56,10 +56,10 @@ TEST(ResourceLoader, WithPrefixCausesIResourceLoaderToBeCalledWithPrefixedPath)
     auto state = std::make_shared<MockState>();
 
     ResourceLoader rl = make_resource_loader<MockResourceLoader>(state);
-    ResourceLoader prefixedLoader = rl.withPrefix("prefix");
+    ResourceLoader prefixedLoader = rl.with_prefix("prefix");
 
     rl.open(ResourcePath{"path"});
-    ASSERT_EQ(state->lastOpenCallArg, ResourcePath{"path"}) << "withPrefix doesn't affect original ResourceLoader";
+    ASSERT_EQ(state->lastOpenCallArg, ResourcePath{"path"}) << "with_prefix doesn't affect original ResourceLoader";
     prefixedLoader.open(ResourcePath{"path"});
-    ASSERT_EQ(state->lastOpenCallArg, ResourcePath{"prefix/path"}) << "withPrefix should return a loader the prefixes each open call";
+    ASSERT_EQ(state->lastOpenCallArg, ResourcePath{"prefix/path"}) << "with_prefix should return a loader the prefixes each open call";
 }

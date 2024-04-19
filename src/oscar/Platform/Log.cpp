@@ -12,73 +12,70 @@ namespace
 {
     class StdoutSink final : public LogSink {
     private:
-        void implLog(LogMessageView const& msg) final
+        void impl_log_message(const LogMessageView& message) final
         {
-            static std::mutex s_StdoutMutex;
+            static std::mutex s_stdout_mutex;
 
-            std::lock_guard g{s_StdoutMutex};
-            std::cerr << '[' << msg.loggerName << "] [" << ToCStringView(msg.level) << "] " << msg.payload << std::endl;
+            const std::lock_guard g{s_stdout_mutex};
+            std::cerr << '[' << message.logger_name << "] [" << to_cstringview(message.level) << "] " << message.payload << std::endl;
         }
     };
 
     class CircularLogSink final : public LogSink {
     public:
-        SynchronizedValue<CircularBuffer<LogMessage, detail::c_MaxLogTracebackMessages>>& updMessages()
+        SynchronizedValue<CircularBuffer<LogMessage, detail::c_max_log_traceback_messages>>& upd_messages()
         {
-            return m_Messages;
+            return messages_;
         }
+
     private:
-        void implLog(LogMessageView const& msg) final
+        void impl_log_message(const LogMessageView& msg) final
         {
-            auto l = m_Messages.lock();
+            auto l = messages_.lock();
             l->emplace_back(msg);
         }
 
-        SynchronizedValue<CircularBuffer<LogMessage, detail::c_MaxLogTracebackMessages>> m_Messages;
+        SynchronizedValue<CircularBuffer<LogMessage, detail::c_max_log_traceback_messages>> messages_;
     };
 
     struct GlobalSinks final {
-        GlobalSinks() :
-            defaultLogSink{std::make_shared<Logger>("default", std::make_shared<StdoutSink>())},
-            tracebackSink{std::make_shared<CircularLogSink>()}
+        GlobalSinks()
         {
-            defaultLogSink->sinks().push_back(tracebackSink);
+            default_log_sink->sinks().push_back(traceback_sink);
         }
 
-        std::shared_ptr<Logger> defaultLogSink;
-        std::shared_ptr<CircularLogSink> tracebackSink;
+        std::shared_ptr<Logger> default_log_sink = std::make_shared<Logger>("default", std::make_shared<StdoutSink>());
+        std::shared_ptr<CircularLogSink> traceback_sink = std::make_shared<CircularLogSink>();
     };
 
-    GlobalSinks& GetGlobalSinks()
+    GlobalSinks& get_global_sinks()
     {
-        static GlobalSinks s_GlobalSinks;
-        return s_GlobalSinks;
+        static GlobalSinks s_global_sinks;
+        return s_global_sinks;
     }
 }
 
-// public API
-
-std::shared_ptr<Logger> osc::defaultLogger()
+std::shared_ptr<Logger> osc::global_default_logger()
 {
-    return GetGlobalSinks().defaultLogSink;
+    return get_global_sinks().default_log_sink;
 }
 
-Logger* osc::defaultLoggerRaw()
+Logger* osc::global_default_logger_raw()
 {
-    return GetGlobalSinks().defaultLogSink.get();
+    return get_global_sinks().default_log_sink.get();
 }
 
-LogLevel osc::getTracebackLevel()
+LogLevel osc::global_get_traceback_level()
 {
-    return GetGlobalSinks().tracebackSink->getLevel();
+    return get_global_sinks().traceback_sink->level();
 }
 
-void osc::setTracebackLevel(LogLevel lvl)
+void osc::global_set_traceback_level(LogLevel lvl)
 {
-    GetGlobalSinks().tracebackSink->setLevel(lvl);
+    get_global_sinks().traceback_sink->set_level(lvl);
 }
 
-SynchronizedValue<CircularBuffer<LogMessage, detail::c_MaxLogTracebackMessages>>& osc::getTracebackLog()
+SynchronizedValue<CircularBuffer<LogMessage, detail::c_max_log_traceback_messages>>& osc::global_get_traceback_log()
 {
-    return GetGlobalSinks().tracebackSink->updMessages();
+    return get_global_sinks().traceback_sink->upd_messages();
 }

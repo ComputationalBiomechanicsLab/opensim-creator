@@ -25,10 +25,10 @@ namespace osc
         Variant(int);
         Variant(std::string);
         Variant(std::string_view);
-        Variant(char const* ptr) : Variant{std::string_view{ptr}} {}
+        Variant(const char* ptr) : Variant{std::string_view{ptr}} {}
         Variant(std::nullopt_t) = delete;
         Variant(CStringView csv) : Variant{std::string_view{csv}} {}
-        Variant(StringName const&);
+        Variant(const StringName&);
         Variant(Vec2);
         Variant(Vec3);
 
@@ -51,7 +51,7 @@ namespace osc
             return this->operator T();
         }
 
-        friend bool operator==(Variant const&, Variant const&);
+        friend bool operator==(const Variant&, const Variant&);
 
         friend void swap(Variant& a, Variant& b) noexcept
         {
@@ -74,12 +74,12 @@ namespace osc
         > m_Data;
     };
 
-    bool operator==(Variant const&, Variant const&);
-    std::string to_string(Variant const&);
-    std::ostream& operator<<(std::ostream&, Variant const&);
+    bool operator==(const Variant&, const Variant&);
+    std::string to_string(const Variant&);
+    std::ostream& operator<<(std::ostream&, const Variant&);
 }
 
 template<>
 struct std::hash<osc::Variant> final {
-    size_t operator()(osc::Variant const&) const;
+    size_t operator()(const osc::Variant&) const;
 };

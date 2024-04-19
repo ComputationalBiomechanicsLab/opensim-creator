@@ -104,7 +104,7 @@ private:
     std::shared_ptr<UndoableModelStatePair> m_Model;
 
     std::shared_ptr<IconCache> m_IconCache = App::singleton<IconCache>(
-        App::resource_loader().withPrefix("icons/"),
+        App::resource_loader().with_prefix("icons/"),
         ui::GetTextLineHeight()/128.0f
     );
 };

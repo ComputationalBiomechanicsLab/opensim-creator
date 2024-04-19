@@ -254,7 +254,7 @@ void osc::MainMenuAboutTab::onDraw()
 
         ui::TextUnformatted("MSXAA");
         ui::SameLine();
-        ui::DrawHelpMarker("the level of MultiSample Anti-Aliasing to use. This only affects 3D renders *within* the UI, not the whole UI (panels etc. will not be affected)");
+        ui::DrawHelpMarker("the log_level_ of MultiSample Anti-Aliasing to use. This only affects 3D renders *within* the UI, not the whole UI (panels etc. will not be affected)");
         ui::NextColumn();
         {
             AntiAliasingLevel const current = App::get().anti_aliasing_level();

@@ -22,24 +22,23 @@ namespace osc
             typename U,
             typename std::enable_if_t<std::is_base_of_v<T, U>, bool> = true
         >
-        explicit ParentPtr(std::shared_ptr<U> const& parent_) :
+        explicit ParentPtr(const std::shared_ptr<U>& parent_) :
             m_Parent{parent_}
         {
             OSC_ASSERT(!m_Parent.expired() && "null or expired parent pointer given to a child");
         }
 
         // normal copy construction
-        ParentPtr(ParentPtr const&) = default;
+        ParentPtr(const ParentPtr&) = default;
 
         // coercing copy construction: only applies when `T` can be implicitly converted to `U`
         template<
             typename U,
             typename std::enable_if_t<std::is_base_of_v<T, U>, bool> = true
         >
-        ParentPtr(ParentPtr<U> const& other) :
+        ParentPtr(const ParentPtr<U>& other) :
             m_Parent{other.m_Parent}
-        {
-        }
+        {}
 
         // normal move construction
         ParentPtr(ParentPtr&&) noexcept = default;
@@ -55,14 +54,14 @@ namespace osc
         }
 
         // normal copy assignment
-        ParentPtr& operator=(ParentPtr const&) = default;
+        ParentPtr& operator=(const ParentPtr&) = default;
 
         // coercing copy assignment: only applies when `T` can be implicitly converted to `U`
         template<
             typename U,
             typename std::enable_if_t<std::is_base_of_v<T, U>, bool> = false
         >
-        ParentPtr& operator=(ParentPtr<U> const& other)
+        ParentPtr& operator=(const ParentPtr<U>& other)
         {
             m_Parent = other.m_Parent;
         }
@@ -104,7 +103,7 @@ namespace osc
         template<typename> friend class ParentPtr;
 
         // friend function, for downcasting
-        template<typename TDerived, typename TBase> friend std::optional<ParentPtr<TDerived>> DynamicParentCast(ParentPtr<TBase> const&);
+        template<typename TDerived, typename TBase> friend std::optional<ParentPtr<TDerived>> DynamicParentCast(const ParentPtr<TBase>&);
 
         std::weak_ptr<T> m_Parent;
     };
@@ -113,17 +112,15 @@ namespace osc
         typename TDerived,
         typename TBase
     >
-    std::optional<ParentPtr<TDerived>> DynamicParentCast(ParentPtr<TBase> const& p)
+    std::optional<ParentPtr<TDerived>> DynamicParentCast(const ParentPtr<TBase>& p)
     {
-        std::shared_ptr<TBase> const parentSharedPtr = p.m_Parent.lock();
+        const std::shared_ptr<TBase> parentSharedPtr = p.m_Parent.lock();
         OSC_ASSERT(parentSharedPtr != nullptr && "orphaned child tried to access a dead parent: this is a development error");
 
-        if (auto parentDowncastedPtr = std::dynamic_pointer_cast<TDerived>(parentSharedPtr))
-        {
+        if (auto parentDowncastedPtr = std::dynamic_pointer_cast<TDerived>(parentSharedPtr)) {
             return ParentPtr<TDerived>{std::move(parentDowncastedPtr)};
         }
-        else
-        {
+        else {
             return std::nullopt;
         }
     }

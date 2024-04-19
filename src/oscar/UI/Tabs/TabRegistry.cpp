@@ -11,7 +11,7 @@ using namespace osc;
 
 class osc::TabRegistry::Impl final {
 public:
-    void registerTab(TabRegistryEntry const& newEntry)
+    void registerTab(const TabRegistryEntry& newEntry)
     {
         m_Entries.push_back(newEntry);
         std::sort(m_Entries.begin(), m_Entries.end());
@@ -29,7 +29,7 @@ public:
 
     std::optional<TabRegistryEntry> getByName(std::string_view name) const
     {
-        auto const it = find_if(m_Entries, [name](TabRegistryEntry const& e)
+        const auto it = find_if(m_Entries, [name](const TabRegistryEntry& e)
         {
             return e.getName() == name;
         });
@@ -52,7 +52,7 @@ osc::TabRegistry::TabRegistry(TabRegistry&&) noexcept = default;
 osc::TabRegistry& osc::TabRegistry::operator=(TabRegistry&&) noexcept = default;
 osc::TabRegistry::~TabRegistry() noexcept = default;
 
-void osc::TabRegistry::registerTab(TabRegistryEntry const& newEntry)
+void osc::TabRegistry::registerTab(const TabRegistryEntry& newEntry)
 {
     m_Impl->registerTab(newEntry);
 }

@@ -9,9 +9,9 @@ namespace osc
 {
     class NullOStream final : public std::ostream {
     public:
-        NullOStream() : std::ostream{&m_Streambuf}
-        {
-        }
+        NullOStream() :
+            std::ostream{&m_Streambuf}
+        {}
 
         size_t numCharsWritten() const
         {

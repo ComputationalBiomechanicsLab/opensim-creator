@@ -16,13 +16,13 @@ namespace osc
             m_Value{std::forward<Args>(args)...}
         {}
 
-        DefaultConstructOnCopy(DefaultConstructOnCopy const&) :
+        DefaultConstructOnCopy(const DefaultConstructOnCopy&) :
             m_Value{}
         {}
 
         DefaultConstructOnCopy(DefaultConstructOnCopy&&) noexcept = default;
 
-        DefaultConstructOnCopy& operator=(DefaultConstructOnCopy const&)
+        DefaultConstructOnCopy& operator=(const DefaultConstructOnCopy&)
         {
             m_Value = T{};  // exception safety: construct it then move-assign it
             return *this;
@@ -33,11 +33,11 @@ namespace osc
         ~DefaultConstructOnCopy() noexcept = default;
 
         T* operator->() { return &m_Value; }
-        T const* operator->() const { return &m_Value; }
+        const T* operator->() const { return &m_Value; }
         T& operator*() { return m_Value; }
-        T const& operator*() const { return m_Value; }
+        const T& operator*() const { return m_Value; }
         T* get() { return m_Value; }
-        T const* get() const { return m_Value; }
+        const T* get() const { return m_Value; }
 
         void reset() { m_Value = T{}; }
 

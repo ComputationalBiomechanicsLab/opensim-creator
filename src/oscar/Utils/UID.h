@@ -33,9 +33,9 @@ namespace osc
         UID() : m_Value{GetNextID()}
         {
         }
-        constexpr UID(UID const&) = default;
+        constexpr UID(const UID&) = default;
         constexpr UID(UID&&) noexcept = default;
-        constexpr UID& operator=(UID const&) = default;
+        constexpr UID& operator=(const UID&) = default;
         constexpr UID& operator=(UID&&) noexcept = default;
         ~UID() noexcept = default;
 
@@ -54,7 +54,7 @@ namespace osc
             return m_Value > 0;
         }
 
-        friend auto operator<=>(UID const&, UID const&) = default;
+        friend auto operator<=>(const UID&, const UID&) = default;
 
     private:
         static constinit std::atomic<element_type> g_NextID;
@@ -70,7 +70,7 @@ namespace osc
         element_type m_Value;
     };
 
-    std::ostream& operator<<(std::ostream&, UID const&);
+    std::ostream& operator<<(std::ostream&, const UID&);
 }
 
 // hashing support for LogicalIDs
@@ -78,7 +78,7 @@ namespace osc
 // lets them be used as associative lookup keys, etc.
 template<>
 struct std::hash<osc::UID> final {
-    size_t operator()(osc::UID const& id) const
+    size_t operator()(const osc::UID& id) const
     {
         return static_cast<size_t>(id.get());
     }

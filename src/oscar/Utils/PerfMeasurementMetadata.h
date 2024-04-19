@@ -18,20 +18,19 @@ namespace osc
             m_Label{label_},
             m_Filename{filename_},
             m_FileLine{fileLine_}
-        {
-        }
+        {}
 
         size_t getID() const
         {
             return m_ID;
         }
 
-        std::string const& getLabel() const
+        const std::string& getLabel() const
         {
             return m_Label;
         }
 
-        std::string const& getFilename() const
+        const std::string& getFilename() const
         {
             return m_Filename;
         }

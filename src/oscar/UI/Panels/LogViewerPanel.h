@@ -11,9 +11,9 @@ namespace osc
     class LogViewerPanel final : public IPanel {
     public:
         explicit LogViewerPanel(std::string_view panelName);
-        LogViewerPanel(LogViewerPanel const&) = delete;
+        LogViewerPanel(const LogViewerPanel&) = delete;
         LogViewerPanel(LogViewerPanel&&) noexcept;
-        LogViewerPanel& operator=(LogViewerPanel const&) = delete;
+        LogViewerPanel& operator=(const LogViewerPanel&) = delete;
         LogViewerPanel& operator=(LogViewerPanel&&) noexcept;
         ~LogViewerPanel() noexcept;
 

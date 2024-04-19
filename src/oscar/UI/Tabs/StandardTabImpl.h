@@ -12,8 +12,7 @@ namespace osc
     protected:
         explicit StandardTabImpl(CStringView tabName) :
             m_TabName{std::string{tabName}}
-        {
-        }
+        {}
 
     private:
         UID implGetID() const final

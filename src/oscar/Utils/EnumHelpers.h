@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <functional>
 #include <iterator>
+#include <optional>
 #include <type_traits>
 
 namespace osc
@@ -44,6 +45,19 @@ namespace osc
         return static_cast<size_t>(cpp23::to_underlying(v));
     }
 
+    // if `pos` is within the range of densely-packed enum options, returns the enum member
+    // that has an integer value equal to `pos`; otherwise, returns `std::nullopt`
+    template<DenselyPackedOptionsEnum TEnum>
+    constexpr std::optional<TEnum> from_index(size_t pos)
+    {
+        if (pos < num_options<TEnum>()) {
+            return static_cast<TEnum>(pos);
+        }
+        else {
+            return std::nullopt;
+        }
+    }
+
     // an iterable adaptor for a `DenselyPackedOptionsEnum` that, when iterated, emits
     // each enum option projected via `Proj`
     template<
@@ -61,9 +75,9 @@ namespace osc
             using iterator_category = std::forward_iterator_tag;
 
             Iterator() = default;
-            Iterator(Proj const& proj_, TEnum current_) : m_Current{current_}, m_Proj{&proj_} {}
+            Iterator(const Proj& proj_, TEnum current_) : m_Current{current_}, m_Proj{&proj_} {}
 
-            friend bool operator==(Iterator const&, Iterator const&) = default;
+            friend bool operator==(const Iterator&, const Iterator&) = default;
 
             value_type operator*() const
             {
@@ -84,7 +98,7 @@ namespace osc
             }
         private:
             TEnum m_Current = static_cast<TEnum>(0);
-            Proj const* m_Proj = nullptr;
+            const Proj* m_Proj = nullptr;
         };
 
         using value_type = decltype(Proj{}(std::declval<TEnum>()));

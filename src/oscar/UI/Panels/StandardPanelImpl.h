@@ -14,9 +14,9 @@ namespace osc
     protected:
         explicit StandardPanelImpl(std::string_view panelName);
         StandardPanelImpl(std::string_view panelName, ImGuiWindowFlags);
-        StandardPanelImpl(StandardPanelImpl const&) = default;
+        StandardPanelImpl(const StandardPanelImpl&) = default;
         StandardPanelImpl(StandardPanelImpl&&) noexcept = default;
-        StandardPanelImpl& operator=(StandardPanelImpl const&) = default;
+        StandardPanelImpl& operator=(const StandardPanelImpl&) = default;
         StandardPanelImpl& operator=(StandardPanelImpl&&) noexcept = default;
     public:
         ~StandardPanelImpl() noexcept override = default;

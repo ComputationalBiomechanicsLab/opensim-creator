@@ -48,17 +48,17 @@ public:
 
     bool isLeftClicked() const
     {
-        return m_MaybeLastHittest && m_MaybeLastHittest->isLeftClickReleasedWithoutDragging;
+        return m_MaybeLastHittest && m_MaybeLastHittest->is_left_click_released_without_dragging;
     }
 
     bool isRightClicked() const
     {
-        return m_MaybeLastHittest && m_MaybeLastHittest->isRightClickReleasedWithoutDragging;
+        return m_MaybeLastHittest && m_MaybeLastHittest->is_right_click_released_without_dragging;
     }
 
     bool isMousedOver() const
     {
-        return m_MaybeLastHittest && m_MaybeLastHittest->isHovered;
+        return m_MaybeLastHittest && m_MaybeLastHittest->is_hovered;
     }
 
     std::optional<SceneCollision> onDraw(IConstModelStatePair const& rs)
@@ -74,11 +74,11 @@ public:
         }
 
         // inputs: process inputs, if hovering
-        if (m_MaybeLastHittest && m_MaybeLastHittest->isHovered)
+        if (m_MaybeLastHittest && m_MaybeLastHittest->is_hovered)
         {
             ui::UpdatePolarCameraFromInputs(
                 m_Params.camera,
-                m_MaybeLastHittest->rect,
+                m_MaybeLastHittest->item_rect,
                 m_CachedModelRenderer.bounds()
             );
         }
@@ -103,12 +103,12 @@ public:
 
         // if allowed, hittest the scene
         std::optional<SceneCollision> hittestResult;
-        if (!(m_Flags & Readonly3DModelViewerFlags::NoSceneHittest) && hittest.isHovered && !ui::IsDraggingWithAnyMouseButtonDown())
+        if (!(m_Flags & Readonly3DModelViewerFlags::NoSceneHittest) && hittest.is_hovered && !ui::IsDraggingWithAnyMouseButtonDown())
         {
             hittestResult = m_CachedModelRenderer.getClosestCollision(
                 m_Params,
                 ui::GetMousePos(),
-                hittest.rect
+                hittest.item_rect
             );
         }
 
@@ -118,7 +118,7 @@ public:
             m_Params,
             m_CachedModelRenderer.getDrawlist(),
             m_CachedModelRenderer.bounds(),
-            hittest.rect,
+            hittest.item_rect,
             *m_IconCache,
             [this]() { return drawRulerButton(); }
         );
@@ -136,7 +136,7 @@ public:
         // handle ruler and return value
         if (m_Ruler.isMeasuring())
         {
-            m_Ruler.onDraw(m_Params.camera, hittest.rect, hittestResult);
+            m_Ruler.onDraw(m_Params.camera, hittest.item_rect, hittestResult);
             return std::nullopt;  // disable hittest while measuring
         }
         else
@@ -148,7 +148,7 @@ public:
     std::optional<Rect> getScreenRect() const
     {
         return m_MaybeLastHittest ?
-            std::optional<Rect>{m_MaybeLastHittest->rect} :
+            std::optional<Rect>{m_MaybeLastHittest->item_rect} :
             std::nullopt;
     }
 
@@ -198,7 +198,7 @@ private:
 
     // overlay-related data
     std::shared_ptr<IconCache> m_IconCache = App::singleton<IconCache>(
-        App::resource_loader().withPrefix("icons/"),
+        App::resource_loader().with_prefix("icons/"),
         ui::GetTextLineHeight()/128.0f
     );
     GuiRuler m_Ruler;

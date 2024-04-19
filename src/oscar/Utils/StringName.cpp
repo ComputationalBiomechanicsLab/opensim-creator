@@ -28,7 +28,7 @@ namespace
         {
         }
 
-        friend bool operator==(std::string_view lhs, StringNameDataPtr const& rhs)
+        friend bool operator==(std::string_view lhs, const StringNameDataPtr& rhs)
         {
             return lhs == rhs.m_Ptr->value();
         }
@@ -55,7 +55,7 @@ namespace
             return ankerl::unordered_dense::hash<std::string_view>{}(str);
         }
 
-        [[nodiscard]] auto operator()(StringNameDataPtr const& ptr) const noexcept -> uint64_t
+        [[nodiscard]] auto operator()(const StringNameDataPtr& ptr) const noexcept -> uint64_t
         {
             return ankerl::unordered_dense::hash<std::string_view>{}(ptr->value());
         }
@@ -95,9 +95,9 @@ namespace
     }
 
     // edge-case for blank string (common)
-    StringName const& GetCachedBlankStringData()
+    const StringName& GetCachedBlankStringData()
     {
-        static StringName const s_BlankString{std::string_view{}};
+        static const StringName s_BlankString{std::string_view{}};
         return s_BlankString;
     }
 }
@@ -107,7 +107,7 @@ osc::StringName::StringName(std::string&& tmp) : m_Data{&PossiblyConstructThenGe
 osc::StringName::StringName(std::string_view sv) : m_Data{&PossiblyConstructThenGetData(sv)} {}
 osc::StringName::~StringName() noexcept { DecrementThenPossiblyDestroyData(*m_Data); }
 
-std::ostream& osc::operator<<(std::ostream& o, StringName const& s)
+std::ostream& osc::operator<<(std::ostream& o, const StringName& s)
 {
     return o << std::string_view{s};
 }

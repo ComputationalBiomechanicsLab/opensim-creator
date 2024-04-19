@@ -33,21 +33,21 @@ namespace osc::ui
     // updates a polar comera's rotation, position, etc. from UI mouse input state
     bool UpdatePolarCameraFromMouseInputs(
         PolarPerspectiveCamera&,
-        Vec2 viewportDims
+        Vec2 viewport_dimensions
     );
 
     // updates a polar comera's rotation, position, etc. from UI keyboard input state
     bool UpdatePolarCameraFromKeyboardInputs(
         PolarPerspectiveCamera&,
-        Rect const& viewportRect,
-        std::optional<AABB> maybeSceneAABB
+        const Rect& viewport_rect,
+        std::optional<AABB> maybe_scene_aabb
     );
 
     // updates a polar comera's rotation, position, etc. from UI input state (all)
     bool UpdatePolarCameraFromInputs(
         PolarPerspectiveCamera&,
-        Rect const& viewportRect,
-        std::optional<AABB> maybeSceneAABB
+        const Rect& viewport_rect,
+        std::optional<AABB> maybe_scene_aabb
     );
 
     void UpdateCameraFromInputs(
@@ -62,24 +62,24 @@ namespace osc::ui
     //
     // assumes the texture coordinates are [(0.0, 1.0), (1.0, 0.0)]
     void Image(
-        Texture2D const&
+        const Texture2D&
     );
     void Image(
-        Texture2D const&,
-        Vec2 dims
+        const Texture2D&,
+        Vec2 dimensions
     );
     void Image(
-        Texture2D const&,
-        Vec2 dims,
-        Vec2 topLeftCoord,
-        Vec2 bottomRightCoord
+        const Texture2D&,
+        Vec2 dimensions,
+        Vec2 top_left_texture_coordinate,
+        Vec2 bottom_right_texture_coordinate
     );
     void Image(
-        RenderTexture const&
+        const RenderTexture&
     );
     void Image(
-        RenderTexture const&,
-        Vec2 dims
+        const RenderTexture&,
+        Vec2 dimensions
     );
 
     // returns the dimensions of a button with the given content
@@ -88,20 +88,20 @@ namespace osc::ui
 
     bool ButtonNoBg(
         CStringView,
-        Vec2 size = {0.0f, 0.0f}
+        Vec2 dimensions = {0.0f, 0.0f}
     );
 
     // draws a texture within the UI as a clickable button
     bool ImageButton(
         CStringView,
-        Texture2D const&,
-        Vec2 dims,
-        Rect const& textureCoords
+        const Texture2D&,
+        Vec2 dimensions,
+        const Rect& texture_coordinates
     );
     bool ImageButton(
         CStringView,
-        Texture2D const&,
-        Vec2 dims
+        const Texture2D&,
+        Vec2 dimensions
     );
 
     // returns the screenspace bounding rectangle of the last-drawn item
@@ -109,21 +109,21 @@ namespace osc::ui
 
     // hittest the last-drawn item in the UI
     struct HittestResult final {
-        Rect rect = {};
-        bool isHovered = false;
-        bool isLeftClickReleasedWithoutDragging = false;
-        bool isRightClickReleasedWithoutDragging = false;
+        Rect item_rect = {};
+        bool is_hovered = false;
+        bool is_left_click_released_without_dragging = false;
+        bool is_right_click_released_without_dragging = false;
     };
     HittestResult HittestLastItem();
-    HittestResult HittestLastItem(float dragThreshold);
+    HittestResult HittestLastItem(float drag_threshold);
 
     // returns `true` if any scancode in the provided range is currently pressed down
-    bool IsAnyKeyDown(std::span<ImGuiKey const>);
-    bool IsAnyKeyDown(std::initializer_list<ImGuiKey const>);
+    bool IsAnyKeyDown(std::span<const ImGuiKey>);
+    bool IsAnyKeyDown(std::initializer_list<const ImGuiKey>);
 
     // returns `true` if any scancode in the provided range was pressed down this frame
-    bool IsAnyKeyPressed(std::span<ImGuiKey const>);
-    bool IsAnyKeyPressed(std::initializer_list<ImGuiKey const>);
+    bool IsAnyKeyPressed(std::span<const ImGuiKey>);
+    bool IsAnyKeyPressed(std::initializer_list<const ImGuiKey>);
 
     // returns true if the user is pressing either left- or right-Ctrl
     bool IsCtrlDown();
@@ -144,14 +144,14 @@ namespace osc::ui
 
     // returns `true` if the specified mouse button was released without the user dragging
     bool IsMouseReleasedWithoutDragging(ImGuiMouseButton);
-    bool IsMouseReleasedWithoutDragging(ImGuiMouseButton, float dragThreshold);
+    bool IsMouseReleasedWithoutDragging(ImGuiMouseButton, float drag_threshold);
 
     // returns `true` if the user is dragging their mouse with any button pressed
     bool IsDraggingWithAnyMouseButtonDown();
 
     // (lower-level tooltip methods: prefer using higher-level 'DrawTooltip(txt)' methods)
-    void BeginTooltip(std::optional<float> wrapWidth = std::nullopt);
-    void EndTooltip(std::optional<float> wrapWidth = std::nullopt);
+    void BeginTooltip(std::optional<float> wrap_width = std::nullopt);
+    void EndTooltip(std::optional<float> wrap_width = std::nullopt);
     void TooltipHeaderText(CStringView);
     void TooltipDescriptionSpacer();
     void TooltipDescriptionText(CStringView);
@@ -176,7 +176,7 @@ namespace osc::ui
     );
 
     // draw a help text marker `"(?)"` and display a tooltip when the user hovers over it
-    void DrawHelpMarker(CStringView header, CStringView desc);
+    void DrawHelpMarker(CStringView header, CStringView description);
 
     // draw a help text marker `"(?)"` and display a tooltip when the user hovers over it
     void DrawHelpMarker(CStringView);
@@ -184,7 +184,7 @@ namespace osc::ui
     // draw a ui::InputText that manipulates a std::string
     bool InputString(
         CStringView label,
-        std::string& editedString,
+        std::string& edited_string,
         ImGuiInputTextFlags flags = ImGuiInputTextFlags_None
     );
 
@@ -244,16 +244,16 @@ namespace osc::ui
     );
 
     // returns an `ImU32` converted from the given `Color`
-    ImU32 ToImU32(Color const&);
+    ImU32 ToImU32(const Color&);
 
     // returns a `Color` converted from the given LDR 8-bit `ImU32` format
     Color to_color(ImU32);
 
     // returns a `Color` converted from the given LDR `ImVec4` color
-    Color to_color(ImVec4 const&);
+    Color to_color(const ImVec4&);
 
     // returns an `ImVec4` converted from the given `Color`
-    ImVec4 ToImVec4(Color const&);
+    ImVec4 ToImVec4(const Color&);
 
     // returns "minimal" window flags (i.e. no title bar, can't move the window - ideal for images etc.)
     ImGuiWindowFlags GetMinimalWindowFlags();
@@ -270,7 +270,7 @@ namespace osc::ui
     bool BeginMainViewportTopBar(
         CStringView label,
         float height = ui::GetFrameHeight(),
-        ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_MenuBar
+        ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_MenuBar
     );
 
     // begin a menu that's attached to the bottom of a viewport, end it with ui::End();
@@ -307,13 +307,13 @@ namespace osc::ui
         CStringView label,
         size_t* current,
         size_t size,
-        std::function<CStringView(size_t)> const& accessor
+        const std::function<CStringView(size_t)>& accessor
     );
 
     bool Combo(
         CStringView label,
         size_t* current,
-        std::span<CStringView const> items
+        std::span<const CStringView> items
     );
 
     void VerticalSeperator();

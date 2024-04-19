@@ -10,10 +10,10 @@ namespace osc
     public:
         FileChangePoller(
             std::chrono::milliseconds delayBetweenChecks,
-            std::string const& path
+            const std::string& path
         );
 
-        bool changeWasDetected(std::string const& path);
+        bool changeWasDetected(const std::string& path);
 
     private:
         std::chrono::milliseconds m_DelayBetweenChecks;

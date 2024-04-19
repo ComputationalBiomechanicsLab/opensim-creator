@@ -79,18 +79,18 @@ private:
     void implOnMount() final
     {
         App::upd().make_main_loop_polling();
-        m_UserCamera.onMount();
+        m_UserCamera.on_mount();
     }
 
     void implOnUnmount() final
     {
-        m_UserCamera.onUnmount();
+        m_UserCamera.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
     bool implOnEvent(SDL_Event const& e) final
     {
-        return m_UserCamera.onEvent(e);
+        return m_UserCamera.on_event(e);
     }
 
     void implOnDraw() final
@@ -101,7 +101,7 @@ private:
         Rect const rhs = {{xmid, viewport.p1.y}, viewport.p2};
         FrustumPlanes const frustum = calc_frustum_planes(m_UserCamera, aspect_ratio(lhs));
 
-        m_UserCamera.onDraw();  // update from inputs etc.
+        m_UserCamera.on_draw();  // update from inputs etc.
 
         // render from user's perspective on left-hand side
         for (auto const& dec : m_Decorations) {

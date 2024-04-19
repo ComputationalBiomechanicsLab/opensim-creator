@@ -13,9 +13,9 @@ namespace osc
     class ITab {
     protected:
         ITab() = default;
-        ITab(ITab const&) = default;
+        ITab(const ITab&) = default;
         ITab(ITab&&) noexcept = default;
-        ITab& operator=(ITab const&) = default;
+        ITab& operator=(const ITab&) = default;
         ITab& operator=(ITab&&) noexcept = default;
     public:
         virtual ~ITab() noexcept = default;
@@ -26,7 +26,7 @@ namespace osc
         bool trySave() { return implTrySave(); }
         void onMount() { implOnMount(); }
         void onUnmount() { implOnUnmount(); }
-        bool onEvent(SDL_Event const& e) { return implOnEvent(e); }
+        bool onEvent(const SDL_Event& e) { return implOnEvent(e); }
         void onTick() { implOnTick(); }
         void onDrawMainMenu() { implOnDrawMainMenu(); }
         void onDraw() { implOnDraw(); }
@@ -38,7 +38,7 @@ namespace osc
         virtual bool implTrySave() { return true; }
         virtual void implOnMount() {}
         virtual void implOnUnmount() {}
-        virtual bool implOnEvent(SDL_Event const&) { return false; }
+        virtual bool implOnEvent(const SDL_Event&) { return false; }
         virtual void implOnTick() {}
         virtual void implOnDrawMainMenu() {}
         virtual void implOnDraw() = 0;

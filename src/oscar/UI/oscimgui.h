@@ -30,7 +30,7 @@ namespace osc::ui
         ImGui::TextUnformatted(sv.c_str(), sv.c_str() + sv.size());
     }
 
-    inline void Text(char const* fmt, ...)
+    inline void Text(const char* fmt, ...)
     {
         va_list args;
         va_start(args, fmt);
@@ -43,7 +43,7 @@ namespace osc::ui
         ImGui::TextDisabled("%s", sv.c_str());
     }
 
-    inline void TextDisabled(char const* fmt, ...)
+    inline void TextDisabled(const char* fmt, ...)
     {
         va_list args;
         va_start(args, fmt);
@@ -56,7 +56,7 @@ namespace osc::ui
         ImGui::TextWrapped("%s", sv.c_str());
     }
 
-    inline void TextWrapped(char const* fmt, ...)
+    inline void TextWrapped(const char* fmt, ...)
     {
         va_list args;
         va_start(args, fmt);
@@ -259,7 +259,7 @@ namespace osc::ui
         return ImGui::ColorEdit4(label.c_str(), value_ptr(color));
     }
 
-    inline bool Button(CStringView label, Vec2 const& size = {})
+    inline bool Button(CStringView label, const Vec2& size = {})
     {
         return ImGui::Button(label.c_str(), size);
     }
@@ -284,7 +284,7 @@ namespace osc::ui
         return ImGui::CollapsingHeader(label.c_str());
     }
 
-    inline void Dummy(Vec2 const& size)
+    inline void Dummy(const Vec2& size)
     {
         ImGui::Dummy(size);
     }
@@ -564,7 +564,7 @@ namespace osc::ui
 
     inline Color GetStyleColor(ImGuiCol color)
     {
-        auto const vec = ImGui::GetStyleColorVec4(color);
+        const auto vec = ImGui::GetStyleColorVec4(color);
         return {vec.x, vec.y, vec.z, vec.w};
     }
 
@@ -603,7 +603,7 @@ namespace osc::ui
         return ImGui::GetIO();
     }
 
-    inline void PushStyleVar(ImGuiStyleVar style, Vec2 const& pos)
+    inline void PushStyleVar(ImGuiStyleVar style, const Vec2& pos)
     {
         ImGui::PushStyleVar(style, pos);
     }
@@ -753,12 +753,12 @@ namespace osc::ui
         ImGui::PushStyleColor(index, col);
     }
 
-    inline void PushStyleColor(ImGuiCol index, Vec4 const& col)
+    inline void PushStyleColor(ImGuiCol index, const Vec4& col)
     {
         ImGui::PushStyleColor(index, ImVec4{col});
     }
 
-    inline void PushStyleColor(ImGuiCol index, Color const& c)
+    inline void PushStyleColor(ImGuiCol index, const Color& c)
     {
         ImGui::PushStyleColor(index, {c.r, c.g, c.b, c.a});
     }
@@ -773,7 +773,7 @@ namespace osc::ui
         return ImGui::GetColorU32(index);
     }
 
-    inline ImU32 ColorConvertFloat4ToU32(Vec4 const& color)
+    inline ImU32 ColorConvertFloat4ToU32(const Vec4& color)
     {
         return ImGui::ColorConvertFloat4ToU32(color);
     }

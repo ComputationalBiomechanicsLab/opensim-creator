@@ -69,8 +69,7 @@ std::vector<PerfMeasurement> osc::GetAllPerfMeasurements()
 
     std::vector<PerfMeasurement> rv;
     rv.reserve(guard->size());
-    for (auto const& [id, measurement] : *guard)
-    {
+    for (const auto& [id, measurement] : *guard) {
         rv.push_back(measurement);
     }
     return rv;

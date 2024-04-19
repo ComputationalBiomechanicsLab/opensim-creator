@@ -14,10 +14,10 @@ namespace osc
 {
     class ErrorTab final : public ITab {
     public:
-        ErrorTab(ParentPtr<ITabHost> const&, std::exception const&);
-        ErrorTab(ErrorTab const&) = delete;
+        ErrorTab(const ParentPtr<ITabHost>&, const std::exception&);
+        ErrorTab(const ErrorTab&) = delete;
         ErrorTab(ErrorTab&&) noexcept;
-        ErrorTab& operator=(ErrorTab const&) = delete;
+        ErrorTab& operator=(const ErrorTab&) = delete;
         ErrorTab& operator=(ErrorTab&&) noexcept;
         ~ErrorTab() noexcept override;
 

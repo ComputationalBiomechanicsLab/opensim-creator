@@ -27,7 +27,7 @@ namespace osc { struct Color; }
 namespace osc { class AppConfig; }
 namespace osc { class AppMetadata; }
 namespace osc { class IScreen; }
-namespace osc::ui::context { void Init(); }
+namespace osc::ui::context { void init(); }
 
 namespace osc
 {
@@ -251,7 +251,7 @@ namespace osc
         // HACK: the 2D ui currently needs access to these
         SDL_Window* upd_underlying_window();
         void* upd_underlying_opengl_context();
-        friend void ui::context::Init();
+        friend void ui::context::init();
 
         class Impl;
         std::unique_ptr<Impl> impl_;

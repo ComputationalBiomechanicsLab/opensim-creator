@@ -13,7 +13,7 @@ public:
         // called when app receives the screen, but before it starts pumping events
         // into it, ticking it, drawing it, etc.
 
-        ui::context::Init();  // boot up 2D ui support (ImGui, plotting, etc.)
+        ui::context::init();  // boot up 2D ui support (ImGui, plotting, etc.)
     }
 
     void onUnmount()
@@ -21,7 +21,7 @@ public:
         // called when the app is going to stop pumping events/ticks/draws into this
         // screen (e.g. because the app is quitting, or transitioning to some other screen)
 
-        ui::context::Shutdown();  // shutdown 2D UI support
+        ui::context::shutdown();  // shutdown 2D UI support
     }
 
     void onEvent(SDL_Event const& e)
@@ -32,7 +32,7 @@ public:
             App::upd().request_quit();
             return;
         }
-        else if (ui::context::OnEvent(e)) {
+        else if (ui::context::on_event(e)) {
             return;  // an element in the 2D UI handled this event
         }
     }
@@ -53,7 +53,7 @@ public:
         // screen buffer between frames (it's assumed that your code does this when it needs
         // to)
 
-        ui::context::NewFrame();  // prepare the 2D UI for drawing a new frame
+        ui::context::on_start_new_frame();  // prepare the 2D UI for drawing a new frame
 
         App::upd().clear_screen(Color::clear());  // set app window bg color
 
@@ -62,7 +62,7 @@ public:
         ui::Checkbox("checkbox_state", &m_CheckboxState);
         ui::End();
 
-        ui::context::Render();  // render the 2D UI's drawing to the screen
+        ui::context::render();  // render the 2D UI's drawing to the screen
     }
 
 private:
@@ -81,27 +81,27 @@ osc::CookiecutterScreen::CookiecutterScreen(CookiecutterScreen&&) noexcept = def
 osc::CookiecutterScreen& osc::CookiecutterScreen::operator=(CookiecutterScreen&&) noexcept = default;
 osc::CookiecutterScreen::~CookiecutterScreen() noexcept = default;
 
-void osc::CookiecutterScreen::implOnMount()
+void osc::CookiecutterScreen::impl_on_mount()
 {
     m_Impl->onMount();
 }
 
-void osc::CookiecutterScreen::implOnUnmount()
+void osc::CookiecutterScreen::impl_on_unmount()
 {
     m_Impl->onUnmount();
 }
 
-void osc::CookiecutterScreen::implOnEvent(SDL_Event const& e)
+void osc::CookiecutterScreen::impl_on_event(SDL_Event const& e)
 {
     m_Impl->onEvent(e);
 }
 
-void osc::CookiecutterScreen::implOnTick()
+void osc::CookiecutterScreen::impl_on_tick()
 {
     m_Impl->onTick();
 }
 
-void osc::CookiecutterScreen::implOnDraw()
+void osc::CookiecutterScreen::impl_on_draw()
 {
     m_Impl->onDraw();
 }

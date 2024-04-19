@@ -177,23 +177,23 @@ private:
     void implOnMount() final
     {
         App::upd().make_main_loop_polling();
-        m_UserCamera.onMount();
+        m_UserCamera.on_mount();
     }
 
     void implOnUnmount() final
     {
-        m_UserCamera.onUnmount();
+        m_UserCamera.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
     bool implOnEvent(SDL_Event const& e) final
     {
-        return m_UserCamera.onEvent(e);
+        return m_UserCamera.on_event(e);
     }
 
     void implOnDraw() final
     {
-        m_UserCamera.onDraw();  // update from inputs etc.
+        m_UserCamera.on_draw();  // update from inputs etc.
         m_Material.set_viewer_position(m_UserCamera.position());
 
         for (auto const& decoration : m_Decorations) {

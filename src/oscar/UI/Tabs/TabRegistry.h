@@ -16,8 +16,8 @@ namespace osc
 {
     template<typename T>
     concept StandardRegisterableTab =
-        std::derived_from<T, ITab> &&
-        std::constructible_from<T, ParentPtr<ITabHost> const&> &&
+        std::derived_from<T, ITab> and
+        std::constructible_from<T, const ParentPtr<ITabHost>&> and
         requires (T) {
             { T::id() } -> std::same_as<CStringView>;
         };
@@ -26,20 +26,20 @@ namespace osc
     class TabRegistry final {
     public:
         TabRegistry();
-        TabRegistry(TabRegistry const&) = delete;
+        TabRegistry(const TabRegistry&) = delete;
         TabRegistry(TabRegistry&&) noexcept;
-        TabRegistry& operator=(TabRegistry const&) = delete;
+        TabRegistry& operator=(const TabRegistry&) = delete;
         TabRegistry& operator=(TabRegistry&&) noexcept;
         ~TabRegistry() noexcept;
 
-        void registerTab(TabRegistryEntry const&);
+        void registerTab(const TabRegistryEntry&);
 
         template<StandardRegisterableTab T>
         void registerTab()
         {
             registerTab(TabRegistryEntry{
                 T::id(),
-                [](ParentPtr<ITabHost> const& h) { return std::make_unique<T>(h); },
+                [](const ParentPtr<ITabHost>& h) { return std::make_unique<T>(h); },
             });
         }
 

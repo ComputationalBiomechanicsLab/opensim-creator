@@ -10,37 +10,37 @@ namespace osc
 {
     class MouseCapturingCamera final : public Camera {
     public:
-        void onMount()
+        void on_mount()
         {
-            m_IsMouseCaptured = true;
+            mouse_captured_ = true;
             App::upd().set_show_cursor(false);
         }
 
-        void onUnmount()
+        void on_unmount()
         {
-            m_IsMouseCaptured = false;
+            mouse_captured_ = false;
             App::upd().set_show_cursor(true);
         }
 
-        bool onEvent(SDL_Event const& e)
+        bool on_event(const SDL_Event& e)
         {
-            if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
-                m_IsMouseCaptured = false;
+            if (e.type == SDL_KEYDOWN and e.key.keysym.sym == SDLK_ESCAPE) {
+                mouse_captured_ = false;
                 return true;
             }
-            if (e.type == SDL_MOUSEBUTTONDOWN && ui::IsMouseInMainViewportWorkspaceScreenRect()) {
-                m_IsMouseCaptured = true;
+            if (e.type == SDL_MOUSEBUTTONDOWN and ui::IsMouseInMainViewportWorkspaceScreenRect()) {
+                mouse_captured_ = true;
                 return true;
             }
 
             return false;
         }
 
-        void onDraw()
+        void on_draw()
         {
             // handle mouse capturing
-            if (m_IsMouseCaptured) {
-                ui::UpdateCameraFromInputs(*this, m_CameraEulers);
+            if (mouse_captured_) {
+                ui::UpdateCameraFromInputs(*this, camera_eulers_);
                 ui::SetMouseCursor(ImGuiMouseCursor_None);
                 App::upd().set_show_cursor(false);
             }
@@ -50,23 +50,13 @@ namespace osc
             }
         }
 
-        bool isCapturingMouse() const
-        {
-            return m_IsMouseCaptured;
-        }
+        bool is_capturing_mouse() const { return mouse_captured_; }
 
-        Eulers const& eulers() const
-        {
-            return m_CameraEulers;
-        }
-
-        Eulers& eulers()
-        {
-            return m_CameraEulers;
-        }
+        const Eulers& eulers() const { return camera_eulers_; }
+        Eulers& eulers() { return camera_eulers_; }
 
     private:
-        bool m_IsMouseCaptured = false;
-        Eulers m_CameraEulers = {};
+        bool mouse_captured_ = false;
+        Eulers camera_eulers_ = {};
     };
 }

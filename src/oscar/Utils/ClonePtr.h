@@ -29,11 +29,11 @@ namespace osc
         {
             // takes ownership
         }
-        explicit ClonePtr(T const& ref) : m_Value{ref.clone()}
+        explicit ClonePtr(const T& ref) : m_Value{ref.clone()}
         {
             // clones
         }
-        ClonePtr(ClonePtr const& src) : m_Value{src.m_Value ? src.m_Value->clone() : nullptr}
+        ClonePtr(const ClonePtr& src) : m_Value{src.m_Value ? src.m_Value->clone() : nullptr}
         {
             // clones
         }
@@ -60,7 +60,7 @@ namespace osc
             return *this;
         }
 
-        ClonePtr& operator=(T const& other)
+        ClonePtr& operator=(const T& other)
         {
             if (m_Value)
             {
@@ -108,7 +108,7 @@ namespace osc
         {
             return m_Value.get_deleter();
         }
-        Deleter const& get_deleter() const
+        const Deleter& get_deleter() const
         {
             return m_Value.get_deleter();
         }
@@ -131,12 +131,12 @@ namespace osc
         }
 
         template<typename T2, typename D2>
-        friend bool operator==(ClonePtr const& lhs, ClonePtr<T2, D2> const& rhs)
+        friend bool operator==(const ClonePtr& lhs, const ClonePtr<T2, D2>& rhs)
         {
             return lhs.get() == rhs.get();
         }
 
-        friend std::ostream& operator<<(std::ostream& o, ClonePtr const& p)
+        friend std::ostream& operator<<(std::ostream& o, const ClonePtr& p)
         {
             return o << p.get();
         }
@@ -148,7 +148,7 @@ namespace osc
 
 template<typename T, typename D>
 struct std::hash<osc::ClonePtr<T, D>> final {
-    size_t operator()(osc::ClonePtr<T, D> const& p)
+    size_t operator()(const osc::ClonePtr<T, D>& p)
     {
         return std::hash(p.get());
     }

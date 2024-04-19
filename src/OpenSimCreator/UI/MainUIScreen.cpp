@@ -110,7 +110,7 @@ public:
             }
         }
 
-        ui::context::Init();
+        ui::context::init();
     }
 
     void onUnmount()
@@ -128,13 +128,13 @@ public:
                 // - soak up the exception to prevent the whole application from terminating
                 // - and emit the error to the log, because we have to assume that this
                 //   screen is about to die (it's being unmounted)
-                log_error("MainUIScreen::onUnmount: unmounting active tab threw an exception: %s", ex.what());
+                log_error("MainUIScreen::on_unmount: unmounting active tab threw an exception: %s", ex.what());
             }
 
             m_ActiveTabID = UID::empty();
         }
 
-        ui::context::Shutdown();
+        ui::context::shutdown();
     }
 
     void onEvent(SDL_Event const& e)
@@ -186,7 +186,7 @@ public:
                 selectTab((*it)->getID());
             }
         }
-        else if (ui::context::OnEvent(e))
+        else if (ui::context::on_event(e))
         {
             // event was pumped into the UI context - it shouldn't be pumped into the active tab
             m_ShouldRequestRedraw = true;
@@ -207,7 +207,7 @@ public:
                 }
                 catch (std::exception const& ex)
                 {
-                    log_error("MainUIScreen::onEvent: exception thrown by tab: %s", ex.what());
+                    log_error("MainUIScreen::on_event: exception thrown by tab: %s", ex.what());
 
                     // - the tab is faulty in some way
                     // - soak up the exception to prevent the whole application from terminating
@@ -253,7 +253,7 @@ public:
             }
             catch (std::exception const& ex)
             {
-                log_error("MainUIScreen::onEvent: exception thrown by tab: %s", ex.what());
+                log_error("MainUIScreen::on_event: exception thrown by tab: %s", ex.what());
 
                 // - the tab is faulty in some way
                 // - soak up the exception to prevent the whole application from terminating
@@ -287,7 +287,7 @@ public:
             catch (std::exception const& ex)
             {
 
-                log_error("MainUIScreen::onTick: tab thrown an exception: %s", ex.what());
+                log_error("MainUIScreen::on_tick: tab thrown an exception: %s", ex.what());
 
                 // - the tab is faulty in some way
                 // - soak up the exception to prevent the whole application from terminating
@@ -314,7 +314,7 @@ public:
             App::upd().clear_screen({0.0f, 0.0f, 0.0f, 0.0f});
         }
 
-        ui::context::NewFrame();
+        ui::context::on_start_new_frame();
 
         {
             OSC_PERF("MainUIScreen/drawUIContent");
@@ -329,8 +329,8 @@ public:
             }
             m_ActiveTabID = UID::empty();
 
-            ui::context::Shutdown();
-            ui::context::Init();
+            ui::context::shutdown();
+            ui::context::init();
             App::upd().request_redraw();
             m_ImguiWasAggressivelyReset = false;
 
@@ -338,8 +338,8 @@ public:
         }
 
         {
-            OSC_PERF("MainUIScreen/ui::context::Render()");
-            ui::context::Render();
+            OSC_PERF("MainUIScreen/ui::context::render()");
+            ui::context::render();
         }
 
         if (m_ShouldRequestRedraw)
@@ -897,27 +897,27 @@ void osc::MainUIScreen::open(std::filesystem::path const& path)
     m_Impl->open(path);
 }
 
-void osc::MainUIScreen::implOnMount()
+void osc::MainUIScreen::impl_on_mount()
 {
     m_Impl->onMount();
 }
 
-void osc::MainUIScreen::implOnUnmount()
+void osc::MainUIScreen::impl_on_unmount()
 {
     m_Impl->onUnmount();
 }
 
-void osc::MainUIScreen::implOnEvent(SDL_Event const& e)
+void osc::MainUIScreen::impl_on_event(SDL_Event const& e)
 {
     m_Impl->onEvent(e);
 }
 
-void osc::MainUIScreen::implOnTick()
+void osc::MainUIScreen::impl_on_tick()
 {
     m_Impl->onTick();
 }
 
-void osc::MainUIScreen::implOnDraw()
+void osc::MainUIScreen::impl_on_draw()
 {
     m_Impl->onDraw();
 }

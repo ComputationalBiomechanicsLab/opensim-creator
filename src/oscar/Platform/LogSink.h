@@ -9,36 +9,29 @@ namespace osc
     class LogSink {
     protected:
         LogSink() = default;
-        LogSink(LogSink const&) = delete;
+        LogSink(const LogSink&) = delete;
         LogSink(LogSink&&) noexcept = delete;
-        LogSink& operator=(LogSink const&) = delete;
+        LogSink& operator=(const LogSink&) = delete;
         LogSink& operator=(LogSink&&) noexcept = delete;
     public:
         virtual ~LogSink() noexcept = default;
 
-        void log_message(LogMessageView const& view)
+        void log_message(const LogMessageView& view)
         {
-            implLog(view);
+            impl_log_message(view);
         }
 
-        [[nodiscard]] LogLevel getLevel() const
-        {
-            return m_SinkLevel;
-        }
+        LogLevel level() const { return sink_level_; }
+        void set_level(LogLevel level) { sink_level_ = level; }
 
-        void setLevel(LogLevel level)
+        bool should_log(LogLevel level) const
         {
-            m_SinkLevel = level;
-        }
-
-        [[nodiscard]] bool shouldLog(LogLevel level) const
-        {
-            return level >= m_SinkLevel;
+            return level >= sink_level_;
         }
 
     private:
-        virtual void implLog(LogMessageView const&) = 0;
+        virtual void impl_log_message(const LogMessageView&) = 0;
 
-        LogLevel m_SinkLevel = LogLevel::trace;
+        LogLevel sink_level_ = LogLevel::trace;
     };
 }

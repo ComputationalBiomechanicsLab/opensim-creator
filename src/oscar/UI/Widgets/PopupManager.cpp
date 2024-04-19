@@ -49,7 +49,7 @@ void osc::PopupManager::onDraw()
     }
 
     // garbage-collect any closed popups
-    std::erase_if(m_Popups, [](auto const& ptr) { return !ptr->isOpen(); });
+    std::erase_if(m_Popups, [](const auto& ptr) { return !ptr->isOpen(); });
 }
 
 bool osc::PopupManager::empty()

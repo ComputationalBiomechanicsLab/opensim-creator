@@ -144,7 +144,7 @@ namespace
     LogLevel get_log_level(const AppSettings& settings)
     {
         if (const auto v = settings.find_value("log_level")) {
-            return TryParseAsLogLevel(v->to_string()).value_or(LogLevel::DEFAULT);
+            return try_parse_as_log_level(v->to_string()).value_or(LogLevel::DEFAULT);
         }
         else {
             return LogLevel::DEFAULT;

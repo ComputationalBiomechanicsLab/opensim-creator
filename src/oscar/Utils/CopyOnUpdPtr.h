@@ -20,7 +20,7 @@ namespace osc
         }
     public:
 
-        T const* get() const
+        const T* get() const
         {
             return m_Ptr.get();
         }
@@ -34,12 +34,12 @@ namespace osc
             return m_Ptr.get();
         }
 
-        T const& operator*() const
+        const T& operator*() const
         {
             return *get();
         }
 
-        T const* operator->() const
+        const T* operator->() const
         {
             return get();
         }
@@ -50,13 +50,13 @@ namespace osc
         }
 
         template<typename U>
-        friend bool operator==(CopyOnUpdPtr const& lhs, CopyOnUpdPtr<U> const& rhs)
+        friend bool operator==(const CopyOnUpdPtr& lhs, const CopyOnUpdPtr<U>& rhs)
         {
             return lhs.m_Ptr == rhs.m_Ptr;
         }
 
         template<typename U>
-        friend auto operator<=>(CopyOnUpdPtr const& lhs, CopyOnUpdPtr<U> const& rhs)
+        friend auto operator<=>(const CopyOnUpdPtr& lhs, const CopyOnUpdPtr<U>& rhs)
         {
             return lhs.m_Ptr <=> rhs.m_Ptr;
         }
@@ -76,7 +76,7 @@ namespace osc
 
 template<typename T>
 struct std::hash<osc::CopyOnUpdPtr<T>> final {
-    size_t operator()(osc::CopyOnUpdPtr<T> const& cow) const
+    size_t operator()(const osc::CopyOnUpdPtr<T>& cow) const
     {
         return std::hash<std::shared_ptr<T>>{}(cow.m_Ptr);
     }

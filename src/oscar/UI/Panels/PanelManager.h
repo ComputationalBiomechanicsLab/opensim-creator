@@ -17,9 +17,9 @@ namespace osc
     class PanelManager final {
     public:
         PanelManager();
-        PanelManager(PanelManager const&) = delete;
+        PanelManager(const PanelManager&) = delete;
         PanelManager(PanelManager&&) noexcept;
-        PanelManager& operator=(PanelManager const&) = delete;
+        PanelManager& operator=(const PanelManager&) = delete;
         PanelManager& operator=(PanelManager&&) noexcept;
         ~PanelManager() noexcept;
 

@@ -11,15 +11,15 @@ namespace osc
     class ResourceStream final {
     public:
         ResourceStream();
-        explicit ResourceStream(std::filesystem::path const&);
+        explicit ResourceStream(const std::filesystem::path&);
 
-        std::string_view name() const { return m_Name; }
-        std::istream& stream() const { return *m_Handle; }
+        std::string_view name() const { return name_; }
+        std::istream& stream() const { return *handle_; }
 
-        operator std::istream& () { return *m_Handle; }
+        operator std::istream& () { return *handle_; }
 
     private:
-        std::string m_Name;
-        std::unique_ptr<std::istream> m_Handle;
+        std::string name_;
+        std::unique_ptr<std::istream> handle_;
     };
 }

@@ -9,9 +9,9 @@ namespace osc
     );
     bool DrawGizmoOpSelector(
         ImGuizmo::OPERATION&,
-        bool canTranslate = true,
-        bool canRotate = true,
-        bool canScale = true
+        bool can_translate = true,
+        bool can_rotate = true,
+        bool can_scale = true
     );
 
     bool UpdateImguizmoStateFromKeyboard(

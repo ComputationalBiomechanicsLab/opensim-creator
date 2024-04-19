@@ -7,6 +7,7 @@
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/CircularBuffer.h>
+#include <oscar/Utils/EnumHelpers.h>
 
 #include <string>
 #include <sstream>
@@ -19,22 +20,14 @@ namespace
 {
     Color to_color(LogLevel lvl)
     {
-        switch (lvl)
-        {
-        case LogLevel::trace:
-            return {0.5f, 0.5f, 0.5f, 1.0f};
-        case LogLevel::debug:
-            return {0.8f, 0.8f, 0.8f, 1.0f};
-        case LogLevel::info:
-            return {0.5f, 0.5f, 1.0f, 1.0f};
-        case LogLevel::warn:
-            return {1.0f, 1.0f, 0.0f, 1.0f};
-        case LogLevel::err:
-            return {1.0f, 0.0f, 0.0f, 1.0f};
-        case LogLevel::critical:
-            return {1.0f, 0.0f, 0.0f, 1.0f};
-        default:
-            return {1.0f, 1.0f, 1.0f, 1.0f};
+        switch (lvl) {
+        case LogLevel::trace:    return {0.5f, 0.5f, 0.5f, 1.0f};
+        case LogLevel::debug:    return {0.8f, 0.8f, 0.8f, 1.0f};
+        case LogLevel::info:     return {0.5f, 0.5f, 1.0f, 1.0f};
+        case LogLevel::warn:     return {1.0f, 1.0f, 0.0f, 1.0f};
+        case LogLevel::err:      return {1.0f, 0.0f, 0.0f, 1.0f};
+        case LogLevel::critical: return {1.0f, 0.0f, 0.0f, 1.0f};
+        default:                 return {1.0f, 1.0f, 1.0f, 1.0f};
         }
     }
 
@@ -42,12 +35,11 @@ namespace
     {
         std::stringstream ss;
 
-        auto& guarded_content = getTracebackLog();
+        auto& guarded_content = global_get_traceback_log();
         {
-            auto const& content = guarded_content.lock();
-            for (LogMessage const& msg : *content)
-            {
-                ss << '[' << ToCStringView(msg.level) << "] " << msg.payload << '\n';
+            const auto& content = guarded_content.lock();
+            for (const LogMessage& msg : *content) {
+                ss << '[' << to_cstringview(msg.level) << "] " << msg.payload << '\n';
             }
         }
 
@@ -61,7 +53,7 @@ class osc::LogViewer::Impl final {
 public:
     void onDraw()
     {
-        auto logger = defaultLogger();
+        auto logger = global_default_logger();
         if (!logger)
         {
             return;
@@ -72,15 +64,12 @@ public:
         {
             // draw level selector
             {
-                LogLevel currentLevel = logger->get_level();
+                LogLevel currentLevel = logger->level();
                 ui::SetNextItemWidth(200.0f);
-                if (ui::BeginCombo("level", ToCStringView(currentLevel)))
-                {
-                    for (LogLevel l = FirstLogLevel(); l <= LastLogLevel(); l = next(l))
-                    {
+                if (ui::BeginCombo("log_level_", to_cstringview(currentLevel))) {
+                    for (LogLevel l : make_option_iterable<LogLevel>()) {
                         bool active = l == currentLevel;
-                        if (ui::Selectable(ToCStringView(l), &active))
-                        {
+                        if (ui::Selectable(to_cstringview(l), &active)) {
                             logger->set_level(l);
                         }
                     }
@@ -94,7 +83,7 @@ public:
             ui::SameLine();
             if (ui::Button("clear"))
             {
-                getTracebackLog().lock()->clear();
+                global_get_traceback_log().lock()->clear();
             }
             App::upd().add_frame_annotation("LogClearButton", ui::GetItemRect());
 
@@ -116,18 +105,16 @@ public:
         }
 
         // draw log content lines
-        auto& guardedContent = getTracebackLog();
-        auto const& contentGuard = guardedContent.lock();
-        for (LogMessage const& msg : *contentGuard)
-        {
+        auto& guardedContent = global_get_traceback_log();
+        const auto& contentGuard = guardedContent.lock();
+        for (const LogMessage& msg : *contentGuard) {
             ui::PushStyleColor(ImGuiCol_Text, ::to_color(msg.level));
-            ui::Text("[%s]", ToCStringView(msg.level).c_str());
+            ui::Text("[%s]", to_cstringview(msg.level).c_str());
             ui::PopStyleColor();
             ui::SameLine();
             ui::TextWrapped(msg.payload);
 
-            if (autoscroll)
-            {
+            if (autoscroll) {
                 ui::SetScrollHereY();
             }
         }

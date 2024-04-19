@@ -131,7 +131,7 @@ public:
         Vec2 dims,
         AntiAliasingLevel antiAliasingLevel)
     {
-        OSC_PERF("CachedModelRenderer/onDraw");
+        OSC_PERF("CachedModelRenderer/on_draw");
 
         // setup render/rasterization parameters
         SceneRendererParams const rendererParameters = CalcSceneRendererParams(
@@ -145,7 +145,7 @@ public:
         if (m_DecorationCache.update(modelState, renderParams) ||
             rendererParameters != m_PrevRendererParams)
         {
-            OSC_PERF("CachedModelRenderer/onDraw/render");
+            OSC_PERF("CachedModelRenderer/on_draw/render");
             m_Renderer.render(m_DecorationCache.getDrawlist(), rendererParameters);
             m_PrevRendererParams = rendererParameters;
         }

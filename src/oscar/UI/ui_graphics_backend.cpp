@@ -83,72 +83,70 @@ namespace
         }
     )";
 
-    ImTextureID ToImGuiTextureID(UID id)
+    ImTextureID to_imgui_texture_id(UID id)
     {
         return cpp20::bit_cast<ImTextureID>(id);
     }
 
-    UID ToUID(ImTextureID id)
+    UID to_uid(ImTextureID id)
     {
         return UID::FromIntUnchecked(cpp20::bit_cast<UID::element_type>(id));
     }
 
-    Texture2D CreateFontsTexture(UID textureID)
+    Texture2D create_font_texture(UID texture_id)
     {
         ImGuiIO& io = ui::GetIO();
 
-        uint8_t* pixelData = nullptr;
+        uint8_t* pixel_data = nullptr;
         Vec2i dims{};
-        io.Fonts->GetTexDataAsRGBA32(&pixelData, &dims.x, &dims.y);
-        io.Fonts->SetTexID(ToImGuiTextureID(textureID));
-        size_t const numBytes = static_cast<size_t>(dims.x)*static_cast<size_t>(dims.y)*static_cast<size_t>(4);
+        io.Fonts->GetTexDataAsRGBA32(&pixel_data, &dims.x, &dims.y);
+        io.Fonts->SetTexID(to_imgui_texture_id(texture_id));
+        const size_t num_bytes = static_cast<size_t>(dims.x)*static_cast<size_t>(dims.y)*static_cast<size_t>(4);
 
-        Texture2D rv
-        {
+        Texture2D rv{
             dims,
             TextureFormat::RGBA32,
             ColorSpace::Linear,
         };
-        rv.set_pixel_data({pixelData, numBytes});
+        rv.set_pixel_data({pixel_data, num_bytes});
         rv.set_filter_mode(TextureFilterMode::Linear);
 
         return rv;
     }
 
     // create a lookup table that maps sRGB color bytes to linear-space color bytes
-    std::array<uint8_t, 256> CreateSRGBToLinearLUT()
+    std::array<uint8_t, 256> create_srgb_to_linear_lut()
     {
         std::array<uint8_t, 256> rv{};
-        for (size_t i = 0; i < 256; ++i)
-        {
-            auto const ldrColor = Unorm8{static_cast<uint8_t>(i)};
-            float const hdrColor = ldrColor.normalized_value();
-            float const linearHdrColor = to_linear_colorspace(hdrColor);
-            rv[i] = Unorm8{linearHdrColor}.raw_value();
+        for (size_t i = 0; i < 256; ++i) {
+            const auto ldr_color = Unorm8{static_cast<uint8_t>(i)};
+            const float hdr_color = ldr_color.normalized_value();
+            const float linear_hdr_color = to_linear_colorspace(hdr_color);
+            rv[i] = Unorm8{linear_hdr_color}.raw_value();
         }
         return rv;
     }
 
-    std::array<uint8_t, 256> const& GetSRGBToLinearLUT()
+    const std::array<uint8_t, 256>& get_srgc_to_linear_lut_singleton()
     {
-        static std::array<uint8_t, 256> const s_LUT = CreateSRGBToLinearLUT();
+        static const std::array<uint8_t, 256> s_LUT = create_srgb_to_linear_lut();
         return s_LUT;
     }
 
-    void ConvertDrawDataFromSRGBToLinear(ImDrawList& dl)
+    void convert_draw_data_from_srgb_to_linear(ImDrawList& drawlist)
     {
-        std::array<uint8_t, 256> const& lut = GetSRGBToLinearLUT();
+        const std::array<uint8_t, 256>& lut = get_srgc_to_linear_lut_singleton();
 
-        for (ImDrawVert& v : dl.VtxBuffer)
+        for (ImDrawVert& v : drawlist.VtxBuffer)
         {
-            auto const rSRGB = static_cast<uint8_t>((v.col >> IM_COL32_R_SHIFT) & 0xFF);
-            auto const gSRGB = static_cast<uint8_t>((v.col >> IM_COL32_G_SHIFT) & 0xFF);
-            auto const bSRGB = static_cast<uint8_t>((v.col >> IM_COL32_B_SHIFT) & 0xFF);
-            auto const aSRGB = static_cast<uint8_t>((v.col >> IM_COL32_A_SHIFT) & 0xFF);
+            const auto rSRGB = static_cast<uint8_t>((v.col >> IM_COL32_R_SHIFT) & 0xFF);
+            const auto gSRGB = static_cast<uint8_t>((v.col >> IM_COL32_G_SHIFT) & 0xFF);
+            const auto bSRGB = static_cast<uint8_t>((v.col >> IM_COL32_B_SHIFT) & 0xFF);
+            const auto aSRGB = static_cast<uint8_t>((v.col >> IM_COL32_A_SHIFT) & 0xFF);
 
-            uint8_t const rLinear = lut[rSRGB];
-            uint8_t const gLinear = lut[gSRGB];
-            uint8_t const bLinear = lut[bSRGB];
+            const uint8_t rLinear = lut[rSRGB];
+            const uint8_t gLinear = lut[gSRGB];
+            const uint8_t bLinear = lut[bSRGB];
 
             v.col =
                 static_cast<ImU32>(rLinear) << IM_COL32_R_SHIFT |
@@ -162,99 +160,93 @@ namespace
 
         OscarImguiBackendData()
         {
-            material.set_transparent(true);
-            material.set_cull_mode(CullMode::Off);
-            material.set_depth_tested(false);
-            material.set_wireframe(false);
+            ui_material.set_transparent(true);
+            ui_material.set_cull_mode(CullMode::Off);
+            ui_material.set_depth_tested(false);
+            ui_material.set_wireframe(false);
         }
 
-        UID fontTextureID;
-        Texture2D fontTexture = CreateFontsTexture(fontTextureID);
-        Material material{Shader{c_VertexShader, c_FragmentShader}};
+        UID font_texture_id;
+        Texture2D font_texture = create_font_texture(font_texture_id);
+        Material ui_material{Shader{c_VertexShader, c_FragmentShader}};
         Camera camera;
         Mesh mesh;
-        std::unordered_map<UID, std::variant<Texture2D, RenderTexture>> texturesSubmittedThisFrame = {{fontTextureID, fontTexture}};
+        std::unordered_map<UID, std::variant<Texture2D, RenderTexture>> texures_allocated_this_frame = {{font_texture_id, font_texture}};
     };
 
     // Backend data stored in io.BackendRendererUserData to allow support for multiple Dear ImGui contexts
     // It is STRONGLY preferred that you use docking branch with multi-viewports (== single Dear ImGui context + multiple windows) instead of multiple Dear ImGui contexts.
-    OscarImguiBackendData* GetBackendData()
+    OscarImguiBackendData* get_backend_data()
     {
-        if (ImGui::GetCurrentContext())
-        {
+        if (ImGui::GetCurrentContext()) {
             return std::launder(reinterpret_cast<OscarImguiBackendData*>(ui::GetIO().BackendRendererUserData));
         }
-        else
-        {
+        else {
             return nullptr;
         }
     }
 
-    void SetupCameraViewMatrix(ImDrawData& drawData, Camera& camera)
+    void setup_camera_view_matrix(ImDrawData& draw_data, Camera& camera)
     {
         // Our visible imgui space lies from draw_data->DisplayPos (top left) to draw_data->DisplayPos+data_data->DisplaySize (bottom right). DisplayPos is (0,0) for single viewport apps.
-        float const L = drawData.DisplayPos.x;
-        float const R = drawData.DisplayPos.x + drawData.DisplaySize.x;
-        float const T = drawData.DisplayPos.y;
-        float const B = drawData.DisplayPos.y + drawData.DisplaySize.y;
+        const float L = draw_data.DisplayPos.x;
+        const float R = draw_data.DisplayPos.x + draw_data.DisplaySize.x;
+        const float T = draw_data.DisplayPos.y;
+        const float B = draw_data.DisplayPos.y + draw_data.DisplaySize.y;
 
-        Mat4 const projMat =
-        {
+        const Mat4 projection_matrix = {
             { 2.0f/(R-L),   0.0f,         0.0f,   0.0f },
             { 0.0f,         2.0f/(T-B),   0.0f,   0.0f },
             { 0.0f,         0.0f,        -1.0f,   0.0f },
             { (R+L)/(L-R),  (T+B)/(B-T),  0.0f,   1.0f },
         };
 
-        camera.set_projection_matrix_override(projMat);
+        camera.set_projection_matrix_override(projection_matrix);
     }
 
-    void RenderDrawCommand(
+    void render_draw_command(
         OscarImguiBackendData& bd,
-        ImDrawData const& drawData,
-        ImDrawList const&,
+        const ImDrawData& draw_data,
+        const ImDrawList&,
         Mesh& mesh,
-        ImDrawCmd const& drawCommand)
+        const ImDrawCmd& draw_command)
     {
-        OSC_ASSERT(drawCommand.UserCallback == nullptr && "user callbacks are not supported in oscar's ImGui renderer impl");
+        OSC_ASSERT(draw_command.UserCallback == nullptr && "user callbacks are not supported in oscar's ImGui renderer impl");
 
         // Will project scissor/clipping rectangles into framebuffer space
-        Vec2 clip_off = drawData.DisplayPos;         // (0,0) unless using multi-viewports
-        Vec2 clip_scale = drawData.FramebufferScale; // (1,1) unless using retina display which are often (2,2)
-        Vec2 clip_min((drawCommand.ClipRect.x - clip_off.x) * clip_scale.x, (drawCommand.ClipRect.y - clip_off.y) * clip_scale.y);
-        Vec2 clip_max((drawCommand.ClipRect.z - clip_off.x) * clip_scale.x, (drawCommand.ClipRect.w - clip_off.y) * clip_scale.y);
+        const Vec2 clip_off = draw_data.DisplayPos;         // (0,0) unless using multi-viewports
+        const Vec2 clip_scale = draw_data.FramebufferScale; // (1,1) unless using retina display which are often (2,2)
+        const Vec2 clip_min((draw_command.ClipRect.x - clip_off.x) * clip_scale.x, (draw_command.ClipRect.y - clip_off.y) * clip_scale.y);
+        const Vec2 clip_max((draw_command.ClipRect.z - clip_off.x) * clip_scale.x, (draw_command.ClipRect.w - clip_off.y) * clip_scale.y);
 
-        if (clip_max.x <= clip_min.x || clip_max.y <= clip_min.y)
-        {
+        if (clip_max.x <= clip_min.x or clip_max.y <= clip_min.y) {
             return;
         }
 
         // setup clipping rectangle
         bd.camera.set_clear_flags(CameraClearFlags::Nothing);
-        Vec2 minflip{clip_min.x, (drawData.FramebufferScale.y * drawData.DisplaySize.y) - clip_max.y};
-        Vec2 maxflip{clip_max.x, (drawData.FramebufferScale.y * drawData.DisplaySize.y) - clip_min.y};
+        const Vec2 minflip{clip_min.x, (draw_data.FramebufferScale.y * draw_data.DisplaySize.y) - clip_max.y};
+        const Vec2 maxflip{clip_max.x, (draw_data.FramebufferScale.y * draw_data.DisplaySize.y) - clip_min.y};
         bd.camera.set_scissor_rect(Rect{minflip, maxflip});
 
         // setup submesh description
-        SubMeshDescriptor d{drawCommand.IdxOffset, drawCommand.ElemCount, MeshTopology::Triangles};
-        size_t idx = mesh.num_submesh_descriptors();
-        mesh.push_submesh_descriptor(d);
+        const size_t idx = mesh.num_submesh_descriptors();
+        mesh.push_submesh_descriptor({draw_command.IdxOffset, draw_command.ElemCount, MeshTopology::Triangles});
 
-        if (auto const* texture = try_find(bd.texturesSubmittedThisFrame, ToUID(drawCommand.GetTexID())))
-        {
+        if (const auto* texture = try_find(bd.texures_allocated_this_frame, to_uid(draw_command.GetTexID()))) {
             std::visit(Overload{
-                [&bd](Texture2D const& t) { bd.material.set_texture("uTexture", t); },
-                [&bd](RenderTexture const& t) { bd.material.set_render_texture("uTexture", t); },
+                [&bd](const Texture2D& t) { bd.ui_material.set_texture("uTexture", t); },
+                [&bd](const RenderTexture& t) { bd.ui_material.set_render_texture("uTexture", t); },
             }, *texture);
-            graphics::draw(mesh, identity<Mat4>(), bd.material, bd.camera, std::nullopt, idx);
+            graphics::draw(mesh, identity<Mat4>(), bd.ui_material, bd.camera, std::nullopt, idx);
             bd.camera.render_to_screen();
         }
     }
 
-    void RenderDrawList(
+    void render_drawlist(
         OscarImguiBackendData& bd,
-        ImDrawData const& drawData,
-        ImDrawList& drawList)
+        const ImDrawData& draw_data,
+        ImDrawList& draw_list)
     {
         // HACK: convert all ImGui-provided colors from sRGB to linear
         //
@@ -273,37 +265,36 @@ namespace
         //
         // (this shitshow is because ImGui's OpenGL backend behaves differently
         //  from OSCs - ultimately, we need an ImGui_ImplOSC backend)
-        ConvertDrawDataFromSRGBToLinear(drawList);
+        convert_draw_data_from_srgb_to_linear(draw_list);
 
         Mesh& mesh = bd.mesh;
         mesh.clear();
-        mesh.set_vertex_buffer_params(drawList.VtxBuffer.Size, {
+        mesh.set_vertex_buffer_params(draw_list.VtxBuffer.Size, {
             {VertexAttribute::Position,  VertexAttributeFormat::Float32x2},
             {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
             {VertexAttribute::Color,     VertexAttributeFormat::Unorm8x4},
         });
-        mesh.set_vertex_buffer_data(std::span<ImDrawVert>{drawList.VtxBuffer.Data, static_cast<size_t>(drawList.VtxBuffer.Size)});
-        mesh.set_indices({drawList.IdxBuffer.Data, static_cast<size_t>(drawList.IdxBuffer.size())}, MeshUpdateFlags::DontRecalculateBounds | MeshUpdateFlags::DontValidateIndices);
+        mesh.set_vertex_buffer_data(std::span<ImDrawVert>{draw_list.VtxBuffer.Data, static_cast<size_t>(draw_list.VtxBuffer.Size)});
+        mesh.set_indices({draw_list.IdxBuffer.Data, static_cast<size_t>(draw_list.IdxBuffer.size())}, MeshUpdateFlags::DontRecalculateBounds | MeshUpdateFlags::DontValidateIndices);
 
         // iterate through command buffer
-        for (int i = 0; i < drawList.CmdBuffer.Size; ++i)
-        {
-            RenderDrawCommand(bd, drawData, drawList, mesh, drawList.CmdBuffer[i]);
+        for (int i = 0; i < draw_list.CmdBuffer.Size; ++i) {
+            render_draw_command(bd, draw_data, draw_list, mesh, draw_list.CmdBuffer[i]);
         }
         mesh.clear();
     }
 
     template<IsAnyOf<Texture2D, RenderTexture> Texture>
-    ImTextureID AllocateTextureID(Texture const& texture)
+    ImTextureID allocate_texture_for_current_frame(const Texture& texture)
     {
-        OscarImguiBackendData* bd = GetBackendData();
+        OscarImguiBackendData* bd = get_backend_data();
         OSC_ASSERT(bd != nullptr && "no oscar ImGui renderer backend was available to shutdown - this is a developer error");
-        UID uid = bd->texturesSubmittedThisFrame.try_emplace(UID{}, texture).first->first;
-        return ToImGuiTextureID(uid);
+        UID uid = bd->texures_allocated_this_frame.try_emplace(UID{}, texture).first->first;
+        return to_imgui_texture_id(uid);
     }
 }
 
-bool osc::ui::graphics_backend::Init()
+bool osc::ui::graphics_backend::init()
 {
     ImGuiIO& io = ui::GetIO();
     OSC_ASSERT(io.BackendRendererUserData == nullptr && "an oscar ImGui renderer backend is already initialized - this is a developer error (double-initialization)");
@@ -315,9 +306,9 @@ bool osc::ui::graphics_backend::Init()
     return true;
 }
 
-void osc::ui::graphics_backend::Shutdown()
+void osc::ui::graphics_backend::shutdown()
 {
-    OscarImguiBackendData* bd = GetBackendData();
+    OscarImguiBackendData* bd = get_backend_data();
     OSC_ASSERT(bd != nullptr && "no oscar ImGui renderer backend was available to shutdown - this is a developer error (double-free)");
 
     // shutdown platform interface
@@ -330,34 +321,34 @@ void osc::ui::graphics_backend::Shutdown()
     delete bd;  // NOLINT(cppcoreguidelines-owning-memory)
 }
 
-void osc::ui::graphics_backend::NewFrame()
+void osc::ui::graphics_backend::on_start_new_frame()
 {
     // `ImGui_ImplOpenGL3_CreateDeviceObjects` is now part of constructing `OscarImguiBackendData`
 
-    OscarImguiBackendData* bd = GetBackendData();
+    OscarImguiBackendData* bd = get_backend_data();
     OSC_ASSERT(bd != nullptr && "no oscar ImGui renderer backend was available to shutdown - this is a developer error");
-    bd->texturesSubmittedThisFrame.clear();
-    bd->texturesSubmittedThisFrame.try_emplace(bd->fontTextureID, bd->fontTexture);  // (so that all lookups can hit the same LUT)
+    bd->texures_allocated_this_frame.clear();
+    bd->texures_allocated_this_frame.try_emplace(bd->font_texture_id, bd->font_texture);  // (so that all lookups can hit the same LUT)
 }
 
-void osc::ui::graphics_backend::RenderDrawData(ImDrawData* drawData)
+void osc::ui::graphics_backend::render(ImDrawData* drawData)
 {
-    OscarImguiBackendData* bd = GetBackendData();
+    OscarImguiBackendData* bd = get_backend_data();
     OSC_ASSERT(bd != nullptr && "no oscar ImGui renderer backend was available to shutdown - this is a developer error");
 
-    SetupCameraViewMatrix(*drawData, bd->camera);
+    setup_camera_view_matrix(*drawData, bd->camera);
     for (int n = 0; n < drawData->CmdListsCount; ++n)
     {
-        RenderDrawList(*bd, *drawData, *drawData->CmdLists[n]);
+        render_drawlist(*bd, *drawData, *drawData->CmdLists[n]);
     }
 }
 
-ImTextureID osc::ui::graphics_backend::AllocateTextureID(Texture2D const& texture)
+ImTextureID osc::ui::graphics_backend::allocate_texture_for_current_frame(const Texture2D& texture)
 {
-    return ::AllocateTextureID(texture);
+    return ::allocate_texture_for_current_frame(texture);
 }
 
-ImTextureID osc::ui::graphics_backend::AllocateTextureID(RenderTexture const& texture)
+ImTextureID osc::ui::graphics_backend::allocate_texture_for_current_frame(const RenderTexture& texture)
 {
-    return ::AllocateTextureID(texture);
+    return ::allocate_texture_for_current_frame(texture);
 }

@@ -14,31 +14,28 @@ namespace osc
     public:
         using value_type = std::string_view::value_type;
         using pointer = value_type*;
-        using const_pointer = value_type const*;
+        using const_pointer = const value_type*;
         using iterator = value_type*;
-        using const_iterator = value_type const*;
+        using const_iterator = const value_type*;
 
         constexpr CStringView() = default;
 
-        constexpr CStringView(value_type const* s) :
+        constexpr CStringView(const value_type* s) :
             m_Data{s ? s : ""}
-        {
-        }
+        {}
 
         constexpr CStringView(std::nullptr_t) :
             CStringView{}
-        {
-        }
+        {}
 
-        CStringView(std::string const& s) :
+        CStringView(const std::string& s) :
             m_Data{s.c_str()},
             m_Size{s.size()}
-        {
-        }
+        {}
 
-        constexpr CStringView(CStringView const&) = default;
+        constexpr CStringView(const CStringView&) = default;
         constexpr CStringView(CStringView&&) noexcept = default;
-        constexpr CStringView& operator=(CStringView const&) = default;
+        constexpr CStringView& operator=(const CStringView&) = default;
         constexpr CStringView& operator=(CStringView&&) noexcept = default;
 
         constexpr size_t size() const
@@ -56,7 +53,7 @@ namespace osc
             return m_Size == 0;
         }
 
-        constexpr value_type const* c_str() const
+        constexpr const value_type* c_str() const
         {
             return m_Data;
         }
@@ -81,33 +78,33 @@ namespace osc
             return m_Data;
         }
 
-        constexpr friend bool operator==(CStringView const& lhs, CStringView const& rhs)
+        constexpr friend bool operator==(const CStringView& lhs, const CStringView& rhs)
         {
             return static_cast<std::string_view>(lhs) == static_cast<std::string_view>(rhs);
         }
-        constexpr friend auto operator<=>(CStringView const& lhs, CStringView const& rhs)
+        constexpr friend auto operator<=>(const CStringView& lhs, const CStringView& rhs)
         {
             return cpp20::ThreeWayComparison(std::string_view{lhs}, std::string_view{rhs});
         }
     private:
-        value_type const* m_Data = "";
+        const value_type* m_Data = "";
         size_t m_Size = std::string_view{m_Data}.size();
     };
 
 
-    inline std::string to_string(CStringView const& sv)
+    inline std::string to_string(const CStringView& sv)
     {
         return std::string{sv};
     }
 
-    std::ostream& operator<<(std::ostream&, CStringView const&);
-    std::string operator+(char const*, CStringView const&);
-    std::string operator+(std::string const&, CStringView const&);
+    std::ostream& operator<<(std::ostream&, const CStringView&);
+    std::string operator+(const char*, const CStringView&);
+    std::string operator+(const std::string&, const CStringView&);
 }
 
 template<>
 struct std::hash<osc::CStringView> final {
-    size_t operator()(osc::CStringView const& sv) const
+    size_t operator()(const osc::CStringView& sv) const
     {
         return std::hash<std::string_view>{}(sv);
     }

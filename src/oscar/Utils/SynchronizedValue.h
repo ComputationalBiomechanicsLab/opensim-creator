@@ -27,7 +27,7 @@ namespace osc
             m_Value{std::forward<Args>(args)...}
         {}
 
-        SynchronizedValue(SynchronizedValue const& other) :
+        SynchronizedValue(const SynchronizedValue& other) :
             m_Mutex{},
             m_Value{*other.lock()}
         {}
@@ -37,7 +37,7 @@ namespace osc
             m_Value{std::move(tmp).value()}
         {}
 
-        SynchronizedValue& operator=(SynchronizedValue const& other)
+        SynchronizedValue& operator=(const SynchronizedValue& other)
         {
             if (&other != this) {
                 *this->lock() = *other.lock();
@@ -55,7 +55,7 @@ namespace osc
 
         T value() &&
         {
-            auto const guard = std::lock_guard{m_Mutex};
+            const auto guard = std::lock_guard{m_Mutex};
             return std::move(m_Value);
         }
 
@@ -66,9 +66,9 @@ namespace osc
         }
 
         template<typename TGuard = TDefaultGuard>
-        SynchronizedValueGuard<T const, TGuard> lock() const
+        SynchronizedValueGuard<const T, TGuard> lock() const
         {
-            return SynchronizedValueGuard<T const, TGuard>{m_Mutex, m_Value};
+            return SynchronizedValueGuard<const T, TGuard>{m_Mutex, m_Value};
         }
 
         template<
@@ -76,10 +76,10 @@ namespace osc
             typename Getter,
             typename TGuard = TDefaultGuard
         >
-        SynchronizedValueGuard<U const, TGuard> lockChild(Getter f) const
-            requires std::is_same_v<decltype(f(std::declval<T>())), U const&>
+        SynchronizedValueGuard<const U, TGuard> lockChild(Getter f) const
+            requires std::is_same_v<decltype(f(std::declval<T>())), const U&>
         {
-            return SynchronizedValueGuard<U const, TGuard>{m_Mutex, f(m_Value)};
+            return SynchronizedValueGuard<const U, TGuard>{m_Mutex, f(m_Value)};
         }
 
     private:

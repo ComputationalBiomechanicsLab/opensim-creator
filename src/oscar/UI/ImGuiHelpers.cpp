@@ -33,7 +33,7 @@ using namespace osc;
 
 namespace
 {
-    inline constexpr float c_DefaultDragThreshold = 5.0f;
+    inline constexpr float c_default_drag_threshold = 5.0f;
 
     template<
         std::ranges::random_access_range TCollection,
@@ -42,7 +42,7 @@ namespace
     requires
         std::convertible_to<typename TCollection::value_type, float> and
         std::convertible_to<typename UCollection::value_type, float>
-    float diff(TCollection const& older, UCollection const& newer, size_t n)
+    float diff(const TCollection& older, const UCollection& newer, size_t n)
     {
         for (size_t i = 0; i < n; ++i) {
             if (static_cast<float>(older[i]) != static_cast<float>(newer[i])) {
@@ -52,17 +52,17 @@ namespace
         return static_cast<float>(older[0]);
     }
 
-    Vec2 RectMidpoint(ImRect const& r)
+    Vec2 RectMidpoint(const ImRect& r)
     {
         return 0.5f * (Vec2{r.Min} + Vec2{r.Max});
     }
 
-    Vec2 Size(ImRect const& r)
+    Vec2 Size(const ImRect& r)
     {
         return Vec2{r.Max} - Vec2{r.Min};
     }
 
-    float ShortestEdgeLength(ImRect const& r)
+    float ShortestEdgeLength(const ImRect& r)
     {
         const Vec2 sz = Size(r);
         return min(sz.x, sz.y);
@@ -166,47 +166,38 @@ bool osc::ui::UpdatePolarCameraFromMouseInputs(
     // other GUIs and users who use modelling software like Blender (which is
     // more popular among newer users looking to make new models)
 
-    float const aspectRatio = viewportDims.x / viewportDims.y;
+    const float aspectRatio = viewportDims.x / viewportDims.y;
 
-    bool const leftDragging = ui::IsMouseDragging(ImGuiMouseButton_Left);
-    bool const middleDragging = ui::IsMouseDragging(ImGuiMouseButton_Middle);
-    Vec2 const delta = ui::GetIO().MouseDelta;
+    const bool leftDragging = ui::IsMouseDragging(ImGuiMouseButton_Left);
+    const bool middleDragging = ui::IsMouseDragging(ImGuiMouseButton_Middle);
+    const Vec2 delta = ui::GetIO().MouseDelta;
 
-    if (delta != Vec2{0.0f, 0.0f} && (leftDragging || middleDragging))
-    {
-        if (IsCtrlDown())
-        {
+    if (delta != Vec2{0.0f, 0.0f} && (leftDragging || middleDragging)) {
+        if (IsCtrlDown()) {
             camera.pan(aspectRatio, delta/viewportDims);
             modified = true;
         }
-        else if (IsCtrlOrSuperDown())
-        {
+        else if (IsCtrlOrSuperDown()) {
             camera.radius *= 1.0f + 4.0f*delta.y/viewportDims.y;
             modified = true;
         }
-        else
-        {
+        else {
             camera.drag(delta/viewportDims);
             modified = true;
         }
-
     }
-    else if (ui::IsMouseDragging(ImGuiMouseButton_Right))
-    {
-        if (IsAltDown())
-        {
+    else if (ui::IsMouseDragging(ImGuiMouseButton_Right)) {
+        if (IsAltDown()) {
             camera.radius *= 1.0f + 4.0f*delta.y/viewportDims.y;
             modified = true;
         }
-        else
-        {
+        else {
             camera.pan(aspectRatio, delta/viewportDims);
             modified = true;
         }
     }
 
-    if (modified)
-    {
+    if (modified) {
         camera.rescale_znear_and_zfar_based_on_radius();
     }
 
@@ -215,39 +206,31 @@ bool osc::ui::UpdatePolarCameraFromMouseInputs(
 
 bool osc::ui::UpdatePolarCameraFromKeyboardInputs(
     PolarPerspectiveCamera& camera,
-    Rect const& viewportRect,
+    const Rect& viewportRect,
     std::optional<AABB> maybeSceneAABB)
 {
-    bool const shiftDown = IsShiftDown();
-    bool const ctrlOrSuperDown = IsCtrlOrSuperDown();
+    const bool shiftDown = IsShiftDown();
+    const bool ctrlOrSuperDown = IsCtrlOrSuperDown();
 
-    if (ui::IsKeyReleased(ImGuiKey_X))
-    {
-        if (ctrlOrSuperDown)
-        {
+    if (ui::IsKeyReleased(ImGuiKey_X)) {
+        if (ctrlOrSuperDown) {
             FocusAlongMinusX(camera);
             return true;
-        } else
-        {
+        } else {
             FocusAlongX(camera);
             return true;
         }
     }
-    else if (ui::IsKeyPressed(ImGuiKey_Y))
-    {
+    else if (ui::IsKeyPressed(ImGuiKey_Y)) {
         // Ctrl+Y already does something?
-        if (!ctrlOrSuperDown)
-        {
+        if (!ctrlOrSuperDown) {
             FocusAlongY(camera);
             return true;
         }
     }
-    else if (ui::IsKeyPressed(ImGuiKey_F))
-    {
-        if (ctrlOrSuperDown)
-        {
-            if (maybeSceneAABB)
-            {
+    else if (ui::IsKeyPressed(ImGuiKey_F)) {
+        if (ctrlOrSuperDown) {
+            if (maybeSceneAABB) {
                 AutoFocus(
                     camera,
                     *maybeSceneAABB,
@@ -256,16 +239,13 @@ bool osc::ui::UpdatePolarCameraFromKeyboardInputs(
                 return true;
             }
         }
-        else
-        {
+        else {
             Reset(camera);
             return true;
         }
     }
-    else if (ctrlOrSuperDown && (ui::IsKeyPressed(ImGuiKey_8)))
-    {
-        if (maybeSceneAABB)
-        {
+    else if (ctrlOrSuperDown && (ui::IsKeyPressed(ImGuiKey_8))) {
+        if (maybeSceneAABB) {
             AutoFocus(
                 camera,
                 *maybeSceneAABB,
@@ -274,85 +254,67 @@ bool osc::ui::UpdatePolarCameraFromKeyboardInputs(
             return true;
         }
     }
-    else if (ui::IsKeyDown(ImGuiKey_UpArrow))
-    {
-        if (ctrlOrSuperDown)
-        {
+    else if (ui::IsKeyDown(ImGuiKey_UpArrow)) {
+        if (ctrlOrSuperDown) {
             // pan
             camera.pan(aspect_ratio(viewportRect), {0.0f, -0.1f});
         }
-        else if (shiftDown)
-        {
+        else if (shiftDown) {
             camera.phi -= 90_deg;  // rotate in 90-deg increments
         }
-        else
-        {
+        else {
             camera.phi -= 10_deg;  // rotate in 10-deg increments
         }
         return true;
     }
-    else if (ui::IsKeyDown(ImGuiKey_DownArrow))
-    {
-        if (ctrlOrSuperDown)
-        {
+    else if (ui::IsKeyDown(ImGuiKey_DownArrow)) {
+        if (ctrlOrSuperDown) {
             // pan
             camera.pan(aspect_ratio(viewportRect), {0.0f, +0.1f});
         }
-        else if (shiftDown)
-        {
+        else if (shiftDown) {
             // rotate in 90-deg increments
             camera.phi += 90_deg;
         }
-        else
-        {
+        else {
             // rotate in 10-deg increments
             camera.phi += 10_deg;
         }
         return true;
     }
-    else if (ui::IsKeyDown(ImGuiKey_LeftArrow))
-    {
-        if (ctrlOrSuperDown)
-        {
+    else if (ui::IsKeyDown(ImGuiKey_LeftArrow)) {
+        if (ctrlOrSuperDown) {
             // pan
             camera.pan(aspect_ratio(viewportRect), {-0.1f, 0.0f});
         }
-        else if (shiftDown)
-        {
+        else if (shiftDown) {
             // rotate in 90-deg increments
             camera.theta += 90_deg;
         }
-        else
-        {
+        else {
             // rotate in 10-deg increments
             camera.theta += 10_deg;
         }
         return true;
     }
-    else if (ui::IsKeyDown(ImGuiKey_RightArrow))
-    {
-        if (ctrlOrSuperDown)
-        {
+    else if (ui::IsKeyDown(ImGuiKey_RightArrow)) {
+        if (ctrlOrSuperDown) {
             // pan
             camera.pan(aspect_ratio(viewportRect), {+0.1f, 0.0f});
         }
-        else if (shiftDown)
-        {
+        else if (shiftDown) {
             camera.theta -= 90_deg;  // rotate in 90-deg increments
         }
-        else
-        {
+        else {
             camera.theta -= 10_deg;  // rotate in 10-deg increments
         }
         return true;
     }
-    else if (ui::IsKeyDown(ImGuiKey_Minus))
-    {
+    else if (ui::IsKeyDown(ImGuiKey_Minus)) {
         camera.radius *= 1.1f;
         return true;
     }
-    else if (ui::IsKeyDown(ImGuiKey_Equal))
-    {
+    else if (ui::IsKeyDown(ImGuiKey_Equal)) {
         camera.radius *= 0.9f;
         return true;
     }
@@ -361,7 +323,7 @@ bool osc::ui::UpdatePolarCameraFromKeyboardInputs(
 
 bool osc::ui::UpdatePolarCameraFromInputs(
     PolarPerspectiveCamera& camera,
-    Rect const& viewportRect,
+    const Rect& viewportRect,
     std::optional<AABB> maybeSceneAABB)
 {
 
@@ -369,9 +331,9 @@ bool osc::ui::UpdatePolarCameraFromInputs(
 
     // we don't check `io.WantCaptureMouse` because clicking/dragging on an ImGui::Image
     // is classed as a mouse interaction
-    bool const mouseHandled =
+    const bool mouseHandled =
         UpdatePolarCameraFromMouseInputs(camera, dimensions_of(viewportRect));
-    bool const keyboardHandled = !io.WantCaptureKeyboard ?
+    const bool keyboardHandled = !io.WantCaptureKeyboard ?
         UpdatePolarCameraFromKeyboardInputs(camera, viewportRect, maybeSceneAABB) :
         false;
 
@@ -380,14 +342,14 @@ bool osc::ui::UpdatePolarCameraFromInputs(
 
 void osc::ui::UpdateCameraFromInputs(Camera& camera, Eulers& eulers)
 {
-    Vec3 const front = camera.direction();
-    Vec3 const up = camera.upwards_direction();
-    Vec3 const right = cross(front, up);
-    Vec2 const mouseDelta = ui::GetIO().MouseDelta;
+    const Vec3 front = camera.direction();
+    const Vec3 up = camera.upwards_direction();
+    const Vec3 right = cross(front, up);
+    const Vec2 mouseDelta = ui::GetIO().MouseDelta;
 
-    float const speed = 10.0f;
-    float const displacement = speed * ui::GetIO().DeltaTime;
-    Radians const sensitivity{0.005f};
+    const float speed = 10.0f;
+    const float displacement = speed * ui::GetIO().DeltaTime;
+    const Radians sensitivity{0.005f};
 
     // keyboard: changes camera position
     Vec3 pos = camera.position();
@@ -427,42 +389,42 @@ void osc::ui::UpdateCameraFromInputs(Camera& camera, Eulers& eulers)
 
 Rect osc::ui::ContentRegionAvailScreenRect()
 {
-    Vec2 const topLeft = ui::GetCursorScreenPos();
+    const Vec2 topLeft = ui::GetCursorScreenPos();
     return Rect{topLeft, topLeft + ui::GetContentRegionAvail()};
 }
 
-void osc::ui::Image(Texture2D const& t)
+void osc::ui::Image(const Texture2D& t)
 {
     Image(t, t.dimensions());
 }
 
-void osc::ui::Image(Texture2D const& t, Vec2 dims)
+void osc::ui::Image(const Texture2D& t, Vec2 dims)
 {
-    Vec2 const topLeftCoord = {0.0f, 1.0f};
-    Vec2 const bottomRightCoord = {1.0f, 0.0f};
+    const Vec2 topLeftCoord = {0.0f, 1.0f};
+    const Vec2 bottomRightCoord = {1.0f, 0.0f};
     Image(t, dims, topLeftCoord, bottomRightCoord);
 }
 
 void osc::ui::Image(
-    Texture2D const& t,
+    const Texture2D& t,
     Vec2 dims,
     Vec2 topLeftCoord,
     Vec2 bottomRightCoord)
 {
-    auto const handle = ui::graphics_backend::AllocateTextureID(t);
+    const auto handle = ui::graphics_backend::allocate_texture_for_current_frame(t);
     ImGui::Image(handle, dims, topLeftCoord, bottomRightCoord);
 }
 
-void osc::ui::Image(RenderTexture const& tex)
+void osc::ui::Image(const RenderTexture& tex)
 {
     return Image(tex, tex.dimensions());
 }
 
-void osc::ui::Image(RenderTexture const& t, Vec2 dims)
+void osc::ui::Image(const RenderTexture& t, Vec2 dims)
 {
-    Vec2 const uv0 = {0.0f, 1.0f};
-    Vec2 const uv1 = {1.0f, 0.0f};
-    auto const handle = ui::graphics_backend::AllocateTextureID(t);
+    const Vec2 uv0 = {0.0f, 1.0f};
+    const Vec2 uv1 = {1.0f, 0.0f};
+    const auto handle = ui::graphics_backend::allocate_texture_for_current_frame(t);
     ImGui::Image(handle, dims, uv0, uv1);
 }
 
@@ -480,7 +442,7 @@ bool osc::ui::ButtonNoBg(CStringView label, Vec2 size)
 {
     PushStyleColor(ImGuiCol_Button, Color::clear());
     PushStyleColor(ImGuiCol_ButtonHovered, Color::clear());
-    bool const rv = ui::Button(label, size);
+    const bool rv = ui::Button(label, size);
     PopStyleColor();
     PopStyleColor();
 
@@ -489,15 +451,15 @@ bool osc::ui::ButtonNoBg(CStringView label, Vec2 size)
 
 bool osc::ui::ImageButton(
     CStringView label,
-    Texture2D const& t,
+    const Texture2D& t,
     Vec2 dims,
-    Rect const& textureCoords)
+    const Rect& textureCoords)
 {
-    auto const handle = ui::graphics_backend::AllocateTextureID(t);
+    const auto handle = ui::graphics_backend::allocate_texture_for_current_frame(t);
     return ImGui::ImageButton(label.c_str(), handle, dims, textureCoords.p1, textureCoords.p2);
 }
 
-bool osc::ui::ImageButton(CStringView label, Texture2D const& t, Vec2 dims)
+bool osc::ui::ImageButton(CStringView label, const Texture2D& t, Vec2 dims)
 {
     return ImageButton(label, t, dims, Rect{{0.0f, 1.0f}, {1.0f, 0.0f}});
 }
@@ -509,37 +471,37 @@ Rect osc::ui::GetItemRect()
 
 ui::HittestResult osc::ui::HittestLastItem()
 {
-    return HittestLastItem(c_DefaultDragThreshold);
+    return HittestLastItem(c_default_drag_threshold);
 }
 
 ui::HittestResult osc::ui::HittestLastItem(float dragThreshold)
 {
     HittestResult rv;
-    rv.rect.p1 = ui::GetItemRectMin();
-    rv.rect.p2 = ui::GetItemRectMax();
-    rv.isHovered = ui::IsItemHovered();
-    rv.isLeftClickReleasedWithoutDragging = rv.isHovered && IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left, dragThreshold);
-    rv.isRightClickReleasedWithoutDragging = rv.isHovered && IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right, dragThreshold);
+    rv.item_rect.p1 = ui::GetItemRectMin();
+    rv.item_rect.p2 = ui::GetItemRectMax();
+    rv.is_hovered = ui::IsItemHovered();
+    rv.is_left_click_released_without_dragging = rv.is_hovered && IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left, dragThreshold);
+    rv.is_right_click_released_without_dragging = rv.is_hovered && IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right, dragThreshold);
     return rv;
 }
 
-bool osc::ui::IsAnyKeyDown(std::span<ImGuiKey const> keys)
+bool osc::ui::IsAnyKeyDown(std::span<const ImGuiKey> keys)
 {
     return any_of(keys, [](ImGuiKey k) { return ui::IsKeyDown(k); });
 }
 
-bool osc::ui::IsAnyKeyDown(std::initializer_list<ImGuiKey const> keys)
+bool osc::ui::IsAnyKeyDown(std::initializer_list<const ImGuiKey> keys)
 {
     return IsAnyKeyDown(std::span<ImGuiKey const>{keys.begin(), keys.end()});
 }
 
-bool osc::ui::IsAnyKeyPressed(std::span<ImGuiKey const> keys)
+bool osc::ui::IsAnyKeyPressed(std::span<const ImGuiKey> keys)
 {
     return any_of(keys, [](ImGuiKey k) { return ui::IsKeyPressed(k); });
 }
-bool osc::ui::IsAnyKeyPressed(std::initializer_list<ImGuiKey const> keys)
+bool osc::ui::IsAnyKeyPressed(std::initializer_list<const ImGuiKey> keys)
 {
-    return IsAnyKeyPressed(std::span<ImGuiKey const>{keys.begin(), keys.end()});
+    return IsAnyKeyPressed(std::span<const ImGuiKey>{keys.begin(), keys.end()});
 }
 
 bool osc::ui::IsCtrlDown()
@@ -564,7 +526,7 @@ bool osc::ui::IsAltDown()
 
 bool osc::ui::IsMouseReleasedWithoutDragging(ImGuiMouseButton btn)
 {
-    return IsMouseReleasedWithoutDragging(btn, c_DefaultDragThreshold);
+    return IsMouseReleasedWithoutDragging(btn, c_default_drag_threshold);
 }
 
 bool osc::ui::IsMouseReleasedWithoutDragging(ImGuiMouseButton btn, float threshold)
@@ -574,7 +536,7 @@ bool osc::ui::IsMouseReleasedWithoutDragging(ImGuiMouseButton btn, float thresho
         return false;
     }
 
-    Vec2 const dragDelta = ImGui::GetMouseDragDelta(btn);
+    const Vec2 dragDelta = ImGui::GetMouseDragDelta(btn);
 
     return length(dragDelta) < threshold;
 }
@@ -721,17 +683,16 @@ bool osc::ui::InputAngle3(
 bool osc::ui::SliderAngle(CStringView label, Radians& v, Radians min, Radians max)
 {
     float dv = Degrees{v}.count();
-    Degrees const dmin{min};
-    Degrees const dmax{max};
-    if (ui::SliderFloat(label, &dv, dmin.count(), dmax.count()))
-    {
+    const Degrees dmin{min};
+    const Degrees dmax{max};
+    if (ui::SliderFloat(label, &dv, dmin.count(), dmax.count())) {
         v = Degrees{dv};
         return true;
     }
     return false;
 }
 
-ImU32 osc::ui::ToImU32(Color const& color)
+ImU32 osc::ui::ToImU32(const Color& color)
 {
     return ui::ColorConvertFloat4ToU32(Vec4{color});
 }
@@ -741,12 +702,12 @@ Color osc::ui::to_color(ImU32 u32color)
     return Color{Vec4{ImGui::ColorConvertU32ToFloat4(u32color)}};
 }
 
-Color osc::ui::to_color(ImVec4 const& v)
+Color osc::ui::to_color(const ImVec4& v)
 {
     return {v.x, v.y, v.z, v.w};
 }
 
-ImVec4 osc::ui::ToImVec4(Color const& color)
+ImVec4 osc::ui::ToImVec4(const Color& color)
 {
     return ImVec4{Vec4{color}};
 }
@@ -769,10 +730,9 @@ ImGuiWindowFlags osc::ui::GetMinimalWindowFlags()
 
 Rect osc::ui::GetMainViewportWorkspaceScreenRect()
 {
-    ImGuiViewport const& viewport = *ui::GetMainViewport();
+    const ImGuiViewport& viewport = *ui::GetMainViewport();
 
-    return Rect
-    {
+    return Rect{
         viewport.WorkPos,
         Vec2{viewport.WorkPos} + Vec2{viewport.WorkSize}
     };
@@ -780,8 +740,8 @@ Rect osc::ui::GetMainViewportWorkspaceScreenRect()
 
 bool osc::ui::IsMouseInMainViewportWorkspaceScreenRect()
 {
-    Vec2 const mousepos = ui::GetMousePos();
-    Rect const hitRect = GetMainViewportWorkspaceScreenRect();
+    const Vec2 mousepos = ui::GetMousePos();
+    const Rect hitRect = GetMainViewportWorkspaceScreenRect();
 
     return is_intersecting(hitRect, mousepos);
 }
@@ -798,17 +758,17 @@ bool osc::ui::BeginMainViewportBottomBar(CStringView label)
 {
     // https://github.com/ocornut/imgui/issues/3518
     auto* const viewport = static_cast<ImGuiViewportP*>(static_cast<void*>(ui::GetMainViewport()));
-    ImGuiWindowFlags const flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
-    float const height = ui::GetFrameHeight() + ui::GetStyleWindowPadding().y;
+    const ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
+    const float height = ui::GetFrameHeight() + ui::GetStyleWindowPadding().y;
 
     return ImGui::BeginViewportSideBar(label.c_str(), viewport, ImGuiDir_Down, height, flags);
 }
 
 bool osc::ui::ButtonCentered(CStringView s)
 {
-    float const buttonWidth = ui::CalcTextSize(s).x + 2.0f*ui::GetStyleFramePadding().x;
-    float const midpoint = ui::GetCursorScreenPos().x + 0.5f*ui::GetContentRegionAvail().x;
-    float const buttonStartX = midpoint - 0.5f*buttonWidth;
+    const float buttonWidth = ui::CalcTextSize(s).x + 2.0f*ui::GetStyleFramePadding().x;
+    const float midpoint = ui::GetCursorScreenPos().x + 0.5f*ui::GetContentRegionAvail().x;
+    const float buttonStartX = midpoint - 0.5f*buttonWidth;
 
     ui::SetCursorScreenPos({buttonStartX, ui::GetCursorScreenPos().y});
 
@@ -817,8 +777,8 @@ bool osc::ui::ButtonCentered(CStringView s)
 
 void osc::ui::TextCentered(CStringView s)
 {
-    float const windowWidth = ImGui::GetWindowSize().x;
-    float const textWidth   = ui::CalcTextSize(s).x;
+    const float windowWidth = ImGui::GetWindowSize().x;
+    const float textWidth   = ui::CalcTextSize(s).x;
 
     ui::SetCursorPosX(0.5f * (windowWidth - textWidth));
     TextUnformatted(s);
@@ -833,9 +793,9 @@ void osc::ui::TextDisabledAndCentered(CStringView s)
 
 void osc::ui::TextColumnCentered(CStringView s)
 {
-    float const columnWidth = ui::GetColumnWidth();
-    float const columnOffset = ui::GetCursorPos().x;
-    float const textWidth = ui::CalcTextSize(s).x;
+    const float columnWidth = ui::GetColumnWidth();
+    const float columnOffset = ui::GetCursorPos().x;
+    const float textWidth = ui::CalcTextSize(s).x;
 
     ui::SetCursorPosX(columnOffset + 0.5f*(columnWidth-textWidth));
     TextUnformatted(s);
@@ -882,9 +842,9 @@ bool osc::ui::Combo(
     CStringView label,
     size_t* current,
     size_t size,
-    std::function<CStringView(size_t)> const& accessor)
+    const std::function<CStringView(size_t)>& accessor)
 {
-    CStringView const preview = current != nullptr ?
+    const CStringView preview = current != nullptr ?
         accessor(*current) :
         CStringView{};
 
@@ -897,7 +857,7 @@ bool osc::ui::Combo(
     for (size_t i = 0; i < size; ++i)
     {
         ui::PushID(static_cast<int>(i));
-        bool const isSelected = current != nullptr && *current == i;
+        const bool isSelected = current != nullptr && *current == i;
         if (ui::Selectable(accessor(i), isSelected))
         {
             changed = true;
@@ -926,7 +886,7 @@ bool osc::ui::Combo(
 bool osc::ui::Combo(
     CStringView label,
     size_t* current,
-    std::span<CStringView const> items)
+    std::span<const CStringView> items)
 {
     return Combo(
         label,
@@ -1036,8 +996,8 @@ bool osc::ui::CircularSliderFloat(
             ImGuiDataType_Float,
             static_cast<void*>(v),
             format.c_str(),
-            shouldClampTextualInput ? static_cast<void const*>(&min) : nullptr,
-            shouldClampTextualInput ? static_cast<void const*>(&max) : nullptr
+            shouldClampTextualInput ? static_cast<const void*>(&min) : nullptr,
+            shouldClampTextualInput ? static_cast<const void*>(&max) : nullptr
         );
     }
     // else: draw the slider (remainder of this func)
@@ -1065,7 +1025,7 @@ bool osc::ui::CircularSliderFloat(
     }
 
     // render
-    bool const useCustomRendering = true;
+    const bool useCustomRendering = true;
     if (useCustomRendering)
     {
         const Vec2 sliderNobCenter = RectMidpoint(grabBoundingBox);
@@ -1080,8 +1040,8 @@ bool osc::ui::CircularSliderFloat(
 
         // render left-hand rail (brighter)
         {
-            Vec2 const lhsRailTopLeft = {frameBB.Min.x, sliderRailTopY};
-            Vec2 const lhsRailBottomright = {sliderNobCenter.x, sliderRailBottomY};
+            const Vec2 lhsRailTopLeft = {frameBB.Min.x, sliderRailTopY};
+            const Vec2 lhsRailBottomright = {sliderNobCenter.x, sliderRailBottomY};
             const ImU32 brightenedRailColor = Brighten(railColor, 2.0f);
 
             window->DrawList->AddRectFilled(
@@ -1094,8 +1054,8 @@ bool osc::ui::CircularSliderFloat(
 
         // render right-hand rail
         {
-            Vec2 const rhsRailTopLeft = {sliderNobCenter.x, sliderRailTopY};
-            Vec2 const rhsRailBottomRight = {frameBB.Max.x, sliderRailBottomY};
+            const Vec2 rhsRailTopLeft = {sliderNobCenter.x, sliderRailTopY};
+            const Vec2 rhsRailBottomRight = {frameBB.Max.x, sliderRailBottomY};
 
             window->DrawList->AddRectFilled(
                 rhsRailTopLeft,

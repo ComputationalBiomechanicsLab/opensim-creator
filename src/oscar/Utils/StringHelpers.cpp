@@ -14,7 +14,7 @@
 
 namespace
 {
-    auto constexpr c_NibbleToCharacterLUT = std::to_array(
+    constexpr auto c_NibbleToCharacterLUT = std::to_array(
     {
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
     });
@@ -32,7 +32,7 @@ namespace
 
 bool osc::Contains(std::string_view sv, std::string_view substr)
 {
-    auto const it = std::search(
+    const auto it = std::search(
         sv.begin(),
         sv.end(),
         substr.begin(),
@@ -58,8 +58,8 @@ bool osc::ContainsCaseInsensitive(std::string_view sv, std::string_view substr)
         return false;
     }
 
-    std::string const s = ToLower(sv);
-    std::string const ss = ToLower(substr);
+    const std::string s = ToLower(sv);
+    const std::string ss = ToLower(substr);
 
     return Contains(s, ss);
 }
@@ -92,7 +92,7 @@ bool osc::IsStringCaseInsensitiveGreaterThan(std::string_view a, std::string_vie
 
 bool osc::is_equal_case_insensitive(std::string_view a, std::string_view b)
 {
-    auto const compareChars = [](std::string_view::value_type c1, std::string_view::value_type c2)
+    const auto compareChars = [](std::string_view::value_type c1, std::string_view::value_type c2)
     {
         return std::tolower(static_cast<std::make_unsigned_t<decltype(c1)>>(c1)) == std::tolower(static_cast<std::make_unsigned_t<decltype(c2)>>(c2));
     };
@@ -103,14 +103,14 @@ bool osc::is_equal_case_insensitive(std::string_view a, std::string_view b)
 bool osc::is_valid_identifier(std::string_view sv)
 {
     // helpers
-    auto const isValidFirstCharacterOfIdentifier = [](std::string_view::value_type c)
+    const auto isValidFirstCharacterOfIdentifier = [](std::string_view::value_type c)
     {
         return
             ('A' <= c && c <= 'Z') ||
             (     '_' == c       ) ||
             ('a' <= c && c <= 'z');
     };
-    auto const isValidTrailingCharacterOfIdentifier = [](std::string_view::value_type c)
+    const auto isValidTrailingCharacterOfIdentifier = [](std::string_view::value_type c)
     {
         return
             ('0' <= c && c <= '9') ||
@@ -135,8 +135,8 @@ bool osc::is_valid_identifier(std::string_view sv)
 
 std::string_view osc::TrimLeadingAndTrailingWhitespace(std::string_view sv)
 {
-    std::string_view::const_iterator const front = find_if_not(sv, ::isspace);
-    std::string_view::const_iterator const back = find_if_not(sv.rbegin(), std::string_view::const_reverse_iterator{front}, ::isspace).base();
+    const std::string_view::const_iterator front = find_if_not(sv, ::isspace);
+    const std::string_view::const_iterator back = find_if_not(sv.rbegin(), std::string_view::const_reverse_iterator{front}, ::isspace).base();
     return {sv.data() + std::distance(sv.begin(), front), static_cast<size_t>(std::distance(front, back))};
 }
 
@@ -156,12 +156,12 @@ std::optional<float> osc::FromCharsStripWhitespace(std::string_view sv)
     {
         fpv = std::stof(std::string{sv}, &i);
     }
-    catch (std::invalid_argument const&)
+    catch (const std::invalid_argument&)
     {
         // no conversion could be performed
         return std::nullopt;
     }
-    catch (std::out_of_range const&)
+    catch (const std::out_of_range&)
     {
         // value is out of the range of representable values of a float
         return std::nullopt;
@@ -189,7 +189,7 @@ std::string osc::Ellipsis(std::string_view v, size_t maxLen)
 
 std::string_view osc::SubstringAfterLast(std::string_view sv, std::string_view::value_type delimiter)
 {
-    size_t const pos = sv.rfind(delimiter);
+    const size_t pos = sv.rfind(delimiter);
 
     if (pos == std::string_view::npos)
     {
@@ -210,8 +210,8 @@ std::pair<char, char> osc::to_hex_chars(uint8_t b)
     static_assert((std::numeric_limits<decltype(b)>::max() & 0xf) < c_NibbleToCharacterLUT.size());
     static_assert(((std::numeric_limits<decltype(b)>::max()>>1) & 0xf) < c_NibbleToCharacterLUT.size());
 
-    char const msn = c_NibbleToCharacterLUT[(b>>4) & 0xf];
-    char const lsn = c_NibbleToCharacterLUT[b & 0xf];
+    const char msn = c_NibbleToCharacterLUT[(b>>4) & 0xf];
+    const char lsn = c_NibbleToCharacterLUT[b & 0xf];
     return {msn, lsn};
 }
 
@@ -239,7 +239,7 @@ std::optional<uint8_t> osc::try_parse_hex_chars_as_byte(char a, char b)
     // better approach though (I know this is ass)
 
 
-    auto const tryConvertToNibbleBinary = [](char c) -> std::optional<uint8_t>
+    const auto tryConvertToNibbleBinary = [](char c) -> std::optional<uint8_t>
     {
         if ('0' <= c && c <= '9')
         {
@@ -259,16 +259,14 @@ std::optional<uint8_t> osc::try_parse_hex_chars_as_byte(char a, char b)
         }
     };
 
-    auto const msn = tryConvertToNibbleBinary(a);
-    auto const lsn = tryConvertToNibbleBinary(b);
+    const auto msn = tryConvertToNibbleBinary(a);
+    const auto lsn = tryConvertToNibbleBinary(b);
 
-    if (msn && lsn)
-    {
-        auto const v = static_cast<uint8_t>((*msn << 4) | *lsn);
+    if (msn && lsn) {
+        const auto v = static_cast<uint8_t>((*msn << 4) | *lsn);
         return v;
     }
-    else
-    {
+    else {
         return std::nullopt;
     }
 }

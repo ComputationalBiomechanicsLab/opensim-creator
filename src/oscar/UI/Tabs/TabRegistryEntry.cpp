@@ -15,39 +15,37 @@ public:
 
     Impl(
         CStringView name_,
-        std::function<std::unique_ptr<ITab>(ParentPtr<ITabHost> const&)> constructor_) :
+        std::function<std::unique_ptr<ITab>(const ParentPtr<ITabHost>&)> constructor_) :
 
         m_Name{name_},
         m_Constructor{std::move(constructor_)}
-    {
-    }
+    {}
 
     CStringView getName() const
     {
         return m_Name;
     }
 
-    std::unique_ptr<ITab> createTab(ParentPtr<ITabHost> const& host) const
+    std::unique_ptr<ITab> createTab(const ParentPtr<ITabHost>& host) const
     {
         return m_Constructor(host);
     }
 
 private:
     std::string m_Name;
-    std::function<std::unique_ptr<ITab>(ParentPtr<ITabHost> const&)> m_Constructor;
+    std::function<std::unique_ptr<ITab>(const ParentPtr<ITabHost>&)> m_Constructor;
 };
 
 osc::TabRegistryEntry::TabRegistryEntry(
     CStringView name_,
-    std::function<std::unique_ptr<ITab>(ParentPtr<ITabHost> const&)> ctor_) :
+    std::function<std::unique_ptr<ITab>(const ParentPtr<ITabHost>&)> ctor_) :
 
     m_Impl{std::make_shared<Impl>(name_, std::move(ctor_))}
-{
-}
+{}
 
-osc::TabRegistryEntry::TabRegistryEntry(TabRegistryEntry const&) = default;
+osc::TabRegistryEntry::TabRegistryEntry(const TabRegistryEntry&) = default;
 osc::TabRegistryEntry::TabRegistryEntry(TabRegistryEntry&&) noexcept = default;
-osc::TabRegistryEntry& osc::TabRegistryEntry::operator=(TabRegistryEntry const&) = default;
+osc::TabRegistryEntry& osc::TabRegistryEntry::operator=(const TabRegistryEntry&) = default;
 osc::TabRegistryEntry& osc::TabRegistryEntry::operator=(TabRegistryEntry&&) noexcept = default;
 osc::TabRegistryEntry::~TabRegistryEntry() noexcept = default;
 
@@ -56,12 +54,12 @@ CStringView osc::TabRegistryEntry::getName() const
     return m_Impl->getName();
 }
 
-std::unique_ptr<ITab> osc::TabRegistryEntry::createTab(ParentPtr<ITabHost> const& host) const
+std::unique_ptr<ITab> osc::TabRegistryEntry::createTab(const ParentPtr<ITabHost>& host) const
 {
     return m_Impl->createTab(host);
 }
 
-bool osc::operator<(TabRegistryEntry const& lhs, TabRegistryEntry const& rhs)
+bool osc::operator<(const TabRegistryEntry& lhs, const TabRegistryEntry& rhs)
 {
     return lhs.getName() < rhs.getName();
 }

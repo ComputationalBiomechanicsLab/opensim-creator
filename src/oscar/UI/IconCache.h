@@ -15,13 +15,13 @@ namespace osc
             ResourceLoader loaderPrefixedAtDirContainingSVGs,
             float verticalScale
         );
-        IconCache(IconCache const&) = delete;
+        IconCache(const IconCache&) = delete;
         IconCache(IconCache&&) noexcept;
-        IconCache& operator=(IconCache const&) = delete;
+        IconCache& operator=(const IconCache&) = delete;
         IconCache& operator=(IconCache&&) noexcept;
         ~IconCache() noexcept;
 
-        Icon const& getIcon(std::string_view iconName) const;
+        const Icon& getIcon(std::string_view iconName) const;
 
     private:
         class Impl;

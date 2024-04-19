@@ -51,32 +51,30 @@ namespace
     // the returned rectangle is in the same space as the target rectangle
     Rect ShrinkToFit(Rect targetRect, float aspectRatio)
     {
-        float const targetAspectRatio = aspect_ratio(targetRect);
-        float const ratio = targetAspectRatio / aspectRatio;
-        Vec2 const targetDims = dimensions_of(targetRect);
+        const float targetAspectRatio = aspect_ratio(targetRect);
+        const float ratio = targetAspectRatio / aspectRatio;
+        const Vec2 targetDims = dimensions_of(targetRect);
 
-        if (ratio >= 1.0f)
-        {
+        if (ratio >= 1.0f) {
             // it will touch the top/bottom but may (ratio != 1.0f) fall short of the left/right
-            Vec2 const rvDims = {targetDims.x/ratio, targetDims.y};
-            Vec2 const rvTopLeft = {targetRect.p1.x + 0.5f*(targetDims.x - rvDims.x), targetRect.p1.y};
+            const Vec2 rvDims = {targetDims.x/ratio, targetDims.y};
+            const Vec2 rvTopLeft = {targetRect.p1.x + 0.5f*(targetDims.x - rvDims.x), targetRect.p1.y};
             return {rvTopLeft, rvTopLeft + rvDims};
         }
         else
         {
             // it will touch the left/right but will not touch the top/bottom
-            Vec2 const rvDims = {targetDims.x, ratio*targetDims.y};
-            Vec2 const rvTopLeft = {targetRect.p1.x, targetRect.p1.y + 0.5f*(targetDims.y - rvDims.y)};
+            const Vec2 rvDims = {targetDims.x, ratio*targetDims.y};
+            const Vec2 rvTopLeft = {targetRect.p1.x, targetRect.p1.y + 0.5f*(targetDims.y - rvDims.y)};
             return {rvTopLeft, rvTopLeft + rvDims};
         }
     }
 
-    Rect MapRect(Rect const& sourceRect, Rect const& targetRect, Rect const& rect)
+    Rect MapRect(const Rect& sourceRect, const Rect& targetRect, const Rect& rect)
     {
-        Vec2 const scale = dimensions_of(targetRect) / dimensions_of(sourceRect);
+        const Vec2 scale = dimensions_of(targetRect) / dimensions_of(sourceRect);
 
-        return Rect
-        {
+        return Rect{
             targetRect.p1 + scale*(rect.p1 - sourceRect.p1),
             targetRect.p1 + scale*(rect.p2 - sourceRect.p1),
         };
@@ -125,8 +123,7 @@ private:
         {
             int id = 0;
             ui::Begin("Controls");
-            for (ScreenshotAnnotation const& annotation : m_Screenshot.annotations)
-            {
+            for (const ScreenshotAnnotation& annotation : m_Screenshot.annotations) {
                 ui::PushID(id++);
                 ui::TextUnformatted(annotation.label);
                 ui::PopID();
@@ -138,9 +135,9 @@ private:
     // returns screenspace rect of the screenshot within the UI
     Rect drawScreenshot()
     {
-        Vec2 const screenTopLeft = ui::GetCursorScreenPos();
-        Rect const windowRect = {screenTopLeft, screenTopLeft + Vec2{ui::GetContentRegionAvail()}};
-        Rect const imageRect = ShrinkToFit(windowRect, aspect_ratio(m_Screenshot.image.dimensions()));
+        const Vec2 screenTopLeft = ui::GetCursorScreenPos();
+        const Rect windowRect = {screenTopLeft, screenTopLeft + Vec2{ui::GetContentRegionAvail()}};
+        const Rect imageRect = ShrinkToFit(windowRect, aspect_ratio(m_Screenshot.image.dimensions()));
         ui::SetCursorScreenPos(imageRect.p1);
         ui::Image(m_ImageTexture, dimensions_of(imageRect));
         return imageRect;
@@ -148,34 +145,29 @@ private:
 
     void drawOverlays(
         ImDrawList& drawlist,
-        Rect const& imageRect,
-        Color const& unselectedColor,
-        Color const& selectedColor)
+        const Rect& imageRect,
+        const Color& unselectedColor,
+        const Color& selectedColor)
     {
-        Vec2 const mousePos = ui::GetMousePos();
-        bool const leftClickReleased = ui::IsMouseReleased(ImGuiMouseButton_Left);
-        Rect const imageSourceRect = {{0.0f, 0.0f}, m_Screenshot.image.dimensions()};
+        const Vec2 mousePos = ui::GetMousePos();
+        const bool leftClickReleased = ui::IsMouseReleased(ImGuiMouseButton_Left);
+        const Rect imageSourceRect = {{0.0f, 0.0f}, m_Screenshot.image.dimensions()};
 
-        for (ScreenshotAnnotation const& annotation : m_Screenshot.annotations)
-        {
-            Rect const annotationRectScreenSpace = MapRect(imageSourceRect, imageRect, annotation.rect);
-            bool const selected = m_SelectedAnnotations.contains(annotation.label);
-            bool const hovered = is_intersecting(annotationRectScreenSpace, mousePos);
+        for (const ScreenshotAnnotation& annotation : m_Screenshot.annotations) {
+            const Rect annotationRectScreenSpace = MapRect(imageSourceRect, imageRect, annotation.rect);
+            const bool selected = m_SelectedAnnotations.contains(annotation.label);
+            const bool hovered = is_intersecting(annotationRectScreenSpace, mousePos);
 
             Vec4 color = selected ? selectedColor : unselectedColor;
-            if (hovered)
-            {
+            if (hovered) {
                 color.w = saturate(color.w + 0.3f);
             }
 
-            if (hovered && leftClickReleased)
-            {
-                if (selected)
-                {
+            if (hovered && leftClickReleased) {
+                if (selected) {
                     m_SelectedAnnotations.erase(annotation.label);
                 }
-                else
-                {
+                else {
                     m_SelectedAnnotations.insert(annotation.label);
                 }
             }
@@ -193,9 +185,8 @@ private:
 
     void actionSaveOutputImage()
     {
-        std::optional<std::filesystem::path> const maybeImagePath = PromptUserForFileSaveLocationAndAddExtensionIfNecessary("png");
-        if (maybeImagePath)
-        {
+        const std::optional<std::filesystem::path> maybeImagePath = PromptUserForFileSaveLocationAndAddExtensionIfNecessary("png");
+        if (maybeImagePath) {
             std::ofstream fout{*maybeImagePath, std::ios_base::binary};
             if (!fout) {
                 throw std::runtime_error{maybeImagePath->string() + ": cannot open for writing"};
@@ -236,8 +227,7 @@ private:
                 {
                     std::vector<Vec3> vertices;
                     vertices.reserve(drawlist.VtxBuffer.size());
-                    for (ImDrawVert const& vert : drawlist.VtxBuffer)
-                    {
+                    for (const ImDrawVert& vert : drawlist.VtxBuffer) {
                         vertices.emplace_back(vert.pos.x, vert.pos.y, 0.0f);
                     }
                     mesh.set_vertices(vertices);
@@ -247,9 +237,8 @@ private:
                 {
                     std::vector<Color> colors;
                     colors.reserve(drawlist.VtxBuffer.size());
-                    for (ImDrawVert const& vert : drawlist.VtxBuffer)
-                    {
-                        Color const linearColor = ui::to_color(vert.col);
+                    for (const ImDrawVert& vert : drawlist.VtxBuffer) {
+                        const Color linearColor = ui::to_color(vert.col);
                         colors.push_back(linearColor);
                     }
                     mesh.set_colors(colors);
@@ -275,8 +264,7 @@ private:
                 float R = static_cast<float>(m_ImageTexture.dimensions().x);
                 float T = 0.0f;
                 float B = static_cast<float>(m_ImageTexture.dimensions().y);
-                Mat4 const proj =
-                {
+                const Mat4 proj = {
                     { 2.0f/(R-L),   0.0f,         0.0f,   0.0f },
                     { 0.0f,         2.0f/(T-B),   0.0f,   0.0f },
                     { 0.0f,         0.0f,        -1.0f,   0.0f },
@@ -288,7 +276,7 @@ private:
 
             for (int cmdIdx = 0; cmdIdx < drawlist.CmdBuffer.Size; ++cmdIdx)
             {
-                ImDrawCmd const& cmd = drawlist.CmdBuffer[cmdIdx];
+                const ImDrawCmd& cmd = drawlist.CmdBuffer[cmdIdx];
                 {
                     // upload indices
                     std::vector<ImDrawIdx> indices;
@@ -324,10 +312,9 @@ private:
 
 // public API
 
-osc::ScreenshotTab::ScreenshotTab(ParentPtr<ITabHost> const&, Screenshot&& screenshot) :
+osc::ScreenshotTab::ScreenshotTab(const ParentPtr<ITabHost>&, Screenshot&& screenshot) :
     m_Impl{std::make_unique<Impl>(std::move(screenshot))}
-{
-}
+{}
 
 osc::ScreenshotTab::ScreenshotTab(ScreenshotTab&&) noexcept = default;
 osc::ScreenshotTab& osc::ScreenshotTab::operator=(ScreenshotTab&&) noexcept = default;

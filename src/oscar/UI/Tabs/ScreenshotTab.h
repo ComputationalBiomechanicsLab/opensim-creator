@@ -14,10 +14,10 @@ namespace osc
 {
     class ScreenshotTab final : public ITab {
     public:
-        ScreenshotTab(ParentPtr<ITabHost> const&, Screenshot&&);
-        ScreenshotTab(ScreenshotTab const&) = delete;
+        ScreenshotTab(const ParentPtr<ITabHost>&, Screenshot&&);
+        ScreenshotTab(const ScreenshotTab&) = delete;
         ScreenshotTab(ScreenshotTab&&) noexcept;
-        ScreenshotTab& operator=(ScreenshotTab const&) = delete;
+        ScreenshotTab& operator=(const ScreenshotTab&) = delete;
         ScreenshotTab& operator=(ScreenshotTab&&) noexcept;
         ~ScreenshotTab() noexcept override;
 

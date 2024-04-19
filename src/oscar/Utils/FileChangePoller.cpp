@@ -9,7 +9,7 @@ namespace
 {
     constexpr std::string_view c_ModelNoBackingFileSenteniel = "Unassigned";
 
-    std::filesystem::file_time_type GetLastModificationTime(std::string const& path)
+    std::filesystem::file_time_type GetLastModificationTime(const std::string& path)
     {
         if (path.empty() ||
             path == c_ModelNoBackingFileSenteniel ||
@@ -26,7 +26,7 @@ namespace
 
 osc::FileChangePoller::FileChangePoller(
         std::chrono::milliseconds delay,
-        std::string const& path) :
+        const std::string& path) :
 
     m_DelayBetweenChecks{delay},
     m_NextPollingTime{std::chrono::system_clock::now() + delay},
@@ -35,7 +35,7 @@ osc::FileChangePoller::FileChangePoller(
 {
 }
 
-bool osc::FileChangePoller::changeWasDetected(std::string const& path)
+bool osc::FileChangePoller::changeWasDetected(const std::string& path)
 {
     if (!m_IsEnabled)
     {

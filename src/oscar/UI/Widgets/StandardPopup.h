@@ -16,9 +16,9 @@ namespace osc
     // apart from the popup content)
     class StandardPopup : public IPopup {
     protected:
-        StandardPopup(StandardPopup const&) = default;
+        StandardPopup(const StandardPopup&) = default;
         StandardPopup(StandardPopup&&) noexcept = default;
-        StandardPopup& operator=(StandardPopup const&) = default;
+        StandardPopup& operator=(const StandardPopup&) = default;
         StandardPopup& operator=(StandardPopup&&) noexcept = default;
     public:
         virtual ~StandardPopup() noexcept = default;
@@ -38,7 +38,7 @@ namespace osc
         void requestClose();
         bool isModal() const;
         void setModal(bool);
-        void setRect(Rect const&);
+        void setRect(const Rect&);
         void set_dimensions(Vec2);
         void set_position(std::optional<Vec2>);
 

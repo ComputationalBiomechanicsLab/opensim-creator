@@ -13,22 +13,21 @@ namespace osc
     class PerfMeasurement final {
     public:
         PerfMeasurement(
-            std::shared_ptr<PerfMeasurementMetadata const> const& metadata_) :
+            const std::shared_ptr<const PerfMeasurementMetadata>& metadata_) :
             m_Metadata{metadata_}
-        {
-        }
+        {}
 
         size_t getID() const
         {
             return m_Metadata->getID();
         }
 
-        std::string const& getLabel() const
+        const std::string& getLabel() const
         {
             return m_Metadata->getLabel();
         }
 
-        std::string const& getFilename() const
+        const std::string& getFilename() const
         {
             return m_Metadata->getFilename();
         }
@@ -73,7 +72,7 @@ namespace osc
         }
 
     private:
-        std::shared_ptr<PerfMeasurementMetadata const> m_Metadata;
+        std::shared_ptr<const PerfMeasurementMetadata> m_Metadata;
         size_t m_CallCount = 0;
         PerfClock::duration m_TotalDuration{0};
         PerfClock::duration m_LastDuration{0};

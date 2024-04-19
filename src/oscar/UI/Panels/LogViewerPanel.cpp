@@ -14,8 +14,7 @@ public:
 
     explicit Impl(std::string_view panelName) :
         StandardPanelImpl{panelName, ImGuiWindowFlags_MenuBar}
-    {
-    }
+    {}
 
 private:
     void implDrawContent() final

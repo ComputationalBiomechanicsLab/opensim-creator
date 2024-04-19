@@ -545,12 +545,12 @@ void osc::SetProcessHighDPIMode() {}
 
 #include <oscar/Shims/Cpp20/bit.h>
 
-using osc::defaultLogger;
-using osc::getTracebackLog;
+using osc::global_default_logger;
+using osc::global_get_traceback_log;
 using osc::LogMessage;
 using osc::LogMessageView;
 using osc::LogSink;
-using osc::ToCStringView;
+using osc::to_cstringview;
 
 std::tm osc::GMTimeThreadsafe(std::time_t t)
 {
@@ -626,11 +626,11 @@ namespace
         }
 
     private:
-        void implLog(LogMessageView const& msg) final
+        void impl_log_message(LogMessageView const& msg) final
         {
             if (m_Out)
             {
-                m_Out << '[' << msg.loggerName << "] [" << ToCStringView(msg.level) << "] " << msg.payload << std::endl;
+                m_Out << '[' << msg.logger_name << "] [" << to_cstringview(msg.level) << "] " << msg.payload << std::endl;
             }
         }
 
@@ -679,10 +679,10 @@ namespace
         if (maybeCrashReportFile && *maybeCrashReportFile)
         {
             *maybeCrashReportFile << "----- log -----\n";
-            auto guard = getTracebackLog().lock();
+            auto guard = global_get_traceback_log().lock();
             for (LogMessage const& msg : *guard)
             {
-                *maybeCrashReportFile << '[' << msg.loggerName << "] [" << ToCStringView(msg.level) << "] " << msg.payload << '\n';
+                *maybeCrashReportFile << '[' << msg.logger_name << "] [" << to_cstringview(msg.level) << "] " << msg.payload << '\n';
             }
             *maybeCrashReportFile << "----- /log -----\n";
         }
@@ -695,9 +695,9 @@ namespace
 
             std::shared_ptr<osc::LogSink> sink = std::make_shared<CrashFileSink>(*maybeCrashReportFile);
 
-            defaultLogger()->sinks().push_back(sink);
+            global_default_logger()->sinks().push_back(sink);
             WriteTracebackToLog(osc::LogLevel::err);
-            defaultLogger()->sinks().erase(defaultLogger()->sinks().end() - 1);
+            global_default_logger()->sinks().erase(global_default_logger()->sinks().end() - 1);
 
             *maybeCrashReportFile << "----- /traceback -----\n";
         }
