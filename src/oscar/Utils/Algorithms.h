@@ -640,7 +640,7 @@ namespace osc
 
     // osc algorithm: returns a pointer to the element at `key`, or `nullptr` if no such element exists in `container`
     template<AssociativeContainer T, typename Key>
-    typename const T::mapped_type* try_find(const T& container, const Key& key)
+    const typename T::mapped_type* try_find(const T& container, const Key& key)
     {
         if (auto it = container.find(key); it != container.end()) {
             return &it->second;
