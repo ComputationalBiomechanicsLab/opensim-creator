@@ -2,9 +2,9 @@
 
 #include <OpenSimCreator/Documents/OutputExtractors/ComponentOutputExtractor.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationModelStatePair.h>
-#include <OpenSimCreator/UI/Simulation/ComponentDetails.h>
 #include <OpenSimCreator/UI/Simulation/ISimulatorUIAPI.h>
 #include <OpenSimCreator/UI/Simulation/SimulationOutputPlot.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Common/Component.h>
 #include <oscar/UI/oscimgui.h>
@@ -30,26 +30,144 @@ private:
     void impl_draw_content() final
     {
         SimulationModelStatePair* maybeShownState = m_SimulatorUIAPI->tryGetCurrentSimulationState();
-        if (!maybeShownState) {
+        if (not maybeShownState) {
             ui::TextDisabled("(no simulation selected)");
             return;
         }
-
         SimulationModelStatePair& ms = *maybeShownState;
 
-        OpenSim::Component const* selected = ms.getSelected();
-        if (!selected) {
+        OpenSim::Component const* maybeSelected = ms.getSelected();
+        if (not maybeSelected) {
             ui::TextDisabled("(nothing selected)");
             return;
         }
+        OpenSim::Component const& selected = *maybeSelected;
+        SimTK::State const& state = ms.getState();
 
-        m_ComponentDetailsWidget.onDraw(ms.getState(), selected);
+        ui::Text("selection information:");
+        ui::Dummy({0.0, 2.5f});
+        ui::Separator();
+
+        // generic OpenSim::Object/OpenSim::Component stuff
+        {
+            ui::Text("name");
+            ui::NextColumn();
+            ui::Text(selected.getName());
+            ui::NextColumn();
+
+            ui::Text("authors");
+            ui::NextColumn();
+            ui::Text(selected.getAuthors());
+            ui::NextColumn();
+
+            // properties
+            for (int i = 0; i < selected.getNumProperties(); ++i) {
+                OpenSim::AbstractProperty const& prop = selected.getPropertyByIndex(i);
+                ui::Text(prop.getName());
+                ui::NextColumn();
+                ui::Text(prop.toString());
+                ui::NextColumn();
+            }
+        }
+
+        // state variables
+        if (ui::CollapsingHeader("state variables")) {
+            OpenSim::Array<std::string> names = selected.getStateVariableNames();
+            ui::Columns(2);
+            for (int i = 0; i < names.size(); ++i)
+            {
+                std::string const& name = names[i];
+
+                ui::Text(name);
+                ui::NextColumn();
+                ui::Text("%f", selected.getStateVariableValue(state, name));
+                ui::NextColumn();
+
+                ui::Text("%s (deriv)", name.c_str());
+                ui::NextColumn();
+                ui::Text("%f", selected.getStateVariableDerivativeValue(state, name));
+                ui::NextColumn();
+            }
+            ui::Columns();
+        }
+
+        // inputs
+        if (ui::CollapsingHeader("inputs")) {
+            std::vector<std::string> input_names = selected.getInputNames();
+            for (std::string const& inputName : input_names) {
+                ui::Text(inputName);
+            }
+        }
+
+        // sockets
+        if (ui::CollapsingHeader("sockets"))
+        {
+            std::vector<std::string> socknames = GetSocketNames(selected);
+            ui::Columns(2);
+            for (std::string const& sn : socknames)
+            {
+                ui::Text(sn);
+                ui::NextColumn();
+
+                std::string const& cp = selected.getSocket(sn).getConnecteePath();
+                ui::Text(cp);
+                ui::NextColumn();
+            }
+            ui::Columns();
+        }
+
+        // debug info (handy for development)
+        if (ui::CollapsingHeader("debug")) {
+            ui::Columns(2);
+
+            ui::Text("getOwner().name()");
+            ui::NextColumn();
+            ui::Text(TryGetOwnerName(selected).value_or("N/A (no owner)"));
+            ui::NextColumn();
+
+            ui::Text("getAbsolutePath()");
+            ui::NextColumn();
+            ui::Text(GetAbsolutePathString(selected));
+            ui::NextColumn();
+
+            ui::Text("getConcreteClassName()");
+            ui::NextColumn();
+            ui::Text(selected.getConcreteClassName());
+            ui::NextColumn();
+
+            ui::Text("getNumInputs()");
+            ui::NextColumn();
+            ui::Text("%i", selected.getNumInputs());
+            ui::NextColumn();
+
+            ui::Text("getNumOutputs()");
+            ui::NextColumn();
+            ui::Text("%i", selected.getNumOutputs());
+            ui::NextColumn();
+
+            ui::Text("getNumSockets()");
+            ui::NextColumn();
+            ui::Text("%i", selected.getNumSockets());
+            ui::NextColumn();
+
+            ui::Text("getNumStateVariables()");
+            ui::NextColumn();
+            ui::Text("%i", selected.getNumStateVariables());
+            ui::NextColumn();
+
+            ui::Text("getNumProperties()");
+            ui::NextColumn();
+            ui::Text("%i", selected.getNumProperties());
+            ui::NextColumn();
+
+            ui::Columns();
+        }
 
         if (ui::CollapsingHeader("outputs")) {
             int id = 0;
             ui::Columns(2);
 
-            for (auto const& [outputName, aoPtr] : selected->getOutputs()) {
+            for (auto const& [outputName, aoPtr] : selected.getOutputs()) {
                 ui::PushID(id++);
 
                 ui::Text(outputName);
@@ -70,7 +188,6 @@ private:
     }
 
     ISimulatorUIAPI* m_SimulatorUIAPI;
-    ComponentDetails m_ComponentDetailsWidget;
 };
 
 osc::SelectionDetailsPanel::SelectionDetailsPanel(std::string_view panelName, ISimulatorUIAPI* simulatorUIAPI) :
