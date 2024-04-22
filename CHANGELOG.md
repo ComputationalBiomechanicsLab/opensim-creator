@@ -5,6 +5,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- MacOS is now built using the `macos-12` (Montery) GitHub Action runner
 - `README.md` now explicitly mentions that a C++20 compiler is required to build the project
 
 ## [0.5.11] - 2024/04/04

@@ -66,8 +66,8 @@ jobs:
         ./scripts/build_emscripten.sh
 
   macos11clang:
-    name: MacOS 11 (Catalina, llvm@15)
-    runs-on: macos-11
+    name: MacOS 12 (monterey, llvm@15)
+    runs-on: macos-12
     steps:
 
     - uses: actions/checkout@v4
