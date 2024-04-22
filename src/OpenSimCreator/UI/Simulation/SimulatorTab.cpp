@@ -322,7 +322,7 @@ private:
         return m_LoopingState;
     }
 
-    void implSetSimulationLoopingState(SimulationUILoopingState s)
+    void implSetSimulationLoopingState(SimulationUILoopingState s) final
     {
         m_LoopingState = s;
     }

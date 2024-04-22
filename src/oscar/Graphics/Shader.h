@@ -28,7 +28,7 @@ namespace osc
         );
 
         size_t num_properties() const;
-        std::optional<ptrdiff_t> property_index(std::string_view propertyName) const;
+        std::optional<ptrdiff_t> property_index(std::string_view property_name) const;
         std::string_view property_name(ptrdiff_t) const;
         ShaderPropertyType property_type(ptrdiff_t) const;
 

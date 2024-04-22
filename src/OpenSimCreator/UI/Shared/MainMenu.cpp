@@ -423,7 +423,7 @@ void osc::MainMenuAboutTab::onDraw()
         ui::PushID(id++);
         if (ui::Button(ICON_FA_LINK " open"))
         {
-            OpenPathInOSDefaultApplication(App::get().config().html_docs_directory() / "index.html");
+            OpenPathInOSDefaultApplication(App::config().html_docs_directory() / "index.html");
         }
         ui::DrawTooltipBodyOnlyIfItemHovered("this will open the (locally installed) documentation in a separate browser window");
         ui::PopID();

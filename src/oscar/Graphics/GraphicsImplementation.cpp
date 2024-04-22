@@ -1201,9 +1201,9 @@ public:
     {
         OSC_ASSERT(width_ > 0 && "the width of a cubemap must be a positive number");
 
-        const size_t num_bytes_per_pixel = num_bytes_per_pixel_in(format_);
-        const size_t num_pixels_per_face = static_cast<size_t>(width_*width_);
-        const size_t num_bytes_per_face = num_bytes_per_pixel * num_pixels_per_face;
+        const auto num_bytes_per_pixel = num_bytes_per_pixel_in(format_);
+        const auto num_pixels_per_face = static_cast<size_t>(width_) * static_cast<size_t>(width_);
+        const auto num_bytes_per_face = num_bytes_per_pixel * num_pixels_per_face;
         data_.resize(num_options<CubemapFace>() * num_bytes_per_face);
     }
 

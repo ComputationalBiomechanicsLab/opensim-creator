@@ -79,9 +79,9 @@ public:
     std::optional<Class> parent_class() const { return parent_class_; }
     std::span<const PropertyInfo> properties() const { return properties_; }
 
-    std::optional<size_t> property_index(const StringName& propertyName) const
+    std::optional<size_t> property_index(const StringName& property_name) const
     {
-        return find_or_optional(property_name_to_index_lookup_, propertyName);
+        return find_or_optional(property_name_to_index_lookup_, property_name);
     }
 
     friend bool operator==(const Impl&, const Impl&) = default;
@@ -110,7 +110,7 @@ osc::Class::Class(
 const StringName& osc::Class::name() const { return impl_->name(); }
 std::optional<Class> osc::Class::parent_class() const { return impl_->parent_class(); }
 std::span<const PropertyInfo> osc::Class::properties() const { return impl_->properties(); }
-std::optional<size_t> osc::Class::property_index(const StringName& propertyName) const { return impl_->property_index(propertyName); }
+std::optional<size_t> osc::Class::property_index(const StringName& property_name) const { return impl_->property_index(property_name); }
 
 bool osc::operator==(const Class& a, const Class& b)
 {

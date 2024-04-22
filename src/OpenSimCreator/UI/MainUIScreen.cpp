@@ -98,7 +98,7 @@ public:
 
             // if the application configuration has requested that a specific tab should be opened,
             // then try looking it up and open it
-            if (auto tab = LoadConfigurationDefinedTabIfNecessary(App::get().config(), *App::singleton<TabRegistry>(), getTabHostAPI()))
+            if (auto tab = LoadConfigurationDefinedTabIfNecessary(App::config(), *App::singleton<TabRegistry>(), getTabHostAPI()))
             {
                 addTab(std::move(tab));
             }

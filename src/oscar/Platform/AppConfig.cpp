@@ -25,7 +25,7 @@ namespace
     {
         if (const auto system_config = settings.system_configuration_file_location()) {
 
-            const auto resources_dir_path = system_config->parent_path() / "resources";
+            auto resources_dir_path = system_config->parent_path() / "resources";
             if (std::filesystem::exists(resources_dir_path)) {
                 return resources_dir_path;
             }
@@ -34,7 +34,7 @@ namespace
             }
         }
 
-        const auto resources_relative_to_exe = CurrentExeDir().parent_path() / "resources";
+        auto resources_relative_to_exe = CurrentExeDir().parent_path() / "resources";
         if (std::filesystem::exists(resources_relative_to_exe)) {
             return resources_relative_to_exe;
         }
@@ -74,8 +74,8 @@ namespace
             config_file_dir = CurrentExeDir().parent_path();  // assume the `bin/` dir is one-up from the config
         }
         const std::filesystem::path configured_resources_dir{resources_dir_setting_value->to_string()};
-        const auto resolved_resource_dir = std::filesystem::weakly_canonical(config_file_dir / configured_resources_dir);
 
+        auto resolved_resource_dir = std::filesystem::weakly_canonical(config_file_dir / configured_resources_dir);
         if (not std::filesystem::exists(resolved_resource_dir)) {
             log_error("'resources', in the application configuration, points to a location that does not exist (%s), so the application may fail to load resources (which is usually a fatal error). Note: the 'resources' path is relative to the configuration file in which you define it (or can be absolute). Attemtping to fallback to a default resources location (which may or may not work).", resolved_resource_dir.string().c_str());
             return get_resources_dir_fallback_path(settings);
@@ -96,7 +96,7 @@ namespace
 
         if (const auto config_location = settings.find_value_filesystem_source(docs_key)) {
             const std::filesystem::path config_dir = config_location->parent_path();
-            const std::filesystem::path docs_location = std::filesystem::weakly_canonical(config_dir / docs_setting_value->to_string());
+            std::filesystem::path docs_location = std::filesystem::weakly_canonical(config_dir / docs_setting_value->to_string());
             if (std::filesystem::exists(docs_location)) {
                 return docs_location;
             }

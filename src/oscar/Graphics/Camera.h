@@ -98,15 +98,15 @@ namespace osc
         //
         // the caller can manually override the projection matrix, which can be handy in certain
         // rendering scenarios.
-        Mat4 projection_matrix(float aspectRatio) const;
+        Mat4 projection_matrix(float aspect_ratio) const;
         std::optional<Mat4> projection_matrix_override() const;
         void set_projection_matrix_override(std::optional<Mat4>);
 
         // returns the equivalent of projection_matrix(aspectRatio) * view_matrix()
-        Mat4 view_projection_matrix(float aspectRatio) const;
+        Mat4 view_projection_matrix(float aspect_ratio) const;
 
         // returns the equivalent of inverse(view_projection_matrix(aspectRatio))
-        Mat4 inverse_view_projection_matrix(float aspectRatio) const;
+        Mat4 inverse_view_projection_matrix(float aspect_ratio) const;
 
         // flushes any rendering commands that were queued against this camera
         //

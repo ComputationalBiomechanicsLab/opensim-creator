@@ -27,7 +27,7 @@ CStringView osc::StandardPanelImpl::impl_get_name() const
 
 bool osc::StandardPanelImpl::impl_is_open() const
 {
-    return App::get().config().is_panel_enabled(panel_name_);
+    return App::config().is_panel_enabled(panel_name_);
 }
 
 void osc::StandardPanelImpl::impl_open()

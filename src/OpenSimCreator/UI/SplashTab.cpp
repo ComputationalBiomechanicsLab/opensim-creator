@@ -272,7 +272,7 @@ private:
         App::upd().add_frame_annotation("SplashTab/ImportMeshesMenuItem", ui::GetItemRect());
         if (ui::MenuItem(ICON_FA_BOOK " Open Documentation"))
         {
-            OpenPathInOSDefaultApplication(App::get().config().html_docs_directory() / "index.html");
+            OpenPathInOSDefaultApplication(App::config().html_docs_directory() / "index.html");
         }
     }
 

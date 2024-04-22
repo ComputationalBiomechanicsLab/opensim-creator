@@ -126,7 +126,7 @@ namespace
 
     std::filesystem::path get_current_exe_dir_and_log_it()
     {
-        const auto rv = CurrentExeDir();
+        auto rv = CurrentExeDir();
         log_info("executable directory: %s", rv.string().c_str());
         return rv;
     }
@@ -136,7 +136,7 @@ namespace
         CStringView organization_name,
         CStringView application_name)
     {
-        const auto rv = GetUserDataDir(organization_name, application_name);
+        auto rv = GetUserDataDir(organization_name, application_name);
         log_info("user data directory: %s", rv.string().c_str());
         return rv;
     }

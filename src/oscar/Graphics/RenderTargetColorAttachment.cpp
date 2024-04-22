@@ -12,9 +12,8 @@ osc::RenderTargetColorAttachment::RenderTargetColorAttachment(
     std::shared_ptr<RenderBuffer> buffer_,
     RenderBufferLoadAction loadAction_,
     RenderBufferStoreAction storeAction_,
-    Color clearColor_) :
+    Color clear_color_) :
 
     RenderTargetAttachment{std::move(buffer_), loadAction_, storeAction_},
-    clear_color{clearColor_}
-{
-}
+    clear_color{clear_color_}
+{}

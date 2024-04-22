@@ -15,7 +15,7 @@ namespace osc
         Vec3 up() const;
         Vec3 right() const;
         Mat4 view_matrix() const;
-        Mat4 projection_matrix(float aspectRatio) const;
+        Mat4 projection_matrix(float aspect_ratio) const;
 
         Vec3 origin = {};
         Radians pitch = Degrees{0};

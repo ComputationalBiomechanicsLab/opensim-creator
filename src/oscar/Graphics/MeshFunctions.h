@@ -33,7 +33,7 @@ namespace osc
         const MeshTopology&,
         std::span<const Vec3> vertices,
         std::span<const Vec3> normals,
-        std::span<const Vec2> texCoords,
+        std::span<const Vec2> tex_coords,
         const MeshIndicesView&
     );
 

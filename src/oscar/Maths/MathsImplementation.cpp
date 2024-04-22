@@ -1610,14 +1610,14 @@ float osc::ease_out_elastic(float x)
 }
 
 std::array<Mat4, 6> osc::calc_cubemap_view_proj_matrices(
-    const Mat4& projectionMatrix,
-    Vec3 cubeCenter)
+    const Mat4& projection_matrix,
+    Vec3 cube_center)
 {
     static_assert(std::size(c_CubemapFacesDetails) == 6);
 
     std::array<Mat4, 6> rv{};
     for (size_t i = 0; i < 6; ++i) {
-        rv[i] = projectionMatrix * calc_cubemap_view_matrix(c_CubemapFacesDetails[i], cubeCenter);
+        rv[i] = projection_matrix * calc_cubemap_view_matrix(c_CubemapFacesDetails[i], cube_center);
     }
     return rv;
 }

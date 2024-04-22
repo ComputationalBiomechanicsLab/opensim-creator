@@ -216,14 +216,14 @@ public:
     {
         for (ToggleablePanel& panel : toggleable_panels_) {
 
-            if (IPanel* p = panel.instance_or_nullptr(); p and p->name() == name) {
+            if (IPanel* p = panel.instance_or_nullptr(); (p != nullptr) and p->name() == name) {
                 return p;
             }
         }
 
         for (DynamicPanel& panel : dynamic_panels_) {
 
-            if (IPanel* p = panel.instance_or_nullptr(); p and p->name() == name) {
+            if (IPanel* p = panel.instance_or_nullptr(); (p != nullptr) and p->name() == name) {
                 return p;
             }
         }

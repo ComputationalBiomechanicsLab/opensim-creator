@@ -141,7 +141,7 @@ void osc::ui::ApplyDarkTheme()
 
 bool osc::ui::UpdatePolarCameraFromMouseInputs(
     PolarPerspectiveCamera& camera,
-    Vec2 viewportDims)
+    Vec2 viewport_dimensions)
 {
     bool modified = false;
 
@@ -166,7 +166,7 @@ bool osc::ui::UpdatePolarCameraFromMouseInputs(
     // other GUIs and users who use modelling software like Blender (which is
     // more popular among newer users looking to make new models)
 
-    const float aspectRatio = viewportDims.x / viewportDims.y;
+    const float aspectRatio = viewport_dimensions.x / viewport_dimensions.y;
 
     const bool leftDragging = ui::IsMouseDragging(ImGuiMouseButton_Left);
     const bool middleDragging = ui::IsMouseDragging(ImGuiMouseButton_Middle);
@@ -174,25 +174,25 @@ bool osc::ui::UpdatePolarCameraFromMouseInputs(
 
     if (delta != Vec2{0.0f, 0.0f} && (leftDragging || middleDragging)) {
         if (IsCtrlDown()) {
-            camera.pan(aspectRatio, delta/viewportDims);
+            camera.pan(aspectRatio, delta/viewport_dimensions);
             modified = true;
         }
         else if (IsCtrlOrSuperDown()) {
-            camera.radius *= 1.0f + 4.0f*delta.y/viewportDims.y;
+            camera.radius *= 1.0f + 4.0f*delta.y/viewport_dimensions.y;
             modified = true;
         }
         else {
-            camera.drag(delta/viewportDims);
+            camera.drag(delta/viewport_dimensions);
             modified = true;
         }
     }
     else if (ui::IsMouseDragging(ImGuiMouseButton_Right)) {
         if (IsAltDown()) {
-            camera.radius *= 1.0f + 4.0f*delta.y/viewportDims.y;
+            camera.radius *= 1.0f + 4.0f*delta.y/viewport_dimensions.y;
             modified = true;
         }
         else {
-            camera.pan(aspectRatio, delta/viewportDims);
+            camera.pan(aspectRatio, delta/viewport_dimensions);
             modified = true;
         }
     }
@@ -206,8 +206,8 @@ bool osc::ui::UpdatePolarCameraFromMouseInputs(
 
 bool osc::ui::UpdatePolarCameraFromKeyboardInputs(
     PolarPerspectiveCamera& camera,
-    const Rect& viewportRect,
-    std::optional<AABB> maybeSceneAABB)
+    const Rect& viewport_rect,
+    std::optional<AABB> maybe_scene_aabb)
 {
     const bool shiftDown = IsShiftDown();
     const bool ctrlOrSuperDown = IsCtrlOrSuperDown();
@@ -230,11 +230,11 @@ bool osc::ui::UpdatePolarCameraFromKeyboardInputs(
     }
     else if (ui::IsKeyPressed(ImGuiKey_F)) {
         if (ctrlOrSuperDown) {
-            if (maybeSceneAABB) {
+            if (maybe_scene_aabb) {
                 AutoFocus(
                     camera,
-                    *maybeSceneAABB,
-                    aspect_ratio(viewportRect)
+                    *maybe_scene_aabb,
+                    aspect_ratio(viewport_rect)
                 );
                 return true;
             }
@@ -245,11 +245,11 @@ bool osc::ui::UpdatePolarCameraFromKeyboardInputs(
         }
     }
     else if (ctrlOrSuperDown && (ui::IsKeyPressed(ImGuiKey_8))) {
-        if (maybeSceneAABB) {
+        if (maybe_scene_aabb) {
             AutoFocus(
                 camera,
-                *maybeSceneAABB,
-                aspect_ratio(viewportRect)
+                *maybe_scene_aabb,
+                aspect_ratio(viewport_rect)
             );
             return true;
         }
@@ -257,7 +257,7 @@ bool osc::ui::UpdatePolarCameraFromKeyboardInputs(
     else if (ui::IsKeyDown(ImGuiKey_UpArrow)) {
         if (ctrlOrSuperDown) {
             // pan
-            camera.pan(aspect_ratio(viewportRect), {0.0f, -0.1f});
+            camera.pan(aspect_ratio(viewport_rect), {0.0f, -0.1f});
         }
         else if (shiftDown) {
             camera.phi -= 90_deg;  // rotate in 90-deg increments
@@ -270,7 +270,7 @@ bool osc::ui::UpdatePolarCameraFromKeyboardInputs(
     else if (ui::IsKeyDown(ImGuiKey_DownArrow)) {
         if (ctrlOrSuperDown) {
             // pan
-            camera.pan(aspect_ratio(viewportRect), {0.0f, +0.1f});
+            camera.pan(aspect_ratio(viewport_rect), {0.0f, +0.1f});
         }
         else if (shiftDown) {
             // rotate in 90-deg increments
@@ -285,7 +285,7 @@ bool osc::ui::UpdatePolarCameraFromKeyboardInputs(
     else if (ui::IsKeyDown(ImGuiKey_LeftArrow)) {
         if (ctrlOrSuperDown) {
             // pan
-            camera.pan(aspect_ratio(viewportRect), {-0.1f, 0.0f});
+            camera.pan(aspect_ratio(viewport_rect), {-0.1f, 0.0f});
         }
         else if (shiftDown) {
             // rotate in 90-deg increments
@@ -300,7 +300,7 @@ bool osc::ui::UpdatePolarCameraFromKeyboardInputs(
     else if (ui::IsKeyDown(ImGuiKey_RightArrow)) {
         if (ctrlOrSuperDown) {
             // pan
-            camera.pan(aspect_ratio(viewportRect), {+0.1f, 0.0f});
+            camera.pan(aspect_ratio(viewport_rect), {+0.1f, 0.0f});
         }
         else if (shiftDown) {
             camera.theta -= 90_deg;  // rotate in 90-deg increments
@@ -323,8 +323,8 @@ bool osc::ui::UpdatePolarCameraFromKeyboardInputs(
 
 bool osc::ui::UpdatePolarCameraFromInputs(
     PolarPerspectiveCamera& camera,
-    const Rect& viewportRect,
-    std::optional<AABB> maybeSceneAABB)
+    const Rect& viewport_rect,
+    std::optional<AABB> maybe_scene_aabb)
 {
 
     ImGuiIO& io = ui::GetIO();
@@ -332,9 +332,9 @@ bool osc::ui::UpdatePolarCameraFromInputs(
     // we don't check `io.WantCaptureMouse` because clicking/dragging on an ImGui::Image
     // is classed as a mouse interaction
     const bool mouseHandled =
-        UpdatePolarCameraFromMouseInputs(camera, dimensions_of(viewportRect));
+        UpdatePolarCameraFromMouseInputs(camera, dimensions_of(viewport_rect));
     const bool keyboardHandled = !io.WantCaptureKeyboard ?
-        UpdatePolarCameraFromKeyboardInputs(camera, viewportRect, maybeSceneAABB) :
+        UpdatePolarCameraFromKeyboardInputs(camera, viewport_rect, maybe_scene_aabb) :
         false;
 
     return mouseHandled || keyboardHandled;
@@ -398,21 +398,21 @@ void osc::ui::Image(const Texture2D& t)
     Image(t, t.dimensions());
 }
 
-void osc::ui::Image(const Texture2D& t, Vec2 dims)
+void osc::ui::Image(const Texture2D& t, Vec2 dimensions)
 {
     const Vec2 topLeftCoord = {0.0f, 1.0f};
     const Vec2 bottomRightCoord = {1.0f, 0.0f};
-    Image(t, dims, topLeftCoord, bottomRightCoord);
+    Image(t, dimensions, topLeftCoord, bottomRightCoord);
 }
 
 void osc::ui::Image(
     const Texture2D& t,
-    Vec2 dims,
-    Vec2 topLeftCoord,
-    Vec2 bottomRightCoord)
+    Vec2 dimensions,
+    Vec2 top_left_texture_coordinate,
+    Vec2 bottom_right_texture_coordinate)
 {
     const auto handle = ui::graphics_backend::allocate_texture_for_current_frame(t);
-    ImGui::Image(handle, dims, topLeftCoord, bottomRightCoord);
+    ImGui::Image(handle, dimensions, top_left_texture_coordinate, bottom_right_texture_coordinate);
 }
 
 void osc::ui::Image(const RenderTexture& tex)
@@ -420,12 +420,12 @@ void osc::ui::Image(const RenderTexture& tex)
     return Image(tex, tex.dimensions());
 }
 
-void osc::ui::Image(const RenderTexture& t, Vec2 dims)
+void osc::ui::Image(const RenderTexture& t, Vec2 dimensions)
 {
     const Vec2 uv0 = {0.0f, 1.0f};
     const Vec2 uv1 = {1.0f, 0.0f};
     const auto handle = ui::graphics_backend::allocate_texture_for_current_frame(t);
-    ImGui::Image(handle, dims, uv0, uv1);
+    ImGui::Image(handle, dimensions, uv0, uv1);
 }
 
 Vec2 osc::ui::CalcButtonSize(CStringView content)
@@ -438,11 +438,11 @@ float osc::ui::CalcButtonWidth(CStringView content)
     return CalcButtonSize(content).x;
 }
 
-bool osc::ui::ButtonNoBg(CStringView label, Vec2 size)
+bool osc::ui::ButtonNoBg(CStringView label, Vec2 dimensions)
 {
     PushStyleColor(ImGuiCol_Button, Color::clear());
     PushStyleColor(ImGuiCol_ButtonHovered, Color::clear());
-    const bool rv = ui::Button(label, size);
+    const bool rv = ui::Button(label, dimensions);
     PopStyleColor();
     PopStyleColor();
 
@@ -452,16 +452,16 @@ bool osc::ui::ButtonNoBg(CStringView label, Vec2 size)
 bool osc::ui::ImageButton(
     CStringView label,
     const Texture2D& t,
-    Vec2 dims,
-    const Rect& textureCoords)
+    Vec2 dimensions,
+    const Rect& texture_coordinates)
 {
     const auto handle = ui::graphics_backend::allocate_texture_for_current_frame(t);
-    return ImGui::ImageButton(label.c_str(), handle, dims, textureCoords.p1, textureCoords.p2);
+    return ImGui::ImageButton(label.c_str(), handle, dimensions, texture_coordinates.p1, texture_coordinates.p2);
 }
 
-bool osc::ui::ImageButton(CStringView label, const Texture2D& t, Vec2 dims)
+bool osc::ui::ImageButton(CStringView label, const Texture2D& t, Vec2 dimensions)
 {
-    return ImageButton(label, t, dims, Rect{{0.0f, 1.0f}, {1.0f, 0.0f}});
+    return ImageButton(label, t, dimensions, Rect{{0.0f, 1.0f}, {1.0f, 0.0f}});
 }
 
 Rect osc::ui::GetItemRect()
@@ -474,14 +474,14 @@ ui::HittestResult osc::ui::HittestLastItem()
     return HittestLastItem(c_default_drag_threshold);
 }
 
-ui::HittestResult osc::ui::HittestLastItem(float dragThreshold)
+ui::HittestResult osc::ui::HittestLastItem(float drag_threshold)
 {
     HittestResult rv;
     rv.item_rect.p1 = ui::GetItemRectMin();
     rv.item_rect.p2 = ui::GetItemRectMax();
     rv.is_hovered = ui::IsItemHovered();
-    rv.is_left_click_released_without_dragging = rv.is_hovered && IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left, dragThreshold);
-    rv.is_right_click_released_without_dragging = rv.is_hovered && IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right, dragThreshold);
+    rv.is_left_click_released_without_dragging = rv.is_hovered && IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left, drag_threshold);
+    rv.is_right_click_released_without_dragging = rv.is_hovered && IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right, drag_threshold);
     return rv;
 }
 
@@ -549,10 +549,10 @@ bool osc::ui::IsDraggingWithAnyMouseButtonDown()
         ui::IsMouseDragging(ImGuiMouseButton_Right);
 }
 
-void osc::ui::BeginTooltip(std::optional<float> wrapWidth)
+void osc::ui::BeginTooltip(std::optional<float> wrap_width)
 {
     BeginTooltipNoWrap();
-    ImGui::PushTextWrapPos(wrapWidth.value_or(ImGui::GetFontSize() * 35.0f));
+    ImGui::PushTextWrapPos(wrap_width.value_or(ImGui::GetFontSize() * 35.0f));
 }
 
 void osc::ui::EndTooltip(std::optional<float>)
@@ -630,9 +630,9 @@ void osc::ui::DrawHelpMarker(CStringView desc)
     DrawTooltipIfItemHovered(desc, {}, ImGuiHoveredFlags_None);
 }
 
-bool osc::ui::InputString(CStringView label, std::string& editedString, ImGuiInputTextFlags flags)
+bool osc::ui::InputString(CStringView label, std::string& edited_string, ImGuiInputTextFlags flags)
 {
-    return ImGui::InputText(label.c_str(), &editedString, flags);  // uses `imgui_stdlib`
+    return ImGui::InputText(label.c_str(), &edited_string, flags);  // uses `imgui_stdlib`
 }
 
 bool osc::ui::InputMetersFloat(CStringView label, float& v, float step, float step_fast, ImGuiInputTextFlags flags)

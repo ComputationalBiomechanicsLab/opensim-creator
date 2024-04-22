@@ -217,10 +217,10 @@ namespace osc
     std::ostream& operator<<(std::ostream&, const Color&);
 
     // returns the linear version of one (presumed to be) sRGB color channel value
-    float to_linear_colorspace(float colorChannelValue);
+    float to_linear_colorspace(float color_channel_value);
 
     // returns the linear version of one (presumed to be) linear color channel value
-    float to_srgb_colorspace(float colorChannelValue);
+    float to_srgb_colorspace(float color_channel_value);
 
     // returns the linear version of a (presumed to be) sRGB color
     Color to_linear_colorspace(const Color&);
