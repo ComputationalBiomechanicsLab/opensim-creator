@@ -221,8 +221,7 @@ public:
         m_Model{std::move(model)},
         m_SimulationReports{ExtractReports(*m_Model, stoFilePath)},
         m_FixupScaleFactor{fixupScaleFactor}
-    {
-    }
+    {}
 
     SynchronizedValueGuard<OpenSim::Model const> getModel() const
     {
@@ -264,16 +263,6 @@ public:
         return {};
     }
 
-    void requestStop()
-    {
-        // N/A: it's never a "live" sim
-    }
-
-    void stop()
-    {
-        // N/A: it's never a "live" sim
-    }
-
     float getFixupScaleFactor() const
     {
         return m_FixupScaleFactor;
@@ -296,9 +285,7 @@ private:
 
 osc::StoFileSimulation::StoFileSimulation(std::unique_ptr<OpenSim::Model> model, std::filesystem::path const& stoFilePath, float fixupScaleFactor) :
     m_Impl{std::make_unique<Impl>(std::move(model), stoFilePath, fixupScaleFactor)}
-{
-}
-
+{}
 osc::StoFileSimulation::StoFileSimulation(StoFileSimulation&&) noexcept = default;
 osc::StoFileSimulation& osc::StoFileSimulation::operator=(StoFileSimulation&&) noexcept = default;
 osc::StoFileSimulation::~StoFileSimulation() noexcept = default;
@@ -341,16 +328,6 @@ ParamBlock const& osc::StoFileSimulation::implGetParams() const
 std::span<OutputExtractor const> osc::StoFileSimulation::implGetOutputExtractors() const
 {
     return m_Impl->getOutputExtractors();
-}
-
-void osc::StoFileSimulation::implRequestStop()
-{
-    m_Impl->requestStop();
-}
-
-void osc::StoFileSimulation::implStop()
-{
-    m_Impl->stop();
 }
 
 float osc::StoFileSimulation::implGetFixupScaleFactor() const

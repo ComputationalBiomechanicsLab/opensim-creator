@@ -38,8 +38,7 @@ osc::ForwardDynamicSimulatorParams::ForwardDynamicSimulatorParams() :
     integratorMinimumStepSize{1.0e-8},
     integratorMaximumStepSize{1.0},
     integratorAccuracy{1.0e-5}
-{
-}
+{}
 
 ParamBlock osc::ToParamBlock(ForwardDynamicSimulatorParams const& p)
 {

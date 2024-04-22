@@ -20,14 +20,12 @@ class osc::SimulationModelStatePair::Impl final {
 public:
     Impl() :
         m_Simulation{std::make_shared<Simulation>(SingleStateSimulation{BasicModelStatePair{}})}
-    {
-    }
+    {}
 
     Impl(std::shared_ptr<Simulation> simulation, SimulationReport simulationReport) :
         m_Simulation{std::move(simulation)},
         m_SimulationReport{std::move(simulationReport)}
-    {
-    }
+    {}
 
     OpenSim::Model const& getModel() const
     {

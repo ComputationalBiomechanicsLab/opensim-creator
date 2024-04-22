@@ -206,9 +206,7 @@ private:
 
 osc::ForwardDynamicSimulation::ForwardDynamicSimulation(BasicModelStatePair ms, ForwardDynamicSimulatorParams const& params) :
     m_Impl{std::make_unique<Impl>(std::move(ms), params)}
-{
-}
-
+{}
 osc::ForwardDynamicSimulation::ForwardDynamicSimulation(ForwardDynamicSimulation&&) noexcept = default;
 osc::ForwardDynamicSimulation& osc::ForwardDynamicSimulation::operator=(ForwardDynamicSimulation&&) noexcept = default;
 osc::ForwardDynamicSimulation::~ForwardDynamicSimulation() noexcept = default;

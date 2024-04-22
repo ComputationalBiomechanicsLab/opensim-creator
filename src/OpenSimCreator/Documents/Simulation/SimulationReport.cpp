@@ -17,14 +17,12 @@ public:
 
     explicit Impl(SimTK::State&& st) :
         m_State{std::move(st)}
-    {
-    }
+    {}
 
     Impl(SimTK::State&& st, std::unordered_map<UID, float> auxiliaryValues) :
         m_State{std::move(st)},
         m_AuxiliaryValues{std::move(auxiliaryValues)}
-    {
-    }
+    {}
 
     std::unique_ptr<Impl> clone() const
     {
@@ -61,17 +59,13 @@ private:
 
 osc::SimulationReport::SimulationReport() :
     m_Impl{std::make_shared<Impl>()}
-{
-}
-
+{}
 osc::SimulationReport::SimulationReport(SimTK::State&& st) :
     m_Impl{std::make_shared<Impl>(std::move(st))}
-{
-}
+{}
 osc::SimulationReport::SimulationReport(SimTK::State&& st, std::unordered_map<UID, float> auxiliaryValues) :
     m_Impl{std::make_shared<Impl>(std::move(st), std::move(auxiliaryValues))}
-{
-}
+{}
 osc::SimulationReport::SimulationReport(SimulationReport const&) = default;
 osc::SimulationReport::SimulationReport(SimulationReport&&) noexcept = default;
 osc::SimulationReport& osc::SimulationReport::operator=(SimulationReport const&) = default;

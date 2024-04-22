@@ -29,8 +29,7 @@ namespace osc
         template<std::derived_from<ISimulation> TConcreteSimulation>
         Simulation(TConcreteSimulation&& simulation) :
             m_Simulation{std::make_unique<TConcreteSimulation>(std::forward<TConcreteSimulation>(simulation))}
-        {
-        }
+        {}
 
         SynchronizedValueGuard<OpenSim::Model const> getModel() const { return m_Simulation->getModel(); }
 

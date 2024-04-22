@@ -99,8 +99,7 @@ namespace
             m_Name{std::move(name)},
             m_Description{std::move(description)},
             m_UID{uid}
-        {
-        }
+        {}
 
     private:
         CStringView implGetName() const final
@@ -446,9 +445,7 @@ osc::ForwardDynamicSimulator::ForwardDynamicSimulator(
     std::function<void(SimulationReport)> onReportFromBgThread) :
 
     m_Impl{std::make_unique<Impl>(std::move(msp), params, std::move(onReportFromBgThread))}
-{
-}
-
+{}
 osc::ForwardDynamicSimulator::ForwardDynamicSimulator(ForwardDynamicSimulator&&) noexcept = default;
 osc::ForwardDynamicSimulator& osc::ForwardDynamicSimulator::operator=(ForwardDynamicSimulator&&) noexcept = default;
 osc::ForwardDynamicSimulator::~ForwardDynamicSimulator() noexcept = default;

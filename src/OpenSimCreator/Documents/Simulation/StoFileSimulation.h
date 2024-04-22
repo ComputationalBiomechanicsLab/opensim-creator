@@ -46,9 +46,6 @@ namespace osc
         ParamBlock const& implGetParams() const final;
         std::span<OutputExtractor const> implGetOutputExtractors() const final;
 
-        void implRequestStop() final;
-        void implStop() final;
-
         float implGetFixupScaleFactor() const final;
         void implSetFixupScaleFactor(float) final;
 

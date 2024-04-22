@@ -55,14 +55,6 @@ public:
         return {};
     }
 
-    void requestStop()
-    {
-    }
-
-    void stop()
-    {
-    }
-
     float getFixupScaleFactor() const
     {
         return m_ModelState.lock()->getFixupScaleFactor();
@@ -83,8 +75,7 @@ private:
 
 osc::SingleStateSimulation::SingleStateSimulation(BasicModelStatePair modelState) :
     m_Impl{std::make_unique<Impl>(std::move(modelState))}
-{
-}
+{}
 osc::SingleStateSimulation::SingleStateSimulation(SingleStateSimulation&&) noexcept = default;
 osc::SingleStateSimulation& osc::SingleStateSimulation::operator=(SingleStateSimulation&&) noexcept = default;
 osc::SingleStateSimulation::~SingleStateSimulation() noexcept = default;
@@ -127,16 +118,6 @@ ParamBlock const& osc::SingleStateSimulation::implGetParams() const
 std::span<OutputExtractor const> osc::SingleStateSimulation::implGetOutputExtractors() const
 {
     return m_Impl->getOutputExtractors();
-}
-
-void osc::SingleStateSimulation::implRequestStop()
-{
-    m_Impl->requestStop();
-}
-
-void osc::SingleStateSimulation::implStop()
-{
-    m_Impl->stop();
 }
 
 float osc::SingleStateSimulation::implGetFixupScaleFactor() const

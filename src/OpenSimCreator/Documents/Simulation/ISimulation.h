@@ -127,8 +127,8 @@ namespace osc
         virtual ParamBlock const& implGetParams() const = 0;
         virtual std::span<OutputExtractor const> implGetOutputExtractors() const = 0;
 
-        virtual void implRequestStop() = 0;
-        virtual void implStop() = 0;
+        virtual void implRequestStop() {}  // only applicable for "live" simulations
+        virtual void implStop() {}  // only applicable for "live" simulations
 
         virtual float implGetFixupScaleFactor() const = 0;
         virtual void implSetFixupScaleFactor(float) = 0;
