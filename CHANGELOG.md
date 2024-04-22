@@ -5,6 +5,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- The "empty" state of some panels (e.g. "nothing selected", "nothing watched") was tidied up and
+  now shows a centered message with, where applicable, a tip for showing information in the panel
 - Each plot in the `Output Plots` panel of the simulator tab now shows a little trash icon, to
   match the deletion button that's shown in the model editor tab
 - The right-click menu of an output plot in the simulator tab will now show a little trash icon

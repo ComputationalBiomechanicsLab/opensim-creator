@@ -7,8 +7,9 @@
 
 #include <IconsFontAwesome5.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/StandardPanelImpl.h>
+#include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/ParentPtr.h>
 #include <oscar/Utils/UID.h>
 #include <Simbody.h>
@@ -98,7 +99,8 @@ private:
         }
         else
         {
-            ui::TextWrapped("No outputs are being watched. You can watch outputs by right-clicking something in the model.");
+            ui::TextDisabledAndWindowCentered("No outputs being watched");
+            ui::TextDisabledAndCentered("(Right-click a component and 'Watch Output')");
         }
     }
 

@@ -119,7 +119,7 @@ private:
     {
         if (!m_Model->getSelected())
         {
-            ui::TextUnformatted("(nothing selected)");
+            ui::TextDisabledAndWindowCentered("(nothing selected)");
             return;
         }
 

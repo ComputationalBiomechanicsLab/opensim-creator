@@ -798,6 +798,11 @@ namespace osc::ui
         return ImGui::CalcTextSize(text.c_str(), text.c_str() + text.size(), hide_text_after_double_hash);
     }
 
+    inline Vec2 GetWindowSize()
+    {
+        return ImGui::GetWindowSize();
+    }
+
     inline ImDrawList* GetWindowDrawList()
     {
         return ImGui::GetWindowDrawList();

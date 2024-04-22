@@ -784,10 +784,26 @@ void osc::ui::TextCentered(CStringView s)
     TextUnformatted(s);
 }
 
+void osc::ui::TextWindowCentered(CStringView s)
+{
+    const auto windowDimensions = ui::GetWindowSize();
+    const auto textDimensions = ui::CalcTextSize(s);
+
+    ui::SetCursorPos(0.5f * (windowDimensions - textDimensions));
+    TextUnformatted(s);
+}
+
 void osc::ui::TextDisabledAndCentered(CStringView s)
 {
     ui::BeginDisabled();
     TextCentered(s);
+    ui::EndDisabled();
+}
+
+void osc::ui::TextDisabledAndWindowCentered(CStringView s)
+{
+    ui::BeginDisabled();
+    TextWindowCentered(s);
     ui::EndDisabled();
 }
 

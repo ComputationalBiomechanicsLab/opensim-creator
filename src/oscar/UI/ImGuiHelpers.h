@@ -279,11 +279,17 @@ namespace osc::ui
     // draws a ui::Button, but centered on the current line
     bool ButtonCentered(CStringView);
 
-    // draw text, but centered on the current window/line
+    // draw text, but centered on the current line
     void TextCentered(CStringView);
 
-    // draw disabled text, but centered on the current window/line
+    // draw text, but centered in the current window (i.e. vertically and horizontally)
+    void TextWindowCentered(CStringView);
+
+    // draw disabled text, but centered on the current line
     void TextDisabledAndCentered(CStringView);
+
+    // draw diabled text, but centered on the current window
+    void TextDisabledAndWindowCentered(CStringView);
 
     // draw text that's centered in the current ui::Table column
     void TextColumnCentered(CStringView);

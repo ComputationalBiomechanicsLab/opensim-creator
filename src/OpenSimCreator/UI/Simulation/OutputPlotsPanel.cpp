@@ -8,8 +8,9 @@
 
 #include <IconsFontAwesome5.h>
 #include <oscar/Platform/os.h>
-#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/StandardPanelImpl.h>
+#include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/ParentPtr.h>
 
 #include <memory>
@@ -49,7 +50,8 @@ private:
     {
         if (m_API->getNumUserOutputExtractors() <= 0)
         {
-            ui::TextDisabled("(no outputs requested)");
+            ui::TextDisabledAndWindowCentered("No outputs being watched");
+            ui::TextDisabledAndCentered("(Right-click a component and 'Watch Output')");
             return;
         }
 
