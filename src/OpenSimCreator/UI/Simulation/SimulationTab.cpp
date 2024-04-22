@@ -490,7 +490,7 @@ private:
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
 
     // non-toggleable UI panels/menus/toolbars
-    SimulationTabMainMenu m_MainMenu{m_Parent, m_PanelManager};
+    SimulationTabMainMenu m_MainMenu{m_Parent, m_Simulation, m_PanelManager};
     SimulationToolbar m_Toolbar{"##SimulationToolbar", this, m_Simulation};
 
     // manager for popups that are open in this tab

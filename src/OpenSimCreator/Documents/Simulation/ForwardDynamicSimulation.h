@@ -43,6 +43,9 @@ namespace osc
         ParamBlock const& implGetParams() const final;
         std::span<OutputExtractor const> implGetOutputExtractors() const final;
 
+        bool implCanChangeEndTime() const final { return true; }
+        void implRequestNewEndTime(SimulationClock::time_point) final;
+
         void implRequestStop() final;
         void implStop() final;
 

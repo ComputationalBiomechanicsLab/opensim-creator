@@ -80,6 +80,16 @@ namespace osc
             return implGetClocks().end();
         }
 
+        bool canChangeEndTime() const
+        {
+            return implCanChangeEndTime();
+        }
+
+        void requestNewEndTime(SimulationClock::time_point t)
+        {
+            implRequestNewEndTime(t);
+        }
+
         float getProgress() const
         {
             return implGetClocks().progress();
@@ -126,6 +136,9 @@ namespace osc
         virtual SimulationClocks implGetClocks() const = 0;
         virtual ParamBlock const& implGetParams() const = 0;
         virtual std::span<OutputExtractor const> implGetOutputExtractors() const = 0;
+
+        virtual bool implCanChangeEndTime() const { return false; }
+        virtual void implRequestNewEndTime(SimulationClock::time_point) {}
 
         virtual void implRequestStop() {}  // only applicable for "live" simulations
         virtual void implStop() {}  // only applicable for "live" simulations

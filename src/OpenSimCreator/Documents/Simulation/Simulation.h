@@ -45,6 +45,9 @@ namespace osc
         ParamBlock const& getParams() const { return m_Simulation->getParams(); }
         std::span<OutputExtractor const> getOutputs() const { return m_Simulation->getOutputExtractors(); }
 
+        bool canChangeEndTime() const { return m_Simulation->canChangeEndTime(); }
+        void requestNewEndTime(SimulationClock::time_point t) { m_Simulation->requestNewEndTime(t); }
+
         void requestStop() { m_Simulation->requestStop(); }
         void stop() { m_Simulation->stop(); }
 

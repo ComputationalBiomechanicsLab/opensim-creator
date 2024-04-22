@@ -5,6 +5,7 @@
 namespace osc { class IMainUIStateAPI; }
 namespace osc { class PanelManager; }
 namespace osc { template<typename T> class ParentPtr; }
+namespace osc { class Simulation; }
 
 namespace osc
 {
@@ -12,6 +13,7 @@ namespace osc
     public:
         SimulationTabMainMenu(
             ParentPtr<IMainUIStateAPI>,
+            std::shared_ptr<Simulation>,
             std::shared_ptr<PanelManager>
         );
         SimulationTabMainMenu(const SimulationTabMainMenu&) = delete;

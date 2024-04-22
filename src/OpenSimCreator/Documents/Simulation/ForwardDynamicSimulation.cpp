@@ -65,8 +65,7 @@ public:
         m_Simulation{MakeSimulation(*m_ModelState.lock(), params, m_ReportQueue)},
         m_ParamsAsParamBlock{ToParamBlock(params)},
         m_SimulatorOutputExtractors(GetFdSimulatorOutputExtractorsAsVector())
-    {
-    }
+    {}
 
     SynchronizedValueGuard<OpenSim::Model const> getModel() const
     {
@@ -130,6 +129,11 @@ public:
     std::span<OutputExtractor const> getOutputExtractors() const
     {
         return m_SimulatorOutputExtractors;
+    }
+
+    void requestNewEndTime(SimulationClock::time_point)
+    {
+        // todo
     }
 
     void requestStop()
@@ -249,6 +253,11 @@ ParamBlock const& osc::ForwardDynamicSimulation::implGetParams() const
 std::span<OutputExtractor const> osc::ForwardDynamicSimulation::implGetOutputExtractors() const
 {
     return m_Impl->getOutputExtractors();
+}
+
+void osc::ForwardDynamicSimulation::implRequestNewEndTime(SimulationClock::time_point t)
+{
+    m_Impl->requestNewEndTime(t);
 }
 
 void osc::ForwardDynamicSimulation::implRequestStop()
