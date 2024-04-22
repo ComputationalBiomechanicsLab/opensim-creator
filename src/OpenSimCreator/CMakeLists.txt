@@ -359,6 +359,10 @@ add_library(OpenSimCreator STATIC
     UI/Simulation/SimulationOutputPlot.h
     UI/Simulation/SimulationScrubber.cpp
     UI/Simulation/SimulationScrubber.h
+    UI/Simulation/SimulationTab.cpp
+    UI/Simulation/SimulationTab.h
+    UI/Simulation/SimulationTabMainMenu.cpp
+    UI/Simulation/SimulationTabMainMenu.h
     UI/Simulation/SimulationToolbar.cpp
     UI/Simulation/SimulationToolbar.h
     UI/Simulation/SimulationUILoopingState.h
@@ -368,8 +372,6 @@ add_library(OpenSimCreator STATIC
     UI/Simulation/SimulationViewerPanel.h
     UI/Simulation/SimulationViewerPanelParameters.h
     UI/Simulation/SimulationViewerRightClickEvent.h
-    UI/Simulation/SimulatorTab.cpp
-    UI/Simulation/SimulatorTab.h
 
     UI/IMainUIStateAPI.h
     UI/IPopupAPI.h

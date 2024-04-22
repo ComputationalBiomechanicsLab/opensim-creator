@@ -12,17 +12,17 @@ namespace osc { class Simulation; }
 
 namespace osc
 {
-    class SimulatorTab final : public ITab {
+    class SimulationTab final : public ITab {
     public:
-        SimulatorTab(
+        SimulationTab(
             ParentPtr<IMainUIStateAPI> const&,
             std::shared_ptr<Simulation>
         );
-        SimulatorTab(SimulatorTab const&) = delete;
-        SimulatorTab(SimulatorTab&&) noexcept;
-        SimulatorTab& operator=(SimulatorTab const&) = delete;
-        SimulatorTab& operator=(SimulatorTab&&) noexcept;
-        ~SimulatorTab() noexcept override;
+        SimulationTab(SimulationTab const&) = delete;
+        SimulationTab(SimulationTab&&) noexcept;
+        SimulationTab& operator=(SimulationTab const&) = delete;
+        SimulationTab& operator=(SimulationTab&&) noexcept;
+        ~SimulationTab() noexcept override;
 
     private:
         UID implGetID() const final;

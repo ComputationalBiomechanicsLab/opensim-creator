@@ -7,7 +7,7 @@
 #include <OpenSimCreator/Platform/RecentFiles.h>
 #include <OpenSimCreator/UI/IMainUIStateAPI.h>
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterTab.h>
-#include <OpenSimCreator/UI/Simulation/SimulatorTab.h>
+#include <OpenSimCreator/UI/Simulation/SimulationTab.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <IconsFontAwesome5.h>
@@ -149,7 +149,7 @@ void osc::MainMenuFileTab::onDraw(
                 InitializeModel(*cpy);
                 InitializeState(*cpy);
 
-                api->addAndSelectTab<SimulatorTab>(api, std::make_shared<Simulation>(StoFileSimulation{std::move(cpy), *maybePath, maybeModel->getFixupScaleFactor()}));
+                api->addAndSelectTab<SimulationTab>(api, std::make_shared<Simulation>(StoFileSimulation{std::move(cpy), *maybePath, maybeModel->getFixupScaleFactor()}));
             }
             catch (std::exception const& ex)
             {

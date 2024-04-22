@@ -1,4 +1,4 @@
-#include "SimulatorTab.h"
+#include "SimulationTab.h"
 
 #include <OpenSimCreator/Documents/OutputExtractors/ComponentOutputExtractor.h>
 #include <OpenSimCreator/Documents/OutputExtractors/OutputExtractor.h>
@@ -9,13 +9,13 @@
 #include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
 #include <OpenSimCreator/UI/IMainUIStateAPI.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
-#include <OpenSimCreator/UI/Shared/MainMenu.h>
 #include <OpenSimCreator/UI/Shared/NavigatorPanel.h>
 #include <OpenSimCreator/UI/Simulation/ISimulatorUIAPI.h>
 #include <OpenSimCreator/UI/Simulation/ModelStatePairContextMenu.h>
 #include <OpenSimCreator/UI/Simulation/OutputPlotsPanel.h>
 #include <OpenSimCreator/UI/Simulation/SelectionDetailsPanel.h>
 #include <OpenSimCreator/UI/Simulation/SimulationDetailsPanel.h>
+#include <OpenSimCreator/UI/Simulation/SimulationTabMainMenu.h>
 #include <OpenSimCreator/UI/Simulation/SimulationToolbar.h>
 #include <OpenSimCreator/UI/Simulation/SimulationUIPlaybackState.h>
 #include <OpenSimCreator/UI/Simulation/SimulationViewerPanel.h>
@@ -34,7 +34,6 @@
 #include <oscar/UI/Panels/PanelManager.h>
 #include <oscar/UI/Panels/PerfPanel.h>
 #include <oscar/UI/Widgets/PopupManager.h>
-#include <oscar/UI/Widgets/WindowMenu.h>
 #include <oscar/Utils/EnumHelpers.h>
 #include <oscar/Utils/ParentPtr.h>
 #include <oscar/Utils/Perf.h>
@@ -64,7 +63,7 @@ namespace
     }
 }
 
-class osc::SimulatorTab::Impl final : public ISimulatorUIAPI {
+class osc::SimulationTab::Impl final : public ISimulatorUIAPI {
 public:
 
     Impl(
@@ -231,9 +230,7 @@ public:
 
     void onDrawMainMenu()
     {
-        m_MainMenuFileTab.onDraw(m_Parent);
-        m_MainMenuWindowTab.onDraw();
-        m_MainMenuAboutTab.onDraw();
+        m_MainMenu.onDraw();
     }
 
     void onDraw()
@@ -493,9 +490,7 @@ private:
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
 
     // non-toggleable UI panels/menus/toolbars
-    MainMenuFileTab m_MainMenuFileTab;
-    MainMenuAboutTab m_MainMenuAboutTab;
-    WindowMenu m_MainMenuWindowTab{m_PanelManager};
+    SimulationTabMainMenu m_MainMenu{m_Parent, m_PanelManager};
     SimulationToolbar m_Toolbar{"##SimulationToolbar", this, m_Simulation};
 
     // manager for popups that are open in this tab
@@ -505,7 +500,7 @@ private:
 
 // public API (PIMPL)
 
-osc::SimulatorTab::SimulatorTab(
+osc::SimulationTab::SimulationTab(
     ParentPtr<IMainUIStateAPI> const& parent_,
     std::shared_ptr<Simulation> simulation_) :
 
@@ -513,46 +508,46 @@ osc::SimulatorTab::SimulatorTab(
 {
 }
 
-osc::SimulatorTab::SimulatorTab(SimulatorTab&&) noexcept = default;
-osc::SimulatorTab& osc::SimulatorTab::operator=(SimulatorTab&&) noexcept = default;
-osc::SimulatorTab::~SimulatorTab() noexcept = default;
+osc::SimulationTab::SimulationTab(SimulationTab&&) noexcept = default;
+osc::SimulationTab& osc::SimulationTab::operator=(SimulationTab&&) noexcept = default;
+osc::SimulationTab::~SimulationTab() noexcept = default;
 
-UID osc::SimulatorTab::implGetID() const
+UID osc::SimulationTab::implGetID() const
 {
     return m_Impl->getID();
 }
 
-CStringView osc::SimulatorTab::implGetName() const
+CStringView osc::SimulationTab::implGetName() const
 {
     return m_Impl->getName();
 }
 
-void osc::SimulatorTab::implOnMount()
+void osc::SimulationTab::implOnMount()
 {
     m_Impl->on_mount();
 }
 
-void osc::SimulatorTab::implOnUnmount()
+void osc::SimulationTab::implOnUnmount()
 {
     m_Impl->on_unmount();
 }
 
-bool osc::SimulatorTab::implOnEvent(SDL_Event const& e)
+bool osc::SimulationTab::implOnEvent(SDL_Event const& e)
 {
     return m_Impl->onEvent(e);
 }
 
-void osc::SimulatorTab::implOnTick()
+void osc::SimulationTab::implOnTick()
 {
     m_Impl->on_tick();
 }
 
-void osc::SimulatorTab::implOnDrawMainMenu()
+void osc::SimulationTab::implOnDrawMainMenu()
 {
     m_Impl->onDrawMainMenu();
 }
 
-void osc::SimulatorTab::implOnDraw()
+void osc::SimulationTab::implOnDraw()
 {
     m_Impl->onDraw();
 }

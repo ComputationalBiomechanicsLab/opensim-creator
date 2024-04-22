@@ -16,7 +16,7 @@
 #include <OpenSimCreator/UI/PerformanceAnalyzerTab.h>
 #include <OpenSimCreator/UI/ModelEditor/ModelEditorTab.h>
 #include <OpenSimCreator/UI/Shared/ObjectPropertiesEditor.h>
-#include <OpenSimCreator/UI/Simulation/SimulatorTab.h>
+#include <OpenSimCreator/UI/Simulation/SimulationTab.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 #include <OpenSimCreator/Utils/ShapeFitters.h>
 #include <OpenSimCreator/Utils/SimTKHelpers.h>
@@ -424,7 +424,7 @@ bool osc::ActionLoadSTOFileAgainstModel(
 
         auto simulation = std::make_shared<Simulation>(StoFileSimulation{std::move(modelCopy), stoPath, uim.getFixupScaleFactor()});
 
-        parent->addAndSelectTab<SimulatorTab>(parent, simulation);
+        parent->addAndSelectTab<SimulationTab>(parent, simulation);
 
         return true;
     }
@@ -443,7 +443,7 @@ bool osc::ActionStartSimulatingModel(
     ForwardDynamicSimulatorParams params = FromParamBlock(parent->getSimulationParams());
 
     auto simulation = std::make_shared<Simulation>(ForwardDynamicSimulation{std::move(modelState), params});
-    auto simulationTab = std::make_unique<SimulatorTab>(parent, std::move(simulation));
+    auto simulationTab = std::make_unique<SimulationTab>(parent, std::move(simulation));
 
     parent->selectTab(parent->addTab(std::move(simulationTab)));
 
