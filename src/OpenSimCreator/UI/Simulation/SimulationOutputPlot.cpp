@@ -139,15 +139,17 @@ namespace
     {
         bool isWatching = api.hasUserOutputExtractor(output);
 
-        if (ui::MenuItem(ICON_FA_EYE " Watch Output", {}, &isWatching)) {
-            if (isWatching) {
-                api.addUserOutputExtractor(output);
-            }
-            else {
+        if (isWatching) {
+            if (ui::MenuItem(ICON_FA_TRASH " Stop Watching")) {
                 api.removeUserOutputExtractor(output);
             }
         }
-        ui::DrawTooltipIfItemHovered("Watch Output", "Watch the selected output. This makes it appear in the 'Output Watches' window in the editor panel and the 'Output Plots' window during a simulation");
+        else {
+            if (ui::MenuItem(ICON_FA_EYE " Watch Output")) {
+                api.addUserOutputExtractor(output);
+            }
+            ui::DrawTooltipIfItemHovered("Watch Output", "Watch the selected output. This makes it appear in the 'Output Watches' window in the editor panel and the 'Output Plots' window during a simulation");
+        }
     }
 
     void DrawSelectOtherOutputMenuContent(

@@ -7,6 +7,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Each plot in the `Output Plots` panel of the simulator tab now shows a little trash icon, to
   match the deletion button that's shown in the model editor tab
+- The right-click menu of an output plot in the simulator tab will now show a little trash icon
+  and the button text `Stop Watching` (previously, `Watch Output` with a tick box) to match the
+  deletion button that's shown in the model editor tab
 - The `Selection Details` panel that's shown in the simulator tab was cleaned up to prioritize
   showing property values (similar to the editor tab), followed by a toggleable outputs section (#838)
 - Fixed a bug in the `Selection Details` panel where drawing too many output plots would cause
