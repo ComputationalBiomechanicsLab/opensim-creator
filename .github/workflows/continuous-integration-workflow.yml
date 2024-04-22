@@ -66,7 +66,7 @@ jobs:
         ./scripts/build_emscripten.sh
 
   macos11clang:
-    name: MacOS 12 (monterey, llvm@15)
+    name: MacOS 12 (Monterey)
     runs-on: macos-12
     steps:
 
@@ -78,8 +78,6 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE
         export OSC_BUILD_CONCURRENCY=$(sysctl -n hw.physicalcpu)
-        export CC=$(brew --prefix llvm@15)/bin/clang
-        export CXX=$(brew --prefix llvm@15)/bin/clang++  # C++20 support (apple clang on this CI node isn't new enough)
         ./scripts/build_mac.sh
 
     - uses: actions/upload-artifact@v4
