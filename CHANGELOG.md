@@ -5,6 +5,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- The loading bar on the loading tab is now more centered and scales with the overall window size
 - Fixed "Plot Against other Output" feature not working with non-model-sourced outputs, such as
   the integrator's "Step Wall Time"
 - The "empty" state of some panels (e.g. "nothing selected", "nothing watched") was tidied up and
