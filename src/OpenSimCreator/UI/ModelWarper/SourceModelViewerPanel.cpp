@@ -21,17 +21,17 @@ public:
     {}
 
 private:
-    void implBeforeImGuiBegin() final
+    void impl_before_imgui_begin() final
     {
         ui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
     }
 
-    void implAfterImGuiBegin() final
+    void impl_after_imgui_begin() final
     {
         ui::PopStyleVar();
     }
 
-    void implDrawContent() final
+    void impl_draw_content() final
     {
         if (m_State->isCameraLinked()) {
             if (m_State->isOnlyCameraRotationLinked()) {
@@ -62,7 +62,7 @@ private:
     }
 
     std::shared_ptr<UIState> m_State;
-    Readonly3DModelViewer m_ModelViewer{this->getName(), Readonly3DModelViewerFlags::NoSceneHittest};
+    Readonly3DModelViewer m_ModelViewer{this->name(), Readonly3DModelViewerFlags::NoSceneHittest};
 };
 
 osc::mow::SourceModelViewerPanel::SourceModelViewerPanel(
@@ -76,27 +76,27 @@ osc::mow::SourceModelViewerPanel::SourceModelViewerPanel(SourceModelViewerPanel&
 osc::mow::SourceModelViewerPanel& osc::mow::SourceModelViewerPanel::operator=(SourceModelViewerPanel&&) noexcept = default;
 osc::mow::SourceModelViewerPanel::~SourceModelViewerPanel() noexcept = default;
 
-CStringView osc::mow::SourceModelViewerPanel::implGetName() const
+CStringView osc::mow::SourceModelViewerPanel::impl_get_name() const
 {
-    return m_Impl->getName();
+    return m_Impl->name();
 }
 
-bool osc::mow::SourceModelViewerPanel::implIsOpen() const
+bool osc::mow::SourceModelViewerPanel::impl_is_open() const
 {
-    return m_Impl->isOpen();
+    return m_Impl->is_open();
 }
 
-void osc::mow::SourceModelViewerPanel::implOpen()
+void osc::mow::SourceModelViewerPanel::impl_open()
 {
     m_Impl->open();
 }
 
-void osc::mow::SourceModelViewerPanel::implClose()
+void osc::mow::SourceModelViewerPanel::impl_close()
 {
     m_Impl->close();
 }
 
-void osc::mow::SourceModelViewerPanel::implOnDraw()
+void osc::mow::SourceModelViewerPanel::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }

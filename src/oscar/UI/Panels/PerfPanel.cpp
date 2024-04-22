@@ -16,22 +16,21 @@ using namespace osc;
 
 namespace
 {
-    bool LexographicallyHighestLabel(const PerfMeasurement& a, const PerfMeasurement& b)
+    bool lexographically_highest_label(const PerfMeasurement& a, const PerfMeasurement& b)
     {
-        return std::string_view{a.getLabel()} > std::string_view{b.getLabel()};
+        return a.getLabel() > b.getLabel();
     }
 }
 
 class osc::PerfPanel::Impl final : public StandardPanelImpl {
 public:
 
-    explicit Impl(std::string_view panelName) :
-        StandardPanelImpl{panelName}
-    {
-    }
+    explicit Impl(std::string_view panel_name) :
+        StandardPanelImpl{panel_name}
+    {}
 
 private:
-    void implDrawContent() final
+    void impl_draw_content() final
     {
         ui::Columns(2);
         ui::TextUnformatted("FPS");
@@ -42,37 +41,33 @@ private:
 
         {
             bool waiting = App::get().is_main_loop_waiting();
-            if (ui::Checkbox("waiting", &waiting))
-            {
+            if (ui::Checkbox("waiting", &waiting)) {
                 App::upd().set_main_loop_waiting(waiting);
             }
         }
         {
             bool vsync = App::get().is_vsync_enabled();
-            if (ui::Checkbox("VSYNC", &vsync))
-            {
+            if (ui::Checkbox("VSYNC", &vsync)) {
                 App::upd().set_vsync(vsync);
             }
         }
-        if (ui::Button("clear measurements"))
-        {
+        if (ui::Button("clear measurements")) {
             ClearAllPerfMeasurements();
         }
-        ui::Checkbox("pause", &m_IsPaused);
+        ui::Checkbox("pause", &is_paused_);
 
         std::vector<PerfMeasurement> measurements;
-        if (!m_IsPaused)
-        {
+        if (not is_paused_) {
             measurements = GetAllPerfMeasurements();
-            std::sort(measurements.begin(), measurements.end(), LexographicallyHighestLabel);
+            std::sort(measurements.begin(), measurements.end(), lexographically_highest_label);
         }
 
-        ImGuiTableFlags flags =
+        const ImGuiTableFlags flags =
             ImGuiTableFlags_NoSavedSettings |
             ImGuiTableFlags_Resizable |
             ImGuiTableFlags_BordersInner;
-        if (ui::BeginTable("measurements", 6, flags))
-        {
+
+        if (ui::BeginTable("measurements", 6, flags)) {
             ui::TableSetupColumn("Label");
             ui::TableSetupColumn("Source File");
             ui::TableSetupColumn("Num Calls");
@@ -107,42 +102,38 @@ private:
         }
     }
 
-    bool m_IsPaused = false;
+    bool is_paused_ = false;
 };
 
-
-// public API
-
-osc::PerfPanel::PerfPanel(std::string_view panelName) :
-    m_Impl{std::make_unique<Impl>(panelName)}
-{
-}
+osc::PerfPanel::PerfPanel(std::string_view panel_name) :
+    impl_{std::make_unique<Impl>(panel_name)}
+{}
 
 osc::PerfPanel::PerfPanel(PerfPanel&&) noexcept = default;
 osc::PerfPanel& osc::PerfPanel::operator=(PerfPanel&&) noexcept = default;
 osc::PerfPanel::~PerfPanel() noexcept = default;
 
-CStringView osc::PerfPanel::implGetName() const
+CStringView osc::PerfPanel::impl_get_name() const
 {
-    return m_Impl->getName();
+    return impl_->name();
 }
 
-bool osc::PerfPanel::implIsOpen() const
+bool osc::PerfPanel::impl_is_open() const
 {
-    return m_Impl->isOpen();
+    return impl_->is_open();
 }
 
-void osc::PerfPanel::implOpen()
+void osc::PerfPanel::impl_open()
 {
-    return m_Impl->open();
+    return impl_->open();
 }
 
-void osc::PerfPanel::implClose()
+void osc::PerfPanel::impl_close()
 {
-    m_Impl->close();
+    impl_->close();
 }
 
-void osc::PerfPanel::implOnDraw()
+void osc::PerfPanel::impl_on_draw()
 {
-    m_Impl->onDraw();
+    impl_->on_draw();
 }

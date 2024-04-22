@@ -43,13 +43,13 @@ public:
         return "GeometryShader";
     }
 
-    void onMount()
+    void on_mount()
     {
         App::upd().make_main_loop_polling();
         m_IsMouseCaptured = true;
     }
 
-    void onUnmount()
+    void on_unmount()
     {
         m_IsMouseCaptured = false;
         App::upd().set_show_cursor(true);
@@ -151,12 +151,12 @@ CStringView osc::RendererGeometryShaderTab::implGetName() const
 
 void osc::RendererGeometryShaderTab::implOnMount()
 {
-    m_Impl->onMount();
+    m_Impl->on_mount();
 }
 
 void osc::RendererGeometryShaderTab::implOnUnmount()
 {
-    m_Impl->onUnmount();
+    m_Impl->on_unmount();
 }
 
 bool osc::RendererGeometryShaderTab::implOnEvent(SDL_Event const& e)

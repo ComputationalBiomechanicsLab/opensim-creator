@@ -29,14 +29,14 @@ private:
     {
         m_CurrentTab = m_RegistryEntry.createTab(ParentPtr<Impl>{shared_from_this()});
         ui::context::init();
-        m_CurrentTab->onMount();
+        m_CurrentTab->on_mount();
         App::upd().make_main_loop_polling();
     }
 
     void impl_on_unmount() override
     {
         App::upd().make_main_loop_waiting();
-        m_CurrentTab->onUnmount();
+        m_CurrentTab->on_unmount();
         ui::context::shutdown();
     }
 
@@ -52,7 +52,7 @@ private:
 
     void impl_on_tick() override
     {
-        m_CurrentTab->onTick();
+        m_CurrentTab->on_tick();
     }
 
     void impl_on_draw() override

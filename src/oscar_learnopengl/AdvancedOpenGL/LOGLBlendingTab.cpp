@@ -142,8 +142,8 @@ private:
         m_Camera.render_to_screen();
 
         // auxiliary UI
-        m_LogViewer.onDraw();
-        m_PerfPanel.onDraw();
+        m_LogViewer.on_draw();
+        m_PerfPanel.on_draw();
     }
 
     ResourceLoader m_Loader = App::resource_loader();
@@ -201,12 +201,12 @@ CStringView osc::LOGLBlendingTab::implGetName() const
 
 void osc::LOGLBlendingTab::implOnMount()
 {
-    m_Impl->onMount();
+    m_Impl->on_mount();
 }
 
 void osc::LOGLBlendingTab::implOnUnmount()
 {
-    m_Impl->onUnmount();
+    m_Impl->on_unmount();
 }
 
 bool osc::LOGLBlendingTab::implOnEvent(SDL_Event const& e)

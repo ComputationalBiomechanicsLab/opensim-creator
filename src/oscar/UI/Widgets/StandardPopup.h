@@ -35,7 +35,7 @@ namespace osc
 
     protected:
         bool isPopupOpenedThisFrame() const;
-        void requestClose();
+        void request_close();
         bool isModal() const;
         void setModal(bool);
         void setRect(const Rect&);

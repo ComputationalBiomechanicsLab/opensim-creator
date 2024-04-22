@@ -238,7 +238,7 @@ namespace
         // build up the prim list for each triangle
         prims.reserve(indices.size()/3);  // guess: upper limit
         for (size_t i = 0; (i+2) < indices.size(); i += 3) {
-            const Triangle triangle {
+            const Triangle triangle{
                 at(vertices, indices[i]),
                 at(vertices, indices[i+1]),
                 at(vertices, indices[i+2]),
@@ -249,9 +249,13 @@ namespace
             }
         }
 
+        nodes.reserve(2 * prims.size());  // guess
         if (not prims.empty()) {
             bvh_recursive_build(nodes, prims, 0, static_cast<ptrdiff_t>(prims.size()));
         }
+
+        prims.shrink_to_fit();
+        nodes.shrink_to_fit();
     }
 
     template<std::unsigned_integral TIndex>
@@ -351,16 +355,20 @@ void osc::BVH::build_from_aabbs(std::span<const AABB> aabbs)
     clear();
 
     // build up prim list for each AABB (just copy the AABB)
-    prims_.reserve(aabbs.size());  // good guess
+    prims_.reserve(aabbs.size());  // guess
     for (ptrdiff_t i = 0; i < ssize(aabbs); ++i) {
         if (not is_point(aabbs[i])) {
             prims_.emplace_back(i, aabbs[i]);
         }
     }
 
+    nodes_.reserve(2 * prims_.size());
     if (not prims_.empty()) {
         bvh_recursive_build(nodes_, prims_, 0, ssize(prims_));
     }
+
+    prims_.shrink_to_fit();
+    nodes_.shrink_to_fit();
 }
 
 void osc::BVH::for_each_ray_aabb_collision(

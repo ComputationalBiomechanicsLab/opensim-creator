@@ -18,7 +18,7 @@ namespace osc
         ~PopupManager() noexcept;
 
         void push_back(std::shared_ptr<IPopup>);
-        void onMount() { openAll(); }
+        void on_mount() { openAll(); }
         void openAll();
         void onDraw();
         [[nodiscard]] bool empty();

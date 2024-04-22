@@ -187,12 +187,12 @@ CStringView osc::LOGLParallaxMappingTab::implGetName() const
 
 void osc::LOGLParallaxMappingTab::implOnMount()
 {
-    m_Impl->onMount();
+    m_Impl->on_mount();
 }
 
 void osc::LOGLParallaxMappingTab::implOnUnmount()
 {
-    m_Impl->onUnmount();
+    m_Impl->on_unmount();
 }
 
 bool osc::LOGLParallaxMappingTab::implOnEvent(SDL_Event const& e)

@@ -294,12 +294,12 @@ CStringView osc::HittestTab::implGetName() const
 
 void osc::HittestTab::implOnMount()
 {
-    m_Impl->onMount();
+    m_Impl->on_mount();
 }
 
 void osc::HittestTab::implOnUnmount()
 {
-    m_Impl->onUnmount();
+    m_Impl->on_unmount();
 }
 
 bool osc::HittestTab::implOnEvent(SDL_Event const& e)
@@ -309,7 +309,7 @@ bool osc::HittestTab::implOnEvent(SDL_Event const& e)
 
 void osc::HittestTab::implOnTick()
 {
-    m_Impl->onTick();
+    m_Impl->on_tick();
 }
 
 void osc::HittestTab::implOnDraw()

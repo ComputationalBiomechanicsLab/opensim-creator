@@ -75,12 +75,12 @@ CStringView osc::CookiecutterTab::implGetName() const
 
 void osc::CookiecutterTab::implOnMount()
 {
-    m_Impl->onMount();
+    m_Impl->on_mount();
 }
 
 void osc::CookiecutterTab::implOnUnmount()
 {
-    m_Impl->onUnmount();
+    m_Impl->on_unmount();
 }
 
 bool osc::CookiecutterTab::implOnEvent(SDL_Event const& e)
@@ -90,7 +90,7 @@ bool osc::CookiecutterTab::implOnEvent(SDL_Event const& e)
 
 void osc::CookiecutterTab::implOnTick()
 {
-    m_Impl->onTick();
+    m_Impl->on_tick();
 }
 
 void osc::CookiecutterTab::implOnDrawMainMenu()

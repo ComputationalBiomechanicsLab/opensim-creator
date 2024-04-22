@@ -92,7 +92,7 @@ namespace
             std::string_view panelName_,
             std::shared_ptr<UndoableModelStatePair> model_) :
 
-            m_PanelName{panelName_},
+            panel_name_{panelName_},
             m_Gizmo{std::move(model_)}
         {
         }
@@ -146,14 +146,14 @@ namespace
 
             if (edited)
             {
-                log_debug("%s edited", m_PanelName.c_str());
+                log_debug("%s edited", panel_name_.c_str());
 
                 auto const& renderParamsAfter = params.getRenderParams();
 
                 SaveModelRendererParamsDifference(
                     renderParamsBefore,
                     renderParamsAfter,
-                    GetSettingsKeyPrefixForPanel(m_PanelName),
+                    GetSettingsKeyPrefixForPanel(panel_name_),
                     App::upd().upd_config()
                 );
             }
@@ -220,7 +220,7 @@ namespace
             App::resource_loader().with_prefix("icons/"),
             ui::GetTextLineHeight()/128.0f
         );
-        std::string m_PanelName;
+        std::string panel_name_;
         ModelSelectionGizmo m_Gizmo;
     };
 
@@ -360,17 +360,17 @@ public:
     }
 
 private:
-    void implBeforeImGuiBegin() final
+    void impl_before_imgui_begin() final
     {
         ui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
     }
 
-    void implAfterImGuiBegin() final
+    void impl_after_imgui_begin() final
     {
         ui::PopStyleVar();
     }
 
-    void implDrawContent() final
+    void impl_draw_content() final
     {
         // HACK: garbage-collect one frame later, because the layers
         // may have submitted textures to ImGui that are then invalid
@@ -547,7 +547,7 @@ private:
     }
 
     ModelEditorViewerPanelParameters m_Parameters;
-    ModelEditorViewerPanelState m_State{getName()};
+    ModelEditorViewerPanelState m_State{name()};
     std::vector<std::unique_ptr<ModelEditorViewerPanelLayer>> m_Layers;
     bool m_IsFirstFrame = true;
     bool m_RenderIsHovered = false;
@@ -578,27 +578,27 @@ void osc::ModelEditorViewerPanel::focusOn(Vec3 const& pos)
     m_Impl->focusOn(pos);
 }
 
-CStringView osc::ModelEditorViewerPanel::implGetName() const
+CStringView osc::ModelEditorViewerPanel::impl_get_name() const
 {
-    return m_Impl->getName();
+    return m_Impl->name();
 }
 
-bool osc::ModelEditorViewerPanel::implIsOpen() const
+bool osc::ModelEditorViewerPanel::impl_is_open() const
 {
-    return m_Impl->isOpen();
+    return m_Impl->is_open();
 }
 
-void osc::ModelEditorViewerPanel::implOpen()
+void osc::ModelEditorViewerPanel::impl_open()
 {
     m_Impl->open();
 }
 
-void osc::ModelEditorViewerPanel::implClose()
+void osc::ModelEditorViewerPanel::impl_close()
 {
     m_Impl->close();
 }
 
-void osc::ModelEditorViewerPanel::implOnDraw()
+void osc::ModelEditorViewerPanel::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }

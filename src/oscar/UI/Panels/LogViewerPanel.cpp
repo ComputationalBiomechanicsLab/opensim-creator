@@ -12,48 +12,48 @@ using namespace osc;
 class osc::LogViewerPanel::Impl final : public StandardPanelImpl {
 public:
 
-    explicit Impl(std::string_view panelName) :
-        StandardPanelImpl{panelName, ImGuiWindowFlags_MenuBar}
+    explicit Impl(std::string_view panel_name) :
+        StandardPanelImpl{panel_name, ImGuiWindowFlags_MenuBar}
     {}
 
 private:
-    void implDrawContent() final
+    void impl_draw_content() final
     {
-        m_Viewer.onDraw();
+        log_viewer_.onDraw();
     }
 
-    LogViewer m_Viewer;
+    LogViewer log_viewer_;
 };
 
-osc::LogViewerPanel::LogViewerPanel(std::string_view panelName) :
-    m_Impl{std::make_unique<Impl>(panelName)}
+osc::LogViewerPanel::LogViewerPanel(std::string_view panel_name) :
+    m_Impl{std::make_unique<Impl>(panel_name)}
 {
 }
 osc::LogViewerPanel::LogViewerPanel(LogViewerPanel&&) noexcept = default;
 osc::LogViewerPanel& osc::LogViewerPanel::operator=(LogViewerPanel&&) noexcept = default;
 osc::LogViewerPanel::~LogViewerPanel() noexcept = default;
 
-CStringView osc::LogViewerPanel::implGetName() const
+CStringView osc::LogViewerPanel::impl_get_name() const
 {
-    return m_Impl->getName();
+    return m_Impl->name();
 }
 
-bool osc::LogViewerPanel::implIsOpen() const
+bool osc::LogViewerPanel::impl_is_open() const
 {
-    return m_Impl->isOpen();
+    return m_Impl->is_open();
 }
 
-void osc::LogViewerPanel::implOpen()
+void osc::LogViewerPanel::impl_open()
 {
     m_Impl->open();
 }
 
-void osc::LogViewerPanel::implClose()
+void osc::LogViewerPanel::impl_close()
 {
     m_Impl->close();
 }
 
-void osc::LogViewerPanel::implOnDraw()
+void osc::LogViewerPanel::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }

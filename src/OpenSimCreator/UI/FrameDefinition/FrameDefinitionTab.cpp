@@ -82,7 +82,7 @@ namespace
         OpenSim::Point const& point,
         ModelEditorViewerPanelRightClickEvent const& sourceEvent)
     {
-        auto* const visualizer = editor.getPanelManager()->tryUpdPanelByNameT<ModelEditorViewerPanel>(sourceEvent.sourcePanelName);
+        auto* const visualizer = editor.getPanelManager()->try_upd_panel_by_name_T<ModelEditorViewerPanel>(sourceEvent.sourcePanelName);
         if (!visualizer)
         {
             return;  // can't figure out which visualizer to push the layer to
@@ -133,7 +133,7 @@ namespace
         OpenSim::Point const& point,
         ModelEditorViewerPanelRightClickEvent const& sourceEvent)
     {
-        auto* const visualizer = editor.getPanelManager()->tryUpdPanelByNameT<ModelEditorViewerPanel>(sourceEvent.sourcePanelName);
+        auto* const visualizer = editor.getPanelManager()->try_upd_panel_by_name_T<ModelEditorViewerPanel>(sourceEvent.sourcePanelName);
         if (!visualizer)
         {
             return;  // can't figure out which visualizer to push the layer to
@@ -184,7 +184,7 @@ namespace
         Edge const& firstEdge,
         ModelEditorViewerPanelRightClickEvent const& sourceEvent)
     {
-        auto* const visualizer = editor.getPanelManager()->tryUpdPanelByNameT<ModelEditorViewerPanel>(sourceEvent.sourcePanelName);
+        auto* const visualizer = editor.getPanelManager()->try_upd_panel_by_name_T<ModelEditorViewerPanel>(sourceEvent.sourcePanelName);
         if (!visualizer)
         {
             return;  // can't figure out which visualizer to push the layer to
@@ -347,7 +347,7 @@ namespace
             return;  // there is no way to figure out which visualizer to push the layer to
         }
 
-        auto* const visualizer = editor.getPanelManager()->tryUpdPanelByNameT<ModelEditorViewerPanel>(maybeSourceEvent->sourcePanelName);
+        auto* const visualizer = editor.getPanelManager()->try_upd_panel_by_name_T<ModelEditorViewerPanel>(maybeSourceEvent->sourcePanelName);
         if (!visualizer)
         {
             return;  // the visualizer that the user clicked cannot be found
@@ -511,7 +511,7 @@ namespace
             return;  // there is no way to figure out which visualizer to push the layer to
         }
 
-        auto* const visualizer = editor.getPanelManager()->tryUpdPanelByNameT<ModelEditorViewerPanel>(maybeSourceEvent->sourcePanelName);
+        auto* const visualizer = editor.getPanelManager()->try_upd_panel_by_name_T<ModelEditorViewerPanel>(maybeSourceEvent->sourcePanelName);
         if (!visualizer)
         {
             return;  // the visualizer that the user clicked cannot be found
@@ -594,7 +594,7 @@ namespace
         {
             if (ui::MenuItem("on Ground"))
             {
-                auto* visualizer = editor.getPanelManager()->tryUpdPanelByNameT<ModelEditorViewerPanel>(maybeSourceEvent->sourcePanelName);
+                auto* visualizer = editor.getPanelManager()->try_upd_panel_by_name_T<ModelEditorViewerPanel>(maybeSourceEvent->sourcePanelName);
                 if (visualizer)
                 {
                     visualizer->focusOn({});
@@ -604,7 +604,7 @@ namespace
             if (maybeSourceEvent->maybeClickPositionInGround &&
                 ui::MenuItem("on Click Position"))
             {
-                auto* visualizer = editor.getPanelManager()->tryUpdPanelByNameT<ModelEditorViewerPanel>(maybeSourceEvent->sourcePanelName);
+                auto* visualizer = editor.getPanelManager()->try_upd_panel_by_name_T<ModelEditorViewerPanel>(maybeSourceEvent->sourcePanelName);
                 if (visualizer)
                 {
                     visualizer->focusOn(*maybeSourceEvent->maybeClickPositionInGround);
@@ -1021,7 +1021,7 @@ public:
     explicit Impl(ParentPtr<ITabHost> const& parent_) :
         m_Parent{parent_}
     {
-        m_PanelManager->registerToggleablePanel(
+        m_PanelManager->register_toggleable_panel(
             "Navigator",
             [this](std::string_view panelName)
             {
@@ -1040,28 +1040,28 @@ public:
                 );
             }
         );
-        m_PanelManager->registerToggleablePanel(
+        m_PanelManager->register_toggleable_panel(
             "Properties",
             [this](std::string_view panelName)
             {
                 return std::make_shared<PropertiesPanel>(panelName, this, m_Model);
             }
         );
-        m_PanelManager->registerToggleablePanel(
+        m_PanelManager->register_toggleable_panel(
             "Log",
             [](std::string_view panelName)
             {
                 return std::make_shared<LogViewerPanel>(panelName);
             }
         );
-        m_PanelManager->registerToggleablePanel(
+        m_PanelManager->register_toggleable_panel(
             "Performance",
             [](std::string_view panelName)
             {
                 return std::make_shared<PerfPanel>(panelName);
             }
         );
-        m_PanelManager->registerSpawnablePanel(
+        m_PanelManager->register_spawnable_panel(
             "framedef_viewer",
             [this](std::string_view panelName)
             {
@@ -1097,16 +1097,16 @@ public:
         return c_TabStringID;
     }
 
-    void onMount()
+    void on_mount()
     {
         App::upd().make_main_loop_waiting();
-        m_PanelManager->onMount();
-        m_PopupManager.onMount();
+        m_PanelManager->on_mount();
+        m_PopupManager.on_mount();
     }
 
-    void onUnmount()
+    void on_unmount()
     {
-        m_PanelManager->onUnmount();
+        m_PanelManager->on_unmount();
         App::upd().make_main_loop_polling();
     }
 
@@ -1122,9 +1122,9 @@ public:
         }
     }
 
-    void onTick()
+    void on_tick()
     {
-        m_PanelManager->onTick();
+        m_PanelManager->on_tick();
     }
 
     void onDrawMainMenu()
@@ -1139,7 +1139,7 @@ public:
             ImGuiDockNodeFlags_PassthruCentralNode
         );
         m_Toolbar.onDraw();
-        m_PanelManager->onDraw();
+        m_PanelManager->on_draw();
         m_PopupManager.onDraw();
     }
 
@@ -1237,12 +1237,12 @@ CStringView osc::FrameDefinitionTab::implGetName() const
 
 void osc::FrameDefinitionTab::implOnMount()
 {
-    m_Impl->onMount();
+    m_Impl->on_mount();
 }
 
 void osc::FrameDefinitionTab::implOnUnmount()
 {
-    m_Impl->onUnmount();
+    m_Impl->on_unmount();
 }
 
 bool osc::FrameDefinitionTab::implOnEvent(SDL_Event const& e)
@@ -1252,7 +1252,7 @@ bool osc::FrameDefinitionTab::implOnEvent(SDL_Event const& e)
 
 void osc::FrameDefinitionTab::implOnTick()
 {
-    m_Impl->onTick();
+    m_Impl->on_tick();
 }
 
 void osc::FrameDefinitionTab::implOnDrawMainMenu()

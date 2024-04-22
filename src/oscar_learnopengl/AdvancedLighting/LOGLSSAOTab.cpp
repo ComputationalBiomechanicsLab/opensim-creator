@@ -153,7 +153,7 @@ private:
     {
         m_Camera.on_draw();
         draw3DScene();
-        m_PerfPanel.onDraw();
+        m_PerfPanel.on_draw();
     }
 
     void draw3DScene()
@@ -395,12 +395,12 @@ CStringView osc::LOGLSSAOTab::implGetName() const
 
 void osc::LOGLSSAOTab::implOnMount()
 {
-    m_Impl->onMount();
+    m_Impl->on_mount();
 }
 
 void osc::LOGLSSAOTab::implOnUnmount()
 {
-    m_Impl->onUnmount();
+    m_Impl->on_unmount();
 }
 
 bool osc::LOGLSSAOTab::implOnEvent(SDL_Event const& e)

@@ -42,7 +42,7 @@ namespace osc
             TPSDocumentElement const* el = FindElement(m_State->getScratch(), m_ElementID);
             if (!el)
             {
-                requestClose();  // element cannot be found in document (deleted? renamed?)
+                request_close();  // element cannot be found in document (deleted? renamed?)
             }
             else if (auto const* landmarkPair = dynamic_cast<TPSDocumentLandmarkPair const*>(el))
             {
@@ -54,7 +54,7 @@ namespace osc
             }
             else
             {
-                requestClose();  // (defensive programming)
+                request_close();  // (defensive programming)
             }
         }
 

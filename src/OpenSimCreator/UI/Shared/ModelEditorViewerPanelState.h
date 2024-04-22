@@ -27,7 +27,7 @@ namespace osc
 
         CStringView getPanelName() const
         {
-            return m_PanelName;
+            return panel_name_;
         }
 
         Rect viewportRect{};
@@ -68,7 +68,7 @@ namespace osc
         }
 
     private:
-        std::string m_PanelName;
+        std::string panel_name_;
         CachedModelRenderer m_CachedModelRenderer;
         std::vector<std::unique_ptr<ModelEditorViewerPanelLayer>> m_LayerQueue;
     };

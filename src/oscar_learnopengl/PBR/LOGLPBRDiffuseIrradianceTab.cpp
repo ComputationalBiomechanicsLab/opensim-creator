@@ -262,12 +262,12 @@ CStringView osc::LOGLPBRDiffuseIrradianceTab::implGetName() const
 
 void osc::LOGLPBRDiffuseIrradianceTab::implOnMount()
 {
-    m_Impl->onMount();
+    m_Impl->on_mount();
 }
 
 void osc::LOGLPBRDiffuseIrradianceTab::implOnUnmount()
 {
-    m_Impl->onUnmount();
+    m_Impl->on_unmount();
 }
 
 bool osc::LOGLPBRDiffuseIrradianceTab::implOnEvent(SDL_Event const& e)

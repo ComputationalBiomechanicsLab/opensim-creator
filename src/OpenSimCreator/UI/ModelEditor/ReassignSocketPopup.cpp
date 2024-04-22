@@ -144,7 +144,7 @@ private:
         OpenSim::Component const* component = FindComponent(m_Model->getModel(), m_Params.componentPath);
         if (!component)
         {
-            requestClose();
+            request_close();
             return;
         }
 
@@ -152,7 +152,7 @@ private:
         OpenSim::AbstractSocket const* socket = FindSocket(*component, m_Params.socketName);
         if (!socket)
         {
-            requestClose();
+            request_close();
             return;
         }
 
@@ -193,7 +193,7 @@ private:
 
         if (ui::Button("Cancel"))
         {
-            requestClose();
+            request_close();
             return;
         }
 
@@ -208,7 +208,7 @@ private:
 
             if (selected && ActionReassignComponentSocket(*m_Model, m_Params.componentPath, m_Params.socketName, *selected, flags, m_Error))
             {
-                requestClose();
+                request_close();
                 return;
             }
         }

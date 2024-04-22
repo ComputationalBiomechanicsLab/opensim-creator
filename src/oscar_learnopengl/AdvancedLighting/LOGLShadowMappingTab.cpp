@@ -217,12 +217,12 @@ CStringView osc::LOGLShadowMappingTab::implGetName() const
 
 void osc::LOGLShadowMappingTab::implOnMount()
 {
-    m_Impl->onMount();
+    m_Impl->on_mount();
 }
 
 void osc::LOGLShadowMappingTab::implOnUnmount()
 {
-    m_Impl->onUnmount();
+    m_Impl->on_unmount();
 }
 
 bool osc::LOGLShadowMappingTab::implOnEvent(SDL_Event const& e)

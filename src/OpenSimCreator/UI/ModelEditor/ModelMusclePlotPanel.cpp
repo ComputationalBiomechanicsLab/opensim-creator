@@ -2230,7 +2230,7 @@ public:
 
         m_SharedData{editorAPI, std::move(uim)},
         m_ActiveState{std::make_unique<PickMuscleState>(m_SharedData)},
-        m_PanelName{panelName}
+        panel_name_{panelName}
     {}
 
     Impl(
@@ -2242,10 +2242,10 @@ public:
 
         m_SharedData{editorAPI, std::move(uim), coordPath, musclePath},
         m_ActiveState{std::make_unique<ShowingPlotState>(m_SharedData)},
-        m_PanelName{panelName}
+        panel_name_{panelName}
     {}
 
-    std::string const& getName() const { return m_PanelName; }
+    std::string const& getName() const { return panel_name_; }
     bool isOpen() const { return m_IsOpen; }
     void open() { m_IsOpen = true; }
     void close() { m_IsOpen = false; }
@@ -2255,7 +2255,7 @@ public:
         if (m_IsOpen) {
             bool isOpen = m_IsOpen;
 
-            if (ui::Begin(m_PanelName, &isOpen)) {
+            if (ui::Begin(panel_name_, &isOpen)) {
                 if (auto maybeNextState = m_ActiveState->onDraw()) {
                     m_ActiveState = std::move(maybeNextState);
                 }
@@ -2277,7 +2277,7 @@ private:
     std::unique_ptr<MusclePlotState> m_ActiveState;
 
     // name of the panel, as shown in the UI (via ui::Begin)
-    std::string m_PanelName;
+    std::string panel_name_;
 
     // if the panel is currently open or not
     bool m_IsOpen = true;
@@ -2308,8 +2308,8 @@ osc::ModelMusclePlotPanel::ModelMusclePlotPanel(ModelMusclePlotPanel&&) noexcept
 osc::ModelMusclePlotPanel& osc::ModelMusclePlotPanel::operator=(ModelMusclePlotPanel&&) noexcept = default;
 osc::ModelMusclePlotPanel::~ModelMusclePlotPanel() noexcept = default;
 
-CStringView osc::ModelMusclePlotPanel::implGetName() const { return m_Impl->getName(); }
-bool osc::ModelMusclePlotPanel::implIsOpen() const { return m_Impl->isOpen(); }
-void osc::ModelMusclePlotPanel::implOpen() { m_Impl->open(); }
-void osc::ModelMusclePlotPanel::implClose() { m_Impl->close(); }
-void osc::ModelMusclePlotPanel::implOnDraw() { m_Impl->onDraw(); }
+CStringView osc::ModelMusclePlotPanel::impl_get_name() const { return m_Impl->getName(); }
+bool osc::ModelMusclePlotPanel::impl_is_open() const { return m_Impl->isOpen(); }
+void osc::ModelMusclePlotPanel::impl_open() { m_Impl->open(); }
+void osc::ModelMusclePlotPanel::impl_close() { m_Impl->close(); }
+void osc::ModelMusclePlotPanel::impl_on_draw() { m_Impl->onDraw(); }

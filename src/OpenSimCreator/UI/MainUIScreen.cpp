@@ -89,7 +89,7 @@ public:
         addTab(std::make_unique<LoadingTab>(getTabHostAPI(), p));
     }
 
-    void onMount()
+    void on_mount()
     {
         if (!std::exchange(m_HasBeenMountedBefore, true))
         {
@@ -113,14 +113,14 @@ public:
         ui::context::init();
     }
 
-    void onUnmount()
+    void on_unmount()
     {
         // unmount the active tab before unmounting this (host) screen
         if (ITab* active = getActiveTab())
         {
             try
             {
-                active->onUnmount();
+                active->on_unmount();
             }
             catch (std::exception const& ex)
             {
@@ -274,7 +274,7 @@ public:
         }
     }
 
-    void onTick()
+    void on_tick()
     {
         // tick all the tabs, because they may internally be polling something (e.g.
         // updating something as a simulation runs)
@@ -282,7 +282,7 @@ public:
         {
             try
             {
-                m_Tabs[i]->onTick();
+                m_Tabs[i]->on_tick();
             }
             catch (std::exception const& ex)
             {
@@ -493,9 +493,9 @@ private:
                             {
                                 if (ITab* activeTab = getActiveTab())
                                 {
-                                    activeTab->onUnmount();
+                                    activeTab->on_unmount();
                                 }
-                                m_Tabs[i]->onMount();
+                                m_Tabs[i]->on_mount();
                             }
 
                             m_ActiveTabID = m_Tabs[i]->getID();
@@ -720,7 +720,7 @@ private:
             {
                 if (id == m_ActiveTabID)
                 {
-                    (*it)->onUnmount();
+                    (*it)->on_unmount();
                     m_ActiveTabID = UID::empty();
                     lowestDeletedTab = min(lowestDeletedTab, static_cast<int>(std::distance(m_Tabs.begin(), it)));
                 }
@@ -899,12 +899,12 @@ void osc::MainUIScreen::open(std::filesystem::path const& path)
 
 void osc::MainUIScreen::impl_on_mount()
 {
-    m_Impl->onMount();
+    m_Impl->on_mount();
 }
 
 void osc::MainUIScreen::impl_on_unmount()
 {
-    m_Impl->onUnmount();
+    m_Impl->on_unmount();
 }
 
 void osc::MainUIScreen::impl_on_event(SDL_Event const& e)
@@ -914,7 +914,7 @@ void osc::MainUIScreen::impl_on_event(SDL_Event const& e)
 
 void osc::MainUIScreen::impl_on_tick()
 {
-    m_Impl->onTick();
+    m_Impl->on_tick();
 }
 
 void osc::MainUIScreen::impl_on_draw()

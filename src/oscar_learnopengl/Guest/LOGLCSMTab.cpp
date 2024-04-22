@@ -243,12 +243,12 @@ CStringView osc::LOGLCSMTab::implGetName() const
 
 void osc::LOGLCSMTab::implOnMount()
 {
-    m_Impl->onMount();
+    m_Impl->on_mount();
 }
 
 void osc::LOGLCSMTab::implOnUnmount()
 {
-    m_Impl->onUnmount();
+    m_Impl->on_unmount();
 }
 
 bool osc::LOGLCSMTab::implOnEvent(SDL_Event const& e)

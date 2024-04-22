@@ -237,7 +237,7 @@ private:
         drawBackground();
         graphics::blit_to_screen(m_OutputRender, outputRect);
         draw2DUI();
-        m_PerfPanel.onDraw();
+        m_PerfPanel.on_draw();
     }
 
     void draw3DRender()
@@ -367,12 +367,12 @@ CStringView osc::LOGLPBRSpecularIrradianceTab::implGetName() const
 
 void osc::LOGLPBRSpecularIrradianceTab::implOnMount()
 {
-    m_Impl->onMount();
+    m_Impl->on_mount();
 }
 
 void osc::LOGLPBRSpecularIrradianceTab::implOnUnmount()
 {
-    m_Impl->onUnmount();
+    m_Impl->on_unmount();
 }
 
 bool osc::LOGLPBRSpecularIrradianceTab::implOnEvent(SDL_Event const& e)

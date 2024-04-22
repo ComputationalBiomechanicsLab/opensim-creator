@@ -107,7 +107,7 @@ private:
     {
         m_Camera.on_draw();
         draw3DRender();
-        m_PerfPanel.onDraw();
+        m_PerfPanel.on_draw();
     }
 
     void draw3DRender()
@@ -176,12 +176,12 @@ CStringView osc::LOGLPBRLightingTexturedTab::implGetName() const
 
 void osc::LOGLPBRLightingTexturedTab::implOnMount()
 {
-    m_Impl->onMount();
+    m_Impl->on_mount();
 }
 
 void osc::LOGLPBRLightingTexturedTab::implOnUnmount()
 {
-    m_Impl->onUnmount();
+    m_Impl->on_unmount();
 }
 
 bool osc::LOGLPBRLightingTexturedTab::implOnEvent(SDL_Event const& e)

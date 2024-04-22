@@ -589,7 +589,7 @@ private:
     {
         if (ui::Button("Cancel"))
         {
-            requestClose();
+            request_close();
         }
 
         ui::SameLine();
@@ -606,7 +606,7 @@ private:
             );
             if (rv == ExportStepReturn::Done)
             {
-                requestClose();
+                request_close();
             }
         }
     }

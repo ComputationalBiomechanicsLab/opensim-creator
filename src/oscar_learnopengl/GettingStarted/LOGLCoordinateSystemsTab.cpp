@@ -146,7 +146,7 @@ private:
         ui::Text("camera eulers = (%f, %f, %f)", cameraEulers.x.count(), cameraEulers.y.count(), cameraEulers.z.count());
         ui::End();
 
-        m_PerfPanel.onDraw();
+        m_PerfPanel.on_draw();
     }
 
     ResourceLoader m_Loader = App::resource_loader();
@@ -187,12 +187,12 @@ CStringView osc::LOGLCoordinateSystemsTab::implGetName() const
 
 void osc::LOGLCoordinateSystemsTab::implOnMount()
 {
-    m_Impl->onMount();
+    m_Impl->on_mount();
 }
 
 void osc::LOGLCoordinateSystemsTab::implOnUnmount()
 {
-    m_Impl->onUnmount();
+    m_Impl->on_unmount();
 }
 
 bool osc::LOGLCoordinateSystemsTab::implOnEvent(SDL_Event const& e)
@@ -202,7 +202,7 @@ bool osc::LOGLCoordinateSystemsTab::implOnEvent(SDL_Event const& e)
 
 void osc::LOGLCoordinateSystemsTab::implOnTick()
 {
-    m_Impl->onTick();
+    m_Impl->on_tick();
 }
 
 void osc::LOGLCoordinateSystemsTab::implOnDraw()

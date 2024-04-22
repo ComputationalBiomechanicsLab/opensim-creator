@@ -21,17 +21,17 @@ public:
     {}
 
 private:
-    void implBeforeImGuiBegin() final
+    void impl_before_imgui_begin() final
     {
         ui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
     }
 
-    void implAfterImGuiBegin() final
+    void impl_after_imgui_begin() final
     {
         ui::PopStyleVar();
     }
 
-    void implDrawContent() final
+    void impl_draw_content() final
     {
         if (auto warped = m_State->tryGetWarpedModel()) {
             if (m_State->isCameraLinked()) {
@@ -67,7 +67,7 @@ private:
     }
 
     std::shared_ptr<UIState> m_State;
-    Readonly3DModelViewer m_ModelViewer{this->getName(), Readonly3DModelViewerFlags::NoSceneHittest};
+    Readonly3DModelViewer m_ModelViewer{this->name(), Readonly3DModelViewerFlags::NoSceneHittest};
 };
 
 osc::mow::ResultModelViewerPanel::ResultModelViewerPanel(
@@ -80,27 +80,27 @@ osc::mow::ResultModelViewerPanel::ResultModelViewerPanel(ResultModelViewerPanel&
 osc::mow::ResultModelViewerPanel& osc::mow::ResultModelViewerPanel::operator=(ResultModelViewerPanel&&) noexcept = default;
 osc::mow::ResultModelViewerPanel::~ResultModelViewerPanel() noexcept = default;
 
-CStringView osc::mow::ResultModelViewerPanel::implGetName() const
+CStringView osc::mow::ResultModelViewerPanel::impl_get_name() const
 {
-    return m_Impl->getName();
+    return m_Impl->name();
 }
 
-bool osc::mow::ResultModelViewerPanel::implIsOpen() const
+bool osc::mow::ResultModelViewerPanel::impl_is_open() const
 {
-    return m_Impl->isOpen();
+    return m_Impl->is_open();
 }
 
-void osc::mow::ResultModelViewerPanel::implOpen()
+void osc::mow::ResultModelViewerPanel::impl_open()
 {
     m_Impl->open();
 }
 
-void osc::mow::ResultModelViewerPanel::implClose()
+void osc::mow::ResultModelViewerPanel::impl_close()
 {
     m_Impl->close();
 }
 
-void osc::mow::ResultModelViewerPanel::implOnDraw()
+void osc::mow::ResultModelViewerPanel::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }

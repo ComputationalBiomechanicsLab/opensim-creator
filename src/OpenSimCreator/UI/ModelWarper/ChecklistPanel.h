@@ -23,7 +23,7 @@ namespace osc::mow
             m_State{std::move(state_)}
         {}
     private:
-        void implDrawContent() final;
+        void impl_draw_content() final;
 
         std::shared_ptr<UIState> m_State;
     };

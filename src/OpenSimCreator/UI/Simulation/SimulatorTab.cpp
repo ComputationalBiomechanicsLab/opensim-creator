@@ -76,14 +76,14 @@ public:
     {
         // register panels
 
-        m_PanelManager->registerToggleablePanel(
+        m_PanelManager->register_toggleable_panel(
             "Performance",
             [](std::string_view panelName)
             {
                 return std::make_shared<PerfPanel>(panelName);
             }
         );
-        m_PanelManager->registerToggleablePanel(
+        m_PanelManager->register_toggleable_panel(
             "Navigator",
             [this](std::string_view panelName)
             {
@@ -104,7 +104,7 @@ public:
                 );
             }
         );
-        m_PanelManager->registerToggleablePanel(
+        m_PanelManager->register_toggleable_panel(
             "Selection Details",
             [this](std::string_view panelName)
             {
@@ -114,7 +114,7 @@ public:
                 );
             }
         );
-        m_PanelManager->registerToggleablePanel(
+        m_PanelManager->register_toggleable_panel(
             "Output Plots",
             [this](std::string_view panelName)
             {
@@ -125,7 +125,7 @@ public:
                 );
             }
         );
-        m_PanelManager->registerToggleablePanel(
+        m_PanelManager->register_toggleable_panel(
             "Simulation Details",
             [this](std::string_view panelName)
             {
@@ -136,14 +136,14 @@ public:
                 );
             }
         );
-        m_PanelManager->registerToggleablePanel(
+        m_PanelManager->register_toggleable_panel(
             "Log",
             [](std::string_view panelName)
             {
                 return std::make_shared<LogViewerPanel>(panelName);
             }
         );
-        m_PanelManager->registerSpawnablePanel(
+        m_PanelManager->register_spawnable_panel(
             "viewer",
             [this](std::string_view panelName)
             {
@@ -179,20 +179,20 @@ public:
         return m_Name;
     }
 
-    void onMount()
+    void on_mount()
     {
         App::upd().make_main_loop_waiting();
-        m_PopupManager.onMount();
-        m_PanelManager->onMount();
+        m_PopupManager.on_mount();
+        m_PanelManager->on_mount();
     }
 
-    void onUnmount()
+    void on_unmount()
     {
-        m_PanelManager->onUnmount();
+        m_PanelManager->on_unmount();
         App::upd().make_main_loop_polling();
     }
 
-    void onTick()
+    void on_tick()
     {
         if (m_PlaybackState == SimulationUIPlaybackState::Playing) {
 
@@ -215,7 +215,7 @@ public:
             }
         }
 
-        m_PanelManager->onTick();
+        m_PanelManager->on_tick();
     }
 
     bool onEvent(SDL_Event const& e)
@@ -451,7 +451,7 @@ private:
             m_ShownModelState->setSimulationReport(*maybeReport);
 
             OSC_PERF("draw simulation screen");
-            m_PanelManager->onDraw();
+            m_PanelManager->on_draw();
             m_PopupManager.onDraw();
         }
         else
@@ -465,7 +465,7 @@ private:
             // this might be less necessary once the integrator correctly reports errors to
             // this UI panel (#625)
             LogViewerPanel p{"Log"};
-            p.onDraw();
+            p.on_draw();
         }
     }
 
@@ -529,12 +529,12 @@ CStringView osc::SimulatorTab::implGetName() const
 
 void osc::SimulatorTab::implOnMount()
 {
-    m_Impl->onMount();
+    m_Impl->on_mount();
 }
 
 void osc::SimulatorTab::implOnUnmount()
 {
-    m_Impl->onUnmount();
+    m_Impl->on_unmount();
 }
 
 bool osc::SimulatorTab::implOnEvent(SDL_Event const& e)
@@ -544,7 +544,7 @@ bool osc::SimulatorTab::implOnEvent(SDL_Event const& e)
 
 void osc::SimulatorTab::implOnTick()
 {
-    m_Impl->onTick();
+    m_Impl->on_tick();
 }
 
 void osc::SimulatorTab::implOnDrawMainMenu()

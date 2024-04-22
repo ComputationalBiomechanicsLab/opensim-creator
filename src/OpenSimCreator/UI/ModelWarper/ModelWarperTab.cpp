@@ -30,7 +30,7 @@ public:
         StandardTabImpl{c_TabStringID},
         m_TabHost{tabHost}
     {
-        m_PanelManager->registerToggleablePanel(
+        m_PanelManager->register_toggleable_panel(
             "Checklist",
             [state = m_State](std::string_view panelName)
             {
@@ -38,7 +38,7 @@ public:
             }
         );
 
-        m_PanelManager->registerToggleablePanel(
+        m_PanelManager->register_toggleable_panel(
             "Source Model",
             [state = m_State](std::string_view panelName)
             {
@@ -46,7 +46,7 @@ public:
             }
         );
 
-        m_PanelManager->registerToggleablePanel(
+        m_PanelManager->register_toggleable_panel(
             "Result Model",
             [state = m_State](std::string_view panelName)
             {
@@ -54,7 +54,7 @@ public:
             }
         );
 
-        m_PanelManager->registerToggleablePanel(
+        m_PanelManager->register_toggleable_panel(
             "Log",
             [](std::string_view panelName)
             {
@@ -67,12 +67,12 @@ private:
     void implOnMount() final
     {
         App::upd().make_main_loop_waiting();
-        m_PanelManager->onMount();
+        m_PanelManager->on_mount();
     }
 
     void implOnUnmount() final
     {
-        m_PanelManager->onUnmount();
+        m_PanelManager->on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
@@ -83,7 +83,7 @@ private:
 
     void implOnTick() final
     {
-        m_PanelManager->onTick();
+        m_PanelManager->on_tick();
     }
 
     void implOnDrawMainMenu() final
@@ -95,7 +95,7 @@ private:
     {
         ui::DockSpaceOverViewport(ui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
         m_Toolbar.onDraw();
-        m_PanelManager->onDraw();
+        m_PanelManager->on_draw();
     }
 
     ParentPtr<ITabHost> m_TabHost;
@@ -133,12 +133,12 @@ CStringView osc::mow::ModelWarperTab::implGetName() const
 
 void osc::mow::ModelWarperTab::implOnMount()
 {
-    m_Impl->onMount();
+    m_Impl->on_mount();
 }
 
 void osc::mow::ModelWarperTab::implOnUnmount()
 {
-    m_Impl->onUnmount();
+    m_Impl->on_unmount();
 }
 
 bool osc::mow::ModelWarperTab::implOnEvent(SDL_Event const& e)
@@ -148,7 +148,7 @@ bool osc::mow::ModelWarperTab::implOnEvent(SDL_Event const& e)
 
 void osc::mow::ModelWarperTab::implOnTick()
 {
-    m_Impl->onTick();
+    m_Impl->on_tick();
 }
 
 void osc::mow::ModelWarperTab::implOnDrawMainMenu()

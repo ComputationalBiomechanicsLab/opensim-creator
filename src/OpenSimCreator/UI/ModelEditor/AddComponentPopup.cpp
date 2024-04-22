@@ -472,7 +472,7 @@ private:
     {
         if (ui::Button("cancel"))
         {
-            requestClose();
+            request_close();
         }
 
         if (!isAbleToAddComponentFromCurrentState())
@@ -489,7 +489,7 @@ private:
             {
                 if (ActionAddComponentToModel(*m_Uum, std::move(rv), m_CurrentErrors))
                 {
-                    requestClose();
+                    request_close();
                 }
             }
         }

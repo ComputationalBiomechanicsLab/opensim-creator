@@ -45,7 +45,7 @@ public:
     {
     }
 private:
-    void implDrawContent() final
+    void impl_draw_content() final
     {
         if (m_API->getNumUserOutputExtractors() <= 0)
         {
@@ -108,27 +108,27 @@ osc::OutputPlotsPanel::OutputPlotsPanel(OutputPlotsPanel&&) noexcept = default;
 osc::OutputPlotsPanel& osc::OutputPlotsPanel::operator=(OutputPlotsPanel&&) noexcept = default;
 osc::OutputPlotsPanel::~OutputPlotsPanel() noexcept = default;
 
-CStringView osc::OutputPlotsPanel::implGetName() const
+CStringView osc::OutputPlotsPanel::impl_get_name() const
 {
-    return m_Impl->getName();
+    return m_Impl->name();
 }
 
-bool osc::OutputPlotsPanel::implIsOpen() const
+bool osc::OutputPlotsPanel::impl_is_open() const
 {
-    return m_Impl->isOpen();
+    return m_Impl->is_open();
 }
 
-void osc::OutputPlotsPanel::implOpen()
+void osc::OutputPlotsPanel::impl_open()
 {
     m_Impl->open();
 }
 
-void osc::OutputPlotsPanel::implClose()
+void osc::OutputPlotsPanel::impl_close()
 {
     m_Impl->close();
 }
 
-void osc::OutputPlotsPanel::implOnDraw()
+void osc::OutputPlotsPanel::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }

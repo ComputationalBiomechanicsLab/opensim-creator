@@ -126,7 +126,7 @@ private:
 
     void draw2DUI()
     {
-        m_PerfPanel.onDraw();
+        m_PerfPanel.on_draw();
     }
 
     ResourceLoader m_Loader = App::resource_loader();
@@ -165,12 +165,12 @@ CStringView osc::LOGLPBRLightingTab::implGetName() const
 
 void osc::LOGLPBRLightingTab::implOnMount()
 {
-    m_Impl->onMount();
+    m_Impl->on_mount();
 }
 
 void osc::LOGLPBRLightingTab::implOnUnmount()
 {
-    m_Impl->onUnmount();
+    m_Impl->on_unmount();
 }
 
 bool osc::LOGLPBRLightingTab::implOnEvent(SDL_Event const& e)

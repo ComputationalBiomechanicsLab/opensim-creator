@@ -121,12 +121,12 @@ private:
         if (ui::Button("save"))
         {
             *m_OutputTarget = m_LocalCopy;
-            requestClose();
+            request_close();
         }
         ui::SameLine();
         if (ui::Button("close"))
         {
-            requestClose();
+            request_close();
         }
     }
 

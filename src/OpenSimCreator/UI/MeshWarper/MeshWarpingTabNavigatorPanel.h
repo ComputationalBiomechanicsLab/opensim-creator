@@ -30,7 +30,7 @@ namespace osc
         {
         }
     private:
-        void implDrawContent() final
+        void impl_draw_content() final
         {
             ui::TextUnformatted("Landmarks:");
             ui::Separator();

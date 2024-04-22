@@ -57,7 +57,7 @@ public:
         return "LoadingTab";
     }
 
-    void onTick()
+    void on_tick()
     {
         auto const dt = static_cast<float>(App::get().frame_delta_since_last_frame().count());
 
@@ -195,7 +195,7 @@ CStringView osc::LoadingTab::implGetName() const
 
 void osc::LoadingTab::implOnTick()
 {
-    m_Impl->onTick();
+    m_Impl->on_tick();
 }
 
 void osc::LoadingTab::implOnDraw()

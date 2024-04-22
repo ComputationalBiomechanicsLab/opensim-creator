@@ -61,7 +61,7 @@ namespace osc
         }
     private:
         // draws all of the panel's content
-        void implDrawContent() final
+        void impl_draw_content() final
         {
             // compute top-level UI variables (render rect, mouse pos, etc.)
             Rect const contentRect = ui::ContentRegionAvailScreenRect();

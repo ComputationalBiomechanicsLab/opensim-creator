@@ -131,12 +131,12 @@ CStringView osc::LOGLFaceCullingTab::implGetName() const
 
 void osc::LOGLFaceCullingTab::implOnMount()
 {
-    m_Impl->onMount();
+    m_Impl->on_mount();
 }
 
 void osc::LOGLFaceCullingTab::implOnUnmount()
 {
-    m_Impl->onUnmount();
+    m_Impl->on_unmount();
 }
 
 bool osc::LOGLFaceCullingTab::implOnEvent(SDL_Event const& e)

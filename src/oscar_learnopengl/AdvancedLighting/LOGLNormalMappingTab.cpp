@@ -192,12 +192,12 @@ CStringView osc::LOGLNormalMappingTab::implGetName() const
 
 void osc::LOGLNormalMappingTab::implOnMount()
 {
-    m_Impl->onMount();
+    m_Impl->on_mount();
 }
 
 void osc::LOGLNormalMappingTab::implOnUnmount()
 {
-    m_Impl->onUnmount();
+    m_Impl->on_unmount();
 }
 
 bool osc::LOGLNormalMappingTab::implOnEvent(SDL_Event const& e)
@@ -207,7 +207,7 @@ bool osc::LOGLNormalMappingTab::implOnEvent(SDL_Event const& e)
 
 void osc::LOGLNormalMappingTab::implOnTick()
 {
-    m_Impl->onTick();
+    m_Impl->on_tick();
 }
 
 void osc::LOGLNormalMappingTab::implOnDraw()

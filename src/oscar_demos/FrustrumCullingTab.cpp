@@ -170,12 +170,12 @@ CStringView osc::FrustrumCullingTab::implGetName() const
 
 void osc::FrustrumCullingTab::implOnMount()
 {
-    m_Impl->onMount();
+    m_Impl->on_mount();
 }
 
 void osc::FrustrumCullingTab::implOnUnmount()
 {
-    m_Impl->onUnmount();
+    m_Impl->on_unmount();
 }
 
 bool osc::FrustrumCullingTab::implOnEvent(SDL_Event const& e)

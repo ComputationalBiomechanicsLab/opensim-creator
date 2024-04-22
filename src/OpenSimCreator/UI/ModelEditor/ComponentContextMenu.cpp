@@ -444,7 +444,7 @@ private:
 
             // when the user asks to watch an output, make sure the "Output Watches" panel is
             // open, so that they can immediately see the side-effect of watching an output (#567)
-            m_EditorAPI->getPanelManager()->setToggleablePanelActivated("Output Watches", true);
+            m_EditorAPI->getPanelManager()->set_toggleable_panel_activated("Output Watches", true);
         });
 
         if (ui::BeginMenu("Display"))
@@ -633,7 +633,7 @@ private:
                         if (ui::SmallButton(socket.getConnecteeAsObject().getName()))
                         {
                             m_Model->setSelected(dynamic_cast<OpenSim::Component const*>(&socket.getConnecteeAsObject()));
-                            requestClose();
+                            request_close();
                         }
                         if (auto const* connectee = dynamic_cast<OpenSim::Component const*>(&socket.getConnecteeAsObject());
                             connectee && ui::IsItemHovered())

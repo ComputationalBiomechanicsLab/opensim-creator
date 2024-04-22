@@ -34,11 +34,11 @@ namespace osc
         ~ModelMusclePlotPanel() noexcept;
 
     private:
-        CStringView implGetName() const;
-        bool implIsOpen() const;
-        void implOpen();
-        void implClose();
-        void implOnDraw();
+        CStringView impl_get_name() const;
+        bool impl_is_open() const;
+        void impl_open();
+        void impl_close();
+        void impl_on_draw();
 
         class Impl;
         std::unique_ptr<Impl> m_Impl;

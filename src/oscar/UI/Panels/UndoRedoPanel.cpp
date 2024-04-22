@@ -14,99 +14,91 @@ using namespace osc;
 class osc::UndoRedoPanel::Impl final : public StandardPanelImpl {
 public:
     Impl(
-        std::string_view panelName,
-        std::shared_ptr<UndoRedoBase> storage_) :
+        std::string_view panel_name,
+        std::shared_ptr<UndoRedoBase> storage) :
 
-        StandardPanelImpl{panelName},
-        m_Storage{std::move(storage_)}
-    {
-    }
+        StandardPanelImpl{panel_name},
+        storage_{std::move(storage)}
+    {}
 
 private:
-    void implDrawContent() final
+    void impl_draw_content() final
     {
-        UndoRedoPanel::DrawContent(*m_Storage);
+        UndoRedoPanel::draw_content(*storage_);
     }
 
-    std::shared_ptr<UndoRedoBase> m_Storage;
+    std::shared_ptr<UndoRedoBase> storage_;
 };
 
 
 // public API (PIMPL)
 
-void osc::UndoRedoPanel::DrawContent(UndoRedoBase& storage)
+void osc::UndoRedoPanel::draw_content(UndoRedoBase& storage)
 {
-    if (ui::Button("undo"))
-    {
+    if (ui::Button("undo")) {
         storage.undo();
     }
 
     ui::SameLine();
 
-    if (ui::Button("redo"))
-    {
+    if (ui::Button("redo")) {
         storage.redo();
     }
 
-    int imguiID = 0;
+    int ui_id = 0;
 
     // draw undo entries oldest (highest index) to newest (lowest index)
-    for (ptrdiff_t i = storage.getNumUndoEntriesi()-1; 0 <= i && i < storage.getNumUndoEntriesi(); --i)
-    {
-        ui::PushID(imguiID++);
-        if (ui::Selectable(storage.getUndoEntry(i).message()))
-        {
+    for (ptrdiff_t i = storage.getNumUndoEntriesi()-1; 0 <= i and i < storage.getNumUndoEntriesi(); --i) {
+        ui::PushID(ui_id++);
+        if (ui::Selectable(storage.getUndoEntry(i).message())) {
             storage.undoTo(i);
         }
         ui::PopID();
     }
 
-    ui::PushID(imguiID++);
+    ui::PushID(ui_id++);
     ui::Text("  %s", storage.getHead().message().c_str());
     ui::PopID();
 
     // draw redo entries oldest (lowest index) to newest (highest index)
-    for (ptrdiff_t i = 0; i < storage.getNumRedoEntriesi(); ++i)
-    {
-        ui::PushID(imguiID++);
-        if (ui::Selectable(storage.getRedoEntry(i).message()))
-        {
+    for (ptrdiff_t i = 0; i < storage.getNumRedoEntriesi(); ++i) {
+        ui::PushID(ui_id++);
+        if (ui::Selectable(storage.getRedoEntry(i).message())) {
             storage.redoTo(i);
         }
         ui::PopID();
     }
 }
 
-osc::UndoRedoPanel::UndoRedoPanel(std::string_view panelName_, std::shared_ptr<UndoRedoBase> storage_) :
-    m_Impl{std::make_unique<Impl>(panelName_, std::move(storage_))}
-{
-}
+osc::UndoRedoPanel::UndoRedoPanel(std::string_view panel_name, std::shared_ptr<UndoRedoBase> storage) :
+    impl_{std::make_unique<Impl>(panel_name, std::move(storage))}
+{}
 
 osc::UndoRedoPanel::UndoRedoPanel(UndoRedoPanel&&) noexcept = default;
 osc::UndoRedoPanel& osc::UndoRedoPanel::operator=(UndoRedoPanel&&) noexcept = default;
 osc::UndoRedoPanel::~UndoRedoPanel() noexcept = default;
 
-CStringView osc::UndoRedoPanel::implGetName() const
+CStringView osc::UndoRedoPanel::impl_get_name() const
 {
-    return m_Impl->getName();
+    return impl_->name();
 }
 
-bool osc::UndoRedoPanel::implIsOpen() const
+bool osc::UndoRedoPanel::impl_is_open() const
 {
-    return m_Impl->isOpen();
+    return impl_->is_open();
 }
 
-void osc::UndoRedoPanel::implOpen()
+void osc::UndoRedoPanel::impl_open()
 {
-    return m_Impl->open();
+    return impl_->open();
 }
 
-void osc::UndoRedoPanel::implClose()
+void osc::UndoRedoPanel::impl_close()
 {
-    return m_Impl->close();
+    return impl_->close();
 }
 
-void osc::UndoRedoPanel::implOnDraw()
+void osc::UndoRedoPanel::impl_on_draw()
 {
-    return m_Impl->onDraw();
+    return impl_->on_draw();
 }

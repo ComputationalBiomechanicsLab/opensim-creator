@@ -492,7 +492,7 @@ private:
 
         ui::End();
 
-        m_LogViewer.onDraw();
+        m_LogViewer.on_draw();
     }
 
     RenderTexture& render3DScene(Vec2 dims)
@@ -605,12 +605,12 @@ CStringView osc::PreviewExperimentalDataTab::implGetName() const
 
 void osc::PreviewExperimentalDataTab::implOnMount()
 {
-    m_Impl->onMount();
+    m_Impl->on_mount();
 }
 
 void osc::PreviewExperimentalDataTab::implOnUnmount()
 {
-    m_Impl->onUnmount();
+    m_Impl->on_unmount();
 }
 
 bool osc::PreviewExperimentalDataTab::implOnEvent(SDL_Event const& e)

@@ -351,12 +351,12 @@ CStringView osc::LOGLDeferredShadingTab::implGetName() const
 
 void osc::LOGLDeferredShadingTab::implOnMount()
 {
-    m_Impl->onMount();
+    m_Impl->on_mount();
 }
 
 void osc::LOGLDeferredShadingTab::implOnUnmount()
 {
-    m_Impl->onUnmount();
+    m_Impl->on_unmount();
 }
 
 bool osc::LOGLDeferredShadingTab::implOnEvent(SDL_Event const& e)

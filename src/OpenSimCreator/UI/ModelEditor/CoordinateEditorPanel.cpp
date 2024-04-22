@@ -41,7 +41,7 @@ public:
 
 private:
 
-    void implDrawContent() final
+    void impl_draw_content() final
     {
         // load coords
         std::vector<OpenSim::Coordinate const*> coordPtrs = GetCoordinatesInModel(m_Model->getModel());
@@ -272,27 +272,27 @@ osc::CoordinateEditorPanel::CoordinateEditorPanel(CoordinateEditorPanel&&) noexc
 osc::CoordinateEditorPanel& osc::CoordinateEditorPanel::operator=(CoordinateEditorPanel&&) noexcept = default;
 osc::CoordinateEditorPanel::~CoordinateEditorPanel() noexcept = default;
 
-CStringView osc::CoordinateEditorPanel::implGetName() const
+CStringView osc::CoordinateEditorPanel::impl_get_name() const
 {
-    return m_Impl->getName();
+    return m_Impl->name();
 }
 
-bool osc::CoordinateEditorPanel::implIsOpen() const
+bool osc::CoordinateEditorPanel::impl_is_open() const
 {
-    return m_Impl->isOpen();
+    return m_Impl->is_open();
 }
 
-void osc::CoordinateEditorPanel::implOpen()
+void osc::CoordinateEditorPanel::impl_open()
 {
     m_Impl->open();
 }
 
-void osc::CoordinateEditorPanel::implClose()
+void osc::CoordinateEditorPanel::impl_close()
 {
     m_Impl->close();
 }
 
-void osc::CoordinateEditorPanel::implOnDraw()
+void osc::CoordinateEditorPanel::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }

@@ -371,12 +371,12 @@ CStringView osc::LOGLBloomTab::implGetName() const
 
 void osc::LOGLBloomTab::implOnMount()
 {
-    m_Impl->onMount();
+    m_Impl->on_mount();
 }
 
 void osc::LOGLBloomTab::implOnUnmount()
 {
-    m_Impl->onUnmount();
+    m_Impl->on_unmount();
 }
 
 bool osc::LOGLBloomTab::implOnEvent(SDL_Event const& e)
@@ -386,7 +386,7 @@ bool osc::LOGLBloomTab::implOnEvent(SDL_Event const& e)
 
 void osc::LOGLBloomTab::implOnTick()
 {
-    m_Impl->onTick();
+    m_Impl->on_tick();
 }
 
 void osc::LOGLBloomTab::implOnDrawMainMenu()

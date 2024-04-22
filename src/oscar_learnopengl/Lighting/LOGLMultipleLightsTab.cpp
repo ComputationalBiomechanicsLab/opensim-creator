@@ -177,8 +177,8 @@ private:
         ui::InputFloat("uMaterialShininess", &m_MaterialShininess);
         ui::End();
 
-        m_LogViewer.onDraw();
-        m_PerfPanel.onDraw();
+        m_LogViewer.on_draw();
+        m_PerfPanel.on_draw();
     }
 
     ResourceLoader m_Loader = App::resource_loader();
@@ -224,12 +224,12 @@ CStringView osc::LOGLMultipleLightsTab::implGetName() const
 
 void osc::LOGLMultipleLightsTab::implOnMount()
 {
-    m_Impl->onMount();
+    m_Impl->on_mount();
 }
 
 void osc::LOGLMultipleLightsTab::implOnUnmount()
 {
-    m_Impl->onUnmount();
+    m_Impl->on_unmount();
 }
 
 bool osc::LOGLMultipleLightsTab::implOnEvent(SDL_Event const& e)

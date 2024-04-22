@@ -43,7 +43,7 @@ namespace osc
         {
         }
     private:
-        void implDrawContent() final
+        void impl_draw_content() final
         {
             // fill the entire available region with the render
             Vec2 const dims = ui::GetContentRegionAvail();

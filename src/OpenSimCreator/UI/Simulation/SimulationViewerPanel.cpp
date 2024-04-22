@@ -43,17 +43,17 @@ public:
     }
 
 private:
-    void implBeforeImGuiBegin() final
+    void impl_before_imgui_begin() final
     {
         ui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
     }
 
-    void implAfterImGuiBegin() final
+    void impl_after_imgui_begin() final
     {
         ui::PopStyleVar();
     }
 
-    void implDrawContent() final
+    void impl_draw_content() final
     {
         IModelStatePair& msp = m_Params.updModelState();
 
@@ -105,27 +105,27 @@ osc::SimulationViewerPanel::SimulationViewerPanel(SimulationViewerPanel&&) noexc
 osc::SimulationViewerPanel& osc::SimulationViewerPanel::operator=(SimulationViewerPanel&&) noexcept = default;
 osc::SimulationViewerPanel::~SimulationViewerPanel() noexcept = default;
 
-CStringView osc::SimulationViewerPanel::implGetName() const
+CStringView osc::SimulationViewerPanel::impl_get_name() const
 {
-    return m_Impl->getName();
+    return m_Impl->name();
 }
 
-bool osc::SimulationViewerPanel::implIsOpen() const
+bool osc::SimulationViewerPanel::impl_is_open() const
 {
-    return m_Impl->isOpen();
+    return m_Impl->is_open();
 }
 
-void osc::SimulationViewerPanel::implOpen()
+void osc::SimulationViewerPanel::impl_open()
 {
     m_Impl->open();
 }
 
-void osc::SimulationViewerPanel::implClose()
+void osc::SimulationViewerPanel::impl_close()
 {
     m_Impl->close();
 }
 
-void osc::SimulationViewerPanel::implOnDraw()
+void osc::SimulationViewerPanel::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }

@@ -52,7 +52,7 @@ private:
         if (selected)
         {
             m_OnSelection(GetAbsolutePath(*selected));
-            requestClose();
+            request_close();
         }
     }
 

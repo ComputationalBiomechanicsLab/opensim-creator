@@ -8,62 +8,59 @@
 
 using namespace osc;
 
-osc::StandardPanelImpl::StandardPanelImpl(std::string_view panelName) :
-    StandardPanelImpl{panelName, ImGuiWindowFlags_None}
-{
-}
+osc::StandardPanelImpl::StandardPanelImpl(std::string_view panel_name) :
+    StandardPanelImpl{panel_name, ImGuiWindowFlags_None}
+{}
 
 osc::StandardPanelImpl::StandardPanelImpl(
-    std::string_view panelName,
-    ImGuiWindowFlags imGuiWindowFlags) :
+    std::string_view panel_name,
+    ImGuiWindowFlags panel_flags) :
 
-    m_PanelName{panelName},
-    m_PanelFlags{imGuiWindowFlags}
+    panel_name_{panel_name},
+    panel_flags_{panel_flags}
+{}
+
+CStringView osc::StandardPanelImpl::impl_get_name() const
 {
+    return panel_name_;
 }
 
-CStringView osc::StandardPanelImpl::implGetName() const
+bool osc::StandardPanelImpl::impl_is_open() const
 {
-    return m_PanelName;
+    return App::get().config().is_panel_enabled(panel_name_);
 }
 
-bool osc::StandardPanelImpl::implIsOpen() const
+void osc::StandardPanelImpl::impl_open()
 {
-    return App::get().config().is_panel_enabled(m_PanelName);
+    App::upd().upd_config().set_panel_enabled(panel_name_, true);
 }
 
-void osc::StandardPanelImpl::implOpen()
+void osc::StandardPanelImpl::impl_close()
 {
-    App::upd().upd_config().set_panel_enabled(m_PanelName, true);
+    App::upd().upd_config().set_panel_enabled(panel_name_, false);
 }
 
-void osc::StandardPanelImpl::implClose()
+void osc::StandardPanelImpl::impl_on_draw()
 {
-    App::upd().upd_config().set_panel_enabled(m_PanelName, false);
-}
+    if (is_open()) {
+        bool open = true;
 
-void osc::StandardPanelImpl::implOnDraw()
-{
-    if (isOpen())
-    {
-        bool v = true;
-        implBeforeImGuiBegin();
-        bool began = ui::Begin(m_PanelName, &v, m_PanelFlags);
-        implAfterImGuiBegin();
-        if (began)
-        {
-            implDrawContent();
+        impl_before_imgui_begin();
+        const bool began = ui::Begin(panel_name_, &open, panel_flags_);
+        impl_after_imgui_begin();
+
+        if (began) {
+            impl_draw_content();
         }
         ui::End();
 
-        if (!v)
-        {
+        if (not open) {
             close();
         }
     }
 }
 
-void osc::StandardPanelImpl::requestClose()
+void osc::StandardPanelImpl::request_close()
 {
     close();
 }

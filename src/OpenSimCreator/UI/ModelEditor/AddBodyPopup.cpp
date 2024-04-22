@@ -202,7 +202,7 @@ private:
 
         if (ui::Button("cancel"))
         {
-            requestClose();
+            request_close();
         }
 
         ui::SameLine();
@@ -210,7 +210,7 @@ private:
         if (ui::Button(ICON_FA_PLUS " add body"))
         {
             ActionAddBodyToModel(*m_Uum, m_BodyDetails);
-            requestClose();
+            request_close();
         }
     }
 

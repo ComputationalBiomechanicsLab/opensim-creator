@@ -243,7 +243,7 @@ private:
         draw3DRender();
         drawBackground();
         graphics::blit_to_screen(m_OutputRender, outputRect);
-        m_PerfPanel.onDraw();
+        m_PerfPanel.on_draw();
     }
 
     void draw3DRender()
@@ -374,12 +374,12 @@ CStringView osc::LOGLPBRSpecularIrradianceTexturedTab::implGetName() const
 
 void osc::LOGLPBRSpecularIrradianceTexturedTab::implOnMount()
 {
-    m_Impl->onMount();
+    m_Impl->on_mount();
 }
 
 void osc::LOGLPBRSpecularIrradianceTexturedTab::implOnUnmount()
 {
-    m_Impl->onUnmount();
+    m_Impl->on_unmount();
 }
 
 bool osc::LOGLPBRSpecularIrradianceTexturedTab::implOnEvent(SDL_Event const& e)

@@ -168,7 +168,7 @@ namespace osc::mi
             return m_CloseRequested;
         }
 
-        void requestClose()
+        void request_close()
         {
             m_CloseRequested = true;
         }
@@ -733,7 +733,7 @@ namespace osc::mi
             PanelIndex_Performance,
             PanelIndex_COUNT,
         };
-        size_t getNumToggleablePanels() const
+        size_t num_toggleable_panels() const
         {
             return static_cast<size_t>(PanelIndex_COUNT);
         }

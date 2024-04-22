@@ -11,11 +11,11 @@ namespace osc
         using StandardPanelImpl::StandardPanelImpl;
 
     private:
-        void implBeforeImGuiBegin() final
+        void impl_before_imgui_begin() final
         {
             ui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
         }
-        void implAfterImGuiBegin() final
+        void impl_after_imgui_begin() final
         {
             ui::PopStyleVar();
         }

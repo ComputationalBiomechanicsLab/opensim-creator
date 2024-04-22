@@ -67,7 +67,7 @@ public:
     {
         // register all panels that the editor tab supports
 
-        m_PanelManager->registerToggleablePanel(
+        m_PanelManager->register_toggleable_panel(
             "Navigator",
             [this](std::string_view panelName)
             {
@@ -81,42 +81,42 @@ public:
                 );
             }
         );
-        m_PanelManager->registerToggleablePanel(
+        m_PanelManager->register_toggleable_panel(
             "Properties",
             [this](std::string_view panelName)
             {
                 return std::make_shared<PropertiesPanel>(panelName, this, m_Model);
             }
         );
-        m_PanelManager->registerToggleablePanel(
+        m_PanelManager->register_toggleable_panel(
             "Log",
             [](std::string_view panelName)
             {
                 return std::make_shared<LogViewerPanel>(panelName);
             }
         );
-        m_PanelManager->registerToggleablePanel(
+        m_PanelManager->register_toggleable_panel(
             "Coordinates",
             [this](std::string_view panelName)
             {
                 return std::make_shared<CoordinateEditorPanel>(panelName, m_Parent, this, m_Model);
             }
         );
-        m_PanelManager->registerToggleablePanel(
+        m_PanelManager->register_toggleable_panel(
             "Performance",
             [](std::string_view panelName)
             {
                 return std::make_shared<PerfPanel>(panelName);
             }
         );
-        m_PanelManager->registerToggleablePanel(
+        m_PanelManager->register_toggleable_panel(
             "Output Watches",
             [this](std::string_view panelName)
             {
                 return std::make_shared<OutputWatchesPanel>(panelName, m_Model, m_Parent);
             }
         );
-        m_PanelManager->registerSpawnablePanel(
+        m_PanelManager->register_spawnable_panel(
             "viewer",
             [this](std::string_view panelName)
             {
@@ -136,7 +136,7 @@ public:
             },
             1  // have one viewer open at the start
         );
-        m_PanelManager->registerSpawnablePanel(
+        m_PanelManager->register_spawnable_panel(
             "muscleplot",
             [this](std::string_view panelName)
             {
@@ -166,17 +166,17 @@ public:
         return ActionSaveModel(*m_Parent, *m_Model);
     }
 
-    void onMount()
+    void on_mount()
     {
         App::upd().make_main_loop_waiting();
         m_TabName = computeTabName();
-        m_PopupManager.onMount();
-        m_PanelManager->onMount();
+        m_PopupManager.on_mount();
+        m_PanelManager->on_mount();
     }
 
-    void onUnmount()
+    void on_unmount()
     {
-        m_PanelManager->onUnmount();
+        m_PanelManager->on_unmount();
         App::upd().make_main_loop_polling();
     }
 
@@ -196,7 +196,7 @@ public:
         }
     }
 
-    void onTick()
+    void on_tick()
     {
         if (m_FileChangePoller.changeWasDetected(m_Model->getModel().getInputFileName()))
         {
@@ -204,7 +204,7 @@ public:
         }
 
         m_TabName = computeTabName();
-        m_PanelManager->onTick();
+        m_PanelManager->on_tick();
     }
 
     void onDrawMainMenu()
@@ -222,7 +222,7 @@ public:
         try
         {
             m_Toolbar.onDraw();
-            m_PanelManager->onDraw();
+            m_PanelManager->on_draw();
             m_StatusBar.onDraw();
             m_PopupManager.onDraw();
 
@@ -400,8 +400,8 @@ private:
 
     void implAddMusclePlot(OpenSim::Coordinate const& coord, OpenSim::Muscle const& muscle) final
     {
-        std::string const name = m_PanelManager->computeSuggestedDynamicPanelName("muscleplot");
-        m_PanelManager->pushDynamicPanel(
+        std::string const name = m_PanelManager->suggested_dynamic_panel_name("muscleplot");
+        m_PanelManager->push_dynamic_panel(
             "muscleplot",
             std::make_shared<ModelMusclePlotPanel>(this, m_Model, name, GetAbsolutePath(coord), GetAbsolutePath(muscle))
         );
@@ -479,12 +479,12 @@ bool osc::ModelEditorTab::implTrySave()
 
 void osc::ModelEditorTab::implOnMount()
 {
-    m_Impl->onMount();
+    m_Impl->on_mount();
 }
 
 void osc::ModelEditorTab::implOnUnmount()
 {
-    m_Impl->onUnmount();
+    m_Impl->on_unmount();
 }
 
 bool osc::ModelEditorTab::implOnEvent(SDL_Event const& e)
@@ -494,7 +494,7 @@ bool osc::ModelEditorTab::implOnEvent(SDL_Event const& e)
 
 void osc::ModelEditorTab::implOnTick()
 {
-    m_Impl->onTick();
+    m_Impl->on_tick();
 }
 
 void osc::ModelEditorTab::implOnDrawMainMenu()

@@ -61,7 +61,7 @@ public:
     }
 
 private:
-    void implDrawContent() final
+    void impl_draw_content() final
     {
         UpdateCachedSimulationReportIfNecessary(*m_Model, m_CachedReport);
 
@@ -123,27 +123,27 @@ osc::OutputWatchesPanel::OutputWatchesPanel(OutputWatchesPanel&&) noexcept = def
 osc::OutputWatchesPanel& osc::OutputWatchesPanel::operator=(OutputWatchesPanel&&) noexcept = default;
 osc::OutputWatchesPanel::~OutputWatchesPanel() noexcept = default;
 
-CStringView osc::OutputWatchesPanel::implGetName() const
+CStringView osc::OutputWatchesPanel::impl_get_name() const
 {
-    return m_Impl->getName();
+    return m_Impl->name();
 }
 
-bool osc::OutputWatchesPanel::implIsOpen() const
+bool osc::OutputWatchesPanel::impl_is_open() const
 {
-    return m_Impl->isOpen();
+    return m_Impl->is_open();
 }
 
-void osc::OutputWatchesPanel::implOpen()
+void osc::OutputWatchesPanel::impl_open()
 {
     m_Impl->open();
 }
 
-void osc::OutputWatchesPanel::implClose()
+void osc::OutputWatchesPanel::impl_close()
 {
     m_Impl->close();
 }
 
-void osc::OutputWatchesPanel::implOnDraw()
+void osc::OutputWatchesPanel::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }

@@ -109,8 +109,8 @@ private:
         graphics::blit_to_screen(m_RenderTexture, viewportRect, m_ScreenMaterial);
 
         // auxiliary UI
-        m_LogViewer.onDraw();
-        m_PerfPanel.onDraw();
+        m_LogViewer.on_draw();
+        m_PerfPanel.on_draw();
     }
 
     ResourceLoader m_Loader = App::resource_loader();
@@ -175,12 +175,12 @@ CStringView osc::LOGLFramebuffersTab::implGetName() const
 
 void osc::LOGLFramebuffersTab::implOnMount()
 {
-    m_Impl->onMount();
+    m_Impl->on_mount();
 }
 
 void osc::LOGLFramebuffersTab::implOnUnmount()
 {
-    m_Impl->onUnmount();
+    m_Impl->on_unmount();
 }
 
 bool osc::LOGLFramebuffersTab::implOnEvent(SDL_Event const& e)

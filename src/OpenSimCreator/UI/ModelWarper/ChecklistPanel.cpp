@@ -184,7 +184,7 @@ namespace
 
 // public API
 
-void osc::mow::ChecklistPanel::implDrawContent()
+void osc::mow::ChecklistPanel::impl_draw_content()
 {
     int id = 0;
 

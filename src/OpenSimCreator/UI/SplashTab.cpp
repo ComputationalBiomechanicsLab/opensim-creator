@@ -114,7 +114,7 @@ public:
         return ICON_FA_HOME;
     }
 
-    void onMount()
+    void on_mount()
     {
         // edge-case: reset the file tab whenever the splash screen is (re)mounted,
         // because actions within other tabs may have updated things like recently
@@ -124,7 +124,7 @@ public:
         App::upd().make_main_loop_waiting();
     }
 
-    void onUnmount()
+    void on_unmount()
     {
         App::upd().make_main_loop_polling();
     }
@@ -442,12 +442,12 @@ CStringView osc::SplashTab::implGetName() const
 
 void osc::SplashTab::implOnMount()
 {
-    m_Impl->onMount();
+    m_Impl->on_mount();
 }
 
 void osc::SplashTab::implOnUnmount()
 {
-    m_Impl->onUnmount();
+    m_Impl->on_unmount();
 }
 
 bool osc::SplashTab::implOnEvent(SDL_Event const& e)

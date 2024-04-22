@@ -195,12 +195,12 @@ CStringView osc::LOGLHDRTab::implGetName() const
 
 void osc::LOGLHDRTab::implOnMount()
 {
-    m_Impl->onMount();
+    m_Impl->on_mount();
 }
 
 void osc::LOGLHDRTab::implOnUnmount()
 {
-    m_Impl->onUnmount();
+    m_Impl->on_unmount();
 }
 
 bool osc::LOGLHDRTab::implOnEvent(SDL_Event const& e)

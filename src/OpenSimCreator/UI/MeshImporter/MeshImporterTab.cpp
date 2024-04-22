@@ -122,13 +122,13 @@ public:
         }
     }
 
-    void onMount()
+    void on_mount()
     {
         App::upd().make_main_loop_waiting();
-        m_PopupManager.onMount();
+        m_PopupManager.on_mount();
     }
 
-    void onUnmount()
+    void on_unmount()
     {
         App::upd().make_main_loop_polling();
     }
@@ -152,7 +152,7 @@ public:
         return false;
     }
 
-    void onTick()
+    void on_tick()
     {
         auto const dt = static_cast<float>(App::get().frame_delta_since_last_frame().count());
 
@@ -256,8 +256,8 @@ public:
             PerfPanel& pp = m_Shared->updPerfPanel();
 
             pp.open();
-            pp.onDraw();
-            if (!pp.isOpen())
+            pp.on_draw();
+            if (!pp.is_open())
             {
                 m_Shared->setPanelEnabled(MeshImporterSharedState::PanelIndex_Performance, false);
             }
@@ -780,7 +780,7 @@ private:
         else if (ctrlOrSuperDown && ui::IsKeyPressed(ImGuiKey_W))
         {
             // Ctrl+W: close
-            m_Shared->requestClose();
+            m_Shared->request_close();
             return true;
         }
         else if (ctrlOrSuperDown && ui::IsKeyPressed(ImGuiKey_Q))
@@ -1624,7 +1624,7 @@ private:
     // draw the content of the (undo/redo) "History" panel
     void drawHistoryPanelContent()
     {
-        UndoRedoPanel::DrawContent(m_Shared->updCommittableModelGraph());
+        UndoRedoPanel::draw_content(m_Shared->updCommittableModelGraph());
     }
 
     void drawNavigatorElement(MIClass const& c)
@@ -2348,7 +2348,7 @@ private:
 
             if (ui::MenuItem(ICON_FA_TIMES " Close", "Ctrl+W"))
             {
-                m_Shared->requestClose();
+                m_Shared->request_close();
             }
 
             if (ui::MenuItem(ICON_FA_TIMES_CIRCLE " Quit", "Ctrl+Q"))
@@ -2381,7 +2381,7 @@ private:
 
         if (ui::BeginMenu("Window"))
         {
-            for (size_t i = 0; i < m_Shared->getNumToggleablePanels(); ++i)
+            for (size_t i = 0; i < m_Shared->num_toggleable_panels(); ++i)
             {
                 bool isEnabled = m_Shared->isNthPanelEnabled(i);
                 if (ui::MenuItem(m_Shared->getNthPanelName(i), {}, isEnabled))
@@ -2524,12 +2524,12 @@ bool osc::mi::MeshImporterTab::implTrySave()
 
 void osc::mi::MeshImporterTab::implOnMount()
 {
-    m_Impl->onMount();
+    m_Impl->on_mount();
 }
 
 void osc::mi::MeshImporterTab::implOnUnmount()
 {
-    m_Impl->onUnmount();
+    m_Impl->on_unmount();
 }
 
 bool osc::mi::MeshImporterTab::implOnEvent(SDL_Event const& e)
@@ -2539,7 +2539,7 @@ bool osc::mi::MeshImporterTab::implOnEvent(SDL_Event const& e)
 
 void osc::mi::MeshImporterTab::implOnTick()
 {
-    m_Impl->onTick();
+    m_Impl->on_tick();
 }
 
 void osc::mi::MeshImporterTab::implOnDrawMainMenu()

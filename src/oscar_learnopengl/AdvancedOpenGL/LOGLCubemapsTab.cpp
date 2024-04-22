@@ -246,12 +246,12 @@ CStringView osc::LOGLCubemapsTab::implGetName() const
 
 void osc::LOGLCubemapsTab::implOnMount()
 {
-    m_Impl->onMount();
+    m_Impl->on_mount();
 }
 
 void osc::LOGLCubemapsTab::implOnUnmount()
 {
-    m_Impl->onUnmount();
+    m_Impl->on_unmount();
 }
 
 bool osc::LOGLCubemapsTab::implOnEvent(SDL_Event const& e)

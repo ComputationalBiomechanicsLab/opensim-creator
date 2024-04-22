@@ -138,12 +138,12 @@ CStringView osc::LOGLBasicLightingTab::implGetName() const
 
 void osc::LOGLBasicLightingTab::implOnMount()
 {
-    m_Impl->onMount();
+    m_Impl->on_mount();
 }
 
 void osc::LOGLBasicLightingTab::implOnUnmount()
 {
-    m_Impl->onUnmount();
+    m_Impl->on_unmount();
 }
 
 bool osc::LOGLBasicLightingTab::implOnEvent(SDL_Event const& e)

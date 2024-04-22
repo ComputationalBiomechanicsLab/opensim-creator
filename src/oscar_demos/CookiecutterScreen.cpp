@@ -8,7 +8,7 @@
 class osc::CookiecutterScreen::Impl final {
 public:
 
-    void onMount()
+    void on_mount()
     {
         // called when app receives the screen, but before it starts pumping events
         // into it, ticking it, drawing it, etc.
@@ -16,7 +16,7 @@ public:
         ui::context::init();  // boot up 2D ui support (ImGui, plotting, etc.)
     }
 
-    void onUnmount()
+    void on_unmount()
     {
         // called when the app is going to stop pumping events/ticks/draws into this
         // screen (e.g. because the app is quitting, or transitioning to some other screen)
@@ -37,7 +37,7 @@ public:
         }
     }
 
-    void onTick()
+    void on_tick()
     {
         // called once per frame, before drawing, with a timedelta from the last call
         // to `tick`
@@ -83,12 +83,12 @@ osc::CookiecutterScreen::~CookiecutterScreen() noexcept = default;
 
 void osc::CookiecutterScreen::impl_on_mount()
 {
-    m_Impl->onMount();
+    m_Impl->on_mount();
 }
 
 void osc::CookiecutterScreen::impl_on_unmount()
 {
-    m_Impl->onUnmount();
+    m_Impl->on_unmount();
 }
 
 void osc::CookiecutterScreen::impl_on_event(SDL_Event const& e)
@@ -98,7 +98,7 @@ void osc::CookiecutterScreen::impl_on_event(SDL_Event const& e)
 
 void osc::CookiecutterScreen::impl_on_tick()
 {
-    m_Impl->onTick();
+    m_Impl->on_tick();
 }
 
 void osc::CookiecutterScreen::impl_on_draw()

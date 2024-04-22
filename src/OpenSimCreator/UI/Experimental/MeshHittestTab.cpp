@@ -54,7 +54,7 @@ public:
         return ICON_FA_COOKIE " MeshHittestTab";
     }
 
-    void onTick()
+    void on_tick()
     {
         ui::UpdatePolarCameraFromMouseInputs(m_PolarCamera, App::get().dimensions());
 
@@ -166,7 +166,7 @@ public:
             }
             ui::End();
         }
-        m_PerfPanel.onDraw();
+        m_PerfPanel.on_draw();
     }
 
 private:
@@ -223,7 +223,7 @@ CStringView osc::MeshHittestTab::implGetName() const
 
 void osc::MeshHittestTab::implOnTick()
 {
-    m_Impl->onTick();
+    m_Impl->on_tick();
 }
 
 void osc::MeshHittestTab::implOnDraw()

@@ -402,7 +402,7 @@ public:
         }
 
         // draw log panel (debugging)
-        m_LogViewerPanel.onDraw();
+        m_LogViewerPanel.on_draw();
     }
 
 

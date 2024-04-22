@@ -24,216 +24,206 @@ namespace
     class ToggleablePanel final {
     public:
         ToggleablePanel(
-            std::string_view name_,
-            std::function<std::shared_ptr<IPanel>(std::string_view)> constructorFunc_,
-            ToggleablePanelFlags flags_) :
+            std::string_view name,
+            std::function<std::shared_ptr<IPanel>(std::string_view)> panel_constructor,
+            ToggleablePanelFlags flags) :
 
-            m_Name{name_},
-            m_ConstructorFunc{std::move(constructorFunc_)},
-            m_Flags{flags_},
-            m_Instance{std::nullopt}
+            name_{name},
+            panel_constructor_{std::move(panel_constructor)},
+            flags_{flags},
+            instance_{std::nullopt}
+        {}
+
+        CStringView name() const
         {
+            return name_;
         }
 
-        IPanel* updPtrOrNull()
+        IPanel* instance_or_nullptr()
         {
-            return m_Instance ? m_Instance->get() : nullptr;
+            return instance_ ? instance_->get() : nullptr;
         }
 
-        CStringView getName() const
+        bool is_enabled_by_default() const
         {
-            return m_Name;
+            return flags_ & ToggleablePanelFlags::IsEnabledByDefault;
         }
 
-        bool isEnabledByDefault() const
+        bool is_activated() const
         {
-            return m_Flags & ToggleablePanelFlags::IsEnabledByDefault;
-        }
-
-        bool isActivated() const
-        {
-            return m_Instance.has_value();
+            return instance_.has_value();
         }
 
         void activate()
         {
-            if (!m_Instance)
-            {
-                m_Instance = m_ConstructorFunc(m_Name);
+            if (not instance_) {
+                instance_ = panel_constructor_(name_);
             }
         }
 
         void deactivate()
         {
-            m_Instance.reset();
+            instance_.reset();
         }
 
-        void toggleActivation()
+        void toggle_activated()
         {
-            if (m_Instance && (*m_Instance)->isOpen())
-            {
-                m_Instance.reset();
+            if (instance_ and (*instance_)->is_open()) {
+                instance_.reset();
             }
-            else
-            {
-                m_Instance = m_ConstructorFunc(m_Name);
-                (*m_Instance)->open();
+            else {
+                instance_ = panel_constructor_(name_);
+                (*instance_)->open();
             }
         }
 
-        void onDraw()
+        void on_draw()
         {
-            if (m_Instance)
-            {
-                (*m_Instance)->onDraw();
+            if (instance_) {
+                (*instance_)->on_draw();
             }
         }
 
         // clear any instance data if the panel has been closed
-        void garbageCollect()
+        void garbage_collect()
         {
-            if (m_Instance && !(*m_Instance)->isOpen())
-            {
-                m_Instance.reset();
+            if (instance_ and !(*instance_)->is_open()) {
+                instance_.reset();
             }
         }
 
     private:
-        std::string m_Name;
-        std::function<std::shared_ptr<IPanel>(std::string_view)> m_ConstructorFunc;
-        ToggleablePanelFlags m_Flags;
-        std::optional<std::shared_ptr<IPanel>> m_Instance;
+        std::string name_;
+        std::function<std::shared_ptr<IPanel>(std::string_view)> panel_constructor_;
+        ToggleablePanelFlags flags_;
+        std::optional<std::shared_ptr<IPanel>> instance_;
     };
 
     class DynamicPanel final {
     public:
         DynamicPanel(
-            std::string_view baseName,
-            size_t instanceNumber,
+            std::string_view base_name,
+            size_t instance_number,
             std::shared_ptr<IPanel> instance) :
 
-            m_SpawnerID{std::hash<std::string_view>{}(baseName)},
-            m_InstanceNumber{instanceNumber},
-            m_Instance{std::move(instance)}
+            spawner_id_{std::hash<std::string_view>{}(base_name)},
+            instance_number_{instance_number},
+            instance_{std::move(instance)}
         {
-            m_Instance->open();
+            instance_->open();
         }
 
-        IPanel* updPtrOrNull()
+        IPanel* instance_or_nullptr()
         {
-            return m_Instance.get();
+            return instance_.get();
         }
 
-        size_t getSpawnablePanelID() const
+        size_t spawnable_panel_id() const
         {
-            return m_SpawnerID;
+            return spawner_id_;
         }
 
-        size_t getInstanceNumber() const
+        size_t instance_number() const
         {
-            return m_InstanceNumber;
+            return instance_number_;
         }
 
-        CStringView getName() const
+        CStringView name() const
         {
-            return m_Instance->getName();
+            return instance_->name();
         }
 
-        bool isOpen() const
+        bool is_open() const
         {
-            return m_Instance->isOpen();
+            return instance_->is_open();
         }
 
-        void onDraw()
+        void on_draw()
         {
-            m_Instance->onDraw();
+            instance_->on_draw();
         }
 
     private:
-        size_t m_SpawnerID;
-        size_t m_InstanceNumber;
-        std::shared_ptr<IPanel> m_Instance;
+        size_t spawner_id_;
+        size_t instance_number_;
+        std::shared_ptr<IPanel> instance_;
     };
 
     // declaration for a panel that can spawn new dyanmic panels (above)
     class SpawnablePanel final {
     public:
         SpawnablePanel(
-            std::string_view baseName_,
-            std::function<std::shared_ptr<IPanel>(std::string_view)> constructorFunc_,
-            size_t numInitiallyOpenedPanels_) :
+            std::string_view base_name,
+            std::function<std::shared_ptr<IPanel>(std::string_view)> panel_constructor,
+            size_t num_initially_opened_panels) :
 
-            m_BaseName{baseName_},
-            m_ConstructorFunc{std::move(constructorFunc_)},
-            m_NumInitiallyOpenedPanels{numInitiallyOpenedPanels_}
+            base_name_{base_name},
+            panel_constructor_{std::move(panel_constructor)},
+            num_initially_opened_panels_{num_initially_opened_panels}
+        {}
+
+        size_t id() const
         {
+            return std::hash<std::string_view>{}(base_name_);
         }
 
-        size_t getID() const
+        CStringView base_name() const
         {
-            return std::hash<std::string_view>{}(m_BaseName);
+            return base_name_;
         }
 
-        CStringView getBaseName() const
+        DynamicPanel spawn_dynamic_panel(size_t instance_number, std::string_view panel_name)
         {
-            return m_BaseName;
-        }
-
-        DynamicPanel spawnDynamicPanel(size_t ithInstance, std::string_view panelName)
-        {
-            return DynamicPanel
-            {
-                m_BaseName,         // so outside code knows which spawnable panel made it
-                ithInstance,        // so outside code can reassign `i` later based on open/close logic
-                m_ConstructorFunc(panelName),
+            return DynamicPanel{
+                base_name_,
+                instance_number,
+                panel_constructor_(panel_name),
             };
         }
 
-        size_t getNumInitiallyOpenedPanels() const
+        size_t num_initially_opened_panels() const
         {
-            return m_NumInitiallyOpenedPanels;
+            return num_initially_opened_panels_;
         }
 
     private:
-        std::string m_BaseName;
-        std::function<std::shared_ptr<IPanel>(std::string_view)> m_ConstructorFunc;
-        size_t m_NumInitiallyOpenedPanels;
+        std::string base_name_;
+        std::function<std::shared_ptr<IPanel>(std::string_view)> panel_constructor_;
+        size_t num_initially_opened_panels_;
     };
 }
 
 class osc::PanelManager::Impl final {
 public:
 
-    void registerToggleablePanel(
-        std::string_view baseName,
-        std::function<std::shared_ptr<IPanel>(std::string_view)> constructorFunc_,
-        ToggleablePanelFlags flags_)
+    void register_toggleable_panel(
+        std::string_view base_name,
+        std::function<std::shared_ptr<IPanel>(std::string_view)> panel_constructor,
+        ToggleablePanelFlags flags)
     {
-        m_ToggleablePanels.emplace_back(baseName, std::move(constructorFunc_), flags_);
+        toggleable_panels_.emplace_back(base_name, std::move(panel_constructor), flags);
     }
 
-    void registerSpawnablePanel(
-        std::string_view baseName,
-        std::function<std::shared_ptr<IPanel>(std::string_view)> constructorFunc_,
-        size_t numInitiallyOpenedPanels)
+    void register_spawnable_panel(
+        std::string_view base_name,
+        std::function<std::shared_ptr<IPanel>(std::string_view)> panel_constructor,
+        size_t num_initially_opened_panels)
     {
-        m_SpawnablePanels.emplace_back(baseName, std::move(constructorFunc_), numInitiallyOpenedPanels);
+        spawnable_panels_.emplace_back(base_name, std::move(panel_constructor), num_initially_opened_panels);
     }
 
-    IPanel* tryUpdPanelByName(std::string_view name)
+    IPanel* try_upd_panel_by_name(std::string_view name)
     {
-        for (ToggleablePanel& panel : m_ToggleablePanels)
-        {
-            if (IPanel* p = panel.updPtrOrNull(); (p != nullptr) && p->getName() == name)
-            {
+        for (ToggleablePanel& panel : toggleable_panels_) {
+
+            if (IPanel* p = panel.instance_or_nullptr(); p and p->name() == name) {
                 return p;
             }
         }
 
-        for (DynamicPanel& panel : m_DynamicPanels)
-        {
-            if (IPanel* p = panel.updPtrOrNull(); (p != nullptr) && p->getName() == name)
-            {
+        for (DynamicPanel& panel : dynamic_panels_) {
+
+            if (IPanel* p = panel.instance_or_nullptr(); p and p->name() == name) {
                 return p;
             }
         }
@@ -241,96 +231,85 @@ public:
         return nullptr;
     }
 
-    size_t getNumToggleablePanels() const
+    size_t num_toggleable_panels() const
     {
-        return m_ToggleablePanels.size();
+        return toggleable_panels_.size();
     }
 
-    CStringView getToggleablePanelName(size_t i) const
+    CStringView toggleable_panel_name(size_t pos) const
     {
-        return m_ToggleablePanels.at(i).getName();
+        return toggleable_panels_.at(pos).name();
     }
 
-    bool isToggleablePanelActivated(size_t i) const
+    bool is_toggleable_panel_activated(size_t pos) const
     {
-        return m_ToggleablePanels.at(i).isActivated();
+        return toggleable_panels_.at(pos).is_activated();
     }
 
-    void setToggleablePanelActivated(size_t i, bool v)
+    void set_toggleable_panel_activated(size_t pos, bool v)
     {
-        ToggleablePanel& panel = m_ToggleablePanels.at(i);
-        if (panel.isActivated() != v)
-        {
-            panel.toggleActivation();
+        ToggleablePanel& panel = toggleable_panels_.at(pos);
+        if (panel.is_activated() != v) {
+            panel.toggle_activated();
         }
     }
 
-    void setToggleablePanelActivated(std::string_view panelName, bool v)
+    void set_toggleable_panel_activated(std::string_view panel_name, bool v)
     {
-        for (ToggleablePanel& panel : m_ToggleablePanels)
-        {
-            if (panel.getName() == panelName)
-            {
-                if (v)
-                {
+        for (ToggleablePanel& panel : toggleable_panels_) {
+            if (panel.name() == panel_name) {
+                if (v) {
                     panel.activate();
                 }
-                else
-                {
+                else {
                     panel.deactivate();
                 }
             }
         }
     }
 
-    void onMount()
+    void on_mount()
     {
-        if (!m_FirstMount)
-        {
+        if (not first_mount_) {
             return;  // already mounted once
         }
 
         // initialize default-open tabs
-        for (ToggleablePanel& panel : m_ToggleablePanels)
-        {
-            if (panel.isEnabledByDefault())
-            {
+        for (ToggleablePanel& panel : toggleable_panels_) {
+            if (panel.is_enabled_by_default()) {
                 panel.activate();
             }
         }
 
         // initialize dynamic tabs that have some "initial" number
         // of spawned tabs
-        for (size_t iPanel = 0; iPanel < m_SpawnablePanels.size(); ++iPanel)
-        {
-            SpawnablePanel& panel = m_SpawnablePanels[iPanel];
-            for (size_t i = 0; i < panel.getNumInitiallyOpenedPanels(); ++i)
-            {
-                createDynamicPanel(iPanel);
+        for (size_t ith_panel = 0; ith_panel < spawnable_panels_.size(); ++ith_panel) {
+
+            SpawnablePanel& panel = spawnable_panels_[ith_panel];
+            for (size_t i = 0; i < panel.num_initially_opened_panels(); ++i) {
+                create_dynamic_panel(ith_panel);
             }
         }
 
-        m_FirstMount = false;
+        first_mount_ = false;
     }
 
-    void onUnmount()
+    void on_unmount()
     {
         // noop: we only mount the panels once and never unmount them
     }
 
-    void onTick()
+    void on_tick()
     {
-        // garbage collect closed-panel instance data
-        for (ToggleablePanel& panel : m_ToggleablePanels)
-        {
-            panel.garbageCollect();
+        // garbage-collect toggleable panels
+        for (ToggleablePanel& panel : toggleable_panels_) {
+            panel.garbage_collect();
         }
 
-        for (size_t i = 0; i < m_DynamicPanels.size(); ++i)
-        {
-            if (!m_DynamicPanels.at(i).isOpen())
-            {
-                m_DynamicPanels.erase(m_DynamicPanels.begin() + i);
+        // garbage-collect non-open dynamic panels
+        for (ptrdiff_t i = 0; i < ssize(dynamic_panels_); ++i) {
+            if (not dynamic_panels_[i].is_open()) {
+                dynamic_panels_.erase(dynamic_panels_.begin() + i);
                 --i;
             }
         }
@@ -338,236 +317,226 @@ public:
 
     void onDraw()
     {
-        for (ToggleablePanel& panel : m_ToggleablePanels)
-        {
-            if (panel.isActivated())
-            {
-                panel.onDraw();
+        // draw each toggleable panel
+        for (ToggleablePanel& panel : toggleable_panels_) {
+            if (panel.is_activated()) {
+                panel.on_draw();
             }
         }
 
-        for (DynamicPanel& panel : m_DynamicPanels)
-        {
-            panel.onDraw();
+        // draw each (set of) dynamic panel(s)
+        for (DynamicPanel& panel : dynamic_panels_) {
+            panel.on_draw();
         }
     }
 
-    size_t getNumDynamicPanels() const
+    size_t num_dynamic_panels() const
     {
-        return m_DynamicPanels.size();
+        return dynamic_panels_.size();
     }
 
-    CStringView getDynamicPanelName(size_t i) const
+    CStringView dynamic_panel_name(size_t pos) const
     {
-        return m_DynamicPanels.at(i).getName();
+        return dynamic_panels_.at(pos).name();
     }
 
-    void deactivateDynamicPanel(size_t i)
+    void deactivate_dynamic_panel(size_t pos)
     {
-        if (i < m_DynamicPanels.size())
-        {
-            m_DynamicPanels.erase(m_DynamicPanels.begin() + i);
+        if (pos < dynamic_panels_.size()) {
+            dynamic_panels_.erase(dynamic_panels_.begin() + pos);
         }
     }
 
-    size_t getNumSpawnablePanels() const
+    size_t num_spawnable_panels() const
     {
-        return m_SpawnablePanels.size();
+        return spawnable_panels_.size();
     }
 
-    CStringView getSpawnablePanelBaseName(size_t i) const
+    CStringView spawnable_panel_base_name(size_t pos) const
     {
-        return m_SpawnablePanels.at(i).getBaseName();
+        return spawnable_panels_.at(pos).base_name();
     }
 
-    void createDynamicPanel(size_t i)
+    void create_dynamic_panel(size_t pos)
     {
-        SpawnablePanel& spawnable = m_SpawnablePanels.at(i);
-        size_t const ithInstance = calcDynamicPanelInstanceNumber(spawnable.getID());
-        std::string const panelName = calcPanelName(spawnable.getBaseName(), ithInstance);
-        DynamicPanel p = spawnable.spawnDynamicPanel(ithInstance, panelName);
-        pushDynamicPanel(std::move(p));
+        SpawnablePanel& spawnable = spawnable_panels_.at(pos);
+        const size_t ith_instance = calc_dynamic_panel_instance_number(spawnable.id());
+        const std::string panel_name = calc_panel_name(spawnable.base_name(), ith_instance);
+
+        push_dynamic_panel(spawnable.spawn_dynamic_panel(ith_instance, panel_name));
     }
 
-    std::string computeSuggestedDynamicPanelName(std::string_view baseName)
+    std::string suggested_dynamic_panel_name(std::string_view base_name)
     {
-        size_t const ithInstance = calcDynamicPanelInstanceNumber(std::hash<std::string_view>{}(baseName));
-        return calcPanelName(baseName, ithInstance);
+        const size_t ith_instance = calc_dynamic_panel_instance_number(std::hash<std::string_view>{}(base_name));
+        return calc_panel_name(base_name, ith_instance);
     }
 
-    void pushDynamicPanel(std::string_view baseName, std::shared_ptr<IPanel> panel)
+    void push_dynamic_panel(std::string_view base_name, std::shared_ptr<IPanel> panel)
     {
-        size_t const ithInstance = calcDynamicPanelInstanceNumber(std::hash<std::string_view>{}(baseName));
-        pushDynamicPanel(DynamicPanel{baseName, ithInstance, std::move(panel)});
+        const size_t ith_instance = calc_dynamic_panel_instance_number(std::hash<std::string_view>{}(base_name));
+
+        push_dynamic_panel(DynamicPanel{base_name, ith_instance, std::move(panel)});
     }
 
 private:
-    size_t calcDynamicPanelInstanceNumber(size_t spawnableID)
+    size_t calc_dynamic_panel_instance_number(size_t spawnable_id)
     {
         // compute instance index such that it's the lowest non-colliding
         // number with the same spawnable panel
 
-        std::vector<bool> used(m_DynamicPanels.size());
-        for (DynamicPanel& panel : m_DynamicPanels)
-        {
-            if (panel.getSpawnablePanelID() == spawnableID)
-            {
-                size_t instanceNumber = panel.getInstanceNumber();
-                used.resize(max(instanceNumber, used.size()));
-                used[instanceNumber] = true;
+        std::vector<bool> used(dynamic_panels_.size());
+        for (DynamicPanel& panel : dynamic_panels_) {
+            if (panel.spawnable_panel_id() == spawnable_id) {
+                const size_t instance_number = panel.instance_number();
+                used.resize(max(instance_number, used.size()));
+                used[instance_number] = true;
             }
         }
         return std::distance(used.begin(), find(used, false));
     }
 
-    std::string calcPanelName(std::string_view baseName, size_t ithInstance)
+    std::string calc_panel_name(std::string_view base_name, size_t ith_instance)
     {
         std::stringstream ss;
-        ss << baseName << ithInstance;
+        ss << base_name << ith_instance;
         return std::move(ss).str();
     }
 
-    void pushDynamicPanel(DynamicPanel p)
+    void push_dynamic_panel(DynamicPanel p)
     {
-        m_DynamicPanels.push_back(std::move(p));
+        dynamic_panels_.push_back(std::move(p));
 
         // re-sort so that panels are clustered correctly
-        std::sort(
-            m_DynamicPanels.begin(),
-            m_DynamicPanels.end(),
-            [](DynamicPanel const& a, DynamicPanel const& b)
-            {
-                if (a.getSpawnablePanelID() != b.getSpawnablePanelID())
-                {
-                    return a.getSpawnablePanelID() < b.getSpawnablePanelID();
-                }
-                else
-                {
-                    return a.getInstanceNumber() < b.getInstanceNumber();
-                }
-            });
+        const auto panel_id_or_instance_number_less_than = [](const DynamicPanel& a, const DynamicPanel& b)
+        {
+            if (a.spawnable_panel_id() != b.spawnable_panel_id()) {
+                return a.spawnable_panel_id() < b.spawnable_panel_id();
+            }
+            else {
+                return a.instance_number() < b.instance_number();
+            }
+        };
+        std::sort(dynamic_panels_.begin(), dynamic_panels_.end(), panel_id_or_instance_number_less_than);
     }
 
-    std::vector<ToggleablePanel> m_ToggleablePanels;
-    std::vector<DynamicPanel> m_DynamicPanels;
-    std::vector<SpawnablePanel> m_SpawnablePanels;
-    bool m_FirstMount = true;
+    std::vector<ToggleablePanel> toggleable_panels_;
+    std::vector<DynamicPanel> dynamic_panels_;
+    std::vector<SpawnablePanel> spawnable_panels_;
+    bool first_mount_ = true;
 };
 
 
-// public API (PIMPL)
-
 osc::PanelManager::PanelManager() :
-    m_Impl{std::make_unique<Impl>()}
-{
-}
+    impl_{std::make_unique<Impl>()}
+{}
 
 osc::PanelManager::PanelManager(PanelManager&&) noexcept = default;
 osc::PanelManager& osc::PanelManager::operator=(PanelManager&&) noexcept = default;
 osc::PanelManager::~PanelManager() noexcept = default;
 
-void osc::PanelManager::registerToggleablePanel(
-    std::string_view baseName,
-    std::function<std::shared_ptr<IPanel>(std::string_view)> constructorFunc_,
-    ToggleablePanelFlags flags_)
+void osc::PanelManager::register_toggleable_panel(
+    std::string_view base_name,
+    std::function<std::shared_ptr<IPanel>(std::string_view)> panel_constructor,
+    ToggleablePanelFlags flags)
 {
-    m_Impl->registerToggleablePanel(baseName, std::move(constructorFunc_), flags_);
+    impl_->register_toggleable_panel(base_name, std::move(panel_constructor), flags);
 }
 
-void osc::PanelManager::registerSpawnablePanel(
-    std::string_view baseName,
-    std::function<std::shared_ptr<IPanel>(std::string_view)> constructorFunc_,
-    size_t numInitiallyOpenedPanels)
+void osc::PanelManager::register_spawnable_panel(
+    std::string_view base_name,
+    std::function<std::shared_ptr<IPanel>(std::string_view)> panel_constructor,
+    size_t num_initially_opened_panels)
 {
-    m_Impl->registerSpawnablePanel(baseName, std::move(constructorFunc_), numInitiallyOpenedPanels);
+    impl_->register_spawnable_panel(base_name, std::move(panel_constructor), num_initially_opened_panels);
 }
 
-IPanel* osc::PanelManager::tryUpdPanelByName(std::string_view name)
+IPanel* osc::PanelManager::try_upd_panel_by_name(std::string_view name)
 {
-    return m_Impl->tryUpdPanelByName(name);
+    return impl_->try_upd_panel_by_name(name);
 }
 
-size_t osc::PanelManager::getNumToggleablePanels() const
+size_t osc::PanelManager::num_toggleable_panels() const
 {
-    return m_Impl->getNumToggleablePanels();
+    return impl_->num_toggleable_panels();
 }
 
-CStringView osc::PanelManager::getToggleablePanelName(size_t i) const
+CStringView osc::PanelManager::toggleable_panel_name(size_t pos) const
 {
-    return m_Impl->getToggleablePanelName(i);
+    return impl_->toggleable_panel_name(pos);
 }
 
-bool osc::PanelManager::isToggleablePanelActivated(size_t i) const
+bool osc::PanelManager::is_toggleable_panel_activated(size_t pos) const
 {
-    return m_Impl->isToggleablePanelActivated(i);
+    return impl_->is_toggleable_panel_activated(pos);
 }
 
-void osc::PanelManager::setToggleablePanelActivated(size_t i, bool v)
+void osc::PanelManager::set_toggleable_panel_activated(size_t pos, bool v)
 {
-    m_Impl->setToggleablePanelActivated(i, v);
+    impl_->set_toggleable_panel_activated(pos, v);
 }
 
-void osc::PanelManager::setToggleablePanelActivated(std::string_view panelName, bool v)
+void osc::PanelManager::set_toggleable_panel_activated(std::string_view panel_name, bool v)
 {
-    m_Impl->setToggleablePanelActivated(panelName, v);
+    impl_->set_toggleable_panel_activated(panel_name, v);
 }
 
-void osc::PanelManager::onMount()
+void osc::PanelManager::on_mount()
 {
-    m_Impl->onMount();
+    impl_->on_mount();
 }
 
-void osc::PanelManager::onUnmount()
+void osc::PanelManager::on_unmount()
 {
-    m_Impl->onUnmount();
+    impl_->on_unmount();
 }
 
-void osc::PanelManager::onTick()
+void osc::PanelManager::on_tick()
 {
-    m_Impl->onTick();
+    impl_->on_tick();
 }
 
-void osc::PanelManager::onDraw()
+void osc::PanelManager::on_draw()
 {
-    m_Impl->onDraw();
+    impl_->onDraw();
 }
 
-size_t osc::PanelManager::getNumDynamicPanels() const
+size_t osc::PanelManager::num_dynamic_panels() const
 {
-    return m_Impl->getNumDynamicPanels();
+    return impl_->num_dynamic_panels();
 }
 
-CStringView osc::PanelManager::getDynamicPanelName(size_t i) const
+CStringView osc::PanelManager::dynamic_panel_name(size_t pos) const
 {
-    return m_Impl->getDynamicPanelName(i);
+    return impl_->dynamic_panel_name(pos);
 }
 
-void osc::PanelManager::deactivateDynamicPanel(size_t i)
+void osc::PanelManager::deactivate_dynamic_panel(size_t pos)
 {
-    m_Impl->deactivateDynamicPanel(i);
+    impl_->deactivate_dynamic_panel(pos);
 }
 
-size_t osc::PanelManager::getNumSpawnablePanels() const
+size_t osc::PanelManager::num_spawnable_panels() const
 {
-    return m_Impl->getNumSpawnablePanels();
+    return impl_->num_spawnable_panels();
 }
 
-CStringView osc::PanelManager::getSpawnablePanelBaseName(size_t i) const
+CStringView osc::PanelManager::spawnable_panel_base_name(size_t pos) const
 {
-    return m_Impl->getSpawnablePanelBaseName(i);
+    return impl_->spawnable_panel_base_name(pos);
 }
 
-void osc::PanelManager::createDynamicPanel(size_t i)
+void osc::PanelManager::create_dynamic_panel(size_t pos)
 {
-    m_Impl->createDynamicPanel(i);
+    impl_->create_dynamic_panel(pos);
 }
 
-std::string osc::PanelManager::computeSuggestedDynamicPanelName(std::string_view baseName)
+std::string osc::PanelManager::suggested_dynamic_panel_name(std::string_view base_name)
 {
-    return m_Impl->computeSuggestedDynamicPanelName(baseName);
+    return impl_->suggested_dynamic_panel_name(base_name);
 }
 
-void osc::PanelManager::pushDynamicPanel(std::string_view baseName, std::shared_ptr<IPanel> panel)
+void osc::PanelManager::push_dynamic_panel(std::string_view base_name, std::shared_ptr<IPanel> panel)
 {
-    m_Impl->pushDynamicPanel(baseName, std::move(panel));
+    impl_->push_dynamic_panel(base_name, std::move(panel));
 }

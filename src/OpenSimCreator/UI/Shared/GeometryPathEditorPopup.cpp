@@ -140,7 +140,7 @@ private:
             // exists (e.g. because a muscle was deleted or similar), so it should
             // announce the problem and close itself
             ui::Text("The GeometryPath no longer exists - closing this popup");
-            requestClose();
+            request_close();
             return;
         }
         // else: the geometry path exists, but this UI should edit the cached
@@ -322,7 +322,7 @@ private:
     {
         if (ui::Button("cancel"))
         {
-            requestClose();
+            request_close();
         }
 
         ui::SameLine();
@@ -330,7 +330,7 @@ private:
         if (ui::Button("save"))
         {
             m_OnLocalCopyEdited(m_EditedGeometryPath);
-            requestClose();
+            request_close();
         }
     }
 

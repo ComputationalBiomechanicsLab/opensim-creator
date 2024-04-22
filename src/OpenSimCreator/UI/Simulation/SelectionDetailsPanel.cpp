@@ -27,7 +27,7 @@ public:
     {}
 
 private:
-    void implDrawContent() final
+    void impl_draw_content() final
     {
         SimulationModelStatePair* maybeShownState = m_SimulatorUIAPI->tryGetCurrentSimulationState();
         if (!maybeShownState) {
@@ -81,27 +81,27 @@ osc::SelectionDetailsPanel::SelectionDetailsPanel(SelectionDetailsPanel&&) noexc
 osc::SelectionDetailsPanel& osc::SelectionDetailsPanel::operator=(SelectionDetailsPanel&&) noexcept = default;
 osc::SelectionDetailsPanel::~SelectionDetailsPanel() noexcept = default;
 
-CStringView osc::SelectionDetailsPanel::implGetName() const
+CStringView osc::SelectionDetailsPanel::impl_get_name() const
 {
-    return m_Impl->getName();
+    return m_Impl->name();
 }
 
-bool osc::SelectionDetailsPanel::implIsOpen() const
+bool osc::SelectionDetailsPanel::impl_is_open() const
 {
-    return m_Impl->isOpen();
+    return m_Impl->is_open();
 }
 
-void osc::SelectionDetailsPanel::implOpen()
+void osc::SelectionDetailsPanel::impl_open()
 {
     m_Impl->open();
 }
 
-void osc::SelectionDetailsPanel::implClose()
+void osc::SelectionDetailsPanel::impl_close()
 {
     m_Impl->close();
 }
 
-void osc::SelectionDetailsPanel::implOnDraw()
+void osc::SelectionDetailsPanel::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }

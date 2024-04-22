@@ -15,36 +15,17 @@ namespace osc
     public:
         virtual ~IPanel() noexcept = default;
 
-        CStringView getName() const
-        {
-            return implGetName();
-        }
-
-        bool isOpen() const
-        {
-            return implIsOpen();
-        }
-
-        void open()
-        {
-            implOpen();
-        }
-
-        void close()
-        {
-            implClose();
-        }
-
-        void onDraw()
-        {
-            implOnDraw();
-        }
+        CStringView name() const { return impl_get_name(); }
+        bool is_open() const { return impl_is_open(); }
+        void open() { impl_open(); }
+        void close() { impl_close(); }
+        void on_draw() { impl_on_draw(); }
 
     private:
-        virtual CStringView implGetName() const = 0;
-        virtual bool implIsOpen() const = 0;
-        virtual void implOpen() = 0;
-        virtual void implClose() = 0;
-        virtual void implOnDraw() = 0;
+        virtual CStringView impl_get_name() const = 0;
+        virtual bool impl_is_open() const = 0;
+        virtual void impl_open() = 0;
+        virtual void impl_close() = 0;
+        virtual void impl_on_draw() = 0;
     };
 }

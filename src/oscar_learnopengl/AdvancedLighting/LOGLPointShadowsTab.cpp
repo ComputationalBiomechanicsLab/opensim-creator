@@ -181,7 +181,7 @@ private:
         ui::Checkbox("soften shadows", &m_UseSoftShadows);
         ui::End();
 
-        m_PerfPanel.onDraw();
+        m_PerfPanel.on_draw();
     }
 
     ResourceLoader m_Loader = App::resource_loader();
@@ -246,12 +246,12 @@ CStringView osc::LOGLPointShadowsTab::implGetName() const
 
 void osc::LOGLPointShadowsTab::implOnMount()
 {
-    m_Impl->onMount();
+    m_Impl->on_mount();
 }
 
 void osc::LOGLPointShadowsTab::implOnUnmount()
 {
-    m_Impl->onUnmount();
+    m_Impl->on_unmount();
 }
 
 bool osc::LOGLPointShadowsTab::implOnEvent(SDL_Event const& e)
@@ -261,7 +261,7 @@ bool osc::LOGLPointShadowsTab::implOnEvent(SDL_Event const& e)
 
 void osc::LOGLPointShadowsTab::implOnTick()
 {
-    m_Impl->onTick();
+    m_Impl->on_tick();
 }
 
 void osc::LOGLPointShadowsTab::implOnDrawMainMenu()

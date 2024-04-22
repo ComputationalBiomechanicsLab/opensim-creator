@@ -162,7 +162,7 @@ public:
 
     bool isOpen() const
     {
-        return static_cast<StandardPanelImpl const&>(*this).isOpen();
+        return static_cast<StandardPanelImpl const&>(*this).is_open();
     }
 
     void open()
@@ -177,7 +177,7 @@ public:
 
 private:
 
-    void implDrawContent() final
+    void impl_draw_content() final
     {
         if (!m_Model)
         {
@@ -411,27 +411,27 @@ osc::NavigatorPanel::NavigatorPanel(NavigatorPanel&&) noexcept = default;
 osc::NavigatorPanel& osc::NavigatorPanel::operator=(NavigatorPanel&&) noexcept = default;
 osc::NavigatorPanel::~NavigatorPanel() noexcept = default;
 
-CStringView osc::NavigatorPanel::implGetName() const
+CStringView osc::NavigatorPanel::impl_get_name() const
 {
-    return m_Impl->getName();
+    return m_Impl->name();
 }
 
-bool osc::NavigatorPanel::implIsOpen() const
+bool osc::NavigatorPanel::impl_is_open() const
 {
     return m_Impl->isOpen();
 }
 
-void osc::NavigatorPanel::implOpen()
+void osc::NavigatorPanel::impl_open()
 {
     m_Impl->open();
 }
 
-void osc::NavigatorPanel::implClose()
+void osc::NavigatorPanel::impl_close()
 {
     m_Impl->close();
 }
 
-void osc::NavigatorPanel::implOnDraw()
+void osc::NavigatorPanel::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }

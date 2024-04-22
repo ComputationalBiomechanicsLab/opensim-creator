@@ -167,7 +167,7 @@ bool osc::StandardPopup::isPopupOpenedThisFrame() const
     return m_JustOpened;
 }
 
-void osc::StandardPopup::requestClose()
+void osc::StandardPopup::request_close()
 {
     m_ShouldClose = true;
     m_ShouldOpen = false;

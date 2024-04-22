@@ -151,12 +151,12 @@ CStringView osc::LOGLLightingMapsTab::implGetName() const
 
 void osc::LOGLLightingMapsTab::implOnMount()
 {
-    m_Impl->onMount();
+    m_Impl->on_mount();
 }
 
 void osc::LOGLLightingMapsTab::implOnUnmount()
 {
-    m_Impl->onUnmount();
+    m_Impl->on_unmount();
 }
 
 bool osc::LOGLLightingMapsTab::implOnEvent(SDL_Event const& e)

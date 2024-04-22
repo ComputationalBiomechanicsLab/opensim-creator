@@ -6,7 +6,7 @@
 osc::ModelEditorViewerPanelState::ModelEditorViewerPanelState(
     std::string_view panelName_) :
 
-    m_PanelName{panelName_},
+    panel_name_{panelName_},
     m_CachedModelRenderer
     {
         App::singleton<SceneCache>(App::resource_loader()),

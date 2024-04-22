@@ -29,7 +29,7 @@ public:
 
     explicit Impl(ParentPtr<ITabHost> const& parent_) : m_Parent{parent_}
     {
-        m_PanelManager->registerToggleablePanel(
+        m_PanelManager->register_toggleable_panel(
             "Source Mesh",
             [state = m_Shared](std::string_view panelName)
             {
@@ -37,7 +37,7 @@ public:
             }
         );
 
-        m_PanelManager->registerToggleablePanel(
+        m_PanelManager->register_toggleable_panel(
             "Destination Mesh",
             [state = m_Shared](std::string_view panelName)
             {
@@ -45,7 +45,7 @@ public:
             }
         );
 
-        m_PanelManager->registerToggleablePanel(
+        m_PanelManager->register_toggleable_panel(
             "Result",
             [state = m_Shared](std::string_view panelName)
             {
@@ -53,7 +53,7 @@ public:
             }
         );
 
-        m_PanelManager->registerToggleablePanel(
+        m_PanelManager->register_toggleable_panel(
             "History",
             [state = m_Shared](std::string_view panelName)
             {
@@ -62,7 +62,7 @@ public:
             ToggleablePanelFlags::Default - ToggleablePanelFlags::IsEnabledByDefault
         );
 
-        m_PanelManager->registerToggleablePanel(
+        m_PanelManager->register_toggleable_panel(
             "Log",
             [](std::string_view panelName)
             {
@@ -71,7 +71,7 @@ public:
             ToggleablePanelFlags::Default - ToggleablePanelFlags::IsEnabledByDefault
         );
 
-        m_PanelManager->registerToggleablePanel(
+        m_PanelManager->register_toggleable_panel(
             "Landmark Navigator",
             [state = m_Shared](std::string_view panelName)
             {
@@ -80,7 +80,7 @@ public:
             ToggleablePanelFlags::Default - ToggleablePanelFlags::IsEnabledByDefault
         );
 
-        m_PanelManager->registerToggleablePanel(
+        m_PanelManager->register_toggleable_panel(
             "Performance",
             [](std::string_view panelName)
             {
@@ -100,16 +100,16 @@ public:
         return ICON_FA_BEZIER_CURVE " Mesh Warping";
     }
 
-    void onMount()
+    void on_mount()
     {
         App::upd().make_main_loop_waiting();
-        m_PanelManager->onMount();
-        m_Shared->popupManager.onMount();
+        m_PanelManager->on_mount();
+        m_Shared->popupManager.on_mount();
     }
 
-    void onUnmount()
+    void on_unmount()
     {
-        m_PanelManager->onUnmount();
+        m_PanelManager->on_unmount();
         App::upd().make_main_loop_polling();
     }
 
@@ -125,13 +125,13 @@ public:
         }
     }
 
-    void onTick()
+    void on_tick()
     {
         // re-perform hover test each frame
         m_Shared->currentHover.reset();
 
         // garbage collect panel data
-        m_PanelManager->onTick();
+        m_PanelManager->on_tick();
     }
 
     void onDrawMainMenu()
@@ -144,7 +144,7 @@ public:
         ui::DockSpaceOverViewport(ui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
         m_TopToolbar.onDraw();
-        m_PanelManager->onDraw();
+        m_PanelManager->on_draw();
         m_StatusBar.onDraw();
 
         // draw active popups over the UI
@@ -248,12 +248,12 @@ CStringView osc::MeshWarpingTab::implGetName() const
 
 void osc::MeshWarpingTab::implOnMount()
 {
-    m_Impl->onMount();
+    m_Impl->on_mount();
 }
 
 void osc::MeshWarpingTab::implOnUnmount()
 {
-    m_Impl->onUnmount();
+    m_Impl->on_unmount();
 }
 
 bool osc::MeshWarpingTab::implOnEvent(SDL_Event const& e)
@@ -263,7 +263,7 @@ bool osc::MeshWarpingTab::implOnEvent(SDL_Event const& e)
 
 void osc::MeshWarpingTab::implOnTick()
 {
-    m_Impl->onTick();
+    m_Impl->on_tick();
 }
 
 void osc::MeshWarpingTab::implOnDrawMainMenu()

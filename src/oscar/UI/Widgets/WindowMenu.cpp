@@ -30,45 +30,45 @@ void osc::WindowMenu::drawContent()
     size_t numMenuItemsPrinted = 0;
 
     // toggleable panels
-    for (size_t i = 0; i < manager.getNumToggleablePanels(); ++i)
+    for (size_t i = 0; i < manager.num_toggleable_panels(); ++i)
     {
-        bool activated = manager.isToggleablePanelActivated(i);
-        const CStringView name = manager.getToggleablePanelName(i);
+        bool activated = manager.is_toggleable_panel_activated(i);
+        const CStringView name = manager.toggleable_panel_name(i);
         if (ui::MenuItem(name, {}, &activated))
         {
-            manager.setToggleablePanelActivated(i, activated);
+            manager.set_toggleable_panel_activated(i, activated);
         }
         ++numMenuItemsPrinted;
     }
 
     // dynamic panels
-    if (manager.getNumDynamicPanels() > 0)
+    if (manager.num_dynamic_panels() > 0)
     {
         ui::Separator();
-        for (size_t i = 0; i < manager.getNumDynamicPanels(); ++i)
+        for (size_t i = 0; i < manager.num_dynamic_panels(); ++i)
         {
             bool activated = true;
-            const CStringView name = manager.getDynamicPanelName(i);
+            const CStringView name = manager.dynamic_panel_name(i);
             if (ui::MenuItem(name, {}, &activated))
             {
-                manager.deactivateDynamicPanel(i);
+                manager.deactivate_dynamic_panel(i);
             }
             ++numMenuItemsPrinted;
         }
     }
 
     // spawnable submenu
-    if (manager.getNumSpawnablePanels() > 0)
+    if (manager.num_spawnable_panels() > 0)
     {
         ui::Separator();
 
         if (ui::BeginMenu("Add"))
         {
-            for (size_t i = 0; i < manager.getNumSpawnablePanels(); ++i)
+            for (size_t i = 0; i < manager.num_spawnable_panels(); ++i)
             {
-                const CStringView name = manager.getSpawnablePanelBaseName(i);
+                const CStringView name = manager.spawnable_panel_base_name(i);
                 if (ui::MenuItem(name)) {
-                    manager.createDynamicPanel(i);
+                    manager.create_dynamic_panel(i);
                 }
             }
             ui::EndMenu();

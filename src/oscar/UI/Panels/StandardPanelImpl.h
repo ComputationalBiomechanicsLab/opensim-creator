@@ -12,8 +12,8 @@ namespace osc
     // a "standard" implementation for an IPanel
     class StandardPanelImpl : public IPanel {
     protected:
-        explicit StandardPanelImpl(std::string_view panelName);
-        StandardPanelImpl(std::string_view panelName, ImGuiWindowFlags);
+        explicit StandardPanelImpl(std::string_view panel_name);
+        StandardPanelImpl(std::string_view panel_name, ImGuiWindowFlags);
         StandardPanelImpl(const StandardPanelImpl&) = default;
         StandardPanelImpl(StandardPanelImpl&&) noexcept = default;
         StandardPanelImpl& operator=(const StandardPanelImpl&) = default;
@@ -22,22 +22,22 @@ namespace osc
         ~StandardPanelImpl() noexcept override = default;
 
     protected:
-        void requestClose();
+        void request_close();
 
     private:
         // this standard implementation supplies these
-        CStringView implGetName() const final;
-        bool implIsOpen() const final;
-        void implOpen() final;
-        void implClose() final;
-        void implOnDraw() final;
+        CStringView impl_get_name() const final;
+        bool impl_is_open() const final;
+        void impl_open() final;
+        void impl_close() final;
+        void impl_on_draw() final;
 
         // inheritors can/must provide these
-        virtual void implBeforeImGuiBegin() {}
-        virtual void implAfterImGuiBegin() {}
-        virtual void implDrawContent() = 0;
+        virtual void impl_before_imgui_begin() {}
+        virtual void impl_after_imgui_begin() {}
+        virtual void impl_draw_content() = 0;
 
-        std::string m_PanelName;
-        ImGuiWindowFlags m_PanelFlags;
+        std::string panel_name_;
+        ImGuiWindowFlags panel_flags_;
     };
 }

@@ -188,14 +188,14 @@ private:
         if (ui::Button("Cancel"))
         {
             m_Search.clear();
-            requestClose();
+            request_close();
         }
 
         if (m_Result)
         {
             m_OnSelection(std::move(m_Result));
             m_Search.clear();
-            requestClose();
+            request_close();
         }
     }
 
@@ -209,7 +209,7 @@ private:
         // reset search (for next popup open)
         m_Search.clear();
 
-        requestClose();
+        request_close();
 
         return rv;
     }

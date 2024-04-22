@@ -24,10 +24,10 @@ namespace osc
         CStringView getName() const { return implGetName(); }
         bool isUnsaved() const { return implIsUnsaved(); }
         bool trySave() { return implTrySave(); }
-        void onMount() { implOnMount(); }
-        void onUnmount() { implOnUnmount(); }
+        void on_mount() { implOnMount(); }
+        void on_unmount() { implOnUnmount(); }
         bool onEvent(const SDL_Event& e) { return implOnEvent(e); }
-        void onTick() { implOnTick(); }
+        void on_tick() { implOnTick(); }
         void onDrawMainMenu() { implOnDrawMainMenu(); }
         void onDraw() { implOnDraw(); }
 

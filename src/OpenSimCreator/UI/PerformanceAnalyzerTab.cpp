@@ -66,7 +66,7 @@ public:
         return ICON_FA_FAST_FORWARD " PerformanceAnalyzerTab";
     }
 
-    void onTick()
+    void on_tick()
     {
         startSimsIfNecessary();
     }
@@ -258,7 +258,7 @@ CStringView osc::PerformanceAnalyzerTab::implGetName() const
 
 void osc::PerformanceAnalyzerTab::implOnTick()
 {
-    m_Impl->onTick();
+    m_Impl->on_tick();
 }
 
 void osc::PerformanceAnalyzerTab::implOnDraw()
