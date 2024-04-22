@@ -86,7 +86,13 @@ private:
             ui::PushID(i);
             SimulationOutputPlot plot{m_SimulatorUIAPI, output, 128.0f};
             plot.onDraw();
+
             DrawOutputNameColumn(output, true, m_SimulatorUIAPI->tryGetCurrentSimulationState());
+            ui::SameLine();
+            if (ui::Button(ICON_FA_TRASH)) {
+                m_API->removeUserOutputExtractor(output);
+                --i;
+            }
             ui::PopID();
         }
     }
