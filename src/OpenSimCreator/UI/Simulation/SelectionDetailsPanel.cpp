@@ -36,20 +36,18 @@ private:
         }
         SimulationModelStatePair& ms = *maybeShownState;
 
-        OpenSim::Component const* maybeSelected = ms.getSelected();
+        const OpenSim::Component* maybeSelected = ms.getSelected();
         if (not maybeSelected) {
             ui::TextDisabled("(nothing selected)");
             return;
         }
-        OpenSim::Component const& selected = *maybeSelected;
-        SimTK::State const& state = ms.getState();
+        const OpenSim::Component& selected = *maybeSelected;
+        const SimTK::State& state = ms.getState();
 
-        ui::Text("selection information:");
-        ui::Dummy({0.0, 2.5f});
-        ui::Separator();
-
-        // generic OpenSim::Object/OpenSim::Component stuff
+        // print generic OpenSim::Object/OpenSim::Component stuff
         {
+            ui::Columns(2);
+
             ui::Text("name");
             ui::NextColumn();
             ui::Text(selected.getName());
@@ -60,14 +58,42 @@ private:
             ui::Text(selected.getAuthors());
             ui::NextColumn();
 
-            // properties
+            ui::Columns();
+        }
+
+        if (ui::CollapsingHeader("properties", ImGuiTreeNodeFlags_DefaultOpen)) {
+            ui::Columns(2);
             for (int i = 0; i < selected.getNumProperties(); ++i) {
-                OpenSim::AbstractProperty const& prop = selected.getPropertyByIndex(i);
+                const OpenSim::AbstractProperty& prop = selected.getPropertyByIndex(i);
                 ui::Text(prop.getName());
                 ui::NextColumn();
                 ui::Text(prop.toString());
                 ui::NextColumn();
             }
+            ui::Columns();
+        }
+
+        // print outputs (this is probably what the users are more interested in)
+        if (ui::CollapsingHeader("outputs")) {
+            int id = 0;
+            ui::Columns(2);
+
+            for (const auto& [outputName, aoPtr] : selected.getOutputs()) {
+                ui::PushID(id++);
+
+                ui::Text(outputName);
+                ui::NextColumn();
+                SimulationOutputPlot plot{
+                    m_SimulatorUIAPI,
+                    OutputExtractor{ComponentOutputExtractor{*aoPtr}},
+                    ui::GetTextLineHeight(),
+                };
+                plot.onDraw();
+                ui::NextColumn();
+
+                ui::PopID();
+            }
+            ui::Columns();
         }
 
         // state variables
@@ -76,7 +102,7 @@ private:
             ui::Columns(2);
             for (int i = 0; i < names.size(); ++i)
             {
-                std::string const& name = names[i];
+                const std::string& name = names[i];
 
                 ui::Text(name);
                 ui::NextColumn();
@@ -94,7 +120,7 @@ private:
         // inputs
         if (ui::CollapsingHeader("inputs")) {
             std::vector<std::string> input_names = selected.getInputNames();
-            for (std::string const& inputName : input_names) {
+            for (const std::string& inputName : input_names) {
                 ui::Text(inputName);
             }
         }
@@ -104,12 +130,12 @@ private:
         {
             std::vector<std::string> socknames = GetSocketNames(selected);
             ui::Columns(2);
-            for (std::string const& sn : socknames)
+            for (const std::string& sn : socknames)
             {
                 ui::Text(sn);
                 ui::NextColumn();
 
-                std::string const& cp = selected.getSocket(sn).getConnecteePath();
+                const std::string& cp = selected.getSocket(sn).getConnecteePath();
                 ui::Text(cp);
                 ui::NextColumn();
             }
@@ -117,7 +143,7 @@ private:
         }
 
         // debug info (handy for development)
-        if (ui::CollapsingHeader("debug")) {
+        if (ui::CollapsingHeader("other")) {
             ui::Columns(2);
 
             ui::Text("getOwner().name()");
@@ -160,29 +186,6 @@ private:
             ui::Text("%i", selected.getNumProperties());
             ui::NextColumn();
 
-            ui::Columns();
-        }
-
-        if (ui::CollapsingHeader("outputs")) {
-            int id = 0;
-            ui::Columns(2);
-
-            for (auto const& [outputName, aoPtr] : selected.getOutputs()) {
-                ui::PushID(id++);
-
-                ui::Text(outputName);
-                ui::NextColumn();
-                SimulationOutputPlot plot
-                {
-                    m_SimulatorUIAPI,
-                    OutputExtractor{ComponentOutputExtractor{*aoPtr}},
-                    ui::GetTextLineHeight(),
-                };
-                plot.onDraw();
-                ui::NextColumn();
-
-                ui::PopID();
-            }
             ui::Columns();
         }
     }

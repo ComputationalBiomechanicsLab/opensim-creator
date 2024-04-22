@@ -4857,20 +4857,22 @@ public:
 
         // convert mesh/descriptor data types into OpenGL-compatible formats
         const GLenum mode = to_opengl_topology_enum(descriptor.topology());
-        const auto num_indices = static_cast<GLsizei>(descriptor.getIndexCount());
+        const auto num_indices = static_cast<GLsizei>(descriptor.index_count());
         const GLenum type = indices_are_32bit_ ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT;
+        const auto base_vertex = static_cast<GLint>(descriptor.base_vertex());
 
         const size_t num_bytes_per_index = indices_are_32bit_ ? sizeof(GLint) : sizeof(GLshort);
-        const size_t first_index_byte_offset = descriptor.getIndexStart() * num_bytes_per_index;
+        const size_t first_index_byte_offset = descriptor.index_start() * num_bytes_per_index;
 
         const auto num_instances = static_cast<GLsizei>(n);
 
-        glDrawElementsInstanced(
+        glDrawElementsInstancedBaseVertex(
             mode,
             num_indices,
             type,
             cpp20::bit_cast<void*>(first_index_byte_offset),
-            num_instances
+            num_instances,
+            base_vertex
         );
     }
 

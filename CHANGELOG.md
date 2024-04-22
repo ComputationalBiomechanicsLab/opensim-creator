@@ -5,6 +5,10 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- The `Selection Details` panel that's shown in the simulator tab was cleaned up to prioritize
+  showing property values (similar to the editor tab), followed by a toggleable outputs section (#838)
+- Fixed a bug in the `Selection Details` panel where drawing too many output plots would cause
+  drawing to fail
 - MacOS is now built using the `macos-12` (Montery) GitHub Action runner
 - `README.md` now explicitly mentions that a C++20 compiler is required to build the project
 

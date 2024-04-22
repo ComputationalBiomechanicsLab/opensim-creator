@@ -16,9 +16,9 @@ namespace osc
             std::string_view panelName,
             ISimulatorUIAPI*
         );
-        SelectionDetailsPanel(SelectionDetailsPanel const&) = delete;
+        SelectionDetailsPanel(const SelectionDetailsPanel&) = delete;
         SelectionDetailsPanel(SelectionDetailsPanel&&) noexcept;
-        SelectionDetailsPanel& operator=(SelectionDetailsPanel const&) = delete;
+        SelectionDetailsPanel& operator=(const SelectionDetailsPanel&) = delete;
         SelectionDetailsPanel& operator=(SelectionDetailsPanel&&) noexcept;
         ~SelectionDetailsPanel() noexcept;
 

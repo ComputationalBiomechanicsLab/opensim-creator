@@ -231,7 +231,12 @@ namespace
 
         // setup submesh description
         const size_t idx = mesh.num_submesh_descriptors();
-        mesh.push_submesh_descriptor({draw_command.IdxOffset, draw_command.ElemCount, MeshTopology::Triangles});
+        mesh.push_submesh_descriptor(SubMeshDescriptor{
+            draw_command.IdxOffset,
+            draw_command.ElemCount,
+            MeshTopology::Triangles,
+            draw_command.VtxOffset
+        });
 
         if (const auto* texture = try_find(bd.texures_allocated_this_frame, to_uid(draw_command.GetTexID()))) {
             std::visit(Overload{
@@ -302,6 +307,7 @@ bool osc::ui::graphics_backend::init()
     // init backend data
     io.BackendRendererUserData = static_cast<void*>(new OscarImguiBackendData{});
     io.BackendRendererName = "imgui_impl_osc";
+    io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;
 
     return true;
 }

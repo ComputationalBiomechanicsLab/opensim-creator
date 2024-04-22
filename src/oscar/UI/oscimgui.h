@@ -279,9 +279,9 @@ namespace osc::ui
         return ImGui::RadioButton(label.c_str(), active);
     }
 
-    inline bool CollapsingHeader(CStringView label)
+    inline bool CollapsingHeader(CStringView label, ImGuiTreeNodeFlags flags = 0)
     {
-        return ImGui::CollapsingHeader(label.c_str());
+        return ImGui::CollapsingHeader(label.c_str(), flags);
     }
 
     inline void Dummy(const Vec2& size)

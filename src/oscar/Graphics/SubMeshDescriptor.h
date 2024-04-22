@@ -11,21 +11,25 @@ namespace osc
         SubMeshDescriptor(
             size_t index_start,
             size_t index_count,
-            MeshTopology topology) :
+            MeshTopology topology,
+            size_t base_vertex = 0) :
 
             index_start_{index_start},
             index_count_{index_count},
-            topology_{topology}
+            topology_{topology},
+            base_vertex_{base_vertex}
         {}
 
-        size_t getIndexStart() const { return index_start_; }
-        size_t getIndexCount() const { return index_count_; }
+        size_t index_start() const { return index_start_; }
+        size_t index_count() const { return index_count_; }
         MeshTopology topology() const { return topology_; }
+        size_t base_vertex() const { return base_vertex_; }
 
         friend bool operator==(const SubMeshDescriptor&, const SubMeshDescriptor&) = default;
     private:
         size_t index_start_;
         size_t index_count_;
         MeshTopology topology_;
+        size_t base_vertex_;
     };
 }
