@@ -426,9 +426,9 @@ private:
         return m_Parent->removeUserOutputExtractor(oe);
     }
 
-    bool implOverwriteUserOutputExtractor(OutputExtractor const& old, OutputExtractor const& newer) final
+    bool implOverwriteOrAddNewUserOutputExtractor(OutputExtractor const& old, OutputExtractor const& newer) final
     {
-        return m_Parent->overwriteUserOutputExtractor(old, newer);
+        return m_Parent->overwriteOrAddNewUserOutputExtractor(old, newer);
     }
 
     SimulationModelStatePair* implTryGetCurrentSimulationState() final

@@ -182,7 +182,7 @@ namespace
                         {
                             OutputExtractor rhs = subfield ? OutputExtractor{ComponentOutputExtractor{ao, *subfield}} : OutputExtractor{ComponentOutputExtractor{ao}};
                             OutputExtractor concatenating = OutputExtractor{ConcatenatingOutputExtractor{oneDimensionalOutputExtractor, rhs}};
-                            api.overwriteUserOutputExtractor(oneDimensionalOutputExtractor, concatenating);
+                            api.overwriteOrAddNewUserOutputExtractor(oneDimensionalOutputExtractor, concatenating);
                         });
                         ui::PopID();
                     }

@@ -5,6 +5,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- Fixed "Plot Against other Output" feature not working with non-model-sourced outputs, such as
+  the integrator's "Step Wall Time"
 - The "empty" state of some panels (e.g. "nothing selected", "nothing watched") was tidied up and
   now shows a centered message with, where applicable, a tip for showing information in the panel
 - Each plot in the `Output Plots` panel of the simulator tab now shows a little trash icon, to
