@@ -18,7 +18,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   showing property values (similar to the editor tab), followed by a toggleable outputs section (#838)
 - Fixed a bug in the `Selection Details` panel where drawing too many output plots would cause
   drawing to fail
-- MacOS is now built using the `macos-12` (Montery) GitHub Action runner
+- MacOS is now built using the `macos-13` (Ventura) GitHub Action runner, which means that OSC
+  will only work on Ventura or newer
 - `README.md` now explicitly mentions that a C++20 compiler is required to build the project
 
 ## [0.5.11] - 2024/04/04
