@@ -21,7 +21,11 @@ osc::TorusGeometry::TorusGeometry(
     size_t num_tubular_segments,
     Radians arc)
 {
-    // (ported from three.js/TorusGeometry)
+    // the implementation of this was initially translated from `three.js`'s
+    // `TorusGeometry`, which has excellent documentation and source code. The
+    // code was then subsequently mutated to suit OSC, C++ etc.
+    //
+    // https://threejs.org/docs/#api/en/geometries/TorusGeometry
 
     const auto fnum_radial_segments = static_cast<float>(num_radial_segments);
     const auto fnum_tubular_segments = static_cast<float>(num_tubular_segments);

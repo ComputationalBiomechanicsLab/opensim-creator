@@ -27,4 +27,10 @@ osc::ConeGeometry::ConeGeometry(
         theta_start,
         theta_length
     }}
-{}
+{
+    // the implementation of this was initially translated from `three.js`'s
+    // `ConeGeometry`, which has excellent documentation and source code. The
+    // code was then subsequently mutated to suit OSC, C++ etc.
+    //
+    // https://threejs.org/docs/#api/en/geometries/ConeGeometry
+}

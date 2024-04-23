@@ -1,5 +1,3 @@
-
-
 #include "ChequeredTexture.h"
 
 #include <oscar/Graphics/Color32.h>

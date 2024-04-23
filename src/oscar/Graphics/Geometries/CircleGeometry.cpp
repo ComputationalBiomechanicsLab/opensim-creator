@@ -20,7 +20,11 @@ osc::CircleGeometry::CircleGeometry(
     Radians theta_start,
     Radians theta_length)
 {
-    // this implementation was initially hand-ported from threejs (CircleGeometry)
+    // the implementation of this was initially translated from `three.js`'s
+    // `CircleGeometry`, which has excellent documentation and source code. The
+    // code was then subsequently mutated to suit OSC, C++ etc.
+    //
+    // https://threejs.org/docs/#api/en/geometries/CircleGeometry
 
     num_segments = max(3_uz, num_segments);
     const auto fnum_segments = static_cast<float>(num_segments);

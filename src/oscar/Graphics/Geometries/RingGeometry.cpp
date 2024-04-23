@@ -23,7 +23,11 @@ osc::RingGeometry::RingGeometry(
     Radians theta_start,
     Radians theta_length)
 {
-    // this implementation was initially hand-ported from threejs (RingGeometry)
+    // the implementation of this was initially translated from `three.js`'s
+    // `RingGeometry`, which has excellent documentation and source code. The
+    // code was then subsequently mutated to suit OSC, C++ etc.
+    //
+    // https://threejs.org/docs/#api/en/geometries/RingGeometry
 
     num_theta_segments = max(3_uz, num_theta_segments);
     num_phi_segments = max(1_uz, num_phi_segments);
@@ -55,9 +59,9 @@ osc::RingGeometry::RingGeometry(
     }
 
     for (size_t j = 0; j < num_phi_segments; ++j) {
-        const size_t thetaSegmentLevel = j * (num_theta_segments + 1);
+        const size_t theta_segment_level = j * (num_theta_segments + 1);
         for (size_t i = 0; i < num_theta_segments; ++i) {
-            const size_t segment = i + thetaSegmentLevel;
+            const size_t segment = i + theta_segment_level;
 
             const auto a = static_cast<uint32_t>(segment);
             const auto b = static_cast<uint32_t>(segment + num_theta_segments + 1);

@@ -4,6 +4,8 @@
 #include <oscar/Graphics/Material.h>
 #include <oscar/Maths/Vec3.h>
 
+#include <string_view>
+
 namespace osc
 {
     // a material for drawing shiny meshes with specular highlights
@@ -14,36 +16,36 @@ namespace osc
     public:
         MeshPhongMaterial();
 
-        Vec3 light_position() const { return *m_Material.get_vec3(c_LightPosPropName); }
-        void set_light_position(Vec3 v) { m_Material.set_vec3(c_LightPosPropName, v); }
+        Vec3 light_position() const { return *material_.get_vec3(c_light_pos_propname); }
+        void set_light_position(Vec3 v) { material_.set_vec3(c_light_pos_propname, v); }
 
-        Vec3 viewer_position() const { return *m_Material.get_vec3(c_ViewPosPropName); }
-        void set_viewer_position(Vec3 v) { m_Material.set_vec3(c_ViewPosPropName, v); }
+        Vec3 viewer_position() const { return *material_.get_vec3(c_view_pos_propname); }
+        void set_viewer_position(Vec3 v) { material_.set_vec3(c_view_pos_propname, v); }
 
-        Color light_color() const { return *m_Material.get_color(c_LightColorPropName); }
-        void set_light_color(Color c) { m_Material.set_color(c_LightColorPropName, c); }
+        Color light_color() const { return *material_.get_color(c_light_color_propname); }
+        void set_light_color(Color c) { material_.set_color(c_light_color_propname, c); }
 
-        Color ambient_color() const { return *m_Material.get_color(c_AmbientColorPropName); }
-        void set_ambient_color(Color c) { m_Material.set_color(c_AmbientColorPropName, c); }
+        Color ambient_color() const { return *material_.get_color(c_ambient_color_propname); }
+        void set_ambient_color(Color c) { material_.set_color(c_ambient_color_propname, c); }
 
-        Color diffuse_color() const { return *m_Material.get_color(c_DiffuseColorPropName); }
-        void set_diffuse_color(Color c) { m_Material.set_color(c_DiffuseColorPropName, c); }
+        Color diffuse_color() const { return *material_.get_color(c_diffuse_color_propname); }
+        void set_diffuse_color(Color c) { material_.set_color(c_diffuse_color_propname, c); }
 
-        Color specular_color() const { return *m_Material.get_color(c_SpecularColorPropName); }
-        void set_specular_color(Color c) { m_Material.set_color(c_SpecularColorPropName, c); }
+        Color specular_color() const { return *material_.get_color(c_specular_color_propname); }
+        void set_specular_color(Color c) { material_.set_color(c_specular_color_propname, c); }
 
-        float specular_shininess() const { return *m_Material.get_float(c_ShininessPropName); }
-        void set_specular_shininess(float v) { m_Material.set_float(c_ShininessPropName, v); }
+        float specular_shininess() const { return *material_.get_float(c_shininess_propname); }
+        void set_specular_shininess(float v) { material_.set_float(c_shininess_propname, v); }
 
-        operator const Material& () const { return m_Material; }
+        operator const Material& () const { return material_; }
     private:
-        static constexpr CStringView c_LightPosPropName = "uLightPos";
-        static constexpr CStringView c_ViewPosPropName = "uViewPos";
-        static constexpr CStringView c_LightColorPropName = "uLightColor";
-        static constexpr CStringView c_AmbientColorPropName = "uAmbientColor";
-        static constexpr CStringView c_DiffuseColorPropName = "uDiffuseColor";
-        static constexpr CStringView c_SpecularColorPropName = "uSpecularColor";
-        static constexpr CStringView c_ShininessPropName = "uShininess";
-        Material m_Material;
+        static constexpr std::string_view c_light_pos_propname = "uLightPos";
+        static constexpr std::string_view c_view_pos_propname = "uViewPos";
+        static constexpr std::string_view c_light_color_propname = "uLightColor";
+        static constexpr std::string_view c_ambient_color_propname = "uAmbientColor";
+        static constexpr std::string_view c_diffuse_color_propname = "uDiffuseColor";
+        static constexpr std::string_view c_specular_color_propname = "uSpecularColor";
+        static constexpr std::string_view c_shininess_propname = "uShininess";
+        Material material_;
     };
 }

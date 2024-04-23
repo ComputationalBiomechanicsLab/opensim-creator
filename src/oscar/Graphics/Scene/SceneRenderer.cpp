@@ -304,10 +304,10 @@ private:
         }
 
         // compute the worldspace bounds union of all rim-highlighted geometry
-        const auto rim_aabb_of = [](const SceneDecoration& d) -> std::optional<AABB>
+        const auto rim_aabb_of = [](const SceneDecoration& dec) -> std::optional<AABB>
         {
-            if (d.flags & (SceneDecorationFlags::IsSelected | SceneDecorationFlags::IsChildOfSelected | SceneDecorationFlags::IsHovered | SceneDecorationFlags::IsChildOfHovered)) {
-                return worldspace_bounds_of(d);
+            if (dec.flags & (SceneDecorationFlags::IsSelected | SceneDecorationFlags::IsChildOfSelected | SceneDecorationFlags::IsHovered | SceneDecorationFlags::IsChildOfHovered)) {
+                return worldspace_bounds_of(dec);
             }
             return std::nullopt;
         };
@@ -488,10 +488,10 @@ AntiAliasingLevel osc::SceneRenderer::antialiasing_level() const
 }
 
 void osc::SceneRenderer::render(
-    std::span<const SceneDecoration> decs,
+    std::span<const SceneDecoration> decorations,
     const SceneRendererParams& params)
 {
-    impl_->render(decs, params);
+    impl_->render(decorations, params);
 }
 
 RenderTexture& osc::SceneRenderer::upd_render_texture()

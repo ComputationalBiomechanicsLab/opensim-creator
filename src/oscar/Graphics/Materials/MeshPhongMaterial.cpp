@@ -68,7 +68,7 @@ void main()
 }
 
 osc::MeshPhongMaterial::MeshPhongMaterial() :
-    m_Material{Shader{c_vertex_shader_src, c_fragment_shader_src}}
+    material_{Shader{c_vertex_shader_src, c_fragment_shader_src}}
 {
     set_light_position({1.0f, 1.0f, 1.0f});
     set_viewer_position({0.0f, 0.0f, 0.0f});

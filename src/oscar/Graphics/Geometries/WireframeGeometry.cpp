@@ -17,6 +17,12 @@ using namespace osc;
 
 osc::WireframeGeometry::WireframeGeometry(const Mesh& mesh)
 {
+    // the implementation/API of this was initially translated from `three.js`'s
+    // `WireframeGeometry`, which has excellent documentation and source code. The
+    // code was then subsequently mutated to suit OSC, C++ etc.
+    //
+    // https://threejs.org/docs/#api/en/geometries/WireframeGeometry
+
     static_assert(num_options<MeshTopology>() == 2);
 
     if (mesh.topology() == MeshTopology::Lines) {
@@ -39,15 +45,15 @@ osc::WireframeGeometry::WireframeGeometry(const Mesh& mesh)
             return lexicographical_compare(p1, p2) ? LineSegment{p1, p2} : LineSegment{p2, p1};
         };
 
-        if (auto ab = ordered_edge(a, b); edges.emplace(ab).second) {
+        if (const auto ab = ordered_edge(a, b); edges.emplace(ab).second) {
             vertices.insert(vertices.end(), {ab.start, ab.end});
         }
 
-        if (auto ac = ordered_edge(a, c); edges.emplace(ac).second) {
+        if (const auto ac = ordered_edge(a, c); edges.emplace(ac).second) {
             vertices.insert(vertices.end(), {ac.start, ac.end});
         }
 
-        if (auto bc = ordered_edge(b, c); edges.emplace(bc).second) {
+        if (const auto bc = ordered_edge(b, c); edges.emplace(bc).second) {
             vertices.insert(vertices.end(), {bc.start, bc.end});
         }
     });

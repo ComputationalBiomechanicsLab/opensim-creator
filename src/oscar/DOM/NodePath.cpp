@@ -44,16 +44,8 @@ namespace
         //       `path` quite a bit. The test suite is heavily relied on for
         //       developing this kind of tricky code.
         //
-        //       the reason it's done this way is because profiling shown that
-        //       `ComponentPath` was accounting for ~6-10 % of OpenSim's CPU
-        //       usage for component-heavy sims. The reason this was so high
-        //       was because `ComponentPath` used a simpler algorithm that
-        //       split the path into a std::vector.
-        //
-        //       usually, that alg. wouldn't be a problem, but path
-        //       normalization can happen millions of times during a simulation,
-        //       all those vector allocations can thrash the allocator and
-        //       increase L1 misses.
+        //       the reason it's done this way is because ths path is used in
+        //       performance-critical contexts
 
         // assert that `path` contains no invalid chars
         if (path.find_first_of(c_invalid_chars) != std::string::npos) {
@@ -160,7 +152,7 @@ namespace
 
             if (l.a == '.' and (l.b == c_nul or l.b == NodePath::separator)) {
                 // handle '.' (if found)
-                size_t num_chars_in_current_el = l.b == NodePath::separator ? 2 : 1;
+                const size_t num_chars_in_current_el = l.b == NodePath::separator ? 2 : 1;
                 shift(cursor, num_chars_in_current_el);
 
             } else if (l.a == '.' and l.b == '.' and (l.c == c_nul or l.c == NodePath::separator)) {

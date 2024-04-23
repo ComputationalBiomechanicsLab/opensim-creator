@@ -6,12 +6,6 @@
 
 namespace osc
 {
-    // generates a rectangular cuboid with the given dimensions centered on the origin, with each
-    // edge parallel to each axis
-    //
-    // `segments` affects how many 2-triangle quads may be generated along each dimension
-    //
-    // inspired by three.js's `BoxGeometry`
     class BoxGeometry final {
     public:
         BoxGeometry(

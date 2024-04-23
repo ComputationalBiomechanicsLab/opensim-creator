@@ -79,8 +79,8 @@ namespace osc
         std::vector<Variant> property_values_;
     };
 
-    inline std::string to_string(const Object& o)
+    inline std::string to_string(const Object& obj)
     {
-        return o.to_string();
+        return obj.to_string();
     }
 }

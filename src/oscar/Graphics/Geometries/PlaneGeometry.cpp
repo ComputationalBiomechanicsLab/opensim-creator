@@ -14,6 +14,12 @@ osc::PlaneGeometry::PlaneGeometry(
     size_t num_width_segments,
     size_t num_height_segments)
 {
+    // the implementation of this was initially translated from `three.js`'s
+    // `PlaneGeometry`, which has excellent documentation and source code. The
+    // code was then subsequently mutated to suit OSC, C++ etc.
+    //
+    // https://threejs.org/docs/#api/en/geometries/PlaneGeometry
+
     const float half_width = 0.5f * width;
     const float half_height = 0.5f * height;
     const size_t grid_x = num_width_segments;

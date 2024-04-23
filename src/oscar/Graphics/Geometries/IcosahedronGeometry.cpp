@@ -12,6 +12,12 @@ using namespace osc;
 
 osc::IcosahedronGeometry::IcosahedronGeometry(float radius, size_t detail)
 {
+    // the implementation of this was initially translated from `three.js`'s
+    // `IcosahedronGeometry`, which has excellent documentation and source code. The
+    // code was then subsequently mutated to suit OSC, C++ etc.
+    //
+    // https://threejs.org/docs/#api/en/geometries/IcosahedronGeometry
+
     const float t = 0.5f * (1.0f + sqrt(5.0f));
 
     const auto vertices = std::to_array<Vec3>({
