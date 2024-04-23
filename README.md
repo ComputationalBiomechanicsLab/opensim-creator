@@ -11,7 +11,8 @@
 
 OpenSim Creator (`osc`) is a standalone UI for building and editing
 [OpenSim](https://github.com/opensim-org/opensim-core) models. It is available
-as a freestanding all-in-one [installer](../../releases/latest) for Windows, Mac, and Linux.
+as a freestanding all-in-one [installer](../../releases/latest) for Windows 10 (or newer),
+MacOS Ventura (or newer), and Ubuntu 20 (or newer).
 
 Architecturally, `osc` is a C++ codebase that is directly integrated against
 the [OpenSim core C++ API](https://github.com/opensim-org/opensim-core). It otherwise only
@@ -55,14 +56,14 @@ from source using GitHub Actions, so if you want a bleeding-edge--but unreleased
 of OpenSim Creator check [⚡ the actions page](../../actions) (downloading a CI build
 requires being logged into GitHub; otherwise, you won't see download links).
 
-### Windows
+### Windows (10 or newer)
 
 - Download an `exe` [release](../../releases)
 - Run the `.exe` installer, continue past any security warnings
 - Follow the familiar `next`, `next`, `finish` wizard
 - Run `OpenSimCreator` by typing `OpenSimCreator` in your start menu, or browse to `C:\Program Files\OpenSimCreator\`.
 
-### Mac
+### Mac (Ventura or newer)
 
 - Download a `dmg` [release](../../releases)
 - Double click the `dmg` file to mount it
@@ -71,7 +72,7 @@ requires being logged into GitHub; otherwise, you won't see download links).
 - Right-click the `osc` application, click `open`, continue past any security warnings to run `osc` for the first time
 - After running it the first time, you can boot it as normal (e.g. `Command+Space`, `osc`, `Enter`)
 
-### Debian/Ubuntu
+### Ubuntu (20 or newer)
 
 - Download a `deb` [release](../../releases)
 - Double-click the `.deb` package and install it through your package manager UI.
