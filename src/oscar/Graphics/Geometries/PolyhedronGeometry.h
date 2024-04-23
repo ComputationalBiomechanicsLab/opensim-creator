@@ -10,10 +10,8 @@
 namespace osc
 {
     // generates a 3D solid with flat faces by projecting triangle faces (`indicies`
-    // indexes into `vertices` for each triangle) onto a sphere, followed by dividing
-    // them up to the desired level of detail_level
-    //
-    // inspired by three.js's `PolyhedronGeometry`
+    // indexes into `vertices` for each triangle) onto a sphere of `radius`, followed
+    // by dividing them up to the desired `detail_level`
     class PolyhedronGeometry final {
     public:
         PolyhedronGeometry(

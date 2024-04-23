@@ -101,8 +101,6 @@ void osc::ui::context::init()
     ImFontConfig base_config;
     base_config.SizePixels = dpi_scale_factor*15.0f;
     base_config.PixelSnapH = true;
-    base_config.OversampleH = 2;
-    base_config.OversampleV = 2;
     base_config.FontDataOwnedByAtlas = true;
     add_resource_as_font(base_config, *io.Fonts, "oscar/fonts/Ruda-Bold.ttf");
 

@@ -12,10 +12,14 @@ using namespace osc;
 
 osc::TetrahedronGeometry::TetrahedronGeometry(float radius, size_t detail_level)
 {
-    // implementation ported from threejs (TetrahedronGeometry)
+    // the implementation of this was initially translated from `three.js`'s
+    // `TetrahedronGeometry`, which has excellent documentation and source code. The
+    // code was then subsequently mutated to suit OSC, C++ etc.
+    //
+    // https://threejs.org/docs/#api/en/geometries/TetrahedronGeometry
 
     const auto vertices = std::to_array<Vec3>({
-        {1, 1, 1}, {-1, -1, 1}, {-1, 1, - 1}, {1, -1, -1},
+        {1.0f, 1.0f, 1.0f}, {-1.0f, -1.0f, 1.0f}, {-1.0f, 1.0f, -1.0f}, {1.0f, -1.0f, -1.0f},
     });
 
     const auto indices = std::to_array<uint32_t>({

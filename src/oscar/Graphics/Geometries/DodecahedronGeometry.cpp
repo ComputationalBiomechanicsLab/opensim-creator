@@ -12,7 +12,11 @@ using namespace osc;
 
 osc::DodecahedronGeometry::DodecahedronGeometry(float radius, size_t detail)
 {
-    // implementation ported from threejs (DodecahedronGeometry)
+    // the implementation of this was initially translated from `three.js`'s
+    // `DodecahedronGeometry`, which has excellent documentation and source code. The
+    // code was then subsequently mutated to suit OSC, C++ etc.
+    //
+    // https://threejs.org/docs/#api/en/geometries/DodecahedronGeometry
 
     const float t = 0.5f * (1.0f + sqrt(5.0f));
     const float r = 1.0f/t;

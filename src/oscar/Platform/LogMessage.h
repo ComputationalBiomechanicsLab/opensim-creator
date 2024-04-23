@@ -2,29 +2,36 @@
 
 #include <oscar/Platform/LogLevel.h>
 #include <oscar/Platform/LogMessageView.h>
+#include <oscar/Utils/CStringView.h>
+#include <oscar/Utils/StringName.h>
 
 #include <chrono>
 #include <string>
+#include <string_view>
 
 namespace osc
 {
-    // a log message that owns all its data
-    //
-    // useful if you need to persist a log message somewhere
-    struct LogMessage final {
-
+    // a log message
+    class LogMessage final {
+    public:
         LogMessage() = default;
 
-        LogMessage(const LogMessageView& view) :
-            logger_name{view.logger_name},
-            time{view.time},
-            payload{view.payload},
-            level{view.level}
+        explicit LogMessage(const LogMessageView& view) :
+            logger_name_{view.logger_name()},
+            time_{view.time()},
+            payload_{view.payload()},
+            level_{view.level()}
         {}
 
-        std::string logger_name;
-        std::chrono::system_clock::time_point time;
-        std::string payload;
-        LogLevel level;
+        StringName const& logger_name() const { return logger_name_; }
+        std::chrono::system_clock::time_point time() const { return time_; }
+        CStringView payload() const { return payload_; }
+        LogLevel level() const { return level_; }
+
+    private:
+        StringName logger_name_;
+        std::chrono::system_clock::time_point time_;
+        std::string payload_;
+        LogLevel level_;
     };
 }

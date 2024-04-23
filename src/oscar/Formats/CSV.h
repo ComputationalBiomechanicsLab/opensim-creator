@@ -16,7 +16,7 @@ namespace osc
     // returns `true` if a row was read from the input and written as columns to the output
     bool read_csv_row_into_vector(
         std::istream&,
-        std::vector<std::string>& overwriteOut
+        std::vector<std::string>& assigned_columns
     );
 
     // writes the given columns to the output stream as an ASCII encoded text row

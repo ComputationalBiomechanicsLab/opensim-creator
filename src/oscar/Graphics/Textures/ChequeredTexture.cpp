@@ -1,5 +1,3 @@
-
-
 #include "ChequeredTexture.h"
 
 #include <oscar/Graphics/Color32.h>
@@ -18,7 +16,7 @@ namespace
 {
     Texture2D generate_chequer_texture()
     {
-        constexpr Vec2i chequer_dims = {32, 32};
+        constexpr Vec2i chequer_dims = {1, 1};
         constexpr Vec2i texture_dims = 2 * chequer_dims;
         constexpr Color32 on_color = {0xff, 0xff, 0xff, 0xff};
         constexpr Color32 off_color = {0xf3, 0xf3, 0xf3, 0xff};
@@ -38,7 +36,7 @@ namespace
             TextureFormat::RGBA32,
             ColorSpace::sRGB,
             TextureWrapMode::Repeat,
-            TextureFilterMode::Mipmap,
+            TextureFilterMode::Nearest,
         };
         rv.set_pixel_data(view_object_representations<uint8_t>(pixels));
         return rv;

@@ -39,7 +39,7 @@ namespace
         {
             const auto& content = guarded_content.lock();
             for (const LogMessage& msg : *content) {
-                ss << '[' << to_cstringview(msg.level) << "] " << msg.payload << '\n';
+                ss << '[' << msg.level() << "] " << msg.payload() << '\n';
             }
         }
 
@@ -108,11 +108,11 @@ public:
         auto& guardedContent = global_get_traceback_log();
         const auto& contentGuard = guardedContent.lock();
         for (const LogMessage& msg : *contentGuard) {
-            ui::PushStyleColor(ImGuiCol_Text, ::to_color(msg.level));
-            ui::Text("[%s]", to_cstringview(msg.level).c_str());
+            ui::PushStyleColor(ImGuiCol_Text, ::to_color(msg.level()));
+            ui::Text("[%s]", to_cstringview(msg.level()).c_str());
             ui::PopStyleColor();
             ui::SameLine();
-            ui::TextWrapped(msg.payload);
+            ui::TextWrapped(msg.payload());
 
             if (autoscroll) {
                 ui::SetScrollHereY();

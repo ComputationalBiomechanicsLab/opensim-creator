@@ -109,6 +109,61 @@ public:
         resource_loader_{std::move(resource_loader)}
     {}
 
+    void clear_meshes()
+    {
+        mesh_cache.lock()->clear();
+        bvh_cache.lock()->clear();
+        torus_cache.lock()->clear();
+    }
+
+    Mesh get_mesh(
+        const std::string& key,
+        const std::function<Mesh()>& getter)
+    {
+        auto guard = mesh_cache.lock();
+
+        auto [it, inserted] = guard->try_emplace(key, cube);
+        if (inserted) {
+            it->second = getter();
+        }
+
+        return it->second;
+    }
+
+    Mesh sphere_mesh() { return sphere; }
+    Mesh circle_mesh() { return circle; }
+    Mesh cylinder_mesh() { return cylinder; }
+    Mesh uncapped_cylinder_mesh() { return uncapped_cylinder; }
+    Mesh brick_mesh() { return cube; }
+    Mesh cone_mesh() { return cone; }
+    Mesh floor_mesh() { return floor; }
+    Mesh grid_mesh() { return grid100x100; }
+    Mesh cube_wireframe_mesh() { return cube_wireframe; }
+    Mesh yline_mesh() { return y_line; }
+    Mesh quad_mesh() { return textured_quad; }
+    Mesh torus_mesh(float tube_center_radius, float tube_radius)
+    {
+        const TorusParameters key{tube_center_radius, tube_radius};
+
+        auto guard = torus_cache.lock();
+        auto [it, inserted] = guard->try_emplace(key, cube);
+        if (inserted) {
+            it->second = TorusGeometry{key.tube_center_radius, key.tube_radius, 12, 12, Degrees{360}};
+        }
+
+        return it->second;
+    }
+
+    const BVH& get_bvh(const Mesh& mesh)
+    {
+        auto guard = bvh_cache.lock();
+        auto [it, inserted] = guard->try_emplace(mesh, nullptr);
+        if (inserted) {
+            it->second = std::make_unique<BVH>(create_triangle_bvh(mesh));
+        }
+        return *it->second;
+    }
+
     const Shader& load(
         const ResourcePath& vertex_shader_path,
         const ResourcePath& fragment_shader_path)
@@ -162,6 +217,7 @@ public:
         return *wireframe_material_;
     }
 
+private:
     Mesh sphere = SphereGeometry{1.0f, 16, 16};
     Mesh circle = CircleGeometry{1.0f, 16};
     Mesh cylinder = CylinderGeometry{1.0f, 1.0f, 2.0f, 16};
@@ -186,11 +242,11 @@ public:
 };
 
 osc::SceneCache::SceneCache() :
-    m_Impl{std::make_unique<Impl>()}
+    impl_{std::make_unique<Impl>()}
 {}
 
 osc::SceneCache::SceneCache(const ResourceLoader& resource_loader) :
-    m_Impl{std::make_unique<Impl>(resource_loader)}
+    impl_{std::make_unique<Impl>(resource_loader)}
 {}
 
 osc::SceneCache::SceneCache(SceneCache&&) noexcept = default;
@@ -199,108 +255,42 @@ osc::SceneCache::~SceneCache() noexcept = default;
 
 void osc::SceneCache::clear_meshes()
 {
-    m_Impl->mesh_cache.lock()->clear();
-    m_Impl->bvh_cache.lock()->clear();
-    m_Impl->torus_cache.lock()->clear();
+    impl_->clear_meshes();
 }
 
 Mesh osc::SceneCache::get_mesh(
     const std::string& key,
     const std::function<Mesh()>& getter)
 {
-    auto guard = m_Impl->mesh_cache.lock();
-
-    auto [it, inserted] = guard->try_emplace(key, m_Impl->cube);
-    if (inserted) {
-        it->second = getter();
-    }
-
-    return it->second;
+    return impl_->get_mesh(key, getter);
 }
 
-Mesh osc::SceneCache::sphere_mesh()
-{
-    return m_Impl->sphere;
-}
-
-Mesh osc::SceneCache::circle_mesh()
-{
-    return m_Impl->circle;
-}
-
-Mesh osc::SceneCache::cylinder_mesh()
-{
-    return m_Impl->cylinder;
-}
-
-Mesh osc::SceneCache::uncapped_cylinder_mesh()
-{
-    return m_Impl->uncapped_cylinder;
-}
-
-Mesh osc::SceneCache::brick_mesh()
-{
-    return m_Impl->cube;
-}
-
-Mesh osc::SceneCache::cone_mesh()
-{
-    return m_Impl->cone;
-}
-
-Mesh osc::SceneCache::floor_mesh()
-{
-    return m_Impl->floor;
-}
-
-Mesh osc::SceneCache::grid_mesh()
-{
-    return m_Impl->grid100x100;
-}
-
-Mesh osc::SceneCache::cube_wireframe_mesh()
-{
-    return m_Impl->cube_wireframe;
-}
-
-Mesh osc::SceneCache::yline_mesh()
-{
-    return m_Impl->y_line;
-}
-
-Mesh osc::SceneCache::quad_mesh()
-{
-    return m_Impl->textured_quad;
-}
-
+Mesh osc::SceneCache::sphere_mesh() { return impl_->sphere_mesh(); }
+Mesh osc::SceneCache::circle_mesh() { return impl_->circle_mesh(); }
+Mesh osc::SceneCache::cylinder_mesh() { return impl_->cylinder_mesh(); }
+Mesh osc::SceneCache::uncapped_cylinder_mesh() { return impl_->uncapped_cylinder_mesh(); }
+Mesh osc::SceneCache::brick_mesh() { return impl_->brick_mesh(); }
+Mesh osc::SceneCache::cone_mesh() { return impl_->cone_mesh(); }
+Mesh osc::SceneCache::floor_mesh() { return impl_->floor_mesh(); }
+Mesh osc::SceneCache::grid_mesh() { return impl_->grid_mesh(); }
+Mesh osc::SceneCache::cube_wireframe_mesh() { return impl_->cube_wireframe_mesh(); }
+Mesh osc::SceneCache::yline_mesh() { return impl_->yline_mesh(); }
+Mesh osc::SceneCache::quad_mesh() { return impl_->quad_mesh(); }
 Mesh osc::SceneCache::torus_mesh(float tube_center_radius, float tube_radius)
 {
-    const TorusParameters key{tube_center_radius, tube_radius};
-
-    auto guard = m_Impl->torus_cache.lock();
-    auto [it, inserted] = guard->try_emplace(key, m_Impl->cube);
-    if (inserted) {
-        it->second = TorusGeometry{key.tube_center_radius, key.tube_radius, 12, 12, Degrees{360}};
-    }
-
-    return it->second;
+    return impl_->torus_mesh(tube_center_radius, tube_radius);
 }
 
 const BVH& osc::SceneCache::get_bvh(const Mesh& mesh)
 {
-    auto guard = m_Impl->bvh_cache.lock();
-    auto [it, inserted] = guard->try_emplace(mesh, nullptr);
-    if (inserted) {
-        it->second = std::make_unique<BVH>(create_triangle_bvh(mesh));
-    }
-    return *it->second;
+    return impl_->get_bvh(mesh);
 }
 
 const Shader& osc::SceneCache::get_shader(
     const ResourcePath& vertex_shader_path,
     const ResourcePath& fragment_shader_path)
 {
-    return m_Impl->load(vertex_shader_path, fragment_shader_path);
+    return impl_->load(vertex_shader_path, fragment_shader_path);
 }
 
 const Shader& osc::SceneCache::get_shader(
@@ -308,15 +298,15 @@ const Shader& osc::SceneCache::get_shader(
     const ResourcePath& geometry_shader_path,
     const ResourcePath& fragment_shader_path)
 {
-    return m_Impl->load(vertex_shader_path, geometry_shader_path, fragment_shader_path);
+    return impl_->load(vertex_shader_path, geometry_shader_path, fragment_shader_path);
 }
 
 const MeshBasicMaterial& osc::SceneCache::basic_material()
 {
-    return m_Impl->basic_material();
+    return impl_->basic_material();
 }
 
 const MeshBasicMaterial& osc::SceneCache::wireframe_material()
 {
-    return m_Impl->wireframe_material();
+    return impl_->wireframe_material();
 }

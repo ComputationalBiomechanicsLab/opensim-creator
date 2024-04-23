@@ -348,9 +348,9 @@ namespace
         o << "  </library_geometries>\n";
     }
 
-    void write_matrix_node(std::ostream& o, const Transform& t)
+    void write_matrix_node(std::ostream& o, const Transform& transform)
     {
-        const Mat4 m = mat4_cast(t);
+        const Mat4 m = mat4_cast(transform);
 
         // row-major
         o << R"(        <matrix sid="transform">)";
@@ -419,10 +419,10 @@ osc::DAEMetadata::DAEMetadata(
 
 void osc::write_as_dae(
     std::ostream& o,
-    std::span<const SceneDecoration> els,
+    std::span<const SceneDecoration> decorations,
     const DAEMetadata& metadata)
 {
-    const DAESceneGraph graph = to_dae_scene_graph(els);
+    const DAESceneGraph graph = to_dae_scene_graph(decorations);
 
     write_header(o);
     write_collada_root_node_begin(o);

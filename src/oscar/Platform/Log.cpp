@@ -17,7 +17,7 @@ namespace
             static std::mutex s_stdout_mutex;
 
             const std::lock_guard g{s_stdout_mutex};
-            std::cerr << '[' << message.logger_name << "] [" << to_cstringview(message.level) << "] " << message.payload << std::endl;
+            std::cerr << '[' << message.logger_name() << "] [" << message.level() << "] " << message.payload() << std::endl;
         }
     };
 

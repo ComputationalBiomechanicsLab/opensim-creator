@@ -9,6 +9,12 @@ using namespace osc;
 
 osc::AABBGeometry::AABBGeometry(const AABB& aabb)
 {
+    // the implementation of this was initially translated from `three.js`'s
+    // `BoxHelper`, which has excellent documentation and source code. The
+    // code was then subsequently mutated to suit OSC, C++ etc.
+    //
+    // https://threejs.org/docs/#api/en/helpers/BoxHelper
+
     const auto& [min, max] = aabb;
 
     mesh_.set_topology(MeshTopology::Lines);

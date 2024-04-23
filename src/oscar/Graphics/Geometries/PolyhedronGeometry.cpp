@@ -24,6 +24,12 @@ osc::PolyhedronGeometry::PolyhedronGeometry(
     float radius,
     size_t detail_level)
 {
+    // the implementation of this was initially translated from `three.js`'s
+    // `PolyhedronGeometry`, which has excellent documentation and source code. The
+    // code was then subsequently mutated to suit OSC, C++ etc.
+    //
+    // https://threejs.org/docs/#api/en/geometries/PolyhedronGeometry
+
     std::vector<Vec3> generated_vertices;
     std::vector<Vec2> uvs;
 

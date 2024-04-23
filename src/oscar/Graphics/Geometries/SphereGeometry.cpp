@@ -22,7 +22,11 @@ osc::SphereGeometry::SphereGeometry(
     Radians theta_start,
     Radians theta_length)
 {
-    // implementation was initially hand-ported from three.js (SphereGeometry)
+    // the implementation of this was initially translated from `three.js`'s
+    // `SphereGeometry`, which has excellent documentation and source code. The
+    // code was then subsequently mutated to suit OSC, C++ etc.
+    //
+    // https://threejs.org/docs/#api/en/geometries/SphereGeometry
 
     num_width_segments = max(3_uz, num_width_segments);
     num_height_segments = max(2_uz, num_height_segments);

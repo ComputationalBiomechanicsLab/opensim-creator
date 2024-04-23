@@ -7,9 +7,6 @@
 
 namespace osc
 {
-    // returns a mesh representation of a solid circle
-    //
-    // (ported from three.js:CircleGeometry)
     class CircleGeometry final {
     public:
         CircleGeometry(

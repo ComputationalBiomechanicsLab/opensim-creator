@@ -24,7 +24,11 @@ osc::CylinderGeometry::CylinderGeometry(
     Radians theta_start,
     Radians theta_length)
 {
-    // this implementation was initially hand-ported from threejs (CylinderGeometry)
+    // the implementation of this was initially translated from `three.js`'s
+    // `CylinderGeometry`, which has excellent documentation and source code. The
+    // code was then subsequently mutated to suit OSC, C++ etc.
+    //
+    // https://threejs.org/docs/#api/en/geometries/CylinderGeometry
 
     const auto fnum_radial_segments = static_cast<float>(num_radial_segments);
     const auto fnum_height_segments = static_cast<float>(num_height_segments);

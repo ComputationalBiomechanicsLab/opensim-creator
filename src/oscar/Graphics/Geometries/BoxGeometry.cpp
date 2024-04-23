@@ -20,7 +20,7 @@ osc::BoxGeometry::BoxGeometry(
     size_t num_height_segments,
     size_t num_depth_segments)
 {
-    // the implementation/API of this was initially translated from `three.js`'s
+    // the implementation of this was initially translated from `three.js`'s
     // `BoxGeometry`, which has excellent documentation and source code. The
     // code was then subsequently mutated to suit OSC, C++ etc.
     //

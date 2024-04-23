@@ -38,7 +38,7 @@ std::optional<std::vector<std::string>> osc::read_csv_row(
 
 bool osc::read_csv_row_into_vector(
     std::istream& in,
-    std::vector<std::string>& out)
+    std::vector<std::string>& assigned_columns)
 {
     if (in.eof()) {
         return false;
@@ -100,7 +100,7 @@ bool osc::read_csv_row_into_vector(
     }
 
     if (not cols.empty()) {
-        out = std::move(cols);
+        assigned_columns = std::move(cols);
         return true;
     }
     else {

@@ -7,7 +7,6 @@
 
 namespace osc
 {
-    // (ported from three.js/TorusGeometry)
     class TorusGeometry final {
     public:
         TorusGeometry(

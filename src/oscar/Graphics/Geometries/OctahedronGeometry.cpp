@@ -12,7 +12,11 @@ using namespace osc;
 
 osc::OctahedronGeometry::OctahedronGeometry(float radius, size_t detail)
 {
-    // implementation ported from threejs (OctahedronGeometry)
+    // the implementation of this was initially translated from `three.js`'s
+    // `OctahedronGeometry`, which has excellent documentation and source code. The
+    // code was then subsequently mutated to suit OSC, C++ etc.
+    //
+    // https://threejs.org/docs/#api/en/geometries/OctahedronGeometry
 
     const auto vertices = std::to_array<Vec3>({
         {1.0f,  0.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 1.0f,  0.0f},

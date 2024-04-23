@@ -4,7 +4,7 @@
 
 namespace osc::detail
 {
-    //  used by the texture implementation to keep track of what kind of
+    // used by the texture implementation to keep track of what kind of
     // data it is storing
     enum class CPUImageFormat {
         R8,

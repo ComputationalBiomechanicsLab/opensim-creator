@@ -27,7 +27,7 @@ TEST(SimTKDecorationGenerator, PropagatesWireframeShadingFlag)
         ++ncalls;
         ASSERT_TRUE(dec.flags & SceneDecorationFlags::WireframeOverlay);
     });
-    ASSERT_EQ(ncalls, 1) << "should only emit one wireframe sphere";
+    ASSERT_EQ(ncalls, 1) << "should only emit one is_wireframe sphere";
 }
 
 // ensure the SimTKDecorationGenerator correctly tags emitted geometry as
@@ -51,5 +51,5 @@ TEST(SimTKDecorationGenerator, PropagatesHiddenRepresentation)
         ++ncalls;
         ASSERT_TRUE(dec.flags & SceneDecorationFlags::NoDrawNormally);
     });
-    ASSERT_EQ(ncalls, 1) << "should only emit one wireframe sphere";
+    ASSERT_EQ(ncalls, 1) << "should only emit one is_wireframe sphere";
 }

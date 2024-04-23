@@ -6,7 +6,6 @@
 
 namespace osc
 {
-    // (ported from three.js/PlaneGeometry)
     class PlaneGeometry final {
     public:
         PlaneGeometry(

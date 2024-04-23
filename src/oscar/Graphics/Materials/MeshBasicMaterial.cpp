@@ -36,7 +36,7 @@ void main()
 }
 
 osc::MeshBasicMaterial::MeshBasicMaterial() :
-    m_Material{Shader{c_vertex_shader_src, c_fragment_shader_src}}
+    material_{Shader{c_vertex_shader_src, c_fragment_shader_src}}
 {
     set_color(Color::black());
 }

@@ -105,16 +105,15 @@ public:
 
     void onDraw()
     {
-        constexpr Vec2 menuDims = {512.0f, 512.0f};
-
-        Rect const tabRect = ui::GetMainViewportWorkspaceScreenRect();
-        Vec2 const windowDims = dimensions_of(tabRect);
+        Rect const viewportRect = ui::GetMainViewportWorkspaceScreenRect();
+        Vec2 const viewportDims = dimensions_of(viewportRect);
+        Vec2 const menuDimsGuess = {0.3f * viewportDims.x, 6.0f * ui::GetTextLineHeight()};
 
         // center the menu
         {
-            Vec2 const menuTopLeft = (windowDims - menuDims) / 2.0f;
-            ui::SetNextWindowPos(menuTopLeft);
-            ui::SetNextWindowSize({menuDims.x, -1.0f});
+            Vec2 const menuTopLeft = 0.5f * (viewportDims - menuDimsGuess);
+            ui::SetNextWindowPos(viewportRect.p1 + menuTopLeft);
+            ui::SetNextWindowSize({menuDimsGuess.x, -1.0f});
         }
 
         if (m_LoadingErrorMsg.empty())

@@ -7,6 +7,7 @@
 
 #include <array>
 #include <cstddef>
+#include <iostream>
 #include <iterator>
 
 using namespace osc;
@@ -43,4 +44,9 @@ std::optional<LogLevel> osc::try_parse_as_log_level(std::string_view v)
     }
 
     return from_index<LogLevel>(std::distance(c_log_level_strings.begin(), it));
+}
+
+std::ostream& osc::operator<<(std::ostream& o, LogLevel level)
+{
+    return o << to_cstringview(level);
 }

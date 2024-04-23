@@ -21,7 +21,11 @@ osc::LatheGeometry::LatheGeometry(
     Radians phi_start,
     Radians phi_length)
 {
-    // this implementation was initially hand-ported from threejs (LatheGeometry)
+    // the implementation of this was initially translated from `three.js`'s
+    // `LatheGeometry`, which has excellent documentation and source code. The
+    // code was then subsequently mutated to suit OSC, C++ etc.
+    //
+    // https://threejs.org/docs/#api/en/geometries/LatheGeometry
 
     if (points.size() <= 2) {
         return;  // edge-case: requires at least 2 points

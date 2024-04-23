@@ -99,8 +99,8 @@ namespace osc
 
 template<>
 struct std::hash<osc::NodePath> final {
-    size_t operator()(const osc::NodePath& np) const
+    size_t operator()(const osc::NodePath& node_path) const
     {
-        return std::hash<std::string_view>{}(np);
+        return std::hash<std::string_view>{}(node_path);
     }
 };

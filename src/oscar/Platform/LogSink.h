@@ -2,7 +2,7 @@
 
 #include <oscar/Platform/LogLevel.h>
 
-namespace osc { struct LogMessageView; }
+namespace osc { class LogMessageView; }
 
 namespace osc
 {
@@ -16,18 +16,12 @@ namespace osc
     public:
         virtual ~LogSink() noexcept = default;
 
-        void log_message(const LogMessageView& view)
-        {
-            impl_log_message(view);
-        }
+        void log_message(const LogMessageView& view) { impl_log_message(view); }
 
         LogLevel level() const { return sink_level_; }
         void set_level(LogLevel level) { sink_level_ = level; }
 
-        bool should_log(LogLevel level) const
-        {
-            return level >= sink_level_;
-        }
+        bool should_log(LogLevel level) const { return level >= sink_level_; }
 
     private:
         virtual void impl_log_message(const LogMessageView&) = 0;

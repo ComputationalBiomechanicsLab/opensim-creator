@@ -5,13 +5,11 @@
 #include <oscar/Graphics/Color.h>
 
 #include <optional>
+#include <string_view>
 
 namespace osc
 {
-    // a material for drawing meshes in a simple (solid-colored) way
-    //
-    // naming inspired by three.js's `MeshBasicMaterial`, was called
-    // "SolidColorMaterial" in earlier OSCs
+    // a material for drawing meshes with a simple solid color
     class MeshBasicMaterial final {
     public:
         class PropertyBlock final {
@@ -19,11 +17,11 @@ namespace osc
             PropertyBlock() = default;
             explicit PropertyBlock(Color color)
             {
-                property_block_.set_color(c_ColorPropName, color);
+                property_block_.set_color(c_color_propname, color);
             }
 
-            std::optional<Color> color() const { return property_block_.get_color(c_ColorPropName); }
-            void set_color(Color c) { property_block_.set_color(c_ColorPropName, c); }
+            std::optional<Color> color() const { return property_block_.get_color(c_color_propname); }
+            void set_color(Color c) { property_block_.set_color(c_color_propname, c); }
 
             operator const MaterialPropertyBlock& () const { return property_block_; }
         private:
@@ -32,22 +30,22 @@ namespace osc
 
         MeshBasicMaterial();
 
-        Color color() const { return *m_Material.get_color(c_ColorPropName); }
-        void set_color(Color c) { m_Material.set_color(c_ColorPropName, c); }
+        Color color() const { return *material_.get_color(c_color_propname); }
+        void set_color(Color c) { material_.set_color(c_color_propname, c); }
 
-        bool wireframe() const { return m_Material.is_wireframe(); }
-        void set_wireframe(bool v) { m_Material.set_wireframe(v); }
+        bool is_wireframe() const { return material_.is_wireframe(); }
+        void set_wireframe(bool v) { material_.set_wireframe(v); }
 
-        bool depth_tested() const { return m_Material.is_depth_tested(); }
-        void set_depth_tested(bool v) { m_Material.set_depth_tested(v); }
+        bool is_depth_tested() const { return material_.is_depth_tested(); }
+        void set_depth_tested(bool v) { material_.set_depth_tested(v); }
 
-        bool transparent() const { return m_Material.is_transparent(); }
-        void set_transparent(bool v) { m_Material.set_transparent(v); }
+        bool is_transparent() const { return material_.is_transparent(); }
+        void set_transparent(bool v) { material_.set_transparent(v); }
 
-        operator const Material& () const { return m_Material; }
+        operator const Material& () const { return material_; }
 
     private:
-        static constexpr CStringView c_ColorPropName = "uDiffuseColor";
-        Material m_Material;
+        static constexpr std::string_view c_color_propname = "uDiffuseColor";
+        Material material_;
     };
 }

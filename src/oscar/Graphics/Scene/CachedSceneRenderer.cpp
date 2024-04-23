@@ -43,7 +43,7 @@ private:
 // public API (PIMPL)
 
 osc::CachedSceneRenderer::CachedSceneRenderer(SceneCache& scene_cache) :
-    m_Impl{std::make_unique<Impl>(scene_cache)}
+    impl_{std::make_unique<Impl>(scene_cache)}
 {}
 
 osc::CachedSceneRenderer::CachedSceneRenderer(CachedSceneRenderer&&) noexcept = default;
@@ -54,5 +54,5 @@ RenderTexture& osc::CachedSceneRenderer::render(
     std::span<const SceneDecoration> decorations,
     const SceneRendererParams& params)
 {
-    return m_Impl->render(decorations, params);
+    return impl_->render(decorations, params);
 }

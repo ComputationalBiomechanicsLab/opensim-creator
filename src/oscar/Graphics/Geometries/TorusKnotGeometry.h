@@ -6,10 +6,9 @@
 
 namespace osc
 {
-    // generates a torus knot, the particular shape of which is defined by a pair of coprime integers
-    // `p` and `q`. If `p` and `q` are not coprime, the result will be a torus link
-    //
-    // inspired by three.js's `TorusKnotGeometry`
+    // generates a torus knot, the particular shape of which is defined by a pair
+    // of coprime integers `p` and `q`. If `p` and `q` are not coprime, the result
+    // will be a torus link
     class TorusKnotGeometry final {
     public:
         TorusKnotGeometry(

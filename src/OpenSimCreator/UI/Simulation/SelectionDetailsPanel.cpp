@@ -8,6 +8,7 @@
 
 #include <OpenSim/Common/Component.h>
 #include <oscar/UI/oscimgui.h>
+#include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/Panels/StandardPanelImpl.h>
 
 #include <memory>
@@ -38,7 +39,7 @@ private:
 
         const OpenSim::Component* maybeSelected = ms.getSelected();
         if (not maybeSelected) {
-            ui::TextDisabled("(nothing selected)");
+            ui:: TextDisabledAndWindowCentered("(nothing selected)");
             return;
         }
         const OpenSim::Component& selected = *maybeSelected;
