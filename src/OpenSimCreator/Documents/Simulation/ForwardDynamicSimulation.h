@@ -31,6 +31,8 @@ namespace osc
         ForwardDynamicSimulation& operator=(ForwardDynamicSimulation&&) noexcept;
         ~ForwardDynamicSimulation() noexcept;
 
+        // blocks the current thread until the simulator thread finishes its execution
+        void join();
     private:
         SynchronizedValueGuard<OpenSim::Model const> implGetModel() const final;
 

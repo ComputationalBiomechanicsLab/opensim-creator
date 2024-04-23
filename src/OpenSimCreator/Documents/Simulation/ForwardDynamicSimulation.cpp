@@ -67,6 +67,11 @@ public:
         m_SimulatorOutputExtractors(GetFdSimulatorOutputExtractorsAsVector())
     {}
 
+    void join()
+    {
+        m_Simulation.join();
+    }
+
     SynchronizedValueGuard<OpenSim::Model const> getModel() const
     {
         return m_ModelState.lockChild<OpenSim::Model>([](BasicModelStatePair const& p) -> decltype(auto) { return p.getModel(); });
@@ -104,12 +109,10 @@ public:
     {
         popReportsHACK();
 
-        if (!m_Reports.empty())
-        {
+        if (not m_Reports.empty()) {
             return SimulationClock::start() + SimulationClock::duration{m_Reports.back().getState().getTime()};
         }
-        else
-        {
+        else {
             return getStartTime();
         }
     }
@@ -131,9 +134,61 @@ public:
         return m_SimulatorOutputExtractors;
     }
 
-    void requestNewEndTime(SimulationClock::time_point)
+    void requestNewEndTime(SimulationClock::time_point new_end_time)
     {
-        // todo
+        SimulationClock::time_point const old_end_time = getClocks().end();
+
+        if (new_end_time == old_end_time) {
+            return;  // nothing to change
+        }
+
+        // before doing anything, sychronously stop current simulation and
+        // ensure the report queue is popped
+        {
+            stop();
+            popReportsHACK();
+        }
+
+        // if necessary, truncate any dangling reports
+        if (new_end_time < old_end_time and not m_Reports.empty()) {
+
+            auto const reportBeforeOrEqualToNewEndTime = [new_end_time](SimulationReport const& r)
+            {
+                return r.getTime() <= new_end_time;
+            };
+            auto const it = find_if(m_Reports.rbegin(), m_Reports.rend(), reportBeforeOrEqualToNewEndTime);
+            m_Reports.erase(it.base(), m_Reports.end());
+        }
+
+        // update the simulation parameters to reflect the new end-time
+        {
+            auto params = FromParamBlock(m_ParamsAsParamBlock);
+            params.finalTime = new_end_time;
+            m_ParamsAsParamBlock = ToParamBlock(params);
+        }
+
+        // edge-case: if the latest available report has an end-time equal to `t`, then
+        // our work is complete
+        if (not m_Reports.empty() and m_Reports.back().getTime() == new_end_time) {
+            return;
+        }
+
+        // otherwise, create a new simulator with the new parameters
+        {
+            auto const guard = m_ModelState.lock();
+            SimTK::State const& latestState = m_Reports.empty() ?
+                guard->getState() :
+                m_Reports.back().getState();
+
+            m_Simulation = MakeSimulation(
+                BasicModelStatePair{guard->getModel(), latestState},
+                FromParamBlock(m_ParamsAsParamBlock),
+                m_ReportQueue
+            );
+
+            // note: the report collection method should ensure that double-reports
+            // aren't collected
+        }
     }
 
     void requestStop()
@@ -166,33 +221,38 @@ private:
     {
         auto& reports = const_cast<std::vector<SimulationReport>&>(m_Reports);
 
+        // handle double-reporting (e.g. due to `requestNewEndTime`) by checking
+        // the time of each incoming reports against the latest already collected
+        std::optional<SimulationClock::time_point> latestReportTime;
+        if (not reports.empty()) {
+            latestReportTime = reports.back().getTime();
+        }
+
         size_t const nReportsBefore = reports.size();
+        size_t nAdded = 0;
 
         // pop them onto the local reports queue
         {
             auto guard = const_cast<SynchronizedValue<std::vector<SimulationReport>>&>(m_ReportQueue).lock();
-
             reports.reserve(reports.size() + guard->size());
-            copy(
-                std::make_move_iterator(guard->begin()),
-                std::make_move_iterator(guard->end()),
-                std::back_inserter(reports)
-            );
+            for (SimulationReport& report : *guard) {
+                if (report.getTime() == latestReportTime) {
+                    continue;  // filter out duplicate reports (e.g. due to `requestNewEndTime`)
+                }
+
+                reports.push_back(std::move(report));
+                ++nAdded;
+            }
             guard->clear();
         }
 
-        size_t const nReportsAfter = reports.size();
-        size_t const nAdded = nReportsAfter-nReportsBefore;
-
-        if (nAdded <= 0)
-        {
+        if (nAdded <= 0) {
             return;
         }
 
         // ensure all reports are realized on the UI model
         auto modelLock = m_ModelState.lock();
-        for (auto it = reports.begin() + nReportsBefore; it != reports.end(); ++it)
-        {
+        for (auto it = reports.begin() + nReportsBefore; it != reports.end(); ++it) {
             modelLock->getModel().realizeReport(it->updStateHACK());
         }
     }
@@ -214,6 +274,11 @@ osc::ForwardDynamicSimulation::ForwardDynamicSimulation(BasicModelStatePair ms, 
 osc::ForwardDynamicSimulation::ForwardDynamicSimulation(ForwardDynamicSimulation&&) noexcept = default;
 osc::ForwardDynamicSimulation& osc::ForwardDynamicSimulation::operator=(ForwardDynamicSimulation&&) noexcept = default;
 osc::ForwardDynamicSimulation::~ForwardDynamicSimulation() noexcept = default;
+
+void osc::ForwardDynamicSimulation::join()
+{
+    m_Impl->join();
+}
 
 SynchronizedValueGuard<OpenSim::Model const> osc::ForwardDynamicSimulation::implGetModel() const
 {

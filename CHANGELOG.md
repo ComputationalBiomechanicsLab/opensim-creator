@@ -5,6 +5,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- The simulation tab now has an `Actions` menu, which includes the ability to extend the end time of
+  a simulation by some multiplication factor (2x, 4x, etc. #839)
 - The chequered floor texture is now rendered with `Nearest` sampling, which makes it appear sharper
   in the foreground
 - Memory usage was reduced by optimizing font loading and log message storage

@@ -404,6 +404,13 @@ public:
         return m_Shared->getStatus();
     }
 
+    void join()
+    {
+        if (m_SimulatorThread.joinable()) {
+            m_SimulatorThread.join();
+        }
+    }
+
     void requestStop()
     {
         m_SimulatorThread.request_stop();
@@ -412,7 +419,9 @@ public:
     void stop()
     {
         m_SimulatorThread.request_stop();
-        m_SimulatorThread.join();
+        if (m_SimulatorThread.joinable()) {
+            m_SimulatorThread.join();
+        }
     }
 
     ForwardDynamicSimulatorParams const& params() const
@@ -453,6 +462,11 @@ osc::ForwardDynamicSimulator::~ForwardDynamicSimulator() noexcept = default;
 SimulationStatus osc::ForwardDynamicSimulator::getStatus() const
 {
     return m_Impl->getStatus();
+}
+
+void osc::ForwardDynamicSimulator::join()
+{
+    m_Impl->join();
 }
 
 void osc::ForwardDynamicSimulator::requestStop()

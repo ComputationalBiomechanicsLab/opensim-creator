@@ -36,8 +36,16 @@ namespace osc
         ~ForwardDynamicSimulator() noexcept;
 
         SimulationStatus getStatus() const;
-        void requestStop();  // asynchronous
-        void stop();  // synchronous (blocks until it stops)
+
+        // blocks the current thread until the simulator thread finishes its execution
+        void join();
+
+        // asynchronous
+        void requestStop();
+
+        // synchronous (blocks until it stops)
+        void stop();
+
         ForwardDynamicSimulatorParams const& params() const;
 
     private:
