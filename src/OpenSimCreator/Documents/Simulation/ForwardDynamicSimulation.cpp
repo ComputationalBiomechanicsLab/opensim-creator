@@ -63,6 +63,7 @@ public:
     Impl(BasicModelStatePair p, ForwardDynamicSimulatorParams const& params) :
         m_ModelState{std::move(p)},
         m_Simulation{MakeSimulation(*m_ModelState.lock(), params, m_ReportQueue)},
+        m_Params{params},
         m_ParamsAsParamBlock{ToParamBlock(params)},
         m_SimulatorOutputExtractors(GetFdSimulatorOutputExtractorsAsVector())
     {}
@@ -120,7 +121,7 @@ public:
     SimulationClocks getClocks() const
     {
         auto start = getStartTime();
-        auto end = m_Simulation.params().finalTime;
+        auto end = m_Params.finalTime;
         return SimulationClocks{{start, end}, getCurTime()};
     }
 
@@ -162,9 +163,8 @@ public:
 
         // update the simulation parameters to reflect the new end-time
         {
-            auto params = FromParamBlock(m_ParamsAsParamBlock);
-            params.finalTime = new_end_time;
-            m_ParamsAsParamBlock = ToParamBlock(params);
+            m_Params.finalTime = new_end_time;
+            m_ParamsAsParamBlock = ToParamBlock(m_Params);
         }
 
         // edge-case: if the latest available report has an end-time equal to `t`, then
@@ -182,7 +182,7 @@ public:
 
             m_Simulation = MakeSimulation(
                 BasicModelStatePair{guard->getModel(), latestState},
-                FromParamBlock(m_ParamsAsParamBlock),
+                m_Params,
                 m_ReportQueue
             );
 
@@ -261,6 +261,7 @@ private:
     SynchronizedValue<std::vector<SimulationReport>> m_ReportQueue;
     std::vector<SimulationReport> m_Reports;
     ForwardDynamicSimulator m_Simulation;
+    ForwardDynamicSimulatorParams m_Params;
     ParamBlock m_ParamsAsParamBlock;
     std::vector<OutputExtractor> m_SimulatorOutputExtractors;
 };

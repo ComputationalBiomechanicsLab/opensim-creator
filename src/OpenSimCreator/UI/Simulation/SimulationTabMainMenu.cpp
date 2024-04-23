@@ -41,10 +41,38 @@ private:
         }
 
         if (ui::BeginMenu("Change End Time", m_Simulation->canChangeEndTime())) {
+            if (ui::MenuItem("0.1x")) {
+                auto dur = m_Simulation->getEndTime() - m_Simulation->getStartTime();
+                m_Simulation->requestNewEndTime(m_Simulation->getStartTime() + (0.1 * dur));
+            }
+            if (ui::MenuItem("0.25x")) {
+                auto dur = m_Simulation->getEndTime() - m_Simulation->getStartTime();
+                m_Simulation->requestNewEndTime(m_Simulation->getStartTime() + (0.25 * dur));
+            }
+            if (ui::MenuItem("0.5x")) {
+                auto dur = m_Simulation->getEndTime() - m_Simulation->getStartTime();
+                m_Simulation->requestNewEndTime(m_Simulation->getStartTime() + (0.5 * dur));
+            }
             if (ui::MenuItem("2x")) {
                 auto dur = m_Simulation->getEndTime() - m_Simulation->getStartTime();
                 m_Simulation->requestNewEndTime(m_Simulation->getStartTime() + (2 * dur));
             }
+            if (ui::MenuItem("4x")) {
+                auto dur = m_Simulation->getEndTime() - m_Simulation->getStartTime();
+                m_Simulation->requestNewEndTime(m_Simulation->getStartTime() + (4 * dur));
+            }
+            if (ui::MenuItem("10x")) {
+                auto dur = m_Simulation->getEndTime() - m_Simulation->getStartTime();
+                m_Simulation->requestNewEndTime(m_Simulation->getStartTime() + (10 * dur));
+            }
+            {
+                auto count = m_NewCustomEndTime.count();
+                if (ui::InputDouble("custom end time", &count, 0.0, 0.0, "%.6f", ImGuiInputTextFlags_EnterReturnsTrue)) {
+                    m_Simulation->requestNewEndTime(m_Simulation->getStartTime() + SimulationClock::duration{count});
+                }
+            }
+
+
             ui::EndMenu();
         }
 
@@ -58,6 +86,7 @@ private:
     MainMenuFileTab m_MainMenuFileTab;
     MainMenuAboutTab m_MainMenuAboutTab;
     WindowMenu m_MainMenuWindowTab{m_PanelManager};
+    SimulationClock::duration m_NewCustomEndTime = 2 * (m_Simulation->getEndTime() - m_Simulation->getStartTime());
 };
 
 osc::SimulationTabMainMenu::SimulationTabMainMenu(
