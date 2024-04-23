@@ -4,6 +4,7 @@
 #include <oscar/Utils/CStringView.h>
 
 #include <cstddef>
+#include <iosfwd>
 #include <optional>
 #include <string_view>
 
@@ -23,4 +24,5 @@ namespace osc
 
     CStringView to_cstringview(LogLevel);
     std::optional<LogLevel> try_parse_as_log_level(std::string_view);
+    std::ostream& operator<<(std::ostream&, LogLevel);
 }

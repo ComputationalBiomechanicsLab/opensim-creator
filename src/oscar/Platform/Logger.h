@@ -4,6 +4,7 @@
 #include <oscar/Platform/LogMessageView.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/CStringView.h>
+#include <oscar/Utils/StringName.h>
 
 #include <algorithm>
 #include <cstdarg>
@@ -19,12 +20,12 @@ namespace osc
 {
     class Logger final {
     public:
-        explicit Logger(std::string name) :
-            name_{std::move(name)}
+        explicit Logger(std::string_view name) :
+            name_{name}
         {}
 
-        Logger(std::string name, std::shared_ptr<LogSink> sink) :
-            name_{std::move(name)},
+        Logger(std::string_view name, std::shared_ptr<LogSink> sink) :
+            name_{name},
             log_sinks_{std::move(sink)}
         {}
 
@@ -58,11 +59,11 @@ namespace osc
             }
 
             // create a readonly view of the message that sinks _may_ consume
-            LogMessageView view{name_, std::string_view{formatted_buffer.data(), n}, message_log_level};
+            LogMessageView view{name_, CStringView{formatted_buffer.data(), n}, message_log_level};
 
             // sink the message
             for (; it != log_sinks_.end(); ++it) {
-                if ((*it)->should_log(view.level)) {
+                if ((*it)->should_log(view.level())) {
                     (*it)->log_message(view);
                 }
             }
@@ -111,7 +112,7 @@ namespace osc
         void set_level(LogLevel level_) { log_level_ = level_; }
 
     private:
-        std::string name_;
+        StringName name_;
         std::vector<std::shared_ptr<LogSink>> log_sinks_;
         LogLevel log_level_ = LogLevel::DEFAULT;
     };

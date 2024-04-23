@@ -5,6 +5,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- The chequered floor texture is now rendered with `Nearest` sampling, which makes it appear sharper
+  in the foreground
+- Memory usage was reduced by optimizing font loading and log message storage
 - The loading bar on the loading tab is now more centered and scales with the overall window size
 - Fixed "Plot Against other Output" feature not working with non-model-sourced outputs, such as
   the integrator's "Step Wall Time"

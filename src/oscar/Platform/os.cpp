@@ -630,7 +630,7 @@ namespace
         {
             if (m_Out)
             {
-                m_Out << '[' << msg.logger_name << "] [" << to_cstringview(msg.level) << "] " << msg.payload << std::endl;
+                m_Out << '[' << msg.logger_name() << "] [" << msg.level() << "] " << msg.payload() << std::endl;
             }
         }
 
@@ -682,7 +682,7 @@ namespace
             auto guard = global_get_traceback_log().lock();
             for (LogMessage const& msg : *guard)
             {
-                *maybeCrashReportFile << '[' << msg.logger_name << "] [" << to_cstringview(msg.level) << "] " << msg.payload << '\n';
+                *maybeCrashReportFile << '[' << msg.logger_name() << "] [" << msg.level() << "] " << msg.payload() << '\n';
             }
             *maybeCrashReportFile << "----- /log -----\n";
         }

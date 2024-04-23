@@ -17,11 +17,17 @@ namespace osc
         using const_pointer = const value_type*;
         using iterator = value_type*;
         using const_iterator = const value_type*;
+        using size_type = std::string_view::size_type;
 
         constexpr CStringView() = default;
 
         constexpr CStringView(const value_type* s) :
             m_Data{s ? s : ""}
+        {}
+
+        constexpr CStringView(const value_type* s, size_type count) :
+            m_Data{s},
+            m_Size{count}
         {}
 
         constexpr CStringView(std::nullptr_t) :
@@ -38,12 +44,12 @@ namespace osc
         constexpr CStringView& operator=(const CStringView&) = default;
         constexpr CStringView& operator=(CStringView&&) noexcept = default;
 
-        constexpr size_t size() const
+        constexpr size_type size() const
         {
             return m_Size;
         }
 
-        constexpr size_t length() const
+        constexpr size_type length() const
         {
             return m_Size;
         }
@@ -88,7 +94,7 @@ namespace osc
         }
     private:
         const value_type* m_Data = "";
-        size_t m_Size = std::string_view{m_Data}.size();
+        size_type m_Size = std::string_view{m_Data}.size();
     };
 
 
