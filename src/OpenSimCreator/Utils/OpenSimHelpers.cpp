@@ -331,6 +331,15 @@ OpenSim::Component* osc::UpdOwner(OpenSim::Component& root, OpenSim::Component c
     }
 }
 
+OpenSim::Component& osc::UpdOwnerOrThrow(OpenSim::Component& root, OpenSim::Component const& c)
+{
+    auto* p = UpdOwner(root, c);
+    if (not p) {
+        throw std::runtime_error{"could not update a component's owner"};
+    }
+    return *p;
+}
+
 OpenSim::Component const& osc::GetOwnerOrThrow(OpenSim::AbstractOutput const& ao)
 {
     return ao.getOwner();
@@ -1074,22 +1083,13 @@ void osc::FinalizeFromProperties(OpenSim::Model& model)
 std::optional<size_t> osc::FindJointInParentJointSet(OpenSim::Joint const& joint)
 {
     auto const* parentJointset = GetOwner<OpenSim::JointSet>(joint);
-    if (!parentJointset)
-    {
+    if (not parentJointset) {
         // it's a joint, but it's not owned by a JointSet, so the implementation cannot switch
         // the joint type
         return std::nullopt;
     }
 
-    OpenSim::JointSet const& js = *parentJointset;
-    for (size_t i = 0; i < size(js); ++i)
-    {
-        if (&At(js, i) == &joint)
-        {
-            return i;
-        }
-    }
-    return std::nullopt;
+    return IndexOf(*parentJointset, joint);
 }
 
 std::string osc::GetDisplayName(OpenSim::Geometry const& g)

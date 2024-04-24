@@ -1,5 +1,7 @@
 #include <OpenSimCreator/ComponentRegistry/StaticComponentRegistries.h>
 
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
+
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Simulation/Control/Controller.h>
 #include <OpenSim/Simulation/Model/ContactGeometry.h>
@@ -118,6 +120,41 @@ TEST(JointRegistry, CanAddAnyJointWithoutAnExceptionOrSegfault)
         // (shouldn't throw or segfault)
         model.finalizeFromProperties();
         model.buildSystem();
+    }
+}
+
+// #298: try converting between every available joint type in an existing model to
+//       ensure there's no faults
+TEST(JointRegistry, CanConvertBetweenAnyJointWithoutAnExceptionOrSegfault)
+{
+    auto const& entries = GetComponentRegistry<OpenSim::Joint>();
+
+    for (size_t i = 0; i < entries.size(); ++i) {
+        for (size_t j = 0; j < entries.size(); ++j) {
+            // create a model with base joint
+            OpenSim::Model model;
+
+            auto& body = AddBody(model, "body", 1.0, SimTK::Vec3{}, SimTK::Inertia(1.0));
+            body.setMass(1.0);
+
+            auto& joint = AddJoint(model, entries[i].instantiate());
+            joint.connectSocket_parent_frame(model.getGround());
+            joint.connectSocket_child_frame(body);
+
+            FinalizeConnections(model);
+            InitializeModel(model);
+            InitializeState(model);
+
+            // then switch the joint over
+            auto newJoint = entries[j].instantiate();
+            CopyCommonJointProperties(joint, *newJoint);
+            auto& jointSet = UpdOwnerOrThrow<OpenSim::JointSet>(model, joint);
+            Assign(jointSet, joint, std::move(newJoint));
+
+            FinalizeConnections(model);
+            InitializeModel(model);
+            InitializeState(model);
+        }
     }
 }
 

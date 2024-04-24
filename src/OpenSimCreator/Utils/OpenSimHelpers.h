@@ -219,6 +219,13 @@ namespace osc
 
     // returns a mutable pointer to the owner (if it exists)
     OpenSim::Component* UpdOwner(OpenSim::Component& root, OpenSim::Component const&);
+    OpenSim::Component& UpdOwnerOrThrow(OpenSim::Component& root, OpenSim::Component const&);
+
+    template<std::derived_from<OpenSim::Component> T>
+    T& UpdOwnerOrThrow(OpenSim::Component& root, OpenSim::Component const& c)
+    {
+        return dynamic_cast<T&>(UpdOwnerOrThrow(root, c));
+    }
 
     template<std::derived_from<OpenSim::Component> T>
     T* UpdOwner(OpenSim::Component& root, OpenSim::Component const& c)
@@ -788,6 +795,20 @@ namespace osc
 
     template<
         std::derived_from<OpenSim::Object> T,
+        std::derived_from<OpenSim::Object> C = OpenSim::Object
+    >
+    std::optional<size_t> IndexOf(OpenSim::Set<T, C> const& set, T const& el)
+    {
+        for (size_t i = 0; i < size(set); ++i) {
+            if (&At(set, i) == &el) {
+                return i;
+            }
+        }
+        return std::nullopt;
+    }
+
+    template<
+        std::derived_from<OpenSim::Object> T,
         std::derived_from<T> U,
         std::derived_from<OpenSim::Object> C = OpenSim::Object
     >
@@ -811,6 +832,20 @@ namespace osc
         U& rv = *el;
         set.set(static_cast<int>(index), el.release());
         return rv;
+    }
+
+    template<
+        std::derived_from<OpenSim::Object> T,
+        std::derived_from<T> U,
+        std::derived_from<OpenSim::Object> C = OpenSim::Object
+    >
+    U& Assign(OpenSim::Set<T, C>& set, T& oldElement, std::unique_ptr<U> newElement)
+    {
+        auto idx = IndexOf(set, oldElement);
+        if (not idx) {
+            throw std::runtime_error{"cannot find the requested element in the set"};
+        }
+        return Assign(set, *idx, std::move(newElement));
     }
 
     template<

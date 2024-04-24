@@ -28,6 +28,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/ConstantDistanceConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/Constraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
+#include <OpenSim/Simulation/SimbodyEngine/CustomJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/EllipsoidJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/GimbalJoint.h>
@@ -36,6 +37,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/PlanarJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/ScapulothoracicJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/SpatialTransform.h>
 #include <OpenSim/Simulation/SimbodyEngine/UniversalJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 #include <oscar/Utils/CStringView.h>
@@ -328,10 +330,6 @@ namespace
             // get its associated joint (it doesn't declare this dependency via sockets)
             "Coordinate",
 
-            // it requires creating generalized coordinate children, which gets hairy to automate
-            // in the UI
-            "CustomJoint",
-
             // it requires at least two path points, so it can't be default-constructed and added
             "GeometryPath",
 
@@ -584,6 +582,31 @@ namespace
                     return c;
                 }(),
             },
+
+            // HOTFIX: give a default `CustomJoint` one independent coordinate and make it behave like a `PinJoint`,
+            //         so that OpenSim doesn't segfault when switching joint types (#298)
+            {
+                "CustomJoint",
+                []()
+                {
+                    OpenSim::Coordinate independentCoord{"rx", OpenSim::Coordinate::MotionType::Rotational, 0.0, -3*pi_v<double>, +3*pi_v<double>};
+
+                    OpenSim::Array<std::string> independentCoordNames;
+                    independentCoordNames.append(independentCoord.getName());
+
+                    OpenSim::TransformAxis zRotationAxisTransform(independentCoordNames, {0.0, 0.0, 1.0});
+                    zRotationAxisTransform.setFunction(new OpenSim::LinearFunction(1.0, 0.0));
+
+                    OpenSim::SpatialTransform spatialTransform;
+                    spatialTransform.set_rotation3(zRotationAxisTransform);
+
+                    auto customJoint = std::make_shared<OpenSim::CustomJoint>();
+                    customJoint->set_SpatialTransform(spatialTransform);
+                    customJoint->append_coordinates(independentCoord);
+
+                    return customJoint;
+                }()
+            }
         };
     }
 

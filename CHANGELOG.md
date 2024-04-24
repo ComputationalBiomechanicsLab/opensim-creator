@@ -5,6 +5,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- `CustomJoint`s can now be added via the UI. They default to having a single rotational degree of
+  freedom along the Z axis (i.e. a `PinJoint`-like `CustomJoint`). Editing a `CustomJoint` still
+  requires manually editing the `.osim` file, though
 - The simulation tab now has an `Actions` menu, which includes the ability to extend the end time of
   a simulation by some multiplication factor (2x, 4x, etc. #839)
 - The chequered floor texture is now rendered with `Nearest` sampling, which makes it appear sharper

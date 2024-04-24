@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <functional>
 #include <iterator>
 #include <optional>
 #include <ranges>
@@ -170,23 +171,30 @@ namespace osc
     template<
         std::input_iterator I,
         std::sentinel_for<I> S,
-        typename T
+        class T,
+        class Proj = std::identity
     >
-    requires std::indirect_binary_predicate<std::ranges::equal_to, I, const T*>
-    constexpr I find(I first, S last, const T& value)
+    requires std::indirect_binary_predicate<std::ranges::equal_to, std::projected<I, Proj>, const T*>
+    constexpr I find(I first, S last, const T& value, Proj proj = {})
     {
-        return std::find(first, last, value);
+        for (; first != last; ++first) {
+            if (std::invoke(proj, *first) == value) {
+                return first;
+            }
+        }
+        return first;
     }
 
     // see: std::ranges::find
     template<
         std::ranges::input_range R,
-        class T
+        class T,
+        class Proj = std::identity
     >
-    requires std::indirect_binary_predicate<std::ranges::equal_to, std::ranges::iterator_t<R>, const T*>
-    constexpr std::ranges::borrowed_iterator_t<R> find(R&& r, const T& value)
+    requires std::indirect_binary_predicate<std::ranges::equal_to, std::projected<std::ranges::iterator_t<R>, Proj>, const T*>
+    constexpr std::ranges::borrowed_iterator_t<R> find(R&& r, const T& value, Proj proj = {})
     {
-        return std::find(std::ranges::begin(r), std::ranges::end(r), value);
+        return find(std::ranges::begin(r), std::ranges::end(r), value, std::ref(proj));
     }
 
     // see: std::ranges::contains

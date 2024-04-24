@@ -946,12 +946,14 @@ bool osc::ActionChangeJointTypeTo(UndoableModelStatePair& uim, OpenSim::Componen
     auto const* const target = FindComponent<OpenSim::Joint>(uim.getModel(), jointPath);
     if (!target)
     {
+        log_error("could not find %s in the model", jointPath.toString().c_str());
         return false;
     }
 
     auto const* const owner = GetOwner<OpenSim::JointSet>(*target);
     if (!owner)
     {
+        log_error("%s is not owned by an OpenSim::JointSet", jointPath.toString().c_str());
         return false;
     }
 
@@ -960,6 +962,7 @@ bool osc::ActionChangeJointTypeTo(UndoableModelStatePair& uim, OpenSim::Componen
     std::optional<size_t> const maybeIdx = FindJointInParentJointSet(*target);
     if (!maybeIdx)
     {
+        log_error("%s could not be found in its owner", jointPath.toString().c_str());
         return false;
     }
 
