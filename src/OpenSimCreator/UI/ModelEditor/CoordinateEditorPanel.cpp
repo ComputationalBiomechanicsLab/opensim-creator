@@ -49,10 +49,7 @@ private:
         // if there's no coordinates in the model, show a warning message and stop drawing
         if (coordPtrs.empty())
         {
-            CStringView const msg = "(there are no coordinates in the model)";
-            float const w = ui::CalcTextSize(msg).x;
-            ui::SetCursorPosX(0.5f * (ui::GetContentRegionAvail().x - w));  // center align
-            ui::TextDisabled(msg);
+            ui::TextDisabledAndWindowCentered("(no coordinates in the model)");
             return;
         }
 
