@@ -2,6 +2,7 @@
 
 #include <OpenSimCreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <OpenSimCreator/Documents/Simulation/ISimulation.h>
+#include <OpenSimCreator/Documents/Simulation/SimulationHelpers.h>
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Platform/Log.h>
@@ -23,44 +24,25 @@ namespace
         const ISimulation& simulation,
         std::span<const OutputExtractor> outputs)
     {
-        // try prompt user for save location
-        const std::optional<std::filesystem::path> maybeCSVPath =
+        // prompt user for save location
+        const std::optional<std::filesystem::path> path =
             PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
-
-        if (not maybeCSVPath) {
+        if (not path) {
             return std::nullopt;  // user probably cancelled out
         }
-        const std::filesystem::path& csvPath = *maybeCSVPath;
 
-        std::ofstream fout{csvPath};
+        // open output file
+        std::ofstream fout{*path};
         if (not fout) {
-            log_error("%s: error opening file for writing", csvPath.string().c_str());
+            log_error("%s: error opening file for writing", path->string().c_str());
             return std::nullopt;  // error opening output file for writing
         }
         fout.exceptions(std::ios_base::badbit | std::ios_base::failbit);
 
-        // header line
-        fout << "time";
-        for (const OutputExtractor& o : outputs) {
-            fout << ',' << o.getName();
-        }
-        fout << '\n';
+        // write output
+        WriteOutputsAsCSV(outputs, simulation, fout);
 
-
-        // data lines
-        const auto guard = simulation.getModel();
-        for (size_t i = 0, len = simulation.getNumReports(); i < len; ++i) {
-            const SimulationReport report = simulation.getSimulationReport(i);
-
-            fout << report.getState().getTime();  // time column
-            for (const OutputExtractor& o : outputs) {
-                fout << ',' << o.getValueFloat(*guard, report);
-            }
-
-            fout << '\n';
-        }
-
-        return csvPath;
+        return path;
     }
 }
 
