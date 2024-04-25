@@ -46,7 +46,7 @@ namespace
         {
             // stbi: fill 'data' with 'size' bytes.  return number of bytes actually read
 
-            std::istream& in = *reinterpret_cast<std::istream*>(user);
+            std::istream& in = *static_cast<std::istream*>(user);
             in.read(data, size);
             return static_cast<int>(in.gcount());
         },
@@ -55,7 +55,7 @@ namespace
         {
             // stbi: skip the next 'n' bytes, or 'unget' the last -n bytes if negative
 
-            std::istream& in = *reinterpret_cast<std::istream*>(user);
+            std::istream& in = *static_cast<std::istream*>(user);
             in.seekg(n, std::ios::cur);
         },
 
@@ -63,7 +63,7 @@ namespace
         {
             // stbi: returns nonzero if we are at end of file/data
 
-            std::istream& in = *reinterpret_cast<std::istream*>(user);
+            std::istream& in = *static_cast<std::istream*>(user);
             return in.eof() ? -1 : 0;
         }
     };
@@ -165,9 +165,9 @@ namespace
 
     void osc_stbi_write_via_std_ostream(void* context, void* data, int size)
     {
-        std::ostream& out = *reinterpret_cast<std::ostream*>(context);
+        std::ostream& out = *static_cast<std::ostream*>(context);
         if (size > 0) {
-            out.write(std::launder(reinterpret_cast<const char*>(data)), std::streamsize{size});
+            out.write(static_cast<const char*>(data), std::streamsize{size});
         }
     }
 }

@@ -179,7 +179,7 @@ namespace
     OscarImguiBackendData* get_backend_data()
     {
         if (ImGui::GetCurrentContext()) {
-            return std::launder(reinterpret_cast<OscarImguiBackendData*>(ui::GetIO().BackendRendererUserData));
+            return static_cast<OscarImguiBackendData*>(ui::GetIO().BackendRendererUserData);
         }
         else {
             return nullptr;

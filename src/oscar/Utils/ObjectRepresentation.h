@@ -22,7 +22,7 @@ namespace osc
         // >
         // > - AliasedType is std::byte,(since C++17) char, or unsigned char: this permits
         // >   examination of the object representation of any object as an array of bytes.
-        return {reinterpret_cast<const Byte*>(&v), sizeof(T)};
+        return {reinterpret_cast<const Byte*>(&v), sizeof(T)};  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
     }
 
     template<ObjectRepresentationByte Byte = std::byte, std::ranges::contiguous_range Range>
@@ -40,6 +40,6 @@ namespace osc
         // >
         // > - AliasedType is std::byte,(since C++17) char, or unsigned char: this permits
         // >   examination of the object representation of any object as an array of bytes.
-        return {reinterpret_cast<const Byte*>(std::ranges::data(range)), sizeof(typename Range::value_type) * std::ranges::size(range)};
+        return {reinterpret_cast<const Byte*>(std::ranges::data(range)), sizeof(typename Range::value_type) * std::ranges::size(range)};  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
     }
 }

@@ -369,7 +369,7 @@ namespace osc
 
             static_assert(alignof(Value) == alignof(typename decltype(buf.m_RawStorage)::value_type));
             static_assert(sizeof(Value) == sizeof(typename decltype(buf.m_RawStorage)::value_type));
-            Value* ptr = std::launder(reinterpret_cast<Value*>(buf.m_RawStorage.data()));
+            Value* ptr = std::launder(reinterpret_cast<Value*>(buf.m_RawStorage.data()));  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 
             return Iterator{ptr, pos};
         }

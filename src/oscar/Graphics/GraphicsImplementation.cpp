@@ -155,8 +155,9 @@ namespace
 
         static_assert(sizeof(GLubyte) == sizeof(value_type));
         static_assert(alignof(GLubyte) == alignof(value_type));
+        static_assert(std::is_same_v<value_type, char>, "therefore, the cast below should be ok");
         if (string_ptr) {
-            return CStringView{std::launder(reinterpret_cast<const value_type*>(string_ptr))};
+            return CStringView{reinterpret_cast<const char*>(string_ptr)};  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
         }
         else {
             return CStringView{};
