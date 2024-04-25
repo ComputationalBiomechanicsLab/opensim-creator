@@ -14,16 +14,6 @@
 
 namespace osc
 {
-    // see: std::ranges::none_of
-    template<
-        std::ranges::input_range R,
-        std::indirect_unary_predicate<std::ranges::iterator_t<R>> Pred
-    >
-    constexpr bool none_of(R&& r, Pred pred)
-    {
-        return std::none_of(std::ranges::begin(r), std::ranges::end(r), pred);
-    }
-
     // see: std::ranges::count
     template<
         std::ranges::input_range R,

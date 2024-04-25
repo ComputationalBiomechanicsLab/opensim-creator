@@ -63,8 +63,7 @@ namespace
             name += prefix;
             name += std::to_string(i);
 
-            if (none_of(range, std::bind_front(HasName<typename Range::value_type>, name)))
-            {
+            if (ranges::none_of(range, std::bind_front(HasName<typename Range::value_type>, name))) {
                 return StringName{std::move(name)};
             }
             name.clear();

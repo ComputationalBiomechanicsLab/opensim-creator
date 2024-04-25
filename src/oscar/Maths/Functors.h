@@ -62,6 +62,6 @@ namespace osc
     template<size_t N>
     constexpr bool none_of(const Vec<N, bool>& v)
     {
-        return none_of(v, std::identity{});
+        return std::ranges::none_of(v, std::identity{});
     }
 }
