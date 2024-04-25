@@ -8,7 +8,6 @@
 #include <utility>
 
 namespace graphics = osc::graphics;
-namespace cpp20 = osc::cpp20;
 using namespace osc::literals;
 using namespace osc;
 
@@ -130,7 +129,7 @@ namespace
 
         constexpr size_t maxMipmapLevel = static_cast<size_t>(max(
             0,
-            std::bit_width(static_cast<size_t>(levelZeroWidth)) - 1
+            static_cast<int>(std::bit_width(static_cast<size_t>(levelZeroWidth))) - 1
         ));
         static_assert(maxMipmapLevel == 7);
 
