@@ -16,6 +16,7 @@
 
 #include <algorithm>
 #include <array>
+#include <bit>
 #include <cerrno>
 #include <cstddef>
 #include <ctime>
@@ -341,9 +342,9 @@ namespace
 
         /* Get the address at the time the signal was raised */
 #if defined(__i386__)  // gcc specific
-        void* caller_address = cpp20::bit_cast<void*>(uc->uc_mcontext.eip);  // EIP: x86 specific
+        void* caller_address = std::bit_cast<void*>(uc->uc_mcontext.eip);  // EIP: x86 specific
 #elif defined(__x86_64__)  // gcc specific
-        void* callerAddress = cpp20::bit_cast<void*>(uc->uc_mcontext.rip);  // RIP: x86_64 specific
+        void* callerAddress = std::bit_cast<void*>(uc->uc_mcontext.rip);  // RIP: x86_64 specific
 #else
 #error Unsupported architecture.
 #endif
@@ -586,12 +587,12 @@ void osc::WriteTracebackToLog(LogLevel lvl)
         // falls in (effectively, where it is relative to the start of the memory-mapped DLL/exe)
         MEMORY_BASIC_INFORMATION bmi;
         VirtualQuery(return_addrs[i], &bmi, sizeof(bmi));
-        DWORD64 base_addr = cpp20::bit_cast<DWORD64>(bmi.AllocationBase);
+        DWORD64 base_addr = std::bit_cast<DWORD64>(bmi.AllocationBase);
         static_assert(sizeof(DWORD64) == 8 && sizeof(PVOID) == 8, "review this code - might not work so well on 32-bit systems");
 
         // use the base address to figure out the file name
         TCHAR module_namebuf[1024];
-        GetModuleFileName(cpp20::bit_cast<HMODULE>(base_addr), module_namebuf, 1024);
+        GetModuleFileName(std::bit_cast<HMODULE>(base_addr), module_namebuf, 1024);
 
         // find the final element in the filename
         TCHAR* cursor = module_namebuf;
@@ -605,7 +606,7 @@ void osc::WriteTracebackToLog(LogLevel lvl)
             ++cursor;
         }
 
-        PVOID relative_addr = cpp20::bit_cast<PVOID>(cpp20::bit_cast<DWORD64>(return_addrs[i]) - base_addr);
+        PVOID relative_addr = std::bit_cast<PVOID>(std::bit_cast<DWORD64>(return_addrs[i]) - base_addr);
 
         log_message(lvl, "    #%zu %s+0x%" PRIXPTR " [0x%" PRIXPTR "]", i, filename_start, (uintptr_t)relative_addr, (uintptr_t)return_addrs[i]);
     }

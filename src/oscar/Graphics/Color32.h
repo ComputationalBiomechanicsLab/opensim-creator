@@ -1,8 +1,8 @@
 #pragma once
 
 #include <oscar/Graphics/Unorm8.h>
-#include <oscar/Shims/Cpp20/bit.h>
 
+#include <bit>
 #include <concepts>
 #include <cstddef>
 #include <cstdint>
@@ -61,9 +61,9 @@ namespace osc
     };
 
     template<std::integral T>
-    T to_integer(const Color32& color32)
+    constexpr T to_integer(const Color32& color32)
     {
-        return cpp20::bit_cast<T>(color32);
+        return std::bit_cast<T>(color32);
     }
 }
 

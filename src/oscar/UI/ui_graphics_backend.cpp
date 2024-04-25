@@ -24,7 +24,6 @@
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Maths/Vec4.h>
 #include <oscar/Platform/App.h>
-#include <oscar/Shims/Cpp20/bit.h>
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/Algorithms.h>
@@ -35,6 +34,7 @@
 #include <oscar/Utils/UID.h>
 
 #include <array>
+#include <bit>
 #include <cstddef>
 #include <cstdint>
 #include <new>
@@ -42,7 +42,6 @@
 #include <variant>
 
 namespace graphics = osc::graphics;
-namespace cpp20 = osc::cpp20;
 using namespace osc;
 
 namespace
@@ -85,12 +84,12 @@ namespace
 
     ImTextureID to_imgui_texture_id(UID id)
     {
-        return cpp20::bit_cast<ImTextureID>(id);
+        return std::bit_cast<ImTextureID>(id);
     }
 
     UID to_uid(ImTextureID id)
     {
-        return UID::FromIntUnchecked(cpp20::bit_cast<UID::element_type>(id));
+        return UID::FromIntUnchecked(std::bit_cast<UID::element_type>(id));
     }
 
     Texture2D create_font_texture(UID texture_id)
