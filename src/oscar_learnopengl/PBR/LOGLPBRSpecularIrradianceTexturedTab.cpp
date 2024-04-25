@@ -4,6 +4,7 @@
 #include <oscar/oscar.h>
 
 #include <array>
+#include <bit>
 #include <utility>
 
 namespace graphics = osc::graphics;
@@ -105,7 +106,7 @@ namespace
         RenderTexture const& environmentMap)
     {
         int constexpr levelZeroWidth = 128;
-        static_assert(cpp20::popcount(static_cast<unsigned>(levelZeroWidth)) == 1);
+        static_assert(std::popcount(static_cast<unsigned>(levelZeroWidth)) == 1);
 
         RenderTexture captureRT{{levelZeroWidth, levelZeroWidth}};
         captureRT.set_dimensionality(TextureDimensionality::Cube);

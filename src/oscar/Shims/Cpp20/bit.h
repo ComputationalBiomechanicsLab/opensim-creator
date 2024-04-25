@@ -7,24 +7,6 @@
 
 namespace osc::cpp20
 {
-    // C++20: popcount
-    //
-    // see: https://en.cppreference.com/w/cpp/numeric/popcount
-    template<std::unsigned_integral T>
-    constexpr int popcount(T x) noexcept
-    {
-        static_assert(sizeof(T) <= sizeof(unsigned long long));
-
-        unsigned long long uv = x;
-        int i = 0;
-        while (uv)
-        {
-            uv &= (uv - 1);
-            ++i;
-        }
-        return i;
-    }
-
     // C++20: countr_zero: counts the number of consecutive 0 bits, starting from the least significant bit
     //
     // see: https://en.cppreference.com/w/cpp/numeric/countr_zero

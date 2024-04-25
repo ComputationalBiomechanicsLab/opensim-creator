@@ -2,15 +2,16 @@
 
 #include <gtest/gtest.h>
 
+#include <bit>
 #include <cstdint>
 
 namespace cpp20 = osc::cpp20;
 
 TEST(popcount, ReturnsExpectedResults)
 {
-    static_assert(cpp20::popcount(0b00000000u) == 0);
-    static_assert(cpp20::popcount(0b11111111u) == 8);
-    static_assert(cpp20::popcount(0b00011101u) == 4);
+    static_assert(std::popcount(0b00000000u) == 0);
+    static_assert(std::popcount(0b11111111u) == 8);
+    static_assert(std::popcount(0b00011101u) == 4);
 }
 
 TEST(countrzero, ReturnsExpectedResults)
