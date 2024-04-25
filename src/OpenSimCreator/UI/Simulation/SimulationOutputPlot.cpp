@@ -46,6 +46,7 @@ namespace
     constexpr Color c_CurrentScubTimeColor = Color::yellow().with_alpha(0.6f);
     constexpr Color c_HoveredScrubTimeColor = Color::yellow().with_alpha(0.3f);
 
+    // draw a menu item for toggling watching the output
     void DrawToggleWatchOutputMenuItem(
         ISimulatorUIAPI& api,
         OutputExtractor const& output)
@@ -63,6 +64,23 @@ namespace
         }
     }
 
+    // draw menu items for exporting the output to a CSV
+    void DrawExportToCSVMenuItems(
+        ISimulatorUIAPI& api,
+        OutputExtractor const& output)
+    {
+        if (ui::MenuItem(ICON_FA_SAVE "Save as CSV")) {
+            api.tryPromptToSaveOutputsAsCSV({output});
+        }
+
+        if (ui::MenuItem(ICON_FA_SAVE "Save as CSV (and open)")) {
+            if (auto const path = api.tryPromptToSaveOutputsAsCSV({output})) {
+                OpenPathInOSDefaultApplication(*path);
+            }
+        }
+    }
+
+    // draw a menu that prompts the user to select some other output
     void DrawSelectOtherOutputMenuContent(
         ISimulatorUIAPI& api,
         ISimulation& simulation,
@@ -107,29 +125,44 @@ namespace
         });
     }
 
-    void DrawFloatOutputContextMenuContent(
+    // draw menu item for plotting one output against another output
+    void DrawPlotAgainstOtherOutputMenuItem(
         ISimulatorUIAPI& api,
         ISimulation& sim,
         OutputExtractor const& output)
     {
-        OSC_ASSERT(output.getOutputType() == OutputExtractorDataType::Float);
-
-        if (ui::MenuItem(ICON_FA_SAVE "Save as CSV")) {
-            api.tryPromptToSaveOutputsAsCSV({output});
-        }
-
-        if (ui::MenuItem(ICON_FA_SAVE "Save as CSV (and open)")) {
-            if (auto const path = api.tryPromptToSaveOutputsAsCSV({output})) {
-                OpenPathInOSDefaultApplication(*path);
-            }
-        }
-
         if (ui::BeginMenu(ICON_FA_CHART_LINE "Plot Against Other Output")) {
             DrawSelectOtherOutputMenuContent(api, sim, output);
             ui::EndMenu();
         }
+    }
 
-        DrawToggleWatchOutputMenuItem(api, output);
+    void TryDrawOutputContextMenuForLastItem(
+        ISimulatorUIAPI& api,
+        ISimulation& sim,
+        OutputExtractor const& output)
+    {
+        if (not ui::BeginPopupContextItem("outputplotmenu")) {
+            return;  // menu not open
+        }
+
+        const OutputExtractorDataType dataType = output.getOutputType();
+
+        if (dataType == OutputExtractorDataType::Float) {
+            DrawExportToCSVMenuItems(api, output);
+            DrawPlotAgainstOtherOutputMenuItem(api, sim, output);
+            DrawToggleWatchOutputMenuItem(api, output);
+        }
+        else if (dataType == OutputExtractorDataType::Vec2) {
+            DrawExportToCSVMenuItems(api, output);
+            DrawToggleWatchOutputMenuItem(api, output);
+        }
+        else {
+            DrawToggleWatchOutputMenuItem(api, output);
+
+        }
+
+        ui::EndPopup();
     }
 }
 
@@ -223,10 +256,7 @@ private:
         }
 
         // if the user right-clicks, draw a context menu
-        if (ui::BeginPopupContextItem("plotcontextmenu")) {
-            DrawFloatOutputContextMenuContent(*m_API, sim, m_OutputExtractor);
-            ui::EndPopup();
-        }
+        TryDrawOutputContextMenuForLastItem(*m_API, sim, m_OutputExtractor);
 
         // (the rest): handle scrubber overlay
         OSC_PERF("draw output plot overlay");
@@ -291,13 +321,9 @@ private:
         ISimulation& sim = m_API->updSimulation();
         ptrdiff_t const nReports = m_API->updSimulation().getNumReports();
         SimulationReport r = m_API->trySelectReportBasedOnScrubbing().value_or(sim.getSimulationReport(nReports - 1));
-        ui::TextCentered(m_OutputExtractor.getValueString(*sim.getModel(), r));
 
-        // draw context menu (if user right clicks)
-        if (ui::BeginPopupContextItem("plotcontextmenu")) {
-            DrawToggleWatchOutputMenuItem(*m_API, m_OutputExtractor);
-            ui::EndPopup();
-        }
+        ui::TextCentered(m_OutputExtractor.getValueString(*sim.getModel(), r));
+        TryDrawOutputContextMenuForLastItem(*m_API, sim, m_OutputExtractor);
     }
 
     void drawVec2OutputUI()
@@ -371,6 +397,9 @@ private:
             ImPlot::PopStyleVar();
             ImPlot::PopStyleVar();
         }
+
+        // if the user right-clicks the output, show a context menu
+        TryDrawOutputContextMenuForLastItem(*m_API, sim, m_OutputExtractor);
     }
 
     ISimulatorUIAPI* m_API;

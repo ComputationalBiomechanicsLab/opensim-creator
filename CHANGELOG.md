@@ -5,6 +5,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- Right-clicking a 2D output plot in the simulator tab now shows a context menu with the option to
+  export the plot to a CSV or stop watching the output (#841)
 - Fixed the `Save All` button only showing in the output plots tab if any of the plots happens to be
   1D floating-point data (it should now show when 2D data is being plotted, too, #840)
 - Fixed using `Save All > as CSV` in the simulation tab when plotting 2D outputs (e.g. phase diagrams)
