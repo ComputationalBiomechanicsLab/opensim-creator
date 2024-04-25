@@ -47,7 +47,7 @@ using namespace osc;
 
 namespace
 {
-    App* g_app_global = nullptr;
+    App* g_app_global = nullptr;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
     void sdl_gl_set_attribute_or_throw(
         SDL_GLattr attribute,

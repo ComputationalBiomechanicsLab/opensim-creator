@@ -6219,7 +6219,7 @@ private:
     gl::ArrayBuffer<float, GL_STREAM_DRAW> instance_gpu_buffer_;
 };
 
-static std::unique_ptr<osc::GraphicsContext::Impl> g_graphics_context_impl = nullptr;
+static std::unique_ptr<osc::GraphicsContext::Impl> g_graphics_context_impl = nullptr;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
 osc::GraphicsContext::GraphicsContext(SDL_Window& window)
 {

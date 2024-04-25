@@ -30,7 +30,7 @@ namespace {
         return rv;
     }();
 
-    std::unique_ptr<App> g_App;
+    std::unique_ptr<App> g_App;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
     class RegisteredDemoTabsFixture : public testing::TestWithParam<std::string> {
     protected:
         static void SetUpTestSuite()

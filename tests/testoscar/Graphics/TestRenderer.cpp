@@ -55,7 +55,7 @@ using namespace osc;
 
 namespace
 {
-    std::unique_ptr<App> g_App;
+    std::unique_ptr<App> g_App;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
     class Renderer : public ::testing::Test {
     protected:

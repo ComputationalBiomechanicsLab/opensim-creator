@@ -15,7 +15,6 @@ Checks: >
   -modernize-use-trailing-return-type,
   -modernize-use-nodiscard,
   cppcoreguidelines-*,
-  -cppcoreguidelines-avoid-non-const-global-variables,
   -cppcoreguidelines-avoid-magic-numbers,
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,
   -cppcoreguidelines-pro-bounds-constant-array-index,
