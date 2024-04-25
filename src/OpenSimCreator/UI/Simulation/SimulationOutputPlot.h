@@ -29,8 +29,4 @@ namespace osc
         class Impl;
         std::unique_ptr<Impl> m_Impl;
     };
-
-    // returns empty path if not saved
-    std::filesystem::path TryPromptAndSaveOutputsAsCSV(ISimulatorUIAPI&, std::span<OutputExtractor const>);
-    std::filesystem::path TryPromptAndSaveAllUserDesiredOutputsAsCSV(ISimulatorUIAPI&);
 }

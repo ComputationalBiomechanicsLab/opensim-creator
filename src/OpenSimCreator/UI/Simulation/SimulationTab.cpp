@@ -292,6 +292,11 @@ private:
         }
     }
 
+    ISimulation const& implGetSimulation() const final
+    {
+        return *m_Simulation;
+    }
+
     ISimulation& implUpdSimulation() final
     {
         return *m_Simulation;
@@ -505,8 +510,7 @@ osc::SimulationTab::SimulationTab(
     std::shared_ptr<Simulation> simulation_) :
 
     m_Impl{std::make_unique<Impl>(parent_, std::move(simulation_))}
-{
-}
+{}
 
 osc::SimulationTab::SimulationTab(SimulationTab&&) noexcept = default;
 osc::SimulationTab& osc::SimulationTab::operator=(SimulationTab&&) noexcept = default;

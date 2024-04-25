@@ -347,6 +347,7 @@ add_library(OpenSimCreator STATIC
     UI/Shared/Readonly3DModelViewer.cpp
     UI/Shared/Readonly3DModelViewer.h
 
+    UI/Simulation/ISimulatorUIAPI.cpp
     UI/Simulation/ISimulatorUIAPI.h
     UI/Simulation/ModelStatePairContextMenu.cpp
     UI/Simulation/ModelStatePairContextMenu.h

@@ -46,100 +46,11 @@ namespace
     constexpr Color c_CurrentScubTimeColor = Color::yellow().with_alpha(0.6f);
     constexpr Color c_HoveredScrubTimeColor = Color::yellow().with_alpha(0.3f);
 
-    std::vector<OutputExtractor> GetAllUserDesiredOutputs(ISimulatorUIAPI& api)
-    {
-        int nOutputs = api.getNumUserOutputExtractors();
-
-        std::vector<OutputExtractor> rv;
-        rv.reserve(nOutputs);
-        for (int i = 0; i < nOutputs; ++i) {
-            rv.push_back(api.getUserOutputExtractor(i));
-        }
-        return rv;
-    }
-
-    // export a timeseries to a CSV file and return the filepath
-    std::string ExportTimeseriesToCSV(
-        std::span<float const> times,
-        std::span<float const> values,
-        std::string_view header)
-    {
-        // try prompt user for save location
-        std::optional<std::filesystem::path> const maybeCSVPath =
-            PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
-
-        if (!maybeCSVPath) {
-            return {};  // user probably cancelled out
-        }
-
-        std::filesystem::path const& csvPath = *maybeCSVPath;
-
-        std::ofstream fout{csvPath};
-
-        if (!fout) {
-            log_error("%s: error opening file for writing", csvPath.string().c_str());
-            return {};  // error opening output file for writing
-        }
-
-        fout << "time," << header << '\n';
-        for (size_t i = 0, len = min(times.size(), values.size()); i < len; ++i) {
-            fout << times[i] << ',' << values[i] << '\n';
-        }
-
-        if (!fout) {
-            log_error("%s: error encountered while writing CSV data to file", csvPath.string().c_str());
-            return {};  // error writing
-        }
-
-        log_info("%: successfully wrote CSV data to output file", csvPath.string().c_str());
-
-        return csvPath.string();
-    }
-
-    std::vector<float> PopulateFirstNNumericOutputValues(
-        OpenSim::Model const& model,
-        std::span<SimulationReport const> reports,
-        IOutputExtractor const& output)
-    {
-        std::vector<float> rv;
-        rv.reserve(reports.size());
-        output.getValuesFloat(model, reports, [&rv](float v)
-        {
-            rv.push_back(v);
-        });
-        return rv;
-    }
-
-    std::vector<float> PopulateFirstNTimeValues(std::span<SimulationReport const> reports)
-    {
-        std::vector<float> times;
-        times.reserve(reports.size());
-        for (SimulationReport const& r : reports) {
-            times.push_back(static_cast<float>(r.getState().getTime()));
-        }
-        return times;
-    }
-
-    std::string TryExportNumericOutputToCSV(
-        ISimulation& sim,
-        IOutputExtractor const& output)
-    {
-        OSC_ASSERT(output.getOutputType() == OutputExtractorDataType::Float);
-
-        std::vector<SimulationReport> reports = sim.getAllSimulationReports();
-        std::vector<float> values = PopulateFirstNNumericOutputValues(*sim.getModel(), reports, output);
-        std::vector<float> times = PopulateFirstNTimeValues(reports);
-
-        return ExportTimeseriesToCSV(times, values, output.getName());
-    }
-
     void DrawToggleWatchOutputMenuItem(
         ISimulatorUIAPI& api,
         OutputExtractor const& output)
     {
-        bool isWatching = api.hasUserOutputExtractor(output);
-
-        if (isWatching) {
+        if (api.hasUserOutputExtractor(output)) {
             if (ui::MenuItem(ICON_FA_TRASH " Stop Watching")) {
                 api.removeUserOutputExtractor(output);
             }
@@ -157,6 +68,9 @@ namespace
         ISimulation& simulation,
         OutputExtractor const& oneDimensionalOutputExtractor)
     {
+        static_assert(num_options<OutputExtractorDataType>() == 3);
+        OSC_ASSERT(oneDimensionalOutputExtractor.getOutputType() == OutputExtractorDataType::Float);
+
         int id = 0;
         ForEachComponentInclusive(*simulation.getModel(), [&](auto const& component)
         {
@@ -201,13 +115,12 @@ namespace
         OSC_ASSERT(output.getOutputType() == OutputExtractorDataType::Float);
 
         if (ui::MenuItem(ICON_FA_SAVE "Save as CSV")) {
-            TryExportNumericOutputToCSV(sim, output);
+            api.tryPromptToSaveOutputsAsCSV({output});
         }
 
         if (ui::MenuItem(ICON_FA_SAVE "Save as CSV (and open)")) {
-            std::string p = TryExportNumericOutputToCSV(sim, output);
-            if (!p.empty()) {
-                OpenPathInOSDefaultApplication(p);
+            if (auto const path = api.tryPromptToSaveOutputsAsCSV({output})) {
+                OpenPathInOSDefaultApplication(*path);
             }
         }
 
@@ -217,57 +130,6 @@ namespace
         }
 
         DrawToggleWatchOutputMenuItem(api, output);
-    }
-
-    std::filesystem::path TryExportOutputsToCSV(ISimulation& sim, std::span<OutputExtractor const> outputs)
-    {
-        std::vector<SimulationReport> reports = sim.getAllSimulationReports();
-        std::vector<float> times = PopulateFirstNTimeValues(reports);
-
-        // try prompt user for save location
-        std::optional<std::filesystem::path> const maybeCSVPath =
-            PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
-
-        if (!maybeCSVPath) {
-            // user probably cancelled out
-            return {};
-        }
-        std::filesystem::path const& csvPath = *maybeCSVPath;
-
-        std::ofstream fout{csvPath};
-
-        if (!fout) {
-            log_error("%s: error opening file for writing", csvPath.string().c_str());
-            return {};  // error opening output file for writing
-        }
-
-        // header line
-        fout << "time";
-        for (OutputExtractor const& o : outputs)
-        {
-            fout << ',' << o.getName();
-        }
-        fout << '\n';
-
-
-        // data lines
-        auto guard = sim.getModel();
-        for (size_t i = 0; i < reports.size(); ++i) {
-            fout << times.at(i);  // time column
-
-            SimulationReport r = reports[i];
-            for (OutputExtractor const& o : outputs) {
-                fout << ',' << o.getValueFloat(*guard, r);
-            }
-
-            fout << '\n';
-        }
-
-        if (!fout) {
-            log_warn("%s: encountered error while writing output data: some of the data may have been written, but maybe not all of it", csvPath.string().c_str());
-        }
-
-        return csvPath;
     }
 }
 
@@ -517,9 +379,11 @@ private:
 };
 
 
-// public API
+osc::SimulationOutputPlot::SimulationOutputPlot(
+    ISimulatorUIAPI* api,
+    OutputExtractor outputExtractor,
+    float height) :
 
-osc::SimulationOutputPlot::SimulationOutputPlot(ISimulatorUIAPI* api, OutputExtractor outputExtractor, float height) :
     m_Impl{std::make_unique<Impl>(api, std::move(outputExtractor), height)}
 {}
 
@@ -530,15 +394,4 @@ osc::SimulationOutputPlot::~SimulationOutputPlot() noexcept = default;
 void osc::SimulationOutputPlot::onDraw()
 {
     m_Impl->onDraw();
-}
-
-std::filesystem::path osc::TryPromptAndSaveOutputsAsCSV(ISimulatorUIAPI& api, std::span<OutputExtractor const> outputs)
-{
-    return TryExportOutputsToCSV(api.updSimulation(), outputs);
-}
-
-std::filesystem::path osc::TryPromptAndSaveAllUserDesiredOutputsAsCSV(ISimulatorUIAPI& api)
-{
-    auto outputs = GetAllUserDesiredOutputs(api);
-    return TryExportOutputsToCSV(api.updSimulation(), outputs);
 }

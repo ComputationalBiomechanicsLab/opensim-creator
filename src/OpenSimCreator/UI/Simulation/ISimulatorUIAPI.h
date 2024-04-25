@@ -1,11 +1,16 @@
 #pragma once
 
+#include <OpenSimCreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationClock.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
 #include <OpenSimCreator/UI/Simulation/SimulationUIPlaybackState.h>
 #include <OpenSimCreator/UI/Simulation/SimulationUILoopingState.h>
 
+#include <filesystem>
+#include <initializer_list>
 #include <optional>
+#include <span>
+#include <vector>
 
 namespace osc { class OutputExtractor; }
 namespace osc { class SimulationModelStatePair; }
@@ -26,6 +31,7 @@ namespace osc
     public:
         virtual ~ISimulatorUIAPI() noexcept = default;
 
+        ISimulation const& getSimulation() const { return implGetSimulation(); }
         ISimulation& updSimulation() { return implUpdSimulation(); }
 
         SimulationUIPlaybackState getSimulationPlaybackState() { return implGetSimulationPlaybackState(); }
@@ -48,15 +54,23 @@ namespace osc
 
         int getNumUserOutputExtractors() const { return implGetNumUserOutputExtractors(); }
         OutputExtractor const& getUserOutputExtractor(int i) const { return implGetUserOutputExtractor(i); }
+        std::vector<OutputExtractor> getAllUserOutputExtractors() const;
         void addUserOutputExtractor(OutputExtractor const& o) { implAddUserOutputExtractor(o); }
         void removeUserOutputExtractor(int i) { implRemoveUserOutputExtractor(i); }
         bool hasUserOutputExtractor(OutputExtractor const& o) { return implHasUserOutputExtractor(o); }
         bool removeUserOutputExtractor(OutputExtractor const& o) { return implRemoveUserOutputExtractor(o); }
         bool overwriteOrAddNewUserOutputExtractor(OutputExtractor const& old, OutputExtractor const& newer) { return implOverwriteOrAddNewUserOutputExtractor(old, newer); }
+        std::optional<std::filesystem::path> tryPromptToSaveOutputsAsCSV(std::span<OutputExtractor const>) const;
+        std::optional<std::filesystem::path> tryPromptToSaveOutputsAsCSV(std::initializer_list<OutputExtractor> il) const
+        {
+            return tryPromptToSaveOutputsAsCSV(std::span<OutputExtractor const>{il});
+        }
+        std::optional<std::filesystem::path> tryPromptToSaveAllOutputsAsCSV() const;
 
         SimulationModelStatePair* tryGetCurrentSimulationState() { return implTryGetCurrentSimulationState(); }
 
     private:
+        virtual ISimulation const& implGetSimulation() const = 0;
         virtual ISimulation& implUpdSimulation() = 0;
 
         virtual SimulationUIPlaybackState implGetSimulationPlaybackState() = 0;

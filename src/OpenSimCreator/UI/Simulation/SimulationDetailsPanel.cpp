@@ -2,6 +2,7 @@
 
 #include <OpenSimCreator/Documents/Simulation/Simulation.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
+#include <OpenSimCreator/UI/Simulation/ISimulatorUIAPI.h>
 #include <OpenSimCreator/UI/Simulation/SimulationOutputPlot.h>
 
 #include <IconsFontAwesome5.h>
@@ -29,8 +30,7 @@ public:
         StandardPanelImpl{panelName},
         m_SimulatorUIAPI{simulatorUIAPI},
         m_Simulation{std::move(simulation)}
-    {
-    }
+    {}
 
 private:
     void impl_draw_content() final
@@ -39,7 +39,7 @@ private:
             ui::Dummy({0.0f, 1.0f});
             ui::TextUnformatted("info:");
             ui::SameLine();
-            ui::DrawHelpMarker("Top-log_level_ info about the simulation");
+            ui::DrawHelpMarker("Top-level information about the simulation");
             ui::Separator();
             ui::Dummy({0.0f, 2.0f});
 
@@ -70,7 +70,7 @@ private:
 
         if (outputs.empty())
         {
-            ui::TextDisabled("(no simulator output plots available for this simulation)");
+            ui::TextDisabledAndCentered("(no simulator output plots)");
             return;
         }
 
@@ -87,15 +87,13 @@ private:
             {
                 if (ui::MenuItem("as CSV"))
                 {
-                    TryPromptAndSaveOutputsAsCSV(*m_SimulatorUIAPI, outputs);
+                    m_SimulatorUIAPI->tryPromptToSaveOutputsAsCSV(outputs);
                 }
 
                 if (ui::MenuItem("as CSV (and open)"))
                 {
-                    std::filesystem::path p = TryPromptAndSaveOutputsAsCSV(*m_SimulatorUIAPI, outputs);
-                    if (!p.empty())
-                    {
-                        OpenPathInOSDefaultApplication(p);
+                    if (const auto path = m_SimulatorUIAPI->tryPromptToSaveOutputsAsCSV(outputs)) {
+                        OpenPathInOSDefaultApplication(*path);
                     }
                 }
 
@@ -136,8 +134,7 @@ osc::SimulationDetailsPanel::SimulationDetailsPanel(
     std::shared_ptr<Simulation const> simulation) :
 
     m_Impl{std::make_unique<Impl>(panelName, simulatorUIAPI, std::move(simulation))}
-{
-}
+{}
 
 osc::SimulationDetailsPanel::SimulationDetailsPanel(SimulationDetailsPanel&&) noexcept = default;
 osc::SimulationDetailsPanel& osc::SimulationDetailsPanel::operator=(SimulationDetailsPanel&&) noexcept = default;

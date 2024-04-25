@@ -60,17 +60,13 @@ private:
             ui::Button(ICON_FA_SAVE " Save All " ICON_FA_CARET_DOWN);
             if (ui::BeginPopupContextItem("##exportoptions", ImGuiPopupFlags_MouseButtonLeft))
             {
-                if (ui::MenuItem("as CSV"))
-                {
-                    TryPromptAndSaveAllUserDesiredOutputsAsCSV(*m_SimulatorUIAPI);
+                if (ui::MenuItem("as CSV")) {
+                    m_SimulatorUIAPI->tryPromptToSaveAllOutputsAsCSV();
                 }
 
-                if (ui::MenuItem("as CSV (and open)"))
-                {
-                    auto p = TryPromptAndSaveAllUserDesiredOutputsAsCSV(*m_SimulatorUIAPI);
-                    if (!p.empty())
-                    {
-                        OpenPathInOSDefaultApplication(p);
+                if (ui::MenuItem("as CSV (and open)")) {
+                    if (const auto path = m_SimulatorUIAPI->tryPromptToSaveAllOutputsAsCSV()) {
+                        OpenPathInOSDefaultApplication(*path);
                     }
                 }
 
