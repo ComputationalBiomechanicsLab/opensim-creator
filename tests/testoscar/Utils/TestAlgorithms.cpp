@@ -188,6 +188,8 @@ TEST(is_eq_downcasted, WorksAsExpected)
     // basic case: both types are the same and don't require downcasting
     ASSERT_TRUE(is_eq_downcasted<Derived1>(Derived1{1}, Derived1{1}));
     ASSERT_FALSE(is_eq_downcasted<Derived1>(Derived1{1}, Derived1{2}));
+    ASSERT_TRUE(is_eq_downcasted<Derived2>(Derived2{1.0}, Derived2{1.0}));
+    ASSERT_FALSE(is_eq_downcasted<Derived2>(Derived2{1.0}, Derived2{2.0}));
 
     // correct downcast case
     ASSERT_TRUE(is_eq_downcasted<Derived1>(Derived1{1}, static_cast<const Base&>(Derived1{1})));
