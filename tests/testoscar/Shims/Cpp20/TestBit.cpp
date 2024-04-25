@@ -24,14 +24,14 @@ TEST(countrzero, ReturnsExpectedResults)
 
 TEST(bitwidth, ReturnsExpectedResults)
 {
-    static_assert(cpp20::bit_width(0b0000u) == 0);
-    static_assert(cpp20::bit_width(0b0001u) == 1);
-    static_assert(cpp20::bit_width(0b0010u) == 2);
-    static_assert(cpp20::bit_width(0b0011u) == 2);
-    static_assert(cpp20::bit_width(0b0100u) == 3);
-    static_assert(cpp20::bit_width(0b0101u) == 3);
-    static_assert(cpp20::bit_width(0b0110u) == 3);
-    static_assert(cpp20::bit_width(0b0111u) == 3);
+    static_assert(std::bit_width(0b0000u) == 0);
+    static_assert(std::bit_width(0b0001u) == 1);
+    static_assert(std::bit_width(0b0010u) == 2);
+    static_assert(std::bit_width(0b0011u) == 2);
+    static_assert(std::bit_width(0b0100u) == 3);
+    static_assert(std::bit_width(0b0101u) == 3);
+    static_assert(std::bit_width(0b0110u) == 3);
+    static_assert(std::bit_width(0b0111u) == 3);
 
-    static_assert(cpp20::bit_width(2u) == 2);
+    static_assert(std::bit_width(2u) == 2);
 }

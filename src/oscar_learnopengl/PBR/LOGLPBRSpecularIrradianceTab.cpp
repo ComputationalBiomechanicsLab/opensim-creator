@@ -141,7 +141,7 @@ namespace
 
         size_t const maxMipmapLevel = static_cast<size_t>(max(
             0,
-            cpp20::bit_width(static_cast<size_t>(levelZeroWidth)) - 1
+            std::bit_width(static_cast<size_t>(levelZeroWidth)) - 1
         ));
         static_assert(maxMipmapLevel == 7);
 
@@ -248,7 +248,7 @@ private:
         m_PBRMaterial.set_vec3_array("uLightColors", c_LightRadiances);
         m_PBRMaterial.set_render_texture("uIrradianceMap", m_IrradianceMap);
         m_PBRMaterial.set_cubemap("uPrefilterMap", m_PrefilterMap);
-        m_PBRMaterial.set_float("uMaxReflectionLOD", static_cast<float>(cpp20::bit_width(static_cast<size_t>(m_PrefilterMap.width()) - 1)));
+        m_PBRMaterial.set_float("uMaxReflectionLOD", static_cast<float>(std::bit_width(static_cast<size_t>(m_PrefilterMap.width()) - 1)));
         m_PBRMaterial.set_texture("uBRDFLut", m_BRDFLookup);
 
         drawSpheres();

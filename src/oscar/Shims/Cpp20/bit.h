@@ -7,20 +7,6 @@
 
 namespace osc::cpp20
 {
-    template<std::unsigned_integral T>
-    constexpr int bit_width(T x) noexcept
-    {
-        static_assert(!std::is_same_v<T, bool>);
-
-        int rv = 0;
-        while (x)
-        {
-            x >>= 1;
-            ++rv;
-        }
-        return rv;
-    }
-
     template<typename To, typename From>
     To bit_cast(From const& src) noexcept
     {
