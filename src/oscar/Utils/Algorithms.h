@@ -14,17 +14,6 @@
 
 namespace osc
 {
-    // see: std::ranges::count
-    template<
-        std::ranges::input_range R,
-        typename T
-    >
-    requires std::indirect_binary_predicate<std::ranges::equal_to, std::ranges::iterator_t<R>, const T*>
-    constexpr typename std::ranges::range_difference_t<R> count(R&& r, const T& value)
-    {
-        return std::count(std::ranges::begin(r), std::ranges::end(r), value);
-    }
-
     // see: std::ranges::count_if
     template<
         std::ranges::input_range R,

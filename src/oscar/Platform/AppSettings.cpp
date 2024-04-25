@@ -19,6 +19,7 @@
 #include <fstream>
 #include <memory>
 #include <optional>
+#include <ranges>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -293,7 +294,7 @@ R"(# configuration options
         }
 
         // iterate through each part of the given path (e.g. a/b/c)
-        const size_t depth = count(table_path, '/') + 1;
+        const size_t depth = std::ranges::count(table_path, '/') + 1;
         toml::table* current_table = &root;
         std::string_view current_path = table_path.substr(0, table_path.find('/'));
 
