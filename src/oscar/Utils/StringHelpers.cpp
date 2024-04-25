@@ -129,7 +129,7 @@ bool osc::is_valid_identifier(std::string_view sv)
     }
     else
     {
-        return all_of(sv.begin() + 1, sv.end(), isValidTrailingCharacterOfIdentifier);
+        return std::all_of(sv.begin() + 1, sv.end(), isValidTrailingCharacterOfIdentifier);
     }
 }
 
