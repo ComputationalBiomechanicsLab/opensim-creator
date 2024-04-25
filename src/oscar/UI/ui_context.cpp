@@ -5,6 +5,7 @@
 #include <oscar/Platform/AppConfig.h>
 #include <oscar/Platform/ResourceLoader.h>
 #include <oscar/Platform/ResourcePath.h>
+#include <oscar/Shims/Cpp20/bit.h>
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/imgui_impl_sdl2.h>
@@ -15,7 +16,6 @@
 
 #include <algorithm>
 #include <array>
-#include <bit>
 #include <iterator>
 #include <ranges>
 #include <string>
@@ -35,7 +35,7 @@ namespace
     {
         using value_type = typename Container::value_type;
 
-        auto* ptr = std::bit_cast<value_type*>(malloc(std::ranges::size(c) * sizeof(value_type)));  // NOLINT(cppcoreguidelines-owning-memory,cppcoreguidelines-no-malloc,hicpp-no-malloc)
+        auto* ptr = cpp20::bit_cast<value_type*>(malloc(std::ranges::size(c) * sizeof(value_type)));  // NOLINT(cppcoreguidelines-owning-memory,cppcoreguidelines-no-malloc,hicpp-no-malloc)
         copy(c, ptr);
         return ptr;
     }
