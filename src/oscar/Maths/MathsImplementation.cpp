@@ -16,6 +16,7 @@
 #include <memory>
 #include <numeric>
 #include <optional>
+#include <ranges>
 #include <span>
 #include <sstream>
 #include <string>
@@ -1422,7 +1423,7 @@ bool osc::is_intersecting(const Rect& r, const Vec2& p)
 
 bool osc::is_intersecting(const FrustumPlanes& frustum, const AABB& aabb)
 {
-    return not any_of(frustum, [&aabb](const auto& plane) { return is_in_front_of(plane, aabb); });
+    return not std::ranges::any_of(frustum, [&aabb](const auto& plane) { return is_in_front_of(plane, aabb); });
 }
 
 std::optional<RayCollision> osc::find_collision(const Line& line, const Sphere& sphere)

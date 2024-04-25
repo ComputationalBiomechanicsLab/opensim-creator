@@ -1,9 +1,8 @@
 #include "CSV.h"
 
-#include <oscar/Utils/Algorithms.h>
-
 #include <algorithm>
 #include <iostream>
+#include <ranges>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -20,7 +19,7 @@ namespace
 
     constexpr bool should_be_quoted(std::string_view v)
     {
-        return any_of(v, is_special_csv_char);
+        return std::ranges::any_of(v, is_special_csv_char);
     }
 }
 

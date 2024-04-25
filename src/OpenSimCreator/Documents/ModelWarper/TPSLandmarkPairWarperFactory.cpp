@@ -23,6 +23,7 @@
 using namespace osc;
 using namespace osc::lm;
 using namespace osc::mow;
+namespace ranges = std::ranges;
 
 namespace
 {
@@ -247,7 +248,7 @@ bool osc::mow::TPSLandmarkPairWarperFactory::hasUnpairedLandmarks() const
 
 bool osc::mow::TPSLandmarkPairWarperFactory::hasLandmarkNamed(std::string_view name) const
 {
-    return any_of(m_Landmarks, [name](auto const& lm) { return lm.name() == name; });
+    return ranges::any_of(m_Landmarks, [name](auto const& lm) { return lm.name() == name; });
 }
 
 MaybePairedLandmark const* osc::mow::TPSLandmarkPairWarperFactory::tryGetLandmarkPairingByName(std::string_view name) const

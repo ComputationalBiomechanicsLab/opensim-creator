@@ -301,7 +301,7 @@ private:
             {
                 return p.userChoice == GetAbsolutePath(c);
             };
-            if (any_of(m_PathPoints, isSameUserChoiceAsComponent))
+            if (std::ranges::any_of(m_PathPoints, isSameUserChoiceAsComponent))
             {
                 continue;  // already selected
             }

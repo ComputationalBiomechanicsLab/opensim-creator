@@ -4897,7 +4897,7 @@ private:
             return v > std::numeric_limits<uint16_t>::max();
         };
 
-        if (any_of(indices, isGreaterThanU16Max)) {
+        if (std::ranges::any_of(indices, isGreaterThanU16Max)) {
             indices_are_32bit_ = true;
             num_indices_ = indices.size();
             indices_data_.resize(indices.size());

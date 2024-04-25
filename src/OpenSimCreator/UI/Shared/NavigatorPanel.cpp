@@ -23,6 +23,7 @@
 #include <cstddef>
 #include <limits>
 #include <memory>
+#include <ranges>
 #include <stdexcept>
 #include <string>
 #include <typeinfo>
@@ -140,7 +141,7 @@ namespace
 
     bool isSearchHit(std::string const& searchStr, ComponentPath const& cp)
     {
-        return any_of(cp, [&searchStr](OpenSim::Component const* c)
+        return std::ranges::any_of(cp, [&searchStr](OpenSim::Component const* c)
         {
             return ContainsCaseInsensitive(c->getName(), searchStr);
         });

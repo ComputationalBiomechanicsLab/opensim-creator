@@ -55,7 +55,7 @@ namespace osc
     template<size_t N>
     constexpr bool any_of(const Vec<N, bool>& v)
     {
-        return any_of(v, std::identity{});
+        return std::ranges::any_of(v, std::identity{});
     }
 
     // tests if no elements in `v` are `true`

@@ -19,6 +19,7 @@
 #include <oscar/Utils/UID.h>
 
 #include <algorithm>
+#include <ranges>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -29,7 +30,7 @@ using namespace osc;
 
 bool osc::mi::IsAChildAttachmentInAnyJoint(Document const& doc, MIObject const& obj)
 {
-    return any_of(doc.iter<Joint>(), [id = obj.getID()](Joint const& j)
+    return std::ranges::any_of(doc.iter<Joint>(), [id = obj.getID()](Joint const& j)
     {
         return j.getChildID() == id;
     });

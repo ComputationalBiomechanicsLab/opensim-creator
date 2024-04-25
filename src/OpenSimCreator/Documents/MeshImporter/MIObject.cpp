@@ -1,9 +1,8 @@
 #include "MIObject.h"
 
 #include <oscar/Maths/MathHelpers.h>
-#include <oscar/Utils/Algorithms.h>
 
-#include <algorithm>
+#include <ranges>
 
 void osc::mi::MIObject::applyRotation(
     IObjectFinder const& lookup,
@@ -19,7 +18,7 @@ bool osc::mi::MIObject::isCrossReferencing(
     UID id,
     CrossrefDirection direction) const
 {
-    return any_of(implGetCrossReferences(), [id, direction](CrossrefDescriptor const& desc)
+    return std::ranges::any_of(implGetCrossReferences(), [id, direction](CrossrefDescriptor const& desc)
     {
         return desc.getConnecteeID() == id && (desc.getDirection() & direction);
     });
