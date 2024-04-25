@@ -151,6 +151,9 @@ add_library(OpenSimCreator STATIC
     Documents/OutputExtractors/OutputExtractor.cpp
     Documents/OutputExtractors/OutputExtractor.h
     Documents/OutputExtractors/OutputExtractorDataType.h
+    Documents/OutputExtractors/OutputExtractorDataTypeHelpers.h
+    Documents/OutputExtractors/OutputExtractorDataTypeList.h
+    Documents/OutputExtractors/OutputExtractorDataTypeTraits.h
     Documents/OutputExtractors/OutputValueExtractor.h
 
     Documents/Simulation/ForwardDynamicSimulation.cpp

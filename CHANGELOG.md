@@ -5,6 +5,10 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- Fixed the `Save All` button only showing in the output plots tab if any of the plots happens to be
+  1D floating-point data (it should now show when 2D data is being plotted, too, #840)
+- Fixed using `Save All > as CSV` in the simulation tab when plotting 2D outputs (e.g. phase diagrams)
+  wasn't exporting the 2nd dimension as a column in the CSV (#840)
 - `CustomJoint`s can now be added via the UI. They default to having a single rotational degree of
   freedom along the Z axis (i.e. a `PinJoint`-like `CustomJoint`). Editing a `CustomJoint` still
   requires manually editing the `.osim` file, though

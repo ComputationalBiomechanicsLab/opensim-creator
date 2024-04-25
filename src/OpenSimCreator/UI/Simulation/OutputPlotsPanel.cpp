@@ -1,6 +1,7 @@
 #include "OutputPlotsPanel.h"
 
 #include <OpenSimCreator/Documents/OutputExtractors/OutputExtractor.h>
+#include <OpenSimCreator/Documents/OutputExtractors/OutputExtractorDataTypeHelpers.h>
 #include <OpenSimCreator/UI/IMainUIStateAPI.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/UI/Simulation/ISimulatorUIAPI.h>
@@ -11,6 +12,7 @@
 #include <oscar/UI/Panels/StandardPanelImpl.h>
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/ParentPtr.h>
 
 #include <memory>
@@ -22,10 +24,8 @@ namespace
 {
     bool IsAnyOutputExportableToCSV(IMainUIStateAPI& api)
     {
-        for (int i = 0; i < api.getNumUserOutputExtractors(); ++i)
-        {
-            if (api.getUserOutputExtractor(i).getOutputType() == OutputExtractorDataType::Float)
-            {
+        for (int i = 0; i < api.getNumUserOutputExtractors(); ++i) {
+            if (is_numeric(api.getUserOutputExtractor(i).getOutputType())) {
                 return true;
             }
         }
