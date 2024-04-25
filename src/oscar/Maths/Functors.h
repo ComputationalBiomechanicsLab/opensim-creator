@@ -6,6 +6,7 @@
 #include <concepts>
 #include <cstddef>
 #include <functional>
+#include <ranges>
 
 namespace osc
 {
@@ -47,7 +48,7 @@ namespace osc
     template<size_t N>
     constexpr bool all_of(const Vec<N, bool>& v)
     {
-        return all_of(v, std::identity{});
+        return std::ranges::all_of(v, std::identity{});
     }
 
     // tests if any element in `v` is `true`

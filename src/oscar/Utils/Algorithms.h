@@ -14,27 +14,6 @@
 
 namespace osc
 {
-    // see: std::ranges::all_of
-    template<
-        std::ranges::input_range R,
-        std::indirect_unary_predicate<std::ranges::iterator_t<R>> Pred
-    >
-    constexpr bool all_of(R&& r, Pred pred)
-    {
-        return std::all_of(std::ranges::begin(r), std::ranges::end(r), pred);
-    }
-
-    // see: std::ranges::all_of
-    template<
-        std::input_iterator I,
-        std::sentinel_for<I> S,
-        std::indirect_unary_predicate<I> Pred
-    >
-    constexpr bool all_of(I first, S last, Pred pred)
-    {
-        return std::all_of(first, last, pred);
-    }
-
     // see: std::ranges::any_of
     template<
         std::ranges::input_range R,

@@ -4,16 +4,18 @@
 
 #include <array>
 #include <map>
+#include <ranges>
 #include <unordered_map>
 
 using namespace osc;
+namespace ranges = std::ranges;
 
 TEST(all_of, WorksAsExpected)
 {
     auto vs = std::to_array({-1, -2, -3, 0, 1, 2, 3});
-    ASSERT_TRUE(all_of(vs, [](int v){ return v > -4; }));
-    ASSERT_TRUE(all_of(vs, [](int v){ return v <  4; }));
-    ASSERT_FALSE(all_of(vs, [](int v){ return v > 0; }));
+    ASSERT_TRUE(ranges::all_of(vs, [](int v){ return v > -4; }));
+    ASSERT_TRUE(ranges::all_of(vs, [](int v){ return v <  4; }));
+    ASSERT_FALSE(ranges::all_of(vs, [](int v){ return v > 0; }));
 }
 TEST(at, WorksAsExpected)
 {

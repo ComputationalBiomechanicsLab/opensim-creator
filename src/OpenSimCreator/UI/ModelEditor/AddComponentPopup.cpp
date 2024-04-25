@@ -28,12 +28,14 @@
 #include <cstddef>
 #include <memory>
 #include <optional>
+#include <ranges>
 #include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
 
 namespace OpenSim { class AbstractProperty; }
+namespace ranges = std::ranges;
 
 namespace
 {
@@ -151,7 +153,7 @@ private:
         OpenSim::Model const& model = m_Uum->getModel();
 
         bool hasName = !m_Name.empty();
-        bool allSocketsAssigned = all_of(m_SocketConnecteePaths, [&model](OpenSim::ComponentPath const& cp)
+        bool allSocketsAssigned = ranges::all_of(m_SocketConnecteePaths, [&model](OpenSim::ComponentPath const& cp)
         {
             return ContainsComponent(model, cp);
         });

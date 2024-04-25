@@ -16,9 +16,11 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <ranges>
 #include <vector>
 
 using namespace osc;
+namespace ranges = std::ranges;
 
 Vec3 osc::average_centroid_of(const Mesh& mesh)
 {
@@ -64,7 +66,7 @@ std::vector<Vec4> osc::calc_tangent_vectors(
     // else: there must be enough data to compute the tangents
     //
     // (but, just to keep sane, assert that the mesh data is actually valid)
-    OSC_ASSERT_ALWAYS(all_of(indices, [num_verts = vertices.size(), num_normals = normals.size(), num_tex_coords = tex_coords.size()](auto index)
+    OSC_ASSERT_ALWAYS(ranges::all_of(indices, [num_verts = vertices.size(), num_normals = normals.size(), num_tex_coords = tex_coords.size()](auto index)
     {
         return index < num_verts and index < num_normals and index < num_tex_coords;
     }) && "the provided mesh contains invalid indices");
