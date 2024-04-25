@@ -586,11 +586,7 @@ namespace
 {
     enum class GraphEdgeType { ParentChild, Socket };
     struct GraphEdge final {
-        friend bool operator<(GraphEdge const& lhs, GraphEdge const& rhs)
-        {
-            // HACK: MacOS doesn't define a three-way comparison operator for `std::string`
-            return std::tie(lhs.sourceAbsPath, lhs.destinationAbsPath, lhs.name, lhs.type) < std::tie(rhs.sourceAbsPath, rhs.destinationAbsPath, rhs.name, rhs.type);
-        }
+        friend auto operator<=>(GraphEdge const&, GraphEdge const&) = default;
 
         std::string sourceAbsPath;
         std::string destinationAbsPath;
