@@ -6,6 +6,7 @@
 
 #include <oscar/Utils/CStringView.h>
 
+#include <concepts>
 #include <cstddef>
 #include <functional>
 #include <iosfwd>
@@ -116,6 +117,13 @@ namespace osc
 
         std::shared_ptr<IOutputExtractor const> m_Output;
     };
+
+    template<std::derived_from<IOutputExtractor> ConcreteOutputExtractor, typename... Args>
+    requires std::constructible_from<ConcreteOutputExtractor, Args&&...>
+    OutputExtractor make_output_extractor(Args&&... args)
+    {
+        return OutputExtractor{ConcreteOutputExtractor{std::forward<Args>(args)...}};
+    }
 
     std::ostream& operator<<(std::ostream&, OutputExtractor const&);
     std::string to_string(OutputExtractor const&);

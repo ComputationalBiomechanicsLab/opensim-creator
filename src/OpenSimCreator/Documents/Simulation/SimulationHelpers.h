@@ -3,14 +3,16 @@
 #include <iosfwd>
 #include <span>
 
-namespace osc { class ISimulation; }
+namespace OpenSim { class Component; }
 namespace osc { class OutputExtractor; }
+namespace osc { class SimulationReport; }
 
 namespace osc
 {
     void WriteOutputsAsCSV(
+        const OpenSim::Component&,
         std::span<const OutputExtractor>,
-        ISimulation const&,
+        std::span<const SimulationReport>,
         std::ostream&
     );
 }

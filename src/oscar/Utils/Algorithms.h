@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <functional>
 #include <iterator>
+#include <memory>
 #include <optional>
 #include <ranges>
 #include <stdexcept>
@@ -664,5 +665,21 @@ namespace osc
             return &it->second;
         }
         return nullptr;
+    }
+
+    template<typename Downcasted, typename T1, typename T2>
+    requires
+        std::equality_comparable<Downcasted> and
+        std::is_polymorphic_v<Downcasted> and
+        std::derived_from<Downcasted, T1> and
+        std::derived_from<Downcasted, T2>
+    constexpr bool is_eq_downcasted(const T1& lhs, const T2& rhs)
+    {
+        const auto* lhs_casted = dynamic_cast<const Downcasted*>(std::addressof(lhs));
+        const auto* rhs_casted = dynamic_cast<const Downcasted*>(std::addressof(rhs));
+        if (lhs_casted and rhs_casted) {
+            return *lhs_casted == *rhs_casted;
+        }
+        return false;
     }
 }

@@ -159,3 +159,43 @@ TEST(minmax, WorksAsExpected)
     ASSERT_EQ(min, -4);
     ASSERT_EQ(max, 13);
 }
+
+namespace
+{
+    class Base {
+    public:
+        virtual ~Base() noexcept = default;
+        constexpr friend bool operator==(const Base&, const Base&) = default;
+    };
+    class Derived1 : public Base {
+    public:
+        explicit constexpr Derived1(int data) : m_Data{data} {}
+        constexpr friend bool operator==(const Derived1&, const Derived1&) = default;
+    private:
+        int m_Data;
+    };
+    class Derived2 : public Base {
+    public:
+        explicit constexpr Derived2(double data) : m_Data{data} {}
+        constexpr friend bool operator==(const Derived2&, const Derived2&) = default;
+    private:
+        double m_Data;
+    };
+}
+
+TEST(is_eq_downcasted, WorksAsExpected)
+{
+    // basic case: both types are the same and don't require downcasting
+    ASSERT_TRUE(is_eq_downcasted<Derived1>(Derived1{1}, Derived1{1}));
+    ASSERT_FALSE(is_eq_downcasted<Derived1>(Derived1{1}, Derived1{2}));
+
+    // correct downcast case
+    ASSERT_TRUE(is_eq_downcasted<Derived1>(Derived1{1}, static_cast<const Base&>(Derived1{1})));
+    ASSERT_FALSE(is_eq_downcasted<Derived1>(Derived1{1}, static_cast<const Base&>(Derived1{2})));
+    ASSERT_TRUE(is_eq_downcasted<Derived1>(static_cast<const Base&>(Derived1{1}), Derived1{1}));
+    ASSERT_FALSE(is_eq_downcasted<Derived1>(static_cast<const Base&>(Derived1{2}), Derived1{1}));
+
+    // incorrect downcast case (i.e. should never compare equal)
+    ASSERT_FALSE(is_eq_downcasted<Derived1>(Derived1{1}, static_cast<const Base&>(Derived2{1.0})));
+    ASSERT_FALSE(is_eq_downcasted<Derived1>(static_cast<const Base&>(Derived2{1.0}), Derived1(1)));
+}

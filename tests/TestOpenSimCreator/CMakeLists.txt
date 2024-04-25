@@ -14,6 +14,7 @@ add_executable(TestOpenSimCreator
     Documents/ModelWarper/TestModelWarpDocument.cpp
     Documents/ModelWarper/TestPointWarperFactories.cpp
     Documents/Simulation/TestForwardDynamicSimulation.cpp
+    Documents/Simulation/TestSimulationHelpers.cpp
     Graphics/TestOpenSimDecorationGenerator.cpp
     Graphics/TestSimTKDecorationGenerator.cpp
     MetaTests/TestOpenSimLibraryAPI.cpp
@@ -24,7 +25,7 @@ add_executable(TestOpenSimCreator
     Utils/TestShapeFitters.cpp
 
     TestOpenSimCreator.cpp  # entrypoint (main)
-)
+  "Documents/OutputExtractors/TestConstantOutputExtractor.cpp")
 
 configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/TestOpenSimCreatorConfig.h.in"

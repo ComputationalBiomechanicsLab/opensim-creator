@@ -140,6 +140,8 @@ add_library(OpenSimCreator STATIC
     Documents/OutputExtractors/ComponentOutputSubfield.h
     Documents/OutputExtractors/ConcatenatingOutputExtractor.cpp
     Documents/OutputExtractors/ConcatenatingOutputExtractor.h
+    Documents/OutputExtractors/ConstantOutputExtractor.cpp
+    Documents/OutputExtractors/ConstantOutputExtractor.h
     Documents/OutputExtractors/IntegratorOutputExtractor.cpp
     Documents/OutputExtractors/IntegratorOutputExtractor.h
     Documents/OutputExtractors/IOutputExtractor.cpp

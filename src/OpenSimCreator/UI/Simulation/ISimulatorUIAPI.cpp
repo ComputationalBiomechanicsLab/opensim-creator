@@ -40,7 +40,8 @@ namespace
         fout.exceptions(std::ios_base::badbit | std::ios_base::failbit);
 
         // write output
-        WriteOutputsAsCSV(outputs, simulation, fout);
+        const auto guard = simulation.getModel();
+        WriteOutputsAsCSV(*guard, outputs, simulation.getAllSimulationReports(), fout);
 
         return path;
     }

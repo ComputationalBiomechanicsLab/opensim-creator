@@ -5,6 +5,7 @@
 #include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
 
 #include <OpenSim/Simulation/Model/Model.h>
+#include <oscar/Utils/EnumHelpers.h>
 #include <Simbody.h>
 
 #include <cstddef>
@@ -12,28 +13,38 @@
 #include <span>
 
 void osc::WriteOutputsAsCSV(
+    OpenSim::Component const& root,
     std::span<const OutputExtractor> outputs,
-    ISimulation const& simulation,
+    std::span<const SimulationReport> reports,
     std::ostream& out)
 {
     // header line
     out << "time";
     for (const OutputExtractor& o : outputs) {
-        out << ',' << o.getName();
+        static_assert(num_options<OutputExtractorDataType>() == 3);
+        if (o.getOutputType() == OutputExtractorDataType::Vec2) {
+            out << ',' << o.getName() << "/0";
+            out << ',' << o.getName() << "/1";
+        }
+        else {
+            out << ',' << o.getName();
+        }
     }
     out << '\n';
 
-
     // data lines
-    const auto guard = simulation.getModel();
-    for (size_t i = 0, len = simulation.getNumReports(); i < len; ++i) {
-        const SimulationReport report = simulation.getSimulationReport(i);
-
+    for (const SimulationReport& report : reports) {
         out << report.getState().getTime();  // time column
         for (const OutputExtractor& o : outputs) {
-            out << ',' << o.getValueFloat(*guard, report);
+            static_assert(num_options<OutputExtractorDataType>() == 3);
+            if (o.getOutputType() == OutputExtractorDataType::Vec2) {
+                const Vec2 v = o.getValueVec2(root, report);
+                out << ',' << v.x << ',' << v.y;
+            }
+            else {
+                out << ',' << o.getValueFloat(root, report);
+            }
         }
-
         out << '\n';
     }
 }
