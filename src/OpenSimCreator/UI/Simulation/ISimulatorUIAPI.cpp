@@ -25,7 +25,7 @@ namespace
         std::span<const OutputExtractor> outputs)
     {
         // prompt user for save location
-        const std::optional<std::filesystem::path> path =
+        std::optional<std::filesystem::path> path =
             PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
         if (not path) {
             return std::nullopt;  // user probably cancelled out

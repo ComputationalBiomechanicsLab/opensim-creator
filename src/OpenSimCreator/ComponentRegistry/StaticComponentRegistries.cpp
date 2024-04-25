@@ -595,7 +595,7 @@ namespace
                     independentCoordNames.append(independentCoord.getName());
 
                     OpenSim::TransformAxis zRotationAxisTransform(independentCoordNames, {0.0, 0.0, 1.0});
-                    zRotationAxisTransform.setFunction(new OpenSim::LinearFunction(1.0, 0.0));
+                    zRotationAxisTransform.setFunction(std::make_unique<OpenSim::LinearFunction>(1.0, 0.0).release());
 
                     OpenSim::SpatialTransform spatialTransform;
                     spatialTransform.set_rotation3(zRotationAxisTransform);

@@ -163,6 +163,12 @@ TEST(minmax, WorksAsExpected)
 namespace
 {
     class Base {
+    protected:
+        Base() = default;
+        Base(const Base&) = default;
+        Base(Base&&) noexcept = default;
+        Base& operator=(const Base&) = default;
+        Base& operator=(Base&&) noexcept = default;
     public:
         virtual ~Base() noexcept = default;
         constexpr friend bool operator==(const Base&, const Base&) = default;
