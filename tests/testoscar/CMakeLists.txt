@@ -77,7 +77,6 @@ add_executable(testoscar
     Platform/TestResourcePath.cpp
     Platform/TestResourceStream.cpp
 
-    Shims/Cpp20/TestBit.cpp
     Shims/Cpp23/TestCstddef.cpp
 
     Utils/TestAlgorithms.cpp

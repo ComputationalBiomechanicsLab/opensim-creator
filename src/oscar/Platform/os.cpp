@@ -2,7 +2,6 @@
 
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/LogLevel.h>
-#include <oscar/Shims/Cpp20/bit.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/StringHelpers.h>
 
@@ -543,8 +542,6 @@ void osc::SetProcessHighDPIMode() {}
 #include <time.h>  // gmtime_s
 #include <cinttypes>  // PRIXPTR
 #include <signal.h>   // signal()
-
-#include <oscar/Shims/Cpp20/bit.h>
 
 using osc::global_default_logger;
 using osc::global_get_traceback_log;

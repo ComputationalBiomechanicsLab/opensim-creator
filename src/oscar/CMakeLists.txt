@@ -276,7 +276,6 @@ add_library(oscar STATIC
     Platform/Screenshot.h
     Platform/ScreenshotAnnotation.h
 
-    Shims/Cpp20/bit.h
     Shims/Cpp20/stop_token.h
     Shims/Cpp20/thread.h
     Shims/Cpp23/cstddef.h
