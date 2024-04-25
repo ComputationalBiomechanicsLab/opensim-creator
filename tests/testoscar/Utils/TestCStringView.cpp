@@ -1,13 +1,11 @@
 #include <oscar/Utils/CStringView.h>
 
 #include <gtest/gtest.h>
-#include <oscar/Shims/Cpp20/string_view.h>
 
 #include <algorithm>
 #include <array>
 #include <string_view>
 
-namespace cpp20 = osc::cpp20;
 using namespace osc;
 
 TEST(CStringView, WhenPassedNullCstringYieldsEmptyCStringView)
@@ -51,7 +49,7 @@ TEST(CStringView, ThreeWayComparisonBehavesIdenticallyToStringViewComparision)
         CStringView csv{elCStr};
         for (char const* otherCStr : svs)
         {
-            ASSERT_EQ(cpp20::ThreeWayComparison(sv, std::string_view{otherCStr}), csv <=> CStringView{otherCStr});
+            ASSERT_EQ(sv <=> std::string_view{otherCStr}, csv <=> CStringView{otherCStr});
         }
     };
     std::for_each(svs.begin(), svs.end(), sameThreeWayResultWithAllOtherElements);
