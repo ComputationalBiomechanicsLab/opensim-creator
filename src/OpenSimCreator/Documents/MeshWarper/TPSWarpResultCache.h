@@ -9,6 +9,7 @@
 #include <oscar/Utils/Algorithms.h>
 
 #include <algorithm>
+#include <ranges>
 #include <span>
 #include <utility>
 #include <vector>
@@ -94,7 +95,7 @@ namespace osc
         {
             auto const& docLandmarks = doc.nonParticipatingLandmarks;
 
-            bool const samePositions = equal(
+            bool const samePositions = std::ranges::equal(
                 docLandmarks,
                 m_CachedSourceNonParticipatingLandmarks,
                 [](TPSDocumentNonParticipatingLandmark const& lm, Vec3 const& pos)

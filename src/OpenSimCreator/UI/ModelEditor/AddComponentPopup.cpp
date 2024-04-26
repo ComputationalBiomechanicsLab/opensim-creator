@@ -35,7 +35,7 @@
 #include <vector>
 
 namespace OpenSim { class AbstractProperty; }
-namespace ranges = std::ranges;
+namespace rgs = std::ranges;
 
 namespace
 {
@@ -153,7 +153,7 @@ private:
         OpenSim::Model const& model = m_Uum->getModel();
 
         bool hasName = !m_Name.empty();
-        bool allSocketsAssigned = ranges::all_of(m_SocketConnecteePaths, [&model](OpenSim::ComponentPath const& cp)
+        bool allSocketsAssigned = rgs::all_of(m_SocketConnecteePaths, [&model](OpenSim::ComponentPath const& cp)
         {
             return ContainsComponent(model, cp);
         });
@@ -301,7 +301,7 @@ private:
             {
                 return p.userChoice == GetAbsolutePath(c);
             };
-            if (std::ranges::any_of(m_PathPoints, isSameUserChoiceAsComponent))
+            if (rgs::any_of(m_PathPoints, isSameUserChoiceAsComponent))
             {
                 continue;  // already selected
             }

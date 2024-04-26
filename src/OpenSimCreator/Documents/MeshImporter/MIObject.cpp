@@ -4,6 +4,8 @@
 
 #include <ranges>
 
+namespace rgs = std::ranges;
+
 void osc::mi::MIObject::applyRotation(
     IObjectFinder const& lookup,
     Eulers const& eulerAngles,
@@ -18,7 +20,7 @@ bool osc::mi::MIObject::isCrossReferencing(
     UID id,
     CrossrefDirection direction) const
 {
-    return std::ranges::any_of(implGetCrossReferences(), [id, direction](CrossrefDescriptor const& desc)
+    return rgs::any_of(implGetCrossReferences(), [id, direction](CrossrefDescriptor const& desc)
     {
         return desc.getConnecteeID() == id && (desc.getDirection() & direction);
     });

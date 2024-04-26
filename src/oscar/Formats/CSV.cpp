@@ -8,6 +8,7 @@
 #include <utility>
 
 using namespace osc;
+namespace rgs = std::ranges;
 
 // helpers
 namespace
@@ -19,7 +20,7 @@ namespace
 
     constexpr bool should_be_quoted(std::string_view v)
     {
-        return std::ranges::any_of(v, is_special_csv_char);
+        return rgs::any_of(v, is_special_csv_char);
     }
 }
 

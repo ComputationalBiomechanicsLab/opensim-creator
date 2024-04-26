@@ -7,10 +7,13 @@
 #include <cstddef>
 #include <limits>
 #include <optional>
+#include <ranges>
 #include <stdexcept>
 #include <string>
 #include <string_view>
 #include <type_traits>
+
+namespace rgs = std::ranges;
 
 namespace
 {
@@ -70,7 +73,7 @@ bool osc::IsStringCaseInsensitiveGreaterThan(std::string_view a, std::string_vie
     //
     //     https://stackoverflow.com/questions/33379846/case-insensitive-sorting-of-an-array-of-strings
 
-    auto [itA, itB] = osc::mismatch(a, b, [](auto c1, auto c2)
+    auto [itA, itB] = rgs::mismatch(a, b, [](auto c1, auto c2)
     {
         return std::tolower(c1) == std::tolower(c2);
     });
@@ -97,7 +100,7 @@ bool osc::is_equal_case_insensitive(std::string_view a, std::string_view b)
         return std::tolower(static_cast<std::make_unsigned_t<decltype(c1)>>(c1)) == std::tolower(static_cast<std::make_unsigned_t<decltype(c2)>>(c2));
     };
 
-    return osc::equal(a, b, compareChars);
+    return rgs::equal(a, b, compareChars);
 }
 
 bool osc::is_valid_identifier(std::string_view sv)

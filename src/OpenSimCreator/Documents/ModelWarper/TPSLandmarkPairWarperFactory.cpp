@@ -23,7 +23,7 @@
 using namespace osc;
 using namespace osc::lm;
 using namespace osc::mow;
-namespace ranges = std::ranges;
+namespace rgs = std::ranges;
 
 namespace
 {
@@ -213,17 +213,17 @@ size_t osc::mow::TPSLandmarkPairWarperFactory::getNumLandmarks() const
 
 size_t osc::mow::TPSLandmarkPairWarperFactory::getNumSourceLandmarks() const
 {
-    return count_if(m_Landmarks, std::mem_fn(&MaybePairedLandmark::hasSource));
+    return rgs::count_if(m_Landmarks, std::mem_fn(&MaybePairedLandmark::hasSource));
 }
 
 size_t osc::mow::TPSLandmarkPairWarperFactory::getNumDestinationLandmarks() const
 {
-    return count_if(m_Landmarks, std::mem_fn(&MaybePairedLandmark::hasDestination));
+    return rgs::count_if(m_Landmarks, std::mem_fn(&MaybePairedLandmark::hasDestination));
 }
 
 size_t osc::mow::TPSLandmarkPairWarperFactory::getNumFullyPairedLandmarks() const
 {
-    return count_if(m_Landmarks, std::mem_fn(&MaybePairedLandmark::isFullyPaired));
+    return rgs::count_if(m_Landmarks, std::mem_fn(&MaybePairedLandmark::isFullyPaired));
 }
 
 size_t osc::mow::TPSLandmarkPairWarperFactory::getNumUnpairedLandmarks() const
@@ -248,7 +248,7 @@ bool osc::mow::TPSLandmarkPairWarperFactory::hasUnpairedLandmarks() const
 
 bool osc::mow::TPSLandmarkPairWarperFactory::hasLandmarkNamed(std::string_view name) const
 {
-    return ranges::any_of(m_Landmarks, [name](auto const& lm) { return lm.name() == name; });
+    return rgs::any_of(m_Landmarks, [name](auto const& lm) { return lm.name() == name; });
 }
 
 MaybePairedLandmark const* osc::mow::TPSLandmarkPairWarperFactory::tryGetLandmarkPairingByName(std::string_view name) const

@@ -21,7 +21,7 @@
 #include <string>
 
 using namespace osc;
-namespace ranges = std::ranges;
+namespace rgs = std::ranges;
 
 namespace
 {
@@ -30,7 +30,7 @@ namespace
     // this is necessary because ImGui will take ownership, but will free the
     // font atlas with `free`, rather than `delete`, which memory sanitizers
     // like libASAN dislike (`malloc`/`free`, or `new`/`delete` - no mixes)
-    template<ranges::contiguous_range Container>
+    template<rgs::contiguous_range Container>
     typename Container::value_type* to_malloced_copy(const Container& c)
     {
         using value_type = typename Container::value_type;

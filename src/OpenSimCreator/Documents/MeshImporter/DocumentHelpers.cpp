@@ -27,10 +27,11 @@
 #include <variant>
 
 using namespace osc;
+namespace rgs = std::ranges;
 
 bool osc::mi::IsAChildAttachmentInAnyJoint(Document const& doc, MIObject const& obj)
 {
-    return std::ranges::any_of(doc.iter<Joint>(), [id = obj.getID()](Joint const& j)
+    return rgs::any_of(doc.iter<Joint>(), [id = obj.getID()](Joint const& j)
     {
         return j.getChildID() == id;
     });

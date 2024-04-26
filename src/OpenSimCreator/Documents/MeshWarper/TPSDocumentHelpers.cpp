@@ -24,7 +24,7 @@
 #include <utility>
 #include <vector>
 
-namespace ranges = std::ranges;
+namespace rgs = std::ranges;
 using namespace osc;
 
 namespace
@@ -54,7 +54,7 @@ namespace
     }
 
     // returns the next available unique ID with the given prefix
-    template<ranges::range Range>
+    template<rgs::range Range>
     StringName NextUniqueID(Range const& range, std::string_view prefix)
     {
         std::string name;
@@ -63,7 +63,7 @@ namespace
             name += prefix;
             name += std::to_string(i);
 
-            if (ranges::none_of(range, std::bind_front(HasName<typename Range::value_type>, name))) {
+            if (rgs::none_of(range, std::bind_front(HasName<typename Range::value_type>, name))) {
                 return StringName{std::move(name)};
             }
             name.clear();
@@ -73,10 +73,10 @@ namespace
 
     // equivalent of `find_if`, but returns a `nullptr` when nothing is found
     template<
-        ranges::range Range,
+        rgs::range Range,
         std::predicate<typename Range::value_type const&> UnaryPredicate
     >
-    auto NullableFindIf(Range& range, UnaryPredicate p) -> decltype(ranges::data(range))
+    auto NullableFindIf(Range& range, UnaryPredicate p) -> decltype(rgs::data(range))
     {
         auto const it = find_if(range, p);
         return it != range.end() ? &(*it) : nullptr;
@@ -97,7 +97,7 @@ namespace
 
     size_t CountFullyPaired(TPSDocument const& doc)
     {
-        return count_if(doc.landmarkPairs, osc::IsFullyPaired);
+        return rgs::count_if(doc.landmarkPairs, osc::IsFullyPaired);
     }
 }
 
@@ -210,7 +210,7 @@ std::vector<NamedLandmarkPair3D> osc::GetNamedLandmarkPairs(TPSDocument const& d
 size_t osc::CountNumLandmarksForInput(TPSDocument const& doc, TPSDocumentInputIdentifier which)
 {
     auto const hasLocation = [which](TPSDocumentLandmarkPair const& p) { return HasLocation(p, which); };
-    return count_if(doc.landmarkPairs, hasLocation);
+    return rgs::count_if(doc.landmarkPairs, hasLocation);
 }
 
 // returns the next available unique landmark ID

@@ -7,10 +7,12 @@
 
 #include <algorithm>
 #include <memory>
+#include <ranges>
 #include <span>
 #include <vector>
 
 using namespace osc;
+namespace rgs = std::ranges;
 
 class osc::CachedSceneRenderer::Impl final {
 public:
@@ -22,7 +24,7 @@ public:
         std::span<const SceneDecoration> decorations,
         const SceneRendererParams& params)
     {
-        if (params != last_rendering_params_ or not equal(decorations, last_decoration_list_)) {
+        if (params != last_rendering_params_ or not rgs::equal(decorations, last_decoration_list_)) {
 
             // inputs have changed: cache the new ones and re-render
             last_rendering_params_ = params;

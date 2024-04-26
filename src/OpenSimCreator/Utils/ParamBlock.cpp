@@ -13,7 +13,7 @@
 #include <vector>
 
 using namespace osc;
-namespace ranges = std::ranges;
+namespace rgs = std::ranges;
 
 namespace
 {
@@ -115,8 +115,8 @@ private:
 
 
     // helper, to prevent writing a const-/non-const-version of a member method
-    template<ranges::range Range>
-    static auto find(Range& range, std::string const& name) -> decltype(ranges::data(range))
+    template<rgs::range Range>
+    static auto find(Range& range, std::string const& name) -> decltype(rgs::data(range))
     {
         auto const hasName = [&name](Param const& el) { return el.name == name; };
         auto const it = find_if(range, hasName);

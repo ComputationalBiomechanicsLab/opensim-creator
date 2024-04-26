@@ -30,6 +30,7 @@
 #include <utility>
 
 using namespace osc;
+namespace rgs = std::ranges;
 
 namespace
 {
@@ -141,7 +142,7 @@ namespace
 
     bool isSearchHit(std::string const& searchStr, ComponentPath const& cp)
     {
-        return std::ranges::any_of(cp, [&searchStr](OpenSim::Component const* c)
+        return rgs::any_of(cp, [&searchStr](OpenSim::Component const* c)
         {
             return ContainsCaseInsensitive(c->getName(), searchStr);
         });

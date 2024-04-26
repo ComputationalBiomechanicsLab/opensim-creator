@@ -103,9 +103,7 @@
 using namespace osc::detail;
 using namespace osc::literals;
 using namespace osc;
-namespace cpp20 = osc::cpp20;
-namespace gl = osc::gl;
-namespace sdl = osc::sdl;
+namespace rgs = std::ranges;
 
 // shader source
 namespace
@@ -4897,7 +4895,7 @@ private:
             return v > std::numeric_limits<uint16_t>::max();
         };
 
-        if (std::ranges::any_of(indices, isGreaterThanU16Max)) {
+        if (rgs::any_of(indices, isGreaterThanU16Max)) {
             indices_are_32bit_ = true;
             num_indices_ = indices.size();
             indices_data_.resize(indices.size());

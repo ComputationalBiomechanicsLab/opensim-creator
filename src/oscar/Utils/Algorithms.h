@@ -14,66 +14,6 @@
 
 namespace osc
 {
-    // see: std::ranges::count_if
-    template<
-        std::ranges::input_range R,
-        std::indirect_unary_predicate<std::ranges::iterator_t<R>> Pred
-    >
-    constexpr typename std::ranges::range_difference_t<R> count_if(R&& r, Pred pred)
-    {
-        return std::count_if(std::ranges::begin(r), std::ranges::end(r), pred);
-    }
-
-    // see: std::ranges::mismatch
-    template<
-        std::ranges::input_range R1,
-        std::ranges::input_range R2,
-        typename Pred = std::ranges::equal_to
-    >
-    requires std::indirectly_comparable<std::ranges::iterator_t<R1>, std::ranges::iterator_t<R2>, Pred>
-    constexpr auto mismatch(R1&& r1, R2&& r2, Pred pred = {})
-    {
-        return std::mismatch(
-            std::ranges::begin(r1),
-            std::ranges::end(r1),
-            std::ranges::begin(r2),
-            std::ranges::end(r2),
-            pred
-        );
-    }
-
-    // see: std::ranges::equal
-    template<
-        std::ranges::input_range R1,
-        std::ranges::input_range R2,
-        class Pred = std::ranges::equal_to
-    >
-    requires std::indirectly_comparable<std::ranges::iterator_t<R1>, std::ranges::iterator_t<R2>, Pred>
-    constexpr bool equal(R1&& r1, R2&& r2, Pred pred = {})
-    {
-        return std::equal(std::ranges::begin(r1), std::ranges::end(r1), std::ranges::begin(r2), std::ranges::end(r2), pred);
-    }
-
-    // see: std::ranges::lexicographical_compare
-    template<
-        std::ranges::input_range R1,
-        std::ranges::input_range R2,
-        std::indirect_strict_weak_order<
-            std::ranges::iterator_t<R1>,
-            std::ranges::iterator_t<R2>
-        > Comp = std::ranges::less
-    >
-    constexpr bool lexicographical_compare(R1&& r1, R2&& r2, Comp comp = {})
-    {
-        return std::lexicographical_compare(
-            std::ranges::begin(r1),
-            std::ranges::end(r1),
-            std::ranges::begin(r2),
-            std::ranges::end(r2),
-            comp
-        );
-    }
-
     // see: std::ranges::find_if
     template<
         std::input_iterator I,

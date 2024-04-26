@@ -10,10 +10,12 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <ranges>
 #include <unordered_set>
 #include <vector>
 
 using namespace osc;
+namespace rgs = std::ranges;
 
 osc::WireframeGeometry::WireframeGeometry(const Mesh& mesh)
 {
@@ -42,7 +44,7 @@ osc::WireframeGeometry::WireframeGeometry(const Mesh& mesh)
 
         const auto ordered_edge = [](Vec3 p1, Vec3 p2)
         {
-            return lexicographical_compare(p1, p2) ? LineSegment{p1, p2} : LineSegment{p2, p1};
+            return rgs::lexicographical_compare(p1, p2) ? LineSegment{p1, p2} : LineSegment{p2, p1};
         };
 
         if (const auto ab = ordered_edge(a, b); edges.emplace(ab).second) {

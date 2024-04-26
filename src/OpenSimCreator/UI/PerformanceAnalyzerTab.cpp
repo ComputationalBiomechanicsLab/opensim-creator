@@ -21,12 +21,14 @@
 #include <filesystem>
 #include <optional>
 #include <ostream>
+#include <ranges>
 #include <span>
 #include <string_view>
 #include <utility>
 #include <vector>
 
 using namespace osc;
+namespace rgs = std::ranges;
 
 namespace
 {
@@ -202,7 +204,7 @@ private:
     void startSimsIfNecessary()
     {
         int nAvail = static_cast<int>(m_Params.size()) - static_cast<int>(m_Sims.size());
-        int nActive = static_cast<int>(count_if(m_Sims, [](auto const& sim) { return sim.getStatus() == SimulationStatus::Running || sim.getStatus() == SimulationStatus::Initializing; }));
+        int nActive = static_cast<int>(rgs::count_if(m_Sims, [](auto const& sim) { return sim.getStatus() == SimulationStatus::Running || sim.getStatus() == SimulationStatus::Initializing; }));
         int nToStart = min(nAvail, m_Parallelism - nActive);
 
         if (nToStart <= 0)
