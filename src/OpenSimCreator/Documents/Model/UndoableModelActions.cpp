@@ -224,12 +224,8 @@ namespace
                 SimTK::Rotation const currentParentRotationToNewConnecteeRotation = groundToNewConnecteeRotation * currentRotationInGround;
 
                 SimTK::Vec3 const oldEulers = orientationalProp->getValue();
-                SimTK::Rotation const oldRotation = [oldEulers]()
-                {
-                    SimTK::Rotation rv;
-                    rv.setRotationToBodyFixedXYZ(oldEulers);
-                    return rv;
-                }();
+                SimTK::Rotation oldRotation;
+                oldRotation.setRotationToBodyFixedXYZ(oldEulers);
                 SimTK::Rotation const newRotation = currentParentRotationToNewConnecteeRotation * oldRotation;
                 SimTK::Vec3 const newEulers = newRotation.convertRotationToBodyFixedXYZ();
 

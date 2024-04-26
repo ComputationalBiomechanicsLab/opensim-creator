@@ -150,6 +150,9 @@ target_compile_options(oscar_compiler_configuration INTERFACE
     $<$<CXX_COMPILER_ID:GNU>:
         # produces false positives?
         -Wno-uninitialized
+
+        # false-positive in googletest https://github.com/google/googletest/issues/4232
+        -Wno-restrict
     >
 )
 target_link_options(oscar_compiler_configuration INTERFACE

@@ -461,4 +461,10 @@ target_compile_options(OpenSimCreator PUBLIC
         # disable extra-semicolon detection: broken by OpenSim_DECLARE_ macros (see: opensim-core/3496)
         -Wno-extra-semi
     >
+
+    # gcc
+    $<$<CXX_COMPILER_ID:GNU>:
+        # gcc-12 finds (possibly legit) bounds issues in simbody - requires investigation
+        -Wno-array-bounds
+    >
 )
