@@ -14,7 +14,7 @@ namespace rgs = std::ranges;
 // helpers
 namespace
 {
-    constexpr auto c_special_csv_chars = std::to_array({ ',', '\r', '"'});
+    constexpr auto c_special_csv_chars = std::to_array({ ',', '\r', '\n', '"'});
 
     constexpr bool should_be_quoted(std::string_view v)
     {
