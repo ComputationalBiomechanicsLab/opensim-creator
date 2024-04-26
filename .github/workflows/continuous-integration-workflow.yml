@@ -26,7 +26,7 @@ jobs:
         if-no-files-found: error
 
   ubuntu2004clang:
-    name: Ubuntu 20.04 (clang)
+    name: Ubuntu 20.04 (Clang)
     runs-on: ubuntu-20.04
     steps:
 
@@ -66,7 +66,7 @@ jobs:
         ./scripts/build_emscripten.sh
 
   macos11clang:
-    name: MacOS 13
+    name: MacOS 13 (XCode)
     runs-on: macos-13
     steps:
 
@@ -85,3 +85,23 @@ jobs:
         name: OpenSimCreator_MacOSX.zip
         path: osc-build/*.dmg
         if-no-files-found: error
+
+  # for compiler verification (gcc)
+  ubuntu2204gcc:
+    name: Ubuntu 22.04 (gcc-12)
+    runs-on: ubuntu-22.04
+    steps:
+
+    - uses: actions/checkout@v4
+      with:
+        path: osc
+        submodules: 'recursive'
+
+    - name: run build script
+      run: |
+        cd $GITHUB_WORKSPACE/osc
+        sudo apt-get install xvfb  # virtual desktop, for tests
+        export OSC_BUILD_CONCURRENCY=$(nproc)
+        export CC=gcc-12
+        export CXX=g++-12
+        xvfb-run ./scripts/build_debian-buster.sh
