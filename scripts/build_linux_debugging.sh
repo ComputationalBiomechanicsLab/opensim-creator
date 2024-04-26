@@ -24,10 +24,15 @@ cat << EOF > osc-build/opensim_suppressions.supp
 leak:OpenSim::Coordinate
 EOF
 
-CC=clang CXX=clang++ CCFLAGS=-fsanitize=address CXXFLAGS=-fsanitize=address cmake -S third_party/ -B osc-deps-build -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=${PWD}/osc-deps-install
+export CC=clang
+export CXX=clang++
+
+# configure+build dependencies
+CCFLAGS=-fsanitize=address CXXFLAGS=-fsanitize=address cmake -S third_party/ -B osc-deps-build -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=${PWD}/osc-deps-install
 cmake --build osc-deps-build/ -v -j${OSC_BUILD_CONCURRENCY}
 
-CC=clang CXX=clang++ CCFLAGS=-fsanitize=address,undefined,bounds CXXFLAGS=-fsanitize=address,undefined,bounds cmake -S . -B osc-build -DCMAKE_BUILD_TYPE=Debug -DOSC_FORCE_ASSERTS_ENABLED=ON -DOSC_FORCE_UNDEFINE_NDEBUG=ON -DCMAKE_PREFIX_PATH=${PWD}/osc-deps-install -DCMAKE_INSTALL_PREFIX=${PWD}/osc-install -DOSC_BUILD_BENCHMARKS=ON -DOSC_USE_CLANG_TIDY=OFF
+# configure+build OpenSimCreator
+CCFLAGS=-fsanitize=address,undefined,bounds CXXFLAGS=-fsanitize=address,undefined,bounds cmake -S . -B osc-build -DCMAKE_BUILD_TYPE=Debug -DOSC_FORCE_ASSERTS_ENABLED=ON -DOSC_FORCE_UNDEFINE_NDEBUG=ON -DCMAKE_PREFIX_PATH=${PWD}/osc-deps-install -DCMAKE_INSTALL_PREFIX=${PWD}/osc-install -DOSC_BUILD_BENCHMARKS=ON -DOSC_USE_CLANG_TIDY=OFF
 cmake --build osc-build -j${OSC_BUILD_CONCURRENCY}
 cmake --build osc-build -j${OSC_BUILD_CONCURRENCY} --target testoscar
 cmake --build osc-build -j${OSC_BUILD_CONCURRENCY} --target testoscar_learnopengl
@@ -37,7 +42,7 @@ cmake --build osc-build -j${OSC_BUILD_CONCURRENCY} --target TestOpenSimCreator
 # run tests
 export ASAN_OPTIONS="strict_string_checks=true:malloc_context_size=30:check_initialization_order=true:detect_stack_use_after_return=true:strict_init_order=true"
 export LIBGL_ALWAYS_SOFTWARE=1  # minimize driver leaks
-export LD_PRELOAD=osc-build/libdlclose.so  # minimize library unloading leaks
+export LD_PRELOAD=osc-build/libdlclose.so  # minimize library unloading leaks (due to poor library design)
 ./osc-build/tests/testoscar/testoscar
 ./osc-build/tests/testoscar_learnopengl/testoscar_learnopengl
 ./osc-build/tests/testoscar_demos/testoscar_demos
