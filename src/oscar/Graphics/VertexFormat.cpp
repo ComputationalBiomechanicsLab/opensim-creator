@@ -31,7 +31,7 @@ osc::VertexFormat::VertexFormat(std::initializer_list<VertexAttributeDescriptor>
         {
             return d.attribute() == attr;
         };
-        if (std::ranges::count_if(m_AttributeDescriptions, hasAttr) > 1)
+        if (rgs::count_if(m_AttributeDescriptions, hasAttr) > 1)
         {
             throw std::runtime_error{"Duplicate attributes passed to VertexFormat: each VertexAttribute should be unique"};
         }

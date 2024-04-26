@@ -659,7 +659,7 @@ namespace
             }
         }
 
-        rgs::sort(rv, IsConcreteClassNameLexographicallyLowerThan<std::shared_ptr<OpenSim::Component const>>);
+        rgs::sort(rv, rgs::less{}, [](auto const& ptr) { return ptr->getConcreteClassName(); });
 
         return rv;
     }
@@ -694,7 +694,7 @@ namespace
             rv.emplace_back(Clone(c));
         }
 
-        rgs::sort(rv, IsConcreteClassNameLexographicallyLowerThan<std::shared_ptr<OpenSim::Component const>>);
+        rgs::sort(rv, rgs::less{}, [](auto const& ptr) { return ptr->getConcreteClassName(); });
 
         return rv;
     }

@@ -27,6 +27,7 @@
 #include <vector>
 
 using namespace osc;
+namespace rgs = std::ranges;
 
 namespace
 {
@@ -294,7 +295,7 @@ R"(# configuration options
         }
 
         // iterate through each part of the given path (e.g. a/b/c)
-        const size_t depth = std::ranges::count(table_path, '/') + 1;
+        const size_t depth = rgs::count(table_path, '/') + 1;
         toml::table* current_table = &root;
         std::string_view current_path = table_path.substr(0, table_path.find('/'));
 

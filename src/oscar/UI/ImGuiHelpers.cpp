@@ -30,14 +30,15 @@
 
 using namespace osc::literals;
 using namespace osc;
+namespace rgs = std::ranges;
 
 namespace
 {
     inline constexpr float c_default_drag_threshold = 5.0f;
 
     template<
-        std::ranges::random_access_range TCollection,
-        std::ranges::random_access_range UCollection
+        rgs::random_access_range TCollection,
+        rgs::random_access_range UCollection
     >
     requires
         std::convertible_to<typename TCollection::value_type, float> and
@@ -487,7 +488,7 @@ ui::HittestResult osc::ui::HittestLastItem(float drag_threshold)
 
 bool osc::ui::IsAnyKeyDown(std::span<const ImGuiKey> keys)
 {
-    return std::ranges::any_of(keys, ui::IsKeyDown);
+    return rgs::any_of(keys, ui::IsKeyDown);
 }
 
 bool osc::ui::IsAnyKeyDown(std::initializer_list<const ImGuiKey> keys)
@@ -497,7 +498,7 @@ bool osc::ui::IsAnyKeyDown(std::initializer_list<const ImGuiKey> keys)
 
 bool osc::ui::IsAnyKeyPressed(std::span<const ImGuiKey> keys)
 {
-    return std::ranges::any_of(keys, [](ImGuiKey k) { return ui::IsKeyPressed(k); });
+    return rgs::any_of(keys, [](ImGuiKey k) { return ui::IsKeyPressed(k); });
 }
 bool osc::ui::IsAnyKeyPressed(std::initializer_list<const ImGuiKey> keys)
 {

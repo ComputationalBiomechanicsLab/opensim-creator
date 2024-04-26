@@ -22,6 +22,6 @@ bool osc::mi::MIObject::isCrossReferencing(
 {
     return rgs::any_of(implGetCrossReferences(), [id, direction](CrossrefDescriptor const& desc)
     {
-        return desc.getConnecteeID() == id && (desc.getDirection() & direction);
+        return desc.getConnecteeID() == id and (desc.getDirection() & direction);
     });
 }

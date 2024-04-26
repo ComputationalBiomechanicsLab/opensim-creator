@@ -11,12 +11,13 @@
 #include <vector>
 
 using namespace osc;
+namespace rgs = std::ranges;
 
 namespace
 {
     constexpr CStringView c_TabStringID = "Demos/SubMeshes";
 
-    template<std::ranges::range T, std::ranges::range U>
+    template<rgs::range T, rgs::range U>
     requires std::same_as<typename T::value_type, typename U::value_type>
     void Append(T& out, U els)
     {

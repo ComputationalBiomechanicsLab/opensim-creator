@@ -78,6 +78,17 @@ namespace osc
         return std::nullopt;
     }
 
+    template<
+        std::ranges::input_range R,
+        typename T,
+        typename Proj = std::identity
+    >
+    auto find_or_nullptr(R&& r, const T& value, Proj proj = {})
+    {
+        const auto it = std::ranges::find(r, value, std::move(proj));
+        return it != std::ranges::end(r) ? std::addressof(*it) : nullptr;
+    }
+
     // osc algorithm: returns a pointer to the element at `key`, or `nullptr` if no such element exists in `container`
     template<AssociativeContainer T, typename Key>
     const typename T::mapped_type* find_or_nullptr(const T& container, const Key& key)

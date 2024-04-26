@@ -6,6 +6,7 @@
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentLandmarkPair.h>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentNonParticipatingLandmark.h>
 
+#include <oscar/Shims/Cpp23/ranges.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/EnumHelpers.h>
@@ -35,26 +36,27 @@ namespace
         { v.uid } -> std::convertible_to<UID>;
     };
 
+    template<UIDed T>
+    UID id_of(T const& v)
+    {
+        return v.uid;
+    }
+
     template<typename T>
     concept Named = requires(T v)
     {
         { v.name } -> std::convertible_to<std::string_view>;
     };
 
-    template<UIDed T>
-    bool HasUID(UID id, T const& v)
-    {
-        return v.uid == id;
-    }
-
     template<Named T>
-    bool HasName(std::string_view name, T const& v)
+    std::string_view name_of(T const& v)
     {
-        return v.name == name;
+        return v.name;
     }
 
     // returns the next available unique ID with the given prefix
     template<rgs::range Range>
+    requires Named<typename Range::value_type>
     StringName NextUniqueID(Range const& range, std::string_view prefix)
     {
         std::string name;
@@ -63,7 +65,7 @@ namespace
             name += prefix;
             name += std::to_string(i);
 
-            if (rgs::none_of(range, std::bind_front(HasName<typename Range::value_type>, name))) {
+            if (not cpp23::contains(range, name, name_of<typename Range::value_type>)) {
                 return StringName{std::move(name)};
             }
             name.clear();
@@ -71,28 +73,17 @@ namespace
         throw std::runtime_error{"unable to generate a unique name for a scene element"};
     }
 
-    // equivalent of `find_if`, but returns a `nullptr` when nothing is found
-    template<
-        rgs::range Range,
-        std::predicate<typename Range::value_type const&> UnaryPredicate
-    >
-    auto NullableFindIf(Range& range, UnaryPredicate p) -> decltype(rgs::data(range))
-    {
-        auto const it = rgs::find_if(range, p);
-        return it != range.end() ? &(*it) : nullptr;
-    }
-
     // this template exists because there's a const and non-const version of the function
     template<std::convertible_to<TPSDocument> TDocument>
     auto FindLandmarkPairImpl(TDocument& doc, UID id) -> decltype(doc.landmarkPairs.data())
     {
-        return NullableFindIf(doc.landmarkPairs, std::bind_front(HasUID<TPSDocumentLandmarkPair>, id));
+        return find_or_nullptr(doc.landmarkPairs, id, id_of<TPSDocumentLandmarkPair>);
     }
 
     template<std::convertible_to<TPSDocument> TDocument>
     auto FindNonParticipatingLandmarkImpl(TDocument& doc, UID id) -> decltype(doc.nonParticipatingLandmarks.data())
     {
-        return NullableFindIf(doc.nonParticipatingLandmarks, std::bind_front(HasUID<TPSDocumentNonParticipatingLandmark>, id));
+        return find_or_nullptr(doc.nonParticipatingLandmarks, id, id_of<TPSDocumentNonParticipatingLandmark>);
     }
 
     size_t CountFullyPaired(TPSDocument const& doc)
@@ -142,22 +133,22 @@ TPSDocumentElement const* osc::FindElement(TPSDocument const& doc, TPSDocumentEl
 
 TPSDocumentLandmarkPair const* osc::FindLandmarkPairByName(TPSDocument const& doc, StringName const& name)
 {
-    return NullableFindIf(doc.landmarkPairs, std::bind_front(HasName<TPSDocumentLandmarkPair>, name));
+    return find_or_nullptr(doc.landmarkPairs, name, name_of<TPSDocumentLandmarkPair>);
 }
 
 TPSDocumentLandmarkPair* osc::FindLandmarkPairByName(TPSDocument& doc, StringName const& name)
 {
-    return NullableFindIf(doc.landmarkPairs, std::bind_front(HasName<TPSDocumentLandmarkPair>, name));
+    return find_or_nullptr(doc.landmarkPairs, name, name_of<TPSDocumentLandmarkPair>);
 }
 
 TPSDocumentNonParticipatingLandmark const* osc::FindNonParticipatingLandmarkByName(TPSDocument const& doc, StringName const& name)
 {
-    return NullableFindIf(doc.nonParticipatingLandmarks, std::bind_front(HasName<TPSDocumentNonParticipatingLandmark>, name));
+    return find_or_nullptr(doc.nonParticipatingLandmarks, name, name_of<TPSDocumentNonParticipatingLandmark>);
 }
 
 TPSDocumentNonParticipatingLandmark* osc::FindNonParticipatingLandmarkByName(TPSDocument& doc, StringName const& name)
 {
-    return NullableFindIf(doc.nonParticipatingLandmarks, std::bind_front(HasName<TPSDocumentNonParticipatingLandmark>, name));
+    return find_or_nullptr(doc.nonParticipatingLandmarks, name, name_of<TPSDocumentNonParticipatingLandmark>);
 }
 
 bool osc::ContainsElementWithName(TPSDocument const& doc, StringName const& name)
@@ -311,7 +302,7 @@ bool osc::DeleteElementByID(TPSDocument& doc, TPSDocumentElementID const& id)
     if (id.type == TPSDocumentElementType::Landmark)
     {
         auto& lms = doc.landmarkPairs;
-        auto const it = rgs::find_if(lms, std::bind_front(HasUID<TPSDocumentLandmarkPair>, id.uid));
+        auto const it = rgs::find(lms, id.uid, id_of<TPSDocumentLandmarkPair>);
         if (it != doc.landmarkPairs.end())
         {
             UpdLocation(*it, id.input).reset();
@@ -326,7 +317,7 @@ bool osc::DeleteElementByID(TPSDocument& doc, TPSDocumentElementID const& id)
     }
     else if (id.type == TPSDocumentElementType::NonParticipatingLandmark)
     {
-        auto const numElsDeleted = std::erase_if(doc.nonParticipatingLandmarks, std::bind_front(HasUID<TPSDocumentNonParticipatingLandmark>, id.uid));
+        auto const numElsDeleted = std::erase_if(doc.nonParticipatingLandmarks, [id = id.uid](auto const& npl) { return npl.uid == id; });
         return numElsDeleted > 0;
     }
     return false;
@@ -335,8 +326,8 @@ bool osc::DeleteElementByID(TPSDocument& doc, TPSDocumentElementID const& id)
 bool osc::DeleteElementByID(TPSDocument& doc, UID id)
 {
     return
-        std::erase_if(doc.landmarkPairs, std::bind_front(HasUID<TPSDocumentLandmarkPair>, id)) > 0 ||
-        std::erase_if(doc.nonParticipatingLandmarks, std::bind_front(HasUID<TPSDocumentNonParticipatingLandmark>, id)) > 0;
+        std::erase_if(doc.landmarkPairs, [id](auto const& lp) { return lp.uid == id; }) > 0 or
+        std::erase_if(doc.nonParticipatingLandmarks, [id](auto const& nlp) { return nlp.uid == id; }) > 0;
 }
 
 CStringView osc::FindElementNameOr(
