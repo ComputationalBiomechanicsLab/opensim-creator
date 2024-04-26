@@ -1,7 +1,6 @@
 #pragma once
 
-#include <oscar/Shims/Cpp20/string_view.h>
-
+#include <compare>
 #include <cstddef>
 #include <string>
 #include <string_view>
@@ -90,7 +89,7 @@ namespace osc
         }
         constexpr friend auto operator<=>(const CStringView& lhs, const CStringView& rhs)
         {
-            return cpp20::ThreeWayComparison(std::string_view{lhs}, std::string_view{rhs});
+            return static_cast<std::string_view>(lhs) <=> static_cast<std::string_view>(rhs);
         }
     private:
         const value_type* m_Data = "";

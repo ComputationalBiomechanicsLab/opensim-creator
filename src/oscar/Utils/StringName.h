@@ -1,9 +1,9 @@
 #pragma once
 
-#include <oscar/Shims/Cpp20/string_view.h>
 #include <oscar/Utils/CStringView.h>
 
 #include <atomic>
+#include <compare>
 #include <concepts>
 #include <cstddef>
 #include <iostream>
@@ -203,7 +203,7 @@ namespace osc
         template<std::convertible_to<std::string_view> StringLike>
         friend auto operator<=>(const StringName& lhs, const StringLike& rhs)
         {
-            return cpp20::ThreeWayComparison(std::string_view{lhs}, std::string_view{rhs});
+            return std::string_view{lhs} <=> std::string_view{rhs};
         }
 
     private:
