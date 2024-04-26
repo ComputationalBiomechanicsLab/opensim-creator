@@ -70,7 +70,7 @@ bool osc::IsStringCaseInsensitiveGreaterThan(std::string_view a, std::string_vie
     //
     //     https://stackoverflow.com/questions/33379846/case-insensitive-sorting-of-an-array-of-strings
 
-    auto [itA, itB] = rgs::mismatch(a, b, rgs::equal_to{}, std::tolower);
+    auto [itA, itB] = rgs::mismatch(a, b, rgs::equal_to{}, [](auto c) { return std::tolower(c); });
 
     if (itB == b.end())
     {
@@ -89,7 +89,7 @@ bool osc::IsStringCaseInsensitiveGreaterThan(std::string_view a, std::string_vie
 
 bool osc::is_equal_case_insensitive(std::string_view a, std::string_view b)
 {
-    return rgs::equal(a, b, rgs::equal_to{}, std::tolower);
+    return rgs::equal(a, b, rgs::equal_to{}, [](auto c) { return std::tolower(c); });
 }
 
 bool osc::is_valid_identifier(std::string_view sv)
