@@ -89,7 +89,7 @@ requires being logged into GitHub; otherwise, you won't see download links).
 > instructions that will work for everyone. Instead, we recommend reading + running the automated
 > build scripts, or reading some of the basic tips-and-tricks for Visual Studio or QtCreator (below).
 
-### Windows
+### Windows (10 or newer)
 
 1. Get `git`:
     1. Download+install it from https://git-scm.com/downloads
@@ -116,7 +116,7 @@ requires being logged into GitHub; otherwise, you won't see download links).
 7. Done:
     1. The `osc-build` directory should contain the built installer
 
-### Mac
+### Mac (Ventura or newer)
 
 1. Get `brew`:
     1. Go to https://brew.sh/ and follow installation instructions
@@ -138,24 +138,29 @@ requires being logged into GitHub; otherwise, you won't see download links).
 6. Done:
     1. The `osc-build` directory should contain the built installer
 
-### Linux (Ubuntu)
+### Ubuntu (20 or newer)
 
 1. Get `git`:
     1. Install `git` via your package manager (e.g. `apt-get install git`)
-2. Get C++20-compatible compiler:
+2. Get a C++20-compatible compiler:
     1. Install `g++`/`clang++` via your package manager (e.g. `apt-get install g++`)
-    2. Make sure either of them are new enough to compile C++20
+    2. They must be new enough to compile C++20 (e.g. clang >= clang-11)
     3. If they aren't new enough, most Linux OSes provide a way to install a newer compiler
-       toolchain (e.g. `apt-get install g++-11`)
+       toolchain (e.g. `apt-get install clang-11`). You can configure which compiler is used
+       to build OpenSim Creator by setting the `CC` and `CXX` environment variables. E.g.
+       `CC=clang-11 CXX=clang++-11 ./scripts/build_debian-buster.sh`
+3. Get C++20-compatible standard library headers (usually required on Ubuntu 20):
+    1. `sudo apt-get install libstdc++-10-dev`
 3. Get `cmake`:
     1. Install `cmake` via your package manager (e.g. `apt-get install cmake`)
+    2. If your cmake is too old, build one from source, see: https://askubuntu.com/a/865294
 4. Get `python` and `pip` (*optional*: you only need this if you want to build documentation):
     1. Install `python3` and `pip3` via your package manager (e.g. `apt-get install python3 pip3`)
 5. Build OpenSim Creator in a terminal:
-    1. Clone `opensim-creator`: `git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator`
+    1. Clone `opensim-creator`: `git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator --recursive`
     2. `cd` into the source dir: `cd opensim-creator`
     3. If you have multiple C++ compilers, make sure that the `CC` and `CXX` environment variables point to
-       compilers that are compatible with C++20. E.g. `export CXX=g++-12`
+       compilers that are compatible with C++20. E.g. `export CC=clang-12`, `export CXX=clang++-12`
     4. Run the build script: `scripts/build_debian-buster.sh`
 6. Done:
     1. The `osc-build` directory should contain the built installer
