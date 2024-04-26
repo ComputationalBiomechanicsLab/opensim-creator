@@ -238,7 +238,7 @@ namespace
             draw_command.VtxOffset
         });
 
-        if (const auto* texture = try_find(bd.texures_allocated_this_frame, to_uid(draw_command.GetTexID()))) {
+        if (const auto* texture = find_or_nullptr(bd.texures_allocated_this_frame, to_uid(draw_command.GetTexID()))) {
             std::visit(Overload{
                 [&bd](const Texture2D& t) { bd.ui_material.set_texture("uTexture", t); },
                 [&bd](const RenderTexture& t) { bd.ui_material.set_render_texture("uTexture", t); },

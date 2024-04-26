@@ -3214,7 +3214,7 @@ private:
     requires std::convertible_to<T, TConverted>
     std::optional<TConverted> get_value(std::string_view property_name) const
     {
-        const auto* value = try_find(values_, property_name);
+        const auto* value = find_or_nullptr(values_, property_name);
 
         if (not value) {
             return std::nullopt;
@@ -6849,7 +6849,7 @@ void osc::GraphicsBackend::handle_batch_with_same_material_property_block(
     // bind property block variables (if applicable)
     if (batch.front().maybe_prop_block) {
         for (const auto& [name, value] : batch.front().maybe_prop_block->m_Impl->values_) {
-            if (const auto* uniform = try_find(uniforms, name)) {
+            if (const auto* uniform = find_or_nullptr(uniforms, name)) {
                 try_bind_material_value_to_shader_element(*uniform, value, texture_slot);
             }
         }
@@ -6930,7 +6930,7 @@ void osc::GraphicsBackend::handle_batch_with_same_material(
 
         // bind material values
         for (const auto& [name, value] : material_impl.values_) {
-            if (const ShaderElement* e = try_find(uniforms, name)) {
+            if (const ShaderElement* e = find_or_nullptr(uniforms, name)) {
                 try_bind_material_value_to_shader_element(*e, value, texture_slot);
             }
         }

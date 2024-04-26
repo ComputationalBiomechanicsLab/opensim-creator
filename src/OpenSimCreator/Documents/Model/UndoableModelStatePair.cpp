@@ -411,7 +411,7 @@ private:
     // try to lookup a commit by its ID
     ModelStateCommit const* tryGetCommitByID(UID id) const
     {
-        return try_find(m_Commits, id);
+        return find_or_nullptr(m_Commits, id);
     }
 
     ModelStateCommit const& getHeadCommit() const

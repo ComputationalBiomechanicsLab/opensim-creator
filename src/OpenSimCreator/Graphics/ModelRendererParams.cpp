@@ -51,10 +51,10 @@ namespace
         params.decorationOptions.tryUpdFromValues(std::string{prefix} + "decorations/", values);
         params.overlayOptions.tryUpdFromValues(std::string{prefix} + "overlays/", values);
         params.renderingOptions.tryUpdFromValues(std::string{prefix} + "graphics/", values);
-        if (auto const* v = try_find(values, std::string{prefix} + "light_color")) {
+        if (auto const* v = find_or_nullptr(values, std::string{prefix} + "light_color")) {
             params.lightColor = v->to_color();
         }
-        if (auto const* v = try_find(values,std::string{prefix} + "background_color")) {
+        if (auto const* v = find_or_nullptr(values,std::string{prefix} + "background_color")) {
             params.backgroundColor = v->to_color();
         }
         // TODO: floorLocation
@@ -95,7 +95,7 @@ void osc::SaveModelRendererParamsDifference(
     auto const bVals = ToValues(keyPrefix, b);
 
     for (auto const& [aK, aV] : aVals) {
-        if (auto const* bV = try_find(bVals, aK)) {
+        if (auto const* bV = find_or_nullptr(bVals, aK)) {
             if (*bV != aV) {
                 config.set_value(aK, *bV);
             }

@@ -42,7 +42,7 @@ public:
 
     const Icon& getIcon(std::string_view iconName) const
     {
-        if (const auto* icon = try_find(m_Icons, std::string{iconName})) {
+        if (const auto* icon = find_or_nullptr(m_Icons, std::string{iconName})) {
             return *icon;
         }
         else {

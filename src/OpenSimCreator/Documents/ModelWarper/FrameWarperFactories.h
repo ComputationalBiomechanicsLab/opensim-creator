@@ -41,7 +41,7 @@ namespace osc::mow
     private:
         IFrameWarperFactory const* lookup(std::string const& absPath) const
         {
-            if (auto const* ptr = try_find(m_AbsPathToWarpLUT, absPath)) {
+            if (auto const* ptr = find_or_nullptr(m_AbsPathToWarpLUT, absPath)) {
                 return ptr->get();
             }
             else {
