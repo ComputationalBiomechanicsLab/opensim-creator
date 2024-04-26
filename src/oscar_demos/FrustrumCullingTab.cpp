@@ -6,11 +6,13 @@
 
 #include <array>
 #include <cstddef>
+#include <ranges>
 #include <memory>
 #include <random>
 
 using namespace osc;
 using namespace osc::literals;
+namespace rgs = std::ranges;
 
 namespace
 {
@@ -46,7 +48,7 @@ namespace
                     Vec3 const pos = bounds.min + dims * (Vec3{x, y, z} / Vec3{cells - 1_uz});
 
                     Mesh mesh;
-                    sample(geoms, &mesh, 1, rng);
+                    rgs::sample(geoms, &mesh, 1, rng);
 
                     rv.push_back(TransformedMesh{
                         .mesh = mesh,

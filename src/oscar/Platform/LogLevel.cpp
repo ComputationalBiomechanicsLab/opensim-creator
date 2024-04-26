@@ -4,6 +4,7 @@
 #include <oscar/Utils/EnumHelpers.h>
 #include <oscar/Utils/StringHelpers.h>
 
+#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <functional>

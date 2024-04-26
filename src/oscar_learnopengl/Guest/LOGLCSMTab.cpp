@@ -8,10 +8,12 @@
 #include <cstddef>
 #include <memory>
 #include <random>
+#include <ranges>
 #include <vector>
 
 using namespace osc;
 using namespace osc::literals;
+namespace rgs = std::ranges;
 
 namespace
 {
@@ -46,7 +48,7 @@ namespace
 
                 Vec3 const cellPos = gridBounds.min + gridDims * (Vec3{x, 0.0f, y} / Vec3{gridCells.x - 1_uz, 1, gridCells.y - 1_uz});
                 Mesh mesh;
-                sample(possibleGeometries, &mesh, 1, rng);
+                rgs::sample(possibleGeometries, &mesh, 1, rng);
 
                 rv.push_back(TransformedMesh{
                     .mesh = mesh,

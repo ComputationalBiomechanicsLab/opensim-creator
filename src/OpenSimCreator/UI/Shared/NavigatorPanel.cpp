@@ -121,7 +121,7 @@ namespace
         }
 
         // reverse to yield parent --> child
-        reverse(out);
+        rgs::reverse(out);
     }
 
     bool pathContains(ComponentPath const& p, OpenSim::Component const* c)

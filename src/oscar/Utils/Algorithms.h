@@ -14,43 +14,6 @@
 
 namespace osc
 {
-    // see: std::ranges::fill
-    //
-    // NOTE: return value differs from C++20's std::ranges:fill (fix when MacOS supports std::ranges)
-    template<
-        typename T,
-        std::ranges::output_range<const T&> R
-    >
-    constexpr void fill(R&& r, const T& value)
-    {
-        std::fill(std::ranges::begin(r), std::ranges::end(r), value);
-    }
-
-    // see: std::ranges::reverse
-    template<std::ranges::bidirectional_range R>
-    requires std::permutable<std::ranges::iterator_t<R>>
-    constexpr std::ranges::borrowed_iterator_t<R> reverse(R&& r)
-    {
-        auto last = std::ranges::end(r);
-        std::reverse(std::ranges::begin(r), last);
-        return last;
-    }
-
-    // see: std::ranges::sample
-    template<
-        std::ranges::input_range R,
-        std::weakly_incrementable O,
-        typename Gen
-    >
-    requires
-        (std::ranges::forward_range<R> or std::random_access_iterator<O>) and
-         std::indirectly_copyable<std::ranges::iterator_t<R>, O> and
-         std::uniform_random_bit_generator<std::remove_reference_t<Gen>>
-    O sample(R&& r, O out, std::ranges::range_difference_t<R> n, Gen&& gen)
-    {
-        return std::sample(std::ranges::begin(r), std::ranges::end(r), std::move(out), n, std::forward<Gen>(gen));
-    }
-
     // see: std::ranges::max_element
     template<
         std::forward_iterator I,
