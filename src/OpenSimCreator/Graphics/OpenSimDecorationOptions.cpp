@@ -7,8 +7,10 @@
 #include <oscar/Utils/EnumHelpers.h>
 
 #include <optional>
+#include <ranges>
 
 using namespace osc;
+namespace rgs = std::ranges;
 
 osc::OpenSimDecorationOptions::OpenSimDecorationOptions() :
     m_MuscleDecorationStyle{MuscleDecorationStyle::Default},
@@ -185,7 +187,7 @@ void osc::OpenSimDecorationOptions::tryUpdFromValues(
     if (auto* appVal = lookup("muscle_decoration_style"); appVal->type() == AppSettingValueType::String)
     {
         auto const metadata = GetAllMuscleDecorationStyleMetadata();
-        auto const it = find_if(metadata, [appVal](auto const& m)
+        auto const it = rgs::find_if(metadata, [appVal](auto const& m)
         {
             return appVal->to_string() == m.id;
         });
@@ -198,7 +200,7 @@ void osc::OpenSimDecorationOptions::tryUpdFromValues(
     if (auto* appVal = lookup("muscle_coloring_style"); appVal->type() == AppSettingValueType::String)
     {
         auto const metadata = GetAllMuscleColoringStyleMetadata();
-        auto const it = find_if(metadata, [appVal](auto const& m)
+        auto const it = rgs::find_if(metadata, [appVal](auto const& m)
         {
             return appVal->to_string() == m.id;
         });
@@ -211,7 +213,7 @@ void osc::OpenSimDecorationOptions::tryUpdFromValues(
     if (auto* appVal = lookup("muscle_sizing_style"); appVal->type() == AppSettingValueType::String)
     {
         auto const metadata = GetAllMuscleSizingStyleMetadata();
-        auto const it = find_if(metadata, [appVal](auto const& m)
+        auto const it = rgs::find_if(metadata, [appVal](auto const& m)
         {
             return appVal->to_string() == m.id;
         });

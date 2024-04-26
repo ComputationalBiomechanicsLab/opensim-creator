@@ -1,16 +1,18 @@
 #include "LogLevel.h"
 
-#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/EnumHelpers.h>
 #include <oscar/Utils/StringHelpers.h>
 
 #include <array>
 #include <cstddef>
+#include <functional>
 #include <iostream>
 #include <iterator>
+#include <ranges>
 
 using namespace osc;
+namespace rgs = std::ranges;
 
 namespace
 {
@@ -34,10 +36,7 @@ CStringView osc::to_cstringview(LogLevel level)
 
 std::optional<LogLevel> osc::try_parse_as_log_level(std::string_view v)
 {
-    const auto it = find_if(c_log_level_strings, [v](std::string_view el)
-    {
-        return is_equal_case_insensitive(v, el);
-    });
+    const auto it = rgs::find_if(c_log_level_strings, std::bind_front(is_equal_case_insensitive, v));
 
     if (it == c_log_level_strings.end()) {
         return std::nullopt;

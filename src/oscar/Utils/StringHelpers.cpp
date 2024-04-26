@@ -138,8 +138,8 @@ bool osc::is_valid_identifier(std::string_view sv)
 
 std::string_view osc::TrimLeadingAndTrailingWhitespace(std::string_view sv)
 {
-    const std::string_view::const_iterator front = find_if_not(sv, ::isspace);
-    const std::string_view::const_iterator back = find_if_not(sv.rbegin(), std::string_view::const_reverse_iterator{front}, ::isspace).base();
+    const std::string_view::const_iterator front = rgs::find_if_not(sv, ::isspace);
+    const std::string_view::const_iterator back = rgs::find_if_not(sv.rbegin(), std::string_view::const_reverse_iterator{front}, ::isspace).base();
     return {sv.data() + std::distance(sv.begin(), front), static_cast<size_t>(std::distance(front, back))};
 }
 

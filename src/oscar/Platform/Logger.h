@@ -11,6 +11,7 @@
 #include <cstddef>
 #include <cstdio>
 #include <memory>
+#include <ranges>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -35,7 +36,7 @@ namespace osc
                 return;  // the message's level is too low for this logger
             }
 
-            auto it = find_if(log_sinks_, [message_log_level](const auto& sink) { return sink->should_log(message_log_level); });
+            auto it = std::ranges::find_if(log_sinks_, [message_log_level](const auto& sink) { return sink->should_log(message_log_level); });
             if (it == log_sinks_.end()) {
                 return;  // no sink in this logger will consume the message
             }

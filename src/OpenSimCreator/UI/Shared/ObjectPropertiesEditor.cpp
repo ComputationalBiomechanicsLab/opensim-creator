@@ -37,6 +37,7 @@
 #include <concepts>
 #include <cstddef>
 #include <memory>
+#include <ranges>
 #include <string>
 #include <type_traits>
 #include <typeinfo>
@@ -44,6 +45,7 @@
 #include <utility>
 
 using namespace osc;
+namespace rgs = std::ranges;
 
 // constants
 namespace
@@ -1586,7 +1588,7 @@ namespace
                 return nullptr;  // cannot access the property
             }
 
-            auto const it = find_if(
+            auto const it = rgs::find_if(
                 m_Entries,
                 [&prop](auto const& entry) { return entry.isCompatibleWith(*prop); }
             );

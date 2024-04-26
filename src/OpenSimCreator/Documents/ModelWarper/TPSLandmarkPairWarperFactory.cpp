@@ -78,7 +78,7 @@ namespace
 
         // handle/pair all elements in `a`
         for (auto& lm : a) {
-            auto const it = find_if(b, std::bind_front(SameNameOrBothUnnamed, lm));
+            auto const it = rgs::find_if(b, std::bind_front(SameNameOrBothUnnamed, lm));
             std::string name = lm.maybeName ? *std::move(lm.maybeName) : GenerateName(nunnamed++);
 
             if (it != b.end()) {
@@ -253,7 +253,7 @@ bool osc::mow::TPSLandmarkPairWarperFactory::hasLandmarkNamed(std::string_view n
 
 MaybePairedLandmark const* osc::mow::TPSLandmarkPairWarperFactory::tryGetLandmarkPairingByName(std::string_view name) const
 {
-    auto const it = find_if(m_Landmarks, [name](auto const& lm) { return lm.name() == name; });
+    auto const it = rgs::find_if(m_Landmarks, [name](auto const& lm) { return lm.name() == name; });
     return it != m_Landmarks.end() ? &(*it) : nullptr;
 }
 

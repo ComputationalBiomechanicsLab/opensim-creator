@@ -40,6 +40,7 @@
 #include <limits>
 #include <memory>
 #include <optional>
+#include <ranges>
 #include <sstream>
 #include <string>
 #include <unordered_set>
@@ -47,6 +48,7 @@
 #include <vector>
 
 using namespace osc;
+namespace rgs = std::ranges;
 
 namespace
 {
@@ -393,7 +395,7 @@ public:
 
     bool implOverwriteOrAddNewUserOutputExtractor(OutputExtractor const& old, OutputExtractor const& newer) final
     {
-        auto it = find(m_UserOutputExtractors, old);
+        auto it = rgs::find(m_UserOutputExtractors, old);
         if (it != m_UserOutputExtractors.end()) {
             *it = newer;
             return true;
@@ -629,7 +631,7 @@ private:
 
     std::vector<std::unique_ptr<ITab>>::iterator findTabByID(UID id)
     {
-        return find_if(m_Tabs, [id](auto const& p)
+        return rgs::find_if(m_Tabs, [id](auto const& p)
         {
             return p->getID() == id;
         });
@@ -717,7 +719,7 @@ private:
         int lowestDeletedTab = std::numeric_limits<int>::max();
         for (UID id : m_DeletedTabs)
         {
-            auto it = find_if(m_Tabs, [id](auto const& o) { return o->getID() == id; });
+            auto it = rgs::find_if(m_Tabs, [id](auto const& o) { return o->getID() == id; });
 
             if (it != m_Tabs.end())
             {

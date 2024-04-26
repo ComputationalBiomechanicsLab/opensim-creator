@@ -75,6 +75,7 @@
 #include <vector>
 
 using namespace osc;
+namespace rgs = std::ranges;
 
 namespace
 {
@@ -460,7 +461,7 @@ OpenSim::Component const* osc::IsInclusiveChildOf(std::span<OpenSim::Component c
     // TODO: this method signature makes no sense and should be refactored
     for (; c; c = GetOwner(*c))
     {
-        if (auto it = find(parents, c); it != parents.end())
+        if (auto it = rgs::find(parents, c); it != parents.end())
         {
             return *it;
         }

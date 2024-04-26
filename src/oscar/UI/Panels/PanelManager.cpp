@@ -10,6 +10,7 @@
 #include <functional>
 #include <memory>
 #include <optional>
+#include <ranges>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -17,6 +18,7 @@
 #include <vector>
 
 using namespace osc;
+namespace rgs = std::ranges;
 
 namespace
 {
@@ -393,7 +395,7 @@ private:
                 used[instance_number] = true;
             }
         }
-        return std::distance(used.begin(), find(used, false));
+        return std::distance(used.begin(), rgs::find(used, false));
     }
 
     std::string calc_panel_name(std::string_view base_name, size_t ith_instance)

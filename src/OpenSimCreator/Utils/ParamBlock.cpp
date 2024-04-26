@@ -119,7 +119,7 @@ private:
     static auto find(Range& range, std::string const& name) -> decltype(rgs::data(range))
     {
         auto const hasName = [&name](Param const& el) { return el.name == name; };
-        auto const it = find_if(range, hasName);
+        auto const it = rgs::find_if(range, hasName);
         return it != range.end() ? &(*it) : nullptr;
     }
 

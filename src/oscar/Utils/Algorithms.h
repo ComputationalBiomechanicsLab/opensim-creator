@@ -14,78 +14,6 @@
 
 namespace osc
 {
-    // see: std::ranges::find_if
-    template<
-        std::input_iterator I,
-        std::sentinel_for<I> S,
-        std::indirect_unary_predicate<I> Pred
-    >
-    constexpr bool find_if(I first, S last, Pred pred)
-    {
-        return std::find_if(first, last, pred);
-    }
-
-    // see: std::ranges::find_if
-    template<
-        std::ranges::input_range R,
-        std::indirect_unary_predicate<std::ranges::iterator_t<R>> Pred
-    >
-    constexpr std::ranges::borrowed_iterator_t<R> find_if(R&& r, Pred pred)
-    {
-        return std::find_if(std::ranges::begin(r), std::ranges::end(r), pred);
-    }
-
-    // see: std::ranges::find_if_not
-    template<
-        std::input_iterator I,
-        std::sentinel_for<I> S,
-        std::indirect_unary_predicate<I> Pred
-    >
-    constexpr bool find_if_not(I first, S last, Pred pred)
-    {
-        return std::find_if_not(first, last, pred);
-    }
-
-    // see: std::ranges::find_if_not
-    template<
-        std::ranges::input_range R,
-        std::indirect_unary_predicate<std::ranges::iterator_t<R>> Pred
-    >
-    constexpr std::ranges::borrowed_iterator_t<R> find_if_not(R&& r, Pred pred)
-    {
-        return std::find_if_not(std::ranges::begin(r), std::ranges::end(r), pred);
-    }
-
-    // see: std::ranges::find
-    template<
-        std::input_iterator I,
-        std::sentinel_for<I> S,
-        class T,
-        class Proj = std::identity
-    >
-    requires std::indirect_binary_predicate<std::ranges::equal_to, std::projected<I, Proj>, const T*>
-    constexpr I find(I first, S last, const T& value, Proj proj = {})
-    {
-        for (; first != last; ++first) {
-            if (std::invoke(proj, *first) == value) {
-                return first;
-            }
-        }
-        return first;
-    }
-
-    // see: std::ranges::find
-    template<
-        std::ranges::input_range R,
-        class T,
-        class Proj = std::identity
-    >
-    requires std::indirect_binary_predicate<std::ranges::equal_to, std::projected<std::ranges::iterator_t<R>, Proj>, const T*>
-    constexpr std::ranges::borrowed_iterator_t<R> find(R&& r, const T& value, Proj proj = {})
-    {
-        return find(std::ranges::begin(r), std::ranges::end(r), value, std::ref(proj));
-    }
-
     // see: std::ranges::contains
     template<
         std::input_iterator I,
@@ -94,7 +22,7 @@ namespace osc
     >
     constexpr bool contains(I first, S last, const T& value)
     {
-        return find(first, last, value) != last;
+        return std::ranges::find(first, last, value) != last;
     }
 
     // see: std::ranges::contains

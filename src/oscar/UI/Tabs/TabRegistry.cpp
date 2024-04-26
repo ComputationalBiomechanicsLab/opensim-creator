@@ -4,10 +4,12 @@
 
 #include <algorithm>
 #include <memory>
+#include <ranges>
 #include <string>
 #include <vector>
 
 using namespace osc;
+namespace rgs = std::ranges;
 
 class osc::TabRegistry::Impl final {
 public:
@@ -29,11 +31,7 @@ public:
 
     std::optional<TabRegistryEntry> getByName(std::string_view name) const
     {
-        const auto it = find_if(m_Entries, [name](const TabRegistryEntry& e)
-        {
-            return e.getName() == name;
-        });
-
+        const auto it = rgs::find(m_Entries, name, &TabRegistryEntry::getName);
         return it != m_Entries.end() ? *it : std::optional<TabRegistryEntry>{};
     }
 
