@@ -7,6 +7,7 @@
 
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Platform/Log.h>
+#include <oscar/Shims/Cpp23/ranges.h>
 #include <oscar/Utils/Algorithms.h>
 
 #include <algorithm>
@@ -213,17 +214,17 @@ size_t osc::mow::TPSLandmarkPairWarperFactory::getNumLandmarks() const
 
 size_t osc::mow::TPSLandmarkPairWarperFactory::getNumSourceLandmarks() const
 {
-    return rgs::count_if(m_Landmarks, std::mem_fn(&MaybePairedLandmark::hasSource));
+    return rgs::count_if(m_Landmarks, &MaybePairedLandmark::hasSource);
 }
 
 size_t osc::mow::TPSLandmarkPairWarperFactory::getNumDestinationLandmarks() const
 {
-    return rgs::count_if(m_Landmarks, std::mem_fn(&MaybePairedLandmark::hasDestination));
+    return rgs::count_if(m_Landmarks, &MaybePairedLandmark::hasDestination);
 }
 
 size_t osc::mow::TPSLandmarkPairWarperFactory::getNumFullyPairedLandmarks() const
 {
-    return rgs::count_if(m_Landmarks, std::mem_fn(&MaybePairedLandmark::isFullyPaired));
+    return rgs::count_if(m_Landmarks, &MaybePairedLandmark::isFullyPaired);
 }
 
 size_t osc::mow::TPSLandmarkPairWarperFactory::getNumUnpairedLandmarks() const
@@ -248,13 +249,12 @@ bool osc::mow::TPSLandmarkPairWarperFactory::hasUnpairedLandmarks() const
 
 bool osc::mow::TPSLandmarkPairWarperFactory::hasLandmarkNamed(std::string_view name) const
 {
-    return rgs::any_of(m_Landmarks, [name](auto const& lm) { return lm.name() == name; });
+    return cpp23::contains(m_Landmarks, name, &MaybePairedLandmark::name);
 }
 
 MaybePairedLandmark const* osc::mow::TPSLandmarkPairWarperFactory::tryGetLandmarkPairingByName(std::string_view name) const
 {
-    auto const it = rgs::find_if(m_Landmarks, [name](auto const& lm) { return lm.name() == name; });
-    return it != m_Landmarks.end() ? &(*it) : nullptr;
+    return find_or_nullptr(m_Landmarks, name, &MaybePairedLandmark::name);
 }
 
 std::unique_ptr<IPointWarperFactory> osc::mow::TPSLandmarkPairWarperFactory::implClone() const

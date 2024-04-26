@@ -1,5 +1,6 @@
 #include "CSV.h"
 
+#include <array>
 #include <algorithm>
 #include <iostream>
 #include <ranges>
@@ -13,14 +14,11 @@ namespace rgs = std::ranges;
 // helpers
 namespace
 {
-    constexpr bool is_special_csv_char(std::string_view::value_type c)
-    {
-        return c == ',' or c == '\r' or c == '\n' or c == '"';
-    }
+    constexpr auto c_special_csv_chars = std::to_array({ ',', '\r', '"'});
 
     constexpr bool should_be_quoted(std::string_view v)
     {
-        return rgs::any_of(v, is_special_csv_char);
+        return rgs::find_first_of(v, c_special_csv_chars) != v.end();
     }
 }
 

@@ -70,10 +70,7 @@ bool osc::IsStringCaseInsensitiveGreaterThan(std::string_view a, std::string_vie
     //
     //     https://stackoverflow.com/questions/33379846/case-insensitive-sorting-of-an-array-of-strings
 
-    auto [itA, itB] = rgs::mismatch(a, b, [](auto c1, auto c2)
-    {
-        return std::tolower(c1) == std::tolower(c2);
-    });
+    auto [itA, itB] = rgs::mismatch(a, b, rgs::equal_to{}, std::tolower);
 
     if (itB == b.end())
     {
@@ -92,12 +89,7 @@ bool osc::IsStringCaseInsensitiveGreaterThan(std::string_view a, std::string_vie
 
 bool osc::is_equal_case_insensitive(std::string_view a, std::string_view b)
 {
-    const auto compareChars = [](std::string_view::value_type c1, std::string_view::value_type c2)
-    {
-        return std::tolower(static_cast<std::make_unsigned_t<decltype(c1)>>(c1)) == std::tolower(static_cast<std::make_unsigned_t<decltype(c2)>>(c2));
-    };
-
-    return rgs::equal(a, b, compareChars);
+    return rgs::equal(a, b, rgs::equal_to{}, std::tolower);
 }
 
 bool osc::is_valid_identifier(std::string_view sv)
@@ -119,18 +111,15 @@ bool osc::is_valid_identifier(std::string_view sv)
             ('a' <= c && c <= 'z');
     };
 
-    if (sv.empty())
-    {
+    if (sv.empty()) {
         return false;
     }
-    else if (!isValidFirstCharacterOfIdentifier(sv.front()))
-    {
+
+    if (not isValidFirstCharacterOfIdentifier(sv.front())) {
         return false;
     }
-    else
-    {
-        return rgs::all_of(sv.begin() + 1, sv.end(), isValidTrailingCharacterOfIdentifier);
-    }
+
+    return rgs::all_of(sv.begin() + 1, sv.end(), isValidTrailingCharacterOfIdentifier);
 }
 
 std::string_view osc::TrimLeadingAndTrailingWhitespace(std::string_view sv)

@@ -268,9 +268,7 @@ std::vector<Vec3> osc::ApplyThinPlateWarpToPoints(
     std::span<Vec3 const> points,
     float blendingFactor)
 {
-    std::vector<Vec3> rv;
-    rv.reserve(points.size());
-    rgs::copy(points, std::back_inserter(rv));
+    std::vector<Vec3> rv(points.begin(), points.end());
     ApplyThinPlateWarpToPointsInPlace(coefs, rv, blendingFactor);
     return rv;
 }

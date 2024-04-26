@@ -338,11 +338,7 @@ namespace
 
         std::vector<CStringView> extensions_missing;
         extensions_missing.reserve(extensions_needed.size());  // pessimistic guess
-        rgs::set_difference(
-            extensions_needed,
-            extensions_available,
-            std::back_inserter(extensions_missing)
-        );
+        rgs::set_difference(extensions_needed, extensions_available, std::back_inserter(extensions_missing));
 
         if (not extensions_missing.empty()) {
             log_message(logging_level, "OpenGL: the following OpenGL extensions may be missing from the graphics backend: ");

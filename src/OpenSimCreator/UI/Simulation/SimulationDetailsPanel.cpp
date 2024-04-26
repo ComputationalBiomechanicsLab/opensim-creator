@@ -1,6 +1,7 @@
 #include "SimulationDetailsPanel.h"
 
 #include <OpenSimCreator/Documents/Simulation/Simulation.h>
+#include <OpenSimCreator/Documents/OutputExtractors/OutputExtractorDataTypeHelpers.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/UI/Simulation/ISimulatorUIAPI.h>
 #include <OpenSimCreator/UI/Simulation/SimulationOutputPlot.h>
@@ -82,7 +83,7 @@ private:
         ui::SameLine();
         ui::DrawHelpMarker("Various statistics collected when the simulation was ran");
         ui::NextColumn();
-        if (rgs::any_of(outputs, [](OutputExtractor const& o) { return o.getOutputType() == OutputExtractorDataType::Float; }))
+        if (rgs::any_of(outputs, is_numeric, &OutputExtractor::getOutputType))
         {
             ui::Button(ICON_FA_SAVE " Save All " ICON_FA_CARET_DOWN);
             if (ui::BeginPopupContextItem("##exportoptions", ImGuiPopupFlags_MouseButtonLeft))

@@ -26,6 +26,7 @@
 #include <SimTKcommon/SmallMatrix.h>
 
 #include <cstddef>
+#include <functional>
 #include <memory>
 #include <optional>
 #include <ranges>
@@ -153,10 +154,7 @@ private:
         OpenSim::Model const& model = m_Uum->getModel();
 
         bool hasName = !m_Name.empty();
-        bool allSocketsAssigned = rgs::all_of(m_SocketConnecteePaths, [&model](OpenSim::ComponentPath const& cp)
-        {
-            return ContainsComponent(model, cp);
-        });
+        bool allSocketsAssigned = rgs::all_of(m_SocketConnecteePaths, std::bind_front(ContainsComponent, model));
         bool hasEnoughPathPoints =
             dynamic_cast<OpenSim::PathActuator const*>(m_Proto.get()) == nullptr ||
             m_PathPoints.size() >= 2;

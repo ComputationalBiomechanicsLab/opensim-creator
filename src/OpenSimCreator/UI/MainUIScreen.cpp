@@ -396,8 +396,7 @@ public:
 
     bool implOverwriteOrAddNewUserOutputExtractor(OutputExtractor const& old, OutputExtractor const& newer) final
     {
-        auto it = rgs::find(m_UserOutputExtractors, old);
-        if (it != m_UserOutputExtractors.end()) {
+        if (auto it = find_or_nullptr(m_UserOutputExtractors, old)) {
             *it = newer;
             return true;
         }
@@ -632,10 +631,7 @@ private:
 
     std::vector<std::unique_ptr<ITab>>::iterator findTabByID(UID id)
     {
-        return rgs::find_if(m_Tabs, [id](auto const& p)
-        {
-            return p->getID() == id;
-        });
+        return rgs::find(m_Tabs, id, [](auto const& ptr) { return ptr->getID(); });
     }
 
     ITab* getTabByID(UID id)
@@ -720,8 +716,7 @@ private:
         int lowestDeletedTab = std::numeric_limits<int>::max();
         for (UID id : m_DeletedTabs)
         {
-            auto it = rgs::find_if(m_Tabs, [id](auto const& o) { return o->getID() == id; });
-
+            auto it = rgs::find(m_Tabs, id, [](auto const& ptr) { return ptr->getID(); });
             if (it != m_Tabs.end())
             {
                 if (id == m_ActiveTabID)
