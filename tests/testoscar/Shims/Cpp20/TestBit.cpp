@@ -5,8 +5,6 @@
 #include <bit>
 #include <cstdint>
 
-namespace cpp20 = osc::cpp20;
-
 TEST(popcount, ReturnsExpectedResults)
 {
     static_assert(std::popcount(0b00000000u) == 0);
