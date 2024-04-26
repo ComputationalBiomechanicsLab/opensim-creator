@@ -37,7 +37,8 @@ namespace
 
 bool osc::Contains(std::string_view sv, std::string_view substr)
 {
-    return not rgs::search(sv, substr).empty();
+    // CARE: Ubuntu20's `std::ranges::search` doesn't seem to like this
+    return std::search(sv.begin(), sv.end(), substr.begin(), substr.end()) != sv.end();
 }
 
 bool osc::Contains(std::string_view sv, std::string_view::value_type c)
