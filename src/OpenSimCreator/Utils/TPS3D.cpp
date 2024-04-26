@@ -11,10 +11,12 @@
 #include <oscar/Utils/Perf.h>
 
 #include <iostream>
+#include <ranges>
 #include <span>
 #include <vector>
 
 using namespace osc;
+namespace rgs = std::ranges;
 
 namespace
 {
@@ -268,7 +270,7 @@ std::vector<Vec3> osc::ApplyThinPlateWarpToPoints(
 {
     std::vector<Vec3> rv;
     rv.reserve(points.size());
-    copy(points, std::back_inserter(rv));
+    rgs::copy(points, std::back_inserter(rv));
     ApplyThinPlateWarpToPointsInPlace(coefs, rv, blendingFactor);
     return rv;
 }

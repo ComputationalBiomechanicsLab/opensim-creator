@@ -14,33 +14,6 @@
 
 namespace osc
 {
-    // see: std::ranges::copy
-    //
-    // NOTE: return value differs from C++20's std::ranges::copy (fix when MacOS supports std::ranges)
-    template<
-        std::input_iterator I,
-        std::sentinel_for<I> S,
-        std::weakly_incrementable O
-    >
-    requires std::indirectly_copyable<I, O>
-    constexpr void copy(I first, S last, O result)
-    {
-        std::copy(first, last, result);
-    }
-
-    // see: std::ranges::copy
-    //
-    // NOTE: return value differs from C++20's std::ranges::copy (fix when MacOS supports std::ranges)
-    template<
-        std::ranges::input_range R,
-        std::weakly_incrementable O
-    >
-    requires std::indirectly_copyable<std::ranges::iterator_t<R>, O>
-    constexpr void copy(R&& r, O result)
-    {
-        std::copy(std::ranges::begin(r), std::ranges::end(r), result);
-    }
-
     // see: std::ranges::fill
     //
     // NOTE: return value differs from C++20's std::ranges:fill (fix when MacOS supports std::ranges)

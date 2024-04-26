@@ -1271,7 +1271,7 @@ void osc::GetAbsolutePathString(OpenSim::Component const& c, std::string& out)
     {
         out[loc++] = '/';
         std::string const& name = els[i]->getName();
-        copy(name, out.begin() + loc);
+        rgs::copy(name, out.begin() + loc);
         loc += name.size();
     }
 }

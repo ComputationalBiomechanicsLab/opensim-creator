@@ -1285,7 +1285,7 @@ public:
         OSC_ASSERT(data.size() == num_bytes_per_face && "incorrect amount of data passed to Cubemap::set_pixel_data: the data must match the dimensions and texture format of the cubemap");
         OSC_ASSERT(destination_data_end <= data_.size() && "out of range assignment detected: this should be handled in the constructor");
 
-        copy(data, data_.begin() + destination_data_begin);
+        rgs::copy(data, data_.begin() + destination_data_begin);
         data_version_.reset();
     }
 
@@ -1500,7 +1500,7 @@ namespace
 
                     std::span<const uint8_t> channel_span{pixel_bytes.data() + channel_begin, sizeof(float)};
                     std::array<uint8_t, sizeof(float)> tmp_array{};
-                    copy(channel_span, tmp_array.begin());
+                    rgs::copy(channel_span, tmp_array.begin());
 
                     color[channel] = cpp20::bit_cast<float>(tmp_array);
                 }
@@ -1557,7 +1557,7 @@ namespace
 
                     std::span<const uint8_t> channel_span{pixel_bytes.data() + channel_begin, sizeof(float)};
                     std::array<uint8_t, sizeof(float)> tmp_array{};
-                    copy(channel_span, tmp_array.begin());
+                    rgs::copy(channel_span, tmp_array.begin());
                     const auto channelFloat = cpp20::bit_cast<float>(tmp_array);
 
                     color[channel] = Unorm8{channelFloat};
@@ -1769,7 +1769,7 @@ public:
         OSC_ASSERT(pixelData.size() == num_bytes_per_pixel_in(format_)*dimensions_.x*dimensions_.y && "incorrect number of bytes passed to Texture2D::set_pixel_data");
         OSC_ASSERT(pixelData.size() == pixel_data_.size());
 
-        copy(pixelData, pixel_data_.begin());
+        rgs::copy(pixelData, pixel_data_.begin());
     }
 
     // non PIMPL method
@@ -4882,7 +4882,7 @@ private:
         indices_are_32bit_ = false;
         num_indices_ = indices.size();
         indices_data_.resize((indices.size()+1)/2);
-        copy(indices, &indices_data_.front().u16.a);
+        rgs::copy(indices, &indices_data_.front().u16.a);
 
         range_check_indices_and_recalculate_bounds(flags);
         version_->reset();
@@ -4899,7 +4899,7 @@ private:
             indices_are_32bit_ = true;
             num_indices_ = indices.size();
             indices_data_.resize(indices.size());
-            copy(indices, &indices_data_.front().u32);
+            rgs::copy(indices, &indices_data_.front().u32);
         }
         else {
             indices_are_32bit_ = false;
