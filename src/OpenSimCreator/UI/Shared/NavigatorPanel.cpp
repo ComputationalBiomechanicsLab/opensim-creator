@@ -11,6 +11,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
 #include <oscar/Graphics/Color.h>
+#include <oscar/Shims/Cpp23/ranges.h>
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/StandardPanelImpl.h>
@@ -126,7 +127,7 @@ namespace
     bool pathContains(ComponentPath const& p, OpenSim::Component const* c)
     {
         auto end = p.begin() == p.end() ? p.end() : p.end()-1;
-        return contains(p.begin(), end, c);
+        return cpp23::contains(p.begin(), end, c);
     }
 
     enum class ResponseType {

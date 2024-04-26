@@ -14,6 +14,7 @@
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/App.h>
+#include <oscar/Shims/Cpp23/ranges.h>
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/Algorithms.h>
@@ -91,7 +92,7 @@ namespace osc::mi
         // returns true if the user has already selected the given scene element
         bool isSelected(MIObject const& el) const
         {
-            return contains(m_SelectedObjectIDs, el.getID());
+            return cpp23::contains(m_SelectedObjectIDs, el.getID());
         }
 
         // returns true if the user can (de)select the given element

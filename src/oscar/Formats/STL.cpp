@@ -6,7 +6,6 @@
 #include <oscar/Maths/TriangleFunctions.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/os.h>
-#include <oscar/Shims/Cpp20/bit.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/ObjectRepresentation.h>

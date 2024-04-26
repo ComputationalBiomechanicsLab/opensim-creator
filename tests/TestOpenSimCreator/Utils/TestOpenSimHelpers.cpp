@@ -15,6 +15,7 @@
 #include <gtest/gtest.h>
 #include <oscar/Platform/AppConfig.h>
 #include <oscar/Platform/Log.h>
+#include <oscar/Shims/Cpp23/ranges.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/StringHelpers.h>
@@ -340,7 +341,7 @@ TEST(OpenSimHelpers, GetAllWrapObjectsReferencedByWorksAsExpected)
         auto const* gp = FindComponent<OpenSim::GeometryPath>(m, geomAbsPath);
         OSC_ASSERT_ALWAYS(gp != nullptr && "maybe the rajagopal model has changed?");
         for (OpenSim::WrapObject const* wo : GetAllWrapObjectsReferencedBy(*gp)) {
-            ASSERT_TRUE(contains(expectedWrapObjectNames, wo->getName()));
+            ASSERT_TRUE(cpp23::contains(expectedWrapObjectNames, wo->getName()));
         }
     }
 }

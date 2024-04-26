@@ -280,6 +280,7 @@ add_library(oscar STATIC
     Shims/Cpp20/stop_token.h
     Shims/Cpp20/thread.h
     Shims/Cpp23/cstddef.h
+    Shims/Cpp23/ranges.h
     Shims/Cpp23/utility.h
 
     UI/Panels/IPanel.h

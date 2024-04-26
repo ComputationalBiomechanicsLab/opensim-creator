@@ -30,6 +30,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/os.h>
+#include <oscar/Shims/Cpp23/ranges.h>
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/PanelManager.h>
@@ -339,7 +340,7 @@ namespace
     {
         auto const wraps = GetAllWrapObjectsReferencedBy(gp);
         for (auto const& wo : uim.getModel().getComponentList<OpenSim::WrapObject>()) {
-            bool const enabled = contains(wraps, &wo);
+            bool const enabled = cpp23::contains(wraps, &wo);
 
             ui::PushID(&wo);
             bool selected = enabled;

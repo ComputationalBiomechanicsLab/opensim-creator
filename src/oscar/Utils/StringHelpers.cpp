@@ -1,5 +1,6 @@
 #include "StringHelpers.h"
 
+#include <oscar/Shims/Cpp23/ranges.h>
 #include <oscar/Utils/Algorithms.h>
 
 #include <algorithm>
@@ -13,6 +14,7 @@
 #include <string_view>
 #include <type_traits>
 
+using namespace osc;
 namespace rgs = std::ranges;
 
 namespace
@@ -46,7 +48,7 @@ bool osc::Contains(std::string_view sv, std::string_view substr)
 
 bool osc::Contains(std::string_view sv, std::string_view::value_type c)
 {
-    return contains(sv, c);
+    return cpp23::contains(sv, c);
 }
 
 bool osc::ContainsCaseInsensitive(std::string_view sv, std::string_view substr)

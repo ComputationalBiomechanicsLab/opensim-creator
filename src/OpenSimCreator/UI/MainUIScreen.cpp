@@ -16,6 +16,7 @@
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
 #include <oscar/Platform/Screenshot.h>
+#include <oscar/Shims/Cpp23/ranges.h>
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/oscimgui_internal.h>
@@ -385,7 +386,7 @@ public:
 
     bool implHasUserOutputExtractor(OutputExtractor const& oe) const final
     {
-        return contains(m_UserOutputExtractors, oe);
+        return cpp23::contains(m_UserOutputExtractors, oe);
     }
 
     bool implRemoveUserOutputExtractor(OutputExtractor const& oe) final
