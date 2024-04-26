@@ -37,8 +37,11 @@
 #include <array>
 #include <atomic>
 #include <chrono>
+#include <compare>
+#include <functional>
 #include <future>
 #include <memory>
+#include <ranges>
 #include <span>
 #include <sstream>
 #include <string>
@@ -49,8 +52,8 @@
 
 namespace SimTK { class State; }
 
-namespace cpp20 = osc::cpp20;
 using namespace osc;
+namespace rgs = std::ranges;
 
 // muscle outputs
 //
@@ -90,12 +93,15 @@ namespace
             return m_Getter(st, muscle, c);
         }
 
-        friend bool operator<(PlottableOutput const& lhs, PlottableOutput const& rhs)
+        friend auto operator<=>(PlottableOutput const& lhs, PlottableOutput const& rhs)
         {
-            return lhs.m_Name < rhs.m_Name;
+            return lhs.m_Name <=> rhs.m_Name;
         }
 
-        friend bool operator==(PlottableOutput const&, PlottableOutput const&) = default;
+        friend bool operator==(PlottableOutput const& lhs, PlottableOutput const& rhs)
+        {
+            return lhs.m_Name == rhs.m_Name;
+        }
     private:
         CStringView m_Name;
         CStringView m_Units;
@@ -238,7 +244,7 @@ namespace
             {"Tendon Power", "W", GetTendonPower},
             {"Muscle Power", "W", GetMusclePower},
         }};
-        std::sort(rv.begin(), rv.end());
+        rgs::sort(rv);
         return rv;
     }
 }
@@ -492,7 +498,7 @@ namespace
         if (firstXValue > lastXValue)
         {
             // this invariant is necessary because other algorithms assume X increases over
-            // the datapoint collection (e.g. for optimized binary searches, std::lower_bound etc.)
+            // the datapoint collection (e.g. for optimized binary searches, lower_bound etc.)
 
             shared.setErrorMessage(params.getCoordinatePath().toString() + ": cannot plot a coordinate with reversed min/max");
             return PlottingTaskStatus::Error;
@@ -713,7 +719,7 @@ namespace
             return std::nullopt;
         }
 
-        auto const it = std::lower_bound(points.begin(), points.end(), PlotDataPoint{x, 0.0f});
+        auto const it = rgs::lower_bound(points, PlotDataPoint{x, 0.0f}, std::less{});
 
         if (it == points.end())
         {
@@ -750,7 +756,7 @@ namespace
             return std::nullopt;
         }
 
-        auto const it = std::lower_bound(points.begin(), points.end(), PlotDataPoint{x, 0.0f});
+        auto const it = rgs::lower_bound(points, PlotDataPoint{x, 0.0f}, std::less{});
 
         if (it == points.begin())
         {
@@ -1338,7 +1344,7 @@ namespace
     // returns the smallest X value accross all given plot lines - if an X value exists
     std::optional<float> CalcSmallestX(std::span<LineCursor const> cursors)
     {
-        auto it = min_element(cursors, HasLowerX);
+        auto it = rgs::min_element(cursors, HasLowerX);
         return it != cursors.end() ? it->peekX() : std::optional<float>{};
     }
 
@@ -2149,11 +2155,7 @@ namespace
             for (OpenSim::Coordinate const& coord : getShared().getModel().getModel().getComponentList<OpenSim::Coordinate>()) {
                 coordinates.push_back(&coord);
             }
-            std::sort(
-                coordinates.begin(),
-                coordinates.end(),
-                IsNameLexographicallyLowerThan<OpenSim::Component const*>
-            );
+            rgs::sort(coordinates, IsNameLexographicallyLowerThan<OpenSim::Component const*>);
 
             ui::Text("select coordinate:");
 
@@ -2189,11 +2191,7 @@ namespace
             for (OpenSim::Muscle const& musc : getShared().getModel().getModel().getComponentList<OpenSim::Muscle>()) {
                 muscles.push_back(&musc);
             }
-            std::sort(
-                muscles.begin(),
-                muscles.end(),
-                IsNameLexographicallyLowerThan<OpenSim::Component const*>
-            );
+            rgs::sort(muscles, IsNameLexographicallyLowerThan<OpenSim::Component const*>);
 
             ui::Text("select muscle:");
 

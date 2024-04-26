@@ -10,6 +10,7 @@
 #include <oscar/Maths/Sphere.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
+#include <oscar/Shims/Cpp23/numeric.h>
 #include <oscar/Utils/Assertions.h>
 
 #include <cmath>
@@ -17,10 +18,12 @@
 #include <array>
 #include <complex>
 #include <numeric>
+#include <ranges>
 #include <span>
 #include <vector>
 
 using namespace osc;
+namespace rgs = std::ranges;
 
 // generic helpers
 namespace
@@ -215,8 +218,8 @@ namespace
         auto const sortedIndices = [&unsorted]()
         {
             std::array<int, N> indices{};
-            std::iota(indices.begin(), indices.end(), 0);
-            std::sort(indices.begin(), indices.end(), [&unsorted](int a, int b)
+            cpp23::iota(indices, 0);
+            rgs::sort(indices, [&unsorted](int a, int b)
             {
                 auto const& lhsEigenValue = unsorted.second(a, a);
                 auto const& rhsEigenValue = unsorted.second(b, b);

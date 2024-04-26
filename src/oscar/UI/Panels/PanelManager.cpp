@@ -419,7 +419,7 @@ private:
                 return a.instance_number() < b.instance_number();
             }
         };
-        std::sort(dynamic_panels_.begin(), dynamic_panels_.end(), panel_id_or_instance_number_less_than);
+        rgs::sort(dynamic_panels_, panel_id_or_instance_number_less_than);
     }
 
     std::vector<ToggleablePanel> toggleable_panels_;

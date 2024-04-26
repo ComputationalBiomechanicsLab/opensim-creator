@@ -13,12 +13,14 @@
 #include <ctime>
 #include <filesystem>
 #include <fstream>
+#include <ranges>
 #include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
 
 using namespace osc;
+namespace rgs = std::ranges;
 
 namespace
 {
@@ -37,7 +39,7 @@ namespace
 
     void SortNewestToOldest(std::vector<RecentFile>& files)
     {
-        std::sort(files.begin(), files.end(), LastOpenedGreaterThan);
+        rgs::sort(files, LastOpenedGreaterThan);
     }
 
     // load the "recent files" file that the application persists to disk

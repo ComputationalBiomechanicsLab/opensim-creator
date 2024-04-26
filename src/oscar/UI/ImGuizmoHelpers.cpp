@@ -21,7 +21,7 @@ bool osc::DrawGizmoModeSelector(ImGuizmo::MODE& mode)
     constexpr auto modes = std::to_array<ImGuizmo::MODE, 2>({ ImGuizmo::LOCAL, ImGuizmo::WORLD });
 
     bool rv = false;
-    int current_mode = static_cast<int>(std::distance(std::begin(modes), rgs::find(modes, mode)));
+    int current_mode = static_cast<int>(std::distance(rgs::begin(modes), rgs::find(modes, mode)));
     ui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
     ui::SetNextItemWidth(ui::CalcTextSize(mode_labels[0]).x + 40.0f);
     if (ui::Combo("##modeselect", &current_mode, mode_labels.data(), static_cast<int>(mode_labels.size()))) {

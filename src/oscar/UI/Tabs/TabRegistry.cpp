@@ -16,7 +16,7 @@ public:
     void registerTab(const TabRegistryEntry& newEntry)
     {
         m_Entries.push_back(newEntry);
-        std::sort(m_Entries.begin(), m_Entries.end());
+        rgs::sort(m_Entries, rgs::less{}, &TabRegistryEntry::getName);
     }
 
     size_t size() const

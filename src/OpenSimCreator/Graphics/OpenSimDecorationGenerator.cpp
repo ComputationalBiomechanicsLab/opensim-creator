@@ -43,6 +43,7 @@
 #include <iterator>
 #include <memory>
 #include <optional>
+#include <ranges>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -50,6 +51,7 @@
 #include <vector>
 
 using namespace osc;
+namespace rgs = std::ranges;
 
 namespace
 {
@@ -1130,7 +1132,7 @@ float osc::GetRecommendedScaleFactor(
     // what the smallest scale factor that would cause that dimension
     // to be >=1 cm (roughly the length of a frame leg in OSC's
     // decoration generator)
-    float longest = max(dimensions_of(*aabb));
+    float longest = rgs::max(dimensions_of(*aabb));
     float rv = 1.0f;
     while (longest < 0.01)
     {

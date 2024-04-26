@@ -16,8 +16,10 @@
 #include <oscar/Utils/StringHelpers.h>
 
 #include <algorithm>
+#include <compare>
 #include <memory>
 #include <optional>
+#include <ranges>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -25,6 +27,7 @@
 #include <utility>
 
 using namespace osc;
+namespace rgs = std::ranges;
 
 namespace
 {
@@ -59,14 +62,19 @@ namespace
         {
         }
 
+        friend auto operator<=>(ConnecteeOption const& lhs, ConnecteeOption const& rhs)
+        {
+            return std::tie(lhs.name, lhs.absPath.toString()) <=> std::tie(rhs.name, rhs.absPath.toString());
+        }
+
+        friend bool operator==(ConnecteeOption const& lhs, ConnecteeOption const& rhs)
+        {
+            return std::tie(lhs.name, lhs.absPath.toString()) == std::tie(rhs.name, rhs.absPath.toString());
+        }
+
         OpenSim::ComponentPath absPath;
         std::string name;
     };
-
-    bool operator<(ConnecteeOption const& lhs, ConnecteeOption const& rhs)
-    {
-        return std::tie(lhs.name, lhs.absPath.toString()) < std::tie(rhs.name, rhs.absPath.toString());
-    }
 
     // generate a list of possible connectee options, given a set of popup parameters
     std::vector<ConnecteeOption> GenerateSelectionOptions(
@@ -107,7 +115,7 @@ namespace
             rv.emplace_back(other);
         }
 
-        std::sort(rv.begin(), rv.end());
+        rgs::sort(rv);
 
         return rv;
     }

@@ -9,18 +9,12 @@
 #include <chrono>
 #include <cinttypes>
 #include <memory>
+#include <ranges>
 #include <string_view>
 #include <vector>
 
 using namespace osc;
-
-namespace
-{
-    bool lexographically_highest_label(const PerfMeasurement& a, const PerfMeasurement& b)
-    {
-        return a.getLabel() > b.getLabel();
-    }
-}
+namespace rgs = std::ranges;
 
 class osc::PerfPanel::Impl final : public StandardPanelImpl {
 public:
@@ -59,7 +53,7 @@ private:
         std::vector<PerfMeasurement> measurements;
         if (not is_paused_) {
             measurements = GetAllPerfMeasurements();
-            std::sort(measurements.begin(), measurements.end(), lexographically_highest_label);
+            rgs::sort(measurements, rgs::less{}, &PerfMeasurement::getLabel);
         }
 
         const ImGuiTableFlags flags =

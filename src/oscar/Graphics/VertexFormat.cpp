@@ -10,6 +10,8 @@
 #include <stdexcept>
 #include <vector>
 
+namespace rgs = std::ranges;
+
 osc::VertexFormat::VertexFormat(std::initializer_list<VertexAttributeDescriptor> attrs) :
     m_AttributeDescriptions{attrs.begin(), attrs.end()}
 {
@@ -44,15 +46,11 @@ void osc::VertexFormat::insert(VertexAttributeDescriptor const& desc)
         return;
     }
 
-    auto const comp = [](VertexAttributeDescriptor const& a, VertexAttributeDescriptor const& b)
-    {
-        return a.attribute() < b.attribute();
-    };
-    auto const it = std::lower_bound(
-        m_AttributeDescriptions.begin(),
-        m_AttributeDescriptions.end(),
-        desc,
-        comp
+    auto const it = rgs::lower_bound(
+        m_AttributeDescriptions,
+        desc.attribute(),
+        rgs::less{},
+        &VertexAttributeDescriptor::attribute
     );
 
     if (it != m_AttributeDescriptions.end() && it->attribute() == desc.attribute())

@@ -27,7 +27,7 @@ namespace
     std::string ToLower(std::string_view sv)
     {
         std::string cpy{sv};
-        std::transform(cpy.begin(), cpy.end(), cpy.begin(), [](std::string::value_type c)
+        rgs::transform(cpy, cpy.begin(), [](std::string::value_type c)
         {
             return static_cast<std::string::value_type>(std::tolower(c));
         });
@@ -37,13 +37,7 @@ namespace
 
 bool osc::Contains(std::string_view sv, std::string_view substr)
 {
-    const auto it = std::search(
-        sv.begin(),
-        sv.end(),
-        substr.begin(),
-        substr.end()
-    );
-    return it != sv.end();
+    return not rgs::search(sv, substr).empty();
 }
 
 bool osc::Contains(std::string_view sv, std::string_view::value_type c)
@@ -134,7 +128,7 @@ bool osc::is_valid_identifier(std::string_view sv)
     }
     else
     {
-        return std::all_of(sv.begin() + 1, sv.end(), isValidTrailingCharacterOfIdentifier);
+        return rgs::all_of(sv.begin() + 1, sv.end(), isValidTrailingCharacterOfIdentifier);
     }
 }
 

@@ -331,18 +331,16 @@ namespace
         }
 
         std::vector<CStringView> extensions_needed = get_all_opengl_extensions_used_by_opengl_backend();
-        std::sort(extensions_needed.begin(), extensions_needed.end());
+        rgs::sort(extensions_needed);
 
         std::vector<CStringView> extensions_available = get_extensions_supported_by_opengl_backend();
-        std::sort(extensions_available.begin(), extensions_available.end());
+        rgs::sort(extensions_available);
 
         std::vector<CStringView> extensions_missing;
         extensions_missing.reserve(extensions_needed.size());  // pessimistic guess
-        std::set_difference(
-            extensions_needed.begin(),
-            extensions_needed.end(),
-            extensions_available.begin(),
-            extensions_available.end(),
+        rgs::set_difference(
+            extensions_needed,
+            extensions_available,
             std::back_inserter(extensions_missing)
         );
 

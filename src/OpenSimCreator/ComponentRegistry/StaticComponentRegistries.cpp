@@ -46,6 +46,7 @@
 #include <concepts>
 #include <initializer_list>
 #include <memory>
+#include <ranges>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -55,6 +56,7 @@
 
 using namespace osc::fd;
 using namespace osc;
+namespace rgs = std::ranges;
 
 // generic helpers
 namespace
@@ -657,11 +659,7 @@ namespace
             }
         }
 
-        std::sort(
-            rv.begin(),
-            rv.end(),
-            IsConcreteClassNameLexographicallyLowerThan<std::shared_ptr<OpenSim::Component const>>
-        );
+        rgs::sort(rv, IsConcreteClassNameLexographicallyLowerThan<std::shared_ptr<OpenSim::Component const>>);
 
         return rv;
     }
@@ -696,11 +694,7 @@ namespace
             rv.emplace_back(Clone(c));
         }
 
-        std::sort(
-            rv.begin(),
-            rv.end(),
-            IsConcreteClassNameLexographicallyLowerThan<std::shared_ptr<OpenSim::Component const>>
-        );
+        rgs::sort(rv, IsConcreteClassNameLexographicallyLowerThan<std::shared_ptr<OpenSim::Component const>>);
 
         return rv;
     }

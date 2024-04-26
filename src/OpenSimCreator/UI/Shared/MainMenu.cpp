@@ -30,12 +30,12 @@
 #include <filesystem>
 #include <memory>
 #include <optional>
+#include <ranges>
 #include <string>
 #include <typeinfo>
 #include <utility>
 
-
-// public API
+namespace rgs = std::ranges;
 
 osc::MainMenuFileTab::MainMenuFileTab() :
     exampleOsimFiles
@@ -46,7 +46,7 @@ osc::MainMenuFileTab::MainMenuFileTab() :
         )
     }
 {
-    std::sort(exampleOsimFiles.begin(), exampleOsimFiles.end(), IsFilenameLexographicallyGreaterThan);
+    rgs::sort(exampleOsimFiles, IsFilenameLexographicallyGreaterThan);
 }
 
 void osc::MainMenuFileTab::onDraw(

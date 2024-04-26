@@ -107,9 +107,8 @@ namespace osc
             if (!samePositions)
             {
                 m_CachedSourceNonParticipatingLandmarks.clear();
-                std::transform(
-                    docLandmarks.begin(),
-                    docLandmarks.end(),
+                std::ranges::transform(
+                    docLandmarks,
                     std::back_inserter(m_CachedSourceNonParticipatingLandmarks),
                     [](auto const& lm) { return lm.location; }
                 );

@@ -27,12 +27,14 @@
 #include <fstream>
 #include <memory>
 #include <optional>
+#include <ranges>
 #include <string>
 #include <string_view>
 #include <unordered_set>
 #include <utility>
 
 using namespace osc;
+namespace rgs = std::ranges;
 
 namespace
 {
@@ -407,7 +409,7 @@ namespace
         std::vector<std::string> rv(unorderedPointAbsPaths.begin(), unorderedPointAbsPaths.end());
         if (shouldExportPointsWithAbsPathNames)
         {
-            std::sort(rv.begin(), rv.end());
+            rgs::sort(rv);
         }
         else
         {
@@ -415,7 +417,7 @@ namespace
             {
                 return SubstringAfterLast(a, '/') < SubstringAfterLast(b, '/');
             };
-            std::sort(rv.begin(), rv.end(), isComponentNameLexographicallyLess);
+            rgs::sort(rv, isComponentNameLexographicallyLess);
         }
         return rv;
     }

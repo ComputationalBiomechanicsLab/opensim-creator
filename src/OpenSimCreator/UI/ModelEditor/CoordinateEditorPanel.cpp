@@ -16,12 +16,15 @@
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/ParentPtr.h>
 
+#include <algorithm>
+#include <ranges>
 #include <sstream>
 #include <string_view>
 #include <utility>
 #include <vector>
 
 using namespace osc;
+namespace rgs = std::ranges;
 
 class osc::CoordinateEditorPanel::Impl final : public StandardPanelImpl {
 public:
@@ -80,18 +83,10 @@ private:
                     switch (specs.front().SortDirection)
                     {
                     case ImGuiSortDirection_Ascending:
-                        std::sort(
-                            coordPtrs.begin(),
-                            coordPtrs.end(),
-                            IsNameLexographicallyLowerThan<OpenSim::Component const*>
-                        );
+                        rgs::sort(coordPtrs, IsNameLexographicallyLowerThan<OpenSim::Component const*>);
                         break;
                     case ImGuiSortDirection_Descending:
-                        std::sort(
-                            coordPtrs.begin(),
-                            coordPtrs.end(),
-                            IsNameLexographicallyGreaterThan<OpenSim::Component const*>
-                        );
+                        rgs::sort(coordPtrs, IsNameLexographicallyGreaterThan<OpenSim::Component const*>);
                         break;
                     case ImGuiSortDirection_None:
                     default:

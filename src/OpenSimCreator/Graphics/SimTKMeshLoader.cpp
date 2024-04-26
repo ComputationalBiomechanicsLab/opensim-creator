@@ -18,9 +18,11 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <ranges>
 #include <vector>
 
 using namespace osc;
+namespace rgs = std::ranges;
 
 // helper functions
 namespace
@@ -163,10 +165,6 @@ Mesh osc::LoadMeshViaSimTK(std::filesystem::path const& p)
 
 void osc::AssignIndexedVerts(SimTK::PolygonalMesh& mesh, std::span<Vec3 const> vertices, MeshIndicesView indices)
 {
-    using std::begin;
-    using std::end;
-    using std::distance;
-
     mesh.clear();
 
     // assign vertices
@@ -175,9 +173,9 @@ void osc::AssignIndexedVerts(SimTK::PolygonalMesh& mesh, std::span<Vec3 const> v
     }
 
     // assign indices (assumed triangle)
-    OSC_ASSERT_ALWAYS(distance(begin(indices), end(indices)) % 3 == 0);
+    OSC_ASSERT_ALWAYS(indices.size() % 3 == 0);
     SimTK::Array_<int> triVerts(3, 0);
-    for (auto it = begin(indices); it != end(indices); it += 3) {
+    for (auto it = rgs::begin(indices); it != rgs::end(indices); it += 3) {
         triVerts[0] = static_cast<int>(it[0]);
         triVerts[1] = static_cast<int>(it[1]);
         triVerts[2] = static_cast<int>(it[2]);

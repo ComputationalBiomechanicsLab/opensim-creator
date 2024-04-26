@@ -6,8 +6,10 @@
 
 #include <filesystem>
 #include <functional>
+#include <ranges>
 
 using namespace osc;
+namespace rgs = std::ranges;
 
 namespace
 {
@@ -27,12 +29,10 @@ ResourceStream osc::FilesystemResourceLoader::impl_open(const ResourcePath& p)
 
 std::function<std::optional<ResourceDirectoryEntry>()> osc::FilesystemResourceLoader::impl_iterate_directory(const ResourcePath& p)
 {
-    using std::begin;
-    using std::end;
 
     const std::filesystem::path full_path = calc_full_path(root_directory_, p);
     const std::filesystem::directory_iterator iterable{full_path};
-    return [p, full_path, beg = begin(iterable), en = end(iterable)]() mutable -> std::optional<ResourceDirectoryEntry>
+    return [p, full_path, beg = rgs::begin(iterable), en = rgs::end(iterable)]() mutable -> std::optional<ResourceDirectoryEntry>
     {
         if (beg != en) {
             const auto relative_path = std::filesystem::relative(beg->path(), full_path);

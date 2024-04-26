@@ -2,20 +2,21 @@
 
 #include <gtest/gtest.h>
 
+#include <algorithm>
 #include <array>
 #include <map>
 #include <ranges>
 #include <unordered_map>
 
 using namespace osc;
-namespace ranges = std::ranges;
+namespace rgs = std::ranges;
 
 TEST(all_of, WorksAsExpected)
 {
     auto vs = std::to_array({-1, -2, -3, 0, 1, 2, 3});
-    ASSERT_TRUE(ranges::all_of(vs, [](int v){ return v > -4; }));
-    ASSERT_TRUE(ranges::all_of(vs, [](int v){ return v <  4; }));
-    ASSERT_FALSE(ranges::all_of(vs, [](int v){ return v > 0; }));
+    ASSERT_TRUE(rgs::all_of(vs, [](int v){ return v > -4; }));
+    ASSERT_TRUE(rgs::all_of(vs, [](int v){ return v <  4; }));
+    ASSERT_FALSE(rgs::all_of(vs, [](int v){ return v > 0; }));
 }
 TEST(at, WorksAsExpected)
 {
@@ -137,19 +138,19 @@ TEST(try_find, CanMutateViaReturnedPointer)
 TEST(min_element, WorksAsExpected)
 {
     auto const els = std::to_array({1, 5, 8, -4, 13});
-    ASSERT_EQ(min_element(els), els.begin() + 3);
+    ASSERT_EQ(rgs::min_element(els), els.begin() + 3);
 }
 
 TEST(min, WorksAsExpected)
 {
     auto const els = std::to_array({1, 5, 8, -4, 13});
-    ASSERT_EQ(min(els), -4);
+    ASSERT_EQ(rgs::min(els), -4);
 }
 
 TEST(minmax_element, WorksAsExpected)
 {
     auto const els = std::to_array({1, 5, 8, -4, -4, 13, 13, 13});
-    auto const [minit, maxit] = minmax_element(els);
+    auto const [minit, maxit] = rgs::minmax_element(els);
     ASSERT_EQ(minit, els.begin() + 3);
     ASSERT_EQ(maxit, els.end() - 1);
 }
@@ -157,7 +158,7 @@ TEST(minmax_element, WorksAsExpected)
 TEST(minmax, WorksAsExpected)
 {
     auto const els = std::to_array({1, 5, 8, -4, -4, 13, 13, 13});
-    auto const [min, max] = minmax(els);
+    auto const [min, max] = rgs::minmax(els);
     ASSERT_EQ(min, -4);
     ASSERT_EQ(max, 13);
 }

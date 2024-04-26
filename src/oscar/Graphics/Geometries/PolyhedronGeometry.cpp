@@ -12,11 +12,13 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <ranges>
 #include <span>
 #include <vector>
 
 using namespace osc;
 using namespace osc::literals;
+namespace rgs = std::ranges;
 
 osc::PolyhedronGeometry::PolyhedronGeometry(
     std::span<const Vec3> vertices,
@@ -147,7 +149,7 @@ osc::PolyhedronGeometry::PolyhedronGeometry(
             const float x0 = uvs[i+0].x;
             const float x1 = uvs[i+1].x;
             const float x2 = uvs[i+2].x;
-            const auto [min, max] = minmax({x0, x1, x2});
+            const auto [min, max] = rgs::minmax({x0, x1, x2});
 
             // these magic numbers are arbitrary (copied from three.js)
             if (max > 0.9f and min < 0.1f) {

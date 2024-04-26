@@ -31,6 +31,4 @@ namespace osc
         class Impl;
         std::shared_ptr<Impl> m_Impl;
     };
-
-    bool operator<(const TabRegistryEntry&, const TabRegistryEntry&);
 }

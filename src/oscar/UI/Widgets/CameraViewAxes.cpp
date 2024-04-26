@@ -16,8 +16,10 @@
 #include <array>
 #include <cmath>
 #include <iterator>
+#include <ranges>
 
 using namespace osc;
+namespace rgs = std::ranges;
 
 namespace
 {
@@ -48,7 +50,7 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
     // figure out rendering order (back-to-front)
     const Mat4 viewMtx = camera.view_matrix();
     auto order = std::to_array<Vec4::size_type>({0, 1, 2});
-    std::sort(order.begin(), order.end(), [&viewMtx](auto a, auto b)
+    rgs::sort(order, [&viewMtx](auto a, auto b)
     {
         const float aDepth = (viewMtx * Vec4{}.with_element(a, 1.0f)).z;
         const float bDepth = (viewMtx * Vec4{}.with_element(b, 1.0f)).z;
