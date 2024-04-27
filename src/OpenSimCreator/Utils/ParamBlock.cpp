@@ -118,9 +118,7 @@ private:
     template<rgs::range Range>
     static auto find(Range& range, std::string const& name) -> decltype(rgs::data(range))
     {
-        auto const hasName = [&name](Param const& el) { return el.name == name; };
-        auto const it = rgs::find_if(range, hasName);
-        return it != range.end() ? &(*it) : nullptr;
+        return find_or_nullptr(range, name, [](auto const& el) { return el.name; });
     }
 
     Param* find(std::string const& name)

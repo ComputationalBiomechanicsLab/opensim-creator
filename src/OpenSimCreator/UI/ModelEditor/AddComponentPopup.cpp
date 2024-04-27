@@ -18,6 +18,7 @@
 #include <OpenSim/Simulation/Model/Station.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Platform/App.h>
+#include <oscar/Shims/Cpp23/ranges.h>
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Widgets/StandardPopup.h>
@@ -295,11 +296,7 @@ private:
         // choices
         for (OpenSim::Component const& c : model.getComponentList())
         {
-            auto const isSameUserChoiceAsComponent = [&c](PathPoint const& p)
-            {
-                return p.userChoice == GetAbsolutePath(c);
-            };
-            if (rgs::any_of(m_PathPoints, isSameUserChoiceAsComponent))
+            if (cpp23::contains(m_PathPoints, GetAbsolutePath(c), [](auto const& pp) { return pp.userChoice; }))
             {
                 continue;  // already selected
             }

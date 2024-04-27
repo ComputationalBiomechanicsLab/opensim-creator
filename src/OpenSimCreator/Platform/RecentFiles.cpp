@@ -32,14 +32,9 @@ namespace
         return std::chrono::seconds(std::time(nullptr));
     }
 
-    bool LastOpenedGreaterThan(RecentFile const& a, RecentFile const& b)
-    {
-        return a.lastOpenedUnixTimestamp > b.lastOpenedUnixTimestamp;
-    }
-
     void SortNewestToOldest(std::vector<RecentFile>& files)
     {
-        rgs::sort(files, LastOpenedGreaterThan);
+        rgs::sort(files, rgs::greater{}, [](RecentFile const& rf) { return rf.lastOpenedUnixTimestamp; });
     }
 
     // load the "recent files" file that the application persists to disk

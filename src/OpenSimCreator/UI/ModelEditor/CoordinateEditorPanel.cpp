@@ -83,10 +83,10 @@ private:
                     switch (specs.front().SortDirection)
                     {
                     case ImGuiSortDirection_Ascending:
-                        rgs::sort(coordPtrs, IsNameLexographicallyLowerThan<OpenSim::Component const*>);
+                        rgs::sort(coordPtrs, rgs::less{}, [](auto const& ptr) { return ptr->getName(); });
                         break;
                     case ImGuiSortDirection_Descending:
-                        rgs::sort(coordPtrs, IsNameLexographicallyGreaterThan<OpenSim::Component const*>);
+                        rgs::sort(coordPtrs, rgs::greater{}, [](auto const& ptr) { return ptr->getName(); });
                         break;
                     case ImGuiSortDirection_None:
                     default:

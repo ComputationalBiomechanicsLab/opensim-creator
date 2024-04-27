@@ -219,12 +219,7 @@ namespace
         {
             std::array<int, N> indices{};
             cpp23::iota(indices, 0);
-            rgs::sort(indices, [&unsorted](int a, int b)
-            {
-                auto const& lhsEigenValue = unsorted.second(a, a);
-                auto const& rhsEigenValue = unsorted.second(b, b);
-                return lhsEigenValue < rhsEigenValue;
-            });
+            rgs::sort(indices, rgs::less{}, [&unsorted](int v) { return unsorted.second(v, v); });
             return indices;
         }();
 

@@ -2155,7 +2155,7 @@ namespace
             for (OpenSim::Coordinate const& coord : getShared().getModel().getModel().getComponentList<OpenSim::Coordinate>()) {
                 coordinates.push_back(&coord);
             }
-            rgs::sort(coordinates, IsNameLexographicallyLowerThan<OpenSim::Component const*>);
+            rgs::sort(coordinates, rgs::less{}, [](auto const* ptr) { return ptr->getName(); });
 
             ui::Text("select coordinate:");
 
@@ -2191,7 +2191,7 @@ namespace
             for (OpenSim::Muscle const& musc : getShared().getModel().getModel().getComponentList<OpenSim::Muscle>()) {
                 muscles.push_back(&musc);
             }
-            rgs::sort(muscles, IsNameLexographicallyLowerThan<OpenSim::Component const*>);
+            rgs::sort(muscles, rgs::less{}, [](auto const* ptr) { return ptr->getName(); });
 
             ui::Text("select muscle:");
 

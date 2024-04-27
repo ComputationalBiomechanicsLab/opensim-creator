@@ -12,6 +12,7 @@
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/Vec3.h>
+#include <oscar/Shims/Cpp23/ranges.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/CStringView.h>
@@ -31,10 +32,7 @@ namespace rgs = std::ranges;
 
 bool osc::mi::IsAChildAttachmentInAnyJoint(Document const& doc, MIObject const& obj)
 {
-    return rgs::any_of(doc.iter<Joint>(), [id = obj.getID()](Joint const& j)
-    {
-        return j.getChildID() == id;
-    });
+    return cpp23::contains(doc.iter<Joint>(), obj.getID(), &Joint::getChildID);
 }
 
 bool osc::mi::IsGarbageJoint(Document const& doc, Joint const& joint)

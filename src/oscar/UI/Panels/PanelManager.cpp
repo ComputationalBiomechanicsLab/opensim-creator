@@ -14,6 +14,7 @@
 #include <sstream>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -410,16 +411,7 @@ private:
         dynamic_panels_.push_back(std::move(p));
 
         // re-sort so that panels are clustered correctly
-        const auto panel_id_or_instance_number_less_than = [](const DynamicPanel& a, const DynamicPanel& b)
-        {
-            if (a.spawnable_panel_id() != b.spawnable_panel_id()) {
-                return a.spawnable_panel_id() < b.spawnable_panel_id();
-            }
-            else {
-                return a.instance_number() < b.instance_number();
-            }
-        };
-        rgs::sort(dynamic_panels_, panel_id_or_instance_number_less_than);
+        rgs::sort(dynamic_panels_, rgs::less{}, [](auto const& p) { return std::make_tuple(p.spawnable_panel_id(), p.instance_number()); });
     }
 
     std::vector<ToggleablePanel> toggleable_panels_;

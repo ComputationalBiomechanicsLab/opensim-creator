@@ -88,7 +88,7 @@ namespace
 
     size_t CountFullyPaired(TPSDocument const& doc)
     {
-        return rgs::count_if(doc.landmarkPairs, osc::IsFullyPaired);
+        return rgs::count_if(doc.landmarkPairs, IsFullyPaired);
     }
 }
 

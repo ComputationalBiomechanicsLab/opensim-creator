@@ -1,6 +1,7 @@
 #include "VertexFormat.h"
 
 #include <oscar/Graphics/VertexAttributeDescriptor.h>
+#include <oscar/Shims/Cpp23/ranges.h>
 #include <oscar/Utils/Algorithms.h>
 
 #include <algorithm>
@@ -27,12 +28,7 @@ osc::VertexFormat::VertexFormat(std::initializer_list<VertexAttributeDescriptor>
 
     for (auto const& desc : m_AttributeDescriptions)
     {
-        auto const hasAttr = [attr = desc.attribute()](auto const& d)
-        {
-            return d.attribute() == attr;
-        };
-        if (rgs::count_if(m_AttributeDescriptions, hasAttr) > 1)
-        {
+        if (rgs::count(m_AttributeDescriptions, desc.attribute(), &VertexAttributeDescriptor::attribute) > 1) {
             throw std::runtime_error{"Duplicate attributes passed to VertexFormat: each VertexAttribute should be unique"};
         }
     }

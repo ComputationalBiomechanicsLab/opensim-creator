@@ -407,17 +407,11 @@ namespace
         bool shouldExportPointsWithAbsPathNames)
     {
         std::vector<std::string> rv(unorderedPointAbsPaths.begin(), unorderedPointAbsPaths.end());
-        if (shouldExportPointsWithAbsPathNames)
-        {
+        if (shouldExportPointsWithAbsPathNames) {
             rgs::sort(rv);
         }
-        else
-        {
-            auto const isComponentNameLexographicallyLess = [](std::string const& a, std::string const& b)
-            {
-                return SubstringAfterLast(a, '/') < SubstringAfterLast(b, '/');
-            };
-            rgs::sort(rv, isComponentNameLexographicallyLess);
+        else {
+            rgs::sort(rv, rgs::less{}, [](auto const& path) { return SubstringAfterLast(path, '/'); });
         }
         return rv;
     }

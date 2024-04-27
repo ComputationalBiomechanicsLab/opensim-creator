@@ -187,12 +187,8 @@ void osc::OpenSimDecorationOptions::tryUpdFromValues(
     if (auto* appVal = lookup("muscle_decoration_style"); appVal->type() == AppSettingValueType::String)
     {
         auto const metadata = GetAllMuscleDecorationStyleMetadata();
-        auto const it = rgs::find_if(metadata, [appVal](auto const& m)
-        {
-            return appVal->to_string() == m.id;
-        });
-        if (it != metadata.end())
-        {
+        auto const it = rgs::find(metadata, appVal->to_string(), [](auto const& m) { return m.id; });
+        if (it != metadata.end()) {
             m_MuscleDecorationStyle = it->value;
         }
     }
@@ -200,12 +196,8 @@ void osc::OpenSimDecorationOptions::tryUpdFromValues(
     if (auto* appVal = lookup("muscle_coloring_style"); appVal->type() == AppSettingValueType::String)
     {
         auto const metadata = GetAllMuscleColoringStyleMetadata();
-        auto const it = rgs::find_if(metadata, [appVal](auto const& m)
-        {
-            return appVal->to_string() == m.id;
-        });
-        if (it != metadata.end())
-        {
+        auto const it = rgs::find(metadata, appVal->to_string(), [](auto const& m) { return m.id; });
+        if (it != metadata.end()) {
             m_MuscleColoringStyle = it->value;
         }
     }
@@ -213,12 +205,8 @@ void osc::OpenSimDecorationOptions::tryUpdFromValues(
     if (auto* appVal = lookup("muscle_sizing_style"); appVal->type() == AppSettingValueType::String)
     {
         auto const metadata = GetAllMuscleSizingStyleMetadata();
-        auto const it = rgs::find_if(metadata, [appVal](auto const& m)
-        {
-            return appVal->to_string() == m.id;
-        });
-        if (it != metadata.end())
-        {
+        auto const it = rgs::find(metadata, appVal->to_string(), [](auto const& m) { return m.id; });
+        if (it != metadata.end()) {
             m_MuscleSizingStyle = it->value;
         }
     }

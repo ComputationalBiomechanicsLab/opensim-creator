@@ -46,7 +46,7 @@ namespace osc::mi
             using pointer = T*;
             using const_pointer = T const*;
             using reference = T const&;
-            using iterator_category = std::input_iterator_tag;
+            using iterator_category = std::forward_iterator_tag;
 
             // caller-provided iterator
             using InternalIterator = std::conditional_t<

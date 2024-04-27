@@ -4884,12 +4884,7 @@ private:
 
     void set_indices(std::span<const uint32_t> indices, MeshUpdateFlags flags)
     {
-        const auto isGreaterThanU16Max = [](uint32_t v)
-        {
-            return v > std::numeric_limits<uint16_t>::max();
-        };
-
-        if (rgs::any_of(indices, isGreaterThanU16Max)) {
+        if (rgs::any_of(indices, [](uint32_t idx) { return idx > std::numeric_limits<uint16_t>::max(); })) {
             indices_are_32bit_ = true;
             num_indices_ = indices.size();
             indices_data_.resize(indices.size());
@@ -4899,9 +4894,7 @@ private:
             indices_are_32bit_ = false;
             num_indices_ = indices.size();
             indices_data_.resize((indices.size()+1)/2);
-            for (size_t i = 0; i < indices.size(); ++i) {
-                (&indices_data_.front().u16.a)[i] = static_cast<uint16_t>(indices[i]);
-            }
+            rgs::transform(indices, &indices_data_.front().u16.a, [](uint32_t v) { return static_cast<uint16_t>(v); });
         }
 
         range_check_indices_and_recalculate_bounds(flags);
