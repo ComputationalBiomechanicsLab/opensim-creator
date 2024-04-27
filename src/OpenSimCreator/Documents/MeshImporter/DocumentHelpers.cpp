@@ -28,7 +28,6 @@
 #include <variant>
 
 using namespace osc;
-namespace rgs = std::ranges;
 
 bool osc::mi::IsAChildAttachmentInAnyJoint(Document const& doc, MIObject const& obj)
 {

@@ -16,7 +16,6 @@
 #include <vector>
 
 using namespace osc;
-namespace rgs = std::ranges;
 
 namespace
 {
