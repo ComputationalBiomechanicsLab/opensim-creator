@@ -155,7 +155,7 @@ namespace
         static_assert(alignof(GLubyte) == alignof(value_type));
         static_assert(std::is_same_v<value_type, char>, "therefore, the cast below should be ok");
         if (string_ptr) {
-            return CStringView{reinterpret_cast<const char*>(string_ptr)};  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+            return CStringView{std::launder(reinterpret_cast<const char*>(string_ptr))};  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
         }
         else {
             return CStringView{};
@@ -591,7 +591,7 @@ namespace
             mesh{std::move(mesh_)},
             maybe_prop_block{std::move(maybe_prop_block_)},
             transform{transform_},
-            world_centroid{material.is_transparent() ? transform_point(transform_, centroid_of(mesh.bounds())) : Vec3{}},
+            world_centroid{transform_point(transform_, centroid_of(mesh.bounds()))},
             maybe_submesh_index{maybe_submesh_index_}
         {}
 
@@ -606,7 +606,7 @@ namespace
             mesh{std::move(mesh_)},
             maybe_prop_block{std::move(maybe_prop_block_)},
             transform{transform_},
-            world_centroid{material.is_transparent() ? transform_ * Vec4{centroid_of(mesh.bounds()), 1.0f} : Vec3{}},
+            world_centroid{transform_point(transform_, centroid_of(mesh.bounds()))},
             maybe_submesh_index{maybe_submesh_index_}
         {}
 
@@ -632,10 +632,9 @@ namespace
         std::optional<size_t> maybe_submesh_index;
     };
 
-    // returns true if the render object is opaque
     bool is_opaque(const RenderObject& ro)
     {
-        return !ro.material.is_transparent();
+        return not ro.material.is_transparent();
     }
 
     bool is_depth_tested(const RenderObject& ro)
@@ -1124,14 +1123,10 @@ namespace
         static_assert(num_options<TextureWrapMode>() == 3);
 
         switch (texture_wrap_mode) {
-        case TextureWrapMode::Repeat:
-            return GL_REPEAT;
-        case TextureWrapMode::Clamp:
-            return GL_CLAMP_TO_EDGE;
-        case TextureWrapMode::Mirror:
-            return GL_MIRRORED_REPEAT;
-        default:
-            return GL_REPEAT;
+        case TextureWrapMode::Repeat: return GL_REPEAT;
+        case TextureWrapMode::Clamp:  return GL_CLAMP_TO_EDGE;
+        case TextureWrapMode::Mirror: return GL_MIRRORED_REPEAT;
+        default:                      return GL_REPEAT;
         }
     }
 
@@ -1267,7 +1262,7 @@ public:
         texture_params_version_.reset();
     }
 
-    void set_pixel_data(CubemapFace face, std::span<const uint8_t> data)
+    void set_pixel_data(CubemapFace face, std::span<const uint8_t> channels_row_by_row)
     {
         const size_t face_index = to_index(face);
         const auto num_pixels_per_face = static_cast<size_t>(width_) * static_cast<size_t>(width_);
@@ -1276,10 +1271,10 @@ public:
         const size_t destination_data_end = destination_data_begin + num_bytes_per_face;
 
         OSC_ASSERT(face_index < num_options<CubemapFace>() && "invalid cubemap face passed to Cubemap::set_pixel_data");
-        OSC_ASSERT(data.size() == num_bytes_per_face && "incorrect amount of data passed to Cubemap::set_pixel_data: the data must match the dimensions and texture format of the cubemap");
+        OSC_ASSERT(channels_row_by_row.size() == num_bytes_per_face && "incorrect amount of data passed to Cubemap::set_pixel_data: the data must match the dimensions and texture format of the cubemap");
         OSC_ASSERT(destination_data_end <= data_.size() && "out of range assignment detected: this should be handled in the constructor");
 
-        rgs::copy(data, data_.begin() + destination_data_begin);
+        rgs::copy(channels_row_by_row, data_.begin() + destination_data_begin);
         data_version_.reset();
     }
 
@@ -1340,7 +1335,7 @@ private:
             );
         }
 
-        // generate mips (care: they can be uploaded to with graphics::copy_texture)
+        // generate mips (care: they can be uploaded to with `graphics::copy_texture`)
         glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 
         gl::bind_texture();
@@ -1393,9 +1388,9 @@ TextureWrapMode osc::Cubemap::wrap_mode() const
     return impl_->wrap_mode();
 }
 
-void osc::Cubemap::set_wrap_mode(TextureWrapMode wm)
+void osc::Cubemap::set_wrap_mode(TextureWrapMode wrap_mode)
 {
-    impl_.upd()->set_wrap_mode(wm);
+    impl_.upd()->set_wrap_mode(wrap_mode);
 }
 
 TextureWrapMode osc::Cubemap::wrap_mode_u() const
@@ -1403,9 +1398,9 @@ TextureWrapMode osc::Cubemap::wrap_mode_u() const
     return impl_->get_wrap_mode_u();
 }
 
-void osc::Cubemap::set_wrap_mode_u(TextureWrapMode wm)
+void osc::Cubemap::set_wrap_mode_u(TextureWrapMode wrap_mode_u)
 {
-    impl_.upd()->set_wrap_mode_u(wm);
+    impl_.upd()->set_wrap_mode_u(wrap_mode_u);
 }
 
 TextureWrapMode osc::Cubemap::wrap_mode_v() const
@@ -1413,9 +1408,9 @@ TextureWrapMode osc::Cubemap::wrap_mode_v() const
     return impl_->get_wrap_mode_v();
 }
 
-void osc::Cubemap::set_wrap_mode_v(TextureWrapMode wm)
+void osc::Cubemap::set_wrap_mode_v(TextureWrapMode wrap_mode_v)
 {
-    impl_.upd()->set_wrap_mode_v(wm);
+    impl_.upd()->set_wrap_mode_v(wrap_mode_v);
 }
 
 TextureWrapMode osc::Cubemap::wrap_mode_w() const
@@ -1423,9 +1418,9 @@ TextureWrapMode osc::Cubemap::wrap_mode_w() const
     return impl_->wrap_mode_w();
 }
 
-void osc::Cubemap::set_wrap_mode_w(TextureWrapMode wm)
+void osc::Cubemap::set_wrap_mode_w(TextureWrapMode wrap_mode_w)
 {
-    impl_.upd()->set_wrap_mode_w(wm);
+    impl_.upd()->set_wrap_mode_w(wrap_mode_w);
 }
 
 TextureFilterMode osc::Cubemap::filter_mode() const
@@ -1433,9 +1428,9 @@ TextureFilterMode osc::Cubemap::filter_mode() const
     return impl_->filter_mode();
 }
 
-void osc::Cubemap::set_filter_mode(TextureFilterMode fm)
+void osc::Cubemap::set_filter_mode(TextureFilterMode filter_mode)
 {
-    impl_.upd()->set_filter_mode(fm);
+    impl_.upd()->set_filter_mode(filter_mode);
 }
 
 TextureFormat osc::Cubemap::texture_format() const
@@ -1488,8 +1483,7 @@ namespace
                 const size_t pixel_begin = num_bytes_per_pixel * pixel;
 
                 Color color = Color::black();
-                for (size_t channel = 0; channel < num_channels; ++channel)
-                {
+                for (size_t channel = 0; channel < num_channels; ++channel) {
                     const size_t channel_begin = pixel_begin + channel*num_bytes_per_channel;
 
                     std::span<const uint8_t> channel_span{pixel_bytes.data() + channel_begin, sizeof(float)};
@@ -1626,8 +1620,7 @@ namespace
                 }
             }
         }
-        else
-        {
+        else {
             // upscale pixels to float32s and write the floats to the pixel buffer
             for (const Color32& color : colors) {
                 for (size_t channel = 0; channel < num_channels; ++channel) {
@@ -1643,13 +1636,13 @@ class osc::Texture2D::Impl final {
 public:
     Impl(
         Vec2i dimensions,
-        TextureFormat format,
+        TextureFormat texture_format,
         ColorSpace color_space,
         TextureWrapMode wrap_mode,
         TextureFilterMode filter_mode) :
 
         dimensions_{dimensions},
-        format_{format},
+        texture_format_{texture_format},
         color_space_{color_space},
         wrap_mode_u_{wrap_mode},
         wrap_mode_v_{wrap_mode},
@@ -1666,7 +1659,7 @@ public:
 
     TextureFormat texture_format() const
     {
-        return format_;
+        return texture_format_;
     }
 
     ColorSpace color_space() const
@@ -1733,24 +1726,24 @@ public:
 
     std::vector<Color> pixels() const
     {
-        return convert_pixel_bytes_to_color(pixel_data_, format_);
+        return convert_pixel_bytes_to_color(pixel_data_, texture_format_);
     }
 
     void set_pixels(std::span<const Color> pixels)
     {
-        OSC_ASSERT(std::ssize(pixels) == static_cast<ptrdiff_t>(dimensions_.x*dimensions_.y));
-        convert_colors_to_pixel_bytes(pixels, format_, pixel_data_);
+        OSC_ASSERT(ssize(pixels) == static_cast<ptrdiff_t>(dimensions_.x*dimensions_.y));
+        convert_colors_to_pixel_bytes(pixels, texture_format_, pixel_data_);
     }
 
     std::vector<Color32> pixels32() const
     {
-        return convert_pixel_bytes_to_color32(pixel_data_, format_);
+        return convert_pixel_bytes_to_color32(pixel_data_, texture_format_);
     }
 
     void set_pixels32(std::span<const Color32> pixels)
     {
-        OSC_ASSERT(std::ssize(pixels) == static_cast<ptrdiff_t>(dimensions_.x*dimensions_.y));
-        convert_color32s_to_pixel_bytes(pixels, format_, pixel_data_);
+        OSC_ASSERT(ssize(pixels) == static_cast<ptrdiff_t>(dimensions_.x*dimensions_.y));
+        convert_color32s_to_pixel_bytes(pixels, texture_format_, pixel_data_);
     }
 
     std::span<const uint8_t> pixel_data() const
@@ -1760,7 +1753,7 @@ public:
 
     void set_pixel_data(std::span<const uint8_t> channels_row_by_row)
     {
-        OSC_ASSERT(channels_row_by_row.size() == num_bytes_per_pixel_in(format_)*dimensions_.x*dimensions_.y && "incorrect number of bytes passed to Texture2D::set_pixel_data");
+        OSC_ASSERT(channels_row_by_row.size() == num_bytes_per_pixel_in(texture_format_)*dimensions_.x*dimensions_.y && "incorrect number of bytes passed to Texture2D::set_pixel_data");
         OSC_ASSERT(channels_row_by_row.size() == pixel_data_.size());
 
         rgs::copy(channels_row_by_row, pixel_data_.begin());
@@ -1777,8 +1770,7 @@ public:
 
         Texture2DOpenGLData& bufs = **maybe_opengl_data_;
 
-        if (bufs.texture_params_version != texture_params_version_)
-        {
+        if (bufs.texture_params_version != texture_params_version_) {
             update_opengl_texture_params(bufs);
         }
 
@@ -1790,11 +1782,11 @@ private:
     {
         *maybe_opengl_data_ = Texture2DOpenGLData{};
 
-        const size_t num_bytes_per_pixel = num_bytes_per_pixel_in(format_);
+        const size_t num_bytes_per_pixel = num_bytes_per_pixel_in(texture_format_);
         const size_t num_bytes_per_row = dimensions_.x * num_bytes_per_pixel;
-        const GLint unpack_alignment = opengl_unpack_alignment_of(format_);
-        const CPUDataType cpu_data_type = equivalent_cpu_datatype_of(format_);  // TextureFormat's datatype == CPU format's datatype for cubemaps
-        const CPUImageFormat cpu_channel_layout = equivalent_cpu_image_format_of(format_);  // TextureFormat's layout == CPU formats's layout for cubemaps
+        const GLint unpack_alignment = opengl_unpack_alignment_of(texture_format_);
+        const CPUDataType cpu_data_type = equivalent_cpu_datatype_of(texture_format_);  // TextureFormat's datatype == CPU format's datatype for cubemaps
+        const CPUImageFormat cpu_channel_layout = equivalent_cpu_image_format_of(texture_format_);  // TextureFormat's layout == CPU formats's layout for cubemaps
 
         static_assert(num_options<TextureFormat>() == 7, "careful here, glTexImage2D will not accept some formats (e.g. GL_RGBA16F) as the externally-provided format (must be GL_RGBA format with GL_HALF_FLOAT type)");
         OSC_ASSERT(num_bytes_per_row % unpack_alignment == 0 && "the memory alignment of each horizontal line in an OpenGL texture must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
@@ -1806,7 +1798,7 @@ private:
         gl::tex_image2D(
             GL_TEXTURE_2D,
             0,
-            opengl_internal_format_of(format_, color_space_),
+            opengl_internal_format_of(texture_format_, color_space_),
             dimensions_.x,
             dimensions_.y,
             0,
@@ -1833,25 +1825,25 @@ private:
     friend class GraphicsBackend;
 
     Vec2i dimensions_;
-    TextureFormat format_;
+    TextureFormat texture_format_;
     ColorSpace color_space_;
     TextureWrapMode wrap_mode_u_ = TextureWrapMode::Repeat;
     TextureWrapMode wrap_mode_v_ = TextureWrapMode::Repeat;
     TextureWrapMode wrap_mode_w_ = TextureWrapMode::Repeat;
     TextureFilterMode filter_mode_ = TextureFilterMode::Nearest;
-    std::vector<uint8_t> pixel_data_ = std::vector<uint8_t>(num_bytes_per_pixel_in(format_) * dimensions_.x * dimensions_.y, 0xff);
+    std::vector<uint8_t> pixel_data_ = std::vector<uint8_t>(num_bytes_per_pixel_in(texture_format_) * dimensions_.x * dimensions_.y, 0xff);
     UID texture_params_version_;
     DefaultConstructOnCopy<std::optional<Texture2DOpenGLData>> maybe_opengl_data_;
 };
 
-std::ostream& osc::operator<<(std::ostream& o, TextureWrapMode twm)
+std::ostream& osc::operator<<(std::ostream& o, TextureWrapMode wrap_mode)
 {
-    return o << c_texture_wrap_mode_strings.at(static_cast<size_t>(twm));
+    return o << c_texture_wrap_mode_strings.at(to_index(wrap_mode));
 }
 
-std::ostream& osc::operator<<(std::ostream& o, TextureFilterMode twm)
+std::ostream& osc::operator<<(std::ostream& o, TextureFilterMode filter_mode)
 {
-    return o << c_texture_filter_mode_strings.at(static_cast<size_t>(twm));
+    return o << c_texture_filter_mode_strings.at(to_index(filter_mode));
 }
 
 size_t osc::num_channels_in(TextureFormat format)
@@ -1864,14 +1856,14 @@ size_t osc::num_channels_in(TextureFormat format)
     return lut.at(to_index(format));
 }
 
-TextureChannelFormat osc::channel_format_of(TextureFormat f)
+TextureChannelFormat osc::channel_format_of(TextureFormat format)
 {
     constexpr auto lut = []<TextureFormat... Formats>(OptionList<TextureFormat, Formats...>)
     {
         return std::to_array({ TextureFormatTraits<Formats>::channel_format... });
     }(TextureFormatList{});
 
-    return lut.at(to_index(f));
+    return lut.at(to_index(format));
 }
 
 size_t osc::num_bytes_per_pixel_in(TextureFormat format)
@@ -1906,12 +1898,12 @@ size_t osc::num_bytes_per_channel_in(TextureChannelFormat channel_format)
 
 osc::Texture2D::Texture2D(
     Vec2i dimensions,
-    TextureFormat format,
+    TextureFormat texture_format,
     ColorSpace color_space,
     TextureWrapMode wrap_mode,
     TextureFilterMode filter_mode) :
 
-    m_Impl{make_cow<Impl>(dimensions, format, color_space, wrap_mode, filter_mode)}
+    m_Impl{make_cow<Impl>(dimensions, texture_format, color_space, wrap_mode, filter_mode)}
 {}
 
 Vec2i osc::Texture2D::dimensions() const
@@ -2059,7 +2051,7 @@ namespace
 
     constexpr CPUImageFormat equivalent_cpu_image_format_of(
         RenderBufferType type,
-        const RenderTextureDescriptor& desc)
+        const RenderTextureDescriptor& descriptor)
     {
         static_assert(num_options<RenderBufferType>() == 2);
         static_assert(num_options<DepthStencilFormat>() == 1);
@@ -2070,7 +2062,7 @@ namespace
             return CPUImageFormat::DepthStencil;
         }
         else {
-            switch (desc.color_format()) {
+            switch (descriptor.color_format()) {
             case RenderTextureFormat::Red8:        return CPUImageFormat::R8;
             case RenderTextureFormat::ARGB32:      return CPUImageFormat::RGBA;
             case RenderTextureFormat::RGFloat16:   return CPUImageFormat::RG;
@@ -2084,7 +2076,7 @@ namespace
 
     constexpr CPUDataType equivalent_cpu_datatype_of(
         RenderBufferType buffer_type,
-        const RenderTextureDescriptor& desc)
+        const RenderTextureDescriptor& descriptor)
     {
         static_assert(num_options<RenderBufferType>() == 2);
         static_assert(num_options<DepthStencilFormat>() == 1);
@@ -2095,7 +2087,7 @@ namespace
             return CPUDataType::UnsignedInt24_8;
         }
         else {
-            switch (desc.color_format()) {
+            switch (descriptor.color_format()) {
             case RenderTextureFormat::Red8:        return CPUDataType::UnsignedByte;
             case RenderTextureFormat::ARGB32:      return CPUDataType::UnsignedByte;
             case RenderTextureFormat::RGFloat16:   return CPUDataType::HalfFloat;
@@ -2134,14 +2126,14 @@ namespace
     }
 }
 
-std::ostream& osc::operator<<(std::ostream& o, RenderTextureFormat f)
+std::ostream& osc::operator<<(std::ostream& o, RenderTextureFormat render_texture_format)
 {
-    return o << c_render_texture_format_strings.at(static_cast<size_t>(f));
+    return o << c_render_texture_format_strings.at(to_index(render_texture_format));
 }
 
-std::ostream& osc::operator<<(std::ostream& o, DepthStencilFormat f)
+std::ostream& osc::operator<<(std::ostream& o, DepthStencilFormat depth_stencil_format)
 {
-    return o << c_depth_stencil_format_strings.at(static_cast<size_t>(f));
+    return o << c_depth_stencil_format_strings.at(to_index(depth_stencil_format));
 }
 
 osc::RenderTextureDescriptor::RenderTextureDescriptor(Vec2i dimensions) :
@@ -2229,10 +2221,10 @@ class osc::RenderBuffer::Impl final {
 public:
     Impl(
         const RenderTextureDescriptor& descriptor,
-        RenderBufferType type) :
+        RenderBufferType buffer_type) :
 
         descriptor_{descriptor},
-        buffer_type_{type}
+        buffer_type_{buffer_type}
     {
         OSC_ASSERT((dimensionality() != TextureDimensionality::Cube or dimensions().x == dimensions().y) && "cannot construct a Cube renderbuffer with non-square dimensions");
         OSC_ASSERT((dimensionality() != TextureDimensionality::Cube or anti_aliasing_level() == AntiAliasingLevel::none()) && "cannot construct a Cube renderbuffer that is anti-aliased (not supported by backends like OpenGL)");
@@ -2259,12 +2251,12 @@ public:
         return descriptor_.dimensions();
     }
 
-    void set_dimensions(Vec2i dims)
+    void set_dimensions(Vec2i new_dimensions)
     {
-        OSC_ASSERT((dimensionality() != TextureDimensionality::Cube or dims.x == dims.y) && "cannot set a cubemap to have non-square dimensions");
+        OSC_ASSERT((dimensionality() != TextureDimensionality::Cube or new_dimensions.x == new_dimensions.y) && "cannot set a cubemap to have non-square dimensions");
 
-        if (dims != dimensions()) {
-            descriptor_.set_dimensions(dims);
+        if (new_dimensions != dimensions()) {
+            descriptor_.set_dimensions(new_dimensions);
             maybe_opengl_data_->reset();
         }
     }
@@ -2369,12 +2361,12 @@ public:
         }
     }
 
-    void configure_texture(SingleSampledTexture& t)
+    void configure_texture(SingleSampledTexture& single_samped_texture)
     {
         const Vec2i dimensions = descriptor_.dimensions();
 
         // setup resolved texture
-        gl::bind_texture(t.texture2D);
+        gl::bind_texture(single_samped_texture.texture2D);
         gl::tex_image2D(
             GL_TEXTURE_2D,
             0,
@@ -2394,12 +2386,12 @@ public:
         gl::bind_texture();
     }
 
-    void configure_texture(MultisampledRBOAndResolvedTexture& data)
+    void configure_texture(MultisampledRBOAndResolvedTexture& multisampled_rbo_and_texture)
     {
         const Vec2i dimensions = descriptor_.dimensions();
 
         // setup multisampled RBO
-        gl::bind_renderbuffer(data.multisampled_rbo);
+        gl::bind_renderbuffer(multisampled_rbo_and_texture.multisampled_rbo);
         glRenderbufferStorageMultisample(
             GL_RENDERBUFFER,
             descriptor_.anti_aliasing_level().get_as<GLsizei>(),
@@ -2410,7 +2402,7 @@ public:
         gl::bind_renderbuffer();
 
         // setup resolved texture
-        gl::bind_texture(data.single_sampled_texture2D);
+        gl::bind_texture(multisampled_rbo_and_texture.single_sampled_texture2D);
         gl::tex_image2D(
             GL_TEXTURE_2D,
             0,
@@ -2430,12 +2422,12 @@ public:
         gl::bind_texture();
     }
 
-    void configure_texture(SingleSampledCubemap& t)
+    void configure_texture(SingleSampledCubemap& single_sampled_cubemap)
     {
         const Vec2i dimensions = descriptor_.dimensions();
 
         // setup resolved texture
-        gl::bind_texture(t.cubemap);
+        gl::bind_texture(single_sampled_cubemap.cubemap);
         for (int i = 0; i < 6; ++i)
         {
             gl::tex_image2D(
@@ -2470,10 +2462,10 @@ private:
 };
 
 osc::RenderBuffer::RenderBuffer(
-    const RenderTextureDescriptor& descriptor_,
-    RenderBufferType type_) :
+    const RenderTextureDescriptor& descriptor,
+    RenderBufferType buffer_type) :
 
-    impl_{std::make_unique<Impl>(descriptor_, type_)}
+    impl_{std::make_unique<Impl>(descriptor, buffer_type)}
 {}
 
 osc::RenderBuffer::~RenderBuffer() noexcept = default;
@@ -2627,9 +2619,9 @@ Vec2i osc::RenderTexture::dimensions() const
     return m_Impl->dimensions();
 }
 
-void osc::RenderTexture::set_dimensions(Vec2i d)
+void osc::RenderTexture::set_dimensions(Vec2i new_dimensions)
 {
-    m_Impl.upd()->set_dimensions(d);
+    m_Impl.upd()->set_dimensions(new_dimensions);
 }
 
 TextureDimensionality osc::RenderTexture::dimensionality() const
@@ -2746,17 +2738,17 @@ public:
         }
     }
 
-    std::string_view property_name(ptrdiff_t i) const
+    std::string_view property_name(ptrdiff_t pos) const
     {
         auto it = uniforms_.begin();
-        std::advance(it, i);
+        std::advance(it, pos);
         return it->first;
     }
 
-    ShaderPropertyType property_type(ptrdiff_t i) const
+    ShaderPropertyType property_type(ptrdiff_t pos) const
     {
         auto it = uniforms_.begin();
-        std::advance(it, i);
+        std::advance(it, pos);
         return it->second.shader_type;
     }
 
@@ -3215,8 +3207,7 @@ private:
         if (not value) {
             return std::nullopt;
         }
-        if (not std::holds_alternative<T>(*value))
-        {
+        if (not std::holds_alternative<T>(*value)) {
             return std::nullopt;
         }
         return TConverted{std::get<T>(*value)};
@@ -3616,8 +3607,7 @@ osc::MaterialPropertyBlock::MaterialPropertyBlock() :
         static const CopyOnUpdPtr<Impl> s_empty_property_block_impl = make_cow<Impl>();
         return s_empty_property_block_impl;
     }()}
-{
-}
+{}
 
 void osc::MaterialPropertyBlock::clear()
 {
@@ -3973,10 +3963,10 @@ namespace
         const VertexFormat& destination_format)
     {
         std::vector<VertexBufferAttributeReencoder> rv;
-        rv.reserve(destination_format.numAttributes());  // guess
+        rv.reserve(destination_format.num_attributes());  // guess
 
-        for (const auto destination_layout : destination_format.attributeLayouts()) {
-            if (const auto source_layout = source_format.attributeLayout(destination_layout.attribute())) {
+        for (const auto destination_layout : destination_format.attribute_layouts()) {
+            if (const auto source_layout = source_format.attribute_layout(destination_layout.attribute())) {
                 rv.push_back({
                     c_reencoder_lut.lookup(source_layout->format(), destination_layout.format()),
                     source_layout->offset(),
@@ -4117,28 +4107,28 @@ namespace
                 return tmp;
             }
 
-            AttributeValueIterator& operator+=(difference_type i)
+            AttributeValueIterator& operator+=(difference_type n)
             {
-                data_ += i*stride_;
+                data_ += n*stride_;
                 return *this;
             }
 
-            AttributeValueIterator operator+(difference_type i) const
+            AttributeValueIterator operator+(difference_type n) const
             {
                 auto copy = *this;
-                copy += i;
+                copy += n;
                 return copy;
             }
 
-            AttributeValueIterator& operator-=(difference_type i)
+            AttributeValueIterator& operator-=(difference_type n)
             {
-                data_ -= i*stride_;
+                data_ -= n*stride_;
             }
 
-            AttributeValueIterator operator-(difference_type i)
+            AttributeValueIterator operator-(difference_type n)
             {
                 auto copy = *this;
-                copy -= i;
+                copy -= n;
                 return copy;
             }
 
@@ -4147,9 +4137,9 @@ namespace
                 return (data_ - rhs.data_) / stride_;
             }
 
-            AttributeValueProxy<T, IsConst> operator[](difference_type n) const
+            AttributeValueProxy<T, IsConst> operator[](difference_type pos) const
             {
-                return *(*this + n);
+                return *(*this + pos);
             }
 
             bool operator<(const AttributeValueIterator& rhs) const
@@ -4215,29 +4205,29 @@ namespace
                 return {data_.data() + data_.size(), stride_, encoding_};
             }
 
-            value_type at(difference_type i) const
+            value_type at(difference_type pos) const
             {
-                return at(*this, i);
+                return at(*this, pos);
             }
 
-            value_type at(difference_type i)
+            value_type at(difference_type pos)
             {
-                return at(*this, i);
+                return at(*this, pos);
             }
 
-            value_type operator[](difference_type i) const
+            value_type operator[](difference_type pos) const
             {
-                return begin()[i];
+                return begin()[pos];
             }
         private:
             template<typename AttrValueRange>
-            static value_type at(AttrValueRange&& range, difference_type i)
+            static value_type at(AttrValueRange&& range, difference_type pos)
             {
                 const auto beg = range.begin();
-                if (i >= std::distance(beg, range.end())) {
+                if (pos >= std::distance(beg, range.end())) {
                     throw std::out_of_range{"an attribute value was out-of-range: this is usually because of out-of-range mesh indices"};
                 }
-                return beg[i];
+                return beg[pos];
             }
 
             std::span<Byte> data_{};
@@ -4267,7 +4257,7 @@ namespace
 
         size_t num_attributes() const
         {
-            return vertex_format_.numAttributes();
+            return vertex_format_.num_attributes();
         }
 
         size_t stride() const
@@ -4292,7 +4282,7 @@ namespace
 
         auto attribute_layouts() const
         {
-            return vertex_format_.attributeLayouts();
+            return vertex_format_.attribute_layouts();
         }
 
         bool has_attribute(VertexAttribute attribute) const
@@ -4303,7 +4293,7 @@ namespace
         template<UserFacingVertexData T>
         auto iter(VertexAttribute attribute) const
         {
-            if (const auto layout = vertex_format_.attributeLayout(attribute)) {
+            if (const auto layout = vertex_format_.attribute_layout(attribute)) {
                 std::span<const std::byte> offset_span{data_.data() + layout->offset(), data_.size()};
 
                 return AttributeValueRange<T, true>{
@@ -4320,7 +4310,7 @@ namespace
         template<UserFacingVertexData T>
         auto iter(VertexAttribute attribute)
         {
-            if (const auto layout = vertex_format_.attributeLayout(attribute)) {
+            if (const auto layout = vertex_format_.attribute_layout(attribute)) {
                 std::span<std::byte> offset_span{data_.data() + layout->offset(), data_.size()};
                 return AttributeValueRange<T, false>{
                     offset_span,
@@ -4336,7 +4326,7 @@ namespace
         template<UserFacingVertexData T>
         std::vector<T> read(VertexAttribute attribute) const
         {
-            auto range = iter<T>(attribute);
+            const auto range = iter<T>(attribute);
             return std::vector<T>(range.begin(), range.end());
         }
 
@@ -4383,10 +4373,10 @@ namespace
 
         template<UserFacingVertexData T, typename UnaryOperation>
         requires std::invocable<UnaryOperation, T>
-        void transform_attribute(VertexAttribute attribute, UnaryOperation f)
+        void transform_attribute(VertexAttribute attribute, UnaryOperation transformer)
         {
             for (auto&& proxy : iter<T>(attribute)) {
-                proxy = f(proxy);
+                proxy = transformer(proxy);
             }
         }
 
@@ -4479,30 +4469,30 @@ public:
         version_->reset();
     }
 
-    void transform_vertices(const std::function<Vec3(Vec3)>& f)
+    void transform_vertices(const std::function<Vec3(Vec3)>& transformer)
     {
-        vertex_buffer_.transform_attribute<Vec3>(VertexAttribute::Position, f);
+        vertex_buffer_.transform_attribute<Vec3>(VertexAttribute::Position, transformer);
 
         range_check_indices_and_recalculate_bounds();
         version_->reset();
     }
 
-    void transform_vertices(const Transform& t)
+    void transform_vertices(const Transform& transform)
     {
-        vertex_buffer_.transform_attribute<Vec3>(VertexAttribute::Position, [&t](Vec3 v)
+        vertex_buffer_.transform_attribute<Vec3>(VertexAttribute::Position, [&transform](Vec3 vertex)
         {
-            return t * v;
+            return transform * vertex;
         });
 
         range_check_indices_and_recalculate_bounds();
         version_->reset();
     }
 
-    void transform_vertices(const Mat4& m)
+    void transform_vertices(const Mat4& mat4)
     {
-        vertex_buffer_.transform_attribute<Vec3>(VertexAttribute::Position, [&m](Vec3 v)
+        vertex_buffer_.transform_attribute<Vec3>(VertexAttribute::Position, [&mat4](Vec3 vertex)
         {
-            return Vec3{m * Vec4{v, 1.0f}};
+            return transform_point(mat4, vertex);
         });
 
         range_check_indices_and_recalculate_bounds();
@@ -4526,9 +4516,9 @@ public:
         version_->reset();
     }
 
-    void transform_normals(const std::function<Vec3(Vec3)>& f)
+    void transform_normals(const std::function<Vec3(Vec3)>& transformer)
     {
-        vertex_buffer_.transform_attribute<Vec3>(VertexAttribute::Normal, f);
+        vertex_buffer_.transform_attribute<Vec3>(VertexAttribute::Normal, transformer);
 
         version_->reset();
     }
@@ -4550,9 +4540,9 @@ public:
         version_->reset();
     }
 
-    void transform_tex_coords(const std::function<Vec2(Vec2)>& f)
+    void transform_tex_coords(const std::function<Vec2(Vec2)>& transformer)
     {
-        vertex_buffer_.transform_attribute<Vec2>(VertexAttribute::TexCoord0, f);
+        vertex_buffer_.transform_attribute<Vec2>(VertexAttribute::TexCoord0, transformer);
 
         version_->reset();
     }
@@ -4609,15 +4599,15 @@ public:
         }
     }
 
-    void for_each_indexed_vert(const std::function<void(Vec3)>& f) const
+    void for_each_indexed_vert(const std::function<void(Vec3)>& callback) const
     {
         const auto positions = vertex_buffer_.iter<Vec3>(VertexAttribute::Position).begin();
         for (auto index : indices()) {
-            f(positions[index]);
+            callback(positions[index]);
         }
     }
 
-    void for_each_indexed_triangle(const std::function<void(Triangle)>& f) const
+    void for_each_indexed_triangle(const std::function<void(Triangle)>& callback) const
     {
         if (topology_ != MeshTopology::Triangles) {
             return;
@@ -4628,7 +4618,9 @@ public:
 
         const auto positions = vertex_buffer_.iter<Vec3>(VertexAttribute::Position).begin();
         for (size_t i = 0; i < steps; i += 3) {
-            f(Triangle{
+
+            // can use unchecked access here: `mesh_indices` are range-checked on writing
+            callback(Triangle{
                 positions[mesh_indices[i]],
                 positions[mesh_indices[i+1]],
                 positions[mesh_indices[i+2]],
@@ -4650,7 +4642,7 @@ public:
 
         const auto verts = vertex_buffer_.iter<Vec3>(VertexAttribute::Position);
 
-        // can use unchecked access here: `indices` are range-checked on writing
+        // can use unchecked access here: `mesh_indices` are range-checked on writing
         return Triangle{
             verts[mesh_indices[first_index_offset+0]],
             verts[mesh_indices[first_index_offset+1]],
@@ -4693,9 +4685,9 @@ public:
         submesh_descriptors_.push_back(descriptor);
     }
 
-    const SubMeshDescriptor& submesh_descriptor_at(size_t i) const
+    const SubMeshDescriptor& submesh_descriptor_at(size_t pos) const
     {
-        return submesh_descriptors_.at(i);
+        return submesh_descriptors_.at(pos);
     }
 
     void clear_submesh_descriptors()
@@ -4726,11 +4718,11 @@ public:
         return vertex_buffer_.stride();
     }
 
-    void set_vertex_buffer_data(std::span<const uint8_t> data, MeshUpdateFlags update_flags)
+    void set_vertex_buffer_data(std::span<const uint8_t> data, MeshUpdateFlags flags)
     {
         vertex_buffer_.set_data(std::as_bytes(data));
 
-        range_check_indices_and_recalculate_bounds(update_flags);
+        range_check_indices_and_recalculate_bounds(flags);
         version_->reset();
     }
 
@@ -4846,7 +4838,7 @@ public:
     {
         const SubMeshDescriptor descriptor = maybe_submesh_index ?
             submesh_descriptors_.at(*maybe_submesh_index) :         // draw the requested sub-mesh
-            SubMeshDescriptor{0, num_indices_, topology_};       // else: draw the entire mesh as a "sub mesh"
+            SubMeshDescriptor{0, num_indices_, topology_};          // else: draw the entire mesh as a "sub mesh"
 
         // convert mesh/descriptor data types into OpenGL-compatible formats
         const GLenum mode = to_opengl_topology_enum(descriptor.topology());
@@ -4967,7 +4959,7 @@ private:
         case VertexAttributeFormat::Float32x3: return GL_FLOAT;
         case VertexAttributeFormat::Float32x4: return GL_FLOAT;
         case VertexAttributeFormat::Unorm8x4:  return GL_UNSIGNED_BYTE;
-        default:                               throw std::runtime_error{"nyi"};
+        default:                               return GL_FLOAT;  // should never happen (static_assert)
         }
     }
 
@@ -4980,7 +4972,7 @@ private:
         case VertexAttributeFormat::Float32x3: return GL_FALSE;
         case VertexAttributeFormat::Float32x4: return GL_FALSE;
         case VertexAttributeFormat::Unorm8x4:  return GL_TRUE;
-        default:                               throw std::runtime_error{"nyi"};
+        default:                               return GL_FALSE;  // should never happen (static_assert)
         }
     }
 
@@ -5088,14 +5080,14 @@ std::vector<Vec3> osc::Mesh::vertices() const
     return m_Impl->vertices();
 }
 
-void osc::Mesh::set_vertices(std::span<const Vec3> verts)
+void osc::Mesh::set_vertices(std::span<const Vec3> vertices)
 {
-    m_Impl.upd()->set_vertices(verts);
+    m_Impl.upd()->set_vertices(vertices);
 }
 
-void osc::Mesh::transform_vertices(const std::function<Vec3(Vec3)>& f)
+void osc::Mesh::transform_vertices(const std::function<Vec3(Vec3)>& transformer)
 {
-    m_Impl.upd()->transform_vertices(f);
+    m_Impl.upd()->transform_vertices(transformer);
 }
 
 void osc::Mesh::transform_vertices(const Transform& transform)
@@ -5103,9 +5095,9 @@ void osc::Mesh::transform_vertices(const Transform& transform)
     m_Impl.upd()->transform_vertices(transform);
 }
 
-void osc::Mesh::transform_vertices(const Mat4& mat)
+void osc::Mesh::transform_vertices(const Mat4& mat4)
 {
-    m_Impl.upd()->transform_vertices(mat);
+    m_Impl.upd()->transform_vertices(mat4);
 }
 
 bool osc::Mesh::has_normals() const
@@ -5123,9 +5115,9 @@ void osc::Mesh::set_normals(std::span<const Vec3> normals)
     m_Impl.upd()->set_normals(normals);
 }
 
-void osc::Mesh::transform_normals(const std::function<Vec3(Vec3)>& f)
+void osc::Mesh::transform_normals(const std::function<Vec3(Vec3)>& transformer)
 {
-    m_Impl.upd()->transform_normals(f);
+    m_Impl.upd()->transform_normals(transformer);
 }
 
 bool osc::Mesh::has_tex_coords() const
@@ -5143,9 +5135,9 @@ void osc::Mesh::set_tex_coords(std::span<const Vec2> tex_coords)
     m_Impl.upd()->set_tex_coords(tex_coords);
 }
 
-void osc::Mesh::transform_tex_coords(const std::function<Vec2(Vec2)>& f)
+void osc::Mesh::transform_tex_coords(const std::function<Vec2(Vec2)>& transformer)
 {
-    m_Impl.upd()->transform_tex_coords(f);
+    m_Impl.upd()->transform_tex_coords(transformer);
 }
 
 std::vector<Color> osc::Mesh::colors() const
@@ -5183,14 +5175,14 @@ void osc::Mesh::set_indices(MeshIndicesView indices, MeshUpdateFlags flags)
     m_Impl.upd()->set_indices(indices, flags);
 }
 
-void osc::Mesh::for_each_indexed_vert(const std::function<void(Vec3)>& f) const
+void osc::Mesh::for_each_indexed_vert(const std::function<void(Vec3)>& callback) const
 {
-    m_Impl->for_each_indexed_vert(f);
+    m_Impl->for_each_indexed_vert(callback);
 }
 
-void osc::Mesh::for_each_indexed_triangle(const std::function<void(Triangle)>& f) const
+void osc::Mesh::for_each_indexed_triangle(const std::function<void(Triangle)>& callback) const
 {
-    m_Impl->for_each_indexed_triangle(f);
+    m_Impl->for_each_indexed_triangle(callback);
 }
 
 Triangle osc::Mesh::get_triangle_at(size_t first_index_offset) const
@@ -5223,9 +5215,9 @@ void osc::Mesh::push_submesh_descriptor(const SubMeshDescriptor& descriptor)
     m_Impl.upd()->push_submesh_descriptor(descriptor);
 }
 
-const SubMeshDescriptor& osc::Mesh::submesh_descriptor_at(size_t i) const
+const SubMeshDescriptor& osc::Mesh::submesh_descriptor_at(size_t pos) const
 {
-    return m_Impl->submesh_descriptor_at(i);
+    return m_Impl->submesh_descriptor_at(pos);
 }
 
 void osc::Mesh::clear_submesh_descriptors()
@@ -5304,12 +5296,12 @@ public:
         background_color_ = color;
     }
 
-    CameraProjection camera_projection() const
+    CameraProjection projection() const
     {
         return camera_projection_;
     }
 
-    void set_camera_projection(CameraProjection projection)
+    void set_projection(CameraProjection projection)
     {
         camera_projection_ = projection;
     }
@@ -5586,14 +5578,14 @@ void osc::Camera::set_background_color(const Color& color)
     impl_.upd()->set_background_color(color);
 }
 
-CameraProjection osc::Camera::camera_projection() const
+CameraProjection osc::Camera::projection() const
 {
-    return impl_->camera_projection();
+    return impl_->projection();
 }
 
-void osc::Camera::set_camera_projection(CameraProjection camera_projection)
+void osc::Camera::set_projection(CameraProjection camera_projection)
 {
-    impl_.upd()->set_camera_projection(camera_projection);
+    impl_.upd()->set_projection(camera_projection);
 }
 
 float osc::Camera::orthographic_size() const
@@ -5758,7 +5750,7 @@ void osc::Camera::render_to(RenderTarget& render_target)
 
 std::ostream& osc::operator<<(std::ostream& o, const Camera& camera)
 {
-    return o << "Camera(position = " << camera.position() << ", direction = " << camera.direction() << ", projection = " << camera.camera_projection() << ')';
+    return o << "Camera(position = " << camera.position() << ", direction = " << camera.direction() << ", projection = " << camera.projection() << ')';
 }
 
 bool osc::operator==(const Camera& lhs, const Camera& rhs)
@@ -5833,7 +5825,7 @@ namespace
 
         for (const auto& capability : c_required_opengl_capabilities) {
             glEnable(capability.id);
-            if (!glIsEnabled(capability.id)) {
+            if (not glIsEnabled(capability.id)) {
                 log_warn("failed to enable %s: this may cause rendering issues", capability.label.c_str());
             }
         }
@@ -6684,9 +6676,8 @@ void osc::GraphicsBackend::try_bind_material_value_to_shader_element(
     case variant_index<MaterialValue, RenderTexture>():
     {
         static_assert(num_options<TextureDimensionality>() == 2);
-        std::visit(Overload
-            {
-                [&texture_slot, &shader_element](SingleSampledTexture& sst)
+        std::visit(Overload{
+            [&texture_slot, &shader_element](SingleSampledTexture& sst)
             {
                 gl::active_texture(GL_TEXTURE0 + texture_slot);
                 gl::bind_texture(sst.texture2D);
@@ -6710,7 +6701,7 @@ void osc::GraphicsBackend::try_bind_material_value_to_shader_element(
                 gl::set_uniform(u, texture_slot);
                 ++texture_slot;
             },
-            }, const_cast<RenderTexture::Impl&>(*std::get<RenderTexture>(material_value).m_Impl).getColorRenderBufferData());
+        }, const_cast<RenderTexture::Impl&>(*std::get<RenderTexture>(material_value).m_Impl).getColorRenderBufferData());
 
         break;
     }
@@ -7312,8 +7303,7 @@ void osc::GraphicsBackend::resolve_render_buffers(RenderTarget& render_target)
         }
 
         bool can_resolve_buffer = false;  // changes if the underlying buffer data is resolve-able
-        std::visit(Overload
-        {
+        std::visit(Overload{
             [](SingleSampledTexture&)
             {
                 // don't resolve: it's single-sampled
@@ -7573,8 +7563,7 @@ void osc::GraphicsBackend::copy_texture(
     // create a source (read) framebuffer for blitting from the source render texture
     gl::FrameBuffer read_fbo;
     gl::bind_framebuffer(GL_READ_FRAMEBUFFER, read_fbo);
-    std::visit(Overload  // attach source texture depending on rendertexture's type
-    {
+    std::visit(Overload{  // attach source texture depending on rendertexture's type
         [](SingleSampledTexture& t)
         {
             gl::framebuffer_texture2D(

@@ -32,14 +32,14 @@ namespace osc
         Color background_color() const;
         void set_background_color(const Color&);
 
-        CameraProjection camera_projection() const;
-        void set_camera_projection(CameraProjection);
+        CameraProjection projection() const;
+        void set_projection(CameraProjection);
 
-        // only used if CameraProjection == Orthographic
+        // only used if `projection() == CameraProjection::Orthographic`
         float orthographic_size() const;
         void set_orthographic_size(float);
 
-        // only used if CameraProjection == Perspective
+        // only used if `projection() == CameraProjection::Perspective`
         Radians vertical_fov() const;
         void set_vertical_fov(Radians);
 
@@ -80,7 +80,7 @@ namespace osc
         // careful: the camera doesn't *store* a direction vector - it assumes the direction is along -Z,
         // and that +Y is "upwards" and figures out how to rotate from that to your desired direction
         //
-        // if you want to "roll" the camera (i.e. Y isn't upwards) then use `setRotation`
+        // if you want to "roll" the camera (i.e. Y isn't upwards) then use `set_rotation`
         Vec3 direction() const;
         void set_direction(const Vec3&);
 

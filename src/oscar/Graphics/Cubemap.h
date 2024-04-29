@@ -17,7 +17,7 @@ namespace osc
         int32_t width() const;
         TextureFormat texture_format() const;
 
-        TextureWrapMode wrap_mode() const;  // same as wrap_mode_u
+        TextureWrapMode wrap_mode() const;  // same as `wrap_mode_u`
         void set_wrap_mode(TextureWrapMode);  // sets all axes
         TextureWrapMode wrap_mode_u() const;
         void set_wrap_mode_u(TextureWrapMode);
@@ -29,7 +29,7 @@ namespace osc
         TextureFilterMode filter_mode() const;
         void set_filter_mode(TextureFilterMode);
 
-        // `data` must match the channel layout, bytes per channel, and
+        // the provided bytes must match the channel layout, bytes per channel, and
         // width*height of the cubemap, or an exception will be thrown
         void set_pixel_data(CubemapFace, std::span<const uint8_t>);
 

@@ -181,8 +181,8 @@ TEST(VertexFormat, AttributeLayoutReturnsNulloptForNonExistentAttribute)
         {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
     };
 
-    ASSERT_EQ(f.attributeLayout(VertexAttribute::Color), std::nullopt);
-    ASSERT_EQ(f.attributeLayout(VertexAttribute::Tangent), std::nullopt);
+    ASSERT_EQ(f.attribute_layout(VertexAttribute::Color), std::nullopt);
+    ASSERT_EQ(f.attribute_layout(VertexAttribute::Tangent), std::nullopt);
 }
 
 TEST(VertexFormat, AttributeLayoutReturnsExpectedAnswersForExistentAttribute)
@@ -196,9 +196,9 @@ TEST(VertexFormat, AttributeLayoutReturnsExpectedAnswersForExistentAttribute)
 
     using Layout = VertexFormat::VertexAttributeLayout;
 
-    ASSERT_EQ(f.attributeLayout(VertexAttribute::Position), Layout(VertexAttributeDescriptor(VertexAttribute::Position, VertexAttributeFormat::Float32x3), 0));
-    ASSERT_EQ(f.attributeLayout(VertexAttribute::Normal), Layout(VertexAttributeDescriptor(VertexAttribute::Normal, VertexAttributeFormat::Unorm8x4), 3*sizeof(float)));
-    ASSERT_EQ(f.attributeLayout(VertexAttribute::TexCoord0), Layout(VertexAttributeDescriptor(VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2), 3*sizeof(float)+4));
+    ASSERT_EQ(f.attribute_layout(VertexAttribute::Position), Layout(VertexAttributeDescriptor(VertexAttribute::Position, VertexAttributeFormat::Float32x3), 0));
+    ASSERT_EQ(f.attribute_layout(VertexAttribute::Normal), Layout(VertexAttributeDescriptor(VertexAttribute::Normal, VertexAttributeFormat::Unorm8x4), 3*sizeof(float)));
+    ASSERT_EQ(f.attribute_layout(VertexAttribute::TexCoord0), Layout(VertexAttributeDescriptor(VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2), 3*sizeof(float)+4));
 }
 
 TEST(VertexFormat, AttributeLayoutsReturnsProvidedAttributeDescriptionsWithOffsets)
@@ -225,7 +225,7 @@ TEST(VertexFormat, AttributeLayoutsReturnsProvidedAttributeDescriptionsWithOffse
     };
 
 
-    ASSERT_TRUE(equal(f.attributeLayouts(), expected));
+    ASSERT_TRUE(equal(f.attribute_layouts(), expected));
 }
 
 TEST(VertexFormat, InsertDoesNothingIfAssigningNonPositionAttributeIfNoPositionAttributeIsAvailable)

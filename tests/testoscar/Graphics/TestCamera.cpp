@@ -161,13 +161,13 @@ TEST(Camera, SetClearFlagsWorksAsExpected)
 TEST(Camera, GetCameraProjectionReturnsProject)
 {
     Camera camera;
-    ASSERT_EQ(camera.camera_projection(), CameraProjection::Perspective);
+    ASSERT_EQ(camera.projection(), CameraProjection::Perspective);
 }
 
 TEST(Camera, CanSetCameraProjection)
 {
     Camera camera;
-    camera.set_camera_projection(CameraProjection::Orthographic);
+    camera.set_projection(CameraProjection::Orthographic);
 }
 
 TEST(Camera, SetCameraProjectionMakesGetCameraProjectionReturnSetProjection)
@@ -175,11 +175,11 @@ TEST(Camera, SetCameraProjectionMakesGetCameraProjectionReturnSetProjection)
     Camera camera;
     CameraProjection proj = CameraProjection::Orthographic;
 
-    ASSERT_NE(camera.camera_projection(), proj);
+    ASSERT_NE(camera.projection(), proj);
 
-    camera.set_camera_projection(proj);
+    camera.set_projection(proj);
 
-    ASSERT_EQ(camera.camera_projection(), proj);
+    ASSERT_EQ(camera.projection(), proj);
 }
 
 TEST(Camera, SetCameraProjectionMakesCameraCompareNotEqual)
@@ -188,9 +188,9 @@ TEST(Camera, SetCameraProjectionMakesCameraCompareNotEqual)
     Camera copy{camera};
     CameraProjection proj = CameraProjection::Orthographic;
 
-    ASSERT_NE(copy.camera_projection(), proj);
+    ASSERT_NE(copy.projection(), proj);
 
-    copy.set_camera_projection(proj);
+    copy.set_projection(proj);
 
     ASSERT_NE(camera, copy);
 }
@@ -247,7 +247,7 @@ TEST(Camera, SetDirectionToDifferentDirectionGivesAccurateEnoughResults)
 TEST(Camera, GetViewMatrixReturnsViewMatrixBasedOnPositonDirectionAndUp)
 {
     Camera camera;
-    camera.set_camera_projection(CameraProjection::Orthographic);
+    camera.set_projection(CameraProjection::Orthographic);
     camera.set_position({0.0f, 0.0f, 0.0f});
 
     Mat4 viewMatrix = camera.view_matrix();
@@ -261,7 +261,7 @@ TEST(Camera, SetViewMatrixOverrideSetsANewViewMatrixThatCanBeRetrievedWithGetVie
     Camera camera;
 
     // these shouldn't matter - they're overridden
-    camera.set_camera_projection(CameraProjection::Orthographic);
+    camera.set_projection(CameraProjection::Orthographic);
     camera.set_position({7.0f, 5.0f, -3.0f});
 
     Mat4 viewMatrix = identity<Mat4>();
@@ -292,7 +292,7 @@ TEST(Camera, SetViewMatrixOverrideNulloptResetsTheViewMatrixToUsingStandardCamer
 TEST(Camera, GetProjectionMatrixReturnsProjectionMatrixBasedOnPositonDirectionAndUp)
 {
     Camera camera;
-    camera.set_camera_projection(CameraProjection::Orthographic);
+    camera.set_projection(CameraProjection::Orthographic);
     camera.set_position({0.0f, 0.0f, 0.0f});
 
     Mat4 mtx = camera.projection_matrix(1.0f);
@@ -310,7 +310,7 @@ TEST(Camera, SetProjectionMatrixOverrideSetsANewProjectionMatrixThatCanBeRetriev
     Camera camera;
 
     // these shouldn't matter - they're overridden
-    camera.set_camera_projection(CameraProjection::Orthographic);
+    camera.set_projection(CameraProjection::Orthographic);
     camera.set_position({7.0f, 5.0f, -3.0f});
 
     Mat4 ProjectionMatrix = identity<Mat4>();

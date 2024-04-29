@@ -33,7 +33,7 @@ namespace osc
         {}
 
         constexpr Unorm8(float normalized_value) :
-            value_{toNormalizedUint8(normalized_value)}
+            value_{to_normalized_uint8(normalized_value)}
         {}
 
         friend auto operator<=>(const Unorm8&, const Unorm8&) = default;
@@ -63,7 +63,7 @@ namespace osc
             return static_cast<std::byte>(value_);
         }
     private:
-        static constexpr uint8_t toNormalizedUint8(float v)
+        static constexpr uint8_t to_normalized_uint8(float v)
         {
             // care: NaN should return 0.0f
             const float saturated = v > 0.0f ? (v < 1.0f ? v : 1.0f) : 0.0f;

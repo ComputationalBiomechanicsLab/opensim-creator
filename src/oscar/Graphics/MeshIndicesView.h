@@ -59,18 +59,18 @@ namespace osc
                 return copy;
             }
 
-            Iterator& operator+=(difference_type v)
+            Iterator& operator+=(difference_type n)
             {
                 std::visit(Overload{
-                    [v](auto& ptr) { ptr += v; }
+                    [n](auto& ptr) { ptr += n; }
                 }, ptr_);
                 return *this;
             }
 
-            value_type operator[](difference_type v) const
+            value_type operator[](difference_type pos) const
             {
                 return std::visit(Overload{
-                    [v](const auto* ptr) { return static_cast<value_type>(ptr[v]); }
+                    [pos](const auto* ptr) { return static_cast<value_type>(ptr[pos]); }
                 }, ptr_);
             }
         private:

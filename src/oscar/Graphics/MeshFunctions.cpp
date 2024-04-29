@@ -80,7 +80,7 @@ std::vector<Vec4> osc::calc_tangent_vectors(
     // - every time a tangent vector is computed:
     //     - accumulate a new average: `tangents[i] = (weights[i]*tangents[i] + new_tangent)/weights[i]+1;`
     //     - increment weight: `weights[i]++`
-    rv.assign(vertices.size(), {0.0f, 0.0f, 0.0f, 0.0f});
+    rv.assign(vertices.size(), Vec4{});
     std::vector<uint16_t> weights(vertices.size(), 0);
     const auto accumulate_tangent = [&rv, &weights](auto i, const Vec4& new_tangent)
     {
@@ -152,7 +152,7 @@ Vec3 osc::mass_center_of(const Mesh& mesh)
     // volume that's *way* off
 
     if (mesh.topology() != MeshTopology::Triangles or mesh.num_vertices() < 3) {
-        return {0.0f, 0.0f, 0.0f};
+        return Vec3{};
     }
 
     double total_volume = 0.0f;

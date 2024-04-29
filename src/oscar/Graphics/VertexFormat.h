@@ -2,6 +2,8 @@
 
 #include <oscar/Graphics/VertexAttribute.h>
 #include <oscar/Graphics/VertexAttributeDescriptor.h>
+#include <oscar/Shims/Cpp23/ranges.h>
+#include <oscar/Utils/Algorithms.h>
 
 #include <cstddef>
 #include <initializer_list>
@@ -37,21 +39,23 @@ namespace osc
             using reference = value_type;
             using iterator_category = std::input_iterator_tag;
 
-            explicit VertexAttributeLayoutIterator(
-                std::vector<VertexAttributeDescriptor>::const_iterator iter_) :
+            VertexAttributeLayoutIterator() = default;  // to satisfy `std::ranges::range`
 
-                m_Iter{iter_}
+            explicit VertexAttributeLayoutIterator(
+                std::vector<VertexAttributeDescriptor>::const_iterator iter) :
+
+                iter_{iter}
             {}
 
             friend bool operator==(const VertexAttributeLayoutIterator& lhs, const VertexAttributeLayoutIterator& rhs)
             {
-                return lhs.m_Iter == rhs.m_Iter;
+                return lhs.iter_ == rhs.iter_;
             }
 
             VertexAttributeLayoutIterator& operator++()
             {
-                offset_ += m_Iter->stride();
-                ++m_Iter;
+                offset_ += iter_->stride();
+                ++iter_;
                 return *this;
             }
 
@@ -64,32 +68,36 @@ namespace osc
 
             reference operator*() const
             {
-                return VertexAttributeLayout{*m_Iter, offset_};
+                return VertexAttributeLayout{*iter_, offset_};
             }
         private:
             size_t offset_ = 0;
-            std::vector<VertexAttributeDescriptor>::const_iterator m_Iter;
+            std::vector<VertexAttributeDescriptor>::const_iterator iter_{};
         };
 
         // C++20 ranges support for `VertexAttributeLayoutIterator`
         class VertexAttributeLayoutRange final {
         public:
+            using value_type = VertexAttributeLayout;
+            using iterator = VertexAttributeLayoutIterator;
+            using const_iterator = VertexAttributeLayoutIterator;
+
             explicit VertexAttributeLayoutRange(
                 const std::vector<VertexAttributeDescriptor>& descriptions) :
                 descriptions_{&descriptions}
             {}
 
-            VertexAttributeLayoutIterator begin() const
+            const_iterator begin() const
             {
                 return VertexAttributeLayoutIterator{descriptions_->begin()};
             }
 
-            VertexAttributeLayoutIterator end() const
+            const_iterator end() const
             {
                 return VertexAttributeLayoutIterator{descriptions_->end()};
             }
         private:
-            const std::vector<VertexAttributeDescriptor>* descriptions_;
+            const std::vector<VertexAttributeDescriptor>* descriptions_ = nullptr;
         };
 
         // constructs an "empty" format
@@ -97,8 +105,8 @@ namespace osc
 
         // attribute descriptions must:
         //
-        // - have unique `VertexAttribute`s
-        // - be provided in the same order as `VertexAttribute` (e.g. `Position`, then `Normal`, then `Color`, etc.)
+        // - have at least a `VertexAttribute::Position`
+        // - all be unique
         VertexFormat(std::initializer_list<VertexAttributeDescriptor>);
 
         friend bool operator==(const VertexFormat&, const VertexFormat&) = default;
@@ -110,37 +118,27 @@ namespace osc
 
         [[nodiscard]] bool empty() const
         {
-            return m_AttributeDescriptions.empty();
+            return attribute_descriptions_.empty();
         }
 
-        bool contains(VertexAttribute attr) const
+        bool contains(VertexAttribute attribute) const
         {
-            for (const auto& desc : m_AttributeDescriptions) {
-                if (desc.attribute() == attr) {
-                    return true;
-                }
-            }
-            return false;
+            return cpp23::contains(attribute_descriptions_, attribute, &VertexAttributeDescriptor::attribute);
         }
 
-        size_t numAttributes() const
+        size_t num_attributes() const
         {
-            return m_AttributeDescriptions.size();
+            return attribute_descriptions_.size();
         }
 
-        VertexAttributeLayoutRange attributeLayouts() const
+        VertexAttributeLayoutRange attribute_layouts() const
         {
-            return VertexAttributeLayoutRange{m_AttributeDescriptions};
+            return VertexAttributeLayoutRange{attribute_descriptions_};
         }
 
-        std::optional<VertexAttributeLayout> attributeLayout(VertexAttribute attr) const
+        std::optional<VertexAttributeLayout> attribute_layout(VertexAttribute attribute) const
         {
-            for (VertexAttributeLayout l : attributeLayouts()) {
-                if (l.attribute() == attr) {
-                    return l;
-                }
-            }
-            return std::nullopt;
+            return find_or_optional(attribute_layouts(), attribute, &VertexAttributeLayout::attribute);
         }
 
         size_t stride() const
@@ -153,7 +151,7 @@ namespace osc
     private:
         size_t calc_stride() const;
 
-        std::vector<VertexAttributeDescriptor> m_AttributeDescriptions;
+        std::vector<VertexAttributeDescriptor> attribute_descriptions_;
         size_t stride_ = 0;
     };
 }

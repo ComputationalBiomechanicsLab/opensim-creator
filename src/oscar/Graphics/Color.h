@@ -300,7 +300,7 @@ namespace osc
     constexpr const float&& get(const Color&& c) { return std::move(c[I]); }
 }
 
-// define compile-time size for Color (same as std::array, std::tuple, Vec, etc.)
+// define compile-time size for Color (same as `std::array`, `std::tuple`, `osc::Vec`, etc.)
 template<>
 struct std::tuple_size<osc::Color> {
     static inline constexpr size_t value = 4;

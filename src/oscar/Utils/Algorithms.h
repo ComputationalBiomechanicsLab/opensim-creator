@@ -68,6 +68,20 @@ namespace osc
         }
     }
 
+    template<
+        std::ranges::input_range R,
+        typename T,
+        typename Proj = std::identity
+    >
+    requires
+        std::indirect_binary_predicate<std::ranges::equal_to, std::projected<std::ranges::iterator_t<R>, Proj>, const T*> and
+        (not AssociativeContainer<R>)
+    std::optional<typename R::value_type> find_or_optional(R&& r, const T& value, Proj proj = {})
+    {
+        const auto it = std::ranges::find(r, value, std::ref(proj));
+        return it != std::ranges::end(r) ? std::optional<typename R::value_type>{*it} : std::nullopt;
+    }
+
     // osc algorithm: returns a `std::optional<T>` containing the value located at `key`, or `std::nullopt` if no such element exists in `container`
     template<AssociativeContainer T, typename Key>
     std::optional<typename T::mapped_type> find_or_optional(const T& container, const Key& key)

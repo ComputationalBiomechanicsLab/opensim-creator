@@ -58,7 +58,7 @@ namespace osc::graphics
 
     // assigns the source RenderTexture to the texture uniform "uTexture"
     //
-    // (can be sampler2D or samplerCube, depending on the source RenderTexture)
+    // (the glsl uniform may be `sampler2D` or `samplerCube`, depending on the source `RenderTexture`)
     void blit_to_screen(
         const RenderTexture&,
         const Rect&,

@@ -28,7 +28,7 @@ namespace osc
     // returns tangent vectors for the given (presumed, mesh) data
     //
     // the 4th (w) component of each vector indicates the flip direction
-    // of the corresponding bitangent vector (i.e. bitangent = cross(normal, tangent) * w)
+    // of the corresponding bitangent vector (i.e. `bitangent = cross(normal, tangent) * w`)
     std::vector<Vec4> calc_tangent_vectors(
         const MeshTopology&,
         std::span<const Vec3> vertices,

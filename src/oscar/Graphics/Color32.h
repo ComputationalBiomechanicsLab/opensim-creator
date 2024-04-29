@@ -10,7 +10,7 @@
 
 namespace osc
 {
-    // Representation of an LDR RGBA color as four Unorm8 bytes. The color
+    // Representation of an LDR RGBA color as four `Unorm8` bytes. The color
     // space of the color isn't prescribed, but is usually sRGB.
     struct alignas(alignof(uint32_t)) Color32 final {
 
