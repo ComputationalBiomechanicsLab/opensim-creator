@@ -154,13 +154,13 @@ private:
     {
         OpenSim::Model const& model = m_Uum->getModel();
 
-        bool hasName = !m_Name.empty();
-        bool allSocketsAssigned = rgs::all_of(m_SocketConnecteePaths, std::bind_front(ContainsComponent, model));
-        bool hasEnoughPathPoints =
-            dynamic_cast<OpenSim::PathActuator const*>(m_Proto.get()) == nullptr ||
+        bool const hasName = !m_Name.empty();
+        bool const allSocketsAssigned = rgs::all_of(m_SocketConnecteePaths, std::bind_front(ContainsComponent, std::cref(model)));
+        bool const hasEnoughPathPoints =
+            dynamic_cast<OpenSim::PathActuator const*>(m_Proto.get()) == nullptr or
             m_PathPoints.size() >= 2;
 
-        return hasName && allSocketsAssigned && hasEnoughPathPoints;
+        return hasName and allSocketsAssigned and hasEnoughPathPoints;
     }
 
     void drawNameEditor()

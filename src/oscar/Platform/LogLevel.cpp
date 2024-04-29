@@ -38,7 +38,6 @@ CStringView osc::to_cstringview(LogLevel level)
 std::optional<LogLevel> osc::try_parse_as_log_level(std::string_view v)
 {
     const auto it = rgs::find_if(c_log_level_strings, std::bind_front(is_equal_case_insensitive, v));
-
     if (it == c_log_level_strings.end()) {
         return std::nullopt;
     }
