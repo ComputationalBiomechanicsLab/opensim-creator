@@ -5,6 +5,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- MacOS is now built using the `macos-13` (Ventura) GitHub Action runner, which means that OSC
+  will only work on Ventura or newer
 - Right-clicking a 2D output plot in the simulator tab now shows a context menu with the option to
   export the plot to a CSV or stop watching the output (#841)
 - Fixed the `Save All` button only showing in the output plots tab if any of the plots happens to be
@@ -33,9 +35,10 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   showing property values (similar to the editor tab), followed by a toggleable outputs section (#838)
 - Fixed a bug in the `Selection Details` panel where drawing too many output plots would cause
   drawing to fail
-- MacOS is now built using the `macos-13` (Ventura) GitHub Action runner, which means that OSC
-  will only work on Ventura or newer
 - `README.md` now explicitly mentions that a C++20 compiler is required to build the project
+- Internal: The project now sucessfully builds with Visual Studio 2022, XCode-15, `clang++-11`,
+  `gcc-12`, and emsdk (3.1.58 - `oscar` only)
+- Internal: `std::ranges` were rolled out code-base wide. Now-unused OSC shims were droppped.
 
 ## [0.5.11] - 2024/04/04
 
