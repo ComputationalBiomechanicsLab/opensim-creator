@@ -586,8 +586,9 @@ std::vector<OpenSim::AbstractSocket const*> osc::GetAllSockets(OpenSim::Componen
 namespace
 {
     enum class GraphEdgeType { ParentChild, Socket };
+
     struct GraphEdge final {
-        friend auto operator<=>(GraphEdge const&, GraphEdge const&) = default;
+        friend auto operator<=>(GraphEdge const&, GraphEdge const&) = default;  // NOLINT(hicpp-use-nullptr,modernize-use-nullptr)
 
         std::string sourceAbsPath;
         std::string destinationAbsPath;
