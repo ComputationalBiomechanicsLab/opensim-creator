@@ -658,7 +658,7 @@ namespace
         return normal_matrix4(ro.transform);
     }
 
-    Vec3 const& worldspace_centroid(const RenderObject& ro)
+    const Vec3& worldspace_centroid(const RenderObject& ro)
     {
         return ro.world_centroid;
     }
@@ -1443,9 +1443,9 @@ TextureFormat osc::Cubemap::texture_format() const
     return impl_->texture_format();
 }
 
-void osc::Cubemap::set_pixel_data(CubemapFace face, std::span<const uint8_t> channelsRowByRow)
+void osc::Cubemap::set_pixel_data(CubemapFace face, std::span<const uint8_t> channels_row_by_row)
 {
-    impl_.upd()->set_pixel_data(face, channelsRowByRow);
+    impl_.upd()->set_pixel_data(face, channels_row_by_row);
 }
 
 namespace
@@ -1631,8 +1631,8 @@ namespace
             // upscale pixels to float32s and write the floats to the pixel buffer
             for (const Color32& color : colors) {
                 for (size_t channel = 0; channel < num_channels; ++channel) {
-                    const float pixelFloatVal = Unorm8{color[channel]}.normalized_value();
-                    push_as_bytes(pixelFloatVal, pixel_data_out);
+                    const float pixel_float_value = Unorm8{color[channel]}.normalized_value();
+                    push_as_bytes(pixel_float_value, pixel_data_out);
                 }
             }
         }
@@ -1758,12 +1758,12 @@ public:
         return pixel_data_;
     }
 
-    void set_pixel_data(std::span<const uint8_t> pixelData)
+    void set_pixel_data(std::span<const uint8_t> channels_row_by_row)
     {
-        OSC_ASSERT(pixelData.size() == num_bytes_per_pixel_in(format_)*dimensions_.x*dimensions_.y && "incorrect number of bytes passed to Texture2D::set_pixel_data");
-        OSC_ASSERT(pixelData.size() == pixel_data_.size());
+        OSC_ASSERT(channels_row_by_row.size() == num_bytes_per_pixel_in(format_)*dimensions_.x*dimensions_.y && "incorrect number of bytes passed to Texture2D::set_pixel_data");
+        OSC_ASSERT(channels_row_by_row.size() == pixel_data_.size());
 
-        rgs::copy(pixelData, pixel_data_.begin());
+        rgs::copy(channels_row_by_row, pixel_data_.begin());
     }
 
     // non PIMPL method
@@ -2004,9 +2004,9 @@ std::span<const uint8_t> osc::Texture2D::pixel_data() const
     return m_Impl->pixel_data();
 }
 
-void osc::Texture2D::set_pixel_data(std::span<const uint8_t> pixel_data)
+void osc::Texture2D::set_pixel_data(std::span<const uint8_t> channels_row_by_row)
 {
-    m_Impl.upd()->set_pixel_data(pixel_data);
+    m_Impl.upd()->set_pixel_data(channels_row_by_row);
 }
 
 std::ostream& osc::operator<<(std::ostream& o, const Texture2D&)
@@ -2219,7 +2219,7 @@ std::ostream& osc::operator<<(std::ostream& o, const RenderTextureDescriptor& de
     return o <<
         "RenderTextureDescriptor(width = " << descriptor.dimensions_.x
         << ", height = " << descriptor.dimensions_.y
-        << ", aa = " << descriptor.antialiasing_level_
+        << ", antialiasing_level = " << descriptor.antialiasing_level_
         << ", color_format = " << descriptor.color_format_
         << ", depth_stencil_format = " << descriptor.depth_stencil_format_
         << ")";
@@ -2570,7 +2570,7 @@ public:
         }
     }
 
-    void reformat(RenderTextureDescriptor const& format_description)
+    void reformat(const RenderTextureDescriptor& format_description)
     {
         if (format_description != color_buffer_->impl_->getDescriptor()) {
             color_buffer_->impl_->reformat(format_description);
@@ -2714,7 +2714,7 @@ public:
             gl::compile_from_source<gl::FragmentShader>(fragment_shader_src.c_str())
         )}
     {
-        parseUniformsAndAttributesFromProgram();
+        parse_uniforms_and_attributes_from_program();
     }
 
     Impl(
@@ -2728,7 +2728,7 @@ public:
             gl::compile_from_source<gl::GeometryShader>(geometry_shader_src.c_str())
         )}
     {
-        parseUniformsAndAttributesFromProgram();
+        parse_uniforms_and_attributes_from_program();
     }
 
     size_t num_properties() const
@@ -2762,23 +2762,23 @@ public:
 
     // non-PIMPL APIs
 
-    const gl::Program& getProgram() const
+    const gl::Program& program() const
     {
         return program_;
     }
 
-    const FastStringHashtable<ShaderElement>& getUniforms() const
+    const FastStringHashtable<ShaderElement>& uniforms() const
     {
         return uniforms_;
     }
 
-    const FastStringHashtable<ShaderElement>& getAttributes() const
+    const FastStringHashtable<ShaderElement>& attributes() const
     {
         return attributes_;
     }
 
 private:
-    void parseUniformsAndAttributesFromProgram()
+    void parse_uniforms_and_attributes_from_program()
     {
         constexpr GLsizei c_shader_max_name_length = 128;
 
@@ -2918,9 +2918,9 @@ std::ostream& osc::operator<<(std::ostream& o, const Shader& shader)
     {
         o << "    uniforms = [";
 
-        const std::string_view delim = "\n        ";
-        for (const auto& [name, data] : shader.m_Impl->getUniforms()) {
-            o << delim;
+        const std::string_view delimiter = "\n        ";
+        for (const auto& [name, data] : shader.m_Impl->uniforms()) {
+            o << delimiter;
             print_shader_element(o, name, data);
         }
 
@@ -2930,9 +2930,9 @@ std::ostream& osc::operator<<(std::ostream& o, const Shader& shader)
     {
         o << "    attributes = [";
 
-        const std::string_view delim = "\n        ";
-        for (const auto& [name, data] : shader.m_Impl->getAttributes()) {
-            o << delim;
+        const std::string_view delimeter = "\n        ";
+        for (const auto& [name, data] : shader.m_Impl->attributes()) {
+            o << delimeter;
             print_shader_element(o, name, data);
         }
 
@@ -3496,7 +3496,7 @@ public:
         return get_value<Color>(property_name);
     }
 
-    void set_color(std::string_view property_name, Color const& color)
+    void set_color(std::string_view property_name, const Color& color)
     {
         set_value(property_name, color);
     }
@@ -4466,7 +4466,7 @@ public:
         return vertex_buffer_.has_vertices();
     }
 
-    std::vector<Vec3> verts() const
+    std::vector<Vec3> vertices() const
     {
         return vertex_buffer_.read<Vec3>(VertexAttribute::Position);
     }
@@ -4666,7 +4666,7 @@ public:
         return rv;
     }
 
-    const AABB& getBounds() const
+    const AABB& bounds() const
     {
         return aabb_;
     }
@@ -5018,11 +5018,11 @@ private:
         );
 
         // upload CPU-side element data into the GPU-side buffer
-        const size_t eboNumBytes = num_indices_ * (indices_are_32bit_ ? sizeof(uint32_t) : sizeof(uint16_t));
+        const size_t num_ebo_bytes = num_indices_ * (indices_are_32bit_ ? sizeof(uint32_t) : sizeof(uint16_t));
         gl::bind_buffer(GL_ELEMENT_ARRAY_BUFFER, buffers.indices_buffer);
         gl::buffer_data(
             GL_ELEMENT_ARRAY_BUFFER,
-            static_cast<GLsizei>(eboNumBytes),
+            static_cast<GLsizei>(num_ebo_bytes),
             indices_data_.data(),
             GL_STATIC_DRAW
         );
@@ -5085,7 +5085,7 @@ bool osc::Mesh::has_vertices() const
 
 std::vector<Vec3> osc::Mesh::vertices() const
 {
-    return m_Impl->verts();
+    return m_Impl->vertices();
 }
 
 void osc::Mesh::set_vertices(std::span<const Vec3> verts)
@@ -5205,7 +5205,7 @@ std::vector<Vec3> osc::Mesh::indexed_vertices() const
 
 const AABB& osc::Mesh::bounds() const
 {
-    return m_Impl->getBounds();
+    return m_Impl->bounds();
 }
 
 void osc::Mesh::clear()
@@ -6833,7 +6833,7 @@ void osc::GraphicsBackend::handle_batch_with_same_material_property_block(
 
     const Material::Impl& material_impl = *batch.front().material.m_Impl;
     const Shader::Impl& shader_impl = *material_impl.shader_.m_Impl;
-    const FastStringHashtable<ShaderElement>& uniforms = shader_impl.getUniforms();
+    const FastStringHashtable<ShaderElement>& uniforms = shader_impl.uniforms();
 
     // bind property block variables (if applicable)
     if (batch.front().maybe_prop_block) {
@@ -6864,7 +6864,7 @@ void osc::GraphicsBackend::handle_batch_with_same_material(
 
     const auto& material_impl = *batch.front().material.m_Impl;
     const auto& shader_impl = *material_impl.shader_.m_Impl;
-    const FastStringHashtable<ShaderElement>& uniforms = shader_impl.getUniforms();
+    const FastStringHashtable<ShaderElement>& uniforms = shader_impl.uniforms();
 
     // preemptively upload instance data
     std::optional<InstancingState> maybe_instances = upload_instance_data(batch, shader_impl);
@@ -6872,7 +6872,7 @@ void osc::GraphicsBackend::handle_batch_with_same_material(
     // updated by various batches (which may bind to textures etc.)
     int32_t texture_slot = 0;
 
-    gl::use_program(shader_impl.getProgram());
+    gl::use_program(shader_impl.program());
 
     if (material_impl.is_wireframe()) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);

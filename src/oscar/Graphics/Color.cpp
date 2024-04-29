@@ -204,7 +204,7 @@ Color osc::to_color(const ColorHSLA& c)
 {
     // see: https://web.cs.uni-paderborn.de/cgvb/colormaster/web/color-systems/hsl.html
 
-    const auto [h, s, l, a] = c;
+    const auto& [h, s, l, a] = c;
 
     if (l <= 0.0f) {
         return Color::black();
@@ -249,18 +249,16 @@ std::string osc::to_html_string_rgba(const Color& c)
 
 std::optional<Color> osc::try_parse_html_color_string(std::string_view v)
 {
-    if (v.empty())
-    {
+    if (v.empty()) {
         return std::nullopt;  // it's empty
     }
-    if (v.front() != '#')
-    {
+    if (v.front() != '#') {
         return std::nullopt;  // incorrect first character (e.g. should be "#ff0000ff")
     }
 
     const std::string_view content = v.substr(1);
     if (content.size() == 6) {
-        // RGB hex string
+        // RGB hex string (e.g. "ffaa88")
         Color rv = Color::black();
         for (size_t i = 0; i < 3; ++i) {
             if (auto b = try_parse_hex_chars_as_byte(content[2*i], content[2*i + 1])) {
@@ -273,7 +271,7 @@ std::optional<Color> osc::try_parse_html_color_string(std::string_view v)
         return rv;
     }
     else if (content.size() == 8) {
-        // RGBA hex string
+        // RGBA hex string (e.g. "ffaa8822")
         Color rv = Color::black();
         for (size_t i = 0; i < 4; ++i) {
             if (auto b = try_parse_hex_chars_as_byte(content[2*i], content[2*i + 1])) {
