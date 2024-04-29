@@ -94,9 +94,9 @@ The reason we add joints is because bodies must be connected in a **model topolo
 
     Components in an OpenSim model can also use **sockets** to form a **graph-like** connection to some other component. This enables components (which are **stored** hierarchically) to connect to each other in a non-hierarchical manner.
 
-    For example, bodies and joints are direct children of a model--they are, *hierarchically speaking*, siblings--but joints use sockets (``parent_frame`` and ``child_frame``) to connect to two frames/bodies and establish a **joint topology graph**.
+    For example, bodies and joints are direct children of a model--they are, *hierarchically speaking*, siblings--but joints use sockets (``parent_frame`` and ``child_frame``) to connect to two frames/bodies and establish a **joint topology graph** (or **kinematic chain**).
 
-    When these tutorials write about the **topology** of the model, they're usually referring to how the various bodies, joints, and frames *physically* affect each other. That topology is usually dictated by the socket connectivity graph. By contrast, the model hierarchy, as shown in OpenSim Creator's navigator panel, shows you the hierarchical **storage** of the model. Storage affects things like where the component's data is ultimately saved in the resulting ``.osim`` model file.
+    When these tutorials write about the **topology** (or **kinematics**) of the model, they're usually referring to how the various bodies, joints, and frames *physically* affect each other. That topology is usually dictated by the socket connectivity graph. By contrast, the model hierarchy, as shown in OpenSim Creator's navigator panel, shows you the hierarchical **storage** of the model. Storage affects things like where the component's data is ultimately saved in the resulting ``.osim`` model file.
 
 
 Reposition the Body
@@ -246,7 +246,7 @@ Finally--and this is the hardest part--we need to add a ``Cylinder`` between the
   * Right-clicking it in the navigator panel
   * Clicking the lightning ("actions") icon
 
-* Click ``Add Offset Frame`` in ``pendulum_head``'s context menu
+* Open the ``Add`` menu and click ``OffsetFrame``
 * This should create and select ``pendulum_head_offsetframe``
 * Use the properties panel to set ``pendulum_head_offsetframe``'s ``translation`` property to ``(0.0, 0.25, 0.0)``. This moves ``pendulum_head_offsetframe`` between the base and the head.
 * Open ``pendulum_head_offsetframe``'s context menu by either:
@@ -254,7 +254,7 @@ Finally--and this is the hardest part--we need to add a ``Cylinder`` between the
   * Right-clicking it in the navigator panel
   * Clicking the lightning ("actions") icon
 
-* Click ``Add Geometry`` in the properties panel to add a ``Cylinder`` to ``pendulum_head_offsetframe`` (``pendulum_head_offsetframe_geom_1``).
+* Open the ``Add`` menu and click ``Geometry`` to add a ``Cylinder`` to ``pendulum_head_offsetframe`` (``pendulum_head_offsetframe_geom_1``).
 * Click the cylinder in the visualizer, or find ``pendulum_head_offsetframe_geom_1`` in the navigator panel
 * Use the properties panel to set ``pendulum_head_offsetframe_geom_1``'s ``radius`` property to ``0.01`` and its ``half_height`` property to ``0.25``
 

@@ -39,7 +39,7 @@ The mesh importer is a separate UI from the main ``osim`` editor. It creates/man
     The mesh importer can be opened from the center of the home tab, the plus button, or the main menu.
 
 
-One opened, you will be greeted with a new mesh importer scene, which will be used for the next few steps of this tutorial:
+Once opened, you will be greeted with a new mesh importer scene, which will be used for the next few steps of this tutorial:
 
 .. figure:: _static/tut3_opened-meshimporter.png
     :width: 60%

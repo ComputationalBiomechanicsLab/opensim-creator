@@ -108,7 +108,7 @@ To add a contact force (``HuntCrossleyForce``) to the model:
 
 * Open the ``Add`` menu from the main menu, or by right-clicking an empty part of the 3D scene
 * Open the ``Force`` sub-menu and click ``HuntCrossleyForce``
-* In the popup, just click the ``add force`` button (don't edit anything)
+* In the popup, just click the ``add`` button (don't edit anything)
 * If it isn't selected, select the force in the navigator panel (``forceset/HuntCrossleyForce``)
 * Open the force's context menu by right-clicking it in the navigator panel, or click by clicking the lightning ("actions") icon
 * Click ``Add Contact Geometry`` button
@@ -134,13 +134,13 @@ The next step is to add a "knee" and "head" to our ``foot``. This mostly involve
 
 To add the ``knee`` to the model:
 
-* Add a body called ``knee`` into the model. It should have a mass of ``1 kg`` and be joined to ``foot`` with a ``PinJoint`` called ``foot_to_knee``. Attach a sphere geometry to it.
+* Add a body called ``knee`` into the model. It should have a mass of ``1 kg`` and be joined to ``foot`` with a ``PinJoint`` called ``foot_to_knee``. Attach a ``Sphere`` geometry to it.
 * Use the properties panel to change the ``translation`` property of the ``foot_offset`` (``/jointset/foot_to_knee/foot_offset``) from ``(0, 0, 0)`` to ``(0, 0.5, 0)``. This is so that the ``foot`` is offset from the origin of the ``foot_to_knee`` and ``knee`` is co-located with it (i.e. it swings at the knee).
 * Click on the new ``knee_geom_1`` sphere and use the properties panel to change the ``Appearance`` property such that the sphere is red.
 
 To add the ``head`` to the model:
 
-* Add a body called ``head`` into the model. It should have a mass of ``1 kg`` and be joined to ``knee`` with a ``PinJoint`` called ``knee_to_head``. Attach a brick geometry to it.
+* Add a body called ``head`` into the model. It should have a mass of ``1 kg`` and be joined to ``knee`` with a ``PinJoint`` called ``knee_to_head``. Attach a ``Brick`` geometry to it.
 * Use the properties panel to change the ``translation`` property of the ``knee_offset`` (``/jointset/knee_to_head/knee_offset``) from  ``(0, 0, 0)`` to ``(0, 0.5, 0)``. This is so that the ``knee`` is offset from the origin of ``knee_to_head`` and ``head`` is co-located with it (i.e. it swings at the head).
 * Click on the new ``head_geom_1`` cube and use the properties panel to change the ``Appearance`` property such that the cube is red
 
@@ -157,11 +157,11 @@ Much like at the end of :ref:`tut1`, we can make the model look better by adding
 To add a decorative link between the ``foot`` and ``knee``:
 
 * Right-click the ``foot`` body (``/bodyset/foot``) in the navigator panel to open its context menu.
-* Click ``Add Offset Frame`` in the context menu
+* Open the ``Add`` menu and click ``Offset Frame``
 * Select the created offset frame (``/bodyset/foot/foot_offsetframe``)
 * Use the properties panel to change the offset frame's ``translation`` property to ``(0.0, 0.25, 0.0)``. This makes the offset frame sit between ``foot`` and ``knee``.
 * Right-click the offset frame in the navigator, or click the lightning icon ("Actions") in the properies panel to open the offset frame's context menu
-* Click ``Add Geometry`` and attach a ``Brick`` geometry to the offset frame
+* Open the ``Add`` menu and click ``Geometry``. Attach a ``Brick`` geometry to the offset frame
 * Select the brick through the navigator (``/bodyset/foot/foot_offsetframe/foot_offsetframe_geom_1``), or by clicking it in the 3D viewport
 * Use the properties panel to edit the brick's ``half_widths`` property to something like ``(0.025, 0.25, 0.025)``. This creates a thin "rod" between ``foot`` and ``knee``
 
@@ -174,11 +174,11 @@ To add a decorative link between the ``foot`` and ``knee``:
 To add a decorative link between the ``knee`` and ``head``:
 
 * Right-click the ``knee`` body (``/bodyset/knee``) in the navigator panel to open its context menu
-* Click ``Add Offset Frame`` in the context menu
+* Open the ``Add`` menu and click ``Offset Frame``
 * Select the created offset frame (``/bodyset/knee/knee_offsetframe``)
 * Use the properties panel to change the offset frame's ``translation`` property to ``(0.0, 0.25, 0.0)``. This makes the offset frame sit between ``knee`` and ``head``.
 * Right-click the offset frame in the navigator, or click the lightning icon ("Actions") in the properies panel to open the offset frame's context menu
-* Click ``Add Geometry`` and attach a ``Brick`` geometry to the offset frame
+* Open the ``Add`` menu and click ``Geometry``. Attach a ``Brick`` geometry to the offset frame
 * Select the brick through the navigator (``/bodyset/knee/knee_offsetframe/knee_offsetframe_geom_1``), or by clicking it in the 3D viewport
 * Use the properties panel to edit the brick's ``half_widths`` property to something like ``(0.025, 0.25, 0.025)``. This creates a thin "rod" between ``knee`` and ``head``
 
