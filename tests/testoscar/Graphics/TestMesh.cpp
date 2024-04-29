@@ -1498,8 +1498,8 @@ TEST(Mesh, GetVertexAttributesReturnsExpectedForCombinations)
         VertexFormat const expected = {
             {VertexAttribute::Position,  VertexAttributeFormat::Float32x3},
             {VertexAttribute::Normal,    VertexAttributeFormat::Float32x3},
-            {VertexAttribute::Color,     VertexAttributeFormat::Float32x4},
             {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
+            {VertexAttribute::Color,     VertexAttributeFormat::Float32x4},
         };
         ASSERT_EQ(m.vertex_format(), expected);
     }
@@ -1510,9 +1510,9 @@ TEST(Mesh, GetVertexAttributesReturnsExpectedForCombinations)
         VertexFormat const expected = {
             {VertexAttribute::Position,  VertexAttributeFormat::Float32x3},
             {VertexAttribute::Normal,    VertexAttributeFormat::Float32x3},
-            {VertexAttribute::Tangent,   VertexAttributeFormat::Float32x4},
-            {VertexAttribute::Color,     VertexAttributeFormat::Float32x4},
             {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
+            {VertexAttribute::Color,     VertexAttributeFormat::Float32x4},
+            {VertexAttribute::Tangent,   VertexAttributeFormat::Float32x4},
         };
         ASSERT_EQ(m.vertex_format(), expected);
     }
@@ -1523,8 +1523,8 @@ TEST(Mesh, GetVertexAttributesReturnsExpectedForCombinations)
         VertexFormat const expected = {
             {VertexAttribute::Position,  VertexAttributeFormat::Float32x3},
             {VertexAttribute::Normal,    VertexAttributeFormat::Float32x3},
-            {VertexAttribute::Tangent,   VertexAttributeFormat::Float32x4},
             {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
+            {VertexAttribute::Tangent,   VertexAttributeFormat::Float32x4},
         };
         ASSERT_EQ(m.vertex_format(), expected);
     }
@@ -1536,9 +1536,9 @@ TEST(Mesh, GetVertexAttributesReturnsExpectedForCombinations)
         VertexFormat const expected = {
             {VertexAttribute::Position,  VertexAttributeFormat::Float32x3},
             {VertexAttribute::Normal,    VertexAttributeFormat::Float32x3},
+            {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
             {VertexAttribute::Tangent,   VertexAttributeFormat::Float32x4},
             {VertexAttribute::Color,     VertexAttributeFormat::Float32x4},
-            {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
         };
         ASSERT_EQ(m.vertex_format(), expected);
     }
@@ -1548,9 +1548,9 @@ TEST(Mesh, GetVertexAttributesReturnsExpectedForCombinations)
     {
         VertexFormat const expected = {
             {VertexAttribute::Position,  VertexAttributeFormat::Float32x3},
+            {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
             {VertexAttribute::Tangent,   VertexAttributeFormat::Float32x4},
             {VertexAttribute::Color,     VertexAttributeFormat::Float32x4},
-            {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
         };
         ASSERT_EQ(m.vertex_format(), expected);
     }
@@ -1560,9 +1560,9 @@ TEST(Mesh, GetVertexAttributesReturnsExpectedForCombinations)
     {
         VertexFormat const expected = {
             {VertexAttribute::Position,  VertexAttributeFormat::Float32x3},
+            {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
             {VertexAttribute::Tangent,   VertexAttributeFormat::Float32x4},
             {VertexAttribute::Color,     VertexAttributeFormat::Float32x4},
-            {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
         };
         ASSERT_EQ(copy.vertex_format(), expected);
     }

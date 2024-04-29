@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <initializer_list>
 #include <optional>
+#include <span>
 #include <vector>
 
 namespace osc
@@ -107,7 +108,11 @@ namespace osc
         //
         // - have at least a `VertexAttribute::Position`
         // - all be unique
-        VertexFormat(std::initializer_list<VertexAttributeDescriptor>);
+        explicit VertexFormat(std::span<const VertexAttributeDescriptor>);
+
+        VertexFormat(std::initializer_list<VertexAttributeDescriptor> il) :
+            VertexFormat{std::span{il.begin(), il.end()}}
+        {}
 
         friend bool operator==(const VertexFormat&, const VertexFormat&) = default;
 

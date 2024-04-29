@@ -5,10 +5,14 @@
 #include <oscar/Graphics/VertexAttributeDescriptor.h>
 #include <oscar/Graphics/VertexAttributeFormat.h>
 
+#include <algorithm>
 #include <array>
 #include <initializer_list>
+#include <ranges>
+#include <vector>
 
 using namespace osc;
+namespace rgs = std::ranges;
 
 TEST(VertexFormat, IsDefaultConstructible)
 {
@@ -260,7 +264,7 @@ TEST(VertexFormat, InsertWorksWhenInsertingASecondAttribute)
     ASSERT_EQ(f, expected);
 }
 
-TEST(VertexFormat, InsertCanInsertElementsInBetweenExistingElements)
+TEST(VertexFormat, InsertCanAddThirdElement)
 {
     VertexFormat f =
     {
@@ -272,8 +276,8 @@ TEST(VertexFormat, InsertCanInsertElementsInBetweenExistingElements)
     VertexFormat const expected =
     {
         {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
-        {VertexAttribute::Normal, VertexAttributeFormat::Float32x3},
         {VertexAttribute::Tangent, VertexAttributeFormat::Unorm8x4},
+        {VertexAttribute::Normal, VertexAttributeFormat::Float32x3},
     };
 
     ASSERT_EQ(f, expected);
@@ -334,4 +338,30 @@ TEST(VertexFormat, ErasePositionWipesAllAttributes)
     };
     f.erase(VertexAttribute::Position);
     ASSERT_EQ(f, VertexFormat{});
+}
+
+TEST(VertexFormat, ShouldRetainCallerProvidedLayout)
+{
+    // because the caller might be setting up a buffer with a very specific
+    // layout, the `VertexFormat` shouldn't shuffle the non-`Position` fields
+    // around at all
+    std::vector<VertexAttributeDescriptor> attrs = {
+        {VertexAttribute::Position, VertexAttributeFormat::Float32x3},  // required
+        {VertexAttribute::Normal, VertexAttributeFormat::Float32x2},
+        {VertexAttribute::Tangent, VertexAttributeFormat::Unorm8x4},
+        {VertexAttribute::Color, VertexAttributeFormat::Float32x4},
+        {VertexAttribute::TexCoord0, VertexAttributeFormat::Unorm8x4},
+    };
+
+    // permute the other fields and ensure no reordering happens
+    for (bool permuted = true; permuted; permuted = rgs::next_permutation(attrs.begin()+1, attrs.end(), rgs::less{}, &VertexAttributeDescriptor::attribute).found) {
+        const VertexFormat format{attrs};
+        ASSERT_TRUE(rgs::equal(
+            attrs,
+            format.attribute_layouts(),
+            rgs::equal_to{},
+            &VertexAttributeDescriptor::attribute,
+            &VertexFormat::VertexAttributeLayout::attribute
+        ));
+    }
 }
