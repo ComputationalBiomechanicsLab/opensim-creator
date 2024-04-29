@@ -11,7 +11,7 @@
 
 namespace osc
 {
-    // satisfied if `T` has the appropriate shape to be used as a "unit type trait" (e.g. radians)
+    // satisfied if `T` can be used as a type trait that describes angular units (e.g. radians)
     template<typename T>
     concept AngularUnitTraits = requires(T) {
         { T::radians_per_rep } -> std::convertible_to<double>;

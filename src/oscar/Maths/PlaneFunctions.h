@@ -39,7 +39,7 @@ namespace osc
     {
         // originally found in: https://learnopengl.com/Guest-Articles/2021/Scene/Frustum-Culling
         // which was based on : https://gdbooks.gitbooks.io/3dcollisions/content/Chapter2/static_aabb_plane.html
-        float const r = dot(half_widths_of(aabb), abs(plane.normal));
+        const float r = dot(half_widths_of(aabb), abs(plane.normal));
         return signed_distance_between(plane, centroid_of(aabb)) > r;
     }
 

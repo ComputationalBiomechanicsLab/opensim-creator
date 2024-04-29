@@ -31,13 +31,13 @@ osc::VertexFormat::VertexFormat(std::span<const VertexAttributeDescriptor> descr
     stride_ = calc_stride();
 }
 
-void osc::VertexFormat::insert(VertexAttributeDescriptor const& desc)
+void osc::VertexFormat::insert(const VertexAttributeDescriptor& desc)
 {
     if (attribute_descriptions_.empty() and desc.attribute() != VertexAttribute::Position) {
         return;
     }
 
-    auto const it = rgs::find(attribute_descriptions_, desc.attribute(), &VertexAttributeDescriptor::attribute);
+    const auto it = rgs::find(attribute_descriptions_, desc.attribute(), &VertexAttributeDescriptor::attribute);
     if (it != attribute_descriptions_.end()) {
         *it = desc;
     }
