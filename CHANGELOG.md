@@ -5,6 +5,13 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+
+## [0.5.12] - 2024/04/29
+
+0.5.12 adds support for adding a templated `CustomJoint` (i.e. a `PinJoint`-like joint), cleans up some
+of the UI buttons/menus, and fixes various little issues, such as not being able to delete outputs from
+the simulation screen.
+
 - MacOS is now built using the `macos-13` (Ventura) GitHub Action runner, which means that OSC
   will only work on Ventura or newer
 - Right-clicking a 2D output plot in the simulator tab now shows a context menu with the option to
