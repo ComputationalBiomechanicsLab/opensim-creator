@@ -43,4 +43,5 @@ osc-dependencies-install/
 # joss-specific paper build artefacts
 paper/paper.pdf
 paper/paper.jats
+paper/media
 
