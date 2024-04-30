@@ -13,14 +13,11 @@
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Shims/Cpp23/ranges.h>
-#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/StdVariantHelpers.h>
 #include <oscar/Utils/UID.h>
 
-#include <algorithm>
-#include <ranges>
 #include <sstream>
 #include <stdexcept>
 #include <string>

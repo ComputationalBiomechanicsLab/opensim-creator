@@ -6,13 +6,14 @@
 
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Maths/Vec3.h>
-#include <oscar/Utils/Algorithms.h>
 
 #include <algorithm>
 #include <ranges>
 #include <span>
 #include <utility>
 #include <vector>
+
+namespace rgs = std::ranges;
 
 namespace osc
 {
@@ -95,7 +96,7 @@ namespace osc
         {
             auto const& docLandmarks = doc.nonParticipatingLandmarks;
 
-            bool const samePositions = std::ranges::equal(
+            bool const samePositions = rgs::equal(
                 docLandmarks,
                 m_CachedSourceNonParticipatingLandmarks,
                 [](TPSDocumentNonParticipatingLandmark const& lm, Vec3 const& pos)
@@ -107,7 +108,7 @@ namespace osc
             if (!samePositions)
             {
                 m_CachedSourceNonParticipatingLandmarks.clear();
-                std::ranges::transform(
+                rgs::transform(
                     docLandmarks,
                     std::back_inserter(m_CachedSourceNonParticipatingLandmarks),
                     [](auto const& lm) { return lm.location; }

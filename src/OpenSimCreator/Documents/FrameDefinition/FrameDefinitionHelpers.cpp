@@ -11,7 +11,6 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Maths/Vec3.h>
-#include <oscar/Utils/Algorithms.h>
 
 #include <array>
 #include <atomic>

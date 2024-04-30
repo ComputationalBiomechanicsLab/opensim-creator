@@ -20,9 +20,7 @@
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/AppMetadata.h>
 #include <oscar/Platform/os.h>
-#include <oscar/Utils/Algorithms.h>
 
-#include <algorithm>
 #include <array>
 #include <filesystem>
 #include <fstream>
