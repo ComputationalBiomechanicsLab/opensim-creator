@@ -219,8 +219,8 @@ public:
                         previous_color = dec.color;
                     }
 
-                    if (dec.maybe_material) {
-                        graphics::draw(dec.mesh, dec.transform, *dec.maybe_material, camera_, dec.maybe_material_props);
+                    if (dec.material) {
+                        graphics::draw(dec.mesh, dec.transform, *dec.material, camera_, dec.material_properties);
                     }
                     else if (dec.color.a > 0.99f) {
                         graphics::draw(dec.mesh, dec.transform, scene_colored_els_material_, camera_, prop_block);

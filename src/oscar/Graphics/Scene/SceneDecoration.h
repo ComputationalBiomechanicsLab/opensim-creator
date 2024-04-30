@@ -44,7 +44,7 @@ namespace osc
         Color color = Color::white();
         std::string id{};
         SceneDecorationFlags flags = SceneDecorationFlags::None;
-        std::optional<Material> maybe_material{};
-        std::optional<MaterialPropertyBlock> maybe_material_props{};
+        std::optional<Material> material{};
+        std::optional<MaterialPropertyBlock> material_properties{};
     };
 }

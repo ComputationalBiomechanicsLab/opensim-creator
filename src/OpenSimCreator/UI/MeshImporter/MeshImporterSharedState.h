@@ -410,7 +410,7 @@ namespace osc::mi
                     dt.color,
                     std::string{},
                     dt.flags,
-                    dt.maybe_material,
+                    dt.material,
                     dt.maybePropertyBlock
                 });
             }
@@ -519,7 +519,7 @@ namespace osc::mi
             dt.transform = t;
             dt.color = m_Colors.gridLines;
             dt.flags = SceneDecorationFlags::None;
-            dt.maybe_material = m_FloorMaterial;
+            dt.material = m_FloorMaterial;
             dt.maybePropertyBlock = props;
             return dt;
         }

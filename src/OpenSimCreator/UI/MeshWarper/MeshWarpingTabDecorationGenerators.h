@@ -30,7 +30,7 @@ namespace osc
         {
             out({
                 .mesh = tpsSourceOrDestinationMesh,
-                .maybe_material = sharedState.wireframe_material,
+                .material = sharedState.wireframe_material,
             });
         }
 
