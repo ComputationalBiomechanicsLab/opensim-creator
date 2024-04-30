@@ -30,7 +30,46 @@ date: 30 April 2024
 bibliography: paper.bib
 ---
 
-# Figures
+
+# Summary
+
+Here, we present OpenSim Creator, an open-source “biomechanical CAD” user interface (UI) that focuses on building and evaluating OpenSim models. We also present examples of how OpenSim Creator has already been used to build new biomechanical models.
+
+
+# Introduction
+
+OpenSim [1,2] is an open-source musculoskeletal modelling platform that has received increased interest for building new biomechanical models over the past few years [2-5]. This follows the general trend of musculoskeletal modelling being increasingly used in clinical [3], biomechanical [4], and palaeobiological [5] studies. However, creating a biomechanical model remains a challenge because the process is both laborious, as it requires the input of a large amount of biological data, and complex, as it requires expertise in biomedical imaging, model and data file formats, and musculoskeletal anatomy.
+
+The essence of that challenge—to streamline a building process—is also present in fields such as 3D design, engineering, and game development. For example, engineers commonly use computer-aided design (CAD) software both to reduce labour, by automating actions (e.g., model validation); and to increase expertise, by enabling model editing in a safe undoable area with immediate, useful, visual feedback. OpenSim Creator's aim is to continue the heritage CAD software, but with a biomechanical twist on the theme.
+
+
+# Design/Implementation Method
+
+We initially studied existing open-source CAD software (e.g., Blender [6]) to find common design themes. We found that they typically rely on real-time editing capabilities to provide immediate visual feedback in response to each user action. We also found that they are constantly evolving: all successful open-source CAD applications we studied are continuously updated and improved. Based on that, we anticipated that OpenSim Creator’s architecture would require the following four key attributes:
+
+- **High performance**: to accommodate real-time model editing.
+- **Low-level UI control**: to accommodate highly customized visual feedback.
+- **Tight integration with the OpenSim API**: to accommodate showing biomechanical information (e.g. muscle lengths, moment arms) on-demand, and to run forward dynamic simulations directly inside the UI.
+- **Iterative software, and model, development**: to accommodate rapid software prototyping and feedback from the research community.
+
+To facilitate those requirements, OpenSim Creator took inspiration from the games industry, which is commonly associated with rapid prototyping and real-time rendering. We developed OpenSim Creator using a combination of C++, a high-performance language that directly integrates with the OpenSim API; a custom OpenGL renderer, to tightly control real-time 3D editing; and ImGui [7], which provides customizable low-level 2D UI.
+
+We also adopted an open, iterative, development cycle. All releases, including alpha releases, of OpenSim Creator have been available on GitHub with an Apache license as early as the first month of development, and a new releases are published every 1-2 months. As a consequence, we have been able to continuously receive feedback from researchers in the community, in addition to a healthy supply of real model-building challenges from our own research, which contributed heavily to OpenSim Creator's design and architecture.
+
+
+# Results and Discussion
+
+- TODO A list of key references including a link to the software archive.
+
+TODO: citations must refer to bibtex key (e.g. "Something worth citing [@Pearson:2017]")
+For a quick reference, the following citation commands can be used:
+- `@author:2001`  ->  "Author et al. (2001)"
+- `[@author:2001]` -> "(Author et al., 2001)"
+- `[@author1:2001; @author2:2001]` -> "(Author1 et al., 2001; Author2 et al., 2002)"
+
+TODO IMAGES HERE
+
+Fig 1: A selection of screenshots of OpenSim Creator, demonstrating its flexible UI architecture for real-time 3D editing. a) mesh importer, c) mesh warper, c) via point optimization (from [9]).
 
 Figures can be included like this:
 ![Caption for example figure.\label{fig:example}](figure.png)
@@ -39,44 +78,19 @@ and referenced from text using \autoref{fig:example}.
 Figure sizes can be customized by adding an optional second parameter:
 ![Caption for example figure.](figure.png){ width=20% }
 
-# Introduction
+- A Statement of need section that clearly illustrates the research purpose of the software and places it in the context of related work.
+- Mention (if applicable) a representative set of past or ongoing research projects using the software and recent scholarly publications enabled by it.
 
-TODO: citations must refer to bibtex key (e.g. "Something worth citing [@Pearson:2017]")
-For a quick reference, the following citation commands can be used:
-- `@author:2001`  ->  "Author et al. (2001)"
-- `[@author:2001]` -> "(Author et al., 2001)"
-- `[@author1:2001; @author2:2001]` -> "(Author1 et al., 2001; Author2 et al., 2002)"
-
-
-
-OpenSim [1,2] is an open-source musculoskeletal modelling platform that has received increased interest for building new biomechanical models over the past few years [2-5]. This follows the general trend of musculoskeletal modelling being increasingly used in clinical [3], biomechanical [4], and palaeobiological [5] studies. However, creating a biomechanical model remains a challenge because the process is both laborious, as it requires the input of a large amount of biological data, and complex, as it requires expertise in biomedical imaging, model and data file formats, and musculoskeletal anatomy.
-The essence of that challenge—to streamline a building process—is also present in fields such as 3D design, engineering, and game development. For example, engineers commonly use computer-aided design (CAD) software both to reduce labour, by automating actions (e.g., model validation), and to increase expertise, by enabling model editing in a safe undoable area with immediate, useful, visual feedback.
-Here, we present OpenSim Creator, an open-source “biomechanical CAD” user interface (UI) that focuses on building and evaluating OpenSim models. We also present examples of how OpenSim Creator has already been used to build new biomechanical models.
-
-# Methods
-
-We initially studied existing open-source CAD software (e.g., Blender [6]) to find common design themes. We found that they typically rely on real-time editing capabilities and provide immediate visual feedback in response to each user action. They are also constantly evolving: all successful open-source CAD applications we studied are continuously updated and improved.
-Based on that, we anticipated that OpenSim Creator’s architecture would require the following four key attributes:
-    • High performance: to accommodate real-time model editing.
-    • Low-level UI control: to accommodate highly customized visual feedback.
-    • Tight integration with OpenSim: to provide underlying biomechanical information like muscle lengths and moment-arms on-demand and to perform forward dynamic simulations.
-    • Iterative software, and model, development: to accommodate rapid software prototyping and feedback from the research community.
-
-To facilitate those requirements, OpenSim Creator was inspired from the games industry, which is commonly associated with rapid prototyping and real-time rendering. We developed OpenSim Creator using a combination of C++, a high-performance language that directly integrates with OpenSim; a custom OpenGL renderer, to accommodate real-time 3D editing; and ImGui [7], which provides customizable low-level 2D UI.
-We published (and received feedback from) early alpha releases of OpenSim Creator within the first two months of development. Receiving early feedback from researchers, along with a healthy supply of real model-building challenges from our own research, contributed heavily to its design and architecture.
-
-TODO IMAGES HERE
-
-Fig 1: A selection of screenshots of OpenSim Creator, demonstrating its flexible UI architecture for real-time 3D editing. a) mesh importer, c) mesh warper, c) via point optimization (from [9]).
-
-# Results and Discussion
+END TODO
 
 With the aim of demonstrating how the design and architectural methods outlined above interplay with the model-building process, we will discuss concrete examples of how models have been built using OpenSim Creator.
+
 Subject-specific models are necessary when (e.g.) a subject has deformities that cannot be adequately represented by scaling a generic model. Our goal was to create a subject-specific model of a human shoulder. A previously published [8] generic shoulder model was used as a template by superimposing it over subject-specific CT scans in OpenSim Creator’s mesh importer UI (Fig. 2a). The mesh importer UI enabled real-time, freeform placement and orientation of the subject-specific joints and bodies. The scene was automatically converted into an OpenSim model. Muscle volumes from subject-specific MRI data were combined with moment arm data from the generic model to create a line of action for each muscle in the model. The model editor UI provided real-time visual feedback about how each muscle’s moment arm was affected by the placement of attachment points and wrapping surfaces on the line of action within the model (Fig. 2).
 
 Fig 2: OpenSim Creator’s model editor UI, showing a subject-specific human shoulder model made using it. The model editor can host multiple panels, each of which are updated whenever the user edits the model. For example, the muscle plotter (right) can be used to show how a muscle’s moment arm changes as a user edits it in the 3D viewport (middle) or in the properties panel (left).
 
 Another study evaluated how a given biomechanical model simulated a sit-to-stand movement. The predictive simulations proved to be computationally expensive, and OpenSim Creator was used to simplify the existing model by eliminating wrapping surfaces and leveraging quick visual feedback to place muscle via points while preserving the moment-arms of the original model (Fig. 2c, [9]).
+
 
 # Conclusions
 
@@ -84,7 +98,7 @@ By combining a rapid-prototyping architecture inspired by the games industry wit
 
 OpenSim Creator’s design and architecture enabled it to render multiple high-vertex-count CT scans in a single scene in real-time on a mid-range laptop. Its control over the UI enables customized workflows where researchers can create models visually, and its tight integration with OpenSim enables it to show moment arms in real time as model creation proceeds.  Our users report significantly reduced amounts of effort required when compared to existing approaches.
 
-Software constantly evolves. Looking forward, we anticipate that OpenSim Creator’s architecture could be used to create specialized workflows for (e.g.) visually-assisted model warping, real-time sensor visualization, and the import of other biomedical data – in addition to improving the user experience.
+Software constantly evolves. Looking forward, we anticipate that OpenSim Creator’s architecture could be used to create specialized workflows for (e.g.) visually-assisted model warping, real-time sensor visualization, and the import of other biomedical data – in addition to improving the day-to-day user experience.
 
 # Acknowledgements
 
