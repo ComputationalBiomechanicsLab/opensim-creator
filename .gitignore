@@ -39,3 +39,8 @@ opensim-install/
 osc-build/
 osc-dependencies-build/
 osc-dependencies-install/
+
+# joss-specific paper build artefacts
+paper/paper.pdf
+paper/paper.jats
+
