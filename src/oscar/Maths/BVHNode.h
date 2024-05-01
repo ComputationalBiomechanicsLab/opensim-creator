@@ -59,7 +59,11 @@ namespace osc
 
     private:
         static inline constexpr size_t c_leaf_mask = static_cast<size_t>(1) << (8*sizeof(size_t) - 1);
-        AABB bounds_{};  // the union of all AABBs below, and including, this node
+
+        // the union of all AABBs below, and including, this node
+        AABB bounds_{};
+
+        // bit-packed node data
         size_t data_{};
     };
 }

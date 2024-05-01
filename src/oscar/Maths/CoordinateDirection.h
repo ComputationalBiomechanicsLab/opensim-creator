@@ -19,7 +19,7 @@ namespace osc
     public:
         // returns a `CoordinateDirection` parsed from a `std::string_view`, the format should be [direction]axis, e.g.:
         //
-        //     -x, +x, x, -X, +X, X, -y,...
+        //     "-x", "+x", "x", "-X", "+X", "X", "-y", etc...
         //
         // returns `std::nullopt` if the input string is incorrect
         static std::optional<CoordinateDirection> try_parse(std::string_view);

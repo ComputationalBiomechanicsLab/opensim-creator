@@ -6,7 +6,7 @@
 
 namespace osc
 {
-    // represents the 6 clipping planes (pointing outwards) of a camera's frustum
+    // represents the six outward-pointing clipping planes of a frustum
     struct FrustumPlanes final {
         using value_type = AnalyticPlane;
         using size_type = size_t;

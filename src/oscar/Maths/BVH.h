@@ -26,7 +26,7 @@ namespace osc
 
         // triangle BVHes
         //
-        // prim.getID() will refer to the index of the first vertex in the triangle
+        // `prim.id()` will refer to the index of the first vertex in the triangle
         void build_from_indexed_triangles(
             std::span<const Vec3> vertices,
             std::span<const uint16_t> indices
@@ -50,7 +50,7 @@ namespace osc
 
         // AABB BVHes
         //
-        // prim.id will refer to the index of the AABB
+        // `prim.id()` will refer to the index of the AABB
         void build_from_aabbs(std::span<const AABB>);
 
         // calls the callback with each collision between the line and an AABB in
@@ -74,7 +74,10 @@ namespace osc
         void for_each_leaf_or_inner_node(const std::function<void(const BVHNode&)>&) const;
 
     private:
-        std::vector<BVHNode> nodes_;  // nodes in the hierarchy
-        std::vector<BVHPrim> prims_;  // primitives (triangles, AABBs) that the nodes reference
+        // nodes in the hierarchy
+        std::vector<BVHNode> nodes_;
+
+        // primitives (triangles, AABBs) that the nodes reference
+        std::vector<BVHPrim> prims_;
     };
 }

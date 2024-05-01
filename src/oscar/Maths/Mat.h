@@ -18,10 +18,10 @@ namespace osc
     std::ostream& operator<<(std::ostream& o, const Mat<C, R, T>& m)
     {
         for (size_t row = 0; row < R; ++row) {
-            std::string_view delim;
+            std::string_view delimeter;
             for (size_t col = 0; col < C; ++col) {
-                o << delim << m[col][row];
-                delim = " ";
+                o << delimeter << m[col][row];
+                delimeter = " ";
             }
             o << '\n';
         }
@@ -36,7 +36,7 @@ namespace osc
         return std::move(ss).str();
     }
 
-    // when handled as a tuple-like object, a `Mat` decomposes into its columns (`Vec`s)
+    // when handled as a tuple-like object, a `Mat` decomposes into its column `Vec`s
 
     template<size_t I, size_t C, size_t R, typename T>
     constexpr const typename Mat<C, R, T>::value_type& get(const Mat<C, R, T>& m) { return m[I]; }

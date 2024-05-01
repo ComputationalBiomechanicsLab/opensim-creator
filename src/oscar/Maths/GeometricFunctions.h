@@ -76,14 +76,14 @@ namespace osc
         return v * inversesqrt(dot(v, v));
     }
 
-    // returns the aspect ratio of the vector (effectively: FloatingPointResult{x}/FloatingPointResult{y})
+    // returns the aspect ratio of the vector (effectively: `FloatingPointResult{x}/FloatingPointResult{y}`)
     template<std::integral T, std::floating_point FloatingPointResult = float>
     constexpr FloatingPointResult aspect_ratio(Vec<2, T> v)
     {
         return static_cast<FloatingPointResult>(v.x) / static_cast<FloatingPointResult>(v.y);
     }
 
-    // returns the aspect ratio of the vector (effectively: x/y)
+    // returns the aspect ratio of `v` (effectively: `v.x/v.y`)
     template<std::floating_point T>
     constexpr T aspect_ratio(Vec<2, T> v)
     {

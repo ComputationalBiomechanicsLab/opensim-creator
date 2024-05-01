@@ -179,7 +179,7 @@ TEST(FitEllipsoid, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedA
         std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources/TestOpenSimCreator/Utils/ShapeFitting/Femoral_head.obj";
     Mesh const mesh = LoadMeshViaSimTK(objPath);
     Ellipsoid const fit = FitEllipsoid(mesh);
-    auto const directions = radii_directions(fit);
+    auto const directions = axis_directions_of(fit);
 
     ASSERT_TRUE(all_of(equal_within_absdiff(fit.origin, c_ExpectedOrigin, c_MaximumAbsoluteError)));
     ASSERT_TRUE(all_of(equal_within_absdiff(fit.radii,  c_ExpectedRadii, c_MaximumAbsoluteError)));

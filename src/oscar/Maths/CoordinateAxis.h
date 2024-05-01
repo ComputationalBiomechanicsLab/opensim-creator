@@ -18,7 +18,7 @@ namespace osc
     public:
         // returns a `CoordinateAxis` parsed from a `std::string_view`, the format can only be one of:
         //
-        //     x, X, y, Y, z, Z
+        //     "x", "X", "y", "Y", "z", "Z"
         //
         // returns `std::nullopt` if the input string is incorrect
         static std::optional<CoordinateAxis> try_parse(std::string_view);
@@ -44,7 +44,7 @@ namespace osc
         // default-constructs a `CoordinateAxis` that represents the X axis
         constexpr CoordinateAxis() = default;
 
-        // constructs a `CoordinateAxis` from a runtime integer that must be 0, 1, or 2, representing X, Y, or Z axis
+        // constructs a `CoordinateAxis` from a runtime integer that must be `0`, `1`, or `2`, representing X, Y, or Z axis
         explicit constexpr CoordinateAxis(int axis_index) :
             axis_index_{static_cast<uint8_t>(axis_index)}
         {

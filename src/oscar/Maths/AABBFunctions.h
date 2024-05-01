@@ -42,7 +42,7 @@ namespace osc
         return dims.x * dims.y * dims.z;
     }
 
-    // tests if `aabb` has zero width along all of its edges (i.e. min == max)
+    // tests if `aabb` has zero width along all of its edges
     constexpr bool is_point(const AABB& aabb)
     {
         return aabb.min == aabb.max;
@@ -128,7 +128,7 @@ namespace osc
     // if both `x` and `y` are `std::nullopt`, returns `std::nullopt`
     constexpr std::optional<AABB> maybe_bounding_aabb_of(std::optional<AABB> x, std::optional<AABB> y)
     {
-        if (x && y) {
+        if (x and y) {
             return bounding_aabb_of(*x, *y);
         }
         else if (x) {

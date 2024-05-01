@@ -66,6 +66,6 @@ template<size_t L, typename T>
 struct std::hash<osc::Vec<L, T>> final {
     size_t operator()(const osc::Vec<L, T>& v) const
     {
-        return osc::HashRange(v);
+        return osc::hash_range(v);
     }
 };

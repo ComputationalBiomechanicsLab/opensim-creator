@@ -28,7 +28,7 @@ namespace osc
     }
 
     template<typename Range>
-    size_t HashRange(const Range& range)
+    size_t hash_range(const Range& range)
     {
         size_t rv = 0;
         for (const auto& el : range) {

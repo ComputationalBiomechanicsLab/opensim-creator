@@ -2144,7 +2144,7 @@ bool osc::ActionFitEllipsoidToMesh(
     {
         // compute offset transform for ellipsoid
         SimTK::Mat33 m;
-        auto directions = radii_directions(ellipsoid);
+        auto directions = axis_directions_of(ellipsoid);
         m.col(0) = ToSimTKVec3(directions[0]);
         m.col(1) = ToSimTKVec3(directions[1]);
         m.col(2) = ToSimTKVec3(directions[2]);

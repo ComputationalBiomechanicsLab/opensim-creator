@@ -48,7 +48,7 @@ namespace osc
     }
 
     template<std::floating_point T, AngularUnitTraits Units>
-    Mat<4, 4, T> perspective(Angle<T, Units> fovy, T aspect, T z_near, T z_far)
+    Mat<4, 4, T> perspective(Angle<T, Units> vertical_fov, T aspect, T z_near, T z_far)
     {
         if (fabs(aspect - epsilon_v<T>) <= T{}) {
             // edge-case: some UIs ask for a perspective matrix on first frame before
@@ -57,7 +57,7 @@ namespace osc
             return Mat<4, 4, T>{T(1)};
         }
 
-        const T tan_half_fovy = tan(fovy / static_cast<T>(2));
+        const T tan_half_fovy = tan(vertical_fov / static_cast<T>(2));
 
         Mat<4, 4, T> rv(static_cast<T>(0));
         rv[0][0] = static_cast<T>(1) / (aspect * tan_half_fovy);
@@ -98,7 +98,7 @@ namespace osc
         const T c = cos(angle);
         const T s = sin(angle);
 
-        Vec<3, T> temp((T(1) - c) * axis);
+        const Vec<3, T> temp((T(1) - c) * axis);
 
         Mat<4, 4, T> rotate;
         rotate[0][0] = c + temp[0] * axis[0];
@@ -148,18 +148,18 @@ namespace osc
     template<std::floating_point T>
     T determinant(const Mat<4, 4, T>& m)
     {
-        T SubFactor00 = m[2][2] * m[3][3] - m[3][2] * m[2][3];
-        T SubFactor01 = m[2][1] * m[3][3] - m[3][1] * m[2][3];
-        T SubFactor02 = m[2][1] * m[3][2] - m[3][1] * m[2][2];
-        T SubFactor03 = m[2][0] * m[3][3] - m[3][0] * m[2][3];
-        T SubFactor04 = m[2][0] * m[3][2] - m[3][0] * m[2][2];
-        T SubFactor05 = m[2][0] * m[3][1] - m[3][0] * m[2][1];
+        const T subfactor_00 = m[2][2] * m[3][3] - m[3][2] * m[2][3];
+        const T subfactor_01 = m[2][1] * m[3][3] - m[3][1] * m[2][3];
+        const T subfactor_02 = m[2][1] * m[3][2] - m[3][1] * m[2][2];
+        const T subfactor_03 = m[2][0] * m[3][3] - m[3][0] * m[2][3];
+        const T subfactor_04 = m[2][0] * m[3][2] - m[3][0] * m[2][2];
+        const T subfactor_05 = m[2][0] * m[3][1] - m[3][0] * m[2][1];
 
-        Vec<4, T> determinant_coef(
-            + (m[1][1] * SubFactor00 - m[1][2] * SubFactor01 + m[1][3] * SubFactor02),
-            - (m[1][0] * SubFactor00 - m[1][2] * SubFactor03 + m[1][3] * SubFactor04),
-            + (m[1][0] * SubFactor01 - m[1][1] * SubFactor03 + m[1][3] * SubFactor05),
-            - (m[1][0] * SubFactor02 - m[1][1] * SubFactor04 + m[1][2] * SubFactor05)
+        const Vec<4, T> determinant_coef(
+            + (m[1][1] * subfactor_00 - m[1][2] * subfactor_01 + m[1][3] * subfactor_02),
+            - (m[1][0] * subfactor_00 - m[1][2] * subfactor_03 + m[1][3] * subfactor_04),
+            + (m[1][0] * subfactor_01 - m[1][1] * subfactor_03 + m[1][3] * subfactor_05),
+            - (m[1][0] * subfactor_02 - m[1][1] * subfactor_04 + m[1][2] * subfactor_05)
         );
 
         return
@@ -170,78 +170,77 @@ namespace osc
     template<std::floating_point T>
     T inverse(const Mat<3, 3, T>& m)
     {
-        T OneOverDeterminant = static_cast<T>(1) / determinant(m);
+        const T one_over_determinant = static_cast<T>(1) / determinant(m);
 
         Mat<3, 3, T> rv;
-        rv[0][0] = + (m[1][1] * m[2][2] - m[2][1] * m[1][2]) * OneOverDeterminant;
-        rv[1][0] = - (m[1][0] * m[2][2] - m[2][0] * m[1][2]) * OneOverDeterminant;
-        rv[2][0] = + (m[1][0] * m[2][1] - m[2][0] * m[1][1]) * OneOverDeterminant;
-        rv[0][1] = - (m[0][1] * m[2][2] - m[2][1] * m[0][2]) * OneOverDeterminant;
-        rv[1][1] = + (m[0][0] * m[2][2] - m[2][0] * m[0][2]) * OneOverDeterminant;
-        rv[2][1] = - (m[0][0] * m[2][1] - m[2][0] * m[0][1]) * OneOverDeterminant;
-        rv[0][2] = + (m[0][1] * m[1][2] - m[1][1] * m[0][2]) * OneOverDeterminant;
-        rv[1][2] = - (m[0][0] * m[1][2] - m[1][0] * m[0][2]) * OneOverDeterminant;
-        rv[2][2] = + (m[0][0] * m[1][1] - m[1][0] * m[0][1]) * OneOverDeterminant;
-
+        rv[0][0] = + (m[1][1] * m[2][2] - m[2][1] * m[1][2]) * one_over_determinant;
+        rv[1][0] = - (m[1][0] * m[2][2] - m[2][0] * m[1][2]) * one_over_determinant;
+        rv[2][0] = + (m[1][0] * m[2][1] - m[2][0] * m[1][1]) * one_over_determinant;
+        rv[0][1] = - (m[0][1] * m[2][2] - m[2][1] * m[0][2]) * one_over_determinant;
+        rv[1][1] = + (m[0][0] * m[2][2] - m[2][0] * m[0][2]) * one_over_determinant;
+        rv[2][1] = - (m[0][0] * m[2][1] - m[2][0] * m[0][1]) * one_over_determinant;
+        rv[0][2] = + (m[0][1] * m[1][2] - m[1][1] * m[0][2]) * one_over_determinant;
+        rv[1][2] = - (m[0][0] * m[1][2] - m[1][0] * m[0][2]) * one_over_determinant;
+        rv[2][2] = + (m[0][0] * m[1][1] - m[1][0] * m[0][1]) * one_over_determinant;
         return rv;
     }
 
     template<std::floating_point T>
     Mat<4, 4, T> inverse(const Mat<4, 4, T>& m)
     {
-        T Coef00 = m[2][2] * m[3][3] - m[3][2] * m[2][3];
-        T Coef02 = m[1][2] * m[3][3] - m[3][2] * m[1][3];
-        T Coef03 = m[1][2] * m[2][3] - m[2][2] * m[1][3];
+        const T coef_00 = m[2][2] * m[3][3] - m[3][2] * m[2][3];
+        const T coef_02 = m[1][2] * m[3][3] - m[3][2] * m[1][3];
+        const T coef_03 = m[1][2] * m[2][3] - m[2][2] * m[1][3];
 
-        T Coef04 = m[2][1] * m[3][3] - m[3][1] * m[2][3];
-        T Coef06 = m[1][1] * m[3][3] - m[3][1] * m[1][3];
-        T Coef07 = m[1][1] * m[2][3] - m[2][1] * m[1][3];
+        const T coef_04 = m[2][1] * m[3][3] - m[3][1] * m[2][3];
+        const T coef_06 = m[1][1] * m[3][3] - m[3][1] * m[1][3];
+        const T coef_07 = m[1][1] * m[2][3] - m[2][1] * m[1][3];
 
-        T Coef08 = m[2][1] * m[3][2] - m[3][1] * m[2][2];
-        T Coef10 = m[1][1] * m[3][2] - m[3][1] * m[1][2];
-        T Coef11 = m[1][1] * m[2][2] - m[2][1] * m[1][2];
+        const T coef_08 = m[2][1] * m[3][2] - m[3][1] * m[2][2];
+        const T coef_10 = m[1][1] * m[3][2] - m[3][1] * m[1][2];
+        const T coef_11 = m[1][1] * m[2][2] - m[2][1] * m[1][2];
 
-        T Coef12 = m[2][0] * m[3][3] - m[3][0] * m[2][3];
-        T Coef14 = m[1][0] * m[3][3] - m[3][0] * m[1][3];
-        T Coef15 = m[1][0] * m[2][3] - m[2][0] * m[1][3];
+        const T coef_12 = m[2][0] * m[3][3] - m[3][0] * m[2][3];
+        const T coef_14 = m[1][0] * m[3][3] - m[3][0] * m[1][3];
+        const T coef_15 = m[1][0] * m[2][3] - m[2][0] * m[1][3];
 
-        T Coef16 = m[2][0] * m[3][2] - m[3][0] * m[2][2];
-        T Coef18 = m[1][0] * m[3][2] - m[3][0] * m[1][2];
-        T Coef19 = m[1][0] * m[2][2] - m[2][0] * m[1][2];
+        const T coef_16 = m[2][0] * m[3][2] - m[3][0] * m[2][2];
+        const T coef_18 = m[1][0] * m[3][2] - m[3][0] * m[1][2];
+        const T coef_19 = m[1][0] * m[2][2] - m[2][0] * m[1][2];
 
-        T Coef20 = m[2][0] * m[3][1] - m[3][0] * m[2][1];
-        T Coef22 = m[1][0] * m[3][1] - m[3][0] * m[1][1];
-        T Coef23 = m[1][0] * m[2][1] - m[2][0] * m[1][1];
+        const T coef_20 = m[2][0] * m[3][1] - m[3][0] * m[2][1];
+        const T coef_22 = m[1][0] * m[3][1] - m[3][0] * m[1][1];
+        const T coef_23 = m[1][0] * m[2][1] - m[2][0] * m[1][1];
 
-        Vec<4, T> Fac0(Coef00, Coef00, Coef02, Coef03);
-        Vec<4, T> Fac1(Coef04, Coef04, Coef06, Coef07);
-        Vec<4, T> Fac2(Coef08, Coef08, Coef10, Coef11);
-        Vec<4, T> Fac3(Coef12, Coef12, Coef14, Coef15);
-        Vec<4, T> Fac4(Coef16, Coef16, Coef18, Coef19);
-        Vec<4, T> Fac5(Coef20, Coef20, Coef22, Coef23);
+        const Vec<4, T> fac_0(coef_00, coef_00, coef_02, coef_03);
+        const Vec<4, T> fac_1(coef_04, coef_04, coef_06, coef_07);
+        const Vec<4, T> fac_2(coef_08, coef_08, coef_10, coef_11);
+        const Vec<4, T> fac_3(coef_12, coef_12, coef_14, coef_15);
+        const Vec<4, T> fac_4(coef_16, coef_16, coef_18, coef_19);
+        const Vec<4, T> fac_5(coef_20, coef_20, coef_22, coef_23);
 
-        Vec<4, T> Vec0(m[1][0], m[0][0], m[0][0], m[0][0]);
-        Vec<4, T> Vec1(m[1][1], m[0][1], m[0][1], m[0][1]);
-        Vec<4, T> Vec2(m[1][2], m[0][2], m[0][2], m[0][2]);
-        Vec<4, T> Vec3(m[1][3], m[0][3], m[0][3], m[0][3]);
+        const Vec<4, T> vec_0(m[1][0], m[0][0], m[0][0], m[0][0]);
+        const Vec<4, T> vec_1(m[1][1], m[0][1], m[0][1], m[0][1]);
+        const Vec<4, T> vec_2(m[1][2], m[0][2], m[0][2], m[0][2]);
+        const Vec<4, T> vec_3(m[1][3], m[0][3], m[0][3], m[0][3]);
 
-        Vec<4, T> Inv0(Vec1 * Fac0 - Vec2 * Fac1 + Vec3 * Fac2);
-        Vec<4, T> Inv1(Vec0 * Fac0 - Vec2 * Fac3 + Vec3 * Fac4);
-        Vec<4, T> Inv2(Vec0 * Fac1 - Vec1 * Fac3 + Vec3 * Fac5);
-        Vec<4, T> Inv3(Vec0 * Fac2 - Vec1 * Fac4 + Vec2 * Fac5);
+        const Vec<4, T> inv_0(vec_1 * fac_0 - vec_2 * fac_1 + vec_3 * fac_2);
+        const Vec<4, T> inv_1(vec_0 * fac_0 - vec_2 * fac_3 + vec_3 * fac_4);
+        const Vec<4, T> inv_2(vec_0 * fac_1 - vec_1 * fac_3 + vec_3 * fac_5);
+        const Vec<4, T> inv_3(vec_0 * fac_2 - vec_1 * fac_4 + vec_2 * fac_5);
 
-        Vec<4, T> SignA(+1, -1, +1, -1);
-        Vec<4, T> SignB(-1, +1, -1, +1);
-        Mat<4, 4, T> Inverse(Inv0 * SignA, Inv1 * SignB, Inv2 * SignA, Inv3 * SignB);
+        const Vec<4, T> sign_a(+1, -1, +1, -1);
+        const Vec<4, T> sign_b(-1, +1, -1, +1);
+        const Mat<4, 4, T> inverted(inv_0 * sign_a, inv_1 * sign_b, inv_2 * sign_a, inv_3 * sign_b);
 
-        Vec<4, T> Row0(Inverse[0][0], Inverse[1][0], Inverse[2][0], Inverse[3][0]);
+        const Vec<4, T> row_0(inverted[0][0], inverted[1][0], inverted[2][0], inverted[3][0]);
 
-        Vec<4, T> Dot0(m[0] * Row0);
-        T Dot1 = (Dot0.x + Dot0.y) + (Dot0.z + Dot0.w);
+        const Vec<4, T> dot_0(m[0] * row_0);
+        const T dot_1 = (dot_0.x + dot_0.y) + (dot_0.z + dot_0.w);
 
-        T OneOverDeterminant = static_cast<T>(1) / Dot1;
+        const T one_over_determinant = static_cast<T>(1) / dot_1;
 
-        return Inverse * OneOverDeterminant;
+        return inverted * one_over_determinant;
     }
 
     template<typename T>
@@ -289,17 +288,17 @@ namespace osc
     }
 
     // returns euler angles for performing an intrinsic, step-by-step, rotation about X, Y, and then Z
-    template<typename T>
-    Vec<3, RadiansT<T>> extract_eulers_xyz(const Mat<4, 4, T>& M)
+    template<std::floating_point T>
+    Vec<3, RadiansT<T>> extract_eulers_xyz(const Mat<4, 4, T>& m)
     {
-        RadiansT<T> T1 = atan2(M[2][1], M[2][2]);
-        T C2 = sqrt(M[0][0]*M[0][0] + M[1][0]*M[1][0]);
-        RadiansT<T> T2 = atan2(-M[2][0], C2);
-        T S1 = sin(T1);
-        T C1 = cos(T1);
-        RadiansT<T> T3 = atan2(S1*M[0][2] - C1*M[0][1], C1*M[1][1] - S1*M[1][2  ]);
+        const RadiansT<T> t1 = atan2(m[2][1], m[2][2]);
+        const T c2 = sqrt(m[0][0]*m[0][0] + m[1][0]*m[1][0]);
+        const RadiansT<T> t2 = atan2(-m[2][0], c2);
+        const T s1 = sin(t1);
+        const T c1 = cos(t1);
+        const RadiansT<T> t3 = atan2(s1*m[0][2] - c1*m[0][1], c1*m[1][1] - s1*m[1][2  ]);
 
-        return Vec<3, RadiansT<T>>{-T1, -T2, -T3};
+        return Vec<3, RadiansT<T>>{-t1, -t2, -t3};
     }
 
     namespace detail
@@ -321,124 +320,124 @@ namespace osc
     template<typename T>
     bool decompose(
         const Mat<4, 4, T>& model_mat4,
-        Vec<3, T>& Scale,
-        Qua<T>& Orientation,
-        Vec<3, T>& Translation,
-        Vec<3, T>& Skew,
-        Vec<4, T>& Perspective)
+        Vec<3, T>& r_scale,
+        Qua<T>& r_orientation,
+        Vec<3, T>& r_translation,
+        Vec<3, T>& r_skew,
+        Vec<4, T>& r_perspective)
     {
         // Matrix decompose
         // http://www.opensource.apple.com/source/WebCore/WebCore-514/platform/graphics/transforms/TransformationMatrix.cpp
         // Decomposes the mode matrix to translations,rotation scale components
 
-        Mat<4, 4, T> LocalMatrix(model_mat4);
+        Mat<4, 4, T> local_matrix(model_mat4);
 
-        // Normalize the matrix.
-        if (equal_within_epsilon(LocalMatrix[3][3], static_cast<T>(0))) {
+        // normalize the matrix
+        if (equal_within_epsilon(local_matrix[3][3], static_cast<T>(0))) {
             return false;
         }
 
         for (size_t i = 0; i < 4; ++i) {
             for (size_t j = 0; j < 4; ++j) {
-                LocalMatrix[i][j] /= LocalMatrix[3][3];
+                local_matrix[i][j] /= local_matrix[3][3];
             }
         }
 
-        // perspectiveMatrix is used to solve for perspective, but it also provides
-        // an easy way to test for singularity of the upper 3x3 component.
-        Mat<4, 4, T> PerspectiveMatrix(LocalMatrix);
-
+        // `perspective_matrix` is used to solve for perspective, but it also provides
+        // an easy way to test for singularity of the upper 3x3 component
+        Mat<4, 4, T> perspective_matrix(local_matrix);
         for (size_t i = 0; i < 3; i++) {
-            PerspectiveMatrix[i][3] = static_cast<T>(0);
+            perspective_matrix[i][3] = static_cast<T>(0);
         }
-        PerspectiveMatrix[3][3] = static_cast<T>(1);
+        perspective_matrix[3][3] = static_cast<T>(1);
 
-        if (equal_within_epsilon(determinant(PerspectiveMatrix), static_cast<T>(0))) {
+        if (equal_within_epsilon(determinant(perspective_matrix), static_cast<T>(0))) {
             return false;
         }
 
-        // First, isolate perspective.  This is the messiest.
-        if(
-            !equal_within_epsilon(LocalMatrix[0][3], static_cast<T>(0)) ||
-            !equal_within_epsilon(LocalMatrix[1][3], static_cast<T>(0)) ||
-            !equal_within_epsilon(LocalMatrix[2][3], static_cast<T>(0)))
+        // first, isolate perspective, which is the messiest
+        if (
+            not equal_within_epsilon(local_matrix[0][3], static_cast<T>(0)) or
+            not equal_within_epsilon(local_matrix[1][3], static_cast<T>(0)) or
+            not equal_within_epsilon(local_matrix[2][3], static_cast<T>(0)))
         {
-            // rightHandSide is the right hand side of the equation.
-            Vec<4, T> RightHandSide;
-            RightHandSide[0] = LocalMatrix[0][3];
-            RightHandSide[1] = LocalMatrix[1][3];
-            RightHandSide[2] = LocalMatrix[2][3];
-            RightHandSide[3] = LocalMatrix[3][3];
+            // `right_hand_side` is the right hand side of the equation
+            const Vec<4, T> right_hand_side = {
+                local_matrix[0][3],
+                local_matrix[1][3],
+                local_matrix[2][3],
+                local_matrix[3][3],
+            };
 
-            // Solve the equation by inverting PerspectiveMatrix and multiplying
-            // rightHandSide by the inverse.  (This is the easiest way, not
-            // necessarily the best.)
-            Mat<4, 4, T> InversePerspectiveMatrix = inverse(PerspectiveMatrix);//   inverse(PerspectiveMatrix, inversePerspectiveMatrix);
-            Mat<4, 4, T> TransposedInversePerspectiveMatrix = transpose(InversePerspectiveMatrix);//   transposeMatrix4(inversePerspectiveMatrix, transposedInversePerspectiveMatrix);
+            // solve the equation by inverting `perspective_matrix` and multiplying
+            // `right_hand_side` by the inverse. This is the easiest way, not
+            // necessarily the best.
+            const Mat<4, 4, T> inverse_perspective_matrix = inverse(perspective_matrix);
+            const Mat<4, 4, T> transposed_inverse_perspective_matrix = transpose(inverse_perspective_matrix);//   transposeMatrix4(inversePerspectiveMatrix, transposedInversePerspectiveMatrix);
 
-            Perspective = TransposedInversePerspectiveMatrix * RightHandSide;
-            //  v4MulPointByMatrix(rightHandSide, transposedInversePerspectiveMatrix, perspectivePoint);
+            r_perspective = transposed_inverse_perspective_matrix * right_hand_side;
 
-            // Clear the perspective partition
-            LocalMatrix[0][3] = LocalMatrix[1][3] = LocalMatrix[2][3] = static_cast<T>(0);
-            LocalMatrix[3][3] = static_cast<T>(1);
+            // clear the perspective partition
+            local_matrix[0][3] = local_matrix[1][3] = local_matrix[2][3] = static_cast<T>(0);
+            local_matrix[3][3] = static_cast<T>(1);
         }
         else {
-            // No perspective.
-            Perspective = Vec<4, T>(0, 0, 0, 1);
+            // no perspective
+            r_perspective = Vec<4, T>(0, 0, 0, 1);
         }
 
-        // Next take care of translation (easy).
-        Translation = Vec<3, T>(LocalMatrix[3]);
-        LocalMatrix[3] = Vec<4, T>(0, 0, 0, LocalMatrix[3].w);
+        // second, take care of translation (easy).
+        r_translation = Vec<3, T>(local_matrix[3]);
+        local_matrix[3] = Vec<4, T>(0, 0, 0, local_matrix[3].w);
 
-        Vec<3, T> Row[3], Pdum3;
-
-        // Now get scale and shear.
+        // third/fourth, calculate the scale and shear
+        Vec<3, T> Row[3];
+        Vec<3, T> Pdum3;
         for (size_t i = 0; i < 3; ++i) {
             for(size_t j = 0; j < 3; ++j) {
-                Row[i][j] = LocalMatrix[i][j];
+                Row[i][j] = local_matrix[i][j];
             }
         }
 
-        // Compute X scale factor and normalize first row.
-        Scale.x = length(Row[0]);// v3Length(Row[0]);
+        // compute X scale factor and normalize first row
+        r_scale.x = length(Row[0]);
 
         Row[0] = detail::scale(Row[0], static_cast<T>(1));
 
-        // Compute XY shear factor and make 2nd row orthogonal to 1st.
-        Skew.z = dot(Row[0], Row[1]);
-        Row[1] = detail::combine(Row[1], Row[0], static_cast<T>(1), -Skew.z);
+        // compute XY shear factor and make 2nd row orthogonal to 1st
+        r_skew.z = dot(Row[0], Row[1]);
+        Row[1] = detail::combine(Row[1], Row[0], static_cast<T>(1), -r_skew.z);
 
-        // Now, compute Y scale and normalize 2nd row.
-        Scale.y = length(Row[1]);
+        // compute Y scale and normalize 2nd row
+        r_scale.y = length(Row[1]);
         Row[1] = detail::scale(Row[1], static_cast<T>(1));
-        Skew.z /= Scale.y;
+        r_skew.z /= r_scale.y;
 
-        // Compute XZ and YZ shears, orthogonalize 3rd row.
-        Skew.y = dot(Row[0], Row[2]);
-        Row[2] = detail::combine(Row[2], Row[0], static_cast<T>(1), -Skew.y);
-        Skew.x = dot(Row[1], Row[2]);
-        Row[2] = detail::combine(Row[2], Row[1], static_cast<T>(1), -Skew.x);
+        // compute XZ and YZ shears, orthogonalize 3rd row
+        r_skew.y = dot(Row[0], Row[2]);
+        Row[2] = detail::combine(Row[2], Row[0], static_cast<T>(1), -r_skew.y);
+        r_skew.x = dot(Row[1], Row[2]);
+        Row[2] = detail::combine(Row[2], Row[1], static_cast<T>(1), -r_skew.x);
 
-        // Next, get Z scale and normalize 3rd row.
-        Scale.z = length(Row[2]);
+        // get Z scale and normalize 3rd row
+        r_scale.z = length(Row[2]);
         Row[2] = detail::scale(Row[2], static_cast<T>(1));
-        Skew.y /= Scale.z;
-        Skew.x /= Scale.z;
+        r_skew.y /= r_scale.z;
+        r_skew.x /= r_scale.z;
 
-        // At this point, the matrix (in rows[]) is orthonormal.
-        // Check for a coordinate system flip.  If the determinant
+        // at this point, the matrix (in rows[]) is orthonormal
+        //
+        // check for a coordinate system flip.  If the determinant
         // is -1, then negate the matrix and the scaling factors.
-        Pdum3 = cross(Row[1], Row[2]); // v3Cross(row[1], row[2], Pdum3);
+        Pdum3 = cross(Row[1], Row[2]);
         if (dot(Row[0], Pdum3) < 0) {
             for (size_t i = 0; i < 3; i++) {
-                Scale[i] *= static_cast<T>(-1);
+                r_scale[i] *= static_cast<T>(-1);
                 Row[i] *= static_cast<T>(-1);
             }
         }
 
-        // Now, get the rotations out, as described in the gem.
+        // fifth (finally), get the rotations out, as described in the gem
 
         // FIXME - Add the ability to return either quaternions (which are
         // easier to recompose with) or Euler angles (rx, ry, rz), which
@@ -459,11 +458,11 @@ namespace osc
         T root, trace = Row[0].x + Row[1].y + Row[2].z;
         if (trace > static_cast<T>(0)) {
             root = sqrt(trace + static_cast<T>(1.0));
-            Orientation.w = static_cast<T>(0.5) * root;
+            r_orientation.w = static_cast<T>(0.5) * root;
             root = static_cast<T>(0.5) / root;
-            Orientation.x = root * (Row[1].z - Row[2].y);
-            Orientation.y = root * (Row[2].x - Row[0].z);
-            Orientation.z = root * (Row[0].y - Row[1].x);
+            r_orientation.x = root * (Row[1].z - Row[2].y);
+            r_orientation.y = root * (Row[2].x - Row[0].z);
+            r_orientation.z = root * (Row[0].y - Row[1].x);
         } // End if > 0
         else {
             static int next[3] = {1, 2, 0};
@@ -477,11 +476,11 @@ namespace osc
 
             root = sqrt(Row[i][i] - Row[j][j] - Row[k][k] + static_cast<T>(1.0));
 
-            Orientation[i + off] = static_cast<T>(0.5) * root;
+            r_orientation[i + off] = static_cast<T>(0.5) * root;
             root = static_cast<T>(0.5) / root;
-            Orientation[j + off] = root * (Row[i][j] + Row[j][i]);
-            Orientation[k + off] = root * (Row[i][k] + Row[k][i]);
-            Orientation.w = root * (Row[j][k] - Row[k][j]);
+            r_orientation[j + off] = root * (Row[i][j] + Row[j][i]);
+            r_orientation[k + off] = root * (Row[i][k] + Row[k][i]);
+            r_orientation.w = root * (Row[j][k] - Row[k][j]);
         } // End if <= 0
 
         return true;
@@ -525,8 +524,8 @@ namespace osc
         //  be normalized after mutiplication with a normal matrix anyway, so
         //  nothing is lost"
 
-        const Mat<3, 3, T> topLeft{m};
-        return adjugate(transpose(topLeft));
+        const Mat<3, 3, T> top_left{m};
+        return adjugate(transpose(top_left));
     }
 
     template<std::floating_point T>
@@ -552,6 +551,6 @@ template<size_t C, size_t R, typename T>
 struct std::hash<osc::Mat<C, R, T>> final {
     size_t operator()(const osc::Mat<C, R, T>& m) const
     {
-        return osc::HashRange(m);
+        return osc::hash_range(m);
     }
 };
