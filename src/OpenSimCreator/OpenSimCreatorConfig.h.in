@@ -32,3 +32,9 @@
 // to the repo so that users can just click and go, rather than having to separately
 // browse to the repo
 #define OSC_REPO_URL "@OSC_REPO_URL@"
+
+// char[]
+//
+// the internet location for a "help site", which is loosely defined as somewhere the user
+// can go to ask for help. This data is used by in-app links, shortcuts, etc.
+#define OSC_HELP_URL "@OSC_HELP_URL@"

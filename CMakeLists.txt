@@ -46,6 +46,11 @@ set(
     "the internet location of the software's repo - used by in-app links, installers, etc."
 )
 set(
+    OSC_HELP_URL "https://github.com/ComputationalBiomechanicsLab/opensim-creator/discussions"
+    CACHE STRING
+    "the internet location of the software's help page - used by in-app links, installers, etc."
+)
+set(
     OSC_ORGNAME "cbl"
     CACHE STRING
     "the name of the organization that created the application (affects configuration location)"

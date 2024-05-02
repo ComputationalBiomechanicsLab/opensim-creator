@@ -443,6 +443,20 @@ void osc::MainMenuAboutTab::onDraw()
             ui::NextColumn();
         }
 
+        if (auto helpURL = App::get().metadata().maybe_help_url())
+        {
+            ui::TextUnformatted("OpenSim Creator Help");
+            ui::NextColumn();
+            ui::PushID(id++);
+            if (ui::Button(ICON_FA_LINK " open"))
+            {
+                OpenPathInOSDefaultApplication(std::filesystem::path{std::string_view{*helpURL}});
+            }
+            ui::DrawTooltipBodyOnlyIfItemHovered("this will open the help/discussion page in a separate browser window");
+            ui::PopID();
+            ui::NextColumn();
+        }
+
         ui::TextUnformatted("OpenSim Documentation");
         ui::NextColumn();
         ui::PushID(id++);

@@ -209,6 +209,7 @@ AppMetadata osc::GetOpenSimCreatorAppMetadata()
         OSC_VERSION_STRING,
         OSC_BUILD_ID,
         OSC_REPO_URL,
+        OSC_HELP_URL,
     };
 }
 
