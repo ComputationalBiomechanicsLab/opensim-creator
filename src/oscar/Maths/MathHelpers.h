@@ -90,28 +90,28 @@ namespace osc
 
     // ----- `Sphere` helpers -----
 
-    // returns a sphere that bounds the given vertices
+    // returns a `Sphere` that loosely bounds the given `Vec3`s
     Sphere bounding_sphere_of(std::span<const Vec3>);
 
-    // returns a sphere that loosely bounds the given AABB
+    // returns a `Sphere` that loosely bounds the given `AABB`
     Sphere bounding_sphere_of(const AABB&);
 
-    // returns an AABB that tightly bounds the sphere
+    // returns an `AABB` that tightly bounds the `Sphere`
     AABB bounding_aabb_of(const Sphere&);
 
 
     // ----- `Line` helpers -----
 
-    // returns a line that has been transformed by the supplied transform matrix
+    // returns a `Line` that has been transformed by the `Mat4`
     Line transform_line(const Line&, const Mat4&);
 
-    // returns a line that has been transformed by the inverse of the supplied transform
+    // returns a `Line` that has been transformed by the inverse of the supplied `Transform`
     Line inverse_transform_line(const Line&, const Transform&);
 
 
     // ----- `Disc` helpers -----
 
-    // returns an xform that maps a disc to another disc
+    // returns a `Mat4` that maps one `Disc` to another `Disc`
     Mat4 mat4_transform_between(const Disc&, const Disc&);
 
 
@@ -120,20 +120,18 @@ namespace osc
     // returns a transform matrix that maps a path segment to another path segment
     Mat4 mat4_transform_between(const LineSegment&, const LineSegment&);
 
-    // returns a transform that maps a path segment to another path segment
+    // returns a `Transform` that maps a path segment to another path segment
     Transform transform_between(const LineSegment&, const LineSegment&);
 
-    // returns a transform that maps a Y-to-Y (bottom-to-top) cylinder to a segment with the given radius
+    // returns a `Transform` that maps a Y-to-Y (bottom-to-top) cylinder to a segment with the given radius
     Transform cylinder_to_line_segment_transform(const LineSegment&, float radius);
 
-    // returns a transform that maps a Y-to-Y (bottom-to-top) cone to a segment with the given radius
+    // returns a `Transform` that maps a Y-to-Y (bottom-to-top) cone to a segment with the given radius
     Transform y_to_y_cone_to_segment_transform(const LineSegment&, float radius);
-
-    // ----- other -----
 
     // ----- VecX/MatX helpers -----
 
-    // returns a transform matrix that rotates dir1 to point in the same direction as dir2
+    // returns a transform matrix that rotates `dir1` to point in the same direction as `dir2`
     Mat4 mat4_transform_between_directions(const Vec3& dir1, const Vec3& dir2);
 
     // returns euler angles for performing an intrinsic, step-by-step, rotation about X, Y, and then Z
@@ -141,7 +139,7 @@ namespace osc
 
     Vec3 transform_point(const Mat4&, const Vec3&);
 
-    // returns the a quaternion equivalent to the given euler angles
+    // returns the a `Quat` equivalent to the given euler angles
     Quat to_worldspace_rotation_quat(const Eulers&);
 
     // applies a world-space rotation to the transform
