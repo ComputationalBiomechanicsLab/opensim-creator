@@ -48,8 +48,8 @@ namespace osc
 
         Vec3 position() const;
 
-        // converts a `pos` (top-left) in the output `dims` into a line in worldspace by unprojection
-        Line unproject_topleft_pos_to_world_ray(Vec2 pos, Vec2 dims) const;
+        // converts a `pos` (top-left) in the output `dimensions` into a line in worldspace by unprojection
+        Line unproject_topleft_pos_to_world_ray(Vec2 pos, Vec2 dimensions) const;
 
         friend bool operator==(const PolarPerspectiveCamera&, const PolarPerspectiveCamera&) = default;
 
@@ -62,18 +62,18 @@ namespace osc
         float zfar;
     };
 
-    PolarPerspectiveCamera CreateCameraWithRadius(float);
-    PolarPerspectiveCamera CreateCameraFocusedOn(const AABB&);
+    PolarPerspectiveCamera create_camera_with_radius(float);
+    PolarPerspectiveCamera create_camera_focused_on(const AABB&);
     Vec3 recommended_light_direction(const PolarPerspectiveCamera&);
-    void FocusAlongAxis(PolarPerspectiveCamera&, size_t, bool negate = false);
-    void FocusAlongX(PolarPerspectiveCamera&);
-    void FocusAlongMinusX(PolarPerspectiveCamera&);
-    void FocusAlongY(PolarPerspectiveCamera&);
-    void FocusAlongMinusY(PolarPerspectiveCamera&);
-    void FocusAlongZ(PolarPerspectiveCamera&);
-    void FocusAlongMinusZ(PolarPerspectiveCamera&);
-    void ZoomIn(PolarPerspectiveCamera&);
-    void ZoomOut(PolarPerspectiveCamera&);
-    void Reset(PolarPerspectiveCamera&);
-    void AutoFocus(PolarPerspectiveCamera&, const AABB& element_aabb, float aspect_ratio = 1.0f);
+    void focus_along_axis(PolarPerspectiveCamera&, size_t, bool negate = false);
+    void focus_along_x(PolarPerspectiveCamera&);
+    void focus_along_minus_x(PolarPerspectiveCamera&);
+    void focus_along_y(PolarPerspectiveCamera&);
+    void focus_along_minus_y(PolarPerspectiveCamera&);
+    void focus_along_z(PolarPerspectiveCamera&);
+    void focus_along_minus_z(PolarPerspectiveCamera&);
+    void zoom_in(PolarPerspectiveCamera&);
+    void zoom_out(PolarPerspectiveCamera&);
+    void reset(PolarPerspectiveCamera&);
+    void auto_focus(PolarPerspectiveCamera&, const AABB& element_aabb, float aspect_ratio = 1.0f);
 }

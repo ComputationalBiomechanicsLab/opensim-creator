@@ -85,7 +85,7 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
                 drawlist.AddText(end - 0.5f*labelSize, textColor, labels[i].c_str());
 
                 if (hovered && ui::IsMouseClicked(ImGuiMouseButton_Left, id)) {
-                    FocusAlongAxis(camera, i);
+                    focus_along_axis(camera, i);
                     edited = true;
                 }
             }
@@ -108,7 +108,7 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
                 drawlist.AddCircleFilled(circ.origin, circ.radius, color);
 
                 if (hovered && ui::IsMouseClicked(ImGuiMouseButton_Left, id)) {
-                    FocusAlongAxis(camera, i, true);
+                    focus_along_axis(camera, i, true);
                     edited = true;
                 }
             }

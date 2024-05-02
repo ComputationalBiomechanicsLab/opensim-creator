@@ -298,18 +298,18 @@ namespace osc
     {
         using col_type = typename Mat<4, 4, T>::col_type;
 
-        const col_type Mov0(v[0]);
-        const col_type Mov1(v[1]);
-        const col_type Mul0 = m[0] * Mov0;
-        const col_type Mul1 = m[1] * Mov1;
-        const col_type Add0 = Mul0 + Mul1;
-        const col_type Mov2(v[2]);
-        const col_type Mov3(v[3]);
-        const col_type Mul2 = m[2] * Mov2;
-        const col_type Mul3 = m[3] * Mov3;
-        const col_type Add1 = Mul2 + Mul3;
-        const col_type Add2 = Add0 + Add1;
-        return Add2;
+        const col_type mov0(v[0]);
+        const col_type mov1(v[1]);
+        const col_type mul0 = m[0] * mov0;
+        const col_type mul1 = m[1] * mov1;
+        const col_type add0 = mul0 + mul1;
+        const col_type mov2(v[2]);
+        const col_type mov3(v[3]);
+        const col_type mul2 = m[2] * mov2;
+        const col_type mul3 = m[3] * mov3;
+        const col_type add1 = mul2 + mul3;
+        const col_type add2 = add0 + add1;
+        return add2;
     }
 
     template<typename T>
@@ -324,26 +324,26 @@ namespace osc
     }
 
     template<typename T>
-    Mat<4, 4, T> operator*(const Mat<4, 4, T>& m1, const Mat<4, 4, T>& m2)
+    Mat<4, 4, T> operator*(const Mat<4, 4, T>& a, const Mat<4, 4, T>& b)
     {
         using col_type = typename Mat<4, 4, T>::col_type;
 
-        const col_type SrcA0 = m1[0];
-        const col_type SrcA1 = m1[1];
-        const col_type SrcA2 = m1[2];
-        const col_type SrcA3 = m1[3];
+        const col_type& a0 = a[0];
+        const col_type& a1 = a[1];
+        const col_type& a2 = a[2];
+        const col_type& a3 = a[3];
 
-        const col_type SrcB0 = m2[0];
-        const col_type SrcB1 = m2[1];
-        const col_type SrcB2 = m2[2];
-        const col_type SrcB3 = m2[3];
+        const col_type& b0 = b[0];
+        const col_type& b1 = b[1];
+        const col_type& b2 = b[2];
+        const col_type& b3 = b[3];
 
-        Mat<4, 4, T> Result;
-        Result[0] = SrcA0 * SrcB0[0] + SrcA1 * SrcB0[1] + SrcA2 * SrcB0[2] + SrcA3 * SrcB0[3];
-        Result[1] = SrcA0 * SrcB1[0] + SrcA1 * SrcB1[1] + SrcA2 * SrcB1[2] + SrcA3 * SrcB1[3];
-        Result[2] = SrcA0 * SrcB2[0] + SrcA1 * SrcB2[1] + SrcA2 * SrcB2[2] + SrcA3 * SrcB2[3];
-        Result[3] = SrcA0 * SrcB3[0] + SrcA1 * SrcB3[1] + SrcA2 * SrcB3[2] + SrcA3 * SrcB3[3];
-        return Result;
+        Mat<4, 4, T> rv;
+        rv[0] = a0 * b0[0] + a1 * b0[1] + a2 * b0[2] + a3 * b0[3];
+        rv[1] = a0 * b1[0] + a1 * b1[1] + a2 * b1[2] + a3 * b1[3];
+        rv[2] = a0 * b2[0] + a1 * b2[1] + a2 * b2[2] + a3 * b2[3];
+        rv[3] = a0 * b3[0] + a1 * b3[1] + a2 * b3[2] + a3 * b3[3];
+        return rv;
     }
 
     template<typename T>

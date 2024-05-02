@@ -41,11 +41,11 @@ namespace osc
     };
 
     // applies the transform to a point vector (equivalent to `TransformPoint`)
-    constexpr Vec3 operator*(const Transform& t, Vec3 point)
+    constexpr Vec3 operator*(const Transform& transform, Vec3 point)
     {
-        point *= t.scale;
-        point  = t.rotation * point;
-        point += t.position;
+        point *= transform.scale;
+        point  = transform.rotation * point;
+        point += transform.position;
         return point;
     }
 
@@ -63,10 +63,10 @@ namespace osc
         return o << "Transform(position = " << t.position << ", rotation = " << t.rotation << ", scale = " << t.scale << ')';
     }
 
-    inline std::string to_string(const Transform& t)
+    inline std::string to_string(const Transform& transform)
     {
         std::stringstream ss;
-        ss << t;
+        ss << transform;
         return std::move(ss).str();
     }
 }

@@ -304,39 +304,39 @@ namespace osc
     }
 
     template<typename T>
-    Mat<3, 3, T> operator*(const Mat<3, 3, T>& m1, const Mat<3, 3, T>& m2)
+    Mat<3, 3, T> operator*(const Mat<3, 3, T>& a, const Mat<3, 3, T>& b)
     {
-        const T SrcA00 = m1[0][0];
-        const T SrcA01 = m1[0][1];
-        const T SrcA02 = m1[0][2];
-        const T SrcA10 = m1[1][0];
-        const T SrcA11 = m1[1][1];
-        const T SrcA12 = m1[1][2];
-        const T SrcA20 = m1[2][0];
-        const T SrcA21 = m1[2][1];
-        const T SrcA22 = m1[2][2];
+        const T& a00 = a[0][0];
+        const T& a01 = a[0][1];
+        const T& a02 = a[0][2];
+        const T& a10 = a[1][0];
+        const T& a11 = a[1][1];
+        const T& a12 = a[1][2];
+        const T& a20 = a[2][0];
+        const T& a21 = a[2][1];
+        const T& a22 = a[2][2];
 
-        const T SrcB00 = m2[0][0];
-        const T SrcB01 = m2[0][1];
-        const T SrcB02 = m2[0][2];
-        const T SrcB10 = m2[1][0];
-        const T SrcB11 = m2[1][1];
-        const T SrcB12 = m2[1][2];
-        const T SrcB20 = m2[2][0];
-        const T SrcB21 = m2[2][1];
-        const T SrcB22 = m2[2][2];
+        const T& b00 = b[0][0];
+        const T& b01 = b[0][1];
+        const T& b02 = b[0][2];
+        const T& b10 = b[1][0];
+        const T& b11 = b[1][1];
+        const T& b12 = b[1][2];
+        const T& b20 = b[2][0];
+        const T& b21 = b[2][1];
+        const T& b22 = b[2][2];
 
-        Mat<3, 3, T> Result;
-        Result[0][0] = SrcA00 * SrcB00 + SrcA10 * SrcB01 + SrcA20 * SrcB02;
-        Result[0][1] = SrcA01 * SrcB00 + SrcA11 * SrcB01 + SrcA21 * SrcB02;
-        Result[0][2] = SrcA02 * SrcB00 + SrcA12 * SrcB01 + SrcA22 * SrcB02;
-        Result[1][0] = SrcA00 * SrcB10 + SrcA10 * SrcB11 + SrcA20 * SrcB12;
-        Result[1][1] = SrcA01 * SrcB10 + SrcA11 * SrcB11 + SrcA21 * SrcB12;
-        Result[1][2] = SrcA02 * SrcB10 + SrcA12 * SrcB11 + SrcA22 * SrcB12;
-        Result[2][0] = SrcA00 * SrcB20 + SrcA10 * SrcB21 + SrcA20 * SrcB22;
-        Result[2][1] = SrcA01 * SrcB20 + SrcA11 * SrcB21 + SrcA21 * SrcB22;
-        Result[2][2] = SrcA02 * SrcB20 + SrcA12 * SrcB21 + SrcA22 * SrcB22;
-        return Result;
+        Mat<3, 3, T> rv;
+        rv[0][0] = a00 * b00 + a10 * b01 + a20 * b02;
+        rv[0][1] = a01 * b00 + a11 * b01 + a21 * b02;
+        rv[0][2] = a02 * b00 + a12 * b01 + a22 * b02;
+        rv[1][0] = a00 * b10 + a10 * b11 + a20 * b12;
+        rv[1][1] = a01 * b10 + a11 * b11 + a21 * b12;
+        rv[1][2] = a02 * b10 + a12 * b11 + a22 * b12;
+        rv[2][0] = a00 * b20 + a10 * b21 + a20 * b22;
+        rv[2][1] = a01 * b20 + a11 * b21 + a21 * b22;
+        rv[2][2] = a02 * b20 + a12 * b21 + a22 * b22;
+        return rv;
     }
 
     template<typename T>

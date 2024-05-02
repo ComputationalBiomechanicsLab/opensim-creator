@@ -185,7 +185,7 @@ namespace osc
         {
             if (ui::Button(ICON_FA_EXPAND_ARROWS_ALT))
             {
-                AutoFocus(
+                auto_focus(
                     m_Camera,
                     m_State->getResultMesh().bounds(),
                     aspect_ratio(m_LastTextureHittestResult.item_rect)
@@ -279,7 +279,7 @@ namespace osc
         }
 
         std::shared_ptr<MeshWarpingTabSharedState> m_State;
-        PolarPerspectiveCamera m_Camera = CreateCameraFocusedOn(m_State->getResultMesh().bounds());
+        PolarPerspectiveCamera m_Camera = create_camera_focused_on(m_State->getResultMesh().bounds());
         CachedSceneRenderer m_CachedRenderer{
             *App::singleton<SceneCache>(App::resource_loader()),
         };

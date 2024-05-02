@@ -18,8 +18,6 @@
 namespace osc
 {
     // a 3D (4-element) quaternion: usually used to represent rotations
-    //
-    // implementation initially adapted from `glm::qua`
     template<typename T>
     struct Qua {
         using value_type = T;
@@ -85,10 +83,10 @@ namespace osc
         }
 
         // constructs a `Qua` from euler angles (pitch, yaw, roll), in radians.
-        constexpr explicit Qua(const Vec<3, T>& eulerAngle)
+        constexpr explicit Qua(const Vec<3, T>& euler_angle)
         {
-            Vec<3, T> c = cos(eulerAngle * T(0.5));
-            Vec<3, T> s = sin(eulerAngle * T(0.5));
+            Vec<3, T> c = cos(euler_angle * T(0.5));
+            Vec<3, T> s = sin(euler_angle * T(0.5));
 
             this->w = c.x * c.y * c.z + s.x * s.y * s.z;
             this->x = s.x * c.y * c.z - c.x * s.y * s.z;
@@ -153,8 +151,8 @@ namespace osc
         template<typename U>
         constexpr Qua<T>& operator*=(const Qua<U>& r)
         {
-            Qua<T> const p(*this);
-            Qua<T> const q(r);
+            const Qua<T> p(*this);
+            const Qua<T> q(r);
             this->w = p.w * q.w - p.x * q.x - p.y * q.y - p.z * q.z;
             this->x = p.w * q.x + p.x * q.w + p.y * q.z - p.z * q.y;
             this->y = p.w * q.y + p.y * q.w + p.z * q.x - p.x * q.z;

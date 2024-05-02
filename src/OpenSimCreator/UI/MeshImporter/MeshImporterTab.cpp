@@ -1913,7 +1913,7 @@ private:
         {
             if (std::optional<AABB> const sceneAABB = calcSceneAABB())
             {
-                AutoFocus(m_Shared->updCamera(), *sceneAABB, aspect_ratio(m_Shared->get3DSceneDims()));
+                auto_focus(m_Shared->updCamera(), *sceneAABB, aspect_ratio(m_Shared->get3DSceneDims()));
             }
         }
         ui::DrawTooltipIfItemHovered("Autoscale Scene", "Zooms camera to try and fit everything in the scene into the viewer");

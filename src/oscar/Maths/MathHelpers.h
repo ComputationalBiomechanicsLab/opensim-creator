@@ -149,6 +149,7 @@ namespace osc
         const Vec3& rotation_center
     );
 
+    // returns the volume of a given tetrahedron, defined as 4 points in space
     float volume_of(const Tetrahedron&);
 
     // returns arrays that transforms cube faces from worldspace to projection

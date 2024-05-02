@@ -557,7 +557,7 @@ namespace osc
         {
             if (ui::Button(ICON_FA_EXPAND_ARROWS_ALT))
             {
-                AutoFocus(m_Camera, m_State->getScratchMesh(m_DocumentIdentifier).bounds(), aspect_ratio(m_LastTextureHittestResult.item_rect));
+                auto_focus(m_Camera, m_State->getScratchMesh(m_DocumentIdentifier).bounds(), aspect_ratio(m_LastTextureHittestResult.item_rect));
                 m_State->linkedCameraBase = m_Camera;
             }
             ui::DrawTooltipIfItemHovered("Autoscale Scene", "Zooms camera to try and fit everything in the scene into the viewer");
@@ -585,7 +585,7 @@ namespace osc
 
         std::shared_ptr<MeshWarpingTabSharedState> m_State;
         TPSDocumentInputIdentifier m_DocumentIdentifier;
-        PolarPerspectiveCamera m_Camera = CreateCameraFocusedOn(m_State->getScratchMesh(m_DocumentIdentifier).bounds());
+        PolarPerspectiveCamera m_Camera = create_camera_focused_on(m_State->getScratchMesh(m_DocumentIdentifier).bounds());
         CachedSceneRenderer m_CachedRenderer{
             *App::singleton<SceneCache>(App::resource_loader()),
         };

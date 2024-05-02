@@ -186,10 +186,10 @@ namespace osc
         }
 
         template<typename U>
-        constexpr Vec with_element(size_type i, U scalar) const
+        constexpr Vec with_element(size_type pos, U scalar) const
         {
             Vec copy{*this};
-            copy[i] = static_cast<T>(scalar);
+            copy[pos] = static_cast<T>(scalar);
             return copy;
         }
 

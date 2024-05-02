@@ -29,24 +29,16 @@ using namespace osc::literals;
 using namespace osc;
 namespace rgs = std::ranges;
 
-// `AABB` implementation
-
 std::ostream& osc::operator<<(std::ostream& o, const AABB& aabb)
 {
     return o << "AABB(min = " << aabb.min << ", max = " << aabb.max << ')';
 }
-
-// `AnalyticPlane` implementation
 
 std::ostream& osc::operator<<(std::ostream& o, const AnalyticPlane& plane)
 {
     return o << "AnalyticPlane(distance = " << plane.distance << ", normal = " << plane.normal << ')';
 }
 
-
-// BVH implementation
-
-// BVH helpers
 namespace
 {
     bool has_nonzero_volume(const Triangle& t)
@@ -70,7 +62,7 @@ namespace
             return;
         }
 
-        // else: n >= 2, so partition the data appropriately and allocate an internal node
+        // else: `n >= 2`, so partition the data appropriately and allocate an internal node
 
         ptrdiff_t midpoint = -1;
         ptrdiff_t internal_node_loc = -1;
@@ -87,7 +79,7 @@ namespace
             const auto longest_dim_index = max_element_index(dimensions_of(aabb));
             const float midpoint_x2 = aabb.min[longest_dim_index] + aabb.max[longest_dim_index];
 
-            // returns true if a given primitive is below the midpoint along the dim
+            // returns `true` if a given primitive is below the midpoint along the dim
             const auto is_below_midpoint = [longest_dim_index, midpoint_x2](const BVHPrim& p)
             {
                 const float prim_midpoint_x2 = p.bounds().min[longest_dim_index] + p.bounds().max[longest_dim_index];
@@ -126,9 +118,9 @@ namespace
         OSC_ASSERT(internal_node_loc+num_lhs_nodes < static_cast<ptrdiff_t>(nodes.size()));
     }
 
-    // returns true if something hit (recursively)
+    // returns `true` if something hit (recursively)
     //
-    // populates outparam with all AABB hits in depth-first order
+    // populates outparam with all `AABB` hits in depth-first order
     bool bvh_for_each_ray_aabb_collisions_recursive(
         std::span<const BVHNode> nodes,
         std::span<const BVHPrim> prims,
@@ -145,7 +137,7 @@ namespace
         }
 
         if (node.is_leaf()) {
-            // it's a leaf node, so we've sucessfully found the AABB that intersected
+            // it's a leaf node, so we've sucessfully found the `AABB` that intersected
             callback(BVHCollision{
                 maybe_collision->distance,
                 maybe_collision->position,
@@ -486,8 +478,6 @@ std::ostream& osc::operator<<(std::ostream& o, CoordinateAxis axis)
     }
 }
 
-// `CoordinateDirection` implementation
-
 std::optional<CoordinateDirection> osc::CoordinateDirection::try_parse(std::string_view s)
 {
     if (s.empty()) {
@@ -517,15 +507,11 @@ std::ostream& osc::operator<<(std::ostream& o, CoordinateDirection direction)
     return o << direction.axis();
 }
 
-// `Disc` implementation
-
 std::ostream& osc::operator<<(std::ostream& o, const Disc& d)
 {
     return o << "Disc(origin = " << d.origin << ", normal = " << d.normal << ", radius = " << d.radius << ')';
 }
 
-
-// `EulerPerspectiveCamera` implementation
 
 Vec3 osc::EulerPerspectiveCamera::front() const
 {
@@ -557,23 +543,17 @@ Mat4 osc::EulerPerspectiveCamera::projection_matrix(float aspect_ratio) const
 }
 
 
-// `Line` implementation
-
 std::ostream& osc::operator<<(std::ostream& o, const Line& l)
 {
     return o << "Line(origin = " << l.origin << ", direction = " << l.direction << ')';
 }
 
 
-// `Plane` implementation
-
 std::ostream& osc::operator<<(std::ostream& o, const Plane& p)
 {
     return o << "Plane(origin = " << p.origin << ", normal = " << p.normal << ')';
 }
 
-
-// `PolarPerspectiveCamera` implementation
 
 namespace
 {
@@ -619,8 +599,8 @@ void osc::PolarPerspectiveCamera::pan(float aspect_ratio, Vec2 delta)
     const UnitVec3 phi_axis = cross(theta_vec, UnitVec3::along_y());
     const Mat4 rotation_phi = rotate(identity<Mat4>(), phi, phi_axis);
 
-    const Vec4 panningAxes = rotation_phi * rotation_theta * default_panning_axis;
-    focus_point += Vec3{panningAxes};
+    const Vec4 panning_axes = rotation_phi * rotation_theta * default_panning_axis;
+    focus_point += Vec3{panning_axes};
 }
 
 void osc::PolarPerspectiveCamera::drag(Vec2 delta)
@@ -645,8 +625,8 @@ Mat4 osc::PolarPerspectiveCamera::view_matrix() const
     // is expressed as polar coordinates. Camera panning is represented as a
     // translation vector.
 
-    // this maths is a complete shitshow and I apologize. It just happens to work for now. It's a polar coordinate
-    // system that shifts the world based on the camera pan
+    // this maths is a complete shitshow and I apologize. It just happens to work for now. It's
+    // a polar coordinate system that shifts the world based on the camera pan
 
     const Mat4 theta_rotation = rotate(identity<Mat4>(), -theta, Vec3{0.0f, 1.0f, 0.0f});
     const Vec3 theta_vec = normalize(Vec3{sin(theta), 0.0f, cos(theta)});
@@ -674,9 +654,9 @@ Vec2 osc::PolarPerspectiveCamera::project_onto_screen_rect(
     const Rect& screen_rect) const
 {
     const Vec2 screen_dims = dimensions_of(screen_rect);
-    const Mat4 MV = projection_matrix(screen_dims.x/screen_dims.y) * view_matrix();
+    const Mat4 view_proj_mtx = projection_matrix(screen_dims.x/screen_dims.y) * view_matrix();
 
-    Vec4 ndc = MV * Vec4{worldspace_location, 1.0f};
+    Vec4 ndc = view_proj_mtx * Vec4{worldspace_location, 1.0f};
     ndc /= ndc.w;  // perspective divide
 
     Vec2 ndc2D;
@@ -689,27 +669,27 @@ Vec2 osc::PolarPerspectiveCamera::project_onto_screen_rect(
     return ndc2D;
 }
 
-Line osc::PolarPerspectiveCamera::unproject_topleft_pos_to_world_ray(Vec2 pos, Vec2 dims) const
+Line osc::PolarPerspectiveCamera::unproject_topleft_pos_to_world_ray(Vec2 pos, Vec2 dimensions) const
 {
     return perspective_unproject_topleft_screen_pos_to_world_ray(
-        pos / dims,
+        pos / dimensions,
         this->position(),
         view_matrix(),
-        projection_matrix(dims.x/dims.y)
+        projection_matrix(dimensions.x/dimensions.y)
     );
 }
 
-PolarPerspectiveCamera osc::CreateCameraWithRadius(float r)
+PolarPerspectiveCamera osc::create_camera_with_radius(float r)
 {
     PolarPerspectiveCamera rv;
     rv.radius = r;
     return rv;
 }
 
-PolarPerspectiveCamera osc::CreateCameraFocusedOn(const AABB& aabb)
+PolarPerspectiveCamera osc::create_camera_focused_on(const AABB& aabb)
 {
     PolarPerspectiveCamera rv;
-    AutoFocus(rv, aabb);
+    auto_focus(rv, aabb);
     return rv;
 }
 
@@ -736,80 +716,80 @@ Vec3 osc::recommended_light_direction(const PolarPerspectiveCamera& c)
     return normalize(-c.focus_point - p);
 }
 
-void osc::FocusAlongAxis(PolarPerspectiveCamera& camera, size_t axis, bool negate)
+void osc::focus_along_axis(PolarPerspectiveCamera& camera, size_t axis, bool negate)
 {
     if (negate) {
         switch (axis) {
-        case 0: FocusAlongMinusX(camera); break;
-        case 1: FocusAlongMinusY(camera); break;
-        case 2: FocusAlongMinusZ(camera); break;
+        case 0: focus_along_minus_x(camera); break;
+        case 1: focus_along_minus_y(camera); break;
+        case 2: focus_along_minus_z(camera); break;
         default: break;
         }
     }
     else {
         switch (axis) {
-        case 0: FocusAlongX(camera); break;
-        case 1: FocusAlongY(camera); break;
-        case 2: FocusAlongZ(camera); break;
+        case 0: focus_along_x(camera); break;
+        case 1: focus_along_y(camera); break;
+        case 2: focus_along_z(camera); break;
         default: break;
         }
     }
 }
 
-void osc::FocusAlongX(PolarPerspectiveCamera& camera)
+void osc::focus_along_x(PolarPerspectiveCamera& camera)
 {
     camera.theta = 90_deg;
     camera.phi = 0_deg;
 }
 
-void osc::FocusAlongMinusX(PolarPerspectiveCamera& camera)
+void osc::focus_along_minus_x(PolarPerspectiveCamera& camera)
 {
     camera.theta = -90_deg;
     camera.phi = 0_deg;
 }
 
-void osc::FocusAlongY(PolarPerspectiveCamera& camera)
+void osc::focus_along_y(PolarPerspectiveCamera& camera)
 {
     camera.theta = 0_deg;
     camera.phi = 90_deg;
 }
 
-void osc::FocusAlongMinusY(PolarPerspectiveCamera& camera)
+void osc::focus_along_minus_y(PolarPerspectiveCamera& camera)
 {
     camera.theta = 0_deg;
     camera.phi = -90_deg;
 }
 
-void osc::FocusAlongZ(PolarPerspectiveCamera& camera)
+void osc::focus_along_z(PolarPerspectiveCamera& camera)
 {
     camera.theta = 0_deg;
     camera.phi = 0_deg;
 }
 
-void osc::FocusAlongMinusZ(PolarPerspectiveCamera& camera)
+void osc::focus_along_minus_z(PolarPerspectiveCamera& camera)
 {
     camera.theta = 180_deg;
     camera.phi = 0_deg;
 }
 
-void osc::ZoomIn(PolarPerspectiveCamera& camera)
+void osc::zoom_in(PolarPerspectiveCamera& camera)
 {
     camera.radius *= 0.8f;
 }
 
-void osc::ZoomOut(PolarPerspectiveCamera& camera)
+void osc::zoom_out(PolarPerspectiveCamera& camera)
 {
     camera.radius *= 1.2f;
 }
 
-void osc::Reset(PolarPerspectiveCamera& camera)
+void osc::reset(PolarPerspectiveCamera& camera)
 {
     camera = {};
     camera.theta = 45_deg;
     camera.phi = 45_deg;
 }
 
-void osc::AutoFocus(
+void osc::auto_focus(
     PolarPerspectiveCamera& camera,
     const AABB& element_aabb,
     float aspect_ratio)
@@ -828,15 +808,11 @@ void osc::AutoFocus(
 }
 
 
-// `Rect` implementation
-
 std::ostream& osc::operator<<(std::ostream& o, const Rect& r)
 {
     return o << "Rect(p1 = " << r.p1 << ", p2 = " << r.p2 << ")";
 }
 
-
-// `Segment` implementation
 
 std::ostream& osc::operator<<(std::ostream& o, const LineSegment& d)
 {
@@ -844,17 +820,12 @@ std::ostream& osc::operator<<(std::ostream& o, const LineSegment& d)
 }
 
 
-// `Sphere` implementation
-
 std::ostream& osc::operator<<(std::ostream& o, const Sphere& s)
 {
     return o << "Sphere(origin = " << s.origin << ", radius = " << s.radius << ')';
 }
 
 
-// `Tetrahedron` implementatioon
-
-// returns the volume of a given tetrahedron, defined as 4 points in space
 float osc::volume_of(const Tetrahedron& t)
 {
     // sources:
@@ -871,9 +842,6 @@ float osc::volume_of(const Tetrahedron& t)
 
     return determinant(m) / 6.0f;
 }
-
-
-// Geometry implementation
 
 
 namespace
@@ -1000,8 +968,6 @@ namespace
     }
 }
 
-
-// MathHelpers
 
 Radians osc::vertial_to_horizontal_fov(Radians vertical_fov, float aspect_ratio)
 {
@@ -1305,7 +1271,7 @@ std::optional<Rect> osc::loosely_project_into_ndc(
     // z-test the viewspace AABB to see if any part of it it falls within the
     // camera's clipping planes
     //
-    // care: znear and zfar are usually defined as positive distances from the
+    // care: `znear` and `zfar` are usually defined as positive distances from the
     //       camera but viewspace points along -Z
 
     if (viewspace_aabb.min.z > -znear and viewspace_aabb.max.z > -znear) {

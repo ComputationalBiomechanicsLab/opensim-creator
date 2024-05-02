@@ -215,24 +215,24 @@ bool osc::ui::UpdatePolarCameraFromKeyboardInputs(
 
     if (ui::IsKeyReleased(ImGuiKey_X)) {
         if (ctrlOrSuperDown) {
-            FocusAlongMinusX(camera);
+            focus_along_minus_x(camera);
             return true;
         } else {
-            FocusAlongX(camera);
+            focus_along_x(camera);
             return true;
         }
     }
     else if (ui::IsKeyPressed(ImGuiKey_Y)) {
         // Ctrl+Y already does something?
         if (!ctrlOrSuperDown) {
-            FocusAlongY(camera);
+            focus_along_y(camera);
             return true;
         }
     }
     else if (ui::IsKeyPressed(ImGuiKey_F)) {
         if (ctrlOrSuperDown) {
             if (maybe_scene_aabb) {
-                AutoFocus(
+                auto_focus(
                     camera,
                     *maybe_scene_aabb,
                     aspect_ratio(viewport_rect)
@@ -241,13 +241,13 @@ bool osc::ui::UpdatePolarCameraFromKeyboardInputs(
             }
         }
         else {
-            Reset(camera);
+            reset(camera);
             return true;
         }
     }
     else if (ctrlOrSuperDown && (ui::IsKeyPressed(ImGuiKey_8))) {
         if (maybe_scene_aabb) {
-            AutoFocus(
+            auto_focus(
                 camera,
                 *maybe_scene_aabb,
                 aspect_ratio(viewport_rect)

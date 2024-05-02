@@ -121,7 +121,7 @@ public:
         m_DecorationCache.update(modelState, params);
         if (std::optional<AABB> const aabb = m_DecorationCache.getAABB())
         {
-            AutoFocus(params.camera, *aabb, aspectRatio);
+            auto_focus(params.camera, *aabb, aspectRatio);
         }
     }
 

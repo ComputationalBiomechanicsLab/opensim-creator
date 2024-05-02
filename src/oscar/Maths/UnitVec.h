@@ -26,7 +26,7 @@ namespace osc
         using iterator = const T*;
         using const_iterator = const T*;
 
-        // returns a UnitVec by constructing the underlying vector and assuming that it is already normalized
+        // returns a `UnitVec` by constructing the underlying vector and assuming that it is already normalized
         template<typename... Args>
         requires std::constructible_from<Vec<L, T>, Args&&...>
         static constexpr UnitVec<L, T> already_normalized(Args&&... args)
@@ -112,8 +112,8 @@ namespace osc
     };
 
     template<size_t L, std::floating_point T>
-    constexpr Vec<L, T> operator*(T s, const UnitVec<L, T>& v)
+    constexpr Vec<L, T> operator*(T scalar, const UnitVec<L, T>& v)
     {
-        return s * static_cast<const Vec<L, T>&>(v);
+        return scalar * static_cast<const Vec<L, T>&>(v);
     }
 }

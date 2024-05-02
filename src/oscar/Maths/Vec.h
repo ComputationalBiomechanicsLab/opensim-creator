@@ -20,10 +20,10 @@ namespace osc
     std::ostream& operator<<(std::ostream& o, const Vec<L, T>& v)
     {
         o << "Vec" << L << '(';
-        std::string_view delim;
+        std::string_view delimiter;
         for (const T& el : v) {
-            o << delim << el;
-            delim = ", ";
+            o << delimiter << el;
+            delimiter = ", ";
         }
         o << ')';
         return o;
