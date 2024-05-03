@@ -1,5 +1,6 @@
 #include "Log.h"
 
+#include <oscar/Platform/LogSink.h>
 #include <oscar/Utils/CStringView.h>
 
 #include <iostream>

@@ -2,6 +2,7 @@
 
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/LogLevel.h>
+#include <oscar/Platform/LogSink.h>
 #include <oscar/Shims/Cpp20/bit.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/StringHelpers.h>

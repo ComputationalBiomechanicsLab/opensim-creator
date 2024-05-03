@@ -8,6 +8,7 @@
 #include <oscar/Platform/AppSettingValue.h>
 #include <oscar/Platform/AppSettingValueType.h>
 #include <oscar/Platform/FilesystemResourceLoader.h>
+#include <oscar/Platform/ILogSink.h>
 #include <oscar/Platform/IResourceLoader.h>
 #include <oscar/Platform/IScreen.h>
 #include <oscar/Platform/Log.h>

@@ -26,34 +26,33 @@ private:
 };
 
 osc::LogViewerPanel::LogViewerPanel(std::string_view panel_name) :
-    m_Impl{std::make_unique<Impl>(panel_name)}
-{
-}
+    impl_{std::make_unique<Impl>(panel_name)}
+{}
 osc::LogViewerPanel::LogViewerPanel(LogViewerPanel&&) noexcept = default;
 osc::LogViewerPanel& osc::LogViewerPanel::operator=(LogViewerPanel&&) noexcept = default;
 osc::LogViewerPanel::~LogViewerPanel() noexcept = default;
 
 CStringView osc::LogViewerPanel::impl_get_name() const
 {
-    return m_Impl->name();
+    return impl_->name();
 }
 
 bool osc::LogViewerPanel::impl_is_open() const
 {
-    return m_Impl->is_open();
+    return impl_->is_open();
 }
 
 void osc::LogViewerPanel::impl_open()
 {
-    m_Impl->open();
+    impl_->open();
 }
 
 void osc::LogViewerPanel::impl_close()
 {
-    m_Impl->close();
+    impl_->close();
 }
 
 void osc::LogViewerPanel::impl_on_draw()
 {
-    m_Impl->on_draw();
+    impl_->on_draw();
 }
