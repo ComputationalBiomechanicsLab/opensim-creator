@@ -19,6 +19,7 @@ namespace osc::cpp20
         template<typename Function, typename... Args>
         requires std::invocable<Function, stop_token, Args&&...>
         jthread(Function&& f, Args&&... args) :
+            stop_source_{},
             thread_{std::forward<Function>(f), stop_source_.get_token(), std::forward<Args>(args)...}
         {}
 
@@ -66,7 +67,7 @@ namespace osc::cpp20
         }
 
     private:
-        stop_source stop_source_{};
-        std::thread thread_{};
+        stop_source stop_source_;
+        std::thread thread_;
     };
 }
