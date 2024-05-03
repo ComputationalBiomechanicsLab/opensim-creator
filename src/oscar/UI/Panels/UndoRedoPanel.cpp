@@ -31,8 +31,6 @@ private:
 };
 
 
-// public API (PIMPL)
-
 void osc::UndoRedoPanel::draw_content(UndoRedoBase& storage)
 {
     if (ui::Button("undo")) {

@@ -252,7 +252,7 @@ namespace osc
         // returns a full filesystem path to runtime resource in `resources/` dir
         std::filesystem::path get_resource_filepath(const ResourcePath&) const;
 
-        // try and retrieve a virtual singleton that has the same lifetime as the app
+        // try and retrieve a singleton that has the same lifetime as the app
         std::shared_ptr<void> upd_singleton(const std::type_info&, const std::function<std::shared_ptr<void>()>&);
 
         // HACK: the 2D ui currently needs access to these
