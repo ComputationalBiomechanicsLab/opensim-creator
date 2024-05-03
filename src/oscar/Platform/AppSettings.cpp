@@ -53,6 +53,7 @@ R"(# configuration options
 
         // set by a readonly system-level configuration file
         System,
+
         NUM_OPTIONS,
     };
 
@@ -130,7 +131,7 @@ R"(# configuration options
         // copied from the legacy `AppConfig` implementation for backwards
         // compatibility with existing config files
 
-        std::filesystem::path p = CurrentExeDir();
+        std::filesystem::path p = current_executable_directory();
         bool exists = false;
 
         while (p.has_filename()) {
@@ -164,7 +165,7 @@ R"(# configuration options
         std::string_view application_name,
         std::string_view application_config_file_name)
     {
-        const auto user_data_dir = GetUserDataDir(std::string{organization_name}, std::string{application_name});
+        const auto user_data_dir = user_data_directory(std::string{organization_name}, std::string{application_name});
         const auto full_path = user_data_dir / application_config_file_name;
 
         if (std::filesystem::exists(full_path)) {

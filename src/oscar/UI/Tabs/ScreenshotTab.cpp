@@ -123,9 +123,9 @@ private:
         {
             int id = 0;
             ui::Begin("Controls");
-            for (const ScreenshotAnnotation& annotation : m_Screenshot.annotations) {
+            for (const ScreenshotAnnotation& annotation : m_Screenshot.annotations()) {
                 ui::PushID(id++);
-                ui::TextUnformatted(annotation.label);
+                ui::TextUnformatted(annotation.label());
                 ui::PopID();
             }
             ui::End();
@@ -137,7 +137,7 @@ private:
     {
         const Vec2 screenTopLeft = ui::GetCursorScreenPos();
         const Rect windowRect = {screenTopLeft, screenTopLeft + Vec2{ui::GetContentRegionAvail()}};
-        const Rect imageRect = ShrinkToFit(windowRect, aspect_ratio(m_Screenshot.image.dimensions()));
+        const Rect imageRect = ShrinkToFit(windowRect, aspect_ratio(m_Screenshot.dimensions()));
         ui::SetCursorScreenPos(imageRect.p1);
         ui::Image(m_ImageTexture, dimensions_of(imageRect));
         return imageRect;
@@ -151,11 +151,11 @@ private:
     {
         const Vec2 mousePos = ui::GetMousePos();
         const bool leftClickReleased = ui::IsMouseReleased(ImGuiMouseButton_Left);
-        const Rect imageSourceRect = {{0.0f, 0.0f}, m_Screenshot.image.dimensions()};
+        const Rect imageSourceRect = {{0.0f, 0.0f}, m_Screenshot.dimensions()};
 
-        for (const ScreenshotAnnotation& annotation : m_Screenshot.annotations) {
-            const Rect annotationRectScreenSpace = MapRect(imageSourceRect, imageRect, annotation.rect);
-            const bool selected = m_SelectedAnnotations.contains(annotation.label);
+        for (const ScreenshotAnnotation& annotation : m_Screenshot.annotations()) {
+            const Rect annotationRectScreenSpace = MapRect(imageSourceRect, imageRect, annotation.rect());
+            const bool selected = m_SelectedAnnotations.contains(annotation.label());
             const bool hovered = is_intersecting(annotationRectScreenSpace, mousePos);
 
             Vec4 color = selected ? selectedColor : unselectedColor;
@@ -165,10 +165,10 @@ private:
 
             if (hovered && leftClickReleased) {
                 if (selected) {
-                    m_SelectedAnnotations.erase(annotation.label);
+                    m_SelectedAnnotations.erase(annotation.label());
                 }
                 else {
-                    m_SelectedAnnotations.insert(annotation.label);
+                    m_SelectedAnnotations.insert(annotation.label());
                 }
             }
 
@@ -193,7 +193,7 @@ private:
             }
             Texture2D outputImage = renderOutputImage();
             write_to_png(outputImage, fout);
-            OpenPathInOSDefaultApplication(*maybeImagePath);
+            open_file_in_os_default_application(*maybeImagePath);
         }
     }
 
@@ -305,7 +305,7 @@ private:
     }
 
     Screenshot m_Screenshot;
-    Texture2D m_ImageTexture = m_Screenshot.image;
+    Texture2D m_ImageTexture = m_Screenshot.image();
     std::unordered_set<std::string> m_SelectedAnnotations;
 };
 

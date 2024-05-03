@@ -22,6 +22,7 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <span>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -31,11 +32,10 @@ using namespace osc;
 
 namespace
 {
-    std::filesystem::path convertSDLPathToStdpath(CStringView methodname, char* p)
+    std::filesystem::path convert_SDL_filepath_to_std_filepath(CStringView methodname, char* p)
     {
         // nullptr disallowed
-        if (p == nullptr)
-        {
+        if (p == nullptr) {
             std::stringstream ss;
             ss << methodname << ": returned null: " << SDL_GetError();
             throw std::runtime_error{std::move(ss).str()};
@@ -44,16 +44,14 @@ namespace
         std::string_view sv{p};
 
         // empty string disallowed
-        if (sv.empty())
-        {
+        if (sv.empty()) {
             std::stringstream ss;
             ss << methodname << ": returned an empty string";
             throw std::runtime_error{std::move(ss).str()};
         }
 
-        // remove trailing slash: it interferes with std::filesystem::path
-        if (sv.back() == '/' || sv.back() == '\\')
-        {
+        // remove trailing slash: it interferes with `std::filesystem::path`
+        if (sv.back() == '/' or sv.back() == '\\') {
             sv = sv.substr(0, sv.size()-1);
         }
 
@@ -61,60 +59,61 @@ namespace
     }
 }
 
-std::tm osc::GetSystemCalendarTime()
+std::tm osc::system_calendar_time()
 {
-    std::chrono::system_clock::time_point const tp = std::chrono::system_clock::now();
-    std::time_t const t = std::chrono::system_clock::to_time_t(tp);
-    return GMTimeThreadsafe(t);
+    const std::chrono::system_clock::time_point tp = std::chrono::system_clock::now();
+    const std::time_t t = std::chrono::system_clock::to_time_t(tp);
+    return gmtime_threadsafe(t);
 }
 
-std::filesystem::path osc::CurrentExeDir()
+std::filesystem::path osc::current_executable_directory()
 {
-    std::unique_ptr<char, decltype(&SDL_free)> p
-    {
+    std::unique_ptr<char, decltype(&SDL_free)> p{
         SDL_GetBasePath(),
         SDL_free
     };
-    return convertSDLPathToStdpath("SDL_GetBasePath", p.get());
+    return convert_SDL_filepath_to_std_filepath("SDL_GetBasePath", p.get());
 }
 
-std::filesystem::path osc::GetUserDataDir(
-    CStringView organizationName,
-    CStringView applicationName)
+std::filesystem::path osc::user_data_directory(
+    CStringView organization_name,
+    CStringView application_name)
 {
-    std::unique_ptr<char, decltype(&SDL_free)> p
-    {
-        SDL_GetPrefPath(organizationName.c_str(), applicationName.c_str()),
+    std::unique_ptr<char, decltype(&SDL_free)> p{
+        SDL_GetPrefPath(organization_name.c_str(), application_name.c_str()),
         SDL_free,
     };
-    return convertSDLPathToStdpath("SDL_GetPrefPath", p.get());
+    return convert_SDL_filepath_to_std_filepath("SDL_GetPrefPath", p.get());
 }
 
-bool osc::SetClipboardText(CStringView content)
+bool osc::set_clipboard_text(CStringView content)
 {
     return SDL_SetClipboardText(content.c_str()) == 0;
 }
 
-void osc::SetEnv(CStringView name, CStringView value, bool overwrite)
+void osc::set_environment_variable(CStringView name, CStringView value, bool overwrite)
 {
     SDL_setenv(name.c_str(), value.c_str(), overwrite ? 1 : 0);
 }
 
-std::optional<std::filesystem::path> osc::PromptUserForFile(
-    std::optional<CStringView> maybeCommaDelimitedExtensions,
-    std::optional<CStringView> maybeInitialDirectoryToOpen)
+std::optional<std::filesystem::path> osc::prompt_user_to_select_file(
+    std::span<const std::string_view> file_extensions,
+    std::optional<std::filesystem::path> initial_directory_to_show)
 {
 #ifdef EMSCRIPTEN
-    static_cast<void>(maybeCommaDelimitedExtensions);
-    static_cast<void>(maybeInitialDirectoryToOpen);
+    static_cast<void>(file_extensions);
+    static_cast<void>(initial_directory_to_show);
     return std::nullopt;
 #else
+
     auto [path, result] = [&]()
     {
+        const std::string comma_delimted_extensions = join(file_extensions, ",");
+
         nfdchar_t* ptr = nullptr;
-        nfdresult_t const res = NFD_OpenDialog(
-            maybeCommaDelimitedExtensions ? maybeCommaDelimitedExtensions->c_str() : nullptr,
-            maybeInitialDirectoryToOpen ? maybeInitialDirectoryToOpen->c_str() : nullptr,
+        const nfdresult_t res = NFD_OpenDialog(
+            comma_delimted_extensions.empty() ? nullptr : comma_delimted_extensions.c_str(),
+            initial_directory_to_show ? initial_directory_to_show->string().c_str() : nullptr,
             &ptr
         );
         return std::pair<std::unique_ptr<nfdchar_t, decltype(::free)*>, nfdresult_t>
@@ -136,19 +135,21 @@ std::optional<std::filesystem::path> osc::PromptUserForFile(
 #endif
 }
 
-std::vector<std::filesystem::path> osc::PromptUserForFiles(
-    std::optional<CStringView> maybeCommaDelimitedExtensions,
-    std::optional<CStringView> maybeInitialDirectoryToOpen)
+std::vector<std::filesystem::path> osc::prompt_user_to_select_files(
+    std::span<const std::string_view> file_extensions,
+    std::optional<std::filesystem::path> initial_directory_to_show)
 {
 #ifdef EMSCRIPTEN
-    static_cast<void>(maybeCommaDelimitedExtensions);
-    static_cast<void>(maybeInitialDirectoryToOpen);
+    static_cast<void>(file_extensions);
+    static_cast<void>(initial_directory_to_show);
     return {};
 #else
+
+    const std::string comma_delimted_extensions = join(file_extensions, ",");
     nfdpathset_t s{};
     nfdresult_t result = NFD_OpenDialogMultiple(
-        maybeCommaDelimitedExtensions ? maybeCommaDelimitedExtensions->c_str() : nullptr,
-        maybeInitialDirectoryToOpen ? maybeInitialDirectoryToOpen->c_str() : nullptr,
+        comma_delimted_extensions.empty() ? nullptr : comma_delimted_extensions.c_str(),
+        initial_directory_to_show ? initial_directory_to_show->string().c_str() : nullptr,
         &s
     );
 
@@ -194,7 +195,7 @@ std::optional<std::filesystem::path> osc::PromptUserForFileSaveLocationAndAddExt
     auto [path, result] = [&]()
     {
         nfdchar_t* ptr = nullptr;
-        nfdresult_t const res = NFD_SaveDialog(
+        const nfdresult_t res = NFD_SaveDialog(
             maybeExtension ? maybeExtension->c_str() : nullptr,
             maybeInitialDirectoryToOpen ? maybeInitialDirectoryToOpen->c_str() : nullptr,
             &ptr
@@ -222,9 +223,8 @@ std::optional<std::filesystem::path> osc::PromptUserForFileSaveLocationAndAddExt
         // NFD requires) but the user may have manually wrote a string that is
         // suffixed with the dot-less version of the extension (e.g. "somecsv")
 
-        std::string const fullExtension = std::string{"."} + *maybeExtension;
-        if (!std::string_view{path.get()}.ends_with(fullExtension))
-        {
+        const std::string fullExtension = std::string{"."} + *maybeExtension;
+        if (!std::string_view{path.get()}.ends_with(fullExtension)) {
             p += fullExtension;
         }
     }
@@ -233,9 +233,9 @@ std::optional<std::filesystem::path> osc::PromptUserForFileSaveLocationAndAddExt
 #endif
 }
 
-std::string osc::CurrentErrnoAsString()
+std::string osc::errno_to_string_threadsafe()
 {
-    return StrerrorThreadsafe(errno);
+    return strerror_threadsafe(errno);
 }
 
 
@@ -260,14 +260,14 @@ std::string osc::CurrentErrnoAsString()
 
 using osc::log_error;
 
-std::tm osc::GMTimeThreadsafe(std::time_t t)
+std::tm osc::gmtime_threadsafe(std::time_t t)
 {
     std::tm rv{};
     gmtime_r(&t, &rv);
     return rv;
 }
 
-std::string osc::StrerrorThreadsafe(int errnum)
+std::string osc::strerror_threadsafe(int errnum)
 {
     std::array<char, 1024> buffer{};
 
@@ -290,10 +290,10 @@ std::string osc::StrerrorThreadsafe(int errnum)
     return rv;
 }
 
-void osc::WriteTracebackToLog(LogLevel lvl)
+void osc::write_this_thread_backtrace_to_log(LogLevel lvl)
 {
     std::array<void*, 50> ary{};
-    int const size = backtrace(ary.data(), ary.size());
+    const int size = backtrace(ary.data(), ary.size());
     std::unique_ptr<char*, decltype(::free)*> messages{backtrace_symbols(ary.data(), size), ::free};
 
     if (!messages)
@@ -351,10 +351,10 @@ namespace
         std::cerr << "critical error: signal " << sig_num << '(' << strsignal(sig_num) << ") received from OS: address is " <<  info->si_addr << " from " << callerAddress;  // NOLINT(concurrency-mt-unsafe)
 
         std::array<void*, 50> ary{};
-        int const size = backtrace(ary.data(), ary.size());
+        const int size = backtrace(ary.data(), ary.size());
         ary[1] = callerAddress;  // overwrite sigaction with caller's address
 
-        std::unique_ptr<char*, decltype(::free)*> const messages{backtrace_symbols(ary.data(), size), ::free};
+        const std::unique_ptr<char*, decltype(::free)*> messages{backtrace_symbols(ary.data(), size), ::free};
         if (!messages)
         {
             return;
@@ -369,7 +369,7 @@ namespace
     }
 }
 
-void osc::InstallBacktraceHandler(std::filesystem::path const&)
+void osc::enable_crash_signal_backtrace_handler(const std::filesystem::path&)
 {
     struct sigaction sigact{};
 
@@ -389,7 +389,7 @@ void osc::InstallBacktraceHandler(std::filesystem::path const&)
     }
 }
 
-void osc::OpenPathInOSDefaultApplication(std::filesystem::path const& fp)
+void osc::open_file_in_os_default_application(const std::filesystem::path& fp)
 {
     // fork a subprocess
     pid_t pid = fork();
@@ -438,13 +438,13 @@ void osc::OpenPathInOSDefaultApplication(std::filesystem::path const& fp)
     }
 }
 
-void osc::OpenURLInDefaultBrowser(std::string_view vw)
+void osc::open_url_in_os_default_web_browser(std::string_view vw)
 {
     // (we know that xdg-open handles this automatically)
-    OpenPathInOSDefaultApplication(vw);
+    open_file_in_os_default_application(vw);
 }
 
-void osc::SetProcessHighDPIMode() {}
+void osc::enable_highdpi_mode_for_this_process() {}
 
 #elif defined(__APPLE__)
 #include <errno.h>  // ERANGE
@@ -458,14 +458,14 @@ using osc::log_error;
 using osc::log_message;
 using osc::log_warn;
 
-std::tm osc::GMTimeThreadsafe(std::time_t t)
+std::tm osc::gmtime_threadsafe(std::time_t t)
 {
     std::tm rv;
     gmtime_r(&t, &rv);
     return rv;
 }
 
-std::string osc::StrerrorThreadsafe(int errnum)
+std::string osc::strerror_threadsafe(int errnum)
 {
     std::array<char, 512> buffer{};
     if (strerror_r(errnum, buffer.data(), buffer.size()) == ERANGE)
@@ -476,7 +476,7 @@ std::string osc::StrerrorThreadsafe(int errnum)
 }
 
 
-void osc::WriteTracebackToLog(LogLevel lvl)
+void osc::write_this_thread_backtrace_to_log(LogLevel lvl)
 {
     void* array[50];
     int size = backtrace(array, 50);
@@ -499,12 +499,12 @@ namespace
     {
         log_error("critical error: signal %d (%s) received from OS", sig_num, strsignal(sig_num));
         log_error("backtrace:");
-        osc::WriteTracebackToLog(osc::LogLevel::err);
+        osc::write_this_thread_backtrace_to_log(osc::LogLevel::err);
         exit(EXIT_FAILURE);
     }
 }
 
-void osc::InstallBacktraceHandler(std::filesystem::path const&)
+void osc::enable_crash_signal_backtrace_handler(const std::filesystem::path&)
 {
     struct sigaction sigact;
     sigact.sa_sigaction = OSC_critical_error_handler;
@@ -523,19 +523,19 @@ void osc::InstallBacktraceHandler(std::filesystem::path const&)
     }
 }
 
-void osc::OpenPathInOSDefaultApplication(std::filesystem::path const& p)
+void osc::open_file_in_os_default_application(const std::filesystem::path& p)
 {
     std::string cmd = "open " + p.string();
     system(cmd.c_str());
 }
 
-void osc::OpenURLInDefaultBrowser(std::string_view url)
+void osc::open_url_in_os_default_web_browser(std::string_view url)
 {
     std::string cmd = "open " + std::string{url};
     system(cmd.c_str());
 }
 
-void osc::SetProcessHighDPIMode() {}
+void osc::enable_highdpi_mode_for_this_process() {}
 
 #elif defined(WIN32)
 #include <Windows.h>  // PVOID, RtlCaptureStackBackTrace(), MEMORY_BASIC_INFORMATION, VirtualQuery(), DWORD64, TCHAR, GetModuleFileName()
@@ -552,24 +552,23 @@ using osc::LogMessageView;
 using osc::LogSink;
 using osc::to_cstringview;
 
-std::tm osc::GMTimeThreadsafe(std::time_t t)
+std::tm osc::gmtime_threadsafe(std::time_t t)
 {
     std::tm rv;
     gmtime_s(&rv, &t);
     return rv;
 }
 
-std::string osc::StrerrorThreadsafe(int errnum)
+std::string osc::strerror_threadsafe(int errnum)
 {
     std::array<char, 512> buf{};
-    if (errno_t rv = strerror_s(buf.data(), buf.size(), errnum); rv != 0)
-    {
+    if (errno_t rv = strerror_s(buf.data(), buf.size(), errnum); rv != 0) {
         log_warn("a call to strerror_s returned an error (%i): an OS error message may be missing!", rv);
     }
     return std::string{buf.data()};
 }
 
-void osc::WriteTracebackToLog(LogLevel lvl)
+void osc::write_this_thread_backtrace_to_log(LogLevel lvl)
 {
     constexpr size_t skipped_frames = 0;
     constexpr size_t num_frames = 16;
@@ -622,14 +621,12 @@ namespace
     class CrashFileSink final : public LogSink {
     public:
         explicit CrashFileSink(std::ostream& out_) : m_Out{out_}
-        {
-        }
+        {}
 
     private:
-        void impl_log_message(LogMessageView const& msg) final
+        void impl_sink_message(const LogMessageView& msg) final
         {
-            if (m_Out)
-            {
+            if (m_Out) {
                 m_Out << '[' << msg.logger_name() << "] [" << msg.level() << "] " << msg.payload() << std::endl;
             }
         }
@@ -638,76 +635,72 @@ namespace
     };
 
     // returns a unix timestamp in seconds since the epoch
-    std::chrono::seconds GetCurrentTimeAsUnixTimestamp()
+    std::chrono::seconds get_current_time_as_unix_timestamp()
     {
         return std::chrono::seconds(std::time(nullptr));
     }
 
     // care: this is necessary because segfault crash handlers don't appear to
     // be able to have data passed to them
-    std::optional<std::filesystem::path> UpdCrashDumpDirGlobal()
+    std::optional<std::filesystem::path> upd_crash_report_directory_global()
     {
         static std::optional<std::filesystem::path> s_CrashDumpDir;
         return s_CrashDumpDir;
     }
 
-    std::optional<std::filesystem::path> GetCrashReportPath()
+    std::optional<std::filesystem::path> get_crash_report_path()
     {
-        if (!UpdCrashDumpDirGlobal())
-        {
+        if (!upd_crash_report_directory_global()) {
             return std::nullopt;  // global wasn't set: programmer error
         }
 
         std::stringstream filename;
-        filename << GetCurrentTimeAsUnixTimestamp().count();
+        filename << get_current_time_as_unix_timestamp().count();
         filename << "_CrashReport.txt";
-        return *UpdCrashDumpDirGlobal() / std::move(filename).str();
+        return *upd_crash_report_directory_global() / std::move(filename).str();
     }
 
     LONG crash_handler(EXCEPTION_POINTERS*)
     {
         log_error("exception propagated to root of the application: might be a segfault?");
 
-        std::optional<std::filesystem::path> const maybeCrashReportPath =
-            GetCrashReportPath();
+        const std::optional<std::filesystem::path> maybe_crash_report_path =
+            get_crash_report_path();
 
-        std::optional<std::ofstream> maybeCrashReportFile = maybeCrashReportPath ?
-            std::ofstream{*maybeCrashReportPath} :
+        std::optional<std::ofstream> maybe_crash_report_ostream = maybe_crash_report_path ?
+            std::ofstream{*maybe_crash_report_path} :
             std::optional<std::ofstream>{};
 
         // dump out the log history (it's handy for context)
-        if (maybeCrashReportFile && *maybeCrashReportFile)
+        if (maybe_crash_report_ostream and *maybe_crash_report_ostream)
         {
-            *maybeCrashReportFile << "----- log -----\n";
+            *maybe_crash_report_ostream << "----- log -----\n";
             auto guard = global_get_traceback_log().lock();
-            for (LogMessage const& msg : *guard)
-            {
-                *maybeCrashReportFile << '[' << msg.logger_name() << "] [" << msg.level() << "] " << msg.payload() << '\n';
+            for (const LogMessage& msg : *guard) {
+                *maybe_crash_report_ostream << '[' << msg.logger_name() << "] [" << msg.level() << "] " << msg.payload() << '\n';
             }
-            *maybeCrashReportFile << "----- /log -----\n";
+            *maybe_crash_report_ostream << "----- /log -----\n";
         }
 
         // then write a traceback to both the log (in case the user is running from a console)
         // *and* the crash dump (in case the user is running from a GUI and wants to report it)
-        if (maybeCrashReportFile && *maybeCrashReportFile)
-        {
-            *maybeCrashReportFile << "----- traceback -----\n";
+        if (maybe_crash_report_ostream and *maybe_crash_report_ostream) {
+            *maybe_crash_report_ostream << "----- traceback -----\n";
 
-            std::shared_ptr<osc::LogSink> sink = std::make_shared<CrashFileSink>(*maybeCrashReportFile);
+            auto sink = std::make_shared<CrashFileSink>(*maybe_crash_report_ostream);
 
             global_default_logger()->sinks().push_back(sink);
-            WriteTracebackToLog(osc::LogLevel::err);
+            write_this_thread_backtrace_to_log(osc::LogLevel::err);
             global_default_logger()->sinks().erase(global_default_logger()->sinks().end() - 1);
 
-            *maybeCrashReportFile << "----- /traceback -----\n";
+            *maybe_crash_report_ostream << "----- /traceback -----\n";
         }
-        else
-        {
+        else {
             // (no crash dump file, but still write it to stdout etc.)
 
-            *maybeCrashReportFile << "----- traceback -----\n";
-            WriteTracebackToLog(osc::LogLevel::err);
-            *maybeCrashReportFile << "----- /traceback -----\n";
+            *maybe_crash_report_ostream << "----- traceback -----\n";
+            write_this_thread_backtrace_to_log(osc::LogLevel::err);
+            *maybe_crash_report_ostream << "----- /traceback -----\n";
         }
 
         return EXCEPTION_CONTINUE_SEARCH;
@@ -716,16 +709,16 @@ namespace
     void signal_handler(int)
     {
         log_error("signal caught by application: printing backtrace");
-        WriteTracebackToLog(osc::LogLevel::err);
+        write_this_thread_backtrace_to_log(osc::LogLevel::err);
     }
 }
 
-void osc::InstallBacktraceHandler(std::filesystem::path const& crashDumpDir)
+void osc::enable_crash_signal_backtrace_handler(const std::filesystem::path& crash_dump_directory)
 {
     // https://stackoverflow.com/questions/13591334/what-actions-do-i-need-to-take-to-get-a-crash-dump-in-all-error-scenarios
 
     // set crash dump directory globally so that the crash handler can see it
-    UpdCrashDumpDirGlobal() = crashDumpDir;
+    upd_crash_report_directory_global() = crash_dump_directory;
 
     // system default: display all errors
     SetErrorMode(0);
@@ -736,32 +729,32 @@ void osc::InstallBacktraceHandler(std::filesystem::path const& crashDumpDir)
     signal(SIGABRT, signal_handler);
 }
 
-void osc::OpenPathInOSDefaultApplication(std::filesystem::path const& p)
+void osc::open_file_in_os_default_application(const std::filesystem::path& p)
 {
     ShellExecute(0, 0, p.string().c_str(), 0, 0 , SW_SHOW);
 }
 
-void osc::OpenURLInDefaultBrowser(std::string_view)
+void osc::open_url_in_os_default_web_browser(std::string_view)
 {
     log_error("unsupported action: cannot open external URLs in Windows (yet!)");
 }
 
-void osc::SetProcessHighDPIMode()
+void osc::enable_highdpi_mode_for_this_process()
 {
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
 }
 
 #elif EMSCRIPTEN
 
-void osc::InstallBacktraceHandler(std::filesystem::path const&) {}
+void osc::enable_crash_signal_backtrace_handler(const std::filesystem::path&) {}
 
-std::tm osc::GMTimeThreadsafe(std::time_t t)
+std::tm osc::gmtime_threadsafe(std::time_t t)
 {
     std::tm rv{};
     gmtime_r(&t, &rv);
     return rv;
 }
-void osc::SetProcessHighDPIMode() {}
+void osc::enable_highdpi_mode_for_this_process() {}
 
 #else
 #error "Unsupported platform?"

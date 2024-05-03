@@ -12,7 +12,7 @@ namespace
 {
     class StdoutSink final : public LogSink {
     private:
-        void impl_log_message(const LogMessageView& message) final
+        void impl_sink_message(const LogMessageView& message) final
         {
             static std::mutex s_stdout_mutex;
 
@@ -29,7 +29,7 @@ namespace
         }
 
     private:
-        void impl_log_message(const LogMessageView& msg) final
+        void impl_sink_message(const LogMessageView& msg) final
         {
             auto l = messages_.lock();
             l->emplace_back(msg);

@@ -71,14 +71,14 @@ namespace
 
         log_info("setting locale to US (so that numbers are always in the format '0.x'");
         CStringView const locale = "C";
-        SetEnv("LANG", locale, true);
-        SetEnv("LC_CTYPE", locale, true);
-        SetEnv("LC_NUMERIC", locale, true);
-        SetEnv("LC_TIME", locale, true);
-        SetEnv("LC_COLLATE", locale, true);
-        SetEnv("LC_MONETARY", locale, true);
-        SetEnv("LC_MESSAGES", locale, true);
-        SetEnv("LC_ALL", locale, true);
+        set_environment_variable("LANG", locale, true);
+        set_environment_variable("LC_CTYPE", locale, true);
+        set_environment_variable("LC_NUMERIC", locale, true);
+        set_environment_variable("LC_TIME", locale, true);
+        set_environment_variable("LC_COLLATE", locale, true);
+        set_environment_variable("LC_MONETARY", locale, true);
+        set_environment_variable("LC_MESSAGES", locale, true);
+        set_environment_variable("LC_ALL", locale, true);
 #ifdef LC_CTYPE
         setLocaleUNSAFE(LC_CTYPE, locale);
 #endif

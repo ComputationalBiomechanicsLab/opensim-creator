@@ -72,7 +72,7 @@ private:
         ui::SameLine();
         if (ui::Button(ICON_FA_COPY))
         {
-            SetClipboardText(c_ExampleInputText);
+            set_clipboard_text(c_ExampleInputText);
         }
         ui::DrawTooltipBodyOnlyIfItemHovered("Copy example input to clipboard");
         ui::Indent();
@@ -203,7 +203,7 @@ private:
 
     void actionTryPromptingUserForCSVFile()
     {
-        if (auto const path = PromptUserForFile("csv"))
+        if (auto const path = prompt_user_to_select_file({"csv"}))
         {
             actionLoadCSVFile(*path);
         }

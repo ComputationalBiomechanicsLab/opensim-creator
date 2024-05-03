@@ -83,7 +83,7 @@ namespace
 
     void DoOpenFileViaDialog(ParentPtr<IMainUIStateAPI> const& api)
     {
-        std::optional<std::filesystem::path> const maybePath = PromptUserForFile("osim");
+        std::optional<std::filesystem::path> const maybePath = prompt_user_to_select_file({"osim"});
 
         if (maybePath)
         {
@@ -505,7 +505,7 @@ bool osc::ActionCopyModelPathToClipboard(UndoableModelStatePair const& uim)
 
     std::filesystem::path const absPath = std::filesystem::weakly_canonical(uim.getFilesystemPath());
 
-    SetClipboardText(absPath.string());
+    set_clipboard_text(absPath.string());
 
     return true;
 }
@@ -610,7 +610,7 @@ bool osc::ActionOpenOsimParentDirectory(UndoableModelStatePair& uim)
     }
 
     std::filesystem::path const p{uim.getModel().getInputFileName()};
-    OpenPathInOSDefaultApplication(p.parent_path());
+    open_file_in_os_default_application(p.parent_path());
     return true;
 }
 
@@ -621,7 +621,7 @@ bool osc::ActionOpenOsimInExternalEditor(UndoableModelStatePair& uim)
         return false;
     }
 
-    OpenPathInOSDefaultApplication(uim.getModel().getInputFileName());
+    open_file_in_os_default_application(uim.getModel().getInputFileName());
     return true;
 }
 
@@ -2313,6 +2313,6 @@ bool osc::ActionExportModelGraphToDotvizClipboard(UndoableModelStatePair const& 
 {
     std::stringstream ss;
     WriteComponentTopologyGraphAsDotViz(model.getModel(), ss);
-    SetClipboardText(std::move(ss).str());
+    set_clipboard_text(std::move(ss).str());
     return true;
 }

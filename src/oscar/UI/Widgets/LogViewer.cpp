@@ -45,7 +45,7 @@ namespace
 
         std::string full_log_content = std::move(ss).str();
 
-        SetClipboardText(full_log_content);
+        set_clipboard_text(full_log_content);
     }
 }
 

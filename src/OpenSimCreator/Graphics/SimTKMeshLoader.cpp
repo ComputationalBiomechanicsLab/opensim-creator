@@ -19,14 +19,17 @@
 #include <cstddef>
 #include <cstdint>
 #include <ranges>
+#include <string_view>
 #include <vector>
 
 using namespace osc;
+using namespace std::literals;
 namespace rgs = std::ranges;
 
-// helper functions
 namespace
 {
+    constexpr auto c_supported_mesh_extensions = std::to_array({"obj"sv, "vtp"sv, "stl"sv});
+
     struct OutputMeshMetrics {
         size_t numVertices = 0;
         size_t numIndices = 0;
@@ -151,9 +154,9 @@ Mesh osc::ToOscMesh(SimTK::PolygonalMesh const& mesh)
     return rv;
 }
 
-std::string osc::GetCommaDelimitedListOfSupportedSimTKMeshFormats()
+std::span<const std::string_view> osc::GetSupportedSimTKMeshFormats()
 {
-    return "obj,vtp,stl";
+    return c_supported_mesh_extensions;
 }
 
 Mesh osc::LoadMeshViaSimTK(std::filesystem::path const& p)

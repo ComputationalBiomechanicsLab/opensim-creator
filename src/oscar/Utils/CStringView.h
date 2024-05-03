@@ -96,6 +96,13 @@ namespace osc
         size_type m_Size = std::string_view{m_Data}.size();
     };
 
+    namespace literals
+    {
+        constexpr CStringView operator""_cs(const char* str, size_t len)
+        {
+            return CStringView{str, len};
+        }
+    }
 
     inline std::string to_string(const CStringView& sv)
     {

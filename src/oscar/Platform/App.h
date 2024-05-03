@@ -37,11 +37,12 @@ namespace osc
     // systems (windowing, event pumping, timers, graphics, logging, etc.)
     class App {
     public:
+
         template<std::destructible T, typename... Args>
         requires std::constructible_from<T, Args&&...>
         static std::shared_ptr<T> singleton(Args&&... args)
         {
-            const auto ctor = [args_tuple = std::make_tuple(std::forward<Args>(args)...)]() mutable -> std::shared_ptr<void>
+            const auto singleton_constructor = [args_tuple = std::make_tuple(std::forward<Args>(args)...)]() mutable -> std::shared_ptr<void>
             {
                 return std::apply([](auto&&... inner_args) -> std::shared_ptr<void>
                 {
@@ -49,7 +50,7 @@ namespace osc
                 }, std::move(args_tuple));
             };
 
-            return std::static_pointer_cast<T>(App::upd().upd_singleton(typeid(T), ctor));
+            return std::static_pointer_cast<T>(App::upd().upd_singleton(typeid(T), singleton_constructor));
         }
 
         // returns the currently-active application global
@@ -75,7 +76,7 @@ namespace osc
 
         // constructs an app by initializing it from a config at the default app config location
         //
-        // this also sets the `cur` application global
+        // this also sets the currently-active application global (i.e. `App::upd()` and `App::get()` will work)
         explicit App(const AppMetadata&);
         App(const App&) = delete;
         App(App&&) noexcept;
@@ -93,10 +94,13 @@ namespace osc
         // application
         const std::filesystem::path& user_data_dir() const;
 
-        // start showing the supplied screen, only returns once a screen requests to quit or an exception is thrown
+        // starts showing the supplied screen
+        //
+        // this function only returns once the active screen calls `app.request_quit()`, or an exception
+        // is thrown
         void show(std::unique_ptr<IScreen>);
 
-        // construct `TScreen` with `Args` and start showing it
+        // constructs `TScreen` with `Args` and starts `show`ing it
         template<std::derived_from<IScreen> TScreen, typename... Args>
         requires std::constructible_from<TScreen, Args&&...>
         void show(Args&&... args)
@@ -104,11 +108,11 @@ namespace osc
             show(std::make_unique<TScreen>(std::forward<Args>(args)...));
         }
 
-        // Request the app transitions to a new screen
+        // requests that the app transitions to a new screen
         //
         // this is merely a *request* that the `App` will fulfill at a later
-        // time (usually, after it's done handling some part of the top-level application
-        // loop).
+        // time (usually, after it's done handling some part of the top-level
+        // application rendering loop)
         //
         // When the App decides it's ready to transition to the new screen, it will:
         //
@@ -118,7 +122,7 @@ namespace osc
         // - make the new screen the current screen
         void request_transition(std::unique_ptr<IScreen>);
 
-        // construct `TScreen` with `Args` then request the app transitions to it
+        // constructs `TScreen` with `Args` then requests that the app transitions to it
         template<std::derived_from<IScreen> TScreen, typename... Args>
         requires std::constructible_from<TScreen, Args&&...>
         void request_transition(Args&&... args)
@@ -126,10 +130,11 @@ namespace osc
             request_transition(std::make_unique<TScreen>(std::forward<Args>(args)...));
         }
 
-        // request that the app quits
+        // requests that the app quits
         //
-        // this is merely a *request* tha the `App` will fulfill at a later time (usually,
-        // after it's done handling some part of the top-level application loop)
+        // this is merely a *request* that the `App` will fulfill at a later
+        // time (usually, after it's done handling some part of the top-level
+        // application rendering loop)
         void request_quit();
 
         // returns main window's dimensions (float)
@@ -147,15 +152,17 @@ namespace osc
         // makes the main window windowed (as opposed to fullscreen)
         void make_windowed();
 
-        // returns the recommended number of MSXAA antiAliasingLevel that renderers should use (based on config etc.)
+        // returns the recommended number of anti-aliasing samples that renderers that want to render
+        // to this `App`'s screen should use (based on user config, etc.)
         AntiAliasingLevel anti_aliasing_level() const;
 
-        // sets the number of MSXAA antiAliasingLevel multisampled renderers should use
+        // sets the number of anti-aliasing samples that multisampled renderers should use when they
+        // want to render to this `App`'s screen
         //
-        // throws if arg > max_samples()
+        // throws if `samples > max_samples()`
         void set_anti_aliasing_level(AntiAliasingLevel);
 
-        // returns the maximum number of MSXAA antiAliasingLevel the backend supports
+        // returns the maximum number of anti-aliasing samples that the graphics backend supports
         AntiAliasingLevel max_anti_aliasing_level() const;
 
         // returns true if the application is rendering in debug mode
@@ -182,22 +189,22 @@ namespace osc
         // client code can submit annotations with `App::add_frame_annotation`
         std::future<Screenshot> request_screenshot();
 
-        // returns human-readable strings representing (parts of) the graphics backend (e.g. OpenGL)
+        // returns human-readable strings representing (parts of) the currently-active graphics backend (e.g. OpenGL)
         std::string graphics_backend_vendor_string() const;
         std::string graphics_backend_renderer_string() const;
         std::string graphics_backend_version_string() const;
         std::string graphics_backend_shading_language_version_string() const;
 
-        // returns the number of times the application has drawn a frame to the screen
+        // returns the number of times this `App` has drawn a frame to the screen
         size_t num_frames_drawn() const;
 
-        // returns the time at which the app started up (arbitrary timepoint, don't assume 0)
+        // returns the time at which this `App` started up (arbitrary timepoint, don't assume 0)
         AppClock::time_point startup_time() const;
 
-        // returns the time delta between when the app started up and the current frame
+        // returns `frame_start_time() - startup_time()`
         AppClock::duration frame_delta_since_startup() const;
 
-        // returns the time at which the current frame started
+        // returns the time at which the current frame started being drawn
         AppClock::time_point frame_start_time() const;
 
         // returns the time delta between when the current frame started and when the previous
@@ -219,7 +226,7 @@ namespace osc
         void make_main_loop_polling();
         void request_redraw();  // threadsafe: used to make a waiting loop redraw
 
-        // fill all pixels in the screen with the given color
+        // fill all pixels in the main window with the given color
         void clear_screen(const Color&);
 
         // sets the main window's subtitle (e.g. document name)
@@ -249,9 +256,9 @@ namespace osc
         std::shared_ptr<void> upd_singleton(const std::type_info&, const std::function<std::shared_ptr<void>()>&);
 
         // HACK: the 2D ui currently needs access to these
+        friend void ui::context::init();
         SDL_Window* upd_underlying_window();
         void* upd_underlying_opengl_context();
-        friend void ui::context::init();
 
         class Impl;
         std::unique_ptr<Impl> impl_;

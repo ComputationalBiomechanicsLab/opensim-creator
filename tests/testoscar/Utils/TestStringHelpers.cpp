@@ -7,6 +7,7 @@
 #include <cctype>
 #include <cstdint>
 #include <optional>
+#include <string>
 #include <string_view>
 #include <vector>
 
@@ -14,6 +15,7 @@ using osc::try_parse_hex_chars_as_byte;
 using osc::TrimLeadingAndTrailingWhitespace;
 using osc::to_hex_chars;
 using osc::is_valid_identifier;
+using osc::join;
 
 TEST(Algorithms, TrimLeadingAndTrailingWhitespaceWorksAsExpected)
 {
@@ -339,4 +341,25 @@ TEST(StringHelpers, IsValidIdentifierReturnsFalseWhenGivenIdentifiersWithInvalid
             assertCharCannotBeUsedInIdentifier(static_cast<char>(c));
         }
     }
+}
+
+TEST(StringHelpers, joinWorksForBlankString)
+{
+    const auto els = std::vector<std::string>{};
+    ASSERT_EQ(join(els, ","), "");
+}
+
+TEST(StringHelpers, joinWorksForOneElement)
+{
+    ASSERT_EQ(join(std::to_array({1}), ", "), "1");
+}
+
+TEST(StringHelpers, joinWorksForTwoElements)
+{
+    ASSERT_EQ(join(std::to_array({1, 2}), ", "), "1, 2");
+}
+
+TEST(StringHelpers, joinWorksForThreeElements)
+{
+    ASSERT_EQ(join(std::to_array({5, 4, 3}), ", "), "5, 4, 3");
 }

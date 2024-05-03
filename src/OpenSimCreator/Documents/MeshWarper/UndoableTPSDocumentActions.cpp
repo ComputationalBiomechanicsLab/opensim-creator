@@ -181,7 +181,7 @@ void osc::ActionLoadMeshFile(
     TPSDocumentInputIdentifier which)
 {
     std::optional<std::filesystem::path> const maybeMeshPath =
-        PromptUserForFile(GetCommaDelimitedListOfSupportedSimTKMeshFormats());
+        prompt_user_to_select_file(GetSupportedSimTKMeshFormats());
     if (!maybeMeshPath)
     {
         return;  // user didn't select anything
@@ -196,7 +196,7 @@ void osc::ActionLoadLandmarksFromCSV(
     UndoableTPSDocument& doc,
     TPSDocumentInputIdentifier which)
 {
-    auto const maybeCSVPath = PromptUserForFile("csv");
+    auto const maybeCSVPath = prompt_user_to_select_file({"csv"});
     if (!maybeCSVPath)
     {
         return;  // user didn't select anything
@@ -218,7 +218,7 @@ void osc::ActionLoadLandmarksFromCSV(
 
 void osc::ActionLoadNonParticipatingLandmarksFromCSV(UndoableTPSDocument& doc)
 {
-    auto const maybeCSVPath = PromptUserForFile("csv");
+    auto const maybeCSVPath = prompt_user_to_select_file({"csv"});
     if (!maybeCSVPath)
     {
         return;  // user didn't select anything

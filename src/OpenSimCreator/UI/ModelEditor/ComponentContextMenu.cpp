@@ -544,7 +544,7 @@ private:
         if (ui::MenuItem("Copy Absolute Path to Clipboard"))
         {
             std::string const path = GetAbsolutePathString(*c);
-            SetClipboardText(path);
+            set_clipboard_text(path);
         }
         ui::DrawTooltipIfItemHovered("Copy Component Absolute Path", "Copy the absolute path to this component to your clipboard.\n\n(This is handy if you are separately using absolute component paths to (e.g.) manipulate the model in a script or something)");
 

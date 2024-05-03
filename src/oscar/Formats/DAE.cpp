@@ -413,7 +413,7 @@ osc::DAEMetadata::DAEMetadata(
 
     author{author_},
     authoring_tool{authoring_tool_},
-    creation_time{GetSystemCalendarTime()},
+    creation_time{system_calendar_time()},
     modification_time{creation_time}
 {}
 

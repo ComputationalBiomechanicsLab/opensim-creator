@@ -9,69 +9,63 @@
 #include <variant>
 
 using namespace osc;
+using namespace std::literals;
 
 AppSettingValueType osc::AppSettingValue::type() const
 {
     static_assert(std::variant_size_v<decltype(value_)> == num_options<AppSettingValueType>());
 
-    AppSettingValueType rv = AppSettingValueType::String;
-    std::visit(Overload
+    return std::visit(Overload
     {
-        [&rv](const std::string&) { rv = AppSettingValueType::String; },
-        [&rv](bool)               { rv = AppSettingValueType::Bool; },
-        [&rv](const Color&)       { rv = AppSettingValueType::Color; },
+        [](const std::string&) { return AppSettingValueType::String; },
+        [](bool)               { return AppSettingValueType::Bool; },
+        [](const Color&)       { return AppSettingValueType::Color; },
     }, value_);
-    return rv;
 }
 
 bool osc::AppSettingValue::to_bool() const
 {
-    bool rv = false;
-    std::visit(Overload{
-        [&rv](const std::string& s)
+    return std::visit(Overload{
+        [](const std::string& s)
         {
             if (s.empty()) {
-                rv = false;
+                return false;
             }
             else if (is_equal_case_insensitive(s, "false")) {
-                rv = false;
+                return false;
             }
             else if (is_equal_case_insensitive(s, "0")) {
-                rv = false;
+                return false;
             }
             else {
-                rv = true;
+                return true;
             }
         },
-        [&rv](bool v) { rv = v; },
-        [](const Color&) {},
+        [](bool v)
+        {
+            return v;
+        },
+        [](const Color&)
+        {
+            return false;
+        },
     }, value_);
-    return rv;
 }
 
 std::string osc::AppSettingValue::to_string() const
 {
-    std::string rv;
-    std::visit(Overload{
-        [&rv](const std::string& v) { rv = v; },
-        [&rv](bool v) { rv = v ? "true" : "false"; },
-        [&rv](const Color& c) { rv = to_html_string_rgba(c); },
+    return std::visit(Overload{
+        [](const std::string& v) { return std::string{v}; },
+        [](bool v) { return v ? "true"s : "false"s; },
+        [](const Color& c) { return to_html_string_rgba(c); },
     }, value_);
-    return rv;
 }
 
 Color osc::AppSettingValue::to_color() const
 {
-    Color rv = Color::white();
-    std::visit(Overload{
-        [&rv](const std::string& v)
-        {
-            if (auto c = try_parse_html_color_string(v)) {
-                rv = *c;
-            }
-        },
-        [](bool) {},
-        [&rv](const Color& c) { rv = c; },
+    return std::visit(Overload{
+        [](const std::string& v) { return try_parse_html_color_string(v).value_or(Color::white()); },
+        [](bool v) { return v ? Color::white() : Color::black(); },
+        [](const Color& c) { return c; },
     }, value_);
-    return rv;
 }

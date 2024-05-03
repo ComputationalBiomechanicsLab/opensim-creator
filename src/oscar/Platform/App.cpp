@@ -70,7 +70,7 @@ namespace
     bool ensure_backtrace_handler_enabled(const std::filesystem::path& crash_dump_dir)
     {
         log_info("enabling backtrace handler");
-        InstallBacktraceHandler(crash_dump_dir);
+        enable_crash_signal_backtrace_handler(crash_dump_dir);
         return true;
     }
 
@@ -104,7 +104,7 @@ namespace
         Uint32 flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED;
         if (auto v = config.find_value("experimental_feature_flags/high_dpi_mode"); v and v->to_bool()) {
             flags |= SDL_WINDOW_ALLOW_HIGHDPI;
-            SetProcessHighDPIMode();
+            enable_highdpi_mode_for_this_process();
         }
 
         return sdl::CreateWindoww(application_name, x, y, width, height, flags);
@@ -126,7 +126,7 @@ namespace
 
     std::filesystem::path get_current_exe_dir_and_log_it()
     {
-        auto rv = CurrentExeDir();
+        auto rv = current_executable_directory();
         log_info("executable directory: %s", rv.string().c_str());
         return rv;
     }
@@ -136,7 +136,7 @@ namespace
         CStringView organization_name,
         CStringView application_name)
     {
-        auto rv = GetUserDataDir(organization_name, application_name);
+        auto rv = user_data_directory(organization_name, application_name);
         log_info("user data directory: %s", rv.string().c_str());
         return rv;
     }

@@ -7,7 +7,7 @@
 #include <memory>
 
 namespace osc { template<typename T> class ParentPtr; }
-namespace osc { struct Screenshot; }
+namespace osc { class Screenshot; }
 namespace osc { class ITabHost; }
 
 namespace osc

@@ -1419,7 +1419,7 @@ namespace
     void ActionPromptUserForCSVOverlayFile(PlotLines& lines)
     {
         std::optional<std::filesystem::path> const maybeCSVPath =
-            PromptUserForFile("csv");
+            prompt_user_to_select_file({"csv"});
 
         if (maybeCSVPath)
         {

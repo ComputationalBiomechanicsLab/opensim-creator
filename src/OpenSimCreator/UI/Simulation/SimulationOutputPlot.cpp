@@ -75,7 +75,7 @@ namespace
 
         if (ui::MenuItem(ICON_FA_SAVE "Save as CSV (and open)")) {
             if (auto const path = api.tryPromptToSaveOutputsAsCSV({output})) {
-                OpenPathInOSDefaultApplication(*path);
+                open_file_in_os_default_application(*path);
             }
         }
     }

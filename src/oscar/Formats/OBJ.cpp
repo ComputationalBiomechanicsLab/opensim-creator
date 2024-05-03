@@ -69,7 +69,7 @@ namespace
 
 osc::ObjMetadata::ObjMetadata(std::string_view authoring_tool_) :
     authoring_tool{authoring_tool_},
-    creation_time{GetSystemCalendarTime()}
+    creation_time{system_calendar_time()}
 {}
 
 void osc::write_as_obj(

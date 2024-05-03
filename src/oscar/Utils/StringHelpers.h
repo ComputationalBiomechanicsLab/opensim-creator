@@ -73,12 +73,31 @@ namespace osc
     std::pair<char, char> to_hex_chars(uint8_t);
     std::optional<uint8_t> try_parse_hex_chars_as_byte(char, char);
 
-    // returns a string representation of `v` by first streaming it to a `std::stringstream`
     template<typename T>
+    concept OutputStreamable = requires (T v, std::ostream& o) {
+        { o << v } -> std::same_as<std::ostream&>;
+    };
+
+    // returns a string representation of `v` by first streaming it to a `std::stringstream`
+    template<OutputStreamable T>
     std::string StreamToString(const T& v)
     {
         std::stringstream ss;
         ss << v;
+        return std::move(ss).str();
+    }
+
+    template<std::ranges::input_range R>
+    requires OutputStreamable<std::ranges::range_value_t<R>>
+    std::string join(R&& r, std::string_view delimeter)
+    {
+        std::stringstream ss;
+        std::string_view prefix_delim;
+        for (auto&& el : r) {
+            ss << prefix_delim;
+            ss << el;
+            prefix_delim = delimeter;
+        }
         return std::move(ss).str();
     }
 }

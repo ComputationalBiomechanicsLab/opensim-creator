@@ -27,7 +27,7 @@ using namespace osc;
 void osc::fd::ActionPromptUserToAddMeshFiles(UndoableModelStatePair& model)
 {
     std::vector<std::filesystem::path> const meshPaths =
-        PromptUserForFiles(GetCommaDelimitedListOfSupportedSimTKMeshFormats());
+        prompt_user_to_select_files(GetSupportedSimTKMeshFormats());
     if (meshPaths.empty())
     {
         return;  // user didn't select anything

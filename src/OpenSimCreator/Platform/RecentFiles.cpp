@@ -27,7 +27,7 @@ namespace
     constexpr size_t c_MaxRecentFileEntries = 10;
 
     // returns a unix timestamp in seconds since the epoch
-    std::chrono::seconds GetCurrentTimeAsUnixTimestamp()
+    std::chrono::seconds get_current_time_as_unix_timestamp()
     {
         return std::chrono::seconds(std::time(nullptr));
     }
@@ -112,7 +112,7 @@ void osc::RecentFiles::push_back(std::filesystem::path const& path)
     m_Files.push_back(RecentFile
     {
         std::filesystem::exists(path),
-        GetCurrentTimeAsUnixTimestamp(),
+        get_current_time_as_unix_timestamp(),
         path,
     });
 

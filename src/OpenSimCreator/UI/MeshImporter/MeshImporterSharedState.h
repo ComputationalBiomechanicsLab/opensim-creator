@@ -120,7 +120,7 @@ namespace osc::mi
 
         bool openOsimFileAsModelGraph()
         {
-            std::optional<std::filesystem::path> const maybeOsimPath = PromptUserForFile("osim");
+            std::optional<std::filesystem::path> const maybeOsimPath = prompt_user_to_select_file({"osim"});
 
             if (maybeOsimPath)
             {
@@ -271,7 +271,7 @@ namespace osc::mi
 
         std::vector<std::filesystem::path> promptUserForMeshFiles() const
         {
-            return PromptUserForFiles(GetCommaDelimitedListOfSupportedSimTKMeshFormats());
+            return prompt_user_to_select_files(GetSupportedSimTKMeshFormats());
         }
 
         void pushMeshLoadRequests(UID attachmentPoint, std::vector<std::filesystem::path> paths)

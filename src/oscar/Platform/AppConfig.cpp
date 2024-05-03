@@ -34,7 +34,7 @@ namespace
             }
         }
 
-        auto resources_relative_to_exe = CurrentExeDir().parent_path() / "resources";
+        auto resources_relative_to_exe = current_executable_directory().parent_path() / "resources";
         if (std::filesystem::exists(resources_relative_to_exe)) {
             return resources_relative_to_exe;
         }
@@ -71,7 +71,7 @@ namespace
             config_file_dir = p->parent_path();
         }
         else {
-            config_file_dir = CurrentExeDir().parent_path();  // assume the `bin/` dir is one-up from the config
+            config_file_dir = current_executable_directory().parent_path();  // assume the `bin/` dir is one-up from the config
         }
         const std::filesystem::path configured_resources_dir{resources_dir_setting_value->to_string()};
 

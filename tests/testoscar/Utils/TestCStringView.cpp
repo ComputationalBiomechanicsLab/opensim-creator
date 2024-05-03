@@ -7,6 +7,7 @@
 #include <string_view>
 
 using namespace osc;
+using namespace osc::literals;
 
 TEST(CStringView, WhenPassedNullCstringYieldsEmptyCStringView)
 {
@@ -53,4 +54,10 @@ TEST(CStringView, ThreeWayComparisonBehavesIdenticallyToStringViewComparision)
         }
     };
     std::for_each(svs.begin(), svs.end(), sameThreeWayResultWithAllOtherElements);
+}
+
+TEST(CStringView, LiteralSuffixReturnsCStringView)
+{
+    static_assert(std::same_as<decltype("hello"_cs), CStringView>);
+    ASSERT_EQ("hello"_cs, CStringView{"hello"});
 }

@@ -16,7 +16,7 @@ namespace osc
     public:
         virtual ~LogSink() noexcept = default;
 
-        void log_message(const LogMessageView& view) { impl_log_message(view); }
+        void sink_message(const LogMessageView& view) { impl_sink_message(view); }
 
         LogLevel level() const { return sink_level_; }
         void set_level(LogLevel level) { sink_level_ = level; }
@@ -24,7 +24,7 @@ namespace osc
         bool should_log(LogLevel level) const { return level >= sink_level_; }
 
     private:
-        virtual void impl_log_message(const LogMessageView&) = 0;
+        virtual void impl_sink_message(const LogMessageView&) = 0;
 
         LogLevel sink_level_ = LogLevel::trace;
     };

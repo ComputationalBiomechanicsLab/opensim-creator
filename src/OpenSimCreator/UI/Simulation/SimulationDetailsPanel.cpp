@@ -96,7 +96,7 @@ private:
                 if (ui::MenuItem("as CSV (and open)"))
                 {
                     if (const auto path = m_SimulatorUIAPI->tryPromptToSaveOutputsAsCSV(outputs)) {
-                        OpenPathInOSDefaultApplication(*path);
+                        open_file_in_os_default_application(*path);
                     }
                 }
 

@@ -65,7 +65,7 @@ namespace osc
             // sink the message
             for (; it != log_sinks_.end(); ++it) {
                 if ((*it)->should_log(view.level())) {
-                    (*it)->log_message(view);
+                    (*it)->sink_message(view);
                 }
             }
         }

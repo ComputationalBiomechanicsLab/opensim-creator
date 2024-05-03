@@ -17,8 +17,8 @@
 
 void osc::mow::UIState::actionOpenOsimOrPromptUser(std::optional<std::filesystem::path> path)
 {
-    if (!path) {
-        path = PromptUserForFile("osim");
+    if (not path) {
+        path = prompt_user_to_select_file({"osim"});
     }
 
     if (path) {

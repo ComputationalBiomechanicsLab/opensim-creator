@@ -221,7 +221,7 @@ namespace
         };
         if (!outputFileStream)
         {
-            std::string const error = CurrentErrnoAsString();
+            std::string const error = errno_to_string_threadsafe();
             log_error("%s: could not save obj output: %s", userSaveLocation.string().c_str(), error.c_str());
             return;
         }
@@ -269,7 +269,7 @@ namespace
         };
         if (!outputFileStream)
         {
-            std::string const error = CurrentErrnoAsString();
+            std::string const error = errno_to_string_threadsafe();
             log_error("%s: could not save obj output: %s", userSaveLocation.string().c_str(), error.c_str());
             return;
         }

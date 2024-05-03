@@ -140,7 +140,7 @@ void osc::MainMenuFileTab::onDraw(
 
     if (ui::MenuItem(ICON_FA_FOLDER_OPEN " Load Motion", {}, false, maybeModel != nullptr))
     {
-        std::optional<std::filesystem::path> maybePath = PromptUserForFile("sto,mot");
+        std::optional<std::filesystem::path> maybePath = prompt_user_to_select_file({"sto", "mot"});
         if (maybePath && maybeModel)
         {
             try
@@ -371,7 +371,7 @@ void osc::MainMenuAboutTab::onDraw()
         ui::PushID(id++);
         if (ui::Button(ICON_FA_FOLDER " open"))
         {
-            OpenPathInOSDefaultApplication(App::get().executable_dir());
+            open_file_in_os_default_application(App::get().executable_dir());
         }
         ui::PopID();
         ui::NextColumn();
@@ -382,7 +382,7 @@ void osc::MainMenuAboutTab::onDraw()
         ui::NextColumn();
         ui::PushID(id++);
         if (ui::Button(ICON_FA_FOLDER " open")) {
-            OpenPathInOSDefaultApplication(App::get().user_data_dir());
+            open_file_in_os_default_application(App::get().user_data_dir());
         }
         ui::PopID();
         ui::NextColumn();
@@ -423,7 +423,7 @@ void osc::MainMenuAboutTab::onDraw()
         ui::PushID(id++);
         if (ui::Button(ICON_FA_LINK " open"))
         {
-            OpenPathInOSDefaultApplication(App::config().html_docs_directory() / "index.html");
+            open_file_in_os_default_application(App::config().html_docs_directory() / "index.html");
         }
         ui::DrawTooltipBodyOnlyIfItemHovered("this will open the (locally installed) documentation in a separate browser window");
         ui::PopID();
@@ -436,7 +436,7 @@ void osc::MainMenuAboutTab::onDraw()
             ui::PushID(id++);
             if (ui::Button(ICON_FA_LINK " open"))
             {
-                OpenPathInOSDefaultApplication(std::filesystem::path{std::string_view{*repoURL}});
+                open_file_in_os_default_application(std::filesystem::path{std::string_view{*repoURL}});
             }
             ui::DrawTooltipBodyOnlyIfItemHovered("this will open the repository homepage in a separate browser window");
             ui::PopID();
@@ -450,7 +450,7 @@ void osc::MainMenuAboutTab::onDraw()
             ui::PushID(id++);
             if (ui::Button(ICON_FA_LINK " open"))
             {
-                OpenPathInOSDefaultApplication(std::filesystem::path{std::string_view{*helpURL}});
+                open_file_in_os_default_application(std::filesystem::path{std::string_view{*helpURL}});
             }
             ui::DrawTooltipBodyOnlyIfItemHovered("this will open the help/discussion page in a separate browser window");
             ui::PopID();
@@ -462,7 +462,7 @@ void osc::MainMenuAboutTab::onDraw()
         ui::PushID(id++);
         if (ui::Button(ICON_FA_LINK " open"))
         {
-            OpenPathInOSDefaultApplication("https://simtk-confluence.stanford.edu/display/OpenSim/Documentation");
+            open_file_in_os_default_application("https://simtk-confluence.stanford.edu/display/OpenSim/Documentation");
         }
         ui::DrawTooltipBodyOnlyIfItemHovered("this will open the documentation in a separate browser window");
         ui::PopID();
