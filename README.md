@@ -5,7 +5,7 @@
 
 > A UI for building OpenSim models
 
-- 📥 Looking for a download? [Download the latest release here](../../releases/latest)
+- 📥 Want to download it? [Download the latest release here](../../releases/latest)
 - 📚 Want to learn the basics? [Watch Introduction Videos Here](https://www.youtube.com/playlist?list=PLOPlDtRLhp8c2SWLCQKKd-l4__UainOYk)
 - 🐛 Found a bug or want to request a feature? [Post it on the issues page](../../issues)
 - ❓ Have a question? [Go to the discussions page](../../discussions)
