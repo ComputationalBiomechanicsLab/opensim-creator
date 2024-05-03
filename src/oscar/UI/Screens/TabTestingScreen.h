@@ -26,6 +26,6 @@ namespace osc
         void impl_on_draw() override;
 
         class Impl;
-        std::shared_ptr<Impl> m_Impl;
+        std::shared_ptr<Impl> impl_;
     };
 }

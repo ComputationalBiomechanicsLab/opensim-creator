@@ -20,30 +20,30 @@ class osc::TabTestingScreen::Impl final :
     public IScreen,
     public ITabHost {
 public:
-    explicit Impl(TabRegistryEntry registryEntry) :
-        m_RegistryEntry{std::move(registryEntry)}
+    explicit Impl(TabRegistryEntry registry_entry) :
+        registry_entry_{std::move(registry_entry)}
     {}
 
 private:
     void impl_on_mount() override
     {
-        m_CurrentTab = m_RegistryEntry.createTab(ParentPtr<Impl>{shared_from_this()});
+        current_tab_ = registry_entry_.createTab(ParentPtr<Impl>{shared_from_this()});
         ui::context::init();
-        m_CurrentTab->on_mount();
+        current_tab_->on_mount();
         App::upd().make_main_loop_polling();
     }
 
     void impl_on_unmount() override
     {
         App::upd().make_main_loop_waiting();
-        m_CurrentTab->on_unmount();
+        current_tab_->on_unmount();
         ui::context::shutdown();
     }
 
     void impl_on_event(const SDL_Event& e) override
     {
         ui::context::on_event(e);
-        m_CurrentTab->onEvent(e);
+        current_tab_->onEvent(e);
 
         if (e.type == SDL_QUIT) {
             throw std::runtime_error{"forcibly quit"};
@@ -52,19 +52,19 @@ private:
 
     void impl_on_tick() override
     {
-        m_CurrentTab->on_tick();
+        current_tab_->on_tick();
     }
 
     void impl_on_draw() override
     {
         App::upd().clear_screen({0.0f, 0.0f, 0.0f, 0.0f});
         ui::context::on_start_new_frame();
-        m_CurrentTab->onDraw();
+        current_tab_->onDraw();
         ui::context::render();
 
-        ++m_FramesShown;
-        if (m_FramesShown >= m_MinFramesShown &&
-            App::get().frame_start_time() >= m_CloseTime) {
+        ++frames_shown_;
+        if (frames_shown_ >= min_frames_shown_ and
+            App::get().frame_start_time() >= close_time_) {
 
             App::upd().request_quit();
         }
@@ -75,19 +75,19 @@ private:
     void implCloseTab(UID) override {}
     void implResetImgui() override {}
 
-    TabRegistryEntry m_RegistryEntry;
-    std::unique_ptr<ITab> m_CurrentTab;
-    size_t m_MinFramesShown = 2;
-    size_t m_FramesShown = 0;
-    AppClock::duration m_MinOpenDuration = AppSeconds{0};
-    AppClock::time_point m_CloseTime = App::get().frame_start_time() + m_MinOpenDuration;
+    TabRegistryEntry registry_entry_;
+    std::unique_ptr<ITab> current_tab_;
+    size_t min_frames_shown_ = 2;
+    size_t frames_shown_ = 0;
+    AppClock::duration min_open_duration_ = AppSeconds{0};
+    AppClock::time_point close_time_ = App::get().frame_start_time() + min_open_duration_;
 };
 
-osc::TabTestingScreen::TabTestingScreen(const TabRegistryEntry& registryEntry) :
-    m_Impl{std::make_shared<Impl>(registryEntry)}
+osc::TabTestingScreen::TabTestingScreen(const TabRegistryEntry& registry_entry) :
+    impl_{std::make_shared<Impl>(registry_entry)}
 {}
-void osc::TabTestingScreen::impl_on_mount() { m_Impl->on_mount(); }
-void osc::TabTestingScreen::impl_on_unmount() { m_Impl->on_unmount(); }
-void osc::TabTestingScreen::impl_on_event(const SDL_Event& e) { m_Impl->on_event(e); }
-void osc::TabTestingScreen::impl_on_tick() { m_Impl->on_tick(); }
-void osc::TabTestingScreen::impl_on_draw() { m_Impl->on_draw(); }
+void osc::TabTestingScreen::impl_on_mount() { impl_->on_mount(); }
+void osc::TabTestingScreen::impl_on_unmount() { impl_->on_unmount(); }
+void osc::TabTestingScreen::impl_on_event(const SDL_Event& e) { impl_->on_event(e); }
+void osc::TabTestingScreen::impl_on_tick() { impl_->on_tick(); }
+void osc::TabTestingScreen::impl_on_draw() { impl_->on_draw(); }
