@@ -9,7 +9,8 @@ namespace osc::cpp20
     // C++20: std::stop_token
     class stop_token final {
     public:
-        explicit stop_token(std::shared_ptr<std::atomic<bool>> shared_state) : shared_state_{std::move(shared_state)}
+        explicit stop_token(std::shared_ptr<std::atomic<bool>> shared_state) :
+            shared_state_{std::move(shared_state)}
         {}
         stop_token(stop_token const&) = delete;
         stop_token(stop_token&&) noexcept = default;

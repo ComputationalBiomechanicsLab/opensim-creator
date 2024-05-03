@@ -67,6 +67,6 @@ namespace osc::cpp20
 
     private:
         stop_source stop_source_{};
-        std::thread thread_;
+        std::thread thread_{};
     };
 }
