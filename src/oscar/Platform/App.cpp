@@ -174,18 +174,15 @@ namespace
     // wrapper class for storing std::type_info as a hash-able type
     class TypeInfoReference final {
     public:
-        explicit TypeInfoReference(const std::type_info& typeInfo) :
-            m_TypeInfo{&typeInfo}
+        explicit TypeInfoReference(const std::type_info& type_info) :
+            type_info_{&type_info}
         {}
 
-        const std::type_info& get() const { return *m_TypeInfo; }
+        const std::type_info& get() const { return *type_info_; }
 
-        friend bool operator==(const TypeInfoReference& lhs, const TypeInfoReference& rhs)
-        {
-            return lhs.get() == rhs.get();
-        }
+        friend bool operator==(const TypeInfoReference&, const TypeInfoReference&) = default;
     private:
-        const std::type_info* m_TypeInfo;
+        const std::type_info* type_info_;
     };
 }
 
@@ -224,7 +221,7 @@ public:
         // ensure retained screens are destroyed when exiting this guarded path
         //
         // this means callers can call .show multiple times on the same app
-        const ScopeGuard g{[this]()
+        const ScopeGuard scope_guard{[this]()
         {
             screen_.reset();
             next_screen_.reset();
@@ -414,19 +411,19 @@ public:
         graphics_context_.clear_screen(color);
     }
 
-    void set_main_window_subtitle(std::string_view sv)
+    void set_main_window_subtitle(std::string_view subtitle)
     {
-        auto lock = main_window_subtitle_.lock();
+        auto title_lock = main_window_subtitle_.lock();
 
-        if (sv == *lock) {
+        if (subtitle == *title_lock) {
             return;
         }
 
-        *lock = sv;
+        *title_lock = subtitle;
 
-        const std::string new_title = sv.empty() ?
+        const std::string new_title = subtitle.empty() ?
             std::string{calc_human_readable_application_name(metadata_)} :
-            (std::string{sv} + " - " + calc_human_readable_application_name(metadata_));
+            (std::string{subtitle} + " - " + calc_human_readable_application_name(metadata_));
 
         SDL_SetWindowTitle(main_window_.get(), new_title.c_str());
     }
@@ -462,12 +459,12 @@ public:
 
     std::shared_ptr<void> upd_singleton(
         const std::type_info& type_info,
-        const std::function<std::shared_ptr<void>()>& ctor)
+        const std::function<std::shared_ptr<void>()>& singleton_constructor)
     {
         auto lock = singletons_.lock();
         const auto [it, inserted] = lock->try_emplace(TypeInfoReference{type_info}, nullptr);
         if (inserted) {
-            it->second = ctor();
+            it->second = singleton_constructor();
         }
         return it->second;
     }
@@ -625,8 +622,7 @@ private:
             // handle annotated screenshot requests (if any)
             {
                 // save this frame's annotations into the requests, if necessary
-                for (AnnotatedScreenshotRequest& req : active_screenshot_requests_)
-                {
+                for (AnnotatedScreenshotRequest& req : active_screenshot_requests_) {
                     if (req.frame_requested == frame_counter_) {
                         req.annotations = frame_annotations_;
                     }
@@ -648,9 +644,9 @@ private:
                 // gc any invalid (i.e. handled) requests
                 std::erase_if(
                     active_screenshot_requests_,
-                    [](const AnnotatedScreenshotRequest& req)
+                    [](const AnnotatedScreenshotRequest& request)
                     {
-                        return not req.underlying_future.valid();
+                        return not request.underlying_future.valid();
                     }
                 );
             }
@@ -1010,9 +1006,9 @@ void osc::App::clear_screen(const Color& color)
     impl_->clear_screen(color);
 }
 
-void osc::App::set_main_window_subtitle(std::string_view sv)
+void osc::App::set_main_window_subtitle(std::string_view subtitle)
 {
-    impl_->set_main_window_subtitle(sv);
+    impl_->set_main_window_subtitle(subtitle);
 }
 
 void osc::App::unset_main_window_subtitle()
@@ -1052,9 +1048,9 @@ ResourceStream osc::App::go_load_resource(const ResourcePath& rp)
 
 std::shared_ptr<void> osc::App::upd_singleton(
     const std::type_info& type_info,
-    const std::function<std::shared_ptr<void>()>& ctor)
+    const std::function<std::shared_ptr<void>()>& singleton_constructor)
 {
-    return impl_->upd_singleton(type_info, ctor);
+    return impl_->upd_singleton(type_info, singleton_constructor);
 }
 
 SDL_Window* osc::App::upd_underlying_window()

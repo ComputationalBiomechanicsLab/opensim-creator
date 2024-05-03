@@ -25,7 +25,7 @@
 
 namespace osc::sdl
 {
-    // RAII wrapper for SDL_Init and SDL_Quit
+    // RAII wrapper for `SDL_Init` and `SDL_Quit`
     //     https://wiki.libsdl.org/SDL_Quit
     class Context final {
     public:
@@ -51,7 +51,7 @@ namespace osc::sdl
         return Context{flags};
     }
 
-    // RAII wrapper around SDL_Window that calls SDL_DestroyWindow on dtor
+    // RAII wrapper around `SDL_Window` that calls `SDL_DestroyWindow` on dtor
     //     https://wiki.libsdl.org/SDL_CreateWindow
     //     https://wiki.libsdl.org/SDL_DestroyWindow
     class Window final {
@@ -82,7 +82,7 @@ namespace osc::sdl
         SDL_Window* window_handle_;
     };
 
-    // RAII'ed version of SDL_CreateWindow
+    // RAII'ed version of `SDL_CreateWindow`
     //     https://wiki.libsdl.org/SDL_CreateWindow
     //
     // CreateWindoww is a typo because `CreateWindow` is defined in the
@@ -98,7 +98,7 @@ namespace osc::sdl
         return Window{win};
     }
 
-    // RAII wrapper around SDL_GLContext that calls SDL_GL_DeleteContext on dtor
+    // RAII wrapper around `SDL_GLContext` that calls `SDL_GL_DeleteContext` on dtor
     //     https://wiki.libsdl.org/SDL_GL_DeleteContext
     class GLContext final {
     public:
@@ -141,7 +141,7 @@ namespace osc::sdl
     // https://wiki.libsdl.org/SDL_GetWindowSizeInPixels
     inline Vec2i GetWindowSizeInPixels(SDL_Window* window)
     {
-        // care: SDL_GetWindowSize may return a number that's different from
+        // care: `SDL_GetWindowSize` may return a number that's different from
         // the number of pixels in the window on Mac Retina devices
         Vec2i d;
         SDL_GetWindowSizeInPixels(window, &d.x, &d.y);
