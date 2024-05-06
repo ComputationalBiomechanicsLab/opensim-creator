@@ -16,126 +16,117 @@
 #include <string>
 #include <utility>
 
-void osc::GuiRuler::onDraw(
-    const PolarPerspectiveCamera& sceneCamera,
-    const Rect& renderRect,
-    std::optional<SceneCollision> maybeMouseover)
+void osc::GuiRuler::on_draw(
+    const PolarPerspectiveCamera& camera,
+    const Rect& render_rect,
+    std::optional<SceneCollision> maybe_mouseover)
 {
-    if (m_State == State::Inactive) {
+    if (state_ == State::Inactive) {
         return;
     }
 
     // users can exit measuring through these actions
     if (ui::IsKeyDown(ImGuiKey_Escape) or ui::IsMouseReleased(ImGuiMouseButton_Right)) {
-        stopMeasuring();
+        stop_measuring();
         return;
     }
 
     // users can "finish" the measurement through these actions
-    if (m_State == State::WaitingForSecondPoint and ui::IsMouseReleased(ImGuiMouseButton_Left)) {
-        stopMeasuring();
+    if (state_ == State::WaitingForSecondPoint and ui::IsMouseReleased(ImGuiMouseButton_Left)) {
+        stop_measuring();
         return;
     }
 
-    Vec2 mouseLoc = ui::GetMousePos();
-    ImDrawList& dl = *ui::GetWindowDrawList();
-    ImU32 circleMousedOverNothingColor = ui::ToImU32(Color::red().with_alpha(0.6f));
-    ImU32 circleColor = ui::ToImU32(Color::white().with_alpha(0.8f));
-    ImU32 lineColor = circleColor;
-    ImU32 textBgColor = ui::ToImU32(Color::white());
-    ImU32 textColor = ui::ToImU32(Color::black());
-    float circleRadius = 5.0f;
-    float lineThickness = 3.0f;
+    const Vec2 mouse_pos = ui::GetMousePos();
+    const ImU32 circle_moused_over_nothing_color = ui::ToImU32(Color::red().with_alpha(0.6f));
+    const ImU32 circle_color = ui::ToImU32(Color::white().with_alpha(0.8f));
+    const ImU32 line_color = circle_color;
+    const ImU32 text_background_color = ui::ToImU32(Color::white());
+    const ImU32 text_color = ui::ToImU32(Color::black());
+    const float circle_radius = 5.0f;
+    const float line_thickness = 3.0f;
 
-    auto drawTooltipWithBg = [&dl, &textBgColor, &textColor](const Vec2& pos, CStringView tooltipText)
+    ImDrawList& drawlist = *ui::GetWindowDrawList();
+    const auto draw_tooltip_with_bg = [&drawlist, &text_background_color, &text_color](const Vec2& pos, CStringView tooltip_text)
     {
-        Vec2 sz = ui::CalcTextSize(tooltipText);
-        float bgPad = 5.0f;
-        float edgeRounding = bgPad - 2.0f;
+        const Vec2 text_size = ui::CalcTextSize(tooltip_text);
+        const float background_padding = 5.0f;
+        const float edge_rounding = background_padding - 2.0f;
 
-        dl.AddRectFilled(pos - bgPad, pos + sz + bgPad, textBgColor, edgeRounding);
-        dl.AddText(pos, textColor, tooltipText.c_str());
+        drawlist.AddRectFilled(pos - background_padding, pos + text_size + background_padding, text_background_color, edge_rounding);
+        drawlist.AddText(pos, text_color, tooltip_text.c_str());
     };
 
-    if (m_State == State::WaitingForFirstPoint)
-    {
-        if (!maybeMouseover)
-        {
+    if (state_ == State::WaitingForFirstPoint) {
+        if (not maybe_mouseover) {
             // not mousing over anything
-            dl.AddCircleFilled(mouseLoc, circleRadius, circleMousedOverNothingColor);
+            drawlist.AddCircleFilled(mouse_pos, circle_radius, circle_moused_over_nothing_color);
             return;
         }
-        else
-        {
+        else {
             // mousing over something
-            dl.AddCircleFilled(mouseLoc, circleRadius, circleColor);
+            drawlist.AddCircleFilled(mouse_pos, circle_radius, circle_color);
 
-            if (ui::IsMouseReleased(ImGuiMouseButton_Left))
-            {
-                m_State = State::WaitingForSecondPoint;
-                m_StartWorldPos = maybeMouseover->worldspace_location;
+            if (ui::IsMouseReleased(ImGuiMouseButton_Left)) {
+                state_ = State::WaitingForSecondPoint;
+                start_world_pos_ = maybe_mouseover->worldspace_location;
             }
             return;
         }
     }
-    else if (m_State == State::WaitingForSecondPoint)
-    {
-        Vec2 startScreenPos = sceneCamera.project_onto_screen_rect(m_StartWorldPos, renderRect);
+    else if (state_ == State::WaitingForSecondPoint) {
+        const Vec2 start_screenpos = camera.project_onto_screen_rect(start_world_pos_, render_rect);
 
-        if (maybeMouseover)
-        {
+        if (maybe_mouseover) {
             // user is moused over something, so draw a line + circle between the two hitlocs
-            Vec2 endScreenPos = mouseLoc;
-            Vec2 lineScreenDir = normalize(startScreenPos - endScreenPos);
-            Vec2 offsetVec = 15.0f * Vec2{lineScreenDir.y, -lineScreenDir.x};
-            Vec2 lineMidpoint = (startScreenPos + endScreenPos) / 2.0f;
-            float lineWorldLen = length(maybeMouseover->worldspace_location - m_StartWorldPos);
+            const Vec2 end_screenpos = mouse_pos;
+            const Vec2 line_screen_direction = normalize(start_screenpos - end_screenpos);
+            const Vec2 offset_vec = 15.0f * Vec2{line_screen_direction.y, -line_screen_direction.x};
+            const Vec2 line_midpoint = (start_screenpos + end_screenpos) / 2.0f;
+            const float line_world_length = length(maybe_mouseover->worldspace_location - start_world_pos_);
 
-            dl.AddCircleFilled(startScreenPos, circleRadius, circleColor);
-            dl.AddLine(startScreenPos, endScreenPos, lineColor, lineThickness);
-            dl.AddCircleFilled(endScreenPos, circleRadius, circleColor);
+            drawlist.AddCircleFilled(start_screenpos, circle_radius, circle_color);
+            drawlist.AddLine(start_screenpos, end_screenpos, line_color, line_thickness);
+            drawlist.AddCircleFilled(end_screenpos, circle_radius, circle_color);
 
             // label the line's length
             {
-                const std::string lineLenLabel = [&lineWorldLen]()
+                const std::string lineLenLabel = [&line_world_length]()
                 {
                     std::stringstream ss;
-                    ss << std::setprecision(5) << lineWorldLen;
+                    ss << std::setprecision(5) << line_world_length;
                     return std::move(ss).str();
                 }();
-                drawTooltipWithBg(lineMidpoint + offsetVec, lineLenLabel);
+                draw_tooltip_with_bg(line_midpoint + offset_vec, lineLenLabel);
             }
         }
-        else
-        {
-            dl.AddCircleFilled(startScreenPos, circleRadius, circleColor);
+        else {
+            drawlist.AddCircleFilled(start_screenpos, circle_radius, circle_color);
         }
     }
 }
 
-void osc::GuiRuler::startMeasuring()
+void osc::GuiRuler::start_measuring()
 {
-    m_State = State::WaitingForFirstPoint;
+    state_ = State::WaitingForFirstPoint;
 }
 
-void osc::GuiRuler::stopMeasuring()
+void osc::GuiRuler::stop_measuring()
 {
-    m_State = State::Inactive;
+    state_ = State::Inactive;
 }
 
-void osc::GuiRuler::toggleMeasuring()
+void osc::GuiRuler::toggle_measuring()
 {
-    if (m_State == State::Inactive)
-    {
-        m_State = State::WaitingForFirstPoint;
+    if (state_ == State::Inactive) {
+        state_ = State::WaitingForFirstPoint;
     }
-    else
-    {
-        m_State = State::Inactive;
+    else {
+        state_ = State::Inactive;
     }
 }
 
-bool osc::GuiRuler::isMeasuring() const
+bool osc::GuiRuler::is_measuring() const
 {
-    return m_State != State::Inactive;
+    return state_ != State::Inactive;
 }

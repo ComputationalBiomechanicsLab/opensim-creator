@@ -18,14 +18,14 @@ namespace osc
         SceneViewer& operator=(SceneViewer&&) noexcept;
         ~SceneViewer() noexcept;
 
-        void onDraw(std::span<const SceneDecoration>, const SceneRendererParams&);
+        void on_draw(std::span<const SceneDecoration>, const SceneRendererParams&);
 
-        bool isHovered() const;
-        bool isLeftClicked() const;
-        bool isRightClicked() const;
+        bool is_hovered() const;
+        bool is_left_clicked() const;
+        bool is_right_clicked() const;
 
     private:
         class Impl;
-        std::unique_ptr<Impl> m_Impl;
+        std::unique_ptr<Impl> impl_;
     };
 }

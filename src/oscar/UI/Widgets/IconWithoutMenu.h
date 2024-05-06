@@ -16,23 +16,17 @@ namespace osc
             CStringView description
         );
 
-        CStringView getIconID() const
-        {
-            return m_ButtonID;
-        }
+        CStringView icon_id() const { return button_id_; }
 
-        CStringView getTitle() const
-        {
-            return m_Title;
-        }
+        CStringView title() const { return title_; }
 
         Vec2 dimensions() const;
-        bool onDraw();
+        bool on_draw();
 
     private:
-        Icon m_Icon;
-        std::string m_Title;
-        std::string m_ButtonID;
-        std::string m_Description;
+        Icon icon_;
+        std::string title_;
+        std::string button_id_;
+        std::string description_;
     };
 }

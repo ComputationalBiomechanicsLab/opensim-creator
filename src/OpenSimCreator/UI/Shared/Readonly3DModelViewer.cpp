@@ -134,9 +134,9 @@ public:
         }
 
         // handle ruler and return value
-        if (m_Ruler.isMeasuring())
+        if (m_Ruler.is_measuring())
         {
-            m_Ruler.onDraw(m_Params.camera, hittest.item_rect, hittestResult);
+            m_Ruler.on_draw(m_Params.camera, hittest.item_rect, hittestResult);
             return std::nullopt;  // disable hittest while measuring
         }
         else
@@ -167,15 +167,15 @@ private:
     {
         IconWithoutMenu rulerButton
         {
-            m_IconCache->getIcon("ruler"),
+            m_IconCache->find_or_throw("ruler"),
             "Ruler",
             "Roughly measure something in the scene",
         };
 
         bool rv = false;
-        if (rulerButton.onDraw())
+        if (rulerButton.on_draw())
         {
-            m_Ruler.toggleMeasuring();
+            m_Ruler.toggle_measuring();
             rv = true;
         }
         return rv;

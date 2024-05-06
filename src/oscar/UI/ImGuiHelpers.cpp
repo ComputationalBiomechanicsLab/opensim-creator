@@ -53,19 +53,19 @@ namespace
         return static_cast<float>(older[0]);
     }
 
-    Vec2 RectMidpoint(const ImRect& r)
+    Vec2 centroid_of(const ImRect& r)
     {
         return 0.5f * (Vec2{r.Min} + Vec2{r.Max});
     }
 
-    Vec2 Size(const ImRect& r)
+    Vec2 dimensions_of(const ImRect& r)
     {
         return Vec2{r.Max} - Vec2{r.Min};
     }
 
     float ShortestEdgeLength(const ImRect& r)
     {
-        const Vec2 sz = Size(r);
+        const Vec2 sz = dimensions_of(r);
         return min(sz.x, sz.y);
     }
 
@@ -1045,7 +1045,7 @@ bool osc::ui::CircularSliderFloat(
     const bool useCustomRendering = true;
     if (useCustomRendering)
     {
-        const Vec2 sliderNobCenter = RectMidpoint(grabBoundingBox);
+        const Vec2 sliderNobCenter = ::centroid_of(grabBoundingBox);
         const float sliderNobRadius = 0.75f * ShortestEdgeLength(grabBoundingBox);
         const float sliderRailThickness = 0.5f * sliderNobRadius;
         const float sliderRailTopY = sliderNobCenter.y - 0.5f*sliderRailThickness;

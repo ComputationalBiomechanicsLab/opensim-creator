@@ -49,7 +49,7 @@ namespace
     public:
         RulerLayer()
         {
-            m_Ruler.startMeasuring();
+            m_Ruler.start_measuring();
         }
 
     private:
@@ -69,7 +69,7 @@ namespace
             ModelEditorViewerPanelParameters& params,
             ModelEditorViewerPanelState& state) final
         {
-            m_Ruler.onDraw(
+            m_Ruler.on_draw(
                 params.getRenderParams().camera,
                 state.viewportRect,
                 state.maybeBaseLayerHittest
@@ -78,7 +78,7 @@ namespace
 
         bool implShouldClose() const final
         {
-            return !m_Ruler.isMeasuring();
+            return !m_Ruler.is_measuring();
         }
 
         GuiRuler m_Ruler;
@@ -175,11 +175,11 @@ namespace
 
             IconWithoutMenu rulerButton
             {
-                m_IconCache->getIcon("ruler"),
+                m_IconCache->find_or_throw("ruler"),
                 "Ruler",
                 "Roughly measure something in the scene",
             };
-            if (rulerButton.onDraw())
+            if (rulerButton.on_draw())
             {
                 state.pushLayer(std::make_unique<RulerLayer>());
                 edited = true;

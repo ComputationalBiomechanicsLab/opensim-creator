@@ -14,71 +14,53 @@ class osc::SceneViewer::Impl final {
 public:
 
     void onDraw(
-        std::span<const SceneDecoration> els,
-        const SceneRendererParams& params)
+        std::span<const SceneDecoration> decorations,
+        const SceneRendererParams& renderer_params)
     {
-        m_Renderer.render(els, params);
+        renderer_.render(decorations, renderer_params);
 
         // emit the texture to ImGui
-        ui::Image(m_Renderer.upd_render_texture(), m_Renderer.dimensions());
-        m_IsHovered = ui::IsItemHovered();
-        m_IsLeftClicked = ui::IsItemHovered() && ui::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left);
-        m_IsRightClicked = ui::IsItemHovered() && ui::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right);
+        ui::Image(renderer_.upd_render_texture(), renderer_.dimensions());
+        is_hovered_ = ui::IsItemHovered();
+        is_left_clicked_ = ui::IsItemHovered() and ui::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left);
+        is_right_clicked_ = ui::IsItemHovered() and ui::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right);
     }
 
-    bool isHovered() const
-    {
-        return m_IsHovered;
-    }
-
-    bool isLeftClicked() const
-    {
-        return m_IsLeftClicked;
-    }
-
-    bool isRightClicked() const
-    {
-        return m_IsRightClicked;
-    }
+    bool is_hovered() const { return is_hovered_; }
+    bool is_left_clicked() const { return is_left_clicked_; }
+    bool is_right_clicked() const { return is_right_clicked_; }
 
 private:
-    SceneRenderer m_Renderer
-    {
-        *App::singleton<SceneCache>(App::resource_loader()),
-    };
-    bool m_IsHovered = false;
-    bool m_IsLeftClicked = false;
-    bool m_IsRightClicked = false;
+    SceneRenderer renderer_{*App::singleton<SceneCache>(App::resource_loader())};
+    bool is_hovered_ = false;
+    bool is_left_clicked_ = false;
+    bool is_right_clicked_ = false;
 };
 
-
-// public API (PIMPL)
-
 osc::SceneViewer::SceneViewer() :
-    m_Impl{std::make_unique<Impl>()}
-{
-}
+    impl_{std::make_unique<Impl>()}
+{}
 
 osc::SceneViewer::SceneViewer(SceneViewer&&) noexcept = default;
 osc::SceneViewer& osc::SceneViewer::operator=(SceneViewer&&) noexcept = default;
 osc::SceneViewer::~SceneViewer() noexcept = default;
 
-void osc::SceneViewer::onDraw(std::span<const SceneDecoration> els, const SceneRendererParams& params)
+void osc::SceneViewer::on_draw(std::span<const SceneDecoration> decorations, const SceneRendererParams& renderer_params)
 {
-    m_Impl->onDraw(els, params);
+    impl_->onDraw(decorations, renderer_params);
 }
 
-bool osc::SceneViewer::isHovered() const
+bool osc::SceneViewer::is_hovered() const
 {
-    return m_Impl->isHovered();
+    return impl_->is_hovered();
 }
 
-bool osc::SceneViewer::isLeftClicked() const
+bool osc::SceneViewer::is_left_clicked() const
 {
-    return m_Impl->isLeftClicked();
+    return impl_->is_left_clicked();
 }
 
-bool osc::SceneViewer::isRightClicked() const
+bool osc::SceneViewer::is_right_clicked() const
 {
-    return m_Impl->isRightClicked();
+    return impl_->is_right_clicked();
 }

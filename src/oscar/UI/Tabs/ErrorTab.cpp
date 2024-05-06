@@ -55,7 +55,7 @@ private:
             ui::SetNextWindowSize({width, 0.0f});
 
             if (ui::Begin("Error Log", nullptr, ImGuiWindowFlags_MenuBar)) {
-                log_viewer_.onDraw();
+                log_viewer_.on_draw();
             }
             ui::End();
         }

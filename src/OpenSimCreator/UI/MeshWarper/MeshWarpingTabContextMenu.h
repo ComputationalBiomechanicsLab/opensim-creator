@@ -34,10 +34,10 @@ namespace osc
             m_State{std::move(shared_)},
             m_ElementID{std::move(rightClickedID_)}
         {
-            setModal(false);
+            set_modal(false);
         }
     private:
-        void implDrawContent() final
+        void impl_draw_content() final
         {
             TPSDocumentElement const* el = FindElement(m_State->getScratch(), m_ElementID);
             if (!el)

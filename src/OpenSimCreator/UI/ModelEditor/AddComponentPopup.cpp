@@ -504,7 +504,7 @@ private:
         }
     }
 
-    void implDrawContent() final
+    void impl_draw_content() final
     {
         drawNameEditor();
 
@@ -573,33 +573,33 @@ osc::AddComponentPopup::AddComponentPopup(AddComponentPopup&&) noexcept = defaul
 osc::AddComponentPopup& osc::AddComponentPopup::operator=(AddComponentPopup&&) noexcept = default;
 osc::AddComponentPopup::~AddComponentPopup() noexcept = default;
 
-bool osc::AddComponentPopup::implIsOpen() const
+bool osc::AddComponentPopup::impl_is_open() const
 {
-    return m_Impl->isOpen();
+    return m_Impl->is_open();
 }
 
-void osc::AddComponentPopup::implOpen()
+void osc::AddComponentPopup::impl_open()
 {
     m_Impl->open();
 }
 
-void osc::AddComponentPopup::implClose()
+void osc::AddComponentPopup::impl_close()
 {
     m_Impl->close();
 }
 
-bool osc::AddComponentPopup::implBeginPopup()
+bool osc::AddComponentPopup::impl_begin_popup()
 {
-    return m_Impl->beginPopup();
+    return m_Impl->begin_popup();
 }
 
-void osc::AddComponentPopup::implOnDraw()
+void osc::AddComponentPopup::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }
 
-void osc::AddComponentPopup::implEndPopup()
+void osc::AddComponentPopup::impl_end_popup()
 {
-    m_Impl->endPopup();
+    m_Impl->end_popup();
 }
 

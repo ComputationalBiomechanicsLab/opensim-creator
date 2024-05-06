@@ -92,7 +92,7 @@ public:
     }
 
 private:
-    void implDrawContent() final
+    void impl_draw_content() final
     {
         m_WasEdited = false;
 
@@ -144,32 +144,32 @@ osc::ParamBlockEditorPopup::ParamBlockEditorPopup(ParamBlockEditorPopup&&) noexc
 osc::ParamBlockEditorPopup& osc::ParamBlockEditorPopup::operator=(ParamBlockEditorPopup&&) noexcept = default;
 osc::ParamBlockEditorPopup::~ParamBlockEditorPopup() noexcept = default;
 
-bool osc::ParamBlockEditorPopup::implIsOpen() const
+bool osc::ParamBlockEditorPopup::impl_is_open() const
 {
-    return m_Impl->isOpen();
+    return m_Impl->is_open();
 }
 
-void osc::ParamBlockEditorPopup::implOpen()
+void osc::ParamBlockEditorPopup::impl_open()
 {
     m_Impl->open();
 }
 
-void osc::ParamBlockEditorPopup::implClose()
+void osc::ParamBlockEditorPopup::impl_close()
 {
     m_Impl->close();
 }
 
-bool osc::ParamBlockEditorPopup::implBeginPopup()
+bool osc::ParamBlockEditorPopup::impl_begin_popup()
 {
-    return m_Impl->beginPopup();
+    return m_Impl->begin_popup();
 }
 
-void osc::ParamBlockEditorPopup::implOnDraw()
+void osc::ParamBlockEditorPopup::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }
 
-void osc::ParamBlockEditorPopup::implEndPopup()
+void osc::ParamBlockEditorPopup::impl_end_popup()
 {
-    m_Impl->endPopup();
+    m_Impl->end_popup();
 }

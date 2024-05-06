@@ -37,9 +37,9 @@ TEST(AddComponentPopup, CanOpenAndDrawAllRegisteredComponentsInTheAddComponentPo
             auto model = std::make_shared<UndoableModelStatePair>();
             AddComponentPopup popup{"popupname", &api, model, entry.instantiate()};
             popup.open();
-            popup.beginPopup();
-            popup.onDraw();
-            popup.endPopup();
+            popup.begin_popup();
+            popup.on_draw();
+            popup.end_popup();
             ui::context::render();
         }
         catch (std::exception const& ex) {

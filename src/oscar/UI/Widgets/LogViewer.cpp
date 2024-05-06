@@ -31,46 +31,42 @@ namespace
         }
     }
 
-    void copyTracebackLogToClipboard()
+    void copy_traceback_log_to_clipboard()
     {
         std::stringstream ss;
 
         auto& guarded_content = global_get_traceback_log();
         {
-            const auto& content = guarded_content.lock();
-            for (const LogMessage& msg : *content) {
+            const auto& guard = guarded_content.lock();
+            for (const LogMessage& msg : *guard) {
                 ss << '[' << msg.level() << "] " << msg.payload() << '\n';
             }
         }
 
-        std::string full_log_content = std::move(ss).str();
-
-        set_clipboard_text(full_log_content);
+        set_clipboard_text(std::move(ss).str());
     }
 }
 
 class osc::LogViewer::Impl final {
 public:
-    void onDraw()
+    void on_draw()
     {
-        auto logger = global_default_logger();
-        if (!logger)
-        {
+        const auto logger = global_default_logger();
+        if (not logger) {
             return;
         }
 
         // draw top menu bar
-        if (ui::BeginMenuBar())
-        {
+        if (ui::BeginMenuBar()) {
             // draw level selector
             {
-                LogLevel currentLevel = logger->level();
+                const LogLevel current_log_level = logger->level();
                 ui::SetNextItemWidth(200.0f);
-                if (ui::BeginCombo("log_level_", to_cstringview(currentLevel))) {
-                    for (LogLevel l : make_option_iterable<LogLevel>()) {
-                        bool active = l == currentLevel;
-                        if (ui::Selectable(to_cstringview(l), &active)) {
-                            logger->set_level(l);
+                if (ui::BeginCombo("log_level_", to_cstringview(current_log_level))) {
+                    for (LogLevel log_level : make_option_iterable<LogLevel>()) {
+                        bool active = log_level == current_log_level;
+                        if (ui::Selectable(to_cstringview(log_level), &active)) {
+                            logger->set_level(log_level);
                         }
                     }
                     ui::EndCombo();
@@ -78,25 +74,22 @@ public:
             }
 
             ui::SameLine();
-            ui::Checkbox("autoscroll", &autoscroll);
+            ui::Checkbox("autoscroll", &autoscroll_);
 
             ui::SameLine();
-            if (ui::Button("clear"))
-            {
+            if (ui::Button("clear")) {
                 global_get_traceback_log().lock()->clear();
             }
             App::upd().add_frame_annotation("LogClearButton", ui::GetItemRect());
 
             ui::SameLine();
-            if (ui::Button("turn off"))
-            {
+            if (ui::Button("turn off")) {
                 logger->set_level(LogLevel::off);
             }
 
             ui::SameLine();
-            if (ui::Button("copy to clipboard"))
-            {
-                copyTracebackLogToClipboard();
+            if (ui::Button("copy to clipboard")) {
+                copy_traceback_log_to_clipboard();
             }
 
             ui::Dummy({0.0f, 10.0f});
@@ -105,36 +98,35 @@ public:
         }
 
         // draw log content lines
-        auto& guardedContent = global_get_traceback_log();
-        const auto& contentGuard = guardedContent.lock();
-        for (const LogMessage& msg : *contentGuard) {
-            ui::PushStyleColor(ImGuiCol_Text, ::to_color(msg.level()));
-            ui::Text("[%s]", to_cstringview(msg.level()).c_str());
+        auto& guarded_content = global_get_traceback_log();
+        const auto& guard = guarded_content.lock();
+        for (const LogMessage& log_message : *guard) {
+            ui::PushStyleColor(ImGuiCol_Text, ::to_color(log_message.level()));
+            ui::Text("[%s]", to_cstringview(log_message.level()).c_str());
             ui::PopStyleColor();
             ui::SameLine();
-            ui::TextWrapped(msg.payload());
+            ui::TextWrapped(log_message.payload());
 
-            if (autoscroll) {
+            if (autoscroll_) {
                 ui::SetScrollHereY();
             }
         }
     }
 private:
-    bool autoscroll = true;
+    bool autoscroll_ = true;
 };
 
 
 // public API
 
 osc::LogViewer::LogViewer() :
-    m_Impl{std::make_unique<Impl>()}
-{
-}
+    impl_{std::make_unique<Impl>()}
+{}
 osc::LogViewer::LogViewer(LogViewer&&) noexcept = default;
 osc::LogViewer& osc::LogViewer::operator=(LogViewer&&) noexcept = default;
 osc::LogViewer::~LogViewer() noexcept = default;
 
-void osc::LogViewer::onDraw()
+void osc::LogViewer::on_draw()
 {
-    m_Impl->onDraw();
+    impl_->on_draw();
 }

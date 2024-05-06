@@ -12,8 +12,8 @@ namespace osc
     class IconCache final {
     public:
         IconCache(
-            ResourceLoader loaderPrefixedAtDirContainingSVGs,
-            float verticalScale
+            ResourceLoader loader_prefixed_at_dir_containing_svgs,
+            float vertical_scale
         );
         IconCache(const IconCache&) = delete;
         IconCache(IconCache&&) noexcept;
@@ -21,10 +21,10 @@ namespace osc
         IconCache& operator=(IconCache&&) noexcept;
         ~IconCache() noexcept;
 
-        const Icon& getIcon(std::string_view iconName) const;
+        const Icon& find_or_throw(std::string_view icon_name) const;
 
     private:
         class Impl;
-        std::unique_ptr<Impl> m_Impl;
+        std::unique_ptr<Impl> impl_;
     };
 }

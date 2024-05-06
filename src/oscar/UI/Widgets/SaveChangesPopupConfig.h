@@ -6,10 +6,10 @@
 namespace osc
 {
     struct SaveChangesPopupConfig final {
-        std::string popupName = "Save changes?";
-        std::function<bool()> onUserClickedSave = []{ return true; };
-        std::function<bool()> onUserClickedDontSave = []{ return true; };
-        std::function<bool()> onUserCancelled = []{ return true; };
-        std::string content = popupName;
+        std::string popup_name = "Save changes?";
+        std::function<bool()> on_user_clicked_save = []{ return true; };
+        std::function<bool()> on_user_clicked_dont_save = []{ return true; };
+        std::function<bool()> on_user_cancelled = []{ return true; };
+        std::string content = popup_name;
     };
 }

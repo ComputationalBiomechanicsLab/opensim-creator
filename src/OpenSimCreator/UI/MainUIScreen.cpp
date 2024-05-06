@@ -62,7 +62,7 @@ namespace
         {
             if (std::optional<TabRegistryEntry> maybeEntry = tabRegistry.find_by_name(*maybeRequestedTab))
             {
-                return maybeEntry->createTab(api);
+                return maybeEntry->construct_tab(api);
             }
 
             log_warn("%s: cannot find a tab with this name in the tab registry: ignoring", maybeRequestedTab->c_str());
@@ -236,7 +236,7 @@ public:
             // handle any deletion-related side-effects (e.g. showing save prompt)
             handleDeletedTabs();
 
-            if (!quitHandled && (!m_MaybeSaveChangesPopup || !m_MaybeSaveChangesPopup->isOpen()))
+            if (!quitHandled && (!m_MaybeSaveChangesPopup || !m_MaybeSaveChangesPopup->is_open()))
             {
                 // - if no tab handled a quit event
                 // - and the UI isn't currently showing a save prompt
@@ -595,7 +595,7 @@ private:
 
         if (m_MaybeSaveChangesPopup)
         {
-            m_MaybeSaveChangesPopup->onDraw();
+            m_MaybeSaveChangesPopup->on_draw();
         }
     }
 
@@ -621,7 +621,7 @@ private:
                     TabRegistryEntry e = (*tabs)[i];
                     if (ui::MenuItem(e.name()))
                     {
-                        select_tab(addTab(e.createTab(ParentPtr<ITabHost>{getTabHostAPI()})));
+                        select_tab(addTab(e.construct_tab(ParentPtr<ITabHost>{getTabHostAPI()})));
                     }
                 }
                 ui::EndMenu();

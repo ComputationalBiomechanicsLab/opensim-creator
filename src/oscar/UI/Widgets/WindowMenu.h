@@ -15,10 +15,10 @@ namespace osc
         WindowMenu& operator=(WindowMenu&&) noexcept;
         ~WindowMenu() noexcept;
 
-        void onDraw();
+        void on_draw();
     private:
-        void drawContent();
+        void draw_content();
 
-        std::shared_ptr<PanelManager> m_PanelManager;
+        std::shared_ptr<PanelManager> panel_manager_;
     };
 }

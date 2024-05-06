@@ -31,10 +31,10 @@ public:
         m_API{api_},
         m_MaybeComponentAbsPath{std::move(maybeComponentAbsPath_)}
     {
-        setModal(false);
+        set_modal(false);
     }
 
-    void implDrawContent() override
+    void impl_draw_content() override
     {
         if (!m_MaybeComponentAbsPath)
         {
@@ -106,32 +106,32 @@ osc::ModelStatePairContextMenu::ModelStatePairContextMenu(ModelStatePairContextM
 osc::ModelStatePairContextMenu& osc::ModelStatePairContextMenu::operator=(ModelStatePairContextMenu&&) noexcept = default;
 osc::ModelStatePairContextMenu::~ModelStatePairContextMenu() noexcept = default;
 
-bool osc::ModelStatePairContextMenu::implIsOpen() const
+bool osc::ModelStatePairContextMenu::impl_is_open() const
 {
-    return m_Impl->isOpen();
+    return m_Impl->is_open();
 }
 
-void osc::ModelStatePairContextMenu::implOpen()
+void osc::ModelStatePairContextMenu::impl_open()
 {
     m_Impl->open();
 }
 
-void osc::ModelStatePairContextMenu::implClose()
+void osc::ModelStatePairContextMenu::impl_close()
 {
     m_Impl->close();
 }
 
-bool osc::ModelStatePairContextMenu::implBeginPopup()
+bool osc::ModelStatePairContextMenu::impl_begin_popup()
 {
-    return m_Impl->beginPopup();
+    return m_Impl->begin_popup();
 }
 
-void osc::ModelStatePairContextMenu::implOnDraw()
+void osc::ModelStatePairContextMenu::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }
 
-void osc::ModelStatePairContextMenu::implEndPopup()
+void osc::ModelStatePairContextMenu::impl_end_popup()
 {
-    m_Impl->endPopup();
+    m_Impl->end_popup();
 }

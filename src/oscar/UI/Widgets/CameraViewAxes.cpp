@@ -24,11 +24,11 @@ namespace rgs = std::ranges;
 namespace
 {
     struct AxesMetrics final {
-        float fontSize = ui::GetFontSize();
-        float linelen = 2.0f * fontSize;
-        float circleRadius = 0.6f * fontSize;
-        float maxEdgeLength = 2.0f * (linelen + std::sqrt(2.0f * circleRadius * circleRadius));
-        Vec2 dimensions = {maxEdgeLength, maxEdgeLength};
+        float font_size = ui::GetFontSize();
+        float line_length = 2.0f * font_size;
+        float circle_radius = 0.6f * font_size;
+        float max_edge_length = 2.0f * (line_length + std::sqrt(2.0f * circle_radius * circle_radius));
+        Vec2 dimensions = {max_edge_length, max_edge_length};
     };
 }
 
@@ -43,49 +43,52 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
     const auto metrics = AxesMetrics{};
 
     // calculate widget screen-space metrics
-    const Vec2 topLeft = ui::GetCursorScreenPos();
-    const Rect bounds = {topLeft, topLeft + metrics.dimensions};
+    const Vec2 topleft = ui::GetCursorScreenPos();
+    const Rect bounds = {topleft, topleft + metrics.dimensions};
     const Vec2 origin = centroid_of(bounds);
 
     // figure out rendering order (back-to-front)
-    const Mat4 viewMtx = camera.view_matrix();
-    auto order = std::to_array<Vec4::size_type>({0, 1, 2});
-    rgs::sort(order, rgs::less{}, [&viewMtx](auto ax) { return (viewMtx * Vec4{}.with_element(ax, 1.0f)).z; });
+    const Mat4 view_matrix = camera.view_matrix();
+    auto axis_indices = std::to_array<Vec4::size_type>({0, 1, 2});
+    rgs::sort(axis_indices, rgs::less{}, [&view_matrix](auto axis_index)
+    {
+        return (view_matrix * Vec4{}.with_element(axis_index, 1.0f)).z;
+    });
 
     // draw each edge back-to-front
     bool edited = false;
     ImDrawList& drawlist = *ui::GetWindowDrawList();
-    for (auto i : order) {
+    for (auto axis_index : axis_indices) {
         // calc direction vector in screen space
-        Vec2 view = Vec2{viewMtx * Vec4{}.with_element(i, 1.0f)};
+        Vec2 view = Vec2{view_matrix * Vec4{}.with_element(axis_index, 1.0f)};
         view.y = -view.y;  // y goes down in screen-space
 
-        Color baseColor = {0.15f, 0.15f, 0.15f, 1.0f};
-        baseColor[i] = 0.7f;
+        Color base_color = {0.15f, 0.15f, 0.15f, 1.0f};
+        base_color[axis_index] = 0.7f;
 
         // draw line from origin to end with a labelled (clickable) circle ending
         {
-            const Vec2 end = origin + metrics.linelen*view;
-            const Circle circ = {.origin = end, .radius = metrics.circleRadius};
-            const Rect circleBounds = bounding_rect_of(circ);
+            const Vec2 end = origin + metrics.line_length*view;
+            const Circle circ = {.origin = end, .radius = metrics.circle_radius};
+            const Rect circle_bounds = bounding_rect_of(circ);
 
             const auto labels = std::to_array<CStringView>({ "X", "Y", "Z" });
-            const auto id = ui::GetID(labels[i]);
-            ui::SetCursorScreenPos(circleBounds.p1);
-            ui::ItemSize(circleBounds);
-            if (ui::ItemAdd(circleBounds, id)) {
-                const Vec2 labelSize = ui::CalcTextSize(labels[i]);
+            const auto id = ui::GetID(labels[axis_index]);
+            ui::SetCursorScreenPos(circle_bounds.p1);
+            ui::ItemSize(circle_bounds);
+            if (ui::ItemAdd(circle_bounds, id)) {
+                const Vec2 label_size = ui::CalcTextSize(labels[axis_index]);
 
-                const bool hovered = ui::ItemHoverable(circleBounds, id, ui::GetItemFlags());
-                const ImU32 color = ui::ToImU32(hovered ? Color::white() : baseColor);
-                const ImU32 textColor = ui::ToImU32(hovered ? Color::black() : Color::white());
+                const bool hovered = ui::ItemHoverable(circle_bounds, id, ui::GetItemFlags());
+                const ImU32 color = ui::ToImU32(hovered ? Color::white() : base_color);
+                const ImU32 text_color_u32 = ui::ToImU32(hovered ? Color::black() : Color::white());
 
                 drawlist.AddLine(origin, end, color, 3.0f);
                 drawlist.AddCircleFilled(circ.origin, circ.radius, color);
-                drawlist.AddText(end - 0.5f*labelSize, textColor, labels[i].c_str());
+                drawlist.AddText(end - 0.5f*label_size, text_color_u32, labels[axis_index].c_str());
 
-                if (hovered && ui::IsMouseClicked(ImGuiMouseButton_Left, id)) {
-                    focus_along_axis(camera, i);
+                if (hovered and ui::IsMouseClicked(ImGuiMouseButton_Left, id)) {
+                    focus_along_axis(camera, axis_index);
                     edited = true;
                 }
             }
@@ -93,22 +96,22 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
 
         // negative axes: draw a faded (clickable) circle ending - no line
         {
-            const Vec2 end = origin - metrics.linelen*view;
-            const Circle circ = {.origin = end, .radius = metrics.circleRadius};
-            const Rect circleBounds = bounding_rect_of(circ);
+            const Vec2 end = origin - metrics.line_length*view;
+            const Circle circ = {.origin = end, .radius = metrics.circle_radius};
+            const Rect circle_bounds = bounding_rect_of(circ);
 
             const auto labels = std::to_array<CStringView>({ "-X", "-Y", "-Z" });
-            const auto id = ui::GetID(labels[i]);
-            ui::SetCursorScreenPos(circleBounds.p1);
-            ui::ItemSize(circleBounds);
-            if (ui::ItemAdd(circleBounds, id)) {
-                const bool hovered = ui::ItemHoverable(circleBounds, id, ui::GetItemFlags());
-                const ImU32 color = ui::ToImU32(hovered ? Color::white() : baseColor.with_alpha(0.3f));
+            const auto id = ui::GetID(labels[axis_index]);
+            ui::SetCursorScreenPos(circle_bounds.p1);
+            ui::ItemSize(circle_bounds);
+            if (ui::ItemAdd(circle_bounds, id)) {
+                const bool hovered = ui::ItemHoverable(circle_bounds, id, ui::GetItemFlags());
+                const ImU32 color = ui::ToImU32(hovered ? Color::white() : base_color.with_alpha(0.3f));
 
                 drawlist.AddCircleFilled(circ.origin, circ.radius, color);
 
-                if (hovered && ui::IsMouseClicked(ImGuiMouseButton_Left, id)) {
-                    focus_along_axis(camera, i, true);
+                if (hovered and ui::IsMouseClicked(ImGuiMouseButton_Left, id)) {
+                    focus_along_axis(camera, axis_index, true);
                     edited = true;
                 }
             }

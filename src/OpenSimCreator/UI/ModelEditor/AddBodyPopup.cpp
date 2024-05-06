@@ -40,7 +40,7 @@ public:
     }
 
 private:
-    void implDrawContent() final
+    void impl_draw_content() final
     {
         OpenSim::Model const& model = m_Uum->getModel();
 
@@ -56,7 +56,7 @@ private:
 
         // prompt name
         {
-            if (isPopupOpenedThisFrame())
+            if (is_popup_opened_this_frame())
             {
                 ui::SetKeyboardFocusHere();
             }
@@ -214,7 +214,7 @@ private:
         }
     }
 
-    void implOnClose() final
+    void impl_on_close() final
     {
         m_BodyDetails = BodyDetails{};
     }
@@ -249,32 +249,32 @@ osc::AddBodyPopup::AddBodyPopup(AddBodyPopup&&) noexcept = default;
 osc::AddBodyPopup& osc::AddBodyPopup::operator=(AddBodyPopup&&) noexcept = default;
 osc::AddBodyPopup::~AddBodyPopup() noexcept = default;
 
-bool osc::AddBodyPopup::implIsOpen() const
+bool osc::AddBodyPopup::impl_is_open() const
 {
-    return m_Impl->isOpen();
+    return m_Impl->is_open();
 }
 
-void osc::AddBodyPopup::implOpen()
+void osc::AddBodyPopup::impl_open()
 {
     m_Impl->open();
 }
 
-void osc::AddBodyPopup::implClose()
+void osc::AddBodyPopup::impl_close()
 {
     m_Impl->close();
 }
 
-bool osc::AddBodyPopup::implBeginPopup()
+bool osc::AddBodyPopup::impl_begin_popup()
 {
-    return m_Impl->beginPopup();
+    return m_Impl->begin_popup();
 }
 
-void osc::AddBodyPopup::implOnDraw()
+void osc::AddBodyPopup::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }
 
-void osc::AddBodyPopup::implEndPopup()
+void osc::AddBodyPopup::impl_end_popup()
 {
-    m_Impl->endPopup();
+    m_Impl->end_popup();
 }

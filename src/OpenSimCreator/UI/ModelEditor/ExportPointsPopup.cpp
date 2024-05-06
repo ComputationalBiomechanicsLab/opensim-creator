@@ -559,7 +559,7 @@ public:
     }
 
 private:
-    void implDrawContent() final
+    void impl_draw_content() final
     {
         OpenSim::Model const& model = m_Model->getModel();
         SimTK::State const& state = m_Model->getState();
@@ -627,32 +627,32 @@ osc::ExportPointsPopup::ExportPointsPopup(ExportPointsPopup&&) noexcept = defaul
 osc::ExportPointsPopup& osc::ExportPointsPopup::operator=(ExportPointsPopup&&) noexcept = default;
 osc::ExportPointsPopup::~ExportPointsPopup() noexcept = default;
 
-bool osc::ExportPointsPopup::implIsOpen() const
+bool osc::ExportPointsPopup::impl_is_open() const
 {
-    return m_Impl->isOpen();
+    return m_Impl->is_open();
 }
 
-void osc::ExportPointsPopup::implOpen()
+void osc::ExportPointsPopup::impl_open()
 {
     m_Impl->open();
 }
 
-void osc::ExportPointsPopup::implClose()
+void osc::ExportPointsPopup::impl_close()
 {
     m_Impl->close();
 }
 
-bool osc::ExportPointsPopup::implBeginPopup()
+bool osc::ExportPointsPopup::impl_begin_popup()
 {
-    return m_Impl->beginPopup();
+    return m_Impl->begin_popup();
 }
 
-void osc::ExportPointsPopup::implOnDraw()
+void osc::ExportPointsPopup::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }
 
-void osc::ExportPointsPopup::implEndPopup()
+void osc::ExportPointsPopup::impl_end_popup()
 {
-    m_Impl->endPopup();
+    m_Impl->end_popup();
 }

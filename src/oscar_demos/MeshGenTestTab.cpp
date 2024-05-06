@@ -66,7 +66,7 @@ private:
     {
         ui::DockSpaceOverViewport(ui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
-        if (m_Viewer.isHovered()) {
+        if (m_Viewer.is_hovered()) {
             ui::UpdatePolarCameraFromMouseInputs(m_Camera, App::get().dimensions());
         }
 
@@ -94,7 +94,7 @@ private:
                 m_RenderParams.draw_floor = false;
                 m_RenderParams.draw_mesh_normals = true;
 
-                m_Viewer.onDraw({{SceneDecoration{
+                m_Viewer.on_draw({{SceneDecoration{
                     .mesh = m_AllMeshes[m_CurrentMesh],
                     .color = Color::white(),
                     .flags = m_DrawWireframe ? SceneDecorationFlags::WireframeOverlay : SceneDecorationFlags::None,

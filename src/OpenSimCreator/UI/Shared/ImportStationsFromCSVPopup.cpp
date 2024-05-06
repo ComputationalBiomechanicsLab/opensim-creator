@@ -30,11 +30,11 @@ public:
         StandardPopup{popupName_},
         m_OnImportCallback{std::move(onImport_)}
     {
-        setModal(true);
+        set_modal(true);
     }
 
 private:
-    void implDrawContent() final
+    void impl_draw_content() final
     {
         drawHelpText();
         ui::Dummy({0.0f, 0.25f*ui::GetTextLineHeight()});
@@ -263,32 +263,32 @@ osc::ImportStationsFromCSVPopup::ImportStationsFromCSVPopup(ImportStationsFromCS
 osc::ImportStationsFromCSVPopup& osc::ImportStationsFromCSVPopup::operator=(ImportStationsFromCSVPopup&&) noexcept = default;
 osc::ImportStationsFromCSVPopup::~ImportStationsFromCSVPopup() noexcept = default;
 
-bool osc::ImportStationsFromCSVPopup::implIsOpen() const
+bool osc::ImportStationsFromCSVPopup::impl_is_open() const
 {
-    return m_Impl->isOpen();
+    return m_Impl->is_open();
 }
 
-void osc::ImportStationsFromCSVPopup::implOpen()
+void osc::ImportStationsFromCSVPopup::impl_open()
 {
     m_Impl->open();
 }
 
-void osc::ImportStationsFromCSVPopup::implClose()
+void osc::ImportStationsFromCSVPopup::impl_close()
 {
     m_Impl->close();
 }
 
-bool osc::ImportStationsFromCSVPopup::implBeginPopup()
+bool osc::ImportStationsFromCSVPopup::impl_begin_popup()
 {
-    return m_Impl->beginPopup();
+    return m_Impl->begin_popup();
 }
 
-void osc::ImportStationsFromCSVPopup::implOnDraw()
+void osc::ImportStationsFromCSVPopup::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }
 
-void osc::ImportStationsFromCSVPopup::implEndPopup()
+void osc::ImportStationsFromCSVPopup::impl_end_popup()
 {
-    m_Impl->endPopup();
+    m_Impl->end_popup();
 }

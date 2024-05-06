@@ -32,7 +32,7 @@ namespace osc
             m_FileMenu.onDraw();
             m_EditMenu.onDraw();
             m_ActionsMenu.onDraw();
-            m_WindowMenu.onDraw();
+            m_WindowMenu.on_draw();
             m_AboutTab.onDraw();
         }
     private:

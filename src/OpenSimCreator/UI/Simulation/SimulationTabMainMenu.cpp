@@ -29,7 +29,7 @@ public:
     {
         m_MainMenuFileTab.onDraw(m_Parent);
         drawActionsMenu();
-        m_MainMenuWindowTab.onDraw();
+        m_MainMenuWindowTab.on_draw();
         m_MainMenuAboutTab.onDraw();
     }
 

@@ -24,7 +24,7 @@ namespace osc::mow
         void onDraw()
         {
             m_FileMenu.onDraw();
-            m_WindowMenu.onDraw();
+            m_WindowMenu.on_draw();
             m_AboutTab.onDraw();
         }
     private:

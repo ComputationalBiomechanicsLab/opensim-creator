@@ -16,22 +16,21 @@ using osc::Icon;
 
 class osc::IconCache::Impl final {
 public:
-    Impl(ResourceLoader& loaderPrefixedAtDirContainingSVGs, float verticalScale)
+    Impl(ResourceLoader& loader_prefixed_at_dir_containing_svgs, float vertical_scale)
     {
-        auto it = loaderPrefixedAtDirContainingSVGs.iterate_directory(".");
+        auto it = loader_prefixed_at_dir_containing_svgs.iterate_directory(".");
 
         for (auto el = it(); el; el = it()) {
             const ResourcePath& p = *el;
 
-            if (p.has_extension(".svg"))
-            {
+            if (p.has_extension(".svg")) {
                 Texture2D texture = load_texture2D_from_svg(
-                    loaderPrefixedAtDirContainingSVGs.open(p),
-                    verticalScale
+                    loader_prefixed_at_dir_containing_svgs.open(p),
+                    vertical_scale
                 );
                 texture.set_filter_mode(TextureFilterMode::Nearest);
 
-                m_Icons.try_emplace(
+                icons_by_name_.try_emplace(
                     p.stem(),
                     std::move(texture),
                     Rect{{0.0f, 1.0f}, {1.0f, 0.0f}}
@@ -40,34 +39,31 @@ public:
         }
     }
 
-    const Icon& getIcon(std::string_view iconName) const
+    const Icon& find_or_throw(std::string_view icon_name) const
     {
-        if (const auto* icon = find_or_nullptr(m_Icons, std::string{iconName})) {
+        if (const auto* icon = find_or_nullptr(icons_by_name_, std::string{icon_name})) {
             return *icon;
         }
         else {
             std::stringstream ss;
-            ss << "error finding icon: cannot find: " << iconName;
+            ss << "error finding icon: cannot find: " << icon_name;
             throw std::runtime_error{std::move(ss).str()};
         }
     }
 
 private:
-    std::unordered_map<std::string, Icon> m_Icons;
+    std::unordered_map<std::string, Icon> icons_by_name_;
 };
 
 
-// public API (PIMPL)
-
-osc::IconCache::IconCache(ResourceLoader loaderPrefixedAtDirContainingSVGs, float verticalScale) :
-    m_Impl{std::make_unique<Impl>(loaderPrefixedAtDirContainingSVGs, verticalScale)}
-{
-}
+osc::IconCache::IconCache(ResourceLoader loader_prefixed_at_dir_containing_svgs, float vertical_scale) :
+    impl_{std::make_unique<Impl>(loader_prefixed_at_dir_containing_svgs, vertical_scale)}
+{}
 osc::IconCache::IconCache(IconCache&&) noexcept = default;
 osc::IconCache& osc::IconCache::operator=(IconCache&&) noexcept = default;
 osc::IconCache::~IconCache() noexcept = default;
 
-const Icon& osc::IconCache::getIcon(std::string_view iconName) const
+const Icon& osc::IconCache::find_or_throw(std::string_view icon_name) const
 {
-    return m_Impl->getIcon(iconName);
+    return impl_->find_or_throw(icon_name);
 }

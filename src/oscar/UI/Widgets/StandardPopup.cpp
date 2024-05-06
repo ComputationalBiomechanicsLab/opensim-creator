@@ -8,67 +8,63 @@
 #include <optional>
 #include <string_view>
 
-osc::StandardPopup::StandardPopup(std::string_view popupName) :
-    StandardPopup{popupName, {512.0f, 0.0f}, ImGuiWindowFlags_AlwaysAutoResize}
+osc::StandardPopup::StandardPopup(std::string_view popup_name) :
+    StandardPopup{popup_name, {512.0f, 0.0f}, ImGuiWindowFlags_AlwaysAutoResize}
 {}
 
 osc::StandardPopup::StandardPopup(
-    std::string_view popupName,
+    std::string_view popup_name,
     Vec2 dimensions,
-    ImGuiWindowFlags popupFlags) :
+    ImGuiWindowFlags popup_flags) :
 
-    m_PopupName{popupName},
-    m_Dimensions{dimensions},
-    m_MaybePosition{std::nullopt},
-    m_PopupFlags{popupFlags},
-    m_ShouldOpen{false},
-    m_ShouldClose{false},
-    m_JustOpened{false},
-    m_IsOpen{false},
-    m_IsModal{true}
+    popup_name_{popup_name},
+    dimensions_{dimensions},
+    maybe_position_{std::nullopt},
+    popup_flags_{popup_flags},
+    should_open_{false},
+    should_close_{false},
+    just_opened_{false},
+    is_open_{false},
+    is_modal_{true}
 {}
 
-bool osc::StandardPopup::implIsOpen() const
+bool osc::StandardPopup::impl_is_open() const
 {
-    return m_ShouldOpen || m_IsOpen;
+    return should_open_ or is_open_;
 }
 
-void osc::StandardPopup::implOpen()
+void osc::StandardPopup::impl_open()
 {
-    m_ShouldOpen = true;
-    m_ShouldClose = false;
+    should_open_ = true;
+    should_close_ = false;
 }
 
-void osc::StandardPopup::implClose()
+void osc::StandardPopup::impl_close()
 {
-    m_ShouldClose = true;
-    m_ShouldOpen = false;
+    should_close_ = true;
+    should_open_ = false;
 }
 
-bool osc::StandardPopup::implBeginPopup()
+bool osc::StandardPopup::impl_begin_popup()
 {
-    if (m_ShouldOpen)
-    {
-        ui::OpenPopup(m_PopupName);
-        m_ShouldOpen = false;
-        m_ShouldClose = false;
-        m_JustOpened = true;
+    if (should_open_) {
+        ui::OpenPopup(popup_name_);
+        should_open_ = false;
+        should_close_ = false;
+        just_opened_ = true;
     }
 
-    if (m_IsModal)
-    {
+    if (is_modal_) {
         // if specified, set the position of the modal upon appearing
         //
         // else, position the modal in the center of the viewport
-        if (m_MaybePosition)
-        {
+        if (maybe_position_) {
             ui::SetNextWindowPos(
-                static_cast<Vec2>(*m_MaybePosition),
+                static_cast<Vec2>(*maybe_position_),
                 ImGuiCond_Appearing
             );
         }
-        else
-        {
+        else {
             ui::SetNextWindowPos(
                 ui::GetMainViewport()->GetCenter(),
                 ImGuiCond_Appearing,
@@ -81,29 +77,26 @@ bool osc::StandardPopup::implBeginPopup()
         //
         // else, set the position every frame, because the __nonzero__ dimensions
         // will stretch out the modal accordingly
-        if (!(m_PopupFlags & ImGuiWindowFlags_AlwaysAutoResize))
-        {
+        if (not (popup_flags_ & ImGuiWindowFlags_AlwaysAutoResize)) {
             ui::SetNextWindowSize(
-                Vec2{m_Dimensions},
+                Vec2{dimensions_},
                 ImGuiCond_Appearing
             );
         }
-        else
-        {
+        else {
             ui::SetNextWindowSize(
-                Vec2{m_Dimensions}
+                Vec2{dimensions_}
             );
         }
 
         // try to begin the modal window
-        implBeforeImguiBeginPopup();
-        const bool opened = ui::BeginPopupModal(m_PopupName, nullptr, m_PopupFlags);
-        implAfterImguiBeginPopup();
+        impl_before_imgui_begin_popup();
+        const bool opened = ui::BeginPopupModal(popup_name_, nullptr, popup_flags_);
+        impl_after_imgui_begin_popup();
 
-        if (!opened)
-        {
+        if (not opened) {
             // modal not showing
-            m_IsOpen = false;
+            is_open_ = false;
             return false;
         }
     }
@@ -115,87 +108,83 @@ bool osc::StandardPopup::implBeginPopup()
         // by other means (unlike a modal, which usually takes control
         // of the screen and, therefore, should proabably be centered
         // in it)
-        if (m_MaybePosition)
-        {
+        if (maybe_position_) {
             ui::SetNextWindowPos(
-                static_cast<Vec2>(*m_MaybePosition),
+                static_cast<Vec2>(*maybe_position_),
                 ImGuiCond_Appearing
             );
         }
 
         // try to begin the popup window
-        implBeforeImguiBeginPopup();
-        const bool opened = ui::BeginPopup(m_PopupName, m_PopupFlags);
-        implAfterImguiBeginPopup();
+        impl_before_imgui_begin_popup();
+        const bool opened = ui::BeginPopup(popup_name_, popup_flags_);
+        impl_after_imgui_begin_popup();
 
         // try to show popup
-        if (!opened)
-        {
+        if (not opened) {
             // popup not showing
-            m_IsOpen = false;
+            is_open_ = false;
             return false;
         }
     }
 
-    m_IsOpen = true;
+    is_open_ = true;
     return true;
 }
 
-void osc::StandardPopup::implOnDraw()
+void osc::StandardPopup::impl_on_draw()
 {
-    if (m_ShouldClose)
-    {
-        implOnClose();
+    if (should_close_) {
+        impl_on_close();
         ui::CloseCurrentPopup();
-        m_ShouldClose = false;
-        m_ShouldOpen = false;
-        m_JustOpened = false;
+        should_close_ = false;
+        should_open_ = false;
+        just_opened_ = false;
         return;
     }
 
-    implDrawContent();
+    impl_draw_content();
 }
 
-void osc::StandardPopup::implEndPopup()
+void osc::StandardPopup::impl_end_popup()
 {
     ui::EndPopup();
-    m_JustOpened = false;
+    just_opened_ = false;
 }
 
-bool osc::StandardPopup::isPopupOpenedThisFrame() const
+bool osc::StandardPopup::is_popup_opened_this_frame() const
 {
-    return m_JustOpened;
+    return just_opened_;
 }
 
 void osc::StandardPopup::request_close()
 {
-    m_ShouldClose = true;
-    m_ShouldOpen = false;
+    should_close_ = true;
+    should_open_ = false;
 }
 
-bool osc::StandardPopup::isModal() const
+bool osc::StandardPopup::is_modal() const
 {
-    return m_IsModal;
+    return is_modal_;
 }
 
-void osc::StandardPopup::setModal(bool v)
+void osc::StandardPopup::set_modal(bool v)
 {
-    m_IsModal = v;
+    is_modal_ = v;
 }
 
-void osc::StandardPopup::setRect(const Rect& rect)
+void osc::StandardPopup::set_rect(const Rect& rect)
 {
-    m_MaybePosition = rect.p1;
-    m_Dimensions = dimensions_of(rect);
+    maybe_position_ = rect.p1;
+    dimensions_ = dimensions_of(rect);
 }
 
 void osc::StandardPopup::set_dimensions(Vec2 d)
 {
-    m_Dimensions = d;
+    dimensions_ = d;
 }
 
 void osc::StandardPopup::set_position(std::optional<Vec2> p)
 {
-    m_MaybePosition = p;
+    maybe_position_ = p;
 }
-

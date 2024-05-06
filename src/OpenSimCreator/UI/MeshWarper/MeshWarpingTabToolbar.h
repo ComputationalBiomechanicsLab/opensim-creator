@@ -57,7 +57,7 @@ namespace osc
             ui::SameLine();
 
             // undo/redo-related stuff
-            m_UndoButton.onDraw();
+            m_UndoButton.on_draw();
             ui::SameLine();
             m_RedoButton.onDraw();
             ui::SameLine();

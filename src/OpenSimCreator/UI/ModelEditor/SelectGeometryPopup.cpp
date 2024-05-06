@@ -104,7 +104,7 @@ public:
 
 private:
 
-    void implDrawContent() final
+    void impl_draw_content() final
     {
         // premade geometry section
         //
@@ -258,32 +258,32 @@ osc::SelectGeometryPopup::SelectGeometryPopup(SelectGeometryPopup&&) noexcept = 
 osc::SelectGeometryPopup& osc::SelectGeometryPopup::operator=(SelectGeometryPopup&&) noexcept = default;
 osc::SelectGeometryPopup::~SelectGeometryPopup() noexcept = default;
 
-bool osc::SelectGeometryPopup::implIsOpen() const
+bool osc::SelectGeometryPopup::impl_is_open() const
 {
-    return m_Impl->isOpen();
+    return m_Impl->is_open();
 }
 
-void osc::SelectGeometryPopup::implOpen()
+void osc::SelectGeometryPopup::impl_open()
 {
     m_Impl->open();
 }
 
-void osc::SelectGeometryPopup::implClose()
+void osc::SelectGeometryPopup::impl_close()
 {
     m_Impl->close();
 }
 
-bool osc::SelectGeometryPopup::implBeginPopup()
+bool osc::SelectGeometryPopup::impl_begin_popup()
 {
-    return m_Impl->beginPopup();
+    return m_Impl->begin_popup();
 }
 
-void osc::SelectGeometryPopup::implOnDraw()
+void osc::SelectGeometryPopup::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }
 
-void osc::SelectGeometryPopup::implEndPopup()
+void osc::SelectGeometryPopup::impl_end_popup()
 {
-    m_Impl->endPopup();
+    m_Impl->end_popup();
 }

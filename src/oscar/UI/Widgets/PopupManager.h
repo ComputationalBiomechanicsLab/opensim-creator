@@ -18,12 +18,12 @@ namespace osc
         ~PopupManager() noexcept;
 
         void push_back(std::shared_ptr<IPopup>);
-        void on_mount() { openAll(); }
-        void openAll();
-        void onDraw();
+        void on_mount() { open_all(); }
+        void open_all();
+        void on_draw();
         [[nodiscard]] bool empty();
         void clear();
     private:
-        std::vector<std::shared_ptr<IPopup>> m_Popups;
+        std::vector<std::shared_ptr<IPopup>> popups_;
     };
 }

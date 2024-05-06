@@ -139,10 +139,10 @@ public:
 
         ui::End();
 
-        if (m_ParamEditor.beginPopup())
+        if (m_ParamEditor.begin_popup())
         {
-            m_ParamEditor.onDraw();
-            m_ParamEditor.endPopup();
+            m_ParamEditor.on_draw();
+            m_ParamEditor.end_popup();
         }
     }
 

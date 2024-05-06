@@ -27,7 +27,7 @@ public:
 private:
     void impl_on_mount() override
     {
-        current_tab_ = registry_entry_.createTab(ParentPtr<Impl>{shared_from_this()});
+        current_tab_ = registry_entry_.construct_tab(ParentPtr<Impl>{shared_from_this()});
         ui::context::init();
         current_tab_->on_mount();
         App::upd().make_main_loop_polling();

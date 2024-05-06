@@ -7,27 +7,25 @@
 
 #include <memory>
 
-osc::UndoButton::UndoButton(std::shared_ptr<UndoRedoBase> undoRedo_) :
-    m_UndoRedo{std::move(undoRedo_)}
+osc::UndoButton::UndoButton(std::shared_ptr<UndoRedoBase> undo_redo) :
+    undo_redo_{std::move(undo_redo)}
 {}
 
 osc::UndoButton::~UndoButton() noexcept = default;
 
-void osc::UndoButton::onDraw()
+void osc::UndoButton::on_draw()
 {
-    int imguiID = 0;
+    int imgui_id = 0;
 
     ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
 
-    bool wasDisabled = false;
-    if (!m_UndoRedo->canUndo())
-    {
+    bool was_disabled = false;
+    if (not undo_redo_->canUndo()) {
         ui::BeginDisabled();
-        wasDisabled = true;
+        was_disabled = true;
     }
-    if (ui::Button(ICON_FA_UNDO))
-    {
-        m_UndoRedo->undo();
+    if (ui::Button(ICON_FA_UNDO)) {
+        undo_redo_->undo();
     }
 
     ui::SameLine();
@@ -36,19 +34,15 @@ void osc::UndoButton::onDraw()
     ui::Button(ICON_FA_CARET_DOWN);
     ui::PopStyleVar();
 
-    if (wasDisabled)
-    {
+    if (was_disabled) {
         ui::EndDisabled();
     }
 
-    if (ui::BeginPopupContextItem("##OpenUndoMenu", ImGuiPopupFlags_MouseButtonLeft))
-    {
-        for (ptrdiff_t i = 0; i < m_UndoRedo->getNumUndoEntriesi(); ++i)
-        {
-            ui::PushID(imguiID++);
-            if (ui::Selectable(m_UndoRedo->getUndoEntry(i).message()))
-            {
-                m_UndoRedo->undoTo(i);
+    if (ui::BeginPopupContextItem("##OpenUndoMenu", ImGuiPopupFlags_MouseButtonLeft)) {
+        for (ptrdiff_t i = 0; i < undo_redo_->getNumUndoEntriesi(); ++i) {
+            ui::PushID(imgui_id++);
+            if (ui::Selectable(undo_redo_->getUndoEntry(i).message())) {
+                undo_redo_->undoTo(i);
             }
             ui::PopID();
         }

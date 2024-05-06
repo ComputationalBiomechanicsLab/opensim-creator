@@ -84,7 +84,7 @@ void osc::MainMenuFileTab::onDraw(
     // draw "save as", if necessary
     if (maybeSaveChangesPopup)
     {
-        maybeSaveChangesPopup->onDraw();
+        maybeSaveChangesPopup->on_draw();
     }
 
     if (!ui::BeginMenu("File"))

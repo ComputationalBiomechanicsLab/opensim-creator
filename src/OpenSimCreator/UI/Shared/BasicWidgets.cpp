@@ -1127,22 +1127,22 @@ bool osc::DrawViewerTopButtonRow(
 
     IconWithMenu muscleStylingButton
     {
-        iconCache.getIcon("muscle_coloring"),
+        iconCache.find_or_throw("muscle_coloring"),
         "Muscle Styling",
         "Affects how muscles appear in this visualizer panel",
         [&params]() { return DrawMuscleDecorationOptionsEditor(params.decorationOptions); },
     };
-    edited = muscleStylingButton.onDraw() || edited;
+    edited = muscleStylingButton.on_draw() || edited;
     ui::SameLine();
 
     IconWithMenu vizAidsButton
     {
-        iconCache.getIcon("viz_aids"),
+        iconCache.find_or_throw("viz_aids"),
         "Visual Aids",
         "Affects what's shown in the 3D scene",
         [&params]() { return DrawVisualAidsContextMenuContent(params); },
     };
-    edited = vizAidsButton.onDraw() || edited;
+    edited = vizAidsButton.on_draw() || edited;
 
     ui::SameLine();
     ui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
@@ -1163,22 +1163,22 @@ bool osc::DrawCameraControlButtons(
     Vec2 desiredTopCentroid)
 {
     IconWithoutMenu zoomOutButton{
-        iconCache.getIcon("zoomout"),
+        iconCache.find_or_throw("zoomout"),
         "Zoom Out Camera",
         "Moves the camera one step away from its focus point (Hotkey: -)",
     };
     IconWithoutMenu zoomInButton{
-        iconCache.getIcon("zoomin"),
+        iconCache.find_or_throw("zoomin"),
         "Zoom in Camera",
         "Moves the camera one step towards its focus point (Hotkey: =)",
     };
     IconWithoutMenu autoFocusButton{
-        iconCache.getIcon("zoomauto"),
+        iconCache.find_or_throw("zoomauto"),
         "Auto-Focus Camera",
         "Try to automatically adjust the camera's zoom etc. to suit the model's dimensions (Hotkey: Ctrl+F)",
     };
     IconWithMenu sceneSettingsButton{
-        iconCache.getIcon("gear"),
+        iconCache.find_or_throw("gear"),
         "Scene Settings",
         "Change advanced scene settings",
         [&params, drawlist]() { return DrawAdvancedParamsEditor(params, drawlist); },
@@ -1194,17 +1194,17 @@ bool osc::DrawCameraControlButtons(
     ui::SetCursorScreenPos(topleft);
 
     bool edited = false;
-    if (zoomOutButton.onDraw()) {
+    if (zoomOutButton.on_draw()) {
         zoom_out(params.camera);
         edited = true;
     }
     ui::SameLine();
-    if (zoomInButton.onDraw()) {
+    if (zoomInButton.on_draw()) {
         zoom_in(params.camera);
         edited = true;
     }
     ui::SameLine();
-    if (autoFocusButton.onDraw() && maybeSceneAABB) {
+    if (autoFocusButton.on_draw() && maybeSceneAABB) {
         auto_focus(params.camera, *maybeSceneAABB, aspect_ratio_of(viewerScreenRect));
         edited = true;
     }
@@ -1216,7 +1216,7 @@ bool osc::DrawCameraControlButtons(
             ui::GetCursorScreenPos().y,
         };
         ui::SetCursorScreenPos(tl);
-        if (sceneSettingsButton.onDraw()) {
+        if (sceneSettingsButton.on_draw()) {
             edited = true;
         }
     }
@@ -1432,8 +1432,8 @@ void osc::DrawUndoAndRedoButtons(UndoableModelStatePair& model)
 
 void osc::DrawToggleFramesButton(UndoableModelStatePair& model, IconCache& icons)
 {
-    Icon const& icon = icons.getIcon(IsShowingFrames(model.getModel()) ? "frame_colored" : "frame_bw");
-    if (ui::ImageButton("##toggleframes", icon.get_texture(), icon.dimensions(), icon.getTextureCoordinates()))
+    Icon const& icon = icons.find_or_throw(IsShowingFrames(model.getModel()) ? "frame_colored" : "frame_bw");
+    if (ui::ImageButton("##toggleframes", icon.texture(), icon.dimensions(), icon.texture_coordinates()))
     {
         ActionToggleFrames(model);
     }
@@ -1442,8 +1442,8 @@ void osc::DrawToggleFramesButton(UndoableModelStatePair& model, IconCache& icons
 
 void osc::DrawToggleMarkersButton(UndoableModelStatePair& model, IconCache& icons)
 {
-    Icon const& icon = icons.getIcon(IsShowingMarkers(model.getModel()) ? "marker_colored" : "marker");
-    if (ui::ImageButton("##togglemarkers", icon.get_texture(), icon.dimensions(), icon.getTextureCoordinates()))
+    Icon const& icon = icons.find_or_throw(IsShowingMarkers(model.getModel()) ? "marker_colored" : "marker");
+    if (ui::ImageButton("##togglemarkers", icon.texture(), icon.dimensions(), icon.texture_coordinates()))
     {
         ActionToggleMarkers(model);
     }
@@ -1452,8 +1452,8 @@ void osc::DrawToggleMarkersButton(UndoableModelStatePair& model, IconCache& icon
 
 void osc::DrawToggleWrapGeometryButton(UndoableModelStatePair& model, IconCache& icons)
 {
-    Icon const& icon = icons.getIcon(IsShowingWrapGeometry(model.getModel()) ? "wrap_colored" : "wrap");
-    if (ui::ImageButton("##togglewrapgeom", icon.get_texture(), icon.dimensions(), icon.getTextureCoordinates()))
+    Icon const& icon = icons.find_or_throw(IsShowingWrapGeometry(model.getModel()) ? "wrap_colored" : "wrap");
+    if (ui::ImageButton("##togglewrapgeom", icon.texture(), icon.dimensions(), icon.texture_coordinates()))
     {
         ActionToggleWrapGeometry(model);
     }
@@ -1462,8 +1462,8 @@ void osc::DrawToggleWrapGeometryButton(UndoableModelStatePair& model, IconCache&
 
 void osc::DrawToggleContactGeometryButton(UndoableModelStatePair& model, IconCache& icons)
 {
-    Icon const& icon = icons.getIcon(IsShowingContactGeometry(model.getModel()) ? "contact_colored" : "contact");
-    if (ui::ImageButton("##togglecontactgeom", icon.get_texture(), icon.dimensions(), icon.getTextureCoordinates()))
+    Icon const& icon = icons.find_or_throw(IsShowingContactGeometry(model.getModel()) ? "contact_colored" : "contact");
+    if (ui::ImageButton("##togglecontactgeom", icon.texture(), icon.dimensions(), icon.texture_coordinates()))
     {
         ActionToggleContactGeometry(model);
     }

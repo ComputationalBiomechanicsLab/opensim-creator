@@ -923,11 +923,11 @@ namespace
             OSC_ASSERT(m_EditorAPI != nullptr);
             OSC_ASSERT(m_Model != nullptr);
 
-            setModal(false);
+            set_modal(false);
         }
 
     private:
-        void implDrawContent() final
+        void impl_draw_content() final
         {
             OpenSim::Component const* const maybeComponent = FindComponent(m_Model->getModel(), m_ComponentPath);
             if (!maybeComponent)
@@ -986,7 +986,7 @@ namespace
         void onDraw()
         {
             drawEditMenu();
-            m_WindowMenu.onDraw();
+            m_WindowMenu.on_draw();
             m_AboutMenu.onDraw();
         }
 
@@ -1140,7 +1140,7 @@ public:
         );
         m_Toolbar.onDraw();
         m_PanelManager->on_draw();
-        m_PopupManager.onDraw();
+        m_PopupManager.on_draw();
     }
 
 private:

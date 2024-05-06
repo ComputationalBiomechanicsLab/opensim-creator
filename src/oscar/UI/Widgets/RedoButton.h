@@ -17,6 +17,6 @@ namespace osc
 
         void onDraw();
     private:
-        std::shared_ptr<UndoRedoBase> m_UndoRedo;
+        std::shared_ptr<UndoRedoBase> undo_redo_;
     };
 }

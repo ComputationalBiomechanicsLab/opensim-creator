@@ -10,93 +10,83 @@ class osc::SaveChangesPopup::Impl final : public StandardPopup {
 public:
 
     explicit Impl(SaveChangesPopupConfig config) :
-        StandardPopup{config.popupName},
-        m_Config{std::move(config)}
-    {
-    }
+        StandardPopup{config.popup_name},
+        config_{std::move(config)}
+    {}
 
-    void implDrawContent() final
+    void impl_draw_content() final
     {
-        ui::TextUnformatted(m_Config.content);
+        ui::TextUnformatted(config_.content);
 
-        if (ui::Button("Yes"))
-        {
-            if (m_Config.onUserClickedSave())
-            {
+        if (ui::Button("Yes")) {
+            if (config_.on_user_clicked_save()) {
                 close();
             }
         }
 
         ui::SameLine();
 
-        if (ui::Button("No"))
-        {
-            if (m_Config.onUserClickedDontSave())
-            {
+        if (ui::Button("No")) {
+            if (config_.on_user_clicked_dont_save()) {
                 close();
             }
         }
 
         ui::SameLine();
 
-        if (ui::Button("Cancel"))
-        {
-            if (m_Config.onUserCancelled())
-            {
+        if (ui::Button("Cancel")) {
+            if (config_.on_user_cancelled()) {
                 close();
             }
         }
     }
 private:
-    SaveChangesPopupConfig m_Config;
+    SaveChangesPopupConfig config_;
 };
 
 
-// public API (PIMPL)
-
 osc::SaveChangesPopup::SaveChangesPopup(const SaveChangesPopupConfig& config) :
-    m_Impl{std::make_unique<Impl>(config)}
+    impl_{std::make_unique<Impl>(config)}
 {}
 
 osc::SaveChangesPopup::SaveChangesPopup(SaveChangesPopup&&) noexcept = default;
 osc::SaveChangesPopup& osc::SaveChangesPopup::operator=(SaveChangesPopup&&) noexcept = default;
 osc::SaveChangesPopup::~SaveChangesPopup() noexcept = default;
 
-bool osc::SaveChangesPopup::implIsOpen() const
+bool osc::SaveChangesPopup::impl_is_open() const
 {
-    return m_Impl->isOpen();
+    return impl_->is_open();
 }
 
-void osc::SaveChangesPopup::implOpen()
+void osc::SaveChangesPopup::impl_open()
 {
-    m_Impl->open();
+    impl_->open();
 }
 
-void osc::SaveChangesPopup::implClose()
+void osc::SaveChangesPopup::impl_close()
 {
-    m_Impl->close();
+    impl_->close();
 }
 
-bool osc::SaveChangesPopup::implBeginPopup()
+bool osc::SaveChangesPopup::impl_begin_popup()
 {
-    return m_Impl->beginPopup();
+    return impl_->begin_popup();
 }
 
-void osc::SaveChangesPopup::implOnDraw()
+void osc::SaveChangesPopup::impl_on_draw()
 {
-    m_Impl->onDraw();
+    impl_->on_draw();
 }
 
-void osc::SaveChangesPopup::implEndPopup()
+void osc::SaveChangesPopup::impl_end_popup()
 {
-    m_Impl->endPopup();
+    impl_->end_popup();
 }
 
-void osc::SaveChangesPopup::onDraw()
+void osc::SaveChangesPopup::on_draw()
 {
-    if (m_Impl->beginPopup())
-    {
-        m_Impl->onDraw();
-        m_Impl->endPopup();
+    if (impl_->begin_popup()) {
+        impl_->on_draw();
+        impl_->end_popup();
     }
 }

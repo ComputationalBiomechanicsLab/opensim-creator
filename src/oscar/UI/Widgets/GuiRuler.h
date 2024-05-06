@@ -12,19 +12,19 @@ namespace osc
 {
     class GuiRuler final {
     public:
-        void onDraw(
+        void on_draw(
             const PolarPerspectiveCamera&,
-            const Rect& renderRect,
+            const Rect& render_rect,
             std::optional<SceneCollision>
         );
-        void startMeasuring();
-        void stopMeasuring();
-        void toggleMeasuring();
-        bool isMeasuring() const;
+        void start_measuring();
+        void stop_measuring();
+        void toggle_measuring();
+        bool is_measuring() const;
 
     private:
         enum class State { Inactive, WaitingForFirstPoint, WaitingForSecondPoint };
-        State m_State = State::Inactive;
-        Vec3 m_StartWorldPos = {};
+        State state_ = State::Inactive;
+        Vec3 start_world_pos_ = {};
     };
 }

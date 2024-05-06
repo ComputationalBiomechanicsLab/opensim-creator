@@ -27,7 +27,7 @@ public:
     }
 
 private:
-    void implDrawContent() final
+    void impl_draw_content() final
     {
         OpenSim::PhysicalFrame const* selected = nullptr;
 
@@ -68,32 +68,32 @@ osc::Select1PFPopup::Select1PFPopup(Select1PFPopup&&) noexcept = default;
 osc::Select1PFPopup& osc::Select1PFPopup::operator=(Select1PFPopup&&) noexcept = default;
 osc::Select1PFPopup::~Select1PFPopup() noexcept = default;
 
-bool osc::Select1PFPopup::implIsOpen() const
+bool osc::Select1PFPopup::impl_is_open() const
 {
-    return m_Impl->isOpen();
+    return m_Impl->is_open();
 }
 
-void osc::Select1PFPopup::implOpen()
+void osc::Select1PFPopup::impl_open()
 {
     m_Impl->open();
 }
 
-void osc::Select1PFPopup::implClose()
+void osc::Select1PFPopup::impl_close()
 {
     m_Impl->close();
 }
 
-bool osc::Select1PFPopup::implBeginPopup()
+bool osc::Select1PFPopup::impl_begin_popup()
 {
-    return m_Impl->beginPopup();
+    return m_Impl->begin_popup();
 }
 
-void osc::Select1PFPopup::implOnDraw()
+void osc::Select1PFPopup::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }
 
-void osc::Select1PFPopup::implEndPopup()
+void osc::Select1PFPopup::impl_end_popup()
 {
-    m_Impl->endPopup();
+    m_Impl->end_popup();
 }

@@ -136,7 +136,7 @@ public:
     }
 
 private:
-    void implDrawContent() final
+    void impl_draw_content() final
     {
         // caching: regenerate cached socket list, if necessary
         //
@@ -223,7 +223,7 @@ private:
         }
     }
 
-    void implOnClose() final
+    void impl_on_close() final
     {
         m_EditedParams.search.clear();
         m_Error.clear();
@@ -288,32 +288,32 @@ osc::ReassignSocketPopup::ReassignSocketPopup(ReassignSocketPopup&&) noexcept = 
 osc::ReassignSocketPopup& osc::ReassignSocketPopup::operator=(ReassignSocketPopup&&) noexcept = default;
 osc::ReassignSocketPopup::~ReassignSocketPopup() noexcept = default;
 
-bool osc::ReassignSocketPopup::implIsOpen() const
+bool osc::ReassignSocketPopup::impl_is_open() const
 {
-    return m_Impl->isOpen();
+    return m_Impl->is_open();
 }
 
-void osc::ReassignSocketPopup::implOpen()
+void osc::ReassignSocketPopup::impl_open()
 {
     m_Impl->open();
 }
 
-void osc::ReassignSocketPopup::implClose()
+void osc::ReassignSocketPopup::impl_close()
 {
     m_Impl->close();
 }
 
-bool osc::ReassignSocketPopup::implBeginPopup()
+bool osc::ReassignSocketPopup::impl_begin_popup()
 {
-    return m_Impl->beginPopup();
+    return m_Impl->begin_popup();
 }
 
-void osc::ReassignSocketPopup::implOnDraw()
+void osc::ReassignSocketPopup::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }
 
-void osc::ReassignSocketPopup::implEndPopup()
+void osc::ReassignSocketPopup::impl_end_popup()
 {
-    m_Impl->endPopup();
+    m_Impl->end_popup();
 }

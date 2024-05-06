@@ -19,7 +19,7 @@ public:
 private:
     void impl_draw_content() final
     {
-        log_viewer_.onDraw();
+        log_viewer_.on_draw();
     }
 
     LogViewer log_viewer_;

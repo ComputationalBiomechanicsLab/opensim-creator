@@ -243,7 +243,7 @@ public:
             bool v = true;
             if (ui::Begin("Log", &v, ImGuiWindowFlags_MenuBar))
             {
-                m_Shared->updLogViewer().onDraw();
+                m_Shared->updLogViewer().on_draw();
             }
             ui::End();
 
@@ -267,7 +267,7 @@ public:
         drawMainViewerPanelOrModal();
 
         // draw any active popups over the scene
-        m_PopupManager.onDraw();
+        m_PopupManager.on_draw();
     }
 
 private:

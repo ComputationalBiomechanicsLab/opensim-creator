@@ -454,7 +454,7 @@ private:
 
             OSC_PERF("draw simulation screen");
             m_PanelManager->on_draw();
-            m_PopupManager.onDraw();
+            m_PopupManager.on_draw();
         }
         else
         {

@@ -148,7 +148,7 @@ public:
         m_StatusBar.onDraw();
 
         // draw active popups over the UI
-        m_Shared->popupManager.onDraw();
+        m_Shared->popupManager.on_draw();
     }
 
 private:

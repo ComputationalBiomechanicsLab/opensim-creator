@@ -15,21 +15,21 @@ osc::IconWithoutMenu::IconWithoutMenu(
     CStringView title,
     CStringView description) :
 
-    m_Icon{std::move(icon)},
-    m_Title{title},
-    m_ButtonID{"##" + m_Title},
-    m_Description{description}
+    icon_{std::move(icon)},
+    title_{title},
+    button_id_{"##" + title_},
+    description_{description}
 {}
 
 Vec2 osc::IconWithoutMenu::dimensions() const
 {
     const Vec2 padding = ui::GetStyleFramePadding();
-    return Vec2{m_Icon.dimensions()} + 2.0f*padding;
+    return Vec2{icon_.dimensions()} + 2.0f*padding;
 }
 
-bool osc::IconWithoutMenu::onDraw()
+bool osc::IconWithoutMenu::on_draw()
 {
-    const bool rv = ui::ImageButton(m_ButtonID, m_Icon.get_texture(), m_Icon.dimensions(), m_Icon.getTextureCoordinates());
-    ui::DrawTooltipIfItemHovered(m_Title, m_Description);
+    const bool rv = ui::ImageButton(button_id_, icon_.texture(), icon_.dimensions(), icon_.texture_coordinates());
+    ui::DrawTooltipIfItemHovered(title_, description_);
     return rv;
 }

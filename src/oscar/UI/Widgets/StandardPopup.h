@@ -24,47 +24,47 @@ namespace osc
         virtual ~StandardPopup() noexcept = default;
 
         explicit StandardPopup(
-            std::string_view popupName
+            std::string_view popup_name
         );
 
         StandardPopup(
-            std::string_view popupName,
+            std::string_view popup_name,
             Vec2 dimensions,
             ImGuiWindowFlags
         );
 
     protected:
-        bool isPopupOpenedThisFrame() const;
+        bool is_popup_opened_this_frame() const;
         void request_close();
-        bool isModal() const;
-        void setModal(bool);
-        void setRect(const Rect&);
+        bool is_modal() const;
+        void set_modal(bool);
+        void set_rect(const Rect&);
         void set_dimensions(Vec2);
         void set_position(std::optional<Vec2>);
 
     private:
         // this standard implementation supplies these
-        bool implIsOpen() const final;
-        void implOpen() final;
-        void implClose() final;
-        bool implBeginPopup() final;
-        void implOnDraw() final;
-        void implEndPopup() final;
+        bool impl_is_open() const final;
+        void impl_open() final;
+        void impl_close() final;
+        bool impl_begin_popup() final;
+        void impl_on_draw() final;
+        void impl_end_popup() final;
 
         // derivers can/must provide these
-        virtual void implBeforeImguiBeginPopup() {}
-        virtual void implAfterImguiBeginPopup() {}
-        virtual void implDrawContent() = 0;
-        virtual void implOnClose() {}
+        virtual void impl_before_imgui_begin_popup() {}
+        virtual void impl_after_imgui_begin_popup() {}
+        virtual void impl_draw_content() = 0;
+        virtual void impl_on_close() {}
 
-        std::string m_PopupName;
-        Vec2i m_Dimensions;
-        std::optional<Vec2i> m_MaybePosition;
-        ImGuiWindowFlags m_PopupFlags;
-        bool m_ShouldOpen;
-        bool m_ShouldClose;
-        bool m_JustOpened;
-        bool m_IsOpen;
-        bool m_IsModal;
+        std::string popup_name_;
+        Vec2i dimensions_;
+        std::optional<Vec2i> maybe_position_;
+        ImGuiWindowFlags popup_flags_;
+        bool should_open_;
+        bool should_close_;
+        bool just_opened_;
+        bool is_open_;
+        bool is_modal_;
     };
 }

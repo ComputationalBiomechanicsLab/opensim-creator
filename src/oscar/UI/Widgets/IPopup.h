@@ -13,42 +13,20 @@ namespace osc
     public:
         virtual ~IPopup() noexcept = default;
 
-        bool isOpen()
-        {
-            return implIsOpen();
-        }
+        bool is_open() { return impl_is_open(); }
+        void open() { impl_open(); }
+        void close() { impl_close(); }
 
-        void open()
-        {
-            implOpen();
-        }
-
-        void close()
-        {
-            implClose();
-        }
-
-        bool beginPopup()
-        {
-            return implBeginPopup();
-        }
-
-        void onDraw()
-        {
-            implOnDraw();
-        }
-
-        void endPopup()
-        {
-            implEndPopup();
-        }
+        bool begin_popup() { return impl_begin_popup(); }
+        void on_draw() { impl_on_draw(); }
+        void end_popup() { impl_end_popup(); }
 
     private:
-        virtual bool implIsOpen() const = 0;
-        virtual void implOpen() = 0;
-        virtual void implClose() = 0;
-        virtual bool implBeginPopup() = 0;
-        virtual void implOnDraw() = 0;
-        virtual void implEndPopup() = 0;
+        virtual bool impl_is_open() const = 0;
+        virtual void impl_open() = 0;
+        virtual void impl_close() = 0;
+        virtual bool impl_begin_popup() = 0;
+        virtual void impl_on_draw() = 0;
+        virtual void impl_end_popup() = 0;
     };
 }

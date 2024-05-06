@@ -132,7 +132,7 @@ public:
     {
     }
 private:
-    void implDrawContent() final
+    void impl_draw_content() final
     {
         if (m_GeometryPathGetter() == nullptr)
         {
@@ -385,27 +385,27 @@ osc::GeometryPathEditorPopup::GeometryPathEditorPopup(GeometryPathEditorPopup&&)
 osc::GeometryPathEditorPopup& osc::GeometryPathEditorPopup::operator=(GeometryPathEditorPopup&&) noexcept = default;
 osc::GeometryPathEditorPopup::~GeometryPathEditorPopup() noexcept = default;
 
-bool osc::GeometryPathEditorPopup::implIsOpen() const
+bool osc::GeometryPathEditorPopup::impl_is_open() const
 {
-    return m_Impl->isOpen();
+    return m_Impl->is_open();
 }
-void osc::GeometryPathEditorPopup::implOpen()
+void osc::GeometryPathEditorPopup::impl_open()
 {
     m_Impl->open();
 }
-void osc::GeometryPathEditorPopup::implClose()
+void osc::GeometryPathEditorPopup::impl_close()
 {
     m_Impl->close();
 }
-bool osc::GeometryPathEditorPopup::implBeginPopup()
+bool osc::GeometryPathEditorPopup::impl_begin_popup()
 {
-    return m_Impl->beginPopup();
+    return m_Impl->begin_popup();
 }
-void osc::GeometryPathEditorPopup::implOnDraw()
+void osc::GeometryPathEditorPopup::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }
-void osc::GeometryPathEditorPopup::implEndPopup()
+void osc::GeometryPathEditorPopup::impl_end_popup()
 {
-    m_Impl->endPopup();
+    m_Impl->end_popup();
 }

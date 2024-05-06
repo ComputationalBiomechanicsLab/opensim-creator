@@ -15,10 +15,10 @@ namespace osc
 
 
         // assumes caller handles `ui::Begin(panel_name, nullptr, ImGuiWindowFlags_MenuBar)`
-        void onDraw();
+        void on_draw();
 
     private:
         class Impl;
-        std::unique_ptr<Impl> m_Impl;
+        std::unique_ptr<Impl> impl_;
     };
 }

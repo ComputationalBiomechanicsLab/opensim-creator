@@ -41,7 +41,7 @@ public:
         drawMainMenuAddTab();
         drawMainMenuToolsTab();
         drawMainMenuActionsTab();
-        m_WindowMenu.onDraw();
+        m_WindowMenu.on_draw();
         m_MainMenuAboutTab.onDraw();
     }
 

@@ -394,12 +394,12 @@ public:
         m_Model{std::move(model_)},
         m_Path{std::move(path_)}
     {
-        setModal(false);
+        set_modal(false);
         OSC_ASSERT(m_Model != nullptr);
     }
 
 private:
-    void implDrawContent() final
+    void impl_draw_content() final
     {
         OpenSim::Component const* c = FindComponent(m_Model->getModel(), m_Path);
         if (!c)
@@ -712,32 +712,32 @@ osc::ComponentContextMenu::ComponentContextMenu(ComponentContextMenu&&) noexcept
 osc::ComponentContextMenu& osc::ComponentContextMenu::operator=(ComponentContextMenu&&) noexcept = default;
 osc::ComponentContextMenu::~ComponentContextMenu() noexcept = default;
 
-bool osc::ComponentContextMenu::implIsOpen() const
+bool osc::ComponentContextMenu::impl_is_open() const
 {
-    return m_Impl->isOpen();
+    return m_Impl->is_open();
 }
 
-void osc::ComponentContextMenu::implOpen()
+void osc::ComponentContextMenu::impl_open()
 {
     m_Impl->open();
 }
 
-void osc::ComponentContextMenu::implClose()
+void osc::ComponentContextMenu::impl_close()
 {
     m_Impl->close();
 }
 
-bool osc::ComponentContextMenu::implBeginPopup()
+bool osc::ComponentContextMenu::impl_begin_popup()
 {
-    return m_Impl->beginPopup();
+    return m_Impl->begin_popup();
 }
 
-void osc::ComponentContextMenu::implOnDraw()
+void osc::ComponentContextMenu::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }
 
-void osc::ComponentContextMenu::implEndPopup()
+void osc::ComponentContextMenu::impl_end_popup()
 {
-    m_Impl->endPopup();
+    m_Impl->end_popup();
 }

@@ -28,7 +28,7 @@ public:
     }
 
 private:
-    void implDrawContent() final
+    void impl_draw_content() final
     {
         OpenSim::Component const* selected = nullptr;
 
@@ -75,32 +75,32 @@ osc::SelectComponentPopup::SelectComponentPopup(SelectComponentPopup&&) noexcept
 osc::SelectComponentPopup& osc::SelectComponentPopup::operator=(SelectComponentPopup&&) noexcept = default;
 osc::SelectComponentPopup::~SelectComponentPopup() noexcept = default;
 
-bool osc::SelectComponentPopup::implIsOpen() const
+bool osc::SelectComponentPopup::impl_is_open() const
 {
-    return m_Impl->isOpen();
+    return m_Impl->is_open();
 }
 
-void osc::SelectComponentPopup::implOpen()
+void osc::SelectComponentPopup::impl_open()
 {
     m_Impl->open();
 }
 
-void osc::SelectComponentPopup::implClose()
+void osc::SelectComponentPopup::impl_close()
 {
     m_Impl->close();
 }
 
-bool osc::SelectComponentPopup::implBeginPopup()
+bool osc::SelectComponentPopup::impl_begin_popup()
 {
-    return m_Impl->beginPopup();
+    return m_Impl->begin_popup();
 }
 
-void osc::SelectComponentPopup::implOnDraw()
+void osc::SelectComponentPopup::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }
 
-void osc::SelectComponentPopup::implEndPopup()
+void osc::SelectComponentPopup::impl_end_popup()
 {
-    m_Impl->endPopup();
+    m_Impl->end_popup();
 }

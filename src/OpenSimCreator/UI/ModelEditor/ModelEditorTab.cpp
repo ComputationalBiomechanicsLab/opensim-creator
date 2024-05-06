@@ -224,7 +224,7 @@ public:
             m_Toolbar.onDraw();
             m_PanelManager->on_draw();
             m_StatusBar.onDraw();
-            m_PopupManager.onDraw();
+            m_PopupManager.on_draw();
 
             m_ExceptionThrownLastFrame = false;
         }
