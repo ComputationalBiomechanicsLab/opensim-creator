@@ -97,7 +97,7 @@ void osc::fd::ActionExportFrameDefinitionSceneModelToEditorTab(
         return;
     }
 
-    (*maybeMainUIStateAPI)->addAndSelectTab<ModelEditorTab>(
+    (*maybeMainUIStateAPI)->add_and_select_tab<ModelEditorTab>(
         *maybeMainUIStateAPI,
         MakeUndoableModelFromSceneModel(model)
     );

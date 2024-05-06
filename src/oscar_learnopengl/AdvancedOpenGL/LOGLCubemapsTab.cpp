@@ -121,24 +121,24 @@ public:
     }
 
 private:
-    void implOnMount() final
+    void impl_on_mount() final
     {
         App::upd().make_main_loop_polling();
         m_Camera.on_mount();
     }
 
-    void implOnUnmount() final
+    void impl_on_unmount() final
     {
         m_Camera.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
-    bool implOnEvent(SDL_Event const& e) final
+    bool impl_on_event(SDL_Event const& e) final
     {
         return m_Camera.on_event(e);
     }
 
-    void implOnDraw() final
+    void impl_on_draw() final
     {
         m_Camera.on_draw();
 
@@ -234,32 +234,32 @@ osc::LOGLCubemapsTab::LOGLCubemapsTab(LOGLCubemapsTab&&) noexcept = default;
 osc::LOGLCubemapsTab& osc::LOGLCubemapsTab::operator=(LOGLCubemapsTab&&) noexcept = default;
 osc::LOGLCubemapsTab::~LOGLCubemapsTab() noexcept = default;
 
-UID osc::LOGLCubemapsTab::implGetID() const
+UID osc::LOGLCubemapsTab::impl_get_id() const
 {
-    return m_Impl->getID();
+    return m_Impl->id();
 }
 
-CStringView osc::LOGLCubemapsTab::implGetName() const
+CStringView osc::LOGLCubemapsTab::impl_get_name() const
 {
-    return m_Impl->getName();
+    return m_Impl->name();
 }
 
-void osc::LOGLCubemapsTab::implOnMount()
+void osc::LOGLCubemapsTab::impl_on_mount()
 {
     m_Impl->on_mount();
 }
 
-void osc::LOGLCubemapsTab::implOnUnmount()
+void osc::LOGLCubemapsTab::impl_on_unmount()
 {
     m_Impl->on_unmount();
 }
 
-bool osc::LOGLCubemapsTab::implOnEvent(SDL_Event const& e)
+bool osc::LOGLCubemapsTab::impl_on_event(SDL_Event const& e)
 {
-    return m_Impl->onEvent(e);
+    return m_Impl->on_event(e);
 }
 
-void osc::LOGLCubemapsTab::implOnDraw()
+void osc::LOGLCubemapsTab::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }

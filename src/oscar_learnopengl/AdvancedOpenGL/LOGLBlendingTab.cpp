@@ -94,24 +94,24 @@ public:
     }
 
 private:
-    void implOnMount() final
+    void impl_on_mount() final
     {
         App::upd().make_main_loop_polling();
         m_Camera.on_mount();
     }
 
-    void implOnUnmount() final
+    void impl_on_unmount() final
     {
         m_Camera.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
-    bool implOnEvent(SDL_Event const& e) final
+    bool impl_on_event(SDL_Event const& e) final
     {
         return m_Camera.on_event(e);
     }
 
-    void implOnDraw() final
+    void impl_on_draw() final
     {
         m_Camera.on_draw();
 
@@ -189,32 +189,32 @@ osc::LOGLBlendingTab::LOGLBlendingTab(LOGLBlendingTab&&) noexcept = default;
 osc::LOGLBlendingTab& osc::LOGLBlendingTab::operator=(LOGLBlendingTab&&) noexcept = default;
 osc::LOGLBlendingTab::~LOGLBlendingTab() noexcept = default;
 
-UID osc::LOGLBlendingTab::implGetID() const
+UID osc::LOGLBlendingTab::impl_get_id() const
 {
-    return m_Impl->getID();
+    return m_Impl->id();
 }
 
-CStringView osc::LOGLBlendingTab::implGetName() const
+CStringView osc::LOGLBlendingTab::impl_get_name() const
 {
-    return m_Impl->getName();
+    return m_Impl->name();
 }
 
-void osc::LOGLBlendingTab::implOnMount()
+void osc::LOGLBlendingTab::impl_on_mount()
 {
     m_Impl->on_mount();
 }
 
-void osc::LOGLBlendingTab::implOnUnmount()
+void osc::LOGLBlendingTab::impl_on_unmount()
 {
     m_Impl->on_unmount();
 }
 
-bool osc::LOGLBlendingTab::implOnEvent(SDL_Event const& e)
+bool osc::LOGLBlendingTab::impl_on_event(SDL_Event const& e)
 {
-    return m_Impl->onEvent(e);
+    return m_Impl->on_event(e);
 }
 
-void osc::LOGLBlendingTab::implOnDraw()
+void osc::LOGLBlendingTab::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }

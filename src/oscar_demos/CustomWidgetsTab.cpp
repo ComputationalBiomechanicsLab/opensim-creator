@@ -97,7 +97,7 @@ public:
     {}
 
 private:
-    void implOnDraw() final
+    void impl_on_draw() final
     {
         ui::Begin("window");
         ui::InputFloat("standardinput", &m_Value);
@@ -127,17 +127,17 @@ osc::CustomWidgetsTab::CustomWidgetsTab(CustomWidgetsTab&&) noexcept = default;
 osc::CustomWidgetsTab& osc::CustomWidgetsTab::operator=(CustomWidgetsTab&&) noexcept = default;
 osc::CustomWidgetsTab::~CustomWidgetsTab() noexcept = default;
 
-UID osc::CustomWidgetsTab::implGetID() const
+UID osc::CustomWidgetsTab::impl_get_id() const
 {
-    return m_Impl->getID();
+    return m_Impl->id();
 }
 
-CStringView osc::CustomWidgetsTab::implGetName() const
+CStringView osc::CustomWidgetsTab::impl_get_name() const
 {
-    return m_Impl->getName();
+    return m_Impl->name();
 }
 
-void osc::CustomWidgetsTab::implOnDraw()
+void osc::CustomWidgetsTab::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }

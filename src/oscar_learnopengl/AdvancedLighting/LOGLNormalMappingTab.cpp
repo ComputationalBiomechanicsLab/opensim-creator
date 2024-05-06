@@ -92,22 +92,22 @@ public:
     {}
 
 private:
-    void implOnMount() final
+    void impl_on_mount() final
     {
         m_Camera.on_mount();
     }
 
-    void implOnUnmount() final
+    void impl_on_unmount() final
     {
         m_Camera.on_unmount();
     }
 
-    bool implOnEvent(SDL_Event const& e) final
+    bool impl_on_event(SDL_Event const& e) final
     {
         return m_Camera.on_event(e);
     }
 
-    void implOnTick() final
+    void impl_on_tick() final
     {
         // rotate the quad over time
         AppClock::duration const dt = App::get().frame_delta_since_startup();
@@ -116,7 +116,7 @@ private:
         m_QuadTransform.rotation = angle_axis(angle, axis);
     }
 
-    void implOnDraw() final
+    void impl_on_draw() final
     {
         m_Camera.on_draw();
 
@@ -180,37 +180,37 @@ osc::LOGLNormalMappingTab::LOGLNormalMappingTab(LOGLNormalMappingTab&&) noexcept
 osc::LOGLNormalMappingTab& osc::LOGLNormalMappingTab::operator=(LOGLNormalMappingTab&&) noexcept = default;
 osc::LOGLNormalMappingTab::~LOGLNormalMappingTab() noexcept = default;
 
-UID osc::LOGLNormalMappingTab::implGetID() const
+UID osc::LOGLNormalMappingTab::impl_get_id() const
 {
-    return m_Impl->getID();
+    return m_Impl->id();
 }
 
-CStringView osc::LOGLNormalMappingTab::implGetName() const
+CStringView osc::LOGLNormalMappingTab::impl_get_name() const
 {
-    return m_Impl->getName();
+    return m_Impl->name();
 }
 
-void osc::LOGLNormalMappingTab::implOnMount()
+void osc::LOGLNormalMappingTab::impl_on_mount()
 {
     m_Impl->on_mount();
 }
 
-void osc::LOGLNormalMappingTab::implOnUnmount()
+void osc::LOGLNormalMappingTab::impl_on_unmount()
 {
     m_Impl->on_unmount();
 }
 
-bool osc::LOGLNormalMappingTab::implOnEvent(SDL_Event const& e)
+bool osc::LOGLNormalMappingTab::impl_on_event(SDL_Event const& e)
 {
-    return m_Impl->onEvent(e);
+    return m_Impl->on_event(e);
 }
 
-void osc::LOGLNormalMappingTab::implOnTick()
+void osc::LOGLNormalMappingTab::impl_on_tick()
 {
     m_Impl->on_tick();
 }
 
-void osc::LOGLNormalMappingTab::implOnDraw()
+void osc::LOGLNormalMappingTab::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }

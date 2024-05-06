@@ -109,7 +109,7 @@ public:
             m_Camera.set_near_clipping_plane(m_PolarCamera.znear);
             m_Camera.set_far_clipping_plane(m_PolarCamera.zfar);
             m_Camera.set_view_matrix_override(m_PolarCamera.view_matrix());
-            m_Camera.set_projection_matrix_override(m_PolarCamera.projection_matrix(aspect_ratio(viewportRectDims)));
+            m_Camera.set_projection_matrix_override(m_PolarCamera.projection_matrix(aspect_ratio_of(viewportRectDims)));
         }
 
         // draw mesh
@@ -211,22 +211,22 @@ osc::MeshHittestTab::MeshHittestTab(MeshHittestTab&&) noexcept = default;
 osc::MeshHittestTab& osc::MeshHittestTab::operator=(MeshHittestTab&&) noexcept = default;
 osc::MeshHittestTab::~MeshHittestTab() noexcept = default;
 
-UID osc::MeshHittestTab::implGetID() const
+UID osc::MeshHittestTab::impl_get_id() const
 {
     return m_Impl->getID();
 }
 
-CStringView osc::MeshHittestTab::implGetName() const
+CStringView osc::MeshHittestTab::impl_get_name() const
 {
     return m_Impl->getName();
 }
 
-void osc::MeshHittestTab::implOnTick()
+void osc::MeshHittestTab::impl_on_tick()
 {
     m_Impl->on_tick();
 }
 
-void osc::MeshHittestTab::implOnDraw()
+void osc::MeshHittestTab::impl_on_draw()
 {
     m_Impl->onDraw();
 }

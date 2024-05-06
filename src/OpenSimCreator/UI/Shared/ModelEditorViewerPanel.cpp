@@ -387,7 +387,7 @@ private:
             m_State.updRenderer().autoFocusCamera(
                 *m_Parameters.getModelSharedPtr(),
                 m_Parameters.updRenderParams(),
-                aspect_ratio(m_State.viewportRect)
+                aspect_ratio_of(m_State.viewportRect)
             );
             m_IsFirstFrame = false;
         }

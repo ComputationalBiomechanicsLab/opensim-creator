@@ -62,7 +62,7 @@ public:
     }
 
 private:
-    void implOnDraw() final
+    void impl_on_draw() final
     {
         ui::DockSpaceOverViewport(ui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
@@ -86,7 +86,7 @@ private:
 
             {
                 m_RenderParams.light_direction = recommended_light_direction(m_Camera);
-                m_RenderParams.projection_matrix = m_Camera.projection_matrix(aspect_ratio(m_RenderParams.dimensions));
+                m_RenderParams.projection_matrix = m_Camera.projection_matrix(aspect_ratio_of(m_RenderParams.dimensions));
                 m_RenderParams.view_matrix = m_Camera.view_matrix();
                 m_RenderParams.view_pos = m_Camera.position();
                 m_RenderParams.near_clipping_plane = m_Camera.znear;
@@ -128,17 +128,17 @@ osc::MeshGenTestTab::MeshGenTestTab(MeshGenTestTab&&) noexcept = default;
 osc::MeshGenTestTab& osc::MeshGenTestTab::operator=(MeshGenTestTab&&) noexcept = default;
 osc::MeshGenTestTab::~MeshGenTestTab() noexcept = default;
 
-UID osc::MeshGenTestTab::implGetID() const
+UID osc::MeshGenTestTab::impl_get_id() const
 {
-    return m_Impl->getID();
+    return m_Impl->id();
 }
 
-CStringView osc::MeshGenTestTab::implGetName() const
+CStringView osc::MeshGenTestTab::impl_get_name() const
 {
-    return m_Impl->getName();
+    return m_Impl->name();
 }
 
-void osc::MeshGenTestTab::implOnDraw()
+void osc::MeshGenTestTab::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }

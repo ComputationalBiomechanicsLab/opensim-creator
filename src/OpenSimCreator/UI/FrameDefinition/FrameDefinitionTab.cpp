@@ -1225,42 +1225,42 @@ osc::FrameDefinitionTab::FrameDefinitionTab(FrameDefinitionTab&&) noexcept = def
 osc::FrameDefinitionTab& osc::FrameDefinitionTab::operator=(FrameDefinitionTab&&) noexcept = default;
 osc::FrameDefinitionTab::~FrameDefinitionTab() noexcept = default;
 
-UID osc::FrameDefinitionTab::implGetID() const
+UID osc::FrameDefinitionTab::impl_get_id() const
 {
     return m_Impl->getID();
 }
 
-CStringView osc::FrameDefinitionTab::implGetName() const
+CStringView osc::FrameDefinitionTab::impl_get_name() const
 {
     return m_Impl->getName();
 }
 
-void osc::FrameDefinitionTab::implOnMount()
+void osc::FrameDefinitionTab::impl_on_mount()
 {
     m_Impl->on_mount();
 }
 
-void osc::FrameDefinitionTab::implOnUnmount()
+void osc::FrameDefinitionTab::impl_on_unmount()
 {
     m_Impl->on_unmount();
 }
 
-bool osc::FrameDefinitionTab::implOnEvent(SDL_Event const& e)
+bool osc::FrameDefinitionTab::impl_on_event(SDL_Event const& e)
 {
     return m_Impl->onEvent(e);
 }
 
-void osc::FrameDefinitionTab::implOnTick()
+void osc::FrameDefinitionTab::impl_on_tick()
 {
     m_Impl->on_tick();
 }
 
-void osc::FrameDefinitionTab::implOnDrawMainMenu()
+void osc::FrameDefinitionTab::impl_on_draw_main_menu()
 {
     m_Impl->onDrawMainMenu();
 }
 
-void osc::FrameDefinitionTab::implOnDraw()
+void osc::FrameDefinitionTab::impl_on_draw()
 {
     m_Impl->onDraw();
 }

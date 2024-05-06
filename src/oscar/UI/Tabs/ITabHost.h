@@ -22,43 +22,43 @@ namespace osc
 
         template<std::derived_from<ITab> T, typename... Args>
         requires std::constructible_from<T, Args&&...>
-        UID addTab(Args&&... args)
+        UID add_tab(Args&&... args)
         {
-            return addTab(std::make_unique<T>(std::forward<Args>(args)...));
+            return add_tab(std::make_unique<T>(std::forward<Args>(args)...));
         }
 
-        UID addTab(std::unique_ptr<ITab> tab)
+        UID add_tab(std::unique_ptr<ITab> tab)
         {
-            return implAddTab(std::move(tab));
+            return impl_add_tab(std::move(tab));
         }
 
-        void selectTab(UID tabID)
+        void select_tab(UID tab_id)
         {
-            implSelectTab(tabID);
+            impl_select_tab(tab_id);
         }
 
-        void closeTab(UID tabID)
+        void close_tab(UID tab_id)
         {
-            implCloseTab(tabID);
+            impl_close_tab(tab_id);
         }
 
-        void resetImgui()
+        void reset_imgui()
         {
-            implResetImgui();
+            impl_reset_imgui();
         }
 
         template<std::derived_from<ITab> T, typename... Args>
         requires std::constructible_from<T, Args&&...>
-        void addAndSelectTab(Args&&... args)
+        void add_and_select_tab(Args&&... args)
         {
-            const UID tabID = addTab<T>(std::forward<Args>(args)...);
-            selectTab(tabID);
+            const UID tab_id = add_tab<T>(std::forward<Args>(args)...);
+            select_tab(tab_id);
         }
 
     private:
-        virtual UID implAddTab(std::unique_ptr<ITab>) = 0;
-        virtual void implSelectTab(UID) = 0;
-        virtual void implCloseTab(UID) = 0;
-        virtual void implResetImgui() {}
+        virtual UID impl_add_tab(std::unique_ptr<ITab>) = 0;
+        virtual void impl_select_tab(UID) = 0;
+        virtual void impl_close_tab(UID) = 0;
+        virtual void impl_reset_imgui() {}
     };
 }

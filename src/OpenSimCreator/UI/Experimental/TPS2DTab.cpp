@@ -543,17 +543,17 @@ osc::TPS2DTab::TPS2DTab(TPS2DTab&&) noexcept = default;
 osc::TPS2DTab& osc::TPS2DTab::operator=(TPS2DTab&&) noexcept = default;
 osc::TPS2DTab::~TPS2DTab() noexcept = default;
 
-UID osc::TPS2DTab::implGetID() const
+UID osc::TPS2DTab::impl_get_id() const
 {
     return m_Impl->getID();
 }
 
-CStringView osc::TPS2DTab::implGetName() const
+CStringView osc::TPS2DTab::impl_get_name() const
 {
     return m_Impl->getName();
 }
 
-void osc::TPS2DTab::implOnDraw()
+void osc::TPS2DTab::impl_on_draw()
 {
     m_Impl->onDraw();
 }

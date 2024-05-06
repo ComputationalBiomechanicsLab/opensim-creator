@@ -139,32 +139,32 @@ osc::RendererGeometryShaderTab::RendererGeometryShaderTab(RendererGeometryShader
 osc::RendererGeometryShaderTab& osc::RendererGeometryShaderTab::operator=(RendererGeometryShaderTab&&) noexcept = default;
 osc::RendererGeometryShaderTab::~RendererGeometryShaderTab() noexcept = default;
 
-UID osc::RendererGeometryShaderTab::implGetID() const
+UID osc::RendererGeometryShaderTab::impl_get_id() const
 {
     return m_Impl->getID();
 }
 
-CStringView osc::RendererGeometryShaderTab::implGetName() const
+CStringView osc::RendererGeometryShaderTab::impl_get_name() const
 {
     return m_Impl->getName();
 }
 
-void osc::RendererGeometryShaderTab::implOnMount()
+void osc::RendererGeometryShaderTab::impl_on_mount()
 {
     m_Impl->on_mount();
 }
 
-void osc::RendererGeometryShaderTab::implOnUnmount()
+void osc::RendererGeometryShaderTab::impl_on_unmount()
 {
     m_Impl->on_unmount();
 }
 
-bool osc::RendererGeometryShaderTab::implOnEvent(SDL_Event const& e)
+bool osc::RendererGeometryShaderTab::impl_on_event(SDL_Event const& e)
 {
     return m_Impl->onEvent(e);
 }
 
-void osc::RendererGeometryShaderTab::implOnDraw()
+void osc::RendererGeometryShaderTab::impl_on_draw()
 {
     m_Impl->onDraw();
 }

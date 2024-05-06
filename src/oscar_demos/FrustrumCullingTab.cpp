@@ -78,30 +78,30 @@ public:
     }
 
 private:
-    void implOnMount() final
+    void impl_on_mount() final
     {
         App::upd().make_main_loop_polling();
         m_UserCamera.on_mount();
     }
 
-    void implOnUnmount() final
+    void impl_on_unmount() final
     {
         m_UserCamera.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
-    bool implOnEvent(SDL_Event const& e) final
+    bool impl_on_event(SDL_Event const& e) final
     {
         return m_UserCamera.on_event(e);
     }
 
-    void implOnDraw() final
+    void impl_on_draw() final
     {
         Rect const viewport = ui::GetMainViewportWorkspaceScreenRect();
         float const xmid = midpoint(viewport.p1.x, viewport.p2.x);
         Rect const lhs = {viewport.p1, {xmid, viewport.p2.y}};
         Rect const rhs = {{xmid, viewport.p1.y}, viewport.p2};
-        FrustumPlanes const frustum = calc_frustum_planes(m_UserCamera, aspect_ratio(lhs));
+        FrustumPlanes const frustum = calc_frustum_planes(m_UserCamera, aspect_ratio_of(lhs));
 
         m_UserCamera.on_draw();  // update from inputs etc.
 
@@ -160,32 +160,32 @@ osc::FrustrumCullingTab::FrustrumCullingTab(FrustrumCullingTab&&) noexcept = def
 osc::FrustrumCullingTab& osc::FrustrumCullingTab::operator=(FrustrumCullingTab&&) noexcept = default;
 osc::FrustrumCullingTab::~FrustrumCullingTab() noexcept = default;
 
-UID osc::FrustrumCullingTab::implGetID() const
+UID osc::FrustrumCullingTab::impl_get_id() const
 {
-    return m_Impl->getID();
+    return m_Impl->id();
 }
 
-CStringView osc::FrustrumCullingTab::implGetName() const
+CStringView osc::FrustrumCullingTab::impl_get_name() const
 {
-    return m_Impl->getName();
+    return m_Impl->name();
 }
 
-void osc::FrustrumCullingTab::implOnMount()
+void osc::FrustrumCullingTab::impl_on_mount()
 {
     m_Impl->on_mount();
 }
 
-void osc::FrustrumCullingTab::implOnUnmount()
+void osc::FrustrumCullingTab::impl_on_unmount()
 {
     m_Impl->on_unmount();
 }
 
-bool osc::FrustrumCullingTab::implOnEvent(SDL_Event const& e)
+bool osc::FrustrumCullingTab::impl_on_event(SDL_Event const& e)
 {
-    return m_Impl->onEvent(e);
+    return m_Impl->on_event(e);
 }
 
-void osc::FrustrumCullingTab::implOnDraw()
+void osc::FrustrumCullingTab::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }

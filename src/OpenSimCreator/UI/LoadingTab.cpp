@@ -98,8 +98,8 @@ public:
             // there is an existing editor state
             //
             // recycle it so that users can keep their running sims, local edits, etc.
-            m_Parent->addAndSelectTab<ModelEditorTab>(m_Parent, std::move(result));
-            m_Parent->closeTab(m_TabID);
+            m_Parent->add_and_select_tab<ModelEditorTab>(m_Parent, std::move(result));
+            m_Parent->close_tab(m_TabID);
         }
     }
 
@@ -136,8 +136,8 @@ public:
 
                 if (ui::Button("try again"))
                 {
-                    m_Parent->addAndSelectTab<LoadingTab>(m_Parent, m_OsimPath);
-                    m_Parent->closeTab(m_TabID);
+                    m_Parent->add_and_select_tab<LoadingTab>(m_Parent, m_OsimPath);
+                    m_Parent->close_tab(m_TabID);
                 }
             }
             ui::End();
@@ -182,22 +182,22 @@ osc::LoadingTab::LoadingTab(LoadingTab&&) noexcept = default;
 osc::LoadingTab& osc::LoadingTab::operator=(LoadingTab&&) noexcept = default;
 osc::LoadingTab::~LoadingTab() noexcept = default;
 
-UID osc::LoadingTab::implGetID() const
+UID osc::LoadingTab::impl_get_id() const
 {
     return m_Impl->getID();
 }
 
-CStringView osc::LoadingTab::implGetName() const
+CStringView osc::LoadingTab::impl_get_name() const
 {
     return m_Impl->getName();
 }
 
-void osc::LoadingTab::implOnTick()
+void osc::LoadingTab::impl_on_tick()
 {
     m_Impl->on_tick();
 }
 
-void osc::LoadingTab::implOnDraw()
+void osc::LoadingTab::impl_on_draw()
 {
     m_Impl->onDraw();
 }

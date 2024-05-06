@@ -17,7 +17,7 @@ public:
     {}
 
 private:
-    void implOnDraw() final
+    void impl_on_draw() final
     {
         ui::ShowDemoWindow();
     }
@@ -39,17 +39,17 @@ osc::ImGuiDemoTab::ImGuiDemoTab(ImGuiDemoTab&&) noexcept = default;
 osc::ImGuiDemoTab& osc::ImGuiDemoTab::operator=(ImGuiDemoTab&&) noexcept = default;
 osc::ImGuiDemoTab::~ImGuiDemoTab() noexcept = default;
 
-UID osc::ImGuiDemoTab::implGetID() const
+UID osc::ImGuiDemoTab::impl_get_id() const
 {
-    return m_Impl->getID();
+    return m_Impl->id();
 }
 
-CStringView osc::ImGuiDemoTab::implGetName() const
+CStringView osc::ImGuiDemoTab::impl_get_name() const
 {
-    return m_Impl->getName();
+    return m_Impl->name();
 }
 
-void osc::ImGuiDemoTab::implOnDraw()
+void osc::ImGuiDemoTab::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }

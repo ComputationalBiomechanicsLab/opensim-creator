@@ -69,7 +69,7 @@ public:
     {}
 
 private:
-    void implOnDraw() final
+    void impl_on_draw() final
     {
         graphics::draw(m_Mesh, identity<Transform>(), m_Material, m_Camera);
 
@@ -100,17 +100,17 @@ osc::LOGLTexturingTab::LOGLTexturingTab(LOGLTexturingTab&&) noexcept = default;
 osc::LOGLTexturingTab& osc::LOGLTexturingTab::operator=(LOGLTexturingTab&&) noexcept = default;
 osc::LOGLTexturingTab::~LOGLTexturingTab() noexcept = default;
 
-UID osc::LOGLTexturingTab::implGetID() const
+UID osc::LOGLTexturingTab::impl_get_id() const
 {
-    return m_Impl->getID();
+    return m_Impl->id();
 }
 
-CStringView osc::LOGLTexturingTab::implGetName() const
+CStringView osc::LOGLTexturingTab::impl_get_name() const
 {
-    return m_Impl->getName();
+    return m_Impl->name();
 }
 
-void osc::LOGLTexturingTab::implOnDraw()
+void osc::LOGLTexturingTab::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }

@@ -70,26 +70,26 @@ private:
             ui::TableSetupColumn("Total Duration");
             ui::TableHeadersRow();
 
-            for (const PerfMeasurement& pm : measurements) {
+            for (const PerfMeasurement& measurement : measurements) {
 
-                if (pm.getCallCount() <= 0) {
+                if (measurement.getCallCount() <= 0) {
                     continue;
                 }
 
                 int column = 0;
                 ui::TableNextRow();
                 ui::TableSetColumnIndex(column++);
-                ui::TextUnformatted(pm.getLabel());
+                ui::TextUnformatted(measurement.getLabel());
                 ui::TableSetColumnIndex(column++);
-                ui::Text("%s:%u", pm.getFilename().c_str(), pm.getLine());
+                ui::Text("%s:%u", measurement.getFilename().c_str(), measurement.getLine());
                 ui::TableSetColumnIndex(column++);
-                ui::Text("%zu", pm.getCallCount());
+                ui::Text("%zu", measurement.getCallCount());
                 ui::TableSetColumnIndex(column++);
-                ui::Text("%" PRId64 " us", static_cast<int64_t>(std::chrono::duration_cast<std::chrono::microseconds>(pm.getLastDuration()).count()));
+                ui::Text("%" PRId64 " us", static_cast<int64_t>(std::chrono::duration_cast<std::chrono::microseconds>(measurement.getLastDuration()).count()));
                 ui::TableSetColumnIndex(column++);
-                ui::Text("%" PRId64 " us", static_cast<int64_t>(std::chrono::duration_cast<std::chrono::microseconds>(pm.getAvgDuration()).count()));
+                ui::Text("%" PRId64 " us", static_cast<int64_t>(std::chrono::duration_cast<std::chrono::microseconds>(measurement.getAvgDuration()).count()));
                 ui::TableSetColumnIndex(column++);
-                ui::Text("%" PRId64 " us", static_cast<int64_t>(std::chrono::duration_cast<std::chrono::microseconds>(pm.getTotalDuration()).count()));
+                ui::Text("%" PRId64 " us", static_cast<int64_t>(std::chrono::duration_cast<std::chrono::microseconds>(measurement.getTotalDuration()).count()));
             }
 
             ui::EndTable();

@@ -74,30 +74,30 @@ public:
     {}
 
 private:
-    void implOnMount() final
+    void impl_on_mount() final
     {
         App::upd().make_main_loop_polling();
         m_Camera.on_mount();
     }
 
-    void implOnUnmount() final
+    void impl_on_unmount() final
     {
         m_Camera.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
-    bool implOnEvent(SDL_Event const& e) final
+    bool impl_on_event(SDL_Event const& e) final
     {
         return m_Camera.on_event(e);
     }
 
-    void implOnTick() final
+    void impl_on_tick() final
     {
         double const dt = App::get().frame_delta_since_startup().count();
         m_Step1Transform.rotation = angle_axis(50_deg * dt, UnitVec3{0.5f, 1.0f, 0.0f});
     }
 
-    void implOnDraw() final
+    void impl_on_draw() final
     {
         m_Camera.on_draw();
         draw3DScene();
@@ -175,37 +175,37 @@ osc::LOGLCoordinateSystemsTab::LOGLCoordinateSystemsTab(LOGLCoordinateSystemsTab
 osc::LOGLCoordinateSystemsTab& osc::LOGLCoordinateSystemsTab::operator=(LOGLCoordinateSystemsTab&&) noexcept = default;
 osc::LOGLCoordinateSystemsTab::~LOGLCoordinateSystemsTab() noexcept = default;
 
-UID osc::LOGLCoordinateSystemsTab::implGetID() const
+UID osc::LOGLCoordinateSystemsTab::impl_get_id() const
 {
-    return m_Impl->getID();
+    return m_Impl->id();
 }
 
-CStringView osc::LOGLCoordinateSystemsTab::implGetName() const
+CStringView osc::LOGLCoordinateSystemsTab::impl_get_name() const
 {
-    return m_Impl->getName();
+    return m_Impl->name();
 }
 
-void osc::LOGLCoordinateSystemsTab::implOnMount()
+void osc::LOGLCoordinateSystemsTab::impl_on_mount()
 {
     m_Impl->on_mount();
 }
 
-void osc::LOGLCoordinateSystemsTab::implOnUnmount()
+void osc::LOGLCoordinateSystemsTab::impl_on_unmount()
 {
     m_Impl->on_unmount();
 }
 
-bool osc::LOGLCoordinateSystemsTab::implOnEvent(SDL_Event const& e)
+bool osc::LOGLCoordinateSystemsTab::impl_on_event(SDL_Event const& e)
 {
-    return m_Impl->onEvent(e);
+    return m_Impl->on_event(e);
 }
 
-void osc::LOGLCoordinateSystemsTab::implOnTick()
+void osc::LOGLCoordinateSystemsTab::impl_on_tick()
 {
     m_Impl->on_tick();
 }
 
-void osc::LOGLCoordinateSystemsTab::implOnDraw()
+void osc::LOGLCoordinateSystemsTab::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }

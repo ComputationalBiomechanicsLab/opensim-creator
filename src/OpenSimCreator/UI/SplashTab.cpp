@@ -79,7 +79,7 @@ namespace
         ui::PushID(++imguiID);
         if (ui::MenuItem(label))
         {
-            parent_->addAndSelectTab<LoadingTab>(parent_, path);
+            parent_->add_and_select_tab<LoadingTab>(parent_, path);
         }
         // show the full path as a tooltip when the item is hovered (some people have
         // long file names (#784)
@@ -134,7 +134,7 @@ public:
         if (e.type == SDL_DROPFILE && e.drop.file != nullptr && std::string_view{e.drop.file}.ends_with(".osim"))
         {
             // if the user drops an osim file on this tab then it should be loaded
-            m_Parent->addAndSelectTab<LoadingTab>(m_Parent, e.drop.file);
+            m_Parent->add_and_select_tab<LoadingTab>(m_Parent, e.drop.file);
             return true;
         }
         return false;
@@ -203,7 +203,7 @@ private:
         SceneRendererParams params{m_LastSceneRendererParams};
         params.dimensions = dimensions_of(screenRect);
         params.antialiasing_level = App::get().anti_aliasing_level();
-        params.projection_matrix = m_Camera.projection_matrix(aspect_ratio(screenRect));
+        params.projection_matrix = m_Camera.projection_matrix(aspect_ratio_of(screenRect));
 
         if (params != m_LastSceneRendererParams)
         {
@@ -267,7 +267,7 @@ private:
         }
         if (ui::MenuItem(ICON_FA_MAGIC " Import Meshes"))
         {
-            m_Parent->addAndSelectTab<mi::MeshImporterTab>(m_Parent);
+            m_Parent->add_and_select_tab<mi::MeshImporterTab>(m_Parent);
         }
         App::upd().add_frame_annotation("SplashTab/ImportMeshesMenuItem", ui::GetItemRect());
         if (ui::MenuItem(ICON_FA_BOOK " Open Documentation"))
@@ -280,15 +280,15 @@ private:
     {
         if (ui::MenuItem(ICON_FA_ARROWS_ALT " Frame Definition"))
         {
-            m_Parent->addAndSelectTab<FrameDefinitionTab>(m_Parent);
+            m_Parent->add_and_select_tab<FrameDefinitionTab>(m_Parent);
         }
         if (ui::MenuItem(ICON_FA_MAGIC " Mesh Importer"))
         {
-            m_Parent->addAndSelectTab<mi::MeshImporterTab>(m_Parent);
+            m_Parent->add_and_select_tab<mi::MeshImporterTab>(m_Parent);
         }
         if (ui::MenuItem(ICON_FA_CUBE " Mesh Warping"))
         {
-            m_Parent->addAndSelectTab<MeshWarpingTab>(m_Parent);
+            m_Parent->add_and_select_tab<MeshWarpingTab>(m_Parent);
         }
     }
 
@@ -430,37 +430,37 @@ osc::SplashTab::SplashTab(SplashTab&&) noexcept = default;
 osc::SplashTab& osc::SplashTab::operator=(SplashTab&&) noexcept = default;
 osc::SplashTab::~SplashTab() noexcept = default;
 
-UID osc::SplashTab::implGetID() const
+UID osc::SplashTab::impl_get_id() const
 {
     return m_Impl->getID();
 }
 
-CStringView osc::SplashTab::implGetName() const
+CStringView osc::SplashTab::impl_get_name() const
 {
     return m_Impl->getName();
 }
 
-void osc::SplashTab::implOnMount()
+void osc::SplashTab::impl_on_mount()
 {
     m_Impl->on_mount();
 }
 
-void osc::SplashTab::implOnUnmount()
+void osc::SplashTab::impl_on_unmount()
 {
     m_Impl->on_unmount();
 }
 
-bool osc::SplashTab::implOnEvent(SDL_Event const& e)
+bool osc::SplashTab::impl_on_event(SDL_Event const& e)
 {
     return m_Impl->onEvent(e);
 }
 
-void osc::SplashTab::implOnDrawMainMenu()
+void osc::SplashTab::impl_on_draw_main_menu()
 {
     m_Impl->drawMainMenu();
 }
 
-void osc::SplashTab::implOnDraw()
+void osc::SplashTab::impl_on_draw()
 {
     m_Impl->onDraw();
 }

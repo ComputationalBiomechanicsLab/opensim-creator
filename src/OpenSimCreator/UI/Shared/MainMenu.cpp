@@ -149,7 +149,7 @@ void osc::MainMenuFileTab::onDraw(
                 InitializeModel(*cpy);
                 InitializeState(*cpy);
 
-                api->addAndSelectTab<SimulationTab>(api, std::make_shared<Simulation>(StoFileSimulation{std::move(cpy), *maybePath, maybeModel->getFixupScaleFactor()}));
+                api->add_and_select_tab<SimulationTab>(api, std::make_shared<Simulation>(StoFileSimulation{std::move(cpy), *maybePath, maybeModel->getFixupScaleFactor()}));
             }
             catch (std::exception const& ex)
             {
@@ -214,7 +214,7 @@ void osc::MainMenuFileTab::onDraw(
 
     if (ui::MenuItem(ICON_FA_MAGIC " Import Meshes"))
     {
-        api->addAndSelectTab<mi::MeshImporterTab>(api);
+        api->add_and_select_tab<mi::MeshImporterTab>(api);
     }
     App::upd().add_frame_annotation("MainMenu/ImportMeshesMenuItem", ui::GetItemRect());
 

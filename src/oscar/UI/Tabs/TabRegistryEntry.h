@@ -15,8 +15,8 @@ namespace osc
     class TabRegistryEntry final {
     public:
         TabRegistryEntry(
-            CStringView name_,
-            std::function<std::unique_ptr<ITab>(const ParentPtr<ITabHost>&)> constructor_
+            CStringView name,
+            std::function<std::unique_ptr<ITab>(const ParentPtr<ITabHost>&)> tab_constructor
         );
         TabRegistryEntry(const TabRegistryEntry&);
         TabRegistryEntry(TabRegistryEntry&&) noexcept;
@@ -24,11 +24,11 @@ namespace osc
         TabRegistryEntry& operator=(TabRegistryEntry&&) noexcept;
         ~TabRegistryEntry() noexcept;
 
-        CStringView getName() const;
-        std::unique_ptr<ITab> createTab(const ParentPtr<ITabHost>&) const;
+        CStringView name() const;
+        std::unique_ptr<ITab> construct_tab(const ParentPtr<ITabHost>&) const;
 
     private:
         class Impl;
-        std::shared_ptr<Impl> m_Impl;
+        std::shared_ptr<Impl> impl_;
     };
 }

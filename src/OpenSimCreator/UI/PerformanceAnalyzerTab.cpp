@@ -248,22 +248,22 @@ osc::PerformanceAnalyzerTab::PerformanceAnalyzerTab(PerformanceAnalyzerTab&&) no
 osc::PerformanceAnalyzerTab& osc::PerformanceAnalyzerTab::operator=(PerformanceAnalyzerTab&&) noexcept = default;
 osc::PerformanceAnalyzerTab::~PerformanceAnalyzerTab() noexcept = default;
 
-UID osc::PerformanceAnalyzerTab::implGetID() const
+UID osc::PerformanceAnalyzerTab::impl_get_id() const
 {
     return m_Impl->getID();
 }
 
-CStringView osc::PerformanceAnalyzerTab::implGetName() const
+CStringView osc::PerformanceAnalyzerTab::impl_get_name() const
 {
     return m_Impl->getName();
 }
 
-void osc::PerformanceAnalyzerTab::implOnTick()
+void osc::PerformanceAnalyzerTab::impl_on_tick()
 {
     m_Impl->on_tick();
 }
 
-void osc::PerformanceAnalyzerTab::implOnDraw()
+void osc::PerformanceAnalyzerTab::impl_on_draw()
 {
     m_Impl->onDraw();
 }

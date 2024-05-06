@@ -8,6 +8,6 @@ void osc::RegisterOpenSimCreatorTabs(TabRegistry& registry)
 {
     [&registry]<typename... Tabs>(Typelist<Tabs...>)
     {
-        (registry.registerTab<Tabs>(), ...);
+        (registry.register_tab<Tabs>(), ...);
     }(OpenSimCreatorTabs{});
 }

@@ -5,27 +5,28 @@
 #include <oscar/Utils/UID.h>
 
 #include <string>
+#include <string_view>
 
 namespace osc
 {
     class StandardTabImpl : public ITab {
     protected:
-        explicit StandardTabImpl(CStringView tabName) :
-            m_TabName{std::string{tabName}}
+        explicit StandardTabImpl(std::string_view tab_name) :
+            name_{std::string{tab_name}}
         {}
 
     private:
-        UID implGetID() const final
+        UID impl_get_id() const final
         {
-            return m_TabID;
+            return id_;
         }
 
-        CStringView implGetName() const final
+        CStringView impl_get_name() const final
         {
-            return m_TabName;
+            return name_;
         }
 
-        UID m_TabID;
-        std::string m_TabName;
+        UID id_;
+        std::string name_;
     };
 }

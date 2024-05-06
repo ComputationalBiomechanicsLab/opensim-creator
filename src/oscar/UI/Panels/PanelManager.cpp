@@ -318,7 +318,7 @@ public:
         }
     }
 
-    void onDraw()
+    void on_draw()
     {
         // draw each toggleable panel
         for (ToggleablePanel& panel : toggleable_panels_) {
@@ -492,7 +492,7 @@ void osc::PanelManager::on_tick()
 
 void osc::PanelManager::on_draw()
 {
-    impl_->onDraw();
+    impl_->on_draw();
 }
 
 size_t osc::PanelManager::num_dynamic_panels() const

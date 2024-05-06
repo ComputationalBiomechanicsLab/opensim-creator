@@ -257,8 +257,8 @@ public:
                 {
                     log_error("undoing the model also failed with error: %s", ex2.what());
                     log_error("because the model isn't recoverable, closing the editor tab");
-                    m_Parent->addAndSelectTab<ErrorTab>(m_Parent, ex);
-                    m_Parent->closeTab(m_TabID);  // TODO: should be forcibly closed with no "save" prompt
+                    m_Parent->add_and_select_tab<ErrorTab>(m_Parent, ex);
+                    m_Parent->close_tab(m_TabID);  // TODO: should be forcibly closed with no "save" prompt
                 }
 
                 log_error("sucessfully undone model");
@@ -277,8 +277,8 @@ public:
                 // but cannot undo, so quit
 
                 log_error("because the model isn't recoverable, closing the editor tab");
-                m_Parent->addAndSelectTab<ErrorTab>(m_Parent, ex);
-                m_Parent->closeTab(m_TabID);  // TODO: should be forcibly closed
+                m_Parent->add_and_select_tab<ErrorTab>(m_Parent, ex);
+                m_Parent->close_tab(m_TabID);  // TODO: should be forcibly closed
             }
         }
         else
@@ -297,13 +297,13 @@ public:
             {
                 log_error("model rollback thrown an exception: %s", ex2.what());
                 log_error("because the model cannot be rolled back, closing the editor tab");
-                m_Parent->addAndSelectTab<ErrorTab>(m_Parent, ex2);
-                m_Parent->closeTab(m_TabID);
+                m_Parent->add_and_select_tab<ErrorTab>(m_Parent, ex2);
+                m_Parent->close_tab(m_TabID);
             }
         }
 
         // reset ImGui, because the exception unroll may have damaged ImGui state
-        m_Parent->resetImgui();
+        m_Parent->reset_imgui();
     }
 
 private:
@@ -331,7 +331,7 @@ private:
         else if (filename.ends_with(".osim"))
         {
             // if the user drops an osim file on this tab then it should be loaded
-            m_Parent->addAndSelectTab<LoadingTab>(m_Parent, e.file);
+            m_Parent->add_and_select_tab<LoadingTab>(m_Parent, e.file);
             return true;
         }
 
@@ -457,52 +457,52 @@ osc::ModelEditorTab::ModelEditorTab(ModelEditorTab&&) noexcept = default;
 osc::ModelEditorTab& osc::ModelEditorTab::operator=(ModelEditorTab&&) noexcept = default;
 osc::ModelEditorTab::~ModelEditorTab() noexcept = default;
 
-UID osc::ModelEditorTab::implGetID() const
+UID osc::ModelEditorTab::impl_get_id() const
 {
     return m_Impl->getID();
 }
 
-CStringView osc::ModelEditorTab::implGetName() const
+CStringView osc::ModelEditorTab::impl_get_name() const
 {
     return m_Impl->getName();
 }
 
-bool osc::ModelEditorTab::implIsUnsaved() const
+bool osc::ModelEditorTab::impl_is_unsaved() const
 {
     return m_Impl->isUnsaved();
 }
 
-bool osc::ModelEditorTab::implTrySave()
+bool osc::ModelEditorTab::impl_try_save()
 {
     return m_Impl->trySave();
 }
 
-void osc::ModelEditorTab::implOnMount()
+void osc::ModelEditorTab::impl_on_mount()
 {
     m_Impl->on_mount();
 }
 
-void osc::ModelEditorTab::implOnUnmount()
+void osc::ModelEditorTab::impl_on_unmount()
 {
     m_Impl->on_unmount();
 }
 
-bool osc::ModelEditorTab::implOnEvent(SDL_Event const& e)
+bool osc::ModelEditorTab::impl_on_event(SDL_Event const& e)
 {
     return m_Impl->onEvent(e);
 }
 
-void osc::ModelEditorTab::implOnTick()
+void osc::ModelEditorTab::impl_on_tick()
 {
     m_Impl->on_tick();
 }
 
-void osc::ModelEditorTab::implOnDrawMainMenu()
+void osc::ModelEditorTab::impl_on_draw_main_menu()
 {
     m_Impl->onDrawMainMenu();
 }
 
-void osc::ModelEditorTab::implOnDraw()
+void osc::ModelEditorTab::impl_on_draw()
 {
     m_Impl->onDraw();
 }

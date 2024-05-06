@@ -176,24 +176,24 @@ public:
     }
 
 private:
-    void implOnMount() final
+    void impl_on_mount() final
     {
         App::upd().make_main_loop_polling();
         m_UserCamera.on_mount();
     }
 
-    void implOnUnmount() final
+    void impl_on_unmount() final
     {
         m_UserCamera.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
-    bool implOnEvent(SDL_Event const& e) final
+    bool impl_on_event(SDL_Event const& e) final
     {
         return m_UserCamera.on_event(e);
     }
 
-    void implOnDraw() final
+    void impl_on_draw() final
     {
         m_UserCamera.on_draw();  // update from inputs etc.
         m_Material.set_viewer_position(m_UserCamera.position());
@@ -233,32 +233,32 @@ osc::LOGLCSMTab::LOGLCSMTab(LOGLCSMTab&&) noexcept = default;
 osc::LOGLCSMTab& osc::LOGLCSMTab::operator=(LOGLCSMTab&&) noexcept = default;
 osc::LOGLCSMTab::~LOGLCSMTab() noexcept = default;
 
-UID osc::LOGLCSMTab::implGetID() const
+UID osc::LOGLCSMTab::impl_get_id() const
 {
-    return m_Impl->getID();
+    return m_Impl->id();
 }
 
-CStringView osc::LOGLCSMTab::implGetName() const
+CStringView osc::LOGLCSMTab::impl_get_name() const
 {
-    return m_Impl->getName();
+    return m_Impl->name();
 }
 
-void osc::LOGLCSMTab::implOnMount()
+void osc::LOGLCSMTab::impl_on_mount()
 {
     m_Impl->on_mount();
 }
 
-void osc::LOGLCSMTab::implOnUnmount()
+void osc::LOGLCSMTab::impl_on_unmount()
 {
     m_Impl->on_unmount();
 }
 
-bool osc::LOGLCSMTab::implOnEvent(SDL_Event const& e)
+bool osc::LOGLCSMTab::impl_on_event(SDL_Event const& e)
 {
-    return m_Impl->onEvent(e);
+    return m_Impl->on_event(e);
 }
 
-void osc::LOGLCSMTab::implOnDraw()
+void osc::LOGLCSMTab::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }

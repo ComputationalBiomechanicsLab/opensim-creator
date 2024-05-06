@@ -22,10 +22,10 @@ namespace osc
         ~LoadingTab() noexcept override;
 
     private:
-        UID implGetID() const final;
-        CStringView implGetName() const final;
-        void implOnTick() final;
-        void implOnDraw() final;
+        UID impl_get_id() const final;
+        CStringView impl_get_name() const final;
+        void impl_on_tick() final;
+        void impl_on_draw() final;
 
         class Impl;
         std::unique_ptr<Impl> m_Impl;

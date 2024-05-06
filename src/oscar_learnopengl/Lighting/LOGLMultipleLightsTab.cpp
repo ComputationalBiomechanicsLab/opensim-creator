@@ -120,24 +120,24 @@ public:
     }
 
 private:
-    void implOnMount() final
+    void impl_on_mount() final
     {
         App::upd().make_main_loop_polling();
         m_Camera.on_mount();
     }
 
-    void implOnUnmount() final
+    void impl_on_unmount() final
     {
         m_Camera.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
-    bool implOnEvent(SDL_Event const& e) final
+    bool impl_on_event(SDL_Event const& e) final
     {
         return m_Camera.on_event(e);
     }
 
-    void implOnDraw() final
+    void impl_on_draw() final
     {
         m_Camera.on_draw();
 
@@ -212,32 +212,32 @@ osc::LOGLMultipleLightsTab::LOGLMultipleLightsTab(LOGLMultipleLightsTab&&) noexc
 osc::LOGLMultipleLightsTab& osc::LOGLMultipleLightsTab::operator=(LOGLMultipleLightsTab&&) noexcept = default;
 osc::LOGLMultipleLightsTab::~LOGLMultipleLightsTab() noexcept = default;
 
-UID osc::LOGLMultipleLightsTab::implGetID() const
+UID osc::LOGLMultipleLightsTab::impl_get_id() const
 {
-    return m_Impl->getID();
+    return m_Impl->id();
 }
 
-CStringView osc::LOGLMultipleLightsTab::implGetName() const
+CStringView osc::LOGLMultipleLightsTab::impl_get_name() const
 {
-    return m_Impl->getName();
+    return m_Impl->name();
 }
 
-void osc::LOGLMultipleLightsTab::implOnMount()
+void osc::LOGLMultipleLightsTab::impl_on_mount()
 {
     m_Impl->on_mount();
 }
 
-void osc::LOGLMultipleLightsTab::implOnUnmount()
+void osc::LOGLMultipleLightsTab::impl_on_unmount()
 {
     m_Impl->on_unmount();
 }
 
-bool osc::LOGLMultipleLightsTab::implOnEvent(SDL_Event const& e)
+bool osc::LOGLMultipleLightsTab::impl_on_event(SDL_Event const& e)
 {
-    return m_Impl->onEvent(e);
+    return m_Impl->on_event(e);
 }
 
-void osc::LOGLMultipleLightsTab::implOnDraw()
+void osc::LOGLMultipleLightsTab::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }

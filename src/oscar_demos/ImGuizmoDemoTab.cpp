@@ -18,14 +18,14 @@ public:
     {}
 
 private:
-    void implOnDraw() final
+    void impl_on_draw() final
     {
         // ImGuizmo::BeginFrame();  already done by MainUIScreen
 
         Mat4 view = m_SceneCamera.view_matrix();
         Rect viewportRect = ui::GetMainViewportWorkspaceScreenRect();
         Vec2 dims = dimensions_of(viewportRect);
-        Mat4 projection = m_SceneCamera.projection_matrix(aspect_ratio(dims));
+        Mat4 projection = m_SceneCamera.projection_matrix(aspect_ratio_of(dims));
 
         ImGuizmo::SetRect(viewportRect.p1.x, viewportRect.p1.y, dims.x, dims.y);
         Mat4 identityMatrix = identity<Mat4>();
@@ -77,17 +77,17 @@ osc::ImGuizmoDemoTab::ImGuizmoDemoTab(ImGuizmoDemoTab&&) noexcept = default;
 osc::ImGuizmoDemoTab& osc::ImGuizmoDemoTab::operator=(ImGuizmoDemoTab&&) noexcept = default;
 osc::ImGuizmoDemoTab::~ImGuizmoDemoTab() noexcept = default;
 
-UID osc::ImGuizmoDemoTab::implGetID() const
+UID osc::ImGuizmoDemoTab::impl_get_id() const
 {
-    return m_Impl->getID();
+    return m_Impl->id();
 }
 
-CStringView osc::ImGuizmoDemoTab::implGetName() const
+CStringView osc::ImGuizmoDemoTab::impl_get_name() const
 {
-    return m_Impl->getName();
+    return m_Impl->name();
 }
 
-void osc::ImGuizmoDemoTab::implOnDraw()
+void osc::ImGuizmoDemoTab::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }

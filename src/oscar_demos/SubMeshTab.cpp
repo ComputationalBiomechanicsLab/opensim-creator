@@ -75,7 +75,7 @@ public:
     }
 
 private:
-    void implOnDraw() final
+    void impl_on_draw() final
     {
         for (size_t subMeshIndex = 0; subMeshIndex < m_MeshWithSubmeshes.num_submesh_descriptors(); ++subMeshIndex) {
             graphics::draw(
@@ -113,17 +113,17 @@ osc::SubMeshTab::SubMeshTab(SubMeshTab&&) noexcept = default;
 osc::SubMeshTab& osc::SubMeshTab::operator=(SubMeshTab&&) noexcept = default;
 osc::SubMeshTab::~SubMeshTab() noexcept = default;
 
-UID osc::SubMeshTab::implGetID() const
+UID osc::SubMeshTab::impl_get_id() const
 {
-    return m_Impl->getID();
+    return m_Impl->id();
 }
 
-CStringView osc::SubMeshTab::implGetName() const
+CStringView osc::SubMeshTab::impl_get_name() const
 {
-    return m_Impl->getName();
+    return m_Impl->name();
 }
 
-void osc::SubMeshTab::implOnDraw()
+void osc::SubMeshTab::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }

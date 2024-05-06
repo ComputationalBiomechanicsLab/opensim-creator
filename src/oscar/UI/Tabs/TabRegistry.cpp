@@ -13,59 +13,55 @@ namespace rgs = std::ranges;
 
 class osc::TabRegistry::Impl final {
 public:
-    void registerTab(const TabRegistryEntry& newEntry)
+    void register_tab(const TabRegistryEntry& entry)
     {
-        m_Entries.push_back(newEntry);
-        rgs::sort(m_Entries, rgs::less{}, &TabRegistryEntry::getName);
+        entries_.push_back(entry);
+        rgs::sort(entries_, rgs::less{}, &TabRegistryEntry::name);
     }
 
     size_t size() const
     {
-        return m_Entries.size();
+        return entries_.size();
     }
 
-    TabRegistryEntry operator[](size_t i) const
+    TabRegistryEntry operator[](size_t pos) const
     {
-        return m_Entries[i];
+        return entries_[pos];
     }
 
-    std::optional<TabRegistryEntry> getByName(std::string_view name) const
+    std::optional<TabRegistryEntry> find_by_name(std::string_view name) const
     {
-        const auto it = rgs::find(m_Entries, name, &TabRegistryEntry::getName);
-        return it != m_Entries.end() ? *it : std::optional<TabRegistryEntry>{};
+        const auto it = rgs::find(entries_, name, &TabRegistryEntry::name);
+        return it != entries_.end() ? *it : std::optional<TabRegistryEntry>{};
     }
 
 private:
-    std::vector<TabRegistryEntry> m_Entries;
+    std::vector<TabRegistryEntry> entries_;
 };
 
-
-// public API (PIMPL)
-
 osc::TabRegistry::TabRegistry() :
-    m_Impl{std::make_unique<Impl>()}
-{
-}
+    impl_{std::make_unique<Impl>()}
+{}
 osc::TabRegistry::TabRegistry(TabRegistry&&) noexcept = default;
 osc::TabRegistry& osc::TabRegistry::operator=(TabRegistry&&) noexcept = default;
 osc::TabRegistry::~TabRegistry() noexcept = default;
 
-void osc::TabRegistry::registerTab(const TabRegistryEntry& newEntry)
+void osc::TabRegistry::register_tab(const TabRegistryEntry& entry)
 {
-    m_Impl->registerTab(newEntry);
+    impl_->register_tab(entry);
 }
 
 size_t osc::TabRegistry::size() const
 {
-    return m_Impl->size();
+    return impl_->size();
 }
 
-TabRegistryEntry osc::TabRegistry::operator[](size_t i) const
+TabRegistryEntry osc::TabRegistry::operator[](size_t pos) const
 {
-    return (*m_Impl)[i];
+    return (*impl_)[pos];
 }
 
-std::optional<TabRegistryEntry> osc::TabRegistry::getByName(std::string_view name) const
+std::optional<TabRegistryEntry> osc::TabRegistry::find_by_name(std::string_view name) const
 {
-    return m_Impl->getByName(name);
+    return impl_->find_by_name(name);
 }

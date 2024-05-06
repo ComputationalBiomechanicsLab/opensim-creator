@@ -42,41 +42,40 @@ using namespace osc;
 
 namespace
 {
-    constexpr Color c_UnselectedColor = {1.0f, 1.0f, 1.0f, 0.4f};
-    constexpr Color c_SelectedColor = {1.0f, 0.0f, 0.0f, 0.8f};
+    constexpr Color c_unselected_color = {1.0f, 1.0f, 1.0f, 0.4f};
+    constexpr Color c_selected_color = {1.0f, 0.0f, 0.0f, 0.8f};
 
     // returns a rect that fully spans at least one dimension of the target rect, but has
     // the given aspect ratio
     //
     // the returned rectangle is in the same space as the target rectangle
-    Rect ShrinkToFit(Rect targetRect, float aspectRatio)
+    Rect shrink_to_fit(Rect target_rect, float aspect_ratio)
     {
-        const float targetAspectRatio = aspect_ratio(targetRect);
-        const float ratio = targetAspectRatio / aspectRatio;
-        const Vec2 targetDims = dimensions_of(targetRect);
+        const float target_aspect_ratio = aspect_ratio_of(target_rect);
+        const float ratio = target_aspect_ratio / aspect_ratio;
+        const Vec2 target_dimensions = dimensions_of(target_rect);
 
         if (ratio >= 1.0f) {
             // it will touch the top/bottom but may (ratio != 1.0f) fall short of the left/right
-            const Vec2 rvDims = {targetDims.x/ratio, targetDims.y};
-            const Vec2 rvTopLeft = {targetRect.p1.x + 0.5f*(targetDims.x - rvDims.x), targetRect.p1.y};
-            return {rvTopLeft, rvTopLeft + rvDims};
+            const Vec2 rv_dimensions = {target_dimensions.x/ratio, target_dimensions.y};
+            const Vec2 rv_topleft = {target_rect.p1.x + 0.5f*(target_dimensions.x - rv_dimensions.x), target_rect.p1.y};
+            return {rv_topleft, rv_topleft + rv_dimensions};
         }
-        else
-        {
+        else {
             // it will touch the left/right but will not touch the top/bottom
-            const Vec2 rvDims = {targetDims.x, ratio*targetDims.y};
-            const Vec2 rvTopLeft = {targetRect.p1.x, targetRect.p1.y + 0.5f*(targetDims.y - rvDims.y)};
-            return {rvTopLeft, rvTopLeft + rvDims};
+            const Vec2 rv_dimensions = {target_dimensions.x, ratio*target_dimensions.y};
+            const Vec2 rv_topleft = {target_rect.p1.x, target_rect.p1.y + 0.5f*(target_dimensions.y - rv_dimensions.y)};
+            return {rv_topleft, rv_topleft + rv_dimensions};
         }
     }
 
-    Rect MapRect(const Rect& sourceRect, const Rect& targetRect, const Rect& rect)
+    Rect map_rect(const Rect& source_rect, const Rect& target_rect, const Rect& rect)
     {
-        const Vec2 scale = dimensions_of(targetRect) / dimensions_of(sourceRect);
+        const Vec2 scale = dimensions_of(target_rect) / dimensions_of(source_rect);
 
         return Rect{
-            targetRect.p1 + scale*(rect.p1 - sourceRect.p1),
-            targetRect.p1 + scale*(rect.p2 - sourceRect.p1),
+            target_rect.p1 + scale*(rect.p1 - source_rect.p1),
+            target_rect.p1 + scale*(rect.p2 - source_rect.p1),
         };
     }
 }
@@ -85,25 +84,23 @@ class osc::ScreenshotTab::Impl final : public StandardTabImpl {
 public:
     explicit Impl(Screenshot&& screenshot) :
         StandardTabImpl{ICON_FA_COOKIE " ScreenshotTab"},
-        m_Screenshot{std::move(screenshot)}
+        screenshot_{std::move(screenshot)}
     {
-        m_ImageTexture.set_filter_mode(TextureFilterMode::Mipmap);
+        image_texture_.set_filter_mode(TextureFilterMode::Mipmap);
     }
 
 private:
-    void implOnDrawMainMenu() final
+    void impl_on_draw_main_menu() final
     {
-        if (ui::BeginMenu("File"))
-        {
-            if (ui::MenuItem("Save"))
-            {
-                actionSaveOutputImage();
+        if (ui::BeginMenu("File")) {
+            if (ui::MenuItem("Save")) {
+                action_try_save_annotated_screenshot();
             }
             ui::EndMenu();
         }
     }
 
-    void implOnDraw() final
+    void impl_on_draw() final
     {
         ui::DockSpaceOverViewport(ui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
@@ -113,8 +110,8 @@ private:
             ui::Begin("Screenshot");
             ui::PopStyleVar();
 
-            Rect imageRect = drawScreenshot();
-            drawOverlays(*ui::GetWindowDrawList(), imageRect, c_UnselectedColor, c_SelectedColor);
+            const Rect ui_image_rect = draw_screenshot_as_image();
+            draw_image_overlays(*ui::GetWindowDrawList(), ui_image_rect, c_unselected_color, c_selected_color);
 
             ui::End();
         }
@@ -123,7 +120,7 @@ private:
         {
             int id = 0;
             ui::Begin("Controls");
-            for (const ScreenshotAnnotation& annotation : m_Screenshot.annotations()) {
+            for (const ScreenshotAnnotation& annotation : screenshot_.annotations()) {
                 ui::PushID(id++);
                 ui::TextUnformatted(annotation.label());
                 ui::PopID();
@@ -133,48 +130,48 @@ private:
     }
 
     // returns screenspace rect of the screenshot within the UI
-    Rect drawScreenshot()
+    Rect draw_screenshot_as_image()
     {
-        const Vec2 screenTopLeft = ui::GetCursorScreenPos();
-        const Rect windowRect = {screenTopLeft, screenTopLeft + Vec2{ui::GetContentRegionAvail()}};
-        const Rect imageRect = ShrinkToFit(windowRect, aspect_ratio(m_Screenshot.dimensions()));
-        ui::SetCursorScreenPos(imageRect.p1);
-        ui::Image(m_ImageTexture, dimensions_of(imageRect));
-        return imageRect;
+        const Vec2 cursor_topleft = ui::GetCursorScreenPos();
+        const Rect window_rect = {cursor_topleft, cursor_topleft + Vec2{ui::GetContentRegionAvail()}};
+        const Rect image_rect = shrink_to_fit(window_rect, aspect_ratio_of(screenshot_.dimensions()));
+        ui::SetCursorScreenPos(image_rect.p1);
+        ui::Image(image_texture_, dimensions_of(image_rect));
+        return image_rect;
     }
 
-    void drawOverlays(
+    void draw_image_overlays(
         ImDrawList& drawlist,
-        const Rect& imageRect,
-        const Color& unselectedColor,
-        const Color& selectedColor)
+        const Rect& image_rect,
+        const Color& unselected_color,
+        const Color& selected_color)
     {
-        const Vec2 mousePos = ui::GetMousePos();
-        const bool leftClickReleased = ui::IsMouseReleased(ImGuiMouseButton_Left);
-        const Rect imageSourceRect = {{0.0f, 0.0f}, m_Screenshot.dimensions()};
+        const Vec2 mouse_pos = ui::GetMousePos();
+        const bool left_click_released = ui::IsMouseReleased(ImGuiMouseButton_Left);
+        const Rect image_source_rect = {{0.0f, 0.0f}, screenshot_.dimensions()};
 
-        for (const ScreenshotAnnotation& annotation : m_Screenshot.annotations()) {
-            const Rect annotationRectScreenSpace = MapRect(imageSourceRect, imageRect, annotation.rect());
-            const bool selected = m_SelectedAnnotations.contains(annotation.label());
-            const bool hovered = is_intersecting(annotationRectScreenSpace, mousePos);
+        for (const ScreenshotAnnotation& annotation : screenshot_.annotations()) {
+            const Rect annotation_rect_screen = map_rect(image_source_rect, image_rect, annotation.rect());
+            const bool selected = user_selected_annotations_.contains(annotation.label());
+            const bool hovered = is_intersecting(annotation_rect_screen, mouse_pos);
 
-            Vec4 color = selected ? selectedColor : unselectedColor;
+            Vec4 color = selected ? selected_color : unselected_color;
             if (hovered) {
                 color.w = saturate(color.w + 0.3f);
             }
 
-            if (hovered && leftClickReleased) {
+            if (hovered and left_click_released) {
                 if (selected) {
-                    m_SelectedAnnotations.erase(annotation.label());
+                    user_selected_annotations_.erase(annotation.label());
                 }
                 else {
-                    m_SelectedAnnotations.insert(annotation.label());
+                    user_selected_annotations_.insert(annotation.label());
                 }
             }
 
             drawlist.AddRect(
-                annotationRectScreenSpace.p1,
-                annotationRectScreenSpace.p2,
+                annotation_rect_screen.p1,
+                annotation_rect_screen.p2,
                 ui::ColorConvertFloat4ToU32(color),
                 3.0f,
                 0,
@@ -183,39 +180,40 @@ private:
         }
     }
 
-    void actionSaveOutputImage()
+    void action_try_save_annotated_screenshot()
     {
-        const std::optional<std::filesystem::path> maybeImagePath = PromptUserForFileSaveLocationAndAddExtensionIfNecessary("png");
-        if (maybeImagePath) {
-            std::ofstream fout{*maybeImagePath, std::ios_base::binary};
+        const std::optional<std::filesystem::path> maybe_image_path =
+            PromptUserForFileSaveLocationAndAddExtensionIfNecessary("png");
+
+        if (maybe_image_path) {
+            std::ofstream fout{*maybe_image_path, std::ios_base::binary};
             if (!fout) {
-                throw std::runtime_error{maybeImagePath->string() + ": cannot open for writing"};
+                throw std::runtime_error{maybe_image_path->string() + ": cannot open for writing"};
             }
-            Texture2D outputImage = renderOutputImage();
-            write_to_png(outputImage, fout);
-            open_file_in_os_default_application(*maybeImagePath);
+            const Texture2D annotated_screenshot = render_annotated_screenshot();
+            write_to_png(annotated_screenshot, fout);
+            open_file_in_os_default_application(*maybe_image_path);
         }
     }
 
-    Texture2D renderOutputImage()
+    Texture2D render_annotated_screenshot()
     {
-        std::optional<RenderTexture> rt;
-        rt.emplace(RenderTextureDescriptor{m_ImageTexture.dimensions()});
+        RenderTexture render_texture{image_texture_.dimensions()};
 
         // blit the screenshot into the output
-        graphics::blit(m_ImageTexture, *rt);
+        graphics::blit(image_texture_, render_texture);
 
         // draw overlays to a local ImGui drawlist
         ImDrawList drawlist{ui::GetDrawListSharedData()};
         drawlist.Flags |= ImDrawListFlags_AntiAliasedLines;
         drawlist.AddDrawCmd();
-        Color outlineColor = c_SelectedColor;
-        outlineColor.a = 1.0f;
-        drawOverlays(
+        Color outline_color = c_selected_color;
+        outline_color.a = 1.0f;
+        draw_image_overlays(
             drawlist,
-            Rect{{0.0f, 0.0f}, m_ImageTexture.dimensions()},
+            Rect{{0.0f, 0.0f}, image_texture_.dimensions()},
             {0.0f, 0.0f, 0.0f, 0.0f},
-            outlineColor
+            outline_color
         );
 
         // render drawlist to output
@@ -238,22 +236,18 @@ private:
                     std::vector<Color> colors;
                     colors.reserve(drawlist.VtxBuffer.size());
                     for (const ImDrawVert& vert : drawlist.VtxBuffer) {
-                        const Color linearColor = ui::to_color(vert.col);
-                        colors.push_back(linearColor);
+                        const Color linear_color = ui::to_color(vert.col);
+                        colors.push_back(linear_color);
                     }
                     mesh.set_colors(colors);
                 }
             }
 
             // solid color material
-            Material material
-            {
-                Shader
-                {
-                    App::slurp("oscar/shaders/PerVertexColor.vert"),
-                    App::slurp("oscar/shaders/PerVertexColor.frag"),
-                }
-            };
+            Material material{Shader{
+                App::slurp("oscar/shaders/PerVertexColor.vert"),
+                App::slurp("oscar/shaders/PerVertexColor.frag"),
+            }};
 
             Camera c;
             c.set_view_matrix_override(identity<Mat4>());
@@ -261,9 +255,9 @@ private:
             {
                 // project screenspace overlays into NDC
                 float L = 0.0f;
-                float R = static_cast<float>(m_ImageTexture.dimensions().x);
+                float R = static_cast<float>(image_texture_.dimensions().x);
                 float T = 0.0f;
-                float B = static_cast<float>(m_ImageTexture.dimensions().y);
+                float B = static_cast<float>(image_texture_.dimensions().y);
                 const Mat4 proj = {
                     { 2.0f/(R-L),   0.0f,         0.0f,   0.0f },
                     { 0.0f,         2.0f/(T-B),   0.0f,   0.0f },
@@ -274,9 +268,8 @@ private:
             }
             c.set_clear_flags(CameraClearFlags::Nothing);
 
-            for (int cmdIdx = 0; cmdIdx < drawlist.CmdBuffer.Size; ++cmdIdx)
-            {
-                const ImDrawCmd& cmd = drawlist.CmdBuffer[cmdIdx];
+            for (int cmd_index = 0; cmd_index < drawlist.CmdBuffer.Size; ++cmd_index) {
+                const ImDrawCmd& cmd = drawlist.CmdBuffer[cmd_index];
                 {
                     // upload indices
                     std::vector<ImDrawIdx> indices;
@@ -290,52 +283,43 @@ private:
                 graphics::draw(mesh, Transform{}, material, c);
             }
 
-            OSC_ASSERT(rt.has_value());
-            c.render_to(*rt);
+            c.render_to(render_texture);
         }
 
-        Texture2D t
-        {
-            rt->dimensions(),
-            TextureFormat::RGB24,
-            ColorSpace::sRGB,
-        };
-        graphics::copy_texture(*rt, t);
-        return t;
+        Texture2D rv{render_texture.dimensions(), TextureFormat::RGB24, ColorSpace::sRGB};
+        graphics::copy_texture(render_texture, rv);
+        return rv;
     }
 
-    Screenshot m_Screenshot;
-    Texture2D m_ImageTexture = m_Screenshot.image();
-    std::unordered_set<std::string> m_SelectedAnnotations;
+    Screenshot screenshot_;
+    Texture2D image_texture_ = screenshot_.image();
+    std::unordered_set<std::string> user_selected_annotations_;
 };
 
-
-// public API
-
 osc::ScreenshotTab::ScreenshotTab(const ParentPtr<ITabHost>&, Screenshot&& screenshot) :
-    m_Impl{std::make_unique<Impl>(std::move(screenshot))}
+    impl_{std::make_unique<Impl>(std::move(screenshot))}
 {}
 
 osc::ScreenshotTab::ScreenshotTab(ScreenshotTab&&) noexcept = default;
 osc::ScreenshotTab& osc::ScreenshotTab::operator=(ScreenshotTab&&) noexcept = default;
 osc::ScreenshotTab::~ScreenshotTab() noexcept = default;
 
-UID osc::ScreenshotTab::implGetID() const
+UID osc::ScreenshotTab::impl_get_id() const
 {
-    return m_Impl->getID();
+    return impl_->id();
 }
 
-CStringView osc::ScreenshotTab::implGetName() const
+CStringView osc::ScreenshotTab::impl_get_name() const
 {
-    return m_Impl->getName();
+    return impl_->name();
 }
 
-void osc::ScreenshotTab::implOnDrawMainMenu()
+void osc::ScreenshotTab::impl_on_draw_main_menu()
 {
-    m_Impl->onDrawMainMenu();
+    impl_->on_draw_main_menu();
 }
 
-void osc::ScreenshotTab::implOnDraw()
+void osc::ScreenshotTab::impl_on_draw()
 {
-    m_Impl->onDraw();
+    impl_->on_draw();
 }

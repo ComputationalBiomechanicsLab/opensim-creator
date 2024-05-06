@@ -78,7 +78,7 @@ namespace
 {
     void OpenOsimInLoadingTab(ParentPtr<IMainUIStateAPI> const& api, std::filesystem::path p)
     {
-        api->addAndSelectTab<LoadingTab>(api, std::move(p));
+        api->add_and_select_tab<LoadingTab>(api, std::move(p));
     }
 
     void DoOpenFileViaDialog(ParentPtr<IMainUIStateAPI> const& api)
@@ -268,7 +268,7 @@ void osc::ActionSaveCurrentModelAs(UndoableModelStatePair& uim)
 void osc::ActionNewModel(ParentPtr<IMainUIStateAPI> const& api)
 {
     auto p = std::make_unique<UndoableModelStatePair>();
-    api->addAndSelectTab<ModelEditorTab>(api, std::move(p));
+    api->add_and_select_tab<ModelEditorTab>(api, std::move(p));
 }
 
 void osc::ActionOpenModel(ParentPtr<IMainUIStateAPI> const& api)
@@ -420,7 +420,7 @@ bool osc::ActionLoadSTOFileAgainstModel(
 
         auto simulation = std::make_shared<Simulation>(StoFileSimulation{std::move(modelCopy), stoPath, uim.getFixupScaleFactor()});
 
-        parent->addAndSelectTab<SimulationTab>(parent, simulation);
+        parent->add_and_select_tab<SimulationTab>(parent, simulation);
 
         return true;
     }
@@ -441,7 +441,7 @@ bool osc::ActionStartSimulatingModel(
     auto simulation = std::make_shared<Simulation>(ForwardDynamicSimulation{std::move(modelState), params});
     auto simulationTab = std::make_unique<SimulationTab>(parent, std::move(simulation));
 
-    parent->selectTab(parent->addTab(std::move(simulationTab)));
+    parent->select_tab(parent->add_tab(std::move(simulationTab)));
 
     return true;
 }
@@ -663,7 +663,7 @@ bool osc::ActionSimulateAgainstAllIntegrators(
     ParentPtr<IMainUIStateAPI> const& parent,
     UndoableModelStatePair const& uim)
 {
-    parent->addAndSelectTab<PerformanceAnalyzerTab>(
+    parent->add_and_select_tab<PerformanceAnalyzerTab>(
         parent,
         BasicModelStatePair{uim},
         parent->getSimulationParams()

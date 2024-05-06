@@ -123,7 +123,7 @@ namespace osc
 
         void closeTab()
         {
-            tabHost->closeTab(tabID);
+            tabHost->close_tab(tabID);
         }
 
         bool canUndo() const

@@ -43,7 +43,7 @@ private:
     void impl_on_event(const SDL_Event& e) override
     {
         ui::context::on_event(e);
-        current_tab_->onEvent(e);
+        current_tab_->on_event(e);
 
         if (e.type == SDL_QUIT) {
             throw std::runtime_error{"forcibly quit"};
@@ -59,7 +59,7 @@ private:
     {
         App::upd().clear_screen({0.0f, 0.0f, 0.0f, 0.0f});
         ui::context::on_start_new_frame();
-        current_tab_->onDraw();
+        current_tab_->on_draw();
         ui::context::render();
 
         ++frames_shown_;
@@ -70,10 +70,10 @@ private:
         }
     }
 
-    UID implAddTab(std::unique_ptr<ITab>) override { return UID{}; }
-    void implSelectTab(UID) override {}
-    void implCloseTab(UID) override {}
-    void implResetImgui() override {}
+    UID impl_add_tab(std::unique_ptr<ITab>) override { return UID{}; }
+    void impl_select_tab(UID) override {}
+    void impl_close_tab(UID) override {}
+    void impl_reset_imgui() override {}
 
     TabRegistryEntry registry_entry_;
     std::unique_ptr<ITab> current_tab_;

@@ -25,7 +25,7 @@ namespace {
         std::vector<std::string> rv;
         rv.reserve(c_Tabs.size());
         for (size_t i = 0; i < c_Tabs.size(); ++i) {
-            rv.emplace_back(c_Tabs[i].getName());
+            rv.emplace_back(c_Tabs[i].name());
         }
         return rv;
     }();
@@ -54,7 +54,7 @@ INSTANTIATE_TEST_SUITE_P(
 TEST_P(RegisteredLearnOpenGLTabsFixture, Check)
 {
     std::string s = GetParam();
-    if (auto entry = c_Tabs.getByName(s)) {
+    if (auto entry = c_Tabs.find_by_name(s)) {
         g_App->show<TabTestingScreen>(*entry);
     }
     else {

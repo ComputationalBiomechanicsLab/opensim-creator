@@ -25,14 +25,14 @@ namespace osc::mow
         ~ModelWarperTab() noexcept override;
 
     private:
-        UID implGetID() const final;
-        CStringView implGetName() const final;
-        void implOnMount() final;
-        void implOnUnmount() final;
-        bool implOnEvent(SDL_Event const&) final;
-        void implOnTick() final;
-        void implOnDrawMainMenu() final;
-        void implOnDraw() final;
+        UID impl_get_id() const final;
+        CStringView impl_get_name() const final;
+        void impl_on_mount() final;
+        void impl_on_unmount() final;
+        bool impl_on_event(SDL_Event const&) final;
+        void impl_on_tick() final;
+        void impl_on_draw_main_menu() final;
+        void impl_on_draw() final;
 
         class Impl;
         std::unique_ptr<Impl> m_Impl;

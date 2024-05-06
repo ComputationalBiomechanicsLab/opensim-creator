@@ -35,7 +35,7 @@ SceneRendererParams osc::CalcSceneRendererParams(
     params.light_direction = recommended_light_direction(renderParams.camera);
     params.draw_floor = renderParams.renderingOptions.getDrawFloor();
     params.view_matrix = renderParams.camera.view_matrix();
-    params.projection_matrix = renderParams.camera.projection_matrix(aspect_ratio(viewportDims));
+    params.projection_matrix = renderParams.camera.projection_matrix(aspect_ratio_of(viewportDims));
     params.near_clipping_plane = renderParams.camera.znear;
     params.far_clipping_plane = renderParams.camera.zfar;
     params.view_pos = renderParams.camera.position();

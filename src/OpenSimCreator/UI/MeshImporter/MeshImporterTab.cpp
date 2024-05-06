@@ -169,20 +169,20 @@ public:
         {
             auto ptr = std::make_unique<UndoableModelStatePair>(std::move(m_Shared->updOutputModel()));
             ptr->setFixupScaleFactor(m_Shared->getSceneScaleFactor());
-            m_Parent->addAndSelectTab<ModelEditorTab>(m_Parent, std::move(ptr));
+            m_Parent->add_and_select_tab<ModelEditorTab>(m_Parent, std::move(ptr));
         }
 
         m_Name = m_Shared->getRecommendedTitle();
 
         if (m_Shared->isCloseRequested())
         {
-            m_Parent->closeTab(m_TabID);
+            m_Parent->close_tab(m_TabID);
             m_Shared->resetRequestClose();
         }
 
         if (m_Shared->isNewMeshImpoterTabRequested())
         {
-            m_Parent->addAndSelectTab<MeshImporterTab>(m_Parent);
+            m_Parent->add_and_select_tab<MeshImporterTab>(m_Parent);
             m_Shared->resetRequestNewMeshImporter();
         }
     }
@@ -1913,7 +1913,7 @@ private:
         {
             if (std::optional<AABB> const sceneAABB = calcSceneAABB())
             {
-                auto_focus(m_Shared->updCamera(), *sceneAABB, aspect_ratio(m_Shared->get3DSceneDims()));
+                auto_focus(m_Shared->updCamera(), *sceneAABB, aspect_ratio_of(m_Shared->get3DSceneDims()));
             }
         }
         ui::DrawTooltipIfItemHovered("Autoscale Scene", "Zooms camera to try and fit everything in the scene into the viewer");
@@ -2120,7 +2120,7 @@ private:
         SetImguizmoStyleToOSCStandard();
         bool manipulated = ImGuizmo::Manipulate(
             value_ptr(m_Shared->getCamera().view_matrix()),
-            value_ptr(m_Shared->getCamera().projection_matrix(aspect_ratio(sceneRect))),
+            value_ptr(m_Shared->getCamera().projection_matrix(aspect_ratio_of(sceneRect))),
             m_ImGuizmoState.op,
             m_ImGuizmoState.mode,
             value_ptr(m_ImGuizmoState.mtx),
@@ -2502,52 +2502,52 @@ osc::mi::MeshImporterTab::MeshImporterTab(MeshImporterTab&&) noexcept = default;
 osc::mi::MeshImporterTab& osc::mi::MeshImporterTab::operator=(MeshImporterTab&&) noexcept = default;
 osc::mi::MeshImporterTab::~MeshImporterTab() noexcept = default;
 
-osc::UID osc::mi::MeshImporterTab::implGetID() const
+osc::UID osc::mi::MeshImporterTab::impl_get_id() const
 {
     return m_Impl->getID();
 }
 
-osc::CStringView osc::mi::MeshImporterTab::implGetName() const
+osc::CStringView osc::mi::MeshImporterTab::impl_get_name() const
 {
     return m_Impl->getName();
 }
 
-bool osc::mi::MeshImporterTab::implIsUnsaved() const
+bool osc::mi::MeshImporterTab::impl_is_unsaved() const
 {
     return m_Impl->isUnsaved();
 }
 
-bool osc::mi::MeshImporterTab::implTrySave()
+bool osc::mi::MeshImporterTab::impl_try_save()
 {
     return m_Impl->trySave();
 }
 
-void osc::mi::MeshImporterTab::implOnMount()
+void osc::mi::MeshImporterTab::impl_on_mount()
 {
     m_Impl->on_mount();
 }
 
-void osc::mi::MeshImporterTab::implOnUnmount()
+void osc::mi::MeshImporterTab::impl_on_unmount()
 {
     m_Impl->on_unmount();
 }
 
-bool osc::mi::MeshImporterTab::implOnEvent(SDL_Event const& e)
+bool osc::mi::MeshImporterTab::impl_on_event(SDL_Event const& e)
 {
     return m_Impl->onEvent(e);
 }
 
-void osc::mi::MeshImporterTab::implOnTick()
+void osc::mi::MeshImporterTab::impl_on_tick()
 {
     m_Impl->on_tick();
 }
 
-void osc::mi::MeshImporterTab::implOnDrawMainMenu()
+void osc::mi::MeshImporterTab::impl_on_draw_main_menu()
 {
     m_Impl->drawMainMenu();
 }
 
-void osc::mi::MeshImporterTab::implOnDraw()
+void osc::mi::MeshImporterTab::impl_on_draw()
 {
     m_Impl->onDraw();
 }

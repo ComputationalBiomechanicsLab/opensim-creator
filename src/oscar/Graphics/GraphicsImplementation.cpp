@@ -7423,7 +7423,7 @@ void osc::GraphicsBackend::render_camera_queue(
     {
         const std::optional<gl::FrameBuffer> maybe_tmp_fbo_KEEPALIVE =
             bind_and_clear_render_buffers(camera, maybe_custom_render_target);
-        flush_render_queue(camera, aspect_ratio(viewportRect));
+        flush_render_queue(camera, aspect_ratio_of(viewportRect));
     }
 
     if (maybe_custom_render_target) {

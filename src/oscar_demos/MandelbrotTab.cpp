@@ -27,7 +27,7 @@ public:
     {}
 
 private:
-    bool implOnEvent(SDL_Event const& e) final
+    bool impl_on_event(SDL_Event const& e) final
     {
         if (e.type == SDL_KEYUP && e.key.keysym.sym == SDLK_PAGEUP && m_NumIterations < std::numeric_limits<decltype(m_NumIterations)>::max()) {
             m_NumIterations *= 2;
@@ -51,7 +51,7 @@ private:
         return false;
     }
 
-    void implOnDraw() final
+    void impl_on_draw() final
     {
         m_MainViewportWorkspaceScreenRect = ui::GetMainViewportWorkspaceScreenRect();
 
@@ -101,22 +101,22 @@ osc::MandelbrotTab::MandelbrotTab(MandelbrotTab&&) noexcept = default;
 osc::MandelbrotTab& osc::MandelbrotTab::operator=(MandelbrotTab&&) noexcept = default;
 osc::MandelbrotTab::~MandelbrotTab() noexcept = default;
 
-UID osc::MandelbrotTab::implGetID() const
+UID osc::MandelbrotTab::impl_get_id() const
 {
-    return m_Impl->getID();
+    return m_Impl->id();
 }
 
-CStringView osc::MandelbrotTab::implGetName() const
+CStringView osc::MandelbrotTab::impl_get_name() const
 {
-    return m_Impl->getName();
+    return m_Impl->name();
 }
 
-bool osc::MandelbrotTab::implOnEvent(SDL_Event const& e)
+bool osc::MandelbrotTab::impl_on_event(SDL_Event const& e)
 {
-    return m_Impl->onEvent(e);
+    return m_Impl->on_event(e);
 }
 
-void osc::MandelbrotTab::implOnDraw()
+void osc::MandelbrotTab::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }

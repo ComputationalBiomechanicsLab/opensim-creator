@@ -27,7 +27,7 @@ namespace osc
     }
 
     // returns the aspect ratio of `rect`
-    inline float aspect_ratio(const Rect& rect)
+    inline float aspect_ratio_of(const Rect& rect)
     {
         const auto [x, y] = dimensions_of(rect);
         return x / y;

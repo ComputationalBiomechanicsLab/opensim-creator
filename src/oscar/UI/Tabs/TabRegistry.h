@@ -32,12 +32,12 @@ namespace osc
         TabRegistry& operator=(TabRegistry&&) noexcept;
         ~TabRegistry() noexcept;
 
-        void registerTab(const TabRegistryEntry&);
+        void register_tab(const TabRegistryEntry&);
 
         template<StandardRegisterableTab T>
-        void registerTab()
+        void register_tab()
         {
-            registerTab(TabRegistryEntry{
+            register_tab(TabRegistryEntry{
                 T::id(),
                 [](const ParentPtr<ITabHost>& h) { return std::make_unique<T>(h); },
             });
@@ -45,10 +45,10 @@ namespace osc
 
         size_t size() const;
         TabRegistryEntry operator[](size_t) const;
-        std::optional<TabRegistryEntry> getByName(std::string_view) const;
+        std::optional<TabRegistryEntry> find_by_name(std::string_view) const;
 
     private:
         class Impl;
-        std::unique_ptr<Impl> m_Impl;
+        std::unique_ptr<Impl> impl_;
     };
 }

@@ -188,7 +188,7 @@ namespace osc
                 auto_focus(
                     m_Camera,
                     m_State->getResultMesh().bounds(),
-                    aspect_ratio(m_LastTextureHittestResult.item_rect)
+                    aspect_ratio_of(m_LastTextureHittestResult.item_rect)
                 );
                 m_State->linkedCameraBase = m_Camera;
             }

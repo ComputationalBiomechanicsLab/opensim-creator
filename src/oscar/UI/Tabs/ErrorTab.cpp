@@ -18,32 +18,31 @@ using namespace osc;
 
 class osc::ErrorTab::Impl final : public StandardTabImpl {
 public:
-    explicit Impl(const std::exception& ex) :
+    explicit Impl(const std::exception& exception) :
         StandardTabImpl{ICON_FA_SPIDER " Error"},
-        m_ErrorMessage{ex.what()}
+        error_message_{exception.what()}
     {}
 
 private:
-    void implOnDraw() final
+    void impl_on_draw() final
     {
         constexpr float width = 800.0f;
         constexpr float padding = 10.0f;
 
-        Rect tabRect = ui::GetMainViewportWorkspaceScreenRect();
-        Vec2 tabDims = dimensions_of(tabRect);
+        const Rect viewport_rect = ui::GetMainViewportWorkspaceScreenRect();
+        const Vec2 viewport_dimensions = dimensions_of(viewport_rect);
 
         // error message panel
         {
-            Vec2 pos{tabRect.p1.x + tabDims.x/2.0f, tabRect.p1.y + padding};
+            Vec2 pos{viewport_rect.p1.x + viewport_dimensions.x/2.0f, viewport_rect.p1.y + padding};
             ui::SetNextWindowPos(pos, ImGuiCond_Once, {0.5f, 0.0f});
             ui::SetNextWindowSize({width, 0.0f});
 
-            if (ui::Begin("fatal error"))
-            {
+            if (ui::Begin("fatal error")) {
                 ui::TextWrapped("The application threw an exception with the following message:");
                 ui::Dummy({2.0f, 10.0f});
                 ui::SameLine();
-                ui::TextWrapped(m_ErrorMessage);
+                ui::TextWrapped(error_message_);
                 ui::Dummy({0.0f, 10.0f});
             }
             ui::End();
@@ -51,44 +50,40 @@ private:
 
         // log message panel
         {
-            Vec2 pos{tabRect.p1.x + tabDims.x/2.0f, tabRect.p2.y - padding};
+            Vec2 pos{viewport_rect.p1.x + viewport_dimensions.x/2.0f, viewport_rect.p2.y - padding};
             ui::SetNextWindowPos(pos, ImGuiCond_Once, {0.5f, 1.0f});
             ui::SetNextWindowSize({width, 0.0f});
 
-            if (ui::Begin("Error Log", nullptr, ImGuiWindowFlags_MenuBar))
-            {
-                m_LogViewer.onDraw();
+            if (ui::Begin("Error Log", nullptr, ImGuiWindowFlags_MenuBar)) {
+                log_viewer_.onDraw();
             }
             ui::End();
         }
     }
 
-    std::string m_ErrorMessage;
-    LogViewer m_LogViewer;
+    std::string error_message_;
+    LogViewer log_viewer_;
 };
 
-
-// public API
-
-osc::ErrorTab::ErrorTab(const ParentPtr<ITabHost>&, const std::exception& ex) :
-    m_Impl{std::make_unique<Impl>(ex)}
+osc::ErrorTab::ErrorTab(const ParentPtr<ITabHost>&, const std::exception& exception) :
+    impl_{std::make_unique<Impl>(exception)}
 {}
 
 osc::ErrorTab::ErrorTab(ErrorTab&&) noexcept = default;
 osc::ErrorTab& osc::ErrorTab::operator=(ErrorTab&&) noexcept = default;
 osc::ErrorTab::~ErrorTab() noexcept = default;
 
-UID osc::ErrorTab::implGetID() const
+UID osc::ErrorTab::impl_get_id() const
 {
-    return m_Impl->getID();
+    return impl_->id();
 }
 
-CStringView osc::ErrorTab::implGetName() const
+CStringView osc::ErrorTab::impl_get_name() const
 {
-    return m_Impl->getName();
+    return impl_->name();
 }
 
-void osc::ErrorTab::implOnDraw()
+void osc::ErrorTab::impl_on_draw()
 {
-    m_Impl->onDraw();
+    impl_->on_draw();
 }

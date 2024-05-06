@@ -21,7 +21,7 @@ public:
     }
 
 private:
-    void implOnDraw() final
+    void impl_on_draw() final
     {
         ImPlot::ShowDemoWindow();
     }
@@ -43,17 +43,17 @@ osc::ImPlotDemoTab::ImPlotDemoTab(ImPlotDemoTab&&) noexcept = default;
 osc::ImPlotDemoTab& osc::ImPlotDemoTab::operator=(ImPlotDemoTab&&) noexcept = default;
 osc::ImPlotDemoTab::~ImPlotDemoTab() noexcept = default;
 
-UID osc::ImPlotDemoTab::implGetID() const
+UID osc::ImPlotDemoTab::impl_get_id() const
 {
-    return m_Impl->getID();
+    return m_Impl->id();
 }
 
-CStringView osc::ImPlotDemoTab::implGetName() const
+CStringView osc::ImPlotDemoTab::impl_get_name() const
 {
-    return m_Impl->getName();
+    return m_Impl->name();
 }
 
-void osc::ImPlotDemoTab::implOnDraw()
+void osc::ImPlotDemoTab::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }

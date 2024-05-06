@@ -14,47 +14,46 @@ class osc::TabRegistryEntry::Impl final {
 public:
 
     Impl(
-        CStringView name_,
-        std::function<std::unique_ptr<ITab>(const ParentPtr<ITabHost>&)> constructor_) :
+        CStringView name,
+        std::function<std::unique_ptr<ITab>(const ParentPtr<ITabHost>&)> tab_constructor) :
 
-        m_Name{name_},
-        m_Constructor{std::move(constructor_)}
+        name_{name},
+        tab_constructor_{std::move(tab_constructor)}
     {}
 
-    CStringView getName() const
+    CStringView name() const
     {
-        return m_Name;
+        return name_;
     }
 
-    std::unique_ptr<ITab> createTab(const ParentPtr<ITabHost>& host) const
+    std::unique_ptr<ITab> construct_tab(const ParentPtr<ITabHost>& host) const
     {
-        return m_Constructor(host);
+        return tab_constructor_(host);
     }
 
 private:
-    std::string m_Name;
-    std::function<std::unique_ptr<ITab>(const ParentPtr<ITabHost>&)> m_Constructor;
+    std::string name_;
+    std::function<std::unique_ptr<ITab>(const ParentPtr<ITabHost>&)> tab_constructor_;
 };
 
 osc::TabRegistryEntry::TabRegistryEntry(
-    CStringView name_,
-    std::function<std::unique_ptr<ITab>(const ParentPtr<ITabHost>&)> ctor_) :
+    CStringView name,
+    std::function<std::unique_ptr<ITab>(const ParentPtr<ITabHost>&)> tab_constructor) :
 
-    m_Impl{std::make_shared<Impl>(name_, std::move(ctor_))}
+    impl_{std::make_shared<Impl>(name, std::move(tab_constructor))}
 {}
-
 osc::TabRegistryEntry::TabRegistryEntry(const TabRegistryEntry&) = default;
 osc::TabRegistryEntry::TabRegistryEntry(TabRegistryEntry&&) noexcept = default;
 osc::TabRegistryEntry& osc::TabRegistryEntry::operator=(const TabRegistryEntry&) = default;
 osc::TabRegistryEntry& osc::TabRegistryEntry::operator=(TabRegistryEntry&&) noexcept = default;
 osc::TabRegistryEntry::~TabRegistryEntry() noexcept = default;
 
-CStringView osc::TabRegistryEntry::getName() const
+CStringView osc::TabRegistryEntry::name() const
 {
-    return m_Impl->getName();
+    return impl_->name();
 }
 
-std::unique_ptr<ITab> osc::TabRegistryEntry::createTab(const ParentPtr<ITabHost>& host) const
+std::unique_ptr<ITab> osc::TabRegistryEntry::construct_tab(const ParentPtr<ITabHost>& host) const
 {
-    return m_Impl->createTab(host);
+    return impl_->construct_tab(host);
 }

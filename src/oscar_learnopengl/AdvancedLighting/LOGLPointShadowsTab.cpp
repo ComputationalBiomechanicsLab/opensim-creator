@@ -78,31 +78,31 @@ public:
     {}
 
 private:
-    void implOnMount() final
+    void impl_on_mount() final
     {
         App::upd().make_main_loop_polling();
         m_SceneCamera.on_mount();
     }
 
-    void implOnUnmount() final
+    void impl_on_unmount() final
     {
         m_SceneCamera.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
-    bool implOnEvent(SDL_Event const& e) final
+    bool impl_on_event(SDL_Event const& e) final
     {
         return m_SceneCamera.on_event(e);
     }
 
-    void implOnTick() final
+    void impl_on_tick() final
     {
         // move light position over time
         double const seconds = App::get().frame_delta_since_startup().count();
         m_LightPos.x = static_cast<float>(3.0 * sin(0.5 * seconds));
     }
 
-    void implOnDraw() final
+    void impl_on_draw() final
     {
         m_SceneCamera.on_draw();
         draw3DScene();
@@ -124,7 +124,7 @@ private:
         float const farPlane = 25.0f;
         Mat4 const projectionMatrix = perspective(
             90_deg,
-            aspect_ratio(c_ShadowmapDims),
+            aspect_ratio_of(c_ShadowmapDims),
             nearPlane,
             farPlane
         );
@@ -234,42 +234,42 @@ osc::LOGLPointShadowsTab::LOGLPointShadowsTab(LOGLPointShadowsTab&&) noexcept = 
 osc::LOGLPointShadowsTab& osc::LOGLPointShadowsTab::operator=(LOGLPointShadowsTab&&) noexcept = default;
 osc::LOGLPointShadowsTab::~LOGLPointShadowsTab() noexcept = default;
 
-UID osc::LOGLPointShadowsTab::implGetID() const
+UID osc::LOGLPointShadowsTab::impl_get_id() const
 {
-    return m_Impl->getID();
+    return m_Impl->id();
 }
 
-CStringView osc::LOGLPointShadowsTab::implGetName() const
+CStringView osc::LOGLPointShadowsTab::impl_get_name() const
 {
-    return m_Impl->getName();
+    return m_Impl->name();
 }
 
-void osc::LOGLPointShadowsTab::implOnMount()
+void osc::LOGLPointShadowsTab::impl_on_mount()
 {
     m_Impl->on_mount();
 }
 
-void osc::LOGLPointShadowsTab::implOnUnmount()
+void osc::LOGLPointShadowsTab::impl_on_unmount()
 {
     m_Impl->on_unmount();
 }
 
-bool osc::LOGLPointShadowsTab::implOnEvent(SDL_Event const& e)
+bool osc::LOGLPointShadowsTab::impl_on_event(SDL_Event const& e)
 {
-    return m_Impl->onEvent(e);
+    return m_Impl->on_event(e);
 }
 
-void osc::LOGLPointShadowsTab::implOnTick()
+void osc::LOGLPointShadowsTab::impl_on_tick()
 {
     m_Impl->on_tick();
 }
 
-void osc::LOGLPointShadowsTab::implOnDrawMainMenu()
+void osc::LOGLPointShadowsTab::impl_on_draw_main_menu()
 {
-    m_Impl->onDrawMainMenu();
+    m_Impl->on_draw_main_menu();
 }
 
-void osc::LOGLPointShadowsTab::implOnDraw()
+void osc::LOGLPointShadowsTab::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }

@@ -235,7 +235,7 @@ bool osc::ui::UpdatePolarCameraFromKeyboardInputs(
                 auto_focus(
                     camera,
                     *maybe_scene_aabb,
-                    aspect_ratio(viewport_rect)
+                    aspect_ratio_of(viewport_rect)
                 );
                 return true;
             }
@@ -250,7 +250,7 @@ bool osc::ui::UpdatePolarCameraFromKeyboardInputs(
             auto_focus(
                 camera,
                 *maybe_scene_aabb,
-                aspect_ratio(viewport_rect)
+                aspect_ratio_of(viewport_rect)
             );
             return true;
         }
@@ -258,7 +258,7 @@ bool osc::ui::UpdatePolarCameraFromKeyboardInputs(
     else if (ui::IsKeyDown(ImGuiKey_UpArrow)) {
         if (ctrlOrSuperDown) {
             // pan
-            camera.pan(aspect_ratio(viewport_rect), {0.0f, -0.1f});
+            camera.pan(aspect_ratio_of(viewport_rect), {0.0f, -0.1f});
         }
         else if (shiftDown) {
             camera.phi -= 90_deg;  // rotate in 90-deg increments
@@ -271,7 +271,7 @@ bool osc::ui::UpdatePolarCameraFromKeyboardInputs(
     else if (ui::IsKeyDown(ImGuiKey_DownArrow)) {
         if (ctrlOrSuperDown) {
             // pan
-            camera.pan(aspect_ratio(viewport_rect), {0.0f, +0.1f});
+            camera.pan(aspect_ratio_of(viewport_rect), {0.0f, +0.1f});
         }
         else if (shiftDown) {
             // rotate in 90-deg increments
@@ -286,7 +286,7 @@ bool osc::ui::UpdatePolarCameraFromKeyboardInputs(
     else if (ui::IsKeyDown(ImGuiKey_LeftArrow)) {
         if (ctrlOrSuperDown) {
             // pan
-            camera.pan(aspect_ratio(viewport_rect), {-0.1f, 0.0f});
+            camera.pan(aspect_ratio_of(viewport_rect), {-0.1f, 0.0f});
         }
         else if (shiftDown) {
             // rotate in 90-deg increments
@@ -301,7 +301,7 @@ bool osc::ui::UpdatePolarCameraFromKeyboardInputs(
     else if (ui::IsKeyDown(ImGuiKey_RightArrow)) {
         if (ctrlOrSuperDown) {
             // pan
-            camera.pan(aspect_ratio(viewport_rect), {+0.1f, 0.0f});
+            camera.pan(aspect_ratio_of(viewport_rect), {+0.1f, 0.0f});
         }
         else if (shiftDown) {
             camera.theta -= 90_deg;  // rotate in 90-deg increments

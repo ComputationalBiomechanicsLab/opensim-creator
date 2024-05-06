@@ -53,7 +53,7 @@ public:
     {}
 
 private:
-    void implOnDraw() final
+    void impl_on_draw() final
     {
         graphics::draw(m_TriangleMesh, identity<Transform>(), m_Material, m_Camera);
 
@@ -84,17 +84,17 @@ osc::LOGLHelloTriangleTab::LOGLHelloTriangleTab(LOGLHelloTriangleTab&&) noexcept
 osc::LOGLHelloTriangleTab& osc::LOGLHelloTriangleTab::operator=(LOGLHelloTriangleTab&&) noexcept = default;
 osc::LOGLHelloTriangleTab::~LOGLHelloTriangleTab() noexcept = default;
 
-UID osc::LOGLHelloTriangleTab::implGetID() const
+UID osc::LOGLHelloTriangleTab::impl_get_id() const
 {
-    return m_Impl->getID();
+    return m_Impl->id();
 }
 
-CStringView osc::LOGLHelloTriangleTab::implGetName() const
+CStringView osc::LOGLHelloTriangleTab::impl_get_name() const
 {
-    return m_Impl->getName();
+    return m_Impl->name();
 }
 
-void osc::LOGLHelloTriangleTab::implOnDraw()
+void osc::LOGLHelloTriangleTab::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }

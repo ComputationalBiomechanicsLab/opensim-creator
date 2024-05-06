@@ -65,24 +65,24 @@ public:
     {}
 
 private:
-    void implOnMount() final
+    void impl_on_mount() final
     {
         App::upd().make_main_loop_polling();
         m_SceneCamera.on_mount();
     }
 
-    void implOnUnmount() final
+    void impl_on_unmount() final
     {
         m_SceneCamera.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
-    bool implOnEvent(SDL_Event const& e) final
+    bool impl_on_event(SDL_Event const& e) final
     {
         return m_SceneCamera.on_event(e);
     }
 
-    void implOnDraw() final
+    void impl_on_draw() final
     {
         m_SceneCamera.on_draw();
 
@@ -163,32 +163,32 @@ osc::LOGLFramebuffersTab::LOGLFramebuffersTab(LOGLFramebuffersTab&&) noexcept = 
 osc::LOGLFramebuffersTab& osc::LOGLFramebuffersTab::operator=(LOGLFramebuffersTab&&) noexcept = default;
 osc::LOGLFramebuffersTab::~LOGLFramebuffersTab() noexcept = default;
 
-UID osc::LOGLFramebuffersTab::implGetID() const
+UID osc::LOGLFramebuffersTab::impl_get_id() const
 {
-    return m_Impl->getID();
+    return m_Impl->id();
 }
 
-CStringView osc::LOGLFramebuffersTab::implGetName() const
+CStringView osc::LOGLFramebuffersTab::impl_get_name() const
 {
-    return m_Impl->getName();
+    return m_Impl->name();
 }
 
-void osc::LOGLFramebuffersTab::implOnMount()
+void osc::LOGLFramebuffersTab::impl_on_mount()
 {
     m_Impl->on_mount();
 }
 
-void osc::LOGLFramebuffersTab::implOnUnmount()
+void osc::LOGLFramebuffersTab::impl_on_unmount()
 {
     m_Impl->on_unmount();
 }
 
-bool osc::LOGLFramebuffersTab::implOnEvent(SDL_Event const& e)
+bool osc::LOGLFramebuffersTab::impl_on_event(SDL_Event const& e)
 {
-    return m_Impl->onEvent(e);
+    return m_Impl->on_event(e);
 }
 
-void osc::LOGLFramebuffersTab::implOnDraw()
+void osc::LOGLFramebuffersTab::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }

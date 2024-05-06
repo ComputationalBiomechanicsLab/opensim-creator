@@ -468,7 +468,7 @@ public:
     {}
 
 private:
-    void implOnDraw() final
+    void impl_on_draw() final
     {
         ui::DockSpaceOverViewport(ui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
@@ -517,7 +517,7 @@ private:
         params.draw_rims = true;
         params.draw_floor = false;
         params.view_matrix = m_Camera.view_matrix();
-        params.projection_matrix = m_Camera.projection_matrix(aspect_ratio(params.dimensions));
+        params.projection_matrix = m_Camera.projection_matrix(aspect_ratio_of(params.dimensions));
         params.near_clipping_plane = m_Camera.znear;
         params.far_clipping_plane = m_Camera.zfar;
         params.view_pos = m_Camera.position();
@@ -593,32 +593,32 @@ osc::PreviewExperimentalDataTab::PreviewExperimentalDataTab(PreviewExperimentalD
 PreviewExperimentalDataTab& osc::PreviewExperimentalDataTab::operator=(PreviewExperimentalDataTab&&) noexcept = default;
 osc::PreviewExperimentalDataTab::~PreviewExperimentalDataTab() noexcept = default;
 
-UID osc::PreviewExperimentalDataTab::implGetID() const
+UID osc::PreviewExperimentalDataTab::impl_get_id() const
 {
-    return m_Impl->getID();
+    return m_Impl->id();
 }
 
-CStringView osc::PreviewExperimentalDataTab::implGetName() const
+CStringView osc::PreviewExperimentalDataTab::impl_get_name() const
 {
-    return m_Impl->getName();
+    return m_Impl->name();
 }
 
-void osc::PreviewExperimentalDataTab::implOnMount()
+void osc::PreviewExperimentalDataTab::impl_on_mount()
 {
     m_Impl->on_mount();
 }
 
-void osc::PreviewExperimentalDataTab::implOnUnmount()
+void osc::PreviewExperimentalDataTab::impl_on_unmount()
 {
     m_Impl->on_unmount();
 }
 
-bool osc::PreviewExperimentalDataTab::implOnEvent(SDL_Event const& e)
+bool osc::PreviewExperimentalDataTab::impl_on_event(SDL_Event const& e)
 {
-    return m_Impl->onEvent(e);
+    return m_Impl->on_event(e);
 }
 
-void osc::PreviewExperimentalDataTab::implOnDraw()
+void osc::PreviewExperimentalDataTab::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }

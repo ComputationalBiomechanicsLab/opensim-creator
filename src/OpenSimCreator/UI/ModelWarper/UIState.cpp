@@ -41,5 +41,5 @@ void osc::mow::UIState::actionWarpModelAndOpenInModelEditor()
     }
 
     auto m = m_ModelWarper.warp(*m_Document);
-    m_TabHost->addAndSelectTab<ModelEditorTab>(*api, std::make_unique<UndoableModelStatePair>(m->getModel()));
+    m_TabHost->add_and_select_tab<ModelEditorTab>(*api, std::make_unique<UndoableModelStatePair>(m->getModel()));
 }

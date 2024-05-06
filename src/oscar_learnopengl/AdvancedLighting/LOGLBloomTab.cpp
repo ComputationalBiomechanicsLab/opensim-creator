@@ -104,24 +104,24 @@ public:
     }
 
 private:
-    void implOnMount() final
+    void impl_on_mount() final
     {
         App::upd().make_main_loop_polling();
         m_Camera.on_mount();
     }
 
-    void implOnUnmount() final
+    void impl_on_unmount() final
     {
         m_Camera.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
-    bool implOnEvent(SDL_Event const& e) final
+    bool impl_on_event(SDL_Event const& e) final
     {
         return m_Camera.on_event(e);
     }
 
-    void implOnDraw() final
+    void impl_on_draw() final
     {
         m_Camera.on_draw();
         draw3DScene();
@@ -359,42 +359,42 @@ osc::LOGLBloomTab::LOGLBloomTab(LOGLBloomTab&&) noexcept = default;
 osc::LOGLBloomTab& osc::LOGLBloomTab::operator=(LOGLBloomTab&&) noexcept = default;
 osc::LOGLBloomTab::~LOGLBloomTab() noexcept = default;
 
-UID osc::LOGLBloomTab::implGetID() const
+UID osc::LOGLBloomTab::impl_get_id() const
 {
-    return m_Impl->getID();
+    return m_Impl->id();
 }
 
-CStringView osc::LOGLBloomTab::implGetName() const
+CStringView osc::LOGLBloomTab::impl_get_name() const
 {
-    return m_Impl->getName();
+    return m_Impl->name();
 }
 
-void osc::LOGLBloomTab::implOnMount()
+void osc::LOGLBloomTab::impl_on_mount()
 {
     m_Impl->on_mount();
 }
 
-void osc::LOGLBloomTab::implOnUnmount()
+void osc::LOGLBloomTab::impl_on_unmount()
 {
     m_Impl->on_unmount();
 }
 
-bool osc::LOGLBloomTab::implOnEvent(SDL_Event const& e)
+bool osc::LOGLBloomTab::impl_on_event(SDL_Event const& e)
 {
-    return m_Impl->onEvent(e);
+    return m_Impl->on_event(e);
 }
 
-void osc::LOGLBloomTab::implOnTick()
+void osc::LOGLBloomTab::impl_on_tick()
 {
     m_Impl->on_tick();
 }
 
-void osc::LOGLBloomTab::implOnDrawMainMenu()
+void osc::LOGLBloomTab::impl_on_draw_main_menu()
 {
-    m_Impl->onDrawMainMenu();
+    m_Impl->on_draw_main_menu();
 }
 
-void osc::LOGLBloomTab::implOnDraw()
+void osc::LOGLBloomTab::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }

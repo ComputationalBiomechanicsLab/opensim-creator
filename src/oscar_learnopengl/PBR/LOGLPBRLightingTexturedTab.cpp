@@ -86,24 +86,24 @@ public:
     {}
 
 private:
-    void implOnMount() final
+    void impl_on_mount() final
     {
         App::upd().make_main_loop_polling();
         m_Camera.on_mount();
     }
 
-    void implOnUnmount() final
+    void impl_on_unmount() final
     {
         m_Camera.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
-    bool implOnEvent(SDL_Event const& e) final
+    bool impl_on_event(SDL_Event const& e) final
     {
         return m_Camera.on_event(e);
     }
 
-    void implOnDraw() final
+    void impl_on_draw() final
     {
         m_Camera.on_draw();
         draw3DRender();
@@ -164,32 +164,32 @@ osc::LOGLPBRLightingTexturedTab::LOGLPBRLightingTexturedTab(LOGLPBRLightingTextu
 osc::LOGLPBRLightingTexturedTab& osc::LOGLPBRLightingTexturedTab::operator=(LOGLPBRLightingTexturedTab&&) noexcept = default;
 osc::LOGLPBRLightingTexturedTab::~LOGLPBRLightingTexturedTab() noexcept = default;
 
-UID osc::LOGLPBRLightingTexturedTab::implGetID() const
+UID osc::LOGLPBRLightingTexturedTab::impl_get_id() const
 {
-    return m_Impl->getID();
+    return m_Impl->id();
 }
 
-CStringView osc::LOGLPBRLightingTexturedTab::implGetName() const
+CStringView osc::LOGLPBRLightingTexturedTab::impl_get_name() const
 {
-    return m_Impl->getName();
+    return m_Impl->name();
 }
 
-void osc::LOGLPBRLightingTexturedTab::implOnMount()
+void osc::LOGLPBRLightingTexturedTab::impl_on_mount()
 {
     m_Impl->on_mount();
 }
 
-void osc::LOGLPBRLightingTexturedTab::implOnUnmount()
+void osc::LOGLPBRLightingTexturedTab::impl_on_unmount()
 {
     m_Impl->on_unmount();
 }
 
-bool osc::LOGLPBRLightingTexturedTab::implOnEvent(SDL_Event const& e)
+bool osc::LOGLPBRLightingTexturedTab::impl_on_event(SDL_Event const& e)
 {
-    return m_Impl->onEvent(e);
+    return m_Impl->on_event(e);
 }
 
-void osc::LOGLPBRLightingTexturedTab::implOnDraw()
+void osc::LOGLPBRLightingTexturedTab::impl_on_draw()
 {
-    m_Impl->onDraw();
+    m_Impl->on_draw();
 }

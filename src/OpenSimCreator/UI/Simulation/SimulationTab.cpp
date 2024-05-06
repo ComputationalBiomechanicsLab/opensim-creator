@@ -516,42 +516,42 @@ osc::SimulationTab::SimulationTab(SimulationTab&&) noexcept = default;
 osc::SimulationTab& osc::SimulationTab::operator=(SimulationTab&&) noexcept = default;
 osc::SimulationTab::~SimulationTab() noexcept = default;
 
-UID osc::SimulationTab::implGetID() const
+UID osc::SimulationTab::impl_get_id() const
 {
     return m_Impl->getID();
 }
 
-CStringView osc::SimulationTab::implGetName() const
+CStringView osc::SimulationTab::impl_get_name() const
 {
     return m_Impl->getName();
 }
 
-void osc::SimulationTab::implOnMount()
+void osc::SimulationTab::impl_on_mount()
 {
     m_Impl->on_mount();
 }
 
-void osc::SimulationTab::implOnUnmount()
+void osc::SimulationTab::impl_on_unmount()
 {
     m_Impl->on_unmount();
 }
 
-bool osc::SimulationTab::implOnEvent(SDL_Event const& e)
+bool osc::SimulationTab::impl_on_event(SDL_Event const& e)
 {
     return m_Impl->onEvent(e);
 }
 
-void osc::SimulationTab::implOnTick()
+void osc::SimulationTab::impl_on_tick()
 {
     m_Impl->on_tick();
 }
 
-void osc::SimulationTab::implOnDrawMainMenu()
+void osc::SimulationTab::impl_on_draw_main_menu()
 {
     m_Impl->onDrawMainMenu();
 }
 
-void osc::SimulationTab::implOnDraw()
+void osc::SimulationTab::impl_on_draw()
 {
     m_Impl->onDraw();
 }

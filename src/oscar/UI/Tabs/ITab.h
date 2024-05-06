@@ -20,27 +20,27 @@ namespace osc
     public:
         virtual ~ITab() noexcept = default;
 
-        UID getID() const { return implGetID(); }
-        CStringView getName() const { return implGetName(); }
-        bool isUnsaved() const { return implIsUnsaved(); }
-        bool trySave() { return implTrySave(); }
-        void on_mount() { implOnMount(); }
-        void on_unmount() { implOnUnmount(); }
-        bool onEvent(const SDL_Event& e) { return implOnEvent(e); }
-        void on_tick() { implOnTick(); }
-        void onDrawMainMenu() { implOnDrawMainMenu(); }
-        void onDraw() { implOnDraw(); }
+        UID id() const { return impl_get_id(); }
+        CStringView name() const { return impl_get_name(); }
+        bool is_unsaved() const { return impl_is_unsaved(); }
+        bool try_save() { return impl_try_save(); }
+        void on_mount() { impl_on_mount(); }
+        void on_unmount() { impl_on_unmount(); }
+        bool on_event(const SDL_Event& e) { return impl_on_event(e); }
+        void on_tick() { impl_on_tick(); }
+        void on_draw_main_menu() { impl_on_draw_main_menu(); }
+        void on_draw() { impl_on_draw(); }
 
     private:
-        virtual UID implGetID() const = 0;
-        virtual CStringView implGetName() const = 0;
-        virtual bool implIsUnsaved() const { return false; }
-        virtual bool implTrySave() { return true; }
-        virtual void implOnMount() {}
-        virtual void implOnUnmount() {}
-        virtual bool implOnEvent(const SDL_Event&) { return false; }
-        virtual void implOnTick() {}
-        virtual void implOnDrawMainMenu() {}
-        virtual void implOnDraw() = 0;
+        virtual UID impl_get_id() const = 0;
+        virtual CStringView impl_get_name() const = 0;
+        virtual bool impl_is_unsaved() const { return false; }
+        virtual bool impl_try_save() { return true; }
+        virtual void impl_on_mount() {}
+        virtual void impl_on_unmount() {}
+        virtual bool impl_on_event(const SDL_Event&) { return false; }
+        virtual void impl_on_tick() {}
+        virtual void impl_on_draw_main_menu() {}
+        virtual void impl_on_draw() = 0;
     };
 }
