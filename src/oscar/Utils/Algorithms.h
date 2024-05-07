@@ -14,6 +14,7 @@
 
 namespace osc
 {
+    // returns the greater of the given projected values
     template<
         class T,
         class Proj = std::identity,
@@ -24,6 +25,7 @@ namespace osc
         return std::ranges::max(a, b, std::ref(comp), std::ref(proj));
     }
 
+    // returns the smaller of the given projected elements
     template<
         class T,
         class Proj = std::identity,
@@ -34,6 +36,7 @@ namespace osc
         return std::ranges::min(a, b, std::ref(comp), std::ref(proj));
     }
 
+    // if `v` compares less than `lo`, returns `lo`; otherwise, if `hi` compares less than `v`, returns `hi`; otherwise, returns `v`
     template<
         class T,
         class Proj = std::identity,
@@ -44,7 +47,7 @@ namespace osc
         return std::ranges::clamp(v, lo, hi, std::ref(comp), std::ref(proj));
     }
 
-    // osc algorithm: returns the index of the largest element in the range
+    // returns the index of the largest element in the range
     template<
         std::ranges::random_access_range R,
         class Proj = std::identity,
@@ -56,18 +59,19 @@ namespace osc
         return std::distance(first, std::ranges::max_element(first, std::ranges::end(r), std::ref(comp), std::ref(proj)));
     }
 
-    // osc algorithm: perform bounds-checked indexed access
+    // returns a reference to the element at specified location `pos`, with bounds checking
     template<std::ranges::random_access_range Range>
-    constexpr auto at(const Range& range, typename Range::size_type i) -> decltype(range[i])
+    constexpr auto at(const Range& range, typename Range::size_type pos) -> decltype(range[pos])
     {
-        if (i < std::ranges::size(range)) {
-            return range[i];
+        if (pos < std::ranges::size(range)) {
+            return range[pos];
         }
         else {
             throw std::out_of_range{"out of bounds index given to a container"};
         }
     }
 
+    // returns the element that has a projection that compares equivalent to `value`, or `std::nullopt` if not found
     template<
         std::ranges::input_range R,
         typename T,
@@ -82,7 +86,7 @@ namespace osc
         return it != std::ranges::end(r) ? std::optional<typename R::value_type>{*it} : std::nullopt;
     }
 
-    // osc algorithm: returns a `std::optional<T>` containing the value located at `key`, or `std::nullopt` if no such element exists in `container`
+    // returns the element with key equivalent to `key`, or `std::nullopt` if no such element exists in `container`
     template<AssociativeContainer T, typename Key>
     std::optional<typename T::mapped_type> find_or_optional(const T& container, const Key& key)
     {
@@ -92,6 +96,7 @@ namespace osc
         return std::nullopt;
     }
 
+    // returns a pointer to the element with a projection that compares equal to `value`, or `nullptr` if no such element exists in `r`
     template<
         std::ranges::input_range R,
         typename T,
@@ -103,7 +108,7 @@ namespace osc
         return it != std::ranges::end(r) ? std::addressof(*it) : nullptr;
     }
 
-    // osc algorithm: returns a pointer to the element at `key`, or `nullptr` if no such element exists in `container`
+    // returns a pointer to the element with key equivalent to `key`, or `nullptr` if no such element exists in `container`
     template<AssociativeContainer T, typename Key>
     const typename T::mapped_type* find_or_nullptr(const T& container, const Key& key)
     {
@@ -113,7 +118,7 @@ namespace osc
         return nullptr;
     }
 
-    // osc algorithm: returns a mutable pointer to the element at `key`, or `nullptr` if no such element exists in `container`
+    // returns a mutable pointer to the element with key equivalent to `key`, or `nullptr` if no such element exists in `container`
     template<AssociativeContainer T, typename Key>
     typename T::mapped_type* find_or_nullptr(T& container, const Key& key)
     {
@@ -123,6 +128,7 @@ namespace osc
         return nullptr;
     }
 
+    // returns `true` if both `lhs` and `rhs` can be sucessfully `dynamic_cast`ed to `Downcasted` and compare equal
     template<typename Downcasted, typename T1, typename T2>
     requires
         std::equality_comparable<Downcasted> and
