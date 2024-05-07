@@ -8,10 +8,10 @@ namespace osc
 {
     // calls into (hidden) assertion-handling implementation
     [[noreturn]] void OnAssertionFailure(
-        std::string_view failingCode,
-        std::string_view func,
-        std::string_view file,
-        unsigned int line
+        std::string_view failing_code,
+        std::string_view function_name,
+        std::string_view file_name,
+        unsigned int file_line
     );
 }
 

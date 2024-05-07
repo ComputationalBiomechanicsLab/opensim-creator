@@ -283,8 +283,8 @@ namespace
         mesh.set_indices({draw_list.IdxBuffer.Data, static_cast<size_t>(draw_list.IdxBuffer.size())}, MeshUpdateFlags::DontRecalculateBounds | MeshUpdateFlags::DontValidateIndices);
 
         // iterate through command buffer
-        for (int i = 0; i < draw_list.CmdBuffer.Size; ++i) {
-            render_draw_command(bd, draw_data, draw_list, mesh, draw_list.CmdBuffer[i]);
+        for (const ImDrawCmd& cmd : draw_list.CmdBuffer) {
+            render_draw_command(bd, draw_data, draw_list, mesh, cmd);
         }
         mesh.clear();
     }

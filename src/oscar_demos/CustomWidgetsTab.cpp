@@ -10,45 +10,45 @@ using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_TabStringID = "Demos/CustomWidgets";
+    constexpr CStringView c_tab_string_id = "Demos/CustomWidgets";
 
-    void WidgetTitle(CStringView title, Vec2 pos)
+    void draw_widget_title(CStringView title, Vec2 pos)
     {
-        Vec2 const textTopLeft = pos + ui::get_style_frame_padding();
-        ui::get_panel_draw_list()->AddText(textTopLeft, ui::get_color_ImU32(ImGuiCol_Text), title.c_str());
+        const Vec2 text_topleft = pos + ui::get_style_frame_padding();
+        ui::get_panel_draw_list()->AddText(text_topleft, ui::get_color_ImU32(ImGuiCol_Text), title.c_str());
     }
 }
 
 // toggle
 namespace
 {
-    void DrawToggle(bool enabled, bool hovered, Vec2 pos, Vec2 size)
+    void draw_toggle(bool enabled, bool hovered, Vec2 pos, Vec2 size)
     {
         ImDrawList& draw_list = *ui::get_panel_draw_list();
 
-        float const radius = size.y * 0.5f;
-        float const rounding = size.y * 0.25f;
-        float const slot_half_height = size.y * 0.5f;
-        bool const circular_grab = false;
+        const float radius = size.y * 0.5f;
+        const float rounding = size.y * 0.25f;
+        const float slot_half_height = size.y * 0.5f;
+        const bool circular_grab = false;
 
-        ImU32 const bgColor = hovered ?
+        const ImU32 bg_color = hovered ?
             ui::get_color_ImU32(enabled ? ImGuiCol_FrameBgActive : ImGuiCol_FrameBgHovered) :
             ui::get_color_ImU32(enabled ? ImGuiCol_CheckMark : ImGuiCol_FrameBg);
 
-        Vec2 const pmid{
+        const Vec2 pmid{
             pos.x + radius + (enabled ? 1.0f : 0.0f) * (size.x - radius * 2),
             pos.y + size.y / 2.0f,
         };
-        Vec2 const smin = {pos.x, pmid.y - slot_half_height};
-        Vec2 const smax = {pos.x + size.x, pmid.y + slot_half_height};
+        const Vec2 smin = {pos.x, pmid.y - slot_half_height};
+        const Vec2 smax = {pos.x + size.x, pmid.y + slot_half_height};
 
-        draw_list.AddRectFilled(smin, smax, bgColor, rounding);
+        draw_list.AddRectFilled(smin, smax, bg_color, rounding);
 
         if (circular_grab) {
             draw_list.AddCircleFilled(pmid, radius * 0.8f, ui::get_color_ImU32(ImGuiCol_SliderGrab));
         }
         else {
-            Vec2 const offs = {radius*0.8f, radius*0.8f};
+            const Vec2 offs = {radius*0.8f, radius*0.8f};
             draw_list.AddRectFilled(pmid - offs, pmid + offs, ui::get_color_ImU32(ImGuiCol_SliderGrab), rounding);
         }
     }
@@ -57,13 +57,13 @@ namespace
     {
         ui::push_style_color(ImGuiCol_Button, IM_COL32_BLACK_TRANS);
 
-        float const titleHeight = ui::get_text_line_height();
+        const float title_height = ui::get_text_line_height();
 
-        Vec2 const p = ui::get_cursor_screen_pos();
-        Vec2 const bb(ui::get_column_width(), ui::get_frame_height());
+        const Vec2 p = ui::get_cursor_screen_pos();
+        const Vec2 bb(ui::get_column_width(), ui::get_frame_height());
         ui::push_style_var(ImGuiStyleVar_ButtonTextAlign, {0.0f, 0.0f});
         ui::push_id(label);
-        bool const status = ui::draw_button("###toggle_button", bb);
+        const bool status = ui::draw_button("###toggle_button", bb);
 
         if (status) {
             *v = !*v;
@@ -71,19 +71,19 @@ namespace
 
         ui::pop_id();
         ui::pop_style_var();
-        Vec2 const pMin = ui::get_item_topleft();
-        Vec2 const pMax = ui::get_item_bottomright();
+        const Vec2 pmin = ui::get_item_topleft();
+        const Vec2 pmax = ui::get_item_bottomright();
 
-        WidgetTitle(label, p);
+        draw_widget_title(label, p);
 
-        float const toggleHeight = titleHeight * 0.9f;
-        Vec2 const framePadding = ui::get_style_frame_padding();
-        Vec2 const toggleSize = {toggleHeight * 1.75f, toggleHeight};
-        Vec2 const togglePos{
-            pMax.x - toggleSize.x - framePadding.x,
-            pMin.y + (titleHeight - toggleSize.y)/2.0f + framePadding.y,
+        const float toggle_height = title_height * 0.9f;
+        const Vec2 frame_padding = ui::get_style_frame_padding();
+        const Vec2 toggle_size = {toggle_height * 1.75f, toggle_height};
+        const Vec2 toggle_pos{
+            pmax.x - toggle_size.x - frame_padding.x,
+            pmin.y + (title_height - toggle_size.y)/2.0f + frame_padding.y,
         };
-        DrawToggle(*v, ui::is_item_hovered(), togglePos, toggleSize);
+        draw_toggle(*v, ui::is_item_hovered(), toggle_pos, toggle_size);
 
         ui::pop_style_color();
 
@@ -93,34 +93,32 @@ namespace
 
 class osc::CustomWidgetsTab::Impl final : public StandardTabImpl {
 public:
-    Impl() : StandardTabImpl{c_TabStringID}
+    Impl() : StandardTabImpl{c_tab_string_id}
     {}
 
 private:
     void impl_on_draw() final
     {
         ui::begin_panel("window");
-        ui::draw_float_input("standardinput", &m_Value);
-        ui::draw_float_circular_slider("custom slider", &m_Value, 15.0f, 5.0f);
-        ui::draw_text("%f", m_Value);
-        Toggle("custom toggle", &m_Toggle);
+        ui::draw_float_input("standardinput", &float_value_);
+        ui::draw_float_circular_slider("custom slider", &float_value_, 15.0f, 5.0f);
+        ui::draw_text("%f", float_value_);
+        Toggle("custom toggle", &toggle_state_);
         ui::end_panel();
     }
 
-    float m_Value = 10.0f;
-    bool m_Toggle = false;
+    float float_value_ = 10.0f;
+    bool toggle_state_ = false;
 };
 
 
-// public API
-
 CStringView osc::CustomWidgetsTab::id()
 {
-    return c_TabStringID;
+    return c_tab_string_id;
 }
 
-osc::CustomWidgetsTab::CustomWidgetsTab(ParentPtr<ITabHost> const&) :
-    m_Impl{std::make_unique<Impl>()}
+osc::CustomWidgetsTab::CustomWidgetsTab(const ParentPtr<ITabHost>&) :
+    impl_{std::make_unique<Impl>()}
 {}
 
 osc::CustomWidgetsTab::CustomWidgetsTab(CustomWidgetsTab&&) noexcept = default;
@@ -129,15 +127,15 @@ osc::CustomWidgetsTab::~CustomWidgetsTab() noexcept = default;
 
 UID osc::CustomWidgetsTab::impl_get_id() const
 {
-    return m_Impl->id();
+    return impl_->id();
 }
 
 CStringView osc::CustomWidgetsTab::impl_get_name() const
 {
-    return m_Impl->name();
+    return impl_->name();
 }
 
 void osc::CustomWidgetsTab::impl_on_draw()
 {
-    m_Impl->on_draw();
+    impl_->on_draw();
 }

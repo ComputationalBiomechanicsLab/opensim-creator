@@ -16,7 +16,7 @@ namespace rgs = std::ranges;
 
 namespace
 {
-    constexpr CStringView c_TabStringID = "Demos/FrustrumCulling";
+    constexpr CStringView c_tab_string_id = "Demos/FrustrumCulling";
 
     struct TransformedMesh {
         Mesh mesh;
@@ -25,7 +25,7 @@ namespace
 
     std::vector<TransformedMesh> generateDecorations()
     {
-        auto const geoms = std::to_array<Mesh>({
+        const auto geoms = std::to_array<Mesh>({
             SphereGeometry{},
             TorusKnotGeometry{},
             IcosahedronGeometry{},
@@ -34,9 +34,9 @@ namespace
 
         auto rng = std::default_random_engine{std::random_device{}()};
         auto dist = std::normal_distribution{0.1f, 0.1f};
-        AABB const bounds = {{-5.0f, -2.0f, -5.0f}, {5.0f, 2.0f, 5.0f}};
-        Vec3 const dims = dimensions_of(bounds);
-        Vec3uz const cells = {10, 3, 10};
+        const AABB bounds = {{-5.0f, -2.0f, -5.0f}, {5.0f, 2.0f, 5.0f}};
+        const Vec3 dims = dimensions_of(bounds);
+        const Vec3uz cells = {10, 3, 10};
 
         std::vector<TransformedMesh> rv;
         rv.reserve(cells.x * cells.y * cells.z);
@@ -45,7 +45,7 @@ namespace
             for (size_t y = 0; y < cells.y; ++y) {
                 for (size_t z = 0; z < cells.z; ++z) {
 
-                    Vec3 const pos = bounds.min + dims * (Vec3{x, y, z} / Vec3{cells - 1_uz});
+                    const Vec3 pos = bounds.min + dims * (Vec3{x, y, z} / Vec3{cells - 1_uz});
 
                     Mesh mesh;
                     rgs::sample(geoms, &mesh, 1, rng);
@@ -67,94 +67,91 @@ namespace
 
 class osc::FrustrumCullingTab::Impl final : public StandardTabImpl {
 public:
-    Impl() : StandardTabImpl{c_TabStringID}
+    Impl() : StandardTabImpl{c_tab_string_id}
     {
-        m_UserCamera.set_near_clipping_plane(0.1f);
-        m_UserCamera.set_far_clipping_plane(10.0f);
-        m_TopDownCamera.set_position({0.0f, 9.5f, 0.0f});
-        m_TopDownCamera.set_direction({0.0f, -1.0f, 0.0f});
-        m_TopDownCamera.set_near_clipping_plane(0.1f);
-        m_TopDownCamera.set_far_clipping_plane(10.0f);
+        user_camera_.set_near_clipping_plane(0.1f);
+        user_camera_.set_far_clipping_plane(10.0f);
+        top_down_camera_.set_position({0.0f, 9.5f, 0.0f});
+        top_down_camera_.set_direction({0.0f, -1.0f, 0.0f});
+        top_down_camera_.set_near_clipping_plane(0.1f);
+        top_down_camera_.set_far_clipping_plane(10.0f);
     }
 
 private:
     void impl_on_mount() final
     {
         App::upd().make_main_loop_polling();
-        m_UserCamera.on_mount();
+        user_camera_.on_mount();
     }
 
     void impl_on_unmount() final
     {
-        m_UserCamera.on_unmount();
+        user_camera_.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
-    bool impl_on_event(SDL_Event const& e) final
+    bool impl_on_event(const SDL_Event& e) final
     {
-        return m_UserCamera.on_event(e);
+        return user_camera_.on_event(e);
     }
 
     void impl_on_draw() final
     {
-        Rect const viewport = ui::get_main_viewport_workspace_screen_rect();
-        float const xmid = midpoint(viewport.p1.x, viewport.p2.x);
-        Rect const lhs = {viewport.p1, {xmid, viewport.p2.y}};
-        Rect const rhs = {{xmid, viewport.p1.y}, viewport.p2};
-        FrustumPlanes const frustum = calc_frustum_planes(m_UserCamera, aspect_ratio_of(lhs));
+        const Rect viewport = ui::get_main_viewport_workspace_screen_rect();
+        const float xmid = midpoint(viewport.p1.x, viewport.p2.x);
+        const Rect lhs = {viewport.p1, {xmid, viewport.p2.y}};
+        const Rect rhs = {{xmid, viewport.p1.y}, viewport.p2};
+        const FrustumPlanes frustum = calc_frustum_planes(user_camera_, aspect_ratio_of(lhs));
 
-        m_UserCamera.on_draw();  // update from inputs etc.
+        user_camera_.on_draw();  // update from inputs etc.
 
         // render from user's perspective on left-hand side
-        for (auto const& dec : m_Decorations) {
-            AABB const aabb = transform_aabb(dec.transform, dec.mesh.bounds());
+        for (const auto& decoration : decorations_) {
+            const AABB aabb = transform_aabb(decoration.transform, decoration.mesh.bounds());
             if (is_intersecting(frustum, aabb)) {
-                graphics::draw(dec.mesh, dec.transform, m_Material, m_UserCamera, m_BlueMaterialProps);
+                graphics::draw(decoration.mesh, decoration.transform, material_, user_camera_, blue_material_props_);
             }
         }
-        m_UserCamera.set_pixel_rect(lhs);
-        m_UserCamera.render_to_screen();
+        user_camera_.set_pixel_rect(lhs);
+        user_camera_.render_to_screen();
 
         // render from top-down perspective on right-hand side
-        for (auto const& dec : m_Decorations) {
-            AABB const aabb = transform_aabb(dec.transform, dec.mesh.bounds());
-            auto const& props = is_intersecting(frustum, aabb) ? m_BlueMaterialProps : m_RedMaterialProps;
-            graphics::draw(dec.mesh, dec.transform, m_Material, m_TopDownCamera, props);
+        for (const auto& decoration : decorations_) {
+            const AABB aabb = transform_aabb(decoration.transform, decoration.mesh.bounds());
+            const auto & props = is_intersecting(frustum, aabb) ? blue_material_props_ : red_material_props_;
+            graphics::draw(decoration.mesh, decoration.transform, material_, top_down_camera_, props);
         }
         graphics::draw(
             SphereGeometry{},
-            {.scale = Vec3{0.1f}, .position = m_UserCamera.position()},
-            m_Material,
-            m_TopDownCamera,
-            m_GreenMaterialProps
+            {.scale = Vec3{0.1f}, .position = user_camera_.position()},
+            material_,
+            top_down_camera_,
+            green_material_props_
         );
-        m_TopDownCamera.set_pixel_rect(rhs);
-        m_TopDownCamera.set_scissor_rect(rhs);
-        m_TopDownCamera.set_background_color({0.1f, 1.0f});
-        m_TopDownCamera.render_to_screen();
+        top_down_camera_.set_pixel_rect(rhs);
+        top_down_camera_.set_scissor_rect(rhs);
+        top_down_camera_.set_background_color({0.1f, 1.0f});
+        top_down_camera_.render_to_screen();
     }
 
-    MouseCapturingCamera m_UserCamera;
-    std::vector<TransformedMesh> m_Decorations = generateDecorations();
-    Camera m_TopDownCamera;
-    MeshBasicMaterial m_Material;
-    MeshBasicMaterial::PropertyBlock m_RedMaterialProps{Color::red()};
-    MeshBasicMaterial::PropertyBlock m_BlueMaterialProps{Color::blue()};
-    MeshBasicMaterial::PropertyBlock m_GreenMaterialProps{Color::green()};
+    MouseCapturingCamera user_camera_;
+    std::vector<TransformedMesh> decorations_ = generateDecorations();
+    Camera top_down_camera_;
+    MeshBasicMaterial material_;
+    MeshBasicMaterial::PropertyBlock red_material_props_{Color::red()};
+    MeshBasicMaterial::PropertyBlock blue_material_props_{Color::blue()};
+    MeshBasicMaterial::PropertyBlock green_material_props_{Color::green()};
 };
 
 
-// public API
-
 osc::CStringView osc::FrustrumCullingTab::id()
 {
-    return c_TabStringID;
+    return c_tab_string_id;
 }
 
-osc::FrustrumCullingTab::FrustrumCullingTab(ParentPtr<ITabHost> const&) :
-    m_Impl{std::make_unique<Impl>()}
-{
-}
+osc::FrustrumCullingTab::FrustrumCullingTab(const ParentPtr<ITabHost>&) :
+    impl_{std::make_unique<Impl>()}
+{}
 
 osc::FrustrumCullingTab::FrustrumCullingTab(FrustrumCullingTab&&) noexcept = default;
 osc::FrustrumCullingTab& osc::FrustrumCullingTab::operator=(FrustrumCullingTab&&) noexcept = default;
@@ -162,30 +159,30 @@ osc::FrustrumCullingTab::~FrustrumCullingTab() noexcept = default;
 
 UID osc::FrustrumCullingTab::impl_get_id() const
 {
-    return m_Impl->id();
+    return impl_->id();
 }
 
 CStringView osc::FrustrumCullingTab::impl_get_name() const
 {
-    return m_Impl->name();
+    return impl_->name();
 }
 
 void osc::FrustrumCullingTab::impl_on_mount()
 {
-    m_Impl->on_mount();
+    impl_->on_mount();
 }
 
 void osc::FrustrumCullingTab::impl_on_unmount()
 {
-    m_Impl->on_unmount();
+    impl_->on_unmount();
 }
 
-bool osc::FrustrumCullingTab::impl_on_event(SDL_Event const& e)
+bool osc::FrustrumCullingTab::impl_on_event(const SDL_Event& e)
 {
-    return m_Impl->on_event(e);
+    return impl_->on_event(e);
 }
 
 void osc::FrustrumCullingTab::impl_on_draw()
 {
-    m_Impl->on_draw();
+    impl_->on_draw();
 }

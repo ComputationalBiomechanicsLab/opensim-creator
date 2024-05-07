@@ -24,14 +24,12 @@ private:
 };
 
 
-// public API
-
 CStringView osc::ImGuiDemoTab::id()
 {
     return c_TabStringID;
 }
 
-osc::ImGuiDemoTab::ImGuiDemoTab(ParentPtr<ITabHost> const&) :
+osc::ImGuiDemoTab::ImGuiDemoTab(const ParentPtr<ITabHost>&) :
     m_Impl{std::make_unique<Impl>()}
 {}
 

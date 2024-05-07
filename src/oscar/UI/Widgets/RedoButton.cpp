@@ -15,7 +15,7 @@ osc::RedoButton::~RedoButton() noexcept = default;
 
 void osc::RedoButton::onDraw()
 {
-    int imgui_id = 0;
+    int ui_id = 0;
 
     ui::push_style_var(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
 
@@ -40,7 +40,7 @@ void osc::RedoButton::onDraw()
 
     if (ui::begin_popup_context_menu("##OpenRedoMenu", ImGuiPopupFlags_MouseButtonLeft)) {
         for (ptrdiff_t i = 0; i < undo_redo_->getNumRedoEntriesi(); ++i) {
-            ui::push_id(imgui_id++);
+            ui::push_id(ui_id++);
             if (ui::draw_selectable(undo_redo_->getRedoEntry(i).message())) {
                 undo_redo_->redoTo(i);
             }

@@ -268,18 +268,16 @@ private:
             }
             c.set_clear_flags(CameraClearFlags::Nothing);
 
-            for (int cmd_index = 0; cmd_index < drawlist.CmdBuffer.Size; ++cmd_index) {
-                const ImDrawCmd& cmd = drawlist.CmdBuffer[cmd_index];
-                {
-                    // upload indices
-                    std::vector<ImDrawIdx> indices;
-                    indices.reserve(cmd.ElemCount);
-                    for (unsigned int i = cmd.IdxOffset; i < cmd.IdxOffset + cmd.ElemCount; ++i)
-                    {
-                        indices.push_back(drawlist.IdxBuffer[static_cast<int>(i)]);
-                    }
-                    mesh.set_indices(indices);
+            for (const ImDrawCmd& cmd : drawlist.CmdBuffer) {
+                // upload indices
+                std::vector<ImDrawIdx> indices;
+                indices.reserve(cmd.ElemCount);
+                for (auto offset = cmd.IdxOffset; offset < cmd.IdxOffset + cmd.ElemCount; ++offset) {
+                    indices.push_back(drawlist.IdxBuffer[static_cast<int>(offset)]);
                 }
+                mesh.set_indices(indices);
+
+                // draw mesh
                 graphics::draw(mesh, Transform{}, material, c);
             }
 

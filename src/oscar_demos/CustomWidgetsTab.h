@@ -15,10 +15,10 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit CustomWidgetsTab(ParentPtr<ITabHost> const&);
-        CustomWidgetsTab(CustomWidgetsTab const&) = delete;
+        explicit CustomWidgetsTab(const ParentPtr<ITabHost>&);
+        CustomWidgetsTab(const CustomWidgetsTab&) = delete;
         CustomWidgetsTab(CustomWidgetsTab&&) noexcept;
-        CustomWidgetsTab& operator=(CustomWidgetsTab const&) = delete;
+        CustomWidgetsTab& operator=(const CustomWidgetsTab&) = delete;
         CustomWidgetsTab& operator=(CustomWidgetsTab&&) noexcept;
         ~CustomWidgetsTab() noexcept override;
 
@@ -28,6 +28,6 @@ namespace osc
         void impl_on_draw() final;
 
         class Impl;
-        std::unique_ptr<Impl> m_Impl;
+        std::unique_ptr<Impl> impl_;
     };
 }

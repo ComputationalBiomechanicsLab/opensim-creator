@@ -14,9 +14,9 @@ using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_TabStringID = "Demos/Hittest";
+    constexpr CStringView c_tab_string_id = "Demos/Hittest";
 
-    constexpr auto c_TriangleVerts = std::to_array<Vec3>({
+    constexpr auto c_triangle_verts = std::to_array<Vec3>({
         {-10.0f, -10.0f, 0.0f},
         {+0.0f, +10.0f, 0.0f},
         {+10.0f, -10.0f, 0.0f},
@@ -29,10 +29,10 @@ namespace
         {}
 
         Vec3 pos;
-        bool isHovered = false;
+        bool is_hovered = false;
     };
 
-    std::vector<SceneSphere> GenerateSceneSpheres()
+    std::vector<SceneSphere> generate_scene_spheres()
     {
         constexpr int32_t min = -30;
         constexpr int32_t max = 30;
@@ -53,7 +53,7 @@ namespace
         return rv;
     }
 
-    Mesh GenerateCrosshairMesh()
+    Mesh generate_crosshair_mesh()
     {
         Mesh rv;
         rv.set_topology(MeshTopology::Lines);
@@ -70,15 +70,15 @@ namespace
         return rv;
     }
 
-    Mesh GenerateTriangleMesh()
+    Mesh generate_triangle_mesh()
     {
         Mesh rv;
-        rv.set_vertices(c_TriangleVerts);
+        rv.set_vertices(c_triangle_verts);
         rv.set_indices({0, 1, 2});
         return rv;
     }
 
-    Line GetCameraRay(Camera const& camera)
+    Line get_camera_ray(const Camera& camera)
     {
         return {
             camera.position(),
@@ -89,33 +89,33 @@ namespace
 
 class osc::HittestTab::Impl final : public StandardTabImpl {
 public:
-    Impl() : StandardTabImpl{c_TabStringID}
+    Impl() : StandardTabImpl{c_tab_string_id}
     {
-        m_Camera.set_background_color({1.0f, 1.0f, 1.0f, 0.0f});
+        camera_.set_background_color({1.0f, 1.0f, 1.0f, 0.0f});
     }
 
 private:
     void impl_on_mount() final
     {
         App::upd().make_main_loop_polling();
-        m_IsMouseCaptured = true;
+        is_mouse_captured_ = true;
     }
 
     void impl_on_unmount() final
     {
-        m_IsMouseCaptured = false;
+        is_mouse_captured_ = false;
         App::upd().make_main_loop_waiting();
         App::upd().set_show_cursor(true);
     }
 
-    bool impl_on_event(SDL_Event const& e) final
+    bool impl_on_event(const SDL_Event& e) final
     {
-        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
-            m_IsMouseCaptured = false;
+        if (e.type == SDL_KEYDOWN and e.key.keysym.sym == SDLK_ESCAPE) {
+            is_mouse_captured_ = false;
             return true;
         }
-        else if (e.type == SDL_MOUSEBUTTONDOWN && ui::is_mouse_in_main_viewport_workspace()) {
-            m_IsMouseCaptured = true;
+        else if (e.type == SDL_MOUSEBUTTONDOWN and ui::is_mouse_in_main_viewport_workspace()) {
+            is_mouse_captured_ = true;
             return true;
         }
         return false;
@@ -125,35 +125,35 @@ private:
     {
         // hittest spheres
 
-        Line ray = GetCameraRay(m_Camera);
-        float closestEl = std::numeric_limits<float>::max();
-        SceneSphere* closestSceneSphere = nullptr;
+        const Line ray = get_camera_ray(camera_);
+        float closest_distance = std::numeric_limits<float>::max();
+        SceneSphere* closest_sphere = nullptr;
 
-        for (SceneSphere& ss : m_SceneSpheres) {
-            ss.isHovered = false;
+        for (SceneSphere& ss : scene_spheres_) {
+            ss.is_hovered = false;
 
             Sphere s{
                 ss.pos,
-                m_SceneSphereBoundingSphere.radius
+                sphere_bounding_sphere_.radius
             };
 
-            std::optional<RayCollision> res = find_collision(ray, s);
-            if (res && res->distance >= 0.0f && res->distance < closestEl) {
-                closestEl = res->distance;
-                closestSceneSphere = &ss;
+            std::optional<RayCollision> collision = find_collision(ray, s);
+            if (collision and collision->distance >= 0.0f and collision->distance < closest_distance) {
+                closest_distance = collision->distance;
+                closest_sphere = &ss;
             }
         }
 
-        if (closestSceneSphere) {
-            closestSceneSphere->isHovered = true;
+        if (closest_sphere) {
+            closest_sphere->is_hovered = true;
         }
     }
 
     void impl_on_draw() final
     {
         // handle mouse capturing
-        if (m_IsMouseCaptured) {
-            ui::update_camera_from_all_inputs(m_Camera, m_CameraEulers);
+        if (is_mouse_captured_) {
+            ui::update_camera_from_all_inputs(camera_, camera_eulers);
             ui::set_mouse_cursor(ImGuiMouseCursor_None);
             App::upd().set_show_cursor(false);
         }
@@ -163,119 +163,117 @@ private:
         }
 
         // render spheres
-        for (SceneSphere const& sphere : m_SceneSpheres) {
+        for (const SceneSphere& sphere : scene_spheres_) {
 
             graphics::draw(
-                m_SphereMesh,
+                sphere_mesh_,
                 {.position = sphere.pos},
-                m_Material,
-                m_Camera,
-                sphere.isHovered ? m_BlueColorMaterialProps : m_RedColorMaterialProps
+                material_,
+                camera_,
+                sphere.is_hovered ? blue_color_material_props_ : red_color_material_props_
             );
 
             // draw sphere AABBs
-            if (m_IsShowingAABBs) {
+            if (showing_aabbs_) {
 
                 graphics::draw(
-                    m_WireframeCubeMesh,
-                    {.scale = half_widths_of(m_SceneSphereAABB), .position = sphere.pos},
-                    m_Material,
-                    m_Camera,
-                    m_BlackColorMaterialProps
+                    wireframe_mesh_,
+                    {.scale = half_widths_of(scene_sphere_aabb_), .position = sphere.pos},
+                    material_,
+                    camera_,
+                    black_color_material_props_
                 );
             }
         }
 
         // hittest + draw disc
         {
-            Line const ray = GetCameraRay(m_Camera);
+            const Line ray = get_camera_ray(camera_);
 
-            Disc const sceneDisc{
+            const Disc scene_disc{
                 .origin = {0.0f, 0.0f, 0.0f},
                 .normal = {0.0f, 1.0f, 0.0f},
                 .radius = 10.0f,
             };
 
-            std::optional<RayCollision> const maybeCollision = find_collision(ray, sceneDisc);
+            const std::optional<RayCollision> maybe_collision = find_collision(ray, scene_disc);
 
-            Disc const meshDisc{
+            const Disc mesh_disc{
                 .origin = {0.0f, 0.0f, 0.0f},
                 .normal = {0.0f, 0.0f, 1.0f},
                 .radius = 1.0f,
             };
 
             graphics::draw(
-                m_CircleMesh,
-                mat4_transform_between(meshDisc, sceneDisc),
-                m_Material,
-                m_Camera,
-                maybeCollision ? m_BlueColorMaterialProps : m_RedColorMaterialProps
+                circle_mesh_,
+                mat4_transform_between(mesh_disc, scene_disc),
+                material_,
+                camera_,
+                maybe_collision ? blue_color_material_props_ : red_color_material_props_
             );
         }
 
         // hittest + draw triangle
         {
-            Line const ray = GetCameraRay(m_Camera);
-            std::optional<RayCollision> const maybeCollision = find_collision(
+            const Line ray = get_camera_ray(camera_);
+            const std::optional<RayCollision> maybe_collision = find_collision(
                 ray,
-                Triangle{c_TriangleVerts.at(0), c_TriangleVerts.at(1), c_TriangleVerts.at(2)}
+                Triangle{c_triangle_verts.at(0), c_triangle_verts.at(1), c_triangle_verts.at(2)}
             );
 
             graphics::draw(
-                m_TriangleMesh,
+                triangle_mesh_,
                 identity<Transform>(),
-                m_Material,
-                m_Camera,
-                maybeCollision ? m_BlueColorMaterialProps : m_RedColorMaterialProps
+                material_,
+                camera_,
+                maybe_collision ? blue_color_material_props_ : red_color_material_props_
             );
         }
 
-        Rect const viewport = ui::get_main_viewport_workspace_screen_rect();
+        const Rect viewport = ui::get_main_viewport_workspace_screen_rect();
 
         // draw crosshair overlay
         graphics::draw(
-            m_CrosshairMesh,
-            m_Camera.inverse_view_projection_matrix(aspect_ratio_of(viewport)),
-            m_Material,
-            m_Camera,
-            m_BlackColorMaterialProps
+            crosshair_mesh_,
+            camera_.inverse_view_projection_matrix(aspect_ratio_of(viewport)),
+            material_,
+            camera_,
+            black_color_material_props_
         );
 
         // draw scene to screen
-        m_Camera.set_pixel_rect(viewport);
-        m_Camera.render_to_screen();
+        camera_.set_pixel_rect(viewport);
+        camera_.render_to_screen();
     }
 
-    Camera m_Camera;
-    MeshBasicMaterial m_Material;
-    Mesh m_SphereMesh = SphereGeometry{1.0f, 12, 12};
-    Mesh m_WireframeCubeMesh = AABBGeometry{};
-    Mesh m_CircleMesh = CircleGeometry{1.0f, 36};
-    Mesh m_CrosshairMesh = GenerateCrosshairMesh();
-    Mesh m_TriangleMesh = GenerateTriangleMesh();
-    MeshBasicMaterial::PropertyBlock m_BlackColorMaterialProps{Color::black()};
-    MeshBasicMaterial::PropertyBlock m_BlueColorMaterialProps{Color::blue()};
-    MeshBasicMaterial::PropertyBlock m_RedColorMaterialProps{Color::red()};
+    Camera camera_;
+    MeshBasicMaterial material_;
+    Mesh sphere_mesh_ = SphereGeometry{1.0f, 12, 12};
+    Mesh wireframe_mesh_ = AABBGeometry{};
+    Mesh circle_mesh_ = CircleGeometry{1.0f, 36};
+    Mesh crosshair_mesh_ = generate_crosshair_mesh();
+    Mesh triangle_mesh_ = generate_triangle_mesh();
+    MeshBasicMaterial::PropertyBlock black_color_material_props_{Color::black()};
+    MeshBasicMaterial::PropertyBlock blue_color_material_props_{Color::blue()};
+    MeshBasicMaterial::PropertyBlock red_color_material_props_{Color::red()};
 
     // scene state
-    std::vector<SceneSphere> m_SceneSpheres = GenerateSceneSpheres();
-    AABB m_SceneSphereAABB = m_SphereMesh.bounds();
-    Sphere m_SceneSphereBoundingSphere = bounding_sphere_of(m_SphereMesh);
-    bool m_IsMouseCaptured = false;
-    Eulers m_CameraEulers{};
-    bool m_IsShowingAABBs = true;
+    std::vector<SceneSphere> scene_spheres_ = generate_scene_spheres();
+    AABB scene_sphere_aabb_ = sphere_mesh_.bounds();
+    Sphere sphere_bounding_sphere_ = bounding_sphere_of(sphere_mesh_);
+    bool is_mouse_captured_ = false;
+    Eulers camera_eulers{};
+    bool showing_aabbs_ = true;
 };
 
 
-// public API
-
 CStringView osc::HittestTab::id()
 {
-    return c_TabStringID;
+    return c_tab_string_id;
 }
 
-osc::HittestTab::HittestTab(ParentPtr<ITabHost> const&) :
-    m_Impl{std::make_unique<Impl>()}
+osc::HittestTab::HittestTab(const ParentPtr<ITabHost>&) :
+    impl_{std::make_unique<Impl>()}
 {}
 
 osc::HittestTab::HittestTab(HittestTab&&) noexcept = default;
@@ -284,35 +282,35 @@ osc::HittestTab::~HittestTab() noexcept = default;
 
 UID osc::HittestTab::impl_get_id() const
 {
-    return m_Impl->id();
+    return impl_->id();
 }
 
 CStringView osc::HittestTab::impl_get_name() const
 {
-    return m_Impl->name();
+    return impl_->name();
 }
 
 void osc::HittestTab::impl_on_mount()
 {
-    m_Impl->on_mount();
+    impl_->on_mount();
 }
 
 void osc::HittestTab::impl_on_unmount()
 {
-    m_Impl->on_unmount();
+    impl_->on_unmount();
 }
 
-bool osc::HittestTab::impl_on_event(SDL_Event const& e)
+bool osc::HittestTab::impl_on_event(const SDL_Event& e)
 {
-    return m_Impl->on_event(e);
+    return impl_->on_event(e);
 }
 
 void osc::HittestTab::impl_on_tick()
 {
-    m_Impl->on_tick();
+    impl_->on_tick();
 }
 
 void osc::HittestTab::impl_on_draw()
 {
-    m_Impl->on_draw();
+    impl_->on_draw();
 }

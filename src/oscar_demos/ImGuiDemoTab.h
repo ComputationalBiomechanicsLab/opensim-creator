@@ -15,10 +15,10 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit ImGuiDemoTab(ParentPtr<ITabHost> const&);
-        ImGuiDemoTab(ImGuiDemoTab const&) = delete;
+        explicit ImGuiDemoTab(const ParentPtr<ITabHost>&);
+        ImGuiDemoTab(const ImGuiDemoTab&) = delete;
         ImGuiDemoTab(ImGuiDemoTab&&) noexcept;
-        ImGuiDemoTab& operator=(ImGuiDemoTab const&) = delete;
+        ImGuiDemoTab& operator=(const ImGuiDemoTab&) = delete;
         ImGuiDemoTab& operator=(ImGuiDemoTab&&) noexcept;
         ~ImGuiDemoTab() noexcept override;
 
