@@ -20,17 +20,17 @@
 
 namespace osc::ui
 {
-    inline void AlignTextToFramePadding()
+    inline void align_text_to_frame_padding()
     {
         ImGui::AlignTextToFramePadding();
     }
 
-    inline void Text(CStringView sv)
+    inline void draw_text(CStringView sv)
     {
         ImGui::TextUnformatted(sv.c_str(), sv.c_str() + sv.size());
     }
 
-    inline void Text(const char* fmt, ...)
+    inline void draw_text(const char* fmt, ...)
     {
         va_list args;
         va_start(args, fmt);
@@ -38,12 +38,12 @@ namespace osc::ui
         va_end(args);
     }
 
-    inline void TextDisabled(CStringView sv)
+    inline void draw_text_disabled(CStringView sv)
     {
         ImGui::TextDisabled("%s", sv.c_str());
     }
 
-    inline void TextDisabled(const char* fmt, ...)
+    inline void draw_text_disabled(const char* fmt, ...)
     {
         va_list args;
         va_start(args, fmt);
@@ -51,12 +51,12 @@ namespace osc::ui
         va_end(args);
     }
 
-    inline void TextWrapped(CStringView sv)
+    inline void draw_text_wrapped(CStringView sv)
     {
         ImGui::TextWrapped("%s", sv.c_str());
     }
 
-    inline void TextWrapped(const char* fmt, ...)
+    inline void draw_text_wrapped(const char* fmt, ...)
     {
         va_list args;
         va_start(args, fmt);
@@ -64,292 +64,300 @@ namespace osc::ui
         va_end(args);
     }
 
-    inline void TextUnformatted(CStringView sv)
+    inline void draw_text_unformatted(CStringView sv)
     {
         ImGui::TextUnformatted(sv.c_str(), sv.c_str() + sv.size());
     }
 
-    inline void Bullet()
+    inline void draw_bullet_point()
     {
         ImGui::Bullet();
     }
 
-    inline void BulletText(CStringView str)
+    inline void draw_text_bullet_pointed(CStringView str)
     {
         ImGui::BulletText("%s", str.c_str());
     }
 
-    inline bool TreeNodeEx(CStringView label, ImGuiTreeNodeFlags flags = 0)
+    inline bool draw_tree_node_ex(CStringView label, ImGuiTreeNodeFlags flags = 0)
     {
         return ImGui::TreeNodeEx(label.c_str(), flags);
     }
 
-    inline float GetTreeNodeToLabelSpacing()
+    inline float get_tree_node_to_label_spacing()
     {
         return ImGui::GetTreeNodeToLabelSpacing();
     }
 
-    inline void TreePop()
+    inline void tree_pop()
     {
         ImGui::TreePop();
     }
 
-    inline void ProgressBar(float fraction)
+    inline void draw_progress_bar(float fraction)
     {
         ImGui::ProgressBar(fraction);
     }
 
-    inline bool BeginMenu(CStringView sv, bool enabled = true)
+    inline bool begin_menu(CStringView sv, bool enabled = true)
     {
         return ImGui::BeginMenu(sv.c_str(), enabled);
     }
 
-    inline void EndMenu()
+    inline void end_menu()
     {
         return ImGui::EndMenu();
     }
 
-    inline bool MenuItem(CStringView label, CStringView shortcut = {}, bool selected = false, bool enabled = true)
+    inline bool draw_menu_item(
+        CStringView label,
+        CStringView shortcut = {},
+        bool selected = false,
+        bool enabled = true)
     {
         return ImGui::MenuItem(label.c_str(), shortcut.empty() ? nullptr : shortcut.c_str(), selected, enabled);
     }
 
-    inline bool MenuItem(CStringView label, CStringView shortcut, bool* p_selected, bool enabled = true)
+    inline bool draw_menu_item(
+        CStringView label,
+        CStringView shortcut,
+        bool* p_selected,
+        bool enabled = true)
     {
         return ImGui::MenuItem(label.c_str(), shortcut.empty() ? nullptr : shortcut.c_str(), p_selected, enabled);
     }
 
-    inline bool BeginTabBar(CStringView str_id)
+    inline bool begin_tab_bar(CStringView str_id)
     {
         return ImGui::BeginTabBar(str_id.c_str());
     }
 
-    inline void EndTabBar()
+    inline void end_tab_bar()
     {
         ImGui::EndTabBar();
     }
 
-    inline bool BeginTabItem(CStringView label, bool* p_open = nullptr, ImGuiTabItemFlags flags = 0)
+    inline bool begin_tab_item(CStringView label, bool* p_open = nullptr, ImGuiTabItemFlags flags = 0)
     {
         return ImGui::BeginTabItem(label.c_str(), p_open, flags);
     }
 
-    inline void EndTabItem()
+    inline void end_tab_item()
     {
         ImGui::EndTabItem();
     }
 
-    inline bool TabItemButton(CStringView label)
+    inline bool draw_tab_item_button(CStringView label)
     {
         return ImGui::TabItemButton(label.c_str());
     }
 
-    inline void Columns(int count = 1, const char* id = nullptr, bool border = true)
+    inline void set_num_columns(int count = 1, const char* id = nullptr, bool border = true)
     {
         ImGui::Columns(count, id, border);
     }
 
-    inline float GetColumnWidth(int column_index = -1)
+    inline float get_column_width(int column_index = -1)
     {
         return ImGui::GetColumnWidth(column_index);
     }
 
-    inline void NextColumn()
+    inline void next_column()
     {
         ImGui::NextColumn();
     }
 
-    inline void SameLine(float offset_from_start_x = 0.0f, float spacing = -1.0f)
+    inline void same_line(float offset_from_start_x = 0.0f, float spacing = -1.0f)
     {
         ImGui::SameLine(offset_from_start_x, spacing);
     }
 
-    inline bool IsMouseClicked(ImGuiMouseButton button, bool repeat = false)
+    inline bool is_mouse_clicked(ImGuiMouseButton button, bool repeat = false)
     {
         return ImGui::IsMouseClicked(button, repeat);
     }
 
-    inline bool IsMouseClicked(ImGuiMouseButton button, ImGuiID owner_id, ImGuiInputFlags flags = 0)
+    inline bool is_mouse_clicked(ImGuiMouseButton button, ImGuiID owner_id, ImGuiInputFlags flags = 0)
     {
         return ImGui::IsMouseClicked(button, owner_id, flags);
     }
 
-    inline bool IsMouseReleased(ImGuiMouseButton button)
+    inline bool is_mouse_released(ImGuiMouseButton button)
     {
         return ImGui::IsMouseReleased(button);
     }
 
-    inline bool IsMouseDown(ImGuiMouseButton button)
+    inline bool is_mouse_down(ImGuiMouseButton button)
     {
         return ImGui::IsMouseDown(button);
     }
 
-    inline bool IsMouseDragging(ImGuiMouseButton button, float lock_threshold = -1.0f)
+    inline bool is_mouse_dragging(ImGuiMouseButton button, float lock_threshold = -1.0f)
     {
         return ImGui::IsMouseDragging(button, lock_threshold);
     }
 
-    inline bool Selectable(CStringView label, bool* p_selected, ImGuiSelectableFlags flags = 0, const Vec2& size = {})
+    inline bool draw_selectable(CStringView label, bool* p_selected, ImGuiSelectableFlags flags = 0, const Vec2& size = {})
     {
         return ImGui::Selectable(label.c_str(), p_selected, flags, size);
     }
 
-    inline bool Selectable(CStringView label, bool selected = false, ImGuiSelectableFlags flags = 0, const Vec2& size = {})
+    inline bool draw_selectable(CStringView label, bool selected = false, ImGuiSelectableFlags flags = 0, const Vec2& size = {})
     {
         return ImGui::Selectable(label.c_str(), selected, flags, size);
     }
 
-    inline bool Checkbox(CStringView label, bool* v)
+    inline bool draw_checkbox(CStringView label, bool* v)
     {
         return ImGui::Checkbox(label.c_str(), v);
     }
 
-    inline bool CheckboxFlags(CStringView label, int* flags, int flags_value)
+    inline bool draw_checkbox_flags(CStringView label, int* flags, int flags_value)
     {
         return ImGui::CheckboxFlags(label.c_str(), flags, flags_value);
     }
 
-    inline bool CheckboxFlags(CStringView label, unsigned int* flags, unsigned int flags_value)
+    inline bool draw_checkbox_flags(CStringView label, unsigned int* flags, unsigned int flags_value)
     {
         return ImGui::CheckboxFlags(label.c_str(), flags, flags_value);
     }
 
-    inline bool SliderFloat(CStringView label, float* v, float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0)
+    inline bool draw_float_slider(CStringView label, float* v, float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0)
     {
         return ImGui::SliderFloat(label.c_str(), v, v_min, v_max, format, flags);
     }
 
-    inline bool InputScalar(CStringView label, ImGuiDataType data_type, void* p_data, const void* p_step = NULL, const void* p_step_fast = NULL, const char* format = NULL, ImGuiInputTextFlags flags = 0)
+    inline bool draw_scalar_input(CStringView label, ImGuiDataType data_type, void* p_data, const void* p_step = NULL, const void* p_step_fast = NULL, const char* format = NULL, ImGuiInputTextFlags flags = 0)
     {
         return ImGui::InputScalar(label.c_str(), data_type, p_data, p_step, p_step_fast, format, flags);
     }
 
-    inline bool InputInt(CStringView label, int* v, int step = 1, int step_fast = 100, ImGuiInputTextFlags flags = 0)
+    inline bool draw_int_input(CStringView label, int* v, int step = 1, int step_fast = 100, ImGuiInputTextFlags flags = 0)
     {
         return ImGui::InputInt(label.c_str(), v, step, step_fast, flags);
     }
 
-    inline bool InputDouble(CStringView label, double* v, double step = 0.0, double step_fast = 0.0, const char* format = "%.6f", ImGuiInputTextFlags flags = 0)
+    inline bool draw_double_input(CStringView label, double* v, double step = 0.0, double step_fast = 0.0, const char* format = "%.6f", ImGuiInputTextFlags flags = 0)
     {
         return ImGui::InputDouble(label.c_str(), v, step, step_fast, format, flags);
     }
 
-    inline bool InputFloat(CStringView label, float* v, float step = 0.0f, float step_fast = 0.0f, const char* format = "%.3f", ImGuiInputTextFlags flags = 0)
+    inline bool draw_float_input(CStringView label, float* v, float step = 0.0f, float step_fast = 0.0f, const char* format = "%.3f", ImGuiInputTextFlags flags = 0)
     {
         return ImGui::InputFloat(label.c_str(), v, step, step_fast, format, flags);
     }
 
-    inline bool InputFloat3(CStringView label, float v[3], const char* format = "%.3f", ImGuiInputTextFlags flags = 0)
+    inline bool draw_float3_input(CStringView label, float v[3], const char* format = "%.3f", ImGuiInputTextFlags flags = 0)
     {
         return ImGui::InputFloat3(label.c_str(), v, format, flags);
     }
 
-    inline bool InputVec3(CStringView label, Vec3& v, const char* format = "%.3f", ImGuiInputTextFlags flags = 0)
+    inline bool draw_vec3_input(CStringView label, Vec3& v, const char* format = "%.3f", ImGuiInputTextFlags flags = 0)
     {
         return ImGui::InputFloat3(label.c_str(), &v.x, format, flags);
     }
 
-    inline bool ColorEditRGB(CStringView label, Color& color)
+    inline bool draw_rgb_color_editor(CStringView label, Color& color)
     {
         return ImGui::ColorEdit3(label.c_str(), value_ptr(color));
     }
 
-    inline bool ColorEditRGBA(CStringView label, Color& color)
+    inline bool draw_rgba_color_editor(CStringView label, Color& color)
     {
         return ImGui::ColorEdit4(label.c_str(), value_ptr(color));
     }
 
-    inline bool Button(CStringView label, const Vec2& size = {})
+    inline bool draw_button(CStringView label, const Vec2& size = {})
     {
         return ImGui::Button(label.c_str(), size);
     }
 
-    inline bool SmallButton(CStringView label)
+    inline bool draw_small_button(CStringView label)
     {
         return ImGui::SmallButton(label.c_str());
     }
 
-    inline bool InvisibleButton(CStringView label, Vec2 size = {})
+    inline bool draw_invisible_button(CStringView label, Vec2 size = {})
     {
         return ImGui::InvisibleButton(label.c_str(), size);
     }
 
-    inline bool RadioButton(CStringView label, bool active)
+    inline bool draw_radio_button(CStringView label, bool active)
     {
         return ImGui::RadioButton(label.c_str(), active);
     }
 
-    inline bool CollapsingHeader(CStringView label, ImGuiTreeNodeFlags flags = 0)
+    inline bool draw_collapsing_header(CStringView label, ImGuiTreeNodeFlags flags = 0)
     {
         return ImGui::CollapsingHeader(label.c_str(), flags);
     }
 
-    inline void Dummy(const Vec2& size)
+    inline void draw_dummy(const Vec2& size)
     {
         ImGui::Dummy(size);
     }
 
-    inline bool BeginCombo(CStringView label, CStringView preview_value, ImGuiComboFlags flags = 0)
+    inline bool begin_combobox(CStringView label, CStringView preview_value, ImGuiComboFlags flags = 0)
     {
         return ImGui::BeginCombo(label.c_str(), preview_value.empty() ? nullptr : preview_value.c_str(), flags);
     }
 
-    inline void EndCombo()
+    inline void end_combobox()
     {
         ImGui::EndCombo();
     }
 
-    inline bool Combo(CStringView label, int* current_item, const char* const items[], int items_count, int popup_max_height_in_items = -1)
+    inline bool draw_combobox(CStringView label, int* current_item, const char* const items[], int items_count, int popup_max_height_in_items = -1)
     {
         return ImGui::Combo(label.c_str(), current_item, items, items_count, popup_max_height_in_items);
     }
 
-    inline bool BeginListBox(CStringView label)
+    inline bool begin_listbox(CStringView label)
     {
         return ImGui::BeginListBox(label.c_str());
     }
 
-    inline void EndListBox()
+    inline void end_listbox()
     {
         ImGui::EndListBox();
     }
 
-    inline ImGuiViewport* GetMainViewport()
+    inline ImGuiViewport* get_main_viewport()
     {
         return ImGui::GetMainViewport();
     }
 
-    inline ImGuiID DockSpaceOverViewport(const ImGuiViewport* viewport = NULL, ImGuiDockNodeFlags flags = 0, const ImGuiWindowClass* window_class = NULL)
+    inline ImGuiID enable_dockspace_over_viewport(const ImGuiViewport* viewport = NULL, ImGuiDockNodeFlags flags = 0, const ImGuiWindowClass* window_class = NULL)
     {
         return ImGui::DockSpaceOverViewport(viewport, flags, window_class);
     }
 
-    inline bool Begin(CStringView name, bool* p_open = nullptr, ImGuiWindowFlags flags = 0)
+    inline bool begin_panel(CStringView name, bool* p_open = nullptr, ImGuiWindowFlags flags = 0)
     {
         return ImGui::Begin(name.c_str(), p_open, flags);
     }
 
-    inline void End()
+    inline void end_panel()
     {
         ImGui::End();
     }
 
-    inline bool BeginChild(CStringView str_id, const Vec2& size = {}, ImGuiChildFlags child_flags = 0, ImGuiWindowFlags window_flags = 0)
+    inline bool begin_child_panel(CStringView str_id, const Vec2& size = {}, ImGuiChildFlags child_flags = 0, ImGuiWindowFlags panel_flags = 0)
     {
-        return ImGui::BeginChild(str_id.c_str(), size, child_flags, window_flags);
+        return ImGui::BeginChild(str_id.c_str(), size, child_flags, panel_flags);
     }
 
-    inline void EndChild()
+    inline void end_child_panel()
     {
         ImGui::EndChild();
     }
 
-    inline void CloseCurrentPopup()
+    inline void close_current_popup()
     {
         ImGui::CloseCurrentPopup();
     }
 
-    inline void SetTooltip(const char* fmt, ...)
+    inline void set_tooltip(const char* fmt, ...)
     {
         va_list args;
         va_start(args, fmt);
@@ -357,468 +365,468 @@ namespace osc::ui
         va_end(args);
     }
 
-    inline void SetScrollHereY()
+    inline void set_scroll_y_here()
     {
         ImGui::SetScrollHereY();
     }
 
-    inline float GetFrameHeight()
+    inline float get_frame_height()
     {
         return ImGui::GetFrameHeight();
     }
 
-    inline Vec2 GetContentRegionAvail()
+    inline Vec2 get_content_region_avail()
     {
         return ImGui::GetContentRegionAvail();
     }
 
-    inline Vec2 GetCursorStartPos()
+    inline Vec2 get_cursor_start_pos()
     {
         return ImGui::GetCursorStartPos();
     }
 
-    inline Vec2 GetCursorPos()
+    inline Vec2 get_cursor_pos()
     {
         return ImGui::GetCursorPos();
     }
 
-    inline float GetCursorPosX()
+    inline float get_cursor_pos_x()
     {
         return ImGui::GetCursorPosX();
     }
 
-    inline void SetCursorPos(Vec2 p)
+    inline void set_cursor_pos(Vec2 p)
     {
         ImGui::SetCursorPos(p);
     }
 
-    inline void SetCursorPosX(float local_x)
+    inline void set_cursor_pos_x(float local_x)
     {
         ImGui::SetCursorPosX(local_x);
     }
 
-    inline Vec2 GetCursorScreenPos()
+    inline Vec2 get_cursor_screen_pos()
     {
         return ImGui::GetCursorScreenPos();
     }
 
-    inline void SetCursorScreenPos(Vec2 pos)
+    inline void set_cursor_screen_pos(Vec2 pos)
     {
         ImGui::SetCursorScreenPos(pos);
     }
 
-    inline void SetNextWindowPos(Vec2 pos, ImGuiCond cond = 0, Vec2 pivot = {})
+    inline void set_next_panel_pos(Vec2 pos, ImGuiCond cond = 0, Vec2 pivot = {})
     {
         ImGui::SetNextWindowPos(pos, cond, pivot);
     }
 
-    inline void SetNextWindowSize(Vec2 size, ImGuiCond cond = 0)
+    inline void set_next_panel_size(Vec2 size, ImGuiCond cond = 0)
     {
         ImGui::SetNextWindowSize(size, cond);
     }
 
-    inline void SetNextWindowSizeConstraints(Vec2 size_min, Vec2 size_max)
+    inline void set_next_panel_size_constraints(Vec2 size_min, Vec2 size_max)
     {
         ImGui::SetNextWindowSizeConstraints(size_min, size_max);
     }
 
-    inline void SetNextWindowBgAlpha(float alpha)
+    inline void set_next_panel_bg_alpha(float alpha)
     {
         ImGui::SetNextWindowBgAlpha(alpha);
     }
 
-    inline bool IsWindowHovered(ImGuiHoveredFlags flags = 0)
+    inline bool is_panel_hovered(ImGuiHoveredFlags flags = 0)
     {
         return ImGui::IsWindowHovered(flags);
     }
 
-    inline void BeginDisabled(bool disabled = true)
+    inline void begin_disabled(bool disabled = true)
     {
         ImGui::BeginDisabled(disabled);
     }
 
-    inline bool BeginTooltipNoWrap()
-    {
-        return ImGui::BeginTooltip();
-    }
-
-    inline void EndTooltipNoWrap()
-    {
-        ImGui::EndTooltip();
-    }
-
-    inline void EndDisabled()
+    inline void end_disabled()
     {
         ImGui::EndDisabled();
     }
 
-    inline void PushID(UID id)
+    inline bool begin_tooltip_nowrap()
+    {
+        return ImGui::BeginTooltip();
+    }
+
+    inline void end_tooltip_nowrap()
+    {
+        ImGui::EndTooltip();
+    }
+
+    inline void push_id(UID id)
     {
         ImGui::PushID(static_cast<int>(id.get()));
     }
 
-    inline void PushID(ptrdiff_t p)
+    inline void push_id(ptrdiff_t p)
     {
         ImGui::PushID(static_cast<int>(p));
     }
 
-    inline void PushID(size_t i)
+    inline void push_id(size_t i)
     {
         ImGui::PushID(static_cast<int>(i));
     }
 
-    inline void PushID(int int_id)
+    inline void push_id(int int_id)
     {
         ImGui::PushID(int_id);
     }
 
-    inline void PushID(const void* ptr_id)
+    inline void push_id(const void* ptr_id)
     {
         ImGui::PushID(ptr_id);
     }
 
-    inline void PushID(CStringView str_id)
+    inline void push_id(CStringView str_id)
     {
         ImGui::PushID(str_id.data(), str_id.data() + str_id.size());
     }
 
-    inline void PopID()
+    inline void pop_id()
     {
         ImGui::PopID();
     }
 
-    inline ImGuiID GetID(CStringView str_id)
+    inline ImGuiID get_id(CStringView str_id)
     {
         return ImGui::GetID(str_id.c_str());
     }
 
-    inline ImGuiItemFlags GetItemFlags()
+    inline ImGuiItemFlags get_item_flags()
     {
         return ImGui::GetItemFlags();
     }
 
-    inline void ItemSize(Rect r)  // note: ImGui API assumes cursor is located at `p1` already
+    inline void set_next_item_size(Rect r)  // note: ImGui API assumes cursor is located at `p1` already
     {
         ImGui::ItemSize(ImRect{r.p1, r.p2});
     }
 
-    inline bool ItemAdd(Rect bounds, ImGuiID id)
+    inline bool add_item(Rect bounds, ImGuiID id)
     {
         return ImGui::ItemAdd(ImRect{bounds.p1, bounds.p2}, id);
     }
 
-    inline bool ItemHoverable(Rect bounds, ImGuiID id, ImGuiItemFlags item_flags)
+    inline bool is_item_hoverable(Rect bounds, ImGuiID id, ImGuiItemFlags item_flags)
     {
         return ImGui::ItemHoverable(ImRect{bounds.p1, bounds.p2}, id, item_flags);
     }
 
-    inline void Separator()
+    inline void draw_separator()
     {
         ImGui::Separator();
     }
 
-    inline void SeparatorEx(ImGuiSeparatorFlags flags)
+    inline void draw_separator(ImGuiSeparatorFlags flags)
     {
         ImGui::SeparatorEx(flags);
     }
 
-    inline void NewLine()
+    inline void start_new_line()
     {
         ImGui::NewLine();
     }
 
-    inline void Indent(float indent_w = 0.0f)
+    inline void indent(float indent_w = 0.0f)
     {
         ImGui::Indent(indent_w);
     }
 
-    inline void Unindent(float indent_w = 0.0f)
+    inline void unindent(float indent_w = 0.0f)
     {
         ImGui::Unindent(indent_w);
     }
 
-    inline void SetKeyboardFocusHere()
+    inline void set_keyboard_focus_here()
     {
         ImGui::SetKeyboardFocusHere();
     }
 
-    inline bool IsKeyPressed(ImGuiKey key, bool repeat = true)
+    inline bool is_key_pressed(ImGuiKey key, bool repeat = true)
     {
         return ImGui::IsKeyPressed(key, repeat);
     }
 
-    inline bool IsKeyReleased(ImGuiKey key)
+    inline bool is_key_released(ImGuiKey key)
     {
         return ImGui::IsKeyReleased(key);
     }
 
-    inline bool IsKeyDown(ImGuiKey key)
+    inline bool is_key_down(ImGuiKey key)
     {
         return ImGui::IsKeyDown(key);
     }
 
-    inline ImGuiStyle& GetStyle()
+    inline ImGuiStyle& get_style()
     {
         return ImGui::GetStyle();
     }
 
-    inline Color GetStyleColor(ImGuiCol color)
+    inline Color get_style_color(ImGuiCol color)
     {
         const auto vec = ImGui::GetStyleColorVec4(color);
         return {vec.x, vec.y, vec.z, vec.w};
     }
 
-    inline Vec2 GetStyleFramePadding()
+    inline Vec2 get_style_frame_padding()
     {
-        return GetStyle().FramePadding;
+        return get_style().FramePadding;
     }
 
-    inline float GetStyleFrameBorderSize()
+    inline float get_style_frame_border_size()
     {
-        return GetStyle().FrameBorderSize;
+        return get_style().FrameBorderSize;
     }
 
-    inline Vec2 GetStyleWindowPadding()
+    inline Vec2 get_style_panel_padding()
     {
-        return GetStyle().WindowPadding;
+        return get_style().WindowPadding;
     }
 
-    inline Vec2 GetStyleItemSpacing()
+    inline Vec2 get_style_item_spacing()
     {
-        return GetStyle().ItemSpacing;
+        return get_style().ItemSpacing;
     }
 
-    inline Vec2 GetStyleItemInnerSpacing()
+    inline Vec2 get_style_item_inner_spacing()
     {
-        return GetStyle().ItemInnerSpacing;
+        return get_style().ItemInnerSpacing;
     }
 
-    inline float GetStyleAlpha()
+    inline float get_style_alpha()
     {
-        return GetStyle().Alpha;
+        return get_style().Alpha;
     }
 
-    inline ImGuiIO& GetIO()
+    inline ImGuiIO& get_io()
     {
         return ImGui::GetIO();
     }
 
-    inline void PushStyleVar(ImGuiStyleVar style, const Vec2& pos)
+    inline void push_style_var(ImGuiStyleVar style, const Vec2& pos)
     {
         ImGui::PushStyleVar(style, pos);
     }
 
-    inline void PushStyleVar(ImGuiStyleVar style, float pos)
+    inline void push_style_var(ImGuiStyleVar style, float pos)
     {
         ImGui::PushStyleVar(style, pos);
     }
 
-    inline void PopStyleVar(int count = 1)
+    inline void pop_style_var(int count = 1)
     {
         ImGui::PopStyleVar(count);
     }
 
-    inline void OpenPopup(CStringView str_id, ImGuiPopupFlags popup_flags = 0)
+    inline void open_popup(CStringView str_id, ImGuiPopupFlags popup_flags = 0)
     {
         return ImGui::OpenPopup(str_id.c_str(), popup_flags);
     }
 
-    inline bool BeginPopup(CStringView str_id, ImGuiWindowFlags flags = 0)
+    inline bool begin_popup(CStringView str_id, ImGuiWindowFlags flags = 0)
     {
         return ImGui::BeginPopup(str_id.c_str(), flags);
     }
 
-    inline bool BeginPopupContextItem(CStringView str_id = nullptr, ImGuiPopupFlags popup_flags = 1)
+    inline bool begin_popup_context_menu(CStringView str_id = nullptr, ImGuiPopupFlags popup_flags = 1)
     {
         return ImGui::BeginPopupContextItem(str_id.c_str(), popup_flags);
     }
 
-    inline bool BeginPopupModal(CStringView name, bool* p_open = NULL, ImGuiWindowFlags flags = 0)
+    inline bool begin_popup_modal(CStringView name, bool* p_open = NULL, ImGuiWindowFlags flags = 0)
     {
         return ImGui::BeginPopupModal(name.c_str(), p_open, flags);
     }
 
-    inline void EndPopup()
+    inline void end_popup()
     {
         ImGui::EndPopup();
     }
 
-    inline Vec2 GetMousePos()
+    inline Vec2 get_mouse_pos()
     {
         return ImGui::GetMousePos();
     }
 
-    inline bool BeginMenuBar()
+    inline bool begin_menu_bar()
     {
         return ImGui::BeginMenuBar();
     }
 
-    inline void EndMenuBar()
+    inline void end_menu_bar()
     {
         ImGui::EndMenuBar();
     }
 
-    inline void SetMouseCursor(ImGuiMouseCursor cursor_type)
+    inline void set_mouse_cursor(ImGuiMouseCursor cursor_type)
     {
         ImGui::SetMouseCursor(cursor_type);
     }
 
-    inline void SetNextItemWidth(float item_width)
+    inline void set_next_item_width(float item_width)
     {
         ImGui::SetNextItemWidth(item_width);
     }
 
-    inline void SetNextItemOpen(bool is_open)
+    inline void set_next_item_open(bool is_open)
     {
         ImGui::SetNextItemOpen(is_open);
     }
 
-    inline void PushItemFlag(ImGuiItemFlags option, bool enabled)
+    inline void push_item_flag(ImGuiItemFlags option, bool enabled)
     {
         ImGui::PushItemFlag(option, enabled);
     }
 
-    inline void PopItemFlag()
+    inline void pop_item_flag()
     {
         ImGui::PopItemFlag();
     }
 
-    inline bool IsItemClicked(ImGuiMouseButton mouse_button = 0)
+    inline bool is_item_clicked(ImGuiMouseButton mouse_button = 0)
     {
         return ImGui::IsItemClicked(mouse_button);
     }
 
-    inline bool IsItemHovered(ImGuiHoveredFlags flags = 0)
+    inline bool is_item_hovered(ImGuiHoveredFlags flags = 0)
     {
         return ImGui::IsItemHovered(flags);
     }
 
-    inline bool IsItemDeactivatedAfterEdit()
+    inline bool is_item_deactivated_after_edit()
     {
         return ImGui::IsItemDeactivatedAfterEdit();
     }
 
-    inline Vec2 GetItemRectMin()
+    inline Vec2 get_item_topleft()
     {
         return ImGui::GetItemRectMin();
     }
 
-    inline Vec2 GetItemRectMax()
+    inline Vec2 get_item_bottomright()
     {
         return ImGui::GetItemRectMax();
     }
 
-    inline bool BeginTable(CStringView str_id, int column, ImGuiTableFlags flags = 0, const Vec2& outer_size = {}, float inner_width = 0.0f)
+    inline bool begin_table(CStringView str_id, int column, ImGuiTableFlags flags = 0, const Vec2& outer_size = {}, float inner_width = 0.0f)
     {
         return ImGui::BeginTable(str_id.c_str(), column, flags, outer_size, inner_width);
     }
 
-    inline void TableSetupScrollFreeze(int cols, int rows)
+    inline void table_setup_scroll_freeze(int cols, int rows)
     {
         ImGui::TableSetupScrollFreeze(cols, rows);
     }
 
-    inline ImGuiTableSortSpecs* TableGetSortSpecs()
+    inline ImGuiTableSortSpecs* table_get_sort_specs()
     {
         return ImGui::TableGetSortSpecs();
     }
 
-    inline void TableHeadersRow()
+    inline void table_headers_row()
     {
         ImGui::TableHeadersRow();
     }
 
-    inline bool TableSetColumnIndex(int column_n)
+    inline bool table_set_column_index(int column_n)
     {
         return ImGui::TableSetColumnIndex(column_n);
     }
 
-    inline void TableNextRow(ImGuiTableRowFlags row_flags = 0, float min_row_height = 0.0f)
+    inline void table_next_row(ImGuiTableRowFlags row_flags = 0, float min_row_height = 0.0f)
     {
         ImGui::TableNextRow(row_flags, min_row_height);
     }
 
-    inline void TableSetupColumn(CStringView label, ImGuiTableColumnFlags flags = 0, float init_width_or_weight = 0.0f, ImGuiID user_id = 0)
+    inline void table_setup_column(CStringView label, ImGuiTableColumnFlags flags = 0, float init_width_or_weight = 0.0f, ImGuiID user_id = 0)
     {
         ImGui::TableSetupColumn(label.c_str(), flags, init_width_or_weight, user_id);
     }
 
-    inline void EndTable()
+    inline void end_table()
     {
         ImGui::EndTable();
     }
 
-    inline void PushStyleColor(ImGuiCol index, ImU32 col)
+    inline void push_style_color(ImGuiCol index, ImU32 col)
     {
         ImGui::PushStyleColor(index, col);
     }
 
-    inline void PushStyleColor(ImGuiCol index, const Vec4& col)
+    inline void push_style_color(ImGuiCol index, const Vec4& col)
     {
         ImGui::PushStyleColor(index, ImVec4{col});
     }
 
-    inline void PushStyleColor(ImGuiCol index, const Color& c)
+    inline void push_style_color(ImGuiCol index, const Color& c)
     {
         ImGui::PushStyleColor(index, {c.r, c.g, c.b, c.a});
     }
 
-    inline void PopStyleColor(int count = 1)
+    inline void pop_style_color(int count = 1)
     {
         ImGui::PopStyleColor(count);
     }
 
-    inline ImU32 GetColorU32(ImGuiCol index)
+    inline ImU32 get_color_ImU32(ImGuiCol index)
     {
         return ImGui::GetColorU32(index);
     }
 
-    inline ImU32 ColorConvertFloat4ToU32(const Vec4& color)
+    inline ImU32 to_ImU32(const Vec4& color)
     {
         return ImGui::ColorConvertFloat4ToU32(color);
     }
 
-    inline float GetTextLineHeight()
+    inline float get_text_line_height()
     {
         return ImGui::GetTextLineHeight();
     }
 
-    inline float GetTextLineHeightWithSpacing()
+    inline float get_text_line_height_with_spacing()
     {
         return ImGui::GetTextLineHeightWithSpacing();
     }
 
-    inline float GetFontSize()
+    inline float get_font_size()
     {
         return ImGui::GetFontSize();
     }
 
-    inline Vec2 CalcTextSize(CStringView text, bool hide_text_after_double_hash = false)
+    inline Vec2 calc_text_size(CStringView text, bool hide_text_after_double_hash = false)
     {
         return ImGui::CalcTextSize(text.c_str(), text.c_str() + text.size(), hide_text_after_double_hash);
     }
 
-    inline Vec2 GetWindowSize()
+    inline Vec2 get_panel_size()
     {
         return ImGui::GetWindowSize();
     }
 
-    inline ImDrawList* GetWindowDrawList()
+    inline ImDrawList* get_panel_draw_list()
     {
         return ImGui::GetWindowDrawList();
     }
 
-    inline ImDrawList* GetForegroundDrawList()
+    inline ImDrawList* get_foreground_draw_list()
     {
         return ImGui::GetForegroundDrawList();
     }
 
-    inline ImDrawListSharedData* GetDrawListSharedData()
+    inline ImDrawListSharedData* get_draw_list_shared_data()
     {
         return ImGui::GetDrawListSharedData();
     }
 
-    inline void ShowDemoWindow()
+    inline void show_demo_panel()
     {
         ImGui::ShowDemoWindow();
     }

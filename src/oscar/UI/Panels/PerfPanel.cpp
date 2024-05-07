@@ -26,29 +26,29 @@ public:
 private:
     void impl_draw_content() final
     {
-        ui::Columns(2);
-        ui::TextUnformatted("FPS");
-        ui::NextColumn();
-        ui::Text("%.0f", static_cast<double>(ui::GetIO().Framerate));
-        ui::NextColumn();
-        ui::Columns();
+        ui::set_num_columns(2);
+        ui::draw_text_unformatted("FPS");
+        ui::next_column();
+        ui::draw_text("%.0f", static_cast<double>(ui::get_io().Framerate));
+        ui::next_column();
+        ui::set_num_columns();
 
         {
             bool waiting = App::get().is_main_loop_waiting();
-            if (ui::Checkbox("waiting", &waiting)) {
+            if (ui::draw_checkbox("waiting", &waiting)) {
                 App::upd().set_main_loop_waiting(waiting);
             }
         }
         {
             bool vsync = App::get().is_vsync_enabled();
-            if (ui::Checkbox("VSYNC", &vsync)) {
+            if (ui::draw_checkbox("VSYNC", &vsync)) {
                 App::upd().set_vsync(vsync);
             }
         }
-        if (ui::Button("clear measurements")) {
+        if (ui::draw_button("clear measurements")) {
             ClearAllPerfMeasurements();
         }
-        ui::Checkbox("pause", &is_paused_);
+        ui::draw_checkbox("pause", &is_paused_);
 
         std::vector<PerfMeasurement> measurements;
         if (not is_paused_) {
@@ -61,14 +61,14 @@ private:
             ImGuiTableFlags_Resizable |
             ImGuiTableFlags_BordersInner;
 
-        if (ui::BeginTable("measurements", 6, flags)) {
-            ui::TableSetupColumn("Label");
-            ui::TableSetupColumn("Source File");
-            ui::TableSetupColumn("Num Calls");
-            ui::TableSetupColumn("Last Duration");
-            ui::TableSetupColumn("Average Duration");
-            ui::TableSetupColumn("Total Duration");
-            ui::TableHeadersRow();
+        if (ui::begin_table("measurements", 6, flags)) {
+            ui::table_setup_column("Label");
+            ui::table_setup_column("Source File");
+            ui::table_setup_column("Num Calls");
+            ui::table_setup_column("Last Duration");
+            ui::table_setup_column("Average Duration");
+            ui::table_setup_column("Total Duration");
+            ui::table_headers_row();
 
             for (const PerfMeasurement& measurement : measurements) {
 
@@ -77,22 +77,22 @@ private:
                 }
 
                 int column = 0;
-                ui::TableNextRow();
-                ui::TableSetColumnIndex(column++);
-                ui::TextUnformatted(measurement.getLabel());
-                ui::TableSetColumnIndex(column++);
-                ui::Text("%s:%u", measurement.getFilename().c_str(), measurement.getLine());
-                ui::TableSetColumnIndex(column++);
-                ui::Text("%zu", measurement.getCallCount());
-                ui::TableSetColumnIndex(column++);
-                ui::Text("%" PRId64 " us", static_cast<int64_t>(std::chrono::duration_cast<std::chrono::microseconds>(measurement.getLastDuration()).count()));
-                ui::TableSetColumnIndex(column++);
-                ui::Text("%" PRId64 " us", static_cast<int64_t>(std::chrono::duration_cast<std::chrono::microseconds>(measurement.getAvgDuration()).count()));
-                ui::TableSetColumnIndex(column++);
-                ui::Text("%" PRId64 " us", static_cast<int64_t>(std::chrono::duration_cast<std::chrono::microseconds>(measurement.getTotalDuration()).count()));
+                ui::table_next_row();
+                ui::table_set_column_index(column++);
+                ui::draw_text_unformatted(measurement.getLabel());
+                ui::table_set_column_index(column++);
+                ui::draw_text("%s:%u", measurement.getFilename().c_str(), measurement.getLine());
+                ui::table_set_column_index(column++);
+                ui::draw_text("%zu", measurement.getCallCount());
+                ui::table_set_column_index(column++);
+                ui::draw_text("%" PRId64 " us", static_cast<int64_t>(std::chrono::duration_cast<std::chrono::microseconds>(measurement.getLastDuration()).count()));
+                ui::table_set_column_index(column++);
+                ui::draw_text("%" PRId64 " us", static_cast<int64_t>(std::chrono::duration_cast<std::chrono::microseconds>(measurement.getAvgDuration()).count()));
+                ui::table_set_column_index(column++);
+                ui::draw_text("%" PRId64 " us", static_cast<int64_t>(std::chrono::duration_cast<std::chrono::microseconds>(measurement.getTotalDuration()).count()));
             }
 
-            ui::EndTable();
+            ui::end_table();
         }
     }
 

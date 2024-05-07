@@ -40,7 +40,7 @@ private:
         if (e.type == SDL_MOUSEWHEEL) {
             float const factor = e.wheel.y > 0 ? 0.9f : 1.11111111f;
 
-            applyZoom(ui::GetIO().MousePos, factor);
+            applyZoom(ui::get_io().MousePos, factor);
             return true;
         }
         if (e.type == SDL_MOUSEMOTION && (e.motion.state & SDL_BUTTON_LMASK) != 0) {
@@ -53,7 +53,7 @@ private:
 
     void impl_on_draw() final
     {
-        m_MainViewportWorkspaceScreenRect = ui::GetMainViewportWorkspaceScreenRect();
+        m_MainViewportWorkspaceScreenRect = ui::get_main_viewport_workspace_screen_rect();
 
         m_Material.set_vec2("uRescale", {1.0f, 1.0f});
         m_Material.set_vec2("uOffset", {});

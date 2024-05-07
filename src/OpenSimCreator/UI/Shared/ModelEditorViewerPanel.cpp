@@ -185,28 +185,28 @@ namespace
                 edited = true;
             }
 
-            ui::SameLine();
-            ui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
-            ui::SameLine();
+            ui::same_line();
+            ui::draw_separator(ImGuiSeparatorFlags_Vertical);
+            ui::same_line();
 
             // draw translate/rotate/scale selector
             {
                 ImGuizmo::OPERATION op = m_Gizmo.getOperation();
-                if (DrawGizmoOpSelector(op, true, true, false))
+                if (ui::draw_gizmo_op_selector(op, true, true, false))
                 {
                     m_Gizmo.setOperation(op);
                     edited = true;
                 }
             }
 
-            ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
-            ui::SameLine();
-            ui::PopStyleVar();
+            ui::push_style_var(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
+            ui::same_line();
+            ui::pop_style_var();
 
             // draw global/world selector
             {
                 ImGuizmo::MODE mode = m_Gizmo.getMode();
-                if (DrawGizmoModeSelector(mode))
+                if (ui::draw_gizmo_mode_selector(mode))
                 {
                     m_Gizmo.setMode(mode);
                     edited = true;
@@ -218,7 +218,7 @@ namespace
 
         std::shared_ptr<IconCache> m_IconCache = App::singleton<IconCache>(
             App::resource_loader().with_prefix("icons/"),
-            ui::GetTextLineHeight()/128.0f
+            ui::get_text_line_height()/128.0f
         );
         std::string panel_name_;
         ModelSelectionGizmo m_Gizmo;
@@ -238,7 +238,7 @@ namespace
             ModelEditorViewerPanelParameters& params,
             ModelEditorViewerPanelState& state) final
         {
-            return ui::UpdatePolarCameraFromKeyboardInputs(
+            return ui::update_polar_camera_from_keyboard_inputs(
                 params.updRenderParams().camera,
                 state.viewportRect,
                 state.maybeSceneAABB
@@ -252,12 +252,12 @@ namespace
             m_IsHandlingMouseInputs = true;
 
             // try updating the camera (mouse panning, etc.)
-            bool rv = ui::UpdatePolarCameraFromMouseInputs(
+            bool rv = ui::update_polar_camera_from_mouse_inputs(
                 params.updRenderParams().camera,
                 dimensions_of(state.viewportRect)
             );
 
-            if (ui::IsDraggingWithAnyMouseButtonDown())
+            if (ui::is_mouse_dragging_with_any_button_down())
             {
                 params.getModelSharedPtr()->setHovered(nullptr);
             }
@@ -291,7 +291,7 @@ namespace
             // hover, but not panning: show tooltip
             if (!state.maybeHoveredComponentAbsPath.toString().empty() &&
                 m_IsHandlingMouseInputs &&
-                !ui::IsDraggingWithAnyMouseButtonDown())
+                !ui::is_mouse_dragging_with_any_button_down())
             {
                 if (OpenSim::Component const* c = FindComponent(params.getModelSharedPtr()->getModel(), state.maybeHoveredComponentAbsPath))
                 {
@@ -362,12 +362,12 @@ public:
 private:
     void impl_before_imgui_begin() final
     {
-        ui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
+        ui::push_style_var(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
     }
 
     void impl_after_imgui_begin() final
     {
-        ui::PopStyleVar();
+        ui::pop_style_var();
     }
 
     void impl_draw_content() final
@@ -377,9 +377,9 @@ private:
         // because GCing destroyed them before they were rendered
         layersGarbageCollect();
 
-        m_State.viewportRect = ui::ContentRegionAvailScreenRect();
-        m_State.isLeftClickReleasedWithoutDragging = ui::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left);
-        m_State.isRightClickReleasedWithoutDragging = ui::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right);
+        m_State.viewportRect = ui::content_region_avail_as_screen_rect();
+        m_State.isLeftClickReleasedWithoutDragging = ui::is_mouse_released_without_dragging(ImGuiMouseButton_Left);
+        m_State.isRightClickReleasedWithoutDragging = ui::is_mouse_released_without_dragging(ImGuiMouseButton_Right);
 
         // if necessary, auto-focus the camera on the first frame
         if (m_IsFirstFrame)
@@ -399,7 +399,7 @@ private:
         {
             layersHandleMouseInputs();
 
-            if (!ui::GetIO().WantCaptureKeyboard)
+            if (!ui::get_io().WantCaptureKeyboard)
             {
                 layersHandleKeyboardInputs();
             }
@@ -413,12 +413,12 @@ private:
                 dimensions_of(m_State.viewportRect),
                 App::get().anti_aliasing_level()
             );
-            ui::Image(
+            ui::draw_image(
                 sceneTexture,
                 dimensions_of(m_State.viewportRect)
             );
 
-            // care: hittesting is done here, rather than using ui::IsWindowHovered, because
+            // care: hittesting is done here, rather than using ui::is_panel_hovered, because
             // we care about whether the _render_ is hovered, not any part of the window (which
             // may include things like the title bar, etc.
             //
@@ -428,11 +428,11 @@ private:
             // check if the window is conditionally hovered: this returns true if no other window is
             // overlapping the editor panel, _but_ it also returns true if the user is only hovering
             // the title bar of the window, rather than specifically the render
-            bool const windowHovered = ui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows);
+            bool const windowHovered = ui::is_panel_hovered(ImGuiHoveredFlags_ChildWindows);
 
             // check if the 3D render is hovered - ignore blocking and overlapping because the layer
             // stack might be screwing with this
-            bool const renderHoveredIgnoringOverlap = ui::IsItemHovered(
+            bool const renderHoveredIgnoringOverlap = ui::is_item_hovered(
                 ImGuiHoveredFlags_AllowWhenBlockedByActiveItem |
                 ImGuiHoveredFlags_AllowWhenOverlapped
             );
@@ -448,7 +448,7 @@ private:
         {
             m_State.maybeBaseLayerHittest = m_State.getRenderer().getClosestCollision(
                 m_Parameters.getRenderParams(),
-                ui::GetMousePos(),
+                ui::get_mouse_pos(),
                 m_State.viewportRect
             );
         }
@@ -508,7 +508,7 @@ private:
         {
             ModelEditorViewerPanelLayer& layer = **it;
 
-            ImGuiWindowFlags windowFlags = ui::GetMinimalWindowFlags() & ~ImGuiWindowFlags_NoInputs;
+            ImGuiWindowFlags windowFlags = ui::get_minimal_panel_flags() & ~ImGuiWindowFlags_NoInputs;
 
             // if any layer above this one captures mouse inputs then disable this layer's inputs
             if (find_if(it+1, m_Layers.end(), [](auto const& layerPtr) -> bool { return layerPtr->getFlags() & ModelEditorViewerPanelLayerFlags::CapturesMouseInputs; }) != m_Layers.end())
@@ -518,17 +518,17 @@ private:
 
             // layers always have a background (although, it can be entirely invisible)
             windowFlags &= ~ImGuiWindowFlags_NoBackground;
-            ui::SetNextWindowBgAlpha(layer.getBackgroundAlpha());
+            ui::set_next_panel_bg_alpha(layer.getBackgroundAlpha());
 
             // draw the layer in a child window, so that ImGui understands that hittests
             // should happen window-by-window (otherwise, you'll have problems with overlapping
             // buttons, widgets, etc.)
-            ui::SetNextWindowPos(m_State.viewportRect.p1);
+            ui::set_next_panel_pos(m_State.viewportRect.p1);
             std::string const childID = std::to_string(std::distance(it, m_Layers.end()));
-            if (ui::BeginChild(childID, dimensions_of(m_State.viewportRect), ImGuiChildFlags_None, windowFlags))
+            if (ui::begin_child_panel(childID, dimensions_of(m_State.viewportRect), ImGuiChildFlags_None, windowFlags))
             {
                 layer.onDraw(m_Parameters, m_State);
-                ui::EndChild();
+                ui::end_child_panel();
             }
         }
     }

@@ -16,15 +16,8 @@ namespace osc
         {}
 
     private:
-        UID impl_get_id() const final
-        {
-            return id_;
-        }
-
-        CStringView impl_get_name() const final
-        {
-            return name_;
-        }
+        UID impl_get_id() const final { return id_; }
+        CStringView impl_get_name() const final { return name_; }
 
         UID id_;
         std::string name_;

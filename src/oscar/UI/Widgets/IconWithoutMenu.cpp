@@ -23,13 +23,13 @@ osc::IconWithoutMenu::IconWithoutMenu(
 
 Vec2 osc::IconWithoutMenu::dimensions() const
 {
-    const Vec2 padding = ui::GetStyleFramePadding();
+    const Vec2 padding = ui::get_style_frame_padding();
     return Vec2{icon_.dimensions()} + 2.0f*padding;
 }
 
 bool osc::IconWithoutMenu::on_draw()
 {
-    const bool rv = ui::ImageButton(button_id_, icon_.texture(), icon_.dimensions(), icon_.texture_coordinates());
-    ui::DrawTooltipIfItemHovered(title_, description_);
+    const bool rv = ui::draw_image_button(button_id_, icon_.texture(), icon_.dimensions(), icon_.texture_coordinates());
+    ui::draw_tooltip_if_item_hovered(title_, description_);
     return rv;
 }

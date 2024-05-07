@@ -137,12 +137,12 @@ private:
             graphics::draw(m_CubeMesh, m_LightTransform, m_LightCubeMaterial, m_Camera);
         }
 
-        m_Camera.set_pixel_rect(ui::GetMainViewportWorkspaceScreenRect());
+        m_Camera.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
         m_Camera.render_to_screen();
 
-        ui::Begin("controls");
-        ui::Checkbox("normal mapping", &m_IsNormalMappingEnabled);
-        ui::End();
+        ui::begin_panel("controls");
+        ui::draw_checkbox("normal mapping", &m_IsNormalMappingEnabled);
+        ui::end_panel();
     }
 
     ResourceLoader m_Loader = App::resource_loader();

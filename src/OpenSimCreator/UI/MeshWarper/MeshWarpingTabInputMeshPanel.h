@@ -64,9 +64,9 @@ namespace osc
         void impl_draw_content() final
         {
             // compute top-level UI variables (render rect, mouse pos, etc.)
-            Rect const contentRect = ui::ContentRegionAvailScreenRect();
+            Rect const contentRect = ui::content_region_avail_as_screen_rect();
             Vec2 const contentRectDims = dimensions_of(contentRect);
-            Vec2 const mousePos = ui::GetMousePos();
+            Vec2 const mousePos = ui::get_mouse_pos();
 
             // un-project mouse's (2D) location into the 3D scene as a ray
             Line const cameraRay = m_Camera.unproject_topleft_pos_to_world_ray(mousePos - contentRect.p1, contentRectDims);
@@ -98,14 +98,14 @@ namespace osc
 
             // render 3D: draw the scene into the content rect and 2D-hittest it
             RenderTexture& renderTexture = renderScene(contentRectDims, meshCollision, landmarkCollision);
-            ui::Image(renderTexture);
-            m_LastTextureHittestResult = ui::HittestLastItem();
+            ui::draw_image(renderTexture);
+            m_LastTextureHittestResult = ui::hittest_last_drawn_item();
 
             // handle any events due to hovering over, clicking, etc.
             handleInputAndHoverEvents(m_LastTextureHittestResult, meshCollision, landmarkCollision);
 
             // render 2D: draw any 2D overlays over the 3D render
-            draw2DOverlayUI(m_LastTextureHittestResult.item_rect);
+            draw2DOverlayUI(m_LastTextureHittestResult.item_screen_rect);
         }
 
         // update the 3D camera from user inputs/external data
@@ -128,7 +128,7 @@ namespace osc
             // if the user interacts with the render, update the camera as necessary
             if (m_LastTextureHittestResult.is_hovered)
             {
-                if (ui::UpdatePolarCameraFromMouseInputs(m_Camera, dimensions_of(m_LastTextureHittestResult.item_rect)))
+                if (ui::update_polar_camera_from_mouse_inputs(m_Camera, dimensions_of(m_LastTextureHittestResult.item_screen_rect)))
                 {
                     m_State->linkedCameraBase = m_Camera;  // reflects latest modification
                 }
@@ -380,7 +380,7 @@ namespace osc
             {
                 if (landmarkCollision && landmarkCollision->isHoveringASceneElement())
                 {
-                    if (!ui::IsShiftDown())
+                    if (!ui::is_shift_down())
                     {
                         m_State->clearSelection();
                     }
@@ -415,7 +415,7 @@ namespace osc
 
             // event: if the user is hovering the render while something is selected and the user
             // presses delete then the landmarks should be deleted
-            if (htResult.is_hovered && ui::IsAnyKeyPressed({ImGuiKey_Delete, ImGuiKey_Backspace}))
+            if (htResult.is_hovered && ui::any_of_keys_pressed({ImGuiKey_Delete, ImGuiKey_Backspace}))
             {
                 ActionDeleteSceneElementsByID(
                     m_State->updUndoable(),
@@ -430,137 +430,137 @@ namespace osc
         // draws 2D ImGui overlays over the scene render
         void draw2DOverlayUI(Rect const& renderRect)
         {
-            ui::SetCursorScreenPos(renderRect.p1 + m_State->overlayPadding);
+            ui::set_cursor_screen_pos(renderRect.p1 + m_State->overlayPadding);
 
             drawInformationIcon();
-            ui::SameLine();
+            ui::same_line();
             drawImportButton();
-            ui::SameLine();
+            ui::same_line();
             drawExportButton();
-            ui::SameLine();
+            ui::same_line();
             drawAutoFitCameraButton();
-            ui::SameLine();
+            ui::same_line();
             drawLandmarkRadiusSlider();
         }
 
         // draws a information icon that shows basic mesh info when hovered
         void drawInformationIcon()
         {
-            ui::ButtonNoBg(ICON_FA_INFO_CIRCLE);
-            if (ui::IsItemHovered())
+            ui::draw_button_nobg(ICON_FA_INFO_CIRCLE);
+            if (ui::is_item_hovered())
             {
-                ui::BeginTooltip();
+                ui::begin_tooltip();
 
-                ui::TextDisabled("Input Information:");
+                ui::draw_text_disabled("Input Information:");
                 drawInputInformationTable();
 
-                ui::EndTooltip();
+                ui::end_tooltip();
             }
         }
 
         // draws a table containing useful input information (handy for debugging)
         void drawInputInformationTable()
         {
-            if (ui::BeginTable("##inputinfo", 2))
+            if (ui::begin_table("##inputinfo", 2))
             {
-                ui::TableSetupColumn("Name");
-                ui::TableSetupColumn("Value");
+                ui::table_setup_column("Name");
+                ui::table_setup_column("Value");
 
-                ui::TableNextRow();
-                ui::TableSetColumnIndex(0);
-                ui::Text("# landmarks");
-                ui::TableSetColumnIndex(1);
-                ui::Text("%zu", CountNumLandmarksForInput(m_State->getScratch(), m_DocumentIdentifier));
+                ui::table_next_row();
+                ui::table_set_column_index(0);
+                ui::draw_text("# landmarks");
+                ui::table_set_column_index(1);
+                ui::draw_text("%zu", CountNumLandmarksForInput(m_State->getScratch(), m_DocumentIdentifier));
 
-                ui::TableNextRow();
-                ui::TableSetColumnIndex(0);
-                ui::Text("# vertices");
-                ui::TableSetColumnIndex(1);
-                ui::Text("%zu", m_State->getScratchMesh(m_DocumentIdentifier).num_vertices());
+                ui::table_next_row();
+                ui::table_set_column_index(0);
+                ui::draw_text("# vertices");
+                ui::table_set_column_index(1);
+                ui::draw_text("%zu", m_State->getScratchMesh(m_DocumentIdentifier).num_vertices());
 
-                ui::TableNextRow();
-                ui::TableSetColumnIndex(0);
-                ui::Text("# triangles");
-                ui::TableSetColumnIndex(1);
-                ui::Text("%zu", m_State->getScratchMesh(m_DocumentIdentifier).num_indices()/3);
+                ui::table_next_row();
+                ui::table_set_column_index(0);
+                ui::draw_text("# triangles");
+                ui::table_set_column_index(1);
+                ui::draw_text("%zu", m_State->getScratchMesh(m_DocumentIdentifier).num_indices()/3);
 
-                ui::EndTable();
+                ui::end_table();
             }
         }
 
         // draws an import button that enables the user to import things for this input
         void drawImportButton()
         {
-            ui::Button(ICON_FA_FILE_IMPORT " import" ICON_FA_CARET_DOWN);
-            if (ui::BeginPopupContextItem("##importcontextmenu", ImGuiPopupFlags_MouseButtonLeft))
+            ui::draw_button(ICON_FA_FILE_IMPORT " import" ICON_FA_CARET_DOWN);
+            if (ui::begin_popup_context_menu("##importcontextmenu", ImGuiPopupFlags_MouseButtonLeft))
             {
-                if (ui::MenuItem("Mesh"))
+                if (ui::draw_menu_item("Mesh"))
                 {
                     ActionLoadMeshFile(m_State->updUndoable(), m_DocumentIdentifier);
                 }
-                if (ui::MenuItem("Landmarks from CSV"))
+                if (ui::draw_menu_item("Landmarks from CSV"))
                 {
                     ActionLoadLandmarksFromCSV(m_State->updUndoable(), m_DocumentIdentifier);
                 }
                 if (m_DocumentIdentifier == TPSDocumentInputIdentifier::Source &&
-                    ui::MenuItem("Non-Participating Landmarks from CSV"))
+                    ui::draw_menu_item("Non-Participating Landmarks from CSV"))
                 {
                     ActionLoadNonParticipatingLandmarksFromCSV(m_State->updUndoable());
                 }
-                ui::EndPopup();
+                ui::end_popup();
             }
         }
 
         // draws an export button that enables the user to export things from this input
         void drawExportButton()
         {
-            ui::Button(ICON_FA_FILE_EXPORT " export" ICON_FA_CARET_DOWN);
-            if (ui::BeginPopupContextItem("##exportcontextmenu", ImGuiPopupFlags_MouseButtonLeft))
+            ui::draw_button(ICON_FA_FILE_EXPORT " export" ICON_FA_CARET_DOWN);
+            if (ui::begin_popup_context_menu("##exportcontextmenu", ImGuiPopupFlags_MouseButtonLeft))
             {
-                if (ui::MenuItem("Mesh to OBJ"))
+                if (ui::draw_menu_item("Mesh to OBJ"))
                 {
                     ActionTrySaveMeshToObjFile(m_State->getScratchMesh(m_DocumentIdentifier), ObjWriterFlags::Default);
                 }
-                if (ui::MenuItem("Mesh to OBJ (no normals)"))
+                if (ui::draw_menu_item("Mesh to OBJ (no normals)"))
                 {
                     ActionTrySaveMeshToObjFile(m_State->getScratchMesh(m_DocumentIdentifier), ObjWriterFlags::NoWriteNormals);
                 }
-                if (ui::MenuItem("Mesh to STL"))
+                if (ui::draw_menu_item("Mesh to STL"))
                 {
                     ActionTrySaveMeshToStlFile(m_State->getScratchMesh(m_DocumentIdentifier));
                 }
-                if (ui::MenuItem("Landmarks to CSV"))
+                if (ui::draw_menu_item("Landmarks to CSV"))
                 {
                     ActionSaveLandmarksToCSV(m_State->getScratch(), m_DocumentIdentifier);
                 }
-                if (ui::MenuItem("Landmark Positions to CSV"))
+                if (ui::draw_menu_item("Landmark Positions to CSV"))
                 {
                     ActionSaveLandmarksToCSV(m_State->getScratch(), m_DocumentIdentifier, LandmarkCSVFlags::NoHeader | LandmarkCSVFlags::NoNames);
                 }
                 if (m_DocumentIdentifier == TPSDocumentInputIdentifier::Source)
                 {
-                    if (ui::MenuItem("Non-Participating Landmarks to CSV"))
+                    if (ui::draw_menu_item("Non-Participating Landmarks to CSV"))
                     {
                         ActionSaveNonParticipatingLandmarksToCSV(m_State->getScratch());
                     }
-                    if (ui::MenuItem("Non-Participating Landmark Positions to CSV"))
+                    if (ui::draw_menu_item("Non-Participating Landmark Positions to CSV"))
                     {
                         ActionSaveNonParticipatingLandmarksToCSV(m_State->getScratch(), LandmarkCSVFlags::NoHeader | LandmarkCSVFlags::NoNames);
                     }
                 }
-                ui::EndPopup();
+                ui::end_popup();
             }
         }
 
         // draws a button that auto-fits the camera to the 3D scene
         void drawAutoFitCameraButton()
         {
-            if (ui::Button(ICON_FA_EXPAND_ARROWS_ALT))
+            if (ui::draw_button(ICON_FA_EXPAND_ARROWS_ALT))
             {
-                auto_focus(m_Camera, m_State->getScratchMesh(m_DocumentIdentifier).bounds(), aspect_ratio_of(m_LastTextureHittestResult.item_rect));
+                auto_focus(m_Camera, m_State->getScratchMesh(m_DocumentIdentifier).bounds(), aspect_ratio_of(m_LastTextureHittestResult.item_screen_rect));
                 m_State->linkedCameraBase = m_Camera;
             }
-            ui::DrawTooltipIfItemHovered("Autoscale Scene", "Zooms camera to try and fit everything in the scene into the viewer");
+            ui::draw_tooltip_if_item_hovered("Autoscale Scene", "Zooms camera to try and fit everything in the scene into the viewer");
         }
 
         // draws a slider that lets the user edit how large the landmarks are
@@ -571,15 +571,15 @@ namespace osc
             ImGuiSliderFlags const flags = ImGuiSliderFlags_Logarithmic;
 
             CStringView const label = "landmark radius";
-            ui::SetNextItemWidth(ui::GetContentRegionAvail().x - ui::CalcTextSize(label).x - ui::GetStyleItemInnerSpacing().x - m_State->overlayPadding.x);
-            ui::SliderFloat(label, &m_LandmarkRadius, 0.0001f, 100.0f, "%.4f", flags);
+            ui::set_next_item_width(ui::get_content_region_avail().x - ui::calc_text_size(label).x - ui::get_style_item_inner_spacing().x - m_State->overlayPadding.x);
+            ui::draw_float_slider(label, &m_LandmarkRadius, 0.0001f, 100.0f, "%.4f", flags);
         }
 
         bool isUserPlacingNonParticipatingLandmark() const
         {
             static_assert(num_options<TPSDocumentInputIdentifier>() == 2);
             bool const isSourceMesh = m_DocumentIdentifier == TPSDocumentInputIdentifier::Source;
-            bool const isCtrlPressed = ui::IsAnyKeyDown({ImGuiKey_LeftCtrl, ImGuiKey_RightCtrl});
+            bool const isCtrlPressed = ui::any_of_keys_down({ImGuiKey_LeftCtrl, ImGuiKey_RightCtrl});
             return isSourceMesh && isCtrlPressed;
         }
 

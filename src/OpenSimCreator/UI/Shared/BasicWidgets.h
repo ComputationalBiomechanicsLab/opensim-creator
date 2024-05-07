@@ -80,7 +80,7 @@ namespace osc
     // within the given component hierarchy (from `root`)
     //
     // calls `onFrameMenuOpened` when the user is hovering a frame's menu
-    // (i.e. `ui::BeginMenu($FRAME)` returned `true`)
+    // (i.e. `ui::begin_menu($FRAME)` returned `true`)
     void DrawWithRespectToMenuContainingMenuPerFrame(
         OpenSim::Component const& root,
         std::function<void(OpenSim::Frame const&)> const& onFrameMenuOpened,
@@ -90,7 +90,7 @@ namespace osc
     // draws a "With Respect to" menu that prompts the user to click a frame
     // within the given component hierarchy (from `root`)
     //
-    // calls `onFrameMenuItemClicked` when the user clicks the `ui::MenuItem`
+    // calls `onFrameMenuItemClicked` when the user clicks the `ui::draw_menu_item`
     // associated with a frame
     void DrawWithRespectToMenuContainingMenuItemPerFrame(
         OpenSim::Component const& root,
@@ -255,7 +255,7 @@ namespace osc
     );
 
     // toolbar stuff
-    bool BeginToolbar(CStringView label, std::optional<Vec2> padding = {});  // behaves the same as ui::Begin (i.e. you must call ui::End)
+    bool BeginToolbar(CStringView label, std::optional<Vec2> padding = {});  // behaves the same as `ui::begin_panel` (i.e. you must call `ui::end_panel`)
     void DrawNewModelButton(ParentPtr<IMainUIStateAPI> const&);
     void DrawOpenModelButtonWithRecentFilesDropdown(
         std::function<void(std::optional<std::filesystem::path>)> const& onUserClickedOpenOrSelectedFile

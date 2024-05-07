@@ -28,105 +28,105 @@ namespace osc { class UID; }
 namespace osc::ui
 {
     // applies "dark" theme to current UI context
-    void ApplyDarkTheme();
+    void apply_dark_theme();
 
     // updates a polar comera's rotation, position, etc. from UI mouse input state
-    bool UpdatePolarCameraFromMouseInputs(
+    bool update_polar_camera_from_mouse_inputs(
         PolarPerspectiveCamera&,
         Vec2 viewport_dimensions
     );
 
     // updates a polar comera's rotation, position, etc. from UI keyboard input state
-    bool UpdatePolarCameraFromKeyboardInputs(
+    bool update_polar_camera_from_keyboard_inputs(
         PolarPerspectiveCamera&,
         const Rect& viewport_rect,
         std::optional<AABB> maybe_scene_aabb
     );
 
     // updates a polar comera's rotation, position, etc. from UI input state (all)
-    bool UpdatePolarCameraFromInputs(
+    bool update_polar_camera_from_all_inputs(
         PolarPerspectiveCamera&,
         const Rect& viewport_rect,
         std::optional<AABB> maybe_scene_aabb
     );
 
-    void UpdateCameraFromInputs(
+    void update_camera_from_all_inputs(
         Camera&,
         Eulers&
     );
 
     // returns the UI content region available in screenspace as a `Rect`
-    Rect ContentRegionAvailScreenRect();
+    Rect content_region_avail_as_screen_rect();
 
     // draws a texture within the 2D UI
     //
     // assumes the texture coordinates are [(0.0, 1.0), (1.0, 0.0)]
-    void Image(
+    void draw_image(
         const Texture2D&
     );
-    void Image(
+    void draw_image(
         const Texture2D&,
         Vec2 dimensions
     );
-    void Image(
+    void draw_image(
         const Texture2D&,
         Vec2 dimensions,
         Vec2 top_left_texture_coordinate,
         Vec2 bottom_right_texture_coordinate
     );
-    void Image(
+    void draw_image(
         const RenderTexture&
     );
-    void Image(
+    void draw_image(
         const RenderTexture&,
         Vec2 dimensions
     );
 
     // returns the dimensions of a button with the given content
-    Vec2 CalcButtonSize(CStringView);
-    float CalcButtonWidth(CStringView);
+    Vec2 calc_button_size(CStringView);
+    float calc_button_width(CStringView);
 
-    bool ButtonNoBg(
+    bool draw_button_nobg(
         CStringView,
         Vec2 dimensions = {0.0f, 0.0f}
     );
 
     // draws a texture within the UI as a clickable button
-    bool ImageButton(
+    bool draw_image_button(
         CStringView,
         const Texture2D&,
         Vec2 dimensions,
         const Rect& texture_coordinates
     );
-    bool ImageButton(
+    bool draw_image_button(
         CStringView,
         const Texture2D&,
         Vec2 dimensions
     );
 
     // returns the screenspace bounding rectangle of the last-drawn item
-    Rect GetItemRect();
+    Rect get_last_drawn_item_screen_rect();
 
     // hittest the last-drawn item in the UI
     struct HittestResult final {
-        Rect item_rect = {};
+        Rect item_screen_rect = {};
         bool is_hovered = false;
         bool is_left_click_released_without_dragging = false;
         bool is_right_click_released_without_dragging = false;
     };
-    HittestResult HittestLastItem();
-    HittestResult HittestLastItem(float drag_threshold);
+    HittestResult hittest_last_drawn_item();
+    HittestResult hittest_last_drawn_item(float drag_threshold);
 
     // returns `true` if any scancode in the provided range is currently pressed down
-    bool IsAnyKeyDown(std::span<const ImGuiKey>);
-    bool IsAnyKeyDown(std::initializer_list<const ImGuiKey>);
+    bool any_of_keys_down(std::span<const ImGuiKey>);
+    bool any_of_keys_down(std::initializer_list<const ImGuiKey>);
 
     // returns `true` if any scancode in the provided range was pressed down this frame
-    bool IsAnyKeyPressed(std::span<const ImGuiKey>);
-    bool IsAnyKeyPressed(std::initializer_list<const ImGuiKey>);
+    bool any_of_keys_pressed(std::span<const ImGuiKey>);
+    bool any_of_keys_pressed(std::initializer_list<const ImGuiKey>);
 
     // returns true if the user is pressing either left- or right-Ctrl
-    bool IsCtrlDown();
+    bool is_ctrl_down();
 
     // returns `true` if the user is pressing either:
     //
@@ -134,62 +134,63 @@ namespace osc::ui
     // - right Ctrl
     // - left Super (mac)
     // - right Super (mac)
-    bool IsCtrlOrSuperDown();
+    bool is_ctrl_or_super_down();
 
     // returns `true` if the user is pressing either left- or right-shift
-    bool IsShiftDown();
+    bool is_shift_down();
 
     // returns `true` if the user is pressing either left- or right-alt
-    bool IsAltDown();
+    bool is_alt_down();
 
     // returns `true` if the specified mouse button was released without the user dragging
-    bool IsMouseReleasedWithoutDragging(ImGuiMouseButton);
-    bool IsMouseReleasedWithoutDragging(ImGuiMouseButton, float drag_threshold);
+    bool is_mouse_released_without_dragging(ImGuiMouseButton);
+    bool is_mouse_released_without_dragging(ImGuiMouseButton, float drag_threshold);
 
     // returns `true` if the user is dragging their mouse with any button pressed
-    bool IsDraggingWithAnyMouseButtonDown();
+    bool is_mouse_dragging_with_any_button_down();
 
-    // (lower-level tooltip methods: prefer using higher-level 'DrawTooltip(txt)' methods)
-    void BeginTooltip(std::optional<float> wrap_width = std::nullopt);
-    void EndTooltip(std::optional<float> wrap_width = std::nullopt);
-    void TooltipHeaderText(CStringView);
-    void TooltipDescriptionSpacer();
-    void TooltipDescriptionText(CStringView);
+    // (lower-level tooltip methods: prefer using higher-level 'draw_tooltip(txt)' methods)
+    void begin_tooltip(std::optional<float> wrap_width = std::nullopt);
+    void end_tooltip(std::optional<float> wrap_width = std::nullopt);
+
+    void draw_tooltip_header_text(CStringView);
+    void draw_tooltip_description_spacer();
+    void draw_tooltip_description_text(CStringView);
 
     // draws an overlay tooltip (content only)
-    void DrawTooltipBodyOnly(CStringView);
+    void draw_tooltip_body_only(CStringView);
 
     // draws an overlay tooltip (content only) if the last item is hovered
-    void DrawTooltipBodyOnlyIfItemHovered(
+    void draw_tooltip_body_only_if_item_hovered(
         CStringView,
         ImGuiHoveredFlags flags = ImGuiHoveredFlags_ForTooltip
     );
 
     // draws an overlay tooltip with a header and description
-    void DrawTooltip(CStringView header, CStringView description = {});
+    void draw_tooltip(CStringView header, CStringView description = {});
 
-    // equivalent to `if (ui::IsItemHovered(flags)) DrawTooltip(header, description);`
-    void DrawTooltipIfItemHovered(
+    // equivalent to `if (ui::is_item_hovered(flags)) draw_tooltip(header, description);`
+    void draw_tooltip_if_item_hovered(
         CStringView header,
         CStringView description = {},
         ImGuiHoveredFlags flags = ImGuiHoveredFlags_ForTooltip
     );
 
-    // draw a help text marker `"(?)"` and display a tooltip when the user hovers over it
-    void DrawHelpMarker(CStringView header, CStringView description);
+    // draws a help text marker `"(?)"` and display a tooltip when the user hovers over it
+    void draw_help_marker(CStringView header, CStringView description);
 
-    // draw a help text marker `"(?)"` and display a tooltip when the user hovers over it
-    void DrawHelpMarker(CStringView);
+    // draws a help text marker `"(?)"` and display a tooltip when the user hovers over it
+    void draw_help_marker(CStringView);
 
-    // draw a ui::InputText that manipulates a std::string
-    bool InputString(
+    // draws a `ImGui::InputText` that manipulates a `std::string`
+    bool draw_string_input(
         CStringView label,
         std::string& edited_string,
         ImGuiInputTextFlags flags = ImGuiInputTextFlags_None
     );
 
-    // draw a ui::InputFloat that manipulates in the scene scale (note: some users work with very very small sizes)
-    bool InputMetersFloat(
+    // behaves like `ui::draw_float_input`, but understood to manipulate the scene scale
+    bool draw_float_meters_input(
         CStringView label,
         float& v,
         float step = 0.0f,
@@ -197,15 +198,15 @@ namespace osc::ui
         ImGuiInputTextFlags flags = ImGuiInputTextFlags_None
     );
 
-    // draw a ui::InputFloat3 that manipulates in the scene scale (note: some users work with very very small sizes)
-    bool InputMetersFloat3(
+    // behaves like `ui::draw_float3_input`, but understood to manipulate the scene scale
+    bool draw_float3_meters_input(
         CStringView label,
         Vec3&,
         ImGuiInputTextFlags flags = ImGuiInputTextFlags_None
     );
 
-    // draw a ui::SliderFloat that manipulates in the scene scale (note: some users work with very very small sizes)
-    bool SliderMetersFloat(
+    // behaves like `ui::draw_float_slider`, but understood to manipulate the scene scale
+    bool draw_float_meters_slider(
         CStringView label,
         float& v,
         float v_min,
@@ -213,8 +214,8 @@ namespace osc::ui
         ImGuiSliderFlags flags = ImGuiInputTextFlags_None
     );
 
-    // draw a ui::InputFloat for masses (note: some users work with very very small masses)
-    bool InputKilogramFloat(
+    // behaves like `ui::draw_float_input`, but edits the given value as a mass (kg)
+    bool draw_float_kilogram_input(
         CStringView label,
         float& v,
         float step = 0.0f,
@@ -222,21 +223,21 @@ namespace osc::ui
         ImGuiInputTextFlags flags = ImGuiInputTextFlags_None
     );
 
-    // draw a ui::InputFloat that edits the given angular value in degrees
-    bool InputAngle(
+    // behaves like `ui::draw_float_input`, but edits the given angular value in degrees
+    bool draw_angle_input(
         CStringView label,
         Radians& v
     );
 
-    // draw a ui::InputFloat3 that edits the given angular value in degrees
-    bool InputAngle3(
+    // behaves like `ui::draw_float3_input`, but edits the given angular value in degrees
+    bool draw_angle3_input(
         CStringView label,
         Vec<3, Radians>&,
         CStringView format = "%.3f"
     );
 
-    // draw a ui::SliderFloat that edits the given angular value as degrees
-    bool SliderAngle(
+    // behaves like `ui::draw_float_slider`, but edits the given angular value as degrees
+    bool draw_angle_slider(
         CStringView label,
         Radians& v,
         Radians min,
@@ -244,7 +245,7 @@ namespace osc::ui
     );
 
     // returns an `ImU32` converted from the given `Color`
-    ImU32 ToImU32(const Color&);
+    ImU32 to_ImU32(const Color&);
 
     // returns a `Color` converted from the given LDR 8-bit `ImU32` format
     Color to_color(ImU32);
@@ -253,79 +254,79 @@ namespace osc::ui
     Color to_color(const ImVec4&);
 
     // returns an `ImVec4` converted from the given `Color`
-    ImVec4 ToImVec4(const Color&);
+    ImVec4 to_ImVec4(const Color&);
 
-    // returns "minimal" window flags (i.e. no title bar, can't move the window - ideal for images etc.)
-    ImGuiWindowFlags GetMinimalWindowFlags();
+    // returns "minimal" panel flags (i.e. no title bar, can't move the panel - ideal for images etc.)
+    ImGuiWindowFlags get_minimal_panel_flags();
 
     // returns a `Rect` that indicates where the current workspace area is in the main viewport
     //
     // handy if (e.g.) you want to know the rect of a tab area
-    Rect GetMainViewportWorkspaceScreenRect();
+    Rect get_main_viewport_workspace_screen_rect();
 
     // returns `true` if the user's mouse is within the current workspace area of the main viewport
-    bool IsMouseInMainViewportWorkspaceScreenRect();
+    bool is_mouse_in_main_viewport_workspace();
 
-    // begin a menu that's attached to the top of a viewport, end it with ui::End();
-    bool BeginMainViewportTopBar(
+    // begin a menu that's attached to the top of a viewport, end it with `ui::end_panel()`
+    bool begin_main_viewport_top_bar(
         CStringView label,
-        float height = ui::GetFrameHeight(),
-        ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_MenuBar
+        float height = ui::get_frame_height(),
+        ImGuiWindowFlags panel_flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_MenuBar
     );
 
-    // begin a menu that's attached to the bottom of a viewport, end it with ui::End();
-    bool BeginMainViewportBottomBar(CStringView);
+    // begin a menu that's attached to the bottom of a viewport, end it with `ui::end_panel()`
+    bool begin_main_viewport_bottom_bar(CStringView);
 
-    // draws a ui::Button, but centered on the current line
-    bool ButtonCentered(CStringView);
+    // behaves like `ui::draw_button`, but is centered on the current line
+    bool draw_button_centered(CStringView);
 
-    // draw text, but centered on the current line
-    void TextCentered(CStringView);
+    // behaves like `ui::draw_text`, but is centered on the current line
+    void draw_text_centered(CStringView);
 
-    // draw text, but centered in the current window (i.e. vertically and horizontally)
-    void TextWindowCentered(CStringView);
+    // behaves like `ui::draw_text`, but is vertically and horizontally centered in the remaining content of the current panel
+    void draw_text_panel_centered(CStringView);
 
-    // draw disabled text, but centered on the current line
-    void TextDisabledAndCentered(CStringView);
+    // behaves like `ui::draw_text`, but with a disabled style and centered on the current line
+    void draw_text_disabled_and_centered(CStringView);
 
-    // draw diabled text, but centered on the current window
-    void TextDisabledAndWindowCentered(CStringView);
+    // behaves like `ui::draw_text`, but with a disabled style and centered in the remaining content of the current panel
+    void draw_text_disabled_and_panel_centered(CStringView);
 
-    // draw text that's centered in the current ui::Table column
-    void TextColumnCentered(CStringView);
+    // behaves like `ui::draw_text`, but centered in the current table column
+    void draw_text_column_centered(CStringView);
 
-    // draw faded (muted) text
-    void TextFaded(CStringView);
+    // behaves like `ui::draw_text`, but with a faded/muted style
+    void draw_text_faded(CStringView);
 
-    // draw warning text
-    void TextWarning(CStringView);
+    // behaves like `ui::draw_text`, but with a warning style (e.g. orange)
+    void draw_text_warning(CStringView);
 
-    // returns `true` if a given item (usually, input) should be saved based on heuristics
+    // returns `true` if the last drawn item (e.g. an input) should be saved based on heuristics
     //
     // - if the item was deactivated (e.g. due to focusing something else), it should be saved
     // - if there's an active edit and the user presses enter, it should be saved
     // - if there's an active edit and the user presses tab, it should be saved
-    bool ItemValueShouldBeSaved();
+    bool should_save_last_drawn_item_value();
 
-    void PopItemFlags(int n = 1);
+    void pop_item_flags(int n = 1);
 
-    bool Combo(
+    bool draw_combobox(
         CStringView label,
         size_t* current,
         size_t size,
         const std::function<CStringView(size_t)>& accessor
     );
 
-    bool Combo(
+    bool draw_combobox(
         CStringView label,
         size_t* current,
         std::span<const CStringView> items
     );
 
-    void VerticalSeperator();
-    void SameLineWithVerticalSeperator();
+    void draw_vertical_separator();
+    void draw_same_line_with_vertical_separator();
 
-    bool CircularSliderFloat(
+    bool draw_float_circular_slider(
         CStringView label,
         float* v,
         float min,

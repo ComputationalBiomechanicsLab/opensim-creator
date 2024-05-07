@@ -48,7 +48,7 @@ void osc::StandardPopup::impl_close()
 bool osc::StandardPopup::impl_begin_popup()
 {
     if (should_open_) {
-        ui::OpenPopup(popup_name_);
+        ui::open_popup(popup_name_);
         should_open_ = false;
         should_close_ = false;
         just_opened_ = true;
@@ -59,14 +59,14 @@ bool osc::StandardPopup::impl_begin_popup()
         //
         // else, position the modal in the center of the viewport
         if (maybe_position_) {
-            ui::SetNextWindowPos(
+            ui::set_next_panel_pos(
                 static_cast<Vec2>(*maybe_position_),
                 ImGuiCond_Appearing
             );
         }
         else {
-            ui::SetNextWindowPos(
-                ui::GetMainViewport()->GetCenter(),
+            ui::set_next_panel_pos(
+                ui::get_main_viewport()->GetCenter(),
                 ImGuiCond_Appearing,
                 Vec2{0.5f, 0.5f}
             );
@@ -78,20 +78,20 @@ bool osc::StandardPopup::impl_begin_popup()
         // else, set the position every frame, because the __nonzero__ dimensions
         // will stretch out the modal accordingly
         if (not (popup_flags_ & ImGuiWindowFlags_AlwaysAutoResize)) {
-            ui::SetNextWindowSize(
+            ui::set_next_panel_size(
                 Vec2{dimensions_},
                 ImGuiCond_Appearing
             );
         }
         else {
-            ui::SetNextWindowSize(
+            ui::set_next_panel_size(
                 Vec2{dimensions_}
             );
         }
 
         // try to begin the modal window
         impl_before_imgui_begin_popup();
-        const bool opened = ui::BeginPopupModal(popup_name_, nullptr, popup_flags_);
+        const bool opened = ui::begin_popup_modal(popup_name_, nullptr, popup_flags_);
         impl_after_imgui_begin_popup();
 
         if (not opened) {
@@ -109,7 +109,7 @@ bool osc::StandardPopup::impl_begin_popup()
         // of the screen and, therefore, should proabably be centered
         // in it)
         if (maybe_position_) {
-            ui::SetNextWindowPos(
+            ui::set_next_panel_pos(
                 static_cast<Vec2>(*maybe_position_),
                 ImGuiCond_Appearing
             );
@@ -117,7 +117,7 @@ bool osc::StandardPopup::impl_begin_popup()
 
         // try to begin the popup window
         impl_before_imgui_begin_popup();
-        const bool opened = ui::BeginPopup(popup_name_, popup_flags_);
+        const bool opened = ui::begin_popup(popup_name_, popup_flags_);
         impl_after_imgui_begin_popup();
 
         // try to show popup
@@ -136,7 +136,7 @@ void osc::StandardPopup::impl_on_draw()
 {
     if (should_close_) {
         impl_on_close();
-        ui::CloseCurrentPopup();
+        ui::close_current_popup();
         should_close_ = false;
         should_open_ = false;
         just_opened_ = false;
@@ -148,7 +148,7 @@ void osc::StandardPopup::impl_on_draw()
 
 void osc::StandardPopup::impl_end_popup()
 {
-    ui::EndPopup();
+    ui::end_popup();
     just_opened_ = false;
 }
 

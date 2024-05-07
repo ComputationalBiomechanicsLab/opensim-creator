@@ -112,7 +112,7 @@ private:
 
     void draw3DRender()
     {
-        m_Camera.set_pixel_rect(ui::GetMainViewportWorkspaceScreenRect());
+        m_Camera.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
 
         m_PBRMaterial.set_vec3("uCameraWorldPosition", m_Camera.position());
 

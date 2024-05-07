@@ -62,11 +62,11 @@ void osc::ui::context::init()
     // init ImGui top-level context
     ImGui::CreateContext();
 
-    ImGuiIO& io = ui::GetIO();
+    ImGuiIO& io = ui::get_io();
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
     // make it so that windows can only ever be moved from the title bar
-    ui::GetIO().ConfigWindowsMoveFromTitleBarOnly = true;
+    ui::get_io().ConfigWindowsMoveFromTitleBarOnly = true;
 
     // load application-level ImGui config, then the user one,
     // so that the user config takes precedence
@@ -122,7 +122,7 @@ void osc::ui::context::init()
     // init ImGui for OpenGL
     graphics_backend::init();
 
-    ApplyDarkTheme();
+    apply_dark_theme();
 
     // init extra parts (plotting, gizmos, etc.)
     ImPlot::CreateContext();
@@ -141,7 +141,7 @@ bool osc::ui::context::on_event(const SDL_Event& e)
 {
     ImGui_ImplSDL2_ProcessEvent(&e);
 
-    const ImGuiIO& io  = ui::GetIO();
+    const ImGuiIO& io  = ui::get_io();
 
     bool event_handled_by_imgui = false;
 

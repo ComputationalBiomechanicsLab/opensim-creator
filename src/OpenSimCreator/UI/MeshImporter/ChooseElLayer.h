@@ -239,7 +239,7 @@ namespace osc::mi
 
             drawHoverTooltip();
 
-            if (ui::IsMouseClicked(ImGuiMouseButton_Left))
+            if (ui::is_mouse_clicked(ImGuiMouseButton_Left))
             {
                 tryToggleSelectionStateOf(m_MaybeHover.ID);
                 handlePossibleCompletion();
@@ -258,11 +258,11 @@ namespace osc::mi
 
             if (se)
             {
-                ui::BeginTooltipNoWrap();
-                ui::TextUnformatted(se->getLabel());
-                ui::SameLine();
-                ui::TextDisabled("(%s, click to choose)", se->getClass().getName().c_str());
-                ui::EndTooltipNoWrap();
+                ui::begin_tooltip_nowrap();
+                ui::draw_text_unformatted(se->getLabel());
+                ui::same_line();
+                ui::draw_text_disabled("(%s, click to choose)", se->getClass().getName().c_str());
+                ui::end_tooltip_nowrap();
             }
         }
 
@@ -295,7 +295,7 @@ namespace osc::mi
                     std::swap(parentPos, childPos);
                 }
 
-                ImU32 strongColorU2 = ui::ToImU32(m_Shared->getColorConnectionLine());
+                ImU32 strongColorU2 = ui::to_ImU32(m_Shared->getColorConnectionLine());
 
                 m_Shared->drawConnectionLine(strongColorU2, parentPos, childPos);
             }
@@ -309,30 +309,30 @@ namespace osc::mi
                 return;
             }
 
-            ImU32 color = ui::ToImU32(Color::white());
+            ImU32 color = ui::to_ImU32(Color::white());
             Vec2 padding = Vec2{10.0f, 10.0f};
             Vec2 pos = m_Shared->get3DSceneRect().p1 + padding;
-            ui::GetWindowDrawList()->AddText(pos, color, m_Options.header.c_str());
+            ui::get_panel_draw_list()->AddText(pos, color, m_Options.header.c_str());
         }
 
         // draw a user-clickable button for cancelling out of this choosing state
         void drawCancelButton()
         {
-            ui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
-            ui::PushStyleColor(ImGuiCol_Button, Color::half_grey());
+            ui::push_style_var(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
+            ui::push_style_color(ImGuiCol_Button, Color::half_grey());
 
             CStringView const text = ICON_FA_ARROW_LEFT " Cancel (ESC)";
             Vec2 const margin = {25.0f, 35.0f};
-            Vec2 const buttonTopLeft = m_Shared->get3DSceneRect().p2 - (ui::CalcButtonSize(text) + margin);
+            Vec2 const buttonTopLeft = m_Shared->get3DSceneRect().p2 - (ui::calc_button_size(text) + margin);
 
-            ui::SetCursorScreenPos(buttonTopLeft);
-            if (ui::Button(text))
+            ui::set_cursor_screen_pos(buttonTopLeft);
+            if (ui::draw_button(text))
             {
                 requestPop();
             }
 
-            ui::PopStyleColor();
-            ui::PopStyleVar();
+            ui::pop_style_color();
+            ui::pop_style_var();
         }
 
         bool implOnEvent(SDL_Event const& e) final
@@ -344,7 +344,7 @@ namespace osc::mi
         {
             m_Shared->tick(dt);
 
-            if (ui::IsKeyPressed(ImGuiKey_Escape))
+            if (ui::is_key_pressed(ImGuiKey_Escape))
             {
                 // ESC: user cancelled out
                 requestPop();
@@ -354,7 +354,7 @@ namespace osc::mi
 
             if (isRenderHovered)
             {
-                ui::UpdatePolarCameraFromMouseInputs(m_Shared->updCamera(), m_Shared->get3DSceneDims());
+                ui::update_polar_camera_from_mouse_inputs(m_Shared->updCamera(), m_Shared->get3DSceneDims());
             }
 
             if (m_AnimationFraction < 1.0f)

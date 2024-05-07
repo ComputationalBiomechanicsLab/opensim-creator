@@ -31,15 +31,15 @@ private:
     {
         OpenSim::PhysicalFrame const* selected = nullptr;
 
-        ui::BeginChild("pflist", Vec2{256.0f, 256.0f}, ImGuiChildFlags_Border, ImGuiWindowFlags_HorizontalScrollbar);
+        ui::begin_child_panel("pflist", Vec2{256.0f, 256.0f}, ImGuiChildFlags_Border, ImGuiWindowFlags_HorizontalScrollbar);
         for (auto const& pf : m_Model->getModel().getComponentList<OpenSim::PhysicalFrame>())
         {
-            if (ui::Selectable(pf.getName()))
+            if (ui::draw_selectable(pf.getName()))
             {
                 selected = &pf;
             }
         }
-        ui::EndChild();
+        ui::end_child_panel();
 
         if (selected)
         {

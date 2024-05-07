@@ -35,15 +35,15 @@ void osc::FrameDefinitionTabToolbar::onDraw()
     {
         drawContent();
     }
-    ui::End();
+    ui::end_panel();
 }
 
 void osc::FrameDefinitionTabToolbar::drawContent()
 {
     DrawUndoAndRedoButtons(*m_Model);
-    ui::SameLineWithVerticalSeperator();
+    ui::draw_same_line_with_vertical_separator();
     DrawSceneScaleFactorEditorControls(*m_Model);
-    ui::SameLineWithVerticalSeperator();
+    ui::draw_same_line_with_vertical_separator();
     drawExportToOpenSimButton();
 }
 
@@ -53,17 +53,17 @@ void osc::FrameDefinitionTabToolbar::drawExportToOpenSimButton()
 
     if (numBodies == 0)
     {
-        ui::BeginDisabled();
+        ui::begin_disabled();
     }
-    if (ui::Button(ICON_FA_FILE_EXPORT " Export to OpenSim"))
+    if (ui::draw_button(ICON_FA_FILE_EXPORT " Export to OpenSim"))
     {
         fd::ActionExportFrameDefinitionSceneModelToEditorTab(m_TabHost, *m_Model);
     }
     if (numBodies == 0)
     {
-        ui::EndDisabled();
+        ui::end_disabled();
     }
-    if (ui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+    if (ui::is_item_hovered(ImGuiHoveredFlags_AllowWhenDisabled))
     {
         drawExportToOpenSimTooltipContent(numBodies);
     }
@@ -71,16 +71,16 @@ void osc::FrameDefinitionTabToolbar::drawExportToOpenSimButton()
 
 void osc::FrameDefinitionTabToolbar::drawExportToOpenSimTooltipContent(size_t numBodies)
 {
-    ui::BeginTooltip();
-    ui::TooltipHeaderText("Export to OpenSim");
-    ui::TooltipDescriptionSpacer();
-    ui::TooltipDescriptionText("Exports the frame definition scene to opensim.");
+    ui::begin_tooltip();
+    ui::draw_tooltip_header_text("Export to OpenSim");
+    ui::draw_tooltip_description_spacer();
+    ui::draw_tooltip_description_text("Exports the frame definition scene to opensim.");
     if (numBodies == 0)
     {
-        ui::Separator();
-        ui::TextWarning("Warning:");
-        ui::SameLine();
-        ui::Text("You currently have %zu bodies defined. Use the 'Add > Body from This' feature on a frame in your scene to add a new body", numBodies);
+        ui::draw_separator();
+        ui::draw_text_warning("Warning:");
+        ui::same_line();
+        ui::draw_text("You currently have %zu bodies defined. Use the 'Add > Body from This' feature on a frame in your scene to add a new body", numBodies);
     }
-    ui::EndTooltip();
+    ui::end_tooltip();
 }

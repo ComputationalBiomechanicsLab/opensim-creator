@@ -32,30 +32,30 @@ namespace osc
     private:
         void impl_draw_content() final
         {
-            ui::TextUnformatted("Landmarks:");
-            ui::Separator();
+            ui::draw_text_unformatted("Landmarks:");
+            ui::draw_separator();
             if (ContainsLandmarks(m_State->getScratch()))
             {
                 drawLandmarksTable();
             }
             else
             {
-                ui::TextDisabledAndCentered("(none in the scene)");
+                ui::draw_text_disabled_and_centered("(none in the scene)");
             }
 
-            ui::NewLine();
+            ui::start_new_line();
 
-            ui::TextUnformatted("Non-Participating Landmarks:");
-            ui::Separator();
+            ui::draw_text_unformatted("Non-Participating Landmarks:");
+            ui::draw_separator();
             if (ContainsNonParticipatingLandmarks(m_State->getScratch()))
             {
                 drawNonPariticpatingLandmarksTable();
             }
             else
             {
-                ui::TextDisabledAndCentered("(none in the scene)");
+                ui::draw_text_disabled_and_centered("(none in the scene)");
             }
-            ui::NewLine();
+            ui::start_new_line();
         }
 
         // draws warp-affecting landmarks table. Shows the user:
@@ -64,36 +64,36 @@ namespace osc
         // - whether they have source/destination location, or are paired
         void drawLandmarksTable()
         {
-            if (!ui::BeginTable("##LandmarksTable", 3, getTableFlags()))
+            if (!ui::begin_table("##LandmarksTable", 3, getTableFlags()))
             {
                 return;
             }
 
-            ui::TableSetupColumn("Name", 0, 0.7f*ui::GetContentRegionAvail().x);
-            ui::TableSetupColumn("Source", 0, 0.15f*ui::GetContentRegionAvail().x);
-            ui::TableSetupColumn("Destination", 0, 0.15f*ui::GetContentRegionAvail().x);
+            ui::table_setup_column("Name", 0, 0.7f*ui::get_content_region_avail().x);
+            ui::table_setup_column("Source", 0, 0.15f*ui::get_content_region_avail().x);
+            ui::table_setup_column("Destination", 0, 0.15f*ui::get_content_region_avail().x);
 
             int id = 0;
             for (auto const& lm : m_State->getScratch().landmarkPairs)
             {
-                ui::PushID(++id);
+                ui::push_id(++id);
                 drawLandmarksTableRow(lm);
-                ui::PopID();
+                ui::pop_id();
             }
 
-            ui::EndTable();
+            ui::end_table();
         }
 
         void drawLandmarksTableRow(TPSDocumentLandmarkPair const& p)
         {
             // name column
-            ui::TableNextRow();
-            ui::TableSetColumnIndex(0);
-            ui::AlignTextToFramePadding();
-            ui::TextColumnCentered(p.name);
+            ui::table_next_row();
+            ui::table_set_column_index(0);
+            ui::align_text_to_frame_padding();
+            ui::draw_text_column_centered(p.name);
 
             // source column
-            ui::TableSetColumnIndex(1);
+            ui::table_set_column_index(1);
             Circle const srcCircle = drawLandmarkCircle(
                 m_State->isSelected(p.sourceID()),
                 m_State->isHovered(p.sourceID()),
@@ -102,7 +102,7 @@ namespace osc
             );
 
             // destination column
-            ui::TableSetColumnIndex(2);
+            ui::table_set_column_index(2);
             Circle const destCircle = drawLandmarkCircle(
                 m_State->isSelected(p.destinationID()),
                 m_State->isHovered(p.destinationID()),
@@ -123,9 +123,9 @@ namespace osc
             bool hasLocation)
         {
             Circle const circle{.origin = calcColumnMidpointScreenPos(), .radius = calcCircleRadius()};
-            ImU32 const color = ui::ToImU32(landmarkDotColor(hasLocation, isPaired));
+            ImU32 const color = ui::to_ImU32(landmarkDotColor(hasLocation, isPaired));
 
-            auto& dl = *ui::GetWindowDrawList();
+            auto& dl = *ui::get_panel_draw_list();
             if (hasLocation)
             {
                 dl.AddCircleFilled(circle.origin, circle.radius, color);
@@ -142,28 +142,28 @@ namespace osc
 
         void tryDrawCircleHighlight(Circle const& circle, bool isSelected, bool isHovered)
         {
-            auto& dl = *ui::GetWindowDrawList();
+            auto& dl = *ui::get_panel_draw_list();
             float const thickness = 2.0f;
             if (isSelected)
             {
-                dl.AddCircle(circle.origin, circle.radius + thickness, ui::ToImU32(Color::yellow()), 0, thickness);
+                dl.AddCircle(circle.origin, circle.radius + thickness, ui::to_ImU32(Color::yellow()), 0, thickness);
             }
             else if (isHovered)
             {
-                dl.AddCircle(circle.origin, circle.radius + thickness, ui::ToImU32(Color::yellow().with_alpha(0.5f)), 0, thickness);
+                dl.AddCircle(circle.origin, circle.radius + thickness, ui::to_ImU32(Color::yellow().with_alpha(0.5f)), 0, thickness);
             }
         }
 
         void drawConnectingLine(Circle const& src, Circle const& dest)
         {
-            float const pad = ui::GetStyleItemInnerSpacing().x;
+            float const pad = ui::get_style_item_inner_spacing().x;
 
             // draw connecting line
             Vec2 const direction = normalize(dest.origin - src.origin);
             Vec2 const start = src.origin  + (src.radius  + Vec2{pad, 0.0f})*direction;
             Vec2 const end   = dest.origin - (dest.radius + Vec2{pad, 0.0f})*direction;
-            ImU32 const color = ui::ToImU32(Color::half_grey());
-            ui::GetWindowDrawList()->AddLine(start, end, color);
+            ImU32 const color = ui::to_ImU32(Color::half_grey());
+            ui::get_panel_draw_list()->AddLine(start, end, color);
 
             // draw triangle on end of connecting line to form an arrow
             Vec2 const p0 = end;
@@ -171,41 +171,41 @@ namespace osc
             Vec2 const orthogonal = {-direction.y, direction.x};
             Vec2 const p1 = base + pad*orthogonal;
             Vec2 const p2 = base - pad*orthogonal;
-            ui::GetWindowDrawList()->AddTriangleFilled(p0, p1, p2, color);
+            ui::get_panel_draw_list()->AddTriangleFilled(p0, p1, p2, color);
         }
 
         // draws non-participating landmarks table
         void drawNonPariticpatingLandmarksTable()
         {
-            if (!ui::BeginTable("##NonParticipatingLandmarksTable", 2, getTableFlags()))
+            if (!ui::begin_table("##NonParticipatingLandmarksTable", 2, getTableFlags()))
             {
                 return;
             }
 
-            ui::TableSetupColumn("Name", 0, 0.7f*ui::GetContentRegionAvail().x);
-            ui::TableSetupColumn("Location", 0, 0.3f*ui::GetContentRegionAvail().x);
+            ui::table_setup_column("Name", 0, 0.7f*ui::get_content_region_avail().x);
+            ui::table_setup_column("Location", 0, 0.3f*ui::get_content_region_avail().x);
 
             int id = 0;
             for (auto const& npl : m_State->getScratch().nonParticipatingLandmarks)
             {
-                ui::PushID(++id);
+                ui::push_id(++id);
                 drawNonParticipatingLandmarksTableRow(npl);
-                ui::PopID();
+                ui::pop_id();
             }
 
-            ui::EndTable();
+            ui::end_table();
         }
 
         void drawNonParticipatingLandmarksTableRow(TPSDocumentNonParticipatingLandmark const& npl)
         {
             // name column
-            ui::TableNextRow();
-            ui::TableSetColumnIndex(0);
-            ui::AlignTextToFramePadding();
-            ui::TextColumnCentered(npl.name);
+            ui::table_next_row();
+            ui::table_set_column_index(0);
+            ui::align_text_to_frame_padding();
+            ui::draw_text_column_centered(npl.name);
 
             // source column
-            ui::TableSetColumnIndex(1);
+            ui::table_set_column_index(1);
             drawNonParticipatingLandmarkCircle(
                 m_State->isSelected(npl.getID()),
                 m_State->isHovered(npl.getID())
@@ -218,10 +218,10 @@ namespace osc
         {
             Circle const circle{.origin = calcColumnMidpointScreenPos(), .radius = calcCircleRadius()};
 
-            ui::GetWindowDrawList()->AddCircleFilled(
+            ui::get_panel_draw_list()->AddCircleFilled(
                 circle.origin,
                 circle.radius,
-                ui::ToImU32(m_State->nonParticipatingLandmarkColor)
+                ui::to_ImU32(m_State->nonParticipatingLandmarkColor)
             );
 
             tryDrawCircleHighlight(circle, isSelected, isHovered);
@@ -252,12 +252,12 @@ namespace osc
 
         float calcCircleRadius() const
         {
-            return 0.4f*ui::GetTextLineHeight();
+            return 0.4f*ui::get_text_line_height();
         }
 
         Vec2 calcColumnMidpointScreenPos() const
         {
-            return Vec2{ui::GetCursorScreenPos()} + Vec2{0.5f*ui::GetColumnWidth(), 0.5f*ui::GetTextLineHeight()};
+            return Vec2{ui::get_cursor_screen_pos()} + Vec2{0.5f*ui::get_column_width(), 0.5f*ui::get_text_line_height()};
         }
 
         std::shared_ptr<MeshWarpingTabSharedState> m_State;

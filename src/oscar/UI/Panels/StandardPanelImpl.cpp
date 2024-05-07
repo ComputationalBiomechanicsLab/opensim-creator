@@ -46,13 +46,13 @@ void osc::StandardPanelImpl::impl_on_draw()
         bool open = true;
 
         impl_before_imgui_begin();
-        const bool began = ui::Begin(panel_name_, &open, panel_flags_);
+        const bool began = ui::begin_panel(panel_name_, &open, panel_flags_);
         impl_after_imgui_begin();
 
         if (began) {
             impl_draw_content();
         }
-        ui::End();
+        ui::end_panel();
 
         if (not open) {
             close();

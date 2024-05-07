@@ -111,14 +111,14 @@ private:
         // let user select from a shorter sequence of analytical geometry that can be
         // generated without a mesh file
         {
-            ui::TextUnformatted("Generated geometry");
-            ui::SameLine();
-            ui::DrawHelpMarker("This is geometry that OpenSim can generate without needing an external mesh file. Useful for basic geometry.");
-            ui::Separator();
-            ui::Dummy({0.0f, 2.0f});
+            ui::draw_text_unformatted("Generated geometry");
+            ui::same_line();
+            ui::draw_help_marker("This is geometry that OpenSim can generate without needing an external mesh file. Useful for basic geometry.");
+            ui::draw_separator();
+            ui::draw_dummy({0.0f, 2.0f});
 
             int item = -1;
-            if (ui::Combo("##premade", &item, c_GeomNames.data(), static_cast<int>(c_GeomNames.size())))
+            if (ui::draw_combobox("##premade", &item, c_GeomNames.data(), static_cast<int>(c_GeomNames.size())))
             {
                 auto const& ctor = c_GeomCtors.at(static_cast<size_t>(item));
                 m_Result = ctor();
@@ -128,26 +128,26 @@ private:
         // mesh file selection
         //
         // let the user select a mesh file that the implementation should load + use
-        ui::Dummy({0.0f, 3.0f});
-        ui::TextUnformatted("mesh file");
-        ui::SameLine();
-        ui::DrawHelpMarker("This is geometry that OpenSim loads from external mesh files. Useful for custom geometry (usually, created in some other application, such as ParaView or Blender)");
-        ui::Separator();
-        ui::Dummy({0.0f, 2.0f});
+        ui::draw_dummy({0.0f, 3.0f});
+        ui::draw_text_unformatted("mesh file");
+        ui::same_line();
+        ui::draw_help_marker("This is geometry that OpenSim loads from external mesh files. Useful for custom geometry (usually, created in some other application, such as ParaView or Blender)");
+        ui::draw_separator();
+        ui::draw_dummy({0.0f, 2.0f});
 
         // let the user search through mesh files in pre-established Geometry/ dirs
-        ui::InputString("search", m_Search);
-        ui::Dummy({0.0f, 1.0f});
+        ui::draw_string_input("search", m_Search);
+        ui::draw_dummy({0.0f, 1.0f});
 
-        ui::BeginChild(
+        ui::begin_child_panel(
             "mesh list",
-            Vec2{ui::GetContentRegionAvail().x, 256},
+            Vec2{ui::get_content_region_avail().x, 256},
             ImGuiChildFlags_None,
             ImGuiWindowFlags_HorizontalScrollbar);
 
         if (!m_RecentUserChoices.empty())
         {
-            ui::TextDisabled("  (recent)");
+            ui::draw_text_disabled("  (recent)");
         }
 
         for (std::filesystem::path const& p : m_RecentUserChoices)
@@ -161,7 +161,7 @@ private:
 
         if (!m_RecentUserChoices.empty())
         {
-            ui::TextDisabled("  (from Geometry/ dir)");
+            ui::draw_text_disabled("  (from Geometry/ dir)");
         }
         for (std::filesystem::path const& p : m_GeometryFiles)
         {
@@ -172,20 +172,20 @@ private:
             }
         }
 
-        ui::EndChild();
+        ui::end_child_panel();
 
-        if (ui::Button("Open Mesh File"))
+        if (ui::draw_button("Open Mesh File"))
         {
             if (auto maybeMeshFile = PromptUserForGeometryFile())
             {
                 m_Result = onMeshFileChosen(std::move(maybeMeshFile).value());
             }
         }
-        ui::DrawTooltipIfItemHovered("Open Mesh File", "Open a mesh file on the filesystem");
+        ui::draw_tooltip_if_item_hovered("Open Mesh File", "Open a mesh file on the filesystem");
 
-        ui::Dummy({0.0f, 5.0f});
+        ui::draw_dummy({0.0f, 5.0f});
 
-        if (ui::Button("Cancel"))
+        if (ui::draw_button("Cancel"))
         {
             m_Search.clear();
             request_close();
@@ -218,7 +218,7 @@ private:
     {
         if (p.filename().string().find(m_Search) != std::string::npos)
         {
-            if (ui::Selectable(p.filename().string()))
+            if (ui::draw_selectable(p.filename().string()))
             {
                 return onMeshFileChosen(p.filename());
             }

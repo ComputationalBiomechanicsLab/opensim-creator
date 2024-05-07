@@ -116,7 +116,7 @@ private:
         m_Camera.on_draw();
 
         // clear screen and ensure camera has correct pixel rect
-        m_Camera.set_pixel_rect(ui::GetMainViewportWorkspaceScreenRect());
+        m_Camera.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
 
         // cubes
         {

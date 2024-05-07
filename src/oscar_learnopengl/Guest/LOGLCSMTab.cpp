@@ -202,7 +202,7 @@ private:
             graphics::draw(decoration.mesh, decoration.transform, m_Material, m_UserCamera);
         }
 
-        m_UserCamera.set_pixel_rect(ui::GetMainViewportWorkspaceScreenRect());
+        m_UserCamera.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
         m_UserCamera.render_to_screen();
     }
 

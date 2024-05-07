@@ -87,7 +87,7 @@ private:
         m_SceneCamera.on_draw();
 
         // setup render texture
-        Rect viewportRect = ui::GetMainViewportWorkspaceScreenRect();
+        Rect viewportRect = ui::get_main_viewport_workspace_screen_rect();
         Vec2 viewportRectDims = dimensions_of(viewportRect);
         m_RenderTexture.set_dimensions(viewportRectDims);
         m_RenderTexture.set_anti_aliasing_level(App::get().anti_aliasing_level());

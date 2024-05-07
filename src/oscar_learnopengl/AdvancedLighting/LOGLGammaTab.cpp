@@ -123,7 +123,7 @@ private:
     void draw3DScene()
     {
         // clear screen and ensure camera has correct pixel rect
-        m_Camera.set_pixel_rect(ui::GetMainViewportWorkspaceScreenRect());
+        m_Camera.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
 
         // render scene
         m_Material.set_vec3("uViewPos", m_Camera.position());
@@ -133,9 +133,9 @@ private:
 
     void draw2DUI()
     {
-        ui::Begin("controls");
-        ui::Text("no need to gamma correct - OSC is a gamma-corrected renderer");
-        ui::End();
+        ui::begin_panel("controls");
+        ui::draw_text("no need to gamma correct - OSC is a gamma-corrected renderer");
+        ui::end_panel();
     }
 
     Material m_Material = CreateFloorMaterial(App::resource_loader());

@@ -15,7 +15,7 @@ void osc::mow::Toolbar::onDraw()
     if (BeginToolbar(m_Label)) {
         drawContent();
     }
-    ui::End();
+    ui::end_panel();
 }
 
 void osc::mow::Toolbar::drawContent()
@@ -25,7 +25,7 @@ void osc::mow::Toolbar::drawContent()
         m_State->actionOpenOsimOrPromptUser(std::move(maybeSelection));
     });
 
-    ui::SameLine();
+    ui::same_line();
 
     drawWarpModelButton();
 }
@@ -33,50 +33,50 @@ void osc::mow::Toolbar::drawContent()
 void osc::mow::Toolbar::drawWarpModelButton()
 {
     if (!m_State->canWarpModel()) {
-        ui::BeginDisabled();
+        ui::begin_disabled();
     }
-    ui::PushStyleColor(ImGuiCol_Button, Color::dark_green());
-    if (ui::Button(ICON_FA_PLAY " Warp Model")) {
+    ui::push_style_color(ImGuiCol_Button, Color::dark_green());
+    if (ui::draw_button(ICON_FA_PLAY " Warp Model")) {
         m_State->actionWarpModelAndOpenInModelEditor();
     }
-    ui::PopStyleColor();
+    ui::pop_style_color();
     if (!m_State->canWarpModel()) {
-        ui::EndDisabled();
+        ui::end_disabled();
     }
 
-    if (ui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
-        ui::BeginTooltip();
-        ui::TooltipHeaderText("Warp Model");
-        ui::TooltipDescriptionSpacer();
-        ui::TooltipDescriptionText("Warp the model and open the warped model in the model editor");
+    if (ui::is_item_hovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
+        ui::begin_tooltip();
+        ui::draw_tooltip_header_text("Warp Model");
+        ui::draw_tooltip_description_spacer();
+        ui::draw_tooltip_description_text("Warp the model and open the warped model in the model editor");
         if (!m_State->canWarpModel()) {
-            ui::TooltipDescriptionSpacer();
-            ui::PushStyleColor(ImGuiCol_Text, Color::muted_red());
-            ui::Text("Cannot warp the model right now: there are errors that need to be fixed. See the checklist panel.");
-            ui::PopStyleColor();
+            ui::draw_tooltip_description_spacer();
+            ui::push_style_color(ImGuiCol_Text, Color::muted_red());
+            ui::draw_text("Cannot warp the model right now: there are errors that need to be fixed. See the checklist panel.");
+            ui::pop_style_color();
         }
-        ui::EndTooltip();
+        ui::end_tooltip();
     }
 
-    ui::SameLine();
-    ui::SetNextItemWidth(ui::CalcTextSize("should be roughly this long incl label").x);
+    ui::same_line();
+    ui::set_next_item_width(ui::calc_text_size("should be roughly this long incl label").x);
     float blend = m_State->getWarpBlendingFactor();
-    if (ui::SliderFloat("blending", &blend, 0.0f, 1.0f)) {
+    if (ui::draw_float_slider("blending", &blend, 0.0f, 1.0f)) {
         m_State->setWarpBlendingFactor(blend);
     }
 
-    ui::SameLine();
+    ui::same_line();
     {
         bool v = m_State->isCameraLinked();
-        if (ui::Checkbox("link cameras", &v)) {
+        if (ui::draw_checkbox("link cameras", &v)) {
             m_State->setCameraLinked(v);
         }
     }
 
-    ui::SameLine();
+    ui::same_line();
     {
         bool v = m_State->isOnlyCameraRotationLinked();
-        if (ui::Checkbox("only link rotation", &v)) {
+        if (ui::draw_checkbox("only link rotation", &v)) {
             m_State->setOnlyCameraRotationLinked(v);
         }
     }

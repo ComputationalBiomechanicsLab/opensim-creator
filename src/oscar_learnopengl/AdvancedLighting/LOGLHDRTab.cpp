@@ -109,7 +109,7 @@ private:
     {
         // reformat intermediate HDR texture to match tab dimensions etc.
         {
-            Rect const viewportRect = ui::GetMainViewportWorkspaceScreenRect();
+            Rect const viewportRect = ui::get_main_viewport_workspace_screen_rect();
             RenderTextureDescriptor descriptor{dimensions_of(viewportRect)};
             descriptor.set_anti_aliasing_level(App::get().anti_aliasing_level());
             if (m_Use16BitFormat)
@@ -128,7 +128,7 @@ private:
     {
         Camera orthoCamera;
         orthoCamera.set_background_color(Color::clear());
-        orthoCamera.set_pixel_rect(ui::GetMainViewportWorkspaceScreenRect());
+        orthoCamera.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
         orthoCamera.set_projection_matrix_override(identity<Mat4>());
         orthoCamera.set_view_matrix_override(identity<Mat4>());
 
@@ -144,13 +144,13 @@ private:
 
     void draw2DUI()
     {
-        ui::Begin("controls");
-        ui::Checkbox("use tonemapping", &m_UseTonemap);
-        ui::Checkbox("use 16-bit colors", &m_Use16BitFormat);
-        ui::InputFloat("exposure", &m_Exposure);
-        ui::Text("pos = %f,%f,%f", m_Camera.position().x, m_Camera.position().y, m_Camera.position().z);
-        ui::Text("eulers = %f,%f,%f", m_Camera.eulers().x.count(), m_Camera.eulers().y.count(), m_Camera.eulers().z.count());
-        ui::End();
+        ui::begin_panel("controls");
+        ui::draw_checkbox("use tonemapping", &m_UseTonemap);
+        ui::draw_checkbox("use 16-bit colors", &m_Use16BitFormat);
+        ui::draw_float_input("exposure", &m_Exposure);
+        ui::draw_text("pos = %f,%f,%f", m_Camera.position().x, m_Camera.position().y, m_Camera.position().z);
+        ui::draw_text("eulers = %f,%f,%f", m_Camera.eulers().x.count(), m_Camera.eulers().y.count(), m_Camera.eulers().z.count());
+        ui::end_panel();
     }
 
     ResourceLoader m_Loader = App::resource_loader();

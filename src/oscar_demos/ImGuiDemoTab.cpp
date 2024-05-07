@@ -19,7 +19,7 @@ public:
 private:
     void impl_on_draw() final
     {
-        ui::ShowDemoWindow();
+        ui::show_demo_panel();
     }
 };
 

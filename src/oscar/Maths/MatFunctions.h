@@ -463,7 +463,7 @@ namespace osc
             r_orientation.x = root * (Row[1].z - Row[2].y);
             r_orientation.y = root * (Row[2].x - Row[0].z);
             r_orientation.z = root * (Row[0].y - Row[1].x);
-        } // End if > 0
+        } // end_panel if > 0
         else {
             static int next[3] = {1, 2, 0};
             i = 0;
@@ -481,7 +481,7 @@ namespace osc
             r_orientation[j + off] = root * (Row[i][j] + Row[j][i]);
             r_orientation[k + off] = root * (Row[i][k] + Row[k][i]);
             r_orientation.w = root * (Row[j][k] - Row[k][j]);
-        } // End if <= 0
+        } // end_panel if <= 0
 
         return true;
     }

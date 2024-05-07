@@ -27,38 +27,38 @@ namespace osc
 
         void onDraw()
         {
-            if (ui::BeginMenu("File"))
+            if (ui::begin_menu("File"))
             {
                 drawContent();
-                ui::EndMenu();
+                ui::end_menu();
             }
         }
     private:
         void drawContent()
         {
-            if (ui::MenuItem(ICON_FA_FILE " New", "Ctrl+N"))
+            if (ui::draw_menu_item(ICON_FA_FILE " New", "Ctrl+N"))
             {
                 ActionCreateNewDocument(m_State->updUndoable());
             }
 
-            if (ui::BeginMenu(ICON_FA_FILE_IMPORT " Import"))
+            if (ui::begin_menu(ICON_FA_FILE_IMPORT " Import"))
             {
                 drawImportMenuContent();
-                ui::EndMenu();
+                ui::end_menu();
             }
 
-            if (ui::BeginMenu(ICON_FA_FILE_EXPORT " Export"))
+            if (ui::begin_menu(ICON_FA_FILE_EXPORT " Export"))
             {
                 drawExportMenuContent();
-                ui::EndMenu();
+                ui::end_menu();
             }
 
-            if (ui::MenuItem(ICON_FA_TIMES " Close", "Ctrl+W"))
+            if (ui::draw_menu_item(ICON_FA_TIMES " Close", "Ctrl+W"))
             {
                 m_State->closeTab();
             }
 
-            if (ui::MenuItem(ICON_FA_TIMES_CIRCLE " Quit", "Ctrl+Q"))
+            if (ui::draw_menu_item(ICON_FA_TIMES_CIRCLE " Quit", "Ctrl+Q"))
             {
                 App::upd().request_quit();
             }
@@ -66,23 +66,23 @@ namespace osc
 
         void drawImportMenuContent()
         {
-            if (ui::MenuItem("Source Mesh"))
+            if (ui::draw_menu_item("Source Mesh"))
             {
                 ActionLoadMeshFile(m_State->updUndoable(), TPSDocumentInputIdentifier::Source);
             }
-            if (ui::MenuItem("Destination Mesh"))
+            if (ui::draw_menu_item("Destination Mesh"))
             {
                 ActionLoadMeshFile(m_State->updUndoable(), TPSDocumentInputIdentifier::Destination);
             }
-            if (ui::MenuItem("Source Landmarks from CSV"))
+            if (ui::draw_menu_item("Source Landmarks from CSV"))
             {
                 ActionLoadLandmarksFromCSV(m_State->updUndoable(), TPSDocumentInputIdentifier::Source);
             }
-            if (ui::MenuItem("Destination Landmarks from CSV"))
+            if (ui::draw_menu_item("Destination Landmarks from CSV"))
             {
                 ActionLoadLandmarksFromCSV(m_State->updUndoable(), TPSDocumentInputIdentifier::Destination);
             }
-            if (ui::MenuItem("Non-Participating Landmarks from CSV"))
+            if (ui::draw_menu_item("Non-Participating Landmarks from CSV"))
             {
                 ActionLoadNonParticipatingLandmarksFromCSV(m_State->updUndoable());
             }
@@ -90,23 +90,23 @@ namespace osc
 
         void drawExportMenuContent()
         {
-            if (ui::MenuItem("Source Landmarks to CSV"))
+            if (ui::draw_menu_item("Source Landmarks to CSV"))
             {
                 ActionSaveLandmarksToCSV(m_State->getScratch(), TPSDocumentInputIdentifier::Source);
             }
-            if (ui::MenuItem("Destination Landmarks to CSV"))
+            if (ui::draw_menu_item("Destination Landmarks to CSV"))
             {
                 ActionSaveLandmarksToCSV(m_State->getScratch(), TPSDocumentInputIdentifier::Destination);
             }
-            if (ui::MenuItem("Landmark Pairs to CSV"))
+            if (ui::draw_menu_item("Landmark Pairs to CSV"))
             {
                 ActionSavePairedLandmarksToCSV(m_State->getScratch());
             }
-            if (ui::MenuItem("Landmark Pairs to CSV (no names)"))
+            if (ui::draw_menu_item("Landmark Pairs to CSV (no names)"))
             {
                 ActionSavePairedLandmarksToCSV(m_State->getScratch(), LandmarkCSVFlags::NoNames);
             }
-            if (ui::MenuItem("Non-Participating Landmarks to CSV"))
+            if (ui::draw_menu_item("Non-Participating Landmarks to CSV"))
             {
                 ActionSaveNonParticipatingLandmarksToCSV(m_State->getScratch());
             }

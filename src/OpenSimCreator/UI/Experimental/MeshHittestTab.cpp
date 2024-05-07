@@ -56,14 +56,14 @@ public:
 
     void on_tick()
     {
-        ui::UpdatePolarCameraFromMouseInputs(m_PolarCamera, App::get().dimensions());
+        ui::update_polar_camera_from_mouse_inputs(m_PolarCamera, App::get().dimensions());
 
         // handle hittest
         auto raycastStart = std::chrono::high_resolution_clock::now();
 
-        Rect r = ui::GetMainViewportWorkspaceScreenRect();
+        Rect r = ui::get_main_viewport_workspace_screen_rect();
         Vec2 d = dimensions_of(r);
-        m_Ray = m_PolarCamera.unproject_topleft_pos_to_world_ray(Vec2{ui::GetMousePos()} - r.p1, d);
+        m_Ray = m_PolarCamera.unproject_topleft_pos_to_world_ray(Vec2{ui::get_mouse_pos()} - r.p1, d);
 
         m_IsMousedOver = false;
         if (m_UseBVH)
@@ -100,7 +100,7 @@ public:
     {
         // setup scene
         {
-            Rect const viewportRect = ui::GetMainViewportWorkspaceScreenRect();
+            Rect const viewportRect = ui::get_main_viewport_workspace_screen_rect();
             Vec2 const viewportRectDims = dimensions_of(viewportRect);
             m_Camera.set_pixel_rect(viewportRect);
 
@@ -150,21 +150,21 @@ public:
         // auxiliary 2D UI
         // printout stats
         {
-            ui::Begin("controls");
-            ui::Checkbox("BVH", &m_UseBVH);
-            ui::Text("%" PRId64 " microseconds", static_cast<int64_t>(m_RaycastDuration.count()));
+            ui::begin_panel("controls");
+            ui::draw_checkbox("BVH", &m_UseBVH);
+            ui::draw_text("%" PRId64 " microseconds", static_cast<int64_t>(m_RaycastDuration.count()));
             auto r = m_Ray;
-            ui::Text("camerapos = (%.2f, %.2f, %.2f)", m_Camera.position().x, m_Camera.position().y, m_Camera.position().z);
-            ui::Text("origin = (%.2f, %.2f, %.2f), direction = (%.2f, %.2f, %.2f)", r.origin.x, r.origin.y, r.origin.z, r.direction.x, r.direction.y, r.direction.z);
+            ui::draw_text("camerapos = (%.2f, %.2f, %.2f)", m_Camera.position().x, m_Camera.position().y, m_Camera.position().z);
+            ui::draw_text("origin = (%.2f, %.2f, %.2f), direction = (%.2f, %.2f, %.2f)", r.origin.x, r.origin.y, r.origin.z, r.direction.x, r.direction.y, r.direction.z);
             if (m_IsMousedOver)
             {
-                ui::Text("hit = (%.2f, %.2f, %.2f)", m_HitPos.x, m_HitPos.y, m_HitPos.z);
-                ui::Text("p1 = (%.2f, %.2f, %.2f)", m_Tris[0].x, m_Tris[0].y, m_Tris[0].z);
-                ui::Text("p2 = (%.2f, %.2f, %.2f)", m_Tris[1].x, m_Tris[1].y, m_Tris[1].z);
-                ui::Text("p3 = (%.2f, %.2f, %.2f)", m_Tris[2].x, m_Tris[2].y, m_Tris[2].z);
+                ui::draw_text("hit = (%.2f, %.2f, %.2f)", m_HitPos.x, m_HitPos.y, m_HitPos.z);
+                ui::draw_text("p1 = (%.2f, %.2f, %.2f)", m_Tris[0].x, m_Tris[0].y, m_Tris[0].z);
+                ui::draw_text("p2 = (%.2f, %.2f, %.2f)", m_Tris[1].x, m_Tris[1].y, m_Tris[1].z);
+                ui::draw_text("p3 = (%.2f, %.2f, %.2f)", m_Tris[2].x, m_Tris[2].y, m_Tris[2].z);
 
             }
-            ui::End();
+            ui::end_panel();
         }
         m_PerfPanel.on_draw();
     }

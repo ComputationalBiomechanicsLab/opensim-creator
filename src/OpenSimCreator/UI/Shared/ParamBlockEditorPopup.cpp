@@ -27,7 +27,7 @@ namespace
         //       see: #553
 
         auto fv = static_cast<float>(v);
-        if (ui::InputFloat("##", &fv, 0.0f, 0.0f, "%.9f"))
+        if (ui::draw_float_input("##", &fv, 0.0f, 0.0f, "%.9f"))
         {
             b.setValue(idx, static_cast<double>(fv));
             return true;
@@ -40,7 +40,7 @@ namespace
 
     bool DrawEditor(ParamBlock& b, int idx, int v)
     {
-        if (ui::InputInt("##", &v))
+        if (ui::draw_int_input("##", &v))
         {
             b.setValue(idx, v);
             return true;
@@ -54,14 +54,14 @@ namespace
     bool DrawEditor(ParamBlock& b, int idx, IntegratorMethod im)
     {
         bool rv = false;
-        if (ui::BeginCombo("##", im.label())) {
+        if (ui::begin_combobox("##", im.label())) {
             for (IntegratorMethod m : IntegratorMethod::all()) {
-                if (ui::Selectable(m.label(), m == im)) {
+                if (ui::draw_selectable(m.label(), m == im)) {
                     b.setValue(idx, m);
                     rv = true;
                 }
             }
-            ui::EndCombo();
+            ui::end_combobox();
         }
         return rv;
     }
@@ -96,35 +96,35 @@ private:
     {
         m_WasEdited = false;
 
-        ui::Columns(2);
+        ui::set_num_columns(2);
         for (int i = 0, len = m_LocalCopy.size(); i < len; ++i)
         {
-            ui::PushID(i);
+            ui::push_id(i);
 
-            ui::TextUnformatted(m_LocalCopy.getName(i));
-            ui::SameLine();
-            ui::DrawHelpMarker(m_LocalCopy.getName(i), m_LocalCopy.getDescription(i));
-            ui::NextColumn();
+            ui::draw_text_unformatted(m_LocalCopy.getName(i));
+            ui::same_line();
+            ui::draw_help_marker(m_LocalCopy.getName(i), m_LocalCopy.getDescription(i));
+            ui::next_column();
 
             if (DrawEditor(m_LocalCopy, i))
             {
                 m_WasEdited = true;
             }
-            ui::NextColumn();
+            ui::next_column();
 
-            ui::PopID();
+            ui::pop_id();
         }
-        ui::Columns();
+        ui::set_num_columns();
 
-        ui::Dummy({0.0f, 1.0f});
+        ui::draw_dummy({0.0f, 1.0f});
 
-        if (ui::Button("save"))
+        if (ui::draw_button("save"))
         {
             *m_OutputTarget = m_LocalCopy;
             request_close();
         }
-        ui::SameLine();
-        if (ui::Button("close"))
+        ui::same_line();
+        if (ui::draw_button("close"))
         {
             request_close();
         }

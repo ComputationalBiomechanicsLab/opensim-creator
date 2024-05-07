@@ -57,58 +57,58 @@ public:
         }
 
         // draw top menu bar
-        if (ui::BeginMenuBar()) {
+        if (ui::begin_menu_bar()) {
             // draw level selector
             {
                 const LogLevel current_log_level = logger->level();
-                ui::SetNextItemWidth(200.0f);
-                if (ui::BeginCombo("log_level_", to_cstringview(current_log_level))) {
+                ui::set_next_item_width(200.0f);
+                if (ui::begin_combobox("log_level_", to_cstringview(current_log_level))) {
                     for (LogLevel log_level : make_option_iterable<LogLevel>()) {
                         bool active = log_level == current_log_level;
-                        if (ui::Selectable(to_cstringview(log_level), &active)) {
+                        if (ui::draw_selectable(to_cstringview(log_level), &active)) {
                             logger->set_level(log_level);
                         }
                     }
-                    ui::EndCombo();
+                    ui::end_combobox();
                 }
             }
 
-            ui::SameLine();
-            ui::Checkbox("autoscroll", &autoscroll_);
+            ui::same_line();
+            ui::draw_checkbox("autoscroll", &autoscroll_);
 
-            ui::SameLine();
-            if (ui::Button("clear")) {
+            ui::same_line();
+            if (ui::draw_button("clear")) {
                 global_get_traceback_log().lock()->clear();
             }
-            App::upd().add_frame_annotation("LogClearButton", ui::GetItemRect());
+            App::upd().add_frame_annotation("LogClearButton", ui::get_last_drawn_item_screen_rect());
 
-            ui::SameLine();
-            if (ui::Button("turn off")) {
+            ui::same_line();
+            if (ui::draw_button("turn off")) {
                 logger->set_level(LogLevel::off);
             }
 
-            ui::SameLine();
-            if (ui::Button("copy to clipboard")) {
+            ui::same_line();
+            if (ui::draw_button("copy to clipboard")) {
                 copy_traceback_log_to_clipboard();
             }
 
-            ui::Dummy({0.0f, 10.0f});
+            ui::draw_dummy({0.0f, 10.0f});
 
-            ui::EndMenuBar();
+            ui::end_menu_bar();
         }
 
         // draw log content lines
         auto& guarded_content = global_get_traceback_log();
         const auto& guard = guarded_content.lock();
         for (const LogMessage& log_message : *guard) {
-            ui::PushStyleColor(ImGuiCol_Text, ::to_color(log_message.level()));
-            ui::Text("[%s]", to_cstringview(log_message.level()).c_str());
-            ui::PopStyleColor();
-            ui::SameLine();
-            ui::TextWrapped(log_message.payload());
+            ui::push_style_color(ImGuiCol_Text, ::to_color(log_message.level()));
+            ui::draw_text("[%s]", to_cstringview(log_message.level()).c_str());
+            ui::pop_style_color();
+            ui::same_line();
+            ui::draw_text_wrapped(log_message.payload());
 
             if (autoscroll_) {
-                ui::SetScrollHereY();
+                ui::set_scroll_y_here();
             }
         }
     }
@@ -116,8 +116,6 @@ private:
     bool autoscroll_ = true;
 };
 
-
-// public API
 
 osc::LogViewer::LogViewer() :
     impl_{std::make_unique<Impl>()}

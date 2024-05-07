@@ -55,27 +55,27 @@ void osc::MainMenuFileTab::onDraw(
 {
     // handle hotkeys enabled by just drawing the menu
     {
-        auto const& io = ui::GetIO();
+        auto const& io = ui::get_io();
 
-        bool mod = ui::IsCtrlOrSuperDown();
+        bool mod = ui::is_ctrl_or_super_down();
 
-        if (mod && ui::IsKeyPressed(ImGuiKey_N))
+        if (mod && ui::is_key_pressed(ImGuiKey_N))
         {
             ActionNewModel(api);
         }
-        else if (mod && ui::IsKeyPressed(ImGuiKey_O))
+        else if (mod && ui::is_key_pressed(ImGuiKey_O))
         {
             ActionOpenModel(api);
         }
-        else if (maybeModel && mod && io.KeyShift && ui::IsKeyPressed(ImGuiKey_S))
+        else if (maybeModel && mod && io.KeyShift && ui::is_key_pressed(ImGuiKey_S))
         {
             ActionSaveCurrentModelAs(*maybeModel);
         }
-        else if (maybeModel && mod && ui::IsKeyPressed(ImGuiKey_S))
+        else if (maybeModel && mod && ui::is_key_pressed(ImGuiKey_S))
         {
             ActionSaveModel(*api, *maybeModel);
         }
-        else if (maybeModel && ui::IsKeyPressed(ImGuiKey_F5))
+        else if (maybeModel && ui::is_key_pressed(ImGuiKey_F5))
         {
             ActionReloadOsimFromDisk(*maybeModel, *App::singleton<SceneCache>());
         }
@@ -87,17 +87,17 @@ void osc::MainMenuFileTab::onDraw(
         maybeSaveChangesPopup->on_draw();
     }
 
-    if (!ui::BeginMenu("File"))
+    if (!ui::begin_menu("File"))
     {
         return;
     }
 
-    if (ui::MenuItem(ICON_FA_FILE " New", "Ctrl+N"))
+    if (ui::draw_menu_item(ICON_FA_FILE " New", "Ctrl+N"))
     {
         ActionNewModel(api);
     }
 
-    if (ui::MenuItem(ICON_FA_FOLDER_OPEN " Open", "Ctrl+O"))
+    if (ui::draw_menu_item(ICON_FA_FOLDER_OPEN " Open", "Ctrl+O"))
     {
         ActionOpenModel(api);
     }
@@ -105,40 +105,40 @@ void osc::MainMenuFileTab::onDraw(
     int imgui_id = 0;
 
     auto recentFiles = App::singleton<RecentFiles>();
-    if (ui::BeginMenu(ICON_FA_FOLDER_OPEN " Open Recent", !recentFiles->empty()))
+    if (ui::begin_menu(ICON_FA_FOLDER_OPEN " Open Recent", !recentFiles->empty()))
     {
         // iterate in reverse: recent files are stored oldest --> newest
         for (RecentFile const& rf : *recentFiles)
         {
-            ui::PushID(++imgui_id);
-            if (ui::MenuItem(rf.path.filename().string()))
+            ui::push_id(++imgui_id);
+            if (ui::draw_menu_item(rf.path.filename().string()))
             {
                 ActionOpenModel(api, rf.path);
             }
-            ui::PopID();
+            ui::pop_id();
         }
 
-        ui::EndMenu();
+        ui::end_menu();
     }
 
-    if (ui::BeginMenu(ICON_FA_FOLDER_OPEN " Open Example"))
+    if (ui::begin_menu(ICON_FA_FOLDER_OPEN " Open Example"))
     {
         for (std::filesystem::path const& ex : exampleOsimFiles)
         {
-            ui::PushID(++imgui_id);
-            if (ui::MenuItem(ex.filename().string()))
+            ui::push_id(++imgui_id);
+            if (ui::draw_menu_item(ex.filename().string()))
             {
                 ActionOpenModel(api, ex);
             }
-            ui::PopID();
+            ui::pop_id();
         }
 
-        ui::EndMenu();
+        ui::end_menu();
     }
 
-    ui::Separator();
+    ui::draw_separator();
 
-    if (ui::MenuItem(ICON_FA_FOLDER_OPEN " Load Motion", {}, false, maybeModel != nullptr))
+    if (ui::draw_menu_item(ICON_FA_FOLDER_OPEN " Load Motion", {}, false, maybeModel != nullptr))
     {
         std::optional<std::filesystem::path> maybePath = prompt_user_to_select_file({"sto", "mot"});
         if (maybePath && maybeModel)
@@ -158,9 +158,9 @@ void osc::MainMenuFileTab::onDraw(
         }
     }
 
-    ui::Separator();
+    ui::draw_separator();
 
-    if (ui::MenuItem(ICON_FA_SAVE " Save", "Ctrl+S", false, maybeModel != nullptr))
+    if (ui::draw_menu_item(ICON_FA_SAVE " Save", "Ctrl+S", false, maybeModel != nullptr))
     {
         if (maybeModel)
         {
@@ -168,7 +168,7 @@ void osc::MainMenuFileTab::onDraw(
         }
     }
 
-    if (ui::MenuItem(ICON_FA_SAVE " Save As", "Shift+Ctrl+S", false, maybeModel != nullptr))
+    if (ui::draw_menu_item(ICON_FA_SAVE " Save As", "Shift+Ctrl+S", false, maybeModel != nullptr))
     {
         if (maybeModel)
         {
@@ -176,33 +176,33 @@ void osc::MainMenuFileTab::onDraw(
         }
     }
 
-    ui::Separator();
+    ui::draw_separator();
 
     {
         bool const modelHasBackingFile = maybeModel != nullptr && HasInputFileName(maybeModel->getModel());
 
-        if (ui::MenuItem(ICON_FA_RECYCLE " Reload", "F5", false, modelHasBackingFile) && maybeModel)
+        if (ui::draw_menu_item(ICON_FA_RECYCLE " Reload", "F5", false, modelHasBackingFile) && maybeModel)
         {
             ActionReloadOsimFromDisk(*maybeModel, *App::singleton<SceneCache>());
         }
-        ui::DrawTooltipIfItemHovered("Reload", "Attempts to reload the osim file from scratch. This can be useful if (e.g.) editing third-party files that OpenSim Creator doesn't automatically track.");
+        ui::draw_tooltip_if_item_hovered("Reload", "Attempts to reload the osim file from scratch. This can be useful if (e.g.) editing third-party files that OpenSim Creator doesn't automatically track.");
 
-        if (ui::MenuItem(ICON_FA_CLIPBOARD " Copy .osim path to clipboard", {}, false, modelHasBackingFile) && maybeModel)
+        if (ui::draw_menu_item(ICON_FA_CLIPBOARD " Copy .osim path to clipboard", {}, false, modelHasBackingFile) && maybeModel)
         {
             ActionCopyModelPathToClipboard(*maybeModel);
         }
-        ui::DrawTooltipIfItemHovered("Copy .osim path to clipboard", "Copies the absolute path to the model's .osim file into your clipboard.\n\nThis is handy if you want to (e.g.) load the osim via a script, open it from the command line in another app, etc.");
+        ui::draw_tooltip_if_item_hovered("Copy .osim path to clipboard", "Copies the absolute path to the model's .osim file into your clipboard.\n\nThis is handy if you want to (e.g.) load the osim via a script, open it from the command line in another app, etc.");
 
-        if (ui::MenuItem(ICON_FA_FOLDER " Open .osim's parent directory", {}, false, modelHasBackingFile) && maybeModel)
+        if (ui::draw_menu_item(ICON_FA_FOLDER " Open .osim's parent directory", {}, false, modelHasBackingFile) && maybeModel)
         {
             ActionOpenOsimParentDirectory(*maybeModel);
         }
 
-        if (ui::MenuItem(ICON_FA_LINK " Open .osim in external editor", {}, false, modelHasBackingFile) && maybeModel)
+        if (ui::draw_menu_item(ICON_FA_LINK " Open .osim in external editor", {}, false, modelHasBackingFile) && maybeModel)
         {
             ActionOpenOsimInExternalEditor(*maybeModel);
         }
-        ui::DrawTooltipIfItemHovered("Open .osim in external editor", "Open the .osim file currently being edited in an external text editor. The editor that's used depends on your operating system's default for opening .osim files.");
+        ui::draw_tooltip_if_item_hovered("Open .osim in external editor", "Open the .osim file currently being edited in an external text editor. The editor that's used depends on your operating system's default for opening .osim files.");
     }
 
     // reload
@@ -210,190 +210,190 @@ void osc::MainMenuFileTab::onDraw(
     // parent dir
     // external editor
 
-    ui::Separator();
+    ui::draw_separator();
 
-    if (ui::MenuItem(ICON_FA_MAGIC " Import Meshes"))
+    if (ui::draw_menu_item(ICON_FA_MAGIC " Import Meshes"))
     {
         api->add_and_select_tab<mi::MeshImporterTab>(api);
     }
-    App::upd().add_frame_annotation("MainMenu/ImportMeshesMenuItem", ui::GetItemRect());
+    App::upd().add_frame_annotation("MainMenu/ImportMeshesMenuItem", ui::get_last_drawn_item_screen_rect());
 
 
 
-    if (ui::MenuItem(ICON_FA_TIMES_CIRCLE " Quit", "Ctrl+Q"))
+    if (ui::draw_menu_item(ICON_FA_TIMES_CIRCLE " Quit", "Ctrl+Q"))
     {
         App::upd().request_quit();
     }
 
-    ui::EndMenu();
+    ui::end_menu();
 }
 
 
 void osc::MainMenuAboutTab::onDraw()
 {
-    if (!ui::BeginMenu("About"))
+    if (!ui::begin_menu("About"))
     {
         return;
     }
 
     constexpr float menuWidth = 400;
-    ui::Dummy({menuWidth, 0});
+    ui::draw_dummy({menuWidth, 0});
 
-    ui::TextUnformatted("graphics");
-    ui::SameLine();
-    ui::DrawHelpMarker("OSMV's global graphical settings");
-    ui::Separator();
-    ui::Dummy({0.0f, 0.5f});
+    ui::draw_text_unformatted("graphics");
+    ui::same_line();
+    ui::draw_help_marker("OSMV's global graphical settings");
+    ui::draw_separator();
+    ui::draw_dummy({0.0f, 0.5f});
     {
-        ui::Columns(2);
+        ui::set_num_columns(2);
 
-        ui::TextUnformatted("FPS");
-        ui::NextColumn();
-        ui::Text("%.0f", static_cast<double>(ui::GetIO().Framerate));
-        ui::NextColumn();
+        ui::draw_text_unformatted("FPS");
+        ui::next_column();
+        ui::draw_text("%.0f", static_cast<double>(ui::get_io().Framerate));
+        ui::next_column();
 
-        ui::TextUnformatted("MSXAA");
-        ui::SameLine();
-        ui::DrawHelpMarker("the log_level_ of MultiSample Anti-Aliasing to use. This only affects 3D renders *within* the UI, not the whole UI (panels etc. will not be affected)");
-        ui::NextColumn();
+        ui::draw_text_unformatted("MSXAA");
+        ui::same_line();
+        ui::draw_help_marker("the log_level_ of MultiSample Anti-Aliasing to use. This only affects 3D renders *within* the UI, not the whole UI (panels etc. will not be affected)");
+        ui::next_column();
         {
             AntiAliasingLevel const current = App::get().anti_aliasing_level();
             AntiAliasingLevel const max = App::get().max_anti_aliasing_level();
 
-            if (ui::BeginCombo("##msxaa", to_string(current)))
+            if (ui::begin_combobox("##msxaa", to_string(current)))
             {
                 for (AntiAliasingLevel l = AntiAliasingLevel::min(); l <= max; ++l)
                 {
                     bool selected = l == current;
-                    if (ui::Selectable(to_string(l), &selected))
+                    if (ui::draw_selectable(to_string(l), &selected))
                     {
                         App::upd().set_anti_aliasing_level(l);
                     }
                 }
-                ui::EndCombo();
+                ui::end_combobox();
             }
         }
-        ui::NextColumn();
+        ui::next_column();
 
-        ui::TextUnformatted("window");
-        ui::NextColumn();
+        ui::draw_text_unformatted("window");
+        ui::next_column();
 
-        if (ui::Button(ICON_FA_EXPAND " fullscreen"))
+        if (ui::draw_button(ICON_FA_EXPAND " fullscreen"))
         {
             App::upd().make_fullscreen();
         }
-        if (ui::Button(ICON_FA_EXPAND " windowed fullscreen"))
+        if (ui::draw_button(ICON_FA_EXPAND " windowed fullscreen"))
         {
             App::upd().make_windowed_fullscreen();
         }
-        if (ui::Button(ICON_FA_WINDOW_RESTORE " windowed"))
+        if (ui::draw_button(ICON_FA_WINDOW_RESTORE " windowed"))
         {
             App::upd().make_windowed();
         }
-        ui::NextColumn();
+        ui::next_column();
 
-        ui::TextUnformatted("VSYNC");
-        ui::SameLine();
-        ui::DrawHelpMarker("whether the backend uses vertical sync (VSYNC), which will cap the rendering FPS to your monitor's refresh rate");
-        ui::NextColumn();
+        ui::draw_text_unformatted("VSYNC");
+        ui::same_line();
+        ui::draw_help_marker("whether the backend uses vertical sync (VSYNC), which will cap the rendering FPS to your monitor's refresh rate");
+        ui::next_column();
 
         bool enabled = App::get().is_vsync_enabled();
-        if (ui::Checkbox("##vsynccheckbox", &enabled)) {
+        if (ui::draw_checkbox("##vsynccheckbox", &enabled)) {
             if (enabled) {
                 App::upd().enable_vsync();
             } else {
                 App::upd().disable_vsync();
             }
         }
-        ui::NextColumn();
+        ui::next_column();
 
-        ui::Columns();
+        ui::set_num_columns();
     }
 
-    ui::Dummy({0.0f, 2.0f});
-    ui::TextUnformatted("properties");
-    ui::SameLine();
-    ui::DrawHelpMarker("general software properties: useful information for bug reporting etc.");
-    ui::Separator();
-    ui::Dummy({0.0f, 0.5f});
+    ui::draw_dummy({0.0f, 2.0f});
+    ui::draw_text_unformatted("properties");
+    ui::same_line();
+    ui::draw_help_marker("general software properties: useful information for bug reporting etc.");
+    ui::draw_separator();
+    ui::draw_dummy({0.0f, 0.5f});
     {
         AppMetadata const& metadata = App::get().metadata();
 
-        ui::Columns(2);
+        ui::set_num_columns(2);
 
-        ui::TextUnformatted("VERSION");
-        ui::NextColumn();
-        ui::TextUnformatted(metadata.maybe_version_string().value_or("(not known)"));
-        ui::NextColumn();
+        ui::draw_text_unformatted("VERSION");
+        ui::next_column();
+        ui::draw_text_unformatted(metadata.maybe_version_string().value_or("(not known)"));
+        ui::next_column();
 
-        ui::TextUnformatted("BUILD_ID");
-        ui::NextColumn();
-        ui::TextUnformatted(metadata.maybe_build_id().value_or("(not known)"));
-        ui::NextColumn();
+        ui::draw_text_unformatted("BUILD_ID");
+        ui::next_column();
+        ui::draw_text_unformatted(metadata.maybe_build_id().value_or("(not known)"));
+        ui::next_column();
 
-        ui::TextUnformatted("GRAPHICS_VENDOR");
-        ui::NextColumn();
-        ui::Text(App::get().graphics_backend_vendor_string());
-        ui::NextColumn();
+        ui::draw_text_unformatted("GRAPHICS_VENDOR");
+        ui::next_column();
+        ui::draw_text(App::get().graphics_backend_vendor_string());
+        ui::next_column();
 
-        ui::TextUnformatted("GRAPHICS_RENDERER");
-        ui::NextColumn();
-        ui::Text(App::get().graphics_backend_renderer_string());
-        ui::NextColumn();
+        ui::draw_text_unformatted("GRAPHICS_RENDERER");
+        ui::next_column();
+        ui::draw_text(App::get().graphics_backend_renderer_string());
+        ui::next_column();
 
-        ui::TextUnformatted("GRAPHICS_RENDERER_VERSION");
-        ui::NextColumn();
-        ui::Text(App::get().graphics_backend_version_string());
-        ui::NextColumn();
+        ui::draw_text_unformatted("GRAPHICS_RENDERER_VERSION");
+        ui::next_column();
+        ui::draw_text(App::get().graphics_backend_version_string());
+        ui::next_column();
 
-        ui::TextUnformatted("GRAPHICS_SHADER_VERSION");
-        ui::NextColumn();
-        ui::Text(App::get().graphics_backend_shading_language_version_string());
-        ui::NextColumn();
+        ui::draw_text_unformatted("GRAPHICS_SHADER_VERSION");
+        ui::next_column();
+        ui::draw_text(App::get().graphics_backend_shading_language_version_string());
+        ui::next_column();
 
-        ui::Columns(1);
+        ui::set_num_columns(1);
     }
 
-    ui::Dummy({0.0f, 2.5f});
-    ui::TextUnformatted("debugging utilities:");
-    ui::SameLine();
-    ui::DrawHelpMarker("standard utilities that can help with development, debugging, etc.");
-    ui::Separator();
-    ui::Dummy({0.0f, 0.5f});
+    ui::draw_dummy({0.0f, 2.5f});
+    ui::draw_text_unformatted("debugging utilities:");
+    ui::same_line();
+    ui::draw_help_marker("standard utilities that can help with development, debugging, etc.");
+    ui::draw_separator();
+    ui::draw_dummy({0.0f, 0.5f});
     int id = 0;
     {
-        ui::Columns(2);
+        ui::set_num_columns(2);
 
-        ui::TextUnformatted("OSC Install Location");
-        ui::SameLine();
-        ui::DrawHelpMarker("opens OSC's installation location in your OS's default file browser");
-        ui::NextColumn();
-        ui::PushID(id++);
-        if (ui::Button(ICON_FA_FOLDER " open"))
+        ui::draw_text_unformatted("OSC Install Location");
+        ui::same_line();
+        ui::draw_help_marker("opens OSC's installation location in your OS's default file browser");
+        ui::next_column();
+        ui::push_id(id++);
+        if (ui::draw_button(ICON_FA_FOLDER " open"))
         {
             open_file_in_os_default_application(App::get().executable_dir());
         }
-        ui::PopID();
-        ui::NextColumn();
+        ui::pop_id();
+        ui::next_column();
 
-        ui::TextUnformatted("User Data Dir");
-        ui::SameLine();
-        ui::DrawHelpMarker("opens your OSC user data directory in your OS's default file browser");
-        ui::NextColumn();
-        ui::PushID(id++);
-        if (ui::Button(ICON_FA_FOLDER " open")) {
+        ui::draw_text_unformatted("User Data Dir");
+        ui::same_line();
+        ui::draw_help_marker("opens your OSC user data directory in your OS's default file browser");
+        ui::next_column();
+        ui::push_id(id++);
+        if (ui::draw_button(ICON_FA_FOLDER " open")) {
             open_file_in_os_default_application(App::get().user_data_dir());
         }
-        ui::PopID();
-        ui::NextColumn();
+        ui::pop_id();
+        ui::next_column();
 
-        ui::TextUnformatted("Debug mode");
-        ui::SameLine();
-        ui::DrawHelpMarker("Toggles whether the application is in debug mode or not: enabling this can reveal more inforamtion about bugs");
-        ui::NextColumn();
+        ui::draw_text_unformatted("Debug mode");
+        ui::same_line();
+        ui::draw_help_marker("Toggles whether the application is in debug mode or not: enabling this can reveal more inforamtion about bugs");
+        ui::next_column();
         {
             bool appIsInDebugMode = App::get().is_in_debug_mode();
-            if (ui::Checkbox("##debugmodecheckbox", &appIsInDebugMode))
+            if (ui::draw_checkbox("##debugmodecheckbox", &appIsInDebugMode))
             {
                 if (appIsInDebugMode)
                 {
@@ -406,70 +406,70 @@ void osc::MainMenuAboutTab::onDraw()
             }
         }
 
-        ui::Columns();
+        ui::set_num_columns();
     }
 
-    ui::Dummy({0.0f, 2.5f});
-    ui::TextUnformatted("useful links:");
-    ui::SameLine();
-    ui::DrawHelpMarker("links to external sites that might be useful");
-    ui::Separator();
-    ui::Dummy({0.0f, 0.5f});
+    ui::draw_dummy({0.0f, 2.5f});
+    ui::draw_text_unformatted("useful links:");
+    ui::same_line();
+    ui::draw_help_marker("links to external sites that might be useful");
+    ui::draw_separator();
+    ui::draw_dummy({0.0f, 0.5f});
     {
-        ui::Columns(2);
+        ui::set_num_columns(2);
 
-        ui::TextUnformatted("OpenSim Creator Documentation");
-        ui::NextColumn();
-        ui::PushID(id++);
-        if (ui::Button(ICON_FA_LINK " open"))
+        ui::draw_text_unformatted("OpenSim Creator Documentation");
+        ui::next_column();
+        ui::push_id(id++);
+        if (ui::draw_button(ICON_FA_LINK " open"))
         {
             open_file_in_os_default_application(App::config().html_docs_directory() / "index.html");
         }
-        ui::DrawTooltipBodyOnlyIfItemHovered("this will open the (locally installed) documentation in a separate browser window");
-        ui::PopID();
-        ui::NextColumn();
+        ui::draw_tooltip_body_only_if_item_hovered("this will open the (locally installed) documentation in a separate browser window");
+        ui::pop_id();
+        ui::next_column();
 
         if (auto repoURL = App::get().metadata().maybe_repository_url())
         {
-            ui::TextUnformatted("OpenSim Creator Repository");
-            ui::NextColumn();
-            ui::PushID(id++);
-            if (ui::Button(ICON_FA_LINK " open"))
+            ui::draw_text_unformatted("OpenSim Creator Repository");
+            ui::next_column();
+            ui::push_id(id++);
+            if (ui::draw_button(ICON_FA_LINK " open"))
             {
                 open_file_in_os_default_application(std::filesystem::path{std::string_view{*repoURL}});
             }
-            ui::DrawTooltipBodyOnlyIfItemHovered("this will open the repository homepage in a separate browser window");
-            ui::PopID();
-            ui::NextColumn();
+            ui::draw_tooltip_body_only_if_item_hovered("this will open the repository homepage in a separate browser window");
+            ui::pop_id();
+            ui::next_column();
         }
 
         if (auto helpURL = App::get().metadata().maybe_help_url())
         {
-            ui::TextUnformatted("OpenSim Creator Help");
-            ui::NextColumn();
-            ui::PushID(id++);
-            if (ui::Button(ICON_FA_LINK " open"))
+            ui::draw_text_unformatted("OpenSim Creator Help");
+            ui::next_column();
+            ui::push_id(id++);
+            if (ui::draw_button(ICON_FA_LINK " open"))
             {
                 open_file_in_os_default_application(std::filesystem::path{std::string_view{*helpURL}});
             }
-            ui::DrawTooltipBodyOnlyIfItemHovered("this will open the help/discussion page in a separate browser window");
-            ui::PopID();
-            ui::NextColumn();
+            ui::draw_tooltip_body_only_if_item_hovered("this will open the help/discussion page in a separate browser window");
+            ui::pop_id();
+            ui::next_column();
         }
 
-        ui::TextUnformatted("OpenSim Documentation");
-        ui::NextColumn();
-        ui::PushID(id++);
-        if (ui::Button(ICON_FA_LINK " open"))
+        ui::draw_text_unformatted("OpenSim Documentation");
+        ui::next_column();
+        ui::push_id(id++);
+        if (ui::draw_button(ICON_FA_LINK " open"))
         {
             open_file_in_os_default_application("https://simtk-confluence.stanford.edu/display/OpenSim/Documentation");
         }
-        ui::DrawTooltipBodyOnlyIfItemHovered("this will open the documentation in a separate browser window");
-        ui::PopID();
-        ui::NextColumn();
+        ui::draw_tooltip_body_only_if_item_hovered("this will open the documentation in a separate browser window");
+        ui::pop_id();
+        ui::next_column();
 
-        ui::Columns();
+        ui::set_num_columns();
     }
 
-    ui::EndMenu();
+    ui::end_menu();
 }

@@ -63,27 +63,27 @@ namespace
         return Vec2{r.Max} - Vec2{r.Min};
     }
 
-    float ShortestEdgeLength(const ImRect& r)
+    float shortest_edge_length_of(const ImRect& r)
     {
-        const Vec2 sz = dimensions_of(r);
-        return min(sz.x, sz.y);
+        const Vec2 dimensions = dimensions_of(r);
+        return rgs::min(dimensions);
     }
 
-    ImU32 Brighten(ImU32 color, float factor)
+    ImU32 brighten(ImU32 color, float factor)
     {
         const Color srgb = ui::to_color(color);
         const Color brightened = factor * srgb;
         const Color clamped = clamp_to_ldr(brightened);
-        return ui::ToImU32(clamped);
+        return ui::to_ImU32(clamped);
     }
 }
 
-void osc::ui::ApplyDarkTheme()
+void osc::ui::apply_dark_theme()
 {
     // see: https://github.com/ocornut/imgui/issues/707
     // this one: https://github.com/ocornut/imgui/issues/707#issuecomment-512669512
 
-    auto& style = ui::GetStyle();
+    auto& style = ui::get_style();
 
     style.FrameRounding = 0.0f;
     style.GrabRounding = 20.0f;
@@ -140,16 +140,15 @@ void osc::ui::ApplyDarkTheme()
     colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.6f);
 }
 
-bool osc::ui::UpdatePolarCameraFromMouseInputs(
+bool osc::ui::update_polar_camera_from_mouse_inputs(
     PolarPerspectiveCamera& camera,
     Vec2 viewport_dimensions)
 {
     bool modified = false;
 
     // handle mousewheel scrolling
-    if (ui::GetIO().MouseWheel != 0.0f)
-    {
-        camera.radius *= 1.0f - 0.1f * ui::GetIO().MouseWheel;
+    if (ui::get_io().MouseWheel != 0.0f) {
+        camera.radius *= 1.0f - 0.1f * ui::get_io().MouseWheel;
         modified = true;
     }
 
@@ -167,18 +166,18 @@ bool osc::ui::UpdatePolarCameraFromMouseInputs(
     // other GUIs and users who use modelling software like Blender (which is
     // more popular among newer users looking to make new models)
 
-    const float aspectRatio = viewport_dimensions.x / viewport_dimensions.y;
+    const float aspect_ratio = aspect_ratio_of(viewport_dimensions);
 
-    const bool leftDragging = ui::IsMouseDragging(ImGuiMouseButton_Left);
-    const bool middleDragging = ui::IsMouseDragging(ImGuiMouseButton_Middle);
-    const Vec2 delta = ui::GetIO().MouseDelta;
+    const bool left_dragging = ui::is_mouse_dragging(ImGuiMouseButton_Left);
+    const bool middle_dragging = ui::is_mouse_dragging(ImGuiMouseButton_Middle);
+    const Vec2 delta = ui::get_io().MouseDelta;
 
-    if (delta != Vec2{0.0f, 0.0f} && (leftDragging || middleDragging)) {
-        if (IsCtrlDown()) {
-            camera.pan(aspectRatio, delta/viewport_dimensions);
+    if (delta != Vec2{0.0f, 0.0f} and (left_dragging or middle_dragging)) {
+        if (is_ctrl_down()) {
+            camera.pan(aspect_ratio, delta/viewport_dimensions);
             modified = true;
         }
-        else if (IsCtrlOrSuperDown()) {
+        else if (is_ctrl_or_super_down()) {
             camera.radius *= 1.0f + 4.0f*delta.y/viewport_dimensions.y;
             modified = true;
         }
@@ -187,13 +186,13 @@ bool osc::ui::UpdatePolarCameraFromMouseInputs(
             modified = true;
         }
     }
-    else if (ui::IsMouseDragging(ImGuiMouseButton_Right)) {
-        if (IsAltDown()) {
+    else if (ui::is_mouse_dragging(ImGuiMouseButton_Right)) {
+        if (is_alt_down()) {
             camera.radius *= 1.0f + 4.0f*delta.y/viewport_dimensions.y;
             modified = true;
         }
         else {
-            camera.pan(aspectRatio, delta/viewport_dimensions);
+            camera.pan(aspect_ratio, delta/viewport_dimensions);
             modified = true;
         }
     }
@@ -205,16 +204,16 @@ bool osc::ui::UpdatePolarCameraFromMouseInputs(
     return modified;
 }
 
-bool osc::ui::UpdatePolarCameraFromKeyboardInputs(
+bool osc::ui::update_polar_camera_from_keyboard_inputs(
     PolarPerspectiveCamera& camera,
     const Rect& viewport_rect,
     std::optional<AABB> maybe_scene_aabb)
 {
-    const bool shiftDown = IsShiftDown();
-    const bool ctrlOrSuperDown = IsCtrlOrSuperDown();
+    const bool shift_down = is_shift_down();
+    const bool ctrl_or_super_down = is_ctrl_or_super_down();
 
-    if (ui::IsKeyReleased(ImGuiKey_X)) {
-        if (ctrlOrSuperDown) {
+    if (ui::is_key_released(ImGuiKey_X)) {
+        if (ctrl_or_super_down) {
             focus_along_minus_x(camera);
             return true;
         } else {
@@ -222,15 +221,15 @@ bool osc::ui::UpdatePolarCameraFromKeyboardInputs(
             return true;
         }
     }
-    else if (ui::IsKeyPressed(ImGuiKey_Y)) {
+    else if (ui::is_key_pressed(ImGuiKey_Y)) {
         // Ctrl+Y already does something?
-        if (!ctrlOrSuperDown) {
+        if (not ctrl_or_super_down) {
             focus_along_y(camera);
             return true;
         }
     }
-    else if (ui::IsKeyPressed(ImGuiKey_F)) {
-        if (ctrlOrSuperDown) {
+    else if (ui::is_key_pressed(ImGuiKey_F)) {
+        if (ctrl_or_super_down) {
             if (maybe_scene_aabb) {
                 auto_focus(
                     camera,
@@ -245,7 +244,7 @@ bool osc::ui::UpdatePolarCameraFromKeyboardInputs(
             return true;
         }
     }
-    else if (ctrlOrSuperDown && (ui::IsKeyPressed(ImGuiKey_8))) {
+    else if (ctrl_or_super_down and ui::is_key_pressed(ImGuiKey_8)) {
         if (maybe_scene_aabb) {
             auto_focus(
                 camera,
@@ -255,12 +254,12 @@ bool osc::ui::UpdatePolarCameraFromKeyboardInputs(
             return true;
         }
     }
-    else if (ui::IsKeyDown(ImGuiKey_UpArrow)) {
-        if (ctrlOrSuperDown) {
+    else if (ui::is_key_down(ImGuiKey_UpArrow)) {
+        if (ctrl_or_super_down) {
             // pan
             camera.pan(aspect_ratio_of(viewport_rect), {0.0f, -0.1f});
         }
-        else if (shiftDown) {
+        else if (shift_down) {
             camera.phi -= 90_deg;  // rotate in 90-deg increments
         }
         else {
@@ -268,12 +267,12 @@ bool osc::ui::UpdatePolarCameraFromKeyboardInputs(
         }
         return true;
     }
-    else if (ui::IsKeyDown(ImGuiKey_DownArrow)) {
-        if (ctrlOrSuperDown) {
+    else if (ui::is_key_down(ImGuiKey_DownArrow)) {
+        if (ctrl_or_super_down) {
             // pan
             camera.pan(aspect_ratio_of(viewport_rect), {0.0f, +0.1f});
         }
-        else if (shiftDown) {
+        else if (shift_down) {
             // rotate in 90-deg increments
             camera.phi += 90_deg;
         }
@@ -283,12 +282,12 @@ bool osc::ui::UpdatePolarCameraFromKeyboardInputs(
         }
         return true;
     }
-    else if (ui::IsKeyDown(ImGuiKey_LeftArrow)) {
-        if (ctrlOrSuperDown) {
+    else if (ui::is_key_down(ImGuiKey_LeftArrow)) {
+        if (ctrl_or_super_down) {
             // pan
             camera.pan(aspect_ratio_of(viewport_rect), {-0.1f, 0.0f});
         }
-        else if (shiftDown) {
+        else if (shift_down) {
             // rotate in 90-deg increments
             camera.theta += 90_deg;
         }
@@ -298,12 +297,12 @@ bool osc::ui::UpdatePolarCameraFromKeyboardInputs(
         }
         return true;
     }
-    else if (ui::IsKeyDown(ImGuiKey_RightArrow)) {
-        if (ctrlOrSuperDown) {
+    else if (ui::is_key_down(ImGuiKey_RightArrow)) {
+        if (ctrl_or_super_down) {
             // pan
             camera.pan(aspect_ratio_of(viewport_rect), {+0.1f, 0.0f});
         }
-        else if (shiftDown) {
+        else if (shift_down) {
             camera.theta -= 90_deg;  // rotate in 90-deg increments
         }
         else {
@@ -311,71 +310,65 @@ bool osc::ui::UpdatePolarCameraFromKeyboardInputs(
         }
         return true;
     }
-    else if (ui::IsKeyDown(ImGuiKey_Minus)) {
+    else if (ui::is_key_down(ImGuiKey_Minus)) {
         camera.radius *= 1.1f;
         return true;
     }
-    else if (ui::IsKeyDown(ImGuiKey_Equal)) {
+    else if (ui::is_key_down(ImGuiKey_Equal)) {
         camera.radius *= 0.9f;
         return true;
     }
     return false;
 }
 
-bool osc::ui::UpdatePolarCameraFromInputs(
+bool osc::ui::update_polar_camera_from_all_inputs(
     PolarPerspectiveCamera& camera,
     const Rect& viewport_rect,
     std::optional<AABB> maybe_scene_aabb)
 {
 
-    ImGuiIO& io = ui::GetIO();
+    ImGuiIO& io = ui::get_io();
 
     // we don't check `io.WantCaptureMouse` because clicking/dragging on an ImGui::Image
     // is classed as a mouse interaction
-    const bool mouseHandled =
-        UpdatePolarCameraFromMouseInputs(camera, dimensions_of(viewport_rect));
-    const bool keyboardHandled = !io.WantCaptureKeyboard ?
-        UpdatePolarCameraFromKeyboardInputs(camera, viewport_rect, maybe_scene_aabb) :
+    const bool mouse_handled =
+        update_polar_camera_from_mouse_inputs(camera, dimensions_of(viewport_rect));
+    const bool keyboard_handled = not io.WantCaptureKeyboard ?
+        update_polar_camera_from_keyboard_inputs(camera, viewport_rect, maybe_scene_aabb) :
         false;
 
-    return mouseHandled || keyboardHandled;
+    return mouse_handled or keyboard_handled;
 }
 
-void osc::ui::UpdateCameraFromInputs(Camera& camera, Eulers& eulers)
+void osc::ui::update_camera_from_all_inputs(Camera& camera, Eulers& eulers)
 {
     const Vec3 front = camera.direction();
     const Vec3 up = camera.upwards_direction();
     const Vec3 right = cross(front, up);
-    const Vec2 mouseDelta = ui::GetIO().MouseDelta;
+    const Vec2 mouseDelta = ui::get_io().MouseDelta;
 
     const float speed = 10.0f;
-    const float displacement = speed * ui::GetIO().DeltaTime;
+    const float displacement = speed * ui::get_io().DeltaTime;
     const Radians sensitivity{0.005f};
 
     // keyboard: changes camera position
     Vec3 pos = camera.position();
-    if (ui::IsKeyDown(ImGuiKey_W))
-    {
+    if (ui::is_key_down(ImGuiKey_W)) {
         pos += displacement * front;
     }
-    if (ui::IsKeyDown(ImGuiKey_S))
-    {
+    if (ui::is_key_down(ImGuiKey_S)) {
         pos -= displacement * front;
     }
-    if (ui::IsKeyDown(ImGuiKey_A))
-    {
+    if (ui::is_key_down(ImGuiKey_A)) {
         pos -= displacement * right;
     }
-    if (ui::IsKeyDown(ImGuiKey_D))
-    {
+    if (ui::is_key_down(ImGuiKey_D)) {
         pos += displacement * right;
     }
-    if (ui::IsKeyDown(ImGuiKey_Space))
-    {
+    if (ui::is_key_down(ImGuiKey_Space)) {
         pos += displacement * up;
     }
-    if (ui::GetIO().KeyCtrl)
-    {
+    if (ui::get_io().KeyCtrl) {
         pos -= displacement * up;
     }
     camera.set_position(pos);
@@ -388,314 +381,305 @@ void osc::ui::UpdateCameraFromInputs(Camera& camera, Eulers& eulers)
     camera.set_rotation(to_worldspace_rotation_quat(eulers));
 }
 
-Rect osc::ui::ContentRegionAvailScreenRect()
+Rect osc::ui::content_region_avail_as_screen_rect()
 {
-    const Vec2 topLeft = ui::GetCursorScreenPos();
-    return Rect{topLeft, topLeft + ui::GetContentRegionAvail()};
+    const Vec2 top_left = ui::get_cursor_screen_pos();
+    return Rect{top_left, top_left + ui::get_content_region_avail()};
 }
 
-void osc::ui::Image(const Texture2D& t)
+void osc::ui::draw_image(const Texture2D& texture)
 {
-    Image(t, t.dimensions());
+    draw_image(texture, texture.dimensions());
 }
 
-void osc::ui::Image(const Texture2D& t, Vec2 dimensions)
+void osc::ui::draw_image(const Texture2D& texture, Vec2 dimensions)
 {
-    const Vec2 topLeftCoord = {0.0f, 1.0f};
-    const Vec2 bottomRightCoord = {1.0f, 0.0f};
-    Image(t, dimensions, topLeftCoord, bottomRightCoord);
+    const Vec2 uv0 = {0.0f, 1.0f};
+    const Vec2 uv1 = {1.0f, 0.0f};
+    draw_image(texture, dimensions, uv0, uv1);
 }
 
-void osc::ui::Image(
-    const Texture2D& t,
+void osc::ui::draw_image(
+    const Texture2D& texture,
     Vec2 dimensions,
     Vec2 top_left_texture_coordinate,
     Vec2 bottom_right_texture_coordinate)
 {
-    const auto handle = ui::graphics_backend::allocate_texture_for_current_frame(t);
+    const auto handle = ui::graphics_backend::allocate_texture_for_current_frame(texture);
     ImGui::Image(handle, dimensions, top_left_texture_coordinate, bottom_right_texture_coordinate);
 }
 
-void osc::ui::Image(const RenderTexture& tex)
+void osc::ui::draw_image(const RenderTexture& texture)
 {
-    return Image(tex, tex.dimensions());
+    return draw_image(texture, texture.dimensions());
 }
 
-void osc::ui::Image(const RenderTexture& t, Vec2 dimensions)
+void osc::ui::draw_image(const RenderTexture& texture, Vec2 dimensions)
 {
     const Vec2 uv0 = {0.0f, 1.0f};
     const Vec2 uv1 = {1.0f, 0.0f};
-    const auto handle = ui::graphics_backend::allocate_texture_for_current_frame(t);
+    const auto handle = ui::graphics_backend::allocate_texture_for_current_frame(texture);
     ImGui::Image(handle, dimensions, uv0, uv1);
 }
 
-Vec2 osc::ui::CalcButtonSize(CStringView content)
+Vec2 osc::ui::calc_button_size(CStringView content)
 {
-    return ui::CalcTextSize(content) + 2.0f*ui::GetStyleFramePadding();
+    return ui::calc_text_size(content) + 2.0f*ui::get_style_frame_padding();
 }
 
-float osc::ui::CalcButtonWidth(CStringView content)
+float osc::ui::calc_button_width(CStringView content)
 {
-    return CalcButtonSize(content).x;
+    return calc_button_size(content).x;
 }
 
-bool osc::ui::ButtonNoBg(CStringView label, Vec2 dimensions)
+bool osc::ui::draw_button_nobg(CStringView label, Vec2 dimensions)
 {
-    PushStyleColor(ImGuiCol_Button, Color::clear());
-    PushStyleColor(ImGuiCol_ButtonHovered, Color::clear());
-    const bool rv = ui::Button(label, dimensions);
-    PopStyleColor();
-    PopStyleColor();
+    push_style_color(ImGuiCol_Button, Color::clear());
+    push_style_color(ImGuiCol_ButtonHovered, Color::clear());
+    const bool rv = ui::draw_button(label, dimensions);
+    pop_style_color(2);
 
     return rv;
 }
 
-bool osc::ui::ImageButton(
+bool osc::ui::draw_image_button(
     CStringView label,
-    const Texture2D& t,
+    const Texture2D& texture,
     Vec2 dimensions,
     const Rect& texture_coordinates)
 {
-    const auto handle = ui::graphics_backend::allocate_texture_for_current_frame(t);
+    const auto handle = ui::graphics_backend::allocate_texture_for_current_frame(texture);
     return ImGui::ImageButton(label.c_str(), handle, dimensions, texture_coordinates.p1, texture_coordinates.p2);
 }
 
-bool osc::ui::ImageButton(CStringView label, const Texture2D& t, Vec2 dimensions)
+bool osc::ui::draw_image_button(CStringView label, const Texture2D& texture, Vec2 dimensions)
 {
-    return ImageButton(label, t, dimensions, Rect{{0.0f, 1.0f}, {1.0f, 0.0f}});
+    return draw_image_button(label, texture, dimensions, Rect{{0.0f, 1.0f}, {1.0f, 0.0f}});
 }
 
-Rect osc::ui::GetItemRect()
+Rect osc::ui::get_last_drawn_item_screen_rect()
 {
-    return {ui::GetItemRectMin(), ui::GetItemRectMax()};
+    return {ui::get_item_topleft(), ui::get_item_bottomright()};
 }
 
-ui::HittestResult osc::ui::HittestLastItem()
+ui::HittestResult osc::ui::hittest_last_drawn_item()
 {
-    return HittestLastItem(c_default_drag_threshold);
+    return hittest_last_drawn_item(c_default_drag_threshold);
 }
 
-ui::HittestResult osc::ui::HittestLastItem(float drag_threshold)
+ui::HittestResult osc::ui::hittest_last_drawn_item(float drag_threshold)
 {
     HittestResult rv;
-    rv.item_rect.p1 = ui::GetItemRectMin();
-    rv.item_rect.p2 = ui::GetItemRectMax();
-    rv.is_hovered = ui::IsItemHovered();
-    rv.is_left_click_released_without_dragging = rv.is_hovered && IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left, drag_threshold);
-    rv.is_right_click_released_without_dragging = rv.is_hovered && IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right, drag_threshold);
+    rv.item_screen_rect.p1 = ui::get_item_topleft();
+    rv.item_screen_rect.p2 = ui::get_item_bottomright();
+    rv.is_hovered = ui::is_item_hovered();
+    rv.is_left_click_released_without_dragging = rv.is_hovered and is_mouse_released_without_dragging(ImGuiMouseButton_Left, drag_threshold);
+    rv.is_right_click_released_without_dragging = rv.is_hovered and is_mouse_released_without_dragging(ImGuiMouseButton_Right, drag_threshold);
     return rv;
 }
 
-bool osc::ui::IsAnyKeyDown(std::span<const ImGuiKey> keys)
+bool osc::ui::any_of_keys_down(std::span<const ImGuiKey> keys)
 {
-    return rgs::any_of(keys, ui::IsKeyDown);
+    return rgs::any_of(keys, ui::is_key_down);
 }
 
-bool osc::ui::IsAnyKeyDown(std::initializer_list<const ImGuiKey> keys)
+bool osc::ui::any_of_keys_down(std::initializer_list<const ImGuiKey> keys)
 {
-    return IsAnyKeyDown(std::span<ImGuiKey const>{keys.begin(), keys.end()});
+    return any_of_keys_down(std::span<ImGuiKey const>{keys.begin(), keys.end()});
 }
 
-bool osc::ui::IsAnyKeyPressed(std::span<const ImGuiKey> keys)
+bool osc::ui::any_of_keys_pressed(std::span<const ImGuiKey> keys)
 {
-    return rgs::any_of(keys, [](ImGuiKey k) { return ui::IsKeyPressed(k); });
+    return rgs::any_of(keys, [](ImGuiKey k) { return ui::is_key_pressed(k); });
 }
-bool osc::ui::IsAnyKeyPressed(std::initializer_list<const ImGuiKey> keys)
+bool osc::ui::any_of_keys_pressed(std::initializer_list<const ImGuiKey> keys)
 {
-    return IsAnyKeyPressed(std::span<const ImGuiKey>{keys.begin(), keys.end()});
-}
-
-bool osc::ui::IsCtrlDown()
-{
-    return ui::GetIO().KeyCtrl;
+    return any_of_keys_pressed(std::span<const ImGuiKey>{keys.begin(), keys.end()});
 }
 
-bool osc::ui::IsCtrlOrSuperDown()
+bool osc::ui::is_ctrl_down()
 {
-    return ui::GetIO().KeyCtrl || ui::GetIO().KeySuper;
+    return ui::get_io().KeyCtrl;
 }
 
-bool osc::ui::IsShiftDown()
+bool osc::ui::is_ctrl_or_super_down()
 {
-    return ui::GetIO().KeyShift;
+    return ui::get_io().KeyCtrl or ui::get_io().KeySuper;
 }
 
-bool osc::ui::IsAltDown()
+bool osc::ui::is_shift_down()
 {
-    return ui::GetIO().KeyAlt;
+    return ui::get_io().KeyShift;
 }
 
-bool osc::ui::IsMouseReleasedWithoutDragging(ImGuiMouseButton btn)
+bool osc::ui::is_alt_down()
 {
-    return IsMouseReleasedWithoutDragging(btn, c_default_drag_threshold);
+    return ui::get_io().KeyAlt;
 }
 
-bool osc::ui::IsMouseReleasedWithoutDragging(ImGuiMouseButton btn, float threshold)
+bool osc::ui::is_mouse_released_without_dragging(ImGuiMouseButton mouse_button)
 {
-    if (!ui::IsMouseReleased(btn))
-    {
+    return is_mouse_released_without_dragging(mouse_button, c_default_drag_threshold);
+}
+
+bool osc::ui::is_mouse_released_without_dragging(ImGuiMouseButton mouse_button, float threshold)
+{
+    if (not ui::is_mouse_released(mouse_button)) {
         return false;
     }
 
-    const Vec2 dragDelta = ImGui::GetMouseDragDelta(btn);
+    const Vec2 drag_delta = ImGui::GetMouseDragDelta(mouse_button);
 
-    return length(dragDelta) < threshold;
+    return length(drag_delta) < threshold;
 }
 
-bool osc::ui::IsDraggingWithAnyMouseButtonDown()
+bool osc::ui::is_mouse_dragging_with_any_button_down()
 {
     return
-        ui::IsMouseDragging(ImGuiMouseButton_Left) ||
-        ui::IsMouseDragging(ImGuiMouseButton_Middle) ||
-        ui::IsMouseDragging(ImGuiMouseButton_Right);
+        ui::is_mouse_dragging(ImGuiMouseButton_Left) or
+        ui::is_mouse_dragging(ImGuiMouseButton_Middle) or
+        ui::is_mouse_dragging(ImGuiMouseButton_Right);
 }
 
-void osc::ui::BeginTooltip(std::optional<float> wrap_width)
+void osc::ui::begin_tooltip(std::optional<float> wrap_width)
 {
-    BeginTooltipNoWrap();
+    begin_tooltip_nowrap();
     ImGui::PushTextWrapPos(wrap_width.value_or(ImGui::GetFontSize() * 35.0f));
 }
 
-void osc::ui::EndTooltip(std::optional<float>)
+void osc::ui::end_tooltip(std::optional<float>)
 {
     ImGui::PopTextWrapPos();
-    EndTooltipNoWrap();
+    end_tooltip_nowrap();
 }
 
-void osc::ui::TooltipHeaderText(CStringView s)
+void osc::ui::draw_tooltip_header_text(CStringView content)
 {
-    TextUnformatted(s);
+    draw_text_unformatted(content);
 }
 
-void osc::ui::TooltipDescriptionSpacer()
+void osc::ui::draw_tooltip_description_spacer()
 {
-    ui::Dummy({0.0f, 1.0f});
+    ui::draw_dummy({0.0f, 1.0f});
 }
 
-void osc::ui::TooltipDescriptionText(CStringView s)
+void osc::ui::draw_tooltip_description_text(CStringView content)
 {
-    TextFaded(s);
+    draw_text_faded(content);
 }
 
-void osc::ui::DrawTooltipBodyOnly(CStringView label)
+void osc::ui::draw_tooltip_body_only(CStringView content)
 {
-    BeginTooltip();
-    TooltipHeaderText(label);
-    EndTooltip();
+    begin_tooltip();
+    draw_tooltip_header_text(content);
+    end_tooltip();
 }
 
-void osc::ui::DrawTooltipBodyOnlyIfItemHovered(
-    CStringView label,
+void osc::ui::draw_tooltip_body_only_if_item_hovered(
+    CStringView content,
     ImGuiHoveredFlags flags)
 {
-    if (ui::IsItemHovered(flags))
-    {
-        DrawTooltipBodyOnly(label);
+    if (ui::is_item_hovered(flags)) {
+        draw_tooltip_body_only(content);
     }
 }
 
-void osc::ui::DrawTooltip(CStringView header, CStringView description)
+void osc::ui::draw_tooltip(CStringView header, CStringView description)
 {
-    BeginTooltip();
-    TooltipHeaderText(header);
-    if (!description.empty())
-    {
-        TooltipDescriptionSpacer();
-        TooltipDescriptionText(description);
+    begin_tooltip();
+    draw_tooltip_header_text(header);
+    if (not description.empty()) {
+        draw_tooltip_description_spacer();
+        draw_tooltip_description_text(description);
     }
-    EndTooltip();
+    end_tooltip();
 }
 
-void osc::ui::DrawTooltipIfItemHovered(
+void osc::ui::draw_tooltip_if_item_hovered(
     CStringView header,
     CStringView description,
     ImGuiHoveredFlags flags)
 {
-    if (ui::IsItemHovered(flags))
-    {
-        DrawTooltip(header, description);
+    if (ui::is_item_hovered(flags)) {
+        draw_tooltip(header, description);
     }
 }
 
-// draw a help text marker `"(?)"` and display a tooltip when the user hovers over it
-void osc::ui::DrawHelpMarker(CStringView header, CStringView desc)
+void osc::ui::draw_help_marker(CStringView header, CStringView desc)
 {
-    ui::TextDisabled("(?)");
-    DrawTooltipIfItemHovered(header, desc, ImGuiHoveredFlags_None);
+    ui::draw_text_disabled("(?)");
+    draw_tooltip_if_item_hovered(header, desc, ImGuiHoveredFlags_None);
 }
 
-// draw a help text marker `"(?)"` and display a tooltip when the user hovers over it
-void osc::ui::DrawHelpMarker(CStringView desc)
+void osc::ui::draw_help_marker(CStringView content)
 {
-    ui::TextDisabled("(?)");
-    DrawTooltipIfItemHovered(desc, {}, ImGuiHoveredFlags_None);
+    ui::draw_text_disabled("(?)");
+    draw_tooltip_if_item_hovered(content, {}, ImGuiHoveredFlags_None);
 }
 
-bool osc::ui::InputString(CStringView label, std::string& edited_string, ImGuiInputTextFlags flags)
+bool osc::ui::draw_string_input(CStringView label, std::string& edited_string, ImGuiInputTextFlags flags)
 {
     return ImGui::InputText(label.c_str(), &edited_string, flags);  // uses `imgui_stdlib`
 }
 
-bool osc::ui::InputMetersFloat(CStringView label, float& v, float step, float step_fast, ImGuiInputTextFlags flags)
+bool osc::ui::draw_float_meters_input(CStringView label, float& v, float step, float step_fast, ImGuiInputTextFlags flags)
 {
-    return ui::InputFloat(label, &v, step, step_fast, "%.6f", flags);
+    return ui::draw_float_input(label, &v, step, step_fast, "%.6f", flags);
 }
 
-bool osc::ui::InputMetersFloat3(CStringView label, Vec3& vec, ImGuiInputTextFlags flags)
+bool osc::ui::draw_float3_meters_input(CStringView label, Vec3& vec, ImGuiInputTextFlags flags)
 {
-    return ui::InputFloat3(label, value_ptr(vec), "%.6f", flags);
+    return ui::draw_float3_input(label, value_ptr(vec), "%.6f", flags);
 }
 
-bool osc::ui::SliderMetersFloat(CStringView label, float& v, float v_min, float v_max, ImGuiSliderFlags flags)
+bool osc::ui::draw_float_meters_slider(CStringView label, float& v, float v_min, float v_max, ImGuiSliderFlags flags)
 {
-    return ui::SliderFloat(label, &v, v_min, v_max, "%.6f", flags);
+    return ui::draw_float_slider(label, &v, v_min, v_max, "%.6f", flags);
 }
 
-bool osc::ui::InputKilogramFloat(CStringView label, float& v, float step, float step_fast, ImGuiInputTextFlags flags)
+bool osc::ui::draw_float_kilogram_input(CStringView label, float& v, float step, float step_fast, ImGuiInputTextFlags flags)
 {
-    return InputMetersFloat(label, v, step, step_fast, flags);
+    return draw_float_meters_input(label, v, step, step_fast, flags);
 }
 
-bool osc::ui::InputAngle(CStringView label, Radians& v)
+bool osc::ui::draw_angle_input(CStringView label, Radians& v)
 {
-    float dv = Degrees{v}.count();
-    if (ui::InputFloat(label, &dv))
-    {
-        v = Degrees{dv};
+    float degrees_float = Degrees{v}.count();
+    if (ui::draw_float_input(label, &degrees_float)) {
+        v = Radians{Degrees{degrees_float}};
         return true;
     }
     return false;
 }
 
-bool osc::ui::InputAngle3(
+bool osc::ui::draw_angle3_input(
     CStringView label,
-    Vec<3, Radians>& vs,
+    Vec<3, Radians>& angles,
     CStringView format)
 {
-    Vec3 dvs = {Degrees{vs.x}.count(), Degrees{vs.y}.count(), Degrees{vs.z}.count()};
-    if (ui::InputVec3(label, dvs, format.c_str()))
-    {
-        vs = Vec<3, Degrees>{dvs};
+    Vec3 dvs = {Degrees{angles.x}.count(), Degrees{angles.y}.count(), Degrees{angles.z}.count()};
+    if (ui::draw_vec3_input(label, dvs, format.c_str())) {
+        angles = Vec<3, Radians>{Vec<3, Degrees>{dvs}};
         return true;
     }
     return false;
 }
 
-bool osc::ui::SliderAngle(CStringView label, Radians& v, Radians min, Radians max)
+bool osc::ui::draw_angle_slider(CStringView label, Radians& v, Radians min, Radians max)
 {
-    float dv = Degrees{v}.count();
-    const Degrees dmin{min};
-    const Degrees dmax{max};
-    if (ui::SliderFloat(label, &dv, dmin.count(), dmax.count())) {
-        v = Degrees{dv};
+    float degrees_float = Degrees{v}.count();
+    const Degrees degrees_min{min};
+    const Degrees degrees_max{max};
+    if (ui::draw_float_slider(label, &degrees_float, degrees_min.count(), degrees_max.count())) {
+        v = Radians{Degrees{degrees_float}};
         return true;
     }
     return false;
 }
 
-ImU32 osc::ui::ToImU32(const Color& color)
+ImU32 osc::ui::to_ImU32(const Color& color)
 {
-    return ui::ColorConvertFloat4ToU32(Vec4{color});
+    return ui::to_ImU32(Vec4{color});
 }
 
 Color osc::ui::to_color(ImU32 u32color)
@@ -708,12 +692,12 @@ Color osc::ui::to_color(const ImVec4& v)
     return {v.x, v.y, v.z, v.w};
 }
 
-ImVec4 osc::ui::ToImVec4(const Color& color)
+ImVec4 osc::ui::to_ImVec4(const Color& color)
 {
     return ImVec4{Vec4{color}};
 }
 
-ImGuiWindowFlags osc::ui::GetMinimalWindowFlags()
+ImGuiWindowFlags osc::ui::get_minimal_panel_flags()
 {
     return
         ImGuiWindowFlags_NoBackground |
@@ -729,9 +713,9 @@ ImGuiWindowFlags osc::ui::GetMinimalWindowFlags()
         ImGuiWindowFlags_NoTitleBar;
 }
 
-Rect osc::ui::GetMainViewportWorkspaceScreenRect()
+Rect osc::ui::get_main_viewport_workspace_screen_rect()
 {
-    const ImGuiViewport& viewport = *ui::GetMainViewport();
+    const ImGuiViewport& viewport = *ui::get_main_viewport();
 
     return Rect{
         viewport.WorkPos,
@@ -739,123 +723,120 @@ Rect osc::ui::GetMainViewportWorkspaceScreenRect()
     };
 }
 
-bool osc::ui::IsMouseInMainViewportWorkspaceScreenRect()
+bool osc::ui::is_mouse_in_main_viewport_workspace()
 {
-    const Vec2 mousepos = ui::GetMousePos();
-    const Rect hitRect = GetMainViewportWorkspaceScreenRect();
+    const Vec2 mousepos = ui::get_mouse_pos();
+    const Rect hitRect = get_main_viewport_workspace_screen_rect();
 
     return is_intersecting(hitRect, mousepos);
 }
 
-bool osc::ui::BeginMainViewportTopBar(CStringView label, float height, ImGuiWindowFlags flags)
+bool osc::ui::begin_main_viewport_top_bar(CStringView label, float height, ImGuiWindowFlags flags)
 {
     // https://github.com/ocornut/imgui/issues/3518
-    auto* const viewport = static_cast<ImGuiViewportP*>(static_cast<void*>(ui::GetMainViewport()));
+    auto* const viewport = static_cast<ImGuiViewportP*>(static_cast<void*>(ui::get_main_viewport()));
     return ImGui::BeginViewportSideBar(label.c_str(), viewport, ImGuiDir_Up, height, flags);
 }
 
 
-bool osc::ui::BeginMainViewportBottomBar(CStringView label)
+bool osc::ui::begin_main_viewport_bottom_bar(CStringView label)
 {
     // https://github.com/ocornut/imgui/issues/3518
-    auto* const viewport = static_cast<ImGuiViewportP*>(static_cast<void*>(ui::GetMainViewport()));
+    auto* const viewport = static_cast<ImGuiViewportP*>(static_cast<void*>(ui::get_main_viewport()));
     const ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
-    const float height = ui::GetFrameHeight() + ui::GetStyleWindowPadding().y;
+    const float height = ui::get_frame_height() + ui::get_style_panel_padding().y;
 
     return ImGui::BeginViewportSideBar(label.c_str(), viewport, ImGuiDir_Down, height, flags);
 }
 
-bool osc::ui::ButtonCentered(CStringView s)
+bool osc::ui::draw_button_centered(CStringView label)
 {
-    const float buttonWidth = ui::CalcTextSize(s).x + 2.0f*ui::GetStyleFramePadding().x;
-    const float midpoint = ui::GetCursorScreenPos().x + 0.5f*ui::GetContentRegionAvail().x;
-    const float buttonStartX = midpoint - 0.5f*buttonWidth;
+    const float button_width = ui::calc_text_size(label).x + 2.0f*ui::get_style_frame_padding().x;
+    const float midpoint = ui::get_cursor_screen_pos().x + 0.5f*ui::get_content_region_avail().x;
+    const float button_start_x = midpoint - 0.5f*button_width;
 
-    ui::SetCursorScreenPos({buttonStartX, ui::GetCursorScreenPos().y});
+    ui::set_cursor_screen_pos({button_start_x, ui::get_cursor_screen_pos().y});
 
-    return ui::Button(s);
+    return ui::draw_button(label);
 }
 
-void osc::ui::TextCentered(CStringView s)
+void osc::ui::draw_text_centered(CStringView content)
 {
-    const float windowWidth = ImGui::GetWindowSize().x;
-    const float textWidth   = ui::CalcTextSize(s).x;
+    const float panel_width = ui::get_panel_size().x;
+    const float text_width   = ui::calc_text_size(content).x;
 
-    ui::SetCursorPosX(0.5f * (windowWidth - textWidth));
-    TextUnformatted(s);
+    ui::set_cursor_pos_x(0.5f * (panel_width - text_width));
+    draw_text_unformatted(content);
 }
 
-void osc::ui::TextWindowCentered(CStringView s)
+void osc::ui::draw_text_panel_centered(CStringView content)
 {
-    const auto windowDimensions = ui::GetWindowSize();
-    const auto textDimensions = ui::CalcTextSize(s);
+    const auto panel_dimensions = ui::get_panel_size();
+    const auto text_dimensions = ui::calc_text_size(content);
 
-    ui::SetCursorPos(0.5f * (windowDimensions - textDimensions));
-    TextUnformatted(s);
+    ui::set_cursor_pos(0.5f * (panel_dimensions - text_dimensions));
+    draw_text_unformatted(content);
 }
 
-void osc::ui::TextDisabledAndCentered(CStringView s)
+void osc::ui::draw_text_disabled_and_centered(CStringView content)
 {
-    ui::BeginDisabled();
-    TextCentered(s);
-    ui::EndDisabled();
+    ui::begin_disabled();
+    draw_text_centered(content);
+    ui::end_disabled();
 }
 
-void osc::ui::TextDisabledAndWindowCentered(CStringView s)
+void osc::ui::draw_text_disabled_and_panel_centered(CStringView content)
 {
-    ui::BeginDisabled();
-    TextWindowCentered(s);
-    ui::EndDisabled();
+    ui::begin_disabled();
+    draw_text_panel_centered(content);
+    ui::end_disabled();
 }
 
-void osc::ui::TextColumnCentered(CStringView s)
+void osc::ui::draw_text_column_centered(CStringView content)
 {
-    const float columnWidth = ui::GetColumnWidth();
-    const float columnOffset = ui::GetCursorPos().x;
-    const float textWidth = ui::CalcTextSize(s).x;
+    const float column_width = ui::get_column_width();
+    const float column_offset = ui::get_cursor_pos().x;
+    const float text_width = ui::calc_text_size(content).x;
 
-    ui::SetCursorPosX(columnOffset + 0.5f*(columnWidth-textWidth));
-    TextUnformatted(s);
+    ui::set_cursor_pos_x(column_offset + 0.5f*(column_width-text_width));
+    draw_text_unformatted(content);
 }
 
-void osc::ui::TextFaded(CStringView s)
+void osc::ui::draw_text_faded(CStringView content)
 {
-    ui::PushStyleColor(ImGuiCol_Text, Color{0.7f, 0.7f, 0.7f});
-    TextUnformatted(s);
-    ui::PopStyleColor();
+    ui::push_style_color(ImGuiCol_Text, Color{0.7f, 0.7f, 0.7f});
+    draw_text_unformatted(content);
+    ui::pop_style_color();
 }
 
-void osc::ui::TextWarning(CStringView s)
+void osc::ui::draw_text_warning(CStringView content)
 {
-    PushStyleColor(ImGuiCol_Text, Color::yellow());
-    TextUnformatted(s);
-    PopStyleColor();
+    push_style_color(ImGuiCol_Text, Color::yellow());
+    draw_text_unformatted(content);
+    pop_style_color();
 }
 
-bool osc::ui::ItemValueShouldBeSaved()
+bool osc::ui::should_save_last_drawn_item_value()
 {
-    if (ui::IsItemDeactivatedAfterEdit())
-    {
+    if (ui::is_item_deactivated_after_edit()) {
         return true;  // ImGui detected that the item was deactivated after an edit
     }
 
-    if (ImGui::IsItemEdited() && IsAnyKeyPressed({ImGuiKey_Enter, ImGuiKey_Tab}))
-    {
+    if (ImGui::IsItemEdited() and any_of_keys_pressed({ImGuiKey_Enter, ImGuiKey_Tab})) {
         return true;  // user pressed enter/tab after editing
     }
 
     return false;
 }
 
-void osc::ui::PopItemFlags(int n)
+void osc::ui::pop_item_flags(int n)
 {
-    for (int i = 0; i < n; ++i)
-    {
+    for (int i = 0; i < n; ++i) {
         ImGui::PopItemFlag();
     }
 }
 
-bool osc::ui::Combo(
+bool osc::ui::draw_combobox(
     CStringView label,
     size_t* current,
     size_t size,
@@ -865,47 +846,41 @@ bool osc::ui::Combo(
         accessor(*current) :
         CStringView{};
 
-    if (!ui::BeginCombo(label, preview, ImGuiComboFlags_None))
-    {
+    if (not ui::begin_combobox(label, preview, ImGuiComboFlags_None)) {
         return false;
     }
 
     bool changed = false;
-    for (size_t i = 0; i < size; ++i)
-    {
-        ui::PushID(static_cast<int>(i));
-        const bool isSelected = current != nullptr && *current == i;
-        if (ui::Selectable(accessor(i), isSelected))
-        {
+    for (size_t i = 0; i < size; ++i) {
+        ui::push_id(static_cast<int>(i));
+        const bool is_selected = current != nullptr and *current == i;
+        if (ui::draw_selectable(accessor(i), is_selected)) {
             changed = true;
-            if (current != nullptr)
-            {
+            if (current != nullptr) {
                 *current = i;
             }
         }
-        if (isSelected)
-        {
+        if (is_selected) {
             ImGui::SetItemDefaultFocus();
         }
-        ui::PopID();
+        ui::pop_id();
     }
 
-    ui::EndCombo();
+    ui::end_combobox();
 
-    if (changed)
-    {
+    if (changed) {
         ImGui::MarkItemEdited(ImGui::GetCurrentContext()->LastItemData.ID);
     }
 
     return changed;
 }
 
-bool osc::ui::Combo(
+bool osc::ui::draw_combobox(
     CStringView label,
     size_t* current,
     std::span<const CStringView> items)
 {
-    return Combo(
+    return draw_combobox(
         label,
         current,
         items.size(),
@@ -913,19 +888,19 @@ bool osc::ui::Combo(
     );
 }
 
-void osc::ui::VerticalSeperator()
+void osc::ui::draw_vertical_separator()
 {
-    ui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+    ui::draw_separator(ImGuiSeparatorFlags_Vertical);
 }
 
-void osc::ui::SameLineWithVerticalSeperator()
+void osc::ui::draw_same_line_with_vertical_separator()
 {
-    ui::SameLine();
-    VerticalSeperator();
-    ui::SameLine();
+    ui::same_line();
+    draw_vertical_separator();
+    ui::same_line();
 }
 
-bool osc::ui::CircularSliderFloat(
+bool osc::ui::draw_float_circular_slider(
     CStringView label,
     float* v,
     float min,
@@ -953,47 +928,41 @@ bool osc::ui::CircularSliderFloat(
     const ImGuiID id = window->GetID(label.c_str());
 
     // calculate top-level item info for early-cull checks etc.
-    const Vec2 labelSize = ui::CalcTextSize(label, true);
-    const Vec2 frameDims = {ImGui::CalcItemWidth(), labelSize.y + 2.0f*style.FramePadding.y};
-    const Vec2 cursorScreenPos = ui::GetCursorScreenPos();
-    const ImRect frameBB = {cursorScreenPos, cursorScreenPos + frameDims};
-    const float labelWidthWithSpacing = labelSize.x > 0.0f ? labelSize.x + style.ItemInnerSpacing.x : 0.0f;
-    const ImRect totalBB = {frameBB.Min, Vec2{frameBB.Max} + Vec2{labelWidthWithSpacing, 0.0f}};
+    const Vec2 label_size = ui::calc_text_size(label, true);
+    const Vec2 frame_dims = {ImGui::CalcItemWidth(), label_size.y + 2.0f*style.FramePadding.y};
+    const Vec2 cursor_screen_pos = ui::get_cursor_screen_pos();
+    const ImRect frame_bounds = {cursor_screen_pos, cursor_screen_pos + frame_dims};
+    const float label_width_with_spacing = label_size.x > 0.0f ? label_size.x + style.ItemInnerSpacing.x : 0.0f;
+    const ImRect total_bounds = {frame_bounds.Min, Vec2{frame_bounds.Max} + Vec2{label_width_with_spacing, 0.0f}};
 
-    const bool temporaryTextInputAllowed = (flags & ImGuiSliderFlags_NoInput) == 0;
-    ImGui::ItemSize(totalBB, style.FramePadding.y);
-    if (!ImGui::ItemAdd(totalBB, id, &frameBB, temporaryTextInputAllowed ? ImGuiItemFlags_Inputable : 0))
-    {
+    const bool temporary_text_input_allowed = (flags & ImGuiSliderFlags_NoInput) == 0;
+    ImGui::ItemSize(total_bounds, style.FramePadding.y);
+    if (not ImGui::ItemAdd(total_bounds, id, &frame_bounds, temporary_text_input_allowed ? ImGuiItemFlags_Inputable : 0)) {
         // skip drawing: the slider item is off-screen or not interactable
         return false;
     }
-    const bool isHovered = ImGui::ItemHoverable(frameBB, id, g.LastItemData.InFlags);  // hovertest the item
+    const bool is_hovered = ImGui::ItemHoverable(frame_bounds, id, g.LastItemData.InFlags);  // hovertest the item
 
     // figure out whether the user is (temporarily) editing the slider as an input text box
-    bool temporaryTextInputActive = temporaryTextInputAllowed && ImGui::TempInputIsActive(id);
-    if (!temporaryTextInputActive)
-    {
+    bool temporary_text_input_active = temporary_text_input_allowed and ImGui::TempInputIsActive(id);
+    if (not temporary_text_input_active) {
         // tabbing or double clicking the slider temporarily transforms it into an input box
-        const bool clicked = isHovered && ui::IsMouseClicked(ImGuiMouseButton_Left, id);
-        const bool doubleClicked = (isHovered && g.IO.MouseClickedCount[0] == 2 && ImGui::TestKeyOwner(ImGuiKey_MouseLeft, id));
-        const bool makeActive = (clicked || doubleClicked || g.NavActivateId == id);
+        const bool clicked = is_hovered and ui::is_mouse_clicked(ImGuiMouseButton_Left, id);
+        const bool double_clicked = (is_hovered and g.IO.MouseClickedCount[0] == 2 and ImGui::TestKeyOwner(ImGuiKey_MouseLeft, id));
+        const bool make_active = (clicked or double_clicked or g.NavActivateId == id);
 
-        if (makeActive && (clicked || doubleClicked))
-        {
+        if (make_active and (clicked or double_clicked)) {
             ImGui::SetKeyOwner(ImGuiKey_MouseLeft, id);  // tell ImGui that left-click is locked from further interaction etc. this frame
         }
-        if (makeActive && temporaryTextInputAllowed)
-        {
-            if ((clicked && g.IO.KeyCtrl) || doubleClicked || (g.NavActivateId == id && (g.NavActivateFlags & ImGuiActivateFlags_PreferInput)))
-            {
-                temporaryTextInputActive = true;
+        if (make_active and temporary_text_input_allowed) {
+            if ((clicked and g.IO.KeyCtrl) or double_clicked or (g.NavActivateId == id and (g.NavActivateFlags & ImGuiActivateFlags_PreferInput))) {
+                temporary_text_input_active = true;
             }
         }
 
         // if it's decided that the text input should be made active, then make it active
         // by focusing on it (e.g. give it keyboard focus)
-        if (makeActive && !temporaryTextInputActive)
-        {
+        if (make_active and not temporary_text_input_active) {
             ImGui::SetActiveID(id, window);
             ImGui::SetFocusID(id, window);
             ImGui::FocusWindow(window);
@@ -1002,21 +971,21 @@ bool osc::ui::CircularSliderFloat(
     }
 
     // if the user is editing the slider as an input text box then draw that instead of the slider
-    if (temporaryTextInputActive)
-    {
-        const bool shouldClampTextualInput = (flags & ImGuiSliderFlags_AlwaysClamp) != 0;
+    if (temporary_text_input_active) {
+        const bool should_clamp_textual_input = (flags & ImGuiSliderFlags_AlwaysClamp) != 0;
 
         return ImGui::TempInputScalar(
-            frameBB,
+            frame_bounds,
             id,
             label.c_str(),
             ImGuiDataType_Float,
             static_cast<void*>(v),
             format.c_str(),
-            shouldClampTextualInput ? static_cast<const void*>(&min) : nullptr,
-            shouldClampTextualInput ? static_cast<const void*>(&max) : nullptr
+            should_clamp_textual_input ? static_cast<const void*>(&min) : nullptr,
+            should_clamp_textual_input ? static_cast<const void*>(&max) : nullptr
         );
     }
+
     // else: draw the slider (remainder of this func)
 
     // calculate slider behavior (interaction, etc.)
@@ -1024,9 +993,9 @@ bool osc::ui::CircularSliderFloat(
     // note: I haven't studied `ImGui::SliderBehaviorT` in-depth. I'm just going to
     // go ahead and assume that it's doing the interaction/hittest/mutation logic
     // and leaves rendering to us.
-    ImRect grabBoundingBox{};
-    bool valueChanged = ImGui::SliderBehaviorT<float, float, float>(
-        frameBB,
+    ImRect grab_bounding_box{};
+    bool value_changed = ImGui::SliderBehaviorT<float, float, float>(
+        frame_bounds,
         id,
         ImGuiDataType_Float,
         v,
@@ -1034,112 +1003,104 @@ bool osc::ui::CircularSliderFloat(
         max,
         format.c_str(),
         flags,
-        &grabBoundingBox
+        &grab_bounding_box
     );
-    if (valueChanged)
-    {
+    if (value_changed) {
         ImGui::MarkItemEdited(id);
     }
 
     // render
-    const bool useCustomRendering = true;
-    if (useCustomRendering)
-    {
-        const Vec2 sliderNobCenter = ::centroid_of(grabBoundingBox);
-        const float sliderNobRadius = 0.75f * ShortestEdgeLength(grabBoundingBox);
-        const float sliderRailThickness = 0.5f * sliderNobRadius;
-        const float sliderRailTopY = sliderNobCenter.y - 0.5f*sliderRailThickness;
-        const float sliderRailBottomY = sliderNobCenter.y + 0.5f*sliderRailThickness;
+    const bool use_custom_rendering = true;
+    if (use_custom_rendering) {
+        const Vec2 slider_nob_center = ::centroid_of(grab_bounding_box);
+        const float slider_nob_radius = 0.75f * shortest_edge_length_of(grab_bounding_box);
+        const float slider_rail_thickness = 0.5f * slider_nob_radius;
+        const float slider_rail_top_y = slider_nob_center.y - 0.5f*slider_rail_thickness;
+        const float slider_rail_bottom_y = slider_nob_center.y + 0.5f*slider_rail_thickness;
 
-        const bool isActive = g.ActiveId == id;
-        const ImU32 railColor = ui::GetColorU32(isHovered ? ImGuiCol_FrameBgHovered : isActive ? ImGuiCol_FrameBgActive : ImGuiCol_FrameBg);
-        const ImU32 grabColor = ui::GetColorU32(isActive ? ImGuiCol_SliderGrabActive : ImGuiCol_SliderGrab);
+        const bool is_active = g.ActiveId == id;
+        const ImU32 rail_color = ui::get_color_ImU32(is_hovered ? ImGuiCol_FrameBgHovered : is_active ? ImGuiCol_FrameBgActive : ImGuiCol_FrameBg);
+        const ImU32 grab_color = ui::get_color_ImU32(is_active ? ImGuiCol_SliderGrabActive : ImGuiCol_SliderGrab);
 
         // render left-hand rail (brighter)
         {
-            const Vec2 lhsRailTopLeft = {frameBB.Min.x, sliderRailTopY};
-            const Vec2 lhsRailBottomright = {sliderNobCenter.x, sliderRailBottomY};
-            const ImU32 brightenedRailColor = Brighten(railColor, 2.0f);
+            const Vec2 lhs_rail_topleft = {frame_bounds.Min.x, slider_rail_top_y};
+            const Vec2 lhs_rail_bottomright = {slider_nob_center.x, slider_rail_bottom_y};
+            const ImU32 brightened_rail_color = brighten(rail_color, 2.0f);
 
             window->DrawList->AddRectFilled(
-                lhsRailTopLeft,
-                lhsRailBottomright,
-                brightenedRailColor,
+                lhs_rail_topleft,
+                lhs_rail_bottomright,
+                brightened_rail_color,
                 g.Style.FrameRounding
             );
         }
 
         // render right-hand rail
         {
-            const Vec2 rhsRailTopLeft = {sliderNobCenter.x, sliderRailTopY};
-            const Vec2 rhsRailBottomRight = {frameBB.Max.x, sliderRailBottomY};
+            const Vec2 rhs_rail_topleft = {slider_nob_center.x, slider_rail_top_y};
+            const Vec2 rhs_rail_bottomright = {frame_bounds.Max.x, slider_rail_bottom_y};
 
             window->DrawList->AddRectFilled(
-                rhsRailTopLeft,
-                rhsRailBottomRight,
-                railColor,
+                rhs_rail_topleft,
+                rhs_rail_bottomright,
+                rail_color,
                 g.Style.FrameRounding
             );
         }
 
         // render slider grab on top of rail
         window->DrawList->AddCircleFilled(
-            sliderNobCenter,
-            sliderNobRadius,  // visible nob is slightly smaller than virtual nob
-            grabColor
+            slider_nob_center,
+            slider_nob_radius,  // visible nob is slightly smaller than virtual nob
+            grab_color
         );
 
         // render current slider value using user-provided display format
         {
             std::array<char, 64> buf{};
-            const char* const bufEnd = buf.data() + ImGui::DataTypeFormatString(buf.data(), static_cast<int>(buf.size()), ImGuiDataType_Float, v, format.c_str());
-            if (g.LogEnabled)
-            {
+            const char* const buf_end = buf.data() + ImGui::DataTypeFormatString(buf.data(), static_cast<int>(buf.size()), ImGuiDataType_Float, v, format.c_str());
+            if (g.LogEnabled) {
                 ImGui::LogSetNextTextDecoration("{", "}");
             }
-            ImGui::RenderTextClipped(frameBB.Min, frameBB.Max, buf.data(), bufEnd, nullptr, ImVec2(0.5f, 0.5f));
+            ImGui::RenderTextClipped(frame_bounds.Min, frame_bounds.Max, buf.data(), buf_end, nullptr, ImVec2(0.5f, 0.5f));
         }
 
         // render input label in remaining space
-        if (labelSize.x > 0.0f)
-        {
-            ImGui::RenderText(ImVec2(frameBB.Max.x + style.ItemInnerSpacing.x, frameBB.Min.y + style.FramePadding.y), label.c_str());
+        if (label_size.x > 0.0f) {
+            ImGui::RenderText(ImVec2(frame_bounds.Max.x + style.ItemInnerSpacing.x, frame_bounds.Min.y + style.FramePadding.y), label.c_str());
         }
     }
-    else
-    {
+    else {
         // render slider background frame
         {
-            const ImU32 frameColor = ui::GetColorU32(g.ActiveId == id ? ImGuiCol_FrameBgActive : isHovered ? ImGuiCol_FrameBgHovered : ImGuiCol_FrameBg);
-            ImGui::RenderNavHighlight(frameBB, id);
-            ImGui::RenderFrame(frameBB.Min, frameBB.Max, frameColor, true, g.Style.FrameRounding);
+            const ImU32 frame_color = ui::get_color_ImU32(g.ActiveId == id ? ImGuiCol_FrameBgActive : is_hovered ? ImGuiCol_FrameBgHovered : ImGuiCol_FrameBg);
+            ImGui::RenderNavHighlight(frame_bounds, id);
+            ImGui::RenderFrame(frame_bounds.Min, frame_bounds.Max, frame_color, true, g.Style.FrameRounding);
         }
 
         // render slider grab handle
-        if (grabBoundingBox.Max.x > grabBoundingBox.Min.x)
-        {
-            window->DrawList->AddRectFilled(grabBoundingBox.Min, grabBoundingBox.Max, ui::GetColorU32(g.ActiveId == id ? ImGuiCol_SliderGrabActive : ImGuiCol_SliderGrab), style.GrabRounding);
+        if (grab_bounding_box.Max.x > grab_bounding_box.Min.x) {
+            window->DrawList->AddRectFilled(grab_bounding_box.Min, grab_bounding_box.Max, ui::get_color_ImU32(g.ActiveId == id ? ImGuiCol_SliderGrabActive : ImGuiCol_SliderGrab), style.GrabRounding);
         }
 
         // render current slider value using user-provided display format
         {
             std::array<char, 64> buf{};
-            const char* const bufEnd = buf.data() + ImGui::DataTypeFormatString(buf.data(), static_cast<int>(buf.size()), ImGuiDataType_Float, v, format.c_str());
-            if (g.LogEnabled)
-            {
+            const char* const buf_end = buf.data() + ImGui::DataTypeFormatString(buf.data(), static_cast<int>(buf.size()), ImGuiDataType_Float, v, format.c_str());
+            if (g.LogEnabled) {
                 ImGui::LogSetNextTextDecoration("{", "}");
             }
-            ImGui::RenderTextClipped(frameBB.Min, frameBB.Max, buf.data(), bufEnd, nullptr, ImVec2(0.5f, 0.5f));
+            ImGui::RenderTextClipped(frame_bounds.Min, frame_bounds.Max, buf.data(), buf_end, nullptr, ImVec2(0.5f, 0.5f));
         }
 
         // render input label in remaining space
-        if (labelSize.x > 0.0f)
-        {
-            ImGui::RenderText(ImVec2(frameBB.Max.x + style.ItemInnerSpacing.x, frameBB.Min.y + style.FramePadding.y), label.c_str());
+        if (label_size.x > 0.0f) {
+            ImGui::RenderText(ImVec2(frame_bounds.Max.x + style.ItemInnerSpacing.x, frame_bounds.Min.y + style.FramePadding.y), label.c_str());
         }
     }
 
     IMGUI_TEST_ENGINE_ITEM_INFO(id, label, g.LastItemData.StatusFlags | (temp_input_allowed ? ImGuiItemStatusFlags_Inputable : 0));
 
-    return valueChanged;
+    return value_changed;
 }

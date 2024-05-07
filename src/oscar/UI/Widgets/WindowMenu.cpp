@@ -16,9 +16,9 @@ osc::WindowMenu::~WindowMenu() noexcept = default;
 
 void osc::WindowMenu::on_draw()
 {
-    if (ui::BeginMenu("Window")) {
+    if (ui::begin_menu("Window")) {
         draw_content();
-        ui::EndMenu();
+        ui::end_menu();
     }
 }
 
@@ -32,7 +32,7 @@ void osc::WindowMenu::draw_content()
     for (size_t i = 0; i < manager.num_toggleable_panels(); ++i) {
         bool activated = manager.is_toggleable_panel_activated(i);
         const CStringView name = manager.toggleable_panel_name(i);
-        if (ui::MenuItem(name, {}, &activated)) {
+        if (ui::draw_menu_item(name, {}, &activated)) {
             manager.set_toggleable_panel_activated(i, activated);
         }
         ++num_menu_items_printed;
@@ -40,11 +40,11 @@ void osc::WindowMenu::draw_content()
 
     // dynamic panels
     if (manager.num_dynamic_panels() > 0) {
-        ui::Separator();
+        ui::draw_separator();
         for (size_t i = 0; i < manager.num_dynamic_panels(); ++i) {
             bool activated = true;
             const CStringView name = manager.dynamic_panel_name(i);
-            if (ui::MenuItem(name, {}, &activated)) {
+            if (ui::draw_menu_item(name, {}, &activated)) {
                 manager.deactivate_dynamic_panel(i);
             }
             ++num_menu_items_printed;
@@ -53,21 +53,21 @@ void osc::WindowMenu::draw_content()
 
     // spawnable submenu
     if (manager.num_spawnable_panels() > 0) {
-        ui::Separator();
+        ui::draw_separator();
 
-        if (ui::BeginMenu("Add")) {
+        if (ui::begin_menu("Add")) {
             for (size_t i = 0; i < manager.num_spawnable_panels(); ++i) {
                 const CStringView name = manager.spawnable_panel_base_name(i);
-                if (ui::MenuItem(name)) {
+                if (ui::draw_menu_item(name)) {
                     manager.create_dynamic_panel(i);
                 }
             }
-            ui::EndMenu();
+            ui::end_menu();
             ++num_menu_items_printed;
         }
     }
 
     if (num_menu_items_printed <= 0) {
-        ui::TextDisabled("(no windows available to be toggled)");
+        ui::draw_text_disabled("(no windows available to be toggled)");
     }
 }

@@ -470,27 +470,27 @@ public:
 private:
     void impl_on_draw() final
     {
-        ui::DockSpaceOverViewport(ui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+        ui::enable_dockspace_over_viewport(ui::get_main_viewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
-        ui::Begin("render");
-        Vec2 dims = ui::GetContentRegionAvail();
+        ui::begin_panel("render");
+        Vec2 dims = ui::get_content_region_avail();
         if (m_RenderIsMousedOver)
         {
-            ui::UpdatePolarCameraFromMouseInputs(m_Camera, dims);
+            ui::update_polar_camera_from_mouse_inputs(m_Camera, dims);
         }
 
         if (static_cast<size_t>(m_ActiveRow) < NumRows(*m_Motion))
         {
-            ui::Image(render3DScene(dims), dims);
-            m_RenderIsMousedOver = ui::IsItemHovered();
+            ui::draw_image(render3DScene(dims), dims);
+            m_RenderIsMousedOver = ui::is_item_hovered();
         }
         else
         {
-            ui::Text("no rows found in the given data? Cannot render");
+            ui::draw_text("no rows found in the given data? Cannot render");
             m_RenderIsMousedOver = false;
         }
 
-        ui::End();
+        ui::end_panel();
 
         m_LogViewer.on_draw();
     }
@@ -543,9 +543,9 @@ private:
             return;  // only hittest while the user is moused over the viewport
         }
 
-        if (ui::IsMouseDragging(ImGuiMouseButton_Left) ||
-            ui::IsMouseDragging(ImGuiMouseButton_Middle) ||
-            ui::IsMouseDragging(ImGuiMouseButton_Right))
+        if (ui::is_mouse_dragging(ImGuiMouseButton_Left) ||
+            ui::is_mouse_dragging(ImGuiMouseButton_Middle) ||
+            ui::is_mouse_dragging(ImGuiMouseButton_Right))
         {
             return;  // don't hittest while a user is dragging around
         }

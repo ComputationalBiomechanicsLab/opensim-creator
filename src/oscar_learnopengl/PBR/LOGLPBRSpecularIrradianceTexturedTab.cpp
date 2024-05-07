@@ -235,7 +235,7 @@ private:
 
     void impl_on_draw() final
     {
-        Rect const outputRect = ui::GetMainViewportWorkspaceScreenRect();
+        Rect const outputRect = ui::get_main_viewport_workspace_screen_rect();
         m_OutputRender.set_dimensions(dimensions_of(outputRect));
         m_OutputRender.set_anti_aliasing_level(App::get().anti_aliasing_level());
 

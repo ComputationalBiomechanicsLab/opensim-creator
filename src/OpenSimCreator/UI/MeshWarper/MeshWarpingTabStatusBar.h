@@ -28,11 +28,11 @@ namespace osc
 
         void onDraw()
         {
-            if (ui::BeginMainViewportBottomBar(m_Label))
+            if (ui::begin_main_viewport_bottom_bar(m_Label))
             {
                 drawContent();
             }
-            ui::End();
+            ui::end_panel();
         }
 
     private:
@@ -44,44 +44,44 @@ namespace osc
             }
             else
             {
-                ui::TextDisabled("(nothing hovered)");
+                ui::draw_text_disabled("(nothing hovered)");
             }
         }
 
         void drawCurrentHoverInfo(MeshWarpingTabHover const& hover)
         {
             drawColorCodedXYZ(hover.getWorldspaceLocation());
-            ui::SameLine();
+            ui::same_line();
             if (hover.isHoveringASceneElement())
             {
-                ui::TextDisabled("(Click: select %s)", FindElementNameOr(m_State->getScratch(), *hover.getSceneElementID()).c_str());
+                ui::draw_text_disabled("(Click: select %s)", FindElementNameOr(m_State->getScratch(), *hover.getSceneElementID()).c_str());
             }
             else if (hover.getInput() == TPSDocumentInputIdentifier::Source)
             {
-                ui::TextDisabled("(Click: add a landmark, Ctrl+Click: add non-participating landmark)");
+                ui::draw_text_disabled("(Click: add a landmark, Ctrl+Click: add non-participating landmark)");
             }
             else
             {
                 static_assert(num_options<TPSDocumentInputIdentifier>() == 2);
-                ui::TextDisabled("(Click: add a landmark)");
+                ui::draw_text_disabled("(Click: add a landmark)");
             }
         }
 
         void drawColorCodedXYZ(Vec3 pos)
         {
-            ui::TextUnformatted("(");
-            ui::SameLine();
+            ui::draw_text_unformatted("(");
+            ui::same_line();
             for (int i = 0; i < 3; ++i)
             {
                 Color color = {0.5f, 0.5f, 0.5f, 1.0f};
                 color[i] = 1.0f;
 
-                ui::PushStyleColor(ImGuiCol_Text, color);
-                ui::Text("%f", pos[i]);
-                ui::SameLine();
-                ui::PopStyleColor();
+                ui::push_style_color(ImGuiCol_Text, color);
+                ui::draw_text("%f", pos[i]);
+                ui::same_line();
+                ui::pop_style_color();
             }
-            ui::TextUnformatted(")");
+            ui::draw_text_unformatted(")");
         }
 
         std::string m_Label;

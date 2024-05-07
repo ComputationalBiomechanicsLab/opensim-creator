@@ -93,7 +93,7 @@ private:
 
     void impl_on_draw() final
     {
-        ui::DockSpaceOverViewport(ui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+        ui::enable_dockspace_over_viewport(ui::get_main_viewport(), ImGuiDockNodeFlags_PassthruCentralNode);
         m_Toolbar.onDraw();
         m_PanelManager->on_draw();
     }

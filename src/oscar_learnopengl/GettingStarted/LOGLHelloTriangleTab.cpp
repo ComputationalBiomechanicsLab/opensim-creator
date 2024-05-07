@@ -57,7 +57,7 @@ private:
     {
         graphics::draw(m_TriangleMesh, identity<Transform>(), m_Material, m_Camera);
 
-        m_Camera.set_pixel_rect(ui::GetMainViewportWorkspaceScreenRect());
+        m_Camera.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
         m_Camera.render_to_screen();
     }
 

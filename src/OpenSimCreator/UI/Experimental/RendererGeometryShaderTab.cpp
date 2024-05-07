@@ -63,7 +63,7 @@ public:
             m_IsMouseCaptured = false;
             return true;
         }
-        else if (e.type == SDL_MOUSEBUTTONDOWN && ui::IsMouseInMainViewportWorkspaceScreenRect())
+        else if (e.type == SDL_MOUSEBUTTONDOWN && ui::is_mouse_in_main_viewport_workspace())
         {
             m_IsMouseCaptured = true;
             return true;
@@ -76,16 +76,16 @@ public:
         // handle mouse capturing
         if (m_IsMouseCaptured)
         {
-            ui::UpdateCameraFromInputs(m_SceneCamera, m_CameraEulers);
-            ui::SetMouseCursor(ImGuiMouseCursor_None);
+            ui::update_camera_from_all_inputs(m_SceneCamera, m_CameraEulers);
+            ui::set_mouse_cursor(ImGuiMouseCursor_None);
             App::upd().set_show_cursor(false);
         }
         else
         {
-            ui::SetMouseCursor(ImGuiMouseCursor_Arrow);
+            ui::set_mouse_cursor(ImGuiMouseCursor_Arrow);
             App::upd().set_show_cursor(true);
         }
-        m_SceneCamera.set_pixel_rect(ui::GetMainViewportWorkspaceScreenRect());
+        m_SceneCamera.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
 
         m_SceneMaterial.set_color("uDiffuseColor", m_MeshColor);
         graphics::draw(m_Mesh, identity<Transform>(), m_SceneMaterial, m_SceneCamera);

@@ -52,15 +52,15 @@ namespace
         OutputExtractor const& output)
     {
         if (api.hasUserOutputExtractor(output)) {
-            if (ui::MenuItem(ICON_FA_TRASH " Stop Watching")) {
+            if (ui::draw_menu_item(ICON_FA_TRASH " Stop Watching")) {
                 api.removeUserOutputExtractor(output);
             }
         }
         else {
-            if (ui::MenuItem(ICON_FA_EYE " Watch Output")) {
+            if (ui::draw_menu_item(ICON_FA_EYE " Watch Output")) {
                 api.addUserOutputExtractor(output);
             }
-            ui::DrawTooltipIfItemHovered("Watch Output", "Watch the selected output. This makes it appear in the 'Output Watches' window in the editor panel and the 'Output Plots' window during a simulation");
+            ui::draw_tooltip_if_item_hovered("Watch Output", "Watch the selected output. This makes it appear in the 'Output Watches' window in the editor panel and the 'Output Plots' window during a simulation");
         }
     }
 
@@ -69,11 +69,11 @@ namespace
         ISimulatorUIAPI& api,
         OutputExtractor const& output)
     {
-        if (ui::MenuItem(ICON_FA_SAVE "Save as CSV")) {
+        if (ui::draw_menu_item(ICON_FA_SAVE "Save as CSV")) {
             api.tryPromptToSaveOutputsAsCSV({output});
         }
 
-        if (ui::MenuItem(ICON_FA_SAVE "Save as CSV (and open)")) {
+        if (ui::draw_menu_item(ICON_FA_SAVE "Save as CSV (and open)")) {
             if (auto const path = api.tryPromptToSaveOutputsAsCSV({output})) {
                 open_file_in_os_default_application(*path);
             }
@@ -106,21 +106,21 @@ namespace
             }
 
             if (!extractableOutputs.empty()) {
-                ui::PushID(id++);
-                if (ui::BeginMenu(component.getName())) {
+                ui::push_id(id++);
+                if (ui::begin_menu(component.getName())) {
                     for (OpenSim::AbstractOutput const& output : extractableOutputs) {
-                        ui::PushID(id++);
+                        ui::push_id(id++);
                         DrawRequestOutputMenuOrMenuItem(output, [&api, &oneDimensionalOutputExtractor](OpenSim::AbstractOutput const& ao, std::optional<ComponentOutputSubfield> subfield)
                         {
                             OutputExtractor rhs = subfield ? OutputExtractor{ComponentOutputExtractor{ao, *subfield}} : OutputExtractor{ComponentOutputExtractor{ao}};
                             OutputExtractor concatenating = OutputExtractor{ConcatenatingOutputExtractor{oneDimensionalOutputExtractor, rhs}};
                             api.overwriteOrAddNewUserOutputExtractor(oneDimensionalOutputExtractor, concatenating);
                         });
-                        ui::PopID();
+                        ui::pop_id();
                     }
-                    ui::EndMenu();
+                    ui::end_menu();
                 }
-                ui::PopID();
+                ui::pop_id();
             }
         });
     }
@@ -131,9 +131,9 @@ namespace
         ISimulation& sim,
         OutputExtractor const& output)
     {
-        if (ui::BeginMenu(ICON_FA_CHART_LINE "Plot Against Other Output")) {
+        if (ui::begin_menu(ICON_FA_CHART_LINE "Plot Against Other Output")) {
             DrawSelectOtherOutputMenuContent(api, sim, output);
-            ui::EndMenu();
+            ui::end_menu();
         }
     }
 
@@ -142,7 +142,7 @@ namespace
         ISimulation& sim,
         OutputExtractor const& output)
     {
-        if (not ui::BeginPopupContextItem("outputplotmenu")) {
+        if (not ui::begin_popup_context_menu("outputplotmenu")) {
             return;  // menu not open
         }
 
@@ -162,7 +162,7 @@ namespace
 
         }
 
-        ui::EndPopup();
+        ui::end_popup();
     }
 }
 
@@ -183,7 +183,7 @@ public:
         OutputExtractorDataType outputType = m_OutputExtractor.getOutputType();
 
         if (nReports <= 0) {
-            ui::Text("no data (yet)");
+            ui::draw_text("no data (yet)");
         }
         else if (outputType == OutputExtractorDataType::Float) {
             drawFloatOutputUI();
@@ -195,7 +195,7 @@ public:
             drawVec2OutputUI();
         }
         else {
-            ui::Text("unknown output type");
+            ui::draw_text("unknown output type");
         }
     }
 
@@ -208,7 +208,7 @@ private:
 
         ptrdiff_t const nReports = sim.getNumReports();
         if (nReports <= 0) {
-            ui::Text("no data (yet)");
+            ui::draw_text("no data (yet)");
             return;
         }
 
@@ -221,8 +221,8 @@ private:
         }
 
         // setup drawing area for drawing
-        ui::SetNextItemWidth(ui::GetContentRegionAvail().x);
-        float const plotWidth = ui::GetContentRegionAvail().x;
+        ui::set_next_item_width(ui::get_content_region_avail().x);
+        float const plotWidth = ui::get_content_region_avail().x;
         Rect plotRect{};
 
         // draw the plot
@@ -270,9 +270,9 @@ private:
 
         float simScrubPct = static_cast<float>(static_cast<double>((simScrubTime - simStartTime)/(simEndTime - simStartTime)));
 
-        ImDrawList* drawlist = ui::GetWindowDrawList();
-        ImU32 const currentTimeLineColor = ui::ToImU32(c_CurrentScubTimeColor);
-        ImU32 const hoverTimeLineColor = ui::ToImU32(c_HoveredScrubTimeColor);
+        ImDrawList* drawlist = ui::get_panel_draw_list();
+        ImU32 const currentTimeLineColor = ui::to_ImU32(c_CurrentScubTimeColor);
+        ImU32 const hoverTimeLineColor = ui::to_ImU32(c_HoveredScrubTimeColor);
 
         // draw a vertical Y line showing the current scrub time over the plots
         {
@@ -282,8 +282,8 @@ private:
             drawlist->AddLine(p1, p2, currentTimeLineColor);
         }
 
-        if (ui::IsItemHovered()) {
-            Vec2 mp = ui::GetMousePos();
+        if (ui::is_item_hovered()) {
+            Vec2 mp = ui::get_mouse_pos();
             Vec2 plotLoc = mp - plotRect.p1;
             float relLoc = plotLoc.x / dimensions_of(plotRect).x;
             SimulationClock::time_point timeLoc = simStartTime + relLoc*(simEndTime - simStartTime);
@@ -302,15 +302,15 @@ private:
                     float y = buf[static_cast<size_t>(step)];
 
                     // ensure the tooltip doesn't occlude the line
-                    ui::PushStyleColor(ImGuiCol_PopupBg, ui::GetStyleColor(ImGuiCol_PopupBg).with_alpha(0.5f));
-                    ui::SetTooltip("(%.2fs, %.4f)", static_cast<float>(timeLoc.time_since_epoch().count()), y);
-                    ui::PopStyleColor();
+                    ui::push_style_color(ImGuiCol_PopupBg, ui::get_style_color(ImGuiCol_PopupBg).with_alpha(0.5f));
+                    ui::set_tooltip("(%.2fs, %.4f)", static_cast<float>(timeLoc.time_since_epoch().count()), y);
+                    ui::pop_style_color();
                 }
             }
 
             // if the user presses their left mouse while hovering over the plot,
             // change the current sim scrub time to match their press location
-            if (ui::IsMouseDown(ImGuiMouseButton_Left)) {
+            if (ui::is_mouse_down(ImGuiMouseButton_Left)) {
                 m_API->setSimulationScrubTime(timeLoc);
             }
         }
@@ -322,7 +322,7 @@ private:
         ptrdiff_t const nReports = m_API->updSimulation().getNumReports();
         SimulationReport r = m_API->trySelectReportBasedOnScrubbing().value_or(sim.getSimulationReport(nReports - 1));
 
-        ui::TextCentered(m_OutputExtractor.getValueString(*sim.getModel(), r));
+        ui::draw_text_centered(m_OutputExtractor.getValueString(*sim.getModel(), r));
         TryDrawOutputContextMenuForLastItem(*m_API, sim, m_OutputExtractor);
     }
 
@@ -334,7 +334,7 @@ private:
 
         ptrdiff_t const nReports = sim.getNumReports();
         if (nReports <= 0) {
-            ui::Text("no data (yet)");
+            ui::draw_text("no data (yet)");
             return;
         }
 
@@ -347,8 +347,8 @@ private:
         }
 
         // setup drawing area for drawing
-        ui::SetNextItemWidth(ui::GetContentRegionAvail().x);
-        float const plotWidth = ui::GetContentRegionAvail().x;
+        ui::set_next_item_width(ui::get_content_region_avail().x);
+        float const plotWidth = ui::get_content_region_avail().x;
         Rect plotRect{};
 
         // draw the plot
@@ -358,7 +358,7 @@ private:
             ImPlot::PushStyleVar(ImPlotStyleVar_PlotPadding, {0.0f, 0.0f});
             ImPlot::PushStyleVar(ImPlotStyleVar_PlotBorderSize, 0.0f);
             ImPlot::PushStyleVar(ImPlotStyleVar_FitPadding, {0.1f, 0.1f});
-            ImPlot::PushStyleVar(ImPlotStyleVar_AnnotationPadding, ui::GetStyleWindowPadding());
+            ImPlot::PushStyleVar(ImPlotStyleVar_AnnotationPadding, ui::get_style_panel_padding());
             auto const flags = ImPlotFlags_NoTitle | ImPlotFlags_NoLegend | ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoFrame;
 
             if (ImPlot::BeginPlot("##", Vec2{plotWidth, m_Height}, flags)) {
@@ -385,9 +385,9 @@ private:
                     SimulationReport currentReport = m_API->trySelectReportBasedOnScrubbing().value_or(sim.getSimulationReport(nReports - 1));
                     Vec2d currentVal = m_OutputExtractor.getValueVec2(*sim.getModel(), currentReport);
                     // ensure the annotation doesn't occlude the line too heavily
-                    auto annotationColor = ui::GetStyleColor(ImGuiCol_PopupBg).with_alpha(0.5f);
-                    ImPlot::Annotation(currentVal.x, currentVal.y, ui::ToImVec4(annotationColor), {10.0f, 10.0f}, true, "(%f, %f)", currentVal.x, currentVal.y);
-                    ImPlot::DragPoint(0, &currentVal.x, &currentVal.y, ui::ToImVec4(c_CurrentScubTimeColor), 4.0f, ImPlotDragToolFlags_NoInputs);
+                    auto annotationColor = ui::get_style_color(ImGuiCol_PopupBg).with_alpha(0.5f);
+                    ImPlot::Annotation(currentVal.x, currentVal.y, ui::to_ImVec4(annotationColor), {10.0f, 10.0f}, true, "(%f, %f)", currentVal.x, currentVal.y);
+                    ImPlot::DragPoint(0, &currentVal.x, &currentVal.y, ui::to_ImVec4(c_CurrentScubTimeColor), 4.0f, ImPlotDragToolFlags_NoInputs);
                 }
 
                 ImPlot::EndPlot();

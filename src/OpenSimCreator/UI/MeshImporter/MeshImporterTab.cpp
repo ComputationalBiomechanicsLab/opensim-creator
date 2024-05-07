@@ -198,7 +198,7 @@ public:
     void onDraw()
     {
         // enable panel docking
-        ui::DockSpaceOverViewport(ui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+        ui::enable_dockspace_over_viewport(ui::get_main_viewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
         // handle keyboards using ImGui's input poller
         if (!m_Maybe3DViewerModal)
@@ -208,18 +208,18 @@ public:
 
         if (!m_Maybe3DViewerModal && m_Shared->isRenderHovered() && !ImGuizmo::IsUsing())
         {
-            ui::UpdatePolarCameraFromMouseInputs(m_Shared->updCamera(), m_Shared->get3DSceneDims());
+            ui::update_polar_camera_from_mouse_inputs(m_Shared->updCamera(), m_Shared->get3DSceneDims());
         }
 
         // draw history panel (if enabled)
         if (m_Shared->isPanelEnabled(MeshImporterSharedState::PanelIndex_History))
         {
             bool v = true;
-            if (ui::Begin("history", &v))
+            if (ui::begin_panel("history", &v))
             {
                 drawHistoryPanelContent();
             }
-            ui::End();
+            ui::end_panel();
 
             m_Shared->setPanelEnabled(MeshImporterSharedState::PanelIndex_History, v);
         }
@@ -228,11 +228,11 @@ public:
         if (m_Shared->isPanelEnabled(MeshImporterSharedState::PanelIndex_Navigator))
         {
             bool v = true;
-            if (ui::Begin("navigator", &v))
+            if (ui::begin_panel("navigator", &v))
             {
                 drawNavigatorPanelContent();
             }
-            ui::End();
+            ui::end_panel();
 
             m_Shared->setPanelEnabled(MeshImporterSharedState::PanelIndex_Navigator, v);
         }
@@ -241,11 +241,11 @@ public:
         if (m_Shared->isPanelEnabled(MeshImporterSharedState::PanelIndex_Log))
         {
             bool v = true;
-            if (ui::Begin("Log", &v, ImGuiWindowFlags_MenuBar))
+            if (ui::begin_panel("Log", &v, ImGuiWindowFlags_MenuBar))
             {
                 m_Shared->updLogViewer().on_draw();
             }
-            ui::End();
+            ui::end_panel();
 
             m_Shared->setPanelEnabled(MeshImporterSharedState::PanelIndex_Log, v);
         }
@@ -745,103 +745,103 @@ private:
     // update this scene from the current keyboard state, as saved by ImGui
     bool updateFromImGuiKeyboardState()
     {
-        if (ui::GetIO().WantCaptureKeyboard)
+        if (ui::get_io().WantCaptureKeyboard)
         {
             return false;
         }
 
-        bool shiftDown = ui::IsShiftDown();
-        bool ctrlOrSuperDown = ui::IsCtrlOrSuperDown();
+        bool shiftDown = ui::is_shift_down();
+        bool ctrlOrSuperDown = ui::is_ctrl_or_super_down();
 
-        if (ctrlOrSuperDown && ui::IsKeyPressed(ImGuiKey_N))
+        if (ctrlOrSuperDown && ui::is_key_pressed(ImGuiKey_N))
         {
             // Ctrl+N: new scene
             m_Shared->requestNewMeshImporterTab();
             return true;
         }
-        else if (ctrlOrSuperDown && ui::IsKeyPressed(ImGuiKey_O))
+        else if (ctrlOrSuperDown && ui::is_key_pressed(ImGuiKey_O))
         {
             // Ctrl+O: open osim
             m_Shared->openOsimFileAsModelGraph();
             return true;
         }
-        else if (ctrlOrSuperDown && shiftDown && ui::IsKeyPressed(ImGuiKey_S))
+        else if (ctrlOrSuperDown && shiftDown && ui::is_key_pressed(ImGuiKey_S))
         {
             // Ctrl+Shift+S: export as: export scene as osim to user-specified location
             m_Shared->exportAsModelGraphAsOsimFile();
             return true;
         }
-        else if (ctrlOrSuperDown && ui::IsKeyPressed(ImGuiKey_S))
+        else if (ctrlOrSuperDown && ui::is_key_pressed(ImGuiKey_S))
         {
             // Ctrl+S: export: export scene as osim according to typical export heuristic
             m_Shared->exportModelGraphAsOsimFile();
             return true;
         }
-        else if (ctrlOrSuperDown && ui::IsKeyPressed(ImGuiKey_W))
+        else if (ctrlOrSuperDown && ui::is_key_pressed(ImGuiKey_W))
         {
             // Ctrl+W: close
             m_Shared->request_close();
             return true;
         }
-        else if (ctrlOrSuperDown && ui::IsKeyPressed(ImGuiKey_Q))
+        else if (ctrlOrSuperDown && ui::is_key_pressed(ImGuiKey_Q))
         {
             // Ctrl+Q: quit application
             App::upd().request_quit();
             return true;
         }
-        else if (ctrlOrSuperDown && ui::IsKeyPressed(ImGuiKey_A))
+        else if (ctrlOrSuperDown && ui::is_key_pressed(ImGuiKey_A))
         {
             // Ctrl+A: select all
             m_Shared->selectAll();
             return true;
         }
-        else if (ctrlOrSuperDown && shiftDown && ui::IsKeyPressed(ImGuiKey_Z))
+        else if (ctrlOrSuperDown && shiftDown && ui::is_key_pressed(ImGuiKey_Z))
         {
             // Ctrl+Shift+Z: redo
             m_Shared->redoCurrentModelGraph();
             return true;
         }
-        else if (ctrlOrSuperDown && ui::IsKeyPressed(ImGuiKey_Z))
+        else if (ctrlOrSuperDown && ui::is_key_pressed(ImGuiKey_Z))
         {
             // Ctrl+Z: undo
             m_Shared->undoCurrentModelGraph();
             return true;
         }
-        else if (ui::IsAnyKeyDown({ImGuiKey_Delete, ImGuiKey_Backspace}))
+        else if (ui::any_of_keys_down({ImGuiKey_Delete, ImGuiKey_Backspace}))
         {
             // Delete/Backspace: delete any selected elements
             deleteSelected();
             return true;
         }
-        else if (ui::IsKeyPressed(ImGuiKey_B))
+        else if (ui::is_key_pressed(ImGuiKey_B))
         {
             // B: add body to hovered element
             tryAddBodyToHoveredElement();
             return true;
         }
-        else if (ui::IsKeyPressed(ImGuiKey_A))
+        else if (ui::is_key_pressed(ImGuiKey_A))
         {
             // A: assign a parent for the hovered element
             tryTransitionToAssigningHoverAndSelectionNextFrame();
             return true;
         }
-        else if (ui::IsKeyPressed(ImGuiKey_J))
+        else if (ui::is_key_pressed(ImGuiKey_J))
         {
             // J: try to create a joint
             tryCreatingJointFromHoveredElement();
             return true;
         }
-        else if (ui::IsKeyPressed(ImGuiKey_T))
+        else if (ui::is_key_pressed(ImGuiKey_T))
         {
             // T: try to add a station to the current hover
             tryAddingStationAtMousePosToHoveredElement();
             return true;
         }
-        else if (UpdateImguizmoStateFromKeyboard(m_ImGuizmoState.op, m_ImGuizmoState.mode))
+        else if (ui::update_gizmo_state_from_keyboard(m_ImGuizmoState.op, m_ImGuizmoState.mode))
         {
             return true;
         }
-        else if (ui::UpdatePolarCameraFromKeyboardInputs(m_Shared->updCamera(), m_Shared->get3DSceneRect(), calcSceneAABB()))
+        else if (ui::update_polar_camera_from_keyboard_inputs(m_Shared->updCamera(), m_Shared->get3DSceneRect(), calcSceneAABB()))
         {
             return true;
         }
@@ -853,20 +853,20 @@ private:
 
     void drawNothingContextMenuContentHeader()
     {
-        ui::Text(ICON_FA_BOLT " Actions");
-        ui::SameLine();
-        ui::TextDisabled("(nothing clicked)");
-        ui::Separator();
+        ui::draw_text(ICON_FA_BOLT " Actions");
+        ui::same_line();
+        ui::draw_text_disabled("(nothing clicked)");
+        ui::draw_separator();
     }
 
     void drawMIObjectContextMenuContentHeader(MIObject const& e)
     {
-        ui::Text("%s %s", e.getClass().getIconUTF8().c_str(), e.getLabel().c_str());
-        ui::SameLine();
-        ui::TextDisabled(GetContextMenuSubHeaderText(m_Shared->getModelGraph(), e));
-        ui::SameLine();
-        ui::DrawHelpMarker(e.getClass().getName(), e.getClass().getDescription());
-        ui::Separator();
+        ui::draw_text("%s %s", e.getClass().getIconUTF8().c_str(), e.getLabel().c_str());
+        ui::same_line();
+        ui::draw_text_disabled(GetContextMenuSubHeaderText(m_Shared->getModelGraph(), e));
+        ui::same_line();
+        ui::draw_help_marker(e.getClass().getName(), e.getClass().getDescription());
+        ui::draw_separator();
     }
 
     void drawMIObjectPropEditors(MIObject const& e)
@@ -877,36 +877,36 @@ private:
         if (e.canChangeLabel())
         {
             std::string buf{static_cast<std::string_view>(e.getLabel())};
-            if (ui::InputString("Name", buf))
+            if (ui::draw_string_input("Name", buf))
             {
                 mg.updByID(e.getID()).setLabel(buf);
             }
-            if (ui::IsItemDeactivatedAfterEdit())
+            if (ui::is_item_deactivated_after_edit())
             {
                 std::stringstream ss;
                 ss << "changed " << e.getClass().getName() << " name";
                 m_Shared->commitCurrentModelGraph(std::move(ss).str());
             }
-            ui::SameLine();
-            ui::DrawHelpMarker("Component Name", "This is the name that the component will have in the exported OpenSim model.");
+            ui::same_line();
+            ui::draw_help_marker("Component Name", "This is the name that the component will have in the exported OpenSim model.");
         }
 
         // position editor
         if (e.canChangePosition())
         {
             Vec3 translation = e.getPos(mg);
-            if (ui::InputVec3("Translation", translation, "%.6f"))
+            if (ui::draw_vec3_input("Translation", translation, "%.6f"))
             {
                 mg.updByID(e.getID()).setPos(mg, translation);
             }
-            if (ui::IsItemDeactivatedAfterEdit())
+            if (ui::is_item_deactivated_after_edit())
             {
                 std::stringstream ss;
                 ss << "changed " << e.getLabel() << "'s translation";
                 m_Shared->commitCurrentModelGraph(std::move(ss).str());
             }
-            ui::SameLine();
-            ui::DrawHelpMarker("Translation", MIStrings::c_TranslationDescription);
+            ui::same_line();
+            ui::draw_help_marker("Translation", MIStrings::c_TranslationDescription);
         }
 
         // rotation editor
@@ -914,228 +914,228 @@ private:
         {
             Eulers eulers = euler_angles(normalize(e.rotation(m_Shared->getModelGraph())));
 
-            if (ui::InputAngle3("Rotation", eulers, "%.6f"))
+            if (ui::draw_angle3_input("Rotation", eulers, "%.6f"))
             {
                 Quat quatRads = osc::to_worldspace_rotation_quat(eulers);
                 mg.updByID(e.getID()).set_rotation(mg, quatRads);
             }
-            if (ui::IsItemDeactivatedAfterEdit())
+            if (ui::is_item_deactivated_after_edit())
             {
                 std::stringstream ss;
                 ss << "changed " << e.getLabel() << "'s rotation";
                 m_Shared->commitCurrentModelGraph(std::move(ss).str());
             }
-            ui::SameLine();
-            ui::DrawHelpMarker("Rotation", "These are the rotation Euler angles for the component in ground. Positive rotations are anti-clockwise along that axis.\n\nNote: the numbers may contain slight rounding error, due to backend constraints. Your values *should* be accurate to a few decimal places.");
+            ui::same_line();
+            ui::draw_help_marker("Rotation", "These are the rotation Euler angles for the component in ground. Positive rotations are anti-clockwise along that axis.\n\nNote: the numbers may contain slight rounding error, due to backend constraints. Your values *should* be accurate to a few decimal places.");
         }
 
         // scale factor editor
         if (e.canChangeScale())
         {
             Vec3 scaleFactors = e.getScale(mg);
-            if (ui::InputVec3("Scale", scaleFactors, "%.6f"))
+            if (ui::draw_vec3_input("Scale", scaleFactors, "%.6f"))
             {
                 mg.updByID(e.getID()).setScale(mg, scaleFactors);
             }
-            if (ui::IsItemDeactivatedAfterEdit())
+            if (ui::is_item_deactivated_after_edit())
             {
                 std::stringstream ss;
                 ss << "changed " << e.getLabel() << "'s scale";
                 m_Shared->commitCurrentModelGraph(std::move(ss).str());
             }
-            ui::SameLine();
-            ui::DrawHelpMarker("Scale", "These are the scale factors of the component in ground. These scale-factors are applied to the element before any other transform (it scales first, then rotates, then translates).");
+            ui::same_line();
+            ui::draw_help_marker("Scale", "These are the scale factors of the component in ground. These scale-factors are applied to the element before any other transform (it scales first, then rotates, then translates).");
         }
     }
 
     // draw content of "Add" menu for some scene element
     void drawAddOtherToMIObjectActions(MIObject& el, Vec3 const& clickPos)
     {
-        ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {10.0f, 10.0f});
-        ScopeGuard const g1{[]() { ui::PopStyleVar(); }};
+        ui::push_style_var(ImGuiStyleVar_ItemSpacing, {10.0f, 10.0f});
+        ScopeGuard const g1{[]() { ui::pop_style_var(); }};
 
         int imguiID = 0;
-        ui::PushID(imguiID++);
-        ScopeGuard const g2{[]() { ui::PopID(); }};
+        ui::push_id(imguiID++);
+        ScopeGuard const g2{[]() { ui::pop_id(); }};
 
         if (CanAttachMeshTo(el))
         {
-            if (ui::MenuItem(ICON_FA_CUBE " Meshes"))
+            if (ui::draw_menu_item(ICON_FA_CUBE " Meshes"))
             {
                 m_Shared->pushMeshLoadRequests(el.getID(), m_Shared->promptUserForMeshFiles());
             }
-            ui::DrawTooltipIfItemHovered("Add Meshes", MIStrings::c_MeshDescription);
+            ui::draw_tooltip_if_item_hovered("Add Meshes", MIStrings::c_MeshDescription);
         }
-        ui::PopID();
+        ui::pop_id();
 
-        ui::PushID(imguiID++);
+        ui::push_id(imguiID++);
         if (el.hasPhysicalSize())
         {
-            if (ui::BeginMenu(ICON_FA_CIRCLE " Body"))
+            if (ui::begin_menu(ICON_FA_CIRCLE " Body"))
             {
-                if (ui::MenuItem(ICON_FA_COMPRESS_ARROWS_ALT " at center"))
+                if (ui::draw_menu_item(ICON_FA_COMPRESS_ARROWS_ALT " at center"))
                 {
                     AddBody(m_Shared->updCommittableModelGraph(), el.getPos(m_Shared->getModelGraph()), el.getID());
                 }
-                ui::DrawTooltipIfItemHovered("Add Body", MIStrings::c_BodyDescription);
+                ui::draw_tooltip_if_item_hovered("Add Body", MIStrings::c_BodyDescription);
 
-                if (ui::MenuItem(ICON_FA_MOUSE_POINTER " at click position"))
+                if (ui::draw_menu_item(ICON_FA_MOUSE_POINTER " at click position"))
                 {
                     AddBody(m_Shared->updCommittableModelGraph(), clickPos, el.getID());
                 }
-                ui::DrawTooltipIfItemHovered("Add Body", MIStrings::c_BodyDescription);
+                ui::draw_tooltip_if_item_hovered("Add Body", MIStrings::c_BodyDescription);
 
-                if (ui::MenuItem(ICON_FA_DOT_CIRCLE " at ground"))
+                if (ui::draw_menu_item(ICON_FA_DOT_CIRCLE " at ground"))
                 {
                     AddBody(m_Shared->updCommittableModelGraph());
                 }
-                ui::DrawTooltipIfItemHovered("Add body", MIStrings::c_BodyDescription);
+                ui::draw_tooltip_if_item_hovered("Add body", MIStrings::c_BodyDescription);
 
                 if (auto const* mesh = dynamic_cast<Mesh const*>(&el))
                 {
-                    if (ui::MenuItem(ICON_FA_BORDER_ALL " at bounds center"))
+                    if (ui::draw_menu_item(ICON_FA_BORDER_ALL " at bounds center"))
                     {
                         Vec3 const location = centroid_of(mesh->calcBounds());
                         AddBody(m_Shared->updCommittableModelGraph(), location, mesh->getID());
                     }
-                    ui::DrawTooltipIfItemHovered("Add Body", MIStrings::c_BodyDescription);
+                    ui::draw_tooltip_if_item_hovered("Add Body", MIStrings::c_BodyDescription);
 
-                    if (ui::MenuItem(ICON_FA_DIVIDE " at mesh average center"))
+                    if (ui::draw_menu_item(ICON_FA_DIVIDE " at mesh average center"))
                     {
                         Vec3 const location = AverageCenter(*mesh);
                         AddBody(m_Shared->updCommittableModelGraph(), location, mesh->getID());
                     }
-                    ui::DrawTooltipIfItemHovered("Add Body", MIStrings::c_BodyDescription);
+                    ui::draw_tooltip_if_item_hovered("Add Body", MIStrings::c_BodyDescription);
 
-                    if (ui::MenuItem(ICON_FA_WEIGHT " at mesh mass center"))
+                    if (ui::draw_menu_item(ICON_FA_WEIGHT " at mesh mass center"))
                     {
                         Vec3 const location = mass_center_of(*mesh);
                         AddBody(m_Shared->updCommittableModelGraph(), location, mesh->getID());
                     }
-                    ui::DrawTooltipIfItemHovered("Add body", MIStrings::c_BodyDescription);
+                    ui::draw_tooltip_if_item_hovered("Add body", MIStrings::c_BodyDescription);
                 }
 
-                ui::EndMenu();
+                ui::end_menu();
             }
         }
         else
         {
-            if (ui::MenuItem(ICON_FA_CIRCLE " Body"))
+            if (ui::draw_menu_item(ICON_FA_CIRCLE " Body"))
             {
                 AddBody(m_Shared->updCommittableModelGraph(), el.getPos(m_Shared->getModelGraph()), el.getID());
             }
-            ui::DrawTooltipIfItemHovered("Add Body", MIStrings::c_BodyDescription);
+            ui::draw_tooltip_if_item_hovered("Add Body", MIStrings::c_BodyDescription);
         }
-        ui::PopID();
+        ui::pop_id();
 
-        ui::PushID(imguiID++);
+        ui::push_id(imguiID++);
         if (auto const* body = dynamic_cast<Body const*>(&el))
         {
-            if (ui::MenuItem(ICON_FA_LINK " Joint"))
+            if (ui::draw_menu_item(ICON_FA_LINK " Joint"))
             {
                 transitionToChoosingJointParent(*body);
             }
-            ui::DrawTooltipIfItemHovered("Creating Joints", "Create a joint from this body (the \"child\") to some other body in the model (the \"parent\").\n\nAll bodies in an OpenSim model must eventually connect to ground via joints. If no joint is added to the body then OpenSim Creator will automatically add a WeldJoint between the body and ground.");
+            ui::draw_tooltip_if_item_hovered("Creating Joints", "Create a joint from this body (the \"child\") to some other body in the model (the \"parent\").\n\nAll bodies in an OpenSim model must eventually connect to ground via joints. If no joint is added to the body then OpenSim Creator will automatically add a WeldJoint between the body and ground.");
         }
-        ui::PopID();
+        ui::pop_id();
 
-        ui::PushID(imguiID++);
+        ui::push_id(imguiID++);
         if (CanAttachStationTo(el))
         {
             if (el.hasPhysicalSize())
             {
-                if (ui::BeginMenu(ICON_FA_MAP_PIN " Station"))
+                if (ui::begin_menu(ICON_FA_MAP_PIN " Station"))
                 {
-                    if (ui::MenuItem(ICON_FA_COMPRESS_ARROWS_ALT " at center"))
+                    if (ui::draw_menu_item(ICON_FA_COMPRESS_ARROWS_ALT " at center"))
                     {
                         AddStationAtLocation(m_Shared->updCommittableModelGraph(), el, el.getPos(m_Shared->getModelGraph()));
                     }
-                    ui::DrawTooltipIfItemHovered("Add Station", MIStrings::c_StationDescription);
+                    ui::draw_tooltip_if_item_hovered("Add Station", MIStrings::c_StationDescription);
 
-                    if (ui::MenuItem(ICON_FA_MOUSE_POINTER " at click position"))
+                    if (ui::draw_menu_item(ICON_FA_MOUSE_POINTER " at click position"))
                     {
                         AddStationAtLocation(m_Shared->updCommittableModelGraph(), el, clickPos);
                     }
-                    ui::DrawTooltipIfItemHovered("Add Station", MIStrings::c_StationDescription);
+                    ui::draw_tooltip_if_item_hovered("Add Station", MIStrings::c_StationDescription);
 
-                    if (ui::MenuItem(ICON_FA_DOT_CIRCLE " at ground"))
+                    if (ui::draw_menu_item(ICON_FA_DOT_CIRCLE " at ground"))
                     {
                         AddStationAtLocation(m_Shared->updCommittableModelGraph(), el, Vec3{});
                     }
-                    ui::DrawTooltipIfItemHovered("Add Station", MIStrings::c_StationDescription);
+                    ui::draw_tooltip_if_item_hovered("Add Station", MIStrings::c_StationDescription);
 
                     if (dynamic_cast<Mesh const*>(&el))
                     {
-                        if (ui::MenuItem(ICON_FA_BORDER_ALL " at bounds center"))
+                        if (ui::draw_menu_item(ICON_FA_BORDER_ALL " at bounds center"))
                         {
                             AddStationAtLocation(m_Shared->updCommittableModelGraph(), el, centroid_of(el.calcBounds(m_Shared->getModelGraph())));
                         }
-                        ui::DrawTooltipIfItemHovered("Add Station", MIStrings::c_StationDescription);
+                        ui::draw_tooltip_if_item_hovered("Add Station", MIStrings::c_StationDescription);
                     }
 
-                    ui::EndMenu();
+                    ui::end_menu();
                 }
             }
             else
             {
-                if (ui::MenuItem(ICON_FA_MAP_PIN " Station"))
+                if (ui::draw_menu_item(ICON_FA_MAP_PIN " Station"))
                 {
                     AddStationAtLocation(m_Shared->updCommittableModelGraph(), el, el.getPos(m_Shared->getModelGraph()));
                 }
-                ui::DrawTooltipIfItemHovered("Add Station", MIStrings::c_StationDescription);
+                ui::draw_tooltip_if_item_hovered("Add Station", MIStrings::c_StationDescription);
             }
         }
-        // ~ScopeGuard: implicitly calls ui::PopID()
+        // ~ScopeGuard: implicitly calls ui::pop_id()
     }
 
     void drawNothingActions()
     {
-        if (ui::MenuItem(ICON_FA_CUBE " Add Meshes"))
+        if (ui::draw_menu_item(ICON_FA_CUBE " Add Meshes"))
         {
             m_Shared->promptUserForMeshFilesAndPushThemOntoMeshLoader();
         }
-        ui::DrawTooltipIfItemHovered("Add Meshes to the model", MIStrings::c_MeshDescription);
+        ui::draw_tooltip_if_item_hovered("Add Meshes to the model", MIStrings::c_MeshDescription);
 
-        if (ui::BeginMenu(ICON_FA_PLUS " Add Other"))
+        if (ui::begin_menu(ICON_FA_PLUS " Add Other"))
         {
             drawAddOtherMenuItems();
 
-            ui::EndMenu();
+            ui::end_menu();
         }
     }
 
     void drawMIObjectActions(MIObject& el, Vec3 const& clickPos)
     {
-        if (ui::MenuItem(ICON_FA_CAMERA " Focus camera on this"))
+        if (ui::draw_menu_item(ICON_FA_CAMERA " Focus camera on this"))
         {
             m_Shared->focusCameraOn(centroid_of(el.calcBounds(m_Shared->getModelGraph())));
         }
-        ui::DrawTooltipIfItemHovered("Focus camera on this scene element", "Focuses the scene camera on this element. This is useful for tracking the camera around that particular object in the scene");
+        ui::draw_tooltip_if_item_hovered("Focus camera on this scene element", "Focuses the scene camera on this element. This is useful for tracking the camera around that particular object in the scene");
 
-        if (ui::BeginMenu(ICON_FA_PLUS " Add"))
+        if (ui::begin_menu(ICON_FA_PLUS " Add"))
         {
             drawAddOtherToMIObjectActions(el, clickPos);
-            ui::EndMenu();
+            ui::end_menu();
         }
 
         if (auto const* body = dynamic_cast<Body const*>(&el))
         {
-            if (ui::MenuItem(ICON_FA_LINK " Join to"))
+            if (ui::draw_menu_item(ICON_FA_LINK " Join to"))
             {
                 transitionToChoosingJointParent(*body);
             }
-            ui::DrawTooltipIfItemHovered("Creating Joints", "Create a joint from this body (the \"child\") to some other body in the model (the \"parent\").\n\nAll bodies in an OpenSim model must eventually connect to ground via joints. If no joint is added to the body then OpenSim Creator will automatically add a WeldJoint between the body and ground.");
+            ui::draw_tooltip_if_item_hovered("Creating Joints", "Create a joint from this body (the \"child\") to some other body in the model (the \"parent\").\n\nAll bodies in an OpenSim model must eventually connect to ground via joints. If no joint is added to the body then OpenSim Creator will automatically add a WeldJoint between the body and ground.");
         }
 
         if (el.canDelete())
         {
-            if (ui::MenuItem(ICON_FA_TRASH " Delete"))
+            if (ui::draw_menu_item(ICON_FA_TRASH " Delete"))
             {
                 DeleteObject(m_Shared->updCommittableModelGraph(), el.getID());
                 garbageCollectStaleRefs();
-                ui::CloseCurrentPopup();
+                ui::close_current_popup();
             }
-            ui::DrawTooltipIfItemHovered("Delete", "Deletes the component from the model. Deletion is undo-able (use the undo/redo feature). Anything attached to this element (e.g. joints, meshes) will also be deleted.");
+            ui::draw_tooltip_if_item_hovered("Delete", "Deletes the component from the model. Deletion is undo-able (use the undo/redo feature). Anything attached to this element (e.g. joints, meshes) will also be deleted.");
         }
     }
 
@@ -1147,23 +1147,23 @@ private:
             return;  // can't change its position
         }
 
-        if (!ui::BeginMenu(ICON_FA_ARROWS_ALT " Translate"))
+        if (!ui::begin_menu(ICON_FA_ARROWS_ALT " Translate"))
         {
             return;  // top-level menu isn't open
         }
 
-        ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {10.0f, 10.0f});
+        ui::push_style_var(ImGuiStyleVar_ItemSpacing, {10.0f, 10.0f});
 
         for (int i = 0, len = el.getNumCrossReferences(); i < len; ++i)
         {
             std::string label = "To " + el.getCrossReferenceLabel(i);
-            if (ui::MenuItem(label))
+            if (ui::draw_menu_item(label))
             {
                 TryTranslateObjectToAnotherObject(m_Shared->updCommittableModelGraph(), el.getID(), el.getCrossReferenceConnecteeID(i));
             }
         }
 
-        if (ui::MenuItem("To (select something)"))
+        if (ui::draw_menu_item("To (select something)"))
         {
             transitionToChoosingWhichElementToTranslateTo(el);
         }
@@ -1171,7 +1171,7 @@ private:
         if (el.getNumCrossReferences() == 2)
         {
             std::string label = "Between " + el.getCrossReferenceLabel(0) + " and " + el.getCrossReferenceLabel(1);
-            if (ui::MenuItem(label))
+            if (ui::draw_menu_item(label))
             {
                 UID a = el.getCrossReferenceConnecteeID(0);
                 UID b = el.getCrossReferenceConnecteeID(1);
@@ -1179,36 +1179,36 @@ private:
             }
         }
 
-        if (ui::MenuItem("Between two scene elements"))
+        if (ui::draw_menu_item("Between two scene elements"))
         {
             transitionToChoosingElementsToTranslateBetween(el);
         }
 
-        if (ui::MenuItem("Between two mesh points"))
+        if (ui::draw_menu_item("Between two mesh points"))
         {
             transitionToTranslatingElementAlongTwoMeshPoints(el);
         }
 
-        if (ui::MenuItem("To mesh bounds center"))
+        if (ui::draw_menu_item("To mesh bounds center"))
         {
             transitionToTranslatingElementToMeshBoundsCenter(el);
         }
-        ui::DrawTooltipIfItemHovered("Translate to mesh bounds center", "Translates the given element to the center of the selected mesh's bounding box. The bounding box is the smallest box that contains all mesh vertices");
+        ui::draw_tooltip_if_item_hovered("Translate to mesh bounds center", "Translates the given element to the center of the selected mesh's bounding box. The bounding box is the smallest box that contains all mesh vertices");
 
-        if (ui::MenuItem("To mesh average center"))
+        if (ui::draw_menu_item("To mesh average center"))
         {
             transitionToTranslatingElementToMeshAverageCenter(el);
         }
-        ui::DrawTooltipIfItemHovered("Translate to mesh average center", "Translates the given element to the average center point of vertices in the selected mesh.\n\nEffectively, this adds each vertex location in the mesh, divides the sum by the number of vertices in the mesh, and sets the translation of the given object to that location.");
+        ui::draw_tooltip_if_item_hovered("Translate to mesh average center", "Translates the given element to the average center point of vertices in the selected mesh.\n\nEffectively, this adds each vertex location in the mesh, divides the sum by the number of vertices in the mesh, and sets the translation of the given object to that location.");
 
-        if (ui::MenuItem("To mesh mass center"))
+        if (ui::draw_menu_item("To mesh mass center"))
         {
             transitionToTranslatingElementToMeshMassCenter(el);
         }
-        ui::DrawTooltipIfItemHovered("Translate to mesh mess center", "Translates the given element to the mass center of the selected mesh.\n\nCAREFUL: the algorithm used to do this heavily relies on your triangle winding (i.e. normals) being correct and your mesh being a closed surface. If your mesh doesn't meet these requirements, you might get strange results (apologies: the only way to get around that problems involves complicated voxelization and leak-detection algorithms :( )");
+        ui::draw_tooltip_if_item_hovered("Translate to mesh mess center", "Translates the given element to the mass center of the selected mesh.\n\nCAREFUL: the algorithm used to do this heavily relies on your triangle winding (i.e. normals) being correct and your mesh being a closed surface. If your mesh doesn't meet these requirements, you might get strange results (apologies: the only way to get around that problems involves complicated voxelization and leak-detection algorithms :( )");
 
-        ui::PopStyleVar();
-        ui::EndMenu();
+        ui::pop_style_var();
+        ui::end_menu();
     }
 
     // draw the "Reorient" menu for any generic `MIObject`
@@ -1219,12 +1219,12 @@ private:
             return;  // can't change its rotation
         }
 
-        if (!ui::BeginMenu(ICON_FA_REDO " Reorient"))
+        if (!ui::begin_menu(ICON_FA_REDO " Reorient"))
         {
             return;  // top-level menu isn't open
         }
 
-        ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {10.0f, 10.0f});
+        ui::push_style_var(ImGuiStyleVar_ItemSpacing, {10.0f, 10.0f});
 
         {
             auto DrawMenuContent = [&](int axis)
@@ -1233,102 +1233,102 @@ private:
                 {
                     std::string label = "Towards " + el.getCrossReferenceLabel(i);
 
-                    if (ui::MenuItem(label))
+                    if (ui::draw_menu_item(label))
                     {
                         point_axis_towards(m_Shared->updCommittableModelGraph(), el.getID(), axis, el.getCrossReferenceConnecteeID(i));
                     }
                 }
 
-                if (ui::MenuItem("Towards (select something)"))
+                if (ui::draw_menu_item("Towards (select something)"))
                 {
                     transitionToChoosingWhichElementToPointAxisTowards(el, axis);
                 }
 
-                if (ui::MenuItem("Along line between (select two elements)"))
+                if (ui::draw_menu_item("Along line between (select two elements)"))
                 {
                     transitionToChoosingTwoElementsToAlignAxisAlong(el, axis);
                 }
 
-                if (ui::MenuItem("90 degress"))
+                if (ui::draw_menu_item("90 degress"))
                 {
                     RotateAxis(m_Shared->updCommittableModelGraph(), el, axis, 90_deg);
                 }
 
-                if (ui::MenuItem("180 degrees"))
+                if (ui::draw_menu_item("180 degrees"))
                 {
                     RotateAxis(m_Shared->updCommittableModelGraph(), el, axis, 180_deg);
                 }
 
-                if (ui::MenuItem("Along two mesh points"))
+                if (ui::draw_menu_item("Along two mesh points"))
                 {
                     transitionToOrientingElementAlongTwoMeshPoints(el, axis);
                 }
             };
 
-            if (ui::BeginMenu("x"))
+            if (ui::begin_menu("x"))
             {
                 DrawMenuContent(0);
-                ui::EndMenu();
+                ui::end_menu();
             }
 
-            if (ui::BeginMenu("y"))
+            if (ui::begin_menu("y"))
             {
                 DrawMenuContent(1);
-                ui::EndMenu();
+                ui::end_menu();
             }
 
-            if (ui::BeginMenu("z"))
+            if (ui::begin_menu("z"))
             {
                 DrawMenuContent(2);
-                ui::EndMenu();
+                ui::end_menu();
             }
         }
 
-        if (ui::MenuItem("copy"))
+        if (ui::draw_menu_item("copy"))
         {
             transitionToCopyingSomethingElsesOrientation(el);
         }
 
-        if (ui::MenuItem("reset"))
+        if (ui::draw_menu_item("reset"))
         {
             el.setXform(m_Shared->getModelGraph(), Transform{.position = el.getPos(m_Shared->getModelGraph())});
             m_Shared->commitCurrentModelGraph("reset " + el.getLabel() + " orientation");
         }
 
-        ui::PopStyleVar();
-        ui::EndMenu();
+        ui::pop_style_var();
+        ui::end_menu();
     }
 
     // draw the "Mass" editor for a `BodyEl`
     void drawMassEditor(Body const& bodyEl)
     {
         auto curMass = static_cast<float>(bodyEl.getMass());
-        if (ui::InputFloat("Mass", &curMass, 0.0f, 0.0f, "%.6f"))
+        if (ui::draw_float_input("Mass", &curMass, 0.0f, 0.0f, "%.6f"))
         {
             m_Shared->updModelGraph().updByID<Body>(bodyEl.getID()).setMass(static_cast<double>(curMass));
         }
-        if (ui::IsItemDeactivatedAfterEdit())
+        if (ui::is_item_deactivated_after_edit())
         {
             m_Shared->commitCurrentModelGraph("changed body mass");
         }
-        ui::SameLine();
-        ui::DrawHelpMarker("Mass", "The mass of the body. OpenSim defines this as 'unitless'; however, models conventionally use kilograms.");
+        ui::same_line();
+        ui::draw_help_marker("Mass", "The mass of the body. OpenSim defines this as 'unitless'; however, models conventionally use kilograms.");
     }
 
     // draw the "Joint Type" editor for a `JointEl`
     void drawJointTypeEditor(Joint const& jointEl)
     {
-        if (ui::BeginCombo("Joint Type", jointEl.getSpecificTypeName())) {
+        if (ui::begin_combobox("Joint Type", jointEl.getSpecificTypeName())) {
             for (auto const& joint : GetComponentRegistry<OpenSim::Joint>()) {
-                if (ui::Selectable(joint.name(), joint.name() == jointEl.getSpecificTypeName())) {
+                if (ui::draw_selectable(joint.name(), joint.name() == jointEl.getSpecificTypeName())) {
                     m_Shared->updModelGraph().updByID<Joint>(jointEl.getID()).setSpecificTypeName(joint.name());
                     m_Shared->commitCurrentModelGraph("changed joint type");
                 }
             }
-            ui::EndCombo();
+            ui::end_combobox();
         }
-        ui::SameLine();
-        ui::DrawHelpMarker("Joint Type", "This is the type of joint that should be added into the OpenSim model. The joint's type dictates what types of motion are permitted around the joint center. See the official OpenSim documentation for an explanation of each joint type.");
+        ui::same_line();
+        ui::draw_help_marker("Joint Type", "This is the type of joint that should be added into the OpenSim model. The joint's type dictates what types of motion are permitted around the joint center. See the official OpenSim documentation for an explanation of each joint type.");
     }
 
     // draw the "Reassign Connection" menu, which lets users change an element's cross reference
@@ -1341,21 +1341,21 @@ private:
             return;
         }
 
-        if (ui::BeginMenu(ICON_FA_EXTERNAL_LINK_ALT " Reassign Connection"))
+        if (ui::begin_menu(ICON_FA_EXTERNAL_LINK_ALT " Reassign Connection"))
         {
-            ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {10.0f, 10.0f});
+            ui::push_style_var(ImGuiStyleVar_ItemSpacing, {10.0f, 10.0f});
 
             for (int i = 0; i < nRefs; ++i)
             {
                 CStringView label = el.getCrossReferenceLabel(i);
-                if (ui::MenuItem(label))
+                if (ui::draw_menu_item(label))
                 {
                     transitionToReassigningCrossRef(el, i);
                 }
             }
 
-            ui::PopStyleVar();
-            ui::EndMenu();
+            ui::pop_style_var();
+            ui::end_menu();
         }
     }
 
@@ -1434,18 +1434,18 @@ private:
 
     void drawSaveMeshMenu(Mesh const& el)
     {
-        if (ui::BeginMenu(ICON_FA_FILE_EXPORT " Export"))
+        if (ui::begin_menu(ICON_FA_FILE_EXPORT " Export"))
         {
-            ui::TextDisabled("With Respect to:");
-            ui::Separator();
+            ui::draw_text_disabled("With Respect to:");
+            ui::draw_separator();
             for (MIObject const& MIObject : m_Shared->getModelGraph().iter())
             {
-                if (ui::BeginMenu(MIObject.getLabel()))
+                if (ui::begin_menu(MIObject.getLabel()))
                 {
-                    ui::TextDisabled("Format:");
-                    ui::Separator();
+                    ui::draw_text_disabled("Format:");
+                    ui::draw_separator();
 
-                    if (ui::MenuItem(".obj"))
+                    if (ui::draw_menu_item(".obj"))
                     {
                         Transform const MIObjectToGround = MIObject.getXForm(m_Shared->getModelGraph());
                         Transform const meshVertToGround = el.getXForm();
@@ -1456,7 +1456,7 @@ private:
                         actionPromptUserToSaveMeshAsOBJ(mesh);
                     }
 
-                    if (ui::MenuItem(".stl"))
+                    if (ui::draw_menu_item(".stl"))
                     {
                         Transform const MIObjectToGround = MIObject.getXForm(m_Shared->getModelGraph());
                         Transform const meshVertToGround = el.getXForm();
@@ -1467,16 +1467,16 @@ private:
                         actionPromptUserToSaveMeshAsSTL(mesh);
                     }
 
-                    ui::EndMenu();
+                    ui::end_menu();
                 }
             }
-            ui::EndMenu();
+            ui::end_menu();
         }
     }
 
     void drawContextMenuSpacer()
     {
-        ui::Dummy({0.0f, 0.0f});
+        ui::draw_dummy({0.0f, 0.0f});
     }
 
     // draw context menu content for when user right-clicks nothing
@@ -1506,7 +1506,7 @@ private:
         drawMassEditor(el);
 
         drawContextMenuSpacer();
-        ui::Separator();
+        ui::draw_separator();
         drawContextMenuSpacer();
 
         drawTranslateMenu(el);
@@ -1525,7 +1525,7 @@ private:
         drawMIObjectPropEditors(el);
 
         drawContextMenuSpacer();
-        ui::Separator();
+        ui::draw_separator();
         drawContextMenuSpacer();
 
         drawTranslateMenu(el);
@@ -1546,7 +1546,7 @@ private:
         drawJointTypeEditor(el);
 
         drawContextMenuSpacer();
-        ui::Separator();
+        ui::draw_separator();
         drawContextMenuSpacer();
 
         drawTranslateMenu(el);
@@ -1565,7 +1565,7 @@ private:
         drawMIObjectPropEditors(el);
 
         drawContextMenuSpacer();
-        ui::Separator();
+        ui::draw_separator();
         drawContextMenuSpacer();
 
         drawTranslateMenu(el);
@@ -1593,31 +1593,31 @@ private:
         if (!m_MaybeOpenedContextMenu)
         {
             // context menu not open, but just draw the "nothing" menu
-            ui::PushID(UID::empty());
-            ScopeGuard const g{[]() { ui::PopID(); }};
+            ui::push_id(UID::empty());
+            ScopeGuard const g{[]() { ui::pop_id(); }};
             drawNothingContextMenuContent();
         }
         else if (m_MaybeOpenedContextMenu.ID == MIIDs::RightClickedNothing())
         {
             // context menu was opened on "nothing" specifically
-            ui::PushID(UID::empty());
-            ScopeGuard const g{[]() { ui::PopID(); }};
+            ui::push_id(UID::empty());
+            ScopeGuard const g{[]() { ui::pop_id(); }};
             drawNothingContextMenuContent();
         }
         else if (MIObject* el = m_Shared->updModelGraph().tryUpdByID(m_MaybeOpenedContextMenu.ID))
         {
             // context menu was opened on a scene element that exists in the modelgraph
-            ui::PushID(el->getID());
-            ScopeGuard const g{[]() { ui::PopID(); }};
+            ui::push_id(el->getID());
+            ScopeGuard const g{[]() { ui::pop_id(); }};
             drawContextMenuContent(*el, m_MaybeOpenedContextMenu.Pos);
         }
 
 
         // context menu should be closed under these conditions
-        if (ui::IsAnyKeyPressed({ImGuiKey_Enter, ImGuiKey_Escape}))
+        if (ui::any_of_keys_pressed({ImGuiKey_Enter, ImGuiKey_Escape}))
         {
             m_MaybeOpenedContextMenu.reset();
-            ui::CloseCurrentPopup();
+            ui::close_current_popup();
         }
     }
 
@@ -1631,11 +1631,11 @@ private:
     {
         Document& mg = m_Shared->updModelGraph();
 
-        ui::Text("%s %s", c.getIconUTF8().c_str(), c.getNamePluralized().c_str());
-        ui::SameLine();
-        ui::DrawHelpMarker(c.getNamePluralized(), c.getDescription());
-        ui::Dummy({0.0f, 5.0f});
-        ui::Indent();
+        ui::draw_text("%s %s", c.getIconUTF8().c_str(), c.getNamePluralized().c_str());
+        ui::same_line();
+        ui::draw_help_marker(c.getNamePluralized(), c.getDescription());
+        ui::draw_dummy({0.0f, 5.0f});
+        ui::indent();
 
         bool empty = true;
         for (MIObject const& el : mg.iter())
@@ -1652,46 +1652,46 @@ private:
 
             if (id == m_MaybeHover.ID)
             {
-                ui::PushStyleColor(ImGuiCol_Text, Color::yellow());
+                ui::push_style_color(ImGuiCol_Text, Color::yellow());
                 ++styles;
             }
             else if (m_Shared->isSelected(id))
             {
-                ui::PushStyleColor(ImGuiCol_Text, Color::yellow());
+                ui::push_style_color(ImGuiCol_Text, Color::yellow());
                 ++styles;
             }
 
-            ui::Text(el.getLabel());
+            ui::draw_text(el.getLabel());
 
-            ui::PopStyleColor(styles);
+            ui::pop_style_color(styles);
 
-            if (ui::IsItemHovered())
+            if (ui::is_item_hovered())
             {
                 m_MaybeHover = {id, {}};
             }
 
-            if (ui::IsItemClicked(ImGuiMouseButton_Left))
+            if (ui::is_item_clicked(ImGuiMouseButton_Left))
             {
-                if (!ui::IsShiftDown())
+                if (!ui::is_shift_down())
                 {
                     m_Shared->updModelGraph().deSelectAll();
                 }
                 m_Shared->updModelGraph().select(id);
             }
 
-            if (ui::IsItemClicked(ImGuiMouseButton_Right))
+            if (ui::is_item_clicked(ImGuiMouseButton_Right))
             {
                 m_MaybeOpenedContextMenu = MeshImporterHover{id, {}};
-                ui::OpenPopup("##maincontextmenu");
+                ui::open_popup("##maincontextmenu");
                 App::upd().request_redraw();
             }
         }
 
         if (empty)
         {
-            ui::TextDisabled("(no %s)", c.getNamePluralized().c_str());
+            ui::draw_text_disabled("(no %s)", c.getNamePluralized().c_str());
         }
-        ui::Unindent();
+        ui::unindent();
     }
 
     void drawNavigatorPanelContent()
@@ -1699,73 +1699,73 @@ private:
         for (MIClass const& c : GetSceneElClasses())
         {
             drawNavigatorElement(c);
-            ui::Dummy({0.0f, 5.0f});
+            ui::draw_dummy({0.0f, 5.0f});
         }
 
         // a navigator element might have opened the context menu in the navigator panel
         //
         // this can happen when the user right-clicks something in the navigator
-        if (ui::BeginPopup("##maincontextmenu"))
+        if (ui::begin_popup("##maincontextmenu"))
         {
             drawContextMenuContent();
-            ui::EndPopup();
+            ui::end_popup();
         }
     }
 
     void drawAddOtherMenuItems()
     {
-        ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {10.0f, 10.0f});
+        ui::push_style_var(ImGuiStyleVar_ItemSpacing, {10.0f, 10.0f});
 
-        if (ui::MenuItem(ICON_FA_CUBE " Meshes"))
+        if (ui::draw_menu_item(ICON_FA_CUBE " Meshes"))
         {
             m_Shared->promptUserForMeshFilesAndPushThemOntoMeshLoader();
         }
-        ui::DrawTooltipIfItemHovered("Add Meshes", MIStrings::c_MeshDescription);
+        ui::draw_tooltip_if_item_hovered("Add Meshes", MIStrings::c_MeshDescription);
 
-        if (ui::MenuItem(ICON_FA_CIRCLE " Body"))
+        if (ui::draw_menu_item(ICON_FA_CIRCLE " Body"))
         {
             AddBody(m_Shared->updCommittableModelGraph());
         }
-        ui::DrawTooltipIfItemHovered("Add Body", MIStrings::c_BodyDescription);
+        ui::draw_tooltip_if_item_hovered("Add Body", MIStrings::c_BodyDescription);
 
-        if (ui::MenuItem(ICON_FA_MAP_PIN " Station"))
+        if (ui::draw_menu_item(ICON_FA_MAP_PIN " Station"))
         {
             Document& mg = m_Shared->updModelGraph();
             auto& e = mg.emplace<StationEl>(UID{}, MIIDs::Ground(), Vec3{}, StationEl::Class().generateName());
             mg.selectOnly(e);
         }
-        ui::DrawTooltipIfItemHovered("Add Station", StationEl::Class().getDescription());
+        ui::draw_tooltip_if_item_hovered("Add Station", StationEl::Class().getDescription());
 
-        ui::PopStyleVar();
+        ui::pop_style_var();
     }
 
     void draw3DViewerOverlayTopBar()
     {
         int imguiID = 0;
 
-        if (ui::Button(ICON_FA_CUBE " Add Meshes"))
+        if (ui::draw_button(ICON_FA_CUBE " Add Meshes"))
         {
             m_Shared->promptUserForMeshFilesAndPushThemOntoMeshLoader();
         }
-        ui::DrawTooltipIfItemHovered("Add Meshes to the model", MIStrings::c_MeshDescription);
+        ui::draw_tooltip_if_item_hovered("Add Meshes to the model", MIStrings::c_MeshDescription);
 
-        ui::SameLine();
+        ui::same_line();
 
-        ui::Button(ICON_FA_PLUS " Add Other");
-        ui::DrawTooltipIfItemHovered("Add components to the model");
+        ui::draw_button(ICON_FA_PLUS " Add Other");
+        ui::draw_tooltip_if_item_hovered("Add components to the model");
 
-        if (ui::BeginPopupContextItem("##additemtoscenepopup", ImGuiPopupFlags_MouseButtonLeft))
+        if (ui::begin_popup_context_menu("##additemtoscenepopup", ImGuiPopupFlags_MouseButtonLeft))
         {
             drawAddOtherMenuItems();
-            ui::EndPopup();
+            ui::end_popup();
         }
 
-        ui::SameLine();
+        ui::same_line();
 
-        ui::Button(ICON_FA_PAINT_ROLLER " Colors");
-        ui::DrawTooltipIfItemHovered("Change scene display colors", "This only changes the decroative display colors of model elements in this screen. Color changes are not saved to the exported OpenSim model. Changing these colors can be handy for spotting things, or constrasting scene elements more strongly");
+        ui::draw_button(ICON_FA_PAINT_ROLLER " Colors");
+        ui::draw_tooltip_if_item_hovered("Change scene display colors", "This only changes the decroative display colors of model elements in this screen. Color changes are not saved to the exported OpenSim model. Changing these colors can be handy for spotting things, or constrasting scene elements more strongly");
 
-        if (ui::BeginPopupContextItem("##addpainttoscenepopup", ImGuiPopupFlags_MouseButtonLeft))
+        if (ui::begin_popup_context_menu("##addpainttoscenepopup", ImGuiPopupFlags_MouseButtonLeft))
         {
             std::span<Color const> colors = m_Shared->colors();
             std::span<char const* const> labels = m_Shared->getColorLabels();
@@ -1774,22 +1774,22 @@ private:
             for (size_t i = 0; i < colors.size(); ++i)
             {
                 Color colorVal = colors[i];
-                ui::PushID(imguiID++);
-                if (ui::ColorEditRGBA(labels[i], colorVal))
+                ui::push_id(imguiID++);
+                if (ui::draw_rgba_color_editor(labels[i], colorVal))
                 {
                     m_Shared->setColor(i, colorVal);
                 }
-                ui::PopID();
+                ui::pop_id();
             }
-            ui::EndPopup();
+            ui::end_popup();
         }
 
-        ui::SameLine();
+        ui::same_line();
 
-        ui::Button(ICON_FA_EYE " Visibility");
-        ui::DrawTooltipIfItemHovered("Change what's visible in the 3D scene", "This only changes what's visible in this screen. Visibility options are not saved to the exported OpenSim model. Changing these visibility options can be handy if you have a lot of overlapping/intercalated scene elements");
+        ui::draw_button(ICON_FA_EYE " Visibility");
+        ui::draw_tooltip_if_item_hovered("Change what's visible in the 3D scene", "This only changes what's visible in this screen. Visibility options are not saved to the exported OpenSim model. Changing these visibility options can be handy if you have a lot of overlapping/intercalated scene elements");
 
-        if (ui::BeginPopupContextItem("##changevisibilitypopup", ImGuiPopupFlags_MouseButtonLeft))
+        if (ui::begin_popup_context_menu("##changevisibilitypopup", ImGuiPopupFlags_MouseButtonLeft))
         {
             std::span<bool const> visibilities = m_Shared->getVisibilityFlags();
             std::span<char const* const> labels = m_Shared->getVisibilityFlagLabels();
@@ -1798,22 +1798,22 @@ private:
             for (size_t i = 0; i < visibilities.size(); ++i)
             {
                 bool v = visibilities[i];
-                ui::PushID(imguiID++);
-                if (ui::Checkbox(labels[i], &v))
+                ui::push_id(imguiID++);
+                if (ui::draw_checkbox(labels[i], &v))
                 {
                     m_Shared->setVisibilityFlag(i, v);
                 }
-                ui::PopID();
+                ui::pop_id();
             }
-            ui::EndPopup();
+            ui::end_popup();
         }
 
-        ui::SameLine();
+        ui::same_line();
 
-        ui::Button(ICON_FA_LOCK " Interactivity");
-        ui::DrawTooltipIfItemHovered("Change what your mouse can interact with in the 3D scene", "This does not prevent being able to edit the model - it only affects whether you can click that type of element in the 3D scene. Combining these flags with visibility and custom colors can be handy if you have heavily overlapping/intercalated scene elements.");
+        ui::draw_button(ICON_FA_LOCK " Interactivity");
+        ui::draw_tooltip_if_item_hovered("Change what your mouse can interact with in the 3D scene", "This does not prevent being able to edit the model - it only affects whether you can click that type of element in the 3D scene. Combining these flags with visibility and custom colors can be handy if you have heavily overlapping/intercalated scene elements.");
 
-        if (ui::BeginPopupContextItem("##changeinteractionlockspopup", ImGuiPopupFlags_MouseButtonLeft))
+        if (ui::begin_popup_context_menu("##changeinteractionlockspopup", ImGuiPopupFlags_MouseButtonLeft))
         {
             std::span<bool const> interactables = m_Shared->getIneractivityFlags();
             std::span<char const* const> labels =  m_Shared->getInteractivityFlagLabels();
@@ -1822,27 +1822,27 @@ private:
             for (size_t i = 0; i < interactables.size(); ++i)
             {
                 bool v = interactables[i];
-                ui::PushID(imguiID++);
-                if (ui::Checkbox(labels[i], &v))
+                ui::push_id(imguiID++);
+                if (ui::draw_checkbox(labels[i], &v))
                 {
                     m_Shared->setInteractivityFlag(i, v);
                 }
-                ui::PopID();
+                ui::pop_id();
             }
-            ui::EndPopup();
+            ui::end_popup();
         }
 
-        ui::SameLine();
+        ui::same_line();
 
-        DrawGizmoOpSelector(m_ImGuizmoState.op);
+        ui::draw_gizmo_op_selector(m_ImGuizmoState.op);
 
-        ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
-        ui::SameLine();
-        ui::PopStyleVar();
+        ui::push_style_var(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
+        ui::same_line();
+        ui::pop_style_var();
 
         // local/global dropdown
-        DrawGizmoModeSelector(m_ImGuizmoState.mode);
-        ui::SameLine();
+        ui::draw_gizmo_mode_selector(m_ImGuizmoState.mode);
+        ui::same_line();
 
         // scale factor
         {
@@ -1850,12 +1850,12 @@ private:
             CStringView const tooltipDesc = "This rescales *some* elements in the scene. Specifically, the ones that have no 'size', such as body frames, joint frames, and the chequered floor texture.\n\nChanging this is handy if you are working on smaller or larger models, where the size of the (decorative) frames and floor are too large/small compared to the model you are working on.\n\nThis is purely decorative and does not affect the exported OpenSim model in any way.";
 
             float sf = m_Shared->getSceneScaleFactor();
-            ui::SetNextItemWidth(ui::CalcTextSize("1000.00").x);
-            if (ui::InputFloat("scene scale factor", &sf))
+            ui::set_next_item_width(ui::calc_text_size("1000.00").x);
+            if (ui::draw_float_input("scene scale factor", &sf))
             {
                 m_Shared->setSceneScaleFactor(sf);
             }
-            ui::DrawTooltipIfItemHovered(tooltipTitle, tooltipDesc);
+            ui::draw_tooltip_if_item_hovered(tooltipTitle, tooltipDesc);
         }
     }
 
@@ -1872,116 +1872,116 @@ private:
 
     void draw3DViewerOverlayBottomBar()
     {
-        ui::PushID("##3DViewerOverlay");
+        ui::push_id("##3DViewerOverlay");
 
         // bottom-left axes overlay
         {
             CameraViewAxes axes;
 
-            Vec2 const windowPadding = ui::GetStyleWindowPadding();
+            Vec2 const windowPadding = ui::get_style_panel_padding();
             Rect const& r = m_Shared->get3DSceneRect();
             Vec2 const topLeft =
             {
                 r.p1.x + windowPadding.x,
                 r.p2.y - windowPadding.y - axes.dimensions().y,
             };
-            ui::SetCursorScreenPos(topLeft);
+            ui::set_cursor_screen_pos(topLeft);
             axes.draw(m_Shared->updCamera());
         }
 
         Rect sceneRect = m_Shared->get3DSceneRect();
         Vec2 trPos = {sceneRect.p1.x + 100.0f, sceneRect.p2.y - 55.0f};
-        ui::SetCursorScreenPos(trPos);
+        ui::set_cursor_screen_pos(trPos);
 
-        if (ui::Button(ICON_FA_SEARCH_MINUS))
+        if (ui::draw_button(ICON_FA_SEARCH_MINUS))
         {
             m_Shared->updCamera().radius *= 1.2f;
         }
-        ui::DrawTooltipIfItemHovered("Zoom Out");
+        ui::draw_tooltip_if_item_hovered("Zoom Out");
 
-        ui::SameLine();
+        ui::same_line();
 
-        if (ui::Button(ICON_FA_SEARCH_PLUS))
+        if (ui::draw_button(ICON_FA_SEARCH_PLUS))
         {
             m_Shared->updCamera().radius *= 0.8f;
         }
-        ui::DrawTooltipIfItemHovered("Zoom In");
+        ui::draw_tooltip_if_item_hovered("Zoom In");
 
-        ui::SameLine();
+        ui::same_line();
 
-        if (ui::Button(ICON_FA_EXPAND_ARROWS_ALT))
+        if (ui::draw_button(ICON_FA_EXPAND_ARROWS_ALT))
         {
             if (std::optional<AABB> const sceneAABB = calcSceneAABB())
             {
                 auto_focus(m_Shared->updCamera(), *sceneAABB, aspect_ratio_of(m_Shared->get3DSceneDims()));
             }
         }
-        ui::DrawTooltipIfItemHovered("Autoscale Scene", "Zooms camera to try and fit everything in the scene into the viewer");
+        ui::draw_tooltip_if_item_hovered("Autoscale Scene", "Zooms camera to try and fit everything in the scene into the viewer");
 
-        ui::SameLine();
+        ui::same_line();
 
-        if (ui::Button("X"))
+        if (ui::draw_button("X"))
         {
             m_Shared->updCamera().theta = 90_deg;
             m_Shared->updCamera().phi = 0_deg;
         }
-        if (ui::IsItemClicked(ImGuiMouseButton_Right))
+        if (ui::is_item_clicked(ImGuiMouseButton_Right))
         {
             m_Shared->updCamera().theta = -90_deg;
             m_Shared->updCamera().phi = 0_deg;
         }
-        ui::DrawTooltipIfItemHovered("Face camera facing along X", "Right-clicking faces it along X, but in the opposite direction");
+        ui::draw_tooltip_if_item_hovered("Face camera facing along X", "Right-clicking faces it along X, but in the opposite direction");
 
-        ui::SameLine();
+        ui::same_line();
 
-        if (ui::Button("Y"))
+        if (ui::draw_button("Y"))
         {
             m_Shared->updCamera().theta = 0_deg;
             m_Shared->updCamera().phi = 90_deg;
         }
-        if (ui::IsItemClicked(ImGuiMouseButton_Right))
+        if (ui::is_item_clicked(ImGuiMouseButton_Right))
         {
             m_Shared->updCamera().theta = 0_deg;
             m_Shared->updCamera().phi = -90_deg;
         }
-        ui::DrawTooltipIfItemHovered("Face camera facing along Y", "Right-clicking faces it along Y, but in the opposite direction");
+        ui::draw_tooltip_if_item_hovered("Face camera facing along Y", "Right-clicking faces it along Y, but in the opposite direction");
 
-        ui::SameLine();
+        ui::same_line();
 
-        if (ui::Button("Z"))
+        if (ui::draw_button("Z"))
         {
             m_Shared->updCamera().theta = 0_deg;
             m_Shared->updCamera().phi = 0_deg;
         }
-        if (ui::IsItemClicked(ImGuiMouseButton_Right))
+        if (ui::is_item_clicked(ImGuiMouseButton_Right))
         {
             m_Shared->updCamera().theta = 180_deg;
             m_Shared->updCamera().phi = 0_deg;
         }
-        ui::DrawTooltipIfItemHovered("Face camera facing along Z", "Right-clicking faces it along Z, but in the opposite direction");
+        ui::draw_tooltip_if_item_hovered("Face camera facing along Z", "Right-clicking faces it along Z, but in the opposite direction");
 
-        ui::SameLine();
+        ui::same_line();
 
-        if (ui::Button(ICON_FA_CAMERA))
+        if (ui::draw_button(ICON_FA_CAMERA))
         {
             m_Shared->resetCamera();
         }
-        ui::DrawTooltipIfItemHovered("Reset camera", "Resets the camera to its default position (the position it's in when the wizard is first loaded)");
+        ui::draw_tooltip_if_item_hovered("Reset camera", "Resets the camera to its default position (the position it's in when the wizard is first loaded)");
 
-        ui::PopID();
+        ui::pop_id();
     }
 
     void draw3DViewerOverlayConvertToOpenSimModelButton()
     {
-        ui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
+        ui::push_style_var(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
 
         constexpr CStringView mainButtonText = "Convert to OpenSim Model " ICON_FA_ARROW_RIGHT;
         constexpr CStringView settingButtonText = ICON_FA_COG;
         constexpr Vec2 spacingBetweenMainAndSettingsButtons = {1.0f, 0.0f};
         constexpr Vec2 margin = {25.0f, 35.0f};
 
-        Vec2 const mainButtonDims = ui::CalcButtonSize(mainButtonText);
-        Vec2 const settingButtonDims = ui::CalcButtonSize(settingButtonText);
+        Vec2 const mainButtonDims = ui::calc_button_size(mainButtonText);
+        Vec2 const settingButtonDims = ui::calc_button_size(settingButtonText);
         Vec2 const viewportBottomRight = m_Shared->get3DSceneRect().p2;
 
         Vec2 const buttonTopLeft =
@@ -1990,29 +1990,29 @@ private:
             viewportBottomRight.y - (margin.y + mainButtonDims.y),
         };
 
-        ui::SetCursorScreenPos(buttonTopLeft);
-        ui::PushStyleColor(ImGuiCol_Button, Color::dark_green());
-        if (ui::Button(mainButtonText))
+        ui::set_cursor_screen_pos(buttonTopLeft);
+        ui::push_style_color(ImGuiCol_Button, Color::dark_green());
+        if (ui::draw_button(mainButtonText))
         {
             m_Shared->tryCreateOutputModel();
         }
-        ui::PopStyleColor();
+        ui::pop_style_color();
 
-        ui::PopStyleVar();
-        ui::DrawTooltipIfItemHovered("Convert current scene to an OpenSim Model", "This will attempt to convert the current scene into an OpenSim model, followed by showing the model in OpenSim Creator's OpenSim model editor screen.\n\nYour progress in this tab will remain untouched.");
+        ui::pop_style_var();
+        ui::draw_tooltip_if_item_hovered("Convert current scene to an OpenSim Model", "This will attempt to convert the current scene into an OpenSim model, followed by showing the model in OpenSim Creator's OpenSim model editor screen.\n\nYour progress in this tab will remain untouched.");
 
-        ui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
-        ui::SameLine(0.0f, spacingBetweenMainAndSettingsButtons.x);
-        ui::Button(settingButtonText);
-        ui::PopStyleVar();
+        ui::push_style_var(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
+        ui::same_line(0.0f, spacingBetweenMainAndSettingsButtons.x);
+        ui::draw_button(settingButtonText);
+        ui::pop_style_var();
 
-        if (ui::BeginPopupContextItem("##settingspopup", ImGuiPopupFlags_MouseButtonLeft))
+        if (ui::begin_popup_context_menu("##settingspopup", ImGuiPopupFlags_MouseButtonLeft))
         {
             ModelCreationFlags const flags = m_Shared->getModelCreationFlags();
 
             {
                 bool v = flags & ModelCreationFlags::ExportStationsAsMarkers;
-                if (ui::Checkbox("Export Stations as Markers", &v))
+                if (ui::draw_checkbox("Export Stations as Markers", &v))
                 {
                     ModelCreationFlags const newFlags = v ?
                         flags + ModelCreationFlags::ExportStationsAsMarkers :
@@ -2021,7 +2021,7 @@ private:
                 }
             }
 
-            ui::EndPopup();
+            ui::end_popup();
         }
     }
 
@@ -2034,11 +2034,11 @@ private:
 
     void drawMIObjectTooltip(MIObject const& e) const
     {
-        ui::BeginTooltipNoWrap();
-        ui::Text("%s %s", e.getClass().getIconUTF8().c_str(), e.getLabel().c_str());
-        ui::SameLine();
-        ui::TextDisabled(GetContextMenuSubHeaderText(m_Shared->getModelGraph(), e));
-        ui::EndTooltipNoWrap();
+        ui::begin_tooltip_nowrap();
+        ui::draw_text("%s %s", e.getClass().getIconUTF8().c_str(), e.getLabel().c_str());
+        ui::same_line();
+        ui::draw_text_disabled(GetContextMenuSubHeaderText(m_Shared->getModelGraph(), e));
+        ui::end_tooltip_nowrap();
     }
 
     void drawHoverTooltip()
@@ -2113,11 +2113,11 @@ private:
             dimensions_of(sceneRect).x,
             dimensions_of(sceneRect).y
         );
-        ImGuizmo::SetDrawlist(ui::GetWindowDrawList());
+        ImGuizmo::SetDrawlist(ui::get_panel_draw_list());
         ImGuizmo::AllowAxisFlip(false);  // user's didn't like this feature in UX sessions
 
         Mat4 delta;
-        SetImguizmoStyleToOSCStandard();
+        ui::set_gizmo_style_to_osc_standard();
         bool manipulated = ImGuizmo::Manipulate(
             value_ptr(m_Shared->getCamera().view_matrix()),
             value_ptr(m_Shared->getCamera().projection_matrix(aspect_ratio_of(sceneRect))),
@@ -2203,9 +2203,9 @@ private:
             return;  // nothing hovered
         }
 
-        bool const lcClicked = ui::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left);
-        bool const shiftDown = ui::IsShiftDown();
-        bool const altDown = ui::IsAltDown();
+        bool const lcClicked = ui::is_mouse_released_without_dragging(ImGuiMouseButton_Left);
+        bool const shiftDown = ui::is_shift_down();
+        bool const altDown = ui::is_alt_down();
         bool const isUsingGizmo = ImGuizmo::IsUsing();
 
         if (!m_MaybeHover && lcClicked && !isUsingGizmo && !shiftDown)
@@ -2272,18 +2272,18 @@ private:
 
         // draw 3D scene (effectively, as an ui::Image)
         m_Shared->drawScene(MIObjects);
-        if (m_Shared->isRenderHovered() && ui::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right) && !ImGuizmo::IsUsing())
+        if (m_Shared->isRenderHovered() && ui::is_mouse_released_without_dragging(ImGuiMouseButton_Right) && !ImGuizmo::IsUsing())
         {
             m_MaybeOpenedContextMenu = m_MaybeHover;
-            ui::OpenPopup("##maincontextmenu");
+            ui::open_popup("##maincontextmenu");
         }
 
         bool ctxMenuShowing = false;
-        if (ui::BeginPopup("##maincontextmenu"))
+        if (ui::begin_popup("##maincontextmenu"))
         {
             ctxMenuShowing = true;
             drawContextMenuContent();
-            ui::EndPopup();
+            ui::end_popup();
         }
 
         if (m_Shared->isRenderHovered() && m_MaybeHover && (ctxMenuShowing ? m_MaybeHover.ID != m_MaybeOpenedContextMenu.ID : true))
@@ -2298,36 +2298,36 @@ private:
 
     void drawMainMenuFileMenu()
     {
-        if (ui::BeginMenu("File"))
+        if (ui::begin_menu("File"))
         {
-            if (ui::MenuItem(ICON_FA_FILE " New", "Ctrl+N"))
+            if (ui::draw_menu_item(ICON_FA_FILE " New", "Ctrl+N"))
             {
                 m_Shared->requestNewMeshImporterTab();
             }
 
-            ui::Separator();
+            ui::draw_separator();
 
-            if (ui::MenuItem(ICON_FA_FOLDER_OPEN " Import", "Ctrl+O"))
+            if (ui::draw_menu_item(ICON_FA_FOLDER_OPEN " Import", "Ctrl+O"))
             {
                 m_Shared->openOsimFileAsModelGraph();
             }
-            ui::DrawTooltipIfItemHovered("Import osim into mesh importer", "Try to import an existing osim file into the mesh importer.\n\nBEWARE: the mesh importer is *not* an OpenSim model editor. The import process will delete information from your osim in order to 'jam' it into this screen. The main purpose of this button is to export/import mesh editor scenes, not to edit existing OpenSim models.");
+            ui::draw_tooltip_if_item_hovered("Import osim into mesh importer", "Try to import an existing osim file into the mesh importer.\n\nBEWARE: the mesh importer is *not* an OpenSim model editor. The import process will delete information from your osim in order to 'jam' it into this screen. The main purpose of this button is to export/import mesh editor scenes, not to edit existing OpenSim models.");
 
-            if (ui::MenuItem(ICON_FA_SAVE " Export", "Ctrl+S"))
+            if (ui::draw_menu_item(ICON_FA_SAVE " Export", "Ctrl+S"))
             {
                 m_Shared->exportModelGraphAsOsimFile();
             }
-            ui::DrawTooltipIfItemHovered("Export mesh impoter scene to osim", "Try to export the current mesh importer scene to an osim.\n\nBEWARE: the mesh importer scene may not map 1:1 onto an OpenSim model, so re-importing the scene *may* change a few things slightly. The main utility of this button is to try and save some progress in the mesh importer.");
+            ui::draw_tooltip_if_item_hovered("Export mesh impoter scene to osim", "Try to export the current mesh importer scene to an osim.\n\nBEWARE: the mesh importer scene may not map 1:1 onto an OpenSim model, so re-importing the scene *may* change a few things slightly. The main utility of this button is to try and save some progress in the mesh importer.");
 
-            if (ui::MenuItem(ICON_FA_SAVE " Export As", "Shift+Ctrl+S"))
+            if (ui::draw_menu_item(ICON_FA_SAVE " Export As", "Shift+Ctrl+S"))
             {
                 m_Shared->exportAsModelGraphAsOsimFile();
             }
-            ui::DrawTooltipIfItemHovered("Export mesh impoter scene to osim", "Try to export the current mesh importer scene to an osim.\n\nBEWARE: the mesh importer scene may not map 1:1 onto an OpenSim model, so re-importing the scene *may* change a few things slightly. The main utility of this button is to try and save some progress in the mesh importer.");
+            ui::draw_tooltip_if_item_hovered("Export mesh impoter scene to osim", "Try to export the current mesh importer scene to an osim.\n\nBEWARE: the mesh importer scene may not map 1:1 onto an OpenSim model, so re-importing the scene *may* change a few things slightly. The main utility of this button is to try and save some progress in the mesh importer.");
 
-            ui::Separator();
+            ui::draw_separator();
 
-            if (ui::MenuItem(ICON_FA_FOLDER_OPEN " Import Stations from CSV"))
+            if (ui::draw_menu_item(ICON_FA_FOLDER_OPEN " Import Stations from CSV"))
             {
                 auto popup = std::make_shared<ImportStationsFromCSVPopup>(
                     "Import Stations from CSV",
@@ -2344,52 +2344,52 @@ private:
                 m_PopupManager.push_back(std::move(popup));
             }
 
-            ui::Separator();
+            ui::draw_separator();
 
-            if (ui::MenuItem(ICON_FA_TIMES " Close", "Ctrl+W"))
+            if (ui::draw_menu_item(ICON_FA_TIMES " Close", "Ctrl+W"))
             {
                 m_Shared->request_close();
             }
 
-            if (ui::MenuItem(ICON_FA_TIMES_CIRCLE " Quit", "Ctrl+Q"))
+            if (ui::draw_menu_item(ICON_FA_TIMES_CIRCLE " Quit", "Ctrl+Q"))
             {
                 App::upd().request_quit();
             }
 
-            ui::EndMenu();
+            ui::end_menu();
         }
     }
 
     void drawMainMenuEditMenu()
     {
-        if (ui::BeginMenu("Edit"))
+        if (ui::begin_menu("Edit"))
         {
-            if (ui::MenuItem(ICON_FA_UNDO " Undo", "Ctrl+Z", false, m_Shared->canUndoCurrentModelGraph()))
+            if (ui::draw_menu_item(ICON_FA_UNDO " Undo", "Ctrl+Z", false, m_Shared->canUndoCurrentModelGraph()))
             {
                 m_Shared->undoCurrentModelGraph();
             }
-            if (ui::MenuItem(ICON_FA_REDO " Redo", "Ctrl+Shift+Z", false, m_Shared->canRedoCurrentModelGraph()))
+            if (ui::draw_menu_item(ICON_FA_REDO " Redo", "Ctrl+Shift+Z", false, m_Shared->canRedoCurrentModelGraph()))
             {
                 m_Shared->redoCurrentModelGraph();
             }
-            ui::EndMenu();
+            ui::end_menu();
         }
     }
 
     void drawMainMenuWindowMenu()
     {
 
-        if (ui::BeginMenu("Window"))
+        if (ui::begin_menu("Window"))
         {
             for (size_t i = 0; i < m_Shared->num_toggleable_panels(); ++i)
             {
                 bool isEnabled = m_Shared->isNthPanelEnabled(i);
-                if (ui::MenuItem(m_Shared->getNthPanelName(i), {}, isEnabled))
+                if (ui::draw_menu_item(m_Shared->getNthPanelName(i), {}, isEnabled))
                 {
                     m_Shared->setNthPanelEnabled(i, !isEnabled);
                 }
             }
-            ui::EndMenu();
+            ui::end_menu();
         }
     }
 
@@ -2408,10 +2408,10 @@ private:
 
             // open it "over" the whole UI as a "modal" - so that the user can't click things
             // outside of the panel
-            ui::OpenPopup("##visualizermodalpopup");
-            ui::SetNextWindowSize(m_Shared->get3DSceneDims());
-            ui::SetNextWindowPos(m_Shared->get3DSceneRect().p1);
-            ui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
+            ui::open_popup("##visualizermodalpopup");
+            ui::set_next_panel_size(m_Shared->get3DSceneDims());
+            ui::set_next_panel_pos(m_Shared->get3DSceneRect().p1);
+            ui::push_style_var(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
 
             ImGuiWindowFlags const modalFlags =
                 ImGuiWindowFlags_AlwaysAutoResize |
@@ -2419,32 +2419,32 @@ private:
                 ImGuiWindowFlags_NoMove |
                 ImGuiWindowFlags_NoResize;
 
-            if (ui::BeginPopupModal("##visualizermodalpopup", nullptr, modalFlags))
+            if (ui::begin_popup_modal("##visualizermodalpopup", nullptr, modalFlags))
             {
-                ui::PopStyleVar();
+                ui::pop_style_var();
                 ptr->onDraw();
-                ui::EndPopup();
+                ui::end_popup();
             }
             else
             {
-                ui::PopStyleVar();
+                ui::pop_style_var();
             }
         }
         else
         {
-            ui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
-            if (ui::Begin("wizard_3dViewer"))
+            ui::push_style_var(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
+            if (ui::begin_panel("wizard_3dViewer"))
             {
-                ui::PopStyleVar();
+                ui::pop_style_var();
                 draw3DViewer();
-                ui::SetCursorPos(Vec2{ui::GetCursorStartPos()} + Vec2{10.0f, 10.0f});
+                ui::set_cursor_pos(Vec2{ui::get_cursor_start_pos()} + Vec2{10.0f, 10.0f});
                 draw3DViewerOverlay();
             }
             else
             {
-                ui::PopStyleVar();
+                ui::pop_style_var();
             }
-            ui::End();
+            ui::end_panel();
         }
     }
 

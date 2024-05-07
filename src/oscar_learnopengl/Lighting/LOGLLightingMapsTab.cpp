@@ -90,17 +90,17 @@ private:
         graphics::draw(m_Mesh, m_LightTransform, m_LightCubeMaterial, m_Camera);
 
         // render 3D scene
-        m_Camera.set_pixel_rect(ui::GetMainViewportWorkspaceScreenRect());
+        m_Camera.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
         m_Camera.render_to_screen();
 
         // render 2D UI
-        ui::Begin("controls");
-        ui::InputVec3("uLightPos", m_LightTransform.position);
-        ui::InputFloat("uLightAmbient", &m_LightAmbient);
-        ui::InputFloat("uLightDiffuse", &m_LightDiffuse);
-        ui::InputFloat("uLightSpecular", &m_LightSpecular);
-        ui::InputFloat("uMaterialShininess", &m_MaterialShininess);
-        ui::End();
+        ui::begin_panel("controls");
+        ui::draw_vec3_input("uLightPos", m_LightTransform.position);
+        ui::draw_float_input("uLightAmbient", &m_LightAmbient);
+        ui::draw_float_input("uLightDiffuse", &m_LightDiffuse);
+        ui::draw_float_input("uLightSpecular", &m_LightSpecular);
+        ui::draw_float_input("uMaterialShininess", &m_MaterialShininess);
+        ui::end_panel();
     }
 
     ResourceLoader m_Loader = App::resource_loader();

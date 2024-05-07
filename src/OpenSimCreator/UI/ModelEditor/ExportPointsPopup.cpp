@@ -72,29 +72,29 @@ namespace
 
     void DrawExportPointsPopupDescriptionSection()
     {
-        ui::Text("Description");
-        ui::Separator();
-        ui::BeginDisabled();
-        ui::TextWrapped(c_ExplanationText);
-        ui::EndDisabled();
-        ui::PopStyleColor();
+        ui::draw_text("Description");
+        ui::draw_separator();
+        ui::begin_disabled();
+        ui::draw_text_wrapped(c_ExplanationText);
+        ui::end_disabled();
+        ui::pop_style_color();
     }
 
     void DrawPointListElementHoverTooltip(
         OpenSim::Component const& component,
         SimTK::State const& state)
     {
-        ui::BeginTooltip();
-        ui::TextUnformatted(component.getName());
-        ui::SameLine();
-        ui::TextDisabled(component.getConcreteClassName());
+        ui::begin_tooltip();
+        ui::draw_text_unformatted(component.getName());
+        ui::same_line();
+        ui::draw_text_disabled(component.getConcreteClassName());
 
         if (std::optional<PointInfo> const pointInfo = TryExtractPointInfo(component, state))
         {
-            ui::TextDisabled("Expressed In: %s", pointInfo->frameAbsPath.toString().c_str());
+            ui::draw_text_disabled("Expressed In: %s", pointInfo->frameAbsPath.toString().c_str());
         }
 
-        ui::EndTooltip();
+        ui::end_tooltip();
     }
 
     void DrawPointListElement(
@@ -107,7 +107,7 @@ namespace
         std::string const absPath = GetAbsolutePathString(component);
 
         bool selected = uiState.selectedPointAbsPaths.contains(absPath);
-        if (ui::Checkbox(component.getName(), &selected))
+        if (ui::draw_checkbox(component.getName(), &selected))
         {
             if (selected)
             {
@@ -119,7 +119,7 @@ namespace
             }
         }
 
-        if (ui::IsItemHovered())
+        if (ui::is_item_hovered())
         {
             DrawPointListElementHoverTooltip(component, state);
         }
@@ -130,12 +130,12 @@ namespace
         OpenSim::Model const& model,
         SimTK::State const& state)
     {
-        auto color = ui::GetStyleColor(ImGuiCol_FrameBg);
+        auto color = ui::get_style_color(ImGuiCol_FrameBg);
         color.a *= 0.5f;
 
-        ui::PushStyleColor(ImGuiCol_FrameBg, color);
-        bool const showingListBox = ui::BeginListBox("##PointsList");
-        ui::PopStyleColor();
+        ui::push_style_color(ImGuiCol_FrameBg, color);
+        bool const showingListBox = ui::begin_listbox("##PointsList");
+        ui::pop_style_color();
 
         if (showingListBox)
         {
@@ -144,12 +144,12 @@ namespace
             {
                 if (IsVisibleInPointList(uiState, component, state))
                 {
-                    ui::PushID(imguiID++);
+                    ui::push_id(imguiID++);
                     DrawPointListElement(uiState, component, state);
-                    ui::PopID();
+                    ui::pop_id();
                 }
             }
-            ui::EndListBox();
+            ui::end_listbox();
         }
     }
 
@@ -193,7 +193,7 @@ namespace
     {
         for (OpenSim::Frame const& f : model.getComponentList<OpenSim::Frame>())
         {
-            if (ui::MenuItem(f.getName()))
+            if (ui::draw_menu_item(f.getName()))
             {
                 auto const isAttachedToFrame = [path = GetAbsolutePath(f), &state](OpenSim::Component const& c)
                 {
@@ -224,7 +224,7 @@ namespace
         SimTK::State const& state,
         SelectionState newStateOnUserClick)
     {
-        if (ui::MenuItem("All"))
+        if (ui::draw_menu_item("All"))
         {
             ActionChangeSelectionStateIf(
                 uiState,
@@ -235,7 +235,7 @@ namespace
             );
         }
 
-        if (ui::MenuItem("Listed (searched)"))
+        if (ui::draw_menu_item("Listed (searched)"))
         {
             ActionChangeSelectionStateIf(
                 uiState,
@@ -249,7 +249,7 @@ namespace
             );
         }
 
-        if (ui::BeginMenu("Expressed In"))
+        if (ui::begin_menu("Expressed In"))
         {
             DrawChangeSelectionStateOfPointsExpressedInMenuContent(
                 uiState,
@@ -257,7 +257,7 @@ namespace
                 state,
                 newStateOnUserClick
             );
-            ui::EndMenu();
+            ui::end_menu();
         }
     }
 
@@ -266,8 +266,8 @@ namespace
         OpenSim::Model const& model,
         SimTK::State const& state)
     {
-        ui::Button("Select" ICON_FA_CARET_DOWN);
-        if (ui::BeginPopupContextItem("##selectmenu", ImGuiPopupFlags_MouseButtonLeft))
+        ui::draw_button("Select" ICON_FA_CARET_DOWN);
+        if (ui::begin_popup_context_menu("##selectmenu", ImGuiPopupFlags_MouseButtonLeft))
         {
             DrawSelectionStateModifierMenuContent(
                 uiState,
@@ -276,13 +276,13 @@ namespace
                 SelectionState::Selected
             );
 
-            ui::EndPopup();
+            ui::end_popup();
         }
 
-        ui::SameLine();
+        ui::same_line();
 
-        ui::Button("De-Select" ICON_FA_CARET_DOWN);
-        if (ui::BeginPopupContextItem("##deselectmenu", ImGuiPopupFlags_MouseButtonLeft))
+        ui::draw_button("De-Select" ICON_FA_CARET_DOWN);
+        if (ui::begin_popup_context_menu("##deselectmenu", ImGuiPopupFlags_MouseButtonLeft))
         {
             DrawSelectionStateModifierMenuContent(
                 uiState,
@@ -291,7 +291,7 @@ namespace
                 SelectionState::NotSelected
             );
 
-            ui::EndPopup();
+            ui::end_popup();
         }
     }
 
@@ -300,9 +300,9 @@ namespace
         OpenSim::Model const& model,
         SimTK::State const& state)
     {
-        ui::Text("Points");
-        ui::Separator();
-        ui::InputString("search", uiState.searchString);
+        ui::draw_text("Points");
+        ui::draw_separator();
+        ui::draw_string_input("search", uiState.searchString);
         DrawPointSelectionList(uiState, model, state);
         DrawSelectionManipulatorButtons(uiState, model, state);
     }
@@ -327,7 +327,7 @@ namespace
     void DrawOriginalFrameSelectable(FrameSelectorUiState& uiState)
     {
         bool const selected = uiState.maybeSelectedFrameAbsPath != std::nullopt;
-        if (ui::Selectable(c_OriginalFrameLabel, selected))
+        if (ui::draw_selectable(c_OriginalFrameLabel, selected))
         {
             uiState.maybeSelectedFrameAbsPath.reset();
         }
@@ -340,7 +340,7 @@ namespace
         std::string const absPath = GetAbsolutePathString(frame);
         bool const selected = uiState.maybeSelectedFrameAbsPath == absPath;
 
-        if (ui::Selectable(frame.getName(), selected))
+        if (ui::draw_selectable(frame.getName(), selected))
         {
             uiState.maybeSelectedFrameAbsPath = absPath;
         }
@@ -353,27 +353,27 @@ namespace
         int imguiID = 0;
         for (OpenSim::Frame const& frame : model.getComponentList<OpenSim::Frame>())
         {
-            ui::PushID(imguiID++);
+            ui::push_id(imguiID++);
             DrawModelFrameSelectable(uiState, frame);
-            ui::PopID();
+            ui::pop_id();
         }
     }
 
     void DrawFrameSelector(FrameSelectorUiState& uiState, OpenSim::Model const& model)
     {
         std::string const label = CalcComboLabel(uiState, model);
-        if (ui::BeginCombo("Express Points In", label))
+        if (ui::begin_combobox("Express Points In", label))
         {
             DrawOriginalFrameSelectable(uiState);
             DrawModelFrameSelectables(uiState, model);
-            ui::EndCombo();
+            ui::end_combobox();
         }
     }
 
     void DrawOutputFormatEditor(OutputFormatEditorUiState& uiState)
     {
-        ui::Checkbox("Export Point Names as Absolute Paths", &uiState.exportPointNamesAsAbsPaths);
-        ui::DrawTooltipBodyOnlyIfItemHovered("If selected, the exported point name will be the full path to the point (e.g. `/forceset/somemuscle/geometrypath/pointname`), rather than just the name of the point (e.g. `pointname`)");
+        ui::draw_checkbox("Export Point Names as Absolute Paths", &uiState.exportPointNamesAsAbsPaths);
+        ui::draw_tooltip_body_only_if_item_hovered("If selected, the exported point name will be the full path to the point (e.g. `/forceset/somemuscle/geometrypath/pointname`), rather than just the name of the point (e.g. `pointname`)");
     }
 
     enum class ExportStepReturn {
@@ -564,33 +564,33 @@ private:
         OpenSim::Model const& model = m_Model->getModel();
         SimTK::State const& state = m_Model->getState();
 
-        float const sectionSpacing = 0.5f*ui::GetTextLineHeight();
+        float const sectionSpacing = 0.5f*ui::get_text_line_height();
 
         DrawExportPointsPopupDescriptionSection();
-        ui::Dummy({0.0f, sectionSpacing});
+        ui::draw_dummy({0.0f, sectionSpacing});
 
         DrawPointSelector(m_PointSelectorState, model, state);
-        ui::Dummy({0.0f, sectionSpacing});
+        ui::draw_dummy({0.0f, sectionSpacing});
 
-        ui::Text("Options");
-        ui::Separator();
+        ui::draw_text("Options");
+        ui::draw_separator();
         DrawFrameSelector(m_FrameSelectorState, model);
         DrawOutputFormatEditor(m_OutputFormatState);
-        ui::Dummy({0.0f, sectionSpacing});
+        ui::draw_dummy({0.0f, sectionSpacing});
 
         drawBottomButtons();
     }
 
     void drawBottomButtons()
     {
-        if (ui::Button("Cancel"))
+        if (ui::draw_button("Cancel"))
         {
             request_close();
         }
 
-        ui::SameLine();
+        ui::same_line();
 
-        if (ui::Button(ICON_FA_UPLOAD " Export to CSV"))
+        if (ui::draw_button(ICON_FA_UPLOAD " Export to CSV"))
         {
             static_assert(num_options<ExportStepReturn>() == 3, "review error handling");
             ExportStepReturn const rv = ActionPromptUserForSaveLocationAndExportPoints(

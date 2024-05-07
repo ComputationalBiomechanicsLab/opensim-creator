@@ -107,7 +107,7 @@ private:
     void draw3DScene()
     {
         // clear screen and ensure camera has correct pixel rect
-        m_Camera.set_pixel_rect(ui::GetMainViewportWorkspaceScreenRect());
+        m_Camera.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
 
         // draw 3D scene
         if (m_ShowStep1) {
@@ -134,17 +134,17 @@ private:
 
     void draw2DUI()
     {
-        ui::Begin("Tutorial Step");
-        ui::Checkbox("step1", &m_ShowStep1);
+        ui::begin_panel("Tutorial Step");
+        ui::draw_checkbox("step1", &m_ShowStep1);
         if (m_Camera.is_capturing_mouse()) {
-            ui::Text("mouse captured (esc to uncapture)");
+            ui::draw_text("mouse captured (esc to uncapture)");
         }
 
         Vec3 const cameraPos = m_Camera.position();
-        ui::Text("camera pos = (%f, %f, %f)", cameraPos.x, cameraPos.y, cameraPos.z);
+        ui::draw_text("camera pos = (%f, %f, %f)", cameraPos.x, cameraPos.y, cameraPos.z);
         Eulers const cameraEulers = m_Camera.eulers();
-        ui::Text("camera eulers = (%f, %f, %f)", cameraEulers.x.count(), cameraEulers.y.count(), cameraEulers.z.count());
-        ui::End();
+        ui::draw_text("camera eulers = (%f, %f, %f)", cameraEulers.x.count(), cameraEulers.y.count(), cameraEulers.z.count());
+        ui::end_panel();
 
         m_PerfPanel.on_draw();
     }

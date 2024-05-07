@@ -214,8 +214,8 @@ public:
 
     void onDraw()
     {
-        ui::DockSpaceOverViewport(
-            ui::GetMainViewport(),
+        ui::enable_dockspace_over_viewport(
+            ui::get_main_viewport(),
             ImGuiDockNodeFlags_PassthruCentralNode
         );
 
@@ -340,7 +340,7 @@ private:
 
     bool onKeydownEvent(SDL_KeyboardEvent const& e)
     {
-        if (ui::IsCtrlOrSuperDown())
+        if (ui::is_ctrl_or_super_down())
         {
             if (e.keysym.mod & KMOD_SHIFT)
             {

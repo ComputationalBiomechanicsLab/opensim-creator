@@ -111,7 +111,7 @@ private:
 
     void draw3DScene()
     {
-        Rect const viewportRect = ui::GetMainViewportWorkspaceScreenRect();
+        Rect const viewportRect = ui::get_main_viewport_workspace_screen_rect();
 
         drawShadowPassToCubemap();
         drawShadowmappedSceneToScreen(viewportRect);
@@ -176,10 +176,10 @@ private:
 
     void draw2DUI()
     {
-        ui::Begin("controls");
-        ui::Checkbox("show shadows", &m_ShowShadows);
-        ui::Checkbox("soften shadows", &m_UseSoftShadows);
-        ui::End();
+        ui::begin_panel("controls");
+        ui::draw_checkbox("show shadows", &m_ShowShadows);
+        ui::draw_checkbox("soften shadows", &m_UseSoftShadows);
+        ui::end_panel();
 
         m_PerfPanel.on_draw();
     }

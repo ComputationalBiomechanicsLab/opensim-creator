@@ -36,47 +36,47 @@ public:
 private:
     void drawActionsMenu()
     {
-        if (not ui::BeginMenu("Actions")) {
+        if (not ui::begin_menu("Actions")) {
             return;
         }
 
-        if (ui::BeginMenu("Change End Time", m_Simulation->canChangeEndTime())) {
-            if (ui::MenuItem("0.1x")) {
+        if (ui::begin_menu("Change End Time", m_Simulation->canChangeEndTime())) {
+            if (ui::draw_menu_item("0.1x")) {
                 auto dur = m_Simulation->getEndTime() - m_Simulation->getStartTime();
                 m_Simulation->requestNewEndTime(m_Simulation->getStartTime() + (0.1 * dur));
             }
-            if (ui::MenuItem("0.25x")) {
+            if (ui::draw_menu_item("0.25x")) {
                 auto dur = m_Simulation->getEndTime() - m_Simulation->getStartTime();
                 m_Simulation->requestNewEndTime(m_Simulation->getStartTime() + (0.25 * dur));
             }
-            if (ui::MenuItem("0.5x")) {
+            if (ui::draw_menu_item("0.5x")) {
                 auto dur = m_Simulation->getEndTime() - m_Simulation->getStartTime();
                 m_Simulation->requestNewEndTime(m_Simulation->getStartTime() + (0.5 * dur));
             }
-            if (ui::MenuItem("2x")) {
+            if (ui::draw_menu_item("2x")) {
                 auto dur = m_Simulation->getEndTime() - m_Simulation->getStartTime();
                 m_Simulation->requestNewEndTime(m_Simulation->getStartTime() + (2 * dur));
             }
-            if (ui::MenuItem("4x")) {
+            if (ui::draw_menu_item("4x")) {
                 auto dur = m_Simulation->getEndTime() - m_Simulation->getStartTime();
                 m_Simulation->requestNewEndTime(m_Simulation->getStartTime() + (4 * dur));
             }
-            if (ui::MenuItem("10x")) {
+            if (ui::draw_menu_item("10x")) {
                 auto dur = m_Simulation->getEndTime() - m_Simulation->getStartTime();
                 m_Simulation->requestNewEndTime(m_Simulation->getStartTime() + (10 * dur));
             }
             {
                 auto count = m_NewCustomEndTime.count();
-                if (ui::InputDouble("custom end time", &count, 0.0, 0.0, "%.6f", ImGuiInputTextFlags_EnterReturnsTrue)) {
+                if (ui::draw_double_input("custom end time", &count, 0.0, 0.0, "%.6f", ImGuiInputTextFlags_EnterReturnsTrue)) {
                     m_Simulation->requestNewEndTime(m_Simulation->getStartTime() + SimulationClock::duration{count});
                 }
             }
 
 
-            ui::EndMenu();
+            ui::end_menu();
         }
 
-        ui::EndMenu();
+        ui::end_menu();
     }
 
     ParentPtr<IMainUIStateAPI> m_Parent;

@@ -64,23 +64,23 @@ public:
 private:
     void impl_on_draw() final
     {
-        ui::DockSpaceOverViewport(ui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+        ui::enable_dockspace_over_viewport(ui::get_main_viewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
         if (m_Viewer.is_hovered()) {
-            ui::UpdatePolarCameraFromMouseInputs(m_Camera, App::get().dimensions());
+            ui::update_polar_camera_from_mouse_inputs(m_Camera, App::get().dimensions());
         }
 
-        if (ui::Begin("viewer")) {
-            ui::Checkbox("is_wireframe", &m_DrawWireframe);
+        if (ui::begin_panel("viewer")) {
+            ui::draw_checkbox("is_wireframe", &m_DrawWireframe);
             for (auto const& [name, _] : m_AllMeshes) {
-                if (ui::Button(name)) {
+                if (ui::draw_button(name)) {
                     m_CurrentMesh = name;
                 }
-                ui::SameLine();
+                ui::same_line();
             }
-            ui::NewLine();
+            ui::start_new_line();
 
-            Vec2 contentRegion = ui::GetContentRegionAvail();
+            Vec2 contentRegion = ui::get_content_region_avail();
             m_RenderParams.dimensions = elementwise_max(contentRegion, {0.0f, 0.0f});
             m_RenderParams.antialiasing_level = App::get().anti_aliasing_level();
 
@@ -101,7 +101,7 @@ private:
                 }}}, m_RenderParams);
             }
         }
-        ui::End();
+        ui::end_panel();
     }
 
     std::map<std::string, Mesh> m_AllMeshes = GenerateMeshLookup();

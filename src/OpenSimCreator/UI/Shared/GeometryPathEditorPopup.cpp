@@ -139,7 +139,7 @@ private:
             // edge-case: the geometry path that this popup is editing no longer
             // exists (e.g. because a muscle was deleted or similar), so it should
             // announce the problem and close itself
-            ui::Text("The GeometryPath no longer exists - closing this popup");
+            ui::draw_text("The GeometryPath no longer exists - closing this popup");
             request_close();
             return;
         }
@@ -147,12 +147,12 @@ private:
         // `m_EditedGeometryPath`, which is independent of the original data
         // and the target model (so that edits can be applied transactionally)
 
-        ui::Text("Path Points:");
-        ui::Separator();
+        ui::draw_text("Path Points:");
+        ui::draw_separator();
         drawPathPointEditorTable();
-        ui::Separator();
+        ui::draw_separator();
         drawAddPathPointButton();
-        ui::NewLine();
+        ui::start_new_line();
         drawBottomButtons();
     }
 
@@ -160,25 +160,25 @@ private:
     {
         OpenSim::PathPointSet& pps = m_EditedGeometryPath.updPathPointSet();
 
-        if (ui::BeginTable("##GeometryPathEditorTable", 6))
+        if (ui::begin_table("##GeometryPathEditorTable", 6))
         {
-            ui::TableSetupColumn("Actions");
-            ui::TableSetupColumn("Type");
-            ui::TableSetupColumn("X");
-            ui::TableSetupColumn("Y");
-            ui::TableSetupColumn("Z");
-            ui::TableSetupColumn("Frame");
-            ui::TableSetupScrollFreeze(0, 1);
-            ui::TableHeadersRow();
+            ui::table_setup_column("Actions");
+            ui::table_setup_column("Type");
+            ui::table_setup_column("X");
+            ui::table_setup_column("Y");
+            ui::table_setup_column("Z");
+            ui::table_setup_column("Frame");
+            ui::table_setup_scroll_freeze(0, 1);
+            ui::table_headers_row();
 
             for (ptrdiff_t i = 0; i < ssize(pps); ++i)
             {
-                ui::PushID(i);
+                ui::push_id(i);
                 drawIthPathPointTableRow(pps, i);
-                ui::PopID();
+                ui::pop_id();
             }
 
-            ui::EndTable();
+            ui::end_table();
         }
 
         // perform any actions after rendering the table: in case the action would
@@ -189,7 +189,7 @@ private:
 
     void drawAddPathPointButton()
     {
-        if (ui::Button(ICON_FA_PLUS_CIRCLE " Add Point"))
+        if (ui::draw_button(ICON_FA_PLUS_CIRCLE " Add Point"))
         {
             ActionAddNewPathPoint(m_EditedGeometryPath.updPathPointSet());
         }
@@ -199,67 +199,67 @@ private:
     {
         int column = 0;
 
-        ui::TableNextRow();
+        ui::table_next_row();
 
-        ui::TableSetColumnIndex(column++);
+        ui::table_set_column_index(column++);
         drawIthPathPointActionsCell(pps, i);
 
-        ui::TableSetColumnIndex(column++);
+        ui::table_set_column_index(column++);
         drawIthPathPointTypeCell(pps, i);
 
         tryDrawIthPathPointLocationEditorCells(pps, i, column);
 
-        ui::TableSetColumnIndex(column++);
+        ui::table_set_column_index(column++);
         drawIthPathPointFrameCell(pps, i);
     }
 
     void drawIthPathPointActionsCell(OpenSim::PathPointSet& pps, ptrdiff_t i)
     {
-        ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {2.0f, 0.0f});
+        ui::push_style_var(ImGuiStyleVar_ItemSpacing, {2.0f, 0.0f});
 
         if (i <= 0)
         {
-            ui::BeginDisabled();
+            ui::begin_disabled();
         }
-        if (ui::SmallButton(ICON_FA_ARROW_UP))
+        if (ui::draw_small_button(ICON_FA_ARROW_UP))
         {
             m_RequestedAction = RequestedAction{RequestedAction::Type::MoveUp, i};
         }
         if (i <= 0)
         {
-            ui::EndDisabled();
+            ui::end_disabled();
         }
 
-        ui::SameLine();
+        ui::same_line();
 
         if (i+1 >= ssize(pps))
         {
-            ui::BeginDisabled();
+            ui::begin_disabled();
         }
-        if (ui::SmallButton(ICON_FA_ARROW_DOWN))
+        if (ui::draw_small_button(ICON_FA_ARROW_DOWN))
         {
             m_RequestedAction = RequestedAction{RequestedAction::Type::MoveDown, i};
         }
         if (i+1 >= ssize(pps))
         {
-            ui::EndDisabled();
+            ui::end_disabled();
         }
 
-        ui::SameLine();
+        ui::same_line();
 
-        ui::PushStyleColor(ImGuiCol_Text, Color{0.7f, 0.0f, 0.0f});
-        if (ui::SmallButton(ICON_FA_TIMES))
+        ui::push_style_color(ImGuiCol_Text, Color{0.7f, 0.0f, 0.0f});
+        if (ui::draw_small_button(ICON_FA_TIMES))
         {
             m_RequestedAction = RequestedAction{RequestedAction::Type::Delete, i};
         }
-        ui::PopStyleColor();
+        ui::pop_style_color();
 
-        ui::PopStyleVar();
+        ui::pop_style_var();
     }
 
     void drawIthPathPointTypeCell(OpenSim::PathPointSet const& pps, ptrdiff_t i)
     {
-        ui::TextDisabled(At(pps, i).getConcreteClassName());
+        ui::draw_text_disabled(At(pps, i).getConcreteClassName());
     }
 
     // try, because the path point type might not actually have a set location
@@ -271,7 +271,7 @@ private:
 
         if (auto* const pp = dynamic_cast<OpenSim::PathPoint*>(&app))
         {
-            float const inputWidth = ui::CalcTextSize("0.00000").x;
+            float const inputWidth = ui::calc_text_size("0.00000").x;
 
             SimTK::Vec3& location = pp->upd_location();
 
@@ -280,9 +280,9 @@ private:
             {
                 auto v = static_cast<float>(location[static_cast<int>(dim)]);
 
-                ui::TableSetColumnIndex(column++);
-                ui::SetNextItemWidth(inputWidth);
-                if (ui::InputFloat(c_LocationInputIDs[dim], &v))
+                ui::table_set_column_index(column++);
+                ui::set_next_item_width(inputWidth);
+                if (ui::draw_float_input(c_LocationInputIDs[dim], &v))
                 {
                     location[static_cast<int>(dim)] = static_cast<double>(v);
                 }
@@ -291,43 +291,43 @@ private:
         else
         {
             // it's some other kind of path point, with no editable X, Y, or Z
-            ui::TableSetColumnIndex(column++);
-            ui::TableSetColumnIndex(column++);
-            ui::TableSetColumnIndex(column++);
+            ui::table_set_column_index(column++);
+            ui::table_set_column_index(column++);
+            ui::table_set_column_index(column++);
         }
     }
 
     void drawIthPathPointFrameCell(OpenSim::PathPointSet& pps, ptrdiff_t i)
     {
-        float const width = ui::CalcTextSize("/bodyset/a_typical_body_name").x;
+        float const width = ui::calc_text_size("/bodyset/a_typical_body_name").x;
 
         std::string const& label = At(pps, i).getSocket("parent_frame").getConnecteePath();
 
-        ui::SetNextItemWidth(width);
-        if (ui::BeginCombo("##framesel", label))
+        ui::set_next_item_width(width);
+        if (ui::begin_combobox("##framesel", label))
         {
             for (OpenSim::Frame const& frame : m_TargetModel->getModel().getComponentList<OpenSim::Frame>())
             {
                 std::string const absPath = frame.getAbsolutePathString();
-                if (ui::Selectable(absPath))
+                if (ui::draw_selectable(absPath))
                 {
                     ActionSetPathPointFramePath(pps, i, absPath);
                 }
             }
-            ui::EndCombo();
+            ui::end_combobox();
         }
     }
 
     void drawBottomButtons()
     {
-        if (ui::Button("cancel"))
+        if (ui::draw_button("cancel"))
         {
             request_close();
         }
 
-        ui::SameLine();
+        ui::same_line();
 
-        if (ui::Button("save"))
+        if (ui::draw_button("save"))
         {
             m_OnLocalCopyEdited(m_EditedGeometryPath);
             request_close();

@@ -69,8 +69,8 @@ namespace osc
             {
                 m_ActiveNameEdit = lm.name;
             }
-            ui::InputString("name", *m_ActiveNameEdit);
-            if (ui::ItemValueShouldBeSaved())
+            ui::draw_string_input("name", *m_ActiveNameEdit);
+            if (ui::should_save_last_drawn_item_value())
             {
                 ActionRenameLandmark(m_State->updUndoable(), lm.uid, *m_ActiveNameEdit);
                 m_ActiveNameEdit.reset();
@@ -82,8 +82,8 @@ namespace osc
                 {
                     m_ActivePositionEdit = lm.maybeSourceLocation;
                 }
-                ui::InputMetersFloat3("source           ", *m_ActivePositionEdit);  // (padded to align with `destination`)
-                if (ui::ItemValueShouldBeSaved())
+                ui::draw_float3_meters_input("source           ", *m_ActivePositionEdit);  // (padded to align with `destination`)
+                if (ui::should_save_last_drawn_item_value())
                 {
                     ActionSetLandmarkPosition(m_State->updUndoable(), lm.uid, TPSDocumentInputIdentifier::Source, *m_ActivePositionEdit);
                     m_ActivePositionEdit.reset();
@@ -91,7 +91,7 @@ namespace osc
             }
             else
             {
-                if (ui::Button("add source"))
+                if (ui::draw_button("add source"))
                 {
                     ActionSetLandmarkPosition(m_State->updUndoable(), lm.uid, TPSDocumentInputIdentifier::Source, Vec3{});
                 }
@@ -103,8 +103,8 @@ namespace osc
                 {
                     m_ActiveDestinationPositionEdit = lm.maybeDestinationLocation;
                 }
-                ui::InputMetersFloat3("destination", *m_ActiveDestinationPositionEdit);
-                if (ui::ItemValueShouldBeSaved())
+                ui::draw_float3_meters_input("destination", *m_ActiveDestinationPositionEdit);
+                if (ui::should_save_last_drawn_item_value())
                 {
                     ActionSetLandmarkPosition(m_State->updUndoable(), lm.uid, TPSDocumentInputIdentifier::Destination, *m_ActiveDestinationPositionEdit);
                     m_ActivePositionEdit.reset();
@@ -112,7 +112,7 @@ namespace osc
             }
             else
             {
-                if (ui::ButtonCentered("add destination"))
+                if (ui::draw_button_centered("add destination"))
                 {
                     ActionSetLandmarkPosition(m_State->updUndoable(), lm.uid, TPSDocumentInputIdentifier::Destination, Vec3{});
                 }
@@ -120,7 +120,7 @@ namespace osc
 
             DrawContextMenuSeparator();
 
-            if (ui::MenuItem(ICON_FA_TRASH " Delete", "Delete"))
+            if (ui::draw_menu_item(ICON_FA_TRASH " Delete", "Delete"))
             {
                 ActionDeleteElementByID(m_State->updUndoable(), lm.uid);
                 return;  // CARE: `lm` is now dead
@@ -138,8 +138,8 @@ namespace osc
             {
                 m_ActiveNameEdit = npl.name;
             }
-            ui::InputString("name", *m_ActiveNameEdit);
-            if (ui::ItemValueShouldBeSaved())
+            ui::draw_string_input("name", *m_ActiveNameEdit);
+            if (ui::should_save_last_drawn_item_value())
             {
                 ActionRenameNonParticipatingLandmark(m_State->updUndoable(), npl.uid, *m_ActiveNameEdit);
                 m_ActiveNameEdit.reset();
@@ -149,8 +149,8 @@ namespace osc
             {
                 m_ActivePositionEdit = npl.location;
             }
-            ui::InputMetersFloat3("location", *m_ActivePositionEdit);
-            if (ui::ItemValueShouldBeSaved())
+            ui::draw_float3_meters_input("location", *m_ActivePositionEdit);
+            if (ui::should_save_last_drawn_item_value())
             {
                 ActionSetNonParticipatingLandmarkPosition(m_State->updUndoable(), npl.uid, *m_ActivePositionEdit);
                 m_ActivePositionEdit.reset();
@@ -158,7 +158,7 @@ namespace osc
 
             DrawContextMenuSeparator();
 
-            if (ui::MenuItem(ICON_FA_TRASH " Delete", "Delete"))
+            if (ui::draw_menu_item(ICON_FA_TRASH " Delete", "Delete"))
             {
                 ActionDeleteElementByID(m_State->updUndoable(), npl.uid);
                 return;  // CARE: `npl` is now dead

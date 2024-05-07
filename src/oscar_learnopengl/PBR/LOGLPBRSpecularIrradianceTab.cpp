@@ -228,7 +228,7 @@ private:
 
     void impl_on_draw() final
     {
-        Rect const outputRect = ui::GetMainViewportWorkspaceScreenRect();
+        Rect const outputRect = ui::get_main_viewport_workspace_screen_rect();
         m_OutputRender.set_dimensions(dimensions_of(outputRect));
         m_OutputRender.set_anti_aliasing_level(App::get().anti_aliasing_level());
 
@@ -301,13 +301,13 @@ private:
 
     void draw2DUI()
     {
-        if (ui::Begin("Controls")) {
+        if (ui::begin_panel("Controls")) {
             float ao = m_PBRMaterial.get_float("uAO").value_or(1.0f);
-            if (ui::SliderFloat("ao", &ao, 0.0f, 1.0f)) {
+            if (ui::draw_float_slider("ao", &ao, 0.0f, 1.0f)) {
                 m_PBRMaterial.set_float("uAO", ao);
             }
         }
-        ui::End();
+        ui::end_panel();
     }
 
     ResourceLoader m_Loader = App::resource_loader();

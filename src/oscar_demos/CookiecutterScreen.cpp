@@ -57,10 +57,10 @@ public:
 
         App::upd().clear_screen(Color::clear());  // set app window bg color
 
-        ui::Begin("cookiecutter panel");
-        ui::Text("hello world");
-        ui::Checkbox("checkbox_state", &m_CheckboxState);
-        ui::End();
+        ui::begin_panel("cookiecutter panel");
+        ui::draw_text("hello world");
+        ui::draw_checkbox("checkbox_state", &m_CheckboxState);
+        ui::end_panel();
 
         ui::context::render();  // render the 2D UI's drawing to the screen
     }

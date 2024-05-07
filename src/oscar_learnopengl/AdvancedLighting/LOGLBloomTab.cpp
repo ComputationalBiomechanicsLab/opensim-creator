@@ -129,7 +129,7 @@ private:
 
     void draw3DScene()
     {
-        Rect const viewportRect = ui::GetMainViewportWorkspaceScreenRect();
+        Rect const viewportRect = ui::get_main_viewport_workspace_screen_rect();
 
         reformatAllTextures(viewportRect);
         renderSceneMRT();

@@ -50,48 +50,48 @@ private:
     {
         if (m_API->getNumUserOutputExtractors() <= 0)
         {
-            ui::TextDisabledAndWindowCentered("No outputs being watched");
-            ui::TextDisabledAndCentered("(Right-click a component and 'Watch Output')");
+            ui::draw_text_disabled_and_panel_centered("No outputs being watched");
+            ui::draw_text_disabled_and_centered("(Right-click a component and 'Watch Output')");
             return;
         }
 
         if (IsAnyOutputExportableToCSV(*m_API))
         {
-            ui::Button(ICON_FA_SAVE " Save All " ICON_FA_CARET_DOWN);
-            if (ui::BeginPopupContextItem("##exportoptions", ImGuiPopupFlags_MouseButtonLeft))
+            ui::draw_button(ICON_FA_SAVE " Save All " ICON_FA_CARET_DOWN);
+            if (ui::begin_popup_context_menu("##exportoptions", ImGuiPopupFlags_MouseButtonLeft))
             {
-                if (ui::MenuItem("as CSV")) {
+                if (ui::draw_menu_item("as CSV")) {
                     m_SimulatorUIAPI->tryPromptToSaveAllOutputsAsCSV();
                 }
 
-                if (ui::MenuItem("as CSV (and open)")) {
+                if (ui::draw_menu_item("as CSV (and open)")) {
                     if (const auto path = m_SimulatorUIAPI->tryPromptToSaveAllOutputsAsCSV()) {
                         open_file_in_os_default_application(*path);
                     }
                 }
 
-                ui::EndPopup();
+                ui::end_popup();
             }
         }
 
-        ui::Separator();
-        ui::Dummy({0.0f, 5.0f});
+        ui::draw_separator();
+        ui::draw_dummy({0.0f, 5.0f});
 
         for (int i = 0; i < m_API->getNumUserOutputExtractors(); ++i)
         {
             OutputExtractor output = m_API->getUserOutputExtractor(i);
 
-            ui::PushID(i);
+            ui::push_id(i);
             SimulationOutputPlot plot{m_SimulatorUIAPI, output, 128.0f};
             plot.onDraw();
 
             DrawOutputNameColumn(output, true, m_SimulatorUIAPI->tryGetCurrentSimulationState());
-            ui::SameLine();
-            if (ui::Button(ICON_FA_TRASH)) {
+            ui::same_line();
+            if (ui::draw_button(ICON_FA_TRASH)) {
                 m_API->removeUserOutputExtractor(output);
                 --i;
             }
-            ui::PopID();
+            ui::pop_id();
         }
     }
 

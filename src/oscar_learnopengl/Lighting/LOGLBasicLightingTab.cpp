@@ -52,7 +52,7 @@ private:
         m_Camera.on_draw();
 
         // clear screen and ensure camera has correct pixel rect
-        m_Camera.set_pixel_rect(ui::GetMainViewportWorkspaceScreenRect());
+        m_Camera.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
 
         // draw cube
         m_LightingMaterial.set_color("uObjectColor", m_ObjectColor);
@@ -72,14 +72,14 @@ private:
         m_Camera.render_to_screen();
 
         // render auxiliary UI
-        ui::Begin("controls");
-        ui::InputVec3("light pos", m_LightTransform.position);
-        ui::InputFloat("ambient strength", &m_AmbientStrength);
-        ui::InputFloat("diffuse strength", &m_DiffuseStrength);
-        ui::InputFloat("specular strength", &m_SpecularStrength);
-        ui::ColorEditRGB("object color", m_ObjectColor);
-        ui::ColorEditRGB("light color", m_LightColor);
-        ui::End();
+        ui::begin_panel("controls");
+        ui::draw_vec3_input("light pos", m_LightTransform.position);
+        ui::draw_float_input("ambient strength", &m_AmbientStrength);
+        ui::draw_float_input("diffuse strength", &m_DiffuseStrength);
+        ui::draw_float_input("specular strength", &m_SpecularStrength);
+        ui::draw_rgb_color_editor("object color", m_ObjectColor);
+        ui::draw_rgb_color_editor("light color", m_LightColor);
+        ui::end_panel();
     }
 
     ResourceLoader m_Loader = App::resource_loader();

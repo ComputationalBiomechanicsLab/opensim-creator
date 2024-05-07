@@ -26,30 +26,30 @@ void osc::GuiRuler::on_draw(
     }
 
     // users can exit measuring through these actions
-    if (ui::IsKeyDown(ImGuiKey_Escape) or ui::IsMouseReleased(ImGuiMouseButton_Right)) {
+    if (ui::is_key_down(ImGuiKey_Escape) or ui::is_mouse_released(ImGuiMouseButton_Right)) {
         stop_measuring();
         return;
     }
 
     // users can "finish" the measurement through these actions
-    if (state_ == State::WaitingForSecondPoint and ui::IsMouseReleased(ImGuiMouseButton_Left)) {
+    if (state_ == State::WaitingForSecondPoint and ui::is_mouse_released(ImGuiMouseButton_Left)) {
         stop_measuring();
         return;
     }
 
-    const Vec2 mouse_pos = ui::GetMousePos();
-    const ImU32 circle_moused_over_nothing_color = ui::ToImU32(Color::red().with_alpha(0.6f));
-    const ImU32 circle_color = ui::ToImU32(Color::white().with_alpha(0.8f));
+    const Vec2 mouse_pos = ui::get_mouse_pos();
+    const ImU32 circle_moused_over_nothing_color = ui::to_ImU32(Color::red().with_alpha(0.6f));
+    const ImU32 circle_color = ui::to_ImU32(Color::white().with_alpha(0.8f));
     const ImU32 line_color = circle_color;
-    const ImU32 text_background_color = ui::ToImU32(Color::white());
-    const ImU32 text_color = ui::ToImU32(Color::black());
+    const ImU32 text_background_color = ui::to_ImU32(Color::white());
+    const ImU32 text_color = ui::to_ImU32(Color::black());
     const float circle_radius = 5.0f;
     const float line_thickness = 3.0f;
 
-    ImDrawList& drawlist = *ui::GetWindowDrawList();
+    ImDrawList& drawlist = *ui::get_panel_draw_list();
     const auto draw_tooltip_with_bg = [&drawlist, &text_background_color, &text_color](const Vec2& pos, CStringView tooltip_text)
     {
-        const Vec2 text_size = ui::CalcTextSize(tooltip_text);
+        const Vec2 text_size = ui::calc_text_size(tooltip_text);
         const float background_padding = 5.0f;
         const float edge_rounding = background_padding - 2.0f;
 
@@ -67,7 +67,7 @@ void osc::GuiRuler::on_draw(
             // mousing over something
             drawlist.AddCircleFilled(mouse_pos, circle_radius, circle_color);
 
-            if (ui::IsMouseReleased(ImGuiMouseButton_Left)) {
+            if (ui::is_mouse_released(ImGuiMouseButton_Left)) {
                 state_ = State::WaitingForSecondPoint;
                 start_world_pos_ = maybe_mouseover->worldspace_location;
             }
@@ -91,13 +91,13 @@ void osc::GuiRuler::on_draw(
 
             // label the line's length
             {
-                const std::string lineLenLabel = [&line_world_length]()
+                const std::string line_len_label = [&line_world_length]()
                 {
                     std::stringstream ss;
                     ss << std::setprecision(5) << line_world_length;
                     return std::move(ss).str();
                 }();
-                draw_tooltip_with_bg(line_midpoint + offset_vec, lineLenLabel);
+                draw_tooltip_with_bg(line_midpoint + offset_vec, line_len_label);
             }
         }
         else {

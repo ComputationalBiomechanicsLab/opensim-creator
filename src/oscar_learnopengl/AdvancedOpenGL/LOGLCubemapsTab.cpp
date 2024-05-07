@@ -143,7 +143,7 @@ private:
         m_Camera.on_draw();
 
         // clear screen and ensure camera has correct pixel rect
-        m_Camera.set_pixel_rect(ui::GetMainViewportWorkspaceScreenRect());
+        m_Camera.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
 
         drawInSceneCube();
         drawSkybox();
@@ -181,18 +181,18 @@ private:
 
     void draw2DUI()
     {
-        ui::Begin("controls");
-        if (ui::BeginCombo("Cube Texturing", m_CubeMaterials.at(m_CubeMaterialIndex).label)) {
+        ui::begin_panel("controls");
+        if (ui::begin_combobox("Cube Texturing", m_CubeMaterials.at(m_CubeMaterialIndex).label)) {
             for (size_t i = 0; i < m_CubeMaterials.size(); ++i) {
                 bool selected = i == m_CubeMaterialIndex;
-                if (ui::Selectable(m_CubeMaterials[i].label, &selected)) {
+                if (ui::draw_selectable(m_CubeMaterials[i].label, &selected)) {
                     m_CubeMaterialIndex = i;
                 }
             }
-            ui::EndCombo();
+            ui::end_combobox();
         }
-        ui::InputFloat("IOR", &m_IOR);
-        ui::End();
+        ui::draw_float_input("IOR", &m_IOR);
+        ui::end_panel();
     }
 
     ResourceLoader m_Loader = App::resource_loader();

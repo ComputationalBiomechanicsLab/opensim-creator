@@ -68,7 +68,7 @@ namespace
         return rv;
     }
 
-    // helper: draws an ui::MenuItem for a given recent- or example-file-path
+    // helper: draws an ui::draw_menu_item for a given recent- or example-file-path
     void DrawRecentOrExampleFileMenuItem(
         std::filesystem::path const& path,
         ParentPtr<IMainUIStateAPI>& parent_,
@@ -76,20 +76,20 @@ namespace
     {
         std::string const label = std::string{ICON_FA_FILE} + " " + path.filename().string();
 
-        ui::PushID(++imguiID);
-        if (ui::MenuItem(label))
+        ui::push_id(++imguiID);
+        if (ui::draw_menu_item(label))
         {
             parent_->add_and_select_tab<LoadingTab>(parent_, path);
         }
         // show the full path as a tooltip when the item is hovered (some people have
         // long file names (#784)
-        if (ui::IsItemHovered())
+        if (ui::is_item_hovered())
         {
-            ui::BeginTooltipNoWrap();
-            ui::TextUnformatted(path.filename().string());
-            ui::EndTooltipNoWrap();
+            ui::begin_tooltip_nowrap();
+            ui::draw_text_unformatted(path.filename().string());
+            ui::end_tooltip_nowrap();
         }
-        ui::PopID();
+        ui::pop_id();
     }
 }
 
@@ -148,7 +148,7 @@ public:
 
     void onDraw()
     {
-        if (area_of(ui::GetMainViewportWorkspaceScreenRect()) <= 0.0f)
+        if (area_of(ui::get_main_viewport_workspace_screen_rect()) <= 0.0f)
         {
             // edge-case: splash screen is the first rendered frame and ImGui
             //            is being unusual about it
@@ -165,9 +165,9 @@ public:
 private:
     Rect calcMainMenuRect() const
     {
-        Rect tabRect = ui::GetMainViewportWorkspaceScreenRect();
+        Rect tabRect = ui::get_main_viewport_workspace_screen_rect();
         // pretend the attributation bar isn't there (avoid it)
-        tabRect.p2.y -= static_cast<float>(max(m_TudLogo.dimensions().y, m_CziLogo.dimensions().y)) - 2.0f*ui::GetStyleWindowPadding().y;
+        tabRect.p2.y -= static_cast<float>(max(m_TudLogo.dimensions().y, m_CziLogo.dimensions().y)) - 2.0f*ui::get_style_panel_padding().y;
 
         Vec2 const menuAndTopLogoDims = elementwise_min(dimensions_of(tabRect), Vec2{m_SplashMenuMaxDims.x, m_SplashMenuMaxDims.y + m_MainAppLogoDims.y + m_TopLogoPadding.y});
         Vec2 const menuAndTopLogoTopLeft = tabRect.p1 + 0.5f*(dimensions_of(tabRect) - menuAndTopLogoDims);
@@ -191,14 +191,14 @@ private:
 
     void drawBackground()
     {
-        Rect const screenRect = ui::GetMainViewportWorkspaceScreenRect();
+        Rect const screenRect = ui::get_main_viewport_workspace_screen_rect();
 
-        ui::SetNextWindowPos(screenRect.p1);
-        ui::SetNextWindowSize(dimensions_of(screenRect));
+        ui::set_next_panel_pos(screenRect.p1);
+        ui::set_next_panel_size(dimensions_of(screenRect));
 
-        ui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0.0f, 0.0f });
-        ui::Begin("##splashscreenbackground", nullptr, ui::GetMinimalWindowFlags());
-        ui::PopStyleVar();
+        ui::push_style_var(ImGuiStyleVar_WindowPadding, { 0.0f, 0.0f });
+        ui::begin_panel("##splashscreenbackground", nullptr, ui::get_minimal_panel_flags());
+        ui::pop_style_var();
 
         SceneRendererParams params{m_LastSceneRendererParams};
         params.dimensions = dimensions_of(screenRect);
@@ -211,34 +211,34 @@ private:
             m_LastSceneRendererParams = params;
         }
 
-        ui::Image(scene_renderer_.upd_render_texture());
+        ui::draw_image(scene_renderer_.upd_render_texture());
 
-        ui::End();
+        ui::end_panel();
     }
 
     void drawLogo()
     {
         Rect const logoRect = calcLogoRect();
 
-        ui::SetNextWindowPos(logoRect.p1);
-        ui::Begin("##osclogo", nullptr, ui::GetMinimalWindowFlags());
-        ui::Image(m_MainAppLogo, dimensions_of(logoRect));
-        ui::End();
+        ui::set_next_panel_pos(logoRect.p1);
+        ui::begin_panel("##osclogo", nullptr, ui::get_minimal_panel_flags());
+        ui::draw_image(m_MainAppLogo, dimensions_of(logoRect));
+        ui::end_panel();
     }
 
     void drawMenu()
     {
         // center the menu window
         Rect const mmr = calcMainMenuRect();
-        ui::SetNextWindowPos(mmr.p1);
-        ui::SetNextWindowSize({dimensions_of(mmr).x, -1.0f});
-        ui::SetNextWindowSizeConstraints(dimensions_of(mmr), dimensions_of(mmr));
+        ui::set_next_panel_pos(mmr.p1);
+        ui::set_next_panel_size({dimensions_of(mmr).x, -1.0f});
+        ui::set_next_panel_size_constraints(dimensions_of(mmr), dimensions_of(mmr));
 
-        if (ui::Begin("Splash screen", nullptr, ImGuiWindowFlags_NoTitleBar))
+        if (ui::begin_panel("Splash screen", nullptr, ImGuiWindowFlags_NoTitleBar))
         {
             drawMenuContent();
         }
-        ui::End();
+        ui::end_panel();
     }
 
     void drawMenuContent()
@@ -247,30 +247,30 @@ private:
         // names
         int imguiID = 0;
 
-        ui::Columns(2, nullptr, false);
+        ui::set_num_columns(2, nullptr, false);
         drawMenuLeftColumnContent(imguiID);
-        ui::NextColumn();
+        ui::next_column();
         drawMenuRightColumnContent(imguiID);
-        ui::NextColumn();
-        ui::Columns();
+        ui::next_column();
+        ui::set_num_columns();
     }
 
     void drawActionsMenuSectionContent()
     {
-        if (ui::MenuItem(ICON_FA_FILE " New Model"))
+        if (ui::draw_menu_item(ICON_FA_FILE " New Model"))
         {
             ActionNewModel(m_Parent);
         }
-        if (ui::MenuItem(ICON_FA_FOLDER_OPEN " Open Model"))
+        if (ui::draw_menu_item(ICON_FA_FOLDER_OPEN " Open Model"))
         {
             ActionOpenModel(m_Parent);
         }
-        if (ui::MenuItem(ICON_FA_MAGIC " Import Meshes"))
+        if (ui::draw_menu_item(ICON_FA_MAGIC " Import Meshes"))
         {
             m_Parent->add_and_select_tab<mi::MeshImporterTab>(m_Parent);
         }
-        App::upd().add_frame_annotation("SplashTab/ImportMeshesMenuItem", ui::GetItemRect());
-        if (ui::MenuItem(ICON_FA_BOOK " Open Documentation"))
+        App::upd().add_frame_annotation("SplashTab/ImportMeshesMenuItem", ui::get_last_drawn_item_screen_rect());
+        if (ui::draw_menu_item(ICON_FA_BOOK " Open Documentation"))
         {
             open_file_in_os_default_application(App::config().html_docs_directory() / "index.html");
         }
@@ -278,15 +278,15 @@ private:
 
     void drawWorkflowsMenuSectionContent()
     {
-        if (ui::MenuItem(ICON_FA_ARROWS_ALT " Frame Definition"))
+        if (ui::draw_menu_item(ICON_FA_ARROWS_ALT " Frame Definition"))
         {
             m_Parent->add_and_select_tab<FrameDefinitionTab>(m_Parent);
         }
-        if (ui::MenuItem(ICON_FA_MAGIC " Mesh Importer"))
+        if (ui::draw_menu_item(ICON_FA_MAGIC " Mesh Importer"))
         {
             m_Parent->add_and_select_tab<mi::MeshImporterTab>(m_Parent);
         }
-        if (ui::MenuItem(ICON_FA_CUBE " Mesh Warping"))
+        if (ui::draw_menu_item(ICON_FA_CUBE " Mesh Warping"))
         {
             m_Parent->add_and_select_tab<MeshWarpingTab>(m_Parent);
         }
@@ -308,31 +308,31 @@ private:
         }
         else
         {
-            ui::PushStyleColor(ImGuiCol_Text, Color::half_grey());
-            ui::TextWrapped("No files opened recently. Try:");
-            ui::BulletText("Creating a new model (Ctrl+N)");
-            ui::BulletText("Opening an existing model (Ctrl+O)");
-            ui::BulletText("Opening an example (right-side)");
-            ui::PopStyleColor();
+            ui::push_style_color(ImGuiCol_Text, Color::half_grey());
+            ui::draw_text_wrapped("No files opened recently. Try:");
+            ui::draw_text_bullet_pointed("Creating a new model (Ctrl+N)");
+            ui::draw_text_bullet_pointed("Opening an existing model (Ctrl+O)");
+            ui::draw_text_bullet_pointed("Opening an example (right-side)");
+            ui::pop_style_color();
         }
     }
 
     void drawMenuLeftColumnContent(int& imguiID)
     {
-        ui::TextDisabled("Actions");
-        ui::Dummy({0.0f, 2.0f});
+        ui::draw_text_disabled("Actions");
+        ui::draw_dummy({0.0f, 2.0f});
 
         drawActionsMenuSectionContent();
 
-        ui::Dummy({0.0f, 1.0f*ui::GetTextLineHeight()});
-        ui::TextDisabled("Workflows");
-        ui::Dummy({0.0f, 2.0f});
+        ui::draw_dummy({0.0f, 1.0f*ui::get_text_line_height()});
+        ui::draw_text_disabled("Workflows");
+        ui::draw_dummy({0.0f, 2.0f});
 
         drawWorkflowsMenuSectionContent();
 
-        ui::Dummy({0.0f, 1.0f*ui::GetTextLineHeight()});
-        ui::TextDisabled("Recent Models");
-        ui::Dummy({0.0f, 2.0f});
+        ui::draw_dummy({0.0f, 1.0f*ui::get_text_line_height()});
+        ui::draw_text_disabled("Recent Models");
+        ui::draw_dummy({0.0f, 2.0f});
 
         drawRecentlyOpenedFilesMenuSectionContent(imguiID);
     }
@@ -341,8 +341,8 @@ private:
     {
         if (!m_MainMenuFileTab.exampleOsimFiles.empty())
         {
-            ui::TextDisabled("Example Models");
-            ui::Dummy({0.0f, 2.0f});
+            ui::draw_text_disabled("Example Models");
+            ui::draw_dummy({0.0f, 2.0f});
 
             for (std::filesystem::path const& examplePath : m_MainMenuFileTab.exampleOsimFiles)
             {
@@ -357,27 +357,27 @@ private:
 
     void drawAttributationLogos()
     {
-        Rect const viewportRect = ui::GetMainViewportWorkspaceScreenRect();
+        Rect const viewportRect = ui::get_main_viewport_workspace_screen_rect();
         Vec2 loc = viewportRect.p2;
-        loc.x = loc.x - 2.0f*ui::GetStyleWindowPadding().x - static_cast<float>(m_CziLogo.dimensions().x) - 2.0f*ui::GetStyleItemSpacing().x - static_cast<float>(m_TudLogo.dimensions().x);
-        loc.y = loc.y - 2.0f*ui::GetStyleWindowPadding().y - static_cast<float>(max(m_CziLogo.dimensions().y, m_TudLogo.dimensions().y));
+        loc.x = loc.x - 2.0f*ui::get_style_panel_padding().x - static_cast<float>(m_CziLogo.dimensions().x) - 2.0f*ui::get_style_item_spacing().x - static_cast<float>(m_TudLogo.dimensions().x);
+        loc.y = loc.y - 2.0f*ui::get_style_panel_padding().y - static_cast<float>(max(m_CziLogo.dimensions().y, m_TudLogo.dimensions().y));
 
-        ui::SetNextWindowPos(loc);
-        ui::Begin("##czlogo", nullptr, ui::GetMinimalWindowFlags());
-        ui::Image(m_CziLogo);
-        ui::End();
+        ui::set_next_panel_pos(loc);
+        ui::begin_panel("##czlogo", nullptr, ui::get_minimal_panel_flags());
+        ui::draw_image(m_CziLogo);
+        ui::end_panel();
 
-        loc.x += static_cast<float>(m_CziLogo.dimensions().x) + 2.0f*ui::GetStyleItemSpacing().x;
-        ui::SetNextWindowPos(loc);
-        ui::Begin("##tudlogo", nullptr, ui::GetMinimalWindowFlags());
-        ui::Image(m_TudLogo);
-        ui::End();
+        loc.x += static_cast<float>(m_CziLogo.dimensions().x) + 2.0f*ui::get_style_item_spacing().x;
+        ui::set_next_panel_pos(loc);
+        ui::begin_panel("##tudlogo", nullptr, ui::get_minimal_panel_flags());
+        ui::draw_image(m_TudLogo);
+        ui::end_panel();
     }
 
     void drawVersionInfo()
     {
-        Rect const tabRect = ui::GetMainViewportWorkspaceScreenRect();
-        float const h = ui::GetTextLineHeightWithSpacing();
+        Rect const tabRect = ui::get_main_viewport_workspace_screen_rect();
+        float const h = ui::get_text_line_height_with_spacing();
         float const padding = 5.0f;
 
         Vec2 const pos
@@ -386,8 +386,8 @@ private:
             tabRect.p2.y - h - padding,
         };
 
-        ImDrawList* const dl = ui::GetForegroundDrawList();
-        ImU32 const color = ui::ToImU32(Color::black());
+        ImDrawList* const dl = ui::get_foreground_draw_list();
+        ImU32 const color = ui::to_ImU32(Color::black());
         std::string const text = calc_full_application_name_with_version_and_build_id(App::get().metadata());
         dl->AddText(pos, color, text.c_str());
     }
@@ -423,8 +423,7 @@ private:
 
 osc::SplashTab::SplashTab(ParentPtr<IMainUIStateAPI> const& parent_) :
     m_Impl{std::make_unique<Impl>(parent_)}
-{
-}
+{}
 
 osc::SplashTab::SplashTab(SplashTab&&) noexcept = default;
 osc::SplashTab& osc::SplashTab::operator=(SplashTab&&) noexcept = default;

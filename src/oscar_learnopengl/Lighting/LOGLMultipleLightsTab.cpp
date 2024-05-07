@@ -169,13 +169,13 @@ private:
         }
 
         // render to output (window)
-        m_Camera.set_pixel_rect(ui::GetMainViewportWorkspaceScreenRect());
+        m_Camera.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
         m_Camera.render_to_screen();
 
         // render auxiliary UI
-        ui::Begin("controls");
-        ui::InputFloat("uMaterialShininess", &m_MaterialShininess);
-        ui::End();
+        ui::begin_panel("controls");
+        ui::draw_float_input("uMaterialShininess", &m_MaterialShininess);
+        ui::end_panel();
 
         m_LogViewer.on_draw();
         m_PerfPanel.on_draw();

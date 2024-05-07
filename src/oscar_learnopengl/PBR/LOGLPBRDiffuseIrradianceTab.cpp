@@ -148,7 +148,7 @@ private:
 
     void draw3DRender()
     {
-        m_Camera.set_pixel_rect(ui::GetMainViewportWorkspaceScreenRect());
+        m_Camera.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
 
         m_PBRMaterial.set_vec3("uCameraWorldPos", m_Camera.position());
         m_PBRMaterial.set_vec3_array("uLightPositions", c_LightPositions);
@@ -194,7 +194,7 @@ private:
         m_BackgroundMaterial.set_render_texture("uEnvironmentMap", m_ProjectedMap);
         m_BackgroundMaterial.set_depth_function(DepthFunction::LessOrEqual);  // for skybox depth trick
         graphics::draw(m_CubeMesh, identity<Transform>(), m_BackgroundMaterial, m_Camera);
-        m_Camera.set_pixel_rect(ui::GetMainViewportWorkspaceScreenRect());
+        m_Camera.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
         m_Camera.set_clear_flags(CameraClearFlags::Nothing);
         m_Camera.render_to_screen();
         m_Camera.set_clear_flags(CameraClearFlags::Default);
@@ -202,13 +202,13 @@ private:
 
     void draw2DUI()
     {
-        if (ui::Begin("Controls")) {
+        if (ui::begin_panel("Controls")) {
             float ao = m_PBRMaterial.get_float("uAO").value_or(1.0f);
-            if (ui::SliderFloat("ao", &ao, 0.0f, 1.0f)) {
+            if (ui::draw_float_slider("ao", &ao, 0.0f, 1.0f)) {
                 m_PBRMaterial.set_float("uAO", ao);
             }
         }
-        ui::End();
+        ui::end_panel();
     }
 
     ResourceLoader m_Loader = App::resource_loader();

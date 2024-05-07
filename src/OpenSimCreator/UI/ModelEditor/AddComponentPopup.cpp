@@ -165,29 +165,29 @@ private:
 
     void drawNameEditor()
     {
-        ui::Columns(2);
+        ui::set_num_columns(2);
 
-        ui::TextUnformatted("name");
-        ui::SameLine();
-        ui::DrawHelpMarker("Name the newly-added component will have after being added into the model. Note: this is used to derive the name of subcomponents (e.g. path points)");
-        ui::NextColumn();
+        ui::draw_text_unformatted("name");
+        ui::same_line();
+        ui::draw_help_marker("Name the newly-added component will have after being added into the model. Note: this is used to derive the name of subcomponents (e.g. path points)");
+        ui::next_column();
 
-        ui::InputString("##componentname", m_Name);
-        App::upd().add_frame_annotation("AddComponentPopup::ComponentNameInput", ui::GetItemRect());
+        ui::draw_string_input("##componentname", m_Name);
+        App::upd().add_frame_annotation("AddComponentPopup::ComponentNameInput", ui::get_last_drawn_item_screen_rect());
 
-        ui::NextColumn();
+        ui::next_column();
 
-        ui::Columns();
+        ui::set_num_columns();
     }
 
     void drawPropertyEditors()
     {
-        ui::TextUnformatted("Properties");
-        ui::SameLine();
-        ui::DrawHelpMarker("These are properties of the OpenSim::Component being added. Their datatypes, default values, and help text are defined in the source code (see OpenSim_DECLARE_PROPERTY in OpenSim's C++ source code, if you want the details). Their default values are typically sane enough to let you add the component directly into your model.");
-        ui::Separator();
+        ui::draw_text_unformatted("Properties");
+        ui::same_line();
+        ui::draw_help_marker("These are properties of the OpenSim::Component being added. Their datatypes, default values, and help text are defined in the source code (see OpenSim_DECLARE_PROPERTY in OpenSim's C++ source code, if you want the details). Their default values are typically sane enough to let you add the component directly into your model.");
+        ui::draw_separator();
 
-        ui::Dummy({0.0f, 3.0f});
+        ui::draw_dummy({0.0f, 3.0f});
 
         auto maybeUpdater = m_PrototypePropertiesEditor.onDraw();
         if (maybeUpdater)
@@ -207,19 +207,19 @@ private:
             return;
         }
 
-        ui::TextUnformatted("Socket assignments (required)");
-        ui::SameLine();
-        ui::DrawHelpMarker("The OpenSim::Component being added has `socket`s that connect to other components in the model. You must specify what these sockets should be connected to; otherwise, the component cannot be added to the model.\n\nIn OpenSim, a Socket formalizes the dependency between a Component and another object (typically another Component) without owning that object. While Components can be composites (of multiple components) they often depend on unrelated objects/components that are defined and owned elsewhere. The object that satisfies the requirements of the Socket we term the 'connectee'. When a Socket is satisfied by a connectee we have a successful 'connection' or is said to be connected.");
-        ui::Separator();
+        ui::draw_text_unformatted("Socket assignments (required)");
+        ui::same_line();
+        ui::draw_help_marker("The OpenSim::Component being added has `socket`s that connect to other components in the model. You must specify what these sockets should be connected to; otherwise, the component cannot be added to the model.\n\nIn OpenSim, a Socket formalizes the dependency between a Component and another object (typically another Component) without owning that object. While Components can be composites (of multiple components) they often depend on unrelated objects/components that are defined and owned elsewhere. The object that satisfies the requirements of the Socket we term the 'connectee'. When a Socket is satisfied by a connectee we have a successful 'connection' or is said to be connected.");
+        ui::draw_separator();
 
-        ui::Dummy({0.0f, 1.0f});
+        ui::draw_dummy({0.0f, 1.0f});
 
         // for each socket in the prototype (cached), check if the user has chosen a
         // connectee for it yet and provide a UI for selecting them
         for (size_t i = 0; i < m_ProtoSockets.size(); ++i)
         {
             drawIthSocketEditor(i);
-            ui::Dummy({0.0f, 0.5f*ui::GetTextLineHeight()});
+            ui::draw_dummy({0.0f, 0.5f*ui::get_text_line_height()});
         }
     }
 
@@ -228,21 +228,21 @@ private:
         OpenSim::AbstractSocket const& socket = *m_ProtoSockets[i];
         OpenSim::ComponentPath& connectee = m_SocketConnecteePaths[i];
 
-        ui::Columns(2);
+        ui::set_num_columns(2);
 
-        ui::TextUnformatted(socket.getName());
-        ui::SameLine();
-        ui::DrawHelpMarker(m_Proto->getPropertyByName("socket_" + socket.getName()).getComment());
-        ui::TextDisabled(socket.getConnecteeTypeName());
-        ui::NextColumn();
+        ui::draw_text_unformatted(socket.getName());
+        ui::same_line();
+        ui::draw_help_marker(m_Proto->getPropertyByName("socket_" + socket.getName()).getComment());
+        ui::draw_text_disabled(socket.getConnecteeTypeName());
+        ui::next_column();
 
         // rhs: search and connectee choices
-        ui::PushID(static_cast<int>(i));
-        ui::TextUnformatted(ICON_FA_SEARCH);
-        ui::SameLine();
-        ui::SetNextItemWidth(ui::GetContentRegionAvail().x);
-        ui::InputString("##search", m_SocketSearchStrings[i]);
-        ui::BeginChild("##pfselector", {ui::GetContentRegionAvail().x, 128.0f});
+        ui::push_id(static_cast<int>(i));
+        ui::draw_text_unformatted(ICON_FA_SEARCH);
+        ui::same_line();
+        ui::set_next_item_width(ui::get_content_region_avail().x);
+        ui::draw_string_input("##search", m_SocketSearchStrings[i]);
+        ui::begin_child_panel("##pfselector", {ui::get_content_region_avail().x, 128.0f});
 
         // iterate through potential connectees in model and print connect-able options
         int innerID = 0;
@@ -263,16 +263,16 @@ private:
             OpenSim::ComponentPath const absPath = GetAbsolutePath(c);
             bool selected = absPath == connectee;
 
-            ui::PushID(innerID++);
-            if (ui::Selectable(c.getName(), selected))
+            ui::push_id(innerID++);
+            if (ui::draw_selectable(c.getName(), selected))
             {
                 connectee = absPath;
             }
 
-            Rect const selectableRect = ui::GetItemRect();
-            ui::DrawTooltipIfItemHovered(absPath.toString());
+            Rect const selectableRect = ui::get_last_drawn_item_screen_rect();
+            ui::draw_tooltip_if_item_hovered(absPath.toString());
 
-            ui::PopID();
+            ui::pop_id();
 
             if (selected)
             {
@@ -280,10 +280,10 @@ private:
             }
         }
 
-        ui::EndChild();
-        ui::PopID();
-        ui::NextColumn();
-        ui::Columns();
+        ui::end_child_panel();
+        ui::pop_id();
+        ui::next_column();
+        ui::set_num_columns();
     }
 
     void drawPathPointEditorChoices()
@@ -291,7 +291,7 @@ private:
         OpenSim::Model const& model = m_Uum->getModel();
 
         // show list of choices
-        ui::BeginChild("##pf_ppchoices", {ui::GetContentRegionAvail().x, 128.0f});
+        ui::begin_child_panel("##pf_ppchoices", {ui::get_content_region_avail().x, 128.0f});
 
         // choices
         for (OpenSim::Component const& c : model.getComponentList())
@@ -348,7 +348,7 @@ private:
                 continue;  // search failed
             }
 
-            if (ui::Selectable(c.getName()))
+            if (ui::draw_selectable(c.getName()))
             {
                 m_PathPoints.emplace_back(
                     GetAbsolutePath(*userChoice),
@@ -356,73 +356,73 @@ private:
                     locationInFrame
                 );
             }
-            ui::DrawTooltipIfItemHovered(c.getName(), (GetAbsolutePathString(c) + " " + c.getConcreteClassName()));
+            ui::draw_tooltip_if_item_hovered(c.getName(), (GetAbsolutePathString(c) + " " + c.getConcreteClassName()));
         }
 
-        ui::EndChild();
+        ui::end_child_panel();
     }
 
     void drawPathPointEditorAlreadyChosenPoints()
     {
         OpenSim::Model const& model = m_Uum->getModel();
 
-        ui::BeginChild("##pf_pathpoints", {ui::GetContentRegionAvail().x, 128.0f});
+        ui::begin_child_panel("##pf_pathpoints", {ui::get_content_region_avail().x, 128.0f});
 
         std::optional<ptrdiff_t> maybeIndexToErase;
         for (ptrdiff_t i = 0; i < std::ssize(m_PathPoints); ++i)
         {
-            ui::PushID(i);
+            ui::push_id(i);
 
-            ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
+            ui::push_style_var(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
 
-            if (ui::Button(ICON_FA_TRASH))
+            if (ui::draw_button(ICON_FA_TRASH))
             {
                 maybeIndexToErase = i;
             }
 
-            ui::SameLine();
+            ui::same_line();
 
             if (i <= 0)
             {
-                ui::BeginDisabled();
+                ui::begin_disabled();
             }
-            if (ui::Button(ICON_FA_ARROW_UP) && i > 0)
+            if (ui::draw_button(ICON_FA_ARROW_UP) && i > 0)
             {
                 std::swap(m_PathPoints[i], m_PathPoints[i-1]);
             }
             if (i <= 0)
             {
-                ui::EndDisabled();
+                ui::end_disabled();
             }
 
-            ui::SameLine();
+            ui::same_line();
 
             if (i >= std::ssize(m_PathPoints) - 1)
             {
-                ui::BeginDisabled();
+                ui::begin_disabled();
             }
-            if (ui::Button(ICON_FA_ARROW_DOWN) && i < std::ssize(m_PathPoints) - 1)
+            if (ui::draw_button(ICON_FA_ARROW_DOWN) && i < std::ssize(m_PathPoints) - 1)
             {
                 std::swap(m_PathPoints[i], m_PathPoints[i+1]);
             }
             if (i >= std::ssize(m_PathPoints) - 1)
             {
-                ui::EndDisabled();
+                ui::end_disabled();
             }
 
-            ui::PopStyleVar();
-            ui::SameLine();
+            ui::pop_style_var();
+            ui::same_line();
 
-            ui::Text(m_PathPoints[i].userChoice.getComponentName());
-            if (ui::IsItemHovered())
+            ui::draw_text(m_PathPoints[i].userChoice.getComponentName());
+            if (ui::is_item_hovered())
             {
                 if (OpenSim::Component const* c = FindComponent(model, m_PathPoints[i].userChoice))
                 {
-                    ui::DrawTooltip(c->getName(), GetAbsolutePathString(*c));
+                    ui::draw_tooltip(c->getName(), GetAbsolutePathString(*c));
                 }
             }
 
-            ui::PopID();
+            ui::pop_id();
         }
 
         if (maybeIndexToErase)
@@ -430,7 +430,7 @@ private:
             m_PathPoints.erase(m_PathPoints.begin() + *maybeIndexToErase);
         }
 
-        ui::EndChild();
+        ui::end_child_panel();
     }
 
     void drawPathPointEditor()
@@ -442,32 +442,32 @@ private:
         }
 
         // header
-        ui::TextUnformatted("Path Points (at least 2 required)");
-        ui::SameLine();
-        ui::DrawHelpMarker("The Component being added is (effectively) a line that connects physical frames (e.g. bodies) in the model. For example, an OpenSim::Muscle can be described as an actuator that connects bodies in the model together. You **must** specify at least two physical frames on the line in order to add a PathActuator component.\n\nDetails: in OpenSim, some `Components` are `PathActuator`s. All `Muscle`s are defined as `PathActuator`s. A `PathActuator` is an `Actuator` that actuates along a path. Therefore, a `Model` containing a `PathActuator` with zero or one points would be invalid. This is why it is required that you specify at least two points");
-        ui::Separator();
+        ui::draw_text_unformatted("Path Points (at least 2 required)");
+        ui::same_line();
+        ui::draw_help_marker("The Component being added is (effectively) a line that connects physical frames (e.g. bodies) in the model. For example, an OpenSim::Muscle can be described as an actuator that connects bodies in the model together. You **must** specify at least two physical frames on the line in order to add a PathActuator component.\n\nDetails: in OpenSim, some `Components` are `PathActuator`s. All `Muscle`s are defined as `PathActuator`s. A `PathActuator` is an `Actuator` that actuates along a path. Therefore, a `Model` containing a `PathActuator` with zero or one points would be invalid. This is why it is required that you specify at least two points");
+        ui::draw_separator();
 
-        ui::InputString(ICON_FA_SEARCH " search", m_PathSearchString);
+        ui::draw_string_input(ICON_FA_SEARCH " search", m_PathSearchString);
 
-        ui::Columns(2);
+        ui::set_num_columns(2);
         int imguiID = 0;
 
-        ui::PushID(imguiID++);
+        ui::push_id(imguiID++);
         drawPathPointEditorChoices();
-        ui::PopID();
-        ui::NextColumn();
+        ui::pop_id();
+        ui::next_column();
 
-        ui::PushID(imguiID++);
+        ui::push_id(imguiID++);
         drawPathPointEditorAlreadyChosenPoints();
-        ui::PopID();
-        ui::NextColumn();
+        ui::pop_id();
+        ui::next_column();
 
-        ui::Columns();
+        ui::set_num_columns();
     }
 
     void drawBottomButtons()
     {
-        if (ui::Button("cancel"))
+        if (ui::draw_button("cancel"))
         {
             request_close();
         }
@@ -477,9 +477,9 @@ private:
             return;  // can't add anything yet
         }
 
-        ui::SameLine();
+        ui::same_line();
 
-        if (ui::Button(ICON_FA_PLUS " add"))
+        if (ui::draw_button(ICON_FA_PLUS " add"))
         {
             std::unique_ptr<OpenSim::Component> rv = tryCreateComponentFromState();
             if (rv)
@@ -496,11 +496,11 @@ private:
     {
         if (!m_CurrentErrors.empty())
         {
-            ui::PushStyleColor(ImGuiCol_Text, Color::red());
-            ui::Dummy({0.0f, 2.0f});
-            ui::TextWrapped("Error adding component to model: %s", m_CurrentErrors.c_str());
-            ui::Dummy({0.0f, 2.0f});
-            ui::PopStyleColor();
+            ui::push_style_color(ImGuiCol_Text, Color::red());
+            ui::draw_dummy({0.0f, 2.0f});
+            ui::draw_text_wrapped("Error adding component to model: %s", m_CurrentErrors.c_str());
+            ui::draw_dummy({0.0f, 2.0f});
+            ui::pop_style_color();
         }
     }
 
@@ -510,17 +510,17 @@ private:
 
         drawPropertyEditors();
 
-        ui::Dummy({0.0f, 3.0f});
+        ui::draw_dummy({0.0f, 3.0f});
 
         drawSocketEditors();
 
-        ui::Dummy({0.0f, 1.0f});
+        ui::draw_dummy({0.0f, 1.0f});
 
         drawPathPointEditor();
 
         drawAnyErrorMessages();
 
-        ui::Dummy({0.0f, 1.0f});
+        ui::draw_dummy({0.0f, 1.0f});
 
         drawBottomButtons();
     }

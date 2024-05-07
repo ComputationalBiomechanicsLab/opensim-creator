@@ -48,53 +48,53 @@ public:
 private:
     void drawMainMenuEditTab()
     {
-        if (ui::BeginMenu("Edit"))
+        if (ui::begin_menu("Edit"))
         {
-            if (ui::MenuItem(ICON_FA_UNDO " Undo", "Ctrl+Z", false, m_Model->canUndo()))
+            if (ui::draw_menu_item(ICON_FA_UNDO " Undo", "Ctrl+Z", false, m_Model->canUndo()))
             {
                 ActionUndoCurrentlyEditedModel(*m_Model);
             }
 
-            if (ui::MenuItem(ICON_FA_REDO " Redo", "Ctrl+Shift+Z", false, m_Model->canRedo()))
+            if (ui::draw_menu_item(ICON_FA_REDO " Redo", "Ctrl+Shift+Z", false, m_Model->canRedo()))
             {
                 ActionRedoCurrentlyEditedModel(*m_Model);
             }
 
-            ui::Separator();
+            ui::draw_separator();
 
-            if (ui::MenuItem("         Deselect", {}, false, m_Model->getSelected() != nullptr))
+            if (ui::draw_menu_item("         Deselect", {}, false, m_Model->getSelected() != nullptr))
             {
                 m_Model->setSelected(nullptr);
             }
 
-            ui::EndMenu();
+            ui::end_menu();
         }
     }
 
     void drawMainMenuAddTab()
     {
-        if (ui::BeginMenu("Add"))
+        if (ui::begin_menu("Add"))
         {
             m_MainMenuAddTabMenuItems.onDraw();
-            ui::EndMenu();
+            ui::end_menu();
         }
     }
 
     void drawMainMenuToolsTab()
     {
-        if (ui::BeginMenu("Tools"))
+        if (ui::begin_menu("Tools"))
         {
-            if (ui::MenuItem(ICON_FA_PLAY " Simulate", "Ctrl+R"))
+            if (ui::draw_menu_item(ICON_FA_PLAY " Simulate", "Ctrl+R"))
             {
                 ActionStartSimulatingModel(m_MainUIStateAPI, *m_Model);
             }
 
-            if (ui::MenuItem(ICON_FA_EDIT " Edit simulation settings"))
+            if (ui::draw_menu_item(ICON_FA_EDIT " Edit simulation settings"))
             {
                 m_EditorAPI->pushPopup(std::make_unique<ParamBlockEditorPopup>("simulation parameters", &m_MainUIStateAPI->updSimulationParams()));
             }
 
-            if (ui::MenuItem("         Import Points"))
+            if (ui::draw_menu_item("         Import Points"))
             {
                 m_EditorAPI->pushPopup(std::make_unique<ImportStationsFromCSVPopup>(
                     "Import Points",
@@ -105,50 +105,50 @@ private:
                 ));
             }
 
-            if (ui::MenuItem("         Export Points"))
+            if (ui::draw_menu_item("         Export Points"))
             {
                 m_EditorAPI->pushPopup(std::make_unique<ExportPointsPopup>("Export Points", m_Model));
             }
 
-            if (ui::BeginMenu("         Experimental Tools"))
+            if (ui::begin_menu("         Experimental Tools"))
             {
-                if (ui::MenuItem("Simulate Against All Integrators (advanced)"))
+                if (ui::draw_menu_item("Simulate Against All Integrators (advanced)"))
                 {
                     ActionSimulateAgainstAllIntegrators(m_MainUIStateAPI, *m_Model);
                 }
-                ui::DrawTooltipIfItemHovered("Simulate Against All Integrators", "Simulate the given model against all available SimTK integrators. This takes the current simulation parameters and permutes the integrator, reporting the overall simulation wall-time to the user. It's an advanced feature that's handy for developers to figure out which integrator best-suits a particular model");
+                ui::draw_tooltip_if_item_hovered("Simulate Against All Integrators", "Simulate the given model against all available SimTK integrators. This takes the current simulation parameters and permutes the integrator, reporting the overall simulation wall-time to the user. It's an advanced feature that's handy for developers to figure out which integrator best-suits a particular model");
 
-                if (ui::MenuItem("Export Model Graph as Dotviz")) {
+                if (ui::draw_menu_item("Export Model Graph as Dotviz")) {
                     ActionExportModelGraphToDotviz(*m_Model);
                 }
-                ui::DrawTooltipIfItemHovered("Writes the model's data topology graph in dotviz format, so that it can be visualized in external tooling such as Graphviz Online");
+                ui::draw_tooltip_if_item_hovered("Writes the model's data topology graph in dotviz format, so that it can be visualized in external tooling such as Graphviz Online");
 
-                if (ui::MenuItem("Export Model Graph as Dotviz (clipboard)")) {
+                if (ui::draw_menu_item("Export Model Graph as Dotviz (clipboard)")) {
                     ActionExportModelGraphToDotvizClipboard(*m_Model);
                 }
 
-                ui::EndMenu();
+                ui::end_menu();
             }
 
-            ui::EndMenu();
+            ui::end_menu();
         }
     }
 
     void drawMainMenuActionsTab()
     {
-        if (ui::BeginMenu("Actions"))
+        if (ui::begin_menu("Actions"))
         {
-            if (ui::MenuItem("Disable all wrapping surfaces"))
+            if (ui::draw_menu_item("Disable all wrapping surfaces"))
             {
                 ActionDisableAllWrappingSurfaces(*m_Model);
             }
 
-            if (ui::MenuItem("Enable all wrapping surfaces"))
+            if (ui::draw_menu_item("Enable all wrapping surfaces"))
             {
                 ActionEnableAllWrappingSurfaces(*m_Model);
             }
 
-            ui::EndMenu();
+            ui::end_menu();
         }
     }
 

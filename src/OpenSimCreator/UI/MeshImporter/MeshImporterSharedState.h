@@ -299,7 +299,7 @@ namespace osc::mi
             Vec3 const& child) const
         {
             // the line
-            ui::GetWindowDrawList()->AddLine(worldPosToScreenPos(parent), worldPosToScreenPos(child), color, c_ConnectionLineWidth);
+            ui::get_panel_draw_list()->AddLine(worldPosToScreenPos(parent), worldPosToScreenPos(child), color, c_ConnectionLineWidth);
 
             // the triangle
             drawConnectionLineTriangleAtMidpoint(color, parent, child);
@@ -310,7 +310,7 @@ namespace osc::mi
             std::unordered_set<UID> const& excludedIDs) const
         {
             Document const& mg = getModelGraph();
-            ImU32 colorU32 = ui::ToImU32(color);
+            ImU32 colorU32 = ui::to_ImU32(color);
 
             for (MIObject const& el : mg.iter())
             {
@@ -345,7 +345,7 @@ namespace osc::mi
         void drawConnectionLines(MeshImporterHover const& currentHover) const
         {
             Document const& mg = getModelGraph();
-            ImU32 color = ui::ToImU32(m_Colors.connectionLines);
+            ImU32 color = ui::to_ImU32(m_Colors.connectionLines);
 
             for (MIObject const& el : mg.iter())
             {
@@ -379,7 +379,7 @@ namespace osc::mi
 
         void setContentRegionAvailAsSceneRect()
         {
-            set3DSceneRect(ui::ContentRegionAvailScreenRect());
+            set3DSceneRect(ui::content_region_avail_as_screen_rect());
         }
 
         void drawScene(std::span<DrawableThing const> drawables)
@@ -419,10 +419,10 @@ namespace osc::mi
             scene_renderer_.render(decs, p);
 
             // send texture to ImGui
-            ui::Image(scene_renderer_.upd_render_texture(), scene_renderer_.dimensions());
+            ui::draw_image(scene_renderer_.upd_render_texture(), scene_renderer_.dimensions());
 
             // handle hittesting, etc.
-            setIsRenderHovered(ui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup));
+            setIsRenderHovered(ui::is_item_hovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup));
         }
 
         bool isRenderHovered() const
@@ -560,7 +560,7 @@ namespace osc::mi
             auto cache = App::singleton<SceneCache>(App::resource_loader());
 
             Rect const sceneRect = get3DSceneRect();
-            Vec2 const mousePos = ui::GetMousePos();
+            Vec2 const mousePos = ui::get_mouse_pos();
 
             if (!is_intersecting(sceneRect, mousePos))
             {
@@ -960,7 +960,7 @@ namespace osc::mi
             Vec2 const p2 = midpointScr - (triangleWidth/2.0f)*directionNormalScr;
             Vec2 const p3 = midpointScr + triangleWidth*directionScr;
 
-            ui::GetWindowDrawList()->AddTriangleFilled(p1, p2, p3, color);
+            ui::get_panel_draw_list()->AddTriangleFilled(p1, p2, p3, color);
         }
 
         void drawConnectionLines(

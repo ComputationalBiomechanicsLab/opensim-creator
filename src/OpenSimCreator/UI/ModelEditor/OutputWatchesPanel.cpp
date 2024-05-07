@@ -66,41 +66,41 @@ private:
     {
         UpdateCachedSimulationReportIfNecessary(*m_Model, m_CachedReport);
 
-        if (m_API->getNumUserOutputExtractors() > 0 && ui::BeginTable("##OutputWatchesTable", 2, ImGuiTableFlags_SizingStretchProp))
+        if (m_API->getNumUserOutputExtractors() > 0 && ui::begin_table("##OutputWatchesTable", 2, ImGuiTableFlags_SizingStretchProp))
         {
-            ui::TableSetupColumn("Output", ImGuiTableColumnFlags_WidthStretch);
-            ui::TableSetupColumn("Value");
-            ui::TableHeadersRow();
+            ui::table_setup_column("Output", ImGuiTableColumnFlags_WidthStretch);
+            ui::table_setup_column("Value");
+            ui::table_headers_row();
 
             for (int outputIdx = 0; outputIdx < m_API->getNumUserOutputExtractors(); ++outputIdx)
             {
                 int column = 0;
                 OutputExtractor o = m_API->getUserOutputExtractor(outputIdx);
 
-                ui::PushID(outputIdx);
+                ui::push_id(outputIdx);
 
-                ui::TableNextRow();
+                ui::table_next_row();
 
-                ui::TableSetColumnIndex(column++);
-                if (ui::SmallButton(ICON_FA_TRASH))
+                ui::table_set_column_index(column++);
+                if (ui::draw_small_button(ICON_FA_TRASH))
                 {
                     m_API->removeUserOutputExtractor(outputIdx);
                 }
-                ui::SameLine();
-                ui::TextUnformatted(o.getName());
+                ui::same_line();
+                ui::draw_text_unformatted(o.getName());
 
-                ui::TableSetColumnIndex(column++);
-                ui::TextUnformatted(o.getValueString(m_Model->getModel(), m_CachedReport.simulationReport));
+                ui::table_set_column_index(column++);
+                ui::draw_text_unformatted(o.getValueString(m_Model->getModel(), m_CachedReport.simulationReport));
 
-                ui::PopID();
+                ui::pop_id();
             }
 
-            ui::EndTable();
+            ui::end_table();
         }
         else
         {
-            ui::TextDisabledAndWindowCentered("No outputs being watched");
-            ui::TextDisabledAndCentered("(Right-click a component and 'Watch Output')");
+            ui::draw_text_disabled_and_panel_centered("No outputs being watched");
+            ui::draw_text_disabled_and_centered("(Right-click a component and 'Watch Output')");
         }
     }
 

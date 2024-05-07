@@ -1553,7 +1553,7 @@ namespace
 
             if (m_Lines.getPlottingTaskStatus() == PlottingTaskStatus::Error) {
                 if (auto maybeErrorString = m_Lines.tryGetPlottingTaskErrorMessage()) {
-                    ui::Text("error: cannot show plot: %s", maybeErrorString->c_str());
+                    ui::draw_text("error: cannot show plot: %s", maybeErrorString->c_str());
                 }
                 return nullptr;
             }
@@ -1563,7 +1563,7 @@ namespace
 
             auto const* maybeCoord = FindComponent<OpenSim::Coordinate>(*modelGuard, latestParams.getCoordinatePath());
             if (!maybeCoord) {
-                ui::Text("(no coordinate named %s in model)", latestParams.getCoordinatePath().toString().c_str());
+                ui::draw_text("(no coordinate named %s in model)", latestParams.getCoordinatePath().toString().c_str());
                 return nullptr;
             }
             OpenSim::Coordinate const& coord = *maybeCoord;
@@ -1572,7 +1572,7 @@ namespace
 
             drawPlotTitle(coord, plotTitle);  // draw a custom title bar
             ImPlot::PushStyleVar(ImPlotStyleVar_FitPadding, {0.025f, 0.05f});
-            if (ImPlot::BeginPlot(plotTitle.c_str(), ui::GetContentRegionAvail(), m_PlotFlags)) {
+            if (ImPlot::BeginPlot(plotTitle.c_str(), ui::get_content_region_avail(), m_PlotFlags)) {
                 PlotParameters const& plotParams = getShared().getPlotParams();
 
                 ImPlot::SetupLegend(
@@ -1631,86 +1631,86 @@ namespace
             // parameters visually (#397)
 
             std::string muscleName = Ellipsis(getShared().getPlotParams().getMusclePath().getComponentName(), 15);
-            float muscleNameWidth = ui::CalcTextSize(muscleName).x + 2.0f*ui::GetStyleFramePadding().x;
+            float muscleNameWidth = ui::calc_text_size(muscleName).x + 2.0f*ui::get_style_frame_padding().x;
             std::string outputName = Ellipsis(getShared().getPlotParams().getPlottedOutput().getName(), 15);
-            float outputNameWidth = ui::CalcTextSize(outputName).x + 2.0f*ui::GetStyleFramePadding().x;
+            float outputNameWidth = ui::calc_text_size(outputName).x + 2.0f*ui::get_style_frame_padding().x;
             std::string coordName = Ellipsis(getShared().getPlotParams().getCoordinatePath().getComponentName(), 15);
-            float coordNameWidth = ui::CalcTextSize(coordName).x + 2.0f*ui::GetStyleFramePadding().x;
+            float coordNameWidth = ui::calc_text_size(coordName).x + 2.0f*ui::get_style_frame_padding().x;
 
             float totalWidth =
                 muscleNameWidth +
-                ui::CalcTextSize("'s").x +
-                ui::GetStyleItemSpacing().x +
+                ui::calc_text_size("'s").x +
+                ui::get_style_item_spacing().x +
                 outputNameWidth +
-                ui::GetStyleItemSpacing().x +
-                ui::CalcTextSize("vs.").x +
-                ui::GetStyleItemSpacing().x +
+                ui::get_style_item_spacing().x +
+                ui::calc_text_size("vs.").x +
+                ui::get_style_item_spacing().x +
                 coordNameWidth +
-                ui::GetStyleItemSpacing().x +
-                ui::GetStyleFramePadding().x +
-                ui::CalcTextSize(ICON_FA_BARS " Options").x +
-                ui::GetStyleFramePadding().x;
+                ui::get_style_item_spacing().x +
+                ui::get_style_frame_padding().x +
+                ui::calc_text_size(ICON_FA_BARS " Options").x +
+                ui::get_style_frame_padding().x;
 
-            float cursorStart = 0.5f*(ui::GetContentRegionAvail().x - totalWidth);
-            ui::SetCursorPosX(cursorStart);
+            float cursorStart = 0.5f*(ui::get_content_region_avail().x - totalWidth);
+            ui::set_cursor_pos_x(cursorStart);
 
-            ui::SetNextItemWidth(muscleNameWidth);
-            if (ui::BeginCombo("##musclename", muscleName, ImGuiComboFlags_NoArrowButton))
+            ui::set_next_item_width(muscleNameWidth);
+            if (ui::begin_combobox("##musclename", muscleName, ImGuiComboFlags_NoArrowButton))
             {
                 auto const* current = FindComponent<OpenSim::Muscle>(getShared().getModel().getModel(), getShared().getPlotParams().getMusclePath());
                 for (OpenSim::Muscle const& musc : getShared().getModel().getModel().getComponentList<OpenSim::Muscle>())
                 {
                     bool selected = &musc == current;
-                    if (ui::Selectable(musc.getName(), &selected))
+                    if (ui::draw_selectable(musc.getName(), &selected))
                     {
                         updShared().updPlotParams().setMusclePath(musc.getAbsolutePath());
                     }
                 }
-                ui::EndCombo();
+                ui::end_combobox();
             }
 
-            ui::SameLine();
-            ui::SetCursorPosX(ui::GetCursorPosX() - ui::GetStyleItemSpacing().x);
-            ui::Text("'s");
-            ui::SameLine();
-            ui::SetNextItemWidth(outputNameWidth);
-            if (ui::BeginCombo("##outputname", outputName, ImGuiComboFlags_NoArrowButton))
+            ui::same_line();
+            ui::set_cursor_pos_x(ui::get_cursor_pos_x() - ui::get_style_item_spacing().x);
+            ui::draw_text("'s");
+            ui::same_line();
+            ui::set_next_item_width(outputNameWidth);
+            if (ui::begin_combobox("##outputname", outputName, ImGuiComboFlags_NoArrowButton))
             {
                 PlottableOutput current = getShared().getPlotParams().getPlottedOutput();
                 for (PlottableOutput const& output : getShared().availableOutputs())
                 {
                     bool selected = output == current;
-                    if (ui::Selectable(output.getName(), &selected))
+                    if (ui::draw_selectable(output.getName(), &selected))
                     {
                         updShared().updPlotParams().setPlottedOutput(output);
                     }
                 }
-                ui::EndCombo();
+                ui::end_combobox();
             }
-            ui::SameLine();
-            ui::TextUnformatted("vs.");
-            ui::SameLine();
-            ui::SetNextItemWidth(coordNameWidth);
-            if (ui::BeginCombo("##coordname", coordName, ImGuiComboFlags_NoArrowButton))
+            ui::same_line();
+            ui::draw_text_unformatted("vs.");
+            ui::same_line();
+            ui::set_next_item_width(coordNameWidth);
+            if (ui::begin_combobox("##coordname", coordName, ImGuiComboFlags_NoArrowButton))
             {
                 auto const* current = FindComponent<OpenSim::Coordinate>(getShared().getModel().getModel(), getShared().getPlotParams().getCoordinatePath());
                 for (OpenSim::Coordinate const& c : getShared().getModel().getModel().getComponentList<OpenSim::Coordinate>())
                 {
                     bool selected = &c == current;
-                    if (ui::Selectable(c.getName(), &selected))
+                    if (ui::draw_selectable(c.getName(), &selected))
                     {
                         updShared().updPlotParams().setCoordinatePath(GetAbsolutePath(c));
                     }
                 }
-                ui::EndCombo();
+                ui::end_combobox();
             }
-            ui::SameLine();
+            ui::same_line();
 
             // draw little options button that opens the context menu
             //
             // it's easier for users to figure out than having to guess they need to
             // right-click the plot (#399)
-            ui::Button(ICON_FA_BARS " Options");
+            ui::draw_button(ICON_FA_BARS " Options");
             tryDrawGeneralPlotPopup(coord, plotTitle, ImGuiPopupFlags_MouseButtonLeft);
         }
 
@@ -1760,23 +1760,23 @@ namespace
                 {
                     m_LegendPopupIsOpen = true;
 
-                    if (ui::MenuItem(ICON_FA_TRASH " delete"))
+                    if (ui::draw_menu_item(ICON_FA_TRASH " delete"))
                     {
                         m_Lines.tagOtherPlotForDeletion(i);
                     }
-                    if (!plot.getIsLocked() && ui::MenuItem(ICON_FA_LOCK " lock"))
+                    if (!plot.getIsLocked() && ui::draw_menu_item(ICON_FA_LOCK " lock"))
                     {
                         m_Lines.setOtherPlotLocked(i, true);
                     }
-                    if (plot.getIsLocked() && ui::MenuItem(ICON_FA_UNLOCK " unlock"))
+                    if (plot.getIsLocked() && ui::draw_menu_item(ICON_FA_UNLOCK " unlock"))
                     {
                         m_Lines.setOtherPlotLocked(i, false);
                     }
-                    if (plot.tryGetParameters() && ui::MenuItem(ICON_FA_UNDO " revert to this"))
+                    if (plot.tryGetParameters() && ui::draw_menu_item(ICON_FA_UNDO " revert to this"))
                     {
                         m_Lines.revertToPreviousPlot(updShared().updModel(), i);
                     }
-                    if (ui::MenuItem(ICON_FA_FILE_EXPORT " export to CSV"))
+                    if (ui::draw_menu_item(ICON_FA_FILE_EXPORT " export to CSV"))
                     {
                         ActionPromptUserToSavePlotToCSV(coord, getShared().getPlotParams(), plot);
                     }
@@ -1816,15 +1816,15 @@ namespace
                 {
                     m_LegendPopupIsOpen = true;
 
-                    if (!plot.getIsLocked() && ui::MenuItem(ICON_FA_LOCK " lock"))
+                    if (!plot.getIsLocked() && ui::draw_menu_item(ICON_FA_LOCK " lock"))
                     {
                         m_Lines.setActivePlotLocked(true);
                     }
-                    if (plot.getIsLocked() && ui::MenuItem(ICON_FA_UNLOCK " unlock"))
+                    if (plot.getIsLocked() && ui::draw_menu_item(ICON_FA_UNLOCK " unlock"))
                     {
                         m_Lines.setActivePlotLocked(false);
                     }
-                    if (ui::MenuItem(ICON_FA_FILE_EXPORT " export to CSV"))
+                    if (ui::draw_menu_item(ICON_FA_FILE_EXPORT " export to CSV"))
                     {
                         ActionPromptUserToSavePlotToCSV(coord, getShared().getPlotParams(), plot);
                     }
@@ -1919,9 +1919,9 @@ namespace
             // then "scrub" through the output in the model
             //
             // this is handy for users to visually see how the independent variable affects the model
-            if (maybeMouseX && ui::IsMouseDown(ImGuiMouseButton_Left)) {
+            if (maybeMouseX && ui::is_mouse_down(ImGuiMouseButton_Left)) {
                 if (coord.getDefaultLocked()) {
-                    ui::DrawTooltip("scrubbing disabled", "you cannot scrub this plot because the coordinate is locked");
+                    ui::draw_tooltip("scrubbing disabled", "you cannot scrub this plot because the coordinate is locked");
                 }
                 else {
                     double storedValue = ConvertCoordDisplayValueToStorageValue(coord, *maybeMouseX);
@@ -1931,9 +1931,9 @@ namespace
 
             // when the user stops dragging their left-mouse around, commit the scrubbed-to
             // coordinate to model storage
-            if (maybeMouseX && ui::IsMouseReleased(ImGuiMouseButton_Left)) {
+            if (maybeMouseX && ui::is_mouse_released(ImGuiMouseButton_Left)) {
                 if (coord.getDefaultLocked()) {
-                    ui::DrawTooltip("scrubbing disabled", "you cannot scrub this plot because the coordinate is locked");
+                    ui::draw_tooltip("scrubbing disabled", "you cannot scrub this plot because the coordinate is locked");
                 }
                 else {
                     double storedValue = ConvertCoordDisplayValueToStorageValue(coord, *maybeMouseX);
@@ -1953,9 +1953,9 @@ namespace
             std::string const& plotTitle,
             ImGuiPopupFlags flags = ImGuiPopupFlags_MouseButtonRight)
         {
-            if (ui::BeginPopupContextItem(plotTitle + "_contextmenu", flags)) {
+            if (ui::begin_popup_context_menu(plotTitle + "_contextmenu", flags)) {
                 drawGeneralPlotPopupContent(coord);
-                ui::EndPopup();
+                ui::end_popup();
             }
         }
 
@@ -1966,31 +1966,31 @@ namespace
             drawMaxDatapointsIntInput();
             drawMaxHistoryEntriesIntInput();
 
-            if (ui::MenuItem("clear unlocked plots")) {
+            if (ui::draw_menu_item("clear unlocked plots")) {
                 m_Lines.clearUnlockedPlots();
             }
 
-            if (ui::BeginMenu("legend")) {
+            if (ui::begin_menu("legend")) {
                 drawLegendContextMenuContent();
-                ui::EndMenu();
+                ui::end_menu();
             }
 
-            ui::MenuItem("show markers on active plot", {}, &m_ShowMarkersOnActivePlot);
-            ui::MenuItem("show markers on other plots", {}, &m_ShowMarkersOnOtherPlots);
-            ui::MenuItem("snap cursor to datapoints", {}, &m_SnapCursor);
+            ui::draw_menu_item("show markers on active plot", {}, &m_ShowMarkersOnActivePlot);
+            ui::draw_menu_item("show markers on other plots", {}, &m_ShowMarkersOnOtherPlots);
+            ui::draw_menu_item("snap cursor to datapoints", {}, &m_SnapCursor);
 
-            if (ui::MenuItem("duplicate plot")) {
+            if (ui::draw_menu_item("duplicate plot")) {
                 actionDuplicateCurrentPlotIntoNewPanel(coord);
             }
 
-            if (ui::MenuItem("import CSV overlay(s)")) {
+            if (ui::draw_menu_item("import CSV overlay(s)")) {
                 ActionPromptUserForCSVOverlayFile(m_Lines);
             }
-            ui::DrawTooltipIfItemHovered("import CSV overlay(s)", "Imports the specified CSV file as an overlay over the current plot. This is handy fitting muscle curves against externally-supplied data.\n\nThe provided CSV file must contain a header row and at least two columns of numeric data on each data row. The values in the columns must match this plot's axes.");
+            ui::draw_tooltip_if_item_hovered("import CSV overlay(s)", "Imports the specified CSV file as an overlay over the current plot. This is handy fitting muscle curves against externally-supplied data.\n\nThe provided CSV file must contain a header row and at least two columns of numeric data on each data row. The values in the columns must match this plot's axes.");
 
-            if (ui::BeginMenu("export CSV")) {
+            if (ui::begin_menu("export CSV")) {
                 drawExportCSVMenuContent(coord);
-                ui::EndMenu();
+                ui::end_menu();
             }
         }
 
@@ -1998,7 +1998,7 @@ namespace
         void drawMaxDatapointsIntInput()
         {
             int currentDataPoints = getShared().getNumRequestedDatapoints();
-            if (ui::InputInt("num data points", &currentDataPoints, 1, 1024, ImGuiInputTextFlags_EnterReturnsTrue)) {
+            if (ui::draw_int_input("num data points", &currentDataPoints, 1, 1024, ImGuiInputTextFlags_EnterReturnsTrue)) {
                 if (currentDataPoints >= 0) {
                     updShared().setNumRequestedDataPoints(currentDataPoints);
                 }
@@ -2009,7 +2009,7 @@ namespace
         void drawMaxHistoryEntriesIntInput()
         {
             int maxHistoryEntries = m_Lines.getMaxHistoryEntries();
-            if (ui::InputInt("max history size", &maxHistoryEntries, 1, 100, ImGuiInputTextFlags_EnterReturnsTrue)) {
+            if (ui::draw_int_input("max history size", &maxHistoryEntries, 1, 100, ImGuiInputTextFlags_EnterReturnsTrue)) {
                 if (maxHistoryEntries >= 0) {
                     m_Lines.setMaxHistoryEntries(maxHistoryEntries);
                 }
@@ -2036,7 +2036,7 @@ namespace
                 }
             }
 
-            if (ui::Combo("output", &active, names)) {
+            if (ui::draw_combobox("output", &active, names)) {
                 updShared().setPlottedOutput(availableOutputs[active]);
             }
         }
@@ -2048,7 +2048,7 @@ namespace
             {
                 static_assert(std::is_same_v<decltype(m_PlotFlags), int>);
                 auto f = static_cast<unsigned int>(m_PlotFlags);
-                if (ui::CheckboxFlags("Hide", &f, ImPlotFlags_NoLegend)) {
+                if (ui::draw_checkbox_flags("Hide", &f, ImPlotFlags_NoLegend)) {
                     m_PlotFlags = static_cast<int>(f);
                 }
             }
@@ -2057,25 +2057,25 @@ namespace
             {
                 static_assert(std::is_same_v<decltype(m_LegendFlags), int>);
                 auto f = static_cast<unsigned int>(m_LegendFlags);
-                if (ui::CheckboxFlags("Outside", &f, ImPlotLegendFlags_Outside)) {
+                if (ui::draw_checkbox_flags("Outside", &f, ImPlotLegendFlags_Outside)) {
                     m_LegendFlags = static_cast<int>(f);
                 }
             }
 
-            const float s = ui::GetFrameHeight();
+            const float s = ui::get_frame_height();
             Vec2 const dims{1.5f * s, s};
 
-            ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {2.0f, 2.0f});
-            if (ui::Button("NW", dims))         { m_LegendLocation = ImPlotLocation_NorthWest; } ui::SameLine();
-            if (ui::Button("N", dims))          { m_LegendLocation = ImPlotLocation_North; }     ui::SameLine();
-            if (ui::Button("NE", dims))         { m_LegendLocation = ImPlotLocation_NorthEast; }
-            if (ui::Button("W", dims))          { m_LegendLocation = ImPlotLocation_West; }      ui::SameLine();
-            if (ui::InvisibleButton("C", dims)) { m_LegendLocation = ImPlotLocation_Center; }    ui::SameLine();
-            if (ui::Button("E", dims))          { m_LegendLocation = ImPlotLocation_East; }
-            if (ui::Button("SW", dims))         { m_LegendLocation = ImPlotLocation_SouthWest; } ui::SameLine();
-            if (ui::Button("S", dims))          { m_LegendLocation = ImPlotLocation_South; }     ui::SameLine();
-            if (ui::Button("SE", dims))         { m_LegendLocation = ImPlotLocation_SouthEast; }
-            ui::PopStyleVar();
+            ui::push_style_var(ImGuiStyleVar_ItemSpacing, {2.0f, 2.0f});
+            if (ui::draw_button("NW", dims))         { m_LegendLocation = ImPlotLocation_NorthWest; } ui::same_line();
+            if (ui::draw_button("N", dims))          { m_LegendLocation = ImPlotLocation_North; }     ui::same_line();
+            if (ui::draw_button("NE", dims))         { m_LegendLocation = ImPlotLocation_NorthEast; }
+            if (ui::draw_button("W", dims))          { m_LegendLocation = ImPlotLocation_West; }      ui::same_line();
+            if (ui::draw_invisible_button("C", dims)) { m_LegendLocation = ImPlotLocation_Center; }    ui::same_line();
+            if (ui::draw_button("E", dims))          { m_LegendLocation = ImPlotLocation_East; }
+            if (ui::draw_button("SW", dims))         { m_LegendLocation = ImPlotLocation_SouthWest; } ui::same_line();
+            if (ui::draw_button("S", dims))          { m_LegendLocation = ImPlotLocation_South; }     ui::same_line();
+            if (ui::draw_button("SE", dims))         { m_LegendLocation = ImPlotLocation_SouthEast; }
+            ui::pop_style_var();
         }
 
         // draws the content of a menu for exporting plot data to a CSV
@@ -2084,27 +2084,27 @@ namespace
             int id = 0;
 
             for (size_t i = 0; i < m_Lines.getNumOtherPlots(); ++i) {
-                ui::PushID(id++);
-                if (ui::MenuItem(m_Lines.getOtherPlot(i).getName())) {
+                ui::push_id(id++);
+                if (ui::draw_menu_item(m_Lines.getOtherPlot(i).getName())) {
                     ActionPromptUserToSavePlotToCSV(coord, getShared().getPlotParams(), m_Lines.getOtherPlot(i));
                 }
-                ui::PopID();
+                ui::pop_id();
             }
 
-            ui::PushID(id++);
-            if (ui::MenuItem(m_Lines.getActivePlot().getName())) {
+            ui::push_id(id++);
+            if (ui::draw_menu_item(m_Lines.getActivePlot().getName())) {
                 ActionPromptUserToSavePlotToCSV(coord, getShared().getPlotParams(), m_Lines.getActivePlot());
             }
-            ui::PopID();
+            ui::pop_id();
 
-            ui::Separator();
+            ui::draw_separator();
 
-            ui::PushID(id++);
-            if (ui::MenuItem("Export All Curves")) {
+            ui::push_id(id++);
+            if (ui::draw_menu_item("Export All Curves")) {
                 ActionPromptUserToSavePlotLinesToCSV(coord, getShared().getPlotParams(), m_Lines);
             }
-            ui::DrawTooltipIfItemHovered("Export All Curves to CSV", "Exports all curves in the plot to a CSV file.\n\nThe implementation will try to group things together by X value, but the CSV file *may* contain sparse rows if (e.g.) some curves have a different number of plot points, or some curves were loaded from another CSV, etc.");
-            ui::PopID();
+            ui::draw_tooltip_if_item_hovered("Export All Curves to CSV", "Exports all curves in the plot to a CSV file.\n\nThe implementation will try to group things together by X value, but the CSV file *may* contain sparse rows if (e.g.) some curves have a different number of plot points, or some curves were loaded from another CSV, etc.");
+            ui::pop_id();
         }
 
         // tries to duplicate the current plot (settings etc.) into a new plot panel
@@ -2157,16 +2157,16 @@ namespace
             }
             rgs::sort(coordinates, rgs::less{}, [](auto const* ptr) { return ptr->getName(); });
 
-            ui::Text("select coordinate:");
+            ui::draw_text("select coordinate:");
 
-            ui::BeginChild("MomentArmPlotCoordinateSelection");
+            ui::begin_child_panel("MomentArmPlotCoordinateSelection");
             for (OpenSim::Coordinate const* coord : coordinates) {
-                if (ui::Selectable(coord->getName())) {
+                if (ui::draw_selectable(coord->getName())) {
                     updShared().updPlotParams().setCoordinatePath(GetAbsolutePath(*coord));
                     rv = std::make_unique<ShowingPlotState>(updShared());
                 }
             }
-            ui::EndChild();
+            ui::end_child_panel();
 
             return rv;
         }
@@ -2193,20 +2193,20 @@ namespace
             }
             rgs::sort(muscles, rgs::less{}, [](auto const* ptr) { return ptr->getName(); });
 
-            ui::Text("select muscle:");
+            ui::draw_text("select muscle:");
 
             if (muscles.empty()) {
-                ui::TextDisabled("(the model contains no muscles?)");
+                ui::draw_text_disabled("(the model contains no muscles?)");
             }
             else {
-                ui::BeginChild("MomentArmPlotMuscleSelection");
+                ui::begin_child_panel("MomentArmPlotMuscleSelection");
                 for (OpenSim::Muscle const* musc : muscles) {
-                    if (ui::Selectable(musc->getName())) {
+                    if (ui::draw_selectable(musc->getName())) {
                         updShared().updPlotParams().setMusclePath(GetAbsolutePath(*musc));
                         rv = std::make_unique<PickCoordinateState>(updShared());
                     }
                 }
-                ui::EndChild();
+                ui::end_child_panel();
             }
 
             return rv;
@@ -2253,13 +2253,13 @@ public:
         if (m_IsOpen) {
             bool isOpen = m_IsOpen;
 
-            if (ui::Begin(panel_name_, &isOpen)) {
+            if (ui::begin_panel(panel_name_, &isOpen)) {
                 if (auto maybeNextState = m_ActiveState->onDraw()) {
                     m_ActiveState = std::move(maybeNextState);
                 }
                 m_IsOpen = isOpen;
             }
-            ui::End();
+            ui::end_panel();
 
             if (isOpen != m_IsOpen) {
                 m_IsOpen = isOpen;
@@ -2274,7 +2274,7 @@ private:
     // currently active state (this class controls a state machine)
     std::unique_ptr<MusclePlotState> m_ActiveState;
 
-    // name of the panel, as shown in the UI (via ui::Begin)
+    // name of the panel, as shown in the UI (via `ui::begin_panel`)
     std::string panel_name_;
 
     // if the panel is currently open or not

@@ -336,19 +336,19 @@ public:
 
     void onDraw()
     {
-        ui::DockSpaceOverViewport(ui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+        ui::enable_dockspace_over_viewport(ui::get_main_viewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
-        ui::Begin("Input");
+        ui::begin_panel("Input");
         {
-            Vec2 const windowDims = ui::GetContentRegionAvail();
+            Vec2 const windowDims = ui::get_content_region_avail();
             float const minDim = min(windowDims.x, windowDims.y);
             Vec2i const texDims = Vec2i{minDim, minDim};
 
             renderMesh(m_InputGrid, texDims, m_InputRender);
 
             // draw rendered texture via ImGui
-            ui::Image(*m_InputRender, texDims);
-            ui::HittestResult const ht = ui::HittestLastItem();
+            ui::draw_image(*m_InputRender, texDims);
+            ui::HittestResult const ht = ui::hittest_last_drawn_item();
 
             // draw any 2D overlays etc.
             renderOverlayElements(ht);
@@ -358,14 +358,14 @@ public:
             }
         }
 
-        ui::End();
+        ui::end_panel();
 
         Vec2 outputWindowPos;
         Vec2 outputWindowDims;
-        ui::Begin("Output");
+        ui::begin_panel("Output");
         {
-            outputWindowPos = ui::GetCursorScreenPos();
-            outputWindowDims = ui::GetContentRegionAvail();
+            outputWindowPos = ui::get_cursor_screen_pos();
+            outputWindowDims = ui::get_content_region_avail();
             float const minDim = min(outputWindowDims.x, outputWindowDims.y);
             Vec2i const texDims = Vec2i{minDim, minDim};
 
@@ -384,21 +384,21 @@ public:
             renderMesh(m_OutputGrid, texDims, m_OutputRender);
 
             // draw rendered texture via ImGui
-            ui::Image(*m_OutputRender, texDims);
+            ui::draw_image(*m_OutputRender, texDims);
         }
-        ui::End();
+        ui::end_panel();
 
         // draw scubber overlay
         {
             float leftPadding = 10.0f;
             float bottomPadding = 10.0f;
             float panelHeight = 50.0f;
-            ui::SetNextWindowPos({ outputWindowPos.x + leftPadding, outputWindowPos.y + outputWindowDims.y - panelHeight - bottomPadding });
-            ui::SetNextWindowSize({ outputWindowDims.x - leftPadding, panelHeight });
-            ui::Begin("##scrubber", nullptr, ui::GetMinimalWindowFlags() & ~ImGuiWindowFlags_NoInputs);
-            ui::SetNextItemWidth(ui::GetContentRegionAvail().x);
-            ui::SliderFloat("##blend", &m_BlendingFactor, 0.0f, 1.0f);
-            ui::End();
+            ui::set_next_panel_pos({ outputWindowPos.x + leftPadding, outputWindowPos.y + outputWindowDims.y - panelHeight - bottomPadding });
+            ui::set_next_panel_size({ outputWindowDims.x - leftPadding, panelHeight });
+            ui::begin_panel("##scrubber", nullptr, ui::get_minimal_panel_flags() & ~ImGuiWindowFlags_NoInputs);
+            ui::set_next_item_width(ui::get_content_region_avail().x);
+            ui::draw_float_slider("##blend", &m_BlendingFactor, 0.0f, 1.0f);
+            ui::end_panel();
         }
 
         // draw log panel (debugging)
@@ -426,13 +426,13 @@ private:
     // render any 2D overlays
     void renderOverlayElements(ui::HittestResult const& ht)
     {
-        ImDrawList* const drawlist = ui::GetWindowDrawList();
+        ImDrawList* const drawlist = ui::get_panel_draw_list();
 
         // render all fully-established landmark pairs
         for (LandmarkPair2D const& p : m_LandmarkPairs)
         {
-            Vec2 const p1 = ht.item_rect.p1 + (dimensions_of(ht.item_rect) * ndc_point_to_topleft_relative_pos(p.src));
-            Vec2 const p2 = ht.item_rect.p1 + (dimensions_of(ht.item_rect) * ndc_point_to_topleft_relative_pos(p.dest));
+            Vec2 const p1 = ht.item_screen_rect.p1 + (dimensions_of(ht.item_screen_rect) * ndc_point_to_topleft_relative_pos(p.src));
+            Vec2 const p2 = ht.item_screen_rect.p1 + (dimensions_of(ht.item_screen_rect) * ndc_point_to_topleft_relative_pos(p.dest));
 
             drawlist->AddLine(p1, p2, m_ConnectionLineColor, 5.0f);
             drawlist->AddRectFilled(p1 - 12.0f, p1 + 12.0f, m_SrcSquareColor);
@@ -444,8 +444,8 @@ private:
         {
             GUIFirstClickMouseState const& st = std::get<GUIFirstClickMouseState>(m_MouseState);
 
-            Vec2 const p1 = ht.item_rect.p1 + (dimensions_of(ht.item_rect) * ndc_point_to_topleft_relative_pos(st.srcNDCPos));
-            Vec2 const p2 = ui::GetMousePos();
+            Vec2 const p1 = ht.item_screen_rect.p1 + (dimensions_of(ht.item_screen_rect) * ndc_point_to_topleft_relative_pos(st.srcNDCPos));
+            Vec2 const p2 = ui::get_mouse_pos();
 
             drawlist->AddLine(p1, p2, m_ConnectionLineColor, 5.0f);
             drawlist->AddRectFilled(p1 - 12.0f, p1 + 12.0f, m_SrcSquareColor);
@@ -466,14 +466,14 @@ private:
     // render any mouse-related overlays for when the user hasn't clicked yet
     void renderMouseUIElements(ui::HittestResult const& ht, GUIInitialMouseState)
     {
-        Vec2 const mouseScreenPos = ui::GetMousePos();
-        Vec2 const mouseImagePos = mouseScreenPos - ht.item_rect.p1;
-        Vec2 const mouseImageRelPos = mouseImagePos / dimensions_of(ht.item_rect);
+        Vec2 const mouseScreenPos = ui::get_mouse_pos();
+        Vec2 const mouseImagePos = mouseScreenPos - ht.item_screen_rect.p1;
+        Vec2 const mouseImageRelPos = mouseImagePos / dimensions_of(ht.item_screen_rect);
         Vec2 const mouseImageNDCPos = topleft_relative_pos_to_ndc_point(mouseImageRelPos);
 
-        ui::DrawTooltipBodyOnly(to_string(mouseImageNDCPos));
+        ui::draw_tooltip_body_only(to_string(mouseImageNDCPos));
 
-        if (ui::IsMouseClicked(ImGuiMouseButton_Left))
+        if (ui::is_mouse_clicked(ImGuiMouseButton_Left))
         {
             m_MouseState = GUIFirstClickMouseState{mouseImageNDCPos};
         }
@@ -482,14 +482,14 @@ private:
     // render any mouse-related overlays for when the user has clicked once
     void renderMouseUIElements(ui::HittestResult const& ht, GUIFirstClickMouseState st)
     {
-        Vec2 const mouseScreenPos = ui::GetMousePos();
-        Vec2 const mouseImagePos = mouseScreenPos - ht.item_rect.p1;
-        Vec2 const mouseImageRelPos = mouseImagePos / dimensions_of(ht.item_rect);
+        Vec2 const mouseScreenPos = ui::get_mouse_pos();
+        Vec2 const mouseImagePos = mouseScreenPos - ht.item_screen_rect.p1;
+        Vec2 const mouseImageRelPos = mouseImagePos / dimensions_of(ht.item_screen_rect);
         Vec2 const mouseImageNDCPos = topleft_relative_pos_to_ndc_point(mouseImageRelPos);
 
-        ui::DrawTooltipBodyOnly(to_string(mouseImageNDCPos) + "*");
+        ui::draw_tooltip_body_only(to_string(mouseImageNDCPos) + "*");
 
-        if (ui::IsMouseClicked(ImGuiMouseButton_Left))
+        if (ui::is_mouse_clicked(ImGuiMouseButton_Left))
         {
             m_LandmarkPairs.push_back({st.srcNDCPos, mouseImageNDCPos});
             m_MouseState = GUIInitialMouseState{};
@@ -518,9 +518,9 @@ private:
     Camera m_Camera;
     std::optional<RenderTexture> m_InputRender;
     std::optional<RenderTexture> m_OutputRender;
-    ImU32 m_SrcSquareColor = ui::ToImU32(Color::red());
-    ImU32 m_DestCircleColor = ui::ToImU32(Color::green());
-    ImU32 m_ConnectionLineColor = ui::ToImU32(Color::white());
+    ImU32 m_SrcSquareColor = ui::to_ImU32(Color::red());
+    ImU32 m_DestCircleColor = ui::to_ImU32(Color::green());
+    ImU32 m_ConnectionLineColor = ui::to_ImU32(Color::white());
 
     // log panel (handy for debugging)
     LogViewerPanel m_LogViewerPanel{"Log"};

@@ -39,19 +39,19 @@ private:
     void impl_draw_content() final
     {
         {
-            ui::Dummy({0.0f, 1.0f});
-            ui::TextUnformatted("info:");
-            ui::SameLine();
-            ui::DrawHelpMarker("Top-level information about the simulation");
-            ui::Separator();
-            ui::Dummy({0.0f, 2.0f});
+            ui::draw_dummy({0.0f, 1.0f});
+            ui::draw_text_unformatted("info:");
+            ui::same_line();
+            ui::draw_help_marker("Top-level information about the simulation");
+            ui::draw_separator();
+            ui::draw_dummy({0.0f, 2.0f});
 
-            ui::Columns(2);
-            ui::Text("num reports");
-            ui::NextColumn();
-            ui::Text("%zu", m_Simulation->getNumReports());
-            ui::NextColumn();
-            ui::Columns();
+            ui::set_num_columns(2);
+            ui::draw_text("num reports");
+            ui::next_column();
+            ui::draw_text("%zu", m_Simulation->getNumReports());
+            ui::next_column();
+            ui::set_num_columns();
         }
 
         {
@@ -59,7 +59,7 @@ private:
             DrawSimulationParams(m_Simulation->getParams());
         }
 
-        ui::Dummy({0.0f, 10.0f});
+        ui::draw_dummy({0.0f, 10.0f});
 
         {
             OSC_PERF("draw simulation stats");
@@ -73,55 +73,55 @@ private:
 
         if (outputs.empty())
         {
-            ui::TextDisabledAndCentered("(no simulator output plots)");
+            ui::draw_text_disabled_and_centered("(no simulator output plots)");
             return;
         }
 
-        ui::Dummy({0.0f, 1.0f});
-        ui::Columns(2);
-        ui::TextUnformatted("plots:");
-        ui::SameLine();
-        ui::DrawHelpMarker("Various statistics collected when the simulation was ran");
-        ui::NextColumn();
+        ui::draw_dummy({0.0f, 1.0f});
+        ui::set_num_columns(2);
+        ui::draw_text_unformatted("plots:");
+        ui::same_line();
+        ui::draw_help_marker("Various statistics collected when the simulation was ran");
+        ui::next_column();
         if (rgs::any_of(outputs, is_numeric, &OutputExtractor::getOutputType))
         {
-            ui::Button(ICON_FA_SAVE " Save All " ICON_FA_CARET_DOWN);
-            if (ui::BeginPopupContextItem("##exportoptions", ImGuiPopupFlags_MouseButtonLeft))
+            ui::draw_button(ICON_FA_SAVE " Save All " ICON_FA_CARET_DOWN);
+            if (ui::begin_popup_context_menu("##exportoptions", ImGuiPopupFlags_MouseButtonLeft))
             {
-                if (ui::MenuItem("as CSV"))
+                if (ui::draw_menu_item("as CSV"))
                 {
                     m_SimulatorUIAPI->tryPromptToSaveOutputsAsCSV(outputs);
                 }
 
-                if (ui::MenuItem("as CSV (and open)"))
+                if (ui::draw_menu_item("as CSV (and open)"))
                 {
                     if (const auto path = m_SimulatorUIAPI->tryPromptToSaveOutputsAsCSV(outputs)) {
                         open_file_in_os_default_application(*path);
                     }
                 }
 
-                ui::EndPopup();
+                ui::end_popup();
             }
         }
 
-        ui::NextColumn();
-        ui::Columns();
-        ui::Separator();
-        ui::Dummy({0.0f, 2.0f});
+        ui::next_column();
+        ui::set_num_columns();
+        ui::draw_separator();
+        ui::draw_dummy({0.0f, 2.0f});
 
         int imguiID = 0;
-        ui::Columns(2);
+        ui::set_num_columns(2);
         for (OutputExtractor const& output : sim.getOutputs())
         {
-            ui::PushID(imguiID++);
+            ui::push_id(imguiID++);
             DrawOutputNameColumn(output, false);
-            ui::NextColumn();
+            ui::next_column();
             SimulationOutputPlot plot{m_SimulatorUIAPI, output, 32.0f};
             plot.onDraw();
-            ui::NextColumn();
-            ui::PopID();
+            ui::next_column();
+            ui::pop_id();
         }
-        ui::Columns();
+        ui::set_num_columns();
     }
 
     ISimulatorUIAPI* m_SimulatorUIAPI;

@@ -95,7 +95,7 @@ namespace
 
     Texture2D create_font_texture(UID texture_id)
     {
-        ImGuiIO& io = ui::GetIO();
+        ImGuiIO& io = ui::get_io();
 
         uint8_t* pixel_data = nullptr;
         Vec2i dims{};
@@ -179,7 +179,7 @@ namespace
     OscarImguiBackendData* get_backend_data()
     {
         if (ImGui::GetCurrentContext()) {
-            return static_cast<OscarImguiBackendData*>(ui::GetIO().BackendRendererUserData);
+            return static_cast<OscarImguiBackendData*>(ui::get_io().BackendRendererUserData);
         }
         else {
             return nullptr;
@@ -301,7 +301,7 @@ namespace
 
 bool osc::ui::graphics_backend::init()
 {
-    ImGuiIO& io = ui::GetIO();
+    ImGuiIO& io = ui::get_io();
     OSC_ASSERT(io.BackendRendererUserData == nullptr && "an oscar ImGui renderer backend is already initialized - this is a developer error (double-initialization)");
 
     // init backend data
@@ -321,7 +321,7 @@ void osc::ui::graphics_backend::shutdown()
     ImGui::DestroyPlatformWindows();
 
     // destroy backend data
-    ImGuiIO& io = ui::GetIO();
+    ImGuiIO& io = ui::get_io();
     io.BackendRendererName = nullptr;
     io.BackendRendererUserData = nullptr;
     delete bd;  // NOLINT(cppcoreguidelines-owning-memory)

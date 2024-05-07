@@ -46,16 +46,16 @@ namespace osc
         void impl_draw_content() final
         {
             // fill the entire available region with the render
-            Vec2 const dims = ui::GetContentRegionAvail();
+            Vec2 const dims = ui::get_content_region_avail();
 
             updateCamera();
 
             // render it via ImGui and hittest it
             RenderTexture& renderTexture = renderScene(dims);
-            ui::Image(renderTexture);
-            m_LastTextureHittestResult = ui::HittestLastItem();
+            ui::draw_image(renderTexture);
+            m_LastTextureHittestResult = ui::hittest_last_drawn_item();
 
-            drawOverlays(m_LastTextureHittestResult.item_rect);
+            drawOverlays(m_LastTextureHittestResult.item_screen_rect);
         }
 
         void updateCamera()
@@ -77,7 +77,7 @@ namespace osc
             // update camera if user drags it around etc.
             if (m_LastTextureHittestResult.is_hovered)
             {
-                if (ui::UpdatePolarCameraFromMouseInputs(m_Camera, dimensions_of(m_LastTextureHittestResult.item_rect)))
+                if (ui::update_polar_camera_from_mouse_inputs(m_Camera, dimensions_of(m_LastTextureHittestResult.item_screen_rect)))
                 {
                     m_State->linkedCameraBase = m_Camera;  // reflects latest modification
                 }
@@ -88,16 +88,16 @@ namespace osc
         void drawOverlays(Rect const& renderRect)
         {
             // ImGui: set cursor to draw over the top-right of the render texture (with padding)
-            ui::SetCursorScreenPos(renderRect.p1 + m_OverlayPadding);
+            ui::set_cursor_screen_pos(renderRect.p1 + m_OverlayPadding);
 
             drawInformationIcon();
-            ui::SameLine();
+            ui::same_line();
             drawExportButton();
-            ui::SameLine();
+            ui::same_line();
             drawAutoFitCameraButton();
-            ui::SameLine();
-            ui::Checkbox("show destination", &m_ShowDestinationMesh);
-            ui::SameLine();
+            ui::same_line();
+            ui::draw_checkbox("show destination", &m_ShowDestinationMesh);
+            ui::same_line();
             drawLandmarkRadiusSlider();
             drawBlendingFactorSlider();
         }
@@ -105,94 +105,94 @@ namespace osc
         // draws a information icon that shows basic mesh info when hovered
         void drawInformationIcon()
         {
-            ui::ButtonNoBg(ICON_FA_INFO_CIRCLE);
-            if (ui::IsItemHovered())
+            ui::draw_button_nobg(ICON_FA_INFO_CIRCLE);
+            if (ui::is_item_hovered())
             {
-                ui::BeginTooltip();
+                ui::begin_tooltip();
 
-                ui::TextDisabled("Result Information:");
+                ui::draw_text_disabled("Result Information:");
                 drawInformationTable();
 
-                ui::EndTooltip();
+                ui::end_tooltip();
             }
         }
 
         // draws a table containing useful input information (handy for debugging)
         void drawInformationTable()
         {
-            if (ui::BeginTable("##inputinfo", 2))
+            if (ui::begin_table("##inputinfo", 2))
             {
-                ui::TableSetupColumn("Name");
-                ui::TableSetupColumn("Value");
+                ui::table_setup_column("Name");
+                ui::table_setup_column("Value");
 
-                ui::TableNextRow();
-                ui::TableSetColumnIndex(0);
-                ui::Text("# vertices");
-                ui::TableSetColumnIndex(1);
-                ui::Text("%zu", m_State->getResultMesh().num_vertices());
+                ui::table_next_row();
+                ui::table_set_column_index(0);
+                ui::draw_text("# vertices");
+                ui::table_set_column_index(1);
+                ui::draw_text("%zu", m_State->getResultMesh().num_vertices());
 
-                ui::TableNextRow();
-                ui::TableSetColumnIndex(0);
-                ui::Text("# triangles");
-                ui::TableSetColumnIndex(1);
-                ui::Text("%zu", m_State->getResultMesh().num_indices()/3);
+                ui::table_next_row();
+                ui::table_set_column_index(0);
+                ui::draw_text("# triangles");
+                ui::table_set_column_index(1);
+                ui::draw_text("%zu", m_State->getResultMesh().num_indices()/3);
 
-                ui::EndTable();
+                ui::end_table();
             }
         }
 
         // draws an export button that enables the user to export things from this input
         void drawExportButton()
         {
-            m_CursorXAtExportButton = ui::GetCursorPos().x;  // needed to align the blending factor slider
-            ui::Button(ICON_FA_FILE_EXPORT " export" ICON_FA_CARET_DOWN);
-            if (ui::BeginPopupContextItem("##exportcontextmenu", ImGuiPopupFlags_MouseButtonLeft))
+            m_CursorXAtExportButton = ui::get_cursor_pos().x;  // needed to align the blending factor slider
+            ui::draw_button(ICON_FA_FILE_EXPORT " export" ICON_FA_CARET_DOWN);
+            if (ui::begin_popup_context_menu("##exportcontextmenu", ImGuiPopupFlags_MouseButtonLeft))
             {
-                if (ui::MenuItem("Mesh to OBJ"))
+                if (ui::draw_menu_item("Mesh to OBJ"))
                 {
                     ActionTrySaveMeshToObjFile(m_State->getResultMesh(), ObjWriterFlags::Default);
                 }
-                if (ui::MenuItem("Mesh to OBJ (no normals)"))
+                if (ui::draw_menu_item("Mesh to OBJ (no normals)"))
                 {
                     ActionTrySaveMeshToObjFile(m_State->getResultMesh(), ObjWriterFlags::NoWriteNormals);
                 }
-                if (ui::MenuItem("Mesh to STL"))
+                if (ui::draw_menu_item("Mesh to STL"))
                 {
                     ActionTrySaveMeshToStlFile(m_State->getResultMesh());
                 }
-                if (ui::MenuItem("Warped Non-Participating Landmarks to CSV"))
+                if (ui::draw_menu_item("Warped Non-Participating Landmarks to CSV"))
                 {
                     ActionSaveWarpedNonParticipatingLandmarksToCSV(m_State->getScratch(), m_State->meshResultCache);
                 }
-                if (ui::MenuItem("Warped Non-Participating Landmark Positions to CSV"))
+                if (ui::draw_menu_item("Warped Non-Participating Landmark Positions to CSV"))
                 {
                     ActionSaveWarpedNonParticipatingLandmarksToCSV(m_State->getScratch(), m_State->meshResultCache, LandmarkCSVFlags::NoHeader | LandmarkCSVFlags::NoNames);
                 }
-                if (ui::MenuItem("Landmark Pairs to CSV"))
+                if (ui::draw_menu_item("Landmark Pairs to CSV"))
                 {
                     ActionSavePairedLandmarksToCSV(m_State->getScratch());
                 }
-                if (ui::MenuItem("Landmark Pairs to CSV (no names)"))
+                if (ui::draw_menu_item("Landmark Pairs to CSV (no names)"))
                 {
                     ActionSavePairedLandmarksToCSV(m_State->getScratch(), LandmarkCSVFlags::NoNames);
                 }
-                ui::EndPopup();
+                ui::end_popup();
             }
         }
 
         // draws a button that auto-fits the camera to the 3D scene
         void drawAutoFitCameraButton()
         {
-            if (ui::Button(ICON_FA_EXPAND_ARROWS_ALT))
+            if (ui::draw_button(ICON_FA_EXPAND_ARROWS_ALT))
             {
                 auto_focus(
                     m_Camera,
                     m_State->getResultMesh().bounds(),
-                    aspect_ratio_of(m_LastTextureHittestResult.item_rect)
+                    aspect_ratio_of(m_LastTextureHittestResult.item_screen_rect)
                 );
                 m_State->linkedCameraBase = m_Camera;
             }
-            ui::DrawTooltipIfItemHovered(
+            ui::draw_tooltip_if_item_hovered(
                 "Autoscale Scene",
                 "Zooms camera to try and fit everything in the scene into the viewer"
             );
@@ -206,23 +206,23 @@ namespace osc
             ImGuiSliderFlags const flags = ImGuiSliderFlags_Logarithmic;
 
             CStringView const label = "landmark radius";
-            ui::SetNextItemWidth(ui::GetContentRegionAvail().x - ui::CalcTextSize(label).x - ui::GetStyleItemInnerSpacing().x - m_State->overlayPadding.x);
-            ui::SliderFloat(label, &m_LandmarkRadius, 0.0001f, 100.0f, "%.4f", flags);
+            ui::set_next_item_width(ui::get_content_region_avail().x - ui::calc_text_size(label).x - ui::get_style_item_inner_spacing().x - m_State->overlayPadding.x);
+            ui::draw_float_slider(label, &m_LandmarkRadius, 0.0001f, 100.0f, "%.4f", flags);
         }
 
         void drawBlendingFactorSlider()
         {
-            ui::SetCursorPosX(m_CursorXAtExportButton);  // align with "export" button in row above
+            ui::set_cursor_pos_x(m_CursorXAtExportButton);  // align with "export" button in row above
 
             CStringView const label = "blending factor  ";  // deliberate trailing spaces (for alignment with "landmark radius")
-            ui::SetNextItemWidth(ui::GetContentRegionAvail().x - ui::CalcTextSize(label).x - ui::GetStyleItemInnerSpacing().x - m_OverlayPadding.x);
+            ui::set_next_item_width(ui::get_content_region_avail().x - ui::calc_text_size(label).x - ui::get_style_item_inner_spacing().x - m_OverlayPadding.x);
 
             float factor = m_State->getScratch().blendingFactor;
-            if (ui::SliderFloat(label, &factor, 0.0f, 1.0f))
+            if (ui::draw_float_slider(label, &factor, 0.0f, 1.0f))
             {
                 ActionSetBlendFactorWithoutCommitting(m_State->updUndoable(), factor);
             }
-            if (ui::IsItemDeactivatedAfterEdit())
+            if (ui::is_item_deactivated_after_edit())
             {
                 ActionSetBlendFactor(m_State->updUndoable(), factor);
             }

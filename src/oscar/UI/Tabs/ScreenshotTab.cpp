@@ -92,51 +92,51 @@ public:
 private:
     void impl_on_draw_main_menu() final
     {
-        if (ui::BeginMenu("File")) {
-            if (ui::MenuItem("Save")) {
+        if (ui::begin_menu("File")) {
+            if (ui::draw_menu_item("Save")) {
                 action_try_save_annotated_screenshot();
             }
-            ui::EndMenu();
+            ui::end_menu();
         }
     }
 
     void impl_on_draw() final
     {
-        ui::DockSpaceOverViewport(ui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+        ui::enable_dockspace_over_viewport(ui::get_main_viewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
         // draw screenshot window
         {
-            ui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
-            ui::Begin("Screenshot");
-            ui::PopStyleVar();
+            ui::push_style_var(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
+            ui::begin_panel("Screenshot");
+            ui::pop_style_var();
 
             const Rect ui_image_rect = draw_screenshot_as_image();
-            draw_image_overlays(*ui::GetWindowDrawList(), ui_image_rect, c_unselected_color, c_selected_color);
+            draw_image_overlays(*ui::get_panel_draw_list(), ui_image_rect, c_unselected_color, c_selected_color);
 
-            ui::End();
+            ui::end_panel();
         }
 
         // draw controls window
         {
             int id = 0;
-            ui::Begin("Controls");
+            ui::begin_panel("Controls");
             for (const ScreenshotAnnotation& annotation : screenshot_.annotations()) {
-                ui::PushID(id++);
-                ui::TextUnformatted(annotation.label());
-                ui::PopID();
+                ui::push_id(id++);
+                ui::draw_text_unformatted(annotation.label());
+                ui::pop_id();
             }
-            ui::End();
+            ui::end_panel();
         }
     }
 
     // returns screenspace rect of the screenshot within the UI
     Rect draw_screenshot_as_image()
     {
-        const Vec2 cursor_topleft = ui::GetCursorScreenPos();
-        const Rect window_rect = {cursor_topleft, cursor_topleft + Vec2{ui::GetContentRegionAvail()}};
+        const Vec2 cursor_topleft = ui::get_cursor_screen_pos();
+        const Rect window_rect = {cursor_topleft, cursor_topleft + Vec2{ui::get_content_region_avail()}};
         const Rect image_rect = shrink_to_fit(window_rect, aspect_ratio_of(screenshot_.dimensions()));
-        ui::SetCursorScreenPos(image_rect.p1);
-        ui::Image(image_texture_, dimensions_of(image_rect));
+        ui::set_cursor_screen_pos(image_rect.p1);
+        ui::draw_image(image_texture_, dimensions_of(image_rect));
         return image_rect;
     }
 
@@ -146,8 +146,8 @@ private:
         const Color& unselected_color,
         const Color& selected_color)
     {
-        const Vec2 mouse_pos = ui::GetMousePos();
-        const bool left_click_released = ui::IsMouseReleased(ImGuiMouseButton_Left);
+        const Vec2 mouse_pos = ui::get_mouse_pos();
+        const bool left_click_released = ui::is_mouse_released(ImGuiMouseButton_Left);
         const Rect image_source_rect = {{0.0f, 0.0f}, screenshot_.dimensions()};
 
         for (const ScreenshotAnnotation& annotation : screenshot_.annotations()) {
@@ -172,7 +172,7 @@ private:
             drawlist.AddRect(
                 annotation_rect_screen.p1,
                 annotation_rect_screen.p2,
-                ui::ColorConvertFloat4ToU32(color),
+                ui::to_ImU32(color),
                 3.0f,
                 0,
                 3.0f
@@ -187,7 +187,7 @@ private:
 
         if (maybe_image_path) {
             std::ofstream fout{*maybe_image_path, std::ios_base::binary};
-            if (!fout) {
+            if (not fout) {
                 throw std::runtime_error{maybe_image_path->string() + ": cannot open for writing"};
             }
             const Texture2D annotated_screenshot = render_annotated_screenshot();
@@ -204,7 +204,7 @@ private:
         graphics::blit(image_texture_, render_texture);
 
         // draw overlays to a local ImGui drawlist
-        ImDrawList drawlist{ui::GetDrawListSharedData()};
+        ImDrawList drawlist{ui::get_draw_list_shared_data()};
         drawlist.Flags |= ImDrawListFlags_AntiAliasedLines;
         drawlist.AddDrawCmd();
         Color outline_color = c_selected_color;

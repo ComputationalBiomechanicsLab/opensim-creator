@@ -97,7 +97,7 @@ private:
 
     void impl_on_draw() final
     {
-        Rect const viewport = ui::GetMainViewportWorkspaceScreenRect();
+        Rect const viewport = ui::get_main_viewport_workspace_screen_rect();
         float const xmid = midpoint(viewport.p1.x, viewport.p2.x);
         Rect const lhs = {viewport.p1, {xmid, viewport.p2.y}};
         Rect const rhs = {{xmid, viewport.p1.y}, viewport.p2};

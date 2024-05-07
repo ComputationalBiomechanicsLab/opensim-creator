@@ -36,20 +36,20 @@ public:
 
     void onDraw()
     {
-        ui::PushID(this);
+        ui::push_id(this);
 
         // action: add body
         {
             // draw button
-            if (ui::MenuItem("Body")) {
+            if (ui::draw_menu_item("Body")) {
                 auto popup = std::make_unique<AddBodyPopup>("add body", m_EditorAPI, m_Model);
                 popup->open();
                 m_EditorAPI->pushPopup(std::move(popup));
             }
 
             // draw tooltip (if hovered)
-            if (ui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
-                ui::DrawTooltip(
+            if (ui::is_item_hovered(ImGuiHoveredFlags_DelayNormal)) {
+                ui::draw_tooltip(
                     "Add an OpenSim::Body into the model",
                     "An OpenSim::Body is a PhysicalFrame (reference frame) with an associated inertia specified by its mass, center-of-mass located in the PhysicalFrame, and its moment of inertia tensor about the center-of-mass");
             }
@@ -64,16 +64,16 @@ public:
         renderButton(GetComponentRegistry<OpenSim::Component>());
         renderButton(GetCustomComponentRegistry());
 
-        ui::PopID();
+        ui::pop_id();
     }
 
 private:
 
     void renderButton(ComponentRegistryBase const& registry)
     {
-        if (ui::BeginMenu(registry.name())) {
+        if (ui::begin_menu(registry.name())) {
             for (auto const& entry : registry) {
-                if (ui::MenuItem(entry.name())) {
+                if (ui::draw_menu_item(entry.name())) {
                     auto popup = std::make_unique<AddComponentPopup>(
                         "Add " + registry.name(),
                         m_EditorAPI,
@@ -84,16 +84,16 @@ private:
                     m_EditorAPI->pushPopup(std::move(popup));
                 }
 
-                if (ui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
-                    ui::DrawTooltip(entry.name(), entry.description());
+                if (ui::is_item_hovered(ImGuiHoveredFlags_DelayNormal)) {
+                    ui::draw_tooltip(entry.name(), entry.description());
                 }
             }
 
-            ui::EndMenu();
+            ui::end_menu();
         }
 
-        if (ui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
-            ui::DrawTooltip(registry.name(), registry.description());
+        if (ui::is_item_hovered(ImGuiHoveredFlags_DelayNormal)) {
+            ui::draw_tooltip(registry.name(), registry.description());
         }
     }
 

@@ -23,12 +23,12 @@ public:
 private:
     void impl_before_imgui_begin() final
     {
-        ui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
+        ui::push_style_var(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
     }
 
     void impl_after_imgui_begin() final
     {
-        ui::PopStyleVar();
+        ui::pop_style_var();
     }
 
     void impl_draw_content() final
@@ -62,7 +62,7 @@ private:
             }
         }
         else {
-            ui::Text("cannot show result: model is not warpable");
+            ui::draw_text("cannot show result: model is not warpable");
         }
     }
 

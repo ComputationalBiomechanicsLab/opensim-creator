@@ -31,54 +31,54 @@ public:
     void onDraw()
     {
         drawBackwardsButtons();
-        ui::SameLine();
+        ui::same_line();
 
         drawPlayOrPauseOrReplayButton();
-        ui::SameLine();
+        ui::same_line();
 
         drawForwardsButtons();
-        ui::SameLine();
+        ui::same_line();
 
         drawLoopButton();
-        ui::SameLine();
+        ui::same_line();
 
         drawPlaybackSpeedSelector();
-        ui::SameLine();
+        ui::same_line();
 
         drawStartTimeText();
-        ui::SameLine();
+        ui::same_line();
 
         drawScrubber();
-        ui::SameLine();
+        ui::same_line();
 
         drawEndTimeText();
 
-        // don't end with SameLine, because this might be composed into
+        // don't end with same_line, because this might be composed into
         // a multiline UI
     }
 
 private:
     void drawBackwardsButtons()
     {
-        if (ui::Button(ICON_FA_FAST_BACKWARD))
+        if (ui::draw_button(ICON_FA_FAST_BACKWARD))
         {
             m_SimulatorAPI->setSimulationScrubTime(m_Simulation->getStartTime());
         }
-        ui::DrawTooltipIfItemHovered("Go to First State");
-        ui::SameLine();
+        ui::draw_tooltip_if_item_hovered("Go to First State");
+        ui::same_line();
 
-        if (ui::Button(ICON_FA_STEP_BACKWARD))
+        if (ui::draw_button(ICON_FA_STEP_BACKWARD))
         {
             m_SimulatorAPI->stepBack();
         }
-        ui::DrawTooltipIfItemHovered("Previous State");
+        ui::draw_tooltip_if_item_hovered("Previous State");
     }
 
     void drawLoopButton()
     {
         static_assert(num_options<SimulationUILoopingState>() == 2);
         bool looping = m_SimulatorAPI->getSimulationLoopingState() == SimulationUILoopingState::Looping;
-        if (ui::Checkbox("loop", &looping)) {
+        if (ui::draw_checkbox("loop", &looping)) {
             if (looping) {
                 m_SimulatorAPI->setSimulationLoopingState(SimulationUILoopingState::Looping);
             }
@@ -99,59 +99,59 @@ private:
         if (state == SimulationUIPlaybackState::Playing) {
             // if playing, the only option is to stop
 
-            if (ui::Button(ICON_FA_PAUSE)) {
+            if (ui::draw_button(ICON_FA_PAUSE)) {
                 m_SimulatorAPI->setSimulationPlaybackState(SimulationUIPlaybackState::Stopped);
             }
-            ui::DrawTooltipIfItemHovered("Pause (Space)");
+            ui::draw_tooltip_if_item_hovered("Pause (Space)");
         }
         else if (state == SimulationUIPlaybackState::Stopped) {
             // if stopped, show either a REDO button (i.e. re-run from the beginning) or
             // a PLAY button (i.e. un-pause)
 
             if (tCur >= tEnd) {
-                if (ui::Button(ICON_FA_REDO)) {
+                if (ui::draw_button(ICON_FA_REDO)) {
                     m_SimulatorAPI->setSimulationScrubTime(tStart);
                     m_SimulatorAPI->setSimulationPlaybackState(SimulationUIPlaybackState::Playing);
                 }
-                ui::DrawTooltipIfItemHovered("Replay (Space)");
+                ui::draw_tooltip_if_item_hovered("Replay (Space)");
             }
             else {
-                if (ui::Button(ICON_FA_PLAY)) {
+                if (ui::draw_button(ICON_FA_PLAY)) {
                     m_SimulatorAPI->setSimulationPlaybackState(SimulationUIPlaybackState::Playing);  // i.e. unpause
                 }
-                ui::DrawTooltipIfItemHovered("Play (Space)");
+                ui::draw_tooltip_if_item_hovered("Play (Space)");
             }
         }
     }
 
     void drawForwardsButtons()
     {
-        if (ui::Button(ICON_FA_STEP_FORWARD))
+        if (ui::draw_button(ICON_FA_STEP_FORWARD))
         {
             m_SimulatorAPI->stepForward();
         }
-        ui::DrawTooltipIfItemHovered("Next State");
+        ui::draw_tooltip_if_item_hovered("Next State");
 
-        ui::SameLine();
+        ui::same_line();
 
-        if (ui::Button(ICON_FA_FAST_FORWARD))
+        if (ui::draw_button(ICON_FA_FAST_FORWARD))
         {
             m_SimulatorAPI->setSimulationScrubTime(m_Simulation->getEndTime());
         }
-        ui::DrawTooltipIfItemHovered("Go to Last State");
+        ui::draw_tooltip_if_item_hovered("Go to Last State");
     }
 
     void drawStartTimeText()
     {
         SimulationClock::time_point const tStart = m_Simulation->getStartTime();
-        ui::TextDisabled("%.2f", static_cast<float>(tStart.time_since_epoch().count()));
+        ui::draw_text_disabled("%.2f", static_cast<float>(tStart.time_since_epoch().count()));
     }
 
     void drawPlaybackSpeedSelector()
     {
-        ui::SetNextItemWidth(ui::CalcTextSize("0.000x").x + 2.0f*ui::GetStyleFramePadding().x);
+        ui::set_next_item_width(ui::calc_text_size("0.000x").x + 2.0f*ui::get_style_frame_padding().x);
         float speed = m_SimulatorAPI->getSimulationPlaybackSpeed();
-        if (ui::InputFloat("speed", &speed, 0.0f, 0.0f, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue))
+        if (ui::draw_float_input("speed", &speed, 0.0f, 0.0f, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue))
         {
             m_SimulatorAPI->setSimulationPlaybackSpeed(speed);
         }
@@ -163,35 +163,35 @@ private:
         SimulationClock::time_point const tEnd = m_Simulation->getEndTime();
         SimulationClock::time_point const tCur = m_SimulatorAPI->getSimulationScrubTime();
 
-        ui::SetNextItemWidth(ui::GetFontSize() * 20.0f);
+        ui::set_next_item_width(ui::get_font_size() * 20.0f);
         float v = static_cast<float>(tCur.time_since_epoch().count());
-        bool const userScrubbed = ui::SliderFloat("##scrubber",
+        bool const userScrubbed = ui::draw_float_slider("##scrubber",
             &v,
             static_cast<float>(tStart.time_since_epoch().count()),
             static_cast<float>(tEnd.time_since_epoch().count()),
             "%.2f",
             ImGuiSliderFlags_AlwaysClamp
         );
-        ui::SameLine();
+        ui::same_line();
 
         if (userScrubbed)
         {
             m_SimulatorAPI->setSimulationScrubTime(SimulationClock::start() + SimulationClock::duration{static_cast<double>(v)});
         }
 
-        if (ui::IsItemHovered())
+        if (ui::is_item_hovered())
         {
-            ui::BeginTooltip();
-            ui::TextUnformatted("Left-Click: Change simulation time being shown");
-            ui::TextUnformatted("Ctrl-Click: Type in the simulation time being shown");
-            ui::EndTooltip();
+            ui::begin_tooltip();
+            ui::draw_text_unformatted("Left-Click: Change simulation time being shown");
+            ui::draw_text_unformatted("Ctrl-Click: Type in the simulation time being shown");
+            ui::end_tooltip();
         }
     }
 
     void drawEndTimeText()
     {
         SimulationClock::time_point const tEnd = m_Simulation->getEndTime();
-        ui::TextDisabled("%.2f", static_cast<float>(tEnd.time_since_epoch().count()));
+        ui::draw_text_disabled("%.2f", static_cast<float>(tEnd.time_since_epoch().count()));
     }
 
     std::string m_Label;

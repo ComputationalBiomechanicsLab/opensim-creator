@@ -33,13 +33,13 @@ private:
 
 void osc::UndoRedoPanel::draw_content(UndoRedoBase& storage)
 {
-    if (ui::Button("undo")) {
+    if (ui::draw_button("undo")) {
         storage.undo();
     }
 
-    ui::SameLine();
+    ui::same_line();
 
-    if (ui::Button("redo")) {
+    if (ui::draw_button("redo")) {
         storage.redo();
     }
 
@@ -47,24 +47,24 @@ void osc::UndoRedoPanel::draw_content(UndoRedoBase& storage)
 
     // draw undo entries oldest (highest index) to newest (lowest index)
     for (ptrdiff_t i = storage.getNumUndoEntriesi()-1; 0 <= i and i < storage.getNumUndoEntriesi(); --i) {
-        ui::PushID(ui_id++);
-        if (ui::Selectable(storage.getUndoEntry(i).message())) {
+        ui::push_id(ui_id++);
+        if (ui::draw_selectable(storage.getUndoEntry(i).message())) {
             storage.undoTo(i);
         }
-        ui::PopID();
+        ui::pop_id();
     }
 
-    ui::PushID(ui_id++);
-    ui::Text("  %s", storage.getHead().message().c_str());
-    ui::PopID();
+    ui::push_id(ui_id++);
+    ui::draw_text("  %s", storage.getHead().message().c_str());
+    ui::pop_id();
 
     // draw redo entries oldest (lowest index) to newest (highest index)
     for (ptrdiff_t i = 0; i < storage.getNumRedoEntriesi(); ++i) {
-        ui::PushID(ui_id++);
-        if (ui::Selectable(storage.getRedoEntry(i).message())) {
+        ui::push_id(ui_id++);
+        if (ui::draw_selectable(storage.getRedoEntry(i).message())) {
             storage.redoTo(i);
         }
-        ui::PopID();
+        ui::pop_id();
     }
 }
 

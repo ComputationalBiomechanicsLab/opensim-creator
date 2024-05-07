@@ -143,7 +143,7 @@ public:
         ModelEditorViewerPanelParameters& params,
         ModelEditorViewerPanelState& state) const
     {
-        return ui::UpdatePolarCameraFromKeyboardInputs(
+        return ui::update_polar_camera_from_keyboard_inputs(
             params.updRenderParams().camera,
             state.viewportRect,
             m_Decorations.bvh.bounds()
@@ -154,12 +154,12 @@ public:
         ModelEditorViewerPanelParameters& params,
         ModelEditorViewerPanelState& state)
     {
-        bool rv = ui::UpdatePolarCameraFromMouseInputs(
+        bool rv = ui::update_polar_camera_from_mouse_inputs(
             params.updRenderParams().camera,
             dimensions_of(state.viewportRect)
         );
 
-        if (ui::IsDraggingWithAnyMouseButtonDown())
+        if (ui::is_mouse_dragging_with_any_button_down())
         {
             m_State.hoveredComponent = {};
         }
@@ -176,13 +176,13 @@ public:
         ModelEditorViewerPanelParameters& panelParams,
         ModelEditorViewerPanelState& panelState)
     {
-        bool const layerIsHovered = ui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
+        bool const layerIsHovered = ui::is_panel_hovered(ImGuiHoveredFlags_RootAndChildWindows);
 
         // update this layer's state from provided state
         m_State.renderParams = panelParams.getRenderParams();
-        m_IsLeftClickReleasedWithoutDragging = ui::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Left);
-        m_IsRightClickReleasedWithoutDragging = ui::IsMouseReleasedWithoutDragging(ImGuiMouseButton_Right);
-        if (ui::IsKeyReleased(ImGuiKey_Escape))
+        m_IsLeftClickReleasedWithoutDragging = ui::is_mouse_released_without_dragging(ImGuiMouseButton_Left);
+        m_IsRightClickReleasedWithoutDragging = ui::is_mouse_released_without_dragging(ImGuiMouseButton_Right);
+        if (ui::is_key_released(ImGuiKey_Escape))
         {
             m_State.shouldClosePopup = true;
         }
@@ -200,7 +200,7 @@ public:
         m_Renderer.render(m_Decorations.decorations, rendererParameters);
 
         // blit texture as ImGui image
-        ui::Image(
+        ui::draw_image(
             m_Renderer.upd_render_texture(),
             dimensions_of(panelState.viewportRect)
         );
@@ -213,7 +213,7 @@ public:
                 *m_State.meshCache,
                 m_Decorations.decorations,
                 m_State.renderParams.camera,
-                ui::GetMousePos(),
+                ui::get_mouse_pos(),
                 panelState.viewportRect
             );
             if (collision)
@@ -233,8 +233,8 @@ public:
         }
 
         // show header
-        ui::SetCursorScreenPos(panelState.viewportRect.p1 + Vec2{10.0f, 10.0f});
-        ui::Text("%s (ESC to cancel)", m_State.popupParams.popupHeaderText.c_str());
+        ui::set_cursor_screen_pos(panelState.viewportRect.p1 + Vec2{10.0f, 10.0f});
+        ui::draw_text("%s (ESC to cancel)", m_State.popupParams.popupHeaderText.c_str());
 
         // handle completion state (i.e. user selected enough components)
         if (m_State.alreadyChosenComponents.size() == m_State.popupParams.numComponentsUserMustChoose)
@@ -245,19 +245,19 @@ public:
 
         // draw cancellation button
         {
-            ui::PushStyleVar(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
+            ui::push_style_var(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
 
             constexpr CStringView cancellationButtonText = ICON_FA_ARROW_LEFT " Cancel (ESC)";
             Vec2 const margin = {25.0f, 25.0f};
-            Vec2 const buttonDims = ui::CalcButtonSize(cancellationButtonText);
+            Vec2 const buttonDims = ui::calc_button_size(cancellationButtonText);
             Vec2 const buttonTopLeft = panelState.viewportRect.p2 - (buttonDims + margin);
-            ui::SetCursorScreenPos(buttonTopLeft);
-            if (ui::Button(cancellationButtonText))
+            ui::set_cursor_screen_pos(buttonTopLeft);
+            if (ui::draw_button(cancellationButtonText))
             {
                 m_State.shouldClosePopup = true;
             }
 
-            ui::PopStyleVar();
+            ui::pop_style_var();
         }
     }
 

@@ -23,15 +23,15 @@ osc::IconWithMenu::IconWithMenu(
 bool osc::IconWithMenu::on_draw()
 {
     if (icon_without_menu_.on_draw()) {
-        ui::OpenPopup(context_menu_id_);
+        ui::open_popup(context_menu_id_);
     }
 
     bool rv = false;
-    if (ui::BeginPopup(context_menu_id_,ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings)) {
-        ui::TextDisabled(icon_without_menu_.title());
-        ui::Dummy({0.0f, 0.5f*ui::GetTextLineHeight()});
+    if (ui::begin_popup(context_menu_id_,ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings)) {
+        ui::draw_text_disabled(icon_without_menu_.title());
+        ui::draw_dummy({0.0f, 0.5f*ui::get_text_line_height()});
         rv = content_renderer_();
-        ui::EndPopup();
+        ui::end_popup();
     }
 
     return rv;

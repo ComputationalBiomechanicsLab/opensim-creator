@@ -28,7 +28,7 @@ namespace osc
                 mouse_captured_ = false;
                 return true;
             }
-            if (e.type == SDL_MOUSEBUTTONDOWN and ui::IsMouseInMainViewportWorkspaceScreenRect()) {
+            if (e.type == SDL_MOUSEBUTTONDOWN and ui::is_mouse_in_main_viewport_workspace()) {
                 mouse_captured_ = true;
                 return true;
             }
@@ -40,12 +40,12 @@ namespace osc
         {
             // handle mouse capturing
             if (mouse_captured_) {
-                ui::UpdateCameraFromInputs(*this, camera_eulers_);
-                ui::SetMouseCursor(ImGuiMouseCursor_None);
+                ui::update_camera_from_all_inputs(*this, camera_eulers_);
+                ui::set_mouse_cursor(ImGuiMouseCursor_None);
                 App::upd().set_show_cursor(false);
             }
             else {
-                ui::SetMouseCursor(ImGuiMouseCursor_Arrow);
+                ui::set_mouse_cursor(ImGuiMouseCursor_Arrow);
                 App::upd().set_show_cursor(true);
             }
         }

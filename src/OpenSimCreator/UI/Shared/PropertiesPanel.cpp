@@ -33,19 +33,19 @@ namespace
             return;
         }
 
-        ui::Columns(2);
-        ui::TextUnformatted("actions");
-        ui::SameLine();
-        ui::DrawHelpMarker("Shows a menu containing extra actions that can be performed on this component.\n\nYou can also access the same menu by right-clicking the component in the 3D viewer, bottom status bar, or navigator panel.");
-        ui::NextColumn();
-        ui::PushStyleColor(ImGuiCol_Text, Color::yellow());
-        if (ui::Button(ICON_FA_BOLT) || ui::IsItemClicked(ImGuiMouseButton_Right))
+        ui::set_num_columns(2);
+        ui::draw_text_unformatted("actions");
+        ui::same_line();
+        ui::draw_help_marker("Shows a menu containing extra actions that can be performed on this component.\n\nYou can also access the same menu by right-clicking the component in the 3D viewer, bottom status bar, or navigator panel.");
+        ui::next_column();
+        ui::push_style_color(ImGuiCol_Text, Color::yellow());
+        if (ui::draw_button(ICON_FA_BOLT) || ui::is_item_clicked(ImGuiMouseButton_Right))
         {
             editorAPI->pushComponentContextMenuPopup(GetAbsolutePath(*selection));
         }
-        ui::PopStyleColor();
-        ui::NextColumn();
-        ui::Columns();
+        ui::pop_style_color();
+        ui::next_column();
+        ui::set_num_columns();
     }
 
     class ObjectNameEditor final {
@@ -72,25 +72,25 @@ namespace
                 m_LastSelected = selected;
             }
 
-            ui::Columns(2);
+            ui::set_num_columns(2);
 
-            ui::Separator();
-            ui::TextUnformatted("name");
-            ui::SameLine();
-            ui::DrawHelpMarker("The name of the component", "The component's name can be important. It can be used when components want to refer to eachover. E.g. a joint will name the two frames it attaches to.");
+            ui::draw_separator();
+            ui::draw_text_unformatted("name");
+            ui::same_line();
+            ui::draw_help_marker("The name of the component", "The component's name can be important. It can be used when components want to refer to eachover. E.g. a joint will name the two frames it attaches to.");
 
-            ui::NextColumn();
+            ui::next_column();
 
-            ui::SetNextItemWidth(ui::GetContentRegionAvail().x);
-            ui::InputString("##nameeditor", m_EditedName);
-            if (ui::ItemValueShouldBeSaved())
+            ui::set_next_item_width(ui::get_content_region_avail().x);
+            ui::draw_string_input("##nameeditor", m_EditedName);
+            if (ui::should_save_last_drawn_item_value())
             {
                 ActionSetComponentName(*m_Model, GetAbsolutePath(*selected), m_EditedName);
             }
 
-            ui::NextColumn();
+            ui::next_column();
 
-            ui::Columns();
+            ui::set_num_columns();
         }
     private:
         std::shared_ptr<UndoableModelStatePair> m_Model;
@@ -119,12 +119,12 @@ private:
     {
         if (!m_Model->getSelected())
         {
-            ui::TextDisabledAndWindowCentered("(nothing selected)");
+            ui::draw_text_disabled_and_panel_centered("(nothing selected)");
             return;
         }
 
-        ui::PushID(m_Model->getSelected());
-        ScopeGuard const g{[]() { ui::PopID(); }};
+        ui::push_id(m_Model->getSelected());
+        ScopeGuard const g{[]() { ui::pop_id(); }};
 
         // draw an actions row with a button that opens the context menu
         //

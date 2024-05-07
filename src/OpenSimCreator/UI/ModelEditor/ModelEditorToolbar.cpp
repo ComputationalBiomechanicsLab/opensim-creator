@@ -43,57 +43,57 @@ public:
         {
             drawContent();
         }
-        ui::End();
+        ui::end_panel();
     }
 private:
     void drawModelFileRelatedButtons()
     {
         DrawNewModelButton(m_MainUIStateAPI);
-        ui::SameLine();
+        ui::same_line();
         DrawOpenModelButtonWithRecentFilesDropdown(m_MainUIStateAPI);
-        ui::SameLine();
+        ui::same_line();
         DrawSaveModelButton(m_MainUIStateAPI, *m_Model);
-        ui::SameLine();
+        ui::same_line();
         DrawReloadModelButton(*m_Model);
     }
 
     void drawForwardDynamicSimulationControls()
     {
-        ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {2.0f, 0.0f});
+        ui::push_style_var(ImGuiStyleVar_ItemSpacing, {2.0f, 0.0f});
 
-        ui::PushStyleColor(ImGuiCol_Text, Color::dark_green());
-        if (ui::Button(ICON_FA_PLAY))
+        ui::push_style_color(ImGuiCol_Text, Color::dark_green());
+        if (ui::draw_button(ICON_FA_PLAY))
         {
             ActionStartSimulatingModel(m_MainUIStateAPI, *m_Model);
         }
-        ui::PopStyleColor();
-        App::upd().add_frame_annotation("Simulate Button", ui::GetItemRect());
-        ui::DrawTooltipIfItemHovered("Simulate Model", "Run a forward-dynamic simulation of the model");
+        ui::pop_style_color();
+        App::upd().add_frame_annotation("Simulate Button", ui::get_last_drawn_item_screen_rect());
+        ui::draw_tooltip_if_item_hovered("Simulate Model", "Run a forward-dynamic simulation of the model");
 
-        ui::SameLine();
+        ui::same_line();
 
-        if (ui::Button(ICON_FA_EDIT))
+        if (ui::draw_button(ICON_FA_EDIT))
         {
             m_EditorAPI->pushPopup(std::make_unique<ParamBlockEditorPopup>("simulation parameters", &m_MainUIStateAPI->updSimulationParams()));
         }
-        ui::DrawTooltipIfItemHovered("Edit Simulation Settings", "Change the parameters used when simulating the model");
+        ui::draw_tooltip_if_item_hovered("Edit Simulation Settings", "Change the parameters used when simulating the model");
 
-        ui::PopStyleVar();
+        ui::pop_style_var();
     }
 
     void drawContent()
     {
         drawModelFileRelatedButtons();
-        ui::SameLineWithVerticalSeperator();
+        ui::draw_same_line_with_vertical_separator();
 
         DrawUndoAndRedoButtons(*m_Model);
-        ui::SameLineWithVerticalSeperator();
+        ui::draw_same_line_with_vertical_separator();
 
         DrawSceneScaleFactorEditorControls(*m_Model);
-        ui::SameLineWithVerticalSeperator();
+        ui::draw_same_line_with_vertical_separator();
 
         drawForwardDynamicSimulationControls();
-        ui::SameLineWithVerticalSeperator();
+        ui::draw_same_line_with_vertical_separator();
 
         DrawAllDecorationToggleButtons(*m_Model, *m_IconCache);
     }
@@ -105,7 +105,7 @@ private:
 
     std::shared_ptr<IconCache> m_IconCache = App::singleton<IconCache>(
         App::resource_loader().with_prefix("icons/"),
-        ui::GetTextLineHeight()/128.0f
+        ui::get_text_line_height()/128.0f
     );
 };
 

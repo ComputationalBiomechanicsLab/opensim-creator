@@ -75,35 +75,35 @@ public:
 
     void onDraw()
     {
-        ui::DockSpaceOverViewport(
-            ui::GetMainViewport(),
+        ui::enable_dockspace_over_viewport(
+            ui::get_main_viewport(),
             ImGuiDockNodeFlags_PassthruCentralNode
         );
 
-        ui::Begin("Inputs");
+        ui::begin_panel("Inputs");
 
-        ui::InputInt("parallelism", &m_Parallelism);
-        if (ui::Button("edit base params"))
+        ui::draw_int_input("parallelism", &m_Parallelism);
+        if (ui::draw_button("edit base params"))
         {
             m_ParamEditor.open();
         }
 
-        if (ui::Button("(re)start"))
+        if (ui::draw_button("(re)start"))
         {
             populateParamsFromParamBlock();
         }
 
-        ui::End();
+        ui::end_panel();
 
-        ui::Begin("Outputs");
+        ui::begin_panel("Outputs");
 
-        if (!m_Sims.empty() && ui::BeginTable("simulations", 4))
+        if (!m_Sims.empty() && ui::begin_table("simulations", 4))
         {
-            ui::TableSetupColumn("Integrator");
-            ui::TableSetupColumn("Progress");
-            ui::TableSetupColumn("Wall Time (sec)");
-            ui::TableSetupColumn("NumStepsTaken");
-            ui::TableHeadersRow();
+            ui::table_setup_column("Integrator");
+            ui::table_setup_column("Progress");
+            ui::table_setup_column("Wall Time (sec)");
+            ui::table_setup_column("NumStepsTaken");
+            ui::table_headers_row();
 
             for (ForwardDynamicSimulation const& sim : m_Sims)
             {
@@ -117,27 +117,27 @@ public:
                 float t = m_WalltimeExtractor.getValueFloat(*sim.getModel(), reports.back());
                 float steps = m_StepsTakenExtractor.getValueFloat(*sim.getModel(), reports.back());
 
-                ui::TableNextRow();
+                ui::table_next_row();
                 int column = 0;
-                ui::TableSetColumnIndex(column++);
-                ui::TextUnformatted(m.label());
-                ui::TableSetColumnIndex(column++);
-                ui::ProgressBar(sim.getProgress());
-                ui::TableSetColumnIndex(column++);
-                ui::Text("%f", t);
-                ui::TableSetColumnIndex(column++);
-                ui::Text("%i", static_cast<int>(steps));
+                ui::table_set_column_index(column++);
+                ui::draw_text_unformatted(m.label());
+                ui::table_set_column_index(column++);
+                ui::draw_progress_bar(sim.getProgress());
+                ui::table_set_column_index(column++);
+                ui::draw_text("%f", t);
+                ui::table_set_column_index(column++);
+                ui::draw_text("%i", static_cast<int>(steps));
             }
 
-            ui::EndTable();
+            ui::end_table();
 
-            if (ui::Button(ICON_FA_SAVE " Export to CSV"))
+            if (ui::draw_button(ICON_FA_SAVE " Export to CSV"))
             {
                 tryExportOutputs();
             }
         }
 
-        ui::End();
+        ui::end_panel();
 
         if (m_ParamEditor.begin_popup())
         {
@@ -241,8 +241,7 @@ osc::PerformanceAnalyzerTab::PerformanceAnalyzerTab(
     ParamBlock const& params) :
 
     m_Impl{std::make_unique<Impl>(std::move(modelState), params)}
-{
-}
+{}
 
 osc::PerformanceAnalyzerTab::PerformanceAnalyzerTab(PerformanceAnalyzerTab&&) noexcept = default;
 osc::PerformanceAnalyzerTab& osc::PerformanceAnalyzerTab::operator=(PerformanceAnalyzerTab&&) noexcept = default;

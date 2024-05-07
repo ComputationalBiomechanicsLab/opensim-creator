@@ -14,8 +14,8 @@ namespace
 
     void WidgetTitle(CStringView title, Vec2 pos)
     {
-        Vec2 const textTopLeft = pos + ui::GetStyleFramePadding();
-        ui::GetWindowDrawList()->AddText(textTopLeft, ui::GetColorU32(ImGuiCol_Text), title.c_str());
+        Vec2 const textTopLeft = pos + ui::get_style_frame_padding();
+        ui::get_panel_draw_list()->AddText(textTopLeft, ui::get_color_ImU32(ImGuiCol_Text), title.c_str());
     }
 }
 
@@ -24,7 +24,7 @@ namespace
 {
     void DrawToggle(bool enabled, bool hovered, Vec2 pos, Vec2 size)
     {
-        ImDrawList& draw_list = *ui::GetWindowDrawList();
+        ImDrawList& draw_list = *ui::get_panel_draw_list();
 
         float const radius = size.y * 0.5f;
         float const rounding = size.y * 0.25f;
@@ -32,8 +32,8 @@ namespace
         bool const circular_grab = false;
 
         ImU32 const bgColor = hovered ?
-            ui::GetColorU32(enabled ? ImGuiCol_FrameBgActive : ImGuiCol_FrameBgHovered) :
-            ui::GetColorU32(enabled ? ImGuiCol_CheckMark : ImGuiCol_FrameBg);
+            ui::get_color_ImU32(enabled ? ImGuiCol_FrameBgActive : ImGuiCol_FrameBgHovered) :
+            ui::get_color_ImU32(enabled ? ImGuiCol_CheckMark : ImGuiCol_FrameBg);
 
         Vec2 const pmid{
             pos.x + radius + (enabled ? 1.0f : 0.0f) * (size.x - radius * 2),
@@ -45,47 +45,47 @@ namespace
         draw_list.AddRectFilled(smin, smax, bgColor, rounding);
 
         if (circular_grab) {
-            draw_list.AddCircleFilled(pmid, radius * 0.8f, ui::GetColorU32(ImGuiCol_SliderGrab));
+            draw_list.AddCircleFilled(pmid, radius * 0.8f, ui::get_color_ImU32(ImGuiCol_SliderGrab));
         }
         else {
             Vec2 const offs = {radius*0.8f, radius*0.8f};
-            draw_list.AddRectFilled(pmid - offs, pmid + offs, ui::GetColorU32(ImGuiCol_SliderGrab), rounding);
+            draw_list.AddRectFilled(pmid - offs, pmid + offs, ui::get_color_ImU32(ImGuiCol_SliderGrab), rounding);
         }
     }
 
     bool Toggle(CStringView label, bool* v)
     {
-        ui::PushStyleColor(ImGuiCol_Button, IM_COL32_BLACK_TRANS);
+        ui::push_style_color(ImGuiCol_Button, IM_COL32_BLACK_TRANS);
 
-        float const titleHeight = ui::GetTextLineHeight();
+        float const titleHeight = ui::get_text_line_height();
 
-        Vec2 const p = ui::GetCursorScreenPos();
-        Vec2 const bb(ui::GetColumnWidth(), ui::GetFrameHeight());
-        ui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, {0.0f, 0.0f});
-        ui::PushID(label);
-        bool const status = ui::Button("###toggle_button", bb);
+        Vec2 const p = ui::get_cursor_screen_pos();
+        Vec2 const bb(ui::get_column_width(), ui::get_frame_height());
+        ui::push_style_var(ImGuiStyleVar_ButtonTextAlign, {0.0f, 0.0f});
+        ui::push_id(label);
+        bool const status = ui::draw_button("###toggle_button", bb);
 
         if (status) {
             *v = !*v;
         }
 
-        ui::PopID();
-        ui::PopStyleVar();
-        Vec2 const pMin = ui::GetItemRectMin();
-        Vec2 const pMax = ui::GetItemRectMax();
+        ui::pop_id();
+        ui::pop_style_var();
+        Vec2 const pMin = ui::get_item_topleft();
+        Vec2 const pMax = ui::get_item_bottomright();
 
         WidgetTitle(label, p);
 
         float const toggleHeight = titleHeight * 0.9f;
-        Vec2 const framePadding = ui::GetStyleFramePadding();
+        Vec2 const framePadding = ui::get_style_frame_padding();
         Vec2 const toggleSize = {toggleHeight * 1.75f, toggleHeight};
         Vec2 const togglePos{
             pMax.x - toggleSize.x - framePadding.x,
             pMin.y + (titleHeight - toggleSize.y)/2.0f + framePadding.y,
         };
-        DrawToggle(*v, ui::IsItemHovered(), togglePos, toggleSize);
+        DrawToggle(*v, ui::is_item_hovered(), togglePos, toggleSize);
 
-        ui::PopStyleColor();
+        ui::pop_style_color();
 
         return status;
     }
@@ -99,12 +99,12 @@ public:
 private:
     void impl_on_draw() final
     {
-        ui::Begin("window");
-        ui::InputFloat("standardinput", &m_Value);
-        ui::CircularSliderFloat("custom slider", &m_Value, 15.0f, 5.0f);
-        ui::Text("%f", m_Value);
+        ui::begin_panel("window");
+        ui::draw_float_input("standardinput", &m_Value);
+        ui::draw_float_circular_slider("custom slider", &m_Value, 15.0f, 5.0f);
+        ui::draw_text("%f", m_Value);
         Toggle("custom toggle", &m_Toggle);
-        ui::End();
+        ui::end_panel();
     }
 
     float m_Value = 10.0f;

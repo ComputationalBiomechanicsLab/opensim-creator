@@ -2,22 +2,22 @@
 
 #include <oscar/UI/oscimgui.h>
 
-namespace osc
+namespace osc::ui
 {
-    bool DrawGizmoModeSelector(
+    bool draw_gizmo_mode_selector(
         ImGuizmo::MODE&
     );
-    bool DrawGizmoOpSelector(
+    bool draw_gizmo_op_selector(
         ImGuizmo::OPERATION&,
         bool can_translate = true,
         bool can_rotate = true,
         bool can_scale = true
     );
 
-    bool UpdateImguizmoStateFromKeyboard(
+    bool update_gizmo_state_from_keyboard(
         ImGuizmo::OPERATION&,
         ImGuizmo::MODE&
     );
 
-    void SetImguizmoStyleToOSCStandard();
+    void set_gizmo_style_to_osc_standard();
 }

@@ -76,24 +76,24 @@ private:
 
     void drawScene()
     {
-        m_Camera.set_pixel_rect(ui::GetMainViewportWorkspaceScreenRect());
+        m_Camera.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
         graphics::draw(m_Cube, identity<Transform>(), m_Material, m_Camera);
         m_Camera.render_to_screen();
     }
 
     void draw2DUI()
     {
-        ui::Begin("controls");
-        if (ui::Button("off")) {
+        ui::begin_panel("controls");
+        if (ui::draw_button("off")) {
             m_Material.set_cull_mode(CullMode::Off);
         }
-        if (ui::Button("back")) {
+        if (ui::draw_button("back")) {
             m_Material.set_cull_mode(CullMode::Back);
         }
-        if (ui::Button("front")) {
+        if (ui::draw_button("front")) {
             m_Material.set_cull_mode(CullMode::Front);
         }
-        ui::End();
+        ui::end_panel();
     }
 
     ResourceLoader m_Loader = App::resource_loader();

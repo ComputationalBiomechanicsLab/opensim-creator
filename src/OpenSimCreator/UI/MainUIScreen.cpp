@@ -416,9 +416,9 @@ private:
     {
         OSC_PERF("MainUIScreen/drawTabSpecificMenu");
 
-        if (ui::BeginMainViewportTopBar("##TabSpecificMenuBar"))
+        if (ui::begin_main_viewport_top_bar("##TabSpecificMenuBar"))
         {
-            if (ui::BeginMenuBar())
+            if (ui::begin_menu_bar())
             {
                 if (ITab* active = getActiveTab())
                 {
@@ -440,12 +440,12 @@ private:
 
                     if (m_ImguiWasAggressivelyReset)
                     {
-                        return;  // must return here to prevent the ImGui End calls from erroring
+                        return;  // must return here to prevent the ImGui end_panel calls from erroring
                     }
                 }
-                ui::EndMenuBar();
+                ui::end_menu_bar();
             }
-            ui::End();
+            ui::end_panel();
             handleDeletedTabs();
         }
     }
@@ -454,15 +454,15 @@ private:
     {
         OSC_PERF("MainUIScreen/drawTabBar");
 
-        ui::PushStyleVar(ImGuiStyleVar_FramePadding, ui::GetStyleFramePadding() + 2.0f);
-        ui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, Vec2{5.0f, 0.0f});
-        ui::PushStyleVar(ImGuiStyleVar_TabRounding, 10.0f);
-        ui::PushStyleVar(ImGuiStyleVar_FrameRounding, 10.0f);
-        if (ui::BeginMainViewportTopBar("##TabBarViewport"))
+        ui::push_style_var(ImGuiStyleVar_FramePadding, ui::get_style_frame_padding() + 2.0f);
+        ui::push_style_var(ImGuiStyleVar_ItemInnerSpacing, Vec2{5.0f, 0.0f});
+        ui::push_style_var(ImGuiStyleVar_TabRounding, 10.0f);
+        ui::push_style_var(ImGuiStyleVar_FrameRounding, 10.0f);
+        if (ui::begin_main_viewport_top_bar("##TabBarViewport"))
         {
-            if (ui::BeginMenuBar())
+            if (ui::begin_menu_bar())
             {
-                if (ui::BeginTabBar("##TabBar"))
+                if (ui::begin_tab_bar("##TabBar"))
                 {
                     for (size_t i = 0; i < m_Tabs.size(); ++i)
                     {
@@ -489,10 +489,10 @@ private:
                             m_ActiveTabNameLastFrame = m_Tabs[i]->name();
                         }
 
-                        ui::PushID(m_Tabs[i].get());
+                        ui::push_id(m_Tabs[i].get());
                         bool active = true;
 
-                        if (ui::BeginTabItem(m_Tabs[i]->name(), &active, flags))
+                        if (ui::begin_tab_item(m_Tabs[i]->name(), &active, flags))
                         {
                             if (m_Tabs[i]->id() != m_ActiveTabID)
                             {
@@ -516,10 +516,10 @@ private:
                                 return;
                             }
 
-                            ui::EndTabItem();
+                            ui::end_tab_item();
                         }
 
-                        ui::PopID();
+                        ui::pop_id();
                         if (!active && i != 0)  // can't close the splash tab
                         {
                             impl_close_tab(m_Tabs[i]->id());
@@ -527,23 +527,23 @@ private:
                     }
 
                     // adding buttons to tab bars: https://github.com/ocornut/imgui/issues/3291
-                    ui::TabItemButton(ICON_FA_PLUS);
+                    ui::draw_tab_item_button(ICON_FA_PLUS);
 
-                    if (ui::BeginPopupContextItem("popup", ImGuiPopupFlags_MouseButtonLeft))
+                    if (ui::begin_popup_context_menu("popup", ImGuiPopupFlags_MouseButtonLeft))
                     {
                         drawAddNewTabMenu();
-                        ui::EndPopup();
+                        ui::end_popup();
                     }
 
-                    ui::EndTabBar();
+                    ui::end_tab_bar();
                 }
-                ui::EndMenuBar();
+                ui::end_menu_bar();
             }
 
-            ui::End();
+            ui::end_panel();
             handleDeletedTabs();
         }
-        ui::PopStyleVar(4);
+        ui::pop_style_var(4);
     }
 
     void drawUIContent()
@@ -601,12 +601,12 @@ private:
 
     void drawAddNewTabMenu()
     {
-        if (ui::MenuItem(ICON_FA_EDIT " Editor"))
+        if (ui::draw_menu_item(ICON_FA_EDIT " Editor"))
         {
             select_tab(addTab(std::make_unique<ModelEditorTab>(getTabHostAPI(), std::make_unique<UndoableModelStatePair>())));
         }
 
-        if (ui::MenuItem(ICON_FA_CUBE " Mesh Importer"))
+        if (ui::draw_menu_item(ICON_FA_CUBE " Mesh Importer"))
         {
             select_tab(addTab(std::make_unique<mi::MeshImporterTab>(getTabHostAPI())));
         }
@@ -614,17 +614,17 @@ private:
         std::shared_ptr<TabRegistry const> const tabs = App::singleton<TabRegistry>();
         if (tabs->size() > 0)
         {
-            if (ui::BeginMenu("Experimental Tabs"))
+            if (ui::begin_menu("Experimental Tabs"))
             {
                 for (size_t i = 0; i < tabs->size(); ++i)
                 {
                     TabRegistryEntry e = (*tabs)[i];
-                    if (ui::MenuItem(e.name()))
+                    if (ui::draw_menu_item(e.name()))
                     {
                         select_tab(addTab(e.construct_tab(ParentPtr<ITabHost>{getTabHostAPI()})));
                     }
                 }
-                ui::EndMenu();
+                ui::end_menu();
             }
         }
     }

@@ -105,42 +105,42 @@ public:
 
     void onDraw()
     {
-        Rect const viewportRect = ui::GetMainViewportWorkspaceScreenRect();
+        Rect const viewportRect = ui::get_main_viewport_workspace_screen_rect();
         Vec2 const viewportDims = dimensions_of(viewportRect);
-        Vec2 const menuDimsGuess = {0.3f * viewportDims.x, 6.0f * ui::GetTextLineHeight()};
+        Vec2 const menuDimsGuess = {0.3f * viewportDims.x, 6.0f * ui::get_text_line_height()};
 
         // center the menu
         {
             Vec2 const menuTopLeft = 0.5f * (viewportDims - menuDimsGuess);
-            ui::SetNextWindowPos(viewportRect.p1 + menuTopLeft);
-            ui::SetNextWindowSize({menuDimsGuess.x, -1.0f});
+            ui::set_next_panel_pos(viewportRect.p1 + menuTopLeft);
+            ui::set_next_panel_size({menuDimsGuess.x, -1.0f});
         }
 
         if (m_LoadingErrorMsg.empty())
         {
-            if (ui::Begin("Loading Message", nullptr, ImGuiWindowFlags_NoTitleBar))
+            if (ui::begin_panel("Loading Message", nullptr, ImGuiWindowFlags_NoTitleBar))
             {
-                ui::Text("loading: %s", m_OsimPath.string().c_str());
-                ui::ProgressBar(m_LoadingProgress);
+                ui::draw_text("loading: %s", m_OsimPath.string().c_str());
+                ui::draw_progress_bar(m_LoadingProgress);
             }
-            ui::End();
+            ui::end_panel();
         }
         else
         {
-            if (ui::Begin("Error Message", nullptr, ImGuiWindowFlags_NoTitleBar))
+            if (ui::begin_panel("Error Message", nullptr, ImGuiWindowFlags_NoTitleBar))
             {
-                ui::TextWrapped("An error occurred while loading the file:");
-                ui::Dummy({0.0f, 5.0f});
-                ui::TextWrapped(m_LoadingErrorMsg);
-                ui::Dummy({0.0f, 5.0f});
+                ui::draw_text_wrapped("An error occurred while loading the file:");
+                ui::draw_dummy({0.0f, 5.0f});
+                ui::draw_text_wrapped(m_LoadingErrorMsg);
+                ui::draw_dummy({0.0f, 5.0f});
 
-                if (ui::Button("try again"))
+                if (ui::draw_button("try again"))
                 {
                     m_Parent->add_and_select_tab<LoadingTab>(m_Parent, m_OsimPath);
                     m_Parent->close_tab(m_TabID);
                 }
             }
-            ui::End();
+            ui::end_panel();
         }
     }
 

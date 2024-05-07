@@ -554,7 +554,7 @@ namespace
         // else: it's a supported operation and the gizmo should be drawn
 
         // important: necessary for multi-viewport gizmos
-        // also important: don't use ui::GetID(), because it uses an ID stack and we might want to know if "isover" etc. is true outside of a window
+        // also important: don't use ui::get_id(), because it uses an ID stack and we might want to know if "isover" etc. is true outside of a window
         ImGuizmo::SetID(static_cast<int>(std::hash<void*>{}(gizmoID)));
         ScopeGuard const g{[]() { ImGuizmo::SetID(-1); }};
 
@@ -564,14 +564,14 @@ namespace
             dimensions_of(viewportRect).x,
             dimensions_of(viewportRect).y
         );
-        ImGuizmo::SetDrawlist(ui::GetWindowDrawList());
+        ImGuizmo::SetDrawlist(ui::get_panel_draw_list());
         ImGuizmo::AllowAxisFlip(false);
 
         // use rotation from the parent, translation from station
         Mat4 currentXformInGround = manipulator.getCurrentModelMatrix();
         Mat4 deltaInGround;
 
-        SetImguizmoStyleToOSCStandard();
+        ui::set_gizmo_style_to_osc_standard();
         bool const gizmoWasManipulatedByUser = ImGuizmo::Manipulate(
             value_ptr(camera.view_matrix()),
             value_ptr(camera.projection_matrix(aspect_ratio_of(viewportRect))),
@@ -694,7 +694,7 @@ bool osc::ModelSelectionGizmo::isOver() const
 
 bool osc::ModelSelectionGizmo::handleKeyboardInputs()
 {
-    return osc::UpdateImguizmoStateFromKeyboard(m_GizmoOperation, m_GizmoMode);
+    return ui::update_gizmo_state_from_keyboard(m_GizmoOperation, m_GizmoMode);
 }
 
 void osc::ModelSelectionGizmo::onDraw(

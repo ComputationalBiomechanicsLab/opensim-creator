@@ -17,37 +17,37 @@ void osc::UndoButton::on_draw()
 {
     int imgui_id = 0;
 
-    ui::PushStyleVar(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
+    ui::push_style_var(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
 
     bool was_disabled = false;
     if (not undo_redo_->canUndo()) {
-        ui::BeginDisabled();
+        ui::begin_disabled();
         was_disabled = true;
     }
-    if (ui::Button(ICON_FA_UNDO)) {
+    if (ui::draw_button(ICON_FA_UNDO)) {
         undo_redo_->undo();
     }
 
-    ui::SameLine();
+    ui::same_line();
 
-    ui::PushStyleVar(ImGuiStyleVar_FramePadding, {0.0f, ui::GetStyleFramePadding().y});
-    ui::Button(ICON_FA_CARET_DOWN);
-    ui::PopStyleVar();
+    ui::push_style_var(ImGuiStyleVar_FramePadding, {0.0f, ui::get_style_frame_padding().y});
+    ui::draw_button(ICON_FA_CARET_DOWN);
+    ui::pop_style_var();
 
     if (was_disabled) {
-        ui::EndDisabled();
+        ui::end_disabled();
     }
 
-    if (ui::BeginPopupContextItem("##OpenUndoMenu", ImGuiPopupFlags_MouseButtonLeft)) {
+    if (ui::begin_popup_context_menu("##OpenUndoMenu", ImGuiPopupFlags_MouseButtonLeft)) {
         for (ptrdiff_t i = 0; i < undo_redo_->getNumUndoEntriesi(); ++i) {
-            ui::PushID(imgui_id++);
-            if (ui::Selectable(undo_redo_->getUndoEntry(i).message())) {
+            ui::push_id(imgui_id++);
+            if (ui::draw_selectable(undo_redo_->getUndoEntry(i).message())) {
                 undo_redo_->undoTo(i);
             }
-            ui::PopID();
+            ui::pop_id();
         }
-        ui::EndPopup();
+        ui::end_popup();
     }
 
-    ui::PopStyleVar();
+    ui::pop_style_var();
 }

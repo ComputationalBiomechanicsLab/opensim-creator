@@ -16,25 +16,25 @@ public:
 
     void impl_draw_content() final
     {
-        ui::TextUnformatted(config_.content);
+        ui::draw_text_unformatted(config_.content);
 
-        if (ui::Button("Yes")) {
+        if (ui::draw_button("Yes")) {
             if (config_.on_user_clicked_save()) {
                 close();
             }
         }
 
-        ui::SameLine();
+        ui::same_line();
 
-        if (ui::Button("No")) {
+        if (ui::draw_button("No")) {
             if (config_.on_user_clicked_dont_save()) {
                 close();
             }
         }
 
-        ui::SameLine();
+        ui::same_line();
 
-        if (ui::Button("Cancel")) {
+        if (ui::draw_button("Cancel")) {
             if (config_.on_user_cancelled()) {
                 close();
             }
