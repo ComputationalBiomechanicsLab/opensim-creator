@@ -4,10 +4,10 @@
 
 #include <string_view>
 
-namespace osc
+namespace osc::detail
 {
     // calls into (hidden) assertion-handling implementation
-    [[noreturn]] void OnAssertionFailure(
+    [[noreturn]] void on_assertion_failure(
         std::string_view failing_code,
         std::string_view function_name,
         std::string_view file_name,
@@ -17,7 +17,7 @@ namespace osc
 
 // always execute this assertion - even if in release mode /w debug flags disabled
 #define OSC_ASSERT_ALWAYS(expr) \
-    (static_cast<bool>(expr) ? static_cast<void>(0) : osc::OnAssertionFailure(#expr, static_cast<const char*>(__func__), osc::ExtractFilename(__FILE__), __LINE__))
+    (static_cast<bool>(expr) ? static_cast<void>(0) : osc::detail::on_assertion_failure(#expr, static_cast<const char*>(__func__), osc::ExtractFilename(__FILE__), __LINE__))
 
 #ifdef OSC_FORCE_ASSERTS_ENABLED
 #define OSC_ASSERT(expr) OSC_ASSERT_ALWAYS(expr)
