@@ -35,10 +35,11 @@ TEST(at, WorksAsExpected)
 
 TEST(at, WorksAtCompileTime)
 {
-    static_assert(at(std::to_array({-1, 0, 1}), 1) == 0);
+    constexpr auto ary = std::to_array({-1, 0, 1});
+    static_assert(at(ary, 1) == 0);
 }
 
-TEST(find_or_optional, WorksWithStdUnorderedMap)
+TEST(lookup_or_nullopt, WorksWithStdUnorderedMap)
 {
     std::unordered_map<int, int> um{
         {20, 30},
@@ -47,15 +48,15 @@ TEST(find_or_optional, WorksWithStdUnorderedMap)
         {-15, 20},
     };
 
-    ASSERT_EQ(find_or_optional(um, -20), std::nullopt);
-    ASSERT_EQ(find_or_optional(um, -15), 20);
-    ASSERT_EQ(find_or_optional(um, -2), std::nullopt);
-    ASSERT_EQ(find_or_optional(um, -1), 98);
-    ASSERT_EQ(find_or_optional(um, 0), std::nullopt);
-    ASSERT_EQ(find_or_optional(um, 5), 10);
+    ASSERT_EQ(lookup_or_nullopt(um, -20), std::nullopt);
+    ASSERT_EQ(lookup_or_nullopt(um, -15), 20);
+    ASSERT_EQ(lookup_or_nullopt(um, -2), std::nullopt);
+    ASSERT_EQ(lookup_or_nullopt(um, -1), 98);
+    ASSERT_EQ(lookup_or_nullopt(um, 0), std::nullopt);
+    ASSERT_EQ(lookup_or_nullopt(um, 5), 10);
 }
 
-TEST(find_or_optional, WorksWithStdMap)
+TEST(lookup_or_nullopt, WorksWithStdMap)
 {
     std::map<int, int> um{
         {20, 30},
@@ -64,15 +65,15 @@ TEST(find_or_optional, WorksWithStdMap)
         {-15, 20},
     };
 
-    ASSERT_EQ(find_or_optional(um, -20), std::nullopt);
-    ASSERT_EQ(find_or_optional(um, -15), 20);
-    ASSERT_EQ(find_or_optional(um, -2), std::nullopt);
-    ASSERT_EQ(find_or_optional(um, -1), 98);
-    ASSERT_EQ(find_or_optional(um, 0), std::nullopt);
-    ASSERT_EQ(find_or_optional(um, 5), 10);
+    ASSERT_EQ(lookup_or_nullopt(um, -20), std::nullopt);
+    ASSERT_EQ(lookup_or_nullopt(um, -15), 20);
+    ASSERT_EQ(lookup_or_nullopt(um, -2), std::nullopt);
+    ASSERT_EQ(lookup_or_nullopt(um, -1), 98);
+    ASSERT_EQ(lookup_or_nullopt(um, 0), std::nullopt);
+    ASSERT_EQ(lookup_or_nullopt(um, 5), 10);
 }
 
-TEST(find_or_nullptr, WorksWithUnorderedMap)
+TEST(lookup_or_nullptr, WorksWithUnorderedMap)
 {
     std::unordered_map<int, int> um{
         {20, 30},
@@ -81,15 +82,15 @@ TEST(find_or_nullptr, WorksWithUnorderedMap)
         {-15, 20},
     };
 
-    ASSERT_EQ(find_or_nullptr(um, -20), nullptr);
-    ASSERT_EQ(*find_or_nullptr(um, -15), 20);
-    ASSERT_EQ(find_or_nullptr(um, -2), nullptr);
-    ASSERT_EQ(*find_or_nullptr(um, -1), 98);
-    ASSERT_EQ(find_or_nullptr(um, 0), nullptr);
-    ASSERT_EQ(*find_or_nullptr(um, 5), 10);
+    ASSERT_EQ(lookup_or_nullptr(um, -20), nullptr);
+    ASSERT_EQ(*lookup_or_nullptr(um, -15), 20);
+    ASSERT_EQ(lookup_or_nullptr(um, -2), nullptr);
+    ASSERT_EQ(*lookup_or_nullptr(um, -1), 98);
+    ASSERT_EQ(lookup_or_nullptr(um, 0), nullptr);
+    ASSERT_EQ(*lookup_or_nullptr(um, 5), 10);
 }
 
-TEST(find_or_nullptr, WorksWithStdMap)
+TEST(lookup_or_nullptr, WorksWithStdMap)
 {
     std::map<int, int> um{
         {20, 30},
@@ -98,15 +99,15 @@ TEST(find_or_nullptr, WorksWithStdMap)
         {-15, 20},
     };
 
-    ASSERT_EQ(find_or_nullptr(um, -20), nullptr);
-    ASSERT_EQ(*find_or_nullptr(um, -15), 20);
-    ASSERT_EQ(find_or_nullptr(um, -2), nullptr);
-    ASSERT_EQ(*find_or_nullptr(um, -1), 98);
-    ASSERT_EQ(find_or_nullptr(um, 0), nullptr);
-    ASSERT_EQ(*find_or_nullptr(um, 5), 10);
+    ASSERT_EQ(lookup_or_nullptr(um, -20), nullptr);
+    ASSERT_EQ(*lookup_or_nullptr(um, -15), 20);
+    ASSERT_EQ(lookup_or_nullptr(um, -2), nullptr);
+    ASSERT_EQ(*lookup_or_nullptr(um, -1), 98);
+    ASSERT_EQ(lookup_or_nullptr(um, 0), nullptr);
+    ASSERT_EQ(*lookup_or_nullptr(um, 5), 10);
 }
 
-TEST(find_or_nullptr, WorksWithConstQualifiedStdUnorderedMap)
+TEST(lookup_or_nullptr, WorksWithConstQualifiedStdUnorderedMap)
 {
     std::unordered_map<int, int> const um{
         {20, 30},
@@ -115,24 +116,24 @@ TEST(find_or_nullptr, WorksWithConstQualifiedStdUnorderedMap)
         {-15, 20},
     };
 
-    ASSERT_EQ(find_or_nullptr(um, -20), nullptr);
-    ASSERT_EQ(*find_or_nullptr(um, -15), 20);
-    ASSERT_EQ(find_or_nullptr(um, -2), nullptr);
-    ASSERT_EQ(*find_or_nullptr(um, -1), 98);
-    ASSERT_EQ(find_or_nullptr(um, 0), nullptr);
-    ASSERT_EQ(*find_or_nullptr(um, 5), 10);
+    ASSERT_EQ(lookup_or_nullptr(um, -20), nullptr);
+    ASSERT_EQ(*lookup_or_nullptr(um, -15), 20);
+    ASSERT_EQ(lookup_or_nullptr(um, -2), nullptr);
+    ASSERT_EQ(*lookup_or_nullptr(um, -1), 98);
+    ASSERT_EQ(lookup_or_nullptr(um, 0), nullptr);
+    ASSERT_EQ(*lookup_or_nullptr(um, 5), 10);
 }
 
-TEST(find_or_nullptr, CanMutateViaReturnedPointer)
+TEST(lookup_or_nullptr, CanMutateViaReturnedPointer)
 {
     std::unordered_map<int, int> um{
         {20, 30},
     };
 
-    int* v = find_or_nullptr(um, 20);
+    int* v = lookup_or_nullptr(um, 20);
     *v = -40;
-    ASSERT_TRUE(find_or_nullptr(um, 20));
-    ASSERT_EQ(*find_or_nullptr(um, 20), -40);
+    ASSERT_TRUE(lookup_or_nullptr(um, 20));
+    ASSERT_EQ(*lookup_or_nullptr(um, 20), -40);
 }
 
 TEST(min_element, WorksAsExpected)

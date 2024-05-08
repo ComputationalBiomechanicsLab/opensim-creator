@@ -5,6 +5,7 @@
 #include <functional>
 #include <iosfwd>
 #include <memory>
+#include <ranges>
 #include <string_view>
 #include <type_traits>
 
@@ -53,5 +54,11 @@ namespace osc
         { v.begin() } -> std::forward_iterator;
         { v.end() } -> std::forward_iterator;
         { v.find(std::declval<typename T::key_type>()) } -> std::same_as<typename T::iterator>;
+    };
+
+    template<typename Key, typename Container>
+    concept AssociativeContainerKey = requires(Container& c, Key key) {
+        AssociativeContainer<Container>;
+        { c.find(key) } -> std::same_as<std::ranges::iterator_t<Container>>;
     };
 }

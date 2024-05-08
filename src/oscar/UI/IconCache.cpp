@@ -41,7 +41,7 @@ public:
 
     const Icon& find_or_throw(std::string_view icon_name) const
     {
-        if (const auto* icon = find_or_nullptr(icons_by_name_, std::string{icon_name})) {
+        if (const auto* icon = lookup_or_nullptr(icons_by_name_, std::string{icon_name})) {
             return *icon;
         }
         else {

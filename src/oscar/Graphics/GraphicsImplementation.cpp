@@ -2834,13 +2834,13 @@ private:
         // cache commonly-used "automatic" shader elements
         //
         // it's a perf optimization: the renderer uses this to skip lookups
-        maybe_model_mat_uniform_ = find_or_optional(uniforms_, "uModelMat");
-        maybe_normal_mat_uniform_ = find_or_optional(uniforms_, "uNormalMat");
-        maybe_view_mat_uniform_ = find_or_optional(uniforms_, "uViewMat");
-        maybe_proj_mat_uniform_ = find_or_optional(uniforms_, "uProjMat");
-        maybe_view_proj_mat_uniform_ = find_or_optional(uniforms_, "uViewProjMat");
-        maybe_instanced_model_mat_attr_ = find_or_optional(attributes_, "aModelMat");
-        maybe_instanced_normal_mat_attr_ = find_or_optional(attributes_, "aNormalMat");
+        maybe_model_mat_uniform_ = lookup_or_nullopt(uniforms_, "uModelMat");
+        maybe_normal_mat_uniform_ = lookup_or_nullopt(uniforms_, "uNormalMat");
+        maybe_view_mat_uniform_ = lookup_or_nullopt(uniforms_, "uViewMat");
+        maybe_proj_mat_uniform_ = lookup_or_nullopt(uniforms_, "uProjMat");
+        maybe_view_proj_mat_uniform_ = lookup_or_nullopt(uniforms_, "uViewProjMat");
+        maybe_instanced_model_mat_attr_ = lookup_or_nullopt(attributes_, "aModelMat");
+        maybe_instanced_normal_mat_attr_ = lookup_or_nullopt(attributes_, "aNormalMat");
     }
 
     friend class GraphicsBackend;
@@ -3202,7 +3202,7 @@ private:
     requires std::convertible_to<T, TConverted>
     std::optional<TConverted> get_value(std::string_view property_name) const
     {
-        const auto* value = find_or_nullptr(values_, property_name);
+        const auto* value = lookup_or_nullptr(values_, property_name);
 
         if (not value) {
             return std::nullopt;
@@ -6829,7 +6829,7 @@ void osc::GraphicsBackend::handle_batch_with_same_material_property_block(
     // bind property block variables (if applicable)
     if (batch.front().maybe_prop_block) {
         for (const auto& [name, value] : batch.front().maybe_prop_block->m_Impl->values_) {
-            if (const auto* uniform = find_or_nullptr(uniforms, name)) {
+            if (const auto* uniform = lookup_or_nullptr(uniforms, name)) {
                 try_bind_material_value_to_shader_element(*uniform, value, texture_slot);
             }
         }
@@ -6910,7 +6910,7 @@ void osc::GraphicsBackend::handle_batch_with_same_material(
 
         // bind material values
         for (const auto& [name, value] : material_impl.values_) {
-            if (const ShaderElement* e = find_or_nullptr(uniforms, name)) {
+            if (const ShaderElement* e = lookup_or_nullptr(uniforms, name)) {
                 try_bind_material_value_to_shader_element(*e, value, texture_slot);
             }
         }

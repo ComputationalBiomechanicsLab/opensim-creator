@@ -78,7 +78,7 @@ R"(# configuration options
     public:
         std::optional<AppSettingValue> find_value(std::string_view key) const
         {
-            if (const auto v = find_or_nullptr(hashmap_, key)) {
+            if (const auto v = lookup_or_nullptr(hashmap_, key)) {
                 return v->value();
             }
             else {
@@ -93,7 +93,7 @@ R"(# configuration options
 
         std::optional<AppSettingScope> scope_of(std::string_view key) const
         {
-            if (const auto v = find_or_nullptr(hashmap_, key)) {
+            if (const auto v = lookup_or_nullptr(hashmap_, key)) {
                 return v->scope();
             }
             else {

@@ -507,7 +507,7 @@ namespace
             }
             else
             {
-                if (auto const* body = find_or_nullptr(bodyLookup, dynamic_cast<OpenSim::Body const*>(parentBodyOrGround))) {
+                if (auto const* body = lookup_or_nullptr(bodyLookup, dynamic_cast<OpenSim::Body const*>(parentBodyOrGround))) {
                     parent = *body;
                 }
                 else {
@@ -523,7 +523,7 @@ namespace
             }
             else
             {
-                if (auto const* body = find_or_nullptr(bodyLookup, dynamic_cast<OpenSim::Body const*>(childBodyOrGround))) {
+                if (auto const* body = lookup_or_nullptr(bodyLookup, dynamic_cast<OpenSim::Body const*>(childBodyOrGround))) {
                     child = *body;
                 }
                 else {
@@ -583,7 +583,7 @@ namespace
             }
             else
             {
-                if (auto const* body = find_or_nullptr(bodyLookup, dynamic_cast<OpenSim::Body const*>(frameBodyOrGround))) {
+                if (auto const* body = lookup_or_nullptr(bodyLookup, dynamic_cast<OpenSim::Body const*>(frameBodyOrGround))) {
                     attachment = *body;
                 }
                 else {

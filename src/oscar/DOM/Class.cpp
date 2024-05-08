@@ -81,7 +81,7 @@ public:
 
     std::optional<size_t> property_index(const StringName& property_name) const
     {
-        return find_or_optional(property_name_to_index_lookup_, property_name);
+        return lookup_or_nullopt(property_name_to_index_lookup_, property_name);
     }
 
     friend bool operator==(const Impl&, const Impl&) = default;

@@ -60,37 +60,37 @@ namespace osc
     }
 
     // returns a reference to the element at specified location `pos`, with bounds checking
-    template<std::ranges::random_access_range Range>
-    constexpr auto at(const Range& range, typename Range::size_type pos) -> decltype(range[pos])
+    template<std::ranges::random_access_range R>
+    requires std::ranges::borrowed_range<R>
+    constexpr std::ranges::range_reference_t<R> at(R&& r, std::ranges::range_size_t<R> pos)
     {
-        if (pos < std::ranges::size(range)) {
-            return range[pos];
+        if (pos < std::ranges::size(r)) {
+            return r[pos];
         }
         else {
             throw std::out_of_range{"out of bounds index given to a container"};
         }
     }
 
-    // returns the element that has a projection that compares equivalent to `value`, or `std::nullopt` if not found
+    // returns a copy of the element that has a projection that compares equivalent to `value`, or `std::nullopt` if not found
     template<
         std::ranges::input_range R,
         typename T,
         typename Proj = std::identity
     >
     requires
-        std::indirect_binary_predicate<std::ranges::equal_to, std::projected<std::ranges::iterator_t<R>, Proj>, const T*> and
-        (not AssociativeContainer<R>)
-    std::optional<typename R::value_type> find_or_optional(R&& r, const T& value, Proj proj = {})
+        std::indirect_binary_predicate<std::ranges::equal_to, std::projected<std::ranges::iterator_t<R>, Proj>, const T*>
+    std::optional<std::ranges::range_value_t<R>> find_or_nullopt(R&& r, const T& value, Proj proj = {})
     {
         const auto it = std::ranges::find(r, value, std::ref(proj));
-        return it != std::ranges::end(r) ? std::optional<typename R::value_type>{*it} : std::nullopt;
+        return it != std::ranges::end(r) ? std::optional<std::ranges::range_value_t<R>>{*it} : std::nullopt;
     }
 
-    // returns the element with key equivalent to `key`, or `std::nullopt` if no such element exists in `container`
-    template<AssociativeContainer T, typename Key>
-    std::optional<typename T::mapped_type> find_or_optional(const T& container, const Key& key)
+    // returns a copy of the element with key equivalent to `key`, or `std::nullopt` if no such element exists in `container`
+    template<AssociativeContainer Lookup, AssociativeContainerKey<Lookup> Key>
+    std::optional<typename Lookup::mapped_type> lookup_or_nullopt(const Lookup& lookup, const Key& key)
     {
-        if (auto it = container.find(key); it != container.end()) {
+        if (const auto it = lookup.find(key); it != lookup.end()) {
             return it->second;
         }
         return std::nullopt;
@@ -102,30 +102,35 @@ namespace osc
         typename T,
         typename Proj = std::identity
     >
-    auto find_or_nullptr(R&& r, const T& value, Proj proj = {})
+    requires std::ranges::borrowed_range<R>
+    auto find_or_nullptr(R&& r, const T& value, Proj proj = {}) -> decltype(std::addressof(*std::ranges::begin(r)))
     {
         const auto it = std::ranges::find(r, value, std::move(proj));
         return it != std::ranges::end(r) ? std::addressof(*it) : nullptr;
     }
 
     // returns a pointer to the element with key equivalent to `key`, or `nullptr` if no such element exists in `container`
-    template<AssociativeContainer T, typename Key>
-    const typename T::mapped_type* find_or_nullptr(const T& container, const Key& key)
+    template<AssociativeContainer T, AssociativeContainerKey<T> Key>
+    auto* lookup_or_nullptr(const T& container, const Key& key)
     {
+        using return_type = decltype(std::addressof(std::ranges::begin(container)->second));
+
         if (auto it = container.find(key); it != container.end()) {
-            return &it->second;
+            return std::addressof(it->second);
         }
-        return nullptr;
+        return static_cast<return_type>(nullptr);
     }
 
     // returns a mutable pointer to the element with key equivalent to `key`, or `nullptr` if no such element exists in `container`
-    template<AssociativeContainer T, typename Key>
-    typename T::mapped_type* find_or_nullptr(T& container, const Key& key)
+    template<AssociativeContainer T, AssociativeContainerKey<T> Key>
+    auto* lookup_or_nullptr(T& container, const Key& key)
     {
+        using return_type = decltype(std::addressof(std::ranges::begin(container)->second));
+
         if (auto it = container.find(key); it != container.end()) {
-            return &it->second;
+            return std::addressof(it->second);
         }
-        return nullptr;
+        return static_cast<return_type>(nullptr);
     }
 
     // returns `true` if both `lhs` and `rhs` can be sucessfully `dynamic_cast`ed to `Downcasted` and compare equal

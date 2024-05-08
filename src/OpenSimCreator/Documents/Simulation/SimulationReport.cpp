@@ -46,7 +46,7 @@ public:
 
     std::optional<float> getAuxiliaryValue(UID id) const
     {
-        return find_or_optional(m_AuxiliaryValues, id);
+        return lookup_or_nullopt(m_AuxiliaryValues, id);
     }
 
 private:

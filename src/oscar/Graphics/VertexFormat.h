@@ -143,7 +143,7 @@ namespace osc
 
         std::optional<VertexAttributeLayout> attribute_layout(VertexAttribute attribute) const
         {
-            return find_or_optional(attribute_layouts(), attribute, &VertexAttributeLayout::attribute);
+            return find_or_nullopt(attribute_layouts(), attribute, &VertexAttributeLayout::attribute);
         }
 
         size_t stride() const

@@ -181,7 +181,7 @@ void osc::OpenSimDecorationOptions::tryUpdFromValues(
         buf.resize(prefixLen);
         buf.insert(prefixLen, v);
 
-        return find_or_nullptr(lut, buf);
+        return lookup_or_nullptr(lut, buf);
     };
 
     if (auto* appVal = lookup("muscle_decoration_style"); appVal->type() == AppSettingValueType::String)
