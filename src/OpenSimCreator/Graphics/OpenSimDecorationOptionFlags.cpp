@@ -74,7 +74,7 @@ OpenSimDecorationOptionMetadata const& osc::GetIthOptionMetadata(size_t i)
 
 OpenSimDecorationOptionFlags osc::GetIthOption(size_t i)
 {
-    auto v = 1u << min(i, NumFlags<OpenSimDecorationOptionFlags>()-1);
+    auto v = 1u << min(i, num_flags<OpenSimDecorationOptionFlags>()-1);
     return static_cast<OpenSimDecorationOptionFlags>(v);
 }
 

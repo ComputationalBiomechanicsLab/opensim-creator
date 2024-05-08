@@ -9,20 +9,18 @@ namespace osc
 {
     class NullOStream final : public std::ostream {
     public:
-        NullOStream() :
-            std::ostream{&m_Streambuf}
-        {}
+        NullOStream() : std::ostream{&streambuf_} {}
 
-        size_t numCharsWritten() const
+        size_t num_chars_written() const
         {
-            return m_Streambuf.numCharsWritten();
+            return streambuf_.num_chars_written();
         }
 
-        bool wasWrittenTo() const
+        bool was_written_to() const
         {
-            return m_Streambuf.wasWrittenTo();
+            return streambuf_.was_written_to();
         }
     private:
-        NullStreambuf m_Streambuf;
+        NullStreambuf streambuf_;
     };
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <oscar/Utils/CStringView.h>
+
 #include <cstdint>
 #include <string>
 #include <string_view>
@@ -9,40 +11,28 @@ namespace osc
     class PerfMeasurementMetadata final {
     public:
         PerfMeasurementMetadata(
-            size_t id_,
-            std::string_view label_,
-            std::string_view filename_,
-            unsigned int fileLine_) :
+            size_t id,
+            std::string_view label,
+            std::string_view filename,
+            unsigned int line) :
 
-            m_ID{id_},
-            m_Label{label_},
-            m_Filename{filename_},
-            m_FileLine{fileLine_}
+            id_{id},
+            label_{label},
+            filename_{filename},
+            line_{line}
         {}
 
-        size_t getID() const
-        {
-            return m_ID;
-        }
+        size_t id() const { return id_; }
 
-        const std::string& getLabel() const
-        {
-            return m_Label;
-        }
+        CStringView label() const { return label_; }
 
-        const std::string& getFilename() const
-        {
-            return m_Filename;
-        }
+        CStringView filename() const { return filename_; }
 
-        unsigned int getLine() const
-        {
-            return m_FileLine;
-        }
+        unsigned int line() const { return line_; }
     private:
-        size_t m_ID;
-        std::string m_Label;
-        std::string m_Filename;
-        unsigned int m_FileLine;
+        size_t id_;
+        std::string label_;
+        std::string filename_;
+        unsigned int line_;
     };
 }

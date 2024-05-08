@@ -17,56 +17,49 @@ namespace osc
     // this is a poor-man's `std::execution::par_unseq`, because C++17's <execution>
     // isn't fully integrated into MacOS/Linux
     template<typename T, std::invocable<T&> UnaryFunction>
-    void ForEachParUnseq(
-        size_t minChunkSize,
-        std::span<T> vals,
-        UnaryFunction f)
+    void for_each_parallel_unsequenced(
+        size_t min_chunk_size,
+        std::span<T> values,
+        UnaryFunction mutator)
     {
-        const size_t chunkSize = max(minChunkSize, vals.size()/std::thread::hardware_concurrency());
-        const size_t nTasks = vals.size()/chunkSize;
+        const size_t chunk_size = max(min_chunk_size, values.size()/std::thread::hardware_concurrency());
+        const size_t num_tasks = values.size()/chunk_size;
 
-        if (nTasks > 1)
-        {
+        if (num_tasks > 1) {
             std::vector<std::future<void>> tasks;
-            tasks.reserve(nTasks);
+            tasks.reserve(num_tasks);
 
-            for (size_t i = 0; i < nTasks-1; ++i)
-            {
-                const size_t chunkBegin = i * chunkSize;
-                const size_t chunkEnd = (i+1) * chunkSize;
-                tasks.push_back(std::async(std::launch::async, [vals, f, chunkBegin, chunkEnd]()
+            for (size_t i = 0; i < num_tasks-1; ++i) {
+                const size_t chunk_begin = i * chunk_size;
+                const size_t chunk_end = (i+1) * chunk_size;
+                tasks.push_back(std::async(std::launch::async, [values, mutator, chunk_begin, chunk_end]()
                 {
-                    for (size_t j = chunkBegin; j < chunkEnd; ++j)
-                    {
-                        f(vals[j]);
+                    for (size_t j = chunk_begin; j < chunk_end; ++j) {
+                        mutator(values[j]);
                     }
                 }));
             }
 
             // last worker must also handle the remainder
             {
-                const size_t chunkBegin = (nTasks-1) * chunkSize;
-                const size_t chunkEnd = vals.size();
-                tasks.push_back(std::async(std::launch::async, [vals, f, chunkBegin, chunkEnd]()
+                const size_t chunk_begin = (num_tasks-1) * chunk_size;
+                const size_t chunk_end = values.size();
+                tasks.push_back(std::async(std::launch::async, [values, mutator, chunk_begin, chunk_end]()
                 {
-                    for (size_t i = chunkBegin; i < chunkEnd; ++i)
-                    {
-                        f(vals[i]);
+                    for (size_t i = chunk_begin; i < chunk_end; ++i) {
+                        mutator(values[i]);
                     }
                 }));
             }
 
-            for (std::future<void>& task : tasks)
-            {
+            for (std::future<void>& task : tasks) {
                 task.get();
             }
         }
-        else
-        {
+        else {
             // chunks would be too small if parallelized: just do it sequentially
-            for (T& val : vals)
-            {
-                f(val);
+            for (T& value : values) {
+                mutator(value);
             }
         }
     }

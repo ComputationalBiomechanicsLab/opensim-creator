@@ -10,7 +10,7 @@ namespace osc
 {
     // combines hash of `T` into the seed value
     template<Hashable T>
-    size_t HashCombine(size_t seed, const T& v)
+    size_t hash_combine(size_t seed, const T& v)
     {
         return seed ^ (std::hash<T>{}(v) + 0x9e3779b9 + (seed<<6) + (seed>>2));
     }
@@ -24,7 +24,7 @@ namespace osc
     template<Hashable T, Hashable... Ts>
     size_t hash_of(const T& v, const Ts&... vs)
     {
-        return HashCombine(hash_of(v), hash_of(vs...));
+        return hash_combine(hash_of(v), hash_of(vs...));
     }
 
     template<typename Range>
@@ -32,7 +32,7 @@ namespace osc
     {
         size_t rv = 0;
         for (const auto& el : range) {
-            rv = HashCombine(rv, el);
+            rv = hash_combine(rv, el);
         }
         return rv;
     }

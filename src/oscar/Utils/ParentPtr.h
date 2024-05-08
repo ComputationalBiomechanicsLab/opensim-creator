@@ -18,12 +18,9 @@ namespace osc
     public:
 
         // construct from a non-null shared ptr
-        template<
-            typename U,
-            typename std::enable_if_t<std::is_base_of_v<T, U>, bool> = true
-        >
-        explicit ParentPtr(const std::shared_ptr<U>& parent_) :
-            m_Parent{parent_}
+        template<std::derived_from<T> U>
+        explicit ParentPtr(const std::shared_ptr<U>& parent) :
+            m_Parent{parent}
         {
             OSC_ASSERT(!m_Parent.expired() && "null or expired parent pointer given to a child");
         }
@@ -32,10 +29,7 @@ namespace osc
         ParentPtr(const ParentPtr&) = default;
 
         // coercing copy construction: only applies when `T` can be implicitly converted to `U`
-        template<
-            typename U,
-            typename std::enable_if_t<std::is_base_of_v<T, U>, bool> = true
-        >
+        template<std::derived_from<T> U>
         ParentPtr(const ParentPtr<U>& other) :
             m_Parent{other.m_Parent}
         {}
@@ -44,23 +38,16 @@ namespace osc
         ParentPtr(ParentPtr&&) noexcept = default;
 
         // coercing move construction: only applies when `T` can be implicitly converted to `U`
-        template<
-            typename U,
-            typename std::enable_if_t<std::is_base_of_v<T, U>, bool> = true
-        >
+        template<std::derived_from<T> U>
         ParentPtr(ParentPtr<U>&& tmp) noexcept :
             m_Parent{std::move(tmp.m_Parent)}
-        {
-        }
+        {}
 
         // normal copy assignment
         ParentPtr& operator=(const ParentPtr&) = default;
 
         // coercing copy assignment: only applies when `T` can be implicitly converted to `U`
-        template<
-            typename U,
-            typename std::enable_if_t<std::is_base_of_v<T, U>, bool> = false
-        >
+        template<std::derived_from<T> U>
         ParentPtr& operator=(const ParentPtr<U>& other)
         {
             m_Parent = other.m_Parent;
@@ -70,10 +57,7 @@ namespace osc
         ParentPtr& operator=(ParentPtr&&) noexcept = default;
 
         // coercing move assignment: only applies when `T` can be implicitly converted to `U`
-        template<
-            typename U,
-            typename std::enable_if_t<std::is_base_of_v<T, U>, bool> = true
-        >
+        template<std::derived_from<T> U>
         ParentPtr& operator=(ParentPtr<U> && tmp) noexcept
         {
             m_Parent = std::move(tmp.m_Parent);
@@ -103,22 +87,20 @@ namespace osc
         template<typename> friend class ParentPtr;
 
         // friend function, for downcasting
-        template<typename TDerived, typename TBase> friend std::optional<ParentPtr<TDerived>> DynamicParentCast(const ParentPtr<TBase>&);
+        template<typename TDerived, typename TBase> friend std::optional<ParentPtr<TDerived>> dynamic_parent_cast(const ParentPtr<TBase>&);
 
         std::weak_ptr<T> m_Parent;
     };
 
-    template<
-        typename TDerived,
-        typename TBase
-    >
-    std::optional<ParentPtr<TDerived>> DynamicParentCast(const ParentPtr<TBase>& p)
+    template<typename TDerived, typename TBase>
+    requires std::derived_from<TDerived, TBase>
+    std::optional<ParentPtr<TDerived>> dynamic_parent_cast(const ParentPtr<TBase>& p)
     {
-        const std::shared_ptr<TBase> parentSharedPtr = p.m_Parent.lock();
-        OSC_ASSERT(parentSharedPtr != nullptr && "orphaned child tried to access a dead parent: this is a development error");
+        const std::shared_ptr<TBase> parent_shared_ptr = p.m_Parent.lock();
+        OSC_ASSERT_ALWAYS(parent_shared_ptr != nullptr && "orphaned child tried to access a dead parent: this is a development error");
 
-        if (auto parentDowncastedPtr = std::dynamic_pointer_cast<TDerived>(parentSharedPtr)) {
-            return ParentPtr<TDerived>{std::move(parentDowncastedPtr)};
+        if (auto parent_downcasted_ptr = std::dynamic_pointer_cast<TDerived>(parent_shared_ptr)) {
+            return ParentPtr<TDerived>{std::move(parent_downcasted_ptr)};
         }
         else {
             return std::nullopt;

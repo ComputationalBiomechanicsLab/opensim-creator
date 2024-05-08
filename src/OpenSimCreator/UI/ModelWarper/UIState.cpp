@@ -34,7 +34,7 @@ void osc::mow::UIState::actionWarpModelAndOpenInModelEditor()
         return;
     }
 
-    auto api = DynamicParentCast<IMainUIStateAPI>(m_TabHost);
+    auto api = dynamic_parent_cast<IMainUIStateAPI>(m_TabHost);
     if (!api) {
         log_error("cannot warp the provided model: I can't open a model editor tab (something has gone wrong internally)");
         return;

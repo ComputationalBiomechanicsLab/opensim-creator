@@ -198,7 +198,7 @@ public:
 
     void on_tick()
     {
-        if (m_FileChangePoller.changeWasDetected(m_Model->getModel().getInputFileName()))
+        if (m_FileChangePoller.change_detected(m_Model->getModel().getInputFileName()))
         {
             ActionUpdateModelFromBackingFile(*m_Model);
         }

@@ -40,13 +40,13 @@ namespace rgs = std::ranges;
 osc::MainMenuFileTab::MainMenuFileTab() :
     exampleOsimFiles
     {
-        FindFilesWithExtensionsRecursive(
+        find_files_with_extensions_recursive(
             App::resource_filepath("models"),
             std::to_array({std::string_view{".osim"}})
         )
     }
 {
-    rgs::sort(exampleOsimFiles, IsFilenameLexographicallyGreaterThan);
+    rgs::sort(exampleOsimFiles, is_filename_lexographically_greater_than);
 }
 
 void osc::MainMenuFileTab::onDraw(

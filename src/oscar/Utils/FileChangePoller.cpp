@@ -7,58 +7,52 @@
 
 namespace
 {
-    constexpr std::string_view c_ModelNoBackingFileSenteniel = "Unassigned";
+    constexpr std::string_view c_model_no_backing_file_sentinel = "Unassigned";
 
-    std::filesystem::file_time_type GetLastModificationTime(const std::string& path)
+    std::filesystem::file_time_type get_last_modification_time(const std::string& path)
     {
-        if (path.empty() ||
-            path == c_ModelNoBackingFileSenteniel ||
-            !std::filesystem::exists(path))
-        {
+        if (path.empty() or
+            path == c_model_no_backing_file_sentinel or
+            not std::filesystem::exists(path)) {
+
             return std::filesystem::file_time_type{};
         }
-        else
-        {
+        else {
             return std::filesystem::last_write_time(path);
         }
     }
 }
 
 osc::FileChangePoller::FileChangePoller(
-        std::chrono::milliseconds delay,
+        std::chrono::milliseconds delay_between_checks,
         const std::string& path) :
 
-    m_DelayBetweenChecks{delay},
-    m_NextPollingTime{std::chrono::system_clock::now() + delay},
-    m_FileLastModificationTime{GetLastModificationTime(path)},
-    m_IsEnabled{true}
-{
-}
+    delay_between_checks_{delay_between_checks},
+    next_polling_time_{std::chrono::system_clock::now() + delay_between_checks},
+    file_last_modification_time_{get_last_modification_time(path)},
+    enabled_{true}
+{}
 
-bool osc::FileChangePoller::changeWasDetected(const std::string& path)
+bool osc::FileChangePoller::change_detected(const std::string& path)
 {
-    if (!m_IsEnabled)
-    {
+    if (not enabled_) {
         // is disabled
         return false;
     }
 
-    if (path.empty() || path == c_ModelNoBackingFileSenteniel)
-    {
+    if (path.empty() or path == c_model_no_backing_file_sentinel) {
         // has no, or a senteniel, path - do no checks
         return false;
     }
 
     auto now = std::chrono::system_clock::now();
 
-    if (now < m_NextPollingTime)
-    {
+    if (now < next_polling_time_) {
         // to soon to poll again
         return false;
     }
 
-    if (!std::filesystem::exists(path))
-    {
+    if (not std::filesystem::exists(path)) {
         // the file does not exist
         //
         // (e.g. because the user deleted it externally - #495)
@@ -66,14 +60,13 @@ bool osc::FileChangePoller::changeWasDetected(const std::string& path)
     }
 
     auto modification_time = std::filesystem::last_write_time(path);
-    m_NextPollingTime = now + m_DelayBetweenChecks;
+    next_polling_time_ = now + delay_between_checks_;
 
-    if (modification_time == m_FileLastModificationTime)
-    {
+    if (modification_time == file_last_modification_time_) {
         return false;
     }
 
-    m_FileLastModificationTime = modification_time;
+    file_last_modification_time_ = modification_time;
 
     return true;
 }

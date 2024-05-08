@@ -6,6 +6,5 @@
 #include <oscar/Utils/ClonePtr.h>
 
 osc::mi::Document::Document() :
-    m_Objects{{MIIDs::Ground(), ClonePtr<MIObject>{Ground{}}}}
-{
-}
+    m_Objects{{MIIDs::Ground(), make_cloneable<Ground>()}}
+{}

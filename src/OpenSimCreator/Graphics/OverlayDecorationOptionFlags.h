@@ -42,7 +42,7 @@ namespace osc
 
     constexpr OverlayDecorationOptionFlags IthOption(size_t i)
     {
-        i = i < NumFlags<OverlayDecorationOptionFlags>() ? i : 0;
+        i = i < num_flags<OverlayDecorationOptionFlags>() ? i : 0;
         return static_cast<OverlayDecorationOptionFlags>(1<<i);
     }
 

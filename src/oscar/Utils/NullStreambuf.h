@@ -8,30 +8,30 @@ namespace osc
 {
     class NullStreambuf final : public std::streambuf {
     public:
-        size_t numCharsWritten() const
+        size_t num_chars_written() const
         {
-            return m_NumCharsWritten;
+            return num_chars_written_;
         }
 
-        bool wasWrittenTo() const
+        bool was_written_to() const
         {
-            return m_NumCharsWritten > 0;
+            return num_chars_written_ > 0;
         }
     protected:
         int overflow(int c) final
         {
-            setp(m_DummyBuffer.data(), m_DummyBuffer.data() + m_DummyBuffer.size());
-            ++m_NumCharsWritten;
+            setp(dummy_buffer_.data(), dummy_buffer_.data() + dummy_buffer_.size());
+            ++num_chars_written_;
             return (c == traits_type::eof() ? char_type{} : c);
         }
 
         std::streamsize xsputn(const char_type*, std::streamsize count) final
         {
-            m_NumCharsWritten += count;
+            num_chars_written_ += count;
             return count;
         }
     private:
-        std::array<char_type, 1024> m_DummyBuffer;
-        size_t m_NumCharsWritten = 0;
+        std::array<char_type, 1024> dummy_buffer_;
+        size_t num_chars_written_ = 0;
     };
 }

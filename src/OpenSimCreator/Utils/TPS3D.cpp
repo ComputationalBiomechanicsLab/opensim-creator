@@ -278,7 +278,7 @@ void osc::ApplyThinPlateWarpToPointsInPlace(
     float blendingFactor)
 {
     OSC_PERF("ApplyThinPlateWarpToPointsInPlace");
-    ForEachParUnseq(8192, points, [&coefs, blendingFactor](Vec3& vert)
+    for_each_parallel_unsequenced(8192, points, [&coefs, blendingFactor](Vec3& vert)
     {
         vert = lerp(vert, EvaluateTPSEquation(coefs, vert), blendingFactor);
     });

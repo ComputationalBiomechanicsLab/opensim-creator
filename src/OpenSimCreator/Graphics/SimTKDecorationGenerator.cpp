@@ -95,21 +95,21 @@ namespace
 
         // combine vertex data into hash
         int const numVerts = mesh.getNumVertices();
-        hash = osc::HashCombine(hash, osc::hash_of(numVerts));
+        hash = osc::hash_combine(hash, osc::hash_of(numVerts));
         for (int vert = 0; vert < numVerts; ++vert)
         {
-            hash = HashCombine(hash, hash_of(mesh.getVertexPosition(vert)));
+            hash = hash_combine(hash, hash_of(mesh.getVertexPosition(vert)));
         }
 
         // combine face indices into mesh
         int const numFaces = mesh.getNumFaces();
-        hash = osc::HashCombine(hash, osc::hash_of(numFaces));
+        hash = osc::hash_combine(hash, osc::hash_of(numFaces));
         for (int face = 0; face < numFaces; ++face)
         {
             int const numVertsInFace = mesh.getNumVerticesForFace(face);
             for (int faceVert = 0; faceVert < numVertsInFace; ++faceVert)
             {
-                hash = osc::HashCombine(hash, osc::hash_of(mesh.getFaceVertex(face, faceVert)));
+                hash = osc::hash_combine(hash, osc::hash_of(mesh.getFaceVertex(face, faceVert)));
             }
         }
 

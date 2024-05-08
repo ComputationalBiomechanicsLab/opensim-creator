@@ -1,5 +1,6 @@
 #pragma once
 
+#include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/PerfClock.h>
 #include <oscar/Utils/PerfMeasurementMetadata.h>
 
@@ -12,69 +13,48 @@ namespace osc
 {
     class PerfMeasurement final {
     public:
-        PerfMeasurement(
-            const std::shared_ptr<const PerfMeasurementMetadata>& metadata_) :
-            m_Metadata{metadata_}
+        explicit PerfMeasurement(
+            const std::shared_ptr<const PerfMeasurementMetadata>& metadata) :
+            metadata_{metadata}
         {}
 
-        size_t getID() const
+        size_t id() const { return metadata_->getID(); }
+
+        CStringView label() const { return metadata_->getLabel(); }
+
+        CStringView filename() const { return metadata_->getFilename(); }
+
+        unsigned int line() const { return metadata_->getLine(); }
+
+        size_t call_count() const { return call_count_; }
+
+        PerfClock::duration last_duration() const { return last_duration_; }
+
+        PerfClock::duration average_duration() const
         {
-            return m_Metadata->getID();
+            return call_count_ > 0 ? total_duration_/static_cast<ptrdiff_t>(call_count_) : PerfClock::duration{0};
         }
 
-        const std::string& getLabel() const
-        {
-            return m_Metadata->getLabel();
-        }
-
-        const std::string& getFilename() const
-        {
-            return m_Metadata->getFilename();
-        }
-
-        unsigned int getLine() const
-        {
-            return m_Metadata->getLine();
-        }
-
-        size_t getCallCount() const
-        {
-            return m_CallCount;
-        }
-
-        PerfClock::duration getLastDuration() const
-        {
-            return m_LastDuration;
-        }
-
-        PerfClock::duration getAvgDuration() const
-        {
-            return m_CallCount > 0 ? m_TotalDuration/static_cast<ptrdiff_t>(m_CallCount) : PerfClock::duration{0};
-        }
-
-        PerfClock::duration getTotalDuration() const
-        {
-            return m_TotalDuration;
-        }
+        PerfClock::duration total_duration() const { return total_duration_; }
 
         void submit(PerfClock::time_point start, PerfClock::time_point end)
         {
-            m_LastDuration = end - start;
-            m_TotalDuration += m_LastDuration;
-            m_CallCount++;
+            last_duration_ = end - start;
+            total_duration_ += last_duration_;
+            call_count_++;
         }
 
         void clear()
         {
-            m_CallCount = 0;
-            m_TotalDuration = PerfClock::duration{0};
-            m_LastDuration = PerfClock::duration{0};
+            call_count_ = 0;
+            total_duration_ = PerfClock::duration{0};
+            last_duration_ = PerfClock::duration{0};
         }
 
     private:
-        std::shared_ptr<const PerfMeasurementMetadata> m_Metadata;
-        size_t m_CallCount = 0;
-        PerfClock::duration m_TotalDuration{0};
-        PerfClock::duration m_LastDuration{0};
+        std::shared_ptr<const PerfMeasurementMetadata> metadata_;
+        size_t call_count_ = 0;
+        PerfClock::duration total_duration_{0};
+        PerfClock::duration last_duration_{0};
     };
 }

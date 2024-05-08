@@ -46,14 +46,14 @@ private:
             }
         }
         if (ui::draw_button("clear measurements")) {
-            ClearAllPerfMeasurements();
+            clear_all_perf_measurements();
         }
         ui::draw_checkbox("pause", &is_paused_);
 
         std::vector<PerfMeasurement> measurements;
         if (not is_paused_) {
-            measurements = GetAllPerfMeasurements();
-            rgs::sort(measurements, rgs::less{}, &PerfMeasurement::getLabel);
+            measurements = get_all_perf_measurements();
+            rgs::sort(measurements, rgs::less{}, &PerfMeasurement::label);
         }
 
         const ImGuiTableFlags flags =
@@ -72,24 +72,24 @@ private:
 
             for (const PerfMeasurement& measurement : measurements) {
 
-                if (measurement.getCallCount() <= 0) {
+                if (measurement.call_count() <= 0) {
                     continue;
                 }
 
                 int column = 0;
                 ui::table_next_row();
                 ui::table_set_column_index(column++);
-                ui::draw_text_unformatted(measurement.getLabel());
+                ui::draw_text_unformatted(measurement.label());
                 ui::table_set_column_index(column++);
-                ui::draw_text("%s:%u", measurement.getFilename().c_str(), measurement.getLine());
+                ui::draw_text("%s:%u", measurement.filename().c_str(), measurement.line());
                 ui::table_set_column_index(column++);
-                ui::draw_text("%zu", measurement.getCallCount());
+                ui::draw_text("%zu", measurement.call_count());
                 ui::table_set_column_index(column++);
-                ui::draw_text("%" PRId64 " us", static_cast<int64_t>(std::chrono::duration_cast<std::chrono::microseconds>(measurement.getLastDuration()).count()));
+                ui::draw_text("%" PRId64 " us", static_cast<int64_t>(std::chrono::duration_cast<std::chrono::microseconds>(measurement.last_duration()).count()));
                 ui::table_set_column_index(column++);
-                ui::draw_text("%" PRId64 " us", static_cast<int64_t>(std::chrono::duration_cast<std::chrono::microseconds>(measurement.getAvgDuration()).count()));
+                ui::draw_text("%" PRId64 " us", static_cast<int64_t>(std::chrono::duration_cast<std::chrono::microseconds>(measurement.average_duration()).count()));
                 ui::table_set_column_index(column++);
-                ui::draw_text("%" PRId64 " us", static_cast<int64_t>(std::chrono::duration_cast<std::chrono::microseconds>(measurement.getTotalDuration()).count()));
+                ui::draw_text("%" PRId64 " us", static_cast<int64_t>(std::chrono::duration_cast<std::chrono::microseconds>(measurement.total_duration()).count()));
             }
 
             ui::end_table();

@@ -71,7 +71,7 @@ TEST(UndoableModelStatePair, CanLoadAndRenderAllUserFacingExampleFiles)
             write_as_dae(stream, decorations, metadata);
 
             // and content is actually written to the DAE stream
-            ASSERT_TRUE(stream.wasWrittenTo());
+            ASSERT_TRUE(stream.was_written_to());
 
             ++nExamplesTested;
         }

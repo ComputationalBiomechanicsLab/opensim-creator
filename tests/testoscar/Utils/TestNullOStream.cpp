@@ -11,7 +11,7 @@ TEST(NullOStream, CanConstruct)
 
 TEST(NullOStream, NumCharsWrittenInitiallyZero)
 {
-    ASSERT_EQ(NullOStream{}.numCharsWritten(), 0);
+    ASSERT_EQ(NullOStream{}.num_chars_written(), 0);
 }
 
 TEST(NullOStream, NumCharsWrittenChangesAfterWriting)
@@ -19,12 +19,12 @@ TEST(NullOStream, NumCharsWrittenChangesAfterWriting)
     NullOStream s;
     s << "12345";
     s.flush();
-    ASSERT_EQ(s.numCharsWritten(), 5);
+    ASSERT_EQ(s.num_chars_written(), 5);
 }
 
 TEST(NullOStream, WasWrittenToInitiallyFalse)
 {
-    ASSERT_FALSE(NullOStream{}.wasWrittenTo());
+    ASSERT_FALSE(NullOStream{}.was_written_to());
 }
 
 TEST(NullOStream, WasWrittenToBecomesTrueAfterWriting)
@@ -32,5 +32,5 @@ TEST(NullOStream, WasWrittenToBecomesTrueAfterWriting)
     NullOStream s;
     s << "12345";
     s.flush();
-    ASSERT_TRUE(s.wasWrittenTo());
+    ASSERT_TRUE(s.was_written_to());
 }

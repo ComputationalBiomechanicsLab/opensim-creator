@@ -27,24 +27,24 @@ TEST(NullStreambuf, CanWriteToNullStreambufViaOstream)
 
 TEST(NullStreambuf, NumCharsWrittenReturnsZeroOnInitialConstruction)
 {
-    ASSERT_EQ(NullStreambuf{}.numCharsWritten(), 0);
+    ASSERT_EQ(NullStreambuf{}.num_chars_written(), 0);
 }
 
 TEST(NullStreambuf, NumCharsWrittenUpdatesAfterWriting)
 {
     NullStreambuf buf;
     std::ostream{&buf} << "12345";
-    ASSERT_EQ(buf.numCharsWritten(), 5);
+    ASSERT_EQ(buf.num_chars_written(), 5);
 }
 
 TEST(NullStreambuf, WasWrittenToReturnsFalseInitially)
 {
-    ASSERT_FALSE(NullStreambuf{}.wasWrittenTo());
+    ASSERT_FALSE(NullStreambuf{}.was_written_to());
 }
 
 TEST(NullStreambuf, WasWrittenToReturnsTrueAfterBeingWrittenTo)
 {
     NullStreambuf buf;
     std::ostream{&buf} << "12345";
-    ASSERT_TRUE(buf.wasWrittenTo());
+    ASSERT_TRUE(buf.was_written_to());
 }

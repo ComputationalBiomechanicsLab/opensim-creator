@@ -33,9 +33,6 @@ namespace osc
         // constructs a `ClonePtr` that owns `p`
         explicit ClonePtr(std::unique_ptr<element_type, deleter_type> p) noexcept : value_{std::move(p)} {}
 
-        // constructs a `ClonePtr` by `clone`ing `ref`
-        explicit ClonePtr(const element_type& ref) : value_{ref.clone()} {}
-
         // constructs a `ClonePtr` by `clone`ing `src`
         ClonePtr(const ClonePtr& src) : value_{src.value_ ? src.value_->clone() : nullptr} {}
 
@@ -45,10 +42,10 @@ namespace osc
         // constructs `ClonePtr` by transferring ownership from an rvalue (with conversion)
         template<typename U, typename E>
         requires
-            std::convertible_to<pointer, typename ClonePtr<U, E>::pointer> and
+            std::convertible_to<typename ClonePtr<U, E>::pointer, pointer> and
             (not std::is_array_v<U>) and
             std::convertible_to<E, deleter_type>
-        ClonePtr(ClonePtr<U, E>&& tmp) noexcept : value_{std::move(tmp)} {}
+        ClonePtr(ClonePtr<U, E>&& tmp) noexcept : value_{std::move(tmp.value_)} {}
 
         // if `get() == nullptr` there are no effects. Otherwise, the owned object is destroyed via `get_deleter()(get())`
         ~ClonePtr() noexcept = default;
@@ -63,18 +60,6 @@ namespace osc
             }
             else {
                 reset();
-            }
-            return *this;
-        }
-
-        // assigns `rhs.clone()` to `this`
-        ClonePtr& operator=(const element_type& rhs)
-        {
-            if (value_) {
-                *value_ = rhs;
-            }
-            else {
-                value_ = std::unique_ptr<element_type>{rhs.clone()};
             }
             return *this;
         }
@@ -161,8 +146,18 @@ namespace osc
         }
 
     private:
+        template<typename, typename> friend class ClonePtr;
+
         std::unique_ptr<T, Deleter> value_;
     };
+
+    // constructs an object of type `T` and wraps it in a `ClonePtr`
+    template<typename T, typename... Args>
+    requires std::constructible_from<T, Args&&...>
+    ClonePtr<T> make_cloneable(Args&&... args)
+    {
+        return ClonePtr<T>{std::make_unique<T>(std::forward<Args>(args)...)};
+    }
 }
 
 template<typename T, typename Deleter>

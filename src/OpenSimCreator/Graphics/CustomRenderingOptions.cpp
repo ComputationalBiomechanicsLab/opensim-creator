@@ -13,7 +13,7 @@ using namespace osc;
 
 size_t osc::CustomRenderingOptions::getNumOptions() const
 {
-    return NumFlags<CustomRenderingOptionFlags>();
+    return num_flags<CustomRenderingOptionFlags>();
 }
 
 bool osc::CustomRenderingOptions::getOptionValue(ptrdiff_t i) const

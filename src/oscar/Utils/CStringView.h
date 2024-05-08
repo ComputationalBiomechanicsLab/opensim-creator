@@ -8,7 +8,7 @@
 
 namespace osc
 {
-    // represents a view into a NUL-terminated C string
+    // represents a readonly view into a NUL-terminated C string
     class CStringView final {
     public:
         using value_type = std::string_view::value_type;
@@ -21,12 +21,12 @@ namespace osc
         constexpr CStringView() = default;
 
         constexpr CStringView(const value_type* s) :
-            m_Data{s ? s : ""}
+            data_{s ? s : ""}
         {}
 
         constexpr CStringView(const value_type* s, size_type count) :
-            m_Data{s},
-            m_Size{count}
+            data_{s},
+            size_{count}
         {}
 
         constexpr CStringView(std::nullptr_t) :
@@ -34,8 +34,8 @@ namespace osc
         {}
 
         CStringView(const std::string& s) :
-            m_Data{s.c_str()},
-            m_Size{s.size()}
+            data_{s.c_str()},
+            size_{s.size()}
         {}
 
         constexpr CStringView(const CStringView&) = default;
@@ -45,42 +45,42 @@ namespace osc
 
         constexpr size_type size() const
         {
-            return m_Size;
+            return size_;
         }
 
         constexpr size_type length() const
         {
-            return m_Size;
+            return size_;
         }
 
         [[nodiscard]] constexpr bool empty() const
         {
-            return m_Size == 0;
+            return size_ == 0;
         }
 
         constexpr const value_type* c_str() const
         {
-            return m_Data;
+            return data_;
         }
 
         constexpr operator std::string_view () const
         {
-            return std::string_view{m_Data, m_Size};
+            return std::string_view{data_, size_};
         }
 
         constexpr const_iterator begin() const
         {
-            return m_Data;
+            return data_;
         }
 
         constexpr const_iterator end() const
         {
-            return m_Data + m_Size;
+            return data_ + size_;
         }
 
         constexpr const_pointer data() const
         {
-            return m_Data;
+            return data_;
         }
 
         constexpr friend bool operator==(const CStringView& lhs, const CStringView& rhs)
@@ -92,8 +92,8 @@ namespace osc
             return static_cast<std::string_view>(lhs) <=> static_cast<std::string_view>(rhs);
         }
     private:
-        const value_type* m_Data = "";
-        size_type m_Size = std::string_view{m_Data}.size();
+        const value_type* data_ = "";
+        size_type size_ = std::string_view{data_}.size();
     };
 
     namespace literals
@@ -104,9 +104,9 @@ namespace osc
         }
     }
 
-    inline std::string to_string(const CStringView& sv)
+    inline std::string to_string(const CStringView& cstrv)
     {
-        return std::string{sv};
+        return std::string{cstrv};
     }
 
     std::ostream& operator<<(std::ostream&, const CStringView&);
@@ -116,8 +116,8 @@ namespace osc
 
 template<>
 struct std::hash<osc::CStringView> final {
-    size_t operator()(const osc::CStringView& sv) const
+    size_t operator()(const osc::CStringView& cstrv) const
     {
-        return std::hash<std::string_view>{}(sv);
+        return std::hash<std::string_view>{}(cstrv);
     }
 };

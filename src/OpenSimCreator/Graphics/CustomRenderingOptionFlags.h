@@ -39,7 +39,7 @@ namespace osc
 
     constexpr CustomRenderingOptionFlags CustomRenderingIthOption(size_t i)
     {
-        i = i < NumFlags<CustomRenderingOptionFlags>() ? i : 0;
+        i = i < num_flags<CustomRenderingOptionFlags>() ? i : 0;
         return static_cast<CustomRenderingOptionFlags>(1<<i);
     }
 

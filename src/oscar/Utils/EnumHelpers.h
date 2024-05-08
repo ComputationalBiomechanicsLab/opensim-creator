@@ -137,7 +137,7 @@ namespace osc
 
     // returns the number of flags in `TEnum`
     template<FlagsEnum TEnum>
-    constexpr size_t NumFlags()
+    constexpr size_t num_flags()
     {
         return static_cast<size_t>(TEnum::NUM_FLAGS);
     }

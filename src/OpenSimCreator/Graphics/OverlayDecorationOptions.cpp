@@ -12,7 +12,7 @@ using namespace osc;
 
 size_t osc::OverlayDecorationOptions::getNumOptions() const
 {
-    return NumFlags<OverlayDecorationOptionFlags>();
+    return num_flags<OverlayDecorationOptionFlags>();
 }
 
 bool osc::OverlayDecorationOptions::getOptionValue(ptrdiff_t i) const
@@ -105,7 +105,7 @@ void osc::OverlayDecorationOptions::forEachOptionAsAppSettingValue(std::function
 
 void osc::OverlayDecorationOptions::tryUpdFromValues(std::string_view keyPrefix, std::unordered_map<std::string, AppSettingValue> const& lut)
 {
-    for (size_t i = 0; i < NumFlags<OverlayDecorationOptionFlags>(); ++i)
+    for (size_t i = 0; i < num_flags<OverlayDecorationOptionFlags>(); ++i)
     {
         auto const& metadata = at(GetAllOverlayDecorationOptionFlagsMetadata(), i);
 

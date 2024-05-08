@@ -8,19 +8,19 @@ namespace osc
     template<std::invocable Dtor>
     class ScopeGuard final {
     public:
-        explicit ScopeGuard(Dtor&& dtor_) :
-            m_OnScopeExit{std::forward<Dtor&&>(dtor_)}
+        explicit ScopeGuard(Dtor&& destructor) :
+            destructor_{std::forward<Dtor&&>(destructor)}
         {}
         ScopeGuard(const ScopeGuard&) = delete;
         ScopeGuard(ScopeGuard&&) noexcept = delete;
         ScopeGuard& operator=(const ScopeGuard&) = delete;
         ScopeGuard& operator=(ScopeGuard&&) noexcept = delete;
-        ~ScopeGuard() noexcept(noexcept(m_OnScopeExit()))
+        ~ScopeGuard() noexcept(noexcept(destructor_()))
         {
-            m_OnScopeExit();
+            destructor_();
         }
 
     private:
-        Dtor m_OnScopeExit;
+        Dtor destructor_;
     };
 }

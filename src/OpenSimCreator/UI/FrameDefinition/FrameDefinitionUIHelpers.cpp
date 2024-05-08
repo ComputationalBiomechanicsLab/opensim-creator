@@ -90,7 +90,7 @@ void osc::fd::ActionExportFrameDefinitionSceneModelToEditorTab(
     ParentPtr<ITabHost> const& tabHost,
     UndoableModelStatePair const& model)
 {
-    auto maybeMainUIStateAPI = DynamicParentCast<IMainUIStateAPI>(tabHost);
+    auto maybeMainUIStateAPI = dynamic_parent_cast<IMainUIStateAPI>(tabHost);
     if (!maybeMainUIStateAPI)
     {
         log_error("Tried to export frame definition scene to an OpenSim model but there is no MainUIStateAPI data");

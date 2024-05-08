@@ -10,19 +10,19 @@
 
 namespace osc
 {
-    void ClearAllPerfMeasurements();
-    std::vector<PerfMeasurement> GetAllPerfMeasurements();
+    void clear_all_perf_measurements();
+    std::vector<PerfMeasurement> get_all_perf_measurements();
 
     // internal details needed for `OSC_PERF` to work
     namespace detail
     {
-        size_t AllocateMeasurementID(
+        size_t allocate_perf_mesurement_id(
             std::string_view label,
             std::string_view filename,
             unsigned int line
         );
 
-        void SubmitMeasurement(
+        void submit_perf_measurement(
             size_t id,
             PerfClock::time_point start,
             PerfClock::time_point end
@@ -30,21 +30,18 @@ namespace osc
 
         class PerfTimer final {
         public:
-            explicit PerfTimer(size_t id) :
-                m_ID{id}
-            {
-            }
+            explicit PerfTimer(size_t id) : id_{id} {}
             PerfTimer(PerfTimer const&) = delete;
             PerfTimer(PerfTimer&&) noexcept = delete;
             PerfTimer& operator=(const PerfTimer&) = delete;
             PerfTimer& operator=(PerfTimer&&) noexcept = delete;
             ~PerfTimer() noexcept
             {
-                SubmitMeasurement(m_ID, m_Start, PerfClock::now());
+                submit_perf_measurement(id_, start_time_, PerfClock::now());
             }
         private:
-            size_t m_ID;
-            PerfClock::time_point m_Start = PerfClock::now();
+            size_t id_;
+            PerfClock::time_point start_time_ = PerfClock::now();
         };
     }
 }
@@ -52,5 +49,5 @@ namespace osc
 #define OSC_PERF_TOKENPASTE(x, y) x##y
 #define OSC_PERF_TOKENPASTE2(x, y) OSC_PERF_TOKENPASTE(x, y)
 #define OSC_PERF(label) \
-    static const size_t OSC_PERF_TOKENPASTE2(s_TimerID, __LINE__) = osc::detail::AllocateMeasurementID(label, osc::ExtractFilename(__FILE__), __LINE__); \
+    static const size_t OSC_PERF_TOKENPASTE2(s_TimerID, __LINE__) = osc::detail::allocate_perf_mesurement_id(label, osc::extract_filename(__FILE__), __LINE__); \
     const osc::detail::PerfTimer OSC_PERF_TOKENPASTE2(timer, __LINE__) (OSC_PERF_TOKENPASTE2(s_TimerID, __LINE__));
