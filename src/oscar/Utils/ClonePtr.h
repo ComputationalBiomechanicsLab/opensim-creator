@@ -1,5 +1,6 @@
 #pragma once
 
+#include <concepts>
 #include <iosfwd>
 #include <memory>
 #include <type_traits>
@@ -7,68 +8,73 @@
 
 namespace osc
 {
-    // a "smart pointer" that behaves exactly like a unique_ptr but
-    // supports copy construction/assignment by calling `T::clone()`
+    // `ClonePtr` is a smart pointer that owns and manages another object through
+    // a pointer and disposes of that object when `ClonePtr` goes out of scope.
+    //
+    // This is essentially the same as how `std::unique_ptr` works. The main difference
+    // that `ClonePtr` offers is that it is copyable. Copying is achieved by calling a
+    // cloning function when necessary.
     template<typename T, typename Deleter = std::default_delete<T>>
     class ClonePtr final {
     public:
-        typedef T* pointer;
-        typedef T element_type;
+        using pointer = T*;
+        using element_type = T;
+        using deleter_type = Deleter;
 
-        ClonePtr() : m_Value{nullptr}
-        {
-        }
-        ClonePtr(std::nullptr_t) : m_Value{nullptr}
-        {
-        }
-        explicit ClonePtr(T* ptr) noexcept : m_Value{ptr}
-        {
-            // takes ownership
-        }
-        explicit ClonePtr(std::unique_ptr<T, Deleter> ptr) : m_Value{std::move(ptr)}
-        {
-            // takes ownership
-        }
-        explicit ClonePtr(const T& ref) : m_Value{ref.clone()}
-        {
-            // clones
-        }
-        ClonePtr(const ClonePtr& src) : m_Value{src.m_Value ? src.m_Value->clone() : nullptr}
-        {
-            // clones
-        }
+        // constructs a `ClonePtr` that owns nothing
+        constexpr ClonePtr() noexcept : value_{nullptr} {}
 
+        // constructs a `ClonePtr` that owns nothing
+        constexpr ClonePtr(std::nullptr_t) noexcept : value_{nullptr} {}
+
+        // constructs a `ClonePtr` that owns `p`
+        explicit ClonePtr(pointer p) noexcept : value_{p} {}
+
+        // constructs a `ClonePtr` that owns `p`
+        explicit ClonePtr(std::unique_ptr<element_type, deleter_type> p) noexcept : value_{std::move(p)} {}
+
+        // constructs a `ClonePtr` by `clone`ing `ref`
+        explicit ClonePtr(const element_type& ref) : value_{ref.clone()} {}
+
+        // constructs a `ClonePtr` by `clone`ing `src`
+        ClonePtr(const ClonePtr& src) : value_{src.value_ ? src.value_->clone() : nullptr} {}
+
+        // constructs `ClonePtr` by transferring ownership from an rvalue
         ClonePtr(ClonePtr&&) noexcept = default;
 
+        // constructs `ClonePtr` by transferring ownership from an rvalue (with conversion)
         template<typename U, typename E>
-        ClonePtr(ClonePtr<U, E>&& tmp) : m_Value{std::move(tmp)}
-        {
-        }
+        requires
+            std::convertible_to<pointer, typename ClonePtr<U, E>::pointer> and
+            (not std::is_array_v<U>) and
+            std::convertible_to<E, deleter_type>
+        ClonePtr(ClonePtr<U, E>&& tmp) noexcept : value_{std::move(tmp)} {}
 
+        // if `get() == nullptr` there are no effects. Otherwise, the owned object is destroyed via `get_deleter()(get())`
         ~ClonePtr() noexcept = default;
 
-        ClonePtr& operator=(ClonePtr const& other)
+        // if `rhs.get() != nullptr`, assigns `rhs.clone()` to `this`; otherwise, `reset`s `this`
+        ClonePtr& operator=(ClonePtr const& rhs)
         {
-            if (!other.m_Value)
-            {
-                m_Value.reset();
+            if (&rhs == this) {
             }
-            else if (&other != this)
-            {
-                m_Value = std::unique_ptr<T>{other.m_Value->clone()};
+            else if (rhs.get()) {
+                value_ = std::unique_ptr<element_type>{rhs.value_->clone()};
+            }
+            else {
+                reset();
             }
             return *this;
         }
 
-        ClonePtr& operator=(const T& other)
+        // assigns `rhs.clone()` to `this`
+        ClonePtr& operator=(const element_type& rhs)
         {
-            if (m_Value)
-            {
-                *m_Value = other;
+            if (value_) {
+                *value_ = rhs;
             }
-            else
-            {
-                m_Value = std::make_unique<T>(other);
+            else {
+                value_ = std::unique_ptr<element_type>{rhs.clone()};
             }
             return *this;
         }
@@ -76,53 +82,65 @@ namespace osc
         ClonePtr& operator=(ClonePtr&&) noexcept = default;
 
         template<typename U, typename E>
-        ClonePtr& operator=(ClonePtr<U, E>&& tmp) noexcept
+        requires
+            (not std::is_array_v<U>) and
+            std::convertible_to<typename ClonePtr<U, E>::element_type, element_type> and
+            std::is_assignable_v<Deleter&, E&&>
+        ClonePtr& operator=(ClonePtr<U, E>&& rhs) noexcept
         {
-            m_Value = std::move(tmp.m_Value);
+            value_ = std::move(rhs.value_);
             return *this;
         }
 
-        ClonePtr& operator=(std::nullptr_t)
+        ClonePtr& operator=(std::nullptr_t) noexcept
         {
             reset();
             return *this;
         }
 
-        T* release()
+        pointer release() noexcept
         {
-            return m_Value.release();
+            return value_.release();
         }
-        void reset(T* ptr = nullptr)
+
+        void reset(pointer ptr = pointer()) noexcept
         {
-            m_Value.reset(ptr);
+            value_.reset(ptr);
         }
+
         void swap(ClonePtr& other) noexcept
         {
-            m_Value.swap(other.m_Value);
+            value_.swap(other.value_);
         }
-        T* get() const
+
+        pointer get() const noexcept
         {
-            return m_Value.get();
+            return value_.get();
         }
-        Deleter& get_deleter()
+
+        Deleter& get_deleter() noexcept
         {
-            return m_Value.get_deleter();
+            return value_.get_deleter();
         }
-        const Deleter& get_deleter() const
+
+        const Deleter& get_deleter() const noexcept
         {
-            return m_Value.get_deleter();
+            return value_.get_deleter();
         }
-        explicit operator bool() const
+
+        explicit operator bool() const noexcept
         {
-            return m_Value;
+            return value_;
         }
-        T& operator*() const
+
+        typename std::add_lvalue_reference<T>::type operator*() const noexcept(noexcept(*std::declval<pointer>()))
         {
-            return *m_Value;
+            return *value_;
         }
-        T* operator->() const
+
+        pointer operator->() const noexcept
         {
-            return m_Value.get();
+            return value_.get();
         }
 
         friend void swap(ClonePtr& lhs, ClonePtr& rhs) noexcept
@@ -136,19 +154,20 @@ namespace osc
             return lhs.get() == rhs.get();
         }
 
-        friend std::ostream& operator<<(std::ostream& o, const ClonePtr& p)
+        template<typename CharT, typename Traits>
+        friend std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>& os, const ClonePtr& p)
         {
-            return o << p.get();
+            return os << p.get();
         }
 
     private:
-        std::unique_ptr<T, Deleter> m_Value;
+        std::unique_ptr<T, Deleter> value_;
     };
 }
 
-template<typename T, typename D>
-struct std::hash<osc::ClonePtr<T, D>> final {
-    size_t operator()(const osc::ClonePtr<T, D>& p)
+template<typename T, typename Deleter>
+struct std::hash<osc::ClonePtr<T, Deleter>> final {
+    size_t operator()(const osc::ClonePtr<T, Deleter>& p) const
     {
         return std::hash(p.get());
     }

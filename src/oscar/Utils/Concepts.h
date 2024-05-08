@@ -58,7 +58,7 @@ namespace osc
 
     template<typename Key, typename Container>
     concept AssociativeContainerKey = requires(Container& c, Key key) {
-        AssociativeContainer<Container>;
+        requires AssociativeContainer<Container>;
         { c.find(key) } -> std::same_as<std::ranges::iterator_t<Container>>;
     };
 }

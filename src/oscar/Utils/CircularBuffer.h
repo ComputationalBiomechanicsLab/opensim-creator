@@ -14,8 +14,8 @@
 namespace osc
 {
     template<typename T, size_t N>
+    requires (N > 1)
     class CircularBuffer final {
-        static_assert(N > 1, "the internal representation of a circular buffer (it has one 'dead' entry) requires this");
 
         // iterator implementation
         template<bool IsConst>
@@ -27,30 +27,29 @@ namespace osc
             using reference = typename std::conditional_t<IsConst, const T&, T&>;
             using iterator_category = std::random_access_iterator_tag;
 
-            constexpr Iterator(pointer _data, ptrdiff_t _pos) :
-                data{_data},
-                pos{_pos}
-            {
-            }
+            constexpr Iterator(pointer data, ptrdiff_t offset) :
+                data_{data},
+                offset_{offset}
+            {}
 
             // implicit conversion from non-const iterator to a const one
 
             constexpr operator Iterator<true>() const
             {
-                return Iterator<true>{data, pos};
+                return Iterator<true>{data_, offset_};
             }
 
             // LegacyIterator
 
             constexpr Iterator& operator++()
             {
-                pos = (pos + 1) % N;
+                offset_ = (offset_ + 1) % N;
                 return *this;
             }
 
             constexpr reference operator*() const
             {
-                return data[pos];
+                return data_[offset_];
             }
 
             // EqualityComparable
@@ -61,7 +60,7 @@ namespace osc
 
             constexpr pointer operator->() const
             {
-                return &data[pos];
+                return &data_[offset_];
             }
 
             // LegacyForwardIterator
@@ -77,7 +76,7 @@ namespace osc
 
             constexpr Iterator& operator--()
             {
-                pos = pos == 0 ? N - 1 : pos - 1;
+                offset_ = offset_ == 0 ? N - 1 : offset_ - 1;
                 return *this;
             }
 
@@ -92,7 +91,7 @@ namespace osc
 
             constexpr Iterator& operator+=(difference_type i)
             {
-                pos = (pos + i) % N;
+                offset_ = (offset_ + i) % N;
                 return *this;
             }
 
@@ -107,13 +106,13 @@ namespace osc
             {
                 difference_type im = (i % N);
 
-                if (im > pos)
+                if (im > offset_)
                 {
-                    pos = N - (im - pos);
+                    offset_ = N - (im - offset_);
                 }
                 else
                 {
-                    pos = pos - im;
+                    offset_ = offset_ - im;
                 }
 
                 return *this;
@@ -128,17 +127,17 @@ namespace osc
 
             constexpr difference_type operator-(const Iterator& other) const
             {
-                return pos - other.pos;
+                return offset_ - other.offset_;
             }
 
-            constexpr reference operator[](difference_type i) const
+            constexpr reference operator[](difference_type pos) const
             {
-                return data[(pos + i) % N];
+                return data_[(offset_ + pos) % N];
             }
 
         private:
-            pointer data = nullptr;
-            ptrdiff_t pos = 0;
+            pointer data_ = nullptr;
+            ptrdiff_t offset_ = 0;
         };
 
         Iterator(T*, ptrdiff_t) -> Iterator<false>;
@@ -202,11 +201,11 @@ namespace osc
         // iterators
 
         constexpr const_iterator begin() const {
-            return iterator_at(*this, m_Begin);
+            return iterator_at(*this, begin_offset_);
         }
 
         constexpr iterator begin() {
-            return iterator_at(*this, m_Begin);
+            return iterator_at(*this, begin_offset_);
         }
 
         constexpr const_iterator cbegin() const {
@@ -214,11 +213,11 @@ namespace osc
         }
 
         constexpr const_iterator end() const {
-            return iterator_at(*this, m_End);
+            return iterator_at(*this, end_offset_);
         }
 
         constexpr iterator end() {
-            return iterator_at(*this, m_End);
+            return iterator_at(*this, end_offset_);
         }
 
         constexpr const_iterator cend() const {
@@ -252,11 +251,11 @@ namespace osc
         // capacity
 
         constexpr bool empty() const {
-            return m_Begin == m_End;
+            return begin_offset_ == end_offset_;
         }
 
         constexpr size_type size() const {
-            return m_End >= m_Begin ? m_End - m_Begin : (N - m_Begin) + m_End;
+            return end_offset_ >= begin_offset_ ? end_offset_ - begin_offset_ : (N - begin_offset_) + end_offset_;
         }
 
         constexpr size_type max_size() const {
@@ -272,18 +271,17 @@ namespace osc
         constexpr void clear()
         {
             std::destroy(this->begin(), this->end());
-            m_Begin = 0;
-            m_End = 0;
+            begin_offset_ = 0;
+            end_offset_ = 0;
         }
 
         template<typename... Args>
         requires std::constructible_from<T, Args&&...>
         constexpr T& emplace_back(Args&&... args)
         {
-            ptrdiff_t new_end = (m_End + 1) % N;
+            const ptrdiff_t new_end = (end_offset_ + 1) % N;
 
-            if (new_end == m_Begin)
-            {
+            if (new_end == begin_offset_) {
                 // wraparound case: this is a fixed-size non-blocking circular
                 // buffer
                 //
@@ -292,37 +290,36 @@ namespace osc
                 // new "dead" element and should be destructed
 
                 std::destroy_at(&front());
-                m_Begin = (m_Begin + 1) % N;
+                begin_offset_ = (begin_offset_ + 1) % N;
             }
 
             // construct T in the old "dead" element location
-            object_bytes* ptr = m_RawStorage.data() + m_End;
-            T* constructed_el = new (ptr) T{std::forward<Args>(args)...};
+            object_bytes* const ptr = raw_storage_bytes_.data() + end_offset_;
+            T* const constructed_el = new (ptr) T{std::forward<Args>(args)...};
 
-            m_End = new_end;
+            end_offset_ = new_end;
 
             return *constructed_el;
         }
 
-        constexpr void push_back(const T& v)
+        constexpr void push_back(const T& value)
         {
-            emplace_back(v);
+            emplace_back(value);
         }
 
-        constexpr void push_back(T&& v)
+        constexpr void push_back(T&& value)
         {
-            emplace_back(std::move(v));
+            emplace_back(std::move(value));
         }
 
         constexpr iterator erase(iterator first, iterator last)
         {
-            if (last != end())
-            {
+            if (last != end()) {
                 throw std::runtime_error{"tried to remove a range of elements in the middle of a circular buffer (can currently only erase elements from end of circular buffer)"};
             }
 
             std::destroy(first, last);
-            m_End -= std::distance(first, last);
+            end_offset_ -= std::distance(first, last);
 
             return end();
         }
@@ -331,26 +328,24 @@ namespace osc
         {
             std::optional<T> rv = std::nullopt;
 
-            if (empty())
-            {
+            if (empty()) {
                 return rv;
             }
 
             rv.emplace(std::move(back()));
-            m_End = m_End == 0 ? static_cast<ptrdiff_t>(N) - 1 : m_End - 1;
+            end_offset_ = end_offset_ == 0 ? static_cast<ptrdiff_t>(N) - 1 : end_offset_ - 1;
 
             return rv;
         }
 
         constexpr T pop_back()
         {
-            if (empty())
-            {
+            if (empty()) {
                 throw std::runtime_error{"tried to call Circular_buffer::pop_back on an empty circular buffer"};
             }
 
             T rv{std::move(back())};
-            m_End = m_End == 0 ? static_cast<ptrdiff_t>(N) - 1 : m_End - 1;
+            end_offset_ = end_offset_ == 0 ? static_cast<ptrdiff_t>(N) - 1 : end_offset_ - 1;
             return rv;
         }
 
@@ -367,9 +362,9 @@ namespace osc
         static constexpr auto iterator_at(CircularBuf& buf, ptrdiff_t pos) {
             using Value = std::conditional_t<std::is_const_v<CircularBuf>, const T, T>;
 
-            static_assert(alignof(Value) == alignof(typename decltype(buf.m_RawStorage)::value_type));
-            static_assert(sizeof(Value) == sizeof(typename decltype(buf.m_RawStorage)::value_type));
-            Value* ptr = std::launder(reinterpret_cast<Value*>(buf.m_RawStorage.data()));  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+            static_assert(alignof(Value) == alignof(typename decltype(buf.raw_storage_bytes_)::value_type));
+            static_assert(sizeof(Value) == sizeof(typename decltype(buf.raw_storage_bytes_)::value_type));
+            Value* ptr = std::launder(reinterpret_cast<Value*>(buf.raw_storage_bytes_.data()));  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 
             return Iterator{ptr, pos};
         }
@@ -377,31 +372,31 @@ namespace osc
         // raw (byte) storage for elements
         //
         // - it's raw bytes so that the implementation doesn't
-        //   require a sequence of default-constructed Ts to
+        //   require a sequence of default-constructed `T`s to
         //   populate the storage
         //
-        // - the circular/modulo range [m_Begin..m_End) contains
-        //   fully-constructed Ts
+        // - the circular/modulo range `[begin_offset_..end_offset_)` contains
+        //   fully-constructed `T`s
         //
-        // - m_End always points to a "dead", but valid, location
+        // - `end_offset_` always points to a "dead", but valid, location
         //   in storage
         //
         // - the above constraints imply that the number of "live"
-        //   elements in storage is N-1, because m_End will modulo
-        //   spin into position 0 once it is equal to N (this is
-        //   in constrast to non-circular storage, where m_End
+        //   elements in storage is N-1, because `end_offset_` will modulo
+        //   spin into position 0 once it is equal to `N` (this is
+        //   in constrast to non-circular storage, where `end_offset_`
         //   typically points one past the end of the storage range)
         //
         // - this behavior makes the implementation simpler, because
-        //   you don't have to handle m_Begin == m_End edge cases and
-        //   one-past-the end out-of-bounds checks
+        //   you don't have to handle `begin_offset_ == end_offset_` edge
+        //   cases and one-past-the end out-of-bounds checks
         class alignas(T) object_bytes { std::byte data[sizeof(T)]; };
-        std::array<object_bytes, N> m_RawStorage;
+        std::array<object_bytes, N> raw_storage_bytes_;
 
-        // index (T-based, not raw byte based) of the first element
-        ptrdiff_t m_Begin = 0;
+        // index (`T`-based, not raw byte based) of the first element
+        ptrdiff_t begin_offset_ = 0;
 
-        // first index (T-based, not raw byte based) *after* the last element
-        ptrdiff_t m_End = 0;
+        // first index (`T`-based, not raw byte based) *after* the last element
+        ptrdiff_t end_offset_ = 0;
     };
 }
