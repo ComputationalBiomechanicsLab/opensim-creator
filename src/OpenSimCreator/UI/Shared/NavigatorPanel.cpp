@@ -145,7 +145,7 @@ namespace
     {
         return rgs::any_of(cp, [&searchStr](OpenSim::Component const* c)
         {
-            return ContainsCaseInsensitive(c->getName(), searchStr);
+            return contains_case_insensitive(c->getName(), searchStr);
         });
     }
 }

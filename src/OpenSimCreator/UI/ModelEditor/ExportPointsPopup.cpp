@@ -67,7 +67,7 @@ namespace
     {
         return
             CanExtractPointInfoFrom(component, state) &&
-            ContainsCaseInsensitive(component.getName(), uiState.searchString);
+            contains_case_insensitive(component.getName(), uiState.searchString);
     }
 
     void DrawExportPointsPopupDescriptionSection()
@@ -411,7 +411,7 @@ namespace
             rgs::sort(rv);
         }
         else {
-            rgs::sort(rv, rgs::less{}, [](auto const& path) { return SubstringAfterLast(path, '/'); });
+            rgs::sort(rv, rgs::less{}, [](auto const& path) { return substring_after_last(path, '/'); });
         }
         return rv;
     }

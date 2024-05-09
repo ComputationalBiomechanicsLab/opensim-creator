@@ -301,7 +301,7 @@ void osc::DrawContextMenuHeader(CStringView title, CStringView subtitle)
 
 void osc::DrawRightClickedComponentContextMenuHeader(OpenSim::Component const& c)
 {
-    DrawContextMenuHeader(Ellipsis(c.getName(), 15), c.getConcreteClassName());
+    DrawContextMenuHeader(truncate_with_ellipsis(c.getName(), 15), c.getConcreteClassName());
 }
 
 void osc::DrawContextMenuSeparator()

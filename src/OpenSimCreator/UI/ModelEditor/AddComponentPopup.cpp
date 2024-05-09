@@ -256,7 +256,7 @@ private:
                 continue;  // it's a muscle point: don't present it (noisy)
             }
 
-            if (!ContainsCaseInsensitive(c.getName(), m_SocketSearchStrings[i])) {
+            if (!contains_case_insensitive(c.getName(), m_SocketSearchStrings[i])) {
                 continue;  // not part of the user-enacted search set
             }
 
@@ -343,7 +343,7 @@ private:
                 continue;  // can't attach a point to it
             }
 
-            if (!ContainsCaseInsensitive(c.getName(), m_PathSearchString))
+            if (!contains_case_insensitive(c.getName(), m_PathSearchString))
             {
                 continue;  // search failed
             }

@@ -73,9 +73,9 @@ TEST(CoordinateAxis, PrevWorksAsExpected)
 
 TEST(CoordinateAxis, StreamingOutputWorksAsExpected)
 {
-    ASSERT_EQ(StreamToString(CoordinateAxis::x()), "x");
-    ASSERT_EQ(StreamToString(CoordinateAxis::y()), "y");
-    ASSERT_EQ(StreamToString(CoordinateAxis::z()), "z");
+    ASSERT_EQ(stream_to_string(CoordinateAxis::x()), "x");
+    ASSERT_EQ(stream_to_string(CoordinateAxis::y()), "y");
+    ASSERT_EQ(stream_to_string(CoordinateAxis::z()), "z");
 }
 
 // parsing test cases

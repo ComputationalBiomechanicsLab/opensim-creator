@@ -190,7 +190,7 @@ std::optional<std::filesystem::path> osc::PromptUserForFileSaveLocationAndAddExt
 #else
     if (maybeExtension)
     {
-        OSC_ASSERT(!Contains(*maybeExtension, ',') && "can only provide one extension to this implementation!");
+        OSC_ASSERT(!contains(*maybeExtension, ',') && "can only provide one extension to this implementation!");
     }
 
     auto [path, result] = [&]()

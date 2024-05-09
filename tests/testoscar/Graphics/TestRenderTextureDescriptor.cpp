@@ -264,5 +264,5 @@ TEST(RenderTextureDescriptor, CanBeStreamedToAString)
     ss << d1;
 
     std::string str{ss.str()};
-    ASSERT_TRUE(ContainsCaseInsensitive(str, "RenderTextureDescriptor"));
+    ASSERT_TRUE(contains_case_insensitive(str, "RenderTextureDescriptor"));
 }

@@ -495,7 +495,7 @@ TEST_F(Renderer, ShaderOutputStreamContainsExpectedInfo)
 
     for (auto const& propName : c_ExpectedPropertyNames)
     {
-        ASSERT_TRUE(Contains(str, std::string{propName}));
+        ASSERT_TRUE(contains(str, std::string{propName}));
     }
 }
 
@@ -1185,7 +1185,7 @@ TEST_F(Renderer, MaterialOutputStringContainsUsefulInformation)
 
     std::string str{ss.str()};
 
-    ASSERT_TRUE(ContainsCaseInsensitive(str, "Material"));
+    ASSERT_TRUE(contains_case_insensitive(str, "Material"));
 
     // TODO: should print more useful info, such as number of props etc.
 }
@@ -1479,7 +1479,7 @@ TEST_F(Renderer, MaterialPropertyBlockPrintingToOutputStreamMentionsMaterialProp
 
     ss << m1;
 
-    ASSERT_TRUE(Contains(ss.str(), "MaterialPropertyBlock"));
+    ASSERT_TRUE(contains(ss.str(), "MaterialPropertyBlock"));
 }
 
 TEST_F(Renderer, MeshTopologyAllCanBeWrittenToStream)

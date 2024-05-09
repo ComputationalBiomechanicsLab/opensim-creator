@@ -21,42 +21,46 @@ namespace osc::spsc
     template<typename T>
     class Receiver;
 
-    // internal implementation class
-    template<typename T>
-    class Impl final {
+    namespace detail
+    {
+        // internal implementation class
+        template<typename T>
+        class Impl final {
+        private:
+            // queue mutex
+            std::mutex mutex_;
 
-        // queue mutex
-        std::mutex m_Mutex;
+            // queue != empty condvar for worker
+            std::condition_variable condition_variable_;
 
-        // queue != empty condvar for worker
-        std::condition_variable m_Condvar;
+            // the queue
+            std::list<T> message_queue_;
 
-        // the queue
-        std::list<T> m_MessageQueue;
+            // how many `Sender` classes use this Impl (should be 1/0)
+            std::atomic<ptrdiff_t> num_senders_ = 0;
 
-        // how many `Sender` classes use this Impl (should be 1/0)
-        std::atomic<ptrdiff_t> m_NumSenders = 0;
+            // how many `Receiver` classes use this impl (should be 1/0)
+            std::atomic<ptrdiff_t> num_receivers_ = 0;
 
-        // how many `Receiver` classes use this impl (should be 1/0)
-        std::atomic<ptrdiff_t> m_NumReceivers = 0;
-
-        template<typename U>
-        friend std::pair<Sender<U>, Receiver<U>> channel();
-        friend class Sender<T>;
-        friend class Receiver<T>;
-    };
+            template<typename U>
+            friend std::pair<Sender<U>, Receiver<U>> channel();
+            friend class Sender<T>;
+            friend class Receiver<T>;
+        };
+    }
 
     // a class the client can send information through
     template<typename T>
     class Sender final {
-        std::shared_ptr<Impl<T>> m_Impl;
+        std::shared_ptr<detail::Impl<T>> impl_;
 
         template<typename U>
         friend std::pair<Sender<U>, Receiver<U>> channel();
 
-        Sender(std::shared_ptr<Impl<T>> impl) : m_Impl{std::move(impl)}
+        Sender(std::shared_ptr<detail::Impl<T>> impl) :
+            impl_{std::move(impl)}
         {
-            ++m_Impl->m_NumSenders;
+            ++impl_->num_senders_;
         }
     public:
         Sender(const Sender&) = delete;
@@ -66,39 +70,39 @@ namespace osc::spsc
 
         ~Sender() noexcept
         {
-            if (m_Impl)
-            {
-                --m_Impl->m_NumSenders;
-                m_Impl->m_Condvar.notify_all();  // so receivers can know the hangup happened
+            if (impl_) {
+                --impl_->num_senders_;
+                impl_->condition_variable_.notify_all();  // so receivers can know the hangup happened
             }
         }
 
         // asynchronously (non-blocking) send data
         void send(T v) {
             {
-                std::lock_guard l{m_Impl->m_Mutex};
-                m_Impl->m_MessageQueue.push_front(std::move(v));
+                std::lock_guard l{impl_->mutex_};
+                impl_->message_queue_.push_front(std::move(v));
             }
-            m_Impl->m_Condvar.notify_one();
+            impl_->condition_variable_.notify_one();
         }
 
-        [[nodiscard]] bool isReceiverHungUp()
+        [[nodiscard]] bool is_receiver_hung_up()
         {
-            return m_Impl->m_NumReceivers <= 0;
+            return impl_->num_receivers_ <= 0;
         }
     };
 
     // a class the client can receive data from
     template<typename T>
     class Receiver final {
-        std::shared_ptr<Impl<T>> m_Impl;
+        std::shared_ptr<detail::Impl<T>> impl_;
 
         template<typename U>
         friend std::pair<Sender<U>, Receiver<U>> channel();
 
-        Receiver(std::shared_ptr<Impl<T>> impl) : m_Impl{std::move(impl)}
+        Receiver(std::shared_ptr<detail::Impl<T>> impl) :
+            impl_{std::move(impl)}
         {
-            ++m_Impl->m_NumReceivers;
+            ++impl_->num_receivers_;
         }
     public:
         Receiver(Receiver const&) = delete;
@@ -107,45 +111,43 @@ namespace osc::spsc
         Receiver& operator=(Receiver&&) noexcept = default;
         ~Receiver() noexcept
         {
-            if (m_Impl)
-            {
-                --m_Impl->m_NumReceivers;
+            if (impl_) {
+                --impl_->num_receivers_;
             }
         }
 
         // non-blocking: empty if nothing is sent, or the sender has hung up
-        std::optional<T> tryReceive()
+        std::optional<T> try_receive()
         {
-            std::lock_guard l{m_Impl->m_Mutex};
+            std::lock_guard l{impl_->mutex_};
 
-            if (m_Impl->m_MessageQueue.empty())
-            {
+            if (impl_->message_queue_.empty()) {
                 return std::nullopt;
             }
 
-            std::optional<T> rv{std::move(m_Impl->m_MessageQueue.back())};
-            m_Impl->m_MessageQueue.pop_back();
+            std::optional<T> rv{std::move(impl_->message_queue_.back())};
+            impl_->message_queue_.pop_back();
             return rv;
         }
 
         // blocking: only empty if the sender hung up
-        std::optional<T> recv()
+        std::optional<T> receive()
         {
-            std::unique_lock l{m_Impl->m_Mutex};
+            std::unique_lock l{impl_->mutex_};
 
             // easy case: queue is not empty
-            if (!m_Impl->m_MessageQueue.empty())
+            if (not impl_->message_queue_.empty())
             {
-                std::optional<T> rv{std::move(m_Impl->m_MessageQueue.back())};
-                m_Impl->m_MessageQueue.pop_back();
+                std::optional<T> rv{std::move(impl_->message_queue_.back())};
+                impl_->message_queue_.pop_back();
                 return rv;
             }
 
             // harder case: sleep until the queue is not empty, *or* until
             // the sender hangs up
-            m_Impl->m_Condvar.wait(l, [&]()
+            impl_->condition_variable_.wait(l, [&]()
             {
-                return !m_Impl->m_MessageQueue.empty() || m_Impl->m_NumSenders <= 0;
+                return not impl_->message_queue_.empty() or impl_->num_senders_ <= 0;
             });
 
             // the condvar woke up (non-spuriously), either:
@@ -153,21 +155,19 @@ namespace osc::spsc
             // - there's something in the queue (return it)
             // - the sender hung up (return nullopt)
 
-            if (!m_Impl->m_MessageQueue.empty())
-            {
-                std::optional<T> rv{std::move(m_Impl->m_MessageQueue.back())};
-                m_Impl->m_MessageQueue.pop_back();
+            if (not impl_->message_queue_.empty()) {
+                std::optional<T> rv{std::move(impl_->message_queue_.back())};
+                impl_->message_queue_.pop_back();
                 return rv;
             }
-            else
-            {
+            else {
                 return std::nullopt;
             }
         }
 
-        [[nodiscard]] bool isSenderHungUp()
+        [[nodiscard]] bool is_sender_hung_up()
         {
-            return m_Impl->m_NumSenders <= 0;
+            return impl_->num_senders_ <= 0;
         }
     };
 
@@ -175,7 +175,7 @@ namespace osc::spsc
     template<typename T>
     std::pair<Sender<T>, Receiver<T>> channel()
     {
-        auto impl = std::make_shared<Impl<T>>();
+        auto impl = std::make_shared<detail::Impl<T>>();
         return {Sender<T>{impl}, Receiver<T>{impl}};
     }
 
@@ -187,64 +187,65 @@ namespace osc::spsc
     class Worker {
 
         // worker (background thread)
-        cpp20::jthread m_WorkerThread;
+        cpp20::jthread worker_thread_;
 
         // sending end of the channel: sends inputs to background thread
-        spsc::Sender<Input> m_Tx;
+        spsc::Sender<Input> sender_;
 
         // receiving end of the channel: receives outputs from background thread
-        spsc::Receiver<Output> m_Rx;
+        spsc::Receiver<Output> receiver_;
 
         // MAIN function for an SPSC worker thread
         static int main(
             cpp20::stop_token,
-            spsc::Receiver<Input> rx,
-            spsc::Sender<Output> tx,
-            Func input2output)
+            spsc::Receiver<Input> receiver,
+            spsc::Sender<Output> sender,
+            Func message_processor)
         {
             // continously try to receive input messages and
             // respond to them one-by-one
-            while (!tx.isReceiverHungUp())
-            {
-                std::optional<Input> msg = rx.recv();
+            while (not sender.is_receiver_hung_up()) {
+                std::optional<Input> message = receiver.receive();
 
-                if (!msg)
-                {
+                if (not message) {
                     return 0;  // sender hung up
                 }
 
-                tx.send(input2output(*msg));
+                sender.send(message_processor(*message));
             }
 
             return 0;  // receiver hung up
         }
 
-        Worker(cpp20::jthread&& worker, spsc::Sender<Input>&& tx, spsc::Receiver<Output>&& rx) :
-            m_WorkerThread{std::move(worker)},
-            m_Tx{std::move(tx)},
-            m_Rx{std::move(rx)}
-        {
-        }
+        Worker(
+            cpp20::jthread&& worker,
+            spsc::Sender<Input>&& sender,
+            spsc::Receiver<Output>&& receiver) :
+
+            worker_thread_{std::move(worker)},
+            sender_{std::move(sender)},
+            receiver_{std::move(receiver)}
+        {}
 
     public:
 
         // create a new worker
-        static Worker create(Func f)
+        static Worker create(Func message_processor)
         {
-            auto [reqTransmit, reqReceive] = spsc::channel<Input>();
-            auto [respTransmit, respReceive] = spsc::channel<Output>();
-            cpp20::jthread worker{Worker::main, std::move(reqReceive), std::move(respTransmit), std::move(f)};
-            return Worker{std::move(worker), std::move(reqTransmit), std::move(respReceive)};
+            auto [request_sender, request_receiver] = spsc::channel<Input>();
+            auto [response_sender, response_receiver] = spsc::channel<Output>();
+            cpp20::jthread worker{Worker::main, std::move(request_receiver), std::move(response_sender), std::move(message_processor)};
+            return Worker{std::move(worker), std::move(request_sender), std::move(response_receiver)};
         }
 
         void send(Input req)
         {
-            m_Tx.send(std::move(req));
+            sender_.send(std::move(req));
         }
 
         std::optional<Output> poll()
         {
-            return m_Rx.tryReceive();
+            return receiver_.try_receive();
         }
     };
 }

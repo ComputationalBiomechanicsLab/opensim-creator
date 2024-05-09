@@ -898,7 +898,7 @@ namespace
                 continue;  // skip: row does not contain enough columns
             }
 
-            std::optional<float> const independentVar = FromCharsStripWhitespace(row.front());
+            std::optional<float> const independentVar = from_chars_strip_whitespace(row.front());
             if (!independentVar)
             {
                 continue;  // skip: row does not contain a valid independent variable
@@ -908,7 +908,7 @@ namespace
             for (size_t dependentCol = 1; dependentCol < row.size(); ++dependentCol)
             {
                 std::string const& dependentVarStr = row[dependentCol];
-                std::optional<float> const dependentVar = FromCharsStripWhitespace(dependentVarStr);
+                std::optional<float> const dependentVar = from_chars_strip_whitespace(dependentVarStr);
                 if (!dependentVar)
                 {
                     continue;  // skip: column cannot be parsed as a number
@@ -1630,11 +1630,11 @@ namespace
             // the plot title should contain combo boxes that users can use to change plot
             // parameters visually (#397)
 
-            std::string muscleName = Ellipsis(getShared().getPlotParams().getMusclePath().getComponentName(), 15);
+            std::string muscleName = truncate_with_ellipsis(getShared().getPlotParams().getMusclePath().getComponentName(), 15);
             float muscleNameWidth = ui::calc_text_size(muscleName).x + 2.0f*ui::get_style_frame_padding().x;
-            std::string outputName = Ellipsis(getShared().getPlotParams().getPlottedOutput().getName(), 15);
+            std::string outputName = truncate_with_ellipsis(getShared().getPlotParams().getPlottedOutput().getName(), 15);
             float outputNameWidth = ui::calc_text_size(outputName).x + 2.0f*ui::get_style_frame_padding().x;
-            std::string coordName = Ellipsis(getShared().getPlotParams().getCoordinatePath().getComponentName(), 15);
+            std::string coordName = truncate_with_ellipsis(getShared().getPlotParams().getCoordinatePath().getComponentName(), 15);
             float coordNameWidth = ui::calc_text_size(coordName).x + 2.0f*ui::get_style_frame_padding().x;
 
             float totalWidth =

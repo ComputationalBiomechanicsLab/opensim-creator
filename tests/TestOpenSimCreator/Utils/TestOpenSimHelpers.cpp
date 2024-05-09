@@ -311,11 +311,11 @@ TEST(OpenSimHelpers, WriteComponentTopologyGraphAsDotViz)
     WriteComponentTopologyGraphAsDotViz(root, ss);
 
     std::string const rv = ss.str();
-    ASSERT_TRUE(Contains(rv, "digraph Component"));
-    ASSERT_TRUE(Contains(rv, R"("/" -> "/child1")"));
-    ASSERT_TRUE(Contains(rv, R"("/" -> "/child2")"));
-    ASSERT_TRUE(Contains(rv, R"("/child2" -> "/child1")"));
-    ASSERT_TRUE(Contains(rv, R"(label="sibling")"));
+    ASSERT_TRUE(contains(rv, "digraph Component"));
+    ASSERT_TRUE(contains(rv, R"("/" -> "/child1")"));
+    ASSERT_TRUE(contains(rv, R"("/" -> "/child2")"));
+    ASSERT_TRUE(contains(rv, R"("/child2" -> "/child1")"));
+    ASSERT_TRUE(contains(rv, R"(label="sibling")"));
 }
 
 TEST(OpenSimHelpers, GetAllWrapObjectsReferencedByWorksAsExpected)

@@ -103,7 +103,7 @@ namespace
                 continue;  // hide redundant reconnnections
             }
 
-            if (!Contains(other.getName(), params.search))
+            if (!contains(other.getName(), params.search))
             {
                 continue;  // filtered out by search string
             }

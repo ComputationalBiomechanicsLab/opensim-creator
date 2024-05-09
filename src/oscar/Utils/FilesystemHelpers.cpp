@@ -79,7 +79,7 @@ std::vector<std::filesystem::path> osc::find_files_recursive(
 
 bool osc::is_filename_lexographically_greater_than(const std::filesystem::path& p1, const std::filesystem::path& p2)
 {
-    return IsStringCaseInsensitiveGreaterThan(p1.filename().string(), p2.filename().string());
+    return is_string_case_insensitive_greater_than(p1.filename().string(), p2.filename().string());
 }
 
 bool osc::is_subpath(const std::filesystem::path& dir, const std::filesystem::path& path)

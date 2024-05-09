@@ -40,7 +40,7 @@ TEST(SimulationHelpers, WriteOutputsAsCSVWritesFloatDataCorrectly)
 
     const std::vector<std::string> row0Expected = { "time", "dummy" };
     ASSERT_EQ(row0, row0Expected);
-    const std::vector<std::string> row1Expected = { StreamToString(0.0), StreamToString(1337.0f) };
+    const std::vector<std::string> row1Expected = { stream_to_string(0.0), stream_to_string(1337.0f) };
     ASSERT_EQ(row1, row1Expected);
 }
 
@@ -68,6 +68,6 @@ TEST(SimulationHelpers, WriteOutputsAsCSVWritesVec2DataCorrectly)
 
     const std::vector<std::string> row0Expected = { "time", "dummy/0", "dummy/1" };
     ASSERT_EQ(row0, row0Expected);
-    const std::vector<std::string> row1Expected = { StreamToString(0.0), StreamToString(3.0f), StreamToString(2.0f) };
+    const std::vector<std::string> row1Expected = { stream_to_string(0.0), stream_to_string(3.0f), stream_to_string(2.0f) };
     ASSERT_EQ(row1, row1Expected);
 }

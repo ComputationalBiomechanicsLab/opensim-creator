@@ -27,7 +27,7 @@ namespace
 
     ParseResult ParseRow(size_t lineNum, std::span<std::string const> cols)
     {
-        if (cols.empty() || (cols.size() == 1 && TrimLeadingAndTrailingWhitespace(cols.front()).empty()))
+        if (cols.empty() || (cols.size() == 1 && strip_whitespace(cols.front()).empty()))
         {
             return SkipRow{};  // whitespace row, or trailing newline
         }
@@ -45,7 +45,7 @@ namespace
             data = data.subspan(1);
         }
 
-        std::optional<float> const x = FromCharsStripWhitespace(data[0]);
+        std::optional<float> const x = from_chars_strip_whitespace(data[0]);
         if (!x)
         {
             if (lineNum == 0)
@@ -57,7 +57,7 @@ namespace
                 return CSVParseWarning{lineNum, "cannot parse X as a number"};
             }
         }
-        std::optional<float> const y = FromCharsStripWhitespace(data[1]);
+        std::optional<float> const y = from_chars_strip_whitespace(data[1]);
         if (!y)
         {
             if (lineNum == 0)
@@ -69,7 +69,7 @@ namespace
                 return CSVParseWarning{lineNum, "cannot parse Y as a number"};
             }
         }
-        std::optional<float> const z = FromCharsStripWhitespace(data[2]);
+        std::optional<float> const z = from_chars_strip_whitespace(data[2]);
         if (!z)
         {
             if (lineNum == 0)

@@ -12,7 +12,7 @@
 #include <vector>
 
 using osc::try_parse_hex_chars_as_byte;
-using osc::TrimLeadingAndTrailingWhitespace;
+using osc::strip_whitespace;
 using osc::to_hex_chars;
 using osc::is_valid_identifier;
 using osc::join;
@@ -64,7 +64,7 @@ TEST(Algorithms, TrimLeadingAndTrailingWhitespaceWorksAsExpected)
 
     for (TestCase const& tc : testCases)
     {
-        std::string_view const rv = TrimLeadingAndTrailingWhitespace(tc.input);
+        std::string_view const rv = strip_whitespace(tc.input);
         ASSERT_EQ(rv, tc.expectedOutput);
     }
 }
@@ -181,7 +181,7 @@ INSTANTIATE_TEST_SUITE_P(
 TEST_P(FromCharsStripWhitespace, Check)
 {
     TestCase c = GetParam();
-    std::optional<float> rv = osc::FromCharsStripWhitespace(c.input);
+    std::optional<float> rv = osc::from_chars_strip_whitespace(c.input);
     ASSERT_EQ(rv, c.expectedOutput);
 }
 TEST(to_hex_chars, ReturnsExpectedResultsWhenComparedToAlternateImplementation)
