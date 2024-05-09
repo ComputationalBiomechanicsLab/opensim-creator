@@ -18,13 +18,13 @@ namespace osc
             metadata_{metadata}
         {}
 
-        size_t id() const { return metadata_->getID(); }
+        size_t id() const { return metadata_->id(); }
 
-        CStringView label() const { return metadata_->getLabel(); }
+        CStringView label() const { return metadata_->label(); }
 
-        CStringView filename() const { return metadata_->getFilename(); }
+        CStringView filename() const { return metadata_->filename(); }
 
-        unsigned int line() const { return metadata_->getLine(); }
+        unsigned int line() const { return metadata_->line(); }
 
         size_t call_count() const { return call_count_; }
 

@@ -31,8 +31,7 @@ namespace osc
         }
 
         UID() : m_Value{GetNextID()}
-        {
-        }
+        {}
         constexpr UID(const UID&) = default;
         constexpr UID(UID&&) noexcept = default;
         constexpr UID& operator=(const UID&) = default;
