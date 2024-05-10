@@ -87,7 +87,9 @@ namespace osc
         template<typename> friend class ParentPtr;
 
         // friend function, for downcasting
-        template<typename TDerived, typename TBase> friend std::optional<ParentPtr<TDerived>> dynamic_parent_cast(const ParentPtr<TBase>&);
+        template<typename TDerived, typename TBase>
+        requires std::derived_from<TDerived, TBase>
+        friend std::optional<ParentPtr<TDerived>> dynamic_parent_cast(const ParentPtr<TBase>&);
 
         std::weak_ptr<T> m_Parent;
     };
