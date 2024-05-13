@@ -10,9 +10,9 @@ using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_TabStringID = "Demos/Mandelbrot";
+    constexpr CStringView c_tab_string_id = "Demos/Mandelbrot";
 
-    Camera CreateIdentityCamera()
+    Camera create_identity_camera()
     {
         Camera camera;
         camera.set_view_matrix_override(identity<Mat4>());
@@ -23,29 +23,28 @@ namespace
 
 class osc::MandelbrotTab::Impl final : public StandardTabImpl {
 public:
-    Impl() : StandardTabImpl{c_TabStringID}
+    Impl() : StandardTabImpl{c_tab_string_id}
     {}
 
 private:
-    bool impl_on_event(SDL_Event const& e) final
+    bool impl_on_event(const SDL_Event& e) final
     {
-        if (e.type == SDL_KEYUP && e.key.keysym.sym == SDLK_PAGEUP && m_NumIterations < std::numeric_limits<decltype(m_NumIterations)>::max()) {
-            m_NumIterations *= 2;
+        if (e.type == SDL_KEYUP and e.key.keysym.sym == SDLK_PAGEUP and num_iterations_ < std::numeric_limits<decltype(num_iterations_)>::max()) {
+            num_iterations_ *= 2;
             return true;
         }
-        if (e.type == SDL_KEYUP && e.key.keysym.sym == SDLK_PAGEDOWN && m_NumIterations > 1) {
-            m_NumIterations /= 2;
+        if (e.type == SDL_KEYUP and e.key.keysym.sym == SDLK_PAGEDOWN and num_iterations_ > 1) {
+            num_iterations_ /= 2;
             return true;
         }
         if (e.type == SDL_MOUSEWHEEL) {
-            float const factor = e.wheel.y > 0 ? 0.9f : 1.11111111f;
-
-            applyZoom(ui::get_io().MousePos, factor);
+            const float factor = e.wheel.y > 0 ? 0.9f : 1.11111111f;
+            apply_zoom_to_camera(ui::get_io().MousePos, factor);
             return true;
         }
-        if (e.type == SDL_MOUSEMOTION && (e.motion.state & SDL_BUTTON_LMASK) != 0) {
-            Vec2 const screenSpacePanAmount = {static_cast<float>(e.motion.xrel), static_cast<float>(e.motion.yrel)};
-            applyPan(screenSpacePanAmount);
+        if (e.type == SDL_MOUSEMOTION and (e.motion.state & SDL_BUTTON_LMASK) != 0) {
+            const Vec2 screenSpacePanAmount = {static_cast<float>(e.motion.xrel), static_cast<float>(e.motion.yrel)};
+            apply_pan_to_camera(screenSpacePanAmount);
             return true;
         }
         return false;
@@ -53,48 +52,46 @@ private:
 
     void impl_on_draw() final
     {
-        m_MainViewportWorkspaceScreenRect = ui::get_main_viewport_workspace_screen_rect();
+        main_viewport_workspace_screen_rect_ = ui::get_main_viewport_workspace_screen_rect();
 
-        m_Material.set_vec2("uRescale", {1.0f, 1.0f});
-        m_Material.set_vec2("uOffset", {});
-        m_Material.set_int("uNumIterations", m_NumIterations);
-        graphics::draw(m_QuadMesh, identity<Transform>(), m_Material, m_Camera);
-        m_Camera.set_pixel_rect(m_MainViewportWorkspaceScreenRect);
-        m_Camera.render_to_screen();
+        material_.set_vec2("uRescale", {1.0f, 1.0f});
+        material_.set_vec2("uOffset", {});
+        material_.set_int("uNumIterations", num_iterations_);
+        graphics::draw(quad_mesh_, identity<Transform>(), material_, camera_);
+        camera_.set_pixel_rect(main_viewport_workspace_screen_rect_);
+        camera_.render_to_screen();
     }
 
-    void applyZoom(Vec2, float)
+    void apply_zoom_to_camera(Vec2, float)
     {
         // TODO: zoom the mandelbrot viewport into the given screen-space location by the given factor
     }
 
-    void applyPan(Vec2)
+    void apply_pan_to_camera(Vec2)
     {
         // TODO: pan the mandelbrot viewport by the given screen-space offset vector
     }
 
-    ResourceLoader m_Loader = App::resource_loader();
-    int m_NumIterations = 16;
-    Rect m_NormalizedMandelbrotViewport = {{}, {1.0f, 1.0f}};
-    Rect m_MainViewportWorkspaceScreenRect = {};
-    Mesh m_QuadMesh = PlaneGeometry{2.0f, 2.0f, 1, 1};
-    Material m_Material{Shader{
-        m_Loader.slurp("oscar_demos/shaders/Mandelbrot.vert"),
-        m_Loader.slurp("oscar_demos/shaders/Mandelbrot.frag"),
+    ResourceLoader loader_ = App::resource_loader();
+    int num_iterations_ = 16;
+    Rect normalized_mandelbrot_viewport_ = {{}, {1.0f, 1.0f}};
+    Rect main_viewport_workspace_screen_rect_ = {};
+    Mesh quad_mesh_ = PlaneGeometry{2.0f, 2.0f, 1, 1};
+    Material material_{Shader{
+        loader_.slurp("oscar_demos/shaders/Mandelbrot.vert"),
+        loader_.slurp("oscar_demos/shaders/Mandelbrot.frag"),
     }};
-    Camera m_Camera = CreateIdentityCamera();
+    Camera camera_ = create_identity_camera();
 };
 
 
-// public API
-
 CStringView osc::MandelbrotTab::id()
 {
-    return c_TabStringID;
+    return c_tab_string_id;
 }
 
-osc::MandelbrotTab::MandelbrotTab(ParentPtr<ITabHost> const&) :
-    m_Impl{std::make_unique<Impl>()}
+osc::MandelbrotTab::MandelbrotTab(const ParentPtr<ITabHost>&) :
+    impl_{std::make_unique<Impl>()}
 {}
 
 osc::MandelbrotTab::MandelbrotTab(MandelbrotTab&&) noexcept = default;
@@ -103,20 +100,20 @@ osc::MandelbrotTab::~MandelbrotTab() noexcept = default;
 
 UID osc::MandelbrotTab::impl_get_id() const
 {
-    return m_Impl->id();
+    return impl_->id();
 }
 
 CStringView osc::MandelbrotTab::impl_get_name() const
 {
-    return m_Impl->name();
+    return impl_->name();
 }
 
-bool osc::MandelbrotTab::impl_on_event(SDL_Event const& e)
+bool osc::MandelbrotTab::impl_on_event(const SDL_Event& e)
 {
-    return m_Impl->on_event(e);
+    return impl_->on_event(e);
 }
 
 void osc::MandelbrotTab::impl_on_draw()
 {
-    m_Impl->on_draw();
+    impl_->on_draw();
 }

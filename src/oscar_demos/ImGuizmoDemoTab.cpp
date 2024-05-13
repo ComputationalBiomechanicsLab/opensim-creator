@@ -9,12 +9,12 @@ using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_TabStringID = "Demos/ImGuizmo";
+    constexpr CStringView c_tab_string_id = "Demos/ImGuizmo";
 }
 
 class osc::ImGuizmoDemoTab::Impl final : public StandardTabImpl {
 public:
-    Impl() : StandardTabImpl{c_TabStringID}
+    Impl() : StandardTabImpl{c_tab_string_id}
     {}
 
 private:
@@ -22,24 +22,24 @@ private:
     {
         // ImGuizmo::BeginFrame();  already done by MainUIScreen
 
-        Mat4 view = m_SceneCamera.view_matrix();
-        Rect viewportRect = ui::get_main_viewport_workspace_screen_rect();
-        Vec2 dims = dimensions_of(viewportRect);
-        Mat4 projection = m_SceneCamera.projection_matrix(aspect_ratio_of(dims));
+        Mat4 view_matrix = scene_camera_.view_matrix();
+        Rect viewport_rect = ui::get_main_viewport_workspace_screen_rect();
+        Vec2 viewport_dimensions = dimensions_of(viewport_rect);
+        Mat4 projection_matrix = scene_camera_.projection_matrix(aspect_ratio_of(viewport_dimensions));
 
-        ImGuizmo::SetRect(viewportRect.p1.x, viewportRect.p1.y, dims.x, dims.y);
-        Mat4 identityMatrix = identity<Mat4>();
-        ImGuizmo::DrawGrid(value_ptr(view), value_ptr(projection), value_ptr(identityMatrix), 100.f);
-        ImGuizmo::DrawCubes(value_ptr(view), value_ptr(projection), value_ptr(m_ModelMatrix), 1);
+        ImGuizmo::SetRect(viewport_rect.p1.x, viewport_rect.p1.y, viewport_dimensions.x, viewport_dimensions.y);
+        Mat4 identity_matrix = identity<Mat4>();
+        ImGuizmo::DrawGrid(value_ptr(view_matrix), value_ptr(projection_matrix), value_ptr(identity_matrix), 100.f);
+        ImGuizmo::DrawCubes(value_ptr(view_matrix), value_ptr(projection_matrix), value_ptr(model_matrix_), 1);
 
-        ui::draw_checkbox("translate", &m_IsInTranslateMode);
+        ui::draw_checkbox("translate", &translate_mode_enabled_);
 
         ImGuizmo::Manipulate(
-            value_ptr(view),
-            value_ptr(projection),
-            m_IsInTranslateMode ? ImGuizmo::TRANSLATE : ImGuizmo::ROTATE,
+            value_ptr(view_matrix),
+            value_ptr(projection_matrix),
+            translate_mode_enabled_ ? ImGuizmo::TRANSLATE : ImGuizmo::ROTATE,
             ImGuizmo::LOCAL,
-            value_ptr(m_ModelMatrix),
+            value_ptr(model_matrix_),
             nullptr,
             nullptr, //&snap[0],   // snap
             nullptr, // bound sizing?
@@ -47,7 +47,7 @@ private:
         );
     }
 
-    PolarPerspectiveCamera m_SceneCamera = []()
+    PolarPerspectiveCamera scene_camera_ = []()
     {
         PolarPerspectiveCamera rv;
         rv.focus_point = {0.0f, 0.0f, 0.0f};
@@ -57,20 +57,18 @@ private:
         return rv;
     }();
 
-    bool m_IsInTranslateMode = false;
-    Mat4 m_ModelMatrix = identity<Mat4>();
+    bool translate_mode_enabled_ = false;
+    Mat4 model_matrix_ = identity<Mat4>();
 };
 
-
-// public API
 
 CStringView osc::ImGuizmoDemoTab::id()
 {
     return "Demos/ImGuizmo";
 }
 
-osc::ImGuizmoDemoTab::ImGuizmoDemoTab(ParentPtr<ITabHost> const&) :
-    m_Impl{std::make_unique<Impl>()}
+osc::ImGuizmoDemoTab::ImGuizmoDemoTab(const ParentPtr<ITabHost>&) :
+    impl_{std::make_unique<Impl>()}
 {}
 
 osc::ImGuizmoDemoTab::ImGuizmoDemoTab(ImGuizmoDemoTab&&) noexcept = default;
@@ -79,15 +77,15 @@ osc::ImGuizmoDemoTab::~ImGuizmoDemoTab() noexcept = default;
 
 UID osc::ImGuizmoDemoTab::impl_get_id() const
 {
-    return m_Impl->id();
+    return impl_->id();
 }
 
 CStringView osc::ImGuizmoDemoTab::impl_get_name() const
 {
-    return m_Impl->name();
+    return impl_->name();
 }
 
 void osc::ImGuizmoDemoTab::impl_on_draw()
 {
-    m_Impl->on_draw();
+    impl_->on_draw();
 }

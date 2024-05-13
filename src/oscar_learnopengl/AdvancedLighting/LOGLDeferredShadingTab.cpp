@@ -16,9 +16,9 @@ using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_TabStringID = "LearnOpenGL/DeferredShading";
+    constexpr CStringView c_tab_string_id = "LearnOpenGL/DeferredShading";
 
-    constexpr auto c_ObjectPositions = std::to_array<Vec3>({
+    constexpr auto c_object_positions = std::to_array<Vec3>({
         {-3.0,  -0.5, -3.0},
         { 0.0,  -0.5, -3.0},
         { 3.0,  -0.5, -3.0},
@@ -29,25 +29,25 @@ namespace
         { 0.0,  -0.5,  3.0},
         { 3.0,  -0.5,  3.0},
     });
-    constexpr size_t c_NumLights = 32;
+    constexpr size_t c_num_lights = 32;
 
-    Vec3 GenerateSceneLightPosition(std::default_random_engine& rng)
+    Vec3 generate_scene_light_position(std::default_random_engine& rng)
     {
         std::uniform_real_distribution<float> dist{-3.0f, 3.0f};
         return {dist(rng), dist(rng), dist(rng)};
     }
 
-    Color GenerateSceneLightColor(std::default_random_engine& rng)
+    Color generate_scene_light_color(std::default_random_engine& rng)
     {
         std::uniform_real_distribution<float> dist{0.5f, 1.0f};
         return {dist(rng), dist(rng), dist(rng), 1.0f};
     }
 
-    std::vector<Vec3> GenerateNSceneLightPositions(size_t n)
+    std::vector<Vec3> generate_n_scene_light_positions(size_t n)
     {
-        auto const generator = [rng = std::default_random_engine{std::random_device{}()}]() mutable
+        const auto generator = [rng = std::default_random_engine{std::random_device{}()}]() mutable
         {
-            return GenerateSceneLightPosition(rng);
+            return generate_scene_light_position(rng);
         };
 
         std::vector<Vec3> rv;
@@ -56,13 +56,13 @@ namespace
         return rv;
     }
 
-    std::vector<Vec3> GenerateNSceneLightColors(size_t n)
+    std::vector<Vec3> generate_n_scene_light_colors(size_t n)
     {
-        auto const generator = [rng = std::default_random_engine{std::random_device{}()}]() mutable
+        const auto generator = [rng = std::default_random_engine{std::random_device{}()}]() mutable
         {
-            Color const sRGBColor = GenerateSceneLightColor(rng);
-            Color const linearColor = to_linear_colorspace(sRGBColor);
-            return Vec3{linearColor.r, linearColor.g, linearColor.b};
+            const Color srgb_color = generate_scene_light_color(rng);
+            const Color linear_color = to_linear_colorspace(srgb_color);
+            return Vec3{linear_color.r, linear_color.g, linear_color.b};
         };
 
         std::vector<Vec3> rv;
@@ -71,22 +71,22 @@ namespace
         return rv;
     }
 
-    Material LoadGBufferMaterial(IResourceLoader& rl)
+    Material load_gbuffer_material(IResourceLoader& loader)
     {
         return Material{Shader{
-            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/GBuffer.vert"),
-            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/GBuffer.frag"),
+            loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/GBuffer.vert"),
+            loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/GBuffer.frag"),
         }};
     }
 
-    RenderTexture RenderTextureWithColorFormat(RenderTextureFormat f)
+    RenderTexture render_texture_with_color_format(RenderTextureFormat color_format)
     {
         RenderTexture rv;
-        rv.set_color_format(f);
+        rv.set_color_format(color_format);
         return rv;
     }
 
-    MouseCapturingCamera CreateCameraThatMatchesLearnOpenGL()
+    MouseCapturingCamera create_camera_that_matches_learnopengl()
     {
         MouseCapturingCamera rv;
         rv.set_position({0.0f, 0.5f, 5.0f});
@@ -99,15 +99,15 @@ namespace
 
     struct GBufferRenderingState final {
 
-        explicit GBufferRenderingState(IResourceLoader& rl) :
-            material{LoadGBufferMaterial(rl)}
+        explicit GBufferRenderingState(IResourceLoader& loader) :
+            material{load_gbuffer_material(loader)}
         {}
 
         Material material;
-        RenderTexture albedo = RenderTextureWithColorFormat(RenderTextureFormat::ARGB32);
-        RenderTexture normal = RenderTextureWithColorFormat(RenderTextureFormat::ARGBFloat16);
-        RenderTexture position = RenderTextureWithColorFormat(RenderTextureFormat::ARGBFloat16);
-        RenderTarget renderTarget{
+        RenderTexture albedo = render_texture_with_color_format(RenderTextureFormat::ARGB32);
+        RenderTexture normal = render_texture_with_color_format(RenderTextureFormat::ARGBFloat16);
+        RenderTexture position = render_texture_with_color_format(RenderTextureFormat::ARGBFloat16);
+        RenderTarget render_target{
             {
                 RenderTargetColorAttachment{
                     albedo.upd_color_buffer(),
@@ -136,24 +136,24 @@ namespace
             },
         };
 
-        void reformat(Vec2 dims, AntiAliasingLevel antiAliasingLevel)
+        void reformat(Vec2 dimensions, AntiAliasingLevel aa_level)
         {
-            RenderTextureDescriptor desc{dims};
-            desc.set_anti_aliasing_level(antiAliasingLevel);
+            RenderTextureDescriptor desc{dimensions};
+            desc.set_anti_aliasing_level(aa_level);
 
-            for (RenderTexture* tex : {&albedo, &normal, &position}) {
-                desc.set_color_format(tex->color_format());
-                tex->reformat(desc);
+            for (RenderTexture* texture_ptr : {&albedo, &normal, &position}) {
+                desc.set_color_format(texture_ptr->color_format());
+                texture_ptr->reformat(desc);
             }
         }
     };
 
     struct LightPassState final {
 
-        explicit LightPassState(IResourceLoader& rl) :
+        explicit LightPassState(IResourceLoader& loader) :
             material{Shader{
-                rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/LightingPass.vert"),
-                rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/LightingPass.frag"),
+                loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/LightingPass.vert"),
+                loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/LightingPass.frag"),
             }}
         {}
 
@@ -163,208 +163,203 @@ namespace
 
 class osc::LOGLDeferredShadingTab::Impl final : public StandardTabImpl {
 public:
-    Impl() : StandardTabImpl{c_TabStringID}
+    Impl() : StandardTabImpl{c_tab_string_id}
     {}
 
 private:
     void impl_on_mount() final
     {
         App::upd().make_main_loop_polling();
-        m_Camera.on_mount();
+        camera_.on_mount();
     }
 
     void impl_on_unmount() final
     {
-        m_Camera.on_unmount();
+        camera_.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
-    bool impl_on_event(SDL_Event const& e) final
+    bool impl_on_event(const SDL_Event& e) final
     {
-        return m_Camera.on_event(e);
+        return camera_.on_event(e);
     }
 
     void impl_on_draw() final
     {
-        m_Camera.on_draw();
-        draw3DScene();
+        camera_.on_draw();
+        draw_3d_scene();
     }
 
-    void draw3DScene()
+    void draw_3d_scene()
     {
-        Rect const viewportRect = ui::get_main_viewport_workspace_screen_rect();
-        Vec2 const viewportDims = dimensions_of(viewportRect);
-        AntiAliasingLevel const antiAliasingLevel = App::get().anti_aliasing_level();
+        const Rect viewport_rect = ui::get_main_viewport_workspace_screen_rect();
+        const Vec2 viewport_dimensions = dimensions_of(viewport_rect);
+        const AntiAliasingLevel aa_level = App::get().anti_aliasing_level();
 
         // ensure textures/buffers have correct dimensions
         {
-            m_GBuffer.reformat(viewportDims, antiAliasingLevel);
-            m_OutputTexture.set_dimensions(viewportDims);
-            m_OutputTexture.set_anti_aliasing_level(antiAliasingLevel);
+            gbuffer_.reformat(viewport_dimensions, aa_level);
+            output_texture_.set_dimensions(viewport_dimensions);
+            output_texture_.set_anti_aliasing_level(aa_level);
         }
 
-        renderSceneToGBuffers();
-        renderLightingPass();
-        renderLightCubes();
-        graphics::blit_to_screen(m_OutputTexture, viewportRect);
-        drawGBufferOverlays(viewportRect);
+        render_3d_scene_to_gbuffers();
+        render_lighting_pass();
+        render_light_cubes();
+        graphics::blit_to_screen(output_texture_, viewport_rect);
+        draw_gbuffer_overlays(viewport_rect);
     }
 
-    void renderSceneToGBuffers()
+    void render_3d_scene_to_gbuffers()
     {
-        m_GBuffer.material.set_texture("uDiffuseMap", m_DiffuseMap);
-        m_GBuffer.material.set_texture("uSpecularMap", m_SpecularMap);
+        gbuffer_.material.set_texture("uDiffuseMap", diffuse_map_);
+        gbuffer_.material.set_texture("uSpecularMap", specular_map_);
 
         // render scene cubes
-        for (Vec3 const& objectPosition : c_ObjectPositions)
-        {
+        for (const Vec3& object_position : c_object_positions) {
             graphics::draw(
-                m_CubeMesh,
-                {.scale = Vec3{0.5f}, .position = objectPosition},
-                m_GBuffer.material,
-                m_Camera
+                cube_mesh_,
+                {.scale = Vec3{0.5f}, .position = object_position},
+                gbuffer_.material,
+                camera_
             );
         }
-        m_Camera.render_to(m_GBuffer.renderTarget);
+        camera_.render_to(gbuffer_.render_target);
     }
 
-    void drawGBufferOverlays(Rect const& viewportRect) const
+    void draw_gbuffer_overlays(const Rect& viewport_rect) const
     {
         graphics::blit_to_screen(
-            m_GBuffer.albedo,
-            Rect{viewportRect.p1, viewportRect.p1 + 200.0f}
+            gbuffer_.albedo,
+            Rect{viewport_rect.p1, viewport_rect.p1 + 200.0f}
         );
         graphics::blit_to_screen(
-            m_GBuffer.normal,
-            Rect{viewportRect.p1 + Vec2{200.0f, 0.0f}, viewportRect.p1 + Vec2{200.0f, 0.0f} + 200.0f}
+            gbuffer_.normal,
+            Rect{viewport_rect.p1 + Vec2{200.0f, 0.0f}, viewport_rect.p1 + Vec2{200.0f, 0.0f} + 200.0f}
         );
         graphics::blit_to_screen(
-            m_GBuffer.position,
-            Rect{viewportRect.p1 + Vec2{400.0f, 0.0f}, viewportRect.p1 + Vec2{400.0f, 0.0f} + 200.0f}
+            gbuffer_.position,
+            Rect{viewport_rect.p1 + Vec2{400.0f, 0.0f}, viewport_rect.p1 + Vec2{400.0f, 0.0f} + 200.0f}
         );
     }
 
-    void renderLightingPass()
+    void render_lighting_pass()
     {
-        m_LightPass.material.set_render_texture("uPositionTex", m_GBuffer.position);
-        m_LightPass.material.set_render_texture("uNormalTex", m_GBuffer.normal);
-        m_LightPass.material.set_render_texture("uAlbedoTex", m_GBuffer.albedo);
-        m_LightPass.material.set_vec3_array("uLightPositions", m_LightPositions);
-        m_LightPass.material.set_vec3_array("uLightColors", m_LightColors);
-        m_LightPass.material.set_float("uLightLinear", 0.7f);
-        m_LightPass.material.set_float("uLightQuadratic", 1.8f);
-        m_LightPass.material.set_vec3("uViewPos", m_Camera.position());
+        light_pass_.material.set_render_texture("uPositionTex", gbuffer_.position);
+        light_pass_.material.set_render_texture("uNormalTex", gbuffer_.normal);
+        light_pass_.material.set_render_texture("uAlbedoTex", gbuffer_.albedo);
+        light_pass_.material.set_vec3_array("uLightPositions", light_positions_);
+        light_pass_.material.set_vec3_array("uLightColors", light_colors_);
+        light_pass_.material.set_float("uLightLinear", 0.7f);
+        light_pass_.material.set_float("uLightQuadratic", 1.8f);
+        light_pass_.material.set_vec3("uViewPos", camera_.position());
 
-        graphics::draw(m_QuadMesh, identity<Transform>(), m_LightPass.material, m_Camera);
+        graphics::draw(quad_mesh_, identity<Transform>(), light_pass_.material, camera_);
 
-        m_Camera.render_to(m_OutputTexture);
+        camera_.render_to(output_texture_);
 
-        m_LightPass.material.clear_render_texture("uPositionTex");
-        m_LightPass.material.clear_render_texture("uNormalTex");
-        m_LightPass.material.clear_render_texture("uAlbedoTex");
+        light_pass_.material.clear_render_texture("uPositionTex");
+        light_pass_.material.clear_render_texture("uNormalTex");
+        light_pass_.material.clear_render_texture("uAlbedoTex");
     }
 
-    void renderLightCubes()
+    void render_light_cubes()
     {
-        OSC_ASSERT(m_LightPositions.size() == m_LightColors.size());
+        OSC_ASSERT(light_positions_.size() == light_colors_.size());
 
-        for (size_t i = 0; i < m_LightPositions.size(); ++i) {
-            m_LightBoxMaterial.set_vec3("uLightColor", m_LightColors[i]);
-            graphics::draw(m_CubeMesh, {.scale = Vec3{0.125f}, .position = m_LightPositions[i]}, m_LightBoxMaterial, m_Camera);
+        for (size_t i = 0; i < light_positions_.size(); ++i) {
+            light_box_material_.set_vec3("uLightColor", light_colors_[i]);
+            graphics::draw(cube_mesh_, {.scale = Vec3{0.125f}, .position = light_positions_[i]}, light_box_material_, camera_);
         }
 
-        RenderTarget t{
+        RenderTarget render_target{
             {
                 RenderTargetColorAttachment{
-                    m_OutputTexture.upd_color_buffer(),
+                    output_texture_.upd_color_buffer(),
                     RenderBufferLoadAction::Load,
                     RenderBufferStoreAction::Resolve,
                     Color::clear(),
                 },
             },
             RenderTargetDepthAttachment{
-                m_GBuffer.albedo.upd_depth_buffer(),
+                gbuffer_.albedo.upd_depth_buffer(),
                 RenderBufferLoadAction::Load,
                 RenderBufferStoreAction::DontCare,
             },
         };
-        m_Camera.render_to(t);
+        camera_.render_to(render_target);
     }
 
-    ResourceLoader m_Loader = App::resource_loader();
+    ResourceLoader loader_ = App::resource_loader();
 
     // scene state
-    std::vector<Vec3> m_LightPositions = GenerateNSceneLightPositions(c_NumLights);
-    std::vector<Vec3> m_LightColors = GenerateNSceneLightColors(c_NumLights);
-    MouseCapturingCamera m_Camera = CreateCameraThatMatchesLearnOpenGL();
-    Mesh m_CubeMesh = BoxGeometry{2.0f, 2.0f, 2.0f};
-    Mesh m_QuadMesh = PlaneGeometry{2.0f, 2.0f};
-    Texture2D m_DiffuseMap = load_texture2D_from_image(
-        m_Loader.open("oscar_learnopengl/textures/container2.png"),
+    std::vector<Vec3> light_positions_ = generate_n_scene_light_positions(c_num_lights);
+    std::vector<Vec3> light_colors_ = generate_n_scene_light_colors(c_num_lights);
+    MouseCapturingCamera camera_ = create_camera_that_matches_learnopengl();
+    Mesh cube_mesh_ = BoxGeometry{2.0f, 2.0f, 2.0f};
+    Mesh quad_mesh_ = PlaneGeometry{2.0f, 2.0f};
+    Texture2D diffuse_map_ = load_texture2D_from_image(
+        loader_.open("oscar_learnopengl/textures/container2.png"),
         ColorSpace::sRGB,
         ImageLoadingFlags::FlipVertically
     );
-    Texture2D m_SpecularMap = load_texture2D_from_image(
-        m_Loader.open("oscar_learnopengl/textures/container2_specular.png"),
+    Texture2D specular_map_ = load_texture2D_from_image(
+        loader_.open("oscar_learnopengl/textures/container2_specular.png"),
         ColorSpace::sRGB,
         ImageLoadingFlags::FlipVertically
     );
 
     // rendering state
-    GBufferRenderingState m_GBuffer{m_Loader};
-    LightPassState m_LightPass{m_Loader};
+    GBufferRenderingState gbuffer_{loader_};
+    LightPassState light_pass_{loader_};
 
-    Material m_LightBoxMaterial{Shader{
-        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/LightBox.vert"),
-        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/LightBox.frag"),
+    Material light_box_material_{Shader{
+        loader_.slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/LightBox.vert"),
+        loader_.slurp("oscar_learnopengl/shaders/AdvancedLighting/deferred_shading/LightBox.frag"),
     }};
 
-    RenderTexture m_OutputTexture;
+    RenderTexture output_texture_;
 };
 
 
-// public API
-
 CStringView osc::LOGLDeferredShadingTab::id()
 {
-    return c_TabStringID;
+    return c_tab_string_id;
 }
 
-osc::LOGLDeferredShadingTab::LOGLDeferredShadingTab(ParentPtr<ITabHost> const&) :
-    m_Impl{std::make_unique<Impl>()}
-{
-}
-
+osc::LOGLDeferredShadingTab::LOGLDeferredShadingTab(const ParentPtr<ITabHost>&) :
+    impl_{std::make_unique<Impl>()}
+{}
 osc::LOGLDeferredShadingTab::LOGLDeferredShadingTab(LOGLDeferredShadingTab&&) noexcept = default;
 osc::LOGLDeferredShadingTab& osc::LOGLDeferredShadingTab::operator=(LOGLDeferredShadingTab&&) noexcept = default;
 osc::LOGLDeferredShadingTab::~LOGLDeferredShadingTab() noexcept = default;
 
 UID osc::LOGLDeferredShadingTab::impl_get_id() const
 {
-    return m_Impl->id();
+    return impl_->id();
 }
 
 CStringView osc::LOGLDeferredShadingTab::impl_get_name() const
 {
-    return m_Impl->name();
+    return impl_->name();
 }
 
 void osc::LOGLDeferredShadingTab::impl_on_mount()
 {
-    m_Impl->on_mount();
+    impl_->on_mount();
 }
 
 void osc::LOGLDeferredShadingTab::impl_on_unmount()
 {
-    m_Impl->on_unmount();
+    impl_->on_unmount();
 }
 
-bool osc::LOGLDeferredShadingTab::impl_on_event(SDL_Event const& e)
+bool osc::LOGLDeferredShadingTab::impl_on_event(const SDL_Event& e)
 {
-    return m_Impl->on_event(e);
+    return impl_->on_event(e);
 }
 
 void osc::LOGLDeferredShadingTab::impl_on_draw()
 {
-    m_Impl->on_draw();
+    impl_->on_draw();
 }

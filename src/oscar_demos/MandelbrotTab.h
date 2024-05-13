@@ -16,20 +16,20 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit MandelbrotTab(ParentPtr<ITabHost> const&);
-        MandelbrotTab(MandelbrotTab const&) = delete;
+        explicit MandelbrotTab(const ParentPtr<ITabHost>&);
+        MandelbrotTab(const MandelbrotTab&) = delete;
         MandelbrotTab(MandelbrotTab&&) noexcept;
-        MandelbrotTab& operator=(MandelbrotTab const&) = delete;
+        MandelbrotTab& operator=(const MandelbrotTab&) = delete;
         MandelbrotTab& operator=(MandelbrotTab&&) noexcept;
         ~MandelbrotTab() noexcept override;
 
     private:
         UID impl_get_id() const final;
         CStringView impl_get_name() const final;
-        bool impl_on_event(SDL_Event const&) final;
+        bool impl_on_event(const SDL_Event&) final;
         void impl_on_draw() final;
 
         class Impl;
-        std::unique_ptr<Impl> m_Impl;
+        std::unique_ptr<Impl> impl_;
     };
 }

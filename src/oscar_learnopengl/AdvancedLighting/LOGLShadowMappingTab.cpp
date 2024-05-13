@@ -12,10 +12,10 @@ using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_TabStringID = "LearnOpenGL/ShadowMapping";
+    constexpr CStringView c_tab_string_id = "LearnOpenGL/ShadowMapping";
 
     // this matches the plane vertices used in the LearnOpenGL tutorial
-    Mesh GeneratePlaneMeshLOGL()
+    Mesh generate_learnopengl_plane_mesh()
     {
         Mesh rv;
         rv.set_vertices({
@@ -49,188 +49,184 @@ namespace
         return rv;
     }
 
-    MouseCapturingCamera CreateCamera()
+    MouseCapturingCamera create_camera()
     {
-        MouseCapturingCamera cam;
-        cam.set_position({-2.0f, 1.0f, 0.0f});
-        cam.set_near_clipping_plane(0.1f);
-        cam.set_far_clipping_plane(100.0f);
-        return cam;
+        MouseCapturingCamera rv;
+        rv.set_position({-2.0f, 1.0f, 0.0f});
+        rv.set_near_clipping_plane(0.1f);
+        rv.set_far_clipping_plane(100.0f);
+        return rv;
     }
 
-    RenderTexture CreateDepthTexture()
+    RenderTexture create_depth_texture()
     {
         RenderTexture rv;
-        RenderTextureDescriptor shadowmapDescriptor{Vec2i{1024, 1024}};
-        shadowmapDescriptor.set_read_write(RenderTextureReadWrite::Linear);
-        rv.reformat(shadowmapDescriptor);
+        RenderTextureDescriptor shadowmap_descriptor{Vec2i{1024, 1024}};
+        shadowmap_descriptor.set_read_write(RenderTextureReadWrite::Linear);
+        rv.reformat(shadowmap_descriptor);
         return rv;
     }
 }
 
 class osc::LOGLShadowMappingTab::Impl final : public StandardTabImpl {
 public:
-    Impl() : StandardTabImpl{c_TabStringID}
+    Impl() : StandardTabImpl{c_tab_string_id}
     {}
 
 private:
     void impl_on_mount() final
     {
         App::upd().make_main_loop_polling();
-        m_Camera.on_mount();
+        camera_.on_mount();
     }
 
     void impl_on_unmount() final
     {
-        m_Camera.on_unmount();
+        camera_.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
-    bool impl_on_event(SDL_Event const& e) final
+    bool impl_on_event(const SDL_Event& e) final
     {
-        return m_Camera.on_event(e);
+        return camera_.on_event(e);
     }
 
     void impl_on_draw() final
     {
-        m_Camera.on_draw();
-        draw3DScene();
+        camera_.on_draw();
+        draw_3d_scene();
     }
 
-    void draw3DScene()
+    void draw_3d_scene()
     {
-        Rect const viewportRect = ui::get_main_viewport_workspace_screen_rect();
+        const Rect viewport_rect = ui::get_main_viewport_workspace_screen_rect();
 
-        renderShadowsToDepthTexture();
+        render_shadows_to_depth_texture();
 
-        m_Camera.set_background_color({0.1f, 0.1f, 0.1f, 1.0f});
+        camera_.set_background_color({0.1f, 0.1f, 0.1f, 1.0f});
 
-        m_SceneMaterial.set_vec3("uLightWorldPos", m_LightPos);
-        m_SceneMaterial.set_vec3("uViewWorldPos", m_Camera.position());
-        m_SceneMaterial.set_mat4("uLightSpaceMat", m_LatestLightSpaceMatrix);
-        m_SceneMaterial.set_texture("uDiffuseTexture", m_WoodTexture);
-        m_SceneMaterial.set_render_texture("uShadowMapTexture", m_DepthTexture);
+        scene_material_.set_vec3("uLightWorldPos", light_pos_);
+        scene_material_.set_vec3("uViewWorldPos", camera_.position());
+        scene_material_.set_mat4("uLightSpaceMat", latest_lightspace_matrix_);
+        scene_material_.set_texture("uDiffuseTexture", wood_texture_);
+        scene_material_.set_render_texture("uShadowMapTexture", depth_texture_);
 
-        drawMeshesWithMaterial(m_SceneMaterial);
-        m_Camera.set_pixel_rect(viewportRect);
-        m_Camera.render_to_screen();
-        m_Camera.set_pixel_rect(std::nullopt);
-        graphics::blit_to_screen(m_DepthTexture, Rect{viewportRect.p1, viewportRect.p1 + 200.0f});
+        draw_meshes_with_material(scene_material_);
+        camera_.set_pixel_rect(viewport_rect);
+        camera_.render_to_screen();
+        camera_.set_pixel_rect(std::nullopt);
+        graphics::blit_to_screen(depth_texture_, Rect{viewport_rect.p1, viewport_rect.p1 + 200.0f});
 
-        m_SceneMaterial.clear_render_texture("uShadowMapTexture");
+        scene_material_.clear_render_texture("uShadowMapTexture");
     }
 
-    void drawMeshesWithMaterial(Material const& material)
+    void draw_meshes_with_material(const Material& material)
     {
         // floor
-        graphics::draw(m_PlaneMesh, identity<Transform>(), material, m_Camera);
+        graphics::draw(plane_mesh_, identity<Transform>(), material, camera_);
 
         // cubes
         graphics::draw(
-            m_CubeMesh,
+            cube_mesh_,
             {.scale = Vec3{0.5f}, .position = {0.0f, 1.0f, 0.0f}},
             material,
-            m_Camera
+            camera_
         );
         graphics::draw(
-            m_CubeMesh,
+            cube_mesh_,
             {.scale = Vec3{0.5f}, .position = {2.0f, 0.0f, 1.0f}},
             material,
-            m_Camera
+            camera_
         );
         graphics::draw(
-            m_CubeMesh,
+            cube_mesh_,
             Transform{
                 .scale = Vec3{0.25f},
                 .rotation = angle_axis(60_deg, UnitVec3{1.0f, 0.0f, 1.0f}),
                 .position = {-1.0f, 0.0f, 2.0f},
             },
             material,
-            m_Camera
+            camera_
         );
     }
 
-    void renderShadowsToDepthTexture()
+    void render_shadows_to_depth_texture()
     {
-        float const zNear = 1.0f;
-        float const zFar = 7.5f;
-        Mat4 const lightViewMatrix = look_at(m_LightPos, Vec3{0.0f}, {0.0f, 1.0f, 0.0f});
-        Mat4 const lightProjMatrix = ortho(-10.0f, 10.0f, -10.0f, 10.0f, zNear, zFar);
-        m_LatestLightSpaceMatrix = lightProjMatrix * lightViewMatrix;
+        const float znear = 1.0f;
+        const float zfar = 7.5f;
+        const Mat4 light_view_matrix = look_at(light_pos_, Vec3{0.0f}, {0.0f, 1.0f, 0.0f});
+        const Mat4 light_projection_matrix = ortho(-10.0f, 10.0f, -10.0f, 10.0f, znear, zfar);
+        latest_lightspace_matrix_ = light_projection_matrix * light_view_matrix;
 
-        drawMeshesWithMaterial(m_DepthMaterial);
+        draw_meshes_with_material(depth_material_);
 
-        m_Camera.set_view_matrix_override(lightViewMatrix);
-        m_Camera.set_projection_matrix_override(lightProjMatrix);
-        m_Camera.render_to(m_DepthTexture);
-        m_Camera.set_view_matrix_override(std::nullopt);
-        m_Camera.set_projection_matrix_override(std::nullopt);
+        camera_.set_view_matrix_override(light_view_matrix);
+        camera_.set_projection_matrix_override(light_projection_matrix);
+        camera_.render_to(depth_texture_);
+        camera_.set_view_matrix_override(std::nullopt);
+        camera_.set_projection_matrix_override(std::nullopt);
     }
 
-    ResourceLoader m_Loader = App::resource_loader();
-    MouseCapturingCamera m_Camera = CreateCamera();
-    Texture2D m_WoodTexture = load_texture2D_from_image(
-        m_Loader.open("oscar_learnopengl/textures/wood.png"),
+    ResourceLoader loader_ = App::resource_loader();
+    MouseCapturingCamera camera_ = create_camera();
+    Texture2D wood_texture_ = load_texture2D_from_image(
+        loader_.open("oscar_learnopengl/textures/wood.png"),
         ColorSpace::sRGB
     );
-    Mesh m_CubeMesh = BoxGeometry{2.0f, 2.0f, 2.0f};
-    Mesh m_PlaneMesh = GeneratePlaneMeshLOGL();
-    Material m_SceneMaterial{Shader{
-        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/shadow_mapping/Scene.vert"),
-        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/shadow_mapping/Scene.frag"),
+    Mesh cube_mesh_ = BoxGeometry{2.0f, 2.0f, 2.0f};
+    Mesh plane_mesh_ = generate_learnopengl_plane_mesh();
+    Material scene_material_{Shader{
+        loader_.slurp("oscar_learnopengl/shaders/AdvancedLighting/shadow_mapping/Scene.vert"),
+        loader_.slurp("oscar_learnopengl/shaders/AdvancedLighting/shadow_mapping/Scene.frag"),
     }};
-    Material m_DepthMaterial{Shader{
-        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/shadow_mapping/MakeShadowMap.vert"),
-        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/shadow_mapping/MakeShadowMap.frag"),
+    Material depth_material_{Shader{
+        loader_.slurp("oscar_learnopengl/shaders/AdvancedLighting/shadow_mapping/MakeShadowMap.vert"),
+        loader_.slurp("oscar_learnopengl/shaders/AdvancedLighting/shadow_mapping/MakeShadowMap.frag"),
     }};
-    RenderTexture m_DepthTexture = CreateDepthTexture();
-    Mat4 m_LatestLightSpaceMatrix = identity<Mat4>();
-    Vec3 m_LightPos = {-2.0f, 4.0f, -1.0f};
+    RenderTexture depth_texture_ = create_depth_texture();
+    Mat4 latest_lightspace_matrix_ = identity<Mat4>();
+    Vec3 light_pos_ = {-2.0f, 4.0f, -1.0f};
 };
 
 
-// public API (PIMPL)
-
 CStringView osc::LOGLShadowMappingTab::id()
 {
-    return c_TabStringID;
+    return c_tab_string_id;
 }
 
-osc::LOGLShadowMappingTab::LOGLShadowMappingTab(ParentPtr<ITabHost> const&) :
-    m_Impl{std::make_unique<Impl>()}
-{
-}
-
+osc::LOGLShadowMappingTab::LOGLShadowMappingTab(const ParentPtr<ITabHost>&) :
+    impl_{std::make_unique<Impl>()}
+{}
 osc::LOGLShadowMappingTab::LOGLShadowMappingTab(LOGLShadowMappingTab&&) noexcept = default;
 osc::LOGLShadowMappingTab& osc::LOGLShadowMappingTab::operator=(LOGLShadowMappingTab&&) noexcept = default;
 osc::LOGLShadowMappingTab::~LOGLShadowMappingTab() noexcept = default;
 
 UID osc::LOGLShadowMappingTab::impl_get_id() const
 {
-    return m_Impl->id();
+    return impl_->id();
 }
 
 CStringView osc::LOGLShadowMappingTab::impl_get_name() const
 {
-    return m_Impl->name();
+    return impl_->name();
 }
 
 void osc::LOGLShadowMappingTab::impl_on_mount()
 {
-    m_Impl->on_mount();
+    impl_->on_mount();
 }
 
 void osc::LOGLShadowMappingTab::impl_on_unmount()
 {
-    m_Impl->on_unmount();
+    impl_->on_unmount();
 }
 
-bool osc::LOGLShadowMappingTab::impl_on_event(SDL_Event const& e)
+bool osc::LOGLShadowMappingTab::impl_on_event(const SDL_Event& e)
 {
-    return m_Impl->on_event(e);
+    return impl_->on_event(e);
 }
 
 void osc::LOGLShadowMappingTab::impl_on_draw()
 {
-    m_Impl->on_draw();
+    impl_->on_draw();
 }

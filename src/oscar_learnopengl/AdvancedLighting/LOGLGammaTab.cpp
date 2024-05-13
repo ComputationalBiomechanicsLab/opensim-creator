@@ -11,23 +11,23 @@ using namespace osc;
 
 namespace
 {
-    constexpr auto c_LightPositions = std::to_array<Vec3>({
+    constexpr auto c_light_positions = std::to_array<Vec3>({
         {-3.0f, 0.0f, 0.0f},
         {-1.0f, 0.0f, 0.0f},
         { 1.0f, 0.0f, 0.0f},
         { 3.0f, 0.0f, 0.0f},
     });
 
-    constexpr auto c_LightColors = std::to_array<Color>({
+    constexpr auto c_light_colors = std::to_array<Color>({
         {0.25f, 0.25f, 0.25f, 1.0f},
         {0.50f, 0.50f, 0.50f, 1.0f},
         {0.75f, 0.75f, 0.75f, 1.0f},
         {1.00f, 1.00f, 1.00f, 1.0f},
     });
 
-    constexpr CStringView c_TabStringID = "LearnOpenGL/Gamma";
+    constexpr CStringView c_tab_string_id = "LearnOpenGL/Gamma";
 
-    Mesh GeneratePlane()
+    Mesh generate_plane()
     {
         Mesh rv;
         rv.set_vertices({
@@ -61,7 +61,7 @@ namespace
         return rv;
     }
 
-    MouseCapturingCamera CreateSceneCamera()
+    MouseCapturingCamera create_scene_camera()
     {
         MouseCapturingCamera rv;
         rv.set_position({0.0f, 0.0f, 3.0f});
@@ -72,120 +72,116 @@ namespace
         return rv;
     }
 
-    Material CreateFloorMaterial(IResourceLoader& rl)
+    Material create_floor_material(IResourceLoader& loader)
     {
-        Texture2D woodTexture = load_texture2D_from_image(
-            rl.open("oscar_learnopengl/textures/wood.png"),
+        const Texture2D wood_texture = load_texture2D_from_image(
+            loader.open("oscar_learnopengl/textures/wood.png"),
             ColorSpace::sRGB
         );
 
         Material rv{Shader{
-            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/Gamma.vert"),
-            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/Gamma.frag"),
+            loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/Gamma.vert"),
+            loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/Gamma.frag"),
         }};
-        rv.set_texture("uFloorTexture", woodTexture);
-        rv.set_vec3_array("uLightPositions", c_LightPositions);
-        rv.set_color_array("uLightColors", c_LightColors);
+        rv.set_texture("uFloorTexture", wood_texture);
+        rv.set_vec3_array("uLightPositions", c_light_positions);
+        rv.set_color_array("uLightColors", c_light_colors);
         return rv;
     }
 }
 
 class osc::LOGLGammaTab::Impl final : public StandardTabImpl {
 public:
-    Impl() : StandardTabImpl{c_TabStringID}
+    Impl() : StandardTabImpl{c_tab_string_id}
     {}
 
 private:
     void impl_on_mount() final
     {
         App::upd().make_main_loop_polling();
-        m_Camera.on_mount();
+        camera_.on_mount();
     }
 
     void impl_on_unmount() final
     {
-        m_Camera.on_unmount();
+        camera_.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
-    bool impl_on_event(SDL_Event const& e) final
+    bool impl_on_event(const SDL_Event& e) final
     {
-        return m_Camera.on_event(e);
+        return camera_.on_event(e);
     }
 
     void impl_on_draw() final
     {
-        m_Camera.on_draw();
-        draw3DScene();
-        draw2DUI();
+        camera_.on_draw();
+        draw_3d_scene();
+        draw_2d_ui();
     }
 
-    void draw3DScene()
+    void draw_3d_scene()
     {
         // clear screen and ensure camera has correct pixel rect
-        m_Camera.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
+        camera_.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
 
         // render scene
-        m_Material.set_vec3("uViewPos", m_Camera.position());
-        graphics::draw(m_PlaneMesh, identity<Transform>(), m_Material, m_Camera);
-        m_Camera.render_to_screen();
+        material_.set_vec3("uViewPos", camera_.position());
+        graphics::draw(plane_mesh_, identity<Transform>(), material_, camera_);
+        camera_.render_to_screen();
     }
 
-    void draw2DUI()
+    void draw_2d_ui()
     {
         ui::begin_panel("controls");
         ui::draw_text("no need to gamma correct - OSC is a gamma-corrected renderer");
         ui::end_panel();
     }
 
-    Material m_Material = CreateFloorMaterial(App::resource_loader());
-    Mesh m_PlaneMesh = GeneratePlane();
-    MouseCapturingCamera m_Camera = CreateSceneCamera();
+    Material material_ = create_floor_material(App::resource_loader());
+    Mesh plane_mesh_ = generate_plane();
+    MouseCapturingCamera camera_ = create_scene_camera();
 };
 
 
-// public API
-
 CStringView osc::LOGLGammaTab::id()
 {
-    return c_TabStringID;
+    return c_tab_string_id;
 }
 
-osc::LOGLGammaTab::LOGLGammaTab(ParentPtr<ITabHost> const&) :
-    m_Impl{std::make_unique<Impl>()}
-{
-}
-
+osc::LOGLGammaTab::LOGLGammaTab(const ParentPtr<ITabHost>&) :
+    impl_{std::make_unique<Impl>()}
+{}
 osc::LOGLGammaTab::LOGLGammaTab(LOGLGammaTab&&) noexcept = default;
 osc::LOGLGammaTab& osc::LOGLGammaTab::operator=(LOGLGammaTab&&) noexcept = default;
 osc::LOGLGammaTab::~LOGLGammaTab() noexcept = default;
 
 UID osc::LOGLGammaTab::impl_get_id() const
 {
-    return m_Impl->id();
+    return impl_->id();
 }
 
 CStringView osc::LOGLGammaTab::impl_get_name() const
 {
-    return m_Impl->name();
+    return impl_->name();
 }
 
 void osc::LOGLGammaTab::impl_on_mount()
 {
-    m_Impl->on_mount();
+    impl_->on_mount();
 }
 
 void osc::LOGLGammaTab::impl_on_unmount()
 {
-    m_Impl->on_unmount();
+    impl_->on_unmount();
 }
 
-bool osc::LOGLGammaTab::impl_on_event(SDL_Event const& e)
+bool osc::LOGLGammaTab::impl_on_event(const SDL_Event& e)
 {
-    return m_Impl->on_event(e);
+    return impl_->on_event(e);
 }
 
 void osc::LOGLGammaTab::impl_on_draw()
 {
-    m_Impl->on_draw();
+    impl_->on_draw();
 }

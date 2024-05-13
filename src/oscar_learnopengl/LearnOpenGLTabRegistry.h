@@ -4,5 +4,5 @@ namespace osc { class TabRegistry; }
 
 namespace osc
 {
-    void RegisterLearnOpenGLTabs(TabRegistry&);
+    void register_learnopengl_tabs(TabRegistry&);
 }

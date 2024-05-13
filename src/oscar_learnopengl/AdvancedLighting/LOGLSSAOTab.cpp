@@ -15,9 +15,9 @@ using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_TabStringID = "LearnOpenGL/SSAO";
+    constexpr CStringView c_tab_string_id = "LearnOpenGL/SSAO";
 
-    MouseCapturingCamera CreateCameraWithSameParamsAsLearnOpenGL()
+    MouseCapturingCamera create_camera_that_matches_learnopengl()
     {
         MouseCapturingCamera rv;
         rv.set_position({0.0f, 0.0f, 5.0f});
@@ -28,23 +28,22 @@ namespace
         return rv;
     }
 
-    std::vector<Vec3> GenerateSampleKernel(size_t numSamples)
+    std::vector<Vec3> generate_sample_kernel(size_t num_samples)
     {
         std::default_random_engine rng{std::random_device{}()};
-        std::uniform_real_distribution<float> zeroToOne{0.0f, 1.0f};
-        std::uniform_real_distribution<float> minusOneToOne{-1.0f, 1.0f};
+        std::uniform_real_distribution<float> zero_to_one{0.0f, 1.0f};
+        std::uniform_real_distribution<float> minus_one_to_one{-1.0f, 1.0f};
 
         std::vector<Vec3> rv;
-        rv.reserve(numSamples);
-        for (size_t i = 0; i < numSamples; ++i) {
-            // scale antiAliasingLevel such that they are more aligned to
-            // the center of the kernel
-            float scale = static_cast<float>(i)/static_cast<float>(numSamples);
+        rv.reserve(num_samples);
+        for (size_t i = 0; i < num_samples; ++i) {
+            // scale such that they are more aligned to the center of the kernel
+            float scale = static_cast<float>(i)/static_cast<float>(num_samples);
             scale = lerp(0.1f, 1.0f, scale*scale);
 
-            Vec3 sample = {minusOneToOne(rng), minusOneToOne(rng), minusOneToOne(rng)};
+            Vec3 sample = {minus_one_to_one(rng), minus_one_to_one(rng), minus_one_to_one(rng)};
             sample = normalize(sample);
-            sample *= zeroToOne(rng);
+            sample *= zero_to_one(rng);
             sample *= scale;
 
             rv.push_back(sample);
@@ -53,16 +52,16 @@ namespace
         return rv;
     }
 
-    std::vector<Color> GenerateNoiseTexturePixels(size_t numPixels) {
+    std::vector<Color> generate_noise_texture_pixels(size_t num_pixels) {
         std::default_random_engine rng{std::random_device{}()};
-        std::uniform_real_distribution<float> minusOneToOne{-1.0f, 1.0f};
+        std::uniform_real_distribution<float> minus_one_to_one{-1.0f, 1.0f};
 
         std::vector<Color> rv;
-        rv.reserve(numPixels);
-        for (size_t i = 0; i < numPixels; ++i) {
+        rv.reserve(num_pixels);
+        for (size_t i = 0; i < num_pixels; ++i) {
             rv.emplace_back(
-                minusOneToOne(rng),
-                minusOneToOne(rng),
+                minus_one_to_one(rng),
+                minus_one_to_one(rng),
                 0.0f,  // rotate around z-axis in tangent space
                 0.0f   // ignored (Texture2D doesn't support RGB --> RGBA upload conversion)
             );
@@ -70,10 +69,10 @@ namespace
         return rv;
     }
 
-    Texture2D GenerateNoiseTexture(Vec2i dimensions)
+    Texture2D generate_noise_texture(Vec2i dimensions)
     {
-        std::vector<Color> const pixels =
-            GenerateNoiseTexturePixels(static_cast<size_t>(dimensions.x) * static_cast<size_t>(dimensions.y));
+        const std::vector<Color> pixels =
+            generate_noise_texture_pixels(static_cast<size_t>(area_of(dimensions)));
 
         Texture2D rv{
             dimensions,
@@ -86,211 +85,211 @@ namespace
         return rv;
     }
 
-    Material LoadGBufferMaterial(IResourceLoader& rl)
+    Material load_gbuffer_material(IResourceLoader& loader)
     {
         return Material{Shader{
-            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Geometry.vert"),
-            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Geometry.frag"),
+            loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Geometry.vert"),
+            loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Geometry.frag"),
         }};
     }
 
-    RenderTexture RenderTextureWithColorFormat(RenderTextureFormat f)
+    RenderTexture render_texture_with_color_format(RenderTextureFormat format)
     {
         RenderTexture rv;
-        rv.set_color_format(f);
+        rv.set_color_format(format);
         return rv;
     }
 
-    Material LoadSSAOMaterial(IResourceLoader& rl)
+    Material load_ssao_material(IResourceLoader& loader)
     {
         return Material{Shader{
-            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/SSAO.vert"),
-            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/SSAO.frag"),
+            loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/SSAO.vert"),
+            loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/SSAO.frag"),
         }};
     }
 
-    Material LoadBlurMaterial(IResourceLoader& rl)
+    Material load_blur_material(IResourceLoader& loader)
     {
         return Material{Shader{
-            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Blur.vert"),
-            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Blur.frag"),
+            loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Blur.vert"),
+            loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Blur.frag"),
         }};
     }
 
-    Material LoadLightingMaterial(IResourceLoader& rl)
+    Material load_lighting_material(IResourceLoader& loader)
     {
         return Material{Shader{
-            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Lighting.vert"),
-            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Lighting.frag"),
+            loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Lighting.vert"),
+            loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/ssao/Lighting.frag"),
         }};
     }
 }
 
 class osc::LOGLSSAOTab::Impl final : public StandardTabImpl {
 public:
-    Impl() : StandardTabImpl{c_TabStringID}
+    Impl() : StandardTabImpl{c_tab_string_id}
     {}
 
 private:
     void impl_on_mount() final
     {
         App::upd().make_main_loop_polling();
-        m_Camera.on_mount();
+        camera_.on_mount();
     }
 
     void impl_on_unmount() final
     {
-        m_Camera.on_unmount();
+        camera_.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
-    bool impl_on_event(SDL_Event const& e) final
+    bool impl_on_event(const SDL_Event& e) final
     {
-        return m_Camera.on_event(e);
+        return camera_.on_event(e);
     }
 
     void impl_on_draw() final
     {
-        m_Camera.on_draw();
+        camera_.on_draw();
         draw3DScene();
-        m_PerfPanel.on_draw();
+        perf_panel_.on_draw();
     }
 
     void draw3DScene()
     {
-        Rect const viewportRect = ui::get_main_viewport_workspace_screen_rect();
-        Vec2 const viewportDims = dimensions_of(viewportRect);
-        AntiAliasingLevel const antiAliasingLevel = AntiAliasingLevel::none();
+        const Rect viewport_rect = ui::get_main_viewport_workspace_screen_rect();
+        const Vec2 viewport_dimensions = dimensions_of(viewport_rect);
+        const AntiAliasingLevel anti_aliasing_level = AntiAliasingLevel::none();
 
         // ensure textures/buffers have correct dimensions
         {
-            m_GBuffer.reformat(viewportDims, antiAliasingLevel);
-            m_SSAO.reformat(viewportDims, antiAliasingLevel);
-            m_Blur.reformat(viewportDims, antiAliasingLevel);
-            m_Lighting.reformat(viewportDims, antiAliasingLevel);
+            gbuffer_state_.reformat(viewport_dimensions, anti_aliasing_level);
+            ssao_state_.reformat(viewport_dimensions, anti_aliasing_level);
+            blur_state_.reformat(viewport_dimensions, anti_aliasing_level);
+            lighting_state_.reformat(viewport_dimensions, anti_aliasing_level);
         }
 
-        renderGeometryPassToGBuffers();
-        renderSSAOPass(viewportRect);
-        renderBlurPass();
-        renderLightingPass();
-        graphics::blit_to_screen(m_Lighting.outputTexture, viewportRect);
-        drawOverlays(viewportRect);
+        render_geometry_pass_to_gbuffers();
+        render_ssao_pass(viewport_rect);
+        render_blur_pass();
+        render_lighting_pass();
+        graphics::blit_to_screen(lighting_state_.output_texture, viewport_rect);
+        draw_debug_overlays(viewport_rect);
     }
 
-    void renderGeometryPassToGBuffers()
+    void render_geometry_pass_to_gbuffers()
     {
         // render cube
         {
-            m_GBuffer.material.set_bool("uInvertedNormals", true);
+            gbuffer_state_.material.set_bool("uInvertedNormals", true);
             graphics::draw(
-                m_CubeMesh,
+                cube_mesh_,
                 {.scale = Vec3{7.5f}, .position = {0.0f, 7.0f, 0.0f}},
-                m_GBuffer.material,
-                m_Camera
+                gbuffer_state_.material,
+                camera_
             );
         }
 
         // render sphere
         {
-            m_GBuffer.material.set_bool("uInvertedNormals", false);
+            gbuffer_state_.material.set_bool("uInvertedNormals", false);
             graphics::draw(
-                m_SphereMesh,
+                sphere_mesh_,
                 {.position = {0.0f, 0.5f, 0.0f}},
-                m_GBuffer.material,
-                m_Camera
+                gbuffer_state_.material,
+                camera_
             );
         }
 
-        m_Camera.render_to(m_GBuffer.renderTarget);
+        camera_.render_to(gbuffer_state_.render_target);
     }
 
-    void renderSSAOPass(Rect const& viewportRect)
+    void render_ssao_pass(const Rect& viewport_rect)
     {
-        m_SSAO.material.set_render_texture("uPositionTex", m_GBuffer.position);
-        m_SSAO.material.set_render_texture("uNormalTex", m_GBuffer.normal);
-        m_SSAO.material.set_texture("uNoiseTex", m_NoiseTexture);
-        m_SSAO.material.set_vec3_array("uSamples", m_SampleKernel);
-        m_SSAO.material.set_vec2("uNoiseScale", dimensions_of(viewportRect) / Vec2{m_NoiseTexture.dimensions()});
-        m_SSAO.material.set_int("uKernelSize", static_cast<int32_t>(m_SampleKernel.size()));
-        m_SSAO.material.set_float("uRadius", 0.5f);
-        m_SSAO.material.set_float("uBias", 0.125f);
+        ssao_state_.material.set_render_texture("uPositionTex", gbuffer_state_.position);
+        ssao_state_.material.set_render_texture("uNormalTex", gbuffer_state_.normal);
+        ssao_state_.material.set_texture("uNoiseTex", noise_texture_);
+        ssao_state_.material.set_vec3_array("uSamples", sample_kernel_);
+        ssao_state_.material.set_vec2("uNoiseScale", dimensions_of(viewport_rect) / Vec2{noise_texture_.dimensions()});
+        ssao_state_.material.set_int("uKernelSize", static_cast<int32_t>(sample_kernel_.size()));
+        ssao_state_.material.set_float("uRadius", 0.5f);
+        ssao_state_.material.set_float("uBias", 0.125f);
 
-        graphics::draw(m_QuadMesh, identity<Transform>(), m_SSAO.material, m_Camera);
-        m_Camera.render_to(m_SSAO.outputTexture);
+        graphics::draw(quad_mesh_, identity<Transform>(), ssao_state_.material, camera_);
+        camera_.render_to(ssao_state_.output_texture);
 
-        m_SSAO.material.clear_render_texture("uPositionTex");
-        m_SSAO.material.clear_render_texture("uNormalTex");
+        ssao_state_.material.clear_render_texture("uPositionTex");
+        ssao_state_.material.clear_render_texture("uNormalTex");
     }
 
-    void renderBlurPass()
+    void render_blur_pass()
     {
-        m_Blur.material.set_render_texture("uSSAOTex", m_SSAO.outputTexture);
+        blur_state_.material.set_render_texture("uSSAOTex", ssao_state_.output_texture);
 
-        graphics::draw(m_QuadMesh, identity<Transform>(), m_Blur.material, m_Camera);
-        m_Camera.render_to(m_Blur.outputTexture);
+        graphics::draw(quad_mesh_, identity<Transform>(), blur_state_.material, camera_);
+        camera_.render_to(blur_state_.output_texture);
 
-        m_Blur.material.clear_render_texture("uSSAOTex");
+        blur_state_.material.clear_render_texture("uSSAOTex");
     }
 
-    void renderLightingPass()
+    void render_lighting_pass()
     {
-        m_Lighting.material.set_render_texture("uPositionTex", m_GBuffer.position);
-        m_Lighting.material.set_render_texture("uNormalTex", m_GBuffer.normal);
-        m_Lighting.material.set_render_texture("uAlbedoTex", m_GBuffer.albedo);
-        m_Lighting.material.set_render_texture("uSSAOTex", m_SSAO.outputTexture);
-        m_Lighting.material.set_vec3("uLightPosition", m_LightPosition);
-        m_Lighting.material.set_color("uLightColor", m_LightColor);
-        m_Lighting.material.set_float("uLightLinear", 0.09f);
-        m_Lighting.material.set_float("uLightQuadratic", 0.032f);
+        lighting_state_.material.set_render_texture("uPositionTex", gbuffer_state_.position);
+        lighting_state_.material.set_render_texture("uNormalTex", gbuffer_state_.normal);
+        lighting_state_.material.set_render_texture("uAlbedoTex", gbuffer_state_.albedo);
+        lighting_state_.material.set_render_texture("uSSAOTex", ssao_state_.output_texture);
+        lighting_state_.material.set_vec3("uLightPosition", light_position_);
+        lighting_state_.material.set_color("uLightColor", light_color_);
+        lighting_state_.material.set_float("uLightLinear", 0.09f);
+        lighting_state_.material.set_float("uLightQuadratic", 0.032f);
 
-        graphics::draw(m_QuadMesh, identity<Transform>(), m_Lighting.material, m_Camera);
-        m_Camera.render_to(m_Lighting.outputTexture);
+        graphics::draw(quad_mesh_, identity<Transform>(), lighting_state_.material, camera_);
+        camera_.render_to(lighting_state_.output_texture);
 
-        m_Lighting.material.clear_render_texture("uPositionTex");
-        m_Lighting.material.clear_render_texture("uNormalTex");
-        m_Lighting.material.clear_render_texture("uAlbedoTex");
-        m_Lighting.material.clear_render_texture("uSSAOTex");
+        lighting_state_.material.clear_render_texture("uPositionTex");
+        lighting_state_.material.clear_render_texture("uNormalTex");
+        lighting_state_.material.clear_render_texture("uAlbedoTex");
+        lighting_state_.material.clear_render_texture("uSSAOTex");
     }
 
-    void drawOverlays(Rect const& viewportRect)
+    void draw_debug_overlays(const Rect& viewport_rect)
     {
-        float const w = 200.0f;
+        const float w = 200.0f;
 
-        auto const textures = std::to_array<RenderTexture const*>({
-            &m_GBuffer.albedo,
-            &m_GBuffer.normal,
-            &m_GBuffer.position,
-            &m_SSAO.outputTexture,
-            &m_Blur.outputTexture,
+        const auto textures = std::to_array<const RenderTexture*>({
+            &gbuffer_state_.albedo,
+            &gbuffer_state_.normal,
+            &gbuffer_state_.position,
+            &ssao_state_.output_texture,
+            &blur_state_.output_texture,
         });
 
         for (size_t i = 0; i < textures.size(); ++i) {
-            Vec2 const offset = {static_cast<float>(i)*w, 0.0f};
-            Rect const overlayRect{viewportRect.p1 + offset, viewportRect.p1 + offset + w};
+            const Vec2 offset = {static_cast<float>(i)*w, 0.0f};
+            const Rect overlay_rect{viewport_rect.p1 + offset, viewport_rect.p1 + offset + w};
 
-            graphics::blit_to_screen(*textures[i], overlayRect);
+            graphics::blit_to_screen(*textures[i], overlay_rect);
         }
     }
 
-    std::vector<Vec3> m_SampleKernel = GenerateSampleKernel(64);
-    Texture2D m_NoiseTexture = GenerateNoiseTexture({4, 4});
-    Vec3 m_LightPosition = {2.0f, 4.0f, -2.0f};
-    Color m_LightColor = {0.2f, 0.2f, 0.7f, 1.0f};
+    std::vector<Vec3> sample_kernel_ = generate_sample_kernel(64);
+    Texture2D noise_texture_ = generate_noise_texture({4, 4});
+    Vec3 light_position_ = {2.0f, 4.0f, -2.0f};
+    Color light_color_ = {0.2f, 0.2f, 0.7f, 1.0f};
 
-    MouseCapturingCamera m_Camera = CreateCameraWithSameParamsAsLearnOpenGL();
+    MouseCapturingCamera camera_ = create_camera_that_matches_learnopengl();
 
-    Mesh m_SphereMesh = SphereGeometry{1.0f, 32, 32};
-    Mesh m_CubeMesh = BoxGeometry{2.0f, 2.0f, 2.0f};
-    Mesh m_QuadMesh = PlaneGeometry{2.0f, 2.0f};
+    Mesh sphere_mesh_ = SphereGeometry{1.0f, 32, 32};
+    Mesh cube_mesh_ = BoxGeometry{2.0f, 2.0f, 2.0f};
+    Mesh quad_mesh_ = PlaneGeometry{2.0f, 2.0f};
 
     // rendering state
     struct GBufferRenderingState final {
-        Material material = LoadGBufferMaterial(App::resource_loader());
-        RenderTexture albedo = RenderTextureWithColorFormat(RenderTextureFormat::ARGB32);
-        RenderTexture normal = RenderTextureWithColorFormat(RenderTextureFormat::ARGBFloat16);
-        RenderTexture position = RenderTextureWithColorFormat(RenderTextureFormat::ARGBFloat16);
-        RenderTarget renderTarget{
+        Material material = load_gbuffer_material(App::resource_loader());
+        RenderTexture albedo = render_texture_with_color_format(RenderTextureFormat::ARGB32);
+        RenderTexture normal = render_texture_with_color_format(RenderTextureFormat::ARGBFloat16);
+        RenderTexture position = render_texture_with_color_format(RenderTextureFormat::ARGBFloat16);
+        RenderTarget render_target{
             {
                 RenderTargetColorAttachment{
                     albedo.upd_color_buffer(),
@@ -318,97 +317,93 @@ private:
             },
         };
 
-        void reformat(Vec2 dims, AntiAliasingLevel antiAliasingLevel)
+        void reformat(Vec2 dimensions, AntiAliasingLevel aa_level)
         {
-            RenderTextureDescriptor desc{dims};
-            desc.set_anti_aliasing_level(antiAliasingLevel);
+            RenderTextureDescriptor descriptor{dimensions};
+            descriptor.set_anti_aliasing_level(aa_level);
 
-            for (RenderTexture* tex : {&albedo, &normal, &position}) {
-                desc.set_color_format(tex->color_format());
-                tex->reformat(desc);
+            for (RenderTexture* texture_ptr : {&albedo, &normal, &position}) {
+                descriptor.set_color_format(texture_ptr->color_format());
+                texture_ptr->reformat(descriptor);
             }
         }
-    } m_GBuffer;
+    } gbuffer_state_;
 
     struct SSAORenderingState final {
-        Material material = LoadSSAOMaterial(App::resource_loader());
-        RenderTexture outputTexture = RenderTextureWithColorFormat(RenderTextureFormat::Red8);
+        Material material = load_ssao_material(App::resource_loader());
+        RenderTexture output_texture = render_texture_with_color_format(RenderTextureFormat::Red8);
 
-        void reformat(Vec2 dims, AntiAliasingLevel antiAliasingLevel)
+        void reformat(Vec2 dimensions, AntiAliasingLevel aa_level)
         {
-            outputTexture.set_dimensions(dims);
-            outputTexture.set_anti_aliasing_level(antiAliasingLevel);
+            output_texture.set_dimensions(dimensions);
+            output_texture.set_anti_aliasing_level(aa_level);
         }
-    } m_SSAO;
+    } ssao_state_;
 
     struct BlurRenderingState final {
-        Material material = LoadBlurMaterial(App::resource_loader());
-        RenderTexture outputTexture = RenderTextureWithColorFormat(RenderTextureFormat::Red8);
+        Material material = load_blur_material(App::resource_loader());
+        RenderTexture output_texture = render_texture_with_color_format(RenderTextureFormat::Red8);
 
-        void reformat(Vec2 dims, AntiAliasingLevel antiAliasingLevel)
+        void reformat(Vec2 dimensions, AntiAliasingLevel aa_level)
         {
-            outputTexture.set_dimensions(dims);
-            outputTexture.set_anti_aliasing_level(antiAliasingLevel);
+            output_texture.set_dimensions(dimensions);
+            output_texture.set_anti_aliasing_level(aa_level);
         }
-    } m_Blur;
+    } blur_state_;
 
     struct LightingRenderingState final {
-        Material material = LoadLightingMaterial(App::resource_loader());
-        RenderTexture outputTexture = RenderTextureWithColorFormat(RenderTextureFormat::ARGB32);
+        Material material = load_lighting_material(App::resource_loader());
+        RenderTexture output_texture = render_texture_with_color_format(RenderTextureFormat::ARGB32);
 
-        void reformat(Vec2 dims, AntiAliasingLevel antiAliasingLevel)
+        void reformat(Vec2 dimensions, AntiAliasingLevel aa_level)
         {
-            outputTexture.set_dimensions(dims);
-            outputTexture.set_anti_aliasing_level(antiAliasingLevel);
+            output_texture.set_dimensions(dimensions);
+            output_texture.set_anti_aliasing_level(aa_level);
         }
-    } m_Lighting;
+    } lighting_state_;
 
-    PerfPanel m_PerfPanel{"Perf"};
+    PerfPanel perf_panel_{"Perf"};
 };
 
 
-// public API (PIMPL)
-
 CStringView osc::LOGLSSAOTab::id()
 {
-    return c_TabStringID;
+    return c_tab_string_id;
 }
 
-osc::LOGLSSAOTab::LOGLSSAOTab(ParentPtr<ITabHost> const&) :
-    m_Impl{std::make_unique<Impl>()}
-{
-}
-
+osc::LOGLSSAOTab::LOGLSSAOTab(const ParentPtr<ITabHost>&) :
+    impl_{std::make_unique<Impl>()}
+{}
 osc::LOGLSSAOTab::LOGLSSAOTab(LOGLSSAOTab&&) noexcept = default;
 osc::LOGLSSAOTab& osc::LOGLSSAOTab::operator=(LOGLSSAOTab&&) noexcept = default;
 osc::LOGLSSAOTab::~LOGLSSAOTab() noexcept = default;
 
 UID osc::LOGLSSAOTab::impl_get_id() const
 {
-    return m_Impl->id();
+    return impl_->id();
 }
 
 CStringView osc::LOGLSSAOTab::impl_get_name() const
 {
-    return m_Impl->name();
+    return impl_->name();
 }
 
 void osc::LOGLSSAOTab::impl_on_mount()
 {
-    m_Impl->on_mount();
+    impl_->on_mount();
 }
 
 void osc::LOGLSSAOTab::impl_on_unmount()
 {
-    m_Impl->on_unmount();
+    impl_->on_unmount();
 }
 
-bool osc::LOGLSSAOTab::impl_on_event(SDL_Event const& e)
+bool osc::LOGLSSAOTab::impl_on_event(const SDL_Event& e)
 {
-    return m_Impl->on_event(e);
+    return impl_->on_event(e);
 }
 
 void osc::LOGLSSAOTab::impl_on_draw()
 {
-    m_Impl->on_draw();
+    impl_->on_draw();
 }

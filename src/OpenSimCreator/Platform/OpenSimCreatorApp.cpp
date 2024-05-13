@@ -190,8 +190,8 @@ namespace
     // registers user-accessible tabs
     void InitializeTabRegistry(TabRegistry& registry)
     {
-        RegisterLearnOpenGLTabs(registry);
-        RegisterDemoTabs(registry);
+        register_learnopengl_tabs(registry);
+        register_demo_tabs(registry);
         RegisterOpenSimCreatorTabs(registry);
     }
 }

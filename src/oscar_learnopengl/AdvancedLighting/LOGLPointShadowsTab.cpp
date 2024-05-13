@@ -13,10 +13,10 @@ using namespace osc;
 
 namespace
 {
-    constexpr Vec2i c_ShadowmapDims = {1024, 1024};
-    constexpr CStringView c_TabStringID = "LearnOpenGL/PointShadows";
+    constexpr Vec2i c_shadowmap_dimensions = {1024, 1024};
+    constexpr CStringView c_tab_string_id = "LearnOpenGL/PointShadows";
 
-    Transform MakeRotatedTransform()
+    Transform make_rotated_transform()
     {
         return {
             .scale = Vec3(0.75f),
@@ -30,16 +30,16 @@ namespace
             transform{transform_}
         {}
 
-        SceneCube(Transform transform_, bool invertNormals_) :
+        SceneCube(Transform transform_, bool invert_normals_) :
             transform{transform_},
-            invertNormals{invertNormals_}
+            invert_normals{invert_normals_}
         {}
 
         Transform transform;
-        bool invertNormals = false;
+        bool invert_normals = false;
     };
 
-    auto MakeSceneCubes()
+    auto make_scene_cubes()
     {
         return std::to_array<SceneCube>({
             SceneCube{{.scale = Vec3{5.0f}}, true},
@@ -47,20 +47,20 @@ namespace
             SceneCube{{.scale = Vec3{0.75f}, .position = {2.0f, 3.0f, 1.0f}}},
             SceneCube{{.scale = Vec3{0.50f}, .position = {-3.0f, -1.0f, 0.0f}}},
             SceneCube{{.scale = Vec3{0.50f}, .position = {-1.5f, 1.0f, 1.5f}}},
-            SceneCube{MakeRotatedTransform()},
+            SceneCube{make_rotated_transform()},
         });
     }
 
-    RenderTexture CreateDepthTexture()
+    RenderTexture create_depth_texture()
     {
-        RenderTextureDescriptor desc{c_ShadowmapDims};
-        desc.set_dimensionality(TextureDimensionality::Cube);
-        desc.set_read_write(RenderTextureReadWrite::Linear);
-        desc.set_color_format(RenderTextureFormat::Depth);
-        return RenderTexture{desc};
+        RenderTextureDescriptor descriptor{c_shadowmap_dimensions};
+        descriptor.set_dimensionality(TextureDimensionality::Cube);
+        descriptor.set_read_write(RenderTextureReadWrite::Linear);
+        descriptor.set_color_format(RenderTextureFormat::Depth);
+        return RenderTexture{descriptor};
     }
 
-    MouseCapturingCamera CreateCamera()
+    MouseCapturingCamera create_camera()
     {
         MouseCapturingCamera rv;
         rv.set_position({0.0f, 0.0f, 5.0f});
@@ -74,202 +74,198 @@ namespace
 
 class osc::LOGLPointShadowsTab::Impl final : public StandardTabImpl {
 public:
-    Impl() : StandardTabImpl{c_TabStringID}
+    Impl() : StandardTabImpl{c_tab_string_id}
     {}
 
 private:
     void impl_on_mount() final
     {
         App::upd().make_main_loop_polling();
-        m_SceneCamera.on_mount();
+        scene_camera_.on_mount();
     }
 
     void impl_on_unmount() final
     {
-        m_SceneCamera.on_unmount();
+        scene_camera_.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
-    bool impl_on_event(SDL_Event const& e) final
+    bool impl_on_event(const SDL_Event& e) final
     {
-        return m_SceneCamera.on_event(e);
+        return scene_camera_.on_event(e);
     }
 
     void impl_on_tick() final
     {
         // move light position over time
-        double const seconds = App::get().frame_delta_since_startup().count();
-        m_LightPos.x = static_cast<float>(3.0 * sin(0.5 * seconds));
+        const double seconds = App::get().frame_delta_since_startup().count();
+        light_pos_.x = static_cast<float>(3.0 * sin(0.5 * seconds));
     }
 
     void impl_on_draw() final
     {
-        m_SceneCamera.on_draw();
-        draw3DScene();
-        draw2DUI();
+        scene_camera_.on_draw();
+        draw_3d_scene();
+        draw_2d_ui();
     }
 
-    void draw3DScene()
+    void draw_3d_scene()
     {
-        Rect const viewportRect = ui::get_main_viewport_workspace_screen_rect();
+        const Rect viewport_rect = ui::get_main_viewport_workspace_screen_rect();
 
-        drawShadowPassToCubemap();
-        drawShadowmappedSceneToScreen(viewportRect);
+        draw_shadow_pass_to_cubemap();
+        draw_shadowmapped_scene_to_screen(viewport_rect);
     }
 
-    void drawShadowPassToCubemap()
+    void draw_shadow_pass_to_cubemap()
     {
         // create a 90 degree cube cone projection matrix
-        float const nearPlane = 0.1f;
-        float const farPlane = 25.0f;
-        Mat4 const projectionMatrix = perspective(
+        const float znear = 0.1f;
+        const float zfar = 25.0f;
+        const Mat4 projection_matrix = perspective(
             90_deg,
-            aspect_ratio_of(c_ShadowmapDims),
-            nearPlane,
-            farPlane
+            aspect_ratio_of(c_shadowmap_dimensions),
+            znear,
+            zfar
         );
 
         // have the cone point toward all 6 faces of the cube
-        auto const shadowMatrices =
-            calc_cubemap_view_proj_matrices(projectionMatrix, m_LightPos);
+        const auto shadow_matrices =
+            calc_cubemap_view_proj_matrices(projection_matrix, light_pos_);
 
         // pass data to material
-        m_ShadowMappingMaterial.set_mat4_array("uShadowMatrices", shadowMatrices);
-        m_ShadowMappingMaterial.set_vec3("uLightPos", m_LightPos);
-        m_ShadowMappingMaterial.set_float("uFarPlane", farPlane);
+        shadowmapping_material_.set_mat4_array("uShadowMatrices", shadow_matrices);
+        shadowmapping_material_.set_vec3("uLightPos", light_pos_);
+        shadowmapping_material_.set_float("uFarPlane", zfar);
 
         // render (shadowmapping does not use the camera's view/projection matrices)
         Camera camera;
-        for (SceneCube const& cube : m_SceneCubes) {
-            graphics::draw(m_CubeMesh, cube.transform, m_ShadowMappingMaterial, camera);
+        for (const SceneCube& cube : scene_cubes_) {
+            graphics::draw(cube_mesh_, cube.transform, shadowmapping_material_, camera);
         }
-        camera.render_to(m_DepthTexture);
+        camera.render_to(depth_texture_);
     }
 
-    void drawShadowmappedSceneToScreen(Rect const& viewportRect)
+    void draw_shadowmapped_scene_to_screen(const Rect& viewport_rect)
     {
-        Material material = m_UseSoftShadows ? m_SoftSceneMaterial : m_SceneMaterial;
+        Material material = use_soft_shadows_ ? soft_scene_material_ : scene_material_;
 
         // set shared material params
         material.set_texture("uDiffuseTexture", m_WoodTexture);
-        material.set_vec3("uLightPos", m_LightPos);
-        material.set_vec3("uViewPos", m_SceneCamera.position());
+        material.set_vec3("uLightPos", light_pos_);
+        material.set_vec3("uViewPos", scene_camera_.position());
         material.set_float("uFarPlane", 25.0f);
-        material.set_bool("uShadows", m_ShowShadows);
+        material.set_bool("uShadows", soft_shadows_);
 
-        for (SceneCube const& cube : m_SceneCubes) {
-            MaterialPropertyBlock mpb;
-            mpb.set_bool("uReverseNormals", cube.invertNormals);
-            material.set_render_texture("uDepthMap", m_DepthTexture);
-            graphics::draw(m_CubeMesh, cube.transform, material, m_SceneCamera, std::move(mpb));
+        for (const SceneCube& cube : scene_cubes_) {
+            MaterialPropertyBlock material_props;
+            material_props.set_bool("uReverseNormals", cube.invert_normals);
+            material.set_render_texture("uDepthMap", depth_texture_);
+            graphics::draw(cube_mesh_, cube.transform, material, scene_camera_, std::move(material_props));
             material.clear_render_texture("uDepthMap");
         }
 
         // also, draw the light as a little cube
-        material.set_bool("uShadows", m_ShowShadows);
-        graphics::draw(m_CubeMesh, {.scale = Vec3{0.1f}, .position = m_LightPos}, material, m_SceneCamera);
+        material.set_bool("uShadows", soft_shadows_);
+        graphics::draw(cube_mesh_, {.scale = Vec3{0.1f}, .position = light_pos_}, material, scene_camera_);
 
-        m_SceneCamera.set_pixel_rect(viewportRect);
-        m_SceneCamera.render_to_screen();
-        m_SceneCamera.set_pixel_rect(std::nullopt);
+        scene_camera_.set_pixel_rect(viewport_rect);
+        scene_camera_.render_to_screen();
+        scene_camera_.set_pixel_rect(std::nullopt);
     }
 
-    void draw2DUI()
+    void draw_2d_ui()
     {
         ui::begin_panel("controls");
-        ui::draw_checkbox("show shadows", &m_ShowShadows);
-        ui::draw_checkbox("soften shadows", &m_UseSoftShadows);
+        ui::draw_checkbox("show shadows", &soft_shadows_);
+        ui::draw_checkbox("soften shadows", &use_soft_shadows_);
         ui::end_panel();
 
-        m_PerfPanel.on_draw();
+        perf_panel_.on_draw();
     }
 
-    ResourceLoader m_Loader = App::resource_loader();
+    ResourceLoader loader_ = App::resource_loader();
 
-    Material m_ShadowMappingMaterial{Shader{
-        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/MakeShadowMap.vert"),
-        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/MakeShadowMap.geom"),
-        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/MakeShadowMap.frag"),
+    Material shadowmapping_material_{Shader{
+        loader_.slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/MakeShadowMap.vert"),
+        loader_.slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/MakeShadowMap.geom"),
+        loader_.slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/MakeShadowMap.frag"),
     }};
 
-    Material m_SceneMaterial{Shader{
-        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/Scene.vert"),
-        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/Scene.frag"),
+    Material scene_material_{Shader{
+        loader_.slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/Scene.vert"),
+        loader_.slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/Scene.frag"),
     }};
 
-    Material m_SoftSceneMaterial{Shader{
-        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/Scene.vert"),
-        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/SoftScene.frag"),
+    Material soft_scene_material_{Shader{
+        loader_.slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/Scene.vert"),
+        loader_.slurp("oscar_learnopengl/shaders/AdvancedLighting/point_shadows/SoftScene.frag"),
     }};
 
-    MouseCapturingCamera m_SceneCamera = CreateCamera();
+    MouseCapturingCamera scene_camera_ = create_camera();
     Texture2D m_WoodTexture = load_texture2D_from_image(
-        m_Loader.open("oscar_learnopengl/textures/wood.png"),
+        loader_.open("oscar_learnopengl/textures/wood.png"),
         ColorSpace::sRGB
     );
-    Mesh m_CubeMesh = BoxGeometry{2.0f, 2.0f, 2.0f};
-    std::array<SceneCube, 6> m_SceneCubes = MakeSceneCubes();
-    RenderTexture m_DepthTexture = CreateDepthTexture();
-    Vec3 m_LightPos = {};
-    bool m_ShowShadows = true;
-    bool m_UseSoftShadows = false;
+    Mesh cube_mesh_ = BoxGeometry{2.0f, 2.0f, 2.0f};
+    std::array<SceneCube, 6> scene_cubes_ = make_scene_cubes();
+    RenderTexture depth_texture_ = create_depth_texture();
+    Vec3 light_pos_ = {};
+    bool soft_shadows_ = true;
+    bool use_soft_shadows_ = false;
 
-    PerfPanel m_PerfPanel{"Perf"};
+    PerfPanel perf_panel_{"Perf"};
 };
 
 
-// public API
-
 CStringView osc::LOGLPointShadowsTab::id()
 {
-    return c_TabStringID;
+    return c_tab_string_id;
 }
 
-osc::LOGLPointShadowsTab::LOGLPointShadowsTab(ParentPtr<ITabHost> const&) :
-    m_Impl{std::make_unique<Impl>()}
-{
-}
-
+osc::LOGLPointShadowsTab::LOGLPointShadowsTab(const ParentPtr<ITabHost>&) :
+    impl_{std::make_unique<Impl>()}
+{}
 osc::LOGLPointShadowsTab::LOGLPointShadowsTab(LOGLPointShadowsTab&&) noexcept = default;
 osc::LOGLPointShadowsTab& osc::LOGLPointShadowsTab::operator=(LOGLPointShadowsTab&&) noexcept = default;
 osc::LOGLPointShadowsTab::~LOGLPointShadowsTab() noexcept = default;
 
 UID osc::LOGLPointShadowsTab::impl_get_id() const
 {
-    return m_Impl->id();
+    return impl_->id();
 }
 
 CStringView osc::LOGLPointShadowsTab::impl_get_name() const
 {
-    return m_Impl->name();
+    return impl_->name();
 }
 
 void osc::LOGLPointShadowsTab::impl_on_mount()
 {
-    m_Impl->on_mount();
+    impl_->on_mount();
 }
 
 void osc::LOGLPointShadowsTab::impl_on_unmount()
 {
-    m_Impl->on_unmount();
+    impl_->on_unmount();
 }
 
-bool osc::LOGLPointShadowsTab::impl_on_event(SDL_Event const& e)
+bool osc::LOGLPointShadowsTab::impl_on_event(const SDL_Event& e)
 {
-    return m_Impl->on_event(e);
+    return impl_->on_event(e);
 }
 
 void osc::LOGLPointShadowsTab::impl_on_tick()
 {
-    m_Impl->on_tick();
+    impl_->on_tick();
 }
 
 void osc::LOGLPointShadowsTab::impl_on_draw_main_menu()
 {
-    m_Impl->on_draw_main_menu();
+    impl_->on_draw_main_menu();
 }
 
 void osc::LOGLPointShadowsTab::impl_on_draw()
 {
-    m_Impl->on_draw();
+    impl_->on_draw();
 }

@@ -16,7 +16,7 @@ namespace {
     TabRegistry const c_Tabs = []()
     {
         TabRegistry r;
-        RegisterDemoTabs(r);
+        register_demo_tabs(r);
         return r;
     }();
 

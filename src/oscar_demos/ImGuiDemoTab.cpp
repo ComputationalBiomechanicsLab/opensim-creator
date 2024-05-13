@@ -8,12 +8,12 @@ using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_TabStringID = "Demos/ImGui";
+    constexpr CStringView c_tab_string_id = "Demos/ImGui";
 }
 
 class osc::ImGuiDemoTab::Impl final : public StandardTabImpl {
 public:
-    Impl() : StandardTabImpl{c_TabStringID}
+    Impl() : StandardTabImpl{c_tab_string_id}
     {}
 
 private:
@@ -26,7 +26,7 @@ private:
 
 CStringView osc::ImGuiDemoTab::id()
 {
-    return c_TabStringID;
+    return c_tab_string_id;
 }
 
 osc::ImGuiDemoTab::ImGuiDemoTab(const ParentPtr<ITabHost>&) :

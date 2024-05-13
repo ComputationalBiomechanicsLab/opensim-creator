@@ -12,9 +12,9 @@ using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_TabStringID = "LearnOpenGL/Framebuffers";
+    constexpr CStringView c_tab_string_id = "LearnOpenGL/Framebuffers";
 
-    Mesh GeneratePlane()
+    Mesh generate_plane()
     {
         Mesh rv;
         rv.set_vertices({
@@ -39,7 +39,7 @@ namespace
         return rv;
     }
 
-    MouseCapturingCamera CreateSceneCamera()
+    MouseCapturingCamera create_scene_camera()
     {
         MouseCapturingCamera rv;
         rv.set_position({0.0f, 0.0f, 3.0f});
@@ -49,7 +49,7 @@ namespace
         return rv;
     }
 
-    Camera CreateScreenCamera()
+    Camera create_screen_camera()
     {
         Camera rv;
         rv.set_view_matrix_override(identity<Mat4>());
@@ -61,134 +61,130 @@ namespace
 class osc::LOGLFramebuffersTab::Impl final : public StandardTabImpl {
 public:
 
-    Impl() : StandardTabImpl{c_TabStringID}
+    Impl() : StandardTabImpl{c_tab_string_id}
     {}
 
 private:
     void impl_on_mount() final
     {
         App::upd().make_main_loop_polling();
-        m_SceneCamera.on_mount();
+        scene_camera_.on_mount();
     }
 
     void impl_on_unmount() final
     {
-        m_SceneCamera.on_unmount();
+        scene_camera_.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
-    bool impl_on_event(SDL_Event const& e) final
+    bool impl_on_event(const SDL_Event& e) final
     {
-        return m_SceneCamera.on_event(e);
+        return scene_camera_.on_event(e);
     }
 
     void impl_on_draw() final
     {
-        m_SceneCamera.on_draw();
+        scene_camera_.on_draw();
 
         // setup render texture
-        Rect viewportRect = ui::get_main_viewport_workspace_screen_rect();
-        Vec2 viewportRectDims = dimensions_of(viewportRect);
-        m_RenderTexture.set_dimensions(viewportRectDims);
-        m_RenderTexture.set_anti_aliasing_level(App::get().anti_aliasing_level());
+        const Rect viewport_rect = ui::get_main_viewport_workspace_screen_rect();
+        const Vec2 viewport_dimensions = dimensions_of(viewport_rect);
+        render_texture_.set_dimensions(viewport_dimensions);
+        render_texture_.set_anti_aliasing_level(App::get().anti_aliasing_level());
 
         // render scene
         {
             // cubes
-            m_SceneRenderMaterial.set_texture("uTexture1", m_ContainerTexture);
-            graphics::draw(m_CubeMesh, {.position = {-1.0f, 0.0f, -1.0f}}, m_SceneRenderMaterial, m_SceneCamera);
-            graphics::draw(m_CubeMesh, {.position = { 1.0f, 0.0f, -1.0f}}, m_SceneRenderMaterial, m_SceneCamera);
+            scene_render_material_.set_texture("uTexture1", container_texture_);
+            graphics::draw(cube_mesh_, {.position = {-1.0f, 0.0f, -1.0f}}, scene_render_material_, scene_camera_);
+            graphics::draw(cube_mesh_, {.position = { 1.0f, 0.0f, -1.0f}}, scene_render_material_, scene_camera_);
 
             // floor
-            m_SceneRenderMaterial.set_texture("uTexture1", m_MetalTexture);
-            graphics::draw(m_PlaneMesh, identity<Transform>(), m_SceneRenderMaterial, m_SceneCamera);
+            scene_render_material_.set_texture("uTexture1", metal_texture_);
+            graphics::draw(plane_mesh_, identity<Transform>(), scene_render_material_, scene_camera_);
         }
-        m_SceneCamera.render_to(m_RenderTexture);
+        scene_camera_.render_to(render_texture_);
 
         // render via a effect sampler
-        graphics::blit_to_screen(m_RenderTexture, viewportRect, m_ScreenMaterial);
+        graphics::blit_to_screen(render_texture_, viewport_rect, screen_material_);
 
         // auxiliary UI
-        m_LogViewer.on_draw();
-        m_PerfPanel.on_draw();
+        log_viewer_.on_draw();
+        perf_panel_.on_draw();
     }
 
-    ResourceLoader m_Loader = App::resource_loader();
+    ResourceLoader loader_ = App::resource_loader();
 
-    Material m_SceneRenderMaterial{Shader{
-        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Framebuffers/Blitter.vert"),
-        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Framebuffers/Blitter.frag"),
+    Material scene_render_material_{Shader{
+        loader_.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Framebuffers/Blitter.vert"),
+        loader_.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Framebuffers/Blitter.frag"),
     }};
 
-    MouseCapturingCamera m_SceneCamera = CreateSceneCamera();
+    MouseCapturingCamera scene_camera_ = create_scene_camera();
 
-    Texture2D m_ContainerTexture = load_texture2D_from_image(
-        m_Loader.open("oscar_learnopengl/textures/container.jpg"),
+    Texture2D container_texture_ = load_texture2D_from_image(
+        loader_.open("oscar_learnopengl/textures/container.jpg"),
         ColorSpace::sRGB
     );
-    Texture2D m_MetalTexture = load_texture2D_from_image(
-        m_Loader.open("oscar_learnopengl/textures/metal.png"),
+    Texture2D metal_texture_ = load_texture2D_from_image(
+        loader_.open("oscar_learnopengl/textures/metal.png"),
         ColorSpace::sRGB
     );
 
-    Mesh m_CubeMesh = BoxGeometry{};
-    Mesh m_PlaneMesh = GeneratePlane();
-    Mesh m_QuadMesh = PlaneGeometry{2.0f, 2.0f, 1, 1};
+    Mesh cube_mesh_ = BoxGeometry{};
+    Mesh plane_mesh_ = generate_plane();
+    Mesh quad_mesh_ = PlaneGeometry{2.0f, 2.0f, 1, 1};
 
-    RenderTexture m_RenderTexture;
-    Camera m_ScreenCamera = CreateScreenCamera();
-    Material m_ScreenMaterial{Shader{
-        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Framebuffers/Filter.vert"),
-        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Framebuffers/Filter.frag"),
+    RenderTexture render_texture_;
+    Camera screen_camera_ = create_screen_camera();
+    Material screen_material_{Shader{
+        loader_.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Framebuffers/Filter.vert"),
+        loader_.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Framebuffers/Filter.frag"),
     }};
 
-    LogViewerPanel m_LogViewer{"log"};
-    PerfPanel m_PerfPanel{"perf"};
+    LogViewerPanel log_viewer_{"log"};
+    PerfPanel perf_panel_{"perf"};
 };
 
 
-// public API
-
 CStringView osc::LOGLFramebuffersTab::id()
 {
-    return c_TabStringID;
+    return c_tab_string_id;
 }
 
-osc::LOGLFramebuffersTab::LOGLFramebuffersTab(ParentPtr<ITabHost> const&) :
-    m_Impl{std::make_unique<Impl>()}
-{
-}
-
+osc::LOGLFramebuffersTab::LOGLFramebuffersTab(const ParentPtr<ITabHost>&) :
+    impl_{std::make_unique<Impl>()}
+{}
 osc::LOGLFramebuffersTab::LOGLFramebuffersTab(LOGLFramebuffersTab&&) noexcept = default;
 osc::LOGLFramebuffersTab& osc::LOGLFramebuffersTab::operator=(LOGLFramebuffersTab&&) noexcept = default;
 osc::LOGLFramebuffersTab::~LOGLFramebuffersTab() noexcept = default;
 
 UID osc::LOGLFramebuffersTab::impl_get_id() const
 {
-    return m_Impl->id();
+    return impl_->id();
 }
 
 CStringView osc::LOGLFramebuffersTab::impl_get_name() const
 {
-    return m_Impl->name();
+    return impl_->name();
 }
 
 void osc::LOGLFramebuffersTab::impl_on_mount()
 {
-    m_Impl->on_mount();
+    impl_->on_mount();
 }
 
 void osc::LOGLFramebuffersTab::impl_on_unmount()
 {
-    m_Impl->on_unmount();
+    impl_->on_unmount();
 }
 
-bool osc::LOGLFramebuffersTab::impl_on_event(SDL_Event const& e)
+bool osc::LOGLFramebuffersTab::impl_on_event(const SDL_Event& e)
 {
-    return m_Impl->on_event(e);
+    return impl_->on_event(e);
 }
 
 void osc::LOGLFramebuffersTab::impl_on_draw()
 {
-    m_Impl->on_draw();
+    impl_->on_draw();
 }

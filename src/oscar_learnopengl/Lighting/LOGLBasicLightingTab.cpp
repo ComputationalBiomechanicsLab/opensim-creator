@@ -10,9 +10,9 @@ using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_TabStringID = "LearnOpenGL/BasicLighting";
+    constexpr CStringView c_tab_string_id = "LearnOpenGL/BasicLighting";
 
-    MouseCapturingCamera CreateCameraThatMatchesLearnOpenGL()
+    MouseCapturingCamera create_camera_that_matches_learnopengl()
     {
         MouseCapturingCamera rv;
         rv.set_position({0.0f, 0.0f, 3.0f});
@@ -26,132 +26,128 @@ namespace
 
 class osc::LOGLBasicLightingTab::Impl final : public StandardTabImpl {
 public:
-    Impl() : StandardTabImpl{c_TabStringID}
+    Impl() : StandardTabImpl{c_tab_string_id}
     {}
 
 private:
     void impl_on_mount() final
     {
         App::upd().make_main_loop_polling();
-        m_Camera.on_mount();
+        camera_.on_mount();
     }
 
     void impl_on_unmount() final
     {
-        m_Camera.on_unmount();
+        camera_.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
-    bool impl_on_event(SDL_Event const& e) final
+    bool impl_on_event(const SDL_Event& e) final
     {
-        return m_Camera.on_event(e);
+        return camera_.on_event(e);
     }
 
     void impl_on_draw() final
     {
-        m_Camera.on_draw();
+        camera_.on_draw();
 
         // clear screen and ensure camera has correct pixel rect
-        m_Camera.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
+        camera_.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
 
         // draw cube
-        m_LightingMaterial.set_color("uObjectColor", m_ObjectColor);
-        m_LightingMaterial.set_color("uLightColor", m_LightColor);
-        m_LightingMaterial.set_vec3("uLightPos", m_LightTransform.position);
-        m_LightingMaterial.set_vec3("uViewPos", m_Camera.position());
-        m_LightingMaterial.set_float("uAmbientStrength", m_AmbientStrength);
-        m_LightingMaterial.set_float("uDiffuseStrength", m_DiffuseStrength);
-        m_LightingMaterial.set_float("uSpecularStrength", m_SpecularStrength);
-        graphics::draw(m_CubeMesh, identity<Transform>(), m_LightingMaterial, m_Camera);
+        lighting_material_.set_color("uObjectColor", object_color_);
+        lighting_material_.set_color("uLightColor", light_color_);
+        lighting_material_.set_vec3("uLightPos", light_transform_.position);
+        lighting_material_.set_vec3("uViewPos", camera_.position());
+        lighting_material_.set_float("uAmbientStrength", ambient_strength_);
+        lighting_material_.set_float("uDiffuseStrength", diffuse_strength_);
+        lighting_material_.set_float("uSpecularStrength", specular_strength_);
+        graphics::draw(cube_mesh_, identity<Transform>(), lighting_material_, camera_);
 
         // draw lamp
-        m_LightCubeMaterial.set_color("uLightColor", m_LightColor);
-        graphics::draw(m_CubeMesh, m_LightTransform, m_LightCubeMaterial, m_Camera);
+        light_cube_material_.set_color("uLightColor", light_color_);
+        graphics::draw(cube_mesh_, light_transform_, light_cube_material_, camera_);
 
         // render to output (window)
-        m_Camera.render_to_screen();
+        camera_.render_to_screen();
 
         // render auxiliary UI
         ui::begin_panel("controls");
-        ui::draw_vec3_input("light pos", m_LightTransform.position);
-        ui::draw_float_input("ambient strength", &m_AmbientStrength);
-        ui::draw_float_input("diffuse strength", &m_DiffuseStrength);
-        ui::draw_float_input("specular strength", &m_SpecularStrength);
-        ui::draw_rgb_color_editor("object color", m_ObjectColor);
-        ui::draw_rgb_color_editor("light color", m_LightColor);
+        ui::draw_vec3_input("light pos", light_transform_.position);
+        ui::draw_float_input("ambient strength", &ambient_strength_);
+        ui::draw_float_input("diffuse strength", &diffuse_strength_);
+        ui::draw_float_input("specular strength", &specular_strength_);
+        ui::draw_rgb_color_editor("object color", object_color_);
+        ui::draw_rgb_color_editor("light color", light_color_);
         ui::end_panel();
     }
 
-    ResourceLoader m_Loader = App::resource_loader();
+    ResourceLoader loader_ = App::resource_loader();
 
-    Material m_LightingMaterial{Shader{
-        m_Loader.slurp("oscar_learnopengl/shaders/Lighting/BasicLighting.vert"),
-        m_Loader.slurp("oscar_learnopengl/shaders/Lighting/BasicLighting.frag"),
+    Material lighting_material_{Shader{
+        loader_.slurp("oscar_learnopengl/shaders/Lighting/BasicLighting.vert"),
+        loader_.slurp("oscar_learnopengl/shaders/Lighting/BasicLighting.frag"),
     }};
 
-    Material m_LightCubeMaterial{Shader{
-        m_Loader.slurp("oscar_learnopengl/shaders/LightCube.vert"),
-        m_Loader.slurp("oscar_learnopengl/shaders/LightCube.frag"),
+    Material light_cube_material_{Shader{
+        loader_.slurp("oscar_learnopengl/shaders/LightCube.vert"),
+        loader_.slurp("oscar_learnopengl/shaders/LightCube.frag"),
     }};
 
-    Mesh m_CubeMesh = BoxGeometry{};
+    Mesh cube_mesh_ = BoxGeometry{};
 
-    MouseCapturingCamera m_Camera = CreateCameraThatMatchesLearnOpenGL();
+    MouseCapturingCamera camera_ = create_camera_that_matches_learnopengl();
 
-    Transform m_LightTransform = {
+    Transform light_transform_ = {
         .scale = Vec3{0.2f},
         .position = {1.2f, 1.0f, 2.0f},
     };
-    Color m_ObjectColor = {1.0f, 0.5f, 0.31f, 1.0f};
-    Color m_LightColor = Color::white();
-    float m_AmbientStrength = 0.01f;
-    float m_DiffuseStrength = 0.6f;
-    float m_SpecularStrength = 1.0f;
+    Color object_color_ = {1.0f, 0.5f, 0.31f, 1.0f};
+    Color light_color_ = Color::white();
+    float ambient_strength_ = 0.01f;
+    float diffuse_strength_ = 0.6f;
+    float specular_strength_ = 1.0f;
 };
 
 
-// public API
-
 CStringView osc::LOGLBasicLightingTab::id()
 {
-    return c_TabStringID;
+    return c_tab_string_id;
 }
 
-osc::LOGLBasicLightingTab::LOGLBasicLightingTab(ParentPtr<ITabHost> const&) :
-    m_Impl{std::make_unique<Impl>()}
-{
-}
-
+osc::LOGLBasicLightingTab::LOGLBasicLightingTab(const ParentPtr<ITabHost>&) :
+    impl_{std::make_unique<Impl>()}
+{}
 osc::LOGLBasicLightingTab::LOGLBasicLightingTab(LOGLBasicLightingTab&&) noexcept = default;
 osc::LOGLBasicLightingTab& osc::LOGLBasicLightingTab::operator=(LOGLBasicLightingTab&&) noexcept = default;
 osc::LOGLBasicLightingTab::~LOGLBasicLightingTab() noexcept = default;
 
 UID osc::LOGLBasicLightingTab::impl_get_id() const
 {
-    return m_Impl->id();
+    return impl_->id();
 }
 
 CStringView osc::LOGLBasicLightingTab::impl_get_name() const
 {
-    return m_Impl->name();
+    return impl_->name();
 }
 
 void osc::LOGLBasicLightingTab::impl_on_mount()
 {
-    m_Impl->on_mount();
+    impl_->on_mount();
 }
 
 void osc::LOGLBasicLightingTab::impl_on_unmount()
 {
-    m_Impl->on_unmount();
+    impl_->on_unmount();
 }
 
-bool osc::LOGLBasicLightingTab::impl_on_event(SDL_Event const& e)
+bool osc::LOGLBasicLightingTab::impl_on_event(const SDL_Event& e)
 {
-    return m_Impl->on_event(e);
+    return impl_->on_event(e);
 }
 
 void osc::LOGLBasicLightingTab::impl_on_draw()
 {
-    m_Impl->on_draw();
+    impl_->on_draw();
 }

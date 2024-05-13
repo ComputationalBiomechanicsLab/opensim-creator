@@ -15,10 +15,10 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit LOGLHelloTriangleTab(ParentPtr<ITabHost> const&);
-        LOGLHelloTriangleTab(LOGLHelloTriangleTab const&) = delete;
+        explicit LOGLHelloTriangleTab(const ParentPtr<ITabHost>&);
+        LOGLHelloTriangleTab(const LOGLHelloTriangleTab&) = delete;
         LOGLHelloTriangleTab(LOGLHelloTriangleTab&&) noexcept;
-        LOGLHelloTriangleTab& operator=(LOGLHelloTriangleTab const&) = delete;
+        LOGLHelloTriangleTab& operator=(const LOGLHelloTriangleTab&) = delete;
         LOGLHelloTriangleTab& operator=(LOGLHelloTriangleTab&&) noexcept;
         ~LOGLHelloTriangleTab() noexcept override;
 
@@ -28,6 +28,6 @@ namespace osc
         void impl_on_draw() final;
 
         class Impl;
-        std::unique_ptr<Impl> m_Impl;
+        std::unique_ptr<Impl> impl_;
     };
 }

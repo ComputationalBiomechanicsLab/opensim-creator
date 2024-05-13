@@ -15,10 +15,10 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit SubMeshTab(ParentPtr<ITabHost> const&);
-        SubMeshTab(SubMeshTab const&) = delete;
+        explicit SubMeshTab(const ParentPtr<ITabHost>&);
+        SubMeshTab(const SubMeshTab&) = delete;
         SubMeshTab(SubMeshTab&&) noexcept;
-        SubMeshTab& operator=(SubMeshTab const&) = delete;
+        SubMeshTab& operator=(const SubMeshTab&) = delete;
         SubMeshTab& operator=(SubMeshTab&&) noexcept;
         ~SubMeshTab() noexcept override;
 
@@ -28,6 +28,6 @@ namespace osc
         void impl_on_draw() final;
 
         class Impl;
-        std::unique_ptr<Impl> m_Impl;
+        std::unique_ptr<Impl> impl_;
     };
 }

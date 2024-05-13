@@ -15,98 +15,96 @@ namespace rgs = std::ranges;
 
 namespace
 {
-    constexpr CStringView c_TabStringID = "Demos/SubMeshes";
+    constexpr CStringView c_tab_string_id = "Demos/SubMeshes";
 
     template<rgs::range T, rgs::range U>
     requires std::same_as<typename T::value_type, typename U::value_type>
-    void Append(T& out, U els)
+    void append(T& out, U els)
     {
         out.insert(out.end(), els.begin(), els.end());
     }
 
-    Mesh GenerateMeshWithSubMeshes()
+    Mesh generate_mesh_with_submeshes()
     {
-        auto const meshes = std::to_array<Mesh>({
+        const auto meshes = std::to_array<Mesh>({
             BoxGeometry{2.0f, 2.0f, 2.0f},
             SphereGeometry{1.0f, 16, 16},
             CircleGeometry{1.0f, 32},
         });
 
-        std::vector<Vec3> allVerts;
-        std::vector<Vec3> allNormals;
-        std::vector<uint32_t> allIndices;
-        std::vector<SubMeshDescriptor> allDescriptors;
+        std::vector<Vec3> all_verts;
+        std::vector<Vec3> all_normals;
+        std::vector<uint32_t> all_indices;
+        std::vector<SubMeshDescriptor> all_descriptors;
 
-        for (auto const& mesh : meshes) {
-            size_t firstVert = allVerts.size();
-            Append(allVerts, mesh.vertices());
-            Append(allNormals, mesh.normals());
+        for (const auto& mesh : meshes) {
+            const size_t first_vert = all_verts.size();
+            append(all_verts, mesh.vertices());
+            append(all_normals, mesh.normals());
 
-            size_t firstIndex = allIndices.size();
+            const size_t first_index = all_indices.size();
             for (auto index : mesh.indices()) {
-                allIndices.push_back(static_cast<uint32_t>(firstVert + index));
+                all_indices.push_back(static_cast<uint32_t>(first_vert + index));
             }
-            size_t nIndices = allIndices.size() - firstIndex;
+            const size_t num_indices = all_indices.size() - first_index;
 
-            allDescriptors.emplace_back(firstIndex, nIndices, mesh.topology());
+            all_descriptors.emplace_back(first_index, num_indices, mesh.topology());
         }
 
         Mesh rv;
-        rv.set_vertices(allVerts);
-        rv.set_normals(allNormals);
-        rv.set_indices(allIndices);
-        rv.set_submesh_descriptors(allDescriptors);
+        rv.set_vertices(all_verts);
+        rv.set_normals(all_normals);
+        rv.set_indices(all_indices);
+        rv.set_submesh_descriptors(all_descriptors);
         return rv;
     }
 }
 
 class osc::SubMeshTab::Impl final : public StandardTabImpl {
 public:
-    Impl() : StandardTabImpl{c_TabStringID}
+    Impl() : StandardTabImpl{c_tab_string_id}
     {
-        m_Camera.set_background_color(Color::white());
-        m_Camera.set_near_clipping_plane(0.1f);
-        m_Camera.set_far_clipping_plane(5.0f);
-        m_Camera.set_position({0.0f, 0.0f, -2.5f});
-        m_Camera.set_direction({0.0f, 0.0f, 1.0f});
+        camera_.set_background_color(Color::white());
+        camera_.set_near_clipping_plane(0.1f);
+        camera_.set_far_clipping_plane(5.0f);
+        camera_.set_position({0.0f, 0.0f, -2.5f});
+        camera_.set_direction({0.0f, 0.0f, 1.0f});
 
-        m_Material.set_color(Color::red());
-        m_Material.set_wireframe(true);
+        material_.set_color(Color::red());
+        material_.set_wireframe(true);
     }
 
 private:
     void impl_on_draw() final
     {
-        for (size_t subMeshIndex = 0; subMeshIndex < m_MeshWithSubmeshes.num_submesh_descriptors(); ++subMeshIndex) {
+        for (size_t submesh_index = 0; submesh_index < mesh_with_submeshes_.num_submesh_descriptors(); ++submesh_index) {
             graphics::draw(
-                m_MeshWithSubmeshes,
+                mesh_with_submeshes_,
                 identity<Transform>(),
-                m_Material,
-                m_Camera,
+                material_,
+                camera_,
                 std::nullopt,
-                subMeshIndex
+                submesh_index
             );
         }
-        m_Camera.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
-        m_Camera.render_to_screen();
+        camera_.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
+        camera_.render_to_screen();
     }
 
-    ResourceLoader m_Loader = App::resource_loader();
-    Camera m_Camera;
-    MeshBasicMaterial m_Material;
-    Mesh m_MeshWithSubmeshes = GenerateMeshWithSubMeshes();
+    ResourceLoader loader_ = App::resource_loader();
+    Camera camera_;
+    MeshBasicMaterial material_;
+    Mesh mesh_with_submeshes_ = generate_mesh_with_submeshes();
 };
 
 
-// public API
-
 CStringView osc::SubMeshTab::id()
 {
-    return c_TabStringID;
+    return c_tab_string_id;
 }
 
-osc::SubMeshTab::SubMeshTab(ParentPtr<ITabHost> const&) :
-    m_Impl{std::make_unique<Impl>()}
+osc::SubMeshTab::SubMeshTab(const ParentPtr<ITabHost>&) :
+    impl_{std::make_unique<Impl>()}
 {}
 
 osc::SubMeshTab::SubMeshTab(SubMeshTab&&) noexcept = default;
@@ -115,15 +113,15 @@ osc::SubMeshTab::~SubMeshTab() noexcept = default;
 
 UID osc::SubMeshTab::impl_get_id() const
 {
-    return m_Impl->id();
+    return impl_->id();
 }
 
 CStringView osc::SubMeshTab::impl_get_name() const
 {
-    return m_Impl->name();
+    return impl_->name();
 }
 
 void osc::SubMeshTab::impl_on_draw()
 {
-    m_Impl->on_draw();
+    impl_->on_draw();
 }

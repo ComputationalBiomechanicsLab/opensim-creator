@@ -10,12 +10,12 @@ using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_TabStringID = "Demos/ImPlot";
+    constexpr CStringView c_tab_string_id = "Demos/ImPlot";
 }
 
 class osc::ImPlotDemoTab::Impl final : public StandardTabImpl {
 public:
-    Impl() : StandardTabImpl{c_TabStringID}
+    Impl() : StandardTabImpl{c_tab_string_id}
     {
         // ImPlot::CreateContext();  // presumed to already done by the screen
     }
@@ -28,15 +28,13 @@ private:
 };
 
 
-// public API
-
 CStringView osc::ImPlotDemoTab::id()
 {
-    return c_TabStringID;
+    return c_tab_string_id;
 }
 
-osc::ImPlotDemoTab::ImPlotDemoTab(ParentPtr<ITabHost> const&) :
-    m_Impl{std::make_unique<Impl>()}
+osc::ImPlotDemoTab::ImPlotDemoTab(const ParentPtr<ITabHost>&) :
+    impl_{std::make_unique<Impl>()}
 {}
 
 osc::ImPlotDemoTab::ImPlotDemoTab(ImPlotDemoTab&&) noexcept = default;
@@ -45,15 +43,15 @@ osc::ImPlotDemoTab::~ImPlotDemoTab() noexcept = default;
 
 UID osc::ImPlotDemoTab::impl_get_id() const
 {
-    return m_Impl->id();
+    return impl_->id();
 }
 
 CStringView osc::ImPlotDemoTab::impl_get_name() const
 {
-    return m_Impl->name();
+    return impl_->name();
 }
 
 void osc::ImPlotDemoTab::impl_on_draw()
 {
-    m_Impl->on_draw();
+    impl_->on_draw();
 }

@@ -10,9 +10,9 @@ using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_TabStringID = "LearnOpenGL/HelloTriangle";
+    constexpr CStringView c_tab_string_id = "LearnOpenGL/HelloTriangle";
 
-    Mesh GenerateTriangleMesh()
+    Mesh generate_triangle_mesh()
     {
         Mesh m;
         m.set_vertices({
@@ -29,7 +29,7 @@ namespace
         return m;
     }
 
-    Camera CreateSceneCamera()
+    Camera create_scene_camera()
     {
         Camera rv;
         rv.set_view_matrix_override(identity<Mat4>());
@@ -37,11 +37,11 @@ namespace
         return rv;
     }
 
-    Material CreateTriangleMaterial(IResourceLoader& rl)
+    Material create_triangle_material(IResourceLoader& loader)
     {
         return Material{Shader{
-            rl.slurp("oscar_learnopengl/shaders/GettingStarted/HelloTriangle.vert"),
-            rl.slurp("oscar_learnopengl/shaders/GettingStarted/HelloTriangle.frag"),
+            loader.slurp("oscar_learnopengl/shaders/GettingStarted/HelloTriangle.vert"),
+            loader.slurp("oscar_learnopengl/shaders/GettingStarted/HelloTriangle.frag"),
         }};
     }
 }
@@ -49,34 +49,32 @@ namespace
 class osc::LOGLHelloTriangleTab::Impl final : public StandardTabImpl {
 public:
 
-    Impl() : StandardTabImpl{c_TabStringID}
+    Impl() : StandardTabImpl{c_tab_string_id}
     {}
 
 private:
     void impl_on_draw() final
     {
-        graphics::draw(m_TriangleMesh, identity<Transform>(), m_Material, m_Camera);
+        graphics::draw(triangle_mesh_, identity<Transform>(), material_, camera_);
 
-        m_Camera.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
-        m_Camera.render_to_screen();
+        camera_.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
+        camera_.render_to_screen();
     }
 
-    ResourceLoader m_Loader = App::resource_loader();
-    Material m_Material = CreateTriangleMaterial(m_Loader);
-    Mesh m_TriangleMesh = GenerateTriangleMesh();
-    Camera m_Camera = CreateSceneCamera();
+    ResourceLoader loader_ = App::resource_loader();
+    Material material_ = create_triangle_material(loader_);
+    Mesh triangle_mesh_ = generate_triangle_mesh();
+    Camera camera_ = create_scene_camera();
 };
 
 
-// public API
-
 CStringView osc::LOGLHelloTriangleTab::id()
 {
-    return c_TabStringID;
+    return c_tab_string_id;
 }
 
-osc::LOGLHelloTriangleTab::LOGLHelloTriangleTab(ParentPtr<ITabHost> const&) :
-    m_Impl{std::make_unique<Impl>()}
+osc::LOGLHelloTriangleTab::LOGLHelloTriangleTab(const ParentPtr<ITabHost>&) :
+    impl_{std::make_unique<Impl>()}
 {
 }
 
@@ -86,15 +84,15 @@ osc::LOGLHelloTriangleTab::~LOGLHelloTriangleTab() noexcept = default;
 
 UID osc::LOGLHelloTriangleTab::impl_get_id() const
 {
-    return m_Impl->id();
+    return impl_->id();
 }
 
 CStringView osc::LOGLHelloTriangleTab::impl_get_name() const
 {
-    return m_Impl->name();
+    return impl_->name();
 }
 
 void osc::LOGLHelloTriangleTab::impl_on_draw()
 {
-    m_Impl->on_draw();
+    impl_->on_draw();
 }

@@ -17,7 +17,7 @@ namespace rgs = std::ranges;
 
 namespace
 {
-    constexpr CStringView c_TabStringID = "LearnOpenGL/CSM";
+    constexpr CStringView c_tab_string_id = "LearnOpenGL/CSM";
 
     struct TransformedMesh {
         Mesh mesh;
@@ -25,9 +25,9 @@ namespace
     };
 
     // returns random 3D decorations for the scene
-    std::vector<TransformedMesh> generateDecorations()
+    std::vector<TransformedMesh> generate_decorations()
     {
-        auto const possibleGeometries = std::to_array<Mesh>({
+        const auto possible_geometries = std::to_array<Mesh>({
             SphereGeometry{},
             TorusKnotGeometry{},
             IcosahedronGeometry{},
@@ -36,25 +36,25 @@ namespace
 
         auto rng = std::default_random_engine{std::random_device{}()};
         auto dist = std::normal_distribution{0.1f, 0.2f};
-        AABB const gridBounds = {{-5.0f,  0.0f, -5.0f}, {5.0f, 0.0f, 5.0f}};
-        Vec3 const gridDims = dimensions_of(gridBounds);
-        Vec2uz const gridCells = {10, 10};
+        const AABB grid_bounds = {{-5.0f,  0.0f, -5.0f}, {5.0f, 0.0f, 5.0f}};
+        const Vec3 grid_dimensions = dimensions_of(grid_bounds);
+        const Vec2uz grid_cells = {10, 10};
 
         std::vector<TransformedMesh> rv;
-        rv.reserve(gridCells.x * gridCells.y);
+        rv.reserve(grid_cells.x * grid_cells.y);
 
-        for (size_t x = 0; x < gridCells.x; ++x) {
-            for (size_t y = 0; y < gridCells.y; ++y) {
+        for (size_t x = 0; x < grid_cells.x; ++x) {
+            for (size_t y = 0; y < grid_cells.y; ++y) {
 
-                Vec3 const cellPos = gridBounds.min + gridDims * (Vec3{x, 0.0f, y} / Vec3{gridCells.x - 1_uz, 1, gridCells.y - 1_uz});
+                const Vec3 cell_pos = grid_bounds.min + grid_dimensions * (Vec3{x, 0.0f, y} / Vec3{grid_cells.x - 1_uz, 1, grid_cells.y - 1_uz});
                 Mesh mesh;
-                rgs::sample(possibleGeometries, &mesh, 1, rng);
+                rgs::sample(possible_geometries, &mesh, 1, rng);
 
                 rv.push_back(TransformedMesh{
                     .mesh = mesh,
                     .transform = {
                         .scale = Vec3{abs(dist(rng))},
-                        .position = cellPos,
+                        .position = cell_pos,
                     }
                 });
             }
@@ -77,10 +77,10 @@ namespace
     };
 
     // returns orthogonal projection information for each cascade
-    std::vector<OrthogonalProjectionParameters> CalcOrthoProjections(
-        Camera const& camera,
-        float aspectRatio,
-        UnitVec3 lightDirection)
+    std::vector<OrthogonalProjectionParameters> calc_ortho_projections(
+        const Camera& camera,
+        float aspect_ratio,
+        UnitVec3 light_direction)
     {
         // most of the maths/logic here was ported from an excellently-written ogldev tutorial:
         //
@@ -89,68 +89,68 @@ namespace
         // normalized means that 0.0 == near and 1.0 == far
         //
         // these planes are paired to figure out the near/far planes of each CSM's frustum
-        constexpr auto normalizedCascadePlanes = std::to_array({ 0.0f, 1.0f/3.0f, 2.0f/3.0f, 3.0f/3.0f });
+        constexpr auto normalized_cascade_planes = std::to_array({ 0.0f, 1.0f/3.0f, 2.0f/3.0f, 3.0f/3.0f });
 
         // precompure transforms
-        Mat4 const model2light = look_at({0.0f, 0.0f, 0.0f}, Vec3{lightDirection}, {0.0f, 1.0f, 0.0f});
-        Mat4 const view2model = inverse(camera.view_matrix());
-        Mat4 const view2light = model2light * view2model;
+        const Mat4 model2light = look_at({0.0f, 0.0f, 0.0f}, Vec3{light_direction}, {0.0f, 1.0f, 0.0f});
+        const Mat4 view2model = inverse(camera.view_matrix());
+        const Mat4 view2light = model2light * view2model;
 
         // precompute necessary values to figure out the corners of the view frustum
-        float const viewZNear = camera.near_clipping_plane();
-        float const viewZFar = camera.far_clipping_plane();
-        Radians const viewVFOV = camera.vertical_fov();
-        Radians const viewHFOV = vertial_to_horizontal_fov(viewVFOV, aspectRatio);
-        float const viewTanHalfVFOV = tan(0.5f * viewVFOV);
-        float const viewTanHalfHFOV = tan(0.5f * viewHFOV);
+        const float view_znear = camera.near_clipping_plane();
+        const float view_zfar = camera.far_clipping_plane();
+        const Radians view_vfov = camera.vertical_fov();
+        const Radians view_hfov = vertial_to_horizontal_fov(view_vfov, aspect_ratio);
+        const float view_tan_half_vfov = tan(0.5f * view_vfov);
+        const float view_tan_half_hfov = tan(0.5f * view_hfov);
 
         // calculate `OrthogonalProjectionParameters` for each cascade
         std::vector<OrthogonalProjectionParameters> rv;
-        rv.reserve(normalizedCascadePlanes.size() - 1);
-        for (size_t i = 0; i < normalizedCascadePlanes.size()-1; ++i) {
-            float const viewCascadeZNear = lerp(viewZNear, viewZFar, normalizedCascadePlanes[i]);
-            float const viewCascadeZFar = lerp(viewZNear, viewZFar, normalizedCascadePlanes[i+1]);
+        rv.reserve(normalized_cascade_planes.size() - 1);
+        for (size_t i = 0; i < normalized_cascade_planes.size()-1; ++i) {
+            const float view_cascade_znear = lerp(view_znear, view_zfar, normalized_cascade_planes[i]);
+            const float view_cascade_zfar = lerp(view_znear, view_zfar, normalized_cascade_planes[i+1]);
 
             // imagine a triangle with a point where the viewer is (0,0,0 in view-space) and another
             // point thats (e.g.) znear away from the viewer: the FOV dictates the angle of the corner
             // that originates from the viewer
-            float const viewCascadeXNear = viewCascadeZNear * viewTanHalfHFOV;
-            float const viewCascadeXFar  = viewCascadeZFar  * viewTanHalfHFOV;
-            float const viewCascadeYNear = viewCascadeZNear * viewTanHalfVFOV;
-            float const viewCascadeYFar  = viewCascadeZFar  * viewTanHalfVFOV;
+            const float view_cascade_xnear = view_cascade_znear * view_tan_half_hfov;
+            const float view_cascade_xfar  = view_cascade_zfar  * view_tan_half_hfov;
+            const float view_cascade_ynear = view_cascade_znear * view_tan_half_vfov;
+            const float view_cascade_yfar  = view_cascade_zfar  * view_tan_half_vfov;
 
-            FrustumCorners const viewFrustumCorners = {
+            const FrustumCorners view_frustum_corners = {
                 // near face
-                Vec3{ viewCascadeXNear,  viewCascadeYNear, viewCascadeZNear},  // top-right
-                Vec3{-viewCascadeXNear,  viewCascadeYNear, viewCascadeZNear},  // top-left
-                Vec3{ viewCascadeXNear, -viewCascadeYNear, viewCascadeZNear},  // bottom-right
-                Vec3{-viewCascadeXNear, -viewCascadeYNear, viewCascadeZNear},  // bottom-left
+                Vec3{ view_cascade_xnear,  view_cascade_ynear, view_cascade_znear},  // top-right
+                Vec3{-view_cascade_xnear,  view_cascade_ynear, view_cascade_znear},  // top-left
+                Vec3{ view_cascade_xnear, -view_cascade_ynear, view_cascade_znear},  // bottom-right
+                Vec3{-view_cascade_xnear, -view_cascade_ynear, view_cascade_znear},  // bottom-left
 
                 // far face
-                Vec3{ viewCascadeXFar,  viewCascadeYFar, viewCascadeZFar},     // top-right
-                Vec3{-viewCascadeXFar,  viewCascadeYFar, viewCascadeZFar},     // top-left
-                Vec3{ viewCascadeXFar, -viewCascadeYFar, viewCascadeZFar},     // bottom-right
-                Vec3{-viewCascadeXFar, -viewCascadeYFar, viewCascadeZFar},     // bottom-left
+                Vec3{ view_cascade_xfar,  view_cascade_yfar, view_cascade_zfar},     // top-right
+                Vec3{-view_cascade_xfar,  view_cascade_yfar, view_cascade_zfar},     // top-left
+                Vec3{ view_cascade_xfar, -view_cascade_yfar, view_cascade_zfar},     // bottom-right
+                Vec3{-view_cascade_xfar, -view_cascade_yfar, view_cascade_zfar},     // bottom-left
             };
 
             // compute the bounds in light-space by projecting each corner into light-space and min-maxing
-            Vec3 lightBoundsMin = transform_point(view2light, viewFrustumCorners.front());
-            Vec3 lightBoundsMax = lightBoundsMin;
-            for (size_t corner = 1; corner < viewFrustumCorners.size(); ++corner) {
-                Vec3 const lightCorner = transform_point(view2light, viewFrustumCorners[corner]);
-                lightBoundsMin = elementwise_min(lightBoundsMin, lightCorner);
-                lightBoundsMax = elementwise_max(lightBoundsMax, lightCorner);
+            Vec3 light_bounds_min = transform_point(view2light, view_frustum_corners.front());
+            Vec3 light_bounds_max = light_bounds_min;
+            for (size_t corner = 1; corner < view_frustum_corners.size(); ++corner) {
+                const Vec3 lightCorner = transform_point(view2light, view_frustum_corners[corner]);
+                light_bounds_min = elementwise_min(light_bounds_min, lightCorner);
+                light_bounds_max = elementwise_max(light_bounds_max, lightCorner);
             }
 
             // then use those bounds to compure the orthogonal projection parameters of
             // the directional light
             rv.push_back(OrthogonalProjectionParameters{
-                .r = lightBoundsMax.x,
-                .l = lightBoundsMin.x,
-                .b = lightBoundsMin.y,
-                .t = lightBoundsMax.y,
-                .f = lightBoundsMax.z,
-                .n = lightBoundsMin.z,
+                .r = light_bounds_max.x,
+                .l = light_bounds_min.x,
+                .b = light_bounds_min.y,
+                .t = light_bounds_max.y,
+                .f = light_bounds_max.z,
+                .n = light_bounds_min.z,
             });
         }
         return rv;
@@ -159,13 +159,13 @@ namespace
 
 class osc::LOGLCSMTab::Impl final : public StandardTabImpl {
 public:
-    Impl() : StandardTabImpl{c_TabStringID}
+    Impl() : StandardTabImpl{c_tab_string_id}
     {
-        m_UserCamera.set_near_clipping_plane(0.1f);
-        m_UserCamera.set_far_clipping_plane(100.0f);
-        m_Material.set_light_position(Vec3{5.0f});
-        m_Material.set_diffuse_color(Color::orange());
-        m_Decorations.push_back(TransformedMesh{
+        user_camera_.set_near_clipping_plane(0.1f);
+        user_camera_.set_far_clipping_plane(100.0f);
+        material_.set_light_position(Vec3{5.0f});
+        material_.set_diffuse_color(Color::orange());
+        decorations_.push_back(TransformedMesh{
             .mesh = PlaneGeometry{},
             .transform = {
                 .scale = Vec3{10.0f, 10.0f, 1.0f},
@@ -179,86 +179,82 @@ private:
     void impl_on_mount() final
     {
         App::upd().make_main_loop_polling();
-        m_UserCamera.on_mount();
+        user_camera_.on_mount();
     }
 
     void impl_on_unmount() final
     {
-        m_UserCamera.on_unmount();
+        user_camera_.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
-    bool impl_on_event(SDL_Event const& e) final
+    bool impl_on_event(const SDL_Event& e) final
     {
-        return m_UserCamera.on_event(e);
+        return user_camera_.on_event(e);
     }
 
     void impl_on_draw() final
     {
-        m_UserCamera.on_draw();  // update from inputs etc.
-        m_Material.set_viewer_position(m_UserCamera.position());
+        user_camera_.on_draw();  // update from inputs etc.
+        material_.set_viewer_position(user_camera_.position());
 
-        for (auto const& decoration : m_Decorations) {
-            graphics::draw(decoration.mesh, decoration.transform, m_Material, m_UserCamera);
+        for (const auto& decoration : decorations_) {
+            graphics::draw(decoration.mesh, decoration.transform, material_, user_camera_);
         }
 
-        m_UserCamera.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
-        m_UserCamera.render_to_screen();
+        user_camera_.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
+        user_camera_.render_to_screen();
     }
 
-    void drawShadowmaps()
+    void draw_shadowmaps()
     {
-        CalcOrthoProjections(m_UserCamera, 1.0f, UnitVec3{0.0f, -1.0f, 0.0f});  // TODO
+        calc_ortho_projections(user_camera_, 1.0f, UnitVec3{0.0f, -1.0f, 0.0f});  // TODO
     }
 
-    MouseCapturingCamera m_UserCamera;
-    std::vector<TransformedMesh> m_Decorations = generateDecorations();
-    MeshPhongMaterial m_Material;
+    MouseCapturingCamera user_camera_;
+    std::vector<TransformedMesh> decorations_ = generate_decorations();
+    MeshPhongMaterial material_;
 };
 
 
-// public API
-
 osc::CStringView osc::LOGLCSMTab::id()
 {
-    return c_TabStringID;
+    return c_tab_string_id;
 }
 
-osc::LOGLCSMTab::LOGLCSMTab(ParentPtr<ITabHost> const&) :
-    m_Impl{std::make_unique<Impl>()}
-{
-}
-
+osc::LOGLCSMTab::LOGLCSMTab(const ParentPtr<ITabHost>&) :
+    impl_{std::make_unique<Impl>()}
+{}
 osc::LOGLCSMTab::LOGLCSMTab(LOGLCSMTab&&) noexcept = default;
 osc::LOGLCSMTab& osc::LOGLCSMTab::operator=(LOGLCSMTab&&) noexcept = default;
 osc::LOGLCSMTab::~LOGLCSMTab() noexcept = default;
 
 UID osc::LOGLCSMTab::impl_get_id() const
 {
-    return m_Impl->id();
+    return impl_->id();
 }
 
 CStringView osc::LOGLCSMTab::impl_get_name() const
 {
-    return m_Impl->name();
+    return impl_->name();
 }
 
 void osc::LOGLCSMTab::impl_on_mount()
 {
-    m_Impl->on_mount();
+    impl_->on_mount();
 }
 
 void osc::LOGLCSMTab::impl_on_unmount()
 {
-    m_Impl->on_unmount();
+    impl_->on_unmount();
 }
 
-bool osc::LOGLCSMTab::impl_on_event(SDL_Event const& e)
+bool osc::LOGLCSMTab::impl_on_event(const SDL_Event& e)
 {
-    return m_Impl->on_event(e);
+    return impl_->on_event(e);
 }
 
 void osc::LOGLCSMTab::impl_on_draw()
 {
-    m_Impl->on_draw();
+    impl_->on_draw();
 }

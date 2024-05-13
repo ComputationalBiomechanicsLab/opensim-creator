@@ -4,5 +4,5 @@ namespace osc { class TabRegistry; }
 
 namespace osc
 {
-    void RegisterDemoTabs(TabRegistry&);
+    void register_demo_tabs(TabRegistry&);
 }

@@ -10,29 +10,29 @@ using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_TabStringID = "LearnOpenGL/FaceCulling";
+    constexpr CStringView c_tab_string_id = "LearnOpenGL/FaceCulling";
 
-    Mesh GenerateCubeSimilarlyToLOGL()
+    Mesh generate_cube_like_learnopengl()
     {
         return BoxGeometry{1.0f, 1.0f, 1.0f}.mesh();
     }
 
-    Material GenerateUVTestingTextureMappedMaterial(IResourceLoader& rl)
+    Material generate_uv_testing_texture_mapped_material(IResourceLoader& loader)
     {
         Material rv{Shader{
-            rl.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/FaceCulling.vert"),
-            rl.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/FaceCulling.frag"),
+            loader.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/FaceCulling.vert"),
+            loader.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/FaceCulling.frag"),
         }};
 
         rv.set_texture("uTexture", load_texture2D_from_image(
-            rl.open("oscar_learnopengl/textures/uv_checker.jpg"),
+            loader.open("oscar_learnopengl/textures/uv_checker.jpg"),
             ColorSpace::sRGB
         ));
 
         return rv;
     }
 
-    MouseCapturingCamera CreateCameraThatMatchesLearnOpenGL()
+    MouseCapturingCamera create_camera_that_matches_learnopengl()
     {
         MouseCapturingCamera rv;
         rv.set_position({0.0f, 0.0f, 3.0f});
@@ -46,105 +46,101 @@ namespace
 
 class osc::LOGLFaceCullingTab::Impl final : public StandardTabImpl {
 public:
-    Impl() : StandardTabImpl{c_TabStringID}
+    Impl() : StandardTabImpl{c_tab_string_id}
     {}
 
 private:
     void impl_on_mount() final
     {
         App::upd().make_main_loop_polling();
-        m_Camera.on_mount();
+        camera_.on_mount();
     }
 
     void impl_on_unmount() final
     {
-        m_Camera.on_unmount();
+        camera_.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
-    bool impl_on_event(SDL_Event const& e) final
+    bool impl_on_event(const SDL_Event& e) final
     {
-        return m_Camera.on_event(e);
+        return camera_.on_event(e);
     }
 
     void impl_on_draw() final
     {
-        m_Camera.on_draw();
-        drawScene();
-        draw2DUI();
+        camera_.on_draw();
+        draw_scene();
+        draw_2d_ui();
     }
 
-    void drawScene()
+    void draw_scene()
     {
-        m_Camera.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
-        graphics::draw(m_Cube, identity<Transform>(), m_Material, m_Camera);
-        m_Camera.render_to_screen();
+        camera_.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
+        graphics::draw(cube_, identity<Transform>(), material_, camera_);
+        camera_.render_to_screen();
     }
 
-    void draw2DUI()
+    void draw_2d_ui()
     {
         ui::begin_panel("controls");
         if (ui::draw_button("off")) {
-            m_Material.set_cull_mode(CullMode::Off);
+            material_.set_cull_mode(CullMode::Off);
         }
         if (ui::draw_button("back")) {
-            m_Material.set_cull_mode(CullMode::Back);
+            material_.set_cull_mode(CullMode::Back);
         }
         if (ui::draw_button("front")) {
-            m_Material.set_cull_mode(CullMode::Front);
+            material_.set_cull_mode(CullMode::Front);
         }
         ui::end_panel();
     }
 
-    ResourceLoader m_Loader = App::resource_loader();
-    Material m_Material = GenerateUVTestingTextureMappedMaterial(m_Loader);
-    Mesh m_Cube = GenerateCubeSimilarlyToLOGL();
-    MouseCapturingCamera m_Camera = CreateCameraThatMatchesLearnOpenGL();
+    ResourceLoader loader_ = App::resource_loader();
+    Material material_ = generate_uv_testing_texture_mapped_material(loader_);
+    Mesh cube_ = generate_cube_like_learnopengl();
+    MouseCapturingCamera camera_ = create_camera_that_matches_learnopengl();
 };
 
 
-// public API
-
 CStringView osc::LOGLFaceCullingTab::id()
 {
-    return c_TabStringID;
+    return c_tab_string_id;
 }
 
-osc::LOGLFaceCullingTab::LOGLFaceCullingTab(ParentPtr<ITabHost> const&) :
-    m_Impl{std::make_unique<Impl>()}
-{
-}
-
+osc::LOGLFaceCullingTab::LOGLFaceCullingTab(const ParentPtr<ITabHost>&) :
+    impl_{std::make_unique<Impl>()}
+{}
 osc::LOGLFaceCullingTab::LOGLFaceCullingTab(LOGLFaceCullingTab&&) noexcept = default;
 osc::LOGLFaceCullingTab& osc::LOGLFaceCullingTab::operator=(LOGLFaceCullingTab&&) noexcept = default;
 osc::LOGLFaceCullingTab::~LOGLFaceCullingTab() noexcept = default;
 
 UID osc::LOGLFaceCullingTab::impl_get_id() const
 {
-    return m_Impl->id();
+    return impl_->id();
 }
 
 CStringView osc::LOGLFaceCullingTab::impl_get_name() const
 {
-    return m_Impl->name();
+    return impl_->name();
 }
 
 void osc::LOGLFaceCullingTab::impl_on_mount()
 {
-    m_Impl->on_mount();
+    impl_->on_mount();
 }
 
 void osc::LOGLFaceCullingTab::impl_on_unmount()
 {
-    m_Impl->on_unmount();
+    impl_->on_unmount();
 }
 
-bool osc::LOGLFaceCullingTab::impl_on_event(SDL_Event const& e)
+bool osc::LOGLFaceCullingTab::impl_on_event(const SDL_Event& e)
 {
-    return m_Impl->on_event(e);
+    return impl_->on_event(e);
 }
 
 void osc::LOGLFaceCullingTab::impl_on_draw()
 {
-    m_Impl->on_draw();
+    impl_->on_draw();
 }

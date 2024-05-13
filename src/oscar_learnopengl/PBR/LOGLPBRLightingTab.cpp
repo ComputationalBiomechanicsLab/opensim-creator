@@ -11,25 +11,25 @@ using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_TabStringID = "LearnOpenGL/PBR/Lighting";
+    constexpr CStringView c_tab_string_id = "LearnOpenGL/PBR/Lighting";
 
-    constexpr auto c_LightPositions = std::to_array<Vec3>({
+    constexpr auto c_light_positions = std::to_array<Vec3>({
         {-10.0f,  10.0f, 10.0f},
         { 10.0f,  10.0f, 10.0f},
         {-10.0f, -10.0f, 10.0f},
         { 10.0f, -10.0f, 10.0f},
     });
 
-    constexpr std::array<Vec3, c_LightPositions.size()> c_LightRadiances = std::to_array<Vec3>({
+    constexpr std::array<Vec3, c_light_positions.size()> c_light_radiances = std::to_array<Vec3>({
         {300.0f, 300.0f, 300.0f},
         {300.0f, 300.0f, 300.0f},
         {300.0f, 300.0f, 300.0f},
         {300.0f, 300.0f, 300.0f},
     });
 
-    constexpr int c_NumRows = 7;
-    constexpr int c_NumCols = 7;
-    constexpr float c_CellSpacing = 2.5f;
+    constexpr int c_num_rows = 7;
+    constexpr int c_num_cols = 7;
+    constexpr float c_cell_spacing = 2.5f;
 
     MouseCapturingCamera CreateCamera()
     {
@@ -55,130 +55,126 @@ namespace
 
 class osc::LOGLPBRLightingTab::Impl final : public StandardTabImpl {
 public:
-    Impl() : StandardTabImpl{c_TabStringID}
+    Impl() : StandardTabImpl{c_tab_string_id}
     {}
 
 private:
     void impl_on_mount() final
     {
         App::upd().make_main_loop_polling();
-        m_Camera.on_mount();
+        camera_.on_mount();
     }
 
     void impl_on_unmount() final
     {
-        m_Camera.on_unmount();
+        camera_.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
-    bool impl_on_event(SDL_Event const& e) final
+    bool impl_on_event(const SDL_Event& e) final
     {
-        return m_Camera.on_event(e);
+        return camera_.on_event(e);
     }
 
     void impl_on_draw() final
     {
-        m_Camera.on_draw();
+        camera_.on_draw();
         draw3DRender();
-        draw2DUI();
+        draw_2D_ui();
     }
 
     void draw3DRender()
     {
-        m_Camera.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
+        camera_.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
 
-        m_PBRMaterial.set_vec3("uCameraWorldPos", m_Camera.position());
-        m_PBRMaterial.set_vec3_array("uLightPositions", c_LightPositions);
-        m_PBRMaterial.set_vec3_array("uLightColors", c_LightRadiances);
+        pbr_material_.set_vec3("uCameraWorldPos", camera_.position());
+        pbr_material_.set_vec3_array("uLightPositions", c_light_positions);
+        pbr_material_.set_vec3_array("uLightColors", c_light_radiances);
 
-        drawSpheres();
-        drawLights();
+        draw_spheres();
+        draw_lights();
 
-        m_Camera.render_to_screen();
+        camera_.render_to_screen();
     }
 
-    void drawSpheres()
+    void draw_spheres()
     {
-        m_PBRMaterial.set_vec3("uAlbedoColor", {0.5f, 0.0f, 0.0f});
+        pbr_material_.set_vec3("uAlbedoColor", {0.5f, 0.0f, 0.0f});
 
-        for (int row = 0; row < c_NumRows; ++row) {
-            m_PBRMaterial.set_float("uMetallicity", static_cast<float>(row) / static_cast<float>(c_NumRows));
+        for (int row = 0; row < c_num_rows; ++row) {
+            pbr_material_.set_float("uMetallicity", static_cast<float>(row) / static_cast<float>(c_num_rows));
 
-            for (int col = 0; col < c_NumCols; ++col) {
-                float const normalizedCol = static_cast<float>(col) / static_cast<float>(c_NumCols);
-                m_PBRMaterial.set_float("uRoughness", clamp(normalizedCol, 0.005f, 1.0f));
+            for (int col = 0; col < c_num_cols; ++col) {
+                const float normalized_col = static_cast<float>(col) / static_cast<float>(c_num_cols);
+                pbr_material_.set_float("uRoughness", clamp(normalized_col, 0.005f, 1.0f));
 
-                float const x = (static_cast<float>(col) - static_cast<float>(c_NumCols)/2.0f) * c_CellSpacing;
-                float const y = (static_cast<float>(row) - static_cast<float>(c_NumRows)/2.0f) * c_CellSpacing;
-                graphics::draw(m_SphereMesh, {.position = {x, y, 0.0f}}, m_PBRMaterial, m_Camera);
+                const float x = (static_cast<float>(col) - static_cast<float>(c_num_cols)/2.0f) * c_cell_spacing;
+                const float y = (static_cast<float>(row) - static_cast<float>(c_num_rows)/2.0f) * c_cell_spacing;
+                graphics::draw(sphere_mesh_, {.position = {x, y, 0.0f}}, pbr_material_, camera_);
             }
         }
     }
 
-    void drawLights()
+    void draw_lights()
     {
-        m_PBRMaterial.set_vec3("uAlbedoColor", {1.0f, 1.0f, 1.0f});
+        pbr_material_.set_vec3("uAlbedoColor", {1.0f, 1.0f, 1.0f});
 
-        for (Vec3 const& pos : c_LightPositions) {
-            graphics::draw(m_SphereMesh, {.scale = Vec3{0.5f}, .position = pos}, m_PBRMaterial, m_Camera);
+        for (const Vec3& light_position : c_light_positions) {
+            graphics::draw(sphere_mesh_, {.scale = Vec3{0.5f}, .position = light_position}, pbr_material_, camera_);
         }
     }
 
-    void draw2DUI()
+    void draw_2D_ui()
     {
-        m_PerfPanel.on_draw();
+        perf_panel_.on_draw();
     }
 
-    ResourceLoader m_Loader = App::resource_loader();
-    MouseCapturingCamera m_Camera = CreateCamera();
-    Mesh m_SphereMesh = SphereGeometry{1.0f, 64, 64};
-    Material m_PBRMaterial = CreateMaterial(m_Loader);
-    PerfPanel m_PerfPanel{"Perf"};
+    ResourceLoader loader_ = App::resource_loader();
+    MouseCapturingCamera camera_ = CreateCamera();
+    Mesh sphere_mesh_ = SphereGeometry{1.0f, 64, 64};
+    Material pbr_material_ = CreateMaterial(loader_);
+    PerfPanel perf_panel_{"Perf"};
 };
 
 
-// public API
-
 CStringView osc::LOGLPBRLightingTab::id()
 {
-    return c_TabStringID;
+    return c_tab_string_id;
 }
 
-osc::LOGLPBRLightingTab::LOGLPBRLightingTab(ParentPtr<ITabHost> const&) :
-    m_Impl{std::make_unique<Impl>()}
-{
-}
-
+osc::LOGLPBRLightingTab::LOGLPBRLightingTab(const ParentPtr<ITabHost>&) :
+    impl_{std::make_unique<Impl>()}
+{}
 osc::LOGLPBRLightingTab::LOGLPBRLightingTab(LOGLPBRLightingTab&&) noexcept = default;
 osc::LOGLPBRLightingTab& osc::LOGLPBRLightingTab::operator=(LOGLPBRLightingTab&&) noexcept = default;
 osc::LOGLPBRLightingTab::~LOGLPBRLightingTab() noexcept = default;
 
 UID osc::LOGLPBRLightingTab::impl_get_id() const
 {
-    return m_Impl->id();
+    return impl_->id();
 }
 
 CStringView osc::LOGLPBRLightingTab::impl_get_name() const
 {
-    return m_Impl->name();
+    return impl_->name();
 }
 
 void osc::LOGLPBRLightingTab::impl_on_mount()
 {
-    m_Impl->on_mount();
+    impl_->on_mount();
 }
 
 void osc::LOGLPBRLightingTab::impl_on_unmount()
 {
-    m_Impl->on_unmount();
+    impl_->on_unmount();
 }
 
-bool osc::LOGLPBRLightingTab::impl_on_event(SDL_Event const& e)
+bool osc::LOGLPBRLightingTab::impl_on_event(const SDL_Event& e)
 {
-    return m_Impl->on_event(e);
+    return impl_->on_event(e);
 }
 
 void osc::LOGLPBRLightingTab::impl_on_draw()
 {
-    m_Impl->on_draw();
+    impl_->on_draw();
 }

@@ -15,10 +15,10 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit LOGLTexturingTab(ParentPtr<ITabHost> const&);
-        LOGLTexturingTab(LOGLTexturingTab const&) = delete;
+        explicit LOGLTexturingTab(const ParentPtr<ITabHost>&);
+        LOGLTexturingTab(const LOGLTexturingTab&) = delete;
         LOGLTexturingTab(LOGLTexturingTab&&) noexcept;
-        LOGLTexturingTab& operator=(LOGLTexturingTab const&) = delete;
+        LOGLTexturingTab& operator=(const LOGLTexturingTab&) = delete;
         LOGLTexturingTab& operator=(LOGLTexturingTab&&) noexcept;
         ~LOGLTexturingTab() noexcept override;
 
@@ -28,6 +28,6 @@ namespace osc
         void impl_on_draw() final;
 
         class Impl;
-        std::unique_ptr<Impl> m_Impl;
+        std::unique_ptr<Impl> impl_;
     };
 }

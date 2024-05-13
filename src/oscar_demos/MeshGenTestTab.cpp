@@ -11,9 +11,9 @@ using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_TabStringID = "Demos/MeshGen";
+    constexpr CStringView c_tab_string_id = "Demos/MeshGen";
 
-    std::vector<Vec2> LathePoints()
+    std::vector<Vec2> generate_lathe_points()
     {
         std::vector<Vec2> rv;
         rv.reserve(10);
@@ -26,7 +26,7 @@ namespace
         return rv;
     }
 
-    std::map<std::string, Mesh> GenerateMeshLookup()
+    std::map<std::string, Mesh> generate_mesh_lookup()
     {
         SceneCache cache;
 
@@ -48,7 +48,7 @@ namespace
             {"dodecahedron", DodecahedronGeometry{}},
             {"octahedron", OctahedronGeometry{}},
             {"tetrahedron", TetrahedronGeometry{}},
-            {"lathe", LatheGeometry{LathePoints(), 3}},
+            {"lathe", LatheGeometry{generate_lathe_points(), 3}},
             {"ring", RingGeometry{0.5f, 1.0f, 32, 3, Degrees{0}, Degrees{180}}},
         };
     }
@@ -56,9 +56,9 @@ namespace
 
 class osc::MeshGenTestTab::Impl final : public StandardTabImpl {
 public:
-    Impl() : StandardTabImpl{c_TabStringID}
+    Impl() : StandardTabImpl{c_tab_string_id}
     {
-        m_Camera.radius = 5.0f;
+        camera_.radius = 5.0f;
     }
 
 private:
@@ -66,62 +66,57 @@ private:
     {
         ui::enable_dockspace_over_viewport(ui::get_main_viewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
-        if (m_Viewer.is_hovered()) {
-            ui::update_polar_camera_from_mouse_inputs(m_Camera, App::get().dimensions());
+        if (viewer_.is_hovered()) {
+            ui::update_polar_camera_from_mouse_inputs(camera_, App::get().dimensions());
         }
 
         if (ui::begin_panel("viewer")) {
-            ui::draw_checkbox("is_wireframe", &m_DrawWireframe);
-            for (auto const& [name, _] : m_AllMeshes) {
+            ui::draw_checkbox("is_wireframe", &draw_wireframe_);
+            for (const auto& [name, _] : all_meshes_) {
                 if (ui::draw_button(name)) {
-                    m_CurrentMesh = name;
+                    current_mesh_ = name;
                 }
                 ui::same_line();
             }
             ui::start_new_line();
 
-            Vec2 contentRegion = ui::get_content_region_avail();
-            m_RenderParams.dimensions = elementwise_max(contentRegion, {0.0f, 0.0f});
-            m_RenderParams.antialiasing_level = App::get().anti_aliasing_level();
+            Vec2 content_region = ui::get_content_region_avail();
+            render_params_.dimensions = elementwise_max(content_region, {0.0f, 0.0f});
+            render_params_.antialiasing_level = App::get().anti_aliasing_level();
+            render_params_.light_direction = recommended_light_direction(camera_);
+            render_params_.projection_matrix = camera_.projection_matrix(aspect_ratio_of(render_params_.dimensions));
+            render_params_.view_matrix = camera_.view_matrix();
+            render_params_.view_pos = camera_.position();
+            render_params_.near_clipping_plane = camera_.znear;
+            render_params_.far_clipping_plane = camera_.zfar;
+            render_params_.draw_floor = false;
+            render_params_.draw_mesh_normals = true;
 
-            {
-                m_RenderParams.light_direction = recommended_light_direction(m_Camera);
-                m_RenderParams.projection_matrix = m_Camera.projection_matrix(aspect_ratio_of(m_RenderParams.dimensions));
-                m_RenderParams.view_matrix = m_Camera.view_matrix();
-                m_RenderParams.view_pos = m_Camera.position();
-                m_RenderParams.near_clipping_plane = m_Camera.znear;
-                m_RenderParams.far_clipping_plane = m_Camera.zfar;
-                m_RenderParams.draw_floor = false;
-                m_RenderParams.draw_mesh_normals = true;
-
-                m_Viewer.on_draw({{SceneDecoration{
-                    .mesh = m_AllMeshes[m_CurrentMesh],
-                    .color = Color::white(),
-                    .flags = m_DrawWireframe ? SceneDecorationFlags::WireframeOverlay : SceneDecorationFlags::None,
-                }}}, m_RenderParams);
-            }
+            viewer_.on_draw({{SceneDecoration{
+                .mesh = all_meshes_[current_mesh_],
+                .color = Color::white(),
+                .flags = draw_wireframe_ ? SceneDecorationFlags::WireframeOverlay : SceneDecorationFlags::None,
+            }}}, render_params_);
         }
         ui::end_panel();
     }
 
-    std::map<std::string, Mesh> m_AllMeshes = GenerateMeshLookup();
-    std::string m_CurrentMesh = m_AllMeshes.begin()->first;
-    bool m_DrawWireframe = false;
-    SceneViewer m_Viewer;
-    SceneRendererParams m_RenderParams;
-    PolarPerspectiveCamera m_Camera;
+    std::map<std::string, Mesh> all_meshes_ = generate_mesh_lookup();
+    std::string current_mesh_ = all_meshes_.begin()->first;
+    bool draw_wireframe_ = false;
+    SceneViewer viewer_;
+    SceneRendererParams render_params_;
+    PolarPerspectiveCamera camera_;
 };
 
 
-// public API
-
 CStringView osc::MeshGenTestTab::id()
 {
-    return c_TabStringID;
+    return c_tab_string_id;
 }
 
-osc::MeshGenTestTab::MeshGenTestTab(ParentPtr<ITabHost> const&) :
-    m_Impl{std::make_unique<Impl>()}
+osc::MeshGenTestTab::MeshGenTestTab(const ParentPtr<ITabHost>&) :
+    impl_{std::make_unique<Impl>()}
 {}
 
 osc::MeshGenTestTab::MeshGenTestTab(MeshGenTestTab&&) noexcept = default;
@@ -130,15 +125,15 @@ osc::MeshGenTestTab::~MeshGenTestTab() noexcept = default;
 
 UID osc::MeshGenTestTab::impl_get_id() const
 {
-    return m_Impl->id();
+    return impl_->id();
 }
 
 CStringView osc::MeshGenTestTab::impl_get_name() const
 {
-    return m_Impl->name();
+    return impl_->name();
 }
 
 void osc::MeshGenTestTab::impl_on_draw()
 {
-    m_Impl->on_draw();
+    impl_->on_draw();
 }

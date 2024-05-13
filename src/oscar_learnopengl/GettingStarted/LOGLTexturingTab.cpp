@@ -9,9 +9,9 @@ using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_TabStringID = "LearnOpenGL/Texturing";
+    constexpr CStringView c_tab_string_id = "LearnOpenGL/Texturing";
 
-    Mesh GenTexturedQuadMesh()
+    Mesh generate_textured_quad_mesh()
     {
         Mesh quad = PlaneGeometry{1.0f, 1.0f, 1, 1};
 
@@ -21,17 +21,17 @@ namespace
         return quad;
     }
 
-    Material LoadTexturedMaterial(IResourceLoader& rl)
+    Material load_textured_material(IResourceLoader& loader)
     {
         Material rv{Shader{
-            rl.slurp("oscar_learnopengl/shaders/GettingStarted/Texturing.vert"),
-            rl.slurp("oscar_learnopengl/shaders/GettingStarted/Texturing.frag"),
+            loader.slurp("oscar_learnopengl/shaders/GettingStarted/Texturing.vert"),
+            loader.slurp("oscar_learnopengl/shaders/GettingStarted/Texturing.frag"),
         }};
 
         // set uTexture1
         {
             Texture2D container = load_texture2D_from_image(
-                rl.open("oscar_learnopengl/textures/container.jpg"),
+                loader.open("oscar_learnopengl/textures/container.jpg"),
                 ColorSpace::sRGB,
                 ImageLoadingFlags::FlipVertically
             );
@@ -42,8 +42,8 @@ namespace
 
         // set uTexture2
         {
-            Texture2D const face = load_texture2D_from_image(
-                rl.open("oscar_learnopengl/textures/awesomeface.png"),
+            const Texture2D face = load_texture2D_from_image(
+                loader.open("oscar_learnopengl/textures/awesomeface.png"),
                 ColorSpace::sRGB,
                 ImageLoadingFlags::FlipVertically
             );
@@ -54,7 +54,7 @@ namespace
         return rv;
     }
 
-    Camera CreateIdentityCamera()
+    Camera create_identity_camera()
     {
         Camera rv;
         rv.set_view_matrix_override(identity<Mat4>());
@@ -65,52 +65,48 @@ namespace
 
 class osc::LOGLTexturingTab::Impl final : public StandardTabImpl {
 public:
-    Impl() : StandardTabImpl{c_TabStringID}
+    Impl() : StandardTabImpl{c_tab_string_id}
     {}
 
 private:
     void impl_on_draw() final
     {
-        graphics::draw(m_Mesh, identity<Transform>(), m_Material, m_Camera);
+        graphics::draw(mesh_, identity<Transform>(), material_, camera_);
 
-        m_Camera.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
-        m_Camera.render_to_screen();
+        camera_.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
+        camera_.render_to_screen();
     }
 
-    ResourceLoader m_Loader = App::resource_loader();
-    Material m_Material = LoadTexturedMaterial(m_Loader);
-    Mesh m_Mesh = GenTexturedQuadMesh();
-    Camera m_Camera = CreateIdentityCamera();
+    ResourceLoader loader_ = App::resource_loader();
+    Material material_ = load_textured_material(loader_);
+    Mesh mesh_ = generate_textured_quad_mesh();
+    Camera camera_ = create_identity_camera();
 };
 
 
-// public API
-
 CStringView osc::LOGLTexturingTab::id()
 {
-    return c_TabStringID;
+    return c_tab_string_id;
 }
 
-osc::LOGLTexturingTab::LOGLTexturingTab(ParentPtr<ITabHost> const&) :
-    m_Impl{std::make_unique<Impl>()}
-{
-}
-
+osc::LOGLTexturingTab::LOGLTexturingTab(const ParentPtr<ITabHost>&) :
+    impl_{std::make_unique<Impl>()}
+{}
 osc::LOGLTexturingTab::LOGLTexturingTab(LOGLTexturingTab&&) noexcept = default;
 osc::LOGLTexturingTab& osc::LOGLTexturingTab::operator=(LOGLTexturingTab&&) noexcept = default;
 osc::LOGLTexturingTab::~LOGLTexturingTab() noexcept = default;
 
 UID osc::LOGLTexturingTab::impl_get_id() const
 {
-    return m_Impl->id();
+    return impl_->id();
 }
 
 CStringView osc::LOGLTexturingTab::impl_get_name() const
 {
-    return m_Impl->name();
+    return impl_->name();
 }
 
 void osc::LOGLTexturingTab::impl_on_draw()
 {
-    m_Impl->on_draw();
+    impl_->on_draw();
 }

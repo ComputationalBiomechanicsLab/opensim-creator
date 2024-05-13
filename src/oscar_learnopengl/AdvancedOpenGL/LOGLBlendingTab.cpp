@@ -12,7 +12,7 @@ using namespace osc;
 
 namespace
 {
-    constexpr auto c_WindowLocations = std::to_array<Vec3>({
+    constexpr auto c_window_locations = std::to_array<Vec3>({
         {-1.5f, 0.0f, -0.48f},
         { 1.5f, 0.0f,  0.51f},
         { 0.0f, 0.0f,  0.7f},
@@ -20,9 +20,9 @@ namespace
         { 0.5f, 0.0f, -0.6},
     });
 
-    constexpr CStringView c_TabStringID = "LearnOpenGL/Blending";
+    constexpr CStringView c_tab_string_id = "LearnOpenGL/Blending";
 
-    Mesh GeneratePlane()
+    Mesh generate_plane()
     {
         Mesh rv;
         rv.set_vertices({
@@ -47,7 +47,7 @@ namespace
         return rv;
     }
 
-    Mesh GenerateTransparent()
+    Mesh generate_transparent()
     {
         Mesh rv;
         rv.set_vertices({
@@ -72,7 +72,7 @@ namespace
         return rv;
     }
 
-    MouseCapturingCamera CreateCameraThatMatchesLearnOpenGL()
+    MouseCapturingCamera create_camera_that_matches_learnopengl()
     {
         MouseCapturingCamera rv;
         rv.set_position({0.0f, 0.0f, 3.0f});
@@ -86,135 +86,131 @@ namespace
 
 class osc::LOGLBlendingTab::Impl final : public StandardTabImpl {
 public:
-    Impl() : StandardTabImpl{c_TabStringID}
+    Impl() : StandardTabImpl{c_tab_string_id}
     {
-        m_BlendingMaterial.set_transparent(true);
-        m_LogViewer.open();
-        m_PerfPanel.open();
+        blending_material_.set_transparent(true);
+        log_viewer_.open();
+        perf_panel_.open();
     }
 
 private:
     void impl_on_mount() final
     {
         App::upd().make_main_loop_polling();
-        m_Camera.on_mount();
+        camera_.on_mount();
     }
 
     void impl_on_unmount() final
     {
-        m_Camera.on_unmount();
+        camera_.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
-    bool impl_on_event(SDL_Event const& e) final
+    bool impl_on_event(const SDL_Event& e) final
     {
-        return m_Camera.on_event(e);
+        return camera_.on_event(e);
     }
 
     void impl_on_draw() final
     {
-        m_Camera.on_draw();
+        camera_.on_draw();
 
         // clear screen and ensure camera has correct pixel rect
-        m_Camera.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
+        camera_.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
 
         // cubes
         {
-            m_OpaqueMaterial.set_texture("uTexture", m_MarbleTexture);
-            graphics::draw(m_CubeMesh, {.position = {-1.0f, 0.0f, -1.0f}}, m_OpaqueMaterial, m_Camera);
-            graphics::draw(m_CubeMesh, {.position = { 1.0f, 0.0f, -1.0f}}, m_OpaqueMaterial, m_Camera);
+            opaque_material_.set_texture("uTexture", marble_texture_);
+            graphics::draw(cube_mesh_, {.position = {-1.0f, 0.0f, -1.0f}}, opaque_material_, camera_);
+            graphics::draw(cube_mesh_, {.position = { 1.0f, 0.0f, -1.0f}}, opaque_material_, camera_);
         }
 
         // floor
         {
-            m_OpaqueMaterial.set_texture("uTexture", m_MetalTexture);
-            graphics::draw(m_PlaneMesh, identity<Transform>(), m_OpaqueMaterial, m_Camera);
+            opaque_material_.set_texture("uTexture", metal_texture_);
+            graphics::draw(plane_mesh_, identity<Transform>(), opaque_material_, camera_);
         }
 
         // windows
         {
-            m_BlendingMaterial.set_texture("uTexture", m_WindowTexture);
-            for (Vec3 const& windowLocation : c_WindowLocations) {
-                graphics::draw(m_TransparentMesh, {.position = windowLocation}, m_BlendingMaterial, m_Camera);
+            blending_material_.set_texture("uTexture", window_texture_);
+            for (const Vec3& window_location : c_window_locations) {
+                graphics::draw(transparent_mesh_, {.position = window_location}, blending_material_, camera_);
             }
         }
 
-        m_Camera.render_to_screen();
+        camera_.render_to_screen();
 
         // auxiliary UI
-        m_LogViewer.on_draw();
-        m_PerfPanel.on_draw();
+        log_viewer_.on_draw();
+        perf_panel_.on_draw();
     }
 
-    ResourceLoader m_Loader = App::resource_loader();
-    Material m_OpaqueMaterial{Shader{
-        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Blending.vert"),
-        m_Loader.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Blending.frag"),
+    ResourceLoader loader_ = App::resource_loader();
+    Material opaque_material_{Shader{
+        loader_.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Blending.vert"),
+        loader_.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Blending.frag"),
     }};
-    Material m_BlendingMaterial = m_OpaqueMaterial;
-    Mesh m_CubeMesh = BoxGeometry{};
-    Mesh m_PlaneMesh = GeneratePlane();
-    Mesh m_TransparentMesh = GenerateTransparent();
-    MouseCapturingCamera m_Camera = CreateCameraThatMatchesLearnOpenGL();
-    Texture2D m_MarbleTexture = load_texture2D_from_image(
-        m_Loader.open("oscar_learnopengl/textures/marble.jpg"),
+    Material blending_material_ = opaque_material_;
+    Mesh cube_mesh_ = BoxGeometry{};
+    Mesh plane_mesh_ = generate_plane();
+    Mesh transparent_mesh_ = generate_transparent();
+    MouseCapturingCamera camera_ = create_camera_that_matches_learnopengl();
+    Texture2D marble_texture_ = load_texture2D_from_image(
+        loader_.open("oscar_learnopengl/textures/marble.jpg"),
         ColorSpace::sRGB
     );
-    Texture2D m_MetalTexture = load_texture2D_from_image(
-        m_Loader.open("oscar_learnopengl/textures/metal.png"),
+    Texture2D metal_texture_ = load_texture2D_from_image(
+        loader_.open("oscar_learnopengl/textures/metal.png"),
         ColorSpace::sRGB
     );
-    Texture2D m_WindowTexture = load_texture2D_from_image(
-        m_Loader.open("oscar_learnopengl/textures/window.png"),
+    Texture2D window_texture_ = load_texture2D_from_image(
+        loader_.open("oscar_learnopengl/textures/window.png"),
         ColorSpace::sRGB
     );
-    LogViewerPanel m_LogViewer{"log"};
-    PerfPanel m_PerfPanel{"perf"};
+    LogViewerPanel log_viewer_{"log"};
+    PerfPanel perf_panel_{"perf"};
 };
 
 
-// public API
-
 CStringView osc::LOGLBlendingTab::id()
 {
-    return c_TabStringID;
+    return c_tab_string_id;
 }
 
-osc::LOGLBlendingTab::LOGLBlendingTab(ParentPtr<ITabHost> const&) :
-    m_Impl{std::make_unique<Impl>()}
-{
-}
-
+osc::LOGLBlendingTab::LOGLBlendingTab(const ParentPtr<ITabHost>&) :
+    impl_{std::make_unique<Impl>()}
+{}
 osc::LOGLBlendingTab::LOGLBlendingTab(LOGLBlendingTab&&) noexcept = default;
 osc::LOGLBlendingTab& osc::LOGLBlendingTab::operator=(LOGLBlendingTab&&) noexcept = default;
 osc::LOGLBlendingTab::~LOGLBlendingTab() noexcept = default;
 
 UID osc::LOGLBlendingTab::impl_get_id() const
 {
-    return m_Impl->id();
+    return impl_->id();
 }
 
 CStringView osc::LOGLBlendingTab::impl_get_name() const
 {
-    return m_Impl->name();
+    return impl_->name();
 }
 
 void osc::LOGLBlendingTab::impl_on_mount()
 {
-    m_Impl->on_mount();
+    impl_->on_mount();
 }
 
 void osc::LOGLBlendingTab::impl_on_unmount()
 {
-    m_Impl->on_unmount();
+    impl_->on_unmount();
 }
 
-bool osc::LOGLBlendingTab::impl_on_event(SDL_Event const& e)
+bool osc::LOGLBlendingTab::impl_on_event(const SDL_Event& e)
 {
-    return m_Impl->on_event(e);
+    return impl_->on_event(e);
 }
 
 void osc::LOGLBlendingTab::impl_on_draw()
 {
-    m_Impl->on_draw();
+    impl_->on_draw();
 }

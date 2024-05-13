@@ -16,10 +16,10 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit LOGLPBRSpecularIrradianceTexturedTab(ParentPtr<ITabHost> const&);
-        LOGLPBRSpecularIrradianceTexturedTab(LOGLPBRSpecularIrradianceTexturedTab const&) = delete;
+        explicit LOGLPBRSpecularIrradianceTexturedTab(const ParentPtr<ITabHost>&);
+        LOGLPBRSpecularIrradianceTexturedTab(const LOGLPBRSpecularIrradianceTexturedTab&) = delete;
         LOGLPBRSpecularIrradianceTexturedTab(LOGLPBRSpecularIrradianceTexturedTab&&) noexcept;
-        LOGLPBRSpecularIrradianceTexturedTab& operator=(LOGLPBRSpecularIrradianceTexturedTab const&) = delete;
+        LOGLPBRSpecularIrradianceTexturedTab& operator=(const LOGLPBRSpecularIrradianceTexturedTab&) = delete;
         LOGLPBRSpecularIrradianceTexturedTab& operator=(LOGLPBRSpecularIrradianceTexturedTab&&) noexcept;
         ~LOGLPBRSpecularIrradianceTexturedTab() noexcept override;
 
@@ -28,10 +28,10 @@ namespace osc
         CStringView impl_get_name() const final;
         void impl_on_mount() final;
         void impl_on_unmount() final;
-        bool impl_on_event(SDL_Event const&) final;
+        bool impl_on_event(const SDL_Event&) final;
         void impl_on_draw() final;
 
         class Impl;
-        std::unique_ptr<Impl> m_Impl;
+        std::unique_ptr<Impl> impl_;
     };
 }

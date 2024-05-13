@@ -16,7 +16,7 @@ namespace {
     TabRegistry const c_Tabs = []()
     {
         TabRegistry r;
-        RegisterLearnOpenGLTabs(r);
+        register_learnopengl_tabs(r);
         return r;
     }();
 

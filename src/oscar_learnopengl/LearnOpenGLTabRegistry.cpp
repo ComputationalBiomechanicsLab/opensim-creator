@@ -4,7 +4,7 @@
 
 #include <oscar/UI/Tabs/TabRegistry.h>
 
-void osc::RegisterLearnOpenGLTabs(TabRegistry& registry)
+void osc::register_learnopengl_tabs(TabRegistry& registry)
 {
     // register each concrete tab with the registry
     [&registry]<typename... Tabs>(Typelist<Tabs...>)

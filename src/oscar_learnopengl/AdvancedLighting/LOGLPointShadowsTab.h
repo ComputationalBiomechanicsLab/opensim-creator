@@ -16,10 +16,10 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit LOGLPointShadowsTab(ParentPtr<ITabHost> const&);
-        LOGLPointShadowsTab(LOGLPointShadowsTab const&) = delete;
+        explicit LOGLPointShadowsTab(const ParentPtr<ITabHost>&);
+        LOGLPointShadowsTab(const LOGLPointShadowsTab&) = delete;
         LOGLPointShadowsTab(LOGLPointShadowsTab&&) noexcept;
-        LOGLPointShadowsTab& operator=(LOGLPointShadowsTab const&) = delete;
+        LOGLPointShadowsTab& operator=(const LOGLPointShadowsTab&) = delete;
         LOGLPointShadowsTab& operator=(LOGLPointShadowsTab&&) noexcept;
         ~LOGLPointShadowsTab() noexcept override;
 
@@ -28,12 +28,12 @@ namespace osc
         CStringView impl_get_name() const final;
         void impl_on_mount() final;
         void impl_on_unmount() final;
-        bool impl_on_event(SDL_Event const&) final;
+        bool impl_on_event(const SDL_Event&) final;
         void impl_on_tick() final;
         void impl_on_draw_main_menu() final;
         void impl_on_draw() final;
 
         class Impl;
-        std::unique_ptr<Impl> m_Impl;
+        std::unique_ptr<Impl> impl_;
     };
 }

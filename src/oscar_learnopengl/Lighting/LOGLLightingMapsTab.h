@@ -16,10 +16,10 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit LOGLLightingMapsTab(ParentPtr<ITabHost> const&);
-        LOGLLightingMapsTab(LOGLLightingMapsTab const&) = delete;
+        explicit LOGLLightingMapsTab(const ParentPtr<ITabHost>&);
+        LOGLLightingMapsTab(const LOGLLightingMapsTab&) = delete;
         LOGLLightingMapsTab(LOGLLightingMapsTab&&) noexcept;
-        LOGLLightingMapsTab& operator=(LOGLLightingMapsTab const&) = delete;
+        LOGLLightingMapsTab& operator=(const LOGLLightingMapsTab&) = delete;
         LOGLLightingMapsTab& operator=(LOGLLightingMapsTab&&) noexcept;
         ~LOGLLightingMapsTab() noexcept override;
 
@@ -28,10 +28,10 @@ namespace osc
         CStringView impl_get_name() const final;
         void impl_on_mount() final;
         void impl_on_unmount() final;
-        bool impl_on_event(SDL_Event const&) final;
+        bool impl_on_event(const SDL_Event&) final;
         void impl_on_draw() final;
 
         class Impl;
-        std::unique_ptr<Impl> m_Impl;
+        std::unique_ptr<Impl> impl_;
     };
 }

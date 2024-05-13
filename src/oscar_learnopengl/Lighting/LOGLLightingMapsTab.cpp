@@ -10,9 +10,9 @@ using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_TabStringID = "LearnOpenGL/LightingMaps";
+    constexpr CStringView c_tab_string_id = "LearnOpenGL/LightingMaps";
 
-    MouseCapturingCamera CreateCamera()
+    MouseCapturingCamera create_camera()
     {
         MouseCapturingCamera rv;
         rv.set_position({0.0f, 0.0f, 3.0f});
@@ -22,149 +22,145 @@ namespace
         return rv;
     }
 
-    Material CreateLightMappingMaterial(IResourceLoader& rl)
+    Material create_light_mapping_material(IResourceLoader& loader)
     {
-        Texture2D diffuseMap = load_texture2D_from_image(
-            rl.open("oscar_learnopengl/textures/container2.png"),
+        const Texture2D diffuse_map = load_texture2D_from_image(
+            loader.open("oscar_learnopengl/textures/container2.png"),
             ColorSpace::sRGB,
             ImageLoadingFlags::FlipVertically
         );
 
-        Texture2D specularMap = load_texture2D_from_image(
-            rl.open("oscar_learnopengl/textures/container2_specular.png"),
+        const Texture2D specular_map = load_texture2D_from_image(
+            loader.open("oscar_learnopengl/textures/container2_specular.png"),
             ColorSpace::sRGB,
             ImageLoadingFlags::FlipVertically
         );
 
         Material rv{Shader{
-            rl.slurp("oscar_learnopengl/shaders/Lighting/LightingMaps.vert"),
-            rl.slurp("oscar_learnopengl/shaders/Lighting/LightingMaps.frag"),
+            loader.slurp("oscar_learnopengl/shaders/Lighting/LightingMaps.vert"),
+            loader.slurp("oscar_learnopengl/shaders/Lighting/LightingMaps.frag"),
         }};
-        rv.set_texture("uMaterialDiffuse", diffuseMap);
-        rv.set_texture("uMaterialSpecular", specularMap);
+        rv.set_texture("uMaterialDiffuse", diffuse_map);
+        rv.set_texture("uMaterialSpecular", specular_map);
         return rv;
     }
 }
 
 class osc::LOGLLightingMapsTab::Impl final : public StandardTabImpl {
 public:
-    Impl() : StandardTabImpl{c_TabStringID}
+    Impl() : StandardTabImpl{c_tab_string_id}
     {}
 
 private:
     void impl_on_mount() final
     {
         App::upd().make_main_loop_polling();
-        m_Camera.on_mount();
+        camera_.on_mount();
     }
 
     void impl_on_unmount() final
     {
-        m_Camera.on_unmount();
+        camera_.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
-    bool impl_on_event(SDL_Event const& e) final
+    bool impl_on_event(const SDL_Event& e) final
     {
-        return m_Camera.on_event(e);
+        return camera_.on_event(e);
     }
 
     void impl_on_draw() final
     {
-        m_Camera.on_draw();
+        camera_.on_draw();
 
         // clear screen and ensure camera has correct pixel rect
         App::upd().clear_screen({0.1f, 0.1f, 0.1f, 1.0f});
 
         // draw cube
-        m_LightingMapsMaterial.set_vec3("uViewPos", m_Camera.position());
-        m_LightingMapsMaterial.set_vec3("uLightPos", m_LightTransform.position);
-        m_LightingMapsMaterial.set_float("uLightAmbient", m_LightAmbient);
-        m_LightingMapsMaterial.set_float("uLightDiffuse", m_LightDiffuse);
-        m_LightingMapsMaterial.set_float("uLightSpecular", m_LightSpecular);
-        m_LightingMapsMaterial.set_float("uMaterialShininess", m_MaterialShininess);
-        graphics::draw(m_Mesh, identity<Transform>(), m_LightingMapsMaterial, m_Camera);
+        lighting_maps_material_.set_vec3("uViewPos", camera_.position());
+        lighting_maps_material_.set_vec3("uLightPos", light_transform_.position);
+        lighting_maps_material_.set_float("uLightAmbient", light_ambient_);
+        lighting_maps_material_.set_float("uLightDiffuse", light_diffuse_);
+        lighting_maps_material_.set_float("uLightSpecular", light_specular_);
+        lighting_maps_material_.set_float("uMaterialShininess", material_shininess_);
+        graphics::draw(mesh_, identity<Transform>(), lighting_maps_material_, camera_);
 
         // draw lamp
-        m_LightCubeMaterial.set_color("uLightColor", Color::white());
-        graphics::draw(m_Mesh, m_LightTransform, m_LightCubeMaterial, m_Camera);
+        light_cube_material_.set_color("uLightColor", Color::white());
+        graphics::draw(mesh_, light_transform_, light_cube_material_, camera_);
 
         // render 3D scene
-        m_Camera.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
-        m_Camera.render_to_screen();
+        camera_.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
+        camera_.render_to_screen();
 
         // render 2D UI
         ui::begin_panel("controls");
-        ui::draw_vec3_input("uLightPos", m_LightTransform.position);
-        ui::draw_float_input("uLightAmbient", &m_LightAmbient);
-        ui::draw_float_input("uLightDiffuse", &m_LightDiffuse);
-        ui::draw_float_input("uLightSpecular", &m_LightSpecular);
-        ui::draw_float_input("uMaterialShininess", &m_MaterialShininess);
+        ui::draw_vec3_input("uLightPos", light_transform_.position);
+        ui::draw_float_input("uLightAmbient", &light_ambient_);
+        ui::draw_float_input("uLightDiffuse", &light_diffuse_);
+        ui::draw_float_input("uLightSpecular", &light_specular_);
+        ui::draw_float_input("uMaterialShininess", &material_shininess_);
         ui::end_panel();
     }
 
-    ResourceLoader m_Loader = App::resource_loader();
-    Material m_LightingMapsMaterial = CreateLightMappingMaterial(m_Loader);
-    Material m_LightCubeMaterial{Shader{
-        m_Loader.slurp("oscar_learnopengl/shaders/LightCube.vert"),
-        m_Loader.slurp("oscar_learnopengl/shaders/LightCube.frag"),
+    ResourceLoader loader_ = App::resource_loader();
+    Material lighting_maps_material_ = create_light_mapping_material(loader_);
+    Material light_cube_material_{Shader{
+        loader_.slurp("oscar_learnopengl/shaders/LightCube.vert"),
+        loader_.slurp("oscar_learnopengl/shaders/LightCube.frag"),
     }};
-    Mesh m_Mesh = BoxGeometry{};
-    MouseCapturingCamera m_Camera = CreateCamera();
+    Mesh mesh_ = BoxGeometry{};
+    MouseCapturingCamera camera_ = create_camera();
 
-    Transform m_LightTransform = {
+    Transform light_transform_ = {
         .scale = Vec3{0.2f},
         .position = {0.4f, 0.4f, 2.0f},
     };
-    float m_LightAmbient = 0.02f;
-    float m_LightDiffuse = 0.4f;
-    float m_LightSpecular = 1.0f;
-    float m_MaterialShininess = 64.0f;
+    float light_ambient_ = 0.02f;
+    float light_diffuse_ = 0.4f;
+    float light_specular_ = 1.0f;
+    float material_shininess_ = 64.0f;
 };
 
 
-// public API
-
 CStringView osc::LOGLLightingMapsTab::id()
 {
-    return c_TabStringID;
+    return c_tab_string_id;
 }
 
-osc::LOGLLightingMapsTab::LOGLLightingMapsTab(ParentPtr<ITabHost> const&) :
-    m_Impl{std::make_unique<Impl>()}
-{
-}
-
+osc::LOGLLightingMapsTab::LOGLLightingMapsTab(const ParentPtr<ITabHost>&) :
+    impl_{std::make_unique<Impl>()}
+{}
 osc::LOGLLightingMapsTab::LOGLLightingMapsTab(LOGLLightingMapsTab&&) noexcept = default;
 osc::LOGLLightingMapsTab& osc::LOGLLightingMapsTab::operator=(LOGLLightingMapsTab&&) noexcept = default;
 osc::LOGLLightingMapsTab::~LOGLLightingMapsTab() noexcept = default;
 
 UID osc::LOGLLightingMapsTab::impl_get_id() const
 {
-    return m_Impl->id();
+    return impl_->id();
 }
 
 CStringView osc::LOGLLightingMapsTab::impl_get_name() const
 {
-    return m_Impl->name();
+    return impl_->name();
 }
 
 void osc::LOGLLightingMapsTab::impl_on_mount()
 {
-    m_Impl->on_mount();
+    impl_->on_mount();
 }
 
 void osc::LOGLLightingMapsTab::impl_on_unmount()
 {
-    m_Impl->on_unmount();
+    impl_->on_unmount();
 }
 
-bool osc::LOGLLightingMapsTab::impl_on_event(SDL_Event const& e)
+bool osc::LOGLLightingMapsTab::impl_on_event(const SDL_Event& e)
 {
-    return m_Impl->on_event(e);
+    return impl_->on_event(e);
 }
 
 void osc::LOGLLightingMapsTab::impl_on_draw()
 {
-    m_Impl->on_draw();
+    impl_->on_draw();
 }

@@ -11,27 +11,27 @@ using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_TabStringID = "LearnOpenGL/PBR/LightingTextured";
+    constexpr CStringView c_tab_string_id = "LearnOpenGL/PBR/LightingTextured";
 
-    constexpr auto c_LightPositions = std::to_array<Vec3>({
+    constexpr auto c_light_positions = std::to_array<Vec3>({
         {-10.0f,  10.0f, 10.0f},
         { 10.0f,  10.0f, 10.0f},
         {-10.0f, -10.0f, 10.0f},
         { 10.0f, -10.0f, 10.0f},
     });
 
-    constexpr std::array<Vec3, c_LightPositions.size()> c_LightRadiances = std::to_array<Vec3>({
+    constexpr std::array<Vec3, c_light_positions.size()> c_light_radiances = std::to_array<Vec3>({
         {300.0f, 300.0f, 300.0f},
         {300.0f, 300.0f, 300.0f},
         {300.0f, 300.0f, 300.0f},
         {300.0f, 300.0f, 300.0f},
     });
 
-    constexpr int c_NumRows = 7;
-    constexpr int c_NumCols = 7;
-    constexpr float c_CellSpacing = 2.5f;
+    constexpr int c_num_rows = 7;
+    constexpr int c_num_cols = 7;
+    constexpr float c_cell_spacing = 2.5f;
 
-    MouseCapturingCamera CreateCamera()
+    MouseCapturingCamera create_camera()
     {
         MouseCapturingCamera rv;
         rv.set_position({0.0f, 0.0f, 20.0f});
@@ -42,154 +42,150 @@ namespace
         return rv;
     }
 
-    Material CreateMaterial(IResourceLoader& rl)
+    Material create_material(IResourceLoader& loader)
     {
-        Texture2D albedo = load_texture2D_from_image(
-            rl.open("oscar_learnopengl/textures/pbr/rusted_iron/albedo.png"),
+        const Texture2D albedo = load_texture2D_from_image(
+            loader.open("oscar_learnopengl/textures/pbr/rusted_iron/albedo.png"),
             ColorSpace::sRGB
         );
-        Texture2D normal = load_texture2D_from_image(
-            rl.open("oscar_learnopengl/textures/pbr/rusted_iron/normal.png"),
+        const Texture2D normal = load_texture2D_from_image(
+            loader.open("oscar_learnopengl/textures/pbr/rusted_iron/normal.png"),
             ColorSpace::Linear
         );
-        Texture2D metallic = load_texture2D_from_image(
-            rl.open("oscar_learnopengl/textures/pbr/rusted_iron/metallic.png"),
+        const Texture2D metallic = load_texture2D_from_image(
+            loader.open("oscar_learnopengl/textures/pbr/rusted_iron/metallic.png"),
             ColorSpace::Linear
         );
-        Texture2D roughness = load_texture2D_from_image(
-            rl.open("oscar_learnopengl/textures/pbr/rusted_iron/roughness.png"),
+        const Texture2D roughness = load_texture2D_from_image(
+            loader.open("oscar_learnopengl/textures/pbr/rusted_iron/roughness.png"),
             ColorSpace::Linear
         );
-        Texture2D ao = load_texture2D_from_image(
-            rl.open("oscar_learnopengl/textures/pbr/rusted_iron/ao.png"),
+        const Texture2D ao = load_texture2D_from_image(
+            loader.open("oscar_learnopengl/textures/pbr/rusted_iron/ao.png"),
             ColorSpace::Linear
         );
 
         Material rv{Shader{
-            rl.slurp("oscar_learnopengl/shaders/PBR/lighting_textured/PBR.vert"),
-            rl.slurp("oscar_learnopengl/shaders/PBR/lighting_textured/PBR.frag"),
+            loader.slurp("oscar_learnopengl/shaders/PBR/lighting_textured/PBR.vert"),
+            loader.slurp("oscar_learnopengl/shaders/PBR/lighting_textured/PBR.frag"),
         }};
         rv.set_texture("uAlbedoMap", albedo);
         rv.set_texture("uNormalMap", normal);
         rv.set_texture("uMetallicMap", metallic);
         rv.set_texture("uRoughnessMap", roughness);
         rv.set_texture("uAOMap", ao);
-        rv.set_vec3_array("uLightWorldPositions", c_LightPositions);
-        rv.set_vec3_array("uLightRadiances", c_LightRadiances);
+        rv.set_vec3_array("uLightWorldPositions", c_light_positions);
+        rv.set_vec3_array("uLightRadiances", c_light_radiances);
         return rv;
     }
 }
 
 class osc::LOGLPBRLightingTexturedTab::Impl final : public StandardTabImpl {
 public:
-    Impl() : StandardTabImpl{c_TabStringID}
+    Impl() : StandardTabImpl{c_tab_string_id}
     {}
 
 private:
     void impl_on_mount() final
     {
         App::upd().make_main_loop_polling();
-        m_Camera.on_mount();
+        camera_.on_mount();
     }
 
     void impl_on_unmount() final
     {
-        m_Camera.on_unmount();
+        camera_.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
-    bool impl_on_event(SDL_Event const& e) final
+    bool impl_on_event(const SDL_Event& e) final
     {
-        return m_Camera.on_event(e);
+        return camera_.on_event(e);
     }
 
     void impl_on_draw() final
     {
-        m_Camera.on_draw();
-        draw3DRender();
-        m_PerfPanel.on_draw();
+        camera_.on_draw();
+        draw_3D_render();
+        perf_panel_.on_draw();
     }
 
-    void draw3DRender()
+    void draw_3D_render()
     {
-        m_Camera.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
+        camera_.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
 
-        m_PBRMaterial.set_vec3("uCameraWorldPosition", m_Camera.position());
+        pbr_material_.set_vec3("uCameraWorldPosition", camera_.position());
 
-        drawSpheres();
-        drawLights();
+        draw_spheres();
+        draw_lights();
 
-        m_Camera.render_to_screen();
+        camera_.render_to_screen();
     }
 
-    void drawSpheres()
+    void draw_spheres()
     {
-        for (int row = 0; row < c_NumRows; ++row) {
-            for (int col = 0; col < c_NumCols; ++col) {
-                float const x = (static_cast<float>(col) - static_cast<float>(c_NumCols)/2.0f) * c_CellSpacing;
-                float const y = (static_cast<float>(row) - static_cast<float>(c_NumRows)/2.0f) * c_CellSpacing;
-                graphics::draw(m_SphereMesh, {.position = {x, y, 0.0f}}, m_PBRMaterial, m_Camera);
+        for (int row = 0; row < c_num_rows; ++row) {
+            for (int col = 0; col < c_num_cols; ++col) {
+                const float x = (static_cast<float>(col) - static_cast<float>(c_num_cols)/2.0f) * c_cell_spacing;
+                const float y = (static_cast<float>(row) - static_cast<float>(c_num_rows)/2.0f) * c_cell_spacing;
+                graphics::draw(sphere_mesh_, {.position = {x, y, 0.0f}}, pbr_material_, camera_);
             }
         }
     }
 
-    void drawLights()
+    void draw_lights()
     {
-        for (Vec3 const& pos : c_LightPositions) {
-            graphics::draw(m_SphereMesh, {.scale = Vec3{0.5f}, .position = pos}, m_PBRMaterial, m_Camera);
+        for (const Vec3& light_position : c_light_positions) {
+            graphics::draw(sphere_mesh_, {.scale = Vec3{0.5f}, .position = light_position}, pbr_material_, camera_);
         }
     }
 
-    ResourceLoader m_Loader = App::resource_loader();
-    MouseCapturingCamera m_Camera = CreateCamera();
-    Mesh m_SphereMesh = SphereGeometry{1.0f, 64, 64};
-    Material m_PBRMaterial = CreateMaterial(m_Loader);
-    PerfPanel m_PerfPanel{"Perf"};
+    ResourceLoader loader_ = App::resource_loader();
+    MouseCapturingCamera camera_ = create_camera();
+    Mesh sphere_mesh_ = SphereGeometry{1.0f, 64, 64};
+    Material pbr_material_ = create_material(loader_);
+    PerfPanel perf_panel_{"Perf"};
 };
 
 
-// public API
-
 CStringView osc::LOGLPBRLightingTexturedTab::id()
 {
-    return c_TabStringID;
+    return c_tab_string_id;
 }
 
-osc::LOGLPBRLightingTexturedTab::LOGLPBRLightingTexturedTab(ParentPtr<ITabHost> const&) :
-    m_Impl{std::make_unique<Impl>()}
-{
-}
-
+osc::LOGLPBRLightingTexturedTab::LOGLPBRLightingTexturedTab(const ParentPtr<ITabHost>&) :
+    impl_{std::make_unique<Impl>()}
+{}
 osc::LOGLPBRLightingTexturedTab::LOGLPBRLightingTexturedTab(LOGLPBRLightingTexturedTab&&) noexcept = default;
 osc::LOGLPBRLightingTexturedTab& osc::LOGLPBRLightingTexturedTab::operator=(LOGLPBRLightingTexturedTab&&) noexcept = default;
 osc::LOGLPBRLightingTexturedTab::~LOGLPBRLightingTexturedTab() noexcept = default;
 
 UID osc::LOGLPBRLightingTexturedTab::impl_get_id() const
 {
-    return m_Impl->id();
+    return impl_->id();
 }
 
 CStringView osc::LOGLPBRLightingTexturedTab::impl_get_name() const
 {
-    return m_Impl->name();
+    return impl_->name();
 }
 
 void osc::LOGLPBRLightingTexturedTab::impl_on_mount()
 {
-    m_Impl->on_mount();
+    impl_->on_mount();
 }
 
 void osc::LOGLPBRLightingTexturedTab::impl_on_unmount()
 {
-    m_Impl->on_unmount();
+    impl_->on_unmount();
 }
 
-bool osc::LOGLPBRLightingTexturedTab::impl_on_event(SDL_Event const& e)
+bool osc::LOGLPBRLightingTexturedTab::impl_on_event(const SDL_Event& e)
 {
-    return m_Impl->on_event(e);
+    return impl_->on_event(e);
 }
 
 void osc::LOGLPBRLightingTexturedTab::impl_on_draw()
 {
-    m_Impl->on_draw();
+    impl_->on_draw();
 }

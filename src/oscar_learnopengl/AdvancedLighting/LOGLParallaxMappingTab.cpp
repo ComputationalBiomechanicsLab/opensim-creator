@@ -13,10 +13,10 @@ using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_TabStringID = "LearnOpenGL/ParallaxMapping";
+    constexpr CStringView c_tab_string_id = "LearnOpenGL/ParallaxMapping";
 
     // matches the quad used in LearnOpenGL's parallax mapping tutorial
-    Mesh GenerateQuad()
+    Mesh generate_quad()
     {
         Mesh rv;
         rv.set_vertices({
@@ -45,7 +45,7 @@ namespace
         return rv;
     }
 
-    MouseCapturingCamera CreateCamera()
+    MouseCapturingCamera create_camera()
     {
         MouseCapturingCamera rv;
         rv.set_position({0.0f, 0.0f, 3.0f});
@@ -55,152 +55,148 @@ namespace
         return rv;
     }
 
-    Material CreateParallaxMappingMaterial(IResourceLoader& rl)
+    Material create_parallax_mapping_material(IResourceLoader& loader)
     {
-        Texture2D diffuseMap = load_texture2D_from_image(
-            rl.open("oscar_learnopengl/textures/bricks2.jpg"),
+        const Texture2D diffuse_map = load_texture2D_from_image(
+            loader.open("oscar_learnopengl/textures/bricks2.jpg"),
             ColorSpace::sRGB
         );
-        Texture2D normalMap = load_texture2D_from_image(
-            rl.open("oscar_learnopengl/textures/bricks2_normal.jpg"),
+        const Texture2D normal_map = load_texture2D_from_image(
+            loader.open("oscar_learnopengl/textures/bricks2_normal.jpg"),
             ColorSpace::Linear
         );
-        Texture2D displacementMap = load_texture2D_from_image(
-            rl.open("oscar_learnopengl/textures/bricks2_disp.jpg"),
+        const Texture2D displacement_map = load_texture2D_from_image(
+            loader.open("oscar_learnopengl/textures/bricks2_disp.jpg"),
             ColorSpace::Linear
         );
 
         Material rv{Shader{
-            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/ParallaxMapping.vert"),
-            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/ParallaxMapping.frag"),
+            loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/ParallaxMapping.vert"),
+            loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/ParallaxMapping.frag"),
         }};
-        rv.set_texture("uDiffuseMap", diffuseMap);
-        rv.set_texture("uNormalMap", normalMap);
-        rv.set_texture("uDisplacementMap", displacementMap);
+        rv.set_texture("uDiffuseMap", diffuse_map);
+        rv.set_texture("uNormalMap", normal_map);
+        rv.set_texture("uDisplacementMap", displacement_map);
         rv.set_float("uHeightScale", 0.1f);
         return rv;
     }
 
-    Material CreateLightCubeMaterial(IResourceLoader& rl)
+    Material create_lightcube_material(IResourceLoader& loader)
     {
         return Material{Shader{
-            rl.slurp("oscar_learnopengl/shaders/LightCube.vert"),
-            rl.slurp("oscar_learnopengl/shaders/LightCube.frag"),
+            loader.slurp("oscar_learnopengl/shaders/LightCube.vert"),
+            loader.slurp("oscar_learnopengl/shaders/LightCube.frag"),
         }};
     }
 }
 
 class osc::LOGLParallaxMappingTab::Impl final : public StandardTabImpl {
 public:
-    Impl() : StandardTabImpl{c_TabStringID}
+    Impl() : StandardTabImpl{c_tab_string_id}
     {}
 
 private:
     void impl_on_mount() final
     {
-        m_Camera.on_mount();
+        camera_.on_mount();
     }
 
     void impl_on_unmount() final
     {
-        m_Camera.on_unmount();
+        camera_.on_unmount();
     }
 
-    bool impl_on_event(SDL_Event const& e) final
+    bool impl_on_event(const SDL_Event& e) final
     {
-        return m_Camera.on_event(e);
+        return camera_.on_event(e);
     }
 
     void impl_on_draw() final
     {
-        m_Camera.on_draw();
+        camera_.on_draw();
 
         // clear screen and ensure camera has correct pixel rect
         App::upd().clear_screen({0.1f, 0.1f, 0.1f, 1.0f});
 
         // draw normal-mapped quad
         {
-            m_ParallaxMappingMaterial.set_vec3("uLightWorldPos", m_LightTransform.position);
-            m_ParallaxMappingMaterial.set_vec3("uViewWorldPos", m_Camera.position());
-            m_ParallaxMappingMaterial.set_bool("uEnableMapping", m_IsMappingEnabled);
-            graphics::draw(m_QuadMesh, m_QuadTransform, m_ParallaxMappingMaterial, m_Camera);
+            parallax_mapping_material_.set_vec3("uLightWorldPos", light_transform_.position);
+            parallax_mapping_material_.set_vec3("uViewWorldPos", camera_.position());
+            parallax_mapping_material_.set_bool("uEnableMapping", parallax_mapping_enabled_);
+            graphics::draw(quad_mesh_, quad_transform_, parallax_mapping_material_, camera_);
         }
 
         // draw light source cube
         {
-            m_LightCubeMaterial.set_color("uLightColor", Color::white());
-            graphics::draw(m_CubeMesh, m_LightTransform, m_LightCubeMaterial, m_Camera);
+            light_cube_material_.set_color("uLightColor", Color::white());
+            graphics::draw(cube_mesh_, light_transform_, light_cube_material_, camera_);
         }
 
-        m_Camera.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
-        m_Camera.render_to_screen();
+        camera_.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
+        camera_.render_to_screen();
 
         ui::begin_panel("controls");
-        ui::draw_checkbox("normal mapping", &m_IsMappingEnabled);
+        ui::draw_checkbox("normal mapping", &parallax_mapping_enabled_);
         ui::end_panel();
     }
 
-    ResourceLoader m_Loader = App::resource_loader();
+    ResourceLoader loader_ = App::resource_loader();
 
     // rendering state
-    Material m_ParallaxMappingMaterial = CreateParallaxMappingMaterial(m_Loader);
-    Material m_LightCubeMaterial = CreateLightCubeMaterial(m_Loader);
-    Mesh m_CubeMesh = BoxGeometry{};
-    Mesh m_QuadMesh = GenerateQuad();
+    Material parallax_mapping_material_ = create_parallax_mapping_material(loader_);
+    Material light_cube_material_ = create_lightcube_material(loader_);
+    Mesh cube_mesh_ = BoxGeometry{};
+    Mesh quad_mesh_ = generate_quad();
 
     // scene state
-    MouseCapturingCamera m_Camera = CreateCamera();
-    Transform m_QuadTransform;
-    Transform m_LightTransform = {
+    MouseCapturingCamera camera_ = create_camera();
+    Transform quad_transform_;
+    Transform light_transform_ = {
         .scale = Vec3{0.2f},
         .position = {0.5f, 1.0f, 0.3f},
     };
-    bool m_IsMappingEnabled = true;
+    bool parallax_mapping_enabled_ = true;
 };
 
 
-// public API
-
 CStringView osc::LOGLParallaxMappingTab::id()
 {
-    return c_TabStringID;
+    return c_tab_string_id;
 }
 
-osc::LOGLParallaxMappingTab::LOGLParallaxMappingTab(ParentPtr<ITabHost> const&) :
-    m_Impl{std::make_unique<Impl>()}
-{
-}
-
+osc::LOGLParallaxMappingTab::LOGLParallaxMappingTab(const ParentPtr<ITabHost>&) :
+    impl_{std::make_unique<Impl>()}
+{}
 osc::LOGLParallaxMappingTab::LOGLParallaxMappingTab(LOGLParallaxMappingTab&&) noexcept = default;
 osc::LOGLParallaxMappingTab& osc::LOGLParallaxMappingTab::operator=(LOGLParallaxMappingTab&&) noexcept = default;
 osc::LOGLParallaxMappingTab::~LOGLParallaxMappingTab() noexcept = default;
 
 UID osc::LOGLParallaxMappingTab::impl_get_id() const
 {
-    return m_Impl->id();
+    return impl_->id();
 }
 
 CStringView osc::LOGLParallaxMappingTab::impl_get_name() const
 {
-    return m_Impl->name();
+    return impl_->name();
 }
 
 void osc::LOGLParallaxMappingTab::impl_on_mount()
 {
-    m_Impl->on_mount();
+    impl_->on_mount();
 }
 
 void osc::LOGLParallaxMappingTab::impl_on_unmount()
 {
-    m_Impl->on_unmount();
+    impl_->on_unmount();
 }
 
-bool osc::LOGLParallaxMappingTab::impl_on_event(SDL_Event const& e)
+bool osc::LOGLParallaxMappingTab::impl_on_event(const SDL_Event& e)
 {
-    return m_Impl->on_event(e);
+    return impl_->on_event(e);
 }
 
 void osc::LOGLParallaxMappingTab::impl_on_draw()
 {
-    m_Impl->on_draw();
+    impl_->on_draw();
 }

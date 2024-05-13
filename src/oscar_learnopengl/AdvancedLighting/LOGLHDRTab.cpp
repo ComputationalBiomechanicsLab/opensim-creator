@@ -11,16 +11,16 @@ using namespace osc;
 
 namespace
 {
-    constexpr auto c_LightPositions = std::to_array<Vec3>({
+    constexpr auto c_light_positions = std::to_array<Vec3>({
         { 0.0f,  0.0f, 49.5f},
         {-1.4f, -1.9f, 9.0f},
         { 0.0f, -1.8f, 4.0f},
         { 0.8f, -1.7f, 6.0f},
     });
 
-    constexpr CStringView c_TabStringID = "LearnOpenGL/HDR";
+    constexpr CStringView c_tab_string_id = "LearnOpenGL/HDR";
 
-    std::array<Color, c_LightPositions.size()> GetLightColors()
+    std::array<Color, c_light_positions.size()> GetLightColors()
     {
         return std::to_array<Color>({
             to_srgb_colorspace({200.0f, 200.0f, 200.0f, 1.0f}),
@@ -30,12 +30,12 @@ namespace
         });
     }
 
-    Transform CalcCorridoorTransform()
+    Transform calc_corridoor_transform()
     {
         return {.scale = {2.5f, 2.5f, 27.5f}, .position = {0.0f, 0.0f, 25.0f}};
     }
 
-    MouseCapturingCamera CreateSceneCamera()
+    MouseCapturingCamera create_scene_camera()
     {
         MouseCapturingCamera rv;
         rv.set_position({0.0f, 0.0f, 5.0f});
@@ -47,168 +47,163 @@ namespace
         return rv;
     }
 
-    Material CreateSceneMaterial(IResourceLoader& rl)
+    Material create_scene_material(IResourceLoader& loader)
     {
-        Texture2D woodTexture = load_texture2D_from_image(
-            rl.open("oscar_learnopengl/textures/wood.png"),
+        Texture2D wood_texture = load_texture2D_from_image(
+            loader.open("oscar_learnopengl/textures/wood.png"),
             ColorSpace::sRGB
         );
 
         Material rv{Shader{
-            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Scene.vert"),
-            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Scene.frag"),
+            loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Scene.vert"),
+            loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Scene.frag"),
         }};
-        rv.set_vec3_array("uSceneLightPositions", c_LightPositions);
+        rv.set_vec3_array("uSceneLightPositions", c_light_positions);
         rv.set_color_array("uSceneLightColors", GetLightColors());
-        rv.set_texture("uDiffuseTexture", woodTexture);
+        rv.set_texture("uDiffuseTexture", wood_texture);
         rv.set_bool("uInverseNormals", true);
         return rv;
     }
 
-    Material CreateTonemapMaterial(IResourceLoader& rl)
+    Material create_tonemap_material(IResourceLoader& loader)
     {
         return Material{Shader{
-            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Tonemap.vert"),
-            rl.slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Tonemap.frag"),
+            loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Tonemap.vert"),
+            loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Tonemap.frag"),
         }};
     }
 }
 
 class osc::LOGLHDRTab::Impl final : public StandardTabImpl {
 public:
-    Impl() : StandardTabImpl{c_TabStringID}
+    Impl() : StandardTabImpl{c_tab_string_id}
     {}
 
 private:
     void impl_on_mount() final
     {
         App::upd().make_main_loop_polling();
-        m_Camera.on_mount();
+        camera_.on_mount();
     }
 
     void impl_on_unmount() final
     {
-        m_Camera.on_unmount();
+        camera_.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
-    bool impl_on_event(SDL_Event const& e) final
+    bool impl_on_event(const SDL_Event& e) final
     {
-        return m_Camera.on_event(e);
+        return camera_.on_event(e);
     }
 
     void impl_on_draw() final
     {
-        m_Camera.on_draw();
-        draw3DSceneToHDRTexture();
-        drawHDRTextureViaTonemapperToScreen();
-        draw2DUI();
+        camera_.on_draw();
+        draw_3d_scene_to_hdr_texture();
+        draw_hdr_texture_via_tonemapper_to_screen();
+        draw_2d_ui();
     }
 
-    void draw3DSceneToHDRTexture()
+    void draw_3d_scene_to_hdr_texture()
     {
         // reformat intermediate HDR texture to match tab dimensions etc.
         {
-            Rect const viewportRect = ui::get_main_viewport_workspace_screen_rect();
-            RenderTextureDescriptor descriptor{dimensions_of(viewportRect)};
+            const Rect viewport_rect = ui::get_main_viewport_workspace_screen_rect();
+            RenderTextureDescriptor descriptor{dimensions_of(viewport_rect)};
             descriptor.set_anti_aliasing_level(App::get().anti_aliasing_level());
-            if (m_Use16BitFormat)
-            {
+            if (use_16bit_format_) {
                 descriptor.set_color_format(RenderTextureFormat::ARGBFloat16);
             }
 
-            m_SceneHDRTexture.reformat(descriptor);
+            scene_hdr_texture_.reformat(descriptor);
         }
 
-        graphics::draw(m_CubeMesh, m_CorridoorTransform, m_SceneMaterial, m_Camera);
-        m_Camera.render_to(m_SceneHDRTexture);
+        graphics::draw(cube_mesh_, corridoor_transform_, scene_material_, camera_);
+        camera_.render_to(scene_hdr_texture_);
     }
 
-    void drawHDRTextureViaTonemapperToScreen()
+    void draw_hdr_texture_via_tonemapper_to_screen()
     {
-        Camera orthoCamera;
-        orthoCamera.set_background_color(Color::clear());
-        orthoCamera.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
-        orthoCamera.set_projection_matrix_override(identity<Mat4>());
-        orthoCamera.set_view_matrix_override(identity<Mat4>());
+        Camera ortho_camera;
+        ortho_camera.set_background_color(Color::clear());
+        ortho_camera.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
+        ortho_camera.set_projection_matrix_override(identity<Mat4>());
+        ortho_camera.set_view_matrix_override(identity<Mat4>());
 
-        m_TonemapMaterial.set_render_texture("uTexture", m_SceneHDRTexture);
-        m_TonemapMaterial.set_bool("uUseTonemap", m_UseTonemap);
-        m_TonemapMaterial.set_float("uExposure", m_Exposure);
+        tonemap_material_.set_render_texture("uTexture", scene_hdr_texture_);
+        tonemap_material_.set_bool("uUseTonemap", use_tonemap_);
+        tonemap_material_.set_float("uExposure", exposure_);
 
-        graphics::draw(m_QuadMesh, identity<Transform>(), m_TonemapMaterial, orthoCamera);
-        orthoCamera.render_to_screen();
+        graphics::draw(quad_mesh_, identity<Transform>(), tonemap_material_, ortho_camera);
+        ortho_camera.render_to_screen();
 
-        m_TonemapMaterial.clear_render_texture("uTexture");
+        tonemap_material_.clear_render_texture("uTexture");
     }
 
-    void draw2DUI()
+    void draw_2d_ui()
     {
         ui::begin_panel("controls");
-        ui::draw_checkbox("use tonemapping", &m_UseTonemap);
-        ui::draw_checkbox("use 16-bit colors", &m_Use16BitFormat);
-        ui::draw_float_input("exposure", &m_Exposure);
-        ui::draw_text("pos = %f,%f,%f", m_Camera.position().x, m_Camera.position().y, m_Camera.position().z);
-        ui::draw_text("eulers = %f,%f,%f", m_Camera.eulers().x.count(), m_Camera.eulers().y.count(), m_Camera.eulers().z.count());
+        ui::draw_checkbox("use tonemapping", &use_tonemap_);
+        ui::draw_checkbox("use 16-bit colors", &use_16bit_format_);
+        ui::draw_float_input("exposure", &exposure_);
+        ui::draw_text("pos = %f,%f,%f", camera_.position().x, camera_.position().y, camera_.position().z);
+        ui::draw_text("eulers = %f,%f,%f", camera_.eulers().x.count(), camera_.eulers().y.count(), camera_.eulers().z.count());
         ui::end_panel();
     }
 
-    ResourceLoader m_Loader = App::resource_loader();
-    Material m_SceneMaterial = CreateSceneMaterial(m_Loader);
-    Material m_TonemapMaterial = CreateTonemapMaterial(m_Loader);
-    MouseCapturingCamera m_Camera = CreateSceneCamera();
-    Mesh m_CubeMesh = BoxGeometry{2.0f, 2.0f, 2.0f};
-    Mesh m_QuadMesh = PlaneGeometry{2.0f, 2.0f};
-    Transform m_CorridoorTransform = CalcCorridoorTransform();
-    RenderTexture m_SceneHDRTexture;
-    float m_Exposure = 1.0f;
-    bool m_Use16BitFormat = true;
-    bool m_UseTonemap = true;
+    ResourceLoader loader_ = App::resource_loader();
+    Material scene_material_ = create_scene_material(loader_);
+    Material tonemap_material_ = create_tonemap_material(loader_);
+    MouseCapturingCamera camera_ = create_scene_camera();
+    Mesh cube_mesh_ = BoxGeometry{2.0f, 2.0f, 2.0f};
+    Mesh quad_mesh_ = PlaneGeometry{2.0f, 2.0f};
+    Transform corridoor_transform_ = calc_corridoor_transform();
+    RenderTexture scene_hdr_texture_;
+    float exposure_ = 1.0f;
+    bool use_16bit_format_ = true;
+    bool use_tonemap_ = true;
 };
 
 
-// public API
-
 CStringView osc::LOGLHDRTab::id()
 {
-    return c_TabStringID;
+    return c_tab_string_id;
 }
 
-osc::LOGLHDRTab::LOGLHDRTab(ParentPtr<ITabHost> const&) :
-    m_Impl{std::make_unique<Impl>()}
-{
-}
-
+osc::LOGLHDRTab::LOGLHDRTab(const ParentPtr<ITabHost>&) :
+    impl_{std::make_unique<Impl>()}
+{}
 osc::LOGLHDRTab::LOGLHDRTab(LOGLHDRTab&&) noexcept = default;
 osc::LOGLHDRTab& osc::LOGLHDRTab::operator=(LOGLHDRTab&&) noexcept = default;
 osc::LOGLHDRTab::~LOGLHDRTab() noexcept = default;
 
 UID osc::LOGLHDRTab::impl_get_id() const
 {
-    return m_Impl->id();
+    return impl_->id();
 }
 
 CStringView osc::LOGLHDRTab::impl_get_name() const
 {
-    return m_Impl->name();
+    return impl_->name();
 }
 
 void osc::LOGLHDRTab::impl_on_mount()
 {
-    m_Impl->on_mount();
+    impl_->on_mount();
 }
 
 void osc::LOGLHDRTab::impl_on_unmount()
 {
-    m_Impl->on_unmount();
+    impl_->on_unmount();
 }
 
-bool osc::LOGLHDRTab::impl_on_event(SDL_Event const& e)
+bool osc::LOGLHDRTab::impl_on_event(const SDL_Event& e)
 {
-    return m_Impl->on_event(e);
+    return impl_->on_event(e);
 }
 
 void osc::LOGLHDRTab::impl_on_draw()
 {
-    m_Impl->on_draw();
+    impl_->on_draw();
 }
