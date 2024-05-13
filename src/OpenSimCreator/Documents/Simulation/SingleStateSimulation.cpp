@@ -17,7 +17,7 @@ public:
 
     SynchronizedValueGuard<OpenSim::Model const> getModel() const
     {
-        return m_ModelState.lockChild<OpenSim::Model>([](BasicModelStatePair const& ms) -> OpenSim::Model const& { return ms.getModel(); });
+        return m_ModelState.lock_child<OpenSim::Model>([](BasicModelStatePair const& ms) -> OpenSim::Model const& { return ms.getModel(); });
     }
 
     ptrdiff_t getNumReports() const

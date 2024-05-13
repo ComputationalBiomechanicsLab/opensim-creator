@@ -20,7 +20,7 @@
 namespace osc
 {
     template<typename T>
-    concept Undoable = std::destructible<T> && std::copy_constructible<T>;
+    concept Undoable = std::destructible<T> and std::copy_constructible<T>;
 
     // internal storage details
     namespace detail
@@ -28,8 +28,8 @@ namespace osc
         // a base class for storing undo/redo metadata
         class UndoRedoEntryMetadata {
         protected:
-            explicit UndoRedoEntryMetadata(std::string_view message_) :
-                m_Message{message_}
+            explicit UndoRedoEntryMetadata(std::string_view message) :
+                message_{message}
             {}
             UndoRedoEntryMetadata(const UndoRedoEntryMetadata&) = default;
             UndoRedoEntryMetadata(UndoRedoEntryMetadata&&) noexcept = default;
@@ -38,13 +38,13 @@ namespace osc
         public:
             virtual ~UndoRedoEntryMetadata() noexcept = default;
 
-            UID id() const { return m_ID; }
-            std::chrono::system_clock::time_point time() const { return m_Time; }
-            CStringView message() const { return m_Message; }
+            UID id() const { return id_; }
+            std::chrono::system_clock::time_point time() const { return time_; }
+            CStringView message() const { return message_; }
         private:
-            UID m_ID;
-            std::chrono::system_clock::time_point m_Time = std::chrono::system_clock::now();
-            std::string m_Message;
+            UID id_;
+            std::chrono::system_clock::time_point time_ = std::chrono::system_clock::now();
+            std::string message_;
         };
 
         // concrete implementation of storage for a complete undo/redo entry (metadata + value)
@@ -53,15 +53,15 @@ namespace osc
         public:
             template<typename... Args>
             requires std::constructible_from<T, Args&&...>
-            UndoRedoEntryData(std::string_view message_, Args&&... args) :
-                UndoRedoEntryMetadata{std::move(message_)},
-                m_Value{std::forward<Args>(args)...}
+            UndoRedoEntryData(std::string_view message, Args&&... args) :
+                UndoRedoEntryMetadata{std::move(message)},
+                value_{std::forward<Args>(args)...}
             {}
 
-            const T& value() const { return m_Value; }
+            const T& value() const { return value_; }
 
         private:
-            T m_Value;
+            T value_;
         };
     }
 

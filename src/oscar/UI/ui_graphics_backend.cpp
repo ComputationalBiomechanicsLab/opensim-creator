@@ -90,7 +90,7 @@ namespace
 
     UID to_uid(ImTextureID id)
     {
-        return UID::FromIntUnchecked(cpp20::bit_cast<UID::element_type>(id));
+        return UID::from_int_unchecked(cpp20::bit_cast<UID::element_type>(id));
     }
 
     Texture2D create_font_texture(UID texture_id)

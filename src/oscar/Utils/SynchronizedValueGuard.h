@@ -11,19 +11,18 @@ namespace osc
     >
     class SynchronizedValueGuard final {
     public:
-        SynchronizedValueGuard(std::mutex& mutex, T& _ref) :
-            m_Guard{mutex},
-            m_Ptr{&_ref}
-        {
-        }
+        SynchronizedValueGuard(std::mutex& mutex, T& value_ref) :
+            mutex_guard_{mutex},
+            value_ptr_{&value_ref}
+        {}
 
-        T& operator*() & { return *m_Ptr; }
-        const T& operator*() const & { return *m_Ptr; }
-        T* operator->() { return m_Ptr; }
-        const T* operator->() const { return m_Ptr; }
+        T& operator*() & { return *value_ptr_; }
+        const T& operator*() const & { return *value_ptr_; }
+        T* operator->() { return value_ptr_; }
+        const T* operator->() const { return value_ptr_; }
 
     private:
-        TGuard m_Guard;
-        T* m_Ptr;
+        TGuard mutex_guard_;
+        T* value_ptr_;
     };
 }

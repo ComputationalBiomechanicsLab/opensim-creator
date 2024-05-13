@@ -23,27 +23,26 @@ namespace
     // pointers
     struct StringNameDataPtr final {
     public:
-        explicit StringNameDataPtr(std::string_view value_) :
-            m_Ptr{std::make_unique<StringNameData>(value_)}
-        {
-        }
+        explicit StringNameDataPtr(std::string_view s) :
+            ptr_{std::make_unique<StringNameData>(s)}
+        {}
 
         friend bool operator==(std::string_view lhs, const StringNameDataPtr& rhs)
         {
-            return lhs == rhs.m_Ptr->value();
+            return lhs == rhs.ptr_->value();
         }
 
         StringNameData* operator->() const
         {
-            return m_Ptr.get();
+            return ptr_.get();
         }
 
         StringNameData& operator*() const
         {
-            return *m_Ptr;
+            return *ptr_;
         }
     private:
-        std::unique_ptr<StringNameData> m_Ptr;
+        std::unique_ptr<StringNameData> ptr_;
     };
 
     struct StringNameLutHasher final {
@@ -67,45 +66,44 @@ namespace
         std::equal_to<>
     >;
 
-    SynchronizedValue<StringNameLookup>& GetGlobalStringNameLUT()
+    SynchronizedValue<StringNameLookup>& get_global_string_name_lut()
     {
-        static SynchronizedValue<StringNameLookup> s_Lut;
-        return s_Lut;
+        static SynchronizedValue<StringNameLookup> s_lut;
+        return s_lut;
     }
 
     template<typename StringLike>
     requires
         std::constructible_from<std::string, StringLike&&> and
         std::convertible_to<StringLike&&, std::string_view>
-    StringNameData& PossiblyConstructThenGetData(StringLike&& input)
+    StringNameData& possibly_construct_then_get_data(StringLike&& input)
     {
-        auto [it, inserted] = GetGlobalStringNameLUT().lock()->emplace(std::forward<StringLike>(input));
+        auto [it, inserted] = get_global_string_name_lut().lock()->emplace(std::forward<StringLike>(input));
         if (not inserted) {
-            (*it)->incrementOwnerCount();
+            (*it)->increment_owner_count();
         }
         return **it;
     }
 
-    void DecrementThenPossiblyDestroyData(StringNameData& data)
+    void decrement_then_possibly_destruct_data(StringNameData& data)
     {
-        if (data.decrementOwnerCount())
-        {
-            GetGlobalStringNameLUT().lock()->erase(data.value());
+        if (data.decrement_owner_count()) {
+            get_global_string_name_lut().lock()->erase(data.value());
         }
     }
 
     // edge-case for blank string (common)
-    const StringName& GetCachedBlankStringData()
+    const StringName& get_cached_blank_string_data()
     {
-        static const StringName s_BlankString{std::string_view{}};
-        return s_BlankString;
+        static const StringName s_blank_string{std::string_view{}};
+        return s_blank_string;
     }
 }
 
-osc::StringName::StringName() : StringName{GetCachedBlankStringData()} {}
-osc::StringName::StringName(std::string&& tmp) : m_Data{&PossiblyConstructThenGetData(std::move(tmp))} {}
-osc::StringName::StringName(std::string_view sv) : m_Data{&PossiblyConstructThenGetData(sv)} {}
-osc::StringName::~StringName() noexcept { DecrementThenPossiblyDestroyData(*m_Data); }
+osc::StringName::StringName() : StringName{get_cached_blank_string_data()} {}
+osc::StringName::StringName(std::string&& tmp) : data_{&possibly_construct_then_get_data(std::move(tmp))} {}
+osc::StringName::StringName(std::string_view sv) : data_{&possibly_construct_then_get_data(sv)} {}
+osc::StringName::~StringName() noexcept { decrement_then_possibly_destruct_data(*data_); }
 
 std::ostream& osc::operator<<(std::ostream& o, const StringName& s)
 {

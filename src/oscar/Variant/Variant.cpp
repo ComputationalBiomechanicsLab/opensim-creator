@@ -251,7 +251,7 @@ std::ostream& osc::operator<<(std::ostream& o, const Variant& v)
 
 size_t std::hash<osc::Variant>::operator()(const Variant& v) const
 {
-    // note: you might be wondering why this isn't `std::hash<std::variant>{}(v.m_Data)`
+    // note: you might be wondering why this isn't `std::hash<std::variant>{}(v.data_)`
     //
     // > cppreference.com
     // >

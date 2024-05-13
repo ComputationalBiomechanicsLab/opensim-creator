@@ -20,9 +20,9 @@ namespace osc
         // construct from a non-null shared ptr
         template<std::derived_from<T> U>
         explicit ParentPtr(const std::shared_ptr<U>& parent) :
-            m_Parent{parent}
+            ptr_{parent}
         {
-            OSC_ASSERT(!m_Parent.expired() && "null or expired parent pointer given to a child");
+            OSC_ASSERT(!ptr_.expired() && "null or expired parent pointer given to a child");
         }
 
         // normal copy construction
@@ -31,7 +31,7 @@ namespace osc
         // coercing copy construction: only applies when `T` can be implicitly converted to `U`
         template<std::derived_from<T> U>
         ParentPtr(const ParentPtr<U>& other) :
-            m_Parent{other.m_Parent}
+            ptr_{other.ptr_}
         {}
 
         // normal move construction
@@ -40,7 +40,7 @@ namespace osc
         // coercing move construction: only applies when `T` can be implicitly converted to `U`
         template<std::derived_from<T> U>
         ParentPtr(ParentPtr<U>&& tmp) noexcept :
-            m_Parent{std::move(tmp.m_Parent)}
+            ptr_{std::move(tmp.ptr_)}
         {}
 
         // normal copy assignment
@@ -50,7 +50,7 @@ namespace osc
         template<std::derived_from<T> U>
         ParentPtr& operator=(const ParentPtr<U>& other)
         {
-            m_Parent = other.m_Parent;
+            ptr_ = other.ptr_;
         }
 
         // normal move assignment
@@ -60,26 +60,26 @@ namespace osc
         template<std::derived_from<T> U>
         ParentPtr& operator=(ParentPtr<U> && tmp) noexcept
         {
-            m_Parent = std::move(tmp.m_Parent);
+            ptr_ = std::move(tmp.ptr_);
         }
 
         ~ParentPtr() noexcept = default;
 
         T* operator->() const
         {
-            OSC_ASSERT(!m_Parent.expired() && "orphaned child tried to access a dead parent: this is a development error");
-            return m_Parent.lock().get();
+            OSC_ASSERT(!ptr_.expired() && "orphaned child tried to access a dead parent: this is a development error");
+            return ptr_.lock().get();
         }
 
         T& operator*() const
         {
-            OSC_ASSERT(!m_Parent.expired() && "orphaned child tried to access a dead parent: this is a development error");
-            return *m_Parent.lock();
+            OSC_ASSERT(!ptr_.expired() && "orphaned child tried to access a dead parent: this is a development error");
+            return *ptr_.lock();
         }
 
         friend void swap(ParentPtr& a, ParentPtr& b) noexcept
         {
-            std::swap(a.m_Parent, b.m_Parent);
+            std::swap(a.ptr_, b.ptr_);
         }
 
     private:
@@ -88,17 +88,17 @@ namespace osc
 
         // friend function, for downcasting
         template<typename TDerived, typename TBase>
-        requires std::derived_from<TDerived, TBase>
         friend std::optional<ParentPtr<TDerived>> dynamic_parent_cast(const ParentPtr<TBase>&);
 
-        std::weak_ptr<T> m_Parent;
+        std::weak_ptr<T> ptr_;
     };
 
     template<typename TDerived, typename TBase>
-    requires std::derived_from<TDerived, TBase>
     std::optional<ParentPtr<TDerived>> dynamic_parent_cast(const ParentPtr<TBase>& p)
     {
-        const std::shared_ptr<TBase> parent_shared_ptr = p.m_Parent.lock();
+        static_assert(std::derived_from<TDerived, TBase>);
+
+        const std::shared_ptr<TBase> parent_shared_ptr = p.ptr_.lock();
         OSC_ASSERT_ALWAYS(parent_shared_ptr != nullptr && "orphaned child tried to access a dead parent: this is a development error");
 
         if (auto parent_downcasted_ptr = std::dynamic_pointer_cast<TDerived>(parent_shared_ptr)) {

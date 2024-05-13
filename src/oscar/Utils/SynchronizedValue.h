@@ -19,22 +19,22 @@ namespace osc
         // default-construct T
         SynchronizedValue() = default;
 
-        // in-place constructor for T
+        // in-place constructor for `T`
         template<typename... Args>
         requires std::constructible_from<T, Args&&...>
         explicit SynchronizedValue(Args&&... args) :
-            m_Mutex{},
-            m_Value{std::forward<Args>(args)...}
+            value_mutex_{},
+            value_{std::forward<Args>(args)...}
         {}
 
         SynchronizedValue(const SynchronizedValue& other) :
-            m_Mutex{},
-            m_Value{*other.lock()}
+            value_mutex_{},
+            value_{*other.lock()}
         {}
 
         SynchronizedValue(SynchronizedValue&& tmp) noexcept :
-            m_Mutex{},
-            m_Value{std::move(tmp).value()}
+            value_mutex_{},
+            value_{std::move(tmp).value()}
         {}
 
         SynchronizedValue& operator=(const SynchronizedValue& other)
@@ -55,20 +55,20 @@ namespace osc
 
         T value() &&
         {
-            const auto guard = std::lock_guard{m_Mutex};
-            return std::move(m_Value);
+            const auto guard = std::lock_guard{value_mutex_};
+            return std::move(value_);
         }
 
         template<typename TGuard = TDefaultGuard>
         SynchronizedValueGuard<T, TGuard> lock()
         {
-            return SynchronizedValueGuard<T, TGuard>{m_Mutex, m_Value};
+            return SynchronizedValueGuard<T, TGuard>{value_mutex_, value_};
         }
 
         template<typename TGuard = TDefaultGuard>
         SynchronizedValueGuard<const T, TGuard> lock() const
         {
-            return SynchronizedValueGuard<const T, TGuard>{m_Mutex, m_Value};
+            return SynchronizedValueGuard<const T, TGuard>{value_mutex_, value_};
         }
 
         template<
@@ -76,14 +76,14 @@ namespace osc
             typename Getter,
             typename TGuard = TDefaultGuard
         >
-        SynchronizedValueGuard<const U, TGuard> lockChild(Getter f) const
+        SynchronizedValueGuard<const U, TGuard> lock_child(Getter f) const
             requires std::is_same_v<decltype(f(std::declval<T>())), const U&>
         {
-            return SynchronizedValueGuard<const U, TGuard>{m_Mutex, f(m_Value)};
+            return SynchronizedValueGuard<const U, TGuard>{value_mutex_, f(value_)};
         }
 
     private:
-        mutable std::mutex m_Mutex;
-        T m_Value{};
+        mutable std::mutex value_mutex_;
+        T value_{};
     };
 }

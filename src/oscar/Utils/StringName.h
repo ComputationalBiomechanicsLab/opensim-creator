@@ -16,39 +16,32 @@ namespace osc
     {
         class StringNameData final {
         public:
-            explicit StringNameData(std::string_view value_) :
-                m_Value{value_}
-            {
-            }
+            explicit StringNameData(std::string_view view) :
+                value_{view}
+            {}
             StringNameData(StringNameData const&) = delete;
             StringNameData(StringNameData&&) noexcept = delete;
             StringNameData& operator=(const StringNameData&) = delete;
             StringNameData& operator=(StringNameData&&) noexcept = delete;
             ~StringNameData() noexcept = default;
 
-            const std::string& value() const
+            const std::string& value() const { return value_; }
+
+            size_t hash() const { return hash_; }
+
+            void increment_owner_count()
             {
-                return m_Value;
+                num_owners_.fetch_add(1, std::memory_order_relaxed);
             }
 
-            size_t hash() const
+            bool decrement_owner_count()
             {
-                return m_Hash;
-            }
-
-            void incrementOwnerCount()
-            {
-                m_Owners.fetch_add(1, std::memory_order_relaxed);
-            }
-
-            bool decrementOwnerCount()
-            {
-                return m_Owners.fetch_sub(1, std::memory_order_relaxed) == 1;
+                return num_owners_.fetch_sub(1, std::memory_order_relaxed) == 1;
             }
         private:
-            std::string m_Value;
-            size_t m_Hash = std::hash<std::string>{}(m_Value);
-            std::atomic<size_t> m_Owners = 1;
+            std::string value_;
+            size_t hash_ = std::hash<std::string>{}(value_);
+            std::atomic<size_t> num_owners_ = 1;
         };
     }
 
@@ -69,44 +62,42 @@ namespace osc
         explicit StringName();
         explicit StringName(std::string&&);
         explicit StringName(std::string_view);
-        explicit StringName(const char* ptr) : StringName{std::string_view{ptr}} {}
+        explicit StringName(const char* s) : StringName{std::string_view{s}} {}
         explicit StringName(std::nullptr_t) = delete;
 
         StringName(const StringName& other) noexcept :
-            m_Data{other.m_Data}
+            data_{other.data_}
         {
-            m_Data->incrementOwnerCount();
+            data_->increment_owner_count();
         }
 
         StringName(StringName&& tmp) noexcept :
-            m_Data{tmp.m_Data}
+            data_{tmp.data_}
         {
-            m_Data->incrementOwnerCount();
+            data_->increment_owner_count();
         }
 
         StringName& operator=(const StringName& other) noexcept
         {
-            if (other == *this)
-            {
+            if (other == *this) {
                 return *this;
             }
 
             this->~StringName();
-            m_Data = other.m_Data;
-            m_Data->incrementOwnerCount();
+            data_ = other.data_;
+            data_->increment_owner_count();
             return *this;
         }
 
-        StringName& operator=(StringName&& tmp) noexcept
+        StringName& operator=(StringName&& strname) noexcept
         {
-            if (tmp == *this)
-            {
+            if (strname == *this) {
                 return *this;
             }
 
             this->~StringName();
-            m_Data = tmp.m_Data;
-            m_Data->incrementOwnerCount();
+            data_ = strname.data_;
+            data_->increment_owner_count();
             return *this;
         }
 
@@ -119,77 +110,77 @@ namespace osc
 
         const_reference at(size_t pos) const
         {
-            return m_Data->value().at(pos);
+            return data_->value().at(pos);
         }
 
         const_reference operator[](size_t pos) const
         {
-            return m_Data->value()[pos];
+            return data_->value()[pos];
         }
 
         const_reference front() const
         {
-            return m_Data->value().front();
+            return data_->value().front();
         }
 
         const_reference back() const
         {
-            return m_Data->value().back();
+            return data_->value().back();
         }
 
         const value_type* data() const noexcept
         {
-            return m_Data->value().data();
+            return data_->value().data();
         }
 
         const value_type* c_str() const noexcept
         {
-            return m_Data->value().c_str();
+            return data_->value().c_str();
         }
 
         operator std::string_view() const noexcept
         {
-            return m_Data->value();
+            return data_->value();
         }
 
         operator CStringView() const noexcept
         {
-            return m_Data->value();
+            return data_->value();
         }
 
         const_iterator begin() const noexcept
         {
-            return m_Data->value().cbegin();
+            return data_->value().cbegin();
         }
 
         const_iterator cbegin() const noexcept
         {
-            return m_Data->value().cbegin();
+            return data_->value().cbegin();
         }
 
         const_iterator end() const noexcept
         {
-            return m_Data->value().cend();
+            return data_->value().cend();
         }
 
         const_iterator cend() const noexcept
         {
-            return m_Data->value().cend();
+            return data_->value().cend();
         }
 
         [[nodiscard]] bool empty() const noexcept
         {
-            return m_Data->value().empty();
+            return data_->value().empty();
         }
 
         size_type size() const noexcept
         {
-            return m_Data->value().size();
+            return data_->value().size();
         }
 
         void swap(StringName& other) noexcept
         {
-            std::swap(m_Data, other.m_Data);
+            std::swap(data_, other.data_);
         }
 
         friend bool operator==(const StringName&, const StringName&) noexcept = default;
@@ -208,7 +199,7 @@ namespace osc
 
     private:
         friend struct std::hash<StringName>;
-        detail::StringNameData* m_Data;
+        detail::StringNameData* data_;
     };
 
     std::ostream& operator<<(std::ostream&, const StringName&);
@@ -218,6 +209,6 @@ template<>
 struct std::hash<osc::StringName> final {
     size_t operator()(const osc::StringName& str) const
     {
-        return str.m_Data->hash();
+        return str.data_->hash();
     }
 };

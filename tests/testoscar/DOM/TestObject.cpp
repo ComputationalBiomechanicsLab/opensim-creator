@@ -37,7 +37,7 @@ namespace
     public:
         friend bool operator==(MinimalObjectImpl const& lhs, MinimalObjectImpl const& rhs)
         {
-            return lhs.m_Data == rhs.m_Data;
+            return lhs.data_ == rhs.data_;
         }
     private:
         std::unique_ptr<Object> impl_clone() const override
@@ -45,7 +45,7 @@ namespace
             return std::make_unique<MinimalObjectImpl>(*this);
         }
 
-        int m_Data = RandomInt();
+        int data_ = RandomInt();
     };
 
     class ObjectWithCustomToStringOverride final : public Object {

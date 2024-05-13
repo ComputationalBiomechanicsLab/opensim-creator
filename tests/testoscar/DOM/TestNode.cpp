@@ -27,23 +27,23 @@ namespace
     public:
         friend bool operator==(MinimalNodeImpl const& lhs, MinimalNodeImpl const& rhs)
         {
-            return lhs.m_Data == rhs.m_Data;
+            return lhs.data_ == rhs.data_;
         }
     private:
         std::unique_ptr<Node> impl_clone() const override { return std::make_unique<MinimalNodeImpl>(*this); }
 
-        int m_Data = RandomInt();
+        int data_ = RandomInt();
     };
 
     class DifferentMinimalNodeImpl final : public osc::Node {
     public:
         friend bool operator==(DifferentMinimalNodeImpl const& lhs, DifferentMinimalNodeImpl const& rhs)
         {
-            return lhs.m_Data == rhs.m_Data;
+            return lhs.data_ == rhs.data_;
         }
     private:
         std::unique_ptr<Node> impl_clone() const final { return std::make_unique<DifferentMinimalNodeImpl>(*this); }
-        int m_Data = RandomInt();
+        int data_ = RandomInt();
     };
 
     class NodeWithCtorArg final : public osc::Node {

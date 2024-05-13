@@ -25,12 +25,12 @@ namespace osc
             return UID{0};
         }
 
-        static constexpr UID FromIntUnchecked(element_type i)
+        static constexpr UID from_int_unchecked(element_type i)
         {
             return UID{i};
         }
 
-        UID() : m_Value{GetNextID()}
+        UID() : value_{allocate_next_id()}
         {}
         constexpr UID(const UID&) = default;
         constexpr UID(UID&&) noexcept = default;
@@ -40,33 +40,33 @@ namespace osc
 
         void reset()
         {
-            m_Value = GetNextID();
+            value_ = allocate_next_id();
         }
 
         constexpr element_type get() const
         {
-            return m_Value;
+            return value_;
         }
 
         explicit constexpr operator bool() const
         {
-            return m_Value > 0;
+            return value_ > 0;
         }
 
         friend auto operator<=>(const UID&, const UID&) = default;
 
     private:
-        static constinit std::atomic<element_type> g_NextID;
-        static element_type GetNextID()
+        static constinit std::atomic<element_type> g_next_available_id;
+
+        static element_type allocate_next_id()
         {
-            return g_NextID.fetch_add(1, std::memory_order_relaxed);
+            return g_next_available_id.fetch_add(1, std::memory_order_relaxed);
         }
 
-        constexpr UID(element_type value) : m_Value{value}
-        {
-        }
+        constexpr UID(element_type value) : value_{value}
+        {}
 
-        element_type m_Value;
+        element_type value_;
     };
 
     std::ostream& operator<<(std::ostream&, const UID&);
