@@ -12,5 +12,5 @@ https://learnopengl.com/ , the itent of this code is to:
 
 - Provide working examples of UIs that use the `oscar` API
 
-Use `osc::RegisterLearnOpenGLTabs(TabRegistry&);` to register all demo tabs that
+Use `osc::register_learnopengl_tabs(TabRegistry&);` to register all demo tabs that
 this project exports.
