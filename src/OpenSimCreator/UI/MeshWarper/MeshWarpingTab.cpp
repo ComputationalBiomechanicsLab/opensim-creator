@@ -174,12 +174,6 @@ private:
             ActionCreateNewDocument(m_Shared->updUndoable());
             return true;
         }
-        else if (ctrlOrSuperDown && e.keysym.sym == SDLK_w)
-        {
-            // Ctrl+W: new
-            m_Shared->closeTab();
-            return true;
-        }
         else if (ctrlOrSuperDown && e.keysym.sym == SDLK_q)
         {
             // Ctrl+Q: quit

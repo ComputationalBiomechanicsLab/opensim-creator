@@ -83,11 +83,8 @@ namespace
 
     void DoOpenFileViaDialog(ParentPtr<IMainUIStateAPI> const& api)
     {
-        std::optional<std::filesystem::path> const maybePath = prompt_user_to_select_file({"osim"});
-
-        if (maybePath)
-        {
-            OpenOsimInLoadingTab(api, *maybePath);
+        for (const auto& path : prompt_user_to_select_files({"osim"})) {
+            OpenOsimInLoadingTab(api, path);
         }
     }
 

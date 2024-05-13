@@ -82,6 +82,59 @@ class osc::MainUIScreen::Impl final :
     public std::enable_shared_from_this<Impl> {
 public:
 
+    // called when an event is pumped into this screen but isn't handled by
+    // either the global 2D UI context or the active tab
+    void onUnhandledEvent(SDL_Event const& e)
+    {
+        if (e.type == SDL_KEYUP &&
+            e.key.keysym.mod & (KMOD_CTRL | KMOD_GUI) &&
+            e.key.keysym.scancode == SDL_SCANCODE_P)
+        {
+            // `Ctrl+P` or `Super+P`: "take a screenshot"
+            m_MaybeScreenshotRequest = App::upd().request_screenshot();
+        }
+        if ((e.type == SDL_KEYUP &&
+             e.key.keysym.mod & (KMOD_CTRL | KMOD_GUI) &&
+             e.key.keysym.scancode == SDL_SCANCODE_PAGEUP) ||
+
+            (e.type == SDL_KEYUP &&
+             e.key.keysym.mod & (KMOD_GUI) &&
+             e.key.keysym.mod & (KMOD_LALT | KMOD_RALT) &&
+             e.key.keysym.scancode == SDL_SCANCODE_LEFT))
+        {
+            // `Ctrl+PageUp` or `Super+PageUp` or `Command+Option+Left`: focus the tab to the left of the currently-active tab
+            auto it = findTabByID(m_ActiveTabID);
+            if (it != m_Tabs.begin() and it != m_Tabs.end()) {
+                --it;  // previous
+                select_tab((*it)->id());
+            }
+        }
+        if ((e.type == SDL_KEYUP &&
+            e.key.keysym.mod & (KMOD_CTRL | KMOD_GUI) &&
+            e.key.keysym.scancode == SDL_SCANCODE_PAGEDOWN) ||
+
+            (e.type == SDL_KEYUP &&
+             e.key.keysym.mod & (KMOD_GUI) &&
+             e.key.keysym.mod & (KMOD_LALT | KMOD_RALT) &&
+             e.key.keysym.scancode == SDL_SCANCODE_RIGHT))
+        {
+            // `Ctrl+PageDown` or `Super+PageDown` or `Command+Option+Right`: focus the tab to the right of the currently-active tab
+            auto it = findTabByID(m_ActiveTabID);
+            if (it != m_Tabs.end()-1) {
+                ++it;  // next
+                select_tab((*it)->id());
+            }
+        }
+        if (e.type == SDL_KEYUP &&
+            e.key.keysym.mod & (KMOD_CTRL | KMOD_GUI) &&
+            e.key.keysym.scancode == SDL_SCANCODE_W &&
+            m_Tabs.size() > 1 &&  // can't close splash tab
+            m_ActiveTabID != m_Tabs.front()->id())
+        {
+            close_tab(m_ActiveTabID);
+        }
+    }
+
     UID addTab(std::unique_ptr<ITab> tab)
     {
         return impl_add_tab(std::move(tab));
@@ -149,67 +202,27 @@ public:
             // if the user just potentially changed something via a mouse/keyboard
             // interaction then the screen should be aggressively redrawn to reduce
             // and input delays
+
             m_ShouldRequestRedraw = true;
         }
 
-        if (e.type == SDL_KEYUP &&
-            e.key.keysym.mod & (KMOD_CTRL | KMOD_GUI) &&
-            e.key.keysym.scancode == SDL_SCANCODE_P)
-        {
-            // Ctrl+/Super+P operates as a "take a screenshot" request
-            m_MaybeScreenshotRequest = App::upd().request_screenshot();
-        }
-        if ((e.type == SDL_KEYUP &&
-             e.key.keysym.mod & (KMOD_CTRL | KMOD_GUI) &&
-             e.key.keysym.scancode == SDL_SCANCODE_PAGEUP) ||
-            (e.type == SDL_KEYUP &&
-             e.key.keysym.mod & (KMOD_GUI) &&
-             e.key.keysym.mod & (KMOD_LALT | KMOD_RALT) &&
-             e.key.keysym.scancode == SDL_SCANCODE_LEFT))
-        {
-            // Ctrl+/Super+PageUp (or Command+Option+Left on MacOS) focuses the tab to the left of the currently active tab
-            auto it = findTabByID(m_ActiveTabID);
-            if (it != m_Tabs.begin() and it != m_Tabs.end()) {
-                --it;  // previous
-                select_tab((*it)->id());
-            }
-        }
-        if ((e.type == SDL_KEYUP &&
-             e.key.keysym.mod & (KMOD_CTRL | KMOD_GUI) &&
-             e.key.keysym.scancode == SDL_SCANCODE_PAGEDOWN) ||
-            (e.type == SDL_KEYUP &&
-             e.key.keysym.mod & (KMOD_GUI) &&
-             e.key.keysym.mod & (KMOD_LALT | KMOD_RALT) &&
-             e.key.keysym.scancode == SDL_SCANCODE_RIGHT))
-        {
-            // Ctrl+/Super+PageDown focuses the tab to the right of the currently active tab
-            auto it = findTabByID(m_ActiveTabID);
-            if (it != m_Tabs.end()-1) {
-                ++it;  // next
-                select_tab((*it)->id());
-            }
-        }
-        else if (ui::context::on_event(e))
-        {
-            // event was pumped into the UI context - it shouldn't be pumped into the active tab
+        if (ui::context::on_event(e)) {
+            // if the 2D UI captured the event, then assume that the event will be "handled"
+            // during `ITab::onDraw` (immediate-mode UI)
+
             m_ShouldRequestRedraw = true;
         }
-        else if (e.type == SDL_QUIT)
-        {
-            // it's a quit *request* event, which must be pumped into all tabs
-            //
-            // note: some tabs may block the quit event, e.g. because they need to
-            //       ask the user whether they want to save changes or not
+        else if (e.type == SDL_QUIT) {
+            // if it's an application-level QUIT request, then it should be pumped into each
+            // tab, while checking whether a tab wants to "block" the request (e.g. because it
+            // wants to show a "do you want to save changes?" popup to the user
 
-            bool quitHandled = false;
-            for (int i = 0; i < static_cast<int>(m_Tabs.size()); ++i)
-            {
-                try
-                {
-                    quitHandled = m_Tabs[i]->on_event(e) || quitHandled;
+            bool atLeastOneTabHandledQuit = false;
+            for (int i = 0; i < static_cast<int>(m_Tabs.size()); ++i) {
+                try {
+                    atLeastOneTabHandledQuit = m_Tabs[i]->on_event(e) || atLeastOneTabHandledQuit;
                 }
-                catch (std::exception const& ex)
-                {
+                catch (std::exception const& ex) {
                     log_error("MainUIScreen::on_event: exception thrown by tab: %s", ex.what());
 
                     // - the tab is faulty in some way
@@ -221,13 +234,11 @@ public:
                 }
             }
 
-            if (!quitHandled)
-            {
+            if (not atLeastOneTabHandledQuit) {
                 // if no tab handled the quit event, treat it as-if the user
                 // has tried to close all tabs
 
-                for (auto const& tab : m_Tabs)
-                {
+                for (auto const& tab : m_Tabs) {
                     impl_close_tab(tab->id());
                 }
                 m_QuitRequested = true;
@@ -236,8 +247,7 @@ public:
             // handle any deletion-related side-effects (e.g. showing save prompt)
             handleDeletedTabs();
 
-            if (!quitHandled && (!m_MaybeSaveChangesPopup || !m_MaybeSaveChangesPopup->is_open()))
-            {
+            if (!atLeastOneTabHandledQuit && (!m_MaybeSaveChangesPopup || !m_MaybeSaveChangesPopup->is_open())) {
                 // - if no tab handled a quit event
                 // - and the UI isn't currently showing a save prompt
                 // - then it's safe to outright quit the application from this screen
@@ -245,17 +255,15 @@ public:
                 App::upd().request_quit();
             }
         }
-        else if (ITab* active = getActiveTab())
-        {
-            // all other event types are only pumped into the active tab
+        else if (ITab* active = getActiveTab()) {
+            // if there's an active tab, pump the event into the active tab and check
+            // whether the tab handled the event
 
-            bool handled = false;
-            try
-            {
-                handled = active->on_event(e);
+            bool activeTabHandledEvent = false;
+            try {
+                activeTabHandledEvent = active->on_event(e);
             }
-            catch (std::exception const& ex)
-            {
+            catch (std::exception const& ex) {
                 log_error("MainUIScreen::on_event: exception thrown by tab: %s", ex.what());
 
                 // - the tab is faulty in some way
@@ -269,10 +277,11 @@ public:
             // the event may have triggered tab deletions
             handleDeletedTabs();
 
-            if (handled)
-            {
+            if (activeTabHandledEvent) {
                 m_ShouldRequestRedraw = true;
-                return;
+            }
+            else {
+                onUnhandledEvent(e);
             }
         }
     }
@@ -345,10 +354,9 @@ public:
             ui::context::render();
         }
 
-        if (m_ShouldRequestRedraw)
+        if (std::exchange(m_ShouldRequestRedraw, false))
         {
             App::upd().request_redraw();
-            m_ShouldRequestRedraw = false;
         }
     }
 

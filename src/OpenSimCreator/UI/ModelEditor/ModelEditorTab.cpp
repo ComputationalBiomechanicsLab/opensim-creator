@@ -169,6 +169,7 @@ public:
     void on_mount()
     {
         App::upd().make_main_loop_waiting();
+        App::upd().set_main_window_subtitle(m_Model->recommendedDocumentName());
         m_TabName = computeTabName();
         m_PopupManager.on_mount();
         m_PanelManager->on_mount();
@@ -177,6 +178,7 @@ public:
     void on_unmount()
     {
         m_PanelManager->on_unmount();
+        App::upd().unset_main_window_subtitle();
         App::upd().make_main_loop_polling();
     }
 
@@ -232,6 +234,9 @@ public:
         {
             tryRecoveringFromException(ex);
         }
+
+        // always re-update this, in case the model's document name changed
+        App::upd().set_main_window_subtitle(m_Model->recommendedDocumentName());
     }
 
     void tryRecoveringFromException(std::exception const& ex)

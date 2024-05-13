@@ -777,12 +777,6 @@ private:
             m_Shared->exportModelGraphAsOsimFile();
             return true;
         }
-        else if (ctrlOrSuperDown && ui::is_key_pressed(ImGuiKey_W))
-        {
-            // Ctrl+W: close
-            m_Shared->request_close();
-            return true;
-        }
         else if (ctrlOrSuperDown && ui::is_key_pressed(ImGuiKey_Q))
         {
             // Ctrl+Q: quit application
