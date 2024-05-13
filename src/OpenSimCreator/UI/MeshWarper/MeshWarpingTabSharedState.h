@@ -45,7 +45,7 @@ namespace osc
 
         TPSDocument const& getScratch() const
         {
-            return editedDocument->getScratch();
+            return editedDocument->scratch();
         }
 
         UndoableTPSDocument const& getUndoable() const
@@ -72,12 +72,12 @@ namespace osc
         // returns a (potentially cached) post-TPS-warp mesh
         Mesh const& getResultMesh()
         {
-            return meshResultCache.getWarpedMesh(editedDocument->getScratch());
+            return meshResultCache.getWarpedMesh(editedDocument->scratch());
         }
 
         std::span<Vec3 const> getResultNonParticipatingLandmarkLocations()
         {
-            return meshResultCache.getWarpedNonParticipatingLandmarkLocations(editedDocument->getScratch());
+            return meshResultCache.getWarpedNonParticipatingLandmarkLocations(editedDocument->scratch());
         }
 
         bool isHovered(TPSDocumentElementID const& id) const
@@ -115,7 +115,7 @@ namespace osc
 
         void selectAll()
         {
-            for (auto const& el : GetAllElementIDs(editedDocument->getScratch()))
+            for (auto const& el : GetAllElementIDs(editedDocument->scratch()))
             {
                 userSelection.select(el);
             }
@@ -128,7 +128,7 @@ namespace osc
 
         bool canUndo() const
         {
-            return editedDocument->canUndo();
+            return editedDocument->can_undo();
         }
 
         void undo()
@@ -138,7 +138,7 @@ namespace osc
 
         bool canRedo() const
         {
-            return editedDocument->canRedo();
+            return editedDocument->can_redo();
         }
 
         void redo()
@@ -174,7 +174,7 @@ namespace osc
         bool onlyLinkRotation = false;
 
         // shared linked camera
-        PolarPerspectiveCamera linkedCameraBase = create_camera_focused_on(editedDocument->getScratch().sourceMesh.bounds());
+        PolarPerspectiveCamera linkedCameraBase = create_camera_focused_on(editedDocument->scratch().sourceMesh.bounds());
 
         // wireframe material, used to draw scene elements in a wireframe style
         MeshBasicMaterial wireframe_material = App::singleton<SceneCache>(App::resource_loader())->wireframe_material();

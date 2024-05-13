@@ -10,7 +10,8 @@
 
 using namespace osc;
 
-osc::UndoRedoBase::UndoRedoBase(UndoRedoEntryBase initialCommit_) : m_Head{std::move(initialCommit_)}
+osc::UndoRedoBase::UndoRedoBase(UndoRedoEntryBase initial_commit) :
+    head_{std::move(initial_commit)}
 {}
 osc::UndoRedoBase::UndoRedoBase(const UndoRedoBase&) = default;
 osc::UndoRedoBase::UndoRedoBase(UndoRedoBase&&) noexcept = default;
@@ -18,115 +19,113 @@ osc::UndoRedoBase& osc::UndoRedoBase::operator=(const UndoRedoBase&) = default;
 osc::UndoRedoBase& osc::UndoRedoBase::operator=(UndoRedoBase&&) noexcept = default;
 osc::UndoRedoBase::~UndoRedoBase() noexcept = default;
 
-void osc::UndoRedoBase::commitScratch(std::string_view commitMsg)
+void osc::UndoRedoBase::commit_scratch(std::string_view commit_message)
 {
-    m_Undo.push_back(std::move(m_Head));
-    m_Head = implCreateCommitFromScratch(commitMsg);
-    m_Redo.clear();
+    undo_.push_back(std::move(head_));
+    head_ = impl_construct_commit_from_scratch(commit_message);
+    redo_.clear();
 }
 
-const UndoRedoEntryBase& osc::UndoRedoBase::getHead() const
+const UndoRedoEntryBase& osc::UndoRedoBase::head() const
 {
-    return m_Head;
+    return head_;
 }
 
-UID osc::UndoRedoBase::getHeadID() const
+UID osc::UndoRedoBase::head_id() const
 {
-    return m_Head.id();
+    return head_.id();
 }
 
-size_t osc::UndoRedoBase::getNumUndoEntries() const
+size_t osc::UndoRedoBase::num_undo_entries() const
 {
-    return m_Undo.size();
+    return undo_.size();
 }
 
-ptrdiff_t osc::UndoRedoBase::getNumUndoEntriesi() const
+ptrdiff_t osc::UndoRedoBase::num_undo_entriesi() const
 {
-    return static_cast<ptrdiff_t>(getNumUndoEntries());
+    return static_cast<ptrdiff_t>(num_undo_entries());
 }
 
-const osc::UndoRedoEntryBase& osc::UndoRedoBase::getUndoEntry(ptrdiff_t i) const
+const osc::UndoRedoEntryBase& osc::UndoRedoBase::undo_entry_at(ptrdiff_t pos) const
 {
-    OSC_ASSERT(i < std::ssize(m_Undo));
-    return m_Undo.rbegin()[i];
+    OSC_ASSERT_ALWAYS(pos < std::ssize(undo_));
+    return undo_.rbegin()[pos];
 }
 
-void osc::UndoRedoBase::undoTo(ptrdiff_t nthEntry)
+void osc::UndoRedoBase::undo_to(ptrdiff_t pos)
 {
-    if (nthEntry >= std::ssize(m_Undo))
-    {
+    if (pos >= std::ssize(undo_)) {
         return;  // out of bounds: ignore request
     }
 
-    const UndoRedoEntryBase oldHead = m_Head;
-    const UndoRedoEntryBase newHead = m_Undo.rbegin()[nthEntry];
+    const UndoRedoEntryBase old_head = head_;
+    const UndoRedoEntryBase new_head = undo_.rbegin()[pos];
 
     // push old head onto the redo stack
-    m_Redo.push_back(oldHead);
+    redo_.push_back(old_head);
 
     // copy any commits between the top of the undo stack, but shallower than
     // the requested entry, onto the redo stack
-    copy(m_Undo.rbegin(), m_Undo.rbegin() + nthEntry, std::back_inserter(m_Redo));
-    m_Undo.erase((m_Undo.rbegin() + nthEntry + 1).base(), m_Undo.end());
+    copy(undo_.rbegin(), undo_.rbegin() + pos, std::back_inserter(redo_));
+    undo_.erase((undo_.rbegin() + pos + 1).base(), undo_.end());
 
-    m_Head = newHead;
-    implAssignScratchFromCommit(newHead);
+    head_ = new_head;
+    impl_copy_assign_scratch_from_commit(new_head);
 }
 
-bool osc::UndoRedoBase::canUndo() const
+bool osc::UndoRedoBase::can_undo() const
 {
-    return !m_Undo.empty();
+    return not undo_.empty();
 }
 
 void osc::UndoRedoBase::undo()
 {
-    undoTo(0);
+    undo_to(0);
 }
 
-size_t osc::UndoRedoBase::getNumRedoEntries() const
+size_t osc::UndoRedoBase::num_redo_entries() const
 {
-    return m_Redo.size();
+    return redo_.size();
 }
 
-ptrdiff_t osc::UndoRedoBase::getNumRedoEntriesi() const
+ptrdiff_t osc::UndoRedoBase::num_redo_entriesi() const
 {
-    return static_cast<ptrdiff_t>(getNumRedoEntries());
+    return static_cast<ptrdiff_t>(num_redo_entries());
 }
 
-const UndoRedoEntryBase& osc::UndoRedoBase::getRedoEntry(ptrdiff_t i) const
+const UndoRedoEntryBase& osc::UndoRedoBase::redo_entry_at(ptrdiff_t pos) const
 {
-    OSC_ASSERT(i < std::ssize(m_Redo));
-    return m_Redo.rbegin()[i];
+    OSC_ASSERT_ALWAYS(pos < std::ssize(redo_));
+    return redo_.rbegin()[pos];
 }
 
-bool osc::UndoRedoBase::canRedo() const
+bool osc::UndoRedoBase::can_redo() const
 {
-    return !m_Redo.empty();
+    return not redo_.empty();
 }
 
-void osc::UndoRedoBase::redoTo(ptrdiff_t nthEntry)
+void osc::UndoRedoBase::redo_to(ptrdiff_t pos)
 {
-    if (nthEntry >= std::ssize(m_Redo))
-    {
+    if (pos >= std::ssize(redo_)) {
         return;  // out of bounds: ignore request
     }
 
-    const UndoRedoEntryBase oldHead = m_Head;
-    const UndoRedoEntryBase newHead = m_Redo.rbegin()[nthEntry];
+    const UndoRedoEntryBase old_head = head_;
+    const UndoRedoEntryBase new_head = redo_.rbegin()[pos];
 
     // push old head onto the undo stack
-    m_Undo.push_back(oldHead);
+    undo_.push_back(old_head);
 
     // copy any commits between the top of the redo stack but *before* the
     // requested entry onto the redo stack
-    copy(m_Redo.rbegin(), m_Redo.rbegin() + nthEntry, std::back_inserter(m_Undo));
-    m_Redo.erase((m_Redo.rbegin() + nthEntry + 1).base(), m_Redo.end());
+    copy(redo_.rbegin(), redo_.rbegin() + pos, std::back_inserter(undo_));
+    redo_.erase((redo_.rbegin() + pos + 1).base(), redo_.end());
 
-    m_Head = newHead;
-    implAssignScratchFromCommit(newHead);
+    head_ = new_head;
+    impl_copy_assign_scratch_from_commit(new_head);
 }
 
 void osc::UndoRedoBase::redo()
 {
-    redoTo(0);
+    redo_to(0);
 }

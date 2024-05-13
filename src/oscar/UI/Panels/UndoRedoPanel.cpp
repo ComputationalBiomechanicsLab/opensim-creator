@@ -46,23 +46,23 @@ void osc::UndoRedoPanel::draw_content(UndoRedoBase& storage)
     int ui_id = 0;
 
     // draw undo entries oldest (highest index) to newest (lowest index)
-    for (ptrdiff_t i = storage.getNumUndoEntriesi()-1; 0 <= i and i < storage.getNumUndoEntriesi(); --i) {
+    for (ptrdiff_t i = storage.num_undo_entriesi()-1; 0 <= i and i < storage.num_undo_entriesi(); --i) {
         ui::push_id(ui_id++);
-        if (ui::draw_selectable(storage.getUndoEntry(i).message())) {
-            storage.undoTo(i);
+        if (ui::draw_selectable(storage.undo_entry_at(i).message())) {
+            storage.undo_to(i);
         }
         ui::pop_id();
     }
 
     ui::push_id(ui_id++);
-    ui::draw_text("  %s", storage.getHead().message().c_str());
+    ui::draw_text("  %s", storage.head().message().c_str());
     ui::pop_id();
 
     // draw redo entries oldest (lowest index) to newest (highest index)
-    for (ptrdiff_t i = 0; i < storage.getNumRedoEntriesi(); ++i) {
+    for (ptrdiff_t i = 0; i < storage.num_redo_entriesi(); ++i) {
         ui::push_id(ui_id++);
-        if (ui::draw_selectable(storage.getRedoEntry(i).message())) {
-            storage.redoTo(i);
+        if (ui::draw_selectable(storage.redo_entry_at(i).message())) {
+            storage.redo_to(i);
         }
         ui::pop_id();
     }

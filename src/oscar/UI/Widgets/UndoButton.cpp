@@ -20,7 +20,7 @@ void osc::UndoButton::on_draw()
     ui::push_style_var(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
 
     bool was_disabled = false;
-    if (not undo_redo_->canUndo()) {
+    if (not undo_redo_->can_undo()) {
         ui::begin_disabled();
         was_disabled = true;
     }
@@ -39,10 +39,10 @@ void osc::UndoButton::on_draw()
     }
 
     if (ui::begin_popup_context_menu("##OpenUndoMenu", ImGuiPopupFlags_MouseButtonLeft)) {
-        for (ptrdiff_t i = 0; i < undo_redo_->getNumUndoEntriesi(); ++i) {
+        for (ptrdiff_t i = 0; i < undo_redo_->num_undo_entriesi(); ++i) {
             ui::push_id(ui_id++);
-            if (ui::draw_selectable(undo_redo_->getUndoEntry(i).message())) {
-                undo_redo_->undoTo(i);
+            if (ui::draw_selectable(undo_redo_->undo_entry_at(i).message())) {
+                undo_redo_->undo_to(i);
             }
             ui::pop_id();
         }

@@ -27,7 +27,7 @@ namespace osc
         Variant(std::string_view);
         Variant(const char* ptr) : Variant{std::string_view{ptr}} {}
         Variant(std::nullopt_t) = delete;
-        Variant(CStringView csv) : Variant{std::string_view{csv}} {}
+        Variant(CStringView cstr) : Variant{std::string_view{cstr}} {}
         Variant(const StringName&);
         Variant(Vec2);
         Variant(Vec3);
@@ -55,7 +55,7 @@ namespace osc
 
         friend void swap(Variant& a, Variant& b) noexcept
         {
-            std::swap(a.m_Data, b.m_Data);
+            std::swap(a.data_, b.data_);
         }
 
     private:
@@ -71,7 +71,7 @@ namespace osc
             StringName,
             Vec2,
             Vec3
-        > m_Data;
+        > data_;
     };
 
     bool operator==(const Variant&, const Variant&);

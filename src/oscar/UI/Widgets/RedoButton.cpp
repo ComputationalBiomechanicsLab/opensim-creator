@@ -20,7 +20,7 @@ void osc::RedoButton::onDraw()
     ui::push_style_var(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
 
     bool was_disabled = false;
-    if (not undo_redo_->canRedo()) {
+    if (not undo_redo_->can_redo()) {
         ui::begin_disabled();
         was_disabled = true;
     }
@@ -39,10 +39,10 @@ void osc::RedoButton::onDraw()
     }
 
     if (ui::begin_popup_context_menu("##OpenRedoMenu", ImGuiPopupFlags_MouseButtonLeft)) {
-        for (ptrdiff_t i = 0; i < undo_redo_->getNumRedoEntriesi(); ++i) {
+        for (ptrdiff_t i = 0; i < undo_redo_->num_redo_entriesi(); ++i) {
             ui::push_id(ui_id++);
-            if (ui::draw_selectable(undo_redo_->getRedoEntry(i).message())) {
-                undo_redo_->redoTo(i);
+            if (ui::draw_selectable(undo_redo_->redo_entry_at(i).message())) {
+                undo_redo_->redo_to(i);
             }
             ui::pop_id();
         }

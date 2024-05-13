@@ -126,7 +126,7 @@ namespace osc::mi
             {
                 m_ModelGraphSnapshots = UndoableDocument{CreateModelFromOsimFile(*maybeOsimPath)};
                 m_MaybeModelGraphExportLocation = *maybeOsimPath;
-                m_MaybeModelGraphExportedUID = m_ModelGraphSnapshots.getHeadID();
+                m_MaybeModelGraphExportedUID = m_ModelGraphSnapshots.head_id();
                 return true;
             }
             else
@@ -160,7 +160,7 @@ namespace osc::mi
 
         bool isModelGraphUpToDateWithDisk() const
         {
-            return m_MaybeModelGraphExportedUID == m_ModelGraphSnapshots.getHeadID();
+            return m_MaybeModelGraphExportedUID == m_ModelGraphSnapshots.head_id();
         }
 
         bool isCloseRequested() const
@@ -202,12 +202,12 @@ namespace osc::mi
 
         Document const& getModelGraph() const
         {
-            return m_ModelGraphSnapshots.getScratch();
+            return m_ModelGraphSnapshots.scratch();
         }
 
         Document& updModelGraph()
         {
-            return m_ModelGraphSnapshots.updScratch();
+            return m_ModelGraphSnapshots.upd_scratch();
         }
 
         UndoableDocument& updCommittableModelGraph()
@@ -217,12 +217,12 @@ namespace osc::mi
 
         void commitCurrentModelGraph(std::string_view commitMsg)
         {
-            m_ModelGraphSnapshots.commitScratch(commitMsg);
+            m_ModelGraphSnapshots.commit_scratch(commitMsg);
         }
 
         bool canUndoCurrentModelGraph() const
         {
-            return m_ModelGraphSnapshots.canUndo();
+            return m_ModelGraphSnapshots.can_undo();
         }
 
         void undoCurrentModelGraph()
@@ -232,7 +232,7 @@ namespace osc::mi
 
         bool canRedoCurrentModelGraph() const
         {
-            return m_ModelGraphSnapshots.canRedo();
+            return m_ModelGraphSnapshots.can_redo();
         }
 
         void redoCurrentModelGraph()
@@ -804,7 +804,7 @@ namespace osc::mi
             // pop any background-loaded meshes
             popMeshLoader();
 
-            m_ModelGraphSnapshots.updScratch().garbageCollect();
+            m_ModelGraphSnapshots.upd_scratch().garbageCollect();
         }
 
     private:
@@ -826,7 +826,7 @@ namespace osc::mi
             {
                 m->print(exportPath.string());
                 m_MaybeModelGraphExportLocation = exportPath;
-                m_MaybeModelGraphExportedUID = m_ModelGraphSnapshots.getHeadID();
+                m_MaybeModelGraphExportedUID = m_ModelGraphSnapshots.head_id();
                 return true;
             }
             else
@@ -1429,7 +1429,7 @@ namespace osc::mi
         std::filesystem::path m_MaybeModelGraphExportLocation;
 
         // (maybe) the UID of the model graph when it was last successfully saved to disk (used for dirty checking)
-        UID m_MaybeModelGraphExportedUID = m_ModelGraphSnapshots.getHeadID();
+        UID m_MaybeModelGraphExportedUID = m_ModelGraphSnapshots.head_id();
 
         // a batch of files that the user drag-dropped into the UI in the last frame
         std::vector<std::filesystem::path> m_DroppedFiles;
