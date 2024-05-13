@@ -5,7 +5,7 @@
 namespace osc
 {
     enum class VariantType {
-        Nil,
+        None,
         Bool,
         Color,
         Float,

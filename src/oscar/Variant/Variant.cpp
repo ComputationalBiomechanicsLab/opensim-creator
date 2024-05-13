@@ -80,7 +80,7 @@ osc::Variant::Variant(Vec3 v) : data_{v} {}
 VariantType osc::Variant::type() const
 {
     return std::visit(Overload{
-        [](const std::monostate&) { return VariantType::Nil; },
+        [](const std::monostate&) { return VariantType::None; },
         [](const bool&)           { return VariantType::Bool; },
         [](const Color&)          { return VariantType::Color; },
         [](const float&)          { return VariantType::Float; },

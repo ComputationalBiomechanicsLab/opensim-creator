@@ -163,7 +163,7 @@ TEST(Variant, CanImplicitlyConstructFromVec3)
 
 TEST(Variant, DefaultConstructedValueIsNil)
 {
-    ASSERT_EQ(Variant{}.type(), VariantType::Nil);
+    ASSERT_EQ(Variant{}.type(), VariantType::None);
 }
 
 TEST(Variant, NilValueToBoolReturnsFalse)

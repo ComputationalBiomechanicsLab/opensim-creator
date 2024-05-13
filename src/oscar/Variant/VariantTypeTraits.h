@@ -9,13 +9,13 @@ namespace osc
     struct VariantTypeTraits;
 
     template<>
-    struct VariantTypeTraits<VariantType::Nil> {
-        static inline constexpr CStringView name = "Nil";
+    struct VariantTypeTraits<VariantType::None> {
+        static inline constexpr CStringView name = "NoneType";
     };
 
     template<>
     struct VariantTypeTraits<VariantType::Bool> {
-        static inline constexpr CStringView name = "Bool";
+        static inline constexpr CStringView name = "bool";
     };
 
     template<>
@@ -25,12 +25,12 @@ namespace osc
 
     template<>
     struct VariantTypeTraits<VariantType::Float> {
-        static inline constexpr CStringView name = "Float";
+        static inline constexpr CStringView name = "float";
     };
 
     template<>
     struct VariantTypeTraits<VariantType::Int> {
-        static inline constexpr CStringView name = "Int";
+        static inline constexpr CStringView name = "int";
     };
 
     template<>

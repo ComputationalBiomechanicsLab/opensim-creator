@@ -11,7 +11,7 @@ TEST(PropertyInfo, DefaultConstructedPropertyInfoHasNoNameAndNilDefaultValue)
 {
     PropertyInfo info;
     ASSERT_EQ(info.name(), "");
-    ASSERT_EQ(info.type(), VariantType::Nil);
+    ASSERT_EQ(info.type(), VariantType::None);
     ASSERT_EQ(info.default_value(), Variant{});
 }
 

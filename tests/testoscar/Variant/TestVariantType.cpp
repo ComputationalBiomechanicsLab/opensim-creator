@@ -17,11 +17,11 @@ TEST(VariantType, ToStringReturnsExpectedResults)
     };
     auto const testCases = std::to_array<TestCase>(
     {
-        {VariantType::Nil, "Nil"},
-        {VariantType::Bool, "Bool"},
+        {VariantType::None, "NoneType"},
+        {VariantType::Bool, "bool"},
         {VariantType::Color, "Color"},
-        {VariantType::Float, "Float"},
-        {VariantType::Int, "Int"},
+        {VariantType::Float, "float"},
+        {VariantType::Int, "int"},
         {VariantType::String, "String"},
         {VariantType::StringName, "StringName"},
         {VariantType::Vec2, "Vec2"},
@@ -35,8 +35,8 @@ TEST(VariantType, ToStringReturnsExpectedResults)
     }
 }
 
-TEST(VariantType, PassingBsValueIntoItReturnsUnknown)
+TEST(VariantType, PassingBsValueIntoToStringThrows)
 {
     auto const bs = static_cast<VariantType>(std::numeric_limits<std::underlying_type_t<VariantType>>::max()-1);
-    ASSERT_EQ(to_string(bs), "Unknown");
+    ASSERT_ANY_THROW({ to_string(bs); });
 }
