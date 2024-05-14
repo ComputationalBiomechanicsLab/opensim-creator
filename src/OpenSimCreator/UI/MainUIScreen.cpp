@@ -126,7 +126,7 @@ public:
             }
         }
         if (e.type == SDL_KEYUP &&
-            e.key.keysym.mod & (KMOD_CTRL | KMOD_GUI) &&
+            ((e.key.keysym.mod & (KMOD_CTRL | KMOD_GUI)) != 0) &&
             e.key.keysym.scancode == SDL_SCANCODE_W &&
             m_Tabs.size() > 1 &&  // can't close splash tab
             m_ActiveTabID != m_Tabs.front()->id())

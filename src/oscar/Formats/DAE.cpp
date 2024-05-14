@@ -22,7 +22,6 @@
 #include <unordered_map>
 
 using namespace osc;
-namespace rgs = std::ranges;
 
 namespace
 {
