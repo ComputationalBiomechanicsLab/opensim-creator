@@ -215,9 +215,9 @@ namespace
 
     void write_material_node(std::ostream& o, const DAEMaterial& material)
     {
-        o << "    <ui_material id=\"" << material.material_id << "-ui_material\" name=\"" << material.material_id << "\">\n";
+        o << "    <material id=\"" << material.material_id << "-material\" name=\"" << material.material_id << "\">\n";
         o << "      <instance_effect url=\"#" << material.material_id << "-effect\"/>\n";
-        o << "    </ui_material>\n";
+        o << "    </material>\n";
     }
 
     void write_library_materials_node(std::ostream& o, std::span<const DAEMaterial> materials)
@@ -370,7 +370,7 @@ namespace
     {
         o << "          <bind_material>\n";
         o << "            <technique_common>\n";
-        o << "              <instance_material symbol=\"" << instance.material_id << "-ui_material\" target=\"#" << instance.material_id << "-ui_material\" />\n";
+        o << "              <instance_material symbol=\"" << instance.material_id << "-material\" target=\"#" << instance.material_id << "-material\" />\n";
         o << "            </technique_common>\n";
         o << "          </bind_material>\n";
     }

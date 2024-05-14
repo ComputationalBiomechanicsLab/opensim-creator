@@ -5,6 +5,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- Fixed a bug where the DAE 3D scene exporter wasn't writing color information (#880)
 - The `Open Model` file dialog now allows for multi-select, which opens each selected
   `.osim` file in a seperate tab
 - Pressing `Ctrl+W` or `Command+W` (Mac) now closes the currently-active tab, excluding
