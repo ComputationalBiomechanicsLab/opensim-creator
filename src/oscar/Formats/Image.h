@@ -16,7 +16,7 @@ namespace osc
     // an incorrect number of color channels)
     Texture2D load_texture2D_from_image(
         std::istream&,
-        std::string_view name,
+        std::string_view input_name,
         ColorSpace,
         ImageLoadingFlags = ImageLoadingFlags::None
     );
