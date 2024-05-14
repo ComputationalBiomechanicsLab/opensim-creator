@@ -21,14 +21,14 @@ using namespace osc;
 
 namespace
 {
-    const StringName& validate_as_classname(const StringName& s)
+    const StringName& validate_as_classname(const StringName& str)
     {
-        if (is_valid_identifier(s)) {
-            return s;
+        if (is_valid_identifier(str)) {
+            return str;
         }
         else {
             std::stringstream ss;
-            ss << s << ": is not a valid class name: must an 'identifier' (i.e. start with a letter/underscore, followed by letters/numbers/underscores)";
+            ss << str << ": is not a valid class name: must an 'identifier' (i.e. start with a letter/underscore, followed by letters/numbers/underscores)";
             throw std::runtime_error{std::move(ss).str()};
         }
     }

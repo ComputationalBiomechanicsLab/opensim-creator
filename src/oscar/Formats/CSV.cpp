@@ -11,39 +11,38 @@
 using namespace osc;
 namespace rgs = std::ranges;
 
-// helpers
 namespace
 {
     constexpr auto c_special_csv_chars = std::to_array({ ',', '\r', '\n', '"'});
 
-    constexpr bool should_be_quoted(std::string_view v)
+    constexpr bool should_be_quoted(std::string_view str)
     {
-        return rgs::find_first_of(v, c_special_csv_chars) != v.end();
+        return rgs::find_first_of(str, c_special_csv_chars) != str.end();
     }
 }
 
 std::optional<std::vector<std::string>> osc::read_csv_row(
     std::istream& in)
 {
-    std::optional<std::vector<std::string>> cols;
-    cols.emplace();
+    std::optional<std::vector<std::string>> columns;
+    columns.emplace();
 
-    if (not read_csv_row_into_vector(in, *cols)) {
-        cols.reset();
+    if (not read_csv_row_into_vector(in, *columns)) {
+        columns.reset();
     }
-    return cols;
+    return columns;
 }
 
 bool osc::read_csv_row_into_vector(
     std::istream& in,
-    std::vector<std::string>& assigned_columns)
+    std::vector<std::string>& r_columns)
 {
     if (in.eof()) {
         return false;
     }
 
-    std::vector<std::string> cols;
-    std::string s;
+    std::vector<std::string> columns;
+    std::string str;
     bool inside_quotes = false;
 
     while (not in.bad()) {
@@ -51,22 +50,22 @@ bool osc::read_csv_row_into_vector(
 
         if (c == std::istream::traits_type::eof()) {
             // EOF
-            cols.push_back(s);
+            columns.push_back(str);
             break;
         }
         else if (c == '\n' and not inside_quotes) {
             // standard newline
-            cols.push_back(s);
+            columns.push_back(str);
             break;
         }
         else if (c == '\r' and in.peek() == '\n' and not inside_quotes) {
             // windows newline
 
             in.get();  // skip the \n
-            cols.push_back(s);
+            columns.push_back(str);
             break;
         }
-        else if (c == '"' and s.empty() and not inside_quotes) {
+        else if (c == '"' and str.empty() and not inside_quotes) {
             // quote at beginning of quoted column
             inside_quotes = true;
             continue;
@@ -75,7 +74,7 @@ bool osc::read_csv_row_into_vector(
             // escaped quote
 
             in.get();  // skip the second '"'
-            s += '"';
+            str += '"';
             continue;
         }
         else if (c == '"' and inside_quotes) {
@@ -86,19 +85,19 @@ bool osc::read_csv_row_into_vector(
         else if (c == ',' and not inside_quotes) {
             // comma delimiter at end of column
 
-            cols.push_back(s);
-            s.clear();
+            columns.push_back(str);
+            str.clear();
             continue;
         }
         else {
             // normal text
-            s += static_cast<std::string::value_type>(c);
+            str += static_cast<std::string::value_type>(c);
             continue;
         }
     }
 
-    if (not cols.empty()) {
-        assigned_columns = std::move(cols);
+    if (not columns.empty()) {
+        r_columns = std::move(columns);
         return true;
     }
     else {
@@ -110,16 +109,16 @@ void osc::write_csv_row(
     std::ostream& out,
     std::span<const std::string> columns)
 {
-    std::string_view delim;
+    std::string_view delimeter;
     for (const auto& column : columns) {
         const bool quoted = should_be_quoted(column);
 
-        out << delim;
+        out << delimeter;
         if (quoted) {
             out << '"';
         }
 
-        for (std::string::value_type c : column) {
+        for (auto c : column) {
             if (c != '"') {
                 out << c;
             }
@@ -132,7 +131,7 @@ void osc::write_csv_row(
             out << '"';
         }
 
-        delim = ",";
+        delimeter = ",";
     }
     out << '\n';
 }

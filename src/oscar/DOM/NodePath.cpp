@@ -199,6 +199,6 @@ namespace
     }
 }
 
-osc::NodePath::NodePath(std::string_view p) :
-    parsed_path_{normalize(std::string{p})}
+osc::NodePath::NodePath(std::string_view path) :
+    parsed_path_{normalize(std::string{path})}
 {}

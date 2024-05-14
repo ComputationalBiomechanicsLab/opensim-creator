@@ -13,13 +13,13 @@ namespace osc
         std::istream&
     );
 
-    // returns `true` if a row was read from the input and written as columns to the output
+    // returns `true` if a CSV row was read from the input and written to `r_columns`
     bool read_csv_row_into_vector(
         std::istream&,
-        std::vector<std::string>& assigned_columns
+        std::vector<std::string>& r_columns
     );
 
-    // writes the given columns to the output stream as an ASCII encoded text row
+    // writes the given columns to the output stream as a UTF-8-encoded text row
     void write_csv_row(
         std::ostream&,
         std::span<const std::string> columns
