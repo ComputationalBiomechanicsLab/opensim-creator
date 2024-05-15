@@ -212,7 +212,7 @@ void osc::write_to_png(
     );
     stbi_flip_vertically_on_write(c_stb_false);
 
-    if (rv != 0) {
+    if (rv == 0) {
         std::stringstream ss;
         ss << "failed to write a texture as a PNG: " << stbi_failure_reason();
         throw std::runtime_error{std::move(ss).str()};
