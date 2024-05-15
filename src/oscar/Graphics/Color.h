@@ -132,16 +132,16 @@ namespace osc
             r{r_}, g{g_}, b{b_}, a(1.0f)
         {}
 
-        constexpr reference operator[](size_type i)
+        constexpr reference operator[](size_type pos)
         {
             static_assert(sizeof(Color) == 4*sizeof(value_type));
-            return (&r)[i];
+            return (&r)[pos];
         }
 
-        constexpr const_reference operator[](size_type i) const
+        constexpr const_reference operator[](size_type pos) const
         {
             static_assert(sizeof(Color) == 4*sizeof(value_type));
-            return (&r)[i];
+            return (&r)[pos];
         }
 
         constexpr size_t size() const
@@ -238,9 +238,9 @@ namespace osc
     Color to_color(const ColorHSLA&);
 
     // returns a Vec4 version of a Color
-    inline Vec4 to_vec4(const Color& c)
+    inline Vec4 to_vec4(const Color& color)
     {
-        return Vec4{c};
+        return Vec4{color};
     }
 
     // returns a pointer to the first float element in the color
@@ -288,16 +288,16 @@ namespace osc
     // when handled as a tuple-like object, a `Color` decomposes into its channels (incl. alpha)
 
     template<size_t I>
-    constexpr const float& get(const Color& c) { return c[I]; }
+    constexpr const float& get(const Color& color) { return color[I]; }
 
     template<size_t I>
-    constexpr float& get(Color& c) { return c[I]; }
+    constexpr float& get(Color& color) { return color[I]; }
 
     template<size_t I>
-    constexpr float&& get(Color&& c) { return std::move(c[I]); }
+    constexpr float&& get(Color&& color) { return std::move(color[I]); }
 
     template<size_t I>
-    constexpr const float&& get(const Color&& c) { return std::move(c[I]); }
+    constexpr const float&& get(const Color&& color) { return std::move(color[I]); }
 }
 
 // define compile-time size for Color (same as `std::array`, `std::tuple`, `osc::Vec`, etc.)

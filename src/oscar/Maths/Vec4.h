@@ -97,8 +97,8 @@ namespace osc
         constexpr const_iterator begin() const { return data(); }
         constexpr iterator end() { return data() + size(); }
         constexpr const_iterator end() const { return data() + size(); }
-        constexpr reference operator[](size_type i) { return begin()[i]; }
-        constexpr const_reference operator[](size_type i) const { return begin()[i]; }
+        constexpr reference operator[](size_type pos) { return begin()[pos]; }
+        constexpr const_reference operator[](size_type pos) const { return begin()[pos]; }
 
         constexpr friend bool operator==(const Vec&, const Vec&) = default;
 
@@ -123,12 +123,12 @@ namespace osc
         }
 
         template<typename U>
-        constexpr Vec& operator+=(const Vec<4, U>& v)
+        constexpr Vec& operator+=(const Vec<4, U>& rhs)
         {
-            this->x += static_cast<T>(v.x);
-            this->y += static_cast<T>(v.y);
-            this->z += static_cast<T>(v.z);
-            this->w += static_cast<T>(v.w);
+            this->x += static_cast<T>(rhs.x);
+            this->y += static_cast<T>(rhs.y);
+            this->z += static_cast<T>(rhs.z);
+            this->w += static_cast<T>(rhs.w);
             return *this;
         }
 
@@ -143,12 +143,12 @@ namespace osc
         }
 
         template<typename U>
-        constexpr Vec& operator-=(const Vec<4, U>& v)
+        constexpr Vec& operator-=(const Vec<4, U>& rhs)
         {
-            this->x -= static_cast<T>(v.x);
-            this->y -= static_cast<T>(v.y);
-            this->z -= static_cast<T>(v.z);
-            this->w -= static_cast<T>(v.w);
+            this->x -= static_cast<T>(rhs.x);
+            this->y -= static_cast<T>(rhs.y);
+            this->z -= static_cast<T>(rhs.z);
+            this->w -= static_cast<T>(rhs.w);
             return *this;
         }
 
@@ -163,12 +163,12 @@ namespace osc
         }
 
         template<typename U>
-        constexpr Vec& operator*=(const Vec<4, U>& v)
+        constexpr Vec& operator*=(const Vec<4, U>& rhs)
         {
-            this->x *= static_cast<T>(v.x);
-            this->y *= static_cast<T>(v.y);
-            this->z *= static_cast<T>(v.z);
-            this->w *= static_cast<T>(v.w);
+            this->x *= static_cast<T>(rhs.x);
+            this->y *= static_cast<T>(rhs.y);
+            this->z *= static_cast<T>(rhs.z);
+            this->w *= static_cast<T>(rhs.w);
             return *this;
         }
 
@@ -183,12 +183,12 @@ namespace osc
         }
 
         template<typename U>
-        constexpr Vec& operator/=(const Vec<4, U>& v)
+        constexpr Vec& operator/=(const Vec<4, U>& rhs)
         {
-            this->x /= static_cast<T>(v.x);
-            this->y /= static_cast<T>(v.y);
-            this->z /= static_cast<T>(v.z);
-            this->w /= static_cast<T>(v.w);
+            this->x /= static_cast<T>(rhs.x);
+            this->y /= static_cast<T>(rhs.y);
+            this->z /= static_cast<T>(rhs.z);
+            this->w /= static_cast<T>(rhs.w);
             return *this;
         }
 
@@ -239,98 +239,98 @@ namespace osc
     };
 
     template<typename T>
-    constexpr Vec<4, T> operator+(const Vec<4, T>& v)
+    constexpr Vec<4, T> operator+(const Vec<4, T>& vec)
     {
-        return v;
+        return vec;
     }
 
     template<typename T>
-    constexpr Vec<4, T> operator-(const Vec<4, T>& v)
+    constexpr Vec<4, T> operator-(const Vec<4, T>& vec)
     {
-        return Vec<4, T>{-v.x, -v.y, -v.z, -v.w};
+        return Vec<4, T>{-vec.x, -vec.y, -vec.z, -vec.w};
     }
 
 
     template<typename T>
-    constexpr Vec<4, T> operator+(const Vec<4, T>& v, T scalar)
+    constexpr Vec<4, T> operator+(const Vec<4, T>& vec, T scalar)
     {
-        return Vec<4, T>{v.x + scalar, v.y + scalar, v.z + scalar, v.w + scalar};
+        return Vec<4, T>{vec.x + scalar, vec.y + scalar, vec.z + scalar, vec.w + scalar};
     }
 
     template<typename T>
-    constexpr Vec<4, T> operator+(T scalar, const Vec<4, T>& v)
+    constexpr Vec<4, T> operator+(T scalar, const Vec<4, T>& vec)
     {
-        return Vec<4, T>{scalar + v.x, scalar + v.y, scalar + v.z, scalar + v.w};
+        return Vec<4, T>{scalar + vec.x, scalar + vec.y, scalar + vec.z, scalar + vec.w};
     }
 
     template<typename T>
-    constexpr Vec<4, T> operator+(const Vec<4, T>& v1, const Vec<4, T>& v2)
+    constexpr Vec<4, T> operator+(const Vec<4, T>& lhs, const Vec<4, T>& rhs)
     {
-        return Vec<4, T>{v1.x + v2.x, v1.y + v2.y, v1.z + v2.z, v1.w + v2.w};
+        return Vec<4, T>{lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z, lhs.w + rhs.w};
     }
 
     template<typename T>
-    constexpr Vec<4, T> operator-(const Vec<4, T>& v, T scalar)
+    constexpr Vec<4, T> operator-(const Vec<4, T>& vec, T scalar)
     {
-        return Vec<4, T>{v.x - scalar, v.y - scalar, v.z - scalar, v.w - scalar};
+        return Vec<4, T>{vec.x - scalar, vec.y - scalar, vec.z - scalar, vec.w - scalar};
     }
 
     template<typename T>
-    constexpr Vec<4, T> operator-(T scalar, const Vec<4, T>& v)
+    constexpr Vec<4, T> operator-(T scalar, const Vec<4, T>& vec)
     {
-        return Vec<4, T>{scalar - v.x, scalar - v.y, scalar - v.z, scalar - v.w};
+        return Vec<4, T>{scalar - vec.x, scalar - vec.y, scalar - vec.z, scalar - vec.w};
     }
 
     template<typename T>
-    constexpr Vec<4, T> operator-(const Vec<4, T>& v1, const Vec<4, T>& v2)
+    constexpr Vec<4, T> operator-(const Vec<4, T>& lhs, const Vec<4, T>& rhs)
     {
-        return Vec<4, T>{v1.x - v2.x, v1.y - v2.y, v1.z - v2.z, v1.w - v2.w};
+        return Vec<4, T>{lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z, lhs.w - rhs.w};
     }
 
     template<typename T>
-    constexpr Vec<4, T> operator*(const Vec<4, T>& v, T scalar)
+    constexpr Vec<4, T> operator*(const Vec<4, T>& vec, T scalar)
     {
-        return Vec<4, T>{v.x * scalar, v.y * scalar, v.z * scalar, v.w * scalar};
+        return Vec<4, T>{vec.x * scalar, vec.y * scalar, vec.z * scalar, vec.w * scalar};
     }
 
     template<typename T>
-    constexpr Vec<4, T> operator*(T scalar, const Vec<4, T>& v)
+    constexpr Vec<4, T> operator*(T scalar, const Vec<4, T>& vec)
     {
-        return Vec<4, T>{scalar * v.x, scalar * v.y, scalar * v.z, scalar * v.w};
+        return Vec<4, T>{scalar * vec.x, scalar * vec.y, scalar * vec.z, scalar * vec.w};
     }
 
     template<typename T>
-    constexpr Vec<4, T> operator*(const Vec<4, T>& v1, const Vec<4, T>& v2)
+    constexpr Vec<4, T> operator*(const Vec<4, T>& lhs, const Vec<4, T>& rhs)
     {
-        return Vec<4, T>{v1.x * v2.x, v1.y * v2.y, v1.z * v2.z, v1.w * v2.w};
+        return Vec<4, T>{lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z, lhs.w * rhs.w};
     }
 
     template<typename T>
-    constexpr Vec<4, T> operator/(const Vec<4, T>& v, T scalar)
+    constexpr Vec<4, T> operator/(const Vec<4, T>& vec, T scalar)
     {
-        return Vec<4, T>{v.x / scalar, v.y / scalar, v.z / scalar, v.w / scalar};
+        return Vec<4, T>{vec.x / scalar, vec.y / scalar, vec.z / scalar, vec.w / scalar};
     }
 
     template<typename T>
-    constexpr Vec<4, T> operator/(T scalar, const Vec<4, T>& v)
+    constexpr Vec<4, T> operator/(T scalar, const Vec<4, T>& vec)
     {
-        return Vec<4, T>{scalar / v.x, scalar / v.y, scalar / v.z, scalar / v.w};
+        return Vec<4, T>{scalar / vec.x, scalar / vec.y, scalar / vec.z, scalar / vec.w};
     }
 
     template<typename T>
-    constexpr Vec<4, T> operator/(const Vec<4, T>& v1, const Vec<4, T>& v2)
+    constexpr Vec<4, T> operator/(const Vec<4, T>& lhs, const Vec<4, T>& rhs)
     {
-        return Vec<4, T>{v1.x / v2.x, v1.y / v2.y, v1.z / v2.z, v1.w / v2.w};
+        return Vec<4, T>{lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z, lhs.w / rhs.w};
     }
 
-    constexpr Vec<4, bool> operator&&(const Vec<4, bool>& v1, const Vec<4, bool>& v2)
+    constexpr Vec<4, bool> operator&&(const Vec<4, bool>& lhs, const Vec<4, bool>& rhs)
     {
-        return Vec<4, bool>{v1.x && v2.x, v1.y && v2.y, v1.z && v2.z, v1.w && v2.w};
+        return Vec<4, bool>{lhs.x && rhs.x, lhs.y && rhs.y, lhs.z && rhs.z, lhs.w && rhs.w};
     }
 
-    constexpr Vec<4, bool> operator||(const Vec<4, bool>& v1, const Vec<4, bool>& v2)
+    constexpr Vec<4, bool> operator||(const Vec<4, bool>& lhs, const Vec<4, bool>& rhs)
     {
-        return Vec<4, bool>{v1.x || v2.x, v1.y || v2.y, v1.z || v2.z, v1.w || v2.w};
+        return Vec<4, bool>{lhs.x || rhs.x, lhs.y || rhs.y, lhs.z || rhs.z, lhs.w || rhs.w};
     }
 
     using Vec4  = Vec<4, float>;

@@ -30,9 +30,9 @@ osc::GridGeometry::GridGeometry(
     normals.reserve(4 * num_lines);
     uint32_t index = 0;
 
-    auto push = [&index, &vertices, &indices, &normals](const Vec3& pos)
+    auto push = [&index, &vertices, &indices, &normals](const Vec3& vertex)
     {
-        vertices.push_back(pos);
+        vertices.push_back(vertex);
         indices.push_back(index++);
         normals.emplace_back(0.0f, 0.0f, 1.0f);
     };

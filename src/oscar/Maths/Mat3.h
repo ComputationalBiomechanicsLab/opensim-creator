@@ -118,8 +118,8 @@ namespace osc
         constexpr const_iterator begin() const { return data(); }
         constexpr iterator end() { return data() + size(); }
         constexpr const_iterator end() const { return data() + size(); }
-        constexpr reference operator[](size_type i) { return begin()[i]; }
-        constexpr const_reference operator[](size_type i) const { return begin()[i]; }
+        constexpr reference operator[](size_type pos) { return begin()[pos]; }
+        constexpr const_reference operator[](size_type pos) const { return begin()[pos]; }
 
         friend constexpr bool operator==(const Mat&, const Mat&) = default;
 

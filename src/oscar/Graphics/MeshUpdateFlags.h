@@ -6,7 +6,10 @@ namespace osc
 {
     enum class MeshUpdateFlags {
         Default               = 0,
-        DontValidateIndices   = 1<<0,  // also requires `DontRecalculateBounds`, because recalculating the bounds implicitly validates indices
+
+        // using this flag also requires using `DontRecalculateBounds`, because
+        // recalculating the bounds will implicitly validate indices "for free"
+        DontValidateIndices   = 1<<0,
         DontRecalculateBounds = 1<<1,
     };
 

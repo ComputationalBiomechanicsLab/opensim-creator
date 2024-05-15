@@ -58,9 +58,9 @@ namespace osc
         return Transform{};
     }
 
-    inline std::ostream& operator<<(std::ostream& o, const Transform& t)
+    inline std::ostream& operator<<(std::ostream& out, const Transform& transform)
     {
-        return o << "Transform(position = " << t.position << ", rotation = " << t.rotation << ", scale = " << t.scale << ')';
+        return out << "Transform(position = " << transform.position << ", rotation = " << transform.rotation << ", scale = " << transform.scale << ')';
     }
 
     inline std::string to_string(const Transform& transform)

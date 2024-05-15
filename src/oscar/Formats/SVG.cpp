@@ -27,20 +27,20 @@ Texture2D osc::load_texture2D_from_svg(std::istream& in, float scale)
     );
 
     // parse the `std::string` as an SVG document
-    std::unique_ptr<lunasvg::Document> doc = lunasvg::Document::loadFromData(data);
-    OSC_ASSERT(doc != nullptr && "error loading SVG document");
+    std::unique_ptr<lunasvg::Document> svg_document = lunasvg::Document::loadFromData(data);
+    OSC_ASSERT(svg_document != nullptr && "error loading SVG document");
 
     // when rendering the document's contents, flip Y so that it's compatible with the
     // renderer's coordinate system
-    lunasvg::Matrix m{1.0, 0.0, 0.0, -1.0, 0.0, doc->height()};
-    doc->setMatrix(m);
+    lunasvg::Matrix m{1.0, 0.0, 0.0, -1.0, 0.0, svg_document->height()};
+    svg_document->setMatrix(m);
 
     // render to a rescaled bitmap
     const Vec2u32 bitmap_dimensions{
-        static_cast<uint32_t>(scale*doc->width()),
-        static_cast<uint32_t>(scale*doc->height())
+        static_cast<uint32_t>(scale*svg_document->width()),
+        static_cast<uint32_t>(scale*svg_document->height())
     };
-    lunasvg::Bitmap bitmap = doc->renderToBitmap(bitmap_dimensions.x, bitmap_dimensions.y, 0x00000000);
+    lunasvg::Bitmap bitmap = svg_document->renderToBitmap(bitmap_dimensions.x, bitmap_dimensions.y, 0x00000000);
     bitmap.convertToRGBA();
 
     // return as a GPU-ready texture

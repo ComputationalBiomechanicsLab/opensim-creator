@@ -138,7 +138,7 @@ private:
         graphics::draw(quad_mesh_, identity<Transform>(), tonemap_material_, ortho_camera);
         ortho_camera.render_to_screen();
 
-        tonemap_material_.clear_render_texture("uTexture");
+        tonemap_material_.unset("uTexture");
     }
 
     void draw_2d_ui()

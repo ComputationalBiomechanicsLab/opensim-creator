@@ -941,7 +941,7 @@ TEST_F(Renderer, MaterialSetTextureOnMaterialCausesGetTextureToReturnTheTexture)
     ASSERT_TRUE(mat.get_texture(key));
 }
 
-TEST_F(Renderer, MaterialClearTextureOnMaterialCausesGetTextureToReturnNothing)
+TEST_F(Renderer, MaterialUnsetTextureOnMaterialCausesGetTextureToReturnNothing)
 {
     Material mat = GenerateMaterial();
 
@@ -954,7 +954,7 @@ TEST_F(Renderer, MaterialClearTextureOnMaterialCausesGetTextureToReturnNothing)
 
     ASSERT_TRUE(mat.get_texture(key));
 
-    mat.clear_texture(key);
+    mat.unset(key);
 
     ASSERT_FALSE(mat.get_texture(key));
 }
@@ -972,7 +972,7 @@ TEST_F(Renderer, MaterialSetRenderTextureCausesGetRenderTextureToReturnTheTextur
     ASSERT_EQ(*mat.get_render_texture(key), renderTex);
 }
 
-TEST_F(Renderer, MaterialSetRenderTextureFollowedByClearRenderTextureClearsTheRenderTexture)
+TEST_F(Renderer, MaterialSetRenderTextureFollowedByUnsetClearsTheRenderTexture)
 {
     Material mat = GenerateMaterial();
     RenderTexture renderTex = GenerateRenderTexture();
@@ -984,7 +984,7 @@ TEST_F(Renderer, MaterialSetRenderTextureFollowedByClearRenderTextureClearsTheRe
 
     ASSERT_EQ(*mat.get_render_texture(key), renderTex);
 
-    mat.clear_render_texture(key);
+    mat.unset(key);
 
     ASSERT_FALSE(mat.get_render_texture(key));
 }
@@ -1025,7 +1025,7 @@ TEST_F(Renderer, MaterialGetCubemapReturnsTheCubemapThatWasLastSet)
     ASSERT_EQ(mat.get_cubemap("cubemap"), secondCubemap);
 }
 
-TEST_F(Renderer, MaterialClearCubemapClearsTheCubemap)
+TEST_F(Renderer, MaterialUnsetCubemapClearsTheCubemap)
 {
     Material mat = GenerateMaterial();
 
@@ -1037,7 +1037,7 @@ TEST_F(Renderer, MaterialClearCubemapClearsTheCubemap)
 
     ASSERT_TRUE(mat.get_cubemap("cubemap").has_value());
 
-    mat.clear_cubemap("cubemap");
+    mat.unset("cubemap");
 
     ASSERT_FALSE(mat.get_cubemap("cubemap").has_value());
 }

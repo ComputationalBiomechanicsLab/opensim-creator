@@ -93,9 +93,9 @@ struct std::hash<ShaderLookupKey> final {
 
 template<>
 struct std::hash<TorusParameters> final {
-    size_t operator()(const TorusParameters& p) const
+    size_t operator()(const TorusParameters& params) const
     {
-        return hash_of(p.tube_center_radius, p.tube_radius);
+        return hash_of(params.tube_center_radius, params.tube_radius);
     }
 };
 
@@ -244,11 +244,9 @@ private:
 osc::SceneCache::SceneCache() :
     impl_{std::make_unique<Impl>()}
 {}
-
 osc::SceneCache::SceneCache(const ResourceLoader& resource_loader) :
     impl_{std::make_unique<Impl>(resource_loader)}
 {}
-
 osc::SceneCache::SceneCache(SceneCache&&) noexcept = default;
 osc::SceneCache& osc::SceneCache::operator=(SceneCache&&) noexcept = default;
 osc::SceneCache::~SceneCache() noexcept = default;

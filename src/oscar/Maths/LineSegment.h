@@ -23,8 +23,8 @@ namespace osc
 
 template<>
 struct std::hash<osc::LineSegment> {
-    size_t operator()(const osc::LineSegment& ls) const
+    size_t operator()(const osc::LineSegment& line_segment) const
     {
-        return osc::hash_of(ls.start, ls.end);
+        return osc::hash_of(line_segment.start, line_segment.end);
     }
 };

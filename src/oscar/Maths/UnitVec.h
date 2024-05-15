@@ -83,7 +83,7 @@ namespace osc
         constexpr const_pointer data() const { return data_.data(); }
         constexpr const_iterator begin() const { return data(); }
         constexpr const_iterator end() const { return data() + size(); }
-        constexpr const_reference operator[](size_type i) const { return begin()[i]; }
+        constexpr const_reference operator[](size_type pos) const { return begin()[pos]; }
 
         constexpr UnitVec operator+() const
         {

@@ -218,8 +218,8 @@ private:
         graphics::draw(quad_mesh_, identity<Transform>(), ssao_state_.material, camera_);
         camera_.render_to(ssao_state_.output_texture);
 
-        ssao_state_.material.clear_render_texture("uPositionTex");
-        ssao_state_.material.clear_render_texture("uNormalTex");
+        ssao_state_.material.unset("uPositionTex");
+        ssao_state_.material.unset("uNormalTex");
     }
 
     void render_blur_pass()
@@ -229,7 +229,7 @@ private:
         graphics::draw(quad_mesh_, identity<Transform>(), blur_state_.material, camera_);
         camera_.render_to(blur_state_.output_texture);
 
-        blur_state_.material.clear_render_texture("uSSAOTex");
+        blur_state_.material.unset("uSSAOTex");
     }
 
     void render_lighting_pass()
@@ -246,10 +246,10 @@ private:
         graphics::draw(quad_mesh_, identity<Transform>(), lighting_state_.material, camera_);
         camera_.render_to(lighting_state_.output_texture);
 
-        lighting_state_.material.clear_render_texture("uPositionTex");
-        lighting_state_.material.clear_render_texture("uNormalTex");
-        lighting_state_.material.clear_render_texture("uAlbedoTex");
-        lighting_state_.material.clear_render_texture("uSSAOTex");
+        lighting_state_.material.unset("uPositionTex");
+        lighting_state_.material.unset("uNormalTex");
+        lighting_state_.material.unset("uAlbedoTex");
+        lighting_state_.material.unset("uSSAOTex");
     }
 
     void draw_debug_overlays(const Rect& viewport_rect)

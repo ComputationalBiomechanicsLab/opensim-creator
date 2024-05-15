@@ -42,8 +42,6 @@ private:
 };
 
 
-// public API (PIMPL)
-
 osc::CachedSceneRenderer::CachedSceneRenderer(SceneCache& scene_cache) :
     impl_{std::make_unique<Impl>(scene_cache)}
 {}

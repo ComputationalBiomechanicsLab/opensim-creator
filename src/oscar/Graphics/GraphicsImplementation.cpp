@@ -2603,90 +2603,90 @@ private:
 };
 
 osc::RenderTexture::RenderTexture() :
-    m_Impl{make_cow<Impl>()}
+    impl_{make_cow<Impl>()}
 {}
 
 osc::RenderTexture::RenderTexture(Vec2i dimensions) :
-    m_Impl{make_cow<Impl>(dimensions)}
+    impl_{make_cow<Impl>(dimensions)}
 {}
 
 osc::RenderTexture::RenderTexture(const RenderTextureDescriptor& descriptor) :
-    m_Impl{make_cow<Impl>(descriptor)}
+    impl_{make_cow<Impl>(descriptor)}
 {}
 
 Vec2i osc::RenderTexture::dimensions() const
 {
-    return m_Impl->dimensions();
+    return impl_->dimensions();
 }
 
 void osc::RenderTexture::set_dimensions(Vec2i new_dimensions)
 {
-    m_Impl.upd()->set_dimensions(new_dimensions);
+    impl_.upd()->set_dimensions(new_dimensions);
 }
 
 TextureDimensionality osc::RenderTexture::dimensionality() const
 {
-    return m_Impl->dimensionality();
+    return impl_->dimensionality();
 }
 
 void osc::RenderTexture::set_dimensionality(TextureDimensionality dimensionality)
 {
-    m_Impl.upd()->set_dimensionality(dimensionality);
+    impl_.upd()->set_dimensionality(dimensionality);
 }
 
 RenderTextureFormat osc::RenderTexture::color_format() const
 {
-    return m_Impl->color_format();
+    return impl_->color_format();
 }
 
 void osc::RenderTexture::set_color_format(RenderTextureFormat format)
 {
-    m_Impl.upd()->set_color_format(format);
+    impl_.upd()->set_color_format(format);
 }
 
 AntiAliasingLevel osc::RenderTexture::anti_aliasing_level() const
 {
-    return m_Impl->anti_aliasing_level();
+    return impl_->anti_aliasing_level();
 }
 
 void osc::RenderTexture::set_anti_aliasing_level(AntiAliasingLevel aa_level)
 {
-    m_Impl.upd()->set_anti_aliasing_level(aa_level);
+    impl_.upd()->set_anti_aliasing_level(aa_level);
 }
 
 DepthStencilFormat osc::RenderTexture::depth_stencil_format() const
 {
-    return m_Impl->depth_stencil_format();
+    return impl_->depth_stencil_format();
 }
 
 void osc::RenderTexture::set_depth_stencil_format(DepthStencilFormat depth_stencil_format)
 {
-    m_Impl.upd()->set_depth_stencil_format(depth_stencil_format);
+    impl_.upd()->set_depth_stencil_format(depth_stencil_format);
 }
 
 RenderTextureReadWrite osc::RenderTexture::read_write() const
 {
-    return m_Impl->read_write();
+    return impl_->read_write();
 }
 
 void osc::RenderTexture::set_read_write(RenderTextureReadWrite read_write)
 {
-    m_Impl.upd()->set_read_write(read_write);
+    impl_.upd()->set_read_write(read_write);
 }
 
 void osc::RenderTexture::reformat(const RenderTextureDescriptor& format_description)
 {
-    m_Impl.upd()->reformat(format_description);
+    impl_.upd()->reformat(format_description);
 }
 
 std::shared_ptr<RenderBuffer> osc::RenderTexture::upd_color_buffer()
 {
-    return m_Impl.upd()->upd_color_buffer();
+    return impl_.upd()->upd_color_buffer();
 }
 
 std::shared_ptr<RenderBuffer> osc::RenderTexture::upd_depth_buffer()
 {
-    return m_Impl.upd()->upd_depth_buffer();
+    return impl_.upd()->upd_depth_buffer();
 }
 
 std::ostream& osc::operator<<(std::ostream& o, const RenderTexture&)
@@ -2873,7 +2873,7 @@ osc::Shader::Shader(
     CStringView vertex_shader_src,
     CStringView fragment_shader_src) :
 
-    m_Impl{make_cow<Impl>(vertex_shader_src, fragment_shader_src)}
+    impl_{make_cow<Impl>(vertex_shader_src, fragment_shader_src)}
 {}
 
 osc::Shader::Shader(
@@ -2881,27 +2881,27 @@ osc::Shader::Shader(
     CStringView geometry_shader_src,
     CStringView fragment_shader_src) :
 
-    m_Impl{make_cow<Impl>(vertex_shader_src, geometry_shader_src, fragment_shader_src)}
+    impl_{make_cow<Impl>(vertex_shader_src, geometry_shader_src, fragment_shader_src)}
 {}
 
 size_t osc::Shader::num_properties() const
 {
-    return m_Impl->num_properties();
+    return impl_->num_properties();
 }
 
 std::optional<ptrdiff_t> osc::Shader::property_index(std::string_view property_name) const
 {
-    return m_Impl->property_index(property_name);
+    return impl_->property_index(property_name);
 }
 
 std::string_view osc::Shader::property_name(ptrdiff_t property_index) const
 {
-    return m_Impl->property_name(property_index);
+    return impl_->property_name(property_index);
 }
 
 ShaderPropertyType osc::Shader::property_type(ptrdiff_t property_index) const
 {
-    return m_Impl->property_type(property_index);
+    return impl_->property_type(property_index);
 }
 
 std::ostream& osc::operator<<(std::ostream& o, const Shader& shader)
@@ -2911,7 +2911,7 @@ std::ostream& osc::operator<<(std::ostream& o, const Shader& shader)
         o << "    uniforms = [";
 
         const std::string_view delimiter = "\n        ";
-        for (const auto& [name, data] : shader.m_Impl->uniforms()) {
+        for (const auto& [name, data] : shader.impl_->uniforms()) {
             o << delimiter;
             print_shader_element(o, name, data);
         }
@@ -2923,7 +2923,7 @@ std::ostream& osc::operator<<(std::ostream& o, const Shader& shader)
         o << "    attributes = [";
 
         const std::string_view delimeter = "\n        ";
-        for (const auto& [name, data] : shader.m_Impl->attributes()) {
+        for (const auto& [name, data] : shader.impl_->attributes()) {
             o << delimeter;
             print_shader_element(o, name, data);
         }
@@ -3112,11 +3112,6 @@ public:
         set_value(property_name, std::move(texture));
     }
 
-    void clear_texture(std::string_view property_name)
-    {
-        values_.erase(property_name);
-    }
-
     std::optional<RenderTexture> get_render_texture(std::string_view property_name) const
     {
         return get_value<RenderTexture>(property_name);
@@ -3125,11 +3120,6 @@ public:
     void set_render_texture(std::string_view property_name, RenderTexture render_texture)
     {
         set_value(property_name, std::move(render_texture));
-    }
-
-    void clear_render_texture(std::string_view property_name)
-    {
-        values_.erase(property_name);
     }
 
     std::optional<Cubemap> get_cubemap(std::string_view property_name) const
@@ -3142,7 +3132,7 @@ public:
         set_value(property_name, std::move(cubemap));
     }
 
-    void clear_cubemap(std::string_view property_name)
+    void unset(std::string_view property_name)
     {
         values_.erase(property_name);
     }
@@ -3231,237 +3221,227 @@ private:
 };
 
 osc::Material::Material(Shader shader) :
-    m_Impl{make_cow<Impl>(std::move(shader))}
+    impl_{make_cow<Impl>(std::move(shader))}
 {}
 
 const Shader& osc::Material::shader() const
 {
-    return m_Impl->shader();
+    return impl_->shader();
 }
 
 std::optional<Color> osc::Material::get_color(std::string_view property_name) const
 {
-    return m_Impl->get_color(property_name);
+    return impl_->get_color(property_name);
 }
 
 void osc::Material::set_color(std::string_view property_name, const Color& color)
 {
-    m_Impl.upd()->set_color(property_name, color);
+    impl_.upd()->set_color(property_name, color);
 }
 
 std::optional<std::span<const Color>> osc::Material::get_color_array(std::string_view property_name) const
 {
-    return m_Impl->get_color_array(property_name);
+    return impl_->get_color_array(property_name);
 }
 
 void osc::Material::set_color_array(std::string_view property_name, std::span<const Color> colors)
 {
-    m_Impl.upd()->set_color_array(property_name, colors);
+    impl_.upd()->set_color_array(property_name, colors);
 }
 
 std::optional<float> osc::Material::get_float(std::string_view property_name) const
 {
-    return m_Impl->get_float(property_name);
+    return impl_->get_float(property_name);
 }
 
 void osc::Material::set_float(std::string_view property_name, float value)
 {
-    m_Impl.upd()->set_float(property_name, value);
+    impl_.upd()->set_float(property_name, value);
 }
 
 std::optional<std::span<const float>> osc::Material::get_float_array(std::string_view property_name) const
 {
-    return m_Impl->get_float_array(property_name);
+    return impl_->get_float_array(property_name);
 }
 
 void osc::Material::set_float_array(std::string_view property_name, std::span<const float> values)
 {
-    m_Impl.upd()->set_float_array(property_name, values);
+    impl_.upd()->set_float_array(property_name, values);
 }
 
 std::optional<Vec2> osc::Material::get_vec2(std::string_view property_name) const
 {
-    return m_Impl->get_vec2(property_name);
+    return impl_->get_vec2(property_name);
 }
 
 void osc::Material::set_vec2(std::string_view property_name, Vec2 vec)
 {
-    m_Impl.upd()->set_vec2(property_name, vec);
+    impl_.upd()->set_vec2(property_name, vec);
 }
 
 std::optional<std::span<const Vec3>> osc::Material::get_vec3_array(std::string_view property_name) const
 {
-    return m_Impl->get_vec3_array(property_name);
+    return impl_->get_vec3_array(property_name);
 }
 
 void osc::Material::set_vec3_array(std::string_view property_name, std::span<const Vec3> vecs)
 {
-    m_Impl.upd()->set_vec3_array(property_name, vecs);
+    impl_.upd()->set_vec3_array(property_name, vecs);
 }
 
 std::optional<Vec3> osc::Material::get_vec3(std::string_view property_name) const
 {
-    return m_Impl->get_vec3(property_name);
+    return impl_->get_vec3(property_name);
 }
 
 void osc::Material::set_vec3(std::string_view property_name, Vec3 vec)
 {
-    m_Impl.upd()->set_vec3(property_name, vec);
+    impl_.upd()->set_vec3(property_name, vec);
 }
 
 std::optional<Vec4> osc::Material::get_vec4(std::string_view property_name) const
 {
-    return m_Impl->get_vec4(property_name);
+    return impl_->get_vec4(property_name);
 }
 
 void osc::Material::set_vec4(std::string_view property_name, Vec4 vec)
 {
-    m_Impl.upd()->set_vec4(property_name, vec);
+    impl_.upd()->set_vec4(property_name, vec);
 }
 
 std::optional<Mat3> osc::Material::get_mat3(std::string_view property_name) const
 {
-    return m_Impl->get_mat3(property_name);
+    return impl_->get_mat3(property_name);
 }
 
 void osc::Material::set_mat3(std::string_view property_name, const Mat3& mat)
 {
-    m_Impl.upd()->set_mat3(property_name, mat);
+    impl_.upd()->set_mat3(property_name, mat);
 }
 
 std::optional<Mat4> osc::Material::get_mat4(std::string_view property_name) const
 {
-    return m_Impl->get_mat4(property_name);
+    return impl_->get_mat4(property_name);
 }
 
 void osc::Material::set_mat4(std::string_view property_name, const Mat4& mat)
 {
-    m_Impl.upd()->set_mat4(property_name, mat);
+    impl_.upd()->set_mat4(property_name, mat);
 }
 
 std::optional<std::span<const Mat4>> osc::Material::get_mat4_array(std::string_view property_name) const
 {
-    return m_Impl->get_mat4_array(property_name);
+    return impl_->get_mat4_array(property_name);
 }
 
 void osc::Material::set_mat4_array(std::string_view property_name, std::span<const Mat4> mats)
 {
-    m_Impl.upd()->set_mat4_array(property_name, mats);
+    impl_.upd()->set_mat4_array(property_name, mats);
 }
 
 std::optional<int32_t> osc::Material::get_int(std::string_view property_name) const
 {
-    return m_Impl->get_int(property_name);
+    return impl_->get_int(property_name);
 }
 
 void osc::Material::set_int(std::string_view property_name, int32_t value)
 {
-    m_Impl.upd()->set_int(property_name, value);
+    impl_.upd()->set_int(property_name, value);
 }
 
 std::optional<bool> osc::Material::get_bool(std::string_view property_name) const
 {
-    return m_Impl->get_bool(property_name);
+    return impl_->get_bool(property_name);
 }
 
 void osc::Material::set_bool(std::string_view property_name, bool value)
 {
-    m_Impl.upd()->set_bool(property_name, value);
+    impl_.upd()->set_bool(property_name, value);
 }
 
 std::optional<Texture2D> osc::Material::get_texture(std::string_view property_name) const
 {
-    return m_Impl->get_texture(property_name);
+    return impl_->get_texture(property_name);
 }
 
 void osc::Material::set_texture(std::string_view property_name, Texture2D texture)
 {
-    m_Impl.upd()->set_texture(property_name, std::move(texture));
+    impl_.upd()->set_texture(property_name, std::move(texture));
 }
 
-void osc::Material::clear_texture(std::string_view property_name)
+void osc::Material::unset(std::string_view property_name)
 {
-    m_Impl.upd()->clear_texture(property_name);
+    impl_.upd()->unset(property_name);
 }
 
 std::optional<RenderTexture> osc::Material::get_render_texture(std::string_view property_name) const
 {
-    return m_Impl->get_render_texture(property_name);
+    return impl_->get_render_texture(property_name);
 }
 
 void osc::Material::set_render_texture(std::string_view property_name, RenderTexture render_texture)
 {
-    m_Impl.upd()->set_render_texture(property_name, std::move(render_texture));
-}
-
-void osc::Material::clear_render_texture(std::string_view property_name)
-{
-    m_Impl.upd()->clear_render_texture(property_name);
+    impl_.upd()->set_render_texture(property_name, std::move(render_texture));
 }
 
 std::optional<Cubemap> osc::Material::get_cubemap(std::string_view property_name) const
 {
-    return m_Impl->get_cubemap(property_name);
+    return impl_->get_cubemap(property_name);
 }
 
 void osc::Material::set_cubemap(std::string_view property_name, Cubemap cubemap)
 {
-    m_Impl.upd()->set_cubemap(property_name, std::move(cubemap));
-}
-
-void osc::Material::clear_cubemap(std::string_view property_name)
-{
-    m_Impl.upd()->clear_cubemap(property_name);
+    impl_.upd()->set_cubemap(property_name, std::move(cubemap));
 }
 
 bool osc::Material::is_transparent() const
 {
-    return m_Impl->is_transparent();
+    return impl_->is_transparent();
 }
 
 void osc::Material::set_transparent(bool value)
 {
-    m_Impl.upd()->set_transparent(value);
+    impl_.upd()->set_transparent(value);
 }
 
 bool osc::Material::is_depth_tested() const
 {
-    return m_Impl->is_depth_tested();
+    return impl_->is_depth_tested();
 }
 
 void osc::Material::set_depth_tested(bool value)
 {
-    m_Impl.upd()->set_depth_tested(value);
+    impl_.upd()->set_depth_tested(value);
 }
 
 DepthFunction osc::Material::depth_function() const
 {
-    return m_Impl->depth_function();
+    return impl_->depth_function();
 }
 
 void osc::Material::set_depth_function(DepthFunction depth_function)
 {
-    m_Impl.upd()->set_depth_function(depth_function);
+    impl_.upd()->set_depth_function(depth_function);
 }
 
 bool osc::Material::is_wireframe() const
 {
-    return m_Impl->is_wireframe();
+    return impl_->is_wireframe();
 }
 
 void osc::Material::set_wireframe(bool value)
 {
-    m_Impl.upd()->set_wireframe(value);
+    impl_.upd()->set_wireframe(value);
 }
 
 CullMode osc::Material::cull_mode() const
 {
-    return m_Impl->cull_mode();
+    return impl_->cull_mode();
 }
 
 void osc::Material::set_cull_mode(CullMode cull_mode)
 {
-    m_Impl.upd()->set_cull_mode(cull_mode);
+    impl_.upd()->set_cull_mode(cull_mode);
 }
 
 std::ostream& osc::operator<<(std::ostream& o, const Material&)
@@ -3602,7 +3582,7 @@ private:
 };
 
 osc::MaterialPropertyBlock::MaterialPropertyBlock() :
-    m_Impl{[]()
+    impl_{[]()
     {
         static const CopyOnUpdPtr<Impl> s_empty_property_block_impl = make_cow<Impl>();
         return s_empty_property_block_impl;
@@ -3611,107 +3591,107 @@ osc::MaterialPropertyBlock::MaterialPropertyBlock() :
 
 void osc::MaterialPropertyBlock::clear()
 {
-    m_Impl.upd()->clear();
+    impl_.upd()->clear();
 }
 
 bool osc::MaterialPropertyBlock::empty() const
 {
-    return m_Impl->empty();
+    return impl_->empty();
 }
 
 std::optional<Color> osc::MaterialPropertyBlock::get_color(std::string_view property_name) const
 {
-    return m_Impl->get_color(property_name);
+    return impl_->get_color(property_name);
 }
 
 void osc::MaterialPropertyBlock::set_color(std::string_view property_name, const Color& color)
 {
-    m_Impl.upd()->set_color(property_name, color);
+    impl_.upd()->set_color(property_name, color);
 }
 
 std::optional<float> osc::MaterialPropertyBlock::get_float(std::string_view property_name) const
 {
-    return m_Impl->get_float(property_name);
+    return impl_->get_float(property_name);
 }
 
 void osc::MaterialPropertyBlock::set_float(std::string_view property_name, float value)
 {
-    m_Impl.upd()->set_float(property_name, value);
+    impl_.upd()->set_float(property_name, value);
 }
 
 std::optional<Vec3> osc::MaterialPropertyBlock::get_vec3(std::string_view property_name) const
 {
-    return m_Impl->get_vec3(property_name);
+    return impl_->get_vec3(property_name);
 }
 
 void osc::MaterialPropertyBlock::set_vec3(std::string_view property_name, Vec3 value)
 {
-    m_Impl.upd()->set_vec3(property_name, value);
+    impl_.upd()->set_vec3(property_name, value);
 }
 
 std::optional<Vec4> osc::MaterialPropertyBlock::get_vec4(std::string_view property_name) const
 {
-    return m_Impl->get_vec4(property_name);
+    return impl_->get_vec4(property_name);
 }
 
 void osc::MaterialPropertyBlock::set_vec4(std::string_view property_name, Vec4 value)
 {
-    m_Impl.upd()->set_vec4(property_name, value);
+    impl_.upd()->set_vec4(property_name, value);
 }
 
 std::optional<Mat3> osc::MaterialPropertyBlock::get_mat3(std::string_view property_name) const
 {
-    return m_Impl->get_mat3(property_name);
+    return impl_->get_mat3(property_name);
 }
 
 void osc::MaterialPropertyBlock::set_mat3(std::string_view property_name, const Mat3& value)
 {
-    m_Impl.upd()->set_mat3(property_name, value);
+    impl_.upd()->set_mat3(property_name, value);
 }
 
 std::optional<Mat4> osc::MaterialPropertyBlock::get_mat4(std::string_view property_name) const
 {
-    return m_Impl->get_mat4(property_name);
+    return impl_->get_mat4(property_name);
 }
 
 void osc::MaterialPropertyBlock::set_mat4(std::string_view property_name, const Mat4& value)
 {
-    m_Impl.upd()->set_mat4(property_name, value);
+    impl_.upd()->set_mat4(property_name, value);
 }
 
 std::optional<int32_t> osc::MaterialPropertyBlock::get_int(std::string_view property_name) const
 {
-    return m_Impl->get_int(property_name);
+    return impl_->get_int(property_name);
 }
 
 void osc::MaterialPropertyBlock::set_int(std::string_view property_name, int32_t value)
 {
-    m_Impl.upd()->set_int(property_name, value);
+    impl_.upd()->set_int(property_name, value);
 }
 
 std::optional<bool> osc::MaterialPropertyBlock::get_bool(std::string_view property_name) const
 {
-    return m_Impl->get_bool(property_name);
+    return impl_->get_bool(property_name);
 }
 
 void osc::MaterialPropertyBlock::set_bool(std::string_view property_name, bool value)
 {
-    m_Impl.upd()->set_bool(property_name, value);
+    impl_.upd()->set_bool(property_name, value);
 }
 
 std::optional<Texture2D> osc::MaterialPropertyBlock::get_texture(std::string_view property_name) const
 {
-    return m_Impl->get_texture(property_name);
+    return impl_->get_texture(property_name);
 }
 
 void osc::MaterialPropertyBlock::set_texture(std::string_view property_name, Texture2D texture)
 {
-    m_Impl.upd()->set_texture(property_name, std::move(texture));
+    impl_.upd()->set_texture(property_name, std::move(texture));
 }
 
 bool osc::operator==(const MaterialPropertyBlock& lhs, const MaterialPropertyBlock& rhs)
 {
-    return lhs.m_Impl == rhs.m_Impl || *lhs.m_Impl == *rhs.m_Impl;
+    return lhs.impl_ == rhs.impl_ || *lhs.impl_ == *rhs.impl_;
 }
 
 std::ostream& osc::operator<<(std::ostream& o, const MaterialPropertyBlock&)
@@ -5052,212 +5032,212 @@ std::ostream& osc::operator<<(std::ostream& o, MeshTopology topology)
 }
 
 osc::Mesh::Mesh() :
-    m_Impl{make_cow<Impl>()}
+    impl_{make_cow<Impl>()}
 {}
 
 MeshTopology osc::Mesh::topology() const
 {
-    return m_Impl->topology();
+    return impl_->topology();
 }
 
 void osc::Mesh::set_topology(MeshTopology topology)
 {
-    m_Impl.upd()->set_topology(topology);
+    impl_.upd()->set_topology(topology);
 }
 
 size_t osc::Mesh::num_vertices() const
 {
-    return m_Impl->num_vertices();
+    return impl_->num_vertices();
 }
 
 bool osc::Mesh::has_vertices() const
 {
-    return m_Impl->has_vertices();
+    return impl_->has_vertices();
 }
 
 std::vector<Vec3> osc::Mesh::vertices() const
 {
-    return m_Impl->vertices();
+    return impl_->vertices();
 }
 
 void osc::Mesh::set_vertices(std::span<const Vec3> vertices)
 {
-    m_Impl.upd()->set_vertices(vertices);
+    impl_.upd()->set_vertices(vertices);
 }
 
 void osc::Mesh::transform_vertices(const std::function<Vec3(Vec3)>& transformer)
 {
-    m_Impl.upd()->transform_vertices(transformer);
+    impl_.upd()->transform_vertices(transformer);
 }
 
 void osc::Mesh::transform_vertices(const Transform& transform)
 {
-    m_Impl.upd()->transform_vertices(transform);
+    impl_.upd()->transform_vertices(transform);
 }
 
 void osc::Mesh::transform_vertices(const Mat4& mat4)
 {
-    m_Impl.upd()->transform_vertices(mat4);
+    impl_.upd()->transform_vertices(mat4);
 }
 
 bool osc::Mesh::has_normals() const
 {
-    return m_Impl->has_normals();
+    return impl_->has_normals();
 }
 
 std::vector<Vec3> osc::Mesh::normals() const
 {
-    return m_Impl->normals();
+    return impl_->normals();
 }
 
 void osc::Mesh::set_normals(std::span<const Vec3> normals)
 {
-    m_Impl.upd()->set_normals(normals);
+    impl_.upd()->set_normals(normals);
 }
 
 void osc::Mesh::transform_normals(const std::function<Vec3(Vec3)>& transformer)
 {
-    m_Impl.upd()->transform_normals(transformer);
+    impl_.upd()->transform_normals(transformer);
 }
 
 bool osc::Mesh::has_tex_coords() const
 {
-    return m_Impl->has_tex_coords();
+    return impl_->has_tex_coords();
 }
 
 std::vector<Vec2> osc::Mesh::tex_coords() const
 {
-    return m_Impl->tex_coords();
+    return impl_->tex_coords();
 }
 
 void osc::Mesh::set_tex_coords(std::span<const Vec2> tex_coords)
 {
-    m_Impl.upd()->set_tex_coords(tex_coords);
+    impl_.upd()->set_tex_coords(tex_coords);
 }
 
 void osc::Mesh::transform_tex_coords(const std::function<Vec2(Vec2)>& transformer)
 {
-    m_Impl.upd()->transform_tex_coords(transformer);
+    impl_.upd()->transform_tex_coords(transformer);
 }
 
 std::vector<Color> osc::Mesh::colors() const
 {
-    return m_Impl->colors();
+    return impl_->colors();
 }
 
 void osc::Mesh::set_colors(std::span<const Color> colors)
 {
-    m_Impl.upd()->set_colors(colors);
+    impl_.upd()->set_colors(colors);
 }
 
 std::vector<Vec4> osc::Mesh::tangents() const
 {
-    return m_Impl->tangents();
+    return impl_->tangents();
 }
 
 void osc::Mesh::set_tangents(std::span<const Vec4> tangents)
 {
-    m_Impl.upd()->set_tangents(tangents);
+    impl_.upd()->set_tangents(tangents);
 }
 
 size_t osc::Mesh::num_indices() const
 {
-    return m_Impl->num_indices();
+    return impl_->num_indices();
 }
 
 MeshIndicesView osc::Mesh::indices() const
 {
-    return m_Impl->indices();
+    return impl_->indices();
 }
 
 void osc::Mesh::set_indices(MeshIndicesView indices, MeshUpdateFlags flags)
 {
-    m_Impl.upd()->set_indices(indices, flags);
+    impl_.upd()->set_indices(indices, flags);
 }
 
 void osc::Mesh::for_each_indexed_vert(const std::function<void(Vec3)>& callback) const
 {
-    m_Impl->for_each_indexed_vert(callback);
+    impl_->for_each_indexed_vert(callback);
 }
 
 void osc::Mesh::for_each_indexed_triangle(const std::function<void(Triangle)>& callback) const
 {
-    m_Impl->for_each_indexed_triangle(callback);
+    impl_->for_each_indexed_triangle(callback);
 }
 
 Triangle osc::Mesh::get_triangle_at(size_t first_index_offset) const
 {
-    return m_Impl->get_triangle_at(first_index_offset);
+    return impl_->get_triangle_at(first_index_offset);
 }
 
 std::vector<Vec3> osc::Mesh::indexed_vertices() const
 {
-    return m_Impl->indexed_vertices();
+    return impl_->indexed_vertices();
 }
 
 const AABB& osc::Mesh::bounds() const
 {
-    return m_Impl->bounds();
+    return impl_->bounds();
 }
 
 void osc::Mesh::clear()
 {
-    m_Impl.upd()->clear();
+    impl_.upd()->clear();
 }
 
 size_t osc::Mesh::num_submesh_descriptors() const
 {
-    return m_Impl->num_submesh_descriptors();
+    return impl_->num_submesh_descriptors();
 }
 
 void osc::Mesh::push_submesh_descriptor(const SubMeshDescriptor& descriptor)
 {
-    m_Impl.upd()->push_submesh_descriptor(descriptor);
+    impl_.upd()->push_submesh_descriptor(descriptor);
 }
 
 const SubMeshDescriptor& osc::Mesh::submesh_descriptor_at(size_t pos) const
 {
-    return m_Impl->submesh_descriptor_at(pos);
+    return impl_->submesh_descriptor_at(pos);
 }
 
 void osc::Mesh::clear_submesh_descriptors()
 {
-    m_Impl.upd()->clear_submesh_descriptors();
+    impl_.upd()->clear_submesh_descriptors();
 }
 
 size_t osc::Mesh::num_vertex_attributes() const
 {
-    return m_Impl->num_vertex_attributes();
+    return impl_->num_vertex_attributes();
 }
 
 const VertexFormat& osc::Mesh::vertex_format() const
 {
-    return m_Impl->vertex_format();
+    return impl_->vertex_format();
 }
 
 void osc::Mesh::set_vertex_buffer_params(size_t n, const VertexFormat& format)
 {
-    m_Impl.upd()->set_vertex_buffer_params(n, format);
+    impl_.upd()->set_vertex_buffer_params(n, format);
 }
 
 size_t osc::Mesh::vertex_buffer_stride() const
 {
-    return m_Impl->vertex_buffer_stride();
+    return impl_->vertex_buffer_stride();
 }
 
 void osc::Mesh::set_vertex_buffer_data(std::span<const uint8_t> data, MeshUpdateFlags flags)
 {
-    m_Impl.upd()->set_vertex_buffer_data(data, flags);
+    impl_.upd()->set_vertex_buffer_data(data, flags);
 }
 
 void osc::Mesh::recalculate_normals()
 {
-    m_Impl.upd()->recalculate_normals();
+    impl_.upd()->recalculate_normals();
 }
 
 void osc::Mesh::recalculate_tangents()
 {
-    m_Impl.upd()->recalculate_tangents();
+    impl_.upd()->recalculate_tangents();
 }
 
 std::ostream& osc::operator<<(std::ostream& o, const Mesh&)
@@ -6023,23 +6003,27 @@ public:
         return vsync_enabled_;
     }
 
-    void enable_vsync()
+    void set_vsync_enabled(bool v)
     {
-        if (SDL_GL_SetSwapInterval(-1) == 0) {
-            // adaptive vsync enabled
-        }
-        else if (SDL_GL_SetSwapInterval(1) == 0) {
-            // normal vsync enabled
-        }
+        if (v) {
+            // try to enable vsync
 
-        // always read the vsync state back from SDL
-        vsync_enabled_ = SDL_GL_GetSwapInterval() != 0;
-    }
+            if (SDL_GL_SetSwapInterval(-1) == 0) {
+                // adaptive vsync enabled
+            }
+            else if (SDL_GL_SetSwapInterval(1) == 0) {
+                // normal vsync enabled
+            }
 
-    void disable_vsync()
-    {
-        SDL_GL_SetSwapInterval(0);
-        vsync_enabled_ = SDL_GL_GetSwapInterval() != 0;
+            // always read the vsync state back from SDL
+            vsync_enabled_ = SDL_GL_GetSwapInterval() != 0;
+        }
+        else {
+            // try to disable vsync
+
+            SDL_GL_SetSwapInterval(0);
+            vsync_enabled_ = SDL_GL_GetSwapInterval() != 0;
+        }
     }
 
     bool is_in_debug_mode() const
@@ -6047,25 +6031,30 @@ public:
         return debug_mode_enabled_;
     }
 
-    void enable_debug_mode()
+    void set_debug_mode(bool v)
     {
-        if (is_opengl_in_debug_mode()) {
-            return;  // already in debug mode
-        }
+        if (v) {
+            // enable debug mode
 
-        log_info("enabling debug mode");
-        enable_opengl_debug_messages();
-        debug_mode_enabled_ = is_opengl_in_debug_mode();
-    }
-    void disable_debug_mode()
-    {
-        if (not is_opengl_in_debug_mode()) {
-            return;  // already not in debug mode
-        }
+            if (is_opengl_in_debug_mode()) {
+                return;  // already in debug mode
+            }
 
-        log_info("disabling debug mode");
-        disable_opengl_debug_messages();
-        debug_mode_enabled_ = is_opengl_in_debug_mode();
+            log_info("enabling debug mode");
+            enable_opengl_debug_messages();
+            debug_mode_enabled_ = is_opengl_in_debug_mode();
+        }
+        else {
+            // disable debug mode
+
+            if (not is_opengl_in_debug_mode()) {
+                return;  // already not in debug mode
+            }
+
+            log_info("disabling debug mode");
+            disable_opengl_debug_messages();
+            debug_mode_enabled_ = is_opengl_in_debug_mode();
+        }
     }
 
     void clear_screen(const Color& color)
@@ -6222,14 +6211,9 @@ bool osc::GraphicsContext::is_vsync_enabled() const
     return g_graphics_context_impl->is_vsync_enabled();
 }
 
-void osc::GraphicsContext::enable_vsync()
+void osc::GraphicsContext::set_vsync_enabled(bool v)
 {
-    g_graphics_context_impl->enable_vsync();
-}
-
-void osc::GraphicsContext::disable_vsync()
-{
-    g_graphics_context_impl->disable_vsync();
+    return g_graphics_context_impl->set_vsync_enabled(v);
 }
 
 bool osc::GraphicsContext::is_in_debug_mode() const
@@ -6237,14 +6221,9 @@ bool osc::GraphicsContext::is_in_debug_mode() const
     return g_graphics_context_impl->is_in_debug_mode();
 }
 
-void osc::GraphicsContext::enable_debug_mode()
+void osc::GraphicsContext::set_debug_mode(bool v)
 {
-    g_graphics_context_impl->enable_debug_mode();
-}
-
-void osc::GraphicsContext::disable_debug_mode()
-{
-    g_graphics_context_impl->disable_debug_mode();
+    g_graphics_context_impl->set_debug_mode(v);
 }
 
 void osc::GraphicsContext::clear_screen(const Color& color)
@@ -6701,7 +6680,7 @@ void osc::GraphicsBackend::try_bind_material_value_to_shader_element(
                 gl::set_uniform(u, texture_slot);
                 ++texture_slot;
             },
-        }, const_cast<RenderTexture::Impl&>(*std::get<RenderTexture>(material_value).m_Impl).getColorRenderBufferData());
+        }, const_cast<RenderTexture::Impl&>(*std::get<RenderTexture>(material_value).impl_).getColorRenderBufferData());
 
         break;
     }
@@ -6735,8 +6714,8 @@ void osc::GraphicsBackend::handle_batch_with_same_submesh(
     std::span<const RenderObject> batch,
     std::optional<InstancingState>& instancing_state)
 {
-    auto& mesh_impl = const_cast<Mesh::Impl&>(*batch.front().mesh.m_Impl);
-    const Shader::Impl& shader_impl = *batch.front().material.m_Impl->shader_.m_Impl;
+    auto& mesh_impl = const_cast<Mesh::Impl&>(*batch.front().mesh.impl_);
+    const Shader::Impl& shader_impl = *batch.front().material.impl_->shader_.impl_;
     const std::optional<size_t> maybe_submesh_index = batch.front().maybe_submesh_index;
 
     gl::bind_vertex_array(mesh_impl.upd_vertex_array());
@@ -6822,13 +6801,13 @@ void osc::GraphicsBackend::handle_batch_with_same_material_property_block(
 {
     OSC_PERF("GraphicsBackend::handle_batch_with_same_material_property_block");
 
-    const Material::Impl& material_impl = *batch.front().material.m_Impl;
-    const Shader::Impl& shader_impl = *material_impl.shader_.m_Impl;
+    const Material::Impl& material_impl = *batch.front().material.impl_;
+    const Shader::Impl& shader_impl = *material_impl.shader_.impl_;
     const FastStringHashtable<ShaderElement>& uniforms = shader_impl.uniforms();
 
     // bind property block variables (if applicable)
     if (batch.front().maybe_prop_block) {
-        for (const auto& [name, value] : batch.front().maybe_prop_block->m_Impl->values_) {
+        for (const auto& [name, value] : batch.front().maybe_prop_block->impl_->values_) {
             if (const auto* uniform = lookup_or_nullptr(uniforms, name)) {
                 try_bind_material_value_to_shader_element(*uniform, value, texture_slot);
             }
@@ -6853,8 +6832,8 @@ void osc::GraphicsBackend::handle_batch_with_same_material(
 {
     OSC_PERF("GraphicsBackend::handle_batch_with_same_material");
 
-    const auto& material_impl = *batch.front().material.m_Impl;
-    const auto& shader_impl = *material_impl.shader_.m_Impl;
+    const auto& material_impl = *batch.front().material.impl_;
+    const auto& shader_impl = *material_impl.shader_.impl_;
     const FastStringHashtable<ShaderElement>& uniforms = shader_impl.uniforms();
 
     // preemptively upload instance data
@@ -7509,7 +7488,7 @@ void osc::GraphicsBackend::blit_to_screen(
     BlitFlags)
 {
     OSC_ASSERT(g_graphics_context_impl);
-    OSC_ASSERT(source.m_Impl->has_been_rendered_to() && "the input texture has not been rendered to");
+    OSC_ASSERT(source.impl_->has_been_rendered_to() && "the input texture has not been rendered to");
 
     Camera camera;
     camera.set_background_color(Color::clear());
@@ -7522,7 +7501,7 @@ void osc::GraphicsBackend::blit_to_screen(
     material_copy.set_render_texture("uTexture", source);
     graphics::draw(g_graphics_context_impl->getQuadMesh(), Transform{}, material_copy, camera);
     camera.render_to_screen();
-    material_copy.clear_render_texture("uTexture");
+    material_copy.unset("uTexture");
 }
 
 void osc::GraphicsBackend::blit_to_screen(
@@ -7542,7 +7521,7 @@ void osc::GraphicsBackend::blit_to_screen(
     material_copy.set_texture("uTexture", source);
     graphics::draw(g_graphics_context_impl->getQuadMesh(), Transform{}, material_copy, camera);
     camera.render_to_screen();
-    material_copy.clear_texture("uTexture");
+    material_copy.unset("uTexture");
 }
 
 void osc::GraphicsBackend::copy_texture(
@@ -7558,7 +7537,7 @@ void osc::GraphicsBackend::copy_texture(
     CubemapFace face)
 {
     OSC_ASSERT(g_graphics_context_impl);
-    OSC_ASSERT(source.m_Impl->has_been_rendered_to() && "the input texture has not been rendered to");
+    OSC_ASSERT(source.impl_->has_been_rendered_to() && "the input texture has not been rendered to");
 
     // create a source (read) framebuffer for blitting from the source render texture
     gl::FrameBuffer read_fbo;
@@ -7592,7 +7571,7 @@ void osc::GraphicsBackend::copy_texture(
                 0
             );
         }
-    }, const_cast<RenderTexture::Impl&>(*source.m_Impl).getColorRenderBufferData());
+    }, const_cast<RenderTexture::Impl&>(*source.impl_).getColorRenderBufferData());
     glReadBuffer(GL_COLOR_ATTACHMENT0);
 
     // create a destination (draw) framebuffer for blitting to the destination render texture
@@ -7691,7 +7670,7 @@ void osc::GraphicsBackend::copy_texture(
                     0
                 );
             }
-        }, const_cast<RenderTexture::Impl&>(*source.m_Impl).getColorRenderBufferData());
+        }, const_cast<RenderTexture::Impl&>(*source.impl_).getColorRenderBufferData());
         glReadBuffer(GL_COLOR_ATTACHMENT0);
 
         gl::FrameBuffer draw_fbo;

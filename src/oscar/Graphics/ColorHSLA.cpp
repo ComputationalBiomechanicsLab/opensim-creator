@@ -2,7 +2,7 @@
 
 #include <ostream>
 
-std::ostream& osc::operator<<(std::ostream& o, const ColorHSLA& c)
+std::ostream& osc::operator<<(std::ostream& color, const ColorHSLA& c)
 {
-    return o << "ColorHSLA(h = " << c.h << ", s = " << c.s << ", l = " << c.l << ", a = " << c.a << ')';
+    return color << "ColorHSLA(h = " << c.h << ", s = " << c.s << ", l = " << c.l << ", a = " << c.a << ')';
 }

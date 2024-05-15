@@ -7,14 +7,14 @@
 namespace osc
 {
     template<size_t L, typename T>
-    constexpr const T* value_ptr(const Vec<L, T>& v)
+    constexpr const T* value_ptr(const Vec<L, T>& vec)
     {
-        return v.data();
+        return vec.data();
     }
 
     template<size_t L, typename T>
-    constexpr T* value_ptr(Vec<L, T>& v)
+    constexpr T* value_ptr(Vec<L, T>& vec)
     {
-        return v.data();
+        return vec.data();
     }
 }

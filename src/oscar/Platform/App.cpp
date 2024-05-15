@@ -288,12 +288,12 @@ public:
 
     void enable_debug_mode()
     {
-        graphics_context_.enable_debug_mode();
+        graphics_context_.set_debug_mode(true);
     }
 
     void disable_debug_mode()
     {
-        graphics_context_.disable_debug_mode();
+        graphics_context_.set_debug_mode(false);
     }
 
     bool is_vsync_enabled() const
@@ -303,22 +303,17 @@ public:
 
     void set_vsync(bool v)
     {
-        if (v) {
-            graphics_context_.enable_vsync();
-        }
-        else {
-            graphics_context_.disable_vsync();
-        }
+        graphics_context_.set_vsync_enabled(v);
     }
 
     void enable_vsync()
     {
-        graphics_context_.enable_vsync();
+        graphics_context_.set_vsync_enabled(true);
     }
 
     void disable_vsync()
     {
-        graphics_context_.disable_vsync();
+        graphics_context_.set_vsync_enabled(false);
     }
 
     void add_frame_annotation(std::string_view label, Rect screen_rect)

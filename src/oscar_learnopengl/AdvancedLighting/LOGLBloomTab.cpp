@@ -258,7 +258,7 @@ private:
             Camera camera;
             graphics::draw(quad_mesh_, identity<Transform>(), blur_material_, camera);
             camera.render_to(ping_pong_buffer);
-            blur_material_.clear_render_texture("uInputImage");
+            blur_material_.unset("uInputImage");
 
             horizontal = !horizontal;
         }
@@ -276,8 +276,8 @@ private:
         camera.set_pixel_rect(viewport_rect);
         camera.render_to_screen();
 
-        final_compositing_material_.clear_render_texture("uBloomBlur");
-        final_compositing_material_.clear_render_texture("uHDRSceneRender");
+        final_compositing_material_.unset("uBloomBlur");
+        final_compositing_material_.unset("uHDRSceneRender");
     }
 
     void draw_overlays(const Rect& viewport_rect)

@@ -25,8 +25,8 @@ namespace osc
     };
 
     template<std::floating_point T>
-    std::ostream& operator<<(std::ostream& o, const Normalized<T>& v)
+    std::ostream& operator<<(std::ostream& out, const Normalized<T>& normalized_value)
     {
-        return o << v.get();
+        return out << normalized_value.get();
     }
 }

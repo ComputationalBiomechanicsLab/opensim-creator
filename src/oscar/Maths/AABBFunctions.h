@@ -55,7 +55,7 @@ namespace osc
     }
 
     // returns the eight corner vertices of `aabb`
-    std::array<Vec3, 8> corner_vertices(const AABB& aabb);
+    std::array<Vec3, 8> corner_vertices_of(const AABB& aabb);
 
     // returns an `AABB` computed by transforming `aabb` with `m`
     AABB transform_aabb(const Mat4& m, const AABB& aabb);

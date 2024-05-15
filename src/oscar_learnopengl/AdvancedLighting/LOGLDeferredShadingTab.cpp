@@ -258,9 +258,9 @@ private:
 
         camera_.render_to(output_texture_);
 
-        light_pass_.material.clear_render_texture("uPositionTex");
-        light_pass_.material.clear_render_texture("uNormalTex");
-        light_pass_.material.clear_render_texture("uAlbedoTex");
+        light_pass_.material.unset("uPositionTex");
+        light_pass_.material.unset("uNormalTex");
+        light_pass_.material.unset("uAlbedoTex");
     }
 
     void render_light_cubes()

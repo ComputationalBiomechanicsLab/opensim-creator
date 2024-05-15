@@ -25,14 +25,14 @@ namespace osc
             return 4;
         }
 
-        constexpr reference operator[](size_type i)
+        constexpr reference operator[](size_type pos)
         {
-            return (&r)[i];
+            return (&r)[pos];
         }
 
-        constexpr const_reference operator[](size_type i) const
+        constexpr const_reference operator[](size_type pos) const
         {
-            return (&r)[i];
+            return (&r)[pos];
         }
 
         constexpr Color32() = default;

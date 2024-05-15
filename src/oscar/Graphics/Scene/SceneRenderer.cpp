@@ -241,7 +241,7 @@ public:
                 //
                 // care: this only works for triangles, because normals-drawing material uses a geometry
                 //       shader that assumes triangular input (#792)
-                if (params.draw_mesh_normals && dec.mesh.topology() == MeshTopology::Triangles) {
+                if (params.draw_mesh_normals and dec.mesh.topology() == MeshTopology::Triangles) {
                     graphics::draw(dec.mesh, dec.transform, normals_material_, camera_);
                 }
             }
@@ -284,9 +284,9 @@ public:
         camera_.render_to(output_rendertexture_);
 
         // prevents copies on next frame
-        edge_detection_material_.clear_render_texture("uScreenTexture");
-        scene_textured_els_material_.clear_render_texture("uShadowMapTexture");
-        scene_colored_els_material_.clear_render_texture("uShadowMapTexture");
+        edge_detection_material_.unset("uScreenTexture");
+        scene_textured_els_material_.unset("uShadowMapTexture");
+        scene_colored_els_material_.unset("uShadowMapTexture");
     }
 
     RenderTexture& upd_render_texture()
@@ -304,10 +304,10 @@ private:
         }
 
         // compute the worldspace bounds union of all rim-highlighted geometry
-        const auto rim_aabb_of = [](const SceneDecoration& dec) -> std::optional<AABB>
+        const auto rim_aabb_of = [](const SceneDecoration& decoration) -> std::optional<AABB>
         {
-            if (dec.flags & (SceneDecorationFlags::IsSelected | SceneDecorationFlags::IsChildOfSelected | SceneDecorationFlags::IsHovered | SceneDecorationFlags::IsChildOfHovered)) {
-                return worldspace_bounds_of(dec);
+            if (decoration.flags & (SceneDecorationFlags::IsSelected | SceneDecorationFlags::IsChildOfSelected | SceneDecorationFlags::IsHovered | SceneDecorationFlags::IsChildOfHovered)) {
+                return worldspace_bounds_of(decoration);
             }
             return std::nullopt;
         };
@@ -337,7 +337,7 @@ private:
         const Vec2 rim_ndc_thickness = 2.0f*params.rim_thickness_in_pixels / Vec2{params.dimensions};
 
         // expand by the rim thickness, so that the output has space for the rims
-        rim_ndc_rect = expand(rim_ndc_rect, rim_ndc_thickness);
+        rim_ndc_rect = expand_by_absolute_amount(rim_ndc_rect, rim_ndc_thickness);
 
         // constrain the result of the above to within clip space
         rim_ndc_rect = clamp(rim_ndc_rect, {-1.0f, -1.0f}, {1.0f, 1.0f});
@@ -367,13 +367,13 @@ private:
         camera_.set_background_color(Color::clear());
 
         // draw all selected geometry in a solid color
-        for (const SceneDecoration& dec : decorations) {
+        for (const SceneDecoration& decoration : decorations) {
 
-            if (dec.flags & (SceneDecorationFlags::IsSelected | SceneDecorationFlags::IsChildOfSelected)) {
-                graphics::draw(dec.mesh, dec.transform, solid_color_material_, camera_, rims_selected_properties_);
+            if (decoration.flags & (SceneDecorationFlags::IsSelected | SceneDecorationFlags::IsChildOfSelected)) {
+                graphics::draw(decoration.mesh, decoration.transform, solid_color_material_, camera_, rims_selected_properties_);
             }
-            else if (dec.flags & (SceneDecorationFlags::IsHovered | SceneDecorationFlags::IsChildOfHovered)) {
-                graphics::draw(dec.mesh, dec.transform, solid_color_material_, camera_, rims_hovered_properties_);
+            else if (decoration.flags & (SceneDecorationFlags::IsHovered | SceneDecorationFlags::IsChildOfHovered)) {
+                graphics::draw(decoration.mesh, decoration.transform, solid_color_material_, camera_, rims_hovered_properties_);
             }
         }
 
@@ -419,10 +419,10 @@ private:
         //
         // (also, while doing that, draw each mesh - to prevent multipass)
         std::optional<AABB> shadowcaster_aabbs;
-        for (const SceneDecoration& dec : decorations) {
-            if (dec.flags & SceneDecorationFlags::CastsShadows) {
-                shadowcaster_aabbs = bounding_aabb_of(shadowcaster_aabbs, worldspace_bounds_of(dec));
-                graphics::draw(dec.mesh, dec.transform, depth_writer_material_, camera_);
+        for (const SceneDecoration& decoration : decorations) {
+            if (decoration.flags & SceneDecorationFlags::CastsShadows) {
+                shadowcaster_aabbs = bounding_aabb_of(shadowcaster_aabbs, worldspace_bounds_of(decoration));
+                graphics::draw(decoration.mesh, decoration.transform, depth_writer_material_, camera_);
             }
         }
 
@@ -463,16 +463,12 @@ private:
 };
 
 
-// public API (PIMPL)
-
-osc::SceneRenderer::SceneRenderer(SceneCache& meshCache) :
-    impl_{std::make_unique<Impl>(meshCache)}
+osc::SceneRenderer::SceneRenderer(SceneCache& scene_cache) :
+    impl_{std::make_unique<Impl>(scene_cache)}
 {}
-
 osc::SceneRenderer::SceneRenderer(const SceneRenderer& other) :
     impl_{std::make_unique<Impl>(*other.impl_)}
 {}
-
 osc::SceneRenderer::SceneRenderer(SceneRenderer&&) noexcept = default;
 osc::SceneRenderer& osc::SceneRenderer::operator=(SceneRenderer&&) noexcept = default;
 osc::SceneRenderer::~SceneRenderer() noexcept = default;

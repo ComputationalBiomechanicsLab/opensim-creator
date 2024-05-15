@@ -33,69 +33,69 @@ namespace
         return std::move(ss).str();
     }
 
-    void write_header(std::ostream& o, const StlMetadata& metadata)
+    void write_header(std::ostream& out, const StlMetadata& metadata)
     {
         constexpr size_t c_num_bytes_in_stl_header = 80;
         constexpr size_t c_max_chars_in_stl_header = c_num_bytes_in_stl_header - 1;  // nul-terminator
 
-        const std::string content = calc_header_text(metadata);
-        const size_t len = min(content.size(), c_max_chars_in_stl_header);
+        const std::string header_content = calc_header_text(metadata);
+        const size_t len = min(header_content.size(), c_max_chars_in_stl_header);
 
         for (size_t i = 0; i < len; ++i) {
-            o << static_cast<uint8_t>(content[i]);
+            out << static_cast<uint8_t>(header_content[i]);
         }
         for (size_t i = 0; i < c_num_bytes_in_stl_header-len; ++i) {
-            o << static_cast<uint8_t>(0x00);
+            out << static_cast<uint8_t>(0x00);
         }
     }
 
-    void write_u32_little_endian(std::ostream& o, uint32_t v)
+    void write_u32_little_endian(std::ostream& out, uint32_t v)
     {
-        o << static_cast<uint8_t>(v & 0xff);
-        o << static_cast<uint8_t>((v>>8) & 0xff);
-        o << static_cast<uint8_t>((v>>16) & 0xff);
-        o << static_cast<uint8_t>((v>>24) & 0xff);
+        out << static_cast<uint8_t>((v    ) & 0xff);
+        out << static_cast<uint8_t>((v>>8 ) & 0xff);
+        out << static_cast<uint8_t>((v>>16) & 0xff);
+        out << static_cast<uint8_t>((v>>24) & 0xff);
     }
 
-    void write_num_triangles(std::ostream& o, const Mesh& mesh)
+    void write_num_triangles(std::ostream& out, const Mesh& mesh)
     {
         OSC_ASSERT(mesh.num_indices()/3 <= std::numeric_limits<uint32_t>::max());
-        write_u32_little_endian(o, static_cast<uint32_t>(mesh.num_indices()/3));
+        write_u32_little_endian(out, static_cast<uint32_t>(mesh.num_indices()/3));
     }
 
-    void write_float_ieee754(std::ostream& o, float v)
+    void write_float_ieee754(std::ostream& out, float v)
     {
         static_assert(std::numeric_limits<float>::is_iec559, "STL files use IEE754 floats");
         for (std::byte byte : view_object_representation(v)) {
-            o << static_cast<uint8_t>(byte);
+            out << static_cast<uint8_t>(byte);
         }
     }
 
-    void write_vec3_ieee754(std::ostream& o, const Vec3& v)
+    void write_vec3_ieee754(std::ostream& out, const Vec3& vec)
     {
-        write_float_ieee754(o, v.x);
-        write_float_ieee754(o, v.y);
-        write_float_ieee754(o, v.z);
+        write_float_ieee754(out, vec.x);
+        write_float_ieee754(out, vec.y);
+        write_float_ieee754(out, vec.z);
     }
 
-    void write_attribute_count(std::ostream& o)
+    void write_attribute_count(std::ostream& out)
     {
-        o << static_cast<uint8_t>(0x00);
-        o << static_cast<uint8_t>(0x00);
+        out << static_cast<uint8_t>(0x00);
+        out << static_cast<uint8_t>(0x00);
     }
 
-    void write_triangle(std::ostream& o, const Triangle& triangle)
+    void write_triangle(std::ostream& out, const Triangle& triangle)
     {
-        write_vec3_ieee754(o, triangle_normal(triangle));
-        write_vec3_ieee754(o, triangle.p0);
-        write_vec3_ieee754(o, triangle.p1);
-        write_vec3_ieee754(o, triangle.p2);
-        write_attribute_count(o);
+        write_vec3_ieee754(out, triangle_normal(triangle));
+        write_vec3_ieee754(out, triangle.p0);
+        write_vec3_ieee754(out, triangle.p1);
+        write_vec3_ieee754(out, triangle.p2);
+        write_attribute_count(out);
     }
 
-    void write_triangles(std::ostream& o, const Mesh& mesh)
+    void write_triangles(std::ostream& out, const Mesh& mesh)
     {
-        mesh.for_each_indexed_triangle([&o](Triangle t) { write_triangle(o, t); });
+        mesh.for_each_indexed_triangle([&out](Triangle t) { write_triangle(out, t); });
     }
 }
 

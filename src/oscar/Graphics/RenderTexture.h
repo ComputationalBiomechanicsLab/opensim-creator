@@ -46,11 +46,6 @@ namespace osc
         std::shared_ptr<RenderBuffer> upd_color_buffer();
         std::shared_ptr<RenderBuffer> upd_depth_buffer();
 
-        friend void swap(RenderTexture& a, RenderTexture& b) noexcept
-        {
-            swap(a.m_Impl, b.m_Impl);
-        }
-
         friend bool operator==(const RenderTexture&, const RenderTexture&) = default;
 
         friend std::ostream& operator<<(std::ostream&, const RenderTexture&);
@@ -58,7 +53,7 @@ namespace osc
         friend class GraphicsBackend;
 
         class Impl;
-        CopyOnUpdPtr<Impl> m_Impl;
+        CopyOnUpdPtr<Impl> impl_;
     };
 
     std::ostream& operator<<(std::ostream&, const RenderTexture&);

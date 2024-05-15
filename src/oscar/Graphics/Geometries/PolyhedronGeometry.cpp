@@ -103,8 +103,8 @@ osc::PolyhedronGeometry::PolyhedronGeometry(
 
     const auto apply_radius = [&generated_vertices](float radius)
     {
-        for (Vec3& v : generated_vertices) {
-            v = radius * normalize(v);
+        for (Vec3& vertex : generated_vertices) {
+            vertex = radius * normalize(vertex);
         }
     };
 
@@ -169,10 +169,10 @@ osc::PolyhedronGeometry::PolyhedronGeometry(
             return atan2(-v.y, length(Vec2{v.x, v.z}));
         };
 
-        for (const Vec3& v : generated_vertices) {
+        for (const Vec3& vertex : generated_vertices) {
             uvs.emplace_back(
-                Turns{azimuth(v) + 0.5_turn}.count(),
-                Turns{2.0f*inclination(v) + 0.5_turn}.count()
+                Turns{azimuth(vertex) + 0.5_turn}.count(),
+                Turns{2.0f*inclination(vertex) + 0.5_turn}.count()
             );
         }
 

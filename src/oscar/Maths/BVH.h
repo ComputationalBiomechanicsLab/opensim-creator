@@ -17,14 +17,14 @@ namespace osc { struct Line; }
 
 namespace osc
 {
-    // a bounding volume hierarchy (BVH) of numerically IDed AABBs
+    // a bounding volume hierarchy (BVH) of numerically IDed `AABB`s
     //
-    // the AABBs may be computed from triangles, commonly called a "triangle BVH"
+    // the `AABB`s may be computed from triangles, commonly called a "triangle BVH"
     class BVH final {
     public:
         void clear();
 
-        // triangle BVHes
+        // triangle `BVH`es
         //
         // `prim.id()` will refer to the index of the first vertex in the triangle
         void build_from_indexed_triangles(
@@ -48,22 +48,22 @@ namespace osc
             const Line&
         ) const;
 
-        // AABB BVHes
+        // `AABB` `BVH`es
         //
-        // `prim.id()` will refer to the index of the AABB
+        // `prim.id()` will refer to the index of the `AABB`
         void build_from_aabbs(std::span<const AABB>);
 
-        // calls the callback with each collision between the line and an AABB in
-        // the BVH
+        // calls the callback with each collision between the line and an `AABB` in
+        // the `BVH`
         void for_each_ray_aabb_collision(const Line&, const std::function<void(BVHCollision)>&) const;
 
-        // returns `true` if the BVH contains no nodes
+        // returns `true` if the `BVH` contains no `BVHNode`s
         [[nodiscard]] bool empty() const;
 
-        // returns the maximum depth of the given BVH tree
+        // returns the maximum depth of the `BVH` tree
         size_t max_depth() const;
 
-        // returns the AABB of the root node, or `std::nullopt` if there are no nodes in
+        // returns the `AABB` of the root node, or `std::nullopt` if there are no nodes in
         // the tree
         std::optional<AABB> bounds() const;
 
@@ -77,7 +77,7 @@ namespace osc
         // nodes in the hierarchy
         std::vector<BVHNode> nodes_;
 
-        // primitives (triangles, AABBs) that the nodes reference
+        // primitives (triangles, `AABB`s) that the nodes reference
         std::vector<BVHPrim> prims_;
     };
 }

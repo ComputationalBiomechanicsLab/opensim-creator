@@ -19,8 +19,8 @@ namespace osc
     {
         for (size_t row = 0; row < R; ++row) {
             std::string_view delimeter;
-            for (size_t col = 0; col < C; ++col) {
-                o << delimeter << m[col][row];
+            for (size_t column = 0; column < C; ++column) {
+                o << delimeter << m[column][row];
                 delimeter = " ";
             }
             o << '\n';

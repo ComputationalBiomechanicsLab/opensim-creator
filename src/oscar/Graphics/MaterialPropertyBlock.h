@@ -26,9 +26,6 @@ namespace osc
         void clear();
         [[nodiscard]] bool empty() const;
 
-        // note: this differs from merely setting a vec4, because it is assumed
-        // that the provided color is in sRGB and needs to be converted to a
-        // linear color in the shader
         std::optional<Color> get_color(std::string_view property_name) const;
         void set_color(std::string_view property_name, const Color&);
 
@@ -56,18 +53,13 @@ namespace osc
         std::optional<Texture2D> get_texture(std::string_view property_name) const;
         void set_texture(std::string_view, Texture2D);
 
-        friend void swap(MaterialPropertyBlock& a, MaterialPropertyBlock& b) noexcept
-        {
-            swap(a.m_Impl, b.m_Impl);
-        }
-
     private:
         friend bool operator==(const MaterialPropertyBlock&, const MaterialPropertyBlock&);
         friend std::ostream& operator<<(std::ostream&, const MaterialPropertyBlock&);
         friend class GraphicsBackend;
 
         class Impl;
-        CopyOnUpdPtr<Impl> m_Impl;
+        CopyOnUpdPtr<Impl> impl_;
     };
 
     bool operator==(const MaterialPropertyBlock&, const MaterialPropertyBlock&);

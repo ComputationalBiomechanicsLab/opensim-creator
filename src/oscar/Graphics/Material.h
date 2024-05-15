@@ -69,15 +69,14 @@ namespace osc
 
         std::optional<Texture2D> get_texture(std::string_view property_name) const;
         void set_texture(std::string_view property_name, Texture2D);
-        void clear_texture(std::string_view property_name);
 
         std::optional<RenderTexture> get_render_texture(std::string_view property_name) const;
         void set_render_texture(std::string_view property_name, RenderTexture);
-        void clear_render_texture(std::string_view property_name);
 
         std::optional<Cubemap> get_cubemap(std::string_view property_name) const;
         void set_cubemap(std::string_view property_name, Cubemap);
-        void clear_cubemap(std::string_view property_name);
+
+        void unset(std::string_view property_name);
 
         bool is_transparent() const;
         void set_transparent(bool);
@@ -94,11 +93,6 @@ namespace osc
         CullMode cull_mode() const;
         void set_cull_mode(CullMode);
 
-        friend void swap(Material& a, Material& b) noexcept
-        {
-            swap(a.m_Impl, b.m_Impl);
-        }
-
         friend bool operator==(const Material&, const Material&) = default;
 
     private:
@@ -106,7 +100,7 @@ namespace osc
         friend class GraphicsBackend;
 
         class Impl;
-        CopyOnUpdPtr<Impl> m_Impl;
+        CopyOnUpdPtr<Impl> impl_;
     };
 
     std::ostream& operator<<(std::ostream&, const Material&);

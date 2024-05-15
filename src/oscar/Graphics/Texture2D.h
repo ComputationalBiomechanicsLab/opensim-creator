@@ -66,11 +66,6 @@ namespace osc
         std::span<const uint8_t> pixel_data() const;
         void set_pixel_data(std::span<const uint8_t>);
 
-        friend void swap(Texture2D& a, Texture2D& b) noexcept
-        {
-            swap(a.m_Impl, b.m_Impl);
-        }
-
         friend bool operator==(const Texture2D&, const Texture2D&) = default;
 
     private:

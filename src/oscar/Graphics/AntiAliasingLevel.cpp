@@ -5,14 +5,14 @@
 #include <string>
 #include <utility>
 
-std::ostream& osc::operator<<(std::ostream& o, AntiAliasingLevel level)
+std::ostream& osc::operator<<(std::ostream& out, AntiAliasingLevel aa_level)
 {
-    return o << level.get_as<uint32_t>() << 'x';
+    return out << aa_level.get_as<uint32_t>() << 'x';
 }
 
-std::string osc::to_string(AntiAliasingLevel level)
+std::string osc::to_string(AntiAliasingLevel aa_level)
 {
     std::stringstream ss;
-    ss << level;
+    ss << aa_level;
     return std::move(ss).str();
 }

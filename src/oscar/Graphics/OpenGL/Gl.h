@@ -103,10 +103,10 @@ namespace osc::gl
     class GeometryShader : public Shader<GL_GEOMETRY_SHADER> {};
 
     template<typename TShader>
-    inline TShader compile_from_source(const GLchar* src)
+    inline TShader compile_from_source(const GLchar* shader_src)
     {
         TShader rv;
-        compile_from_source(rv.handle(), src);
+        compile_from_source(rv.handle(), shader_src);
         return rv;
     }
 

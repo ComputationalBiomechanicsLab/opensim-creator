@@ -27,8 +27,8 @@ namespace osc
         constexpr const_iterator begin() const { return data(); }
         constexpr iterator end() { return data() + size(); }
         constexpr const_iterator end() const { return data() + size(); }
-        constexpr reference operator[](size_t i) { return begin()[i]; }
-        constexpr const_reference operator[](size_t i) const { return begin()[i]; }
+        constexpr reference operator[](size_t pos) { return begin()[pos]; }
+        constexpr const_reference operator[](size_t pos) const { return begin()[pos]; }
 
         AnalyticPlane p0 = {.distance = 0.0f, .normal = { 0.0f,  0.0f, -1.0f}};
         AnalyticPlane p1 = {.distance = 1.0f, .normal = { 0.0f,  0.0f,  1.0f}};

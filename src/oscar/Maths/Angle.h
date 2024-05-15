@@ -29,39 +29,39 @@ namespace osc
         // explicitly constructs the angle from a raw value in the given units
         template<std::convertible_to<Rep> Rep2>
         constexpr explicit Angle(const Rep2& value_) :
-            m_Value{static_cast<Rep>(value_)}
+            value_{static_cast<Rep>(value_)}
         {}
 
         // implicitly constructs from an angle expressed in other units
         template<AngularUnitTraits Units2>
         constexpr Angle(const Angle<Rep, Units2>& other) :
-            m_Value{static_cast<Rep>(other.count() * (Units2::radians_per_rep/Units::radians_per_rep))}
+            value_{static_cast<Rep>(other.count() * (Units2::radians_per_rep/Units::radians_per_rep))}
         {}
 
         // explicitly constructs from an angle expressed of type `Rep2` expressed in other units
         template<std::convertible_to<Rep> Rep2, AngularUnitTraits Units2>
         explicit constexpr Angle(const Angle<Rep2, Units2>& other) :
-            m_Value{static_cast<Rep>(other.count() * (Units2::radians_per_rep/Units::radians_per_rep))}
+            value_{static_cast<Rep>(other.count() * (Units2::radians_per_rep/Units::radians_per_rep))}
         {}
 
         // returns the underlying floating point representation of the angle
-        constexpr Rep count() const { return m_Value; }
+        constexpr Rep count() const { return value_; }
 
         constexpr Angle operator+() const { return Angle{*this}; }
 
-        constexpr Angle operator-() const { return Angle{-m_Value}; }
+        constexpr Angle operator-() const { return Angle{-value_}; }
 
         constexpr friend auto operator<=>(const Angle&, const Angle&) = default;
 
         constexpr friend Angle& operator+=(Angle& lhs, const Angle& rhs)
         {
-            lhs.m_Value += rhs.m_Value;
+            lhs.value_ += rhs.value_;
             return lhs;
         }
 
         constexpr friend Angle& operator-=(Angle& lhs, const Angle& rhs)
         {
-            lhs.m_Value -= rhs.m_Value;
+            lhs.value_ -= rhs.value_;
             return lhs;
         }
 
@@ -69,22 +69,22 @@ namespace osc
         template<std::convertible_to<Rep> Rep2>
         constexpr friend Angle operator*(const Rep2& scalar, const Angle& rhs)
         {
-            return Angle{static_cast<Rep>(scalar) * rhs.m_Value};
+            return Angle{static_cast<Rep>(scalar) * rhs.value_};
         }
         template<std::convertible_to<Rep> Rep2>
         constexpr friend Angle operator*(const Angle& lhs, const Rep2& scalar)
         {
-            return Angle{lhs.m_Value * static_cast<Rep>(scalar)};
+            return Angle{lhs.value_ * static_cast<Rep>(scalar)};
         }
 
         // scalar division (only on the rhs: reciporical angular units aren't supported)
         template<std::convertible_to<Rep> Rep2>
         constexpr friend Angle operator/(const Angle& lhs, const Rep2& scalar)
         {
-            return Angle{lhs.m_Value / static_cast<Rep>(scalar)};
+            return Angle{lhs.value_ / static_cast<Rep>(scalar)};
         }
     private:
-        Rep m_Value{0};
+        Rep value_{0};
     };
 
     // heterogeneously adds two angles (e.g. `90_deg + 1_turn`) by first converting them to a common angle type
@@ -143,11 +143,11 @@ namespace osc
         return CA{lhs} <=> CA{rhs};
     }
 
-    // writes the angle's value, followed by a space, followed by its units (use `.count()` if you just want the value)
+    // writes `angle`'s value, followed by a space, followed by its units (use `.count()` if you just want the value)
     template<std::floating_point Rep, AngularUnitTraits Units>
-    std::ostream& operator<<(std::ostream& o, const Angle<Rep, Units>& v)
+    std::ostream& operator<<(std::ostream& o, const Angle<Rep, Units>& angle)
     {
-        return o << v.count() << ' ' << Units::unit_label;
+        return o << angle.count() << ' ' << Units::unit_label;
     }
 }
 

@@ -117,7 +117,7 @@ private:
         camera_.set_pixel_rect(std::nullopt);
         graphics::blit_to_screen(depth_texture_, Rect{viewport_rect.p1, viewport_rect.p1 + 200.0f});
 
-        scene_material_.clear_render_texture("uShadowMapTexture");
+        scene_material_.unset("uShadowMapTexture");
     }
 
     void draw_meshes_with_material(const Material& material)

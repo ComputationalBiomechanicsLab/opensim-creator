@@ -174,11 +174,6 @@ namespace osc
         // - creates a tangent vertex attribute if tangents aren't assigned yet
         void recalculate_tangents();
 
-        friend void swap(Mesh& a, Mesh& b) noexcept
-        {
-            swap(a.m_Impl, b.m_Impl);
-        }
-
         friend bool operator==(const Mesh&, const Mesh&) = default;
         friend std::ostream& operator<<(std::ostream&, const Mesh&);
     private:
@@ -186,7 +181,7 @@ namespace osc
         friend struct std::hash<Mesh>;
 
         class Impl;
-        CopyOnUpdPtr<Impl> m_Impl;
+        CopyOnUpdPtr<Impl> impl_;
     };
 
     std::ostream& operator<<(std::ostream&, const Mesh&);
@@ -196,6 +191,6 @@ template<>
 struct std::hash<osc::Mesh> final {
     size_t operator()(const osc::Mesh& mesh) const
     {
-        return std::hash<osc::CopyOnUpdPtr<osc::Mesh::Impl>>{}(mesh.m_Impl);
+        return std::hash<osc::CopyOnUpdPtr<osc::Mesh::Impl>>{}(mesh.impl_);
     }
 };

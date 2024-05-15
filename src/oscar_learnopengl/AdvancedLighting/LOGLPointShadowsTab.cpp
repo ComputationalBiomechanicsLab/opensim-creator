@@ -162,7 +162,7 @@ private:
             material_props.set_bool("uReverseNormals", cube.invert_normals);
             material.set_render_texture("uDepthMap", depth_texture_);
             graphics::draw(cube_mesh_, cube.transform, material, scene_camera_, std::move(material_props));
-            material.clear_render_texture("uDepthMap");
+            material.unset("uDepthMap");
         }
 
         // also, draw the light as a little cube

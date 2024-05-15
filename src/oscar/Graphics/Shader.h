@@ -32,11 +32,6 @@ namespace osc
         std::string_view property_name(ptrdiff_t) const;
         ShaderPropertyType property_type(ptrdiff_t) const;
 
-        friend void swap(Shader& a, Shader& b) noexcept
-        {
-            swap(a.m_Impl, b.m_Impl);
-        }
-
         friend bool operator==(const Shader&, const Shader&) = default;
 
     private:
@@ -44,7 +39,7 @@ namespace osc
         friend class GraphicsBackend;
 
         class Impl;
-        CopyOnUpdPtr<Impl> m_Impl;
+        CopyOnUpdPtr<Impl> impl_;
     };
 
     std::ostream& operator<<(std::ostream&, const Shader&);

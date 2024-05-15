@@ -72,9 +72,9 @@ namespace
     }
 }
 
-std::ostream& osc::operator<<(std::ostream& o, const Color& c)
+std::ostream& osc::operator<<(std::ostream& out, const Color& color)
 {
-    return o << "Color(r = " << c.r << ", g = " << c.g << ", b = " << c.b << ", a = " << c.a << ')';
+    return out << "Color(r = " << color.r << ", g = " << color.g << ", b = " << color.b << ", a = " << color.a << ')';
 }
 
 // the sRGB <--> linear relationship is commonly simplified to:
@@ -112,23 +112,23 @@ float osc::to_srgb_colorspace(float color_channel_value)
     }
 }
 
-Color osc::to_linear_colorspace(const Color& c)
+Color osc::to_linear_colorspace(const Color& color)
 {
     return {
-        to_linear_colorspace(c.r),
-        to_linear_colorspace(c.g),
-        to_linear_colorspace(c.b),
-        c.a,
+        to_linear_colorspace(color.r),
+        to_linear_colorspace(color.g),
+        to_linear_colorspace(color.b),
+        color.a,
     };
 }
 
-Color osc::to_srgb_colorspace(const Color& c)
+Color osc::to_srgb_colorspace(const Color& color)
 {
     return {
-        to_srgb_colorspace(c.r),
-        to_srgb_colorspace(c.g),
-        to_srgb_colorspace(c.b),
-        c.a,
+        to_srgb_colorspace(color.r),
+        to_srgb_colorspace(color.g),
+        to_srgb_colorspace(color.b),
+        color.a,
     };
 }
 
@@ -147,9 +147,9 @@ Color32 osc::to_color32(const Color& color)
     return to_color32(static_cast<Vec4>(color));
 }
 
-Color32 osc::to_color32(const Vec4& v)
+Color32 osc::to_color32(const Vec4& vec)
 {
-    return Color32{v.x, v.y, v.z, v.w};
+    return Color32{vec.x, vec.y, vec.z, vec.w};
 }
 
 Color32 osc::to_color32(float r, float g, float b, float a)
@@ -162,34 +162,34 @@ Color32 osc::to_color32(uint32_t v)
     return Color32{
         static_cast<uint8_t>((v >> 24) & 0xff),
         static_cast<uint8_t>((v >> 16) & 0xff),
-        static_cast<uint8_t>((v >> 8) & 0xff),
-        static_cast<uint8_t>((v >> 0) & 0xff),
+        static_cast<uint8_t>((v >> 8 ) & 0xff),
+        static_cast<uint8_t>((v >> 0 ) & 0xff),
     };
 }
 
-Color osc::to_color(Color32 c)
+Color osc::to_color(Color32 color)
 {
     return Color{
-        c.r.normalized_value(),
-        c.g.normalized_value(),
-        c.b.normalized_value(),
-        c.a.normalized_value(),
+        color.r.normalized_value(),
+        color.g.normalized_value(),
+        color.b.normalized_value(),
+        color.a.normalized_value(),
     };
 }
 
-Color osc::clamp_to_ldr(const Color& c)
+Color osc::clamp_to_ldr(const Color& color)
 {
-    return Color{saturate(Vec4{c})};
+    return Color{saturate(Vec4{color})};
 }
 
-ColorHSLA osc::to_hsla_color(const Color& c)
+ColorHSLA osc::to_hsla_color(const Color& color)
 {
     // sources:
     //
     // - https://web.cs.uni-paderborn.de/cgvb/colormaster/web/color-systems/hsl.html
     // - https://stackoverflow.com/questions/39118528/rgb-to-hsl-conversion
 
-    const auto [r, g, b, a] = clamp_to_ldr(c);
+    const auto [r, g, b, a] = clamp_to_ldr(color);
     const auto [min, max] = rgs::minmax(std::to_array({r, g, b}));  // CARE: `std::initializer_list<float>` broken in Ubuntu20?
     const float delta = max - min;
 
@@ -200,11 +200,11 @@ ColorHSLA osc::to_hsla_color(const Color& c)
     return {hue, saturation, lightness, a};
 }
 
-Color osc::to_color(const ColorHSLA& c)
+Color osc::to_color(const ColorHSLA& color)
 {
     // see: https://web.cs.uni-paderborn.de/cgvb/colormaster/web/color-systems/hsl.html
 
-    const auto& [h, s, l, a] = c;
+    const auto& [h, s, l, a] = color;
 
     if (l <= 0.0f) {
         return Color::black();
@@ -234,12 +234,12 @@ Color osc::to_color(const ColorHSLA& c)
     }
 }
 
-std::string osc::to_html_string_rgba(const Color& c)
+std::string osc::to_html_string_rgba(const Color& color)
 {
     std::string rv;
     rv.reserve(9);
     rv.push_back('#');
-    for (auto channel : to_color32(c)) {
+    for (auto channel : to_color32(color)) {
         auto [nibble_1, nibble_2] = to_hex_chars(static_cast<uint8_t>(channel));
         rv.push_back(nibble_1);
         rv.push_back(nibble_2);
@@ -247,16 +247,16 @@ std::string osc::to_html_string_rgba(const Color& c)
     return rv;
 }
 
-std::optional<Color> osc::try_parse_html_color_string(std::string_view v)
+std::optional<Color> osc::try_parse_html_color_string(std::string_view str)
 {
-    if (v.empty()) {
+    if (str.empty()) {
         return std::nullopt;  // it's empty
     }
-    if (v.front() != '#') {
+    if (str.front() != '#') {
         return std::nullopt;  // incorrect first character (e.g. should be "#ff0000ff")
     }
 
-    const std::string_view content = v.substr(1);
+    const std::string_view content = str.substr(1);
     if (content.size() == 6) {
         // RGB hex string (e.g. "ffaa88")
         Color rv = Color::black();
@@ -289,9 +289,9 @@ std::optional<Color> osc::try_parse_html_color_string(std::string_view v)
     }
 }
 
-Color osc::multiply_luminance(const Color& c, float factor)
+Color osc::multiply_luminance(const Color& color, float factor)
 {
-    auto hsla = to_hsla_color(c);
-    hsla.l *= factor;
-    return to_color(hsla);
+    auto hsla_color = to_hsla_color(color);
+    hsla_color.l *= factor;
+    return to_color(hsla_color);
 }

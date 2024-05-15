@@ -116,11 +116,6 @@ namespace osc
         void render_to(RenderTexture&);
         void render_to(RenderTarget&);
 
-        friend void swap(Camera& a, Camera& b) noexcept
-        {
-            swap(a.impl_, b.impl_);
-        }
-
     private:
         friend bool operator==(const Camera&, const Camera&);
         friend std::ostream& operator<<(std::ostream&, const Camera&);

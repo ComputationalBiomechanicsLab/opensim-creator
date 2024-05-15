@@ -136,7 +136,7 @@ namespace osc
     }
 
     template<std::floating_point T>
-    T determinant(const Mat<3, 3, T>& m)
+    T determinant_of(const Mat<3, 3, T>& m)
     {
         return
             + m[0][0] * (m[1][1] * m[2][2] - m[2][1] * m[1][2])
@@ -146,7 +146,7 @@ namespace osc
     }
 
     template<std::floating_point T>
-    T determinant(const Mat<4, 4, T>& m)
+    T determinant_of(const Mat<4, 4, T>& m)
     {
         const T subfactor_00 = m[2][2] * m[3][3] - m[3][2] * m[2][3];
         const T subfactor_01 = m[2][1] * m[3][3] - m[3][1] * m[2][3];
@@ -170,7 +170,7 @@ namespace osc
     template<std::floating_point T>
     T inverse(const Mat<3, 3, T>& m)
     {
-        const T one_over_determinant = static_cast<T>(1) / determinant(m);
+        const T one_over_determinant = static_cast<T>(1) / determinant_of(m);
 
         Mat<3, 3, T> rv;
         rv[0][0] = + (m[1][1] * m[2][2] - m[2][1] * m[1][2]) * one_over_determinant;
@@ -351,7 +351,7 @@ namespace osc
         }
         perspective_matrix[3][3] = static_cast<T>(1);
 
-        if (equal_within_epsilon(determinant(perspective_matrix), static_cast<T>(0))) {
+        if (equal_within_epsilon(determinant_of(perspective_matrix), static_cast<T>(0))) {
             return false;
         }
 
@@ -492,7 +492,7 @@ namespace osc
         // google: "Adjugate Matrix": it's related to the cofactor matrix and is
         // related to the inverse of a matrix through:
         //
-        //     inverse(M) = Adjugate(M) / determinant(M);
+        //     inverse(M) = Adjugate(M) / determinant_of(M);
 
         Mat<3, 3, T> rv;
         rv[0][0] = + (m[1][1] * m[2][2] - m[2][1] * m[1][2]);
@@ -516,7 +516,7 @@ namespace osc
         //  adjoint is attractive because it always exists, even when M is
         //  singular. The inverse and the adjoint are related by:
         //
-        //      inverse(M) = adjoint(M) / determinant(M);
+        //      inverse(M) = adjoint(M) / determinant_of(M);
         //
         //  so, when the inverse exists, they only differ by a constant factor.
         //  Therefore, using adjoint(M) instead of inverse(M) only affects the

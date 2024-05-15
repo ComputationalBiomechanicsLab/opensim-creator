@@ -26,12 +26,10 @@ namespace osc
         AntiAliasingLevel max_antialiasing_level() const;
 
         bool is_vsync_enabled() const;
-        void enable_vsync();
-        void disable_vsync();
+        void set_vsync_enabled(bool);
 
         bool is_in_debug_mode() const;
-        void enable_debug_mode();
-        void disable_debug_mode();
+        void set_debug_mode(bool);
 
         void clear_screen(const Color&);
 

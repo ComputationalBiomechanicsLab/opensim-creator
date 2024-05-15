@@ -85,10 +85,10 @@ namespace osc
     Rect bounding_rect_of(const Circle& circle);
 
     // returns a `Rect` calculated by adding `abs_amount` to each edge of `rect`
-    Rect expand(const Rect& rect, float abs_amount);
+    Rect expand_by_absolute_amount(const Rect& rect, float abs_amount);
 
     // returns a `Rect` calculated by adding `abs_amount` to each edge of `rect`
-    Rect expand(const Rect& rect, Vec2 abs_amount);
+    Rect expand_by_absolute_amount(const Rect& rect, Vec2 abs_amount);
 
     // returns a `Rect` that has its bounds clamped between `min` and `max` (inclusive)
     Rect clamp(const Rect&, const Vec2& min, const Vec2& max);
