@@ -42,7 +42,7 @@ private:
         {
             bool vsync = App::get().is_vsync_enabled();
             if (ui::draw_checkbox("VSYNC", &vsync)) {
-                App::upd().set_vsync(vsync);
+                App::upd().set_vsync_enabled(vsync);
             }
         }
         if (ui::draw_button("clear measurements")) {

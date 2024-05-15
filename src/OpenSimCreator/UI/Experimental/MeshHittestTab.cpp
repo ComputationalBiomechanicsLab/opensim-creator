@@ -56,7 +56,7 @@ public:
 
     void on_tick()
     {
-        ui::update_polar_camera_from_mouse_inputs(m_PolarCamera, App::get().dimensions());
+        ui::update_polar_camera_from_mouse_inputs(m_PolarCamera, App::get().main_window_dimensions());
 
         // handle hittest
         auto raycastStart = std::chrono::high_resolution_clock::now();

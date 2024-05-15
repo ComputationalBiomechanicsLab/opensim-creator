@@ -137,8 +137,8 @@ namespace osc
         // application rendering loop)
         void request_quit();
 
-        // returns main window's dimensions (float)
-        Vec2 dimensions() const;
+        // returns main window's dimensions
+        Vec2 main_window_dimensions() const;
 
         // sets whether the user's mouse cursor should be shown/hidden
         void set_show_cursor(bool);
@@ -170,14 +170,11 @@ namespace osc
         // other parts of the application can use this to decide whether to render
         // extra debug elements, etc.
         bool is_in_debug_mode() const;
-        void enable_debug_mode();
-        void disable_debug_mode();
+        void set_debug_mode(bool);
 
         // returns true if VSYNC has been enabled in the graphics layer
         bool is_vsync_enabled() const;
-        void set_vsync(bool);
-        void enable_vsync();
-        void disable_vsync();
+        void set_vsync_enabled(bool);
 
         // add an annotation to the current frame
         //

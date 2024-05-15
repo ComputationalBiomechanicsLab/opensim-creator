@@ -240,7 +240,7 @@ public:
         quit_requested_ = true;
     }
 
-    Vec2 dimensions() const
+    Vec2 main_window_dimensions() const
     {
         return Vec2{sdl::GetWindowSizeInPixels(main_window_.get())};
     }
@@ -286,14 +286,9 @@ public:
         return graphics_context_.is_in_debug_mode();
     }
 
-    void enable_debug_mode()
+    void set_debug_mode(bool v)
     {
-        graphics_context_.set_debug_mode(true);
-    }
-
-    void disable_debug_mode()
-    {
-        graphics_context_.set_debug_mode(false);
+        graphics_context_.set_debug_mode(v);
     }
 
     bool is_vsync_enabled() const
@@ -301,19 +296,9 @@ public:
         return graphics_context_.is_vsync_enabled();
     }
 
-    void set_vsync(bool v)
+    void set_vsync_enabled(bool v)
     {
         graphics_context_.set_vsync_enabled(v);
-    }
-
-    void enable_vsync()
-    {
-        graphics_context_.set_vsync_enabled(true);
-    }
-
-    void disable_vsync()
-    {
-        graphics_context_.set_vsync_enabled(false);
     }
 
     void add_frame_annotation(std::string_view label, Rect screen_rect)
@@ -841,9 +826,9 @@ void osc::App::request_quit()
     impl_->request_quit();
 }
 
-Vec2 osc::App::dimensions() const
+Vec2 osc::App::main_window_dimensions() const
 {
-    return impl_->dimensions();
+    return impl_->main_window_dimensions();
 }
 
 void osc::App::set_show_cursor(bool v)
@@ -886,14 +871,9 @@ bool osc::App::is_in_debug_mode() const
     return impl_->is_in_debug_mode();
 }
 
-void osc::App::enable_debug_mode()
+void osc::App::set_debug_mode(bool v)
 {
-    impl_->enable_debug_mode();
-}
-
-void osc::App::disable_debug_mode()
-{
-    impl_->disable_debug_mode();
+    impl_->set_debug_mode(v);
 }
 
 bool osc::App::is_vsync_enabled() const
@@ -901,19 +881,9 @@ bool osc::App::is_vsync_enabled() const
     return impl_->is_vsync_enabled();
 }
 
-void osc::App::set_vsync(bool v)
+void osc::App::set_vsync_enabled(bool v)
 {
-    impl_->set_vsync(v);
-}
-
-void osc::App::enable_vsync()
-{
-    impl_->enable_vsync();
-}
-
-void osc::App::disable_vsync()
-{
-    impl_->disable_vsync();
+    impl_->set_vsync_enabled(v);
 }
 
 void osc::App::add_frame_annotation(std::string_view label, Rect screen_rect)

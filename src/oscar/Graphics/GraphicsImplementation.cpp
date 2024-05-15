@@ -6087,7 +6087,7 @@ public:
         if (not screenshot_request_queue_.empty()) {
 
             // copy GPU-side window framebuffer into response
-            const Vec2i dims = App::get().dimensions();
+            const Vec2i dims = App::get().main_window_dimensions();
 
             std::vector<uint8_t> pixels(static_cast<size_t>(4*dims.x*dims.y));
             OSC_ASSERT(is_aligned_at_least(pixels.data(), 4) && "glReadPixels must be called with a buffer that is aligned to GL_PACK_ALIGNMENT (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
@@ -7050,7 +7050,7 @@ Rect osc::GraphicsBackend::calc_viewport_bounds(
 {
     const Vec2 target_dimensions = maybe_custom_render_target ?
         Vec2{maybe_custom_render_target->colors.front().buffer->impl_->dimensions()} :
-        App::get().dimensions();
+        App::get().main_window_dimensions();
 
     const Rect camera_pixel_rect = camera.pixel_rect() ?
         *camera.pixel_rect() :

@@ -299,11 +299,7 @@ void osc::MainMenuAboutTab::onDraw()
 
         bool enabled = App::get().is_vsync_enabled();
         if (ui::draw_checkbox("##vsynccheckbox", &enabled)) {
-            if (enabled) {
-                App::upd().enable_vsync();
-            } else {
-                App::upd().disable_vsync();
-            }
+            App::upd().set_vsync_enabled(enabled);
         }
         ui::next_column();
 
@@ -393,16 +389,8 @@ void osc::MainMenuAboutTab::onDraw()
         ui::next_column();
         {
             bool appIsInDebugMode = App::get().is_in_debug_mode();
-            if (ui::draw_checkbox("##debugmodecheckbox", &appIsInDebugMode))
-            {
-                if (appIsInDebugMode)
-                {
-                    App::upd().enable_debug_mode();
-                }
-                else
-                {
-                    App::upd().disable_debug_mode();
-                }
+            if (ui::draw_checkbox("##debugmodecheckbox", &appIsInDebugMode)) {
+                App::upd().set_debug_mode(appIsInDebugMode);
             }
         }
 

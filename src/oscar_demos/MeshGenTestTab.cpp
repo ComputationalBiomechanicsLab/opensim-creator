@@ -67,7 +67,7 @@ private:
         ui::enable_dockspace_over_viewport(ui::get_main_viewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
         if (viewer_.is_hovered()) {
-            ui::update_polar_camera_from_mouse_inputs(camera_, App::get().dimensions());
+            ui::update_polar_camera_from_mouse_inputs(camera_, App::get().main_window_dimensions());
         }
 
         if (ui::begin_panel("viewer")) {
