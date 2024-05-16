@@ -168,7 +168,6 @@ public:
     LogLevel log_level_ = get_log_level(settings_);
 };
 
-// public API
 
 osc::AppConfig::AppConfig(
     std::string_view organization_name,
@@ -180,9 +179,9 @@ osc::AppConfig::AppConfig(AppConfig&&) noexcept = default;
 osc::AppConfig& osc::AppConfig::operator=(AppConfig&&) noexcept = default;
 osc::AppConfig::~AppConfig() noexcept = default;
 
-std::filesystem::path osc::AppConfig::resource_path(std::string_view k) const
+std::filesystem::path osc::AppConfig::resource_path(std::string_view resource_name) const
 {
-    return std::filesystem::weakly_canonical(resource_directory() / k);
+    return std::filesystem::weakly_canonical(resource_directory() / resource_name);
 }
 
 const std::filesystem::path& osc::AppConfig::resource_directory() const

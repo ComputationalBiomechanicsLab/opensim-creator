@@ -41,6 +41,7 @@ namespace osc
             UID id() const { return id_; }
             std::chrono::system_clock::time_point time() const { return time_; }
             CStringView message() const { return message_; }
+
         private:
             UID id_;
             std::chrono::system_clock::time_point time_ = std::chrono::system_clock::now();

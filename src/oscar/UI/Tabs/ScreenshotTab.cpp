@@ -297,7 +297,6 @@ private:
 osc::ScreenshotTab::ScreenshotTab(const ParentPtr<ITabHost>&, Screenshot&& screenshot) :
     impl_{std::make_unique<Impl>(std::move(screenshot))}
 {}
-
 osc::ScreenshotTab::ScreenshotTab(ScreenshotTab&&) noexcept = default;
 osc::ScreenshotTab& osc::ScreenshotTab::operator=(ScreenshotTab&&) noexcept = default;
 osc::ScreenshotTab::~ScreenshotTab() noexcept = default;

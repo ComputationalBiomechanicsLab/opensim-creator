@@ -460,37 +460,37 @@ public:
         std::string_view application_name,
         std::string_view application_config_file_name) :
 
-        m_GuardedData{organization_name, application_name, application_config_file_name}
+        guarded_data_{organization_name, application_name, application_config_file_name}
     {}
 
     std::optional<std::filesystem::path> system_configuration_file_location() const
     {
-        return m_GuardedData.lock()->system_configuration_file_location();
+        return guarded_data_.lock()->system_configuration_file_location();
     }
 
     std::optional<AppSettingValue> find_value(std::string_view key) const
     {
-        return m_GuardedData.lock()->find_value(key);
+        return guarded_data_.lock()->find_value(key);
     }
 
     void set_value(std::string_view key, AppSettingValue value)
     {
-        m_GuardedData.lock()->setValue(key, std::move(value));
+        guarded_data_.lock()->setValue(key, std::move(value));
     }
 
     std::optional<std::filesystem::path> find_value_filesystem_source(
         std::string_view key) const
     {
-        return m_GuardedData.lock()->find_value_filesystem_source(key);
+        return guarded_data_.lock()->find_value_filesystem_source(key);
     }
 
     void sync()
     {
-        m_GuardedData.lock()->sync();
+        guarded_data_.lock()->sync();
     }
 
 private:
-    SynchronizedValue<ThreadUnsafeAppSettings> m_GuardedData;
+    SynchronizedValue<ThreadUnsafeAppSettings> guarded_data_;
 };
 
 // flyweight the settings implementations based on organization+appname
@@ -511,7 +511,7 @@ namespace
             std::string_view application_name,
             std::string_view application_config_file_name)
         {
-            auto [it, inserted] = m_Data.try_emplace(Key{organization_name, application_name, application_config_file_name});
+            auto [it, inserted] = data_.try_emplace(Key{organization_name, application_name, application_config_file_name});
             if (inserted) {
                 it->second = std::make_shared<AppSettings::Impl>(organization_name, application_name, application_config_file_name);
             }
@@ -527,7 +527,7 @@ namespace
             }
         };
 
-        std::unordered_map<Key, std::shared_ptr<AppSettings::Impl>, KeyHasher> m_Data;
+        std::unordered_map<Key, std::shared_ptr<AppSettings::Impl>, KeyHasher> data_;
     };
 
     std::shared_ptr<AppSettings::Impl> get_globally_shared_settings_impl(

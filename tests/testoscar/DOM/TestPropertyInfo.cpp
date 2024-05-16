@@ -17,12 +17,12 @@ TEST(PropertyInfo, DefaultConstructedPropertyInfoHasNoNameAndNilDefaultValue)
 
 TEST(PropertyInfo, CanConstructFromStringNameAndVariant)
 {
-    [[maybe_unused]] PropertyInfo const desc{"name", Variant{1.0f}};
+    [[maybe_unused]] const PropertyInfo desc{"name", Variant{1.0f}};
 }
 
-TEST(PropertyInfo, GetNameReturnsSuppliedName)
+TEST(PropertyInfo, name_ReturnsSuppliedName)
 {
-    PropertyInfo const desc{"suppliedName", Variant{1.0f}};
+    const PropertyInfo desc{"suppliedName", Variant{1.0f}};
     ASSERT_EQ(desc.name(), "suppliedName");
 }
 
@@ -31,37 +31,37 @@ TEST(PropertyInfo, CanConstructFromStringRValue)
     ASSERT_NO_THROW({ PropertyInfo(std::string{"rvalue"}, Variant{false}); });
 }
 
-TEST(PropertyInfo, GetTypeReturnsSuppliedType)
+TEST(PropertyInfo, type_ReturnsSuppliedType)
 {
-    PropertyInfo const desc{"name", Variant{1.0f}};
+    const PropertyInfo desc{"name", Variant{1.0f}};
     ASSERT_EQ(desc.type(), VariantType::Float);
 }
 
 TEST(PropertyInfo, ComparesEquivalentWhenGivenSameInformation)
 {
-    PropertyInfo const a{"name", Variant{1.0f}};
-    PropertyInfo const b{"name", Variant{1.0f}};
+    const PropertyInfo a{"name", Variant{1.0f}};
+    const PropertyInfo b{"name", Variant{1.0f}};
     ASSERT_EQ(a, b);
 }
 
 TEST(PropertyInfo, ComparesInequivalentWhenGivenDifferentNames)
 {
-    PropertyInfo const a{"a", Variant{1.0f}};
-    PropertyInfo const b{"b", Variant{1.0f}};
+    const PropertyInfo a{"a", Variant{1.0f}};
+    const PropertyInfo b{"b", Variant{1.0f}};
     ASSERT_NE(a, b);
 }
 
 TEST(PropertyInfo, ComparesInequivalentWhenGivenDifferentDefaultValues)
 {
-    PropertyInfo const a{"name", Variant{1.0f}};
-    PropertyInfo const b{"name", Variant{2.0f}};
+    const PropertyInfo a{"name", Variant{1.0f}};
+    const PropertyInfo b{"name", Variant{2.0f}};
     ASSERT_NE(a, b);
 }
 
 TEST(PropertyInfo, ComparesInequivalentWhenGivenDifferentDefaultValueTypes)
 {
-    PropertyInfo const a{"name", Variant{1.0f}};
-    PropertyInfo const b{"name", Variant{"different type"}};
+    const PropertyInfo a{"name", Variant{1.0f}};
+    const PropertyInfo b{"name", Variant{"different type"}};
     ASSERT_NE(a, b);
 }
 
@@ -84,7 +84,7 @@ TEST(PropertyInfo, ThrowsAnExceptionWhenConstructedWithANameContainingWhitespace
 
 TEST(PropertyInfo, ThrowsWhenConstructedWithANameContainingAnyASCIIControlCharacters)
 {
-    auto const test = [](char c)
+    const auto test = [](char c)
     {
         ASSERT_ANY_THROW({ PropertyInfo(std::string{c} + std::string("leading"), Variant(true)); });
         ASSERT_ANY_THROW({ PropertyInfo(std::string("trailing") + c, Variant(true)); });
@@ -92,8 +92,7 @@ TEST(PropertyInfo, ThrowsWhenConstructedWithANameContainingAnyASCIIControlCharac
     };
 
     constexpr char c_LastControlCharacterInASCII = 0x1F;
-    for (char c = 0; c <= c_LastControlCharacterInASCII; ++c)
-    {
+    for (char c = 0; c <= c_LastControlCharacterInASCII; ++c) {
         test(c);
     }
     test(0x7F);  // DEL

@@ -25,6 +25,7 @@ namespace osc
         virtual bool impl_is_open() const = 0;
         virtual void impl_open() = 0;
         virtual void impl_close() = 0;
+
         virtual bool impl_begin_popup() = 0;
         virtual void impl_on_draw() = 0;
         virtual void impl_end_popup() = 0;

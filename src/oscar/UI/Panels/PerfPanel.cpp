@@ -102,7 +102,6 @@ private:
 osc::PerfPanel::PerfPanel(std::string_view panel_name) :
     impl_{std::make_unique<Impl>(panel_name)}
 {}
-
 osc::PerfPanel::PerfPanel(PerfPanel&&) noexcept = default;
 osc::PerfPanel& osc::PerfPanel::operator=(PerfPanel&&) noexcept = default;
 osc::PerfPanel::~PerfPanel() noexcept = default;

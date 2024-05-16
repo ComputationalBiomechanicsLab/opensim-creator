@@ -30,10 +30,10 @@ namespace
         }
 
     private:
-        void impl_sink_message(const LogMessageView& msg) final
+        void impl_sink_message(const LogMessageView& message_view) final
         {
             auto l = messages_.lock();
-            l->emplace_back(msg);
+            l->emplace_back(message_view);
         }
 
         SynchronizedValue<CircularBuffer<LogMessage, detail::c_max_log_traceback_messages>> messages_;

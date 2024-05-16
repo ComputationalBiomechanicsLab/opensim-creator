@@ -221,17 +221,17 @@ bool osc::operator==(const Variant& lhs, const Variant& rhs)
     }
 }
 
-std::string osc::to_string(const Variant& v)
+std::string osc::to_string(const Variant& variant)
 {
-    return v.to<std::string>();
+    return variant.to<std::string>();
 }
 
-std::ostream& osc::operator<<(std::ostream& o, const Variant& v)
+std::ostream& osc::operator<<(std::ostream& out, const Variant& variant)
 {
-    return o << to_string(v);
+    return out << to_string(variant);
 }
 
-size_t std::hash<osc::Variant>::operator()(const Variant& v) const
+size_t std::hash<osc::Variant>::operator()(const Variant& variant) const
 {
     // note: you might be wondering why this isn't `std::hash<std::variant>{}(v.data_)`
     //
@@ -251,5 +251,5 @@ size_t std::hash<osc::Variant>::operator()(const Variant& v) const
         {
             return std::hash<std::remove_cv_t<std::remove_reference_t<decltype(inner)>>>{}(inner);
         },
-    }, v.data_);
+    }, variant.data_);
 }

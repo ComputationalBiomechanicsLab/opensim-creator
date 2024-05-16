@@ -50,7 +50,6 @@ osc::CStringView osc::CookiecutterTab::id()
 osc::CookiecutterTab::CookiecutterTab(const ParentPtr<ITabHost>&) :
     impl_{std::make_unique<Impl>()}
 {}
-
 osc::CookiecutterTab::CookiecutterTab(CookiecutterTab&&) noexcept = default;
 osc::CookiecutterTab& osc::CookiecutterTab::operator=(CookiecutterTab&&) noexcept = default;
 osc::CookiecutterTab::~CookiecutterTab() noexcept = default;

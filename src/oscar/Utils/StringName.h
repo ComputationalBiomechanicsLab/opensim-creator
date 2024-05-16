@@ -16,8 +16,8 @@ namespace osc
     {
         class StringNameData final {
         public:
-            explicit StringNameData(std::string_view view) :
-                value_{view}
+            explicit StringNameData(std::string_view str) :
+                value_{str}
             {}
             StringNameData(StringNameData const&) = delete;
             StringNameData(StringNameData&&) noexcept = delete;

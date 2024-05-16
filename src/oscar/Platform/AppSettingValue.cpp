@@ -26,15 +26,15 @@ AppSettingValueType osc::AppSettingValue::type() const
 bool osc::AppSettingValue::to_bool() const
 {
     return std::visit(Overload{
-        [](const std::string& s)
+        [](const std::string& str)
         {
-            if (s.empty()) {
+            if (str.empty()) {
                 return false;
             }
-            else if (is_equal_case_insensitive(s, "false")) {
+            else if (is_equal_case_insensitive(str, "false")) {
                 return false;
             }
-            else if (is_equal_case_insensitive(s, "0")) {
+            else if (is_equal_case_insensitive(str, "0")) {
                 return false;
             }
             else {

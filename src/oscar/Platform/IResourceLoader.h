@@ -21,12 +21,12 @@ namespace osc
     public:
         virtual ~IResourceLoader() noexcept = default;
 
-        ResourceStream open(const ResourcePath& p) { return impl_open(p); }
+        ResourceStream open(const ResourcePath& resource_path) { return impl_open(resource_path); }
         std::string slurp(const ResourcePath&);
 
-        std::function<std::optional<ResourceDirectoryEntry>()> iterate_directory(const ResourcePath& p)
+        std::function<std::optional<ResourceDirectoryEntry>()> iterate_directory(const ResourcePath& resource_path)
         {
-            return impl_iterate_directory(p);
+            return impl_iterate_directory(resource_path);
         }
 
     private:

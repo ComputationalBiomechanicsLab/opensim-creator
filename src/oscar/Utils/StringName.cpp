@@ -23,8 +23,8 @@ namespace
     // pointers
     struct StringNameDataPtr final {
     public:
-        explicit StringNameDataPtr(std::string_view s) :
-            ptr_{std::make_unique<StringNameData>(s)}
+        explicit StringNameDataPtr(std::string_view str) :
+            ptr_{std::make_unique<StringNameData>(str)}
         {}
 
         friend bool operator==(std::string_view lhs, const StringNameDataPtr& rhs)
@@ -105,7 +105,7 @@ osc::StringName::StringName(std::string&& tmp) : data_{&possibly_construct_then_
 osc::StringName::StringName(std::string_view sv) : data_{&possibly_construct_then_get_data(sv)} {}
 osc::StringName::~StringName() noexcept { decrement_then_possibly_destruct_data(*data_); }
 
-std::ostream& osc::operator<<(std::ostream& o, const StringName& s)
+std::ostream& osc::operator<<(std::ostream& out, const StringName& s)
 {
-    return o << std::string_view{s};
+    return out << std::string_view{s};
 }

@@ -40,9 +40,9 @@ namespace osc
         {
             return ResourcePath{lhs.path_ / rhs};
         }
-        friend std::ostream& operator<<(std::ostream& os, const ResourcePath& p)
+        friend std::ostream& operator<<(std::ostream& out, const ResourcePath& resource_path)
         {
-            return os << p.path_;
+            return out << resource_path.path_;
         }
     private:
         friend struct std::hash<osc::ResourcePath>;
@@ -52,8 +52,8 @@ namespace osc
 
 template<>
 struct std::hash<osc::ResourcePath> final {
-    size_t operator()(const osc::ResourcePath& p) const
+    size_t operator()(const osc::ResourcePath& resource_path) const
     {
-        return std::filesystem::hash_value(p.path_);
+        return std::filesystem::hash_value(resource_path.path_);
     }
 };

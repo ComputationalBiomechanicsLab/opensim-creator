@@ -39,7 +39,7 @@ namespace osc
         {
             register_tab(TabRegistryEntry{
                 T::id(),
-                [](const ParentPtr<ITabHost>& h) { return std::make_unique<T>(h); },
+                [](const ParentPtr<ITabHost>& host_ptr) { return std::make_unique<T>(host_ptr); },
             });
         }
 

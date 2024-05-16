@@ -19,20 +19,19 @@ namespace
     }
 }
 
-ResourceStream osc::FilesystemResourceLoader::impl_open(const ResourcePath& p)
+ResourceStream osc::FilesystemResourceLoader::impl_open(const ResourcePath& resource_path)
 {
     if (log_level() <= LogLevel::debug) {
-        log_debug("opening %s", p.string().c_str());
+        log_debug("opening %s", resource_path.string().c_str());
     }
-    return ResourceStream{calc_full_path(root_directory_, p)};
+    return ResourceStream{calc_full_path(root_directory_, resource_path)};
 }
 
-std::function<std::optional<ResourceDirectoryEntry>()> osc::FilesystemResourceLoader::impl_iterate_directory(const ResourcePath& p)
+std::function<std::optional<ResourceDirectoryEntry>()> osc::FilesystemResourceLoader::impl_iterate_directory(const ResourcePath& resource_path)
 {
-
-    const std::filesystem::path full_path = calc_full_path(root_directory_, p);
+    const std::filesystem::path full_path = calc_full_path(root_directory_, resource_path);
     const std::filesystem::directory_iterator iterable{full_path};
-    return [p, full_path, beg = rgs::begin(iterable), en = rgs::end(iterable)]() mutable -> std::optional<ResourceDirectoryEntry>
+    return [resource_path, full_path, beg = rgs::begin(iterable), en = rgs::end(iterable)]() mutable -> std::optional<ResourceDirectoryEntry>
     {
         if (beg != en) {
             const auto relative_path = std::filesystem::relative(beg->path(), full_path);

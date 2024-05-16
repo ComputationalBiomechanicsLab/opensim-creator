@@ -19,28 +19,28 @@ namespace osc
         operator IResourceLoader& () { return *impl_; }
         operator const IResourceLoader& () { return *impl_; }
 
-        ResourceStream open(const ResourcePath& p)
+        ResourceStream open(const ResourcePath& resource_path)
         {
-            return impl_->open(prefix_ / p);
+            return impl_->open(prefix_ / resource_path);
         }
 
-        std::string slurp(const ResourcePath& p)
+        std::string slurp(const ResourcePath& resource_path)
         {
-            return impl_->slurp(prefix_ / p);
+            return impl_->slurp(prefix_ / resource_path);
         }
 
         ResourceLoader with_prefix(const ResourcePath& prefix) const
         {
             return ResourceLoader{impl_, prefix_ / prefix};
         }
-        ResourceLoader with_prefix(std::string_view sv)
+        ResourceLoader with_prefix(std::string_view str)
         {
-            return with_prefix(ResourcePath{sv});
+            return with_prefix(ResourcePath{str});
         }
 
-        std::function<std::optional<ResourceDirectoryEntry>()> iterate_directory(const ResourcePath& p)
+        std::function<std::optional<ResourceDirectoryEntry>()> iterate_directory(const ResourcePath& resource_path)
         {
-            return impl_->iterate_directory(prefix_ / p);
+            return impl_->iterate_directory(prefix_ / resource_path);
         }
     private:
         template<std::derived_from<IResourceLoader> TResourceLoader, typename... Args>

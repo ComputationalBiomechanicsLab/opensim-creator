@@ -411,7 +411,10 @@ private:
         dynamic_panels_.push_back(std::move(p));
 
         // re-sort so that panels are clustered correctly
-        rgs::sort(dynamic_panels_, rgs::less{}, [](auto const& p) { return std::make_tuple(p.spawnable_panel_id(), p.instance_number()); });
+        rgs::sort(dynamic_panels_, rgs::less{}, [](auto const& p)
+        {
+            return std::make_tuple(p.spawnable_panel_id(), p.instance_number());
+        });
     }
 
     std::vector<ToggleablePanel> toggleable_panels_;
@@ -424,7 +427,6 @@ private:
 osc::PanelManager::PanelManager() :
     impl_{std::make_unique<Impl>()}
 {}
-
 osc::PanelManager::PanelManager(PanelManager&&) noexcept = default;
 osc::PanelManager& osc::PanelManager::operator=(PanelManager&&) noexcept = default;
 osc::PanelManager::~PanelManager() noexcept = default;

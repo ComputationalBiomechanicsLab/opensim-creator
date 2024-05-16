@@ -68,7 +68,6 @@ private:
 osc::ErrorTab::ErrorTab(const ParentPtr<ITabHost>&, const std::exception& exception) :
     impl_{std::make_unique<Impl>(exception)}
 {}
-
 osc::ErrorTab::ErrorTab(ErrorTab&&) noexcept = default;
 osc::ErrorTab& osc::ErrorTab::operator=(ErrorTab&&) noexcept = default;
 osc::ErrorTab::~ErrorTab() noexcept = default;

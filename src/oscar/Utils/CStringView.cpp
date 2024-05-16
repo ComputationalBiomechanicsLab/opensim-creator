@@ -4,9 +4,9 @@
 #include <string>
 #include <string_view>
 
-std::ostream& osc::operator<<(std::ostream& o, const CStringView& sv)
+std::ostream& osc::operator<<(std::ostream& out, const CStringView& sv)
 {
-    return o << std::string_view{sv};
+    return out << std::string_view{sv};
 }
 
 std::string osc::operator+(const char* lhs, const CStringView& rhs)

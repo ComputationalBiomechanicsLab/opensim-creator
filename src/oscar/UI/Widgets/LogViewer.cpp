@@ -18,9 +18,9 @@ using namespace osc;
 
 namespace
 {
-    Color to_color(LogLevel lvl)
+    Color to_color(LogLevel log_level)
     {
-        switch (lvl) {
+        switch (log_level) {
         case LogLevel::trace:    return {0.5f, 0.5f, 0.5f, 1.0f};
         case LogLevel::debug:    return {0.8f, 0.8f, 0.8f, 1.0f};
         case LogLevel::info:     return {0.5f, 0.5f, 1.0f, 1.0f};

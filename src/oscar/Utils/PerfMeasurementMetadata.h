@@ -23,12 +23,10 @@ namespace osc
         {}
 
         size_t id() const { return id_; }
-
         CStringView label() const { return label_; }
-
         CStringView filename() const { return filename_; }
-
         unsigned int line() const { return line_; }
+
     private:
         size_t id_;
         std::string label_;

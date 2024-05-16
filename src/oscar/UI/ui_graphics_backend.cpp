@@ -137,8 +137,7 @@ namespace
     {
         const std::array<uint8_t, 256>& lut = get_srgc_to_linear_lut_singleton();
 
-        for (ImDrawVert& v : drawlist.VtxBuffer)
-        {
+        for (ImDrawVert& v : drawlist.VtxBuffer) {
             const auto rSRGB = static_cast<uint8_t>((v.col >> IM_COL32_R_SHIFT) & 0xFF);
             const auto gSRGB = static_cast<uint8_t>((v.col >> IM_COL32_G_SHIFT) & 0xFF);
             const auto bSRGB = static_cast<uint8_t>((v.col >> IM_COL32_B_SHIFT) & 0xFF);
@@ -343,8 +342,7 @@ void osc::ui::graphics_backend::render(ImDrawData* drawData)
     OSC_ASSERT(bd != nullptr && "no oscar ImGui renderer backend was available to shutdown - this is a developer error");
 
     setup_camera_view_matrix(*drawData, bd->camera);
-    for (int n = 0; n < drawData->CmdListsCount; ++n)
-    {
+    for (int n = 0; n < drawData->CmdListsCount; ++n) {
         render_drawlist(*bd, *drawData, *drawData->CmdLists[n]);
     }
 }

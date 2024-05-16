@@ -75,18 +75,21 @@ namespace osc
             using iterator_category = std::forward_iterator_tag;
 
             Iterator() = default;
-            Iterator(const Proj& proj_, TEnum current_) : m_Current{current_}, m_Proj{&proj_} {}
+            Iterator(const Proj& proj, TEnum current) :
+                current_{current},
+                proj_{&proj}
+            {}
 
             friend bool operator==(const Iterator&, const Iterator&) = default;
 
             value_type operator*() const
             {
-                return std::invoke(*m_Proj, m_Current);
+                return std::invoke(*proj_, current_);
             }
 
             Iterator& operator++()
             {
-                m_Current = static_cast<TEnum>(cpp23::to_underlying(m_Current) + 1);
+                current_ = static_cast<TEnum>(cpp23::to_underlying(current_) + 1);
                 return *this;
             }
 
@@ -97,8 +100,8 @@ namespace osc
                 return copy;
             }
         private:
-            TEnum m_Current = static_cast<TEnum>(0);
-            const Proj* m_Proj = nullptr;
+            TEnum current_ = static_cast<TEnum>(0);
+            const Proj* proj_ = nullptr;
         };
 
         using value_type = decltype(Proj{}(std::declval<TEnum>()));
@@ -106,16 +109,16 @@ namespace osc
         using const_iterator = Iterator;
 
         constexpr DenselyPackedOptionsIterable(Proj proj = {}) :
-            m_Proj{proj}
+            proj_{proj}
         {}
 
-        auto front() const { return std::invoke(m_Proj, static_cast<TEnum>(0)); }
-        auto back() const { return std::invoke(m_Proj, static_cast<TEnum>(cpp23::to_underlying(TEnum::NUM_OPTIONS)-1)); }
-        Iterator begin() const { return Iterator{m_Proj, static_cast<TEnum>(0)}; }
-        Iterator end() const { return Iterator{m_Proj, TEnum::NUM_OPTIONS}; }
+        auto front() const { return std::invoke(proj_, static_cast<TEnum>(0)); }
+        auto back() const { return std::invoke(proj_, static_cast<TEnum>(cpp23::to_underlying(TEnum::NUM_OPTIONS)-1)); }
+        Iterator begin() const { return Iterator{proj_, static_cast<TEnum>(0)}; }
+        Iterator end() const { return Iterator{proj_, TEnum::NUM_OPTIONS}; }
 
     private:
-        Proj m_Proj;
+        Proj proj_;
     };
 
     // returns a `DenselyPackedOptionsIterable` that, when iterated, projects each enum value via `proj`

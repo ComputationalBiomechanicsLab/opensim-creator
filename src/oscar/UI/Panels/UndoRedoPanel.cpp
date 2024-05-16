@@ -71,7 +71,6 @@ void osc::UndoRedoPanel::draw_content(UndoRedoBase& storage)
 osc::UndoRedoPanel::UndoRedoPanel(std::string_view panel_name, std::shared_ptr<UndoRedoBase> storage) :
     impl_{std::make_unique<Impl>(panel_name, std::move(storage))}
 {}
-
 osc::UndoRedoPanel::UndoRedoPanel(UndoRedoPanel&&) noexcept = default;
 osc::UndoRedoPanel& osc::UndoRedoPanel::operator=(UndoRedoPanel&&) noexcept = default;
 osc::UndoRedoPanel::~UndoRedoPanel() noexcept = default;

@@ -29,9 +29,6 @@ namespace
     }
 }
 
-
-// public API
-
 size_t osc::detail::allocate_perf_mesurement_id(std::string_view label, std::string_view filename, unsigned int line)
 {
     size_t id = generate_perf_measurement_id(label, filename, line);
