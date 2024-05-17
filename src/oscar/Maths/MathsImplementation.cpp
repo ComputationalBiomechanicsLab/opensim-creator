@@ -1374,13 +1374,13 @@ Quat osc::to_worldspace_rotation_quat(const Eulers& eulers)
 }
 
 void osc::apply_worldspace_rotation(
-    Transform& transform,
+    Transform& application_target,
     const Eulers& euler_angles,
     const Vec3& rotation_center)
 {
     Quat q = to_worldspace_rotation_quat(euler_angles);
-    transform.position = q*(transform.position - rotation_center) + rotation_center;
-    transform.rotation = normalize(q*transform.rotation);
+    application_target.position = q*(application_target.position - rotation_center) + rotation_center;
+    application_target.rotation = normalize(q*application_target.rotation);
 }
 
 bool osc::is_intersecting(const Rect& rect, const Vec2& point)
