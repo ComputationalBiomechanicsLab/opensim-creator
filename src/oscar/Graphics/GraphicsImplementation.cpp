@@ -4861,7 +4861,12 @@ private:
 
     void set_indices(std::span<const uint32_t> indices, MeshUpdateFlags flags)
     {
-        if (rgs::any_of(indices, [](uint32_t idx) { return idx > std::numeric_limits<uint16_t>::max(); })) {
+        if (indices.empty()) {
+            indices_are_32bit_ = false;
+            num_indices_ = 0;
+            indices_data_.clear();
+        }
+        else if (rgs::any_of(indices, [](uint32_t idx) { return idx > std::numeric_limits<uint16_t>::max(); })) {
             indices_are_32bit_ = true;
             num_indices_ = indices.size();
             indices_data_.resize(indices.size());
