@@ -111,10 +111,10 @@ private:
 
     void draw_3d_scene()
     {
-        const Rect viewport_rect = ui::get_main_viewport_workspace_screen_rect();
+        const Rect viewport_screenspace_rect = ui::get_main_viewport_workspace_screenspace_rect();
 
         draw_shadow_pass_to_cubemap();
-        draw_shadowmapped_scene_to_screen(viewport_rect);
+        draw_shadowmapped_scene_to_screen(viewport_screenspace_rect);
     }
 
     void draw_shadow_pass_to_cubemap()
@@ -146,7 +146,7 @@ private:
         camera.render_to(depth_texture_);
     }
 
-    void draw_shadowmapped_scene_to_screen(const Rect& viewport_rect)
+    void draw_shadowmapped_scene_to_screen(const Rect& viewport_screenspace_rect)
     {
         Material material = use_soft_shadows_ ? soft_scene_material_ : scene_material_;
 
@@ -169,7 +169,7 @@ private:
         material.set_bool("uShadows", soft_shadows_);
         graphics::draw(cube_mesh_, {.scale = Vec3{0.1f}, .position = light_pos_}, material, scene_camera_);
 
-        scene_camera_.set_pixel_rect(viewport_rect);
+        scene_camera_.set_pixel_rect(viewport_screenspace_rect);
         scene_camera_.render_to_screen();
         scene_camera_.set_pixel_rect(std::nullopt);
     }

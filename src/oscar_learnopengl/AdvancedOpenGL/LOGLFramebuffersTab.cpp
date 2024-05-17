@@ -87,9 +87,8 @@ private:
         scene_camera_.on_draw();
 
         // setup render texture
-        const Rect viewport_rect = ui::get_main_viewport_workspace_screen_rect();
-        const Vec2 viewport_dimensions = dimensions_of(viewport_rect);
-        render_texture_.set_dimensions(viewport_dimensions);
+        const Rect viewport_screenspace_rect = ui::get_main_viewport_workspace_screenspace_rect();
+        render_texture_.set_dimensions(dimensions_of(viewport_screenspace_rect));
         render_texture_.set_anti_aliasing_level(App::get().anti_aliasing_level());
 
         // render scene
@@ -106,7 +105,7 @@ private:
         scene_camera_.render_to(render_texture_);
 
         // render via a effect sampler
-        graphics::blit_to_screen(render_texture_, viewport_rect, screen_material_);
+        graphics::blit_to_screen(render_texture_, viewport_screenspace_rect, screen_material_);
 
         // auxiliary UI
         log_viewer_.on_draw();

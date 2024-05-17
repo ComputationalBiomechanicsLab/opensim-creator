@@ -1063,6 +1063,11 @@ Vec2 osc::bottom_left_lh(const Rect& rect)
     return Vec2{min(rect.p1.x, rect.p2.x), max(rect.p1.y, rect.p2.y)};
 }
 
+Vec2 osc::top_left_rh(const Rect& rect)
+{
+    return Vec2{min(rect.p1.x, rect.p2.x), max(rect.p1.y, rect.p2.y)};
+}
+
 Rect osc::bounding_rect_of(const Circle& circle)
 {
     const float hypot = sqrt(2.0f * circle.radius * circle.radius);

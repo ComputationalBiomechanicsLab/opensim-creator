@@ -157,8 +157,8 @@ private:
 
     void draw3DScene()
     {
-        const Rect viewport_rect = ui::get_main_viewport_workspace_screen_rect();
-        const Vec2 viewport_dimensions = dimensions_of(viewport_rect);
+        const Rect viewport_screenspace_rect = ui::get_main_viewport_workspace_screenspace_rect();
+        const Vec2 viewport_dimensions = dimensions_of(viewport_screenspace_rect);
         const AntiAliasingLevel anti_aliasing_level = AntiAliasingLevel::none();
 
         // ensure textures/buffers have correct dimensions
@@ -170,11 +170,11 @@ private:
         }
 
         render_geometry_pass_to_gbuffers();
-        render_ssao_pass(viewport_rect);
+        render_ssao_pass(viewport_dimensions);
         render_blur_pass();
         render_lighting_pass();
-        graphics::blit_to_screen(lighting_state_.output_texture, viewport_rect);
-        draw_debug_overlays(viewport_rect);
+        graphics::blit_to_screen(lighting_state_.output_texture, viewport_screenspace_rect);
+        draw_debug_overlays(viewport_screenspace_rect);
     }
 
     void render_geometry_pass_to_gbuffers()
@@ -204,13 +204,13 @@ private:
         camera_.render_to(gbuffer_state_.render_target);
     }
 
-    void render_ssao_pass(const Rect& viewport_rect)
+    void render_ssao_pass(const Vec2& viewport_dimensions)
     {
         ssao_state_.material.set_render_texture("uPositionTex", gbuffer_state_.position);
         ssao_state_.material.set_render_texture("uNormalTex", gbuffer_state_.normal);
         ssao_state_.material.set_texture("uNoiseTex", noise_texture_);
         ssao_state_.material.set_vec3_array("uSamples", sample_kernel_);
-        ssao_state_.material.set_vec2("uNoiseScale", dimensions_of(viewport_rect) / Vec2{noise_texture_.dimensions()});
+        ssao_state_.material.set_vec2("uNoiseScale", viewport_dimensions / Vec2{noise_texture_.dimensions()});
         ssao_state_.material.set_int("uKernelSize", static_cast<int32_t>(sample_kernel_.size()));
         ssao_state_.material.set_float("uRadius", 0.5f);
         ssao_state_.material.set_float("uBias", 0.125f);
@@ -252,9 +252,9 @@ private:
         lighting_state_.material.unset("uSSAOTex");
     }
 
-    void draw_debug_overlays(const Rect& viewport_rect)
+    void draw_debug_overlays(const Rect& viewport_screenspace_rect)
     {
-        const float w = 200.0f;
+        const float overlay_size = 200.0f;
 
         const auto textures = std::to_array<const RenderTexture*>({
             &gbuffer_state_.albedo,
@@ -264,11 +264,12 @@ private:
             &blur_state_.output_texture,
         });
 
+        const Vec2 viewport_topleft = top_left_rh(viewport_screenspace_rect);
         for (size_t i = 0; i < textures.size(); ++i) {
-            const Vec2 offset = {static_cast<float>(i)*w, 0.0f};
-            const Rect overlay_rect{viewport_rect.p1 + offset, viewport_rect.p1 + offset + w};
-
-            graphics::blit_to_screen(*textures[i], overlay_rect);
+            const float offset = static_cast<float>(i)*overlay_size;
+            const Vec2 overlay_bottom_left = {viewport_topleft.x + offset, viewport_topleft.y - overlay_size};
+            const Vec2 overlay_top_right = overlay_bottom_left + Vec2{overlay_size};
+            graphics::blit_to_screen(*textures[i], Rect{overlay_bottom_left, overlay_top_right});
         }
     }
 

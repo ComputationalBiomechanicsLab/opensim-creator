@@ -940,11 +940,16 @@ namespace osc
         static void validate_render_target(
             RenderTarget&
         );
-        static Rect calc_viewport_bounds(
+
+        struct ViewportGeometry final {
+            Vec2 bottom_left;
+            Vec2 dimensions;
+        };
+        static ViewportGeometry calc_viewport_geometry(
             Camera::Impl&,
             RenderTarget* maybe_custom_render_target
         );
-        static Rect setup_top_level_pipeline_state(
+        static float setup_top_level_pipeline_state(
             Camera::Impl&,
             RenderTarget* maybe_custom_render_target
         );
@@ -7044,38 +7049,33 @@ void osc::GraphicsBackend::validate_render_target(RenderTarget& render_target)
     OSC_ASSERT(render_target.depth.buffer->impl_->anti_aliasing_level() == first_color_buffer_samples);
 }
 
-Rect osc::GraphicsBackend::calc_viewport_bounds(
+osc::GraphicsBackend::ViewportGeometry osc::GraphicsBackend::calc_viewport_geometry(
     Camera::Impl& camera,
     RenderTarget* maybe_custom_render_target)
 {
-    const Vec2 target_dimensions = maybe_custom_render_target ?
-        Vec2{maybe_custom_render_target->colors.front().buffer->impl_->dimensions()} :
-        App::get().main_window_dimensions();
-
-    const Rect camera_pixel_rect = camera.pixel_rect() ?
-        *camera.pixel_rect() :
-        Rect{{}, target_dimensions};
-
-    const Vec2 camera_bottom_left = bottom_left_lh(camera_pixel_rect);
-    const Vec2 output_dimensions = dimensions_of(camera_pixel_rect);
-    const Vec2 top_left = {camera_bottom_left.x, target_dimensions.y - camera_bottom_left.y};
-
-    return Rect{top_left, top_left + output_dimensions};
+    if (auto pixel_rect = camera.pixel_rect()) {
+        return {pixel_rect->p1, dimensions_of(*pixel_rect)};
+    }
+    else if (maybe_custom_render_target) {
+        return {{}, maybe_custom_render_target->colors.front().buffer->impl_->dimensions()};
+    }
+    else {
+        return {{}, App::get().main_window_dimensions()};
+    }
 }
 
-Rect osc::GraphicsBackend::setup_top_level_pipeline_state(
+float osc::GraphicsBackend::setup_top_level_pipeline_state(
     Camera::Impl& camera,
     RenderTarget* maybe_custom_render_target)
 {
-    const Rect viewport_rect = calc_viewport_bounds(camera, maybe_custom_render_target);
-    const Vec2 viewport_dimensions = dimensions_of(viewport_rect);
+    const auto viewport_geom = calc_viewport_geometry(camera, maybe_custom_render_target);
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     gl::viewport(
-        static_cast<GLsizei>(viewport_rect.p1.x),
-        static_cast<GLsizei>(viewport_rect.p1.y),
-        static_cast<GLsizei>(viewport_dimensions.x),
-        static_cast<GLsizei>(viewport_dimensions.y)
+        static_cast<GLsizei>(viewport_geom.bottom_left.x),
+        static_cast<GLsizei>(viewport_geom.bottom_left.y),
+        static_cast<GLsizei>(viewport_geom.dimensions.x),
+        static_cast<GLsizei>(viewport_geom.dimensions.y)
     );
 
     if (camera.maybe_scissor_rect_) {
@@ -7094,7 +7094,7 @@ Rect osc::GraphicsBackend::setup_top_level_pipeline_state(
         gl::disable(GL_SCISSOR_TEST);
     }
 
-    return viewport_rect;
+    return aspect_ratio_of(viewport_geom.dimensions);
 }
 
 void osc::GraphicsBackend::teardown_top_level_pipeline_state(
@@ -7394,7 +7394,7 @@ void osc::GraphicsBackend::render_camera_queue(
         validate_render_target(*maybe_custom_render_target);
     }
 
-    const Rect viewportRect = setup_top_level_pipeline_state(
+    const float output_aspect_ratio = setup_top_level_pipeline_state(
         camera,
         maybe_custom_render_target
     );
@@ -7402,7 +7402,7 @@ void osc::GraphicsBackend::render_camera_queue(
     {
         const std::optional<gl::FrameBuffer> maybe_tmp_fbo_KEEPALIVE =
             bind_and_clear_render_buffers(camera, maybe_custom_render_target);
-        flush_render_queue(camera, aspect_ratio_of(viewportRect));
+        flush_render_queue(camera, output_aspect_ratio);
     }
 
     if (maybe_custom_render_target) {

@@ -97,11 +97,11 @@ private:
 
     void impl_on_draw() final
     {
-        const Rect viewport = ui::get_main_viewport_workspace_screen_rect();
-        const float xmid = midpoint(viewport.p1.x, viewport.p2.x);
-        const Rect lhs = {viewport.p1, {xmid, viewport.p2.y}};
-        const Rect rhs = {{xmid, viewport.p1.y}, viewport.p2};
-        const FrustumPlanes frustum = calc_frustum_planes(user_camera_, aspect_ratio_of(lhs));
+        const Rect viewport_screenspace_rect = ui::get_main_viewport_workspace_screenspace_rect();
+        const float xmid = midpoint(viewport_screenspace_rect.p1.x, viewport_screenspace_rect.p2.x);
+        const Rect lhs_screenspace_rect = {viewport_screenspace_rect.p1, {xmid, viewport_screenspace_rect.p2.y}};
+        const Rect rhs_screenspace_rect = {{xmid, viewport_screenspace_rect.p1.y}, viewport_screenspace_rect.p2};
+        const FrustumPlanes frustum = calc_frustum_planes(user_camera_, aspect_ratio_of(lhs_screenspace_rect));
 
         user_camera_.on_draw();  // update from inputs etc.
 
@@ -112,7 +112,7 @@ private:
                 graphics::draw(decoration.mesh, decoration.transform, material_, user_camera_, blue_material_props_);
             }
         }
-        user_camera_.set_pixel_rect(lhs);
+        user_camera_.set_pixel_rect(lhs_screenspace_rect);
         user_camera_.render_to_screen();
 
         // render from top-down perspective on right-hand side
@@ -128,8 +128,8 @@ private:
             top_down_camera_,
             green_material_props_
         );
-        top_down_camera_.set_pixel_rect(rhs);
-        top_down_camera_.set_scissor_rect(rhs);
+        top_down_camera_.set_pixel_rect(rhs_screenspace_rect);
+        top_down_camera_.set_scissor_rect(rhs_screenspace_rect);  // stops camera clear from clearing left-hand side
         top_down_camera_.set_background_color({0.1f, 1.0f});
         top_down_camera_.render_to_screen();
     }

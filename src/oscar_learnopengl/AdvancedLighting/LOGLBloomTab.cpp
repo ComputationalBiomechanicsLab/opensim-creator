@@ -129,18 +129,18 @@ private:
 
     void draw_3d_scene()
     {
-        const Rect viewport_rect = ui::get_main_viewport_workspace_screen_rect();
+        const Rect viewport_screenspace_rect = ui::get_main_viewport_workspace_screenspace_rect();
+        const Vec2 viewport_dimensions = dimensions_of(viewport_screenspace_rect);
 
-        reformat_all_textures(viewport_rect);
+        reformat_all_textures(viewport_dimensions);
         render_scene_mrt();
         render_blurred_brightness();
-        render_combined_scene(viewport_rect);
-        draw_overlays(viewport_rect);
+        render_combined_scene(viewport_screenspace_rect);
+        draw_overlays(viewport_screenspace_rect);
     }
 
-    void reformat_all_textures(const Rect& viewport_rect)
+    void reformat_all_textures(const Vec2& viewport_dimensions)
     {
-        const Vec2 viewport_dimensions = dimensions_of(viewport_rect);
         const AntiAliasingLevel aa_level = App::get().anti_aliasing_level();
 
         RenderTextureDescriptor texture_descriptor{viewport_dimensions};
@@ -280,7 +280,7 @@ private:
         final_compositing_material_.unset("uHDRSceneRender");
     }
 
-    void draw_overlays(const Rect& viewport_rect)
+    void draw_overlays(const Rect& viewport_screenspace_rect)
     {
         constexpr float w = 200.0f;
 
@@ -294,8 +294,8 @@ private:
         for (size_t i = 0; i < texture_ptrs.size(); ++i) {
             const Vec2 offset = {static_cast<float>(i)*w, 0.0f};
             const Rect overlay_rect{
-                viewport_rect.p1 + offset,
-                viewport_rect.p1 + offset + w,
+                viewport_screenspace_rect.p1 + offset,
+                viewport_screenspace_rect.p1 + offset + w,
             };
 
             graphics::blit_to_screen(*texture_ptrs[i], overlay_rect);

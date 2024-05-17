@@ -148,7 +148,7 @@ private:
 
     void draw_3D_render()
     {
-        camera_.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
+        camera_.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
 
         pbr_material_.set_vec3("uCameraWorldPos", camera_.position());
         pbr_material_.set_vec3_array("uLightPositions", c_light_positions);
@@ -194,7 +194,7 @@ private:
         background_material_.set_render_texture("uEnvironmentMap", projected_map_);
         background_material_.set_depth_function(DepthFunction::LessOrEqual);  // for skybox depth trick
         graphics::draw(cube_mesh_, identity<Transform>(), background_material_, camera_);
-        camera_.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
+        camera_.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
         camera_.set_clear_flags(CameraClearFlags::Nothing);
         camera_.render_to_screen();
         camera_.set_clear_flags(CameraClearFlags::Default);

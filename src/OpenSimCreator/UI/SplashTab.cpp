@@ -148,8 +148,7 @@ public:
 
     void onDraw()
     {
-        if (area_of(ui::get_main_viewport_workspace_screen_rect()) <= 0.0f)
-        {
+        if (area_of(ui::get_main_viewport_workspace_uiscreenspace_rect()) <= 0.0f) {
             // edge-case: splash screen is the first rendered frame and ImGui
             //            is being unusual about it
             return;
@@ -165,12 +164,12 @@ public:
 private:
     Rect calcMainMenuRect() const
     {
-        Rect tabRect = ui::get_main_viewport_workspace_screen_rect();
+        Rect tabUIRect = ui::get_main_viewport_workspace_uiscreenspace_rect();
         // pretend the attributation bar isn't there (avoid it)
-        tabRect.p2.y -= static_cast<float>(max(m_TudLogo.dimensions().y, m_CziLogo.dimensions().y)) - 2.0f*ui::get_style_panel_padding().y;
+        tabUIRect.p2.y -= static_cast<float>(max(m_TudLogo.dimensions().y, m_CziLogo.dimensions().y)) - 2.0f*ui::get_style_panel_padding().y;
 
-        Vec2 const menuAndTopLogoDims = elementwise_min(dimensions_of(tabRect), Vec2{m_SplashMenuMaxDims.x, m_SplashMenuMaxDims.y + m_MainAppLogoDims.y + m_TopLogoPadding.y});
-        Vec2 const menuAndTopLogoTopLeft = tabRect.p1 + 0.5f*(dimensions_of(tabRect) - menuAndTopLogoDims);
+        Vec2 const menuAndTopLogoDims = elementwise_min(dimensions_of(tabUIRect), Vec2{m_SplashMenuMaxDims.x, m_SplashMenuMaxDims.y + m_MainAppLogoDims.y + m_TopLogoPadding.y});
+        Vec2 const menuAndTopLogoTopLeft = tabUIRect.p1 + 0.5f*(dimensions_of(tabUIRect) - menuAndTopLogoDims);
         Vec2 const menuDims = {menuAndTopLogoDims.x, menuAndTopLogoDims.y - m_MainAppLogoDims.y - m_TopLogoPadding.y};
         Vec2 const menuTopLeft = Vec2{menuAndTopLogoTopLeft.x, menuAndTopLogoTopLeft.y + m_MainAppLogoDims.y + m_TopLogoPadding.y};
 
@@ -191,19 +190,19 @@ private:
 
     void drawBackground()
     {
-        Rect const screenRect = ui::get_main_viewport_workspace_screen_rect();
+        Rect const viewportUIRect = ui::get_main_viewport_workspace_uiscreenspace_rect();
 
-        ui::set_next_panel_pos(screenRect.p1);
-        ui::set_next_panel_size(dimensions_of(screenRect));
+        ui::set_next_panel_pos(viewportUIRect.p1);
+        ui::set_next_panel_size(dimensions_of(viewportUIRect));
 
         ui::push_style_var(ImGuiStyleVar_WindowPadding, { 0.0f, 0.0f });
         ui::begin_panel("##splashscreenbackground", nullptr, ui::get_minimal_panel_flags());
         ui::pop_style_var();
 
         SceneRendererParams params{m_LastSceneRendererParams};
-        params.dimensions = dimensions_of(screenRect);
+        params.dimensions = dimensions_of(viewportUIRect);
         params.antialiasing_level = App::get().anti_aliasing_level();
-        params.projection_matrix = m_Camera.projection_matrix(aspect_ratio_of(screenRect));
+        params.projection_matrix = m_Camera.projection_matrix(aspect_ratio_of(viewportUIRect));
 
         if (params != m_LastSceneRendererParams)
         {
@@ -357,8 +356,8 @@ private:
 
     void drawAttributationLogos()
     {
-        Rect const viewportRect = ui::get_main_viewport_workspace_screen_rect();
-        Vec2 loc = viewportRect.p2;
+        Rect const viewportUIRect = ui::get_main_viewport_workspace_uiscreenspace_rect();
+        Vec2 loc = viewportUIRect.p2;
         loc.x = loc.x - 2.0f*ui::get_style_panel_padding().x - static_cast<float>(m_CziLogo.dimensions().x) - 2.0f*ui::get_style_item_spacing().x - static_cast<float>(m_TudLogo.dimensions().x);
         loc.y = loc.y - 2.0f*ui::get_style_panel_padding().y - static_cast<float>(max(m_CziLogo.dimensions().y, m_TudLogo.dimensions().y));
 
@@ -376,14 +375,14 @@ private:
 
     void drawVersionInfo()
     {
-        Rect const tabRect = ui::get_main_viewport_workspace_screen_rect();
+        Rect const tabUIRect = ui::get_main_viewport_workspace_uiscreenspace_rect();
         float const h = ui::get_text_line_height_with_spacing();
         float const padding = 5.0f;
 
         Vec2 const pos
         {
-            tabRect.p1.x + padding,
-            tabRect.p2.y - h - padding,
+            tabUIRect.p1.x + padding,
+            tabUIRect.p2.y - h - padding,
         };
 
         ImDrawList* const dl = ui::get_foreground_draw_list();

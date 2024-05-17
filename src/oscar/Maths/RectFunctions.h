@@ -42,6 +42,9 @@ namespace osc
     // returns bottom-left point of the rectangle, assuming y points down (e.g. in 2D UIs)
     Vec2 bottom_left_lh(const Rect&);
 
+    // returns the top-left point of the rectangle, assuming y points up
+    Vec2 top_left_rh(const Rect&);
+
     // returns a `Rect` that tightly bounds `x` (i.e. a `Rect` with an area of zero)
     constexpr Rect bounding_rect_of(const Vec2& x)
     {

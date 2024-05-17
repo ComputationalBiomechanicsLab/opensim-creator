@@ -109,8 +109,7 @@ private:
     {
         // reformat intermediate HDR texture to match tab dimensions etc.
         {
-            const Rect viewport_rect = ui::get_main_viewport_workspace_screen_rect();
-            RenderTextureDescriptor descriptor{dimensions_of(viewport_rect)};
+            RenderTextureDescriptor descriptor{ui::get_main_viewport_workspace_screen_dimensions()};
             descriptor.set_anti_aliasing_level(App::get().anti_aliasing_level());
             if (use_16bit_format_) {
                 descriptor.set_color_format(RenderTextureFormat::ARGBFloat16);
@@ -127,7 +126,7 @@ private:
     {
         Camera ortho_camera;
         ortho_camera.set_background_color(Color::clear());
-        ortho_camera.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
+        ortho_camera.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
         ortho_camera.set_projection_matrix_override(identity<Mat4>());
         ortho_camera.set_view_matrix_override(identity<Mat4>());
 

@@ -228,14 +228,14 @@ private:
 
     void impl_on_draw() final
     {
-        const Rect viewport_rect = ui::get_main_viewport_workspace_screen_rect();
-        output_render_texture_.set_dimensions(dimensions_of(viewport_rect));
+        const Rect viewport_screenspace_rect = ui::get_main_viewport_workspace_screenspace_rect();
+        output_render_texture_.set_dimensions(dimensions_of(viewport_screenspace_rect));
         output_render_texture_.set_anti_aliasing_level(App::get().anti_aliasing_level());
 
         camera_.on_draw();
         draw_3D_render();
         draw_background();
-        graphics::blit_to_screen(output_render_texture_, viewport_rect);
+        graphics::blit_to_screen(output_render_texture_, viewport_screenspace_rect);
         draw_2D_ui();
         perf_panel_.on_draw();
     }

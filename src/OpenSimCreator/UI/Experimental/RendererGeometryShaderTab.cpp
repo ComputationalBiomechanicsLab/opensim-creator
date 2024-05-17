@@ -85,7 +85,7 @@ public:
             ui::set_mouse_cursor(ImGuiMouseCursor_Arrow);
             App::upd().set_show_cursor(true);
         }
-        m_SceneCamera.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
+        m_SceneCamera.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
 
         m_SceneMaterial.set_color("uDiffuseColor", m_MeshColor);
         graphics::draw(m_Mesh, identity<Transform>(), m_SceneMaterial, m_SceneCamera);

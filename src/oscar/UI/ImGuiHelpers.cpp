@@ -713,7 +713,7 @@ ImGuiWindowFlags osc::ui::get_minimal_panel_flags()
         ImGuiWindowFlags_NoTitleBar;
 }
 
-Rect osc::ui::get_main_viewport_workspace_screen_rect()
+Rect osc::ui::get_main_viewport_workspace_uiscreenspace_rect()
 {
     const ImGuiViewport& viewport = *ui::get_main_viewport();
 
@@ -723,10 +723,25 @@ Rect osc::ui::get_main_viewport_workspace_screen_rect()
     };
 }
 
+Rect osc::ui::get_main_viewport_workspace_screenspace_rect()
+{
+    const ImGuiViewport& viewport = *ui::get_main_viewport();
+    const Vec2 bottom_left_uiscreenspace = Vec2{viewport.WorkPos} + Vec2{0.0f, viewport.WorkSize.y};
+    const Vec2 bottom_left_screenspace = Vec2{bottom_left_uiscreenspace.x, viewport.Size.y - bottom_left_uiscreenspace.y};
+    const Vec2 top_right_screenspace = bottom_left_screenspace + Vec2{viewport.WorkSize};
+
+    return {bottom_left_screenspace, top_right_screenspace};
+}
+
+Vec2 osc::ui::get_main_viewport_workspace_screen_dimensions()
+{
+    return dimensions_of(get_main_viewport_workspace_uiscreenspace_rect());
+}
+
 bool osc::ui::is_mouse_in_main_viewport_workspace()
 {
     const Vec2 mousepos = ui::get_mouse_pos();
-    const Rect hitRect = get_main_viewport_workspace_screen_rect();
+    const Rect hitRect = get_main_viewport_workspace_uiscreenspace_rect();
 
     return is_intersecting(hitRect, mousepos);
 }

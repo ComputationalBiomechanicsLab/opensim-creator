@@ -23,11 +23,11 @@ private:
         // ImGuizmo::BeginFrame();  already done by MainUIScreen
 
         Mat4 view_matrix = scene_camera_.view_matrix();
-        Rect viewport_rect = ui::get_main_viewport_workspace_screen_rect();
-        Vec2 viewport_dimensions = dimensions_of(viewport_rect);
+        Rect viewport_ui_rect = ui::get_main_viewport_workspace_uiscreenspace_rect();
+        Vec2 viewport_dimensions = dimensions_of(viewport_ui_rect);
         Mat4 projection_matrix = scene_camera_.projection_matrix(aspect_ratio_of(viewport_dimensions));
 
-        ImGuizmo::SetRect(viewport_rect.p1.x, viewport_rect.p1.y, viewport_dimensions.x, viewport_dimensions.y);
+        ImGuizmo::SetRect(viewport_ui_rect.p1.x, viewport_ui_rect.p1.y, viewport_dimensions.x, viewport_dimensions.y);
         Mat4 identity_matrix = identity<Mat4>();
         ImGuizmo::DrawGrid(value_ptr(view_matrix), value_ptr(projection_matrix), value_ptr(identity_matrix), 100.f);
         ImGuizmo::DrawCubes(value_ptr(view_matrix), value_ptr(projection_matrix), value_ptr(model_matrix_), 1);

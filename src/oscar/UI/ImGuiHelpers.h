@@ -261,8 +261,25 @@ namespace osc::ui
 
     // returns a `Rect` that indicates where the current workspace area is in the main viewport
     //
-    // handy if (e.g.) you want to know the rect of a tab area
-    Rect get_main_viewport_workspace_screen_rect();
+    // the returned `Rect` is given in UI-compatible UI-space, such that:
+    //
+    // - it's measured in pixels
+    // - starts in the top-left corner
+    // - ends in the bottom-right corner
+    Rect get_main_viewport_workspace_uiscreenspace_rect();
+
+    // returns a `Rect` that indicates where the current workspace area is in the main viewport
+    //
+    // the returned `Rect` is given in osc-graphics-API-compatible screen-space, rather than UI
+    // space, such that:
+    //
+    // - it's measured in pixels
+    // - starts in the bottom-left corner
+    // - ends in the top-right corner
+    Rect get_main_viewport_workspace_screenspace_rect();
+
+    // returns the dimensions of the current workspace area in pixels in the main viewport
+    Vec2 get_main_viewport_workspace_screen_dimensions();
 
     // returns `true` if the user's mouse is within the current workspace area of the main viewport
     bool is_mouse_in_main_viewport_workspace();

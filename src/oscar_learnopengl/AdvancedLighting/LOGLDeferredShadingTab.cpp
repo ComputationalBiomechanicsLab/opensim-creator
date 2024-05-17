@@ -192,8 +192,8 @@ private:
 
     void draw_3d_scene()
     {
-        const Rect viewport_rect = ui::get_main_viewport_workspace_screen_rect();
-        const Vec2 viewport_dimensions = dimensions_of(viewport_rect);
+        const Rect viewport_screenspace_rect = ui::get_main_viewport_workspace_screenspace_rect();
+        const Vec2 viewport_dimensions = dimensions_of(viewport_screenspace_rect);
         const AntiAliasingLevel aa_level = App::get().anti_aliasing_level();
 
         // ensure textures/buffers have correct dimensions
@@ -206,8 +206,8 @@ private:
         render_3d_scene_to_gbuffers();
         render_lighting_pass();
         render_light_cubes();
-        graphics::blit_to_screen(output_texture_, viewport_rect);
-        draw_gbuffer_overlays(viewport_rect);
+        graphics::blit_to_screen(output_texture_, viewport_screenspace_rect);
+        draw_gbuffer_overlays(viewport_screenspace_rect);
     }
 
     void render_3d_scene_to_gbuffers()
@@ -227,19 +227,23 @@ private:
         camera_.render_to(gbuffer_.render_target);
     }
 
-    void draw_gbuffer_overlays(const Rect& viewport_rect) const
+    void draw_gbuffer_overlays(const Rect& viewport_screenspace_rect) const
     {
+        constexpr float overlay_size = 200.0f;
+        const Vec2 viewport_topleft = top_left_rh(viewport_screenspace_rect);
+        const Vec2 overlays_bottomleft = viewport_topleft - Vec2{0.0f, overlay_size};
+
         graphics::blit_to_screen(
             gbuffer_.albedo,
-            Rect{viewport_rect.p1, viewport_rect.p1 + 200.0f}
+            Rect{overlays_bottomleft + Vec2{0.0f*overlay_size, 0.0f}, overlays_bottomleft + Vec2{0.0f*overlay_size, 0.0f} + overlay_size}
         );
         graphics::blit_to_screen(
             gbuffer_.normal,
-            Rect{viewport_rect.p1 + Vec2{200.0f, 0.0f}, viewport_rect.p1 + Vec2{200.0f, 0.0f} + 200.0f}
+            Rect{overlays_bottomleft + Vec2{1.0f*overlay_size, 0.0f}, overlays_bottomleft + Vec2{1.0f*overlay_size, 0.0f} + overlay_size}
         );
         graphics::blit_to_screen(
             gbuffer_.position,
-            Rect{viewport_rect.p1 + Vec2{400.0f, 0.0f}, viewport_rect.p1 + Vec2{400.0f, 0.0f} + 200.0f}
+            Rect{overlays_bottomleft + Vec2{2.0f*overlay_size, 0.0f}, overlays_bottomleft + Vec2{2.0f*overlay_size, 0.0f} + overlay_size}
         );
     }
 

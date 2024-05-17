@@ -29,83 +29,146 @@ namespace osc
         // resets the camera to default parameters
         void reset();
 
+        // get/set the background color that the camera will clear the output with before
+        // performing a draw call (assuming `CameraClearFlags::SolidColor` is set)
         Color background_color() const;
         void set_background_color(const Color&);
 
+        // get/set the kind of projection that the camera should use when projecting view-space
+        // vertices into clip space (ignored if `set_projection_matrix_override` is used)
         CameraProjection projection() const;
         void set_projection(CameraProjection);
 
-        // only used if `projection() == CameraProjection::Orthographic`
+        // get/set the height of the orthographic projection plane that the camera will use
+        //
+        // ignored if `projection() != CameraProjection::Orthographic`, the width of the
+        // orthographic plane is calculated from the aspect ratio of the render target at
+        // runtime.
         float orthographic_size() const;
         void set_orthographic_size(float);
 
-        // only used if `projection() == CameraProjection::Perspective`
+        // get/set the vertical field-of-view angle of the viewer's projection camera
+        //
+        // ignored if `projection() != CameraProjection::Perspective`. The horizontal FoV is
+        // calculated from the aspect ratio of the render target at runtime.
         Radians vertical_fov() const;
         void set_vertical_fov(Radians);
 
+        // get/set the distance, in worldspace units, between the camera and the nearest
+        // clipping plane
         float near_clipping_plane() const;
         void set_near_clipping_plane(float);
 
+        // get/set the distance, in worldspace units, between the camera and the farthest
+        // clipping plane
         float far_clipping_plane() const;
         void set_far_clipping_plane(float);
 
+        // get/set the camera's clear flags, which affect how/if the camera clears the output
+        // during a call to `graphics::draw`
         CameraClearFlags clear_flags() const;
         void set_clear_flags(CameraClearFlags);
 
-        // where on the screen/texture that the camera should render the viewport to
+        // get/set where on the output that this `Camera` should rasterize its pixels
+        // during a call to `graphics::draw`
         //
-        // the rect uses a top-left coordinate system (in screen-space - top-left, X rightwards, Y down)
+        // the rectangle is defined in screen space, which:
         //
-        // if this is not specified, the camera will render to the full extents of the given
-        // render output (entire screen, or entire render texture)
+        // - is measured in pixels
+        // - starts in the bottom-left corner
+        // - ends in the top-right corner
+        //
+        // `std::nullopt` implies that the camera should render to the full extents
+        // of the screen or render target
         std::optional<Rect> pixel_rect() const;
         void set_pixel_rect(std::optional<Rect>);
 
-        // scissor testing
+        // get/set the scissor rectangle, which tells the renderer to only clear and/or
+        // render fragments (pixels) that occur within the given rectangle
         //
-        // This tells the rendering backend to only render the fragments that occur within
-        // these bounds. It's useful when (e.g.) running an expensive fragment shader (e.g.
-        // image processing kernels) where you know that only a certain subspace is actually
-        // interesting (e.g. rim-highlighting only selected elements)
-        std::optional<Rect> scissor_rect() const;  // std::nullopt if not scissor testing
+        // the rectangle is defined in screen space, which:
+        //
+        // - is measured in pixels
+        // - starts in the bottom-left corner
+        // - ends in the top-right corner
+        //
+        // `std::nullopt` implies that the camera should clear (if applicable) the entire
+        // output, followed by writing output fragments to the output pixel rectangle
+        // with no scissoring
+        //
+        // the usefulness of scissor testing is that it can be used to:
+        //
+        // - limit running an expensive fragment shader to a smaller subspace
+        // - only draw sub-parts of a scene without having to recompute transforms or render it differently etc.
+        // - only clear + draw to a smaller subspace of the output (e.g. writing to sub-sections of a larger UI)
+        std::optional<Rect> scissor_rect() const;
         void set_scissor_rect(std::optional<Rect>);
 
+        // get/set the worldspace position of this `Camera`
         Vec3 position() const;
         void set_position(const Vec3&);
 
-        // get rotation (from the assumed "default" rotation of the camera pointing towards -Z, Y is up)
+        // get/set the orientation of this `Camera`
+        //
+        // the default/identity orientation of the camera has it pointing along `-Z`, with
+        // `+Y` pointing "up"
         Quat rotation() const;
         void set_rotation(const Quat&);
 
-        // careful: the camera doesn't *store* a direction vector - it assumes the direction is along -Z,
-        // and that +Y is "upwards" and figures out how to rotate from that to your desired direction
+        // get/set the direction in which this `Camera` is pointing
         //
-        // if you want to "roll" the camera (i.e. Y isn't upwards) then use `set_rotation`
+        // care: This is a convenience method. `Camera` actually stores a rotation, not this
+        //       direction vector. The implementation assumes that the direction is along `-Z`
+        //       and that `+Y` is "up", followed by figuring out what rotation is necessary to
+        //       point it along directions get/set via these methods.
+        //
+        //       Therefore, if you want to "roll" the camera (i.e. where `+Y` isn't "up"), you
+        //       should directly manipulate the rotation of this camera, rather than trying to
+        //       play with this method.
         Vec3 direction() const;
         void set_direction(const Vec3&);
 
+        // returns the "up" direction of this camera
         Vec3 upwards_direction() const;
 
-        // get view matrix
+        // returns the matrix that this camera uses to transform world-space locations into
+        // view-space
         //
-        // the caller can manually override the view matrix, which can be handy in certain
-        // rendering scenarios
+        // world-space and view-space operate with the same units-of-measure, handedness, etc.
+        // but view-space places the camera at `(0, 0, 0)`
         Mat4 view_matrix() const;
+
+        // get/set matrices that override the default view matrix that this `Camera` uses
+        //
+        // by default, `Camera` computes its view matrix from its position and rotation, but
+        // it's sometimes necessary/handy to override this default behavior.
         std::optional<Mat4> view_matrix_override() const;
         void set_view_matrix_override(std::optional<Mat4>);
 
-        // projection matrix
+        // returns the matrix that this camera uses to transform view-space locations into
+        // clip-space.
         //
-        // the caller can manually override the projection matrix, which can be handy in certain
-        // rendering scenarios.
+        // clip-space is defined such that there exists a unit cube in it that eventually
+        // projects onto screen space in the following way:
+        //
+        // - `( 0,  0,  0)` is the center of the screen
+        // - `(-1, -1, -1)` is the bottom-left, and closest part, of the screen
+        // - `(+1, +1, +1)` is the top-right, and farthest part, of the screen
+        //
+        // anything that projects into clip space but doesn't land within that cube won't be
+        // drawn to the output. The XY component of fragments that land within clip space
+        // are transformed into screen space and drawn to the output pixel rectangle (assuming
+        // they also pass the scissor test). The Z component of things that land within clip
+        // space are written to the depth buffer if the `Material` that's being drawn enables
+        // this behavior (and there's a depth buffer attached to the render target)
         Mat4 projection_matrix(float aspect_ratio) const;
         std::optional<Mat4> projection_matrix_override() const;
         void set_projection_matrix_override(std::optional<Mat4>);
 
-        // returns the equivalent of projection_matrix(aspectRatio) * view_matrix()
+        // returns the equivalent of `projection_matrix(aspect_ratio) * view_matrix()`
         Mat4 view_projection_matrix(float aspect_ratio) const;
 
-        // returns the equivalent of inverse(view_projection_matrix(aspectRatio))
+        // returns the equivalent of `inverse(view_projection_matrix(aspect_ratio))`
         Mat4 inverse_view_projection_matrix(float aspect_ratio) const;
 
         // flushes any rendering commands that were queued against this camera

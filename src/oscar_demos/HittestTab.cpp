@@ -230,19 +230,19 @@ private:
             );
         }
 
-        const Rect viewport = ui::get_main_viewport_workspace_screen_rect();
+        const Rect viewport_screenspace_rect = ui::get_main_viewport_workspace_screenspace_rect();
 
         // draw crosshair overlay
         graphics::draw(
             crosshair_mesh_,
-            camera_.inverse_view_projection_matrix(aspect_ratio_of(viewport)),
+            camera_.inverse_view_projection_matrix(aspect_ratio_of(viewport_screenspace_rect)),
             material_,
             camera_,
             black_color_material_props_
         );
 
         // draw scene to screen
-        camera_.set_pixel_rect(viewport);
+        camera_.set_pixel_rect(viewport_screenspace_rect);
         camera_.render_to_screen();
     }
 

@@ -85,7 +85,7 @@ private:
 
     void draw3DRender()
     {
-        camera_.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
+        camera_.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
 
         pbr_material_.set_vec3("uCameraWorldPos", camera_.position());
         pbr_material_.set_vec3_array("uLightPositions", c_light_positions);

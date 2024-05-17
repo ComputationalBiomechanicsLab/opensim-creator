@@ -137,7 +137,7 @@ private:
             graphics::draw(cube_mesh_, light_transform_, light_cube_material_, camera_);
         }
 
-        camera_.set_pixel_rect(ui::get_main_viewport_workspace_screen_rect());
+        camera_.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
         camera_.render_to_screen();
 
         ui::begin_panel("controls");
