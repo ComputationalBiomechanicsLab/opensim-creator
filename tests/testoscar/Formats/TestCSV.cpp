@@ -6,54 +6,52 @@
 
 using namespace osc;
 
-TEST(read_csv_row, CallingReadCSVRowOnEmptyStringReturnsEmptyString)
+TEST(read_csv_row, ReadingAnEmptyStreamReturnsASingleEmptyColumn)
 {
     std::istringstream input;
-    std::optional<std::vector<std::string>> const rv = read_csv_row(input);
+    const std::optional<std::vector<std::string>> output = read_csv_row(input);
 
-    ASSERT_TRUE(rv.has_value());
-    ASSERT_EQ(rv->size(), 1);
-    ASSERT_EQ(rv->at(0), "");
+    ASSERT_TRUE(output.has_value());
+    ASSERT_EQ(output->size(), 1);
+    ASSERT_EQ(output->at(0), "");
 }
 
-TEST(CSVReader, CallingNextOnWhitespaceStringReturnsNonemptyOptional)
+TEST(read_csv_row, ReadingAStreamContainingASpaceReturnsASingleColumnContainingTheSpace)
 {
     std::istringstream input{" "};
-    std::optional<std::vector<std::string>> const rv = read_csv_row(input);
+    const std::optional<std::vector<std::string>> output = read_csv_row(input);
 
-    ASSERT_TRUE(rv.has_value());
-    ASSERT_EQ(rv->size(), 1);
-    ASSERT_EQ(rv->at(0), " ");
+    ASSERT_TRUE(output.has_value());
+    ASSERT_EQ(output->size(), 1);
+    ASSERT_EQ(output->at(0), " ");
 }
 
-TEST(CSVReader, CallingNextOnStringWithEmptyColumnsReturnsEmptyStrings)
+TEST(read_csv_row, ReadingAStreamContainingTwoCommasShouldReturnThreeEmptyColumns)
 {
     std::istringstream input{",,"};
-    std::optional<std::vector<std::string>> const rv = read_csv_row(input);
+    const  std::optional<std::vector<std::string>> output = read_csv_row(input);
 
-    ASSERT_TRUE(rv.has_value());
-    ASSERT_EQ(rv->size(), 3);
-    for (std::string const& s : *rv)
-    {
-        ASSERT_EQ(s, "");
+    ASSERT_TRUE(output.has_value());
+    ASSERT_EQ(output->size(), 3);
+    for (const std::string& column : *output) {
+        ASSERT_TRUE(column.empty()) << column << " is not an empty string";
     }
 }
 
-TEST(CSVReader, CallingNextOnStandardColumnHeaderStringsReturnsExpectedResult)
+TEST(read_csv_row, ReadingAStreamContainingStandardColumnHeadersReturnsExpectedOutput)
 {
     std::istringstream input{"col1,col2,col3"};
-    std::vector<std::string> const expectedOutput = {"col1", "col2", "col3"};
-    std::optional<std::vector<std::string>> const rv = read_csv_row(input);
+    const std::vector<std::string> expected_output = {"col1", "col2", "col3"};
+    const std::optional<std::vector<std::string>> output = read_csv_row(input);
 
-    ASSERT_TRUE(rv.has_value());
-    ASSERT_EQ(*rv, expectedOutput);
+    ASSERT_TRUE(output.has_value());
+    ASSERT_EQ(*output, expected_output);
 }
 
-TEST(CSVReader, CallingNextOnMultilineInputReturnsExpectedResult)
+TEST(read_csv_row, ReadingAStreamContainingMultipleLinesReturnsEachRowAsExpected)
 {
     std::istringstream input{"col1,col2\n1,2\n,\n \n\n"};
-    std::vector<std::vector<std::string>> const expectedOutputs =
-    {
+    const std::vector<std::vector<std::string>> expected_outputs = {
         {"col1", "col2"},
         {"1", "2"},
         {"", ""},
@@ -61,219 +59,212 @@ TEST(CSVReader, CallingNextOnMultilineInputReturnsExpectedResult)
         {""},
     };
 
-    for (auto const& expectedOutput : expectedOutputs)
-    {
-        std::optional<std::vector<std::string>> const rv = read_csv_row(input);
-        ASSERT_TRUE(rv.has_value());
-        ASSERT_EQ(*rv, expectedOutput);
+    for (const auto& expected_output : expected_outputs) {
+        const std::optional<std::vector<std::string>> columns = read_csv_row(input);
+        ASSERT_TRUE(columns.has_value());
+        ASSERT_EQ(*columns, expected_output);
     }
 }
 
-TEST(CSVReader, CallingNextWithNestedQuotesWorksAsExpectedForBasicExample)
+TEST(read_csv_row, ReadingAStreamContainingNestedQuotesWorksAsExpectedForBasicExample)
 {
     std::istringstream input{R"("contains spaces",col2)"};
-    std::optional<std::vector<std::string>> const rv = read_csv_row(input);
+    const std::optional<std::vector<std::string>> output = read_csv_row(input);
 
-    ASSERT_TRUE(rv.has_value());
-    ASSERT_EQ(rv->size(), 2);
-    ASSERT_EQ(rv->at(0), "contains spaces");
-    ASSERT_EQ(rv->at(1), "col2");
+    ASSERT_TRUE(output.has_value());
+    ASSERT_EQ(output->size(), 2);
+    ASSERT_EQ(output->at(0), "contains spaces");
+    ASSERT_EQ(output->at(1), "col2");
 }
 
-TEST(CSVReader, CallingNextWithNestedQuotesWorksAsExpectedExcelExample)
+TEST(read_csv_row, ReadingAStreamWithNestedQuotesWorksAsExpectedForExampleExportedFromExcel)
 {
     std::istringstream input{R"("""quoted text""",col2)"};
-    std::optional<std::vector<std::string>> const rv = read_csv_row(input);
+    const std::optional<std::vector<std::string>> output = read_csv_row(input);
 
-    ASSERT_TRUE(rv.has_value());
-    ASSERT_EQ(rv->size(), 2);
-    ASSERT_EQ(rv->at(0), R"("quoted text")");
-    ASSERT_EQ(rv->at(1), "col2");
+    ASSERT_TRUE(output.has_value());
+    ASSERT_EQ(output->size(), 2);
+    ASSERT_EQ(output->at(0), R"("quoted text")");
+    ASSERT_EQ(output->at(1), "col2");
 }
 
-TEST(CSVReader, CallingNextAfterEOFReturnsEmptyOptional)
+TEST(read_csv_row, ReadingAStreamAfterEOFReturnsAnEmptyOptional)
 {
     std::istringstream input{"col1,col2,col3"};
-    std::vector<std::string> const expectedFirstRow = {"col1", "col2", "col3"};
 
-    std::optional<std::vector<std::string>> const rv1 = read_csv_row(input);
+    const std::vector<std::string> expected_first_output = {"col1", "col2", "col3"};
+    const std::optional<std::vector<std::string>> first_output = read_csv_row(input);
 
-    ASSERT_TRUE(rv1.has_value());
-    ASSERT_EQ(*rv1, expectedFirstRow);
+    ASSERT_TRUE(first_output.has_value());
+    ASSERT_EQ(*first_output, expected_first_output);
 
-    std::optional<std::vector<std::string>> rv2 = read_csv_row(input);
+    const std::optional<std::vector<std::string>> second_output_after_eof = read_csv_row(input);
 
-    ASSERT_FALSE(rv2.has_value());
+    ASSERT_FALSE(second_output_after_eof.has_value());
 }
-TEST(CSVReader, EdgeCase1)
+TEST(read_csv_row, EdgeCase1)
 {
     // e.g. https://stackoverflow.com/questions/9714322/parsing-a-csv-edge-cases
 
     std::istringstream input{R"(a,b"c"d,e)"};
-    std::vector<std::string> const expectedOutput = {"a", R"(b"c"d)", "e"};
-    std::optional<std::vector<std::string>> const output = read_csv_row(input);
+    const std::vector<std::string> expected_output = {"a", R"(b"c"d)", "e"};
+    const std::optional<std::vector<std::string>> output = read_csv_row(input);
 
     ASSERT_TRUE(output.has_value());
-    ASSERT_EQ(*output, expectedOutput);
+    ASSERT_EQ(*output, expected_output);
 }
 
-TEST(CSVReader, EdgeCase2)
+TEST(read_csv_row, EdgeCase2)
 {
     // e.g. https://stackoverflow.com/questions/9714322/parsing-a-csv-edge-cases
 
     std::istringstream input{R"(a,"bc"d,e)"};
-    std::vector<std::string> const expectedOutput = {"a", "bcd", "e"};
-    std::optional<std::vector<std::string>> const output = read_csv_row(input);
+    const std::vector<std::string> expected_output = {"a", "bcd", "e"};
+    const std::optional<std::vector<std::string>> output = read_csv_row(input);
 
     ASSERT_TRUE(output.has_value());
-    ASSERT_EQ(*output, expectedOutput);
+    ASSERT_EQ(*output, expected_output);
 }
 
-TEST(CSVReader, EdgeCase3)
+TEST(read_csv_row, EdgeCase3)
 {
     // from GitHub: maxogden/csv-spectrum: comma_in_quotes.csv
 
     std::istringstream input{R"(John,Doe,120 any st.,"Anytown, WW",08123)"};
-    std::vector<std::string> const expectedOutput = {"John", "Doe", "120 any st.", "Anytown, WW", "08123"};
-    std::optional<std::vector<std::string>> const output = read_csv_row(input);
+    const std::vector<std::string> expected_output = {"John", "Doe", "120 any st.", "Anytown, WW", "08123"};
+    const std::optional<std::vector<std::string>> output = read_csv_row(input);
 
     ASSERT_TRUE(output.has_value());
-    ASSERT_EQ(*output, expectedOutput);
+    ASSERT_EQ(*output, expected_output);
 }
 
-TEST(CSVReader, EdgeCase4)
+TEST(read_csv_row, EdgeCase4)
 {
     // from GitHub: maxogden/csv-spectrum: empty.csv
 
     std::istringstream input{R"(1,"","")"};
-    std::vector<std::string> const expectedOutput = {"1", "", ""};
-    std::optional<std::vector<std::string>> const output = read_csv_row(input);
+    const std::vector<std::string> expected_output = {"1", "", ""};
+    const std::optional<std::vector<std::string>> output = read_csv_row(input);
 
     ASSERT_TRUE(output.has_value());
-    ASSERT_EQ(*output, expectedOutput);
+    ASSERT_EQ(*output, expected_output);
 }
 
-TEST(CSVReader, EdgeCase5)
+TEST(read_csv_row, EdgeCase5)
 {
     // from GitHub: maxogden/csv-spectrum: empty_crlf.csv
 
     std::istringstream input{"1,\"\",\"\"\r\n"};
-    std::vector<std::string> const expectedOutput = {"1", "", ""};
-    std::optional<std::vector<std::string>> const output = read_csv_row(input);
+    const std::vector<std::string> expected_output = {"1", "", ""};
+    const std::optional<std::vector<std::string>> output = read_csv_row(input);
 
     ASSERT_TRUE(output.has_value());
-    ASSERT_EQ(*output, expectedOutput);
+    ASSERT_EQ(*output, expected_output);
 }
 
-TEST(CSVReader, EdgeCase6)
+TEST(read_csv_row, EdgeCase6)
 {
     // from GitHub: maxogden/csv-spectrum: escaped_quotes.csv
 
     std::istringstream input{R"(1,"ha ""ha"" ha")"};
-    std::vector<std::string> const expectedOutput = {"1", R"(ha "ha" ha)"};
-    std::optional<std::vector<std::string>> const output = read_csv_row(input);
+    const std::vector<std::string> expected_output = {"1", R"(ha "ha" ha)"};
+    const std::optional<std::vector<std::string>> output = read_csv_row(input);
 
     ASSERT_TRUE(output.has_value());
-    ASSERT_EQ(*output, expectedOutput);
+    ASSERT_EQ(*output, expected_output);
 }
 
-TEST(CSVReader, EdgeCase7)
+TEST(read_csv_row, EdgeCase7)
 {
     // from GitHub: maxogden/csv-spectrum: json.csv
 
     std::istringstream input{R"(1,"{""type"": ""Point"", ""coordinates"": [102.0, 0.5]}")"};
-    std::vector<std::string> const expectedOutput = {"1", R"({"type": "Point", "coordinates": [102.0, 0.5]})"};
-    std::optional<std::vector<std::string>> const output = read_csv_row(input);
+    const std::vector<std::string> expected_output = {"1", R"({"type": "Point", "coordinates": [102.0, 0.5]})"};
+    const std::optional<std::vector<std::string>> output = read_csv_row(input);
 
     ASSERT_TRUE(output.has_value());
-    ASSERT_EQ(*output, expectedOutput);
+    ASSERT_EQ(*output, expected_output);
 }
 
-TEST(CSVReader, EdgeCase8)
+TEST(read_csv_row, EdgeCase8)
 {
     // from GitHub: maxogden/csv-spectrum: newlines.csv
 
     std::istringstream input{"\"Once upon \na time\",5,6"};
-    std::vector<std::string> const expectedOutput = {"Once upon \na time", "5", "6"};
-    std::optional<std::vector<std::string>> const output = read_csv_row(input);
+    const std::vector<std::string> expected_output = {"Once upon \na time", "5", "6"};
+    const std::optional<std::vector<std::string>> output = read_csv_row(input);
 
     ASSERT_TRUE(output.has_value());
-    ASSERT_EQ(output, expectedOutput);
+    ASSERT_EQ(output, expected_output);
 }
 
-TEST(CSVReader, EdgeCase9)
+TEST(read_csv_row, EdgeCase9)
 {
     // from GitHub: maxogden/csv-spectrum: newlines_crlf.csv
 
     std::istringstream input{"\"Once upon \r\na time\",5,6"};
-    std::vector<std::string> const expectedOutput = {"Once upon \r\na time", "5", "6"};
-    std::optional<std::vector<std::string>> const output = read_csv_row(input);
+    const std::vector<std::string> expected_output = {"Once upon \r\na time", "5", "6"};
+    const std::optional<std::vector<std::string>> output = read_csv_row(input);
 
     ASSERT_TRUE(output.has_value());
-    ASSERT_EQ(*output, expectedOutput);
+    ASSERT_EQ(*output, expected_output);
 }
 
-TEST(CSVReader, EdgeCase10)
+TEST(read_csv_row, EdgeCase10)
 {
     // from GitHub: maxogden/csv-spectrum: simple_crlf.csv
 
     std::istringstream input{"a,b,c\r\n1,2,3"};
-    std::vector<std::vector<std::string>> const expectedOutput =
-    {
+    const std::vector<std::vector<std::string>> expected_outputs = {
         {"a", "b", "c"},
         {"1", "2", "3"},
     };
-    for (auto const& row : expectedOutput)
-    {
-        std::optional<std::vector<std::string>> const rv = read_csv_row(input);
-        ASSERT_TRUE(rv.has_value());
-        ASSERT_EQ(*rv, row);
+    for (const auto& expected_output : expected_outputs) {
+        const std::optional<std::vector<std::string>> output = read_csv_row(input);
+        ASSERT_TRUE(output.has_value());
+        ASSERT_EQ(*output, expected_output);
     }
 }
 
-TEST(CSVWriter, WriteRowWritesExpectedContentForBasicExample)
+TEST(write_csv_row, WritesExpectedContentForBasicExample)
 {
-    std::vector<std::string> const input = {"a", "b", "c"};
-    std::string const expectedOutput = "a,b,c\n";
+    const std::vector<std::string> input = {"a", "b", "c"};
+    const std::string expected_output = "a,b,c\n";
 
     std::stringstream output;
     write_csv_row(output, input);
 
-    ASSERT_EQ(output.str(), expectedOutput);
+    ASSERT_EQ(output.str(), expected_output);
 }
 
-TEST(CSVWriter, WriteRowWritesExpectedContentForMultilineExample)
+TEST(write_csv_row, WritesExpectedContentForMultilineExample)
 {
-    std::vector<std::vector<std::string>> const inputs =
-    {
+    const std::vector<std::vector<std::string>> inputs = {
         {"col1", "col2", "col3"},
         {"a", "b", "c"},
     };
-    std::string const expectedOutput = "col1,col2,col3\na,b,c\n";
+    const std::string expected_output = "col1,col2,col3\na,b,c\n";
 
     std::stringstream output;
-    for (auto const& input : inputs)
-    {
+    for (const auto& input : inputs) {
         write_csv_row(output, input);
     }
 
-    ASSERT_EQ(output.str(), expectedOutput);
+    ASSERT_EQ(output.str(), expected_output);
 }
 
-TEST(CSVWriter, EdgeCase1)
+TEST(write_csv_row, EdgeCase1)
 {
-    std::vector<std::vector<std::string>> const inputs =
-    {
+    const std::vector<std::vector<std::string>> inputs = {
         {"\"quoted column\"", "column, with comma", "nested\nnewline"},
         {"a", "b", "\"hardmode, maybe?\nwho knows"},
     };
-    std::string const expectedOutput = "\"\"\"quoted column\"\"\",\"column, with comma\",\"nested\nnewline\"\na,b,\"\"\"hardmode, maybe?\nwho knows\"\n";
+    const std::string expected_output = "\"\"\"quoted column\"\"\",\"column, with comma\",\"nested\nnewline\"\na,b,\"\"\"hardmode, maybe?\nwho knows\"\n";
 
     std::stringstream output;
-    for (std::vector<std::string> const& input : inputs)
-    {
+    for (const auto& input : inputs) {
         write_csv_row(output, input);
     }
 
-    ASSERT_EQ(output.str(), expectedOutput);
+    ASSERT_EQ(output.str(), expected_output);
 }
