@@ -12,34 +12,33 @@
 
 using namespace osc;
 
-TEST(SceneMesh, GetBVHOnEmptyMeshReturnsEmptyBVH)
+TEST(SceneCache, GetBVHOnEmptyMeshReturnsEmptyBVH)
 {
     SceneCache c;
     Mesh m;
-    BVH const& bvh = c.get_bvh(m);
+    const BVH& bvh = c.get_bvh(m);
     ASSERT_TRUE(bvh.empty());
 }
 
-TEST(SceneMesh, GetBVHOnNonEmptyMeshReturnsExpectedRootNode)
+TEST(SceneCache, GetBVHOnNonEmptyMeshReturnsExpectedRootNode)
 {
-    auto const pyramid = std::to_array<Vec3>(
-    {
+    const auto pyramid = std::to_array<Vec3>({
         {-1.0f, -1.0f, 0.0f},  // base: bottom-left
         { 1.0f, -1.0f, 0.0f},  // base: bottom-right
         { 0.0f,  1.0f, 0.0f},  // base: top-middle
     });
-    auto const pyramidIndices = std::to_array<uint16_t>({0, 1, 2});
+    const auto pyramid_indices = std::to_array<uint16_t>({0, 1, 2});
 
     Mesh m;
     m.set_vertices(pyramid);
-    m.set_indices(pyramidIndices);
+    m.set_indices(pyramid_indices);
 
-    AABB const expectedRoot = bounding_aabb_of(pyramid);
+    const AABB expected_root = bounding_aabb_of(pyramid);
 
     SceneCache c;
 
-    BVH const& bvh = c.get_bvh(m);
+    const BVH& bvh = c.get_bvh(m);
 
     ASSERT_FALSE(bvh.empty());
-    ASSERT_EQ(expectedRoot, bvh.bounds());
+    ASSERT_EQ(expected_root, bvh.bounds());
 }

@@ -1,6 +1,7 @@
 #include <oscar/Graphics/AntiAliasingLevel.h>
 
 #include <gtest/gtest.h>
+#include <oscar/Utils/StringHelpers.h>
 
 #include <sstream>
 #include <string>
@@ -69,20 +70,13 @@ TEST(AntiAliasingLevel, GetU32ReturnsExpectedValues)
 
 TEST(AntiAliasingLevel, CanStreamToOutput)
 {
-    auto toString = [](AntiAliasingLevel lvl) -> std::string
-    {
-        std::stringstream ss;
-        ss << lvl;
-        return std::move(ss).str();
-    };
-
-    ASSERT_EQ(toString(AntiAliasingLevel{1}), "1x");
-    ASSERT_EQ(toString(AntiAliasingLevel{2}), "2x");
-    ASSERT_EQ(toString(AntiAliasingLevel{4}), "4x");
-    ASSERT_EQ(toString(AntiAliasingLevel{8}), "8x");
-    ASSERT_EQ(toString(AntiAliasingLevel{16}), "16x");
-    ASSERT_EQ(toString(AntiAliasingLevel{32}), "32x");
-    ASSERT_EQ(toString(AntiAliasingLevel{64}), "64x");
+    ASSERT_EQ(stream_to_string(AntiAliasingLevel{1}), "1x");
+    ASSERT_EQ(stream_to_string(AntiAliasingLevel{2}), "2x");
+    ASSERT_EQ(stream_to_string(AntiAliasingLevel{4}), "4x");
+    ASSERT_EQ(stream_to_string(AntiAliasingLevel{8}), "8x");
+    ASSERT_EQ(stream_to_string(AntiAliasingLevel{16}), "16x");
+    ASSERT_EQ(stream_to_string(AntiAliasingLevel{32}), "32x");
+    ASSERT_EQ(stream_to_string(AntiAliasingLevel{64}), "64x");
 }
 
 TEST(AntiAliasingLevel, MinReturns1X)

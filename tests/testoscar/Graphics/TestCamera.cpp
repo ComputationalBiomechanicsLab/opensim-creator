@@ -27,22 +27,22 @@ TEST(Camera, CanDefaultConstruct)
 
 TEST(Camera, CanCopyConstruct)
 {
-    Camera c;
-    Camera{c};
+    Camera camera;
+    Camera{camera};
 }
 
 TEST(Camera, CopyConstructedComparesEqual)
 {
-    Camera c;
-    Camera copy{c};  // NOLINT(performance-unnecessary-copy-initialization)
+    Camera camera;
+    Camera copy{camera};  // NOLINT(performance-unnecessary-copy-initialization)
 
-    ASSERT_EQ(c, copy);
+    ASSERT_EQ(camera, copy);
 }
 
 TEST(Camera, CanMoveConstruct)
 {
-    Camera c;
-    Camera copy{std::move(c)};
+    Camera camera;
+    Camera copy{std::move(camera)};
 }
 
 TEST(Camera, CanCopyAssign)
@@ -89,12 +89,12 @@ TEST(Camera, UsesValueComparison)
 
 TEST(Camera, ResetResetsToDefaultValues)
 {
-    Camera const defaultCamera;
-    Camera camera = defaultCamera;
+    const Camera default_camera;
+    Camera camera = default_camera;
     camera.set_direction({1.0f, 0.0f, 0.0f});
-    ASSERT_NE(camera, defaultCamera);
+    ASSERT_NE(camera, default_camera);
     camera.reset();
-    ASSERT_EQ(camera, defaultCamera);
+    ASSERT_EQ(camera, default_camera);
 }
 
 TEST(Camera, CanGetBackgroundColor)
@@ -113,7 +113,7 @@ TEST(Camera, CanSetBackgroundColor)
 TEST(Camera, SetBackgroundColorMakesGetBackgroundColorReturnTheColor)
 {
     Camera camera;
-    Color const color = GenerateColor();
+    const Color color = GenerateColor();
 
     camera.set_background_color(color);
 
