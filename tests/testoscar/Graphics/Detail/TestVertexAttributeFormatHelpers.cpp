@@ -6,17 +6,17 @@
 using namespace osc;
 using namespace osc::detail;
 
-TEST(VertexAttributeHelpers, StrideOfWorks)
+TEST(stride_of, WorksAsExpected)
 {
     static_assert(stride_of(VertexAttributeFormat::Float32x2) == 2*sizeof(float));
 }
 
-TEST(VertexAttributeHelpers, NumComponentsWorks)
+TEST(num_components_in, WorksAsExpected)
 {
     static_assert(num_components_in(VertexAttributeFormat::Float32x3) == 3);
 }
 
-TEST(VertexAttributeHelpers, SizeOfComponentWorks)
+TEST(component_size, WorksAsExpected)
 {
     static_assert(component_size(VertexAttributeFormat::Float32x3) == sizeof(float));
 }

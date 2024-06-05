@@ -7,7 +7,7 @@
 using namespace osc;
 using namespace osc::detail;
 
-TEST(VertexAttributeHelpers, DefaultFormatWorks)
+TEST(default_format, WorksAsExpected)
 {
     static_assert(default_format(VertexAttribute::Position) == VertexAttributeFormat::Float32x3);
 }
