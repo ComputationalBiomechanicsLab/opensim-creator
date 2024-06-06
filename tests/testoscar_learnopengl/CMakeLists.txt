@@ -14,16 +14,10 @@ target_include_directories(testoscar_learnopengl PUBLIC
 
 target_link_libraries(testoscar_learnopengl PUBLIC
 
-    # set compiler options
     oscar_compiler_configuration
-
-    # library access
     oscar
-
-    # the to-be-tested library
     oscar_learnopengl
 
-    # link to testing library
     GTest::gtest
     GTest::gtest_main
 )

@@ -19,6 +19,16 @@ public:
         rgs::sort(entries_, rgs::less{}, &TabRegistryEntry::name);
     }
 
+    const_iterator begin() const
+    {
+        return entries_.data();
+    }
+
+    const_iterator end() const
+    {
+        return entries_.data() + entries_.size();
+    }
+
     size_t size() const
     {
         return entries_.size();
@@ -49,6 +59,16 @@ osc::TabRegistry::~TabRegistry() noexcept = default;
 void osc::TabRegistry::register_tab(const TabRegistryEntry& entry)
 {
     impl_->register_tab(entry);
+}
+
+osc::TabRegistry::const_iterator osc::TabRegistry::begin() const
+{
+    return impl_->begin();
+}
+
+osc::TabRegistry::const_iterator osc::TabRegistry::end() const
+{
+    return impl_->end();
 }
 
 size_t osc::TabRegistry::size() const

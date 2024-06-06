@@ -4,43 +4,33 @@
 
 #include <gtest/gtest.h>
 
+#include <algorithm>
 #include <memory>
-#include <stdexcept>
 #include <string>
-#include <utility>
-#include <vector>
 
+namespace rgs = std::ranges;
 using namespace osc;
 
-namespace {
-    TabRegistry const c_Tabs = []()
+namespace
+{
+    TabRegistry get_all_tab_entries()
     {
         TabRegistry r;
         register_learnopengl_tabs(r);
         return r;
-    }();
+    }
 
-    std::vector<std::string> const c_TabNames = []()
-    {
-        std::vector<std::string> rv;
-        rv.reserve(c_Tabs.size());
-        for (size_t i = 0; i < c_Tabs.size(); ++i) {
-            rv.emplace_back(c_Tabs[i].name());
-        }
-        return rv;
-    }();
-
-    std::unique_ptr<App> g_App;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
-    class RegisteredLearnOpenGLTabsFixture : public testing::TestWithParam<std::string> {
+    std::unique_ptr<App> g_app;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+    class RegisteredLearnOpenGLTabsFixture : public testing::TestWithParam<TabRegistryEntry> {
     protected:
         static void SetUpTestSuite()
         {
-            g_App = std::make_unique<App>();
+            g_app = std::make_unique<App>();
         }
 
         static void TearDownTestSuite()
         {
-            g_App.reset();
+            g_app.reset();
         }
     };
 }
@@ -48,16 +38,16 @@ namespace {
 INSTANTIATE_TEST_SUITE_P(
     RegisteredLearnOpenGLTabsTest,
     RegisteredLearnOpenGLTabsFixture,
-    testing::ValuesIn(c_TabNames)
+    testing::ValuesIn(get_all_tab_entries()),
+    [](const testing::TestParamInfo<TabRegistryEntry>& info)
+    {
+        std::string rv{info.param.name()};
+        rgs::replace(rv, '/', '_');
+        return rv;
+    }
 );
 
 TEST_P(RegisteredLearnOpenGLTabsFixture, Check)
 {
-    std::string s = GetParam();
-    if (auto entry = c_Tabs.find_by_name(s)) {
-        g_App->show<TabTestingScreen>(*entry);
-    }
-    else {
-        throw std::runtime_error{"cannot find tab in registry"};
-    }
+    g_app->show<TabTestingScreen>(GetParam());
 }

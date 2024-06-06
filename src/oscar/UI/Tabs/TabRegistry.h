@@ -25,6 +25,11 @@ namespace osc
     // container for alphabetically-sorted tab entries
     class TabRegistry final {
     public:
+        using value_type = TabRegistryEntry;
+        using size_type = size_t;
+        using iterator = const TabRegistryEntry*;
+        using const_iterator = const TabRegistryEntry*;
+
         TabRegistry();
         TabRegistry(const TabRegistry&) = delete;
         TabRegistry(TabRegistry&&) noexcept;
@@ -43,8 +48,11 @@ namespace osc
             });
         }
 
-        size_t size() const;
-        TabRegistryEntry operator[](size_t) const;
+        const_iterator begin() const;
+        const_iterator end() const;
+        [[nodiscard]] bool empty() const { return size() > 0; }
+        size_type size() const;
+        TabRegistryEntry operator[](size_type) const;
         std::optional<TabRegistryEntry> find_by_name(std::string_view) const;
 
     private:

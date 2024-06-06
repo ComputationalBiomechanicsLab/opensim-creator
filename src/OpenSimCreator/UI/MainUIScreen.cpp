@@ -67,9 +67,9 @@ namespace
 
             log_warn("%s: cannot find a tab with this name in the tab registry: ignoring", maybeRequestedTab->c_str());
             log_warn("available tabs are:");
-            for (size_t i = 0; i < tabRegistry.size(); ++i)
+            for (TabRegistryEntry tabRegistryEntry : tabRegistry)
             {
-                log_warn("    %s", tabRegistry[i].name().c_str());
+                log_warn("    %s", tabRegistryEntry.name().c_str());
             }
         }
 
@@ -619,14 +619,13 @@ private:
             select_tab(addTab(std::make_unique<mi::MeshImporterTab>(getTabHostAPI())));
         }
 
-        std::shared_ptr<TabRegistry const> const tabs = App::singleton<TabRegistry>();
-        if (tabs->size() > 0)
+        std::shared_ptr<TabRegistry const> const tabRegistry = App::singleton<TabRegistry>();
+        if (not tabRegistry->empty())
         {
             if (ui::begin_menu("Experimental Tabs"))
             {
-                for (size_t i = 0; i < tabs->size(); ++i)
+                for (TabRegistryEntry e : *tabRegistry)
                 {
-                    TabRegistryEntry e = (*tabs)[i];
                     if (ui::draw_menu_item(e.name()))
                     {
                         select_tab(addTab(e.construct_tab(ParentPtr<ITabHost>{getTabHostAPI()})));
