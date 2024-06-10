@@ -16,6 +16,7 @@
 #include <OpenSim/Simulation/RegisterTypes_osimSimulation.h>
 #include <OpenSim/Simulation/Model/ModelVisualizer.h>
 #include <OpenSim/Tools/RegisterTypes_osimTools.h>
+#include <OpenSimThirdPartyPlugins/RegisterTypes_osimPlugin.h>
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/AppConfig.h>
 #include <oscar/Platform/AppMetadata.h>
@@ -132,6 +133,7 @@ namespace
         RegisterTypes_osimAnalyses();
         RegisterTypes_osimTools();
         RegisterTypes_osimExampleComponents();
+        RegisterTypes_osimPlugin();  // from `OpenSimThirdPartyPlugins`
 
         // custom components
         OpenSim::Object::registerType(CrossProductEdge{});

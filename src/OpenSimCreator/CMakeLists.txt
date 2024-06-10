@@ -441,6 +441,8 @@ target_link_libraries(OpenSimCreator PUBLIC
     osimTools
     osimLepton
     osimExampleComponents
+
+    OpenSimThirdPartyPlugins
 )
 
 # additional compile options (on top of `oscar_compiler_configuration`)
