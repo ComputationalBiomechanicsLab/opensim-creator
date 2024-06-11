@@ -24,4 +24,4 @@ set_target_properties(OpenSimThirdPartyPlugins PROPERTIES
     DEFINE_SYMBOL OSIMPLUGIN_EXPORTS
 )
 
-target_compile_features(OpenSimThirdPartyPlugins INTERFACE cxx_std_14)
+target_compile_features(OpenSimThirdPartyPlugins PRIVATE cxx_std_14)
