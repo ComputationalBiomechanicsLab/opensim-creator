@@ -43,49 +43,49 @@ TEST(SubMeshDescriptor, BaseVertexReturnsFourthCtorArgument)
 
 TEST(SubMeshDescriptor, CopiesCompareEqual)
 {
-    SubMeshDescriptor const a{0, 10, MeshTopology::Triangles};
-    SubMeshDescriptor const b{a};
+    const SubMeshDescriptor a{0, 10, MeshTopology::Triangles};
+    const SubMeshDescriptor b{a};
     ASSERT_EQ(a, b);
 }
 
 TEST(SubMeshDescriptor, SeparatelyConstructedInstancesCompareEqual)
 {
-    SubMeshDescriptor const a{0, 10, MeshTopology::Triangles};
-    SubMeshDescriptor const b{0, 10, MeshTopology::Triangles};
+    const SubMeshDescriptor a{0, 10, MeshTopology::Triangles};
+    const SubMeshDescriptor b{0, 10, MeshTopology::Triangles};
     ASSERT_EQ(a, b);
 }
 
 TEST(SubMeshDescriptor, DifferentStartingOffsetsComparesNonEqual)
 {
-    SubMeshDescriptor const a{0, 10, MeshTopology::Triangles};
-    SubMeshDescriptor const b{5, 10, MeshTopology::Triangles};
+    const SubMeshDescriptor a{0, 10, MeshTopology::Triangles};
+    const SubMeshDescriptor b{5, 10, MeshTopology::Triangles};
     ASSERT_NE(a, b);
 }
 
 TEST(SubMeshDescriptor, DifferentIndexCountComparesNonEqual)
 {
-    SubMeshDescriptor const a{0, 10, MeshTopology::Triangles};
-    SubMeshDescriptor const b{0, 15, MeshTopology::Triangles};
+    const SubMeshDescriptor a{0, 10, MeshTopology::Triangles};
+    const SubMeshDescriptor b{0, 15, MeshTopology::Triangles};
     ASSERT_NE(a, b);
 }
 
 TEST(SubMeshDescriptor, DifferentTopologyComparesNonEqual)
 {
-    SubMeshDescriptor const a{0, 10, MeshTopology::Triangles};
-    SubMeshDescriptor const b{0, 10, MeshTopology::Lines};
+    const SubMeshDescriptor a{0, 10, MeshTopology::Triangles};
+    const SubMeshDescriptor b{0, 10, MeshTopology::Lines};
     ASSERT_NE(a, b);
 }
 
 TEST(SubMeshDescriptor, SameBaseVertexComparesEqual)
 {
-    SubMeshDescriptor const a{0, 10, MeshTopology::Triangles, 5};
-    SubMeshDescriptor const b{0, 10, MeshTopology::Triangles, 5};
+    const SubMeshDescriptor a{0, 10, MeshTopology::Triangles, 5};
+    const SubMeshDescriptor b{0, 10, MeshTopology::Triangles, 5};
     ASSERT_EQ(a, b);
 }
 
 TEST(SubMeshDescriptor, DifferentBaseVertexComparesNonEqual)
 {
-    SubMeshDescriptor const a{0, 10, MeshTopology::Triangles, 5};
-    SubMeshDescriptor const b{0, 10, MeshTopology::Triangles, 10};
+    const SubMeshDescriptor a{0, 10, MeshTopology::Triangles, 5};
+    const SubMeshDescriptor b{0, 10, MeshTopology::Triangles, 10};
     ASSERT_NE(a, b);
 }

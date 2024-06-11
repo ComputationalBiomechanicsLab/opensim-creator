@@ -46,7 +46,7 @@ TEST(RenderTargetDepthAttachment, EqualityReturnsTrueForCopies)
         RenderBufferLoadAction::Clear,
         RenderBufferStoreAction::Resolve,
     };
-    RenderTargetDepthAttachment const copy = attachment;  // NOLINT(performance-unnecessary-copy-initialization)
+    const RenderTargetDepthAttachment copy = attachment;  // NOLINT(performance-unnecessary-copy-initialization)
 
     ASSERT_EQ(copy, attachment);
 }

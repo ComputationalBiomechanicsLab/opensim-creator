@@ -21,7 +21,7 @@ TEST(VertexFormat, IsDefaultConstructible)
 
 TEST(VertexFormat, CanConstructWithJustAPositionAttribute)
 {
-    std::initializer_list<VertexAttributeDescriptor> const lst = {
+    const std::initializer_list<VertexAttributeDescriptor> lst = {
         {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
     };
 
@@ -30,7 +30,7 @@ TEST(VertexFormat, CanConstructWithJustAPositionAttribute)
 
 TEST(VertexFormat, ThrowsIfGivenDuplicatePositionAttributes)
 {
-    std::initializer_list<VertexAttributeDescriptor> const lst = {
+    const std::initializer_list<VertexAttributeDescriptor> lst = {
         {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
         {VertexAttribute::Position, VertexAttributeFormat::Unorm8x4},
     };
@@ -40,7 +40,7 @@ TEST(VertexFormat, ThrowsIfGivenDuplicatePositionAttributes)
 
 TEST(VertexFormat, CanHandleManyAttributesIfOrderedCorrectly)
 {
-    std::initializer_list<VertexAttributeDescriptor> const lst = {
+    const std::initializer_list<VertexAttributeDescriptor> lst = {
         {VertexAttribute::Position,  VertexAttributeFormat::Float32x3},
         {VertexAttribute::Normal,    VertexAttributeFormat::Float32x3},
         {VertexAttribute::Tangent,   VertexAttributeFormat::Unorm8x4},  // nonstandard formats are ok
@@ -53,7 +53,7 @@ TEST(VertexFormat, CanHandleManyAttributesIfOrderedCorrectly)
 
 TEST(VertexFormat, DoesNotThrowIfJustPositionAndNormal)
 {
-    std::initializer_list<VertexAttributeDescriptor> const lst = {
+    const std::initializer_list<VertexAttributeDescriptor> lst = {
         {VertexAttribute::Position,  VertexAttributeFormat::Float32x3},
         {VertexAttribute::Normal,    VertexAttributeFormat::Float32x3},
     };
@@ -69,7 +69,7 @@ TEST(VertexFormat, ThrowsIfPositionIsMissing)
 
     for (VertexAttribute a : {VertexAttribute::Normal, VertexAttribute::Tangent, VertexAttribute::Color, VertexAttribute::TexCoord0})
     {
-        std::initializer_list<VertexAttributeDescriptor> const lst = {
+        const std::initializer_list<VertexAttributeDescriptor> lst = {
             {a, VertexAttributeFormat::Float32x3},  // format/dimensionality is flexible w.r.t. the chosen attribute
         };
         ASSERT_ANY_THROW({ VertexFormat{lst}; });
@@ -82,7 +82,7 @@ TEST(VertexFormat, ThrowsIfSameAttributeSuppliedMultipleTimes)
     // because renderer algorithms may assume that the data does not need to be duplicated within
     // one buffer
 
-    std::initializer_list<VertexAttributeDescriptor> const lst = {
+    const std::initializer_list<VertexAttributeDescriptor> lst = {
         {VertexAttribute::Position,  VertexAttributeFormat::Float32x3},
         {VertexAttribute::Normal,    VertexAttributeFormat::Float32x3},
         {VertexAttribute::Tangent,   VertexAttributeFormat::Unorm8x4},
@@ -115,24 +115,21 @@ TEST(VertexFormat, StrideReturnsZeroOnDefaultConstruction)
 TEST(VertexFormat, StrideReturnsExpectedResults)
 {
     {
-        VertexFormat const f
-        {
+        const VertexFormat f = {
             {VertexAttribute::Position,  VertexAttributeFormat::Float32x3},
             {VertexAttribute::Normal,    VertexAttributeFormat::Float32x3},
         };
         ASSERT_EQ(f.stride(), 6*sizeof(float));
     }
     {
-        VertexFormat const f
-        {
+        const VertexFormat f = {
             {VertexAttribute::Position,  VertexAttributeFormat::Float32x3},
             {VertexAttribute::Normal,    VertexAttributeFormat::Unorm8x4},
         };
         ASSERT_EQ(f.stride(), 3*sizeof(float)+4);
     }
     {
-        VertexFormat const f
-        {
+        const VertexFormat f = {
             {VertexAttribute::Position,  VertexAttributeFormat::Float32x3},
             {VertexAttribute::Normal,    VertexAttributeFormat::Unorm8x4},
             {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
@@ -151,8 +148,7 @@ TEST(VertexFormat, ContainsReturnsFalseOnEmptyFormat)
 
 TEST(VertexFormat, ContainsReturnsFalseOnNonExistentAttr)
 {
-    VertexFormat const f
-    {
+    const VertexFormat f = {
         {VertexAttribute::Position,  VertexAttributeFormat::Float32x3},
         {VertexAttribute::Normal,    VertexAttributeFormat::Unorm8x4},
         {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
@@ -164,8 +160,7 @@ TEST(VertexFormat, ContainsReturnsFalseOnNonExistentAttr)
 
 TEST(VertexFormat, ContainsReturnsTrueOnExistentAttr)
 {
-    VertexFormat const f
-    {
+    const VertexFormat f = {
         {VertexAttribute::Position,  VertexAttributeFormat::Float32x3},
         {VertexAttribute::Normal,    VertexAttributeFormat::Unorm8x4},
         {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
@@ -178,8 +173,7 @@ TEST(VertexFormat, ContainsReturnsTrueOnExistentAttr)
 
 TEST(VertexFormat, AttributeLayoutReturnsNulloptForNonExistentAttribute)
 {
-    VertexFormat const f
-    {
+    const VertexFormat f = {
         {VertexAttribute::Position,  VertexAttributeFormat::Float32x3},
         {VertexAttribute::Normal,    VertexAttributeFormat::Unorm8x4},
         {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
@@ -191,8 +185,7 @@ TEST(VertexFormat, AttributeLayoutReturnsNulloptForNonExistentAttribute)
 
 TEST(VertexFormat, AttributeLayoutReturnsExpectedAnswersForExistentAttribute)
 {
-    VertexFormat const f
-    {
+    const VertexFormat f = {
         {VertexAttribute::Position,  VertexAttributeFormat::Float32x3},
         {VertexAttribute::Normal,    VertexAttributeFormat::Unorm8x4},
         {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
@@ -207,8 +200,7 @@ TEST(VertexFormat, AttributeLayoutReturnsExpectedAnswersForExistentAttribute)
 
 TEST(VertexFormat, AttributeLayoutsReturnsProvidedAttributeDescriptionsWithOffsets)
 {
-    VertexFormat const f
-    {
+    const VertexFormat f = {
         {VertexAttribute::Position,  VertexAttributeFormat::Float32x3},
         {VertexAttribute::Normal,    VertexAttributeFormat::Unorm8x4},
         {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
@@ -216,14 +208,13 @@ TEST(VertexFormat, AttributeLayoutsReturnsProvidedAttributeDescriptionsWithOffse
 
     using Layout = VertexFormat::VertexAttributeLayout;
 
-    auto const expected = std::to_array<Layout>(
-    {
+    const auto expected = std::to_array<Layout>({
         {{VertexAttribute::Position,  VertexAttributeFormat::Float32x3}, 0},
         {{VertexAttribute::Normal,    VertexAttributeFormat::Unorm8x4},  3*sizeof(float)},
         {{VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2}, 3*sizeof(float)+4},
     });
 
-    auto equal = [](auto const& range1, auto const& range2)
+    auto equal = [](const auto& range1, const auto& range2)
     {
         return std::equal(range1.begin(), range1.end(), range2.begin(), range2.end());
     };
@@ -245,7 +236,7 @@ TEST(VertexFormat, InsertWorksWhenInsertingPositionToAnEmptyFormat)
     VertexFormat f;
     f.insert({VertexAttribute::Position, VertexAttributeFormat::Float32x3});
 
-    VertexFormat const expected = {{VertexAttribute::Position, VertexAttributeFormat::Float32x3}};
+    const VertexFormat expected = {{VertexAttribute::Position, VertexAttributeFormat::Float32x3}};
 
     ASSERT_EQ(f, expected);
 }
@@ -255,8 +246,7 @@ TEST(VertexFormat, InsertWorksWhenInsertingASecondAttribute)
     VertexFormat f{{VertexAttribute::Position, VertexAttributeFormat::Float32x3}};
     f.insert({VertexAttribute::Tangent, VertexAttributeFormat::Unorm8x4});
 
-    VertexFormat const expected =
-    {
+    const VertexFormat expected = {
         {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
         {VertexAttribute::Tangent, VertexAttributeFormat::Unorm8x4},
     };
@@ -266,15 +256,13 @@ TEST(VertexFormat, InsertWorksWhenInsertingASecondAttribute)
 
 TEST(VertexFormat, InsertCanAddThirdElement)
 {
-    VertexFormat f =
-    {
+    VertexFormat f = {
         {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
         {VertexAttribute::Tangent, VertexAttributeFormat::Unorm8x4},
     };
     f.insert({VertexAttribute::Normal, VertexAttributeFormat::Float32x3});
 
-    VertexFormat const expected =
-    {
+    const VertexFormat expected = {
         {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
         {VertexAttribute::Tangent, VertexAttributeFormat::Unorm8x4},
         {VertexAttribute::Normal, VertexAttributeFormat::Float32x3},
@@ -285,15 +273,13 @@ TEST(VertexFormat, InsertCanAddThirdElement)
 
 TEST(VertexFormat, InsertOverwritesExistingAttributesFormatIfAlreadyInFormat)
 {
-    VertexFormat f =
-    {
+    VertexFormat f = {
         {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
         {VertexAttribute::Tangent, VertexAttributeFormat::Unorm8x4},
     };
     f.insert({VertexAttribute::Tangent, VertexAttributeFormat::Float32x2});
 
-    VertexFormat const expected =
-    {
+    const VertexFormat expected = {
         {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
         {VertexAttribute::Tangent, VertexAttributeFormat::Float32x2},
     };
@@ -303,8 +289,7 @@ TEST(VertexFormat, InsertOverwritesExistingAttributesFormatIfAlreadyInFormat)
 
 TEST(VertexFormat, EraseWithNonPresentVertexAttributeDoesNothing)
 {
-    VertexFormat const before =
-    {
+    const VertexFormat before = {
         {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
         {VertexAttribute::Tangent, VertexAttributeFormat::Unorm8x4},
     };
@@ -316,14 +301,12 @@ TEST(VertexFormat, EraseWithNonPresentVertexAttributeDoesNothing)
 
 TEST(VertexFormat, EraseErasesExistentAttribute)
 {
-    VertexFormat f =
-    {
+    VertexFormat f = {
         {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
         {VertexAttribute::Tangent, VertexAttributeFormat::Unorm8x4},
     };
     f.erase(VertexAttribute::Tangent);
-    VertexFormat const expected =
-    {
+    const VertexFormat expected = {
         {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
     };
     ASSERT_EQ(f, expected);
@@ -331,8 +314,7 @@ TEST(VertexFormat, EraseErasesExistentAttribute)
 
 TEST(VertexFormat, ErasePositionWipesAllAttributes)
 {
-    VertexFormat f =
-    {
+    VertexFormat f = {
         {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
         {VertexAttribute::Tangent, VertexAttributeFormat::Unorm8x4},
     };

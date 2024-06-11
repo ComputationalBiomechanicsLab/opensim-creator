@@ -25,17 +25,17 @@ TEST(Unorm8, NaNsAreConvertedToZero)
 
 TEST(Unorm8, CanCreateVec3OfUnormsFromUsualVec3OfFloats)
 {
-    Vec3 const v{0.25f, 1.0f, 1.5f};
-    Vec<3, Unorm8> const converted{v};
-    Vec<3, Unorm8> const expected{Unorm8{0.25f}, Unorm8{1.0f}, Unorm8{1.5f}};
+    const Vec3 v{0.25f, 1.0f, 1.5f};
+    const Vec<3, Unorm8> converted{v};
+    const Vec<3, Unorm8> expected{Unorm8{0.25f}, Unorm8{1.0f}, Unorm8{1.5f}};
     ASSERT_EQ(converted, expected);
 }
 
 TEST(Unorm8, CanCreateUsualVec3FromVec3OfUNorms)
 {
-    Vec<3, Unorm8> const v{Unorm8{0.1f}, Unorm8{0.2f}, Unorm8{0.3f}};
-    Vec3 const converted{v};
-    Vec3 const expected{Unorm8{0.1f}.normalized_value(), Unorm8{0.2f}.normalized_value(), Unorm8{0.3f}.normalized_value()};
+    const Vec<3, Unorm8> v{Unorm8{0.1f}, Unorm8{0.2f}, Unorm8{0.3f}};
+    const Vec3 converted{v};
+    const Vec3 expected{Unorm8{0.1f}.normalized_value(), Unorm8{0.2f}.normalized_value(), Unorm8{0.3f}.normalized_value()};
     ASSERT_EQ(converted, expected);
 }
 

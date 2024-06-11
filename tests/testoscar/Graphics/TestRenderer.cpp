@@ -493,8 +493,7 @@ TEST_F(Renderer, ShaderOutputStreamContainsExpectedInfo)
     ss << s;
     std::string str{std::move(ss).str()};
 
-    for (auto const& propName : c_ExpectedPropertyNames)
-    {
+    for (const auto& propName : c_ExpectedPropertyNames) {
         ASSERT_TRUE(contains(str, std::string{propName}));
     }
 }
@@ -503,8 +502,7 @@ TEST_F(Renderer, ShaderFindPropertyIndexCanFindAllExpectedProperties)
 {
     Shader s{c_vertex_shader_src, c_fragment_shader_src};
 
-    for (auto const& propName : c_ExpectedPropertyNames)
-    {
+    for (const auto& propName : c_ExpectedPropertyNames) {
         ASSERT_TRUE(s.property_index(std::string{propName}));
     }
 }
@@ -520,14 +518,12 @@ TEST_F(Renderer, ShaderIteratingOverPropertyIndicesForNameReturnsValidPropertyNa
     Shader s{c_vertex_shader_src, c_fragment_shader_src};
 
     std::unordered_set<std::string> allPropNames;
-    for (auto const& sv : c_ExpectedPropertyNames)
-    {
+    for (const auto& sv : c_ExpectedPropertyNames) {
         allPropNames.insert(std::string{sv});
     }
     std::unordered_set<std::string> returnedPropNames;
 
-    for (size_t i = 0, len = s.num_properties(); i < len; ++i)
-    {
+    for (size_t i = 0, len = s.num_properties(); i < len; ++i) {
         returnedPropNames.insert(std::string{s.property_name(i)});
     }
 
@@ -538,8 +534,7 @@ TEST_F(Renderer, ShaderGetPropertyNameReturnsGivenPropertyName)
 {
     Shader s{c_vertex_shader_src, c_fragment_shader_src};
 
-    for (auto const& propName : c_ExpectedPropertyNames)
-    {
+    for (const auto& propName : c_ExpectedPropertyNames) {
         std::optional<size_t> idx = s.property_index(propName);
         ASSERT_TRUE(idx);
         ASSERT_EQ(s.property_name(*idx), propName);
@@ -557,10 +552,9 @@ TEST_F(Renderer, ShaderGetPropertyTypeReturnsExpectedType)
 {
     Shader s{c_vertex_shader_src, c_fragment_shader_src};
 
-    for (size_t i = 0; i < c_ExpectedPropertyNames.size(); ++i)
-    {
+    for (size_t i = 0; i < c_ExpectedPropertyNames.size(); ++i) {
         static_assert(c_ExpectedPropertyNames.size() == c_ExpectedPropertyTypes.size());
-        auto const& propName = c_ExpectedPropertyNames[i];
+        const auto& propName = c_ExpectedPropertyNames[i];
         ShaderPropertyType expectedType = c_ExpectedPropertyTypes[i];
 
         std::optional<size_t> idx = s.property_index(std::string{propName});
@@ -670,7 +664,7 @@ TEST_F(Renderer, MaterialGetColorArrayReturnsEmptyOnNewMaterial)
 TEST_F(Renderer, MaterialCanCallSetColorArrayOnNewMaterial)
 {
     Material mat = GenerateMaterial();
-    auto const colors = std::to_array({Color::black(), Color::blue()});
+    const auto colors = std::to_array({Color::black(), Color::blue()});
 
     mat.set_color_array("someKey", colors);
 }
@@ -678,12 +672,12 @@ TEST_F(Renderer, MaterialCanCallSetColorArrayOnNewMaterial)
 TEST_F(Renderer, MaterialCallingGetColorArrayOnMaterialAfterSettingThemReturnsTheSameColors)
 {
     Material mat = GenerateMaterial();
-    auto const colors = std::to_array({Color::red(), Color::green(), Color::blue()});
-    CStringView const key = "someKey";
+    const auto colors = std::to_array({Color::red(), Color::green(), Color::blue()});
+    const CStringView key = "someKey";
 
     mat.set_color_array(key, colors);
 
-    std::optional<std::span<Color const>> rv = mat.get_color_array(key);
+    std::optional<std::span<const Color>> rv = mat.get_color_array(key);
 
     ASSERT_TRUE(rv);
     ASSERT_EQ(std::size(*rv), std::size(colors));
@@ -771,7 +765,7 @@ TEST_F(Renderer, MaterialSetFloatArrayOnMaterialCausesGetFloatArrayToReturnThePr
 
     mat.set_float_array(key, values);
 
-    std::span<float const> rv = mat.get_float_array(key).value();
+    std::span<const float> rv = mat.get_float_array(key).value();
     ASSERT_TRUE(std::equal(rv.begin(), rv.end(), values.begin(), values.end()));
 }
 
@@ -838,7 +832,7 @@ TEST_F(Renderer, MaterialSetVec3ArrayOnMaterialCausesGetVec3ArrayToReutrnTheProv
 
     mat.set_vec3_array(key, values);
 
-    std::span<Vec3 const> rv = mat.get_vec3_array(key).value();
+    std::span<const Vec3> rv = mat.get_vec3_array(key).value();
     ASSERT_TRUE(std::equal(rv.begin(), rv.end(), values.begin(), values.end()));
 }
 
@@ -886,8 +880,7 @@ TEST_F(Renderer, MaterialGetMat4ArrayInitiallyReturnsNothing)
 
 TEST_F(Renderer, MaterialSetMat4ArrayCausesGetMat4ArrayToReturnSameSequenceOfValues)
 {
-    auto const mat4Array = std::to_array<Mat4>(
-    {
+    const auto mat4Array = std::to_array<Mat4>({
         GenerateMat4x4(),
         GenerateMat4x4(),
         GenerateMat4x4(),
@@ -897,7 +890,7 @@ TEST_F(Renderer, MaterialSetMat4ArrayCausesGetMat4ArrayToReturnSameSequenceOfVal
     Material mat = GenerateMaterial();
     mat.set_mat4_array("someKey", mat4Array);
 
-    std::optional<std::span<Mat4 const>> rv = mat.get_mat4_array("someKey");
+    std::optional<std::span<const Mat4>> rv = mat.get_mat4_array("someKey");
     ASSERT_TRUE(rv.has_value());
     ASSERT_EQ(mat4Array.size(), rv->size());
     ASSERT_TRUE(std::equal(mat4Array.begin(), mat4Array.end(), rv->begin()));
@@ -991,7 +984,7 @@ TEST_F(Renderer, MaterialSetRenderTextureFollowedByUnsetClearsTheRenderTexture)
 
 TEST_F(Renderer, MaterialGetCubemapInitiallyReturnsNothing)
 {
-    Material const mat = GenerateMaterial();
+    const Material mat = GenerateMaterial();
 
     ASSERT_FALSE(mat.get_cubemap("cubemap").has_value());
 }
@@ -1002,7 +995,7 @@ TEST_F(Renderer, MaterialGetCubemapReturnsSomethingAfterSettingCubemap)
 
     ASSERT_FALSE(mat.get_cubemap("cubemap").has_value());
 
-    Cubemap const cubemap{1, TextureFormat::RGBA32};
+    const Cubemap cubemap{1, TextureFormat::RGBA32};
 
     mat.set_cubemap("cubemap", cubemap);
 
@@ -1015,8 +1008,8 @@ TEST_F(Renderer, MaterialGetCubemapReturnsTheCubemapThatWasLastSet)
 
     ASSERT_FALSE(mat.get_cubemap("cubemap").has_value());
 
-    Cubemap const firstCubemap{1, TextureFormat::RGBA32};
-    Cubemap const secondCubemap{2, TextureFormat::RGBA32};  // different
+    const Cubemap firstCubemap{1, TextureFormat::RGBA32};
+    const Cubemap secondCubemap{2, TextureFormat::RGBA32};  // different
 
     mat.set_cubemap("cubemap", firstCubemap);
     ASSERT_EQ(mat.get_cubemap("cubemap"), firstCubemap);
@@ -1031,7 +1024,7 @@ TEST_F(Renderer, MaterialUnsetCubemapClearsTheCubemap)
 
     ASSERT_FALSE(mat.get_cubemap("cubemap").has_value());
 
-    Cubemap const cubemap{1, TextureFormat::RGBA32};
+    const Cubemap cubemap{1, TextureFormat::RGBA32};
 
     mat.set_cubemap("cubemap", cubemap);
 
@@ -1484,9 +1477,8 @@ TEST_F(Renderer, MaterialPropertyBlockPrintingToOutputStreamMentionsMaterialProp
 
 TEST_F(Renderer, MeshTopologyAllCanBeWrittenToStream)
 {
-    for (size_t i = 0; i < num_options<MeshTopology>(); ++i)
-    {
-        auto const mt = static_cast<MeshTopology>(i);
+    for (size_t i = 0; i < num_options<MeshTopology>(); ++i) {
+        const auto mt = static_cast<MeshTopology>(i);
 
         std::stringstream ss;
 
@@ -1498,7 +1490,7 @@ TEST_F(Renderer, MeshTopologyAllCanBeWrittenToStream)
 
 TEST_F(Renderer, LoadTexture2DFromImageResourceCanLoadImageFile)
 {
-    Texture2D const t = load_texture2D_from_image(
+    const Texture2D t = load_texture2D_from_image(
         App::load_resource((std::filesystem::path{OSC_BUILD_RESOURCES_DIR} / "testoscar/awesomeface.png").string()),
         ColorSpace::sRGB
     );
@@ -1536,9 +1528,9 @@ TEST_F(Renderer, DepthStencilFormatCanBeIteratedOverAndStreamedToString)
 
 TEST_F(Renderer, DrawMeshDoesNotThrowWithStandardArgs)
 {
-    Mesh const mesh;
-    Transform const transform = identity<Transform>();
-    Material const material = GenerateMaterial();
+    const Mesh mesh;
+    const Transform transform = identity<Transform>();
+    const Material material = GenerateMaterial();
     Camera camera;
 
     ASSERT_NO_THROW({ graphics::draw(mesh, transform, material, camera); });
@@ -1546,9 +1538,9 @@ TEST_F(Renderer, DrawMeshDoesNotThrowWithStandardArgs)
 
 TEST_F(Renderer, DrawMeshThrowsIfGivenOutOfBoundsSubMeshIndex)
 {
-    Mesh const mesh;
-    Transform const transform = identity<Transform>();
-    Material const material = GenerateMaterial();
+    const Mesh mesh;
+    const Transform transform = identity<Transform>();
+    const Material material = GenerateMaterial();
     Camera camera;
 
     ASSERT_ANY_THROW({ graphics::draw(mesh, transform, material, camera, std::nullopt, 0); });
@@ -1558,8 +1550,8 @@ TEST_F(Renderer, DrawMeshDoesNotThrowIfGivenInBoundsSubMesh)
 {
     Mesh mesh;
     mesh.push_submesh_descriptor({0, 0, MeshTopology::Triangles});
-    Transform const transform = identity<Transform>();
-    Material const material = GenerateMaterial();
+    const Transform transform = identity<Transform>();
+    const Material material = GenerateMaterial();
     Camera camera;
 
     ASSERT_NO_THROW({ graphics::draw(mesh, transform, material, camera, std::nullopt, 0); });

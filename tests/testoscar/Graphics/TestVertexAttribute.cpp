@@ -14,7 +14,7 @@ using namespace osc;
 // set intersection between multiple vertex buffers etc. more easily
 TEST(VertexAttribute, OrderMatchesAttributeLayout)
 {
-    auto const order = std::to_array({
+    const auto order = std::to_array({
         VertexAttribute::Position,
         VertexAttribute::Normal,
         VertexAttribute::Tangent,

@@ -56,8 +56,8 @@ TEST(Texture2D, DefaultConstructorCreatesRGBATextureWithExpectedColorSpaceEtc)
 
 TEST(Texture2D, CanSetPixels32OnDefaultConstructedTexture)
 {
-    Vec2i const dimensions = {1, 1};
-    std::vector<Color32> const pixels(static_cast<size_t>(dimensions.x * dimensions.y));
+    const Vec2i dimensions = {1, 1};
+    const std::vector<Color32> pixels(static_cast<size_t>(dimensions.x * dimensions.y));
 
     Texture2D t{dimensions};
     t.set_pixels32(pixels);
@@ -68,8 +68,8 @@ TEST(Texture2D, CanSetPixels32OnDefaultConstructedTexture)
 
 TEST(Texture2D, SetPixelsThrowsIfNumberOfPixelsDoesNotMatchDimensions)
 {
-    Vec2i const dimensions = {1, 1};
-    std::vector<Color> const incorrectPixels(dimensions.x * dimensions.y + 1);
+    const Vec2i dimensions = {1, 1};
+    const std::vector<Color> incorrectPixels(dimensions.x * dimensions.y + 1);
 
     Texture2D t{dimensions};
 
@@ -78,8 +78,8 @@ TEST(Texture2D, SetPixelsThrowsIfNumberOfPixelsDoesNotMatchDimensions)
 
 TEST(Texture2D, SetPixels32ThrowsIfNumberOfPixelsDoesNotMatchDimensions)
 {
-    Vec2i const dimensions = {1, 1};
-    std::vector<Color32> const incorrectPixels(dimensions.x * dimensions.y + 1);
+    const Vec2i dimensions = {1, 1};
+    const std::vector<Color32> incorrectPixels(dimensions.x * dimensions.y + 1);
 
     Texture2D t{dimensions};
     ASSERT_ANY_THROW({ t.set_pixels32(incorrectPixels); });
@@ -87,8 +87,8 @@ TEST(Texture2D, SetPixels32ThrowsIfNumberOfPixelsDoesNotMatchDimensions)
 
 TEST(Texture2D, SetPixelDataThrowsIfNumberOfPixelBytesDoesNotMatchDimensions)
 {
-    Vec2i const dimensions = {1, 1};
-    std::vector<Color32> const incorrectPixels(dimensions.x * dimensions.y + 1);
+    const Vec2i dimensions = {1, 1};
+    const std::vector<Color32> incorrectPixels(dimensions.x * dimensions.y + 1);
 
     Texture2D t{dimensions};
 
@@ -98,8 +98,8 @@ TEST(Texture2D, SetPixelDataThrowsIfNumberOfPixelBytesDoesNotMatchDimensions)
 
 TEST(Texture2D, SetPixelDataDoesNotThrowWhenGivenValidNumberOfPixelBytes)
 {
-    Vec2i const dimensions = {1, 1};
-    std::vector<Color32> const pixels(static_cast<size_t>(dimensions.x * dimensions.y));
+    const Vec2i dimensions = {1, 1};
+    const std::vector<Color32> pixels(static_cast<size_t>(dimensions.x * dimensions.y));
 
     Texture2D t{dimensions};
 
@@ -110,8 +110,8 @@ TEST(Texture2D, SetPixelDataDoesNotThrowWhenGivenValidNumberOfPixelBytes)
 
 TEST(Texture2D, SetPixelDataWorksFineFor8BitSingleChannelData)
 {
-    Vec2i const dimensions = {1, 1};
-    std::vector<uint8_t> const singleChannelPixels(static_cast<size_t>(dimensions.x * dimensions.y));
+    const Vec2i dimensions = {1, 1};
+    const std::vector<uint8_t> singleChannelPixels(static_cast<size_t>(dimensions.x * dimensions.y));
 
     Texture2D t{dimensions, TextureFormat::R8};
     t.set_pixel_data(singleChannelPixels);  // shouldn't throw
@@ -119,31 +119,29 @@ TEST(Texture2D, SetPixelDataWorksFineFor8BitSingleChannelData)
 
 TEST(Texture2D, SetPixelDataWith8BitSingleChannelDataFollowedByGetPixelsBlanksOutGreenAndRed)
 {
-    uint8_t const color{0x88};
-    float const colorFloat = static_cast<float>(color) / 255.0f;
-    Vec2i const dimensions = {1, 1};
-    std::vector<uint8_t> const singleChannelPixels(static_cast<size_t>(dimensions.x * dimensions.y), color);
+    const uint8_t color{0x88};
+    const float colorFloat = static_cast<float>(color) / 255.0f;
+    const Vec2i dimensions = {1, 1};
+    const std::vector<uint8_t> singleChannelPixels(static_cast<size_t>(dimensions.x * dimensions.y), color);
 
     Texture2D t{dimensions, TextureFormat::R8};
     t.set_pixel_data(singleChannelPixels);
 
-    for (Color const& c : t.pixels())
-    {
+    for (const Color& c : t.pixels()) {
         ASSERT_EQ(c, Color(colorFloat, 0.0f, 0.0f, 1.0f));
     }
 }
 
 TEST(Texture2D, SetPixelDataWith8BitSingleChannelDataFollowedByGetPixels32BlanksOutGreenAndRed)
 {
-    uint8_t const color{0x88};
-    Vec2i const dimensions = {1, 1};
-    std::vector<uint8_t> const singleChannelPixels(static_cast<size_t>(dimensions.x * dimensions.y), color);
+    const uint8_t color{0x88};
+    const Vec2i dimensions = {1, 1};
+    const std::vector<uint8_t> singleChannelPixels(static_cast<size_t>(dimensions.x * dimensions.y), color);
 
     Texture2D t{dimensions, TextureFormat::R8};
     t.set_pixel_data(singleChannelPixels);
 
-    for (Color32 const& c : t.pixels32())
-    {
+    for (const Color32& c : t.pixels32()) {
         Color32 expected{color, 0x00, 0x00, 0xff};
         ASSERT_EQ(c, expected);
     }
@@ -151,8 +149,8 @@ TEST(Texture2D, SetPixelDataWith8BitSingleChannelDataFollowedByGetPixels32Blanks
 
 TEST(Texture2D, SetPixelDataWith32BitFloatingPointValuesFollowedByGetPixelDataReturnsSameSpan)
 {
-    Vec4 const color = GenerateVec4();
-    Vec2i const dimensions = {1, 1};
+    const Vec4 color = GenerateVec4();
+    const Vec2i dimensions = {1, 1};
     std::vector<Vec4> const rgbaFloatPixels(static_cast<size_t>(dimensions.x * dimensions.y), color);
 
     Texture2D t(dimensions, TextureFormat::RGBAFloat);
@@ -163,9 +161,9 @@ TEST(Texture2D, SetPixelDataWith32BitFloatingPointValuesFollowedByGetPixelDataRe
 
 TEST(Texture2D, SetPixelDataWith32BitFloatingPointValuesFollowedByGetPixelsReturnsSameValues)
 {
-    Color const hdrColor = {1.2f, 1.4f, 1.3f, 1.0f};
-    Vec2i const dimensions = {1, 1};
-    std::vector<Color> const rgbaFloatPixels(static_cast<size_t>(dimensions.x * dimensions.y), hdrColor);
+    const Color hdrColor = {1.2f, 1.4f, 1.3f, 1.0f};
+    const Vec2i dimensions = {1, 1};
+    const std::vector<Color> rgbaFloatPixels(static_cast<size_t>(dimensions.x * dimensions.y), hdrColor);
 
     Texture2D t(dimensions, TextureFormat::RGBAFloat);
     t.set_pixel_data(view_object_representations<uint8_t>(rgbaFloatPixels));
@@ -175,9 +173,9 @@ TEST(Texture2D, SetPixelDataWith32BitFloatingPointValuesFollowedByGetPixelsRetur
 
 TEST(Texture2D, SetPixelsOnAn8BitTextureLDRClampsTheColorValues)
 {
-    Color const hdrColor = {1.2f, 1.4f, 1.3f, 1.0f};
-    Vec2i const dimensions = {1, 1};
-    std::vector<Color> const hdrPixels(static_cast<size_t>(dimensions.x * dimensions.y), hdrColor);
+    const Color hdrColor = {1.2f, 1.4f, 1.3f, 1.0f};
+    const Vec2i dimensions = {1, 1};
+    const std::vector<Color> hdrPixels(static_cast<size_t>(dimensions.x * dimensions.y), hdrColor);
 
     Texture2D t(dimensions, TextureFormat::RGBA32);  // note: not HDR
 
@@ -188,9 +186,9 @@ TEST(Texture2D, SetPixelsOnAn8BitTextureLDRClampsTheColorValues)
 
 TEST(Texture2D, SetPixels32OnAn8BitTextureDoesntConvert)
 {
-    Color32 const color32 = {0x77, 0x63, 0x24, 0x76};
-    Vec2i const dimensions = {1, 1};
-    std::vector<Color32> const pixels32(static_cast<size_t>(dimensions.x * dimensions.y), color32);
+    const Color32 color32 = {0x77, 0x63, 0x24, 0x76};
+    const Vec2i dimensions = {1, 1};
+    const std::vector<Color32> pixels32(static_cast<size_t>(dimensions.x * dimensions.y), color32);
 
     Texture2D t(dimensions, TextureFormat::RGBA32);  // note: matches pixel format
 
@@ -201,9 +199,9 @@ TEST(Texture2D, SetPixels32OnAn8BitTextureDoesntConvert)
 
 TEST(Texture2D, SetPixels32OnA32BitTextureDoesntDetectablyChangeValues)
 {
-    Color32 const color32 = {0x77, 0x63, 0x24, 0x76};
-    Vec2i const dimensions = {1, 1};
-    std::vector<Color32> const pixels32(static_cast<size_t>(dimensions.x * dimensions.y), color32);
+    const Color32 color32 = {0x77, 0x63, 0x24, 0x76};
+    const Vec2i dimensions = {1, 1};
+    const std::vector<Color32> pixels32(static_cast<size_t>(dimensions.x * dimensions.y), color32);
 
     Texture2D t(dimensions, TextureFormat::RGBAFloat);  // note: higher precision than input
 
