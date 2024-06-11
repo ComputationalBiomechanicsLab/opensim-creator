@@ -11,8 +11,7 @@ using namespace osc;
 
 TEST(CameraProjection, CanBeStreamed)
 {
-    for (size_t i = 0; i < num_options<CameraProjection>(); ++i)
-    {
+    for (size_t i = 0; i < num_options<CameraProjection>(); ++i) {
         std::stringstream ss;
         ss << static_cast<CameraProjection>(i);
 

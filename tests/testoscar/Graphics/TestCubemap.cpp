@@ -27,7 +27,7 @@ TEST(Cubemap, ConstructorThrowsIfGivenNegativeWidth)
 
 TEST(Cubemap, CanBeCopyConstructed)
 {
-    Cubemap const source{1, TextureFormat::RGBA32};
+    const Cubemap source{1, TextureFormat::RGBA32};
     Cubemap{source};
 }
 
@@ -41,7 +41,7 @@ TEST(Cubemap, CanBeMoveConstructed)
 
 TEST(Cubemap, CanBeCopyAssigned)
 {
-    Cubemap const first{1, TextureFormat::RGBA32};
+    const Cubemap first{1, TextureFormat::RGBA32};
     Cubemap second{2, TextureFormat::RGB24};
     second = first;
 
@@ -53,12 +53,12 @@ static_assert(std::is_nothrow_assignable_v<Cubemap, Cubemap&&>);
 
 TEST(Cubemap, CanBeMoveAssigned)
 {
-    int32_t const firstWidth = 1;
-    TextureFormat const firstFormat = TextureFormat::RGB24;
+    const int32_t firstWidth = 1;
+    const TextureFormat firstFormat = TextureFormat::RGB24;
     Cubemap first{firstWidth, firstFormat};
 
-    int32_t const secondWidth = 2;
-    TextureFormat const secondFormat = TextureFormat::RGBA32;
+    const int32_t secondWidth = 2;
+    const TextureFormat secondFormat = TextureFormat::RGBA32;
     Cubemap second{secondWidth, secondFormat};
     second = std::move(first);
 
@@ -72,25 +72,25 @@ static_assert(std::is_nothrow_destructible_v<Cubemap>);
 
 TEST(Cubemap, CanBeReferenceComparedForEquality)
 {
-    Cubemap const cubemap{1, TextureFormat::RGBA32};
+    const Cubemap cubemap{1, TextureFormat::RGBA32};
 
     ASSERT_EQ(cubemap, cubemap);
 }
 
 TEST(Cubemap, CopiesCompareEqual)
 {
-    Cubemap const cubemap{1, TextureFormat::RGBA32};
-    Cubemap const copy{cubemap}; // NOLINT(performance-unnecessary-copy-initialization)
+    const Cubemap cubemap{1, TextureFormat::RGBA32};
+    const Cubemap copy{cubemap}; // NOLINT(performance-unnecessary-copy-initialization)
 
     ASSERT_EQ(cubemap, copy);
 }
 
 TEST(Cubemap, MutatingACopyMakesItNotEqual)
 {
-    Cubemap const cubemap{1, TextureFormat::RGBA32};
+    const Cubemap cubemap{1, TextureFormat::RGBA32};
 
     Cubemap copy{cubemap};
-    std::array<uint8_t, 4> const data = {};
+    const std::array<uint8_t, 4> data = {};
     copy.set_pixel_data(CubemapFace::PositiveX, data);
 
     ASSERT_NE(cubemap, copy);
@@ -106,92 +106,88 @@ TEST(Cubemap, EqualityIsReferenceAndNotValueBased)
     // to enabled value-equality (e.g. by comparing the actual
     // image data or using a strong hashing technique) then
     // this test can be deleted
-    Cubemap const a{1, TextureFormat::RGBA32};
-    Cubemap const b{1, TextureFormat::RGBA32};
+    const Cubemap a{1, TextureFormat::RGBA32};
+    const Cubemap b{1, TextureFormat::RGBA32};
 
     ASSERT_NE(a, b);
 }
 
 TEST(Cubemap, GetWidthReturnsConstructedWidth)
 {
-    int32_t const width = 4;
-    Cubemap const cubemap{width, TextureFormat::RGBA32};
+    const int32_t width = 4;
+    const Cubemap cubemap{width, TextureFormat::RGBA32};
 
     ASSERT_EQ(cubemap.width(), width);
 }
 
 TEST(Cubemap, GetFormatReturnsConstructedFormat)
 {
-    TextureFormat const format = TextureFormat::RGB24;
-    Cubemap const cubemap{1, format};
+    const TextureFormat format = TextureFormat::RGB24;
+    const Cubemap cubemap{1, format};
 
     ASSERT_EQ(cubemap.texture_format(), format);
 }
 
 TEST(Cubemap, SetDataWorksForAnyFaceIfGivenCorrectNumberOfBytes)
 {
-    TextureFormat const format = TextureFormat::RGBA32;
+    const TextureFormat format = TextureFormat::RGBA32;
     constexpr size_t bytesPerPixelForFormat = 4;
     constexpr size_t width = 5;
     constexpr size_t nPixels = width*width*bytesPerPixelForFormat;
-    std::array<uint8_t, nPixels> const data = {};
+    const std::array<uint8_t, nPixels> data = {};
 
     Cubemap cubemap{width, format};
-    for (CubemapFace face : make_option_iterable<CubemapFace>())
-    {
+    for (CubemapFace face : make_option_iterable<CubemapFace>()) {
         cubemap.set_pixel_data(face, data);
     }
 }
 
 TEST(Cubemap, SetDataThrowsIfGivenIncorrectNumberOfBytesForRGBA32)
 {
-    TextureFormat const format = TextureFormat::RGBA32;
+    const TextureFormat format = TextureFormat::RGBA32;
     constexpr size_t incorrectBytesPerPixelForFormat = 3;
     constexpr size_t width = 5;
     constexpr size_t nPixels = width*width*incorrectBytesPerPixelForFormat;
-    std::array<uint8_t, nPixels> const data = {};
+    const std::array<uint8_t, nPixels> data = {};
 
     Cubemap cubemap{width, format};
-    for (CubemapFace face : make_option_iterable<CubemapFace>())
-    {
+    for (CubemapFace face : make_option_iterable<CubemapFace>()) {
         ASSERT_ANY_THROW({ cubemap.set_pixel_data(face, data); });
     }
 }
 
 TEST(Cubemap, SetDataThrowsIfGivenIncorrectNumberOfBytesForRGB24)
 {
-    TextureFormat const format = TextureFormat::RGB24;
+    const TextureFormat format = TextureFormat::RGB24;
     constexpr size_t incorrectBytesPerPixelForFormat = 4;
     constexpr size_t width = 5;
     constexpr size_t nPixels = width*width*incorrectBytesPerPixelForFormat;
-    std::array<uint8_t, nPixels> const data = {};
+    const std::array<uint8_t, nPixels> data = {};
 
     Cubemap cubemap{width, format};
-    for (CubemapFace face : make_option_iterable<CubemapFace>())
-    {
+    for (CubemapFace face : make_option_iterable<CubemapFace>()) {
         ASSERT_ANY_THROW({ cubemap.set_pixel_data(face, data); });
     }
 }
 
 TEST(Cubemap, SetDataThrowsIfGivenIncorrectNumberOfBytesForWidth)
 {
-    TextureFormat const format = TextureFormat::RGBA32;
+    const TextureFormat format = TextureFormat::RGBA32;
     constexpr size_t bytesPerPixelForFormat = 4;
     constexpr size_t width = 5;
     constexpr size_t nPixels = width*width*bytesPerPixelForFormat;
     constexpr size_t incorrectNPixels = nPixels+3;
-    std::array<uint8_t, incorrectNPixels> const data = {};
+    const std::array<uint8_t, incorrectNPixels> data = {};
 
     Cubemap cubemap{width, format};
-    for (CubemapFace face : make_option_iterable<CubemapFace>())
-    {
+    for (CubemapFace face : make_option_iterable<CubemapFace>()) {
         ASSERT_ANY_THROW({ cubemap.set_pixel_data(face, data); });
     }
 }
 
 TEST(Cubemap, SetPixelDataWorksWithFloatingPointTextureFormats)
 {
-    [[maybe_unused]] TextureFormat const format = TextureFormat::RGBAFloat;
+    [[maybe_unused]] const TextureFormat format = TextureFormat::RGBAFloat;
 }
 
 TEST(Cubemap, GetWrapModeInitiallyReturnsRepeatedByDefault)

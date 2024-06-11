@@ -17,7 +17,6 @@ using namespace osc;
 TEST(Image, LoadTexture2DFromImageRespectsSRGBColorSpace)
 {
     const auto path = std::filesystem::path{OSC_BUILD_RESOURCES_DIR} / "testoscar" / "awesomeface.png";
-
     const Texture2D loaded_texture = load_texture2D_from_image(ResourceStream{path}, ColorSpace::sRGB);
 
     ASSERT_EQ(loaded_texture.color_space(), ColorSpace::sRGB);
@@ -26,7 +25,6 @@ TEST(Image, LoadTexture2DFromImageRespectsSRGBColorSpace)
 TEST(Image, LoadTexture2DFromImageRespectsLinearColorSpace)
 {
     const auto path = std::filesystem::path{OSC_BUILD_RESOURCES_DIR} / "testoscar" / "awesomeface.png";
-
     const Texture2D loaded_texture = load_texture2D_from_image(ResourceStream{path}, ColorSpace::Linear);
 
     ASSERT_EQ(loaded_texture.color_space(), ColorSpace::Linear);
