@@ -7,7 +7,7 @@
 
 using namespace osc;
 
-TEST(PropertyInfo, DefaultConstructedPropertyInfoHasNoNameAndNilDefaultValue)
+TEST(PropertyInfo, has_no_name_and_nil_default_value_when_default_constructed)
 {
     PropertyInfo info;
     ASSERT_EQ(info.name(), "");
@@ -15,57 +15,57 @@ TEST(PropertyInfo, DefaultConstructedPropertyInfoHasNoNameAndNilDefaultValue)
     ASSERT_EQ(info.default_value(), Variant{});
 }
 
-TEST(PropertyInfo, CanConstructFromStringNameAndVariant)
+TEST(PropertyInfo, can_construct_from_name_and_Variant_default_value)
 {
     [[maybe_unused]] const PropertyInfo desc{"name", Variant{1.0f}};
 }
 
-TEST(PropertyInfo, name_ReturnsSuppliedName)
+TEST(PropertyInfo, name_returns_name_supplied_via_constructor)
 {
     const PropertyInfo desc{"suppliedName", Variant{1.0f}};
     ASSERT_EQ(desc.name(), "suppliedName");
 }
 
-TEST(PropertyInfo, CanConstructFromStringRValue)
+TEST(PropertyInfo, can_provide_a_std_string_prvalue_as_the_name_via_the_constructor)
 {
     ASSERT_NO_THROW({ PropertyInfo(std::string{"rvalue"}, Variant{false}); });
 }
 
-TEST(PropertyInfo, type_ReturnsSuppliedType)
+TEST(PropertyInfo, type_returns_the_default_argument_Variant_type_supplied_via_the_constructor)
 {
     const PropertyInfo desc{"name", Variant{1.0f}};
     ASSERT_EQ(desc.type(), VariantType::Float);
 }
 
-TEST(PropertyInfo, ComparesEquivalentWhenGivenSameInformation)
+TEST(PropertyInfo, compares_equal_to_another_PropertyInfo_with_the_same_name_and_default_value)
 {
     const PropertyInfo a{"name", Variant{1.0f}};
     const PropertyInfo b{"name", Variant{1.0f}};
     ASSERT_EQ(a, b);
 }
 
-TEST(PropertyInfo, ComparesInequivalentWhenGivenDifferentNames)
+TEST(PropertyInfo, compares_not_equal_to_another_PropertyInfo_with_a_different_name)
 {
     const PropertyInfo a{"a", Variant{1.0f}};
     const PropertyInfo b{"b", Variant{1.0f}};
     ASSERT_NE(a, b);
 }
 
-TEST(PropertyInfo, ComparesInequivalentWhenGivenDifferentDefaultValues)
+TEST(PropertyInfo, compares_not_equal_to_another_PropertyInfo_with_same_name_but_different_default_value)
 {
     const PropertyInfo a{"name", Variant{1.0f}};
     const PropertyInfo b{"name", Variant{2.0f}};
     ASSERT_NE(a, b);
 }
 
-TEST(PropertyInfo, ComparesInequivalentWhenGivenDifferentDefaultValueTypes)
+TEST(PropertyInfo, compares_not_equal_to_another_PropertyInfo_with_same_name_but_different_default_value_type)
 {
     const PropertyInfo a{"name", Variant{1.0f}};
     const PropertyInfo b{"name", Variant{"different type"}};
     ASSERT_NE(a, b);
 }
 
-TEST(PropertyInfo, ThrowsAnExceptionWhenConstructedWithANameContainingWhitespace)
+TEST(PropertyInfo, constructor_throws_an_exception_if_name_contains_whitespace)
 {
     // (basic examples)
 
@@ -82,7 +82,7 @@ TEST(PropertyInfo, ThrowsAnExceptionWhenConstructedWithANameContainingWhitespace
     ASSERT_ANY_THROW({ PropertyInfo("inner\tTab", Variant{true}); });
 }
 
-TEST(PropertyInfo, ThrowsWhenConstructedWithANameContainingAnyASCIIControlCharacters)
+TEST(PropertyInfo, constructor_throws_exception_if_name_contains_any_ASCII_control_characters)
 {
     const auto test = [](char c)
     {

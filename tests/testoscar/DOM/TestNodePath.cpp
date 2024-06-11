@@ -40,24 +40,24 @@ TEST(NodePath, is_absolute_returns_false_on_default_constructed_instance)
     ASSERT_FALSE(NodePath().is_absolute());
 }
 
-TEST(NodePath, compares_equal_to_empty_string_view_when_default_constructed)
+TEST(NodePath, compares_equal_to_empty_std_string_view_when_default_constructed)
 {
     ASSERT_EQ(NodePath(), std::string_view());
 }
 
-TEST(NodePath, compares_not_equal_to_nonempty_string_view_when_default_constructed)
+TEST(NodePath, compares_not_equal_to_nonempty_std_string_view_when_default_constructed)
 {
     ASSERT_NE(NodePath(), std::string_view("hi"));
 }
 
-TEST(NodePath, hash_is_same_as_hash_of_equivalent_string_view)
+TEST(NodePath, std_hash_is_same_as_hash_of_equivalent_std_string_view)
 {
     const auto node_path_hash = std::hash<NodePath>{}(NodePath{});
     const auto string_view_hash = std::hash<std::string_view>{}(std::string_view{});
     ASSERT_EQ(node_path_hash, string_view_hash);
 }
 
-TEST(NodePath, can_be_converted_into_a_string_view)
+TEST(NodePath, can_be_converted_into_a_std_string_view)
 {
     const NodePath node_path;
     auto sv = static_cast<std::string_view>(node_path);
@@ -80,7 +80,7 @@ TEST(NodePath, begin_not_equal_to_end_when_constructed_from_nonempty_string)
     ASSERT_NE(node_path.begin(), node_path.end());
 }
 
-TEST(NodePath, distance_equals_one_when_constructed_from_single_element_string)
+TEST(NodePath, std_distance_equals_one_when_constructed_from_single_element_string)
 {
     const NodePath node_path{"el"};
     ASSERT_EQ(std::distance(node_path.begin(), node_path.end()), 1);
@@ -94,22 +94,22 @@ TEST(NodePath, compares_equal_to_expected_result_when_constructed_from_single_el
     ASSERT_EQ(slurp(node_path), expected);
 }
 
-TEST(NodePath, compares_equal_to_equivalent_string_view_when_constructed_from_single_element)
+TEST(NodePath, compares_equal_to_equivalent_std_string_view_when_constructed_from_single_element)
 {
     ASSERT_EQ(NodePath("el"), std::string_view("el"));
 }
 
-TEST(NodePath, compares_not_equal_to_empty_string_view_when_constructed_from_single_element)
+TEST(NodePath, compares_not_equal_to_empty_std_string_view_when_constructed_from_single_element)
 {
     ASSERT_NE(NodePath("el"), std::string_view());
 }
 
-TEST(NodePath, compares_not_equal_to_some_other_string_view_when_constructed_from_single_element)
+TEST(NodePath, compares_not_equal_to_some_other_std_string_view_when_constructed_from_single_element)
 {
     ASSERT_NE(NodePath("el"), std::string_view("else"));
 }
 
-TEST(NodePath, hash_is_equal_to_hash_of_equivalent_string_view_when_constructed_from_single_element)
+TEST(NodePath, std_hash_is_equal_to_hash_of_equivalent_std_string_view_when_constructed_from_single_element)
 {
     const auto node_path_hash = std::hash<NodePath>{}(NodePath{"el"});
     const auto string_view_hash = std::hash<std::string_view>{}(std::string_view{"el"});
@@ -126,80 +126,80 @@ TEST(NodePath, is_absolute_returns_true_when_constructed_from_abs_path_to_single
     ASSERT_TRUE(NodePath("/el").is_absolute());
 }
 
-TEST(NodePath, compares_equal_to_equivalent_string_view_when_constructed_from_abs_path_to_single_element)
+TEST(NodePath, compares_equal_to_equivalent_std_string_view_when_constructed_from_abs_path_to_single_element)
 {
     ASSERT_EQ(NodePath("/el"), std::string_view("/el"));
 }
 
-TEST(NodePath, distance_returns_1_when_constructed_from_abs_path_to_single_element)
+TEST(NodePath, std_distance_returns_1_when_constructed_from_abs_path_to_single_element)
 {
     const NodePath node_path{"/el"};
     ASSERT_EQ(std::distance(node_path.begin(), node_path.end()), 1);
 }
 
-TEST(NodePath, WhenConstructedFromSingleElementWithLeadingSlashSlurpsIntoExpectedVector)
+TEST(NodePath, when_constructed_from_single_element_with_leading_slash_slurps_into_expected_vector)
 {
     const NodePath node_path{"/el"};
     const std::vector<std::string> expected = {"el"};
     ASSERT_EQ(slurp(node_path), expected);
 }
 
-TEST(NodePath, WhenConstructedFromSingleElementWithLeadingSlashHashesToEquivalentStringView)
+TEST(NodePath, when_constructed_from_single_element_with_leading_slash_hashes_to_equivalent_std_string_view)
 {
     const auto node_path_hash = std::hash<NodePath>{}(NodePath{"/el"});
     const auto string_view_hash = std::hash<std::string_view>{}(std::string_view{"/el"});
     ASSERT_EQ(node_path_hash, string_view_hash);
 }
 
-TEST(NodePath, WhenConstructedFromTwoElementsWithNoLeadingSlashIsNotAbsolute)
+TEST(NodePath, is_absolute_returns_false_when_constructed_from_two_elements_with_no_leading_slash)
 {
     ASSERT_FALSE(NodePath("a/b").is_absolute());
 }
 
-TEST(NodePath, WhenConstructedFromTwoElementsWithNoLeadingSlashHasIteratorDistanceOfTwo)
+TEST(NodePath, std_distance_returns_two_when_constructed_from_two_elements_with_no_leading_slash)
 {
     const NodePath node_path{"a/b"};
     ASSERT_EQ(std::distance(node_path.begin(), node_path.end()), 2);
 }
 
-TEST(NodePath, WhenConstructedFromTwoElementsWithNoLeadingSlashSlurpsIntoExpectedVector)
+TEST(NodePath, when_constructed_from_two_elements_with_no_leading_slash_slurps_into_expected_vector)
 {
     const NodePath node_path{"a/b"};
     const std::vector<std::string> expected = {"a", "b"};
     ASSERT_EQ(slurp(node_path), expected);
 }
 
-TEST(NodePath, WhenConstructedFromTwoElementsWithNoLeadingSlashComparesEqualToEquivalentStringView)
+TEST(NodePath, when_constructed_from_two_elements_with_no_leading_slash_compares_equal_to_equivalent_std_string_view)
 {
     ASSERT_EQ(NodePath("a/b"), std::string_view("a/b"));
 }
 
-TEST(NodePath, WhenConstructedFromTwoElementsWithNoLeadingSlashHashesToSameAsStringView)
+TEST(NodePath, std_hash_returns_same_as_std_string_veiw_when_constructed_from_two_elements_with_no_leading_slash)
 {
     const auto node_path_hash = std::hash<NodePath>{}(NodePath{"a/b"});
     const auto string_view_hash = std::hash<std::string_view>{}(std::string_view{"a/b"});
     ASSERT_EQ(node_path_hash, string_view_hash);
 }
 
-TEST(NodePath, WhenConstructedFromTwoElementsWithLeadingSlashIsAbsolute)
+TEST(NodePath, is_absolute_returns_true_when_constructed_from_two_elements_with_leading_slash)
 {
     ASSERT_TRUE(NodePath("/a/b").is_absolute());
 }
 
-TEST(NodePath, WhenConstructedFromTwoElementsWithLeadingSlashHasIteratorDistanceOfTwo)
+TEST(NodePath, std_distance_returns_2_when_constructed_from_two_elements_with_leading_slash)
 {
     const NodePath node_path{"/a/b"};
     ASSERT_EQ(std::distance(node_path.begin(), node_path.end()), 2);
 }
 
-TEST(NodePath, WhenConstructedFromTwoElementsWithLeadingSlashSlurpsToExpectedVector)
+TEST(NodePath, when_constructed_from_two_elements_with_leading_slash_slurps_into_expected_vector)
 {
     const NodePath node_path{"/a/b"};
     const std::vector<std::string> expected = {"a", "b"};
     ASSERT_EQ(slurp(node_path), expected);
 }
 
-TEST(NodePath, HasExpectedNumberOfElementsForTestInputs)
+TEST(NodePath, std_distance_returns_expected_values_for_a_variety_of_inputs)
 {
     struct TestCase final {
         std::string_view input;
@@ -228,7 +228,7 @@ TEST(NodePath, HasExpectedNumberOfElementsForTestInputs)
     }
 }
 
-TEST(NodePath, NormalizesInputsAsExpected)
+TEST(NodePath, normalizes_the_input_string_as_expected_for_a_variety_of_inputs)
 {
     struct TestCase final {
         std::string_view input;
@@ -279,7 +279,7 @@ TEST(NodePath, NormalizesInputsAsExpected)
     }
 }
 
-TEST(NodePath, ThrowsIfGivenInvalidInputs)
+TEST(NodePath, constructor_throws_if_given_invalid_input)
 {
     const auto inputs = std::to_array<std::string_view>({
         "a/../..",
