@@ -15,6 +15,10 @@ set(
     CACHE BOOL
     "force-enable/disable NDEBUG - even if building a release build. Note: unlike OSC_FORCE_ASSERTS_ENABLED, this also tends to enable runtime assertions from library headers"
 )
+set(OSC_EXECUTABLE_SUFFIX ${CMAKE_EXECUTABLE_SUFFIX}
+    CACHE BOOL
+    "global suffix to place on the end of each executable (platform-dependent)"
+)
 
 # -------------- set globally-applicable policies ---------------- #
 
@@ -24,6 +28,7 @@ cmake_policy(SET CMP0092 NEW)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_EXECUTABLE_SUFFIX ${OSC_EXECUTABLE_SUFFIX})  # note: cannot be set externally
 
 # handle OSC_FORCE_UNDEFINE_NDEBUG
 #
