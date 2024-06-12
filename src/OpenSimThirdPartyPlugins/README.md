@@ -8,9 +8,9 @@ users have requested for OpenSim Creator.
 The reason why plugins are included in-tree rather than (e.g.) providing a
 native plugin API/UI in OpenSim Creator itself (much like in OpenSim) is
 because OpenSim Creator is not built against a particular release version of
-OpenSim (e.g. v4.5). Additionally, it's because OpenSim Creator has to behave
-exactly the same on multiple platforms without having to handle per-platform
-native plugin environments.
+OpenSim (e.g. v4.5). Additionally, OpenSim Creator has to behave exactly
+the same on multiple platforms without having to handle per-platform native
+environments.
 
 Current proposed plugin inclusion pipeline looks like this:
 

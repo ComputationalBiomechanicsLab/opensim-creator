@@ -3,7 +3,7 @@
 > Implements https://learnopengl.com/ tutorials via the `oscar` API
 
 This project provides `osc::ITab` implementations of many of the tutorials from
-https://learnopengl.com/ , the itent of this code is to:
+https://learnopengl.com/ . The itent of this code is to:
 
 - Enable verifying that the `oscar` graphics API is capable of rendering
   each LearnOpenGL tutorial without directly referrring to OpenGL itself
