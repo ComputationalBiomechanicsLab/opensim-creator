@@ -30,26 +30,6 @@ set(
     CACHE STRING
     "a longer, user-friendly name of the application"
 )
-set(
-    OSC_PACKAGE_NAME "OpenSimCreator"
-    CACHE STRING
-    "a prefix for the name of the built package (e.g. OSC_PACKAGE_NAME-version.exe)"
-)
-set(
-    OSC_SOFTWARE_DESCRIPTION "A standalone GUI for building OpenSim models"
-    CACHE STRING
-    "a desription of what the software does (shows in package installers on Debian, for example)"
-)
-set(
-    OSC_AUTHOR "Adam Kewley"
-    CACHE STRING
-    "the user-facing name of the author (appears in installer, etc.)"
-)
-set(
-    OSC_AUTHOR_EMAIL "contact@adamkewley.com"
-    CACHE STRING
-    "the user-facing email of the author (appears in 'email support', installer, etc.)"
-)
 set(OSC_BUILD_OPENSIMCREATOR ON
     CACHE BOOL
     "enable/disable building OpenSim Creator (i.e. the OpenSim-dependent part of the codebase)"
