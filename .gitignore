@@ -6,6 +6,7 @@
 
 # build artifacts from docs build
 docs/build
+docs/venv
 
 # C++ objects and libs
 *.slo

@@ -63,7 +63,7 @@ namespace osc
     void open_file_in_os_default_application(const std::filesystem::path&);
 
     // tries to open the specified URL in the OS's default browser
-    void open_url_in_os_default_web_browser(std::string_view);
+    void open_url_in_os_default_web_browser(CStringView);
 
     // returns `true` if `content` was sucessfully copied to the user's clipboard
     bool set_clipboard_text(CStringView content);

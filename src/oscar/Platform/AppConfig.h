@@ -32,11 +32,8 @@ namespace osc
         // returns the full path to the runtime `resources/` dir
         const std::filesystem::path& resource_directory() const;
 
-        // returns the full path to the runtime `html/` dir for the documentation
-        const std::filesystem::path& html_docs_directory() const;
-
-        // returns `true` if the implementation should allow multiple viewports
-        bool is_multi_viewport_enabled() const;
+        // returns a URL to the application's documentation (if available)
+        std::string docs_url() const;
 
         // returns the number of anti-aliasing samples that 3D viewports should use
         AntiAliasingLevel anti_aliasing_level() const;

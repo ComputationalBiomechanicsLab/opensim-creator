@@ -21,6 +21,17 @@ namespace
 {
     constexpr AntiAliasingLevel c_num_msxaa_samples{4};
 
+    // LEGACY KEYS:
+    //
+    // - `docs`: used to point to a local directory where the pre-built documentation is
+    //   stored. Was changed to `docs_url` to support both local (e.g. file://...) and
+    //   internet (e.g. `https://docs.opensimcreator.com`)-based documentation sources
+    //
+    // - `experimental_feature_flags/multiple_viewports`: used to be a `bool` that indicated
+    //   whether the application backend should support multiple viewports, but was
+    //   subsequently dropped because multi-viewport support sucked via ImGui on Linux/Mac
+    //   (Windows was ok)
+
     std::filesystem::path get_resources_dir_fallback_path(const AppSettings& settings)
     {
         if (const auto system_config = settings.system_configuration_file_location()) {
@@ -84,34 +95,15 @@ namespace
         return resolved_resource_dir;
     }
 
-    std::filesystem::path get_html_docs_dir(const AppSettings& settings)
+    std::string get_docs_url(const AppSettings& settings)
     {
-        constexpr CStringView docs_key = "docs";
-
-        const auto docs_setting_value = settings.find_value(docs_key);
-        if (not docs_setting_value) {
-            // fallback: not set in configuration file
-            return std::filesystem::path{};
+        if (const auto runtime_url = settings.find_value("docs_url")) {
+            return runtime_url->to_string();
         }
-
-        if (const auto config_location = settings.find_value_filesystem_source(docs_key)) {
-            const std::filesystem::path config_dir = config_location->parent_path();
-            std::filesystem::path docs_location = std::filesystem::weakly_canonical(config_dir / docs_setting_value->to_string());
-            if (std::filesystem::exists(docs_location)) {
-                return docs_location;
-            }
+        else {
+            // TODO: this fallback should be handled in `OpenSimCreator`, not `oscar`
+            return "https://docs.opensimcreator.com";
         }
-
-        // fallback: not set, or is set but cannot find it on the filesystem
-        return std::filesystem::path{};
-    }
-
-    bool get_multi_viewport(const AppSettings& settings)
-    {
-        return settings
-            .find_value("experimental_feature_flags/multiple_viewports")
-            .value_or(AppSettingValue{false})
-            .to_bool();
     }
 
     std::unordered_map<std::string, bool> get_default_panel_states(const AppSettings&)
@@ -161,8 +153,7 @@ public:
 
     AppSettings settings_;
     std::filesystem::path resource_dir_ = get_resources_dir(settings_);
-    std::filesystem::path html_docs_dir_ = get_html_docs_dir(settings_);
-    bool use_multi_viewport_ = get_multi_viewport(settings_);
+    std::string docs_url_ = get_docs_url(settings_);
     std::unordered_map<std::string, bool> panel_enabled_state_ = get_default_panel_states(settings_);
     std::optional<std::string> maybe_initial_tab_ = get_initial_tab_name(settings_);
     LogLevel log_level_ = get_log_level(settings_);
@@ -189,14 +180,9 @@ const std::filesystem::path& osc::AppConfig::resource_directory() const
     return impl_->resource_dir_;
 }
 
-const std::filesystem::path& osc::AppConfig::html_docs_directory() const
+std::string osc::AppConfig::docs_url() const
 {
-    return impl_->html_docs_dir_;
-}
-
-bool osc::AppConfig::is_multi_viewport_enabled() const
-{
-    return impl_->use_multi_viewport_;
+    return impl_->docs_url_;
 }
 
 AntiAliasingLevel osc::AppConfig::anti_aliasing_level() const

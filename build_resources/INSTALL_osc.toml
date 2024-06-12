@@ -1,5 +1,5 @@
 resources = "resources"
-docs = "share/doc/html"
+docs_url = "@OSC_DOCS_URL@"
 
 # change this if you need OSC to print more information to the log
 # log_level = "trace"  # trace < debug < info < warn < err < critical

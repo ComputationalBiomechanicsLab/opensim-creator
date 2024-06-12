@@ -439,7 +439,7 @@ void osc::open_file_in_os_default_application(const std::filesystem::path& fp)
     }
 }
 
-void osc::open_url_in_os_default_web_browser(std::string_view vw)
+void osc::open_url_in_os_default_web_browser(CStringView vw)
 {
     // (we know that xdg-open handles this automatically)
     open_file_in_os_default_application(vw);
@@ -530,7 +530,7 @@ void osc::open_file_in_os_default_application(const std::filesystem::path& p)
     system(cmd.c_str());
 }
 
-void osc::open_url_in_os_default_web_browser(std::string_view url)
+void osc::open_url_in_os_default_web_browser(CStringView url)
 {
     std::string cmd = "open " + std::string{url};
     system(cmd.c_str());
@@ -735,9 +735,9 @@ void osc::open_file_in_os_default_application(const std::filesystem::path& p)
     ShellExecute(0, 0, p.string().c_str(), 0, 0 , SW_SHOW);
 }
 
-void osc::open_url_in_os_default_web_browser(std::string_view)
+void osc::open_url_in_os_default_web_browser(CStringView url)
 {
-    log_error("unsupported action: cannot open external URLs in Windows (yet!)");
+    ShellExecute(0, 0, url.c_str(), 0, 0 , SW_SHOW);
 }
 
 void osc::enable_highdpi_mode_for_this_process()
