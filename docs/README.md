@@ -15,7 +15,7 @@ This documentation is mostly self-standing, but may contain links to
 `files.opensimcreator.com` (usually, when an asset is large or shared, such as
 video tutorials). The concrete deployment steps that we use to handle
 `files.opensimcreator.com` and actually deploy the documentation to
-`docs.opensimcreator.com` is described in OpenSim Creator's README file.
+`docs.opensimcreator.com` is described in OpenSim Creator's [README.md](../README.md).
 
 To build the documentation, you will need to setup your development
 environment with:
