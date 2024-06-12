@@ -1,16 +1,29 @@
 # Release Checklist
 
-These are the typical steps required to finalize a release of OpenSim
-Creator.
+> Typical steps required to finalize a release of OpenSim Creator
 
-How comprehensively the QA/testing steps are done is entirely dependent
-on how many changes were made since the last release (assuming an automated
-test suite isn't available that covers the changes).
+
+# Required Credentials
+
+These are required for some parts of the release procedure:
+
+- Zenodo is currently linked (via OAuth) to @adamkewley's GitHub account
+- Uploading the documentation to `docs.opensimcreator.com` requires a suitable
+  SSH key for that server
+- Adding an announcement to the website requires commit access to
+  [opensim-creator-site](https://github.com/ComputationalBiomechanicsLab/opensim-creator-site)
+- Uploading the announcement to `www.opensimcreator.com` requires a suitable
+  SSH key for that server
+- Uploading archived releases to `files.opensimcreator.com` requires a suitable
+  SSH key for that server
+
+
+# Release Steps
 
 - [ ] Create an issue called something like `Release XX.xx.pp`
 - [ ] Copy this checklist into it
 - [ ] Bump OSC's version number in `CMakeLists.txt` (`project`)
-- [ ] Clean-build a debug version of OSC:
+- [ ] Clean-build a debug (+ libASAN) version of OSC on Ubuntu:
 
 ```bash
 git clone --recurse-submodules https://github.com/ComputationalBiomechanicsLab/opensim-creator
@@ -18,11 +31,11 @@ cd opensim-creator
 ./scripts/build_linux_debugging.sh
 ```
 
-- [ ] Ensure test suite passes with debug+ASAN build
-- [ ] Manually spot-check new changes with debug+ASAN build
+- [ ] Ensure the test suite passes with the debug build
+- [ ] Manually spot-check new changes with the debug+ASAN build
 - [ ] Fix all bugs/problems found during the above steps
-- [ ] Update `CHANGELOG.md` sections such that the current `unreleased`
-      section becomes `XX.xx.pp` and then add a new `unreleased` section
+- [ ] Update `CHANGELOG.md` sections such that the current `Unreleased`
+      section becomes `XX.xx.pp` and add a new `Unreleased` section
       above that
 - [ ] Commit any fixes to CI and ensure CI passes
 - [ ] Tag+push the commit as a release
@@ -30,11 +43,29 @@ cd opensim-creator
 - [ ] Unzip/rename any artifacts (see prev. releases)
 - [ ] Create new release on github from the tagged commit
   - Upload all artifacts against it
-  - Write a user-friendly version of CHANGELOG that explains changes
-- [ ] Update Zenodo with the release (requires adamkewley's Zenodo login
-      to publish the automatically generated draft)
-- [ ] Update content with Zenodo details:
+  - Write a user-friendly version of CHANGELOG that explains the release's
+    changes
+- [ ] Update Zenodo with the release
+  - [ ] This usually happens automatically, via a webhook in Zenodo
+  - [ ] Otherwise, it requires @adamkewley's GitHub login to publish
+        the generated draft from Zenodo
+- [ ] Update + commit the repository with the Zenodo release details:
   - [ ] Use `bump_zenodo_details.py` to automatically do this
   - [ ] Ensure `codemeta.json` is up-to-date
   - [ ] Ensure `CITATION.cff` is up-to-date
   - [ ] Ensure `README.md` is up-to-date
+- [ ] Update `docs.opensimcreator.com` to host the documentation
+  - [ ] **Note**: this requires appropriate credentials for `docs.opensimcreator.com`
+  - [ ] Build the docs yourself, or get the CI build of them
+  - [ ] Upload with (e.g.) `rsync -avz build/html/ docs.opensimcreator.com:/var/www/docs.opensimcreator.com/manual/en/VERSION`
+  - [ ] Make them the "latest" with a softlink, e.g.: `ssh docs.opensimcreator.com ln -sfn /var/www/docs.opensimcreator.com/manual/en/0.5.12 /var/www/docs.opensimcreator.com/manual/en/latest`
+- [ ] (optional) Update `www.opensimcreator.com` with a basic announcement news post
+  - [ ] **Note**: this requires appropriate SSH credentials for `www.opensimcreator.com`
+  - [ ] Edit https://github.com/ComputationalBiomechanicsLab/opensim-creator-site appropriately
+  - [ ] Upload with (e.g.): `rsync -avz public/* www.opensimcreator.com:/var/www/opensimcreator.com/`
+- [ ] (optional) Update `files.creator.com/releases` with appropriate release artifacts
+- [ ] (optional) Update social media:
+  - [ ] LinkedIn
+  - [ ] Twitter
+  - [ ] Mastodon
+  - [ ] SimTK
