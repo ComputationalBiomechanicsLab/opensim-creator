@@ -374,6 +374,11 @@ namespace
 
             // probably shouldn't allow two grounds in a model (#521)
             "Ground",
+
+            // from `OpenSimThirdPartyPlugins`, so this should be load-able, but users
+            // shouldn't see it as an add-able component (yet)
+            "Smith2018ContactMesh",
+            "Smith2018ArticularContactForce",
         };
 
         // also, ensure all custom components are blacklisted (they should only appear
