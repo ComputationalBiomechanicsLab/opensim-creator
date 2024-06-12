@@ -23,23 +23,10 @@
  * -------------------------------------------------------------------------- */
 
 // UNIX PLATFORM
-#ifndef _WIN32
 
+// OSC change: this used to define `__declspec(dllexport)` and
+// `__declspec(dllimport)`, but that isn't necessary because
+// OpenSimCreator builds into a single fat binary
 #define OSIMPLUGIN_API
-
-// WINDOWS PLATFORM
-#else
-
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
-#include <windows.h>
-#ifdef OSIMPLUGIN_EXPORTS
-#define OSIMPLUGIN_API __declspec(dllexport)
-#else
-#define OSIMPLUGIN_API __declspec(dllimport)
-#endif
-
-#endif // PLATFORM
-
 
 #endif // __osimPluginDLL_h__
