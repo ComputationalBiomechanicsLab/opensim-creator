@@ -32,7 +32,9 @@ CCFLAGS=-fsanitize=address CXXFLAGS=-fsanitize=address cmake -S third_party/ -B 
 cmake --build osc-deps-build/ -v -j${OSC_BUILD_CONCURRENCY}
 
 # configure+build OpenSimCreator
-CCFLAGS="-fsanitize=address,undefined,bounds -fno-sanitize-recover=all" CXXFLAGS="-fsanitize=address,undefined,bounds -fno-sanitize-recover=all" cmake -S . -B osc-build -DCMAKE_BUILD_TYPE=Debug -DOSC_FORCE_ASSERTS_ENABLED=ON -DOSC_FORCE_UNDEFINE_NDEBUG=ON -DCMAKE_PREFIX_PATH=${PWD}/osc-deps-install -DCMAKE_INSTALL_PREFIX=${PWD}/osc-install -DOSC_BUILD_BENCHMARKS=ON -DOSC_USE_CLANG_TIDY=OFF
+# also: `-DCMAKE_CXX_INCLUDE_WHAT_YOU_USE "include-what-you-use;-Xiwyu;any;-Xiwyu;iwyu;-Xiwyu;"`
+
+CCFLAGS="-fsanitize=address,undefined,bounds -fno-sanitize-recover=all" CXXFLAGS="-fsanitize=address,undefined,bounds -fno-sanitize-recover=all" cmake -S . -B osc-build -DCMAKE_BUILD_TYPE=Debug -DOSC_FORCE_ASSERTS_ENABLED=ON -DOSC_FORCE_UNDEFINE_NDEBUG=ON -DCMAKE_PREFIX_PATH=${PWD}/osc-deps-install -DCMAKE_INSTALL_PREFIX=${PWD}/osc-install -DCMAKE_CXX_CLANG_TIDY=clang-tidy
 cmake --build osc-build -j${OSC_BUILD_CONCURRENCY}
 cmake --build osc-build -j${OSC_BUILD_CONCURRENCY} --target testoscar
 cmake --build osc-build -j${OSC_BUILD_CONCURRENCY} --target testoscar_learnopengl

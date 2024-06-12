@@ -268,7 +268,7 @@ TEST(OpenSimHelpers, AddModelComponentAddsComponentToModelComponentSet)
 TEST(OpenSimHelpers, DISABLED_FinalizeConnectionsWithUnusualJointTopologyDoesNotSegfault)
 {
     std::filesystem::path const brokenFilePath =
-        std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "TestOpenSimCreator" / "opensim-creator_773-2_repro.osim";
+        std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "opensim-creator_773-2_repro.osim";
     OpenSim::Model model{brokenFilePath.string()};
     model.finalizeFromProperties();
 

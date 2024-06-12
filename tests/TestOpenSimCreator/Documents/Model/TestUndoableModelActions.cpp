@@ -106,7 +106,7 @@ TEST(OpenSimActions, ActionApplyRangeDeletionPropertyEditReturnsFalseToIndicateF
 TEST(OpenSimActions, DISABLED_ActionSetComponentNameOnModelWithUnusualJointTopologyDoesNotSegfault)
 {
     std::filesystem::path const brokenFilePath =
-        std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "TestOpenSimCreator" / "opensim-creator_773-2_repro.osim";
+        std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "opensim-creator_773-2_repro.osim";
 
     UndoableModelStatePair const loadedModel{brokenFilePath};
 
@@ -127,7 +127,7 @@ TEST(OpenSimActions, DISABLED_ActionSetComponentNameOnModelWithUnusualJointTopol
 TEST(OpenSimActions, ActionFitSphereToMeshFitsASphereToAMeshInTheModelAndSelectsIt)
 {
     std::filesystem::path const geomFile =
-        std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "TestOpenSimCreator" / "arrow.vtp";
+        std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "arrow.vtp";
 
     UndoableModelStatePair model;
     auto& body = AddBody(model.updModel(), std::make_unique<OpenSim::Body>("name", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{1.0}));
@@ -146,7 +146,7 @@ TEST(OpenSimActions, ActionFitSphereToMeshFitsASphereToAMeshInTheModelAndSelects
 TEST(OpenSimActions, ActionFitSphereToMeshAppliesMeshesScaleFactorsCorrectly)
 {
     std::filesystem::path const geomFile =
-        std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "TestOpenSimCreator" / "arrow.vtp";
+        std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "arrow.vtp";
 
     UndoableModelStatePair model;
     auto& body = AddBody(model.updModel(), std::make_unique<OpenSim::Body>("name", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{1.0}));

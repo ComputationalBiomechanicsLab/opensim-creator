@@ -27,7 +27,7 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsWithOpenSimMuscleColoringGen
 {
     // TODO: this should be more synthetic and should just create a body with one muscle with a
     // known color that is then pumped through the pipeline etc.
-    std::filesystem::path const tugOfWarPath = std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "resources" / "models" / "Tug_of_War" / "Tug_of_War.osim";
+    std::filesystem::path const tugOfWarPath = std::filesystem::path{OSC_RESOURCES_DIR} / "models" / "Tug_of_War" / "Tug_of_War.osim";
     OpenSim::Model model{tugOfWarPath.string()};
     model.buildSystem();
     SimTK::State& state = model.initializeState();
@@ -184,7 +184,7 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsWithScaleFactorDoesNotScaleE
 
 TEST(OpenSimDecorationGenerator, ToOscMeshWorksAsIntended)
 {
-    std::filesystem::path const arrowPath = std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources" / "TestOpenSimCreator" / "arrow.vtp";
+    std::filesystem::path const arrowPath = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "arrow.vtp";
 
     OpenSim::Model model;
     auto& mesh = AddComponent(model, std::make_unique<OpenSim::Mesh>(arrowPath.string()));
@@ -199,7 +199,7 @@ TEST(OpenSimDecorationGenerator, ToOscMeshWorksAsIntended)
 // everything and label it with 'model
 TEST(OpenSimDecorationGenerator, DoesntIncludeTheModelsDirectDecorations)
 {
-    std::filesystem::path const tugOfWarPath = std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "resources" / "models" / "Tug_of_War" / "Tug_of_War.osim";
+    std::filesystem::path const tugOfWarPath = std::filesystem::path{OSC_RESOURCES_DIR} / "models" / "Tug_of_War" / "Tug_of_War.osim";
     OpenSim::Model model{tugOfWarPath.string()};
     InitializeModel(model);
     InitializeState(model);
@@ -227,7 +227,7 @@ TEST(OpenSimDecorationGenerator, DoesntIncludeTheModelsDirectDecorations)
 // (this is just an automated repro for that one time where I screwed up a loop in the renderer ;))
 TEST(OpenSimDecorationGenerator, GenerateCollisionArrowsWorks)
 {
-    std::filesystem::path const soccerKickPath = std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "resources" / "models" / "SoccerKick" / "SoccerKickingModel.osim";
+    std::filesystem::path const soccerKickPath = std::filesystem::path{OSC_RESOURCES_DIR} / "models" / "SoccerKick" / "SoccerKickingModel.osim";
     OpenSim::Model model{soccerKickPath.string()};
     InitializeModel(model);
     InitializeState(model);

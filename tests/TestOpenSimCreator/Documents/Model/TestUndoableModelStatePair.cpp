@@ -36,7 +36,7 @@ TEST(UndoableModelStatePair, CanLoadAndRenderAllUserFacingExampleFiles)
     decorationOpts.setShouldShowScapulo(true);
     decorationOpts.setShouldShowPointToPointSprings(true);
 
-    std::filesystem::path const examplesDir = std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "resources" / "models";
+    std::filesystem::path const examplesDir = std::filesystem::path{OSC_RESOURCES_DIR} / "models";
     ASSERT_TRUE(std::filesystem::exists(examplesDir) && std::filesystem::is_directory(examplesDir));
 
     size_t nExamplesTested = 0;

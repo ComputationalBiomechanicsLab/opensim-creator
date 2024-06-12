@@ -7,7 +7,11 @@
 
 // char[]
 //
-// absolute path to the source directory - necessary for loading test
-// fixture data that is stored in the source dir (cannot use relative
-// directories because the build dir can be different on each platform)
-#define OSC_TESTING_SOURCE_DIR "@CMAKE_CURRENT_SOURCE_DIR@/../../"
+// absolute path to the general resources directory for the OSC project
+#define OSC_RESOURCES_DIR "@CMAKE_CURRENT_SOURCE_DIR@/../../resources"
+
+// char[]
+//
+// absolute path to the resources directory for this test suite
+#define OSC_TESTING_RESOURCES_DIR "@CMAKE_CURRENT_SOURCE_DIR@/resources"
+

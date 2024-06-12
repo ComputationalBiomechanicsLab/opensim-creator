@@ -25,7 +25,7 @@ install(
 #     - in contrast to the dev-centric one, this loads resources from the installation dir,
 #       which has a known path relative to the osc executable (../resources)
 install(
-    FILES "${CMAKE_CURRENT_SOURCE_DIR}/build_resources/INSTALL_osc.toml"
+    FILES "${CMAKE_CURRENT_SOURCE_DIR}/osc_installed_config.toml.in"
     RENAME "osc.toml"
     DESTINATION osc.app/Contents/MacOS/
 )
@@ -35,19 +35,19 @@ install(
 # it's mac-specific XML file that tells Mac OSX about where the
 # executable is, what the icon is, etc.
 install(
-    FILES "${CMAKE_CURRENT_SOURCE_DIR}/build_resources/Info.plist"
+    FILES "${CMAKE_CURRENT_SOURCE_DIR}/MacOS/Info.plist"
     DESTINATION osc.app/Contents/
 )
 
 # install-time: copy `resources/` (assets) dir
 install(
-    DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/resources"
+    DIRECTORY "${PROJECT_SOURCE_DIR}/resources"
     DESTINATION osc.app/Contents/MacOS/
 )
 
 # install-time: copy the Mac-specific desktop icon (.icns)
 install(
-    FILES "${CMAKE_CURRENT_SOURCE_DIR}/resources/textures/osc.icns"
+    FILES "${CMAKE_CURRENT_SOURCE_DIR}/MacOS/osc.icns"
     DESTINATION osc.app/Contents/Resources/
 )
 

@@ -3,7 +3,7 @@
 // char[]
 //
 // name of the organization (affects things like configuration location)
-#define TESTOSCAR_ORGNAME_STRING "@OSC_ORGNAME@"
+#define TESTOSCAR_ORGNAME_STRING "oscar"
 
 // char[]
 //
@@ -13,4 +13,4 @@
 // char[]
 //
 // absolute path to the build_resources/ dir (for access to test fixture data)
-#define OSC_BUILD_RESOURCES_DIR "@CMAKE_CURRENT_SOURCE_DIR@/../../build_resources"
+#define OSC_TESTING_RESOURCES_DIR "@CMAKE_CURRENT_SOURCE_DIR@/resources"

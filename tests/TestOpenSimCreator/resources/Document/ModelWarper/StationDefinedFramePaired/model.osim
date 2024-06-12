@@ -36,7 +36,7 @@
 					<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
 					<socket_frame>..</socket_frame>
 					<!--Name of geometry file.-->
-					<mesh_file>C:\Users\adamk\Desktop\opensim-creator\build_resources\TestOpenSimCreator\Document\ModelWarper\StationDefinedFramePaired\Geometry\mesh.obj</mesh_file>
+					<mesh_file>mesh.obj</mesh_file>
 				</Mesh>
 			</attached_geometry>
 		</Ground>

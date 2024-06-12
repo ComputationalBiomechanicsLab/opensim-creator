@@ -87,7 +87,7 @@ TEST(FitSphere, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedAlgo
 
     // Femoral_head.obj is copied from the example data that came with the supplamentary information
     auto const objPath =
-        std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources/TestOpenSimCreator/Utils/ShapeFitting/Femoral_head.obj";
+        std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "Utils/ShapeFitting/Femoral_head.obj";
     Mesh const mesh = LoadMeshViaSimTK(objPath);
     Sphere const sphereFit = FitSphere(mesh);
 
@@ -134,7 +134,7 @@ TEST(FitPlane, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedAlgor
 
     // Femoral_head.obj is copied from the example data that came with the supplamentary information
     auto const objPath =
-        std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources/TestOpenSimCreator/Utils/ShapeFitting/Femoral_head.obj";
+        std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "Utils/ShapeFitting/Femoral_head.obj";
     Mesh const mesh = LoadMeshViaSimTK(objPath);
     Plane const planeFit = FitPlane(mesh);
 
@@ -176,7 +176,7 @@ TEST(FitEllipsoid, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedA
 
     // Femoral_head.obj is copied from the example data that came with the supplamentary information
     auto const objPath =
-        std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources/TestOpenSimCreator/Utils/ShapeFitting/Femoral_head.obj";
+        std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "Utils/ShapeFitting/Femoral_head.obj";
     Mesh const mesh = LoadMeshViaSimTK(objPath);
     Ellipsoid const fit = FitEllipsoid(mesh);
     auto const directions = axis_directions_of(fit);

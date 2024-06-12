@@ -43,14 +43,14 @@ install(
 #     - in contrast to the dev-centric one, this loads resources from the installation dir,
 #       which has a known path relative to the osc executable (../resources)
 install(
-    FILES "${CMAKE_CURRENT_SOURCE_DIR}/build_resources/INSTALL_osc.toml"
+    FILES "${CMAKE_CURRENT_SOURCE_DIR}/osc_installed_config.toml.in"
     RENAME "osc.toml"
     DESTINATION "."
 )
 
 # install-time: copy `resources/` (assets) dir
 install(
-    DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/resources"
+    DIRECTORY "${PROJECT_SOURCE_DIR}/resources"
     DESTINATION
     "."
 )
@@ -62,10 +62,10 @@ set(CPACK_DEBIAN_PACKAGE_DEPENDS "libblas3, liblapack3, libstdc++6")
 set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
 
 # packaging: configure a script that creates a symlink /usr/local/bin/osc --> /opt/osc/bin/osc
-configure_file("${PROJECT_SOURCE_DIR}/build_resources/postinst.in" "postinst" @ONLY)
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/Linux/postinst.in" "postinst" @ONLY)
 
 # packaging: configure a script that destroys the above symlink on uninstall
-configure_file("${PROJECT_SOURCE_DIR}/build_resources/postrm.in" "postrm" @ONLY)
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/Linux/postrm.in" "postrm" @ONLY)
 
 # packaging: tell debian packager to use the scripts for postinst and postrm actions
 set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_BINARY_DIR}/postinst;${CMAKE_BINARY_DIR}/postrm")

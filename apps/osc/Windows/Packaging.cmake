@@ -24,21 +24,21 @@ install(
 #     - in contrast to the dev-centric one, this loads resources from the installation dir,
 #       which has a known path relative to the osc executable (../resources)
 install(
-    FILES "${CMAKE_CURRENT_SOURCE_DIR}/build_resources/INSTALL_osc.toml"
+    FILES "${CMAKE_CURRENT_SOURCE_DIR}/osc_installed_config.toml.in"
     RENAME "osc.toml"
     DESTINATION "."
 )
 
 # install the runtime `resources/` (assets) dir
 install(
-    DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/resources"
+    DIRECTORY "${PROJECT_SOURCE_DIR}/resources"
     DESTINATION "."
 )
 
 # use NSIS to package everything into a self-extracting installer
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "${OSC_PACKAGE_NAME}")
 set(CPACK_GENERATOR NSIS)
-set(CPACK_NSIS_MUI_ICON "${CMAKE_CURRENT_SOURCE_DIR}/resources/textures/logo.ico")
+set(CPACK_NSIS_MUI_ICON "${PROJECT_SOURCE_DIR}/resources/textures/logo.ico")
 set(CPACK_NSIS_INSTALLED_ICON_NAME "resources/textures/logo.ico")
 set(CPACK_NSIS_IGNORE_LICENSE_PAGE ON)
 set(CPACK_NSIS_HELP_LINK ${CPACK_PACKAGE_HOMEPAGE_URL})

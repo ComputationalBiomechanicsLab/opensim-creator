@@ -11,8 +11,7 @@ using namespace osc;
 
 TEST(BasicModelStatePair, WhenConstructedFromFilepathLoadsTheOsimFileAndInitializesIt)
 {
-    std::filesystem::path const modelPath =
-        std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "resources" / "models" / "Arm26" / "arm26.osim";
+    std::filesystem::path const modelPath = std::filesystem::path{OSC_RESOURCES_DIR} / "models" / "Arm26" / "arm26.osim";
 
     BasicModelStatePair p{modelPath};
     ASSERT_GE(p.getState().getSystemStage(), SimTK::Stage::Dynamics);

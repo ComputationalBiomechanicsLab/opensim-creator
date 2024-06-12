@@ -8,7 +8,7 @@ add_executable(osc
     # into the output exe. Specifically, it's used to embed the application icon
     # into the `osc` exe
     $<$<CXX_COMPILER_ID:MSVC>:
-        ${CMAKE_CURRENT_SOURCE_DIR}/../../build_resources/resources.rc
+        ${CMAKE_CURRENT_SOURCE_DIR}/Windows/resources.rc
     >
 )
 
@@ -42,6 +42,28 @@ target_link_options(osc PUBLIC
     >
 )
 
+
+# -------------- installation/packaging ------------- #
+
+# set shared CPack variables
+set(CPACK_PACKAGE_NAME "${OSC_PACKAGE_NAME}")
+set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/LICENSE")
+set(CPACK_PACKAGE_VENDOR "${OSC_AUTHOR}")
+set(CPACK_PACKAGE_CONTACT "${OSC_AUTHOR} <${OSC_AUTHOR_EMAIL}>")
+set(CPACK_PACKAGE_HOMEPAGE_URL "${OSC_REPO_URL}")
+set(CPACK_PACKAGE_DESCRIPTION "${OSC_SOFTWARE_DESCRIPTION}")
+set(CPACK_PACKAGE_EXECUTABLES "osc;${OSC_PACKAGE_NAME}")
+
+# `include` platform-specific packaging instructions
+if (WIN32)
+    include(${CMAKE_CURRENT_SOURCE_DIR}/Windows/Packaging.cmake)
+elseif(LINUX)
+    include(${CMAKE_CURRENT_SOURCE_DIR}/Linux/Packaging.cmake)
+elseif(APPLE)
+    include(${CMAKE_CURRENT_SOURCE_DIR}/MacOS/Packaging.cmake)
+endif()
+
+
 # -------------- development nice-to-haves ------------- #
 
 # generate a dev-centric `osc.toml`
@@ -53,7 +75,7 @@ target_link_options(osc PUBLIC
 #
 #     - this config is switched out at install-time to a configuration that loads
 #       resources from the (copied) resource directory
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/../../build_resources/DEV_osc.toml.in" "${CMAKE_BINARY_DIR}/osc.toml")
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/osc_dev_config.toml.in" "${CMAKE_BINARY_DIR}/osc.toml")
 
 # for development on Windows, copy all runtime dlls to the exe directory
 # (because Windows doesn't have an RPATH)

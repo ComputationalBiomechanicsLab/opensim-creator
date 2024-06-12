@@ -1,6 +1,6 @@
 find_package(benchmark REQUIRED CONFIG)
 
-# BenchOpenSimCreator: main exe that links to `osccore` and benches parts of the APIs
+# BenchOpenSimCreator: main exe that links to `oscar` and benchmarks parts of the APIs
 add_executable(BenchOpenSimCreator
 
     Utils/BenchOpenSimHelpers.cpp

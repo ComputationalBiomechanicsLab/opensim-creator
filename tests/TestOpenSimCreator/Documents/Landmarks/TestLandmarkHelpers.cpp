@@ -22,7 +22,7 @@ namespace
 {
     std::filesystem::path GetFixturesDir()
     {
-        auto p = std::filesystem::path{OSC_TESTING_SOURCE_DIR} / "build_resources/TestOpenSimCreator/Document/Landmarks";
+        auto p = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "Document/Landmarks";
         p = std::filesystem::weakly_canonical(p);
         return p;
     }

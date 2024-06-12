@@ -1,5 +1,42 @@
+# -------------- gather user-facing build cache vars ---------------- #
+
+set(
+    OSC_FORCE_ASSERTS_ENABLED ON
+    CACHE BOOL
+    "force-enable/-disable OSC's runtime assertions - even if building a release build"
+)
+set(
+    OSC_USE_ASAN OFF
+    CACHE BOOL
+    "enable/disable address sanitizer (libASAN): useful for spotting memory access violations and leaks"
+)
+set(
+    OSC_FORCE_UNDEFINE_NDEBUG OFF
+    CACHE BOOL
+    "force-enable/disable NDEBUG - even if building a release build. Note: unlike OSC_FORCE_ASSERTS_ENABLED, this also tends to enable runtime assertions from library headers"
+)
+
+# -------------- set globally-applicable policies ---------------- #
+
 # tell cmake that we will define MSVC warning flags (e.g. /W3 /W4) ourselves
 cmake_policy(SET CMP0092 NEW)
+
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# handle OSC_FORCE_UNDEFINE_NDEBUG
+#
+# this unsets the relevant flags globally
+if(OSC_FORCE_UNDEFINE_NDEBUG)
+    # MSVC
+    string(REPLACE "/DNDEBUG" "" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+    string(REPLACE "/DNDEBUG" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+    # others
+    string(REPLACE "-DNDEBUG" "" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+    string(REPLACE "-DNDEBUG" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+endif()
+
 
 # oscar_compiler_configuration:
 #
