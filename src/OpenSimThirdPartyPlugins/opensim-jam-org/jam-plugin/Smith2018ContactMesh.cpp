@@ -20,6 +20,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+// NOLINTBEGIN
+
 #include "Smith2018ContactMesh.h"
 
 #include <OpenSim/Common/ScaleSet.h>
@@ -1012,3 +1014,4 @@ int Smith2018ContactMesh::OBBTreeNode::getNumTriangles() const {
     return _numTriangles;
 }
 
+// NOLINTEND

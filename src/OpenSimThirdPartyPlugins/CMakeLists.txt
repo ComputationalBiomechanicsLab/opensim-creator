@@ -1,6 +1,6 @@
 find_package(OpenSim REQUIRED CONFIG)
 
-add_library(OpenSimThirdPartyPlugins SHARED
+add_library(OpenSimThirdPartyPlugins STATIC
 
     opensim-jam-org/jam-plugin/Smith2018ArticularContactForce.cpp
     opensim-jam-org/jam-plugin/Smith2018ArticularContactForce.h

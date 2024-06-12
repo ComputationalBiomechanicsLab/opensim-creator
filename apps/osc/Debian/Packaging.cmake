@@ -51,8 +51,18 @@ install(
 # install-time: copy `resources/` (assets) dir
 install(
     DIRECTORY "${PROJECT_SOURCE_DIR}/resources"
-    DESTINATION
-    "."
+    DESTINATION "."
+)
+
+install(
+    PROGRAMS "${CMAKE_CURRENT_SOURCE_DIR}/Debian/osc.sh"
+    RENAME "osc"
+    DESTINATION /usr/local/bin/
+)
+
+install(
+    FILES "${CMAKE_CURRENT_SOURCE_DIR}/Debian/osc.desktop"
+    DESTINATION /usr/local/share/applications/
 )
 
 # packaging: package installation as a DEB
@@ -60,15 +70,6 @@ set(CPACK_GENERATOR DEB)
 set(CPACK_PACKAGING_INSTALL_PREFIX /opt/osc)
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "libblas3, liblapack3, libstdc++6")
 set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
-
-# packaging: configure a script that creates a symlink /usr/local/bin/osc --> /opt/osc/bin/osc
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/Linux/postinst.in" "postinst" @ONLY)
-
-# packaging: configure a script that destroys the above symlink on uninstall
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/Linux/postrm.in" "postrm" @ONLY)
-
-# packaging: tell debian packager to use the scripts for postinst and postrm actions
-set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_BINARY_DIR}/postinst;${CMAKE_BINARY_DIR}/postrm")
 
 # CPack vars etc. now fully configured, so include it
 include(CPack)

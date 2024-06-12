@@ -30,6 +30,8 @@
 #include <iostream>
 #include <string>
 
+// NOLINTBEGIN
+
 using namespace OpenSim;
 using namespace std;
 
@@ -55,3 +57,5 @@ void dllObjectInstantiator::registerDllClasses()
 { 
         RegisterTypes_osimPlugin(); 
 } 
+
+// NOLINTEND

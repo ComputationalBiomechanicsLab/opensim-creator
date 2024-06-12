@@ -442,7 +442,7 @@ void osc::open_file_in_os_default_application(const std::filesystem::path& fp)
 void osc::open_url_in_os_default_web_browser(CStringView vw)
 {
     // (we know that xdg-open handles this automatically)
-    open_file_in_os_default_application(vw);
+    open_file_in_os_default_application(std::filesystem::path{std::string{vw}});
 }
 
 void osc::enable_highdpi_mode_for_this_process() {}

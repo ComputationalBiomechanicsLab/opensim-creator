@@ -67,8 +67,7 @@ namespace
 
             log_warn("%s: cannot find a tab with this name in the tab registry: ignoring", maybeRequestedTab->c_str());
             log_warn("available tabs are:");
-            for (TabRegistryEntry tabRegistryEntry : tabRegistry)
-            {
+            for (auto&& tabRegistryEntry : tabRegistry) {
                 log_warn("    %s", tabRegistryEntry.name().c_str());
             }
         }
@@ -624,11 +623,11 @@ private:
         {
             if (ui::begin_menu("Experimental Tabs"))
             {
-                for (TabRegistryEntry e : *tabRegistry)
+                for (auto&& tabRegistryEntry : *tabRegistry)
                 {
-                    if (ui::draw_menu_item(e.name()))
+                    if (ui::draw_menu_item(tabRegistryEntry.name()))
                     {
-                        select_tab(addTab(e.construct_tab(ParentPtr<ITabHost>{getTabHostAPI()})));
+                        select_tab(addTab(tabRegistryEntry.construct_tab(ParentPtr<ITabHost>{getTabHostAPI()})));
                     }
                 }
                 ui::end_menu();
