@@ -53,6 +53,10 @@ set(
     CACHE BOOL
     "enable special build parameters for emscripten (emsdk) - don't try this unless you know what you're doing ;)"
 )
+set(OSC_EXECUTABLE_SUFFIX ${CMAKE_EXECUTABLE_SUFFIX}
+    CACHE BOOL
+    "global suffix to place on the end of each executable (platform-dependent)"
+)
 
 # set OSC_BUILD_ID
 #
@@ -88,6 +92,11 @@ endif()
 if(UNIX AND NOT APPLE)
     set(LINUX TRUE)
 endif()
+
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_EXECUTABLE_SUFFIX ${OSC_EXECUTABLE_SUFFIX})  # note: cannot be set externally
 
 # -------------- setup top-level project state ---------------- #
 
