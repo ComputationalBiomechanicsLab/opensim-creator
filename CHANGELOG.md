@@ -5,6 +5,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- The [opensim-jam-org/jam-plugin](https://github.com/opensim-jam-org/jam-plugin) is
+  now built alongside OpenSimCreator, which enables loading models containing
+  `Smith2018ArticularContactForce` and `Smith2018ContactMesh` (#884)
 - Fixed a bug where the DAE 3D scene exporter wasn't writing color information (#880)
 - The `Open Model` file dialog now allows for multi-select, which opens each selected
   `.osim` file in a seperate tab
@@ -12,6 +15,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   the splash tab
 - When a model editor tab is active, it now shows the filename of the osim file--if there is
   one--in the application window's title
+- Internal: Added `src/OpenSimThirdPartyPlugins`, for housing copy+pasted OpenSim
+  plugin code sourced from the internet (e.g. SimTK.org)
 
 
 ## [0.5.12] - 2024/04/29
