@@ -28,4 +28,3 @@ emmake cmake --build osc-build --target hellotriangle -v -j$(nproc)
 
 # run test suite, excluding tests that depend on window/files (work-in-progress)
 node osc-build/tests/testoscar/testoscar.js  --gtest_filter=-Renderer*:Image*:ResourceStream*
-node osc-build/apps/hellotriangle/hellotriangle.js
