@@ -6,11 +6,6 @@ set(
     "force-enable/-disable OSC's runtime assertions - even if building a release build"
 )
 set(
-    OSC_USE_ASAN OFF
-    CACHE BOOL
-    "enable/disable address sanitizer (libASAN): useful for spotting memory access violations and leaks"
-)
-set(
     OSC_FORCE_UNDEFINE_NDEBUG OFF
     CACHE BOOL
     "force-enable/disable NDEBUG - even if building a release build. Note: unlike OSC_FORCE_ASSERTS_ENABLED, this also tends to enable runtime assertions from library headers"
@@ -69,9 +64,6 @@ target_compile_options(oscar_compiler_configuration INTERFACE
         # only handle standard, synchronous, C++ exceptions (ISO) and treat asynchronous
         # Windows/system structured exceptions as fatal, non-catchable, errors
         /EHsc
-
-        # if requested, enable MSVC's libASAN
-        $<$<BOOL:${OSC_USE_ASAN}>:/fsanitize=address>
     >
 
     # gcc AND clang flags
@@ -158,9 +150,6 @@ target_compile_options(oscar_compiler_configuration INTERFACE
         # to setup their base pointers etc.) but makes debugging + profiling
         # the application much easier, even in release mode
         -fno-omit-frame-pointer
-
-        # if address sanitizer is specified, use it
-        $<$<BOOL:${OSC_USE_ASAN}>:-fsanitize=address>
     >
 
     # clang flags
@@ -199,11 +188,6 @@ target_link_options(oscar_compiler_configuration INTERFACE
         # this makes the binary a bigger, but means that the application
         # can emit its own stack trace /w function names - even in Release mode.
         -rdynamic
-    >
-
-    # GCC or Clang: handle OSC_USE_ASAN
-    $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:
-        $<$<BOOL:${OSC_USE_ASAN}>:-fsanitize=address>
     >
 )
 target_compile_features(oscar_compiler_configuration INTERFACE cxx_std_20)

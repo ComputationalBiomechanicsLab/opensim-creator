@@ -6,10 +6,11 @@
 > A UI for building OpenSim models
 
 - 📥 Want to download it? [Download the latest release here](../../releases/latest)
-- 📚 Want to learn the basics? [Watch Introduction Videos Here](https://www.youtube.com/playlist?list=PLOPlDtRLhp8c2SWLCQKKd-l4__UainOYk)
+- 📚 Want to learn the basics? [View the documentation online](https://docs.opensimcreator.com)
 - 🐛 Found a bug or want to request a feature? [Post it on the issues page](../../issues)
 - ❓ Have a question? [Go to the discussions page](../../discussions)
 - 📖 Want to cite the project? [See the citation section of this README](#citing)
+- 🧬 Want to know more about the project? [See www.opensimcreator.com](www.opensimcreator.com)
 
 
 ## 👓 Overview
@@ -17,9 +18,9 @@
 ![screenshot](docs/source/_static/screenshot.png)
 
 OpenSim Creator (`osc`) is a standalone UI for building and editing
-[OpenSim](https://github.com/opensim-org/opensim-core) models. It is available
-as a freestanding all-in-one [installer](../../releases/latest) for Windows 10 (or newer),
-MacOS Ventura (or newer), and Ubuntu 20 (or newer).
+[OpenSim](https://github.com/opensim-org/opensim-core) models. It's available
+as a freestanding all-in-one [installer](../../releases/latest) for Windows 10,
+MacOS Ventura, and Ubuntu 20 (or newer versions).
 
 Architecturally, `osc` is a C++ codebase that is directly integrated against
 the [OpenSim core C++ API](https://github.com/opensim-org/opensim-core). It otherwise only
@@ -56,33 +57,39 @@ Science" grant (Chan Zuckerberg Initiative DAF, 2020-218896 (5022)).
 
 ## 🚀 Installing
 
-You can download a release from the [📥 releases](../../releases) page. The latest
-release is [📥 here](../../releases/latest). Also, OpenSim Creator is regularly built
-from source using GitHub Actions, so if you want a bleeding-edge--but unreleased--build
-of OpenSim Creator check [⚡ the actions page](../../actions) (downloading a CI build
-requires being logged into GitHub; otherwise, you won't see download links).
+You can download a binary release from the [📥 releases](../../releases) page. OpenSim
+Creator is also regularly built from source using GitHub Actions, so if you want
+a bleeding-edge--but unreleased--build of OpenSim Creator check [the actions page](../../actions)
+(must be logged into GitHub to see artifact links).
 
-### Windows (10 or newer)
+
+### 🪟 Windows (10 or newer)
 
 - Download an `exe` [release](../../releases)
-- Run the `.exe` installer, continue past any security warnings
-- Follow the familiar `next`, `next`, `finish` wizard
+- Run the installer `.exe`, continue past any security warnings
+- Follow the familiar `next`, `next`, `finish` installation wizard
 - Run `OpenSimCreator` by typing `OpenSimCreator` in your start menu, or browse to `C:\Program Files\OpenSimCreator\`.
 
-### Mac (Ventura or newer)
+
+### MacOS (Ventura or newer)
 
 - Download a `dmg` [release](../../releases)
 - Double click the `dmg` file to mount it
-- Drag `osc` into your `Applications` directory.
+- Drag the `osc` icon into your `Applications` directory.
 - Browse to the `Applications` directory in `Finder`
-- Right-click the `osc` application, click `open`, continue past any security warnings to run `osc` for the first time
-- After running it the first time, you can boot it as normal (e.g. `Command+Space`, `osc`, `Enter`)
+- Right-click the `osc` application, click `open`, continue past any security
+  warnings to run `osc` for the first time
+  - **Note**: you may need to do this twice, because MacOS _really_ doesn't like
+    unsigned binaries
+- After running it the first time, you can boot it as normal (e.g. `Command+Space`,
+  `osc`, `Enter`)
+
 
 ### Ubuntu (20 or newer)
 
 - Download a `deb` [release](../../releases)
 - Double-click the `.deb` package and install it through your package manager UI.
-- **Alternatively**, you can install it through the command-line: `apt-get install -yf ./osc-X.X.X_amd64.deb` (or similar).
+- **Alternatively**, you can install it through the command-line: `apt-get install -yf ~/Downloads/osc-X.X.X_amd64.deb` (or similar).
 - Once installed, the `osc` or `OpenSim Creator` shortcuts should be available from your desktop, or you can browse
   to `/opt/osc`
 
@@ -96,6 +103,7 @@ OpenSim Creator doesn't have a central _written_ software publication that you c
 If you need a general citation for the simulation/modelling technique, you can directly cite OpenSim via this paper:
 
 > Seth A, Hicks JL, Uchida TK, Habib A, Dembia CL, et al. (2018) **OpenSim: Simulating musculoskeletal dynamics and neuromuscular control to study human and animal movement.** _PLOS Computational Biology_ 14(7): e1006223. https://doi.org/10.1371/journal.pcbi.1006223
+
 
 ## 🥰 Contributing
 
@@ -167,7 +175,7 @@ that make open-source awesome! See [CONTRIBUTING.md](CONTRIBUTING.md) for more d
 2. Get a C++20-compatible compiler:
     1. Install `g++`/`clang++` via your package manager (e.g. `apt-get install g++`)
     2. They must be new enough to compile C++20 (e.g. clang >= clang-11)
-    3. If they aren't new enough, most Linux OSes provide a way to install a newer compiler
+    3. If they aren't new enough, most OSes provide a way to install a newer compiler
        toolchain (e.g. `apt-get install clang-11`). You can configure which compiler is used
        to build OpenSim Creator by setting the `CC` and `CXX` environment variables. E.g.
        `CC=clang-11 CXX=clang++-11 ./scripts/build_debian-buster.sh`
@@ -187,6 +195,7 @@ that make open-source awesome! See [CONTRIBUTING.md](CONTRIBUTING.md) for more d
 6. Done:
     1. The `osc-build` directory should contain the built installer
 
+
 ## 💻 Setup Development Environment
 
 These are some generic tips that might be handy when setting up your own development environment.
@@ -204,6 +213,7 @@ These are some generic tips that might be handy when setting up your own develop
 - (optional): switch the solution explorer view to a `Folder View` after doing this: the CMake view is crap for developing osc
 - You should now be able to build+run `osc` from `Visual Studio`
 - To run tests, open the `Test Explorer` tab, which should list all of the `googletest` tests in the project
+
 
 ### QtCreator
 

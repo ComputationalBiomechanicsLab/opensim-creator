@@ -44,10 +44,6 @@ set(
     CACHE BOOL
     "enable/disable building the benchmark suite (handy for development)"
 )
-set(OSC_DISCOVER_TESTS ON
-    CACHE BOOL
-    "enable/disable automatically running test discovery (IDE integration)"
-)
 set(
     OSC_EMSCRIPTEN OFF
     CACHE BOOL
@@ -88,7 +84,7 @@ endif()
 
 # set LINUX
 #
-# this is based on whether the UNIX variant being used appears to be LINUX
+# this is based on whether the UNIX variant being used appears to be Linux
 if(UNIX AND NOT APPLE)
     set(LINUX TRUE)
 endif()

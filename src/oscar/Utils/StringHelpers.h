@@ -51,7 +51,7 @@ namespace osc
     //
     // the reason this function exists is because, at time of writing, C++'s
     // <charconv> `std::from_chars` function isn't implemented in Mac OSX
-    // or linux. When they are, feel free to nuke this from orbit.
+    // or Ubuntu20. When they are, feel free to nuke this from orbit.
     //
     // see the unittest suite for some of the more unusual things to consider
     std::optional<float> from_chars_strip_whitespace(std::string_view sv);

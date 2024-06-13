@@ -15,7 +15,7 @@ namespace osc
     // independent chunk of data to process
     //
     // this is a poor-man's `std::execution::par_unseq`, because C++17's <execution>
-    // isn't fully integrated into MacOS/Linux
+    // isn't fully integrated into MacOS/Ubuntu20
     template<typename T, std::invocable<T&> UnaryFunction>
     void for_each_parallel_unsequenced(
         size_t min_chunk_size,

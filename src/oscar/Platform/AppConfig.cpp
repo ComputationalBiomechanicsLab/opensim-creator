@@ -29,7 +29,7 @@ namespace
     //
     // - `experimental_feature_flags/multiple_viewports`: used to be a `bool` that indicated
     //   whether the application backend should support multiple viewports, but was
-    //   subsequently dropped because multi-viewport support sucked via ImGui on Linux/Mac
+    //   subsequently dropped because multi-viewport support sucked via ImGui on Ubuntu20/Mac
     //   (Windows was ok)
 
     std::filesystem::path get_resources_dir_fallback_path(const AppSettings& settings)

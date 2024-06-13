@@ -1,4 +1,4 @@
-# Linux install/packaging:
+# Debian install/packaging:
 #
 #     - copy osc + libraries into a standard-layout dir
 #           bin/  # executables
@@ -21,7 +21,7 @@
 # install-time: also package any required system libraries
 include(InstallRequiredSystemLibraries)
 
-# set RPATH of `osc` on Linux to $ORIGIN/../lib, because dir structure is:
+# set RPATH of `osc` on Debian to $ORIGIN/../lib, because dir structure is:
 #
 #     lib/*.dylib
 #     bin/osc (exe)
@@ -29,7 +29,7 @@ set_target_properties(osc PROPERTIES INSTALL_RPATH "\$ORIGIN/../lib")
 
 # HACK: Simbody has some sort of cmake configuration/module bug that
 #       prevents RUNTIME_DEPENDENCIES from correctly resolving it
-#       on Linux
+#       on Debian
 find_package(Simbody REQUIRED CONFIG)
 install(
     TARGETS osc
