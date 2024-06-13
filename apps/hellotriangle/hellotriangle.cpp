@@ -8,14 +8,14 @@ namespace
     public:
         HelloTriangleScreen()
         {
-            const Vec3 viewer_pos = {3.0f, 0.0f, 0.0f};
-            camera_.set_position(viewer_pos);
+            const Vec3 viewer_position = {3.0f, 0.0f, 0.0f};
+            camera_.set_position(viewer_position);
             camera_.set_direction({-1.0f, 0.0f, 0.0f});
             const Color color = Color::red();
             material_.set_ambient_color(0.2f * color);
             material_.set_diffuse_color(0.5f * color);
             material_.set_specular_color(0.5f * color);
-            material_.set_viewer_position(viewer_pos);
+            material_.set_viewer_position(viewer_position);
         }
     private:
          void impl_on_draw() override
