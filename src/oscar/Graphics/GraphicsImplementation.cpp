@@ -89,6 +89,7 @@
 #include <iostream>
 #include <iterator>
 #include <ranges>
+#include <regex>
 #include <span>
 #include <sstream>
 #include <stdexcept>
@@ -2699,6 +2700,82 @@ std::ostream& osc::operator<<(std::ostream& o, const RenderTexture&)
     return o << "RenderTexture()";
 }
 
+namespace
+{
+    gl::Program compile_program_with_shimming(
+        CStringView vertex_shader_src,
+        CStringView fragment_shader_src,
+        std::optional<CStringView> geometry_shader_src = std::nullopt)
+    {
+#ifndef EMSCRIPTEN
+        if (geometry_shader_src) {
+            return gl::create_program_from(
+                gl::compile_from_source<gl::VertexShader>(vertex_shader_src.c_str()),
+                gl::compile_from_source<gl::FragmentShader>(fragment_shader_src.c_str()),
+                gl::compile_from_source<gl::GeometryShader>(geometry_shader_src.c_str())
+            );
+        }
+        else {
+            return gl::create_program_from(
+                gl::compile_from_source<gl::VertexShader>(vertex_shader_src.c_str()),
+                gl::compile_from_source<gl::FragmentShader>(fragment_shader_src.c_str())
+            );
+        }
+#else
+        // replace version string, ensure it's on the first line and `#version 300 es`
+        // add `precision mediump float;` to frag shader
+        const std::string shimmed_vertex_shader_src = [&vertex_shader_src]()
+        {
+            std::stringstream out;
+            std::regex_replace(
+                std::ostreambuf_iterator<char>{out},
+                vertex_shader_src.begin(),
+                vertex_shader_src.end(),
+                std::regex{"\\s*#version.+\n"},
+                "#version 300 es\n"
+            );
+            return std::move(out).str();
+        }();
+        const std::string shimmed_fragment_shader_src = [&fragment_shader_src]()
+        {
+            std::stringstream out;
+            std::regex_replace(
+                std::ostreambuf_iterator<char>{out},
+                fragment_shader_src.begin(),
+                fragment_shader_src.end(),
+                std::regex{"\\s*#version.+\n"},
+                "#version 300 es\nprecision mediump float;\n"
+            );
+            return std::move(out).str();
+        }();
+        if (geometry_shader_src) {
+            const std::string shimmed_geometry_shader_src = [&geometry_shader_src]()
+            {
+                std::stringstream out;
+                std::regex_replace(
+                    std::ostreambuf_iterator<char>{out},
+                    geometry_shader_src->begin(),
+                    geometry_shader_src->end(),
+                    std::regex{"\\s*#version.+\n"},
+                    "#version 300 es\n"
+                );
+                return std::move(out).str();
+            }();
+            return gl::create_program_from(
+                gl::compile_from_source<gl::VertexShader>(shimmed_vertex_shader_src.c_str()),
+                gl::compile_from_source<gl::FragmentShader>(shimmed_fragment_shader_src.c_str()),
+                gl::compile_from_source<gl::GeometryShader>(shimmed_geometry_shader_src.c_str())
+            );
+        }
+        else {
+            return gl::create_program_from(
+                gl::compile_from_source<gl::VertexShader>(shimmed_vertex_shader_src.c_str()),
+                gl::compile_from_source<gl::FragmentShader>(shimmed_fragment_shader_src.c_str())
+            );
+        }
+#endif
+    }
+}
 
 class osc::Shader::Impl final {
 public:
@@ -2706,10 +2783,7 @@ public:
         CStringView vertex_shader_src,
         CStringView fragment_shader_src) :
 
-        program_{gl::create_program_from(
-            gl::compile_from_source<gl::VertexShader>(vertex_shader_src.c_str()),
-            gl::compile_from_source<gl::FragmentShader>(fragment_shader_src.c_str())
-        )}
+        program_{compile_program_with_shimming(vertex_shader_src, fragment_shader_src)}
     {
         parse_uniforms_and_attributes_from_program();
     }
@@ -2719,11 +2793,7 @@ public:
         CStringView geometry_shader_src,
         CStringView fragment_shader_src) :
 
-        program_{gl::create_program_from(
-            gl::compile_from_source<gl::VertexShader>(vertex_shader_src.c_str()),
-            gl::compile_from_source<gl::FragmentShader>(fragment_shader_src.c_str()),
-            gl::compile_from_source<gl::GeometryShader>(geometry_shader_src.c_str())
-        )}
+        program_{compile_program_with_shimming(vertex_shader_src, fragment_shader_src, geometry_shader_src)}
     {
         parse_uniforms_and_attributes_from_program();
     }
@@ -6864,9 +6934,11 @@ void osc::GraphicsBackend::handle_batch_with_same_material(
 
     gl::use_program(shader_impl.program());
 
+#ifndef EMSCRIPTEN
     if (material_impl.is_wireframe()) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     }
+#endif
 
     if (material_impl.depth_function() != DepthFunction::Default) {
         glDepthFunc(to_opengl_depth_function_enum(material_impl.depth_function()));
@@ -6933,9 +7005,11 @@ void osc::GraphicsBackend::handle_batch_with_same_material(
         glDepthFunc(to_opengl_depth_function_enum(DepthFunction::Default));
     }
 
+#ifndef EMSCRIPTEN
     if (material_impl.is_wireframe()) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
+#endif
 }
 
 // helper: draw a sequence of `RenderObject`s
@@ -7304,7 +7378,7 @@ void osc::GraphicsBackend::resolve_render_buffers(RenderTarget& render_target)
             },
             [&can_resolve_buffer, i](MultisampledRBOAndResolvedTexture& t)
             {
-                const GLint attachment_location = GL_COLOR_ATTACHMENT0 + static_cast<GLint>(i);
+                const GLenum attachment_location = GL_COLOR_ATTACHMENT0 + static_cast<GLint>(i);
 
                 gl::framebuffer_renderbuffer(
                     GL_READ_FRAMEBUFFER,
@@ -7319,7 +7393,7 @@ void osc::GraphicsBackend::resolve_render_buffers(RenderTarget& render_target)
                     t.single_sampled_texture2D,
                     0
                 );
-                glDrawBuffer(attachment_location);
+                glDrawBuffers(1, &attachment_location);
 
                 can_resolve_buffer = true;
             },
@@ -7370,7 +7444,10 @@ void osc::GraphicsBackend::resolve_render_buffers(RenderTarget& render_target)
                     t.single_sampled_texture2D,
                     0
                 );
-                glDrawBuffer(GL_DEPTH_ATTACHMENT);
+                {
+                    const GLenum buf = GL_DEPTH_ATTACHMENT;
+                    glDrawBuffers(1, &buf);
+                }
 
                 can_resolve_buffer = true;
             },
@@ -7598,7 +7675,10 @@ void osc::GraphicsBackend::copy_texture(
         destination.m_Impl.upd()->updTexture(),
         0
     );
-    glDrawBuffer(GL_COLOR_ATTACHMENT0);
+    {
+        const GLenum buf = GL_COLOR_ATTACHMENT0;
+        glDrawBuffers(1, &buf);
+    }
 
     // blit the read framebuffer to the draw framebuffer
     gl::blit_framebuffer(
@@ -7697,7 +7777,10 @@ void osc::GraphicsBackend::copy_texture(
             destination.impl_.upd()->upd_cubemap().get(),
             static_cast<GLint>(mip)
         );
-        glDrawBuffer(GL_COLOR_ATTACHMENT0);
+        {
+            const GLenum buf = GL_COLOR_ATTACHMENT0;
+            glDrawBuffers(1, &buf);
+        }
 
         // blit the read framebuffer to the draw framebuffer
         gl::blit_framebuffer(

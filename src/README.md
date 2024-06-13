@@ -1,7 +1,11 @@
-# `opensim-creator` Source Code Layout
+# `src/`: OpenSim Creator's Source Code (Libraries)
 
-OpenSim Creator is split into several independent components. The intent of
-each is:
+This directory containing the core source code of OpenSimCreator, which is exposed
+as (cmake-based) library targets that the downstream targets (e.g. the `osc` binary)
+link to.
+
+OpenSim Creator is split into several independent library components. The intent
+of each is:
 
 | Directory | Description | Depends on |
 | - | - | - |

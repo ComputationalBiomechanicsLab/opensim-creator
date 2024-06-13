@@ -49,6 +49,7 @@ namespace
 {
     App* g_app_global = nullptr;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
+#ifndef EMSCRIPTEN
     void sdl_gl_set_attribute_or_throw(
         SDL_GLattr attribute,
         CStringView attribute_readable_name,
@@ -61,6 +62,7 @@ namespace
             throw std::runtime_error{std::move(msg).str()};
         }
     }
+#endif
 
     // install backtrace dumper
     //
@@ -87,11 +89,13 @@ namespace
     {
         log_info("initializing main application window");
 
+#ifndef EMSCRIPTEN
         sdl_gl_set_attribute_or_throw(SDL_GL_CONTEXT_PROFILE_MASK, "SDL_GL_CONTEXT_PROFILE_MASK", SDL_GL_CONTEXT_PROFILE_CORE, "SDL_GL_CONTEXT_PROFILE_CORE");
         sdl_gl_set_attribute_or_throw(SDL_GL_CONTEXT_MAJOR_VERSION, "SDL_GL_CONTEXT_MAJOR_VERSION", 3, "3");
         sdl_gl_set_attribute_or_throw(SDL_GL_CONTEXT_MINOR_VERSION, "SDL_GL_CONTEXT_MINOR_VERSION", 3, "3");
         sdl_gl_set_attribute_or_throw(SDL_GL_CONTEXT_FLAGS, "SDL_GL_CONTEXT_FLAGS", SDL_GL_CONTEXT_DEBUG_FLAG, "SDL_GL_CONTEXT_DEBUG_FLAG");
         sdl_gl_set_attribute_or_throw(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, "SDL_GL_FRAMEBUFFER_SRGB_CAPABLE", 1, "1");
+#endif
 
         // careful about setting resolution, position, etc. - some people have *very* shitty
         // screens on their laptop (e.g. ultrawide, sub-HD, minus space for the start bar, can

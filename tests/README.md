@@ -1,8 +1,7 @@
-# `tests/`
+# `tests/`: OpenSim Creator's Test Suites
 
-> Test suite for `OpenSimCreator` and `oscar`
-
-Uses `googletest` to test various parts of the project.
+This directory contains code that builds `googletest`-based test suites that
+test various parts of the project.
 
 
 ## Note: Debugging on Visual Studio
