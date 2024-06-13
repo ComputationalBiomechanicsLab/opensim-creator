@@ -2712,7 +2712,7 @@ namespace
             return gl::create_program_from(
                 gl::compile_from_source<gl::VertexShader>(vertex_shader_src.c_str()),
                 gl::compile_from_source<gl::FragmentShader>(fragment_shader_src.c_str()),
-                gl::compile_from_source<gl::GeometryShader>(geometry_shader_src.c_str())
+                gl::compile_from_source<gl::GeometryShader>(geometry_shader_src->c_str())
             );
         }
         else {
