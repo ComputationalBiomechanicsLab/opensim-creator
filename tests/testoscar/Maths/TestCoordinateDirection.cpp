@@ -78,7 +78,7 @@ TEST(CoordinateDirection, DirectionReturnsExpectedResults)
 
 TEST(CoordinateDirection, AreOrderedAsExpected)
 {
-    auto const expectedOrder = std::to_array({
+    const auto expectedOrder = std::to_array({
         CoordinateDirection::minus_x(),
         CoordinateDirection::x(),
         CoordinateDirection::minus_y(),
@@ -216,7 +216,7 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST_P(ParsingTestFixture, Check)
 {
-    ParsingTestCase const tc =  GetParam();
+    const ParsingTestCase tc =  GetParam();
     ASSERT_EQ(CoordinateDirection::try_parse(tc.input), tc.expected) << "input = " << tc.input;
 }
 
@@ -248,7 +248,7 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST_P(PrintingTestFixture, Check)
 {
-    PrintingTestCase const tc = GetParam();
+    const PrintingTestCase tc = GetParam();
     std::stringstream ss;
     ss << tc.input;
     ASSERT_EQ(ss.str(), tc.expected);

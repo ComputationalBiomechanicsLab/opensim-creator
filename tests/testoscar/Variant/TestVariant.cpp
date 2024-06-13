@@ -27,12 +27,10 @@ namespace
 
         std::string s{v};
         size_t pos = 0;
-        try
-        {
+        try {
             return std::stof(s, &pos);
         }
-        catch (std::exception const&)
-        {
+        catch (const std::exception&) {
             return 0.0f;
         }
     }
@@ -289,14 +287,12 @@ TEST(Variant, ColorToIntReturnsExpectedValues)
 
 TEST(Variant, ColorValueToStringReturnsSameAsToHtmlStringRGBA)
 {
-    auto const colors = std::to_array(
-    {
+    const auto colors = std::to_array({
         Color::red(),
         Color::magenta(),
     });
 
-    for (auto const& color : colors)
-    {
+    for (const auto& color : colors) {
         ASSERT_EQ(Variant(color).to<std::string>(), to_html_string_rgba(color));
     }
 }
@@ -330,9 +326,8 @@ TEST(Variant, FloatValueToBoolReturnsExpectedValues)
 
 TEST(Variant, FloatValueToColorReturnsExpectedColor)
 {
-    for (float v : std::to_array<float>({0.0f, 0.5f, 0.75, 1.0f}))
-    {
-        Color const expected = {v, v, v};
+    for (float v : std::to_array<float>({0.0f, 0.5f, 0.75, 1.0f})) {
+        const Color expected = {v, v, v};
         ASSERT_EQ(Variant(v).to<Color>(), expected);
     }
 }
@@ -346,18 +341,16 @@ TEST(Variant, FloatValueToFloatReturnsInput)
 
 TEST(Variant, FloatValueToIntReturnsCastedResult)
 {
-    for (float v : std::to_array<float>({-0.5f, -0.123f, 0.0f, 1.0f, 1337.0f}))
-    {
-        int const expected = static_cast<int>(v);
+    for (float v : std::to_array<float>({-0.5f, -0.123f, 0.0f, 1.0f, 1337.0f})) {
+        const int expected = static_cast<int>(v);
         ASSERT_EQ(Variant(v).to<int>(), expected);
     }
 }
 
 TEST(Variant, FloatValueToStringReturnsToStringedResult)
 {
-    for (float v : std::to_array<float>({-5.35f, -2.0f, -1.0f, 0.0f, 0.123f, 18000.0f}))
-    {
-        std::string const expected = std::to_string(v);
+    for (float v : std::to_array<float>({-5.35f, -2.0f, -1.0f, 0.0f, 0.123f, 18000.0f})) {
+        const std::string expected = std::to_string(v);
         ASSERT_EQ(Variant(v).to<std::string>(), expected);
     }
 }
@@ -370,18 +363,16 @@ TEST(Variant, FloatValueToStringNameReturnsEmptyStringName)
 
 TEST(Variant, FloatValueToVec2ReturnsVec2FilledWithFloat)
 {
-    for (float v : std::to_array<float>({-20000.0f, -5.328f, -1.2f, 0.0f, 0.123f, 50.0f, 18000.0f}))
-    {
-        Vec2 const expected = {v, v};
+    for (float v : std::to_array<float>({-20000.0f, -5.328f, -1.2f, 0.0f, 0.123f, 50.0f, 18000.0f})) {
+        const Vec2 expected = {v, v};
         ASSERT_EQ(Variant(v).to<Vec2>(), expected);
     }
 }
 
 TEST(Variant, FloatValueToVec3ReturnsVec3FilledWithFloat)
 {
-    for (float v : std::to_array<float>({-20000.0f, -5.328f, -1.2f, 0.0f, 0.123f, 50.0f, 18000.0f}))
-    {
-        Vec3 const expected = {v, v, v};
+    for (float v : std::to_array<float>({-20000.0f, -5.328f, -1.2f, 0.0f, 0.123f, 50.0f, 18000.0f})) {
+        const Vec3 expected = {v, v, v};
         ASSERT_EQ(Variant(v).to<Vec3>(), expected);
     }
 }
@@ -406,9 +397,8 @@ TEST(Variant, IntValueToColorReturnsBlackOrWhite)
 
 TEST(Variant, IntValueToFloatReturnsIntCastedToFloat)
 {
-    for (int v : std::to_array<int>({-10000, -1000, -1, 0, 1, 17, 23000}))
-    {
-        auto const expected = static_cast<float>(v);
+    for (int v : std::to_array<int>({-10000, -1000, -1, 0, 1, 17, 23000})) {
+        const auto expected = static_cast<float>(v);
         ASSERT_EQ(Variant(v).to<float>(), expected);
     }
 }
@@ -423,9 +413,8 @@ TEST(Variant, IntValueToIntReturnsTheSuppliedInt)
 
 TEST(Variant, IntValueToStringReturnsStringifiedInt)
 {
-    for (int v : std::to_array<int>({ -121010, -13482, -1923, -123, -92, -7, 0, 1, 1294, 1209849}))
-    {
-        std::string const expected = std::to_string(v);
+    for (int v : std::to_array<int>({ -121010, -13482, -1923, -123, -92, -7, 0, 1, 1294, 1209849})) {
+        const std::string expected = std::to_string(v);
         ASSERT_EQ(Variant(v).to<std::string>(), expected);
     }
 }
@@ -439,20 +428,18 @@ TEST(Variant, IntValueToStringNameReturnsEmptyString)
 
 TEST(Variant, IntValueToVec2CastsValueToFloatThenPlacesItInAllSlots)
 {
-    for (int v : std::to_array<int>({ -12193, -1212, -738, -12, -1, 0, 1, 18, 1294, 1209849}))
-    {
-        auto const vf = static_cast<float>(v);
-        Vec2 const expected = {vf, vf};
+    for (int v : std::to_array<int>({ -12193, -1212, -738, -12, -1, 0, 1, 18, 1294, 1209849})) {
+        const auto vf = static_cast<float>(v);
+        const Vec2 expected = {vf, vf};
         ASSERT_EQ(Variant(v).to<Vec2>(), expected);
     }
 }
 
 TEST(Variant, IntValueToVec3CastsValueToFloatThenPlacesInAllSlots)
 {
-    for (int v : std::to_array<int>({ -12193, -1212, -738, -12, -1, 0, 1, 18, 1294, 1209849}))
-    {
-        auto const vf = static_cast<float>(v);
-        Vec3 const expected = {vf, vf, vf};
+    for (int v : std::to_array<int>({ -12193, -1212, -738, -12, -1, 0, 1, 18, 1294, 1209849})) {
+        const auto vf = static_cast<float>(v);
+        const Vec3 expected = {vf, vf, vf};
         ASSERT_EQ(Variant(v).to<Vec3>(), expected);
     }
 }
@@ -490,8 +477,7 @@ TEST(Variant, StringValueColorReturnsBlackIfStringIsInvalidHTMLColorString)
 
 TEST(Variant, StringValueToFloatTriesToParseStringAsFloatAndReturnsZeroOnFailure)
 {
-    auto const inputs = std::to_array<std::string_view>(
-    {
+    const auto inputs = std::to_array<std::string_view>({
         "-1.0",
         "20e-10",
         "",
@@ -502,17 +488,15 @@ TEST(Variant, StringValueToFloatTriesToParseStringAsFloatAndReturnsZeroOnFailure
         "  ",
     });
 
-    for (auto const& input : inputs)
-    {
-        float const expectedOutput = ToFloatOrZero(input);
+    for (const auto& input : inputs) {
+        const float expectedOutput = ToFloatOrZero(input);
         ASSERT_EQ(Variant{input}.to<float>(), expectedOutput);
     }
 }
 
 TEST(Variant, StringValueToIntTriesToParseStringAsBase10Int)
 {
-    auto const inputs = std::to_array<std::string_view>(
-    {
+    const auto inputs = std::to_array<std::string_view>({
         "-1.0",
         "20e-10",
         "",
@@ -523,17 +507,15 @@ TEST(Variant, StringValueToIntTriesToParseStringAsBase10Int)
         "  ",
     });
 
-    for (auto const& input : inputs)
-    {
-        int const expectedOutput = ToIntOrZero(input);
+    for (const auto& input : inputs) {
+        const int expectedOutput = ToIntOrZero(input);
         ASSERT_EQ(Variant{input}.to<int>(), expectedOutput);
     }
 }
 
 TEST(Variant, StringValueToStringReturnsSuppliedString)
 {
-    auto const inputs = std::to_array<std::string_view>(
-    {
+    const auto inputs = std::to_array<std::string_view>({
         "some\tstring",
         "-1.0",
         "20e-10",
@@ -546,16 +528,14 @@ TEST(Variant, StringValueToStringReturnsSuppliedString)
         "a slightly longer string in case sso is in some way important"
     });
 
-    for (auto const& input : inputs)
-    {
+    for (const auto& input : inputs) {
         ASSERT_EQ(Variant{input}.to<std::string>(), input);
     }
 }
 
 TEST(Variant, StringValueToStringNameReturnsSuppliedStringAsAStringName)
 {
-    auto const inputs = std::to_array<std::string_view>(
-    {
+    const auto inputs = std::to_array<std::string_view>({
         "some\tstring",
         "-1.0",
         "20e-10",
@@ -568,38 +548,14 @@ TEST(Variant, StringValueToStringNameReturnsSuppliedStringAsAStringName)
         "a slightly longer string in case sso is in some way important"
     });
 
-    for (auto const& input : inputs)
-    {
+    for (const auto& input : inputs) {
         ASSERT_EQ(Variant{input}.to<StringName>(), StringName{input});
     }
 }
 
 TEST(Variant, StringValueToVec2AlwaysReturnsZeroedVec)
 {
-    auto const inputs = std::to_array<std::string_view>(
-        {
-            "some\tstring",
-            "-1.0",
-            "20e-10",
-            "",
-            "not a number",
-            "  ",
-            "1, 2, 3",
-            "(1, 2, 3)",
-            "[1, 2, 3]",
-            "Vec3(1, 2, 3)",
-        });
-
-    for (auto const& input : inputs)
-    {
-        ASSERT_EQ(Variant{input}.to<Vec2>(), Vec2{});
-    }
-}
-
-TEST(Variant, StringValueToVec3AlwaysReturnsZeroedVec)
-{
-    auto const inputs = std::to_array<std::string_view>(
-    {
+    const auto inputs = std::to_array<std::string_view>({
         "some\tstring",
         "-1.0",
         "20e-10",
@@ -612,8 +568,27 @@ TEST(Variant, StringValueToVec3AlwaysReturnsZeroedVec)
         "Vec3(1, 2, 3)",
     });
 
-    for (auto const& input : inputs)
-    {
+    for (const auto& input : inputs) {
+        ASSERT_EQ(Variant{input}.to<Vec2>(), Vec2{});
+    }
+}
+
+TEST(Variant, StringValueToVec3AlwaysReturnsZeroedVec)
+{
+    const auto inputs = std::to_array<std::string_view>({
+        "some\tstring",
+        "-1.0",
+        "20e-10",
+        "",
+        "not a number",
+        "  ",
+        "1, 2, 3",
+        "(1, 2, 3)",
+        "[1, 2, 3]",
+        "Vec3(1, 2, 3)",
+    });
+
+    for (const auto& input : inputs) {
         ASSERT_EQ(Variant{input}.to<Vec3>(), Vec3{});
     }
 }
@@ -648,7 +623,7 @@ TEST(Variant, Vec2ValueToBoolReturnsTrueIfXIsNonZeroRegardlessOfOtherComponents)
 
 TEST(Variant, Vec2ValueToColorExtractsTheElementsIntoRGB)
 {
-    auto const testCases = std::to_array<Vec2>({
+    const auto testCases = std::to_array<Vec2>({
         { 0.0f,   0.0f},
         { 1.0f,   1.0f},
         {-1.0f,   7.5f},
@@ -656,15 +631,14 @@ TEST(Variant, Vec2ValueToColorExtractsTheElementsIntoRGB)
         { 0.0f,  -0.0f},
     });
 
-    for (auto const& testCase : testCases)
-    {
+    for (const auto& testCase : testCases) {
         ASSERT_EQ(Variant{testCase}.to<Color>(), Color(testCase.x, testCase.y, 0.0f));
     }
 }
 
 TEST(Variant, Vec2ValueToFloatExtractsXToTheFloat)
 {
-    auto const testCases = std::to_array<Vec2>({
+    const auto testCases = std::to_array<Vec2>({
         { 0.0f,   0.0f},
         { 1.0f,   1.0f},
         {-1.0f,   7.5f},
@@ -672,14 +646,14 @@ TEST(Variant, Vec2ValueToFloatExtractsXToTheFloat)
         { 0.0f,  -0.0f},
     });
 
-    for (auto const& testCase : testCases) {
+    for (const auto& testCase : testCases) {
         ASSERT_EQ(Variant{testCase}.to<float>(), testCase.x);
     }
 }
 
 TEST(Variant, Vec2ValueToIntExtractsXToTheInt)
 {
-    auto const testCases = std::to_array<Vec2>({
+    const auto testCases = std::to_array<Vec2>({
         { 0.0f,   0.0f},
         { 1.0f,   1.0f},
         {-1.0f,   7.5f},
@@ -687,14 +661,14 @@ TEST(Variant, Vec2ValueToIntExtractsXToTheInt)
         { 0.0f,  -0.0f},
      });
 
-    for (auto const& testCase : testCases) {
+    for (const auto& testCase : testCases) {
         ASSERT_EQ(Variant{testCase}.to<int>(), static_cast<int>(testCase.x));
     }
 }
 
 TEST(Variant, Vec2ValueToStringReturnsSameAsDirectlyConvertingVectorToString)
 {
-    auto const testCases = std::to_array<Vec2>({
+    const auto testCases = std::to_array<Vec2>({
         { 0.0f,   0.0f},
         { 1.0f,   1.0f},
         {-1.0f,   7.5f},
@@ -702,7 +676,7 @@ TEST(Variant, Vec2ValueToStringReturnsSameAsDirectlyConvertingVectorToString)
         { 0.0f,  -0.0f},
     });
 
-    for (auto const& testCase : testCases) {
+    for (const auto& testCase : testCases) {
         ASSERT_EQ(Variant{testCase}.to<std::string>(), to_string(testCase));
     }
 }
@@ -715,7 +689,7 @@ TEST(Variant, Vec2ValueToStringNameReturnsAnEmptyString)
 
 TEST(Variant, Vec2ValueToVec3ReturnsOriginalValue)
 {
-    auto const testCases = std::to_array<Vec2>({
+    const auto testCases = std::to_array<Vec2>({
         { 0.0f,   0.0f},
         { 1.0f,   1.0f},
         {-1.0f,   7.5f},
@@ -723,7 +697,7 @@ TEST(Variant, Vec2ValueToVec3ReturnsOriginalValue)
         { 0.0f,  -0.0f},
     });
 
-    for (auto const& testCase : testCases) {
+    for (const auto& testCase : testCases) {
         ASSERT_EQ(Variant{testCase}.to<Vec2>(), testCase);
     }
 }
@@ -758,8 +732,7 @@ TEST(Variant, Vec3ValueToBoolReturnsTrueIfXIsNonZeroRegardlessOfOtherComponents)
 
 TEST(Variant, Vec3ValueToColorExtractsTheElementsIntoRGB)
 {
-    auto const testCases = std::to_array<Vec3>(
-    {
+    const auto testCases = std::to_array<Vec3>({
         {0.0f, 0.0f, 0.0f},
         {1.0f, 0.0f, 1.0f},
         {-1.0f, 0.0f, 1.0f},
@@ -767,16 +740,14 @@ TEST(Variant, Vec3ValueToColorExtractsTheElementsIntoRGB)
         {0.0f, -20.0f, 0.5f},
     });
 
-    for (auto const& testCase : testCases)
-    {
+    for (const auto& testCase : testCases) {
         ASSERT_EQ(Variant{testCase}.to<Color>(), Color{testCase});
     }
 }
 
 TEST(Variant, Vec3ValueToFloatExtractsXToTheFloat)
 {
-    auto const testCases = std::to_array<Vec3>(
-    {
+    const auto testCases = std::to_array<Vec3>({
         {0.0f, 0.0f, 0.0f},
         {1.0f, 0.0f, 1.0f},
         {-1.0f, 0.0f, 1.0f},
@@ -784,16 +755,14 @@ TEST(Variant, Vec3ValueToFloatExtractsXToTheFloat)
         {0.0f, -20.0f, 0.5f},
     });
 
-    for (auto const& testCase : testCases)
-    {
+    for (const auto& testCase : testCases) {
         ASSERT_EQ(Variant{testCase}.to<float>(), testCase.x);
     }
 }
 
 TEST(Variant, Vec3ValueToIntExtractsXToTheInt)
 {
-    auto const testCases = std::to_array<Vec3>(
-    {
+    const auto testCases = std::to_array<Vec3>({
         {0.0f, 0.0f, 0.0f},
         {1.0f, 0.0f, 1.0f},
         {-1.0f, 0.0f, 1.0f},
@@ -801,16 +770,14 @@ TEST(Variant, Vec3ValueToIntExtractsXToTheInt)
         {0.0f, -20.0f, 0.5f},
     });
 
-    for (auto const& testCase : testCases)
-    {
+    for (const auto& testCase : testCases) {
         ASSERT_EQ(Variant{testCase}.to<int>(), static_cast<int>(testCase.x));
     }
 }
 
 TEST(Variant, Vec3ValueToStringReturnsSameAsDirectlyConvertingVectorToString)
 {
-    auto const testCases = std::to_array<Vec3>(
-    {
+    const auto testCases = std::to_array<Vec3>({
         {0.0f, 0.0f, 0.0f},
         {1.0f, 0.0f, 1.0f},
         {-1.0f, 0.0f, 1.0f},
@@ -818,8 +785,7 @@ TEST(Variant, Vec3ValueToStringReturnsSameAsDirectlyConvertingVectorToString)
         {0.0f, -20.0f, 0.5f},
     });
 
-    for (auto const& testCase : testCases)
-    {
+    for (const auto& testCase : testCases) {
         ASSERT_EQ(Variant{testCase}.to<std::string>(), to_string(testCase));
     }
 }
@@ -832,8 +798,7 @@ TEST(Variant, Vec3ValueToStringNameReturnsAnEmptyString)
 
 TEST(Variant, Vec3ValueToVec3ReturnsOriginalValue)
 {
-    auto const testCases = std::to_array<Vec3>(
-    {
+    const auto testCases = std::to_array<Vec3>({
         {0.0f, 0.0f, 0.0f},
         {1.0f, 0.0f, 1.0f},
         {-1.0f, 0.0f, 1.0f},
@@ -841,16 +806,14 @@ TEST(Variant, Vec3ValueToVec3ReturnsOriginalValue)
         {0.0f, -20.0f, 0.5f},
     });
 
-    for (auto const& testCase : testCases)
-    {
+    for (const auto& testCase : testCases) {
         ASSERT_EQ(Variant{testCase}.to<Vec3>(), testCase);
     }
 }
 
 TEST(Variant, IsAlwaysEqualToACopyOfItself)
 {
-    auto const testCases = std::to_array<Variant>(
-    {
+    const auto testCases = std::to_array<Variant>({
         Variant{false},
         Variant{true},
         Variant{Color::white()},
@@ -885,26 +848,22 @@ TEST(Variant, IsAlwaysEqualToACopyOfItself)
         Variant{Vec3{-0.5f}},
     });
 
-    for (auto const& tc : testCases)
-    {
+    for (const auto& tc : testCases) {
         ASSERT_EQ(tc, tc) << "input: " << tc.to<std::string>();
     }
 
-    auto const exceptions = std::to_array<Variant>(
-    {
+    const auto exceptions = std::to_array<Variant>({
         Variant{std::numeric_limits<float>::quiet_NaN()},
         Variant{std::numeric_limits<float>::signaling_NaN()},
     });
-    for (auto const& tc : exceptions)
-    {
+    for (const auto& tc : exceptions) {
         ASSERT_NE(tc, tc) << "input: " << tc.to<std::string>();
     }
 }
 
 TEST(Variant, IsNotEqualToOtherValuesEvenIfConversionIsPossible)
 {
-    auto const testCases = std::to_array<Variant>(
-    {
+    const auto testCases = std::to_array<Variant>({
         Variant{false},
         Variant{true},
         Variant{Color::white()},
@@ -957,8 +916,7 @@ TEST(Variant, IsNotEqualToOtherValuesEvenIfConversionIsPossible)
 
 TEST(Variant, CanHashAVarietyOfTypes)
 {
-    auto const testCases = std::to_array<Variant>(
-    {
+    const auto testCases = std::to_array<Variant>({
         Variant{false},
         Variant{true},
         Variant{Color::white()},
@@ -996,16 +954,14 @@ TEST(Variant, CanHashAVarietyOfTypes)
         Variant{Vec3{-0.5f}},
     });
 
-    for (auto const& testCase : testCases)
-    {
+    for (const auto& testCase : testCases) {
         ASSERT_NO_THROW({ std::hash<Variant>{}(testCase); });
     }
 }
 
 TEST(Variant, FreeFunctionToStringOnVarietyOfTypesReturnsSameAsCallingToStringMemberFunction)
 {
-    auto const testCases = std::to_array<Variant>(
-    {
+    const auto testCases = std::to_array<Variant>({
         Variant{false},
         Variant{true},
         Variant{Color::white()},
@@ -1043,16 +999,14 @@ TEST(Variant, FreeFunctionToStringOnVarietyOfTypesReturnsSameAsCallingToStringMe
         Variant{Vec3{-0.5f}},
     });
 
-    for (auto const& testCase : testCases)
-    {
+    for (const auto& testCase : testCases) {
         ASSERT_EQ(to_string(testCase), testCase.to<std::string>());
     }
 }
 
 TEST(Variant, StreamingToOutputStreamProducesSameOutputAsToString)
 {
-    auto const testCases = std::to_array<Variant>(
-    {
+    const auto testCases = std::to_array<Variant>({
         Variant{false},
         Variant{true},
         Variant{Color::white()},
@@ -1090,8 +1044,7 @@ TEST(Variant, StreamingToOutputStreamProducesSameOutputAsToString)
         Variant{Vec3{-0.5f}},
     });
 
-    for (auto const& testCase : testCases)
-    {
+    for (const auto& testCase : testCases) {
         std::stringstream ss;
         ss << testCase;
         ASSERT_EQ(ss.str(), testCase.to<std::string>());
@@ -1100,8 +1053,7 @@ TEST(Variant, StreamingToOutputStreamProducesSameOutputAsToString)
 
 TEST(Variant, HashesForStringValuesMatchStdStringEtc)
 {
-    auto const strings = std::to_array<std::string_view>(
-    {
+    const auto strings = std::to_array<std::string_view>({
         "false",
         "true",
         "0",
@@ -1109,10 +1061,9 @@ TEST(Variant, HashesForStringValuesMatchStdStringEtc)
         "a string",
     });
 
-    for (auto const& s : strings)
-    {
-        Variant const variant{s};
-        auto const hash = std::hash<Variant>{}(variant);
+    for (const auto& s : strings) {
+        const Variant variant{s};
+        const auto hash = std::hash<Variant>{}(variant);
 
         ASSERT_EQ(hash, std::hash<std::string>{}(std::string{s}));
         ASSERT_EQ(hash, std::hash<std::string_view>{}(s));
@@ -1168,8 +1119,7 @@ TEST(Variant, StringNameValueToColorReturnsBlackIfStringIsInvalidHTMLColorString
 
 TEST(Variant, StringNameValueToFloatTriesToParseStringAsFloatAndReturnsZeroOnFailure)
 {
-    auto const inputs = std::to_array<std::string_view>(
-    {
+    const auto inputs = std::to_array<std::string_view>({
         "-1.0",
         "20e-10",
         "",
@@ -1180,17 +1130,15 @@ TEST(Variant, StringNameValueToFloatTriesToParseStringAsFloatAndReturnsZeroOnFai
         "  ",
     });
 
-    for (auto const& input : inputs)
-    {
-        float const expectedOutput = ToFloatOrZero(input);
+    for (const auto& input : inputs) {
+        const float expectedOutput = ToFloatOrZero(input);
         ASSERT_EQ(Variant{StringName{input}}.to<float>(), expectedOutput);
     }
 }
 
 TEST(Variant, StringNameValueToIntTriesToParseStringAsBase10Int)
 {
-    auto const inputs = std::to_array<std::string_view>(
-    {
+    const auto inputs = std::to_array<std::string_view>({
         "-1.0",
         "20e-10",
         "",
@@ -1201,17 +1149,15 @@ TEST(Variant, StringNameValueToIntTriesToParseStringAsBase10Int)
         "  ",
     });
 
-    for (auto const& input : inputs)
-    {
-        int const expectedOutput = ToIntOrZero(input);
+    for (const auto& input : inputs) {
+        const int expectedOutput = ToIntOrZero(input);
         ASSERT_EQ(Variant{StringName{input}}.to<int>(), expectedOutput);
     }
 }
 
 TEST(Variant, StringNameValueToStringReturnsSuppliedString)
 {
-    auto const inputs = std::to_array<std::string_view>(
-    {
+    const auto inputs = std::to_array<std::string_view>({
         "some\tstring",
         "-1.0",
         "20e-10",
@@ -1224,16 +1170,14 @@ TEST(Variant, StringNameValueToStringReturnsSuppliedString)
         "a slightly longer string in case sso is in some way important"
     });
 
-    for (auto const& input : inputs)
-    {
+    for (const auto& input : inputs) {
         ASSERT_EQ(Variant{StringName{input}}.to<std::string>(), input);
     }
 }
 
 TEST(Variant, StringNameValueToStringNameReturnsSuppliedStringName)
 {
-    auto const inputs = std::to_array<std::string_view>(
-    {
+    const auto inputs = std::to_array<std::string_view>({
         "some\tstring",
         "-1.0",
         "20e-10",
@@ -1246,16 +1190,14 @@ TEST(Variant, StringNameValueToStringNameReturnsSuppliedStringName)
         "a slightly longer string in case sso is in some way important"
     });
 
-    for (auto const& input : inputs)
-    {
+    for (const auto& input : inputs) {
         ASSERT_EQ(Variant{StringName{input}}.to<StringName>(), StringName{input});
     }
 }
 
 TEST(Variant, StringNameToVec3AlwaysReturnsZeroedVec)
 {
-    auto const inputs = std::to_array<std::string_view>(
-    {
+    const auto inputs = std::to_array<std::string_view>({
         "some\tstring",
         "-1.0",
         "20e-10",
@@ -1268,16 +1210,14 @@ TEST(Variant, StringNameToVec3AlwaysReturnsZeroedVec)
         "Vec3(1, 2, 3)",
     });
 
-    for (auto const& input : inputs)
-    {
+    for (const auto& input : inputs) {
         ASSERT_EQ(Variant{StringName{input}}.to<Vec3>(), Vec3{});
     }
 }
 
 TEST(Variant, HashOfStringNameVariantIsSameAsHashOfStringVariant)
 {
-    auto const inputs = std::to_array<std::string_view>(
-    {
+    const auto inputs = std::to_array<std::string_view>({
         "some\tstring",
         "-1.0",
         "20e-10",
@@ -1290,10 +1230,9 @@ TEST(Variant, HashOfStringNameVariantIsSameAsHashOfStringVariant)
         "Vec3(1, 2, 3)",
     });
 
-    for (auto const& input : inputs)
-    {
-        auto snv = Variant{StringName{input}};
-        auto sv = Variant{std::string{input}};
+    for (const auto& input : inputs) {
+        const auto snv = Variant{StringName{input}};
+        const auto sv = Variant{std::string{input}};
 
         ASSERT_EQ(std::hash<Variant>{}(snv), std::hash<Variant>{}(sv));
     }
@@ -1301,8 +1240,7 @@ TEST(Variant, HashOfStringNameVariantIsSameAsHashOfStringVariant)
 
 TEST(Variant, StringNameVariantComparesEqualToEquivalentStringVariant)
 {
-    auto const inputs = std::to_array<std::string_view>(
-    {
+    const auto inputs = std::to_array<std::string_view>({
         "some\tstring",
         "-1.0",
         "20e-10",
@@ -1315,18 +1253,16 @@ TEST(Variant, StringNameVariantComparesEqualToEquivalentStringVariant)
         "Vec3(1, 2, 3)",
     });
 
-    for (auto const& input : inputs)
-    {
-        auto snv = Variant{StringName{input}};
-        auto sv = Variant{std::string{input}};
+    for (const auto& input : inputs) {
+        const auto snv = Variant{StringName{input}};
+        const auto sv = Variant{std::string{input}};
         ASSERT_EQ(snv, sv);
     }
 }
 
 TEST(Variant, StringNameVariantComparesEqualToEquivalentStringVariantReversed)
 {
-    auto const inputs = std::to_array<std::string_view>(
-    {
+    const auto inputs = std::to_array<std::string_view>({
         "some\tstring",
         "-1.0",
         "20e-10",
@@ -1339,10 +1275,9 @@ TEST(Variant, StringNameVariantComparesEqualToEquivalentStringVariantReversed)
         "Vec3(1, 2, 3)",
     });
 
-    for (auto const& input : inputs)
-    {
-        auto snv = Variant{StringName{input}};
-        auto sv = Variant{std::string{input}};
+    for (const auto& input : inputs) {
+        const auto snv = Variant{StringName{input}};
+        const auto sv = Variant{std::string{input}};
         ASSERT_EQ(sv, snv);  // reversed, compared to other test
     }
 }

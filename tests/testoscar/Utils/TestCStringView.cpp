@@ -11,13 +11,13 @@ using namespace osc::literals;
 
 TEST(CStringView, WhenPassedNullCstringYieldsEmptyCStringView)
 {
-    char const* p = nullptr;
+    const char* p = nullptr;
     ASSERT_TRUE(CStringView{p}.empty());
 }
 
 TEST(CStringView, WhenPassedNullCStringYieldsNonNullCStr)
 {
-    char const* p = nullptr;
+    const char* p = nullptr;
     ASSERT_NE(CStringView{p}.c_str(), nullptr);
 }
 
@@ -43,13 +43,12 @@ TEST(CStringView, WhenConstructedFromNullptrYieldsNonNullCStr)
 
 TEST(CStringView, ThreeWayComparisonBehavesIdenticallyToStringViewComparision)
 {
-    auto const svs = std::to_array<char const*>({ "x", "somestring", "somethingelse", "", "_i hope it works ;)" });
-    auto sameThreeWayResultWithAllOtherElements = [&svs](char const* elCStr)
+    const auto svs = std::to_array<const char*>({ "x", "somestring", "somethingelse", "", "_i hope it works ;)" });
+    auto sameThreeWayResultWithAllOtherElements = [&svs](const char* elCStr)
     {
         std::string_view sv{elCStr};
         CStringView csv{elCStr};
-        for (char const* otherCStr : svs)
-        {
+        for (const char* otherCStr : svs) {
             ASSERT_EQ(sv <=> std::string_view{otherCStr}, csv <=> CStringView{otherCStr});
         }
     };

@@ -15,7 +15,7 @@ TEST(signed_distance_between, ProducesExpectedAnswersInExampleCases)
         float expected;
     };
 
-    auto const cases = std::to_array<TestCase>({
+    const auto cases = std::to_array<TestCase>({
          // origin    // normal                // point                 // expected signed distance
         {{Vec3{},     Vec3{0.0f, 1.0f, 0.0f}}, Vec3{0.0f,  0.5f, 0.0f},  0.5f                      },
         {{Vec3{},     Vec3{0.0f, 1.0f, 0.0f}}, Vec3{0.0f, -0.5f, 0.0f}, -0.5f                      },
@@ -23,7 +23,7 @@ TEST(signed_distance_between, ProducesExpectedAnswersInExampleCases)
         {{Vec3{1.0f}, Vec3{1.0f, 0.0f, 0.0f}}, Vec3{0.0f, 0.25f, 0.0f}, -1.0f                      },
     });
 
-    for (auto const& [plane, point, expected] : cases) {
+    for (const auto& [plane, point, expected] : cases) {
         ASSERT_NEAR(signed_distance_between(plane, point), expected, epsilon_v<float>);
     }
 }
@@ -36,7 +36,7 @@ TEST(is_in_front_of, ProducesExpectedAnswersInExampleCases)
         bool expected;
     };
 
-    auto const cases = std::to_array<TestCase>({
+    const auto cases = std::to_array<TestCase>({
           // origin                   // normal                  // min                 // max                  // is in front of plane?
         {{Vec3{},                     Vec3{ 0.0f, 1.0f, 0.0f}}, {{ 1.0f,  1.0f,  1.0f}, { 2.0f,  2.0f,  2.0f}}, true},
         {{Vec3{},                     Vec3{ 0.0f, 1.0f, 0.0f}}, {{-2.0f, -2.0f, -2.0f}, {-1.0f, -1.0f, -1.0f}}, false},
@@ -55,7 +55,7 @@ TEST(is_in_front_of, ProducesExpectedAnswersInExampleCases)
 
 
 
-    for (auto const& [plane, aabb, expected] : cases) {
+    for (const auto& [plane, aabb, expected] : cases) {
         ASSERT_EQ(is_in_front_of(plane, aabb), expected) << "plane = " << plane << ", aabb = " << aabb << " (dimensions_of = " << dimensions_of(aabb) << ", half_widths . normal = " << dot(half_widths_of(aabb), abs(plane.normal)) << ", signed distance = " << signed_distance_between(plane, centroid_of(aabb)) << ')';
     }
 }

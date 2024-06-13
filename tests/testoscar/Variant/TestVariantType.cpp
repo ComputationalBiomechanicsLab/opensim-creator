@@ -15,8 +15,7 @@ TEST(VariantType, ToStringReturnsExpectedResults)
         VariantType input;
         std::string_view expectedOutput;
     };
-    auto const testCases = std::to_array<TestCase>(
-    {
+    const auto testCases = std::to_array<TestCase>({
         {VariantType::None, "NoneType"},
         {VariantType::Bool, "bool"},
         {VariantType::Color, "Color"},
@@ -29,14 +28,13 @@ TEST(VariantType, ToStringReturnsExpectedResults)
     });
     static_assert(num_options<VariantType>() == std::tuple_size<decltype(testCases)>());
 
-    for (auto const& tc : testCases)
-    {
+    for (const auto& tc : testCases) {
         ASSERT_EQ(to_string(tc.input), tc.expectedOutput);
     }
 }
 
 TEST(VariantType, PassingBsValueIntoToStringThrows)
 {
-    auto const bs = static_cast<VariantType>(std::numeric_limits<std::underlying_type_t<VariantType>>::max()-1);
+    const auto bs = static_cast<VariantType>(std::numeric_limits<std::underlying_type_t<VariantType>>::max()-1);
     ASSERT_ANY_THROW({ to_string(bs); });
 }

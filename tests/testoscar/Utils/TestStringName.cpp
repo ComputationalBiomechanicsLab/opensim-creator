@@ -18,9 +18,9 @@ using namespace osc;
 namespace
 {
     constexpr auto c_LongStringToAvoidSSOData = std::to_array("somequitelongstringthatprobablyneedstobeheapallocatedsothatmemoryanalyzershaveabetterchance");
-    constexpr char const* const c_LongStringToAvoidSSO = c_LongStringToAvoidSSOData.data();
+    constexpr const char* const c_LongStringToAvoidSSO = c_LongStringToAvoidSSOData.data();
     constexpr auto c_AnotherStringToAvoidSSOData = std::to_array("somedifferencequitelongstringthatprobablyneedstobeheapallocatedbutwhoknows");
-    constexpr char const* const c_AnotherStringToAvoidSSO = c_AnotherStringToAvoidSSOData.data();
+    constexpr const char* const c_AnotherStringToAvoidSSO = c_AnotherStringToAvoidSSOData.data();
 }
 
 TEST(StringName, CanBeDefaultConstructed)
@@ -83,7 +83,7 @@ TEST(StringName, DefaultConstructedExplicitlyConvertsIntoCStringView)
 TEST(StringName, CanBeUsedToCallCStringViewFunctions)
 {
     StringName sn;
-    auto const f = [](CStringView) {};
+    const auto f = [](CStringView) {};
     f(sn);  // should compile
 }
 
@@ -210,9 +210,9 @@ TEST(StringName, DefaultConstructedCanBeStreamedWhichWritesNothingToTheStream)
 TEST(StringName, DefaultConstructedSwappingWorksAsExpectedWithNonEmpty)
 {
     StringName a;
-    StringName const aCopy{a};
+    const StringName aCopy{a};
     StringName b{c_LongStringToAvoidSSO};
-    StringName const bCopy{b};
+    const StringName bCopy{b};
 
     swap(a, b);
 
@@ -247,7 +247,7 @@ TEST(StringName, CanConstructFromCString)
 
 TEST(StringName, CanImplicitlyConstructFromCStringView)
 {
-    auto const f = [](CStringView const&) {};
+    const auto f = [](const CStringView&) {};
     f(CStringView{"cstring"});  // should compile
 }
 
@@ -308,8 +308,8 @@ TEST(StringName, DataReturnsNulTerminatedPointerToFirstElement)
     constexpr auto c_Input = std::to_array("string");
     StringName s{c_Input.data()};
 
-    std::span<char const> inputSpan(c_Input);
-    std::span<StringName::value_type const> outputSpan{s.data(), std::size(c_Input)};  // plus nul terminator
+    std::span<const char> inputSpan(c_Input);
+    std::span<const StringName::value_type> outputSpan{s.data(), std::size(c_Input)};  // plus nul terminator
 
     ASSERT_TRUE(std::equal(outputSpan.begin(), outputSpan.end(), inputSpan.begin(), inputSpan.end()));
 }
@@ -319,21 +319,21 @@ TEST(StringName, CStringReturnsNulTerminatedPointerToFirstElement)
     constexpr auto c_Input = std::to_array("string");
     StringName s{c_Input.data()};
 
-    std::span<char const> inputSpan(c_Input);
-    std::span<StringName::value_type const> outputSpan{s.c_str(), std::size(c_Input)};  // plus nul terminator
+    std::span<const char> inputSpan(c_Input);
+    std::span<const StringName::value_type> outputSpan{s.c_str(), std::size(c_Input)};  // plus nul terminator
 
     ASSERT_TRUE(std::equal(outputSpan.begin(), outputSpan.end(), inputSpan.begin(), inputSpan.end()));
 }
 
 TEST(StringName, ImplicitlyConvertingToStringViewWorksAsExpected)
 {
-    StringName const s{c_LongStringToAvoidSSO};
+    const StringName s{c_LongStringToAvoidSSO};
     ASSERT_EQ(static_cast<std::string_view>(s), std::string_view{c_LongStringToAvoidSSO});
 }
 
 TEST(StringName, ImplicitlyConvertingToCStringViewWorksAsExpected)
 {
-    StringName const s{c_LongStringToAvoidSSO};
+    const StringName s{c_LongStringToAvoidSSO};
     ASSERT_EQ(static_cast<CStringView>(s), CStringView{c_LongStringToAvoidSSO});
 }
 

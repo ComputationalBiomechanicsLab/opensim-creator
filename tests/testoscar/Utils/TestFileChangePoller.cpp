@@ -12,7 +12,7 @@ using namespace osc;
 // that something not-quite-right has happened
 TEST(FileChangePoller, CtorDoesNotThrowExceptionIfGivenInvalidPath)
 {
-    std::string const path = "doesnt-exist";
+    const std::string path = "doesnt-exist";
 
     // constructing with an invalid path shouldn't throw
     ASSERT_NO_THROW({ FileChangePoller(std::chrono::milliseconds{0}, path); });
@@ -26,7 +26,7 @@ TEST(FileChangePoller, CtorDoesNotThrowExceptionIfGivenInvalidPath)
 // that something not-quite-right has happened
 TEST(FileChangePoller, ChangeWasDetectedDoesNotThrowExceptionIfGivenInvalidPath)
 {
-    std::string const path = "doesnt-exist";
+    const std::string path = "doesnt-exist";
 
     // construct it with an invalid path
     FileChangePoller p{std::chrono::milliseconds{0}, path};

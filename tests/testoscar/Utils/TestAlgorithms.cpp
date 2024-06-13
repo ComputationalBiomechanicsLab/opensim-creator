@@ -109,7 +109,7 @@ TEST(lookup_or_nullptr, WorksWithStdMap)
 
 TEST(lookup_or_nullptr, WorksWithConstQualifiedStdUnorderedMap)
 {
-    std::unordered_map<int, int> const um{
+    const std::unordered_map<int, int> um{
         {20, 30},
         {-1, 98},
         {5, 10},
@@ -138,28 +138,28 @@ TEST(lookup_or_nullptr, CanMutateViaReturnedPointer)
 
 TEST(min_element, WorksAsExpected)
 {
-    auto const els = std::to_array({1, 5, 8, -4, 13});
+    const auto els = std::to_array({1, 5, 8, -4, 13});
     ASSERT_EQ(rgs::min_element(els), els.begin() + 3);
 }
 
 TEST(min, WorksAsExpected)
 {
-    auto const els = std::to_array({1, 5, 8, -4, 13});
+    const auto els = std::to_array({1, 5, 8, -4, 13});
     ASSERT_EQ(rgs::min(els), -4);
 }
 
 TEST(minmax_element, WorksAsExpected)
 {
-    auto const els = std::to_array({1, 5, 8, -4, -4, 13, 13, 13});
-    auto const [minit, maxit] = rgs::minmax_element(els);
+    const auto els = std::to_array({1, 5, 8, -4, -4, 13, 13, 13});
+    const auto [minit, maxit] = rgs::minmax_element(els);
     ASSERT_EQ(minit, els.begin() + 3);
     ASSERT_EQ(maxit, els.end() - 1);
 }
 
 TEST(minmax, WorksAsExpected)
 {
-    auto const els = std::to_array({1, 5, 8, -4, -4, 13, 13, 13});
-    auto const [min, max] = rgs::minmax(els);
+    const auto els = std::to_array({1, 5, 8, -4, -4, 13, 13, 13});
+    const auto [min, max] = rgs::minmax(els);
     ASSERT_EQ(min, -4);
     ASSERT_EQ(max, 13);
 }

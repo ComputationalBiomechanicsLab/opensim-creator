@@ -14,8 +14,7 @@ namespace
     {
         std::vector<decltype(f())> rv;
         rv.reserve(n);
-        for (size_t i = 0; i < n; ++i)
-        {
+        for (size_t i = 0; i < n; ++i) {
             rv.push_back(f());
         }
         return rv;

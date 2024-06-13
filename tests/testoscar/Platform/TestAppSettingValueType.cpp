@@ -68,14 +68,12 @@ TEST(AppSettingValue, StringValueToBoolReturnsExpectedBoolValues)
 
 TEST(AppSettingValue, ColorValueToStringReturnsSameAsToHtmlStringRGBA)
 {
-    auto const colors = std::to_array(
-    {
+    const auto colors = std::to_array({
         Color::red(),
         Color::magenta(),
     });
 
-    for (auto const& color : colors)
-    {
+    for (const auto& color : colors) {
         ASSERT_EQ(AppSettingValue{color}.to_string(), to_html_string_rgba(color));
     }
 }

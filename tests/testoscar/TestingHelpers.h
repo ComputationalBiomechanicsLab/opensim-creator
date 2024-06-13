@@ -43,7 +43,7 @@ namespace osc::testing
     std::vector<uint16_t> GenerateIndices(size_t start, size_t end);
 
     template<std::ranges::range T, std::ranges::range U>
-    bool ContainersEqual(T const& a, U const& b)
+    bool ContainersEqual(const T& a, const U& b)
     {
         using std::begin;
         using std::end;
@@ -52,23 +52,22 @@ namespace osc::testing
     }
 
     template<std::ranges::range Range, class UnaryOperation>
-    requires std::invocable<UnaryOperation, typename Range::value_type const&>
-    auto MapToVector(Range const& src, UnaryOperation op)
+    requires std::invocable<UnaryOperation, const typename Range::value_type&>
+    auto MapToVector(const Range& src, UnaryOperation op)
     {
         using std::begin;
         using std::end;
 
         std::vector<std::remove_const_t<std::remove_reference_t<decltype(op(std::declval<decltype(*begin(src))>()))>>> rv;
         rv.reserve(std::distance(begin(src), end(src)));
-        for (auto const& el : src)
-        {
+        for (const auto& el : src) {
             rv.push_back(op(el));
         }
         return rv;
     }
 
     template<class T>
-    std::vector<T> ResizedVectorCopy(std::vector<T> const& v, size_t newSize, T const& filler = {})
+    std::vector<T> ResizedVectorCopy(const std::vector<T>& v, size_t newSize, const T& filler = {})
     {
         std::vector<T> rv;
         rv.reserve(newSize);

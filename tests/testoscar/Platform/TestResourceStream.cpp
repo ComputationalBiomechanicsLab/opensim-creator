@@ -21,7 +21,7 @@ namespace
         return std::string{beg, end};
     }
 
-    std::string slurp(std::filesystem::path const& p)
+    std::string slurp(const std::filesystem::path& p)
     {
         std::ifstream fs{p, std::ios::binary};
         return slurp(fs);
@@ -40,7 +40,7 @@ TEST(ResourceStream, WhenDefaultConstructedHasNameNullstream)
 
 TEST(ResourceStream, WhenConstructedFromFilepathCreatesStreamThatReadsFile)
 {
-    auto const path = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "awesomeface.png";
+    const auto path = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "awesomeface.png";
     ResourceStream rs{path};
 
     ASSERT_TRUE(slurp(rs) == slurp(path));
@@ -48,6 +48,6 @@ TEST(ResourceStream, WhenConstructedFromFilepathCreatesStreamThatReadsFile)
 
 TEST(ResourceStream, WhenConstructedFromFilepathHasNameEqualtoFilename)
 {
-    auto const path = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "awesomeface.png";
+    const auto path = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "awesomeface.png";
     ASSERT_EQ(ResourceStream{path}.name(), path.filename().string());
 }
