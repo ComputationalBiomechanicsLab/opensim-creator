@@ -28,7 +28,7 @@ namespace osc
             MaterialPropertyBlock property_block_;
         };
 
-        MeshBasicMaterial();
+        explicit MeshBasicMaterial(const Color& = Color::black());
 
         Color color() const { return *material_.get_color(c_color_propname); }
         void set_color(Color c) { material_.set_color(c_color_propname, c); }

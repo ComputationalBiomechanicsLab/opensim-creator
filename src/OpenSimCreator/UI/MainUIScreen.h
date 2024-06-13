@@ -27,7 +27,7 @@ namespace osc
     private:
         void impl_on_mount() final;
         void impl_on_unmount() final;
-        void impl_on_event(SDL_Event const&) final;
+        bool impl_on_event(SDL_Event const&) final;
         void impl_on_tick() final;
         void impl_on_draw() final;
 

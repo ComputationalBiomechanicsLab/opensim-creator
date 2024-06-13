@@ -48,7 +48,7 @@ using namespace OpenSim;
 using namespace SimTK;
 
 //=============================================================================
-// CONSTRUCTOR(S) 
+// CONSTRUCTOR(S)
 //=============================================================================
 
 Smith2018ArticularContactForce::Smith2018ArticularContactForce() : Force()
@@ -96,7 +96,7 @@ extendAddToSystem(MultibodySystem& system) const
     int target_mesh_nTri =
         getSocket<Smith2018ContactMesh>("target_mesh").
         getConnectee().getNumFaces();
-    int casting_mesh_nTri = 
+    int casting_mesh_nTri =
         getSocket<Smith2018ContactMesh>("casting_mesh").
         getConnectee().getNumFaces();
 
@@ -107,7 +107,7 @@ extendAddToSystem(MultibodySystem& system) const
 
     Vector_<Vec3> target_mesh_def_vec3(target_mesh_nTri,Vec3(0.0));
     Vector_<Vec3> casting_mesh_def_vec3(casting_mesh_nTri,Vec3(0.0));
-    
+
 
     std::vector<int> target_mesh_def_vector_int(target_mesh_nTri,-1);
     std::vector<int> casting_mesh_def_vector_int(casting_mesh_nTri,-1);
@@ -117,7 +117,7 @@ extendAddToSystem(MultibodySystem& system) const
     // state. Is there a better way to make them accessible without setting
     // the stage to LowestRuntime???
 
-    this->_target_triangle_previous_contacting_triangleCV = 
+    this->_target_triangle_previous_contacting_triangleCV =
         addCacheVariable(
         "target_triangle_previous_contacting_triangle",
         target_mesh_def_vector_int, Stage::LowestRuntime);
@@ -128,7 +128,7 @@ extendAddToSystem(MultibodySystem& system) const
         casting_mesh_def_vector_int, Stage::LowestRuntime);
 
     //Triangles with ray intersections
-    this->_target_num_active_trianglesCV = 
+    this->_target_num_active_trianglesCV =
         addCacheVariable("target_num_active_triangles",
         0, Stage::Position);
 
@@ -137,14 +137,14 @@ extendAddToSystem(MultibodySystem& system) const
         0, Stage::Position);
 
     //Subset of num_active_triangles with positive proximity
-    this->_target_num_contacting_trianglesCV = 
+    this->_target_num_contacting_trianglesCV =
         addCacheVariable("target_num_contacting_triangles",
         0, Stage::Position);
 
-    this->_casting_num_contacting_trianglesCV = 
+    this->_casting_num_contacting_trianglesCV =
         addCacheVariable("casting_num_contacting_triangles",
         0, Stage::Position);
-    
+
     //same, neighbor, and different are useful for debugging issues with
     //newly constructed contact meshes
     //Subset of n_contacting_tri that contact same triangle as previous step
@@ -156,23 +156,23 @@ extendAddToSystem(MultibodySystem& system) const
         addCacheVariable("casting_num_contacting_triangles_same",
         0, Stage::Position);
 
-    //Subset of n_contacting_tri that contact 
+    //Subset of n_contacting_tri that contact
     //neighboring triangle to previous step
     this->_target_num_contacting_triangles_neighborCV =
         addCacheVariable("target_num_contacting_triangles_neighbor",
         0, Stage::Position);
 
-    this->_casting_num_contacting_triangles_neighborCV = 
+    this->_casting_num_contacting_triangles_neighborCV =
         addCacheVariable("casting_num_contacting_triangles_neighbor",
         0, Stage::Position);
 
-    //Subset of n_contacting_tri that contact different triangle from previous 
+    //Subset of n_contacting_tri that contact different triangle from previous
     //step (not same or neighbor), this means expensive OBB check was used
     this->_target_num_contacting_triangles_differentCV =
         addCacheVariable("target_num_contacting_triangles_different",
         0, Stage::Position);
 
-    this->_casting_num_contacting_triangles_differentCV = 
+    this->_casting_num_contacting_triangles_differentCV =
         addCacheVariable("casting_num_contacting_triangles_different",
         0, Stage::Position);
 
@@ -183,7 +183,7 @@ extendAddToSystem(MultibodySystem& system) const
     this->_casting_triangle_proximityCV =
         addCacheVariable("casting_triangle_proximity",
         casting_mesh_def_vec, Stage::Position);
-    
+
     this->_target_triangle_pressureCV =
         addCacheVariable("target_triangle_pressure",
         target_mesh_def_vec, Stage::Position);
@@ -191,7 +191,7 @@ extendAddToSystem(MultibodySystem& system) const
         addCacheVariable("casting_triangle_pressure",
         casting_mesh_def_vec, Stage::Position);
 
-    this->_target_triangle_potential_energyCV = 
+    this->_target_triangle_potential_energyCV =
         addCacheVariable("target_triangle_potential_energy",
         target_mesh_def_vec, Stage::Position);
     this->_casting_triangle_potential_energyCV =
@@ -201,19 +201,19 @@ extendAddToSystem(MultibodySystem& system) const
     this->_target_triangle_forceCV =
         addCacheVariable("target_triangle_force",
         target_mesh_def_vec3, Stage::Position);
-    this->_casting_triangle_forceCV = 
+    this->_casting_triangle_forceCV =
         addCacheVariable("casting_triangle_force",
         casting_mesh_def_vec3, Stage::Position);
 
 
     //Lazy Evaluations (only computed getXX is called)
-    this->_target_total_contact_areaCV = 
+    this->_target_total_contact_areaCV =
         addCacheVariable
         ("target_total_contact_area", 0.0, Stage::Position);
     this->_target_total_mean_proximityCV =
         addCacheVariable
         ("target_total_mean_proximity", 0.0, Stage::Position);
-    this->_target_total_max_proximityCV = 
+    this->_target_total_max_proximityCV =
         addCacheVariable
         ("target_total_max_proximity", 0.0, Stage::Position);
     this->_target_total_center_of_proximityCV =
@@ -228,7 +228,7 @@ extendAddToSystem(MultibodySystem& system) const
     this->_target_total_center_of_pressureCV =
         addCacheVariable
         ("target_total_center_of_pressure", Vec3(0), Stage::Position);
-    this->_target_total_contact_forceCV = 
+    this->_target_total_contact_forceCV =
         addCacheVariable
         ("target_total_contact_force", Vec3(0), Stage::Position);
     this->_target_total_contact_momentCV =
@@ -385,7 +385,7 @@ void Smith2018ArticularContactForce::computeMeshProximity(
         SimTK::UnitVec3 direction(
             MeshCtoMeshT.xformFrameVecToBase(tri_nor(i)));
 
-        //If triangle was in contact in previous timestep, 
+        //If triangle was in contact in previous timestep,
         //recheck same contact triangle and neighbors
         if (target_tri[i] >= 0) {
             //same triangle
@@ -460,35 +460,35 @@ void Smith2018ArticularContactForce::computeMeshProximity(
 
     //Store Contact Info
     if (cache_mesh_name == "casting"){
-        this->setCacheVariableValue(state, 
+        this->setCacheVariableValue(state,
             this->_casting_triangle_proximityCV, triangle_proximity);
-        this->setCacheVariableValue(state, 
+        this->setCacheVariableValue(state,
             this->_casting_triangle_previous_contacting_triangleCV, target_tri);
-        this->setCacheVariableValue(state, 
+        this->setCacheVariableValue(state,
             this->_casting_num_active_trianglesCV, nActiveTri);
-        this->setCacheVariableValue(state, 
+        this->setCacheVariableValue(state,
             this->_casting_num_contacting_trianglesCV, nContactingTri);
-        this->setCacheVariableValue(state, 
+        this->setCacheVariableValue(state,
             this->_casting_num_contacting_triangles_sameCV, nSameTri);
-        this->setCacheVariableValue(state, 
+        this->setCacheVariableValue(state,
             this->_casting_num_contacting_triangles_neighborCV, nNeighborTri);
-        this->setCacheVariableValue(state, 
+        this->setCacheVariableValue(state,
             this->_casting_num_contacting_triangles_differentCV, nDiffTri);
     }
     else {
-        this->setCacheVariableValue(state, 
+        this->setCacheVariableValue(state,
             this->_target_triangle_proximityCV, triangle_proximity);
-        this->setCacheVariableValue(state, 
+        this->setCacheVariableValue(state,
             this->_target_triangle_previous_contacting_triangleCV, target_tri);
-        this->setCacheVariableValue(state, 
+        this->setCacheVariableValue(state,
             this->_target_num_active_trianglesCV, nActiveTri);
-        this->setCacheVariableValue(state, 
+        this->setCacheVariableValue(state,
             this->_target_num_contacting_trianglesCV, nContactingTri);
-        this->setCacheVariableValue(state, 
+        this->setCacheVariableValue(state,
             this->_target_num_contacting_triangles_sameCV, nSameTri);
-        this->setCacheVariableValue(state, 
+        this->setCacheVariableValue(state,
             this->_target_num_contacting_triangles_neighborCV, nNeighborTri);
-        this->setCacheVariableValue(state, 
+        this->setCacheVariableValue(state,
             this->_target_num_contacting_triangles_differentCV, nDiffTri);
     }
 }
@@ -526,9 +526,9 @@ void Smith2018ArticularContactForce::computeMeshDynamics(
     }
 
     const Vector& triangle_proximity = (flipped_meshes) ?
-        this->getCacheVariableValue(state, 
+        this->getCacheVariableValue(state,
             this->_target_triangle_proximityCV) :
-        this->getCacheVariableValue(state, 
+        this->getCacheVariableValue(state,
             this->_casting_triangle_proximityCV);
 
     const std::vector<int>& target_tri = (flipped_meshes) ?
@@ -561,7 +561,7 @@ void Smith2018ArticularContactForce::computeMeshDynamics(
         hT = target_mesh.getTriangleThickness(target_tri[i]);
         ET = target_mesh.getTriangleElasticModulus(target_tri[i]);
         vT = target_mesh.getTrianglePoissonsRatio(target_tri[i]);
-        
+
         hC = casting_mesh.getTriangleThickness(i);
         EC = casting_mesh.getTriangleElasticModulus(i);
         vC = casting_mesh.getTrianglePoissonsRatio(i);
@@ -611,8 +611,8 @@ void Smith2018ArticularContactForce::computeMeshDynamics(
         }
 
         //nonlinear solution
-        else{ //(get_elastic_foundation_formulation() == "nonlinear") 
-            double nonlinearPressure = 
+        else{ //(get_elastic_foundation_formulation() == "nonlinear")
+            double nonlinearPressure =
                 calcTrianglePressureVariableNonlinearModel(
                     triangle_proximity(i),hC,hT,EC,ET,vC,vT,linearPressure);
 
@@ -621,16 +621,16 @@ void Smith2018ArticularContactForce::computeMeshDynamics(
             double depthC = hC * (1 - exp(-nonlinearPressure / kC));
             double depthT = hT * (1 - exp(-nonlinearPressure / kT));
 
-            double energyC = -triangle_area(i)* kC * 
+            double energyC = -triangle_area(i)* kC *
                 ((depthC - hC)*log(1 - depthC / hC) - depthC);
-            double energyT = -triangle_area(i)* kT * 
+            double energyT = -triangle_area(i)* kT *
                 ((depthT - hT)*log(1 - depthT / hT) - depthT);
             triangle_energy(i) = energyC + energyT;
             continue;
         }
     }
 
-    //Compute Triangle Forces 
+    //Compute Triangle Forces
     //-----------------------
     const Vector_<UnitVec3>& triangle_normal = casting_mesh.getTriangleNormals();
 
@@ -639,18 +639,18 @@ void Smith2018ArticularContactForce::computeMeshDynamics(
 
     for (int i = 0; i < casting_mesh.getNumFaces(); ++i) {
         for (int j = 0; j < 3; ++j) {
-            triangle_force(i)(j) = 
+            triangle_force(i)(j) =
                 triangle_pressure(i) * triangle_area(i) * -triangle_normal(i)(j);
         }
     }
 
-    
+
     if (flipped_meshes) {
         this->setCacheVariableValue(state,
             this->_target_triangle_pressureCV, triangle_pressure);
         this->setCacheVariableValue(state,
             this->_target_triangle_potential_energyCV, triangle_energy);
-        this->setCacheVariableValue(state, 
+        this->setCacheVariableValue(state,
             this->_target_triangle_forceCV, triangle_force);
     }
     else {
@@ -658,7 +658,7 @@ void Smith2018ArticularContactForce::computeMeshDynamics(
             this->_casting_triangle_pressureCV, triangle_pressure);
         this->setCacheVariableValue(state,
             this->_casting_triangle_potential_energyCV, triangle_energy);
-        this->setCacheVariableValue(state, 
+        this->setCacheVariableValue(state,
             this->_casting_triangle_forceCV, triangle_force);
     }
 
@@ -666,11 +666,11 @@ void Smith2018ArticularContactForce::computeMeshDynamics(
 }
 
 double Smith2018ArticularContactForce::
-    calcTrianglePressureVariableNonlinearModel(double proximity, 
+    calcTrianglePressureVariableNonlinearModel(double proximity,
     double casting_thickness, double target_thickness,
     double casting_E, double target_E, double casting_v, double target_v,
     double init_guess) const {
-    
+
     NonlinearContactParams cp;
 
     cp.dc = proximity;
@@ -747,7 +747,7 @@ void Smith2018ArticularContactForce::computeForce(const State& state,
             "casting", casting_triangle_proximity);
     }
     else {
-        casting_triangle_proximity = 
+        casting_triangle_proximity =
             this->getCacheVariableValue(state, this->_casting_triangle_proximityCV);
     }
 
@@ -799,8 +799,8 @@ void Smith2018ArticularContactForce::computeForce(const State& state,
                 this->getCacheVariableValue(state,
                     this->_target_triangle_proximityCV);
         }
-    
-        
+
+
         //target pressure
         SimTK::Vector target_triangle_pressure;
         SimTK::Vector_<SimTK::Vec3> target_triangle_force;
@@ -808,7 +808,7 @@ void Smith2018ArticularContactForce::computeForce(const State& state,
 
         computeMeshDynamics(state, target_mesh, casting_mesh,
             target_triangle_force, target_triangle_pressure, target_triangle_energy);
-            
+
         /*setCacheVariableValue(state,
             "target.triangle.proximity", target_triangle_proximity);
 
@@ -830,11 +830,11 @@ void Smith2018ArticularContactForce::realizeContactMetricCaches(
     const Smith2018ContactMesh& target_mesh =
         getConnectee<Smith2018ContactMesh>("target_mesh");
 
-    const SimTK::Vector& casting_triangle_proximity = 
+    const SimTK::Vector& casting_triangle_proximity =
         this->getCacheVariableValue(
             state, this->_casting_triangle_proximityCV);
 
-    const SimTK::Vector& casting_triangle_pressure = 
+    const SimTK::Vector& casting_triangle_pressure =
         this->getCacheVariableValue(
             state, this->_casting_triangle_pressureCV);
 
@@ -845,39 +845,39 @@ void Smith2018ArticularContactForce::realizeContactMetricCaches(
 
     auto stats = computeContactStats(casting_mesh, casting_triangle_proximity,
         casting_triangle_pressure,casting_faces);
-    
-    this->setCacheVariableValue(state, 
+
+    this->setCacheVariableValue(state,
         this->_casting_total_contact_areaCV, stats.contact_area);
-    this->setCacheVariableValue(state, 
+    this->setCacheVariableValue(state,
         this->_casting_total_mean_proximityCV, stats.mean_proximity);
-    this->setCacheVariableValue(state, 
+    this->setCacheVariableValue(state,
         this->_casting_total_max_proximityCV, stats.max_proximity);
-    this->setCacheVariableValue(state, 
+    this->setCacheVariableValue(state,
         this->_casting_total_center_of_proximityCV, stats.center_of_proximity);
-    this->setCacheVariableValue(state, 
+    this->setCacheVariableValue(state,
         this->_casting_total_mean_pressureCV, stats.mean_pressure);
-    this->setCacheVariableValue(state, 
+    this->setCacheVariableValue(state,
         this->_casting_total_max_pressureCV, stats.max_pressure);
-    this->setCacheVariableValue(state, 
+    this->setCacheVariableValue(state,
         this->_casting_total_center_of_pressureCV, stats.center_of_pressure);
-    this->setCacheVariableValue(state, 
+    this->setCacheVariableValue(state,
         this->_casting_total_contact_forceCV, stats.contact_force);
-    this->setCacheVariableValue(state, 
+    this->setCacheVariableValue(state,
         this->_casting_total_contact_momentCV, stats.contact_moment);
- 
+
 
     //Target mesh computations (not used in applied contact force calculation)
     SimTK::Vector target_triangle_proximity;
     SimTK::Vector target_triangle_pressure;
 
     if (getModelingOption(state, "flip_meshes")) {
-        
-        target_triangle_proximity = 
-            this->getCacheVariableValue(state, 
+
+        target_triangle_proximity =
+            this->getCacheVariableValue(state,
                 this->_target_triangle_proximityCV);
 
-        target_triangle_pressure = 
-            this->getCacheVariableValue(state, 
+        target_triangle_pressure =
+            this->getCacheVariableValue(state,
                 this->_target_triangle_pressureCV);
 
         //target contact stats
@@ -888,7 +888,7 @@ void Smith2018ArticularContactForce::realizeContactMetricCaches(
 
         auto Tstats = computeContactStats(target_mesh, target_triangle_proximity,
             target_triangle_pressure,Tcasting_faces);
-    
+
         this->setCacheVariableValue(state,
             this->_target_total_contact_areaCV, Tstats.contact_area);
         this->setCacheVariableValue(state,
@@ -910,7 +910,7 @@ void Smith2018ArticularContactForce::realizeContactMetricCaches(
     }
 
     //regional casting stats
-    std::vector<std::vector<int>> casting_region_tri_ind = 
+    std::vector<std::vector<int>> casting_region_tri_ind =
         casting_mesh.getRegionalTriangleIndices();
 
     SimTK::Vector reg_contact_area(6, 0.0);
@@ -924,7 +924,7 @@ void Smith2018ArticularContactForce::realizeContactMetricCaches(
     SimTK::Vector_<SimTK::Vec3> reg_contact_moment(6, SimTK::Vec3(0));
 
     for (int i = 0; i < 6; ++i) {
-        auto stats = computeContactStats(casting_mesh, 
+        auto stats = computeContactStats(casting_mesh,
             casting_triangle_proximity, casting_triangle_pressure,
             casting_region_tri_ind[i]);
 
@@ -959,12 +959,12 @@ void Smith2018ArticularContactForce::realizeContactMetricCaches(
 
     //target
     if (getModelingOption(state, "flip_meshes")) {
-        
+
         std::vector<std::vector<int>> target_region_tri_ind =
             target_mesh.getRegionalTriangleIndices();
 
         for (int i = 0; i < 6; ++i) {
-            auto stats = computeContactStats(target_mesh, 
+            auto stats = computeContactStats(target_mesh,
                 target_triangle_proximity, target_triangle_pressure, target_region_tri_ind[i]);
 
             reg_contact_area(i) = stats.contact_area;
@@ -1067,7 +1067,7 @@ Smith2018ArticularContactForce::computeContactStats(
             nContactingTri++;
         }
     }
-    
+
     SimTK::Vector triangle_cenX(nTri);
     SimTK::Vector triangle_cenY(nTri);
     SimTK::Vector triangle_cenZ(nTri);
@@ -1160,7 +1160,7 @@ Smith2018ArticularContactForce::computeContactStats(
     //Contact Force
     stats.contact_force = 0.0;
     stats.contact_moment = 0.0;
-    
+
 
     for (int i = 0; i < nTri; ++i) {
         stats.contact_force += computeContactForceVector(
@@ -1176,7 +1176,7 @@ Smith2018ArticularContactForce::computeContactStats(
 
 OpenSim::Array<std::string> Smith2018ArticularContactForce::
 getRecordLabels() const {
-    // Can only return casting_mesh computations because target_mesh is 
+    // Can only return casting_mesh computations because target_mesh is
     // not used in computation of force, so if the flip_meshes ModelingOption
     // is not set, target_mesh values will not be valid
 
@@ -1190,7 +1190,7 @@ getRecordLabels() const {
 
     labels.append(getName() + "." + c_mesh + ".total.contact_area");
     labels.append(getName() + "." + c_mesh + ".total.mean_proximity");
-    labels.append(getName() + "." + c_mesh + ".total.max_proximity"); 
+    labels.append(getName() + "." + c_mesh + ".total.max_proximity");
     labels.append(getName() + "." + c_mesh + ".total.center_of_proximity_x");
     labels.append(getName() + "." + c_mesh + ".total.center_of_proximity_y");
     labels.append(getName() + "." + c_mesh + ".total.center_of_proximity_z");
@@ -1297,7 +1297,7 @@ getRecordLabels() const {
     labels.append(getName() + "." + c_mesh + ".regional.contact_force_5_x");
     labels.append(getName() + "." + c_mesh + ".regional.contact_force_5_y");
     labels.append(getName() + "." + c_mesh + ".regional.contact_force_5_z");
-    
+
     labels.append(getName() + "." + c_mesh + ".regional.contact_moment_0_x");
     labels.append(getName() + "." + c_mesh + ".regional.contact_moment_0_y");
     labels.append(getName() + "." + c_mesh + ".regional.contact_moment_0_z");
@@ -1316,10 +1316,10 @@ getRecordLabels() const {
     labels.append(getName() + "." + c_mesh + ".regional.contact_moment_5_x");
     labels.append(getName() + "." + c_mesh + ".regional.contact_moment_5_y");
     labels.append(getName() + "." + c_mesh + ".regional.contact_moment_5_z");
-    
+
     labels.append(getName() + "." + t_mesh + ".total.contact_area");
     labels.append(getName() + "." + t_mesh + ".total.mean_proximity");
-    labels.append(getName() + "." + t_mesh + ".total.max_proximity"); 
+    labels.append(getName() + "." + t_mesh + ".total.max_proximity");
     labels.append(getName() + "." + t_mesh + ".total.center_of_proximity_x");
     labels.append(getName() + "." + t_mesh + ".total.center_of_proximity_y");
     labels.append(getName() + "." + t_mesh + ".total.center_of_proximity_z");
@@ -1426,7 +1426,7 @@ getRecordLabels() const {
     labels.append(getName() + "." + t_mesh + ".regional.contact_force_5_x");
     labels.append(getName() + "." + t_mesh + ".regional.contact_force_5_y");
     labels.append(getName() + "." + t_mesh + ".regional.contact_force_5_z");
-    
+
     labels.append(getName() + "." + t_mesh + ".regional.contact_moment_0_x");
     labels.append(getName() + "." + t_mesh + ".regional.contact_moment_0_y");
     labels.append(getName() + "." + t_mesh + ".regional.contact_moment_0_z");
@@ -1445,14 +1445,14 @@ getRecordLabels() const {
     labels.append(getName() + "." + t_mesh + ".regional.contact_moment_5_x");
     labels.append(getName() + "." + t_mesh + ".regional.contact_moment_5_y");
     labels.append(getName() + "." + t_mesh + ".regional.contact_moment_5_z");
-    
+
     return labels;
 }
 
 
 OpenSim::Array<double> Smith2018ArticularContactForce::
 getRecordValues(const SimTK::State& state) const {
-    
+
     if (!this->isCacheVariableValid(state, _casting_total_contact_areaCV)) {
         realizeContactMetricCaches(state);
     }
@@ -1461,24 +1461,24 @@ getRecordValues(const SimTK::State& state) const {
     const double& casting_contact_area = this->getCacheVariableValue(state,
         this->_casting_total_contact_areaCV);
 
-    const double& casting_mean_proximity = this->getCacheVariableValue(state, 
+    const double& casting_mean_proximity = this->getCacheVariableValue(state,
         this->_casting_total_mean_proximityCV);
 
-    const double& casting_max_proximity = this->getCacheVariableValue(state, 
+    const double& casting_max_proximity = this->getCacheVariableValue(state,
         this->_casting_total_max_proximityCV);
 
-    const SimTK::Vec3& casting_center_of_proximity = 
-        this->getCacheVariableValue(state, 
+    const SimTK::Vec3& casting_center_of_proximity =
+        this->getCacheVariableValue(state,
             this->_casting_total_center_of_proximityCV);
 
-    const double& casting_mean_pressure = this->getCacheVariableValue(state, 
+    const double& casting_mean_pressure = this->getCacheVariableValue(state,
         this->_casting_total_mean_pressureCV);
 
-    const double& casting_max_pressure = this->getCacheVariableValue(state, 
+    const double& casting_max_pressure = this->getCacheVariableValue(state,
         this->_casting_total_max_pressureCV);
 
-    const SimTK::Vec3& casting_center_of_pressure = 
-        this->getCacheVariableValue(state, 
+    const SimTK::Vec3& casting_center_of_pressure =
+        this->getCacheVariableValue(state,
             this->_casting_total_center_of_pressureCV);
 
     const SimTK::Vec3& casting_contact_force = this->getCacheVariableValue(
@@ -1488,52 +1488,52 @@ getRecordValues(const SimTK::State& state) const {
         state, this->_casting_total_contact_momentCV);
 
     // Regional
-    const SimTK::Vector& casting_regional_contact_area = 
-        this->getCacheVariableValue(state, 
+    const SimTK::Vector& casting_regional_contact_area =
+        this->getCacheVariableValue(state,
             this->_casting_regional_contact_areaCV);
 
-    const SimTK::Vector& casting_regional_mean_proximity = 
-        this->getCacheVariableValue(state, 
+    const SimTK::Vector& casting_regional_mean_proximity =
+        this->getCacheVariableValue(state,
             this->_casting_regional_mean_proximityCV);
 
-    const SimTK::Vector& casting_regional_max_proximity = 
-        this->getCacheVariableValue(state, 
+    const SimTK::Vector& casting_regional_max_proximity =
+        this->getCacheVariableValue(state,
             this->_casting_regional_max_proximityCV);
 
-    const SimTK::Vector_<SimTK::Vec3>& casting_regional_center_of_proximity = 
-        this->getCacheVariableValue(state, 
+    const SimTK::Vector_<SimTK::Vec3>& casting_regional_center_of_proximity =
+        this->getCacheVariableValue(state,
             this->_casting_regional_center_of_proximityCV);
-    
-    const SimTK::Vector& casting_regional_mean_pressure = 
-        this->getCacheVariableValue(state, 
+
+    const SimTK::Vector& casting_regional_mean_pressure =
+        this->getCacheVariableValue(state,
             this->_casting_regional_mean_pressureCV);
 
-    const SimTK::Vector& casting_regional_max_pressure = 
-        this->getCacheVariableValue(state, 
+    const SimTK::Vector& casting_regional_max_pressure =
+        this->getCacheVariableValue(state,
             this->_casting_regional_max_pressureCV);
 
-    const SimTK::Vector_<SimTK::Vec3>& casting_regional_center_of_pressure = 
-        this->getCacheVariableValue(state, 
+    const SimTK::Vector_<SimTK::Vec3>& casting_regional_center_of_pressure =
+        this->getCacheVariableValue(state,
             this->_casting_regional_center_of_pressureCV);
 
-    const SimTK::Vector_<SimTK::Vec3>& casting_regional_contact_force = 
-        this->getCacheVariableValue(state, 
+    const SimTK::Vector_<SimTK::Vec3>& casting_regional_contact_force =
+        this->getCacheVariableValue(state,
             this->_casting_regional_contact_forceCV);
 
-    const SimTK::Vector_<SimTK::Vec3>& casting_regional_contact_moment = 
-        this->getCacheVariableValue(state, 
+    const SimTK::Vector_<SimTK::Vec3>& casting_regional_contact_moment =
+        this->getCacheVariableValue(state,
             this->_casting_regional_contact_momentCV);
 
     OpenSim::Array<double> values;
-    
+
     values.append(casting_contact_area);
     values.append(casting_mean_proximity);
-    values.append(casting_max_proximity); 
+    values.append(casting_max_proximity);
     values.append(casting_center_of_proximity(0));
     values.append(casting_center_of_proximity(1));
     values.append(casting_center_of_proximity(2));
     values.append(casting_mean_pressure);
-    values.append(casting_max_pressure);    
+    values.append(casting_max_pressure);
     values.append(casting_center_of_pressure(0));
     values.append(casting_center_of_pressure(1));
     values.append(casting_center_of_pressure(2));
@@ -1655,7 +1655,7 @@ getRecordValues(const SimTK::State& state) const {
     values.append(casting_regional_contact_moment(5)(1));
     values.append(casting_regional_contact_moment(5)(2));
 
-    
+
     if (getModelingOption(state, "flip_meshes")) {
         //Total
         const double& target_contact_area = this->getCacheVariableValue(
@@ -1667,7 +1667,7 @@ getRecordValues(const SimTK::State& state) const {
         const double& target_max_proximity = this->getCacheVariableValue(
             state, this->_target_total_max_proximityCV);
 
-        const SimTK::Vec3& target_center_of_proximity = 
+        const SimTK::Vec3& target_center_of_proximity =
             this->getCacheVariableValue(state,
                this->_target_total_center_of_proximityCV);
 
@@ -1677,57 +1677,57 @@ getRecordValues(const SimTK::State& state) const {
         const double& target_max_pressure = this->getCacheVariableValue(
             state, this->_target_total_max_pressureCV);
 
-        const SimTK::Vec3& target_center_of_pressure = 
+        const SimTK::Vec3& target_center_of_pressure =
             this->getCacheVariableValue(
                 state, this->_target_total_center_of_pressureCV);
 
-        const SimTK::Vec3& target_contact_force = 
+        const SimTK::Vec3& target_contact_force =
             this->getCacheVariableValue(state,
                 this->_target_total_contact_forceCV);
 
-        const SimTK::Vec3& target_contact_moment = 
-            this->getCacheVariableValue(state, 
+        const SimTK::Vec3& target_contact_moment =
+            this->getCacheVariableValue(state,
                 this->_target_total_contact_momentCV);
         // Regional
-        const SimTK::Vector& target_regional_contact_area = 
+        const SimTK::Vector& target_regional_contact_area =
             this->getCacheVariableValue(state,
                 this->_target_regional_contact_areaCV);
 
-        const SimTK::Vector& target_regional_mean_proximity = 
+        const SimTK::Vector& target_regional_mean_proximity =
             this->getCacheVariableValue(state,
                 this->_target_regional_mean_proximityCV);
 
-        const SimTK::Vector& target_regional_max_proximity = 
-            this->getCacheVariableValue(state, 
+        const SimTK::Vector& target_regional_max_proximity =
+            this->getCacheVariableValue(state,
                 this->_target_regional_max_proximityCV);
 
-        const SimTK::Vector_<SimTK::Vec3>& target_regional_center_of_proximity = 
-            this->getCacheVariableValue(state, 
+        const SimTK::Vector_<SimTK::Vec3>& target_regional_center_of_proximity =
+            this->getCacheVariableValue(state,
                 this->_target_regional_center_of_proximityCV);
-    
-        const SimTK::Vector& target_regional_mean_pressure = 
-            this->getCacheVariableValue(state, 
+
+        const SimTK::Vector& target_regional_mean_pressure =
+            this->getCacheVariableValue(state,
                 this->_target_regional_mean_pressureCV);
 
-        const SimTK::Vector& target_regional_max_pressure = 
-            this->getCacheVariableValue(state, 
+        const SimTK::Vector& target_regional_max_pressure =
+            this->getCacheVariableValue(state,
                 this->_target_regional_max_pressureCV);
 
-        const SimTK::Vector_<SimTK::Vec3>& target_regional_center_of_pressure = 
-            this->getCacheVariableValue(state, 
+        const SimTK::Vector_<SimTK::Vec3>& target_regional_center_of_pressure =
+            this->getCacheVariableValue(state,
                 this->_target_regional_center_of_pressureCV);
 
-        const SimTK::Vector_<SimTK::Vec3>& target_regional_contact_force = 
-            this->getCacheVariableValue(state, 
+        const SimTK::Vector_<SimTK::Vec3>& target_regional_contact_force =
+            this->getCacheVariableValue(state,
                 this->_target_regional_contact_forceCV);
 
-        const SimTK::Vector_<SimTK::Vec3>& target_regional_contact_moment = 
-            this->getCacheVariableValue(state, 
+        const SimTK::Vector_<SimTK::Vec3>& target_regional_contact_moment =
+            this->getCacheVariableValue(state,
                 this->_target_regional_contact_momentCV);
-    
+
         values.append(target_contact_area);
         values.append(target_mean_proximity);
-        values.append(target_max_proximity); 
+        values.append(target_max_proximity);
         values.append(target_center_of_proximity(0));
         values.append(target_center_of_proximity(1));
         values.append(target_center_of_proximity(2));

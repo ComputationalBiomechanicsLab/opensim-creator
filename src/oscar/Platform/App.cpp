@@ -90,7 +90,7 @@ namespace
         log_info("initializing main application window");
 
 #ifndef EMSCRIPTEN
-	// note: cannot set context attributes in EMSCRIPTEN
+    // note: cannot set context attributes in EMSCRIPTEN
         sdl_gl_set_attribute_or_throw(SDL_GL_CONTEXT_PROFILE_MASK, "SDL_GL_CONTEXT_PROFILE_MASK", SDL_GL_CONTEXT_PROFILE_CORE, "SDL_GL_CONTEXT_PROFILE_CORE");
         sdl_gl_set_attribute_or_throw(SDL_GL_CONTEXT_MAJOR_VERSION, "SDL_GL_CONTEXT_MAJOR_VERSION", 3, "3");
         sdl_gl_set_attribute_or_throw(SDL_GL_CONTEXT_MINOR_VERSION, "SDL_GL_CONTEXT_MINOR_VERSION", 3, "3");
@@ -540,14 +540,21 @@ private:
                 for (SDL_Event e; shouldWait ? SDL_WaitEventTimeout(&e, 1000) : SDL_PollEvent(&e);) {
                     shouldWait = false;
 
-                    if (e.type == SDL_WINDOWEVENT) {
-                        // window was resized and should be drawn a couple of times quickly
-                        // to ensure any immediate UIs in screens are updated
-                        num_frames_to_poll_ = 2;
-                    }
-
                     // let screen handle the event
-                    screen_->on_event(e);
+                    const bool screenHandledEvent = screen_->on_event(e);
+
+                    // if the active screen didn't handle the event, try to handle it here by following
+                    // reasonable heuristics
+                    if (not screenHandledEvent) {
+                        if (e.type == SDL_WINDOWEVENT) {
+                            // window was resized and should be drawn a couple of times quickly
+                            // to ensure any immediate UIs in screens are updated
+                            num_frames_to_poll_ = 2;
+                        }
+                        else if (e.type == SDL_QUIT) {
+                            request_quit();  // i.e. "as if the current screen tried to quit"
+                        }
+                    }
 
                     if (quit_requested_) {
                         // screen requested application quit, so exit this function

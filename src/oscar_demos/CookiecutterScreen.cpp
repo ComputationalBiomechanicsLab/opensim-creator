@@ -24,17 +24,18 @@ public:
         ui::context::shutdown();  // shutdown 2D UI support
     }
 
-    void on_event(const SDL_Event& e)
+    bool on_event(const SDL_Event& e)
     {
         // called when the app receives an event from the operating system
 
         if (e.type == SDL_QUIT) {
             App::upd().request_quit();
-            return;
+            return true;
         }
         else if (ui::context::on_event(e)) {
-            return;  // an element in the 2D UI handled this event
+            return true;  // an element in the 2D UI handled this event
         }
+        return false;   // nothing handled the event
     }
 
     void on_tick()
@@ -87,9 +88,9 @@ void osc::CookiecutterScreen::impl_on_unmount()
     impl_->on_unmount();
 }
 
-void osc::CookiecutterScreen::impl_on_event(const SDL_Event& e)
+bool osc::CookiecutterScreen::impl_on_event(const SDL_Event& e)
 {
-    impl_->on_event(e);
+    return impl_->on_event(e);
 }
 
 void osc::CookiecutterScreen::impl_on_tick()

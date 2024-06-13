@@ -32,42 +32,42 @@
 namespace OpenSim {
 /**
 This Force component models the contact between a pair of triangulated surface
-meshes (.vtp, .stl, .obj). It was orginially designed to represent articular 
-contact between cartilage, mensici, or joint implants [1], but is 
-generalizable so it could also represent foot-floor contact or a skin-device 
-interfaces etc. The formulation of the contact model has previously been 
-called an elastic foundation model [2] or discrete element analysis [3,4]. 
-In this implementation, non-deforming triangulated meshes are allowed to 
-interpenetrate and the proximity (distance between the meshes) is calculated 
-for each triangle. For every triangle with a positive proximity (ie triangle 
-interpenetrated the opposing mesh), the contact pressure on the triangle face 
-is then calculated based on the proximity and material properties. This 
-formulation is much faster than a finite element approach, but only calculates 
-the contact pressures on the mesh surface and not the internal stresses. 
-Additionally, it provides a simplifed representation of the contact as the 
-meshes do not deform, but instead are geometrically rigid (ie the vertices 
-within a mesh do not move relative to each other), but the contacting mesh 
+meshes (.vtp, .stl, .obj). It was orginially designed to represent articular
+contact between cartilage, mensici, or joint implants [1], but is
+generalizable so it could also represent foot-floor contact or a skin-device
+interfaces etc. The formulation of the contact model has previously been
+called an elastic foundation model [2] or discrete element analysis [3,4].
+In this implementation, non-deforming triangulated meshes are allowed to
+interpenetrate and the proximity (distance between the meshes) is calculated
+for each triangle. For every triangle with a positive proximity (ie triangle
+interpenetrated the opposing mesh), the contact pressure on the triangle face
+is then calculated based on the proximity and material properties. This
+formulation is much faster than a finite element approach, but only calculates
+the contact pressures on the mesh surface and not the internal stresses.
+Additionally, it provides a simplifed representation of the contact as the
+meshes do not deform, but instead are geometrically rigid (ie the vertices
+within a mesh do not move relative to each other), but the contacting mesh
 pair are allowed to interpenetrate.
 
 The while the force calculatation is similar to the ElasticFoundationForce
-component, the Smith2018ArticularContactForce provides a different 
-parameterization of the relationship between the overlap depth and material 
-properties to calculate the contact pressure. Additionally, it provides the 
-proximity, pressure, and potential_energy for each mesh triangle as an output 
-so that maps of these calculated values on the mesh surface can be visualized. 
-Finally, it provides improved computational performance through a different 
+component, the Smith2018ArticularContactForce provides a different
+parameterization of the relationship between the overlap depth and material
+properties to calculate the contact pressure. Additionally, it provides the
+proximity, pressure, and potential_energy for each mesh triangle as an output
+so that maps of these calculated values on the mesh surface can be visualized.
+Finally, it provides improved computational performance through a different
 collision detection method.
 
-To calculate the pressure for each triangle, it is necessary to detect the 
+To calculate the pressure for each triangle, it is necessary to detect the
 mesh triangles that are interpenetrating (commonly called contact or collision
-detection in computer graphics literature) and calculate the proximity. This 
-task is extremely slow if a brute force approach is applied to check every 
-triangle in one mesh against every triangle in another mesh. Smith et al, 
-CMBBE I&V, 2018 [1] introduced a method to efficiently detect contact between 
-triangular meshes using Oriented Bounding Boxes (OBBs, a common approach in 
-computer graphics) and several additional speed-ups that leverage the fact 
-that changes in contact between timesteps are generally small. This approach 
-has been implemented in the Smith2018ArticularContactForce component along 
+detection in computer graphics literature) and calculate the proximity. This
+task is extremely slow if a brute force approach is applied to check every
+triangle in one mesh against every triangle in another mesh. Smith et al,
+CMBBE I&V, 2018 [1] introduced a method to efficiently detect contact between
+triangular meshes using Oriented Bounding Boxes (OBBs, a common approach in
+computer graphics) and several additional speed-ups that leverage the fact
+that changes in contact between timesteps are generally small. This approach
+has been implemented in the Smith2018ArticularContactForce component along
 with some additional features.
 
 Two articulating triangular meshes are defined as Smith2018ContactMesh
@@ -83,24 +83,24 @@ intersection queries managed by the Smith2018ContactMesh.
 \image html fig_Smith2018ArticularContactForce_contact_detection.png width=600px
 
 The major speed-up in the algorithm leverages the fact that changes in joint
-coordinates and thus contact patterns between time steps are generally small. 
+coordinates and thus contact patterns between time steps are generally small.
 Thus, after reposing the meshes, (i.e. realizePosition()) each
 triangle in the casting mesh is tested against the contacting target triangle
 from the previous pose. Additional speed-up can be gained by casting the normal
-ray in both directions (by setting min_proximity to a negative value), so 
-even some of the out-of-contact triangles are "remembered". If the previous 
-contacting triangle test fails, the casting ray is checked against the 
-neighboring triangles (those that share a vertex) in the target mesh. Then if 
-this test fails, the expensive casting ray--OBB test is performed. If the 
-meshes were not in contact at the previous time step this does not cause an 
-issue, just a slower solution, as here the ray-OBB tests will be peformed for 
-every triangle in the casting_mesh.  
+ray in both directions (by setting min_proximity to a negative value), so
+even some of the out-of-contact triangles are "remembered". If the previous
+contacting triangle test fails, the casting ray is checked against the
+neighboring triangles (those that share a vertex) in the target mesh. Then if
+this test fails, the expensive casting ray--OBB test is performed. If the
+meshes were not in contact at the previous time step this does not cause an
+issue, just a slower solution, as here the ray-OBB tests will be peformed for
+every triangle in the casting_mesh.
 
 
 # Swapping the contact meshes changes the resulting forces
 
-The ray casting is only performed from the casting_mesh towards the 
-target_mesh. Thus, a pressure map is only generated for the casting_mesh. 
+The ray casting is only performed from the casting_mesh towards the
+target_mesh. Thus, a pressure map is only generated for the casting_mesh.
 A force vector is computed for each triangle in the casting_mesh using
 Force = -normal*area*pressure, and the resultant force of
 all triangle forces is applied to the body to which the casting_mesh is
@@ -116,46 +116,46 @@ from the target_mesh are very close to the mirrored casting_mesh resultant
 force, there is a ModelingOption named "flip_meshes" that will cause the ray
 casting to also be performed from the target_mesh to calculate triangle
 proximity and pressure values. Note the applied contact force in this case is
-still only that calculated for the casting_mesh, and the time needed for 
-collision detection is approximately doubled. 
+still only that calculated for the casting_mesh, and the time needed for
+collision detection is approximately doubled.
 
 # Potential Pitfalls
 \image html fig_Smith2018ArticularContactForce_pitfalls.png width=600px
 
 Case 1
-The casting_mesh mesh has significant curvature and the material properties 
-are set in a manner that results in a compliment contact where large 
+The casting_mesh mesh has significant curvature and the material properties
+are set in a manner that results in a compliment contact where large
 interpenetrations with curvature may occur. In this scenario,
 the distance along the normal ray from the casting_mesh to the target_mesh
-may be unrealistically large, resulting in high contact pressures. If only 
+may be unrealistically large, resulting in high contact pressures. If only
 one mesh has high curvature, then this mesh can be defined as the target_mesh
 and the excessive proximity values are avoided. Another potential solution is
-to ensure that the initial positions of the meshes are set so that there is 
-minimal or no contact, thus as the simulation progresses the increasing 
-contact pressures will prevent significant interpentration of the meshes. 
+to ensure that the initial positions of the meshes are set so that there is
+minimal or no contact, thus as the simulation progresses the increasing
+contact pressures will prevent significant interpentration of the meshes.
 
 Case 2
-Another pitfall of highly curved meshes is the potential for false contact 
+Another pitfall of highly curved meshes is the potential for false contact
 detection as shown in the figure. Here, a triangle on the side of the patellar
-cartilage will be incorrectly identified as in contact with the femur. This 
+cartilage will be incorrectly identified as in contact with the femur. This
 problem can be avoided by setting min_proximity and max_proximity properties
-to values that limit the potential contact search area to feasible locations 
-for your application. The min_proximity and max_proximity properties limit the 
+to values that limit the potential contact search area to feasible locations
+for your application. The min_proximity and max_proximity properties limit the
 search region for a contact triangle along the ray cast from the casting_mesh.
-The min_proximity can be set to a negative value if you would like proximity 
-maps for the out of contact triangles. For example, if you are visualizing 
-kinematics measured with fluoroscopy and only have meshes of the bones, using 
-a negative min_proximity enables the distance between the subcondral surfaces 
+The min_proximity can be set to a negative value if you would like proximity
+maps for the out of contact triangles. For example, if you are visualizing
+kinematics measured with fluoroscopy and only have meshes of the bones, using
+a negative min_proximity enables the distance between the subcondral surfaces
 to be calculated for each triangle in the casting_mesh.
 
 Case 3
 To reduce the number of triangles in the Smith2018ContactMesh and thus speed
 up the collision detection, the meshes do not need to be closed surfaces
-(water tight). However, this can cause issues if the initial positions of the 
-meshes are set improperly or the positions of the meshes within a simulation 
-progress to infeasible configurations. The figure depicts that the patella 
-has been spun 180*, so if soft tissues pull the patella straight into the 
-femur, no contact will be detected because the backside of the patella will 
+(water tight). However, this can cause issues if the initial positions of the
+meshes are set improperly or the positions of the meshes within a simulation
+progress to infeasible configurations. The figure depicts that the patella
+has been spun 180*, so if soft tissues pull the patella straight into the
+femur, no contact will be detected because the backside of the patella will
 collide with the femur. However, while the meshes do not need to be closed,
 they can be closed to avoid this issue for applications such as simulating the
 contact between a spinning ball bouncing on a surface.
@@ -199,7 +199,7 @@ cartilage-cartilage contact often involves articulations between cartilage
 surfaces with varying thickness and material properties, the Bei and Fregly
 approach was extended to accommodate variable properties. The
 use_lumped_contact_model property controls whether the constant property or
-variable property formulation is used. 
+variable property formulation is used.
 
 \image html fig_Smith2018ArticularContactForce_lumped_model.png width=600px
 
@@ -233,28 +233,28 @@ system of equations is solved using a numerical solver.
 # Outputs
 
 This component has some outputs such as triangle_proximity, triangle_pressure,
-and triangle_potential_energy that return a SimTK::Vector (size = number of 
-triangles) with a value corresponding to each triangle face in the respective 
+and triangle_potential_energy that return a SimTK::Vector (size = number of
+triangles) with a value corresponding to each triangle face in the respective
 target or casting mesh.
-There are also "summary" outputs that return values associated with the entire 
+There are also "summary" outputs that return values associated with the entire
 mesh such as contact area, mean/max proximity/pressure, center of
 proximity/pressure etc. Finally, there are regional summary outputs which
 return a SimTK::Vector (size = 6). Here, the entries in the vector reflect the
-summary metrics corresponding to subset of mesh triangles located in six 
-specific regions. These six regions are defined as the subset of mesh triangles 
-whose center is located in the half space [+x, -x, +y, -y, +z, -z] in the 
-local mesh coordinate system. If the mesh coordinate system is aligned with 
-anatomical axes, then this enables simulation results to be more readily 
-interpreted. For example, when performing simulations of the knee, if the 
-z axis is aligned to the medial-lateral axis, points medially, and the origin 
-is located between the femoral condyles, then the regional outputs 
-corresponding to +z and -z will summarize the mesh triangles located on the 
-medial and lateral condyles and thus enable comparisons of the loading in the 
+summary metrics corresponding to subset of mesh triangles located in six
+specific regions. These six regions are defined as the subset of mesh triangles
+whose center is located in the half space [+x, -x, +y, -y, +z, -z] in the
+local mesh coordinate system. If the mesh coordinate system is aligned with
+anatomical axes, then this enables simulation results to be more readily
+interpreted. For example, when performing simulations of the knee, if the
+z axis is aligned to the medial-lateral axis, points medially, and the origin
+is located between the femoral condyles, then the regional outputs
+corresponding to +z and -z will summarize the mesh triangles located on the
+medial and lateral condyles and thus enable comparisons of the loading in the
 medial and lateral compartments.
 
 All outputs are reported in the local mesh reference frame (ie the reference
-frame of the mesh_file. The ContactForce and ContactMoment outputs are 
-expressed in this frame and calculated at the origin of this frame.). 
+frame of the mesh_file. The ContactForce and ContactMoment outputs are
+expressed in this frame and calculated at the origin of this frame.).
 
 # References
 
@@ -536,7 +536,7 @@ public:
 
     SimTK::Vector getTargetRegionalContactArea(
         const SimTK::State& state) const {
-        
+
         if (!this->isCacheVariableValid(state, this->_target_regional_contact_areaCV)) {
             realizeContactMetricCaches(state);
         }
@@ -558,7 +558,7 @@ public:
 
     //mean proximity
     double getTargetTotalMeanProximity(const SimTK::State& state) const {
-        
+
         if (!this->isCacheVariableValid(state, this->_target_total_mean_proximityCV)) {
             realizeContactMetricCaches(state);
         }
@@ -742,11 +742,11 @@ public:
 
     SimTK::Vec3 getCastingTotalCenterOfProximity(
         const SimTK::State& state) const {
-        
+
         if (!this->isCacheVariableValid(state, this->_target_total_center_of_proximityCV)) {
             realizeContactMetricCaches(state);
         }
-        
+
         return this->getCacheVariableValue
             (state, this->_casting_total_center_of_proximityCV);
     }
@@ -754,7 +754,7 @@ public:
     SimTK::Vector_<SimTK::Vec3> getTargetRegionalCenterOfProximity(
         const SimTK::State& state) const {
 
-        if (!this->isCacheVariableValid(state, 
+        if (!this->isCacheVariableValid(state,
             this->_target_regional_center_of_proximityCV)) {
 
             realizeContactMetricCaches(state);
@@ -767,7 +767,7 @@ public:
     SimTK::Vector_<SimTK::Vec3> getCastingRegionalCenterOfProximity(
         const SimTK::State& state) const {
 
-        if (!this->isCacheVariableValid(state, 
+        if (!this->isCacheVariableValid(state,
             this->_casting_regional_center_of_proximityCV)) {
 
             realizeContactMetricCaches(state);
@@ -803,7 +803,7 @@ public:
     SimTK::Vector_<SimTK::Vec3> getTargetRegionalCenterOfPressure(
         const SimTK::State& state) const {
 
-        if (!this->isCacheVariableValid(state, 
+        if (!this->isCacheVariableValid(state,
             this->_target_regional_center_of_pressureCV)) {
 
             realizeContactMetricCaches(state);
@@ -816,7 +816,7 @@ public:
     SimTK::Vector_<SimTK::Vec3> getCastingRegionalCenterOfPressure(
         const SimTK::State& state) const {
 
-        if (!this->isCacheVariableValid(state, 
+        if (!this->isCacheVariableValid(state,
             this->_casting_regional_center_of_pressureCV)) {
 
             realizeContactMetricCaches(state);
@@ -961,7 +961,7 @@ protected:
         const std::vector<int>& triIndices) const;
 
     void realizeContactMetricCaches(const SimTK::State& state) const;
-    
+
     //void computeRegionalContactStats(const SimTK::State& state) const;
 
 private:

@@ -83,14 +83,16 @@ public:
 
     // called when an event is pumped into this screen but isn't handled by
     // either the global 2D UI context or the active tab
-    void onUnhandledEvent(SDL_Event const& e)
+    bool onUnhandledEvent(SDL_Event const& e)
     {
+        bool handled = false;
         if (e.type == SDL_KEYUP &&
             e.key.keysym.mod & (KMOD_CTRL | KMOD_GUI) &&
             e.key.keysym.scancode == SDL_SCANCODE_P)
         {
             // `Ctrl+P` or `Super+P`: "take a screenshot"
             m_MaybeScreenshotRequest = App::upd().request_screenshot();
+            handled = true;
         }
         if ((e.type == SDL_KEYUP &&
              e.key.keysym.mod & (KMOD_CTRL | KMOD_GUI) &&
@@ -107,6 +109,7 @@ public:
                 --it;  // previous
                 select_tab((*it)->id());
             }
+            handled = true;
         }
         if ((e.type == SDL_KEYUP &&
             e.key.keysym.mod & (KMOD_CTRL | KMOD_GUI) &&
@@ -123,6 +126,7 @@ public:
                 ++it;  // next
                 select_tab((*it)->id());
             }
+            handled = true;
         }
         if (e.type == SDL_KEYUP &&
             ((e.key.keysym.mod & (KMOD_CTRL | KMOD_GUI)) != 0) &&
@@ -131,7 +135,10 @@ public:
             m_ActiveTabID != m_Tabs.front()->id())
         {
             close_tab(m_ActiveTabID);
+            handled = true;
         }
+
+        return handled;
     }
 
     UID addTab(std::unique_ptr<ITab> tab)
@@ -192,8 +199,9 @@ public:
         ui::context::shutdown();
     }
 
-    void onEvent(SDL_Event const& e)
+    bool onEvent(SDL_Event const& e)
     {
+        bool handled = false;
         if (e.type == SDL_KEYUP or
             e.type == SDL_MOUSEBUTTONUP or
             e.type == SDL_MOUSEMOTION) {
@@ -210,6 +218,7 @@ public:
             // during `ITab::onDraw` (immediate-mode UI)
 
             m_ShouldRequestRedraw = true;
+            handled = true;
         }
         else if (e.type == SDL_QUIT) {
             // if it's an application-level QUIT request, then it should be pumped into each
@@ -253,6 +262,8 @@ public:
 
                 App::upd().request_quit();
             }
+
+            handled = true;
         }
         else if (ITab* active = getActiveTab()) {
             // if there's an active tab, pump the event into the active tab and check
@@ -278,11 +289,14 @@ public:
 
             if (activeTabHandledEvent) {
                 m_ShouldRequestRedraw = true;
+                handled = true;
             }
             else {
-                onUnhandledEvent(e);
+                handled = onUnhandledEvent(e);
             }
         }
+
+        return handled;
     }
 
     void on_tick()
@@ -914,9 +928,9 @@ void osc::MainUIScreen::impl_on_unmount()
     m_Impl->on_unmount();
 }
 
-void osc::MainUIScreen::impl_on_event(SDL_Event const& e)
+bool osc::MainUIScreen::impl_on_event(SDL_Event const& e)
 {
-    m_Impl->onEvent(e);
+    return m_Impl->onEvent(e);
 }
 
 void osc::MainUIScreen::impl_on_tick()

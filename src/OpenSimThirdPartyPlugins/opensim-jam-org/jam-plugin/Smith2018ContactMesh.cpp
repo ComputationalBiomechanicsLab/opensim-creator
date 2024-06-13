@@ -44,14 +44,14 @@ using std::set;
 // CONSTRUCTOR
 //=============================================================================
 
-Smith2018ContactMesh::Smith2018ContactMesh() 
+Smith2018ContactMesh::Smith2018ContactMesh()
 {
     setNull();
     constructProperties();
     _mesh_is_cached = false;
 }
 
-Smith2018ContactMesh::Smith2018ContactMesh(const std::string& name, 
+Smith2018ContactMesh::Smith2018ContactMesh(const std::string& name,
     const std::string& mesh_file, const PhysicalFrame& parent_frame) :
     ContactGeometry (parent_frame)
 {
@@ -64,7 +64,7 @@ Smith2018ContactMesh::Smith2018ContactMesh(const std::string& name,
     updSocket<PhysicalFrame>("scale_frame").connect(parent_frame);
 }
 
-Smith2018ContactMesh::Smith2018ContactMesh(const std::string& name, 
+Smith2018ContactMesh::Smith2018ContactMesh(const std::string& name,
     const std::string& mesh_file, const PhysicalFrame& frame,
     const SimTK::Vec3& location, const SimTK::Vec3& orientation) :
     ContactGeometry(location, orientation, frame)
@@ -76,7 +76,7 @@ Smith2018ContactMesh::Smith2018ContactMesh(const std::string& name,
     const std::string& mesh_file, const PhysicalFrame& frame,
     const SimTK::Vec3& location, const SimTK::Vec3& orientation,
     bool use_variable_thickness,
-    const std::string& mesh_back_file, 
+    const std::string& mesh_back_file,
     double min_thickness, double max_thickness) :
     ContactGeometry(location, orientation, frame)
 {
@@ -126,7 +126,7 @@ void Smith2018ContactMesh::extendFinalizeFromProperties() {
     if (!_mesh_is_cached) {
         initializeMesh();
     }
-    
+
     //Create Decorative Mesh
     if (!isObjectUpToDateWithProperties()) {
         _decorative_mesh.reset(
@@ -142,7 +142,7 @@ void Smith2018ContactMesh::extendConnectToModel(Model& model)
     //Add in a local frame for the mesh reprsenting the resulting translation
     // and orientation from this component's parent frame
 
-    PhysicalOffsetFrame* mesh_frame = 
+    PhysicalOffsetFrame* mesh_frame =
         new PhysicalOffsetFrame(getFrame(), SimTK::Transform());
 
     mesh_frame->setName("mesh_frame");
@@ -157,14 +157,14 @@ std::string Smith2018ContactMesh::findMeshFile(const std::string& file)
 {
     /*This is a modified version of the code found in Geometry.cpp
     Mesh::extendFinalizeFromProperties to find geometry files in
-    the same directory as the modelDir, modelDir/Geometry, or 
+    the same directory as the modelDir, modelDir/Geometry, or
     the installDir: OPENSIM_HOME/Geometry
 
     It plays some games to figure out the modelDir, because the
     Smith2018ContactMesh can't call getModel() at this stage
     */
 
-    //bool isAbsolutePath; 
+    //bool isAbsolutePath;
     //std::string directory, fileName, extension;
     //
     //SimTK::Pathname::deconstructPathname(file, isAbsolutePath, directory,
@@ -172,7 +172,7 @@ std::string Smith2018ContactMesh::findMeshFile(const std::string& file)
     //const std::string lowerExtension = SimTK::String::toLower(extension);
     //
     ////Check for correct extension
-    //if (lowerExtension != ".vtp" && lowerExtension != ".obj" && 
+    //if (lowerExtension != ".vtp" && lowerExtension != ".obj" &&
     //    lowerExtension != ".stl") {
 
     //    log_error("Smith2018ContactMesh ERROR: '" + file +
@@ -228,10 +228,10 @@ std::string Smith2018ContactMesh::findMeshFile(const std::string& file)
     //        log_error(attempts[i]);
     //    }
 
-    //    if (!isAbsolutePath && 
+    //    if (!isAbsolutePath &&
     //        !SimTK::Pathname::environmentVariableExists("OPENSIM_HOME")) {
-    //        
-    //        log_error("Set environment variable OPENSIM_HOME " 
+    //
+    //        log_error("Set environment variable OPENSIM_HOME "
     //            "to search $OPENSIM_HOME/Geometry.");
     //    }
 
@@ -294,13 +294,13 @@ std::string Smith2018ContactMesh::findMeshFile(const std::string& file)
         bool foundIt = ModelVisualizer::findGeometryFile(model, file, isAbsolutePath, attempts);
 
         if (!foundIt) {
-            
+
             log_error("Couldn't find file '{}'.", file);
-            
+
             log_error( "The following locations were tried:");
             for (unsigned i = 0; i < attempts.size(); ++i)
                 log_error(attempts[i]);
-            
+
             if (!isAbsolutePath &&
                 !SimTK::Pathname::environmentVariableExists("OPENSIM_HOME"))
                 log_debug("Set environment variable OPENSIM_HOME to search $OPENSIM_HOME/Geometry.");
@@ -312,8 +312,8 @@ std::string Smith2018ContactMesh::findMeshFile(const std::string& file)
             std::ifstream objFile;
             objFile.open(attempts.back().c_str());
             // objFile closes when destructed
-            // if the file can be opened but had bad contents e.g. binary vtp 
-            // it will be handled downstream 
+            // if the file can be opened but had bad contents e.g. binary vtp
+            // it will be handled downstream
         }
         catch (const std::exception& e) {
             log_warn("Visualizer couldn't open {} because: {}",
@@ -330,14 +330,14 @@ void Smith2018ContactMesh::initializeMesh()
     _mesh_is_cached = true;
     _mesh.clear();
     _mesh_back.clear();
-    
+
     _obb = OBBTreeNode();
     _back_obb = OBBTreeNode();
 
 
     // Load Mesh from file
     _full_mesh_file_path = findMeshFile(get_mesh_file());
-    
+
     _mesh.loadFile(_full_mesh_file_path);
 
     //Scale Mesh
@@ -351,7 +351,7 @@ void Smith2018ContactMesh::initializeMesh()
     scale_rot.set(2, 2, zscale);
     SimTK::Transform scale_transform(scale_rot,SimTK::Vec3(0.0));
     _mesh.transformMesh(scale_transform);
-    
+
     //Allocate space
     _tri_center.resize(_mesh.getNumFaces());
     _tri_normal.resize(_mesh.getNumFaces());
@@ -362,7 +362,7 @@ void Smith2018ContactMesh::initializeMesh()
 
     _vertex_locations.resize(_mesh.getNumVertices());
     _face_vertex_locations.resize(_mesh.getNumFaces(), 3);
-        
+
     _regional_tri_ind.resize(6);
     _regional_n_tri.assign(6,0);
 
@@ -395,13 +395,13 @@ void Smith2018ContactMesh::initializeMesh()
             _tri_normal(i).set(j,-cross[j] / mag);
         }
 
-        
+
         // Compute Triangle Area
         // Compute length of each side of the triangle
         double s1 = 0;
         double s2 = 0;
         double s3 = 0;
-                
+
         for (int j = 0; j<3; j++) {
             s1 += (v2[j] - v1[j])*(v2[j] - v1[j]);
             s2 += (v3[j] - v2[j])*(v3[j] - v2[j]);
@@ -415,7 +415,7 @@ void Smith2018ContactMesh::initializeMesh()
         // Now employ Heron's formula
         double s = (s1 + s2 + s3) / 2.0;
         _tri_area[i] = sqrt(s*(s - s1)*(s - s2)*(s - s3));
-        
+
         //Determine regional triangle indices
         for (int j = 0; j < 3; ++j) {
             if (_tri_center(i)(j) < 0.0) {
@@ -426,7 +426,7 @@ void Smith2018ContactMesh::initializeMesh()
                 _regional_tri_ind[j * 2 + 1].push_back(i);
                 _regional_n_tri[j * 2 +1]++;
             }
-        }  
+        }
     }
 
     //Vertex Locations
@@ -521,7 +521,7 @@ void Smith2018ContactMesh::computeVariableThickness() {
 
     for (int i = 0; i < _mesh_back.getNumFaces(); ++i) {
         allFaces[i] = i;
-    }    
+    }
 
     createObbTree(_back_obb,_mesh_back, allFaces);
 
@@ -534,7 +534,7 @@ void Smith2018ContactMesh::computeVariableThickness() {
         int tri;
         SimTK::Vec3 intersection_point;
         double depth = 0.0;
-        
+
         if (_back_obb.rayIntersectOBB(_mesh_back,
             _tri_center(i), -_tri_normal(i), tri, intersection_point, depth)) {
 
@@ -543,7 +543,7 @@ void Smith2018ContactMesh::computeVariableThickness() {
             }
             else if (depth > max_thickness) {
                 depth = min_thickness;
-            }            
+            }
         }
         else{ //Normal from mesh missed mesh back
             depth = min_thickness;
@@ -583,7 +583,7 @@ void Smith2018ContactMesh::generateDecorations(
     //_decorative_mesh->setScaleFactors(get_scale_factors());
 
     //SET TRANSFORM
- 
+
     // B: base Frame (Body or Ground)
     // F: PhysicalFrame that this ContactGeometry is connected to
     // P: the frame defined (relative to F) by the location and orientation
@@ -595,11 +595,11 @@ void Smith2018ContactMesh::generateDecorations(
 
     _decorative_mesh->setTransform(X_BP);
     _decorative_mesh->setBodyId(getFrame().getMobilizedBodyIndex());
-    
+
     // SET APPERANCE
     _decorative_mesh->setColor(get_Appearance().get_color());
     _decorative_mesh->setOpacity(get_Appearance().get_opacity());
-   
+
     if (get_Appearance().get_visible()) {
         _decorative_mesh->setRepresentation(
             (VisualRepresentation)
@@ -614,13 +614,13 @@ void Smith2018ContactMesh::generateDecorations(
 
 
 void Smith2018ContactMesh::createObbTree
-    (OBBTreeNode& node, const SimTK::PolygonalMesh& mesh, 
+    (OBBTreeNode& node, const SimTK::PolygonalMesh& mesh,
     const SimTK::Array_<int>& faceIndices)
 {   // Find all vertices in the node and build the OrientedBoundingBox.
     node._numTriangles = faceIndices.size();
-    
+
     set<int> vertexIndices;
-    for (int i = 0; i < (int)faceIndices.size(); i++) {        
+    for (int i = 0; i < (int)faceIndices.size(); i++) {
         for (int j = 0; j < 3; j++) {
             vertexIndices.insert(mesh.getFaceVertex(faceIndices[i], j));
         }
@@ -630,7 +630,7 @@ void Smith2018ContactMesh::createObbTree
     for (set<int>::iterator iter = vertexIndices.begin();
         iter != vertexIndices.end(); ++iter) {
         points[index++] = mesh.getVertexPosition(*iter);
-        
+
     }
     node._bounds = SimTK::OrientedBoundingBox(points);
     if (faceIndices.size() > 3) {
@@ -678,7 +678,7 @@ void Smith2018ContactMesh::createObbTree
 
         for (int i = 0; i < 3; i++) {
             SimTK::Array_<int> child1Indices, child2Indices;
-            splitObbAxis(mesh,faceIndices, child1Indices, child2Indices, 
+            splitObbAxis(mesh,faceIndices, child1Indices, child2Indices,
                          axisOrder[i]);
             if (child1Indices.size() > 0 && child2Indices.size() > 0) {
                 // It was successfully split, so create the child nodes.
@@ -693,14 +693,14 @@ void Smith2018ContactMesh::createObbTree
     }
 
     // This is a leaf node
-    node._triangles.insert(node._triangles.begin(), faceIndices.begin(), 
+    node._triangles.insert(node._triangles.begin(), faceIndices.begin(),
                           faceIndices.end());
 }
 
 void Smith2018ContactMesh::splitObbAxis
    (const SimTK::PolygonalMesh& mesh, const SimTK::Array_<int>& parentIndices,
        SimTK::Array_<int>& child1Indices, SimTK::Array_<int>& child2Indices,
-       int axis) 
+       int axis)
 {   // For each face, find its minimum and maximum extent along the axis.
     SimTK::Vector minExtent(parentIndices.size());
     SimTK::Vector maxExtent(parentIndices.size());
@@ -720,14 +720,14 @@ void Smith2018ContactMesh::splitObbAxis
         maxExtent[i] =
             std::max(maxVal, mesh.getVertexPosition(vertexIndices[2])(axis));
     }
-    
-    // Select a split point that tries to put as many faces as possible 
+
+    // Select a split point that tries to put as many faces as possible
     // entirely on one side or the other.
-    
+
     SimTK::Real split = (median(minExtent)+median(maxExtent)) / 2;
-    
+
     // Choose a side for each face.
-    
+
     for (int i = 0; i < (int) parentIndices.size(); i++) {
         if (maxExtent[i] <= split)
             child1Indices.push_back(parentIndices[i]);
@@ -742,7 +742,7 @@ void Smith2018ContactMesh::splitObbAxis
 
 bool Smith2018ContactMesh::rayIntersectMesh(
     const SimTK::Vec3& origin, const SimTK::UnitVec3& direction,
-    const double& min_proximity, const double& max_proximity, 
+    const double& min_proximity, const double& max_proximity,
     int& tri, SimTK::Vec3 intersection_point, SimTK::Real& distance) const {
 
     double obb_distance=-1;
@@ -757,7 +757,7 @@ bool Smith2018ContactMesh::rayIntersectMesh(
     }
 
     //Shoot the ray in the opposite direction
-    if (min_proximity < 0.0) {        
+    if (min_proximity < 0.0) {
         if (_obb.rayIntersectOBB(_mesh, origin, -direction, tri,
             intersection_point, distance)) {
 
@@ -767,7 +767,7 @@ bool Smith2018ContactMesh::rayIntersectMesh(
             }
         }
     }
-    
+
     //ray didn't intersect
     distance = -1;
     intersection_point = -1;
@@ -802,7 +802,7 @@ void Smith2018ContactMesh::printMeshDebugInfo() const {
 //               Smith2018ContactMesh :: OBBTreeNode
 //=============================================================================
 Smith2018ContactMesh::OBBTreeNode::OBBTreeNode(const OBBTreeNode& copy):
-   _bounds(copy._bounds), _triangles(copy._triangles), 
+   _bounds(copy._bounds), _triangles(copy._triangles),
     _numTriangles(copy._numTriangles) {
     if (copy._child1 == NULL) {
         _child1 = NULL;
@@ -831,11 +831,11 @@ bool Smith2018ContactMesh::OBBTreeNode::rayIntersectOBB(
         // Recursively check the child nodes.
         SimTK::Real child1distance, child2distance;
         SimTK::Array_<int> child1triangles, child2triangles;
-        bool child1intersects = 
+        bool child1intersects =
             _child1->_bounds.intersectsRay(origin, direction, child1distance);
-        bool child2intersects = 
+        bool child2intersects =
             _child2->_bounds.intersectsRay(origin, direction, child2distance);
-        
+
         if (child1intersects) {
             if (child2intersects) {
                 // The ray intersects both child nodes.
@@ -870,7 +870,7 @@ bool Smith2018ContactMesh::OBBTreeNode::rayIntersectOBB(
             child2intersects = _child2->rayIntersectOBB(mesh, origin,
                 direction, tri_index, intersection_point, child2distance);
 
-        // If either one had an intersection, return the closer one.  
+        // If either one had an intersection, return the closer one.
 
         if (child1intersects){
             if (!child2intersects || child1distance < child2distance) {
@@ -899,33 +899,33 @@ bool Smith2018ContactMesh::OBBTreeNode::rayIntersectOBB(
 
 bool Smith2018ContactMesh::OBBTreeNode::rayIntersectTri(
     const SimTK::PolygonalMesh& mesh,
-    SimTK::Vec3 origin, SimTK::Vec3 direction, 
+    SimTK::Vec3 origin, SimTK::Vec3 direction,
     int tri_index,
     SimTK::Vec3& intersection_pt, double& distance) const
 {
-    
-    
-/* 
-origin - reference point of casting ray 
+
+
+/*
+origin - reference point of casting ray
         (i.e. center of triangle from which ray is cast)
 
-direction - casting ray direction vector 
+direction - casting ray direction vector
             (i.e. normal to triangle from which ray is cast)
 
 tri_index - The triangle index of the test target
-    
+
 www.lighthouse3d.com/tutorials/maths/ray-triangle-intersection/
-*/  
+*/
     int v0_ind = mesh.getFaceVertex(tri_index, 0);
     int v1_ind = mesh.getFaceVertex(tri_index, 1);
     int v2_ind = mesh.getFaceVertex(tri_index, 2);
-    
+
 
     SimTK::Vec3 v0 = mesh.getVertexPosition(v0_ind);
     SimTK::Vec3 v1 = mesh.getVertexPosition(v1_ind);
     SimTK::Vec3 v2 = mesh.getVertexPosition(v2_ind);
 
-   
+
     SimTK::Vec3 e1, e2, h, s, q;
     double a, f, u, v;
 
@@ -960,11 +960,11 @@ www.lighthouse3d.com/tutorials/maths/ray-triangle-intersection/
 
     v = f * SimTK::dot(direction, q);
     double w = 1 - u - v;
-    
+
     if (v < 0.0 || w < 0.0)
         return(false);
-    
-    
+
+
     else {
         // else there is a line intersection
         // at this stage we can compute the distance to the intersection
@@ -980,7 +980,7 @@ www.lighthouse3d.com/tutorials/maths/ray-triangle-intersection/
     }
 }
 
-const SimTK::OrientedBoundingBox& 
+const SimTK::OrientedBoundingBox&
 Smith2018ContactMesh::OBBTreeNode::getBounds() const {
     return _bounds;
 }
@@ -989,23 +989,23 @@ bool Smith2018ContactMesh::OBBTreeNode::isLeafNode() const {
     return (_child1 == NULL);
 }
 
-const Smith2018ContactMesh::OBBTreeNode 
+const Smith2018ContactMesh::OBBTreeNode
 Smith2018ContactMesh::OBBTreeNode::getFirstChildNode() const {
-    SimTK_ASSERT_ALWAYS(_child1, 
+    SimTK_ASSERT_ALWAYS(_child1,
         "Called getFirstChildNode() on a leaf node");
     return OBBTreeNode(*_child1);
 }
 
-const Smith2018ContactMesh::OBBTreeNode 
+const Smith2018ContactMesh::OBBTreeNode
 Smith2018ContactMesh::OBBTreeNode::getSecondChildNode() const {
-    SimTK_ASSERT_ALWAYS(_child2, 
+    SimTK_ASSERT_ALWAYS(_child2,
         "Called getFirstChildNode() on a leaf node");
     return OBBTreeNode(*_child2);
 }
 
-const SimTK::Array_<int>& 
+const SimTK::Array_<int>&
 Smith2018ContactMesh::OBBTreeNode::getTriangles() const {
-    SimTK_ASSERT_ALWAYS(_child2 == NULL, 
+    SimTK_ASSERT_ALWAYS(_child2 == NULL,
         "Called getTriangles() on a non-leaf node");
     return _triangles;
 }

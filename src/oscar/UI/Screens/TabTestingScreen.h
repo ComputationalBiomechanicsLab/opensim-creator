@@ -21,7 +21,7 @@ namespace osc
     private:
         void impl_on_mount() override;
         void impl_on_unmount() override;
-        void impl_on_event(const SDL_Event&) override;
+        bool impl_on_event(const SDL_Event&) override;
         void impl_on_tick() override;
         void impl_on_draw() override;
 

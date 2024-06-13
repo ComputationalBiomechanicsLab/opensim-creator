@@ -25,7 +25,7 @@ namespace osc
         CStringView name() const { return impl_get_name(); }
         void on_mount() { impl_on_mount(); }
         void on_unmount() { impl_on_unmount(); }
-        void on_event(const SDL_Event& e) { impl_on_event(e); }
+        bool on_event(const SDL_Event& e) { return impl_on_event(e); }
         void on_tick() { impl_on_tick(); }
         void on_draw() { impl_on_draw(); }
 
@@ -44,7 +44,7 @@ namespace osc
         virtual void impl_on_unmount() {}
 
         // called by app to pump an event to the screen
-        virtual void impl_on_event(const SDL_Event&) {}
+        virtual bool impl_on_event(const SDL_Event&) { return false; }
 
         // called by app once per frame (float is a timedelta in seconds)
         virtual void impl_on_tick() {}
