@@ -7,10 +7,10 @@
 
 - 📥 Want to download it? [Download the latest release here](../../releases/latest)
 - 📚 Want to learn the basics? [View the documentation online](https://docs.opensimcreator.com)
-- 🐛 Found a bug or want to request a feature? [Post it on the issues page](../../issues)
-- ❓ Have a question? [Go to the discussions page](../../discussions)
 - 📖 Want to cite the project? [See the citation section of this README](#citing)
 - 🧬 Want to know more about the project? [See www.opensimcreator.com](https://www.opensimcreator.com)
+- ❓ Have a question? [Go to the discussions page](../../discussions)
+- 🐛 Found a bug or want to request a feature? [Post it on the issues page](../../issues)
 
 
 ## 👓 Overview
