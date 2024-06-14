@@ -114,10 +114,14 @@ private:
         int column = 0;
         ui::table_set_column_index(column++);
         drawNameCell(c);
+
         ui::table_set_column_index(column++);
         drawDataCell(c);
+        OSC_ASSERT_ALWAYS(c.hasOwner() && "An `OpenSim::Coordinate` must always have an owner. This bug can occur when using is_free_to_satisfy_coordinates (see issue #888)");
+
         ui::table_set_column_index(column++);
         drawSpeedCell(c);
+        OSC_ASSERT_ALWAYS(c.hasOwner() && "An `OpenSim::Coordinate` must always have an owner. This bug can occur when using is_free_to_satisfy_coordinates (see issue #888)");
     }
 
     void drawNameCell(OpenSim::Coordinate const& c)
