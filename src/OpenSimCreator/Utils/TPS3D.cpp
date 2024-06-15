@@ -22,7 +22,7 @@ namespace
     // this is effectviely the "U" term in the TPS algorithm literature
     //
     // i.e. U(||pi - p||) in the literature is equivalent to `RadialBasisFunction3D(pi, p)` here
-    float RadialBasisFunction3D(Vec3 const& controlPoint, Vec3 const& p)
+    float RadialBasisFunction3D(const Vec3& controlPoint, const Vec3& p)
     {
         // this implementation uses the U definition from the following (later) source:
         //
@@ -37,12 +37,11 @@ namespace
     }
 }
 
-std::ostream& osc::operator<<(std::ostream& o, TPSCoefficientSolverInputs3D const& inputs)
+std::ostream& osc::operator<<(std::ostream& o, const TPSCoefficientSolverInputs3D& inputs)
 {
     o << "TPSCoefficientSolverInputs3D{landmarks = [";
     std::string_view delim;
-    for (LandmarkPair3D const& landmark : inputs.landmarks)
-    {
+    for (const LandmarkPair3D& landmark : inputs.landmarks) {
         o << delim << landmark;
         delim = ", ";
     }
@@ -50,16 +49,15 @@ std::ostream& osc::operator<<(std::ostream& o, TPSCoefficientSolverInputs3D cons
     return o;
 }
 
-std::ostream& osc::operator<<(std::ostream& o, TPSNonAffineTerm3D const& wt)
+std::ostream& osc::operator<<(std::ostream& o, const TPSNonAffineTerm3D& wt)
 {
     return o << "TPSNonAffineTerm3D{Weight = " << wt.weight << ", ControlPoint = " << wt.controlPoint << '}';
 }
 
-std::ostream& osc::operator<<(std::ostream& o, TPSCoefficients3D const& coefs)
+std::ostream& osc::operator<<(std::ostream& o, const TPSCoefficients3D& coefs)
 {
     o << "TPSCoefficients3D{a1 = " << coefs.a1 << ", a2 = " << coefs.a2 << ", a3 = " << coefs.a3 << ", a4 = " << coefs.a4;
-    for (size_t i = 0; i < coefs.nonAffineTerms.size(); ++i)
-    {
+    for (size_t i = 0; i < coefs.nonAffineTerms.size(); ++i) {
         o << ", w" << i << " = " << coefs.nonAffineTerms[i];
     }
     o << '}';
@@ -67,7 +65,7 @@ std::ostream& osc::operator<<(std::ostream& o, TPSCoefficients3D const& coefs)
 }
 
 // computes all coefficients of the 3D TPS equation (a1, a2, a3, a4, and all the w's)
-TPSCoefficients3D osc::CalcCoefficients(TPSCoefficientSolverInputs3D const& inputs)
+TPSCoefficients3D osc::CalcCoefficients(const TPSCoefficientSolverInputs3D& inputs)
 {
     // this is based on the Bookstein Thin Plate Sline (TPS) warping algorithm
     //
@@ -117,10 +115,9 @@ TPSCoefficients3D osc::CalcCoefficients(TPSCoefficientSolverInputs3D const& inpu
 
     OSC_PERF("CalcCoefficients");
 
-    int const numPairs = static_cast<int>(inputs.landmarks.size());
+    const int numPairs = static_cast<int>(inputs.landmarks.size());
 
-    if (numPairs == 0)
-    {
+    if (numPairs == 0) {
         // edge-case: there are no pairs, so return an identity-like transform
         return TPSCoefficients3D{};
     }
@@ -129,12 +126,10 @@ TPSCoefficients3D osc::CalcCoefficients(TPSCoefficientSolverInputs3D const& inpu
     SimTK::Matrix L(numPairs + 4, numPairs + 4);
 
     // populate the K part of matrix L (upper-left)
-    for (int row = 0; row < numPairs; ++row)
-    {
-        for (int col = 0; col < numPairs; ++col)
-        {
-            Vec3 const& pis = inputs.landmarks[row].source;
-            Vec3 const& pj = inputs.landmarks[col].source;
+    for (int row = 0; row < numPairs; ++row) {
+        for (int col = 0; col < numPairs; ++col) {
+            const Vec3& pis = inputs.landmarks[row].source;
+            const Vec3& pj = inputs.landmarks[col].source;
 
             L(row, col) = RadialBasisFunction3D(pis, pj);
         }
@@ -142,10 +137,9 @@ TPSCoefficients3D osc::CalcCoefficients(TPSCoefficientSolverInputs3D const& inpu
 
     // populate the P part of matrix L (upper-right)
     {
-        int const pStartColumn = numPairs;
+        const int pStartColumn = numPairs;
 
-        for (int row = 0; row < numPairs; ++row)
-        {
+        for (int row = 0; row < numPairs; ++row) {
             L(row, pStartColumn)     = 1.0;
             L(row, pStartColumn + 1) = inputs.landmarks[row].source.x;
             L(row, pStartColumn + 2) = inputs.landmarks[row].source.y;
@@ -155,10 +149,9 @@ TPSCoefficients3D osc::CalcCoefficients(TPSCoefficientSolverInputs3D const& inpu
 
     // populate the PT part of matrix L (bottom-left)
     {
-        int const ptStartRow = numPairs;
+        const int ptStartRow = numPairs;
 
-        for (int col = 0; col < numPairs; ++col)
-        {
+        for (int col = 0; col < numPairs; ++col) {
             L(ptStartRow, col)     = 1.0;
             L(ptStartRow + 1, col) = inputs.landmarks[col].source.x;
             L(ptStartRow + 2, col) = inputs.landmarks[col].source.y;
@@ -168,13 +161,11 @@ TPSCoefficients3D osc::CalcCoefficients(TPSCoefficientSolverInputs3D const& inpu
 
     // populate the 0 part of matrix L (bottom-right)
     {
-        int const zeroStartRow = numPairs;
-        int const zeroStartCol = numPairs;
+        const int zeroStartRow = numPairs;
+        const int zeroStartCol = numPairs;
 
-        for (int row = 0; row < 4; ++row)
-        {
-            for (int col = 0; col < 4; ++col)
-            {
+        for (int row = 0; row < 4; ++row) {
+            for (int col = 0; col < 4; ++col) {
                 L(zeroStartRow + row, zeroStartCol + col) = 0.0;
             }
         }
@@ -191,7 +182,7 @@ TPSCoefficients3D osc::CalcCoefficients(TPSCoefficientSolverInputs3D const& inpu
     }
 
     // create a linear solver that can be used to solve `L*Cn = Vn` for `Cn` (where `n` is a dimension)
-    SimTK::FactorQTZ const F{L};
+    const SimTK::FactorQTZ F{L};
 
     // solve for each dimension
     SimTK::Vector Cx(numPairs + 4, 0.0);
@@ -215,10 +206,9 @@ TPSCoefficients3D osc::CalcCoefficients(TPSCoefficientSolverInputs3D const& inpu
 
     // populate `wi` coefficients (+ control points, needed at evaluation-time)
     rv.nonAffineTerms.reserve(numPairs);
-    for (int i = 0; i < numPairs; ++i)
-    {
-        Vec3 const weight = {Cx[i], Cy[i], Cz[i]};
-        Vec3 const& controlPoint = inputs.landmarks[i].source;
+    for (int i = 0; i < numPairs; ++i) {
+        const Vec3 weight = {Cx[i], Cy[i], Cz[i]};
+        const Vec3& controlPoint = inputs.landmarks[i].source;
         rv.nonAffineTerms.emplace_back(weight, controlPoint);
     }
 
@@ -226,7 +216,7 @@ TPSCoefficients3D osc::CalcCoefficients(TPSCoefficientSolverInputs3D const& inpu
 }
 
 // evaluates the TPS equation with the given coefficients and input point
-Vec3 osc::EvaluateTPSEquation(TPSCoefficients3D const& coefs, Vec3 p)
+Vec3 osc::EvaluateTPSEquation(const TPSCoefficients3D& coefs, Vec3 p)
 {
     // this implementation effectively evaluates `fx(x, y, z)`, `fy(x, y, z)`, and
     // `fz(x, y, z)` the same time, because `TPSCoefficients3D` stores the X, Y, and Z
@@ -236,8 +226,7 @@ Vec3 osc::EvaluateTPSEquation(TPSCoefficients3D const& coefs, Vec3 p)
     Vec3d rv = Vec3d{coefs.a1} + Vec3d{coefs.a2*p.x} + Vec3d{coefs.a3*p.y} + Vec3d{coefs.a4*p.z};
 
     // accumulate non-affine terms (effectively: wi * U(||controlPoint - p||))
-    for (TPSNonAffineTerm3D const& term : coefs.nonAffineTerms)
-    {
+    for (const TPSNonAffineTerm3D& term : coefs.nonAffineTerms) {
         rv += term.weight * RadialBasisFunction3D(term.controlPoint, p);
     }
 
@@ -245,7 +234,7 @@ Vec3 osc::EvaluateTPSEquation(TPSCoefficients3D const& coefs, Vec3 p)
 }
 
 // returns a mesh that is the equivalent of applying the 3D TPS warp to each vertex of the mesh
-Mesh osc::ApplyThinPlateWarpToMesh(TPSCoefficients3D const& coefs, Mesh const& mesh, float blendingFactor)
+Mesh osc::ApplyThinPlateWarpToMesh(const TPSCoefficients3D& coefs, const Mesh& mesh, float blendingFactor)
 {
     OSC_PERF("ApplyThinPlateWarpToMesh");
 
@@ -263,8 +252,8 @@ Mesh osc::ApplyThinPlateWarpToMesh(TPSCoefficients3D const& coefs, Mesh const& m
 }
 
 std::vector<Vec3> osc::ApplyThinPlateWarpToPoints(
-    TPSCoefficients3D const& coefs,
-    std::span<Vec3 const> points,
+    const TPSCoefficients3D& coefs,
+    std::span<const Vec3> points,
     float blendingFactor)
 {
     std::vector<Vec3> rv(points.begin(), points.end());
@@ -273,7 +262,7 @@ std::vector<Vec3> osc::ApplyThinPlateWarpToPoints(
 }
 
 void osc::ApplyThinPlateWarpToPointsInPlace(
-    TPSCoefficients3D const& coefs,
+    const TPSCoefficients3D& coefs,
     std::span<Vec3> points,
     float blendingFactor)
 {

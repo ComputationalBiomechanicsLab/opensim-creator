@@ -204,6 +204,7 @@ namespace
             SimTK::State& st = report.updStateHACK();
             st.setTime(sv->getTime());
             model.setStateVariableValues(st, stateValsBuf);
+            model.assemble(st);
             model.realizeReport(st);
         }
 

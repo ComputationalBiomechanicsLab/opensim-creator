@@ -31,12 +31,12 @@ namespace osc
             landmarks{std::move(landmarks_)}
         {}
 
-        friend bool operator==(TPSCoefficientSolverInputs3D const&, TPSCoefficientSolverInputs3D const&) = default;
+        friend bool operator==(const TPSCoefficientSolverInputs3D&, const TPSCoefficientSolverInputs3D&) = default;
 
         std::vector<LandmarkPair3D> landmarks;
     };
 
-    std::ostream& operator<<(std::ostream&, TPSCoefficientSolverInputs3D const&);
+    std::ostream& operator<<(std::ostream&, const TPSCoefficientSolverInputs3D&);
 
     // a single non-affine term of the 3D TPS equation
     //
@@ -45,49 +45,49 @@ namespace osc
     struct TPSNonAffineTerm3D final {
 
         TPSNonAffineTerm3D(
-            Vec3 const& weight_,
-            Vec3 const& controlPoint_) :
+            const Vec3& weight_,
+            const Vec3& controlPoint_) :
 
             weight{weight_},
             controlPoint{controlPoint_}
         {}
 
-        friend bool operator==(TPSNonAffineTerm3D const&, TPSNonAffineTerm3D const&) = default;
+        friend bool operator==(const TPSNonAffineTerm3D&, const TPSNonAffineTerm3D&) = default;
 
         Vec3 weight;
         Vec3 controlPoint;
     };
 
-    std::ostream& operator<<(std::ostream&, TPSNonAffineTerm3D const&);
+    std::ostream& operator<<(std::ostream&, const TPSNonAffineTerm3D&);
 
     // all coefficients in the 3D TPS equation
     //
     // i.e. these are the a1, a2, a3, a4, and w's (+ control points) terms of the equation
     struct TPSCoefficients3D final {
+        friend bool operator==(const TPSCoefficients3D&, const TPSCoefficients3D&) = default;
+
         // default the coefficients to an "identity" warp
         Vec3 a1 = {0.0f, 0.0f, 0.0f};
         Vec3 a2 = {1.0f, 0.0f, 0.0f};
         Vec3 a3 = {0.0f, 1.0f, 0.0f};
         Vec3 a4 = {0.0f, 0.0f, 1.0f};
         std::vector<TPSNonAffineTerm3D> nonAffineTerms;
-
-        friend bool operator==(TPSCoefficients3D const&, TPSCoefficients3D const&) = default;
     };
 
-    std::ostream& operator<<(std::ostream&, TPSCoefficients3D const&);
+    std::ostream& operator<<(std::ostream&, const TPSCoefficients3D&);
 
     // computes all coefficients of the 3D TPS equation (a1, a2, a3, a4, and all the w's)
-    TPSCoefficients3D CalcCoefficients(TPSCoefficientSolverInputs3D const&);
+    TPSCoefficients3D CalcCoefficients(const TPSCoefficientSolverInputs3D&);
 
     // evaluates the TPS equation with the given coefficients and input point
-    Vec3 EvaluateTPSEquation(TPSCoefficients3D const&, Vec3);
+    Vec3 EvaluateTPSEquation(const TPSCoefficients3D&, Vec3);
 
     // returns a mesh that is the equivalent of applying the 3D TPS warp to the mesh
-    Mesh ApplyThinPlateWarpToMesh(TPSCoefficients3D const&, Mesh const&, float blendingFactor);
+    Mesh ApplyThinPlateWarpToMesh(const TPSCoefficients3D&, const Mesh&, float blendingFactor);
 
     // returns points that are the equivalent of applying the 3D TPS warp to each input point
-    std::vector<Vec3> ApplyThinPlateWarpToPoints(TPSCoefficients3D const&, std::span<Vec3 const>, float blendingFactor);
+    std::vector<Vec3> ApplyThinPlateWarpToPoints(const TPSCoefficients3D&, std::span<const Vec3>, float blendingFactor);
 
     // applies the 3D TPS warp in-place to each SimTK::Vec3 in the provided span
-    void ApplyThinPlateWarpToPointsInPlace(TPSCoefficients3D const&, std::span<Vec3>, float blendingFactor);
+    void ApplyThinPlateWarpToPointsInPlace(const TPSCoefficients3D&, std::span<Vec3>, float blendingFactor);
 }

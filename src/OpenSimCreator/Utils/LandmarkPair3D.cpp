@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-std::ostream& osc::operator<<(std::ostream& o, LandmarkPair3D const& p)
+std::ostream& osc::operator<<(std::ostream& o, const LandmarkPair3D& p)
 {
     return o << "LandmarkPair3D{source = " << p.source << ", dest = " << p.destination << '}';
 }

@@ -16,75 +16,69 @@ using namespace osc;
 
 // public API
 
-SimTK::Vec3 osc::ToSimTKVec3(Vec3 const& v)
+SimTK::Vec3 osc::ToSimTKVec3(const Vec3& v)
 {
-    return
-    {
+    return {
         static_cast<double>(v.x),
         static_cast<double>(v.y),
         static_cast<double>(v.z),
     };
 }
 
-SimTK::Vec3 osc::ToSimTKVec3(Eulers const& v)
+SimTK::Vec3 osc::ToSimTKVec3(const Eulers& v)
 {
-    return
-    {
+    return {
         static_cast<double>(v.x.count()),
         static_cast<double>(v.y.count()),
         static_cast<double>(v.z.count()),
     };
 }
 
-SimTK::Mat33 osc::ToSimTKMat3(Mat3 const& m)
+SimTK::Mat33 osc::ToSimTKMat3(const Mat3& m)
 {
-    return SimTK::Mat33
-    {
+    return SimTK::Mat33 {
         static_cast<double>(m[0][0]), static_cast<double>(m[1][0]), static_cast<double>(m[2][0]),
         static_cast<double>(m[0][1]), static_cast<double>(m[1][1]), static_cast<double>(m[2][1]),
         static_cast<double>(m[0][2]), static_cast<double>(m[1][2]), static_cast<double>(m[2][2]),
     };
 }
 
-SimTK::Inertia osc::ToSimTKInertia(Vec3 const& v)
+SimTK::Inertia osc::ToSimTKInertia(const Vec3& v)
 {
-    return
-    {
+    return {
         static_cast<double>(v[0]),
         static_cast<double>(v[1]),
         static_cast<double>(v[2]),
     };
 }
 
-SimTK::Transform osc::ToSimTKTransform(Transform const& t)
+SimTK::Transform osc::ToSimTKTransform(const Transform& t)
 {
     return SimTK::Transform{ToSimTKRotation(t.rotation), ToSimTKVec3(t.position)};
 }
 
-SimTK::Rotation osc::ToSimTKRotation(Quat const& q)
+SimTK::Rotation osc::ToSimTKRotation(const Quat& q)
 {
     return SimTK::Rotation{ToSimTKMat3(mat3_cast(q))};
 }
 
-SimTK::Vec3 osc::ToSimTKRGBVec3(Color const& color)
+SimTK::Vec3 osc::ToSimTKRGBVec3(const Color& color)
 {
     return {color.r, color.g, color.b};
 }
 
-Vec3 osc::ToVec3(SimTK::Vec3 const& v)
+Vec3 osc::ToVec3(const SimTK::Vec3& v)
 {
-    return Vec3
-    {
+    return Vec3{
         static_cast<float>(v[0]),
         static_cast<float>(v[1]),
         static_cast<float>(v[2]),
     };
 }
 
-Vec4 osc::to_vec4(SimTK::Vec3 const& v, float w)
+Vec4 osc::to_vec4(const SimTK::Vec3& v, float w)
 {
-    return Vec4
-    {
+    return Vec4{
         static_cast<float>(v[0]),
         static_cast<float>(v[1]),
         static_cast<float>(v[2]),
@@ -92,16 +86,16 @@ Vec4 osc::to_vec4(SimTK::Vec3 const& v, float w)
     };
 }
 
-Mat4 osc::ToMat4x4(SimTK::Transform const& t)
+Mat4 osc::ToMat4x4(const SimTK::Transform& t)
 {
     Mat4 m{};
 
     // x0 y0 z0 w0
-    SimTK::Rotation const& r = t.R();
-    SimTK::Vec3 const& p = t.p();
+    const SimTK::Rotation& r = t.R();
+    const SimTK::Vec3& p = t.p();
 
     {
-        auto const& row0 = r[0];
+        const auto& row0 = r[0];
         m[0][0] = static_cast<float>(row0[0]);
         m[1][0] = static_cast<float>(row0[1]);
         m[2][0] = static_cast<float>(row0[2]);
@@ -109,7 +103,7 @@ Mat4 osc::ToMat4x4(SimTK::Transform const& t)
     }
 
     {
-        auto const& row1 = r[1];
+        const auto& row1 = r[1];
         m[0][1] = static_cast<float>(row1[0]);
         m[1][1] = static_cast<float>(row1[1]);
         m[2][1] = static_cast<float>(row1[2]);
@@ -117,7 +111,7 @@ Mat4 osc::ToMat4x4(SimTK::Transform const& t)
     }
 
     {
-        auto const& row2 = r[2];
+        const auto& row2 = r[2];
         m[0][2] = static_cast<float>(row2[0]);
         m[1][2] = static_cast<float>(row2[1]);
         m[2][2] = static_cast<float>(row2[2]);
@@ -133,11 +127,11 @@ Mat4 osc::ToMat4x4(SimTK::Transform const& t)
     return m;
 }
 
-Mat3 osc::ToMat3(SimTK::Mat33 const& m)
+Mat3 osc::ToMat3(const SimTK::Mat33& m)
 {
     Mat3 rv{};
     for (int row = 0; row < 3; ++row) {
-        auto const& r = m[row];
+        const auto& r = m[row];
         rv[0][row] = static_cast<float>(r[0]);
         rv[1][row] = static_cast<float>(r[1]);
         rv[2][row] = static_cast<float>(r[2]);
@@ -145,18 +139,17 @@ Mat3 osc::ToMat3(SimTK::Mat33 const& m)
     return rv;
 }
 
-Mat4 osc::mat4_cast(SimTK::Rotation const& r)
+Mat4 osc::mat4_cast(const SimTK::Rotation& r)
 {
-    SimTK::Transform const t{r};
+    const SimTK::Transform t{r};
     return ToMat4x4(t);
 }
 
-Quat osc::ToQuat(SimTK::Rotation const& r)
+Quat osc::ToQuat(const SimTK::Rotation& r)
 {
-    SimTK::Quaternion const q = r.convertRotationToQuaternion();
+    const SimTK::Quaternion q = r.convertRotationToQuaternion();
 
-    return Quat
-    {
+    return Quat{
         static_cast<float>(q[0]),
         static_cast<float>(q[1]),
         static_cast<float>(q[2]),
@@ -164,7 +157,7 @@ Quat osc::ToQuat(SimTK::Rotation const& r)
     };
 }
 
-Transform osc::decompose_to_transform(SimTK::Transform const& t)
+Transform osc::decompose_to_transform(const SimTK::Transform& t)
 {
     return Transform{.rotation = ToQuat(t.R()), .position = ToVec3(t.p())};
 }

@@ -17,21 +17,21 @@ namespace osc { struct Transform; }
 namespace osc
 {
     // converters: from osc types to SimTK,
-    SimTK::Vec3 ToSimTKVec3(Vec3 const&);
-    inline SimTK::Vec3 ToSimTKVec3(Vec4 const& v) { return ToSimTKVec3(Vec3{v}); }
-    SimTK::Vec3 ToSimTKVec3(Eulers const&);
-    SimTK::Mat33 ToSimTKMat3(Mat3 const&);
-    SimTK::Inertia ToSimTKInertia(Vec3 const&);
-    SimTK::Transform ToSimTKTransform(Transform const&);
-    SimTK::Rotation ToSimTKRotation(Quat const&);
-    SimTK::Vec3 ToSimTKRGBVec3(Color const&);
+    SimTK::Vec3 ToSimTKVec3(const Vec3&);
+    inline SimTK::Vec3 ToSimTKVec3(const Vec4& v) { return ToSimTKVec3(Vec3{v}); }
+    SimTK::Vec3 ToSimTKVec3(const Eulers&);
+    SimTK::Mat33 ToSimTKMat3(const Mat3&);
+    SimTK::Inertia ToSimTKInertia(const Vec3&);
+    SimTK::Transform ToSimTKTransform(const Transform&);
+    SimTK::Rotation ToSimTKRotation(const Quat&);
+    SimTK::Vec3 ToSimTKRGBVec3(const Color&);
 
     // converters: from SimTK types to osc
-    Vec3 ToVec3(SimTK::Vec3 const&);
-    Vec4 to_vec4(SimTK::Vec3 const&, float w = 1.0f);
-    Mat4 ToMat4x4(SimTK::Transform const&);
-    Mat3 ToMat3(SimTK::Mat33 const&);
-    Mat4 mat4_cast(SimTK::Rotation const&);
-    Quat ToQuat(SimTK::Rotation const&);
-    Transform decompose_to_transform(SimTK::Transform const&);
+    Vec3 ToVec3(const SimTK::Vec3&);
+    Vec4 to_vec4(const SimTK::Vec3&, float w = 1.0f);
+    Mat4 ToMat4x4(const SimTK::Transform&);
+    Mat3 ToMat3(const SimTK::Mat33&);
+    Mat4 mat4_cast(const SimTK::Rotation&);
+    Quat ToQuat(const SimTK::Rotation&);
+    Transform decompose_to_transform(const SimTK::Transform&);
 }

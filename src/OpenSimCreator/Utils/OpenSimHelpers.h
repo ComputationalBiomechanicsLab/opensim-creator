@@ -57,7 +57,7 @@ namespace SimTK { class State; }
 namespace osc
 {
     template<typename T>
-    concept ClonesToRawPtr = requires(T const& v) {
+    concept ClonesToRawPtr = requires(const T& v) {
         { v.clone() } -> std::same_as<T*>;
     };
 
@@ -67,7 +67,7 @@ namespace osc
         std::derived_from<OpenSim::Object> T,
         std::derived_from<OpenSim::Object> C = OpenSim::Object
     >
-    size_t size(OpenSim::Set<T, C> const& s)
+    size_t size(const OpenSim::Set<T, C>& s)
     {
         return static_cast<size_t>(s.getSize());
     }
@@ -76,25 +76,25 @@ namespace osc
         std::derived_from<OpenSim::Object> T,
         std::derived_from<OpenSim::Object> C = OpenSim::Object
     >
-    ptrdiff_t ssize(OpenSim::Set<T, C> const& s)
+    ptrdiff_t ssize(const OpenSim::Set<T, C>& s)
     {
         return static_cast<ptrdiff_t>(s.getSize());
     }
 
     template<typename T>
-    size_t size(OpenSim::ArrayPtrs<T> const& ary)
+    size_t size(const OpenSim::ArrayPtrs<T>& ary)
     {
         return static_cast<size_t>(ary.getSize());
     }
 
     template<typename T>
-    size_t size(OpenSim::Array<T> const& ary)
+    size_t size(const OpenSim::Array<T>& ary)
     {
         return static_cast<size_t>(ary.getSize());
     }
 
     template<typename T>
-    size_t size(OpenSim::Property<T> const& p)
+    size_t size(const OpenSim::Property<T>& p)
     {
         return static_cast<size_t>(p.size());
     }
@@ -103,7 +103,7 @@ namespace osc
         std::derived_from<OpenSim::Object> T,
         std::derived_from<OpenSim::Object> C = OpenSim::Object
     >
-    [[nodiscard]] bool empty(OpenSim::Set<T, C> const& s)
+    [[nodiscard]] bool empty(const OpenSim::Set<T, C>& s)
     {
         return size(s) <= 0;
     }
@@ -127,10 +127,9 @@ namespace osc
     }
 
     template<typename T>
-    T const& At(OpenSim::Array<T> const& ary, size_t i)
+    const T& At(const OpenSim::Array<T>& ary, size_t i)
     {
-        if (i >= size(ary))
-        {
+        if (i >= size(ary)) {
             throw std::out_of_range{"out of bounds access to an OpenSim::ArrayPtrs detected"};
         }
         return ary.get(static_cast<int>(i));
@@ -140,10 +139,9 @@ namespace osc
         std::derived_from<OpenSim::Object> T,
         std::derived_from<OpenSim::Object> C = OpenSim::Object
     >
-    T const& At(OpenSim::Set<T, C> const& s, size_t i)
+    const T& At(const OpenSim::Set<T, C>& s, size_t i)
     {
-        if (i >= size(s))
-        {
+        if (i >= size(s)) {
             throw std::out_of_range{"out of bounds access to an OpenSim::Set detected"};
         }
         return s.get(static_cast<int>(i));
@@ -155,8 +153,7 @@ namespace osc
     >
     T& At(OpenSim::Set<T, C>& s, size_t i)
     {
-        if (i >= size(s))
-        {
+        if (i >= size(s)) {
             throw std::out_of_range{"out of bounds access to an OpenSim::Set detected"};
         }
         s.get(static_cast<int>(i));  // force an OpenSim-based null check
@@ -164,7 +161,7 @@ namespace osc
     }
 
     template<typename T>
-    T const& At(OpenSim::Property<T> const& p, size_t i)
+    T const& At(const OpenSim::Property<T>& p, size_t i)
     {
         return p[static_cast<int>(i)];
     }
@@ -180,109 +177,108 @@ namespace osc
 
     // returns true if the first argument has a lexographically lower class name
     bool IsConcreteClassNameLexographicallyLowerThan(
-        OpenSim::Component const&,
-        OpenSim::Component const&
+        const OpenSim::Component&,
+        const OpenSim::Component&
     );
 
     // returns true if the first argument points to a component that has a lexographically lower class
     // name than the component pointed to by second argument
     //
     // (it's a helper method that's handy for use with pointers, unique_ptr, shared_ptr, etc.)
-    template<DereferencesTo<OpenSim::Component const&> ComponentPtrLike>
+    template<DereferencesTo<const OpenSim::Component&> ComponentPtrLike>
     bool IsConcreteClassNameLexographicallyLowerThan(
-        ComponentPtrLike const& a,
-        ComponentPtrLike const& b)
+        const ComponentPtrLike& a,
+        const ComponentPtrLike& b)
     {
         return IsConcreteClassNameLexographicallyLowerThan(*a, *b);
     }
 
     bool IsNameLexographicallyLowerThan(
-        OpenSim::Component const&,
-        OpenSim::Component const&
+        const OpenSim::Component&,
+        const OpenSim::Component&
     );
 
-    template<DereferencesTo<OpenSim::Component const&> Ptr>
+    template<DereferencesTo<const OpenSim::Component&> Ptr>
     bool IsNameLexographicallyLowerThan(
-        Ptr const& a,
-        Ptr const& b)
+        const Ptr& a,
+        const Ptr& b)
     {
         return IsNameLexographicallyLowerThan(*a, *b);
     }
 
-    template<DereferencesTo<OpenSim::Component const&> Ptr>
+    template<DereferencesTo<const OpenSim::Component&> Ptr>
     bool IsNameLexographicallyGreaterThan(
-        Ptr const& a,
-        Ptr const& b)
+        const Ptr& a,
+        const Ptr& b)
     {
         return !IsNameLexographicallyLowerThan<Ptr>(a, b);
     }
 
     // returns a mutable pointer to the owner (if it exists)
-    OpenSim::Component* UpdOwner(OpenSim::Component& root, OpenSim::Component const&);
-    OpenSim::Component& UpdOwnerOrThrow(OpenSim::Component& root, OpenSim::Component const&);
+    OpenSim::Component* UpdOwner(OpenSim::Component& root, const OpenSim::Component&);
+    OpenSim::Component& UpdOwnerOrThrow(OpenSim::Component& root, const OpenSim::Component&);
 
     template<std::derived_from<OpenSim::Component> T>
-    T& UpdOwnerOrThrow(OpenSim::Component& root, OpenSim::Component const& c)
+    T& UpdOwnerOrThrow(OpenSim::Component& root, const OpenSim::Component& c)
     {
         return dynamic_cast<T&>(UpdOwnerOrThrow(root, c));
     }
 
     template<std::derived_from<OpenSim::Component> T>
-    T* UpdOwner(OpenSim::Component& root, OpenSim::Component const& c)
+    T* UpdOwner(OpenSim::Component& root, const OpenSim::Component& c)
     {
         return dynamic_cast<T*>(UpdOwner(root, c));
     }
 
     // returns a pointer to the owner (if it exists)
-    OpenSim::Component const& GetOwnerOrThrow(OpenSim::AbstractOutput const&);
-    OpenSim::Component const& GetOwnerOrThrow(OpenSim::Component const&);
-    OpenSim::Component const& GetOwnerOr(OpenSim::Component const&, OpenSim::Component const& fallback);
-    OpenSim::Component const* GetOwner(OpenSim::Component const&);
+    const OpenSim::Component& GetOwnerOrThrow(const OpenSim::AbstractOutput&);
+    const OpenSim::Component& GetOwnerOrThrow(const OpenSim::Component&);
+    const OpenSim::Component& GetOwnerOr(const OpenSim::Component&, const OpenSim::Component& fallback);
+    const OpenSim::Component* GetOwner(const OpenSim::Component&);
 
     template<std::derived_from<OpenSim::Component> T>
-    T const* GetOwner(OpenSim::Component const& c)
+    const T* GetOwner(const OpenSim::Component& c)
     {
-        return dynamic_cast<T const*>(GetOwner(c));
+        return dynamic_cast<const T*>(GetOwner(c));
     }
 
     template<std::derived_from<OpenSim::Component> T>
-    bool OwnerIs(OpenSim::Component const& c)
+    bool OwnerIs(const OpenSim::Component& c)
     {
         return GetOwner<T>(c) != nullptr;
     }
 
-    std::optional<std::string> TryGetOwnerName(OpenSim::Component const&);
+    std::optional<std::string> TryGetOwnerName(const OpenSim::Component&);
 
     // returns the distance between the given `Component` and the component that is at the root of the component tree
-    size_t DistanceFromRoot(OpenSim::Component const&);
+    size_t DistanceFromRoot(const OpenSim::Component&);
 
     // returns a reference to a global instance of a path that points to the root of a model (i.e. "/")
     OpenSim::ComponentPath GetRootComponentPath();
 
     // returns `true` if the given `ComponentPath` is an empty path
-    bool IsEmpty(OpenSim::ComponentPath const&);
+    bool IsEmpty(const OpenSim::ComponentPath&);
 
     // clears the given component path
     void Clear(OpenSim::ComponentPath&);
 
     // returns all components between the root (element 0) and the given component (element n-1) inclusive
-    std::vector<OpenSim::Component const*> GetPathElements(OpenSim::Component const&);
+    std::vector<const OpenSim::Component*> GetPathElements(const OpenSim::Component&);
 
     // calls the given function with each subcomponent of the given component
-    void ForEachComponent(OpenSim::Component const&, std::function<void(OpenSim::Component const&)> const&);
+    void ForEachComponent(const OpenSim::Component&, const std::function<void(const OpenSim::Component&)>&);
 
     // calls the given function with the provided component and each of its subcomponents
-    void ForEachComponentInclusive(OpenSim::Component const&, std::function<void(OpenSim::Component const&)> const&);
+    void ForEachComponentInclusive(const OpenSim::Component&, const std::function<void(OpenSim::Component const&)>&);
 
     // returns the number of children (recursive) of type T under the given component
     template<std::derived_from<OpenSim::Component> T>
-    size_t GetNumChildren(OpenSim::Component const& c)
+    size_t GetNumChildren(const OpenSim::Component& c)
     {
         size_t i = 0;
-        ForEachComponent(c, [&i](OpenSim::Component const& c)
+        ForEachComponent(c, [&i](const OpenSim::Component& c)
         {
-            if (dynamic_cast<T const*>(&c))
-            {
+            if (dynamic_cast<const T*>(&c)) {
                 ++i;
             }
         });
@@ -290,94 +286,94 @@ namespace osc
     }
 
     // returns the number of direct children that the component owns
-    size_t GetNumChildren(OpenSim::Component const&);
+    size_t GetNumChildren(const OpenSim::Component&);
 
     // returns `true` if `c == parent` or `c` is a descendent of `parent`
     bool IsInclusiveChildOf(
-        OpenSim::Component const* parent,
-        OpenSim::Component const* c
+        const OpenSim::Component* parent,
+        const OpenSim::Component* c
     );
 
     // returns the first parent in `parents` that appears to be an inclusive parent of `c`
     //
     // returns `nullptr` if no element in `parents` is an inclusive parent of `c`
-    OpenSim::Component const* IsInclusiveChildOf(
-        std::span<OpenSim::Component const*> parents,
-        OpenSim::Component const* c
+    const OpenSim::Component* IsInclusiveChildOf(
+        std::span<const OpenSim::Component*> parents,
+        const OpenSim::Component* c
     );
 
     // returns the first ancestor of `c` for which the given predicate returns `true`
-    OpenSim::Component const* FindFirstAncestorInclusive(
-        OpenSim::Component const*,
-        bool(*pred)(OpenSim::Component const*)
+    const OpenSim::Component* FindFirstAncestorInclusive(
+        const OpenSim::Component*,
+        bool(*pred)(const OpenSim::Component*)
     );
 
     // returns the first ancestor of `c` that has type `T`
     template<std::derived_from<OpenSim::Component> T>
-    T const* FindAncestorWithType(OpenSim::Component const* c)
+    const T* FindAncestorWithType(const OpenSim::Component* c)
     {
-        OpenSim::Component const* rv = FindFirstAncestorInclusive(c, [](OpenSim::Component const* el)
+        const OpenSim::Component* rv = FindFirstAncestorInclusive(c, [](const OpenSim::Component* el)
         {
-            return dynamic_cast<T const*>(el) != nullptr;
+            return dynamic_cast<const T*>(el) != nullptr;
         });
 
-        return dynamic_cast<T const*>(rv);
+        return dynamic_cast<const T*>(rv);
     }
 
     // returns `true` if `c` is a child of a component that derives from `T`
     template<std::derived_from<OpenSim::Component> T>
-    bool IsChildOfA(OpenSim::Component const& c)
+    bool IsChildOfA(const OpenSim::Component& c)
     {
         return FindAncestorWithType<T>(&c) != nullptr;
     }
 
     // returns the first descendent (including `component`) that satisfies `predicate(descendent);`
-    OpenSim::Component const* FindFirstDescendentInclusive(
-        OpenSim::Component const& component,
-        bool(*predicate)(OpenSim::Component const&)
+    const OpenSim::Component* FindFirstDescendentInclusive(
+        const OpenSim::Component& component,
+        bool(*predicate)(const OpenSim::Component&)
     );
 
     // returns the first descendent of `component` that satisfies `predicate(descendent)`
-    OpenSim::Component const* FindFirstDescendent(
-        OpenSim::Component const& component,
-        bool(*predicate)(OpenSim::Component const&)
+    const OpenSim::Component* FindFirstDescendent(
+        const OpenSim::Component& component,
+        bool(*predicate)(const OpenSim::Component&)
     );
 
     // returns the first direct descendent of `component` that has type `T`, or
     // `nullptr` if no such descendent exists
     template<std::derived_from<OpenSim::Component> T>
-    T const* FindFirstDescendentOfType(OpenSim::Component const& c)
+    const T* FindFirstDescendentOfType(const OpenSim::Component& c)
     {
-        OpenSim::Component const* rv = FindFirstDescendent(c, [](OpenSim::Component const& el)
+        const OpenSim::Component* rv = FindFirstDescendent(c, [](const OpenSim::Component& el)
         {
-            return dynamic_cast<T const*>(&el) != nullptr;
+            return dynamic_cast<const T*>(&el) != nullptr;
         });
-        return dynamic_cast<T const*>(rv);
+        return dynamic_cast<const T*>(rv);
     }
 
     // returns a vector containing points to all user-editable coordinates in the model
-    std::vector<OpenSim::Coordinate const*> GetCoordinatesInModel(OpenSim::Model const&);
+    std::vector<const OpenSim::Coordinate*> GetCoordinatesInModel(const OpenSim::Model&);
 
     // fills the given vector with all user-editable coordinates in the model
     void GetCoordinatesInModel(
-        OpenSim::Model const&,
-        std::vector<OpenSim::Coordinate const*>&
+        const OpenSim::Model&,
+        std::vector<const OpenSim::Coordinate*>&
     );
 
     // returns the user-facing display value (i.e. degrees) for a coordinate
-    float ConvertCoordValueToDisplayValue(OpenSim::Coordinate const&, double v);
+    float ConvertCoordValueToDisplayValue(const OpenSim::Coordinate&, double v);
 
     // returns the storage-facing value (i.e. radians) for a coordinate
-    double ConvertCoordDisplayValueToStorageValue(OpenSim::Coordinate const&, float v);
+    double ConvertCoordDisplayValueToStorageValue(const OpenSim::Coordinate&, float v);
 
     // returns a user-facing string that describes a coordinate's units
-    CStringView GetCoordDisplayValueUnitsString(OpenSim::Coordinate const&);
+    CStringView GetCoordDisplayValueUnitsString(const OpenSim::Coordinate&);
 
     // returns the names of a component's sockets
-    std::vector<std::string> GetSocketNames(OpenSim::Component const&);
+    std::vector<std::string> GetSocketNames(const OpenSim::Component&);
 
     // returns all sockets that are directly attached to the given component
-    std::vector<OpenSim::AbstractSocket const*> GetAllSockets(OpenSim::Component const&);
+    std::vector<const OpenSim::AbstractSocket*> GetAllSockets(const OpenSim::Component&);
 
     // returns all (mutable) sockets that are directly attached to the given component
     std::vector<OpenSim::AbstractSocket*> UpdAllSockets(OpenSim::Component&);
@@ -385,76 +381,76 @@ namespace osc
     // writes the given component's (recursive) topology graph to the output stream as a
     // dotviz `digraph`
     void WriteComponentTopologyGraphAsDotViz(
-        OpenSim::Component const&,
+        const OpenSim::Component&,
         std::ostream&
     );
 
     // returns a pointer if the given path resolves a component relative to root
-    OpenSim::Component const* FindComponent(
-        OpenSim::Component const& root,
-        OpenSim::ComponentPath const&
+    const OpenSim::Component* FindComponent(
+        const OpenSim::Component& root,
+        const OpenSim::ComponentPath&
     );
-    OpenSim::Component const* FindComponent(
-        OpenSim::Model const&,
-        std::string const& absPath
+    const OpenSim::Component* FindComponent(
+        const OpenSim::Model&,
+        const std::string& absPath
     );
 
     // return non-nullptr if the given path resolves a component of type T relative to root
     template<std::derived_from<OpenSim::Component> T>
-    T const* FindComponent(OpenSim::Component const& root, OpenSim::ComponentPath const& cp)
+    const T* FindComponent(const OpenSim::Component& root, const OpenSim::ComponentPath& cp)
     {
-        return dynamic_cast<T const*>(FindComponent(root, cp));
+        return dynamic_cast<const T*>(FindComponent(root, cp));
     }
 
     template<std::derived_from<OpenSim::Component> T>
-    T const* FindComponent(OpenSim::Component const& root, std::string const& cp)
+    const T* FindComponent(const OpenSim::Component& root, const std::string& cp)
     {
-        return dynamic_cast<T const*>(FindComponent(root, cp));
+        return dynamic_cast<const T*>(FindComponent(root, cp));
     }
 
     // returns a mutable pointer if the given path resolves a component relative to root
     OpenSim::Component* FindComponentMut(
         OpenSim::Component& root,
-        OpenSim::ComponentPath const&
+        const OpenSim::ComponentPath&
     );
 
     // returns non-nullptr if the given path resolves a component of type T relative to root
     template<std::derived_from<OpenSim::Component> T>
     T* FindComponentMut(
         OpenSim::Component& root,
-        OpenSim::ComponentPath const& cp)
+        const OpenSim::ComponentPath& cp)
     {
         return dynamic_cast<T*>(FindComponentMut(root, cp));
     }
 
     // returns true if the path resolves to a component within `root`
     bool ContainsComponent(
-        OpenSim::Component const& root,
-        OpenSim::ComponentPath const&
+        const OpenSim::Component& root,
+        const OpenSim::ComponentPath&
     );
 
     // returns non-nullptr if a socket with the given name is found within the given component
-    OpenSim::AbstractSocket const* FindSocket(
-        OpenSim::Component const&,
-        std::string const& socketName
+    const OpenSim::AbstractSocket* FindSocket(
+        const OpenSim::Component&,
+        const std::string& socketName
     );
 
     // returns non-nullptr if a socket with the given name is found within the given component
     OpenSim::AbstractSocket* FindSocketMut(
         OpenSim::Component&,
-        std::string const& socketName
+        const std::string& socketName
     );
 
     // returns `true` if the socket is connected to the component
     bool IsConnectedTo(
-        OpenSim::AbstractSocket const&,
-        OpenSim::Component const&
+        const OpenSim::AbstractSocket&,
+        const OpenSim::Component&
     );
 
     // returns true if the socket is able to connect to the component
     bool IsAbleToConnectTo(
-        OpenSim::AbstractSocket const&,
-        OpenSim::Component const&
+        const OpenSim::AbstractSocket&,
+        const OpenSim::Component&
     );
 
     // recursively traverses all components within `root` and reassigns any sockets
@@ -463,57 +459,57 @@ namespace osc
     // note: must be called on a component that already has finalized connections
     void RecursivelyReassignAllSockets(
         OpenSim::Component& root,
-        OpenSim::Component const& from,
-        OpenSim::Component const& to
+        const OpenSim::Component& from,
+        const OpenSim::Component& to
     );
 
     // returns a pointer to the property if the component has a property with the given name
     OpenSim::AbstractProperty* FindPropertyMut(
         OpenSim::Component&,
-        std::string const&
+        const std::string&
     );
 
     // returns a pointer to the property if the component has a simple property with the given name and type
     template<typename T>
     OpenSim::SimpleProperty<T>* FindSimplePropertyMut(
         OpenSim::Component& c,
-        std::string const& name)
+        const std::string& name)
     {
         return dynamic_cast<OpenSim::SimpleProperty<T>*>(FindPropertyMut(c, name));
     }
 
     // returns non-nullptr if an `AbstractOutput` with the given name is attached to the given component
-    OpenSim::AbstractOutput const* FindOutput(
-        OpenSim::Component const&,
-        std::string const& outputName
+    const OpenSim::AbstractOutput* FindOutput(
+        const OpenSim::Component&,
+        const std::string& outputName
     );
 
     // returns non-nullptr if an `AbstractOutput` with the given name is attached to a component located at the given path relative to the root
-    OpenSim::AbstractOutput const* FindOutput(
-        OpenSim::Component const& root,
-        OpenSim::ComponentPath const&,
-        std::string const& outputName
+    const OpenSim::AbstractOutput* FindOutput(
+        const OpenSim::Component& root,
+        const OpenSim::ComponentPath&,
+        const std::string& outputName
     );
 
     // returns true if the given model has an input file name (not empty, or "Unassigned")
-    bool HasInputFileName(OpenSim::Model const&);
+    bool HasInputFileName(const OpenSim::Model&);
 
     // returns a non-empty path if the given model has an input file name that exists on the user's filesystem
     //
     // otherwise, returns an empty path
-    std::filesystem::path TryFindInputFile(OpenSim::Model const&);
+    std::filesystem::path TryFindInputFile(const OpenSim::Model&);
 
     // returns the absolute path to the given mesh component, if found (otherwise, std::nullptr)
     std::optional<std::filesystem::path> FindGeometryFileAbsPath(
-        OpenSim::Model const&,
-        OpenSim::Mesh const&
+        const OpenSim::Model&,
+        const OpenSim::Mesh&
     );
 
     // returns `true` if the component should be shown in the UI
     //
     // this uses heuristics to determine whether the component is something the UI should be
     // "revealed" to the user
-    bool ShouldShowInUI(OpenSim::Component const&);
+    bool ShouldShowInUI(const OpenSim::Component&);
 
     // *tries* to delete the supplied component from the model
     //
@@ -523,7 +519,7 @@ namespace osc
     // copy common joint properties from a `src` to `dest`
     //
     // e.g. names, coordinate names, etc.
-    void CopyCommonJointProperties(OpenSim::Joint const& src, OpenSim::Joint& dest);
+    void CopyCommonJointProperties(const OpenSim::Joint& src, OpenSim::Joint& dest);
 
     // de-activates all wrap objects in the given model
     //
@@ -536,7 +532,7 @@ namespace osc
     bool ActivateAllWrapObjectsIn(OpenSim::Model&);
 
     // returns pointers to all wrap objects that are referenced by the given `GeometryPath`
-    std::vector<OpenSim::WrapObject const*> GetAllWrapObjectsReferencedBy(OpenSim::GeometryPath const&);
+    std::vector<const OpenSim::WrapObject*> GetAllWrapObjectsReferencedBy(const OpenSim::GeometryPath&);
 
     // fully initialize an OpenSim model (clear connections, finalize properties, remake SimTK::System)
     void InitializeModel(OpenSim::Model&);
@@ -560,16 +556,16 @@ namespace osc
     void FinalizeConnections(OpenSim::Model&);
 
     // returns optional{index} if joint is found in parent jointset (otherwise: std::nullopt)
-    std::optional<size_t> FindJointInParentJointSet(OpenSim::Joint const&);
+    std::optional<size_t> FindJointInParentJointSet(const OpenSim::Joint&);
 
     // returns user-visible (basic) name of geometry, or underlying file name
-    std::string GetDisplayName(OpenSim::Geometry const&);
+    std::string GetDisplayName(const OpenSim::Geometry&);
 
     // returns a user-visible string for a coordinate's motion type
-    CStringView GetMotionTypeDisplayName(OpenSim::Coordinate const&);
+    CStringView GetMotionTypeDisplayName(const OpenSim::Coordinate&);
 
     // returns a pointer to the component's appearance property, or `nullptr` if it doesn't have one
-    OpenSim::Appearance const* TryGetAppearance(OpenSim::Component const&);
+    const OpenSim::Appearance* TryGetAppearance(const OpenSim::Component&);
     OpenSim::Appearance* TryUpdAppearance(OpenSim::Component&);
 
     // tries to set the given component's appearance property's visibility field to the given bool
@@ -579,30 +575,30 @@ namespace osc
     bool TrySetAppearancePropertyIsVisibleTo(OpenSim::Component&, bool);
 
     // returns the color part of the `OpenSim::Appearance` as an `osc::Color`
-    Color to_color(OpenSim::Appearance const&);
+    Color to_color(const OpenSim::Appearance&);
 
     Color GetSuggestedBoneColor();  // best guess, based on shaders etc.
 
     // returns `true` if the given model's display properties asks to show frames
-    bool IsShowingFrames(OpenSim::Model const&);
+    bool IsShowingFrames(const OpenSim::Model&);
 
     // toggles the model's "show frames" display property and returns the new value
     bool ToggleShowingFrames(OpenSim::Model&);
 
     // returns `true` if the given model's display properties ask to show markers
-    bool IsShowingMarkers(OpenSim::Model const&);
+    bool IsShowingMarkers(const OpenSim::Model&);
 
     // toggles the model's "show markers" display property and returns the new value
     bool ToggleShowingMarkers(OpenSim::Model&);
 
     // returns `true` if the given model's display properties asks to show wrap geometry
-    bool IsShowingWrapGeometry(OpenSim::Model const&);
+    bool IsShowingWrapGeometry(const OpenSim::Model&);
 
     // toggles the model's "show wrap geometry" display property and returns the new value
     bool ToggleShowingWrapGeometry(OpenSim::Model&);
 
     // returns `true` if the given model's display properties asks to show contact geometry
-    bool IsShowingContactGeometry(OpenSim::Model const&);
+    bool IsShowingContactGeometry(const OpenSim::Model&);
 
     // toggles the model's "show contact geometry" display property and returns the new value
     bool ToggleShowingContactGeometry(OpenSim::Model&);
@@ -610,18 +606,18 @@ namespace osc
     // returns/assigns the absolute path to a component within its hierarchy (e.g. /jointset/joint/somejoint)
     //
     // (custom OSC version that may be faster than OpenSim::Component::getAbsolutePathString)
-    void GetAbsolutePathString(OpenSim::Component const&, std::string&);
-    std::string GetAbsolutePathString(OpenSim::Component const&);
+    void GetAbsolutePathString(const OpenSim::Component&, std::string&);
+    std::string GetAbsolutePathString(const OpenSim::Component&);
 
     // returns the absolute path to a component within its hierarchy (e.g. /jointset/joint/somejoint)
     //
     // (custom OSC version that may be faster than OpenSim::Component::getAbsolutePath)
-    OpenSim::ComponentPath GetAbsolutePath(OpenSim::Component const&);
+    OpenSim::ComponentPath GetAbsolutePath(const OpenSim::Component&);
 
     // if non-nullptr, returns/assigns the absolute path to the component within its hierarchy (e.g. /jointset/joint/somejoint)
     //
     // (custom OSC version that may be faster than OpenSim::Component::getAbsolutePath)
-    OpenSim::ComponentPath GetAbsolutePathOrEmpty(OpenSim::Component const*);
+    OpenSim::ComponentPath GetAbsolutePathOrEmpty(const OpenSim::Component*);
 
     // muscle lines of action
     //
@@ -634,31 +630,31 @@ namespace osc
         PointDirection origin;
         PointDirection insertion;
     };
-    std::optional<LinesOfAction> GetEffectiveLinesOfActionInGround(OpenSim::Muscle const&, SimTK::State const&);
-    std::optional<LinesOfAction> GetAnatomicalLinesOfActionInGround(OpenSim::Muscle const&, SimTK::State const&);
+    std::optional<LinesOfAction> GetEffectiveLinesOfActionInGround(const OpenSim::Muscle&, const SimTK::State&);
+    std::optional<LinesOfAction> GetAnatomicalLinesOfActionInGround(const OpenSim::Muscle&, const SimTK::State&);
 
     // path points
     //
     // helper functions for pulling path points out of geometry paths (e.g. for rendering)
     struct GeometryPathPoint final {
 
-        explicit GeometryPathPoint(Vec3 const& locationInGround_) :
+        explicit GeometryPathPoint(const Vec3& locationInGround_) :
             locationInGround{locationInGround_}
         {
         }
 
         GeometryPathPoint(
-            OpenSim::AbstractPathPoint const& underlyingUserPathPoint,
-            Vec3 const& locationInGround_) :
+            const OpenSim::AbstractPathPoint& underlyingUserPathPoint,
+            const Vec3& locationInGround_) :
             maybeUnderlyingUserPathPoint{&underlyingUserPathPoint},
             locationInGround{locationInGround_}
         {
         }
 
-        OpenSim::AbstractPathPoint const* maybeUnderlyingUserPathPoint = nullptr;
+        const OpenSim::AbstractPathPoint* maybeUnderlyingUserPathPoint = nullptr;
         Vec3 locationInGround{};
     };
-    std::vector<GeometryPathPoint> GetAllPathPoints(OpenSim::GeometryPath const&, SimTK::State const&);
+    std::vector<GeometryPathPoint> GetAllPathPoints(const OpenSim::GeometryPath&, const SimTK::State&);
 
     // contact forces
     //
@@ -668,9 +664,9 @@ namespace osc
         Vec3 point;
     };
     std::optional<ForcePoint> TryGetContactForceInGround(
-        OpenSim::Model const&,
-        SimTK::State const&,
-        OpenSim::HuntCrossleyForce const&
+        const OpenSim::Model&,
+        const SimTK::State&,
+        const OpenSim::HuntCrossleyForce&
     );
 
     // point info
@@ -683,14 +679,13 @@ namespace osc
 
             location{location_},
             frameAbsPath{std::move(frameAbsPath_)}
-        {
-        }
+        {}
 
         Vec3 location;
         OpenSim::ComponentPath frameAbsPath;
     };
-    bool CanExtractPointInfoFrom(OpenSim::Component const&, SimTK::State const&);
-    std::optional<PointInfo> TryExtractPointInfo(OpenSim::Component const&, SimTK::State const&);
+    bool CanExtractPointInfoFrom(const OpenSim::Component&, const SimTK::State&);
+    std::optional<PointInfo> TryExtractPointInfo(const OpenSim::Component&, const SimTK::State&);
 
     // adds a component to an appropriate location in the model (e.g. jointset for a joint) and
     // returns a reference to the placed component
@@ -782,13 +777,13 @@ namespace osc
     }
 
     template<ClonesToRawPtr T>
-    std::unique_ptr<T> Clone(T const& obj)
+    std::unique_ptr<T> Clone(const T& obj)
     {
         return std::unique_ptr<T>(obj.clone());
     }
 
     template<std::derived_from<OpenSim::Component> T>
-    void Append(OpenSim::ObjectProperty<T>& prop, T const& c)
+    void Append(OpenSim::ObjectProperty<T>& prop, const T& c)
     {
         prop.adoptAndAppendValue(Clone(c).release());
     }
@@ -797,7 +792,7 @@ namespace osc
         std::derived_from<OpenSim::Object> T,
         std::derived_from<OpenSim::Object> C = OpenSim::Object
     >
-    std::optional<size_t> IndexOf(OpenSim::Set<T, C> const& set, T const& el)
+    std::optional<size_t> IndexOf(const OpenSim::Set<T, C>& set, const T& el)
     {
         for (size_t i = 0; i < size(set); ++i) {
             if (&At(set, i) == &el) {
@@ -824,8 +819,7 @@ namespace osc
     >
     U& Assign(OpenSim::Set<T, C>& set, size_t index, std::unique_ptr<U> el)
     {
-        if (index >= size(set))
-        {
+        if (index >= size(set)) {
             throw std::out_of_range{"out of bounds access to an OpenSim::Set detected"};
         }
 
@@ -853,7 +847,7 @@ namespace osc
         std::derived_from<T> U,
         std::derived_from<OpenSim::Object> C = OpenSim::Object
     >
-    U& Assign(OpenSim::Set<T, C>& set, size_t index, U const& el)
+    U& Assign(OpenSim::Set<T, C>& set, size_t index, const U& el)
     {
         return Assign(set, index, Clone(el));
     }
@@ -862,23 +856,23 @@ namespace osc
     //
     // e.g. in OpenSim, this is usually acquired with `getParentFrame().getTransformInGround(State const&)`
     //      but that API isn't exposed generically via virtual methods
-    std::optional<SimTK::Transform> TryGetParentToGroundTransform(OpenSim::Component const&, SimTK::State const&);
+    std::optional<SimTK::Transform> TryGetParentToGroundTransform(const OpenSim::Component&, const SimTK::State&);
 
     // tries to get the name of the "positional" property of the given component
     //
     // e.g. the positional property of an `OpenSim::Station` is "location", whereas the
     //      positional property of an `OpenSim::PhysicalOffsetFrame` is "translation"
-    std::optional<std::string> TryGetPositionalPropertyName(OpenSim::Component const&);
+    std::optional<std::string> TryGetPositionalPropertyName(const OpenSim::Component&);
 
     // tries to get the name of the "orientational" property of the given component
     //
     // e.g. the orientational property of an `OpenSim::PhysicalOffsetFrame` is "orientation",
     //      whereas `OpenSim::Station` has no orientation, so this returns `std::nullopt`
-    std::optional<std::string> TryGetOrientationalPropertyName(OpenSim::Component const&);
+    std::optional<std::string> TryGetOrientationalPropertyName(const OpenSim::Component&);
 
     // tries to return the "parent" of the given frame, if applicable (e.g. if the frame is an
     // `OffsetFrame<T>` that has a logical parent
-    OpenSim::Frame const* TryGetParentFrame(OpenSim::Frame const&);
+    const OpenSim::Frame* TryGetParentFrame(const OpenSim::Frame&);
 
     // packages up the various useful parts that describe how a component is spatially represented
     //
@@ -895,8 +889,8 @@ namespace osc
 
     // tries to get the "spatial" representation of a component
     std::optional<ComponentSpatialRepresentation> TryGetSpatialRepresentation(
-        OpenSim::Component const&,
-        SimTK::State const&
+        const OpenSim::Component&,
+        const SimTK::State&
     );
 
     // returns `true` if the given character is permitted to appear within the name

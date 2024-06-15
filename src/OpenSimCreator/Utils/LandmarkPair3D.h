@@ -10,11 +10,11 @@ namespace osc
     //
     // this is typically what the user/caller defines
     struct LandmarkPair3D {
-        friend bool operator==(LandmarkPair3D const&, LandmarkPair3D const&) = default;
+        friend bool operator==(const LandmarkPair3D&, const LandmarkPair3D&) = default;
 
         Vec3 source{};
         Vec3 destination{};
     };
 
-    std::ostream& operator<<(std::ostream&, LandmarkPair3D const&);
+    std::ostream& operator<<(std::ostream&, const LandmarkPair3D&);
 }

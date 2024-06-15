@@ -22,8 +22,7 @@ namespace
             name{name_},
             description{description_},
             value{value_}
-        {
-        }
+        {}
 
         std::string name;
         std::string description;
@@ -44,17 +43,17 @@ public:
         return static_cast<int>(m_Params.size());
     }
 
-    std::string const& getName(int idx) const
+    const std::string& getName(int idx) const
     {
         return get(idx).name;
     }
 
-    std::string const& getDescription(int idx) const
+    const std::string& getDescription(int idx) const
     {
         return get(idx).description;
     }
 
-    ParamValue const& getValue(int idx) const
+    const ParamValue& getValue(int idx) const
     {
         return get(idx).value;
     }
@@ -82,24 +81,22 @@ public:
         get(idx).value = v;
     }
 
-    void setValue(std::string const& name, ParamValue value)
+    void setValue(const std::string& name, ParamValue value)
     {
         Param* p = find(name);
 
-        if (p)
-        {
+        if (p) {
             p->value = value;
         }
-        else
-        {
-            throw std::runtime_error{"ParamBlock::setValue(std::string const&, ParamValue): failed: cannot find a param with that name"};
+        else {
+            throw std::runtime_error{"ParamBlock::setValue(const std::string&, ParamValue): failed: cannot find a param with that name"};
         }
     }
 
 private:
-    std::optional<ParamValue> findValue(std::string const& name) const
+    std::optional<ParamValue> findValue(const std::string& name) const
     {
-        Param const* p = find(name);
+        const Param* p = find(name);
         return p ? std::optional<ParamValue>{p->value} : std::nullopt;
     }
 
@@ -108,7 +105,7 @@ private:
         return m_Params.at(static_cast<size_t>(idx));
     }
 
-    Param const& get(int idx) const
+    const Param& get(int idx) const
     {
         return m_Params.at(static_cast<size_t>(idx));
     }
@@ -116,17 +113,17 @@ private:
 
     // helper, to prevent writing a const-/non-const-version of a member method
     template<rgs::range Range>
-    static auto find(Range& range, std::string const& name) -> decltype(rgs::data(range))
+    static auto find(Range& range, const std::string& name) -> decltype(rgs::data(range))
     {
-        return find_or_nullptr(range, name, [](auto const& el) { return el.name; });
+        return find_or_nullptr(range, name, [](const auto& el) { return el.name; });
     }
 
-    Param* find(std::string const& name)
+    Param* find(const std::string& name)
     {
         return Impl::find(m_Params, name);
     }
 
-    Param const* find(std::string const& name) const
+    const Param* find(const std::string& name) const
     {
         return Impl::find(m_Params, name);
     }
@@ -138,9 +135,9 @@ private:
 // public API
 
 osc::ParamBlock::ParamBlock() : m_Impl{std::make_unique<Impl>()} {}
-osc::ParamBlock::ParamBlock(ParamBlock const&) = default;
+osc::ParamBlock::ParamBlock(const ParamBlock&) = default;
 osc::ParamBlock::ParamBlock(ParamBlock&&) noexcept = default;
-osc::ParamBlock& osc::ParamBlock::operator=(ParamBlock const&) = default;
+osc::ParamBlock& osc::ParamBlock::operator=(const ParamBlock&) = default;
 osc::ParamBlock& osc::ParamBlock::operator=(ParamBlock&&) noexcept = default;
 osc::ParamBlock::~ParamBlock() noexcept = default;
 
@@ -149,17 +146,17 @@ int osc::ParamBlock::size() const
     return m_Impl->size();
 }
 
-std::string const& osc::ParamBlock::getName(int idx) const
+const std::string& osc::ParamBlock::getName(int idx) const
 {
     return m_Impl->getName(idx);
 }
 
-std::string const& osc::ParamBlock::getDescription(int idx) const
+const std::string& osc::ParamBlock::getDescription(int idx) const
 {
     return m_Impl->getDescription(idx);
 }
 
-ParamValue const& osc::ParamBlock::getValue(int idx) const
+const ParamValue& osc::ParamBlock::getValue(int idx) const
 {
     return m_Impl->getValue(idx);
 }
@@ -179,7 +176,7 @@ void osc::ParamBlock::setValue(int idx, ParamValue value)
     m_Impl->setValue(idx, value);
 }
 
-void osc::ParamBlock::setValue(std::string const& name, ParamValue value)
+void osc::ParamBlock::setValue(const std::string& name, ParamValue value)
 {
     m_Impl->setValue(name, value);
 }
