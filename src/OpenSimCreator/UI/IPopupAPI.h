@@ -9,9 +9,9 @@ namespace osc
     class IPopupAPI {
     protected:
         IPopupAPI() = default;
-        IPopupAPI(IPopupAPI const&) = default;
+        IPopupAPI(const IPopupAPI&) = default;
         IPopupAPI(IPopupAPI&&) noexcept = default;
-        IPopupAPI& operator=(IPopupAPI const&) = default;
+        IPopupAPI& operator=(const IPopupAPI&) = default;
         IPopupAPI& operator=(IPopupAPI&&) noexcept = default;
     public:
         virtual ~IPopupAPI() noexcept = default;

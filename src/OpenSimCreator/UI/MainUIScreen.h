@@ -15,19 +15,19 @@ namespace osc
     class MainUIScreen final : public IScreen {
     public:
         MainUIScreen();
-        MainUIScreen(MainUIScreen const&) = delete;
+        MainUIScreen(const MainUIScreen&) = delete;
         MainUIScreen(MainUIScreen&&) noexcept;
-        MainUIScreen& operator=(MainUIScreen const&) = delete;
+        MainUIScreen& operator=(const MainUIScreen&) = delete;
         MainUIScreen& operator=(MainUIScreen&&) noexcept;
         ~MainUIScreen() noexcept override;
 
         UID addTab(std::unique_ptr<ITab>);
-        void open(std::filesystem::path const&);
+        void open(const std::filesystem::path&);
 
     private:
         void impl_on_mount() final;
         void impl_on_unmount() final;
-        bool impl_on_event(SDL_Event const&) final;
+        bool impl_on_event(const SDL_Event&) final;
         void impl_on_tick() final;
         void impl_on_draw() final;
 

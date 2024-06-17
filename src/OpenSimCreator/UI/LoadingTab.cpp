@@ -28,7 +28,7 @@ using namespace osc;
 
 namespace
 {
-    std::unique_ptr<UndoableModelStatePair> LoadOsimIntoUndoableModel(std::filesystem::path const& p)
+    std::unique_ptr<UndoableModelStatePair> LoadOsimIntoUndoableModel(const std::filesystem::path& p)
     {
         return std::make_unique<UndoableModelStatePair>(p);
     }
@@ -38,14 +38,13 @@ class osc::LoadingTab::Impl final {
 public:
 
     Impl(
-        ParentPtr<IMainUIStateAPI> const& parent_,
+        const ParentPtr<IMainUIStateAPI>& parent_,
         std::filesystem::path path_) :
 
         m_Parent{parent_},
         m_OsimPath{std::move(path_)},
         m_LoadingResult{std::async(std::launch::async, LoadOsimIntoUndoableModel, m_OsimPath)}
-    {
-    }
+    {}
 
     UID getID() const
     {
@@ -59,7 +58,7 @@ public:
 
     void on_tick()
     {
-        auto const dt = static_cast<float>(App::get().frame_delta_since_last_frame().count());
+        const auto dt = static_cast<float>(App::get().frame_delta_since_last_frame().count());
 
         // tick the progress bar up a little bit
         m_LoadingProgress += (dt * (1.0f - m_LoadingProgress))/2.0f;
@@ -67,31 +66,26 @@ public:
         // if there's an error, then the result came through (it's an error)
         // and this screen should just continuously show the error until the
         // user decides to transition back
-        if (!m_LoadingErrorMsg.empty())
-        {
+        if (!m_LoadingErrorMsg.empty()) {
             return;
         }
 
         // otherwise, poll for the result and catch any exceptions that bubble
         // up from the background thread
         std::unique_ptr<UndoableModelStatePair> result = nullptr;
-        try
-        {
-            if (m_LoadingResult.wait_for(std::chrono::seconds{0}) == std::future_status::ready)
-            {
+        try {
+            if (m_LoadingResult.wait_for(std::chrono::seconds{0}) == std::future_status::ready) {
                 result = m_LoadingResult.get();
             }
         }
-        catch (std::exception const& ex)
-        {
+        catch (const std::exception& ex) {
             log_info("LoadingScreen::on_tick: exception thrown while loading model: %s", ex.what());
             m_LoadingErrorMsg = ex.what();
             return;
         }
 
         // if there was a result (a newly-loaded model), handle it
-        if (result)
-        {
+        if (result) {
             // add newly-loaded model to the "Recent Files" list
             App::singleton<RecentFiles>()->push_back(m_OsimPath);
 
@@ -105,37 +99,32 @@ public:
 
     void onDraw()
     {
-        Rect const viewportUIRect = ui::get_main_viewport_workspace_uiscreenspace_rect();
-        Vec2 const viewportDims = dimensions_of(viewportUIRect);
-        Vec2 const menuDimsGuess = {0.3f * viewportDims.x, 6.0f * ui::get_text_line_height()};
+        const Rect viewportUIRect = ui::get_main_viewport_workspace_uiscreenspace_rect();
+        const Vec2 viewportDims = dimensions_of(viewportUIRect);
+        const Vec2 menuDimsGuess = {0.3f * viewportDims.x, 6.0f * ui::get_text_line_height()};
 
         // center the menu
         {
-            Vec2 const menuTopLeft = 0.5f * (viewportDims - menuDimsGuess);
+            const Vec2 menuTopLeft = 0.5f * (viewportDims - menuDimsGuess);
             ui::set_next_panel_pos(viewportUIRect.p1 + menuTopLeft);
             ui::set_next_panel_size({menuDimsGuess.x, -1.0f});
         }
 
-        if (m_LoadingErrorMsg.empty())
-        {
-            if (ui::begin_panel("Loading Message", nullptr, ImGuiWindowFlags_NoTitleBar))
-            {
+        if (m_LoadingErrorMsg.empty()) {
+            if (ui::begin_panel("Loading Message", nullptr, ImGuiWindowFlags_NoTitleBar)) {
                 ui::draw_text("loading: %s", m_OsimPath.string().c_str());
                 ui::draw_progress_bar(m_LoadingProgress);
             }
             ui::end_panel();
         }
-        else
-        {
-            if (ui::begin_panel("Error Message", nullptr, ImGuiWindowFlags_NoTitleBar))
-            {
+        else {
+            if (ui::begin_panel("Error Message", nullptr, ImGuiWindowFlags_NoTitleBar)) {
                 ui::draw_text_wrapped("An error occurred while loading the file:");
                 ui::draw_dummy({0.0f, 5.0f});
                 ui::draw_text_wrapped(m_LoadingErrorMsg);
                 ui::draw_dummy({0.0f, 5.0f});
 
-                if (ui::draw_button("try again"))
-                {
+                if (ui::draw_button("try again")) {
                     m_Parent->add_and_select_tab<LoadingTab>(m_Parent, m_OsimPath);
                     m_Parent->close_tab(m_TabID);
                 }
@@ -171,12 +160,11 @@ private:
 // public API (PIMPL)
 
 osc::LoadingTab::LoadingTab(
-    ParentPtr<IMainUIStateAPI> const& parent_,
+    const ParentPtr<IMainUIStateAPI>& parent_,
     std::filesystem::path path_) :
 
     m_Impl{std::make_unique<Impl>(parent_, std::move(path_))}
-{
-}
+{}
 
 osc::LoadingTab::LoadingTab(LoadingTab&&) noexcept = default;
 osc::LoadingTab& osc::LoadingTab::operator=(LoadingTab&&) noexcept = default;

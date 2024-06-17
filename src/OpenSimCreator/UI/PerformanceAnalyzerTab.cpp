@@ -34,11 +34,9 @@ namespace
 {
     OutputExtractor GetSimulatorOutputExtractor(std::string_view name)
     {
-        for (int i = 0, len = GetNumFdSimulatorOutputExtractors(); i < len; ++i)
-        {
+        for (int i = 0, len = GetNumFdSimulatorOutputExtractors(); i < len; ++i) {
             OutputExtractor o = GetFdSimulatorOutputExtractor(i);
-            if (o.getName() == name)
-            {
+            if (o.getName() == name) {
                 return o;
             }
         }
@@ -55,8 +53,7 @@ public:
 
         m_BaseModel{std::move(baseModel)},
         m_BaseParams{std::move(params)}
-    {
-    }
+    {}
 
     UID getID() const
     {
@@ -83,13 +80,11 @@ public:
         ui::begin_panel("Inputs");
 
         ui::draw_int_input("parallelism", &m_Parallelism);
-        if (ui::draw_button("edit base params"))
-        {
+        if (ui::draw_button("edit base params")) {
             m_ParamEditor.open();
         }
 
-        if (ui::draw_button("(re)start"))
-        {
+        if (ui::draw_button("(re)start")) {
             populateParamsFromParamBlock();
         }
 
@@ -97,19 +92,16 @@ public:
 
         ui::begin_panel("Outputs");
 
-        if (!m_Sims.empty() && ui::begin_table("simulations", 4))
-        {
+        if (!m_Sims.empty() && ui::begin_table("simulations", 4)) {
             ui::table_setup_column("Integrator");
             ui::table_setup_column("Progress");
             ui::table_setup_column("Wall Time (sec)");
             ui::table_setup_column("NumStepsTaken");
             ui::table_headers_row();
 
-            for (ForwardDynamicSimulation const& sim : m_Sims)
-            {
+            for (const ForwardDynamicSimulation& sim : m_Sims) {
                 auto reports = sim.getAllSimulationReports();
-                if (reports.empty())
-                {
+                if (reports.empty()) {
                     continue;
                 }
 
@@ -131,16 +123,14 @@ public:
 
             ui::end_table();
 
-            if (ui::draw_button(ICON_FA_SAVE " Export to CSV"))
-            {
+            if (ui::draw_button(ICON_FA_SAVE " Export to CSV")) {
                 tryExportOutputs();
             }
         }
 
         ui::end_panel();
 
-        if (m_ParamEditor.begin_popup())
-        {
+        if (m_ParamEditor.begin_popup()) {
             m_ParamEditor.on_draw();
             m_ParamEditor.end_popup();
         }
@@ -151,28 +141,24 @@ private:
     void tryExportOutputs()
     {
         // try prompt user for save location
-        std::optional<std::filesystem::path> const maybeCSVPath =
+        const std::optional<std::filesystem::path> maybeCSVPath =
             PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
 
-        if (!maybeCSVPath)
-        {
+        if (!maybeCSVPath) {
             return;  // user probably cancelled out
         }
 
         std::ofstream fout{*maybeCSVPath};
 
-        if (!fout)
-        {
+        if (!fout) {
             return;  // IO error (can't write to that location?)
         }
 
         fout << "Integrator,Wall Time (sec),NumStepsTaken\n";
 
-        for (ForwardDynamicSimulation const& sim : m_Sims)
-        {
+        for (const ForwardDynamicSimulation& sim : m_Sims) {
             auto reports = sim.getAllSimulationReports();
-            if (reports.empty())
-            {
+            if (reports.empty()) {
                 continue;
             }
 
@@ -193,8 +179,7 @@ private:
         ForwardDynamicSimulatorParams params = FromParamBlock(m_BaseParams);
 
         // for now, just permute through integration methods
-        for (IntegratorMethod m : IntegratorMethod::all())
-        {
+        for (IntegratorMethod m : IntegratorMethod::all()) {
             params.integratorMethodUsed = m;
             m_Params.push_back(params);
         }
@@ -204,17 +189,15 @@ private:
     void startSimsIfNecessary()
     {
         int nAvail = static_cast<int>(m_Params.size()) - static_cast<int>(m_Sims.size());
-        int nActive = static_cast<int>(rgs::count_if(m_Sims, [](auto const& sim) { return sim.getStatus() == SimulationStatus::Running || sim.getStatus() == SimulationStatus::Initializing; }));
+        int nActive = static_cast<int>(rgs::count_if(m_Sims, [](const auto& sim) { return sim.getStatus() == SimulationStatus::Running || sim.getStatus() == SimulationStatus::Initializing; }));
         int nToStart = min(nAvail, m_Parallelism - nActive);
 
-        if (nToStart <= 0)
-        {
+        if (nToStart <= 0) {
             return;  // nothing to start
         }
 
         // load model and enqueue sims
-        for (auto it = m_Params.end() - nAvail, end = it + nToStart; it != end; ++it)
-        {
+        for (auto it = m_Params.end() - nAvail, end = it + nToStart; it != end; ++it) {
             m_Sims.emplace_back(m_BaseModel, *it);
         }
     }
@@ -236,9 +219,9 @@ private:
 // public API (PIMPL)
 
 osc::PerformanceAnalyzerTab::PerformanceAnalyzerTab(
-    ParentPtr<ITabHost> const&,
+    const ParentPtr<ITabHost>&,
     BasicModelStatePair modelState,
-    ParamBlock const& params) :
+    const ParamBlock& params) :
 
     m_Impl{std::make_unique<Impl>(std::move(modelState), params)}
 {}

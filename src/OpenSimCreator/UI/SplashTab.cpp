@@ -54,7 +54,7 @@ namespace
         return rv;
     }
 
-    SceneRendererParams GetSplashScreenDefaultRenderParams(PolarPerspectiveCamera const& camera)
+    SceneRendererParams GetSplashScreenDefaultRenderParams(const PolarPerspectiveCamera& camera)
     {
         SceneRendererParams rv;
         rv.draw_rims = false;
@@ -70,21 +70,19 @@ namespace
 
     // helper: draws an ui::draw_menu_item for a given recent- or example-file-path
     void DrawRecentOrExampleFileMenuItem(
-        std::filesystem::path const& path,
+        const std::filesystem::path& path,
         ParentPtr<IMainUIStateAPI>& parent_,
         int& imguiID)
     {
-        std::string const label = std::string{ICON_FA_FILE} + " " + path.filename().string();
+        const std::string label = std::string{ICON_FA_FILE} + " " + path.filename().string();
 
         ui::push_id(++imguiID);
-        if (ui::draw_menu_item(label))
-        {
+        if (ui::draw_menu_item(label)) {
             parent_->add_and_select_tab<LoadingTab>(parent_, path);
         }
         // show the full path as a tooltip when the item is hovered (some people have
         // long file names (#784)
-        if (ui::is_item_hovered())
-        {
+        if (ui::is_item_hovered()) {
             ui::begin_tooltip_nowrap();
             ui::draw_text_unformatted(path.filename().string());
             ui::end_tooltip_nowrap();
@@ -96,7 +94,7 @@ namespace
 class osc::SplashTab::Impl final {
 public:
 
-    explicit Impl(ParentPtr<IMainUIStateAPI> const& parent_) :
+    explicit Impl(const ParentPtr<IMainUIStateAPI>& parent_) :
         m_Parent{parent_}
     {
         m_MainAppLogo.set_filter_mode(TextureFilterMode::Linear);
@@ -129,10 +127,9 @@ public:
         App::upd().make_main_loop_polling();
     }
 
-    bool onEvent(SDL_Event const& e)
+    bool onEvent(const SDL_Event& e)
     {
-        if (e.type == SDL_DROPFILE && e.drop.file != nullptr && std::string_view{e.drop.file}.ends_with(".osim"))
-        {
+        if (e.type == SDL_DROPFILE && e.drop.file != nullptr && std::string_view{e.drop.file}.ends_with(".osim")) {
             // if the user drops an osim file on this tab then it should be loaded
             m_Parent->add_and_select_tab<LoadingTab>(m_Parent, e.drop.file);
             return true;
@@ -168,19 +165,18 @@ private:
         // pretend the attributation bar isn't there (avoid it)
         tabUIRect.p2.y -= static_cast<float>(max(m_TudLogo.dimensions().y, m_CziLogo.dimensions().y)) - 2.0f*ui::get_style_panel_padding().y;
 
-        Vec2 const menuAndTopLogoDims = elementwise_min(dimensions_of(tabUIRect), Vec2{m_SplashMenuMaxDims.x, m_SplashMenuMaxDims.y + m_MainAppLogoDims.y + m_TopLogoPadding.y});
-        Vec2 const menuAndTopLogoTopLeft = tabUIRect.p1 + 0.5f*(dimensions_of(tabUIRect) - menuAndTopLogoDims);
-        Vec2 const menuDims = {menuAndTopLogoDims.x, menuAndTopLogoDims.y - m_MainAppLogoDims.y - m_TopLogoPadding.y};
-        Vec2 const menuTopLeft = Vec2{menuAndTopLogoTopLeft.x, menuAndTopLogoTopLeft.y + m_MainAppLogoDims.y + m_TopLogoPadding.y};
+        const Vec2 menuAndTopLogoDims = elementwise_min(dimensions_of(tabUIRect), Vec2{m_SplashMenuMaxDims.x, m_SplashMenuMaxDims.y + m_MainAppLogoDims.y + m_TopLogoPadding.y});
+        const Vec2 menuAndTopLogoTopLeft = tabUIRect.p1 + 0.5f*(dimensions_of(tabUIRect) - menuAndTopLogoDims);
+        const Vec2 menuDims = {menuAndTopLogoDims.x, menuAndTopLogoDims.y - m_MainAppLogoDims.y - m_TopLogoPadding.y};
+        const Vec2 menuTopLeft = Vec2{menuAndTopLogoTopLeft.x, menuAndTopLogoTopLeft.y + m_MainAppLogoDims.y + m_TopLogoPadding.y};
 
         return Rect{menuTopLeft, menuTopLeft + menuDims};
     }
 
     Rect calcLogoRect() const
     {
-        Rect const mmr = calcMainMenuRect();
-        Vec2 const topLeft
-        {
+        const Rect mmr = calcMainMenuRect();
+        const Vec2 topLeft{
             mmr.p1.x + dimensions_of(mmr).x/2.0f - m_MainAppLogoDims.x/2.0f,
             mmr.p1.y - m_TopLogoPadding.y - m_MainAppLogoDims.y,
         };
@@ -190,7 +186,7 @@ private:
 
     void drawBackground()
     {
-        Rect const viewportUIRect = ui::get_main_viewport_workspace_uiscreenspace_rect();
+        const Rect viewportUIRect = ui::get_main_viewport_workspace_uiscreenspace_rect();
 
         ui::set_next_panel_pos(viewportUIRect.p1);
         ui::set_next_panel_size(dimensions_of(viewportUIRect));
@@ -204,8 +200,7 @@ private:
         params.antialiasing_level = App::get().anti_aliasing_level();
         params.projection_matrix = m_Camera.projection_matrix(aspect_ratio_of(viewportUIRect));
 
-        if (params != m_LastSceneRendererParams)
-        {
+        if (params != m_LastSceneRendererParams) {
             scene_renderer_.render({}, params);
             m_LastSceneRendererParams = params;
         }
@@ -217,7 +212,7 @@ private:
 
     void drawLogo()
     {
-        Rect const logoRect = calcLogoRect();
+        const Rect logoRect = calcLogoRect();
 
         ui::set_next_panel_pos(logoRect.p1);
         ui::begin_panel("##osclogo", nullptr, ui::get_minimal_panel_flags());
@@ -228,13 +223,12 @@ private:
     void drawMenu()
     {
         // center the menu window
-        Rect const mmr = calcMainMenuRect();
+        const Rect mmr = calcMainMenuRect();
         ui::set_next_panel_pos(mmr.p1);
         ui::set_next_panel_size({dimensions_of(mmr).x, -1.0f});
         ui::set_next_panel_size_constraints(dimensions_of(mmr), dimensions_of(mmr));
 
-        if (ui::begin_panel("Splash screen", nullptr, ImGuiWindowFlags_NoTitleBar))
-        {
+        if (ui::begin_panel("Splash screen", nullptr, ImGuiWindowFlags_NoTitleBar)) {
             drawMenuContent();
         }
         ui::end_panel();
@@ -256,48 +250,39 @@ private:
 
     void drawActionsMenuSectionContent()
     {
-        if (ui::draw_menu_item(ICON_FA_FILE " New Model"))
-        {
+        if (ui::draw_menu_item(ICON_FA_FILE " New Model")) {
             ActionNewModel(m_Parent);
         }
-        if (ui::draw_menu_item(ICON_FA_FOLDER_OPEN " Open Model"))
-        {
+        if (ui::draw_menu_item(ICON_FA_FOLDER_OPEN " Open Model")) {
             ActionOpenModel(m_Parent);
         }
-        if (ui::draw_menu_item(ICON_FA_MAGIC " Import Meshes"))
-        {
+        if (ui::draw_menu_item(ICON_FA_MAGIC " Import Meshes")) {
             m_Parent->add_and_select_tab<mi::MeshImporterTab>(m_Parent);
         }
         App::upd().add_frame_annotation("SplashTab/ImportMeshesMenuItem", ui::get_last_drawn_item_screen_rect());
-        if (ui::draw_menu_item(ICON_FA_BOOK " Open Documentation"))
-        {
+        if (ui::draw_menu_item(ICON_FA_BOOK " Open Documentation")) {
             open_url_in_os_default_web_browser(App::config().docs_url());
         }
     }
 
     void drawWorkflowsMenuSectionContent()
     {
-        if (ui::draw_menu_item(ICON_FA_ARROWS_ALT " Frame Definition"))
-        {
+        if (ui::draw_menu_item(ICON_FA_ARROWS_ALT " Frame Definition")) {
             m_Parent->add_and_select_tab<FrameDefinitionTab>(m_Parent);
         }
-        if (ui::draw_menu_item(ICON_FA_MAGIC " Mesh Importer"))
-        {
+        if (ui::draw_menu_item(ICON_FA_MAGIC " Mesh Importer")) {
             m_Parent->add_and_select_tab<mi::MeshImporterTab>(m_Parent);
         }
-        if (ui::draw_menu_item(ICON_FA_CUBE " Mesh Warping"))
-        {
+        if (ui::draw_menu_item(ICON_FA_CUBE " Mesh Warping")) {
             m_Parent->add_and_select_tab<MeshWarpingTab>(m_Parent);
         }
     }
 
     void drawRecentlyOpenedFilesMenuSectionContent(int& imguiID)
     {
-        auto const recentFiles = App::singleton<RecentFiles>();
-        if (!recentFiles->empty())
-        {
-            for (RecentFile const& rf : *recentFiles)
-            {
+        const auto recentFiles = App::singleton<RecentFiles>();
+        if (!recentFiles->empty()) {
+            for (const RecentFile& rf : *recentFiles) {
                 DrawRecentOrExampleFileMenuItem(
                     rf.path,
                     m_Parent,
@@ -305,8 +290,7 @@ private:
                 );
             }
         }
-        else
-        {
+        else {
             ui::push_style_color(ImGuiCol_Text, Color::half_grey());
             ui::draw_text_wrapped("No files opened recently. Try:");
             ui::draw_text_bullet_pointed("Creating a new model (Ctrl+N)");
@@ -338,13 +322,11 @@ private:
 
     void drawMenuRightColumnContent(int& imguiID)
     {
-        if (!m_MainMenuFileTab.exampleOsimFiles.empty())
-        {
+        if (!m_MainMenuFileTab.exampleOsimFiles.empty()) {
             ui::draw_text_disabled("Example Models");
             ui::draw_dummy({0.0f, 2.0f});
 
-            for (std::filesystem::path const& examplePath : m_MainMenuFileTab.exampleOsimFiles)
-            {
+            for (const std::filesystem::path& examplePath : m_MainMenuFileTab.exampleOsimFiles) {
                 DrawRecentOrExampleFileMenuItem(
                     examplePath,
                     m_Parent,
@@ -356,7 +338,7 @@ private:
 
     void drawAttributationLogos()
     {
-        Rect const viewportUIRect = ui::get_main_viewport_workspace_uiscreenspace_rect();
+        const Rect viewportUIRect = ui::get_main_viewport_workspace_uiscreenspace_rect();
         Vec2 loc = viewportUIRect.p2;
         loc.x = loc.x - 2.0f*ui::get_style_panel_padding().x - static_cast<float>(m_CziLogo.dimensions().x) - 2.0f*ui::get_style_item_spacing().x - static_cast<float>(m_TudLogo.dimensions().x);
         loc.y = loc.y - 2.0f*ui::get_style_panel_padding().y - static_cast<float>(max(m_CziLogo.dimensions().y, m_TudLogo.dimensions().y));
@@ -375,19 +357,18 @@ private:
 
     void drawVersionInfo()
     {
-        Rect const tabUIRect = ui::get_main_viewport_workspace_uiscreenspace_rect();
-        float const h = ui::get_text_line_height_with_spacing();
-        float const padding = 5.0f;
+        const Rect tabUIRect = ui::get_main_viewport_workspace_uiscreenspace_rect();
+        const float h = ui::get_text_line_height_with_spacing();
+        const float padding = 5.0f;
 
-        Vec2 const pos
-        {
+        const Vec2 pos{
             tabUIRect.p1.x + padding,
             tabUIRect.p2.y - h - padding,
         };
 
         ImDrawList* const dl = ui::get_foreground_draw_list();
-        ImU32 const color = ui::to_ImU32(Color::black());
-        std::string const text = calc_full_application_name_with_version_and_build_id(App::get().metadata());
+        const ImU32 color = ui::to_ImU32(Color::black());
+        const std::string text = calc_full_application_name_with_version_and_build_id(App::get().metadata());
         dl->AddText(pos, color, text.c_str());
     }
 
@@ -420,7 +401,7 @@ private:
 
 // public API (PIMPL)
 
-osc::SplashTab::SplashTab(ParentPtr<IMainUIStateAPI> const& parent_) :
+osc::SplashTab::SplashTab(const ParentPtr<IMainUIStateAPI>& parent_) :
     m_Impl{std::make_unique<Impl>(parent_)}
 {}
 
@@ -448,7 +429,7 @@ void osc::SplashTab::impl_on_unmount()
     m_Impl->on_unmount();
 }
 
-bool osc::SplashTab::impl_on_event(SDL_Event const& e)
+bool osc::SplashTab::impl_on_event(const SDL_Event& e)
 {
     return m_Impl->onEvent(e);
 }

@@ -14,10 +14,10 @@ namespace osc
 {
     class LoadingTab final : public ITab {
     public:
-        LoadingTab(ParentPtr<IMainUIStateAPI> const&, std::filesystem::path);
-        LoadingTab(LoadingTab const&) = delete;
+        LoadingTab(const ParentPtr<IMainUIStateAPI>&, std::filesystem::path);
+        LoadingTab(const LoadingTab&) = delete;
         LoadingTab(LoadingTab&&) noexcept;
-        LoadingTab& operator=(LoadingTab const&) = delete;
+        LoadingTab& operator=(const LoadingTab&) = delete;
         LoadingTab& operator=(LoadingTab&&) noexcept;
         ~LoadingTab() noexcept override;
 

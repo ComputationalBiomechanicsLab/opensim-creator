@@ -14,10 +14,10 @@ namespace osc
 {
     class SplashTab final : public ITab {
     public:
-        explicit SplashTab(ParentPtr<IMainUIStateAPI> const&);
-        SplashTab(SplashTab const&) = delete;
+        explicit SplashTab(const ParentPtr<IMainUIStateAPI>&);
+        SplashTab(const SplashTab&) = delete;
         SplashTab(SplashTab&&) noexcept;
-        SplashTab& operator=(SplashTab const&) = delete;
+        SplashTab& operator=(const SplashTab&) = delete;
         SplashTab& operator=(SplashTab&&) noexcept;
         ~SplashTab() noexcept override;
 
@@ -26,7 +26,7 @@ namespace osc
         CStringView impl_get_name() const final;
         void impl_on_mount() final;
         void impl_on_unmount() final;
-        bool impl_on_event(SDL_Event const&) final;
+        bool impl_on_event(const SDL_Event&) final;
         void impl_on_draw_main_menu() final;
         void impl_on_draw() final;
 

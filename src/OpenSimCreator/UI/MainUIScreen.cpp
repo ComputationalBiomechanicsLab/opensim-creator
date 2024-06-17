@@ -54,14 +54,12 @@ namespace rgs = std::ranges;
 namespace
 {
     std::unique_ptr<ITab> LoadConfigurationDefinedTabIfNecessary(
-        AppConfig const& config,
-        TabRegistry const& tabRegistry,
-        ParentPtr<ITabHost> const& api)
+        const AppConfig& config,
+        const TabRegistry& tabRegistry,
+        const ParentPtr<ITabHost>& api)
     {
-        if (std::optional<std::string> maybeRequestedTab = config.initial_tab_override())
-        {
-            if (std::optional<TabRegistryEntry> maybeEntry = tabRegistry.find_by_name(*maybeRequestedTab))
-            {
+        if (std::optional<std::string> maybeRequestedTab = config.initial_tab_override()) {
+            if (std::optional<TabRegistryEntry> maybeEntry = tabRegistry.find_by_name(*maybeRequestedTab)) {
                 return maybeEntry->construct_tab(api);
             }
 
@@ -83,7 +81,7 @@ public:
 
     // called when an event is pumped into this screen but isn't handled by
     // either the global 2D UI context or the active tab
-    bool onUnhandledEvent(SDL_Event const& e)
+    bool onUnhandledEvent(const SDL_Event& e)
     {
         bool handled = false;
         if (e.type == SDL_KEYUP &&
@@ -146,28 +144,25 @@ public:
         return impl_add_tab(std::move(tab));
     }
 
-    void open(std::filesystem::path const& p)
+    void open(const std::filesystem::path& p)
     {
         addTab(std::make_unique<LoadingTab>(getTabHostAPI(), p));
     }
 
     void on_mount()
     {
-        if (!std::exchange(m_HasBeenMountedBefore, true))
-        {
+        if (!std::exchange(m_HasBeenMountedBefore, true)) {
             // on first mount, place the splash tab at the front of the tabs collection
             m_Tabs.insert(m_Tabs.begin(), std::make_unique<SplashTab>(getTabHostAPI()));
 
             // if the application configuration has requested that a specific tab should be opened,
             // then try looking it up and open it
-            if (auto tab = LoadConfigurationDefinedTabIfNecessary(App::config(), *App::singleton<TabRegistry>(), getTabHostAPI()))
-            {
+            if (auto tab = LoadConfigurationDefinedTabIfNecessary(App::config(), *App::singleton<TabRegistry>(), getTabHostAPI())) {
                 addTab(std::move(tab));
             }
 
             // focus on the rightmost tab
-            if (!m_Tabs.empty())
-            {
+            if (!m_Tabs.empty()) {
                 m_RequestedTab = m_Tabs.back()->id();
             }
         }
@@ -178,14 +173,11 @@ public:
     void on_unmount()
     {
         // unmount the active tab before unmounting this (host) screen
-        if (ITab* active = getActiveTab())
-        {
-            try
-            {
+        if (ITab* active = getActiveTab()) {
+            try {
                 active->on_unmount();
             }
-            catch (std::exception const& ex)
-            {
+            catch (const std::exception& ex) {
                 // - the tab is faulty in some way
                 // - soak up the exception to prevent the whole application from terminating
                 // - and emit the error to the log, because we have to assume that this
@@ -199,7 +191,7 @@ public:
         ui::context::shutdown();
     }
 
-    bool onEvent(SDL_Event const& e)
+    bool onEvent(const SDL_Event& e)
     {
         bool handled = false;
         if (e.type == SDL_KEYUP or
@@ -230,7 +222,7 @@ public:
                 try {
                     atLeastOneTabHandledQuit = m_Tabs[i]->on_event(e) || atLeastOneTabHandledQuit;
                 }
-                catch (std::exception const& ex) {
+                catch (const std::exception& ex) {
                     log_error("MainUIScreen::on_event: exception thrown by tab: %s", ex.what());
 
                     // - the tab is faulty in some way
@@ -246,7 +238,7 @@ public:
                 // if no tab handled the quit event, treat it as-if the user
                 // has tried to close all tabs
 
-                for (auto const& tab : m_Tabs) {
+                for (const auto& tab : m_Tabs) {
                     impl_close_tab(tab->id());
                 }
                 m_QuitRequested = true;
@@ -273,7 +265,7 @@ public:
             try {
                 activeTabHandledEvent = active->on_event(e);
             }
-            catch (std::exception const& ex) {
+            catch (const std::exception& ex) {
                 log_error("MainUIScreen::on_event: exception thrown by tab: %s", ex.what());
 
                 // - the tab is faulty in some way
@@ -305,12 +297,10 @@ public:
         // updating something as a simulation runs)
         for (size_t i = 0; i < m_Tabs.size(); ++i)
         {
-            try
-            {
+            try {
                 m_Tabs[i]->on_tick();
             }
-            catch (std::exception const& ex)
-            {
+            catch (const std::exception& ex) {
 
                 log_error("MainUIScreen::on_tick: tab thrown an exception: %s", ex.what());
 
@@ -373,7 +363,7 @@ public:
         }
     }
 
-    ParamBlock const& implGetSimulationParams() const final
+    const ParamBlock& implGetSimulationParams() const final
     {
         return m_SimulationParams;
     }
@@ -388,12 +378,12 @@ public:
         return static_cast<int>(m_UserOutputExtractors.size());
     }
 
-    OutputExtractor const& implGetUserOutputExtractor(int idx) const final
+    const OutputExtractor& implGetUserOutputExtractor(int idx) const final
     {
         return m_UserOutputExtractors.at(idx);
     }
 
-    void implAddUserOutputExtractor(OutputExtractor const& output) final
+    void implAddUserOutputExtractor(const OutputExtractor& output) final
     {
         m_UserOutputExtractors.push_back(output);
         App::upd().upd_config().set_panel_enabled("Output Watches", true);
@@ -405,17 +395,17 @@ public:
         m_UserOutputExtractors.erase(m_UserOutputExtractors.begin() + idx);
     }
 
-    bool implHasUserOutputExtractor(OutputExtractor const& oe) const final
+    bool implHasUserOutputExtractor(const OutputExtractor& oe) const final
     {
         return cpp23::contains(m_UserOutputExtractors, oe);
     }
 
-    bool implRemoveUserOutputExtractor(OutputExtractor const& oe) final
+    bool implRemoveUserOutputExtractor(const OutputExtractor& oe) final
     {
         return std::erase(m_UserOutputExtractors, oe) > 0;
     }
 
-    bool implOverwriteOrAddNewUserOutputExtractor(OutputExtractor const& old, OutputExtractor const& newer) final
+    bool implOverwriteOrAddNewUserOutputExtractor(const OutputExtractor& old, const OutputExtractor& newer) final
     {
         if (auto it = find_or_nullptr(m_UserOutputExtractors, old)) {
             *it = newer;
@@ -443,12 +433,10 @@ private:
             {
                 if (ITab* active = getActiveTab())
                 {
-                    try
-                    {
+                    try {
                         active->on_draw_main_menu();
                     }
-                    catch (std::exception const& ex)
-                    {
+                    catch (const std::exception& ex) {
                         log_error("MainUIScreen::drawTabSpecificMenu: tab thrown an exception: %s", ex.what());
 
                         // - the tab is faulty in some way
@@ -584,15 +572,12 @@ private:
         }
 
         // draw the active tab (if any)
-        if (ITab* active = getActiveTab())
-        {
-            try
-            {
+        if (ITab* active = getActiveTab()) {
+            try {
                 OSC_PERF("MainUIScreen/drawActiveTab");
                 active->on_draw();
             }
-            catch (std::exception const& ex)
-            {
+            catch (const std::exception& ex) {
                 log_error("MainUIScreen::drawUIConent: tab thrown an exception: %s", ex.what());
 
                 // - the tab is faulty in some way
@@ -609,38 +594,30 @@ private:
             handleDeletedTabs();
         }
 
-        if (m_ImguiWasAggressivelyReset)
-        {
+        if (m_ImguiWasAggressivelyReset) {
             return;
         }
 
-        if (m_MaybeSaveChangesPopup)
-        {
+        if (m_MaybeSaveChangesPopup) {
             m_MaybeSaveChangesPopup->on_draw();
         }
     }
 
     void drawAddNewTabMenu()
     {
-        if (ui::draw_menu_item(ICON_FA_EDIT " Editor"))
-        {
+        if (ui::draw_menu_item(ICON_FA_EDIT " Editor")) {
             select_tab(addTab(std::make_unique<ModelEditorTab>(getTabHostAPI(), std::make_unique<UndoableModelStatePair>())));
         }
 
-        if (ui::draw_menu_item(ICON_FA_CUBE " Mesh Importer"))
-        {
+        if (ui::draw_menu_item(ICON_FA_CUBE " Mesh Importer")) {
             select_tab(addTab(std::make_unique<mi::MeshImporterTab>(getTabHostAPI())));
         }
 
-        std::shared_ptr<TabRegistry const> const tabRegistry = App::singleton<TabRegistry>();
-        if (not tabRegistry->empty())
-        {
-            if (ui::begin_menu("Experimental Tabs"))
-            {
-                for (auto&& tabRegistryEntry : *tabRegistry)
-                {
-                    if (ui::draw_menu_item(tabRegistryEntry.name()))
-                    {
+        const std::shared_ptr<const TabRegistry> tabRegistry = App::singleton<TabRegistry>();
+        if (not tabRegistry->empty()) {
+            if (ui::begin_menu("Experimental Tabs")) {
+                for (auto&& tabRegistryEntry : *tabRegistry) {
+                    if (ui::draw_menu_item(tabRegistryEntry.name())) {
                         select_tab(addTab(tabRegistryEntry.construct_tab(ParentPtr<ITabHost>{getTabHostAPI()})));
                     }
                 }
@@ -651,7 +628,7 @@ private:
 
     std::vector<std::unique_ptr<ITab>>::iterator findTabByID(UID id)
     {
-        return rgs::find(m_Tabs, id, [](auto const& ptr) { return ptr->id(); });
+        return rgs::find(m_Tabs, id, [](const auto& ptr) { return ptr->id(); });
     }
 
     ITab* getTabByID(UID id)
@@ -689,25 +666,20 @@ private:
     bool onUserSelectedSaveChangesInSavePrompt()
     {
         bool savingFailedSomewhere = false;
-        for (UID id : m_DeletedTabs)
-        {
-            if (ITab* tab = getTabByID(id); tab && tab->is_unsaved())
-            {
+        for (UID id : m_DeletedTabs) {
+            if (ITab* tab = getTabByID(id); tab && tab->is_unsaved()) {
                 savingFailedSomewhere = !tab->try_save() || savingFailedSomewhere;
             }
         }
 
-        if (!savingFailedSomewhere)
-        {
+        if (!savingFailedSomewhere) {
             nukeDeletedTabs();
-            if (m_QuitRequested)
-            {
+            if (m_QuitRequested) {
                 App::upd().request_quit();
             }
             return true;
         }
-        else
-        {
+        else {
             return false;
         }
     }
@@ -716,8 +688,7 @@ private:
     bool onUserSelectedDoNotSaveChangesInSavePrompt()
     {
         nukeDeletedTabs();
-        if (m_QuitRequested)
-        {
+        if (m_QuitRequested) {
             App::upd().request_quit();
         }
         return true;
@@ -734,13 +705,10 @@ private:
     void nukeDeletedTabs()
     {
         int lowestDeletedTab = std::numeric_limits<int>::max();
-        for (UID id : m_DeletedTabs)
-        {
-            auto it = rgs::find(m_Tabs, id, [](auto const& ptr) { return ptr->id(); });
-            if (it != m_Tabs.end())
-            {
-                if (id == m_ActiveTabID)
-                {
+        for (UID id : m_DeletedTabs) {
+            auto it = rgs::find(m_Tabs, id, [](const auto& ptr) { return ptr->id(); });
+            if (it != m_Tabs.end()) {
+                if (id == m_ActiveTabID) {
                     (*it)->on_unmount();
                     m_ActiveTabID = UID::empty();
                     lowestDeletedTab = min(lowestDeletedTab, static_cast<int>(std::distance(m_Tabs.begin(), it)));
@@ -751,15 +719,12 @@ private:
         m_DeletedTabs.clear();
 
         // coerce active tab, if it has become stale due to a deletion
-        if (!getRequestedTab() && !getActiveTab() && !m_Tabs.empty())
-        {
+        if (!getRequestedTab() && !getActiveTab() && !m_Tabs.empty()) {
             // focus the tab just to the left of the closed one
-            if (1 <= lowestDeletedTab && lowestDeletedTab <= static_cast<int>(m_Tabs.size()))
-            {
+            if (1 <= lowestDeletedTab && lowestDeletedTab <= static_cast<int>(m_Tabs.size())) {
                 m_RequestedTab = m_Tabs[lowestDeletedTab - 1]->id();
             }
-            else
-            {
+            else {
                 m_RequestedTab = m_Tabs.front()->id();
             }
         }
@@ -781,38 +746,30 @@ private:
 
         std::vector<ITab*> tabsWithUnsavedChanges;
 
-        for (UID id : m_DeletedTabs)
-        {
-            if (ITab* t = getTabByID(id))
-            {
-                if (t->is_unsaved())
-                {
+        for (UID id : m_DeletedTabs) {
+            if (ITab* t = getTabByID(id)) {
+                if (t->is_unsaved()) {
                     tabsWithUnsavedChanges.push_back(t);
                 }
             }
         }
 
-        if (!tabsWithUnsavedChanges.empty())
-        {
+        if (!tabsWithUnsavedChanges.empty()) {
             std::stringstream ss;
-            if (tabsWithUnsavedChanges.size() > 1)
-            {
+            if (tabsWithUnsavedChanges.size() > 1) {
                 ss << tabsWithUnsavedChanges.size() << " tabs have unsaved changes:\n";
             }
-            else
-            {
+            else {
                 ss << "A tab has unsaved changes:\n";
             }
 
-            for (ITab* t : tabsWithUnsavedChanges)
-            {
+            for (ITab* t : tabsWithUnsavedChanges) {
                 ss << "\n  - " << t->name();
             }
             ss << "\n\n";
 
             // open the popup
-            SaveChangesPopupConfig cfg
-            {
+            SaveChangesPopupConfig cfg{
                 "Save Changes?",
                 [this]() { return onUserSelectedSaveChangesInSavePrompt(); },
                 [this]() { return onUserSelectedDoNotSaveChangesInSavePrompt(); },
@@ -822,8 +779,7 @@ private:
             m_MaybeSaveChangesPopup.emplace(cfg);
             m_MaybeSaveChangesPopup->open();
         }
-        else
-        {
+        else {
             // just nuke all the tabs
             nukeDeletedTabs();
         }
@@ -836,13 +792,11 @@ private:
 
     void tryHandleScreenshotRequest()
     {
-        if (!m_MaybeScreenshotRequest.valid())
-        {
+        if (!m_MaybeScreenshotRequest.valid()) {
             return;  // probably empty/errored
         }
 
-        if (m_MaybeScreenshotRequest.valid() && m_MaybeScreenshotRequest.wait_for(std::chrono::seconds{0}) == std::future_status::ready)
-        {
+        if (m_MaybeScreenshotRequest.valid() && m_MaybeScreenshotRequest.wait_for(std::chrono::seconds{0}) == std::future_status::ready) {
             UID tabID = addTab(std::make_unique<ScreenshotTab>(updThisAsParent(), m_MaybeScreenshotRequest.get()));
             select_tab(tabID);
         }
@@ -902,8 +856,7 @@ private:
 
 osc::MainUIScreen::MainUIScreen() :
     m_Impl{std::make_shared<Impl>()}
-{
-}
+{}
 osc::MainUIScreen::MainUIScreen(MainUIScreen&&) noexcept = default;
 osc::MainUIScreen& osc::MainUIScreen::operator=(MainUIScreen&&) noexcept = default;
 osc::MainUIScreen::~MainUIScreen() noexcept = default;
@@ -913,7 +866,7 @@ UID osc::MainUIScreen::addTab(std::unique_ptr<ITab> tab)
     return m_Impl->addTab(std::move(tab));
 }
 
-void osc::MainUIScreen::open(std::filesystem::path const& path)
+void osc::MainUIScreen::open(const std::filesystem::path& path)
 {
     m_Impl->open(path);
 }
@@ -928,7 +881,7 @@ void osc::MainUIScreen::impl_on_unmount()
     m_Impl->on_unmount();
 }
 
-bool osc::MainUIScreen::impl_on_event(SDL_Event const& e)
+bool osc::MainUIScreen::impl_on_event(const SDL_Event& e)
 {
     return m_Impl->onEvent(e);
 }

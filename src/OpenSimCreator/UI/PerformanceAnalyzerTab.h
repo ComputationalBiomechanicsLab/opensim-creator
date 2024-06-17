@@ -17,13 +17,13 @@ namespace osc
     class PerformanceAnalyzerTab final : public ITab {
     public:
         PerformanceAnalyzerTab(
-            ParentPtr<ITabHost> const&,
+            const ParentPtr<ITabHost>&,
             BasicModelStatePair,
-            ParamBlock const&
+            const ParamBlock&
         );
-        PerformanceAnalyzerTab(PerformanceAnalyzerTab const&) = delete;
+        PerformanceAnalyzerTab(const PerformanceAnalyzerTab&) = delete;
         PerformanceAnalyzerTab(PerformanceAnalyzerTab&&) noexcept;
-        PerformanceAnalyzerTab& operator=(PerformanceAnalyzerTab const&) = delete;
+        PerformanceAnalyzerTab& operator=(const PerformanceAnalyzerTab&) = delete;
         PerformanceAnalyzerTab& operator=(PerformanceAnalyzerTab&&) noexcept;
         ~PerformanceAnalyzerTab() noexcept override;
 

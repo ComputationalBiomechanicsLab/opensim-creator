@@ -35,7 +35,7 @@ install(
     TARGETS osc
     RUNTIME_DEPENDENCIES
         DIRECTORIES $<TARGET_FILE_DIR:SimTKcommon>
-	    POST_EXCLUDE_REGEXES "^/usr/*" "^/lib/*"  # don't copy system-provided dependencies
+        POST_EXCLUDE_REGEXES "^/usr/*" "^/lib/*"  # don't copy system-provided dependencies
 )
 
 # install-time: install a user-facing `osc.toml` config file
