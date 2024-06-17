@@ -28,7 +28,7 @@ public:
     Impl(
         std::string_view panelName,
         ISimulatorUIAPI* simulatorUIAPI,
-        std::shared_ptr<Simulation const> simulation) :
+        std::shared_ptr<const Simulation> simulation) :
 
         StandardPanelImpl{panelName},
         m_SimulatorUIAPI{simulatorUIAPI},
@@ -67,7 +67,7 @@ private:
         }
     }
 
-    void drawSimulationStatPlots(Simulation const& sim)
+    void drawSimulationStatPlots(const Simulation& sim)
     {
         auto outputs = sim.getOutputs();
 
@@ -111,8 +111,7 @@ private:
 
         int imguiID = 0;
         ui::set_num_columns(2);
-        for (OutputExtractor const& output : sim.getOutputs())
-        {
+        for (const OutputExtractor& output : sim.getOutputs()) {
             ui::push_id(imguiID++);
             DrawOutputNameColumn(output, false);
             ui::next_column();
@@ -125,20 +124,17 @@ private:
     }
 
     ISimulatorUIAPI* m_SimulatorUIAPI;
-    std::shared_ptr<Simulation const> m_Simulation;
+    std::shared_ptr<const Simulation> m_Simulation;
 };
 
-
-// public API (PIMPL)
 
 osc::SimulationDetailsPanel::SimulationDetailsPanel(
     std::string_view panelName,
     ISimulatorUIAPI* simulatorUIAPI,
-    std::shared_ptr<Simulation const> simulation) :
+    std::shared_ptr<const Simulation> simulation) :
 
     m_Impl{std::make_unique<Impl>(panelName, simulatorUIAPI, std::move(simulation))}
 {}
-
 osc::SimulationDetailsPanel::SimulationDetailsPanel(SimulationDetailsPanel&&) noexcept = default;
 osc::SimulationDetailsPanel& osc::SimulationDetailsPanel::operator=(SimulationDetailsPanel&&) noexcept = default;
 osc::SimulationDetailsPanel::~SimulationDetailsPanel() noexcept = default;

@@ -15,8 +15,18 @@ namespace SimTK { class State; }
 
 namespace osc
 {
-    // a model + state pair that automatically reinitializes (i.e. like `AutoFinalizingModelStatePair`),
-    // but it also has support for snapshotting with .commit()
+    // `UndoableModelStatePair` is an `IModelStatePair` that's designed for immediate UI usage.
+    //
+    // Key features:
+    //
+    // - supports deferred (queued) undo/redo/rollback
+    // - supports deferred (queued) model mutation
+    // - all deferred changes can be applied by calling `applyQueuedMutations`
+    //
+    // The reason why all mutations are deferred is so that the UI and associated systems can
+    // safely get references to elements inside the `OpenSim::Model` and `SimTK::State` without
+    // having to tiptoe around reference invalidation due to mid-drawcall mutations (a
+    // drawback/benefit of immediate UIs)
     class UndoableModelStatePair final : public IModelStatePair {
     public:
 
@@ -56,7 +66,7 @@ namespace osc
         // returns the full filesystem path of the model's on-disk location, if applicable
         //
         // returns an empty path if the model has not been saved to disk
-        std::filesystem::path const& getFilesystemPath() const;
+        std::filesystem::path getFilesystemPath() const;
 
         // sets the full filesystem path of the model's on-disk location
         //
@@ -76,7 +86,7 @@ namespace osc
 
         // returns latest *comitted* model state (i.e. not the one being actively edited, but the one saved into
         // the safer undo/redo buffer)
-        ModelStateCommit const& getLatestCommit() const;
+        ModelStateCommit getLatestCommit() const;
 
         // manipulate undo/redo state
         bool canUndo() const;

@@ -13,7 +13,7 @@ namespace osc
     public:
         SimulationViewerPanelParameters(
             std::shared_ptr<IModelStatePair> model_,
-            std::function<void(SimulationViewerRightClickEvent const&)> const& onRightClickedAComponent_) :
+            const std::function<void(const SimulationViewerRightClickEvent&)>& onRightClickedAComponent_) :
 
             m_Model{std::move(model_)},
             m_OnRightClickedAComponent{onRightClickedAComponent_}
@@ -21,10 +21,10 @@ namespace osc
         }
 
         IModelStatePair& updModelState() { return *m_Model; }
-        void callOnRightClickHandler(SimulationViewerRightClickEvent const& e) const { m_OnRightClickedAComponent(e); }
+        void callOnRightClickHandler(const SimulationViewerRightClickEvent& e) const { m_OnRightClickedAComponent(e); }
 
     private:
         std::shared_ptr<IModelStatePair> m_Model;
-        std::function<void(SimulationViewerRightClickEvent const&)> m_OnRightClickedAComponent;
+        std::function<void(const SimulationViewerRightClickEvent&)> m_OnRightClickedAComponent;
     };
 }

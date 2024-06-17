@@ -37,14 +37,13 @@ class osc::OutputPlotsPanel::Impl final : public StandardPanelImpl {
 public:
     Impl(
         std::string_view panelName_,
-        ParentPtr<IMainUIStateAPI> const& mainUIStateAPI_,
+        const ParentPtr<IMainUIStateAPI>& mainUIStateAPI_,
         ISimulatorUIAPI* simulatorUIAPI_) :
 
         StandardPanelImpl{panelName_},
         m_API{mainUIStateAPI_},
         m_SimulatorUIAPI{simulatorUIAPI_}
-    {
-    }
+    {}
 private:
     void impl_draw_content() final
     {
@@ -101,13 +100,11 @@ private:
 
 osc::OutputPlotsPanel::OutputPlotsPanel(
     std::string_view panelName_,
-    ParentPtr<IMainUIStateAPI> const& mainUIStateAPI_,
+    const ParentPtr<IMainUIStateAPI>& mainUIStateAPI_,
     ISimulatorUIAPI* simulatorUIAPI_) :
 
     m_Impl{std::make_unique<Impl>(panelName_, mainUIStateAPI_, simulatorUIAPI_)}
-{
-}
-
+{}
 osc::OutputPlotsPanel::OutputPlotsPanel(OutputPlotsPanel&&) noexcept = default;
 osc::OutputPlotsPanel& osc::OutputPlotsPanel::operator=(OutputPlotsPanel&&) noexcept = default;
 osc::OutputPlotsPanel::~OutputPlotsPanel() noexcept = default;

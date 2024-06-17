@@ -1241,6 +1241,7 @@ std::vector<GeometryPathPoint> osc::GetAllPathPoints(const OpenSim::GeometryPath
         const OpenSim::AbstractPathPoint* const ap = At(pps, i);
 
         if (ap == nullptr) {
+            // defensive case: there's `nullptr` in the pointset, ignore it
             continue;
         }
         else if (const auto* pwp = dynamic_cast<const OpenSim::PathWrapPoint*>(ap)) {
@@ -1254,6 +1255,7 @@ std::vector<GeometryPathPoint> osc::GetAllPathPoints(const OpenSim::GeometryPath
             }
         }
         else {
+            // typical case: it's a normal/computed point with a single location in ground
             rv.emplace_back(*ap, ToVec3(ap->getLocationInGround(st)));
         }
     }

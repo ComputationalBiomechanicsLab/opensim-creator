@@ -15,7 +15,7 @@ namespace osc
             ISimulatorUIAPI*,
             std::shared_ptr<Simulation>
         );
-        SimulationToolbar(SimulationToolbar const&) = delete;
+        SimulationToolbar(const SimulationToolbar&) = delete;
         SimulationToolbar(SimulationToolbar&&) noexcept;
         SimulationToolbar& operator=(SimulationToolbar const&) = delete;
         SimulationToolbar& operator=(SimulationToolbar&&) noexcept;

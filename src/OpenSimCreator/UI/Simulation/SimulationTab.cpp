@@ -67,7 +67,7 @@ class osc::SimulationTab::Impl final : public ISimulatorUIAPI {
 public:
 
     Impl(
-        ParentPtr<IMainUIStateAPI> const& parent_,
+        const ParentPtr<IMainUIStateAPI>& parent_,
         std::shared_ptr<Simulation> simulation_) :
 
         m_Parent{parent_},
@@ -89,7 +89,7 @@ public:
                 return std::make_shared<NavigatorPanel>(
                     panelName,
                     m_ShownModelState,
-                    [this](OpenSim::ComponentPath const& p)
+                    [this](const OpenSim::ComponentPath& p)
                     {
                         auto popup = std::make_shared<ModelStatePairContextMenu>(
                             "##componentcontextmenu",
@@ -149,7 +149,7 @@ public:
                 SimulationViewerPanelParameters params
                 {
                     m_ShownModelState,
-                    [this, menuName = std::string{panelName} + "_contextmenu"](SimulationViewerRightClickEvent const& e)
+                    [this, menuName = std::string{panelName} + "_contextmenu"](const SimulationViewerRightClickEvent& e)
                     {
                         auto popup = std::make_shared<ModelStatePairContextMenu>(
                             menuName,
@@ -195,7 +195,7 @@ public:
     {
         if (m_PlaybackState == SimulationUIPlaybackState::Playing) {
 
-            SimulationClock::time_point const playbackPos = implGetSimulationScrubTime();
+            const SimulationClock::time_point playbackPos = implGetSimulationScrubTime();
 
             if ((m_PlaybackSpeed >= 0.0f and playbackPos < m_Simulation->getEndTime()) ||
                 (m_PlaybackSpeed  < 0.0f and playbackPos > m_Simulation->getStartTime())) {
@@ -217,7 +217,7 @@ public:
         m_PanelManager->on_tick();
     }
 
-    bool onEvent(SDL_Event const& e)
+    bool onEvent(const SDL_Event& e)
     {
         if (e.type == SDL_KEYDOWN and
             e.key.keysym.scancode == SDL_SCANCODE_SPACE)
@@ -263,7 +263,7 @@ private:
 
     std::optional<SimulationReport> tryFindNthReportAfter(SimulationClock::time_point t, int offset = 0)
     {
-        ptrdiff_t const numSimulationReports = m_Simulation->getNumReports();
+        const ptrdiff_t numSimulationReports = m_Simulation->getNumReports();
 
         if (numSimulationReports == 0)
         {
@@ -281,18 +281,16 @@ private:
             }
         }
 
-        ptrdiff_t const reportIndex = zeroethReportIndex + offset;
-        if (0 <= reportIndex && reportIndex < numSimulationReports)
-        {
+        const ptrdiff_t reportIndex = zeroethReportIndex + offset;
+        if (0 <= reportIndex && reportIndex < numSimulationReports) {
             return m_Simulation->getSimulationReport(reportIndex);
         }
-        else
-        {
+        else {
             return std::nullopt;
         }
     }
 
-    ISimulation const& implGetSimulation() const final
+    const ISimulation& implGetSimulation() const final
     {
         return *m_Simulation;
     }
@@ -347,7 +345,7 @@ private:
 
         // else: map the computer's wall time onto simulation time
 
-        ptrdiff_t const nReports = m_Simulation->getNumReports();
+        const ptrdiff_t nReports = m_Simulation->getNumReports();
         if (nReports <= 0) {
             return m_Simulation->getStartTime();
         }
@@ -355,10 +353,10 @@ private:
             std::chrono::system_clock::time_point wallNow = std::chrono::system_clock::now();
             std::chrono::system_clock::duration wallDur = wallNow - m_PlaybackStartWallTime;
 
-            SimulationClock::duration const simDur = m_PlaybackSpeed * SimulationClock::duration{wallDur};
-            SimulationClock::time_point const simNow = m_PlaybackStartSimtime + simDur;
-            SimulationClock::time_point const simEarliest = m_Simulation->getSimulationReport(0).getTime();
-            SimulationClock::time_point const simLatest = m_Simulation->getSimulationReport(nReports - 1).getTime();
+            const SimulationClock::duration simDur = m_PlaybackSpeed * SimulationClock::duration{wallDur};
+            const SimulationClock::time_point simNow = m_PlaybackStartSimtime + simDur;
+            const SimulationClock::time_point simEarliest = m_Simulation->getSimulationReport(0).getTime();
+            const SimulationClock::time_point simLatest = m_Simulation->getSimulationReport(nReports - 1).getTime();
 
             if (simNow < simEarliest) {
                 return simEarliest;
@@ -380,18 +378,16 @@ private:
 
     void implStepBack() final
     {
-        std::optional<SimulationReport> const maybePrev = tryFindNthReportAfter(getSimulationScrubTime(), -1);
-        if (maybePrev)
-        {
+        const std::optional<SimulationReport> maybePrev = tryFindNthReportAfter(getSimulationScrubTime(), -1);
+        if (maybePrev) {
             setSimulationScrubTime(maybePrev->getTime());
         }
     }
 
     void implStepForward() final
     {
-        std::optional<SimulationReport> const maybeNext = tryFindNthReportAfter(getSimulationScrubTime(), 1);
-        if (maybeNext)
-        {
+        const std::optional<SimulationReport> maybeNext = tryFindNthReportAfter(getSimulationScrubTime(), 1);
+        if (maybeNext) {
             setSimulationScrubTime(maybeNext->getTime());
         }
     }
@@ -406,12 +402,12 @@ private:
         return m_Parent->getNumUserOutputExtractors();
     }
 
-    OutputExtractor const& implGetUserOutputExtractor(int i) const final
+    const OutputExtractor& implGetUserOutputExtractor(int i) const final
     {
         return m_Parent->getUserOutputExtractor(i);
     }
 
-    void implAddUserOutputExtractor(OutputExtractor const& outputExtractor) final
+    void implAddUserOutputExtractor(const OutputExtractor& outputExtractor) final
     {
         m_Parent->addUserOutputExtractor(outputExtractor);
     }
@@ -421,17 +417,17 @@ private:
         m_Parent->removeUserOutputExtractor(i);
     }
 
-    bool implHasUserOutputExtractor(OutputExtractor const& oe) const final
+    bool implHasUserOutputExtractor(const OutputExtractor& oe) const final
     {
         return m_Parent->hasUserOutputExtractor(oe);
     }
 
-    bool implRemoveUserOutputExtractor(OutputExtractor const& oe) final
+    bool implRemoveUserOutputExtractor(const OutputExtractor& oe) final
     {
         return m_Parent->removeUserOutputExtractor(oe);
     }
 
-    bool implOverwriteOrAddNewUserOutputExtractor(OutputExtractor const& old, OutputExtractor const& newer) final
+    bool implOverwriteOrAddNewUserOutputExtractor(const OutputExtractor& old, const OutputExtractor& newer) final
     {
         return m_Parent->overwriteOrAddNewUserOutputExtractor(old, newer);
     }
@@ -503,15 +499,12 @@ private:
 };
 
 
-// public API (PIMPL)
-
 osc::SimulationTab::SimulationTab(
-    ParentPtr<IMainUIStateAPI> const& parent_,
+    const ParentPtr<IMainUIStateAPI>& parent_,
     std::shared_ptr<Simulation> simulation_) :
 
     m_Impl{std::make_unique<Impl>(parent_, std::move(simulation_))}
 {}
-
 osc::SimulationTab::SimulationTab(SimulationTab&&) noexcept = default;
 osc::SimulationTab& osc::SimulationTab::operator=(SimulationTab&&) noexcept = default;
 osc::SimulationTab::~SimulationTab() noexcept = default;
@@ -536,7 +529,7 @@ void osc::SimulationTab::impl_on_unmount()
     m_Impl->on_unmount();
 }
 
-bool osc::SimulationTab::impl_on_event(SDL_Event const& e)
+bool osc::SimulationTab::impl_on_event(const SDL_Event& e)
 {
     return m_Impl->onEvent(e);
 }

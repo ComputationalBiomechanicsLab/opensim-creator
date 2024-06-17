@@ -233,7 +233,7 @@ public:
         }
     }
 
-    std::filesystem::path const& getFilesystemPath() const
+    std::filesystem::path getFilesystemPath() const
     {
         return getFilesystemLocation();
     }
@@ -259,7 +259,7 @@ public:
         return m_MaybeFilesystemTimestamp;
     }
 
-    ModelStateCommit const& getLatestCommit() const
+    ModelStateCommit getLatestCommit() const
     {
         return getHeadCommit();
     }
@@ -651,7 +651,7 @@ private:
         m_CurrentHead = c->getID();
     }
 
-    std::filesystem::path const& getFilesystemLocation() const
+    std::filesystem::path getFilesystemLocation() const
     {
         return m_MaybeFilesystemLocation;
     }
@@ -742,7 +742,7 @@ std::string osc::UndoableModelStatePair::recommendedDocumentName() const
     return m_Impl->recommendedDocumentName();
 }
 
-std::filesystem::path const& osc::UndoableModelStatePair::getFilesystemPath() const
+std::filesystem::path osc::UndoableModelStatePair::getFilesystemPath() const
 {
     return m_Impl->getFilesystemPath();
 }
@@ -768,7 +768,7 @@ std::filesystem::file_time_type osc::UndoableModelStatePair::getLastFilesystemWr
 }
 
 
-ModelStateCommit const& osc::UndoableModelStatePair::getLatestCommit() const
+ModelStateCommit osc::UndoableModelStatePair::getLatestCommit() const
 {
     return m_Impl->getLatestCommit();
 }

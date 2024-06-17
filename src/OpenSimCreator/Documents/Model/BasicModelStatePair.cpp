@@ -19,8 +19,7 @@ public:
 
     explicit Impl(IConstModelStatePair const& p) :
         Impl{p.getModel(), p.getState(), p.getFixupScaleFactor()}
-    {
-    }
+    {}
 
     explicit Impl(std::filesystem::path const& osimPath) :
         m_Model{std::make_unique<OpenSim::Model>(osimPath.string())}
@@ -31,8 +30,7 @@ public:
 
     Impl(OpenSim::Model const& m, SimTK::State const& st) :
         Impl{m, st, 1.0f}
-    {
-    }
+    {}
 
     Impl(OpenSim::Model const& m, SimTK::State const& st, float fixupScaleFactor) :
         m_Model(std::make_unique<OpenSim::Model>(m)),
@@ -88,8 +86,6 @@ private:
 };
 
 
-// public API
-
 osc::BasicModelStatePair::BasicModelStatePair() :
     m_Impl{std::make_unique<Impl>()}
 {}
@@ -104,8 +100,7 @@ osc::BasicModelStatePair::BasicModelStatePair(std::filesystem::path const& p) :
 
 osc::BasicModelStatePair::BasicModelStatePair(OpenSim::Model const& model, SimTK::State const& state) :
     m_Impl{std::make_unique<Impl>(model, state)}
-{
-}
+{}
 osc::BasicModelStatePair::BasicModelStatePair(BasicModelStatePair const&) = default;
 osc::BasicModelStatePair::BasicModelStatePair(BasicModelStatePair&&) noexcept = default;
 osc::BasicModelStatePair& osc::BasicModelStatePair::operator=(BasicModelStatePair const&) = default;

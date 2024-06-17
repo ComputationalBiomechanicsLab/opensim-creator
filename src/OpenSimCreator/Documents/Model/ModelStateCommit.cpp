@@ -20,8 +20,7 @@ class osc::ModelStateCommit::Impl final {
 public:
     Impl(IConstModelStatePair const& msp, std::string_view message) :
         Impl{msp, message, UID::empty()}
-    {
-    }
+    {}
 
     Impl(IConstModelStatePair const& msp, std::string_view message, UID parent) :
         m_MaybeParentID{parent},
@@ -87,23 +86,12 @@ private:
 };
 
 
-// public API (PIMPL)
-
 osc::ModelStateCommit::ModelStateCommit(IConstModelStatePair const& p, std::string_view message) :
     m_Impl{std::make_shared<Impl>(p, message)}
-{
-}
-
+{}
 osc::ModelStateCommit::ModelStateCommit(IConstModelStatePair const& p, std::string_view message, UID parent) :
     m_Impl{std::make_shared<Impl>(p, message, parent)}
-{
-}
-
-osc::ModelStateCommit::ModelStateCommit(ModelStateCommit const&) = default;
-osc::ModelStateCommit::ModelStateCommit(ModelStateCommit&&) noexcept = default;
-osc::ModelStateCommit& osc::ModelStateCommit::operator=(ModelStateCommit const&) = default;
-osc::ModelStateCommit& osc::ModelStateCommit::operator=(ModelStateCommit&&) noexcept = default;
-osc::ModelStateCommit::~ModelStateCommit() noexcept = default;
+{}
 
 UID osc::ModelStateCommit::getID() const
 {

@@ -59,7 +59,7 @@ std::vector<OutputExtractor> osc::ISimulatorUIAPI::getAllUserOutputExtractors() 
     return rv;
 }
 
-std::optional<std::filesystem::path> osc::ISimulatorUIAPI::tryPromptToSaveOutputsAsCSV(std::span<OutputExtractor const> outputs) const
+std::optional<std::filesystem::path> osc::ISimulatorUIAPI::tryPromptToSaveOutputsAsCSV(std::span<const OutputExtractor> outputs) const
 {
     return TryExportOutputsToCSV(getSimulation(), outputs);
 }

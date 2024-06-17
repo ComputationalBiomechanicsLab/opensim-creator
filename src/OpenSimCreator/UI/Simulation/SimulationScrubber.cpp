@@ -16,17 +16,15 @@
 
 class osc::SimulationScrubber::Impl final {
 public:
-
     Impl(
         std::string_view label,
         ISimulatorUIAPI* simulatorAPI,
-        std::shared_ptr<Simulation const> simulation) :
+        std::shared_ptr<const Simulation> simulation) :
 
         m_Label{label},
         m_SimulatorAPI{simulatorAPI},
         m_Simulation{std::move(simulation)}
-    {
-    }
+    {}
 
     void onDraw()
     {
@@ -90,10 +88,10 @@ private:
 
     void drawPlayOrPauseOrReplayButton()
     {
-        SimulationClock::time_point const tStart = m_Simulation->getStartTime();
-        SimulationClock::time_point const tEnd = m_Simulation->getEndTime();
-        SimulationClock::time_point const tCur = m_SimulatorAPI->getSimulationScrubTime();
-        SimulationUIPlaybackState const state = m_SimulatorAPI->getSimulationPlaybackState();
+        const SimulationClock::time_point tStart = m_Simulation->getStartTime();
+        const SimulationClock::time_point tEnd = m_Simulation->getEndTime();
+        const SimulationClock::time_point tCur = m_SimulatorAPI->getSimulationScrubTime();
+        const SimulationUIPlaybackState state = m_SimulatorAPI->getSimulationPlaybackState();
 
         static_assert(num_options<SimulationUIPlaybackState>() == 2);
         if (state == SimulationUIPlaybackState::Playing) {
@@ -143,7 +141,7 @@ private:
 
     void drawStartTimeText()
     {
-        SimulationClock::time_point const tStart = m_Simulation->getStartTime();
+        const SimulationClock::time_point tStart = m_Simulation->getStartTime();
         ui::draw_text_disabled("%.2f", static_cast<float>(tStart.time_since_epoch().count()));
     }
 
@@ -159,13 +157,13 @@ private:
 
     void drawScrubber()
     {
-        SimulationClock::time_point const tStart = m_Simulation->getStartTime();
-        SimulationClock::time_point const tEnd = m_Simulation->getEndTime();
-        SimulationClock::time_point const tCur = m_SimulatorAPI->getSimulationScrubTime();
+        const SimulationClock::time_point tStart = m_Simulation->getStartTime();
+        const SimulationClock::time_point tEnd = m_Simulation->getEndTime();
+        const SimulationClock::time_point tCur = m_SimulatorAPI->getSimulationScrubTime();
 
         ui::set_next_item_width(ui::get_font_size() * 20.0f);
         float v = static_cast<float>(tCur.time_since_epoch().count());
-        bool const userScrubbed = ui::draw_float_slider("##scrubber",
+        const bool userScrubbed = ui::draw_float_slider("##scrubber",
             &v,
             static_cast<float>(tStart.time_since_epoch().count()),
             static_cast<float>(tEnd.time_since_epoch().count()),
@@ -190,27 +188,23 @@ private:
 
     void drawEndTimeText()
     {
-        SimulationClock::time_point const tEnd = m_Simulation->getEndTime();
+        const SimulationClock::time_point tEnd = m_Simulation->getEndTime();
         ui::draw_text_disabled("%.2f", static_cast<float>(tEnd.time_since_epoch().count()));
     }
 
     std::string m_Label;
     ISimulatorUIAPI* m_SimulatorAPI;
-    std::shared_ptr<Simulation const> m_Simulation;
+    std::shared_ptr<const Simulation> m_Simulation;
 };
 
-
-// public API (PIMPL)
 
 osc::SimulationScrubber::SimulationScrubber(
     std::string_view label,
     ISimulatorUIAPI* simulatorAPI,
-    std::shared_ptr<Simulation const> simulation) :
+    std::shared_ptr<const Simulation> simulation) :
 
     m_Impl{std::make_unique<Impl>(label, simulatorAPI, std::move(simulation))}
-{
-}
-
+{}
 osc::SimulationScrubber::SimulationScrubber(SimulationScrubber&&) noexcept = default;
 osc::SimulationScrubber& osc::SimulationScrubber::operator=(SimulationScrubber&&) noexcept = default;
 osc::SimulationScrubber::~SimulationScrubber() noexcept = default;

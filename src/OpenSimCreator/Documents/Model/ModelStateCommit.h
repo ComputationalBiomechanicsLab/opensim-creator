@@ -20,11 +20,6 @@ namespace osc
     public:
         ModelStateCommit(IConstModelStatePair const&, std::string_view message);
         ModelStateCommit(IConstModelStatePair const&, std::string_view message, UID parent);
-        ModelStateCommit(ModelStateCommit const&);
-        ModelStateCommit(ModelStateCommit&&) noexcept;
-        ModelStateCommit& operator=(ModelStateCommit const&);
-        ModelStateCommit& operator=(ModelStateCommit&&) noexcept;
-        ~ModelStateCommit() noexcept;
 
         UID getID() const;
         bool hasParent() const;

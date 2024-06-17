@@ -16,9 +16,9 @@ namespace osc
             std::string_view panelName,
             SimulationViewerPanelParameters
         );
-        SimulationViewerPanel(SimulationViewerPanel const&) = delete;
+        SimulationViewerPanel(const SimulationViewerPanel&) = delete;
         SimulationViewerPanel(SimulationViewerPanel&&) noexcept;
-        SimulationViewerPanel& operator=(SimulationViewerPanel const&) = delete;
+        SimulationViewerPanel& operator=(const SimulationViewerPanel&) = delete;
         SimulationViewerPanel& operator=(SimulationViewerPanel&&) noexcept;
         ~SimulationViewerPanel() noexcept;
 

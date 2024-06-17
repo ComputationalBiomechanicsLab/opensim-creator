@@ -24,14 +24,14 @@ namespace osc
     class ISimulatorUIAPI {
     protected:
         ISimulatorUIAPI() = default;
-        ISimulatorUIAPI(ISimulatorUIAPI const&) = default;
+        ISimulatorUIAPI(const ISimulatorUIAPI&) = default;
         ISimulatorUIAPI(ISimulatorUIAPI&&) noexcept = default;
-        ISimulatorUIAPI& operator=(ISimulatorUIAPI const&) = default;
+        ISimulatorUIAPI& operator=(const ISimulatorUIAPI&) = default;
         ISimulatorUIAPI& operator=(ISimulatorUIAPI&&) noexcept = default;
     public:
         virtual ~ISimulatorUIAPI() noexcept = default;
 
-        ISimulation const& getSimulation() const { return implGetSimulation(); }
+        const ISimulation& getSimulation() const { return implGetSimulation(); }
         ISimulation& updSimulation() { return implUpdSimulation(); }
 
         SimulationUIPlaybackState getSimulationPlaybackState() { return implGetSimulationPlaybackState(); }
@@ -53,24 +53,24 @@ namespace osc
         std::optional<SimulationReport> trySelectReportBasedOnScrubbing() { return implTrySelectReportBasedOnScrubbing(); }
 
         int getNumUserOutputExtractors() const { return implGetNumUserOutputExtractors(); }
-        OutputExtractor const& getUserOutputExtractor(int i) const { return implGetUserOutputExtractor(i); }
+        const OutputExtractor& getUserOutputExtractor(int i) const { return implGetUserOutputExtractor(i); }
         std::vector<OutputExtractor> getAllUserOutputExtractors() const;
-        void addUserOutputExtractor(OutputExtractor const& o) { implAddUserOutputExtractor(o); }
+        void addUserOutputExtractor(const OutputExtractor& o) { implAddUserOutputExtractor(o); }
         void removeUserOutputExtractor(int i) { implRemoveUserOutputExtractor(i); }
-        bool hasUserOutputExtractor(OutputExtractor const& o) { return implHasUserOutputExtractor(o); }
-        bool removeUserOutputExtractor(OutputExtractor const& o) { return implRemoveUserOutputExtractor(o); }
-        bool overwriteOrAddNewUserOutputExtractor(OutputExtractor const& old, OutputExtractor const& newer) { return implOverwriteOrAddNewUserOutputExtractor(old, newer); }
-        std::optional<std::filesystem::path> tryPromptToSaveOutputsAsCSV(std::span<OutputExtractor const>) const;
+        bool hasUserOutputExtractor(const OutputExtractor& o) { return implHasUserOutputExtractor(o); }
+        bool removeUserOutputExtractor(const OutputExtractor& o) { return implRemoveUserOutputExtractor(o); }
+        bool overwriteOrAddNewUserOutputExtractor(const OutputExtractor& old, const OutputExtractor& newer) { return implOverwriteOrAddNewUserOutputExtractor(old, newer); }
+        std::optional<std::filesystem::path> tryPromptToSaveOutputsAsCSV(std::span<const OutputExtractor>) const;
         std::optional<std::filesystem::path> tryPromptToSaveOutputsAsCSV(std::initializer_list<OutputExtractor> il) const
         {
-            return tryPromptToSaveOutputsAsCSV(std::span<OutputExtractor const>{il});
+            return tryPromptToSaveOutputsAsCSV(std::span<const OutputExtractor>{il});
         }
         std::optional<std::filesystem::path> tryPromptToSaveAllOutputsAsCSV() const;
 
         SimulationModelStatePair* tryGetCurrentSimulationState() { return implTryGetCurrentSimulationState(); }
 
     private:
-        virtual ISimulation const& implGetSimulation() const = 0;
+        virtual const ISimulation& implGetSimulation() const = 0;
         virtual ISimulation& implUpdSimulation() = 0;
 
         virtual SimulationUIPlaybackState implGetSimulationPlaybackState() = 0;
@@ -86,12 +86,12 @@ namespace osc
         virtual std::optional<SimulationReport> implTrySelectReportBasedOnScrubbing() = 0;
 
         virtual int implGetNumUserOutputExtractors() const = 0;
-        virtual OutputExtractor const& implGetUserOutputExtractor(int) const = 0;
-        virtual void implAddUserOutputExtractor(OutputExtractor const&) = 0;
+        virtual const OutputExtractor& implGetUserOutputExtractor(int) const = 0;
+        virtual void implAddUserOutputExtractor(const OutputExtractor&) = 0;
         virtual void implRemoveUserOutputExtractor(int) = 0;
-        virtual bool implHasUserOutputExtractor(OutputExtractor const&) const = 0;
-        virtual bool implRemoveUserOutputExtractor(OutputExtractor const&) = 0;
-        virtual bool implOverwriteOrAddNewUserOutputExtractor(OutputExtractor const&, OutputExtractor const&) = 0;
+        virtual bool implHasUserOutputExtractor(const OutputExtractor&) const = 0;
+        virtual bool implRemoveUserOutputExtractor(const OutputExtractor&) = 0;
+        virtual bool implOverwriteOrAddNewUserOutputExtractor(const OutputExtractor&, const OutputExtractor&) = 0;
 
         virtual SimulationModelStatePair* implTryGetCurrentSimulationState() = 0;
     };

@@ -18,12 +18,12 @@ namespace osc
         ModelStatePairContextMenu(
             std::string_view panelName,
             std::shared_ptr<IModelStatePair>,
-            ParentPtr<IMainUIStateAPI> const&,
+            const ParentPtr<IMainUIStateAPI>&,
             std::optional<std::string> maybeComponentAbsPath
         );
-        ModelStatePairContextMenu(ModelStatePairContextMenu const&) = delete;
+        ModelStatePairContextMenu(const ModelStatePairContextMenu&) = delete;
         ModelStatePairContextMenu(ModelStatePairContextMenu&&) noexcept;
-        ModelStatePairContextMenu& operator=(ModelStatePairContextMenu const&) = delete;
+        ModelStatePairContextMenu& operator=(const ModelStatePairContextMenu&) = delete;
         ModelStatePairContextMenu& operator=(ModelStatePairContextMenu&&) noexcept;
         ~ModelStatePairContextMenu() noexcept;
 

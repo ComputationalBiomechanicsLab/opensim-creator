@@ -16,12 +16,12 @@ namespace osc
     public:
         OutputPlotsPanel(
             std::string_view panelName,
-            ParentPtr<IMainUIStateAPI> const&,
+            const ParentPtr<IMainUIStateAPI>&,
             ISimulatorUIAPI*
         );
-        OutputPlotsPanel(OutputPlotsPanel const&) = delete;
+        OutputPlotsPanel(const OutputPlotsPanel&) = delete;
         OutputPlotsPanel(OutputPlotsPanel&&) noexcept;
-        OutputPlotsPanel& operator=(OutputPlotsPanel const&) = delete;
+        OutputPlotsPanel& operator=(const OutputPlotsPanel&) = delete;
         OutputPlotsPanel& operator=(OutputPlotsPanel&&) noexcept;
         ~OutputPlotsPanel() noexcept;
 

@@ -20,7 +20,7 @@ using namespace osc;
 namespace
 {
     SimulationViewerRightClickEvent MakeRightClickEvent(
-        OpenSim::Component const* maybeHover)
+        const OpenSim::Component* maybeHover)
     {
         std::optional<std::string> maybeAbsPath = maybeHover ?
             std::optional<std::string>{GetAbsolutePathString(*maybeHover)} :
@@ -57,9 +57,9 @@ private:
     {
         IModelStatePair& msp = m_Params.updModelState();
 
-        std::optional<SceneCollision> const maybeCollision = m_Viewer.onDraw(msp);
+        const std::optional<SceneCollision> maybeCollision = m_Viewer.onDraw(msp);
 
-        OpenSim::Component const* maybeHover = maybeCollision ?
+        const OpenSim::Component* maybeHover = maybeCollision ?
             FindComponent(msp.getModel(), maybeCollision->decoration_id) :
             nullptr;
 
@@ -99,8 +99,7 @@ osc::SimulationViewerPanel::SimulationViewerPanel(
     SimulationViewerPanelParameters params_) :
 
     m_Impl{std::make_unique<Impl>(panelName_, std::move(params_))}
-{
-}
+{}
 osc::SimulationViewerPanel::SimulationViewerPanel(SimulationViewerPanel&&) noexcept = default;
 osc::SimulationViewerPanel& osc::SimulationViewerPanel::operator=(SimulationViewerPanel&&) noexcept = default;
 osc::SimulationViewerPanel::~SimulationViewerPanel() noexcept = default;

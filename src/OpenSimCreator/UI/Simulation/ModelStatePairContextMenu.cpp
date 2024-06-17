@@ -23,7 +23,7 @@ public:
     Impl(
         std::string_view panelName_,
         std::shared_ptr<IModelStatePair> model_,
-        ParentPtr<IMainUIStateAPI> const& api_,
+        const ParentPtr<IMainUIStateAPI>& api_,
         std::optional<std::string> maybeComponentAbsPath_) :
 
         StandardPopup{panelName_, {10.0f, 10.0f}, ImGuiWindowFlags_NoMove},
@@ -36,16 +36,13 @@ public:
 
     void impl_draw_content() override
     {
-        if (!m_MaybeComponentAbsPath)
-        {
+        if (!m_MaybeComponentAbsPath) {
             drawRightClickedNothingContextMenu();
         }
-        else if (OpenSim::Component const* c = FindComponent(m_Model->getModel(), *m_MaybeComponentAbsPath))
-        {
+        else if (const OpenSim::Component* c = FindComponent(m_Model->getModel(), *m_MaybeComponentAbsPath)) {
             drawRightClickedSomethingContextMenu(*c);
         }
-        else
-        {
+        else {
             drawRightClickedNothingContextMenu();
         }
     }
@@ -55,7 +52,7 @@ public:
         ui::draw_text_disabled("(clicked nothing)");
     }
 
-    void drawRightClickedSomethingContextMenu(OpenSim::Component const& c)
+    void drawRightClickedSomethingContextMenu(const OpenSim::Component& c)
     {
         // draw context menu for whatever's selected
         ui::draw_text_unformatted(c.getName());
@@ -65,7 +62,7 @@ public:
         ui::draw_dummy({0.0f, 3.0f});
 
         DrawSelectOwnerMenu(*m_Model, c);
-        DrawWatchOutputMenu(c, [this](OpenSim::AbstractOutput const& output, std::optional<ComponentOutputSubfield> subfield)
+        DrawWatchOutputMenu(c, [this](const OpenSim::AbstractOutput& output, std::optional<ComponentOutputSubfield> subfield)
         {
             if (subfield) {
                 m_API->addUserOutputExtractor(OutputExtractor{ComponentOutputExtractor{output, *subfield}});
@@ -90,12 +87,10 @@ private:
 };
 
 
-// public API
-
 osc::ModelStatePairContextMenu::ModelStatePairContextMenu(
     std::string_view panelName_,
     std::shared_ptr<IModelStatePair> model_,
-    ParentPtr<IMainUIStateAPI> const& api_,
+    const ParentPtr<IMainUIStateAPI>& api_,
     std::optional<std::string> maybeComponentAbsPath_) :
 
     m_Impl{std::make_unique<Impl>(panelName_, std::move(model_), api_, std::move(maybeComponentAbsPath_))}

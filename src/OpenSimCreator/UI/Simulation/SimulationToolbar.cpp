@@ -24,8 +24,7 @@ namespace
 {
     Color CalcStatusColor(SimulationStatus status)
     {
-        switch (status)
-        {
+        switch (status) {
         case SimulationStatus::Initializing:
         case SimulationStatus::Running:
             return Color::muted_blue();
@@ -51,13 +50,11 @@ public:
         m_Label{label},
         m_SimulatorAPI{simulatorAPI},
         m_Simulation{std::move(simulation)}
-    {
-    }
+    {}
 
     void onDraw()
     {
-        if (BeginToolbar(m_Label, Vec2{5.0f, 5.0f}))
-        {
+        if (BeginToolbar(m_Label, Vec2{5.0f, 5.0f})) {
             drawContent();
         }
         ui::end_panel();
@@ -101,7 +98,7 @@ private:
 
     void drawSimulationStatusGroup()
     {
-        SimulationStatus const status = m_Simulation->getStatus();
+        const SimulationStatus status = m_Simulation->getStatus();
         ui::draw_text_disabled("simulator status:");
         ui::same_line();
         ui::push_style_color(ImGuiCol_Text, CalcStatusColor(status));
@@ -117,16 +114,13 @@ private:
 };
 
 
-// public API (PIMPL)
-
 osc::SimulationToolbar::SimulationToolbar(
     std::string_view label,
     ISimulatorUIAPI* simulatorAPI,
     std::shared_ptr<Simulation> simulation) :
 
     m_Impl{std::make_unique<Impl>(label, simulatorAPI, std::move(simulation))}
-{
-}
+{}
 osc::SimulationToolbar::SimulationToolbar(SimulationToolbar&&) noexcept = default;
 osc::SimulationToolbar& osc::SimulationToolbar::operator=(SimulationToolbar&&) noexcept = default;
 osc::SimulationToolbar::~SimulationToolbar() noexcept = default;

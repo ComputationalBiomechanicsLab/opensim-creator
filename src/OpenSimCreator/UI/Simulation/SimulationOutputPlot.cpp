@@ -49,7 +49,7 @@ namespace
     // draw a menu item for toggling watching the output
     void DrawToggleWatchOutputMenuItem(
         ISimulatorUIAPI& api,
-        OutputExtractor const& output)
+        const OutputExtractor& output)
     {
         if (api.hasUserOutputExtractor(output)) {
             if (ui::draw_menu_item(ICON_FA_TRASH " Stop Watching")) {
@@ -67,14 +67,14 @@ namespace
     // draw menu items for exporting the output to a CSV
     void DrawExportToCSVMenuItems(
         ISimulatorUIAPI& api,
-        OutputExtractor const& output)
+        const OutputExtractor& output)
     {
         if (ui::draw_menu_item(ICON_FA_SAVE "Save as CSV")) {
             api.tryPromptToSaveOutputsAsCSV({output});
         }
 
         if (ui::draw_menu_item(ICON_FA_SAVE "Save as CSV (and open)")) {
-            if (auto const path = api.tryPromptToSaveOutputsAsCSV({output})) {
+            if (const auto path = api.tryPromptToSaveOutputsAsCSV({output})) {
                 open_file_in_os_default_application(*path);
             }
         }
@@ -84,22 +84,22 @@ namespace
     void DrawSelectOtherOutputMenuContent(
         ISimulatorUIAPI& api,
         ISimulation& simulation,
-        OutputExtractor const& oneDimensionalOutputExtractor)
+        const OutputExtractor& oneDimensionalOutputExtractor)
     {
         static_assert(num_options<OutputExtractorDataType>() == 3);
         OSC_ASSERT(oneDimensionalOutputExtractor.getOutputType() == OutputExtractorDataType::Float);
 
         int id = 0;
-        ForEachComponentInclusive(*simulation.getModel(), [&](auto const& component)
+        ForEachComponentInclusive(*simulation.getModel(), [&](const auto& component)
         {
-            auto const numOutputs = component.getNumOutputs();
+            const auto numOutputs = component.getNumOutputs();
             if (numOutputs <= 0) {
                 return;
             }
 
-            std::vector<std::reference_wrapper<OpenSim::AbstractOutput const>> extractableOutputs;
+            std::vector<std::reference_wrapper<const OpenSim::AbstractOutput>> extractableOutputs;
             extractableOutputs.reserve(numOutputs);  // upper bound
-            for (auto const& [name, output] : component.getOutputs()) {
+            for (const auto& [name, output] : component.getOutputs()) {
                 if (ProducesExtractableNumericValues(*output)) {
                     extractableOutputs.push_back(*output);
                 }
@@ -108,9 +108,9 @@ namespace
             if (!extractableOutputs.empty()) {
                 ui::push_id(id++);
                 if (ui::begin_menu(component.getName())) {
-                    for (OpenSim::AbstractOutput const& output : extractableOutputs) {
+                    for (const OpenSim::AbstractOutput& output : extractableOutputs) {
                         ui::push_id(id++);
-                        DrawRequestOutputMenuOrMenuItem(output, [&api, &oneDimensionalOutputExtractor](OpenSim::AbstractOutput const& ao, std::optional<ComponentOutputSubfield> subfield)
+                        DrawRequestOutputMenuOrMenuItem(output, [&api, &oneDimensionalOutputExtractor](const OpenSim::AbstractOutput& ao, std::optional<ComponentOutputSubfield> subfield)
                         {
                             OutputExtractor rhs = subfield ? OutputExtractor{ComponentOutputExtractor{ao, *subfield}} : OutputExtractor{ComponentOutputExtractor{ao}};
                             OutputExtractor concatenating = OutputExtractor{ConcatenatingOutputExtractor{oneDimensionalOutputExtractor, rhs}};
@@ -129,7 +129,7 @@ namespace
     void DrawPlotAgainstOtherOutputMenuItem(
         ISimulatorUIAPI& api,
         ISimulation& sim,
-        OutputExtractor const& output)
+        const OutputExtractor& output)
     {
         if (ui::begin_menu(ICON_FA_CHART_LINE "Plot Against Other Output")) {
             DrawSelectOtherOutputMenuContent(api, sim, output);
@@ -140,7 +140,7 @@ namespace
     void TryDrawOutputContextMenuForLastItem(
         ISimulatorUIAPI& api,
         ISimulation& sim,
-        OutputExtractor const& output)
+        const OutputExtractor& output)
     {
         if (not ui::begin_popup_context_menu("outputplotmenu")) {
             return;  // menu not open
@@ -179,7 +179,7 @@ public:
     {
         static_assert(num_options<OutputExtractorDataType>() == 3);
 
-        ptrdiff_t const nReports = m_API->updSimulation().getNumReports();
+        const ptrdiff_t nReports = m_API->updSimulation().getNumReports();
         OutputExtractorDataType outputType = m_OutputExtractor.getOutputType();
 
         if (nReports <= 0) {
@@ -206,7 +206,7 @@ private:
 
         ISimulation& sim = m_API->updSimulation();
 
-        ptrdiff_t const nReports = sim.getNumReports();
+        const ptrdiff_t nReports = sim.getNumReports();
         if (nReports <= 0) {
             ui::draw_text("no data (yet)");
             return;
@@ -216,13 +216,13 @@ private:
         std::vector<float> buf;
         {
             OSC_PERF("collect output data");
-            std::vector<SimulationReport> const reports = sim.getAllSimulationReports();
+            const std::vector<SimulationReport> reports = sim.getAllSimulationReports();
             buf = m_OutputExtractor.slurpValuesFloat(*sim.getModel(), reports);
         }
 
         // setup drawing area for drawing
         ui::set_next_item_width(ui::get_content_region_avail().x);
-        float const plotWidth = ui::get_content_region_avail().x;
+        const float plotWidth = ui::get_content_region_avail().x;
         Rect plotRect{};
 
         // draw the plot
@@ -232,7 +232,7 @@ private:
             ImPlot::PushStyleVar(ImPlotStyleVar_PlotPadding, {0.0f, 0.0f});
             ImPlot::PushStyleVar(ImPlotStyleVar_PlotBorderSize, 0.0f);
             ImPlot::PushStyleVar(ImPlotStyleVar_FitPadding, {0.0f, 1.0f});
-            auto const flags = ImPlotFlags_NoTitle | ImPlotFlags_NoLegend | ImPlotFlags_NoInputs | ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoFrame;
+            const auto flags = ImPlotFlags_NoTitle | ImPlotFlags_NoLegend | ImPlotFlags_NoInputs | ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoFrame;
 
             if (ImPlot::BeginPlot("##", Vec2{plotWidth, m_Height}, flags)) {
                 ImPlot::SetupAxis(ImAxis_X1, nullptr, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_NoMenus | ImPlotAxisFlags_AutoFit);
@@ -271,8 +271,8 @@ private:
         float simScrubPct = static_cast<float>(static_cast<double>((simScrubTime - simStartTime)/(simEndTime - simStartTime)));
 
         ImDrawList* drawlist = ui::get_panel_draw_list();
-        ImU32 const currentTimeLineColor = ui::to_ImU32(c_CurrentScubTimeColor);
-        ImU32 const hoverTimeLineColor = ui::to_ImU32(c_HoveredScrubTimeColor);
+        const ImU32 currentTimeLineColor = ui::to_ImU32(c_CurrentScubTimeColor);
+        const ImU32 hoverTimeLineColor = ui::to_ImU32(c_HoveredScrubTimeColor);
 
         // draw a vertical Y line showing the current scrub time over the plots
         {
@@ -319,7 +319,7 @@ private:
     void drawStringOutputUI()
     {
         ISimulation& sim = m_API->updSimulation();
-        ptrdiff_t const nReports = m_API->updSimulation().getNumReports();
+        const ptrdiff_t nReports = m_API->updSimulation().getNumReports();
         SimulationReport r = m_API->trySelectReportBasedOnScrubbing().value_or(sim.getSimulationReport(nReports - 1));
 
         ui::draw_text_centered(m_OutputExtractor.getValueString(*sim.getModel(), r));
@@ -332,7 +332,7 @@ private:
 
         ISimulation& sim = m_API->updSimulation();
 
-        ptrdiff_t const nReports = sim.getNumReports();
+        const ptrdiff_t nReports = sim.getNumReports();
         if (nReports <= 0) {
             ui::draw_text("no data (yet)");
             return;
@@ -348,7 +348,7 @@ private:
 
         // setup drawing area for drawing
         ui::set_next_item_width(ui::get_content_region_avail().x);
-        float const plotWidth = ui::get_content_region_avail().x;
+        const float plotWidth = ui::get_content_region_avail().x;
         Rect plotRect{};
 
         // draw the plot
@@ -359,7 +359,7 @@ private:
             ImPlot::PushStyleVar(ImPlotStyleVar_PlotBorderSize, 0.0f);
             ImPlot::PushStyleVar(ImPlotStyleVar_FitPadding, {0.1f, 0.1f});
             ImPlot::PushStyleVar(ImPlotStyleVar_AnnotationPadding, ui::get_style_panel_padding());
-            auto const flags = ImPlotFlags_NoTitle | ImPlotFlags_NoLegend | ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoFrame;
+            const auto flags = ImPlotFlags_NoTitle | ImPlotFlags_NoLegend | ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoFrame;
 
             if (ImPlot::BeginPlot("##", Vec2{plotWidth, m_Height}, flags)) {
                 ImPlot::SetupAxis(ImAxis_X1, nullptr, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_NoMenus | ImPlotAxisFlags_AutoFit);

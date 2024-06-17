@@ -15,11 +15,11 @@ namespace osc
         SimulationScrubber(
             std::string_view label,
             ISimulatorUIAPI*,
-            std::shared_ptr<Simulation const>
+            std::shared_ptr<const Simulation>
         );
-        SimulationScrubber(SimulationScrubber const&) = delete;
+        SimulationScrubber(const SimulationScrubber&) = delete;
         SimulationScrubber(SimulationScrubber&&) noexcept;
-        SimulationScrubber& operator=(SimulationScrubber const&) = delete;
+        SimulationScrubber& operator=(const SimulationScrubber&) = delete;
         SimulationScrubber& operator=(SimulationScrubber&&) noexcept;
         ~SimulationScrubber() noexcept;
 

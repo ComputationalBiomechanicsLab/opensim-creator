@@ -17,9 +17,9 @@ namespace osc
             OutputExtractor,
             float height
         );
-        SimulationOutputPlot(SimulationOutputPlot const&) = delete;
+        SimulationOutputPlot(const SimulationOutputPlot&) = delete;
         SimulationOutputPlot(SimulationOutputPlot&&) noexcept;
-        SimulationOutputPlot& operator=(SimulationOutputPlot const&) = delete;
+        SimulationOutputPlot& operator=(const SimulationOutputPlot&) = delete;
         SimulationOutputPlot& operator=(SimulationOutputPlot&&) noexcept;
         ~SimulationOutputPlot() noexcept;
 

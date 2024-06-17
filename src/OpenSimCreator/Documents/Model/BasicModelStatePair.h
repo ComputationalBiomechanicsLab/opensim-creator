@@ -30,6 +30,7 @@ namespace osc
         BasicModelStatePair& operator=(BasicModelStatePair const&);
         BasicModelStatePair& operator=(BasicModelStatePair&&) noexcept;
         ~BasicModelStatePair() noexcept override;
+
     private:
         OpenSim::Model const& implGetModel() const final;
         SimTK::State const& implGetState() const final;

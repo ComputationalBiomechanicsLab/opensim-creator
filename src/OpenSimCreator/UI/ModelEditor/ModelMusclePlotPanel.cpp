@@ -1941,7 +1941,7 @@ namespace
 
                     // trick: we "know" that the last edit to the model was a coordinate edit in this plot's
                     //        independent variable, so we can skip recomputing it
-                    ModelStateCommit const& commitAfter = getShared().getModel().getLatestCommit();
+                    ModelStateCommit commitAfter = getShared().getModel().getLatestCommit();
                     m_Lines.setActivePlotCommit(commitAfter);
                 }
             }
