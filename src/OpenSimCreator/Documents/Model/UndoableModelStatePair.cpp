@@ -196,7 +196,7 @@ public:
     // crete a new commit graph that contains a backup of the given model
     explicit Impl(std::unique_ptr<OpenSim::Model> m) :
         m_Scratch{std::move(m)},
-        m_MaybeFilesystemLocation{TryFindInputFile(m_Scratch.getModel())}
+        m_MaybeFilesystemLocation{TryFindInputFile(m_Scratch.getModel()).value_or("")}
     {
         std::stringstream ss;
         if (!m_MaybeFilesystemLocation.empty())

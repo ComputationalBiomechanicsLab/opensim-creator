@@ -497,13 +497,16 @@ namespace osc
     // returns a non-empty path if the given model has an input file name that exists on the user's filesystem
     //
     // otherwise, returns an empty path
-    std::filesystem::path TryFindInputFile(const OpenSim::Model&);
+    std::optional<std::filesystem::path> TryFindInputFile(const OpenSim::Model&);
 
     // returns the absolute path to the given mesh component, if found (otherwise, std::nullptr)
     std::optional<std::filesystem::path> FindGeometryFileAbsPath(
         const OpenSim::Model&,
         const OpenSim::Mesh&
     );
+
+    // returns the filename part of the `mesh_file` property (e.g. `C:\Users\adam\mesh.obj` returns `mesh.obj`)
+    std::string GetMeshFileName(const OpenSim::Mesh&);
 
     // returns `true` if the component should be shown in the UI
     //

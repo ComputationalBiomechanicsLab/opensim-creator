@@ -40,6 +40,10 @@ void osc::mow::UIState::actionWarpModelAndOpenInModelEditor()
         return;
     }
 
-    auto m = m_ModelWarper.warp(*m_Document);
-    m_TabHost->add_and_select_tab<ModelEditorTab>(*api, std::make_unique<UndoableModelStatePair>(m->getModel()));
+    // create a copy of the document so that we can apply export-specific
+    // configuration changes to it
+    ModelWarpDocument copy{*m_Document};
+    copy.setShouldWriteWarpedMeshesToDisk(true);  // required for OpenSim to be able to load the warped model correctly
+    auto warpedModelStatePair = m_ModelWarper.warp(copy);
+    m_TabHost->add_and_select_tab<ModelEditorTab>(*api, std::make_unique<UndoableModelStatePair>(warpedModelStatePair->getModel()));
 }

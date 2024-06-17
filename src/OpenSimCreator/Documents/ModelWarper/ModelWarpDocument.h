@@ -13,6 +13,7 @@
 #include <oscar/Utils/CopyOnUpdPtr.h>
 
 #include <filesystem>
+#include <optional>
 #include <vector>
 
 namespace OpenSim { class Mesh; }
@@ -48,6 +49,13 @@ namespace osc::mow
 
         float getWarpBlendingFactor() const;
         void setWarpBlendingFactor(float);
+
+        bool getShouldWriteWarpedMeshesToDisk() const;
+        void setShouldWriteWarpedMeshesToDisk(bool);
+
+        std::optional<std::filesystem::path> getWarpedMeshesOutputDirectory() const;
+
+        std::optional<std::filesystem::path> getOsimFileLocation() const;
 
         ValidationCheckState state() const;
 

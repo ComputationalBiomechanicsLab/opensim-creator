@@ -740,16 +740,15 @@ bool osc::HasInputFileName(const OpenSim::Model& m)
     return !name.empty() && name != "Unassigned";
 }
 
-std::filesystem::path osc::TryFindInputFile(const OpenSim::Model& m)
+std::optional<std::filesystem::path> osc::TryFindInputFile(const OpenSim::Model& m)
 {
-    if (!HasInputFileName(m)) {
-        return {};
+    if (not HasInputFileName(m)) {
+        return std::nullopt;
     }
 
     std::filesystem::path p{m.getInputFileName()};
-
-    if (!std::filesystem::exists(p)) {
-        return {};
+    if (not std::filesystem::exists(p)) {
+        return std::nullopt;
     }
 
     return p;
@@ -778,6 +777,12 @@ std::optional<std::filesystem::path> osc::FindGeometryFileAbsPath(
     }
 
     return std::optional<std::filesystem::path>{std::filesystem::weakly_canonical({attempts.back()})};
+}
+
+std::string osc::GetMeshFileName(const OpenSim::Mesh& mesh)
+{
+    std::filesystem::path p{mesh.get_mesh_file()};
+    return p.filename().string();
 }
 
 bool osc::ShouldShowInUI(const OpenSim::Component& c)

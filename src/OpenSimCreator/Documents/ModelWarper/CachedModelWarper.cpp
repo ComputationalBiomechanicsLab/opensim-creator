@@ -9,9 +9,12 @@
 #include <OpenSimCreator/Documents/Model/BasicModelStatePair.h>
 #include <OpenSimCreator/Documents/ModelWarper/ModelWarpDocument.h>
 #include <OpenSimCreator/Utils/SimTKHelpers.h>
+#include <oscar/Formats/OBJ.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Utils/Assertions.h>
 
+#include <filesystem>
+#include <fstream>
 #include <map>
 #include <memory>
 #include <optional>
@@ -21,7 +24,7 @@ using namespace osc::mow;
 
 namespace
 {
-    std::unique_ptr<InMemoryMesh> WarpMesh(
+    std::unique_ptr<OpenSim::Geometry> WarpMesh(
         ModelWarpDocument const& document,
         OpenSim::Model const& model,
         SimTK::State const& state,
@@ -35,7 +38,33 @@ namespace
         compiled->warpInPlace(vertices);
         mesh.set_vertices(vertices);
         mesh.recalculate_normals();
-        return std::make_unique<InMemoryMesh>(mesh);
+
+        if (document.getShouldWriteWarpedMeshesToDisk()) {
+            // the mesh should be written to disk in an appropriate mesh file format
+            // and the resulting warped `OpenSim::Model` should link to the on-disk
+            // data via an `OpenSim::Mesh`
+
+            // figure out and prepare where the mesh data should be written
+            const auto warpedMeshesDir = document.getWarpedMeshesOutputDirectory();
+            OSC_ASSERT(warpedMeshesDir && "cannot figure out where to write warped mesh data: this will only work if the osim file was loaded from disk");
+            const auto meshLocationAbsPath = std::filesystem::weakly_canonical(*warpedMeshesDir / GetMeshFileName(inputMesh));
+            std::filesystem::create_directories(meshLocationAbsPath.parent_path());  // ensure parent directories are created
+
+            // write mesh data to disk as a Wavefront OBJ file
+            {
+                std::ofstream objStream{meshLocationAbsPath, std::ios::trunc};
+                objStream.exceptions(std::ios::badbit | std::ios::failbit);
+                write_as_obj(objStream, mesh, ObjMetadata{"osc-model-warper"});
+            }
+
+            // return an `OpenSim::Mesh` thank refers to the OBJ file
+            auto rv = std::make_unique<OpenSim::Mesh>();
+            rv->set_mesh_file(meshLocationAbsPath.string());  // TODO: should be relative-ized, where reasonable
+            return rv;
+        }
+        else {
+            return std::make_unique<InMemoryMesh>(mesh);
+        }
     }
 
     void OverwriteGeometry(

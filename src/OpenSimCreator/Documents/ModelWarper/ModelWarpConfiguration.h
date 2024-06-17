@@ -25,8 +25,15 @@ namespace osc::mow
         bool getShouldDefaultMissingFrameWarpsToIdentity() const { return m_ShouldDefaultMissingFrameWarpsToIdentity; }
         void setShouldDefaultMissingFrameWarpsToIdentity(bool v) { m_ShouldDefaultMissingFrameWarpsToIdentity = v; }
 
+        bool getShouldWriteWarpedMeshesToDisk() const { return m_ShouldWriteWarpedMeshesToDisk; }
+        void setShouldWriteWarpedMeshesToDisk(bool v) { m_ShouldWriteWarpedMeshesToDisk = v; }
+
+        std::filesystem::path getWarpedMeshesOutputDirectory() const { return m_WarpedMeshesOutputDirectory; }
+
     private:
         float m_WarpBlendingFactor = 1.0f;
         bool m_ShouldDefaultMissingFrameWarpsToIdentity = false;
+        bool m_ShouldWriteWarpedMeshesToDisk = false;
+        std::filesystem::path m_WarpedMeshesOutputDirectory = "WarpedGeometry";
     };
 }

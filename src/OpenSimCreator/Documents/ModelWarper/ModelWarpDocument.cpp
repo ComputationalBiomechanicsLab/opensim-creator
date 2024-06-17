@@ -127,6 +127,30 @@ void osc::mow::ModelWarpDocument::setWarpBlendingFactor(float v)
     m_ModelWarpConfig.upd()->setWarpBlendingFactor(v);
 }
 
+bool osc::mow::ModelWarpDocument::getShouldWriteWarpedMeshesToDisk() const
+{
+    return m_ModelWarpConfig->getShouldWriteWarpedMeshesToDisk();
+}
+
+void osc::mow::ModelWarpDocument::setShouldWriteWarpedMeshesToDisk(bool v)
+{
+    m_ModelWarpConfig.upd()->setShouldWriteWarpedMeshesToDisk(v);
+}
+
+std::optional<std::filesystem::path> osc::mow::ModelWarpDocument::getWarpedMeshesOutputDirectory() const
+{
+    const auto osimFileLocation = getOsimFileLocation();
+    if (not osimFileLocation) {
+        return std::nullopt;
+    }
+    return std::filesystem::weakly_canonical(osimFileLocation->parent_path() / m_ModelWarpConfig->getWarpedMeshesOutputDirectory());
+}
+
+std::optional<std::filesystem::path> osc::mow::ModelWarpDocument::getOsimFileLocation() const
+{
+    return TryFindInputFile(m_ModelState->getModel());
+}
+
 std::vector<ValidationCheckResult> osc::mow::ModelWarpDocument::implValidate() const
 {
     std::vector<ValidationCheckResult> rv;

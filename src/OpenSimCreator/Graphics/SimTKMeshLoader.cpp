@@ -28,7 +28,7 @@ namespace rgs = std::ranges;
 
 namespace
 {
-    constexpr auto c_supported_mesh_extensions = std::to_array({"obj"sv, "vtp"sv, "stl"sv});
+    constexpr auto c_supported_mesh_extensions = std::to_array({"obj"sv, "vtp"sv, "stl"sv, "stla"sv});
 
     struct OutputMeshMetrics {
         size_t numVertices = 0;
