@@ -177,7 +177,7 @@ TEST(ModelWarpDocument, getWarpedMeshesOutputDirectory_ReturnsNonNulloptWhenOsim
 {
     const std::filesystem::path fileLocation = GetFixturesDir() / "blank.osim";
     const ModelWarpDocument doc{fileLocation};
-    ASSERT_NE(ModelWarpDocument{}.getWarpedMeshesOutputDirectory(), std::nullopt);
+    ASSERT_NE(doc.getWarpedMeshesOutputDirectory(), std::nullopt);
 }
 
 TEST(ModelWarpDocument, getOsimFileLocation_ReturnsNulloptOnDefaultConstruction)
