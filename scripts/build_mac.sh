@@ -95,7 +95,7 @@ if [[ -z ${OSC_SKIP_BREW:+x} ]]; then
     brew install wget
 
     # osc: docs dependencies
-    [[ ! -z ${OSC_BUILD_DOCS:+z} ]] && brew install python3
+    # [[ ! -z ${OSC_BUILD_DOCS:+z} ]] && brew install python3  # probably unnecessary: most MacOS nodes will have python support
     [[ ! -z ${OSC_BUILD_DOCS:+z} ]] && pip3 install --user wheel
     [[ ! -z ${OSC_BUILD_DOCS:+z} ]] && pip3 install --user -r docs/requirements.txt
 
