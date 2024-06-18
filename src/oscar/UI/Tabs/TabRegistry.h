@@ -50,7 +50,7 @@ namespace osc
 
         const_iterator begin() const;
         const_iterator end() const;
-        [[nodiscard]] bool empty() const { return size() > 0; }
+        [[nodiscard]] bool empty() const { return size() <= 0; }
         size_type size() const;
         TabRegistryEntry operator[](size_type) const;
         std::optional<TabRegistryEntry> find_by_name(std::string_view) const;
