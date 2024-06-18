@@ -25,11 +25,10 @@ using namespace osc;
 
 namespace
 {
-    void DrawActionsMenu(IEditorAPI* editorAPI, std::shared_ptr<UndoableModelStatePair> const& model)
+    void DrawActionsMenu(IEditorAPI* editorAPI, const std::shared_ptr<UndoableModelStatePair>& model)
     {
-        OpenSim::Component const* selection = model->getSelected();
-        if (!selection)
-        {
+        const OpenSim::Component* const selection = model->getSelected();
+        if (!selection) {
             return;
         }
 
@@ -57,10 +56,8 @@ namespace
 
         void onDraw()
         {
-            OpenSim::Component const* const selected = m_Model->getSelected();
-
-            if (!selected)
-            {
+            const OpenSim::Component* const selected = m_Model->getSelected();
+            if (!selected) {
                 return;  // don't do anything if nothing is selected
             }
 
@@ -95,7 +92,7 @@ namespace
     private:
         std::shared_ptr<UndoableModelStatePair> m_Model;
         UID m_LastModelVersion;
-        OpenSim::Component const* m_LastSelected = nullptr;
+        const OpenSim::Component* m_LastSelected = nullptr;
         std::string m_EditedName;
     };
 }
@@ -111,8 +108,7 @@ public:
         m_EditorAPI{editorAPI},
         m_Model{std::move(model)},
         m_SelectionPropertiesEditor{editorAPI, m_Model, [model = m_Model](){ return model->getSelected(); }}
-    {
-    }
+    {}
 
 private:
     void impl_draw_content() final
@@ -124,7 +120,7 @@ private:
         }
 
         ui::push_id(m_Model->getSelected());
-        ScopeGuard const g{[]() { ui::pop_id(); }};
+        const ScopeGuard g{[]() { ui::pop_id(); }};
 
         // draw an actions row with a button that opens the context menu
         //
@@ -155,16 +151,12 @@ private:
 };
 
 
-// public API (PIMPL)
-
 osc::PropertiesPanel::PropertiesPanel(
     std::string_view panelName,
     IEditorAPI* editorAPI,
     std::shared_ptr<UndoableModelStatePair> model) :
     m_Impl{std::make_unique<Impl>(panelName, editorAPI, std::move(model))}
-{
-}
-
+{}
 osc::PropertiesPanel::PropertiesPanel(PropertiesPanel&&) noexcept = default;
 osc::PropertiesPanel& osc::PropertiesPanel::operator=(PropertiesPanel&&) noexcept = default;
 osc::PropertiesPanel::~PropertiesPanel() noexcept = default;

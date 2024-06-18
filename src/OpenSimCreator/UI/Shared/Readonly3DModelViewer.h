@@ -34,19 +34,19 @@ namespace osc
             std::string_view parentPanelName_,
             Readonly3DModelViewerFlags = Readonly3DModelViewerFlags::None
         );
-        Readonly3DModelViewer(Readonly3DModelViewer const&) = delete;
+        Readonly3DModelViewer(const Readonly3DModelViewer&) = delete;
         Readonly3DModelViewer(Readonly3DModelViewer&&) noexcept;
-        Readonly3DModelViewer& operator=(Readonly3DModelViewer const&) = delete;
+        Readonly3DModelViewer& operator=(const Readonly3DModelViewer&) = delete;
         Readonly3DModelViewer& operator=(Readonly3DModelViewer&&) noexcept;
         ~Readonly3DModelViewer() noexcept;
 
         bool isMousedOver() const;
         bool isLeftClicked() const;
         bool isRightClicked() const;
-        std::optional<SceneCollision> onDraw(IConstModelStatePair const&);
+        std::optional<SceneCollision> onDraw(const IConstModelStatePair&);
         std::optional<Rect> getScreenRect() const;
-        PolarPerspectiveCamera const& getCamera() const;
-        void setCamera(PolarPerspectiveCamera const&);
+        const PolarPerspectiveCamera& getCamera() const;
+        void setCamera(const PolarPerspectiveCamera&);
 
     private:
         class Impl;

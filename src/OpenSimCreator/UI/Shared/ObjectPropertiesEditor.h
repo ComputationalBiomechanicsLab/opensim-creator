@@ -16,12 +16,12 @@ namespace osc
     public:
         ObjectPropertiesEditor(
             IPopupAPI*,
-            std::shared_ptr<UndoableModelStatePair const> targetModel,
-            std::function<OpenSim::Object const*()> objectGetter
+            std::shared_ptr<const UndoableModelStatePair> targetModel,
+            std::function<const OpenSim::Object*()> objectGetter
         );
-        ObjectPropertiesEditor(ObjectPropertiesEditor const&) = delete;
+        ObjectPropertiesEditor(const ObjectPropertiesEditor&) = delete;
         ObjectPropertiesEditor(ObjectPropertiesEditor&&) noexcept;
-        ObjectPropertiesEditor& operator=(ObjectPropertiesEditor const&) = delete;
+        ObjectPropertiesEditor& operator=(const ObjectPropertiesEditor&) = delete;
         ObjectPropertiesEditor& operator=(ObjectPropertiesEditor&&) noexcept;
         ~ObjectPropertiesEditor() noexcept;
 

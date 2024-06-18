@@ -16,9 +16,9 @@ namespace osc
             std::string_view popupName,
             ParamBlock*
         );
-        ParamBlockEditorPopup(ParamBlockEditorPopup const&) = delete;
+        ParamBlockEditorPopup(const ParamBlockEditorPopup&) = delete;
         ParamBlockEditorPopup(ParamBlockEditorPopup&&) noexcept;
-        ParamBlockEditorPopup& operator=(ParamBlockEditorPopup const&) = delete;
+        ParamBlockEditorPopup& operator=(const ParamBlockEditorPopup&) = delete;
         ParamBlockEditorPopup& operator=(ParamBlockEditorPopup&&) noexcept;
         ~ParamBlockEditorPopup() noexcept;
 

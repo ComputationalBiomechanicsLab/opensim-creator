@@ -61,7 +61,7 @@ public:
         return m_MaybeLastHittest && m_MaybeLastHittest->is_hovered;
     }
 
-    std::optional<SceneCollision> onDraw(IConstModelStatePair const& rs)
+    std::optional<SceneCollision> onDraw(const IConstModelStatePair& rs)
     {
         // if this is the first frame being rendered, auto-focus the scene
         if (!m_MaybeLastHittest)
@@ -98,7 +98,7 @@ public:
         );
 
         // update current+retained hittest
-        ui::HittestResult const hittest = ui::hittest_last_drawn_item();
+        const ui::HittestResult hittest = ui::hittest_last_drawn_item();
         m_MaybeLastHittest = hittest;
 
         // if allowed, hittest the scene
@@ -114,7 +114,7 @@ public:
 
         // draw 2D ImGui overlays
         auto renderParamsBefore = m_Params;
-        bool const edited = DrawViewerImGuiOverlays(
+        const bool edited = DrawViewerImGuiOverlays(
             m_Params,
             m_CachedModelRenderer.getDrawlist(),
             m_CachedModelRenderer.bounds(),
@@ -124,7 +124,7 @@ public:
         );
         if (edited)
         {
-            auto const& renderParamsAfter = m_Params;
+            const auto& renderParamsAfter = m_Params;
             SaveModelRendererParamsDifference(
                 renderParamsBefore,
                 renderParamsAfter,
@@ -152,12 +152,12 @@ public:
             std::nullopt;
     }
 
-    PolarPerspectiveCamera const& getCamera() const
+    const PolarPerspectiveCamera& getCamera() const
     {
         return m_Params.camera;
     }
 
-    void setCamera(PolarPerspectiveCamera const& camera)
+    void setCamera(const PolarPerspectiveCamera& camera)
     {
         m_Params.camera = camera;
     }
@@ -230,7 +230,7 @@ bool osc::Readonly3DModelViewer::isMousedOver() const
     return m_Impl->isMousedOver();
 }
 
-std::optional<SceneCollision> osc::Readonly3DModelViewer::onDraw(IConstModelStatePair const& rs)
+std::optional<SceneCollision> osc::Readonly3DModelViewer::onDraw(const IConstModelStatePair& rs)
 {
     return m_Impl->onDraw(rs);
 }
@@ -240,12 +240,12 @@ std::optional<Rect> osc::Readonly3DModelViewer::getScreenRect() const
     return m_Impl->getScreenRect();
 }
 
-PolarPerspectiveCamera const& osc::Readonly3DModelViewer::getCamera() const
+const PolarPerspectiveCamera& osc::Readonly3DModelViewer::getCamera() const
 {
     return m_Impl->getCamera();
 }
 
-void osc::Readonly3DModelViewer::setCamera(PolarPerspectiveCamera const& camera)
+void osc::Readonly3DModelViewer::setCamera(const PolarPerspectiveCamera& camera)
 {
     m_Impl->setCamera(camera);
 }

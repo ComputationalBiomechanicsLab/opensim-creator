@@ -18,9 +18,9 @@ namespace osc
             IEditorAPI*,
             std::shared_ptr<UndoableModelStatePair>
         );
-        PropertiesPanel(PropertiesPanel const&) = delete;
+        PropertiesPanel(const PropertiesPanel&) = delete;
         PropertiesPanel(PropertiesPanel&&) noexcept;
-        PropertiesPanel& operator=(PropertiesPanel const&) = delete;
+        PropertiesPanel& operator=(const PropertiesPanel&) = delete;
         PropertiesPanel& operator=(PropertiesPanel&&) noexcept;
         ~PropertiesPanel() noexcept;
 

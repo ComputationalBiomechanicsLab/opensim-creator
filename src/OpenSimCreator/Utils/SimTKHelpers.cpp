@@ -157,6 +157,18 @@ Quat osc::ToQuat(const SimTK::Rotation& r)
     };
 }
 
+std::array<float, 6> osc::ToArray(const SimTK::Vec6& v)
+{
+    return {
+        static_cast<float>(v[0]),
+        static_cast<float>(v[1]),
+        static_cast<float>(v[2]),
+        static_cast<float>(v[3]),
+        static_cast<float>(v[4]),
+        static_cast<float>(v[5]),
+    };
+}
+
 Transform osc::decompose_to_transform(const SimTK::Transform& t)
 {
     return Transform{.rotation = ToQuat(t.R()), .position = ToVec3(t.p())};

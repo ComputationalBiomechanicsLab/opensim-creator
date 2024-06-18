@@ -137,9 +137,7 @@ private:
 
 osc::ParamBlockEditorPopup::ParamBlockEditorPopup(std::string_view popupName, ParamBlock* paramBlock) :
     m_Impl{std::make_unique<Impl>(popupName, paramBlock)}
-{
-}
-
+{}
 osc::ParamBlockEditorPopup::ParamBlockEditorPopup(ParamBlockEditorPopup&&) noexcept = default;
 osc::ParamBlockEditorPopup& osc::ParamBlockEditorPopup::operator=(ParamBlockEditorPopup&&) noexcept = default;
 osc::ParamBlockEditorPopup::~ParamBlockEditorPopup() noexcept = default;

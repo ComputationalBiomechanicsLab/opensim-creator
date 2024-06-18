@@ -56,20 +56,6 @@ namespace
 // helper functions
 namespace
 {
-    // unpack a SimTK::Vec6 into an array
-    std::array<float, 6> ToArray(SimTK::Vec6 const& v)
-    {
-        return
-        {
-            static_cast<float>(v[0]),
-            static_cast<float>(v[1]),
-            static_cast<float>(v[2]),
-            static_cast<float>(v[3]),
-            static_cast<float>(v[4]),
-            static_cast<float>(v[5]),
-        };
-    }
-
     // returns an updater function that deletes an element from a list property
     template<typename T>
     std::function<void(OpenSim::AbstractProperty&)> MakePropElementDeleter(int idx)
@@ -115,12 +101,11 @@ namespace
     }
 
     // draws the property name and (optionally) comment tooltip
-    void DrawPropertyName(OpenSim::AbstractProperty const& prop)
+    void DrawPropertyName(const OpenSim::AbstractProperty& prop)
     {
         ui::draw_text_unformatted(prop.getName());
 
-        if (!prop.getComment().empty())
-        {
+        if (!prop.getComment().empty()) {
             ui::same_line();
             ui::draw_help_marker(prop.getComment());
         }
@@ -128,18 +113,17 @@ namespace
 
     // wraps an object accessor with property information so that an individual
     // property accesssor with the same lifetime semantics as the object can exist
-    std::function<OpenSim::AbstractProperty const*()> MakePropertyAccessor(
-        std::function<OpenSim::Object const*()> const& objAccessor,
-        std::string const& propertyName)
+    std::function<const OpenSim::AbstractProperty*()> MakePropertyAccessor(
+        const std::function<const OpenSim::Object*()>& objAccessor,
+        const std::string& propertyName)
     {
-        return [objAccessor, propertyName]() -> OpenSim::AbstractProperty const*
+        return [objAccessor, propertyName]() -> const OpenSim::AbstractProperty*
         {
-            OpenSim::Object const* maybeObj = objAccessor();
-            if (!maybeObj)
-            {
+            const OpenSim::Object* maybeObj = objAccessor();
+            if (!maybeObj) {
                 return nullptr;
             }
-            OpenSim::Object const& obj = *maybeObj;
+            const OpenSim::Object& obj = *maybeObj;
 
             if (!obj.hasProperty(propertyName))
             {
@@ -159,12 +143,12 @@ namespace
 
     // draws a little vertical line, which is usually used to visually indicate
     // x/y/z to the user
-    void DrawColoredDimensionHintVerticalLine(Color const& color)
+    void DrawColoredDimensionHintVerticalLine(const Color& color)
     {
         ImDrawList* const l = ui::get_panel_draw_list();
-        Vec2 const p = ui::get_cursor_screen_pos();
-        float const h = ui::get_text_line_height() + 2.0f*ui::get_style_frame_padding().y + 2.0f*ui::get_style_frame_border_size();
-        Vec2 const dims = Vec2{4.0f, h};
+        const Vec2 p = ui::get_cursor_screen_pos();
+        const float h = ui::get_text_line_height() + 2.0f*ui::get_style_frame_padding().y + 2.0f*ui::get_style_frame_border_size();
+        const Vec2 dims = Vec2{4.0f, h};
         l->AddRectFilled(p, p + dims, ui::to_ImU32(color));
         ui::set_cursor_screen_pos({p.x + 4.0f, p.y});
     }
@@ -338,7 +322,7 @@ namespace
     }
 
     std::string GenerateVecFrameAnnotationLabel(
-        OpenSim::AbstractProperty const& backingProperty,
+        const OpenSim::AbstractProperty& backingProperty,
         Vec3::size_type ithDimension)
     {
         std::stringstream ss;
@@ -357,14 +341,14 @@ namespace
     class IPropertyEditor {
     protected:
         IPropertyEditor() = default;
-        IPropertyEditor(IPropertyEditor const&) = default;
+        IPropertyEditor(const IPropertyEditor&) = default;
         IPropertyEditor(IPropertyEditor&&) noexcept = default;
-        IPropertyEditor& operator=(IPropertyEditor const&) = default;
+        IPropertyEditor& operator=(const IPropertyEditor&) = default;
         IPropertyEditor& operator=(IPropertyEditor&&) noexcept = default;
     public:
         virtual ~IPropertyEditor() noexcept = default;
 
-        bool isCompatibleWith(OpenSim::AbstractProperty const& prop) const
+        bool isCompatibleWith(const OpenSim::AbstractProperty& prop) const
         {
             return implIsCompatibleWith(prop);
         }
@@ -375,7 +359,7 @@ namespace
         }
 
     private:
-        virtual bool implIsCompatibleWith(OpenSim::AbstractProperty const&) const = 0;
+        virtual bool implIsCompatibleWith(const OpenSim::AbstractProperty&) const = 0;
         virtual std::optional<std::function<void(OpenSim::AbstractProperty&)>> implOnDraw() = 0;
     };
 
