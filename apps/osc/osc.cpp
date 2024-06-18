@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
     std::vector<std::string_view> unnamedArgs;
     for (int i = 1; i < argc; ++i)
     {
-        std::string_view const arg{argv[i]};  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        const std::string_view arg{argv[i]};  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
         if (arg.empty())
         {
@@ -46,8 +46,7 @@ int main(int argc, char* argv[])
     auto screen = std::make_unique<osc::MainUIScreen>();
 
     // load each unnamed arg as a file in the UI
-    for (auto const& unnamedArg : unnamedArgs)
-    {
+    for (const auto& unnamedArg : unnamedArgs) {
         screen->open(unnamedArg);
     }
 

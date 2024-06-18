@@ -20,8 +20,8 @@ namespace
     private:
          void impl_on_draw() override
          {
-             const auto secs = App::get().frame_delta_since_startup().count();
-             const auto transform = identity<Transform>().with_rotation(angle_axis(Radians{secs}, Vec3{0.0f, 1.0f, 0.0f}));
+             const auto seconds_since_startup = App::get().frame_delta_since_startup().count();
+             const auto transform = identity<Transform>().with_rotation(angle_axis(Radians{seconds_since_startup}, Vec3{0.0f, 1.0f, 0.0f}));
              graphics::draw(mesh_, transform, material_, camera_);
              camera_.render_to_screen();
          }
