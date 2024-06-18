@@ -29,7 +29,7 @@ namespace
 
     std::ifstream OpenFixtureFile(std::string_view fixtureName)
     {
-        std::filesystem::path const path = GetFixturesDir() / fixtureName;
+        const std::filesystem::path path = GetFixturesDir() / fixtureName;
 
         std::ifstream f{path};
         if (!f)
@@ -42,7 +42,7 @@ namespace
     }
 
     template<class T>
-    auto VectorReadingIterator(std::vector<T> const& vs)
+    auto VectorReadingIterator(const std::vector<T>& vs)
     {
         return [it = vs.begin(), end = vs.end()]() mutable
         {
@@ -146,7 +146,7 @@ TEST(LandmarkHelpers, ReadLandmarksFromOver4ColumnCSVIgnoresTrailingColumns)
 
 TEST(LandmarkHelpers, WriteLandmarksToCSVWritesHeaderRowWhenGivenBlankData)
 {
-    std::vector<Landmark> const landmarks = {};
+    const std::vector<Landmark> landmarks = {};
     std::stringstream out;
     WriteLandmarksToCSV(out, VectorReadingIterator(landmarks));
 
@@ -155,7 +155,7 @@ TEST(LandmarkHelpers, WriteLandmarksToCSVWritesHeaderRowWhenGivenBlankData)
 
 TEST(LandmarkHelpers, WriteLandmarksToCSVWritesNothingWhenNoHeaderRowIsRequested)
 {
-    std::vector<Landmark> const landmarks = {};
+    const std::vector<Landmark> landmarks = {};
     std::stringstream out;
     WriteLandmarksToCSV(out, VectorReadingIterator(landmarks), LandmarkCSVFlags::NoHeader);
 
@@ -164,7 +164,7 @@ TEST(LandmarkHelpers, WriteLandmarksToCSVWritesNothingWhenNoHeaderRowIsRequested
 
 TEST(LandmarkHelpers, WriteLandmarksToCSVWritesOnlyXYZIfNoNameRequested)
 {
-    std::vector<Landmark> const landmarks = {};
+    const std::vector<Landmark> landmarks = {};
     std::stringstream out;
     WriteLandmarksToCSV(out, VectorReadingIterator(landmarks), LandmarkCSVFlags::NoNames);
 
@@ -173,55 +173,50 @@ TEST(LandmarkHelpers, WriteLandmarksToCSVWritesOnlyXYZIfNoNameRequested)
 
 TEST(LandmarkHelpers, GenerateNamesDoesNotChangeInputIfInputIsFullyNamed)
 {
-    std::vector<Landmark> const input =
-    {
+    const std::vector<Landmark> input = {
         {"p1",   {}},
         {"p2",   {0.0f, 1.0f, 0.0f}},
         {"etc.", {1.0f, 1.0f, 0.0f}},
     };
-    auto const output = GenerateNames(input);
+    const auto output = GenerateNames(input);
 
     ASSERT_TRUE(std::equal(output.begin(), output.end(), input.begin(), input.end()));
 }
 
 TEST(LandmarkHelpers, GenerateNamesGeneratesPrefixedNameForUnnamedInputs)
 {
-    std::vector<Landmark> const input =
-    {
+    const std::vector<Landmark> input = {
         {"p1",         {}},
         {std::nullopt, {0.0f, 1.0f, 0.0f}},
         {"etc.",       {1.0f, 1.0f, 0.0f}},
     };
-    std::vector<NamedLandmark> const expectedOutput =
-    {
+    const std::vector<NamedLandmark> expectedOutput = {
         {"p1", Vec3{}},
         {"someprefix_0", Vec3{0.0f, 1.0f, 0.0f}},
         {"etc.", Vec3{1.0f, 1.0f, 0.0f}},
     };
-    auto const output = GenerateNames(input, "someprefix_");
+    const auto output = GenerateNames(input, "someprefix_");
 
     ASSERT_TRUE(std::equal(output.begin(), output.end(), expectedOutput.begin(), expectedOutput.end()));
 }
 
 TEST(LandmarkHelpers, GenerateNamesBehavesAsExpectedInPathologicalCase)
 {
-    std::vector<Landmark> const input =
-    {
+    const std::vector<Landmark> input = {
         {"p1",           {}},
         {std::nullopt,   {0.0f, 1.0f, 0.0f}},
         {"someprefix_0", {1.0f, 1.0f, 0.0f}},  // uh oh
         {"someprefix_1", {2.0f, 0.0f, 0.0f}},  // uhhhh oh
         {std::nullopt,   {}},
     };
-    std::vector<NamedLandmark> const expectedOutput =
-    {
+    const std::vector<NamedLandmark> expectedOutput = {
         {"p1",           {}},
         {"someprefix_2", {0.0f, 1.0f, 0.0f}},
         {"someprefix_0", {1.0f, 1.0f, 0.0f}},
         {"someprefix_1", {2.0f, 0.0f, 0.0f}},
         {"someprefix_3", {}},
     };
-    auto const output = GenerateNames(input, "someprefix_");
+    const auto output = GenerateNames(input, "someprefix_");
 
     ASSERT_TRUE(std::equal(output.begin(), output.end(), expectedOutput.begin(), expectedOutput.end()));
 }

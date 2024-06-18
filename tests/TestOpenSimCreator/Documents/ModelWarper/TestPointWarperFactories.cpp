@@ -35,10 +35,10 @@ TEST(PointWarperFactories, CorrectlyLoadsSimpleCase)
         std::filesystem::path landmarks = geometryDir / "sphere.landmarks.csv";
     } paths;
 
-    OpenSim::Model const model{paths.osim.string()};
-    PointWarperFactories const lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
-    std::string const meshAbsPath = "/bodyset/new_body/new_body_geom_1";
-    auto const* pairing = lut.find<TPSLandmarkPairWarperFactory>(meshAbsPath);
+    const OpenSim::Model model{paths.osim.string()};
+    const PointWarperFactories lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
+    const std::string meshAbsPath = "/bodyset/new_body/new_body_geom_1";
+    const auto* pairing = lut.find<TPSLandmarkPairWarperFactory>(meshAbsPath);
 
     // the pairing is found...
     ASSERT_TRUE(pairing);
@@ -65,8 +65,7 @@ TEST(PointWarperFactories, CorrectlyLoadsSimpleCase)
     ASSERT_EQ(pairing->getNumFullyPairedLandmarks(), 0);
 
     // ... and the (partial) landmarks are loaded as-expected
-    for (auto const& name : {"landmark_0", "landmark_2", "landmark_5", "landmark_6"})
-    {
+    for (const auto& name : {"landmark_0", "landmark_2", "landmark_5", "landmark_6"}) {
         ASSERT_TRUE(pairing->hasLandmarkNamed(name));
         auto p = pairing->tryGetLandmarkPairingByName(name);
 
@@ -96,10 +95,10 @@ TEST(ModelWarpingDocument, CorrectlyLoadsPairedCase)
         std::filesystem::path destinationLandmarks = destinationGeometryDir / "sphere.landmarks.csv";
     } paths;
 
-    OpenSim::Model const model{paths.osim.string()};
-    PointWarperFactories const lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
-    std::string const meshAbsPath = "/bodyset/new_body/new_body_geom_1";
-    auto const* pairing = lut.find<TPSLandmarkPairWarperFactory>(meshAbsPath);
+    const OpenSim::Model model{paths.osim.string()};
+    const PointWarperFactories lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
+    const std::string meshAbsPath = "/bodyset/new_body/new_body_geom_1";
+    const auto* pairing = lut.find<TPSLandmarkPairWarperFactory>(meshAbsPath);
 
     // the pairing is found...
     ASSERT_TRUE(pairing);
@@ -129,8 +128,7 @@ TEST(ModelWarpingDocument, CorrectlyLoadsPairedCase)
     ASSERT_EQ(pairing->getNumUnpairedLandmarks(), 0);
 
     // ... and the loaded landmark pairs are as-expected
-    for (auto const& name : {"landmark_0", "landmark_2", "landmark_5", "landmark_6"})
-    {
+    for (const auto& name : {"landmark_0", "landmark_2", "landmark_5", "landmark_6"}) {
         ASSERT_TRUE(pairing->hasLandmarkNamed(name));
         auto p = pairing->tryGetLandmarkPairingByName(name);
 
@@ -160,10 +158,10 @@ TEST(ModelWarpingDocument, CorrectlyLoadsMissingDestinationLMsCase)
         std::filesystem::path destinationLandmarks = destinationGeometryDir / "sphere.landmarks.csv";
     } paths;
 
-    OpenSim::Model const model{paths.osim.string()};
-    PointWarperFactories const lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
-    std::string const meshAbsPath = "/bodyset/new_body/new_body_geom_1";
-    auto const* pairing = lut.find<TPSLandmarkPairWarperFactory>(meshAbsPath);
+    const OpenSim::Model model{paths.osim.string()};
+    const PointWarperFactories lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
+    const std::string meshAbsPath = "/bodyset/new_body/new_body_geom_1";
+    const auto* pairing = lut.find<TPSLandmarkPairWarperFactory>(meshAbsPath);
 
     // the pairing is found...
     ASSERT_TRUE(pairing);
@@ -195,8 +193,7 @@ TEST(ModelWarpingDocument, CorrectlyLoadsMissingDestinationLMsCase)
     ASSERT_EQ(pairing->getNumFullyPairedLandmarks(), 0);
 
     // ... and the landmarks are loaded one-sided
-    for (auto const& name : {"landmark_0", "landmark_2", "landmark_5", "landmark_6"})
-    {
+    for (const auto& name : {"landmark_0", "landmark_2", "landmark_5", "landmark_6"}) {
         ASSERT_TRUE(pairing->hasLandmarkNamed(name));
         auto p = pairing->tryGetLandmarkPairingByName(name);
 
@@ -226,10 +223,10 @@ TEST(ModelWarpingDocument, CorrectlyLoadsMissingSourceLMsCase)
         std::filesystem::path destinationLandmarks = destinationGeometryDir / "sphere.landmarks.csv";
     } paths;
 
-    OpenSim::Model const model{paths.osim.string()};
-    PointWarperFactories const lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
-    std::string const meshAbsPath = "/bodyset/new_body/new_body_geom_1";
-    auto const* pairing = lut.find<TPSLandmarkPairWarperFactory>(meshAbsPath);
+    const OpenSim::Model model{paths.osim.string()};
+    const PointWarperFactories lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
+    const std::string meshAbsPath = "/bodyset/new_body/new_body_geom_1";
+    const auto* pairing = lut.find<TPSLandmarkPairWarperFactory>(meshAbsPath);
 
     // the pairing is found...
     ASSERT_TRUE(pairing);
@@ -264,8 +261,7 @@ TEST(ModelWarpingDocument, CorrectlyLoadsMissingSourceLMsCase)
     ASSERT_TRUE(pairing->hasUnpairedLandmarks());
 
     // ... and the landmarks are loaded one-sided (destination only)
-    for (auto const& name : {"landmark_0", "landmark_2", "landmark_5", "landmark_6"})
-    {
+    for (const auto& name : {"landmark_0", "landmark_2", "landmark_5", "landmark_6"}) {
         ASSERT_TRUE(pairing->hasLandmarkNamed(name));
         auto p = pairing->tryGetLandmarkPairingByName(name);
         ASSERT_TRUE(p);
@@ -289,10 +285,10 @@ TEST(ModelWarpingDocument, CorrectlyLoadsSimpleUnnamedCase)
         std::filesystem::path landmarks = geometryDir / "sphere.landmarks.csv";
     } paths;
 
-    OpenSim::Model const model{paths.osim.string()};
-    PointWarperFactories const lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
-    std::string const meshAbsPath = "/bodyset/new_body/new_body_geom_1";
-    auto const* pairing = lut.find<TPSLandmarkPairWarperFactory>(meshAbsPath);
+    const OpenSim::Model model{paths.osim.string()};
+    const PointWarperFactories lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
+    const std::string meshAbsPath = "/bodyset/new_body/new_body_geom_1";
+    const auto* pairing = lut.find<TPSLandmarkPairWarperFactory>(meshAbsPath);
 
     // the pairing is found...
     ASSERT_TRUE(pairing);
@@ -316,8 +312,7 @@ TEST(ModelWarpingDocument, CorrectlyLoadsSimpleUnnamedCase)
     ASSERT_EQ(pairing->getNumUnpairedLandmarks(), pairing->getNumLandmarks());
 
     // ... and, because the landmarks were unnamed, they were assigned  a name of `unnamed_$i`
-    for (auto const& name : {"unnamed_0", "unnamed_1", "unnamed_2", "unnamed_3"})
-    {
+    for (const auto& name : {"unnamed_0", "unnamed_1", "unnamed_2", "unnamed_3"}) {
         ASSERT_TRUE(pairing->hasLandmarkNamed(name)) << name;
         auto p = pairing->tryGetLandmarkPairingByName(name);
         ASSERT_TRUE(p) << name;
@@ -346,10 +341,10 @@ TEST(ModelWarpingDocument, CorrectlyLoadsSparselyNamedPairedCase)
         std::filesystem::path destinationLandmarks = destinationGeometryDir / "sphere.landmarks.csv";
     } paths;
 
-    OpenSim::Model const model{paths.osim.string()};
-    PointWarperFactories const lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
-    std::string const meshAbsPath = "/bodyset/new_body/new_body_geom_1";
-    auto const* pairing = lut.find<TPSLandmarkPairWarperFactory>(meshAbsPath);
+    const OpenSim::Model model{paths.osim.string()};
+    const PointWarperFactories lut{paths.osim, model, ModelWarpConfiguration{paths.osim, model}};
+    const std::string meshAbsPath = "/bodyset/new_body/new_body_geom_1";
+    const auto* pairing = lut.find<TPSLandmarkPairWarperFactory>(meshAbsPath);
 
     // the pairing is found...
     ASSERT_TRUE(pairing);
@@ -378,8 +373,7 @@ TEST(ModelWarpingDocument, CorrectlyLoadsSparselyNamedPairedCase)
     ASSERT_EQ(pairing->getNumFullyPairedLandmarks(), pairing->getNumLandmarks());
 
     // ... named elements were able to be paired out-of-order, unnamed elements were paired in-order...
-    for (auto const& name : {"landmark_0", "unnamed_0", "unnamed_1", "landmark_3", "landmark_4", "unnamed_2", "landmark_6"})
-    {
+    for (const auto& name : {"landmark_0", "unnamed_0", "unnamed_1", "landmark_3", "landmark_4", "unnamed_2", "landmark_6"}) {
         ASSERT_TRUE(pairing->hasLandmarkNamed(name)) << name;
         auto p = pairing->tryGetLandmarkPairingByName(name);
 

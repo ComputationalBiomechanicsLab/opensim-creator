@@ -18,7 +18,7 @@ TEST(CachedModelWarper, CanWarpDefaultConstructedModelWarpingDocument)
     ModelWarpDocument document;
     CachedModelWarper warper;
 
-    auto const rv = warper.warp(document);
+    const auto rv = warper.warp(document);
     ASSERT_NE(rv, nullptr);
 
     // ... and it can be copied into a new model that can be initialized etc. ready for UI usage

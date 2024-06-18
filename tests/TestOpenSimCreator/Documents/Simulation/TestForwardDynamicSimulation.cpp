@@ -68,7 +68,7 @@ TEST(ForwardDynamicSimulation, IncreasingTheEndTimeWorksAsExpected)
 
     // ensure it has completed and has the expected number of reports
     {
-        auto const reports = sim.getAllSimulationReports();
+        const auto reports = sim.getAllSimulationReports();
         ASSERT_EQ(reports.size(), 2);
         ASSERT_EQ(reports.at(0).getTime(), SimulationClock::start());
         ASSERT_EQ(reports.at(1).getTime(), SimulationClock::start() + 1s);
@@ -82,7 +82,7 @@ TEST(ForwardDynamicSimulation, IncreasingTheEndTimeWorksAsExpected)
 
     // ensure the extended simulation is as-expected
     {
-        auto const reports = sim.getAllSimulationReports();
+        const auto reports = sim.getAllSimulationReports();
         ASSERT_EQ(reports.size(), 3);
         ASSERT_EQ(reports.at(0).getTime(), SimulationClock::start());
         ASSERT_EQ(reports.at(1).getTime(), SimulationClock::start() + 1s);
@@ -108,7 +108,7 @@ TEST(ForwardDynamicSimulation, DecreasingEndTimeWorksAsExpected)
 
     // ensure it has completed and has the expected number of reports
     {
-        auto const reports = sim.getAllSimulationReports();
+        const auto reports = sim.getAllSimulationReports();
         ASSERT_EQ(reports.size(), 3);
         ASSERT_EQ(reports.at(0).getTime(), SimulationClock::start());
         ASSERT_EQ(reports.at(1).getTime(), SimulationClock::start() + 1s);
@@ -123,7 +123,7 @@ TEST(ForwardDynamicSimulation, DecreasingEndTimeWorksAsExpected)
 
     // ensure the shrunk simulation is as-expected
     {
-        auto const reports = sim.getAllSimulationReports();
+        const auto reports = sim.getAllSimulationReports();
         ASSERT_EQ(reports.size(), 2);
         ASSERT_EQ(reports.at(0).getTime(), SimulationClock::start());
         ASSERT_EQ(reports.at(1).getTime(), SimulationClock::start() + 1s);

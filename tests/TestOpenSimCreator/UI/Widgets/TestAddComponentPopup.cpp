@@ -30,7 +30,7 @@ TEST(AddComponentPopup, CanOpenAndDrawAllRegisteredComponentsInTheAddComponentPo
 {
     OpenSimCreatorApp app;
     ui::context::init();
-    for (auto const& entry : GetAllRegisteredComponents()) {
+    for (const auto& entry : GetAllRegisteredComponents()) {
         try {
             ui::context::on_start_new_frame();
             NullPopupAPI api;
@@ -42,7 +42,7 @@ TEST(AddComponentPopup, CanOpenAndDrawAllRegisteredComponentsInTheAddComponentPo
             popup.end_popup();
             ui::context::render();
         }
-        catch (std::exception const& ex) {
+        catch (const std::exception& ex) {
             FAIL() << entry.name() << ": " << ex.what();
         }
     }

@@ -105,10 +105,10 @@ TEST(OpenSimActions, ActionApplyRangeDeletionPropertyEditReturnsFalseToIndicateF
 // bug is specifically related to renaming a component
 TEST(OpenSimActions, DISABLED_ActionSetComponentNameOnModelWithUnusualJointTopologyDoesNotSegfault)
 {
-    std::filesystem::path const brokenFilePath =
+    const std::filesystem::path brokenFilePath =
         std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "opensim-creator_773-2_repro.osim";
 
-    UndoableModelStatePair const loadedModel{brokenFilePath};
+    const UndoableModelStatePair loadedModel{brokenFilePath};
 
     // loop `n` times because the segfault is stochastic
     //
@@ -126,7 +126,7 @@ TEST(OpenSimActions, DISABLED_ActionSetComponentNameOnModelWithUnusualJointTopol
 
 TEST(OpenSimActions, ActionFitSphereToMeshFitsASphereToAMeshInTheModelAndSelectsIt)
 {
-    std::filesystem::path const geomFile =
+    const std::filesystem::path geomFile =
         std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "arrow.vtp";
 
     UndoableModelStatePair model;
@@ -139,13 +139,13 @@ TEST(OpenSimActions, ActionFitSphereToMeshFitsASphereToAMeshInTheModelAndSelects
 
     ActionFitSphereToMesh(model, mesh);
     ASSERT_TRUE(model.getSelected());
-    ASSERT_TRUE(dynamic_cast<OpenSim::Sphere const*>(model.getSelected()));
-    ASSERT_EQ(&dynamic_cast<OpenSim::Sphere const*>(model.getSelected())->getFrame().findBaseFrame(), &body.findBaseFrame());
+    ASSERT_TRUE(dynamic_cast<const OpenSim::Sphere*>(model.getSelected()));
+    ASSERT_EQ(&dynamic_cast<const OpenSim::Sphere*>(model.getSelected())->getFrame().findBaseFrame(), &body.findBaseFrame());
 }
 
 TEST(OpenSimActions, ActionFitSphereToMeshAppliesMeshesScaleFactorsCorrectly)
 {
-    std::filesystem::path const geomFile =
+    const std::filesystem::path geomFile =
         std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "arrow.vtp";
 
     UndoableModelStatePair model;
@@ -153,7 +153,7 @@ TEST(OpenSimActions, ActionFitSphereToMeshAppliesMeshesScaleFactorsCorrectly)
     body.setMass(1.0);
     auto& unscaledMesh = dynamic_cast<OpenSim::Mesh&>(AttachGeometry(body, std::make_unique<OpenSim::Mesh>(geomFile.string())));
     auto& scaledMesh = dynamic_cast<OpenSim::Mesh&>(AttachGeometry(body, std::make_unique<OpenSim::Mesh>(geomFile.string())));
-    double const scalar = 0.1;
+    const double scalar = 0.1;
     scaledMesh.set_scale_factors({scalar, scalar, scalar});
 
     FinalizeConnections(model.updModel());
@@ -161,11 +161,11 @@ TEST(OpenSimActions, ActionFitSphereToMeshAppliesMeshesScaleFactorsCorrectly)
     InitializeState(model.updModel());
 
     ActionFitSphereToMesh(model, unscaledMesh);
-    ASSERT_TRUE(dynamic_cast<OpenSim::Sphere const*>(model.getSelected()));
-    double const unscaledRadius = dynamic_cast<OpenSim::Sphere const&>(*model.getSelected()).get_radius();
+    ASSERT_TRUE(dynamic_cast<const OpenSim::Sphere*>(model.getSelected()));
+    const double unscaledRadius = dynamic_cast<const OpenSim::Sphere&>(*model.getSelected()).get_radius();
     ActionFitSphereToMesh(model, scaledMesh);
-    ASSERT_TRUE(dynamic_cast<OpenSim::Sphere const*>(model.getSelected()));
-    double const scaledRadius = dynamic_cast<OpenSim::Sphere const&>(*model.getSelected()).get_radius();
+    ASSERT_TRUE(dynamic_cast<const OpenSim::Sphere*>(model.getSelected()));
+    const double scaledRadius = dynamic_cast<const OpenSim::Sphere&>(*model.getSelected()).get_radius();
 
     ASSERT_TRUE(equal_within_reldiff(scaledRadius, scalar*unscaledRadius, 0.0001));
 }
@@ -188,10 +188,10 @@ TEST(OpenSimActions, ActionAddParentOffsetFrameToJointWorksInNormalCase)
     ASSERT_TRUE(ActionAddParentOffsetFrameToJoint(um, joint.getAbsolutePath()));
 
     // the joint's parent frame is now a `PhysicalOffsetFrame` that's attached to ground
-    OpenSim::PhysicalFrame const& parent1 = joint.getParentFrame();
+    const OpenSim::PhysicalFrame& parent1 = joint.getParentFrame();
     ASSERT_NE(&parent1, &um.getModel().getGround());
-    ASSERT_TRUE(dynamic_cast<OpenSim::PhysicalOffsetFrame const*>(&parent1));
-    ASSERT_EQ(&dynamic_cast<OpenSim::PhysicalOffsetFrame const&>(parent1).getParentFrame(), &um.getModel().getGround());
+    ASSERT_TRUE(dynamic_cast<const OpenSim::PhysicalOffsetFrame*>(&parent1));
+    ASSERT_EQ(&dynamic_cast<const OpenSim::PhysicalOffsetFrame&>(parent1).getParentFrame(), &um.getModel().getGround());
 }
 
 // ensure that the caller can keep asking to add parent offset frames to a joint - even if the
@@ -216,18 +216,18 @@ TEST(OpenSimActions, DISABLED_ActionAddParentOffsetFrameToJointWorksInChainedCas
     ASSERT_TRUE(ActionAddParentOffsetFrameToJoint(um, joint.getAbsolutePath()));
 
     // the joint's parent frame is now a `PhysicalOffsetFrame` that's attached to ground
-    OpenSim::PhysicalFrame const& parent1 = joint.getParentFrame();
+    const OpenSim::PhysicalFrame& parent1 = joint.getParentFrame();
     ASSERT_NE(&parent1, &um.getModel().getGround());
-    ASSERT_TRUE(dynamic_cast<OpenSim::PhysicalOffsetFrame const*>(&parent1));
-    ASSERT_EQ(&dynamic_cast<OpenSim::PhysicalOffsetFrame const&>(parent1).getParentFrame(), &um.getModel().getGround());
+    ASSERT_TRUE(dynamic_cast<const OpenSim::PhysicalOffsetFrame*>(&parent1));
+    ASSERT_EQ(&dynamic_cast<const OpenSim::PhysicalOffsetFrame&>(parent1).getParentFrame(), &um.getModel().getGround());
 
     // repeating the process creates a chain of `PhysicalOffsetFrame`s
     ASSERT_TRUE(ActionAddParentOffsetFrameToJoint(um, joint.getAbsolutePath()));
 
-    OpenSim::PhysicalFrame const& parent2 = joint.getParentFrame();
+    const OpenSim::PhysicalFrame& parent2 = joint.getParentFrame();
     ASSERT_NE(&parent1, &parent2);
-    ASSERT_TRUE(dynamic_cast<OpenSim::PhysicalOffsetFrame const*>(&parent2));
-    ASSERT_EQ(&dynamic_cast<OpenSim::PhysicalOffsetFrame const&>(parent2).getParentFrame(), &parent1);
+    ASSERT_TRUE(dynamic_cast<const OpenSim::PhysicalOffsetFrame*>(&parent2));
+    ASSERT_EQ(&dynamic_cast<const OpenSim::PhysicalOffsetFrame&>(parent2).getParentFrame(), &parent1);
 }
 
 TEST(OpenSimActions, ActionAddChildOffsetFrameToJointWorksInNormalCase)
@@ -248,10 +248,10 @@ TEST(OpenSimActions, ActionAddChildOffsetFrameToJointWorksInNormalCase)
     ASSERT_TRUE(ActionAddChildOffsetFrameToJoint(um, joint.getAbsolutePath()));
 
     // the joint's child frame is now a `PhysicalOffsetFrame` that's attached to the body
-    OpenSim::PhysicalFrame const& child1 = joint.getChildFrame();
+    const OpenSim::PhysicalFrame& child1 = joint.getChildFrame();
     ASSERT_NE(&child1, &body);
-    ASSERT_TRUE(dynamic_cast<OpenSim::PhysicalOffsetFrame const*>(&child1));
-    ASSERT_EQ(&dynamic_cast<OpenSim::PhysicalOffsetFrame const&>(child1).getParentFrame(), &body);
+    ASSERT_TRUE(dynamic_cast<const OpenSim::PhysicalOffsetFrame*>(&child1));
+    ASSERT_EQ(&dynamic_cast<const OpenSim::PhysicalOffsetFrame&>(child1).getParentFrame(), &body);
 }
 
 // ensure that the caller can keep asking to add child offset frames to a joint - even if the
@@ -276,18 +276,18 @@ TEST(OpenSimActions, DISABLED_ActionAddChildOffsetFrameToJointWorksInChainedCase
     ASSERT_TRUE(ActionAddChildOffsetFrameToJoint(um, joint.getAbsolutePath()));
 
     // the joint's child frame is now a `PhysicalOffsetFrame` that's attached to the body
-    OpenSim::PhysicalFrame const& child1 = joint.getChildFrame();
+    const OpenSim::PhysicalFrame& child1 = joint.getChildFrame();
     ASSERT_NE(&child1, &body);
-    ASSERT_TRUE(dynamic_cast<OpenSim::PhysicalOffsetFrame const*>(&child1));
-    ASSERT_EQ(&dynamic_cast<OpenSim::PhysicalOffsetFrame const&>(child1).getParentFrame(), &body);
+    ASSERT_TRUE(dynamic_cast<const OpenSim::PhysicalOffsetFrame*>(&child1));
+    ASSERT_EQ(&dynamic_cast<const OpenSim::PhysicalOffsetFrame&>(child1).getParentFrame(), &body);
 
     // repeating the process creates a chain of `PhysicalOffsetFrame`s
     ASSERT_TRUE(ActionAddChildOffsetFrameToJoint(um, joint.getAbsolutePath()));
 
-    OpenSim::PhysicalFrame const& child2 = joint.getChildFrame();
+    const OpenSim::PhysicalFrame& child2 = joint.getChildFrame();
     ASSERT_NE(&child2, &child1);
-    ASSERT_TRUE(dynamic_cast<OpenSim::PhysicalOffsetFrame const*>(&child2));
-    ASSERT_EQ(&dynamic_cast<OpenSim::PhysicalOffsetFrame const&>(child2).getParentFrame(), &child1);
+    ASSERT_TRUE(dynamic_cast<const OpenSim::PhysicalOffsetFrame*>(&child2));
+    ASSERT_EQ(&dynamic_cast<const OpenSim::PhysicalOffsetFrame&>(child2).getParentFrame(), &child1);
 }
 
 TEST(OpenSimActions, ActionAddWrapObjectToPhysicalFrameCanAddWrapCylinderToGround)
@@ -304,14 +304,14 @@ TEST(OpenSimActions, ActionAddWrapObjectToPhysicalFrameCanAddWrapCylinderToGroun
 TEST(OpenSimActions, ActionAddWrapObjectToPhysicalFrameCanAddAllRegisteredWrapObjectsToGround)
 {
     UndoableModelStatePair um;
-    OpenSim::ComponentPath const groundPath = um.getModel().getGround().getAbsolutePath();
+    const OpenSim::ComponentPath groundPath = um.getModel().getGround().getAbsolutePath();
 
-    for (auto const& entry : GetComponentRegistry<OpenSim::WrapObject>()) {
+    for (const auto& entry : GetComponentRegistry<OpenSim::WrapObject>()) {
         ASSERT_TRUE(ActionAddWrapObjectToPhysicalFrame(um, groundPath, entry.instantiate()));
     }
 
     size_t numWrapsInModel = 0;
-    for ([[maybe_unused]] auto const& wrap : um.getModel().getComponentList<OpenSim::WrapObject>()) {
+    for ([[maybe_unused]] const auto& wrap : um.getModel().getComponentList<OpenSim::WrapObject>()) {
         ++numWrapsInModel;
     }
 
@@ -332,7 +332,7 @@ TEST(OpenSimActions, ActionAddPathWrapToGeometryPathWorksInExampleCase)
 
     FinalizeConnections(model);
     InitializeModel(model);
-    auto const& state = InitializeState(model);
+    const auto& state = InitializeState(model);
 
     ASSERT_NEAR(path.getLength(state), 1.0, epsilon_v<double>) << "an uninterrupted path should have this length";
 
@@ -342,7 +342,7 @@ TEST(OpenSimActions, ActionAddPathWrapToGeometryPathWorksInExampleCase)
 
     FinalizeConnections(model);
     InitializeModel(model);
-    auto const& state2 = InitializeState(model);
+    const auto& state2 = InitializeState(model);
 
     ASSERT_NEAR(path.getLength(state2), 1.0, epsilon_v<double>) << "the wrap object hasn't been added to the model yet";
 

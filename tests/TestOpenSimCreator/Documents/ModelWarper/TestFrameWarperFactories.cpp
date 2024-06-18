@@ -45,9 +45,9 @@ TEST(FrameWarperFactories, WhenLoadingModelContainingPofsButNoWarpingConfigDoesN
     // warp configuration (either globally, as in "identity-warp all PoFs", or locally, as in
     // "identity-warp this PoF specifically")
 
-    auto const osimFileLocation = ModelWarperFixturesDir() / "PofPaired" / "model.osim";
-    OpenSim::Model const model{osimFileLocation.string()};
-    ModelWarpConfiguration const config{osimFileLocation, model};
+    const auto osimFileLocation = ModelWarperFixturesDir() / "PofPaired" / "model.osim";
+    const OpenSim::Model model{osimFileLocation.string()};
+    const ModelWarpConfiguration config{osimFileLocation, model};
 
     ASSERT_TRUE(FrameWarperFactories(osimFileLocation, model, config).empty());
 }
@@ -58,9 +58,9 @@ TEST(FrameWarperFactories, WhenLoadingModelContainingPofsAndDefaultedWarpingPopu
     // is also an associated warping configuration that says "identity warp missing data", then the lookup
     // should give identity warps to the PoFs
 
-    auto const osimFileLocation = ModelWarperFixturesDir() / "PofPairedIdentityWarp" / "model.osim";
+    const auto osimFileLocation = ModelWarperFixturesDir() / "PofPairedIdentityWarp" / "model.osim";
     OpenSim::Model model{osimFileLocation.string()};
-    ModelWarpConfiguration const config{osimFileLocation, model};
+    const ModelWarpConfiguration config{osimFileLocation, model};
 
     InitializeModel(model);
     InitializeState(model);
@@ -68,9 +68,9 @@ TEST(FrameWarperFactories, WhenLoadingModelContainingPofsAndDefaultedWarpingPopu
     FrameWarperFactories lookup(osimFileLocation, model, config);
 
     ASSERT_FALSE(lookup.empty()) << "should populate lookup with identity warps (as specified in the config)";
-    for (auto const& pof : model.getComponentList<OpenSim::PhysicalOffsetFrame>()) {
-        if (IFrameWarperFactory const* factory =  lookup.find(GetAbsolutePathString(pof))) {
-            ASSERT_TRUE(dynamic_cast<IdentityFrameWarperFactory const*>(factory)) << "every PoF should have an identity warp";
+    for (const auto& pof : model.getComponentList<OpenSim::PhysicalOffsetFrame>()) {
+        if (const IFrameWarperFactory* factory =  lookup.find(GetAbsolutePathString(pof))) {
+            ASSERT_TRUE(dynamic_cast<const IdentityFrameWarperFactory*>(factory)) << "every PoF should have an identity warp";
         }
     }
 }
@@ -81,18 +81,18 @@ TEST(FrameWarperFactories, WhenLoadingAModelUsingStationDefinedFramesAssignsStat
     // is populated with `StationDefinedFrameWarperFactory`s, rather than `IdentityFrameWarperFactory`s, because
     // the implementation knows that these are safe frames to warp (so the user need not override things, etc.)
 
-    auto const osimFileLocation = ModelWarperFixturesDir() / "StationDefinedFramePaired" / "model.osim";
+    const auto osimFileLocation = ModelWarperFixturesDir() / "StationDefinedFramePaired" / "model.osim";
     OpenSim::Model model{osimFileLocation.string()};
-    ModelWarpConfiguration const config{osimFileLocation, model};  // note: it has no associated config file
+    const ModelWarpConfiguration config{osimFileLocation, model};  // note: it has no associated config file
 
     InitializeModel(model);
     InitializeState(model);
 
     FrameWarperFactories lookup(osimFileLocation, model, config);
     ASSERT_FALSE(lookup.empty()) << "should populate lookup with station defined frame warps (even without a config: this is default behavior)";
-    for (auto const& pof : model.getComponentList<OpenSim::StationDefinedFrame>()) {
-        if (IFrameWarperFactory const* factory =  lookup.find(GetAbsolutePathString(pof))) {
-            ASSERT_TRUE(dynamic_cast<StationDefinedFrameWarperFactory const*>(factory)) << "every SdF should have a StationDefinedFrame warp";
+    for (const auto& pof : model.getComponentList<OpenSim::StationDefinedFrame>()) {
+        if (const IFrameWarperFactory* factory =  lookup.find(GetAbsolutePathString(pof))) {
+            ASSERT_TRUE(dynamic_cast<const StationDefinedFrameWarperFactory*>(factory)) << "every SdF should have a StationDefinedFrame warp";
         }
     }
 }

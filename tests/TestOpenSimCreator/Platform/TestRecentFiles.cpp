@@ -15,6 +15,6 @@ using namespace osc;
 // MacOS standard library implementations
 TEST(RecentFiles, CorrectlyLoadsRecentFilesFixture)
 {
-    std::filesystem::path const fixture = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "Platform/811_repro.txt";
+    const std::filesystem::path fixture = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "Platform/811_repro.txt";
     ASSERT_NO_THROW({ RecentFiles rfs(fixture); });
 }

@@ -27,7 +27,7 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsWithOpenSimMuscleColoringGen
 {
     // TODO: this should be more synthetic and should just create a body with one muscle with a
     // known color that is then pumped through the pipeline etc.
-    std::filesystem::path const tugOfWarPath = std::filesystem::path{OSC_RESOURCES_DIR} / "models" / "Tug_of_War" / "Tug_of_War.osim";
+    const std::filesystem::path tugOfWarPath = std::filesystem::path{OSC_RESOURCES_DIR} / "models" / "Tug_of_War" / "Tug_of_War.osim";
     OpenSim::Model model{tugOfWarPath.string()};
     model.buildSystem();
     SimTK::State& state = model.initializeState();
@@ -43,7 +43,7 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsWithOpenSimMuscleColoringGen
         state,
         opts,
         1.0f,
-        [&passedTest](OpenSim::Component const& c, SceneDecoration&& dec)
+        [&passedTest](const OpenSim::Component& c, SceneDecoration&& dec)
         {
             if (contains_case_insensitive(c.getName(), "muscle1"))
             {
@@ -74,9 +74,9 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsWithScaleFactorScalesFrames)
     OpenSim::Model model;
     model.updDisplayHints().set_show_frames(true);  // it should scale frame geometry
     model.buildSystem();
-    SimTK::State const& state = model.initializeState();
+    const SimTK::State& state = model.initializeState();
 
-    auto const generateDecorationsWithScaleFactor = [&model, &state](float scaleFactor)
+    const auto generateDecorationsWithScaleFactor = [&model, &state](float scaleFactor)
     {
         SceneCache meshCache;
 
@@ -87,10 +87,10 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsWithScaleFactorScalesFrames)
             state,
             OpenSimDecorationOptions{},
             scaleFactor,
-            [&rv](OpenSim::Component const& c, SceneDecoration&& dec)
+            [&rv](const OpenSim::Component& c, SceneDecoration&& dec)
             {
                 // only suck up the frame decorations associated with ground
-                if (dynamic_cast<OpenSim::Ground const*>(&c))
+                if (dynamic_cast<const OpenSim::Ground*>(&c))
                 {
                     rv.push_back(std::move(dec));
                 }
@@ -99,9 +99,9 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsWithScaleFactorScalesFrames)
         return rv;
     };
 
-    float const scale = 0.25f;
-    std::vector<SceneDecoration> const unscaledDecs = generateDecorationsWithScaleFactor(1.0f);
-    std::vector<SceneDecoration> const scaledDecs = generateDecorationsWithScaleFactor(scale);
+    const float scale = 0.25f;
+    const std::vector<SceneDecoration> unscaledDecs = generateDecorationsWithScaleFactor(1.0f);
+    const std::vector<SceneDecoration> scaledDecs = generateDecorationsWithScaleFactor(scale);
 
     ASSERT_FALSE(unscaledDecs.empty());
     ASSERT_FALSE(scaledDecs.empty());
@@ -109,8 +109,8 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsWithScaleFactorScalesFrames)
 
     for (size_t i = 0; i < unscaledDecs.size(); ++i)
     {
-        SceneDecoration const& unscaledDec = unscaledDecs[i];
-        SceneDecoration const& scaledDec = scaledDecs[i];
+        const SceneDecoration& unscaledDec = unscaledDecs[i];
+        const SceneDecoration& scaledDec = scaledDecs[i];
 
         ASSERT_TRUE(all_of(equal_within_reldiff(scale*unscaledDec.transform.scale, scaledDec.transform.scale, 0.0001f)));
     }
@@ -130,7 +130,7 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsWithScaleFactorDoesNotScaleE
         OpenSim::Model m;
         auto body = std::make_unique<OpenSim::Body>("body", 1.0, SimTK::Vec3{}, SimTK::Inertia{1.0});
         auto geom = std::make_unique<OpenSim::Sphere>(1.0);
-        OpenSim::Geometry const* geomPtr = geom.get();
+        const OpenSim::Geometry* geomPtr = geom.get();
 
         body->attachGeometry(geom.release());
         m.addBody(body.release());
@@ -139,10 +139,10 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsWithScaleFactorDoesNotScaleE
         return std::pair{std::move(m), geomPtr->getAbsolutePath()};
     }();
     p.first.buildSystem();
-    SimTK::State const& state = p.first.initializeState();
+    const SimTK::State& state = p.first.initializeState();
 
     // helper
-    auto const generateDecorationsWithScaleFactor = [&p, &state](float scaleFactor)
+    const auto generateDecorationsWithScaleFactor = [&p, &state](float scaleFactor)
     {
         SceneCache meshCache;
 
@@ -153,7 +153,7 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsWithScaleFactorDoesNotScaleE
             state,
             OpenSimDecorationOptions{},
             scaleFactor,
-            [&p, &rv](OpenSim::Component const& c, SceneDecoration&& dec)
+            [&p, &rv](const OpenSim::Component& c, SceneDecoration&& dec)
             {
                 if (c.getAbsolutePath() == p.second)
                 {
@@ -164,18 +164,17 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsWithScaleFactorDoesNotScaleE
         return rv;
     };
 
-    float const scale = 0.25f;
-    std::vector<SceneDecoration> const unscaledDecs = generateDecorationsWithScaleFactor(1.0f);
-    std::vector<SceneDecoration> const scaledDecs = generateDecorationsWithScaleFactor(scale);
+    const float scale = 0.25f;
+    const std::vector<SceneDecoration> unscaledDecs = generateDecorationsWithScaleFactor(1.0f);
+    const std::vector<SceneDecoration> scaledDecs = generateDecorationsWithScaleFactor(scale);
 
     ASSERT_FALSE(unscaledDecs.empty());
     ASSERT_FALSE(scaledDecs.empty());
     ASSERT_EQ(unscaledDecs.size(), scaledDecs.size());
 
-    for (size_t i = 0; i < unscaledDecs.size(); ++i)
-    {
-        SceneDecoration const& unscaledDec = unscaledDecs[i];
-        SceneDecoration const& scaledDec = scaledDecs[i];
+    for (size_t i = 0; i < unscaledDecs.size(); ++i) {
+        const SceneDecoration& unscaledDec = unscaledDecs[i];
+        const SceneDecoration& scaledDec = scaledDecs[i];
 
         // note: not scaled
         ASSERT_TRUE(all_of(equal_within_reldiff(unscaledDec.transform.scale, scaledDec.transform.scale, 0.0001f)));
@@ -184,7 +183,7 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsWithScaleFactorDoesNotScaleE
 
 TEST(OpenSimDecorationGenerator, ToOscMeshWorksAsIntended)
 {
-    std::filesystem::path const arrowPath = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "arrow.vtp";
+    const std::filesystem::path arrowPath = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "arrow.vtp";
 
     OpenSim::Model model;
     auto& mesh = AddComponent(model, std::make_unique<OpenSim::Mesh>(arrowPath.string()));
@@ -199,7 +198,7 @@ TEST(OpenSimDecorationGenerator, ToOscMeshWorksAsIntended)
 // everything and label it with 'model
 TEST(OpenSimDecorationGenerator, DoesntIncludeTheModelsDirectDecorations)
 {
-    std::filesystem::path const tugOfWarPath = std::filesystem::path{OSC_RESOURCES_DIR} / "models" / "Tug_of_War" / "Tug_of_War.osim";
+    const std::filesystem::path tugOfWarPath = std::filesystem::path{OSC_RESOURCES_DIR} / "models" / "Tug_of_War" / "Tug_of_War.osim";
     OpenSim::Model model{tugOfWarPath.string()};
     InitializeModel(model);
     InitializeState(model);
@@ -213,7 +212,7 @@ TEST(OpenSimDecorationGenerator, DoesntIncludeTheModelsDirectDecorations)
         model.getWorkingState(),
         opts,
         1.0f,
-        [&model, &empty](OpenSim::Component const& c, SceneDecoration&&)
+        [&model, &empty](const OpenSim::Component& c, SceneDecoration&&)
         {
             ASSERT_NE(&c, &model);
             empty = false;
@@ -227,7 +226,7 @@ TEST(OpenSimDecorationGenerator, DoesntIncludeTheModelsDirectDecorations)
 // (this is just an automated repro for that one time where I screwed up a loop in the renderer ;))
 TEST(OpenSimDecorationGenerator, GenerateCollisionArrowsWorks)
 {
-    std::filesystem::path const soccerKickPath = std::filesystem::path{OSC_RESOURCES_DIR} / "models" / "SoccerKick" / "SoccerKickingModel.osim";
+    const std::filesystem::path soccerKickPath = std::filesystem::path{OSC_RESOURCES_DIR} / "models" / "SoccerKick" / "SoccerKickingModel.osim";
     OpenSim::Model model{soccerKickPath.string()};
     InitializeModel(model);
     InitializeState(model);
@@ -243,7 +242,7 @@ TEST(OpenSimDecorationGenerator, GenerateCollisionArrowsWorks)
         model.getWorkingState(),
         opts,
         1.0f,
-        [&empty](OpenSim::Component const&, SceneDecoration&&) { empty = false; }
+        [&empty](const OpenSim::Component&, SceneDecoration&&) { empty = false; }
     );
     ASSERT_FALSE(empty);
 }
