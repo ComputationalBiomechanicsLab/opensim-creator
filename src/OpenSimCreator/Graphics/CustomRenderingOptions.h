@@ -32,10 +32,10 @@ namespace osc
         bool getDrawSelectionRims() const;
         void setDrawSelectionRims(bool);
 
-        void forEachOptionAsAppSettingValue(std::function<void(std::string_view, AppSettingValue const&)> const&) const;
+        void forEachOptionAsAppSettingValue(std::function<void(std::string_view, const AppSettingValue&)> const&) const;
         void tryUpdFromValues(std::string_view keyPrefix, std::unordered_map<std::string, AppSettingValue> const&);
 
-        friend bool operator==(CustomRenderingOptions const&, CustomRenderingOptions const&) = default;
+        friend bool operator==(const CustomRenderingOptions&, const CustomRenderingOptions&) = default;
 
     private:
         CustomRenderingOptionFlags m_Flags = CustomRenderingOptionFlags::Default;

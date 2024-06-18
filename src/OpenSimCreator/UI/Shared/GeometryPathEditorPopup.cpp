@@ -98,7 +98,7 @@ namespace
     void ActionSetPathPointFramePath(
         OpenSim::PathPointSet& pps,
         ptrdiff_t i,
-        std::string const& frameAbsPath)
+        const std::string& frameAbsPath)
     {
         At(pps, i).updSocket("parent_frame").setConnecteePath(frameAbsPath);
     }
@@ -122,7 +122,7 @@ public:
         std::string_view popupName_,
         std::shared_ptr<UndoableModelStatePair const> targetModel_,
         std::function<OpenSim::GeometryPath const*()> geometryPathGetter_,
-        std::function<void(OpenSim::GeometryPath const&)> onLocalCopyEdited_) :
+        std::function<void(const OpenSim::GeometryPath&)> onLocalCopyEdited_) :
 
         StandardPopup{popupName_, {768.0f, 0.0f}, ImGuiWindowFlags_AlwaysAutoResize},
         m_TargetModel{std::move(targetModel_)},
@@ -257,7 +257,7 @@ private:
         ui::pop_style_var();
     }
 
-    void drawIthPathPointTypeCell(OpenSim::PathPointSet const& pps, ptrdiff_t i)
+    void drawIthPathPointTypeCell(const OpenSim::PathPointSet& pps, ptrdiff_t i)
     {
         ui::draw_text_disabled(At(pps, i).getConcreteClassName());
     }
@@ -301,12 +301,12 @@ private:
     {
         float const width = ui::calc_text_size("/bodyset/a_typical_body_name").x;
 
-        std::string const& label = At(pps, i).getSocket("parent_frame").getConnecteePath();
+        const std::string& label = At(pps, i).getSocket("parent_frame").getConnecteePath();
 
         ui::set_next_item_width(width);
         if (ui::begin_combobox("##framesel", label))
         {
-            for (OpenSim::Frame const& frame : m_TargetModel->getModel().getComponentList<OpenSim::Frame>())
+            for (const OpenSim::Frame& frame : m_TargetModel->getModel().getComponentList<OpenSim::Frame>())
             {
                 std::string const absPath = frame.getAbsolutePathString();
                 if (ui::draw_selectable(absPath))
@@ -363,7 +363,7 @@ private:
 
     std::shared_ptr<UndoableModelStatePair const> m_TargetModel;
     std::function<OpenSim::GeometryPath const*()> m_GeometryPathGetter;
-    std::function<void(OpenSim::GeometryPath const&)> m_OnLocalCopyEdited;
+    std::function<void(const OpenSim::GeometryPath&)> m_OnLocalCopyEdited;
 
     OpenSim::GeometryPath m_EditedGeometryPath;
     RequestedAction m_RequestedAction;
@@ -376,7 +376,7 @@ osc::GeometryPathEditorPopup::GeometryPathEditorPopup(
     std::string_view popupName_,
     std::shared_ptr<UndoableModelStatePair const> targetModel_,
     std::function<OpenSim::GeometryPath const*()> geometryPathGetter_,
-    std::function<void(OpenSim::GeometryPath const&)> onLocalCopyEdited_) :
+    std::function<void(const OpenSim::GeometryPath&)> onLocalCopyEdited_) :
 
     m_Impl{std::make_unique<Impl>(popupName_, std::move(targetModel_), std::move(geometryPathGetter_), std::move(onLocalCopyEdited_))}
 {

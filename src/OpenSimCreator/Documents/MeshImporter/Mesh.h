@@ -28,12 +28,12 @@ namespace osc::mi
             std::filesystem::path path
         );
 
-        osc::Mesh const& getMeshData() const
+        const osc::Mesh& getMeshData() const
         {
             return m_MeshData;
         }
 
-        std::filesystem::path const& getPath() const
+        const std::filesystem::path& getPath() const
         {
             return m_Path;
         }
@@ -53,7 +53,7 @@ namespace osc::mi
             return m_Transform;
         }
 
-        void setXform(Transform const& t)
+        void setXform(const Transform& t)
         {
             m_Transform = t;
         }
@@ -101,17 +101,17 @@ namespace osc::mi
 
         void implSetLabel(std::string_view sv) final;
 
-        Transform implGetXform(IObjectFinder const&) const final
+        Transform implGetXform(const IObjectFinder&) const final
         {
             return getXForm();
         }
 
-        void implSetXform(IObjectFinder const&, Transform const& t) final
+        void implSetXform(const IObjectFinder&, const Transform& t) final
         {
             setXform(t);
         }
 
-        AABB implCalcBounds(IObjectFinder const&) const final
+        AABB implCalcBounds(const IObjectFinder&) const final
         {
             return calcBounds();
         }

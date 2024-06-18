@@ -26,7 +26,7 @@ void osc::fd::PointToPointEdge::generateDecorations(
     ));
 }
 
-EdgePoints osc::fd::PointToPointEdge::calcLocationsInGround(SimTK::State const& state) const
+EdgePoints osc::fd::PointToPointEdge::calcLocationsInGround(const SimTK::State& state) const
 {
     return {
         getConnectee<OpenSim::Point>("first_point").getLocationInGround(state),

@@ -16,9 +16,9 @@ namespace osc
             IEditorAPI*,
             std::shared_ptr<UndoableModelStatePair>
         );
-        EditorTabStatusBar(EditorTabStatusBar const&) = delete;
+        EditorTabStatusBar(const EditorTabStatusBar&) = delete;
         EditorTabStatusBar(EditorTabStatusBar&&) noexcept;
-        EditorTabStatusBar& operator=(EditorTabStatusBar const&) = delete;
+        EditorTabStatusBar& operator=(const EditorTabStatusBar&) = delete;
         EditorTabStatusBar& operator=(EditorTabStatusBar&&) noexcept;
         ~EditorTabStatusBar() noexcept;
 

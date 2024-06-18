@@ -25,10 +25,10 @@ namespace osc::mi
         Joint(
             UID id,
             std::string jointTypeName,
-            std::string const& userAssignedName,  // can be empty
+            const std::string& userAssignedName,  // can be empty
             UID parent,
             UID child,
-            Transform const& xform
+            const Transform& xform
         );
 
         CStringView getSpecificTypeName() const
@@ -105,18 +105,18 @@ namespace osc::mi
 
         void implSetLabel(std::string_view) final;
 
-        Transform implGetXform(IObjectFinder const&) const final
+        Transform implGetXform(const IObjectFinder&) const final
         {
             return getXForm();
         }
 
-        void implSetXform(IObjectFinder const&, Transform const& t) final
+        void implSetXform(const IObjectFinder&, const Transform& t) final
         {
             m_Xform = t;
             m_Xform.scale = {1.0f, 1.0f, 1.0f};
         }
 
-        AABB implCalcBounds(IObjectFinder const&) const final
+        AABB implCalcBounds(const IObjectFinder&) const final
         {
             return bounding_aabb_of(m_Xform.position);
         }

@@ -148,7 +148,7 @@ namespace
             {
                 log_debug("%s edited", panel_name_.c_str());
 
-                auto const& renderParamsAfter = params.getRenderParams();
+                const auto& renderParamsAfter = params.getRenderParams();
 
                 SaveModelRendererParamsDifference(
                     renderParamsBefore,
@@ -354,7 +354,7 @@ public:
         return m_State.pushLayer(std::move(layer));
     }
 
-    void focusOn(Vec3 const& pos)
+    void focusOn(const Vec3& pos)
     {
         m_Parameters.updRenderParams().camera.focus_point = -pos;
     }
@@ -473,7 +473,7 @@ private:
 
     void layersOnNewFrame()
     {
-        for (auto const& layerPtr : m_Layers)
+        for (const auto& layerPtr : m_Layers)
         {
             layerPtr->onNewFrame();
         }
@@ -511,7 +511,7 @@ private:
             ImGuiWindowFlags windowFlags = ui::get_minimal_panel_flags() & ~ImGuiWindowFlags_NoInputs;
 
             // if any layer above this one captures mouse inputs then disable this layer's inputs
-            if (find_if(it+1, m_Layers.end(), [](auto const& layerPtr) -> bool { return layerPtr->getFlags() & ModelEditorViewerPanelLayerFlags::CapturesMouseInputs; }) != m_Layers.end())
+            if (find_if(it+1, m_Layers.end(), [](const auto& layerPtr) -> bool { return layerPtr->getFlags() & ModelEditorViewerPanelLayerFlags::CapturesMouseInputs; }) != m_Layers.end())
             {
                 windowFlags |= ImGuiWindowFlags_NoInputs;
             }
@@ -535,7 +535,7 @@ private:
 
     void layersGarbageCollect()
     {
-        std::erase_if(m_Layers, [](auto const& layerPtr)
+        std::erase_if(m_Layers, [](const auto& layerPtr)
         {
             return layerPtr->shouldClose();
         });
@@ -558,7 +558,7 @@ private:
 
 osc::ModelEditorViewerPanel::ModelEditorViewerPanel(
     std::string_view panelName_,
-    ModelEditorViewerPanelParameters const& parameters_) :
+    const ModelEditorViewerPanelParameters& parameters_) :
 
     m_Impl{std::make_unique<Impl>(panelName_, parameters_)}
 {
@@ -573,7 +573,7 @@ ModelEditorViewerPanelLayer& osc::ModelEditorViewerPanel::pushLayer(std::unique_
     return m_Impl->pushLayer(std::move(layer));
 }
 
-void osc::ModelEditorViewerPanel::focusOn(Vec3 const& pos)
+void osc::ModelEditorViewerPanel::focusOn(const Vec3& pos)
 {
     m_Impl->focusOn(pos);
 }

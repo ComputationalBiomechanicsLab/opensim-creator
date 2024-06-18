@@ -55,7 +55,7 @@ CrossProductDefinedFrame::ParsedAxisArguments osc::fd::CrossProductDefinedFrame:
         ss << getProperty_axis_edge_axis().getName() << ": has an invalid value ('" << get_axis_edge_axis() << "'): permitted values are -x, +x, -y, +y, -z, or +z";
         OPENSIM_THROW_FRMOBJ(OpenSim::Exception, std::move(ss).str());
     }
-    CoordinateDirection const& axisEdge = *maybeAxisEdge;
+    const CoordinateDirection& axisEdge = *maybeAxisEdge;
 
     // ensure `first_cross_product_axis` is a correct property value
     auto const maybeOtherEdge = CoordinateDirection::try_parse(get_first_cross_product_axis());
@@ -64,7 +64,7 @@ CrossProductDefinedFrame::ParsedAxisArguments osc::fd::CrossProductDefinedFrame:
         ss << getProperty_first_cross_product_axis().getName() << ": has an invalid value ('" << get_first_cross_product_axis() << "'): permitted values are -x, +x, -y, +y, -z, or +z";
         OPENSIM_THROW_FRMOBJ(OpenSim::Exception, std::move(ss).str());
     }
-    CoordinateDirection const& otherEdge = *maybeOtherEdge;
+    const CoordinateDirection& otherEdge = *maybeOtherEdge;
 
     // ensure `axis_edge_axis` is an orthogonal axis to `other_edge_axis`
     if (axisEdge.axis() == otherEdge.axis()) {
@@ -76,7 +76,7 @@ CrossProductDefinedFrame::ParsedAxisArguments osc::fd::CrossProductDefinedFrame:
     return ParsedAxisArguments{axisEdge, otherEdge};
 }
 
-SimTK::Transform osc::fd::CrossProductDefinedFrame::calcTransformInGround(SimTK::State const& state) const
+SimTK::Transform osc::fd::CrossProductDefinedFrame::calcTransformInGround(const SimTK::State& state) const
 {
     // parse axis properties
     auto const [axisEdge, otherEdge] = tryParseAxisArgumentsAsOrthogonalAxes();
@@ -114,8 +114,8 @@ SimTK::Transform osc::fd::CrossProductDefinedFrame::calcTransformInGround(SimTK:
         // axes are in a circular X -> Y -> Z relationship w.r.t. cross products
         struct ThirdEdgeOperands final
         {
-            SimTK::UnitVec3 const& firstDir;
-            SimTK::UnitVec3 const& secondDir;
+            const SimTK::UnitVec3& firstDir;
+            const SimTK::UnitVec3& secondDir;
             CoordinateAxis resultAxis;
         };
         ThirdEdgeOperands const ops = axisEdge.axis().next() == otherEdge.axis() ?
@@ -133,12 +133,12 @@ SimTK::Transform osc::fd::CrossProductDefinedFrame::calcTransformInGround(SimTK:
     return SimTK::Transform{rotation, originLocationInGround};
 }
 
-SimTK::SpatialVec osc::fd::CrossProductDefinedFrame::calcVelocityInGround(SimTK::State const&) const
+SimTK::SpatialVec osc::fd::CrossProductDefinedFrame::calcVelocityInGround(const SimTK::State&) const
 {
     return {};  // TODO: see OffsetFrame::calcVelocityInGround
 }
 
-SimTK::SpatialVec osc::fd::CrossProductDefinedFrame::calcAccelerationInGround(SimTK::State const&) const
+SimTK::SpatialVec osc::fd::CrossProductDefinedFrame::calcAccelerationInGround(const SimTK::State&) const
 {
     return {};  // TODO: see OffsetFrame::calcAccelerationInGround
 }

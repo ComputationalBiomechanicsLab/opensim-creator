@@ -40,6 +40,6 @@ namespace osc::fd
         SimTK::Vec3 calcVelocityInGround(const SimTK::State&) const final;
         SimTK::Vec3 calcAccelerationInGround(const SimTK::State&) const final;
 
-        std::pair<OpenSim::Point const&, OpenSim::Point const&> lookupPoints() const;
+        std::pair<const OpenSim::Point&, const OpenSim::Point&> lookupPoints() const;
     };
 }

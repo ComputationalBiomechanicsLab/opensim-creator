@@ -33,7 +33,7 @@ namespace
     // creates a simulator that's hooked up to the reports vector
     ForwardDynamicSimulator MakeSimulation(
         BasicModelStatePair p,
-        ForwardDynamicSimulatorParams const& params,
+        const ForwardDynamicSimulatorParams& params,
         SynchronizedValue<std::vector<SimulationReport>>& reportQueue)
     {
         auto callback = [&](SimulationReport r)
@@ -60,7 +60,7 @@ namespace
 class osc::ForwardDynamicSimulation::Impl final {
 public:
 
-    Impl(BasicModelStatePair p, ForwardDynamicSimulatorParams const& params) :
+    Impl(BasicModelStatePair p, const ForwardDynamicSimulatorParams& params) :
         m_ModelState{std::move(p)},
         m_Simulation{MakeSimulation(*m_ModelState.lock(), params, m_ReportQueue)},
         m_Params{params},
@@ -75,7 +75,7 @@ public:
 
     SynchronizedValueGuard<OpenSim::Model const> getModel() const
     {
-        return m_ModelState.lock_child<OpenSim::Model>([](BasicModelStatePair const& p) -> decltype(auto) { return p.getModel(); });
+        return m_ModelState.lock_child<OpenSim::Model>([](const BasicModelStatePair& p) -> decltype(auto) { return p.getModel(); });
     }
 
     ptrdiff_t getNumReports() const
@@ -125,7 +125,7 @@ public:
         return SimulationClocks{{start, end}, getCurTime()};
     }
 
-    ParamBlock const& getParams() const
+    const ParamBlock& getParams() const
     {
         return m_ParamsAsParamBlock;
     }
@@ -153,7 +153,7 @@ public:
         // if necessary, truncate any dangling reports
         if (new_end_time < old_end_time and not m_Reports.empty()) {
 
-            auto const reportBeforeOrEqualToNewEndTime = [new_end_time](SimulationReport const& r)
+            auto const reportBeforeOrEqualToNewEndTime = [new_end_time](const SimulationReport& r)
             {
                 return r.getTime() <= new_end_time;
             };
@@ -176,7 +176,7 @@ public:
         // otherwise, create a new simulator with the new parameters
         {
             auto const guard = m_ModelState.lock();
-            SimTK::State const& latestState = m_Reports.empty() ?
+            const SimTK::State& latestState = m_Reports.empty() ?
                 guard->getState() :
                 m_Reports.back().getState();
 
@@ -269,7 +269,7 @@ private:
 
 // public API
 
-osc::ForwardDynamicSimulation::ForwardDynamicSimulation(BasicModelStatePair ms, ForwardDynamicSimulatorParams const& params) :
+osc::ForwardDynamicSimulation::ForwardDynamicSimulation(BasicModelStatePair ms, const ForwardDynamicSimulatorParams& params) :
     m_Impl{std::make_unique<Impl>(std::move(ms), params)}
 {}
 osc::ForwardDynamicSimulation::ForwardDynamicSimulation(ForwardDynamicSimulation&&) noexcept = default;
@@ -311,7 +311,7 @@ SimulationClocks osc::ForwardDynamicSimulation::implGetClocks() const
     return m_Impl->getClocks();
 }
 
-ParamBlock const& osc::ForwardDynamicSimulation::implGetParams() const
+const ParamBlock& osc::ForwardDynamicSimulation::implGetParams() const
 {
     return m_Impl->getParams();
 }

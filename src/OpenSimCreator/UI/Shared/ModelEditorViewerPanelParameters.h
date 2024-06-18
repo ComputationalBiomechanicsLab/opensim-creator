@@ -16,7 +16,7 @@ namespace osc
     public:
         ModelEditorViewerPanelParameters(
             std::shared_ptr<UndoableModelStatePair> model_,
-            std::function<void(ModelEditorViewerPanelRightClickEvent const&)> const& onRightClickedAComponent_) :
+            std::function<void(const ModelEditorViewerPanelRightClickEvent&)> const& onRightClickedAComponent_) :
 
             m_Model{std::move(model_)},
             m_OnRightClickedAComponent{onRightClickedAComponent_}
@@ -24,13 +24,13 @@ namespace osc
         }
 
         std::shared_ptr<UndoableModelStatePair> getModelSharedPtr() { return m_Model; }
-        void callOnRightClickHandler(ModelEditorViewerPanelRightClickEvent const& e) { m_OnRightClickedAComponent(e); }
-        ModelRendererParams const& getRenderParams() const { return m_RenderParams; }
+        void callOnRightClickHandler(const ModelEditorViewerPanelRightClickEvent& e) { m_OnRightClickedAComponent(e); }
+        const ModelRendererParams& getRenderParams() const { return m_RenderParams; }
         ModelRendererParams& updRenderParams() { return m_RenderParams; }
 
     private:
         std::shared_ptr<UndoableModelStatePair> m_Model;
-        std::function<void(ModelEditorViewerPanelRightClickEvent const&)> m_OnRightClickedAComponent;
+        std::function<void(const ModelEditorViewerPanelRightClickEvent&)> m_OnRightClickedAComponent;
         ModelRendererParams m_RenderParams;
     };
 }

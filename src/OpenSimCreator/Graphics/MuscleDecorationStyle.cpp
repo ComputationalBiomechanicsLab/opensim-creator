@@ -45,7 +45,7 @@ ptrdiff_t osc::GetIndexOf(MuscleDecorationStyle s)
     return static_cast<ptrdiff_t>(s);
 }
 
-MuscleDecorationStyleMetadata const& osc::GetMuscleDecorationStyleMetadata(MuscleDecorationStyle s)
+const MuscleDecorationStyleMetadata& osc::GetMuscleDecorationStyleMetadata(MuscleDecorationStyle s)
 {
     return GetAllMuscleDecorationStyleMetadata()[GetIndexOf(s)];
 }

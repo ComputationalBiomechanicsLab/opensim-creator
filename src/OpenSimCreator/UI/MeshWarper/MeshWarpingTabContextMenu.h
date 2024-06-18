@@ -58,7 +58,7 @@ namespace osc
             }
         }
 
-        void drawContextMenu(TPSDocumentLandmarkPair const& lm)
+        void drawContextMenu(const TPSDocumentLandmarkPair& lm)
         {
             // header
             DrawContextMenuHeader(truncate_with_ellipsis(lm.name, 15), "Landmark");
@@ -127,7 +127,7 @@ namespace osc
             }
         }
 
-        void drawContextMenu(TPSDocumentNonParticipatingLandmark const& npl)
+        void drawContextMenu(const TPSDocumentNonParticipatingLandmark& npl)
         {
             // header
             DrawContextMenuHeader(truncate_with_ellipsis(npl.name, 15), "Non-Participating Landmark");

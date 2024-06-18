@@ -24,9 +24,9 @@ namespace osc
             std::string_view,
             std::function<void(ImportedData)> onImport
         );
-        ImportStationsFromCSVPopup(ImportStationsFromCSVPopup const&) = delete;
+        ImportStationsFromCSVPopup(const ImportStationsFromCSVPopup&) = delete;
         ImportStationsFromCSVPopup(ImportStationsFromCSVPopup&&) noexcept;
-        ImportStationsFromCSVPopup& operator=(ImportStationsFromCSVPopup const&) = delete;
+        ImportStationsFromCSVPopup& operator=(const ImportStationsFromCSVPopup&) = delete;
         ImportStationsFromCSVPopup& operator=(ImportStationsFromCSVPopup&&) noexcept;
         ~ImportStationsFromCSVPopup() noexcept;
 

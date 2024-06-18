@@ -8,8 +8,8 @@
 
 void osc::GenerateOverlayDecorations(
     SceneCache& meshCache,
-    OverlayDecorationOptions const& params,
-    BVH const& sceneBVH,
+    const OverlayDecorationOptions& params,
+    const BVH& sceneBVH,
     std::function<void(SceneDecoration&&)> const& out)
 {
     if (params.getDrawAABBs())

@@ -20,7 +20,7 @@ namespace osc::lm
         std::string message;
     };
 
-    std::string to_string(CSVParseWarning const&);
+    std::string to_string(const CSVParseWarning&);
 
     void ReadLandmarksFromCSV(
         std::istream&,

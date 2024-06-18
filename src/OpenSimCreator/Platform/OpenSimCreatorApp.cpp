@@ -54,7 +54,7 @@ namespace
 
     // an OpenSim log sink that sinks into OSC's main log
     class OpenSimLogSink final : public OpenSim::LogSink {
-        void sinkImpl(std::string const& msg) final
+        void sinkImpl(const std::string& msg) final
         {
             log_info("%s", msg.c_str());
         }
@@ -142,7 +142,7 @@ namespace
         OpenSim::Object::registerType(SphereLandmark{});
     }
 
-    void GloballySetOpenSimsGeometrySearchPath(AppConfig const& config)
+    void GloballySetOpenSimsGeometrySearchPath(const AppConfig& config)
     {
         // globally set OpenSim's geometry search path
         //
@@ -154,7 +154,7 @@ namespace
         log_info("added geometry search path entry: %s", geometryDir.string().c_str());
     }
 
-    bool InitializeOpenSim(AppConfig const& config)
+    bool InitializeOpenSim(const AppConfig& config)
     {
         // make this process (OSC) globally use the same locale that OpenSim uses
         //
@@ -226,7 +226,7 @@ bool osc::GlobalInitOpenSim()
     return GlobalInitOpenSim(LoadOpenSimCreatorConfig());
 }
 
-bool osc::GlobalInitOpenSim(AppConfig const& config)
+bool osc::GlobalInitOpenSim(const AppConfig& config)
 {
     static bool const s_OpenSimInitialized = InitializeOpenSim(config);
     return s_OpenSimInitialized;

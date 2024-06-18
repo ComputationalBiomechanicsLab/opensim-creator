@@ -29,7 +29,7 @@ namespace rgs = std::ranges;
 namespace
 {
     std::filesystem::path CalcExpectedAssociatedLandmarksFile(
-        std::filesystem::path const& meshAbsolutePath)
+        const std::filesystem::path& meshAbsolutePath)
     {
         std::filesystem::path expected{meshAbsolutePath};
         expected.replace_extension(".landmarks.csv");
@@ -38,15 +38,15 @@ namespace
     }
 
     std::filesystem::path CalcExpectedDestinationMeshFilepath(
-        std::filesystem::path const& osimFilepath,
-        std::filesystem::path const& sourceMeshFilepath)
+        const std::filesystem::path& osimFilepath,
+        const std::filesystem::path& sourceMeshFilepath)
     {
         std::filesystem::path expected = osimFilepath.parent_path() / "DestinationGeometry" / sourceMeshFilepath.filename();
         expected = std::filesystem::weakly_canonical(expected);
         return expected;
     }
 
-    std::vector<Landmark> TryReadLandmarksFromCSVIntoVector(std::filesystem::path const& path)
+    std::vector<Landmark> TryReadLandmarksFromCSVIntoVector(const std::filesystem::path& path)
     {
         std::vector<Landmark> rv;
 
@@ -60,7 +60,7 @@ namespace
         return rv;
     }
 
-    bool SameNameOrBothUnnamed(Landmark const& a, Landmark const& b)
+    bool SameNameOrBothUnnamed(const Landmark& a, const Landmark& b)
     {
         return a.maybeName == b.maybeName;
     }
@@ -118,7 +118,7 @@ namespace
     TPSCoefficients3D TryCalcTPSCoefficients(std::span<MaybePairedLandmark const> maybePairs)
     {
         TPSCoefficientSolverInputs3D rv;
-        for (MaybePairedLandmark const& maybePair: maybePairs) {
+        for (const MaybePairedLandmark& maybePair: maybePairs) {
             if (auto pair = maybePair.tryGetPairedLocations()) {
                 rv.landmarks.push_back(*pair);
             }
@@ -128,8 +128,8 @@ namespace
 }
 
 osc::mow::TPSLandmarkPairWarperFactory::TPSLandmarkPairWarperFactory(
-    std::filesystem::path const& osimFileLocation,
-    std::filesystem::path const& sourceMeshFilepath) :
+    const std::filesystem::path& osimFileLocation,
+    const std::filesystem::path& sourceMeshFilepath) :
 
     m_SourceMeshAbsoluteFilepath{std::filesystem::weakly_canonical(sourceMeshFilepath)},
     m_ExpectedSourceLandmarksAbsoluteFilepath{CalcExpectedAssociatedLandmarksFile(m_SourceMeshAbsoluteFilepath)},
@@ -319,7 +319,7 @@ std::vector<ValidationCheckResult> osc::mow::TPSLandmarkPairWarperFactory::implV
     return rv;
 }
 
-std::unique_ptr<IPointWarper> osc::mow::TPSLandmarkPairWarperFactory::implTryCreatePointWarper(ModelWarpDocument const& document) const
+std::unique_ptr<IPointWarper> osc::mow::TPSLandmarkPairWarperFactory::implTryCreatePointWarper(const ModelWarpDocument& document) const
 {
     class TPSWarper : public IPointWarper {
     public:

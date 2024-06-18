@@ -22,7 +22,7 @@ namespace osc
     // handy for extracting simulation stats (e.g. num steps taken etc.)
     class MultiBodySystemOutputExtractor final : public IOutputExtractor {
     public:
-        using ExtractorFn = float (*)(SimTK::MultibodySystem const&);
+        using ExtractorFn = float (*)(const SimTK::MultibodySystem&);
 
         MultiBodySystemOutputExtractor(
             std::string_view name,
@@ -41,9 +41,9 @@ namespace osc
         CStringView implGetName() const final { return m_Name; }
         CStringView implGetDescription() const final { return m_Description; }
         OutputExtractorDataType implGetOutputType() const final { return OutputExtractorDataType::Float; }
-        OutputValueExtractor implGetOutputValueExtractor(OpenSim::Component const&) const final;
+        OutputValueExtractor implGetOutputValueExtractor(const OpenSim::Component&) const final;
         size_t implGetHash() const final;
-        bool implEquals(IOutputExtractor const&) const final;
+        bool implEquals(const IOutputExtractor&) const final;
 
         UID m_AuxiliaryDataID;
         std::string m_Name;
@@ -52,6 +52,6 @@ namespace osc
     };
 
     int GetNumMultiBodySystemOutputExtractors();
-    MultiBodySystemOutputExtractor const& GetMultiBodySystemOutputExtractor(int idx);
+    const MultiBodySystemOutputExtractor& GetMultiBodySystemOutputExtractor(int idx);
     OutputExtractor GetMultiBodySystemOutputExtractorDynamic(int idx);
 }

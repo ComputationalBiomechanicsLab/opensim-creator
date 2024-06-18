@@ -58,7 +58,7 @@ std::span<MuscleColoringStyleMetadata const> osc::GetAllMuscleColoringStyleMetad
     return c_Metadata;
 }
 
-MuscleColoringStyleMetadata const& osc::GetMuscleColoringStyleMetadata(MuscleColoringStyle s)
+const MuscleColoringStyleMetadata& osc::GetMuscleColoringStyleMetadata(MuscleColoringStyle s)
 {
     return GetAllMuscleColoringStyleMetadata()[GetIndexOf(s)];
 }

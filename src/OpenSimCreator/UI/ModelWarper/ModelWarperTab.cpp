@@ -76,7 +76,7 @@ private:
         App::upd().make_main_loop_waiting();
     }
 
-    bool impl_on_event(SDL_Event const&) final
+    bool impl_on_event(const SDL_Event&) final
     {
         return false;
     }
@@ -141,7 +141,7 @@ void osc::mow::ModelWarperTab::impl_on_unmount()
     m_Impl->on_unmount();
 }
 
-bool osc::mow::ModelWarperTab::impl_on_event(SDL_Event const& e)
+bool osc::mow::ModelWarperTab::impl_on_event(const SDL_Event& e)
 {
     return m_Impl->on_event(e);
 }

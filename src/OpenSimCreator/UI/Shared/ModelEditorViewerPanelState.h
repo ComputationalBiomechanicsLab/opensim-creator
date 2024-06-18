@@ -47,7 +47,7 @@ namespace osc
             return *m_LayerQueue.emplace_back(std::move(layer));
         }
 
-        CachedModelRenderer const& getRenderer() const
+        const CachedModelRenderer& getRenderer() const
         {
             return m_CachedModelRenderer;
         }

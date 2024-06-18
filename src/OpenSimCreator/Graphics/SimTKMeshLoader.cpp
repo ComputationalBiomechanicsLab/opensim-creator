@@ -35,7 +35,7 @@ namespace
         size_t numIndices = 0;
     };
 
-    OutputMeshMetrics CalcMeshMetrics(SimTK::PolygonalMesh const& mesh)
+    OutputMeshMetrics CalcMeshMetrics(const SimTK::PolygonalMesh& mesh)
     {
         OutputMeshMetrics rv;
         rv.numVertices = mesh.getNumVertices();
@@ -59,7 +59,7 @@ namespace
     }
 }
 
-Mesh osc::ToOscMesh(SimTK::PolygonalMesh const& mesh)
+Mesh osc::ToOscMesh(const SimTK::PolygonalMesh& mesh)
 {
     auto const metrics = CalcMeshMetrics(mesh);
 
@@ -159,10 +159,10 @@ std::span<const std::string_view> osc::GetSupportedSimTKMeshFormats()
     return c_supported_mesh_extensions;
 }
 
-Mesh osc::LoadMeshViaSimTK(std::filesystem::path const& p)
+Mesh osc::LoadMeshViaSimTK(const std::filesystem::path& p)
 {
     SimTK::DecorativeMeshFile const dmf{p.string()};
-    SimTK::PolygonalMesh const& mesh = dmf.getMesh();
+    const SimTK::PolygonalMesh& mesh = dmf.getMesh();
     return ToOscMesh(mesh);
 }
 
@@ -171,7 +171,7 @@ void osc::AssignIndexedVerts(SimTK::PolygonalMesh& mesh, std::span<Vec3 const> v
     mesh.clear();
 
     // assign vertices
-    for (Vec3 const& vertex : vertices) {
+    for (const Vec3& vertex : vertices) {
         mesh.addVertex(ToSimTKVec3(vertex));
     }
 

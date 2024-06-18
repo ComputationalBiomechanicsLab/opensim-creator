@@ -19,7 +19,7 @@ namespace osc
 
         CStringView name() const { return m_Name; }
         CStringView description() const { return m_Description; }
-        OpenSim::Component const& prototype() const { return *m_Prototype; }
+        const OpenSim::Component& prototype() const { return *m_Prototype; }
         std::unique_ptr<OpenSim::Component> instantiate() const;
 
     private:

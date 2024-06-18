@@ -27,7 +27,7 @@ public:
         m_SimulationReport{std::move(simulationReport)}
     {}
 
-    OpenSim::Model const& getModel() const
+    const OpenSim::Model& getModel() const
     {
         return *m_Simulation->getModel();  // TODO: UH OH - lock leak (#707 - are locks necessary?)
     }
@@ -37,7 +37,7 @@ public:
         return m_ModelVersion;
     }
 
-    SimTK::State const& getState() const
+    const SimTK::State& getState() const
     {
         return m_SimulationReport.getState();
     }
@@ -151,7 +151,7 @@ void osc::SimulationModelStatePair::setSimulationReport(SimulationReport report)
     m_Impl->setSimulationReport(std::move(report));
 }
 
-OpenSim::Model const& osc::SimulationModelStatePair::implGetModel() const
+const OpenSim::Model& osc::SimulationModelStatePair::implGetModel() const
 {
     return m_Impl->getModel();
 }
@@ -161,7 +161,7 @@ UID osc::SimulationModelStatePair::implGetModelVersion() const
     return m_Impl->getModelVersion();
 }
 
-SimTK::State const& osc::SimulationModelStatePair::implGetState() const
+const SimTK::State& osc::SimulationModelStatePair::implGetState() const
 {
     return m_Impl->getState();
 }

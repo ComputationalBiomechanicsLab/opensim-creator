@@ -22,7 +22,7 @@ namespace osc { class IConstModelStatePair; }
 namespace osc
 {
     SceneRendererParams CalcSceneRendererParams(
-        ModelRendererParams const&,
+        const ModelRendererParams&,
         Vec2 viewportDims,
         AntiAliasingLevel,
         float fixupScaleFactor
@@ -30,17 +30,17 @@ namespace osc
 
     void GenerateDecorations(
         SceneCache&,
-        IConstModelStatePair const&,
-        OpenSimDecorationOptions const&,
-        std::function<void(OpenSim::Component const&, SceneDecoration&&)> const& out
+        const IConstModelStatePair&,
+        const OpenSimDecorationOptions&,
+        std::function<void(const OpenSim::Component&, SceneDecoration&&)> const& out
     );
 
     std::optional<SceneCollision> GetClosestCollision(
-        BVH const& sceneBVH,
+        const BVH& sceneBVH,
         SceneCache&,
         std::span<SceneDecoration const> taggedDrawlist,
-        PolarPerspectiveCamera const&,
+        const PolarPerspectiveCamera&,
         Vec2 mouseScreenPos,
-        Rect const& viewportScreenRect
+        const Rect& viewportScreenRect
     );
 }

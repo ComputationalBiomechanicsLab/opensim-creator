@@ -23,20 +23,20 @@ namespace osc
     // whether the warping parameters have changed
     class TPSResultCache final {
     public:
-        Mesh const& getWarpedMesh(TPSDocument const& doc)
+        const Mesh& getWarpedMesh(const TPSDocument& doc)
         {
             updateAll(doc);
             return m_CachedResultMesh;
         }
 
-        std::span<Vec3 const> getWarpedNonParticipatingLandmarkLocations(TPSDocument const& doc)
+        std::span<Vec3 const> getWarpedNonParticipatingLandmarkLocations(const TPSDocument& doc)
         {
             updateAll(doc);
             return m_CachedResultNonParticipatingLandmarks;
         }
 
     private:
-        void updateAll(TPSDocument const& doc)
+        void updateAll(const TPSDocument& doc)
         {
             bool const updatedCoefficients = updateCoefficients(doc);
             bool const updatedNonParticipatingLandmarks = updateSourceNonParticipatingLandmarks(doc);
@@ -51,7 +51,7 @@ namespace osc
         }
 
         // returns `true` if cached inputs were updated; otherwise, returns the cached inputs
-        bool updateInputs(TPSDocument const& doc)
+        bool updateInputs(const TPSDocument& doc)
         {
             TPSCoefficientSolverInputs3D newInputs
             {
@@ -70,7 +70,7 @@ namespace osc
         }
 
         // returns `true` if cached coefficients were updated
-        bool updateCoefficients(TPSDocument const& doc)
+        bool updateCoefficients(const TPSDocument& doc)
         {
             if (!updateInputs(doc))
             {
@@ -92,14 +92,14 @@ namespace osc
         }
 
 
-        bool updateSourceNonParticipatingLandmarks(TPSDocument const& doc)
+        bool updateSourceNonParticipatingLandmarks(const TPSDocument& doc)
         {
-            auto const& docLandmarks = doc.nonParticipatingLandmarks;
+            const auto& docLandmarks = doc.nonParticipatingLandmarks;
 
             bool const samePositions = rgs::equal(
                 docLandmarks,
                 m_CachedSourceNonParticipatingLandmarks,
-                [](TPSDocumentNonParticipatingLandmark const& lm, Vec3 const& pos)
+                [](const TPSDocumentNonParticipatingLandmark& lm, const Vec3& pos)
                 {
                     return lm.location == pos;
                 }
@@ -111,7 +111,7 @@ namespace osc
                 rgs::transform(
                     docLandmarks,
                     std::back_inserter(m_CachedSourceNonParticipatingLandmarks),
-                    [](auto const& lm) { return lm.location; }
+                    [](const auto& lm) { return lm.location; }
                 );
                 return true;
             }
@@ -122,7 +122,7 @@ namespace osc
         }
 
         // returns `true` if `m_CachedSourceMesh` is updated
-        bool updateInputMesh(TPSDocument const& doc)
+        bool updateInputMesh(const TPSDocument& doc)
         {
             if (m_CachedSourceMesh != doc.sourceMesh)
             {
@@ -135,7 +135,7 @@ namespace osc
             }
         }
 
-        bool updateBlendingFactor(TPSDocument const& doc)
+        bool updateBlendingFactor(const TPSDocument& doc)
         {
             if (m_CachedBlendingFactor != doc.blendingFactor) {
                 m_CachedBlendingFactor = doc.blendingFactor;

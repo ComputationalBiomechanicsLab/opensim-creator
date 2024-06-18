@@ -25,11 +25,11 @@ using namespace osc::mow;
 namespace
 {
     std::unique_ptr<OpenSim::Geometry> WarpMesh(
-        ModelWarpDocument const& document,
-        OpenSim::Model const& model,
-        SimTK::State const& state,
-        OpenSim::Mesh const& inputMesh,
-        IPointWarperFactory const& warper)
+        const ModelWarpDocument& document,
+        const OpenSim::Model& model,
+        const SimTK::State& state,
+        const OpenSim::Mesh& inputMesh,
+        const IPointWarperFactory& warper)
     {
         // TODO: this ignores scale factors
         Mesh mesh = ToOscMesh(model, state, inputMesh);
@@ -88,7 +88,7 @@ namespace
 
 class osc::mow::CachedModelWarper::Impl final {
 public:
-    std::shared_ptr<IConstModelStatePair const> warp(ModelWarpDocument const& document)
+    std::shared_ptr<IConstModelStatePair const> warp(const ModelWarpDocument& document)
     {
         if (document != m_PreviousDocument) {
             m_PreviousResult = createWarpedModel(document);
@@ -97,7 +97,7 @@ public:
         return m_PreviousResult;
     }
 
-    std::shared_ptr<IConstModelStatePair const> createWarpedModel(ModelWarpDocument const& document)
+    std::shared_ptr<IConstModelStatePair const> createWarpedModel(const ModelWarpDocument& document)
     {
         // copy the model into an editable "warped" version
         OpenSim::Model warpedModel{document.model()};
@@ -108,7 +108,7 @@ public:
         //
         // additionally, collect a base-frame-to-mesh lookup while doing this
         std::map<OpenSim::ComponentPath, std::vector<OpenSim::ComponentPath>> baseFrame2meshes;
-        for (auto const& mesh : document.model().getComponentList<OpenSim::Mesh>()) {
+        for (const auto& mesh : document.model().getComponentList<OpenSim::Mesh>()) {
             // try to warp+overwrite
             if (auto const* meshWarper = document.findMeshWarp(mesh)) {
                 auto warpedMesh = WarpMesh(document, document.model(), document.modelstate().getState(), mesh, *meshWarper);
@@ -121,7 +121,7 @@ public:
             }
 
             // update base-frame-to-mesh lookup
-            auto const& [it, inserted] = baseFrame2meshes.try_emplace(mesh.getFrame().findBaseFrame().getAbsolutePath());
+            const auto& [it, inserted] = baseFrame2meshes.try_emplace(mesh.getFrame().findBaseFrame().getAbsolutePath());
             it->second.push_back(mesh.getAbsolutePath());
         }
         InitializeModel(warpedModel);
@@ -210,7 +210,7 @@ osc::mow::CachedModelWarper::CachedModelWarper(CachedModelWarper&&) noexcept = d
 CachedModelWarper& osc::mow::CachedModelWarper::operator=(CachedModelWarper&&) noexcept = default;
 osc::mow::CachedModelWarper::~CachedModelWarper() noexcept = default;
 
-std::shared_ptr<IConstModelStatePair const> osc::mow::CachedModelWarper::warp(ModelWarpDocument const& document)
+std::shared_ptr<IConstModelStatePair const> osc::mow::CachedModelWarper::warp(const ModelWarpDocument& document)
 {
     return m_Impl->warp(document);
 }

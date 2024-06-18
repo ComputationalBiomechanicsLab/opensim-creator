@@ -84,7 +84,7 @@ bool osc::mi::TryCreateJoint(
     Vec3 const childPos = doc.getPosByID(childID);
     Vec3 const midPoint = midpoint(parentPos, childPos);
 
-    auto const& joint = doc.emplace<Joint>(
+    const auto& joint = doc.emplace<Joint>(
         UID{},
         "WeldJoint",
         std::string{},
@@ -142,8 +142,8 @@ bool osc::mi::TryOrientObjectAxisAlongTwoObjects(
 bool osc::mi::TryTranslateObjectBetweenTwoPoints(
     UndoableDocument& udoc,
     UID id,
-    Vec3 const& a,
-    Vec3 const& b)
+    const Vec3& a,
+    const Vec3& b)
 {
     Document& doc = udoc.upd_scratch();
     MIObject* const obj = doc.tryUpdByID(id);
@@ -394,12 +394,12 @@ bool osc::mi::TryCopyOrientation(
 
 UID osc::mi::AddBody(
     UndoableDocument& udoc,
-    Vec3 const& pos,
+    const Vec3& pos,
     UID andTryAttach)
 {
     Document& doc = udoc.upd_scratch();
 
-    auto const& b = doc.emplace<Body>(UID{}, Body::Class().generateName(), Transform{.position = pos});
+    const auto& b = doc.emplace<Body>(UID{}, Body::Class().generateName(), Transform{.position = pos});
     doc.deSelectAll();
     doc.select(b.getID());
 
@@ -425,8 +425,8 @@ UID osc::mi::AddBody(UndoableDocument& udoc)
 
 bool osc::mi::AddStationAtLocation(
     UndoableDocument& udoc,
-    MIObject const& obj,
-    Vec3 const& loc)
+    const MIObject& obj,
+    const Vec3& loc)
 {
     Document& doc = udoc.upd_scratch();
 
@@ -435,7 +435,7 @@ bool osc::mi::AddStationAtLocation(
         return false;
     }
 
-    auto const& station = doc.emplace<StationEl>(
+    const auto& station = doc.emplace<StationEl>(
         UID{},
         GetStationAttachmentParent(doc, obj),
         loc,
@@ -449,7 +449,7 @@ bool osc::mi::AddStationAtLocation(
 bool osc::mi::AddStationAtLocation(
     UndoableDocument& udoc,
     UID attachment,
-    Vec3 const& loc)
+    const Vec3& loc)
 {
     Document& doc = udoc.upd_scratch();
 
@@ -468,7 +468,7 @@ void osc::mi::ActionImportLandmarks(
     std::optional<std::string> maybeName)
 {
     Document& doc = udoc.upd_scratch();
-    for (auto const& lm : landmarks)
+    for (const auto& lm : landmarks)
     {
         doc.emplace<StationEl>(
             UID{},

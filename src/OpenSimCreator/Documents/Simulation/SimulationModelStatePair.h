@@ -19,9 +19,9 @@ namespace osc
     public:
         SimulationModelStatePair();
         SimulationModelStatePair(std::shared_ptr<Simulation>, SimulationReport);
-        SimulationModelStatePair(SimulationModelStatePair const&) = delete;
+        SimulationModelStatePair(const SimulationModelStatePair&) = delete;
         SimulationModelStatePair(SimulationModelStatePair&&) noexcept;
-        SimulationModelStatePair& operator=(SimulationModelStatePair const&) = delete;
+        SimulationModelStatePair& operator=(const SimulationModelStatePair&) = delete;
         SimulationModelStatePair& operator=(SimulationModelStatePair&&) noexcept;
         ~SimulationModelStatePair() noexcept;
 
@@ -32,10 +32,10 @@ namespace osc
         void setSimulationReport(SimulationReport);
 
     private:
-        OpenSim::Model const& implGetModel() const final;
+        const OpenSim::Model& implGetModel() const final;
         UID implGetModelVersion() const final;
 
-        SimTK::State const& implGetState() const final;
+        const SimTK::State& implGetState() const final;
         UID implGetStateVersion() const final;
 
         OpenSim::Component const* implGetSelected() const final;

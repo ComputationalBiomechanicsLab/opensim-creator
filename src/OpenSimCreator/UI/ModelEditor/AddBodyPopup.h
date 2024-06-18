@@ -17,9 +17,9 @@ namespace osc
             IEditorAPI*,
             std::shared_ptr<UndoableModelStatePair>
         );
-        AddBodyPopup(AddBodyPopup const&) = delete;
+        AddBodyPopup(const AddBodyPopup&) = delete;
         AddBodyPopup(AddBodyPopup&&) noexcept;
-        AddBodyPopup& operator=(AddBodyPopup const&) = delete;
+        AddBodyPopup& operator=(const AddBodyPopup&) = delete;
         AddBodyPopup& operator=(AddBodyPopup&&) noexcept;
         ~AddBodyPopup() noexcept;
 

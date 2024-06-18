@@ -70,7 +70,7 @@ private:
         }
     }
 
-    void drawMouseInteractionStuff(OpenSim::Component const& c)
+    void drawMouseInteractionStuff(const OpenSim::Component& c)
     {
         if (ui::is_item_hovered())
         {

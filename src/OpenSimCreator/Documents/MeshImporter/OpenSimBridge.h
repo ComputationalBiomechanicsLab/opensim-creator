@@ -16,16 +16,16 @@ namespace osc::mi { class Joint; }
 // functions that bridge the mesh importer world to the OpenSim one
 namespace osc::mi
 {
-    Document CreateModelFromOsimFile(std::filesystem::path const&);
+    Document CreateModelFromOsimFile(const std::filesystem::path&);
 
     // if there are no issues, returns a new OpenSim::Model created from the document
     //
     // otherwise, returns nullptr and issuesOut will be populated with issue messages
     std::unique_ptr<OpenSim::Model> CreateOpenSimModelFromMeshImporterDocument(
-        Document const&,
+        const Document&,
         ModelCreationFlags,
         std::vector<std::string>& issuesOut
     );
 
-    Vec3 GetJointAxisLengths(Joint const&);
+    Vec3 GetJointAxisLengths(const Joint&);
 }

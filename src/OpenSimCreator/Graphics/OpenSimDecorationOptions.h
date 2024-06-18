@@ -62,10 +62,10 @@ namespace osc
         bool getShouldShowContactForces() const;
         void setShouldShowContactForces(bool);
 
-        void forEachOptionAsAppSettingValue(std::function<void(std::string_view, AppSettingValue const&)> const&) const;
+        void forEachOptionAsAppSettingValue(std::function<void(std::string_view, const AppSettingValue&)> const&) const;
         void tryUpdFromValues(std::string_view keyPrefix, std::unordered_map<std::string, AppSettingValue> const&);
 
-        friend bool operator==(OpenSimDecorationOptions const&, OpenSimDecorationOptions const&) = default;
+        friend bool operator==(const OpenSimDecorationOptions&, const OpenSimDecorationOptions&) = default;
 
     private:
         MuscleDecorationStyle m_MuscleDecorationStyle;

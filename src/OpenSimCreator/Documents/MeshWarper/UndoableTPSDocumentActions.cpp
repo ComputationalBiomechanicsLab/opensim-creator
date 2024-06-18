@@ -35,7 +35,7 @@ using osc::Vec3;
 void osc::ActionAddLandmark(
     UndoableTPSDocument& doc,
     TPSDocumentInputIdentifier which,
-    Vec3 const& pos)
+    const Vec3& pos)
 {
     AddLandmarkToInput(doc.upd_scratch(), which, pos);
     doc.commit_scratch("added landmark");
@@ -43,7 +43,7 @@ void osc::ActionAddLandmark(
 
 void osc::ActionAddNonParticipatingLandmark(
     UndoableTPSDocument& doc,
-    Vec3 const& pos)
+    const Vec3& pos)
 {
     AddNonParticipatingLandmark(doc.upd_scratch(), pos);
     doc.commit_scratch("added non-participating landmark");
@@ -53,7 +53,7 @@ void osc::ActionSetLandmarkPosition(
     UndoableTPSDocument& doc,
     UID id,
     TPSDocumentInputIdentifier side,
-    Vec3 const& newPos)
+    const Vec3& newPos)
 {
     TPSDocumentLandmarkPair* p = FindLandmarkPair(doc.upd_scratch(), id);
     if (!p)
@@ -89,7 +89,7 @@ void osc::ActionRenameLandmark(
 void osc::ActionSetNonParticipatingLandmarkPosition(
     UndoableTPSDocument& doc,
     UID id,
-    Vec3 const& newPos)
+    const Vec3& newPos)
 {
     auto* lm = FindNonParticipatingLandmark(doc.upd_scratch(), id);
     if (!lm)
@@ -157,7 +157,7 @@ void osc::ActionDeleteSceneElementsByID(
 {
     TPSDocument& scratch = doc.upd_scratch();
     bool somethingDeleted = false;
-    for (TPSDocumentElementID const& id : elementIDs)
+    for (const TPSDocumentElementID& id : elementIDs)
     {
         somethingDeleted = DeleteElementByID(scratch, id) || somethingDeleted;
     }
@@ -239,7 +239,7 @@ void osc::ActionLoadNonParticipatingLandmarksFromCSV(UndoableTPSDocument& doc)
 }
 
 void osc::ActionSaveLandmarksToCSV(
-    TPSDocument const& doc,
+    const TPSDocument& doc,
     TPSDocumentInputIdentifier which,
     lm::LandmarkCSVFlags flags)
 {
@@ -271,7 +271,7 @@ void osc::ActionSaveLandmarksToCSV(
 }
 
 void osc::ActionSaveNonParticipatingLandmarksToCSV(
-    TPSDocument const& doc,
+    const TPSDocument& doc,
     lm::LandmarkCSVFlags flags)
 {
     std::optional<std::filesystem::path> const maybeCSVPath =
@@ -298,7 +298,7 @@ void osc::ActionSaveNonParticipatingLandmarksToCSV(
     }, flags);
 }
 
-void osc::ActionSavePairedLandmarksToCSV(TPSDocument const& doc, lm::LandmarkCSVFlags flags)
+void osc::ActionSavePairedLandmarksToCSV(const TPSDocument& doc, lm::LandmarkCSVFlags flags)
 {
     std::optional<std::filesystem::path> const maybeCSVPath =
         PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
@@ -331,7 +331,7 @@ void osc::ActionSavePairedLandmarksToCSV(TPSDocument const& doc, lm::LandmarkCSV
     // write data rows
     std::vector<std::string> cols;
     cols.reserve(flags & lm::LandmarkCSVFlags::NoNames ? 6 : 7);
-    for (auto const& p : pairs)
+    for (const auto& p : pairs)
     {
         using std::to_string;
 
@@ -352,7 +352,7 @@ void osc::ActionSavePairedLandmarksToCSV(TPSDocument const& doc, lm::LandmarkCSV
     }
 }
 
-void osc::ActionTrySaveMeshToObjFile(Mesh const& mesh, ObjWriterFlags flags)
+void osc::ActionTrySaveMeshToObjFile(const Mesh& mesh, ObjWriterFlags flags)
 {
     std::optional<std::filesystem::path> const maybeSavePath =
         PromptUserForFileSaveLocationAndAddExtensionIfNecessary("obj");
@@ -371,7 +371,7 @@ void osc::ActionTrySaveMeshToObjFile(Mesh const& mesh, ObjWriterFlags flags)
         return;  // couldn't open for writing
     }
 
-    AppMetadata const& appMetadata = App::get().metadata();
+    const AppMetadata& appMetadata = App::get().metadata();
     ObjMetadata const objMetadata
     {
         calc_full_application_name_with_version_and_build_id(appMetadata),
@@ -385,7 +385,7 @@ void osc::ActionTrySaveMeshToObjFile(Mesh const& mesh, ObjWriterFlags flags)
     );
 }
 
-void osc::ActionTrySaveMeshToStlFile(Mesh const& mesh)
+void osc::ActionTrySaveMeshToStlFile(const Mesh& mesh)
 {
     std::optional<std::filesystem::path> const maybeSTLPath =
         PromptUserForFileSaveLocationAndAddExtensionIfNecessary("stl");
@@ -404,7 +404,7 @@ void osc::ActionTrySaveMeshToStlFile(Mesh const& mesh)
         return;  // couldn't open for writing
     }
 
-    AppMetadata const& appMetadata = App::get().metadata();
+    const AppMetadata& appMetadata = App::get().metadata();
     StlMetadata const stlMetadata
     {
         calc_full_application_name_with_version_and_build_id(appMetadata),
@@ -414,7 +414,7 @@ void osc::ActionTrySaveMeshToStlFile(Mesh const& mesh)
 }
 
 void osc::ActionSaveWarpedNonParticipatingLandmarksToCSV(
-    TPSDocument const& doc,
+    const TPSDocument& doc,
     TPSResultCache& cache,
     lm::LandmarkCSVFlags flags)
 {

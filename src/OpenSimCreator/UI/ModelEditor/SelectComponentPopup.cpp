@@ -17,8 +17,8 @@ class osc::SelectComponentPopup::Impl final : public StandardPopup {
 public:
     Impl(std::string_view popupName,
          std::shared_ptr<UndoableModelStatePair const> model,
-         std::function<void(OpenSim::ComponentPath const&)> onSelection,
-         std::function<bool(OpenSim::Component const&)> filter) :
+         std::function<void(const OpenSim::ComponentPath&)> onSelection,
+         std::function<bool(const OpenSim::Component&)> filter) :
 
         StandardPopup{popupName},
         m_Model{std::move(model)},
@@ -35,7 +35,7 @@ private:
         // iterate through each T in `root` and give the user the option to click it
         {
             ui::begin_child_panel("first", Vec2{256.0f, 256.0f}, ImGuiChildFlags_Border, ImGuiWindowFlags_HorizontalScrollbar);
-            for (OpenSim::Component const& c : m_Model->getModel().getComponentList())
+            for (const OpenSim::Component& c : m_Model->getModel().getComponentList())
             {
                 if (!m_Filter(c))
                 {
@@ -57,15 +57,15 @@ private:
     }
 
     std::shared_ptr<UndoableModelStatePair const> m_Model;
-    std::function<void(OpenSim::ComponentPath const&)> m_OnSelection;
-    std::function<bool(OpenSim::Component const&)> m_Filter;
+    std::function<void(const OpenSim::ComponentPath&)> m_OnSelection;
+    std::function<bool(const OpenSim::Component&)> m_Filter;
 };
 
 osc::SelectComponentPopup::SelectComponentPopup(
     std::string_view popupName,
     std::shared_ptr<UndoableModelStatePair const> model,
-    std::function<void(OpenSim::ComponentPath const&)> onSelection,
-    std::function<bool(OpenSim::Component const&)> filter) :
+    std::function<void(const OpenSim::ComponentPath&)> onSelection,
+    std::function<bool(const OpenSim::Component&)> filter) :
 
     m_Impl{std::make_unique<Impl>(popupName, std::move(model), std::move(onSelection), std::move(filter))}
 {

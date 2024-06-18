@@ -17,9 +17,9 @@ namespace osc
         static CStringView id();
 
         explicit MeshWarpingTab(ParentPtr<ITabHost> const&);
-        MeshWarpingTab(MeshWarpingTab const&) = delete;
+        MeshWarpingTab(const MeshWarpingTab&) = delete;
         MeshWarpingTab(MeshWarpingTab&&) noexcept;
-        MeshWarpingTab& operator=(MeshWarpingTab const&) = delete;
+        MeshWarpingTab& operator=(const MeshWarpingTab&) = delete;
         MeshWarpingTab& operator=(MeshWarpingTab&&) noexcept;
         ~MeshWarpingTab() noexcept override;
 
@@ -28,7 +28,7 @@ namespace osc
         CStringView impl_get_name() const final;
         void impl_on_mount() final;
         void impl_on_unmount() final;
-        bool impl_on_event(SDL_Event const&) final;
+        bool impl_on_event(const SDL_Event&) final;
         void impl_on_tick() final;
         void impl_on_draw_main_menu() final;
         void impl_on_draw() final;

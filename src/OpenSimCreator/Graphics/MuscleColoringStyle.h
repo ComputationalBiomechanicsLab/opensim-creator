@@ -25,6 +25,6 @@ namespace osc
         MuscleColoringStyle value;
     };
     std::span<MuscleColoringStyleMetadata const> GetAllMuscleColoringStyleMetadata();
-    MuscleColoringStyleMetadata const& GetMuscleColoringStyleMetadata(MuscleColoringStyle);
+    const MuscleColoringStyleMetadata& GetMuscleColoringStyleMetadata(MuscleColoringStyle);
     ptrdiff_t GetIndexOf(MuscleColoringStyle);
 }

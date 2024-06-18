@@ -42,7 +42,7 @@ public:
 private:
     void impl_draw_content() final
     {
-        OpenSim::Model const& model = m_Uum->getModel();
+        const OpenSim::Model& model = m_Uum->getModel();
 
         auto const* selectedPf = FindComponent<OpenSim::PhysicalFrame>(model, m_BodyDetails.parentFrameAbsPath);
         if (!selectedPf)
@@ -112,7 +112,7 @@ private:
             ui::next_column();
 
             ui::begin_child_panel("join targets", Vec2{0, 128.0f}, ImGuiChildFlags_Border, ImGuiWindowFlags_HorizontalScrollbar);
-            for (OpenSim::PhysicalFrame const& pf : model.getComponentList<OpenSim::PhysicalFrame>())
+            for (const OpenSim::PhysicalFrame& pf : model.getComponentList<OpenSim::PhysicalFrame>())
             {
                 if (ui::draw_selectable(pf.getName(), &pf == selectedPf))
                 {
@@ -135,7 +135,7 @@ private:
             ui::draw_help_marker("The type of OpenSim::Joint that will connect the new OpenSim::Body to the selection above");
             ui::next_column();
             {
-                auto const& registry = GetComponentRegistry<OpenSim::Joint>();
+                const auto& registry = GetComponentRegistry<OpenSim::Joint>();
                 ui::draw_combobox(
                     "##jointtype",
                     &m_BodyDetails.jointTypeIndex,

@@ -20,9 +20,9 @@ namespace osc
     class SingleStateSimulation final : public ISimulation {
     public:
         explicit SingleStateSimulation(BasicModelStatePair);
-        SingleStateSimulation(SingleStateSimulation const&) = delete;
+        SingleStateSimulation(const SingleStateSimulation&) = delete;
         SingleStateSimulation(SingleStateSimulation&&) noexcept;
-        SingleStateSimulation& operator=(SingleStateSimulation const&) = delete;
+        SingleStateSimulation& operator=(const SingleStateSimulation&) = delete;
         SingleStateSimulation& operator=(SingleStateSimulation&&) noexcept;
         ~SingleStateSimulation() noexcept;
 
@@ -35,7 +35,7 @@ namespace osc
 
         SimulationStatus implGetStatus() const final;
         SimulationClocks implGetClocks() const final;
-        ParamBlock const& implGetParams() const final;
+        const ParamBlock& implGetParams() const final;
         std::span<OutputExtractor const> implGetOutputExtractors() const final;
 
         float implGetFixupScaleFactor() const final;

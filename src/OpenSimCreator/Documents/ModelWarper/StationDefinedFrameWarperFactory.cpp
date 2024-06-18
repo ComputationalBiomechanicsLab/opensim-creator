@@ -30,11 +30,11 @@ std::vector<ValidationCheckResult> osc::mow::StationDefinedFrameWarperFactory::i
     };
 }
 
-std::unique_ptr<IFrameWarper> osc::mow::StationDefinedFrameWarperFactory::implTryCreateFrameWarper(ModelWarpDocument const&) const
+std::unique_ptr<IFrameWarper> osc::mow::StationDefinedFrameWarperFactory::implTryCreateFrameWarper(const ModelWarpDocument&) const
 {
     class IdentityFrameWarper final : public IFrameWarper {
     private:
-        SimTK::Transform implWarp(SimTK::Transform const& transform) const override
+        SimTK::Transform implWarp(const SimTK::Transform& transform) const override
         {
             return transform;  // identity
         }

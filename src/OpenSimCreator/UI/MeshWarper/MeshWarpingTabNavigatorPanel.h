@@ -74,7 +74,7 @@ namespace osc
             ui::table_setup_column("Destination", 0, 0.15f*ui::get_content_region_avail().x);
 
             int id = 0;
-            for (auto const& lm : m_State->getScratch().landmarkPairs)
+            for (const auto& lm : m_State->getScratch().landmarkPairs)
             {
                 ui::push_id(++id);
                 drawLandmarksTableRow(lm);
@@ -84,7 +84,7 @@ namespace osc
             ui::end_table();
         }
 
-        void drawLandmarksTableRow(TPSDocumentLandmarkPair const& p)
+        void drawLandmarksTableRow(const TPSDocumentLandmarkPair& p)
         {
             // name column
             ui::table_next_row();
@@ -140,7 +140,7 @@ namespace osc
             return circle;
         }
 
-        void tryDrawCircleHighlight(Circle const& circle, bool isSelected, bool isHovered)
+        void tryDrawCircleHighlight(const Circle& circle, bool isSelected, bool isHovered)
         {
             auto& dl = *ui::get_panel_draw_list();
             float const thickness = 2.0f;
@@ -154,7 +154,7 @@ namespace osc
             }
         }
 
-        void drawConnectingLine(Circle const& src, Circle const& dest)
+        void drawConnectingLine(const Circle& src, const Circle& dest)
         {
             float const pad = ui::get_style_item_inner_spacing().x;
 
@@ -186,7 +186,7 @@ namespace osc
             ui::table_setup_column("Location", 0, 0.3f*ui::get_content_region_avail().x);
 
             int id = 0;
-            for (auto const& npl : m_State->getScratch().nonParticipatingLandmarks)
+            for (const auto& npl : m_State->getScratch().nonParticipatingLandmarks)
             {
                 ui::push_id(++id);
                 drawNonParticipatingLandmarksTableRow(npl);
@@ -196,7 +196,7 @@ namespace osc
             ui::end_table();
         }
 
-        void drawNonParticipatingLandmarksTableRow(TPSDocumentNonParticipatingLandmark const& npl)
+        void drawNonParticipatingLandmarksTableRow(const TPSDocumentNonParticipatingLandmark& npl)
         {
             // name column
             ui::table_next_row();

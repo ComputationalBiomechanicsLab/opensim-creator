@@ -19,14 +19,14 @@ namespace osc::mi
         explicit MeshImporterUILayer(IMeshImporterUILayerHost& parent) : m_Parent{&parent}
         {
         }
-        MeshImporterUILayer(MeshImporterUILayer const&) = default;
+        MeshImporterUILayer(const MeshImporterUILayer&) = default;
         MeshImporterUILayer(MeshImporterUILayer&&) noexcept = default;
-        MeshImporterUILayer& operator=(MeshImporterUILayer const&) = default;
+        MeshImporterUILayer& operator=(const MeshImporterUILayer&) = default;
         MeshImporterUILayer& operator=(MeshImporterUILayer&&) noexcept = default;
     public:
         virtual ~MeshImporterUILayer() noexcept = default;
 
-        bool onEvent(SDL_Event const& e)
+        bool onEvent(const SDL_Event& e)
         {
             return implOnEvent(e);
         }
@@ -48,7 +48,7 @@ namespace osc::mi
         }
 
     private:
-        virtual bool implOnEvent(SDL_Event const&) = 0;
+        virtual bool implOnEvent(const SDL_Event&) = 0;
         virtual void implTick(float) = 0;
         virtual void implOnDraw() = 0;
 

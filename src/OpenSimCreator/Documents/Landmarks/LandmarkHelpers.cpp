@@ -86,7 +86,7 @@ namespace
     }
 }
 
-std::string osc::lm::to_string(CSVParseWarning const& warning)
+std::string osc::lm::to_string(const CSVParseWarning& warning)
 {
     std::stringstream ss;
     size_t const displayedLineNumber = warning.lineNumber+1;  // user-facing software (e.g. IDEs) start at 1
@@ -154,7 +154,7 @@ std::vector<NamedLandmark> osc::lm::GenerateNames(
 {
     // collect up all already-named landmarks
     std::unordered_set<std::string_view> suppliedNames;
-    for (auto const& lm : lms)
+    for (const auto& lm : lms)
     {
         if (lm.maybeName)
         {
@@ -163,7 +163,7 @@ std::vector<NamedLandmark> osc::lm::GenerateNames(
     }
 
     // helper: either get, or generate, a name for the given landmark
-    auto getName = [&prefix, &suppliedNames, i=0](Landmark const& lm) mutable -> std::string
+    auto getName = [&prefix, &suppliedNames, i=0](const Landmark& lm) mutable -> std::string
     {
         if (lm.maybeName)
         {
@@ -181,7 +181,7 @@ std::vector<NamedLandmark> osc::lm::GenerateNames(
 
     std::vector<NamedLandmark> rv;
     rv.reserve(lms.size());
-    for (auto const& lm : lms)
+    for (const auto& lm : lms)
     {
         rv.push_back(NamedLandmark{getName(lm), lm.position});
     }

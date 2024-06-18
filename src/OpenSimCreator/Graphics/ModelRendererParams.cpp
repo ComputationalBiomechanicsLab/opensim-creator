@@ -21,7 +21,7 @@ namespace
 {
     std::unordered_map<std::string, AppSettingValue> ToValues(
         std::string_view prefix,
-        ModelRendererParams const& params)
+        const ModelRendererParams& params)
     {
         std::unordered_map<std::string, AppSettingValue> rv;
         std::string subPrefix;
@@ -70,7 +70,7 @@ osc::ModelRendererParams::ModelRendererParams() :
 }
 
 void osc::UpdModelRendererParamsFrom(
-    AppConfig const& config,
+    const AppConfig& config,
     std::string_view keyPrefix,
     ModelRendererParams& params)
 {
@@ -86,15 +86,15 @@ void osc::UpdModelRendererParamsFrom(
 }
 
 void osc::SaveModelRendererParamsDifference(
-    ModelRendererParams const& a,
-    ModelRendererParams const& b,
+    const ModelRendererParams& a,
+    const ModelRendererParams& b,
     std::string_view keyPrefix,
     AppConfig& config)
 {
     auto const aVals = ToValues(keyPrefix, a);
     auto const bVals = ToValues(keyPrefix, b);
 
-    for (auto const& [aK, aV] : aVals) {
+    for (const auto& [aK, aV] : aVals) {
         if (auto const* bV = lookup_or_nullptr(bVals, aK)) {
             if (*bV != aV) {
                 config.set_value(aK, *bV);

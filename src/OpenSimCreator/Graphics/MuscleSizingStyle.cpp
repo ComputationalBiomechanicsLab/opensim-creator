@@ -33,7 +33,7 @@ std::span<MuscleSizingStyleMetadata const> osc::GetAllMuscleSizingStyleMetadata(
     return c_Metadata;
 }
 
-MuscleSizingStyleMetadata const& osc::GetMuscleSizingStyleMetadata(MuscleSizingStyle s)
+const MuscleSizingStyleMetadata& osc::GetMuscleSizingStyleMetadata(MuscleSizingStyle s)
 {
     return GetAllMuscleSizingStyleMetadata()[GetIndexOf(s)];
 }

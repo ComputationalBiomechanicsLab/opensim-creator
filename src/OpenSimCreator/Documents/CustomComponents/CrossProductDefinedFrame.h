@@ -116,9 +116,9 @@ namespace osc::fd
         };
         ParsedAxisArguments tryParseAxisArgumentsAsOrthogonalAxes() const;
 
-        SimTK::Transform calcTransformInGround(SimTK::State const&) const final;
-        SimTK::SpatialVec calcVelocityInGround(SimTK::State const&) const final;
-        SimTK::SpatialVec calcAccelerationInGround(SimTK::State const&) const final;
+        SimTK::Transform calcTransformInGround(const SimTK::State&) const final;
+        SimTK::SpatialVec calcVelocityInGround(const SimTK::State&) const final;
+        SimTK::SpatialVec calcAccelerationInGround(const SimTK::State&) const final;
         void extendAddToSystem(SimTK::MultibodySystem&) const final;
     };
 }

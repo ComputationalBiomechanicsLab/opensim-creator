@@ -11,9 +11,9 @@ namespace osc
     class IModelStatePair : public IConstModelStatePair {
     protected:
         IModelStatePair() = default;
-        IModelStatePair(IModelStatePair const&) = default;
+        IModelStatePair(const IModelStatePair&) = default;
         IModelStatePair(IModelStatePair&&) noexcept = default;
-        IModelStatePair& operator=(IModelStatePair const&) = default;
+        IModelStatePair& operator=(const IModelStatePair&) = default;
         IModelStatePair& operator=(IModelStatePair&&) noexcept = default;
     public:
         virtual ~IModelStatePair() noexcept = default;

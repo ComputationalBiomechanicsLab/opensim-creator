@@ -16,7 +16,7 @@ namespace osc::mi
     template<typename T>
     class MIObjectCRTP : public MIObject {
     public:
-        static MIClass const& Class()
+        static const MIClass& Class()
         {
             static MIClass const s_Class = T::CreateClass();
             return s_Class;
@@ -27,10 +27,10 @@ namespace osc::mi
             return std::unique_ptr<T>{static_cast<T*>(implClone().release())};
         }
     private:
-        MIClass const& implGetClass() const final
+        const MIClass& implGetClass() const final
         {
             static_assert(std::is_reference_v<decltype(T::Class())>);
-            static_assert(std::is_same_v<decltype(T::Class()), MIClass const&>);
+            static_assert(std::is_same_v<decltype(T::Class()), const MIClass&>);
             return T::Class();
         }
 

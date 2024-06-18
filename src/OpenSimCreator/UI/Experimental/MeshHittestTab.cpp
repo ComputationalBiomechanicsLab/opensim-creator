@@ -68,7 +68,7 @@ public:
         m_IsMousedOver = false;
         if (m_UseBVH)
         {
-            m_MeshBVH.for_each_ray_aabb_collision(m_Ray, [this](BVHCollision const& aabbColl)
+            m_MeshBVH.for_each_ray_aabb_collision(m_Ray, [this](const BVHCollision& aabbColl)
             {
                 Triangle const triangle = m_Mesh.get_triangle_at(aabbColl.id);
                 if (auto triangleColl = find_collision(m_Ray, triangle))

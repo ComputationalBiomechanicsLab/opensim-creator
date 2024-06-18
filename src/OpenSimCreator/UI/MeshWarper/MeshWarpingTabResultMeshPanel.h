@@ -85,7 +85,7 @@ namespace osc
         }
 
         // draw ImGui overlays over a result panel
-        void drawOverlays(Rect const& renderRect)
+        void drawOverlays(const Rect& renderRect)
         {
             // ImGui: set cursor to draw over the top-right of the render texture (with padding)
             ui::set_cursor_screen_pos(renderRect.p1 + m_OverlayPadding);
@@ -251,7 +251,7 @@ namespace osc
             }
 
             // draw non-participating landmarks
-            for (Vec3 const& nonParticipatingLandmarkPos : m_State->getResultNonParticipatingLandmarkLocations())
+            for (const Vec3& nonParticipatingLandmarkPos : m_State->getResultNonParticipatingLandmarkLocations())
             {
                 decorationConsumer({
                     .mesh = m_State->landmarkSphere,

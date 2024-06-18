@@ -95,9 +95,9 @@ void osc::OverlayDecorationOptions::setDrawBVH(bool v)
     SetOption(m_Flags, OverlayDecorationOptionFlags::drawBVH, v);
 }
 
-void osc::OverlayDecorationOptions::forEachOptionAsAppSettingValue(std::function<void(std::string_view, AppSettingValue const&)> const& callback) const
+void osc::OverlayDecorationOptions::forEachOptionAsAppSettingValue(std::function<void(std::string_view, const AppSettingValue&)> const& callback) const
 {
-    for (auto const& metadata : GetAllOverlayDecorationOptionFlagsMetadata())
+    for (const auto& metadata : GetAllOverlayDecorationOptionFlagsMetadata())
     {
         callback(metadata.id, AppSettingValue{m_Flags & metadata.value});
     }
@@ -107,7 +107,7 @@ void osc::OverlayDecorationOptions::tryUpdFromValues(std::string_view keyPrefix,
 {
     for (size_t i = 0; i < num_flags<OverlayDecorationOptionFlags>(); ++i)
     {
-        auto const& metadata = at(GetAllOverlayDecorationOptionFlagsMetadata(), i);
+        const auto& metadata = at(GetAllOverlayDecorationOptionFlagsMetadata(), i);
 
         std::string const key = std::string{keyPrefix}+metadata.id;
         if (auto const* v = lookup_or_nullptr(lut, key); v and v->type() == osc::AppSettingValueType::Bool) {

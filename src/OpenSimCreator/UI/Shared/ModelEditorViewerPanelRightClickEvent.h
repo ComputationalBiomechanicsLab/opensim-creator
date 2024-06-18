@@ -13,7 +13,7 @@ namespace osc
 
         ModelEditorViewerPanelRightClickEvent(
             std::string sourcePanelName_,
-            Rect const& viewportScreenRect_,
+            const Rect& viewportScreenRect_,
             std::string componentAbsPathOrEmpty_,
             std::optional<Vec3> maybeClickPositionInGround_) :
 

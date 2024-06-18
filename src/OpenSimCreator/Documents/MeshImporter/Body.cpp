@@ -17,8 +17,8 @@ using osc::mi::MIClass;
 
 osc::mi::Body::Body(
     UID id,
-    std::string const& name,
-    Transform const& xform) :
+    const std::string& name,
+    const Transform& xform) :
 
     m_ID{id},
     m_Name{SanitizeToOpenSimComponentName(name)},

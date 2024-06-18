@@ -114,9 +114,9 @@ namespace osc::mi
         {
             m_DrawablesBuffer.clear();
 
-            Document const& mg = m_Shared->getModelGraph();
+            const Document& mg = m_Shared->getModelGraph();
 
-            for (Mesh const& meshEl : mg.iter<Mesh>())
+            for (const Mesh& meshEl : mg.iter<Mesh>())
             {
                 m_DrawablesBuffer.emplace_back(m_Shared->generateMeshDrawable(meshEl));
             }
@@ -135,7 +135,7 @@ namespace osc::mi
             }
 
             // returns a string representation of a spatial position (e.g. (0.0, 1.0, 3.0))
-            std::string const pos = [](Vec3 const& pos)
+            std::string const pos = [](const Vec3& pos)
             {
                 std::stringstream ss;
                 ss.precision(4);
@@ -209,7 +209,7 @@ namespace osc::mi
             ui::pop_style_var();
         }
 
-        bool implOnEvent(SDL_Event const& e) final
+        bool implOnEvent(const SDL_Event& e) final
         {
             return m_Shared->onEvent(e);
         }

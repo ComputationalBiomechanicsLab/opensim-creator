@@ -18,8 +18,8 @@ namespace osc
     // what is saved upon each user action
     class ModelStateCommit final {
     public:
-        ModelStateCommit(IConstModelStatePair const&, std::string_view message);
-        ModelStateCommit(IConstModelStatePair const&, std::string_view message, UID parent);
+        ModelStateCommit(const IConstModelStatePair&, std::string_view message);
+        ModelStateCommit(const IConstModelStatePair&, std::string_view message, UID parent);
 
         UID getID() const;
         bool hasParent() const;
@@ -30,7 +30,7 @@ namespace osc
         UID getModelVersion() const;
         float getFixupScaleFactor() const;
 
-        friend bool operator==(ModelStateCommit const&, ModelStateCommit const&) = default;
+        friend bool operator==(const ModelStateCommit&, const ModelStateCommit&) = default;
     private:
         class Impl;
         std::shared_ptr<Impl const> m_Impl;

@@ -15,18 +15,18 @@ namespace osc
     class ObjectPropertyEdit final {
     public:
         ObjectPropertyEdit(
-            OpenSim::AbstractProperty const&,
+            const OpenSim::AbstractProperty&,
             std::function<void(OpenSim::AbstractProperty&)>
         );
 
         ObjectPropertyEdit(
-            OpenSim::Object const&,
-            OpenSim::AbstractProperty const&,
+            const OpenSim::Object&,
+            const OpenSim::AbstractProperty&,
             std::function<void(OpenSim::AbstractProperty&)>
         );
 
-        std::string const& getComponentAbsPath() const;  // empty if it's just a standalone object
-        std::string const& getPropertyName() const;
+        const std::string& getComponentAbsPath() const;  // empty if it's just a standalone object
+        const std::string& getPropertyName() const;
         void apply(OpenSim::AbstractProperty&);
         std::function<void(OpenSim::AbstractProperty&)> const& getUpdater() const
         {

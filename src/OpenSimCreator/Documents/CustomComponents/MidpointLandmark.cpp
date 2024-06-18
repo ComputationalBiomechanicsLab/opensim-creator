@@ -28,23 +28,23 @@ void osc::fd::MidpointLandmark::generateDecorations(
 
 SimTK::Vec3 osc::fd::MidpointLandmark::calcLocationInGround(const SimTK::State& state) const
 {
-    auto const& [first, second] = lookupPoints();
+    const auto& [first, second] = lookupPoints();
     return 0.5*(first.getLocationInGround(state) + second.getLocationInGround(state));
 }
 
 SimTK::Vec3 osc::fd::MidpointLandmark::calcVelocityInGround(const SimTK::State& state) const
 {
-    auto const& [first, second] = lookupPoints();
+    const auto& [first, second] = lookupPoints();
     return 0.5*(first.getVelocityInGround(state) + second.getVelocityInGround(state));
 }
 
 SimTK::Vec3 osc::fd::MidpointLandmark::calcAccelerationInGround(const SimTK::State& state) const
 {
-    auto const& [first, second] = lookupPoints();
+    const auto& [first, second] = lookupPoints();
     return 0.5*(first.getAccelerationInGround(state), second.getAccelerationInGround(state));
 }
 
-std::pair<OpenSim::Point const&, OpenSim::Point const&> osc::fd::MidpointLandmark::lookupPoints() const
+std::pair<const OpenSim::Point&, const OpenSim::Point&> osc::fd::MidpointLandmark::lookupPoints() const
 {
     return {
         getConnectee<OpenSim::Point>("first_point"),

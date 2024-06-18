@@ -28,6 +28,6 @@ namespace osc::mi
             UID StationGroup;
             UID EdgeGroup;
         };
-        static AllIDs const& GetAllIDs();
+        static const AllIDs& GetAllIDs();
     };
 }

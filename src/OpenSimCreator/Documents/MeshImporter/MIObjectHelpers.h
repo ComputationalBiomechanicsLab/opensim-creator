@@ -14,13 +14,13 @@ namespace osc::mi { class MIObject; }
 namespace osc::mi
 {
     // returns true if a mesh can be attached to the given object
-    bool CanAttachMeshTo(MIObject const&);
+    bool CanAttachMeshTo(const MIObject&);
 
     // returns `true` if a `StationEl` can be attached to the object
-    bool CanAttachStationTo(MIObject const&);
+    bool CanAttachStationTo(const MIObject&);
 
     std::array<MIClass, std::variant_size_v<SceneElVariant>> const& GetSceneElClasses();
 
-    Vec3 AverageCenter(Mesh const&);
-    Vec3 mass_center_of(Mesh const&);
+    Vec3 AverageCenter(const Mesh&);
+    Vec3 mass_center_of(const Mesh&);
 }

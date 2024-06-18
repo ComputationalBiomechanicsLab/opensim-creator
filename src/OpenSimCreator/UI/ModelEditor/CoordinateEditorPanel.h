@@ -21,9 +21,9 @@ namespace osc
             IEditorAPI*,
             std::shared_ptr<UndoableModelStatePair>
         );
-        CoordinateEditorPanel(CoordinateEditorPanel const&) = delete;
+        CoordinateEditorPanel(const CoordinateEditorPanel&) = delete;
         CoordinateEditorPanel(CoordinateEditorPanel&&) noexcept;
-        CoordinateEditorPanel& operator=(CoordinateEditorPanel const&) = delete;
+        CoordinateEditorPanel& operator=(const CoordinateEditorPanel&) = delete;
         CoordinateEditorPanel& operator=(CoordinateEditorPanel&&) noexcept;
         ~CoordinateEditorPanel() noexcept;
 

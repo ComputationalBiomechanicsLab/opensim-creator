@@ -24,10 +24,10 @@ namespace osc
     // that `osc` is running
     class ForwardDynamicSimulation final : public ISimulation {
     public:
-        ForwardDynamicSimulation(BasicModelStatePair, ForwardDynamicSimulatorParams const&);
-        ForwardDynamicSimulation(ForwardDynamicSimulation const&) = delete;
+        ForwardDynamicSimulation(BasicModelStatePair, const ForwardDynamicSimulatorParams&);
+        ForwardDynamicSimulation(const ForwardDynamicSimulation&) = delete;
         ForwardDynamicSimulation(ForwardDynamicSimulation&&) noexcept;
-        ForwardDynamicSimulation& operator=(ForwardDynamicSimulation const&) = delete;
+        ForwardDynamicSimulation& operator=(const ForwardDynamicSimulation&) = delete;
         ForwardDynamicSimulation& operator=(ForwardDynamicSimulation&&) noexcept;
         ~ForwardDynamicSimulation() noexcept;
 
@@ -42,7 +42,7 @@ namespace osc
 
         SimulationStatus implGetStatus() const final;
         SimulationClocks implGetClocks() const final;
-        ParamBlock const& implGetParams() const final;
+        const ParamBlock& implGetParams() const final;
         std::span<OutputExtractor const> implGetOutputExtractors() const final;
 
         bool implCanChangeEndTime() const final { return true; }

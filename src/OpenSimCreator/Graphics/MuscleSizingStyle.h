@@ -21,6 +21,6 @@ namespace osc
         MuscleSizingStyle value;
     };
     std::span<MuscleSizingStyleMetadata const> GetAllMuscleSizingStyleMetadata();
-    MuscleSizingStyleMetadata const& GetMuscleSizingStyleMetadata(MuscleSizingStyle);
+    const MuscleSizingStyleMetadata& GetMuscleSizingStyleMetadata(MuscleSizingStyle);
     ptrdiff_t GetIndexOf(MuscleSizingStyle);
 }

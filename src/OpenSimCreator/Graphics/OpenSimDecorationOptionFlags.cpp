@@ -67,7 +67,7 @@ namespace
 }
 
 
-OpenSimDecorationOptionMetadata const& osc::GetIthOptionMetadata(size_t i)
+const OpenSimDecorationOptionMetadata& osc::GetIthOptionMetadata(size_t i)
 {
     return c_CustomDecorationOptionLabels.at(i);
 }

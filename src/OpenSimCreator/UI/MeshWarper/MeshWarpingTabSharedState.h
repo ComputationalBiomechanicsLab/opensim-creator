@@ -43,12 +43,12 @@ namespace osc
         {
         }
 
-        TPSDocument const& getScratch() const
+        const TPSDocument& getScratch() const
         {
             return editedDocument->scratch();
         }
 
-        UndoableTPSDocument const& getUndoable() const
+        const UndoableTPSDocument& getUndoable() const
         {
             return *editedDocument;
         }
@@ -58,19 +58,19 @@ namespace osc
             return *editedDocument;
         }
 
-        Mesh const& getScratchMesh(TPSDocumentInputIdentifier which) const
+        const Mesh& getScratchMesh(TPSDocumentInputIdentifier which) const
         {
             return GetMesh(getScratch(), which);
         }
 
-        BVH const& getScratchMeshBVH(TPSDocumentInputIdentifier which)
+        const BVH& getScratchMeshBVH(TPSDocumentInputIdentifier which)
         {
-            Mesh const& mesh = getScratchMesh(which);
+            const Mesh& mesh = getScratchMesh(which);
             return meshCache->get_bvh(mesh);
         }
 
         // returns a (potentially cached) post-TPS-warp mesh
-        Mesh const& getResultMesh()
+        const Mesh& getResultMesh()
         {
             return meshResultCache.getWarpedMesh(editedDocument->scratch());
         }
@@ -80,7 +80,7 @@ namespace osc
             return meshResultCache.getWarpedNonParticipatingLandmarkLocations(editedDocument->scratch());
         }
 
-        bool isHovered(TPSDocumentElementID const& id) const
+        bool isHovered(const TPSDocumentElementID& id) const
         {
             return currentHover && currentHover->isHovering(id);
         }
@@ -88,7 +88,7 @@ namespace osc
         bool hasSelection() const
         {
             // TODO: should probably gc the selection
-            for (auto const& el : userSelection.getUnderlyingSet())
+            for (const auto& el : userSelection.getUnderlyingSet())
             {
                 if (FindElement(getScratch(), el))
                 {
@@ -98,12 +98,12 @@ namespace osc
             return false;
         }
 
-        bool isSelected(TPSDocumentElementID const& id) const
+        bool isSelected(const TPSDocumentElementID& id) const
         {
             return userSelection.contains(id);
         }
 
-        void select(TPSDocumentElementID const& id)
+        void select(const TPSDocumentElementID& id)
         {
             userSelection.select(id);
         }
@@ -115,7 +115,7 @@ namespace osc
 
         void selectAll()
         {
-            for (auto const& el : GetAllElementIDs(editedDocument->scratch()))
+            for (const auto& el : GetAllElementIDs(editedDocument->scratch()))
             {
                 userSelection.select(el);
             }

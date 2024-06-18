@@ -100,7 +100,7 @@ namespace
     };
 
     // evaluates the TPS equation with the given coefficients and input point
-    Vec2 Evaluate(TPSCoefficients2D const& coefs, Vec2 p)
+    Vec2 Evaluate(const TPSCoefficients2D& coefs, Vec2 p)
     {
         // this implementation effectively evaluates both `fx(x, y)` and `fy(x, y)` at
         // the same time, because `TPSCoefficients2D` stores the X and Y variants of the
@@ -110,7 +110,7 @@ namespace
         Vec2 rv = coefs.a1 + coefs.a2*p.x + coefs.a3*p.y;
 
         // accumulate non-affine terms (effectively: wi * U(||controlPoint - p||))
-        for (TPSNonAffineTerm2D const& wt : coefs.weights)
+        for (const TPSNonAffineTerm2D& wt : coefs.weights)
         {
             rv += wt.weight * RadialBasisFunction2D(wt.controlPoint, p);
         }
@@ -183,8 +183,8 @@ namespace
         {
             for (int col = 0; col < numPairs; ++col)
             {
-                Vec2 const& pi_ = landmarkPairs[row].src;
-                Vec2 const& pj = landmarkPairs[col].src;
+                const Vec2& pi_ = landmarkPairs[row].src;
+                const Vec2& pj = landmarkPairs[col].src;
 
                 L(row, col) = RadialBasisFunction2D(pi_, pj);
             }
@@ -289,7 +289,7 @@ namespace
 
     // returns a mesh that is the equivalent of applying the 2D TPS warp to all
     // vertices of the input mesh
-    Mesh ApplyThinPlateWarpToMesh(ThinPlateWarper2D const& t, Mesh const& mesh)
+    Mesh ApplyThinPlateWarpToMesh(const ThinPlateWarper2D& t, const Mesh& mesh)
     {
         Mesh rv = mesh;
         rv.transform_vertices([&t](Vec3 v) { return Vec3{t.transform(v), v.z}; });
@@ -409,7 +409,7 @@ public:
 private:
 
     // render the given mesh as-is to the given output render texture
-    void renderMesh(Mesh const& mesh, Vec2i dims, std::optional<RenderTexture>& out)
+    void renderMesh(const Mesh& mesh, Vec2i dims, std::optional<RenderTexture>& out)
     {
         RenderTextureDescriptor desc{dims};
         desc.set_anti_aliasing_level(App::get().anti_aliasing_level());
@@ -424,12 +424,12 @@ private:
     }
 
     // render any 2D overlays
-    void renderOverlayElements(ui::HittestResult const& ht)
+    void renderOverlayElements(const ui::HittestResult& ht)
     {
         ImDrawList* const drawlist = ui::get_panel_draw_list();
 
         // render all fully-established landmark pairs
-        for (LandmarkPair2D const& p : m_LandmarkPairs)
+        for (const LandmarkPair2D& p : m_LandmarkPairs)
         {
             Vec2 const p1 = ht.item_screen_rect.p1 + (dimensions_of(ht.item_screen_rect) * ndc_point_to_topleft_relative_pos(p.src));
             Vec2 const p2 = ht.item_screen_rect.p1 + (dimensions_of(ht.item_screen_rect) * ndc_point_to_topleft_relative_pos(p.dest));
@@ -442,7 +442,7 @@ private:
         // render any currenty-placing landmark pairs in a more-faded color
         if (ht.is_hovered && std::holds_alternative<GUIFirstClickMouseState>(m_MouseState))
         {
-            GUIFirstClickMouseState const& st = std::get<GUIFirstClickMouseState>(m_MouseState);
+            const GUIFirstClickMouseState& st = std::get<GUIFirstClickMouseState>(m_MouseState);
 
             Vec2 const p1 = ht.item_screen_rect.p1 + (dimensions_of(ht.item_screen_rect) * ndc_point_to_topleft_relative_pos(st.srcNDCPos));
             Vec2 const p2 = ui::get_mouse_pos();
@@ -454,17 +454,17 @@ private:
     }
 
     // render any mouse-related overlays
-    void renderMouseUIElements(ui::HittestResult const& ht)
+    void renderMouseUIElements(const ui::HittestResult& ht)
     {
         std::visit(Overload
         {
-            [this, &ht](GUIInitialMouseState const& st) { renderMouseUIElements(ht, st); },
-            [this, &ht](GUIFirstClickMouseState const& st) { renderMouseUIElements(ht, st); },
+            [this, &ht](const GUIInitialMouseState& st) { renderMouseUIElements(ht, st); },
+            [this, &ht](const GUIFirstClickMouseState& st) { renderMouseUIElements(ht, st); },
         }, m_MouseState);
     }
 
     // render any mouse-related overlays for when the user hasn't clicked yet
-    void renderMouseUIElements(ui::HittestResult const& ht, GUIInitialMouseState)
+    void renderMouseUIElements(const ui::HittestResult& ht, GUIInitialMouseState)
     {
         Vec2 const mouseScreenPos = ui::get_mouse_pos();
         Vec2 const mouseImagePos = mouseScreenPos - ht.item_screen_rect.p1;
@@ -480,7 +480,7 @@ private:
     }
 
     // render any mouse-related overlays for when the user has clicked once
-    void renderMouseUIElements(ui::HittestResult const& ht, GUIFirstClickMouseState st)
+    void renderMouseUIElements(const ui::HittestResult& ht, GUIFirstClickMouseState st)
     {
         Vec2 const mouseScreenPos = ui::get_mouse_pos();
         Vec2 const mouseImagePos = mouseScreenPos - ht.item_screen_rect.p1;

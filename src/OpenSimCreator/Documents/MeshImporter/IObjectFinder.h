@@ -10,9 +10,9 @@ namespace osc::mi
     class IObjectFinder {
     protected:
         IObjectFinder() = default;
-        IObjectFinder(IObjectFinder const&) = default;
+        IObjectFinder(const IObjectFinder&) = default;
         IObjectFinder(IObjectFinder&&) noexcept = default;
-        IObjectFinder& operator=(IObjectFinder const&) = default;
+        IObjectFinder& operator=(const IObjectFinder&) = default;
         IObjectFinder& operator=(IObjectFinder&&) noexcept = default;
     public:
         virtual ~IObjectFinder() noexcept = default;

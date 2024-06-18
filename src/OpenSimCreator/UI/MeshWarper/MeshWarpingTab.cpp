@@ -113,7 +113,7 @@ public:
         App::upd().make_main_loop_polling();
     }
 
-    bool onEvent(SDL_Event const& e)
+    bool onEvent(const SDL_Event& e)
     {
         if (e.type == SDL_KEYDOWN)
         {
@@ -152,7 +152,7 @@ public:
     }
 
 private:
-    bool onKeydownEvent(SDL_KeyboardEvent const& e)
+    bool onKeydownEvent(const SDL_KeyboardEvent& e)
     {
         bool const ctrlOrSuperDown = ui::is_ctrl_or_super_down();
 
@@ -250,7 +250,7 @@ void osc::MeshWarpingTab::impl_on_unmount()
     m_Impl->on_unmount();
 }
 
-bool osc::MeshWarpingTab::impl_on_event(SDL_Event const& e)
+bool osc::MeshWarpingTab::impl_on_event(const SDL_Event& e)
 {
     return m_Impl->onEvent(e);
 }

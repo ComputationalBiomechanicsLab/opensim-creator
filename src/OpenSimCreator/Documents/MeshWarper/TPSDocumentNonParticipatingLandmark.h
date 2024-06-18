@@ -13,8 +13,8 @@ namespace osc
     struct TPSDocumentNonParticipatingLandmark final : public TPSDocumentElement {
     public:
         TPSDocumentNonParticipatingLandmark(
-            StringName const& name_,
-            Vec3 const& location_) :
+            const StringName& name_,
+            const Vec3& location_) :
 
             name{name_},
             location{location_}

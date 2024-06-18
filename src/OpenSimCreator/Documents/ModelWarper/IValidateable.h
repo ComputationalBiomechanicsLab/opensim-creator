@@ -11,12 +11,12 @@ namespace osc::mow
     class IValidateable {
     protected:
         IValidateable() = default;
-        IValidateable(IValidateable const&) = default;
+        IValidateable(const IValidateable&) = default;
         IValidateable(IValidateable&&) noexcept = default;
-        IValidateable& operator=(IValidateable const&) = default;
+        IValidateable& operator=(const IValidateable&) = default;
         IValidateable& operator=(IValidateable&&) noexcept = default;
 
-        friend bool operator==(IValidateable const&, IValidateable const&) = default;
+        friend bool operator==(const IValidateable&, const IValidateable&) = default;
     public:
         virtual ~IValidateable() noexcept = default;
         std::vector<ValidationCheckResult> validate() const { return implValidate(); }

@@ -23,5 +23,5 @@ namespace osc
     };
     std::span<MuscleDecorationStyleMetadata const> GetAllMuscleDecorationStyleMetadata();
     ptrdiff_t GetIndexOf(MuscleDecorationStyle);
-    MuscleDecorationStyleMetadata const& GetMuscleDecorationStyleMetadata(MuscleDecorationStyle);
+    const MuscleDecorationStyleMetadata& GetMuscleDecorationStyleMetadata(MuscleDecorationStyle);
 }

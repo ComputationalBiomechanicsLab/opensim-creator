@@ -18,12 +18,12 @@ namespace osc
         SelectComponentPopup(
             std::string_view popupName,
             std::shared_ptr<UndoableModelStatePair const>,
-            std::function<void(OpenSim::ComponentPath const&)> onSelection,
-            std::function<bool(OpenSim::Component const&)> filter
+            std::function<void(const OpenSim::ComponentPath&)> onSelection,
+            std::function<bool(const OpenSim::Component&)> filter
         );
-        SelectComponentPopup(SelectComponentPopup const&) = delete;
+        SelectComponentPopup(const SelectComponentPopup&) = delete;
         SelectComponentPopup(SelectComponentPopup&&) noexcept;
-        SelectComponentPopup& operator=(SelectComponentPopup const&) = delete;
+        SelectComponentPopup& operator=(const SelectComponentPopup&) = delete;
         SelectComponentPopup& operator=(SelectComponentPopup&&) noexcept;
         ~SelectComponentPopup() noexcept;
 

@@ -15,12 +15,12 @@ namespace osc
     public:
         SelectGeometryPopup(
             std::string_view popupName,
-            std::filesystem::path const& geometryDir,
+            const std::filesystem::path& geometryDir,
             std::function<void(std::unique_ptr<OpenSim::Geometry>)> onSelection
         );
-        SelectGeometryPopup(SelectGeometryPopup const&) = delete;
+        SelectGeometryPopup(const SelectGeometryPopup&) = delete;
         SelectGeometryPopup(SelectGeometryPopup&&) noexcept;
-        SelectGeometryPopup& operator=(SelectGeometryPopup const&) = delete;
+        SelectGeometryPopup& operator=(const SelectGeometryPopup&) = delete;
         SelectGeometryPopup& operator=(SelectGeometryPopup&&) noexcept;
         ~SelectGeometryPopup() noexcept;
 

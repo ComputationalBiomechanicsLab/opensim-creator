@@ -25,13 +25,13 @@ namespace osc::mow
         // constructs a lookup that, given the inputs, is as populated as possible (i.e.
         // actually tries to figure out which concrete frame warpers to use, etc.)
         FrameWarperFactories(
-            std::filesystem::path const& osimFileLocation,
-            OpenSim::Model const&,
-            ModelWarpConfiguration const&
+            const std::filesystem::path& osimFileLocation,
+            const OpenSim::Model&,
+            const ModelWarpConfiguration&
         );
 
         template<std::derived_from<IFrameWarperFactory> FrameWarp = IFrameWarperFactory>
-        FrameWarp const* find(std::string const& absPath) const
+        FrameWarp const* find(const std::string& absPath) const
         {
             return dynamic_cast<FrameWarp const*>(lookup(absPath));
         }
@@ -39,7 +39,7 @@ namespace osc::mow
         [[nodiscard]] bool empty() const { return m_AbsPathToWarpLUT.empty(); }
 
     private:
-        IFrameWarperFactory const* lookup(std::string const& absPath) const
+        IFrameWarperFactory const* lookup(const std::string& absPath) const
         {
             if (auto const* ptr = lookup_or_nullptr(m_AbsPathToWarpLUT, absPath)) {
                 return ptr->get();

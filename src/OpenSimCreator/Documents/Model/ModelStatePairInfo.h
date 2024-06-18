@@ -13,11 +13,11 @@ namespace osc
     class ModelStatePairInfo final {
     public:
         ModelStatePairInfo();
-        explicit ModelStatePairInfo(IConstModelStatePair const&);
+        explicit ModelStatePairInfo(const IConstModelStatePair&);
 
         float getFixupScaleFactor() const { return m_FixupScaleFactor; }
 
-        friend bool operator==(ModelStatePairInfo const&, ModelStatePairInfo const&) = default;
+        friend bool operator==(const ModelStatePairInfo&, const ModelStatePairInfo&) = default;
 
     private:
         UID m_ModelVersion;

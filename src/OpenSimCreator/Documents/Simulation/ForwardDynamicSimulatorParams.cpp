@@ -40,7 +40,7 @@ osc::ForwardDynamicSimulatorParams::ForwardDynamicSimulatorParams() :
     integratorAccuracy{1.0e-5}
 {}
 
-ParamBlock osc::ToParamBlock(ForwardDynamicSimulatorParams const& p)
+ParamBlock osc::ToParamBlock(const ForwardDynamicSimulatorParams& p)
 {
     ParamBlock rv;
     rv.pushParam(c_FinalTimeTitle, c_FinalTimeDesc, (p.finalTime - SimulationClock::start()).count());
@@ -53,7 +53,7 @@ ParamBlock osc::ToParamBlock(ForwardDynamicSimulatorParams const& p)
     return rv;
 }
 
-ForwardDynamicSimulatorParams osc::FromParamBlock(ParamBlock const& b)
+ForwardDynamicSimulatorParams osc::FromParamBlock(const ParamBlock& b)
 {
     ForwardDynamicSimulatorParams rv;
     if (auto finalTime = b.findValue(c_FinalTimeTitle); finalTime && std::holds_alternative<double>(*finalTime))

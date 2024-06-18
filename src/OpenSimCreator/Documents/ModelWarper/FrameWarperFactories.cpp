@@ -9,13 +9,13 @@
 #include <OpenSim/Simulation/Model/Model.h>
 
 osc::mow::FrameWarperFactories::FrameWarperFactories(
-    std::filesystem::path const&,
-    OpenSim::Model const& model,
-    ModelWarpConfiguration const& config)
+    const std::filesystem::path&,
+    const OpenSim::Model& model,
+    const ModelWarpConfiguration& config)
 {
     // `StationDefinedFrame`s don't need a warper (they are warp-able by construction), but populated
     // the lookup with a named warper so the engine knows it's fine
-    for (auto const& sdf : model.getComponentList<OpenSim::StationDefinedFrame>()) {
+    for (const auto& sdf : model.getComponentList<OpenSim::StationDefinedFrame>()) {
         m_AbsPathToWarpLUT.try_emplace(sdf.getAbsolutePathString(), std::make_unique<StationDefinedFrameWarperFactory>());
     }
 
@@ -25,7 +25,7 @@ osc::mow::FrameWarperFactories::FrameWarperFactories(
     // the identity warper should warn the user that this is happening though (it's incorrect to
     // entirely ignore warping, but useful for getting things going)
     if (config.getShouldDefaultMissingFrameWarpsToIdentity()) {
-        for (auto const& pof : model.getComponentList<OpenSim::PhysicalOffsetFrame>()) {
+        for (const auto& pof : model.getComponentList<OpenSim::PhysicalOffsetFrame>()) {
             m_AbsPathToWarpLUT.try_emplace(pof.getAbsolutePathString(), std::make_unique<IdentityFrameWarperFactory>());
         }
     }

@@ -28,7 +28,7 @@ namespace osc::mi
         std::optional<MaterialPropertyBlock> maybePropertyBlock{};
     };
 
-    inline AABB calcBounds(DrawableThing const& dt)
+    inline AABB calcBounds(const DrawableThing& dt)
     {
         return transform_aabb(dt.transform, dt.mesh.bounds());
     }

@@ -108,7 +108,7 @@ namespace osc::mi
             {
                 m_MaybeOutputModel = CreateOpenSimModelFromMeshImporterDocument(getModelGraph(), m_ModelCreationFlags, m_IssuesBuffer);
             }
-            catch (std::exception const& ex)
+            catch (const std::exception& ex)
             {
                 log_error("error occurred while trying to create an OpenSim model from the mesh editor scene: %s", ex.what());
             }
@@ -200,7 +200,7 @@ namespace osc::mi
             return std::move(ss).str();
         }
 
-        Document const& getModelGraph() const
+        const Document& getModelGraph() const
         {
             return m_ModelGraphSnapshots.scratch();
         }
@@ -288,15 +288,15 @@ namespace osc::mi
         // UI OVERLAY STUFF
         //
 
-        Vec2 worldPosToScreenPos(Vec3 const& worldPos) const
+        Vec2 worldPosToScreenPos(const Vec3& worldPos) const
         {
             return getCamera().project_onto_screen_rect(worldPos, get3DSceneRect());
         }
 
         void drawConnectionLine(
             ImU32 color,
-            Vec3 const& parent,
-            Vec3 const& child) const
+            const Vec3& parent,
+            const Vec3& child) const
         {
             // the line
             ui::get_panel_draw_list()->AddLine(worldPosToScreenPos(parent), worldPosToScreenPos(child), color, c_ConnectionLineWidth);
@@ -306,13 +306,13 @@ namespace osc::mi
         }
 
         void drawConnectionLines(
-            Color const& color,
+            const Color& color,
             std::unordered_set<UID> const& excludedIDs) const
         {
-            Document const& mg = getModelGraph();
+            const Document& mg = getModelGraph();
             ImU32 colorU32 = ui::to_ImU32(color);
 
-            for (MIObject const& el : mg.iter())
+            for (const MIObject& el : mg.iter())
             {
                 UID id = el.getID();
 
@@ -337,17 +337,17 @@ namespace osc::mi
             }
         }
 
-        void drawConnectionLines(Color const& color) const
+        void drawConnectionLines(const Color& color) const
         {
             drawConnectionLines(color, {});
         }
 
-        void drawConnectionLines(MeshImporterHover const& currentHover) const
+        void drawConnectionLines(const MeshImporterHover& currentHover) const
         {
-            Document const& mg = getModelGraph();
+            const Document& mg = getModelGraph();
             ImU32 color = ui::to_ImU32(m_Colors.connectionLines);
 
-            for (MIObject const& el : mg.iter())
+            for (const MIObject& el : mg.iter())
             {
                 UID id = el.getID();
 
@@ -402,7 +402,7 @@ namespace osc::mi
 
             std::vector<SceneDecoration> decs;
             decs.reserve(drawables.size());
-            for (DrawableThing const& dt : drawables)
+            for (const DrawableThing& dt : drawables)
             {
                 decs.push_back({
                     dt.mesh,
@@ -430,7 +430,7 @@ namespace osc::mi
             return m_IsRenderHovered;
         }
 
-        Rect const& get3DSceneRect() const
+        const Rect& get3DSceneRect() const
         {
             return m_3DSceneRect;
         }
@@ -440,7 +440,7 @@ namespace osc::mi
             return dimensions_of(m_3DSceneRect);
         }
 
-        PolarPerspectiveCamera const& getCamera() const
+        const PolarPerspectiveCamera& getCamera() const
         {
             return m_3DSceneCamera;
         }
@@ -455,7 +455,7 @@ namespace osc::mi
             m_3DSceneCamera = CreateDefaultCamera();
         }
 
-        void focusCameraOn(Vec3 const& focusPoint)
+        void focusCameraOn(const Vec3& focusPoint)
         {
             m_3DSceneCamera.focus_point = -focusPoint;
         }
@@ -467,7 +467,7 @@ namespace osc::mi
             return {&m_Colors.ground, sizeof(m_Colors)/sizeof(Color)};
         }
 
-        void setColor(size_t i, Color const& newColorValue)
+        void setColor(size_t i, const Color& newColorValue)
         {
             updColors()[i] = newColorValue;
         }
@@ -477,7 +477,7 @@ namespace osc::mi
             return c_ColorNames;
         }
 
-        Color const& getColorConnectionLine() const
+        const Color& getColorConnectionLine() const
         {
             return m_Colors.connectionLines;
         }
@@ -580,7 +580,7 @@ namespace osc::mi
 
             UID closestID = MIIDs::Empty();
             float closestDist = std::numeric_limits<float>::max();
-            for (DrawableThing const& drawable : drawables)
+            for (const DrawableThing& drawable : drawables)
             {
                 if (drawable.id == MIIDs::Empty())
                 {
@@ -649,7 +649,7 @@ namespace osc::mi
         // SCENE ELEMENT STUFF (specific methods for specific scene element types)
         //
 
-        DrawableThing generateMeshDrawable(osc::mi::Mesh const& el) const
+        DrawableThing generateMeshDrawable(const osc::mi::Mesh& el) const
         {
             DrawableThing rv;
             rv.id = el.getID();
@@ -662,12 +662,12 @@ namespace osc::mi
         }
 
         void appendDrawables(
-            MIObject const& e,
+            const MIObject& e,
             std::vector<DrawableThing>& appendOut) const
         {
             std::visit(Overload
             {
-                [this, &appendOut](Ground const&)
+                [this, &appendOut](const Ground&)
                 {
                     if (!isShowingGround())
                     {
@@ -676,7 +676,7 @@ namespace osc::mi
 
                     appendOut.push_back(generateGroundSphere(getColorGround()));
                 },
-                [this, &appendOut](Mesh const& el)
+                [this, &appendOut](const Mesh& el)
                 {
                     if (!isShowingMeshes())
                     {
@@ -685,7 +685,7 @@ namespace osc::mi
 
                     appendOut.push_back(generateMeshDrawable(el));
                 },
-                [this, &appendOut](Body const& el)
+                [this, &appendOut](const Body& el)
                 {
                     if (!isShowingBodies())
                     {
@@ -694,7 +694,7 @@ namespace osc::mi
 
                     appendBodyElAsCubeThing(el, appendOut);
                 },
-                [this, &appendOut](Joint const& el)
+                [this, &appendOut](const Joint& el)
                 {
                     if (!isShowingJointCenters())
                     {
@@ -711,7 +711,7 @@ namespace osc::mi
                         GetJointAxisLengths(el)
                     );
                 },
-                [this, &appendOut](StationEl const& el)
+                [this, &appendOut](const StationEl& el)
                 {
                     if (!isShowingStations())
                     {
@@ -778,7 +778,7 @@ namespace osc::mi
         // TOP-LEVEL STUFF
         //
 
-        bool onEvent(SDL_Event const& e)
+        bool onEvent(const SDL_Event& e)
         {
             // if the user drags + drops a file into the window, assume it's a meshfile
             // and start loading it
@@ -808,7 +808,7 @@ namespace osc::mi
         }
 
     private:
-        bool exportModelGraphTo(std::filesystem::path const& exportPath)
+        bool exportModelGraphTo(const std::filesystem::path& exportPath)
         {
             std::vector<std::string> issues;
             std::unique_ptr<OpenSim::Model> m;
@@ -817,7 +817,7 @@ namespace osc::mi
             {
                 m = CreateOpenSimModelFromMeshImporterDocument(getModelGraph(), m_ModelCreationFlags, issues);
             }
-            catch (std::exception const& ex)
+            catch (const std::exception& ex)
             {
                 log_error("error occurred while trying to create an OpenSim model from the mesh editor scene: %s", ex.what());
             }
@@ -831,7 +831,7 @@ namespace osc::mi
             }
             else
             {
-                for (std::string const& issue : issues)
+                for (const std::string& issue : issues)
                 {
                     log_error("%s", issue.c_str());
                 }
@@ -856,12 +856,12 @@ namespace osc::mi
             pushMeshLoadRequests(MIIDs::Ground(), std::move(paths));
         }
 
-        void pushMeshLoadRequest(UID attachmentPoint, std::filesystem::path const& path)
+        void pushMeshLoadRequest(UID attachmentPoint, const std::filesystem::path& path)
         {
             pushMeshLoadRequests(attachmentPoint, std::vector<std::filesystem::path>{path});
         }
 
-        void pushMeshLoadRequest(std::filesystem::path const& meshFilePath)
+        void pushMeshLoadRequest(const std::filesystem::path& meshFilePath)
         {
             pushMeshLoadRequest(MIIDs::Ground(), meshFilePath);
         }
@@ -878,7 +878,7 @@ namespace osc::mi
             Document& mg = updModelGraph();
             mg.deSelectAll();
 
-            for (LoadedMesh const& lm : ok.meshes)
+            for (const LoadedMesh& lm : ok.meshes)
             {
                 MIObject* el = mg.tryUpdByID(ok.preferredAttachmentPoint);
 
@@ -964,11 +964,11 @@ namespace osc::mi
         }
 
         void drawConnectionLines(
-            MIObject const& el,
+            const MIObject& el,
             ImU32 color,
             std::unordered_set<UID> const& excludedIDs) const
         {
-            Document const& mg = getModelGraph();
+            const Document& mg = getModelGraph();
             for (int i = 0, len = el.getNumCrossReferences(); i < len; ++i)
             {
                 UID refID = el.getCrossReferenceConnecteeID(i);
@@ -997,12 +997,12 @@ namespace osc::mi
             }
         }
 
-        void drawConnectionLines(MIObject const& el, ImU32 color) const
+        void drawConnectionLines(const MIObject& el, ImU32 color) const
         {
             drawConnectionLines(el, color, std::unordered_set<UID>{});
         }
 
-        void drawConnectionLineToGround(MIObject const& el, ImU32 color) const
+        void drawConnectionLineToGround(const MIObject& el, ImU32 color) const
         {
             if (el.getID() == MIIDs::Ground())
             {
@@ -1012,15 +1012,15 @@ namespace osc::mi
             drawConnectionLine(color, Vec3{}, el.getPos(getModelGraph()));
         }
 
-        bool shouldShowConnectionLines(MIObject const& el) const
+        bool shouldShowConnectionLines(const MIObject& el) const
         {
             return std::visit(Overload
             {
-                []    (Ground const&)  { return false; },
-                [this](Mesh const&)    { return this->isShowingMeshConnectionLines(); },
-                [this](Body const&)    { return this->isShowingBodyConnectionLines(); },
-                [this](Joint const&)   { return this->isShowingJointConnectionLines(); },
-                [this](StationEl const&) { return this->isShowingMeshConnectionLines(); },
+                []    (const Ground&)  { return false; },
+                [this](const Mesh&)    { return this->isShowingMeshConnectionLines(); },
+                [this](const Body&)    { return this->isShowingBodyConnectionLines(); },
+                [this](const Joint&)   { return this->isShowingJointConnectionLines(); },
+                [this](const StationEl&) { return this->isShowingMeshConnectionLines(); },
             }, el.toVariant());
         }
 
@@ -1029,7 +1029,7 @@ namespace osc::mi
             m_IsRenderHovered = newIsHovered;
         }
 
-        void set3DSceneRect(Rect const& newRect)
+        void set3DSceneRect(const Rect& newRect)
         {
             m_3DSceneRect = newRect;
         }
@@ -1041,22 +1041,22 @@ namespace osc::mi
             return {&m_Colors.ground, sizeof(m_Colors)/sizeof(Color)};
         }
 
-        Color const& getColorSceneBackground() const
+        const Color& getColorSceneBackground() const
         {
             return m_Colors.sceneBackground;
         }
 
-        Color const& getColorGround() const
+        const Color& getColorGround() const
         {
             return m_Colors.ground;
         }
 
-        Color const& getColorMesh() const
+        const Color& getColorMesh() const
         {
             return m_Colors.meshes;
         }
 
-        Color const& getColorStation() const
+        const Color& getColorStation() const
         {
             return m_Colors.stations;
         }
@@ -1176,7 +1176,7 @@ namespace osc::mi
             return 0.02f * m_SceneScaleFactor;
         }
 
-        Sphere sphereAtTranslation(Vec3 const& translation) const
+        Sphere sphereAtTranslation(const Vec3& translation) const
         {
             return Sphere{translation, getSphereRadius()};
         }
@@ -1184,7 +1184,7 @@ namespace osc::mi
         void appendAsFrame(
             UID logicalID,
             UID groupID,
-            Transform const& xform,
+            const Transform& xform,
             std::vector<DrawableThing>& appendOut,
             float alpha = 1.0f,
             SceneDecorationFlags flags = SceneDecorationFlags::None,
@@ -1249,7 +1249,7 @@ namespace osc::mi
         void appendAsCubeThing(
             UID logicalID,
             UID groupID,
-            Transform const& xform,
+            const Transform& xform,
             std::vector<DrawableThing>& appendOut) const
         {
             float const halfWidth = 1.5f * getSphereRadius();
@@ -1355,12 +1355,12 @@ namespace osc::mi
             m_InteractivityFlags.stations = v;
         }
 
-        void appendBodyElAsCubeThing(Body const& bodyEl, std::vector<DrawableThing>& appendOut) const
+        void appendBodyElAsCubeThing(const Body& bodyEl, std::vector<DrawableThing>& appendOut) const
         {
             appendAsCubeThing(bodyEl.getID(), MIIDs::BodyGroup(), bodyEl.getXForm(), appendOut);
         }
 
-        DrawableThing generateBodyElSphere(Body const& bodyEl, Color const& color) const
+        DrawableThing generateBodyElSphere(const Body& bodyEl, const Color& color) const
         {
             DrawableThing rv;
             rv.id = bodyEl.getID();
@@ -1372,7 +1372,7 @@ namespace osc::mi
             return rv;
         }
 
-        DrawableThing generateGroundSphere(Color const& color) const
+        DrawableThing generateGroundSphere(const Color& color) const
         {
             DrawableThing rv;
             rv.id = MIIDs::Ground();
@@ -1384,7 +1384,7 @@ namespace osc::mi
             return rv;
         }
 
-        DrawableThing generateStationSphere(StationEl const& el, Color const& color) const
+        DrawableThing generateStationSphere(const StationEl& el, const Color& color) const
         {
             DrawableThing rv;
             rv.id = el.getID();
@@ -1396,7 +1396,7 @@ namespace osc::mi
             return rv;
         }
 
-        Color RedifyColor(Color const& srcColor) const
+        Color RedifyColor(const Color& srcColor) const
         {
             constexpr float factor = 0.8f;
             return {srcColor[0], factor * srcColor[1], factor * srcColor[2], factor * srcColor[3]};
@@ -1404,7 +1404,7 @@ namespace osc::mi
 
         // returns a transform that maps a sphere mesh (defined to be @ 0,0,0 with radius 1)
         // to some sphere in the scene (e.g. a body/ground)
-        Transform SphereMeshToSceneSphereTransform(Sphere const& sceneSphere) const
+        Transform SphereMeshToSceneSphereTransform(const Sphere& sceneSphere) const
         {
             Transform t;
             t.scale *= sceneSphere.radius;

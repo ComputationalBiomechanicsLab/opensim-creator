@@ -56,7 +56,7 @@ public:
         App::upd().make_main_loop_waiting();
     }
 
-    bool onEvent(SDL_Event const& e)
+    bool onEvent(const SDL_Event& e)
     {
         if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
         {
@@ -159,7 +159,7 @@ void osc::RendererGeometryShaderTab::impl_on_unmount()
     m_Impl->on_unmount();
 }
 
-bool osc::RendererGeometryShaderTab::impl_on_event(SDL_Event const& e)
+bool osc::RendererGeometryShaderTab::impl_on_event(const SDL_Event& e)
 {
     return m_Impl->onEvent(e);
 }

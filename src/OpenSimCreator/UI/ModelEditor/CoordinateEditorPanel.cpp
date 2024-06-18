@@ -83,10 +83,10 @@ private:
                     switch (specs.front().SortDirection)
                     {
                     case ImGuiSortDirection_Ascending:
-                        rgs::sort(coordPtrs, rgs::less{}, [](auto const& ptr) { return ptr->getName(); });
+                        rgs::sort(coordPtrs, rgs::less{}, [](const auto& ptr) { return ptr->getName(); });
                         break;
                     case ImGuiSortDirection_Descending:
-                        rgs::sort(coordPtrs, rgs::greater{}, [](auto const& ptr) { return ptr->getName(); });
+                        rgs::sort(coordPtrs, rgs::greater{}, [](const auto& ptr) { return ptr->getName(); });
                         break;
                     case ImGuiSortDirection_None:
                     default:
@@ -107,7 +107,7 @@ private:
         }
     }
 
-    void drawRow(OpenSim::Coordinate const& c)
+    void drawRow(const OpenSim::Coordinate& c)
     {
         ui::table_next_row();
 
@@ -124,7 +124,7 @@ private:
         OSC_ASSERT_ALWAYS(c.hasOwner() && "An `OpenSim::Coordinate` must always have an owner. This bug can occur when using is_free_to_satisfy_coordinates (see issue #888)");
     }
 
-    void drawNameCell(OpenSim::Coordinate const& c)
+    void drawNameCell(const OpenSim::Coordinate& c)
     {
         int stylesPushed = 0;
         if (&c == m_Model->getHovered())
@@ -170,14 +170,14 @@ private:
         }
     }
 
-    void drawDataCell(OpenSim::Coordinate const& c)
+    void drawDataCell(const OpenSim::Coordinate& c)
     {
         drawDataCellLockButton(c);
         ui::same_line(0.0f, 0.0f);
         drawDataCellCoordinateSlider(c);
     }
 
-    void drawDataCellLockButton(OpenSim::Coordinate const& c)
+    void drawDataCellLockButton(const OpenSim::Coordinate& c)
     {
         ui::push_style_color(ImGuiCol_Button, Color::clear());
         ui::push_style_color(ImGuiCol_ButtonActive, Color::clear());
@@ -195,7 +195,7 @@ private:
         ui::draw_tooltip_if_item_hovered("Toggle Coordinate Lock", "Lock/unlock the coordinate's value.\n\nLocking a coordinate indicates whether the coordinate's value should be constrained to this value during the simulation.");
     }
 
-    void drawDataCellCoordinateSlider(OpenSim::Coordinate const& c)
+    void drawDataCellCoordinateSlider(const OpenSim::Coordinate& c)
     {
         bool const coordinateLocked = c.getLocked(m_Model->getState());
 
@@ -228,7 +228,7 @@ private:
         ui::draw_tooltip_body_only_if_item_hovered("Ctrl-click the slider to edit");
     }
 
-    void drawSpeedCell(OpenSim::Coordinate const& c)
+    void drawSpeedCell(const OpenSim::Coordinate& c)
     {
         float displayedSpeed = ConvertCoordValueToDisplayValue(c, c.getSpeedValue(m_Model->getState()));
 

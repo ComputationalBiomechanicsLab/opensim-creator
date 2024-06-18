@@ -70,7 +70,7 @@ namespace osc::mi
             return std::move(ss).str();
         }
 
-        friend bool operator==(MIClass const& lhs, MIClass const& rhs)
+        friend bool operator==(const MIClass& lhs, const MIClass& rhs)
         {
             return lhs.m_Data == rhs.m_Data || *lhs.m_Data == *rhs.m_Data;
         }
@@ -96,7 +96,7 @@ namespace osc::mi
             {
             }
 
-            friend bool operator==(Data const&, Data const&) = default;
+            friend bool operator==(const Data&, const Data&) = default;
 
             UID id;
             std::string name;

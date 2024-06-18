@@ -29,12 +29,12 @@ using namespace osc::mow;
 namespace
 {
     template<WarpableOpenSimComponent T>
-    EntryStyling CalcStyle(UIState const& state, T const& c)
+    EntryStyling CalcStyle(const UIState& state, T const& c)
     {
         return ToStyle(state.state(c));
     }
 
-    void DrawIcon(EntryStyling const& style)
+    void DrawIcon(const EntryStyling& style)
     {
         ui::push_style_color(ImGuiCol_Text, style.color);
         ui::draw_text_unformatted(style.icon);
@@ -42,8 +42,8 @@ namespace
     }
 
     void DrawEntryIconAndText(
-        UIState const&,
-        OpenSim::Component const& component,
+        const UIState&,
+        const OpenSim::Component& component,
         EntryStyling style)
     {
         DrawIcon(style);
@@ -52,12 +52,12 @@ namespace
     }
 
     template<WarpableOpenSimComponent T>
-    void DrawEntryIconAndText(UIState const& state, T const& c)
+    void DrawEntryIconAndText(const UIState& state, T const& c)
     {
         DrawEntryIconAndText(state, c, CalcStyle(state, c));
     }
 
-    void DrawTooltipHeader(UIState const&, OpenSim::Component const& component)
+    void DrawTooltipHeader(const UIState&, const OpenSim::Component& component)
     {
         ui::draw_text_unformatted(GetAbsolutePathString(component));
         ui::same_line();
@@ -67,7 +67,7 @@ namespace
     }
 
     template<WarpableOpenSimComponent T>
-    void DrawDetailsTable(UIState const& state, T const& c)
+    void DrawDetailsTable(const UIState& state, T const& c)
     {
         if (ui::begin_table("##Details", 2)) {
 
@@ -88,7 +88,7 @@ namespace
     }
 
     template<WarpableOpenSimComponent T>
-    void DrawChecklist(UIState const& state, T const& c)
+    void DrawChecklist(const UIState& state, T const& c)
     {
         ui::indent(5.0f);
         int id = 0;
@@ -104,7 +104,7 @@ namespace
     }
 
     template<WarpableOpenSimComponent T>
-    void DrawTooltipContent(UIState const& state, T const& c)
+    void DrawTooltipContent(const UIState& state, T const& c)
     {
         DrawTooltipHeader(state, c);
 
@@ -120,7 +120,7 @@ namespace
     }
 
     template<WarpableOpenSimComponent T>
-    void DrawEntry(UIState const& state, T const& c)
+    void DrawEntry(const UIState& state, T const& c)
     {
         DrawEntryIconAndText(state, c);
         if (ui::is_item_hovered(ImGuiHoveredFlags_ForTooltip)) {
@@ -134,7 +134,7 @@ namespace
 // UI (meshes/mesh pairing)
 namespace
 {
-    void DrawMeshSectionHeader(UIState const& state)
+    void DrawMeshSectionHeader(const UIState& state)
     {
         ui::draw_text("Meshes");
         ui::same_line();
@@ -143,12 +143,12 @@ namespace
         ui::draw_help_marker("Shows which meshes are elegible for warping in the source model - and whether the model warper has enough information to warp them (plus any other useful validation checks)");
     }
 
-    void DrawMeshSection(UIState const& state)
+    void DrawMeshSection(const UIState& state)
     {
         DrawMeshSectionHeader(state);
         ui::draw_separator();
         int id = 0;
-        for (auto const& mesh : state.model().getComponentList<OpenSim::Mesh>()) {
+        for (const auto& mesh : state.model().getComponentList<OpenSim::Mesh>()) {
             ui::push_id(id++);
             DrawEntry(state, mesh);
             ui::pop_id();
@@ -159,7 +159,7 @@ namespace
 // UI (frames)
 namespace
 {
-    void DrawFramesSectionHeader(UIState const& state)
+    void DrawFramesSectionHeader(const UIState& state)
     {
         ui::draw_text("Warpable Frames");
         ui::same_line();
@@ -168,12 +168,12 @@ namespace
         ui::draw_help_marker("Shows which frames are eligible for warping in the source model - and whether the model warper has enough information to warp them");
     }
 
-    void DrawFramesSection(UIState const& state)
+    void DrawFramesSection(const UIState& state)
     {
         DrawFramesSectionHeader(state);
         ui::draw_separator();
         int id = 0;
-        for (auto const& pof : state.model().getComponentList<OpenSim::PhysicalOffsetFrame>()) {
+        for (const auto& pof : state.model().getComponentList<OpenSim::PhysicalOffsetFrame>()) {
             ui::push_id(id++);
             DrawEntry(state, pof);
             ui::pop_id();

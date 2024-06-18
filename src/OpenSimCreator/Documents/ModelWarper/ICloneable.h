@@ -9,9 +9,9 @@ namespace osc::mow
     class ICloneable {
     protected:
         ICloneable() = default;
-        ICloneable(ICloneable const&) = default;
+        ICloneable(const ICloneable&) = default;
         ICloneable(ICloneable&&) noexcept = default;
-        ICloneable& operator=(ICloneable const&) = default;
+        ICloneable& operator=(const ICloneable&) = default;
         ICloneable& operator=(ICloneable&&) noexcept = default;
     public:
         virtual ~ICloneable() noexcept = default;

@@ -19,7 +19,7 @@ using namespace osc;
 
 namespace
 {
-    OutputExtractorDataType CalcOutputType(OutputExtractor const& a, OutputExtractor const& b)
+    OutputExtractorDataType CalcOutputType(const OutputExtractor& a, const OutputExtractor& b)
     {
         static_assert(num_options<OutputExtractorDataType>() == 3);
 
@@ -34,7 +34,7 @@ namespace
         }
     }
 
-    std::string CalcLabel(OutputExtractorDataType concatenatedType, OutputExtractor const& a, OutputExtractor const& b)
+    std::string CalcLabel(OutputExtractorDataType concatenatedType, const OutputExtractor& a, const OutputExtractor& b)
     {
         static_assert(num_options<OutputExtractorDataType>() == 3);
 
@@ -61,12 +61,12 @@ osc::ConcatenatingOutputExtractor::ConcatenatingOutputExtractor(
     m_Label{CalcLabel(m_OutputType, m_First, m_Second)}
 {}
 
-OutputValueExtractor osc::ConcatenatingOutputExtractor::implGetOutputValueExtractor(OpenSim::Component const& comp) const
+OutputValueExtractor osc::ConcatenatingOutputExtractor::implGetOutputValueExtractor(const OpenSim::Component& comp) const
 {
     static_assert(num_options<OutputExtractorDataType>() == 3);
 
     if (m_OutputType == OutputExtractorDataType::Vec2) {
-        auto extractor = [lhs = m_First.getOutputValueExtractor(comp), rhs = m_Second.getOutputValueExtractor(comp)](SimulationReport const& report)
+        auto extractor = [lhs = m_First.getOutputValueExtractor(comp), rhs = m_Second.getOutputValueExtractor(comp)](const SimulationReport& report)
         {
             auto const lv = lhs(report).to<float>();
             auto const rv = rhs(report).to<float>();
@@ -76,7 +76,7 @@ OutputValueExtractor osc::ConcatenatingOutputExtractor::implGetOutputValueExtrac
         return OutputValueExtractor{std::move(extractor)};
     }
     else {
-        auto extractor = [lhs = m_First.getOutputValueExtractor(comp), rhs = m_Second.getOutputValueExtractor(comp)](SimulationReport const& report)
+        auto extractor = [lhs = m_First.getOutputValueExtractor(comp), rhs = m_Second.getOutputValueExtractor(comp)](const SimulationReport& report)
         {
             return Variant{lhs(report).to<std::string>() + rhs(report).to<std::string>()};
         };
@@ -89,7 +89,7 @@ size_t osc::ConcatenatingOutputExtractor::implGetHash() const
     return hash_of(m_First, m_Second);
 }
 
-bool osc::ConcatenatingOutputExtractor::implEquals(IOutputExtractor const& other) const
+bool osc::ConcatenatingOutputExtractor::implEquals(const IOutputExtractor& other) const
 {
     if (&other == this) {
         return true;

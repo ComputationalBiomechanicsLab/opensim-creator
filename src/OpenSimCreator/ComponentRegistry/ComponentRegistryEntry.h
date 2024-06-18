@@ -21,13 +21,13 @@ namespace osc
 
         T const& prototype() const
         {
-            auto const& base = static_cast<ComponentRegistryEntryBase const&>(*this);
+            const auto& base = static_cast<const ComponentRegistryEntryBase&>(*this);
             return static_cast<T const&>(base.prototype());
         }
 
         std::unique_ptr<T> instantiate() const
         {
-            auto const& base = static_cast<ComponentRegistryEntryBase const&>(*this);
+            const auto& base = static_cast<const ComponentRegistryEntryBase&>(*this);
             return std::unique_ptr<T>{static_cast<T*>(base.instantiate().release())};
         }
     };

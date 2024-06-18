@@ -15,7 +15,7 @@ osc::ComponentSceneDecorationFlagsTagger::ComponentSceneDecorationFlagsTagger(
 }
 
 void osc::ComponentSceneDecorationFlagsTagger::operator()(
-    OpenSim::Component const& component,
+    const OpenSim::Component& component,
     SceneDecoration& decoration)
 {
     if (&component != m_LastComponent)
@@ -28,7 +28,7 @@ void osc::ComponentSceneDecorationFlagsTagger::operator()(
 }
 
 SceneDecorationFlags osc::ComponentSceneDecorationFlagsTagger::computeFlags(
-    OpenSim::Component const& component) const
+    const OpenSim::Component& component) const
 {
     SceneDecorationFlags rv = SceneDecorationFlags::None;
 

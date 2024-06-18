@@ -20,7 +20,7 @@ namespace osc
             m_SelectedSceneElements.insert(std::move(el));
         }
 
-        bool contains(TPSDocumentElementID const& el) const
+        bool contains(const TPSDocumentElementID& el) const
         {
             return m_SelectedSceneElements.contains(el);
         }

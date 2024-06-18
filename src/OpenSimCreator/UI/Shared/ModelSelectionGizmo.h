@@ -13,9 +13,9 @@ namespace osc
     class ModelSelectionGizmo final {
     public:
         explicit ModelSelectionGizmo(std::shared_ptr<UndoableModelStatePair>);
-        ModelSelectionGizmo(ModelSelectionGizmo const&);
+        ModelSelectionGizmo(const ModelSelectionGizmo&);
         ModelSelectionGizmo(ModelSelectionGizmo&&) noexcept;
-        ModelSelectionGizmo& operator=(ModelSelectionGizmo const&);
+        ModelSelectionGizmo& operator=(const ModelSelectionGizmo&);
         ModelSelectionGizmo& operator=(ModelSelectionGizmo&&) noexcept;
         ~ModelSelectionGizmo() noexcept;
 
@@ -23,7 +23,7 @@ namespace osc
         bool isOver() const;
 
         bool handleKeyboardInputs();
-        void onDraw(Rect const& screenRect, PolarPerspectiveCamera const&);
+        void onDraw(const Rect& screenRect, const PolarPerspectiveCamera&);
 
         ImGuizmo::OPERATION getOperation() const
         {

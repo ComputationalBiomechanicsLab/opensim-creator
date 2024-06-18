@@ -7,9 +7,9 @@
 namespace rgs = std::ranges;
 
 void osc::mi::MIObject::applyRotation(
-    IObjectFinder const& lookup,
-    Eulers const& eulerAngles,
-    Vec3 const& rotationCenter)
+    const IObjectFinder& lookup,
+    const Eulers& eulerAngles,
+    const Vec3& rotationCenter)
 {
     Transform t = getXForm(lookup);
     apply_worldspace_rotation(t, eulerAngles, rotationCenter);
@@ -20,7 +20,7 @@ bool osc::mi::MIObject::isCrossReferencing(
     UID id,
     CrossrefDirection direction) const
 {
-    return rgs::any_of(implGetCrossReferences(), [id, direction](CrossrefDescriptor const& desc)
+    return rgs::any_of(implGetCrossReferences(), [id, direction](const CrossrefDescriptor& desc)
     {
         return desc.getConnecteeID() == id and (desc.getDirection() & direction);
     });

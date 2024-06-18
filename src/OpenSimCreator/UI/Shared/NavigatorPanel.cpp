@@ -124,7 +124,7 @@ namespace
         rgs::reverse(out);
     }
 
-    bool pathContains(ComponentPath const& p, OpenSim::Component const* c)
+    bool pathContains(const ComponentPath& p, OpenSim::Component const* c)
     {
         auto end = p.begin() == p.end() ? p.end() : p.end()-1;
         return cpp23::contains(p.begin(), end, c);
@@ -141,7 +141,7 @@ namespace
         ResponseType type = ResponseType::NothingHappened;
     };
 
-    bool isSearchHit(std::string const& searchStr, ComponentPath const& cp)
+    bool isSearchHit(const std::string& searchStr, const ComponentPath& cp)
     {
         return rgs::any_of(cp, [&searchStr](OpenSim::Component const* c)
         {
@@ -155,7 +155,7 @@ public:
     Impl(
         std::string_view panelName,
         std::shared_ptr<IModelStatePair> model,
-        std::function<void(OpenSim::ComponentPath const&)> onRightClick) :
+        std::function<void(const OpenSim::ComponentPath&)> onRightClick) :
 
         StandardPanelImpl{panelName},
         m_Model{std::move(model)},
@@ -165,7 +165,7 @@ public:
 
     bool isOpen() const
     {
-        return static_cast<StandardPanelImpl const&>(*this).is_open();
+        return static_cast<const StandardPanelImpl&>(*this).is_open();
     }
 
     void open()
@@ -276,7 +276,7 @@ private:
             lookaheadPath.clear();
             while (it != end)
             {
-                OpenSim::Component const& c = *it++;
+                const OpenSim::Component& c = *it++;
 
                 bool shouldRender = true;
 
@@ -393,7 +393,7 @@ private:
     }
 
     std::shared_ptr<IModelStatePair> m_Model;
-    std::function<void(OpenSim::ComponentPath const&)> m_OnRightClick;
+    std::function<void(const OpenSim::ComponentPath&)> m_OnRightClick;
     std::string m_CurrentSearch;
     bool m_ShowFrames = false;
 };
@@ -404,7 +404,7 @@ private:
 osc::NavigatorPanel::NavigatorPanel(
     std::string_view panelName,
     std::shared_ptr<IModelStatePair> model,
-    std::function<void(OpenSim::ComponentPath const&)> onRightClick) :
+    std::function<void(const OpenSim::ComponentPath&)> onRightClick) :
 
     m_Impl{std::make_unique<Impl>(panelName, std::move(model), std::move(onRightClick))}
 {

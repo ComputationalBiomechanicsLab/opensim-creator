@@ -133,7 +133,7 @@ public:
         App::upd().make_main_loop_polling();
     }
 
-    bool onEvent(SDL_Event const& e)
+    bool onEvent(const SDL_Event& e)
     {
         if (m_Shared->onEvent(e))
         {
@@ -326,7 +326,7 @@ private:
             return;  // nothing hovered
         }
 
-        Document const& mg = m_Shared->getModelGraph();
+        const Document& mg = m_Shared->getModelGraph();
 
         MIObject const* hoveredMIObject = mg.tryGetByID(m_MaybeHover.ID);
 
@@ -354,7 +354,7 @@ private:
     // try transitioning the shown UI layer to one where the user is assigning a mesh
     void tryTransitionToAssigningHoverAndSelectionNextFrame()
     {
-        Document const& mg = m_Shared->getModelGraph();
+        const Document& mg = m_Shared->getModelGraph();
 
         std::unordered_set<UID> meshes;
         meshes.insert(mg.getSelected().begin(), mg.getSelected().end());
@@ -422,7 +422,7 @@ private:
     }
 
     // transition the shown UI layer to one where the user is choosing a joint parent
-    void transitionToChoosingJointParent(Body const& child)
+    void transitionToChoosingJointParent(const Body& child)
     {
         ChooseElLayerOptions opts;
         opts.canChooseBodies = true;
@@ -715,7 +715,7 @@ private:
     // ensure any stale references into the modelgrah are cleaned up
     void garbageCollectStaleRefs()
     {
-        Document const& mg = m_Shared->getModelGraph();
+        const Document& mg = m_Shared->getModelGraph();
 
         if (m_MaybeHover && !mg.contains(m_MaybeHover.ID))
         {
@@ -853,7 +853,7 @@ private:
         ui::draw_separator();
     }
 
-    void drawMIObjectContextMenuContentHeader(MIObject const& e)
+    void drawMIObjectContextMenuContentHeader(const MIObject& e)
     {
         ui::draw_text("%s %s", e.getClass().getIconUTF8().c_str(), e.getLabel().c_str());
         ui::same_line();
@@ -863,7 +863,7 @@ private:
         ui::draw_separator();
     }
 
-    void drawMIObjectPropEditors(MIObject const& e)
+    void drawMIObjectPropEditors(const MIObject& e)
     {
         Document& mg = m_Shared->updModelGraph();
 
@@ -943,7 +943,7 @@ private:
     }
 
     // draw content of "Add" menu for some scene element
-    void drawAddOtherToMIObjectActions(MIObject& el, Vec3 const& clickPos)
+    void drawAddOtherToMIObjectActions(MIObject& el, const Vec3& clickPos)
     {
         ui::push_style_var(ImGuiStyleVar_ItemSpacing, {10.0f, 10.0f});
         ScopeGuard const g1{[]() { ui::pop_style_var(); }};
@@ -1098,7 +1098,7 @@ private:
         }
     }
 
-    void drawMIObjectActions(MIObject& el, Vec3 const& clickPos)
+    void drawMIObjectActions(MIObject& el, const Vec3& clickPos)
     {
         if (ui::draw_menu_item(ICON_FA_CAMERA " Focus camera on this"))
         {
@@ -1294,7 +1294,7 @@ private:
     }
 
     // draw the "Mass" editor for a `BodyEl`
-    void drawMassEditor(Body const& bodyEl)
+    void drawMassEditor(const Body& bodyEl)
     {
         auto curMass = static_cast<float>(bodyEl.getMass());
         if (ui::draw_float_input("Mass", &curMass, 0.0f, 0.0f, "%.6f"))
@@ -1310,10 +1310,10 @@ private:
     }
 
     // draw the "Joint Type" editor for a `JointEl`
-    void drawJointTypeEditor(Joint const& jointEl)
+    void drawJointTypeEditor(const Joint& jointEl)
     {
         if (ui::begin_combobox("Joint Type", jointEl.getSpecificTypeName())) {
-            for (auto const& joint : GetComponentRegistry<OpenSim::Joint>()) {
+            for (const auto& joint : GetComponentRegistry<OpenSim::Joint>()) {
                 if (ui::draw_selectable(joint.name(), joint.name() == jointEl.getSpecificTypeName())) {
                     m_Shared->updModelGraph().updByID<Joint>(jointEl.getID()).setSpecificTypeName(joint.name());
                     m_Shared->commitCurrentModelGraph("changed joint type");
@@ -1354,7 +1354,7 @@ private:
     }
 
     void actionPromptUserToSaveMeshAsOBJ(
-        osc::Mesh const& mesh)
+        const osc::Mesh& mesh)
     {
         // prompt user for a save location
         std::optional<std::filesystem::path> const maybeUserSaveLocation =
@@ -1363,7 +1363,7 @@ private:
         {
             return;  // user didn't select a save location
         }
-        std::filesystem::path const& userSaveLocation = *maybeUserSaveLocation;
+        const std::filesystem::path& userSaveLocation = *maybeUserSaveLocation;
 
         // write transformed mesh to output
         std::ofstream outputFileStream
@@ -1378,7 +1378,7 @@ private:
             return;
         }
 
-        AppMetadata const& appMetadata = App::get().metadata();
+        const AppMetadata& appMetadata = App::get().metadata();
         ObjMetadata const objMetadata
         {
             calc_full_application_name_with_version_and_build_id(appMetadata),
@@ -1393,7 +1393,7 @@ private:
     }
 
     void actionPromptUserToSaveMeshAsSTL(
-        osc::Mesh const& mesh)
+        const osc::Mesh& mesh)
     {
         // prompt user for a save location
         std::optional<std::filesystem::path> const maybeUserSaveLocation =
@@ -1402,7 +1402,7 @@ private:
         {
             return;  // user didn't select a save location
         }
-        std::filesystem::path const& userSaveLocation = *maybeUserSaveLocation;
+        const std::filesystem::path& userSaveLocation = *maybeUserSaveLocation;
 
         // write transformed mesh to output
         std::ofstream outputFileStream
@@ -1417,7 +1417,7 @@ private:
             return;
         }
 
-        AppMetadata const& appMetadata = App::get().metadata();
+        const AppMetadata& appMetadata = App::get().metadata();
         StlMetadata const stlMetadata
         {
             calc_full_application_name_with_version_and_build_id(appMetadata),
@@ -1426,13 +1426,13 @@ private:
         write_as_stl(outputFileStream, mesh, stlMetadata);
     }
 
-    void drawSaveMeshMenu(Mesh const& el)
+    void drawSaveMeshMenu(const Mesh& el)
     {
         if (ui::begin_menu(ICON_FA_FILE_EXPORT " Export"))
         {
             ui::draw_text_disabled("With Respect to:");
             ui::draw_separator();
-            for (MIObject const& MIObject : m_Shared->getModelGraph().iter())
+            for (const MIObject& MIObject : m_Shared->getModelGraph().iter())
             {
                 if (ui::begin_menu(MIObject.getLabel()))
                 {
@@ -1482,7 +1482,7 @@ private:
     }
 
     // draw context menu content for a `GroundEl`
-    void drawContextMenuContent(Ground& el, Vec3 const& clickPos)
+    void drawContextMenuContent(Ground& el, const Vec3& clickPos)
     {
         drawMIObjectContextMenuContentHeader(el);
         drawContextMenuSpacer();
@@ -1490,7 +1490,7 @@ private:
     }
 
     // draw context menu content for a `BodyEl`
-    void drawContextMenuContent(Body& el, Vec3 const& clickPos)
+    void drawContextMenuContent(Body& el, const Vec3& clickPos)
     {
         drawMIObjectContextMenuContentHeader(el);
 
@@ -1510,7 +1510,7 @@ private:
     }
 
     // draw context menu content for a `Mesh`
-    void drawContextMenuContent(Mesh& el, Vec3 const& clickPos)
+    void drawContextMenuContent(Mesh& el, const Vec3& clickPos)
     {
         drawMIObjectContextMenuContentHeader(el);
 
@@ -1530,7 +1530,7 @@ private:
     }
 
     // draw context menu content for a `JointEl`
-    void drawContextMenuContent(Joint& el, Vec3 const& clickPos)
+    void drawContextMenuContent(Joint& el, const Vec3& clickPos)
     {
         drawMIObjectContextMenuContentHeader(el);
 
@@ -1550,7 +1550,7 @@ private:
     }
 
     // draw context menu content for a `StationEl`
-    void drawContextMenuContent(StationEl& el, Vec3 const& clickPos)
+    void drawContextMenuContent(StationEl& el, const Vec3& clickPos)
     {
         drawMIObjectContextMenuContentHeader(el);
 
@@ -1569,7 +1569,7 @@ private:
     }
 
     // draw context menu content for some scene element
-    void drawContextMenuContent(MIObject& el, Vec3 const& clickPos)
+    void drawContextMenuContent(MIObject& el, const Vec3& clickPos)
     {
         std::visit(Overload
         {
@@ -1621,7 +1621,7 @@ private:
         UndoRedoPanel::draw_content(m_Shared->updCommittableModelGraph());
     }
 
-    void drawNavigatorElement(MIClass const& c)
+    void drawNavigatorElement(const MIClass& c)
     {
         Document& mg = m_Shared->updModelGraph();
 
@@ -1632,7 +1632,7 @@ private:
         ui::indent();
 
         bool empty = true;
-        for (MIObject const& el : mg.iter())
+        for (const MIObject& el : mg.iter())
         {
             if (el.getClass() != c)
             {
@@ -1690,7 +1690,7 @@ private:
 
     void drawNavigatorPanelContent()
     {
-        for (MIClass const& c : GetSceneElClasses())
+        for (const MIClass& c : GetSceneElClasses())
         {
             drawNavigatorElement(c);
             ui::draw_dummy({0.0f, 5.0f});
@@ -1855,7 +1855,7 @@ private:
 
     std::optional<AABB> calcSceneAABB() const
     {
-        return maybe_bounding_aabb_of(m_DrawablesBuffer, [](DrawableThing const& drawable) -> std::optional<AABB>
+        return maybe_bounding_aabb_of(m_DrawablesBuffer, [](const DrawableThing& drawable) -> std::optional<AABB>
         {
             if (drawable.id != MIIDs::Empty()) {
                 return calcBounds(drawable);
@@ -1873,7 +1873,7 @@ private:
             CameraViewAxes axes;
 
             Vec2 const windowPadding = ui::get_style_panel_padding();
-            Rect const& r = m_Shared->get3DSceneRect();
+            const Rect& r = m_Shared->get3DSceneRect();
             Vec2 const topLeft =
             {
                 r.p1.x + windowPadding.x,
@@ -2026,7 +2026,7 @@ private:
         draw3DViewerOverlayConvertToOpenSimModelButton();
     }
 
-    void drawMIObjectTooltip(MIObject const& e) const
+    void drawMIObjectTooltip(const MIObject& e) const
     {
         ui::begin_tooltip_nowrap();
         ui::draw_text("%s %s", e.getClass().getIconUTF8().c_str(), e.getLabel().c_str());
@@ -2071,7 +2071,7 @@ private:
                 return;  // sanity exit
             }
 
-            Document const& mg = m_Shared->getModelGraph();
+            const Document& mg = m_Shared->getModelGraph();
 
             int n = 0;
 
@@ -2234,7 +2234,7 @@ private:
     {
         m_DrawablesBuffer.clear();
 
-        for (MIObject const& e : m_Shared->getModelGraph().iter())
+        for (const MIObject& e : m_Shared->getModelGraph().iter())
         {
             m_Shared->appendDrawables(e, m_DrawablesBuffer);
         }
@@ -2526,7 +2526,7 @@ void osc::mi::MeshImporterTab::impl_on_unmount()
     m_Impl->on_unmount();
 }
 
-bool osc::mi::MeshImporterTab::impl_on_event(SDL_Event const& e)
+bool osc::mi::MeshImporterTab::impl_on_event(const SDL_Event& e)
 {
     return m_Impl->onEvent(e);
 }

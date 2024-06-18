@@ -17,9 +17,9 @@ namespace osc
         static CStringView id() noexcept;
 
         explicit PreviewExperimentalDataTab(ParentPtr<ITabHost> const&);
-        PreviewExperimentalDataTab(PreviewExperimentalDataTab const&) = delete;
+        PreviewExperimentalDataTab(const PreviewExperimentalDataTab&) = delete;
         PreviewExperimentalDataTab(PreviewExperimentalDataTab&&) noexcept;
-        PreviewExperimentalDataTab& operator=(PreviewExperimentalDataTab const&) = delete;
+        PreviewExperimentalDataTab& operator=(const PreviewExperimentalDataTab&) = delete;
         PreviewExperimentalDataTab& operator=(PreviewExperimentalDataTab&&) noexcept;
         ~PreviewExperimentalDataTab() noexcept override;
 
@@ -28,7 +28,7 @@ namespace osc
         CStringView impl_get_name() const final;
         void impl_on_mount() final;
         void impl_on_unmount() final;
-        bool impl_on_event(SDL_Event const&) final;
+        bool impl_on_event(const SDL_Event&) final;
         void impl_on_draw() final;
 
         class Impl;

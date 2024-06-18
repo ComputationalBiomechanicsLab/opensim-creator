@@ -15,9 +15,9 @@ namespace osc
             std::string_view popupName,
             std::shared_ptr<IConstModelStatePair const>
         );
-        ExportPointsPopup(ExportPointsPopup const&) = delete;
+        ExportPointsPopup(const ExportPointsPopup&) = delete;
         ExportPointsPopup(ExportPointsPopup&&) noexcept;
-        ExportPointsPopup& operator=(ExportPointsPopup const&) = delete;
+        ExportPointsPopup& operator=(const ExportPointsPopup&) = delete;
         ExportPointsPopup& operator=(ExportPointsPopup&&) noexcept;
         ~ExportPointsPopup() noexcept;
 

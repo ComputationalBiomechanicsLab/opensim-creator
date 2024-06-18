@@ -10,9 +10,9 @@ namespace osc
     class ModelEditorViewerPanelLayer {
     protected:
         ModelEditorViewerPanelLayer() = default;
-        ModelEditorViewerPanelLayer(ModelEditorViewerPanelLayer const&) = default;
+        ModelEditorViewerPanelLayer(const ModelEditorViewerPanelLayer&) = default;
         ModelEditorViewerPanelLayer(ModelEditorViewerPanelLayer&&) noexcept = default;
-        ModelEditorViewerPanelLayer& operator=(ModelEditorViewerPanelLayer const&) = default;
+        ModelEditorViewerPanelLayer& operator=(const ModelEditorViewerPanelLayer&) = default;
         ModelEditorViewerPanelLayer& operator=(ModelEditorViewerPanelLayer&&) noexcept = default;
     public:
         virtual ~ModelEditorViewerPanelLayer() noexcept = default;

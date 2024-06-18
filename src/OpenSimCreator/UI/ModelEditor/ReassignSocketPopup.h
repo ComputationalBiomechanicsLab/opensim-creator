@@ -17,9 +17,9 @@ namespace osc
             std::string_view componentAbsPath,
             std::string_view socketName
         );
-        ReassignSocketPopup(ReassignSocketPopup const&) = delete;
+        ReassignSocketPopup(const ReassignSocketPopup&) = delete;
         ReassignSocketPopup(ReassignSocketPopup&&) noexcept;
-        ReassignSocketPopup& operator=(ReassignSocketPopup const&) = delete;
+        ReassignSocketPopup& operator=(const ReassignSocketPopup&) = delete;
         ReassignSocketPopup& operator=(ReassignSocketPopup&&) noexcept;
         ~ReassignSocketPopup() noexcept;
 

@@ -16,17 +16,17 @@ namespace osc::mow
         public IValidateable {
     protected:
         IFrameWarperFactory() = default;
-        IFrameWarperFactory(IFrameWarperFactory const&) = default;
-        IFrameWarperFactory& operator=(IFrameWarperFactory const&) = default;
+        IFrameWarperFactory(const IFrameWarperFactory&) = default;
+        IFrameWarperFactory& operator=(const IFrameWarperFactory&) = default;
         IFrameWarperFactory& operator=(IFrameWarperFactory&&) noexcept = default;
     public:
         virtual ~IFrameWarperFactory() noexcept = default;
 
-        std::unique_ptr<IFrameWarper> tryCreateFrameWarper(ModelWarpDocument const& document) const
+        std::unique_ptr<IFrameWarper> tryCreateFrameWarper(const ModelWarpDocument& document) const
         {
             return implTryCreateFrameWarper(document);
         }
     private:
-        virtual std::unique_ptr<IFrameWarper> implTryCreateFrameWarper(ModelWarpDocument const& document) const = 0;
+        virtual std::unique_ptr<IFrameWarper> implTryCreateFrameWarper(const ModelWarpDocument& document) const = 0;
     };
 }

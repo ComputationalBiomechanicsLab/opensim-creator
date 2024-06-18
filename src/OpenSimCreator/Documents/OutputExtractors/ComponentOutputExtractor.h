@@ -19,24 +19,24 @@ namespace osc
     class ComponentOutputExtractor final : public IOutputExtractor {
     public:
         ComponentOutputExtractor(
-            OpenSim::AbstractOutput const&,
+            const OpenSim::AbstractOutput&,
             ComponentOutputSubfield = ComponentOutputSubfield::None
         );
-        ComponentOutputExtractor(ComponentOutputExtractor const&);
+        ComponentOutputExtractor(const ComponentOutputExtractor&);
         ComponentOutputExtractor(ComponentOutputExtractor&&) noexcept;
-        ComponentOutputExtractor& operator=(ComponentOutputExtractor const&);
+        ComponentOutputExtractor& operator=(const ComponentOutputExtractor&);
         ComponentOutputExtractor& operator=(ComponentOutputExtractor&&) noexcept;
         ~ComponentOutputExtractor() noexcept override;
 
-        OpenSim::ComponentPath const& getComponentAbsPath() const;
+        const OpenSim::ComponentPath& getComponentAbsPath() const;
 
     private:
         CStringView implGetName() const final;
         CStringView implGetDescription() const final;
         OutputExtractorDataType implGetOutputType() const final;
-        OutputValueExtractor implGetOutputValueExtractor(OpenSim::Component const&) const final;
+        OutputValueExtractor implGetOutputValueExtractor(const OpenSim::Component&) const final;
         size_t implGetHash() const final;
-        bool implEquals(IOutputExtractor const&) const final;
+        bool implEquals(const IOutputExtractor&) const final;
 
         class Impl;
         ClonePtr<Impl> m_Impl;

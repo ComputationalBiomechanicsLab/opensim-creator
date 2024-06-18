@@ -74,7 +74,7 @@ public:
                 return std::make_shared<NavigatorPanel>(
                     panelName,
                     m_Model,
-                    [this](OpenSim::ComponentPath const& p)
+                    [this](const OpenSim::ComponentPath& p)
                     {
                         pushPopup(std::make_unique<ComponentContextMenu>("##componentcontextmenu", m_Parent, this, m_Model, p));
                     }
@@ -120,7 +120,7 @@ public:
             "viewer",
             [this](std::string_view panelName)
             {
-                auto onRightClick = [model = m_Model, menuName = std::string{panelName} + "_contextmenu", editorAPI = this, mainUIStateAPI = m_Parent](ModelEditorViewerPanelRightClickEvent const& e)
+                auto onRightClick = [model = m_Model, menuName = std::string{panelName} + "_contextmenu", editorAPI = this, mainUIStateAPI = m_Parent](const ModelEditorViewerPanelRightClickEvent& e)
                 {
                     editorAPI->pushPopup(std::make_unique<ComponentContextMenu>(
                         menuName,
@@ -182,7 +182,7 @@ public:
         App::upd().make_main_loop_polling();
     }
 
-    bool onEvent(SDL_Event const& e)
+    bool onEvent(const SDL_Event& e)
     {
         if (e.type == SDL_KEYDOWN)
         {
@@ -230,7 +230,7 @@ public:
 
             m_ExceptionThrownLastFrame = false;
         }
-        catch (std::exception const& ex)
+        catch (const std::exception& ex)
         {
             tryRecoveringFromException(ex);
         }
@@ -239,7 +239,7 @@ public:
         App::upd().set_main_window_subtitle(m_Model->recommendedDocumentName());
     }
 
-    void tryRecoveringFromException(std::exception const& ex)
+    void tryRecoveringFromException(const std::exception& ex)
     {
         log_error("an std::exception was thrown while drawing the model editor");
         log_error("    message = %s", ex.what());
@@ -258,7 +258,7 @@ public:
                 {
                     m_Model->doUndo();  // TODO: add `doUndoWithNoRedoStorage` so that the user's redo buffer isn't tainted
                 }
-                catch (std::exception const& ex2)
+                catch (const std::exception& ex2)
                 {
                     log_error("undoing the model also failed with error: %s", ex2.what());
                     log_error("because the model isn't recoverable, closing the editor tab");
@@ -298,7 +298,7 @@ public:
                 log_error("model rollback succeeded");
                 m_ExceptionThrownLastFrame = true;
             }
-            catch (std::exception const& ex2)
+            catch (const std::exception& ex2)
             {
                 log_error("model rollback thrown an exception: %s", ex2.what());
                 log_error("because the model cannot be rolled back, closing the editor tab");
@@ -321,7 +321,7 @@ private:
         return std::move(ss).str();
     }
 
-    bool onDropEvent(SDL_DropEvent const& e)
+    bool onDropEvent(const SDL_DropEvent& e)
     {
         if (e.type != SDL_DROPFILE || e.file == nullptr)
         {
@@ -343,7 +343,7 @@ private:
         return false;
     }
 
-    bool onKeydownEvent(SDL_KeyboardEvent const& e)
+    bool onKeydownEvent(const SDL_KeyboardEvent& e)
     {
         if (ui::is_ctrl_or_super_down())
         {
@@ -384,7 +384,7 @@ private:
         return false;
     }
 
-    void implPushComponentContextMenuPopup(OpenSim::ComponentPath const& path) final
+    void implPushComponentContextMenuPopup(const OpenSim::ComponentPath& path) final
     {
         auto popup = std::make_unique<ComponentContextMenu>(
             "##componentcontextmenu",
@@ -403,7 +403,7 @@ private:
         m_PopupManager.push_back(std::move(popup));
     }
 
-    void implAddMusclePlot(OpenSim::Coordinate const& coord, OpenSim::Muscle const& muscle) final
+    void implAddMusclePlot(const OpenSim::Coordinate& coord, const OpenSim::Muscle& muscle) final
     {
         std::string const name = m_PanelManager->suggested_dynamic_panel_name("muscleplot");
         m_PanelManager->push_dynamic_panel(
@@ -492,7 +492,7 @@ void osc::ModelEditorTab::impl_on_unmount()
     m_Impl->on_unmount();
 }
 
-bool osc::ModelEditorTab::impl_on_event(SDL_Event const& e)
+bool osc::ModelEditorTab::impl_on_event(const SDL_Event& e)
 {
     return m_Impl->onEvent(e);
 }

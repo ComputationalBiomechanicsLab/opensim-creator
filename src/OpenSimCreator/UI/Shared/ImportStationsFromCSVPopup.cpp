@@ -108,7 +108,7 @@ private:
             ui::table_headers_row();
 
             int id = 0;
-            for (auto const& station : m_ImportedLandmarks)
+            for (const auto& station : m_ImportedLandmarks)
             {
                 ui::push_id(id++);
                 ui::table_next_row();
@@ -155,7 +155,7 @@ private:
             ui::begin_tooltip();
             ui::indent();
             int id = 0;
-            for (auto const& warning : m_ImportWarnings)
+            for (const auto& warning : m_ImportWarnings)
             {
                 ui::push_id(id++);
                 ui::draw_text_unformatted(warning);
@@ -209,7 +209,7 @@ private:
         }
     }
 
-    void actionLoadCSVFile(std::filesystem::path const& path)
+    void actionLoadCSVFile(const std::filesystem::path& path)
     {
         m_MaybeImportPath = path;
         m_ImportedLandmarks.clear();
@@ -228,7 +228,7 @@ private:
         lm::ReadLandmarksFromCSV(
             ifs,
             [&lms](lm::Landmark&& lm) { lms.push_back(lm); },
-            [this](lm::CSVParseWarning const& warning) { m_ImportWarnings.push_back(to_string(warning)); }
+            [this](const lm::CSVParseWarning& warning) { m_ImportWarnings.push_back(to_string(warning)); }
         );
         m_ImportedLandmarks = GenerateNames(lms);
     }

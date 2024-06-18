@@ -7,7 +7,7 @@
 #include <oscar/Graphics/Scene/SceneDecoration.h>
 
 void osc::mow::InMemoryMesh::implGenerateCustomDecorations(
-    SimTK::State const& state,
+    const SimTK::State& state,
     std::function<void(SceneDecoration&&)> const& out) const
 {
     out({

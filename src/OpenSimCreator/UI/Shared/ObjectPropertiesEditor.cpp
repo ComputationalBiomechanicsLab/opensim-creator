@@ -373,7 +373,7 @@ namespace
 
     template<std::derived_from<OpenSim::AbstractProperty> ConcreteProperty>
     struct PropertyEditorTraits {
-        static bool IsCompatibleWith(OpenSim::AbstractProperty const& prop)
+        static bool IsCompatibleWith(const OpenSim::AbstractProperty& prop)
         {
             return dynamic_cast<ConcreteProperty const*>(&prop) != nullptr;
         }
@@ -388,7 +388,7 @@ namespace
     public:
         using property_type = ConcreteProperty;
 
-        static bool IsCompatibleWith(OpenSim::AbstractProperty const& prop)
+        static bool IsCompatibleWith(const OpenSim::AbstractProperty& prop)
         {
             return Traits::IsCompatibleWith(prop);
         }
@@ -412,7 +412,7 @@ namespace
             };
         }
 
-        OpenSim::Model const& getModel() const
+        const OpenSim::Model& getModel() const
         {
             return m_Args.model->getModel();
         }
@@ -422,7 +422,7 @@ namespace
             return m_Args.model;
         }
 
-        SimTK::State const& getState() const
+        const SimTK::State& getState() const
         {
             return m_Args.model->getState();
         }
@@ -446,7 +446,7 @@ namespace
         }
 
     private:
-        bool implIsCompatibleWith(OpenSim::AbstractProperty const& prop) const final
+        bool implIsCompatibleWith(const OpenSim::AbstractProperty& prop) const final
         {
             return Traits::IsCompatibleWith(prop);
         }
@@ -471,7 +471,7 @@ namespace
             {
                 return std::nullopt;
             }
-            property_type const& prop = *maybeProp;
+            const property_type& prop = *maybeProp;
 
             // update any cached data
             if (!prop.equals(m_OriginalProperty))
@@ -559,7 +559,7 @@ namespace
             {
                 return std::nullopt;
             }
-            property_type const& prop = *maybeProp;
+            const property_type& prop = *maybeProp;
 
             // update any cached data
             if (!prop.equals(m_OriginalProperty))
@@ -651,7 +651,7 @@ namespace
             {
                 return std::nullopt;
             }
-            property_type const& prop = *maybeProp;
+            const property_type& prop = *maybeProp;
 
             // update any cached data
             if (!prop.equals(m_OriginalProperty))
@@ -747,12 +747,12 @@ namespace
             {
             }
 
-            Vec3 modelValueToEditedValue(Vec3 const& modelValue) const
+            Vec3 modelValueToEditedValue(const Vec3& modelValue) const
             {
                 return ToVec3(static_cast<double>(m_ModelToEditedValueScaler) * (m_ModelToEditedTransform * ToSimTKVec3(modelValue)));
             }
 
-            Vec3 editedValueToModelValue(Vec3 const& editedValue) const
+            Vec3 editedValueToModelValue(const Vec3& editedValue) const
             {
                 return ToVec3(m_ModelToEditedTransform.invert() * ToSimTKVec3(editedValue/m_ModelToEditedValueScaler));
             }
@@ -830,7 +830,7 @@ namespace
                 return std::nullopt;
             }
 
-            OpenSim::Model const& model = getModel();
+            const OpenSim::Model& model = getModel();
             auto const* frame = FindComponent<OpenSim::Frame>(model, *m_MaybeUserSelectedFrameAbsPath);
             return frame->getTransformInGround(getState()).invert();
         }
@@ -859,7 +859,7 @@ namespace
             {
                 return std::nullopt;
             }
-            property_type const& prop = *maybeProp;
+            const property_type& prop = *maybeProp;
 
             // update any cached data
             if (!prop.equals(m_OriginalProperty))
@@ -941,7 +941,7 @@ namespace
                 }
 
                 // draw selectable for each frame in the model
-                for (OpenSim::Frame const& frame : getModel().getComponentList<OpenSim::Frame>())
+                for (const OpenSim::Frame& frame : getModel().getComponentList<OpenSim::Frame>())
                 {
                     OpenSim::ComponentPath const frameAbsPath = GetAbsolutePath(frame);
 
@@ -960,7 +960,7 @@ namespace
 
         // draws an editor for the `ith` Vec3 element of the given (potentially, list) property
         std::optional<std::function<void(OpenSim::AbstractProperty&)>> drawIthEditor(
-            ValueConverter const& valueConverter,
+            const ValueConverter& valueConverter,
             int idx)
         {
             std::optional<std::function<void(OpenSim::AbstractProperty&)>> rv;
@@ -1005,7 +1005,7 @@ namespace
             int idx,
             Vec3::size_type i,
             Vec3 editedValue,
-            ValueConverter const& valueConverter)
+            const ValueConverter& valueConverter)
         {
             ui::push_id(i);
             ui::set_next_item_width(ui::get_content_region_avail().x);
@@ -1077,7 +1077,7 @@ namespace
             {
                 return std::nullopt;
             }
-            property_type const& prop = *maybeProp;
+            const property_type& prop = *maybeProp;
 
             // update any cached data
             if (!prop.equals(m_OriginalProperty))
@@ -1172,7 +1172,7 @@ namespace
             {
                 return std::nullopt;
             }
-            property_type const& prop = *maybeProp;
+            const property_type& prop = *maybeProp;
 
             // update any cached data
             if (!prop.equals(m_OriginalProperty))
@@ -1265,7 +1265,7 @@ namespace
             {
                 return std::nullopt;
             }
-            property_type const& prop = *maybeProp;
+            const property_type& prop = *maybeProp;
 
             // update any cached data
             if (!prop.equals(m_OriginalProperty))
@@ -1384,14 +1384,14 @@ namespace
             {
                 return std::nullopt;  // cannot find property
             }
-            property_type const& prop = *maybeProp;
+            const property_type& prop = *maybeProp;
 
             if (empty(prop.getValue()))
             {
                 return std::nullopt;  // no editable contact set on the property
             }
 
-            OpenSim::HuntCrossleyForce::ContactParameters const& params = prop.getValue()[0];
+            const OpenSim::HuntCrossleyForce::ContactParameters& params = prop.getValue()[0];
 
             // update cached editors, if necessary
             if (!m_MaybeNestedEditor)
@@ -1445,7 +1445,7 @@ namespace
             {
                 return std::nullopt;
             }
-            property_type const& prop = *maybeProp;
+            const property_type& prop = *maybeProp;
 
             ui::draw_separator();
             DrawPropertyName(prop);
@@ -1484,11 +1484,11 @@ namespace
                     }
                     return dynamic_cast<OpenSim::GeometryPath const*>(&p->getValueAsObject());
                 },
-                [shared = m_ReturnValueHolder, accessor](OpenSim::GeometryPath const& gp) mutable
+                [shared = m_ReturnValueHolder, accessor](const OpenSim::GeometryPath& gp) mutable
                 {
                     if (property_type const* prop = accessor())
                     {
-                        *shared = ObjectPropertyEdit{*prop, MakePropValueSetter<OpenSim::GeometryPath const&, OpenSim::AbstractGeometryPath>(0, gp)};
+                        *shared = ObjectPropertyEdit{*prop, MakePropValueSetter<const OpenSim::GeometryPath&, OpenSim::AbstractGeometryPath>(0, gp)};
                     }
                 }
             );
@@ -1521,7 +1521,7 @@ namespace
     public:
         // a function that tests whether a property editor in the registry is suitable
         // for the given abstract property
-        using PropertyEditorTester = bool(*)(OpenSim::AbstractProperty const&);
+        using PropertyEditorTester = bool(*)(const OpenSim::AbstractProperty&);
 
         // a function that can be used to construct a pointer to a virtual property editor
         using PropertyEditorCtor = std::unique_ptr<IPropertyEditor>(*)(PropertyEditorArgs);
@@ -1539,7 +1539,7 @@ namespace
             return PropertyEditorRegistryEntry{testerFn, typeErasedCtorFn};
         }
 
-        bool isCompatibleWith(OpenSim::AbstractProperty const& abstractProp) const
+        bool isCompatibleWith(const OpenSim::AbstractProperty& abstractProp) const
         {
             return m_Tester(abstractProp);
         }
@@ -1574,7 +1574,7 @@ namespace
 
             auto const it = rgs::find_if(
                 m_Entries,
-                [&prop](auto const& entry) { return entry.isCompatibleWith(*prop); }
+                [&prop](const auto& entry) { return entry.isCompatibleWith(*prop); }
             );
             if (it == m_Entries.end())
             {
@@ -1625,7 +1625,7 @@ private:
 
     // draws all property editors for the given object
     std::optional<ObjectPropertyEdit> drawPropertyEditors(
-        OpenSim::Object const& obj)
+        const OpenSim::Object& obj)
     {
         if (m_PreviousObject != &obj)
         {
@@ -1657,8 +1657,8 @@ private:
 
     // tries to draw one property editor for one property of an object
     std::optional<ObjectPropertyEdit> tryDrawPropertyEditor(
-        OpenSim::Object const& obj,
-        OpenSim::AbstractProperty const& prop)
+        const OpenSim::Object& obj,
+        const OpenSim::AbstractProperty& prop)
     {
         if (prop.getName().starts_with("socket_"))
         {
@@ -1680,8 +1680,8 @@ private:
 
     // draws a property editor for the given object+property
     std::optional<ObjectPropertyEdit> drawPropertyEditor(
-        OpenSim::Object const& obj,
-        OpenSim::AbstractProperty const& prop,
+        const OpenSim::Object& obj,
+        const OpenSim::AbstractProperty& prop,
         IPropertyEditor& editor)
     {
         ui::push_id(prop.getName());
@@ -1700,7 +1700,7 @@ private:
 
     // draws a non-editable representation of a property
     void drawNonEditablePropertyDetails(
-        OpenSim::AbstractProperty const& prop)
+        const OpenSim::AbstractProperty& prop)
     {
         ui::draw_separator();
         DrawPropertyName(prop);
@@ -1710,7 +1710,7 @@ private:
     }
 
     // try get/construct a property editor for the given property
-    IPropertyEditor* tryGetPropertyEditor(OpenSim::AbstractProperty const& prop)
+    IPropertyEditor* tryGetPropertyEditor(const OpenSim::AbstractProperty& prop)
     {
         auto const [it, inserted] = m_PropertyEditorsByName.try_emplace(prop.getName(), nullptr);
 

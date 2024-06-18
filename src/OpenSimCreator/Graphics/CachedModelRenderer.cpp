@@ -39,8 +39,8 @@ namespace
         }
 
         bool update(
-            IConstModelStatePair const& modelState,
-            ModelRendererParams const& params)
+            const IConstModelStatePair& modelState,
+            const ModelRendererParams& params)
         {
             OSC_PERF("CachedModelRenderer/generateDecorationsCached");
 
@@ -53,7 +53,7 @@ namespace
                 m_BVH.clear();
 
                 // regenerate
-                auto const onComponentDecoration = [this](OpenSim::Component const&, SceneDecoration&& dec)
+                auto const onComponentDecoration = [this](const OpenSim::Component&, SceneDecoration&& dec)
                 {
                     m_Drawlist.push_back(std::move(dec));
                 };
@@ -88,7 +88,7 @@ namespace
         }
 
         std::span<SceneDecoration const> getDrawlist() const { return m_Drawlist; }
-        BVH const& getBVH() const { return m_BVH; }
+        const BVH& getBVH() const { return m_BVH; }
         std::optional<AABB> getAABB() const { return m_BVH.bounds(); }
         SceneCache& updSceneCache() const
         {
@@ -114,7 +114,7 @@ public:
     {}
 
     void autoFocusCamera(
-        IConstModelStatePair const& modelState,
+        const IConstModelStatePair& modelState,
         ModelRendererParams& params,
         float aspectRatio)
     {
@@ -126,8 +126,8 @@ public:
     }
 
     RenderTexture& onDraw(
-        IConstModelStatePair const& modelState,
-        ModelRendererParams const& renderParams,
+        const IConstModelStatePair& modelState,
+        const ModelRendererParams& renderParams,
         Vec2 dims,
         AntiAliasingLevel antiAliasingLevel)
     {
@@ -169,9 +169,9 @@ public:
     }
 
     std::optional<SceneCollision> getClosestCollision(
-        ModelRendererParams const& params,
+        const ModelRendererParams& params,
         Vec2 mouseScreenPos,
-        Rect const& viewportScreenRect) const
+        const Rect& viewportScreenRect) const
     {
         return GetClosestCollision(
             m_DecorationCache.getBVH(),
@@ -200,8 +200,8 @@ osc::CachedModelRenderer& osc::CachedModelRenderer::operator=(CachedModelRendere
 osc::CachedModelRenderer::~CachedModelRenderer() noexcept = default;
 
 RenderTexture& osc::CachedModelRenderer::onDraw(
-    IConstModelStatePair const& modelState,
-    ModelRendererParams const& renderParams,
+    const IConstModelStatePair& modelState,
+    const ModelRendererParams& renderParams,
     Vec2 dims,
     AntiAliasingLevel antiAliasingLevel)
 {
@@ -214,7 +214,7 @@ RenderTexture& osc::CachedModelRenderer::onDraw(
 }
 
 void osc::CachedModelRenderer::autoFocusCamera(
-    IConstModelStatePair const& modelState,
+    const IConstModelStatePair& modelState,
     ModelRendererParams& renderParams,
     float aspectRatio)
 {
@@ -237,9 +237,9 @@ std::optional<AABB> osc::CachedModelRenderer::bounds() const
 }
 
 std::optional<SceneCollision> osc::CachedModelRenderer::getClosestCollision(
-    ModelRendererParams const& params,
+    const ModelRendererParams& params,
     Vec2 mouseScreenPos,
-    Rect const& viewportScreenRect) const
+    const Rect& viewportScreenRect) const
 {
     return m_Impl->getClosestCollision(params, mouseScreenPos, viewportScreenRect);
 }

@@ -52,7 +52,7 @@ namespace
     // draw UI element that lets user change a model joint's type
     void DrawSelectionJointTypeSwitcher(
         UndoableModelStatePair& uim,
-        OpenSim::ComponentPath const& jointPath)
+        const OpenSim::ComponentPath& jointPath)
     {
         auto const* joint = FindComponent<OpenSim::Joint>(uim.getModel(), jointPath);
         if (!joint)
@@ -60,7 +60,7 @@ namespace
             return;
         }
 
-        auto const& registry = GetComponentRegistry<OpenSim::Joint>();
+        const auto& registry = GetComponentRegistry<OpenSim::Joint>();
 
         std::optional<ptrdiff_t> selectedIdx;
         if (ui::begin_menu("Change Joint Type"))
@@ -99,11 +99,11 @@ namespace
     void DrawAddWrapObjectsToPhysicalFrameMenuItems(
         IEditorAPI*,
         std::shared_ptr<UndoableModelStatePair> const& uim,
-        OpenSim::ComponentPath const& physicalFrameAbsPath)
+        const OpenSim::ComponentPath& physicalFrameAbsPath)
     {
         // list each available `WrapObject` as something the user can add
-        auto const& registry = GetComponentRegistry<OpenSim::WrapObject>();
-        for (auto const& entry : registry) {
+        const auto& registry = GetComponentRegistry<OpenSim::WrapObject>();
+        for (const auto& entry : registry) {
             ui::push_id(&entry);
             if (ui::draw_menu_item(entry.name())) {
                 ActionAddWrapObjectToPhysicalFrame(
@@ -120,7 +120,7 @@ namespace
     void DrawPhysicalFrameContextualActions(
         IEditorAPI* editorAPI,
         std::shared_ptr<UndoableModelStatePair> const& uim,
-        OpenSim::ComponentPath const& pfPath)
+        const OpenSim::ComponentPath& pfPath)
     {
         if (auto const* pf = FindComponent<OpenSim::PhysicalFrame>(uim->getModel(), pfPath))
         {
@@ -166,7 +166,7 @@ namespace
     // draw contextual actions (buttons, sliders) for a selected joint
     void DrawJointContextualActions(
         UndoableModelStatePair& uim,
-        OpenSim::ComponentPath const& jointPath)
+        const OpenSim::ComponentPath& jointPath)
     {
         DrawSelectionJointTypeSwitcher(uim, jointPath);
 
@@ -199,7 +199,7 @@ namespace
     void DrawHCFContextualActions(
         IEditorAPI* api,
         std::shared_ptr<UndoableModelStatePair> const& uim,
-        OpenSim::ComponentPath const& hcfPath)
+        const OpenSim::ComponentPath& hcfPath)
     {
         auto const* const hcf = FindComponent<OpenSim::HuntCrossleyForce>(uim->getModel(), hcfPath);
         if (!hcf)
@@ -214,11 +214,11 @@ namespace
 
         if (ui::draw_menu_item("Add Contact Geometry"))
         {
-            auto onSelection = [uim, hcfPath](OpenSim::ComponentPath const& geomPath)
+            auto onSelection = [uim, hcfPath](const OpenSim::ComponentPath& geomPath)
             {
                 ActionAssignContactGeometryToHCF(*uim, hcfPath, geomPath);
             };
-            auto filter = [](OpenSim::Component const& c) -> bool
+            auto filter = [](const OpenSim::Component& c) -> bool
             {
                 return dynamic_cast<OpenSim::ContactGeometry const*>(&c) != nullptr;
             };
@@ -233,11 +233,11 @@ namespace
     void DrawPathActuatorContextualParams(
         IEditorAPI* api,
         std::shared_ptr<UndoableModelStatePair> const& uim,
-        OpenSim::ComponentPath const& paPath)
+        const OpenSim::ComponentPath& paPath)
     {
         if (ui::draw_menu_item("Add Path Point"))
         {
-            auto onSelection = [uim, paPath](OpenSim::ComponentPath const& pfPath) { ActionAddPathPointToPathActuator(*uim, paPath, pfPath); };
+            auto onSelection = [uim, paPath](const OpenSim::ComponentPath& pfPath) { ActionAddPathPointToPathActuator(*uim, paPath, pfPath); };
             auto popup = std::make_unique<Select1PFPopup>("Select Physical Frame", uim, onSelection);
             popup->open();
             api->pushPopup(std::move(popup));
@@ -255,7 +255,7 @@ namespace
 
     void DrawStationContextualActions(
         UndoableModelStatePair& uim,
-        OpenSim::Station const& station)
+        const OpenSim::Station& station)
     {
         DrawCalculateMenu(
             uim.getModel(),
@@ -267,7 +267,7 @@ namespace
 
     void DrawPointContextualActions(
         UndoableModelStatePair& uim,
-        OpenSim::Point const& point)
+        const OpenSim::Point& point)
     {
         DrawCalculateMenu(
             uim.getModel(),
@@ -279,7 +279,7 @@ namespace
 
     void DrawEllipsoidContextualActions(
         UndoableModelStatePair& uim,
-        OpenSim::Ellipsoid const& ellipsoid)
+        const OpenSim::Ellipsoid& ellipsoid)
     {
         DrawCalculateMenu(
             uim.getModel(),
@@ -291,7 +291,7 @@ namespace
 
     void DrawMeshContextualActions(
         UndoableModelStatePair& uim,
-        OpenSim::Mesh const& mesh)
+        const OpenSim::Mesh& mesh)
     {
         if (ui::begin_menu("Fit Analytic Geometry to This"))
         {
@@ -324,7 +324,7 @@ namespace
 
     void DrawGeometryContextualActions(
         UndoableModelStatePair& uim,
-        OpenSim::Geometry const& geometry)
+        const OpenSim::Geometry& geometry)
     {
         DrawCalculateMenu(
             uim.getModel(),
@@ -336,10 +336,10 @@ namespace
 
     void DrawPathWrapToggleMenuItems(
         UndoableModelStatePair& uim,
-        OpenSim::GeometryPath const& gp)
+        const OpenSim::GeometryPath& gp)
     {
         auto const wraps = GetAllWrapObjectsReferencedBy(gp);
-        for (auto const& wo : uim.getModel().getComponentList<OpenSim::WrapObject>()) {
+        for (const auto& wo : uim.getModel().getComponentList<OpenSim::WrapObject>()) {
             bool const enabled = cpp23::contains(wraps, &wo);
 
             ui::push_id(&wo);
@@ -358,7 +358,7 @@ namespace
 
     void DrawGeometryPathContextualActions(
         UndoableModelStatePair& uim,
-        OpenSim::GeometryPath const& geometryPath)
+        const OpenSim::GeometryPath& geometryPath)
     {
         if (ui::begin_menu("Add")) {
             if (ui::begin_menu("Path Wrap")) {
@@ -369,11 +369,11 @@ namespace
         }
     }
 
-    bool AnyDescendentInclusiveHasAppearanceProperty(OpenSim::Component const& component)
+    bool AnyDescendentInclusiveHasAppearanceProperty(const OpenSim::Component& component)
     {
         OpenSim::Component const* const c = FindFirstDescendentInclusive(
             component,
-            [](OpenSim::Component const& desc) -> bool { return TryGetAppearance(desc) != nullptr; }
+            [](const OpenSim::Component& desc) -> bool { return TryGetAppearance(desc) != nullptr; }
         );
         return c != nullptr;
     }
@@ -434,7 +434,7 @@ private:
         DrawRightClickedComponentContextMenuHeader(*c);
         DrawContextMenuSeparator();
 
-        DrawWatchOutputMenu(*c, [this](OpenSim::AbstractOutput const& output, std::optional<ComponentOutputSubfield> subfield)
+        DrawWatchOutputMenu(*c, [this](const OpenSim::AbstractOutput& output, std::optional<ComponentOutputSubfield> subfield)
         {
             if (subfield) {
                 m_MainUIStateAPI->addUserOutputExtractor(OutputExtractor{ComponentOutputExtractor{output, *subfield}});
@@ -601,7 +601,7 @@ private:
         }
     }
 
-    void drawSocketMenu(OpenSim::Component const& c)
+    void drawSocketMenu(const OpenSim::Component& c)
     {
         if (ui::begin_menu("Sockets"))
         {
@@ -619,9 +619,9 @@ private:
                     ui::table_headers_row();
 
                     int id = 0;
-                    for (std::string const& socketName : socketNames)
+                    for (const std::string& socketName : socketNames)
                     {
-                        OpenSim::AbstractSocket const& socket = c.getSocket(socketName);
+                        const OpenSim::AbstractSocket& socket = c.getSocket(socketName);
 
                         int column = 0;
                         ui::push_id(id++);
@@ -671,11 +671,11 @@ private:
         }
     }
 
-    void drawAddMusclePlotMenu(OpenSim::Muscle const& m)
+    void drawAddMusclePlotMenu(const OpenSim::Muscle& m)
     {
         if (ui::begin_menu("Plot vs. Coordinate"))
         {
-            for (OpenSim::Coordinate const& c : m_Model->getModel().getComponentList<OpenSim::Coordinate>())
+            for (const OpenSim::Coordinate& c : m_Model->getModel().getComponentList<OpenSim::Coordinate>())
             {
                 if (ui::draw_menu_item(c.getName()))
                 {
@@ -702,7 +702,7 @@ osc::ComponentContextMenu::ComponentContextMenu(
     ParentPtr<IMainUIStateAPI> const& mainUIStateAPI_,
     IEditorAPI* editorAPI_,
     std::shared_ptr<UndoableModelStatePair> model_,
-    OpenSim::ComponentPath const& path_) :
+    const OpenSim::ComponentPath& path_) :
 
     m_Impl{std::make_unique<Impl>(popupName_, mainUIStateAPI_, editorAPI_, std::move(model_), path_)}
 {

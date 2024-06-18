@@ -19,9 +19,9 @@ namespace osc
             std::shared_ptr<UndoableModelStatePair const>,
             ParentPtr<IMainUIStateAPI> const&
         );
-        OutputWatchesPanel(OutputWatchesPanel const&) = delete;
+        OutputWatchesPanel(const OutputWatchesPanel&) = delete;
         OutputWatchesPanel(OutputWatchesPanel&&) noexcept;
-        OutputWatchesPanel& operator=(OutputWatchesPanel const&) = delete;
+        OutputWatchesPanel& operator=(const OutputWatchesPanel&) = delete;
         OutputWatchesPanel& operator=(OutputWatchesPanel&&) noexcept;
         ~OutputWatchesPanel() noexcept;
 

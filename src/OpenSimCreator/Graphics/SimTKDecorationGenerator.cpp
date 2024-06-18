@@ -31,7 +31,7 @@ namespace
     inline constexpr float c_FrameAxisThickness = 0.0025f;
 
     // extracts scale factors from geometry
-    Vec3 GetScaleFactors(SimTK::DecorativeGeometry const& geom)
+    Vec3 GetScaleFactors(const SimTK::DecorativeGeometry& geom)
     {
         SimTK::Vec3 sf = geom.getScaleFactors();
 
@@ -44,9 +44,9 @@ namespace
     }
 
     // extracts RGBA color from geometry
-    Color GetColor(SimTK::DecorativeGeometry const& geom)
+    Color GetColor(const SimTK::DecorativeGeometry& geom)
     {
-        SimTK::Vec3 const& rgb = geom.getColor();
+        const SimTK::Vec3& rgb = geom.getColor();
 
         auto ar = static_cast<float>(geom.getOpacity());
         ar = ar < 0.0f ? 1.0f : ar;
@@ -54,7 +54,7 @@ namespace
         return Color{ToVec3(rgb), ar};
     }
 
-    SceneDecorationFlags GetFlags(SimTK::DecorativeGeometry const& geom)
+    SceneDecorationFlags GetFlags(const SimTK::DecorativeGeometry& geom)
     {
         SceneDecorationFlags rv = SceneDecorationFlags::None;
         switch (geom.getRepresentation()) {
@@ -73,23 +73,23 @@ namespace
 
     // creates a geometry-to-ground transform for the given geometry
     Transform ToOscTransform(
-        SimTK::SimbodyMatterSubsystem const& matter,
-        SimTK::State const& state,
-        SimTK::DecorativeGeometry const& g)
+        const SimTK::SimbodyMatterSubsystem& matter,
+        const SimTK::State& state,
+        const SimTK::DecorativeGeometry& g)
     {
-        SimTK::MobilizedBody const& mobod = matter.getMobilizedBody(SimTK::MobilizedBodyIndex(g.getBodyId()));
-        SimTK::Transform const& body2ground = mobod.getBodyTransform(state);
-        SimTK::Transform const& decoration2body = g.getTransform();
+        const SimTK::MobilizedBody& mobod = matter.getMobilizedBody(SimTK::MobilizedBodyIndex(g.getBodyId()));
+        const SimTK::Transform& body2ground = mobod.getBodyTransform(state);
+        const SimTK::Transform& decoration2body = g.getTransform();
 
         return decompose_to_transform(body2ground * decoration2body).with_scale(GetScaleFactors(g));
     }
 
-    size_t hash_of(SimTK::Vec3 const& v)
+    size_t hash_of(const SimTK::Vec3& v)
     {
         return osc::hash_of(v[0], v[1], v[2]);
     }
 
-    size_t hash_of(SimTK::PolygonalMesh const& mesh)
+    size_t hash_of(const SimTK::PolygonalMesh& mesh)
     {
         size_t hash = 0;
 
@@ -122,8 +122,8 @@ namespace
     public:
         GeometryImpl(
             SceneCache& meshCache,
-            SimTK::SimbodyMatterSubsystem const& matter,
-            SimTK::State const& st,
+            const SimTK::SimbodyMatterSubsystem& matter,
+            const SimTK::State& st,
             float fixupScaleFactor,
             std::function<void(SceneDecoration&&)> const& out) :
 
@@ -136,12 +136,12 @@ namespace
         }
 
     private:
-        Transform ToOscTransform(SimTK::DecorativeGeometry const& d) const
+        Transform ToOscTransform(const SimTK::DecorativeGeometry& d) const
         {
             return ::ToOscTransform(m_Matter, m_State, d);
         }
 
-        void implementPointGeometry(SimTK::DecorativePoint const&) final
+        void implementPointGeometry(const SimTK::DecorativePoint&) final
         {
             [[maybe_unused]] static bool const s_ShownWarningOnce = []()
             {
@@ -150,7 +150,7 @@ namespace
             }();
         }
 
-        void implementLineGeometry(SimTK::DecorativeLine const& d) final
+        void implementLineGeometry(const SimTK::DecorativeLine& d) final
         {
             Transform const t = ToOscTransform(d);
             Vec3 const p1 = t * ToVec3(d.getPoint1());
@@ -169,7 +169,7 @@ namespace
             });
         }
 
-        void implementBrickGeometry(SimTK::DecorativeBrick const& d) final
+        void implementBrickGeometry(const SimTK::DecorativeBrick& d) final
         {
             Transform t = ToOscTransform(d);
             t.scale *= ToVec3(d.getHalfLengths());
@@ -182,7 +182,7 @@ namespace
             });
         }
 
-        void implementCylinderGeometry(SimTK::DecorativeCylinder const& d) final
+        void implementCylinderGeometry(const SimTK::DecorativeCylinder& d) final
         {
             auto const radius = static_cast<float>(d.getRadius());
             auto const halfHeight = static_cast<float>(d.getHalfHeight());
@@ -198,7 +198,7 @@ namespace
             });
         }
 
-        void implementCircleGeometry(SimTK::DecorativeCircle const& d) final
+        void implementCircleGeometry(const SimTK::DecorativeCircle& d) final
         {
             auto const radius = static_cast<float>(d.getRadius());
 
@@ -213,7 +213,7 @@ namespace
             });
         }
 
-        void implementSphereGeometry(SimTK::DecorativeSphere const& d) final
+        void implementSphereGeometry(const SimTK::DecorativeSphere& d) final
         {
             Transform t = ToOscTransform(d);
             t.scale *= m_FixupScaleFactor * static_cast<float>(d.getRadius());
@@ -226,7 +226,7 @@ namespace
             });
         }
 
-        void implementEllipsoidGeometry(SimTK::DecorativeEllipsoid const& d) final
+        void implementEllipsoidGeometry(const SimTK::DecorativeEllipsoid& d) final
         {
             Transform t = ToOscTransform(d);
             t.scale *= ToVec3(d.getRadii());
@@ -239,7 +239,7 @@ namespace
             });
         }
 
-        void implementFrameGeometry(SimTK::DecorativeFrame const& d) final
+        void implementFrameGeometry(const SimTK::DecorativeFrame& d) final
         {
             Transform const t = ToOscTransform(d);
 
@@ -285,7 +285,7 @@ namespace
             }
         }
 
-        void implementTextGeometry(SimTK::DecorativeText const&) final
+        void implementTextGeometry(const SimTK::DecorativeText&) final
         {
             [[maybe_unused]] static bool const s_ShownWarningOnce = []()
             {
@@ -294,7 +294,7 @@ namespace
             }();
         }
 
-        void implementMeshGeometry(SimTK::DecorativeMesh const& d) final
+        void implementMeshGeometry(const SimTK::DecorativeMesh& d) final
         {
             // the ID of an in-memory mesh is derived from the hash of its data
             //
@@ -315,9 +315,9 @@ namespace
             });
         }
 
-        void implementMeshFileGeometry(SimTK::DecorativeMeshFile const& d) final
+        void implementMeshFileGeometry(const SimTK::DecorativeMeshFile& d) final
         {
-            std::string const& path = d.getMeshFile();
+            const std::string& path = d.getMeshFile();
             auto const meshLoader = [&d](){ return ToOscMesh(d.getMesh()); };
 
             m_Consumer({
@@ -328,7 +328,7 @@ namespace
             });
         }
 
-        void implementArrowGeometry(SimTK::DecorativeArrow const& d) final
+        void implementArrowGeometry(const SimTK::DecorativeArrow& d) final
         {
             Transform const t = ToOscTransform(d);
 
@@ -368,7 +368,7 @@ namespace
             });
         }
 
-        void implementTorusGeometry(SimTK::DecorativeTorus const& d) final
+        void implementTorusGeometry(const SimTK::DecorativeTorus& d) final
         {
             auto const tube_center_radius = static_cast<float>(d.getTorusRadius());
             auto const tube_radius = static_cast<float>(d.getTubeRadius());
@@ -381,7 +381,7 @@ namespace
             });
         }
 
-        void implementConeGeometry(SimTK::DecorativeCone const& d) final
+        void implementConeGeometry(const SimTK::DecorativeCone& d) final
         {
             Transform const t = ToOscTransform(d);
 
@@ -406,8 +406,8 @@ namespace
         }
 
         SceneCache& m_MeshCache;
-        SimTK::SimbodyMatterSubsystem const& m_Matter;
-        SimTK::State const& m_State;
+        const SimTK::SimbodyMatterSubsystem& m_Matter;
+        const SimTK::State& m_State;
         float m_FixupScaleFactor;
         std::function<void(SceneDecoration&&)> const& m_Consumer;
     };
@@ -415,9 +415,9 @@ namespace
 
 void osc::GenerateDecorations(
     SceneCache& meshCache,
-    SimTK::SimbodyMatterSubsystem const& matter,
-    SimTK::State const& state,
-    SimTK::DecorativeGeometry const& geom,
+    const SimTK::SimbodyMatterSubsystem& matter,
+    const SimTK::State& state,
+    const SimTK::DecorativeGeometry& geom,
     float fixupScaleFactor,
     std::function<void(SceneDecoration&&)> const& out)
 {

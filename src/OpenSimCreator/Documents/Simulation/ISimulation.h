@@ -27,9 +27,9 @@ namespace osc
     class ISimulation {
     protected:
         ISimulation() = default;
-        ISimulation(ISimulation const&) = default;
+        ISimulation(const ISimulation&) = default;
         ISimulation(ISimulation&&) noexcept = default;
-        ISimulation& operator=(ISimulation const&) = default;
+        ISimulation& operator=(const ISimulation&) = default;
         ISimulation& operator=(ISimulation&&) noexcept = default;
     public:
         virtual ~ISimulation() noexcept = default;
@@ -95,7 +95,7 @@ namespace osc
             return implGetClocks().progress();
         }
 
-        ParamBlock const& getParams() const
+        const ParamBlock& getParams() const
         {
             return implGetParams();
         }
@@ -134,7 +134,7 @@ namespace osc
 
         virtual SimulationStatus implGetStatus() const = 0;
         virtual SimulationClocks implGetClocks() const = 0;
-        virtual ParamBlock const& implGetParams() const = 0;
+        virtual const ParamBlock& implGetParams() const = 0;
         virtual std::span<OutputExtractor const> implGetOutputExtractors() const = 0;
 
         virtual bool implCanChangeEndTime() const { return false; }

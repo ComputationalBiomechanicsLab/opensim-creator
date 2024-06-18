@@ -70,12 +70,12 @@ namespace
 
     // generates scene decorations for the "choose components" layer
     void GenerateChooseComponentsDecorations(
-        ChooseComponentsEditorLayerSharedState const& state,
+        const ChooseComponentsEditorLayerSharedState& state,
         BVHedDecorations& out)
     {
         out.clear();
 
-        auto const onModelDecoration = [&state, &out](OpenSim::Component const& component, SceneDecoration&& decoration)
+        auto const onModelDecoration = [&state, &out](const OpenSim::Component& component, SceneDecoration&& decoration)
         {
             // update flags based on path
             std::string const absPath = GetAbsolutePathString(component);
@@ -273,7 +273,7 @@ public:
 
     bool tryToggleHover()
     {
-        std::string const& absPath = m_State.hoveredComponent;
+        const std::string& absPath = m_State.hoveredComponent;
         OpenSim::Component const* component = FindComponent(m_State.model->getModel(), absPath);
 
         if (!component)

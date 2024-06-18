@@ -45,7 +45,7 @@ namespace
 
         PathPoint(OpenSim::ComponentPath userChoice_,
             OpenSim::ComponentPath actualFrame_,
-            SimTK::Vec3 const& locationInFrame_) :
+            const SimTK::Vec3& locationInFrame_) :
             userChoice{std::move(userChoice_)},
             actualFrame{std::move(actualFrame_)},
             locationInFrame{locationInFrame_}
@@ -83,7 +83,7 @@ private:
 
     std::unique_ptr<OpenSim::Component> tryCreateComponentFromState()
     {
-        OpenSim::Model const& model = m_Uum->getModel();
+        const OpenSim::Model& model = m_Uum->getModel();
 
         if (m_Name.empty())
         {
@@ -104,8 +104,8 @@ private:
         // assign sockets
         for (size_t i = 0; i < m_ProtoSockets.size(); ++i)
         {
-            OpenSim::AbstractSocket const& socket = *m_ProtoSockets[i];
-            OpenSim::ComponentPath const& connecteePath = m_SocketConnecteePaths[i];
+            const OpenSim::AbstractSocket& socket = *m_ProtoSockets[i];
+            const OpenSim::ComponentPath& connecteePath = m_SocketConnecteePaths[i];
 
             OpenSim::Component const* connectee = FindComponent(model, connecteePath);
 
@@ -127,7 +127,7 @@ private:
 
             for (size_t i = 0; i < m_PathPoints.size(); ++i)
             {
-                auto const& pp = m_PathPoints[i];
+                const auto& pp = m_PathPoints[i];
 
                 if (IsEmpty(pp.actualFrame))
                 {
@@ -152,7 +152,7 @@ private:
 
     bool isAbleToAddComponentFromCurrentState() const
     {
-        OpenSim::Model const& model = m_Uum->getModel();
+        const OpenSim::Model& model = m_Uum->getModel();
 
         bool const hasName = !m_Name.empty();
         bool const allSocketsAssigned = rgs::all_of(m_SocketConnecteePaths, std::bind_front(ContainsComponent, std::cref(model)));
@@ -225,7 +225,7 @@ private:
 
     void drawIthSocketEditor(size_t i)
     {
-        OpenSim::AbstractSocket const& socket = *m_ProtoSockets[i];
+        const OpenSim::AbstractSocket& socket = *m_ProtoSockets[i];
         OpenSim::ComponentPath& connectee = m_SocketConnecteePaths[i];
 
         ui::set_num_columns(2);
@@ -246,7 +246,7 @@ private:
 
         // iterate through potential connectees in model and print connect-able options
         int innerID = 0;
-        for (OpenSim::Component const& c : m_Uum->getModel().getComponentList())
+        for (const OpenSim::Component& c : m_Uum->getModel().getComponentList())
         {
             if (!IsAbleToConnectTo(socket, c)) {
                 continue;  // can't connect to it
@@ -288,15 +288,15 @@ private:
 
     void drawPathPointEditorChoices()
     {
-        OpenSim::Model const& model = m_Uum->getModel();
+        const OpenSim::Model& model = m_Uum->getModel();
 
         // show list of choices
         ui::begin_child_panel("##pf_ppchoices", {ui::get_content_region_avail().x, 128.0f});
 
         // choices
-        for (OpenSim::Component const& c : model.getComponentList())
+        for (const OpenSim::Component& c : model.getComponentList())
         {
-            if (cpp23::contains(m_PathPoints, GetAbsolutePath(c), [](auto const& pp) { return pp.userChoice; }))
+            if (cpp23::contains(m_PathPoints, GetAbsolutePath(c), [](const auto& pp) { return pp.userChoice; }))
             {
                 continue;  // already selected
             }
@@ -364,7 +364,7 @@ private:
 
     void drawPathPointEditorAlreadyChosenPoints()
     {
-        OpenSim::Model const& model = m_Uum->getModel();
+        const OpenSim::Model& model = m_Uum->getModel();
 
         ui::begin_child_panel("##pf_pathpoints", {ui::get_content_region_avail().x, 128.0f});
 

@@ -85,8 +85,8 @@ namespace
     }
 
     std::unordered_map<int, int> CreateStorageIndexToModelSvIndexLUT(
-        OpenSim::Model const& model,
-        OpenSim::Storage const& storage)
+        const OpenSim::Model& model,
+        const OpenSim::Storage& storage)
     {
         std::unordered_map<int, int> rv;
 
@@ -120,7 +120,7 @@ namespace
         rv.reserve(modelStateVars.size());
         for (int modelIndex = 0; modelIndex < modelStateVars.size(); ++modelIndex)
         {
-            std::string const& svName = modelStateVars[modelIndex];
+            const std::string& svName = modelStateVars[modelIndex];
             int storageIndex = OpenSim::TableUtilities::findStateLabelIndex(storageColumnsIncludingTime, svName);
             int valueIndex = storageIndex - 1;  // the column labels include 'time', which isn't in the data elements
 
@@ -140,7 +140,7 @@ namespace
             std::stringstream ss;
             ss << "the provided STO file is missing the following columns:\n";
             std::string_view delim;
-            for (std::string const& el : missing)
+            for (const std::string& el : missing)
             {
                 ss << delim << el;
                 delim = ", ";
@@ -157,7 +157,7 @@ namespace
 
     std::vector<SimulationReport> ExtractReports(
         OpenSim::Model& model,
-        std::filesystem::path const& stoFilePath)
+        const std::filesystem::path& stoFilePath)
     {
         OpenSim::Storage storage{stoFilePath.string()};
 
@@ -216,7 +216,7 @@ class osc::StoFileSimulation::Impl final {
 public:
     Impl(
         std::unique_ptr<OpenSim::Model> model,
-        std::filesystem::path const& stoFilePath,
+        const std::filesystem::path& stoFilePath,
         float fixupScaleFactor) :
 
         m_Model{std::move(model)},
@@ -254,7 +254,7 @@ public:
         return SimulationClocks{{m_Start, m_End}};
     }
 
-    ParamBlock const& getParams() const
+    const ParamBlock& getParams() const
     {
         return m_ParamBlock;
     }
@@ -284,7 +284,7 @@ private:
     float m_FixupScaleFactor = 1.0f;
 };
 
-osc::StoFileSimulation::StoFileSimulation(std::unique_ptr<OpenSim::Model> model, std::filesystem::path const& stoFilePath, float fixupScaleFactor) :
+osc::StoFileSimulation::StoFileSimulation(std::unique_ptr<OpenSim::Model> model, const std::filesystem::path& stoFilePath, float fixupScaleFactor) :
     m_Impl{std::make_unique<Impl>(std::move(model), stoFilePath, fixupScaleFactor)}
 {}
 osc::StoFileSimulation::StoFileSimulation(StoFileSimulation&&) noexcept = default;
@@ -321,7 +321,7 @@ SimulationClocks osc::StoFileSimulation::implGetClocks() const
     return m_Impl->getClocks();
 }
 
-ParamBlock const& osc::StoFileSimulation::implGetParams() const
+const ParamBlock& osc::StoFileSimulation::implGetParams() const
 {
     return m_Impl->getParams();
 }

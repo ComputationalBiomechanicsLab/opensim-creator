@@ -55,7 +55,7 @@ void osc::MainMenuFileTab::onDraw(
 {
     // handle hotkeys enabled by just drawing the menu
     {
-        auto const& io = ui::get_io();
+        const auto& io = ui::get_io();
 
         bool mod = ui::is_ctrl_or_super_down();
 
@@ -108,7 +108,7 @@ void osc::MainMenuFileTab::onDraw(
     if (ui::begin_menu(ICON_FA_FOLDER_OPEN " Open Recent", !recentFiles->empty()))
     {
         // iterate in reverse: recent files are stored oldest --> newest
-        for (RecentFile const& rf : *recentFiles)
+        for (const RecentFile& rf : *recentFiles)
         {
             ui::push_id(++imgui_id);
             if (ui::draw_menu_item(rf.path.filename().string()))
@@ -123,7 +123,7 @@ void osc::MainMenuFileTab::onDraw(
 
     if (ui::begin_menu(ICON_FA_FOLDER_OPEN " Open Example"))
     {
-        for (std::filesystem::path const& ex : exampleOsimFiles)
+        for (const std::filesystem::path& ex : exampleOsimFiles)
         {
             ui::push_id(++imgui_id);
             if (ui::draw_menu_item(ex.filename().string()))
@@ -151,7 +151,7 @@ void osc::MainMenuFileTab::onDraw(
 
                 api->add_and_select_tab<SimulationTab>(api, std::make_shared<Simulation>(StoFileSimulation{std::move(cpy), *maybePath, maybeModel->getFixupScaleFactor()}));
             }
-            catch (std::exception const& ex)
+            catch (const std::exception& ex)
             {
                 log_error("encountered error while trying to load an STO file against the model: %s", ex.what());
             }
@@ -313,7 +313,7 @@ void osc::MainMenuAboutTab::onDraw()
     ui::draw_separator();
     ui::draw_dummy({0.0f, 0.5f});
     {
-        AppMetadata const& metadata = App::get().metadata();
+        const AppMetadata& metadata = App::get().metadata();
 
         ui::set_num_columns(2);
 

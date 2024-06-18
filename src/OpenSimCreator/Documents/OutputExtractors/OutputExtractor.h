@@ -35,18 +35,18 @@ namespace osc
         CStringView getDescription() const { return m_Output->getDescription(); }
         OutputExtractorDataType getOutputType() const { return m_Output->getOutputType(); }
 
-        OutputValueExtractor getOutputValueExtractor(OpenSim::Component const& component) const
+        OutputValueExtractor getOutputValueExtractor(const OpenSim::Component& component) const
         {
             return m_Output->getOutputValueExtractor(component);
         }
 
-        float getValueFloat(OpenSim::Component const& component, SimulationReport const& report) const
+        float getValueFloat(const OpenSim::Component& component, const SimulationReport& report) const
         {
             return m_Output->getValueFloat(component, report);
         }
 
         void getValuesFloat(
-            OpenSim::Component const& component,
+            const OpenSim::Component& component,
             std::span<SimulationReport const> reports,
             std::function<void(float)> const& consumer) const
         {
@@ -54,21 +54,21 @@ namespace osc
         }
 
         std::vector<float> slurpValuesFloat(
-            OpenSim::Component const& component,
+            const OpenSim::Component& component,
             std::span<SimulationReport const> reports) const
         {
             return m_Output->slurpValuesFloat(component, reports);
         }
 
         Vec2 getValueVec2(
-            OpenSim::Component const& component,
-            SimulationReport const& report) const
+            const OpenSim::Component& component,
+            const SimulationReport& report) const
         {
             return m_Output->getValueVec2(component, report);
         }
 
         void getValuesVec2(
-            OpenSim::Component const& component,
+            const OpenSim::Component& component,
             std::span<SimulationReport const> report,
             std::function<void(Vec2)> const& consumer) const
         {
@@ -76,13 +76,13 @@ namespace osc
         }
 
         std::vector<Vec2> slurpValuesVec2(
-            OpenSim::Component const& component,
+            const OpenSim::Component& component,
             std::span<SimulationReport const> report) const
         {
             return m_Output->slurpValuesVec2(component, report);
         }
 
-        std::string getValueString(OpenSim::Component const& component, SimulationReport const& report) const
+        std::string getValueString(const OpenSim::Component& component, const SimulationReport& report) const
         {
             return m_Output->getValueString(component, report);
         }
@@ -92,27 +92,27 @@ namespace osc
             return m_Output->getHash();
         }
 
-        bool equals(IOutputExtractor const& other) const
+        bool equals(const IOutputExtractor& other) const
         {
             return m_Output->equals(other);
         }
 
-        operator IOutputExtractor const& () const
+        operator const IOutputExtractor& () const
         {
             return *m_Output;
         }
 
-        IOutputExtractor const& getInner() const
+        const IOutputExtractor& getInner() const
         {
             return *m_Output;
         }
 
-        friend bool operator==(OutputExtractor const& lhs, OutputExtractor const& rhs)
+        friend bool operator==(const OutputExtractor& lhs, const OutputExtractor& rhs)
         {
             return *lhs.m_Output == *rhs.m_Output;
         }
     private:
-        friend std::string to_string(OutputExtractor const&);
+        friend std::string to_string(const OutputExtractor&);
         friend struct std::hash<OutputExtractor>;
 
         std::shared_ptr<IOutputExtractor const> m_Output;
@@ -125,13 +125,13 @@ namespace osc
         return OutputExtractor{ConcreteOutputExtractor{std::forward<Args>(args)...}};
     }
 
-    std::ostream& operator<<(std::ostream&, OutputExtractor const&);
-    std::string to_string(OutputExtractor const&);
+    std::ostream& operator<<(std::ostream&, const OutputExtractor&);
+    std::string to_string(const OutputExtractor&);
 }
 
 template<>
 struct std::hash<osc::OutputExtractor> final {
-    size_t operator()(osc::OutputExtractor const& o) const
+    size_t operator()(const osc::OutputExtractor& o) const
     {
         return o.m_Output->getHash();
     }

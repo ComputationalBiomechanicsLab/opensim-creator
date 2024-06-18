@@ -47,7 +47,7 @@ namespace
         {
         }
 
-        explicit UiModelStatePair(std::string const& osim) :
+        explicit UiModelStatePair(const std::string& osim) :
             UiModelStatePair{std::make_unique<OpenSim::Model>(osim)}
         {
         }
@@ -60,7 +60,7 @@ namespace
             InitializeState(*m_Model);
         }
 
-        UiModelStatePair(UiModelStatePair const& other) :
+        UiModelStatePair(const UiModelStatePair& other) :
             m_Model{std::make_unique<OpenSim::Model>(*other.m_Model)},
             m_FixupScaleFactor{other.m_FixupScaleFactor},
             m_MaybeSelected{other.m_MaybeSelected},
@@ -71,11 +71,11 @@ namespace
         }
 
         UiModelStatePair(UiModelStatePair&&) noexcept = default;
-        UiModelStatePair& operator=(UiModelStatePair const&) = delete;
+        UiModelStatePair& operator=(const UiModelStatePair&) = delete;
         UiModelStatePair& operator=(UiModelStatePair&&) noexcept = default;
         ~UiModelStatePair() noexcept override = default;
 
-        OpenSim::Model const& implGetModel() const final
+        const OpenSim::Model& implGetModel() const final
         {
             return *m_Model;
         }
@@ -96,7 +96,7 @@ namespace
             m_ModelVersion = version;
         }
 
-        SimTK::State const& implGetState() const final
+        const SimTK::State& implGetState() const final
         {
             return m_Model->getWorkingState();
         }
@@ -116,12 +116,12 @@ namespace
             m_FixupScaleFactor = sf;
         }
 
-        OpenSim::ComponentPath const& getSelectedPath() const
+        const OpenSim::ComponentPath& getSelectedPath() const
         {
             return m_MaybeSelected;
         }
 
-        void setSelectedPath(OpenSim::ComponentPath const& p)
+        void setSelectedPath(const OpenSim::ComponentPath& p)
         {
             m_MaybeSelected = p;
         }
@@ -136,12 +136,12 @@ namespace
             m_MaybeSelected = GetAbsolutePathOrEmpty(c);
         }
 
-        OpenSim::ComponentPath const& getHoveredPath() const
+        const OpenSim::ComponentPath& getHoveredPath() const
         {
             return m_MaybeHovered;
         }
 
-        void setHoveredPath(OpenSim::ComponentPath const& p)
+        void setHoveredPath(const OpenSim::ComponentPath& p)
         {
             m_MaybeHovered = p;
         }
@@ -174,7 +174,7 @@ namespace
         OpenSim::ComponentPath m_MaybeHovered;
     };
 
-    void CopySelectedAndHovered(UiModelStatePair const& src, UiModelStatePair& dest)
+    void CopySelectedAndHovered(const UiModelStatePair& src, UiModelStatePair& dest)
     {
         dest.setSelectedPath(src.getSelectedPath());
         dest.setHoveredPath(src.getHoveredPath());
@@ -189,7 +189,7 @@ public:
         doCommit("created a new model");  // make initial commit
     }
 
-    explicit Impl(OpenSim::Model const& m) :
+    explicit Impl(const OpenSim::Model& m) :
         Impl{std::make_unique<OpenSim::Model>(m)}
     {}
 
@@ -210,7 +210,7 @@ public:
         doCommit(std::move(ss).str());  // make initial commit
     }
 
-    explicit Impl(std::filesystem::path const& osimPath) :
+    explicit Impl(const std::filesystem::path& osimPath) :
         Impl{std::make_unique<OpenSim::Model>(osimPath.string())}
     {
         setUpToDateWithFilesystem(std::filesystem::last_write_time(osimPath));
@@ -238,7 +238,7 @@ public:
         return getFilesystemLocation();
     }
 
-    void setFilesystemPath(std::filesystem::path const& p)
+    void setFilesystemPath(const std::filesystem::path& p)
     {
         setFilesystemLocation(p);
     }
@@ -299,7 +299,7 @@ public:
             OSC_PERF("commit model");
             doCommit(message);
         }
-        catch (std::exception const& ex)
+        catch (const std::exception& ex)
         {
             log_error("exception occurred after applying changes to a model:");
             log_error("    %s", ex.what());
@@ -313,7 +313,7 @@ public:
         checkout();  // care: skip copying selection because a rollback is aggro
     }
 
-    bool tryCheckout(ModelStateCommit const& commit)
+    bool tryCheckout(const ModelStateCommit& commit)
     {
         if (!m_Commits.contains(commit.getID()))
         {
@@ -325,7 +325,7 @@ public:
         return true;
     }
 
-    OpenSim::Model const& getModel() const
+    const OpenSim::Model& getModel() const
     {
         return m_Scratch.getModel();
     }
@@ -352,7 +352,7 @@ public:
         m_Scratch.setModelVersion(version);
     }
 
-    SimTK::State const& getState() const
+    const SimTK::State& getState() const
     {
         return m_Scratch.getState();
     }
@@ -414,7 +414,7 @@ private:
         return lookup_or_nullptr(m_Commits, id);
     }
 
-    ModelStateCommit const& getHeadCommit() const
+    const ModelStateCommit& getHeadCommit() const
     {
         OSC_ASSERT(m_CurrentHead != UID::empty());
         OSC_ASSERT(hasCommit(m_CurrentHead));
@@ -551,7 +551,7 @@ private:
 
     void garbageCollectUnreachable()
     {
-        std::erase_if(m_Commits, [this](auto const& p)
+        std::erase_if(m_Commits, [this](const auto& p)
         {
             return !(p.first == m_BranchHead || isAncestor(p.first, m_BranchHead));
         });
@@ -656,7 +656,7 @@ private:
         return m_MaybeFilesystemLocation;
     }
 
-    void setFilesystemLocation(std::filesystem::path const& p)
+    void setFilesystemLocation(const std::filesystem::path& p)
     {
         m_MaybeFilesystemLocation = p;
     }
@@ -696,7 +696,7 @@ osc::UndoableModelStatePair::UndoableModelStatePair() :
 {
 }
 
-osc::UndoableModelStatePair::UndoableModelStatePair(OpenSim::Model const& model) :
+osc::UndoableModelStatePair::UndoableModelStatePair(const OpenSim::Model& model) :
     m_Impl{std::make_unique<Impl>(model)}
 {
 }
@@ -706,19 +706,19 @@ osc::UndoableModelStatePair::UndoableModelStatePair(std::unique_ptr<OpenSim::Mod
 {
 }
 
-osc::UndoableModelStatePair::UndoableModelStatePair(std::filesystem::path const& osimPath) :
+osc::UndoableModelStatePair::UndoableModelStatePair(const std::filesystem::path& osimPath) :
     m_Impl{std::make_unique<Impl>(osimPath)}
 {
 }
 
-osc::UndoableModelStatePair::UndoableModelStatePair(UndoableModelStatePair const& src) :
+osc::UndoableModelStatePair::UndoableModelStatePair(const UndoableModelStatePair& src) :
     m_Impl{std::make_unique<Impl>(*src.m_Impl)}
 {
 }
 
 osc::UndoableModelStatePair::UndoableModelStatePair(UndoableModelStatePair&&) noexcept = default;
 
-UndoableModelStatePair& osc::UndoableModelStatePair::operator=(UndoableModelStatePair const& src)
+UndoableModelStatePair& osc::UndoableModelStatePair::operator=(const UndoableModelStatePair& src)
 {
     if (&src != this)
     {
@@ -747,7 +747,7 @@ std::filesystem::path osc::UndoableModelStatePair::getFilesystemPath() const
     return m_Impl->getFilesystemPath();
 }
 
-void osc::UndoableModelStatePair::setFilesystemPath(std::filesystem::path const& p)
+void osc::UndoableModelStatePair::setFilesystemPath(const std::filesystem::path& p)
 {
     m_Impl->setFilesystemPath(p);
 }
@@ -803,7 +803,7 @@ void osc::UndoableModelStatePair::rollback()
     m_Impl->rollback();
 }
 
-bool osc::UndoableModelStatePair::tryCheckout(ModelStateCommit const& commit)
+bool osc::UndoableModelStatePair::tryCheckout(const ModelStateCommit& commit)
 {
     return m_Impl->tryCheckout(commit);
 }
@@ -823,7 +823,7 @@ void osc::UndoableModelStatePair::setModelVersion(UID version)
     m_Impl->setModelVersion(version);
 }
 
-OpenSim::Model const& osc::UndoableModelStatePair::implGetModel() const
+const OpenSim::Model& osc::UndoableModelStatePair::implGetModel() const
 {
     return m_Impl->getModel();
 }
@@ -833,7 +833,7 @@ UID osc::UndoableModelStatePair::implGetModelVersion() const
     return m_Impl->getModelVersion();
 }
 
-SimTK::State const& osc::UndoableModelStatePair::implGetState() const
+const SimTK::State& osc::UndoableModelStatePair::implGetState() const
 {
     return m_Impl->getState();
 }

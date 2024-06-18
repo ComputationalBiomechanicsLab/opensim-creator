@@ -21,32 +21,32 @@ namespace osc::fd
 {
     void ActionAddSphereInMeshFrame(
         UndoableModelStatePair&,
-        OpenSim::Mesh const&,
+        const OpenSim::Mesh&,
         std::optional<Vec3> const& maybeClickPosInGround
     );
 
     void ActionAddOffsetFrameInMeshFrame(
         UndoableModelStatePair&,
-        OpenSim::Mesh const&,
+        const OpenSim::Mesh&,
         std::optional<Vec3> const& maybeClickPosInGround
     );
 
     void ActionAddPointToPointEdge(
         UndoableModelStatePair&,
-        OpenSim::Point const& ,
-        OpenSim::Point const&
+        const OpenSim::Point& ,
+        const OpenSim::Point&
     );
 
     void ActionAddMidpoint(
         UndoableModelStatePair&,
-        OpenSim::Point const&,
-        OpenSim::Point const&
+        const OpenSim::Point&,
+        const OpenSim::Point&
     );
 
     void ActionAddCrossProductEdge(
         UndoableModelStatePair&,
-        Edge const&,
-        Edge const&
+        const Edge&,
+        const Edge&
     );
 
     void ActionSwapSocketAssignments(
@@ -58,27 +58,27 @@ namespace osc::fd
 
     void ActionSwapPointToPointEdgeEnds(
         UndoableModelStatePair&,
-        PointToPointEdge const&
+        const PointToPointEdge&
     );
 
     void ActionSwapCrossProductEdgeOperands(
         UndoableModelStatePair&,
-        CrossProductEdge const&
+        const CrossProductEdge&
     );
 
     void ActionAddFrame(
         std::shared_ptr<UndoableModelStatePair> const&,
-        Edge const& firstEdge,
+        const Edge& firstEdge,
         CoordinateDirection firstEdgeAxis,
-        Edge const& otherEdge,
-        OpenSim::Point const& origin
+        const Edge& otherEdge,
+        const OpenSim::Point& origin
     );
 
     void ActionCreateBodyFromFrame(
         std::shared_ptr<UndoableModelStatePair> const&,
-        OpenSim::ComponentPath const& frameAbsPath,
-        OpenSim::ComponentPath const& meshAbsPath,
-        OpenSim::ComponentPath const& jointFrameAbsPath,
-        OpenSim::ComponentPath const& parentFrameAbsPath
+        const OpenSim::ComponentPath& frameAbsPath,
+        const OpenSim::ComponentPath& meshAbsPath,
+        const OpenSim::ComponentPath& jointFrameAbsPath,
+        const OpenSim::ComponentPath& parentFrameAbsPath
     );
 }

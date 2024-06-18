@@ -18,16 +18,16 @@ namespace osc
     public:
         ModelEditorViewerPanel(
             std::string_view panelName_,
-            ModelEditorViewerPanelParameters const&
+            const ModelEditorViewerPanelParameters&
         );
-        ModelEditorViewerPanel(ModelEditorViewerPanel const&) = delete;
+        ModelEditorViewerPanel(const ModelEditorViewerPanel&) = delete;
         ModelEditorViewerPanel(ModelEditorViewerPanel&&) noexcept;
-        ModelEditorViewerPanel& operator=(ModelEditorViewerPanel const&) = delete;
+        ModelEditorViewerPanel& operator=(const ModelEditorViewerPanel&) = delete;
         ModelEditorViewerPanel& operator=(ModelEditorViewerPanel&&) noexcept;
         ~ModelEditorViewerPanel() noexcept;
 
         ModelEditorViewerPanelLayer& pushLayer(std::unique_ptr<ModelEditorViewerPanelLayer>);
-        void focusOn(Vec3 const&);
+        void focusOn(const Vec3&);
 
     private:
         CStringView impl_get_name() const final;

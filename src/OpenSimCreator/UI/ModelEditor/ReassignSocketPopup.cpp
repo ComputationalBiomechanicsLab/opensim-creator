@@ -45,7 +45,7 @@ namespace
         {
         }
 
-        friend bool operator==(PopupParams const&, PopupParams const&) = default;
+        friend bool operator==(const PopupParams&, const PopupParams&) = default;
 
         UID modelVersion;
         OpenSim::ComponentPath componentPath;
@@ -56,19 +56,19 @@ namespace
     // a single user-selectable connectee option
     struct ConnecteeOption final {
 
-        explicit ConnecteeOption(OpenSim::Component const& c) :
+        explicit ConnecteeOption(const OpenSim::Component& c) :
             absPath{GetAbsolutePath(c)},
             name{c.getName()}
         {
         }
 
-        friend auto operator<=>(ConnecteeOption const& lhs, ConnecteeOption const& rhs)
+        friend auto operator<=>(const ConnecteeOption& lhs, const ConnecteeOption& rhs)
         {
             return std::tie(lhs.name, lhs.absPath.toString()) <=> std::tie(rhs.name, rhs.absPath.toString());
         }
 
         [[maybe_unused]]  // TODO: Ubuntu20 doesn't use this function
-        friend bool operator==(ConnecteeOption const& lhs, ConnecteeOption const& rhs)
+        friend bool operator==(const ConnecteeOption& lhs, const ConnecteeOption& rhs)
         {
             return std::tie(lhs.name, lhs.absPath.toString()) == std::tie(rhs.name, rhs.absPath.toString());
         }
@@ -79,8 +79,8 @@ namespace
 
     // generate a list of possible connectee options, given a set of popup parameters
     std::vector<ConnecteeOption> GenerateSelectionOptions(
-        OpenSim::Model const& model,
-        PopupParams const& params)
+        const OpenSim::Model& model,
+        const PopupParams& params)
     {
         std::vector<ConnecteeOption> rv;
 
@@ -96,7 +96,7 @@ namespace
             return rv;  // socket isn't in model?
         }
 
-        for (OpenSim::Component const& other : model.getComponentList())
+        for (const OpenSim::Component& other : model.getComponentList())
         {
             if (&other == component)
             {
@@ -179,7 +179,7 @@ private:
         ui::begin_child_panel("##componentlist", Vec2{512.0f, 256.0f}, ImGuiChildFlags_Border, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_AlwaysVerticalScrollbar);
 
         int id = 0;  // care: necessary because multiple connectees may have the same name
-        for (ConnecteeOption const& option : m_Options)
+        for (const ConnecteeOption& option : m_Options)
         {
             ui::push_id(id++);
             if (ui::draw_selectable(option.name))
@@ -230,8 +230,8 @@ private:
     }
 
     void tryDrawReexpressPropertyInFrameCheckbox(
-        OpenSim::Component const& component,
-        OpenSim::AbstractSocket const& abstractSocket)
+        const OpenSim::Component& component,
+        const OpenSim::AbstractSocket& abstractSocket)
     {
         std::string const label = [&component]()
         {

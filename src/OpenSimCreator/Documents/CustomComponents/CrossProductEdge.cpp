@@ -44,13 +44,13 @@ void osc::fd::CrossProductEdge::generateDecorations(
     }
 }
 
-EdgePoints osc::fd::CrossProductEdge::calcLocationsInGround(SimTK::State const& state) const
+EdgePoints osc::fd::CrossProductEdge::calcLocationsInGround(const SimTK::State& state) const
 {
-    auto const& [first, second] = getBothEdgePoints(state);
+    const auto& [first, second] = getBothEdgePoints(state);
     return CrossProduct(first, second);  // TODO: sort out magnitude etc.
 }
 
-std::pair<EdgePoints, EdgePoints> osc::fd::CrossProductEdge::getBothEdgePoints(SimTK::State const& state) const
+std::pair<EdgePoints, EdgePoints> osc::fd::CrossProductEdge::getBothEdgePoints(const SimTK::State& state) const
 {
     return {
         getConnectee<Edge>("first_edge").getLocationsInGround(state),

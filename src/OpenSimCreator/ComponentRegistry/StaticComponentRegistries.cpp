@@ -67,7 +67,7 @@ namespace
     {
         std::shared_ptr<TJoint> j = std::make_shared<TJoint>();
         int i = 0;
-        for (CStringView const& name : names)
+        for (const CStringView& name : names)
         {
             j->upd_coordinates(i++).setName(std::string{name});
         }
@@ -383,7 +383,7 @@ namespace
 
         // also, ensure all custom components are blacklisted (they should only appear
         // in the explicitly-labelled custom components section)
-        for (auto const& customComponent : GetCustomComponentList()) {
+        for (const auto& customComponent : GetCustomComponentList()) {
             rv.emplace(customComponent->getConcreteClassName());
         }
         return rv;
@@ -632,13 +632,13 @@ namespace
         std::vector<std::shared_ptr<T const>> rv;
         rv.reserve(ptrs.size());
 
-        auto const& protoLut = GetPrototypeLut();
-        auto const& blacklistLut = GetComponentBlacklist();
+        const auto& protoLut = GetPrototypeLut();
+        const auto& blacklistLut = GetComponentBlacklist();
 
         for (int i = 0; i < ptrs.size(); ++i)
         {
             T const& v = *ptrs[i];
-            std::string const& name = v.getConcreteClassName();
+            const std::string& name = v.getConcreteClassName();
             if (useBlacklist && blacklistLut.contains(name))
             {
                 continue;  // it's a blacklisted component, hide it in the UI
@@ -664,7 +664,7 @@ namespace
             }
         }
 
-        rgs::sort(rv, rgs::less{}, [](auto const& ptr) { return ptr->getConcreteClassName(); });
+        rgs::sort(rv, rgs::less{}, [](const auto& ptr) { return ptr->getConcreteClassName(); });
 
         return rv;
     }
@@ -681,8 +681,8 @@ namespace
 
         for (int i = 0; i < ptrs.size(); ++i)
         {
-            OpenSim::Component const& c = *ptrs[i];
-            std::string const& classname = c.getConcreteClassName();
+            const OpenSim::Component& c = *ptrs[i];
+            const std::string& classname = c.getConcreteClassName();
 
             if (blacklisted.contains(classname))
             {
@@ -699,7 +699,7 @@ namespace
             rv.emplace_back(Clone(c));
         }
 
-        rgs::sort(rv, rgs::less{}, [](auto const& ptr) { return ptr->getConcreteClassName(); });
+        rgs::sort(rv, rgs::less{}, [](const auto& ptr) { return ptr->getConcreteClassName(); });
 
         return rv;
     }
@@ -713,7 +713,7 @@ namespace
         ComponentRegistry<T> rv{name, description};
 
         // populate entries
-        auto const& lut = GetComponentDescriptionLookup();
+        const auto& lut = GetComponentDescriptionLookup();
         for (std::shared_ptr<T const> const& el : protoLut)
         {
             std::string elName = el->getConcreteClassName();

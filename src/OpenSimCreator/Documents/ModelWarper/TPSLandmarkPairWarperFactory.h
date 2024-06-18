@@ -32,8 +32,8 @@ namespace osc::mow
         //
         // use the post-construction validation checks to figure out how sucessful it was
         TPSLandmarkPairWarperFactory(
-            std::filesystem::path const& osimFileLocation,
-            std::filesystem::path const& sourceMeshFilepath
+            const std::filesystem::path& osimFileLocation,
+            const std::filesystem::path& sourceMeshFilepath
         );
 
         std::filesystem::path getSourceMeshAbsoluteFilepath() const;
@@ -66,7 +66,7 @@ namespace osc::mow
         std::unique_ptr<IPointWarperFactory> implClone() const override;
         std::vector<WarpDetail> implWarpDetails() const override;
         std::vector<ValidationCheckResult> implValidate() const override;
-        std::unique_ptr<IPointWarper> implTryCreatePointWarper(ModelWarpDocument const&) const override;
+        std::unique_ptr<IPointWarper> implTryCreatePointWarper(const ModelWarpDocument&) const override;
 
         std::filesystem::path m_SourceMeshAbsoluteFilepath;
 

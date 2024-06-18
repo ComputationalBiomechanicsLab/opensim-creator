@@ -26,12 +26,12 @@
 
 using namespace osc;
 
-bool osc::mi::IsAChildAttachmentInAnyJoint(Document const& doc, MIObject const& obj)
+bool osc::mi::IsAChildAttachmentInAnyJoint(const Document& doc, const MIObject& obj)
 {
     return cpp23::contains(doc.iter<Joint>(), obj.getID(), &Joint::getChildID);
 }
 
-bool osc::mi::IsGarbageJoint(Document const& doc, Joint const& joint)
+bool osc::mi::IsGarbageJoint(const Document& doc, const Joint& joint)
 {
     if (joint.getChildID() == MIIDs::Ground())
     {
@@ -57,8 +57,8 @@ bool osc::mi::IsGarbageJoint(Document const& doc, Joint const& joint)
 }
 
 bool osc::mi::IsJointAttachedToGround(
-    Document const& doc,
-    Joint const& joint,
+    const Document& doc,
+    const Joint& joint,
     std::unordered_set<UID>& previousVisits)
 {
     OSC_ASSERT_ALWAYS(!IsGarbageJoint(doc, joint));
@@ -79,13 +79,13 @@ bool osc::mi::IsJointAttachedToGround(
 }
 
 bool osc::mi::IsBodyAttachedToGround(
-    Document const& doc,
-    Body const& body,
+    const Document& doc,
+    const Body& body,
     std::unordered_set<UID>& previouslyVisitedJoints)
 {
     bool childInAtLeastOneJoint = false;
 
-    for (Joint const& joint : doc.iter<Joint>())
+    for (const Joint& joint : doc.iter<Joint>())
     {
         OSC_ASSERT(!IsGarbageJoint(doc, joint));
 
@@ -110,12 +110,12 @@ bool osc::mi::IsBodyAttachedToGround(
 }
 
 bool osc::mi::GetIssues(
-    Document const& doc,
+    const Document& doc,
     std::vector<std::string>& issuesOut)
 {
     issuesOut.clear();
 
-    for (Joint const& joint : doc.iter<Joint>())
+    for (const Joint& joint : doc.iter<Joint>())
     {
         if (IsGarbageJoint(doc, joint))
         {
@@ -125,7 +125,7 @@ bool osc::mi::GetIssues(
         }
     }
 
-    for (Body const& body : doc.iter<Body>())
+    for (const Body& body : doc.iter<Body>())
     {
         std::unordered_set<UID> previouslyVisitedJoints;
         if (!IsBodyAttachedToGround(doc, body, previouslyVisitedJoints))
@@ -140,29 +140,29 @@ bool osc::mi::GetIssues(
 }
 
 std::string osc::mi::GetContextMenuSubHeaderText(
-    Document const& doc,
-    MIObject const& obj)
+    const Document& doc,
+    const MIObject& obj)
 {
     std::stringstream ss;
     std::visit(Overload
     {
-        [&ss](Ground const&)
+        [&ss](const Ground&)
         {
             ss << "(scene origin)";
         },
-        [&ss, &doc](Mesh const& m)
+        [&ss, &doc](const Mesh& m)
         {
             ss << '(' << m.getClass().getName() << ", " << m.getPath().filename().string() << ", attached to " << doc.getLabelByID(m.getParentID()) << ')';
         },
-        [&ss](Body const& b)
+        [&ss](const Body& b)
         {
             ss << '(' << b.getClass().getName() << ')';
         },
-        [&ss, &doc](Joint const& j)
+        [&ss, &doc](const Joint& j)
         {
             ss << '(' << j.getSpecificTypeName() << ", " << doc.getLabelByID(j.getChildID()) << " --> " << doc.getLabelByID(j.getParentID()) << ')';
         },
-        [&ss, &doc](StationEl const& s)
+        [&ss, &doc](const StationEl& s)
         {
             ss << '(' << s.getClass().getName() << ", attached to " << doc.getLabelByID(s.getParentID()) << ')';
         },
@@ -171,7 +171,7 @@ std::string osc::mi::GetContextMenuSubHeaderText(
 }
 
 bool osc::mi::IsInSelectionGroupOf(
-    Document const& doc,
+    const Document& doc,
     UID parent,
     UID id)
 {
@@ -222,15 +222,15 @@ void osc::mi::SelectAnythingGroupedWith(Document& doc, UID id)
     });
 }
 
-UID osc::mi::GetStationAttachmentParent(Document const& doc, MIObject const& obj)
+UID osc::mi::GetStationAttachmentParent(const Document& doc, const MIObject& obj)
 {
     return std::visit(Overload
     {
-        [](Ground const&) { return MIIDs::Ground(); },
-        [&doc](Mesh const& meshEl) { return doc.contains<Body>(meshEl.getParentID()) ? meshEl.getParentID() : MIIDs::Ground(); },
-        [](Body const& bodyEl) { return bodyEl.getID(); },
-        [](Joint const&) { return MIIDs::Ground(); },
-        [](StationEl const&) { return MIIDs::Ground(); },
+        [](const Ground&) { return MIIDs::Ground(); },
+        [&doc](const Mesh& meshEl) { return doc.contains<Body>(meshEl.getParentID()) ? meshEl.getParentID() : MIIDs::Ground(); },
+        [](const Body& bodyEl) { return bodyEl.getID(); },
+        [](const Joint&) { return MIIDs::Ground(); },
+        [](const StationEl&) { return MIIDs::Ground(); },
     }, obj.toVariant());
 }
 
@@ -247,7 +247,7 @@ void osc::mi::point_axis_towards(
 }
 
 SceneDecorationFlags osc::mi::computeFlags(
-    Document const& doc,
+    const Document& doc,
     UID id,
     std::optional<UID> maybeHoverID)
 {

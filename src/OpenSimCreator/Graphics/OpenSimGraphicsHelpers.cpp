@@ -21,7 +21,7 @@
 using namespace osc;
 
 SceneRendererParams osc::CalcSceneRendererParams(
-    ModelRendererParams const& renderParams,
+    const ModelRendererParams& renderParams,
     Vec2 viewportDims,
     AntiAliasingLevel antiAliasingLevel,
     float fixupScaleFactor)
@@ -51,14 +51,14 @@ SceneRendererParams osc::CalcSceneRendererParams(
 
 void osc::GenerateDecorations(
     SceneCache& meshCache,
-    IConstModelStatePair const& msp,
-    OpenSimDecorationOptions const& options,
-    std::function<void(OpenSim::Component const&, SceneDecoration&&)> const& out)
+    const IConstModelStatePair& msp,
+    const OpenSimDecorationOptions& options,
+    std::function<void(const OpenSim::Component&, SceneDecoration&&)> const& out)
 {
     ComponentAbsPathDecorationTagger pathTagger{};
     ComponentSceneDecorationFlagsTagger flagsTagger{msp.getSelected(), msp.getHovered()};
 
-    auto callback = [pathTagger, flagsTagger, &out](OpenSim::Component const& component, SceneDecoration&& decoration) mutable
+    auto callback = [pathTagger, flagsTagger, &out](const OpenSim::Component& component, SceneDecoration&& decoration) mutable
     {
         pathTagger(component, decoration);
         flagsTagger(component, decoration);
@@ -76,12 +76,12 @@ void osc::GenerateDecorations(
 }
 
 std::optional<SceneCollision> osc::GetClosestCollision(
-    BVH const& sceneBVH,
+    const BVH& sceneBVH,
     SceneCache& sceneCache,
     std::span<SceneDecoration const> taggedDrawlist,
-    PolarPerspectiveCamera const& camera,
+    const PolarPerspectiveCamera& camera,
     Vec2 mouseScreenPos,
-    Rect const& viewportScreenRect)
+    const Rect& viewportScreenRect)
 {
     OSC_PERF("ModelSceneDecorations/getClosestCollision");
 
@@ -102,14 +102,14 @@ std::optional<SceneCollision> osc::GetClosestCollision(
 
     // filter through the collisions list
     SceneCollision const* closestCollision = nullptr;
-    for (SceneCollision const& c : collisions)
+    for (const SceneCollision& c : collisions)
     {
         if (closestCollision && c.distance_from_ray_origin > closestCollision->distance_from_ray_origin)
         {
             continue;  // it's further away than the current closest collision
         }
 
-        SceneDecoration const& decoration = taggedDrawlist[c.decoration_index];
+        const SceneDecoration& decoration = taggedDrawlist[c.decoration_index];
 
         if (decoration.id.empty())
         {

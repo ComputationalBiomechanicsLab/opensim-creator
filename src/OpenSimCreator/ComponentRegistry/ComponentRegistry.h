@@ -26,20 +26,20 @@ namespace osc
 
         value_type const* begin() const
         {
-            auto const& base = static_cast<ComponentRegistryBase const&>(*this);
+            const auto& base = static_cast<const ComponentRegistryBase&>(*this);
             return static_cast<value_type const*>(base.begin());
         }
 
         value_type const* end() const
         {
-            auto const& base = static_cast<ComponentRegistryBase const&>(*this);
+            const auto& base = static_cast<const ComponentRegistryBase&>(*this);
             return static_cast<value_type const*>(base.end());
         }
 
-        value_type const& operator[](size_t i) const
+        const value_type& operator[](size_t i) const
         {
-            auto const& base = static_cast<ComponentRegistryBase const&>(*this);
-            return static_cast<value_type const&>(base[i]);
+            const auto& base = static_cast<const ComponentRegistryBase&>(*this);
+            return static_cast<const value_type&>(base[i]);
         }
 
         ComponentRegistryEntry<T>& emplace_back(

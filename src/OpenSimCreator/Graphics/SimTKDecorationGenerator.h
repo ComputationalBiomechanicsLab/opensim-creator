@@ -14,9 +14,9 @@ namespace osc
     // and passes them to the output consumer
     void GenerateDecorations(
         SceneCache&,
-        SimTK::SimbodyMatterSubsystem const&,
-        SimTK::State const&,
-        SimTK::DecorativeGeometry const&,
+        const SimTK::SimbodyMatterSubsystem&,
+        const SimTK::State&,
+        const SimTK::DecorativeGeometry&,
         float fixupScaleFactor,
         std::function<void(SceneDecoration&&)> const& out
     );

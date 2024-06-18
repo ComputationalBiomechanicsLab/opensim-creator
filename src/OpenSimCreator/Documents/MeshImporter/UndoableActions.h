@@ -57,8 +57,8 @@ namespace osc::mi
     bool TryTranslateObjectBetweenTwoPoints(
         UndoableDocument&,
         UID id,
-        Vec3 const&,
-        Vec3 const&
+        const Vec3&,
+        const Vec3&
     );
 
     bool TryTranslateBetweenTwoObjects(
@@ -123,7 +123,7 @@ namespace osc::mi
 
     UID AddBody(
         UndoableDocument&,
-        Vec3 const&,
+        const Vec3&,
         UID andTryAttach
     );
 
@@ -133,14 +133,14 @@ namespace osc::mi
 
     bool AddStationAtLocation(
         UndoableDocument&,
-        MIObject const& obj,
-        Vec3 const&
+        const MIObject& obj,
+        const Vec3&
     );
 
     bool AddStationAtLocation(
         UndoableDocument&,
         UID attachment,
-        Vec3 const&
+        const Vec3&
     );
 
     void ActionImportLandmarks(

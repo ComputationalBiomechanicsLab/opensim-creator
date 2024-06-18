@@ -15,7 +15,7 @@ namespace osc
     //
     // e.g. initializes OpenSim logging, registering components, etc.
     bool GlobalInitOpenSim();
-    bool GlobalInitOpenSim(AppConfig const&);
+    bool GlobalInitOpenSim(const AppConfig&);
 
     // an `App` that also calls `GlobalInitOpenSim`
     class OpenSimCreatorApp final : private App {
