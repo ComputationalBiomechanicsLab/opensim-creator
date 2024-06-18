@@ -465,7 +465,7 @@ namespace
 
         auto const emitTendonSphere = [&](const GeometryPathPoint& p)
         {
-            OpenSim::Component const* c = &muscle;
+            const OpenSim::Component* c = &muscle;
             if (p.maybeUnderlyingUserPathPoint)
             {
                 c = p.maybeUnderlyingUserPathPoint;
@@ -479,7 +479,7 @@ namespace
         };
         auto emitFiberSphere = [&](const GeometryPathPoint& p)
         {
-            OpenSim::Component const* c = &muscle;
+            const OpenSim::Component* c = &muscle;
             if (p.maybeUnderlyingUserPathPoint)
             {
                 c = p.maybeUnderlyingUserPathPoint;
@@ -829,7 +829,7 @@ namespace
         }
 
         // the `GeometryPath` has a owner, which might be a muscle or path actuator
-        if (auto const* const musc = GetOwner<OpenSim::Muscle>(gp))
+        if (const auto* const musc = GetOwner<OpenSim::Muscle>(gp))
         {
             // owner is a muscle, coerce selection "hit" to the muscle
 
@@ -848,13 +848,13 @@ namespace
                 return;
             }
         }
-        else if (auto const* const pa = GetOwner<OpenSim::PathActuator>(gp))
+        else if (const auto* const pa = GetOwner<OpenSim::PathActuator>(gp))
         {
             // owner is a path actuator, coerce selection "hit" to the path actuator (#519)
             HandleGenericGeometryPath(rs, gp, *pa);
             return;
         }
-        else if (auto const* const pathSpring = GetOwner<OpenSim::PathSpring>(gp))
+        else if (const auto* const pathSpring = GetOwner<OpenSim::PathSpring>(gp))
         {
             // owner is a path spring, coerce selection "hit" to the path spring (#650)
             HandleGenericGeometryPath(rs, gp, *pathSpring);
@@ -983,7 +983,7 @@ void osc::GenerateSubcomponentDecorations(
         {
             return;
         }
-        else if (auto const* const custom = dynamic_cast<ICustomDecorationGenerator const*>(&c))
+        else if (const auto* const custom = dynamic_cast<const ICustomDecorationGenerator*>(&c))
         {
             // edge-case: it's a component that has an OSC-specific `ICustomDecorationGenerator`
             //            so we can skip the song-and-dance with caches, OpenSim, SimTK, etc.
@@ -992,19 +992,19 @@ void osc::GenerateSubcomponentDecorations(
                 rendererState.consume(c, std::move(dec));
             });
         }
-        else if (auto const* const gp = dynamic_cast<OpenSim::GeometryPath const*>(&c))
+        else if (const auto* const gp = dynamic_cast<const OpenSim::GeometryPath*>(&c))
         {
             HandleGeometryPath(rendererState, *gp);
         }
-        else if (auto const* const b = dynamic_cast<OpenSim::Body const*>(&c))
+        else if (const auto* const b = dynamic_cast<const OpenSim::Body*>(&c))
         {
             HandleBody(rendererState, *b);
         }
-        else if (auto const* const fg = dynamic_cast<OpenSim::FrameGeometry const*>(&c))
+        else if (const auto* const fg = dynamic_cast<const OpenSim::FrameGeometry*>(&c))
         {
             HandleFrameGeometry(rendererState, *fg);
         }
-        else if (auto const* const p2p = dynamic_cast<OpenSim::PointToPointSpring const*>(&c); p2p && opts.getShouldShowPointToPointSprings())
+        else if (const auto* const p2p = dynamic_cast<const OpenSim::PointToPointSpring*>(&c); p2p && opts.getShouldShowPointToPointSprings())
         {
             HandlePointToPointSpring(rendererState, *p2p);
         }
@@ -1013,15 +1013,15 @@ void osc::GenerateSubcomponentDecorations(
             // CARE: it's a typeid comparison because OpenSim::Marker inherits from OpenSim::Station
             HandleStation(rendererState, dynamic_cast<const OpenSim::Station&>(c));
         }
-        else if (auto const* const sj = dynamic_cast<OpenSim::ScapulothoracicJoint const*>(&c); sj && opts.getShouldShowScapulo())
+        else if (const auto* const sj = dynamic_cast<const OpenSim::ScapulothoracicJoint*>(&c); sj && opts.getShouldShowScapulo())
         {
             HandleScapulothoracicJoint(rendererState, *sj);
         }
-        else if (auto const* const hcf = dynamic_cast<OpenSim::HuntCrossleyForce const*>(&c))
+        else if (const auto* const hcf = dynamic_cast<const OpenSim::HuntCrossleyForce*>(&c))
         {
             HandleHuntCrossleyForce(rendererState, *hcf);
         }
-        else if (auto const* const geom = dynamic_cast<OpenSim::Geometry const*>(&c))
+        else if (const auto* const geom = dynamic_cast<const OpenSim::Geometry*>(&c))
         {
             // EDGE-CASE:
             //

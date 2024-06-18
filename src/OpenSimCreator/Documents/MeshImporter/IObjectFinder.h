@@ -17,11 +17,11 @@ namespace osc::mi
     public:
         virtual ~IObjectFinder() noexcept = default;
 
-        MIObject const* find(UID id) const
+        const MIObject* find(UID id) const
         {
             return implFind(id);
         }
     private:
-        virtual MIObject const* implFind(UID) const = 0;
+        virtual const MIObject* implFind(UID) const = 0;
     };
 }

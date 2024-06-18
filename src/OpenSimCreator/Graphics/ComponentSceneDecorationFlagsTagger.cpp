@@ -7,8 +7,8 @@
 using namespace osc;
 
 osc::ComponentSceneDecorationFlagsTagger::ComponentSceneDecorationFlagsTagger(
-    OpenSim::Component const* selected_,
-    OpenSim::Component const* hovered_) :
+    const OpenSim::Component* selected_,
+    const OpenSim::Component* hovered_) :
     m_Selected{selected_},
     m_Hovered{hovered_}
 {
@@ -42,7 +42,7 @@ SceneDecorationFlags osc::ComponentSceneDecorationFlagsTagger::computeFlags(
         rv |= SceneDecorationFlags::IsHovered;
     }
 
-    for (OpenSim::Component const* p = GetOwner(component); p; p = GetOwner(*p))
+    for (const OpenSim::Component* p = GetOwner(component); p; p = GetOwner(*p))
     {
         if (p == m_Selected)
         {

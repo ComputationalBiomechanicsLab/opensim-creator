@@ -54,7 +54,7 @@ namespace
         UndoableModelStatePair& uim,
         const OpenSim::ComponentPath& jointPath)
     {
-        auto const* joint = FindComponent<OpenSim::Joint>(uim.getModel(), jointPath);
+        const auto* joint = FindComponent<OpenSim::Joint>(uim.getModel(), jointPath);
         if (!joint)
         {
             return;
@@ -122,7 +122,7 @@ namespace
         std::shared_ptr<UndoableModelStatePair> const& uim,
         const OpenSim::ComponentPath& pfPath)
     {
-        if (auto const* pf = FindComponent<OpenSim::PhysicalFrame>(uim->getModel(), pfPath))
+        if (const auto* pf = FindComponent<OpenSim::PhysicalFrame>(uim->getModel(), pfPath))
         {
             DrawCalculateMenu(
                 uim->getModel(),
@@ -201,7 +201,7 @@ namespace
         std::shared_ptr<UndoableModelStatePair> const& uim,
         const OpenSim::ComponentPath& hcfPath)
     {
-        auto const* const hcf = FindComponent<OpenSim::HuntCrossleyForce>(uim->getModel(), hcfPath);
+        const auto* const hcf = FindComponent<OpenSim::HuntCrossleyForce>(uim->getModel(), hcfPath);
         if (!hcf)
         {
             return;
@@ -220,7 +220,7 @@ namespace
             };
             auto filter = [](const OpenSim::Component& c) -> bool
             {
-                return dynamic_cast<OpenSim::ContactGeometry const*>(&c) != nullptr;
+                return dynamic_cast<const OpenSim::ContactGeometry*>(&c) != nullptr;
             };
             auto popup = std::make_unique<SelectComponentPopup>("Select Contact Geometry", uim, onSelection, filter);
             popup->open();
@@ -371,7 +371,7 @@ namespace
 
     bool AnyDescendentInclusiveHasAppearanceProperty(const OpenSim::Component& component)
     {
-        OpenSim::Component const* const c = FindFirstDescendentInclusive(
+        const OpenSim::Component* const c = FindFirstDescendentInclusive(
             component,
             [](const OpenSim::Component& desc) -> bool { return TryGetAppearance(desc) != nullptr; }
         );
@@ -401,7 +401,7 @@ public:
 private:
     void impl_draw_content() final
     {
-        OpenSim::Component const* c = FindComponent(m_Model->getModel(), m_Path);
+        const OpenSim::Component* c = FindComponent(m_Model->getModel(), m_Path);
         if (!c)
         {
             // draw context menu content that's shown when nothing was right-clicked
@@ -550,52 +550,52 @@ private:
 
         drawSocketMenu(*c);
 
-        if (dynamic_cast<OpenSim::Model const*>(c))
+        if (dynamic_cast<const OpenSim::Model*>(c))
         {
             DrawModelContextualActions(*m_Model);
         }
-        else if (dynamic_cast<OpenSim::PhysicalFrame const*>(c))
+        else if (dynamic_cast<const OpenSim::PhysicalFrame*>(c))
         {
             DrawPhysicalFrameContextualActions(m_EditorAPI, m_Model, m_Path);
         }
-        else if (dynamic_cast<OpenSim::Joint const*>(c))
+        else if (dynamic_cast<const OpenSim::Joint*>(c))
         {
             DrawJointContextualActions(*m_Model, m_Path);
         }
-        else if (dynamic_cast<OpenSim::HuntCrossleyForce const*>(c))
+        else if (dynamic_cast<const OpenSim::HuntCrossleyForce*>(c))
         {
             DrawHCFContextualActions(m_EditorAPI, m_Model, m_Path);
         }
-        else if (auto const* musclePtr = dynamic_cast<OpenSim::Muscle const*>(c))
+        else if (const auto* musclePtr = dynamic_cast<const OpenSim::Muscle*>(c))
         {
             drawAddMusclePlotMenu(*musclePtr);
             DrawPathActuatorContextualParams(m_EditorAPI, m_Model, m_Path);  // a muscle is a path actuator
         }
-        else if (dynamic_cast<OpenSim::PathActuator const*>(c))
+        else if (dynamic_cast<const OpenSim::PathActuator*>(c))
         {
             DrawPathActuatorContextualParams(m_EditorAPI, m_Model, m_Path);
         }
-        else if (auto const* stationPtr = dynamic_cast<OpenSim::Station const*>(c))
+        else if (const auto* stationPtr = dynamic_cast<const OpenSim::Station*>(c))
         {
             DrawStationContextualActions(*m_Model, *stationPtr);
         }
-        else if (auto const* pointPtr = dynamic_cast<OpenSim::Point const*>(c))
+        else if (const auto* pointPtr = dynamic_cast<const OpenSim::Point*>(c))
         {
             DrawPointContextualActions(*m_Model, *pointPtr);
         }
-        else if (auto const* ellipsoidPtr = dynamic_cast<OpenSim::Ellipsoid const*>(c))
+        else if (const auto* ellipsoidPtr = dynamic_cast<const OpenSim::Ellipsoid*>(c))
         {
             DrawEllipsoidContextualActions(*m_Model, *ellipsoidPtr);
         }
-        else if (auto const* meshPtr = dynamic_cast<OpenSim::Mesh const*>(c))
+        else if (const auto* meshPtr = dynamic_cast<const OpenSim::Mesh*>(c))
         {
             DrawMeshContextualActions(*m_Model, *meshPtr);
         }
-        else if (auto const* geomPtr = dynamic_cast<OpenSim::Geometry const*>(c))
+        else if (const auto* geomPtr = dynamic_cast<const OpenSim::Geometry*>(c))
         {
             DrawGeometryContextualActions(*m_Model, *geomPtr);
         }
-        else if (auto const* geomPathPtr = dynamic_cast<OpenSim::GeometryPath const*>(c))
+        else if (const auto* geomPathPtr = dynamic_cast<const OpenSim::GeometryPath*>(c))
         {
             DrawGeometryPathContextualActions(*m_Model, *geomPathPtr);
         }
@@ -633,10 +633,10 @@ private:
                         ui::table_set_column_index(column++);
                         if (ui::draw_small_button(socket.getConnecteeAsObject().getName()))
                         {
-                            m_Model->setSelected(dynamic_cast<OpenSim::Component const*>(&socket.getConnecteeAsObject()));
+                            m_Model->setSelected(dynamic_cast<const OpenSim::Component*>(&socket.getConnecteeAsObject()));
                             request_close();
                         }
-                        if (auto const* connectee = dynamic_cast<OpenSim::Component const*>(&socket.getConnecteeAsObject());
+                        if (const auto* connectee = dynamic_cast<const OpenSim::Component*>(&socket.getConnecteeAsObject());
                             connectee && ui::is_item_hovered())
                         {
                             DrawComponentHoverTooltip(*connectee);

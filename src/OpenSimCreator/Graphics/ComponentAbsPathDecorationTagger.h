@@ -12,7 +12,7 @@ namespace osc
     public:
         void operator()(const OpenSim::Component&, SceneDecoration&);
     private:
-        OpenSim::Component const* m_LastComponent = nullptr;
+        const OpenSim::Component* m_LastComponent = nullptr;
         std::string m_ID;
     };
 }

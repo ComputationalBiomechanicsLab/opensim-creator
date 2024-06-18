@@ -18,12 +18,12 @@ namespace osc
     public:
         virtual ~IModelStatePair() noexcept = default;
 
-        void setSelected(OpenSim::Component const* newSelection)
+        void setSelected(const OpenSim::Component* newSelection)
         {
             implSetSelected(newSelection);
         }
 
-        void setHovered(OpenSim::Component const* newHover)
+        void setHovered(const OpenSim::Component* newHover)
         {
             implSetHovered(newHover);
         }
@@ -33,8 +33,8 @@ namespace osc
             implSetFixupScaleFactor(newScaleFactor);
         }
     private:
-        virtual void implSetSelected(OpenSim::Component const*) {}
-        virtual void implSetHovered(OpenSim::Component const*) {}
+        virtual void implSetSelected(const OpenSim::Component*) {}
+        virtual void implSetHovered(const OpenSim::Component*) {}
         virtual void implSetFixupScaleFactor(float) {}
     };
 }

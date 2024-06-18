@@ -474,7 +474,7 @@ namespace
             return PlottingTaskStatus::Cancelled;
         }
 
-        auto const* maybeMuscle = FindComponent<OpenSim::Muscle>(*model, params.getMusclePath());
+        const auto* maybeMuscle = FindComponent<OpenSim::Muscle>(*model, params.getMusclePath());
         if (!maybeMuscle)
         {
             shared.setErrorMessage(params.getMusclePath().toString() + ": cannot find a muscle with this name");
@@ -482,7 +482,7 @@ namespace
         }
         const OpenSim::Muscle& muscle = *maybeMuscle;
 
-        OpenSim::Coordinate const* maybeCoord = FindComponentMut<OpenSim::Coordinate>(*model, params.getCoordinatePath());
+        const OpenSim::Coordinate* maybeCoord = FindComponentMut<OpenSim::Coordinate>(*model, params.getCoordinatePath());
         if (!maybeCoord)
         {
             shared.setErrorMessage(params.getCoordinatePath().toString() + ": cannot find a coordinate with this name");
@@ -629,7 +629,7 @@ namespace
             return m_Name;
         }
 
-        PlotParameters const* tryGetParameters() const
+        const PlotParameters* tryGetParameters() const
         {
             return m_Parameters.has_value() ? &m_Parameters.value() : nullptr;
         }
@@ -805,8 +805,8 @@ namespace
         std::span<PlotDataPoint const> points = *lock;
 
 
-        float const* xPtr = nullptr;
-        float const* yPtr = nullptr;
+        const float* xPtr = nullptr;
+        const float* yPtr = nullptr;
         if (!points.empty())
         {
             xPtr = &points.front().x;
@@ -1091,7 +1091,7 @@ namespace
             // fetch the to-be-reverted-to curve
             std::shared_ptr<Plot> ptr = m_PreviousPlots.at(i);
 
-            PlotParameters const* maybeParams = ptr->tryGetParameters();
+            const PlotParameters* maybeParams = ptr->tryGetParameters();
 
             // try to revert the current model to use the plot's commit
             if (maybeParams && model.tryCheckout(maybeParams->getCommit()))
@@ -1126,7 +1126,7 @@ namespace
             // if the current plot doesn't match the latest requested params, kick off
             // a new plotting task
 
-            PlotParameters const* maybeParams = m_ActivePlot->tryGetParameters();
+            const PlotParameters* maybeParams = m_ActivePlot->tryGetParameters();
 
             if (!maybeParams || (*maybeParams) != desiredParams)
             {
@@ -1561,7 +1561,7 @@ namespace
             const PlotParameters& latestParams = getShared().getPlotParams();
             auto modelGuard = latestParams.getCommit().getModel();
 
-            auto const* maybeCoord = FindComponent<OpenSim::Coordinate>(*modelGuard, latestParams.getCoordinatePath());
+            const auto* maybeCoord = FindComponent<OpenSim::Coordinate>(*modelGuard, latestParams.getCoordinatePath());
             if (!maybeCoord) {
                 ui::draw_text("(no coordinate named %s in model)", latestParams.getCoordinatePath().toString().c_str());
                 return nullptr;
@@ -1657,7 +1657,7 @@ namespace
             ui::set_next_item_width(muscleNameWidth);
             if (ui::begin_combobox("##musclename", muscleName, ImGuiComboFlags_NoArrowButton))
             {
-                auto const* current = FindComponent<OpenSim::Muscle>(getShared().getModel().getModel(), getShared().getPlotParams().getMusclePath());
+                const auto* current = FindComponent<OpenSim::Muscle>(getShared().getModel().getModel(), getShared().getPlotParams().getMusclePath());
                 for (const OpenSim::Muscle& musc : getShared().getModel().getModel().getComponentList<OpenSim::Muscle>())
                 {
                     bool selected = &musc == current;
@@ -1693,7 +1693,7 @@ namespace
             ui::set_next_item_width(coordNameWidth);
             if (ui::begin_combobox("##coordname", coordName, ImGuiComboFlags_NoArrowButton))
             {
-                auto const* current = FindComponent<OpenSim::Coordinate>(getShared().getModel().getModel(), getShared().getPlotParams().getCoordinatePath());
+                const auto* current = FindComponent<OpenSim::Coordinate>(getShared().getModel().getModel(), getShared().getPlotParams().getCoordinatePath());
                 for (const OpenSim::Coordinate& c : getShared().getModel().getModel().getComponentList<OpenSim::Coordinate>())
                 {
                     bool selected = &c == current;
@@ -2110,7 +2110,7 @@ namespace
         // tries to duplicate the current plot (settings etc.) into a new plot panel
         void actionDuplicateCurrentPlotIntoNewPanel(const OpenSim::Coordinate& coord)
         {
-            auto const* musc = FindComponent<OpenSim::Muscle>(getShared().getModel().getModel(), getShared().getPlotParams().getMusclePath());
+            const auto* musc = FindComponent<OpenSim::Muscle>(getShared().getModel().getModel(), getShared().getPlotParams().getMusclePath());
             if (musc) {
                 updShared().updEditorAPI().addMusclePlot(coord, *musc);
             }
@@ -2151,16 +2151,16 @@ namespace
         {
             std::unique_ptr<MusclePlotState> rv;
 
-            std::vector<OpenSim::Coordinate const*> coordinates;
+            std::vector<const OpenSim::Coordinate*> coordinates;
             for (const OpenSim::Coordinate& coord : getShared().getModel().getModel().getComponentList<OpenSim::Coordinate>()) {
                 coordinates.push_back(&coord);
             }
-            rgs::sort(coordinates, rgs::less{}, [](auto const* ptr) { return ptr->getName(); });
+            rgs::sort(coordinates, rgs::less{}, [](const auto* ptr) { return ptr->getName(); });
 
             ui::draw_text("select coordinate:");
 
             ui::begin_child_panel("MomentArmPlotCoordinateSelection");
-            for (OpenSim::Coordinate const* coord : coordinates) {
+            for (const OpenSim::Coordinate* coord : coordinates) {
                 if (ui::draw_selectable(coord->getName())) {
                     updShared().updPlotParams().setCoordinatePath(GetAbsolutePath(*coord));
                     rv = std::make_unique<ShowingPlotState>(updShared());
@@ -2187,11 +2187,11 @@ namespace
         {
             std::unique_ptr<MusclePlotState> rv;
 
-            std::vector<OpenSim::Muscle const*> muscles;
+            std::vector<const OpenSim::Muscle*> muscles;
             for (const OpenSim::Muscle& musc : getShared().getModel().getModel().getComponentList<OpenSim::Muscle>()) {
                 muscles.push_back(&musc);
             }
-            rgs::sort(muscles, rgs::less{}, [](auto const* ptr) { return ptr->getName(); });
+            rgs::sort(muscles, rgs::less{}, [](const auto* ptr) { return ptr->getName(); });
 
             ui::draw_text("select muscle:");
 
@@ -2200,7 +2200,7 @@ namespace
             }
             else {
                 ui::begin_child_panel("MomentArmPlotMuscleSelection");
-                for (OpenSim::Muscle const* musc : muscles) {
+                for (const OpenSim::Muscle* musc : muscles) {
                     if (ui::draw_selectable(musc->getName())) {
                         updShared().updPlotParams().setMusclePath(GetAbsolutePath(*musc));
                         rv = std::make_unique<PickCoordinateState>(updShared());

@@ -126,12 +126,12 @@ namespace
             m_MaybeSelected = p;
         }
 
-        OpenSim::Component const* implGetSelected() const final
+        const OpenSim::Component* implGetSelected() const final
         {
             return FindComponent(*m_Model, m_MaybeSelected);
         }
 
-        void implSetSelected(OpenSim::Component const* c) final
+        void implSetSelected(const OpenSim::Component* c) final
         {
             m_MaybeSelected = GetAbsolutePathOrEmpty(c);
         }
@@ -146,12 +146,12 @@ namespace
             m_MaybeHovered = p;
         }
 
-        OpenSim::Component const* implGetHovered() const final
+        const OpenSim::Component* implGetHovered() const final
         {
             return FindComponent(*m_Model, m_MaybeHovered);
         }
 
-        void implSetHovered(OpenSim::Component const* c) final
+        void implSetHovered(const OpenSim::Component* c) final
         {
             m_MaybeHovered = GetAbsolutePathOrEmpty(c);
         }
@@ -266,7 +266,7 @@ public:
 
     bool canUndo() const
     {
-        ModelStateCommit const* c = tryGetCommitByID(m_CurrentHead);
+        const ModelStateCommit* c = tryGetCommitByID(m_CurrentHead);
         return c ? hasCommit(c->getParentID()) : false;
     }
 
@@ -372,22 +372,22 @@ public:
         m_Scratch.setFixupScaleFactor(v);
     }
 
-    OpenSim::Component const* getSelected() const
+    const OpenSim::Component* getSelected() const
     {
         return m_Scratch.getSelected();
     }
 
-    void setSelected(OpenSim::Component const* c)
+    void setSelected(const OpenSim::Component* c)
     {
         m_Scratch.setSelected(c);
     }
 
-    OpenSim::Component const* getHovered() const
+    const OpenSim::Component* getHovered() const
     {
         return m_Scratch.getHovered();
     }
 
-    void setHovered(OpenSim::Component const* c)
+    void setHovered(const OpenSim::Component* c)
     {
         m_Scratch.setHovered(c);
     }
@@ -409,7 +409,7 @@ private:
     }
 
     // try to lookup a commit by its ID
-    ModelStateCommit const* tryGetCommitByID(UID id) const
+    const ModelStateCommit* tryGetCommitByID(UID id) const
     {
         return lookup_or_nullptr(m_Commits, id);
     }
@@ -425,7 +425,7 @@ private:
     // try to lookup the *parent* of a given commit, or return an empty (senteniel) ID
     UID tryGetParentIDOrEmpty(UID id) const
     {
-        ModelStateCommit const* commit = tryGetCommitByID(id);
+        const ModelStateCommit* commit = tryGetCommitByID(id);
         return commit ? commit->getParentID() : UID::empty();
     }
 
@@ -462,14 +462,14 @@ private:
     // (e.g. n==0 returns `a`, n==1 returns `a`'s parent, n==2 returns `a`'s grandparent)
     //
     // returns `nullptr` if there are insufficient ancestors. `n` must be >= 0
-    ModelStateCommit const* nthAncestor(UID a, int n) const
+    const ModelStateCommit* nthAncestor(UID a, int n) const
     {
         if (n < 0)
         {
             return nullptr;
         }
 
-        ModelStateCommit const* c = tryGetCommitByID(a);
+        const ModelStateCommit* c = tryGetCommitByID(a);
 
         if (!c || n == 0)
         {
@@ -491,14 +491,14 @@ private:
     // returns the UID that is the nth ancestor from `a`, or empty if there are insufficient ancestors
     UID nthAncestorID(UID a, int n) const
     {
-        ModelStateCommit const* c = nthAncestor(a, n);
+        const ModelStateCommit* c = nthAncestor(a, n);
         return c ? c->getID() : UID::empty();
     }
 
     // returns `true` if `maybeAncestor` is an ancestor of `id`
     bool isAncestor(UID maybeAncestor, UID id)
     {
-        ModelStateCommit const* c = tryGetCommitByID(id);
+        const ModelStateCommit* c = tryGetCommitByID(id);
 
         while (c != nullptr && c->getID() != maybeAncestor)
         {
@@ -580,7 +580,7 @@ private:
         // scratch space - things like reset and scaling state, which the
         // user might expect to be maintained even if a crash happened
 
-        ModelStateCommit const* c = tryGetCommitByID(m_CurrentHead);
+        const ModelStateCommit* c = tryGetCommitByID(m_CurrentHead);
 
         if (c)
         {
@@ -596,14 +596,14 @@ private:
     // effectively, checks out HEAD~1
     void undo()
     {
-        ModelStateCommit const* c = tryGetCommitByID(m_CurrentHead);
+        const ModelStateCommit* c = tryGetCommitByID(m_CurrentHead);
 
         if (!c)
         {
             return;
         }
 
-        ModelStateCommit const* parent = tryGetCommitByID(c->getParentID());
+        const ModelStateCommit* parent = tryGetCommitByID(c->getParentID());
 
         if (!parent)
         {
@@ -632,7 +632,7 @@ private:
             return;
         }
 
-        ModelStateCommit const* c = nthAncestor(m_BranchHead, dist - 1);
+        const ModelStateCommit* c = nthAncestor(m_BranchHead, dist - 1);
 
         if (!c)
         {
@@ -853,22 +853,22 @@ void osc::UndoableModelStatePair::implSetFixupScaleFactor(float v)
     m_Impl->setFixupScaleFactor(v);
 }
 
-OpenSim::Component const* osc::UndoableModelStatePair::implGetSelected() const
+const OpenSim::Component* osc::UndoableModelStatePair::implGetSelected() const
 {
     return m_Impl->getSelected();
 }
 
-void osc::UndoableModelStatePair::implSetSelected(OpenSim::Component const* c)
+void osc::UndoableModelStatePair::implSetSelected(const OpenSim::Component* c)
 {
     m_Impl->setSelected(c);
 }
 
-OpenSim::Component const* osc::UndoableModelStatePair::implGetHovered() const
+const OpenSim::Component* osc::UndoableModelStatePair::implGetHovered() const
 {
     return m_Impl->getHovered();
 }
 
-void osc::UndoableModelStatePair::implSetHovered(OpenSim::Component const* c)
+void osc::UndoableModelStatePair::implSetHovered(const OpenSim::Component* c)
 {
     m_Impl->setHovered(c);
 }

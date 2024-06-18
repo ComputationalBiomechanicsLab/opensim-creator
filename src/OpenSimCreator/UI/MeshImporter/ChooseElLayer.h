@@ -145,7 +145,7 @@ namespace osc::mi
 
         void tryToggleSelectionStateOf(UID id)
         {
-            MIObject const* el = m_Shared->getModelGraph().tryGetByID(id);
+            const MIObject* el = m_Shared->getModelGraph().tryGetByID(id);
 
             if (el)
             {
@@ -254,7 +254,7 @@ namespace osc::mi
                 return;
             }
 
-            MIObject const* se = m_Shared->getModelGraph().tryGetByID(m_MaybeHover.ID);
+            const MIObject* se = m_Shared->getModelGraph().tryGetByID(m_MaybeHover.ID);
 
             if (se)
             {

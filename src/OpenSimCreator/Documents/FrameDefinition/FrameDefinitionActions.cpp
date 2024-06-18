@@ -277,28 +277,28 @@ void osc::fd::ActionCreateBodyFromFrame(
     // validate external inputs
 
     log_debug("validate external inputs");
-    auto const* const meshFrame = FindComponent<OpenSim::PhysicalFrame>(model->getModel(), frameAbsPath);
+    const auto* const meshFrame = FindComponent<OpenSim::PhysicalFrame>(model->getModel(), frameAbsPath);
     if (!meshFrame)
     {
         log_error("%s: cannot find frame: skipping body creation", frameAbsPath.toString().c_str());
         return;
     }
 
-    auto const* const mesh = FindComponent<OpenSim::Mesh>(model->getModel(), meshAbsPath);
+    const auto* const mesh = FindComponent<OpenSim::Mesh>(model->getModel(), meshAbsPath);
     if (!mesh)
     {
         log_error("%s: cannot find mesh: skipping body creation", meshAbsPath.toString().c_str());
         return;
     }
 
-    auto const* const jointFrame = FindComponent<OpenSim::PhysicalFrame>(model->getModel(), jointFrameAbsPath);
+    const auto* const jointFrame = FindComponent<OpenSim::PhysicalFrame>(model->getModel(), jointFrameAbsPath);
     if (!jointFrame)
     {
         log_error("%s: cannot find joint frame: skipping body creation", jointFrameAbsPath.toString().c_str());
         return;
     }
 
-    auto const* const parentFrame = FindComponent<OpenSim::PhysicalFrame>(model->getModel(), parentFrameAbsPath);
+    const auto* const parentFrame = FindComponent<OpenSim::PhysicalFrame>(model->getModel(), parentFrameAbsPath);
     if (!parentFrame)
     {
         log_error("%s: cannot find parent frame: skipping body creation", parentFrameAbsPath.toString().c_str());
@@ -386,7 +386,7 @@ void osc::fd::ActionCreateBodyFromFrame(
 
         // if the mesh's PoF was only used by the mesh then reassign
         // everything to the new PoF and delete the old one
-        if (auto const* pof = GetOwner<OpenSim::PhysicalOffsetFrame>(*mesh);
+        if (const auto* pof = GetOwner<OpenSim::PhysicalOffsetFrame>(*mesh);
             pof && GetNumChildren(*pof) == 3)  // mesh+frame geom+wrap object set
         {
             log_debug("reassign sockets");

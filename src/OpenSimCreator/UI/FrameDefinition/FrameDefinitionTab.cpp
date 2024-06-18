@@ -106,14 +106,14 @@ namespace
             }
             const std::string& pointBPath = *choices.begin();
 
-            auto const* pointA = FindComponent<OpenSim::Point>(model->getModel(), pointAPath);
+            const auto* pointA = FindComponent<OpenSim::Point>(model->getModel(), pointAPath);
             if (!pointA)
             {
                 log_error("point A's component path (%s) does not exist in the model", pointAPath.c_str());
                 return false;
             }
 
-            auto const* pointB = FindComponent<OpenSim::Point>(model->getModel(), pointBPath);
+            const auto* pointB = FindComponent<OpenSim::Point>(model->getModel(), pointBPath);
             if (!pointB)
             {
                 log_error("point B's component path (%s) does not exist in the model", pointBPath.c_str());
@@ -157,14 +157,14 @@ namespace
             }
             const std::string& pointBPath = *choices.begin();
 
-            auto const* pointA = FindComponent<OpenSim::Point>(model->getModel(), pointAPath);
+            const auto* pointA = FindComponent<OpenSim::Point>(model->getModel(), pointAPath);
             if (!pointA)
             {
                 log_error("point A's component path (%s) does not exist in the model", pointAPath.c_str());
                 return false;
             }
 
-            auto const* pointB = FindComponent<OpenSim::Point>(model->getModel(), pointBPath);
+            const auto* pointB = FindComponent<OpenSim::Point>(model->getModel(), pointBPath);
             if (!pointB)
             {
                 log_error("point B's component path (%s) does not exist in the model", pointBPath.c_str());
@@ -208,14 +208,14 @@ namespace
             }
             const std::string& edgeBPath = *choices.begin();
 
-            auto const* edgeA = FindComponent<Edge>(model->getModel(), edgeAPath);
+            const auto* edgeA = FindComponent<Edge>(model->getModel(), edgeAPath);
             if (!edgeA)
             {
                 log_error("edge A's component path (%s) does not exist in the model", edgeAPath.c_str());
                 return false;
             }
 
-            auto const* edgeB = FindComponent<Edge>(model->getModel(), edgeBPath);
+            const auto* edgeB = FindComponent<Edge>(model->getModel(), edgeBPath);
             if (!edgeB)
             {
                 log_error("point B's component path (%s) does not exist in the model", edgeBPath.c_str());
@@ -258,21 +258,21 @@ namespace
             }
             const std::string& originPath = *choices.begin();
 
-            auto const* firstEdge = FindComponent<Edge>(model->getModel(), firstEdgeAbsPath);
+            const auto* firstEdge = FindComponent<Edge>(model->getModel(), firstEdgeAbsPath);
             if (!firstEdge)
             {
                 log_error("the first edge's component path (%s) does not exist in the model", firstEdgeAbsPath.c_str());
                 return false;
             }
 
-            auto const* otherEdge = FindComponent<Edge>(model->getModel(), secondEdgeAbsPath);
+            const auto* otherEdge = FindComponent<Edge>(model->getModel(), secondEdgeAbsPath);
             if (!otherEdge)
             {
                 log_error("the second edge's component path (%s) does not exist in the model", secondEdgeAbsPath.c_str());
                 return false;
             }
 
-            auto const* originPoint = FindComponent<OpenSim::Point>(model->getModel(), originPath);
+            const auto* originPoint = FindComponent<OpenSim::Point>(model->getModel(), originPath);
             if (!originPoint)
             {
                 log_error("the origin's component path (%s) does not exist in the model", originPath.c_str());
@@ -377,7 +377,7 @@ namespace
                 &c != bodyFrame &&
                 !IsChildOfA<OpenSim::ComponentSet>(c) &&
                 (
-                    dynamic_cast<OpenSim::Ground const*>(&c) != nullptr ||
+                    dynamic_cast<const OpenSim::Ground*>(&c) != nullptr ||
                     IsChildOfA<OpenSim::BodySet>(c)
                 );
         };
@@ -395,7 +395,7 @@ namespace
                 return false;
             }
 
-            auto const* const parentFrame = FindComponent<OpenSim::PhysicalFrame>(model->getModel(), *choices.begin());
+            const auto* const parentFrame = FindComponent<OpenSim::PhysicalFrame>(model->getModel(), *choices.begin());
             if (!parentFrame)
             {
                 log_error("user selection from 'choose components' layer did not select a frame: this shouldn't happen?");
@@ -439,7 +439,7 @@ namespace
                 return false;
             }
 
-            auto const* const jointFrame = FindComponent<OpenSim::Frame>(model->getModel(), *choices.begin());
+            const auto* const jointFrame = FindComponent<OpenSim::Frame>(model->getModel(), *choices.begin());
             if (!jointFrame)
             {
                 log_error("user selection from 'choose components' layer did not select a frame: this shouldn't happen?");
@@ -481,7 +481,7 @@ namespace
                 return false;
             }
 
-            auto const* const mesh = FindComponent<OpenSim::Mesh>(model->getModel(), *choices.begin());
+            const auto* const mesh = FindComponent<OpenSim::Mesh>(model->getModel(), *choices.begin());
             if (!mesh)
             {
                 log_error("user selection from 'choose components' layer did not select a mesh: this shouldn't happen?");
@@ -718,7 +718,7 @@ namespace
         std::optional<ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
         const OpenSim::Frame& frame)
     {
-        OpenSim::Component const* groundOrExistingBody = dynamic_cast<OpenSim::Ground const*>(&frame);
+        const OpenSim::Component* groundOrExistingBody = dynamic_cast<const OpenSim::Ground*>(&frame);
         if (!groundOrExistingBody)
         {
             groundOrExistingBody = FindFirstDescendentOfType<OpenSim::Body>(frame);
@@ -929,28 +929,28 @@ namespace
     private:
         void impl_draw_content() final
         {
-            OpenSim::Component const* const maybeComponent = FindComponent(m_Model->getModel(), m_ComponentPath);
+            const OpenSim::Component* const maybeComponent = FindComponent(m_Model->getModel(), m_ComponentPath);
             if (!maybeComponent)
             {
                 DrawRightClickedNothingContextMenu(*m_Model);
             }
-            else if (auto const* maybeMesh = dynamic_cast<OpenSim::Mesh const*>(maybeComponent))
+            else if (const auto* maybeMesh = dynamic_cast<const OpenSim::Mesh*>(maybeComponent))
             {
                 DrawRightClickedMeshContextMenu(*m_EditorAPI, m_Model, m_MaybeSourceVisualizerEvent, *maybeMesh);
             }
-            else if (auto const* maybePoint = dynamic_cast<OpenSim::Point const*>(maybeComponent))
+            else if (const auto* maybePoint = dynamic_cast<const OpenSim::Point*>(maybeComponent))
             {
                 DrawRightClickedPointContextMenu(*m_EditorAPI, m_Model, m_MaybeSourceVisualizerEvent, *maybePoint);
             }
-            else if (auto const* maybeFrame = dynamic_cast<OpenSim::Frame const*>(maybeComponent))
+            else if (const auto* maybeFrame = dynamic_cast<const OpenSim::Frame*>(maybeComponent))
             {
                 DrawRightClickedFrameContextMenu(*m_EditorAPI, m_Model, m_MaybeSourceVisualizerEvent, *maybeFrame);
             }
-            else if (auto const* maybeP2PEdge = dynamic_cast<PointToPointEdge const*>(maybeComponent))
+            else if (const auto* maybeP2PEdge = dynamic_cast<const PointToPointEdge*>(maybeComponent))
             {
                 DrawRightClickedPointToPointEdgeContextMenu(*m_EditorAPI, m_Model, m_MaybeSourceVisualizerEvent, *maybeP2PEdge);
             }
-            else if (auto const* maybeCPEdge = dynamic_cast<CrossProductEdge const*>(maybeComponent))
+            else if (const auto* maybeCPEdge = dynamic_cast<const CrossProductEdge*>(maybeComponent))
             {
                 DrawRightClickedCrossProductEdgeContextMenu(*m_EditorAPI, m_Model, m_MaybeSourceVisualizerEvent, *maybeCPEdge);
             }

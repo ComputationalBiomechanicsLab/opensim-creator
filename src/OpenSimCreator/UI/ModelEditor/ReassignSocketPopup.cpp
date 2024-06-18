@@ -84,13 +84,13 @@ namespace
     {
         std::vector<ConnecteeOption> rv;
 
-        OpenSim::Component const* component = FindComponent(model, params.componentPath);
+        const OpenSim::Component* component = FindComponent(model, params.componentPath);
         if (!component)
         {
             return rv;   // component isn't in model?
         }
 
-        OpenSim::AbstractSocket const* socket = FindSocket(*component, params.socketName);
+        const OpenSim::AbstractSocket* socket = FindSocket(*component, params.socketName);
         if (!socket)
         {
             return rv;  // socket isn't in model?
@@ -150,7 +150,7 @@ private:
         }
 
         // check: ensure the "from" side of the socket still exists
-        OpenSim::Component const* component = FindComponent(m_Model->getModel(), m_Params.componentPath);
+        const OpenSim::Component* component = FindComponent(m_Model->getModel(), m_Params.componentPath);
         if (!component)
         {
             request_close();
@@ -158,7 +158,7 @@ private:
         }
 
         // check: ensure the socket still exists
-        OpenSim::AbstractSocket const* socket = FindSocket(*component, m_Params.socketName);
+        const OpenSim::AbstractSocket* socket = FindSocket(*component, m_Params.socketName);
         if (!socket)
         {
             request_close();
@@ -213,7 +213,7 @@ private:
                 SocketReassignmentFlags::TryReexpressComponentInNewConnectee :
                 SocketReassignmentFlags::None;
 
-            OpenSim::Component const* selected = FindComponent(m_Model->getModel(), *userSelection);
+            const OpenSim::Component* selected = FindComponent(m_Model->getModel(), *userSelection);
 
             if (selected && ActionReassignComponentSocket(*m_Model, m_Params.componentPath, m_Params.socketName, *selected, flags, m_Error))
             {
@@ -240,7 +240,7 @@ private:
             return std::move(ss).str();
         }();
 
-        auto const* const physFrameSocket =
+        const auto* const physFrameSocket =
             dynamic_cast<OpenSim::Socket<OpenSim::PhysicalFrame> const*>(&abstractSocket);
         if (!physFrameSocket)
         {

@@ -30,7 +30,7 @@ public:
 private:
     void impl_draw_content() final
     {
-        OpenSim::Component const* selected = nullptr;
+        const OpenSim::Component* selected = nullptr;
 
         // iterate through each T in `root` and give the user the option to click it
         {

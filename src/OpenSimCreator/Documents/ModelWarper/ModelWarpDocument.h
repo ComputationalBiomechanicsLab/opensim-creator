@@ -41,7 +41,7 @@ namespace osc::mow
         std::vector<WarpDetail> details(const OpenSim::Mesh&) const;
         std::vector<ValidationCheckResult> validate(const OpenSim::Mesh&) const;
         ValidationCheckState state(const OpenSim::Mesh&) const;
-        IPointWarperFactory const* findMeshWarp(const OpenSim::Mesh&) const;
+        const IPointWarperFactory* findMeshWarp(const OpenSim::Mesh&) const;
 
         std::vector<WarpDetail> details(const OpenSim::PhysicalOffsetFrame&) const;
         std::vector<ValidationCheckResult> validate(const OpenSim::PhysicalOffsetFrame&) const;

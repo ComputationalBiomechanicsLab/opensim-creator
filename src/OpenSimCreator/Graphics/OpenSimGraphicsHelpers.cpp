@@ -101,7 +101,7 @@ std::optional<SceneCollision> osc::GetClosestCollision(
     );
 
     // filter through the collisions list
-    SceneCollision const* closestCollision = nullptr;
+    const SceneCollision* closestCollision = nullptr;
     for (const SceneCollision& c : collisions)
     {
         if (closestCollision && c.distance_from_ray_origin > closestCollision->distance_from_ray_origin)

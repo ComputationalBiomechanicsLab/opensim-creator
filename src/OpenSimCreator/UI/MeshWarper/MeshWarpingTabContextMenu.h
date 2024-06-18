@@ -39,16 +39,16 @@ namespace osc
     private:
         void impl_draw_content() final
         {
-            TPSDocumentElement const* el = FindElement(m_State->getScratch(), m_ElementID);
+            const TPSDocumentElement* el = FindElement(m_State->getScratch(), m_ElementID);
             if (!el)
             {
                 request_close();  // element cannot be found in document (deleted? renamed?)
             }
-            else if (auto const* landmarkPair = dynamic_cast<TPSDocumentLandmarkPair const*>(el))
+            else if (const auto* landmarkPair = dynamic_cast<const TPSDocumentLandmarkPair*>(el))
             {
                 drawContextMenu(*landmarkPair);
             }
-            else if (auto const* npl = dynamic_cast<TPSDocumentNonParticipatingLandmark const*>(el))
+            else if (const auto* npl = dynamic_cast<const TPSDocumentNonParticipatingLandmark*>(el))
             {
                 drawContextMenu(*npl);
             }

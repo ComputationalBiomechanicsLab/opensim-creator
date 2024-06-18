@@ -38,7 +38,7 @@ namespace osc
             return implGetStateVersion();
         }
 
-        OpenSim::Component const* getSelected() const
+        const OpenSim::Component* getSelected() const
         {
             return implGetSelected();
         }
@@ -49,7 +49,7 @@ namespace osc
             return dynamic_cast<T const*>(getSelected());
         }
 
-        OpenSim::Component const* getHovered() const
+        const OpenSim::Component* getHovered() const
         {
             return implGetHovered();
         }
@@ -77,12 +77,12 @@ namespace osc
             return UID{};
         }
 
-        virtual OpenSim::Component const* implGetSelected() const
+        virtual const OpenSim::Component* implGetSelected() const
         {
             return nullptr;
         }
 
-        virtual OpenSim::Component const* implGetHovered() const
+        virtual const OpenSim::Component* implGetHovered() const
         {
             return nullptr;
         }

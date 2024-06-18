@@ -328,7 +328,7 @@ private:
 
         const Document& mg = m_Shared->getModelGraph();
 
-        MIObject const* hoveredMIObject = mg.tryGetByID(m_MaybeHover.ID);
+        const MIObject* hoveredMIObject = mg.tryGetByID(m_MaybeHover.ID);
 
         if (!hoveredMIObject)
         {
@@ -342,7 +342,7 @@ private:
             return;  // can't attach to it as-if it were a body
         }
 
-        auto const* bodyEl = mg.tryGetByID<Body>(maybeID);
+        const auto* bodyEl = mg.tryGetByID<Body>(maybeID);
         if (!bodyEl)
         {
             return;  // suggested attachment parent isn't in the current model graph?
@@ -687,7 +687,7 @@ private:
             return;  // invalid index?
         }
 
-        MIObject const* old = m_Shared->getModelGraph().tryGetByID(el.getCrossReferenceConnecteeID(crossrefIdx));
+        const MIObject* old = m_Shared->getModelGraph().tryGetByID(el.getCrossReferenceConnecteeID(crossrefIdx));
 
         if (!old)
         {
@@ -695,10 +695,10 @@ private:
         }
 
         ChooseElLayerOptions opts;
-        opts.canChooseBodies = (dynamic_cast<Body const*>(old) != nullptr) || (dynamic_cast<Ground const*>(old) != nullptr);
-        opts.canChooseGround = (dynamic_cast<Body const*>(old) != nullptr) || (dynamic_cast<Ground const*>(old) != nullptr);
-        opts.canChooseJoints = dynamic_cast<Joint const*>(old) != nullptr;
-        opts.canChooseMeshes = dynamic_cast<Mesh const*>(old) != nullptr;
+        opts.canChooseBodies = (dynamic_cast<const Body*>(old) != nullptr) || (dynamic_cast<const Ground*>(old) != nullptr);
+        opts.canChooseGround = (dynamic_cast<const Body*>(old) != nullptr) || (dynamic_cast<const Ground*>(old) != nullptr);
+        opts.canChooseJoints = dynamic_cast<const Joint*>(old) != nullptr;
+        opts.canChooseMeshes = dynamic_cast<const Mesh*>(old) != nullptr;
         opts.maybeElsAttachingTo = {el.getID()};
         opts.header = "choose what to attach to";
         opts.onUserChoice = [shared = m_Shared, id = el.getID(), crossrefIdx](std::span<UID> choices)
@@ -985,7 +985,7 @@ private:
                 }
                 ui::draw_tooltip_if_item_hovered("Add body", MIStrings::c_BodyDescription);
 
-                if (auto const* mesh = dynamic_cast<Mesh const*>(&el))
+                if (const auto* mesh = dynamic_cast<const Mesh*>(&el))
                 {
                     if (ui::draw_menu_item(ICON_FA_BORDER_ALL " at bounds center"))
                     {
@@ -1023,7 +1023,7 @@ private:
         ui::pop_id();
 
         ui::push_id(imguiID++);
-        if (auto const* body = dynamic_cast<Body const*>(&el))
+        if (const auto* body = dynamic_cast<const Body*>(&el))
         {
             if (ui::draw_menu_item(ICON_FA_LINK " Joint"))
             {
@@ -1058,7 +1058,7 @@ private:
                     }
                     ui::draw_tooltip_if_item_hovered("Add Station", MIStrings::c_StationDescription);
 
-                    if (dynamic_cast<Mesh const*>(&el))
+                    if (dynamic_cast<const Mesh*>(&el))
                     {
                         if (ui::draw_menu_item(ICON_FA_BORDER_ALL " at bounds center"))
                         {
@@ -1112,7 +1112,7 @@ private:
             ui::end_menu();
         }
 
-        if (auto const* body = dynamic_cast<Body const*>(&el))
+        if (const auto* body = dynamic_cast<const Body*>(&el))
         {
             if (ui::draw_menu_item(ICON_FA_LINK " Join to"))
             {
@@ -1762,7 +1762,7 @@ private:
         if (ui::begin_popup_context_menu("##addpainttoscenepopup", ImGuiPopupFlags_MouseButtonLeft))
         {
             std::span<Color const> colors = m_Shared->colors();
-            std::span<char const* const> labels = m_Shared->getColorLabels();
+            std::span<const char* const> labels = m_Shared->getColorLabels();
             OSC_ASSERT(colors.size() == labels.size() && "every color should have a label");
 
             for (size_t i = 0; i < colors.size(); ++i)
@@ -1786,7 +1786,7 @@ private:
         if (ui::begin_popup_context_menu("##changevisibilitypopup", ImGuiPopupFlags_MouseButtonLeft))
         {
             std::span<bool const> visibilities = m_Shared->getVisibilityFlags();
-            std::span<char const* const> labels = m_Shared->getVisibilityFlagLabels();
+            std::span<const char* const> labels = m_Shared->getVisibilityFlagLabels();
             OSC_ASSERT(visibilities.size() == labels.size() && "every visibility flag should have a label");
 
             for (size_t i = 0; i < visibilities.size(); ++i)
@@ -1810,7 +1810,7 @@ private:
         if (ui::begin_popup_context_menu("##changeinteractionlockspopup", ImGuiPopupFlags_MouseButtonLeft))
         {
             std::span<bool const> interactables = m_Shared->getIneractivityFlags();
-            std::span<char const* const> labels =  m_Shared->getInteractivityFlagLabels();
+            std::span<const char* const> labels =  m_Shared->getInteractivityFlagLabels();
             OSC_ASSERT(interactables.size() == labels.size());
 
             for (size_t i = 0; i < interactables.size(); ++i)
@@ -2042,7 +2042,7 @@ private:
             return;  // nothing is hovered
         }
 
-        if (MIObject const* e = m_Shared->getModelGraph().tryGetByID(m_MaybeHover.ID))
+        if (const MIObject* e = m_Shared->getModelGraph().tryGetByID(m_MaybeHover.ID))
         {
             drawMIObjectTooltip(*e);
         }

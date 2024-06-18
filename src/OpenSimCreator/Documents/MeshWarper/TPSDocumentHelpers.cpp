@@ -92,7 +92,7 @@ namespace
     }
 }
 
-TPSDocumentLandmarkPair const* osc::FindLandmarkPair(const TPSDocument& doc, UID uid)
+const TPSDocumentLandmarkPair* osc::FindLandmarkPair(const TPSDocument& doc, UID uid)
 {
     return FindLandmarkPairImpl(doc, uid);
 }
@@ -102,7 +102,7 @@ TPSDocumentLandmarkPair* osc::FindLandmarkPair(TPSDocument& doc, UID uid)
     return FindLandmarkPairImpl(doc, uid);
 }
 
-TPSDocumentNonParticipatingLandmark const* osc::FindNonParticipatingLandmark(const TPSDocument& doc, UID id)
+const TPSDocumentNonParticipatingLandmark* osc::FindNonParticipatingLandmark(const TPSDocument& doc, UID id)
 {
     return FindNonParticipatingLandmarkImpl(doc, id);
 }
@@ -112,13 +112,13 @@ TPSDocumentNonParticipatingLandmark* osc::FindNonParticipatingLandmark(TPSDocume
     return FindNonParticipatingLandmarkImpl(doc, id);
 }
 
-TPSDocumentElement const* osc::FindElement(const TPSDocument& doc, const TPSDocumentElementID& id)
+const TPSDocumentElement* osc::FindElement(const TPSDocument& doc, const TPSDocumentElementID& id)
 {
     static_assert(num_options<TPSDocumentElementType>() == 2);
 
     switch (id.type) {
     case TPSDocumentElementType::Landmark:
-        if (auto const* p = FindLandmarkPair(doc, id.uid); p && GetLocation(*p, id.input))
+        if (const auto* p = FindLandmarkPair(doc, id.uid); p && GetLocation(*p, id.input))
         {
             return p;
         }
@@ -131,7 +131,7 @@ TPSDocumentElement const* osc::FindElement(const TPSDocument& doc, const TPSDocu
     }
 }
 
-TPSDocumentLandmarkPair const* osc::FindLandmarkPairByName(const TPSDocument& doc, const StringName& name)
+const TPSDocumentLandmarkPair* osc::FindLandmarkPairByName(const TPSDocument& doc, const StringName& name)
 {
     return find_or_nullptr(doc.landmarkPairs, name, name_of<TPSDocumentLandmarkPair>);
 }
@@ -141,7 +141,7 @@ TPSDocumentLandmarkPair* osc::FindLandmarkPairByName(TPSDocument& doc, const Str
     return find_or_nullptr(doc.landmarkPairs, name, name_of<TPSDocumentLandmarkPair>);
 }
 
-TPSDocumentNonParticipatingLandmark const* osc::FindNonParticipatingLandmarkByName(const TPSDocument& doc, const StringName& name)
+const TPSDocumentNonParticipatingLandmark* osc::FindNonParticipatingLandmarkByName(const TPSDocument& doc, const StringName& name)
 {
     return find_or_nullptr(doc.nonParticipatingLandmarks, name, name_of<TPSDocumentNonParticipatingLandmark>);
 }
@@ -335,7 +335,7 @@ CStringView osc::FindElementNameOr(
     const TPSDocumentElementID& id,
     CStringView alternative)
 {
-    if (auto const* p = FindElement(doc, id))
+    if (const auto* p = FindElement(doc, id))
     {
         return p->getName();
     }

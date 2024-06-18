@@ -47,7 +47,7 @@ private:
     void impl_draw_content() final
     {
         // load coords
-        std::vector<OpenSim::Coordinate const*> coordPtrs = GetCoordinatesInModel(m_Model->getModel());
+        std::vector<const OpenSim::Coordinate*> coordPtrs = GetCoordinatesInModel(m_Model->getModel());
 
         // if there's no coordinates in the model, show a warning message and stop drawing
         if (coordPtrs.empty())
@@ -96,7 +96,7 @@ private:
             }
 
             int id = 0;
-            for (OpenSim::Coordinate const* coordPtr : coordPtrs)
+            for (const OpenSim::Coordinate* coordPtr : coordPtrs)
             {
                 ui::push_id(id++);
                 drawRow(*coordPtr);

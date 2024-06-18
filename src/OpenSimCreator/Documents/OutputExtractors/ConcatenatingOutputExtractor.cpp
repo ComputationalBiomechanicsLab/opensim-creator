@@ -94,7 +94,7 @@ bool osc::ConcatenatingOutputExtractor::implEquals(const IOutputExtractor& other
     if (&other == this) {
         return true;
     }
-    if (auto* ptr = dynamic_cast<ConcatenatingOutputExtractor const*>(&other)) {
+    if (auto* ptr = dynamic_cast<const ConcatenatingOutputExtractor*>(&other)) {
         return ptr->m_First == m_First && ptr->m_Second == m_Second;
     }
     return false;

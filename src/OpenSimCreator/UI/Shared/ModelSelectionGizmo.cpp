@@ -122,7 +122,7 @@ namespace
             OSC_ASSERT(FindComponent<TComponent>(m_Model->getModel(), m_ComponentAbsPath));
         }
 
-        TComponent const* findSelection() const
+        const TComponent* findSelection() const
         {
             return FindComponent<TComponent>(m_Model->getModel(), m_ComponentAbsPath);
         }
@@ -146,7 +146,7 @@ namespace
         // perform runtime lookup for `TComponent` and forward into concrete implementation
         Mat4 implGetCurrentModelMatrix() const final
         {
-            TComponent const* maybeSelected = findSelection();
+            const TComponent* maybeSelected = findSelection();
             if (!maybeSelected)
             {
                 return identity<Mat4>();  // selection of that type does not exist in the model
@@ -157,7 +157,7 @@ namespace
         // perform runtime lookup for `TComponent` and forward into concrete implementation
         void implOnApplyTranslation(const Vec3& deltaTranslationInGround) final
         {
-            TComponent const* maybeSelected = findSelection();
+            const TComponent* maybeSelected = findSelection();
             if (!maybeSelected)
             {
                 return;  // selection of that type does not exist in the model
@@ -168,7 +168,7 @@ namespace
         // perform runtime lookup for `TComponent` and forward into concrete implementation
         void implOnApplyRotation(const Eulers& deltaEulerRadiansInGround) final
         {
-            TComponent const* maybeSelected = findSelection();
+            const TComponent* maybeSelected = findSelection();
             if (!maybeSelected)
             {
                 return;  // selection of that type does not exist in the model
@@ -178,7 +178,7 @@ namespace
 
         void implOnSave() final
         {
-            TComponent const* maybeSelected = findSelection();
+            const TComponent* maybeSelected = findSelection();
             if (!maybeSelected)
             {
                 return;  // selection of that type does not exist in the model
@@ -633,27 +633,27 @@ namespace
         bool& wasUsingLastFrameStorage)
     {
         // use downcasting to figure out which gizmo implementation to use
-        if (auto const* const maybeStation = dynamic_cast<OpenSim::Station const*>(&selected))
+        if (const auto* const maybeStation = dynamic_cast<const OpenSim::Station*>(&selected))
         {
             StationManipulator manipulator{model, *maybeStation};
             DrawGizmoOverlayInner(gizmoID, camera, viewportRect, operation, mode, manipulator, wasUsingLastFrameStorage);
         }
-        else if (auto const* const maybePathPoint = dynamic_cast<OpenSim::PathPoint const*>(&selected))
+        else if (const auto* const maybePathPoint = dynamic_cast<const OpenSim::PathPoint*>(&selected))
         {
             PathPointManipulator manipulator{model, *maybePathPoint};
             DrawGizmoOverlayInner(gizmoID, camera, viewportRect, operation, mode, manipulator, wasUsingLastFrameStorage);
         }
-        else if (auto const* const maybePof = dynamic_cast<OpenSim::PhysicalOffsetFrame const*>(&selected))
+        else if (const auto* const maybePof = dynamic_cast<const OpenSim::PhysicalOffsetFrame*>(&selected))
         {
             PhysicalOffsetFrameManipulator manipulator{model, *maybePof};
             DrawGizmoOverlayInner(gizmoID, camera, viewportRect, operation, mode, manipulator, wasUsingLastFrameStorage);
         }
-        else if (auto const* const maybeWrapObject = dynamic_cast<OpenSim::WrapObject const*>(&selected))
+        else if (const auto* const maybeWrapObject = dynamic_cast<const OpenSim::WrapObject*>(&selected))
         {
             WrapObjectManipulator manipulator{model, *maybeWrapObject};
             DrawGizmoOverlayInner(gizmoID, camera, viewportRect, operation, mode, manipulator, wasUsingLastFrameStorage);
         }
-        else if (auto const* const maybeContactGeom = dynamic_cast<OpenSim::ContactGeometry const*>(&selected))
+        else if (const auto* const maybeContactGeom = dynamic_cast<const OpenSim::ContactGeometry*>(&selected))
         {
             ContactGeometryManipulator manipulator{model, *maybeContactGeom};
             DrawGizmoOverlayInner(gizmoID, camera, viewportRect, operation, mode, manipulator, wasUsingLastFrameStorage);
@@ -678,7 +678,7 @@ osc::ModelSelectionGizmo::~ModelSelectionGizmo() noexcept = default;
 
 bool osc::ModelSelectionGizmo::isUsing() const
 {
-    ImGuizmo::SetID(static_cast<int>(std::hash<ModelSelectionGizmo const*>{}(this)));
+    ImGuizmo::SetID(static_cast<int>(std::hash<const ModelSelectionGizmo*>{}(this)));
     bool const rv = ImGuizmo::IsUsing();
     ImGuizmo::SetID(-1);
     return rv;
@@ -686,7 +686,7 @@ bool osc::ModelSelectionGizmo::isUsing() const
 
 bool osc::ModelSelectionGizmo::isOver() const
 {
-    ImGuizmo::SetID(static_cast<int>(std::hash<ModelSelectionGizmo const*>{}(this)));
+    ImGuizmo::SetID(static_cast<int>(std::hash<const ModelSelectionGizmo*>{}(this)));
     bool const rv = ImGuizmo::IsOver();
     ImGuizmo::SetID(-1);
     return rv;
@@ -701,7 +701,7 @@ void osc::ModelSelectionGizmo::onDraw(
     const Rect& screenRect,
     const PolarPerspectiveCamera& camera)
 {
-    OpenSim::Component const* selected = m_Model->getSelected();
+    const OpenSim::Component* selected = m_Model->getSelected();
     if (!selected)
     {
         return;

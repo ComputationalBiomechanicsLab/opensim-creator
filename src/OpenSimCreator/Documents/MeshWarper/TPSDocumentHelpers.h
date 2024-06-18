@@ -22,20 +22,20 @@
 namespace osc
 {
     // if it exists in the document, returns a pointer to the identified landmark pair; otherwise, returns `nullptr`
-    TPSDocumentLandmarkPair const* FindLandmarkPair(const TPSDocument&, UID);
+    const TPSDocumentLandmarkPair* FindLandmarkPair(const TPSDocument&, UID);
     TPSDocumentLandmarkPair* FindLandmarkPair(TPSDocument&, UID);
 
     // if it exists in the document, returns a pointer to the identified non-participating landmark; otherwise, returns `nullptr`
-    TPSDocumentNonParticipatingLandmark const* FindNonParticipatingLandmark(const TPSDocument&, UID);
+    const TPSDocumentNonParticipatingLandmark* FindNonParticipatingLandmark(const TPSDocument&, UID);
     TPSDocumentNonParticipatingLandmark* FindNonParticipatingLandmark(TPSDocument&, UID);
 
     // if it exists in the document, returns a pointer to the identified element; otherwise, returns `nullptr`
-    TPSDocumentElement const* FindElement(const TPSDocument& doc, const TPSDocumentElementID&);
+    const TPSDocumentElement* FindElement(const TPSDocument& doc, const TPSDocumentElementID&);
 
     // if it exists in the document, returns a pointer to the landmark that has the given name; otherwise, returns `nullptr`
-    TPSDocumentLandmarkPair const* FindLandmarkPairByName(const TPSDocument&, const StringName&);
+    const TPSDocumentLandmarkPair* FindLandmarkPairByName(const TPSDocument&, const StringName&);
     TPSDocumentLandmarkPair* FindLandmarkPairByName(TPSDocument&, const StringName&);
-    TPSDocumentNonParticipatingLandmark const* FindNonParticipatingLandmarkByName(const TPSDocument&, const StringName&);
+    const TPSDocumentNonParticipatingLandmark* FindNonParticipatingLandmarkByName(const TPSDocument&, const StringName&);
     TPSDocumentNonParticipatingLandmark* FindNonParticipatingLandmarkByName(TPSDocument&, const StringName&);
 
     // returns `true` if the document contains an element (landmark, non-participating landmark, etc.) with the given name

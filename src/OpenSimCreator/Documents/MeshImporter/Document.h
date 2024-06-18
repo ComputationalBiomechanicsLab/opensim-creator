@@ -233,7 +233,7 @@ namespace osc::mi
 
         bool deleteByID(UID id)
         {
-            MIObject const* const obj = tryGetByID(id);
+            const MIObject* const obj = tryGetByID(id);
             if (!obj)
             {
                 return false;  // ID doesn't exist in the document
@@ -291,7 +291,7 @@ namespace osc::mi
 
         void select(UID id)
         {
-            MIObject const* const e = tryGetByID(id);
+            const MIObject* const e = tryGetByID(id);
 
             if (e && e->canSelect())
             {
@@ -389,7 +389,7 @@ namespace osc::mi
             return *ptr;
         }
 
-        MIObject const* implFind(UID id) const final
+        const MIObject* implFind(UID id) const final
         {
             return findByID(m_Objects, id);
         }

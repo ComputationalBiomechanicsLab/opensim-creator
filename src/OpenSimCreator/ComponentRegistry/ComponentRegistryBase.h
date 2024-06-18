@@ -22,8 +22,8 @@ namespace osc
         CStringView name() const { return m_Name; }
         CStringView description() const { return m_Description; }
 
-        value_type const* begin() const { return m_Entries.data(); }
-        value_type const* end() const { return m_Entries.data() + m_Entries.size(); }
+        const value_type* begin() const { return m_Entries.data(); }
+        const value_type* end() const { return m_Entries.data() + m_Entries.size(); }
         size_t size() const { return m_Entries.size(); }
         const value_type& operator[](size_t i) const { return m_Entries[i]; }
 

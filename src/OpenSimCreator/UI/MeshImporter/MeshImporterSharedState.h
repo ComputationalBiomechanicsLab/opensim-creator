@@ -472,7 +472,7 @@ namespace osc::mi
             updColors()[i] = newColorValue;
         }
 
-        std::span<char const* const> getColorLabels() const
+        std::span<const char* const> getColorLabels() const
         {
             return c_ColorNames;
         }
@@ -494,7 +494,7 @@ namespace osc::mi
             updVisibilityFlags()[i] = newVisibilityValue;
         }
 
-        std::span<char const* const> getVisibilityFlagLabels() const
+        std::span<const char* const> getVisibilityFlagLabels() const
         {
             return c_VisibilityFlagNames;
         }
@@ -540,7 +540,7 @@ namespace osc::mi
             updInteractivityFlags()[i] = newInteractivityValue;
         }
 
-        std::span<char const* const> getInteractivityFlagLabels() const
+        std::span<const char* const> getInteractivityFlagLabels() const
         {
             return c_InteractivityFlagNames;
         }
@@ -978,7 +978,7 @@ namespace osc::mi
                     continue;
                 }
 
-                MIObject const* other = mg.tryGetByID(refID);
+                const MIObject* other = mg.tryGetByID(refID);
 
                 if (!other)
                 {
@@ -1471,7 +1471,7 @@ namespace osc::mi
             Color sceneBackground{48.0f/255.0f, 48.0f/255.0f, 48.0f/255.0f, 1.0f};
             Color gridLines{0.7f, 0.7f, 0.7f, 0.15f};
         } m_Colors;
-        static constexpr auto c_ColorNames = std::to_array<char const*>(
+        static constexpr auto c_ColorNames = std::to_array<const char*>(
         {
             "ground",
             "meshes",
@@ -1497,7 +1497,7 @@ namespace osc::mi
             bool stationConnectionLines = true;
             bool floor = true;
         } m_VisibilityFlags;
-        static constexpr auto c_VisibilityFlagNames = std::to_array<char const*>(
+        static constexpr auto c_VisibilityFlagNames = std::to_array<const char*>(
         {
             "ground",
             "meshes",
@@ -1522,7 +1522,7 @@ namespace osc::mi
             bool joints = true;
             bool stations = true;
         } m_InteractivityFlags;
-        static constexpr auto c_InteractivityFlagNames = std::to_array<char const*>(
+        static constexpr auto c_InteractivityFlagNames = std::to_array<const char*>(
         {
             "ground",
             "meshes",
@@ -1537,7 +1537,7 @@ namespace osc::mi
         // these are runtime-editable flags that dictate which panels are open
         static inline constexpr size_t c_NumPanelStates = 4;
         std::array<bool, c_NumPanelStates> m_PanelStates{false, true, false, false};
-        static constexpr auto c_OpenedPanelNames = std::to_array<char const*>(
+        static constexpr auto c_OpenedPanelNames = std::to_array<const char*>(
         {
             "History",
             "Navigator",

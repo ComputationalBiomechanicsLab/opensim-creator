@@ -328,7 +328,7 @@ void osc::DrawSelectOwnerMenu(IModelStatePair& model, const OpenSim::Component& 
         model.setHovered(nullptr);
 
         for (
-            OpenSim::Component const* owner = GetOwner(selected);
+            const OpenSim::Component* owner = GetOwner(selected);
             owner != nullptr;
             owner = GetOwner(*owner))
         {
@@ -379,7 +379,7 @@ bool osc::DrawWatchOutputMenu(
 
         // iterate from the selected component upwards to the root
         int imguiId = 0;
-        for (OpenSim::Component const* p = &c; p; p = GetOwner(*p))
+        for (const OpenSim::Component* p = &c; p; p = GetOwner(*p))
         {
             ui::push_id(imguiId++);
 
@@ -480,7 +480,7 @@ void osc::DrawOutputNameColumn(
     // (e.g. if the user mouses over the name of a component output it should make
     // the associated component the current hover to provide immediate feedback to
     // the user)
-    if (auto const* co = dynamic_cast<ComponentOutputExtractor const*>(&output); co && maybeActiveSate)
+    if (const auto* co = dynamic_cast<const ComponentOutputExtractor*>(&output); co && maybeActiveSate)
     {
         if (ui::is_item_hovered())
         {
@@ -503,7 +503,7 @@ void osc::DrawOutputNameColumn(
 void osc::DrawWithRespectToMenuContainingMenuPerFrame(
     const OpenSim::Component& root,
     std::function<void(const OpenSim::Frame&)> const& onFrameMenuOpened,
-    OpenSim::Frame const* maybeParent)
+    const OpenSim::Frame* maybeParent)
 {
     ui::draw_text_disabled("With Respect to:");
     ui::draw_separator();
@@ -537,7 +537,7 @@ void osc::DrawWithRespectToMenuContainingMenuPerFrame(
 void osc::DrawWithRespectToMenuContainingMenuItemPerFrame(
     const OpenSim::Component& root,
     std::function<void(const OpenSim::Frame&)> const& onFrameMenuItemClicked,
-    OpenSim::Frame const* maybeParent = nullptr)
+    const OpenSim::Frame* maybeParent = nullptr)
 {
     ui::draw_text_disabled("With Respect to:");
     ui::draw_separator();
@@ -632,7 +632,7 @@ void osc::DrawCalculatePositionMenu(
     const OpenSim::Component& root,
     const SimTK::State& state,
     const OpenSim::Point& point,
-    OpenSim::Frame const* maybeParent)
+    const OpenSim::Frame* maybeParent)
 {
     if (ui::begin_menu("Position"))
     {
@@ -807,7 +807,7 @@ void osc::DrawCalculateMenu(
 {
     if (BeginCalculateMenu(flags))
     {
-        if (auto const* spherePtr = dynamic_cast<OpenSim::Sphere const*>(&geom))
+        if (const auto* spherePtr = dynamic_cast<const OpenSim::Sphere*>(&geom))
         {
             DrawCalculateOriginMenu(root, state, *spherePtr);
             DrawCalculateRadiusMenu(root, state, *spherePtr);
@@ -829,11 +829,11 @@ void osc::TryDrawCalculateMenu(
     const OpenSim::Component& selected,
     CalculateMenuFlags flags)
 {
-    if (auto const* const frame = dynamic_cast<OpenSim::Frame const*>(&selected))
+    if (const auto* const frame = dynamic_cast<const OpenSim::Frame*>(&selected))
     {
         DrawCalculateMenu(root, state, *frame, flags);
     }
-    else if (auto const* const point = dynamic_cast<OpenSim::Point const*>(&selected))
+    else if (const auto* const point = dynamic_cast<const OpenSim::Point*>(&selected))
     {
         DrawCalculateMenu(root, state, *point, flags);
     }

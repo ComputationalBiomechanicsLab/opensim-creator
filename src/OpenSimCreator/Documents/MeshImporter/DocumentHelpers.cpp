@@ -68,7 +68,7 @@ bool osc::mi::IsJointAttachedToGround(
         return true;  // it's directly attached to ground
     }
 
-    auto const* const parent = doc.tryGetByID<Body>(joint.getParentID());
+    const auto* const parent = doc.tryGetByID<Body>(joint.getParentID());
     if (!parent)
     {
         return false;  // joint's parent is garbage
@@ -185,12 +185,12 @@ bool osc::mi::IsInSelectionGroupOf(
         return true;
     }
 
-    Body const* body = nullptr;
-    if (auto const* be = doc.tryGetByID<Body>(parent))
+    const Body* body = nullptr;
+    if (const auto* be = doc.tryGetByID<Body>(parent))
     {
         body = be;
     }
-    else if (auto const* me = doc.tryGetByID<Mesh>(parent))
+    else if (const auto* me = doc.tryGetByID<Mesh>(parent))
     {
         body = doc.tryGetByID<Body>(me->getParentID());
     }
@@ -200,11 +200,11 @@ bool osc::mi::IsInSelectionGroupOf(
         return false;  // parent isn't attached to any body (or isn't a body)
     }
 
-    if (auto const* be = doc.tryGetByID<Body>(id))
+    if (const auto* be = doc.tryGetByID<Body>(id))
     {
         return be->getID() == body->getID();
     }
-    else if (auto const* me = doc.tryGetByID<Mesh>(id))
+    else if (const auto* me = doc.tryGetByID<Mesh>(id))
     {
         return me->getParentID() == body->getID();
     }

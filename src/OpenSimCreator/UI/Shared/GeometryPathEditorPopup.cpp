@@ -26,9 +26,9 @@ namespace
     constexpr auto c_LocationInputIDs = std::to_array<CStringView>({ "##xinput", "##yinput", "##zinput" });
     static_assert(c_LocationInputIDs.size() == 3);
 
-    OpenSim::GeometryPath CopyOrDefaultGeometryPath(std::function<OpenSim::GeometryPath const*()> const& accessor)
+    OpenSim::GeometryPath CopyOrDefaultGeometryPath(std::function<const OpenSim::GeometryPath*()> const& accessor)
     {
-        OpenSim::GeometryPath const* maybeGeomPath = accessor();
+        const OpenSim::GeometryPath* maybeGeomPath = accessor();
         if (maybeGeomPath)
         {
             return *maybeGeomPath;
@@ -121,7 +121,7 @@ public:
     Impl(
         std::string_view popupName_,
         std::shared_ptr<UndoableModelStatePair const> targetModel_,
-        std::function<OpenSim::GeometryPath const*()> geometryPathGetter_,
+        std::function<const OpenSim::GeometryPath*()> geometryPathGetter_,
         std::function<void(const OpenSim::GeometryPath&)> onLocalCopyEdited_) :
 
         StandardPopup{popupName_, {768.0f, 0.0f}, ImGuiWindowFlags_AlwaysAutoResize},
@@ -362,7 +362,7 @@ private:
     }
 
     std::shared_ptr<UndoableModelStatePair const> m_TargetModel;
-    std::function<OpenSim::GeometryPath const*()> m_GeometryPathGetter;
+    std::function<const OpenSim::GeometryPath*()> m_GeometryPathGetter;
     std::function<void(const OpenSim::GeometryPath&)> m_OnLocalCopyEdited;
 
     OpenSim::GeometryPath m_EditedGeometryPath;
@@ -375,7 +375,7 @@ private:
 osc::GeometryPathEditorPopup::GeometryPathEditorPopup(
     std::string_view popupName_,
     std::shared_ptr<UndoableModelStatePair const> targetModel_,
-    std::function<OpenSim::GeometryPath const*()> geometryPathGetter_,
+    std::function<const OpenSim::GeometryPath*()> geometryPathGetter_,
     std::function<void(const OpenSim::GeometryPath&)> onLocalCopyEdited_) :
 
     m_Impl{std::make_unique<Impl>(popupName_, std::move(targetModel_), std::move(geometryPathGetter_), std::move(onLocalCopyEdited_))}

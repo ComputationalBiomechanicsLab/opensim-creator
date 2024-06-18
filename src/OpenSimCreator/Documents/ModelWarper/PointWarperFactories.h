@@ -32,15 +32,15 @@ namespace osc::mow
         );
 
         template<std::derived_from<IPointWarperFactory> TMeshWarp = IPointWarperFactory>
-        TMeshWarp const* find(const std::string& meshComponentAbsPath) const
+        const TMeshWarp* find(const std::string& meshComponentAbsPath) const
         {
-            return dynamic_cast<TMeshWarp const*>(lookup(meshComponentAbsPath));
+            return dynamic_cast<const TMeshWarp*>(lookup(meshComponentAbsPath));
         }
 
     private:
-        IPointWarperFactory const* lookup(const std::string& absPath) const
+        const IPointWarperFactory* lookup(const std::string& absPath) const
         {
-            if (auto const* ptr = lookup_or_nullptr(m_AbsPathToWarpLUT, absPath)) {
+            if (const auto* ptr = lookup_or_nullptr(m_AbsPathToWarpLUT, absPath)) {
                 return ptr->get();
             }
             else {

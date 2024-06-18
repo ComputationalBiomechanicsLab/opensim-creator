@@ -84,7 +84,7 @@ void osc::CustomRenderingOptions::tryUpdFromValues(std::string_view keyPrefix, s
     for (const auto& metadata : GetAllCustomRenderingOptionFlagsMetadata()) {
 
         std::string key = std::string{keyPrefix} + metadata.id;
-        if (auto const* v = lookup_or_nullptr(lut, key); v->type() == AppSettingValueType::Bool) {
+        if (const auto* v = lookup_or_nullptr(lut, key); v->type() == AppSettingValueType::Bool) {
             SetOption(m_Flags, metadata.value, v->to_bool());
         }
     }

@@ -132,7 +132,7 @@ namespace
     struct JointAttachmentCachedLookupResult final {
 
         // can be nullptr (indicating Ground)
-        Body const* bodyEl = nullptr;
+        const Body* bodyEl = nullptr;
 
         // can be nullptr (indicating ground/cache hit)
         std::unique_ptr<OpenSim::Body> createdBody;
@@ -216,11 +216,11 @@ namespace
     // returns the indices of each degree of freedom that the joint supports
     JointDegreesOfFreedom GetDegreesOfFreedom(const OpenSim::Joint& joint)
     {
-        if (dynamic_cast<OpenSim::FreeJoint const*>(&joint))
+        if (dynamic_cast<const OpenSim::FreeJoint*>(&joint))
         {
             return JointDegreesOfFreedom{{0, 1, 2}, {3, 4, 5}};
         }
-        else if (dynamic_cast<OpenSim::PinJoint const*>(&joint))
+        else if (dynamic_cast<const OpenSim::PinJoint*>(&joint))
         {
             return JointDegreesOfFreedom{{-1, -1, 0}, {-1, -1, -1}};
         }
@@ -420,28 +420,28 @@ namespace
 
     // tries to find the first body connected to the given PhysicalFrame by assuming
     // that the frame is either already a body or is an offset to a body
-    OpenSim::PhysicalFrame const* TryInclusiveRecurseToBodyOrGround(
+    const OpenSim::PhysicalFrame* TryInclusiveRecurseToBodyOrGround(
         const OpenSim::Frame& f,
-        std::unordered_set<OpenSim::Frame const*> visitedFrames)
+        std::unordered_set<const OpenSim::Frame*> visitedFrames)
     {
         if (!visitedFrames.emplace(&f).second)
         {
             return nullptr;
         }
 
-        if (auto const* body = dynamic_cast<OpenSim::Body const*>(&f))
+        if (const auto* body = dynamic_cast<const OpenSim::Body*>(&f))
         {
             return body;
         }
-        else if (auto const* ground = dynamic_cast<OpenSim::Ground const*>(&f))
+        else if (const auto* ground = dynamic_cast<const OpenSim::Ground*>(&f))
         {
             return ground;
         }
-        else if (auto const* pof = dynamic_cast<OpenSim::PhysicalOffsetFrame const*>(&f))
+        else if (const auto* pof = dynamic_cast<const OpenSim::PhysicalOffsetFrame*>(&f))
         {
             return TryInclusiveRecurseToBodyOrGround(pof->getParentFrame(), visitedFrames);
         }
-        else if (auto const* station = dynamic_cast<OpenSim::Station const*>(&f))
+        else if (const auto* station = dynamic_cast<const OpenSim::Station*>(&f))
         {
             return TryInclusiveRecurseToBodyOrGround(station->getParentFrame(), visitedFrames);
         }
@@ -453,7 +453,7 @@ namespace
 
     // tries to find the first body connected to the given PhysicalFrame by assuming
     // that the frame is either already a body or is an offset to a body
-    OpenSim::PhysicalFrame const* TryInclusiveRecurseToBodyOrGround(const OpenSim::Frame& f)
+    const OpenSim::PhysicalFrame* TryInclusiveRecurseToBodyOrGround(const OpenSim::Frame& f)
     {
         return TryInclusiveRecurseToBodyOrGround(f, {});
     }
@@ -468,10 +468,10 @@ namespace
         Document rv;
 
         // used to figure out how a body in the OpenSim::Model maps into the docuemnt
-        std::unordered_map<OpenSim::Body const*, UID> bodyLookup;
+        std::unordered_map<const OpenSim::Body*, UID> bodyLookup;
 
         // used to figure out how a joint in the OpenSim::Model maps into the document
-        std::unordered_map<OpenSim::Joint const*, UID> jointLookup;
+        std::unordered_map<const OpenSim::Joint*, UID> jointLookup;
 
         // import all the bodies from the model file
         for (const OpenSim::Body& b : m.getComponentList<OpenSim::Body>())
@@ -491,8 +491,8 @@ namespace
             const OpenSim::PhysicalFrame& parentFrame = j.getParentFrame();
             const OpenSim::PhysicalFrame& childFrame = j.getChildFrame();
 
-            OpenSim::PhysicalFrame const* const parentBodyOrGround = TryInclusiveRecurseToBodyOrGround(parentFrame);
-            OpenSim::PhysicalFrame const* const childBodyOrGround = TryInclusiveRecurseToBodyOrGround(childFrame);
+            const OpenSim::PhysicalFrame* const parentBodyOrGround = TryInclusiveRecurseToBodyOrGround(parentFrame);
+            const OpenSim::PhysicalFrame* const childBodyOrGround = TryInclusiveRecurseToBodyOrGround(childFrame);
 
             if (!parentBodyOrGround || !childBodyOrGround)
             {
@@ -501,13 +501,13 @@ namespace
             }
 
             UID parent = MIIDs::Empty();
-            if (dynamic_cast<OpenSim::Ground const*>(parentBodyOrGround))
+            if (dynamic_cast<const OpenSim::Ground*>(parentBodyOrGround))
             {
                 parent = MIIDs::Ground();
             }
             else
             {
-                if (auto const* body = lookup_or_nullptr(bodyLookup, dynamic_cast<OpenSim::Body const*>(parentBodyOrGround))) {
+                if (const auto* body = lookup_or_nullptr(bodyLookup, dynamic_cast<const OpenSim::Body*>(parentBodyOrGround))) {
                     parent = *body;
                 }
                 else {
@@ -516,14 +516,14 @@ namespace
             }
 
             UID child = MIIDs::Empty();
-            if (dynamic_cast<OpenSim::Ground const*>(childBodyOrGround))
+            if (dynamic_cast<const OpenSim::Ground*>(childBodyOrGround))
             {
                 // ground can't be a child in a joint
                 continue;
             }
             else
             {
-                if (auto const* body = lookup_or_nullptr(bodyLookup, dynamic_cast<OpenSim::Body const*>(childBodyOrGround))) {
+                if (const auto* body = lookup_or_nullptr(bodyLookup, dynamic_cast<const OpenSim::Body*>(childBodyOrGround))) {
                     child = *body;
                 }
                 else {
@@ -568,7 +568,7 @@ namespace
             }
 
             const OpenSim::Frame& frame = mesh.getFrame();
-            OpenSim::PhysicalFrame const* const frameBodyOrGround = TryInclusiveRecurseToBodyOrGround(frame);
+            const OpenSim::PhysicalFrame* const frameBodyOrGround = TryInclusiveRecurseToBodyOrGround(frame);
 
             if (!frameBodyOrGround)
             {
@@ -577,13 +577,13 @@ namespace
             }
 
             UID attachment = MIIDs::Empty();
-            if (dynamic_cast<OpenSim::Ground const*>(frameBodyOrGround))
+            if (dynamic_cast<const OpenSim::Ground*>(frameBodyOrGround))
             {
                 attachment = MIIDs::Ground();
             }
             else
             {
-                if (auto const* body = lookup_or_nullptr(bodyLookup, dynamic_cast<OpenSim::Body const*>(frameBodyOrGround))) {
+                if (const auto* body = lookup_or_nullptr(bodyLookup, dynamic_cast<const OpenSim::Body*>(frameBodyOrGround))) {
                     attachment = *body;
                 }
                 else {
@@ -609,7 +609,7 @@ namespace
         for (const OpenSim::Station& station : m.getComponentList<OpenSim::Station>())
         {
             // edge-case: it's a path point: ignore it because it will spam the converter
-            if (dynamic_cast<OpenSim::AbstractPathPoint const*>(&station))
+            if (dynamic_cast<const OpenSim::AbstractPathPoint*>(&station))
             {
                 continue;
             }
@@ -620,16 +620,16 @@ namespace
             }
 
             const OpenSim::PhysicalFrame& frame = station.getParentFrame();
-            OpenSim::PhysicalFrame const* const frameBodyOrGround = TryInclusiveRecurseToBodyOrGround(frame);
+            const OpenSim::PhysicalFrame* const frameBodyOrGround = TryInclusiveRecurseToBodyOrGround(frame);
 
             UID attachment = MIIDs::Empty();
-            if (dynamic_cast<OpenSim::Ground const*>(frameBodyOrGround))
+            if (dynamic_cast<const OpenSim::Ground*>(frameBodyOrGround))
             {
                 attachment = MIIDs::Ground();
             }
             else
             {
-                if (auto const it = bodyLookup.find(dynamic_cast<OpenSim::Body const*>(frameBodyOrGround)); it != bodyLookup.end())
+                if (auto const it = bodyLookup.find(dynamic_cast<const OpenSim::Body*>(frameBodyOrGround)); it != bodyLookup.end())
                 {
                     attachment = it->second;
                 }

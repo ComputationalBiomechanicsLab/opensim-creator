@@ -31,17 +31,17 @@ namespace osc::mow
         );
 
         template<std::derived_from<IFrameWarperFactory> FrameWarp = IFrameWarperFactory>
-        FrameWarp const* find(const std::string& absPath) const
+        const FrameWarp* find(const std::string& absPath) const
         {
-            return dynamic_cast<FrameWarp const*>(lookup(absPath));
+            return dynamic_cast<const FrameWarp*>(lookup(absPath));
         }
 
         [[nodiscard]] bool empty() const { return m_AbsPathToWarpLUT.empty(); }
 
     private:
-        IFrameWarperFactory const* lookup(const std::string& absPath) const
+        const IFrameWarperFactory* lookup(const std::string& absPath) const
         {
-            if (auto const* ptr = lookup_or_nullptr(m_AbsPathToWarpLUT, absPath)) {
+            if (const auto* ptr = lookup_or_nullptr(m_AbsPathToWarpLUT, absPath)) {
                 return ptr->get();
             }
             else {

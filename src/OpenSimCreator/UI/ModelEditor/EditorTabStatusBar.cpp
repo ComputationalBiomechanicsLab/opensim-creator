@@ -38,11 +38,11 @@ public:
 private:
     void drawSelectionBreadcrumbs()
     {
-        OpenSim::Component const* const c = m_Model->getSelected();
+        const OpenSim::Component* const c = m_Model->getSelected();
 
         if (c)
         {
-            std::vector<OpenSim::Component const*> const els = GetPathElements(*c);
+            std::vector<const OpenSim::Component*> const els = GetPathElements(*c);
             for (ptrdiff_t i = 0; i < std::ssize(els)-1; ++i)
             {
                 ui::push_id(i);

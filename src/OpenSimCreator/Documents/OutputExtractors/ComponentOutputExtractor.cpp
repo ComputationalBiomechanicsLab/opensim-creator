@@ -87,7 +87,7 @@ public:
         OutputExtractorDataType const datatype = getOutputType();
         NullCallbackFnPointer const nullCallback = datatype == OutputExtractorDataType::Float ? NaNFloatingPointCallback : BlankStringCallback;
 
-        OpenSim::AbstractOutput const* const ao = FindOutput(component, m_ComponentAbsPath, m_OutputName);
+        const OpenSim::AbstractOutput* const ao = FindOutput(component, m_ComponentAbsPath, m_OutputName);
 
         if (not ao) {
             return OutputValueExtractor{nullCallback};  // cannot find output
@@ -117,12 +117,12 @@ public:
 
     bool equals(const IOutputExtractor& other)
     {
-        auto const* const otherT = dynamic_cast<ComponentOutputExtractor const*>(&other);
+        const auto* const otherT = dynamic_cast<const ComponentOutputExtractor*>(&other);
         if (!otherT) {
             return false;
         }
 
-        ComponentOutputExtractor::Impl const* const otherImpl = otherT->m_Impl.get();
+        const ComponentOutputExtractor::Impl* const otherImpl = otherT->m_Impl.get();
         if (otherImpl == this) {
             return true;
         }
@@ -139,7 +139,7 @@ private:
     OpenSim::ComponentPath m_ComponentAbsPath;
     std::string m_OutputName;
     std::string m_Label;
-    std::type_info const* m_OutputTypeid;
+    const std::type_info* m_OutputTypeid;
     SubfieldExtractorFunc m_ExtractorFunc;
 };
 

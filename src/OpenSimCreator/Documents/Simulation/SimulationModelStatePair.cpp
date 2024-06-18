@@ -47,22 +47,22 @@ public:
         return m_StateVersion;
     }
 
-    OpenSim::Component const* getSelected() const
+    const OpenSim::Component* getSelected() const
     {
         return FindComponent(getModel(), m_Selected);
     }
 
-    void setSelected(OpenSim::Component const* c)
+    void setSelected(const OpenSim::Component* c)
     {
         m_Selected = GetAbsolutePathOrEmpty(c);
     }
 
-    OpenSim::Component const* getHovered() const
+    const OpenSim::Component* getHovered() const
     {
         return FindComponent(getModel(), m_Hovered);
     }
 
-    void setHovered(OpenSim::Component const* c)
+    void setHovered(const OpenSim::Component* c)
     {
         m_Hovered = GetAbsolutePathOrEmpty(c);
     }
@@ -171,22 +171,22 @@ UID osc::SimulationModelStatePair::implGetStateVersion() const
     return m_Impl->getStateVersion();
 }
 
-OpenSim::Component const* osc::SimulationModelStatePair::implGetSelected() const
+const OpenSim::Component* osc::SimulationModelStatePair::implGetSelected() const
 {
     return m_Impl->getSelected();
 }
 
-void osc::SimulationModelStatePair::implSetSelected(OpenSim::Component const* c)
+void osc::SimulationModelStatePair::implSetSelected(const OpenSim::Component* c)
 {
     m_Impl->setSelected(c);
 }
 
-OpenSim::Component const* osc::SimulationModelStatePair::implGetHovered() const
+const OpenSim::Component* osc::SimulationModelStatePair::implGetHovered() const
 {
     return m_Impl->getHovered();
 }
 
-void osc::SimulationModelStatePair::implSetHovered(OpenSim::Component const* c)
+void osc::SimulationModelStatePair::implSetHovered(const OpenSim::Component* c)
 {
     m_Impl->setHovered(c);
 }

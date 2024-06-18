@@ -38,11 +38,11 @@ namespace osc
         const SimTK::State& implGetState() const final;
         UID implGetStateVersion() const final;
 
-        OpenSim::Component const* implGetSelected() const final;
-        void implSetSelected(OpenSim::Component const*) final;
+        const OpenSim::Component* implGetSelected() const final;
+        void implSetSelected(const OpenSim::Component*) final;
 
-        OpenSim::Component const* implGetHovered() const final;
-        void implSetHovered(OpenSim::Component const*) final;
+        const OpenSim::Component* implGetHovered() const final;
+        void implSetHovered(const OpenSim::Component*) final;
 
         float implGetFixupScaleFactor() const final;
         void implSetFixupScaleFactor(float) final;

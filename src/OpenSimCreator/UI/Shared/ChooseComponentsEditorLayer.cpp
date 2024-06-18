@@ -227,7 +227,7 @@ public:
         }
 
         // show tooltip
-        if (OpenSim::Component const* c = FindComponent(m_State.model->getModel(), m_State.hoveredComponent))
+        if (const OpenSim::Component* c = FindComponent(m_State.model->getModel(), m_State.hoveredComponent))
         {
             DrawComponentHoverTooltip(*c);
         }
@@ -274,7 +274,7 @@ public:
     bool tryToggleHover()
     {
         const std::string& absPath = m_State.hoveredComponent;
-        OpenSim::Component const* component = FindComponent(m_State.model->getModel(), absPath);
+        const OpenSim::Component* component = FindComponent(m_State.model->getModel(), absPath);
 
         if (!component)
         {

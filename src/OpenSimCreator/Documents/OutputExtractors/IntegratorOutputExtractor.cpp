@@ -135,7 +135,7 @@ bool osc::IntegratorOutputExtractor::implEquals(const IOutputExtractor& other) c
         return true;
     }
 
-    auto const* const otherT = dynamic_cast<IntegratorOutputExtractor const*>(&other);
+    const auto* const otherT = dynamic_cast<const IntegratorOutputExtractor*>(&other);
     if (!otherT)
     {
         return false;

@@ -60,7 +60,7 @@ namespace osc::mow
         bool hasUnpairedLandmarks() const;
 
         bool hasLandmarkNamed(std::string_view) const;
-        MaybePairedLandmark const* tryGetLandmarkPairingByName(std::string_view) const;
+        const MaybePairedLandmark* tryGetLandmarkPairingByName(std::string_view) const;
 
     private:
         std::unique_ptr<IPointWarperFactory> implClone() const override;

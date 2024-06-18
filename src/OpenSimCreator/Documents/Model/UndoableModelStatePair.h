@@ -120,11 +120,11 @@ namespace osc
         float implGetFixupScaleFactor() const final;
         void implSetFixupScaleFactor(float) final;
 
-        OpenSim::Component const* implGetSelected() const final;
-        void implSetSelected(OpenSim::Component const* c) final;
+        const OpenSim::Component* implGetSelected() const final;
+        void implSetSelected(const OpenSim::Component* c) final;
 
-        OpenSim::Component const* implGetHovered() const final;
-        void implSetHovered(OpenSim::Component const* c) final;
+        const OpenSim::Component* implGetHovered() const final;
+        void implSetHovered(const OpenSim::Component* c) final;
 
         class Impl;
         std::unique_ptr<Impl> m_Impl;

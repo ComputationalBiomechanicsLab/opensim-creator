@@ -293,7 +293,7 @@ namespace
                 m_IsHandlingMouseInputs &&
                 !ui::is_mouse_dragging_with_any_button_down())
             {
-                if (OpenSim::Component const* c = FindComponent(params.getModelSharedPtr()->getModel(), state.maybeHoveredComponentAbsPath))
+                if (const OpenSim::Component* c = FindComponent(params.getModelSharedPtr()->getModel(), state.maybeHoveredComponentAbsPath))
                 {
                     DrawComponentHoverTooltip(*c);
                 }

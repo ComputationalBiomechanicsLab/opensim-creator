@@ -84,7 +84,7 @@ namespace osc
     void DrawWithRespectToMenuContainingMenuPerFrame(
         const OpenSim::Component& root,
         std::function<void(const OpenSim::Frame&)> const& onFrameMenuOpened,
-        OpenSim::Frame const* maybeParent
+        const OpenSim::Frame* maybeParent
     );
 
     // draws a "With Respect to" menu that prompts the user to click a frame
@@ -95,7 +95,7 @@ namespace osc
     void DrawWithRespectToMenuContainingMenuItemPerFrame(
         const OpenSim::Component& root,
         std::function<void(const OpenSim::Frame&)> const& onFrameMenuItemClicked,
-        OpenSim::Frame const* maybeParent
+        const OpenSim::Frame* maybeParent
     );
 
     void DrawPointTranslationInformationWithRespectTo(
@@ -132,7 +132,7 @@ namespace osc
         const OpenSim::Component& root,
         const SimTK::State&,
         const OpenSim::Point&,
-        OpenSim::Frame const* maybeParent
+        const OpenSim::Frame* maybeParent
     );
     void DrawCalculateMenu(
         const OpenSim::Component& root,

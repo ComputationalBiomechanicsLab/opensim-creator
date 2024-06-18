@@ -71,7 +71,7 @@ bool osc::MultiBodySystemOutputExtractor::implEquals(const IOutputExtractor& oth
         return true;
     }
 
-    auto const* const otherT = dynamic_cast<MultiBodySystemOutputExtractor const*>(&other);
+    const auto* const otherT = dynamic_cast<const MultiBodySystemOutputExtractor*>(&other);
     if (!otherT)
     {
         return false;

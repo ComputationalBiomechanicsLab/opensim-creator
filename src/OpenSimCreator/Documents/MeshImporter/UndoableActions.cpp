@@ -172,13 +172,13 @@ bool osc::mi::TryTranslateBetweenTwoObjects(
         return false;
     }
 
-    MIObject const* const objA = doc.tryGetByID(a);
+    const MIObject* const objA = doc.tryGetByID(a);
     if (!objA)
     {
         return false;
     }
 
-    MIObject const* const objB = doc.tryGetByID(b);
+    const MIObject* const objB = doc.tryGetByID(b);
     if (!objB)
     {
         return false;
@@ -203,7 +203,7 @@ bool osc::mi::TryTranslateObjectToAnotherObject(
         return false;
     }
 
-    MIObject const* const otherObj = doc.tryGetByID(other);
+    const MIObject* const otherObj = doc.tryGetByID(other);
     if (!otherObj)
     {
         return false;
@@ -228,7 +228,7 @@ bool osc::mi::TryTranslateToMeshAverageCenter(
         return false;
     }
 
-    auto const* const mesh = doc.tryGetByID<Mesh>(meshID);
+    const auto* const mesh = doc.tryGetByID<Mesh>(meshID);
     if (!mesh)
     {
         return false;
@@ -253,7 +253,7 @@ bool osc::mi::TryTranslateToMeshBoundsCenter(
         return false;
     }
 
-    auto const* const mesh = doc.tryGetByID<Mesh>(meshID);
+    const auto* const mesh = doc.tryGetByID<Mesh>(meshID);
     if (!mesh)
     {
         return false;
@@ -280,7 +280,7 @@ bool osc::mi::TryTranslateToMeshMassCenter(
         return false;
     }
 
-    auto const* const mesh = doc.tryGetByID<Mesh>(meshID);
+    const auto* const mesh = doc.tryGetByID<Mesh>(meshID);
     if (!mesh)
     {
         return false;
@@ -379,7 +379,7 @@ bool osc::mi::TryCopyOrientation(
         return false;
     }
 
-    MIObject const* const otherObj = doc.tryGetByID(other);
+    const MIObject* const otherObj = doc.tryGetByID(other);
     if (!otherObj)
     {
         return false;
@@ -453,7 +453,7 @@ bool osc::mi::AddStationAtLocation(
 {
     Document& doc = udoc.upd_scratch();
 
-    auto const* const obj = doc.tryGetByID(attachment);
+    const auto* const obj = doc.tryGetByID(attachment);
     if (!obj)
     {
         return false;

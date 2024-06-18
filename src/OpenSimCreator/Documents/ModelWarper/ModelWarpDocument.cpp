@@ -51,7 +51,7 @@ std::vector<WarpDetail> osc::mow::ModelWarpDocument::details(const OpenSim::Mesh
     std::vector<WarpDetail> rv;
     rv.emplace_back("OpenSim::Mesh path in the OpenSim::Model", GetAbsolutePathString(mesh));
 
-    if (IPointWarperFactory const* p = m_MeshWarpLookup->find(GetAbsolutePathString(mesh))) {
+    if (const IPointWarperFactory* p = m_MeshWarpLookup->find(GetAbsolutePathString(mesh))) {
         auto inner = p->details();
         rv.insert(rv.end(), std::make_move_iterator(inner.begin()), std::make_move_iterator(inner.end()));
     }
@@ -61,7 +61,7 @@ std::vector<WarpDetail> osc::mow::ModelWarpDocument::details(const OpenSim::Mesh
 
 std::vector<ValidationCheckResult> osc::mow::ModelWarpDocument::validate(const OpenSim::Mesh& mesh) const
 {
-    if (IPointWarperFactory const* p = m_MeshWarpLookup->find(GetAbsolutePathString(mesh))) {
+    if (const IPointWarperFactory* p = m_MeshWarpLookup->find(GetAbsolutePathString(mesh))) {
         return p->validate();
     }
     else {
@@ -71,18 +71,18 @@ std::vector<ValidationCheckResult> osc::mow::ModelWarpDocument::validate(const O
 
 ValidationCheckState osc::mow::ModelWarpDocument::state(const OpenSim::Mesh& mesh) const
 {
-    IPointWarperFactory const* p = m_MeshWarpLookup->find(GetAbsolutePathString(mesh));
+    const IPointWarperFactory* p = m_MeshWarpLookup->find(GetAbsolutePathString(mesh));
     return p ? p->state() : ValidationCheckState::Error;
 }
 
-IPointWarperFactory const* osc::mow::ModelWarpDocument::findMeshWarp(const OpenSim::Mesh& mesh) const
+const IPointWarperFactory* osc::mow::ModelWarpDocument::findMeshWarp(const OpenSim::Mesh& mesh) const
 {
     return m_MeshWarpLookup->find(GetAbsolutePathString(mesh));
 }
 
 std::vector<WarpDetail> osc::mow::ModelWarpDocument::details(const OpenSim::PhysicalOffsetFrame& pof) const
 {
-    if (IFrameWarperFactory const* p = m_FrameWarpLookup->find(GetAbsolutePathString(pof))) {
+    if (const IFrameWarperFactory* p = m_FrameWarpLookup->find(GetAbsolutePathString(pof))) {
         return p->details();
     }
     return {};
@@ -90,7 +90,7 @@ std::vector<WarpDetail> osc::mow::ModelWarpDocument::details(const OpenSim::Phys
 
 std::vector<ValidationCheckResult> osc::mow::ModelWarpDocument::validate(const OpenSim::PhysicalOffsetFrame& pof) const
 {
-    if (IFrameWarperFactory const* p = m_FrameWarpLookup->find(GetAbsolutePathString(pof))) {
+    if (const IFrameWarperFactory* p = m_FrameWarpLookup->find(GetAbsolutePathString(pof))) {
         return p->validate();
     }
     else {
@@ -101,7 +101,7 @@ std::vector<ValidationCheckResult> osc::mow::ModelWarpDocument::validate(const O
 ValidationCheckState osc::mow::ModelWarpDocument::state(
     const OpenSim::PhysicalOffsetFrame& pof) const
 {
-    IFrameWarperFactory const* p = m_FrameWarpLookup->find(GetAbsolutePathString(pof));
+    const IFrameWarperFactory* p = m_FrameWarpLookup->find(GetAbsolutePathString(pof));
     return p ? p->state() : ValidationCheckState::Error;
 }
 

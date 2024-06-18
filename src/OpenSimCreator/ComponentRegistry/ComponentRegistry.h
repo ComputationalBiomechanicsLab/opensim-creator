@@ -24,16 +24,16 @@ namespace osc
             ComponentRegistryBase{name_, description_}
         {}
 
-        value_type const* begin() const
+        const value_type* begin() const
         {
             const auto& base = static_cast<const ComponentRegistryBase&>(*this);
-            return static_cast<value_type const*>(base.begin());
+            return static_cast<const value_type*>(base.begin());
         }
 
-        value_type const* end() const
+        const value_type* end() const
         {
             const auto& base = static_cast<const ComponentRegistryBase&>(*this);
-            return static_cast<value_type const*>(base.end());
+            return static_cast<const value_type*>(base.end());
         }
 
         const value_type& operator[](size_t i) const

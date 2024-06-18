@@ -307,7 +307,7 @@ namespace
         DrawSelectionManipulatorButtons(uiState, model, state);
     }
 
-    OpenSim::Component const* TryGetMaybeSelectedFrameOrNullptr(
+    const OpenSim::Component* TryGetMaybeSelectedFrameOrNullptr(
         const FrameSelectorUiState& uiState,
         const OpenSim::Model& model)
     {
@@ -320,7 +320,7 @@ namespace
         const FrameSelectorUiState& uiState,
         const OpenSim::Model& model)
     {
-        OpenSim::Component const* c = TryGetMaybeSelectedFrameOrNullptr(uiState, model);
+        const OpenSim::Component* c = TryGetMaybeSelectedFrameOrNullptr(uiState, model);
         return c ? c->getName() : std::string{c_OriginalFrameLabel};
     }
 
@@ -393,7 +393,7 @@ namespace
             return std::nullopt;  // caller doesn't want re-expression
         }
 
-        auto const* const frame = FindComponent<OpenSim::Frame>(model, *maybeAbsPathOfFrameToReexpressPointsIn);
+        const auto* const frame = FindComponent<OpenSim::Frame>(model, *maybeAbsPathOfFrameToReexpressPointsIn);
         if (!frame)
         {
             return std::nullopt;  // the selected frame doesn't exist in the model (bug?)
@@ -422,7 +422,7 @@ namespace
         const PointInfo& pointInfo,
         const SimTK::Transform& ground2otherFrame)
     {
-        auto const* const frame = FindComponent<OpenSim::Frame>(model, pointInfo.frameAbsPath);
+        const auto* const frame = FindComponent<OpenSim::Frame>(model, pointInfo.frameAbsPath);
         if (!frame)
         {
             return pointInfo.location;  // cannot find frame (bug?)
@@ -439,7 +439,7 @@ namespace
         const std::string& pointAbsPath,
         std::ostream& out)
     {
-        OpenSim::Component const* const c = FindComponent(model, pointAbsPath);
+        const OpenSim::Component* const c = FindComponent(model, pointAbsPath);
         if (!c)
         {
             return;  // skip writing: point no longer exists in model

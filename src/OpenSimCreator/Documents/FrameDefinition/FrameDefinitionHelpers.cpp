@@ -161,22 +161,22 @@ void osc::fd::SetupDefault3DViewportRenderingParams(ModelRendererParams& renderP
 
 bool osc::fd::IsPoint(const OpenSim::Component& component)
 {
-    return dynamic_cast<OpenSim::Point const*>(&component) != nullptr;
+    return dynamic_cast<const OpenSim::Point*>(&component) != nullptr;
 }
 
 bool osc::fd::IsMesh(const OpenSim::Component& component)
 {
-    return dynamic_cast<OpenSim::Mesh const*>(&component) != nullptr;
+    return dynamic_cast<const OpenSim::Mesh*>(&component) != nullptr;
 }
 
 bool osc::fd::IsPhysicalFrame(const OpenSim::Component& component)
 {
-    return dynamic_cast<OpenSim::PhysicalFrame const*>(&component) != nullptr;
+    return dynamic_cast<const OpenSim::PhysicalFrame*>(&component) != nullptr;
 }
 
 bool osc::fd::IsEdge(const OpenSim::Component& component)
 {
-    return dynamic_cast<Edge const*>(&component) != nullptr;
+    return dynamic_cast<const Edge*>(&component) != nullptr;
 }
 
 SimTK::UnitVec3 osc::fd::CalcDirection(const EdgePoints& a)

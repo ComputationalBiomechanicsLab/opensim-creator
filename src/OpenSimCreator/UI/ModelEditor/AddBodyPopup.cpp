@@ -44,7 +44,7 @@ private:
     {
         const OpenSim::Model& model = m_Uum->getModel();
 
-        auto const* selectedPf = FindComponent<OpenSim::PhysicalFrame>(model, m_BodyDetails.parentFrameAbsPath);
+        const auto* selectedPf = FindComponent<OpenSim::PhysicalFrame>(model, m_BodyDetails.parentFrameAbsPath);
         if (!selectedPf)
         {
             // if nothing selected (or not found), coerce the initial selection to ground

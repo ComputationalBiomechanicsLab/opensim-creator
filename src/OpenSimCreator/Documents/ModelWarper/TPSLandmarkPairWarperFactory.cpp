@@ -252,7 +252,7 @@ bool osc::mow::TPSLandmarkPairWarperFactory::hasLandmarkNamed(std::string_view n
     return cpp23::contains(m_Landmarks, name, &MaybePairedLandmark::name);
 }
 
-MaybePairedLandmark const* osc::mow::TPSLandmarkPairWarperFactory::tryGetLandmarkPairingByName(std::string_view name) const
+const MaybePairedLandmark* osc::mow::TPSLandmarkPairWarperFactory::tryGetLandmarkPairingByName(std::string_view name) const
 {
     return find_or_nullptr(m_Landmarks, name, &MaybePairedLandmark::name);
 }

@@ -98,12 +98,12 @@ namespace
         size_t m_Size = 0;
     };
 
-    using ComponentPath = SizedArray<OpenSim::Component const*, 16>;
+    using ComponentPath = SizedArray<const OpenSim::Component*, 16>;
 
     // populates `out` with the sequence of nodes between (ancestor..child]
     void computeComponentPath(
-        OpenSim::Component const* ancestor,
-        OpenSim::Component const* child,
+        const OpenSim::Component* ancestor,
+        const OpenSim::Component* child,
         ComponentPath& out)
     {
 
@@ -124,7 +124,7 @@ namespace
         rgs::reverse(out);
     }
 
-    bool pathContains(const ComponentPath& p, OpenSim::Component const* c)
+    bool pathContains(const ComponentPath& p, const OpenSim::Component* c)
     {
         auto end = p.begin() == p.end() ? p.end() : p.end()-1;
         return cpp23::contains(p.begin(), end, c);
@@ -137,13 +137,13 @@ namespace
     };
 
     struct Response final {
-        OpenSim::Component const* ptr = nullptr;
+        const OpenSim::Component* ptr = nullptr;
         ResponseType type = ResponseType::NothingHappened;
     };
 
     bool isSearchHit(const std::string& searchStr, const ComponentPath& cp)
     {
-        return rgs::any_of(cp, [&searchStr](OpenSim::Component const* c)
+        return rgs::any_of(cp, [&searchStr](const OpenSim::Component* c)
         {
             return contains_case_insensitive(c->getName(), searchStr);
         });
@@ -223,9 +223,9 @@ private:
         // draw content
         ui::begin_child_panel("##componentnavigatorvieweritems", {0.0, 0.0}, ImGuiChildFlags_None, ImGuiWindowFlags_NoBackground);
 
-        OpenSim::Component const* root = &m_Model->getModel();
-        OpenSim::Component const* selection = m_Model->getSelected();
-        OpenSim::Component const* hover = m_Model->getHovered();
+        const OpenSim::Component* root = &m_Model->getModel();
+        const OpenSim::Component* selection = m_Model->getSelected();
+        const OpenSim::Component* hover = m_Model->getHovered();
 
         ComponentPath selectionPath{};
         if (selection)
@@ -245,12 +245,12 @@ private:
         auto const end = lst.end();
 
         // initially populate lookahead (+ path)
-        OpenSim::Component const* lookahead = root;
+        const OpenSim::Component* lookahead = root;
         ComponentPath lookaheadPath;
         computeComponentPath(root, root, lookaheadPath);
 
         // set cur path empty (first step copies lookahead into this)
-        OpenSim::Component const* cur = nullptr;
+        const OpenSim::Component* cur = nullptr;
         ComponentPath currentPath;
 
         int imguiTreeDepth = 0;
@@ -280,11 +280,11 @@ private:
 
                 bool shouldRender = true;
 
-                if (!m_ShowFrames && dynamic_cast<OpenSim::FrameGeometry const*>(&c))
+                if (!m_ShowFrames && dynamic_cast<const OpenSim::FrameGeometry*>(&c))
                 {
                     shouldRender = false;
                 }
-                else if (auto const* wos = dynamic_cast<OpenSim::WrapObjectSet const*>(&c))
+                else if (const auto* wos = dynamic_cast<const OpenSim::WrapObjectSet*>(&c))
                 {
                     shouldRender = !empty(*wos);
                 }

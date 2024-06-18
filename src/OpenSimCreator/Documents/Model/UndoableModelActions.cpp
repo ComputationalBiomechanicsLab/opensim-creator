@@ -188,7 +188,7 @@ namespace
         const OpenSim::Object& newConnectee,
         const SimTK::State& state)
     {
-        auto const* const newFrame = dynamic_cast<OpenSim::Frame const*>(&newConnectee);
+        const auto* const newFrame = dynamic_cast<const OpenSim::Frame*>(&newConnectee);
         if (!newFrame)
         {
             return false;  // new connectee isn't a frame
@@ -305,7 +305,7 @@ bool osc::ActionSaveModel(IMainUIStateAPI&, UndoableModelStatePair& model)
 
 void osc::ActionTryDeleteSelectionFromEditedModel(UndoableModelStatePair& uim)
 {
-    OpenSim::Component const* const selected = uim.getSelected();
+    const OpenSim::Component* const selected = uim.getSelected();
 
     if (!selected)
     {
@@ -670,7 +670,7 @@ bool osc::ActionSimulateAgainstAllIntegrators(
 
 bool osc::ActionAddOffsetFrameToPhysicalFrame(UndoableModelStatePair& uim, const OpenSim::ComponentPath& path)
 {
-    auto const* const target = FindComponent<OpenSim::PhysicalFrame>(uim.getModel(), path);
+    const auto* const target = FindComponent<OpenSim::PhysicalFrame>(uim.getModel(), path);
     if (!target)
     {
         return false;
@@ -713,7 +713,7 @@ bool osc::ActionAddOffsetFrameToPhysicalFrame(UndoableModelStatePair& uim, const
 
 bool osc::CanRezeroJoint(UndoableModelStatePair& uim, const OpenSim::ComponentPath& jointPath)
 {
-    auto const* const joint = FindComponent<OpenSim::Joint>(uim.getModel(), jointPath);
+    const auto* const joint = FindComponent<OpenSim::Joint>(uim.getModel(), jointPath);
     if (!joint)
     {
         return false;
@@ -724,18 +724,18 @@ bool osc::CanRezeroJoint(UndoableModelStatePair& uim, const OpenSim::ComponentPa
     // point is whatever the current arrangement is (effectively, by pre-transforming
     // the parent into the child and assuming a "zeroed" joint is an identity op)
 
-    return dynamic_cast<OpenSim::PhysicalOffsetFrame const*>(&joint->getParentFrame()) != nullptr;
+    return dynamic_cast<const OpenSim::PhysicalOffsetFrame*>(&joint->getParentFrame()) != nullptr;
 }
 
 bool osc::ActionRezeroJoint(UndoableModelStatePair& uim, const OpenSim::ComponentPath& jointPath)
 {
-    auto const* const target = FindComponent<OpenSim::Joint>(uim.getModel(), jointPath);
+    const auto* const target = FindComponent<OpenSim::Joint>(uim.getModel(), jointPath);
     if (!target)
     {
         return false;  // nothing/invalid component type specified
     }
 
-    auto const* const parentPOF = dynamic_cast<OpenSim::PhysicalOffsetFrame const*>(&target->getParentFrame());
+    const auto* const parentPOF = dynamic_cast<const OpenSim::PhysicalOffsetFrame*>(&target->getParentFrame());
     if (!parentPOF)
     {
         return false;  // target has no parent frame
@@ -800,7 +800,7 @@ bool osc::ActionRezeroJoint(UndoableModelStatePair& uim, const OpenSim::Componen
 
 bool osc::ActionAddParentOffsetFrameToJoint(UndoableModelStatePair& uim, const OpenSim::ComponentPath& jointPath)
 {
-    auto const* const target = FindComponent<OpenSim::Joint>(uim.getModel(), jointPath);
+    const auto* const target = FindComponent<OpenSim::Joint>(uim.getModel(), jointPath);
     if (!target)
     {
         return false;
@@ -842,7 +842,7 @@ bool osc::ActionAddParentOffsetFrameToJoint(UndoableModelStatePair& uim, const O
 
 bool osc::ActionAddChildOffsetFrameToJoint(UndoableModelStatePair& uim, const OpenSim::ComponentPath& jointPath)
 {
-    auto const* const target = FindComponent<OpenSim::Joint>(uim.getModel(), jointPath);
+    const auto* const target = FindComponent<OpenSim::Joint>(uim.getModel(), jointPath);
     if (!target)
     {
         return false;
@@ -889,7 +889,7 @@ bool osc::ActionSetComponentName(UndoableModelStatePair& uim, const OpenSim::Com
         return false;
     }
 
-    OpenSim::Component const* const target = FindComponent(uim.getModel(), path);
+    const OpenSim::Component* const target = FindComponent(uim.getModel(), path);
     if (!target)
     {
         return false;
@@ -936,14 +936,14 @@ bool osc::ActionChangeJointTypeTo(UndoableModelStatePair& uim, const OpenSim::Co
         return false;
     }
 
-    auto const* const target = FindComponent<OpenSim::Joint>(uim.getModel(), jointPath);
+    const auto* const target = FindComponent<OpenSim::Joint>(uim.getModel(), jointPath);
     if (!target)
     {
         log_error("could not find %s in the model", jointPath.toString().c_str());
         return false;
     }
 
-    auto const* const owner = GetOwner<OpenSim::JointSet>(*target);
+    const auto* const owner = GetOwner<OpenSim::JointSet>(*target);
     if (!owner)
     {
         log_error("%s is not owned by an OpenSim::JointSet", jointPath.toString().c_str());
@@ -1004,7 +1004,7 @@ bool osc::ActionChangeJointTypeTo(UndoableModelStatePair& uim, const OpenSim::Co
 
 bool osc::ActionAttachGeometryToPhysicalFrame(UndoableModelStatePair& uim, const OpenSim::ComponentPath& physFramePath, std::unique_ptr<OpenSim::Geometry> geom)
 {
-    auto const* const target = FindComponent<OpenSim::PhysicalFrame>(uim.getModel(), physFramePath);
+    const auto* const target = FindComponent<OpenSim::PhysicalFrame>(uim.getModel(), physFramePath);
     if (!target)
     {
         return false;
@@ -1048,13 +1048,13 @@ bool osc::ActionAssignContactGeometryToHCF(
     const OpenSim::ComponentPath& hcfPath,
     const OpenSim::ComponentPath& contactGeomPath)
 {
-    auto const* const target = FindComponent<OpenSim::HuntCrossleyForce>(uim.getModel(), hcfPath);
+    const auto* const target = FindComponent<OpenSim::HuntCrossleyForce>(uim.getModel(), hcfPath);
     if (!target)
     {
         return false;
     }
 
-    auto const* const geom = FindComponent<OpenSim::ContactGeometry>(uim.getModel(), contactGeomPath);
+    const auto* const geom = FindComponent<OpenSim::ContactGeometry>(uim.getModel(), contactGeomPath);
     if (!geom)
     {
         return false;
@@ -1142,13 +1142,13 @@ bool osc::ActionAddPathPointToPathActuator(
     const OpenSim::ComponentPath& pathActuatorPath,
     const OpenSim::ComponentPath& pointPhysFrame)
 {
-    auto const* const pa = FindComponent<OpenSim::PathActuator>(uim.getModel(), pathActuatorPath);
+    const auto* const pa = FindComponent<OpenSim::PathActuator>(uim.getModel(), pathActuatorPath);
     if (!pa)
     {
         return false;
     }
 
-    auto const* const pf = FindComponent<OpenSim::PhysicalFrame>(uim.getModel(), pointPhysFrame);
+    const auto* const pf = FindComponent<OpenSim::PhysicalFrame>(uim.getModel(), pointPhysFrame);
     if (!pf)
     {
         return false;
@@ -1179,7 +1179,7 @@ bool osc::ActionAddPathPointToPathActuator(
 
         // try to select the new path point, if possible, so that the user
         // can immediately see the grab handles etc. (#779)
-        if (auto const* paAfterFinalization = FindComponent<OpenSim::PathActuator>(mutModel, pathActuatorPath))
+        if (const auto* paAfterFinalization = FindComponent<OpenSim::PathActuator>(mutModel, pathActuatorPath))
         {
             const auto& pps = paAfterFinalization->getGeometryPath().getPathPointSet();
             if (!empty(pps))
@@ -1222,7 +1222,7 @@ bool osc::ActionReassignComponentSocket(
         return false;
     }
 
-    OpenSim::Component const* const target = FindComponent(uim.getModel(), componentAbsPath);
+    const OpenSim::Component* const target = FindComponent(uim.getModel(), componentAbsPath);
     if (!target)
     {
         return false;
@@ -1292,7 +1292,7 @@ osc::BodyDetails::BodyDetails() :
 
 bool osc::ActionAddBodyToModel(UndoableModelStatePair& uim, const BodyDetails& details)
 {
-    auto const* const parent = FindComponent<OpenSim::PhysicalFrame>(uim.getModel(), details.parentFrameAbsPath);
+    const auto* const parent = FindComponent<OpenSim::PhysicalFrame>(uim.getModel(), details.parentFrameAbsPath);
     if (!parent)
     {
         return false;
