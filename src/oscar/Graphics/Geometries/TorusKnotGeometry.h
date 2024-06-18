@@ -1,6 +1,7 @@
 #pragma once
 
 #include <oscar/Graphics/Mesh.h>
+#include <oscar/Utils/CStringView.h>
 
 #include <cstddef>
 
@@ -11,6 +12,8 @@ namespace osc
     // will be a torus link
     class TorusKnotGeometry final {
     public:
+        static constexpr CStringView name() { return "Torus Knot"; }
+
         TorusKnotGeometry(
             float torus_radius = 1.0f,
             float tube_radius = 0.4f,

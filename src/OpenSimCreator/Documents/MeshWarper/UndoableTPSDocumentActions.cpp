@@ -176,20 +176,26 @@ void osc::ActionDeleteElementByID(UndoableTPSDocument& doc, UID id)
     }
 }
 
+void osc::ActionLoadMesh(
+    UndoableTPSDocument& doc,
+    const Mesh& mesh,
+    TPSDocumentInputIdentifier which)
+{
+    UpdMesh(doc.upd_scratch(), which) = mesh;
+    doc.commit_scratch("changed mesh");
+}
+
 void osc::ActionLoadMeshFile(
     UndoableTPSDocument& doc,
     TPSDocumentInputIdentifier which)
 {
     const std::optional<std::filesystem::path> maybeMeshPath =
         prompt_user_to_select_file(GetSupportedSimTKMeshFormats());
-    if (!maybeMeshPath)
-    {
+    if (not maybeMeshPath) {
         return;  // user didn't select anything
     }
 
-    UpdMesh(doc.upd_scratch(), which) = LoadMeshViaSimTK(*maybeMeshPath);
-
-    doc.commit_scratch("changed mesh");
+    ActionLoadMesh(doc, LoadMeshViaSimTK(*maybeMeshPath), which);
 }
 
 void osc::ActionLoadLandmarksFromCSV(

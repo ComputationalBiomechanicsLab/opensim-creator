@@ -2,6 +2,7 @@
 
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Maths/Angle.h>
+#include <oscar/Utils/CStringView.h>
 
 #include <cstddef>
 
@@ -9,6 +10,8 @@ namespace osc
 {
     class CylinderGeometry final {
     public:
+        static constexpr CStringView name() { return "Cylinder"; }
+
         CylinderGeometry(
             float radius_top = 1.0f,
             float radius_bottom = 1.0f,

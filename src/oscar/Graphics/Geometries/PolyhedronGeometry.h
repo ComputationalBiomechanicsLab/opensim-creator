@@ -2,6 +2,7 @@
 
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Maths/Vec3.h>
+#include <oscar/Utils/CStringView.h>
 
 #include <cstddef>
 #include <cstdint>
@@ -14,6 +15,8 @@ namespace osc
     // by dividing them up to the desired `detail_level`
     class PolyhedronGeometry final {
     public:
+        static constexpr CStringView name() { return "Polyhedron"; }
+
         PolyhedronGeometry(
             std::span<const Vec3> vertices,
             std::span<const uint32_t> indices,

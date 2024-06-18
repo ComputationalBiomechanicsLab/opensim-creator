@@ -81,6 +81,7 @@ add_library(oscar STATIC
     Graphics/Geometries/PolyhedronGeometry.h
     Graphics/Geometries/RingGeometry.cpp
     Graphics/Geometries/RingGeometry.h
+    Graphics/Geometries/SolidGeometries.h
     Graphics/Geometries/SphereGeometry.cpp
     Graphics/Geometries/SphereGeometry.h
     Graphics/Geometries/TetrahedronGeometry.cpp
@@ -421,7 +422,7 @@ add_library(oscar STATIC
     UI.h
     Utils.h
     Variant.h
-  )
+ )
 
 target_include_directories(oscar PUBLIC
 

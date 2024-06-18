@@ -56,6 +56,9 @@ namespace osc
     void ActionDeleteSceneElementsByID(UndoableTPSDocument&, const std::unordered_set<TPSDocumentElementID>&);
     void ActionDeleteElementByID(UndoableTPSDocument&, UID);
 
+    // assigns the given mesh to the document
+    void ActionLoadMesh(UndoableTPSDocument&, const Mesh&, TPSDocumentInputIdentifier);
+
     // prompts the user to browse for an input mesh and assigns it to the document
     void ActionLoadMeshFile(UndoableTPSDocument&, TPSDocumentInputIdentifier);
 

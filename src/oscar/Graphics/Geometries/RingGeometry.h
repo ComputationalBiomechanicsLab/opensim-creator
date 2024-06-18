@@ -2,6 +2,7 @@
 
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Maths/Angle.h>
+#include <oscar/Utils/CStringView.h>
 
 #include <cstddef>
 
@@ -9,6 +10,8 @@ namespace osc
 {
     class RingGeometry final {
     public:
+        static constexpr CStringView name() { return "Ring"; }
+
         RingGeometry(
             float inner_radius = 0.5f,
             float outer_radius = 1.0f,

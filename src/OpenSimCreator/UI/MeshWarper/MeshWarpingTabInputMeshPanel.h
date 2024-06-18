@@ -14,6 +14,7 @@
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Graphics/RenderTexture.h>
+#include <oscar/Graphics/Geometries/SolidGeometries.h>
 #include <oscar/Graphics/Scene/CachedSceneRenderer.h>
 #include <oscar/Graphics/Scene/SceneCache.h>
 #include <oscar/Graphics/Scene/SceneDecoration.h>
@@ -34,6 +35,7 @@
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/CStringView.h>
+#include <oscar/Utils/Typelist.h>
 
 #include <functional>
 #include <memory>
@@ -490,9 +492,13 @@ namespace osc
             ui::draw_button(ICON_FA_FILE_IMPORT " import" ICON_FA_CARET_DOWN);
             if (ui::begin_popup_context_menu("##importcontextmenu", ImGuiPopupFlags_MouseButtonLeft))
             {
-                if (ui::draw_menu_item("Mesh"))
+                if (ui::draw_menu_item("Mesh File"))
                 {
                     ActionLoadMeshFile(m_State->updUndoable(), m_DocumentIdentifier);
+                }
+                if (ui::begin_menu("Generated Mesh")) {
+                    drawGeneratedMeshOptions(SolidGeometries{});
+                    ui::end_menu();
                 }
                 if (ui::draw_menu_item("Landmarks from CSV"))
                 {
@@ -504,6 +510,20 @@ namespace osc
                     ActionLoadNonParticipatingLandmarksFromCSV(m_State->updUndoable());
                 }
                 ui::end_popup();
+            }
+        }
+
+        template<typename... Geometries>
+        void drawGeneratedMeshOptions(Typelist<Geometries...>)
+        {
+            (drawGeneratedMeshOption<Geometries>(), ...);
+        }
+
+        template<typename Geometry>
+        void drawGeneratedMeshOption()
+        {
+            if (ui::draw_menu_item(Geometry::name())) {
+                ActionLoadMesh(m_State->updUndoable(), Geometry{}, m_DocumentIdentifier);
             }
         }
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <oscar/Graphics/Mesh.h>
+#include <oscar/Utils/CStringView.h>
 
 #include <cstddef>
 
@@ -8,6 +9,8 @@ namespace osc
 {
     class PlaneGeometry final {
     public:
+        static constexpr CStringView name() { return "Plane"; }
+
         PlaneGeometry(
             float width = 1.0f,
             float height = 1.0f,

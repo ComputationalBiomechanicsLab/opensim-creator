@@ -7,6 +7,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - The model warping workflow now writes the warped meshes to disk at `$MODEL_DIR/WarpedGeometry`
   (previously: it kept them in-memory, which was only really useful for development, #889)
+- The mesh input (source/destination) panels in the mesh importer now have the option to import
+  generated meshes, which is handy for debugging/demos
 - The [opensim-jam-org/jam-plugin](https://github.com/opensim-jam-org/jam-plugin) is
   now built alongside OpenSimCreator, which enables loading models containing
   `Smith2018ArticularContactForce` and `Smith2018ContactMesh` (#884)

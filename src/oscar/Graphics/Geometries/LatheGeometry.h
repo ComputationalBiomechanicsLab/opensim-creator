@@ -3,6 +3,7 @@
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Maths/Angle.h>
 #include <oscar/Maths/Vec2.h>
+#include <oscar/Utils/CStringView.h>
 
 #include <cstddef>
 #include <span>
@@ -15,6 +16,8 @@ namespace osc
     // (ported from three.js:LatheGeometry)
     class LatheGeometry final {
     public:
+        static constexpr CStringView name() { return "Lathe"; }
+
         LatheGeometry(
             std::span<const Vec2> points = std::vector<Vec2>{{0.0f, -0.5f}, {0.5f, 0.0f}, {0.0f, 0.5f}},
             size_t num_segments = 12,
