@@ -8,9 +8,9 @@ namespace osc::mi
     class IMeshImporterUILayerHost {
     protected:
         IMeshImporterUILayerHost() = default;
-        IMeshImporterUILayerHost(IMeshImporterUILayerHost const&) = default;
+        IMeshImporterUILayerHost(const IMeshImporterUILayerHost&) = default;
         IMeshImporterUILayerHost(IMeshImporterUILayerHost&&) noexcept = default;
-        IMeshImporterUILayerHost& operator=(IMeshImporterUILayerHost const&) = default;
+        IMeshImporterUILayerHost& operator=(const IMeshImporterUILayerHost&) = default;
         IMeshImporterUILayerHost& operator=(IMeshImporterUILayerHost&&) noexcept = default;
     public:
         virtual ~IMeshImporterUILayerHost() noexcept = default;

@@ -19,9 +19,9 @@ namespace osc
             std::shared_ptr<UndoableModelStatePair>,
             ChooseComponentsEditorLayerParameters
         );
-        ChooseComponentsEditorLayer(ChooseComponentsEditorLayer const&) = delete;
+        ChooseComponentsEditorLayer(const ChooseComponentsEditorLayer&) = delete;
         ChooseComponentsEditorLayer(ChooseComponentsEditorLayer&&) noexcept;
-        ChooseComponentsEditorLayer& operator=(ChooseComponentsEditorLayer const&) = delete;
+        ChooseComponentsEditorLayer& operator=(const ChooseComponentsEditorLayer&) = delete;
         ChooseComponentsEditorLayer& operator=(ChooseComponentsEditorLayer&&) noexcept;
         ~ChooseComponentsEditorLayer() noexcept;
 

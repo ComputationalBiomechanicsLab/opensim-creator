@@ -31,8 +31,8 @@ using namespace osc;
 namespace
 {
     std::string GenerateComponentOutputLabel(
-        OpenSim::ComponentPath const& cp,
-        std::string const& outputName,
+        const OpenSim::ComponentPath& cp,
+        const std::string& outputName,
         ComponentOutputSubfield subfield)
     {
         std::stringstream ss;
@@ -45,22 +45,22 @@ namespace
         return std::move(ss).str();
     }
 
-    Variant NaNFloatingPointCallback(SimulationReport const&)
+    Variant NaNFloatingPointCallback(const SimulationReport&)
     {
         return Variant{quiet_nan_v<float>};
     }
 
-    Variant BlankStringCallback(SimulationReport const&)
+    Variant BlankStringCallback(const SimulationReport&)
     {
         return Variant{std::string{}};
     }
 
-    using NullCallbackFnPointer = Variant(*)(SimulationReport const&);
+    using NullCallbackFnPointer = Variant(*)(const SimulationReport&);
 }
 
 class osc::ComponentOutputExtractor::Impl final {
 public:
-    Impl(OpenSim::AbstractOutput const& ao,
+    Impl(const OpenSim::AbstractOutput& ao,
          ComponentOutputSubfield subfield) :
 
         m_ComponentAbsPath{GetAbsolutePath(GetOwnerOrThrow(ao))},
@@ -72,7 +72,7 @@ public:
 
     std::unique_ptr<Impl> clone() const { return std::make_unique<Impl>(*this); }
 
-    OpenSim::ComponentPath const& getComponentAbsPath() const { return m_ComponentAbsPath; }
+    const OpenSim::ComponentPath& getComponentAbsPath() const { return m_ComponentAbsPath; }
 
     CStringView getName() const { return m_Label; }
     CStringView getDescription() const { return CStringView{}; }
@@ -82,12 +82,12 @@ public:
         return m_ExtractorFunc ? OutputExtractorDataType::Float : OutputExtractorDataType::String;
     }
 
-    OutputValueExtractor getOutputValueExtractor(OpenSim::Component const& component) const
+    OutputValueExtractor getOutputValueExtractor(const OpenSim::Component& component) const
     {
-        OutputExtractorDataType const datatype = getOutputType();
-        NullCallbackFnPointer const nullCallback = datatype == OutputExtractorDataType::Float ? NaNFloatingPointCallback : BlankStringCallback;
+        const OutputExtractorDataType datatype = getOutputType();
+        const NullCallbackFnPointer nullCallback = datatype == OutputExtractorDataType::Float ? NaNFloatingPointCallback : BlankStringCallback;
 
-        OpenSim::AbstractOutput const* const ao = FindOutput(component, m_ComponentAbsPath, m_OutputName);
+        const OpenSim::AbstractOutput* const ao = FindOutput(component, m_ComponentAbsPath, m_OutputName);
 
         if (not ao) {
             return OutputValueExtractor{nullCallback};  // cannot find output
@@ -97,13 +97,13 @@ public:
         }
 
         if (datatype == OutputExtractorDataType::Float) {
-            return OutputValueExtractor{[func = m_ExtractorFunc, ao](SimulationReport const& report)
+            return OutputValueExtractor{[func = m_ExtractorFunc, ao](const SimulationReport& report)
             {
                 return Variant{static_cast<float>(func(*ao, report.getState()))};
             }};
         }
         else {
-            return OutputValueExtractor{[ao](SimulationReport const& report)
+            return OutputValueExtractor{[ao](const SimulationReport& report)
             {
                 return Variant{ao->getValueAsString(report.getState())};
             }};
@@ -115,14 +115,14 @@ public:
         return hash_of(m_ComponentAbsPath.toString(), m_OutputName, m_Label, m_OutputTypeid, m_ExtractorFunc);
     }
 
-    bool equals(IOutputExtractor const& other)
+    bool equals(const IOutputExtractor& other)
     {
-        auto const* const otherT = dynamic_cast<ComponentOutputExtractor const*>(&other);
+        const auto* const otherT = dynamic_cast<const ComponentOutputExtractor*>(&other);
         if (!otherT) {
             return false;
         }
 
-        ComponentOutputExtractor::Impl const* const otherImpl = otherT->m_Impl.get();
+        const ComponentOutputExtractor::Impl* const otherImpl = otherT->m_Impl.get();
         if (otherImpl == this) {
             return true;
         }
@@ -139,7 +139,7 @@ private:
     OpenSim::ComponentPath m_ComponentAbsPath;
     std::string m_OutputName;
     std::string m_Label;
-    std::type_info const* m_OutputTypeid;
+    const std::type_info* m_OutputTypeid;
     SubfieldExtractorFunc m_ExtractorFunc;
 };
 
@@ -147,18 +147,18 @@ private:
 // public API
 
 osc::ComponentOutputExtractor::ComponentOutputExtractor(
-    OpenSim::AbstractOutput const& ao,
+    const OpenSim::AbstractOutput& ao,
     ComponentOutputSubfield subfield) :
 
     m_Impl{std::make_unique<Impl>(ao, subfield)}
 {}
-osc::ComponentOutputExtractor::ComponentOutputExtractor(ComponentOutputExtractor const&) = default;
+osc::ComponentOutputExtractor::ComponentOutputExtractor(const ComponentOutputExtractor&) = default;
 osc::ComponentOutputExtractor::ComponentOutputExtractor(ComponentOutputExtractor&&) noexcept = default;
-osc::ComponentOutputExtractor& osc::ComponentOutputExtractor::operator=(ComponentOutputExtractor const&) = default;
+osc::ComponentOutputExtractor& osc::ComponentOutputExtractor::operator=(const ComponentOutputExtractor&) = default;
 osc::ComponentOutputExtractor& osc::ComponentOutputExtractor::operator=(ComponentOutputExtractor&&) noexcept = default;
 osc::ComponentOutputExtractor::~ComponentOutputExtractor() noexcept = default;
 
-OpenSim::ComponentPath const& osc::ComponentOutputExtractor::getComponentAbsPath() const
+const OpenSim::ComponentPath& osc::ComponentOutputExtractor::getComponentAbsPath() const
 {
     return m_Impl->getComponentAbsPath();
 }
@@ -178,7 +178,7 @@ OutputExtractorDataType osc::ComponentOutputExtractor::implGetOutputType() const
     return m_Impl->getOutputType();
 }
 
-OutputValueExtractor osc::ComponentOutputExtractor::implGetOutputValueExtractor(OpenSim::Component const& component) const
+OutputValueExtractor osc::ComponentOutputExtractor::implGetOutputValueExtractor(const OpenSim::Component& component) const
 {
     return m_Impl->getOutputValueExtractor(component);
 }
@@ -188,7 +188,7 @@ std::size_t osc::ComponentOutputExtractor::implGetHash() const
     return m_Impl->getHash();
 }
 
-bool osc::ComponentOutputExtractor::implEquals(IOutputExtractor const& other) const
+bool osc::ComponentOutputExtractor::implEquals(const IOutputExtractor& other) const
 {
     return m_Impl->equals(other);
 }

@@ -22,7 +22,7 @@ void osc::fd::CrossProductEdge::generateDecorations(
     const SimTK::State& state,
     SimTK::Array_<SimTK::DecorativeGeometry>& appendOut) const
 {
-    EdgePoints const coords = getLocationsInGround(state);
+    const EdgePoints coords = getLocationsInGround(state);
 
     // draw edge
     appendOut.push_back(CreateDecorativeArrow(
@@ -34,7 +34,7 @@ void osc::fd::CrossProductEdge::generateDecorations(
     // if requested, draw a parallelogram from the two edges
     if (get_show_plane())
     {
-        auto const [aPoints, bPoints] = getBothEdgePoints(state);
+        const auto [aPoints, bPoints] = getBothEdgePoints(state);
         appendOut.push_back(CreateParallelogramMesh(
             coords.start,
             aPoints.end - aPoints.start,
@@ -44,13 +44,13 @@ void osc::fd::CrossProductEdge::generateDecorations(
     }
 }
 
-EdgePoints osc::fd::CrossProductEdge::calcLocationsInGround(SimTK::State const& state) const
+EdgePoints osc::fd::CrossProductEdge::calcLocationsInGround(const SimTK::State& state) const
 {
-    auto const& [first, second] = getBothEdgePoints(state);
+    const auto& [first, second] = getBothEdgePoints(state);
     return CrossProduct(first, second);  // TODO: sort out magnitude etc.
 }
 
-std::pair<EdgePoints, EdgePoints> osc::fd::CrossProductEdge::getBothEdgePoints(SimTK::State const& state) const
+std::pair<EdgePoints, EdgePoints> osc::fd::CrossProductEdge::getBothEdgePoints(const SimTK::State& state) const
 {
     return {
         getConnectee<Edge>("first_edge").getLocationsInGround(state),

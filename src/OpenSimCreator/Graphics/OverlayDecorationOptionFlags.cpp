@@ -14,21 +14,21 @@ namespace
             "show_xz_grid",
             "XZ Grid",
             OverlayDecorationOptionGroup::Alignment,
-            OverlayDecorationOptionFlags::drawXZGrid,
+            OverlayDecorationOptionFlags::DrawXZGrid,
         },
         OverlayDecorationOptionFlagsMetadata
         {
             "show_xy_grid",
             "XY Grid",
             OverlayDecorationOptionGroup::Alignment,
-            OverlayDecorationOptionFlags::drawXYGrid,
+            OverlayDecorationOptionFlags::DrawXYGrid,
         },
         OverlayDecorationOptionFlagsMetadata
         {
             "show_yz_grid",
             "YZ Grid",
             OverlayDecorationOptionGroup::Alignment,
-            OverlayDecorationOptionFlags::drawYZGrid,
+            OverlayDecorationOptionFlags::DrawYZGrid,
         },
         OverlayDecorationOptionFlagsMetadata
         {
@@ -42,14 +42,14 @@ namespace
             "show_aabbs",
             "AABBs",
             OverlayDecorationOptionGroup::Development,
-            OverlayDecorationOptionFlags::drawAABBs,
+            OverlayDecorationOptionFlags::DrawAABBs,
         },
         OverlayDecorationOptionFlagsMetadata
         {
             "show_bvh",
             "BVH",
             OverlayDecorationOptionGroup::Development,
-            OverlayDecorationOptionFlags::drawBVH,
+            OverlayDecorationOptionFlags::DrawBVH,
         },
     });
 }
@@ -66,7 +66,7 @@ CStringView osc::getLabel(OverlayDecorationOptionGroup g)
     }
 }
 
-std::span<OverlayDecorationOptionFlagsMetadata const> osc::GetAllOverlayDecorationOptionFlagsMetadata()
+std::span<const OverlayDecorationOptionFlagsMetadata> osc::GetAllOverlayDecorationOptionFlagsMetadata()
 {
     return c_Metadata;
 }

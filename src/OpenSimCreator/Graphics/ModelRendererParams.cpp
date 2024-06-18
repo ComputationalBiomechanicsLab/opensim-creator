@@ -21,11 +21,11 @@ namespace
 {
     std::unordered_map<std::string, AppSettingValue> ToValues(
         std::string_view prefix,
-        ModelRendererParams const& params)
+        const ModelRendererParams& params)
     {
         std::unordered_map<std::string, AppSettingValue> rv;
         std::string subPrefix;
-        auto const callback = [&subPrefix, &rv](std::string_view subkey, AppSettingValue value)
+        const auto callback = [&subPrefix, &rv](std::string_view subkey, AppSettingValue value)
         {
             rv.insert_or_assign(subPrefix + std::string{subkey}, std::move(value));
         };
@@ -45,16 +45,16 @@ namespace
 
     void UpdFromValues(
         std::string_view prefix,
-        std::unordered_map<std::string, AppSettingValue> const& values,
+        const std::unordered_map<std::string, AppSettingValue>& values,
         ModelRendererParams& params)
     {
         params.decorationOptions.tryUpdFromValues(std::string{prefix} + "decorations/", values);
         params.overlayOptions.tryUpdFromValues(std::string{prefix} + "overlays/", values);
         params.renderingOptions.tryUpdFromValues(std::string{prefix} + "graphics/", values);
-        if (auto const* v = lookup_or_nullptr(values, std::string{prefix} + "light_color")) {
+        if (const auto* v = lookup_or_nullptr(values, std::string{prefix} + "light_color")) {
             params.lightColor = v->to_color();
         }
-        if (auto const* v = lookup_or_nullptr(values,std::string{prefix} + "background_color")) {
+        if (const auto* v = lookup_or_nullptr(values,std::string{prefix} + "background_color")) {
             params.backgroundColor = v->to_color();
         }
         // TODO: floorLocation
@@ -70,7 +70,7 @@ osc::ModelRendererParams::ModelRendererParams() :
 }
 
 void osc::UpdModelRendererParamsFrom(
-    AppConfig const& config,
+    const AppConfig& config,
     std::string_view keyPrefix,
     ModelRendererParams& params)
 {
@@ -86,16 +86,16 @@ void osc::UpdModelRendererParamsFrom(
 }
 
 void osc::SaveModelRendererParamsDifference(
-    ModelRendererParams const& a,
-    ModelRendererParams const& b,
+    const ModelRendererParams& a,
+    const ModelRendererParams& b,
     std::string_view keyPrefix,
     AppConfig& config)
 {
-    auto const aVals = ToValues(keyPrefix, a);
-    auto const bVals = ToValues(keyPrefix, b);
+    const auto aVals = ToValues(keyPrefix, a);
+    const auto bVals = ToValues(keyPrefix, b);
 
-    for (auto const& [aK, aV] : aVals) {
-        if (auto const* bV = lookup_or_nullptr(bVals, aK)) {
+    for (const auto& [aK, aV] : aVals) {
+        if (const auto* bV = lookup_or_nullptr(bVals, aK)) {
             if (*bV != aV) {
                 config.set_value(aK, *bV);
             }

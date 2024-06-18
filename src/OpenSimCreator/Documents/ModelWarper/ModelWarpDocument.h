@@ -28,24 +28,24 @@ namespace osc::mow
     class ModelWarpDocument final : public IValidateable {
     public:
         ModelWarpDocument();
-        explicit ModelWarpDocument(std::filesystem::path const& osimFileLocation);
-        ModelWarpDocument(ModelWarpDocument const&);
+        explicit ModelWarpDocument(const std::filesystem::path& osimFileLocation);
+        ModelWarpDocument(const ModelWarpDocument&);
         ModelWarpDocument(ModelWarpDocument&&) noexcept;
-        ModelWarpDocument& operator=(ModelWarpDocument const&);
+        ModelWarpDocument& operator=(const ModelWarpDocument&);
         ModelWarpDocument& operator=(ModelWarpDocument&&) noexcept;
         ~ModelWarpDocument() noexcept;
 
-        OpenSim::Model const& model() const;
-        IConstModelStatePair const& modelstate() const;
+        const OpenSim::Model& model() const;
+        const IConstModelStatePair& modelstate() const;
 
-        std::vector<WarpDetail> details(OpenSim::Mesh const&) const;
-        std::vector<ValidationCheckResult> validate(OpenSim::Mesh const&) const;
-        ValidationCheckState state(OpenSim::Mesh const&) const;
-        IPointWarperFactory const* findMeshWarp(OpenSim::Mesh const&) const;
+        std::vector<WarpDetail> details(const OpenSim::Mesh&) const;
+        std::vector<ValidationCheckResult> validate(const OpenSim::Mesh&) const;
+        ValidationCheckState state(const OpenSim::Mesh&) const;
+        const IPointWarperFactory* findMeshWarp(const OpenSim::Mesh&) const;
 
-        std::vector<WarpDetail> details(OpenSim::PhysicalOffsetFrame const&) const;
-        std::vector<ValidationCheckResult> validate(OpenSim::PhysicalOffsetFrame const&) const;
-        ValidationCheckState state(OpenSim::PhysicalOffsetFrame const&) const;
+        std::vector<WarpDetail> details(const OpenSim::PhysicalOffsetFrame&) const;
+        std::vector<ValidationCheckResult> validate(const OpenSim::PhysicalOffsetFrame&) const;
+        ValidationCheckState state(const OpenSim::PhysicalOffsetFrame&) const;
 
         float getWarpBlendingFactor() const;
         void setWarpBlendingFactor(float);
@@ -60,7 +60,7 @@ namespace osc::mow
         ValidationCheckState state() const;
 
         // only checks reference equality by leaning on the copy-on-write behavior
-        friend bool operator==(ModelWarpDocument const&, ModelWarpDocument const&) = default;
+        friend bool operator==(const ModelWarpDocument&, const ModelWarpDocument&) = default;
     private:
         std::vector<ValidationCheckResult> implValidate() const;
 

@@ -17,12 +17,12 @@ namespace osc
     // lifetime management (e.g. refcounted pointers or similar)
     class OutputValueExtractor final {
     public:
-        explicit OutputValueExtractor(std::function<Variant(SimulationReport const&)> callback_) :
+        explicit OutputValueExtractor(std::function<Variant(const SimulationReport&)> callback_) :
             m_Callback{std::move(callback_)}
         {}
 
-        Variant operator()(SimulationReport const& report) const { return m_Callback(report); }
+        Variant operator()(const SimulationReport& report) const { return m_Callback(report); }
     private:
-        std::function<Variant(SimulationReport const&)> m_Callback;
+        std::function<Variant(const SimulationReport&)> m_Callback;
     };
 }

@@ -42,54 +42,66 @@ namespace
         static_assert(N <= std::numeric_limits<int>::max());
 
     public:
-        void push_back(T v) {
+        void push_back(T v)
+        {
             if (m_Size >= N) {
                 throw std::runtime_error{"cannot render a navigator: the Model/Component tree is too deep"};
             }
             m_Data[m_Size++] = v;
         }
 
-        T const* begin() const {
+        const T* begin() const
+        {
             return m_Data.data();
         }
 
-        T* begin() {
+        T* begin()
+        {
             return m_Data.data();
         }
 
-        T const* end() const {
+        const T* end() const
+        {
             return m_Data.data() + m_Size;
         }
 
-        T* end() {
+        T* end()
+        {
             return m_Data.data() + m_Size;
         }
 
-        size_t size() const {
+        size_t size() const
+        {
             return m_Size;
         }
 
-        ptrdiff_t sizei() const {
+        ptrdiff_t sizei() const
+        {
             return static_cast<ptrdiff_t>(m_Size);
         }
 
-        bool empty() const {
+        bool empty() const
+        {
             return m_Size == 0;
         }
 
-        void resize(size_t newsize) {
+        void resize(size_t newsize)
+        {
             m_Size = newsize;
         }
 
-        void clear() {
+        void clear()
+        {
             m_Size = 0;
         }
 
-        T& operator[](size_t idx) {
+        T& operator[](size_t idx)
+        {
             return m_Data[idx];
         }
 
-        T const& operator[](size_t i) const {
+        const T& operator[](size_t i) const
+        {
             return m_Data[i];
         }
 
@@ -98,12 +110,12 @@ namespace
         size_t m_Size = 0;
     };
 
-    using ComponentPath = SizedArray<OpenSim::Component const*, 16>;
+    using ComponentPath = SizedArray<const OpenSim::Component*, 16>;
 
     // populates `out` with the sequence of nodes between (ancestor..child]
     void computeComponentPath(
-        OpenSim::Component const* ancestor,
-        OpenSim::Component const* child,
+        const OpenSim::Component* ancestor,
+        const OpenSim::Component* child,
         ComponentPath& out)
     {
 
@@ -124,7 +136,7 @@ namespace
         rgs::reverse(out);
     }
 
-    bool pathContains(ComponentPath const& p, OpenSim::Component const* c)
+    bool pathContains(const ComponentPath& p, const OpenSim::Component* c)
     {
         auto end = p.begin() == p.end() ? p.end() : p.end()-1;
         return cpp23::contains(p.begin(), end, c);
@@ -137,13 +149,13 @@ namespace
     };
 
     struct Response final {
-        OpenSim::Component const* ptr = nullptr;
+        const OpenSim::Component* ptr = nullptr;
         ResponseType type = ResponseType::NothingHappened;
     };
 
-    bool isSearchHit(std::string const& searchStr, ComponentPath const& cp)
+    bool isSearchHit(const std::string& searchStr, const ComponentPath& cp)
     {
-        return rgs::any_of(cp, [&searchStr](OpenSim::Component const* c)
+        return rgs::any_of(cp, [&searchStr](const OpenSim::Component* c)
         {
             return contains_case_insensitive(c->getName(), searchStr);
         });
@@ -155,7 +167,7 @@ public:
     Impl(
         std::string_view panelName,
         std::shared_ptr<IModelStatePair> model,
-        std::function<void(OpenSim::ComponentPath const&)> onRightClick) :
+        std::function<void(const OpenSim::ComponentPath&)> onRightClick) :
 
         StandardPanelImpl{panelName},
         m_Model{std::move(model)},
@@ -165,7 +177,7 @@ public:
 
     bool isOpen() const
     {
-        return static_cast<StandardPanelImpl const&>(*this).is_open();
+        return static_cast<const StandardPanelImpl&>(*this).is_open();
     }
 
     void open()
@@ -223,9 +235,9 @@ private:
         // draw content
         ui::begin_child_panel("##componentnavigatorvieweritems", {0.0, 0.0}, ImGuiChildFlags_None, ImGuiWindowFlags_NoBackground);
 
-        OpenSim::Component const* root = &m_Model->getModel();
-        OpenSim::Component const* selection = m_Model->getSelected();
-        OpenSim::Component const* hover = m_Model->getHovered();
+        const OpenSim::Component* root = &m_Model->getModel();
+        const OpenSim::Component* selection = m_Model->getSelected();
+        const OpenSim::Component* hover = m_Model->getHovered();
 
         ComponentPath selectionPath{};
         if (selection)
@@ -240,24 +252,24 @@ private:
         }
 
         // init iterators: this alg. is single-pass with a 1-token lookahead
-        auto const lst = root->getComponentList();
+        const auto lst = root->getComponentList();
         auto it = lst.begin();
-        auto const end = lst.end();
+        const auto end = lst.end();
 
         // initially populate lookahead (+ path)
-        OpenSim::Component const* lookahead = root;
+        const OpenSim::Component* lookahead = root;
         ComponentPath lookaheadPath;
         computeComponentPath(root, root, lookaheadPath);
 
         // set cur path empty (first step copies lookahead into this)
-        OpenSim::Component const* cur = nullptr;
+        const OpenSim::Component* cur = nullptr;
         ComponentPath currentPath;
 
         int imguiTreeDepth = 0;
         int imguiId = 0;
-        bool const hasSearch = !m_CurrentSearch.empty();
+        const bool hasSearch = !m_CurrentSearch.empty();
 
-        float const unindentPerLevel = ui::get_tree_node_to_label_spacing() - 15.0f;
+        const float unindentPerLevel = ui::get_tree_node_to_label_spacing() - 15.0f;
 
         while (lookahead)
         {
@@ -276,15 +288,15 @@ private:
             lookaheadPath.clear();
             while (it != end)
             {
-                OpenSim::Component const& c = *it++;
+                const OpenSim::Component& c = *it++;
 
                 bool shouldRender = true;
 
-                if (!m_ShowFrames && dynamic_cast<OpenSim::FrameGeometry const*>(&c))
+                if (!m_ShowFrames && dynamic_cast<const OpenSim::FrameGeometry*>(&c))
                 {
                     shouldRender = false;
                 }
-                else if (auto const* wos = dynamic_cast<OpenSim::WrapObjectSet const*>(&c))
+                else if (const auto* wos = dynamic_cast<const OpenSim::WrapObjectSet*>(&c))
                 {
                     shouldRender = !empty(*wos);
                 }
@@ -302,7 +314,7 @@ private:
             }
             OSC_ASSERT((lookahead || !lookahead) && "a lookahead is not *required* at this point");
 
-            bool const searchHit = hasSearch && isSearchHit(m_CurrentSearch, currentPath);
+            const bool searchHit = hasSearch && isSearchHit(m_CurrentSearch, currentPath);
 
             // skip rendering if a parent node is collapsed
             if (imguiTreeDepth < currentPath.sizei() - 1)
@@ -320,8 +332,8 @@ private:
             OSC_ASSERT(imguiTreeDepth <= currentPath.sizei() - 1);
 
             // handle display mode (node vs leaf)
-            bool const isInternalNode = currentPath.size() < 2 || lookaheadPath.size() > currentPath.size();
-            ImGuiTreeNodeFlags const nodeFlags = isInternalNode ? ImGuiTreeNodeFlags_OpenOnArrow : (ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet);
+            const bool isInternalNode = currentPath.size() < 2 || lookaheadPath.size() > currentPath.size();
+            const ImGuiTreeNodeFlags nodeFlags = isInternalNode ? ImGuiTreeNodeFlags_OpenOnArrow : (ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet);
 
             // handle coloring
             int styles = 0;
@@ -393,23 +405,19 @@ private:
     }
 
     std::shared_ptr<IModelStatePair> m_Model;
-    std::function<void(OpenSim::ComponentPath const&)> m_OnRightClick;
+    std::function<void(const OpenSim::ComponentPath&)> m_OnRightClick;
     std::string m_CurrentSearch;
     bool m_ShowFrames = false;
 };
 
 
-// public API (PIMPL)
-
 osc::NavigatorPanel::NavigatorPanel(
     std::string_view panelName,
     std::shared_ptr<IModelStatePair> model,
-    std::function<void(OpenSim::ComponentPath const&)> onRightClick) :
+    std::function<void(const OpenSim::ComponentPath&)> onRightClick) :
 
     m_Impl{std::make_unique<Impl>(panelName, std::move(model), std::move(onRightClick))}
-{
-}
-
+{}
 osc::NavigatorPanel::NavigatorPanel(NavigatorPanel&&) noexcept = default;
 osc::NavigatorPanel& osc::NavigatorPanel::operator=(NavigatorPanel&&) noexcept = default;
 osc::NavigatorPanel::~NavigatorPanel() noexcept = default;

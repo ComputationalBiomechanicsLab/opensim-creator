@@ -24,36 +24,36 @@ namespace
         rv.emplace_back(MultiBodySystemOutputExtractor{
             "NumPrescribeQcalls",
             "Get the number of prescribe Q calls made against the system",
-            [](SimTK::MultibodySystem const& mbs) { return static_cast<float>(mbs.getNumPrescribeQCalls()); }
+            [](const SimTK::MultibodySystem& mbs) { return static_cast<float>(mbs.getNumPrescribeQCalls()); }
         });
         rv.emplace_back(MultiBodySystemOutputExtractor{
             "NumHandleEventCalls",
             "The total number of calls to handleEvents() regardless of the outcome",
-            [](SimTK::MultibodySystem const& mbs) { return static_cast<float>(mbs.getNumHandleEventCalls()); }
+            [](const SimTK::MultibodySystem& mbs) { return static_cast<float>(mbs.getNumHandleEventCalls()); }
         });
         rv.emplace_back(MultiBodySystemOutputExtractor{
             "NumReportEventCalls",
             "The total number of calls to reportEvents() regardless of the outcome",
-            [](SimTK::MultibodySystem const& mbs) { return static_cast<float>(mbs.getNumReportEventCalls()); }
+            [](const SimTK::MultibodySystem& mbs) { return static_cast<float>(mbs.getNumReportEventCalls()); }
         });
         rv.emplace_back(MultiBodySystemOutputExtractor{
             "NumRealizeCalls",
             "The total number of calls to realizeTopology(), realizeModel(), or realize(), regardless of whether these routines actually did anything when called",
-            [](SimTK::MultibodySystem const& mbs) { return static_cast<float>(mbs.getNumRealizeCalls()); }
+            [](const SimTK::MultibodySystem& mbs) { return static_cast<float>(mbs.getNumRealizeCalls()); }
         });
         return rv;
     }
 
-    std::vector<OutputExtractor> const& GetAllMultiBodySystemOutputExtractors()
+    const std::vector<OutputExtractor>& GetAllMultiBodySystemOutputExtractors()
     {
-        static std::vector<OutputExtractor> const s_Outputs = ConstructMultiBodySystemOutputExtractors();
+        static const std::vector<OutputExtractor> s_Outputs = ConstructMultiBodySystemOutputExtractors();
         return s_Outputs;
     }
 }
 
-OutputValueExtractor osc::MultiBodySystemOutputExtractor::implGetOutputValueExtractor(OpenSim::Component const&) const
+OutputValueExtractor osc::MultiBodySystemOutputExtractor::implGetOutputValueExtractor(const OpenSim::Component&) const
 {
-    return OutputValueExtractor{[id = m_AuxiliaryDataID](SimulationReport const& report)
+    return OutputValueExtractor{[id = m_AuxiliaryDataID](const SimulationReport& report)
     {
         return report.getAuxiliaryValue(id).value_or(quiet_nan_v<float>);
     }};
@@ -64,14 +64,14 @@ std::size_t osc::MultiBodySystemOutputExtractor::implGetHash() const
     return hash_of(m_AuxiliaryDataID, m_Name, m_Description, m_Extractor);
 }
 
-bool osc::MultiBodySystemOutputExtractor::implEquals(IOutputExtractor const& other) const
+bool osc::MultiBodySystemOutputExtractor::implEquals(const IOutputExtractor& other) const
 {
     if (&other == this)
     {
         return true;
     }
 
-    auto const* const otherT = dynamic_cast<MultiBodySystemOutputExtractor const*>(&other);
+    const auto* const otherT = dynamic_cast<const MultiBodySystemOutputExtractor*>(&other);
     if (!otherT)
     {
         return false;
@@ -89,9 +89,9 @@ int osc::GetNumMultiBodySystemOutputExtractors()
     return static_cast<int>(GetAllMultiBodySystemOutputExtractors().size());
 }
 
-MultiBodySystemOutputExtractor const& osc::GetMultiBodySystemOutputExtractor(int idx)
+const MultiBodySystemOutputExtractor& osc::GetMultiBodySystemOutputExtractor(int idx)
 {
-    return dynamic_cast<MultiBodySystemOutputExtractor const&>(GetAllMultiBodySystemOutputExtractors().at(static_cast<size_t>(idx)).getInner());
+    return dynamic_cast<const MultiBodySystemOutputExtractor&>(GetAllMultiBodySystemOutputExtractors().at(static_cast<size_t>(idx)).getInner());
 }
 
 OutputExtractor osc::GetMultiBodySystemOutputExtractorDynamic(int idx)

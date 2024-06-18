@@ -24,28 +24,28 @@ namespace osc
             ComponentRegistryBase{name_, description_}
         {}
 
-        value_type const* begin() const
+        const value_type* begin() const
         {
-            auto const& base = static_cast<ComponentRegistryBase const&>(*this);
-            return static_cast<value_type const*>(base.begin());
+            const auto& base = static_cast<const ComponentRegistryBase&>(*this);
+            return static_cast<const value_type*>(base.begin());
         }
 
-        value_type const* end() const
+        const value_type* end() const
         {
-            auto const& base = static_cast<ComponentRegistryBase const&>(*this);
-            return static_cast<value_type const*>(base.end());
+            const auto& base = static_cast<const ComponentRegistryBase&>(*this);
+            return static_cast<const value_type*>(base.end());
         }
 
-        value_type const& operator[](size_t i) const
+        const value_type& operator[](size_t i) const
         {
-            auto const& base = static_cast<ComponentRegistryBase const&>(*this);
-            return static_cast<value_type const&>(base[i]);
+            const auto& base = static_cast<const ComponentRegistryBase&>(*this);
+            return static_cast<const value_type&>(base[i]);
         }
 
         ComponentRegistryEntry<T>& emplace_back(
             std::string_view name,
             std::string_view description,
-            std::shared_ptr<T const> prototype)
+            std::shared_ptr<const T> prototype)
         {
             auto& erased = push_back_erased(ComponentRegistryEntry<T>
             {
@@ -58,7 +58,7 @@ namespace osc
     };
 
     template<typename T>
-    ComponentRegistryEntry<T> const& At(ComponentRegistry<T> const& registry, size_t i)
+    const ComponentRegistryEntry<T>& At(const ComponentRegistry<T>& registry, size_t i)
     {
         if (i >= registry.size()) {
             throw std::out_of_range{"attempted to access an out-of-bounds registry entry"};
@@ -67,7 +67,7 @@ namespace osc
     }
 
     template<typename T>
-    ComponentRegistryEntry<T> const& Get(ComponentRegistry<T> const& registry, T const& el)
+    const ComponentRegistryEntry<T>& Get(ComponentRegistry<T> const& registry, const T& el)
     {
         if (auto i = IndexOf(registry, el)) {
             return registry[*i];
@@ -78,7 +78,7 @@ namespace osc
     }
 
     template<typename T>
-    ComponentRegistryEntry<T> const& Get(ComponentRegistry<T> const& registry, std::string_view componentClassName)
+    const ComponentRegistryEntry<T>& Get(const ComponentRegistry<T>& registry, std::string_view componentClassName)
     {
         if (auto i = IndexOf(registry, componentClassName)) {
             return registry[*i];

@@ -21,7 +21,7 @@
 using namespace osc;
 
 SceneRendererParams osc::CalcSceneRendererParams(
-    ModelRendererParams const& renderParams,
+    const ModelRendererParams& renderParams,
     Vec2 viewportDims,
     AntiAliasingLevel antiAliasingLevel,
     float fixupScaleFactor)
@@ -51,14 +51,14 @@ SceneRendererParams osc::CalcSceneRendererParams(
 
 void osc::GenerateDecorations(
     SceneCache& meshCache,
-    IConstModelStatePair const& msp,
-    OpenSimDecorationOptions const& options,
-    std::function<void(OpenSim::Component const&, SceneDecoration&&)> const& out)
+    const IConstModelStatePair& msp,
+    const OpenSimDecorationOptions& options,
+    const std::function<void(const OpenSim::Component&, SceneDecoration&&)>& out)
 {
     ComponentAbsPathDecorationTagger pathTagger{};
     ComponentSceneDecorationFlagsTagger flagsTagger{msp.getSelected(), msp.getHovered()};
 
-    auto callback = [pathTagger, flagsTagger, &out](OpenSim::Component const& component, SceneDecoration&& decoration) mutable
+    auto callback = [pathTagger, flagsTagger, &out](const OpenSim::Component& component, SceneDecoration&& decoration) mutable
     {
         pathTagger(component, decoration);
         flagsTagger(component, decoration);
@@ -76,24 +76,24 @@ void osc::GenerateDecorations(
 }
 
 std::optional<SceneCollision> osc::GetClosestCollision(
-    BVH const& sceneBVH,
+    const BVH& sceneBVH,
     SceneCache& sceneCache,
-    std::span<SceneDecoration const> taggedDrawlist,
-    PolarPerspectiveCamera const& camera,
+    std::span<const SceneDecoration> taggedDrawlist,
+    const PolarPerspectiveCamera& camera,
     Vec2 mouseScreenPos,
-    Rect const& viewportScreenRect)
+    const Rect& viewportScreenRect)
 {
     OSC_PERF("ModelSceneDecorations/getClosestCollision");
 
     // un-project 2D mouse cursor into 3D scene as a ray
-    Vec2 const mouseRenderPos = mouseScreenPos - viewportScreenRect.p1;
-    Line const worldspaceCameraRay = camera.unproject_topleft_pos_to_world_ray(
+    const Vec2 mouseRenderPos = mouseScreenPos - viewportScreenRect.p1;
+    const Line worldspaceCameraRay = camera.unproject_topleft_pos_to_world_ray(
         mouseRenderPos,
         dimensions_of(viewportScreenRect)
     );
 
     // find all collisions along the camera ray
-    std::vector<SceneCollision> const collisions = get_all_ray_collisions_with_scene(
+    const std::vector<SceneCollision> collisions = get_all_ray_collisions_with_scene(
         sceneBVH,
         sceneCache,
         taggedDrawlist,
@@ -101,15 +101,15 @@ std::optional<SceneCollision> osc::GetClosestCollision(
     );
 
     // filter through the collisions list
-    SceneCollision const* closestCollision = nullptr;
-    for (SceneCollision const& c : collisions)
+    const SceneCollision* closestCollision = nullptr;
+    for (const SceneCollision& c : collisions)
     {
         if (closestCollision && c.distance_from_ray_origin > closestCollision->distance_from_ray_origin)
         {
             continue;  // it's further away than the current closest collision
         }
 
-        SceneDecoration const& decoration = taggedDrawlist[c.decoration_index];
+        const SceneDecoration& decoration = taggedDrawlist[c.decoration_index];
 
         if (decoration.id.empty())
         {

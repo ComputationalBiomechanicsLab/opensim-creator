@@ -26,20 +26,20 @@ namespace osc::mow
 {
     class UIState final {
     public:
-        explicit UIState(ParentPtr<ITabHost> const& tabHost) :
+        explicit UIState(const ParentPtr<ITabHost>& tabHost) :
             m_TabHost{tabHost}
         {}
 
-        OpenSim::Model const& model() const { return m_Document->model(); }
-        IConstModelStatePair const& modelstate() const { return m_Document->modelstate(); }
+        const OpenSim::Model& model() const { return m_Document->model(); }
+        const IConstModelStatePair& modelstate() const { return m_Document->modelstate(); }
 
-        std::vector<WarpDetail> details(OpenSim::Mesh const& mesh) const { return m_Document->details(mesh); }
-        std::vector<ValidationCheckResult> validate(OpenSim::Mesh const& mesh) const { return m_Document->validate(mesh); }
-        ValidationCheckState state(OpenSim::Mesh const& mesh) const { return m_Document->state(mesh); }
+        std::vector<WarpDetail> details(const OpenSim::Mesh& mesh) const { return m_Document->details(mesh); }
+        std::vector<ValidationCheckResult> validate(const OpenSim::Mesh& mesh) const { return m_Document->validate(mesh); }
+        ValidationCheckState state(const OpenSim::Mesh& mesh) const { return m_Document->state(mesh); }
 
-        std::vector<WarpDetail> details(OpenSim::PhysicalOffsetFrame const& pof) const { return m_Document->details(pof); }
-        std::vector<ValidationCheckResult> validate(OpenSim::PhysicalOffsetFrame const& pof) const { return m_Document->validate(pof); }
-        ValidationCheckState state(OpenSim::PhysicalOffsetFrame const& pof) const { return m_Document->state(pof); }
+        std::vector<WarpDetail> details(const OpenSim::PhysicalOffsetFrame& pof) const { return m_Document->details(pof); }
+        std::vector<ValidationCheckResult> validate(const OpenSim::PhysicalOffsetFrame& pof) const { return m_Document->validate(pof); }
+        ValidationCheckState state(const OpenSim::PhysicalOffsetFrame& pof) const { return m_Document->state(pof); }
 
         float getWarpBlendingFactor() const { return m_Document->getWarpBlendingFactor(); }
         void setWarpBlendingFactor(float v) { m_Document->setWarpBlendingFactor(v); }
@@ -48,12 +48,12 @@ namespace osc::mow
         void setCameraLinked(bool v) { m_LinkCameras = v; }
         bool isOnlyCameraRotationLinked() const { return m_OnlyLinkRotation; }
         void setOnlyCameraRotationLinked(bool v) { m_OnlyLinkRotation = v; }
-        PolarPerspectiveCamera const& getLinkedCamera() const { return m_LinkedCamera; }
-        void setLinkedCamera(PolarPerspectiveCamera const& camera) { m_LinkedCamera = camera; }
+        const PolarPerspectiveCamera& getLinkedCamera() const { return m_LinkedCamera; }
+        void setLinkedCamera(const PolarPerspectiveCamera& camera) { m_LinkedCamera = camera; }
 
         ValidationCheckState state() const { return m_Document->state(); }
         bool canWarpModel() const { return state() != ValidationCheckState::Error; }
-        std::shared_ptr<IConstModelStatePair const> tryGetWarpedModel()
+        std::shared_ptr<const IConstModelStatePair> tryGetWarpedModel()
         {
             if (canWarpModel()) {
                 return m_ModelWarper.warp(*m_Document);

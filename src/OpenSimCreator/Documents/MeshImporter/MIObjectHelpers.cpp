@@ -19,33 +19,33 @@ using osc::mi::MIClass;
 using osc::mi::SceneElVariant;
 using osc::Vec3;
 
-bool osc::mi::CanAttachMeshTo(MIObject const& e)
+bool osc::mi::CanAttachMeshTo(const MIObject& e)
 {
     return std::visit(Overload
     {
-        [](Ground const&)  { return true; },
-        [](Mesh const&)    { return false; },
-        [](Body const&)    { return true; },
-        [](Joint const&)   { return true; },
-        [](StationEl const&) { return false; },
+        [](const Ground&)  { return true; },
+        [](const Mesh&)    { return false; },
+        [](const Body&)    { return true; },
+        [](const Joint&)   { return true; },
+        [](const StationEl&) { return false; },
     }, e.toVariant());
 }
 
-bool osc::mi::CanAttachStationTo(MIObject const& e)
+bool osc::mi::CanAttachStationTo(const MIObject& e)
 {
     return std::visit(Overload
     {
-        [](Ground const&)  { return true; },
-        [](Mesh const&)    { return true; },
-        [](Body const&)    { return true; },
-        [](Joint const&)   { return false; },
-        [](StationEl const&) { return false; },
+        [](const Ground&)  { return true; },
+        [](const Mesh&)    { return true; },
+        [](const Body&)    { return true; },
+        [](const Joint&)   { return false; },
+        [](const StationEl&) { return false; },
     }, e.toVariant());
 }
 
-std::array<MIClass, std::variant_size_v<SceneElVariant>> const& osc::mi::GetSceneElClasses()
+const std::array<MIClass, std::variant_size_v<SceneElVariant>>& osc::mi::GetSceneElClasses()
 {
-    static auto const s_Classes = std::to_array(
+    static const auto s_Classes = std::to_array(
     {
         Ground::Class(),
         Mesh::Class(),
@@ -56,14 +56,14 @@ std::array<MIClass, std::variant_size_v<SceneElVariant>> const& osc::mi::GetScen
     return s_Classes;
 }
 
-Vec3 osc::mi::AverageCenter(Mesh const& el)
+Vec3 osc::mi::AverageCenter(const Mesh& el)
 {
-    Vec3 const centerpointInModelSpace = average_centroid_of(el.getMeshData());
+    const Vec3 centerpointInModelSpace = average_centroid_of(el.getMeshData());
     return el.getXForm() * centerpointInModelSpace;
 }
 
-Vec3 osc::mi::mass_center_of(Mesh const& el)
+Vec3 osc::mi::mass_center_of(const Mesh& el)
 {
-    Vec3 const massCenterInModelSpace = mass_center_of(el.getMeshData());
+    const Vec3 massCenterInModelSpace = mass_center_of(el.getMeshData());
     return el.getXForm() * massCenterInModelSpace;
 }

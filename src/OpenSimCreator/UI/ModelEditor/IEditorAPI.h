@@ -15,19 +15,19 @@ namespace osc
     class IEditorAPI : public IPopupAPI {
     protected:
         IEditorAPI() = default;
-        IEditorAPI(IEditorAPI const&) = default;
+        IEditorAPI(const IEditorAPI&) = default;
         IEditorAPI(IEditorAPI&&) noexcept = default;
-        IEditorAPI& operator=(IEditorAPI const&) = default;
+        IEditorAPI& operator=(const IEditorAPI&) = default;
         IEditorAPI& operator=(IEditorAPI&&) noexcept = default;
     public:
         virtual ~IEditorAPI() noexcept = default;
 
-        void pushComponentContextMenuPopup(OpenSim::ComponentPath const& p)
+        void pushComponentContextMenuPopup(const OpenSim::ComponentPath& p)
         {
             implPushComponentContextMenuPopup(p);
         }
 
-        void addMusclePlot(OpenSim::Coordinate const& coord, OpenSim::Muscle const& muscle)
+        void addMusclePlot(const OpenSim::Coordinate& coord, const OpenSim::Muscle& muscle)
         {
             implAddMusclePlot(coord, muscle);
         }
@@ -38,8 +38,8 @@ namespace osc
         }
 
     private:
-        virtual void implPushComponentContextMenuPopup(OpenSim::ComponentPath const&) = 0;
-        virtual void implAddMusclePlot(OpenSim::Coordinate const&, OpenSim::Muscle const&) = 0;
+        virtual void implPushComponentContextMenuPopup(const OpenSim::ComponentPath&) = 0;
+        virtual void implAddMusclePlot(const OpenSim::Coordinate&, const OpenSim::Muscle&) = 0;
         virtual std::shared_ptr<PanelManager> implGetPanelManager() = 0;
     };
 }

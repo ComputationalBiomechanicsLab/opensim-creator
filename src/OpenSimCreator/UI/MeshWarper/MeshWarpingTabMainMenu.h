@@ -17,8 +17,8 @@ namespace osc
     class MeshWarpingTabMainMenu final {
     public:
         explicit MeshWarpingTabMainMenu(
-            std::shared_ptr<MeshWarpingTabSharedState> const& tabState_,
-            std::shared_ptr<PanelManager> const& panelManager_) :
+            const std::shared_ptr<MeshWarpingTabSharedState>& tabState_,
+            const std::shared_ptr<PanelManager>& panelManager_) :
 
             m_FileMenu{tabState_},
             m_EditMenu{tabState_},

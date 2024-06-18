@@ -21,33 +21,33 @@ namespace osc
 {
     class CachedModelRenderer final {
     public:
-        explicit CachedModelRenderer(std::shared_ptr<SceneCache> const&);
-        CachedModelRenderer(CachedModelRenderer const&) = delete;
+        explicit CachedModelRenderer(const std::shared_ptr<SceneCache>&);
+        CachedModelRenderer(const CachedModelRenderer&) = delete;
         CachedModelRenderer(CachedModelRenderer&&) noexcept;
-        CachedModelRenderer& operator=(CachedModelRenderer const&) = delete;
+        CachedModelRenderer& operator=(const CachedModelRenderer&) = delete;
         CachedModelRenderer& operator=(CachedModelRenderer&&) noexcept;
         ~CachedModelRenderer() noexcept;
 
         void autoFocusCamera(
-            IConstModelStatePair const&,
+            const IConstModelStatePair&,
             ModelRendererParams&,
             float aspectRatio
         );
 
         RenderTexture& onDraw(
-            IConstModelStatePair const&,
-            ModelRendererParams const&,
+            const IConstModelStatePair&,
+            const ModelRendererParams&,
             Vec2 dims,
             AntiAliasingLevel antiAliasingLevel
         );
         RenderTexture& updRenderTexture();
 
-        std::span<SceneDecoration const> getDrawlist() const;
+        std::span<const SceneDecoration> getDrawlist() const;
         std::optional<AABB> bounds() const;
         std::optional<SceneCollision> getClosestCollision(
-            ModelRendererParams const&,
+            const ModelRendererParams&,
             Vec2 mouseScreenPos,
-            Rect const& viewportScreenRect
+            const Rect& viewportScreenRect
         ) const;
 
     private:

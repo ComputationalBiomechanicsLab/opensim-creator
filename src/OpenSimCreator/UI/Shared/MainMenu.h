@@ -16,7 +16,7 @@ namespace osc
     public:
         MainMenuFileTab();
 
-        void onDraw(ParentPtr<IMainUIStateAPI> const&, UndoableModelStatePair* = nullptr);
+        void onDraw(const ParentPtr<IMainUIStateAPI>&, UndoableModelStatePair* = nullptr);
 
         std::vector<std::filesystem::path> exampleOsimFiles;
         std::optional<SaveChangesPopup> maybeSaveChangesPopup;

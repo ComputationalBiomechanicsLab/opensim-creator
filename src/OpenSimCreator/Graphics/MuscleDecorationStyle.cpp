@@ -35,7 +35,7 @@ namespace
     static_assert(c_Metadata.size() == num_options<MuscleDecorationStyle>());
 }
 
-std::span<MuscleDecorationStyleMetadata const> osc::GetAllMuscleDecorationStyleMetadata()
+std::span<const MuscleDecorationStyleMetadata> osc::GetAllMuscleDecorationStyleMetadata()
 {
     return c_Metadata;
 }
@@ -45,7 +45,7 @@ ptrdiff_t osc::GetIndexOf(MuscleDecorationStyle s)
     return static_cast<ptrdiff_t>(s);
 }
 
-MuscleDecorationStyleMetadata const& osc::GetMuscleDecorationStyleMetadata(MuscleDecorationStyle s)
+const MuscleDecorationStyleMetadata& osc::GetMuscleDecorationStyleMetadata(MuscleDecorationStyle s)
 {
     return GetAllMuscleDecorationStyleMetadata()[GetIndexOf(s)];
 }

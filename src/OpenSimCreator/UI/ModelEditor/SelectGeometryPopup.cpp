@@ -84,7 +84,7 @@ namespace
         return prompt_user_to_select_file(GetSupportedSimTKMeshFormats());
     }
 
-    std::unique_ptr<OpenSim::Mesh> LoadGeometryFile(std::filesystem::path const& p)
+    std::unique_ptr<OpenSim::Mesh> LoadGeometryFile(const std::filesystem::path& p)
     {
         return std::make_unique<OpenSim::Mesh>(p.string());
     }
@@ -93,7 +93,7 @@ namespace
 class osc::SelectGeometryPopup::Impl final : public StandardPopup {
 public:
     Impl(std::string_view popupName,
-         std::filesystem::path const& geometryDir,
+         const std::filesystem::path& geometryDir,
          std::function<void(std::unique_ptr<OpenSim::Geometry>)> onSelection) :
 
         StandardPopup{popupName},
@@ -120,7 +120,7 @@ private:
             int item = -1;
             if (ui::draw_combobox("##premade", &item, c_GeomNames.data(), static_cast<int>(c_GeomNames.size())))
             {
-                auto const& ctor = c_GeomCtors.at(static_cast<size_t>(item));
+                const auto& ctor = c_GeomCtors.at(static_cast<size_t>(item));
                 m_Result = ctor();
             }
         }
@@ -150,7 +150,7 @@ private:
             ui::draw_text_disabled("  (recent)");
         }
 
-        for (std::filesystem::path const& p : m_RecentUserChoices)
+        for (const std::filesystem::path& p : m_RecentUserChoices)
         {
             auto resp = tryDrawFileChoice(p);
             if (resp)
@@ -163,7 +163,7 @@ private:
         {
             ui::draw_text_disabled("  (from Geometry/ dir)");
         }
-        for (std::filesystem::path const& p : m_GeometryFiles)
+        for (const std::filesystem::path& p : m_GeometryFiles)
         {
             auto resp = tryDrawFileChoice(p);
             if (resp)
@@ -214,7 +214,7 @@ private:
         return rv;
     }
 
-    std::unique_ptr<OpenSim::Mesh> tryDrawFileChoice(std::filesystem::path const& p)
+    std::unique_ptr<OpenSim::Mesh> tryDrawFileChoice(const std::filesystem::path& p)
     {
         if (p.filename().string().find(m_Search) != std::string::npos)
         {
@@ -243,17 +243,13 @@ private:
 };
 
 
-// public API (PIMPL)
-
 osc::SelectGeometryPopup::SelectGeometryPopup(
     std::string_view popupName,
-    std::filesystem::path const& geometryDir,
+    const std::filesystem::path& geometryDir,
     std::function<void(std::unique_ptr<OpenSim::Geometry>)> onSelection) :
 
     m_Impl{std::make_unique<Impl>(popupName, geometryDir, std::move(onSelection))}
-{
-}
-
+{}
 osc::SelectGeometryPopup::SelectGeometryPopup(SelectGeometryPopup&&) noexcept = default;
 osc::SelectGeometryPopup& osc::SelectGeometryPopup::operator=(SelectGeometryPopup&&) noexcept = default;
 osc::SelectGeometryPopup::~SelectGeometryPopup() noexcept = default;

@@ -27,9 +27,9 @@ namespace osc
     class IOutputExtractor {
     protected:
         IOutputExtractor() = default;
-        IOutputExtractor(IOutputExtractor const&) = default;
+        IOutputExtractor(const IOutputExtractor&) = default;
         IOutputExtractor(IOutputExtractor&&) noexcept = default;
-        IOutputExtractor& operator=(IOutputExtractor const&) = default;
+        IOutputExtractor& operator=(const IOutputExtractor&) = default;
         IOutputExtractor& operator=(IOutputExtractor&&) noexcept = default;
     public:
         virtual ~IOutputExtractor() noexcept = default;
@@ -38,52 +38,52 @@ namespace osc
         CStringView getDescription() const { return implGetDescription(); }
 
         OutputExtractorDataType getOutputType() const { return implGetOutputType(); }
-        OutputValueExtractor getOutputValueExtractor(OpenSim::Component const& component) const
+        OutputValueExtractor getOutputValueExtractor(const OpenSim::Component& component) const
         {
             return implGetOutputValueExtractor(component);
         }
 
         float getValueFloat(
-            OpenSim::Component const&,
-            SimulationReport const&
+            const OpenSim::Component&,
+            const SimulationReport&
         ) const;
 
         void getValuesFloat(
-            OpenSim::Component const&,
-            std::span<SimulationReport const>,
-            std::function<void(float)> const& consumer
+            const OpenSim::Component&,
+            std::span<const SimulationReport>,
+            const std::function<void(float)>& consumer
         ) const;
 
         std::vector<float> slurpValuesFloat(
-            OpenSim::Component const&,
-            std::span<SimulationReport const>
+            const OpenSim::Component&,
+            std::span<const SimulationReport>
         ) const;
 
         Vec2 getValueVec2(
-            OpenSim::Component const& component,
-            SimulationReport const& report
+            const OpenSim::Component& component,
+            const SimulationReport& report
         ) const;
 
         void getValuesVec2(
-            OpenSim::Component const&,
-            std::span<SimulationReport const>,
-            std::function<void(Vec2)> const& consumer
+            const OpenSim::Component&,
+            std::span<const SimulationReport>,
+            const std::function<void(Vec2)>& consumer
         ) const;
 
         std::vector<Vec2> slurpValuesVec2(
-            OpenSim::Component const&,
-            std::span<SimulationReport const>
+            const OpenSim::Component&,
+            std::span<const SimulationReport>
         ) const;
 
         std::string getValueString(
-            OpenSim::Component const&,
-            SimulationReport const&
+            const OpenSim::Component&,
+            const SimulationReport&
         ) const;
 
         size_t getHash() const { return implGetHash(); }
-        bool equals(IOutputExtractor const& other) const { return implEquals(other); }
+        bool equals(const IOutputExtractor& other) const { return implEquals(other); }
 
-        friend bool operator==(IOutputExtractor const& lhs, IOutputExtractor const& rhs)
+        friend bool operator==(const IOutputExtractor& lhs, const IOutputExtractor& rhs)
         {
             return lhs.equals(rhs);
         }
@@ -91,8 +91,8 @@ namespace osc
         virtual CStringView implGetName() const = 0;
         virtual CStringView implGetDescription() const = 0;
         virtual OutputExtractorDataType implGetOutputType() const = 0;
-        virtual OutputValueExtractor implGetOutputValueExtractor(OpenSim::Component const&) const = 0;
+        virtual OutputValueExtractor implGetOutputValueExtractor(const OpenSim::Component&) const = 0;
         virtual size_t implGetHash() const = 0;
-        virtual bool implEquals(IOutputExtractor const&) const = 0;
+        virtual bool implEquals(const IOutputExtractor&) const = 0;
     };
 }

@@ -17,10 +17,10 @@ namespace osc::mow
     public:
         static CStringView id();
 
-        explicit ModelWarperTab(ParentPtr<ITabHost> const&);
-        ModelWarperTab(ModelWarperTab const&) = delete;
+        explicit ModelWarperTab(const ParentPtr<ITabHost>&);
+        ModelWarperTab(const ModelWarperTab&) = delete;
         ModelWarperTab(ModelWarperTab&&) noexcept;
-        ModelWarperTab& operator=(ModelWarperTab const&) = delete;
+        ModelWarperTab& operator=(const ModelWarperTab&) = delete;
         ModelWarperTab& operator=(ModelWarperTab&&) noexcept;
         ~ModelWarperTab() noexcept override;
 
@@ -29,7 +29,7 @@ namespace osc::mow
         CStringView impl_get_name() const final;
         void impl_on_mount() final;
         void impl_on_unmount() final;
-        bool impl_on_event(SDL_Event const&) final;
+        bool impl_on_event(const SDL_Event&) final;
         void impl_on_tick() final;
         void impl_on_draw_main_menu() final;
         void impl_on_draw() final;

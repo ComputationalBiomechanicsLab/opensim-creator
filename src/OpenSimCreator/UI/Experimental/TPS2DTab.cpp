@@ -58,8 +58,8 @@ namespace
     // i.e. U(||pi - p||) in the literature is equivalent to `RadialBasisFunction2D(pi, p)` here
     float RadialBasisFunction2D(Vec2 controlPoint, Vec2 p)
     {
-        Vec2 const diff = controlPoint - p;
-        float const r2 = dot(diff, diff);
+        const Vec2 diff = controlPoint - p;
+        const float r2 = dot(diff, diff);
 
         if (r2 == 0.0f)
         {
@@ -100,7 +100,7 @@ namespace
     };
 
     // evaluates the TPS equation with the given coefficients and input point
-    Vec2 Evaluate(TPSCoefficients2D const& coefs, Vec2 p)
+    Vec2 Evaluate(const TPSCoefficients2D& coefs, Vec2 p)
     {
         // this implementation effectively evaluates both `fx(x, y)` and `fy(x, y)` at
         // the same time, because `TPSCoefficients2D` stores the X and Y variants of the
@@ -110,7 +110,7 @@ namespace
         Vec2 rv = coefs.a1 + coefs.a2*p.x + coefs.a3*p.y;
 
         // accumulate non-affine terms (effectively: wi * U(||controlPoint - p||))
-        for (TPSNonAffineTerm2D const& wt : coefs.weights)
+        for (const TPSNonAffineTerm2D& wt : coefs.weights)
         {
             rv += wt.weight * RadialBasisFunction2D(wt.controlPoint, p);
         }
@@ -119,7 +119,7 @@ namespace
     }
 
     // computes all coefficients of the TPS equation (a1, a2, a3, and all the w's)
-    TPSCoefficients2D CalcCoefficients(std::span<LandmarkPair2D const> landmarkPairs)
+    TPSCoefficients2D CalcCoefficients(std::span<const LandmarkPair2D> landmarkPairs)
     {
         // this is based on the Bookstein Thin Plate Sline (TPS) warping algorithm
         //
@@ -167,7 +167,7 @@ namespace
         // 6. Use a linear solver to solve L * [w a] = [v o] to yield [w a]
         // 8. Return the coefficients, [w a]
 
-        int const numPairs = static_cast<int>(landmarkPairs.size());
+        const int numPairs = static_cast<int>(landmarkPairs.size());
 
         if (numPairs == 0)
         {
@@ -183,8 +183,8 @@ namespace
         {
             for (int col = 0; col < numPairs; ++col)
             {
-                Vec2 const& pi_ = landmarkPairs[row].src;
-                Vec2 const& pj = landmarkPairs[col].src;
+                const Vec2& pi_ = landmarkPairs[row].src;
+                const Vec2& pj = landmarkPairs[col].src;
 
                 L(row, col) = RadialBasisFunction2D(pi_, pj);
             }
@@ -192,7 +192,7 @@ namespace
 
         // populate the P part of matrix L (upper-right)
         {
-            int const pStartColumn = numPairs;
+            const int pStartColumn = numPairs;
 
             for (int row = 0; row < numPairs; ++row)
             {
@@ -204,7 +204,7 @@ namespace
 
         // populate the PT part of matrix L (bottom-left)
         {
-            int const ptStartRow = numPairs;
+            const int ptStartRow = numPairs;
 
             for (int col = 0; col < numPairs; ++col)
             {
@@ -216,8 +216,8 @@ namespace
 
         // populate the 0 part of matrix L (bottom-right)
         {
-            int const zeroStartRow = numPairs;
-            int const zeroStartCol = numPairs;
+            const int zeroStartRow = numPairs;
+            const int zeroStartCol = numPairs;
 
             for (int row = 0; row < 3; ++row)
             {
@@ -273,7 +273,7 @@ namespace
     // points
     class ThinPlateWarper2D final {
     public:
-        explicit ThinPlateWarper2D(std::span<LandmarkPair2D const> landmarkPairs) :
+        explicit ThinPlateWarper2D(std::span<const LandmarkPair2D> landmarkPairs) :
             m_Coefficients{CalcCoefficients(landmarkPairs)}
         {
         }
@@ -289,7 +289,7 @@ namespace
 
     // returns a mesh that is the equivalent of applying the 2D TPS warp to all
     // vertices of the input mesh
-    Mesh ApplyThinPlateWarpToMesh(ThinPlateWarper2D const& t, Mesh const& mesh)
+    Mesh ApplyThinPlateWarpToMesh(const ThinPlateWarper2D& t, const Mesh& mesh)
     {
         Mesh rv = mesh;
         rv.transform_vertices([&t](Vec3 v) { return Vec3{t.transform(v), v.z}; });
@@ -340,15 +340,15 @@ public:
 
         ui::begin_panel("Input");
         {
-            Vec2 const windowDims = ui::get_content_region_avail();
-            float const minDim = min(windowDims.x, windowDims.y);
-            Vec2i const texDims = Vec2i{minDim, minDim};
+            const Vec2 windowDims = ui::get_content_region_avail();
+            const float minDim = min(windowDims.x, windowDims.y);
+            const Vec2i texDims = Vec2i{minDim, minDim};
 
             renderMesh(m_InputGrid, texDims, m_InputRender);
 
             // draw rendered texture via ImGui
             ui::draw_image(*m_InputRender, texDims);
-            ui::HittestResult const ht = ui::hittest_last_drawn_item();
+            const ui::HittestResult ht = ui::hittest_last_drawn_item();
 
             // draw any 2D overlays etc.
             renderOverlayElements(ht);
@@ -366,8 +366,8 @@ public:
         {
             outputWindowPos = ui::get_cursor_screen_pos();
             outputWindowDims = ui::get_content_region_avail();
-            float const minDim = min(outputWindowDims.x, outputWindowDims.y);
-            Vec2i const texDims = Vec2i{minDim, minDim};
+            const float minDim = min(outputWindowDims.x, outputWindowDims.y);
+            const Vec2i texDims = Vec2i{minDim, minDim};
 
             {
                 // apply blending factor, compute warp, apply to grid
@@ -409,7 +409,7 @@ public:
 private:
 
     // render the given mesh as-is to the given output render texture
-    void renderMesh(Mesh const& mesh, Vec2i dims, std::optional<RenderTexture>& out)
+    void renderMesh(const Mesh& mesh, Vec2i dims, std::optional<RenderTexture>& out)
     {
         RenderTextureDescriptor desc{dims};
         desc.set_anti_aliasing_level(App::get().anti_aliasing_level());
@@ -424,15 +424,15 @@ private:
     }
 
     // render any 2D overlays
-    void renderOverlayElements(ui::HittestResult const& ht)
+    void renderOverlayElements(const ui::HittestResult& ht)
     {
         ImDrawList* const drawlist = ui::get_panel_draw_list();
 
         // render all fully-established landmark pairs
-        for (LandmarkPair2D const& p : m_LandmarkPairs)
+        for (const LandmarkPair2D& p : m_LandmarkPairs)
         {
-            Vec2 const p1 = ht.item_screen_rect.p1 + (dimensions_of(ht.item_screen_rect) * ndc_point_to_topleft_relative_pos(p.src));
-            Vec2 const p2 = ht.item_screen_rect.p1 + (dimensions_of(ht.item_screen_rect) * ndc_point_to_topleft_relative_pos(p.dest));
+            const Vec2 p1 = ht.item_screen_rect.p1 + (dimensions_of(ht.item_screen_rect) * ndc_point_to_topleft_relative_pos(p.src));
+            const Vec2 p2 = ht.item_screen_rect.p1 + (dimensions_of(ht.item_screen_rect) * ndc_point_to_topleft_relative_pos(p.dest));
 
             drawlist->AddLine(p1, p2, m_ConnectionLineColor, 5.0f);
             drawlist->AddRectFilled(p1 - 12.0f, p1 + 12.0f, m_SrcSquareColor);
@@ -442,10 +442,10 @@ private:
         // render any currenty-placing landmark pairs in a more-faded color
         if (ht.is_hovered && std::holds_alternative<GUIFirstClickMouseState>(m_MouseState))
         {
-            GUIFirstClickMouseState const& st = std::get<GUIFirstClickMouseState>(m_MouseState);
+            const GUIFirstClickMouseState& st = std::get<GUIFirstClickMouseState>(m_MouseState);
 
-            Vec2 const p1 = ht.item_screen_rect.p1 + (dimensions_of(ht.item_screen_rect) * ndc_point_to_topleft_relative_pos(st.srcNDCPos));
-            Vec2 const p2 = ui::get_mouse_pos();
+            const Vec2 p1 = ht.item_screen_rect.p1 + (dimensions_of(ht.item_screen_rect) * ndc_point_to_topleft_relative_pos(st.srcNDCPos));
+            const Vec2 p2 = ui::get_mouse_pos();
 
             drawlist->AddLine(p1, p2, m_ConnectionLineColor, 5.0f);
             drawlist->AddRectFilled(p1 - 12.0f, p1 + 12.0f, m_SrcSquareColor);
@@ -454,22 +454,22 @@ private:
     }
 
     // render any mouse-related overlays
-    void renderMouseUIElements(ui::HittestResult const& ht)
+    void renderMouseUIElements(const ui::HittestResult& ht)
     {
         std::visit(Overload
         {
-            [this, &ht](GUIInitialMouseState const& st) { renderMouseUIElements(ht, st); },
-            [this, &ht](GUIFirstClickMouseState const& st) { renderMouseUIElements(ht, st); },
+            [this, &ht](const GUIInitialMouseState& st) { renderMouseUIElements(ht, st); },
+            [this, &ht](const GUIFirstClickMouseState& st) { renderMouseUIElements(ht, st); },
         }, m_MouseState);
     }
 
     // render any mouse-related overlays for when the user hasn't clicked yet
-    void renderMouseUIElements(ui::HittestResult const& ht, GUIInitialMouseState)
+    void renderMouseUIElements(const ui::HittestResult& ht, GUIInitialMouseState)
     {
-        Vec2 const mouseScreenPos = ui::get_mouse_pos();
-        Vec2 const mouseImagePos = mouseScreenPos - ht.item_screen_rect.p1;
-        Vec2 const mouseImageRelPos = mouseImagePos / dimensions_of(ht.item_screen_rect);
-        Vec2 const mouseImageNDCPos = topleft_relative_pos_to_ndc_point(mouseImageRelPos);
+        const Vec2 mouseScreenPos = ui::get_mouse_pos();
+        const Vec2 mouseImagePos = mouseScreenPos - ht.item_screen_rect.p1;
+        const Vec2 mouseImageRelPos = mouseImagePos / dimensions_of(ht.item_screen_rect);
+        const Vec2 mouseImageNDCPos = topleft_relative_pos_to_ndc_point(mouseImageRelPos);
 
         ui::draw_tooltip_body_only(to_string(mouseImageNDCPos));
 
@@ -480,12 +480,12 @@ private:
     }
 
     // render any mouse-related overlays for when the user has clicked once
-    void renderMouseUIElements(ui::HittestResult const& ht, GUIFirstClickMouseState st)
+    void renderMouseUIElements(const ui::HittestResult& ht, GUIFirstClickMouseState st)
     {
-        Vec2 const mouseScreenPos = ui::get_mouse_pos();
-        Vec2 const mouseImagePos = mouseScreenPos - ht.item_screen_rect.p1;
-        Vec2 const mouseImageRelPos = mouseImagePos / dimensions_of(ht.item_screen_rect);
-        Vec2 const mouseImageNDCPos = topleft_relative_pos_to_ndc_point(mouseImageRelPos);
+        const Vec2 mouseScreenPos = ui::get_mouse_pos();
+        const Vec2 mouseImagePos = mouseScreenPos - ht.item_screen_rect.p1;
+        const Vec2 mouseImageRelPos = mouseImagePos / dimensions_of(ht.item_screen_rect);
+        const Vec2 mouseImageNDCPos = topleft_relative_pos_to_ndc_point(mouseImageRelPos);
 
         ui::draw_tooltip_body_only(to_string(mouseImageNDCPos) + "*");
 
@@ -527,18 +527,14 @@ private:
 };
 
 
-// public API (PIMPL)
-
 CStringView osc::TPS2DTab::id()
 {
     return "OpenSim/Experimental/TPS2D";
 }
 
-osc::TPS2DTab::TPS2DTab(ParentPtr<ITabHost> const&) :
+osc::TPS2DTab::TPS2DTab(const ParentPtr<ITabHost>&) :
     m_Impl{std::make_unique<Impl>()}
-{
-}
-
+{}
 osc::TPS2DTab::TPS2DTab(TPS2DTab&&) noexcept = default;
 osc::TPS2DTab& osc::TPS2DTab::operator=(TPS2DTab&&) noexcept = default;
 osc::TPS2DTab::~TPS2DTab() noexcept = default;

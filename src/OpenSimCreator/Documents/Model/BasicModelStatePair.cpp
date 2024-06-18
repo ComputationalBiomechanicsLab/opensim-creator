@@ -17,22 +17,22 @@ public:
         InitializeState(*m_Model);
     }
 
-    explicit Impl(IConstModelStatePair const& p) :
+    explicit Impl(const IConstModelStatePair& p) :
         Impl{p.getModel(), p.getState(), p.getFixupScaleFactor()}
     {}
 
-    explicit Impl(std::filesystem::path const& osimPath) :
+    explicit Impl(const std::filesystem::path& osimPath) :
         m_Model{std::make_unique<OpenSim::Model>(osimPath.string())}
     {
         InitializeModel(*m_Model);
         InitializeState(*m_Model);
     }
 
-    Impl(OpenSim::Model const& m, SimTK::State const& st) :
+    Impl(const OpenSim::Model& m, const SimTK::State& st) :
         Impl{m, st, 1.0f}
     {}
 
-    Impl(OpenSim::Model const& m, SimTK::State const& st, float fixupScaleFactor) :
+    Impl(const OpenSim::Model& m, const SimTK::State& st, float fixupScaleFactor) :
         m_Model(std::make_unique<OpenSim::Model>(m)),
         m_FixupScaleFactor{fixupScaleFactor}
     {
@@ -43,7 +43,7 @@ public:
         m_Model->realizeReport(m_Model->updWorkingState());
     }
 
-    Impl(Impl const& o) :
+    Impl(const Impl& o) :
         m_Model{std::make_unique<OpenSim::Model>(*o.m_Model)}
     {
         InitializeModel(*m_Model);
@@ -51,7 +51,7 @@ public:
         m_Model->updWorkingState() = o.m_Model->getWorkingState();
     }
     Impl(Impl&&) noexcept = default;
-    Impl& operator=(Impl const&) = delete;
+    Impl& operator=(const Impl&) = delete;
     Impl& operator=(Impl&&) noexcept = default;
     ~Impl() noexcept = default;
 
@@ -60,12 +60,12 @@ public:
         return std::make_unique<Impl>(*this);
     }
 
-    OpenSim::Model const& getModel() const
+    const OpenSim::Model& getModel() const
     {
         return *m_Model;
     }
 
-    SimTK::State const& getState() const
+    const SimTK::State& getState() const
     {
         return m_Model->getWorkingState();
     }
@@ -90,29 +90,29 @@ osc::BasicModelStatePair::BasicModelStatePair() :
     m_Impl{std::make_unique<Impl>()}
 {}
 
-osc::BasicModelStatePair::BasicModelStatePair(IConstModelStatePair const& p) :
+osc::BasicModelStatePair::BasicModelStatePair(const IConstModelStatePair& p) :
     m_Impl{std::make_unique<Impl>(p)}
 {}
 
-osc::BasicModelStatePair::BasicModelStatePair(std::filesystem::path const& p) :
+osc::BasicModelStatePair::BasicModelStatePair(const std::filesystem::path& p) :
     m_Impl{std::make_unique<Impl>(p)}
 {}
 
-osc::BasicModelStatePair::BasicModelStatePair(OpenSim::Model const& model, SimTK::State const& state) :
+osc::BasicModelStatePair::BasicModelStatePair(const OpenSim::Model& model, const SimTK::State& state) :
     m_Impl{std::make_unique<Impl>(model, state)}
 {}
-osc::BasicModelStatePair::BasicModelStatePair(BasicModelStatePair const&) = default;
+osc::BasicModelStatePair::BasicModelStatePair(const BasicModelStatePair&) = default;
 osc::BasicModelStatePair::BasicModelStatePair(BasicModelStatePair&&) noexcept = default;
-osc::BasicModelStatePair& osc::BasicModelStatePair::operator=(BasicModelStatePair const&) = default;
+osc::BasicModelStatePair& osc::BasicModelStatePair::operator=(const BasicModelStatePair&) = default;
 osc::BasicModelStatePair& osc::BasicModelStatePair::operator=(BasicModelStatePair&&) noexcept = default;
 osc::BasicModelStatePair::~BasicModelStatePair() noexcept = default;
 
-OpenSim::Model const& osc::BasicModelStatePair::implGetModel() const
+const OpenSim::Model& osc::BasicModelStatePair::implGetModel() const
 {
     return m_Impl->getModel();
 }
 
-SimTK::State const& osc::BasicModelStatePair::implGetState() const
+const SimTK::State& osc::BasicModelStatePair::implGetState() const
 {
     return m_Impl->getState();
 }

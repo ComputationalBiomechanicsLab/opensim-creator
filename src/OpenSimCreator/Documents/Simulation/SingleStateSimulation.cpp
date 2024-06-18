@@ -12,12 +12,11 @@ class osc::SingleStateSimulation::Impl final {
 public:
     explicit Impl(BasicModelStatePair modelState) :
         m_ModelState{std::move(modelState)}
-    {
-    }
+    {}
 
-    SynchronizedValueGuard<OpenSim::Model const> getModel() const
+    SynchronizedValueGuard<const OpenSim::Model> getModel() const
     {
-        return m_ModelState.lock_child<OpenSim::Model>([](BasicModelStatePair const& ms) -> OpenSim::Model const& { return ms.getModel(); });
+        return m_ModelState.lock_child<OpenSim::Model>([](const BasicModelStatePair& ms) -> const OpenSim::Model& { return ms.getModel(); });
     }
 
     ptrdiff_t getNumReports() const
@@ -45,12 +44,12 @@ public:
         return SimulationClocks{SimulationClock::start()};
     }
 
-    ParamBlock const& getParams() const
+    const ParamBlock& getParams() const
     {
         return m_Params;
     }
 
-    std::span<OutputExtractor const> getOutputExtractors() const
+    std::span<const OutputExtractor> getOutputExtractors() const
     {
         return {};
     }
@@ -71,8 +70,6 @@ private:
 };
 
 
-// public API (PIMPL)
-
 osc::SingleStateSimulation::SingleStateSimulation(BasicModelStatePair modelState) :
     m_Impl{std::make_unique<Impl>(std::move(modelState))}
 {}
@@ -80,7 +77,7 @@ osc::SingleStateSimulation::SingleStateSimulation(SingleStateSimulation&&) noexc
 osc::SingleStateSimulation& osc::SingleStateSimulation::operator=(SingleStateSimulation&&) noexcept = default;
 osc::SingleStateSimulation::~SingleStateSimulation() noexcept = default;
 
-SynchronizedValueGuard<OpenSim::Model const> osc::SingleStateSimulation::implGetModel() const
+SynchronizedValueGuard<const OpenSim::Model> osc::SingleStateSimulation::implGetModel() const
 {
     return m_Impl->getModel();
 }
@@ -110,12 +107,12 @@ SimulationClocks osc::SingleStateSimulation::implGetClocks() const
     return m_Impl->getClocks();
 }
 
-ParamBlock const& osc::SingleStateSimulation::implGetParams() const
+const ParamBlock& osc::SingleStateSimulation::implGetParams() const
 {
     return m_Impl->getParams();
 }
 
-std::span<OutputExtractor const> osc::SingleStateSimulation::implGetOutputExtractors() const
+std::span<const OutputExtractor> osc::SingleStateSimulation::implGetOutputExtractors() const
 {
     return m_Impl->getOutputExtractors();
 }

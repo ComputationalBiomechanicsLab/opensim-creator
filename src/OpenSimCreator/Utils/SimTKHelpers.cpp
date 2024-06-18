@@ -14,8 +14,6 @@
 
 using namespace osc;
 
-// public API
-
 SimTK::Vec3 osc::ToSimTKVec3(const Vec3& v)
 {
     return {

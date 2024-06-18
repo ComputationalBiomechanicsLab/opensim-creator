@@ -84,19 +84,19 @@ namespace osc::mi
 
     private:
         // returns true if the user's mouse is hovering over the given scene element
-        bool isHovered(MIObject const& el) const
+        bool isHovered(const MIObject& el) const
         {
             return el.getID() == m_MaybeHover.ID;
         }
 
         // returns true if the user has already selected the given scene element
-        bool isSelected(MIObject const& el) const
+        bool isSelected(const MIObject& el) const
         {
             return cpp23::contains(m_SelectedObjectIDs, el.getID());
         }
 
         // returns true if the user can (de)select the given element
-        bool isSelectable(MIObject const& el) const
+        bool isSelectable(const MIObject& el) const
         {
             if (m_Options.maybeElsAttachingTo.contains(el.getID()))
             {
@@ -105,15 +105,15 @@ namespace osc::mi
 
             return std::visit(Overload
             {
-                [this](Ground const&)  { return m_Options.canChooseGround; },
-                [this](Mesh const&)    { return m_Options.canChooseMeshes; },
-                [this](Body const&)    { return m_Options.canChooseBodies; },
-                [this](Joint const&)   { return m_Options.canChooseJoints; },
-                [this](StationEl const&) { return m_Options.canChooseStations; },
+                [this](const Ground&)  { return m_Options.canChooseGround; },
+                [this](const Mesh&)    { return m_Options.canChooseMeshes; },
+                [this](const Body&)    { return m_Options.canChooseBodies; },
+                [this](const Joint&)   { return m_Options.canChooseJoints; },
+                [this](const StationEl&) { return m_Options.canChooseStations; },
             }, el.toVariant());
         }
 
-        void select(MIObject const& el)
+        void select(const MIObject& el)
         {
             if (!isSelectable(el))
             {
@@ -128,7 +128,7 @@ namespace osc::mi
             m_SelectedObjectIDs.push_back(el.getID());
         }
 
-        void deSelect(MIObject const& el)
+        void deSelect(const MIObject& el)
         {
             if (!isSelectable(el))
             {
@@ -138,14 +138,14 @@ namespace osc::mi
             std::erase_if(m_SelectedObjectIDs, [elID = el.getID()](UID id) { return id == elID; } );
         }
 
-        void tryToggleSelectionStateOf(MIObject const& el)
+        void tryToggleSelectionStateOf(const MIObject& el)
         {
             isSelected(el) ? deSelect(el) : select(el);
         }
 
         void tryToggleSelectionStateOf(UID id)
         {
-            MIObject const* el = m_Shared->getModelGraph().tryGetByID(id);
+            const MIObject* el = m_Shared->getModelGraph().tryGetByID(id);
 
             if (el)
             {
@@ -153,7 +153,7 @@ namespace osc::mi
             }
         }
 
-        SceneDecorationFlags computeFlags(MIObject const& el) const
+        SceneDecorationFlags computeFlags(const MIObject& el) const
         {
             if (isSelected(el))
             {
@@ -174,12 +174,12 @@ namespace osc::mi
         {
             m_DrawablesBuffer.clear();
 
-            Document const& mg = m_Shared->getModelGraph();
+            const Document& mg = m_Shared->getModelGraph();
 
             float fadedAlpha = 0.2f;
             float animScale = ease_out_elastic(m_AnimationFraction);
 
-            for (MIObject const& el : mg.iter())
+            for (const MIObject& el : mg.iter())
             {
                 size_t start = m_DrawablesBuffer.size();
                 m_Shared->appendDrawables(el, m_DrawablesBuffer);
@@ -254,7 +254,7 @@ namespace osc::mi
                 return;
             }
 
-            MIObject const* se = m_Shared->getModelGraph().tryGetByID(m_MaybeHover.ID);
+            const MIObject* se = m_Shared->getModelGraph().tryGetByID(m_MaybeHover.ID);
 
             if (se)
             {
@@ -321,9 +321,9 @@ namespace osc::mi
             ui::push_style_var(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
             ui::push_style_color(ImGuiCol_Button, Color::half_grey());
 
-            CStringView const text = ICON_FA_ARROW_LEFT " Cancel (ESC)";
-            Vec2 const margin = {25.0f, 35.0f};
-            Vec2 const buttonTopLeft = m_Shared->get3DSceneRect().p2 - (ui::calc_button_size(text) + margin);
+            const CStringView text = ICON_FA_ARROW_LEFT " Cancel (ESC)";
+            const Vec2 margin = {25.0f, 35.0f};
+            const Vec2 buttonTopLeft = m_Shared->get3DSceneRect().p2 - (ui::calc_button_size(text) + margin);
 
             ui::set_cursor_screen_pos(buttonTopLeft);
             if (ui::draw_button(text))
@@ -335,7 +335,7 @@ namespace osc::mi
             ui::pop_style_var();
         }
 
-        bool implOnEvent(SDL_Event const& e) final
+        bool implOnEvent(const SDL_Event& e) final
         {
             return m_Shared->onEvent(e);
         }
@@ -379,7 +379,7 @@ namespace osc::mi
             drawCancelButton();
         }
 
-        Color FaintifyColor(Color const& srcColor) const
+        Color FaintifyColor(const Color& srcColor) const
         {
             Color color = srcColor;
             color.a *= 0.2f;

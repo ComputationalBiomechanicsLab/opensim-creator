@@ -31,12 +31,12 @@ namespace
     });
 
     template<std::derived_from<SimTK::Integrator> Integrator>
-    std::unique_ptr<SimTK::Integrator> make_integrator(SimTK::System const& system)
+    std::unique_ptr<SimTK::Integrator> make_integrator(const SimTK::System& system)
     {
         return std::make_unique<Integrator>(system);
     }
 
-    using IntegratorCtor = std::unique_ptr<SimTK::Integrator>(*)(SimTK::System const&);
+    using IntegratorCtor = std::unique_ptr<SimTK::Integrator>(*)(const SimTK::System&);
 
     constexpr auto c_IntegratorMethodConstructors = std::to_array<IntegratorCtor>({
         make_integrator<SimTK::RungeKuttaMersonIntegrator>,
@@ -56,7 +56,7 @@ CStringView osc::IntegratorMethod::label() const
     return c_IntegratorMethodOptionStrings[to_index(m_Option)];
 }
 
-std::unique_ptr<SimTK::Integrator> osc::IntegratorMethod::instantiate(SimTK::System const& system) const
+std::unique_ptr<SimTK::Integrator> osc::IntegratorMethod::instantiate(const SimTK::System& system) const
 {
     static_assert(c_IntegratorMethodConstructors.size() == num_options<IntegratorMethodOption>());
     return c_IntegratorMethodConstructors[to_index(m_Option)](system);

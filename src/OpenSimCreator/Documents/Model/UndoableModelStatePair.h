@@ -34,22 +34,22 @@ namespace osc
         UndoableModelStatePair();
 
         // constructs a model from an existing in-memory OpenSim model
-        explicit UndoableModelStatePair(OpenSim::Model const&);
+        explicit UndoableModelStatePair(const OpenSim::Model&);
 
         // constructs a model from an existing in-memory OpenSim model
         explicit UndoableModelStatePair(std::unique_ptr<OpenSim::Model> model);
 
         // construct a model by loading an existing on-disk osim file
-        explicit UndoableModelStatePair(std::filesystem::path const& osimPath);
+        explicit UndoableModelStatePair(const std::filesystem::path& osimPath);
 
         // copy-construct a new UndoableUiModel
-        UndoableModelStatePair(UndoableModelStatePair const&);
+        UndoableModelStatePair(const UndoableModelStatePair&);
 
         // move an UndoableUiModel in memory
         UndoableModelStatePair(UndoableModelStatePair&&) noexcept;
 
         // copy-assign some other UndoableUiModel over this one
-        UndoableModelStatePair& operator=(UndoableModelStatePair const&);
+        UndoableModelStatePair& operator=(const UndoableModelStatePair&);
 
         // move-assign some other UndoableUiModel over this one
         UndoableModelStatePair& operator=(UndoableModelStatePair&&) noexcept;
@@ -71,7 +71,7 @@ namespace osc
         // sets the full filesystem path of the model's on-disk location
         //
         // setting this to an empty path is interpreted as "no on-disk location"
-        void setFilesystemPath(std::filesystem::path const&);
+        void setFilesystemPath(const std::filesystem::path&);
 
         // returns `true` if the current model commit is up to date with its on-disk representation
         //
@@ -101,7 +101,7 @@ namespace osc
         void rollback();
 
         // try to checkout the given commit as the latest commit
-        bool tryCheckout(ModelStateCommit const&);
+        bool tryCheckout(const ModelStateCommit&);
 
         // read/manipulate underlying OpenSim::Model
         //
@@ -111,20 +111,20 @@ namespace osc
         void setModelVersion(UID);
 
     private:
-        OpenSim::Model const& implGetModel() const final;
+        const OpenSim::Model& implGetModel() const final;
         UID implGetModelVersion() const final;
 
-        SimTK::State const& implGetState() const final;
+        const SimTK::State& implGetState() const final;
         UID implGetStateVersion() const final;
 
         float implGetFixupScaleFactor() const final;
         void implSetFixupScaleFactor(float) final;
 
-        OpenSim::Component const* implGetSelected() const final;
-        void implSetSelected(OpenSim::Component const* c) final;
+        const OpenSim::Component* implGetSelected() const final;
+        void implSetSelected(const OpenSim::Component* c) final;
 
-        OpenSim::Component const* implGetHovered() const final;
-        void implSetHovered(OpenSim::Component const* c) final;
+        const OpenSim::Component* implGetHovered() const final;
+        void implSetHovered(const OpenSim::Component* c) final;
 
         class Impl;
         std::unique_ptr<Impl> m_Impl;

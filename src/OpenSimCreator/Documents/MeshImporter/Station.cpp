@@ -21,8 +21,8 @@ using osc::mi::MIClass;
 osc::mi::StationEl::StationEl(
     UID id,
     UID attachment,
-    Vec3 const& position,
-    std::string const& name) :
+    const Vec3& position,
+    const std::string& name) :
 
     m_ID{id},
     m_Attachment{attachment},
@@ -33,8 +33,8 @@ osc::mi::StationEl::StationEl(
 
 osc::mi::StationEl::StationEl(
     UID attachment,
-    Vec3 const& position,
-    std::string const& name) :
+    const Vec3& position,
+    const std::string& name) :
 
     m_Attachment{attachment},
     m_Position{position},

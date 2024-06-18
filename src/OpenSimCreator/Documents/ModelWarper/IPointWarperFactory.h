@@ -21,15 +21,15 @@ namespace osc::mow
         public IValidateable {
     protected:
         IPointWarperFactory() = default;
-        IPointWarperFactory(IPointWarperFactory const&) = default;
+        IPointWarperFactory(const IPointWarperFactory&) = default;
         IPointWarperFactory(IPointWarperFactory&&) noexcept = default;
-        IPointWarperFactory& operator=(IPointWarperFactory const&) = default;
+        IPointWarperFactory& operator=(const IPointWarperFactory&) = default;
         IPointWarperFactory& operator=(IPointWarperFactory&&) noexcept = default;
     public:
         virtual ~IPointWarperFactory() = default;
 
-        std::unique_ptr<IPointWarper> tryCreatePointWarper(ModelWarpDocument const& document) const { return implTryCreatePointWarper(document); }
+        std::unique_ptr<IPointWarper> tryCreatePointWarper(const ModelWarpDocument& document) const { return implTryCreatePointWarper(document); }
     private:
-        virtual std::unique_ptr<IPointWarper> implTryCreatePointWarper(ModelWarpDocument const&) const = 0;
+        virtual std::unique_ptr<IPointWarper> implTryCreatePointWarper(const ModelWarpDocument&) const = 0;
     };
 }

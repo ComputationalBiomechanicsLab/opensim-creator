@@ -14,13 +14,13 @@ namespace osc
     public:
         ModelEditorToolbar(
             std::string_view label,
-            ParentPtr<IMainUIStateAPI> const&,
+            const ParentPtr<IMainUIStateAPI>&,
             IEditorAPI*,
             std::shared_ptr<UndoableModelStatePair>
         );
-        ModelEditorToolbar(ModelEditorToolbar const&) = delete;
+        ModelEditorToolbar(const ModelEditorToolbar&) = delete;
         ModelEditorToolbar(ModelEditorToolbar&&) noexcept;
-        ModelEditorToolbar& operator=(ModelEditorToolbar const&) = delete;
+        ModelEditorToolbar& operator=(const ModelEditorToolbar&) = delete;
         ModelEditorToolbar& operator=(ModelEditorToolbar&&) noexcept;
         ~ModelEditorToolbar() noexcept;
 

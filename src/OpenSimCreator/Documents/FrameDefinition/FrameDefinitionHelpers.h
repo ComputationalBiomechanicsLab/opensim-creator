@@ -31,49 +31,49 @@ namespace osc::fd
 
     // returns the ground-based location re-expressed w.r.t. the given frame
     SimTK::Vec3 CalcLocationInFrame(
-        OpenSim::Frame const&,
-        SimTK::State const&,
-        Vec3 const& locationInGround
+        const OpenSim::Frame&,
+        const SimTK::State&,
+        const Vec3& locationInGround
     );
 
     // sets the appearance of `geometry` (SimTK) from `appearance` (OpenSim)
     void SetGeomAppearance(
         SimTK::DecorativeGeometry&,
-        OpenSim::Appearance const&
+        const OpenSim::Appearance&
     );
 
     // sets the color and opacity of `appearance` from `color`
     void SetColorAndOpacity(
         OpenSim::Appearance&,
-        Color const&
+        const Color&
     );
 
     // returns a decorative sphere with `radius`, `position`, and `appearance`
     SimTK::DecorativeSphere CreateDecorativeSphere(
         double radius,
-        SimTK::Vec3 const& position,
-        OpenSim::Appearance const&
+        const SimTK::Vec3& position,
+        const OpenSim::Appearance&
     );
 
     // returns a decorative arrow between `startPosition` and `endPosition` with `appearance`
     SimTK::DecorativeArrow CreateDecorativeArrow(
-        SimTK::Vec3 const& startPosition,
-        SimTK::Vec3 const& endPosition,
-        OpenSim::Appearance const&
+        const SimTK::Vec3& startPosition,
+        const SimTK::Vec3& endPosition,
+        const OpenSim::Appearance&
     );
 
     // returns a decorative frame based on the provided transform
     SimTK::DecorativeFrame CreateDecorativeFrame(
-        SimTK::Transform const& transformInGround
+        const SimTK::Transform& transformInGround
     );
 
     // returns a SimTK::DecorativeMesh reperesentation of the parallelogram formed between
     // two (potentially disconnected) edges, starting at `origin`
     SimTK::DecorativeMesh CreateParallelogramMesh(
-        SimTK::Vec3 const& origin,
-        SimTK::Vec3 const& firstEdge,
-        SimTK::Vec3 const& secondEdge,
-        OpenSim::Appearance const& appearance
+        const SimTK::Vec3& origin,
+        const SimTK::Vec3& firstEdge,
+        const SimTK::Vec3& secondEdge,
+        const OpenSim::Appearance& appearance
     );
 
     // custom helper that customizes the OpenSim model defaults to be more
@@ -93,24 +93,24 @@ namespace osc::fd
     void SetupDefault3DViewportRenderingParams(ModelRendererParams&);
 
     // returns `true` if the given component is a point in the frame definition scene
-    bool IsPoint(OpenSim::Component const&);
+    bool IsPoint(const OpenSim::Component&);
 
     // returns `true` if the given component is a mesh in the frame definition scene
-    bool IsMesh(OpenSim::Component const&);
+    bool IsMesh(const OpenSim::Component&);
 
     // returns `true` if the given component is a frame in the frame definition scene
-    bool IsPhysicalFrame(OpenSim::Component const&);
+    bool IsPhysicalFrame(const OpenSim::Component&);
 
     // returns `true` if the given component is an edge
-    bool IsEdge(OpenSim::Component const&);
+    bool IsEdge(const OpenSim::Component&);
 
     // returns the direction vector between the `start` and `end` points
-    SimTK::UnitVec3 CalcDirection(EdgePoints const&);
+    SimTK::UnitVec3 CalcDirection(const EdgePoints&);
 
     // returns points for an edge that:
     //
     // - originates at `a.start`
     // - points in the direction of `a x b`
     // - has a magnitude of min(|a|, |b|) - handy for rendering
-    EdgePoints CrossProduct(EdgePoints const&, EdgePoints const&);
+    EdgePoints CrossProduct(const EdgePoints&, const EdgePoints&);
 }

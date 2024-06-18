@@ -13,14 +13,14 @@ namespace osc
     class IConstModelStatePair {
     protected:
         IConstModelStatePair() = default;
-        IConstModelStatePair(IConstModelStatePair const&) = default;
+        IConstModelStatePair(const IConstModelStatePair&) = default;
         IConstModelStatePair(IConstModelStatePair&&) noexcept = default;
-        IConstModelStatePair& operator=(IConstModelStatePair const&) = default;
+        IConstModelStatePair& operator=(const IConstModelStatePair&) = default;
         IConstModelStatePair& operator=(IConstModelStatePair&&) noexcept = default;
     public:
         virtual ~IConstModelStatePair() noexcept = default;
 
-        OpenSim::Model const& getModel() const
+        const OpenSim::Model& getModel() const
         {
             return implGetModel();
         }
@@ -29,7 +29,7 @@ namespace osc
             return implGetModelVersion();
         }
 
-        SimTK::State const& getState() const
+        const SimTK::State& getState() const
         {
             return implGetState();
         }
@@ -38,18 +38,18 @@ namespace osc
             return implGetStateVersion();
         }
 
-        OpenSim::Component const* getSelected() const
+        const OpenSim::Component* getSelected() const
         {
             return implGetSelected();
         }
 
         template<typename T>
-        T const* getSelectedAs() const
+        const T* getSelectedAs() const
         {
-            return dynamic_cast<T const*>(getSelected());
+            return dynamic_cast<const T*>(getSelected());
         }
 
-        OpenSim::Component const* getHovered() const
+        const OpenSim::Component* getHovered() const
         {
             return implGetHovered();
         }
@@ -61,7 +61,7 @@ namespace osc
         }
 
     private:
-        virtual OpenSim::Model const& implGetModel() const = 0;
+        virtual const OpenSim::Model& implGetModel() const = 0;
         virtual UID implGetModelVersion() const
         {
             // assume the version always changes, unless the concrete implementation
@@ -69,7 +69,7 @@ namespace osc
             return UID{};
         }
 
-        virtual SimTK::State const& implGetState() const = 0;
+        virtual const SimTK::State& implGetState() const = 0;
         virtual UID implGetStateVersion() const
         {
             // assume the version always changes, unless the concrete implementation
@@ -77,12 +77,12 @@ namespace osc
             return UID{};
         }
 
-        virtual OpenSim::Component const* implGetSelected() const
+        virtual const OpenSim::Component* implGetSelected() const
         {
             return nullptr;
         }
 
-        virtual OpenSim::Component const* implGetHovered() const
+        virtual const OpenSim::Component* implGetHovered() const
         {
             return nullptr;
         }

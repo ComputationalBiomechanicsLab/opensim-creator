@@ -11,5 +11,4 @@ osc::ModelEditorViewerPanelState::ModelEditorViewerPanelState(
     {
         App::singleton<SceneCache>(App::resource_loader()),
     }
-{
-}
+{}

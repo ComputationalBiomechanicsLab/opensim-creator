@@ -18,11 +18,11 @@ namespace osc
         NavigatorPanel(
             std::string_view panelName,
             std::shared_ptr<IModelStatePair>,
-            std::function<void(OpenSim::ComponentPath const&)> onRightClick = [](auto const&){}
+            std::function<void(const OpenSim::ComponentPath&)> onRightClick = [](const auto&){}
         );
-        NavigatorPanel(NavigatorPanel const&) = delete;
+        NavigatorPanel(const NavigatorPanel&) = delete;
         NavigatorPanel(NavigatorPanel&&) noexcept;
-        NavigatorPanel& operator=(NavigatorPanel const&) = delete;
+        NavigatorPanel& operator=(const NavigatorPanel&) = delete;
         NavigatorPanel& operator=(NavigatorPanel&&) noexcept;
         ~NavigatorPanel() noexcept;
 

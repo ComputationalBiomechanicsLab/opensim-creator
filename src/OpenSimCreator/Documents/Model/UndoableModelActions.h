@@ -43,18 +43,18 @@ namespace osc
 
     // create a new model and show it in a new tab
     void ActionNewModel(
-        ParentPtr<IMainUIStateAPI> const&
+        const ParentPtr<IMainUIStateAPI>&
     );
 
     // prompt a user to open a model file and open it in a new tab
     void ActionOpenModel(
-        ParentPtr<IMainUIStateAPI> const&
+        const ParentPtr<IMainUIStateAPI>&
     );
 
     // open the specified model in a loading tab
     void ActionOpenModel(
-        ParentPtr<IMainUIStateAPI> const&,
-        std::filesystem::path const&
+        const ParentPtr<IMainUIStateAPI>&,
+        const std::filesystem::path&
     );
 
     // try to save the given model file to disk
@@ -97,15 +97,15 @@ namespace osc
 
     // loads an STO file against the current model and opens it in a new tab
     bool ActionLoadSTOFileAgainstModel(
-        ParentPtr<IMainUIStateAPI> const&,
-        UndoableModelStatePair const&,
-        std::filesystem::path const& stoPath
+        const ParentPtr<IMainUIStateAPI>&,
+        const UndoableModelStatePair&,
+        const std::filesystem::path& stoPath
     );
 
     // start simulating the given model in a forward-dynamic simulator tab
     bool ActionStartSimulatingModel(
-        ParentPtr<IMainUIStateAPI> const&,
-        UndoableModelStatePair const&
+        const ParentPtr<IMainUIStateAPI>&,
+        const UndoableModelStatePair&
     );
 
     // reload the given model from its backing file (if applicable)
@@ -115,7 +115,7 @@ namespace osc
 
     // copies the full absolute path to the osim to the clipboard
     bool ActionCopyModelPathToClipboard(
-        UndoableModelStatePair const&
+        const UndoableModelStatePair&
     );
 
     // try to automatically set the model's scale factor based on how big the scene is
@@ -161,66 +161,66 @@ namespace osc
 
     // start performing a series of simulations against the model by opening a tab that tries all possible integrators
     bool ActionSimulateAgainstAllIntegrators(
-        ParentPtr<IMainUIStateAPI> const&,
-        UndoableModelStatePair const&
+        const ParentPtr<IMainUIStateAPI>&,
+        const UndoableModelStatePair&
     );
 
     // add an offset frame to the current selection (if applicable)
     bool ActionAddOffsetFrameToPhysicalFrame(
         UndoableModelStatePair&,
-        OpenSim::ComponentPath const& physFramePath
+        const OpenSim::ComponentPath& physFramePath
     );
 
     // returns true if the specified joint (if valid) can be re-zeroed
     bool CanRezeroJoint(
         UndoableModelStatePair&,
-        OpenSim::ComponentPath const& jointPath
+        const OpenSim::ComponentPath& jointPath
     );
 
     // re-zeroes the selected joint (if applicable)
     bool ActionRezeroJoint(
         UndoableModelStatePair&,
-        OpenSim::ComponentPath const& jointPath
+        const OpenSim::ComponentPath& jointPath
     );
 
     // adds a parent offset frame to the selected joint (if applicable)
     bool ActionAddParentOffsetFrameToJoint(
         UndoableModelStatePair&,
-        OpenSim::ComponentPath const& jointPath
+        const OpenSim::ComponentPath& jointPath
     );
 
     // adds a child offset frame to the selected joint (if applicable)
     bool ActionAddChildOffsetFrameToJoint(
         UndoableModelStatePair&,
-        OpenSim::ComponentPath const& jointPath
+        const OpenSim::ComponentPath& jointPath
     );
 
     // sets the name of the selected component (if applicable)
     bool ActionSetComponentName(
         UndoableModelStatePair&,
-        OpenSim::ComponentPath const& componentPath,
-        std::string const&
+        const OpenSim::ComponentPath& componentPath,
+        const std::string&
     );
 
     // changes the type of the selected joint (if applicable) to the provided joint
     bool ActionChangeJointTypeTo(
         UndoableModelStatePair&,
-        OpenSim::ComponentPath const& jointPath,
+        const OpenSim::ComponentPath& jointPath,
         std::unique_ptr<OpenSim::Joint>
     );
 
     // attaches geometry to the selected physical frame (if applicable)
     bool ActionAttachGeometryToPhysicalFrame(
         UndoableModelStatePair&,
-        OpenSim::ComponentPath const& physFramePath,
+        const OpenSim::ComponentPath& physFramePath,
         std::unique_ptr<OpenSim::Geometry>
     );
 
     // assigns contact geometry to the selected HCF (if applicable)
     bool ActionAssignContactGeometryToHCF(
         UndoableModelStatePair&,
-        OpenSim::ComponentPath const& hcfPath,
-        OpenSim::ComponentPath const& contactGeomPath
+        const OpenSim::ComponentPath& hcfPath,
+        const OpenSim::ComponentPath& contactGeomPath
     );
 
     // applies a property edit to the model
@@ -232,8 +232,8 @@ namespace osc
     // adds a path point to the selected path actuator (if applicable)
     bool ActionAddPathPointToPathActuator(
         UndoableModelStatePair&,
-        OpenSim::ComponentPath const& pathActuatorPath,
-        OpenSim::ComponentPath const& pointPhysFrame
+        const OpenSim::ComponentPath& pathActuatorPath,
+        const OpenSim::ComponentPath& pointPhysFrame
     );
 
     // flags for reassignment
@@ -249,9 +249,9 @@ namespace osc
     // attempts to reassign a component's socket connection (returns false and writes to `error` on failure)
     bool ActionReassignComponentSocket(
         UndoableModelStatePair&,
-        OpenSim::ComponentPath const& componentAbsPath,
-        std::string const& socketName,
-        OpenSim::Object const& connectee,
+        const OpenSim::ComponentPath& componentAbsPath,
+        const std::string& socketName,
+        const OpenSim::Object& connectee,
         SocketReassignmentFlags flags,
         std::string& error
     );
@@ -281,7 +281,7 @@ namespace osc
     // add a new body to the model
     bool ActionAddBodyToModel(
         UndoableModelStatePair&,
-        BodyDetails const&
+        const BodyDetails&
     );
 
     // add the given component into the model graph
@@ -295,7 +295,7 @@ namespace osc
     // the `OpenSim::PhysicalFrame` located at `physicalFramePath`
     bool ActionAddWrapObjectToPhysicalFrame(
         UndoableModelStatePair&,
-        OpenSim::ComponentPath const& physicalFramePath,
+        const OpenSim::ComponentPath& physicalFramePath,
         std::unique_ptr<OpenSim::WrapObject> wrapObjPtr
     );
 
@@ -303,8 +303,8 @@ namespace osc
     // wrap object set, which makes the path wrap around the wrap object
     bool ActionAddWrapObjectToGeometryPathWraps(
         UndoableModelStatePair&,
-        OpenSim::GeometryPath const&,
-        OpenSim::WrapObject const&
+        const OpenSim::GeometryPath&,
+        const OpenSim::WrapObject&
     );
 
     // remove the given `OpenSim::WrapObject` from the `OpenSim::GeometryPath`'s
@@ -313,49 +313,49 @@ namespace osc
     // does nothing if the `OpenSim::WrapObject` isn't in the path's wrap set
     bool ActionRemoveWrapObjectFromGeometryPathWraps(
         UndoableModelStatePair&,
-        OpenSim::GeometryPath const&,
-        OpenSim::WrapObject const&
+        const OpenSim::GeometryPath&,
+        const OpenSim::WrapObject&
     );
 
     // set the speed of a coordinate
     bool ActionSetCoordinateSpeed(
         UndoableModelStatePair&,
-        OpenSim::Coordinate const&,
+        const OpenSim::Coordinate&,
         double newSpeed
     );
 
     // set the speed of a coordinate and ensure it is saved
     bool ActionSetCoordinateSpeedAndSave(
         UndoableModelStatePair&,
-        OpenSim::Coordinate const&,
+        const OpenSim::Coordinate&,
         double newSpeed
     );
 
     // set a coordinate (un)locked
     bool ActionSetCoordinateLockedAndSave(
         UndoableModelStatePair&,
-        OpenSim::Coordinate const&,
+        const OpenSim::Coordinate&,
         bool
     );
 
     // set the value of a coordinate
     bool ActionSetCoordinateValue(
         UndoableModelStatePair&,
-        OpenSim::Coordinate const&,
+        const OpenSim::Coordinate&,
         double newValue
     );
 
     // set the value of a coordinate and ensure it is saved
     bool ActionSetCoordinateValueAndSave(
         UndoableModelStatePair&,
-        OpenSim::Coordinate const&,
+        const OpenSim::Coordinate&,
         double newValue
     );
 
     // sets the `Appearance` property of the pointed-to component, and all its children, to have visible = bool
     bool ActionSetComponentAndAllChildrensIsVisibleTo(
         UndoableModelStatePair&,
-        OpenSim::ComponentPath const&,
+        const OpenSim::ComponentPath&,
         bool newVisibility
     );
 
@@ -363,14 +363,14 @@ namespace osc
     // `Appearance` property of the pointed-to component, and all its children, to `visible = true`
     bool ActionShowOnlyComponentAndAllChildren(
         UndoableModelStatePair&,
-        OpenSim::ComponentPath const&
+        const OpenSim::ComponentPath&
     );
 
     // sets the `Appearance` property of all components in the model to `visible = visible` if that component has
     // the given concrete class name
     bool ActionSetComponentAndAllChildrenWithGivenConcreteClassNameIsVisibleTo(
         UndoableModelStatePair&,
-        OpenSim::ComponentPath const&,
+        const OpenSim::ComponentPath&,
         std::string_view concreteClassName,
         bool newVisibility
     );
@@ -380,8 +380,8 @@ namespace osc
     // (does not save the change to undo/redo storage)
     bool ActionTranslateStation(
         UndoableModelStatePair&,
-        OpenSim::Station const&,
-        Vec3 const& deltaPosition
+        const OpenSim::Station&,
+        const Vec3& deltaPosition
     );
 
     // sets the location of the given station in its parent frame to its old location plus the provided vector
@@ -389,8 +389,8 @@ namespace osc
     // (saves the change to undo/redo storage)
     bool ActionTranslateStationAndSave(
         UndoableModelStatePair&,
-        OpenSim::Station const&,
-        Vec3 const& deltaPosition
+        const OpenSim::Station&,
+        const Vec3& deltaPosition
     );
 
     // sets the location of the given path point in its parent frame to its old location plus the provided delta
@@ -398,8 +398,8 @@ namespace osc
     // (does not save the change to undo/redo storage)
     bool ActionTranslatePathPoint(
         UndoableModelStatePair&,
-        OpenSim::PathPoint const&,
-        Vec3 const& deltaPosition
+        const OpenSim::PathPoint&,
+        const Vec3& deltaPosition
     );
 
     // sets the location of the given path point in its parent frame to its old location plus the provided delta
@@ -407,55 +407,55 @@ namespace osc
     // (saves the change to undo/redo storage)
     bool ActionTranslatePathPointAndSave(
         UndoableModelStatePair&,
-        OpenSim::PathPoint const&,
-        Vec3 const& deltaPosition
+        const OpenSim::PathPoint&,
+        const Vec3& deltaPosition
     );
 
     bool ActionTransformPof(
         UndoableModelStatePair&,
-        OpenSim::PhysicalOffsetFrame const&,
-        Vec3 const& deltaTranslationInParentFrame,
-        Eulers const& newPofEulers
+        const OpenSim::PhysicalOffsetFrame&,
+        const Vec3& deltaTranslationInParentFrame,
+        const Eulers& newPofEulers
     );
 
     bool ActionTransformWrapObject(
         UndoableModelStatePair&,
-        OpenSim::WrapObject const&,
-        Vec3 const& deltaPosition,
-        Eulers const& newEulers
+        const OpenSim::WrapObject&,
+        const Vec3& deltaPosition,
+        const Eulers& newEulers
     );
 
     bool ActionTransformContactGeometry(
         UndoableModelStatePair&,
-        OpenSim::ContactGeometry const&,
-        Vec3 const& deltaPosition,
-        Eulers const& newEulers
+        const OpenSim::ContactGeometry&,
+        const Vec3& deltaPosition,
+        const Eulers& newEulers
     );
 
     bool ActionFitSphereToMesh(
         UndoableModelStatePair&,
-        OpenSim::Mesh const&
+        const OpenSim::Mesh&
     );
     bool ActionFitEllipsoidToMesh(
         UndoableModelStatePair&,
-        OpenSim::Mesh const&
+        const OpenSim::Mesh&
     );
     bool ActionFitPlaneToMesh(
         UndoableModelStatePair&,
-        OpenSim::Mesh const&
+        const OpenSim::Mesh&
     );
 
     bool ActionImportLandmarks(
         UndoableModelStatePair&,
-        std::span<lm::NamedLandmark const>,
+        std::span<const lm::NamedLandmark>,
         std::optional<std::string> maybeName
     );
 
     bool ActionExportModelGraphToDotviz(
-        UndoableModelStatePair const&
+        const UndoableModelStatePair&
     );
 
     bool ActionExportModelGraphToDotvizClipboard(
-        UndoableModelStatePair const&
+        const UndoableModelStatePair&
     );
 }

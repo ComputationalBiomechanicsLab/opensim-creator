@@ -8,19 +8,19 @@ namespace osc::mow
     class IFrameWarper {
     protected:
         IFrameWarper() = default;
-        IFrameWarper(IFrameWarper const&) = default;
+        IFrameWarper(const IFrameWarper&) = default;
         IFrameWarper(IFrameWarper&&) noexcept = default;
-        IFrameWarper& operator=(IFrameWarper const&) = default;
+        IFrameWarper& operator=(const IFrameWarper&) = default;
         IFrameWarper& operator=(IFrameWarper&&) noexcept = default;
     public:
         virtual ~IFrameWarper() noexcept = default;
 
-        SimTK::Transform warp(SimTK::Transform const& transform) const
+        SimTK::Transform warp(const SimTK::Transform& transform) const
         {
             return implWarp(transform);
         }
 
     private:
-        virtual SimTK::Transform implWarp(SimTK::Transform const&) const = 0;
+        virtual SimTK::Transform implWarp(const SimTK::Transform&) const = 0;
     };
 }

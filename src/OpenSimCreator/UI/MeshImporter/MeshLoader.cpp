@@ -15,13 +15,13 @@ osc::mi::MeshLoadResponse osc::mi::respondToMeshloadRequest(MeshLoadRequest msg)
     std::vector<LoadedMesh> loadedMeshes;
     loadedMeshes.reserve(msg.paths.size());
 
-    for (std::filesystem::path const& path : msg.paths)
+    for (const std::filesystem::path& path : msg.paths)
     {
         try
         {
             loadedMeshes.push_back(LoadedMesh{path, LoadMeshViaSimTK(path)});
         }
-        catch (std::exception const& ex)
+        catch (const std::exception& ex)
         {
             // swallow the exception and emit a log error
             //

@@ -16,13 +16,13 @@ namespace osc
     public:
         GeometryPathEditorPopup(
             std::string_view popupName_,
-            std::shared_ptr<UndoableModelStatePair const> targetModel_,
-            std::function<OpenSim::GeometryPath const*()> geometryPathGetter_,
-            std::function<void(OpenSim::GeometryPath const&)> onLocalCopyEdited_
+            std::shared_ptr<const UndoableModelStatePair> targetModel_,
+            std::function<const OpenSim::GeometryPath*()> geometryPathGetter_,
+            std::function<void(const OpenSim::GeometryPath&)> onLocalCopyEdited_
         );
-        GeometryPathEditorPopup(GeometryPathEditorPopup const&) = delete;
+        GeometryPathEditorPopup(const GeometryPathEditorPopup&) = delete;
         GeometryPathEditorPopup(GeometryPathEditorPopup&&) noexcept;
-        GeometryPathEditorPopup& operator=(GeometryPathEditorPopup const&) = delete;
+        GeometryPathEditorPopup& operator=(const GeometryPathEditorPopup&) = delete;
         GeometryPathEditorPopup& operator=(GeometryPathEditorPopup&&) noexcept;
         ~GeometryPathEditorPopup() noexcept;
 

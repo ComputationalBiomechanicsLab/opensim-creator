@@ -26,21 +26,21 @@ namespace osc::mow
         // constructs a lookup that, given the inputs, is as populated as possible (i.e.
         // actually tries to figure out which concrete point warpers to use, etc.)
         PointWarperFactories(
-            std::filesystem::path const& osimFileLocation,
-            OpenSim::Model const&,
-            ModelWarpConfiguration const&
+            const std::filesystem::path& osimFileLocation,
+            const OpenSim::Model&,
+            const ModelWarpConfiguration&
         );
 
         template<std::derived_from<IPointWarperFactory> TMeshWarp = IPointWarperFactory>
-        TMeshWarp const* find(std::string const& meshComponentAbsPath) const
+        const TMeshWarp* find(const std::string& meshComponentAbsPath) const
         {
-            return dynamic_cast<TMeshWarp const*>(lookup(meshComponentAbsPath));
+            return dynamic_cast<const TMeshWarp*>(lookup(meshComponentAbsPath));
         }
 
     private:
-        IPointWarperFactory const* lookup(std::string const& absPath) const
+        const IPointWarperFactory* lookup(const std::string& absPath) const
         {
-            if (auto const* ptr = lookup_or_nullptr(m_AbsPathToWarpLUT, absPath)) {
+            if (const auto* ptr = lookup_or_nullptr(m_AbsPathToWarpLUT, absPath)) {
                 return ptr->get();
             }
             else {

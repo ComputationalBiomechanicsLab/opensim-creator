@@ -28,10 +28,10 @@ namespace
         SimulationReport simulationReport;
     };
 
-    void UpdateCachedSimulationReportIfNecessary(IConstModelStatePair const& src, CachedSimulationReport& cache)
+    void UpdateCachedSimulationReportIfNecessary(const IConstModelStatePair& src, CachedSimulationReport& cache)
     {
-        UID const modelVersion = src.getModelVersion();
-        UID const stateVersion = src.getStateVersion();
+        const UID modelVersion = src.getModelVersion();
+        const UID stateVersion = src.getStateVersion();
 
         if (cache.sourceModelVersion == modelVersion &&
             cache.sourceStateVersion == stateVersion)
@@ -52,14 +52,13 @@ class osc::OutputWatchesPanel::Impl final : public StandardPanelImpl {
 public:
 
     Impl(std::string_view panelName_,
-        std::shared_ptr<UndoableModelStatePair const> model_,
-        ParentPtr<IMainUIStateAPI> const& api_) :
+        std::shared_ptr<const UndoableModelStatePair> model_,
+        const ParentPtr<IMainUIStateAPI>& api_) :
 
         StandardPanelImpl{panelName_},
         m_API{api_},
         m_Model{std::move(model_)}
-    {
-    }
+    {}
 
 private:
     void impl_draw_content() final
@@ -105,22 +104,18 @@ private:
     }
 
     ParentPtr<IMainUIStateAPI> m_API;
-    std::shared_ptr<UndoableModelStatePair const> m_Model;
+    std::shared_ptr<const UndoableModelStatePair> m_Model;
     CachedSimulationReport m_CachedReport;
 };
 
 
-// public API (PIMPL)
-
 osc::OutputWatchesPanel::OutputWatchesPanel(
     std::string_view panelName_,
-    std::shared_ptr<UndoableModelStatePair const> model_,
-    ParentPtr<IMainUIStateAPI> const& api_) :
+    std::shared_ptr<const UndoableModelStatePair> model_,
+    const ParentPtr<IMainUIStateAPI>& api_) :
 
     m_Impl{std::make_unique<Impl>(panelName_, std::move(model_), api_)}
-{
-}
-
+{}
 osc::OutputWatchesPanel::OutputWatchesPanel(OutputWatchesPanel&&) noexcept = default;
 osc::OutputWatchesPanel& osc::OutputWatchesPanel::operator=(OutputWatchesPanel&&) noexcept = default;
 osc::OutputWatchesPanel::~OutputWatchesPanel() noexcept = default;

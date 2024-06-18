@@ -16,7 +16,7 @@ namespace osc
     // (handy for selection logic etc.)
     struct TPSDocumentElementID final {
 
-        friend bool operator==(TPSDocumentElementID const&, TPSDocumentElementID const&) = default;
+        friend bool operator==(const TPSDocumentElementID&, const TPSDocumentElementID&) = default;
 
         UID uid;
         TPSDocumentElementType type;
@@ -26,7 +26,7 @@ namespace osc
 
 template<>
 struct std::hash<osc::TPSDocumentElementID> final {
-    size_t operator()(osc::TPSDocumentElementID const& el) const
+    size_t operator()(const osc::TPSDocumentElementID& el) const
     {
         return osc::hash_of(el.uid, el.type, el.input);
     }

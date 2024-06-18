@@ -13,23 +13,23 @@ namespace osc
     class ICustomDecorationGenerator {
     protected:
         ICustomDecorationGenerator() = default;
-        ICustomDecorationGenerator(ICustomDecorationGenerator const&) = default;
+        ICustomDecorationGenerator(const ICustomDecorationGenerator&) = default;
         ICustomDecorationGenerator(ICustomDecorationGenerator&&) noexcept = default;
-        ICustomDecorationGenerator& operator=(ICustomDecorationGenerator const&) = default;
+        ICustomDecorationGenerator& operator=(const ICustomDecorationGenerator&) = default;
         ICustomDecorationGenerator& operator=(ICustomDecorationGenerator&&) noexcept = default;
     public:
         virtual ~ICustomDecorationGenerator() noexcept = default;
 
         void generateCustomDecorations(
-            SimTK::State const& state,
-            std::function<void(SceneDecoration&&)> const& callback) const
+            const SimTK::State& state,
+            const std::function<void(SceneDecoration&&)>& callback) const
         {
             implGenerateCustomDecorations(state, callback);
         }
     private:
         virtual void implGenerateCustomDecorations(
-            SimTK::State const&,
-            std::function<void(SceneDecoration&&)> const&
+            const SimTK::State&,
+            const std::function<void(SceneDecoration&&)>&
         ) const = 0;
     };
 }

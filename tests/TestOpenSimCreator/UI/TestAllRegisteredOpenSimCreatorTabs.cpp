@@ -13,14 +13,14 @@
 using namespace osc;
 
 namespace {
-    TabRegistry const c_Tabs = []()
+    const TabRegistry c_Tabs = []()
     {
         TabRegistry r;
         RegisterOpenSimCreatorTabs(r);
         return r;
     }();
 
-    std::vector<std::string> const c_TabNames = []()
+    const std::vector<std::string> c_TabNames = []()
     {
         std::vector<std::string> rv;
         rv.reserve(c_Tabs.size());

@@ -61,7 +61,7 @@ namespace
     }
 
     template<std::copyable T>
-    std::unordered_set<T> ToSet(OpenSim::Array<T> const& v)
+    std::unordered_set<T> ToSet(const OpenSim::Array<T>& v)
     {
         std::unordered_set<T> rv;
         rv.reserve(v.size());
@@ -73,20 +73,20 @@ namespace
     }
 
     template<std::copyable T>
-    int NumUniqueEntriesIn(OpenSim::Array<T> const& v)
+    int NumUniqueEntriesIn(const OpenSim::Array<T>& v)
     {
         return static_cast<int>(ToSet(v).size());
     }
 
     template<std::copyable T>
-    bool AllElementsUnique(OpenSim::Array<T> const& v)
+    bool AllElementsUnique(const OpenSim::Array<T>& v)
     {
         return NumUniqueEntriesIn(v) == v.size();
     }
 
     std::unordered_map<int, int> CreateStorageIndexToModelSvIndexLUT(
-        OpenSim::Model const& model,
-        OpenSim::Storage const& storage)
+        const OpenSim::Model& model,
+        const OpenSim::Storage& storage)
     {
         std::unordered_map<int, int> rv;
 
@@ -108,7 +108,7 @@ namespace
         // etc for the column labels, so you *need* to map the storage column strings
         // carefully onto the model statevars
         std::vector<std::string> missing;
-        OpenSim::Array<std::string> const& storageColumnsIncludingTime = storage.getColumnLabels();
+        const OpenSim::Array<std::string>& storageColumnsIncludingTime = storage.getColumnLabels();
         OpenSim::Array<std::string> modelStateVars = model.getStateVariableNames();
 
         if (!AllElementsUnique(storageColumnsIncludingTime))
@@ -120,7 +120,7 @@ namespace
         rv.reserve(modelStateVars.size());
         for (int modelIndex = 0; modelIndex < modelStateVars.size(); ++modelIndex)
         {
-            std::string const& svName = modelStateVars[modelIndex];
+            const std::string& svName = modelStateVars[modelIndex];
             int storageIndex = OpenSim::TableUtilities::findStateLabelIndex(storageColumnsIncludingTime, svName);
             int valueIndex = storageIndex - 1;  // the column labels include 'time', which isn't in the data elements
 
@@ -140,7 +140,7 @@ namespace
             std::stringstream ss;
             ss << "the provided STO file is missing the following columns:\n";
             std::string_view delim;
-            for (std::string const& el : missing)
+            for (const std::string& el : missing)
             {
                 ss << delim << el;
                 delim = ", ";
@@ -157,7 +157,7 @@ namespace
 
     std::vector<SimulationReport> ExtractReports(
         OpenSim::Model& model,
-        std::filesystem::path const& stoFilePath)
+        const std::filesystem::path& stoFilePath)
     {
         OpenSim::Storage storage{stoFilePath.string()};
 
@@ -174,7 +174,7 @@ namespace
         // temporarily unlock coords
         std::vector<OpenSim::Coordinate*> lockedCoords = GetLockedCoordinates(model);
         SetCoordsDefaultLocked(lockedCoords, false);
-        ScopeGuard const g{[&lockedCoords]() { SetCoordsDefaultLocked(lockedCoords, true); }};
+        const ScopeGuard g{[&lockedCoords]() { SetCoordsDefaultLocked(lockedCoords, true); }};
 
         InitializeModel(model);
         InitializeState(model);
@@ -185,7 +185,7 @@ namespace
         for (int row = 0; row < storage.getSize(); ++row)
         {
             OpenSim::StateVector* sv = storage.getStateVector(row);
-            OpenSim::Array<double> const& cols = sv->getData();
+            const OpenSim::Array<double>& cols = sv->getData();
 
             SimTK::Vector stateValsBuf = model.getStateVariableValues(model.getWorkingState());
             for (auto [valueIdx, modelIdx] : lut)
@@ -216,7 +216,7 @@ class osc::StoFileSimulation::Impl final {
 public:
     Impl(
         std::unique_ptr<OpenSim::Model> model,
-        std::filesystem::path const& stoFilePath,
+        const std::filesystem::path& stoFilePath,
         float fixupScaleFactor) :
 
         m_Model{std::move(model)},
@@ -224,7 +224,7 @@ public:
         m_FixupScaleFactor{fixupScaleFactor}
     {}
 
-    SynchronizedValueGuard<OpenSim::Model const> getModel() const
+    SynchronizedValueGuard<const OpenSim::Model> getModel() const
     {
         return {m_ModelMutex, *m_Model};
     }
@@ -254,12 +254,12 @@ public:
         return SimulationClocks{{m_Start, m_End}};
     }
 
-    ParamBlock const& getParams() const
+    const ParamBlock& getParams() const
     {
         return m_ParamBlock;
     }
 
-    std::span<OutputExtractor const> getOutputExtractors() const
+    std::span<const OutputExtractor> getOutputExtractors() const
     {
         return {};
     }
@@ -284,14 +284,14 @@ private:
     float m_FixupScaleFactor = 1.0f;
 };
 
-osc::StoFileSimulation::StoFileSimulation(std::unique_ptr<OpenSim::Model> model, std::filesystem::path const& stoFilePath, float fixupScaleFactor) :
+osc::StoFileSimulation::StoFileSimulation(std::unique_ptr<OpenSim::Model> model, const std::filesystem::path& stoFilePath, float fixupScaleFactor) :
     m_Impl{std::make_unique<Impl>(std::move(model), stoFilePath, fixupScaleFactor)}
 {}
 osc::StoFileSimulation::StoFileSimulation(StoFileSimulation&&) noexcept = default;
 osc::StoFileSimulation& osc::StoFileSimulation::operator=(StoFileSimulation&&) noexcept = default;
 osc::StoFileSimulation::~StoFileSimulation() noexcept = default;
 
-SynchronizedValueGuard<OpenSim::Model const> osc::StoFileSimulation::implGetModel() const
+SynchronizedValueGuard<const OpenSim::Model> osc::StoFileSimulation::implGetModel() const
 {
     return m_Impl->getModel();
 }
@@ -321,12 +321,12 @@ SimulationClocks osc::StoFileSimulation::implGetClocks() const
     return m_Impl->getClocks();
 }
 
-ParamBlock const& osc::StoFileSimulation::implGetParams() const
+const ParamBlock& osc::StoFileSimulation::implGetParams() const
 {
     return m_Impl->getParams();
 }
 
-std::span<OutputExtractor const> osc::StoFileSimulation::implGetOutputExtractors() const
+std::span<const OutputExtractor> osc::StoFileSimulation::implGetOutputExtractors() const
 {
     return m_Impl->getOutputExtractors();
 }

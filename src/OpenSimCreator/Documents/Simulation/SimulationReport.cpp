@@ -34,7 +34,7 @@ public:
         return SimulationClock::start() + SimulationClock::duration{getState().getTime()};
     }
 
-    SimTK::State const& getState() const
+    const SimTK::State& getState() const
     {
         return m_State;
     }
@@ -55,8 +55,6 @@ private:
 };
 
 
-// public API
-
 osc::SimulationReport::SimulationReport() :
     m_Impl{std::make_shared<Impl>()}
 {}
@@ -66,9 +64,9 @@ osc::SimulationReport::SimulationReport(SimTK::State&& st) :
 osc::SimulationReport::SimulationReport(SimTK::State&& st, std::unordered_map<UID, float> auxiliaryValues) :
     m_Impl{std::make_shared<Impl>(std::move(st), std::move(auxiliaryValues))}
 {}
-osc::SimulationReport::SimulationReport(SimulationReport const&) = default;
+osc::SimulationReport::SimulationReport(const SimulationReport&) = default;
 osc::SimulationReport::SimulationReport(SimulationReport&&) noexcept = default;
-osc::SimulationReport& osc::SimulationReport::operator=(SimulationReport const&) = default;
+osc::SimulationReport& osc::SimulationReport::operator=(const SimulationReport&) = default;
 osc::SimulationReport& osc::SimulationReport::operator=(SimulationReport&&) noexcept = default;
 osc::SimulationReport::~SimulationReport() noexcept = default;
 
@@ -77,7 +75,7 @@ SimulationClock::time_point osc::SimulationReport::getTime() const
     return m_Impl->getTime();
 }
 
-SimTK::State const& osc::SimulationReport::getState() const
+const SimTK::State& osc::SimulationReport::getState() const
 {
     return m_Impl->getState();
 }

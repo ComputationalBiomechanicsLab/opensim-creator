@@ -23,35 +23,35 @@ osc::mow::ModelWarpDocument::ModelWarpDocument() :
     m_FrameWarpLookup{make_cow<FrameWarperFactories>()}
 {}
 
-osc::mow::ModelWarpDocument::ModelWarpDocument(std::filesystem::path const& osimFileLocation) :
+osc::mow::ModelWarpDocument::ModelWarpDocument(const std::filesystem::path& osimFileLocation) :
     m_ModelState{make_cow<BasicModelStatePair>(osimFileLocation)},
     m_ModelWarpConfig{make_cow<ModelWarpConfiguration>(osimFileLocation, m_ModelState->getModel())},
     m_MeshWarpLookup{make_cow<PointWarperFactories>(osimFileLocation, m_ModelState->getModel(), *m_ModelWarpConfig)},
     m_FrameWarpLookup{make_cow<FrameWarperFactories>(osimFileLocation, m_ModelState->getModel(), *m_ModelWarpConfig)}
 {}
 
-osc::mow::ModelWarpDocument::ModelWarpDocument(ModelWarpDocument const&) = default;
+osc::mow::ModelWarpDocument::ModelWarpDocument(const ModelWarpDocument&) = default;
 osc::mow::ModelWarpDocument::ModelWarpDocument(ModelWarpDocument&&) noexcept = default;
-osc::mow::ModelWarpDocument& osc::mow::ModelWarpDocument::operator=(ModelWarpDocument const&) = default;
+osc::mow::ModelWarpDocument& osc::mow::ModelWarpDocument::operator=(const ModelWarpDocument&) = default;
 osc::mow::ModelWarpDocument& osc::mow::ModelWarpDocument::operator=(ModelWarpDocument&&) noexcept = default;
 osc::mow::ModelWarpDocument::~ModelWarpDocument() noexcept = default;
 
-OpenSim::Model const& osc::mow::ModelWarpDocument::model() const
+const OpenSim::Model& osc::mow::ModelWarpDocument::model() const
 {
     return m_ModelState->getModel();
 }
 
-IConstModelStatePair const& osc::mow::ModelWarpDocument::modelstate() const
+const IConstModelStatePair& osc::mow::ModelWarpDocument::modelstate() const
 {
     return *m_ModelState;
 }
 
-std::vector<WarpDetail> osc::mow::ModelWarpDocument::details(OpenSim::Mesh const& mesh) const
+std::vector<WarpDetail> osc::mow::ModelWarpDocument::details(const OpenSim::Mesh& mesh) const
 {
     std::vector<WarpDetail> rv;
     rv.emplace_back("OpenSim::Mesh path in the OpenSim::Model", GetAbsolutePathString(mesh));
 
-    if (IPointWarperFactory const* p = m_MeshWarpLookup->find(GetAbsolutePathString(mesh))) {
+    if (const IPointWarperFactory* p = m_MeshWarpLookup->find(GetAbsolutePathString(mesh))) {
         auto inner = p->details();
         rv.insert(rv.end(), std::make_move_iterator(inner.begin()), std::make_move_iterator(inner.end()));
     }
@@ -59,9 +59,9 @@ std::vector<WarpDetail> osc::mow::ModelWarpDocument::details(OpenSim::Mesh const
     return rv;
 }
 
-std::vector<ValidationCheckResult> osc::mow::ModelWarpDocument::validate(OpenSim::Mesh const& mesh) const
+std::vector<ValidationCheckResult> osc::mow::ModelWarpDocument::validate(const OpenSim::Mesh& mesh) const
 {
-    if (IPointWarperFactory const* p = m_MeshWarpLookup->find(GetAbsolutePathString(mesh))) {
+    if (const IPointWarperFactory* p = m_MeshWarpLookup->find(GetAbsolutePathString(mesh))) {
         return p->validate();
     }
     else {
@@ -69,28 +69,28 @@ std::vector<ValidationCheckResult> osc::mow::ModelWarpDocument::validate(OpenSim
     }
 }
 
-ValidationCheckState osc::mow::ModelWarpDocument::state(OpenSim::Mesh const& mesh) const
+ValidationCheckState osc::mow::ModelWarpDocument::state(const OpenSim::Mesh& mesh) const
 {
-    IPointWarperFactory const* p = m_MeshWarpLookup->find(GetAbsolutePathString(mesh));
+    const IPointWarperFactory* p = m_MeshWarpLookup->find(GetAbsolutePathString(mesh));
     return p ? p->state() : ValidationCheckState::Error;
 }
 
-IPointWarperFactory const* osc::mow::ModelWarpDocument::findMeshWarp(OpenSim::Mesh const& mesh) const
+const IPointWarperFactory* osc::mow::ModelWarpDocument::findMeshWarp(const OpenSim::Mesh& mesh) const
 {
     return m_MeshWarpLookup->find(GetAbsolutePathString(mesh));
 }
 
-std::vector<WarpDetail> osc::mow::ModelWarpDocument::details(OpenSim::PhysicalOffsetFrame const& pof) const
+std::vector<WarpDetail> osc::mow::ModelWarpDocument::details(const OpenSim::PhysicalOffsetFrame& pof) const
 {
-    if (IFrameWarperFactory const* p = m_FrameWarpLookup->find(GetAbsolutePathString(pof))) {
+    if (const IFrameWarperFactory* p = m_FrameWarpLookup->find(GetAbsolutePathString(pof))) {
         return p->details();
     }
     return {};
 }
 
-std::vector<ValidationCheckResult> osc::mow::ModelWarpDocument::validate(OpenSim::PhysicalOffsetFrame const& pof) const
+std::vector<ValidationCheckResult> osc::mow::ModelWarpDocument::validate(const OpenSim::PhysicalOffsetFrame& pof) const
 {
-    if (IFrameWarperFactory const* p = m_FrameWarpLookup->find(GetAbsolutePathString(pof))) {
+    if (const IFrameWarperFactory* p = m_FrameWarpLookup->find(GetAbsolutePathString(pof))) {
         return p->validate();
     }
     else {
@@ -99,19 +99,19 @@ std::vector<ValidationCheckResult> osc::mow::ModelWarpDocument::validate(OpenSim
 }
 
 ValidationCheckState osc::mow::ModelWarpDocument::state(
-    OpenSim::PhysicalOffsetFrame const& pof) const
+    const OpenSim::PhysicalOffsetFrame& pof) const
 {
-    IFrameWarperFactory const* p = m_FrameWarpLookup->find(GetAbsolutePathString(pof));
+    const IFrameWarperFactory* p = m_FrameWarpLookup->find(GetAbsolutePathString(pof));
     return p ? p->state() : ValidationCheckState::Error;
 }
 
 ValidationCheckState osc::mow::ModelWarpDocument::state() const
 {
     ValidationCheckState rv = ValidationCheckState::Ok;
-    for (auto const& mesh : model().getComponentList<OpenSim::Mesh>()) {
+    for (const auto& mesh : model().getComponentList<OpenSim::Mesh>()) {
         rv = max(rv , state(mesh));
     }
-    for (auto const& pof : model().getComponentList<OpenSim::PhysicalOffsetFrame>()) {
+    for (const auto& pof : model().getComponentList<OpenSim::PhysicalOffsetFrame>()) {
         rv = max(rv, state(pof));
     }
     return rv;
@@ -154,10 +154,10 @@ std::optional<std::filesystem::path> osc::mow::ModelWarpDocument::getOsimFileLoc
 std::vector<ValidationCheckResult> osc::mow::ModelWarpDocument::implValidate() const
 {
     std::vector<ValidationCheckResult> rv;
-    for (auto const& mesh : model().getComponentList<OpenSim::Mesh>()) {
+    for (const auto& mesh : model().getComponentList<OpenSim::Mesh>()) {
         rv.emplace_back(mesh.getName(), state(mesh));
     }
-    for (auto const& pof : model().getComponentList<OpenSim::PhysicalOffsetFrame>()) {
+    for (const auto& pof : model().getComponentList<OpenSim::PhysicalOffsetFrame>()) {
         rv.emplace_back(pof.getName(), state(pof));
     }
     return rv;

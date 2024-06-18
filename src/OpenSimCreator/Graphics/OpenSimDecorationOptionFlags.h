@@ -34,7 +34,7 @@ namespace osc
         CStringView label;
         std::optional<CStringView> maybeDescription;
     };
-    OpenSimDecorationOptionMetadata const& GetIthOptionMetadata(size_t);
+    const OpenSimDecorationOptionMetadata& GetIthOptionMetadata(size_t);
     OpenSimDecorationOptionFlags GetIthOption(size_t);
     void SetIthOption(OpenSimDecorationOptionFlags&, size_t, bool);
     void SetOption(OpenSimDecorationOptionFlags&, OpenSimDecorationOptionFlags, bool);

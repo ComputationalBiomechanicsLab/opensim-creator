@@ -68,9 +68,9 @@ public:
         m_IsMousedOver = false;
         if (m_UseBVH)
         {
-            m_MeshBVH.for_each_ray_aabb_collision(m_Ray, [this](BVHCollision const& aabbColl)
+            m_MeshBVH.for_each_ray_aabb_collision(m_Ray, [this](const BVHCollision& aabbColl)
             {
-                Triangle const triangle = m_Mesh.get_triangle_at(aabbColl.id);
+                const Triangle triangle = m_Mesh.get_triangle_at(aabbColl.id);
                 if (auto triangleColl = find_collision(m_Ray, triangle))
                 {
                     m_IsMousedOver = true;
@@ -82,7 +82,7 @@ public:
         {
             m_Mesh.for_each_indexed_triangle([this](Triangle triangle)
             {
-                if (auto const hit = find_collision(m_Ray, triangle))
+                if (const auto hit = find_collision(m_Ray, triangle))
                 {
                     m_HitPos = hit->position;
                     m_IsMousedOver = true;
@@ -100,7 +100,7 @@ public:
     {
         // setup scene
         {
-            Rect const viewportScreenRect = ui::get_main_viewport_workspace_screenspace_rect();
+            const Rect viewportScreenRect = ui::get_main_viewport_workspace_screenspace_rect();
             m_Camera.set_pixel_rect(viewportScreenRect);
 
             // update real scene camera from constrained polar camera
@@ -201,11 +201,9 @@ CStringView osc::MeshHittestTab::id()
     return "OpenSim/Experimental/MeshHittest";
 }
 
-osc::MeshHittestTab::MeshHittestTab(ParentPtr<ITabHost> const&) :
+osc::MeshHittestTab::MeshHittestTab(const ParentPtr<ITabHost>&) :
     m_Impl{std::make_unique<Impl>()}
-{
-}
-
+{}
 osc::MeshHittestTab::MeshHittestTab(MeshHittestTab&&) noexcept = default;
 osc::MeshHittestTab& osc::MeshHittestTab::operator=(MeshHittestTab&&) noexcept = default;
 osc::MeshHittestTab::~MeshHittestTab() noexcept = default;

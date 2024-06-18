@@ -13,7 +13,7 @@ namespace osc
 
         ModelEditorViewerPanelRightClickEvent(
             std::string sourcePanelName_,
-            Rect const& viewportScreenRect_,
+            const Rect& viewportScreenRect_,
             std::string componentAbsPathOrEmpty_,
             std::optional<Vec3> maybeClickPositionInGround_) :
 
@@ -21,8 +21,7 @@ namespace osc
             viewportScreenRect{viewportScreenRect_},
             componentAbsPathOrEmpty{std::move(componentAbsPathOrEmpty_)},
             maybeClickPositionInGround{maybeClickPositionInGround_}
-        {
-        }
+        {}
 
         std::string sourcePanelName;
         Rect viewportScreenRect;

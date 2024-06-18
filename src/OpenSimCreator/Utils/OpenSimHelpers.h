@@ -161,7 +161,7 @@ namespace osc
     }
 
     template<typename T>
-    T const& At(const OpenSim::Property<T>& p, size_t i)
+    const T& At(const OpenSim::Property<T>& p, size_t i)
     {
         return p[static_cast<int>(i)];
     }
@@ -269,7 +269,7 @@ namespace osc
     void ForEachComponent(const OpenSim::Component&, const std::function<void(const OpenSim::Component&)>&);
 
     // calls the given function with the provided component and each of its subcomponents
-    void ForEachComponentInclusive(const OpenSim::Component&, const std::function<void(OpenSim::Component const&)>&);
+    void ForEachComponentInclusive(const OpenSim::Component&, const std::function<void(const OpenSim::Component&)>&);
 
     // returns the number of children (recursive) of type T under the given component
     template<std::derived_from<OpenSim::Component> T>

@@ -22,10 +22,10 @@ using osc::mi::MIClass;
 osc::mi::Joint::Joint(
     UID id,
     std::string jointTypeName,
-    std::string const& userAssignedName,  // can be empty
+    const std::string& userAssignedName,  // can be empty
     UID parent,
     UID child,
-    Transform const& xform) :
+    const Transform& xform) :
 
     m_ID{id},
     m_JointTypeName{std::move(jointTypeName)},

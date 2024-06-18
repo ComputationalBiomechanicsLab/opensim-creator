@@ -35,12 +35,12 @@ namespace
         size_t numIndices = 0;
     };
 
-    OutputMeshMetrics CalcMeshMetrics(SimTK::PolygonalMesh const& mesh)
+    OutputMeshMetrics CalcMeshMetrics(const SimTK::PolygonalMesh& mesh)
     {
         OutputMeshMetrics rv;
         rv.numVertices = mesh.getNumVertices();
         for (int i = 0, faces = mesh.getNumFaces(); i < faces; ++i) {
-            int const numFaceVerts = mesh.getNumVerticesForFace(i);
+            const int numFaceVerts = mesh.getNumVerticesForFace(i);
             if (numFaceVerts < 3) {
                 continue;  // ignore lines/points
             }
@@ -59,9 +59,9 @@ namespace
     }
 }
 
-Mesh osc::ToOscMesh(SimTK::PolygonalMesh const& mesh)
+Mesh osc::ToOscMesh(const SimTK::PolygonalMesh& mesh)
 {
-    auto const metrics = CalcMeshMetrics(mesh);
+    const auto metrics = CalcMeshMetrics(mesh);
 
     std::vector<Vec3> vertices;
     vertices.reserve(metrics.numVertices);
@@ -70,7 +70,7 @@ Mesh osc::ToOscMesh(SimTK::PolygonalMesh const& mesh)
     indices.reserve(metrics.numIndices);
 
     // helper: validate+push triangle into the index list
-    auto const pushTriangle = [&indices, &vertices](uint32_t a, uint32_t b, uint32_t c)
+    const auto pushTriangle = [&indices, &vertices](uint32_t a, uint32_t b, uint32_t c)
     {
         if (a >= vertices.size() || b >= vertices.size() || c >= vertices.size()) {
             return;  // index out-of-bounds
@@ -92,7 +92,7 @@ Mesh osc::ToOscMesh(SimTK::PolygonalMesh const& mesh)
     //
     // (pushes injected triangulation vertices to the end - assumes the mesh is optimized later)
     for (int face = 0, faces = mesh.getNumFaces(); face < faces; ++face) {
-        int const numFaceVerts = mesh.getNumVerticesForFace(face);
+        const int numFaceVerts = mesh.getNumVerticesForFace(face);
 
         if (numFaceVerts <= 1) {
             // point (ignore)
@@ -104,18 +104,18 @@ Mesh osc::ToOscMesh(SimTK::PolygonalMesh const& mesh)
         }
         else if (numFaceVerts == 3) {
             // triangle
-            auto const a = static_cast<uint32_t>(mesh.getFaceVertex(face, 0));
-            auto const b = static_cast<uint32_t>(mesh.getFaceVertex(face, 1));
-            auto const c = static_cast<uint32_t>(mesh.getFaceVertex(face, 2));
+            const auto a = static_cast<uint32_t>(mesh.getFaceVertex(face, 0));
+            const auto b = static_cast<uint32_t>(mesh.getFaceVertex(face, 1));
+            const auto c = static_cast<uint32_t>(mesh.getFaceVertex(face, 2));
 
             pushTriangle(a, b, c);
         }
         else if (numFaceVerts == 4) {
             // quad (emit as two triangles)
-            auto const a = static_cast<uint32_t>(mesh.getFaceVertex(face, 0));
-            auto const b = static_cast<uint32_t>(mesh.getFaceVertex(face, 1));
-            auto const c = static_cast<uint32_t>(mesh.getFaceVertex(face, 2));
-            auto const d = static_cast<uint32_t>(mesh.getFaceVertex(face, 3));
+            const auto a = static_cast<uint32_t>(mesh.getFaceVertex(face, 0));
+            const auto b = static_cast<uint32_t>(mesh.getFaceVertex(face, 1));
+            const auto c = static_cast<uint32_t>(mesh.getFaceVertex(face, 2));
+            const auto d = static_cast<uint32_t>(mesh.getFaceVertex(face, 3));
 
             pushTriangle(a, b, c);
             pushTriangle(a, c, d);
@@ -129,20 +129,20 @@ Mesh osc::ToOscMesh(SimTK::PolygonalMesh const& mesh)
                 centroid_of += vertices.at(mesh.getFaceVertex(face, vert));
             }
             centroid_of /= static_cast<float>(numFaceVerts);
-            auto const centroidIdx = static_cast<uint32_t>(vertices.size());
+            const auto centroidIdx = static_cast<uint32_t>(vertices.size());
             vertices.push_back(centroid_of);
 
             // triangulate polygon loop
             for (int vert = 0; vert < numFaceVerts-1; ++vert) {
-                auto const b = static_cast<uint32_t>(mesh.getFaceVertex(face, vert));
-                auto const c = static_cast<uint32_t>(mesh.getFaceVertex(face, vert+1));
+                const auto b = static_cast<uint32_t>(mesh.getFaceVertex(face, vert));
+                const auto c = static_cast<uint32_t>(mesh.getFaceVertex(face, vert+1));
 
                 pushTriangle(centroidIdx, b, c);
             }
 
             // (complete the loop)
-            auto const b = static_cast<uint32_t>(mesh.getFaceVertex(face, numFaceVerts-1));
-            auto const c = static_cast<uint32_t>(mesh.getFaceVertex(face, 0));
+            const auto b = static_cast<uint32_t>(mesh.getFaceVertex(face, numFaceVerts-1));
+            const auto c = static_cast<uint32_t>(mesh.getFaceVertex(face, 0));
             pushTriangle(centroidIdx, b, c);
         }
     }
@@ -159,19 +159,19 @@ std::span<const std::string_view> osc::GetSupportedSimTKMeshFormats()
     return c_supported_mesh_extensions;
 }
 
-Mesh osc::LoadMeshViaSimTK(std::filesystem::path const& p)
+Mesh osc::LoadMeshViaSimTK(const std::filesystem::path& p)
 {
-    SimTK::DecorativeMeshFile const dmf{p.string()};
-    SimTK::PolygonalMesh const& mesh = dmf.getMesh();
+    const SimTK::DecorativeMeshFile dmf{p.string()};
+    const SimTK::PolygonalMesh& mesh = dmf.getMesh();
     return ToOscMesh(mesh);
 }
 
-void osc::AssignIndexedVerts(SimTK::PolygonalMesh& mesh, std::span<Vec3 const> vertices, MeshIndicesView indices)
+void osc::AssignIndexedVerts(SimTK::PolygonalMesh& mesh, std::span<const Vec3> vertices, MeshIndicesView indices)
 {
     mesh.clear();
 
     // assign vertices
-    for (Vec3 const& vertex : vertices) {
+    for (const Vec3& vertex : vertices) {
         mesh.addVertex(ToSimTKVec3(vertex));
     }
 

@@ -31,7 +31,7 @@ public:
 
     Impl(
         std::string_view panelName_,
-        ParentPtr<IMainUIStateAPI> const& mainUIStateAPI_,
+        const ParentPtr<IMainUIStateAPI>& mainUIStateAPI_,
         IEditorAPI* editorAPI_,
         std::shared_ptr<UndoableModelStatePair> uum_) :
 
@@ -39,15 +39,14 @@ public:
         m_MainUIStateAPI{mainUIStateAPI_},
         m_EditorAPI{editorAPI_},
         m_Model{std::move(uum_)}
-    {
-    }
+    {}
 
 private:
 
     void impl_draw_content() final
     {
         // load coords
-        std::vector<OpenSim::Coordinate const*> coordPtrs = GetCoordinatesInModel(m_Model->getModel());
+        std::vector<const OpenSim::Coordinate*> coordPtrs = GetCoordinatesInModel(m_Model->getModel());
 
         // if there's no coordinates in the model, show a warning message and stop drawing
         if (coordPtrs.empty())
@@ -74,7 +73,7 @@ private:
 
             if (ImGuiTableSortSpecs* p = ui::table_get_sort_specs(); p && p->SpecsDirty)
             {
-                std::span<ImGuiTableColumnSortSpecs const> specs(p->Specs, p->SpecsCount);
+                std::span<const ImGuiTableColumnSortSpecs> specs(p->Specs, p->SpecsCount);
 
                 // we know the user can only sort one column (name) so we don't need to permute
                 // through the entire specs structure
@@ -83,10 +82,10 @@ private:
                     switch (specs.front().SortDirection)
                     {
                     case ImGuiSortDirection_Ascending:
-                        rgs::sort(coordPtrs, rgs::less{}, [](auto const& ptr) { return ptr->getName(); });
+                        rgs::sort(coordPtrs, rgs::less{}, [](const auto& ptr) { return ptr->getName(); });
                         break;
                     case ImGuiSortDirection_Descending:
-                        rgs::sort(coordPtrs, rgs::greater{}, [](auto const& ptr) { return ptr->getName(); });
+                        rgs::sort(coordPtrs, rgs::greater{}, [](const auto& ptr) { return ptr->getName(); });
                         break;
                     case ImGuiSortDirection_None:
                     default:
@@ -96,8 +95,7 @@ private:
             }
 
             int id = 0;
-            for (OpenSim::Coordinate const* coordPtr : coordPtrs)
-            {
+            for (const OpenSim::Coordinate* coordPtr : coordPtrs) {
                 ui::push_id(id++);
                 drawRow(*coordPtr);
                 ui::pop_id();
@@ -107,7 +105,7 @@ private:
         }
     }
 
-    void drawRow(OpenSim::Coordinate const& c)
+    void drawRow(const OpenSim::Coordinate& c)
     {
         ui::table_next_row();
 
@@ -124,7 +122,7 @@ private:
         OSC_ASSERT_ALWAYS(c.hasOwner() && "An `OpenSim::Coordinate` must always have an owner. This bug can occur when using is_free_to_satisfy_coordinates (see issue #888)");
     }
 
-    void drawNameCell(OpenSim::Coordinate const& c)
+    void drawNameCell(const OpenSim::Coordinate& c)
     {
         int stylesPushed = 0;
         if (&c == m_Model->getHovered())
@@ -170,14 +168,14 @@ private:
         }
     }
 
-    void drawDataCell(OpenSim::Coordinate const& c)
+    void drawDataCell(const OpenSim::Coordinate& c)
     {
         drawDataCellLockButton(c);
         ui::same_line(0.0f, 0.0f);
         drawDataCellCoordinateSlider(c);
     }
 
-    void drawDataCellLockButton(OpenSim::Coordinate const& c)
+    void drawDataCellLockButton(const OpenSim::Coordinate& c)
     {
         ui::push_style_color(ImGuiCol_Button, Color::clear());
         ui::push_style_color(ImGuiCol_ButtonActive, Color::clear());
@@ -195,9 +193,9 @@ private:
         ui::draw_tooltip_if_item_hovered("Toggle Coordinate Lock", "Lock/unlock the coordinate's value.\n\nLocking a coordinate indicates whether the coordinate's value should be constrained to this value during the simulation.");
     }
 
-    void drawDataCellCoordinateSlider(OpenSim::Coordinate const& c)
+    void drawDataCellCoordinateSlider(const OpenSim::Coordinate& c)
     {
-        bool const coordinateLocked = c.getLocked(m_Model->getState());
+        const bool coordinateLocked = c.getLocked(m_Model->getState());
 
         ui::set_next_item_width(ui::get_content_region_avail().x);
 
@@ -228,7 +226,7 @@ private:
         ui::draw_tooltip_body_only_if_item_hovered("Ctrl-click the slider to edit");
     }
 
-    void drawSpeedCell(OpenSim::Coordinate const& c)
+    void drawSpeedCell(const OpenSim::Coordinate& c)
     {
         float displayedSpeed = ConvertCoordValueToDisplayValue(c, c.getSpeedValue(m_Model->getState()));
 
@@ -252,18 +250,14 @@ private:
 };
 
 
-// public API
-
 osc::CoordinateEditorPanel::CoordinateEditorPanel(
     std::string_view panelName_,
-    ParentPtr<IMainUIStateAPI> const& mainUIStateAPI_,
+    const ParentPtr<IMainUIStateAPI>& mainUIStateAPI_,
     IEditorAPI* editorAPI_,
     std::shared_ptr<UndoableModelStatePair> uum_) :
 
     m_Impl{std::make_unique<Impl>(panelName_, mainUIStateAPI_, editorAPI_, std::move(uum_))}
-{
-}
-
+{}
 osc::CoordinateEditorPanel::CoordinateEditorPanel(CoordinateEditorPanel&&) noexcept = default;
 osc::CoordinateEditorPanel& osc::CoordinateEditorPanel::operator=(CoordinateEditorPanel&&) noexcept = default;
 osc::CoordinateEditorPanel::~CoordinateEditorPanel() noexcept = default;

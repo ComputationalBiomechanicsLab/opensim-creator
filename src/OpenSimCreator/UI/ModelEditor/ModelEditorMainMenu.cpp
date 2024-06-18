@@ -24,15 +24,14 @@
 class osc::ModelEditorMainMenu::Impl final {
 public:
     Impl(
-        ParentPtr<IMainUIStateAPI> const& mainStateAPI_,
+        const ParentPtr<IMainUIStateAPI>& mainStateAPI_,
         IEditorAPI* editorAPI_,
         std::shared_ptr<UndoableModelStatePair> model_) :
 
         m_MainUIStateAPI{mainStateAPI_},
         m_EditorAPI{editorAPI_},
         m_Model{std::move(model_)}
-    {
-    }
+    {}
 
     void onDraw()
     {
@@ -162,17 +161,13 @@ private:
 };
 
 
-// public API (PIMPL)
-
 osc::ModelEditorMainMenu::ModelEditorMainMenu(
-    ParentPtr<IMainUIStateAPI> const& mainStateAPI_,
+    const ParentPtr<IMainUIStateAPI>& mainStateAPI_,
     IEditorAPI* editorAPI_,
     std::shared_ptr<UndoableModelStatePair> model_) :
 
     m_Impl{std::make_unique<Impl>(mainStateAPI_, editorAPI_, std::move(model_))}
-{
-}
-
+{}
 osc::ModelEditorMainMenu::ModelEditorMainMenu(ModelEditorMainMenu&&) noexcept = default;
 osc::ModelEditorMainMenu& osc::ModelEditorMainMenu::operator=(ModelEditorMainMenu&&) noexcept = default;
 osc::ModelEditorMainMenu::~ModelEditorMainMenu() noexcept = default;

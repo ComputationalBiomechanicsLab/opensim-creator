@@ -16,10 +16,10 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit RendererGeometryShaderTab(ParentPtr<ITabHost> const&);
-        RendererGeometryShaderTab(RendererGeometryShaderTab const&) = delete;
+        explicit RendererGeometryShaderTab(const ParentPtr<ITabHost>&);
+        RendererGeometryShaderTab(const RendererGeometryShaderTab&) = delete;
         RendererGeometryShaderTab(RendererGeometryShaderTab&&) noexcept;
-        RendererGeometryShaderTab& operator=(RendererGeometryShaderTab const&) = delete;
+        RendererGeometryShaderTab& operator=(const RendererGeometryShaderTab&) = delete;
         RendererGeometryShaderTab& operator=(RendererGeometryShaderTab&&) noexcept;
         ~RendererGeometryShaderTab() noexcept override;
 
@@ -28,7 +28,7 @@ namespace osc
         CStringView impl_get_name() const final;
         void impl_on_mount() final;
         void impl_on_unmount() final;
-        bool impl_on_event(SDL_Event const&) final;
+        bool impl_on_event(const SDL_Event&) final;
         void impl_on_draw() final;
 
         class Impl;

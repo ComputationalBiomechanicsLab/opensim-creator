@@ -135,7 +135,7 @@ namespace
             // draw generic overlays (i.e. the buttons for toggling things)
             auto renderParamsBefore = params.getRenderParams();
 
-            bool const edited = DrawViewerImGuiOverlays(
+            const bool edited = DrawViewerImGuiOverlays(
                 params.updRenderParams(),
                 state.getDrawlist(),
                 state.maybeSceneAABB,
@@ -148,7 +148,7 @@ namespace
             {
                 log_debug("%s edited", panel_name_.c_str());
 
-                auto const& renderParamsAfter = params.getRenderParams();
+                const auto& renderParamsAfter = params.getRenderParams();
 
                 SaveModelRendererParamsDifference(
                     renderParamsBefore,
@@ -293,7 +293,7 @@ namespace
                 m_IsHandlingMouseInputs &&
                 !ui::is_mouse_dragging_with_any_button_down())
             {
-                if (OpenSim::Component const* c = FindComponent(params.getModelSharedPtr()->getModel(), state.maybeHoveredComponentAbsPath))
+                if (const OpenSim::Component* c = FindComponent(params.getModelSharedPtr()->getModel(), state.maybeHoveredComponentAbsPath))
                 {
                     DrawComponentHoverTooltip(*c);
                 }
@@ -304,7 +304,7 @@ namespace
                 state.isRightClickReleasedWithoutDragging)
             {
                 // right-click: pump a right-click event
-                ModelEditorViewerPanelRightClickEvent const e
+                const ModelEditorViewerPanelRightClickEvent e
                 {
                     std::string{state.getPanelName()},
                     state.viewportRect,
@@ -354,7 +354,7 @@ public:
         return m_State.pushLayer(std::move(layer));
     }
 
-    void focusOn(Vec3 const& pos)
+    void focusOn(const Vec3& pos)
     {
         m_Parameters.updRenderParams().camera.focus_point = -pos;
     }
@@ -428,11 +428,11 @@ private:
             // check if the window is conditionally hovered: this returns true if no other window is
             // overlapping the editor panel, _but_ it also returns true if the user is only hovering
             // the title bar of the window, rather than specifically the render
-            bool const windowHovered = ui::is_panel_hovered(ImGuiHoveredFlags_ChildWindows);
+            const bool windowHovered = ui::is_panel_hovered(ImGuiHoveredFlags_ChildWindows);
 
             // check if the 3D render is hovered - ignore blocking and overlapping because the layer
             // stack might be screwing with this
-            bool const renderHoveredIgnoringOverlap = ui::is_item_hovered(
+            const bool renderHoveredIgnoringOverlap = ui::is_item_hovered(
                 ImGuiHoveredFlags_AllowWhenBlockedByActiveItem |
                 ImGuiHoveredFlags_AllowWhenOverlapped
             );
@@ -473,7 +473,7 @@ private:
 
     void layersOnNewFrame()
     {
-        for (auto const& layerPtr : m_Layers)
+        for (const auto& layerPtr : m_Layers)
         {
             layerPtr->onNewFrame();
         }
@@ -511,7 +511,7 @@ private:
             ImGuiWindowFlags windowFlags = ui::get_minimal_panel_flags() & ~ImGuiWindowFlags_NoInputs;
 
             // if any layer above this one captures mouse inputs then disable this layer's inputs
-            if (find_if(it+1, m_Layers.end(), [](auto const& layerPtr) -> bool { return layerPtr->getFlags() & ModelEditorViewerPanelLayerFlags::CapturesMouseInputs; }) != m_Layers.end())
+            if (find_if(it+1, m_Layers.end(), [](const auto& layerPtr) -> bool { return layerPtr->getFlags() & ModelEditorViewerPanelLayerFlags::CapturesMouseInputs; }) != m_Layers.end())
             {
                 windowFlags |= ImGuiWindowFlags_NoInputs;
             }
@@ -524,7 +524,7 @@ private:
             // should happen window-by-window (otherwise, you'll have problems with overlapping
             // buttons, widgets, etc.)
             ui::set_next_panel_pos(m_State.viewportRect.p1);
-            std::string const childID = std::to_string(std::distance(it, m_Layers.end()));
+            const std::string childID = std::to_string(std::distance(it, m_Layers.end()));
             if (ui::begin_child_panel(childID, dimensions_of(m_State.viewportRect), ImGuiChildFlags_None, windowFlags))
             {
                 layer.onDraw(m_Parameters, m_State);
@@ -535,7 +535,7 @@ private:
 
     void layersGarbageCollect()
     {
-        std::erase_if(m_Layers, [](auto const& layerPtr)
+        std::erase_if(m_Layers, [](const auto& layerPtr)
         {
             return layerPtr->shouldClose();
         });
@@ -558,7 +558,7 @@ private:
 
 osc::ModelEditorViewerPanel::ModelEditorViewerPanel(
     std::string_view panelName_,
-    ModelEditorViewerPanelParameters const& parameters_) :
+    const ModelEditorViewerPanelParameters& parameters_) :
 
     m_Impl{std::make_unique<Impl>(panelName_, parameters_)}
 {
@@ -573,7 +573,7 @@ ModelEditorViewerPanelLayer& osc::ModelEditorViewerPanel::pushLayer(std::unique_
     return m_Impl->pushLayer(std::move(layer));
 }
 
-void osc::ModelEditorViewerPanel::focusOn(Vec3 const& pos)
+void osc::ModelEditorViewerPanel::focusOn(const Vec3& pos)
 {
     m_Impl->focusOn(pos);
 }

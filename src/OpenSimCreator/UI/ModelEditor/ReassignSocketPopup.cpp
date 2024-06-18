@@ -45,7 +45,7 @@ namespace
         {
         }
 
-        friend bool operator==(PopupParams const&, PopupParams const&) = default;
+        friend bool operator==(const PopupParams&, const PopupParams&) = default;
 
         UID modelVersion;
         OpenSim::ComponentPath componentPath;
@@ -56,19 +56,19 @@ namespace
     // a single user-selectable connectee option
     struct ConnecteeOption final {
 
-        explicit ConnecteeOption(OpenSim::Component const& c) :
+        explicit ConnecteeOption(const OpenSim::Component& c) :
             absPath{GetAbsolutePath(c)},
             name{c.getName()}
         {
         }
 
-        friend auto operator<=>(ConnecteeOption const& lhs, ConnecteeOption const& rhs)
+        friend auto operator<=>(const ConnecteeOption& lhs, const ConnecteeOption& rhs)
         {
             return std::tie(lhs.name, lhs.absPath.toString()) <=> std::tie(rhs.name, rhs.absPath.toString());
         }
 
         [[maybe_unused]]  // TODO: Ubuntu20 doesn't use this function
-        friend bool operator==(ConnecteeOption const& lhs, ConnecteeOption const& rhs)
+        friend bool operator==(const ConnecteeOption& lhs, const ConnecteeOption& rhs)
         {
             return std::tie(lhs.name, lhs.absPath.toString()) == std::tie(rhs.name, rhs.absPath.toString());
         }
@@ -79,24 +79,24 @@ namespace
 
     // generate a list of possible connectee options, given a set of popup parameters
     std::vector<ConnecteeOption> GenerateSelectionOptions(
-        OpenSim::Model const& model,
-        PopupParams const& params)
+        const OpenSim::Model& model,
+        const PopupParams& params)
     {
         std::vector<ConnecteeOption> rv;
 
-        OpenSim::Component const* component = FindComponent(model, params.componentPath);
+        const OpenSim::Component* component = FindComponent(model, params.componentPath);
         if (!component)
         {
             return rv;   // component isn't in model?
         }
 
-        OpenSim::AbstractSocket const* socket = FindSocket(*component, params.socketName);
+        const OpenSim::AbstractSocket* socket = FindSocket(*component, params.socketName);
         if (!socket)
         {
             return rv;  // socket isn't in model?
         }
 
-        for (OpenSim::Component const& other : model.getComponentList())
+        for (const OpenSim::Component& other : model.getComponentList())
         {
             if (&other == component)
             {
@@ -150,7 +150,7 @@ private:
         }
 
         // check: ensure the "from" side of the socket still exists
-        OpenSim::Component const* component = FindComponent(m_Model->getModel(), m_Params.componentPath);
+        const OpenSim::Component* component = FindComponent(m_Model->getModel(), m_Params.componentPath);
         if (!component)
         {
             request_close();
@@ -158,7 +158,7 @@ private:
         }
 
         // check: ensure the socket still exists
-        OpenSim::AbstractSocket const* socket = FindSocket(*component, m_Params.socketName);
+        const OpenSim::AbstractSocket* socket = FindSocket(*component, m_Params.socketName);
         if (!socket)
         {
             request_close();
@@ -179,7 +179,7 @@ private:
         ui::begin_child_panel("##componentlist", Vec2{512.0f, 256.0f}, ImGuiChildFlags_Border, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_AlwaysVerticalScrollbar);
 
         int id = 0;  // care: necessary because multiple connectees may have the same name
-        for (ConnecteeOption const& option : m_Options)
+        for (const ConnecteeOption& option : m_Options)
         {
             ui::push_id(id++);
             if (ui::draw_selectable(option.name))
@@ -209,11 +209,11 @@ private:
         // if the user selected something, try to form the connection in the active model
         if (userSelection)
         {
-            SocketReassignmentFlags const flags = m_TryReexpressInDifferentFrame ?
+            const SocketReassignmentFlags flags = m_TryReexpressInDifferentFrame ?
                 SocketReassignmentFlags::TryReexpressComponentInNewConnectee :
                 SocketReassignmentFlags::None;
 
-            OpenSim::Component const* selected = FindComponent(m_Model->getModel(), *userSelection);
+            const OpenSim::Component* selected = FindComponent(m_Model->getModel(), *userSelection);
 
             if (selected && ActionReassignComponentSocket(*m_Model, m_Params.componentPath, m_Params.socketName, *selected, flags, m_Error))
             {
@@ -230,18 +230,18 @@ private:
     }
 
     void tryDrawReexpressPropertyInFrameCheckbox(
-        OpenSim::Component const& component,
-        OpenSim::AbstractSocket const& abstractSocket)
+        const OpenSim::Component& component,
+        const OpenSim::AbstractSocket& abstractSocket)
     {
-        std::string const label = [&component]()
+        const std::string label = [&component]()
         {
             std::stringstream ss;
             ss << "Re-express " << component.getName() << " in chosen frame";
             return std::move(ss).str();
         }();
 
-        auto const* const physFrameSocket =
-            dynamic_cast<OpenSim::Socket<OpenSim::PhysicalFrame> const*>(&abstractSocket);
+        const auto* const physFrameSocket =
+            dynamic_cast<const OpenSim::Socket<OpenSim::PhysicalFrame>*>(&abstractSocket);
         if (!physFrameSocket)
         {
             bool v = false;
@@ -250,7 +250,7 @@ private:
             return;
         }
 
-        auto const componentSpatialRepresentation =
+        const auto componentSpatialRepresentation =
             TryGetSpatialRepresentation(component, m_Model->getState());
         if (!componentSpatialRepresentation)
         {

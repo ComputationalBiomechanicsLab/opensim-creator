@@ -71,20 +71,20 @@ void osc::CustomRenderingOptions::setDrawSelectionRims(bool v)
     SetOption(m_Flags, CustomRenderingOptionFlags::DrawSelectionRims, v);
 }
 
-void osc::CustomRenderingOptions::forEachOptionAsAppSettingValue(std::function<void(std::string_view, AppSettingValue const&)> const& callback) const
+void osc::CustomRenderingOptions::forEachOptionAsAppSettingValue(const std::function<void(std::string_view, const AppSettingValue&)>& callback) const
 {
-    for (auto const& metadata : GetAllCustomRenderingOptionFlagsMetadata())
+    for (const auto& metadata : GetAllCustomRenderingOptionFlagsMetadata())
     {
         callback(metadata.id, AppSettingValue{m_Flags & metadata.value});
     }
 }
 
-void osc::CustomRenderingOptions::tryUpdFromValues(std::string_view keyPrefix, std::unordered_map<std::string, AppSettingValue> const& lut)
+void osc::CustomRenderingOptions::tryUpdFromValues(std::string_view keyPrefix, const std::unordered_map<std::string, AppSettingValue>& lut)
 {
-    for (auto const& metadata : GetAllCustomRenderingOptionFlagsMetadata()) {
+    for (const auto& metadata : GetAllCustomRenderingOptionFlagsMetadata()) {
 
         std::string key = std::string{keyPrefix} + metadata.id;
-        if (auto const* v = lookup_or_nullptr(lut, key); v->type() == AppSettingValueType::Bool) {
+        if (const auto* v = lookup_or_nullptr(lut, key); v->type() == AppSettingValueType::Bool) {
             SetOption(m_Flags, metadata.value, v->to_bool());
         }
     }

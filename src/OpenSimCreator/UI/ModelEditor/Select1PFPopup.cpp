@@ -17,8 +17,8 @@ class osc::Select1PFPopup::Impl final : public StandardPopup {
 public:
 
     Impl(std::string_view popupName,
-         std::shared_ptr<UndoableModelStatePair const> model,
-         std::function<void(OpenSim::ComponentPath const&)> onSelection) :
+         std::shared_ptr<const UndoableModelStatePair> model,
+         std::function<void(const OpenSim::ComponentPath&)> onSelection) :
 
         StandardPopup{popupName},
         m_Model{std::move(model)},
@@ -29,10 +29,10 @@ public:
 private:
     void impl_draw_content() final
     {
-        OpenSim::PhysicalFrame const* selected = nullptr;
+        const OpenSim::PhysicalFrame* selected = nullptr;
 
         ui::begin_child_panel("pflist", Vec2{256.0f, 256.0f}, ImGuiChildFlags_Border, ImGuiWindowFlags_HorizontalScrollbar);
-        for (auto const& pf : m_Model->getModel().getComponentList<OpenSim::PhysicalFrame>())
+        for (const auto& pf : m_Model->getModel().getComponentList<OpenSim::PhysicalFrame>())
         {
             if (ui::draw_selectable(pf.getName()))
             {
@@ -48,22 +48,18 @@ private:
         }
     }
 
-    std::shared_ptr<UndoableModelStatePair const> m_Model;
-    std::function<void(OpenSim::ComponentPath const&)> m_OnSelection;
+    std::shared_ptr<const UndoableModelStatePair> m_Model;
+    std::function<void(const OpenSim::ComponentPath&)> m_OnSelection;
 };
 
 
-// public API (PIMPL)
-
 osc::Select1PFPopup::Select1PFPopup(
     std::string_view popupName,
-    std::shared_ptr<UndoableModelStatePair const> model,
-    std::function<void(OpenSim::ComponentPath const&)> onSelection) :
+    std::shared_ptr<const UndoableModelStatePair> model,
+    std::function<void(const OpenSim::ComponentPath&)> onSelection) :
 
     m_Impl{std::make_unique<Impl>(popupName, std::move(model), std::move(onSelection))}
-{
-}
-
+{}
 osc::Select1PFPopup::Select1PFPopup(Select1PFPopup&&) noexcept = default;
 osc::Select1PFPopup& osc::Select1PFPopup::operator=(Select1PFPopup&&) noexcept = default;
 osc::Select1PFPopup::~Select1PFPopup() noexcept = default;

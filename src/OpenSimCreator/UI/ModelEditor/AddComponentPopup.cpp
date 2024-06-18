@@ -45,7 +45,7 @@ namespace
 
         PathPoint(OpenSim::ComponentPath userChoice_,
             OpenSim::ComponentPath actualFrame_,
-            SimTK::Vec3 const& locationInFrame_) :
+            const SimTK::Vec3& locationInFrame_) :
             userChoice{std::move(userChoice_)},
             actualFrame{std::move(actualFrame_)},
             locationInFrame{locationInFrame_}
@@ -83,7 +83,7 @@ private:
 
     std::unique_ptr<OpenSim::Component> tryCreateComponentFromState()
     {
-        OpenSim::Model const& model = m_Uum->getModel();
+        const OpenSim::Model& model = m_Uum->getModel();
 
         if (m_Name.empty())
         {
@@ -104,10 +104,10 @@ private:
         // assign sockets
         for (size_t i = 0; i < m_ProtoSockets.size(); ++i)
         {
-            OpenSim::AbstractSocket const& socket = *m_ProtoSockets[i];
-            OpenSim::ComponentPath const& connecteePath = m_SocketConnecteePaths[i];
+            const OpenSim::AbstractSocket& socket = *m_ProtoSockets[i];
+            const OpenSim::ComponentPath& connecteePath = m_SocketConnecteePaths[i];
 
-            OpenSim::Component const* connectee = FindComponent(model, connecteePath);
+            const OpenSim::Component* connectee = FindComponent(model, connecteePath);
 
             if (!connectee)
             {
@@ -127,14 +127,14 @@ private:
 
             for (size_t i = 0; i < m_PathPoints.size(); ++i)
             {
-                auto const& pp = m_PathPoints[i];
+                const auto& pp = m_PathPoints[i];
 
                 if (IsEmpty(pp.actualFrame))
                 {
                     return nullptr;  // invalid path slipped through
                 }
 
-                auto const* pof = FindComponent<OpenSim::PhysicalFrame>(model, pp.actualFrame);
+                const auto* pof = FindComponent<OpenSim::PhysicalFrame>(model, pp.actualFrame);
                 if (!pof)
                 {
                     return nullptr;  // invalid path slipped through
@@ -152,12 +152,12 @@ private:
 
     bool isAbleToAddComponentFromCurrentState() const
     {
-        OpenSim::Model const& model = m_Uum->getModel();
+        const OpenSim::Model& model = m_Uum->getModel();
 
-        bool const hasName = !m_Name.empty();
-        bool const allSocketsAssigned = rgs::all_of(m_SocketConnecteePaths, std::bind_front(ContainsComponent, std::cref(model)));
-        bool const hasEnoughPathPoints =
-            dynamic_cast<OpenSim::PathActuator const*>(m_Proto.get()) == nullptr or
+        const bool hasName = !m_Name.empty();
+        const bool allSocketsAssigned = rgs::all_of(m_SocketConnecteePaths, std::bind_front(ContainsComponent, std::cref(model)));
+        const bool hasEnoughPathPoints =
+            dynamic_cast<const OpenSim::PathActuator*>(m_Proto.get()) == nullptr or
             m_PathPoints.size() >= 2;
 
         return hasName and allSocketsAssigned and hasEnoughPathPoints;
@@ -225,7 +225,7 @@ private:
 
     void drawIthSocketEditor(size_t i)
     {
-        OpenSim::AbstractSocket const& socket = *m_ProtoSockets[i];
+        const OpenSim::AbstractSocket& socket = *m_ProtoSockets[i];
         OpenSim::ComponentPath& connectee = m_SocketConnecteePaths[i];
 
         ui::set_num_columns(2);
@@ -246,13 +246,13 @@ private:
 
         // iterate through potential connectees in model and print connect-able options
         int innerID = 0;
-        for (OpenSim::Component const& c : m_Uum->getModel().getComponentList())
+        for (const OpenSim::Component& c : m_Uum->getModel().getComponentList())
         {
             if (!IsAbleToConnectTo(socket, c)) {
                 continue;  // can't connect to it
             }
 
-            if (dynamic_cast<OpenSim::Station const*>(&c) && IsChildOfA<OpenSim::Muscle>(c)) {
+            if (dynamic_cast<const OpenSim::Station*>(&c) && IsChildOfA<OpenSim::Muscle>(c)) {
                 continue;  // it's a muscle point: don't present it (noisy)
             }
 
@@ -260,7 +260,7 @@ private:
                 continue;  // not part of the user-enacted search set
             }
 
-            OpenSim::ComponentPath const absPath = GetAbsolutePath(c);
+            const OpenSim::ComponentPath absPath = GetAbsolutePath(c);
             bool selected = absPath == connectee;
 
             ui::push_id(innerID++);
@@ -269,7 +269,7 @@ private:
                 connectee = absPath;
             }
 
-            Rect const selectableRect = ui::get_last_drawn_item_screen_rect();
+            const Rect selectableRect = ui::get_last_drawn_item_screen_rect();
             ui::draw_tooltip_if_item_hovered(absPath.toString());
 
             ui::pop_id();
@@ -288,21 +288,21 @@ private:
 
     void drawPathPointEditorChoices()
     {
-        OpenSim::Model const& model = m_Uum->getModel();
+        const OpenSim::Model& model = m_Uum->getModel();
 
         // show list of choices
         ui::begin_child_panel("##pf_ppchoices", {ui::get_content_region_avail().x, 128.0f});
 
         // choices
-        for (OpenSim::Component const& c : model.getComponentList())
+        for (const OpenSim::Component& c : model.getComponentList())
         {
-            if (cpp23::contains(m_PathPoints, GetAbsolutePath(c), [](auto const& pp) { return pp.userChoice; }))
+            if (cpp23::contains(m_PathPoints, GetAbsolutePath(c), [](const auto& pp) { return pp.userChoice; }))
             {
                 continue;  // already selected
             }
 
-            OpenSim::Component const* userChoice = nullptr;
-            OpenSim::PhysicalFrame const* actualFrame = nullptr;
+            const OpenSim::Component* userChoice = nullptr;
+            const OpenSim::PhysicalFrame* actualFrame = nullptr;
             SimTK::Vec3 locationInFrame = {0.0, 0.0, 0.0};
 
             // careful here: the order matters
@@ -310,23 +310,23 @@ private:
             // various OpenSim classes compose some of these. E.g. subclasses of
             // AbstractPathPoint *also* contain a station object, but named with a
             // plain name
-            if (auto const* pof = dynamic_cast<OpenSim::PhysicalFrame const*>(&c))
+            if (const auto* pof = dynamic_cast<const OpenSim::PhysicalFrame*>(&c))
             {
                 userChoice = pof;
                 actualFrame = pof;
             }
-            else if (auto const* pp = dynamic_cast<OpenSim::PathPoint const*>(&c))
+            else if (const auto* pp = dynamic_cast<const OpenSim::PathPoint*>(&c))
             {
                 userChoice = pp;
                 actualFrame = &pp->getParentFrame();
                 locationInFrame = pp->get_location();
             }
-            else if (auto const* app = dynamic_cast<OpenSim::AbstractPathPoint const*>(&c))
+            else if (const auto* app = dynamic_cast<const OpenSim::AbstractPathPoint*>(&c))
             {
                 userChoice = app;
                 actualFrame = &app->getParentFrame();
             }
-            else if (auto const* station = dynamic_cast<OpenSim::Station const*>(&c))
+            else if (const auto* station = dynamic_cast<const OpenSim::Station*>(&c))
             {
                 // check name because it might be a child of one of the above and we
                 // don't want to double-count it
@@ -364,7 +364,7 @@ private:
 
     void drawPathPointEditorAlreadyChosenPoints()
     {
-        OpenSim::Model const& model = m_Uum->getModel();
+        const OpenSim::Model& model = m_Uum->getModel();
 
         ui::begin_child_panel("##pf_pathpoints", {ui::get_content_region_avail().x, 128.0f});
 
@@ -416,7 +416,7 @@ private:
             ui::draw_text(m_PathPoints[i].userChoice.getComponentName());
             if (ui::is_item_hovered())
             {
-                if (OpenSim::Component const* c = FindComponent(model, m_PathPoints[i].userChoice))
+                if (const OpenSim::Component* c = FindComponent(model, m_PathPoints[i].userChoice))
                 {
                     ui::draw_tooltip(c->getName(), GetAbsolutePathString(*c));
                 }
@@ -532,7 +532,7 @@ private:
     std::shared_ptr<OpenSim::Component> m_Proto;  // (may be shared with editor popups etc)
 
     // cached sequence of OpenSim::PhysicalFrame sockets in the prototype
-    std::vector<OpenSim::AbstractSocket const*> m_ProtoSockets{GetAllSockets(*m_Proto)};
+    std::vector<const OpenSim::AbstractSocket*> m_ProtoSockets{GetAllSockets(*m_Proto)};
 
     // user-assigned name for the to-be-added component
     std::string m_Name{m_Proto->getConcreteClassName()};
@@ -557,8 +557,6 @@ private:
 };
 
 
-// public API
-
 osc::AddComponentPopup::AddComponentPopup(
     std::string_view popupName,
     IPopupAPI* api,
@@ -566,9 +564,7 @@ osc::AddComponentPopup::AddComponentPopup(
     std::unique_ptr<OpenSim::Component> prototype) :
 
     m_Impl{std::make_unique<Impl>(popupName, api, std::move(uum), std::move(prototype))}
-{
-}
-
+{}
 osc::AddComponentPopup::AddComponentPopup(AddComponentPopup&&) noexcept = default;
 osc::AddComponentPopup& osc::AddComponentPopup::operator=(AddComponentPopup&&) noexcept = default;
 osc::AddComponentPopup::~AddComponentPopup() noexcept = default;

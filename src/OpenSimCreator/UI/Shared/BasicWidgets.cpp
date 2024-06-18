@@ -73,7 +73,7 @@ using namespace osc;
 namespace
 {
     // prompts the user for a save location and then exports a DAE file containing the 3D scene
-    void TryPromptUserToSaveAsDAE(std::span<SceneDecoration const> scene)
+    void TryPromptUserToSaveAsDAE(std::span<const SceneDecoration> scene)
     {
         std::optional<std::filesystem::path> maybeDAEPath =
             PromptUserForFileSaveLocationAndAddExtensionIfNecessary("dae");
@@ -82,7 +82,7 @@ namespace
         {
             return;  // user cancelled out
         }
-        std::filesystem::path const& daePath = *maybeDAEPath;
+        const std::filesystem::path& daePath = *maybeDAEPath;
 
         std::ofstream outfile{daePath};
 
@@ -92,7 +92,7 @@ namespace
             return;
         }
 
-        AppMetadata const& appMetadata = App::get().metadata();
+        const AppMetadata& appMetadata = App::get().metadata();
         DAEMetadata daeMetadata
         {
             calc_human_readable_application_name(appMetadata),
@@ -103,14 +103,14 @@ namespace
         log_info("wrote scene as a DAE file to %s", daePath.string().c_str());
     }
 
-    void DrawOutputTooltip(OpenSim::AbstractOutput const& o)
+    void DrawOutputTooltip(const OpenSim::AbstractOutput& o)
     {
         ui::draw_tooltip(o.getTypeName());
     }
 
     bool DrawOutputWithSubfieldsMenu(
-        OpenSim::AbstractOutput const& o,
-        std::function<void(OpenSim::AbstractOutput const&, std::optional<ComponentOutputSubfield>)> const& onUserSelection)
+        const OpenSim::AbstractOutput& o,
+        const std::function<void(const OpenSim::AbstractOutput&, std::optional<ComponentOutputSubfield>)>& onUserSelection)
     {
         bool outputAdded = false;
         ComponentOutputSubfield supportedSubfields = GetSupportedSubfields(o);
@@ -141,8 +141,8 @@ namespace
     }
 
     bool DrawOutputWithNoSubfieldsMenuItem(
-        OpenSim::AbstractOutput const& o,
-        std::function<void(OpenSim::AbstractOutput const&, std::optional<ComponentOutputSubfield>)> const& onUserSelection)
+        const OpenSim::AbstractOutput& o,
+        const std::function<void(const OpenSim::AbstractOutput&, std::optional<ComponentOutputSubfield>)>& onUserSelection)
     {
         // can only plot top-level of output
 
@@ -162,7 +162,7 @@ namespace
         return outputAdded;
     }
 
-    void DrawSimulationParamValue(ParamValue const& v)
+    void DrawSimulationParamValue(const ParamValue& v)
     {
         if (std::holds_alternative<double>(v))
         {
@@ -183,9 +183,9 @@ namespace
     }
 
     Transform CalcTransformWithRespectTo(
-        OpenSim::Mesh const& mesh,
-        OpenSim::Frame const& frame,
-        SimTK::State const& state)
+        const OpenSim::Mesh& mesh,
+        const OpenSim::Frame& frame,
+        const SimTK::State& state)
     {
         Transform rv = decompose_to_transform(mesh.getFrame().findTransformBetween(state, frame));
         rv.scale = ToVec3(mesh.get_scale_factors());
@@ -193,19 +193,19 @@ namespace
     }
 
     void ActionReexportMeshOBJWithRespectTo(
-        OpenSim::Model const& model,
-        SimTK::State const& state,
-        OpenSim::Mesh const& openSimMesh,
-        OpenSim::Frame const& frame)
+        const OpenSim::Model& model,
+        const SimTK::State& state,
+        const OpenSim::Mesh& openSimMesh,
+        const OpenSim::Frame& frame)
     {
         // prompt user for a save location
-        std::optional<std::filesystem::path> const maybeUserSaveLocation =
+        const std::optional<std::filesystem::path> maybeUserSaveLocation =
             PromptUserForFileSaveLocationAndAddExtensionIfNecessary("obj");
         if (!maybeUserSaveLocation)
         {
             return;  // user didn't select a save location
         }
-        std::filesystem::path const& userSaveLocation = *maybeUserSaveLocation;
+        const std::filesystem::path& userSaveLocation = *maybeUserSaveLocation;
 
         // load raw mesh data into an osc mesh for processing
         Mesh oscMesh = ToOscMesh(model, state, openSimMesh);
@@ -221,13 +221,13 @@ namespace
         };
         if (!outputFileStream)
         {
-            std::string const error = errno_to_string_threadsafe();
+            const std::string error = errno_to_string_threadsafe();
             log_error("%s: could not save obj output: %s", userSaveLocation.string().c_str(), error.c_str());
             return;
         }
 
-        AppMetadata const& appMetadata = App::get().metadata();
-        ObjMetadata const objMetadata
+        const AppMetadata& appMetadata = App::get().metadata();
+        const ObjMetadata objMetadata
         {
             calc_full_application_name_with_version_and_build_id(appMetadata),
         };
@@ -241,19 +241,19 @@ namespace
     }
 
     void ActionReexportMeshSTLWithRespectTo(
-        OpenSim::Model const& model,
-        SimTK::State const& state,
-        OpenSim::Mesh const& openSimMesh,
-        OpenSim::Frame const& frame)
+        const OpenSim::Model& model,
+        const SimTK::State& state,
+        const OpenSim::Mesh& openSimMesh,
+        const OpenSim::Frame& frame)
     {
         // prompt user for a save location
-        std::optional<std::filesystem::path> const maybeUserSaveLocation =
+        const std::optional<std::filesystem::path> maybeUserSaveLocation =
             PromptUserForFileSaveLocationAndAddExtensionIfNecessary("stl");
         if (!maybeUserSaveLocation)
         {
             return;  // user didn't select a save location
         }
-        std::filesystem::path const& userSaveLocation = *maybeUserSaveLocation;
+        const std::filesystem::path& userSaveLocation = *maybeUserSaveLocation;
 
         // load raw mesh data into an osc mesh for processing
         Mesh oscMesh = ToOscMesh(model, state, openSimMesh);
@@ -269,13 +269,13 @@ namespace
         };
         if (!outputFileStream)
         {
-            std::string const error = errno_to_string_threadsafe();
+            const std::string error = errno_to_string_threadsafe();
             log_error("%s: could not save obj output: %s", userSaveLocation.string().c_str(), error.c_str());
             return;
         }
 
-        AppMetadata const& appMetadata = App::get().metadata();
-        StlMetadata const stlMetadata
+        const AppMetadata& appMetadata = App::get().metadata();
+        const StlMetadata stlMetadata
         {
             calc_full_application_name_with_version_and_build_id(appMetadata),
         };
@@ -299,7 +299,7 @@ void osc::DrawContextMenuHeader(CStringView title, CStringView subtitle)
     ui::draw_text_disabled(subtitle);
 }
 
-void osc::DrawRightClickedComponentContextMenuHeader(OpenSim::Component const& c)
+void osc::DrawRightClickedComponentContextMenuHeader(const OpenSim::Component& c)
 {
     DrawContextMenuHeader(truncate_with_ellipsis(c.getName(), 15), c.getConcreteClassName());
 }
@@ -310,7 +310,7 @@ void osc::DrawContextMenuSeparator()
     ui::draw_dummy({0.0f, 3.0f});
 }
 
-void osc::DrawComponentHoverTooltip(OpenSim::Component const& hovered)
+void osc::DrawComponentHoverTooltip(const OpenSim::Component& hovered)
 {
     ui::begin_tooltip();
 
@@ -321,18 +321,18 @@ void osc::DrawComponentHoverTooltip(OpenSim::Component const& hovered)
     ui::end_tooltip();
 }
 
-void osc::DrawSelectOwnerMenu(IModelStatePair& model, OpenSim::Component const& selected)
+void osc::DrawSelectOwnerMenu(IModelStatePair& model, const OpenSim::Component& selected)
 {
     if (ui::begin_menu("Select Owner"))
     {
         model.setHovered(nullptr);
 
         for (
-            OpenSim::Component const* owner = GetOwner(selected);
+            const OpenSim::Component* owner = GetOwner(selected);
             owner != nullptr;
             owner = GetOwner(*owner))
         {
-            std::string const menuLabel = [&owner]()
+            const std::string menuLabel = [&owner]()
             {
                 std::stringstream ss;
                 ss << owner->getName() << '(' << owner->getConcreteClassName() << ')';
@@ -354,8 +354,8 @@ void osc::DrawSelectOwnerMenu(IModelStatePair& model, OpenSim::Component const& 
 }
 
 bool osc::DrawRequestOutputMenuOrMenuItem(
-    OpenSim::AbstractOutput const& o,
-    std::function<void(OpenSim::AbstractOutput const&, std::optional<ComponentOutputSubfield>)> const& onUserSelection)
+    const OpenSim::AbstractOutput& o,
+    const std::function<void(const OpenSim::AbstractOutput&, std::optional<ComponentOutputSubfield>)>& onUserSelection)
 {
     if (GetSupportedSubfields(o) == ComponentOutputSubfield::None)
     {
@@ -368,8 +368,8 @@ bool osc::DrawRequestOutputMenuOrMenuItem(
 }
 
 bool osc::DrawWatchOutputMenu(
-    OpenSim::Component const& c,
-    std::function<void(OpenSim::AbstractOutput const&, std::optional<ComponentOutputSubfield>)> const& onUserSelection)
+    const OpenSim::Component& c,
+    const std::function<void(const OpenSim::AbstractOutput&, std::optional<ComponentOutputSubfield>)>& onUserSelection)
 {
     bool outputAdded = false;
 
@@ -379,7 +379,7 @@ bool osc::DrawWatchOutputMenu(
 
         // iterate from the selected component upwards to the root
         int imguiId = 0;
-        for (OpenSim::Component const* p = &c; p; p = GetOwner(*p))
+        for (const OpenSim::Component* p = &c; p; p = GetOwner(*p))
         {
             ui::push_id(imguiId++);
 
@@ -393,7 +393,7 @@ bool osc::DrawWatchOutputMenu(
             }
             else
             {
-                for (auto const& [name, output] : p->getOutputs())
+                for (const auto& [name, output] : p->getOutputs())
                 {
                     if (DrawRequestOutputMenuOrMenuItem(*output, onUserSelection))
                     {
@@ -411,7 +411,7 @@ bool osc::DrawWatchOutputMenu(
     return outputAdded;
 }
 
-void osc::DrawSimulationParams(ParamBlock const& params)
+void osc::DrawSimulationParams(const ParamBlock& params)
 {
     ui::draw_dummy({0.0f, 1.0f});
     ui::draw_text_unformatted("parameters:");
@@ -423,9 +423,9 @@ void osc::DrawSimulationParams(ParamBlock const& params)
     ui::set_num_columns(2);
     for (int i = 0, len = params.size(); i < len; ++i)
     {
-        std::string const& name = params.getName(i);
-        std::string const& description = params.getDescription(i);
-        ParamValue const& value = params.getValue(i);
+        const std::string& name = params.getName(i);
+        const std::string& description = params.getDescription(i);
+        const ParamValue& value = params.getValue(i);
 
         ui::draw_text_unformatted(name);
         ui::same_line();
@@ -461,7 +461,7 @@ void osc::DrawSearchBar(std::string& out)
 }
 
 void osc::DrawOutputNameColumn(
-    IOutputExtractor const& output,
+    const IOutputExtractor& output,
     bool centered,
     SimulationModelStatePair* maybeActiveSate)
 {
@@ -480,7 +480,7 @@ void osc::DrawOutputNameColumn(
     // (e.g. if the user mouses over the name of a component output it should make
     // the associated component the current hover to provide immediate feedback to
     // the user)
-    if (auto const* co = dynamic_cast<ComponentOutputExtractor const*>(&output); co && maybeActiveSate)
+    if (const auto* co = dynamic_cast<const ComponentOutputExtractor*>(&output); co && maybeActiveSate)
     {
         if (ui::is_item_hovered())
         {
@@ -501,9 +501,9 @@ void osc::DrawOutputNameColumn(
 }
 
 void osc::DrawWithRespectToMenuContainingMenuPerFrame(
-    OpenSim::Component const& root,
-    std::function<void(OpenSim::Frame const&)> const& onFrameMenuOpened,
-    OpenSim::Frame const* maybeParent)
+    const OpenSim::Component& root,
+    const std::function<void(const OpenSim::Frame&)>& onFrameMenuOpened,
+    const OpenSim::Frame* maybeParent)
 {
     ui::draw_text_disabled("With Respect to:");
     ui::draw_separator();
@@ -522,7 +522,7 @@ void osc::DrawWithRespectToMenuContainingMenuPerFrame(
         ui::draw_separator();
     }
 
-    for (OpenSim::Frame const& frame : root.getComponentList<OpenSim::Frame>())
+    for (const OpenSim::Frame& frame : root.getComponentList<OpenSim::Frame>())
     {
         ui::push_id(imguiID++);
         if (ui::begin_menu(frame.getName()))
@@ -535,9 +535,9 @@ void osc::DrawWithRespectToMenuContainingMenuPerFrame(
 }
 
 void osc::DrawWithRespectToMenuContainingMenuItemPerFrame(
-    OpenSim::Component const& root,
-    std::function<void(OpenSim::Frame const&)> const& onFrameMenuItemClicked,
-    OpenSim::Frame const* maybeParent = nullptr)
+    const OpenSim::Component& root,
+    const std::function<void(const OpenSim::Frame&)>& onFrameMenuItemClicked,
+    const OpenSim::Frame* maybeParent = nullptr)
 {
     ui::draw_text_disabled("With Respect to:");
     ui::draw_separator();
@@ -552,7 +552,7 @@ void osc::DrawWithRespectToMenuContainingMenuItemPerFrame(
         ui::pop_id();
     }
 
-    for (OpenSim::Frame const& frame : root.getComponentList<OpenSim::Frame>())
+    for (const OpenSim::Frame& frame : root.getComponentList<OpenSim::Frame>())
     {
         ui::push_id(imguiID++);
         if (ui::draw_menu_item(frame.getName()))
@@ -564,11 +564,11 @@ void osc::DrawWithRespectToMenuContainingMenuItemPerFrame(
 }
 
 void osc::DrawPointTranslationInformationWithRespectTo(
-    OpenSim::Frame const& frame,
-    SimTK::State const& state,
+    const OpenSim::Frame& frame,
+    const SimTK::State& state,
     Vec3 locationInGround)
 {
-    SimTK::Transform const groundToFrame = frame.getTransformInGround(state).invert();
+    const SimTK::Transform groundToFrame = frame.getTransformInGround(state).invert();
     Vec3 position = ToVec3(groundToFrame * ToSimTKVec3(locationInGround));
 
     ui::draw_text("translation");
@@ -579,11 +579,11 @@ void osc::DrawPointTranslationInformationWithRespectTo(
 }
 
 void osc::DrawDirectionInformationWithRepsectTo(
-    OpenSim::Frame const& frame,
-    SimTK::State const& state,
+    const OpenSim::Frame& frame,
+    const SimTK::State& state,
     Vec3 directionInGround)
 {
-    SimTK::Transform const groundToFrame = frame.getTransformInGround(state).invert();
+    const SimTK::Transform groundToFrame = frame.getTransformInGround(state).invert();
     Vec3 direction = ToVec3(groundToFrame.xformBaseVecToFrame(ToSimTKVec3(directionInGround)));
 
     ui::draw_text("direction");
@@ -594,11 +594,11 @@ void osc::DrawDirectionInformationWithRepsectTo(
 }
 
 void osc::DrawFrameInformationExpressedIn(
-    OpenSim::Frame const& parent,
-    SimTK::State const& state,
-    OpenSim::Frame const& otherFrame)
+    const OpenSim::Frame& parent,
+    const SimTK::State& state,
+    const OpenSim::Frame& otherFrame)
 {
-    SimTK::Transform const xform = parent.findTransformBetween(state, otherFrame);
+    const SimTK::Transform xform = parent.findTransformBetween(state, otherFrame);
     Vec3 position = ToVec3(xform.p());
     Vec3 rotationEulers = ToVec3(xform.R().convertRotationToBodyFixedXYZ());
 
@@ -617,7 +617,7 @@ void osc::DrawFrameInformationExpressedIn(
 
 bool osc::BeginCalculateMenu(CalculateMenuFlags flags)
 {
-    CStringView const label = flags & CalculateMenuFlags::NoCalculatorIcon ?
+    const CStringView label = flags & CalculateMenuFlags::NoCalculatorIcon ?
         "Calculate" :
         ICON_FA_CALCULATOR " Calculate";
     return ui::begin_menu(label);
@@ -629,14 +629,14 @@ void osc::EndCalculateMenu()
 }
 
 void osc::DrawCalculatePositionMenu(
-    OpenSim::Component const& root,
-    SimTK::State const& state,
-    OpenSim::Point const& point,
-    OpenSim::Frame const* maybeParent)
+    const OpenSim::Component& root,
+    const SimTK::State& state,
+    const OpenSim::Point& point,
+    const OpenSim::Frame* maybeParent)
 {
     if (ui::begin_menu("Position"))
     {
-        auto const onFrameMenuOpened = [&state, &point](OpenSim::Frame const& frame)
+        const auto onFrameMenuOpened = [&state, &point](const OpenSim::Frame& frame)
         {
             DrawPointTranslationInformationWithRespectTo(
                 frame,
@@ -651,9 +651,9 @@ void osc::DrawCalculatePositionMenu(
 }
 
 void osc::DrawCalculateMenu(
-    OpenSim::Component const& root,
-    SimTK::State const& state,
-    OpenSim::Station const& station,
+    const OpenSim::Component& root,
+    const SimTK::State& state,
+    const OpenSim::Station& station,
     CalculateMenuFlags flags)
 {
     if (BeginCalculateMenu(flags))
@@ -664,9 +664,9 @@ void osc::DrawCalculateMenu(
 }
 
 void osc::DrawCalculateMenu(
-    OpenSim::Component const& root,
-    SimTK::State const& state,
-    OpenSim::Point const& point,
+    const OpenSim::Component& root,
+    const SimTK::State& state,
+    const OpenSim::Point& point,
     CalculateMenuFlags flags)
 {
     if (BeginCalculateMenu(flags))
@@ -677,13 +677,13 @@ void osc::DrawCalculateMenu(
 }
 
 void osc::DrawCalculateTransformMenu(
-    OpenSim::Component const& root,
-    SimTK::State const& state,
-    OpenSim::Frame const& frame)
+    const OpenSim::Component& root,
+    const SimTK::State& state,
+    const OpenSim::Frame& frame)
 {
     if (ui::begin_menu("Transform"))
     {
-        auto const onFrameMenuOpened = [&state, &frame](OpenSim::Frame const& otherFrame)
+        const auto onFrameMenuOpened = [&state, &frame](const OpenSim::Frame& otherFrame)
         {
             DrawFrameInformationExpressedIn(frame, state, otherFrame);
         };
@@ -693,12 +693,12 @@ void osc::DrawCalculateTransformMenu(
 }
 
 void osc::DrawCalculateAxisDirectionsMenu(
-    OpenSim::Component const& root,
-    SimTK::State const& state,
-    OpenSim::Frame const& frame)
+    const OpenSim::Component& root,
+    const SimTK::State& state,
+    const OpenSim::Frame& frame)
 {
     if (ui::begin_menu("Axis Directions")) {
-        auto const onFrameMenuOpened = [&state, &frame](OpenSim::Frame const& other)
+        const auto onFrameMenuOpened = [&state, &frame](const OpenSim::Frame& other)
         {
             Vec3 x = ToVec3(frame.expressVectorInAnotherFrame(state, {1.0, 0.0, 0.0}, other));
             Vec3 y = ToVec3(frame.expressVectorInAnotherFrame(state, {0.0, 1.0, 0.0}, other));
@@ -722,12 +722,12 @@ void osc::DrawCalculateAxisDirectionsMenu(
 }
 
 void osc::DrawCalculateOriginMenu(
-    OpenSim::Component const& root,
-    SimTK::State const& state,
-    OpenSim::Frame const& frame)
+    const OpenSim::Component& root,
+    const SimTK::State& state,
+    const OpenSim::Frame& frame)
 {
     if (ui::begin_menu("Origin")) {
-        auto const onFrameMenuOpened = [&state, &frame](OpenSim::Frame const& otherFrame)
+        const auto onFrameMenuOpened = [&state, &frame](const OpenSim::Frame& otherFrame)
         {
             auto v = ToVec3(frame.findStationLocationInAnotherFrame(state, {0.0f, 0.0f, 0.0f}, otherFrame));
             ui::draw_text("origin");
@@ -740,9 +740,9 @@ void osc::DrawCalculateOriginMenu(
 }
 
 void osc::DrawCalculateMenu(
-    OpenSim::Component const& root,
-    SimTK::State const& state,
-    OpenSim::Frame const& frame,
+    const OpenSim::Component& root,
+    const SimTK::State& state,
+    const OpenSim::Frame& frame,
     CalculateMenuFlags flags)
 {
     if (BeginCalculateMenu(flags))
@@ -755,14 +755,14 @@ void osc::DrawCalculateMenu(
 }
 
 void osc::DrawCalculateOriginMenu(
-    OpenSim::Component const& root,
-    SimTK::State const& state,
-    OpenSim::Sphere const& sphere)
+    const OpenSim::Component& root,
+    const SimTK::State& state,
+    const OpenSim::Sphere& sphere)
 {
     if (ui::begin_menu("Origin"))
     {
-        Vec3 const posInGround = ToVec3(sphere.getFrame().getPositionInGround(state));
-        auto const onFrameMenuOpened = [&state, posInGround](OpenSim::Frame const& otherFrame)
+        const Vec3 posInGround = ToVec3(sphere.getFrame().getPositionInGround(state));
+        const auto onFrameMenuOpened = [&state, posInGround](const OpenSim::Frame& otherFrame)
         {
             DrawPointTranslationInformationWithRespectTo(otherFrame, state, posInGround);
         };
@@ -773,9 +773,9 @@ void osc::DrawCalculateOriginMenu(
 }
 
 void osc::DrawCalculateRadiusMenu(
-    OpenSim::Component const&,
-    SimTK::State const&,
-    OpenSim::Sphere const& sphere)
+    const OpenSim::Component&,
+    const SimTK::State&,
+    const OpenSim::Sphere& sphere)
 {
     if (ui::begin_menu("Radius"))
     {
@@ -786,13 +786,13 @@ void osc::DrawCalculateRadiusMenu(
 }
 
 void osc::DrawCalculateVolumeMenu(
-    OpenSim::Component const&,
-    SimTK::State const&,
-    OpenSim::Sphere const& sphere)
+    const OpenSim::Component&,
+    const SimTK::State&,
+    const OpenSim::Sphere& sphere)
 {
     if (ui::begin_menu("Volume"))
     {
-        double const r = sphere.get_radius();
+        const double r = sphere.get_radius();
         double v = 4.0/3.0 * SimTK::Pi * r*r*r;
         ui::draw_double_input("volume", &v, 0.0, 0.0, "%.6f", ImGuiInputTextFlags_ReadOnly);
         ui::end_menu();
@@ -800,14 +800,14 @@ void osc::DrawCalculateVolumeMenu(
 }
 
 void osc::DrawCalculateMenu(
-    OpenSim::Component const& root,
-    SimTK::State const& state,
-    OpenSim::Geometry const& geom,
+    const OpenSim::Component& root,
+    const SimTK::State& state,
+    const OpenSim::Geometry& geom,
     CalculateMenuFlags flags)
 {
     if (BeginCalculateMenu(flags))
     {
-        if (auto const* spherePtr = dynamic_cast<OpenSim::Sphere const*>(&geom))
+        if (const auto* spherePtr = dynamic_cast<const OpenSim::Sphere*>(&geom))
         {
             DrawCalculateOriginMenu(root, state, *spherePtr);
             DrawCalculateRadiusMenu(root, state, *spherePtr);
@@ -824,29 +824,29 @@ void osc::DrawCalculateMenu(
 }
 
 void osc::TryDrawCalculateMenu(
-    OpenSim::Component const& root,
-    SimTK::State const& state,
-    OpenSim::Component const& selected,
+    const OpenSim::Component& root,
+    const SimTK::State& state,
+    const OpenSim::Component& selected,
     CalculateMenuFlags flags)
 {
-    if (auto const* const frame = dynamic_cast<OpenSim::Frame const*>(&selected))
+    if (const auto* const frame = dynamic_cast<const OpenSim::Frame*>(&selected))
     {
         DrawCalculateMenu(root, state, *frame, flags);
     }
-    else if (auto const* const point = dynamic_cast<OpenSim::Point const*>(&selected))
+    else if (const auto* const point = dynamic_cast<const OpenSim::Point*>(&selected))
     {
         DrawCalculateMenu(root, state, *point, flags);
     }
 }
 
 void osc::DrawCalculateOriginMenu(
-    OpenSim::Component const& root,
-    SimTK::State const& state,
-    OpenSim::Ellipsoid const& ellipsoid)
+    const OpenSim::Component& root,
+    const SimTK::State& state,
+    const OpenSim::Ellipsoid& ellipsoid)
 {
     if (ui::begin_menu("Origin")) {
-        Vec3 const posInGround = ToVec3(ellipsoid.getFrame().getPositionInGround(state));
-        auto const onFrameMenuOpened = [&state, posInGround](OpenSim::Frame const& otherFrame)
+        const Vec3 posInGround = ToVec3(ellipsoid.getFrame().getPositionInGround(state));
+        const auto onFrameMenuOpened = [&state, posInGround](const OpenSim::Frame& otherFrame)
         {
             DrawPointTranslationInformationWithRespectTo(otherFrame, state, posInGround);
         };
@@ -857,9 +857,9 @@ void osc::DrawCalculateOriginMenu(
 }
 
 void osc::DrawCalculateRadiiMenu(
-    OpenSim::Component const&,
-    SimTK::State const&,
-    OpenSim::Ellipsoid const& ellipsoid)
+    const OpenSim::Component&,
+    const SimTK::State&,
+    const OpenSim::Ellipsoid& ellipsoid)
 {
     if (ui::begin_menu("Radii")) {
         auto v = ToVec3(ellipsoid.get_radii());
@@ -871,22 +871,22 @@ void osc::DrawCalculateRadiiMenu(
 }
 
 void osc::DrawCalculateRadiiDirectionsMenu(
-    OpenSim::Component const& root,
-    SimTK::State const& state,
-    OpenSim::Ellipsoid const& ellipsoid)
+    const OpenSim::Component& root,
+    const SimTK::State& state,
+    const OpenSim::Ellipsoid& ellipsoid)
 {
     return DrawCalculateAxisDirectionsMenu(root, state, ellipsoid.getFrame());
 }
 
 void osc::DrawCalculateScaledRadiiDirectionsMenu(
-    OpenSim::Component const& root,
-    SimTK::State const& state,
-    OpenSim::Ellipsoid const& ellipsoid)
+    const OpenSim::Component& root,
+    const SimTK::State& state,
+    const OpenSim::Ellipsoid& ellipsoid)
 {
     if (ui::begin_menu("Axis Directions (Scaled by Radii)")) {
-        auto const onFrameMenuOpened = [&state, &ellipsoid](OpenSim::Frame const& other)
+        const auto onFrameMenuOpened = [&state, &ellipsoid](const OpenSim::Frame& other)
         {
-            auto const& radii = ellipsoid.get_radii();
+            const auto& radii = ellipsoid.get_radii();
             Vec3 x = ToVec3(radii[0] * ellipsoid.getFrame().expressVectorInAnotherFrame(state, {1.0, 0.0, 0.0}, other));
             Vec3 y = ToVec3(radii[1] * ellipsoid.getFrame().expressVectorInAnotherFrame(state, {0.0, 1.0, 0.0}, other));
             Vec3 z = ToVec3(radii[2] * ellipsoid.getFrame().expressVectorInAnotherFrame(state, {0.0, 0.0, 1.0}, other));
@@ -909,9 +909,9 @@ void osc::DrawCalculateScaledRadiiDirectionsMenu(
 }
 
 void osc::DrawCalculateMenu(
-    OpenSim::Component const& root,
-    SimTK::State const& state,
-    OpenSim::Ellipsoid const& ellipsoid,
+    const OpenSim::Component& root,
+    const SimTK::State& state,
+    const OpenSim::Ellipsoid& ellipsoid,
     CalculateMenuFlags flags)
 {
     if (BeginCalculateMenu(flags)) {
@@ -925,9 +925,9 @@ void osc::DrawCalculateMenu(
 
 bool osc::DrawMuscleRenderingOptionsRadioButtions(OpenSimDecorationOptions& opts)
 {
-    MuscleDecorationStyle const currentStyle = opts.getMuscleDecorationStyle();
+    const MuscleDecorationStyle currentStyle = opts.getMuscleDecorationStyle();
     bool edited = false;
-    for (auto const& metadata : GetAllMuscleDecorationStyleMetadata())
+    for (const auto& metadata : GetAllMuscleDecorationStyleMetadata())
     {
         if (ui::draw_radio_button(metadata.label, metadata.value == currentStyle))
         {
@@ -940,9 +940,9 @@ bool osc::DrawMuscleRenderingOptionsRadioButtions(OpenSimDecorationOptions& opts
 
 bool osc::DrawMuscleSizingOptionsRadioButtons(OpenSimDecorationOptions& opts)
 {
-    MuscleSizingStyle const currentStyle = opts.getMuscleSizingStyle();
+    const MuscleSizingStyle currentStyle = opts.getMuscleSizingStyle();
     bool edited = false;
-    for (auto const& metadata : GetAllMuscleSizingStyleMetadata())
+    for (const auto& metadata : GetAllMuscleSizingStyleMetadata())
     {
         if (ui::draw_radio_button(metadata.label, metadata.value == currentStyle))
         {
@@ -955,9 +955,9 @@ bool osc::DrawMuscleSizingOptionsRadioButtons(OpenSimDecorationOptions& opts)
 
 bool osc::DrawMuscleColoringOptionsRadioButtons(OpenSimDecorationOptions& opts)
 {
-    MuscleColoringStyle const currentStyle = opts.getMuscleColoringStyle();
+    const MuscleColoringStyle currentStyle = opts.getMuscleColoringStyle();
     bool edited = false;
-    for (auto const& metadata : GetAllMuscleColoringStyleMetadata())
+    for (const auto& metadata : GetAllMuscleColoringStyleMetadata())
     {
         if (ui::draw_radio_button(metadata.label, metadata.value == currentStyle))
         {
@@ -1016,7 +1016,7 @@ bool osc::DrawOverlayOptionsEditor(OverlayDecorationOptions& opts)
     for (size_t i = 0; i < opts.getNumOptions(); ++i)
     {
         // print header, if necessary
-        CStringView const groupLabel = opts.getOptionGroupLabel(i);
+        const CStringView groupLabel = opts.getOptionGroupLabel(i);
         if (groupLabel != lastGroupLabel)
         {
             if (lastGroupLabel)
@@ -1064,7 +1064,7 @@ bool osc::DrawCustomDecorationOptionCheckboxes(OpenSimDecorationOptions& opts)
 
 bool osc::DrawAdvancedParamsEditor(
     ModelRendererParams& params,
-    std::span<SceneDecoration const> drawlist)
+    std::span<const SceneDecoration> drawlist)
 {
     bool edited = false;
 
@@ -1119,9 +1119,9 @@ bool osc::DrawVisualAidsContextMenuContent(ModelRendererParams& params)
 
 bool osc::DrawViewerTopButtonRow(
     ModelRendererParams& params,
-    std::span<SceneDecoration const>,
+    std::span<const SceneDecoration>,
     IconCache& iconCache,
-    std::function<bool()> const& drawExtraElements)
+    const std::function<bool()>& drawExtraElements)
 {
     bool edited = false;
 
@@ -1156,9 +1156,9 @@ bool osc::DrawViewerTopButtonRow(
 
 bool osc::DrawCameraControlButtons(
     ModelRendererParams& params,
-    std::span<SceneDecoration const> drawlist,
-    Rect const& viewerScreenRect,
-    std::optional<AABB> const& maybeSceneAABB,
+    std::span<const SceneDecoration> drawlist,
+    const Rect& viewerScreenRect,
+    const std::optional<AABB>& maybeSceneAABB,
     IconCache& iconCache,
     Vec2 desiredTopCentroid)
 {
@@ -1188,9 +1188,9 @@ bool osc::DrawCameraControlButtons(
     c.a *= 0.9f;
     ui::push_style_color(ImGuiCol_Button, c);
 
-    float const spacing = ui::get_style_item_spacing().x;
+    const float spacing = ui::get_style_item_spacing().x;
     float width = zoomOutButton.dimensions().x + spacing + zoomInButton.dimensions().x + spacing + autoFocusButton.dimensions().x;
-    Vec2 const topleft = {desiredTopCentroid.x - 0.5f*width, desiredTopCentroid.y + 2.0f*ui::get_style_item_spacing().y};
+    const Vec2 topleft = {desiredTopCentroid.x - 0.5f*width, desiredTopCentroid.y + 2.0f*ui::get_style_item_spacing().y};
     ui::set_cursor_screen_pos(topleft);
 
     bool edited = false;
@@ -1211,7 +1211,7 @@ bool osc::DrawCameraControlButtons(
 
     // next line (centered)
     {
-        Vec2 const tl = {
+        const Vec2 tl = {
             desiredTopCentroid.x - 0.5f*sceneSettingsButton.dimensions().x,
             ui::get_cursor_screen_pos().y,
         };
@@ -1228,24 +1228,24 @@ bool osc::DrawCameraControlButtons(
 
 bool osc::DrawViewerImGuiOverlays(
     ModelRendererParams& params,
-    std::span<SceneDecoration const> drawlist,
+    std::span<const SceneDecoration> drawlist,
     std::optional<AABB> maybeSceneAABB,
-    Rect const& renderRect,
+    const Rect& renderRect,
     IconCache& iconCache,
-    std::function<bool()> const& drawExtraElementsInTop)
+    const std::function<bool()>& drawExtraElementsInTop)
 {
     bool edited = false;
 
     // draw top-left buttons
-    Vec2 const windowPadding = ui::get_style_panel_padding();
+    const Vec2 windowPadding = ui::get_style_panel_padding();
     ui::set_cursor_screen_pos(renderRect.p1 + windowPadding);
     edited = DrawViewerTopButtonRow(params, drawlist, iconCache, drawExtraElementsInTop) || edited;
 
     // draw top-right camera manipulators
     CameraViewAxes axes;
-    Vec2 const renderDims = dimensions_of(renderRect);
-    Vec2 const axesDims = axes.dimensions();
-    Vec2 const axesTopLeft = {
+    const Vec2 renderDims = dimensions_of(renderRect);
+    const Vec2 axesDims = axes.dimensions();
+    const Vec2 axesTopLeft = {
         renderRect.p1.x + renderDims.x - windowPadding.x - axesDims.x,
         renderRect.p1.y + windowPadding.y,
     };
@@ -1254,7 +1254,7 @@ bool osc::DrawViewerImGuiOverlays(
     ui::set_cursor_screen_pos(axesTopLeft);
     edited = axes.draw(params.camera) || edited;
 
-    Vec2 const cameraButtonsTopLeft = axesTopLeft + Vec2{0.0f, axesDims.y};
+    const Vec2 cameraButtonsTopLeft = axesTopLeft + Vec2{0.0f, axesDims.y};
     ui::set_cursor_screen_pos(cameraButtonsTopLeft);
     edited = DrawCameraControlButtons(
         params,
@@ -1275,8 +1275,8 @@ bool osc::BeginToolbar(CStringView label, std::optional<Vec2> padding)
         ui::push_style_var(ImGuiStyleVar_WindowPadding, *padding);
     }
 
-    float const height = ui::get_frame_height() + 2.0f*ui::get_style_panel_padding().y;
-    ImGuiWindowFlags const flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
+    const float height = ui::get_frame_height() + 2.0f*ui::get_style_panel_padding().y;
+    const ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
     bool open = ui::begin_main_viewport_top_bar(label, height, flags);
     if (padding)
     {
@@ -1285,7 +1285,7 @@ bool osc::BeginToolbar(CStringView label, std::optional<Vec2> padding)
     return open;
 }
 
-void osc::DrawNewModelButton(ParentPtr<IMainUIStateAPI> const& api)
+void osc::DrawNewModelButton(const ParentPtr<IMainUIStateAPI>& api)
 {
     if (ui::draw_button(ICON_FA_FILE))
     {
@@ -1295,7 +1295,7 @@ void osc::DrawNewModelButton(ParentPtr<IMainUIStateAPI> const& api)
 }
 
 void osc::DrawOpenModelButtonWithRecentFilesDropdown(
-    std::function<void(std::optional<std::filesystem::path>)> const& onUserClickedOpenOrSelectedFile)
+    const std::function<void(std::optional<std::filesystem::path>)>& onUserClickedOpenOrSelectedFile)
 {
     ui::push_style_var(ImGuiStyleVar_ItemSpacing, {2.0f, 0.0f});
     if (ui::draw_button(ICON_FA_FOLDER_OPEN))
@@ -1312,10 +1312,10 @@ void osc::DrawOpenModelButtonWithRecentFilesDropdown(
 
     if (ui::begin_popup_context_menu("##RecentFilesMenu", ImGuiPopupFlags_MouseButtonLeft))
     {
-        auto const recentFiles = App::singleton<RecentFiles>();
+        const auto recentFiles = App::singleton<RecentFiles>();
         int imguiID = 0;
 
-        for (RecentFile const& rf : *recentFiles)
+        for (const RecentFile& rf : *recentFiles)
         {
             ui::push_id(imguiID++);
             if (ui::draw_selectable(rf.path.filename().string()))
@@ -1329,7 +1329,7 @@ void osc::DrawOpenModelButtonWithRecentFilesDropdown(
     }
 }
 
-void osc::DrawOpenModelButtonWithRecentFilesDropdown(ParentPtr<IMainUIStateAPI> const& api)
+void osc::DrawOpenModelButtonWithRecentFilesDropdown(const ParentPtr<IMainUIStateAPI>& api)
 {
     DrawOpenModelButtonWithRecentFilesDropdown([&api](auto maybeFile)
     {
@@ -1345,7 +1345,7 @@ void osc::DrawOpenModelButtonWithRecentFilesDropdown(ParentPtr<IMainUIStateAPI> 
 }
 
 void osc::DrawSaveModelButton(
-    ParentPtr<IMainUIStateAPI> const& api,
+    const ParentPtr<IMainUIStateAPI>& api,
     UndoableModelStatePair& model)
 {
     if (ui::draw_button(ICON_FA_SAVE))
@@ -1432,7 +1432,7 @@ void osc::DrawUndoAndRedoButtons(UndoableModelStatePair& model)
 
 void osc::DrawToggleFramesButton(UndoableModelStatePair& model, IconCache& icons)
 {
-    Icon const& icon = icons.find_or_throw(IsShowingFrames(model.getModel()) ? "frame_colored" : "frame_bw");
+    const Icon& icon = icons.find_or_throw(IsShowingFrames(model.getModel()) ? "frame_colored" : "frame_bw");
     if (ui::draw_image_button("##toggleframes", icon.texture(), icon.dimensions(), icon.texture_coordinates()))
     {
         ActionToggleFrames(model);
@@ -1442,7 +1442,7 @@ void osc::DrawToggleFramesButton(UndoableModelStatePair& model, IconCache& icons
 
 void osc::DrawToggleMarkersButton(UndoableModelStatePair& model, IconCache& icons)
 {
-    Icon const& icon = icons.find_or_throw(IsShowingMarkers(model.getModel()) ? "marker_colored" : "marker");
+    const Icon& icon = icons.find_or_throw(IsShowingMarkers(model.getModel()) ? "marker_colored" : "marker");
     if (ui::draw_image_button("##togglemarkers", icon.texture(), icon.dimensions(), icon.texture_coordinates()))
     {
         ActionToggleMarkers(model);
@@ -1452,7 +1452,7 @@ void osc::DrawToggleMarkersButton(UndoableModelStatePair& model, IconCache& icon
 
 void osc::DrawToggleWrapGeometryButton(UndoableModelStatePair& model, IconCache& icons)
 {
-    Icon const& icon = icons.find_or_throw(IsShowingWrapGeometry(model.getModel()) ? "wrap_colored" : "wrap");
+    const Icon& icon = icons.find_or_throw(IsShowingWrapGeometry(model.getModel()) ? "wrap_colored" : "wrap");
     if (ui::draw_image_button("##togglewrapgeom", icon.texture(), icon.dimensions(), icon.texture_coordinates()))
     {
         ActionToggleWrapGeometry(model);
@@ -1462,7 +1462,7 @@ void osc::DrawToggleWrapGeometryButton(UndoableModelStatePair& model, IconCache&
 
 void osc::DrawToggleContactGeometryButton(UndoableModelStatePair& model, IconCache& icons)
 {
-    Icon const& icon = icons.find_or_throw(IsShowingContactGeometry(model.getModel()) ? "contact_colored" : "contact");
+    const Icon& icon = icons.find_or_throw(IsShowingContactGeometry(model.getModel()) ? "contact_colored" : "contact");
     if (ui::draw_image_button("##togglecontactgeom", icon.texture(), icon.dimensions(), icon.texture_coordinates()))
     {
         ActionToggleContactGeometry(model);
@@ -1509,15 +1509,15 @@ void osc::DrawSceneScaleFactorEditorControls(UndoableModelStatePair& model)
 }
 
 void osc::DrawMeshExportContextMenuContent(
-    UndoableModelStatePair const& model,
-    OpenSim::Mesh const& mesh)
+    const UndoableModelStatePair& model,
+    const OpenSim::Mesh& mesh)
 {
     ui::draw_text_disabled("Format:");
     ui::draw_separator();
 
     if (ui::begin_menu(".obj"))
     {
-        auto const onFrameMenuItemClicked = [&model, &mesh](OpenSim::Frame const& frame)
+        const auto onFrameMenuItemClicked = [&model, &mesh](const OpenSim::Frame& frame)
         {
             ActionReexportMeshOBJWithRespectTo(
                 model.getModel(),
@@ -1533,7 +1533,7 @@ void osc::DrawMeshExportContextMenuContent(
 
     if (ui::begin_menu(".stl"))
     {
-        auto const onFrameMenuItemClicked = [model, &mesh](OpenSim::Frame const& frame)
+        const auto onFrameMenuItemClicked = [model, &mesh](const OpenSim::Frame& frame)
         {
             ActionReexportMeshSTLWithRespectTo(
                 model.getModel(),

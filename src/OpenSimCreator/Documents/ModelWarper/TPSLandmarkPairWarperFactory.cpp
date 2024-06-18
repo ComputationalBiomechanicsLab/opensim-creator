@@ -29,7 +29,7 @@ namespace rgs = std::ranges;
 namespace
 {
     std::filesystem::path CalcExpectedAssociatedLandmarksFile(
-        std::filesystem::path const& meshAbsolutePath)
+        const std::filesystem::path& meshAbsolutePath)
     {
         std::filesystem::path expected{meshAbsolutePath};
         expected.replace_extension(".landmarks.csv");
@@ -38,15 +38,15 @@ namespace
     }
 
     std::filesystem::path CalcExpectedDestinationMeshFilepath(
-        std::filesystem::path const& osimFilepath,
-        std::filesystem::path const& sourceMeshFilepath)
+        const std::filesystem::path& osimFilepath,
+        const std::filesystem::path& sourceMeshFilepath)
     {
         std::filesystem::path expected = osimFilepath.parent_path() / "DestinationGeometry" / sourceMeshFilepath.filename();
         expected = std::filesystem::weakly_canonical(expected);
         return expected;
     }
 
-    std::vector<Landmark> TryReadLandmarksFromCSVIntoVector(std::filesystem::path const& path)
+    std::vector<Landmark> TryReadLandmarksFromCSVIntoVector(const std::filesystem::path& path)
     {
         std::vector<Landmark> rv;
 
@@ -60,7 +60,7 @@ namespace
         return rv;
     }
 
-    bool SameNameOrBothUnnamed(Landmark const& a, Landmark const& b)
+    bool SameNameOrBothUnnamed(const Landmark& a, const Landmark& b)
     {
         return a.maybeName == b.maybeName;
     }
@@ -79,7 +79,7 @@ namespace
 
         // handle/pair all elements in `a`
         for (auto& lm : a) {
-            auto const it = rgs::find_if(b, std::bind_front(SameNameOrBothUnnamed, std::cref(lm)));
+            const auto it = rgs::find_if(b, std::bind_front(SameNameOrBothUnnamed, std::cref(lm)));
             std::string name = lm.maybeName ? *std::move(lm.maybeName) : GenerateName(nunnamed++);
 
             if (it != b.end()) {
@@ -101,8 +101,8 @@ namespace
     }
 
     std::vector<MaybePairedLandmark> TryLoadPairedLandmarks(
-        [[maybe_unused]] std::optional<std::filesystem::path> const& maybeSourceLandmarksCSV,
-        [[maybe_unused]] std::optional<std::filesystem::path> const& maybeDestinationLandmarksCSV)
+        [[maybe_unused]] const std::optional<std::filesystem::path>& maybeSourceLandmarksCSV,
+        [[maybe_unused]] const std::optional<std::filesystem::path>& maybeDestinationLandmarksCSV)
     {
         std::vector<Landmark> src;
         if (maybeSourceLandmarksCSV) {
@@ -115,10 +115,10 @@ namespace
         return PairLandmarks(std::move(src), std::move(dest));
     }
 
-    TPSCoefficients3D TryCalcTPSCoefficients(std::span<MaybePairedLandmark const> maybePairs)
+    TPSCoefficients3D TryCalcTPSCoefficients(std::span<const MaybePairedLandmark> maybePairs)
     {
         TPSCoefficientSolverInputs3D rv;
-        for (MaybePairedLandmark const& maybePair: maybePairs) {
+        for (const MaybePairedLandmark& maybePair: maybePairs) {
             if (auto pair = maybePair.tryGetPairedLocations()) {
                 rv.landmarks.push_back(*pair);
             }
@@ -128,8 +128,8 @@ namespace
 }
 
 osc::mow::TPSLandmarkPairWarperFactory::TPSLandmarkPairWarperFactory(
-    std::filesystem::path const& osimFileLocation,
-    std::filesystem::path const& sourceMeshFilepath) :
+    const std::filesystem::path& osimFileLocation,
+    const std::filesystem::path& sourceMeshFilepath) :
 
     m_SourceMeshAbsoluteFilepath{std::filesystem::weakly_canonical(sourceMeshFilepath)},
     m_ExpectedSourceLandmarksAbsoluteFilepath{CalcExpectedAssociatedLandmarksFile(m_SourceMeshAbsoluteFilepath)},
@@ -252,7 +252,7 @@ bool osc::mow::TPSLandmarkPairWarperFactory::hasLandmarkNamed(std::string_view n
     return cpp23::contains(m_Landmarks, name, &MaybePairedLandmark::name);
 }
 
-MaybePairedLandmark const* osc::mow::TPSLandmarkPairWarperFactory::tryGetLandmarkPairingByName(std::string_view name) const
+const MaybePairedLandmark* osc::mow::TPSLandmarkPairWarperFactory::tryGetLandmarkPairingByName(std::string_view name) const
 {
     return find_or_nullptr(m_Landmarks, name, &MaybePairedLandmark::name);
 }
@@ -319,7 +319,7 @@ std::vector<ValidationCheckResult> osc::mow::TPSLandmarkPairWarperFactory::implV
     return rv;
 }
 
-std::unique_ptr<IPointWarper> osc::mow::TPSLandmarkPairWarperFactory::implTryCreatePointWarper(ModelWarpDocument const& document) const
+std::unique_ptr<IPointWarper> osc::mow::TPSLandmarkPairWarperFactory::implTryCreatePointWarper(const ModelWarpDocument& document) const
 {
     class TPSWarper : public IPointWarper {
     public:

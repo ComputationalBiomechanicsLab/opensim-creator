@@ -26,16 +26,16 @@
 
 void osc::fd::ActionAddSphereInMeshFrame(
     UndoableModelStatePair& model,
-    OpenSim::Mesh const& mesh,
-    std::optional<Vec3> const& maybeClickPosInGround)
+    const OpenSim::Mesh& mesh,
+    const std::optional<Vec3>& maybeClickPosInGround)
 {
     // if the caller requests a location via a click, set the position accordingly
-    SimTK::Vec3 const locationInMeshFrame = maybeClickPosInGround ?
+    const SimTK::Vec3 locationInMeshFrame = maybeClickPosInGround ?
         CalcLocationInFrame(mesh.getFrame(), model.getState(), *maybeClickPosInGround) :
         SimTK::Vec3{0.0, 0.0, 0.0};
 
-    std::string const sphereName = GenerateSceneElementName("sphere_");
-    std::string const commitMessage = GenerateAddedSomethingCommitMessage(sphereName);
+    const std::string sphereName = GenerateSceneElementName("sphere_");
+    const std::string commitMessage = GenerateAddedSomethingCommitMessage(sphereName);
 
     // create sphere component
     std::unique_ptr<SphereLandmark> sphere = [&mesh, &locationInMeshFrame, &sphereName]()
@@ -51,7 +51,7 @@ void osc::fd::ActionAddSphereInMeshFrame(
     {
         OpenSim::Model& mutableModel = model.updModel();
 
-        SphereLandmark const& sphereRef = AddModelComponent(mutableModel, std::move(sphere));
+        const SphereLandmark& sphereRef = AddModelComponent(mutableModel, std::move(sphere));
         FinalizeConnections(mutableModel);
         InitializeModel(mutableModel);
         InitializeState(mutableModel);
@@ -62,16 +62,16 @@ void osc::fd::ActionAddSphereInMeshFrame(
 
 void osc::fd::ActionAddOffsetFrameInMeshFrame(
     UndoableModelStatePair& model,
-    OpenSim::Mesh const& mesh,
-    std::optional<Vec3> const& maybeClickPosInGround)
+    const OpenSim::Mesh& mesh,
+    const std::optional<Vec3>& maybeClickPosInGround)
 {
     // if the caller requests a location via a click, set the position accordingly
-    SimTK::Vec3 const locationInMeshFrame = maybeClickPosInGround ?
+    const SimTK::Vec3 locationInMeshFrame = maybeClickPosInGround ?
         CalcLocationInFrame(mesh.getFrame(), model.getState(), *maybeClickPosInGround) :
         SimTK::Vec3{0.0, 0.0, 0.0};
 
-    std::string const pofName = GenerateSceneElementName("pof_");
-    std::string const commitMessage = GenerateAddedSomethingCommitMessage(pofName);
+    const std::string pofName = GenerateSceneElementName("pof_");
+    const std::string commitMessage = GenerateAddedSomethingCommitMessage(pofName);
 
     // create physical offset frame
     std::unique_ptr<OpenSim::PhysicalOffsetFrame> pof = [&mesh, &locationInMeshFrame, &pofName]()
@@ -87,7 +87,7 @@ void osc::fd::ActionAddOffsetFrameInMeshFrame(
     {
         OpenSim::Model& mutableModel = model.updModel();
 
-        OpenSim::PhysicalOffsetFrame const& pofRef = AddModelComponent(mutableModel, std::move(pof));
+        const OpenSim::PhysicalOffsetFrame& pofRef = AddModelComponent(mutableModel, std::move(pof));
         FinalizeConnections(mutableModel);
         InitializeModel(mutableModel);
         InitializeState(mutableModel);
@@ -98,11 +98,11 @@ void osc::fd::ActionAddOffsetFrameInMeshFrame(
 
 void osc::fd::ActionAddPointToPointEdge(
     UndoableModelStatePair& model,
-    OpenSim::Point const& pointA,
-    OpenSim::Point const& pointB)
+    const OpenSim::Point& pointA,
+    const OpenSim::Point& pointB)
 {
-    std::string const edgeName = GenerateSceneElementName("edge_");
-    std::string const commitMessage = GenerateAddedSomethingCommitMessage(edgeName);
+    const std::string edgeName = GenerateSceneElementName("edge_");
+    const std::string commitMessage = GenerateAddedSomethingCommitMessage(edgeName);
 
     // create edge
     auto edge = std::make_unique<PointToPointEdge>();
@@ -113,7 +113,7 @@ void osc::fd::ActionAddPointToPointEdge(
     {
         OpenSim::Model& mutableModel = model.updModel();
 
-        PointToPointEdge const& edgeRef = AddModelComponent(mutableModel, std::move(edge));
+        const PointToPointEdge& edgeRef = AddModelComponent(mutableModel, std::move(edge));
         FinalizeConnections(mutableModel);
         InitializeModel(mutableModel);
         InitializeState(mutableModel);
@@ -124,11 +124,11 @@ void osc::fd::ActionAddPointToPointEdge(
 
 void osc::fd::ActionAddMidpoint(
     UndoableModelStatePair& model,
-    OpenSim::Point const& pointA,
-    OpenSim::Point const& pointB)
+    const OpenSim::Point& pointA,
+    const OpenSim::Point& pointB)
 {
-    std::string const midpointName = GenerateSceneElementName("midpoint_");
-    std::string const commitMessage = GenerateAddedSomethingCommitMessage(midpointName);
+    const std::string midpointName = GenerateSceneElementName("midpoint_");
+    const std::string commitMessage = GenerateAddedSomethingCommitMessage(midpointName);
 
     // create midpoint component
     auto midpoint = std::make_unique<MidpointLandmark>();
@@ -139,7 +139,7 @@ void osc::fd::ActionAddMidpoint(
     {
         OpenSim::Model& mutableModel = model.updModel();
 
-        MidpointLandmark const& midpointRef = AddModelComponent(mutableModel, std::move(midpoint));
+        const MidpointLandmark& midpointRef = AddModelComponent(mutableModel, std::move(midpoint));
         FinalizeConnections(mutableModel);
         InitializeModel(mutableModel);
         InitializeState(mutableModel);
@@ -150,11 +150,11 @@ void osc::fd::ActionAddMidpoint(
 
 void osc::fd::ActionAddCrossProductEdge(
     UndoableModelStatePair& model,
-    Edge const& edgeA,
-    Edge const& edgeB)
+    const Edge& edgeA,
+    const Edge& edgeB)
 {
-    std::string const edgeName = GenerateSceneElementName("crossproduct_");
-    std::string const commitMessage = GenerateAddedSomethingCommitMessage(edgeName);
+    const std::string edgeName = GenerateSceneElementName("crossproduct_");
+    const std::string commitMessage = GenerateAddedSomethingCommitMessage(edgeName);
 
     // create cross product edge component
     auto edge = std::make_unique<CrossProductEdge>();
@@ -165,7 +165,7 @@ void osc::fd::ActionAddCrossProductEdge(
     {
         OpenSim::Model& mutableModel = model.updModel();
 
-        CrossProductEdge const& edgeRef = AddModelComponent(mutableModel, std::move(edge));
+        const CrossProductEdge& edgeRef = AddModelComponent(mutableModel, std::move(edge));
         FinalizeConnections(mutableModel);
         InitializeModel(mutableModel);
         InitializeState(mutableModel);
@@ -181,7 +181,7 @@ void osc::fd::ActionSwapSocketAssignments(
     std::string secondSocketName)
 {
     // create commit message
-    std::string const commitMessage = [&componentAbsPath, &firstSocketName, &secondSocketName]()
+    const std::string commitMessage = [&componentAbsPath, &firstSocketName, &secondSocketName]()
     {
         std::stringstream ss;
         ss << "swapped socket '" << firstSocketName << "' with socket '" << secondSocketName << " in " << componentAbsPath.getComponentName();
@@ -212,7 +212,7 @@ void osc::fd::ActionSwapSocketAssignments(
     }
 
     // perform swap
-    std::string const firstSocketPath = firstSocket->getConnecteePath();
+    const std::string firstSocketPath = firstSocket->getConnecteePath();
     firstSocket->setConnecteePath(secondSocket->getConnecteePath());
     secondSocket->setConnecteePath(firstSocketPath);
 
@@ -224,27 +224,27 @@ void osc::fd::ActionSwapSocketAssignments(
 
 void osc::fd::ActionSwapPointToPointEdgeEnds(
     UndoableModelStatePair& model,
-    PointToPointEdge const& edge)
+    const PointToPointEdge& edge)
 {
     ActionSwapSocketAssignments(model, edge.getAbsolutePath(), "first_point", "second_point");
 }
 
 void osc::fd::ActionSwapCrossProductEdgeOperands(
     UndoableModelStatePair& model,
-    CrossProductEdge const& edge)
+    const CrossProductEdge& edge)
 {
     ActionSwapSocketAssignments(model, edge.getAbsolutePath(), "first_edge", "second_edge");
 }
 
 void osc::fd::ActionAddFrame(
-    std::shared_ptr<UndoableModelStatePair> const& model,
-    Edge const& firstEdge,
+    const std::shared_ptr<UndoableModelStatePair>& model,
+    const Edge& firstEdge,
     CoordinateDirection firstEdgeAxis,
-    Edge const& otherEdge,
-    OpenSim::Point const& origin)
+    const Edge& otherEdge,
+    const OpenSim::Point& origin)
 {
-    std::string const frameName = GenerateSceneElementName("frame_");
-    std::string const commitMessage = GenerateAddedSomethingCommitMessage(frameName);
+    const std::string frameName = GenerateSceneElementName("frame_");
+    const std::string commitMessage = GenerateAddedSomethingCommitMessage(frameName);
 
     // create the frame
     auto frame = std::make_unique<CrossProductDefinedFrame>();
@@ -258,7 +258,7 @@ void osc::fd::ActionAddFrame(
     {
         OpenSim::Model& mutModel = model->updModel();
 
-        CrossProductDefinedFrame const& frameRef = AddModelComponent(mutModel, std::move(frame));
+        const CrossProductDefinedFrame& frameRef = AddModelComponent(mutModel, std::move(frame));
         FinalizeConnections(mutModel);
         InitializeModel(mutModel);
         InitializeState(mutModel);
@@ -268,37 +268,37 @@ void osc::fd::ActionAddFrame(
 }
 
 void osc::fd::ActionCreateBodyFromFrame(
-    std::shared_ptr<UndoableModelStatePair> const& model,
-    OpenSim::ComponentPath const& frameAbsPath,
-    OpenSim::ComponentPath const& meshAbsPath,
-    OpenSim::ComponentPath const& jointFrameAbsPath,
-    OpenSim::ComponentPath const& parentFrameAbsPath)
+    const std::shared_ptr<UndoableModelStatePair>& model,
+    const OpenSim::ComponentPath& frameAbsPath,
+    const OpenSim::ComponentPath& meshAbsPath,
+    const OpenSim::ComponentPath& jointFrameAbsPath,
+    const OpenSim::ComponentPath& parentFrameAbsPath)
 {
     // validate external inputs
 
     log_debug("validate external inputs");
-    auto const* const meshFrame = FindComponent<OpenSim::PhysicalFrame>(model->getModel(), frameAbsPath);
+    const auto* const meshFrame = FindComponent<OpenSim::PhysicalFrame>(model->getModel(), frameAbsPath);
     if (!meshFrame)
     {
         log_error("%s: cannot find frame: skipping body creation", frameAbsPath.toString().c_str());
         return;
     }
 
-    auto const* const mesh = FindComponent<OpenSim::Mesh>(model->getModel(), meshAbsPath);
+    const auto* const mesh = FindComponent<OpenSim::Mesh>(model->getModel(), meshAbsPath);
     if (!mesh)
     {
         log_error("%s: cannot find mesh: skipping body creation", meshAbsPath.toString().c_str());
         return;
     }
 
-    auto const* const jointFrame = FindComponent<OpenSim::PhysicalFrame>(model->getModel(), jointFrameAbsPath);
+    const auto* const jointFrame = FindComponent<OpenSim::PhysicalFrame>(model->getModel(), jointFrameAbsPath);
     if (!jointFrame)
     {
         log_error("%s: cannot find joint frame: skipping body creation", jointFrameAbsPath.toString().c_str());
         return;
     }
 
-    auto const* const parentFrame = FindComponent<OpenSim::PhysicalFrame>(model->getModel(), parentFrameAbsPath);
+    const auto* const parentFrame = FindComponent<OpenSim::PhysicalFrame>(model->getModel(), parentFrameAbsPath);
     if (!parentFrame)
     {
         log_error("%s: cannot find parent frame: skipping body creation", parentFrameAbsPath.toString().c_str());
@@ -307,10 +307,10 @@ void osc::fd::ActionCreateBodyFromFrame(
 
     // create body
     log_debug("create body");
-    std::string const bodyName = meshFrame->getName() + "_body";
-    double const bodyMass = 1.0;
-    SimTK::Vec3 const bodyCenterOfMass = {0.0, 0.0, 0.0};
-    SimTK::Inertia const bodyInertia = {1.0, 1.0, 1.0};
+    const std::string bodyName = meshFrame->getName() + "_body";
+    const double bodyMass = 1.0;
+    const SimTK::Vec3 bodyCenterOfMass = {0.0, 0.0, 0.0};
+    const SimTK::Inertia bodyInertia = {1.0, 1.0, 1.0};
     auto body = std::make_unique<OpenSim::Body>(
         bodyName,
         bodyMass,
@@ -351,7 +351,7 @@ void osc::fd::ActionCreateBodyFromFrame(
     meshPof->setOffsetTransform(mesh->getFrame().findTransformBetween(model->getState(), *meshFrame));
 
     // create commit message
-    std::string const commitMessage = [&body]()
+    const std::string commitMessage = [&body]()
     {
         std::stringstream ss;
         ss << "created " << body->getName();
@@ -364,7 +364,7 @@ void osc::fd::ActionCreateBodyFromFrame(
     {
         // CARE: store mesh path before mutatingthe model, because the mesh reference
         // may become invalidated by other model mutations
-        OpenSim::ComponentPath const meshPath = GetAbsolutePath(*mesh);
+        const OpenSim::ComponentPath meshPath = GetAbsolutePath(*mesh);
 
         OpenSim::Model& mutModel = model->updModel();
 
@@ -386,7 +386,7 @@ void osc::fd::ActionCreateBodyFromFrame(
 
         // if the mesh's PoF was only used by the mesh then reassign
         // everything to the new PoF and delete the old one
-        if (auto const* pof = GetOwner<OpenSim::PhysicalOffsetFrame>(*mesh);
+        if (const auto* pof = GetOwner<OpenSim::PhysicalOffsetFrame>(*mesh);
             pof && GetNumChildren(*pof) == 3)  // mesh+frame geom+wrap object set
         {
             log_debug("reassign sockets");
@@ -418,7 +418,7 @@ void osc::fd::ActionCreateBodyFromFrame(
         model->setSelected(&bodyRef);
         model->commit(commitMessage);
     }
-    catch (std::exception const& ex)
+    catch (const std::exception& ex)
     {
         log_error("error detected while trying to add a body to the model: %s", ex.what());
         model->rollback();

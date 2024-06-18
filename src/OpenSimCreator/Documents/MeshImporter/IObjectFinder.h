@@ -10,18 +10,18 @@ namespace osc::mi
     class IObjectFinder {
     protected:
         IObjectFinder() = default;
-        IObjectFinder(IObjectFinder const&) = default;
+        IObjectFinder(const IObjectFinder&) = default;
         IObjectFinder(IObjectFinder&&) noexcept = default;
-        IObjectFinder& operator=(IObjectFinder const&) = default;
+        IObjectFinder& operator=(const IObjectFinder&) = default;
         IObjectFinder& operator=(IObjectFinder&&) noexcept = default;
     public:
         virtual ~IObjectFinder() noexcept = default;
 
-        MIObject const* find(UID id) const
+        const MIObject* find(UID id) const
         {
             return implFind(id);
         }
     private:
-        virtual MIObject const* implFind(UID) const = 0;
+        virtual const MIObject* implFind(UID) const = 0;
     };
 }

@@ -29,12 +29,12 @@ namespace osc::mi
 
         CStringView implGetLabel() const final;
 
-        Transform implGetXform(IObjectFinder const&) const final
+        Transform implGetXform(const IObjectFinder&) const final
         {
             return identity<Transform>();
         }
 
-        AABB implCalcBounds(IObjectFinder const&) const final
+        AABB implCalcBounds(const IObjectFinder&) const final
         {
             return AABB{};
         }

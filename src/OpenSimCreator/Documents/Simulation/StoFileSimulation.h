@@ -25,17 +25,17 @@ namespace osc
     public:
         StoFileSimulation(
             std::unique_ptr<OpenSim::Model>,
-            std::filesystem::path const& stoFilePath,
+            const std::filesystem::path& stoFilePath,
             float fixupScaleFactor
         );
-        StoFileSimulation(StoFileSimulation const&) = delete;
+        StoFileSimulation(const StoFileSimulation&) = delete;
         StoFileSimulation(StoFileSimulation&&) noexcept;
-        StoFileSimulation& operator=(StoFileSimulation const&) = delete;
+        StoFileSimulation& operator=(const StoFileSimulation&) = delete;
         StoFileSimulation& operator=(StoFileSimulation&&) noexcept;
         ~StoFileSimulation() noexcept;
 
     private:
-        SynchronizedValueGuard<OpenSim::Model const> implGetModel() const final;
+        SynchronizedValueGuard<const OpenSim::Model> implGetModel() const final;
 
         ptrdiff_t implGetNumReports() const final;
         SimulationReport implGetSimulationReport(ptrdiff_t) const final;
@@ -43,8 +43,8 @@ namespace osc
 
         SimulationStatus implGetStatus() const final;
         SimulationClocks implGetClocks() const final;
-        ParamBlock const& implGetParams() const final;
-        std::span<OutputExtractor const> implGetOutputExtractors() const final;
+        const ParamBlock& implGetParams() const final;
+        std::span<const OutputExtractor> implGetOutputExtractors() const final;
 
         float implGetFixupScaleFactor() const final;
         void implSetFixupScaleFactor(float) final;

@@ -11,9 +11,9 @@ namespace osc::mow
     class IPointWarper {
     protected:
         IPointWarper() = default;
-        IPointWarper(IPointWarper const&) = default;
+        IPointWarper(const IPointWarper&) = default;
         IPointWarper(IPointWarper&&) noexcept = default;
-        IPointWarper& operator=(IPointWarper const&) = default;
+        IPointWarper& operator=(const IPointWarper&) = default;
         IPointWarper& operator=(IPointWarper&&) noexcept = default;
     public:
         virtual ~IPointWarper() noexcept = default;

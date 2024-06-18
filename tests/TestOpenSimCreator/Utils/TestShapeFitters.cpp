@@ -28,8 +28,8 @@ using namespace osc::literals;
 
 TEST(FitSphere, ReturnsUnitSphereWhenGivenAnEmptyMesh)
 {
-    Mesh const emptyMesh;
-    Sphere const sphereFit = FitSphere(emptyMesh);
+    const Mesh emptyMesh;
+    const Sphere sphereFit = FitSphere(emptyMesh);
 
     ASSERT_FALSE(emptyMesh.has_vertices());
     ASSERT_EQ(sphereFit.origin, Vec3(0.0f, 0.0f, 0.0f));
@@ -39,8 +39,8 @@ TEST(FitSphere, ReturnsUnitSphereWhenGivenAnEmptyMesh)
 TEST(FitSphere, ReturnsRoughlyExpectedParametersWhenGivenAUnitSphereMesh)
 {
     // generate a UV unit sphere
-    Mesh const sphereMesh = SphereGeometry{1.0f, 16, 16};
-    Sphere const sphereFit = FitSphere(sphereMesh);
+    const Mesh sphereMesh = SphereGeometry{1.0f, 16, 16};
+    const Sphere sphereFit = FitSphere(sphereMesh);
 
     ASSERT_TRUE(all_of(equal_within_absdiff(sphereFit.origin, Vec3{}, 0.000001f)));
     ASSERT_TRUE(equal_within_absdiff(sphereFit.radius, 1.0f, 0.000001f));
@@ -56,7 +56,7 @@ TEST(FitSphere, ReturnsRoughlyExpectedParametersWhenGivenATransformedSphere)
     Mesh sphereMesh = SphereGeometry{1.0f, 16, 16};
     sphereMesh.transform_vertices(t);
 
-    Sphere const sphereFit = FitSphere(sphereMesh);
+    const Sphere sphereFit = FitSphere(sphereMesh);
 
     ASSERT_TRUE(all_of(equal_within_absdiff(sphereFit.origin, t.position, 0.000001f)));
     ASSERT_TRUE(equal_within_reldiff(sphereFit.radius, t.scale.x, 0.000001f));
@@ -86,10 +86,10 @@ TEST(FitSphere, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedAlgo
     constexpr Sphere c_ExpectedSphere{{5.0133f, -27.43f, 164.2998f}, 7.8291f};
 
     // Femoral_head.obj is copied from the example data that came with the supplamentary information
-    auto const objPath =
+    const auto objPath =
         std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "Utils/ShapeFitting/Femoral_head.obj";
-    Mesh const mesh = LoadMeshViaSimTK(objPath);
-    Sphere const sphereFit = FitSphere(mesh);
+    const Mesh mesh = LoadMeshViaSimTK(objPath);
+    const Sphere sphereFit = FitSphere(mesh);
 
     ASSERT_TRUE(all_of(equal_within_absdiff(sphereFit.origin, c_ExpectedSphere.origin, 0.0001f)));
     ASSERT_TRUE(equal_within_absdiff(sphereFit.radius, c_ExpectedSphere.radius, 0.0001f));
@@ -97,8 +97,8 @@ TEST(FitSphere, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedAlgo
 
 TEST(FitPlane, ReturnsUnitPlanePointingUpInYIfGivenAnEmptyMesh)
 {
-    Mesh const emptyMesh;
-    Plane const planeFit = FitPlane(emptyMesh);
+    const Mesh emptyMesh;
+    const Plane planeFit = FitPlane(emptyMesh);
 
     ASSERT_FALSE(emptyMesh.has_vertices());
     ASSERT_EQ(planeFit.origin, Vec3(0.0f, 0.0f, 0.0f));
@@ -133,10 +133,10 @@ TEST(FitPlane, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedAlgor
     };
 
     // Femoral_head.obj is copied from the example data that came with the supplamentary information
-    auto const objPath =
+    const auto objPath =
         std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "Utils/ShapeFitting/Femoral_head.obj";
-    Mesh const mesh = LoadMeshViaSimTK(objPath);
-    Plane const planeFit = FitPlane(mesh);
+    const Mesh mesh = LoadMeshViaSimTK(objPath);
+    const Plane planeFit = FitPlane(mesh);
 
     ASSERT_TRUE(all_of(equal_within_absdiff(planeFit.origin, c_ExpectedPlane.origin, 0.0001f)));
     ASSERT_TRUE(all_of(equal_within_absdiff(planeFit.normal, c_ExpectedPlane.normal, 0.0001f)));
@@ -175,11 +175,11 @@ TEST(FitEllipsoid, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedA
     constexpr float c_MaximumAbsoluteError = 0.0001f;
 
     // Femoral_head.obj is copied from the example data that came with the supplamentary information
-    auto const objPath =
+    const auto objPath =
         std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "Utils/ShapeFitting/Femoral_head.obj";
-    Mesh const mesh = LoadMeshViaSimTK(objPath);
-    Ellipsoid const fit = FitEllipsoid(mesh);
-    auto const directions = axis_directions_of(fit);
+    const Mesh mesh = LoadMeshViaSimTK(objPath);
+    const Ellipsoid fit = FitEllipsoid(mesh);
+    const auto directions = axis_directions_of(fit);
 
     ASSERT_TRUE(all_of(equal_within_absdiff(fit.origin, c_ExpectedOrigin, c_MaximumAbsoluteError)));
     ASSERT_TRUE(all_of(equal_within_absdiff(fit.radii,  c_ExpectedRadii, c_MaximumAbsoluteError)));
@@ -190,7 +190,7 @@ TEST(FitEllipsoid, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedA
 
 TEST(FitEllipsoid, DISABLED_ThrowsErrorIfGivenLessThan9Points)
 {
-    auto const generateMeshWithNPoints = [](size_t n)
+    const auto generateMeshWithNPoints = [](size_t n)
     {
         std::vector<Vec3> vertices(n);
         std::vector<uint16_t> indices(n);

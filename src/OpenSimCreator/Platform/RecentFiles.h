@@ -13,15 +13,15 @@ namespace osc
         RecentFiles();
         explicit RecentFiles(std::filesystem::path recentFilesFile);
         RecentFiles(RecentFiles&&) noexcept = default;
-        RecentFiles(RecentFiles const&) = delete;
-        RecentFiles& operator=(RecentFiles const&) = delete;
+        RecentFiles(const RecentFiles&) = delete;
+        RecentFiles& operator=(const RecentFiles&) = delete;
         RecentFiles& operator=(RecentFiles&&) noexcept = delete;
         ~RecentFiles() noexcept
         {
             sync();
         }
 
-        void push_back(std::filesystem::path const&);
+        void push_back(const std::filesystem::path&);
 
         [[nodiscard]] bool empty() const
         {

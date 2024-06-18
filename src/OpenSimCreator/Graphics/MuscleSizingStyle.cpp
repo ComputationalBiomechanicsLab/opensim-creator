@@ -28,12 +28,12 @@ namespace
     static_assert(c_Metadata.size() == num_options<MuscleSizingStyle>());
 }
 
-std::span<MuscleSizingStyleMetadata const> osc::GetAllMuscleSizingStyleMetadata()
+std::span<const MuscleSizingStyleMetadata> osc::GetAllMuscleSizingStyleMetadata()
 {
     return c_Metadata;
 }
 
-MuscleSizingStyleMetadata const& osc::GetMuscleSizingStyleMetadata(MuscleSizingStyle s)
+const MuscleSizingStyleMetadata& osc::GetMuscleSizingStyleMetadata(MuscleSizingStyle s)
 {
     return GetAllMuscleSizingStyleMetadata()[GetIndexOf(s)];
 }

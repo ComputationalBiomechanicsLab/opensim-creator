@@ -44,8 +44,8 @@ namespace osc::mi
             using difference_type = ptrdiff_t;
             using value_type = T;
             using pointer = T*;
-            using const_pointer = T const*;
-            using reference = T const&;
+            using const_pointer = const T*;
+            using reference = const T&;
             using iterator_category = std::forward_iterator_tag;
 
             // caller-provided iterator
@@ -73,9 +73,9 @@ namespace osc::mi
             }
 
             // conversion to a const version of the iterator
-            explicit operator Iterator<value_type const>() const
+            explicit operator Iterator<const value_type>() const
             {
-                return Iterator<value_type const>{m_Pos, m_End};
+                return Iterator<const value_type>{m_Pos, m_End};
             }
 
             // LegacyIterator
@@ -106,7 +106,7 @@ namespace osc::mi
 
             // EqualityComparable
 
-            friend bool operator==(Iterator const&, Iterator const&) = default;
+            friend bool operator==(const Iterator&, const Iterator&) = default;
 
             // LegacyInputIterator
 
@@ -125,7 +125,7 @@ namespace osc::mi
         template<std::derived_from<MIObject> T>
         class Iterable final {
         public:
-            using MapRef = std::conditional_t<std::is_const_v<T>, ObjectLookup const&, ObjectLookup&>;
+            using MapRef = std::conditional_t<std::is_const_v<T>, const ObjectLookup&, ObjectLookup&>;
 
             explicit Iterable(MapRef objects) :
                 m_Begin{objects.begin(), objects.end()},
@@ -152,7 +152,7 @@ namespace osc::mi
         }
 
         template<std::derived_from<MIObject> T = MIObject>
-        T const* tryGetByID(UID id) const
+        const T* tryGetByID(UID id) const
         {
             return findByID<T>(m_Objects, id);
         }
@@ -164,7 +164,7 @@ namespace osc::mi
         }
 
         template<std::derived_from<MIObject> T = MIObject>
-        T const& getByID(UID id) const
+        const T& getByID(UID id) const
         {
             return findByIDOrThrow<T>(m_Objects, id);
         }
@@ -191,7 +191,7 @@ namespace osc::mi
         }
 
         template<std::derived_from<MIObject> T = MIObject>
-        bool contains(MIObject const& e) const
+        bool contains(const MIObject& e) const
         {
             return contains<T>(e.getID());
         }
@@ -203,9 +203,9 @@ namespace osc::mi
         }
 
         template<std::derived_from<MIObject> T = MIObject>
-        Iterable<T const> iter() const
+        Iterable<const T> iter() const
         {
-            return Iterable<T const>{m_Objects};
+            return Iterable<const T>{m_Objects};
         }
 
         MIObject& insert(std::unique_ptr<MIObject> obj)
@@ -233,7 +233,7 @@ namespace osc::mi
 
         bool deleteByID(UID id)
         {
-            MIObject const* const obj = tryGetByID(id);
+            const MIObject* const obj = tryGetByID(id);
             if (!obj)
             {
                 return false;  // ID doesn't exist in the document
@@ -251,7 +251,7 @@ namespace osc::mi
                 // move object into deletion set, rather than deleting it immediately,
                 // so that code that relies on references to the to-be-deleted object
                 // still works until an explicit `.GarbageCollect()` call
-                if (auto const it = m_Objects.find(deletedID); it != m_Objects.end())
+                if (const auto it = m_Objects.find(deletedID); it != m_Objects.end())
                 {
                     m_DeletedObjects.push_back(std::move(it->second));
                     m_Objects.erase(it);
@@ -274,7 +274,7 @@ namespace osc::mi
             return !m_SelectedObjectIDs.empty();
         }
 
-        std::unordered_set<UID> const& getSelected() const
+        const std::unordered_set<UID>& getSelected() const
         {
             return m_SelectedObjectIDs;
         }
@@ -284,14 +284,14 @@ namespace osc::mi
             return m_SelectedObjectIDs.contains(id);
         }
 
-        bool isSelected(MIObject const& obj) const
+        bool isSelected(const MIObject& obj) const
         {
             return isSelected(obj.getID());
         }
 
         void select(UID id)
         {
-            MIObject const* const e = tryGetByID(id);
+            const MIObject* const e = tryGetByID(id);
 
             if (e && e->canSelect())
             {
@@ -299,12 +299,12 @@ namespace osc::mi
             }
         }
 
-        void select(MIObject const& obj)
+        void select(const MIObject& obj)
         {
             select(obj.getID());
         }
 
-        void selectOnly(MIObject const& obj)
+        void selectOnly(const MIObject& obj)
         {
             deSelectAll();
             select(obj);
@@ -315,14 +315,14 @@ namespace osc::mi
             m_SelectedObjectIDs.erase(id);
         }
 
-        void deSelect(MIObject const& obj)
+        void deSelect(const MIObject& obj)
         {
             deSelect(obj.getID());
         }
 
         void selectAll()
         {
-            for (MIObject const& obj : iter())
+            for (const MIObject& obj : iter())
             {
                 if (obj.canSelect())
                 {
@@ -355,7 +355,7 @@ namespace osc::mi
         >
         static T* findByID(AssociativeContainer& container, UID id)
         {
-            auto const it = container.find(id);
+            const auto it = container.find(id);
 
             if (it == container.end())
             {
@@ -389,14 +389,14 @@ namespace osc::mi
             return *ptr;
         }
 
-        MIObject const* implFind(UID id) const final
+        const MIObject* implFind(UID id) const final
         {
             return findByID(m_Objects, id);
         }
 
-        void populateDeletionSet(MIObject const& deletionTarget, std::unordered_set<UID>& out)
+        void populateDeletionSet(const MIObject& deletionTarget, std::unordered_set<UID>& out)
         {
-            UID const deletedID = deletionTarget.getID();
+            const UID deletedID = deletionTarget.getID();
 
             // add the deletion target to the deletion set (if applicable)
             if (deletionTarget.canDelete())
@@ -410,7 +410,7 @@ namespace osc::mi
             // iterate over everything else in the document and look for things
             // that cross-reference the to-be-deleted object - those things should
             // also be deleted
-            for (MIObject const& obj : iter())
+            for (const MIObject& obj : iter())
             {
                 if (obj.isCrossReferencing(deletedID))
                 {

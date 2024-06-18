@@ -12,12 +12,12 @@ namespace osc
 {
     enum class OverlayDecorationOptionFlags : uint32_t {
         None          = 0,
-        drawXZGrid    = 1<<0,
-        drawXYGrid    = 1<<1,
-        drawYZGrid    = 1<<2,
+        DrawXZGrid    = 1<<0,
+        DrawXYGrid    = 1<<1,
+        DrawYZGrid    = 1<<2,
         DrawAxisLines = 1<<3,
-        drawAABBs     = 1<<4,
-        drawBVH       = 1<<5,
+        DrawAABBs     = 1<<4,
+        DrawBVH       = 1<<5,
         NUM_FLAGS        = 6,
 
         Default = None,
@@ -59,5 +59,5 @@ namespace osc
         OverlayDecorationOptionFlags value;
     };
     CStringView getLabel(OverlayDecorationOptionGroup);
-    std::span<OverlayDecorationOptionFlagsMetadata const> GetAllOverlayDecorationOptionFlagsMetadata();
+    std::span<const OverlayDecorationOptionFlagsMetadata> GetAllOverlayDecorationOptionFlagsMetadata();
 }

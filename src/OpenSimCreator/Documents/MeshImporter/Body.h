@@ -21,8 +21,8 @@ namespace osc::mi
     public:
         Body(
             UID id,
-            std::string const& name,
-            Transform const& xform
+            const std::string& name,
+            const Transform& xform
         );
 
         double getMass() const
@@ -67,18 +67,18 @@ namespace osc::mi
 
         void implSetLabel(std::string_view sv) final;
 
-        Transform implGetXform(IObjectFinder const&) const final
+        Transform implGetXform(const IObjectFinder&) const final
         {
             return getXForm();
         }
 
-        void implSetXform(IObjectFinder const&, Transform const& newXform) final
+        void implSetXform(const IObjectFinder&, const Transform& newXform) final
         {
             m_Xform = newXform;
             m_Xform.scale = {1.0f, 1.0f, 1.0f};
         }
 
-        AABB implCalcBounds(IObjectFinder const&) const final
+        AABB implCalcBounds(const IObjectFinder&) const final
         {
             return bounding_aabb_of(m_Xform.position);
         }

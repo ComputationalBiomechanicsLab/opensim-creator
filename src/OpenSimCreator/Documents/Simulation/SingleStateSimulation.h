@@ -20,14 +20,14 @@ namespace osc
     class SingleStateSimulation final : public ISimulation {
     public:
         explicit SingleStateSimulation(BasicModelStatePair);
-        SingleStateSimulation(SingleStateSimulation const&) = delete;
+        SingleStateSimulation(const SingleStateSimulation&) = delete;
         SingleStateSimulation(SingleStateSimulation&&) noexcept;
-        SingleStateSimulation& operator=(SingleStateSimulation const&) = delete;
+        SingleStateSimulation& operator=(const SingleStateSimulation&) = delete;
         SingleStateSimulation& operator=(SingleStateSimulation&&) noexcept;
         ~SingleStateSimulation() noexcept;
 
     private:
-        SynchronizedValueGuard<OpenSim::Model const> implGetModel() const final;
+        SynchronizedValueGuard<const OpenSim::Model> implGetModel() const final;
 
         ptrdiff_t implGetNumReports() const final;
         SimulationReport implGetSimulationReport(ptrdiff_t) const final;
@@ -35,8 +35,8 @@ namespace osc
 
         SimulationStatus implGetStatus() const final;
         SimulationClocks implGetClocks() const final;
-        ParamBlock const& implGetParams() const final;
-        std::span<OutputExtractor const> implGetOutputExtractors() const final;
+        const ParamBlock& implGetParams() const final;
+        std::span<const OutputExtractor> implGetOutputExtractors() const final;
 
         float implGetFixupScaleFactor() const final;
         void implSetFixupScaleFactor(float) final;

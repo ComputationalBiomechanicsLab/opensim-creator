@@ -15,10 +15,10 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit TPS2DTab(ParentPtr<ITabHost> const&);
-        TPS2DTab(TPS2DTab const&) = delete;
+        explicit TPS2DTab(const ParentPtr<ITabHost>&);
+        TPS2DTab(const TPS2DTab&) = delete;
         TPS2DTab(TPS2DTab&&) noexcept;
-        TPS2DTab& operator=(TPS2DTab const&) = delete;
+        TPS2DTab& operator=(const TPS2DTab&) = delete;
         TPS2DTab& operator=(TPS2DTab&&) noexcept;
         ~TPS2DTab() noexcept override;
 

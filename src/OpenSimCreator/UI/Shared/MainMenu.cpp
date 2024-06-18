@@ -50,12 +50,12 @@ osc::MainMenuFileTab::MainMenuFileTab() :
 }
 
 void osc::MainMenuFileTab::onDraw(
-    ParentPtr<IMainUIStateAPI> const& api,
+    const ParentPtr<IMainUIStateAPI>& api,
     UndoableModelStatePair* maybeModel)
 {
     // handle hotkeys enabled by just drawing the menu
     {
-        auto const& io = ui::get_io();
+        const auto& io = ui::get_io();
 
         bool mod = ui::is_ctrl_or_super_down();
 
@@ -108,7 +108,7 @@ void osc::MainMenuFileTab::onDraw(
     if (ui::begin_menu(ICON_FA_FOLDER_OPEN " Open Recent", !recentFiles->empty()))
     {
         // iterate in reverse: recent files are stored oldest --> newest
-        for (RecentFile const& rf : *recentFiles)
+        for (const RecentFile& rf : *recentFiles)
         {
             ui::push_id(++imgui_id);
             if (ui::draw_menu_item(rf.path.filename().string()))
@@ -123,7 +123,7 @@ void osc::MainMenuFileTab::onDraw(
 
     if (ui::begin_menu(ICON_FA_FOLDER_OPEN " Open Example"))
     {
-        for (std::filesystem::path const& ex : exampleOsimFiles)
+        for (const std::filesystem::path& ex : exampleOsimFiles)
         {
             ui::push_id(++imgui_id);
             if (ui::draw_menu_item(ex.filename().string()))
@@ -151,7 +151,7 @@ void osc::MainMenuFileTab::onDraw(
 
                 api->add_and_select_tab<SimulationTab>(api, std::make_shared<Simulation>(StoFileSimulation{std::move(cpy), *maybePath, maybeModel->getFixupScaleFactor()}));
             }
-            catch (std::exception const& ex)
+            catch (const std::exception& ex)
             {
                 log_error("encountered error while trying to load an STO file against the model: %s", ex.what());
             }
@@ -179,7 +179,7 @@ void osc::MainMenuFileTab::onDraw(
     ui::draw_separator();
 
     {
-        bool const modelHasBackingFile = maybeModel != nullptr && HasInputFileName(maybeModel->getModel());
+        const bool modelHasBackingFile = maybeModel != nullptr && HasInputFileName(maybeModel->getModel());
 
         if (ui::draw_menu_item(ICON_FA_RECYCLE " Reload", "F5", false, modelHasBackingFile) && maybeModel)
         {
@@ -257,8 +257,8 @@ void osc::MainMenuAboutTab::onDraw()
         ui::draw_help_marker("the log_level_ of MultiSample Anti-Aliasing to use. This only affects 3D renders *within* the UI, not the whole UI (panels etc. will not be affected)");
         ui::next_column();
         {
-            AntiAliasingLevel const current = App::get().anti_aliasing_level();
-            AntiAliasingLevel const max = App::get().max_anti_aliasing_level();
+            const AntiAliasingLevel current = App::get().anti_aliasing_level();
+            const AntiAliasingLevel max = App::get().max_anti_aliasing_level();
 
             if (ui::begin_combobox("##msxaa", to_string(current)))
             {
@@ -313,7 +313,7 @@ void osc::MainMenuAboutTab::onDraw()
     ui::draw_separator();
     ui::draw_dummy({0.0f, 0.5f});
     {
-        AppMetadata const& metadata = App::get().metadata();
+        const AppMetadata& metadata = App::get().metadata();
 
         ui::set_num_columns(2);
 

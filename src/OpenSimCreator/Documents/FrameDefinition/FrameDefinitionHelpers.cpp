@@ -25,17 +25,17 @@ using namespace osc;
 
 // returns the ground-based location re-expressed w.r.t. the given frame
 SimTK::Vec3 osc::fd::CalcLocationInFrame(
-    OpenSim::Frame const& frame,
-    SimTK::State const& state,
-    Vec3 const& locationInGround)
+    const OpenSim::Frame& frame,
+    const SimTK::State& state,
+    const Vec3& locationInGround)
 {
-    SimTK::Vec3 const translationInGround = ToSimTKVec3(locationInGround);
+    const SimTK::Vec3 translationInGround = ToSimTKVec3(locationInGround);
     return frame.getTransformInGround(state).invert() * translationInGround;
 }
 
 void osc::fd::SetGeomAppearance(
     SimTK::DecorativeGeometry& geometry,
-    OpenSim::Appearance const& appearance)
+    const OpenSim::Appearance& appearance)
 {
     geometry.setColor(appearance.get_color());
     geometry.setOpacity(appearance.get_opacity());
@@ -51,7 +51,7 @@ void osc::fd::SetGeomAppearance(
 
 void osc::fd::SetColorAndOpacity(
     OpenSim::Appearance& appearance,
-    Color const& color)
+    const Color& color)
 {
     appearance.set_color(ToSimTKRGBVec3(color));
     appearance.set_opacity(color.a);
@@ -59,8 +59,8 @@ void osc::fd::SetColorAndOpacity(
 
 SimTK::DecorativeSphere osc::fd::CreateDecorativeSphere(
     double radius,
-    SimTK::Vec3 const& position,
-    OpenSim::Appearance const& appearance)
+    const SimTK::Vec3& position,
+    const OpenSim::Appearance& appearance)
 {
     SimTK::DecorativeSphere sphere{radius};
     sphere.setTransform(SimTK::Transform{position});
@@ -69,9 +69,9 @@ SimTK::DecorativeSphere osc::fd::CreateDecorativeSphere(
 }
 
 SimTK::DecorativeArrow osc::fd::CreateDecorativeArrow(
-    SimTK::Vec3 const& startPosition,
-    SimTK::Vec3 const& endPosition,
-    OpenSim::Appearance const& appearance)
+    const SimTK::Vec3& startPosition,
+    const SimTK::Vec3& endPosition,
+    const OpenSim::Appearance& appearance)
 {
     SimTK::DecorativeArrow arrow{startPosition, endPosition, 1.75 * c_SphereDefaultRadius};
     arrow.setLineThickness(0.5 * c_SphereDefaultRadius);
@@ -80,7 +80,7 @@ SimTK::DecorativeArrow osc::fd::CreateDecorativeArrow(
 }
 
 SimTK::DecorativeFrame osc::fd::CreateDecorativeFrame(
-    SimTK::Transform const& transformInGround)
+    const SimTK::Transform& transformInGround)
 {
     // adapted from OpenSim::FrameGeometry (Geometry.cpp)
     SimTK::DecorativeFrame frame(1.0);
@@ -91,14 +91,14 @@ SimTK::DecorativeFrame osc::fd::CreateDecorativeFrame(
 }
 
 SimTK::DecorativeMesh osc::fd::CreateParallelogramMesh(
-    SimTK::Vec3 const& origin,
-    SimTK::Vec3 const& firstEdge,
-    SimTK::Vec3 const& secondEdge,
-    OpenSim::Appearance const& appearance)
+    const SimTK::Vec3& origin,
+    const SimTK::Vec3& firstEdge,
+    const SimTK::Vec3& secondEdge,
+    const OpenSim::Appearance& appearance)
 {
     SimTK::PolygonalMesh polygonalMesh;
     {
-        auto const vertices = std::to_array(
+        const auto vertices = std::to_array(
         {
             origin,
             origin + firstEdge,
@@ -108,7 +108,7 @@ SimTK::DecorativeMesh osc::fd::CreateParallelogramMesh(
 
         SimTK::Array_<int> face;
         face.reserve(static_cast<decltype(face)::size_type>(vertices.size()));
-        for (SimTK::Vec3 const& vert : vertices)
+        for (const SimTK::Vec3& vert : vertices)
         {
             face.push_back(polygonalMesh.addVertex(vert));
         }
@@ -144,7 +144,7 @@ std::string osc::fd::GenerateSceneElementName(std::string_view prefix)
 
 std::string osc::fd::GenerateAddedSomethingCommitMessage(std::string_view somethingName)
 {
-    std::string_view const prefix = "added ";
+    const std::string_view prefix = "added ";
     std::string rv;
     rv.reserve(prefix.size() + somethingName.size());
     rv += prefix;
@@ -159,39 +159,39 @@ void osc::fd::SetupDefault3DViewportRenderingParams(ModelRendererParams& renderP
     renderParams.backgroundColor = {48.0f/255.0f, 48.0f/255.0f, 48.0f/255.0f, 1.0f};
 }
 
-bool osc::fd::IsPoint(OpenSim::Component const& component)
+bool osc::fd::IsPoint(const OpenSim::Component& component)
 {
-    return dynamic_cast<OpenSim::Point const*>(&component) != nullptr;
+    return dynamic_cast<const OpenSim::Point*>(&component) != nullptr;
 }
 
-bool osc::fd::IsMesh(OpenSim::Component const& component)
+bool osc::fd::IsMesh(const OpenSim::Component& component)
 {
-    return dynamic_cast<OpenSim::Mesh const*>(&component) != nullptr;
+    return dynamic_cast<const OpenSim::Mesh*>(&component) != nullptr;
 }
 
-bool osc::fd::IsPhysicalFrame(OpenSim::Component const& component)
+bool osc::fd::IsPhysicalFrame(const OpenSim::Component& component)
 {
-    return dynamic_cast<OpenSim::PhysicalFrame const*>(&component) != nullptr;
+    return dynamic_cast<const OpenSim::PhysicalFrame*>(&component) != nullptr;
 }
 
-bool osc::fd::IsEdge(OpenSim::Component const& component)
+bool osc::fd::IsEdge(const OpenSim::Component& component)
 {
-    return dynamic_cast<Edge const*>(&component) != nullptr;
+    return dynamic_cast<const Edge*>(&component) != nullptr;
 }
 
-SimTK::UnitVec3 osc::fd::CalcDirection(EdgePoints const& a)
+SimTK::UnitVec3 osc::fd::CalcDirection(const EdgePoints& a)
 {
     return SimTK::UnitVec3{a.end - a.start};
 }
 
-EdgePoints osc::fd::CrossProduct(EdgePoints const& a, EdgePoints const& b)
+EdgePoints osc::fd::CrossProduct(const EdgePoints& a, const EdgePoints& b)
 {
     // TODO: if cross product isn't possible (e.g. angle between vectors is zero)
     // then this needs to fail or fallback
-    SimTK::Vec3 const firstEdge = a.end - a.start;
-    SimTK::Vec3 const secondEdge = b.end - b.start;
-    SimTK::Vec3 const resultEdge = SimTK::cross(firstEdge, secondEdge).normalize();
-    double const resultEdgeLength = min(firstEdge.norm(), secondEdge.norm());
+    const SimTK::Vec3 firstEdge = a.end - a.start;
+    const SimTK::Vec3 secondEdge = b.end - b.start;
+    const SimTK::Vec3 resultEdge = SimTK::cross(firstEdge, secondEdge).normalize();
+    const double resultEdgeLength = min(firstEdge.norm(), secondEdge.norm());
 
     return {a.start, a.start + (resultEdgeLength*resultEdge)};
 }

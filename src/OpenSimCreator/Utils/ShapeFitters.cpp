@@ -679,7 +679,7 @@ Ellipsoid osc::FitEllipsoid(const Mesh& mesh)
     const auto A = CalcA(v);  // form the algebraic form of the ellipsoid
 
     // solve for ellipsoid origin
-    auto const ellipsoidOrigin = CalcEllipsoidOrigin(A, v);
+    const auto ellipsoidOrigin = CalcEllipsoidOrigin(A, v);
 
     // use Eigenanalysis to solve for the ellipsoid's radii and and frame
     auto [evecs, evals] = SolveEigenProblem(A, ellipsoidOrigin);

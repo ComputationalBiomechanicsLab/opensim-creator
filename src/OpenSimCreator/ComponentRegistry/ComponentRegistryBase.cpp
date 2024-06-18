@@ -7,11 +7,11 @@
 #include <typeinfo>
 
 std::optional<size_t> osc::IndexOf(
-    ComponentRegistryBase const& registry,
+    const ComponentRegistryBase& registry,
     std::string_view componentClassName)
 {
     for (size_t i = 0; i < registry.size(); ++i) {
-        OpenSim::Component const& prototype = registry[i].prototype();
+        const OpenSim::Component& prototype = registry[i].prototype();
         if (prototype.getConcreteClassName() == componentClassName) {
             return i;
         }
@@ -20,11 +20,11 @@ std::optional<size_t> osc::IndexOf(
 }
 
 std::optional<size_t> osc::IndexOf(
-    ComponentRegistryBase const& registry,
-    OpenSim::Component const& component)
+    const ComponentRegistryBase& registry,
+    const OpenSim::Component& component)
 {
     for (size_t i = 0; i < registry.size(); ++i) {
-        OpenSim::Component const& prototype = registry[i].prototype();
+        const OpenSim::Component& prototype = registry[i].prototype();
         if (typeid(prototype) == typeid(component)) {
             return i;
         }

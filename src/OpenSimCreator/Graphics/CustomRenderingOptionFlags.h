@@ -48,5 +48,5 @@ namespace osc
         CStringView label;
         CustomRenderingOptionFlags value;
     };
-    std::span<CustomRenderingOptionFlagsMetadata const> GetAllCustomRenderingOptionFlagsMetadata();
+    std::span<const CustomRenderingOptionFlagsMetadata> GetAllCustomRenderingOptionFlagsMetadata();
 }

@@ -31,7 +31,7 @@ namespace
     inline constexpr float c_FrameAxisThickness = 0.0025f;
 
     // extracts scale factors from geometry
-    Vec3 GetScaleFactors(SimTK::DecorativeGeometry const& geom)
+    Vec3 GetScaleFactors(const SimTK::DecorativeGeometry& geom)
     {
         SimTK::Vec3 sf = geom.getScaleFactors();
 
@@ -44,9 +44,9 @@ namespace
     }
 
     // extracts RGBA color from geometry
-    Color GetColor(SimTK::DecorativeGeometry const& geom)
+    Color GetColor(const SimTK::DecorativeGeometry& geom)
     {
-        SimTK::Vec3 const& rgb = geom.getColor();
+        const SimTK::Vec3& rgb = geom.getColor();
 
         auto ar = static_cast<float>(geom.getOpacity());
         ar = ar < 0.0f ? 1.0f : ar;
@@ -54,7 +54,7 @@ namespace
         return Color{ToVec3(rgb), ar};
     }
 
-    SceneDecorationFlags GetFlags(SimTK::DecorativeGeometry const& geom)
+    SceneDecorationFlags GetFlags(const SimTK::DecorativeGeometry& geom)
     {
         SceneDecorationFlags rv = SceneDecorationFlags::None;
         switch (geom.getRepresentation()) {
@@ -73,28 +73,28 @@ namespace
 
     // creates a geometry-to-ground transform for the given geometry
     Transform ToOscTransform(
-        SimTK::SimbodyMatterSubsystem const& matter,
-        SimTK::State const& state,
-        SimTK::DecorativeGeometry const& g)
+        const SimTK::SimbodyMatterSubsystem& matter,
+        const SimTK::State& state,
+        const SimTK::DecorativeGeometry& g)
     {
-        SimTK::MobilizedBody const& mobod = matter.getMobilizedBody(SimTK::MobilizedBodyIndex(g.getBodyId()));
-        SimTK::Transform const& body2ground = mobod.getBodyTransform(state);
-        SimTK::Transform const& decoration2body = g.getTransform();
+        const SimTK::MobilizedBody& mobod = matter.getMobilizedBody(SimTK::MobilizedBodyIndex(g.getBodyId()));
+        const SimTK::Transform& body2ground = mobod.getBodyTransform(state);
+        const SimTK::Transform& decoration2body = g.getTransform();
 
         return decompose_to_transform(body2ground * decoration2body).with_scale(GetScaleFactors(g));
     }
 
-    size_t hash_of(SimTK::Vec3 const& v)
+    size_t hash_of(const SimTK::Vec3& v)
     {
         return osc::hash_of(v[0], v[1], v[2]);
     }
 
-    size_t hash_of(SimTK::PolygonalMesh const& mesh)
+    size_t hash_of(const SimTK::PolygonalMesh& mesh)
     {
         size_t hash = 0;
 
         // combine vertex data into hash
-        int const numVerts = mesh.getNumVertices();
+        const int numVerts = mesh.getNumVertices();
         hash = osc::hash_combine(hash, osc::hash_of(numVerts));
         for (int vert = 0; vert < numVerts; ++vert)
         {
@@ -102,11 +102,11 @@ namespace
         }
 
         // combine face indices into mesh
-        int const numFaces = mesh.getNumFaces();
+        const int numFaces = mesh.getNumFaces();
         hash = osc::hash_combine(hash, osc::hash_of(numFaces));
         for (int face = 0; face < numFaces; ++face)
         {
-            int const numVertsInFace = mesh.getNumVerticesForFace(face);
+            const int numVertsInFace = mesh.getNumVerticesForFace(face);
             for (int faceVert = 0; faceVert < numVertsInFace; ++faceVert)
             {
                 hash = osc::hash_combine(hash, osc::hash_of(mesh.getFaceVertex(face, faceVert)));
@@ -122,10 +122,10 @@ namespace
     public:
         GeometryImpl(
             SceneCache& meshCache,
-            SimTK::SimbodyMatterSubsystem const& matter,
-            SimTK::State const& st,
+            const SimTK::SimbodyMatterSubsystem& matter,
+            const SimTK::State& st,
             float fixupScaleFactor,
-            std::function<void(SceneDecoration&&)> const& out) :
+            const std::function<void(SceneDecoration&&)>& out) :
 
             m_MeshCache{meshCache},
             m_Matter{matter},
@@ -136,27 +136,27 @@ namespace
         }
 
     private:
-        Transform ToOscTransform(SimTK::DecorativeGeometry const& d) const
+        Transform ToOscTransform(const SimTK::DecorativeGeometry& d) const
         {
             return ::ToOscTransform(m_Matter, m_State, d);
         }
 
-        void implementPointGeometry(SimTK::DecorativePoint const&) final
+        void implementPointGeometry(const SimTK::DecorativePoint&) final
         {
-            [[maybe_unused]] static bool const s_ShownWarningOnce = []()
+            [[maybe_unused]] static const bool s_ShownWarningOnce = []()
             {
                 log_warn("this model uses implementPointGeometry, which is not yet implemented in OSC");
                 return true;
             }();
         }
 
-        void implementLineGeometry(SimTK::DecorativeLine const& d) final
+        void implementLineGeometry(const SimTK::DecorativeLine& d) final
         {
-            Transform const t = ToOscTransform(d);
-            Vec3 const p1 = t * ToVec3(d.getPoint1());
-            Vec3 const p2 = t * ToVec3(d.getPoint2());
+            const Transform t = ToOscTransform(d);
+            const Vec3 p1 = t * ToVec3(d.getPoint1());
+            const Vec3 p2 = t * ToVec3(d.getPoint2());
 
-            float const thickness = c_LineThickness * m_FixupScaleFactor;
+            const float thickness = c_LineThickness * m_FixupScaleFactor;
 
             Transform cylinderXform = cylinder_to_line_segment_transform({p1, p2}, thickness);
             cylinderXform.scale *= t.scale;
@@ -169,7 +169,7 @@ namespace
             });
         }
 
-        void implementBrickGeometry(SimTK::DecorativeBrick const& d) final
+        void implementBrickGeometry(const SimTK::DecorativeBrick& d) final
         {
             Transform t = ToOscTransform(d);
             t.scale *= ToVec3(d.getHalfLengths());
@@ -182,10 +182,10 @@ namespace
             });
         }
 
-        void implementCylinderGeometry(SimTK::DecorativeCylinder const& d) final
+        void implementCylinderGeometry(const SimTK::DecorativeCylinder& d) final
         {
-            auto const radius = static_cast<float>(d.getRadius());
-            auto const halfHeight = static_cast<float>(d.getHalfHeight());
+            const auto radius = static_cast<float>(d.getRadius());
+            const auto halfHeight = static_cast<float>(d.getHalfHeight());
 
             Transform t = ToOscTransform(d);
             t.scale *= Vec3{radius, halfHeight , radius};
@@ -198,9 +198,9 @@ namespace
             });
         }
 
-        void implementCircleGeometry(SimTK::DecorativeCircle const& d) final
+        void implementCircleGeometry(const SimTK::DecorativeCircle& d) final
         {
-            auto const radius = static_cast<float>(d.getRadius());
+            const auto radius = static_cast<float>(d.getRadius());
 
             Transform t = ToOscTransform(d);
             t.scale *= Vec3{radius, radius, 1.0f};
@@ -213,7 +213,7 @@ namespace
             });
         }
 
-        void implementSphereGeometry(SimTK::DecorativeSphere const& d) final
+        void implementSphereGeometry(const SimTK::DecorativeSphere& d) final
         {
             Transform t = ToOscTransform(d);
             t.scale *= m_FixupScaleFactor * static_cast<float>(d.getRadius());
@@ -226,7 +226,7 @@ namespace
             });
         }
 
-        void implementEllipsoidGeometry(SimTK::DecorativeEllipsoid const& d) final
+        void implementEllipsoidGeometry(const SimTK::DecorativeEllipsoid& d) final
         {
             Transform t = ToOscTransform(d);
             t.scale *= ToVec3(d.getRadii());
@@ -239,14 +239,14 @@ namespace
             });
         }
 
-        void implementFrameGeometry(SimTK::DecorativeFrame const& d) final
+        void implementFrameGeometry(const SimTK::DecorativeFrame& d) final
         {
-            Transform const t = ToOscTransform(d);
+            const Transform t = ToOscTransform(d);
 
             // emit origin sphere
             {
-                float const radius = 0.05f * c_FrameAxisLengthRescale * m_FixupScaleFactor;
-                Transform const sphereXform = t.with_scale(radius);
+                const float radius = 0.05f * c_FrameAxisLengthRescale * m_FixupScaleFactor;
+                const Transform sphereXform = t.with_scale(radius);
 
                 m_Consumer({
                     .mesh = m_MeshCache.sphere_mesh(),
@@ -257,21 +257,21 @@ namespace
             }
 
             // emit leg cylinders
-            Vec3 const axisLengths = t.scale * static_cast<float>(d.getAxisLength());
-            float const legLen = c_FrameAxisLengthRescale * m_FixupScaleFactor;
-            float const legThickness = c_FrameAxisThickness * m_FixupScaleFactor;
-            auto const flags = GetFlags(d);
+            const Vec3 axisLengths = t.scale * static_cast<float>(d.getAxisLength());
+            const float legLen = c_FrameAxisLengthRescale * m_FixupScaleFactor;
+            const float legThickness = c_FrameAxisThickness * m_FixupScaleFactor;
+            const auto flags = GetFlags(d);
             for (int axis = 0; axis < 3; ++axis)
             {
                 Vec3 direction = {0.0f, 0.0f, 0.0f};
                 direction[axis] = 1.0f;
 
-                LineSegment const line =
+                const LineSegment line =
                 {
                     t.position,
                     t.position + (legLen * axisLengths[axis] * transform_direction(t, direction))
                 };
-                Transform const legXform = cylinder_to_line_segment_transform(line, legThickness);
+                const Transform legXform = cylinder_to_line_segment_transform(line, legThickness);
 
                 Color color = {0.0f, 0.0f, 0.0f, 1.0f};
                 color[axis] = 1.0f;
@@ -285,16 +285,16 @@ namespace
             }
         }
 
-        void implementTextGeometry(SimTK::DecorativeText const&) final
+        void implementTextGeometry(const SimTK::DecorativeText&) final
         {
-            [[maybe_unused]] static bool const s_ShownWarningOnce = []()
+            [[maybe_unused]] static const bool s_ShownWarningOnce = []()
             {
                 log_warn("this model uses implementTextGeometry, which is not yet implemented in OSC");
                 return true;
             }();
         }
 
-        void implementMeshGeometry(SimTK::DecorativeMesh const& d) final
+        void implementMeshGeometry(const SimTK::DecorativeMesh& d) final
         {
             // the ID of an in-memory mesh is derived from the hash of its data
             //
@@ -304,8 +304,8 @@ namespace
             //
             // (and, yes, hash isn't equality, but it's closer than relying on memory
             //  addresses)
-            std::string const id = std::to_string(hash_of(d.getMesh()));
-            auto const meshLoaderFunc = [&d]() { return ToOscMesh(d.getMesh()); };
+            const std::string id = std::to_string(hash_of(d.getMesh()));
+            const auto meshLoaderFunc = [&d]() { return ToOscMesh(d.getMesh()); };
 
             m_Consumer({
                 .mesh = m_MeshCache.get_mesh(id, meshLoaderFunc),
@@ -315,10 +315,10 @@ namespace
             });
         }
 
-        void implementMeshFileGeometry(SimTK::DecorativeMeshFile const& d) final
+        void implementMeshFileGeometry(const SimTK::DecorativeMeshFile& d) final
         {
-            std::string const& path = d.getMeshFile();
-            auto const meshLoader = [&d](){ return ToOscMesh(d.getMesh()); };
+            const std::string& path = d.getMeshFile();
+            const auto meshLoader = [&d](){ return ToOscMesh(d.getMesh()); };
 
             m_Consumer({
                 .mesh = m_MeshCache.get_mesh(path, meshLoader),
@@ -328,28 +328,28 @@ namespace
             });
         }
 
-        void implementArrowGeometry(SimTK::DecorativeArrow const& d) final
+        void implementArrowGeometry(const SimTK::DecorativeArrow& d) final
         {
-            Transform const t = ToOscTransform(d);
+            const Transform t = ToOscTransform(d);
 
-            Vec3 const startBase = ToVec3(d.getStartPoint());
-            Vec3 const endBase = ToVec3(d.getEndPoint());
+            const Vec3 startBase = ToVec3(d.getStartPoint());
+            const Vec3 endBase = ToVec3(d.getEndPoint());
 
-            Vec3 const start = transform_point(t, startBase);
-            Vec3 const end = transform_point(t, endBase);
+            const Vec3 start = transform_point(t, startBase);
+            const Vec3 end = transform_point(t, endBase);
 
-            Vec3 const direction = normalize(end - start);
+            const Vec3 direction = normalize(end - start);
 
-            Vec3 const neckStart = start;
-            Vec3 const neckEnd = end - (m_FixupScaleFactor * static_cast<float>(d.getTipLength()) * direction);
-            Vec3 const headStart = neckEnd;
-            Vec3 const headEnd = end;
+            const Vec3 neckStart = start;
+            const Vec3 neckEnd = end - (m_FixupScaleFactor * static_cast<float>(d.getTipLength()) * direction);
+            const Vec3 headStart = neckEnd;
+            const Vec3 headEnd = end;
 
-            float const neck_thickness = m_FixupScaleFactor * static_cast<float>(d.getLineThickness());
-            float const head_thickness = 1.75f * neck_thickness;
+            const float neck_thickness = m_FixupScaleFactor * static_cast<float>(d.getLineThickness());
+            const float head_thickness = 1.75f * neck_thickness;
 
-            Color const color = GetColor(d);
-            auto const flags = GetFlags(d);
+            const Color color = GetColor(d);
+            const auto flags = GetFlags(d);
 
             // emit neck cylinder
             m_Consumer({
@@ -368,10 +368,10 @@ namespace
             });
         }
 
-        void implementTorusGeometry(SimTK::DecorativeTorus const& d) final
+        void implementTorusGeometry(const SimTK::DecorativeTorus& d) final
         {
-            auto const tube_center_radius = static_cast<float>(d.getTorusRadius());
-            auto const tube_radius = static_cast<float>(d.getTubeRadius());
+            const auto tube_center_radius = static_cast<float>(d.getTorusRadius());
+            const auto tube_radius = static_cast<float>(d.getTubeRadius());
 
             m_Consumer({
                 .mesh = m_MeshCache.torus_mesh(tube_center_radius, tube_radius),
@@ -381,18 +381,18 @@ namespace
             });
         }
 
-        void implementConeGeometry(SimTK::DecorativeCone const& d) final
+        void implementConeGeometry(const SimTK::DecorativeCone& d) final
         {
-            Transform const t = ToOscTransform(d);
+            const Transform t = ToOscTransform(d);
 
-            Vec3 const posBase = ToVec3(d.getOrigin());
-            Vec3 const posDir = ToVec3(d.getDirection());
+            const Vec3 posBase = ToVec3(d.getOrigin());
+            const Vec3 posDir = ToVec3(d.getDirection());
 
-            Vec3 const pos = transform_point(t, posBase);
-            Vec3 const direction = transform_direction(t, posDir);
+            const Vec3 pos = transform_point(t, posBase);
+            const Vec3 direction = transform_direction(t, posDir);
 
-            auto const radius = static_cast<float>(d.getBaseRadius());
-            auto const height = static_cast<float>(d.getHeight());
+            const auto radius = static_cast<float>(d.getBaseRadius());
+            const auto height = static_cast<float>(d.getHeight());
 
             Transform coneXform = cylinder_to_line_segment_transform({pos, pos + height*direction}, radius);
             coneXform.scale *= t.scale;
@@ -406,20 +406,20 @@ namespace
         }
 
         SceneCache& m_MeshCache;
-        SimTK::SimbodyMatterSubsystem const& m_Matter;
-        SimTK::State const& m_State;
+        const SimTK::SimbodyMatterSubsystem& m_Matter;
+        const SimTK::State& m_State;
         float m_FixupScaleFactor;
-        std::function<void(SceneDecoration&&)> const& m_Consumer;
+        const std::function<void(SceneDecoration&&)>& m_Consumer;
     };
 }
 
 void osc::GenerateDecorations(
     SceneCache& meshCache,
-    SimTK::SimbodyMatterSubsystem const& matter,
-    SimTK::State const& state,
-    SimTK::DecorativeGeometry const& geom,
+    const SimTK::SimbodyMatterSubsystem& matter,
+    const SimTK::State& state,
+    const SimTK::DecorativeGeometry& geom,
     float fixupScaleFactor,
-    std::function<void(SceneDecoration&&)> const& out)
+    const std::function<void(SceneDecoration&&)>& out)
 {
     GeometryImpl impl{meshCache, matter, state, fixupScaleFactor, out};
     geom.implementGeometry(impl);

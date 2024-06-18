@@ -27,7 +27,7 @@ public:
         m_SimulationReport{std::move(simulationReport)}
     {}
 
-    OpenSim::Model const& getModel() const
+    const OpenSim::Model& getModel() const
     {
         return *m_Simulation->getModel();  // TODO: UH OH - lock leak (#707 - are locks necessary?)
     }
@@ -37,7 +37,7 @@ public:
         return m_ModelVersion;
     }
 
-    SimTK::State const& getState() const
+    const SimTK::State& getState() const
     {
         return m_SimulationReport.getState();
     }
@@ -47,22 +47,22 @@ public:
         return m_StateVersion;
     }
 
-    OpenSim::Component const* getSelected() const
+    const OpenSim::Component* getSelected() const
     {
         return FindComponent(getModel(), m_Selected);
     }
 
-    void setSelected(OpenSim::Component const* c)
+    void setSelected(const OpenSim::Component* c)
     {
         m_Selected = GetAbsolutePathOrEmpty(c);
     }
 
-    OpenSim::Component const* getHovered() const
+    const OpenSim::Component* getHovered() const
     {
         return FindComponent(getModel(), m_Hovered);
     }
 
-    void setHovered(OpenSim::Component const* c)
+    void setHovered(const OpenSim::Component* c)
     {
         m_Hovered = GetAbsolutePathOrEmpty(c);
     }
@@ -151,7 +151,7 @@ void osc::SimulationModelStatePair::setSimulationReport(SimulationReport report)
     m_Impl->setSimulationReport(std::move(report));
 }
 
-OpenSim::Model const& osc::SimulationModelStatePair::implGetModel() const
+const OpenSim::Model& osc::SimulationModelStatePair::implGetModel() const
 {
     return m_Impl->getModel();
 }
@@ -161,7 +161,7 @@ UID osc::SimulationModelStatePair::implGetModelVersion() const
     return m_Impl->getModelVersion();
 }
 
-SimTK::State const& osc::SimulationModelStatePair::implGetState() const
+const SimTK::State& osc::SimulationModelStatePair::implGetState() const
 {
     return m_Impl->getState();
 }
@@ -171,22 +171,22 @@ UID osc::SimulationModelStatePair::implGetStateVersion() const
     return m_Impl->getStateVersion();
 }
 
-OpenSim::Component const* osc::SimulationModelStatePair::implGetSelected() const
+const OpenSim::Component* osc::SimulationModelStatePair::implGetSelected() const
 {
     return m_Impl->getSelected();
 }
 
-void osc::SimulationModelStatePair::implSetSelected(OpenSim::Component const* c)
+void osc::SimulationModelStatePair::implSetSelected(const OpenSim::Component* c)
 {
     m_Impl->setSelected(c);
 }
 
-OpenSim::Component const* osc::SimulationModelStatePair::implGetHovered() const
+const OpenSim::Component* osc::SimulationModelStatePair::implGetHovered() const
 {
     return m_Impl->getHovered();
 }
 
-void osc::SimulationModelStatePair::implSetHovered(OpenSim::Component const* c)
+void osc::SimulationModelStatePair::implSetHovered(const OpenSim::Component* c)
 {
     m_Impl->setHovered(c);
 }

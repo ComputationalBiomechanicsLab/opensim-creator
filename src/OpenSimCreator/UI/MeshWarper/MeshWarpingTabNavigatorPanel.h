@@ -74,7 +74,7 @@ namespace osc
             ui::table_setup_column("Destination", 0, 0.15f*ui::get_content_region_avail().x);
 
             int id = 0;
-            for (auto const& lm : m_State->getScratch().landmarkPairs)
+            for (const auto& lm : m_State->getScratch().landmarkPairs)
             {
                 ui::push_id(++id);
                 drawLandmarksTableRow(lm);
@@ -84,7 +84,7 @@ namespace osc
             ui::end_table();
         }
 
-        void drawLandmarksTableRow(TPSDocumentLandmarkPair const& p)
+        void drawLandmarksTableRow(const TPSDocumentLandmarkPair& p)
         {
             // name column
             ui::table_next_row();
@@ -94,7 +94,7 @@ namespace osc
 
             // source column
             ui::table_set_column_index(1);
-            Circle const srcCircle = drawLandmarkCircle(
+            const Circle srcCircle = drawLandmarkCircle(
                 m_State->isSelected(p.sourceID()),
                 m_State->isHovered(p.sourceID()),
                 IsFullyPaired(p),
@@ -103,7 +103,7 @@ namespace osc
 
             // destination column
             ui::table_set_column_index(2);
-            Circle const destCircle = drawLandmarkCircle(
+            const Circle destCircle = drawLandmarkCircle(
                 m_State->isSelected(p.destinationID()),
                 m_State->isHovered(p.destinationID()),
                 IsFullyPaired(p),
@@ -122,8 +122,8 @@ namespace osc
             bool isPaired,
             bool hasLocation)
         {
-            Circle const circle{.origin = calcColumnMidpointScreenPos(), .radius = calcCircleRadius()};
-            ImU32 const color = ui::to_ImU32(landmarkDotColor(hasLocation, isPaired));
+            const Circle circle{.origin = calcColumnMidpointScreenPos(), .radius = calcCircleRadius()};
+            const ImU32 color = ui::to_ImU32(landmarkDotColor(hasLocation, isPaired));
 
             auto& dl = *ui::get_panel_draw_list();
             if (hasLocation)
@@ -140,10 +140,10 @@ namespace osc
             return circle;
         }
 
-        void tryDrawCircleHighlight(Circle const& circle, bool isSelected, bool isHovered)
+        void tryDrawCircleHighlight(const Circle& circle, bool isSelected, bool isHovered)
         {
             auto& dl = *ui::get_panel_draw_list();
-            float const thickness = 2.0f;
+            const float thickness = 2.0f;
             if (isSelected)
             {
                 dl.AddCircle(circle.origin, circle.radius + thickness, ui::to_ImU32(Color::yellow()), 0, thickness);
@@ -154,23 +154,23 @@ namespace osc
             }
         }
 
-        void drawConnectingLine(Circle const& src, Circle const& dest)
+        void drawConnectingLine(const Circle& src, const Circle& dest)
         {
-            float const pad = ui::get_style_item_inner_spacing().x;
+            const float pad = ui::get_style_item_inner_spacing().x;
 
             // draw connecting line
-            Vec2 const direction = normalize(dest.origin - src.origin);
-            Vec2 const start = src.origin  + (src.radius  + Vec2{pad, 0.0f})*direction;
-            Vec2 const end   = dest.origin - (dest.radius + Vec2{pad, 0.0f})*direction;
-            ImU32 const color = ui::to_ImU32(Color::half_grey());
+            const Vec2 direction = normalize(dest.origin - src.origin);
+            const Vec2 start = src.origin  + (src.radius  + Vec2{pad, 0.0f})*direction;
+            const Vec2 end   = dest.origin - (dest.radius + Vec2{pad, 0.0f})*direction;
+            const ImU32 color = ui::to_ImU32(Color::half_grey());
             ui::get_panel_draw_list()->AddLine(start, end, color);
 
             // draw triangle on end of connecting line to form an arrow
-            Vec2 const p0 = end;
-            Vec2 const base = p0 - 2.0f*pad*direction;
-            Vec2 const orthogonal = {-direction.y, direction.x};
-            Vec2 const p1 = base + pad*orthogonal;
-            Vec2 const p2 = base - pad*orthogonal;
+            const Vec2 p0 = end;
+            const Vec2 base = p0 - 2.0f*pad*direction;
+            const Vec2 orthogonal = {-direction.y, direction.x};
+            const Vec2 p1 = base + pad*orthogonal;
+            const Vec2 p2 = base - pad*orthogonal;
             ui::get_panel_draw_list()->AddTriangleFilled(p0, p1, p2, color);
         }
 
@@ -186,7 +186,7 @@ namespace osc
             ui::table_setup_column("Location", 0, 0.3f*ui::get_content_region_avail().x);
 
             int id = 0;
-            for (auto const& npl : m_State->getScratch().nonParticipatingLandmarks)
+            for (const auto& npl : m_State->getScratch().nonParticipatingLandmarks)
             {
                 ui::push_id(++id);
                 drawNonParticipatingLandmarksTableRow(npl);
@@ -196,7 +196,7 @@ namespace osc
             ui::end_table();
         }
 
-        void drawNonParticipatingLandmarksTableRow(TPSDocumentNonParticipatingLandmark const& npl)
+        void drawNonParticipatingLandmarksTableRow(const TPSDocumentNonParticipatingLandmark& npl)
         {
             // name column
             ui::table_next_row();
@@ -216,7 +216,7 @@ namespace osc
             bool isSelected,
             bool isHovered)
         {
-            Circle const circle{.origin = calcColumnMidpointScreenPos(), .radius = calcCircleRadius()};
+            const Circle circle{.origin = calcColumnMidpointScreenPos(), .radius = calcCircleRadius()};
 
             ui::get_panel_draw_list()->AddCircleFilled(
                 circle.origin,

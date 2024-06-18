@@ -44,13 +44,13 @@ namespace
 {
     UID GetWalltimeUID()
     {
-        static UID const s_WalltimeUID;
+        static const UID s_WalltimeUID;
         return s_WalltimeUID;
     }
 
     UID GetStepDurationUID()
     {
-        static UID const s_StepDurationUID;
+        static const UID s_StepDurationUID;
         return s_StepDurationUID;
     }
 
@@ -58,7 +58,7 @@ namespace
     class SimulatorThreadInput final {
     public:
         SimulatorThreadInput(BasicModelStatePair modelState,
-                             ForwardDynamicSimulatorParams const& params,
+                             const ForwardDynamicSimulatorParams& params,
                              std::function<void(SimulationReport)> onReportFromBgThread) :
             m_ModelState{std::move(modelState)},
             m_Params{params},
@@ -66,9 +66,9 @@ namespace
         {
         }
 
-        SimTK::MultibodySystem const& getMultiBodySystem() const { return m_ModelState.getModel().getMultibodySystem(); }
-        SimTK::State const& getState() const { return m_ModelState.getState(); }
-        ForwardDynamicSimulatorParams const& getParams() const { return m_Params; }
+        const SimTK::MultibodySystem& getMultiBodySystem() const { return m_ModelState.getModel().getMultibodySystem(); }
+        const SimTK::State& getState() const { return m_ModelState.getState(); }
+        const ForwardDynamicSimulatorParams& getParams() const { return m_Params; }
         void emitReport(SimulationReport report) { m_ReportCallback(std::move(report)); }
 
     private:
@@ -117,9 +117,9 @@ namespace
             return OutputExtractorDataType::Float;
         }
 
-        OutputValueExtractor implGetOutputValueExtractor(OpenSim::Component const&) const final
+        OutputValueExtractor implGetOutputValueExtractor(const OpenSim::Component&) const final
         {
-            return OutputValueExtractor{[id = m_UID](SimulationReport const& report)
+            return OutputValueExtractor{[id = m_UID](const SimulationReport& report)
             {
                 return Variant{report.getAuxiliaryValue(id).value_or(-1337.0f)};
             }};
@@ -130,14 +130,14 @@ namespace
             return hash_of(m_Name, m_Description, m_UID);
         }
 
-        bool implEquals(IOutputExtractor const& other) const final
+        bool implEquals(const IOutputExtractor& other) const final
         {
             if (&other == this)
             {
                 return true;
             }
 
-            auto const* const otherT = dynamic_cast<AuxiliaryVariableOutputExtractor const*>(&other);
+            const auto* const otherT = dynamic_cast<const AuxiliaryVariableOutputExtractor*>(&other);
             if (!otherT)
             {
                 return false;
@@ -190,13 +190,13 @@ namespace
 
     std::vector<OutputExtractor> const& GetSimulatorOutputExtractors()
     {
-        static std::vector<OutputExtractor> const s_Outputs = CreateSimulatorOutputExtractors();
+        static const std::vector<OutputExtractor> s_Outputs = CreateSimulatorOutputExtractors();
         return s_Outputs;
     }
 
-    std::unique_ptr<SimTK::Integrator> CreateInitializedIntegrator(SimulatorThreadInput const& input)
+    std::unique_ptr<SimTK::Integrator> CreateInitializedIntegrator(const SimulatorThreadInput& input)
     {
-        ForwardDynamicSimulatorParams const& params = input.getParams();
+        const ForwardDynamicSimulatorParams& params = input.getParams();
 
         // create + init an integrator
         auto integ = params.integratorMethodUsed.instantiate(input.getMultiBodySystem());
@@ -210,7 +210,7 @@ namespace
         return integ;
     }
 
-    SimulationClock::time_point GetSimulationTime(SimTK::Integrator const& integ)
+    SimulationClock::time_point GetSimulationTime(const SimTK::Integrator& integ)
     {
         return SimulationClock::time_point(SimulationClock::duration(integ.getTime()));
     }
@@ -218,8 +218,8 @@ namespace
     SimulationReport CreateSimulationReport(
         std::chrono::duration<float> wallTime,
         std::chrono::duration<float> stepDuration,
-        SimTK::MultibodySystem const& sys,
-        SimTK::Integrator const& integrator)
+        const SimTK::MultibodySystem& sys,
+        const SimTK::Integrator& integrator)
     {
         SimTK::State st = integrator.getState();
         std::unordered_map<UID, float> auxValues;
@@ -239,7 +239,7 @@ namespace
             auxValues.reserve(auxValues.size() + numOutputs);
             for (int i = 0; i < numOutputs; ++i)
             {
-                IntegratorOutputExtractor const& o = GetIntegratorOutputExtractor(i);
+                const IntegratorOutputExtractor& o = GetIntegratorOutputExtractor(i);
                 auxValues.emplace(o.getAuxiliaryDataID(), o.getExtractorFunction()(integrator));
             }
         }
@@ -250,7 +250,7 @@ namespace
             auxValues.reserve(auxValues.size() + numOutputs);
             for (int i = 0; i < numOutputs; ++i)
             {
-                MultiBodySystemOutputExtractor const& o = GetMultiBodySystemOutputExtractor(i);
+                const MultiBodySystemOutputExtractor& o = GetMultiBodySystemOutputExtractor(i);
                 auxValues.emplace(o.getAuxiliaryDataID(), o.getExtractorFunction()(sys));
             }
         }
@@ -264,9 +264,9 @@ namespace
         SimulatorThreadInput& input,
         SharedState& shared)
     {
-        std::chrono::high_resolution_clock::time_point const tSimStart = std::chrono::high_resolution_clock::now();
+        const std::chrono::high_resolution_clock::time_point tSimStart = std::chrono::high_resolution_clock::now();
 
-        ForwardDynamicSimulatorParams const& params = input.getParams();
+        const ForwardDynamicSimulatorParams& params = input.getParams();
 
         // create + init an integrator
         std::unique_ptr<SimTK::Integrator> integ = CreateInitializedIntegrator(input);
@@ -361,11 +361,11 @@ namespace
         {
             status = FdSimulationMainUnguarded(std::move(stopToken), *input, *shared);
         }
-        catch (OpenSim::Exception const& ex)
+        catch (const OpenSim::Exception& ex)
         {
             log_error("OpenSim::Exception occurred when running a simulation: %s", ex.what());
         }
-        catch (std::exception const& ex)
+        catch (const std::exception& ex)
         {
             log_error("std::exception occurred when running a simulation: %s", ex.what());
         }
@@ -383,7 +383,7 @@ namespace
 class osc::ForwardDynamicSimulator::Impl final {
 public:
     Impl(BasicModelStatePair modelState,
-        ForwardDynamicSimulatorParams const& params,
+        const ForwardDynamicSimulatorParams& params,
         std::function<void(SimulationReport)> onReportFromBgThread) :
 
         m_SimulationParams{params},
@@ -424,7 +424,7 @@ public:
         }
     }
 
-    ForwardDynamicSimulatorParams const& params() const
+    const ForwardDynamicSimulatorParams& params() const
     {
         return m_SimulationParams;
     }
@@ -450,7 +450,7 @@ OutputExtractor osc::GetFdSimulatorOutputExtractor(int idx)
 
 osc::ForwardDynamicSimulator::ForwardDynamicSimulator(
     BasicModelStatePair msp,
-    ForwardDynamicSimulatorParams const& params,
+    const ForwardDynamicSimulatorParams& params,
     std::function<void(SimulationReport)> onReportFromBgThread) :
 
     m_Impl{std::make_unique<Impl>(std::move(msp), params, std::move(onReportFromBgThread))}
@@ -479,7 +479,7 @@ void osc::ForwardDynamicSimulator::stop()
     return m_Impl->stop();
 }
 
-ForwardDynamicSimulatorParams const& osc::ForwardDynamicSimulator::params() const
+const ForwardDynamicSimulatorParams& osc::ForwardDynamicSimulator::params() const
 {
     return m_Impl->params();
 }

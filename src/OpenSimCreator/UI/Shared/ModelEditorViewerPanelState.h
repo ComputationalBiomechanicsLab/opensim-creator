@@ -37,7 +37,7 @@ namespace osc
         std::optional<SceneCollision> maybeBaseLayerHittest;
         OpenSim::ComponentPath maybeHoveredComponentAbsPath;
 
-        std::span<SceneDecoration const> getDrawlist() const
+        std::span<const SceneDecoration> getDrawlist() const
         {
             return m_CachedModelRenderer.getDrawlist();
         }
@@ -47,7 +47,7 @@ namespace osc
             return *m_LayerQueue.emplace_back(std::move(layer));
         }
 
-        CachedModelRenderer const& getRenderer() const
+        const CachedModelRenderer& getRenderer() const
         {
             return m_CachedModelRenderer;
         }

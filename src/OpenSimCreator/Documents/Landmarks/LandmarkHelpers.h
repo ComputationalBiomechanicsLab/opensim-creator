@@ -20,24 +20,24 @@ namespace osc::lm
         std::string message;
     };
 
-    std::string to_string(CSVParseWarning const&);
+    std::string to_string(const CSVParseWarning&);
 
     void ReadLandmarksFromCSV(
         std::istream&,
-        std::function<void(Landmark&&)> const& landmarkConsumer,
-        std::function<void(CSVParseWarning)> const& warningConsumer = [](auto){}
+        const std::function<void(Landmark&&)>& landmarkConsumer,
+        const std::function<void(CSVParseWarning)>& warningConsumer = [](auto){}
     );
 
     void WriteLandmarksToCSV(
         std::ostream&,
-        std::function<std::optional<Landmark>()> const& landmarkProducer,
+        const std::function<std::optional<Landmark>()>& landmarkProducer,
         LandmarkCSVFlags = LandmarkCSVFlags::None
     );
 
     // generates names for any unnamed landmarks and ensures that the names are
     // unique amongst all supplied landmarks (both named and unnamed)
     std::vector<NamedLandmark> GenerateNames(
-        std::span<Landmark const>,
+        std::span<const Landmark>,
         std::string_view prefix = "unnamed_"
     );
 }

@@ -5,7 +5,7 @@
 #include <oscar/Graphics/Scene/SceneDecoration.h>
 
 void osc::ComponentAbsPathDecorationTagger::operator()(
-    OpenSim::Component const& component,
+    const OpenSim::Component& component,
     SceneDecoration& decoration)
 {
     if (&component != m_LastComponent)

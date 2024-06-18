@@ -39,12 +39,12 @@ namespace
         }
 
         bool update(
-            IConstModelStatePair const& modelState,
-            ModelRendererParams const& params)
+            const IConstModelStatePair& modelState,
+            const ModelRendererParams& params)
         {
             OSC_PERF("CachedModelRenderer/generateDecorationsCached");
 
-            ModelStatePairInfo const info{modelState};
+            const ModelStatePairInfo info{modelState};
             if (info != m_PrevModelStateInfo ||
                 params.decorationOptions != m_PrevDecorationOptions ||
                 params.overlayOptions != m_PrevOverlayOptions)
@@ -53,7 +53,7 @@ namespace
                 m_BVH.clear();
 
                 // regenerate
-                auto const onComponentDecoration = [this](OpenSim::Component const&, SceneDecoration&& dec)
+                const auto onComponentDecoration = [this](const OpenSim::Component&, SceneDecoration&& dec)
                 {
                     m_Drawlist.push_back(std::move(dec));
                 };
@@ -65,7 +65,7 @@ namespace
                 );
                 update_scene_bvh(m_Drawlist, m_BVH);
 
-                auto const onOverlayDecoration = [this](SceneDecoration&& dec)
+                const auto onOverlayDecoration = [this](SceneDecoration&& dec)
                 {
                     m_Drawlist.push_back(std::move(dec));
                 };
@@ -87,8 +87,8 @@ namespace
             }
         }
 
-        std::span<SceneDecoration const> getDrawlist() const { return m_Drawlist; }
-        BVH const& getBVH() const { return m_BVH; }
+        std::span<const SceneDecoration> getDrawlist() const { return m_Drawlist; }
+        const BVH& getBVH() const { return m_BVH; }
         std::optional<AABB> getAABB() const { return m_BVH.bounds(); }
         SceneCache& updSceneCache() const
         {
@@ -108,33 +108,32 @@ namespace
 
 class osc::CachedModelRenderer::Impl final {
 public:
-    explicit Impl(std::shared_ptr<SceneCache> const& cache) :
+    explicit Impl(const std::shared_ptr<SceneCache>& cache) :
         m_DecorationCache{cache},
         m_Renderer{*cache}
     {}
 
     void autoFocusCamera(
-        IConstModelStatePair const& modelState,
+        const IConstModelStatePair& modelState,
         ModelRendererParams& params,
         float aspectRatio)
     {
         m_DecorationCache.update(modelState, params);
-        if (std::optional<AABB> const aabb = m_DecorationCache.getAABB())
-        {
+        if (const std::optional<AABB> aabb = m_DecorationCache.getAABB()) {
             auto_focus(params.camera, *aabb, aspectRatio);
         }
     }
 
     RenderTexture& onDraw(
-        IConstModelStatePair const& modelState,
-        ModelRendererParams const& renderParams,
+        const IConstModelStatePair& modelState,
+        const ModelRendererParams& renderParams,
         Vec2 dims,
         AntiAliasingLevel antiAliasingLevel)
     {
         OSC_PERF("CachedModelRenderer/on_draw");
 
         // setup render/rasterization parameters
-        SceneRendererParams const rendererParameters = CalcSceneRendererParams(
+        const SceneRendererParams rendererParameters = CalcSceneRendererParams(
             renderParams,
             dims,
             antiAliasingLevel,
@@ -158,7 +157,7 @@ public:
         return m_Renderer.upd_render_texture();
     }
 
-    std::span<SceneDecoration const> getDrawlist() const
+    std::span<const SceneDecoration> getDrawlist() const
     {
         return m_DecorationCache.getDrawlist();
     }
@@ -169,9 +168,9 @@ public:
     }
 
     std::optional<SceneCollision> getClosestCollision(
-        ModelRendererParams const& params,
+        const ModelRendererParams& params,
         Vec2 mouseScreenPos,
-        Rect const& viewportScreenRect) const
+        const Rect& viewportScreenRect) const
     {
         return GetClosestCollision(
             m_DecorationCache.getBVH(),
@@ -190,9 +189,7 @@ private:
 };
 
 
-// public API (PIMPL)
-
-osc::CachedModelRenderer::CachedModelRenderer(std::shared_ptr<SceneCache> const& cache) :
+osc::CachedModelRenderer::CachedModelRenderer(const std::shared_ptr<SceneCache>& cache) :
     m_Impl{std::make_unique<Impl>(cache)}
 {}
 osc::CachedModelRenderer::CachedModelRenderer(CachedModelRenderer&&) noexcept = default;
@@ -200,8 +197,8 @@ osc::CachedModelRenderer& osc::CachedModelRenderer::operator=(CachedModelRendere
 osc::CachedModelRenderer::~CachedModelRenderer() noexcept = default;
 
 RenderTexture& osc::CachedModelRenderer::onDraw(
-    IConstModelStatePair const& modelState,
-    ModelRendererParams const& renderParams,
+    const IConstModelStatePair& modelState,
+    const ModelRendererParams& renderParams,
     Vec2 dims,
     AntiAliasingLevel antiAliasingLevel)
 {
@@ -214,7 +211,7 @@ RenderTexture& osc::CachedModelRenderer::onDraw(
 }
 
 void osc::CachedModelRenderer::autoFocusCamera(
-    IConstModelStatePair const& modelState,
+    const IConstModelStatePair& modelState,
     ModelRendererParams& renderParams,
     float aspectRatio)
 {
@@ -226,7 +223,7 @@ RenderTexture& osc::CachedModelRenderer::updRenderTexture()
     return m_Impl->updRenderTexture();
 }
 
-std::span<SceneDecoration const> osc::CachedModelRenderer::getDrawlist() const
+std::span<const SceneDecoration> osc::CachedModelRenderer::getDrawlist() const
 {
     return m_Impl->getDrawlist();
 }
@@ -237,9 +234,9 @@ std::optional<AABB> osc::CachedModelRenderer::bounds() const
 }
 
 std::optional<SceneCollision> osc::CachedModelRenderer::getClosestCollision(
-    ModelRendererParams const& params,
+    const ModelRendererParams& params,
     Vec2 mouseScreenPos,
-    Rect const& viewportScreenRect) const
+    const Rect& viewportScreenRect) const
 {
     return m_Impl->getClosestCollision(params, mouseScreenPos, viewportScreenRect);
 }

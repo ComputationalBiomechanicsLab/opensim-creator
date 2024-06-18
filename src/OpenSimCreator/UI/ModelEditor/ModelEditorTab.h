@@ -16,12 +16,12 @@ namespace osc
     class ModelEditorTab final : public ITab {
     public:
         ModelEditorTab(
-            ParentPtr<IMainUIStateAPI> const&,
+            const ParentPtr<IMainUIStateAPI>&,
             std::unique_ptr<UndoableModelStatePair>
         );
-        ModelEditorTab(ModelEditorTab const&) = delete;
+        ModelEditorTab(const ModelEditorTab&) = delete;
         ModelEditorTab(ModelEditorTab&&) noexcept;
-        ModelEditorTab& operator=(ModelEditorTab const&) = delete;
+        ModelEditorTab& operator=(const ModelEditorTab&) = delete;
         ModelEditorTab& operator=(ModelEditorTab&&) noexcept;
         ~ModelEditorTab() noexcept override;
 
@@ -32,7 +32,7 @@ namespace osc
         bool impl_try_save() final;
         void impl_on_mount() final;
         void impl_on_unmount() final;
-        bool impl_on_event(SDL_Event const&) final;
+        bool impl_on_event(const SDL_Event&) final;
         void impl_on_tick() final;
         void impl_on_draw_main_menu() final;
         void impl_on_draw() final;

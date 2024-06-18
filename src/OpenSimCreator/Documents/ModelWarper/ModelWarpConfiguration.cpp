@@ -6,8 +6,8 @@
 #include <filesystem>
 
 osc::mow::ModelWarpConfiguration::ModelWarpConfiguration(
-    std::filesystem::path const& osimFileLocation,
-    OpenSim::Model const&)
+    const std::filesystem::path& osimFileLocation,
+    const OpenSim::Model&)
 {
     std::filesystem::path maybeWarpconfigLocation = osimFileLocation;
     maybeWarpconfigLocation.replace_extension("warpconfig.toml");

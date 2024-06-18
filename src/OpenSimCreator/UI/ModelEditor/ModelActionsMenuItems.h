@@ -13,9 +13,9 @@ namespace osc
             IEditorAPI*,
             std::shared_ptr<UndoableModelStatePair>
         );
-        ModelActionsMenuItems(ModelActionsMenuItems const&) = delete;
+        ModelActionsMenuItems(const ModelActionsMenuItems&) = delete;
         ModelActionsMenuItems(ModelActionsMenuItems&&) noexcept;
-        ModelActionsMenuItems& operator=(ModelActionsMenuItems const&) = delete;
+        ModelActionsMenuItems& operator=(const ModelActionsMenuItems&) = delete;
         ModelActionsMenuItems& operator=(ModelActionsMenuItems&&) noexcept;
         ~ModelActionsMenuItems() noexcept;
 

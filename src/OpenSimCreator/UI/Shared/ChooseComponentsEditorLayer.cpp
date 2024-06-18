@@ -70,15 +70,15 @@ namespace
 
     // generates scene decorations for the "choose components" layer
     void GenerateChooseComponentsDecorations(
-        ChooseComponentsEditorLayerSharedState const& state,
+        const ChooseComponentsEditorLayerSharedState& state,
         BVHedDecorations& out)
     {
         out.clear();
 
-        auto const onModelDecoration = [&state, &out](OpenSim::Component const& component, SceneDecoration&& decoration)
+        const auto onModelDecoration = [&state, &out](const OpenSim::Component& component, SceneDecoration&& decoration)
         {
             // update flags based on path
-            std::string const absPath = GetAbsolutePathString(component);
+            const std::string absPath = GetAbsolutePathString(component);
             if (state.popupParams.componentsBeingAssignedTo.contains(absPath))
             {
                 decoration.flags |= SceneDecorationFlags::IsSelected;
@@ -115,7 +115,7 @@ namespace
 
         update_scene_bvh(out.decorations, out.bvh);
 
-        auto const onOverlayDecoration = [&](SceneDecoration&& decoration)
+        const auto onOverlayDecoration = [&](SceneDecoration&& decoration)
         {
             out.decorations.push_back(std::move(decoration));
         };
@@ -176,7 +176,7 @@ public:
         ModelEditorViewerPanelParameters& panelParams,
         ModelEditorViewerPanelState& panelState)
     {
-        bool const layerIsHovered = ui::is_panel_hovered(ImGuiHoveredFlags_RootAndChildWindows);
+        const bool layerIsHovered = ui::is_panel_hovered(ImGuiHoveredFlags_RootAndChildWindows);
 
         // update this layer's state from provided state
         m_State.renderParams = panelParams.getRenderParams();
@@ -189,7 +189,7 @@ public:
 
         // generate decorations + rendering params
         GenerateChooseComponentsDecorations(m_State, m_Decorations);
-        SceneRendererParams const rendererParameters = CalcSceneRendererParams(
+        const SceneRendererParams rendererParameters = CalcSceneRendererParams(
             m_State.renderParams,
             dimensions_of(panelState.viewportRect),
             App::get().anti_aliasing_level(),
@@ -208,7 +208,7 @@ public:
         // do hovertest
         if (layerIsHovered)
         {
-            std::optional<SceneCollision> const collision = GetClosestCollision(
+            const std::optional<SceneCollision> collision = GetClosestCollision(
                 m_Decorations.bvh,
                 *m_State.meshCache,
                 m_Decorations.decorations,
@@ -227,7 +227,7 @@ public:
         }
 
         // show tooltip
-        if (OpenSim::Component const* c = FindComponent(m_State.model->getModel(), m_State.hoveredComponent))
+        if (const OpenSim::Component* c = FindComponent(m_State.model->getModel(), m_State.hoveredComponent))
         {
             DrawComponentHoverTooltip(*c);
         }
@@ -248,9 +248,9 @@ public:
             ui::push_style_var(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
 
             constexpr CStringView cancellationButtonText = ICON_FA_ARROW_LEFT " Cancel (ESC)";
-            Vec2 const margin = {25.0f, 25.0f};
-            Vec2 const buttonDims = ui::calc_button_size(cancellationButtonText);
-            Vec2 const buttonTopLeft = panelState.viewportRect.p2 - (buttonDims + margin);
+            const Vec2 margin = {25.0f, 25.0f};
+            const Vec2 buttonDims = ui::calc_button_size(cancellationButtonText);
+            const Vec2 buttonTopLeft = panelState.viewportRect.p2 - (buttonDims + margin);
             ui::set_cursor_screen_pos(buttonTopLeft);
             if (ui::draw_button(cancellationButtonText))
             {
@@ -273,8 +273,8 @@ public:
 
     bool tryToggleHover()
     {
-        std::string const& absPath = m_State.hoveredComponent;
-        OpenSim::Component const* component = FindComponent(m_State.model->getModel(), absPath);
+        const std::string& absPath = m_State.hoveredComponent;
+        const OpenSim::Component* component = FindComponent(m_State.model->getModel(), absPath);
 
         if (!component)
         {

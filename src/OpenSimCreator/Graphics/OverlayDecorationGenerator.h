@@ -13,8 +13,8 @@ namespace osc
     // output consumer
     void GenerateOverlayDecorations(
         SceneCache&,
-        OverlayDecorationOptions const&,
-        BVH const& sceneBVH,
-        std::function<void(SceneDecoration&&)> const& out
+        const OverlayDecorationOptions&,
+        const BVH& sceneBVH,
+        const std::function<void(SceneDecoration&&)>& out
     );
 }

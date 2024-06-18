@@ -36,11 +36,11 @@ TEST(UndoableModelStatePair, CanLoadAndRenderAllUserFacingExampleFiles)
     decorationOpts.setShouldShowScapulo(true);
     decorationOpts.setShouldShowPointToPointSprings(true);
 
-    std::filesystem::path const examplesDir = std::filesystem::path{OSC_RESOURCES_DIR} / "models";
+    const std::filesystem::path examplesDir = std::filesystem::path{OSC_RESOURCES_DIR} / "models";
     ASSERT_TRUE(std::filesystem::exists(examplesDir) && std::filesystem::is_directory(examplesDir));
 
     size_t nExamplesTested = 0;
-    for (std::filesystem::directory_entry const& e : std::filesystem::recursive_directory_iterator{examplesDir})
+    for (const std::filesystem::directory_entry& e : std::filesystem::recursive_directory_iterator{examplesDir})
     {
         if (e.is_regular_file() && e.path().extension() == ".osim")
         {
@@ -55,7 +55,7 @@ TEST(UndoableModelStatePair, CanLoadAndRenderAllUserFacingExampleFiles)
                 p.getState(),
                 decorationOpts,
                 1.0f,  // 1:1 scaling
-                [&decorations](OpenSim::Component const& component, SceneDecoration&& dec)
+                [&decorations](const OpenSim::Component& component, SceneDecoration&& dec)
                 {
                     dec.id = GetAbsolutePathString(component);
                     decorations.push_back(std::move(dec));
@@ -67,7 +67,7 @@ TEST(UndoableModelStatePair, CanLoadAndRenderAllUserFacingExampleFiles)
 
             // and all decorations can be exported to a DAE format
             NullOStream stream;
-            DAEMetadata const metadata{TESTOPENSIMCREATOR_APPNAME_STRING, TESTOPENSIMCREATOR_APPNAME_STRING};
+            const DAEMetadata metadata{TESTOPENSIMCREATOR_APPNAME_STRING, TESTOPENSIMCREATOR_APPNAME_STRING};
             write_as_dae(stream, decorations, metadata);
 
             // and content is actually written to the DAE stream

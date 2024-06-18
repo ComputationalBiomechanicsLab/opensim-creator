@@ -42,10 +42,10 @@ namespace osc
 
         constexpr IntegratorMethod() = default;
 
-        friend constexpr bool operator==(IntegratorMethod const&, IntegratorMethod const&) = default;
+        friend constexpr bool operator==(const IntegratorMethod&, const IntegratorMethod&) = default;
 
         CStringView label() const;
-        std::unique_ptr<SimTK::Integrator> instantiate(SimTK::System const&) const;
+        std::unique_ptr<SimTK::Integrator> instantiate(const SimTK::System&) const;
     private:
         constexpr IntegratorMethod(detail::IntegratorMethodOption opt) : m_Option{opt} {}
 

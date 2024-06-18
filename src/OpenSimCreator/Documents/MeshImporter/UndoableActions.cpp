@@ -38,7 +38,7 @@ bool osc::mi::point_axis_towards(
 
 bool osc::mi::TryAssignMeshAttachments(
     UndoableDocument& udoc,
-    std::unordered_set<UID> const& meshIDs,
+    const std::unordered_set<UID>& meshIDs,
     UID newAttachment)
 {
     Document& doc = udoc.upd_scratch();
@@ -80,11 +80,11 @@ bool osc::mi::TryCreateJoint(
 {
     Document& doc = udoc.upd_scratch();
 
-    Vec3 const parentPos = doc.getPosByID(parentID);
-    Vec3 const childPos = doc.getPosByID(childID);
-    Vec3 const midPoint = midpoint(parentPos, childPos);
+    const Vec3 parentPos = doc.getPosByID(parentID);
+    const Vec3 childPos = doc.getPosByID(childID);
+    const Vec3 midPoint = midpoint(parentPos, childPos);
 
-    auto const& joint = doc.emplace<Joint>(
+    const auto& joint = doc.emplace<Joint>(
         UID{},
         "WeldJoint",
         std::string{},
@@ -114,8 +114,8 @@ bool osc::mi::TryOrientObjectAxisAlongTwoPoints(
         return false;
     }
 
-    Vec3 const direction = normalize(p2 - p1);
-    Transform const t = obj->getXForm(doc);
+    const Vec3 direction = normalize(p2 - p1);
+    const Transform t = obj->getXForm(doc);
 
     obj->setXform(doc, point_axis_along(t, axis, direction));
     udoc.commit_scratch("reoriented " + obj->getLabel());
@@ -142,8 +142,8 @@ bool osc::mi::TryOrientObjectAxisAlongTwoObjects(
 bool osc::mi::TryTranslateObjectBetweenTwoPoints(
     UndoableDocument& udoc,
     UID id,
-    Vec3 const& a,
-    Vec3 const& b)
+    const Vec3& a,
+    const Vec3& b)
 {
     Document& doc = udoc.upd_scratch();
     MIObject* const obj = doc.tryUpdByID(id);
@@ -172,13 +172,13 @@ bool osc::mi::TryTranslateBetweenTwoObjects(
         return false;
     }
 
-    MIObject const* const objA = doc.tryGetByID(a);
+    const MIObject* const objA = doc.tryGetByID(a);
     if (!objA)
     {
         return false;
     }
 
-    MIObject const* const objB = doc.tryGetByID(b);
+    const MIObject* const objB = doc.tryGetByID(b);
     if (!objB)
     {
         return false;
@@ -203,7 +203,7 @@ bool osc::mi::TryTranslateObjectToAnotherObject(
         return false;
     }
 
-    MIObject const* const otherObj = doc.tryGetByID(other);
+    const MIObject* const otherObj = doc.tryGetByID(other);
     if (!otherObj)
     {
         return false;
@@ -228,7 +228,7 @@ bool osc::mi::TryTranslateToMeshAverageCenter(
         return false;
     }
 
-    auto const* const mesh = doc.tryGetByID<Mesh>(meshID);
+    const auto* const mesh = doc.tryGetByID<Mesh>(meshID);
     if (!mesh)
     {
         return false;
@@ -253,13 +253,13 @@ bool osc::mi::TryTranslateToMeshBoundsCenter(
         return false;
     }
 
-    auto const* const mesh = doc.tryGetByID<Mesh>(meshID);
+    const auto* const mesh = doc.tryGetByID<Mesh>(meshID);
     if (!mesh)
     {
         return false;
     }
 
-    Vec3 const boundsMidpoint = centroid_of(mesh->calcBounds());
+    const Vec3 boundsMidpoint = centroid_of(mesh->calcBounds());
 
     obj->setPos(doc, boundsMidpoint);
     udoc.commit_scratch("moved " + obj->getLabel());
@@ -280,7 +280,7 @@ bool osc::mi::TryTranslateToMeshMassCenter(
         return false;
     }
 
-    auto const* const mesh = doc.tryGetByID<Mesh>(meshID);
+    const auto* const mesh = doc.tryGetByID<Mesh>(meshID);
     if (!mesh)
     {
         return false;
@@ -344,7 +344,7 @@ bool osc::mi::DeleteObject(UndoableDocument& udoc, UID id)
         return false;
     }
 
-    std::string const label = to_string(obj->getLabel());
+    const std::string label = to_string(obj->getLabel());
 
     if (!doc.deleteByID(obj->getID()))
     {
@@ -379,7 +379,7 @@ bool osc::mi::TryCopyOrientation(
         return false;
     }
 
-    MIObject const* const otherObj = doc.tryGetByID(other);
+    const MIObject* const otherObj = doc.tryGetByID(other);
     if (!otherObj)
     {
         return false;
@@ -394,12 +394,12 @@ bool osc::mi::TryCopyOrientation(
 
 UID osc::mi::AddBody(
     UndoableDocument& udoc,
-    Vec3 const& pos,
+    const Vec3& pos,
     UID andTryAttach)
 {
     Document& doc = udoc.upd_scratch();
 
-    auto const& b = doc.emplace<Body>(UID{}, Body::Class().generateName(), Transform{.position = pos});
+    const auto& b = doc.emplace<Body>(UID{}, Body::Class().generateName(), Transform{.position = pos});
     doc.deSelectAll();
     doc.select(b.getID());
 
@@ -425,8 +425,8 @@ UID osc::mi::AddBody(UndoableDocument& udoc)
 
 bool osc::mi::AddStationAtLocation(
     UndoableDocument& udoc,
-    MIObject const& obj,
-    Vec3 const& loc)
+    const MIObject& obj,
+    const Vec3& loc)
 {
     Document& doc = udoc.upd_scratch();
 
@@ -435,7 +435,7 @@ bool osc::mi::AddStationAtLocation(
         return false;
     }
 
-    auto const& station = doc.emplace<StationEl>(
+    const auto& station = doc.emplace<StationEl>(
         UID{},
         GetStationAttachmentParent(doc, obj),
         loc,
@@ -449,11 +449,11 @@ bool osc::mi::AddStationAtLocation(
 bool osc::mi::AddStationAtLocation(
     UndoableDocument& udoc,
     UID attachment,
-    Vec3 const& loc)
+    const Vec3& loc)
 {
     Document& doc = udoc.upd_scratch();
 
-    auto const* const obj = doc.tryGetByID(attachment);
+    const auto* const obj = doc.tryGetByID(attachment);
     if (!obj)
     {
         return false;
@@ -464,11 +464,11 @@ bool osc::mi::AddStationAtLocation(
 
 void osc::mi::ActionImportLandmarks(
     UndoableDocument& udoc,
-    std::span<lm::NamedLandmark const> landmarks,
+    std::span<const lm::NamedLandmark> landmarks,
     std::optional<std::string> maybeName)
 {
     Document& doc = udoc.upd_scratch();
-    for (auto const& lm : landmarks)
+    for (const auto& lm : landmarks)
     {
         doc.emplace<StationEl>(
             UID{},

@@ -16,14 +16,14 @@ namespace osc::mow
         OpenSim_DECLARE_CONCRETE_OBJECT(InMemoryMesh, OpenSim::Geometry)
     public:
         InMemoryMesh() = default;
-        explicit InMemoryMesh(Mesh const& mesh_) : m_OscMesh{mesh_} {}
+        explicit InMemoryMesh(const Mesh& mesh_) : m_OscMesh{mesh_} {}
 
         void implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>&) const override
         {
             // do nothing: OpenSim Creator will detect `ICustomDecorationDecorator` and use that
         }
     private:
-        void implGenerateCustomDecorations(SimTK::State const&, std::function<void(SceneDecoration&&)> const&) const override;
+        void implGenerateCustomDecorations(const SimTK::State&, const std::function<void(SceneDecoration&&)>&) const override;
 
         Mesh m_OscMesh;
     };

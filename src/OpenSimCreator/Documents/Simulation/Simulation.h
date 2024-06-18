@@ -31,7 +31,7 @@ namespace osc
             m_Simulation{std::make_unique<TConcreteSimulation>(std::forward<TConcreteSimulation>(simulation))}
         {}
 
-        SynchronizedValueGuard<OpenSim::Model const> getModel() const { return m_Simulation->getModel(); }
+        SynchronizedValueGuard<const OpenSim::Model> getModel() const { return m_Simulation->getModel(); }
 
         size_t getNumReports() const { return m_Simulation->getNumReports(); }
         SimulationReport getSimulationReport(ptrdiff_t reportIndex) const { return m_Simulation->getSimulationReport(std::move(reportIndex)); }
@@ -42,8 +42,8 @@ namespace osc
         SimulationClock::time_point getStartTime() const { return m_Simulation->getStartTime(); }
         SimulationClock::time_point getEndTime() const { return m_Simulation->getEndTime(); }
         float getProgress() const { return m_Simulation->getProgress(); }
-        ParamBlock const& getParams() const { return m_Simulation->getParams(); }
-        std::span<OutputExtractor const> getOutputs() const { return m_Simulation->getOutputExtractors(); }
+        const ParamBlock& getParams() const { return m_Simulation->getParams(); }
+        std::span<const OutputExtractor> getOutputs() const { return m_Simulation->getOutputExtractors(); }
 
         bool canChangeEndTime() const { return m_Simulation->canChangeEndTime(); }
         void requestNewEndTime(SimulationClock::time_point t) { m_Simulation->requestNewEndTime(t); }
@@ -55,7 +55,7 @@ namespace osc
         void setFixupScaleFactor(float v) { m_Simulation->setFixupScaleFactor(v); }
 
         operator ISimulation& () { return *m_Simulation; }
-        operator ISimulation const& () const { return *m_Simulation; }
+        operator const ISimulation& () const { return *m_Simulation; }
 
     private:
         std::unique_ptr<ISimulation> m_Simulation;

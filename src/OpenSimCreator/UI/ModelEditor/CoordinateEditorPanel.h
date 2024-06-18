@@ -17,13 +17,13 @@ namespace osc
     public:
         CoordinateEditorPanel(
             std::string_view panelName,
-            ParentPtr<IMainUIStateAPI> const&,
+            const ParentPtr<IMainUIStateAPI>&,
             IEditorAPI*,
             std::shared_ptr<UndoableModelStatePair>
         );
-        CoordinateEditorPanel(CoordinateEditorPanel const&) = delete;
+        CoordinateEditorPanel(const CoordinateEditorPanel&) = delete;
         CoordinateEditorPanel(CoordinateEditorPanel&&) noexcept;
-        CoordinateEditorPanel& operator=(CoordinateEditorPanel const&) = delete;
+        CoordinateEditorPanel& operator=(const CoordinateEditorPanel&) = delete;
         CoordinateEditorPanel& operator=(CoordinateEditorPanel&&) noexcept;
         ~CoordinateEditorPanel() noexcept;
 

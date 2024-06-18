@@ -22,18 +22,18 @@ namespace osc
     class BasicModelStatePair final : public IModelStatePair {
     public:
         BasicModelStatePair();
-        explicit BasicModelStatePair(IConstModelStatePair const&);
-        explicit BasicModelStatePair(std::filesystem::path const&);
-        BasicModelStatePair(OpenSim::Model const&, SimTK::State const&);
-        BasicModelStatePair(BasicModelStatePair const&);
+        explicit BasicModelStatePair(const IConstModelStatePair&);
+        explicit BasicModelStatePair(const std::filesystem::path&);
+        BasicModelStatePair(const OpenSim::Model&, const SimTK::State&);
+        BasicModelStatePair(const BasicModelStatePair&);
         BasicModelStatePair(BasicModelStatePair&&) noexcept;
-        BasicModelStatePair& operator=(BasicModelStatePair const&);
+        BasicModelStatePair& operator=(const BasicModelStatePair&);
         BasicModelStatePair& operator=(BasicModelStatePair&&) noexcept;
         ~BasicModelStatePair() noexcept override;
 
     private:
-        OpenSim::Model const& implGetModel() const final;
-        SimTK::State const& implGetState() const final;
+        const OpenSim::Model& implGetModel() const final;
+        const SimTK::State& implGetState() const final;
 
         float implGetFixupScaleFactor() const final;
         void implSetFixupScaleFactor(float) final;

@@ -13,10 +13,10 @@ namespace osc
 {
     // append decorations that are common to all panels to the given output vector
     void AppendCommonDecorations(
-        MeshWarpingTabSharedState const& sharedState,
-        Mesh const& tpsSourceOrDestinationMesh,
+        const MeshWarpingTabSharedState& sharedState,
+        const Mesh& tpsSourceOrDestinationMesh,
         bool wireframeMode,
-        std::function<void(SceneDecoration&&)> const& out,
+        const std::function<void(SceneDecoration&&)>& out,
         Color meshColor = Color::white())
     {
         // draw the mesh

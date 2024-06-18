@@ -9,9 +9,9 @@ namespace osc
     class TPSDocumentElement {
     protected:
         TPSDocumentElement() = default;
-        TPSDocumentElement(TPSDocumentElement const&) = default;
+        TPSDocumentElement(const TPSDocumentElement&) = default;
         TPSDocumentElement(TPSDocumentElement&&) noexcept = default;
-        TPSDocumentElement& operator=(TPSDocumentElement const&) = default;
+        TPSDocumentElement& operator=(const TPSDocumentElement&) = default;
         TPSDocumentElement& operator=(TPSDocumentElement&&) noexcept = default;
     public:
         virtual ~TPSDocumentElement() noexcept = default;

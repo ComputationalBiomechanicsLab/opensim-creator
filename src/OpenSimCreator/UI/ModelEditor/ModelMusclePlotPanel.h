@@ -24,12 +24,12 @@ namespace osc
             IEditorAPI*,
             std::shared_ptr<UndoableModelStatePair>,
             std::string_view panelName,
-            OpenSim::ComponentPath const& coordPath,
-            OpenSim::ComponentPath const& musclePath
+            const OpenSim::ComponentPath& coordPath,
+            const OpenSim::ComponentPath& musclePath
         );
-        ModelMusclePlotPanel(ModelMusclePlotPanel const&) = delete;
+        ModelMusclePlotPanel(const ModelMusclePlotPanel&) = delete;
         ModelMusclePlotPanel(ModelMusclePlotPanel&&) noexcept;
-        ModelMusclePlotPanel& operator=(ModelMusclePlotPanel const&) = delete;
+        ModelMusclePlotPanel& operator=(const ModelMusclePlotPanel&) = delete;
         ModelMusclePlotPanel& operator=(ModelMusclePlotPanel&&) noexcept;
         ~ModelMusclePlotPanel() noexcept;
 

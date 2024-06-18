@@ -26,7 +26,7 @@ using namespace osc;
 
 void osc::fd::ActionPromptUserToAddMeshFiles(UndoableModelStatePair& model)
 {
-    std::vector<std::filesystem::path> const meshPaths =
+    const std::vector<std::filesystem::path> meshPaths =
         prompt_user_to_select_files(GetSupportedSimTKMeshFormats());
     if (meshPaths.empty())
     {
@@ -34,7 +34,7 @@ void osc::fd::ActionPromptUserToAddMeshFiles(UndoableModelStatePair& model)
     }
 
     // create a human-readable commit message
-    std::string const commitMessage = [&meshPaths]()
+    const std::string commitMessage = [&meshPaths]()
     {
         if (meshPaths.size() == 1)
         {
@@ -50,9 +50,9 @@ void osc::fd::ActionPromptUserToAddMeshFiles(UndoableModelStatePair& model)
 
     // perform the model mutation
     OpenSim::Model& mutableModel = model.updModel();
-    for (std::filesystem::path const& meshPath : meshPaths)
+    for (const std::filesystem::path& meshPath : meshPaths)
     {
-        std::string const meshName = meshPath.filename().replace_extension().string();
+        const std::string meshName = meshPath.filename().replace_extension().string();
 
         // add an offset frame that is connected to ground - this will become
         // the mesh's offset frame
@@ -68,7 +68,7 @@ void osc::fd::ActionPromptUserToAddMeshFiles(UndoableModelStatePair& model)
         }
 
         // add it to the model and select it (i.e. always select the last mesh)
-        OpenSim::PhysicalOffsetFrame const& pofRef = AddModelComponent(mutableModel, std::move(meshPhysicalOffsetFrame));
+        const OpenSim::PhysicalOffsetFrame& pofRef = AddModelComponent(mutableModel, std::move(meshPhysicalOffsetFrame));
         FinalizeConnections(mutableModel);
         model.setSelected(&pofRef);
     }
@@ -79,7 +79,7 @@ void osc::fd::ActionPromptUserToAddMeshFiles(UndoableModelStatePair& model)
 }
 
 std::unique_ptr<UndoableModelStatePair> osc::fd::MakeUndoableModelFromSceneModel(
-    UndoableModelStatePair const& sceneModel)
+    const UndoableModelStatePair& sceneModel)
 {
     auto modelCopy = std::make_unique<OpenSim::Model>(sceneModel.getModel());
     modelCopy->upd_ComponentSet().clearAndDestroy();
@@ -87,8 +87,8 @@ std::unique_ptr<UndoableModelStatePair> osc::fd::MakeUndoableModelFromSceneModel
 }
 
 void osc::fd::ActionExportFrameDefinitionSceneModelToEditorTab(
-    ParentPtr<ITabHost> const& tabHost,
-    UndoableModelStatePair const& model)
+    const ParentPtr<ITabHost>& tabHost,
+    const UndoableModelStatePair& model)
 {
     auto maybeMainUIStateAPI = dynamic_parent_cast<IMainUIStateAPI>(tabHost);
     if (!maybeMainUIStateAPI)

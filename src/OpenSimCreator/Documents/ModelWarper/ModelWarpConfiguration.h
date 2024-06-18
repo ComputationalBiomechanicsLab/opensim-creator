@@ -15,8 +15,8 @@ namespace osc::mow
 
         // load from the associated model warp configuration file that sits relative to the osim file
         ModelWarpConfiguration(
-            std::filesystem::path const& osimFileLocation,
-            OpenSim::Model const&
+            const std::filesystem::path& osimFileLocation,
+            const OpenSim::Model&
         );
 
         float getWarpBlendingFactor() const { return m_WarpBlendingFactor; }

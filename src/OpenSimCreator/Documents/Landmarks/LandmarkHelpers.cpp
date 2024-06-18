@@ -25,7 +25,7 @@ namespace
 
     using ParseResult = std::variant<Landmark, CSVParseWarning, SkipRow>;
 
-    ParseResult ParseRow(size_t lineNum, std::span<std::string const> cols)
+    ParseResult ParseRow(size_t lineNum, std::span<const std::string> cols)
     {
         if (cols.empty() || (cols.size() == 1 && strip_whitespace(cols.front()).empty()))
         {
@@ -38,14 +38,14 @@ namespace
 
         // >=4 columns implies that the first column is a label column
         std::optional<std::string> maybeName;
-        std::span<std::string const> data = cols;
+        std::span<const std::string> data = cols;
         if (cols.size() >= 4)
         {
             maybeName = cols.front();
             data = data.subspan(1);
         }
 
-        std::optional<float> const x = from_chars_strip_whitespace(data[0]);
+        const std::optional<float> x = from_chars_strip_whitespace(data[0]);
         if (!x)
         {
             if (lineNum == 0)
@@ -57,7 +57,7 @@ namespace
                 return CSVParseWarning{lineNum, "cannot parse X as a number"};
             }
         }
-        std::optional<float> const y = from_chars_strip_whitespace(data[1]);
+        const std::optional<float> y = from_chars_strip_whitespace(data[1]);
         if (!y)
         {
             if (lineNum == 0)
@@ -69,7 +69,7 @@ namespace
                 return CSVParseWarning{lineNum, "cannot parse Y as a number"};
             }
         }
-        std::optional<float> const z = from_chars_strip_whitespace(data[2]);
+        const std::optional<float> z = from_chars_strip_whitespace(data[2]);
         if (!z)
         {
             if (lineNum == 0)
@@ -86,18 +86,18 @@ namespace
     }
 }
 
-std::string osc::lm::to_string(CSVParseWarning const& warning)
+std::string osc::lm::to_string(const CSVParseWarning& warning)
 {
     std::stringstream ss;
-    size_t const displayedLineNumber = warning.lineNumber+1;  // user-facing software (e.g. IDEs) start at 1
+    const size_t displayedLineNumber = warning.lineNumber+1;  // user-facing software (e.g. IDEs) start at 1
     ss << "line " << displayedLineNumber << ": " << warning.message;
     return std::move(ss).str();
 }
 
 void osc::lm::ReadLandmarksFromCSV(
     std::istream& in,
-    std::function<void(Landmark&&)> const& landmarkConsumer,
-    std::function<void(CSVParseWarning)> const& warningConsumer)
+    const std::function<void(Landmark&&)>& landmarkConsumer,
+    const std::function<void(CSVParseWarning)>& warningConsumer)
 {
     std::vector<std::string> cols;
     for (size_t line = 0; read_csv_row_into_vector(in, cols); ++line)
@@ -113,7 +113,7 @@ void osc::lm::ReadLandmarksFromCSV(
 
 void osc::lm::WriteLandmarksToCSV(
     std::ostream& out,
-    std::function<std::optional<Landmark>()> const& landmarkProducer,
+    const std::function<std::optional<Landmark>()>& landmarkProducer,
     LandmarkCSVFlags flags)
 {
     // if applicable, emit header
@@ -149,12 +149,12 @@ void osc::lm::WriteLandmarksToCSV(
 }
 
 std::vector<NamedLandmark> osc::lm::GenerateNames(
-    std::span<Landmark const> lms,
+    std::span<const Landmark> lms,
     std::string_view prefix)
 {
     // collect up all already-named landmarks
     std::unordered_set<std::string_view> suppliedNames;
-    for (auto const& lm : lms)
+    for (const auto& lm : lms)
     {
         if (lm.maybeName)
         {
@@ -163,7 +163,7 @@ std::vector<NamedLandmark> osc::lm::GenerateNames(
     }
 
     // helper: either get, or generate, a name for the given landmark
-    auto getName = [&prefix, &suppliedNames, i=0](Landmark const& lm) mutable -> std::string
+    auto getName = [&prefix, &suppliedNames, i=0](const Landmark& lm) mutable -> std::string
     {
         if (lm.maybeName)
         {
@@ -181,7 +181,7 @@ std::vector<NamedLandmark> osc::lm::GenerateNames(
 
     std::vector<NamedLandmark> rv;
     rv.reserve(lms.size());
-    for (auto const& lm : lms)
+    for (const auto& lm : lms)
     {
         rv.push_back(NamedLandmark{getName(lm), lm.position});
     }

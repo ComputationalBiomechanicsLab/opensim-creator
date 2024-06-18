@@ -46,10 +46,10 @@ namespace osc
         // to improve accuracy (e.g. by taking many more steps)
         double integratorAccuracy;
 
-        friend bool operator==(ForwardDynamicSimulatorParams const&, ForwardDynamicSimulatorParams const&) = default;
+        friend bool operator==(const ForwardDynamicSimulatorParams&, const ForwardDynamicSimulatorParams&) = default;
     };
 
     // convert to a generic parameter block (for UI binding)
-    ParamBlock ToParamBlock(ForwardDynamicSimulatorParams const&);
-    ForwardDynamicSimulatorParams FromParamBlock(ParamBlock const&);
+    ParamBlock ToParamBlock(const ForwardDynamicSimulatorParams&);
+    ForwardDynamicSimulatorParams FromParamBlock(const ParamBlock&);
 }

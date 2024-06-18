@@ -13,7 +13,7 @@
 #include <span>
 
 void osc::WriteOutputsAsCSV(
-    OpenSim::Component const& root,
+    const OpenSim::Component& root,
     std::span<const OutputExtractor> outputs,
     std::span<const SimulationReport> reports,
     std::ostream& out)

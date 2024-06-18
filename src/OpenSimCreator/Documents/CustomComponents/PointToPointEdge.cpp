@@ -17,7 +17,7 @@ void osc::fd::PointToPointEdge::generateDecorations(
     const SimTK::State& state,
     SimTK::Array_<SimTK::DecorativeGeometry>& appendOut) const
 {
-    EdgePoints const coords = getLocationsInGround(state);
+    const EdgePoints coords = getLocationsInGround(state);
 
     appendOut.push_back(CreateDecorativeArrow(
         coords.start,
@@ -26,7 +26,7 @@ void osc::fd::PointToPointEdge::generateDecorations(
     ));
 }
 
-EdgePoints osc::fd::PointToPointEdge::calcLocationsInGround(SimTK::State const& state) const
+EdgePoints osc::fd::PointToPointEdge::calcLocationsInGround(const SimTK::State& state) const
 {
     return {
         getConnectee<OpenSim::Point>("first_point").getLocationInGround(state),

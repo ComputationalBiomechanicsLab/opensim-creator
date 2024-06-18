@@ -11,7 +11,7 @@
 osc::ComponentRegistryEntryBase::ComponentRegistryEntryBase(
     std::string_view name_,
     std::string_view description_,
-    std::shared_ptr<OpenSim::Component const> prototype_) :
+    std::shared_ptr<const OpenSim::Component> prototype_) :
 
     m_Name{name_},
     m_Description{description_},

@@ -54,6 +54,6 @@ namespace osc::fd
     private:
         EdgePoints calcLocationsInGround(const SimTK::State&) const final;
 
-        std::pair<EdgePoints, EdgePoints> getBothEdgePoints(SimTK::State const&) const;
+        std::pair<EdgePoints, EdgePoints> getBothEdgePoints(const SimTK::State&) const;
     };
 }

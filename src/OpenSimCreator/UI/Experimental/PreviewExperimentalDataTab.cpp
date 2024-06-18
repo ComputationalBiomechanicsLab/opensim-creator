@@ -95,9 +95,9 @@ namespace
     // a sequence of matchers to test against
     //
     // if the next N columns don't match any matchers, assume the column is `ColumnDataType::Unknown`
-    std::vector<ColumnDataTypeMatcher> const& GetMatchers()
+    const std::vector<ColumnDataTypeMatcher>& GetMatchers()
     {
-        static std::vector<ColumnDataTypeMatcher> const s_Matchers = {
+        static const std::vector<ColumnDataTypeMatcher> s_Matchers = {
             {
                 ColumnDataType::PointForce,
                 {"_vx", "_vy", "_vz", "_px", "_py", "_pz"},
@@ -131,7 +131,7 @@ namespace
     }
 
     // returns the number of columns the data type would require
-    constexpr int NumColumnsRequiredBy(ColumnDataTypeMatcher const& matcher)
+    constexpr int NumColumnsRequiredBy(const ColumnDataTypeMatcher& matcher)
     {
         return NumElementsIn(matcher.columnDataType);
     }
@@ -155,7 +155,7 @@ namespace
     };
 
     // returns true if `s` ends with the given `suffix`
-    bool EndsWith(std::string const& s, std::string_view suffix)
+    bool EndsWith(const std::string& s, std::string_view suffix)
     {
         if (suffix.length() > s.length())
         {
@@ -166,7 +166,7 @@ namespace
     }
 
     // returns `true` if the provided labels [offset..offset+matcher.Suffixes.size()] all match up
-    bool IsMatch(OpenSim::Array<std::string> const& labels, int offset, ColumnDataTypeMatcher const& matcher)
+    bool IsMatch(const OpenSim::Array<std::string>& labels, int offset, const ColumnDataTypeMatcher& matcher)
     {
         int colsRemaining = labels.size() - offset;
         int numColsToTest = NumColumnsRequiredBy(matcher);
@@ -178,7 +178,7 @@ namespace
 
         for (int i = 0; i < numColsToTest; ++i)
         {
-            std::string const& label = labels[offset + i];
+            const std::string& label = labels[offset + i];
             CStringView requiredSuffix = matcher.suffixes[i];
 
             if (!EndsWith(label, requiredSuffix))
@@ -190,9 +190,9 @@ namespace
     }
 
     // returns the matching column data type for the next set of columns - if a match can be found
-    std::optional<ColumnDataTypeMatcher> TryMatchColumnsWithType(OpenSim::Array<std::string> const& labels, int offset)
+    std::optional<ColumnDataTypeMatcher> TryMatchColumnsWithType(const OpenSim::Array<std::string>& labels, int offset)
     {
-        for (ColumnDataTypeMatcher const& matcher : GetMatchers())
+        for (const ColumnDataTypeMatcher& matcher : GetMatchers())
         {
             if (IsMatch(labels, offset, matcher))
             {
@@ -203,7 +203,7 @@ namespace
     }
 
     // returns a string that has had the
-    std::string RemoveLastNCharacters(std::string const& s, size_t n)
+    std::string RemoveLastNCharacters(const std::string& s, size_t n)
     {
         if (n > s.length())
         {
@@ -214,7 +214,7 @@ namespace
     }
 
     // returns a sequence of parsed column descriptions, based on header labels
-    std::vector<ColumnDescription> ParseColumnDescriptions(OpenSim::Array<std::string> const& labels)
+    std::vector<ColumnDescription> ParseColumnDescriptions(const OpenSim::Array<std::string>& labels)
     {
         std::vector<ColumnDescription> rv;
         int offset = 1;  // offset 0 == "time" (skip it)
@@ -245,16 +245,16 @@ namespace
     };
 
     // returns the number of rows a loaded motion has
-    size_t NumRows(LoadedMotion const& lm)
+    size_t NumRows(const LoadedMotion& lm)
     {
         return lm.data.size() / lm.rowStride;
     }
 
     // compute the stride of the data columns
-    size_t CalcDataStride(std::span<ColumnDescription const> descriptions)
+    size_t CalcDataStride(std::span<const ColumnDescription> descriptions)
     {
         size_t sum = 0;
-        for (ColumnDescription const& d : descriptions)
+        for (const ColumnDescription& d : descriptions)
         {
             sum += NumElementsIn(d.dataType);
         }
@@ -262,13 +262,13 @@ namespace
     }
 
     // compute the total row stride (time + data columns)
-    size_t CalcRowStride(std::span<ColumnDescription const> descriptions)
+    size_t CalcRowStride(std::span<const ColumnDescription> descriptions)
     {
         return 1 + CalcDataStride(descriptions);
     }
 
     // load raw row values from an OpenSim::Storage class
-    std::vector<double> LoadRowValues(OpenSim::Storage const& storage, size_t rowStride)
+    std::vector<double> LoadRowValues(const OpenSim::Storage& storage, size_t rowStride)
     {
         size_t numDataCols = rowStride - 1;
         int numRows = storage.getSize();
@@ -280,9 +280,9 @@ namespace
         // pack the data into the data vector
         for (int row = 0; row < storage.getSize(); ++row)
         {
-            OpenSim::StateVector const& v = *storage.getStateVector(row);
+            const OpenSim::StateVector& v = *storage.getStateVector(row);
             double t = v.getTime();
-            OpenSim::Array<double> const& vs = v.getData();
+            const OpenSim::Array<double>& vs = v.getData();
             size_t numCols = min(static_cast<size_t>(v.getSize()), numDataCols);
 
             rv.push_back(t);
@@ -301,7 +301,7 @@ namespace
     }
 
     // defines a "consumer" that "eats" decorations emitted from the various helper methods
-    using DecorationConsumer = std::function<void(SceneDecoration const&)>;
+    using DecorationConsumer = std::function<void(const SceneDecoration&)>;
 
     // retuns a scene decoration for the floor grid
     SceneDecoration GenerateFloorGrid()
@@ -309,7 +309,7 @@ namespace
         Transform t;
         t.rotation = angle_axis(180_deg, Vec3{-1.0f, 0.0f, 0.0f});
         t.scale = {50.0f, 50.0f, 1.0f};
-        Color const color = {128.0f/255.0f, 128.0f/255.0f, 128.0f/255.0f, 1.0f};
+        const Color color = {128.0f/255.0f, 128.0f/255.0f, 128.0f/255.0f, 1.0f};
 
         return SceneDecoration
         {
@@ -337,7 +337,7 @@ namespace
     };
 
     // writes relevant geometry to output for drawing an arrow between two points in space
-    void GenerateDecorations(DecorativeArrow const& arrow, DecorationConsumer& out)
+    void GenerateDecorations(const DecorativeArrow& arrow, DecorationConsumer& out)
     {
         // calculate arrow vectors/directions
         const Vec3 startToFinishVec = arrow.p1 - arrow.p0;
@@ -393,15 +393,15 @@ namespace
 
     // templated: generate decorations for a compile-time-known type of column data (requires specialization)
     template<ColumnDataType T>
-    void GenerateDecorations(LoadedMotion const& motion, size_t row, ColumnDescription const& columnDescription, DecorationConsumer& out);
+    void GenerateDecorations(const LoadedMotion& motion, size_t row, const ColumnDescription& columnDescription, DecorationConsumer& out);
 
     // template specialization: generate decorations for orientation data
     template<>
-    void GenerateDecorations<ColumnDataType::Orientation>(LoadedMotion const& motion, size_t row, ColumnDescription const& columnDescription, DecorationConsumer& out)
+    void GenerateDecorations<ColumnDataType::Orientation>(const LoadedMotion& motion, size_t row, const ColumnDescription& columnDescription, DecorationConsumer& out)
     {
         OSC_ASSERT(columnDescription.dataType == ColumnDataType::Orientation);
 
-        size_t const dataStart = motion.rowStride * row + columnDescription.offset;
+        const size_t dataStart = motion.rowStride * row + columnDescription.offset;
         Quat q
         {
             static_cast<float>(motion.data.at(dataStart)),
@@ -422,7 +422,7 @@ namespace
     }
 
     // generic: generate decorations for a runtime-checked type of column data
-    void GenerateDecorations(LoadedMotion const& motion, size_t row, ColumnDescription const& desc, DecorationConsumer& out)
+    void GenerateDecorations(const LoadedMotion& motion, size_t row, const ColumnDescription& desc, DecorationConsumer& out)
     {
         if (desc.dataType == ColumnDataType::Orientation)
         {
@@ -431,19 +431,19 @@ namespace
     }
 
     // generate decorations for a all columns of a particular row in the provided motion data
-    void GenerateDecorations(LoadedMotion const& motion, size_t row, DecorationConsumer& out)
+    void GenerateDecorations(const LoadedMotion& motion, size_t row, DecorationConsumer& out)
     {
         // generate decorations for each "column" in the row
-        for (ColumnDescription const& desc : motion.columnDescriptions)
+        for (const ColumnDescription& desc : motion.columnDescriptions)
         {
             GenerateDecorations(motion, row, desc, out);
         }
     }
 
     // returns a parsed motion, read from disk motion from disk
-    [[maybe_unused]] LoadedMotion LoadData(std::filesystem::path const& sourceFile)
+    [[maybe_unused]] LoadedMotion LoadData(const std::filesystem::path& sourceFile)
     {
-        OpenSim::Storage const storage{sourceFile.string()};
+        const OpenSim::Storage storage{sourceFile.string()};
 
         LoadedMotion rv;
         rv.columnDescriptions = ParseColumnDescriptions(storage.getColumnLabels());
@@ -463,7 +463,7 @@ namespace
 class osc::PreviewExperimentalDataTab::Impl final : public StandardTabImpl {
 public:
 
-    explicit Impl(ParentPtr<ITabHost> const&) :
+    explicit Impl(const ParentPtr<ITabHost>&) :
         StandardTabImpl{ICON_FA_DOT_CIRCLE " Experimental Data"}
     {}
 
@@ -531,7 +531,7 @@ private:
     {
         m_Decorations.clear();
         m_Decorations.push_back(GenerateFloorGrid());
-        DecorationConsumer c = [this](SceneDecoration const& d) { m_Decorations.push_back(d); };
+        DecorationConsumer c = [this](const SceneDecoration& d) { m_Decorations.push_back(d); };
         GenerateDecorations(*m_Motion, m_ActiveRow, c);
         update_scene_bvh(m_Decorations, m_SceneBVH);
     }
@@ -557,7 +557,7 @@ private:
     }
 
     // scene state
-    std::shared_ptr<LoadedMotion const> m_Motion = std::make_shared<LoadedMotion>();
+    std::shared_ptr<const LoadedMotion> m_Motion = std::make_shared<LoadedMotion>();
     int m_ActiveRow = NumRows(*m_Motion) <= 0 ? -1 : 0;
 
     // extra scene state
@@ -578,17 +578,14 @@ private:
 };
 
 
-// public API (PIMPL)
-
 CStringView osc::PreviewExperimentalDataTab::id() noexcept
 {
     return "OpenSim/Experimental/PreviewExperimentalData";
 }
 
-osc::PreviewExperimentalDataTab::PreviewExperimentalDataTab(ParentPtr<ITabHost> const& ptr) :
+osc::PreviewExperimentalDataTab::PreviewExperimentalDataTab(const ParentPtr<ITabHost>& ptr) :
     m_Impl{std::make_unique<Impl>(ptr)}
 {}
-
 osc::PreviewExperimentalDataTab::PreviewExperimentalDataTab(PreviewExperimentalDataTab&&) noexcept = default;
 PreviewExperimentalDataTab& osc::PreviewExperimentalDataTab::operator=(PreviewExperimentalDataTab&&) noexcept = default;
 osc::PreviewExperimentalDataTab::~PreviewExperimentalDataTab() noexcept = default;
@@ -613,7 +610,7 @@ void osc::PreviewExperimentalDataTab::impl_on_unmount()
     m_Impl->on_unmount();
 }
 
-bool osc::PreviewExperimentalDataTab::impl_on_event(SDL_Event const& e)
+bool osc::PreviewExperimentalDataTab::impl_on_event(const SDL_Event& e)
 {
     return m_Impl->on_event(e);
 }

@@ -17,7 +17,7 @@ namespace osc
         );
         SimulationToolbar(const SimulationToolbar&) = delete;
         SimulationToolbar(SimulationToolbar&&) noexcept;
-        SimulationToolbar& operator=(SimulationToolbar const&) = delete;
+        SimulationToolbar& operator=(const SimulationToolbar&) = delete;
         SimulationToolbar& operator=(SimulationToolbar&&) noexcept;
         ~SimulationToolbar() noexcept;
 

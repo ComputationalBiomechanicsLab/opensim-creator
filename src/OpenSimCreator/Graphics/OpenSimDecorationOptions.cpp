@@ -17,8 +17,7 @@ osc::OpenSimDecorationOptions::OpenSimDecorationOptions() :
     m_MuscleColoringStyle{MuscleColoringStyle::Default},
     m_MuscleSizingStyle{MuscleSizingStyle::Default},
     m_Flags{OpenSimDecorationOptionFlags::Default}
-{
-}
+{}
 
 MuscleDecorationStyle osc::OpenSimDecorationOptions::getMuscleDecorationStyle() const
 {
@@ -155,22 +154,22 @@ void osc::OpenSimDecorationOptions::setShouldShowContactForces(bool v)
     SetOption(m_Flags, OpenSimDecorationOptionFlags::ShouldShowContactForces, v);
 }
 
-void osc::OpenSimDecorationOptions::forEachOptionAsAppSettingValue(std::function<void(std::string_view, AppSettingValue const&)> const& callback) const
+void osc::OpenSimDecorationOptions::forEachOptionAsAppSettingValue(const std::function<void(std::string_view, const AppSettingValue&)>& callback) const
 {
     callback("muscle_decoration_style", AppSettingValue{GetMuscleDecorationStyleMetadata(m_MuscleDecorationStyle).id});
     callback("muscle_coloring_style", AppSettingValue{GetMuscleColoringStyleMetadata(m_MuscleColoringStyle).id});
     callback("muscle_sizing_style", AppSettingValue{GetMuscleSizingStyleMetadata(m_MuscleSizingStyle).id});
     for (size_t i = 0; i < num_flags<OpenSimDecorationOptionFlags>(); ++i)
     {
-        auto const& meta = GetIthOptionMetadata(i);
-        bool const v = m_Flags & GetIthOption(i);
+        const auto& meta = GetIthOptionMetadata(i);
+        const bool v = m_Flags & GetIthOption(i);
         callback(meta.id, AppSettingValue{v});
     }
 }
 
 void osc::OpenSimDecorationOptions::tryUpdFromValues(
     std::string_view prefix,
-    std::unordered_map<std::string, AppSettingValue> const& lut)
+    const std::unordered_map<std::string, AppSettingValue>& lut)
 {
     // looks up a single element in the lut
     auto lookup = [
@@ -186,8 +185,8 @@ void osc::OpenSimDecorationOptions::tryUpdFromValues(
 
     if (auto* appVal = lookup("muscle_decoration_style"); appVal->type() == AppSettingValueType::String)
     {
-        auto const metadata = GetAllMuscleDecorationStyleMetadata();
-        auto const it = rgs::find(metadata, appVal->to_string(), [](auto const& m) { return m.id; });
+        const auto metadata = GetAllMuscleDecorationStyleMetadata();
+        const auto it = rgs::find(metadata, appVal->to_string(), [](const auto& m) { return m.id; });
         if (it != metadata.end()) {
             m_MuscleDecorationStyle = it->value;
         }
@@ -195,8 +194,8 @@ void osc::OpenSimDecorationOptions::tryUpdFromValues(
 
     if (auto* appVal = lookup("muscle_coloring_style"); appVal->type() == AppSettingValueType::String)
     {
-        auto const metadata = GetAllMuscleColoringStyleMetadata();
-        auto const it = rgs::find(metadata, appVal->to_string(), [](auto const& m) { return m.id; });
+        const auto metadata = GetAllMuscleColoringStyleMetadata();
+        const auto it = rgs::find(metadata, appVal->to_string(), [](const auto& m) { return m.id; });
         if (it != metadata.end()) {
             m_MuscleColoringStyle = it->value;
         }
@@ -204,8 +203,8 @@ void osc::OpenSimDecorationOptions::tryUpdFromValues(
 
     if (auto* appVal = lookup("muscle_sizing_style"); appVal->type() == AppSettingValueType::String)
     {
-        auto const metadata = GetAllMuscleSizingStyleMetadata();
-        auto const it = rgs::find(metadata, appVal->to_string(), [](auto const& m) { return m.id; });
+        const auto metadata = GetAllMuscleSizingStyleMetadata();
+        const auto it = rgs::find(metadata, appVal->to_string(), [](const auto& m) { return m.id; });
         if (it != metadata.end()) {
             m_MuscleSizingStyle = it->value;
         }
@@ -213,10 +212,10 @@ void osc::OpenSimDecorationOptions::tryUpdFromValues(
 
     for (size_t i = 0; i < num_flags<OpenSimDecorationOptionFlags>(); ++i)
     {
-        auto const& metadata = GetIthOptionMetadata(i);
+        const auto& metadata = GetIthOptionMetadata(i);
         if (auto* appVal = lookup(metadata.id); appVal->type() == AppSettingValueType::Bool)
         {
-            bool const v = appVal->to_bool();
+            const bool v = appVal->to_bool();
             SetOption(m_Flags, GetIthOption(i), v);
         }
     }

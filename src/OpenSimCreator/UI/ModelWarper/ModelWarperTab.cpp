@@ -26,7 +26,7 @@ namespace
 
 class osc::mow::ModelWarperTab::Impl final : public StandardTabImpl {
 public:
-    explicit Impl(ParentPtr<ITabHost> const& tabHost) :
+    explicit Impl(const ParentPtr<ITabHost>& tabHost) :
         StandardTabImpl{c_TabStringID},
         m_TabHost{tabHost}
     {
@@ -76,7 +76,7 @@ private:
         App::upd().make_main_loop_waiting();
     }
 
-    bool impl_on_event(SDL_Event const&) final
+    bool impl_on_event(const SDL_Event&) final
     {
         return false;
     }
@@ -106,17 +106,14 @@ private:
 };
 
 
-// public API
-
 CStringView osc::mow::ModelWarperTab::id()
 {
     return c_TabStringID;
 }
 
-osc::mow::ModelWarperTab::ModelWarperTab(ParentPtr<ITabHost> const& tabHost) :
+osc::mow::ModelWarperTab::ModelWarperTab(const ParentPtr<ITabHost>& tabHost) :
     m_Impl{std::make_unique<Impl>(tabHost)}
 {}
-
 osc::mow::ModelWarperTab::ModelWarperTab(ModelWarperTab&&) noexcept = default;
 osc::mow::ModelWarperTab& osc::mow::ModelWarperTab::operator=(ModelWarperTab&&) noexcept = default;
 osc::mow::ModelWarperTab::~ModelWarperTab() noexcept = default;
@@ -141,7 +138,7 @@ void osc::mow::ModelWarperTab::impl_on_unmount()
     m_Impl->on_unmount();
 }
 
-bool osc::mow::ModelWarperTab::impl_on_event(SDL_Event const& e)
+bool osc::mow::ModelWarperTab::impl_on_event(const SDL_Event& e)
 {
     return m_Impl->on_event(e);
 }

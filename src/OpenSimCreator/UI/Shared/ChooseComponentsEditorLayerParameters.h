@@ -16,7 +16,7 @@ namespace osc
         std::string popupHeaderText = "Choose Something";
 
         // predicate that is used to test whether the element is choose-able
-        std::function<bool(OpenSim::Component const&)> canChooseItem = [](OpenSim::Component const&)
+        std::function<bool(const OpenSim::Component&)> canChooseItem = [](const OpenSim::Component&)
         {
             return true;
         };
@@ -27,7 +27,7 @@ namespace osc
 
         size_t numComponentsUserMustChoose = 1;
 
-        std::function<bool(std::unordered_set<std::string> const&)> onUserFinishedChoosing = [](std::unordered_set<std::string> const&)
+        std::function<bool(const std::unordered_set<std::string>&)> onUserFinishedChoosing = [](const std::unordered_set<std::string>&)
         {
             return true;
         };

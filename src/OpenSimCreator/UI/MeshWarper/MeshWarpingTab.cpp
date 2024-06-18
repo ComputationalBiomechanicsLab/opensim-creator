@@ -27,7 +27,7 @@ using namespace osc;
 class osc::MeshWarpingTab::Impl final {
 public:
 
-    explicit Impl(ParentPtr<ITabHost> const& parent_) : m_Parent{parent_}
+    explicit Impl(const ParentPtr<ITabHost>& parent_) : m_Parent{parent_}
     {
         m_PanelManager->register_toggleable_panel(
             "Source Mesh",
@@ -113,7 +113,7 @@ public:
         App::upd().make_main_loop_polling();
     }
 
-    bool onEvent(SDL_Event const& e)
+    bool onEvent(const SDL_Event& e)
     {
         if (e.type == SDL_KEYDOWN)
         {
@@ -152,9 +152,9 @@ public:
     }
 
 private:
-    bool onKeydownEvent(SDL_KeyboardEvent const& e)
+    bool onKeydownEvent(const SDL_KeyboardEvent& e)
     {
-        bool const ctrlOrSuperDown = ui::is_ctrl_or_super_down();
+        const bool ctrlOrSuperDown = ui::is_ctrl_or_super_down();
 
         if (ctrlOrSuperDown && e.keysym.mod & KMOD_SHIFT && e.keysym.sym == SDLK_z)
         {
@@ -214,18 +214,14 @@ private:
 };
 
 
-// public API (PIMPL)
-
 CStringView osc::MeshWarpingTab::id()
 {
     return "OpenSim/Warping";
 }
 
-osc::MeshWarpingTab::MeshWarpingTab(ParentPtr<ITabHost> const& parent_) :
+osc::MeshWarpingTab::MeshWarpingTab(const ParentPtr<ITabHost>& parent_) :
     m_Impl{std::make_unique<Impl>(parent_)}
-{
-}
-
+{}
 osc::MeshWarpingTab::MeshWarpingTab(MeshWarpingTab&&) noexcept = default;
 osc::MeshWarpingTab& osc::MeshWarpingTab::operator=(MeshWarpingTab&&) noexcept = default;
 osc::MeshWarpingTab::~MeshWarpingTab() noexcept = default;
@@ -250,7 +246,7 @@ void osc::MeshWarpingTab::impl_on_unmount()
     m_Impl->on_unmount();
 }
 
-bool osc::MeshWarpingTab::impl_on_event(SDL_Event const& e)
+bool osc::MeshWarpingTab::impl_on_event(const SDL_Event& e)
 {
     return m_Impl->onEvent(e);
 }

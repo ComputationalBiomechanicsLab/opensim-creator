@@ -70,7 +70,7 @@ namespace
 // the joint) but it shouldn't hard crash (it is)
 TEST(OpenSimHelpers, DISABLED_CanSwapACustomJointForAFreeJoint)
 {
-    auto const config = LoadOpenSimCreatorConfig();
+    const auto config = LoadOpenSimCreatorConfig();
     GlobalInitOpenSim(config);  // ensure muscles are available etc.
 
     std::filesystem::path modelPath = config.resource_directory() / "models" / "Leg39" / "leg39.osim";
@@ -80,7 +80,7 @@ TEST(OpenSimHelpers, DISABLED_CanSwapACustomJointForAFreeJoint)
     model.updModel();  // should be fine, before any edits
     model.getState();  // also should be fine
 
-    auto const& registry = GetComponentRegistry<OpenSim::Joint>();
+    const auto& registry = GetComponentRegistry<OpenSim::Joint>();
     auto maybeIdx = IndexOf<OpenSim::FreeJoint>(registry);
     ASSERT_TRUE(maybeIdx) << "can't find FreeJoint in type registry?";
     auto idx = *maybeIdx;
@@ -88,19 +88,19 @@ TEST(OpenSimHelpers, DISABLED_CanSwapACustomJointForAFreeJoint)
     // cache joint paths, because we are changing the model during this test and it might
     // invalidate the model's `getComponentList` function
     std::vector<OpenSim::ComponentPath> allJointPaths;
-    for (OpenSim::Joint const& joint : model.getModel().getComponentList<OpenSim::Joint>())
+    for (const OpenSim::Joint& joint : model.getModel().getComponentList<OpenSim::Joint>())
     {
         allJointPaths.push_back(joint.getAbsolutePath());
     }
 
-    for (OpenSim::ComponentPath const& p : allJointPaths)
+    for (const OpenSim::ComponentPath& p : allJointPaths)
     {
-        auto const& joint = model.getModel().getComponent<OpenSim::Joint>(p);
+        const auto& joint = model.getModel().getComponent<OpenSim::Joint>(p);
 
         std::string msg = "changed " + joint.getAbsolutePathString();
 
-        OpenSim::Component const& parent = joint.getOwner();
-        auto const* jointSet = dynamic_cast<OpenSim::JointSet const*>(&parent);
+        const OpenSim::Component& parent = joint.getOwner();
+        const auto* jointSet = dynamic_cast<const OpenSim::JointSet*>(&parent);
 
         if (!jointSet)
         {
@@ -110,7 +110,7 @@ TEST(OpenSimHelpers, DISABLED_CanSwapACustomJointForAFreeJoint)
         int jointIdx = -1;
         for (int i = 0; i < jointSet->getSize(); ++i)
         {
-            OpenSim::Joint const* j = &(*jointSet)[i];
+            const OpenSim::Joint* j = &(*jointSet)[i];
             if (j == &joint)
             {
                 jointIdx = i;
@@ -135,7 +135,7 @@ TEST(OpenSimHelpers, DISABLED_CanSwapACustomJointForAFreeJoint)
 TEST(OpenSimHelpers, GetAbsolutePathStringWorksForModel)
 {
     OpenSim::Model m;
-    std::string const s = GetAbsolutePathString(m);
+    const std::string s = GetAbsolutePathString(m);
     ASSERT_EQ(s, "/");
 }
 
@@ -149,12 +149,12 @@ TEST(OpenSimHelpers, GetAbsolutePathStringWithOutparamWorksForModel)
 
 TEST(OpenSimHelpers, GetAbsolutePathStringReturnsSameResultAsOpenSimVersionForComplexModel)
 {
-    auto const config = LoadOpenSimCreatorConfig();
+    const auto config = LoadOpenSimCreatorConfig();
     std::filesystem::path modelPath = config.resource_directory() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
     OpenSim::Model m{modelPath.string()};
     std::string outparam;
-    for (OpenSim::Component const& c : m.getComponentList())
+    for (const OpenSim::Component& c : m.getComponentList())
     {
         // test both the "pure" and "assigning" versions at the same time
         GetAbsolutePathString(c, outparam);
@@ -165,11 +165,11 @@ TEST(OpenSimHelpers, GetAbsolutePathStringReturnsSameResultAsOpenSimVersionForCo
 
 TEST(OpenSimHelpers, GetAbsolutePathReturnsSameResultAsOpenSimVersionForComplexModel)
 {
-    auto const config = LoadOpenSimCreatorConfig();
+    const auto config = LoadOpenSimCreatorConfig();
     std::filesystem::path modelPath = config.resource_directory() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
     OpenSim::Model m{modelPath.string()};
-    for (OpenSim::Component const& c : m.getComponentList())
+    for (const OpenSim::Component& c : m.getComponentList())
     {
         ASSERT_EQ(c.getAbsolutePath(), GetAbsolutePath(c));
     }
@@ -182,11 +182,11 @@ TEST(OpenSimHelpers, GetAbsolutePathOrEmptyReuturnsEmptyIfPassedANullptr)
 
 TEST(OpenSimHelpers, GetAbsolutePathOrEmptyReuturnsSameResultAsOpenSimVersionForComplexModel)
 {
-    auto const config = LoadOpenSimCreatorConfig();
+    const auto config = LoadOpenSimCreatorConfig();
     std::filesystem::path modelPath = config.resource_directory() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
     OpenSim::Model m{modelPath.string()};
-    for (OpenSim::Component const& c : m.getComponentList())
+    for (const OpenSim::Component& c : m.getComponentList())
     {
         ASSERT_EQ(c.getAbsolutePath(), GetAbsolutePathOrEmpty(&c));
     }
@@ -196,16 +196,16 @@ TEST(OpenSimHelpers, GetAbsolutePathOrEmptyReuturnsSameResultAsOpenSimVersionFor
 // model without anything exploding (deletion failure is ok, though)
 TEST(OpenSimHelpers, CanTryToDeleteEveryComponentFromComplicatedModelWithNoFaultsOrExceptions)
 {
-    auto const config = LoadOpenSimCreatorConfig();
+    const auto config = LoadOpenSimCreatorConfig();
     std::filesystem::path modelPath = config.resource_directory() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
-    OpenSim::Model const originalModel{modelPath.string()};
+    const OpenSim::Model originalModel{modelPath.string()};
     OpenSim::Model modifiedModel{originalModel};
     InitializeModel(modifiedModel);
 
     // iterate over the original (const) model, so that iterator
     // invalidation can't happen
-    for (OpenSim::Component const& c : originalModel.getComponentList()) {
+    for (const OpenSim::Component& c : originalModel.getComponentList()) {
         // if the component still exists in the to-be-deleted-from model
         // (it may have been indirectly deleted), then try to delete it
         if (OpenSim::Component* lookup = FindComponentMut(modifiedModel, c.getAbsolutePath())) {
@@ -256,7 +256,7 @@ TEST(OpenSimHelpers, AddModelComponentAddsComponentToModelComponentSet)
     FinalizeConnections(m);
 
     ASSERT_EQ(m.get_ComponentSet().getSize(), 1);
-    ASSERT_EQ(dynamic_cast<OpenSim::Component const*>(&m.get_ComponentSet()[0]), dynamic_cast<OpenSim::Component const*>(&s));
+    ASSERT_EQ(dynamic_cast<const OpenSim::Component*>(&m.get_ComponentSet()[0]), dynamic_cast<const OpenSim::Component*>(&s));
 }
 
 // mid-level repro for (#773)
@@ -267,7 +267,7 @@ TEST(OpenSimHelpers, AddModelComponentAddsComponentToModelComponentSet)
 // that `OpenSim` doesn't do
 TEST(OpenSimHelpers, DISABLED_FinalizeConnectionsWithUnusualJointTopologyDoesNotSegfault)
 {
-    std::filesystem::path const brokenFilePath =
+    const std::filesystem::path brokenFilePath =
         std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "opensim-creator_773-2_repro.osim";
     OpenSim::Model model{brokenFilePath.string()};
     model.finalizeFromProperties();
@@ -283,7 +283,7 @@ TEST(OpenSimHelpers, ForEachIsNotCalledOnRootComponent)
     Root root;
     root.finalizeFromProperties();
     size_t n = 0;
-    ForEachComponent(root, [&n](OpenSim::Component const&){ ++n; });
+    ForEachComponent(root, [&n](const OpenSim::Component&){ ++n; });
     ASSERT_EQ(n, 2);
 }
 
@@ -310,7 +310,7 @@ TEST(OpenSimHelpers, WriteComponentTopologyGraphAsDotViz)
     std::stringstream ss;
     WriteComponentTopologyGraphAsDotViz(root, ss);
 
-    std::string const rv = ss.str();
+    const std::string rv = ss.str();
     ASSERT_TRUE(contains(rv, "digraph Component"));
     ASSERT_TRUE(contains(rv, R"("/" -> "/child1")"));
     ASSERT_TRUE(contains(rv, R"("/" -> "/child2")"));
@@ -325,22 +325,22 @@ TEST(OpenSimHelpers, GetAllWrapObjectsReferencedByWorksAsExpected)
         std::vector<std::string> associatedWrapObjectNames;
     };
 
-    auto const expectedWraps = std::to_array<ExpectedWrap>({
+    const auto expectedWraps = std::to_array<ExpectedWrap>({
         {OpenSim::ComponentPath{"/forceset/psoas_r/path"}, {"PS_at_brim_r"}},
         {OpenSim::ComponentPath{"/forceset/vasmed_l/path"}, {"KnExt_at_fem_l"}},
         {OpenSim::ComponentPath{"/forceset/gaslat_r/path"}, {"GasLat_at_shank_r", "Gastroc_at_condyles_r"}},
     });
 
-    auto const config = LoadOpenSimCreatorConfig();
+    const auto config = LoadOpenSimCreatorConfig();
     std::filesystem::path modelPath = config.resource_directory() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
     OpenSim::Model m{modelPath.string()};
     InitializeModel(m);
     InitializeState(m);
 
-    for (auto const& [geomAbsPath, expectedWrapObjectNames] : expectedWraps) {
-        auto const* gp = FindComponent<OpenSim::GeometryPath>(m, geomAbsPath);
+    for (const auto& [geomAbsPath, expectedWrapObjectNames] : expectedWraps) {
+        const auto* gp = FindComponent<OpenSim::GeometryPath>(m, geomAbsPath);
         OSC_ASSERT_ALWAYS(gp != nullptr && "maybe the rajagopal model has changed?");
-        for (OpenSim::WrapObject const* wo : GetAllWrapObjectsReferencedBy(*gp)) {
+        for (const OpenSim::WrapObject* wo : GetAllWrapObjectsReferencedBy(*gp)) {
             ASSERT_TRUE(cpp23::contains(expectedWrapObjectNames, wo->getName()));
         }
     }

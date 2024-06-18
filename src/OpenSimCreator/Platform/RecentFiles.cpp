@@ -34,11 +34,11 @@ namespace
 
     void SortNewestToOldest(std::vector<RecentFile>& files)
     {
-        rgs::sort(files, rgs::greater{}, [](RecentFile const& rf) { return rf.lastOpenedUnixTimestamp; });
+        rgs::sort(files, rgs::greater{}, [](const RecentFile& rf) { return rf.lastOpenedUnixTimestamp; });
     }
 
     // load the "recent files" file that the application persists to disk
-    std::vector<RecentFile> LoadRecentFilesFile(std::filesystem::path const& p)
+    std::vector<RecentFile> LoadRecentFilesFile(const std::filesystem::path& p)
     {
         if (!std::filesystem::exists(p))
         {
@@ -83,7 +83,7 @@ namespace
     }
 
     // returns the filesystem path to the "recent files" file
-    std::filesystem::path GetRecentFilesFilePath(std::filesystem::path const& userDataDirPath)
+    std::filesystem::path GetRecentFilesFilePath(const std::filesystem::path& userDataDirPath)
     {
         return userDataDirPath / "recent_files.txt";
     }
@@ -101,10 +101,10 @@ osc::RecentFiles::RecentFiles(std::filesystem::path recentFilesFile) :
 {
 }
 
-void osc::RecentFiles::push_back(std::filesystem::path const& path)
+void osc::RecentFiles::push_back(const std::filesystem::path& path)
 {
     // remove duplicates
-    std::erase_if(m_Files, [&path](RecentFile const& f)
+    std::erase_if(m_Files, [&path](const RecentFile& f)
     {
         return f.path == path;
     });
@@ -130,10 +130,10 @@ void osc::RecentFiles::sync()
     }
 
     // write up-to the first 10 entries
-    size_t const numFilesToWrite = min(m_Files.size(), c_MaxRecentFileEntries);
+    const size_t numFilesToWrite = min(m_Files.size(), c_MaxRecentFileEntries);
     for (size_t i = 0; i < numFilesToWrite; ++i)
     {
-        RecentFile const& rf = m_Files[i];
+        const RecentFile& rf = m_Files[i];
         fd << rf.lastOpenedUnixTimestamp.count() << ' ' << rf.path << '\n';
     }
 }

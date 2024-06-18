@@ -27,14 +27,14 @@ namespace osc::mi
     class MIObject {
     protected:
         MIObject() = default;
-        MIObject(MIObject const&) = default;
+        MIObject(const MIObject&) = default;
         MIObject(MIObject&&) noexcept = default;
-        MIObject& operator=(MIObject const&) = default;
+        MIObject& operator=(const MIObject&) = default;
         MIObject& operator=(MIObject&&) noexcept = default;
     public:
         virtual ~MIObject() noexcept = default;
 
-        MIClass const& getClass() const
+        const MIClass& getClass() const
         {
             return implGetClass();
         }
@@ -99,61 +99,61 @@ namespace osc::mi
             implSetLabel(newLabel);
         }
 
-        Transform getXForm(IObjectFinder const& lookup) const
+        Transform getXForm(const IObjectFinder& lookup) const
         {
             return implGetXform(lookup);
         }
-        void setXform(IObjectFinder const& lookup, Transform const& newTransform)
+        void setXform(const IObjectFinder& lookup, const Transform& newTransform)
         {
             implSetXform(lookup, newTransform);
         }
 
-        Vec3 getPos(IObjectFinder const& lookup) const
+        Vec3 getPos(const IObjectFinder& lookup) const
         {
             return getXForm(lookup).position;
         }
-        void setPos(IObjectFinder const& lookup, Vec3 const& newPos)
+        void setPos(const IObjectFinder& lookup, const Vec3& newPos)
         {
             setXform(lookup, getXForm(lookup).with_position(newPos));
         }
 
-        Vec3 getScale(IObjectFinder const& lookup) const
+        Vec3 getScale(const IObjectFinder& lookup) const
         {
             return getXForm(lookup).scale;
         }
 
-        void setScale(IObjectFinder const& lookup, Vec3 const& newScale)
+        void setScale(const IObjectFinder& lookup, const Vec3& newScale)
         {
             setXform(lookup, getXForm(lookup).with_scale(newScale));
         }
 
-        Quat rotation(IObjectFinder const& lookup) const
+        Quat rotation(const IObjectFinder& lookup) const
         {
             return getXForm(lookup).rotation;
         }
 
-        void set_rotation(IObjectFinder const& lookup, Quat const& newRotation)
+        void set_rotation(const IObjectFinder& lookup, const Quat& newRotation)
         {
             setXform(lookup, getXForm(lookup).with_rotation(newRotation));
         }
 
-        AABB calcBounds(IObjectFinder const& lookup) const
+        AABB calcBounds(const IObjectFinder& lookup) const
         {
             return implCalcBounds(lookup);
         }
 
-        void applyTranslation(IObjectFinder const& lookup, Vec3 const& translation)
+        void applyTranslation(const IObjectFinder& lookup, const Vec3& translation)
         {
             setPos(lookup, getPos(lookup) + translation);
         }
 
         void applyRotation(
-            IObjectFinder const& lookup,
-            Eulers const& eulerAngles,
-            Vec3 const& rotationCenter
+            const IObjectFinder& lookup,
+            const Eulers& eulerAngles,
+            const Vec3& rotationCenter
         );
 
-        void applyScale(IObjectFinder const& lookup, Vec3 const& scaleFactors)
+        void applyScale(const IObjectFinder& lookup, const Vec3& scaleFactors)
         {
             setScale(lookup, getScale(lookup) * scaleFactors);
         }
@@ -199,7 +199,7 @@ namespace osc::mi
         ) const;
 
     private:
-        virtual MIClass const& implGetClass() const = 0;
+        virtual const MIClass& implGetClass() const = 0;
         virtual std::unique_ptr<MIObject> implClone() const = 0;
         virtual ConstSceneElVariant implToVariant() const = 0;
         virtual SceneElVariant implToVariant() = 0;
@@ -215,9 +215,9 @@ namespace osc::mi
         virtual CStringView implGetLabel() const = 0;
         virtual void implSetLabel(std::string_view) {}
 
-        virtual Transform implGetXform(IObjectFinder const&) const = 0;
-        virtual void implSetXform(IObjectFinder const&, Transform const&) {}
+        virtual Transform implGetXform(const IObjectFinder&) const = 0;
+        virtual void implSetXform(const IObjectFinder&, const Transform&) {}
 
-        virtual AABB implCalcBounds(IObjectFinder const&) const = 0;
+        virtual AABB implCalcBounds(const IObjectFinder&) const = 0;
     };
 }

@@ -26,12 +26,12 @@ namespace osc
         //       to handle it (e.g. mutexes) appropriately
         ForwardDynamicSimulator(
             BasicModelStatePair,
-            ForwardDynamicSimulatorParams const&,
+            const ForwardDynamicSimulatorParams&,
             std::function<void(SimulationReport)> onReportFromBgThread
         );
-        ForwardDynamicSimulator(ForwardDynamicSimulator const&) = delete;
+        ForwardDynamicSimulator(const ForwardDynamicSimulator&) = delete;
         ForwardDynamicSimulator(ForwardDynamicSimulator&&) noexcept;
-        ForwardDynamicSimulator& operator=(ForwardDynamicSimulator const&) = delete;
+        ForwardDynamicSimulator& operator=(const ForwardDynamicSimulator&) = delete;
         ForwardDynamicSimulator& operator=(ForwardDynamicSimulator&&) noexcept;
         ~ForwardDynamicSimulator() noexcept;
 
@@ -46,7 +46,7 @@ namespace osc
         // synchronous (blocks until it stops)
         void stop();
 
-        ForwardDynamicSimulatorParams const& params() const;
+        const ForwardDynamicSimulatorParams& params() const;
 
     private:
         class Impl;

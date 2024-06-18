@@ -37,32 +37,32 @@ CStringView osc::OverlayDecorationOptions::getOptionGroupLabel(ptrdiff_t i) cons
 
 bool osc::OverlayDecorationOptions::getDrawXZGrid() const
 {
-    return m_Flags & OverlayDecorationOptionFlags::drawXZGrid;
+    return m_Flags & OverlayDecorationOptionFlags::DrawXZGrid;
 }
 
 void osc::OverlayDecorationOptions::setDrawXZGrid(bool v)
 {
-    SetOption(m_Flags, OverlayDecorationOptionFlags::drawXZGrid, v);
+    SetOption(m_Flags, OverlayDecorationOptionFlags::DrawXZGrid, v);
 }
 
 bool osc::OverlayDecorationOptions::getDrawXYGrid() const
 {
-    return m_Flags & OverlayDecorationOptionFlags::drawXYGrid;
+    return m_Flags & OverlayDecorationOptionFlags::DrawXYGrid;
 }
 
 void osc::OverlayDecorationOptions::setDrawXYGrid(bool v)
 {
-    SetOption(m_Flags, OverlayDecorationOptionFlags::drawXYGrid, v);
+    SetOption(m_Flags, OverlayDecorationOptionFlags::DrawXYGrid, v);
 }
 
 bool osc::OverlayDecorationOptions::getDrawYZGrid() const
 {
-    return m_Flags & OverlayDecorationOptionFlags::drawYZGrid;
+    return m_Flags & OverlayDecorationOptionFlags::DrawYZGrid;
 }
 
 void osc::OverlayDecorationOptions::setDrawYZGrid(bool v)
 {
-    SetOption(m_Flags, OverlayDecorationOptionFlags::drawYZGrid, v);
+    SetOption(m_Flags, OverlayDecorationOptionFlags::DrawYZGrid, v);
 }
 
 bool osc::OverlayDecorationOptions::getDrawAxisLines() const
@@ -77,40 +77,40 @@ void osc::OverlayDecorationOptions::setDrawAxisLines(bool v)
 
 bool osc::OverlayDecorationOptions::getDrawAABBs() const
 {
-    return m_Flags & OverlayDecorationOptionFlags::drawAABBs;
+    return m_Flags & OverlayDecorationOptionFlags::DrawAABBs;
 }
 
 void osc::OverlayDecorationOptions::setDrawAABBs(bool v)
 {
-    SetOption(m_Flags, OverlayDecorationOptionFlags::drawAABBs, v);
+    SetOption(m_Flags, OverlayDecorationOptionFlags::DrawAABBs, v);
 }
 
 bool osc::OverlayDecorationOptions::getDrawBVH() const
 {
-    return m_Flags & OverlayDecorationOptionFlags::drawBVH;
+    return m_Flags & OverlayDecorationOptionFlags::DrawBVH;
 }
 
 void osc::OverlayDecorationOptions::setDrawBVH(bool v)
 {
-    SetOption(m_Flags, OverlayDecorationOptionFlags::drawBVH, v);
+    SetOption(m_Flags, OverlayDecorationOptionFlags::DrawBVH, v);
 }
 
-void osc::OverlayDecorationOptions::forEachOptionAsAppSettingValue(std::function<void(std::string_view, AppSettingValue const&)> const& callback) const
+void osc::OverlayDecorationOptions::forEachOptionAsAppSettingValue(const std::function<void(std::string_view, const AppSettingValue&)>& callback) const
 {
-    for (auto const& metadata : GetAllOverlayDecorationOptionFlagsMetadata())
+    for (const auto& metadata : GetAllOverlayDecorationOptionFlagsMetadata())
     {
         callback(metadata.id, AppSettingValue{m_Flags & metadata.value});
     }
 }
 
-void osc::OverlayDecorationOptions::tryUpdFromValues(std::string_view keyPrefix, std::unordered_map<std::string, AppSettingValue> const& lut)
+void osc::OverlayDecorationOptions::tryUpdFromValues(std::string_view keyPrefix, const std::unordered_map<std::string, AppSettingValue>& lut)
 {
     for (size_t i = 0; i < num_flags<OverlayDecorationOptionFlags>(); ++i)
     {
-        auto const& metadata = at(GetAllOverlayDecorationOptionFlagsMetadata(), i);
+        const auto& metadata = at(GetAllOverlayDecorationOptionFlagsMetadata(), i);
 
-        std::string const key = std::string{keyPrefix}+metadata.id;
-        if (auto const* v = lookup_or_nullptr(lut, key); v and v->type() == osc::AppSettingValueType::Bool) {
+        const std::string key = std::string{keyPrefix}+metadata.id;
+        if (const auto* v = lookup_or_nullptr(lut, key); v and v->type() == osc::AppSettingValueType::Bool) {
             SetOption(m_Flags, metadata.value, v->to_bool());
         }
     }

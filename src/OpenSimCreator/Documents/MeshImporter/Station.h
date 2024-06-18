@@ -23,14 +23,14 @@ namespace osc::mi
         StationEl(
             UID id,
             UID attachment,  // can be MIIDs::Ground()
-            Vec3 const& position,
-            std::string const& name
+            const Vec3& position,
+            const std::string& name
         );
 
         StationEl(
             UID attachment,  // can be MIIDs::Ground()
-            Vec3 const& position,
-            std::string const& name
+            const Vec3& position,
+            const std::string& name
         );
 
         UID getParentID() const
@@ -81,17 +81,17 @@ namespace osc::mi
 
         void implSetLabel(std::string_view) final;
 
-        Transform implGetXform(IObjectFinder const&) const final
+        Transform implGetXform(const IObjectFinder&) const final
         {
             return getXForm();
         }
 
-        void implSetXform(IObjectFinder const&, Transform const& t) final
+        void implSetXform(const IObjectFinder&, const Transform& t) final
         {
             m_Position = t.position;
         }
 
-        AABB implCalcBounds(IObjectFinder const&) const final
+        AABB implCalcBounds(const IObjectFinder&) const final
         {
             return bounding_aabb_of(m_Position);
         }

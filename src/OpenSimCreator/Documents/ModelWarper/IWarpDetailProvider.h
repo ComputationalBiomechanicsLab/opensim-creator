@@ -10,9 +10,9 @@ namespace osc::mow
     class IWarpDetailProvider {
     protected:
         IWarpDetailProvider() = default;
-        IWarpDetailProvider(IWarpDetailProvider const&) = default;
+        IWarpDetailProvider(const IWarpDetailProvider&) = default;
         IWarpDetailProvider(IWarpDetailProvider&&) noexcept = default;
-        IWarpDetailProvider& operator=(IWarpDetailProvider const&) = default;
+        IWarpDetailProvider& operator=(const IWarpDetailProvider&) = default;
         IWarpDetailProvider& operator=(IWarpDetailProvider&&) noexcept = default;
     public:
         virtual ~IWarpDetailProvider() noexcept = default;

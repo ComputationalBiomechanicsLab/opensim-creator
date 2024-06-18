@@ -42,9 +42,9 @@ public:
 private:
     void impl_draw_content() final
     {
-        OpenSim::Model const& model = m_Uum->getModel();
+        const OpenSim::Model& model = m_Uum->getModel();
 
-        auto const* selectedPf = FindComponent<OpenSim::PhysicalFrame>(model, m_BodyDetails.parentFrameAbsPath);
+        const auto* selectedPf = FindComponent<OpenSim::PhysicalFrame>(model, m_BodyDetails.parentFrameAbsPath);
         if (!selectedPf)
         {
             // if nothing selected (or not found), coerce the initial selection to ground
@@ -112,7 +112,7 @@ private:
             ui::next_column();
 
             ui::begin_child_panel("join targets", Vec2{0, 128.0f}, ImGuiChildFlags_Border, ImGuiWindowFlags_HorizontalScrollbar);
-            for (OpenSim::PhysicalFrame const& pf : model.getComponentList<OpenSim::PhysicalFrame>())
+            for (const OpenSim::PhysicalFrame& pf : model.getComponentList<OpenSim::PhysicalFrame>())
             {
                 if (ui::draw_selectable(pf.getName(), &pf == selectedPf))
                 {
@@ -135,7 +135,7 @@ private:
             ui::draw_help_marker("The type of OpenSim::Joint that will connect the new OpenSim::Body to the selection above");
             ui::next_column();
             {
-                auto const& registry = GetComponentRegistry<OpenSim::Joint>();
+                const auto& registry = GetComponentRegistry<OpenSim::Joint>();
                 ui::draw_combobox(
                     "##jointtype",
                     &m_BodyDetails.jointTypeIndex,
@@ -235,16 +235,13 @@ private:
 };
 
 
-// public API
-
 osc::AddBodyPopup::AddBodyPopup(
     std::string_view popupName,
     IEditorAPI* api,
     std::shared_ptr<UndoableModelStatePair> uum) :
 
     m_Impl{std::make_unique<Impl>(popupName, api, std::move(uum))}
-{
-}
+{}
 osc::AddBodyPopup::AddBodyPopup(AddBodyPopup&&) noexcept = default;
 osc::AddBodyPopup& osc::AddBodyPopup::operator=(AddBodyPopup&&) noexcept = default;
 osc::AddBodyPopup::~AddBodyPopup() noexcept = default;

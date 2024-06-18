@@ -26,8 +26,7 @@ osc::FrameDefinitionTabToolbar::FrameDefinitionTabToolbar(
     m_Label{label_},
     m_TabHost{std::move(tabHost_)},
     m_Model{std::move(model_)}
-{
-}
+{}
 
 void osc::FrameDefinitionTabToolbar::onDraw()
 {
@@ -49,7 +48,7 @@ void osc::FrameDefinitionTabToolbar::drawContent()
 
 void osc::FrameDefinitionTabToolbar::drawExportToOpenSimButton()
 {
-    size_t const numBodies = GetNumChildren(m_Model->getModel().getBodySet());
+    const size_t numBodies = GetNumChildren(m_Model->getModel().getBodySet());
 
     if (numBodies == 0)
     {

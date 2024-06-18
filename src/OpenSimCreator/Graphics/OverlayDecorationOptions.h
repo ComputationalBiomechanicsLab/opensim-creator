@@ -39,10 +39,10 @@ namespace osc
         bool getDrawBVH() const;
         void setDrawBVH(bool);
 
-        void forEachOptionAsAppSettingValue(std::function<void(std::string_view, AppSettingValue const&)> const&) const;
-        void tryUpdFromValues(std::string_view keyPrefix, std::unordered_map<std::string, AppSettingValue> const&);
+        void forEachOptionAsAppSettingValue(const std::function<void(std::string_view, const AppSettingValue&)>&) const;
+        void tryUpdFromValues(std::string_view keyPrefix, const std::unordered_map<std::string, AppSettingValue>&);
 
-        friend bool operator==(OverlayDecorationOptions const&, OverlayDecorationOptions const&) = default;
+        friend bool operator==(const OverlayDecorationOptions&, const OverlayDecorationOptions&) = default;
 
     private:
         OverlayDecorationOptionFlags m_Flags = OverlayDecorationOptionFlags::Default;

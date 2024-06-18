@@ -9,7 +9,7 @@ using namespace osc::mow;
 ValidationCheckState osc::mow::IValidateable::implState() const
 {
     ValidationCheckState worst = ValidationCheckState::Ok;
-    for (auto const& c : validate()) {
+    for (const auto& c : validate()) {
         worst = max(worst, c.state());
         if (worst == ValidationCheckState::Error) {
             break;

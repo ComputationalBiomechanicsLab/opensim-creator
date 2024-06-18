@@ -19,12 +19,12 @@ using namespace osc;
 
 namespace
 {
-    OutputExtractorDataType CalcOutputType(OutputExtractor const& a, OutputExtractor const& b)
+    OutputExtractorDataType CalcOutputType(const OutputExtractor& a, const OutputExtractor& b)
     {
         static_assert(num_options<OutputExtractorDataType>() == 3);
 
-        OutputExtractorDataType const aType = a.getOutputType();
-        OutputExtractorDataType const bType = b.getOutputType();
+        const OutputExtractorDataType aType = a.getOutputType();
+        const OutputExtractorDataType bType = b.getOutputType();
 
         if (aType == OutputExtractorDataType::Float && bType == OutputExtractorDataType::Float) {
             return OutputExtractorDataType::Vec2;
@@ -34,7 +34,7 @@ namespace
         }
     }
 
-    std::string CalcLabel(OutputExtractorDataType concatenatedType, OutputExtractor const& a, OutputExtractor const& b)
+    std::string CalcLabel(OutputExtractorDataType concatenatedType, const OutputExtractor& a, const OutputExtractor& b)
     {
         static_assert(num_options<OutputExtractorDataType>() == 3);
 
@@ -61,22 +61,22 @@ osc::ConcatenatingOutputExtractor::ConcatenatingOutputExtractor(
     m_Label{CalcLabel(m_OutputType, m_First, m_Second)}
 {}
 
-OutputValueExtractor osc::ConcatenatingOutputExtractor::implGetOutputValueExtractor(OpenSim::Component const& comp) const
+OutputValueExtractor osc::ConcatenatingOutputExtractor::implGetOutputValueExtractor(const OpenSim::Component& comp) const
 {
     static_assert(num_options<OutputExtractorDataType>() == 3);
 
     if (m_OutputType == OutputExtractorDataType::Vec2) {
-        auto extractor = [lhs = m_First.getOutputValueExtractor(comp), rhs = m_Second.getOutputValueExtractor(comp)](SimulationReport const& report)
+        auto extractor = [lhs = m_First.getOutputValueExtractor(comp), rhs = m_Second.getOutputValueExtractor(comp)](const SimulationReport& report)
         {
-            auto const lv = lhs(report).to<float>();
-            auto const rv = rhs(report).to<float>();
+            const auto lv = lhs(report).to<float>();
+            const auto rv = rhs(report).to<float>();
 
             return Variant{Vec2{lv, rv}};
         };
         return OutputValueExtractor{std::move(extractor)};
     }
     else {
-        auto extractor = [lhs = m_First.getOutputValueExtractor(comp), rhs = m_Second.getOutputValueExtractor(comp)](SimulationReport const& report)
+        auto extractor = [lhs = m_First.getOutputValueExtractor(comp), rhs = m_Second.getOutputValueExtractor(comp)](const SimulationReport& report)
         {
             return Variant{lhs(report).to<std::string>() + rhs(report).to<std::string>()};
         };
@@ -89,12 +89,12 @@ size_t osc::ConcatenatingOutputExtractor::implGetHash() const
     return hash_of(m_First, m_Second);
 }
 
-bool osc::ConcatenatingOutputExtractor::implEquals(IOutputExtractor const& other) const
+bool osc::ConcatenatingOutputExtractor::implEquals(const IOutputExtractor& other) const
 {
     if (&other == this) {
         return true;
     }
-    if (auto* ptr = dynamic_cast<ConcatenatingOutputExtractor const*>(&other)) {
+    if (auto* ptr = dynamic_cast<const ConcatenatingOutputExtractor*>(&other)) {
         return ptr->m_First == m_First && ptr->m_Second == m_Second;
     }
     return false;

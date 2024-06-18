@@ -78,9 +78,9 @@ namespace
 
     void PushCreateEdgeToOtherPointLayer(
         IEditorAPI& editor,
-        std::shared_ptr<UndoableModelStatePair> const& model,
-        OpenSim::Point const& point,
-        ModelEditorViewerPanelRightClickEvent const& sourceEvent)
+        const std::shared_ptr<UndoableModelStatePair>& model,
+        const OpenSim::Point& point,
+        const ModelEditorViewerPanelRightClickEvent& sourceEvent)
     {
         auto* const visualizer = editor.getPanelManager()->try_upd_panel_by_name_T<ModelEditorViewerPanel>(sourceEvent.sourcePanelName);
         if (!visualizer)
@@ -93,7 +93,7 @@ namespace
         options.canChooseItem = IsPoint;
         options.componentsBeingAssignedTo = {point.getAbsolutePathString()};
         options.numComponentsUserMustChoose = 1;
-        options.onUserFinishedChoosing = [model, pointAPath = point.getAbsolutePathString()](std::unordered_set<std::string> const& choices) -> bool
+        options.onUserFinishedChoosing = [model, pointAPath = point.getAbsolutePathString()](const std::unordered_set<std::string>& choices) -> bool
         {
             if (choices.empty())
             {
@@ -104,16 +104,16 @@ namespace
             {
                 log_warn("number of user selections from 'choose components' layer was greater than expected: this bug should be reported");
             }
-            std::string const& pointBPath = *choices.begin();
+            const std::string& pointBPath = *choices.begin();
 
-            auto const* pointA = FindComponent<OpenSim::Point>(model->getModel(), pointAPath);
+            const auto* pointA = FindComponent<OpenSim::Point>(model->getModel(), pointAPath);
             if (!pointA)
             {
                 log_error("point A's component path (%s) does not exist in the model", pointAPath.c_str());
                 return false;
             }
 
-            auto const* pointB = FindComponent<OpenSim::Point>(model->getModel(), pointBPath);
+            const auto* pointB = FindComponent<OpenSim::Point>(model->getModel(), pointBPath);
             if (!pointB)
             {
                 log_error("point B's component path (%s) does not exist in the model", pointBPath.c_str());
@@ -129,9 +129,9 @@ namespace
 
     void PushCreateMidpointToAnotherPointLayer(
         IEditorAPI& editor,
-        std::shared_ptr<UndoableModelStatePair> const& model,
-        OpenSim::Point const& point,
-        ModelEditorViewerPanelRightClickEvent const& sourceEvent)
+        const std::shared_ptr<UndoableModelStatePair>& model,
+        const OpenSim::Point& point,
+        const ModelEditorViewerPanelRightClickEvent& sourceEvent)
     {
         auto* const visualizer = editor.getPanelManager()->try_upd_panel_by_name_T<ModelEditorViewerPanel>(sourceEvent.sourcePanelName);
         if (!visualizer)
@@ -144,7 +144,7 @@ namespace
         options.canChooseItem = IsPoint;
         options.componentsBeingAssignedTo = {point.getAbsolutePathString()};
         options.numComponentsUserMustChoose = 1;
-        options.onUserFinishedChoosing = [model, pointAPath = point.getAbsolutePathString()](std::unordered_set<std::string> const& choices) -> bool
+        options.onUserFinishedChoosing = [model, pointAPath = point.getAbsolutePathString()](const std::unordered_set<std::string>& choices) -> bool
         {
             if (choices.empty())
             {
@@ -155,16 +155,16 @@ namespace
             {
                 log_warn("number of user selections from 'choose components' layer was greater than expected: this bug should be reported");
             }
-            std::string const& pointBPath = *choices.begin();
+            const std::string& pointBPath = *choices.begin();
 
-            auto const* pointA = FindComponent<OpenSim::Point>(model->getModel(), pointAPath);
+            const auto* pointA = FindComponent<OpenSim::Point>(model->getModel(), pointAPath);
             if (!pointA)
             {
                 log_error("point A's component path (%s) does not exist in the model", pointAPath.c_str());
                 return false;
             }
 
-            auto const* pointB = FindComponent<OpenSim::Point>(model->getModel(), pointBPath);
+            const auto* pointB = FindComponent<OpenSim::Point>(model->getModel(), pointBPath);
             if (!pointB)
             {
                 log_error("point B's component path (%s) does not exist in the model", pointBPath.c_str());
@@ -180,9 +180,9 @@ namespace
 
     void PushCreateCrossProductEdgeLayer(
         IEditorAPI& editor,
-        std::shared_ptr<UndoableModelStatePair> const& model,
-        Edge const& firstEdge,
-        ModelEditorViewerPanelRightClickEvent const& sourceEvent)
+        const std::shared_ptr<UndoableModelStatePair>& model,
+        const Edge& firstEdge,
+        const ModelEditorViewerPanelRightClickEvent& sourceEvent)
     {
         auto* const visualizer = editor.getPanelManager()->try_upd_panel_by_name_T<ModelEditorViewerPanel>(sourceEvent.sourcePanelName);
         if (!visualizer)
@@ -195,7 +195,7 @@ namespace
         options.canChooseItem = IsEdge;
         options.componentsBeingAssignedTo = {firstEdge.getAbsolutePathString()};
         options.numComponentsUserMustChoose = 1;
-        options.onUserFinishedChoosing = [model, edgeAPath = firstEdge.getAbsolutePathString()](std::unordered_set<std::string> const& choices) -> bool
+        options.onUserFinishedChoosing = [model, edgeAPath = firstEdge.getAbsolutePathString()](const std::unordered_set<std::string>& choices) -> bool
         {
             if (choices.empty())
             {
@@ -206,16 +206,16 @@ namespace
             {
                 log_warn("number of user selections from 'choose components' layer was greater than expected: this bug should be reported");
             }
-            std::string const& edgeBPath = *choices.begin();
+            const std::string& edgeBPath = *choices.begin();
 
-            auto const* edgeA = FindComponent<Edge>(model->getModel(), edgeAPath);
+            const auto* edgeA = FindComponent<Edge>(model->getModel(), edgeAPath);
             if (!edgeA)
             {
                 log_error("edge A's component path (%s) does not exist in the model", edgeAPath.c_str());
                 return false;
             }
 
-            auto const* edgeB = FindComponent<Edge>(model->getModel(), edgeBPath);
+            const auto* edgeB = FindComponent<Edge>(model->getModel(), edgeBPath);
             if (!edgeB)
             {
                 log_error("point B's component path (%s) does not exist in the model", edgeBPath.c_str());
@@ -231,10 +231,10 @@ namespace
 
     void PushPickOriginForFrameDefinitionLayer(
         ModelEditorViewerPanel& visualizer,
-        std::shared_ptr<UndoableModelStatePair> const& model,
-        std::string const& firstEdgeAbsPath,
+        const std::shared_ptr<UndoableModelStatePair>& model,
+        const std::string& firstEdgeAbsPath,
         CoordinateDirection firstEdgeAxis,
-        std::string const& secondEdgeAbsPath)
+        const std::string& secondEdgeAbsPath)
     {
         ChooseComponentsEditorLayerParameters options;
         options.popupHeaderText = "choose frame origin";
@@ -245,7 +245,7 @@ namespace
             firstEdgeAbsPath = firstEdgeAbsPath,
             firstEdgeAxis,
             secondEdgeAbsPath
-        ](std::unordered_set<std::string> const& choices) -> bool
+        ](const std::unordered_set<std::string>& choices) -> bool
         {
             if (choices.empty())
             {
@@ -256,23 +256,23 @@ namespace
             {
                 log_warn("number of user selections from 'choose components' layer was greater than expected: this bug should be reported");
             }
-            std::string const& originPath = *choices.begin();
+            const std::string& originPath = *choices.begin();
 
-            auto const* firstEdge = FindComponent<Edge>(model->getModel(), firstEdgeAbsPath);
+            const auto* firstEdge = FindComponent<Edge>(model->getModel(), firstEdgeAbsPath);
             if (!firstEdge)
             {
                 log_error("the first edge's component path (%s) does not exist in the model", firstEdgeAbsPath.c_str());
                 return false;
             }
 
-            auto const* otherEdge = FindComponent<Edge>(model->getModel(), secondEdgeAbsPath);
+            const auto* otherEdge = FindComponent<Edge>(model->getModel(), secondEdgeAbsPath);
             if (!otherEdge)
             {
                 log_error("the second edge's component path (%s) does not exist in the model", secondEdgeAbsPath.c_str());
                 return false;
             }
 
-            auto const* originPoint = FindComponent<OpenSim::Point>(model->getModel(), originPath);
+            const auto* originPoint = FindComponent<OpenSim::Point>(model->getModel(), originPath);
             if (!originPoint)
             {
                 log_error("the origin's component path (%s) does not exist in the model", originPath.c_str());
@@ -294,8 +294,8 @@ namespace
 
     void PushPickOtherEdgeStateForFrameDefinitionLayer(
         ModelEditorViewerPanel& visualizer,
-        std::shared_ptr<UndoableModelStatePair> const& model,
-        Edge const& firstEdge,
+        const std::shared_ptr<UndoableModelStatePair>& model,
+        const Edge& firstEdge,
         CoordinateDirection firstEdgeAxis)
     {
         ChooseComponentsEditorLayerParameters options;
@@ -308,7 +308,7 @@ namespace
                 model,
                 firstEdgeAbsPath = firstEdge.getAbsolutePathString(),
                 firstEdgeAxis
-        ](std::unordered_set<std::string> const& choices) -> bool
+        ](const std::unordered_set<std::string>& choices) -> bool
         {
             // go into "pick origin" state
 
@@ -317,7 +317,7 @@ namespace
                 log_error("user selections from the 'choose components' layer was empty: this bug should be reported");
                 return false;
             }
-            std::string const& otherEdgePath = *choices.begin();
+            const std::string& otherEdgePath = *choices.begin();
 
             PushPickOriginForFrameDefinitionLayer(
                 *visualizerPtr,  // TODO: unsafe if not guarded by weak_ptr or similar
@@ -337,10 +337,10 @@ namespace
 {
     void ActionPushCreateFrameLayer(
         IEditorAPI& editor,
-        std::shared_ptr<UndoableModelStatePair> const& model,
-        Edge const& firstEdge,
+        const std::shared_ptr<UndoableModelStatePair>& model,
+        const Edge& firstEdge,
         CoordinateDirection firstEdgeAxis,
-        std::optional<ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent)
+        const std::optional<ModelEditorViewerPanelRightClickEvent>& maybeSourceEvent)
     {
         if (!maybeSourceEvent)
         {
@@ -363,21 +363,21 @@ namespace
 
     void PushPickParentFrameForBodyCreactionLayer(
         ModelEditorViewerPanel& visualizer,
-        std::shared_ptr<UndoableModelStatePair> const& model,
-        OpenSim::ComponentPath const& frameAbsPath,
-        OpenSim::ComponentPath const& meshAbsPath,
-        OpenSim::ComponentPath const& jointFrameAbsPath)
+        const std::shared_ptr<UndoableModelStatePair>& model,
+        const OpenSim::ComponentPath& frameAbsPath,
+        const OpenSim::ComponentPath& meshAbsPath,
+        const OpenSim::ComponentPath& jointFrameAbsPath)
     {
         ChooseComponentsEditorLayerParameters options;
         options.popupHeaderText = "choose parent frame";
-        options.canChooseItem = [bodyFrame = FindComponent(model->getModel(), frameAbsPath)](OpenSim::Component const& c)
+        options.canChooseItem = [bodyFrame = FindComponent(model->getModel(), frameAbsPath)](const OpenSim::Component& c)
         {
             return
                 IsPhysicalFrame(c) &&
                 &c != bodyFrame &&
                 !IsChildOfA<OpenSim::ComponentSet>(c) &&
                 (
-                    dynamic_cast<OpenSim::Ground const*>(&c) != nullptr ||
+                    dynamic_cast<const OpenSim::Ground*>(&c) != nullptr ||
                     IsChildOfA<OpenSim::BodySet>(c)
                 );
         };
@@ -387,7 +387,7 @@ namespace
             frameAbsPath,
             meshAbsPath,
             jointFrameAbsPath
-        ](std::unordered_set<std::string> const& choices) -> bool
+        ](const std::unordered_set<std::string>& choices) -> bool
         {
             if (choices.empty())
             {
@@ -395,7 +395,7 @@ namespace
                 return false;
             }
 
-            auto const* const parentFrame = FindComponent<OpenSim::PhysicalFrame>(model->getModel(), *choices.begin());
+            const auto* const parentFrame = FindComponent<OpenSim::PhysicalFrame>(model->getModel(), *choices.begin());
             if (!parentFrame)
             {
                 log_error("user selection from 'choose components' layer did not select a frame: this shouldn't happen?");
@@ -418,9 +418,9 @@ namespace
 
     void PushPickJointFrameForBodyCreactionLayer(
         ModelEditorViewerPanel& visualizer,
-        std::shared_ptr<UndoableModelStatePair> const& model,
-        OpenSim::ComponentPath const& frameAbsPath,
-        OpenSim::ComponentPath const& meshAbsPath)
+        const std::shared_ptr<UndoableModelStatePair>& model,
+        const OpenSim::ComponentPath& frameAbsPath,
+        const OpenSim::ComponentPath& meshAbsPath)
     {
         ChooseComponentsEditorLayerParameters options;
         options.popupHeaderText = "choose joint center frame";
@@ -431,7 +431,7 @@ namespace
             model,
             frameAbsPath,
             meshAbsPath
-        ](std::unordered_set<std::string> const& choices) -> bool
+        ](const std::unordered_set<std::string>& choices) -> bool
         {
             if (choices.empty())
             {
@@ -439,7 +439,7 @@ namespace
                 return false;
             }
 
-            auto const* const jointFrame = FindComponent<OpenSim::Frame>(model->getModel(), *choices.begin());
+            const auto* const jointFrame = FindComponent<OpenSim::Frame>(model->getModel(), *choices.begin());
             if (!jointFrame)
             {
                 log_error("user selection from 'choose components' layer did not select a frame: this shouldn't happen?");
@@ -462,18 +462,18 @@ namespace
 
     void PushPickMeshForBodyCreationLayer(
         ModelEditorViewerPanel& visualizer,
-        std::shared_ptr<UndoableModelStatePair> const& model,
-        OpenSim::Frame const& frame)
+        const std::shared_ptr<UndoableModelStatePair>& model,
+        const OpenSim::Frame& frame)
     {
         ChooseComponentsEditorLayerParameters options;
         options.popupHeaderText = "choose mesh to attach the body to";
-        options.canChooseItem = [](OpenSim::Component const& c) { return IsMesh(c) && !IsChildOfA<OpenSim::Body>(c); };
+        options.canChooseItem = [](const OpenSim::Component& c) { return IsMesh(c) && !IsChildOfA<OpenSim::Body>(c); };
         options.numComponentsUserMustChoose = 1;
         options.onUserFinishedChoosing = [
             visualizerPtr = &visualizer,  // TODO: implement weak_ptr for panel lookup
             model,
             frameAbsPath = frame.getAbsolutePath()
-        ](std::unordered_set<std::string> const& choices) -> bool
+        ](const std::unordered_set<std::string>& choices) -> bool
         {
             if (choices.empty())
             {
@@ -481,7 +481,7 @@ namespace
                 return false;
             }
 
-            auto const* const mesh = FindComponent<OpenSim::Mesh>(model->getModel(), *choices.begin());
+            const auto* const mesh = FindComponent<OpenSim::Mesh>(model->getModel(), *choices.begin());
             if (!mesh)
             {
                 log_error("user selection from 'choose components' layer did not select a mesh: this shouldn't happen?");
@@ -502,9 +502,9 @@ namespace
 
     void ActionCreateBodyFromFrame(
         IEditorAPI& editor,
-        std::shared_ptr<UndoableModelStatePair> const& model,
-        std::optional<ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
-        OpenSim::Frame const& frame)
+        const std::shared_ptr<UndoableModelStatePair>& model,
+        const std::optional<ModelEditorViewerPanelRightClickEvent>& maybeSourceEvent,
+        const OpenSim::Frame& frame)
     {
         if (!maybeSourceEvent)
         {
@@ -530,15 +530,15 @@ namespace
 {
     // draws the calculate menu for an edge
     void DrawCalculateMenu(
-        OpenSim::Component const& root,
-        SimTK::State const& state,
-        Edge const& edge)
+        const OpenSim::Component& root,
+        const SimTK::State& state,
+        const Edge& edge)
     {
         if (ui::begin_menu(ICON_FA_CALCULATOR " Calculate"))
         {
             if (ui::begin_menu("Start Point"))
             {
-                auto const onFrameMenuOpened = [&state, &edge](OpenSim::Frame const& frame)
+                const auto onFrameMenuOpened = [&state, &edge](const OpenSim::Frame& frame)
                 {
                     DrawPointTranslationInformationWithRespectTo(
                         frame,
@@ -552,7 +552,7 @@ namespace
 
             if (ui::begin_menu("End Point"))
             {
-                auto const onFrameMenuOpened = [&state, &edge](OpenSim::Frame const& frame)
+                const auto onFrameMenuOpened = [&state, &edge](const OpenSim::Frame& frame)
                 {
                     DrawPointTranslationInformationWithRespectTo(
                         frame,
@@ -567,7 +567,7 @@ namespace
 
             if (ui::begin_menu("Direction"))
             {
-                auto const onFrameMenuOpened = [&state, &edge](OpenSim::Frame const& frame)
+                const auto onFrameMenuOpened = [&state, &edge](const OpenSim::Frame& frame)
                 {
                     DrawDirectionInformationWithRepsectTo(
                         frame,
@@ -586,9 +586,9 @@ namespace
 
     void DrawFocusCameraMenu(
         IEditorAPI& editor,
-        std::shared_ptr<UndoableModelStatePair> const&,
-        std::optional<ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
-        OpenSim::Component const&)
+        const std::shared_ptr<UndoableModelStatePair>&,
+        const std::optional<ModelEditorViewerPanelRightClickEvent>& maybeSourceEvent,
+        const OpenSim::Component&)
     {
         if (maybeSourceEvent && ui::begin_menu(ICON_FA_CAMERA " Focus Camera"))
         {
@@ -617,9 +617,9 @@ namespace
 
     void DrawEdgeAddContextMenuItems(
         IEditorAPI& editor,
-        std::shared_ptr<UndoableModelStatePair> const& model,
-        std::optional<ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
-        Edge const& edge)
+        const std::shared_ptr<UndoableModelStatePair>& model,
+        const std::optional<ModelEditorViewerPanelRightClickEvent>& maybeSourceEvent,
+        const Edge& edge)
     {
         if (maybeSourceEvent && ui::draw_menu_item(ICON_FA_TIMES " Cross Product Edge"))
         {
@@ -714,11 +714,11 @@ namespace
 
     void DrawCreateBodyMenuItem(
         IEditorAPI& editor,
-        std::shared_ptr<UndoableModelStatePair> const& model,
-        std::optional<ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
-        OpenSim::Frame const& frame)
+        const std::shared_ptr<UndoableModelStatePair>& model,
+        const std::optional<ModelEditorViewerPanelRightClickEvent>& maybeSourceEvent,
+        const OpenSim::Frame& frame)
     {
-        OpenSim::Component const* groundOrExistingBody = dynamic_cast<OpenSim::Ground const*>(&frame);
+        const OpenSim::Component* groundOrExistingBody = dynamic_cast<const OpenSim::Ground*>(&frame);
         if (!groundOrExistingBody)
         {
             groundOrExistingBody = FindFirstDescendentOfType<OpenSim::Body>(frame);
@@ -736,9 +736,9 @@ namespace
         }
     }
     void DrawMeshAddContextMenuItems(
-        std::shared_ptr<UndoableModelStatePair> const& model,
-        std::optional<ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
-        OpenSim::Mesh const& mesh)
+        const std::shared_ptr<UndoableModelStatePair>& model,
+        const std::optional<ModelEditorViewerPanelRightClickEvent>& maybeSourceEvent,
+        const OpenSim::Mesh& mesh)
     {
         if (ui::draw_menu_item(ICON_FA_CIRCLE " Sphere Landmark"))
         {
@@ -760,9 +760,9 @@ namespace
 
     void DrawPointAddContextMenuItems(
         IEditorAPI& editor,
-        std::shared_ptr<UndoableModelStatePair> const& model,
-        std::optional<ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
-        OpenSim::Point const& point)
+        const std::shared_ptr<UndoableModelStatePair>& model,
+        const std::optional<ModelEditorViewerPanelRightClickEvent>& maybeSourceEvent,
+        const OpenSim::Point& point)
     {
         if (maybeSourceEvent && ui::draw_menu_item(ICON_FA_GRIP_LINES " Edge"))
         {
@@ -792,9 +792,9 @@ namespace
 
     void DrawRightClickedMeshContextMenu(
         IEditorAPI& editor,
-        std::shared_ptr<UndoableModelStatePair> const& model,
-        std::optional<ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
-        OpenSim::Mesh const& mesh)
+        const std::shared_ptr<UndoableModelStatePair>& model,
+        const std::optional<ModelEditorViewerPanelRightClickEvent>& maybeSourceEvent,
+        const OpenSim::Mesh& mesh)
     {
         DrawRightClickedComponentContextMenuHeader(mesh);
         DrawContextMenuSeparator();
@@ -814,9 +814,9 @@ namespace
 
     void DrawRightClickedPointContextMenu(
         IEditorAPI& editor,
-        std::shared_ptr<UndoableModelStatePair> const& model,
-        std::optional<ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
-        OpenSim::Point const& point)
+        const std::shared_ptr<UndoableModelStatePair>& model,
+        const std::optional<ModelEditorViewerPanelRightClickEvent>& maybeSourceEvent,
+        const OpenSim::Point& point)
     {
         DrawRightClickedComponentContextMenuHeader(point);
         DrawContextMenuSeparator();
@@ -832,9 +832,9 @@ namespace
 
     void DrawRightClickedPointToPointEdgeContextMenu(
         IEditorAPI& editor,
-        std::shared_ptr<UndoableModelStatePair> const& model,
-        std::optional<ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
-        PointToPointEdge const& edge)
+        const std::shared_ptr<UndoableModelStatePair>& model,
+        const std::optional<ModelEditorViewerPanelRightClickEvent>& maybeSourceEvent,
+        const PointToPointEdge& edge)
     {
         DrawRightClickedComponentContextMenuHeader(edge);
         DrawContextMenuSeparator();
@@ -854,9 +854,9 @@ namespace
 
     void DrawRightClickedCrossProductEdgeContextMenu(
         IEditorAPI& editor,
-        std::shared_ptr<UndoableModelStatePair> const& model,
-        std::optional<ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
-        CrossProductEdge const& edge)
+        const std::shared_ptr<UndoableModelStatePair>& model,
+        const std::optional<ModelEditorViewerPanelRightClickEvent>& maybeSourceEvent,
+        const CrossProductEdge& edge)
     {
         DrawRightClickedComponentContextMenuHeader(edge);
         DrawContextMenuSeparator();
@@ -876,9 +876,9 @@ namespace
 
     void DrawRightClickedFrameContextMenu(
         IEditorAPI& editor,
-        std::shared_ptr<UndoableModelStatePair> const& model,
-        std::optional<ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
-        OpenSim::Frame const& frame)
+        const std::shared_ptr<UndoableModelStatePair>& model,
+        const std::optional<ModelEditorViewerPanelRightClickEvent>& maybeSourceEvent,
+        const OpenSim::Frame& frame)
     {
         DrawRightClickedComponentContextMenuHeader(frame);
         DrawContextMenuSeparator();
@@ -894,9 +894,9 @@ namespace
 
     void DrawRightClickedUnknownComponentContextMenu(
         IEditorAPI& editor,
-        std::shared_ptr<UndoableModelStatePair> const& model,
-        std::optional<ModelEditorViewerPanelRightClickEvent> const& maybeSourceEvent,
-        OpenSim::Component const& component)
+        const std::shared_ptr<UndoableModelStatePair>& model,
+        const std::optional<ModelEditorViewerPanelRightClickEvent>& maybeSourceEvent,
+        const OpenSim::Component& component)
     {
         DrawRightClickedComponentContextMenuHeader(component);
         DrawContextMenuSeparator();
@@ -929,28 +929,28 @@ namespace
     private:
         void impl_draw_content() final
         {
-            OpenSim::Component const* const maybeComponent = FindComponent(m_Model->getModel(), m_ComponentPath);
+            const OpenSim::Component* const maybeComponent = FindComponent(m_Model->getModel(), m_ComponentPath);
             if (!maybeComponent)
             {
                 DrawRightClickedNothingContextMenu(*m_Model);
             }
-            else if (auto const* maybeMesh = dynamic_cast<OpenSim::Mesh const*>(maybeComponent))
+            else if (const auto* maybeMesh = dynamic_cast<const OpenSim::Mesh*>(maybeComponent))
             {
                 DrawRightClickedMeshContextMenu(*m_EditorAPI, m_Model, m_MaybeSourceVisualizerEvent, *maybeMesh);
             }
-            else if (auto const* maybePoint = dynamic_cast<OpenSim::Point const*>(maybeComponent))
+            else if (const auto* maybePoint = dynamic_cast<const OpenSim::Point*>(maybeComponent))
             {
                 DrawRightClickedPointContextMenu(*m_EditorAPI, m_Model, m_MaybeSourceVisualizerEvent, *maybePoint);
             }
-            else if (auto const* maybeFrame = dynamic_cast<OpenSim::Frame const*>(maybeComponent))
+            else if (const auto* maybeFrame = dynamic_cast<const OpenSim::Frame*>(maybeComponent))
             {
                 DrawRightClickedFrameContextMenu(*m_EditorAPI, m_Model, m_MaybeSourceVisualizerEvent, *maybeFrame);
             }
-            else if (auto const* maybeP2PEdge = dynamic_cast<PointToPointEdge const*>(maybeComponent))
+            else if (const auto* maybeP2PEdge = dynamic_cast<const PointToPointEdge*>(maybeComponent))
             {
                 DrawRightClickedPointToPointEdgeContextMenu(*m_EditorAPI, m_Model, m_MaybeSourceVisualizerEvent, *maybeP2PEdge);
             }
-            else if (auto const* maybeCPEdge = dynamic_cast<CrossProductEdge const*>(maybeComponent))
+            else if (const auto* maybeCPEdge = dynamic_cast<const CrossProductEdge*>(maybeComponent))
             {
                 DrawRightClickedCrossProductEdgeContextMenu(*m_EditorAPI, m_Model, m_MaybeSourceVisualizerEvent, *maybeCPEdge);
             }
@@ -1018,7 +1018,7 @@ namespace
 class osc::FrameDefinitionTab::Impl final : public IEditorAPI {
 public:
 
-    explicit Impl(ParentPtr<ITabHost> const& parent_) :
+    explicit Impl(const ParentPtr<ITabHost>& parent_) :
         m_Parent{parent_}
     {
         m_PanelManager->register_toggleable_panel(
@@ -1028,7 +1028,7 @@ public:
                 return std::make_shared<NavigatorPanel>(
                     panelName,
                     m_Model,
-                    [this](OpenSim::ComponentPath const& rightClickedPath)
+                    [this](const OpenSim::ComponentPath& rightClickedPath)
                     {
                         pushPopup(std::make_unique<FrameDefinitionContextMenu>(
                             "##ContextMenu",
@@ -1068,7 +1068,7 @@ public:
                 ModelEditorViewerPanelParameters panelParams
                 {
                     m_Model,
-                    [this](ModelEditorViewerPanelRightClickEvent const& e)
+                    [this](const ModelEditorViewerPanelRightClickEvent& e)
                     {
                         pushPopup(std::make_unique<FrameDefinitionContextMenu>(
                             "##ContextMenu",
@@ -1110,7 +1110,7 @@ public:
         App::upd().make_main_loop_polling();
     }
 
-    bool onEvent(SDL_Event const& e)
+    bool onEvent(const SDL_Event& e)
     {
         if (e.type == SDL_KEYDOWN)
         {
@@ -1144,9 +1144,9 @@ public:
     }
 
 private:
-    bool onKeydownEvent(SDL_KeyboardEvent const& e)
+    bool onKeydownEvent(const SDL_KeyboardEvent& e)
     {
-        bool const ctrlOrSuperDown = ui::is_ctrl_or_super_down();
+        const bool ctrlOrSuperDown = ui::is_ctrl_or_super_down();
 
         if (ctrlOrSuperDown && e.keysym.mod & KMOD_SHIFT && e.keysym.sym == SDLK_z)
         {
@@ -1172,7 +1172,7 @@ private:
         }
     }
 
-    void implPushComponentContextMenuPopup(OpenSim::ComponentPath const& componentPath) final
+    void implPushComponentContextMenuPopup(const OpenSim::ComponentPath& componentPath) final
     {
         pushPopup(std::make_unique<FrameDefinitionContextMenu>(
             "##ContextMenu",
@@ -1188,7 +1188,7 @@ private:
         m_PopupManager.push_back(std::move(popup));
     }
 
-    void implAddMusclePlot(OpenSim::Coordinate const&, OpenSim::Muscle const&) final
+    void implAddMusclePlot(const OpenSim::Coordinate&, const OpenSim::Muscle&) final
     {
         // ignore: not applicable in this tab
     }
@@ -1209,18 +1209,14 @@ private:
 };
 
 
-// public API (PIMPL)
-
 CStringView osc::FrameDefinitionTab::id()
 {
     return c_TabStringID;
 }
 
-osc::FrameDefinitionTab::FrameDefinitionTab(ParentPtr<ITabHost> const& parent_) :
+osc::FrameDefinitionTab::FrameDefinitionTab(const ParentPtr<ITabHost>& parent_) :
     m_Impl{std::make_unique<Impl>(parent_)}
-{
-}
-
+{}
 osc::FrameDefinitionTab::FrameDefinitionTab(FrameDefinitionTab&&) noexcept = default;
 osc::FrameDefinitionTab& osc::FrameDefinitionTab::operator=(FrameDefinitionTab&&) noexcept = default;
 osc::FrameDefinitionTab::~FrameDefinitionTab() noexcept = default;
@@ -1245,7 +1241,7 @@ void osc::FrameDefinitionTab::impl_on_unmount()
     m_Impl->on_unmount();
 }
 
-bool osc::FrameDefinitionTab::impl_on_event(SDL_Event const& e)
+bool osc::FrameDefinitionTab::impl_on_event(const SDL_Event& e)
 {
     return m_Impl->onEvent(e);
 }

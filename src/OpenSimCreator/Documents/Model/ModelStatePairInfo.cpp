@@ -5,7 +5,7 @@
 
 osc::ModelStatePairInfo::ModelStatePairInfo() = default;
 
-osc::ModelStatePairInfo::ModelStatePairInfo(IConstModelStatePair const& msp) :
+osc::ModelStatePairInfo::ModelStatePairInfo(const IConstModelStatePair& msp) :
     m_ModelVersion{msp.getModelVersion()},
     m_StateVersion{msp.getStateVersion()},
     m_Selection{GetAbsolutePathOrEmpty(msp.getSelected())},

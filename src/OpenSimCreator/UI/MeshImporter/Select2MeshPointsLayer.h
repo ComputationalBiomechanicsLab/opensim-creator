@@ -114,9 +114,9 @@ namespace osc::mi
         {
             m_DrawablesBuffer.clear();
 
-            Document const& mg = m_Shared->getModelGraph();
+            const Document& mg = m_Shared->getModelGraph();
 
-            for (Mesh const& meshEl : mg.iter<Mesh>())
+            for (const Mesh& meshEl : mg.iter<Mesh>())
             {
                 m_DrawablesBuffer.emplace_back(m_Shared->generateMeshDrawable(meshEl));
             }
@@ -135,7 +135,7 @@ namespace osc::mi
             }
 
             // returns a string representation of a spatial position (e.g. (0.0, 1.0, 3.0))
-            std::string const pos = [](Vec3 const& pos)
+            const std::string pos = [](const Vec3& pos)
             {
                 std::stringstream ss;
                 ss.precision(4);
@@ -195,9 +195,9 @@ namespace osc::mi
             ui::push_style_var(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
             ui::push_style_color(ImGuiCol_Button, Color::half_grey());
 
-            CStringView const text = ICON_FA_ARROW_LEFT " Cancel (ESC)";
-            Vec2 const margin = {25.0f, 35.0f};
-            Vec2 const buttonTopLeft = m_Shared->get3DSceneRect().p2 - (ui::calc_button_size(text) + margin);
+            const CStringView text = ICON_FA_ARROW_LEFT " Cancel (ESC)";
+            const Vec2 margin = {25.0f, 35.0f};
+            const Vec2 buttonTopLeft = m_Shared->get3DSceneRect().p2 - (ui::calc_button_size(text) + margin);
 
             ui::set_cursor_screen_pos(buttonTopLeft);
             if (ui::draw_button(text))
@@ -209,7 +209,7 @@ namespace osc::mi
             ui::pop_style_var();
         }
 
-        bool implOnEvent(SDL_Event const& e) final
+        bool implOnEvent(const SDL_Event& e) final
         {
             return m_Shared->onEvent(e);
         }

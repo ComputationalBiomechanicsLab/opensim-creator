@@ -43,7 +43,7 @@ namespace SimTK { class State; }
 namespace osc
 {
     void DrawComponentHoverTooltip(
-        OpenSim::Component const&
+        const OpenSim::Component&
     );
     void DrawNothingRightClickedContextMenuHeader();
     void DrawContextMenuHeader(
@@ -51,27 +51,27 @@ namespace osc
         CStringView subtitle
     );
     void DrawRightClickedComponentContextMenuHeader(
-        OpenSim::Component const&
+        const OpenSim::Component&
     );
     void DrawContextMenuSeparator();
     void DrawSelectOwnerMenu(
         IModelStatePair&,
-        OpenSim::Component const&
+        const OpenSim::Component&
     );
     bool DrawRequestOutputMenuOrMenuItem(
-        OpenSim::AbstractOutput const& o,
-        std::function<void(OpenSim::AbstractOutput const&, std::optional<ComponentOutputSubfield>)> const& onUserSelection
+        const OpenSim::AbstractOutput& o,
+        const std::function<void(const OpenSim::AbstractOutput&, std::optional<ComponentOutputSubfield>)>& onUserSelection
     );
     bool DrawWatchOutputMenu(
-        OpenSim::Component const&,
-        std::function<void(OpenSim::AbstractOutput const&, std::optional<ComponentOutputSubfield>)> const& onUserSelection
+        const OpenSim::Component&,
+        const std::function<void(const OpenSim::AbstractOutput&, std::optional<ComponentOutputSubfield>)>& onUserSelection
     );
     void DrawSimulationParams(
-        ParamBlock const&
+        const ParamBlock&
     );
     void DrawSearchBar(std::string&);
     void DrawOutputNameColumn(
-        IOutputExtractor const& output,
+        const IOutputExtractor& output,
         bool centered = true,
         SimulationModelStatePair* maybeActiveSate = nullptr
     );
@@ -82,9 +82,9 @@ namespace osc
     // calls `onFrameMenuOpened` when the user is hovering a frame's menu
     // (i.e. `ui::begin_menu($FRAME)` returned `true`)
     void DrawWithRespectToMenuContainingMenuPerFrame(
-        OpenSim::Component const& root,
-        std::function<void(OpenSim::Frame const&)> const& onFrameMenuOpened,
-        OpenSim::Frame const* maybeParent
+        const OpenSim::Component& root,
+        const std::function<void(const OpenSim::Frame&)>& onFrameMenuOpened,
+        const OpenSim::Frame* maybeParent
     );
 
     // draws a "With Respect to" menu that prompts the user to click a frame
@@ -93,25 +93,25 @@ namespace osc
     // calls `onFrameMenuItemClicked` when the user clicks the `ui::draw_menu_item`
     // associated with a frame
     void DrawWithRespectToMenuContainingMenuItemPerFrame(
-        OpenSim::Component const& root,
-        std::function<void(OpenSim::Frame const&)> const& onFrameMenuItemClicked,
-        OpenSim::Frame const* maybeParent
+        const OpenSim::Component& root,
+        const std::function<void(const OpenSim::Frame&)>& onFrameMenuItemClicked,
+        const OpenSim::Frame* maybeParent
     );
 
     void DrawPointTranslationInformationWithRespectTo(
-        OpenSim::Frame const&,
-        SimTK::State const&,
+        const OpenSim::Frame&,
+        const SimTK::State&,
         Vec3 locationInGround
     );
     void DrawDirectionInformationWithRepsectTo(
-        OpenSim::Frame const&,
-        SimTK::State const&,
+        const OpenSim::Frame&,
+        const SimTK::State&,
         Vec3 directionInGround
     );
     void DrawFrameInformationExpressedIn(
-        OpenSim::Frame const& parent,
-        SimTK::State const&,
-        OpenSim::Frame const&
+        const OpenSim::Frame& parent,
+        const SimTK::State&,
+        const OpenSim::Frame&
     );
 
     // calculate menus
@@ -129,95 +129,95 @@ namespace osc
     void EndCalculateMenu(
     );
     void DrawCalculatePositionMenu(
-        OpenSim::Component const& root,
-        SimTK::State const&,
-        OpenSim::Point const&,
-        OpenSim::Frame const* maybeParent
+        const OpenSim::Component& root,
+        const SimTK::State&,
+        const OpenSim::Point&,
+        const OpenSim::Frame* maybeParent
     );
     void DrawCalculateMenu(
-        OpenSim::Component const& root,
-        SimTK::State const&,
-        OpenSim::Station const&,
+        const OpenSim::Component& root,
+        const SimTK::State&,
+        const OpenSim::Station&,
         CalculateMenuFlags = CalculateMenuFlags::None
     );
     void DrawCalculateMenu(
-        OpenSim::Component const& root,
-        SimTK::State const&,
-        OpenSim::Point const&,
+        const OpenSim::Component& root,
+        const SimTK::State&,
+        const OpenSim::Point&,
         CalculateMenuFlags = CalculateMenuFlags::None
     );
     void DrawCalculateTransformMenu(
-        OpenSim::Component const& root,
-        SimTK::State const&,
-        OpenSim::Frame const&
+        const OpenSim::Component& root,
+        const SimTK::State&,
+        const OpenSim::Frame&
     );
     void DrawCalculateOriginMenu(
-        OpenSim::Component const& root,
-        SimTK::State const&,
-        OpenSim::Frame const&
+        const OpenSim::Component& root,
+        const SimTK::State&,
+        const OpenSim::Frame&
     );
     void DrawCalculateAxisDirectionsMenu(
-        OpenSim::Component const& root,
-        SimTK::State const&,
-        OpenSim::Frame const&
+        const OpenSim::Component& root,
+        const SimTK::State&,
+        const OpenSim::Frame&
     );
     void DrawCalculateOriginMenu(
-        OpenSim::Component const& root,
-        SimTK::State const&,
-        OpenSim::Sphere const&
+        const OpenSim::Component& root,
+        const SimTK::State&,
+        const OpenSim::Sphere&
     );
     void DrawCalculateRadiusMenu(
-        OpenSim::Component const& root,
-        SimTK::State const&,
-        OpenSim::Sphere const&
+        const OpenSim::Component& root,
+        const SimTK::State&,
+        const OpenSim::Sphere&
     );
     void DrawCalculateVolumeMenu(
-        OpenSim::Component const& root,
-        SimTK::State const&,
-        OpenSim::Sphere const&
+        const OpenSim::Component& root,
+        const SimTK::State&,
+        const OpenSim::Sphere&
     );
     void DrawCalculateMenu(
-        OpenSim::Component const& root,
-        SimTK::State const&,
-        OpenSim::Frame const&,
+        const OpenSim::Component& root,
+        const SimTK::State&,
+        const OpenSim::Frame&,
         CalculateMenuFlags = CalculateMenuFlags::None
     );
     void DrawCalculateMenu(
-        OpenSim::Component const& root,
-        SimTK::State const&,
-        OpenSim::Geometry const&,
+        const OpenSim::Component& root,
+        const SimTK::State&,
+        const OpenSim::Geometry&,
         CalculateMenuFlags = CalculateMenuFlags::None
     );
     void TryDrawCalculateMenu(
-        OpenSim::Component const& root,
-        SimTK::State const&,
-        OpenSim::Component const& selected,
+        const OpenSim::Component& root,
+        const SimTK::State&,
+        const OpenSim::Component& selected,
         CalculateMenuFlags = CalculateMenuFlags::None
     );
     void DrawCalculateOriginMenu(
-        OpenSim::Component const& root,
-        SimTK::State const&,
-        OpenSim::Ellipsoid const&
+        const OpenSim::Component& root,
+        const SimTK::State&,
+        const OpenSim::Ellipsoid&
     );
     void DrawCalculateRadiiMenu(
-        OpenSim::Component const& root,
-        SimTK::State const&,
-        OpenSim::Ellipsoid const&
+        const OpenSim::Component& root,
+        const SimTK::State&,
+        const OpenSim::Ellipsoid&
     );
     void DrawCalculateRadiiDirectionsMenu(
-        OpenSim::Component const& root,
-        SimTK::State const&,
-        OpenSim::Ellipsoid const&
+        const OpenSim::Component& root,
+        const SimTK::State&,
+        const OpenSim::Ellipsoid&
     );
     void DrawCalculateScaledRadiiDirectionsMenu(
-        OpenSim::Component const& root,
-        SimTK::State const&,
-        OpenSim::Ellipsoid const&
+        const OpenSim::Component& root,
+        const SimTK::State&,
+        const OpenSim::Ellipsoid&
     );
     void DrawCalculateMenu(
-        OpenSim::Component const& root,
-        SimTK::State const&,
-        OpenSim::Ellipsoid const&,
+        const OpenSim::Component& root,
+        const SimTK::State&,
+        const OpenSim::Ellipsoid&,
         CalculateMenuFlags = CalculateMenuFlags::None
     );
 
@@ -229,39 +229,39 @@ namespace osc
     bool DrawRenderingOptionsEditor(CustomRenderingOptions&);
     bool DrawOverlayOptionsEditor(OverlayDecorationOptions&);
     bool DrawCustomDecorationOptionCheckboxes(OpenSimDecorationOptions&);
-    bool DrawAdvancedParamsEditor(ModelRendererParams&, std::span<SceneDecoration const>);
+    bool DrawAdvancedParamsEditor(ModelRendererParams&, std::span<const SceneDecoration>);
     bool DrawVisualAidsContextMenuContent(ModelRendererParams&);
     bool DrawViewerTopButtonRow(
         ModelRendererParams&,
-        std::span<SceneDecoration const>,
+        std::span<const SceneDecoration>,
         IconCache&,
-        std::function<bool()> const& drawExtraElements = []() { return false; }
+        const std::function<bool()>& drawExtraElements = []() { return false; }
     );
     bool DrawCameraControlButtons(
         ModelRendererParams&,
-        std::span<SceneDecoration const>,
-        Rect const&,
-        std::optional<AABB> const& maybeSceneAABB,
+        std::span<const SceneDecoration>,
+        const Rect&,
+        const std::optional<AABB>& maybeSceneAABB,
         IconCache&,
         Vec2 desiredTopCentroid
     );
     bool DrawViewerImGuiOverlays(
         ModelRendererParams&,
-        std::span<SceneDecoration const>,
+        std::span<const SceneDecoration>,
         std::optional<AABB>,
-        Rect const&,
+        const Rect&,
         IconCache&,
-        std::function<bool()> const& drawExtraElementsInTop = []() { return false; }
+        const std::function<bool()>& drawExtraElementsInTop = []() { return false; }
     );
 
     // toolbar stuff
     bool BeginToolbar(CStringView label, std::optional<Vec2> padding = {});  // behaves the same as `ui::begin_panel` (i.e. you must call `ui::end_panel`)
-    void DrawNewModelButton(ParentPtr<IMainUIStateAPI> const&);
+    void DrawNewModelButton(const ParentPtr<IMainUIStateAPI>&);
     void DrawOpenModelButtonWithRecentFilesDropdown(
-        std::function<void(std::optional<std::filesystem::path>)> const& onUserClickedOpenOrSelectedFile
+        const std::function<void(std::optional<std::filesystem::path>)>& onUserClickedOpenOrSelectedFile
     );
-    void DrawOpenModelButtonWithRecentFilesDropdown(ParentPtr<IMainUIStateAPI> const&);
-    void DrawSaveModelButton(ParentPtr<IMainUIStateAPI> const&, UndoableModelStatePair&);
+    void DrawOpenModelButtonWithRecentFilesDropdown(const ParentPtr<IMainUIStateAPI>&);
+    void DrawSaveModelButton(const ParentPtr<IMainUIStateAPI>&, UndoableModelStatePair&);
     void DrawReloadModelButton(UndoableModelStatePair&);
     void DrawUndoButton(UndoableModelStatePair&);
     void DrawRedoButton(UndoableModelStatePair&);
@@ -275,7 +275,7 @@ namespace osc
 
     // mesh stuff
     void DrawMeshExportContextMenuContent(
-        UndoableModelStatePair const&,
-        OpenSim::Mesh const&
+        const UndoableModelStatePair&,
+        const OpenSim::Mesh&
     );
 }

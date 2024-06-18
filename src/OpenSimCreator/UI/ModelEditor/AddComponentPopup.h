@@ -19,9 +19,9 @@ namespace osc
             std::shared_ptr<UndoableModelStatePair>,
             std::unique_ptr<OpenSim::Component> prototype
         );
-        AddComponentPopup(AddComponentPopup const&) = delete;
+        AddComponentPopup(const AddComponentPopup&) = delete;
         AddComponentPopup(AddComponentPopup&&) noexcept;
-        AddComponentPopup& operator=(AddComponentPopup const&) = delete;
+        AddComponentPopup& operator=(const AddComponentPopup&) = delete;
         AddComponentPopup& operator=(AddComponentPopup&&) noexcept;
         ~AddComponentPopup() noexcept;
 

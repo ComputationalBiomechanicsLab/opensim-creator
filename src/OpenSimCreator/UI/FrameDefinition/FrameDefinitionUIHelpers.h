@@ -14,11 +14,11 @@ namespace osc::fd
     );
 
     std::unique_ptr<UndoableModelStatePair> MakeUndoableModelFromSceneModel(
-        UndoableModelStatePair const& sceneModel
+        const UndoableModelStatePair& sceneModel
     );
 
     void ActionExportFrameDefinitionSceneModelToEditorTab(
-        ParentPtr<ITabHost> const&,
-        UndoableModelStatePair const&
+        const ParentPtr<ITabHost>&,
+        const UndoableModelStatePair&
     );
 }
