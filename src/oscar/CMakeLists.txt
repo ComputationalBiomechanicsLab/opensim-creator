@@ -446,3 +446,8 @@ target_link_libraries(oscar PUBLIC
     tomlplusplus::tomlplusplus
     lunasvg::lunasvg
 )
+
+set_target_properties(oscar PROPERTIES
+    CXX_EXTENSIONS OFF
+    CXX_STANDARD_REQUIRED ON
+)

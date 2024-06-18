@@ -470,3 +470,8 @@ target_compile_options(OpenSimCreator PUBLIC
         -Wno-array-bounds
     >
 )
+
+set_target_properties(OpenSimCreator PROPERTIES
+    CXX_EXTENSIONS OFF
+    CXX_STANDARD_REQUIRED ON
+)

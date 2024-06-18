@@ -76,3 +76,8 @@ target_include_directories(oscar_learnopengl PUBLIC
 target_link_libraries(oscar_learnopengl PUBLIC
     oscar
 )
+
+set_target_properties(oscar_learnopengl PROPERTIES
+    CXX_EXTENSIONS OFF
+    CXX_STANDARD_REQUIRED ON
+)

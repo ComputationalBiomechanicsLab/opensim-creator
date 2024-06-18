@@ -63,6 +63,11 @@ target_link_options(osc PUBLIC
     >
 )
 
+set_target_properties(osc PROPERTIES
+    CXX_EXTENSIONS OFF
+    CXX_STANDARD_REQUIRED ON
+)
+
 
 # -------------- installation/packaging ------------- #
 

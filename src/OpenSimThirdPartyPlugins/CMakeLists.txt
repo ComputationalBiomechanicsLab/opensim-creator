@@ -25,3 +25,8 @@ set_target_properties(OpenSimThirdPartyPlugins PROPERTIES
 )
 
 target_compile_features(OpenSimThirdPartyPlugins PRIVATE cxx_std_14)
+
+set_target_properties(OpenSimThirdPartyPlugins PROPERTIES
+    CXX_EXTENSIONS OFF
+    CXX_STANDARD_REQUIRED ON
+)

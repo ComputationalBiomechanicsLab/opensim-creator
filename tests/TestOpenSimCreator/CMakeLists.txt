@@ -13,6 +13,7 @@ add_executable(TestOpenSimCreator
     Documents/ModelWarper/TestFrameWarperFactories.cpp
     Documents/ModelWarper/TestModelWarpDocument.cpp
     Documents/ModelWarper/TestPointWarperFactories.cpp
+    Documents/OutputExtractors/TestConstantOutputExtractor.cpp
     Documents/Simulation/TestForwardDynamicSimulation.cpp
     Documents/Simulation/TestSimulationHelpers.cpp
     Graphics/TestOpenSimDecorationGenerator.cpp
@@ -25,7 +26,7 @@ add_executable(TestOpenSimCreator
     Utils/TestShapeFitters.cpp
 
     TestOpenSimCreator.cpp  # entrypoint (main)
-  "Documents/OutputExtractors/TestConstantOutputExtractor.cpp")
+)
 
 configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/TestOpenSimCreatorConfig.h.in"
@@ -47,6 +48,11 @@ target_link_libraries(TestOpenSimCreator PUBLIC
     # link to testing library
     GTest::gtest
     GTest::gtest_main
+)
+
+set_target_properties(TestOpenSimCreator PROPERTIES
+    CXX_EXTENSIONS OFF
+    CXX_STANDARD_REQUIRED ON
 )
 
 # tell CMake (+IDEs) how to find all tests

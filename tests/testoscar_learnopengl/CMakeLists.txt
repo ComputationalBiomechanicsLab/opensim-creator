@@ -22,7 +22,11 @@ target_link_libraries(testoscar_learnopengl PUBLIC
     GTest::gtest_main
 )
 
-# tell CMake (+IDEs) how to find all tests
+set_target_properties(testoscar_learnopengl PROPERTIES
+    CXX_EXTENSIONS OFF
+    CXX_STANDARD_REQUIRED ON
+)
+
 if(${OSC_DISCOVER_TESTS})
     gtest_discover_tests(testoscar_learnopengl)
 endif()

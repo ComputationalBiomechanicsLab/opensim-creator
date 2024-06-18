@@ -34,3 +34,8 @@ target_include_directories(oscar_demos PUBLIC
 target_link_libraries(oscar_demos PUBLIC
     oscar
 )
+
+set_target_properties(oscar_demos PROPERTIES
+    CXX_EXTENSIONS OFF
+    CXX_STANDARD_REQUIRED ON
+)

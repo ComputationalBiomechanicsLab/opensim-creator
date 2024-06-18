@@ -129,6 +129,11 @@ target_link_libraries(testoscar PUBLIC
     GTest::gtest_main
 )
 
+set_target_properties(testoscar PROPERTIES
+    CXX_EXTENSIONS OFF
+    CXX_STANDARD_REQUIRED ON
+)
+
 # tell CMake (+IDEs) how to find all tests
 if(${OSC_DISCOVER_TESTS})
     gtest_discover_tests(testoscar)

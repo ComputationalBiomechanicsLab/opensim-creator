@@ -5,6 +5,12 @@ target_link_libraries(hellotriangle PUBLIC
     oscar
 )
 
+set_target_properties(hellotriangle PROPERTIES
+    CXX_EXTENSIONS OFF
+    CXX_STANDARD_REQUIRED ON
+)
+
+
 # for development on Windows, copy all runtime dlls to the exe directory
 # (because Windows doesn't have an RPATH)
 #
