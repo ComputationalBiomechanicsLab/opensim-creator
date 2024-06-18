@@ -120,7 +120,7 @@ namespace osc::mi
 
         bool openOsimFileAsModelGraph()
         {
-            std::optional<std::filesystem::path> const maybeOsimPath = prompt_user_to_select_file({"osim"});
+            const std::optional<std::filesystem::path> maybeOsimPath = prompt_user_to_select_file({"osim"});
 
             if (maybeOsimPath)
             {
@@ -137,7 +137,7 @@ namespace osc::mi
 
         bool exportAsModelGraphAsOsimFile()
         {
-            std::optional<std::filesystem::path> const maybeExportPath =
+            const std::optional<std::filesystem::path> maybeExportPath =
                 PromptUserForFileSaveLocationAndAddExtensionIfNecessary("osim");
 
             if (!maybeExportPath)
@@ -240,7 +240,7 @@ namespace osc::mi
             m_ModelGraphSnapshots.redo();
         }
 
-        std::unordered_set<UID> const& getCurrentSelection() const
+        const std::unordered_set<UID>& getCurrentSelection() const
         {
             return getModelGraph().getSelected();
         }
@@ -307,7 +307,7 @@ namespace osc::mi
 
         void drawConnectionLines(
             const Color& color,
-            std::unordered_set<UID> const& excludedIDs) const
+            const std::unordered_set<UID>& excludedIDs) const
         {
             const Document& mg = getModelGraph();
             ImU32 colorU32 = ui::to_ImU32(color);
@@ -555,7 +555,7 @@ namespace osc::mi
             m_SceneScaleFactor = newScaleFactor;
         }
 
-        MeshImporterHover doHovertest(std::vector<DrawableThing> const& drawables) const
+        MeshImporterHover doHovertest(const std::vector<DrawableThing>& drawables) const
         {
             auto cache = App::singleton<SceneCache>(App::resource_loader());
 
@@ -612,7 +612,7 @@ namespace osc::mi
                     continue;
                 }
 
-                std::optional<RayCollision> const rc = get_closest_worldspace_ray_triangle_collision(
+                const std::optional<RayCollision> rc = get_closest_worldspace_ray_triangle_collision(
                     drawable.mesh,
                     cache->get_bvh(drawable.mesh),
                     drawable.transform,
@@ -966,7 +966,7 @@ namespace osc::mi
         void drawConnectionLines(
             const MIObject& el,
             ImU32 color,
-            std::unordered_set<UID> const& excludedIDs) const
+            const std::unordered_set<UID>& excludedIDs) const
         {
             const Document& mg = getModelGraph();
             for (int i = 0, len = el.getNumCrossReferences(); i < len; ++i)

@@ -69,7 +69,7 @@ namespace osc
     }
 
     // returns the source/destination mesh in the given document
-    const inline Mesh& GetMesh(const TPSDocument& doc, TPSDocumentInputIdentifier which)
+    inline const Mesh& GetMesh(const TPSDocument& doc, TPSDocumentInputIdentifier which)
     {
         static_assert(num_options<TPSDocumentInputIdentifier>() == 2);
         return which == TPSDocumentInputIdentifier::Source ? doc.sourceMesh : doc.destinationMesh;

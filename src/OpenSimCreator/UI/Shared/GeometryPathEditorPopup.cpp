@@ -26,7 +26,7 @@ namespace
     constexpr auto c_LocationInputIDs = std::to_array<CStringView>({ "##xinput", "##yinput", "##zinput" });
     static_assert(c_LocationInputIDs.size() == 3);
 
-    OpenSim::GeometryPath CopyOrDefaultGeometryPath(std::function<const OpenSim::GeometryPath*()> const& accessor)
+    OpenSim::GeometryPath CopyOrDefaultGeometryPath(const std::function<const OpenSim::GeometryPath*()>& accessor)
     {
         const OpenSim::GeometryPath* maybeGeomPath = accessor();
         if (maybeGeomPath)
@@ -370,8 +370,6 @@ private:
 };
 
 
-// public API (PIMPL)
-
 osc::GeometryPathEditorPopup::GeometryPathEditorPopup(
     std::string_view popupName_,
     std::shared_ptr<const UndoableModelStatePair> targetModel_,
@@ -379,8 +377,7 @@ osc::GeometryPathEditorPopup::GeometryPathEditorPopup(
     std::function<void(const OpenSim::GeometryPath&)> onLocalCopyEdited_) :
 
     m_Impl{std::make_unique<Impl>(popupName_, std::move(targetModel_), std::move(geometryPathGetter_), std::move(onLocalCopyEdited_))}
-{
-}
+{}
 osc::GeometryPathEditorPopup::GeometryPathEditorPopup(GeometryPathEditorPopup&&) noexcept = default;
 osc::GeometryPathEditorPopup& osc::GeometryPathEditorPopup::operator=(GeometryPathEditorPopup&&) noexcept = default;
 osc::GeometryPathEditorPopup::~GeometryPathEditorPopup() noexcept = default;

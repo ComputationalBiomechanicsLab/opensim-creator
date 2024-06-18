@@ -24,8 +24,7 @@ public:
         m_Model{std::move(model)},
         m_OnSelection{std::move(onSelection)},
         m_Filter{std::move(filter)}
-    {
-    }
+    {}
 
 private:
     void impl_draw_content() final
@@ -68,9 +67,7 @@ osc::SelectComponentPopup::SelectComponentPopup(
     std::function<bool(const OpenSim::Component&)> filter) :
 
     m_Impl{std::make_unique<Impl>(popupName, std::move(model), std::move(onSelection), std::move(filter))}
-{
-}
-
+{}
 osc::SelectComponentPopup::SelectComponentPopup(SelectComponentPopup&&) noexcept = default;
 osc::SelectComponentPopup& osc::SelectComponentPopup::operator=(SelectComponentPopup&&) noexcept = default;
 osc::SelectComponentPopup::~SelectComponentPopup() noexcept = default;

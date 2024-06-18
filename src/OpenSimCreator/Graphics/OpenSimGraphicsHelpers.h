@@ -32,7 +32,7 @@ namespace osc
         SceneCache&,
         const IConstModelStatePair&,
         const OpenSimDecorationOptions&,
-        std::function<void(const OpenSim::Component&, SceneDecoration&&)> const& out
+        const std::function<void(const OpenSim::Component&, SceneDecoration&&)>& out
     );
 
     std::optional<SceneCollision> GetClosestCollision(

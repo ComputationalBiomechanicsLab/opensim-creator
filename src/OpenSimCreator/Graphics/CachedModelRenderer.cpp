@@ -108,7 +108,7 @@ namespace
 
 class osc::CachedModelRenderer::Impl final {
 public:
-    explicit Impl(std::shared_ptr<SceneCache> const& cache) :
+    explicit Impl(const std::shared_ptr<SceneCache>& cache) :
         m_DecorationCache{cache},
         m_Renderer{*cache}
     {}
@@ -119,8 +119,7 @@ public:
         float aspectRatio)
     {
         m_DecorationCache.update(modelState, params);
-        if (std::optional<AABB> const aabb = m_DecorationCache.getAABB())
-        {
+        if (const std::optional<AABB> aabb = m_DecorationCache.getAABB()) {
             auto_focus(params.camera, *aabb, aspectRatio);
         }
     }
@@ -190,9 +189,7 @@ private:
 };
 
 
-// public API (PIMPL)
-
-osc::CachedModelRenderer::CachedModelRenderer(std::shared_ptr<SceneCache> const& cache) :
+osc::CachedModelRenderer::CachedModelRenderer(const std::shared_ptr<SceneCache>& cache) :
     m_Impl{std::make_unique<Impl>(cache)}
 {}
 osc::CachedModelRenderer::CachedModelRenderer(CachedModelRenderer&&) noexcept = default;

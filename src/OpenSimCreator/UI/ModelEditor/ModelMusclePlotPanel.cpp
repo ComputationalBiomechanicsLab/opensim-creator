@@ -640,7 +640,7 @@ namespace
             return *lock;
         }
 
-        SynchronizedValueGuard<std::vector<PlotDataPoint> const> lockDataPoints() const
+        SynchronizedValueGuard<const std::vector<PlotDataPoint>> lockDataPoints() const
         {
             return m_DataPoints.lock();
         }
@@ -711,7 +711,7 @@ namespace
     std::optional<float> ComputeLERPedY(const Plot& p, float x)
     {
         auto lock = p.lockDataPoints();
-        std::span<const PlotDataPoint> const points = *lock;
+        const std::span<const PlotDataPoint> points = *lock;
 
         if (points.empty())
         {
@@ -789,7 +789,7 @@ namespace
     bool IsXInRange(const Plot& p, float x)
     {
         auto lock = p.lockDataPoints();
-        std::span<const PlotDataPoint> const points = *lock;
+        const std::span<const PlotDataPoint> points = *lock;
 
         if (points.size() <= 1)
         {
@@ -898,7 +898,7 @@ namespace
                 continue;  // skip: row does not contain enough columns
             }
 
-            std::optional<float> const independentVar = from_chars_strip_whitespace(row.front());
+            const std::optional<float> independentVar = from_chars_strip_whitespace(row.front());
             if (!independentVar)
             {
                 continue;  // skip: row does not contain a valid independent variable
@@ -908,7 +908,7 @@ namespace
             for (size_t dependentCol = 1; dependentCol < row.size(); ++dependentCol)
             {
                 const std::string& dependentVarStr = row[dependentCol];
-                std::optional<float> const dependentVar = from_chars_strip_whitespace(dependentVarStr);
+                const std::optional<float> dependentVar = from_chars_strip_whitespace(dependentVarStr);
                 if (!dependentVar)
                 {
                     continue;  // skip: column cannot be parsed as a number
@@ -988,7 +988,7 @@ namespace
 
     void ActionPromptUserToSavePlotToCSV(const OpenSim::Coordinate& coord, const PlotParameters& params, const Plot& plot)
     {
-        std::optional<std::filesystem::path> const maybeCSVPath =
+        const std::optional<std::filesystem::path> maybeCSVPath =
             PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
 
         if (maybeCSVPath)
@@ -1017,7 +1017,7 @@ namespace
 
         void clearUnlockedPlots()
         {
-            std::erase_if(m_PreviousPlots, [](std::shared_ptr<Plot> const& p) { return !p->getIsLocked(); });
+            std::erase_if(m_PreviousPlots, [](const std::shared_ptr<Plot>& p) { return !p->getIsLocked(); });
         }
 
         PlottingTaskStatus getPlottingTaskStatus() const
@@ -1181,7 +1181,7 @@ namespace
             // - you now have a list containing 0..`hmax` unlocked elements, plus locked elements,
             //   where the unlocked elements are the most recently used
 
-            auto isFirstDeleteablePlot = [nth = 1, max = this->m_MaxHistoryEntries](std::shared_ptr<Plot> const& p) mutable
+            auto isFirstDeleteablePlot = [nth = 1, max = this->m_MaxHistoryEntries](const std::shared_ptr<Plot>& p) mutable
             {
                 if (p->getIsLocked())
                 {
@@ -1194,7 +1194,7 @@ namespace
             const auto forwardIt = backwardIt.base();
             const ptrdiff_t idxOfDeleteableEnd = std::distance(m_PreviousPlots.begin(), forwardIt);
 
-            auto shouldDelete = [i = static_cast<ptrdiff_t>(0), idxOfDeleteableEnd](std::shared_ptr<Plot> const& p) mutable
+            auto shouldDelete = [i = static_cast<ptrdiff_t>(0), idxOfDeleteableEnd](const std::shared_ptr<Plot>& p) mutable
             {
                 return i++ < idxOfDeleteableEnd && !p->getIsLocked();
             };
@@ -1304,7 +1304,7 @@ namespace
         std::vector<PlotDataPoint>::const_iterator m_Cursor = m_Data.begin();
     };
 
-    bool LessThanAssumingEmptyHighest(std::optional<float> const& a, std::optional<float> const& b)
+    bool LessThanAssumingEmptyHighest(const std::optional<float>& a, const std::optional<float>& b)
     {
         // this is defined differently from the C++ standard, which makes the
         // empty optional the "minimum" value, logically
@@ -1418,7 +1418,7 @@ namespace
     // over the current plot
     void ActionPromptUserForCSVOverlayFile(PlotLines& lines)
     {
-        std::optional<std::filesystem::path> const maybeCSVPath =
+        const std::optional<std::filesystem::path> maybeCSVPath =
             prompt_user_to_select_file({"csv"});
 
         if (maybeCSVPath)
@@ -1436,7 +1436,7 @@ namespace
     // that location
     void ActionPromptUserToSavePlotLinesToCSV(const OpenSim::Coordinate& coord, const PlotParameters& params, const PlotLines& lines)
     {
-        std::optional<std::filesystem::path> const maybeCSVPath =
+        const std::optional<std::filesystem::path> maybeCSVPath =
             PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
 
         if (maybeCSVPath)
@@ -1896,7 +1896,7 @@ namespace
 
                 // (try to) draw the hovered coordinate value as a faded dropline
                 if (maybeMouseX) {
-                    std::optional<float> const maybeHoverY = ComputeLERPedY(m_Lines.getActivePlot(), *maybeMouseX);
+                    const std::optional<float> maybeHoverY = ComputeLERPedY(m_Lines.getActivePlot(), *maybeMouseX);
                     if (maybeHoverY) {
                         double v = *maybeHoverY;
 

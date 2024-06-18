@@ -55,8 +55,6 @@ private:
 };
 
 
-// public API
-
 osc::SimulationReport::SimulationReport() :
     m_Impl{std::make_shared<Impl>()}
 {}

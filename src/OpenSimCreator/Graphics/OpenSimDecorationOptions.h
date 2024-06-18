@@ -62,8 +62,8 @@ namespace osc
         bool getShouldShowContactForces() const;
         void setShouldShowContactForces(bool);
 
-        void forEachOptionAsAppSettingValue(std::function<void(std::string_view, const AppSettingValue&)> const&) const;
-        void tryUpdFromValues(std::string_view keyPrefix, std::unordered_map<std::string, AppSettingValue> const&);
+        void forEachOptionAsAppSettingValue(const std::function<void(std::string_view, const AppSettingValue&)>&) const;
+        void tryUpdFromValues(std::string_view keyPrefix, const std::unordered_map<std::string, AppSettingValue>&);
 
         friend bool operator==(const OpenSimDecorationOptions&, const OpenSimDecorationOptions&) = default;
 

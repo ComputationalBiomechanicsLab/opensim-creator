@@ -16,12 +16,11 @@ namespace osc
     public:
         ModelEditorViewerPanelParameters(
             std::shared_ptr<UndoableModelStatePair> model_,
-            std::function<void(const ModelEditorViewerPanelRightClickEvent&)> const& onRightClickedAComponent_) :
+            const std::function<void(const ModelEditorViewerPanelRightClickEvent&)>& onRightClickedAComponent_) :
 
             m_Model{std::move(model_)},
             m_OnRightClickedAComponent{onRightClickedAComponent_}
-        {
-        }
+        {}
 
         std::shared_ptr<UndoableModelStatePair> getModelSharedPtr() { return m_Model; }
         void callOnRightClickHandler(const ModelEditorViewerPanelRightClickEvent& e) { m_OnRightClickedAComponent(e); }

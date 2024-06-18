@@ -19,7 +19,7 @@ namespace osc::mi
     // returns `true` if a `StationEl` can be attached to the object
     bool CanAttachStationTo(const MIObject&);
 
-    std::array<MIClass, std::variant_size_v<SceneElVariant>> const& GetSceneElClasses();
+    const std::array<MIClass, std::variant_size_v<SceneElVariant>>& GetSceneElClasses();
 
     Vec3 AverageCenter(const Mesh&);
     Vec3 mass_center_of(const Mesh&);

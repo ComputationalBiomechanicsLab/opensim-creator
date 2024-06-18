@@ -42,54 +42,66 @@ namespace
         static_assert(N <= std::numeric_limits<int>::max());
 
     public:
-        void push_back(T v) {
+        void push_back(T v)
+        {
             if (m_Size >= N) {
                 throw std::runtime_error{"cannot render a navigator: the Model/Component tree is too deep"};
             }
             m_Data[m_Size++] = v;
         }
 
-        T const* begin() const {
+        const T* begin() const
+        {
             return m_Data.data();
         }
 
-        T* begin() {
+        T* begin()
+        {
             return m_Data.data();
         }
 
-        T const* end() const {
+        const T* end() const
+        {
             return m_Data.data() + m_Size;
         }
 
-        T* end() {
+        T* end()
+        {
             return m_Data.data() + m_Size;
         }
 
-        size_t size() const {
+        size_t size() const
+        {
             return m_Size;
         }
 
-        ptrdiff_t sizei() const {
+        ptrdiff_t sizei() const
+        {
             return static_cast<ptrdiff_t>(m_Size);
         }
 
-        bool empty() const {
+        bool empty() const
+        {
             return m_Size == 0;
         }
 
-        void resize(size_t newsize) {
+        void resize(size_t newsize)
+        {
             m_Size = newsize;
         }
 
-        void clear() {
+        void clear()
+        {
             m_Size = 0;
         }
 
-        T& operator[](size_t idx) {
+        T& operator[](size_t idx)
+        {
             return m_Data[idx];
         }
 
-        T const& operator[](size_t i) const {
+        const T& operator[](size_t i) const
+        {
             return m_Data[i];
         }
 
@@ -399,17 +411,13 @@ private:
 };
 
 
-// public API (PIMPL)
-
 osc::NavigatorPanel::NavigatorPanel(
     std::string_view panelName,
     std::shared_ptr<IModelStatePair> model,
     std::function<void(const OpenSim::ComponentPath&)> onRightClick) :
 
     m_Impl{std::make_unique<Impl>(panelName, std::move(model), std::move(onRightClick))}
-{
-}
-
+{}
 osc::NavigatorPanel::NavigatorPanel(NavigatorPanel&&) noexcept = default;
 osc::NavigatorPanel& osc::NavigatorPanel::operator=(NavigatorPanel&&) noexcept = default;
 osc::NavigatorPanel::~NavigatorPanel() noexcept = default;

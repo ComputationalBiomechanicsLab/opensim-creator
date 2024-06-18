@@ -547,7 +547,7 @@ namespace
         // then try to import all the meshes
         for (const OpenSim::Mesh& mesh : m.getComponentList<OpenSim::Mesh>())
         {
-            std::optional<std::filesystem::path> const maybeMeshPath = FindGeometryFileAbsPath(m, mesh);
+            const std::optional<std::filesystem::path> maybeMeshPath = FindGeometryFileAbsPath(m, mesh);
 
             if (!maybeMeshPath)
             {

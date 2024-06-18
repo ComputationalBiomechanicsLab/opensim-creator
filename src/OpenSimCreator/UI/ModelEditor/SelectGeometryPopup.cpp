@@ -243,17 +243,13 @@ private:
 };
 
 
-// public API (PIMPL)
-
 osc::SelectGeometryPopup::SelectGeometryPopup(
     std::string_view popupName,
     const std::filesystem::path& geometryDir,
     std::function<void(std::unique_ptr<OpenSim::Geometry>)> onSelection) :
 
     m_Impl{std::make_unique<Impl>(popupName, geometryDir, std::move(onSelection))}
-{
-}
-
+{}
 osc::SelectGeometryPopup::SelectGeometryPopup(SelectGeometryPopup&&) noexcept = default;
 osc::SelectGeometryPopup& osc::SelectGeometryPopup::operator=(SelectGeometryPopup&&) noexcept = default;
 osc::SelectGeometryPopup::~SelectGeometryPopup() noexcept = default;

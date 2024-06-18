@@ -94,9 +94,7 @@ osc::ModelStatePairContextMenu::ModelStatePairContextMenu(
     std::optional<std::string> maybeComponentAbsPath_) :
 
     m_Impl{std::make_unique<Impl>(panelName_, std::move(model_), api_, std::move(maybeComponentAbsPath_))}
-{
-}
-
+{}
 osc::ModelStatePairContextMenu::ModelStatePairContextMenu(ModelStatePairContextMenu&&) noexcept = default;
 osc::ModelStatePairContextMenu& osc::ModelStatePairContextMenu::operator=(ModelStatePairContextMenu&&) noexcept = default;
 osc::ModelStatePairContextMenu::~ModelStatePairContextMenu() noexcept = default;

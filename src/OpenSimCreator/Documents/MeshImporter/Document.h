@@ -44,8 +44,8 @@ namespace osc::mi
             using difference_type = ptrdiff_t;
             using value_type = T;
             using pointer = T*;
-            using const_pointer = T const*;
-            using reference = T const&;
+            using const_pointer = const T*;
+            using reference = const T&;
             using iterator_category = std::forward_iterator_tag;
 
             // caller-provided iterator
@@ -152,7 +152,7 @@ namespace osc::mi
         }
 
         template<std::derived_from<MIObject> T = MIObject>
-        T const* tryGetByID(UID id) const
+        const T* tryGetByID(UID id) const
         {
             return findByID<T>(m_Objects, id);
         }
@@ -164,7 +164,7 @@ namespace osc::mi
         }
 
         template<std::derived_from<MIObject> T = MIObject>
-        T const& getByID(UID id) const
+        const T& getByID(UID id) const
         {
             return findByIDOrThrow<T>(m_Objects, id);
         }
@@ -203,9 +203,9 @@ namespace osc::mi
         }
 
         template<std::derived_from<MIObject> T = MIObject>
-        Iterable<T const> iter() const
+        Iterable<const T> iter() const
         {
-            return Iterable<T const>{m_Objects};
+            return Iterable<const T>{m_Objects};
         }
 
         MIObject& insert(std::unique_ptr<MIObject> obj)
@@ -274,7 +274,7 @@ namespace osc::mi
             return !m_SelectedObjectIDs.empty();
         }
 
-        std::unordered_set<UID> const& getSelected() const
+        const std::unordered_set<UID>& getSelected() const
         {
             return m_SelectedObjectIDs;
         }

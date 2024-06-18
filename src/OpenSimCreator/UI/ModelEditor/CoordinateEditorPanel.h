@@ -17,7 +17,7 @@ namespace osc
     public:
         CoordinateEditorPanel(
             std::string_view panelName,
-            ParentPtr<IMainUIStateAPI> const&,
+            const ParentPtr<IMainUIStateAPI>&,
             IEditorAPI*,
             std::shared_ptr<UndoableModelStatePair>
         );

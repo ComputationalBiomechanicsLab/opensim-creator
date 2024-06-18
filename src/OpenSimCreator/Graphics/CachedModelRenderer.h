@@ -21,7 +21,7 @@ namespace osc
 {
     class CachedModelRenderer final {
     public:
-        explicit CachedModelRenderer(std::shared_ptr<SceneCache> const&);
+        explicit CachedModelRenderer(const std::shared_ptr<SceneCache>&);
         CachedModelRenderer(const CachedModelRenderer&) = delete;
         CachedModelRenderer(CachedModelRenderer&&) noexcept;
         CachedModelRenderer& operator=(const CachedModelRenderer&) = delete;

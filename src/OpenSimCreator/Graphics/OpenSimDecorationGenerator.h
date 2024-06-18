@@ -24,7 +24,7 @@ namespace osc
         const SimTK::State&,
         const OpenSimDecorationOptions&,
         float fixupScaleFactor,
-        std::function<void(const OpenSim::Component&, SceneDecoration&&)> const& out
+        const std::function<void(const OpenSim::Component&, SceneDecoration&&)>& out
     );
 
     // generates 3D decorations only for `subcomponent` within the given {model, state} pair
@@ -37,7 +37,7 @@ namespace osc
         const OpenSim::Component& subcomponent,
         const OpenSimDecorationOptions&,
         float fixupScaleFactor,
-        std::function<void(const OpenSim::Component&, SceneDecoration&&)> const& out,
+        const std::function<void(const OpenSim::Component&, SceneDecoration&&)>& out,
         bool inclusiveOfProvidedSubcomponent = true
     );
 

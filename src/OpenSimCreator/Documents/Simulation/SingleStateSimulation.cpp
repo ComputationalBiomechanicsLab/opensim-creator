@@ -12,8 +12,7 @@ class osc::SingleStateSimulation::Impl final {
 public:
     explicit Impl(BasicModelStatePair modelState) :
         m_ModelState{std::move(modelState)}
-    {
-    }
+    {}
 
     SynchronizedValueGuard<const OpenSim::Model> getModel() const
     {
@@ -70,8 +69,6 @@ private:
     ParamBlock m_Params;
 };
 
-
-// public API (PIMPL)
 
 osc::SingleStateSimulation::SingleStateSimulation(BasicModelStatePair modelState) :
     m_Impl{std::make_unique<Impl>(std::move(modelState))}

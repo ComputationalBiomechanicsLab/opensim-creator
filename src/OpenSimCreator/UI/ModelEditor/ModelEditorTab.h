@@ -16,7 +16,7 @@ namespace osc
     class ModelEditorTab final : public ITab {
     public:
         ModelEditorTab(
-            ParentPtr<IMainUIStateAPI> const&,
+            const ParentPtr<IMainUIStateAPI>&,
             std::unique_ptr<UndoableModelStatePair>
         );
         ModelEditorTab(const ModelEditorTab&) = delete;

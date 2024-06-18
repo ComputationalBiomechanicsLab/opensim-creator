@@ -12,7 +12,7 @@ namespace osc
     class ModelEditorMainMenu final {
     public:
         ModelEditorMainMenu(
-            ParentPtr<IMainUIStateAPI> const&,
+            const ParentPtr<IMainUIStateAPI>&,
             IEditorAPI*,
             std::shared_ptr<UndoableModelStatePair>
         );

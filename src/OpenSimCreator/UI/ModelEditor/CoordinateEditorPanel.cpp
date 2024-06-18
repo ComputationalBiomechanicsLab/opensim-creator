@@ -31,7 +31,7 @@ public:
 
     Impl(
         std::string_view panelName_,
-        ParentPtr<IMainUIStateAPI> const& mainUIStateAPI_,
+        const ParentPtr<IMainUIStateAPI>& mainUIStateAPI_,
         IEditorAPI* editorAPI_,
         std::shared_ptr<UndoableModelStatePair> uum_) :
 
@@ -39,8 +39,7 @@ public:
         m_MainUIStateAPI{mainUIStateAPI_},
         m_EditorAPI{editorAPI_},
         m_Model{std::move(uum_)}
-    {
-    }
+    {}
 
 private:
 
@@ -96,8 +95,7 @@ private:
             }
 
             int id = 0;
-            for (const OpenSim::Coordinate* coordPtr : coordPtrs)
-            {
+            for (const OpenSim::Coordinate* coordPtr : coordPtrs) {
                 ui::push_id(id++);
                 drawRow(*coordPtr);
                 ui::pop_id();
@@ -252,18 +250,14 @@ private:
 };
 
 
-// public API
-
 osc::CoordinateEditorPanel::CoordinateEditorPanel(
     std::string_view panelName_,
-    ParentPtr<IMainUIStateAPI> const& mainUIStateAPI_,
+    const ParentPtr<IMainUIStateAPI>& mainUIStateAPI_,
     IEditorAPI* editorAPI_,
     std::shared_ptr<UndoableModelStatePair> uum_) :
 
     m_Impl{std::make_unique<Impl>(panelName_, mainUIStateAPI_, editorAPI_, std::move(uum_))}
-{
-}
-
+{}
 osc::CoordinateEditorPanel::CoordinateEditorPanel(CoordinateEditorPanel&&) noexcept = default;
 osc::CoordinateEditorPanel& osc::CoordinateEditorPanel::operator=(CoordinateEditorPanel&&) noexcept = default;
 osc::CoordinateEditorPanel::~CoordinateEditorPanel() noexcept = default;

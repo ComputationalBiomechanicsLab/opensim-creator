@@ -45,7 +45,7 @@ namespace osc
         ComponentRegistryEntry<T>& emplace_back(
             std::string_view name,
             std::string_view description,
-            std::shared_ptr<T const> prototype)
+            std::shared_ptr<const T> prototype)
         {
             auto& erased = push_back_erased(ComponentRegistryEntry<T>
             {
@@ -58,7 +58,7 @@ namespace osc
     };
 
     template<typename T>
-    ComponentRegistryEntry<T> const& At(ComponentRegistry<T> const& registry, size_t i)
+    const ComponentRegistryEntry<T>& At(const ComponentRegistry<T>& registry, size_t i)
     {
         if (i >= registry.size()) {
             throw std::out_of_range{"attempted to access an out-of-bounds registry entry"};
@@ -67,7 +67,7 @@ namespace osc
     }
 
     template<typename T>
-    ComponentRegistryEntry<T> const& Get(ComponentRegistry<T> const& registry, T const& el)
+    const ComponentRegistryEntry<T>& Get(ComponentRegistry<T> const& registry, const T& el)
     {
         if (auto i = IndexOf(registry, el)) {
             return registry[*i];
@@ -78,7 +78,7 @@ namespace osc
     }
 
     template<typename T>
-    ComponentRegistryEntry<T> const& Get(ComponentRegistry<T> const& registry, std::string_view componentClassName)
+    const ComponentRegistryEntry<T>& Get(const ComponentRegistry<T>& registry, std::string_view componentClassName)
     {
         if (auto i = IndexOf(registry, componentClassName)) {
             return registry[*i];

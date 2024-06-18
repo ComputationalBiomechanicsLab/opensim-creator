@@ -29,7 +29,7 @@ using namespace osc::mow;
 namespace
 {
     template<WarpableOpenSimComponent T>
-    EntryStyling CalcStyle(const UIState& state, T const& c)
+    EntryStyling CalcStyle(const UIState& state, const T& c)
     {
         return ToStyle(state.state(c));
     }
@@ -52,7 +52,7 @@ namespace
     }
 
     template<WarpableOpenSimComponent T>
-    void DrawEntryIconAndText(const UIState& state, T const& c)
+    void DrawEntryIconAndText(const UIState& state, const T& c)
     {
         DrawEntryIconAndText(state, c, CalcStyle(state, c));
     }
@@ -67,7 +67,7 @@ namespace
     }
 
     template<WarpableOpenSimComponent T>
-    void DrawDetailsTable(const UIState& state, T const& c)
+    void DrawDetailsTable(const UIState& state, const T& c)
     {
         if (ui::begin_table("##Details", 2)) {
 
@@ -88,7 +88,7 @@ namespace
     }
 
     template<WarpableOpenSimComponent T>
-    void DrawChecklist(const UIState& state, T const& c)
+    void DrawChecklist(const UIState& state, const T& c)
     {
         ui::indent(5.0f);
         int id = 0;
@@ -104,7 +104,7 @@ namespace
     }
 
     template<WarpableOpenSimComponent T>
-    void DrawTooltipContent(const UIState& state, T const& c)
+    void DrawTooltipContent(const UIState& state, const T& c)
     {
         DrawTooltipHeader(state, c);
 
@@ -120,7 +120,7 @@ namespace
     }
 
     template<WarpableOpenSimComponent T>
-    void DrawEntry(const UIState& state, T const& c)
+    void DrawEntry(const UIState& state, const T& c)
     {
         DrawEntryIconAndText(state, c);
         if (ui::is_item_hovered(ImGuiHoveredFlags_ForTooltip)) {

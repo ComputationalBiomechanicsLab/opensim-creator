@@ -74,7 +74,7 @@ namespace osc
             // mesh hittest: compute whether the user is hovering over the mesh (affects rendering)
             const Mesh& inputMesh = m_State->getScratchMesh(m_DocumentIdentifier);
             const BVH& inputMeshBVH = m_State->getScratchMeshBVH(m_DocumentIdentifier);
-            std::optional<RayCollision> const meshCollision = m_LastTextureHittestResult.is_hovered ?
+            const std::optional<RayCollision> meshCollision = m_LastTextureHittestResult.is_hovered ?
                 get_closest_worldspace_ray_triangle_collision(inputMesh, inputMeshBVH, Transform{}, cameraRay) :
                 std::nullopt;
 
@@ -161,9 +161,8 @@ namespace osc
             std::optional<MeshWarpingTabHover>& closest,
             const TPSDocumentLandmarkPair& landmark) const
         {
-            std::optional<Vec3> const maybePos = GetLocation(landmark, m_DocumentIdentifier);
-            if (!maybePos)
-            {
+            const std::optional<Vec3> maybePos = GetLocation(landmark, m_DocumentIdentifier);
+            if (!maybePos) {
                 return;  // landmark doesn't have a source/destination
             }
 
@@ -216,22 +215,22 @@ namespace osc
         // renders this panel's 3D scene to a texture
         RenderTexture& renderScene(
             Vec2 dims,
-            std::optional<RayCollision> const& maybeMeshCollision,
-            std::optional<MeshWarpingTabHover> const& maybeLandmarkCollision)
+            const std::optional<RayCollision>& maybeMeshCollision,
+            const std::optional<MeshWarpingTabHover>& maybeLandmarkCollision)
         {
             const SceneRendererParams params = calc_standard_dark_scene_render_params(
                 m_Camera,
                 App::get().anti_aliasing_level(),
                 dims
             );
-            std::vector<SceneDecoration> const decorations = generateDecorations(maybeMeshCollision, maybeLandmarkCollision);
+            const std::vector<SceneDecoration> decorations = generateDecorations(maybeMeshCollision, maybeLandmarkCollision);
             return m_CachedRenderer.render(decorations, params);
         }
 
         // returns a fresh list of 3D decorations for this panel's 3D render
         std::vector<SceneDecoration> generateDecorations(
-            std::optional<RayCollision> const& maybeMeshCollision,
-            std::optional<MeshWarpingTabHover> const& maybeLandmarkCollision) const
+            const std::optional<RayCollision>& maybeMeshCollision,
+            const std::optional<MeshWarpingTabHover>& maybeLandmarkCollision) const
         {
             std::vector<SceneDecoration> decorations;
             decorations.reserve(
@@ -240,7 +239,7 @@ namespace osc
                 m_State->getScratch().nonParticipatingLandmarks.size()
             );
 
-            std::function<void(SceneDecoration&&)> const decorationConsumer =
+            const std::function<void(SceneDecoration&&)> decorationConsumer =
                 [&decorations](SceneDecoration&& dec) { decorations.push_back(std::move(dec)); };
 
             // generate common decorations (mesh, wireframe, grid, etc.)
@@ -267,7 +266,7 @@ namespace osc
         }
 
         void generateDecorationsForLandmarks(
-            std::function<void(SceneDecoration&&)> const& decorationConsumer) const
+            const std::function<void(SceneDecoration&&)>& decorationConsumer) const
         {
             for (const TPSDocumentLandmarkPair& landmarkPair : m_State->getScratch().landmarkPairs)
             {
@@ -277,11 +276,10 @@ namespace osc
 
         void generateDecorationsForLandmark(
             const TPSDocumentLandmarkPair& landmarkPair,
-            std::function<void(SceneDecoration&&)> const& decorationConsumer) const
+            const std::function<void(SceneDecoration&&)>& decorationConsumer) const
         {
-            std::optional<Vec3> const maybeLocation = GetLocation(landmarkPair, m_DocumentIdentifier);
-            if (!maybeLocation)
-            {
+            const std::optional<Vec3> maybeLocation = GetLocation(landmarkPair, m_DocumentIdentifier);
+            if (!maybeLocation) {
                 return;  // no source/destination location for the landmark
             }
 
@@ -307,22 +305,20 @@ namespace osc
         }
 
         void generateDecorationsForNonParticipatingLandmarks(
-            std::function<void(SceneDecoration&&)> const& decorationConsumer) const
+            const std::function<void(SceneDecoration&&)>& decorationConsumer) const
         {
-            if (m_DocumentIdentifier != TPSDocumentInputIdentifier::Source)
-            {
+            if (m_DocumentIdentifier != TPSDocumentInputIdentifier::Source) {
                 return;  // only show them on the source (to-be-warped) mesh
             }
 
-            for (const auto& nonParticipatingLandmark : m_State->getScratch().nonParticipatingLandmarks)
-            {
+            for (const auto& nonParticipatingLandmark : m_State->getScratch().nonParticipatingLandmarks) {
                 generateDecorationsForNonParticipatingLandmark(nonParticipatingLandmark, decorationConsumer);
             }
         }
 
         void generateDecorationsForNonParticipatingLandmark(
             const TPSDocumentNonParticipatingLandmark& npl,
-            std::function<void(SceneDecoration&&)> const& decorationConsumer) const
+            const std::function<void(SceneDecoration&&)>& decorationConsumer) const
         {
             SceneDecoration decoration
             {
@@ -350,7 +346,7 @@ namespace osc
 
         void generateDecorationsForMouseOverMeshHover(
             const Vec3& meshCollisionPosition,
-            std::function<void(SceneDecoration&&)> const& decorationConsumer) const
+            const std::function<void(SceneDecoration&&)>& decorationConsumer) const
         {
             const bool nonParticipating = isUserPlacingNonParticipatingLandmark();
 
@@ -372,8 +368,8 @@ namespace osc
         // handle any input-related side-effects
         void handleInputAndHoverEvents(
             const ui::HittestResult& htResult,
-            std::optional<RayCollision> const& meshCollision,
-            std::optional<MeshWarpingTabHover> const& landmarkCollision)
+            const std::optional<RayCollision>& meshCollision,
+            const std::optional<MeshWarpingTabHover>& landmarkCollision)
         {
             // event: if the user left-clicks and something is hovered, select it; otherwise, add a landmark
             if (htResult.is_left_click_released_without_dragging)

@@ -110,7 +110,7 @@ namespace
 
     bool DrawOutputWithSubfieldsMenu(
         const OpenSim::AbstractOutput& o,
-        std::function<void(const OpenSim::AbstractOutput&, std::optional<ComponentOutputSubfield>)> const& onUserSelection)
+        const std::function<void(const OpenSim::AbstractOutput&, std::optional<ComponentOutputSubfield>)>& onUserSelection)
     {
         bool outputAdded = false;
         ComponentOutputSubfield supportedSubfields = GetSupportedSubfields(o);
@@ -142,7 +142,7 @@ namespace
 
     bool DrawOutputWithNoSubfieldsMenuItem(
         const OpenSim::AbstractOutput& o,
-        std::function<void(const OpenSim::AbstractOutput&, std::optional<ComponentOutputSubfield>)> const& onUserSelection)
+        const std::function<void(const OpenSim::AbstractOutput&, std::optional<ComponentOutputSubfield>)>& onUserSelection)
     {
         // can only plot top-level of output
 
@@ -199,7 +199,7 @@ namespace
         const OpenSim::Frame& frame)
     {
         // prompt user for a save location
-        std::optional<std::filesystem::path> const maybeUserSaveLocation =
+        const std::optional<std::filesystem::path> maybeUserSaveLocation =
             PromptUserForFileSaveLocationAndAddExtensionIfNecessary("obj");
         if (!maybeUserSaveLocation)
         {
@@ -247,7 +247,7 @@ namespace
         const OpenSim::Frame& frame)
     {
         // prompt user for a save location
-        std::optional<std::filesystem::path> const maybeUserSaveLocation =
+        const std::optional<std::filesystem::path> maybeUserSaveLocation =
             PromptUserForFileSaveLocationAndAddExtensionIfNecessary("stl");
         if (!maybeUserSaveLocation)
         {
@@ -355,7 +355,7 @@ void osc::DrawSelectOwnerMenu(IModelStatePair& model, const OpenSim::Component& 
 
 bool osc::DrawRequestOutputMenuOrMenuItem(
     const OpenSim::AbstractOutput& o,
-    std::function<void(const OpenSim::AbstractOutput&, std::optional<ComponentOutputSubfield>)> const& onUserSelection)
+    const std::function<void(const OpenSim::AbstractOutput&, std::optional<ComponentOutputSubfield>)>& onUserSelection)
 {
     if (GetSupportedSubfields(o) == ComponentOutputSubfield::None)
     {
@@ -369,7 +369,7 @@ bool osc::DrawRequestOutputMenuOrMenuItem(
 
 bool osc::DrawWatchOutputMenu(
     const OpenSim::Component& c,
-    std::function<void(const OpenSim::AbstractOutput&, std::optional<ComponentOutputSubfield>)> const& onUserSelection)
+    const std::function<void(const OpenSim::AbstractOutput&, std::optional<ComponentOutputSubfield>)>& onUserSelection)
 {
     bool outputAdded = false;
 
@@ -502,7 +502,7 @@ void osc::DrawOutputNameColumn(
 
 void osc::DrawWithRespectToMenuContainingMenuPerFrame(
     const OpenSim::Component& root,
-    std::function<void(const OpenSim::Frame&)> const& onFrameMenuOpened,
+    const std::function<void(const OpenSim::Frame&)>& onFrameMenuOpened,
     const OpenSim::Frame* maybeParent)
 {
     ui::draw_text_disabled("With Respect to:");
@@ -536,7 +536,7 @@ void osc::DrawWithRespectToMenuContainingMenuPerFrame(
 
 void osc::DrawWithRespectToMenuContainingMenuItemPerFrame(
     const OpenSim::Component& root,
-    std::function<void(const OpenSim::Frame&)> const& onFrameMenuItemClicked,
+    const std::function<void(const OpenSim::Frame&)>& onFrameMenuItemClicked,
     const OpenSim::Frame* maybeParent = nullptr)
 {
     ui::draw_text_disabled("With Respect to:");
@@ -1121,7 +1121,7 @@ bool osc::DrawViewerTopButtonRow(
     ModelRendererParams& params,
     std::span<const SceneDecoration>,
     IconCache& iconCache,
-    std::function<bool()> const& drawExtraElements)
+    const std::function<bool()>& drawExtraElements)
 {
     bool edited = false;
 
@@ -1158,7 +1158,7 @@ bool osc::DrawCameraControlButtons(
     ModelRendererParams& params,
     std::span<const SceneDecoration> drawlist,
     const Rect& viewerScreenRect,
-    std::optional<AABB> const& maybeSceneAABB,
+    const std::optional<AABB>& maybeSceneAABB,
     IconCache& iconCache,
     Vec2 desiredTopCentroid)
 {
@@ -1232,7 +1232,7 @@ bool osc::DrawViewerImGuiOverlays(
     std::optional<AABB> maybeSceneAABB,
     const Rect& renderRect,
     IconCache& iconCache,
-    std::function<bool()> const& drawExtraElementsInTop)
+    const std::function<bool()>& drawExtraElementsInTop)
 {
     bool edited = false;
 
@@ -1285,7 +1285,7 @@ bool osc::BeginToolbar(CStringView label, std::optional<Vec2> padding)
     return open;
 }
 
-void osc::DrawNewModelButton(ParentPtr<IMainUIStateAPI> const& api)
+void osc::DrawNewModelButton(const ParentPtr<IMainUIStateAPI>& api)
 {
     if (ui::draw_button(ICON_FA_FILE))
     {
@@ -1295,7 +1295,7 @@ void osc::DrawNewModelButton(ParentPtr<IMainUIStateAPI> const& api)
 }
 
 void osc::DrawOpenModelButtonWithRecentFilesDropdown(
-    std::function<void(std::optional<std::filesystem::path>)> const& onUserClickedOpenOrSelectedFile)
+    const std::function<void(std::optional<std::filesystem::path>)>& onUserClickedOpenOrSelectedFile)
 {
     ui::push_style_var(ImGuiStyleVar_ItemSpacing, {2.0f, 0.0f});
     if (ui::draw_button(ICON_FA_FOLDER_OPEN))
@@ -1329,7 +1329,7 @@ void osc::DrawOpenModelButtonWithRecentFilesDropdown(
     }
 }
 
-void osc::DrawOpenModelButtonWithRecentFilesDropdown(ParentPtr<IMainUIStateAPI> const& api)
+void osc::DrawOpenModelButtonWithRecentFilesDropdown(const ParentPtr<IMainUIStateAPI>& api)
 {
     DrawOpenModelButtonWithRecentFilesDropdown([&api](auto maybeFile)
     {
@@ -1345,7 +1345,7 @@ void osc::DrawOpenModelButtonWithRecentFilesDropdown(ParentPtr<IMainUIStateAPI> 
 }
 
 void osc::DrawSaveModelButton(
-    ParentPtr<IMainUIStateAPI> const& api,
+    const ParentPtr<IMainUIStateAPI>& api,
     UndoableModelStatePair& model)
 {
     if (ui::draw_button(ICON_FA_SAVE))

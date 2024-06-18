@@ -17,8 +17,7 @@ osc::OpenSimDecorationOptions::OpenSimDecorationOptions() :
     m_MuscleColoringStyle{MuscleColoringStyle::Default},
     m_MuscleSizingStyle{MuscleSizingStyle::Default},
     m_Flags{OpenSimDecorationOptionFlags::Default}
-{
-}
+{}
 
 MuscleDecorationStyle osc::OpenSimDecorationOptions::getMuscleDecorationStyle() const
 {
@@ -155,7 +154,7 @@ void osc::OpenSimDecorationOptions::setShouldShowContactForces(bool v)
     SetOption(m_Flags, OpenSimDecorationOptionFlags::ShouldShowContactForces, v);
 }
 
-void osc::OpenSimDecorationOptions::forEachOptionAsAppSettingValue(std::function<void(std::string_view, const AppSettingValue&)> const& callback) const
+void osc::OpenSimDecorationOptions::forEachOptionAsAppSettingValue(const std::function<void(std::string_view, const AppSettingValue&)>& callback) const
 {
     callback("muscle_decoration_style", AppSettingValue{GetMuscleDecorationStyleMetadata(m_MuscleDecorationStyle).id});
     callback("muscle_coloring_style", AppSettingValue{GetMuscleColoringStyleMetadata(m_MuscleColoringStyle).id});
@@ -170,7 +169,7 @@ void osc::OpenSimDecorationOptions::forEachOptionAsAppSettingValue(std::function
 
 void osc::OpenSimDecorationOptions::tryUpdFromValues(
     std::string_view prefix,
-    std::unordered_map<std::string, AppSettingValue> const& lut)
+    const std::unordered_map<std::string, AppSettingValue>& lut)
 {
     // looks up a single element in the lut
     auto lookup = [

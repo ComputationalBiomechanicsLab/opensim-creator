@@ -190,7 +190,7 @@ namespace
 
     std::vector<OutputExtractor> const& GetSimulatorOutputExtractors()
     {
-        static std::vector<OutputExtractor> const s_Outputs = CreateSimulatorOutputExtractors();
+        static const std::vector<OutputExtractor> s_Outputs = CreateSimulatorOutputExtractors();
         return s_Outputs;
     }
 

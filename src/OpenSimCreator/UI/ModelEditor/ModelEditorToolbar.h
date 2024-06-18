@@ -14,7 +14,7 @@ namespace osc
     public:
         ModelEditorToolbar(
             std::string_view label,
-            ParentPtr<IMainUIStateAPI> const&,
+            const ParentPtr<IMainUIStateAPI>&,
             IEditorAPI*,
             std::shared_ptr<UndoableModelStatePair>
         );

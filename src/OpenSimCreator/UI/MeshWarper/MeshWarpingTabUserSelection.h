@@ -25,7 +25,7 @@ namespace osc
             return m_SelectedSceneElements.contains(el);
         }
 
-        std::unordered_set<TPSDocumentElementID> const& getUnderlyingSet() const
+        const std::unordered_set<TPSDocumentElementID>& getUnderlyingSet() const
         {
             return m_SelectedSceneElements;
         }

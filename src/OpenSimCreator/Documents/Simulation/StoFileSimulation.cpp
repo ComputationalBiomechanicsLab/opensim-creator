@@ -61,7 +61,7 @@ namespace
     }
 
     template<std::copyable T>
-    std::unordered_set<T> ToSet(OpenSim::Array<T> const& v)
+    std::unordered_set<T> ToSet(const OpenSim::Array<T>& v)
     {
         std::unordered_set<T> rv;
         rv.reserve(v.size());
@@ -73,13 +73,13 @@ namespace
     }
 
     template<std::copyable T>
-    int NumUniqueEntriesIn(OpenSim::Array<T> const& v)
+    int NumUniqueEntriesIn(const OpenSim::Array<T>& v)
     {
         return static_cast<int>(ToSet(v).size());
     }
 
     template<std::copyable T>
-    bool AllElementsUnique(OpenSim::Array<T> const& v)
+    bool AllElementsUnique(const OpenSim::Array<T>& v)
     {
         return NumUniqueEntriesIn(v) == v.size();
     }
@@ -108,7 +108,7 @@ namespace
         // etc for the column labels, so you *need* to map the storage column strings
         // carefully onto the model statevars
         std::vector<std::string> missing;
-        OpenSim::Array<std::string> const& storageColumnsIncludingTime = storage.getColumnLabels();
+        const OpenSim::Array<std::string>& storageColumnsIncludingTime = storage.getColumnLabels();
         OpenSim::Array<std::string> modelStateVars = model.getStateVariableNames();
 
         if (!AllElementsUnique(storageColumnsIncludingTime))
@@ -185,7 +185,7 @@ namespace
         for (int row = 0; row < storage.getSize(); ++row)
         {
             OpenSim::StateVector* sv = storage.getStateVector(row);
-            OpenSim::Array<double> const& cols = sv->getData();
+            const OpenSim::Array<double>& cols = sv->getData();
 
             SimTK::Vector stateValsBuf = model.getStateVariableValues(model.getWorkingState());
             for (auto [valueIdx, modelIdx] : lut)

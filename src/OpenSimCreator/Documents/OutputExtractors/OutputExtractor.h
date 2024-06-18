@@ -48,7 +48,7 @@ namespace osc
         void getValuesFloat(
             const OpenSim::Component& component,
             std::span<const SimulationReport> reports,
-            std::function<void(float)> const& consumer) const
+            const std::function<void(float)>& consumer) const
         {
             m_Output->getValuesFloat(component, reports, consumer);
         }
@@ -70,7 +70,7 @@ namespace osc
         void getValuesVec2(
             const OpenSim::Component& component,
             std::span<const SimulationReport> report,
-            std::function<void(Vec2)> const& consumer) const
+            const std::function<void(Vec2)>& consumer) const
         {
             m_Output->getValuesVec2(component, report, consumer);
         }

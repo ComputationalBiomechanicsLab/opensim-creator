@@ -16,7 +16,7 @@ namespace osc
     public:
         static CStringView id() noexcept;
 
-        explicit PreviewExperimentalDataTab(ParentPtr<ITabHost> const&);
+        explicit PreviewExperimentalDataTab(const ParentPtr<ITabHost>&);
         PreviewExperimentalDataTab(const PreviewExperimentalDataTab&) = delete;
         PreviewExperimentalDataTab(PreviewExperimentalDataTab&&) noexcept;
         PreviewExperimentalDataTab& operator=(const PreviewExperimentalDataTab&) = delete;

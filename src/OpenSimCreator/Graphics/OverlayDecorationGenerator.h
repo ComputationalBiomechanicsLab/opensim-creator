@@ -15,6 +15,6 @@ namespace osc
         SceneCache&,
         const OverlayDecorationOptions&,
         const BVH& sceneBVH,
-        std::function<void(SceneDecoration&&)> const& out
+        const std::function<void(SceneDecoration&&)>& out
     );
 }

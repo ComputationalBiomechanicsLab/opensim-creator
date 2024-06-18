@@ -37,7 +37,7 @@ namespace
     };
 
     template<UIDed T>
-    UID id_of(T const& v)
+    UID id_of(const T& v)
     {
         return v.uid;
     }
@@ -49,7 +49,7 @@ namespace
     };
 
     template<Named T>
-    std::string_view name_of(T const& v)
+    std::string_view name_of(const T& v)
     {
         return v.name;
     }

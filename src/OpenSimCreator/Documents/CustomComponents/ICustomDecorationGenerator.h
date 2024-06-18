@@ -22,14 +22,14 @@ namespace osc
 
         void generateCustomDecorations(
             const SimTK::State& state,
-            std::function<void(SceneDecoration&&)> const& callback) const
+            const std::function<void(SceneDecoration&&)>& callback) const
         {
             implGenerateCustomDecorations(state, callback);
         }
     private:
         virtual void implGenerateCustomDecorations(
             const SimTK::State&,
-            std::function<void(SceneDecoration&&)> const&
+            const std::function<void(SceneDecoration&&)>&
         ) const = 0;
     };
 }

@@ -98,7 +98,7 @@ namespace
     // draw the `MenuItem`s for the "Add Wrap Object" menu
     void DrawAddWrapObjectsToPhysicalFrameMenuItems(
         IEditorAPI*,
-        std::shared_ptr<UndoableModelStatePair> const& uim,
+        const std::shared_ptr<UndoableModelStatePair>& uim,
         const OpenSim::ComponentPath& physicalFrameAbsPath)
     {
         // list each available `WrapObject` as something the user can add
@@ -119,7 +119,7 @@ namespace
     // draw contextual actions (buttons, sliders) for a selected physical frame
     void DrawPhysicalFrameContextualActions(
         IEditorAPI* editorAPI,
-        std::shared_ptr<UndoableModelStatePair> const& uim,
+        const std::shared_ptr<UndoableModelStatePair>& uim,
         const OpenSim::ComponentPath& pfPath)
     {
         if (const auto* pf = FindComponent<OpenSim::PhysicalFrame>(uim->getModel(), pfPath))
@@ -134,7 +134,7 @@ namespace
 
         if (ui::begin_menu("Add")) {
             if (ui::draw_menu_item("Geometry")) {
-                std::function<void(std::unique_ptr<OpenSim::Geometry>)> const callback = [uim, pfPath](auto geom)
+                const std::function<void(std::unique_ptr<OpenSim::Geometry>)> callback = [uim, pfPath](auto geom)
                 {
                     ActionAttachGeometryToPhysicalFrame(*uim, pfPath, std::move(geom));
                 };
@@ -198,7 +198,7 @@ namespace
     // draw contextual actions (buttons, sliders) for a selected joint
     void DrawHCFContextualActions(
         IEditorAPI* api,
-        std::shared_ptr<UndoableModelStatePair> const& uim,
+        const std::shared_ptr<UndoableModelStatePair>& uim,
         const OpenSim::ComponentPath& hcfPath)
     {
         const auto* const hcf = FindComponent<OpenSim::HuntCrossleyForce>(uim->getModel(), hcfPath);
@@ -232,7 +232,7 @@ namespace
     // draw contextual actions (buttons, sliders) for a selected path actuator
     void DrawPathActuatorContextualParams(
         IEditorAPI* api,
-        std::shared_ptr<UndoableModelStatePair> const& uim,
+        const std::shared_ptr<UndoableModelStatePair>& uim,
         const OpenSim::ComponentPath& paPath)
     {
         if (ui::draw_menu_item("Add Path Point"))
@@ -383,7 +383,7 @@ class osc::ComponentContextMenu::Impl final : public StandardPopup {
 public:
     Impl(
         std::string_view popupName_,
-        ParentPtr<IMainUIStateAPI> const& mainUIStateAPI_,
+        const ParentPtr<IMainUIStateAPI>& mainUIStateAPI_,
         IEditorAPI* editorAPI_,
         std::shared_ptr<UndoableModelStatePair> model_,
         OpenSim::ComponentPath path_) :
@@ -695,19 +695,15 @@ private:
 };
 
 
-// public API (PIMPL)
-
 osc::ComponentContextMenu::ComponentContextMenu(
     std::string_view popupName_,
-    ParentPtr<IMainUIStateAPI> const& mainUIStateAPI_,
+    const ParentPtr<IMainUIStateAPI>& mainUIStateAPI_,
     IEditorAPI* editorAPI_,
     std::shared_ptr<UndoableModelStatePair> model_,
     const OpenSim::ComponentPath& path_) :
 
     m_Impl{std::make_unique<Impl>(popupName_, mainUIStateAPI_, editorAPI_, std::move(model_), path_)}
-{
-}
-
+{}
 osc::ComponentContextMenu::ComponentContextMenu(ComponentContextMenu&&) noexcept = default;
 osc::ComponentContextMenu& osc::ComponentContextMenu::operator=(ComponentContextMenu&&) noexcept = default;
 osc::ComponentContextMenu::~ComponentContextMenu() noexcept = default;

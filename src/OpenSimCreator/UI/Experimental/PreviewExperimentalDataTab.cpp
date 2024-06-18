@@ -95,9 +95,9 @@ namespace
     // a sequence of matchers to test against
     //
     // if the next N columns don't match any matchers, assume the column is `ColumnDataType::Unknown`
-    std::vector<ColumnDataTypeMatcher> const& GetMatchers()
+    const std::vector<ColumnDataTypeMatcher>& GetMatchers()
     {
-        static std::vector<ColumnDataTypeMatcher> const s_Matchers = {
+        static const std::vector<ColumnDataTypeMatcher> s_Matchers = {
             {
                 ColumnDataType::PointForce,
                 {"_vx", "_vy", "_vz", "_px", "_py", "_pz"},
@@ -166,7 +166,7 @@ namespace
     }
 
     // returns `true` if the provided labels [offset..offset+matcher.Suffixes.size()] all match up
-    bool IsMatch(OpenSim::Array<std::string> const& labels, int offset, const ColumnDataTypeMatcher& matcher)
+    bool IsMatch(const OpenSim::Array<std::string>& labels, int offset, const ColumnDataTypeMatcher& matcher)
     {
         int colsRemaining = labels.size() - offset;
         int numColsToTest = NumColumnsRequiredBy(matcher);
@@ -190,7 +190,7 @@ namespace
     }
 
     // returns the matching column data type for the next set of columns - if a match can be found
-    std::optional<ColumnDataTypeMatcher> TryMatchColumnsWithType(OpenSim::Array<std::string> const& labels, int offset)
+    std::optional<ColumnDataTypeMatcher> TryMatchColumnsWithType(const OpenSim::Array<std::string>& labels, int offset)
     {
         for (const ColumnDataTypeMatcher& matcher : GetMatchers())
         {
@@ -214,7 +214,7 @@ namespace
     }
 
     // returns a sequence of parsed column descriptions, based on header labels
-    std::vector<ColumnDescription> ParseColumnDescriptions(OpenSim::Array<std::string> const& labels)
+    std::vector<ColumnDescription> ParseColumnDescriptions(const OpenSim::Array<std::string>& labels)
     {
         std::vector<ColumnDescription> rv;
         int offset = 1;  // offset 0 == "time" (skip it)
@@ -282,7 +282,7 @@ namespace
         {
             const OpenSim::StateVector& v = *storage.getStateVector(row);
             double t = v.getTime();
-            OpenSim::Array<double> const& vs = v.getData();
+            const OpenSim::Array<double>& vs = v.getData();
             size_t numCols = min(static_cast<size_t>(v.getSize()), numDataCols);
 
             rv.push_back(t);
@@ -463,7 +463,7 @@ namespace
 class osc::PreviewExperimentalDataTab::Impl final : public StandardTabImpl {
 public:
 
-    explicit Impl(ParentPtr<ITabHost> const&) :
+    explicit Impl(const ParentPtr<ITabHost>&) :
         StandardTabImpl{ICON_FA_DOT_CIRCLE " Experimental Data"}
     {}
 
@@ -578,17 +578,14 @@ private:
 };
 
 
-// public API (PIMPL)
-
 CStringView osc::PreviewExperimentalDataTab::id() noexcept
 {
     return "OpenSim/Experimental/PreviewExperimentalData";
 }
 
-osc::PreviewExperimentalDataTab::PreviewExperimentalDataTab(ParentPtr<ITabHost> const& ptr) :
+osc::PreviewExperimentalDataTab::PreviewExperimentalDataTab(const ParentPtr<ITabHost>& ptr) :
     m_Impl{std::make_unique<Impl>(ptr)}
 {}
-
 osc::PreviewExperimentalDataTab::PreviewExperimentalDataTab(PreviewExperimentalDataTab&&) noexcept = default;
 PreviewExperimentalDataTab& osc::PreviewExperimentalDataTab::operator=(PreviewExperimentalDataTab&&) noexcept = default;
 osc::PreviewExperimentalDataTab::~PreviewExperimentalDataTab() noexcept = default;

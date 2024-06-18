@@ -153,7 +153,7 @@ void osc::ActionClearAllNonParticipatingLandmarks(UndoableTPSDocument& doc)
 
 void osc::ActionDeleteSceneElementsByID(
     UndoableTPSDocument& doc,
-    std::unordered_set<TPSDocumentElementID> const& elementIDs)
+    const std::unordered_set<TPSDocumentElementID>& elementIDs)
 {
     TPSDocument& scratch = doc.upd_scratch();
     bool somethingDeleted = false;
@@ -180,7 +180,7 @@ void osc::ActionLoadMeshFile(
     UndoableTPSDocument& doc,
     TPSDocumentInputIdentifier which)
 {
-    std::optional<std::filesystem::path> const maybeMeshPath =
+    const std::optional<std::filesystem::path> maybeMeshPath =
         prompt_user_to_select_file(GetSupportedSimTKMeshFormats());
     if (!maybeMeshPath)
     {
@@ -243,7 +243,7 @@ void osc::ActionSaveLandmarksToCSV(
     TPSDocumentInputIdentifier which,
     lm::LandmarkCSVFlags flags)
 {
-    std::optional<std::filesystem::path> const maybeCSVPath =
+    const std::optional<std::filesystem::path> maybeCSVPath =
         PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
     if (!maybeCSVPath)
     {
@@ -274,7 +274,7 @@ void osc::ActionSaveNonParticipatingLandmarksToCSV(
     const TPSDocument& doc,
     lm::LandmarkCSVFlags flags)
 {
-    std::optional<std::filesystem::path> const maybeCSVPath =
+    const std::optional<std::filesystem::path> maybeCSVPath =
         PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
     if (!maybeCSVPath)
     {
@@ -300,7 +300,7 @@ void osc::ActionSaveNonParticipatingLandmarksToCSV(
 
 void osc::ActionSavePairedLandmarksToCSV(const TPSDocument& doc, lm::LandmarkCSVFlags flags)
 {
-    std::optional<std::filesystem::path> const maybeCSVPath =
+    const std::optional<std::filesystem::path> maybeCSVPath =
         PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
     if (!maybeCSVPath)
     {
@@ -354,7 +354,7 @@ void osc::ActionSavePairedLandmarksToCSV(const TPSDocument& doc, lm::LandmarkCSV
 
 void osc::ActionTrySaveMeshToObjFile(const Mesh& mesh, ObjWriterFlags flags)
 {
-    std::optional<std::filesystem::path> const maybeSavePath =
+    const std::optional<std::filesystem::path> maybeSavePath =
         PromptUserForFileSaveLocationAndAddExtensionIfNecessary("obj");
     if (!maybeSavePath)
     {
@@ -387,7 +387,7 @@ void osc::ActionTrySaveMeshToObjFile(const Mesh& mesh, ObjWriterFlags flags)
 
 void osc::ActionTrySaveMeshToStlFile(const Mesh& mesh)
 {
-    std::optional<std::filesystem::path> const maybeSTLPath =
+    const std::optional<std::filesystem::path> maybeSTLPath =
         PromptUserForFileSaveLocationAndAddExtensionIfNecessary("stl");
     if (!maybeSTLPath)
     {

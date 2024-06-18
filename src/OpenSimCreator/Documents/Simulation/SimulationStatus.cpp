@@ -32,8 +32,6 @@ namespace
 }
 
 
-// public API
-
 std::span<const SimulationStatus> osc::GetAllSimulationStatuses()
 {
     return c_SimulatorStatuses;

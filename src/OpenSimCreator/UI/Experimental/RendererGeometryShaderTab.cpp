@@ -123,18 +123,14 @@ private:
 };
 
 
-// public API (PIMPL)
-
 CStringView osc::RendererGeometryShaderTab::id()
 {
     return "OpenSim/Experimental/GeometryShader";
 }
 
-osc::RendererGeometryShaderTab::RendererGeometryShaderTab(ParentPtr<ITabHost> const&) :
+osc::RendererGeometryShaderTab::RendererGeometryShaderTab(const ParentPtr<ITabHost>&) :
     m_Impl{std::make_unique<Impl>()}
-{
-}
-
+{}
 osc::RendererGeometryShaderTab::RendererGeometryShaderTab(RendererGeometryShaderTab&&) noexcept = default;
 osc::RendererGeometryShaderTab& osc::RendererGeometryShaderTab::operator=(RendererGeometryShaderTab&&) noexcept = default;
 osc::RendererGeometryShaderTab::~RendererGeometryShaderTab() noexcept = default;

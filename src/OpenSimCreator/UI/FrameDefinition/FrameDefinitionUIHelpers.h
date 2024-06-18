@@ -18,7 +18,7 @@ namespace osc::fd
     );
 
     void ActionExportFrameDefinitionSceneModelToEditorTab(
-        ParentPtr<ITabHost> const&,
+        const ParentPtr<ITabHost>&,
         const UndoableModelStatePair&
     );
 }

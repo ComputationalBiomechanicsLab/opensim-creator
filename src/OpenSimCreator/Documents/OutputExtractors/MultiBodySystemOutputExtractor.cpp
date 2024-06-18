@@ -44,9 +44,9 @@ namespace
         return rv;
     }
 
-    std::vector<OutputExtractor> const& GetAllMultiBodySystemOutputExtractors()
+    const std::vector<OutputExtractor>& GetAllMultiBodySystemOutputExtractors()
     {
-        static std::vector<OutputExtractor> const s_Outputs = ConstructMultiBodySystemOutputExtractors();
+        static const std::vector<OutputExtractor> s_Outputs = ConstructMultiBodySystemOutputExtractors();
         return s_Outputs;
     }
 }

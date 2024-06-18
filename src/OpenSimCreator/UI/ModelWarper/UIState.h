@@ -26,7 +26,7 @@ namespace osc::mow
 {
     class UIState final {
     public:
-        explicit UIState(ParentPtr<ITabHost> const& tabHost) :
+        explicit UIState(const ParentPtr<ITabHost>& tabHost) :
             m_TabHost{tabHost}
         {}
 

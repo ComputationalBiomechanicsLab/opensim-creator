@@ -17,7 +17,7 @@ namespace osc
         OutputWatchesPanel(
             std::string_view panelName,
             std::shared_ptr<const UndoableModelStatePair>,
-            ParentPtr<IMainUIStateAPI> const&
+            const ParentPtr<IMainUIStateAPI>&
         );
         OutputWatchesPanel(const OutputWatchesPanel&) = delete;
         OutputWatchesPanel(OutputWatchesPanel&&) noexcept;

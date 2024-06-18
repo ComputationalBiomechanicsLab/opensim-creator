@@ -53,7 +53,7 @@ void osc::GenerateDecorations(
     SceneCache& meshCache,
     const IConstModelStatePair& msp,
     const OpenSimDecorationOptions& options,
-    std::function<void(const OpenSim::Component&, SceneDecoration&&)> const& out)
+    const std::function<void(const OpenSim::Component&, SceneDecoration&&)>& out)
 {
     ComponentAbsPathDecorationTagger pathTagger{};
     ComponentSceneDecorationFlagsTagger flagsTagger{msp.getSelected(), msp.getHovered()};
@@ -93,7 +93,7 @@ std::optional<SceneCollision> osc::GetClosestCollision(
     );
 
     // find all collisions along the camera ray
-    std::vector<SceneCollision> const collisions = get_all_ray_collisions_with_scene(
+    const std::vector<SceneCollision> collisions = get_all_ray_collisions_with_scene(
         sceneBVH,
         sceneCache,
         taggedDrawlist,

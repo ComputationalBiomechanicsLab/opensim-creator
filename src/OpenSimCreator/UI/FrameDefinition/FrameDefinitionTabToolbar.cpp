@@ -26,8 +26,7 @@ osc::FrameDefinitionTabToolbar::FrameDefinitionTabToolbar(
     m_Label{label_},
     m_TabHost{std::move(tabHost_)},
     m_Model{std::move(model_)}
-{
-}
+{}
 
 void osc::FrameDefinitionTabToolbar::onDraw()
 {

@@ -78,20 +78,18 @@
 // mesh importer tab implementation
 class osc::mi::MeshImporterTab::Impl final : public IMeshImporterUILayerHost {
 public:
-    explicit Impl(ParentPtr<IMainUIStateAPI> const& parent_) :
+    explicit Impl(const ParentPtr<IMainUIStateAPI>& parent_) :
         m_Parent{parent_},
         m_Shared{std::make_shared<MeshImporterSharedState>()}
-    {
-    }
+    {}
 
     Impl(
-        ParentPtr<IMainUIStateAPI> const& parent_,
+        const ParentPtr<IMainUIStateAPI>& parent_,
         std::vector<std::filesystem::path> meshPaths_) :
 
         m_Parent{parent_},
         m_Shared{std::make_shared<MeshImporterSharedState>(std::move(meshPaths_))}
-    {
-    }
+    {}
 
     UID getID() const
     {
@@ -396,7 +394,7 @@ private:
     //
 
     // transition the shown UI layer to one where the user is assigning a mesh
-    void transitionToAssigningMeshesNextFrame(std::unordered_set<UID> const& meshes, std::unordered_set<UID> const& existingAttachments)
+    void transitionToAssigningMeshesNextFrame(const std::unordered_set<UID>& meshes, const std::unordered_set<UID>& existingAttachments)
     {
         ChooseElLayerOptions opts;
         opts.canChooseBodies = true;
@@ -1357,7 +1355,7 @@ private:
         const osc::Mesh& mesh)
     {
         // prompt user for a save location
-        std::optional<std::filesystem::path> const maybeUserSaveLocation =
+        const std::optional<std::filesystem::path> maybeUserSaveLocation =
             PromptUserForFileSaveLocationAndAddExtensionIfNecessary("obj");
         if (!maybeUserSaveLocation)
         {
@@ -1396,7 +1394,7 @@ private:
         const osc::Mesh& mesh)
     {
         // prompt user for a save location
-        std::optional<std::filesystem::path> const maybeUserSaveLocation =
+        const std::optional<std::filesystem::path> maybeUserSaveLocation =
             PromptUserForFileSaveLocationAndAddExtensionIfNecessary("stl");
         if (!maybeUserSaveLocation)
         {
@@ -1905,7 +1903,7 @@ private:
 
         if (ui::draw_button(ICON_FA_EXPAND_ARROWS_ALT))
         {
-            if (std::optional<AABB> const sceneAABB = calcSceneAABB())
+            if (const std::optional<AABB> sceneAABB = calcSceneAABB())
             {
                 auto_focus(m_Shared->updCamera(), *sceneAABB, aspect_ratio_of(m_Shared->get3DSceneDims()));
             }
@@ -2174,7 +2172,7 @@ private:
     }
 
     // perform a hovertest on the current 3D scene to determine what the user's mouse is over
-    MeshImporterHover hovertestScene(std::vector<DrawableThing> const& drawables)
+    MeshImporterHover hovertestScene(const std::vector<DrawableThing>& drawables)
     {
         if (!m_Shared->isRenderHovered())
         {
@@ -2398,7 +2396,7 @@ private:
         if (m_Maybe3DViewerModal)
         {
             // ensure it stays alive - even if it pops itself during the drawcall
-            std::shared_ptr<MeshImporterUILayer> const ptr = m_Maybe3DViewerModal;
+            const std::shared_ptr<MeshImporterUILayer> ptr = m_Maybe3DViewerModal;
 
             // open it "over" the whole UI as a "modal" - so that the user can't click things
             // outside of the panel
@@ -2475,23 +2473,17 @@ private:
 };
 
 
-// public API (PIMPL)
-
 osc::mi::MeshImporterTab::MeshImporterTab(
-    ParentPtr<IMainUIStateAPI> const& parent_) :
+    const ParentPtr<IMainUIStateAPI>& parent_) :
 
     m_Impl{std::make_unique<Impl>(parent_)}
-{
-}
-
+{}
 osc::mi::MeshImporterTab::MeshImporterTab(
-    ParentPtr<IMainUIStateAPI> const& parent_,
+    const ParentPtr<IMainUIStateAPI>& parent_,
     std::vector<std::filesystem::path> files_) :
 
     m_Impl{std::make_unique<Impl>(parent_, std::move(files_))}
-{
-}
-
+{}
 osc::mi::MeshImporterTab::MeshImporterTab(MeshImporterTab&&) noexcept = default;
 osc::mi::MeshImporterTab& osc::mi::MeshImporterTab::operator=(MeshImporterTab&&) noexcept = default;
 osc::mi::MeshImporterTab::~MeshImporterTab() noexcept = default;

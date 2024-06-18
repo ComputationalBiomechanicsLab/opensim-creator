@@ -178,7 +178,7 @@ namespace
             const SimTK::State& state,
             const OpenSimDecorationOptions& opts,
             float fixupScaleFactor,
-            std::function<void(const OpenSim::Component&, SceneDecoration&&)> const& out) :
+            const std::function<void(const OpenSim::Component&, SceneDecoration&&)>& out) :
 
             m_MeshCache{meshCache},
             m_Model{model},
@@ -186,8 +186,7 @@ namespace
             m_Opts{opts},
             m_FixupScaleFactor{fixupScaleFactor},
             m_Out{out}
-        {
-        }
+        {}
 
         SceneCache& updMeshCache()
         {
@@ -250,7 +249,7 @@ namespace
             const OpenSim::Component& componentToLinkTo,
             float fixupScaleFactor)
         {
-            std::function<void(SceneDecoration&&)> const callback = [this, &componentToLinkTo](SceneDecoration&& dec)
+            const std::function<void(SceneDecoration&&)> callback = [this, &componentToLinkTo](SceneDecoration&& dec)
             {
                 consume(componentToLinkTo, std::move(dec));
             };
@@ -313,7 +312,7 @@ namespace
         const SimTK::State& m_State;
         const OpenSimDecorationOptions& m_Opts;
         float m_FixupScaleFactor;
-        std::function<void(const OpenSim::Component&, SceneDecoration&&)> const& m_Out;
+        const std::function<void(const OpenSim::Component&, SceneDecoration&&)>& m_Out;
         SimTK::Array_<SimTK::DecorativeGeometry> m_GeomList;
     };
 
@@ -414,7 +413,7 @@ namespace
         RendererState& rs,
         const OpenSim::Muscle& muscle)
     {
-        std::vector<GeometryPathPoint> const pps = GetAllPathPoints(muscle.getGeometryPath(), rs.getState());
+        const std::vector<GeometryPathPoint> pps = GetAllPathPoints(muscle.getGeometryPath(), rs.getState());
         if (pps.empty())
         {
             return;  // edge-case: there are no points in the muscle path
@@ -704,7 +703,7 @@ namespace
         RendererState& rs,
         const OpenSim::Muscle& musc)
     {
-        std::vector<GeometryPathPoint> const points =
+        const std::vector<GeometryPathPoint> points =
             GetAllPathPoints(musc.getGeometryPath(), rs.getState());
 
         const float radius = GetMuscleSize(
@@ -734,7 +733,7 @@ namespace
         // selection hits to enable users to click on individual path points within
         // a path (#647)
 
-        std::vector<GeometryPathPoint> const points = GetAllPathPoints(gp, rs.getState());
+        const std::vector<GeometryPathPoint> points = GetAllPathPoints(gp, rs.getState());
         const Color color = GetGeometryPathColor(gp, rs.getState());
 
         EmitPointBasedLine(
@@ -776,7 +775,7 @@ namespace
         if (rs.getOptions().getShouldShowEffectiveMuscleLineOfActionForOrigin() ||
             rs.getOptions().getShouldShowEffectiveMuscleLineOfActionForInsertion())
         {
-            if (std::optional<LinesOfAction> const loas = GetEffectiveLinesOfActionInGround(musc, rs.getState()))
+            if (const std::optional<LinesOfAction> loas = GetEffectiveLinesOfActionInGround(musc, rs.getState()))
             {
                 if (rs.getOptions().getShouldShowEffectiveMuscleLineOfActionForOrigin())
                 {
@@ -794,8 +793,7 @@ namespace
         if (rs.getOptions().getShouldShowAnatomicalMuscleLineOfActionForOrigin() ||
             rs.getOptions().getShouldShowAnatomicalMuscleLineOfActionForInsertion())
         {
-            if (std::optional<LinesOfAction> const loas = GetAnatomicalLinesOfActionInGround(musc, rs.getState()))
-            {
+            if (const std::optional<LinesOfAction> loas = GetAnatomicalLinesOfActionInGround(musc, rs.getState())) {
                 if (rs.getOptions().getShouldShowAnatomicalMuscleLineOfActionForOrigin())
                 {
                     DrawLineOfActionArrow(rs, musc, loas->origin, c_AnatomicalLineOfActionColor);
@@ -902,7 +900,7 @@ namespace
         }
 
         // else: try and compute a geometry-to-plane contact force and show it in-UI
-        std::optional<ForcePoint> const maybeContact = TryGetContactForceInGround(
+        const std::optional<ForcePoint> maybeContact = TryGetContactForceInGround(
             rs.getModel(),
             rs.getState(),
             hcf
@@ -939,7 +937,7 @@ void osc::GenerateModelDecorations(
     const SimTK::State& state,
     const OpenSimDecorationOptions& opts,
     float fixupScaleFactor,
-    std::function<void(const OpenSim::Component&, SceneDecoration&&)> const& out)
+    const std::function<void(const OpenSim::Component&, SceneDecoration&&)>& out)
 {
     GenerateSubcomponentDecorations(
         meshCache,
@@ -960,7 +958,7 @@ void osc::GenerateSubcomponentDecorations(
     const OpenSim::Component& subcomponent,
     const OpenSimDecorationOptions& opts,
     float fixupScaleFactor,
-    std::function<void(const OpenSim::Component&, SceneDecoration&&)> const& out,
+    const std::function<void(const OpenSim::Component&, SceneDecoration&&)>& out,
     bool inclusiveOfProvidedSubcomponent)
 {
     OSC_PERF("OpenSimRenderer/GenerateModelDecorations");

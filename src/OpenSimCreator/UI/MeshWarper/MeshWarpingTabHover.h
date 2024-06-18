@@ -17,8 +17,7 @@ namespace osc
             const Vec3& worldspaceLocation_) :
             m_Input{input_},
             m_WorldspaceLocation{worldspaceLocation_}
-        {
-        }
+        {}
 
         explicit MeshWarpingTabHover(
             TPSDocumentElementID sceneElementID_,

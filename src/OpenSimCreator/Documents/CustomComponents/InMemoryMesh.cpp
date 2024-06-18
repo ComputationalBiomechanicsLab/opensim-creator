@@ -8,7 +8,7 @@
 
 void osc::mow::InMemoryMesh::implGenerateCustomDecorations(
     const SimTK::State& state,
-    std::function<void(SceneDecoration&&)> const& out) const
+    const std::function<void(SceneDecoration&&)>& out) const
 {
     out({
         .mesh = m_OscMesh,

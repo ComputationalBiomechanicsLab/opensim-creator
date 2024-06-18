@@ -16,7 +16,7 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit FrameDefinitionTab(ParentPtr<ITabHost> const&);
+        explicit FrameDefinitionTab(const ParentPtr<ITabHost>&);
         FrameDefinitionTab(const FrameDefinitionTab&) = delete;
         FrameDefinitionTab(FrameDefinitionTab&&) noexcept;
         FrameDefinitionTab& operator=(const FrameDefinitionTab&) = delete;

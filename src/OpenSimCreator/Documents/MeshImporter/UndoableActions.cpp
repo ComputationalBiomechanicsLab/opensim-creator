@@ -38,7 +38,7 @@ bool osc::mi::point_axis_towards(
 
 bool osc::mi::TryAssignMeshAttachments(
     UndoableDocument& udoc,
-    std::unordered_set<UID> const& meshIDs,
+    const std::unordered_set<UID>& meshIDs,
     UID newAttachment)
 {
     Document& doc = udoc.upd_scratch();

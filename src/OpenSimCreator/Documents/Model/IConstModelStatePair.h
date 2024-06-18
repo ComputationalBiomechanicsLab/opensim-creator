@@ -44,9 +44,9 @@ namespace osc
         }
 
         template<typename T>
-        T const* getSelectedAs() const
+        const T* getSelectedAs() const
         {
-            return dynamic_cast<T const*>(getSelected());
+            return dynamic_cast<const T*>(getSelected());
         }
 
         const OpenSim::Component* getHovered() const

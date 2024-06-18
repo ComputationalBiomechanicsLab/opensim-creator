@@ -28,7 +28,7 @@ namespace osc
         const std::string& getComponentAbsPath() const;  // empty if it's just a standalone object
         const std::string& getPropertyName() const;
         void apply(OpenSim::AbstractProperty&);
-        std::function<void(OpenSim::AbstractProperty&)> const& getUpdater() const
+        const std::function<void(OpenSim::AbstractProperty&)>& getUpdater() const
         {
             return m_Updater;
         }

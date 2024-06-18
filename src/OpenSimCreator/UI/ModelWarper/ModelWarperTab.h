@@ -17,7 +17,7 @@ namespace osc::mow
     public:
         static CStringView id();
 
-        explicit ModelWarperTab(ParentPtr<ITabHost> const&);
+        explicit ModelWarperTab(const ParentPtr<ITabHost>&);
         ModelWarperTab(const ModelWarperTab&) = delete;
         ModelWarperTab(ModelWarperTab&&) noexcept;
         ModelWarperTab& operator=(const ModelWarperTab&) = delete;

@@ -45,7 +45,7 @@ namespace
 
     void UpdFromValues(
         std::string_view prefix,
-        std::unordered_map<std::string, AppSettingValue> const& values,
+        const std::unordered_map<std::string, AppSettingValue>& values,
         ModelRendererParams& params)
     {
         params.decorationOptions.tryUpdFromValues(std::string{prefix} + "decorations/", values);

@@ -50,7 +50,7 @@ osc::MainMenuFileTab::MainMenuFileTab() :
 }
 
 void osc::MainMenuFileTab::onDraw(
-    ParentPtr<IMainUIStateAPI> const& api,
+    const ParentPtr<IMainUIStateAPI>& api,
     UndoableModelStatePair* maybeModel)
 {
     // handle hotkeys enabled by just drawing the menu

@@ -43,7 +43,7 @@ bool osc::mi::CanAttachStationTo(const MIObject& e)
     }, e.toVariant());
 }
 
-std::array<MIClass, std::variant_size_v<SceneElVariant>> const& osc::mi::GetSceneElClasses()
+const std::array<MIClass, std::variant_size_v<SceneElVariant>>& osc::mi::GetSceneElClasses()
 {
     static const auto s_Classes = std::to_array(
     {

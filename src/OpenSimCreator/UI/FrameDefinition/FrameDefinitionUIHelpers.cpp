@@ -26,7 +26,7 @@ using namespace osc;
 
 void osc::fd::ActionPromptUserToAddMeshFiles(UndoableModelStatePair& model)
 {
-    std::vector<std::filesystem::path> const meshPaths =
+    const std::vector<std::filesystem::path> meshPaths =
         prompt_user_to_select_files(GetSupportedSimTKMeshFormats());
     if (meshPaths.empty())
     {
@@ -87,7 +87,7 @@ std::unique_ptr<UndoableModelStatePair> osc::fd::MakeUndoableModelFromSceneModel
 }
 
 void osc::fd::ActionExportFrameDefinitionSceneModelToEditorTab(
-    ParentPtr<ITabHost> const& tabHost,
+    const ParentPtr<ITabHost>& tabHost,
     const UndoableModelStatePair& model)
 {
     auto maybeMainUIStateAPI = dynamic_parent_cast<IMainUIStateAPI>(tabHost);

@@ -16,7 +16,7 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit MeshWarpingTab(ParentPtr<ITabHost> const&);
+        explicit MeshWarpingTab(const ParentPtr<ITabHost>&);
         MeshWarpingTab(const MeshWarpingTab&) = delete;
         MeshWarpingTab(MeshWarpingTab&&) noexcept;
         MeshWarpingTab& operator=(const MeshWarpingTab&) = delete;

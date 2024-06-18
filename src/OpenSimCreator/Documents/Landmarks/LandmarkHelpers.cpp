@@ -45,7 +45,7 @@ namespace
             data = data.subspan(1);
         }
 
-        std::optional<float> const x = from_chars_strip_whitespace(data[0]);
+        const std::optional<float> x = from_chars_strip_whitespace(data[0]);
         if (!x)
         {
             if (lineNum == 0)
@@ -57,7 +57,7 @@ namespace
                 return CSVParseWarning{lineNum, "cannot parse X as a number"};
             }
         }
-        std::optional<float> const y = from_chars_strip_whitespace(data[1]);
+        const std::optional<float> y = from_chars_strip_whitespace(data[1]);
         if (!y)
         {
             if (lineNum == 0)
@@ -69,7 +69,7 @@ namespace
                 return CSVParseWarning{lineNum, "cannot parse Y as a number"};
             }
         }
-        std::optional<float> const z = from_chars_strip_whitespace(data[2]);
+        const std::optional<float> z = from_chars_strip_whitespace(data[2]);
         if (!z)
         {
             if (lineNum == 0)
@@ -96,8 +96,8 @@ std::string osc::lm::to_string(const CSVParseWarning& warning)
 
 void osc::lm::ReadLandmarksFromCSV(
     std::istream& in,
-    std::function<void(Landmark&&)> const& landmarkConsumer,
-    std::function<void(CSVParseWarning)> const& warningConsumer)
+    const std::function<void(Landmark&&)>& landmarkConsumer,
+    const std::function<void(CSVParseWarning)>& warningConsumer)
 {
     std::vector<std::string> cols;
     for (size_t line = 0; read_csv_row_into_vector(in, cols); ++line)
@@ -113,7 +113,7 @@ void osc::lm::ReadLandmarksFromCSV(
 
 void osc::lm::WriteLandmarksToCSV(
     std::ostream& out,
-    std::function<std::optional<Landmark>()> const& landmarkProducer,
+    const std::function<std::optional<Landmark>()>& landmarkProducer,
     LandmarkCSVFlags flags)
 {
     // if applicable, emit header

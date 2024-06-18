@@ -157,8 +157,6 @@ private:
 };
 
 
-// public API (PIMPL)
-
 osc::LoadingTab::LoadingTab(
     const ParentPtr<IMainUIStateAPI>& parent_,
     std::filesystem::path path_) :

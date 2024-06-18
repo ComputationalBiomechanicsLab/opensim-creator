@@ -28,7 +28,7 @@ namespace osc::mi
 
     bool TryAssignMeshAttachments(
         UndoableDocument&,
-        std::unordered_set<UID> const& meshIDs,
+        const std::unordered_set<UID>& meshIDs,
         UID newAttachment
     );
 

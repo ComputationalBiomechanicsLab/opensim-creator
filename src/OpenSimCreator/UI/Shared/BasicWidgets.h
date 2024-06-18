@@ -60,11 +60,11 @@ namespace osc
     );
     bool DrawRequestOutputMenuOrMenuItem(
         const OpenSim::AbstractOutput& o,
-        std::function<void(const OpenSim::AbstractOutput&, std::optional<ComponentOutputSubfield>)> const& onUserSelection
+        const std::function<void(const OpenSim::AbstractOutput&, std::optional<ComponentOutputSubfield>)>& onUserSelection
     );
     bool DrawWatchOutputMenu(
         const OpenSim::Component&,
-        std::function<void(const OpenSim::AbstractOutput&, std::optional<ComponentOutputSubfield>)> const& onUserSelection
+        const std::function<void(const OpenSim::AbstractOutput&, std::optional<ComponentOutputSubfield>)>& onUserSelection
     );
     void DrawSimulationParams(
         const ParamBlock&
@@ -83,7 +83,7 @@ namespace osc
     // (i.e. `ui::begin_menu($FRAME)` returned `true`)
     void DrawWithRespectToMenuContainingMenuPerFrame(
         const OpenSim::Component& root,
-        std::function<void(const OpenSim::Frame&)> const& onFrameMenuOpened,
+        const std::function<void(const OpenSim::Frame&)>& onFrameMenuOpened,
         const OpenSim::Frame* maybeParent
     );
 
@@ -94,7 +94,7 @@ namespace osc
     // associated with a frame
     void DrawWithRespectToMenuContainingMenuItemPerFrame(
         const OpenSim::Component& root,
-        std::function<void(const OpenSim::Frame&)> const& onFrameMenuItemClicked,
+        const std::function<void(const OpenSim::Frame&)>& onFrameMenuItemClicked,
         const OpenSim::Frame* maybeParent
     );
 
@@ -235,13 +235,13 @@ namespace osc
         ModelRendererParams&,
         std::span<const SceneDecoration>,
         IconCache&,
-        std::function<bool()> const& drawExtraElements = []() { return false; }
+        const std::function<bool()>& drawExtraElements = []() { return false; }
     );
     bool DrawCameraControlButtons(
         ModelRendererParams&,
         std::span<const SceneDecoration>,
         const Rect&,
-        std::optional<AABB> const& maybeSceneAABB,
+        const std::optional<AABB>& maybeSceneAABB,
         IconCache&,
         Vec2 desiredTopCentroid
     );
@@ -251,17 +251,17 @@ namespace osc
         std::optional<AABB>,
         const Rect&,
         IconCache&,
-        std::function<bool()> const& drawExtraElementsInTop = []() { return false; }
+        const std::function<bool()>& drawExtraElementsInTop = []() { return false; }
     );
 
     // toolbar stuff
     bool BeginToolbar(CStringView label, std::optional<Vec2> padding = {});  // behaves the same as `ui::begin_panel` (i.e. you must call `ui::end_panel`)
-    void DrawNewModelButton(ParentPtr<IMainUIStateAPI> const&);
+    void DrawNewModelButton(const ParentPtr<IMainUIStateAPI>&);
     void DrawOpenModelButtonWithRecentFilesDropdown(
-        std::function<void(std::optional<std::filesystem::path>)> const& onUserClickedOpenOrSelectedFile
+        const std::function<void(std::optional<std::filesystem::path>)>& onUserClickedOpenOrSelectedFile
     );
-    void DrawOpenModelButtonWithRecentFilesDropdown(ParentPtr<IMainUIStateAPI> const&);
-    void DrawSaveModelButton(ParentPtr<IMainUIStateAPI> const&, UndoableModelStatePair&);
+    void DrawOpenModelButtonWithRecentFilesDropdown(const ParentPtr<IMainUIStateAPI>&);
+    void DrawSaveModelButton(const ParentPtr<IMainUIStateAPI>&, UndoableModelStatePair&);
     void DrawReloadModelButton(UndoableModelStatePair&);
     void DrawUndoButton(UndoableModelStatePair&);
     void DrawRedoButton(UndoableModelStatePair&);

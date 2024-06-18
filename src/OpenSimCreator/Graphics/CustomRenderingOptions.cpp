@@ -71,7 +71,7 @@ void osc::CustomRenderingOptions::setDrawSelectionRims(bool v)
     SetOption(m_Flags, CustomRenderingOptionFlags::DrawSelectionRims, v);
 }
 
-void osc::CustomRenderingOptions::forEachOptionAsAppSettingValue(std::function<void(std::string_view, const AppSettingValue&)> const& callback) const
+void osc::CustomRenderingOptions::forEachOptionAsAppSettingValue(const std::function<void(std::string_view, const AppSettingValue&)>& callback) const
 {
     for (const auto& metadata : GetAllCustomRenderingOptionFlagsMetadata())
     {
@@ -79,7 +79,7 @@ void osc::CustomRenderingOptions::forEachOptionAsAppSettingValue(std::function<v
     }
 }
 
-void osc::CustomRenderingOptions::tryUpdFromValues(std::string_view keyPrefix, std::unordered_map<std::string, AppSettingValue> const& lut)
+void osc::CustomRenderingOptions::tryUpdFromValues(std::string_view keyPrefix, const std::unordered_map<std::string, AppSettingValue>& lut)
 {
     for (const auto& metadata : GetAllCustomRenderingOptionFlagsMetadata()) {
 

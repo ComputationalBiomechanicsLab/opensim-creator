@@ -205,12 +205,9 @@ private:
 };
 
 
-// public API (PIMPL)
-
 osc::Readonly3DModelViewer::Readonly3DModelViewer(std::string_view parentPanelName_, Readonly3DModelViewerFlags flags_) :
     m_Impl{std::make_unique<Impl>(parentPanelName_, flags_)}
-{
-}
+{}
 osc::Readonly3DModelViewer::Readonly3DModelViewer(Readonly3DModelViewer&&) noexcept = default;
 osc::Readonly3DModelViewer& osc::Readonly3DModelViewer::operator=(Readonly3DModelViewer&&) noexcept = default;
 osc::Readonly3DModelViewer::~Readonly3DModelViewer() noexcept = default;

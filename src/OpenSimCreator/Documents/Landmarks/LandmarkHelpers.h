@@ -24,13 +24,13 @@ namespace osc::lm
 
     void ReadLandmarksFromCSV(
         std::istream&,
-        std::function<void(Landmark&&)> const& landmarkConsumer,
-        std::function<void(CSVParseWarning)> const& warningConsumer = [](auto){}
+        const std::function<void(Landmark&&)>& landmarkConsumer,
+        const std::function<void(CSVParseWarning)>& warningConsumer = [](auto){}
     );
 
     void WriteLandmarksToCSV(
         std::ostream&,
-        std::function<std::optional<Landmark>()> const& landmarkProducer,
+        const std::function<std::optional<Landmark>()>& landmarkProducer,
         LandmarkCSVFlags = LandmarkCSVFlags::None
     );
 

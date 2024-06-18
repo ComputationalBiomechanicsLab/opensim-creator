@@ -26,7 +26,7 @@ namespace
 
 class osc::mow::ModelWarperTab::Impl final : public StandardTabImpl {
 public:
-    explicit Impl(ParentPtr<ITabHost> const& tabHost) :
+    explicit Impl(const ParentPtr<ITabHost>& tabHost) :
         StandardTabImpl{c_TabStringID},
         m_TabHost{tabHost}
     {
@@ -106,17 +106,14 @@ private:
 };
 
 
-// public API
-
 CStringView osc::mow::ModelWarperTab::id()
 {
     return c_TabStringID;
 }
 
-osc::mow::ModelWarperTab::ModelWarperTab(ParentPtr<ITabHost> const& tabHost) :
+osc::mow::ModelWarperTab::ModelWarperTab(const ParentPtr<ITabHost>& tabHost) :
     m_Impl{std::make_unique<Impl>(tabHost)}
 {}
-
 osc::mow::ModelWarperTab::ModelWarperTab(ModelWarperTab&&) noexcept = default;
 osc::mow::ModelWarperTab& osc::mow::ModelWarperTab::operator=(ModelWarperTab&&) noexcept = default;
 osc::mow::ModelWarperTab::~ModelWarperTab() noexcept = default;

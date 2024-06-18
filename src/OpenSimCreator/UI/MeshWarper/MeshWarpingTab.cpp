@@ -27,7 +27,7 @@ using namespace osc;
 class osc::MeshWarpingTab::Impl final {
 public:
 
-    explicit Impl(ParentPtr<ITabHost> const& parent_) : m_Parent{parent_}
+    explicit Impl(const ParentPtr<ITabHost>& parent_) : m_Parent{parent_}
     {
         m_PanelManager->register_toggleable_panel(
             "Source Mesh",
@@ -214,18 +214,14 @@ private:
 };
 
 
-// public API (PIMPL)
-
 CStringView osc::MeshWarpingTab::id()
 {
     return "OpenSim/Warping";
 }
 
-osc::MeshWarpingTab::MeshWarpingTab(ParentPtr<ITabHost> const& parent_) :
+osc::MeshWarpingTab::MeshWarpingTab(const ParentPtr<ITabHost>& parent_) :
     m_Impl{std::make_unique<Impl>(parent_)}
-{
-}
-
+{}
 osc::MeshWarpingTab::MeshWarpingTab(MeshWarpingTab&&) noexcept = default;
 osc::MeshWarpingTab& osc::MeshWarpingTab::operator=(MeshWarpingTab&&) noexcept = default;
 osc::MeshWarpingTab::~MeshWarpingTab() noexcept = default;

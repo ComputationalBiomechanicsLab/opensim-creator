@@ -235,16 +235,13 @@ private:
 };
 
 
-// public API
-
 osc::AddBodyPopup::AddBodyPopup(
     std::string_view popupName,
     IEditorAPI* api,
     std::shared_ptr<UndoableModelStatePair> uum) :
 
     m_Impl{std::make_unique<Impl>(popupName, api, std::move(uum))}
-{
-}
+{}
 osc::AddBodyPopup::AddBodyPopup(AddBodyPopup&&) noexcept = default;
 osc::AddBodyPopup& osc::AddBodyPopup::operator=(AddBodyPopup&&) noexcept = default;
 osc::AddBodyPopup::~AddBodyPopup() noexcept = default;

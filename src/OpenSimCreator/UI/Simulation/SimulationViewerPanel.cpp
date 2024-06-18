@@ -92,8 +92,6 @@ private:
 };
 
 
-// public API
-
 osc::SimulationViewerPanel::SimulationViewerPanel(
     std::string_view panelName_,
     SimulationViewerPanelParameters params_) :

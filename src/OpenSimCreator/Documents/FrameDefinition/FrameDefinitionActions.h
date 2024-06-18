@@ -22,13 +22,13 @@ namespace osc::fd
     void ActionAddSphereInMeshFrame(
         UndoableModelStatePair&,
         const OpenSim::Mesh&,
-        std::optional<Vec3> const& maybeClickPosInGround
+        const std::optional<Vec3>& maybeClickPosInGround
     );
 
     void ActionAddOffsetFrameInMeshFrame(
         UndoableModelStatePair&,
         const OpenSim::Mesh&,
-        std::optional<Vec3> const& maybeClickPosInGround
+        const std::optional<Vec3>& maybeClickPosInGround
     );
 
     void ActionAddPointToPointEdge(
@@ -67,7 +67,7 @@ namespace osc::fd
     );
 
     void ActionAddFrame(
-        std::shared_ptr<UndoableModelStatePair> const&,
+        const std::shared_ptr<UndoableModelStatePair>&,
         const Edge& firstEdge,
         CoordinateDirection firstEdgeAxis,
         const Edge& otherEdge,
@@ -75,7 +75,7 @@ namespace osc::fd
     );
 
     void ActionCreateBodyFromFrame(
-        std::shared_ptr<UndoableModelStatePair> const&,
+        const std::shared_ptr<UndoableModelStatePair>&,
         const OpenSim::ComponentPath& frameAbsPath,
         const OpenSim::ComponentPath& meshAbsPath,
         const OpenSim::ComponentPath& jointFrameAbsPath,

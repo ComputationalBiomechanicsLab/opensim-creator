@@ -51,7 +51,7 @@ namespace osc
         void getValuesFloat(
             const OpenSim::Component&,
             std::span<const SimulationReport>,
-            std::function<void(float)> const& consumer
+            const std::function<void(float)>& consumer
         ) const;
 
         std::vector<float> slurpValuesFloat(
@@ -67,7 +67,7 @@ namespace osc
         void getValuesVec2(
             const OpenSim::Component&,
             std::span<const SimulationReport>,
-            std::function<void(Vec2)> const& consumer
+            const std::function<void(Vec2)>& consumer
         ) const;
 
         std::vector<Vec2> slurpValuesVec2(

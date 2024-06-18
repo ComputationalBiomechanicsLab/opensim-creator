@@ -21,8 +21,7 @@ namespace osc
             viewportScreenRect{viewportScreenRect_},
             componentAbsPathOrEmpty{std::move(componentAbsPathOrEmpty_)},
             maybeClickPositionInGround{maybeClickPositionInGround_}
-        {
-        }
+        {}
 
         std::string sourcePanelName;
         Rect viewportScreenRect;

@@ -800,7 +800,7 @@ namespace
                 return std::nullopt;  // the component doesn't have a logical positional property that can be edited with the transform
             }
 
-            OpenSim::Property<SimTK::Vec3> const* const prop = tryGetProperty();
+            const OpenSim::Property<SimTK::Vec3>* const prop = tryGetProperty();
             if (!prop)
             {
                 return std::nullopt;  // can't access the property this editor is ultimately editing
@@ -843,8 +843,8 @@ namespace
                 conversionCoefficient = static_cast<float>(SimTK_RADIAN_TO_DEGREE);
             }
 
-            std::optional<SimTK::Transform> const parent2ground = getParentToGroundTransform();
-            std::optional<SimTK::Transform> const ground2frame = getGroundToUserSelectedFrameTransform();
+            const std::optional<SimTK::Transform> parent2ground = getParentToGroundTransform();
+            const std::optional<SimTK::Transform> ground2frame = getGroundToUserSelectedFrameTransform();
             const SimTK::Transform transform = parent2ground && ground2frame ?
                 (*ground2frame) * (*parent2ground) :
                 SimTK::Transform{};

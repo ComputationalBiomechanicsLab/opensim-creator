@@ -267,8 +267,6 @@ private:
 };
 
 
-// public API
-
 osc::ForwardDynamicSimulation::ForwardDynamicSimulation(BasicModelStatePair ms, const ForwardDynamicSimulatorParams& params) :
     m_Impl{std::make_unique<Impl>(std::move(ms), params)}
 {}

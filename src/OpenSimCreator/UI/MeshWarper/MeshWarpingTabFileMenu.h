@@ -22,8 +22,7 @@ namespace osc
         explicit MeshWarpingTabFileMenu(
             std::shared_ptr<MeshWarpingTabSharedState> tabState_) :
             m_State{std::move(tabState_)}
-        {
-        }
+        {}
 
         void onDraw()
         {

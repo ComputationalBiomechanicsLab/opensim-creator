@@ -12,7 +12,7 @@ namespace osc
     class EditorTabStatusBar final {
     public:
         EditorTabStatusBar(
-            ParentPtr<IMainUIStateAPI> const&,
+            const ParentPtr<IMainUIStateAPI>&,
             IEditorAPI*,
             std::shared_ptr<UndoableModelStatePair>
         );

@@ -132,8 +132,6 @@ private:
 };
 
 
-// public API
-
 osc::ParamBlock::ParamBlock() : m_Impl{std::make_unique<Impl>()} {}
 osc::ParamBlock::ParamBlock(const ParamBlock&) = default;
 osc::ParamBlock::ParamBlock(ParamBlock&&) noexcept = default;

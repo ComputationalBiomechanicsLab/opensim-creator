@@ -16,7 +16,7 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit RendererGeometryShaderTab(ParentPtr<ITabHost> const&);
+        explicit RendererGeometryShaderTab(const ParentPtr<ITabHost>&);
         RendererGeometryShaderTab(const RendererGeometryShaderTab&) = delete;
         RendererGeometryShaderTab(RendererGeometryShaderTab&&) noexcept;
         RendererGeometryShaderTab& operator=(const RendererGeometryShaderTab&) = delete;

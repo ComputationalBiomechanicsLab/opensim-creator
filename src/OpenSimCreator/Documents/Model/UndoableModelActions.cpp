@@ -76,12 +76,12 @@ using namespace osc;
 // helper functions
 namespace
 {
-    void OpenOsimInLoadingTab(ParentPtr<IMainUIStateAPI> const& api, std::filesystem::path p)
+    void OpenOsimInLoadingTab(const ParentPtr<IMainUIStateAPI>& api, std::filesystem::path p)
     {
         api->add_and_select_tab<LoadingTab>(api, std::move(p));
     }
 
-    void DoOpenFileViaDialog(ParentPtr<IMainUIStateAPI> const& api)
+    void DoOpenFileViaDialog(const ParentPtr<IMainUIStateAPI>& api)
     {
         for (const auto& path : prompt_user_to_select_files({"osim"})) {
             OpenOsimInLoadingTab(api, path);
@@ -108,7 +108,7 @@ namespace
             // we can save over this document - *IF* it's not an example file
             if (IsAnExampleFile(backing_path))
             {
-                std::optional<std::filesystem::path> const maybePath = PromptSaveOneFile();
+                const std::optional<std::filesystem::path> maybePath = PromptSaveOneFile();
                 return maybePath ? std::optional<std::string>{maybePath->string()} : std::nullopt;
             }
             else
@@ -120,7 +120,7 @@ namespace
         {
             // the model has no associated file, so prompt the user for a save
             // location
-            std::optional<std::filesystem::path> const maybePath = PromptSaveOneFile();
+            const std::optional<std::filesystem::path> maybePath = PromptSaveOneFile();
             return maybePath ? std::optional<std::string>{maybePath->string()} : std::nullopt;
         }
     }
@@ -243,7 +243,7 @@ namespace
 
 void osc::ActionSaveCurrentModelAs(UndoableModelStatePair& uim)
 {
-    std::optional<std::filesystem::path> const maybePath = PromptSaveOneFile();
+    const std::optional<std::filesystem::path> maybePath = PromptSaveOneFile();
 
     if (maybePath && TrySaveModel(uim.getModel(), maybePath->string()))
     {
@@ -262,25 +262,25 @@ void osc::ActionSaveCurrentModelAs(UndoableModelStatePair& uim)
     }
 }
 
-void osc::ActionNewModel(ParentPtr<IMainUIStateAPI> const& api)
+void osc::ActionNewModel(const ParentPtr<IMainUIStateAPI>& api)
 {
     auto p = std::make_unique<UndoableModelStatePair>();
     api->add_and_select_tab<ModelEditorTab>(api, std::move(p));
 }
 
-void osc::ActionOpenModel(ParentPtr<IMainUIStateAPI> const& api)
+void osc::ActionOpenModel(const ParentPtr<IMainUIStateAPI>& api)
 {
     DoOpenFileViaDialog(api);
 }
 
-void osc::ActionOpenModel(ParentPtr<IMainUIStateAPI> const& api, const std::filesystem::path& path)
+void osc::ActionOpenModel(const ParentPtr<IMainUIStateAPI>& api, const std::filesystem::path& path)
 {
     OpenOsimInLoadingTab(api, path);
 }
 
 bool osc::ActionSaveModel(IMainUIStateAPI&, UndoableModelStatePair& model)
 {
-    std::optional<std::string> const maybeUserSaveLoc = TryGetModelSaveLocation(model.getModel());
+    const std::optional<std::string> maybeUserSaveLoc = TryGetModelSaveLocation(model.getModel());
 
     if (maybeUserSaveLoc && TrySaveModel(model.getModel(), *maybeUserSaveLoc))
     {
@@ -405,7 +405,7 @@ void osc::ActionClearSelectionFromEditedModel(UndoableModelStatePair& model)
 }
 
 bool osc::ActionLoadSTOFileAgainstModel(
-    ParentPtr<IMainUIStateAPI> const& parent,
+    const ParentPtr<IMainUIStateAPI>& parent,
     const UndoableModelStatePair& uim,
     const std::filesystem::path& stoPath)
 {
@@ -429,7 +429,7 @@ bool osc::ActionLoadSTOFileAgainstModel(
 }
 
 bool osc::ActionStartSimulatingModel(
-    ParentPtr<IMainUIStateAPI> const& parent,
+    const ParentPtr<IMainUIStateAPI>& parent,
     const UndoableModelStatePair& uim)
 {
     BasicModelStatePair modelState{uim};
@@ -657,7 +657,7 @@ bool osc::ActionReloadOsimFromDisk(UndoableModelStatePair& uim, SceneCache& mesh
 }
 
 bool osc::ActionSimulateAgainstAllIntegrators(
-    ParentPtr<IMainUIStateAPI> const& parent,
+    const ParentPtr<IMainUIStateAPI>& parent,
     const UndoableModelStatePair& uim)
 {
     parent->add_and_select_tab<PerformanceAnalyzerTab>(
@@ -952,7 +952,7 @@ bool osc::ActionChangeJointTypeTo(UndoableModelStatePair& uim, const OpenSim::Co
 
     const OpenSim::ComponentPath ownerPath = GetAbsolutePath(*owner);
 
-    std::optional<size_t> const maybeIdx = FindJointInParentJointSet(*target);
+    const std::optional<size_t> maybeIdx = FindJointInParentJointSet(*target);
     if (!maybeIdx)
     {
         log_error("%s could not be found in its owner", jointPath.toString().c_str());

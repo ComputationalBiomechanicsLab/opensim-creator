@@ -59,7 +59,7 @@ class osc::ModelEditorTab::Impl final : public IEditorAPI {
 public:
 
     Impl(
-        ParentPtr<IMainUIStateAPI> const& parent_,
+        const ParentPtr<IMainUIStateAPI>& parent_,
         std::unique_ptr<UndoableModelStatePair> model_) :
 
         m_Parent{parent_},
@@ -448,16 +448,12 @@ private:
 };
 
 
-// public API (PIMPL)
-
 osc::ModelEditorTab::ModelEditorTab(
-    ParentPtr<IMainUIStateAPI> const& parent_,
+    const ParentPtr<IMainUIStateAPI>& parent_,
     std::unique_ptr<UndoableModelStatePair> model_) :
 
     m_Impl{std::make_unique<Impl>(parent_, std::move(model_))}
-{
-}
-
+{}
 osc::ModelEditorTab::ModelEditorTab(ModelEditorTab&&) noexcept = default;
 osc::ModelEditorTab& osc::ModelEditorTab::operator=(ModelEditorTab&&) noexcept = default;
 osc::ModelEditorTab::~ModelEditorTab() noexcept = default;

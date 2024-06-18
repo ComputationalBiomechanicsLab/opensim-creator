@@ -628,7 +628,7 @@ namespace
         const Rect& viewportRect,
         ImGuizmo::OPERATION operation,
         ImGuizmo::MODE mode,
-        std::shared_ptr<UndoableModelStatePair> const& model,
+        const std::shared_ptr<UndoableModelStatePair>& model,
         const OpenSim::Component& selected,
         bool& wasUsingLastFrameStorage)
     {
@@ -667,9 +667,7 @@ namespace
 
 osc::ModelSelectionGizmo::ModelSelectionGizmo(std::shared_ptr<UndoableModelStatePair> model_) :
     m_Model{std::move(model_)}
-{
-}
-
+{}
 osc::ModelSelectionGizmo::ModelSelectionGizmo(const ModelSelectionGizmo&) = default;
 osc::ModelSelectionGizmo::ModelSelectionGizmo(ModelSelectionGizmo&&) noexcept = default;
 osc::ModelSelectionGizmo& osc::ModelSelectionGizmo::operator=(const ModelSelectionGizmo&) = default;

@@ -18,15 +18,14 @@
 class osc::EditorTabStatusBar::Impl final {
 public:
     Impl(
-        ParentPtr<IMainUIStateAPI> const& mainUIStateAPI_,
+        const ParentPtr<IMainUIStateAPI>& mainUIStateAPI_,
         IEditorAPI* editorAPI_,
         std::shared_ptr<UndoableModelStatePair> model_) :
 
         m_MainUIStateAPI{mainUIStateAPI_},
         m_EditorAPI{editorAPI_},
         m_Model{std::move(model_)}
-    {
-    }
+    {}
 
     void onDraw()
     {
@@ -40,9 +39,8 @@ private:
     {
         const OpenSim::Component* const c = m_Model->getSelected();
 
-        if (c)
-        {
-            std::vector<const OpenSim::Component*> const els = GetPathElements(*c);
+        if (c) {
+            const std::vector<const OpenSim::Component*> els = GetPathElements(*c);
             for (ptrdiff_t i = 0; i < std::ssize(els)-1; ++i)
             {
                 ui::push_id(i);
@@ -99,17 +97,14 @@ private:
     std::shared_ptr<UndoableModelStatePair> m_Model;
 };
 
-// public API (PIMPL)
 
 osc::EditorTabStatusBar::EditorTabStatusBar(
-    ParentPtr<IMainUIStateAPI> const& mainUIStateAPI_,
+    const ParentPtr<IMainUIStateAPI>& mainUIStateAPI_,
     IEditorAPI* editorAPI_,
     std::shared_ptr<UndoableModelStatePair> model_) :
 
     m_Impl{std::make_unique<Impl>(mainUIStateAPI_, editorAPI_, std::move(model_))}
-{
-}
-
+{}
 osc::EditorTabStatusBar::EditorTabStatusBar(EditorTabStatusBar&&) noexcept = default;
 osc::EditorTabStatusBar& osc::EditorTabStatusBar::operator=(EditorTabStatusBar&&) noexcept = default;
 osc::EditorTabStatusBar::~EditorTabStatusBar() noexcept = default;

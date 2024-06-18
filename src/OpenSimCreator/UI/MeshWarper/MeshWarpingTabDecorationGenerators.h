@@ -16,7 +16,7 @@ namespace osc
         const MeshWarpingTabSharedState& sharedState,
         const Mesh& tpsSourceOrDestinationMesh,
         bool wireframeMode,
-        std::function<void(SceneDecoration&&)> const& out,
+        const std::function<void(SceneDecoration&&)>& out,
         Color meshColor = Color::white())
     {
         // draw the mesh

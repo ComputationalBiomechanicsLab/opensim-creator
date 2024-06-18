@@ -208,7 +208,7 @@ public:
         // do hovertest
         if (layerIsHovered)
         {
-            std::optional<SceneCollision> const collision = GetClosestCollision(
+            const std::optional<SceneCollision> collision = GetClosestCollision(
                 m_Decorations.bvh,
                 *m_State.meshCache,
                 m_Decorations.decorations,

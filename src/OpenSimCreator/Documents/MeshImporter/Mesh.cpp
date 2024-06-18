@@ -31,8 +31,7 @@ osc::mi::Mesh::Mesh(
     m_MeshData{std::move(meshData)},
     m_Path{std::move(path)},
     m_Name{SanitizeToOpenSimComponentName(m_Path.filename().replace_extension().string())}
-{
-}
+{}
 
 AABB osc::mi::Mesh::calcBounds() const
 {

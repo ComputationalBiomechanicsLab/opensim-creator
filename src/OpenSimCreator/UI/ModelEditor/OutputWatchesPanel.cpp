@@ -53,13 +53,12 @@ public:
 
     Impl(std::string_view panelName_,
         std::shared_ptr<const UndoableModelStatePair> model_,
-        ParentPtr<IMainUIStateAPI> const& api_) :
+        const ParentPtr<IMainUIStateAPI>& api_) :
 
         StandardPanelImpl{panelName_},
         m_API{api_},
         m_Model{std::move(model_)}
-    {
-    }
+    {}
 
 private:
     void impl_draw_content() final
@@ -110,17 +109,13 @@ private:
 };
 
 
-// public API (PIMPL)
-
 osc::OutputWatchesPanel::OutputWatchesPanel(
     std::string_view panelName_,
     std::shared_ptr<const UndoableModelStatePair> model_,
-    ParentPtr<IMainUIStateAPI> const& api_) :
+    const ParentPtr<IMainUIStateAPI>& api_) :
 
     m_Impl{std::make_unique<Impl>(panelName_, std::move(model_), api_)}
-{
-}
-
+{}
 osc::OutputWatchesPanel::OutputWatchesPanel(OutputWatchesPanel&&) noexcept = default;
 osc::OutputWatchesPanel& osc::OutputWatchesPanel::operator=(OutputWatchesPanel&&) noexcept = default;
 osc::OutputWatchesPanel::~OutputWatchesPanel() noexcept = default;

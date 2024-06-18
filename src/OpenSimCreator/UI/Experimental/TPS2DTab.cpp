@@ -527,18 +527,14 @@ private:
 };
 
 
-// public API (PIMPL)
-
 CStringView osc::TPS2DTab::id()
 {
     return "OpenSim/Experimental/TPS2D";
 }
 
-osc::TPS2DTab::TPS2DTab(ParentPtr<ITabHost> const&) :
+osc::TPS2DTab::TPS2DTab(const ParentPtr<ITabHost>&) :
     m_Impl{std::make_unique<Impl>()}
-{
-}
-
+{}
 osc::TPS2DTab::TPS2DTab(TPS2DTab&&) noexcept = default;
 osc::TPS2DTab& osc::TPS2DTab::operator=(TPS2DTab&&) noexcept = default;
 osc::TPS2DTab::~TPS2DTab() noexcept = default;

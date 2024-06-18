@@ -15,7 +15,7 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit MeshHittestTab(ParentPtr<ITabHost> const&);
+        explicit MeshHittestTab(const ParentPtr<ITabHost>&);
         MeshHittestTab(const MeshHittestTab&) = delete;
         MeshHittestTab(MeshHittestTab&&) noexcept;
         MeshHittestTab& operator=(const MeshHittestTab&) = delete;

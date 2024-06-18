@@ -11,8 +11,7 @@ osc::ComponentSceneDecorationFlagsTagger::ComponentSceneDecorationFlagsTagger(
     const OpenSim::Component* hovered_) :
     m_Selected{selected_},
     m_Hovered{hovered_}
-{
-}
+{}
 
 void osc::ComponentSceneDecorationFlagsTagger::operator()(
     const OpenSim::Component& component,

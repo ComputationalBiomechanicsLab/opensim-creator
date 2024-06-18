@@ -101,8 +101,8 @@ namespace
     }
 
     std::vector<MaybePairedLandmark> TryLoadPairedLandmarks(
-        [[maybe_unused]] std::optional<std::filesystem::path> const& maybeSourceLandmarksCSV,
-        [[maybe_unused]] std::optional<std::filesystem::path> const& maybeDestinationLandmarksCSV)
+        [[maybe_unused]] const std::optional<std::filesystem::path>& maybeSourceLandmarksCSV,
+        [[maybe_unused]] const std::optional<std::filesystem::path>& maybeDestinationLandmarksCSV)
     {
         std::vector<Landmark> src;
         if (maybeSourceLandmarksCSV) {

@@ -89,8 +89,7 @@ namespace
         ui::same_line();
         ui::draw_text_disabled(component.getConcreteClassName());
 
-        if (std::optional<PointInfo> const pointInfo = TryExtractPointInfo(component, state))
-        {
+        if (const std::optional<PointInfo> pointInfo = TryExtractPointInfo(component, state)) {
             ui::draw_text_disabled("Expressed In: %s", pointInfo->frameAbsPath.toString().c_str());
         }
 
@@ -163,7 +162,7 @@ namespace
         PointSelectorUiState& uiState,
         const OpenSim::Model& model,
         const SimTK::State& state,
-        std::function<bool(const OpenSim::Component&)> const& predicate,
+        const std::function<bool(const OpenSim::Component&)>& predicate,
         SelectionState selectionState)
     {
         for (const OpenSim::Component& component : model.getComponentList())
@@ -386,7 +385,7 @@ namespace
     std::optional<SimTK::Transform> TryGetTransformToReexpressPointsIn(
         const OpenSim::Model& model,
         const SimTK::State& state,
-        std::optional<std::string> const& maybeAbsPathOfFrameToReexpressPointsIn)
+        const std::optional<std::string>& maybeAbsPathOfFrameToReexpressPointsIn)
     {
         if (!maybeAbsPathOfFrameToReexpressPointsIn)
         {
@@ -403,7 +402,7 @@ namespace
     }
 
     std::vector<std::string> GetSortedListOfOutputPointAbsPaths(
-        std::unordered_set<std::string> const& unorderedPointAbsPaths,
+        const std::unordered_set<std::string>& unorderedPointAbsPaths,
         bool shouldExportPointsWithAbsPathNames)
     {
         std::vector<std::string> rv(unorderedPointAbsPaths.begin(), unorderedPointAbsPaths.end());
@@ -435,7 +434,7 @@ namespace
         const OpenSim::Model& model,
         const SimTK::State& state,
         bool shouldExportPointsWithAbsPathNames,
-        std::optional<SimTK::Transform> const& maybeGround2ReexpressedFrame,
+        const std::optional<SimTK::Transform>& maybeGround2ReexpressedFrame,
         const std::string& pointAbsPath,
         std::ostream& out)
     {
@@ -445,7 +444,7 @@ namespace
             return;  // skip writing: point no longer exists in model
         }
 
-        std::optional<PointInfo> const poi = TryExtractPointInfo(*c, state);
+        const std::optional<PointInfo> poi = TryExtractPointInfo(*c, state);
         if (!poi)
         {
             return;  // skip writing: cannot extract point info for the component
@@ -475,17 +474,17 @@ namespace
     void WritePointsAsCSVTo(
         const OpenSim::Model& model,
         const SimTK::State& state,
-        std::unordered_set<std::string> const& pointAbsPaths,
-        std::optional<std::string> const& maybeAbsPathOfFrameToReexpressPointsIn,
+        const std::unordered_set<std::string>& pointAbsPaths,
+        const std::optional<std::string>& maybeAbsPathOfFrameToReexpressPointsIn,
         bool shouldExportPointsWithAbsPathNames,
         std::ostream& out)
     {
-        std::vector<std::string> const sortedRowAbsPaths = GetSortedListOfOutputPointAbsPaths(
+        const std::vector<std::string> sortedRowAbsPaths = GetSortedListOfOutputPointAbsPaths(
             pointAbsPaths,
             shouldExportPointsWithAbsPathNames
         );
 
-        std::optional<SimTK::Transform> const maybeGround2ReexpressedFrame = TryGetTransformToReexpressPointsIn(
+        const std::optional<SimTK::Transform> maybeGround2ReexpressedFrame = TryGetTransformToReexpressPointsIn(
             model,
             state,
             maybeAbsPathOfFrameToReexpressPointsIn
@@ -514,14 +513,13 @@ namespace
     ExportStepReturn ActionPromptUserForSaveLocationAndExportPoints(
         const OpenSim::Model& model,
         const SimTK::State& state,
-        std::unordered_set<std::string> const& pointAbsPaths,
-        std::optional<std::string> const& maybeAbsPathOfFrameToReexpressPointsIn,
+        const std::unordered_set<std::string>& pointAbsPaths,
+        const std::optional<std::string>& maybeAbsPathOfFrameToReexpressPointsIn,
         bool shouldExportPointsWithAbsPathNames)
     {
         // prompt user to select a save location
-        std::optional<std::filesystem::path> const saveLoc = PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
-        if (!saveLoc)
-        {
+        const std::optional<std::filesystem::path> saveLoc = PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
+        if (!saveLoc) {
             return ExportStepReturn::UserCancelled;
         }
 
@@ -555,8 +553,7 @@ public:
 
         StandardPopup{popupName_},
         m_Model{std::move(model_)}
-    {
-    }
+    {}
 
 private:
     void impl_draw_content() final
@@ -614,15 +611,12 @@ private:
 };
 
 
-// public API
-
 osc::ExportPointsPopup::ExportPointsPopup(
     std::string_view popupName,
     std::shared_ptr<const IConstModelStatePair> model_) :
 
     m_Impl{std::make_unique<Impl>(popupName, std::move(model_))}
-{
-}
+{}
 osc::ExportPointsPopup::ExportPointsPopup(ExportPointsPopup&&) noexcept = default;
 osc::ExportPointsPopup& osc::ExportPointsPopup::operator=(ExportPointsPopup&&) noexcept = default;
 osc::ExportPointsPopup::~ExportPointsPopup() noexcept = default;

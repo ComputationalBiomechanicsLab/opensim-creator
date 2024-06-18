@@ -106,14 +106,12 @@ namespace
         return rv;
     }
 
-    std::vector<OutputExtractor> const& GetAllIntegratorOutputExtractors()
+    const std::vector<OutputExtractor>& GetAllIntegratorOutputExtractors()
     {
-        static std::vector<OutputExtractor> const s_IntegratorOutputs = ConstructIntegratorOutputExtractors();
+        static const std::vector<OutputExtractor> s_IntegratorOutputs = ConstructIntegratorOutputExtractors();
         return s_IntegratorOutputs;
     }
 }
-
-// public API
 
 OutputValueExtractor osc::IntegratorOutputExtractor::implGetOutputValueExtractor(const OpenSim::Component&) const
 {

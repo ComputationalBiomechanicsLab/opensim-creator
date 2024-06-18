@@ -125,7 +125,7 @@ namespace
             const SimTK::SimbodyMatterSubsystem& matter,
             const SimTK::State& st,
             float fixupScaleFactor,
-            std::function<void(SceneDecoration&&)> const& out) :
+            const std::function<void(SceneDecoration&&)>& out) :
 
             m_MeshCache{meshCache},
             m_Matter{matter},
@@ -409,7 +409,7 @@ namespace
         const SimTK::SimbodyMatterSubsystem& m_Matter;
         const SimTK::State& m_State;
         float m_FixupScaleFactor;
-        std::function<void(SceneDecoration&&)> const& m_Consumer;
+        const std::function<void(SceneDecoration&&)>& m_Consumer;
     };
 }
 
@@ -419,7 +419,7 @@ void osc::GenerateDecorations(
     const SimTK::State& state,
     const SimTK::DecorativeGeometry& geom,
     float fixupScaleFactor,
-    std::function<void(SceneDecoration&&)> const& out)
+    const std::function<void(SceneDecoration&&)>& out)
 {
     GeometryImpl impl{meshCache, matter, state, fixupScaleFactor, out};
     geom.implementGeometry(impl);

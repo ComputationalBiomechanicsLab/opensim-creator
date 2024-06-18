@@ -36,35 +36,35 @@ namespace
 
     // extract a `double` from an `OpenSim::Property<double>`
     template<>
-    double extract<>(OpenSim::Output<double> const& o, const SimTK::State& s)
+    double extract<>(const OpenSim::Output<double>& o, const SimTK::State& s)
     {
         return o.getValue(s);
     }
 
     // extract X from `SimTK::Vec3`
     template<>
-    double extract<ComponentOutputSubfield::X>(OpenSim::Output<SimTK::Vec3> const& o, const SimTK::State& s)
+    double extract<ComponentOutputSubfield::X>(const OpenSim::Output<SimTK::Vec3>& o, const SimTK::State& s)
     {
         return o.getValue(s).get(0);
     }
 
     // extract Y from `SimTK::Vec3`
     template<>
-    double extract<ComponentOutputSubfield::Y>(OpenSim::Output<SimTK::Vec3> const& o, const SimTK::State& s)
+    double extract<ComponentOutputSubfield::Y>(const OpenSim::Output<SimTK::Vec3>& o, const SimTK::State& s)
     {
         return o.getValue(s).get(1);
     }
 
     // extract Z from `SimTK::Vec3`
     template<>
-    double extract<ComponentOutputSubfield::Z>(OpenSim::Output<SimTK::Vec3> const& o, const SimTK::State& s)
+    double extract<ComponentOutputSubfield::Z>(const OpenSim::Output<SimTK::Vec3>& o, const SimTK::State& s)
     {
         return o.getValue(s).get(2);
     }
 
     // extract magnitude from `SimTK::Vec3`
     template<>
-    double extract<ComponentOutputSubfield::Magnitude>(OpenSim::Output<SimTK::Vec3> const& o, const SimTK::State& s)
+    double extract<ComponentOutputSubfield::Magnitude>(const OpenSim::Output<SimTK::Vec3>& o, const SimTK::State& s)
     {
         return o.getValue(s).norm();
     }
@@ -111,11 +111,11 @@ std::span<const ComponentOutputSubfield> osc::GetAllSupportedOutputSubfields()
 
 bool osc::ProducesExtractableNumericValues(const OpenSim::AbstractOutput& ao)
 {
-    if (dynamic_cast<OpenSim::Output<double> const*>(&ao)) {
+    if (dynamic_cast<const OpenSim::Output<double>*>(&ao)) {
         return true;
     }
 
-    if (dynamic_cast<OpenSim::Output<SimTK::Vec3> const*>(&ao)) {
+    if (dynamic_cast<const OpenSim::Output<SimTK::Vec3>*>(&ao)) {
         return true;
     }
 
@@ -124,7 +124,7 @@ bool osc::ProducesExtractableNumericValues(const OpenSim::AbstractOutput& ao)
 
 ComponentOutputSubfield osc::GetSupportedSubfields(const OpenSim::AbstractOutput& ao)
 {
-    if (dynamic_cast<OpenSim::Output<SimTK::Vec3> const*>(&ao)) {
+    if (dynamic_cast<const OpenSim::Output<SimTK::Vec3>*>(&ao)) {
         return
             ComponentOutputSubfield::X |
             ComponentOutputSubfield::Y |
@@ -140,12 +140,10 @@ SubfieldExtractorFunc osc::GetExtractorFuncOrNull(
     const OpenSim::AbstractOutput& ao,
     ComponentOutputSubfield subfield)
 {
-    if (dynamic_cast<OpenSim::Output<double> const*>(&ao))
-    {
+    if (dynamic_cast<const OpenSim::Output<double>*>(&ao)) {
         return extractTypeErased<OpenSim::Output<double>>;
     }
-    else if (dynamic_cast<OpenSim::Output<SimTK::Vec3> const*>(&ao))
-    {
+    else if (dynamic_cast<const OpenSim::Output<SimTK::Vec3>*>(&ao)) {
         switch (subfield) {
         case ComponentOutputSubfield::X:
             return extractTypeErased<ComponentOutputSubfield::X, OpenSim::Output<SimTK::Vec3>>;

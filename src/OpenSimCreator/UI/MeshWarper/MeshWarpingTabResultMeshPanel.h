@@ -232,7 +232,7 @@ namespace osc
         std::vector<SceneDecoration> generateDecorations() const
         {
             std::vector<SceneDecoration> decorations;
-            std::function<void(SceneDecoration&&)> const decorationConsumer =
+            const std::function<void(SceneDecoration&&)> decorationConsumer =
                 [&decorations](SceneDecoration&& dec) { decorations.push_back(std::move(dec)); };
 
             AppendCommonDecorations(
@@ -269,7 +269,7 @@ namespace osc
         // renders a panel to a texture via its renderer and returns a reference to the rendered texture
         RenderTexture& renderScene(Vec2 dims)
         {
-            std::vector<SceneDecoration> const decorations = generateDecorations();
+            const std::vector<SceneDecoration> decorations = generateDecorations();
             const SceneRendererParams params = calc_standard_dark_scene_render_params(
                 m_Camera,
                 App::get().anti_aliasing_level(),

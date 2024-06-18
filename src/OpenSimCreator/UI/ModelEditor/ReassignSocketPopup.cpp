@@ -241,7 +241,7 @@ private:
         }();
 
         const auto* const physFrameSocket =
-            dynamic_cast<OpenSim::Socket<OpenSim::PhysicalFrame> const*>(&abstractSocket);
+            dynamic_cast<const OpenSim::Socket<OpenSim::PhysicalFrame>*>(&abstractSocket);
         if (!physFrameSocket)
         {
             bool v = false;

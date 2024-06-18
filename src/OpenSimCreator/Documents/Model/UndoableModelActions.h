@@ -43,17 +43,17 @@ namespace osc
 
     // create a new model and show it in a new tab
     void ActionNewModel(
-        ParentPtr<IMainUIStateAPI> const&
+        const ParentPtr<IMainUIStateAPI>&
     );
 
     // prompt a user to open a model file and open it in a new tab
     void ActionOpenModel(
-        ParentPtr<IMainUIStateAPI> const&
+        const ParentPtr<IMainUIStateAPI>&
     );
 
     // open the specified model in a loading tab
     void ActionOpenModel(
-        ParentPtr<IMainUIStateAPI> const&,
+        const ParentPtr<IMainUIStateAPI>&,
         const std::filesystem::path&
     );
 
@@ -97,14 +97,14 @@ namespace osc
 
     // loads an STO file against the current model and opens it in a new tab
     bool ActionLoadSTOFileAgainstModel(
-        ParentPtr<IMainUIStateAPI> const&,
+        const ParentPtr<IMainUIStateAPI>&,
         const UndoableModelStatePair&,
         const std::filesystem::path& stoPath
     );
 
     // start simulating the given model in a forward-dynamic simulator tab
     bool ActionStartSimulatingModel(
-        ParentPtr<IMainUIStateAPI> const&,
+        const ParentPtr<IMainUIStateAPI>&,
         const UndoableModelStatePair&
     );
 
@@ -161,7 +161,7 @@ namespace osc
 
     // start performing a series of simulations against the model by opening a tab that tries all possible integrators
     bool ActionSimulateAgainstAllIntegrators(
-        ParentPtr<IMainUIStateAPI> const&,
+        const ParentPtr<IMainUIStateAPI>&,
         const UndoableModelStatePair&
     );
 

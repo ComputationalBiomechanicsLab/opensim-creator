@@ -557,8 +557,6 @@ private:
 };
 
 
-// public API
-
 osc::AddComponentPopup::AddComponentPopup(
     std::string_view popupName,
     IPopupAPI* api,
@@ -566,9 +564,7 @@ osc::AddComponentPopup::AddComponentPopup(
     std::unique_ptr<OpenSim::Component> prototype) :
 
     m_Impl{std::make_unique<Impl>(popupName, api, std::move(uum), std::move(prototype))}
-{
-}
-
+{}
 osc::AddComponentPopup::AddComponentPopup(AddComponentPopup&&) noexcept = default;
 osc::AddComponentPopup& osc::AddComponentPopup::operator=(AddComponentPopup&&) noexcept = default;
 osc::AddComponentPopup::~AddComponentPopup() noexcept = default;

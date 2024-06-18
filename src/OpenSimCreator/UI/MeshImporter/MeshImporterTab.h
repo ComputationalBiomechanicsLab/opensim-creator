@@ -16,8 +16,8 @@ namespace osc::mi
 {
     class MeshImporterTab final : public ITab {
     public:
-        explicit MeshImporterTab(ParentPtr<IMainUIStateAPI> const&);
-        MeshImporterTab(ParentPtr<IMainUIStateAPI> const&, std::vector<std::filesystem::path>);
+        explicit MeshImporterTab(const ParentPtr<IMainUIStateAPI>&);
+        MeshImporterTab(const ParentPtr<IMainUIStateAPI>&, std::vector<std::filesystem::path>);
         MeshImporterTab(const MeshImporterTab&) = delete;
         MeshImporterTab(MeshImporterTab&&) noexcept;
         MeshImporterTab& operator=(const MeshImporterTab&) = delete;

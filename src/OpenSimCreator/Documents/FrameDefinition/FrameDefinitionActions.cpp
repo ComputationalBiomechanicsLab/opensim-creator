@@ -27,7 +27,7 @@
 void osc::fd::ActionAddSphereInMeshFrame(
     UndoableModelStatePair& model,
     const OpenSim::Mesh& mesh,
-    std::optional<Vec3> const& maybeClickPosInGround)
+    const std::optional<Vec3>& maybeClickPosInGround)
 {
     // if the caller requests a location via a click, set the position accordingly
     const SimTK::Vec3 locationInMeshFrame = maybeClickPosInGround ?
@@ -63,7 +63,7 @@ void osc::fd::ActionAddSphereInMeshFrame(
 void osc::fd::ActionAddOffsetFrameInMeshFrame(
     UndoableModelStatePair& model,
     const OpenSim::Mesh& mesh,
-    std::optional<Vec3> const& maybeClickPosInGround)
+    const std::optional<Vec3>& maybeClickPosInGround)
 {
     // if the caller requests a location via a click, set the position accordingly
     const SimTK::Vec3 locationInMeshFrame = maybeClickPosInGround ?
@@ -237,7 +237,7 @@ void osc::fd::ActionSwapCrossProductEdgeOperands(
 }
 
 void osc::fd::ActionAddFrame(
-    std::shared_ptr<UndoableModelStatePair> const& model,
+    const std::shared_ptr<UndoableModelStatePair>& model,
     const Edge& firstEdge,
     CoordinateDirection firstEdgeAxis,
     const Edge& otherEdge,
@@ -268,7 +268,7 @@ void osc::fd::ActionAddFrame(
 }
 
 void osc::fd::ActionCreateBodyFromFrame(
-    std::shared_ptr<UndoableModelStatePair> const& model,
+    const std::shared_ptr<UndoableModelStatePair>& model,
     const OpenSim::ComponentPath& frameAbsPath,
     const OpenSim::ComponentPath& meshAbsPath,
     const OpenSim::ComponentPath& jointFrameAbsPath,

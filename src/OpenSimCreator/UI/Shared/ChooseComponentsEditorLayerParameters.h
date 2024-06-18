@@ -27,7 +27,7 @@ namespace osc
 
         size_t numComponentsUserMustChoose = 1;
 
-        std::function<bool(std::unordered_set<std::string> const&)> onUserFinishedChoosing = [](std::unordered_set<std::string> const&)
+        std::function<bool(const std::unordered_set<std::string>&)> onUserFinishedChoosing = [](const std::unordered_set<std::string>&)
         {
             return true;
         };
