@@ -78,7 +78,7 @@ void osc::GenerateDecorations(
 std::optional<SceneCollision> osc::GetClosestCollision(
     const BVH& sceneBVH,
     SceneCache& sceneCache,
-    std::span<SceneDecoration const> taggedDrawlist,
+    std::span<const SceneDecoration> taggedDrawlist,
     const PolarPerspectiveCamera& camera,
     Vec2 mouseScreenPos,
     const Rect& viewportScreenRect)

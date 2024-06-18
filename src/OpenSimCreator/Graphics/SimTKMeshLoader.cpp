@@ -166,7 +166,7 @@ Mesh osc::LoadMeshViaSimTK(const std::filesystem::path& p)
     return ToOscMesh(mesh);
 }
 
-void osc::AssignIndexedVerts(SimTK::PolygonalMesh& mesh, std::span<Vec3 const> vertices, MeshIndicesView indices)
+void osc::AssignIndexedVerts(SimTK::PolygonalMesh& mesh, std::span<const Vec3> vertices, MeshIndicesView indices)
 {
     mesh.clear();
 

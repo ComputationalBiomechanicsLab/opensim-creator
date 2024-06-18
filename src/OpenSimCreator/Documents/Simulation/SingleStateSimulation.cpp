@@ -15,7 +15,7 @@ public:
     {
     }
 
-    SynchronizedValueGuard<OpenSim::Model const> getModel() const
+    SynchronizedValueGuard<const OpenSim::Model> getModel() const
     {
         return m_ModelState.lock_child<OpenSim::Model>([](const BasicModelStatePair& ms) -> const OpenSim::Model& { return ms.getModel(); });
     }
@@ -50,7 +50,7 @@ public:
         return m_Params;
     }
 
-    std::span<OutputExtractor const> getOutputExtractors() const
+    std::span<const OutputExtractor> getOutputExtractors() const
     {
         return {};
     }
@@ -80,7 +80,7 @@ osc::SingleStateSimulation::SingleStateSimulation(SingleStateSimulation&&) noexc
 osc::SingleStateSimulation& osc::SingleStateSimulation::operator=(SingleStateSimulation&&) noexcept = default;
 osc::SingleStateSimulation::~SingleStateSimulation() noexcept = default;
 
-SynchronizedValueGuard<OpenSim::Model const> osc::SingleStateSimulation::implGetModel() const
+SynchronizedValueGuard<const OpenSim::Model> osc::SingleStateSimulation::implGetModel() const
 {
     return m_Impl->getModel();
 }
@@ -115,7 +115,7 @@ const ParamBlock& osc::SingleStateSimulation::implGetParams() const
     return m_Impl->getParams();
 }
 
-std::span<OutputExtractor const> osc::SingleStateSimulation::implGetOutputExtractors() const
+std::span<const OutputExtractor> osc::SingleStateSimulation::implGetOutputExtractors() const
 {
     return m_Impl->getOutputExtractors();
 }

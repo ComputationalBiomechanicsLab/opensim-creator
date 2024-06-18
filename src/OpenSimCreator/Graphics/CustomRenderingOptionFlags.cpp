@@ -36,7 +36,7 @@ namespace
     });
 }
 
-std::span<CustomRenderingOptionFlagsMetadata const> osc::GetAllCustomRenderingOptionFlagsMetadata()
+std::span<const CustomRenderingOptionFlagsMetadata> osc::GetAllCustomRenderingOptionFlagsMetadata()
 {
     return c_Metadata;
 }

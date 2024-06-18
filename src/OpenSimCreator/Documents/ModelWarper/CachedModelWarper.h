@@ -21,7 +21,7 @@ namespace osc::mow
         CachedModelWarper& operator=(CachedModelWarper&&) noexcept;
         ~CachedModelWarper() noexcept;
 
-        std::shared_ptr<IConstModelStatePair const> warp(const ModelWarpDocument&);
+        std::shared_ptr<const IConstModelStatePair> warp(const ModelWarpDocument&);
     private:
         class Impl;
         std::unique_ptr<Impl> m_Impl;

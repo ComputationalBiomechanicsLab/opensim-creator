@@ -382,7 +382,7 @@ namespace osc::mi
             set3DSceneRect(ui::content_region_avail_as_screen_rect());
         }
 
-        void drawScene(std::span<DrawableThing const> drawables)
+        void drawScene(std::span<const DrawableThing> drawables)
         {
             // setup rendering params
             SceneRendererParams p;
@@ -460,7 +460,7 @@ namespace osc::mi
             m_3DSceneCamera.focus_point = -focusPoint;
         }
 
-        std::span<Color const> colors() const
+        std::span<const Color> colors() const
         {
             static_assert(offsetof(Colors, ground) == 0);
             static_assert(sizeof(Colors) % sizeof(Color) == 0);
@@ -482,7 +482,7 @@ namespace osc::mi
             return m_Colors.connectionLines;
         }
 
-        std::span<bool const> getVisibilityFlags() const
+        std::span<const bool> getVisibilityFlags() const
         {
             static_assert(offsetof(VisibilityFlags, ground) == 0);
             static_assert(sizeof(VisibilityFlags) % sizeof(bool) == 0);
@@ -528,7 +528,7 @@ namespace osc::mi
         // HOVERTEST/INTERACTIVITY
         //
 
-        std::span<bool const> getIneractivityFlags() const
+        std::span<const bool> getIneractivityFlags() const
         {
             static_assert(offsetof(InteractivityFlags, ground) == 0);
             static_assert(sizeof(InteractivityFlags) % sizeof(bool) == 0);

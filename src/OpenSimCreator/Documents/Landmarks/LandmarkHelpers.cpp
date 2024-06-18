@@ -25,7 +25,7 @@ namespace
 
     using ParseResult = std::variant<Landmark, CSVParseWarning, SkipRow>;
 
-    ParseResult ParseRow(size_t lineNum, std::span<std::string const> cols)
+    ParseResult ParseRow(size_t lineNum, std::span<const std::string> cols)
     {
         if (cols.empty() || (cols.size() == 1 && strip_whitespace(cols.front()).empty()))
         {
@@ -38,7 +38,7 @@ namespace
 
         // >=4 columns implies that the first column is a label column
         std::optional<std::string> maybeName;
-        std::span<std::string const> data = cols;
+        std::span<const std::string> data = cols;
         if (cols.size() >= 4)
         {
             maybeName = cols.front();
@@ -149,7 +149,7 @@ void osc::lm::WriteLandmarksToCSV(
 }
 
 std::vector<NamedLandmark> osc::lm::GenerateNames(
-    std::span<Landmark const> lms,
+    std::span<const Landmark> lms,
     std::string_view prefix)
 {
     // collect up all already-named landmarks

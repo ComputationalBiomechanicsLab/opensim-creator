@@ -14,7 +14,7 @@ namespace osc
         ComponentRegistryEntryBase(
             std::string_view name_,
             std::string_view description_,
-            std::shared_ptr<OpenSim::Component const>
+            std::shared_ptr<const OpenSim::Component>
         );
 
         CStringView name() const { return m_Name; }
@@ -25,6 +25,6 @@ namespace osc
     private:
         std::string m_Name;
         std::string m_Description;
-        std::shared_ptr<OpenSim::Component const> m_Prototype;
+        std::shared_ptr<const OpenSim::Component> m_Prototype;
     };
 }

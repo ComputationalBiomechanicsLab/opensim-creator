@@ -366,7 +366,7 @@ namespace
     // construction-time arguments for the property editor
     struct PropertyEditorArgs final {
         IPopupAPI* api;
-        std::shared_ptr<UndoableModelStatePair const> model;
+        std::shared_ptr<const UndoableModelStatePair> model;
         std::function<const OpenSim::Object*()> objectAccessor;
         std::function<const OpenSim::AbstractProperty*()> propertyAccessor;
     };
@@ -417,7 +417,7 @@ namespace
             return m_Args.model->getModel();
         }
 
-        std::shared_ptr<UndoableModelStatePair const> getModelPtr() const
+        std::shared_ptr<const UndoableModelStatePair> getModelPtr() const
         {
             return m_Args.model;
         }
@@ -1599,7 +1599,7 @@ class osc::ObjectPropertiesEditor::Impl final {
 public:
     Impl(
         IPopupAPI* api_,
-        std::shared_ptr<UndoableModelStatePair const> targetModel_,
+        std::shared_ptr<const UndoableModelStatePair> targetModel_,
         std::function<const OpenSim::Object*()> objectGetter_) :
 
         m_API{api_},
@@ -1730,7 +1730,7 @@ private:
     }
 
     IPopupAPI* m_API;
-    std::shared_ptr<UndoableModelStatePair const> m_TargetModel;
+    std::shared_ptr<const UndoableModelStatePair> m_TargetModel;
     std::function<const OpenSim::Object*()> m_ObjectGetter;
     const OpenSim::Object* m_PreviousObject = nullptr;
     std::unordered_map<std::string, std::unique_ptr<IPropertyEditor>> m_PropertyEditorsByName;
@@ -1741,7 +1741,7 @@ private:
 
 osc::ObjectPropertiesEditor::ObjectPropertiesEditor(
     IPopupAPI* api_,
-    std::shared_ptr<UndoableModelStatePair const> targetModel_,
+    std::shared_ptr<const UndoableModelStatePair> targetModel_,
     std::function<const OpenSim::Object*()> objectGetter_) :
 
     m_Impl{std::make_unique<Impl>(api_, std::move(targetModel_), std::move(objectGetter_))}

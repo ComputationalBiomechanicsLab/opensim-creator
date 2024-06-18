@@ -73,7 +73,7 @@ public:
         m_Simulation.join();
     }
 
-    SynchronizedValueGuard<OpenSim::Model const> getModel() const
+    SynchronizedValueGuard<const OpenSim::Model> getModel() const
     {
         return m_ModelState.lock_child<OpenSim::Model>([](const BasicModelStatePair& p) -> decltype(auto) { return p.getModel(); });
     }
@@ -130,7 +130,7 @@ public:
         return m_ParamsAsParamBlock;
     }
 
-    std::span<OutputExtractor const> getOutputExtractors() const
+    std::span<const OutputExtractor> getOutputExtractors() const
     {
         return m_SimulatorOutputExtractors;
     }
@@ -281,7 +281,7 @@ void osc::ForwardDynamicSimulation::join()
     m_Impl->join();
 }
 
-SynchronizedValueGuard<OpenSim::Model const> osc::ForwardDynamicSimulation::implGetModel() const
+SynchronizedValueGuard<const OpenSim::Model> osc::ForwardDynamicSimulation::implGetModel() const
 {
     return m_Impl->getModel();
 }
@@ -316,7 +316,7 @@ const ParamBlock& osc::ForwardDynamicSimulation::implGetParams() const
     return m_Impl->getParams();
 }
 
-std::span<OutputExtractor const> osc::ForwardDynamicSimulation::implGetOutputExtractors() const
+std::span<const OutputExtractor> osc::ForwardDynamicSimulation::implGetOutputExtractors() const
 {
     return m_Impl->getOutputExtractors();
 }

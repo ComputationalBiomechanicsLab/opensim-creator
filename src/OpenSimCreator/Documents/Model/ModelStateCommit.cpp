@@ -59,7 +59,7 @@ public:
         return m_CommitMessage;
     }
 
-    SynchronizedValueGuard<OpenSim::Model const> getModel() const
+    SynchronizedValueGuard<const OpenSim::Model> getModel() const
     {
         return {m_AccessMutex, *m_Model};
     }
@@ -118,7 +118,7 @@ CStringView osc::ModelStateCommit::getCommitMessage() const
     return m_Impl->getCommitMessage();
 }
 
-SynchronizedValueGuard<OpenSim::Model const> osc::ModelStateCommit::getModel() const
+SynchronizedValueGuard<const OpenSim::Model> osc::ModelStateCommit::getModel() const
 {
     return m_Impl->getModel();
 }

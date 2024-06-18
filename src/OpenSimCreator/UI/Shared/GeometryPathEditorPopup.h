@@ -16,7 +16,7 @@ namespace osc
     public:
         GeometryPathEditorPopup(
             std::string_view popupName_,
-            std::shared_ptr<UndoableModelStatePair const> targetModel_,
+            std::shared_ptr<const UndoableModelStatePair> targetModel_,
             std::function<const OpenSim::GeometryPath*()> geometryPathGetter_,
             std::function<void(const OpenSim::GeometryPath&)> onLocalCopyEdited_
         );

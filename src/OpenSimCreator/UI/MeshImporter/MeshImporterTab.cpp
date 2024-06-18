@@ -1761,7 +1761,7 @@ private:
 
         if (ui::begin_popup_context_menu("##addpainttoscenepopup", ImGuiPopupFlags_MouseButtonLeft))
         {
-            std::span<Color const> colors = m_Shared->colors();
+            std::span<const Color> colors = m_Shared->colors();
             std::span<const char* const> labels = m_Shared->getColorLabels();
             OSC_ASSERT(colors.size() == labels.size() && "every color should have a label");
 
@@ -1785,7 +1785,7 @@ private:
 
         if (ui::begin_popup_context_menu("##changevisibilitypopup", ImGuiPopupFlags_MouseButtonLeft))
         {
-            std::span<bool const> visibilities = m_Shared->getVisibilityFlags();
+            std::span<const bool> visibilities = m_Shared->getVisibilityFlags();
             std::span<const char* const> labels = m_Shared->getVisibilityFlagLabels();
             OSC_ASSERT(visibilities.size() == labels.size() && "every visibility flag should have a label");
 
@@ -1809,7 +1809,7 @@ private:
 
         if (ui::begin_popup_context_menu("##changeinteractionlockspopup", ImGuiPopupFlags_MouseButtonLeft))
         {
-            std::span<bool const> interactables = m_Shared->getIneractivityFlags();
+            std::span<const bool> interactables = m_Shared->getIneractivityFlags();
             std::span<const char* const> labels =  m_Shared->getInteractivityFlagLabels();
             OSC_ASSERT(interactables.size() == labels.size());
 

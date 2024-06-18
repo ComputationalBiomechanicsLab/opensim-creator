@@ -73,9 +73,9 @@ namespace osc::mi
             }
 
             // conversion to a const version of the iterator
-            explicit operator Iterator<value_type const>() const
+            explicit operator Iterator<const value_type>() const
             {
-                return Iterator<value_type const>{m_Pos, m_End};
+                return Iterator<const value_type>{m_Pos, m_End};
             }
 
             // LegacyIterator

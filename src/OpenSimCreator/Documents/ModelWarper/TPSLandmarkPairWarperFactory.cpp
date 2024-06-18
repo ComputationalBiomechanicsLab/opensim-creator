@@ -115,7 +115,7 @@ namespace
         return PairLandmarks(std::move(src), std::move(dest));
     }
 
-    TPSCoefficients3D TryCalcTPSCoefficients(std::span<MaybePairedLandmark const> maybePairs)
+    TPSCoefficients3D TryCalcTPSCoefficients(std::span<const MaybePairedLandmark> maybePairs)
     {
         TPSCoefficientSolverInputs3D rv;
         for (const MaybePairedLandmark& maybePair: maybePairs) {

@@ -23,5 +23,5 @@ namespace osc
     Mesh LoadMeshViaSimTK(const std::filesystem::path&);
 
     // populate the `SimTK::PolygonalMesh` from the given indexed mesh data
-    void AssignIndexedVerts(SimTK::PolygonalMesh&, std::span<Vec3 const>, MeshIndicesView);
+    void AssignIndexedVerts(SimTK::PolygonalMesh&, std::span<const Vec3>, MeshIndicesView);
 }

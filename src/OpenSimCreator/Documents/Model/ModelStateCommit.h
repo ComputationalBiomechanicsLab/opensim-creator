@@ -26,13 +26,13 @@ namespace osc
         UID getParentID() const;
         std::chrono::system_clock::time_point getCommitTime() const;
         CStringView getCommitMessage() const;
-        SynchronizedValueGuard<OpenSim::Model const> getModel() const;
+        SynchronizedValueGuard<const OpenSim::Model> getModel() const;
         UID getModelVersion() const;
         float getFixupScaleFactor() const;
 
         friend bool operator==(const ModelStateCommit&, const ModelStateCommit&) = default;
     private:
         class Impl;
-        std::shared_ptr<Impl const> m_Impl;
+        std::shared_ptr<const Impl> m_Impl;
     };
 }

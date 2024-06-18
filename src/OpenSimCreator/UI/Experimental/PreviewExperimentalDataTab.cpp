@@ -251,7 +251,7 @@ namespace
     }
 
     // compute the stride of the data columns
-    size_t CalcDataStride(std::span<ColumnDescription const> descriptions)
+    size_t CalcDataStride(std::span<const ColumnDescription> descriptions)
     {
         size_t sum = 0;
         for (const ColumnDescription& d : descriptions)
@@ -262,7 +262,7 @@ namespace
     }
 
     // compute the total row stride (time + data columns)
-    size_t CalcRowStride(std::span<ColumnDescription const> descriptions)
+    size_t CalcRowStride(std::span<const ColumnDescription> descriptions)
     {
         return 1 + CalcDataStride(descriptions);
     }
@@ -557,7 +557,7 @@ private:
     }
 
     // scene state
-    std::shared_ptr<LoadedMotion const> m_Motion = std::make_shared<LoadedMotion>();
+    std::shared_ptr<const LoadedMotion> m_Motion = std::make_shared<LoadedMotion>();
     int m_ActiveRow = NumRows(*m_Motion) <= 0 ? -1 : 0;
 
     // extra scene state

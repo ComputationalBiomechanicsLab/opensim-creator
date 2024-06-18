@@ -120,7 +120,7 @@ class osc::GeometryPathEditorPopup::Impl final : public StandardPopup {
 public:
     Impl(
         std::string_view popupName_,
-        std::shared_ptr<UndoableModelStatePair const> targetModel_,
+        std::shared_ptr<const UndoableModelStatePair> targetModel_,
         std::function<const OpenSim::GeometryPath*()> geometryPathGetter_,
         std::function<void(const OpenSim::GeometryPath&)> onLocalCopyEdited_) :
 
@@ -361,7 +361,7 @@ private:
         m_RequestedAction.reset();  // action handled: resets
     }
 
-    std::shared_ptr<UndoableModelStatePair const> m_TargetModel;
+    std::shared_ptr<const UndoableModelStatePair> m_TargetModel;
     std::function<const OpenSim::GeometryPath*()> m_GeometryPathGetter;
     std::function<void(const OpenSim::GeometryPath&)> m_OnLocalCopyEdited;
 
@@ -374,7 +374,7 @@ private:
 
 osc::GeometryPathEditorPopup::GeometryPathEditorPopup(
     std::string_view popupName_,
-    std::shared_ptr<UndoableModelStatePair const> targetModel_,
+    std::shared_ptr<const UndoableModelStatePair> targetModel_,
     std::function<const OpenSim::GeometryPath*()> geometryPathGetter_,
     std::function<void(const OpenSim::GeometryPath&)> onLocalCopyEdited_) :
 

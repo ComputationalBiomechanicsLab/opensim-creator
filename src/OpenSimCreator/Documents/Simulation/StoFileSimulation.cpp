@@ -224,7 +224,7 @@ public:
         m_FixupScaleFactor{fixupScaleFactor}
     {}
 
-    SynchronizedValueGuard<OpenSim::Model const> getModel() const
+    SynchronizedValueGuard<const OpenSim::Model> getModel() const
     {
         return {m_ModelMutex, *m_Model};
     }
@@ -259,7 +259,7 @@ public:
         return m_ParamBlock;
     }
 
-    std::span<OutputExtractor const> getOutputExtractors() const
+    std::span<const OutputExtractor> getOutputExtractors() const
     {
         return {};
     }
@@ -291,7 +291,7 @@ osc::StoFileSimulation::StoFileSimulation(StoFileSimulation&&) noexcept = defaul
 osc::StoFileSimulation& osc::StoFileSimulation::operator=(StoFileSimulation&&) noexcept = default;
 osc::StoFileSimulation::~StoFileSimulation() noexcept = default;
 
-SynchronizedValueGuard<OpenSim::Model const> osc::StoFileSimulation::implGetModel() const
+SynchronizedValueGuard<const OpenSim::Model> osc::StoFileSimulation::implGetModel() const
 {
     return m_Impl->getModel();
 }
@@ -326,7 +326,7 @@ const ParamBlock& osc::StoFileSimulation::implGetParams() const
     return m_Impl->getParams();
 }
 
-std::span<OutputExtractor const> osc::StoFileSimulation::implGetOutputExtractors() const
+std::span<const OutputExtractor> osc::StoFileSimulation::implGetOutputExtractors() const
 {
     return m_Impl->getOutputExtractors();
 }

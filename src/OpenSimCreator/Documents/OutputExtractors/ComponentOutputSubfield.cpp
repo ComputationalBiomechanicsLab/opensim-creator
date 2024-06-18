@@ -104,7 +104,7 @@ std::optional<CStringView> osc::GetOutputSubfieldLabel(ComponentOutputSubfield s
     }
 }
 
-std::span<ComponentOutputSubfield const> osc::GetAllSupportedOutputSubfields()
+std::span<const ComponentOutputSubfield> osc::GetAllSupportedOutputSubfields()
 {
     return c_OutputSubfieldsLut;
 }

@@ -83,7 +83,7 @@ namespace
     // these are components that are only available in OpenSim Creator: either because they're
     // custom (as in, they are in OSC's source tree), or because OpenSim hasn't released a
     // version that includes the component
-    std::vector<std::shared_ptr<OpenSim::Component const>> CreateCustomComponentList()
+    std::vector<std::shared_ptr<const OpenSim::Component>> CreateCustomComponentList()
     {
         return {
             std::make_shared<CrossProductEdge>(),
@@ -96,9 +96,9 @@ namespace
     }
 
     // returns a cached version of the custom component lookup
-    std::vector<std::shared_ptr<OpenSim::Component const>> const& GetCustomComponentList()
+    std::vector<std::shared_ptr<const OpenSim::Component>> const& GetCustomComponentList()
     {
-        static std::vector<std::shared_ptr<OpenSim::Component const>> const s_CustomComponentLUT = CreateCustomComponentList();
+        static std::vector<std::shared_ptr<const OpenSim::Component>> const s_CustomComponentLUT = CreateCustomComponentList();
         return s_CustomComponentLUT;
     }
 
@@ -431,7 +431,7 @@ namespace
     }
 
     // create a lookup of pre-initialized prototype components
-    std::unordered_map<CStringView, std::shared_ptr<OpenSim::Component const>> CreatePrototypeLut()
+    std::unordered_map<CStringView, std::shared_ptr<const OpenSim::Component>> CreatePrototypeLut()
     {
         return
         {
@@ -617,9 +617,9 @@ namespace
         };
     }
 
-    std::unordered_map<CStringView, std::shared_ptr<OpenSim::Component const>> const& GetPrototypeLut()
+    std::unordered_map<CStringView, std::shared_ptr<const OpenSim::Component>> const& GetPrototypeLut()
     {
-        static std::unordered_map<CStringView, std::shared_ptr<OpenSim::Component const>> const s_Lut = CreatePrototypeLut();
+        static std::unordered_map<CStringView, std::shared_ptr<const OpenSim::Component>> const s_Lut = CreatePrototypeLut();
         return s_Lut;
     }
 
@@ -669,7 +669,7 @@ namespace
         return rv;
     }
 
-    std::vector<std::shared_ptr<OpenSim::Component const>> CreateOtherComponentLut()
+    std::vector<std::shared_ptr<const OpenSim::Component>> CreateOtherComponentLut()
     {
         std::unordered_set<std::string> const& grouped = GetSetOfAllGroupedElements();
         std::unordered_set<std::string> const& blacklisted = GetComponentBlacklist();
@@ -677,7 +677,7 @@ namespace
         OpenSim::ArrayPtrs<OpenSim::ModelComponent> ptrs;
         OpenSim::Object::getRegisteredObjectsOfGivenType<OpenSim::ModelComponent>(ptrs);
 
-        std::vector<std::shared_ptr<OpenSim::Component const>> rv;
+        std::vector<std::shared_ptr<const OpenSim::Component>> rv;
 
         for (int i = 0; i < ptrs.size(); ++i)
         {

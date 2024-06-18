@@ -27,7 +27,7 @@ namespace osc
         ~SingleStateSimulation() noexcept;
 
     private:
-        SynchronizedValueGuard<OpenSim::Model const> implGetModel() const final;
+        SynchronizedValueGuard<const OpenSim::Model> implGetModel() const final;
 
         ptrdiff_t implGetNumReports() const final;
         SimulationReport implGetSimulationReport(ptrdiff_t) const final;
@@ -36,7 +36,7 @@ namespace osc
         SimulationStatus implGetStatus() const final;
         SimulationClocks implGetClocks() const final;
         const ParamBlock& implGetParams() const final;
-        std::span<OutputExtractor const> implGetOutputExtractors() const final;
+        std::span<const OutputExtractor> implGetOutputExtractors() const final;
 
         float implGetFixupScaleFactor() const final;
         void implSetFixupScaleFactor(float) final;

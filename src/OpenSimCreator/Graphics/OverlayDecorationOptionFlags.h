@@ -59,5 +59,5 @@ namespace osc
         OverlayDecorationOptionFlags value;
     };
     CStringView getLabel(OverlayDecorationOptionGroup);
-    std::span<OverlayDecorationOptionFlagsMetadata const> GetAllOverlayDecorationOptionFlagsMetadata();
+    std::span<const OverlayDecorationOptionFlagsMetadata> GetAllOverlayDecorationOptionFlagsMetadata();
 }

@@ -75,7 +75,7 @@ namespace osc
             return meshResultCache.getWarpedMesh(editedDocument->scratch());
         }
 
-        std::span<Vec3 const> getResultNonParticipatingLandmarkLocations()
+        std::span<const Vec3> getResultNonParticipatingLandmarkLocations()
         {
             return meshResultCache.getWarpedNonParticipatingLandmarkLocations(editedDocument->scratch());
         }

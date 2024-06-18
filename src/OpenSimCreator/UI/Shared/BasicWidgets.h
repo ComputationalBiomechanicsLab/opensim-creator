@@ -229,17 +229,17 @@ namespace osc
     bool DrawRenderingOptionsEditor(CustomRenderingOptions&);
     bool DrawOverlayOptionsEditor(OverlayDecorationOptions&);
     bool DrawCustomDecorationOptionCheckboxes(OpenSimDecorationOptions&);
-    bool DrawAdvancedParamsEditor(ModelRendererParams&, std::span<SceneDecoration const>);
+    bool DrawAdvancedParamsEditor(ModelRendererParams&, std::span<const SceneDecoration>);
     bool DrawVisualAidsContextMenuContent(ModelRendererParams&);
     bool DrawViewerTopButtonRow(
         ModelRendererParams&,
-        std::span<SceneDecoration const>,
+        std::span<const SceneDecoration>,
         IconCache&,
         std::function<bool()> const& drawExtraElements = []() { return false; }
     );
     bool DrawCameraControlButtons(
         ModelRendererParams&,
-        std::span<SceneDecoration const>,
+        std::span<const SceneDecoration>,
         const Rect&,
         std::optional<AABB> const& maybeSceneAABB,
         IconCache&,
@@ -247,7 +247,7 @@ namespace osc
     );
     bool DrawViewerImGuiOverlays(
         ModelRendererParams&,
-        std::span<SceneDecoration const>,
+        std::span<const SceneDecoration>,
         std::optional<AABB>,
         const Rect&,
         IconCache&,

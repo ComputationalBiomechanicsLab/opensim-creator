@@ -107,6 +107,6 @@ namespace osc::mi
             mutable std::atomic<int32_t> uniqueCounter = 0;
         };
 
-        std::shared_ptr<Data const> m_Data;
+        std::shared_ptr<const Data> m_Data;
     };
 }

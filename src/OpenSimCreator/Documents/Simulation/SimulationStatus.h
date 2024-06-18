@@ -16,6 +16,6 @@ namespace osc
         NUM_OPTIONS,
     };
 
-    std::span<SimulationStatus const> GetAllSimulationStatuses();
-    std::span<CStringView const> GetAllSimulationStatusStrings();
+    std::span<const SimulationStatus> GetAllSimulationStatuses();
+    std::span<const CStringView> GetAllSimulationStatusStrings();
 }

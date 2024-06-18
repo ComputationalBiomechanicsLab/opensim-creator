@@ -447,7 +447,7 @@ namespace osc
 
     bool ActionImportLandmarks(
         UndoableModelStatePair&,
-        std::span<lm::NamedLandmark const>,
+        std::span<const lm::NamedLandmark>,
         std::optional<std::string> maybeName
     );
 

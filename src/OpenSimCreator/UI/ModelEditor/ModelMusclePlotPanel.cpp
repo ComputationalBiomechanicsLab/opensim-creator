@@ -711,7 +711,7 @@ namespace
     std::optional<float> ComputeLERPedY(const Plot& p, float x)
     {
         auto lock = p.lockDataPoints();
-        std::span<PlotDataPoint const> const points = *lock;
+        std::span<const PlotDataPoint> const points = *lock;
 
         if (points.empty())
         {
@@ -748,7 +748,7 @@ namespace
     std::optional<PlotDataPoint> FindNearestPoint(const Plot& p, float x)
     {
         auto lock = p.lockDataPoints();
-        std::span<PlotDataPoint const> points = *lock;
+        std::span<const PlotDataPoint> points = *lock;
 
         if (points.empty())
         {
@@ -789,7 +789,7 @@ namespace
     bool IsXInRange(const Plot& p, float x)
     {
         auto lock = p.lockDataPoints();
-        std::span<PlotDataPoint const> const points = *lock;
+        std::span<const PlotDataPoint> const points = *lock;
 
         if (points.size() <= 1)
         {
@@ -802,7 +802,7 @@ namespace
     void PlotLine(CStringView lineName, const Plot& p)
     {
         auto lock = p.lockDataPoints();
-        std::span<PlotDataPoint const> points = *lock;
+        std::span<const PlotDataPoint> points = *lock;
 
 
         const float* xPtr = nullptr;
@@ -1342,7 +1342,7 @@ namespace
     }
 
     // returns the smallest X value accross all given plot lines - if an X value exists
-    std::optional<float> CalcSmallestX(std::span<LineCursor const> cursors)
+    std::optional<float> CalcSmallestX(std::span<const LineCursor> cursors)
     {
         auto it = rgs::min_element(cursors, HasLowerX);
         return it != cursors.end() ? it->peekX() : std::optional<float>{};
@@ -1482,7 +1482,7 @@ namespace
 
         IEditorAPI& updEditorAPI() { return *m_EditorAPI; }
 
-        std::span<PlottableOutput const> availableOutputs() const { return m_AvailableMuscleOutputs; }
+        std::span<const PlottableOutput> availableOutputs() const { return m_AvailableMuscleOutputs; }
 
         const PlottableOutput& getPlottedOutput() const { return getPlotParams().getPlottedOutput(); }
         void setPlottedOutput(const PlottableOutput& newOutput) { updPlotParams().setPlottedOutput(newOutput); }

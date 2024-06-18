@@ -37,7 +37,7 @@ namespace osc::lm
     // generates names for any unnamed landmarks and ensures that the names are
     // unique amongst all supplied landmarks (both named and unnamed)
     std::vector<NamedLandmark> GenerateNames(
-        std::span<Landmark const>,
+        std::span<const Landmark>,
         std::string_view prefix = "unnamed_"
     );
 }

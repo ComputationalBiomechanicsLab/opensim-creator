@@ -53,7 +53,7 @@ namespace
     static_assert(c_Metadata.size() == num_options<MuscleColoringStyle>());
 }
 
-std::span<MuscleColoringStyleMetadata const> osc::GetAllMuscleColoringStyleMetadata()
+std::span<const MuscleColoringStyleMetadata> osc::GetAllMuscleColoringStyleMetadata()
 {
     return c_Metadata;
 }

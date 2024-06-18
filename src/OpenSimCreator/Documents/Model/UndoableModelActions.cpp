@@ -2265,7 +2265,7 @@ bool osc::ActionFitPlaneToMesh(
 
 bool osc::ActionImportLandmarks(
     UndoableModelStatePair& model,
-    std::span<lm::NamedLandmark const> lms,
+    std::span<const lm::NamedLandmark> lms,
     std::optional<std::string> maybeName)
 {
     try

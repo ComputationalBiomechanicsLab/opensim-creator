@@ -40,7 +40,7 @@ namespace osc
         //
         // this can lead to mayhem if (e.g.) the model is actually being mutated by
         // multiple threads concurrently
-        SynchronizedValueGuard<OpenSim::Model const> getModel() const
+        SynchronizedValueGuard<const OpenSim::Model> getModel() const
         {
             return implGetModel();
         }
@@ -100,7 +100,7 @@ namespace osc
             return implGetParams();
         }
 
-        std::span<OutputExtractor const> getOutputExtractors() const
+        std::span<const OutputExtractor> getOutputExtractors() const
         {
             return implGetOutputExtractors();
         }
@@ -126,7 +126,7 @@ namespace osc
         }
 
     private:
-        virtual SynchronizedValueGuard<OpenSim::Model const> implGetModel() const = 0;
+        virtual SynchronizedValueGuard<const OpenSim::Model> implGetModel() const = 0;
 
         virtual ptrdiff_t implGetNumReports() const = 0;
         virtual SimulationReport implGetSimulationReport(ptrdiff_t) const = 0;
@@ -135,7 +135,7 @@ namespace osc
         virtual SimulationStatus implGetStatus() const = 0;
         virtual SimulationClocks implGetClocks() const = 0;
         virtual const ParamBlock& implGetParams() const = 0;
-        virtual std::span<OutputExtractor const> implGetOutputExtractors() const = 0;
+        virtual std::span<const OutputExtractor> implGetOutputExtractors() const = 0;
 
         virtual bool implCanChangeEndTime() const { return false; }
         virtual void implRequestNewEndTime(SimulationClock::time_point) {}

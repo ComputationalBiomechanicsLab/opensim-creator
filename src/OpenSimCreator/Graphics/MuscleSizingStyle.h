@@ -20,7 +20,7 @@ namespace osc
         CStringView label;
         MuscleSizingStyle value;
     };
-    std::span<MuscleSizingStyleMetadata const> GetAllMuscleSizingStyleMetadata();
+    std::span<const MuscleSizingStyleMetadata> GetAllMuscleSizingStyleMetadata();
     const MuscleSizingStyleMetadata& GetMuscleSizingStyleMetadata(MuscleSizingStyle);
     ptrdiff_t GetIndexOf(MuscleSizingStyle);
 }

@@ -119,7 +119,7 @@ namespace
     }
 
     // computes all coefficients of the TPS equation (a1, a2, a3, and all the w's)
-    TPSCoefficients2D CalcCoefficients(std::span<LandmarkPair2D const> landmarkPairs)
+    TPSCoefficients2D CalcCoefficients(std::span<const LandmarkPair2D> landmarkPairs)
     {
         // this is based on the Bookstein Thin Plate Sline (TPS) warping algorithm
         //
@@ -273,7 +273,7 @@ namespace
     // points
     class ThinPlateWarper2D final {
     public:
-        explicit ThinPlateWarper2D(std::span<LandmarkPair2D const> landmarkPairs) :
+        explicit ThinPlateWarper2D(std::span<const LandmarkPair2D> landmarkPairs) :
             m_Coefficients{CalcCoefficients(landmarkPairs)}
         {
         }

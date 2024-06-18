@@ -47,7 +47,7 @@ namespace osc
 
         void getValuesFloat(
             const OpenSim::Component& component,
-            std::span<SimulationReport const> reports,
+            std::span<const SimulationReport> reports,
             std::function<void(float)> const& consumer) const
         {
             m_Output->getValuesFloat(component, reports, consumer);
@@ -55,7 +55,7 @@ namespace osc
 
         std::vector<float> slurpValuesFloat(
             const OpenSim::Component& component,
-            std::span<SimulationReport const> reports) const
+            std::span<const SimulationReport> reports) const
         {
             return m_Output->slurpValuesFloat(component, reports);
         }
@@ -69,7 +69,7 @@ namespace osc
 
         void getValuesVec2(
             const OpenSim::Component& component,
-            std::span<SimulationReport const> report,
+            std::span<const SimulationReport> report,
             std::function<void(Vec2)> const& consumer) const
         {
             m_Output->getValuesVec2(component, report, consumer);
@@ -77,7 +77,7 @@ namespace osc
 
         std::vector<Vec2> slurpValuesVec2(
             const OpenSim::Component& component,
-            std::span<SimulationReport const> report) const
+            std::span<const SimulationReport> report) const
         {
             return m_Output->slurpValuesVec2(component, report);
         }
@@ -115,7 +115,7 @@ namespace osc
         friend std::string to_string(const OutputExtractor&);
         friend struct std::hash<OutputExtractor>;
 
-        std::shared_ptr<IOutputExtractor const> m_Output;
+        std::shared_ptr<const IOutputExtractor> m_Output;
     };
 
     template<std::derived_from<IOutputExtractor> ConcreteOutputExtractor, typename... Args>

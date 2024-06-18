@@ -42,7 +42,7 @@ namespace osc
         );
         RenderTexture& updRenderTexture();
 
-        std::span<SceneDecoration const> getDrawlist() const;
+        std::span<const SceneDecoration> getDrawlist() const;
         std::optional<AABB> bounds() const;
         std::optional<SceneCollision> getClosestCollision(
             const ModelRendererParams&,

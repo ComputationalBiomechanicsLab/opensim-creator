@@ -87,7 +87,7 @@ namespace
             }
         }
 
-        std::span<SceneDecoration const> getDrawlist() const { return m_Drawlist; }
+        std::span<const SceneDecoration> getDrawlist() const { return m_Drawlist; }
         const BVH& getBVH() const { return m_BVH; }
         std::optional<AABB> getAABB() const { return m_BVH.bounds(); }
         SceneCache& updSceneCache() const
@@ -158,7 +158,7 @@ public:
         return m_Renderer.upd_render_texture();
     }
 
-    std::span<SceneDecoration const> getDrawlist() const
+    std::span<const SceneDecoration> getDrawlist() const
     {
         return m_DecorationCache.getDrawlist();
     }
@@ -226,7 +226,7 @@ RenderTexture& osc::CachedModelRenderer::updRenderTexture()
     return m_Impl->updRenderTexture();
 }
 
-std::span<SceneDecoration const> osc::CachedModelRenderer::getDrawlist() const
+std::span<const SceneDecoration> osc::CachedModelRenderer::getDrawlist() const
 {
     return m_Impl->getDrawlist();
 }

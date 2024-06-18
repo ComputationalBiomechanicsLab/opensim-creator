@@ -23,7 +23,7 @@ float osc::IOutputExtractor::getValueFloat(
 
 void osc::IOutputExtractor::getValuesFloat(
     const OpenSim::Component& component,
-    std::span<SimulationReport const> reports,
+    std::span<const SimulationReport> reports,
     std::function<void(float)> const& consumer) const
 {
     const OutputValueExtractor extractor = getOutputValueExtractor(component);
@@ -34,7 +34,7 @@ void osc::IOutputExtractor::getValuesFloat(
 
 std::vector<float> osc::IOutputExtractor::slurpValuesFloat(
     const OpenSim::Component& component,
-    std::span<SimulationReport const> reports) const
+    std::span<const SimulationReport> reports) const
 {
     const OutputValueExtractor extractor = getOutputValueExtractor(component);
 
@@ -56,7 +56,7 @@ Vec2 osc::IOutputExtractor::getValueVec2(
 
 void osc::IOutputExtractor::getValuesVec2(
     const OpenSim::Component& component,
-    std::span<SimulationReport const> reports,
+    std::span<const SimulationReport> reports,
     std::function<void(Vec2)> const& consumer) const
 {
     const OutputValueExtractor extractor = getOutputValueExtractor(component);
@@ -67,7 +67,7 @@ void osc::IOutputExtractor::getValuesVec2(
 
 std::vector<Vec2> osc::IOutputExtractor::slurpValuesVec2(
     const OpenSim::Component& component,
-    std::span<SimulationReport const> reports) const
+    std::span<const SimulationReport> reports) const
 {
     const OutputValueExtractor extractor = getOutputValueExtractor(component);
 

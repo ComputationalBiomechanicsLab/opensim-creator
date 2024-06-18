@@ -38,7 +38,7 @@ namespace osc
     std::optional<SceneCollision> GetClosestCollision(
         const BVH& sceneBVH,
         SceneCache&,
-        std::span<SceneDecoration const> taggedDrawlist,
+        std::span<const SceneDecoration> taggedDrawlist,
         const PolarPerspectiveCamera&,
         Vec2 mouseScreenPos,
         const Rect& viewportScreenRect

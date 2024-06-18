@@ -34,12 +34,12 @@ namespace
 
 // public API
 
-std::span<SimulationStatus const> osc::GetAllSimulationStatuses()
+std::span<const SimulationStatus> osc::GetAllSimulationStatuses()
 {
     return c_SimulatorStatuses;
 }
 
-std::span<CStringView const> osc::GetAllSimulationStatusStrings()
+std::span<const CStringView> osc::GetAllSimulationStatusStrings()
 {
     return c_SimulatorStatusStrings;
 }

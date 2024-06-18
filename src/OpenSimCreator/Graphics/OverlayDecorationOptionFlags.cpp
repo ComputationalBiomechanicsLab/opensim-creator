@@ -66,7 +66,7 @@ CStringView osc::getLabel(OverlayDecorationOptionGroup g)
     }
 }
 
-std::span<OverlayDecorationOptionFlagsMetadata const> osc::GetAllOverlayDecorationOptionFlagsMetadata()
+std::span<const OverlayDecorationOptionFlagsMetadata> osc::GetAllOverlayDecorationOptionFlagsMetadata()
 {
     return c_Metadata;
 }
