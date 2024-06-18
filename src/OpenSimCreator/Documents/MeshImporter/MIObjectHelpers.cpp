@@ -45,7 +45,7 @@ bool osc::mi::CanAttachStationTo(const MIObject& e)
 
 std::array<MIClass, std::variant_size_v<SceneElVariant>> const& osc::mi::GetSceneElClasses()
 {
-    static auto const s_Classes = std::to_array(
+    static const auto s_Classes = std::to_array(
     {
         Ground::Class(),
         Mesh::Class(),
@@ -58,12 +58,12 @@ std::array<MIClass, std::variant_size_v<SceneElVariant>> const& osc::mi::GetScen
 
 Vec3 osc::mi::AverageCenter(const Mesh& el)
 {
-    Vec3 const centerpointInModelSpace = average_centroid_of(el.getMeshData());
+    const Vec3 centerpointInModelSpace = average_centroid_of(el.getMeshData());
     return el.getXForm() * centerpointInModelSpace;
 }
 
 Vec3 osc::mi::mass_center_of(const Mesh& el)
 {
-    Vec3 const massCenterInModelSpace = mass_center_of(el.getMeshData());
+    const Vec3 massCenterInModelSpace = mass_center_of(el.getMeshData());
     return el.getXForm() * massCenterInModelSpace;
 }

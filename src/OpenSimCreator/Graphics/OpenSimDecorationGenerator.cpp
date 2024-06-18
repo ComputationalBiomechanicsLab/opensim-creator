@@ -80,7 +80,7 @@ namespace
             return static_cast<float>(musc.getActuation(st)) / static_cast<float>(musc.getMaxIsometricForce());
         case MuscleColoringStyle::FiberLength:
         {
-            auto const nfl = static_cast<float>(musc.getNormalizedFiberLength(st));  // 1.0f == ideal length
+            const auto nfl = static_cast<float>(musc.getNormalizedFiberLength(st));  // 1.0f == ideal length
             float fl = nfl - 1.0f;
             fl = abs(fl);
             fl = min(fl, 1.0f);
@@ -101,7 +101,7 @@ namespace
     {
         // returns the same color that OpenSim emits (which is usually just activation-based,
         // but might change in future versions of OpenSim)
-        SimTK::Vec3 const c = gp.getColor(st);
+        const SimTK::Vec3 c = gp.getColor(st);
         return Color{ToVec3(c)};
     }
 
@@ -110,9 +110,9 @@ namespace
         const SimTK::State& st,
         MuscleColoringStyle s)
     {
-        Color const zeroColor = {50.0f / 255.0f, 50.0f / 255.0f, 166.0f / 255.0f, 1.0f};
-        Color const fullColor = {255.0f / 255.0f, 25.0f / 255.0f, 25.0f / 255.0f, 1.0f};
-        float const factor = GetMuscleColorFactor(musc, st, s);
+        const Color zeroColor = {50.0f / 255.0f, 50.0f / 255.0f, 166.0f / 255.0f, 1.0f};
+        const Color fullColor = {255.0f / 255.0f, 25.0f / 255.0f, 25.0f / 255.0f, 1.0f};
+        const float factor = GetMuscleColorFactor(musc, st, s);
         return lerp(zeroColor, fullColor, factor);
     }
 
@@ -140,10 +140,10 @@ namespace
     // similar to how SCONE does it, so that users can compare between the two apps
     float GetSconeStyleAutomaticMuscleRadiusCalc(const OpenSim::Muscle& m)
     {
-        auto const f = static_cast<float>(m.getMaxIsometricForce());
-        float const specificTension = 0.25e6f;  // magic number?
-        float const pcsa = f / specificTension;
-        float const widthFactor = 0.25f;
+        const auto f = static_cast<float>(m.getMaxIsometricForce());
+        const float specificTension = 0.25e6f;  // magic number?
+        const float pcsa = f / specificTension;
+        const float widthFactor = 0.25f;
         return widthFactor * sqrt(pcsa / pi_v<float>);
     }
 
@@ -327,10 +327,10 @@ namespace
             return;
         }
 
-        Vec3 const p1 = TransformInGround(p2p.getBody1(), rs.getState()) * ToVec3(p2p.getPoint1());
-        Vec3 const p2 = TransformInGround(p2p.getBody2(), rs.getState()) * ToVec3(p2p.getPoint2());
+        const Vec3 p1 = TransformInGround(p2p.getBody1(), rs.getState()) * ToVec3(p2p.getPoint1());
+        const Vec3 p2 = TransformInGround(p2p.getBody2(), rs.getState()) * ToVec3(p2p.getPoint2());
 
-        float const radius = c_GeometryPathBaseRadius * rs.getFixupScaleFactor();
+        const float radius = c_GeometryPathBaseRadius * rs.getFixupScaleFactor();
 
         rs.consume(p2p, SceneDecoration
         {
@@ -385,7 +385,7 @@ namespace
     {
         if (rs.getOptions().getShouldShowCentersOfMass() && b.getMassCenter() != SimTK::Vec3{0.0, 0.0, 0.0})
         {
-            float const radius = rs.getFixupScaleFactor() * 0.005f;
+            const float radius = rs.getFixupScaleFactor() * 0.005f;
             Transform t = TransformInGround(b, rs.getState());
             t.position = t * ToVec3(b.getMassCenter());
             t.scale = Vec3{radius};
@@ -420,50 +420,50 @@ namespace
             return;  // edge-case: there are no points in the muscle path
         }
 
-        float const fixupScaleFactor = rs.getFixupScaleFactor();
+        const float fixupScaleFactor = rs.getFixupScaleFactor();
 
-        float const fiberUiRadius = GetMuscleSize(
+        const float fiberUiRadius = GetMuscleSize(
             muscle,
             fixupScaleFactor,
             rs.getOptions().getMuscleSizingStyle()
         );
-        float const tendonUiRadius = 0.618f * fiberUiRadius;  // or fixupScaleFactor * 0.005f;
+        const float tendonUiRadius = 0.618f * fiberUiRadius;  // or fixupScaleFactor * 0.005f;
 
-        Color const fiberColor = GetMuscleColor(
+        const Color fiberColor = GetMuscleColor(
             muscle,
             rs.getState(),
             rs.getOptions().getMuscleColoringStyle()
         );
-        Color const tendonColor = {204.0f/255.0f, 203.0f/255.0f, 200.0f/255.0f};
+        const Color tendonColor = {204.0f/255.0f, 203.0f/255.0f, 200.0f/255.0f};
 
-        SceneDecoration const tendonSpherePrototype =
+        const SceneDecoration tendonSpherePrototype =
         {
             .mesh = rs.sphere_mesh(),
             .transform = {.scale = Vec3{tendonUiRadius}},
             .color = tendonColor,
             .flags = SceneDecorationFlags::CastsShadows,
         };
-        SceneDecoration const tendonCylinderPrototype =
+        const SceneDecoration tendonCylinderPrototype =
         {
             .mesh = rs.uncapped_cylinder_mesh(),
             .color = tendonColor,
             .flags = SceneDecorationFlags::CastsShadows,
         };
-        SceneDecoration const fiberSpherePrototype =
+        const SceneDecoration fiberSpherePrototype =
         {
             .mesh = rs.sphere_mesh(),
             .transform = {.scale = Vec3{fiberUiRadius}},
             .color = fiberColor,
             .flags = SceneDecorationFlags::CastsShadows,
         };
-        SceneDecoration const fiberCylinderPrototype =
+        const SceneDecoration fiberCylinderPrototype =
         {
             .mesh = rs.uncapped_cylinder_mesh(),
             .color = fiberColor,
             .flags = SceneDecorationFlags::CastsShadows,
         };
 
-        auto const emitTendonSphere = [&](const GeometryPathPoint& p)
+        const auto emitTendonSphere = [&](const GeometryPathPoint& p)
         {
             const OpenSim::Component* c = &muscle;
             if (p.maybeUnderlyingUserPathPoint)
@@ -472,9 +472,9 @@ namespace
             }
             rs.consume(*c, tendonSpherePrototype.with_position(p.locationInGround));
         };
-        auto const emitTendonCylinder = [&](const Vec3& p1, const Vec3& p2)
+        const auto emitTendonCylinder = [&](const Vec3& p1, const Vec3& p2)
         {
-            Transform const xform = cylinder_to_line_segment_transform({p1, p2}, tendonUiRadius);
+            const Transform xform = cylinder_to_line_segment_transform({p1, p2}, tendonUiRadius);
             rs.consume(muscle, tendonCylinderPrototype.with_transform(xform));
         };
         auto emitFiberSphere = [&](const GeometryPathPoint& p)
@@ -488,7 +488,7 @@ namespace
         };
         auto emitFiberCylinder = [&](const Vec3& p1, const Vec3& p2)
         {
-            Transform const xform = cylinder_to_line_segment_transform({p1, p2}, fiberUiRadius);
+            const Transform xform = cylinder_to_line_segment_transform({p1, p2}, fiberUiRadius);
             rs.consume(muscle, fiberCylinderPrototype.with_transform(xform));
         };
 
@@ -500,10 +500,10 @@ namespace
 
         // else: the path is >= 2 points, so it's possible to measure a traversal
         //       length along it
-        float const tendonLen = max(0.0f, static_cast<float>(muscle.getTendonLength(rs.getState()) * 0.5));
-        float const fiberLen = max(0.0f, static_cast<float>(muscle.getFiberLength(rs.getState())));
-        float const fiberEnd = tendonLen + fiberLen;
-        bool const hasTendonSpheres = tendonLen > 0.0f;
+        const float tendonLen = max(0.0f, static_cast<float>(muscle.getTendonLength(rs.getState()) * 0.5));
+        const float fiberLen = max(0.0f, static_cast<float>(muscle.getFiberLength(rs.getState())));
+        const float fiberEnd = tendonLen + fiberLen;
+        const bool hasTendonSpheres = tendonLen > 0.0f;
 
         size_t i = 1;
         GeometryPathPoint prevPoint = pps.front();
@@ -520,7 +520,7 @@ namespace
             // emit remaining tendon cylinder + spheres
 
             const GeometryPathPoint& point = pps[i];
-            Vec3 const prevToPos = point.locationInGround - prevPoint.locationInGround;
+            const Vec3 prevToPos = point.locationInGround - prevPoint.locationInGround;
             float prevToPosLen = length(prevToPos);
             float traversalPos = prevTraversalPos + prevToPosLen;
             float excess = traversalPos - tendonLen;
@@ -626,7 +626,7 @@ namespace
         }
 
         // helper function: emits a sphere decoration
-        auto const emitSphere = [&rs, &hittestTarget, radius, color](
+        const auto emitSphere = [&rs, &hittestTarget, radius, color](
             const GeometryPathPoint& pp,
             const Vec3& upDirection)
         {
@@ -652,7 +652,7 @@ namespace
         };
 
         // helper function: emits a cylinder decoration between two points
-        auto const emitCylinder = [&rs, &hittestTarget, radius, color](
+        const auto emitCylinder = [&rs, &hittestTarget, radius, color](
             const Vec3& p1,
             const Vec3& p2)
         {
@@ -670,7 +670,7 @@ namespace
         {
             const GeometryPathPoint& firstPoint = points.front();
             const Vec3& ppPos = firstPoint.locationInGround;
-            Vec3 const direction = points.size() == 1 ?
+            const Vec3 direction = points.size() == 1 ?
                 Vec3{0.0f, 1.0f, 0.0f} :
                 normalize(points[1].locationInGround - ppPos);
 
@@ -690,7 +690,7 @@ namespace
             // if required, draw path points
             if (rs.getShowPathPoints())
             {
-                Vec3 const direction = normalize(curPos - prevPos);
+                const Vec3 direction = normalize(curPos - prevPos);
                 emitSphere(point, direction);
             }
         }
@@ -707,13 +707,13 @@ namespace
         std::vector<GeometryPathPoint> const points =
             GetAllPathPoints(musc.getGeometryPath(), rs.getState());
 
-        float const radius = GetMuscleSize(
+        const float radius = GetMuscleSize(
             musc,
             rs.getFixupScaleFactor(),
             rs.getOptions().getMuscleSizingStyle()
         );
 
-        Color const color = GetMuscleColor(
+        const Color color = GetMuscleColor(
             musc,
             rs.getState(),
             rs.getOptions().getMuscleColoringStyle()
@@ -735,7 +735,7 @@ namespace
         // a path (#647)
 
         std::vector<GeometryPathPoint> const points = GetAllPathPoints(gp, rs.getState());
-        Color const color = GetGeometryPathColor(gp, rs.getState());
+        const Color color = GetGeometryPathColor(gp, rs.getState());
 
         EmitPointBasedLine(
             rs,
@@ -752,7 +752,7 @@ namespace
         const PointDirection& loaPointDirection,
         const Color& color)
     {
-        float const fixupScaleFactor = rs.getFixupScaleFactor();
+        const float fixupScaleFactor = rs.getFixupScaleFactor();
 
         ArrowProperties p;
         p.worldspace_start = loaPointDirection.point;
@@ -913,10 +913,10 @@ namespace
             return;
         }
 
-        float const fixupScaleFactor = rs.getFixupScaleFactor();
-        float const lenScale = 0.0025f;
-        float const baseRadius = 0.025f;
-        float const tip_length = 0.1f*length((fixupScaleFactor*lenScale)*maybeContact->force);
+        const float fixupScaleFactor = rs.getFixupScaleFactor();
+        const float lenScale = 0.0025f;
+        const float baseRadius = 0.025f;
+        const float tip_length = 0.1f*length((fixupScaleFactor*lenScale)*maybeContact->force);
 
         ArrowProperties p;
         p.worldspace_start = maybeContact->point;
@@ -975,7 +975,7 @@ void osc::GenerateSubcomponentDecorations(
         out,
     };
 
-    auto const emitDecorationsForComponent = [&](const OpenSim::Component& c)
+    const auto emitDecorationsForComponent = [&](const OpenSim::Component& c)
     {
         // handle OSC-specific decoration specializations, or fallback to generic
         // component decoration handling

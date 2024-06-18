@@ -105,7 +105,7 @@ namespace
 
     void ActionAddNewPathPoint(OpenSim::PathPointSet& pps)
     {
-        std::string const frame = empty(pps) ?
+        const std::string frame = empty(pps) ?
             "/ground" :
             At(pps, size(pps)-1).getSocket("parent_frame").getConnecteePath();
 
@@ -271,7 +271,7 @@ private:
 
         if (auto* const pp = dynamic_cast<OpenSim::PathPoint*>(&app))
         {
-            float const inputWidth = ui::calc_text_size("0.00000").x;
+            const float inputWidth = ui::calc_text_size("0.00000").x;
 
             SimTK::Vec3& location = pp->upd_location();
 
@@ -299,7 +299,7 @@ private:
 
     void drawIthPathPointFrameCell(OpenSim::PathPointSet& pps, ptrdiff_t i)
     {
-        float const width = ui::calc_text_size("/bodyset/a_typical_body_name").x;
+        const float width = ui::calc_text_size("/bodyset/a_typical_body_name").x;
 
         const std::string& label = At(pps, i).getSocket("parent_frame").getConnecteePath();
 
@@ -308,7 +308,7 @@ private:
         {
             for (const OpenSim::Frame& frame : m_TargetModel->getModel().getComponentList<OpenSim::Frame>())
             {
-                std::string const absPath = frame.getAbsolutePathString();
+                const std::string absPath = frame.getAbsolutePathString();
                 if (ui::draw_selectable(absPath))
                 {
                     ActionSetPathPointFramePath(pps, i, absPath);

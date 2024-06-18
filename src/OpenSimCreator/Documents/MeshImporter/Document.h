@@ -251,7 +251,7 @@ namespace osc::mi
                 // move object into deletion set, rather than deleting it immediately,
                 // so that code that relies on references to the to-be-deleted object
                 // still works until an explicit `.GarbageCollect()` call
-                if (auto const it = m_Objects.find(deletedID); it != m_Objects.end())
+                if (const auto it = m_Objects.find(deletedID); it != m_Objects.end())
                 {
                     m_DeletedObjects.push_back(std::move(it->second));
                     m_Objects.erase(it);
@@ -355,7 +355,7 @@ namespace osc::mi
         >
         static T* findByID(AssociativeContainer& container, UID id)
         {
-            auto const it = container.find(id);
+            const auto it = container.find(id);
 
             if (it == container.end())
             {
@@ -396,7 +396,7 @@ namespace osc::mi
 
         void populateDeletionSet(const MIObject& deletionTarget, std::unordered_set<UID>& out)
         {
-            UID const deletedID = deletionTarget.getID();
+            const UID deletedID = deletionTarget.getID();
 
             // add the deletion target to the deletion set (if applicable)
             if (deletionTarget.canDelete())

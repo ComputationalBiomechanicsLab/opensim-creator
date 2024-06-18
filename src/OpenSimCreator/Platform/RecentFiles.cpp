@@ -130,7 +130,7 @@ void osc::RecentFiles::sync()
     }
 
     // write up-to the first 10 entries
-    size_t const numFilesToWrite = min(m_Files.size(), c_MaxRecentFileEntries);
+    const size_t numFilesToWrite = min(m_Files.size(), c_MaxRecentFileEntries);
     for (size_t i = 0; i < numFilesToWrite; ++i)
     {
         const RecentFile& rf = m_Files[i];

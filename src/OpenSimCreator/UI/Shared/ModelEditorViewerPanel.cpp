@@ -135,7 +135,7 @@ namespace
             // draw generic overlays (i.e. the buttons for toggling things)
             auto renderParamsBefore = params.getRenderParams();
 
-            bool const edited = DrawViewerImGuiOverlays(
+            const bool edited = DrawViewerImGuiOverlays(
                 params.updRenderParams(),
                 state.getDrawlist(),
                 state.maybeSceneAABB,
@@ -304,7 +304,7 @@ namespace
                 state.isRightClickReleasedWithoutDragging)
             {
                 // right-click: pump a right-click event
-                ModelEditorViewerPanelRightClickEvent const e
+                const ModelEditorViewerPanelRightClickEvent e
                 {
                     std::string{state.getPanelName()},
                     state.viewportRect,
@@ -428,11 +428,11 @@ private:
             // check if the window is conditionally hovered: this returns true if no other window is
             // overlapping the editor panel, _but_ it also returns true if the user is only hovering
             // the title bar of the window, rather than specifically the render
-            bool const windowHovered = ui::is_panel_hovered(ImGuiHoveredFlags_ChildWindows);
+            const bool windowHovered = ui::is_panel_hovered(ImGuiHoveredFlags_ChildWindows);
 
             // check if the 3D render is hovered - ignore blocking and overlapping because the layer
             // stack might be screwing with this
-            bool const renderHoveredIgnoringOverlap = ui::is_item_hovered(
+            const bool renderHoveredIgnoringOverlap = ui::is_item_hovered(
                 ImGuiHoveredFlags_AllowWhenBlockedByActiveItem |
                 ImGuiHoveredFlags_AllowWhenOverlapped
             );
@@ -524,7 +524,7 @@ private:
             // should happen window-by-window (otherwise, you'll have problems with overlapping
             // buttons, widgets, etc.)
             ui::set_next_panel_pos(m_State.viewportRect.p1);
-            std::string const childID = std::to_string(std::distance(it, m_Layers.end()));
+            const std::string childID = std::to_string(std::distance(it, m_Layers.end()));
             if (ui::begin_child_panel(childID, dimensions_of(m_State.viewportRect), ImGuiChildFlags_None, windowFlags))
             {
                 layer.onDraw(m_Parameters, m_State);

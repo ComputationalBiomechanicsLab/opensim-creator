@@ -179,7 +179,7 @@ void osc::MainMenuFileTab::onDraw(
     ui::draw_separator();
 
     {
-        bool const modelHasBackingFile = maybeModel != nullptr && HasInputFileName(maybeModel->getModel());
+        const bool modelHasBackingFile = maybeModel != nullptr && HasInputFileName(maybeModel->getModel());
 
         if (ui::draw_menu_item(ICON_FA_RECYCLE " Reload", "F5", false, modelHasBackingFile) && maybeModel)
         {
@@ -257,8 +257,8 @@ void osc::MainMenuAboutTab::onDraw()
         ui::draw_help_marker("the log_level_ of MultiSample Anti-Aliasing to use. This only affects 3D renders *within* the UI, not the whole UI (panels etc. will not be affected)");
         ui::next_column();
         {
-            AntiAliasingLevel const current = App::get().anti_aliasing_level();
-            AntiAliasingLevel const max = App::get().max_anti_aliasing_level();
+            const AntiAliasingLevel current = App::get().anti_aliasing_level();
+            const AntiAliasingLevel max = App::get().max_anti_aliasing_level();
 
             if (ui::begin_combobox("##msxaa", to_string(current)))
             {

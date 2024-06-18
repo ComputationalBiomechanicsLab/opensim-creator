@@ -194,20 +194,20 @@ namespace
             return false;  // new connectee isn't a frame
         }
 
-        auto const spatialRep = TryGetSpatialRepresentation(component, state);
+        const auto spatialRep = TryGetSpatialRepresentation(component, state);
         if (!spatialRep)
         {
             return false;  // cannot represent the component spatially
         }
 
-        SimTK::Transform const currentParentToGround = spatialRep->parentToGround;
-        SimTK::Transform const groundToNewConnectee = newFrame->getTransformInGround(state).invert();
-        SimTK::Transform const currentParentToNewConnectee = groundToNewConnectee * currentParentToGround;
+        const SimTK::Transform currentParentToGround = spatialRep->parentToGround;
+        const SimTK::Transform groundToNewConnectee = newFrame->getTransformInGround(state).invert();
+        const SimTK::Transform currentParentToNewConnectee = groundToNewConnectee * currentParentToGround;
 
         if (auto* positionalProp = FindSimplePropertyMut<SimTK::Vec3>(component, spatialRep->locationVec3PropertyName))
         {
-            SimTK::Vec3 const oldPosition = positionalProp->getValue();
-            SimTK::Vec3 const newPosition = currentParentToNewConnectee * oldPosition;
+            const SimTK::Vec3 oldPosition = positionalProp->getValue();
+            const SimTK::Vec3 newPosition = currentParentToNewConnectee * oldPosition;
 
             positionalProp->setValue(newPosition);  // update property with new position
         }
@@ -216,15 +216,15 @@ namespace
         {
             if (auto* orientationalProp = FindSimplePropertyMut<SimTK::Vec3>(component, *spatialRep->maybeOrientationVec3EulersPropertyName))
             {
-                SimTK::Rotation const currentRotationInGround = spatialRep->parentToGround.R();
-                SimTK::Rotation const groundToNewConnecteeRotation = newFrame->getRotationInGround(state).invert();
-                SimTK::Rotation const currentParentRotationToNewConnecteeRotation = groundToNewConnecteeRotation * currentRotationInGround;
+                const SimTK::Rotation currentRotationInGround = spatialRep->parentToGround.R();
+                const SimTK::Rotation groundToNewConnecteeRotation = newFrame->getRotationInGround(state).invert();
+                const SimTK::Rotation currentParentRotationToNewConnecteeRotation = groundToNewConnecteeRotation * currentRotationInGround;
 
-                SimTK::Vec3 const oldEulers = orientationalProp->getValue();
+                const SimTK::Vec3 oldEulers = orientationalProp->getValue();
                 SimTK::Rotation oldRotation;
                 oldRotation.setRotationToBodyFixedXYZ(oldEulers);
-                SimTK::Rotation const newRotation = currentParentRotationToNewConnecteeRotation * oldRotation;
-                SimTK::Vec3 const newEulers = newRotation.convertRotationToBodyFixedXYZ();
+                const SimTK::Rotation newRotation = currentParentRotationToNewConnecteeRotation * oldRotation;
+                const SimTK::Vec3 newEulers = newRotation.convertRotationToBodyFixedXYZ();
 
                 orientationalProp->setValue(newEulers);
             }
@@ -247,7 +247,7 @@ void osc::ActionSaveCurrentModelAs(UndoableModelStatePair& uim)
 
     if (maybePath && TrySaveModel(uim.getModel(), maybePath->string()))
     {
-        std::string const oldPath = uim.getModel().getInputFileName();
+        const std::string oldPath = uim.getModel().getInputFileName();
 
         uim.updModel().setInputFileName(maybePath->string());
         uim.setFilesystemPath(*maybePath);
@@ -284,7 +284,7 @@ bool osc::ActionSaveModel(IMainUIStateAPI&, UndoableModelStatePair& model)
 
     if (maybeUserSaveLoc && TrySaveModel(model.getModel(), *maybeUserSaveLoc))
     {
-        std::string const oldPath = model.getModel().getInputFileName();
+        const std::string oldPath = model.getModel().getInputFileName();
         model.updModel().setInputFileName(*maybeUserSaveLoc);
         model.setFilesystemPath(*maybeUserSaveLoc);
 
@@ -312,9 +312,9 @@ void osc::ActionTryDeleteSelectionFromEditedModel(UndoableModelStatePair& uim)
         return;
     }
 
-    OpenSim::ComponentPath const selectedPath = GetAbsolutePath(*selected);
+    const OpenSim::ComponentPath selectedPath = GetAbsolutePath(*selected);
 
-    UID const oldVersion = uim.getModelVersion();
+    const UID oldVersion = uim.getModelVersion();
     OpenSim::Model& mutModel = uim.updModel();
     OpenSim::Component* const mutComponent = FindComponentMut(mutModel, selectedPath);
 
@@ -324,7 +324,7 @@ void osc::ActionTryDeleteSelectionFromEditedModel(UndoableModelStatePair& uim)
         return;
     }
 
-    std::string const selectedComponentName = mutComponent->getName();
+    const std::string selectedComponentName = mutComponent->getName();
 
     if (TryDeleteComponentFromModel(mutModel, *mutComponent))
     {
@@ -451,7 +451,7 @@ bool osc::ActionUpdateModelFromBackingFile(UndoableModelStatePair& uim)
         return false;
     }
 
-    std::filesystem::path const path = uim.getFilesystemPath();
+    const std::filesystem::path path = uim.getFilesystemPath();
 
     if (!std::filesystem::exists(path))
     {
@@ -459,7 +459,7 @@ bool osc::ActionUpdateModelFromBackingFile(UndoableModelStatePair& uim)
         return false;
     }
 
-    std::filesystem::file_time_type const lastSaveTime = std::filesystem::last_write_time(path);
+    const std::filesystem::file_time_type lastSaveTime = std::filesystem::last_write_time(path);
 
     if (uim.getLastFilesystemWriteTime() >= lastSaveTime)
     {
@@ -500,7 +500,7 @@ bool osc::ActionCopyModelPathToClipboard(const UndoableModelStatePair& uim)
         return false;
     }
 
-    std::filesystem::path const absPath = std::filesystem::weakly_canonical(uim.getFilesystemPath());
+    const std::filesystem::path absPath = std::filesystem::weakly_canonical(uim.getFilesystemPath());
 
     set_clipboard_text(absPath.string());
 
@@ -509,7 +509,7 @@ bool osc::ActionCopyModelPathToClipboard(const UndoableModelStatePair& uim)
 
 bool osc::ActionAutoscaleSceneScaleFactor(UndoableModelStatePair& uim)
 {
-    float const sf = GetRecommendedScaleFactor(
+    const float sf = GetRecommendedScaleFactor(
         *App::singleton<SceneCache>(App::resource_loader()),
         uim.getModel(),
         uim.getState(),
@@ -524,7 +524,7 @@ bool osc::ActionToggleFrames(UndoableModelStatePair& uim)
     try
     {
         OpenSim::Model& mutModel = uim.updModel();
-        bool const newState = ToggleShowingFrames(mutModel);
+        const bool newState = ToggleShowingFrames(mutModel);
         InitializeModel(mutModel);
         InitializeState(mutModel);
         uim.commit(newState ? "shown frames" : "hidden frames");
@@ -544,7 +544,7 @@ bool osc::ActionToggleMarkers(UndoableModelStatePair& uim)
     try
     {
         OpenSim::Model& mutModel = uim.updModel();
-        bool const newState = ToggleShowingMarkers(mutModel);
+        const bool newState = ToggleShowingMarkers(mutModel);
         InitializeModel(mutModel);
         InitializeState(mutModel);
         uim.commit(newState ? "shown markers" : "hidden markers");
@@ -564,7 +564,7 @@ bool osc::ActionToggleContactGeometry(UndoableModelStatePair& uim)
     try
     {
         OpenSim::Model& mutModel = uim.updModel();
-        bool const newState = ToggleShowingContactGeometry(mutModel);
+        const bool newState = ToggleShowingContactGeometry(mutModel);
         InitializeModel(mutModel);
         InitializeState(mutModel);
         uim.commit(newState ? "shown contact geometry" : "hidden contact geometry");
@@ -584,7 +584,7 @@ bool osc::ActionToggleWrapGeometry(UndoableModelStatePair& uim)
     try
     {
         OpenSim::Model& mutModel = uim.updModel();
-        bool const newState = ToggleShowingWrapGeometry(mutModel);
+        const bool newState = ToggleShowingWrapGeometry(mutModel);
         InitializeModel(mutModel);
         InitializeState(mutModel);
         uim.commit(newState ? "shown wrap geometry" : "hidden wrap geometry");
@@ -606,7 +606,7 @@ bool osc::ActionOpenOsimParentDirectory(UndoableModelStatePair& uim)
         return false;
     }
 
-    std::filesystem::path const p{uim.getModel().getInputFileName()};
+    const std::filesystem::path p{uim.getModel().getInputFileName()};
     open_file_in_os_default_application(p.parent_path());
     return true;
 }
@@ -676,13 +676,13 @@ bool osc::ActionAddOffsetFrameToPhysicalFrame(UndoableModelStatePair& uim, const
         return false;
     }
 
-    std::string const newPofName = target->getName() + "_offsetframe";
+    const std::string newPofName = target->getName() + "_offsetframe";
 
     auto pof = std::make_unique<OpenSim::PhysicalOffsetFrame>();
     pof->setName(newPofName);
     pof->setParentFrame(*target);
 
-    UID const oldVersion = uim.getModelVersion();  // for rollbacks
+    const UID oldVersion = uim.getModelVersion();  // for rollbacks
     try
     {
         OpenSim::Model& mutModel = uim.updModel();
@@ -741,14 +741,14 @@ bool osc::ActionRezeroJoint(UndoableModelStatePair& uim, const OpenSim::Componen
         return false;  // target has no parent frame
     }
 
-    OpenSim::ComponentPath const parentPath = GetAbsolutePath(*parentPOF);
+    const OpenSim::ComponentPath parentPath = GetAbsolutePath(*parentPOF);
     const OpenSim::PhysicalFrame& childFrame = target->getChildFrame();
-    SimTK::Transform const parentXform = parentPOF->getTransformInGround(uim.getState());
-    SimTK::Transform const childXform = childFrame.getTransformInGround(uim.getState());
-    SimTK::Transform const child2parent = parentXform.invert() * childXform;
-    SimTK::Transform const newXform = parentPOF->getOffsetTransform() * child2parent;
+    const SimTK::Transform parentXform = parentPOF->getTransformInGround(uim.getState());
+    const SimTK::Transform childXform = childFrame.getTransformInGround(uim.getState());
+    const SimTK::Transform child2parent = parentXform.invert() * childXform;
+    const SimTK::Transform newXform = parentPOF->getOffsetTransform() * child2parent;
 
-    UID const oldVersion = uim.getModelVersion();  // for rollbacks
+    const UID oldVersion = uim.getModelVersion();  // for rollbacks
     try
     {
         OpenSim::Model& mutModel = uim.updModel();
@@ -769,7 +769,7 @@ bool osc::ActionRezeroJoint(UndoableModelStatePair& uim, const OpenSim::Componen
 
         // else: perform model transformation
 
-        std::string const jointName = mutJoint->getName();
+        const std::string jointName = mutJoint->getName();
 
         // first, zero all the joint's coordinates
         //
@@ -809,7 +809,7 @@ bool osc::ActionAddParentOffsetFrameToJoint(UndoableModelStatePair& uim, const O
     auto pf = std::make_unique<OpenSim::PhysicalOffsetFrame>();
     pf->setParentFrame(target->getParentFrame());
 
-    UID const oldVersion = uim.getModelVersion();  // for rollbacks
+    const UID oldVersion = uim.getModelVersion();  // for rollbacks
     try
     {
         OpenSim::Model& mutModel = uim.updModel();
@@ -821,7 +821,7 @@ bool osc::ActionAddParentOffsetFrameToJoint(UndoableModelStatePair& uim, const O
             return false;
         }
 
-        std::string const jointName = mutJoint->getName();
+        const std::string jointName = mutJoint->getName();
 
         mutJoint->connectSocket_parent_frame(*pf);
         AddFrame(*mutJoint, std::move(pf));
@@ -851,7 +851,7 @@ bool osc::ActionAddChildOffsetFrameToJoint(UndoableModelStatePair& uim, const Op
     auto pf = std::make_unique<OpenSim::PhysicalOffsetFrame>();
     pf->setParentFrame(target->getChildFrame());
 
-    UID const oldVersion = uim.getModelVersion();
+    const UID oldVersion = uim.getModelVersion();
     try
     {
         OpenSim::Model& mutModel = uim.updModel();
@@ -863,7 +863,7 @@ bool osc::ActionAddChildOffsetFrameToJoint(UndoableModelStatePair& uim, const Op
             return false;
         }
 
-        std::string const jointName = mutJoint->getName();
+        const std::string jointName = mutJoint->getName();
 
         mutJoint->connectSocket_child_frame(*pf);
         AddFrame(*mutJoint, std::move(pf));
@@ -895,7 +895,7 @@ bool osc::ActionSetComponentName(UndoableModelStatePair& uim, const OpenSim::Com
         return false;
     }
 
-    UID const oldVersion = uim.getModelVersion();
+    const UID oldVersion = uim.getModelVersion();
     try
     {
         OpenSim::Model& mutModel = uim.updModel();
@@ -907,7 +907,7 @@ bool osc::ActionSetComponentName(UndoableModelStatePair& uim, const OpenSim::Com
             return false;
         }
 
-        std::string const oldName = mutComponent->getName();
+        const std::string oldName = mutComponent->getName();
         mutComponent->setName(newName);
         FinalizeConnections(mutModel);  // because pointers need to know the new name
         InitializeModel(mutModel);
@@ -950,7 +950,7 @@ bool osc::ActionChangeJointTypeTo(UndoableModelStatePair& uim, const OpenSim::Co
         return false;
     }
 
-    OpenSim::ComponentPath const ownerPath = GetAbsolutePath(*owner);
+    const OpenSim::ComponentPath ownerPath = GetAbsolutePath(*owner);
 
     std::optional<size_t> const maybeIdx = FindJointInParentJointSet(*target);
     if (!maybeIdx)
@@ -959,10 +959,10 @@ bool osc::ActionChangeJointTypeTo(UndoableModelStatePair& uim, const OpenSim::Co
         return false;
     }
 
-    size_t const idx = *maybeIdx;
+    const size_t idx = *maybeIdx;
 
-    std::string const oldTypeName = target->getConcreteClassName();
-    std::string const newTypeName = newType->getConcreteClassName();
+    const std::string oldTypeName = target->getConcreteClassName();
+    const std::string newTypeName = newType->getConcreteClassName();
 
     CopyCommonJointProperties(*target, *newType);
 
@@ -971,7 +971,7 @@ bool osc::ActionChangeJointTypeTo(UndoableModelStatePair& uim, const OpenSim::Co
     // note: this will invalidate the input joint, because the
     // OpenSim::JointSet container will automatically kill it
 
-    UID const oldVersion = uim.getModelVersion();
+    const UID oldVersion = uim.getModelVersion();
     try
     {
         OpenSim::Model& mutModel = uim.updModel();
@@ -1010,7 +1010,7 @@ bool osc::ActionAttachGeometryToPhysicalFrame(UndoableModelStatePair& uim, const
         return false;
     }
 
-    UID const oldVersion = uim.getModelVersion();
+    const UID oldVersion = uim.getModelVersion();
     try
     {
         OpenSim::Model& mutModel = uim.updModel();
@@ -1022,7 +1022,7 @@ bool osc::ActionAttachGeometryToPhysicalFrame(UndoableModelStatePair& uim, const
             return false;
         }
 
-        std::string const pofName = mutPof->getName();
+        const std::string pofName = mutPof->getName();
 
         AttachGeometry(*mutPof, std::move(geom));
         FinalizeConnections(mutModel);
@@ -1060,7 +1060,7 @@ bool osc::ActionAssignContactGeometryToHCF(
         return false;
     }
 
-    UID const oldVersion = uim.getModelVersion();
+    const UID oldVersion = uim.getModelVersion();
     try
     {
         OpenSim::Model& mutModel = uim.updModel();
@@ -1095,7 +1095,7 @@ bool osc::ActionAssignContactGeometryToHCF(
 
 bool osc::ActionApplyPropertyEdit(UndoableModelStatePair& uim, ObjectPropertyEdit& resp)
 {
-    UID const oldVersion = uim.getModelVersion();
+    const UID oldVersion = uim.getModelVersion();
     try
     {
         OpenSim::Model& model = uim.updModel();
@@ -1114,11 +1114,11 @@ bool osc::ActionApplyPropertyEdit(UndoableModelStatePair& uim, ObjectPropertyEdi
             return false;
         }
 
-        std::string const propName = prop->getName();
+        const std::string propName = prop->getName();
 
         resp.apply(*prop);
 
-        std::string const newValue = prop->toStringForDisplay(3);
+        const std::string newValue = prop->toStringForDisplay(3);
 
         InitializeModel(model);
         InitializeState(model);
@@ -1154,11 +1154,11 @@ bool osc::ActionAddPathPointToPathActuator(
         return false;
     }
 
-    size_t const n = size(pa->getGeometryPath().getPathPointSet());
-    std::string const name = pa->getName() + "-P" + std::to_string(n + 1);
-    SimTK::Vec3 const pos = {0.0f, 0.0f, 0.0f};
+    const size_t n = size(pa->getGeometryPath().getPathPointSet());
+    const std::string name = pa->getName() + "-P" + std::to_string(n + 1);
+    const SimTK::Vec3 pos = {0.0f, 0.0f, 0.0f};
 
-    UID const oldVersion = uim.getModelVersion();
+    const UID oldVersion = uim.getModelVersion();
     try
     {
         OpenSim::Model& mutModel = uim.updModel();
@@ -1170,7 +1170,7 @@ bool osc::ActionAddPathPointToPathActuator(
             return false;
         }
 
-        std::string const paName = mutPA->getName();
+        const std::string paName = mutPA->getName();
 
         mutPA->addNewPathPoint(name, *pf, pos);
         FinalizeConnections(mutModel);
@@ -1228,7 +1228,7 @@ bool osc::ActionReassignComponentSocket(
         return false;
     }
 
-    UID const oldVersion = uim.getModelVersion();
+    const UID oldVersion = uim.getModelVersion();
 
     OpenSim::Model& mutModel = uim.updModel();
 
@@ -1248,7 +1248,7 @@ bool osc::ActionReassignComponentSocket(
 
     try
     {
-        bool const componentPropertiesReexpressed = flags & SocketReassignmentFlags::TryReexpressComponentInNewConnectee ?
+        const bool componentPropertiesReexpressed = flags & SocketReassignmentFlags::TryReexpressComponentInNewConnectee ?
             TryReexpressComponentSpatialPropertiesInNewConnectee(*mutComponent, connectee, uim.getState()) :
             false;
 
@@ -1298,9 +1298,9 @@ bool osc::ActionAddBodyToModel(UndoableModelStatePair& uim, const BodyDetails& d
         return false;
     }
 
-    SimTK::Vec3 const com = ToSimTKVec3(details.centerOfMass);
-    SimTK::Inertia const inertia = ToSimTKInertia(details.inertia);
-    auto const mass = static_cast<double>(details.mass);
+    const SimTK::Vec3 com = ToSimTKVec3(details.centerOfMass);
+    const SimTK::Inertia inertia = ToSimTKInertia(details.inertia);
+    const auto mass = static_cast<double>(details.mass);
 
     // create body
     auto body = std::make_unique<OpenSim::Body>(details.bodyName, mass, com, inertia);
@@ -1486,9 +1486,9 @@ bool osc::ActionSetCoordinateSpeed(
     const OpenSim::Coordinate& coord,
     double newSpeed)
 {
-    OpenSim::ComponentPath const coordPath = GetAbsolutePath(coord);
+    const OpenSim::ComponentPath coordPath = GetAbsolutePath(coord);
 
-    UID const oldVersion = model.getModelVersion();
+    const UID oldVersion = model.getModelVersion();
     try
     {
         OpenSim::Model& mutModel = model.updModel();
@@ -1543,9 +1543,9 @@ bool osc::ActionSetCoordinateSpeedAndSave(
 
 bool osc::ActionSetCoordinateLockedAndSave(UndoableModelStatePair& model, const OpenSim::Coordinate& coord, bool v)
 {
-    OpenSim::ComponentPath const coordPath = GetAbsolutePath(coord);
+    const OpenSim::ComponentPath coordPath = GetAbsolutePath(coord);
 
-    UID const oldVersion = model.getModelVersion();
+    const UID oldVersion = model.getModelVersion();
     try
     {
         OpenSim::Model& mutModel = model.updModel();
@@ -1582,9 +1582,9 @@ bool osc::ActionSetCoordinateValue(
     const OpenSim::Coordinate& coord,
     double newValue)
 {
-    OpenSim::ComponentPath const coordPath = GetAbsolutePath(coord);
+    const OpenSim::ComponentPath coordPath = GetAbsolutePath(coord);
 
-    UID const oldVersion = model.getModelVersion();
+    const UID oldVersion = model.getModelVersion();
     try
     {
         OpenSim::Model& mutModel = model.updModel();
@@ -1596,8 +1596,8 @@ bool osc::ActionSetCoordinateValue(
             return false;
         }
 
-        double const rangeMin = min(mutCoord->getRangeMin(), mutCoord->getRangeMax());
-        double const rangeMax = max(mutCoord->getRangeMin(), mutCoord->getRangeMax());
+        const double rangeMin = min(mutCoord->getRangeMin(), mutCoord->getRangeMax());
+        const double rangeMax = max(mutCoord->getRangeMin(), mutCoord->getRangeMax());
 
         if (!(rangeMin <= newValue && newValue <= rangeMax))
         {
@@ -1665,7 +1665,7 @@ bool osc::ActionSetComponentAndAllChildrensIsVisibleTo(
     const OpenSim::ComponentPath& path,
     bool newVisibility)
 {
-    UID const oldVersion = model.getModelVersion();
+    const UID oldVersion = model.getModelVersion();
     try
     {
         OpenSim::Model& mutModel = model.updModel();
@@ -1703,7 +1703,7 @@ bool osc::ActionSetComponentAndAllChildrensIsVisibleTo(
 
 bool osc::ActionShowOnlyComponentAndAllChildren(UndoableModelStatePair& model, const OpenSim::ComponentPath& path)
 {
-    UID const oldVersion = model.getModelVersion();
+    const UID oldVersion = model.getModelVersion();
     try
     {
         OpenSim::Model& mutModel = model.updModel();
@@ -1755,7 +1755,7 @@ bool osc::ActionSetComponentAndAllChildrenWithGivenConcreteClassNameIsVisibleTo(
     std::string_view concreteClassName,
     bool newVisibility)
 {
-    UID const oldVersion = model.getModelVersion();
+    const UID oldVersion = model.getModelVersion();
     try
     {
         OpenSim::Model& mutModel = model.updModel();
@@ -1814,8 +1814,8 @@ bool osc::ActionTranslateStation(
     const OpenSim::Station& station,
     const Vec3& deltaPosition)
 {
-    OpenSim::ComponentPath const stationPath = GetAbsolutePath(station);
-    UID const oldVersion = model.getModelVersion();
+    const OpenSim::ComponentPath stationPath = GetAbsolutePath(station);
+    const UID oldVersion = model.getModelVersion();
     try
     {
         OpenSim::Model& mutModel = model.updModel();
@@ -1827,8 +1827,8 @@ bool osc::ActionTranslateStation(
             return false;
         }
 
-        SimTK::Vec3 const originalPos = mutStation->get_location();
-        SimTK::Vec3 const newPos = originalPos + ToSimTKVec3(deltaPosition);
+        const SimTK::Vec3 originalPos = mutStation->get_location();
+        const SimTK::Vec3 newPos = originalPos + ToSimTKVec3(deltaPosition);
 
         // perform mutation
         mutStation->set_location(newPos);
@@ -1877,8 +1877,8 @@ bool osc::ActionTranslatePathPoint(
     const OpenSim::PathPoint& pathPoint,
     const Vec3& deltaPosition)
 {
-    OpenSim::ComponentPath const ppPath = GetAbsolutePath(pathPoint);
-    UID const oldVersion = model.getModelVersion();
+    const OpenSim::ComponentPath ppPath = GetAbsolutePath(pathPoint);
+    const UID oldVersion = model.getModelVersion();
     try
     {
         OpenSim::Model& mutModel = model.updModel();
@@ -1890,8 +1890,8 @@ bool osc::ActionTranslatePathPoint(
             return false;
         }
 
-        SimTK::Vec3 const originalPos = mutPathPoint->get_location();
-        SimTK::Vec3 const newPos = originalPos + ToSimTKVec3(deltaPosition);
+        const SimTK::Vec3 originalPos = mutPathPoint->get_location();
+        const SimTK::Vec3 newPos = originalPos + ToSimTKVec3(deltaPosition);
 
         // perform mutation
         mutPathPoint->setLocation(newPos);
@@ -1936,8 +1936,8 @@ bool osc::ActionTransformPof(
     const Vec3& deltaTranslationInParentFrame,
     const Eulers& newPofEulers)
 {
-    OpenSim::ComponentPath const pofPath = GetAbsolutePath(pof);
-    UID const oldVersion = model.getModelVersion();
+    const OpenSim::ComponentPath pofPath = GetAbsolutePath(pof);
+    const UID oldVersion = model.getModelVersion();
     try
     {
         OpenSim::Model& mutModel = model.updModel();
@@ -1949,8 +1949,8 @@ bool osc::ActionTransformPof(
             return false;
         }
 
-        SimTK::Vec3 const originalPos = mutPof->get_translation();
-        SimTK::Vec3 const newPos = originalPos + ToSimTKVec3(deltaTranslationInParentFrame);
+        const SimTK::Vec3 originalPos = mutPof->get_translation();
+        const SimTK::Vec3 newPos = originalPos + ToSimTKVec3(deltaTranslationInParentFrame);
 
         // perform mutation
         mutPof->set_translation(newPos);
@@ -1975,8 +1975,8 @@ bool osc::ActionTransformWrapObject(
     const Vec3& deltaPosition,
     const Eulers& newEulers)
 {
-    OpenSim::ComponentPath const pofPath = GetAbsolutePath(wo);
-    UID const oldVersion = model.getModelVersion();
+    const OpenSim::ComponentPath pofPath = GetAbsolutePath(wo);
+    const UID oldVersion = model.getModelVersion();
     try
     {
         OpenSim::Model& mutModel = model.updModel();
@@ -1988,8 +1988,8 @@ bool osc::ActionTransformWrapObject(
             return false;
         }
 
-        SimTK::Vec3 const originalPos = mutPof->get_translation();
-        SimTK::Vec3 const newPos = originalPos + ToSimTKVec3(deltaPosition);
+        const SimTK::Vec3 originalPos = mutPof->get_translation();
+        const SimTK::Vec3 newPos = originalPos + ToSimTKVec3(deltaPosition);
 
         // perform mutation
         mutPof->set_translation(newPos);
@@ -2014,8 +2014,8 @@ bool osc::ActionTransformContactGeometry(
     const Vec3& deltaPosition,
     const Eulers& newEulers)
 {
-    OpenSim::ComponentPath const pofPath = GetAbsolutePath(contactGeom);
-    UID const oldVersion = model.getModelVersion();
+    const OpenSim::ComponentPath pofPath = GetAbsolutePath(contactGeom);
+    const UID oldVersion = model.getModelVersion();
     try
     {
         OpenSim::Model& mutModel = model.updModel();
@@ -2027,8 +2027,8 @@ bool osc::ActionTransformContactGeometry(
             return false;
         }
 
-        SimTK::Vec3 const originalPos = mutGeom->get_location();
-        SimTK::Vec3 const newPos = originalPos + ToSimTKVec3(deltaPosition);
+        const SimTK::Vec3 originalPos = mutGeom->get_location();
+        const SimTK::Vec3 newPos = originalPos + ToSimTKVec3(deltaPosition);
 
         // perform mutation
         mutGeom->set_location(newPos);
@@ -2055,7 +2055,7 @@ bool osc::ActionFitSphereToMesh(
     Sphere sphere;
     try
     {
-        Mesh const mesh = ToOscMeshBakeScaleFactors(model.getModel(), model.getState(), openSimMesh);
+        const Mesh mesh = ToOscMeshBakeScaleFactors(model.getModel(), model.getState(), openSimMesh);
         sphere = FitSphere(mesh);
     }
     catch (const std::exception& ex)
@@ -2079,8 +2079,8 @@ bool osc::ActionFitSphereToMesh(
     UpdAppearanceToFittedGeom(openSimSphere->upd_Appearance());
 
     // perform undoable model mutation
-    OpenSim::ComponentPath const openSimMeshPath = GetAbsolutePath(openSimMesh);
-    UID const oldVersion = model.getModelVersion();
+    const OpenSim::ComponentPath openSimMeshPath = GetAbsolutePath(openSimMesh);
+    const UID oldVersion = model.getModelVersion();
     try
     {
         OpenSim::Model& mutModel = model.updModel();
@@ -2091,7 +2091,7 @@ bool osc::ActionFitSphereToMesh(
             return false;
         }
 
-        std::string const sphereName = openSimSphere->getName();
+        const std::string sphereName = openSimSphere->getName();
         auto& pofRef = AddModelComponent(mutModel, std::move(offsetFrame));
         auto& sphereRef = AttachGeometry(pofRef, std::move(openSimSphere));
 
@@ -2121,7 +2121,7 @@ bool osc::ActionFitEllipsoidToMesh(
     Ellipsoid ellipsoid;
     try
     {
-        Mesh const mesh = ToOscMeshBakeScaleFactors(model.getModel(), model.getState(), openSimMesh);
+        const Mesh mesh = ToOscMeshBakeScaleFactors(model.getModel(), model.getState(), openSimMesh);
         ellipsoid = FitEllipsoid(mesh);
     }
     catch (const std::exception& ex)
@@ -2145,7 +2145,7 @@ bool osc::ActionFitEllipsoidToMesh(
         m.col(0) = ToSimTKVec3(directions[0]);
         m.col(1) = ToSimTKVec3(directions[1]);
         m.col(2) = ToSimTKVec3(directions[2]);
-        SimTK::Transform const t{SimTK::Rotation{m}, ToSimTKVec3(ellipsoid.origin)};
+        const SimTK::Transform t{SimTK::Rotation{m}, ToSimTKVec3(ellipsoid.origin)};
         offsetFrame->setOffsetTransform(t);
     }
 
@@ -2157,8 +2157,8 @@ bool osc::ActionFitEllipsoidToMesh(
     UpdAppearanceToFittedGeom(openSimEllipsoid->upd_Appearance());
 
     // mutate the model and add the relevant components
-    OpenSim::ComponentPath const openSimMeshPath = GetAbsolutePath(openSimMesh);
-    UID const oldVersion = model.getModelVersion();
+    const OpenSim::ComponentPath openSimMeshPath = GetAbsolutePath(openSimMesh);
+    const UID oldVersion = model.getModelVersion();
     try
     {
         OpenSim::Model& mutModel = model.updModel();
@@ -2169,7 +2169,7 @@ bool osc::ActionFitEllipsoidToMesh(
             return false;
         }
 
-        std::string const ellipsoidName = openSimEllipsoid->getName();
+        const std::string ellipsoidName = openSimEllipsoid->getName();
         auto& pofRef = AddModelComponent(mutModel, std::move(offsetFrame));
         AttachGeometry(pofRef, std::move(openSimEllipsoid));
 
@@ -2199,7 +2199,7 @@ bool osc::ActionFitPlaneToMesh(
     Plane plane;
     try
     {
-        Mesh const mesh = ToOscMeshBakeScaleFactors(model.getModel(), model.getState(), openSimMesh);
+        const Mesh mesh = ToOscMeshBakeScaleFactors(model.getModel(), model.getState(), openSimMesh);
         plane = FitPlane(mesh);
     }
     catch (const std::exception& ex)
@@ -2216,7 +2216,7 @@ bool osc::ActionFitPlaneToMesh(
     offsetFrame->connectSocket_parent(dynamic_cast<const OpenSim::PhysicalFrame&>(openSimMesh.getFrame()));
     {
         // +1Y in "brick space" should map to the plane's normal
-        Quat const q = rotation({0.0f, 1.0f, 0.0f}, plane.normal);
+        const Quat q = rotation({0.0f, 1.0f, 0.0f}, plane.normal);
         offsetFrame->setOffsetTransform(SimTK::Transform{ToSimTKRotation(q), ToSimTKVec3(plane.origin)});
     }
 
@@ -2229,8 +2229,8 @@ bool osc::ActionFitPlaneToMesh(
     UpdAppearanceToFittedGeom(openSimBrick->upd_Appearance());
 
     // mutate the model and add the relevant components
-    OpenSim::ComponentPath const openSimMeshPath = GetAbsolutePath(openSimMesh);
-    UID const oldVersion = model.getModelVersion();
+    const OpenSim::ComponentPath openSimMeshPath = GetAbsolutePath(openSimMesh);
+    const UID oldVersion = model.getModelVersion();
     try
     {
         OpenSim::Model& mutModel = model.updModel();
@@ -2241,7 +2241,7 @@ bool osc::ActionFitPlaneToMesh(
             return false;
         }
 
-        std::string const fitName = offsetFrame->getName();
+        const std::string fitName = offsetFrame->getName();
         auto& pofRef = AddModelComponent(mutModel, std::move(offsetFrame));
         AttachGeometry(pofRef, std::move(openSimBrick));
 

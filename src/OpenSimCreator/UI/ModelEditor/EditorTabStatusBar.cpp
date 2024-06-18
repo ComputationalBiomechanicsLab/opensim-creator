@@ -46,7 +46,7 @@ private:
             for (ptrdiff_t i = 0; i < std::ssize(els)-1; ++i)
             {
                 ui::push_id(i);
-                std::string const label = truncate_with_ellipsis(els[i]->getName(), 15);
+                const std::string label = truncate_with_ellipsis(els[i]->getName(), 15);
                 if (ui::draw_small_button(label))
                 {
                     m_Model->setSelected(els[i]);
@@ -59,7 +59,7 @@ private:
             }
             if (!els.empty())
             {
-                std::string const label = truncate_with_ellipsis(els.back()->getName(), 15);
+                const std::string label = truncate_with_ellipsis(els.back()->getName(), 15);
                 ui::draw_text_unformatted(label);
                 drawMouseInteractionStuff(*els.back());
             }

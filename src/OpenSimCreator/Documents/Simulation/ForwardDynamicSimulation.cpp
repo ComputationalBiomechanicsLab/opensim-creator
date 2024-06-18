@@ -47,7 +47,7 @@ namespace
     std::vector<OutputExtractor> GetFdSimulatorOutputExtractorsAsVector()
     {
         std::vector<OutputExtractor> rv;
-        int const nOutputExtractors = GetNumFdSimulatorOutputExtractors();
+        const int nOutputExtractors = GetNumFdSimulatorOutputExtractors();
         rv.reserve(nOutputExtractors);
         for (int i = 0; i < nOutputExtractors; ++i)
         {
@@ -137,7 +137,7 @@ public:
 
     void requestNewEndTime(SimulationClock::time_point new_end_time)
     {
-        SimulationClock::time_point const old_end_time = getClocks().end();
+        const SimulationClock::time_point old_end_time = getClocks().end();
 
         if (new_end_time == old_end_time) {
             return;  // nothing to change
@@ -153,11 +153,11 @@ public:
         // if necessary, truncate any dangling reports
         if (new_end_time < old_end_time and not m_Reports.empty()) {
 
-            auto const reportBeforeOrEqualToNewEndTime = [new_end_time](const SimulationReport& r)
+            const auto reportBeforeOrEqualToNewEndTime = [new_end_time](const SimulationReport& r)
             {
                 return r.getTime() <= new_end_time;
             };
-            auto const it = find_if(m_Reports.rbegin(), m_Reports.rend(), reportBeforeOrEqualToNewEndTime);
+            const auto it = find_if(m_Reports.rbegin(), m_Reports.rend(), reportBeforeOrEqualToNewEndTime);
             m_Reports.erase(it.base(), m_Reports.end());
         }
 
@@ -175,7 +175,7 @@ public:
 
         // otherwise, create a new simulator with the new parameters
         {
-            auto const guard = m_ModelState.lock();
+            const auto guard = m_ModelState.lock();
             const SimTK::State& latestState = m_Reports.empty() ?
                 guard->getState() :
                 m_Reports.back().getState();
@@ -228,7 +228,7 @@ private:
             latestReportTime = reports.back().getTime();
         }
 
-        size_t const nReportsBefore = reports.size();
+        const size_t nReportsBefore = reports.size();
         size_t nAdded = 0;
 
         // pop them onto the local reports queue

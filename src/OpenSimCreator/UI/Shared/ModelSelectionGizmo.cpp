@@ -230,9 +230,9 @@ namespace
             const OpenSim::Station& station,
             const Vec3& deltaTranslationInGround) final
         {
-            SimTK::Rotation const parentToGroundRotation = station.getParentFrame().getRotationInGround(getState());
+            const SimTK::Rotation parentToGroundRotation = station.getParentFrame().getRotationInGround(getState());
             const SimTK::InverseRotation& groundToParentRotation = parentToGroundRotation.invert();
-            Vec3 const translationInParent = ToVec3(groundToParentRotation * ToSimTKVec3(deltaTranslationInGround));
+            const Vec3 translationInParent = ToVec3(groundToParentRotation * ToSimTKVec3(deltaTranslationInGround));
 
             ActionTranslateStation(getUndoableModel(), station, translationInParent);
         }
@@ -272,9 +272,9 @@ namespace
             const OpenSim::PathPoint& pathPoint,
             const Vec3& deltaTranslationInGround) final
         {
-            SimTK::Rotation const parentToGroundRotation = pathPoint.getParentFrame().getRotationInGround(getState());
+            const SimTK::Rotation parentToGroundRotation = pathPoint.getParentFrame().getRotationInGround(getState());
             const SimTK::InverseRotation& groundToParentRotation = parentToGroundRotation.invert();
-            Vec3 const translationInParent = ToVec3(groundToParentRotation * ToSimTKVec3(deltaTranslationInGround));
+            const Vec3 translationInParent = ToVec3(groundToParentRotation * ToSimTKVec3(deltaTranslationInGround));
 
             ActionTranslatePathPoint(getUndoableModel(), pathPoint, translationInParent);
         }
@@ -342,7 +342,7 @@ namespace
                 parentToGroundRotation = NegateRotation(parentToGroundRotation);
             }
             const SimTK::InverseRotation& groundToParentRotation = parentToGroundRotation.invert();
-            SimTK::Vec3 const deltaTranslationInParent = groundToParentRotation * ToSimTKVec3(deltaTranslationInGround);
+            const SimTK::Vec3 deltaTranslationInParent = groundToParentRotation * ToSimTKVec3(deltaTranslationInGround);
             const SimTK::Vec3& eulersInPofFrame = pof.get_orientation();
 
             ActionTransformPof(
@@ -360,11 +360,11 @@ namespace
             const OpenSim::Frame& parent = pof.getParentFrame();
             const SimTK::State& state = getState();
 
-            Quat const deltaRotationInGround = to_worldspace_rotation_quat(m_IsChildFrameOfJoint ? -deltaEulerRadiansInGround : deltaEulerRadiansInGround);
-            Quat const oldRotationInGround = ToQuat(pof.getRotationInGround(state));
-            Quat const parentRotationInGround = ToQuat(parent.getRotationInGround(state));
-            Quat const newRotationInGround = normalize(deltaRotationInGround * oldRotationInGround);
-            Quat const newRotationInParent = inverse(parentRotationInGround) * newRotationInGround;
+            const Quat deltaRotationInGround = to_worldspace_rotation_quat(m_IsChildFrameOfJoint ? -deltaEulerRadiansInGround : deltaEulerRadiansInGround);
+            const Quat oldRotationInGround = ToQuat(pof.getRotationInGround(state));
+            const Quat parentRotationInGround = ToQuat(parent.getRotationInGround(state));
+            const Quat newRotationInGround = normalize(deltaRotationInGround * oldRotationInGround);
+            const Quat newRotationInParent = inverse(parentRotationInGround) * newRotationInGround;
 
             ActionTransformPof(
                 getUndoableModel(),
@@ -403,8 +403,8 @@ namespace
             const OpenSim::WrapObject& wrapObj) const final
         {
             const SimTK::Transform& wrapToFrame = wrapObj.getTransform();
-            SimTK::Transform const frameToGround = wrapObj.getFrame().getTransformInGround(getState());
-            SimTK::Transform const wrapToGround = frameToGround * wrapToFrame;
+            const SimTK::Transform frameToGround = wrapObj.getFrame().getTransformInGround(getState());
+            const SimTK::Transform wrapToGround = frameToGround * wrapToFrame;
 
             return ToMat4x4(wrapToGround);
         }
@@ -413,9 +413,9 @@ namespace
             const OpenSim::WrapObject& wrapObj,
             const Vec3& deltaTranslationInGround) final
         {
-            SimTK::Rotation const frameToGroundRotation = wrapObj.getFrame().getTransformInGround(getState()).R();
+            const SimTK::Rotation frameToGroundRotation = wrapObj.getFrame().getTransformInGround(getState()).R();
             const SimTK::InverseRotation& groundToFrameRotation = frameToGroundRotation.invert();
-            Vec3 const translationInPofFrame = ToVec3(groundToFrameRotation * ToSimTKVec3(deltaTranslationInGround));
+            const Vec3 translationInPofFrame = ToVec3(groundToFrameRotation * ToSimTKVec3(deltaTranslationInGround));
 
             ActionTransformWrapObject(
                 getUndoableModel(),
@@ -432,11 +432,11 @@ namespace
             const OpenSim::Frame& parent = wrapObj.getFrame();
             const SimTK::State& state = getState();
 
-            Quat const deltaRotationInGround = to_worldspace_rotation_quat(deltaEulerRadiansInGround);
-            Quat const oldRotationInGround = ToQuat(parent.getTransformInGround(state).R() * wrapObj.getTransform().R());
-            Quat const parentRotationInGround = ToQuat(parent.getRotationInGround(state));
-            Quat const newRotationInGround = normalize(deltaRotationInGround * oldRotationInGround);
-            Quat const newRotationInParent = inverse(parentRotationInGround) * newRotationInGround;
+            const Quat deltaRotationInGround = to_worldspace_rotation_quat(deltaEulerRadiansInGround);
+            const Quat oldRotationInGround = ToQuat(parent.getTransformInGround(state).R() * wrapObj.getTransform().R());
+            const Quat parentRotationInGround = ToQuat(parent.getRotationInGround(state));
+            const Quat newRotationInGround = normalize(deltaRotationInGround * oldRotationInGround);
+            const Quat newRotationInParent = inverse(parentRotationInGround) * newRotationInGround;
 
             ActionTransformWrapObject(
                 getUndoableModel(),
@@ -473,9 +473,9 @@ namespace
         Mat4 implGetCurrentModelMatrix(
             const OpenSim::ContactGeometry& contactGeom) const final
         {
-            SimTK::Transform const wrapToFrame = contactGeom.getTransform();
-            SimTK::Transform const frameToGround = contactGeom.getFrame().getTransformInGround(getState());
-            SimTK::Transform const wrapToGround = frameToGround * wrapToFrame;
+            const SimTK::Transform wrapToFrame = contactGeom.getTransform();
+            const SimTK::Transform frameToGround = contactGeom.getFrame().getTransformInGround(getState());
+            const SimTK::Transform wrapToGround = frameToGround * wrapToFrame;
 
             return ToMat4x4(wrapToGround);
         }
@@ -484,9 +484,9 @@ namespace
             const OpenSim::ContactGeometry& contactGeom,
             const Vec3& deltaTranslationInGround) final
         {
-            SimTK::Rotation const frameToGroundRotation = contactGeom.getFrame().getTransformInGround(getState()).R();
+            const SimTK::Rotation frameToGroundRotation = contactGeom.getFrame().getTransformInGround(getState()).R();
             const SimTK::InverseRotation& groundToFrameRotation = frameToGroundRotation.invert();
-            Vec3 const translationInPofFrame = ToVec3(groundToFrameRotation * ToSimTKVec3(deltaTranslationInGround));
+            const Vec3 translationInPofFrame = ToVec3(groundToFrameRotation * ToSimTKVec3(deltaTranslationInGround));
 
             ActionTransformContactGeometry(
                 getUndoableModel(),
@@ -503,11 +503,11 @@ namespace
             const OpenSim::Frame& parent = contactGeom.getFrame();
             const SimTK::State& state = getState();
 
-            Quat const deltaRotationInGround = to_worldspace_rotation_quat(deltaEulerRadiansInGround);
-            Quat const oldRotationInGround = ToQuat(parent.getTransformInGround(state).R() * contactGeom.getTransform().R());
-            Quat const parentRotationInGround = ToQuat(parent.getRotationInGround(state));
-            Quat const newRotationInGround = normalize(deltaRotationInGround * oldRotationInGround);
-            Quat const newRotationInParent = inverse(parentRotationInGround) * newRotationInGround;
+            const Quat deltaRotationInGround = to_worldspace_rotation_quat(deltaEulerRadiansInGround);
+            const Quat oldRotationInGround = ToQuat(parent.getTransformInGround(state).R() * contactGeom.getTransform().R());
+            const Quat parentRotationInGround = ToQuat(parent.getRotationInGround(state));
+            const Quat newRotationInGround = normalize(deltaRotationInGround * oldRotationInGround);
+            const Quat newRotationInParent = inverse(parentRotationInGround) * newRotationInGround;
 
             ActionTransformContactGeometry(
                 getUndoableModel(),
@@ -541,7 +541,7 @@ namespace
     {
         // figure out whether the gizmo should even be drawn
         {
-            SupportedManipulationOpFlags const flags = manipulator.getSupportedManipulationOps();
+            const SupportedManipulationOpFlags flags = manipulator.getSupportedManipulationOps();
             if (operation == ImGuizmo::TRANSLATE && !(flags & SupportedManipulationOpFlags::Translation))
             {
                 return;
@@ -556,7 +556,7 @@ namespace
         // important: necessary for multi-viewport gizmos
         // also important: don't use ui::get_id(), because it uses an ID stack and we might want to know if "isover" etc. is true outside of a window
         ImGuizmo::SetID(static_cast<int>(std::hash<void*>{}(gizmoID)));
-        ScopeGuard const g{[]() { ImGuizmo::SetID(-1); }};
+        const ScopeGuard g{[]() { ImGuizmo::SetID(-1); }};
 
         ImGuizmo::SetRect(
             viewportRect.p1.x,
@@ -572,7 +572,7 @@ namespace
         Mat4 deltaInGround;
 
         ui::set_gizmo_style_to_osc_standard();
-        bool const gizmoWasManipulatedByUser = ImGuizmo::Manipulate(
+        const bool gizmoWasManipulatedByUser = ImGuizmo::Manipulate(
             value_ptr(camera.view_matrix()),
             value_ptr(camera.projection_matrix(aspect_ratio_of(viewportRect))),
             operation,
@@ -584,8 +584,8 @@ namespace
             nullptr
         );
 
-        bool const isUsingThisFrame = ImGuizmo::IsUsing();
-        bool const wasUsingLastFrame = wasUsingLastFrameStorage;
+        const bool isUsingThisFrame = ImGuizmo::IsUsing();
+        const bool wasUsingLastFrame = wasUsingLastFrameStorage;
         wasUsingLastFrameStorage = isUsingThisFrame;  // update cached state
 
         if (wasUsingLastFrame && !isUsingThisFrame)
@@ -679,7 +679,7 @@ osc::ModelSelectionGizmo::~ModelSelectionGizmo() noexcept = default;
 bool osc::ModelSelectionGizmo::isUsing() const
 {
     ImGuizmo::SetID(static_cast<int>(std::hash<const ModelSelectionGizmo*>{}(this)));
-    bool const rv = ImGuizmo::IsUsing();
+    const bool rv = ImGuizmo::IsUsing();
     ImGuizmo::SetID(-1);
     return rv;
 }
@@ -687,7 +687,7 @@ bool osc::ModelSelectionGizmo::isUsing() const
 bool osc::ModelSelectionGizmo::isOver() const
 {
     ImGuizmo::SetID(static_cast<int>(std::hash<const ModelSelectionGizmo*>{}(this)));
-    bool const rv = ImGuizmo::IsOver();
+    const bool rv = ImGuizmo::IsOver();
     ImGuizmo::SetID(-1);
     return rv;
 }

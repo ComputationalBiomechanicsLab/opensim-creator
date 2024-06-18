@@ -84,8 +84,8 @@ public:
 
     OutputValueExtractor getOutputValueExtractor(const OpenSim::Component& component) const
     {
-        OutputExtractorDataType const datatype = getOutputType();
-        NullCallbackFnPointer const nullCallback = datatype == OutputExtractorDataType::Float ? NaNFloatingPointCallback : BlankStringCallback;
+        const OutputExtractorDataType datatype = getOutputType();
+        const NullCallbackFnPointer nullCallback = datatype == OutputExtractorDataType::Float ? NaNFloatingPointCallback : BlankStringCallback;
 
         const OpenSim::AbstractOutput* const ao = FindOutput(component, m_ComponentAbsPath, m_OutputName);
 

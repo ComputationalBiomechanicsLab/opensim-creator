@@ -25,7 +25,7 @@ namespace
     {
         std::unordered_map<std::string, AppSettingValue> rv;
         std::string subPrefix;
-        auto const callback = [&subPrefix, &rv](std::string_view subkey, AppSettingValue value)
+        const auto callback = [&subPrefix, &rv](std::string_view subkey, AppSettingValue value)
         {
             rv.insert_or_assign(subPrefix + std::string{subkey}, std::move(value));
         };
@@ -91,8 +91,8 @@ void osc::SaveModelRendererParamsDifference(
     std::string_view keyPrefix,
     AppConfig& config)
 {
-    auto const aVals = ToValues(keyPrefix, a);
-    auto const bVals = ToValues(keyPrefix, b);
+    const auto aVals = ToValues(keyPrefix, a);
+    const auto bVals = ToValues(keyPrefix, b);
 
     for (const auto& [aK, aV] : aVals) {
         if (const auto* bV = lookup_or_nullptr(bVals, aK)) {

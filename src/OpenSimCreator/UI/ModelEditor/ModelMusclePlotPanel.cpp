@@ -490,10 +490,10 @@ namespace
         }
         const OpenSim::Coordinate& coord = *maybeCoord;
 
-        int const numDataPoints = params.getNumRequestedDataPoints();
-        double const firstXValue = GetFirstXValue(params, coord);
-        double const lastXValue = GetLastXValue(params, coord);
-        double const stepBetweenXValues = GetStepBetweenXValues(params, coord);
+        const int numDataPoints = params.getNumRequestedDataPoints();
+        const double firstXValue = GetFirstXValue(params, coord);
+        const double lastXValue = GetLastXValue(params, coord);
+        const double stepBetweenXValues = GetStepBetweenXValues(params, coord);
 
         if (firstXValue > lastXValue)
         {
@@ -544,8 +544,8 @@ namespace
                 return PlottingTaskStatus::Cancelled;
             }
 
-            float const xDisplayVal = ConvertCoordValueToDisplayValue(coord, xVal);
-            auto const yVal = static_cast<float>(params.getPlottedOutput()(state, muscle, coord));
+            const float xDisplayVal = ConvertCoordValueToDisplayValue(coord, xVal);
+            const auto yVal = static_cast<float>(params.getPlottedOutput()(state, muscle, coord));
 
             callback(PlotDataPoint{xDisplayVal, yVal});
         }
@@ -719,7 +719,7 @@ namespace
             return std::nullopt;
         }
 
-        auto const it = rgs::lower_bound(points, PlotDataPoint{x, 0.0f}, std::less{});
+        const auto it = rgs::lower_bound(points, PlotDataPoint{x, 0.0f}, std::less{});
 
         if (it == points.end())
         {
@@ -735,12 +735,12 @@ namespace
 
         // else: the iterator is pointing somewhere in the middle of the data
         //       and we need to potentially LERP between two points
-        size_t const aboveIdx = std::distance(points.begin(), it);
-        size_t const belowIdx = aboveIdx - 1;
-        PlotDataPoint const below = points[belowIdx];
-        PlotDataPoint const above = points[aboveIdx];
+        const size_t aboveIdx = std::distance(points.begin(), it);
+        const size_t belowIdx = aboveIdx - 1;
+        const PlotDataPoint below = points[belowIdx];
+        const PlotDataPoint above = points[aboveIdx];
 
-        float const t = (x - below.x) / (above.x - below.x); // [0..1]
+        const float t = (x - below.x) / (above.x - below.x); // [0..1]
 
         return lerp(below.y, above.y, t);
     }
@@ -756,7 +756,7 @@ namespace
             return std::nullopt;
         }
 
-        auto const it = rgs::lower_bound(points, PlotDataPoint{x, 0.0f}, std::less{});
+        const auto it = rgs::lower_bound(points, PlotDataPoint{x, 0.0f}, std::less{});
 
         if (it == points.begin())
         {
@@ -773,15 +773,15 @@ namespace
         // else: the iterator is pointing to the element above the X location and we
         //       need to figure out if that's closer than the element below the X
         //       location
-        size_t const aboveIdx = std::distance(points.begin(), it);
-        size_t const belowIdx = aboveIdx - 1;
-        PlotDataPoint const below = points[belowIdx];
-        PlotDataPoint const above = points[aboveIdx];
+        const size_t aboveIdx = std::distance(points.begin(), it);
+        const size_t belowIdx = aboveIdx - 1;
+        const PlotDataPoint below = points[belowIdx];
+        const PlotDataPoint above = points[aboveIdx];
 
-        float const belowDistance = abs(below.x - x);
-        float const aboveDistance = abs(above.x - x);
+        const float belowDistance = abs(below.x - x);
+        const float aboveDistance = abs(above.x - x);
 
-        size_t const closestIdx =  aboveDistance < belowDistance  ? aboveIdx : belowIdx;
+        const size_t closestIdx =  aboveDistance < belowDistance  ? aboveIdx : belowIdx;
 
         return points[closestIdx];
     }
@@ -1132,7 +1132,7 @@ namespace
             {
                 // (edge-case): if the user selection fundamentally changes what's being plotted
                 // then previous plots should be cleared
-                bool const clearPrevious =
+                const bool clearPrevious =
                     maybeParams != nullptr &&
                     (maybeParams->getPlottedOutput() != desiredParams.getPlottedOutput() ||
                      maybeParams->getCoordinatePath() != desiredParams.getCoordinatePath() ||
@@ -1190,9 +1190,9 @@ namespace
                 return nth++ > max;
             };
 
-            auto const backwardIt = find_if(m_PreviousPlots.rbegin(), m_PreviousPlots.rend(), isFirstDeleteablePlot);
-            auto const forwardIt = backwardIt.base();
-            ptrdiff_t const idxOfDeleteableEnd = std::distance(m_PreviousPlots.begin(), forwardIt);
+            const auto backwardIt = find_if(m_PreviousPlots.rbegin(), m_PreviousPlots.rend(), isFirstDeleteablePlot);
+            const auto forwardIt = backwardIt.base();
+            const ptrdiff_t idxOfDeleteableEnd = std::distance(m_PreviousPlots.begin(), forwardIt);
 
             auto shouldDelete = [i = static_cast<ptrdiff_t>(0), idxOfDeleteableEnd](std::shared_ptr<Plot> const& p) mutable
             {
@@ -1239,7 +1239,7 @@ namespace
     std::optional<float> TryGetMouseXPositionInPlot(const PlotLines& lines, bool snapToNearest)
     {
         // figure out mouse hover position
-        bool const isHovered = ImPlot::IsPlotHovered();
+        const bool isHovered = ImPlot::IsPlotHovered();
         float mouseX = static_cast<float>(ImPlot::GetPlotMousePos().x);
 
         // handle snapping the mouse's X position
@@ -1568,7 +1568,7 @@ namespace
             }
             const OpenSim::Coordinate& coord = *maybeCoord;
 
-            std::string const plotTitle = ComputePlotTitle(latestParams);
+            const std::string plotTitle = ComputePlotTitle(latestParams);
 
             drawPlotTitle(coord, plotTitle);  // draw a custom title bar
             ImPlot::PushStyleVar(ImPlotStyleVar_FitPadding, {0.025f, 0.05f});
@@ -1718,7 +1718,7 @@ namespace
         void drawPlotLines(const OpenSim::Coordinate& coord)
         {
             // plot not-active plots
-            PlotLineCounts const counts = CountOtherPlotTypes(m_Lines);
+            const PlotLineCounts counts = CountOtherPlotTypes(m_Lines);
             size_t externalCounter = 0;
             size_t lockedCounter = 0;
             for (size_t i = 0; i < m_Lines.getNumOtherPlots(); ++i)
@@ -1750,7 +1750,7 @@ namespace
                     ImPlot::SetNextMarkerStyle(ImPlotMarker_Circle, 3.0f);
                 }
 
-                std::string const lineName = IthPlotLineName(plot, i + 1);
+                const std::string lineName = IthPlotLineName(plot, i + 1);
 
                 ImPlot::PushStyleColor(ImPlotCol_Line, Vec4{color});
                 PlotLine(lineName, plot);
@@ -1787,7 +1787,7 @@ namespace
             // then plot the active plot
             {
                 const Plot& plot = m_Lines.getActivePlot();
-                std::string const lineName = IthPlotLineName(plot, m_Lines.getNumOtherPlots() + 1);
+                const std::string lineName = IthPlotLineName(plot, m_Lines.getNumOtherPlots() + 1);
 
                 // locked curves should have a blue tint
                 Color color = m_ComputedPlotLineBaseColor;
@@ -2063,7 +2063,7 @@ namespace
             }
 
             const float s = ui::get_frame_height();
-            Vec2 const dims{1.5f * s, s};
+            const Vec2 dims{1.5f * s, s};
 
             ui::push_style_var(ImGuiStyleVar_ItemSpacing, {2.0f, 2.0f});
             if (ui::draw_button("NW", dims))         { m_LegendLocation = ImPlotLocation_NorthWest; } ui::same_line();

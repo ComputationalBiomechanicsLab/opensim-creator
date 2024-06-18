@@ -71,7 +71,7 @@ namespace
         // but it *reads* OSIM files with the assumption that numbers will be in the format 'x.y'
 
         log_info("setting locale to US (so that numbers are always in the format '0.x'");
-        CStringView const locale = "C";
+        const CStringView locale = "C";
         set_environment_variable("LANG", locale, true);
         set_environment_variable("LC_CTYPE", locale, true);
         set_environment_variable("LC_NUMERIC", locale, true);
@@ -228,7 +228,7 @@ bool osc::GlobalInitOpenSim()
 
 bool osc::GlobalInitOpenSim(const AppConfig& config)
 {
-    static bool const s_OpenSimInitialized = InitializeOpenSim(config);
+    static const bool s_OpenSimInitialized = InitializeOpenSim(config);
     return s_OpenSimInitialized;
 }
 

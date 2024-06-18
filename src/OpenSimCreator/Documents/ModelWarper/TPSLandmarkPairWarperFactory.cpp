@@ -79,7 +79,7 @@ namespace
 
         // handle/pair all elements in `a`
         for (auto& lm : a) {
-            auto const it = rgs::find_if(b, std::bind_front(SameNameOrBothUnnamed, std::cref(lm)));
+            const auto it = rgs::find_if(b, std::bind_front(SameNameOrBothUnnamed, std::cref(lm)));
             std::string name = lm.maybeName ? *std::move(lm.maybeName) : GenerateName(nunnamed++);
 
             if (it != b.end()) {

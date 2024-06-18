@@ -338,9 +338,9 @@ namespace
         UndoableModelStatePair& uim,
         const OpenSim::GeometryPath& gp)
     {
-        auto const wraps = GetAllWrapObjectsReferencedBy(gp);
+        const auto wraps = GetAllWrapObjectsReferencedBy(gp);
         for (const auto& wo : uim.getModel().getComponentList<OpenSim::WrapObject>()) {
-            bool const enabled = cpp23::contains(wraps, &wo);
+            const bool enabled = cpp23::contains(wraps, &wo);
 
             ui::push_id(&wo);
             bool selected = enabled;
@@ -450,7 +450,7 @@ private:
 
         if (ui::begin_menu("Display"))
         {
-            bool const shouldDisable = !AnyDescendentInclusiveHasAppearanceProperty(*c);
+            const bool shouldDisable = !AnyDescendentInclusiveHasAppearanceProperty(*c);
 
             {
                 if (shouldDisable)
@@ -512,7 +512,7 @@ private:
             {
                 std::stringstream ss;
                 ss << "Show All '" << c->getConcreteClassName() << "' Components";
-                std::string const label = std::move(ss).str();
+                const std::string label = std::move(ss).str();
                 if (ui::draw_menu_item(label))
                 {
                     ActionSetComponentAndAllChildrenWithGivenConcreteClassNameIsVisibleTo(
@@ -527,7 +527,7 @@ private:
             {
                 std::stringstream ss;
                 ss << "Hide All '" << c->getConcreteClassName() << "' Components";
-                std::string const label = std::move(ss).str();
+                const std::string label = std::move(ss).str();
                 if (ui::draw_menu_item(label))
                 {
                     ActionSetComponentAndAllChildrenWithGivenConcreteClassNameIsVisibleTo(
@@ -543,7 +543,7 @@ private:
 
         if (ui::draw_menu_item("Copy Absolute Path to Clipboard"))
         {
-            std::string const path = GetAbsolutePathString(*c);
+            const std::string path = GetAbsolutePathString(*c);
             set_clipboard_text(path);
         }
         ui::draw_tooltip_if_item_hovered("Copy Component Absolute Path", "Copy the absolute path to this component to your clipboard.\n\n(This is handy if you are separately using absolute component paths to (e.g.) manipulate the model in a script or something)");

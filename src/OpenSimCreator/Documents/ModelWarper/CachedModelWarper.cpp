@@ -137,7 +137,7 @@ public:
             if (auto it = baseFrame2meshes.find(baseFramePath); it != baseFrame2meshes.end()) {
                 if (it->second.size() == 1) {
                     if (const auto* mesh = FindComponent<OpenSim::Mesh>(document.model(), it->second.front())) {
-                        if (auto const meshWarper = document.findMeshWarp(*mesh)) {
+                        if (const auto meshWarper = document.findMeshWarp(*mesh)) {
                             // redefine the station's position in the mesh's coordinate system
                             auto posInMeshFrame = pp.getParentFrame().expressVectorInAnotherFrame(warpedModel.getWorkingState(), pp.get_location(), mesh->getFrame());
                             auto warpedInMeshFrame = ToSimTKVec3(meshWarper->tryCreatePointWarper(document)->warp(ToVec3(posInMeshFrame)));
@@ -166,7 +166,7 @@ public:
             if (auto it = baseFrame2meshes.find(baseFramePath); it != baseFrame2meshes.end()) {
                 if (it->second.size() == 1) {
                     if (const auto* mesh = FindComponent<OpenSim::Mesh>(document.model(), it->second.front())) {
-                        if (auto const meshWarper = document.findMeshWarp(*mesh)) {
+                        if (const auto meshWarper = document.findMeshWarp(*mesh)) {
                             // redefine the station's position in the mesh's coordinate system
                             auto posInMeshFrame = station.getParentFrame().expressVectorInAnotherFrame(warpedModel.getWorkingState(), station.get_location(), mesh->getFrame());
                             auto warpedInMeshFrame = ToSimTKVec3(meshWarper->tryCreatePointWarper(document)->warp(ToVec3(posInMeshFrame)));

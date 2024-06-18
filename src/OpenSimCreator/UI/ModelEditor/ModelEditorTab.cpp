@@ -327,7 +327,7 @@ private:
         {
             return false;
         }
-        std::string_view const filename{e.file};
+        const std::string_view filename{e.file};
 
         if (filename.ends_with(".sto"))
         {
@@ -405,7 +405,7 @@ private:
 
     void implAddMusclePlot(const OpenSim::Coordinate& coord, const OpenSim::Muscle& muscle) final
     {
-        std::string const name = m_PanelManager->suggested_dynamic_panel_name("muscleplot");
+        const std::string name = m_PanelManager->suggested_dynamic_panel_name("muscleplot");
         m_PanelManager->push_dynamic_panel(
             "muscleplot",
             std::make_shared<ModelMusclePlotPanel>(this, m_Model, name, GetAbsolutePath(coord), GetAbsolutePath(muscle))

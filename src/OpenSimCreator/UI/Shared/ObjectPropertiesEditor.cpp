@@ -794,7 +794,7 @@ namespace
                 return std::nullopt;  // the object is not within the tree of the model (#800)
             }
 
-            auto const positionPropName = TryGetPositionalPropertyName(*component);
+            const auto positionPropName = TryGetPositionalPropertyName(*component);
             if (!positionPropName)
             {
                 return std::nullopt;  // the component doesn't have a logical positional property that can be edited with the transform
@@ -845,7 +845,7 @@ namespace
 
             std::optional<SimTK::Transform> const parent2ground = getParentToGroundTransform();
             std::optional<SimTK::Transform> const ground2frame = getGroundToUserSelectedFrameTransform();
-            SimTK::Transform const transform = parent2ground && ground2frame ?
+            const SimTK::Transform transform = parent2ground && ground2frame ?
                 (*ground2frame) * (*parent2ground) :
                 SimTK::Transform{};
 
@@ -869,7 +869,7 @@ namespace
             }
 
             // compute value converter (applies to all values)
-            ValueConverter const valueConverter = getValueConverter();
+            const ValueConverter valueConverter = getValueConverter();
 
 
             // draw UI
@@ -912,8 +912,8 @@ namespace
                 return;
             }
 
-            CStringView const defaultedLabel = "(parent frame)";
-            std::string const preview = m_MaybeUserSelectedFrameAbsPath ?
+            const CStringView defaultedLabel = "(parent frame)";
+            const std::string preview = m_MaybeUserSelectedFrameAbsPath ?
                 m_MaybeUserSelectedFrameAbsPath->getComponentName() :
                 std::string{defaultedLabel};
 
@@ -943,7 +943,7 @@ namespace
                 // draw selectable for each frame in the model
                 for (const OpenSim::Frame& frame : getModel().getComponentList<OpenSim::Frame>())
                 {
-                    OpenSim::ComponentPath const frameAbsPath = GetAbsolutePath(frame);
+                    const OpenSim::ComponentPath frameAbsPath = GetAbsolutePath(frame);
 
                     ui::push_id(imguiID++);
                     bool selected = frameAbsPath == m_MaybeUserSelectedFrameAbsPath;
@@ -978,14 +978,14 @@ namespace
             // read stored value from edited property
             //
             // care: optional properties have size==0, so perform a range check
-            Vec3 const rawValue = ToVec3(idx < m_EditedProperty.size() ? m_EditedProperty.getValue(idx) : SimTK::Vec3{0.0});
-            Vec3 const editedValue = valueConverter.modelValueToEditedValue(rawValue);
+            const Vec3 rawValue = ToVec3(idx < m_EditedProperty.size() ? m_EditedProperty.getValue(idx) : SimTK::Vec3{0.0});
+            const Vec3 editedValue = valueConverter.modelValueToEditedValue(rawValue);
 
             // draw an editor for each component of the Vec3
             bool shouldSave = false;
             for (Vec3::size_type i = 0; i < 3; ++i)
             {
-                ComponentEditorReturn const componentEditorRv = drawVec3ComponentEditor(idx, i, editedValue, valueConverter);
+                const ComponentEditorReturn componentEditorRv = drawVec3ComponentEditor(idx, i, editedValue, valueConverter);
                 shouldSave = shouldSave || componentEditorRv == ComponentEditorReturn::ShouldSave;
             }
 
@@ -1020,7 +1020,7 @@ namespace
             if (drawRV.wasEdited)
             {
                 // un-convert the value on save
-                Vec3 const savedValue = valueConverter.editedValueToModelValue(editedValue);
+                const Vec3 savedValue = valueConverter.editedValueToModelValue(editedValue);
                 m_EditedProperty.setValue(idx, ToSimTKVec3(savedValue));
             }
 
@@ -1343,7 +1343,7 @@ namespace
                 static_assert(OpenSim::VisualRepresentation::DrawPoints == 1);
                 static_assert(OpenSim::VisualRepresentation::DrawWireframe == 2);
                 static_assert(OpenSim::VisualRepresentation::DrawSurface == 3);
-                auto const options = std::to_array<CStringView>({
+                const auto options = std::to_array<CStringView>({
                     "Default",
                     "Hide",
                     "Points",
@@ -1530,8 +1530,8 @@ namespace
         template<std::derived_from<IPropertyEditor> ConcretePropertyEditor>
         constexpr static PropertyEditorRegistryEntry make_entry()
         {
-            auto const testerFn = ConcretePropertyEditor::IsCompatibleWith;
-            auto const typeErasedCtorFn = [](PropertyEditorArgs args) -> std::unique_ptr<IPropertyEditor>
+            const auto testerFn = ConcretePropertyEditor::IsCompatibleWith;
+            const auto typeErasedCtorFn = [](PropertyEditorArgs args) -> std::unique_ptr<IPropertyEditor>
             {
                 return std::make_unique<ConcretePropertyEditor>(std::move(args));
             };
@@ -1572,7 +1572,7 @@ namespace
                 return nullptr;  // cannot access the property
             }
 
-            auto const it = rgs::find_if(
+            const auto it = rgs::find_if(
                 m_Entries,
                 [&prop](const auto& entry) { return entry.isCompatibleWith(*prop); }
             );
@@ -1712,7 +1712,7 @@ private:
     // try get/construct a property editor for the given property
     IPropertyEditor* tryGetPropertyEditor(const OpenSim::AbstractProperty& prop)
     {
-        auto const [it, inserted] = m_PropertyEditorsByName.try_emplace(prop.getName(), nullptr);
+        const auto [it, inserted] = m_PropertyEditorsByName.try_emplace(prop.getName(), nullptr);
 
         if (inserted || (it->second && !it->second->isCompatibleWith(prop)))
         {

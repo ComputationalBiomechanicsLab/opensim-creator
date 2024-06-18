@@ -209,7 +209,7 @@ private:
         // if the user selected something, try to form the connection in the active model
         if (userSelection)
         {
-            SocketReassignmentFlags const flags = m_TryReexpressInDifferentFrame ?
+            const SocketReassignmentFlags flags = m_TryReexpressInDifferentFrame ?
                 SocketReassignmentFlags::TryReexpressComponentInNewConnectee :
                 SocketReassignmentFlags::None;
 
@@ -233,7 +233,7 @@ private:
         const OpenSim::Component& component,
         const OpenSim::AbstractSocket& abstractSocket)
     {
-        std::string const label = [&component]()
+        const std::string label = [&component]()
         {
             std::stringstream ss;
             ss << "Re-express " << component.getName() << " in chosen frame";
@@ -250,7 +250,7 @@ private:
             return;
         }
 
-        auto const componentSpatialRepresentation =
+        const auto componentSpatialRepresentation =
             TryGetSpatialRepresentation(component, m_Model->getState());
         if (!componentSpatialRepresentation)
         {

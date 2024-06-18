@@ -30,12 +30,12 @@ void osc::fd::ActionAddSphereInMeshFrame(
     std::optional<Vec3> const& maybeClickPosInGround)
 {
     // if the caller requests a location via a click, set the position accordingly
-    SimTK::Vec3 const locationInMeshFrame = maybeClickPosInGround ?
+    const SimTK::Vec3 locationInMeshFrame = maybeClickPosInGround ?
         CalcLocationInFrame(mesh.getFrame(), model.getState(), *maybeClickPosInGround) :
         SimTK::Vec3{0.0, 0.0, 0.0};
 
-    std::string const sphereName = GenerateSceneElementName("sphere_");
-    std::string const commitMessage = GenerateAddedSomethingCommitMessage(sphereName);
+    const std::string sphereName = GenerateSceneElementName("sphere_");
+    const std::string commitMessage = GenerateAddedSomethingCommitMessage(sphereName);
 
     // create sphere component
     std::unique_ptr<SphereLandmark> sphere = [&mesh, &locationInMeshFrame, &sphereName]()
@@ -66,12 +66,12 @@ void osc::fd::ActionAddOffsetFrameInMeshFrame(
     std::optional<Vec3> const& maybeClickPosInGround)
 {
     // if the caller requests a location via a click, set the position accordingly
-    SimTK::Vec3 const locationInMeshFrame = maybeClickPosInGround ?
+    const SimTK::Vec3 locationInMeshFrame = maybeClickPosInGround ?
         CalcLocationInFrame(mesh.getFrame(), model.getState(), *maybeClickPosInGround) :
         SimTK::Vec3{0.0, 0.0, 0.0};
 
-    std::string const pofName = GenerateSceneElementName("pof_");
-    std::string const commitMessage = GenerateAddedSomethingCommitMessage(pofName);
+    const std::string pofName = GenerateSceneElementName("pof_");
+    const std::string commitMessage = GenerateAddedSomethingCommitMessage(pofName);
 
     // create physical offset frame
     std::unique_ptr<OpenSim::PhysicalOffsetFrame> pof = [&mesh, &locationInMeshFrame, &pofName]()
@@ -101,8 +101,8 @@ void osc::fd::ActionAddPointToPointEdge(
     const OpenSim::Point& pointA,
     const OpenSim::Point& pointB)
 {
-    std::string const edgeName = GenerateSceneElementName("edge_");
-    std::string const commitMessage = GenerateAddedSomethingCommitMessage(edgeName);
+    const std::string edgeName = GenerateSceneElementName("edge_");
+    const std::string commitMessage = GenerateAddedSomethingCommitMessage(edgeName);
 
     // create edge
     auto edge = std::make_unique<PointToPointEdge>();
@@ -127,8 +127,8 @@ void osc::fd::ActionAddMidpoint(
     const OpenSim::Point& pointA,
     const OpenSim::Point& pointB)
 {
-    std::string const midpointName = GenerateSceneElementName("midpoint_");
-    std::string const commitMessage = GenerateAddedSomethingCommitMessage(midpointName);
+    const std::string midpointName = GenerateSceneElementName("midpoint_");
+    const std::string commitMessage = GenerateAddedSomethingCommitMessage(midpointName);
 
     // create midpoint component
     auto midpoint = std::make_unique<MidpointLandmark>();
@@ -153,8 +153,8 @@ void osc::fd::ActionAddCrossProductEdge(
     const Edge& edgeA,
     const Edge& edgeB)
 {
-    std::string const edgeName = GenerateSceneElementName("crossproduct_");
-    std::string const commitMessage = GenerateAddedSomethingCommitMessage(edgeName);
+    const std::string edgeName = GenerateSceneElementName("crossproduct_");
+    const std::string commitMessage = GenerateAddedSomethingCommitMessage(edgeName);
 
     // create cross product edge component
     auto edge = std::make_unique<CrossProductEdge>();
@@ -181,7 +181,7 @@ void osc::fd::ActionSwapSocketAssignments(
     std::string secondSocketName)
 {
     // create commit message
-    std::string const commitMessage = [&componentAbsPath, &firstSocketName, &secondSocketName]()
+    const std::string commitMessage = [&componentAbsPath, &firstSocketName, &secondSocketName]()
     {
         std::stringstream ss;
         ss << "swapped socket '" << firstSocketName << "' with socket '" << secondSocketName << " in " << componentAbsPath.getComponentName();
@@ -212,7 +212,7 @@ void osc::fd::ActionSwapSocketAssignments(
     }
 
     // perform swap
-    std::string const firstSocketPath = firstSocket->getConnecteePath();
+    const std::string firstSocketPath = firstSocket->getConnecteePath();
     firstSocket->setConnecteePath(secondSocket->getConnecteePath());
     secondSocket->setConnecteePath(firstSocketPath);
 
@@ -243,8 +243,8 @@ void osc::fd::ActionAddFrame(
     const Edge& otherEdge,
     const OpenSim::Point& origin)
 {
-    std::string const frameName = GenerateSceneElementName("frame_");
-    std::string const commitMessage = GenerateAddedSomethingCommitMessage(frameName);
+    const std::string frameName = GenerateSceneElementName("frame_");
+    const std::string commitMessage = GenerateAddedSomethingCommitMessage(frameName);
 
     // create the frame
     auto frame = std::make_unique<CrossProductDefinedFrame>();
@@ -307,10 +307,10 @@ void osc::fd::ActionCreateBodyFromFrame(
 
     // create body
     log_debug("create body");
-    std::string const bodyName = meshFrame->getName() + "_body";
-    double const bodyMass = 1.0;
-    SimTK::Vec3 const bodyCenterOfMass = {0.0, 0.0, 0.0};
-    SimTK::Inertia const bodyInertia = {1.0, 1.0, 1.0};
+    const std::string bodyName = meshFrame->getName() + "_body";
+    const double bodyMass = 1.0;
+    const SimTK::Vec3 bodyCenterOfMass = {0.0, 0.0, 0.0};
+    const SimTK::Inertia bodyInertia = {1.0, 1.0, 1.0};
     auto body = std::make_unique<OpenSim::Body>(
         bodyName,
         bodyMass,
@@ -351,7 +351,7 @@ void osc::fd::ActionCreateBodyFromFrame(
     meshPof->setOffsetTransform(mesh->getFrame().findTransformBetween(model->getState(), *meshFrame));
 
     // create commit message
-    std::string const commitMessage = [&body]()
+    const std::string commitMessage = [&body]()
     {
         std::stringstream ss;
         ss << "created " << body->getName();
@@ -364,7 +364,7 @@ void osc::fd::ActionCreateBodyFromFrame(
     {
         // CARE: store mesh path before mutatingthe model, because the mesh reference
         // may become invalidated by other model mutations
-        OpenSim::ComponentPath const meshPath = GetAbsolutePath(*mesh);
+        const OpenSim::ComponentPath meshPath = GetAbsolutePath(*mesh);
 
         OpenSim::Model& mutModel = model->updModel();
 

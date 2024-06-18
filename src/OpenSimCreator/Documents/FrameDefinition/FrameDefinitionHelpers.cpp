@@ -29,7 +29,7 @@ SimTK::Vec3 osc::fd::CalcLocationInFrame(
     const SimTK::State& state,
     const Vec3& locationInGround)
 {
-    SimTK::Vec3 const translationInGround = ToSimTKVec3(locationInGround);
+    const SimTK::Vec3 translationInGround = ToSimTKVec3(locationInGround);
     return frame.getTransformInGround(state).invert() * translationInGround;
 }
 
@@ -98,7 +98,7 @@ SimTK::DecorativeMesh osc::fd::CreateParallelogramMesh(
 {
     SimTK::PolygonalMesh polygonalMesh;
     {
-        auto const vertices = std::to_array(
+        const auto vertices = std::to_array(
         {
             origin,
             origin + firstEdge,
@@ -144,7 +144,7 @@ std::string osc::fd::GenerateSceneElementName(std::string_view prefix)
 
 std::string osc::fd::GenerateAddedSomethingCommitMessage(std::string_view somethingName)
 {
-    std::string_view const prefix = "added ";
+    const std::string_view prefix = "added ";
     std::string rv;
     rv.reserve(prefix.size() + somethingName.size());
     rv += prefix;
@@ -188,10 +188,10 @@ EdgePoints osc::fd::CrossProduct(const EdgePoints& a, const EdgePoints& b)
 {
     // TODO: if cross product isn't possible (e.g. angle between vectors is zero)
     // then this needs to fail or fallback
-    SimTK::Vec3 const firstEdge = a.end - a.start;
-    SimTK::Vec3 const secondEdge = b.end - b.start;
-    SimTK::Vec3 const resultEdge = SimTK::cross(firstEdge, secondEdge).normalize();
-    double const resultEdgeLength = min(firstEdge.norm(), secondEdge.norm());
+    const SimTK::Vec3 firstEdge = a.end - a.start;
+    const SimTK::Vec3 secondEdge = b.end - b.start;
+    const SimTK::Vec3 resultEdge = SimTK::cross(firstEdge, secondEdge).normalize();
+    const double resultEdgeLength = min(firstEdge.norm(), secondEdge.norm());
 
     return {a.start, a.start + (resultEdgeLength*resultEdge)};
 }

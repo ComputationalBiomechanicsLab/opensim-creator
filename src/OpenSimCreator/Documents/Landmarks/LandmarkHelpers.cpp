@@ -89,7 +89,7 @@ namespace
 std::string osc::lm::to_string(const CSVParseWarning& warning)
 {
     std::stringstream ss;
-    size_t const displayedLineNumber = warning.lineNumber+1;  // user-facing software (e.g. IDEs) start at 1
+    const size_t displayedLineNumber = warning.lineNumber+1;  // user-facing software (e.g. IDEs) start at 1
     ss << "line " << displayedLineNumber << ": " << warning.message;
     return std::move(ss).str();
 }

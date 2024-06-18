@@ -309,7 +309,7 @@ namespace
         Transform t;
         t.rotation = angle_axis(180_deg, Vec3{-1.0f, 0.0f, 0.0f});
         t.scale = {50.0f, 50.0f, 1.0f};
-        Color const color = {128.0f/255.0f, 128.0f/255.0f, 128.0f/255.0f, 1.0f};
+        const Color color = {128.0f/255.0f, 128.0f/255.0f, 128.0f/255.0f, 1.0f};
 
         return SceneDecoration
         {
@@ -401,7 +401,7 @@ namespace
     {
         OSC_ASSERT(columnDescription.dataType == ColumnDataType::Orientation);
 
-        size_t const dataStart = motion.rowStride * row + columnDescription.offset;
+        const size_t dataStart = motion.rowStride * row + columnDescription.offset;
         Quat q
         {
             static_cast<float>(motion.data.at(dataStart)),
@@ -443,7 +443,7 @@ namespace
     // returns a parsed motion, read from disk motion from disk
     [[maybe_unused]] LoadedMotion LoadData(const std::filesystem::path& sourceFile)
     {
-        OpenSim::Storage const storage{sourceFile.string()};
+        const OpenSim::Storage storage{sourceFile.string()};
 
         LoadedMotion rv;
         rv.columnDescriptions = ParseColumnDescriptions(storage.getColumnLabels());

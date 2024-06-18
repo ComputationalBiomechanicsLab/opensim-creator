@@ -30,8 +30,8 @@ namespace
 
     void UpdateCachedSimulationReportIfNecessary(const IConstModelStatePair& src, CachedSimulationReport& cache)
     {
-        UID const modelVersion = src.getModelVersion();
-        UID const stateVersion = src.getStateVersion();
+        const UID modelVersion = src.getModelVersion();
+        const UID stateVersion = src.getStateVersion();
 
         if (cache.sourceModelVersion == modelVersion &&
             cache.sourceStateVersion == stateVersion)

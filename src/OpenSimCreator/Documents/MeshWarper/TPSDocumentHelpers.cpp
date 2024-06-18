@@ -200,7 +200,7 @@ std::vector<NamedLandmarkPair3D> osc::GetNamedLandmarkPairs(const TPSDocument& d
 
 size_t osc::CountNumLandmarksForInput(const TPSDocument& doc, TPSDocumentInputIdentifier which)
 {
-    auto const hasLocation = [which](const TPSDocumentLandmarkPair& p) { return HasLocation(p, which); };
+    const auto hasLocation = [which](const TPSDocumentLandmarkPair& p) { return HasLocation(p, which); };
     return rgs::count_if(doc.landmarkPairs, hasLocation);
 }
 
@@ -228,7 +228,7 @@ void osc::AddLandmarkToInput(
         // overwrite the location; otherwise, create a new landmark with
         // the name (this is _probably_ what the user intended)
 
-        StringName const name{*suggestedName};
+        const StringName name{*suggestedName};
         auto* p = FindLandmarkPairByName(doc, name);
         if (!p)
         {
@@ -276,7 +276,7 @@ void osc::AddNonParticipatingLandmark(
         // by name and overwrite the location; otherwise, create a new
         // landmark with the name (this is _probably_ what the user intended)
 
-        StringName const name{*suggestedName};
+        const StringName name{*suggestedName};
         auto* p = FindNonParticipatingLandmarkByName(doc, name);
         if (p)
         {
@@ -302,7 +302,7 @@ bool osc::DeleteElementByID(TPSDocument& doc, const TPSDocumentElementID& id)
     if (id.type == TPSDocumentElementType::Landmark)
     {
         auto& lms = doc.landmarkPairs;
-        auto const it = rgs::find(lms, id.uid, id_of<TPSDocumentLandmarkPair>);
+        const auto it = rgs::find(lms, id.uid, id_of<TPSDocumentLandmarkPair>);
         if (it != doc.landmarkPairs.end())
         {
             UpdLocation(*it, id.input).reset();
@@ -317,7 +317,7 @@ bool osc::DeleteElementByID(TPSDocument& doc, const TPSDocumentElementID& id)
     }
     else if (id.type == TPSDocumentElementType::NonParticipatingLandmark)
     {
-        auto const numElsDeleted = std::erase_if(doc.nonParticipatingLandmarks, [id = id.uid](const auto& npl) { return npl.uid == id; });
+        const auto numElsDeleted = std::erase_if(doc.nonParticipatingLandmarks, [id = id.uid](const auto& npl) { return npl.uid == id; });
         return numElsDeleted > 0;
     }
     return false;

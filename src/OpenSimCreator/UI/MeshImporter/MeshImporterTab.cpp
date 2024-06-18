@@ -154,7 +154,7 @@ public:
 
     void on_tick()
     {
-        auto const dt = static_cast<float>(App::get().frame_delta_since_last_frame().count());
+        const auto dt = static_cast<float>(App::get().frame_delta_since_last_frame().count());
 
         m_Shared->tick(dt);
 
@@ -946,11 +946,11 @@ private:
     void drawAddOtherToMIObjectActions(MIObject& el, const Vec3& clickPos)
     {
         ui::push_style_var(ImGuiStyleVar_ItemSpacing, {10.0f, 10.0f});
-        ScopeGuard const g1{[]() { ui::pop_style_var(); }};
+        const ScopeGuard g1{[]() { ui::pop_style_var(); }};
 
         int imguiID = 0;
         ui::push_id(imguiID++);
-        ScopeGuard const g2{[]() { ui::pop_id(); }};
+        const ScopeGuard g2{[]() { ui::pop_id(); }};
 
         if (CanAttachMeshTo(el))
         {
@@ -989,21 +989,21 @@ private:
                 {
                     if (ui::draw_menu_item(ICON_FA_BORDER_ALL " at bounds center"))
                     {
-                        Vec3 const location = centroid_of(mesh->calcBounds());
+                        const Vec3 location = centroid_of(mesh->calcBounds());
                         AddBody(m_Shared->updCommittableModelGraph(), location, mesh->getID());
                     }
                     ui::draw_tooltip_if_item_hovered("Add Body", MIStrings::c_BodyDescription);
 
                     if (ui::draw_menu_item(ICON_FA_DIVIDE " at mesh average center"))
                     {
-                        Vec3 const location = AverageCenter(*mesh);
+                        const Vec3 location = AverageCenter(*mesh);
                         AddBody(m_Shared->updCommittableModelGraph(), location, mesh->getID());
                     }
                     ui::draw_tooltip_if_item_hovered("Add Body", MIStrings::c_BodyDescription);
 
                     if (ui::draw_menu_item(ICON_FA_WEIGHT " at mesh mass center"))
                     {
-                        Vec3 const location = mass_center_of(*mesh);
+                        const Vec3 location = mass_center_of(*mesh);
                         AddBody(m_Shared->updCommittableModelGraph(), location, mesh->getID());
                     }
                     ui::draw_tooltip_if_item_hovered("Add body", MIStrings::c_BodyDescription);
@@ -1373,13 +1373,13 @@ private:
         };
         if (!outputFileStream)
         {
-            std::string const error = errno_to_string_threadsafe();
+            const std::string error = errno_to_string_threadsafe();
             log_error("%s: could not save obj output: %s", userSaveLocation.string().c_str(), error.c_str());
             return;
         }
 
         const AppMetadata& appMetadata = App::get().metadata();
-        ObjMetadata const objMetadata
+        const ObjMetadata objMetadata
         {
             calc_full_application_name_with_version_and_build_id(appMetadata),
         };
@@ -1412,13 +1412,13 @@ private:
         };
         if (!outputFileStream)
         {
-            std::string const error = errno_to_string_threadsafe();
+            const std::string error = errno_to_string_threadsafe();
             log_error("%s: could not save obj output: %s", userSaveLocation.string().c_str(), error.c_str());
             return;
         }
 
         const AppMetadata& appMetadata = App::get().metadata();
-        StlMetadata const stlMetadata
+        const StlMetadata stlMetadata
         {
             calc_full_application_name_with_version_and_build_id(appMetadata),
         };
@@ -1441,9 +1441,9 @@ private:
 
                     if (ui::draw_menu_item(".obj"))
                     {
-                        Transform const MIObjectToGround = MIObject.getXForm(m_Shared->getModelGraph());
-                        Transform const meshVertToGround = el.getXForm();
-                        Mat4 const meshVertToMIObjectVert = inverse_mat4_cast(MIObjectToGround) * mat4_cast(meshVertToGround);
+                        const Transform MIObjectToGround = MIObject.getXForm(m_Shared->getModelGraph());
+                        const Transform meshVertToGround = el.getXForm();
+                        const Mat4 meshVertToMIObjectVert = inverse_mat4_cast(MIObjectToGround) * mat4_cast(meshVertToGround);
 
                         osc::Mesh mesh = el.getMeshData();
                         mesh.transform_vertices(meshVertToMIObjectVert);
@@ -1452,9 +1452,9 @@ private:
 
                     if (ui::draw_menu_item(".stl"))
                     {
-                        Transform const MIObjectToGround = MIObject.getXForm(m_Shared->getModelGraph());
-                        Transform const meshVertToGround = el.getXForm();
-                        Mat4 const meshVertToMIObjectVert = inverse_mat4_cast(MIObjectToGround) * mat4_cast(meshVertToGround);
+                        const Transform MIObjectToGround = MIObject.getXForm(m_Shared->getModelGraph());
+                        const Transform meshVertToGround = el.getXForm();
+                        const Mat4 meshVertToMIObjectVert = inverse_mat4_cast(MIObjectToGround) * mat4_cast(meshVertToGround);
 
                         osc::Mesh mesh = el.getMeshData();
                         mesh.transform_vertices(meshVertToMIObjectVert);
@@ -1588,21 +1588,21 @@ private:
         {
             // context menu not open, but just draw the "nothing" menu
             ui::push_id(UID::empty());
-            ScopeGuard const g{[]() { ui::pop_id(); }};
+            const ScopeGuard g{[]() { ui::pop_id(); }};
             drawNothingContextMenuContent();
         }
         else if (m_MaybeOpenedContextMenu.ID == MIIDs::RightClickedNothing())
         {
             // context menu was opened on "nothing" specifically
             ui::push_id(UID::empty());
-            ScopeGuard const g{[]() { ui::pop_id(); }};
+            const ScopeGuard g{[]() { ui::pop_id(); }};
             drawNothingContextMenuContent();
         }
         else if (MIObject* el = m_Shared->updModelGraph().tryUpdByID(m_MaybeOpenedContextMenu.ID))
         {
             // context menu was opened on a scene element that exists in the modelgraph
             ui::push_id(el->getID());
-            ScopeGuard const g{[]() { ui::pop_id(); }};
+            const ScopeGuard g{[]() { ui::pop_id(); }};
             drawContextMenuContent(*el, m_MaybeOpenedContextMenu.Pos);
         }
 
@@ -1840,8 +1840,8 @@ private:
 
         // scale factor
         {
-            CStringView const tooltipTitle = "Change scene scale factor";
-            CStringView const tooltipDesc = "This rescales *some* elements in the scene. Specifically, the ones that have no 'size', such as body frames, joint frames, and the chequered floor texture.\n\nChanging this is handy if you are working on smaller or larger models, where the size of the (decorative) frames and floor are too large/small compared to the model you are working on.\n\nThis is purely decorative and does not affect the exported OpenSim model in any way.";
+            const CStringView tooltipTitle = "Change scene scale factor";
+            const CStringView tooltipDesc = "This rescales *some* elements in the scene. Specifically, the ones that have no 'size', such as body frames, joint frames, and the chequered floor texture.\n\nChanging this is handy if you are working on smaller or larger models, where the size of the (decorative) frames and floor are too large/small compared to the model you are working on.\n\nThis is purely decorative and does not affect the exported OpenSim model in any way.";
 
             float sf = m_Shared->getSceneScaleFactor();
             ui::set_next_item_width(ui::calc_text_size("1000.00").x);
@@ -1872,9 +1872,9 @@ private:
         {
             CameraViewAxes axes;
 
-            Vec2 const windowPadding = ui::get_style_panel_padding();
+            const Vec2 windowPadding = ui::get_style_panel_padding();
             const Rect& r = m_Shared->get3DSceneRect();
-            Vec2 const topLeft =
+            const Vec2 topLeft =
             {
                 r.p1.x + windowPadding.x,
                 r.p2.y - windowPadding.y - axes.dimensions().y,
@@ -1974,11 +1974,11 @@ private:
         constexpr Vec2 spacingBetweenMainAndSettingsButtons = {1.0f, 0.0f};
         constexpr Vec2 margin = {25.0f, 35.0f};
 
-        Vec2 const mainButtonDims = ui::calc_button_size(mainButtonText);
-        Vec2 const settingButtonDims = ui::calc_button_size(settingButtonText);
-        Vec2 const viewportBottomRight = m_Shared->get3DSceneRect().p2;
+        const Vec2 mainButtonDims = ui::calc_button_size(mainButtonText);
+        const Vec2 settingButtonDims = ui::calc_button_size(settingButtonText);
+        const Vec2 viewportBottomRight = m_Shared->get3DSceneRect().p2;
 
-        Vec2 const buttonTopLeft =
+        const Vec2 buttonTopLeft =
         {
             viewportBottomRight.x - (margin.x + spacingBetweenMainAndSettingsButtons.x + settingButtonDims.x + mainButtonDims.x),
             viewportBottomRight.y - (margin.y + mainButtonDims.y),
@@ -2002,13 +2002,13 @@ private:
 
         if (ui::begin_popup_context_menu("##settingspopup", ImGuiPopupFlags_MouseButtonLeft))
         {
-            ModelCreationFlags const flags = m_Shared->getModelCreationFlags();
+            const ModelCreationFlags flags = m_Shared->getModelCreationFlags();
 
             {
                 bool v = flags & ModelCreationFlags::ExportStationsAsMarkers;
                 if (ui::draw_checkbox("Export Stations as Markers", &v))
                 {
-                    ModelCreationFlags const newFlags = v ?
+                    const ModelCreationFlags newFlags = v ?
                         flags + ModelCreationFlags::ExportStationsAsMarkers :
                         flags - ModelCreationFlags::ExportStationsAsMarkers;
                     m_Shared->setModelCreationFlags(newFlags);
@@ -2081,7 +2081,7 @@ private:
 
 
             while (it != end) {
-                Transform const t = mg.getXFormByID(*it);
+                const Transform t = mg.getXFormByID(*it);
                 ras.position += t.position;
                 ras.rotation += t.rotation;
                 ras.scale += t.scale;
@@ -2197,10 +2197,10 @@ private:
             return;  // nothing hovered
         }
 
-        bool const lcClicked = ui::is_mouse_released_without_dragging(ImGuiMouseButton_Left);
-        bool const shiftDown = ui::is_shift_down();
-        bool const altDown = ui::is_alt_down();
-        bool const isUsingGizmo = ImGuizmo::IsUsing();
+        const bool lcClicked = ui::is_mouse_released_without_dragging(ImGuiMouseButton_Left);
+        const bool shiftDown = ui::is_shift_down();
+        const bool altDown = ui::is_alt_down();
+        const bool isUsingGizmo = ImGuizmo::IsUsing();
 
         if (!m_MaybeHover && lcClicked && !isUsingGizmo && !shiftDown)
         {
@@ -2407,7 +2407,7 @@ private:
             ui::set_next_panel_pos(m_Shared->get3DSceneRect().p1);
             ui::push_style_var(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
 
-            ImGuiWindowFlags const modalFlags =
+            const ImGuiWindowFlags modalFlags =
                 ImGuiWindowFlags_AlwaysAutoResize |
                 ImGuiWindowFlags_NoTitleBar |
                 ImGuiWindowFlags_NoMove |

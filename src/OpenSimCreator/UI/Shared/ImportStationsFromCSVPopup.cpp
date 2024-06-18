@@ -203,7 +203,7 @@ private:
 
     void actionTryPromptingUserForCSVFile()
     {
-        if (auto const path = prompt_user_to_select_file({"csv"}))
+        if (const auto path = prompt_user_to_select_file({"csv"}))
         {
             actionLoadCSVFile(*path);
         }

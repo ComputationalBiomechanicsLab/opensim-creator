@@ -154,7 +154,7 @@ public:
 private:
     bool onKeydownEvent(const SDL_KeyboardEvent& e)
     {
-        bool const ctrlOrSuperDown = ui::is_ctrl_or_super_down();
+        const bool ctrlOrSuperDown = ui::is_ctrl_or_super_down();
 
         if (ctrlOrSuperDown && e.keysym.mod & KMOD_SHIFT && e.keysym.sym == SDLK_z)
         {

@@ -64,12 +64,12 @@ namespace osc
         void impl_draw_content() final
         {
             // compute top-level UI variables (render rect, mouse pos, etc.)
-            Rect const contentRect = ui::content_region_avail_as_screen_rect();
-            Vec2 const contentRectDims = dimensions_of(contentRect);
-            Vec2 const mousePos = ui::get_mouse_pos();
+            const Rect contentRect = ui::content_region_avail_as_screen_rect();
+            const Vec2 contentRectDims = dimensions_of(contentRect);
+            const Vec2 mousePos = ui::get_mouse_pos();
 
             // un-project mouse's (2D) location into the 3D scene as a ray
-            Line const cameraRay = m_Camera.unproject_topleft_pos_to_world_ray(mousePos - contentRect.p1, contentRectDims);
+            const Line cameraRay = m_Camera.unproject_topleft_pos_to_world_ray(mousePos - contentRect.p1, contentRectDims);
 
             // mesh hittest: compute whether the user is hovering over the mesh (affects rendering)
             const Mesh& inputMesh = m_State->getScratchMesh(m_DocumentIdentifier);
@@ -168,8 +168,8 @@ namespace osc
             }
 
             // hittest the landmark as an analytic sphere
-            Sphere const landmarkSphere = {.origin = *maybePos, .radius = m_LandmarkRadius};
-            if (auto const collision = find_collision(cameraRay, landmarkSphere))
+            const Sphere landmarkSphere = {.origin = *maybePos, .radius = m_LandmarkRadius};
+            if (const auto collision = find_collision(cameraRay, landmarkSphere))
             {
                 if (!closest || length(closest->getWorldspaceLocation() - cameraRay.origin) > collision->distance)
                 {
@@ -198,12 +198,12 @@ namespace osc
         {
             // hittest non-participating landmark as an analytic sphere
 
-            Sphere const decorationSphere = {
+            const Sphere decorationSphere = {
                 .origin = nonPariticpatingLandmark.location,
                 .radius = GetNonParticipatingLandmarkScaleFactor()*m_LandmarkRadius
             };
 
-            if (auto const collision = find_collision(cameraRay, decorationSphere))
+            if (const auto collision = find_collision(cameraRay, decorationSphere))
             {
                 if (!closest || length(closest->getWorldspaceLocation() - cameraRay.origin) > collision->distance)
                 {
@@ -219,7 +219,7 @@ namespace osc
             std::optional<RayCollision> const& maybeMeshCollision,
             std::optional<MeshWarpingTabHover> const& maybeLandmarkCollision)
         {
-            SceneRendererParams const params = calc_standard_dark_scene_render_params(
+            const SceneRendererParams params = calc_standard_dark_scene_render_params(
                 m_Camera,
                 App::get().anti_aliasing_level(),
                 dims
@@ -292,7 +292,7 @@ namespace osc
                 .color = IsFullyPaired(landmarkPair) ? m_State->pairedLandmarkColor : m_State->unpairedLandmarkColor,
             };
 
-            TPSDocumentElementID const landmarkID{landmarkPair.uid, TPSDocumentElementType::Landmark, m_DocumentIdentifier};
+            const TPSDocumentElementID landmarkID{landmarkPair.uid, TPSDocumentElementType::Landmark, m_DocumentIdentifier};
             if (m_State->isSelected(landmarkID))
             {
                 decoration.flags |= SceneDecorationFlags::IsSelected;
@@ -334,7 +334,7 @@ namespace osc
                 },
                 .color = m_State->nonParticipatingLandmarkColor,
             };
-            TPSDocumentElementID const id{npl.uid, TPSDocumentElementType::NonParticipatingLandmark, m_DocumentIdentifier};
+            const TPSDocumentElementID id{npl.uid, TPSDocumentElementType::NonParticipatingLandmark, m_DocumentIdentifier};
             if (m_State->isSelected(id))
             {
                 decoration.flags |= SceneDecorationFlags::IsSelected;
@@ -352,13 +352,13 @@ namespace osc
             const Vec3& meshCollisionPosition,
             std::function<void(SceneDecoration&&)> const& decorationConsumer) const
         {
-            bool const nonParticipating = isUserPlacingNonParticipatingLandmark();
+            const bool nonParticipating = isUserPlacingNonParticipatingLandmark();
 
-            Color const color = nonParticipating ?
+            const Color color = nonParticipating ?
                 m_State->nonParticipatingLandmarkColor :
                 m_State->unpairedLandmarkColor;
 
-            float const radius = nonParticipating ?
+            const float radius = nonParticipating ?
                 GetNonParticipatingLandmarkScaleFactor()*m_LandmarkRadius :
                 m_LandmarkRadius;
 
@@ -388,7 +388,7 @@ namespace osc
                 }
                 else if (meshCollision)
                 {
-                    auto const pos = meshCollision->position;
+                    const auto pos = meshCollision->position;
                     if (isUserPlacingNonParticipatingLandmark())
                     {
                         ActionAddNonParticipatingLandmark(m_State->updUndoable(), pos);
@@ -568,9 +568,9 @@ namespace osc
         {
             // note: log scale is important: some users have meshes that
             // are in different scales (e.g. millimeters)
-            ImGuiSliderFlags const flags = ImGuiSliderFlags_Logarithmic;
+            const ImGuiSliderFlags flags = ImGuiSliderFlags_Logarithmic;
 
-            CStringView const label = "landmark radius";
+            const CStringView label = "landmark radius";
             ui::set_next_item_width(ui::get_content_region_avail().x - ui::calc_text_size(label).x - ui::get_style_item_inner_spacing().x - m_State->overlayPadding.x);
             ui::draw_float_slider(label, &m_LandmarkRadius, 0.0001f, 100.0f, "%.4f", flags);
         }
@@ -578,8 +578,8 @@ namespace osc
         bool isUserPlacingNonParticipatingLandmark() const
         {
             static_assert(num_options<TPSDocumentInputIdentifier>() == 2);
-            bool const isSourceMesh = m_DocumentIdentifier == TPSDocumentInputIdentifier::Source;
-            bool const isCtrlPressed = ui::any_of_keys_down({ImGuiKey_LeftCtrl, ImGuiKey_RightCtrl});
+            const bool isSourceMesh = m_DocumentIdentifier == TPSDocumentInputIdentifier::Source;
+            const bool isCtrlPressed = ui::any_of_keys_down({ImGuiKey_LeftCtrl, ImGuiKey_RightCtrl});
             return isSourceMesh && isCtrlPressed;
         }
 

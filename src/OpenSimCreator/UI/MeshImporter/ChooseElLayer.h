@@ -321,9 +321,9 @@ namespace osc::mi
             ui::push_style_var(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
             ui::push_style_color(ImGuiCol_Button, Color::half_grey());
 
-            CStringView const text = ICON_FA_ARROW_LEFT " Cancel (ESC)";
-            Vec2 const margin = {25.0f, 35.0f};
-            Vec2 const buttonTopLeft = m_Shared->get3DSceneRect().p2 - (ui::calc_button_size(text) + margin);
+            const CStringView text = ICON_FA_ARROW_LEFT " Cancel (ESC)";
+            const Vec2 margin = {25.0f, 35.0f};
+            const Vec2 buttonTopLeft = m_Shared->get3DSceneRect().p2 - (ui::calc_button_size(text) + margin);
 
             ui::set_cursor_screen_pos(buttonTopLeft);
             if (ui::draw_button(text))

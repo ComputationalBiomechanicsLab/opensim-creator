@@ -44,13 +44,13 @@ namespace
 {
     UID GetWalltimeUID()
     {
-        static UID const s_WalltimeUID;
+        static const UID s_WalltimeUID;
         return s_WalltimeUID;
     }
 
     UID GetStepDurationUID()
     {
-        static UID const s_StepDurationUID;
+        static const UID s_StepDurationUID;
         return s_StepDurationUID;
     }
 
@@ -264,7 +264,7 @@ namespace
         SimulatorThreadInput& input,
         SharedState& shared)
     {
-        std::chrono::high_resolution_clock::time_point const tSimStart = std::chrono::high_resolution_clock::now();
+        const std::chrono::high_resolution_clock::time_point tSimStart = std::chrono::high_resolution_clock::now();
 
         const ForwardDynamicSimulatorParams& params = input.getParams();
 

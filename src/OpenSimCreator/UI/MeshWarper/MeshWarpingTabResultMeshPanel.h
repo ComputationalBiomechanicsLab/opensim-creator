@@ -46,7 +46,7 @@ namespace osc
         void impl_draw_content() final
         {
             // fill the entire available region with the render
-            Vec2 const dims = ui::get_content_region_avail();
+            const Vec2 dims = ui::get_content_region_avail();
 
             updateCamera();
 
@@ -203,9 +203,9 @@ namespace osc
         {
             // note: log scale is important: some users have meshes that
             // are in different scales (e.g. millimeters)
-            ImGuiSliderFlags const flags = ImGuiSliderFlags_Logarithmic;
+            const ImGuiSliderFlags flags = ImGuiSliderFlags_Logarithmic;
 
-            CStringView const label = "landmark radius";
+            const CStringView label = "landmark radius";
             ui::set_next_item_width(ui::get_content_region_avail().x - ui::calc_text_size(label).x - ui::get_style_item_inner_spacing().x - m_State->overlayPadding.x);
             ui::draw_float_slider(label, &m_LandmarkRadius, 0.0001f, 100.0f, "%.4f", flags);
         }
@@ -214,7 +214,7 @@ namespace osc
         {
             ui::set_cursor_pos_x(m_CursorXAtExportButton);  // align with "export" button in row above
 
-            CStringView const label = "blending factor  ";  // deliberate trailing spaces (for alignment with "landmark radius")
+            const CStringView label = "blending factor  ";  // deliberate trailing spaces (for alignment with "landmark radius")
             ui::set_next_item_width(ui::get_content_region_avail().x - ui::calc_text_size(label).x - ui::get_style_item_inner_spacing().x - m_OverlayPadding.x);
 
             float factor = m_State->getScratch().blendingFactor;
@@ -270,7 +270,7 @@ namespace osc
         RenderTexture& renderScene(Vec2 dims)
         {
             std::vector<SceneDecoration> const decorations = generateDecorations();
-            SceneRendererParams const params = calc_standard_dark_scene_render_params(
+            const SceneRendererParams params = calc_standard_dark_scene_render_params(
                 m_Camera,
                 App::get().anti_aliasing_level(),
                 dims

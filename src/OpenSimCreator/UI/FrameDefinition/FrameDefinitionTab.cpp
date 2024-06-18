@@ -538,7 +538,7 @@ namespace
         {
             if (ui::begin_menu("Start Point"))
             {
-                auto const onFrameMenuOpened = [&state, &edge](const OpenSim::Frame& frame)
+                const auto onFrameMenuOpened = [&state, &edge](const OpenSim::Frame& frame)
                 {
                     DrawPointTranslationInformationWithRespectTo(
                         frame,
@@ -552,7 +552,7 @@ namespace
 
             if (ui::begin_menu("End Point"))
             {
-                auto const onFrameMenuOpened = [&state, &edge](const OpenSim::Frame& frame)
+                const auto onFrameMenuOpened = [&state, &edge](const OpenSim::Frame& frame)
                 {
                     DrawPointTranslationInformationWithRespectTo(
                         frame,
@@ -567,7 +567,7 @@ namespace
 
             if (ui::begin_menu("Direction"))
             {
-                auto const onFrameMenuOpened = [&state, &edge](const OpenSim::Frame& frame)
+                const auto onFrameMenuOpened = [&state, &edge](const OpenSim::Frame& frame)
                 {
                     DrawDirectionInformationWithRepsectTo(
                         frame,
@@ -1146,7 +1146,7 @@ public:
 private:
     bool onKeydownEvent(const SDL_KeyboardEvent& e)
     {
-        bool const ctrlOrSuperDown = ui::is_ctrl_or_super_down();
+        const bool ctrlOrSuperDown = ui::is_ctrl_or_super_down();
 
         if (ctrlOrSuperDown && e.keysym.mod & KMOD_SHIFT && e.keysym.sym == SDLK_z)
         {

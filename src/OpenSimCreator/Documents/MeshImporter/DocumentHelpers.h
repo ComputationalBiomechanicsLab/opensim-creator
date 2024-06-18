@@ -71,7 +71,7 @@ namespace osc::mi
     {
         for (const MIObject& obj : doc.iter())
         {
-            UID const id = obj.getID();
+            const UID id = obj.getID();
 
             if (IsInSelectionGroupOf(doc, parent, id))
             {

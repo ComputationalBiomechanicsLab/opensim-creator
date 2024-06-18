@@ -49,7 +49,7 @@ void osc::FrameDefinitionTabToolbar::drawContent()
 
 void osc::FrameDefinitionTabToolbar::drawExportToOpenSimButton()
 {
-    size_t const numBodies = GetNumChildren(m_Model->getModel().getBodySet());
+    const size_t numBodies = GetNumChildren(m_Model->getModel().getBodySet());
 
     if (numBodies == 0)
     {

@@ -197,7 +197,7 @@ private:
 
     void drawDataCellCoordinateSlider(const OpenSim::Coordinate& c)
     {
-        bool const coordinateLocked = c.getLocked(m_Model->getState());
+        const bool coordinateLocked = c.getLocked(m_Model->getState());
 
         ui::set_next_item_width(ui::get_content_region_avail().x);
 

@@ -23,8 +23,8 @@ namespace
     {
         static_assert(num_options<OutputExtractorDataType>() == 3);
 
-        OutputExtractorDataType const aType = a.getOutputType();
-        OutputExtractorDataType const bType = b.getOutputType();
+        const OutputExtractorDataType aType = a.getOutputType();
+        const OutputExtractorDataType bType = b.getOutputType();
 
         if (aType == OutputExtractorDataType::Float && bType == OutputExtractorDataType::Float) {
             return OutputExtractorDataType::Vec2;
@@ -68,8 +68,8 @@ OutputValueExtractor osc::ConcatenatingOutputExtractor::implGetOutputValueExtrac
     if (m_OutputType == OutputExtractorDataType::Vec2) {
         auto extractor = [lhs = m_First.getOutputValueExtractor(comp), rhs = m_Second.getOutputValueExtractor(comp)](const SimulationReport& report)
         {
-            auto const lv = lhs(report).to<float>();
-            auto const rv = rhs(report).to<float>();
+            const auto lv = lhs(report).to<float>();
+            const auto rv = rhs(report).to<float>();
 
             return Variant{Vec2{lv, rv}};
         };

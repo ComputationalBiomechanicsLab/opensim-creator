@@ -40,7 +40,7 @@ namespace osc
 
         void drawClearLandmarksMenuItem()
         {
-            bool const hasLandmarks = ContainsLandmarks(m_State->getScratch());
+            const bool hasLandmarks = ContainsLandmarks(m_State->getScratch());
 
             if (!hasLandmarks)
             {
@@ -60,7 +60,7 @@ namespace osc
 
         void drawClearNonParticipatingLandmarksMenuItem()
         {
-            bool const hasNonParticipatingLandmarks =
+            const bool hasNonParticipatingLandmarks =
                 ContainsNonParticipatingLandmarks(m_State->getScratch());
 
             if (!hasNonParticipatingLandmarks)

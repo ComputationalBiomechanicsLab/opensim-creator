@@ -154,9 +154,9 @@ private:
     {
         const OpenSim::Model& model = m_Uum->getModel();
 
-        bool const hasName = !m_Name.empty();
-        bool const allSocketsAssigned = rgs::all_of(m_SocketConnecteePaths, std::bind_front(ContainsComponent, std::cref(model)));
-        bool const hasEnoughPathPoints =
+        const bool hasName = !m_Name.empty();
+        const bool allSocketsAssigned = rgs::all_of(m_SocketConnecteePaths, std::bind_front(ContainsComponent, std::cref(model)));
+        const bool hasEnoughPathPoints =
             dynamic_cast<const OpenSim::PathActuator*>(m_Proto.get()) == nullptr or
             m_PathPoints.size() >= 2;
 
@@ -260,7 +260,7 @@ private:
                 continue;  // not part of the user-enacted search set
             }
 
-            OpenSim::ComponentPath const absPath = GetAbsolutePath(c);
+            const OpenSim::ComponentPath absPath = GetAbsolutePath(c);
             bool selected = absPath == connectee;
 
             ui::push_id(innerID++);
@@ -269,7 +269,7 @@ private:
                 connectee = absPath;
             }
 
-            Rect const selectableRect = ui::get_last_drawn_item_screen_rect();
+            const Rect selectableRect = ui::get_last_drawn_item_screen_rect();
             ui::draw_tooltip_if_item_hovered(absPath.toString());
 
             ui::pop_id();

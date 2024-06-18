@@ -559,8 +559,8 @@ namespace osc::mi
         {
             auto cache = App::singleton<SceneCache>(App::resource_loader());
 
-            Rect const sceneRect = get3DSceneRect();
-            Vec2 const mousePos = ui::get_mouse_pos();
+            const Rect sceneRect = get3DSceneRect();
+            const Vec2 mousePos = ui::get_mouse_pos();
 
             if (!is_intersecting(sceneRect, mousePos))
             {
@@ -568,15 +568,15 @@ namespace osc::mi
                 return MeshImporterHover{};
             }
 
-            Vec2 const sceneDims = dimensions_of(sceneRect);
-            Vec2 const relMousePos = mousePos - sceneRect.p1;
+            const Vec2 sceneDims = dimensions_of(sceneRect);
+            const Vec2 relMousePos = mousePos - sceneRect.p1;
 
-            Line const ray = getCamera().unproject_topleft_pos_to_world_ray(relMousePos, sceneDims);
-            bool const hittestMeshes = isMeshesInteractable();
-            bool const hittestBodies = isBodiesInteractable();
-            bool const hittestJointCenters = isJointCentersInteractable();
-            bool const hittestGround = isGroundInteractable();
-            bool const hittestStations = isStationsInteractable();
+            const Line ray = getCamera().unproject_topleft_pos_to_world_ray(relMousePos, sceneDims);
+            const bool hittestMeshes = isMeshesInteractable();
+            const bool hittestBodies = isBodiesInteractable();
+            const bool hittestJointCenters = isJointCentersInteractable();
+            const bool hittestGround = isGroundInteractable();
+            const bool hittestStations = isStationsInteractable();
 
             UID closestID = MIIDs::Empty();
             float closestDist = std::numeric_limits<float>::max();
@@ -626,7 +626,7 @@ namespace osc::mi
                 }
             }
 
-            Vec3 const hitPos = closestID != MIIDs::Empty() ? ray.origin + closestDist*ray.direction : Vec3{};
+            const Vec3 hitPos = closestID != MIIDs::Empty() ? ray.origin + closestDist*ray.direction : Vec3{};
 
             return MeshImporterHover{closestID, hitPos};
         }
@@ -942,23 +942,23 @@ namespace osc::mi
             constexpr float triangleWidth = 6.0f * c_ConnectionLineWidth;
             constexpr float triangleWidthSquared = triangleWidth*triangleWidth;
 
-            Vec2 const parentScr = worldPosToScreenPos(parent);
-            Vec2 const childScr = worldPosToScreenPos(child);
-            Vec2 const child2ParentScr = parentScr - childScr;
+            const Vec2 parentScr = worldPosToScreenPos(parent);
+            const Vec2 childScr = worldPosToScreenPos(child);
+            const Vec2 child2ParentScr = parentScr - childScr;
 
             if (dot(child2ParentScr, child2ParentScr) < triangleWidthSquared)
             {
                 return;
             }
 
-            Vec3 const mp = midpoint(parent, child);
-            Vec2 const midpointScr = worldPosToScreenPos(mp);
-            Vec2 const directionScr = normalize(child2ParentScr);
-            Vec2 const directionNormalScr = {-directionScr.y, directionScr.x};
+            const Vec3 mp = midpoint(parent, child);
+            const Vec2 midpointScr = worldPosToScreenPos(mp);
+            const Vec2 directionScr = normalize(child2ParentScr);
+            const Vec2 directionNormalScr = {-directionScr.y, directionScr.x};
 
-            Vec2 const p1 = midpointScr + (triangleWidth/2.0f)*directionNormalScr;
-            Vec2 const p2 = midpointScr - (triangleWidth/2.0f)*directionNormalScr;
-            Vec2 const p3 = midpointScr + triangleWidth*directionScr;
+            const Vec2 p1 = midpointScr + (triangleWidth/2.0f)*directionNormalScr;
+            const Vec2 p2 = midpointScr - (triangleWidth/2.0f)*directionNormalScr;
+            const Vec2 p3 = midpointScr + triangleWidth*directionScr;
 
             ui::get_panel_draw_list()->AddTriangleFilled(p1, p2, p3, color);
         }
@@ -1191,11 +1191,11 @@ namespace osc::mi
             Vec3 legLen = {1.0f, 1.0f, 1.0f},
             Color coreColor = Color::white()) const
         {
-            float const coreRadius = getSphereRadius();
-            float const legThickness = 0.5f * coreRadius;
+            const float coreRadius = getSphereRadius();
+            const float legThickness = 0.5f * coreRadius;
 
             // this is how much the cylinder has to be "pulled in" to the core to hide the edges
-            float const cylinderPullback = coreRadius * sin((180_deg * legThickness) / coreRadius);
+            const float cylinderPullback = coreRadius * sin((180_deg * legThickness) / coreRadius);
 
             // emit origin sphere
             appendOut.push_back({
@@ -1220,11 +1220,11 @@ namespace osc::mi
                 // - 4.0f * leglen[leg] * radius long
                 // - 0.5f * radius thick
 
-                Vec3 const meshDirection = {0.0f, 1.0f, 0.0f};
+                const Vec3 meshDirection = {0.0f, 1.0f, 0.0f};
                 Vec3 cylinderDirection = {};
                 cylinderDirection[i] = 1.0f;
 
-                float const actualLegLen = 4.0f * legLen[i] * coreRadius;
+                const float actualLegLen = 4.0f * legLen[i] * coreRadius;
 
                 Transform t;
                 t.scale.x = legThickness;
@@ -1252,7 +1252,7 @@ namespace osc::mi
             const Transform& xform,
             std::vector<DrawableThing>& appendOut) const
         {
-            float const halfWidth = 1.5f * getSphereRadius();
+            const float halfWidth = 1.5f * getSphereRadius();
 
             // core
             {
@@ -1272,9 +1272,9 @@ namespace osc::mi
             for (int i = 0; i < 3; ++i)
             {
                 // cone mesh has a source height of 2, stretches from -1 to +1 in Y
-                float const coneHeight = 0.75f * halfWidth;
+                const float coneHeight = 0.75f * halfWidth;
 
-                Vec3 const meshDirection = {0.0f, 1.0f, 0.0f};
+                const Vec3 meshDirection = {0.0f, 1.0f, 0.0f};
                 Vec3 coneDirection = {};
                 coneDirection[i] = 1.0f;
 

@@ -221,13 +221,13 @@ namespace
         };
         if (!outputFileStream)
         {
-            std::string const error = errno_to_string_threadsafe();
+            const std::string error = errno_to_string_threadsafe();
             log_error("%s: could not save obj output: %s", userSaveLocation.string().c_str(), error.c_str());
             return;
         }
 
         const AppMetadata& appMetadata = App::get().metadata();
-        ObjMetadata const objMetadata
+        const ObjMetadata objMetadata
         {
             calc_full_application_name_with_version_and_build_id(appMetadata),
         };
@@ -269,13 +269,13 @@ namespace
         };
         if (!outputFileStream)
         {
-            std::string const error = errno_to_string_threadsafe();
+            const std::string error = errno_to_string_threadsafe();
             log_error("%s: could not save obj output: %s", userSaveLocation.string().c_str(), error.c_str());
             return;
         }
 
         const AppMetadata& appMetadata = App::get().metadata();
-        StlMetadata const stlMetadata
+        const StlMetadata stlMetadata
         {
             calc_full_application_name_with_version_and_build_id(appMetadata),
         };
@@ -332,7 +332,7 @@ void osc::DrawSelectOwnerMenu(IModelStatePair& model, const OpenSim::Component& 
             owner != nullptr;
             owner = GetOwner(*owner))
         {
-            std::string const menuLabel = [&owner]()
+            const std::string menuLabel = [&owner]()
             {
                 std::stringstream ss;
                 ss << owner->getName() << '(' << owner->getConcreteClassName() << ')';
@@ -568,7 +568,7 @@ void osc::DrawPointTranslationInformationWithRespectTo(
     const SimTK::State& state,
     Vec3 locationInGround)
 {
-    SimTK::Transform const groundToFrame = frame.getTransformInGround(state).invert();
+    const SimTK::Transform groundToFrame = frame.getTransformInGround(state).invert();
     Vec3 position = ToVec3(groundToFrame * ToSimTKVec3(locationInGround));
 
     ui::draw_text("translation");
@@ -583,7 +583,7 @@ void osc::DrawDirectionInformationWithRepsectTo(
     const SimTK::State& state,
     Vec3 directionInGround)
 {
-    SimTK::Transform const groundToFrame = frame.getTransformInGround(state).invert();
+    const SimTK::Transform groundToFrame = frame.getTransformInGround(state).invert();
     Vec3 direction = ToVec3(groundToFrame.xformBaseVecToFrame(ToSimTKVec3(directionInGround)));
 
     ui::draw_text("direction");
@@ -598,7 +598,7 @@ void osc::DrawFrameInformationExpressedIn(
     const SimTK::State& state,
     const OpenSim::Frame& otherFrame)
 {
-    SimTK::Transform const xform = parent.findTransformBetween(state, otherFrame);
+    const SimTK::Transform xform = parent.findTransformBetween(state, otherFrame);
     Vec3 position = ToVec3(xform.p());
     Vec3 rotationEulers = ToVec3(xform.R().convertRotationToBodyFixedXYZ());
 
@@ -617,7 +617,7 @@ void osc::DrawFrameInformationExpressedIn(
 
 bool osc::BeginCalculateMenu(CalculateMenuFlags flags)
 {
-    CStringView const label = flags & CalculateMenuFlags::NoCalculatorIcon ?
+    const CStringView label = flags & CalculateMenuFlags::NoCalculatorIcon ?
         "Calculate" :
         ICON_FA_CALCULATOR " Calculate";
     return ui::begin_menu(label);
@@ -636,7 +636,7 @@ void osc::DrawCalculatePositionMenu(
 {
     if (ui::begin_menu("Position"))
     {
-        auto const onFrameMenuOpened = [&state, &point](const OpenSim::Frame& frame)
+        const auto onFrameMenuOpened = [&state, &point](const OpenSim::Frame& frame)
         {
             DrawPointTranslationInformationWithRespectTo(
                 frame,
@@ -683,7 +683,7 @@ void osc::DrawCalculateTransformMenu(
 {
     if (ui::begin_menu("Transform"))
     {
-        auto const onFrameMenuOpened = [&state, &frame](const OpenSim::Frame& otherFrame)
+        const auto onFrameMenuOpened = [&state, &frame](const OpenSim::Frame& otherFrame)
         {
             DrawFrameInformationExpressedIn(frame, state, otherFrame);
         };
@@ -698,7 +698,7 @@ void osc::DrawCalculateAxisDirectionsMenu(
     const OpenSim::Frame& frame)
 {
     if (ui::begin_menu("Axis Directions")) {
-        auto const onFrameMenuOpened = [&state, &frame](const OpenSim::Frame& other)
+        const auto onFrameMenuOpened = [&state, &frame](const OpenSim::Frame& other)
         {
             Vec3 x = ToVec3(frame.expressVectorInAnotherFrame(state, {1.0, 0.0, 0.0}, other));
             Vec3 y = ToVec3(frame.expressVectorInAnotherFrame(state, {0.0, 1.0, 0.0}, other));
@@ -727,7 +727,7 @@ void osc::DrawCalculateOriginMenu(
     const OpenSim::Frame& frame)
 {
     if (ui::begin_menu("Origin")) {
-        auto const onFrameMenuOpened = [&state, &frame](const OpenSim::Frame& otherFrame)
+        const auto onFrameMenuOpened = [&state, &frame](const OpenSim::Frame& otherFrame)
         {
             auto v = ToVec3(frame.findStationLocationInAnotherFrame(state, {0.0f, 0.0f, 0.0f}, otherFrame));
             ui::draw_text("origin");
@@ -761,8 +761,8 @@ void osc::DrawCalculateOriginMenu(
 {
     if (ui::begin_menu("Origin"))
     {
-        Vec3 const posInGround = ToVec3(sphere.getFrame().getPositionInGround(state));
-        auto const onFrameMenuOpened = [&state, posInGround](const OpenSim::Frame& otherFrame)
+        const Vec3 posInGround = ToVec3(sphere.getFrame().getPositionInGround(state));
+        const auto onFrameMenuOpened = [&state, posInGround](const OpenSim::Frame& otherFrame)
         {
             DrawPointTranslationInformationWithRespectTo(otherFrame, state, posInGround);
         };
@@ -792,7 +792,7 @@ void osc::DrawCalculateVolumeMenu(
 {
     if (ui::begin_menu("Volume"))
     {
-        double const r = sphere.get_radius();
+        const double r = sphere.get_radius();
         double v = 4.0/3.0 * SimTK::Pi * r*r*r;
         ui::draw_double_input("volume", &v, 0.0, 0.0, "%.6f", ImGuiInputTextFlags_ReadOnly);
         ui::end_menu();
@@ -845,8 +845,8 @@ void osc::DrawCalculateOriginMenu(
     const OpenSim::Ellipsoid& ellipsoid)
 {
     if (ui::begin_menu("Origin")) {
-        Vec3 const posInGround = ToVec3(ellipsoid.getFrame().getPositionInGround(state));
-        auto const onFrameMenuOpened = [&state, posInGround](const OpenSim::Frame& otherFrame)
+        const Vec3 posInGround = ToVec3(ellipsoid.getFrame().getPositionInGround(state));
+        const auto onFrameMenuOpened = [&state, posInGround](const OpenSim::Frame& otherFrame)
         {
             DrawPointTranslationInformationWithRespectTo(otherFrame, state, posInGround);
         };
@@ -884,7 +884,7 @@ void osc::DrawCalculateScaledRadiiDirectionsMenu(
     const OpenSim::Ellipsoid& ellipsoid)
 {
     if (ui::begin_menu("Axis Directions (Scaled by Radii)")) {
-        auto const onFrameMenuOpened = [&state, &ellipsoid](const OpenSim::Frame& other)
+        const auto onFrameMenuOpened = [&state, &ellipsoid](const OpenSim::Frame& other)
         {
             const auto& radii = ellipsoid.get_radii();
             Vec3 x = ToVec3(radii[0] * ellipsoid.getFrame().expressVectorInAnotherFrame(state, {1.0, 0.0, 0.0}, other));
@@ -925,7 +925,7 @@ void osc::DrawCalculateMenu(
 
 bool osc::DrawMuscleRenderingOptionsRadioButtions(OpenSimDecorationOptions& opts)
 {
-    MuscleDecorationStyle const currentStyle = opts.getMuscleDecorationStyle();
+    const MuscleDecorationStyle currentStyle = opts.getMuscleDecorationStyle();
     bool edited = false;
     for (const auto& metadata : GetAllMuscleDecorationStyleMetadata())
     {
@@ -940,7 +940,7 @@ bool osc::DrawMuscleRenderingOptionsRadioButtions(OpenSimDecorationOptions& opts
 
 bool osc::DrawMuscleSizingOptionsRadioButtons(OpenSimDecorationOptions& opts)
 {
-    MuscleSizingStyle const currentStyle = opts.getMuscleSizingStyle();
+    const MuscleSizingStyle currentStyle = opts.getMuscleSizingStyle();
     bool edited = false;
     for (const auto& metadata : GetAllMuscleSizingStyleMetadata())
     {
@@ -955,7 +955,7 @@ bool osc::DrawMuscleSizingOptionsRadioButtons(OpenSimDecorationOptions& opts)
 
 bool osc::DrawMuscleColoringOptionsRadioButtons(OpenSimDecorationOptions& opts)
 {
-    MuscleColoringStyle const currentStyle = opts.getMuscleColoringStyle();
+    const MuscleColoringStyle currentStyle = opts.getMuscleColoringStyle();
     bool edited = false;
     for (const auto& metadata : GetAllMuscleColoringStyleMetadata())
     {
@@ -1016,7 +1016,7 @@ bool osc::DrawOverlayOptionsEditor(OverlayDecorationOptions& opts)
     for (size_t i = 0; i < opts.getNumOptions(); ++i)
     {
         // print header, if necessary
-        CStringView const groupLabel = opts.getOptionGroupLabel(i);
+        const CStringView groupLabel = opts.getOptionGroupLabel(i);
         if (groupLabel != lastGroupLabel)
         {
             if (lastGroupLabel)
@@ -1188,9 +1188,9 @@ bool osc::DrawCameraControlButtons(
     c.a *= 0.9f;
     ui::push_style_color(ImGuiCol_Button, c);
 
-    float const spacing = ui::get_style_item_spacing().x;
+    const float spacing = ui::get_style_item_spacing().x;
     float width = zoomOutButton.dimensions().x + spacing + zoomInButton.dimensions().x + spacing + autoFocusButton.dimensions().x;
-    Vec2 const topleft = {desiredTopCentroid.x - 0.5f*width, desiredTopCentroid.y + 2.0f*ui::get_style_item_spacing().y};
+    const Vec2 topleft = {desiredTopCentroid.x - 0.5f*width, desiredTopCentroid.y + 2.0f*ui::get_style_item_spacing().y};
     ui::set_cursor_screen_pos(topleft);
 
     bool edited = false;
@@ -1211,7 +1211,7 @@ bool osc::DrawCameraControlButtons(
 
     // next line (centered)
     {
-        Vec2 const tl = {
+        const Vec2 tl = {
             desiredTopCentroid.x - 0.5f*sceneSettingsButton.dimensions().x,
             ui::get_cursor_screen_pos().y,
         };
@@ -1237,15 +1237,15 @@ bool osc::DrawViewerImGuiOverlays(
     bool edited = false;
 
     // draw top-left buttons
-    Vec2 const windowPadding = ui::get_style_panel_padding();
+    const Vec2 windowPadding = ui::get_style_panel_padding();
     ui::set_cursor_screen_pos(renderRect.p1 + windowPadding);
     edited = DrawViewerTopButtonRow(params, drawlist, iconCache, drawExtraElementsInTop) || edited;
 
     // draw top-right camera manipulators
     CameraViewAxes axes;
-    Vec2 const renderDims = dimensions_of(renderRect);
-    Vec2 const axesDims = axes.dimensions();
-    Vec2 const axesTopLeft = {
+    const Vec2 renderDims = dimensions_of(renderRect);
+    const Vec2 axesDims = axes.dimensions();
+    const Vec2 axesTopLeft = {
         renderRect.p1.x + renderDims.x - windowPadding.x - axesDims.x,
         renderRect.p1.y + windowPadding.y,
     };
@@ -1254,7 +1254,7 @@ bool osc::DrawViewerImGuiOverlays(
     ui::set_cursor_screen_pos(axesTopLeft);
     edited = axes.draw(params.camera) || edited;
 
-    Vec2 const cameraButtonsTopLeft = axesTopLeft + Vec2{0.0f, axesDims.y};
+    const Vec2 cameraButtonsTopLeft = axesTopLeft + Vec2{0.0f, axesDims.y};
     ui::set_cursor_screen_pos(cameraButtonsTopLeft);
     edited = DrawCameraControlButtons(
         params,
@@ -1275,8 +1275,8 @@ bool osc::BeginToolbar(CStringView label, std::optional<Vec2> padding)
         ui::push_style_var(ImGuiStyleVar_WindowPadding, *padding);
     }
 
-    float const height = ui::get_frame_height() + 2.0f*ui::get_style_panel_padding().y;
-    ImGuiWindowFlags const flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
+    const float height = ui::get_frame_height() + 2.0f*ui::get_style_panel_padding().y;
+    const ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
     bool open = ui::begin_main_viewport_top_bar(label, height, flags);
     if (padding)
     {
@@ -1312,7 +1312,7 @@ void osc::DrawOpenModelButtonWithRecentFilesDropdown(
 
     if (ui::begin_popup_context_menu("##RecentFilesMenu", ImGuiPopupFlags_MouseButtonLeft))
     {
-        auto const recentFiles = App::singleton<RecentFiles>();
+        const auto recentFiles = App::singleton<RecentFiles>();
         int imguiID = 0;
 
         for (const RecentFile& rf : *recentFiles)
@@ -1517,7 +1517,7 @@ void osc::DrawMeshExportContextMenuContent(
 
     if (ui::begin_menu(".obj"))
     {
-        auto const onFrameMenuItemClicked = [&model, &mesh](const OpenSim::Frame& frame)
+        const auto onFrameMenuItemClicked = [&model, &mesh](const OpenSim::Frame& frame)
         {
             ActionReexportMeshOBJWithRespectTo(
                 model.getModel(),
@@ -1533,7 +1533,7 @@ void osc::DrawMeshExportContextMenuContent(
 
     if (ui::begin_menu(".stl"))
     {
-        auto const onFrameMenuItemClicked = [model, &mesh](const OpenSim::Frame& frame)
+        const auto onFrameMenuItemClicked = [model, &mesh](const OpenSim::Frame& frame)
         {
             ActionReexportMeshSTLWithRespectTo(
                 model.getModel(),

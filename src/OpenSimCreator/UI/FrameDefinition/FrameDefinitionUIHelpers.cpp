@@ -34,7 +34,7 @@ void osc::fd::ActionPromptUserToAddMeshFiles(UndoableModelStatePair& model)
     }
 
     // create a human-readable commit message
-    std::string const commitMessage = [&meshPaths]()
+    const std::string commitMessage = [&meshPaths]()
     {
         if (meshPaths.size() == 1)
         {
@@ -52,7 +52,7 @@ void osc::fd::ActionPromptUserToAddMeshFiles(UndoableModelStatePair& model)
     OpenSim::Model& mutableModel = model.updModel();
     for (const std::filesystem::path& meshPath : meshPaths)
     {
-        std::string const meshName = meshPath.filename().replace_extension().string();
+        const std::string meshName = meshPath.filename().replace_extension().string();
 
         // add an offset frame that is connected to ground - this will become
         // the mesh's offset frame

@@ -58,8 +58,8 @@ namespace
     // i.e. U(||pi - p||) in the literature is equivalent to `RadialBasisFunction2D(pi, p)` here
     float RadialBasisFunction2D(Vec2 controlPoint, Vec2 p)
     {
-        Vec2 const diff = controlPoint - p;
-        float const r2 = dot(diff, diff);
+        const Vec2 diff = controlPoint - p;
+        const float r2 = dot(diff, diff);
 
         if (r2 == 0.0f)
         {
@@ -167,7 +167,7 @@ namespace
         // 6. Use a linear solver to solve L * [w a] = [v o] to yield [w a]
         // 8. Return the coefficients, [w a]
 
-        int const numPairs = static_cast<int>(landmarkPairs.size());
+        const int numPairs = static_cast<int>(landmarkPairs.size());
 
         if (numPairs == 0)
         {
@@ -192,7 +192,7 @@ namespace
 
         // populate the P part of matrix L (upper-right)
         {
-            int const pStartColumn = numPairs;
+            const int pStartColumn = numPairs;
 
             for (int row = 0; row < numPairs; ++row)
             {
@@ -204,7 +204,7 @@ namespace
 
         // populate the PT part of matrix L (bottom-left)
         {
-            int const ptStartRow = numPairs;
+            const int ptStartRow = numPairs;
 
             for (int col = 0; col < numPairs; ++col)
             {
@@ -216,8 +216,8 @@ namespace
 
         // populate the 0 part of matrix L (bottom-right)
         {
-            int const zeroStartRow = numPairs;
-            int const zeroStartCol = numPairs;
+            const int zeroStartRow = numPairs;
+            const int zeroStartCol = numPairs;
 
             for (int row = 0; row < 3; ++row)
             {
@@ -340,15 +340,15 @@ public:
 
         ui::begin_panel("Input");
         {
-            Vec2 const windowDims = ui::get_content_region_avail();
-            float const minDim = min(windowDims.x, windowDims.y);
-            Vec2i const texDims = Vec2i{minDim, minDim};
+            const Vec2 windowDims = ui::get_content_region_avail();
+            const float minDim = min(windowDims.x, windowDims.y);
+            const Vec2i texDims = Vec2i{minDim, minDim};
 
             renderMesh(m_InputGrid, texDims, m_InputRender);
 
             // draw rendered texture via ImGui
             ui::draw_image(*m_InputRender, texDims);
-            ui::HittestResult const ht = ui::hittest_last_drawn_item();
+            const ui::HittestResult ht = ui::hittest_last_drawn_item();
 
             // draw any 2D overlays etc.
             renderOverlayElements(ht);
@@ -366,8 +366,8 @@ public:
         {
             outputWindowPos = ui::get_cursor_screen_pos();
             outputWindowDims = ui::get_content_region_avail();
-            float const minDim = min(outputWindowDims.x, outputWindowDims.y);
-            Vec2i const texDims = Vec2i{minDim, minDim};
+            const float minDim = min(outputWindowDims.x, outputWindowDims.y);
+            const Vec2i texDims = Vec2i{minDim, minDim};
 
             {
                 // apply blending factor, compute warp, apply to grid
@@ -431,8 +431,8 @@ private:
         // render all fully-established landmark pairs
         for (const LandmarkPair2D& p : m_LandmarkPairs)
         {
-            Vec2 const p1 = ht.item_screen_rect.p1 + (dimensions_of(ht.item_screen_rect) * ndc_point_to_topleft_relative_pos(p.src));
-            Vec2 const p2 = ht.item_screen_rect.p1 + (dimensions_of(ht.item_screen_rect) * ndc_point_to_topleft_relative_pos(p.dest));
+            const Vec2 p1 = ht.item_screen_rect.p1 + (dimensions_of(ht.item_screen_rect) * ndc_point_to_topleft_relative_pos(p.src));
+            const Vec2 p2 = ht.item_screen_rect.p1 + (dimensions_of(ht.item_screen_rect) * ndc_point_to_topleft_relative_pos(p.dest));
 
             drawlist->AddLine(p1, p2, m_ConnectionLineColor, 5.0f);
             drawlist->AddRectFilled(p1 - 12.0f, p1 + 12.0f, m_SrcSquareColor);
@@ -444,8 +444,8 @@ private:
         {
             const GUIFirstClickMouseState& st = std::get<GUIFirstClickMouseState>(m_MouseState);
 
-            Vec2 const p1 = ht.item_screen_rect.p1 + (dimensions_of(ht.item_screen_rect) * ndc_point_to_topleft_relative_pos(st.srcNDCPos));
-            Vec2 const p2 = ui::get_mouse_pos();
+            const Vec2 p1 = ht.item_screen_rect.p1 + (dimensions_of(ht.item_screen_rect) * ndc_point_to_topleft_relative_pos(st.srcNDCPos));
+            const Vec2 p2 = ui::get_mouse_pos();
 
             drawlist->AddLine(p1, p2, m_ConnectionLineColor, 5.0f);
             drawlist->AddRectFilled(p1 - 12.0f, p1 + 12.0f, m_SrcSquareColor);
@@ -466,10 +466,10 @@ private:
     // render any mouse-related overlays for when the user hasn't clicked yet
     void renderMouseUIElements(const ui::HittestResult& ht, GUIInitialMouseState)
     {
-        Vec2 const mouseScreenPos = ui::get_mouse_pos();
-        Vec2 const mouseImagePos = mouseScreenPos - ht.item_screen_rect.p1;
-        Vec2 const mouseImageRelPos = mouseImagePos / dimensions_of(ht.item_screen_rect);
-        Vec2 const mouseImageNDCPos = topleft_relative_pos_to_ndc_point(mouseImageRelPos);
+        const Vec2 mouseScreenPos = ui::get_mouse_pos();
+        const Vec2 mouseImagePos = mouseScreenPos - ht.item_screen_rect.p1;
+        const Vec2 mouseImageRelPos = mouseImagePos / dimensions_of(ht.item_screen_rect);
+        const Vec2 mouseImageNDCPos = topleft_relative_pos_to_ndc_point(mouseImageRelPos);
 
         ui::draw_tooltip_body_only(to_string(mouseImageNDCPos));
 
@@ -482,10 +482,10 @@ private:
     // render any mouse-related overlays for when the user has clicked once
     void renderMouseUIElements(const ui::HittestResult& ht, GUIFirstClickMouseState st)
     {
-        Vec2 const mouseScreenPos = ui::get_mouse_pos();
-        Vec2 const mouseImagePos = mouseScreenPos - ht.item_screen_rect.p1;
-        Vec2 const mouseImageRelPos = mouseImagePos / dimensions_of(ht.item_screen_rect);
-        Vec2 const mouseImageNDCPos = topleft_relative_pos_to_ndc_point(mouseImageRelPos);
+        const Vec2 mouseScreenPos = ui::get_mouse_pos();
+        const Vec2 mouseImagePos = mouseScreenPos - ht.item_screen_rect.p1;
+        const Vec2 mouseImageRelPos = mouseImagePos / dimensions_of(ht.item_screen_rect);
+        const Vec2 mouseImageNDCPos = topleft_relative_pos_to_ndc_point(mouseImageRelPos);
 
         ui::draw_tooltip_body_only(to_string(mouseImageNDCPos) + "*");
 

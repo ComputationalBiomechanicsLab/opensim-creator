@@ -756,7 +756,7 @@ namespace
 template<>
 ComponentRegistry<OpenSim::Joint> const& osc::GetComponentRegistry()
 {
-    static auto const s_StaticReg = CreateRegistry<OpenSim::Joint>(
+    static const auto s_StaticReg = CreateRegistry<OpenSim::Joint>(
         "Joint",
         "An OpenSim::Joint is a OpenSim::ModelComponent which connects two PhysicalFrames together and specifies their relative permissible motion as described in internal coordinates."
     );
@@ -766,7 +766,7 @@ ComponentRegistry<OpenSim::Joint> const& osc::GetComponentRegistry()
 template<>
 ComponentRegistry<OpenSim::ContactGeometry> const& osc::GetComponentRegistry()
 {
-    static auto const s_StaticReg = CreateRegistry<OpenSim::ContactGeometry>(
+    static const auto s_StaticReg = CreateRegistry<OpenSim::ContactGeometry>(
         "Contact Geometry",
         "Add a geometry with a physical shape that participates in contact modeling. The geometry is attached to an OpenSim::PhysicalFrame in the model (e.g. a body) and and moves with that frame."
     );
@@ -776,7 +776,7 @@ ComponentRegistry<OpenSim::ContactGeometry> const& osc::GetComponentRegistry()
 template<>
 ComponentRegistry<OpenSim::Constraint> const& osc::GetComponentRegistry()
 {
-    static auto const s_StaticReg = CreateRegistry<OpenSim::Constraint>(
+    static const auto s_StaticReg = CreateRegistry<OpenSim::Constraint>(
         "Constraint",
         "A constraint typically constrains the motion of physical frame(s) in the model some way. For example, an OpenSim::ConstantDistanceConstraint constrains the system to *have* to keep two frames at some constant distance from eachover."
     );
@@ -786,7 +786,7 @@ ComponentRegistry<OpenSim::Constraint> const& osc::GetComponentRegistry()
 template<>
 ComponentRegistry<OpenSim::Force> const& osc::GetComponentRegistry()
 {
-    static auto const s_StaticReg = CreateRegistry<OpenSim::Force>(
+    static const auto s_StaticReg = CreateRegistry<OpenSim::Force>(
         "Force",
         "During a simulation, the force is applied to bodies or generalized coordinates in the model. Muscles are specialized `OpenSim::Force`s with biomech-focused features."
     );
@@ -796,7 +796,7 @@ ComponentRegistry<OpenSim::Force> const& osc::GetComponentRegistry()
 template<>
 ComponentRegistry<OpenSim::Controller> const& osc::GetComponentRegistry()
 {
-    static auto const s_StaticReg = CreateRegistry<OpenSim::Controller>(
+    static const auto s_StaticReg = CreateRegistry<OpenSim::Controller>(
         "Controller",
         "A controller computes and sets the values of the controls for the actuators under its control."
     );
@@ -806,7 +806,7 @@ ComponentRegistry<OpenSim::Controller> const& osc::GetComponentRegistry()
 template<>
 ComponentRegistry<OpenSim::Probe> const& osc::GetComponentRegistry()
 {
-    static auto const s_StaticReg = CreateRegistry<OpenSim::Probe>(
+    static const auto s_StaticReg = CreateRegistry<OpenSim::Probe>(
         "Probe",
         "This class represents a Probe which is designed to query a Vector of model values given system state. This model quantity is specified as a SimTK::Vector by the pure virtual method computeProbeInputs(), which must be specified for each child Probe.  In addition, the Probe model component interface allows <I> operations </I> to be performed on this value (specified by the property: probe_operation), and then have this result scaled (by the scalar property: 'scale_factor'). A controller computes and sets the values of the controls for the actuators under its control."
     );
@@ -816,7 +816,7 @@ ComponentRegistry<OpenSim::Probe> const& osc::GetComponentRegistry()
 template<>
 ComponentRegistry<OpenSim::WrapObject> const& osc::GetComponentRegistry()
 {
-    static auto const s_StaticReg = CreateRegistry<OpenSim::WrapObject>(
+    static const auto s_StaticReg = CreateRegistry<OpenSim::WrapObject>(
         "WrapObject",
         "An abstract class that specifies the interface for a wrapping object.",
         false
@@ -827,7 +827,7 @@ ComponentRegistry<OpenSim::WrapObject> const& osc::GetComponentRegistry()
 template<>
 ComponentRegistry<OpenSim::Component> const& osc::GetComponentRegistry()
 {
-    static auto const s_StaticReg = CreateOtherComponentRegistry(
+    static const auto s_StaticReg = CreateOtherComponentRegistry(
         "Component",
         "These are all the components that OpenSim Creator knows about, but can't put into an existing category (e.g. Force)"
     );
@@ -836,7 +836,7 @@ ComponentRegistry<OpenSim::Component> const& osc::GetComponentRegistry()
 
 ComponentRegistry<OpenSim::Component> const& osc::GetCustomComponentRegistry()
 {
-    static auto const s_StaticReg = CreateCustomComponentRegistry(
+    static const auto s_StaticReg = CreateCustomComponentRegistry(
         "Experimental Components",
         "Components that are either specific to OSC, or not-yet-released in official OpenSim.\n\nBEWARE: using these will result in a non-standard osim file. You should only use them if you know what you're doing (or, at least, if you know how to convert them into a form that is compatible with OpenSim later)."
     );
@@ -845,7 +845,7 @@ ComponentRegistry<OpenSim::Component> const& osc::GetCustomComponentRegistry()
 
 ComponentRegistry<OpenSim::Component> const& osc::GetAllRegisteredComponents()
 {
-    static auto const s_StaticReg = CreateRegistry<OpenSim::Component>(
+    static const auto s_StaticReg = CreateRegistry<OpenSim::Component>(
         "All Components",
         "These are all the components that OpenSim Creator knows about"
     );

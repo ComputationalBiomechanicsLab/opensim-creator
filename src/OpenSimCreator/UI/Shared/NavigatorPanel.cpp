@@ -240,9 +240,9 @@ private:
         }
 
         // init iterators: this alg. is single-pass with a 1-token lookahead
-        auto const lst = root->getComponentList();
+        const auto lst = root->getComponentList();
         auto it = lst.begin();
-        auto const end = lst.end();
+        const auto end = lst.end();
 
         // initially populate lookahead (+ path)
         const OpenSim::Component* lookahead = root;
@@ -255,9 +255,9 @@ private:
 
         int imguiTreeDepth = 0;
         int imguiId = 0;
-        bool const hasSearch = !m_CurrentSearch.empty();
+        const bool hasSearch = !m_CurrentSearch.empty();
 
-        float const unindentPerLevel = ui::get_tree_node_to_label_spacing() - 15.0f;
+        const float unindentPerLevel = ui::get_tree_node_to_label_spacing() - 15.0f;
 
         while (lookahead)
         {
@@ -302,7 +302,7 @@ private:
             }
             OSC_ASSERT((lookahead || !lookahead) && "a lookahead is not *required* at this point");
 
-            bool const searchHit = hasSearch && isSearchHit(m_CurrentSearch, currentPath);
+            const bool searchHit = hasSearch && isSearchHit(m_CurrentSearch, currentPath);
 
             // skip rendering if a parent node is collapsed
             if (imguiTreeDepth < currentPath.sizei() - 1)
@@ -320,8 +320,8 @@ private:
             OSC_ASSERT(imguiTreeDepth <= currentPath.sizei() - 1);
 
             // handle display mode (node vs leaf)
-            bool const isInternalNode = currentPath.size() < 2 || lookaheadPath.size() > currentPath.size();
-            ImGuiTreeNodeFlags const nodeFlags = isInternalNode ? ImGuiTreeNodeFlags_OpenOnArrow : (ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet);
+            const bool isInternalNode = currentPath.size() < 2 || lookaheadPath.size() > currentPath.size();
+            const ImGuiTreeNodeFlags nodeFlags = isInternalNode ? ImGuiTreeNodeFlags_OpenOnArrow : (ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet);
 
             // handle coloring
             int styles = 0;

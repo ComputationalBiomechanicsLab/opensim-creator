@@ -76,8 +76,8 @@ namespace
 
         // set the POFs transform to be equivalent to the mesh's (in-ground) transform,
         // but in the parent frame
-        SimTK::Transform const mesh2ground = ToSimTKTransform(meshEl.getXForm());
-        SimTK::Transform const parent2ground = ToSimTKTransform(parentXform);
+        const SimTK::Transform mesh2ground = ToSimTKTransform(meshEl.getXForm());
+        const SimTK::Transform parent2ground = ToSimTKTransform(parentXform);
         meshPhysOffsetFrame->setOffsetTransform(parent2ground.invert() * mesh2ground);
 
         // attach the mesh data to the transformed POF
@@ -107,9 +107,9 @@ namespace
         // the reason we do this is because having a zero inertia on a body can cause
         // the simulator to freak out in some scenarios.
         {
-            double const moment = 0.01 * bodyEl.getMass();
-            SimTK::Vec3 const moments{moment, moment, moment};
-            SimTK::Vec3 const products{0.0, 0.0, 0.0};
+            const double moment = 0.01 * bodyEl.getMass();
+            const SimTK::Vec3 moments{moment, moment, moment};
+            const SimTK::Vec3 products{0.0, 0.0, 0.0};
             addedBody->setInertia(SimTK::Inertia{moments, products});
         }
 
@@ -163,7 +163,7 @@ namespace
 
         if (rv.bodyEl)
         {
-            auto const it = visitedBodies.find(elID);
+            const auto it = visitedBodies.find(elID);
             if (it == visitedBodies.end())
             {
                 // haven't visited the body before
@@ -238,7 +238,7 @@ namespace
         constexpr auto c_TranslationNames = std::to_array({"_tx", "_ty", "_tz"});
         constexpr auto c_RotationNames = std::to_array({"_rx", "_ry", "_rz"});
 
-        JointDegreesOfFreedom const dofs = GetDegreesOfFreedom(joint);
+        const JointDegreesOfFreedom dofs = GetDegreesOfFreedom(joint);
 
         // translations
         for (int i = 0; i < 3; ++i)
@@ -274,7 +274,7 @@ namespace
         std::unordered_set<UID>& visitedJoints)
     {
         {
-            bool const wasInserted = visitedJoints.emplace(joint.getID()).second;
+            const bool wasInserted = visitedJoints.emplace(joint.getID()).second;
             if (!wasInserted)
             {
                 // graph cycle detected: joint was already previously visited and shouldn't be traversed again
@@ -298,7 +298,7 @@ namespace
         auto childPOF = std::make_unique<OpenSim::PhysicalOffsetFrame>();
         childPOF->setName(child.physicalFrame->getName() + "_offset");
         childPOF->setParentFrame(*child.physicalFrame);
-        Mat4 const toChildPofInChild = inverse_mat4_cast(IgnoreScale(doc.getXFormByID(joint.getChildID()))) * mat4_cast(IgnoreScale(joint.getXForm()));
+        const Mat4 toChildPofInChild = inverse_mat4_cast(IgnoreScale(doc.getXFormByID(joint.getChildID()))) * mat4_cast(IgnoreScale(joint.getXForm()));
         childPOF->set_translation(ToSimTKVec3(toChildPofInChild[3]));
         childPOF->set_orientation(ToSimTKVec3(extract_eulers_xyz(toChildPofInChild)));
 
@@ -306,7 +306,7 @@ namespace
         auto jointUniqPtr = Get(GetComponentRegistry<OpenSim::Joint>(), joint.getSpecificTypeName()).instantiate();
 
         // set its name
-        std::string const jointName = CalcJointName(joint, *parent.physicalFrame, *child.physicalFrame);
+        const std::string jointName = CalcJointName(joint, *parent.physicalFrame, *child.physicalFrame);
         jointUniqPtr->setName(jointName);
 
         // set joint coordinate names
@@ -396,12 +396,12 @@ namespace
         std::unordered_map<UID, OpenSim::Body*>& visitedBodies)
     {
 
-        JointAttachmentCachedLookupResult const res = LookupPhysFrame(doc, model, visitedBodies, stationEl.getParentID());
+        const JointAttachmentCachedLookupResult res = LookupPhysFrame(doc, model, visitedBodies, stationEl.getParentID());
         OSC_ASSERT_ALWAYS(res.physicalFrame != nullptr && "all physical frames should have been added by this point in the model-building process");
 
-        SimTK::Transform const parentXform = ToSimTKTransform(doc.getByID(stationEl.getParentID()).getXForm(doc));
-        SimTK::Transform const stationXform = ToSimTKTransform(stationEl.getXForm());
-        SimTK::Vec3 const locationInParent = (parentXform.invert() * stationXform).p();
+        const SimTK::Transform parentXform = ToSimTKTransform(doc.getByID(stationEl.getParentID()).getXForm(doc));
+        const SimTK::Transform stationXform = ToSimTKTransform(stationEl.getXForm());
+        const SimTK::Vec3 locationInParent = (parentXform.invert() * stationXform).p();
 
         if (flags & ModelCreationFlags::ExportStationsAsMarkers)
         {
@@ -476,8 +476,8 @@ namespace
         // import all the bodies from the model file
         for (const OpenSim::Body& b : m.getComponentList<OpenSim::Body>())
         {
-            std::string const name = b.getName();
-            Transform const xform = decompose_to_transform(b.getTransformInGround(st));
+            const std::string name = b.getName();
+            const Transform xform = decompose_to_transform(b.getTransformInGround(st));
 
             auto& el = rv.emplace<Body>(UID{}, name, xform);
             el.setMass(b.getMass());
@@ -537,7 +537,7 @@ namespace
                 continue;
             }
 
-            Transform const xform = decompose_to_transform(parentFrame.getTransformInGround(st));
+            const Transform xform = decompose_to_transform(parentFrame.getTransformInGround(st));
 
             auto& jointEl = rv.emplace<Joint>(UID{}, j.getConcreteClassName(), j.getName(), parent, child, xform);
             jointLookup.emplace(&j, jointEl.getID());
@@ -629,7 +629,7 @@ namespace
             }
             else
             {
-                if (auto const it = bodyLookup.find(dynamic_cast<const OpenSim::Body*>(frameBodyOrGround)); it != bodyLookup.end())
+                if (const auto it = bodyLookup.find(dynamic_cast<const OpenSim::Body*>(frameBodyOrGround)); it != bodyLookup.end())
                 {
                     attachment = it->second;
                 }
@@ -646,8 +646,8 @@ namespace
                 continue;
             }
 
-            Vec3 const pos = ToVec3(station.findLocationInFrame(st, m.getGround()));
-            std::string const name = station.getName();
+            const Vec3 pos = ToVec3(station.findLocationInFrame(st, m.getGround()));
+            const std::string name = station.getName();
 
             rv.emplace<StationEl>(attachment, pos, name);
         }
@@ -746,7 +746,7 @@ Vec3 osc::mi::GetJointAxisLengths(const Joint& joint)
     const auto& registry = GetComponentRegistry<OpenSim::Joint>();
 
     JointDegreesOfFreedom dofs{};
-    if (auto const idx = IndexOf(registry, joint.getSpecificTypeName())) {
+    if (const auto idx = IndexOf(registry, joint.getSpecificTypeName())) {
         dofs = GetDegreesOfFreedom(registry[*idx].prototype());
     }
 

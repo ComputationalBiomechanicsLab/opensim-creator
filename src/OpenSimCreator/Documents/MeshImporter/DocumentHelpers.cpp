@@ -93,7 +93,7 @@ bool osc::mi::IsBodyAttachedToGround(
         {
             childInAtLeastOneJoint = true;
 
-            bool const alreadyVisited = !previouslyVisitedJoints.emplace(joint.getID()).second;
+            const bool alreadyVisited = !previouslyVisitedJoints.emplace(joint.getID()).second;
             if (alreadyVisited)
             {
                 continue;  // skip this joint: was previously visited
@@ -240,8 +240,8 @@ void osc::mi::point_axis_towards(
     int axis,
     UID other)
 {
-    Vec3 const choicePos = doc.getPosByID(other);
-    Transform const sourceXform = {.position = doc.getPosByID(id)};
+    const Vec3 choicePos = doc.getPosByID(other);
+    const Transform sourceXform = {.position = doc.getPosByID(id)};
 
     doc.updByID(id).setXform(doc, point_axis_towards(sourceXform, axis, choicePos));
 }
@@ -251,7 +251,7 @@ SceneDecorationFlags osc::mi::computeFlags(
     UID id,
     std::optional<UID> maybeHoverID)
 {
-    UID const hoverID = maybeHoverID ? *maybeHoverID : MIIDs::Empty();
+    const UID hoverID = maybeHoverID ? *maybeHoverID : MIIDs::Empty();
 
     if (id == MIIDs::Empty())
     {

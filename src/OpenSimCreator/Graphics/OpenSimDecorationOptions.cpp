@@ -163,7 +163,7 @@ void osc::OpenSimDecorationOptions::forEachOptionAsAppSettingValue(std::function
     for (size_t i = 0; i < num_flags<OpenSimDecorationOptionFlags>(); ++i)
     {
         const auto& meta = GetIthOptionMetadata(i);
-        bool const v = m_Flags & GetIthOption(i);
+        const bool v = m_Flags & GetIthOption(i);
         callback(meta.id, AppSettingValue{v});
     }
 }
@@ -186,8 +186,8 @@ void osc::OpenSimDecorationOptions::tryUpdFromValues(
 
     if (auto* appVal = lookup("muscle_decoration_style"); appVal->type() == AppSettingValueType::String)
     {
-        auto const metadata = GetAllMuscleDecorationStyleMetadata();
-        auto const it = rgs::find(metadata, appVal->to_string(), [](const auto& m) { return m.id; });
+        const auto metadata = GetAllMuscleDecorationStyleMetadata();
+        const auto it = rgs::find(metadata, appVal->to_string(), [](const auto& m) { return m.id; });
         if (it != metadata.end()) {
             m_MuscleDecorationStyle = it->value;
         }
@@ -195,8 +195,8 @@ void osc::OpenSimDecorationOptions::tryUpdFromValues(
 
     if (auto* appVal = lookup("muscle_coloring_style"); appVal->type() == AppSettingValueType::String)
     {
-        auto const metadata = GetAllMuscleColoringStyleMetadata();
-        auto const it = rgs::find(metadata, appVal->to_string(), [](const auto& m) { return m.id; });
+        const auto metadata = GetAllMuscleColoringStyleMetadata();
+        const auto it = rgs::find(metadata, appVal->to_string(), [](const auto& m) { return m.id; });
         if (it != metadata.end()) {
             m_MuscleColoringStyle = it->value;
         }
@@ -204,8 +204,8 @@ void osc::OpenSimDecorationOptions::tryUpdFromValues(
 
     if (auto* appVal = lookup("muscle_sizing_style"); appVal->type() == AppSettingValueType::String)
     {
-        auto const metadata = GetAllMuscleSizingStyleMetadata();
-        auto const it = rgs::find(metadata, appVal->to_string(), [](const auto& m) { return m.id; });
+        const auto metadata = GetAllMuscleSizingStyleMetadata();
+        const auto it = rgs::find(metadata, appVal->to_string(), [](const auto& m) { return m.id; });
         if (it != metadata.end()) {
             m_MuscleSizingStyle = it->value;
         }
@@ -216,7 +216,7 @@ void osc::OpenSimDecorationOptions::tryUpdFromValues(
         const auto& metadata = GetIthOptionMetadata(i);
         if (auto* appVal = lookup(metadata.id); appVal->type() == AppSettingValueType::Bool)
         {
-            bool const v = appVal->to_bool();
+            const bool v = appVal->to_bool();
             SetOption(m_Flags, GetIthOption(i), v);
         }
     }

@@ -22,7 +22,7 @@ void osc::fd::CrossProductEdge::generateDecorations(
     const SimTK::State& state,
     SimTK::Array_<SimTK::DecorativeGeometry>& appendOut) const
 {
-    EdgePoints const coords = getLocationsInGround(state);
+    const EdgePoints coords = getLocationsInGround(state);
 
     // draw edge
     appendOut.push_back(CreateDecorativeArrow(
@@ -34,7 +34,7 @@ void osc::fd::CrossProductEdge::generateDecorations(
     // if requested, draw a parallelogram from the two edges
     if (get_show_plane())
     {
-        auto const [aPoints, bPoints] = getBothEdgePoints(state);
+        const auto [aPoints, bPoints] = getBothEdgePoints(state);
         appendOut.push_back(CreateParallelogramMesh(
             coords.start,
             aPoints.end - aPoints.start,

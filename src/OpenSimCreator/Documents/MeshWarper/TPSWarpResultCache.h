@@ -38,10 +38,10 @@ namespace osc
     private:
         void updateAll(const TPSDocument& doc)
         {
-            bool const updatedCoefficients = updateCoefficients(doc);
-            bool const updatedNonParticipatingLandmarks = updateSourceNonParticipatingLandmarks(doc);
-            bool const updatedMesh = updateInputMesh(doc);
-            bool const updatedBlendingFactor = updateBlendingFactor(doc);
+            const bool updatedCoefficients = updateCoefficients(doc);
+            const bool updatedNonParticipatingLandmarks = updateSourceNonParticipatingLandmarks(doc);
+            const bool updatedMesh = updateInputMesh(doc);
+            const bool updatedBlendingFactor = updateBlendingFactor(doc);
 
             if (updatedCoefficients || updatedNonParticipatingLandmarks || updatedMesh || updatedBlendingFactor)
             {
@@ -96,7 +96,7 @@ namespace osc
         {
             const auto& docLandmarks = doc.nonParticipatingLandmarks;
 
-            bool const samePositions = rgs::equal(
+            const bool samePositions = rgs::equal(
                 docLandmarks,
                 m_CachedSourceNonParticipatingLandmarks,
                 [](const TPSDocumentNonParticipatingLandmark& lm, const Vec3& pos)

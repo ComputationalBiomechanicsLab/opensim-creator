@@ -196,7 +196,7 @@ void osc::ActionLoadLandmarksFromCSV(
     UndoableTPSDocument& doc,
     TPSDocumentInputIdentifier which)
 {
-    auto const maybeCSVPath = prompt_user_to_select_file({"csv"});
+    const auto maybeCSVPath = prompt_user_to_select_file({"csv"});
     if (!maybeCSVPath)
     {
         return;  // user didn't select anything
@@ -218,7 +218,7 @@ void osc::ActionLoadLandmarksFromCSV(
 
 void osc::ActionLoadNonParticipatingLandmarksFromCSV(UndoableTPSDocument& doc)
 {
-    auto const maybeCSVPath = prompt_user_to_select_file({"csv"});
+    const auto maybeCSVPath = prompt_user_to_select_file({"csv"});
     if (!maybeCSVPath)
     {
         return;  // user didn't select anything
@@ -372,7 +372,7 @@ void osc::ActionTrySaveMeshToObjFile(const Mesh& mesh, ObjWriterFlags flags)
     }
 
     const AppMetadata& appMetadata = App::get().metadata();
-    ObjMetadata const objMetadata
+    const ObjMetadata objMetadata
     {
         calc_full_application_name_with_version_and_build_id(appMetadata),
     };
@@ -405,7 +405,7 @@ void osc::ActionTrySaveMeshToStlFile(const Mesh& mesh)
     }
 
     const AppMetadata& appMetadata = App::get().metadata();
-    StlMetadata const stlMetadata
+    const StlMetadata stlMetadata
     {
         calc_full_application_name_with_version_and_build_id(appMetadata),
     };
@@ -418,7 +418,7 @@ void osc::ActionSaveWarpedNonParticipatingLandmarksToCSV(
     TPSResultCache& cache,
     lm::LandmarkCSVFlags flags)
 {
-    auto const maybeCSVPath = PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
+    const auto maybeCSVPath = PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
     if (!maybeCSVPath)
     {
         return;  // user didn't select a save location

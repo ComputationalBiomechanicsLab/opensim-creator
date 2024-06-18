@@ -104,7 +104,7 @@ namespace
     {
         OSC_ASSERT(CanExtractPointInfoFrom(component, state));
 
-        std::string const absPath = GetAbsolutePathString(component);
+        const std::string absPath = GetAbsolutePathString(component);
 
         bool selected = uiState.selectedPointAbsPaths.contains(absPath);
         if (ui::draw_checkbox(component.getName(), &selected))
@@ -134,7 +134,7 @@ namespace
         color.a *= 0.5f;
 
         ui::push_style_color(ImGuiCol_FrameBg, color);
-        bool const showingListBox = ui::begin_listbox("##PointsList");
+        const bool showingListBox = ui::begin_listbox("##PointsList");
         ui::pop_style_color();
 
         if (showingListBox)
@@ -195,9 +195,9 @@ namespace
         {
             if (ui::draw_menu_item(f.getName()))
             {
-                auto const isAttachedToFrame = [path = GetAbsolutePath(f), &state](const OpenSim::Component& c)
+                const auto isAttachedToFrame = [path = GetAbsolutePath(f), &state](const OpenSim::Component& c)
                 {
-                    if (auto const pointInfo = TryExtractPointInfo(c, state))
+                    if (const auto pointInfo = TryExtractPointInfo(c, state))
                     {
                         return pointInfo->frameAbsPath == path;
                     }
@@ -326,7 +326,7 @@ namespace
 
     void DrawOriginalFrameSelectable(FrameSelectorUiState& uiState)
     {
-        bool const selected = uiState.maybeSelectedFrameAbsPath != std::nullopt;
+        const bool selected = uiState.maybeSelectedFrameAbsPath != std::nullopt;
         if (ui::draw_selectable(c_OriginalFrameLabel, selected))
         {
             uiState.maybeSelectedFrameAbsPath.reset();
@@ -337,8 +337,8 @@ namespace
         FrameSelectorUiState& uiState,
         const OpenSim::Frame& frame)
     {
-        std::string const absPath = GetAbsolutePathString(frame);
-        bool const selected = uiState.maybeSelectedFrameAbsPath == absPath;
+        const std::string absPath = GetAbsolutePathString(frame);
+        const bool selected = uiState.maybeSelectedFrameAbsPath == absPath;
 
         if (ui::draw_selectable(frame.getName(), selected))
         {
@@ -361,7 +361,7 @@ namespace
 
     void DrawFrameSelector(FrameSelectorUiState& uiState, const OpenSim::Model& model)
     {
-        std::string const label = CalcComboLabel(uiState, model);
+        const std::string label = CalcComboLabel(uiState, model);
         if (ui::begin_combobox("Express Points In", label))
         {
             DrawOriginalFrameSelectable(uiState);
@@ -453,15 +453,15 @@ namespace
 
         // else: compute position, name, etc. and emit as a CSV data row
 
-        Vec3 const position = maybeGround2ReexpressedFrame ?
+        const Vec3 position = maybeGround2ReexpressedFrame ?
             CalcReexpressedFrame(model, state, *poi, *maybeGround2ReexpressedFrame) :
             poi->location;
 
-        std::string const name = shouldExportPointsWithAbsPathNames ?
+        const std::string name = shouldExportPointsWithAbsPathNames ?
             GetAbsolutePathString(*c) :
             c->getName();
 
-        auto const columns = std::to_array<std::string>(
+        const auto columns = std::to_array<std::string>(
         {
             name,
             std::to_string(position[0]),
@@ -564,7 +564,7 @@ private:
         const OpenSim::Model& model = m_Model->getModel();
         const SimTK::State& state = m_Model->getState();
 
-        float const sectionSpacing = 0.5f*ui::get_text_line_height();
+        const float sectionSpacing = 0.5f*ui::get_text_line_height();
 
         DrawExportPointsPopupDescriptionSection();
         ui::draw_dummy({0.0f, sectionSpacing});
@@ -593,7 +593,7 @@ private:
         if (ui::draw_button(ICON_FA_UPLOAD " Export to CSV"))
         {
             static_assert(num_options<ExportStepReturn>() == 3, "review error handling");
-            ExportStepReturn const rv = ActionPromptUserForSaveLocationAndExportPoints(
+            const ExportStepReturn rv = ActionPromptUserForSaveLocationAndExportPoints(
                 m_Model->getModel(),
                 m_Model->getState(),
                 m_PointSelectorState.selectedPointAbsPaths,

@@ -44,7 +44,7 @@ namespace
         {
             OSC_PERF("CachedModelRenderer/generateDecorationsCached");
 
-            ModelStatePairInfo const info{modelState};
+            const ModelStatePairInfo info{modelState};
             if (info != m_PrevModelStateInfo ||
                 params.decorationOptions != m_PrevDecorationOptions ||
                 params.overlayOptions != m_PrevOverlayOptions)
@@ -53,7 +53,7 @@ namespace
                 m_BVH.clear();
 
                 // regenerate
-                auto const onComponentDecoration = [this](const OpenSim::Component&, SceneDecoration&& dec)
+                const auto onComponentDecoration = [this](const OpenSim::Component&, SceneDecoration&& dec)
                 {
                     m_Drawlist.push_back(std::move(dec));
                 };
@@ -65,7 +65,7 @@ namespace
                 );
                 update_scene_bvh(m_Drawlist, m_BVH);
 
-                auto const onOverlayDecoration = [this](SceneDecoration&& dec)
+                const auto onOverlayDecoration = [this](SceneDecoration&& dec)
                 {
                     m_Drawlist.push_back(std::move(dec));
                 };
@@ -134,7 +134,7 @@ public:
         OSC_PERF("CachedModelRenderer/on_draw");
 
         // setup render/rasterization parameters
-        SceneRendererParams const rendererParameters = CalcSceneRendererParams(
+        const SceneRendererParams rendererParameters = CalcSceneRendererParams(
             renderParams,
             dims,
             antiAliasingLevel,

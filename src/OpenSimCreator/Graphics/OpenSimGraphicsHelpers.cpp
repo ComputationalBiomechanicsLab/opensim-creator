@@ -86,8 +86,8 @@ std::optional<SceneCollision> osc::GetClosestCollision(
     OSC_PERF("ModelSceneDecorations/getClosestCollision");
 
     // un-project 2D mouse cursor into 3D scene as a ray
-    Vec2 const mouseRenderPos = mouseScreenPos - viewportScreenRect.p1;
-    Line const worldspaceCameraRay = camera.unproject_topleft_pos_to_world_ray(
+    const Vec2 mouseRenderPos = mouseScreenPos - viewportScreenRect.p1;
+    const Line worldspaceCameraRay = camera.unproject_topleft_pos_to_world_ray(
         mouseRenderPos,
         dimensions_of(viewportScreenRect)
     );

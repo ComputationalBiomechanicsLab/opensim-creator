@@ -18,7 +18,7 @@ namespace osc::mi
     public:
         static const MIClass& Class()
         {
-            static MIClass const s_Class = T::CreateClass();
+            static const MIClass s_Class = T::CreateClass();
             return s_Class;
         }
 
