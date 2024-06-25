@@ -259,11 +259,12 @@ namespace osc
         RenderTexture& renderScene(Vec2 dims)
         {
             const std::vector<SceneDecoration> decorations = generateDecorations();
-            const SceneRendererParams params = calc_standard_dark_scene_render_params(
+            SceneRendererParams params = calc_standard_dark_scene_render_params(
                 m_Camera,
                 App::get().anti_aliasing_level(),
                 dims
             );
+            m_State->getCustomRenderingOptions().applyTo(params);
             return m_CachedRenderer.render(decorations, params);
         }
 

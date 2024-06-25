@@ -57,7 +57,7 @@ namespace osc
     void draw_xz_floor_lines(
         SceneCache&,
         const std::function<void(SceneDecoration&&)>& out,
-        float scale = 1.0f
+        float scale = 5.0f
     );
 
     void draw_xz_grid(

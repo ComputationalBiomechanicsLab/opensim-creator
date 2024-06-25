@@ -5,6 +5,8 @@
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentInputIdentifier.h>
 #include <OpenSimCreator/Documents/MeshWarper/TPSWarpResultCache.h>
 #include <OpenSimCreator/Documents/MeshWarper/UndoableTPSDocument.h>
+#include <OpenSimCreator/Graphics/CustomRenderingOptions.h>
+#include <OpenSimCreator/Graphics/OverlayDecorationOptions.h>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabHover.h>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabUserSelection.h>
 
@@ -44,6 +46,9 @@ namespace osc
             m_SceneCache{std::move(sceneCache_)}
         {
             OSC_ASSERT(m_SceneCache != nullptr);
+            m_OverlayDecorationOptions.setDrawXZGrid(true);
+            m_OverlayDecorationOptions.setDrawAxisLines(true);
+            m_CustomRenderingOptions.setDrawFloor(false);
         }
 
         void on_mount()
@@ -242,6 +247,11 @@ namespace osc
             m_LinkedCameraBase = newCamera;
         }
 
+        const CustomRenderingOptions& getCustomRenderingOptions() const { return m_CustomRenderingOptions; }
+        CustomRenderingOptions& updCustomRenderingOptions() { return m_CustomRenderingOptions; }
+        const OverlayDecorationOptions& getOverlayDecorationOptions() const { return m_OverlayDecorationOptions; }
+        OverlayDecorationOptions& updOverlayDecorationOptions() { return m_OverlayDecorationOptions; }
+
     private:
         // ID of the top-level TPS3D tab
         UID m_TabID;
@@ -281,5 +291,11 @@ namespace osc
 
         // currently active tab-wide popups
         PopupManager m_PopupManager;
+
+        // user-editable rendering options
+        CustomRenderingOptions m_CustomRenderingOptions;
+
+        // user-editable overlay decoration options
+        OverlayDecorationOptions m_OverlayDecorationOptions;
     };
 }

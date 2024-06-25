@@ -2,6 +2,7 @@
 
 #include <OpenSimCreator/Graphics/CustomRenderingOptionFlags.h>
 
+#include <oscar/Graphics/Scene/SceneRendererParams.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/EnumHelpers.h>
@@ -88,4 +89,12 @@ void osc::CustomRenderingOptions::tryUpdFromValues(std::string_view keyPrefix, c
             SetOption(m_Flags, metadata.value, v->to_bool());
         }
     }
+}
+
+void osc::CustomRenderingOptions::applyTo(SceneRendererParams& params) const
+{
+    params.draw_floor = getDrawFloor();
+    params.draw_rims = getDrawSelectionRims();
+    params.draw_mesh_normals = getDrawMeshNormals();
+    params.draw_shadows = getDrawShadows();
 }

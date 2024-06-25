@@ -1,5 +1,6 @@
 #pragma once
 
+#include <OpenSimCreator/Graphics/OverlayDecorationGenerator.h>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 
 #include <oscar/Graphics/Color.h>
@@ -26,17 +27,20 @@ namespace osc
         });
 
         // if requested, also draw wireframe overlays for the mesh
-        if (wireframeMode)
-        {
+        if (wireframeMode) {
             out({
                 .mesh = tpsSourceOrDestinationMesh,
                 .material = sharedState.wireframe_material(),
             });
         }
 
-        // add grid decorations
-        draw_xz_grid(sharedState.updSceneCache(), out);
-        draw_xz_floor_lines(sharedState.updSceneCache(), out, 100.0f);
+        // add overlay decorations
+        GenerateOverlayDecorations(
+            sharedState.updSceneCache(),
+            sharedState.getOverlayDecorationOptions(),
+            BVH{},  // TODO: should have a scene BVH by this point
+            out
+        );
     }
 
     // returns the amount by which non-participating landmarks should be scaled w.r.t. pariticpating ones

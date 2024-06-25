@@ -207,11 +207,12 @@ namespace osc
             const std::optional<RayCollision>& maybeMeshCollision,
             const std::optional<MeshWarpingTabHover>& maybeLandmarkCollision)
         {
-            const SceneRendererParams params = calc_standard_dark_scene_render_params(
+            SceneRendererParams params = calc_standard_dark_scene_render_params(
                 m_Camera,
                 App::get().anti_aliasing_level(),
                 dims
             );
+            m_State->getCustomRenderingOptions().applyTo(params);
             const std::vector<SceneDecoration> decorations = generateDecorations(maybeMeshCollision, maybeLandmarkCollision);
             return m_CachedRenderer.render(decorations, params);
         }

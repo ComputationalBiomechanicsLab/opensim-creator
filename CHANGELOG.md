@@ -19,6 +19,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   the splash tab
 - When a model editor tab is active, it now shows the filename of the osim file--if there is
   one--in the application window's title
+- The "Axis Lines" overlay option now extends the lines out to 5 meters (previously: 1 m)
 - Internal: Added `src/OpenSimThirdPartyPlugins`, for housing copy+pasted OpenSim
   plugin code sourced from the internet (e.g. SimTK.org)
 

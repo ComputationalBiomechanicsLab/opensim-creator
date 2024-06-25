@@ -26,27 +26,25 @@ SceneRendererParams osc::CalcSceneRendererParams(
     AntiAliasingLevel antiAliasingLevel,
     float fixupScaleFactor)
 {
-    SceneRendererParams params;
-    if (viewportDims.x >= 1.0f && viewportDims.y >= 1.0f)
-    {
-        params.dimensions = viewportDims;
+    SceneRendererParams rv;
+
+    if (viewportDims.x >= 1.0f && viewportDims.y >= 1.0f) {
+        rv.dimensions = viewportDims;
     }
-    params.antialiasing_level = antiAliasingLevel;
-    params.light_direction = recommended_light_direction(renderParams.camera);
-    params.draw_floor = renderParams.renderingOptions.getDrawFloor();
-    params.view_matrix = renderParams.camera.view_matrix();
-    params.projection_matrix = renderParams.camera.projection_matrix(aspect_ratio_of(viewportDims));
-    params.near_clipping_plane = renderParams.camera.znear;
-    params.far_clipping_plane = renderParams.camera.zfar;
-    params.view_pos = renderParams.camera.position();
-    params.fixup_scale_factor = fixupScaleFactor;
-    params.draw_rims = renderParams.renderingOptions.getDrawSelectionRims();
-    params.draw_mesh_normals = renderParams.renderingOptions.getDrawMeshNormals();
-    params.draw_shadows = renderParams.renderingOptions.getDrawShadows();
-    params.light_color = renderParams.lightColor;
-    params.background_color = renderParams.backgroundColor;
-    params.floor_location = renderParams.floorLocation;
-    return params;
+
+    rv.antialiasing_level = antiAliasingLevel;
+    rv.light_direction = recommended_light_direction(renderParams.camera);
+    renderParams.renderingOptions.applyTo(rv);
+    rv.view_matrix = renderParams.camera.view_matrix();
+    rv.projection_matrix = renderParams.camera.projection_matrix(aspect_ratio_of(viewportDims));
+    rv.near_clipping_plane = renderParams.camera.znear;
+    rv.far_clipping_plane = renderParams.camera.zfar;
+    rv.view_pos = renderParams.camera.position();
+    rv.fixup_scale_factor = fixupScaleFactor;
+    rv.light_color = renderParams.lightColor;
+    rv.background_color = renderParams.backgroundColor;
+    rv.floor_location = renderParams.floorLocation;
+    return rv;
 }
 
 void osc::GenerateDecorations(
