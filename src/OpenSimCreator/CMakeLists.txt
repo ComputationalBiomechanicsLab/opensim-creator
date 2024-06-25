@@ -267,6 +267,7 @@ add_library(OpenSimCreator STATIC
     UI/MeshWarper/MeshWarpingTabResultMeshPanel.h
     UI/MeshWarper/MeshWarpingTabSharedState.h
     UI/MeshWarper/MeshWarpingTabStatusBar.h
+    UI/MeshWarper/MeshWarpingTabToolbar.cpp
     UI/MeshWarper/MeshWarpingTabToolbar.h
     UI/MeshWarper/MeshWarpingTabUserSelection.h
 
