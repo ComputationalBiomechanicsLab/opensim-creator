@@ -251,6 +251,8 @@ namespace osc
         CustomRenderingOptions& updCustomRenderingOptions() { return m_CustomRenderingOptions; }
         const OverlayDecorationOptions& getOverlayDecorationOptions() const { return m_OverlayDecorationOptions; }
         OverlayDecorationOptions& updOverlayDecorationOptions() { return m_OverlayDecorationOptions; }
+        bool isWireframeModeEnabled() const { return m_WireframeMode; }
+        void setWireframeModeEnabled(bool v) { m_WireframeMode = v; }
 
     private:
         // ID of the top-level TPS3D tab
@@ -297,5 +299,8 @@ namespace osc
 
         // user-editable overlay decoration options
         OverlayDecorationOptions m_OverlayDecorationOptions;
+
+        // user-editable wireframe mode rendering toggle
+        bool m_WireframeMode = true;
     };
 }

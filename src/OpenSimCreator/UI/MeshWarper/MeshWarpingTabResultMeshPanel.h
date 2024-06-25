@@ -227,7 +227,7 @@ namespace osc
             AppendCommonDecorations(
                 *m_State,
                 m_State->getResultMesh(),
-                m_WireframeMode,
+                m_State->isWireframeModeEnabled(),
                 decorationConsumer
             );
 
@@ -274,7 +274,6 @@ namespace osc
             *App::singleton<SceneCache>(App::resource_loader()),
         };
         ui::HittestResult m_LastTextureHittestResult;
-        bool m_WireframeMode = true;
         bool m_ShowDestinationMesh = false;
         Vec2 m_OverlayPadding = {10.0f, 10.0f};
         float m_LandmarkRadius = 0.05f;

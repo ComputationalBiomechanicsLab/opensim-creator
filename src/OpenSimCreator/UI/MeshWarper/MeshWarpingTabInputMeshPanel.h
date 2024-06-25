@@ -236,7 +236,7 @@ namespace osc
             AppendCommonDecorations(
                 *m_State,
                 m_State->getScratchMesh(m_DocumentIdentifier),
-                m_WireframeMode,
+                m_State->isWireframeModeEnabled(),
                 decorationConsumer
             );
 
@@ -594,7 +594,6 @@ namespace osc
             *App::singleton<SceneCache>(App::resource_loader()),
         };
         ui::HittestResult m_LastTextureHittestResult;
-        bool m_WireframeMode = true;
         float m_LandmarkRadius = 0.05f;
     };
 }

@@ -63,6 +63,9 @@ private:
 
         ui::draw_separator(ImGuiSeparatorFlags_Vertical);
         ui::same_line();
+
+        drawVisualAidsMenuButton();
+        ui::same_line();
     }
 
     void drawNewDocumentButton()
@@ -113,7 +116,9 @@ private:
                 m_State->setCamerasLinked(linked);
             }
         }
+
         ui::same_line();
+
         if (not m_State->isCamerasLinked()) {
             ui::begin_disabled();
         }
@@ -125,6 +130,24 @@ private:
         }
         if (not m_State->isCamerasLinked()) {
             ui::end_disabled();
+        }
+    }
+
+    void drawVisualAidsMenuButton()
+    {
+        if (ui::draw_button("visualization options " ICON_FA_COG)) {
+            ui::open_popup("visualization_options_popup");
+        }
+        if (ui::begin_popup("visualization_options_popup",ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings)) {
+            DrawRenderingOptionsEditor(m_State->updCustomRenderingOptions());
+            DrawOverlayOptionsEditor(m_State->updOverlayDecorationOptions());
+            {
+                bool wireframe = m_State->isWireframeModeEnabled();
+                if (ui::draw_checkbox("Wireframe", &wireframe)) {
+                    m_State->setWireframeModeEnabled(wireframe);
+                }
+            }
+            ui::end_popup();
         }
     }
 

@@ -5,6 +5,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- The mesh warping tab now has a `Visualization Options` menu, which lets users toggle a few
+  basic visualization options (e.g. grid lines, #892)
 - The model warping workflow now writes the warped meshes to disk at `$MODEL_DIR/WarpedGeometry`
   (previously: it kept them in-memory, which was only really useful for development, #889)
 - The mesh input (source/destination) panels in the mesh importer now have the option to import
