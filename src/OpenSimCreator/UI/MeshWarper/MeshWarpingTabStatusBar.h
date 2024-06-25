@@ -38,12 +38,10 @@ namespace osc
     private:
         void drawContent()
         {
-            if (m_State->currentHover)
-            {
-                drawCurrentHoverInfo(*m_State->currentHover);
+            if (m_State->isHoveringSomething()) {
+                drawCurrentHoverInfo(m_State->getCurrentHover());
             }
-            else
-            {
+            else {
                 ui::draw_text_disabled("(nothing hovered)");
             }
         }

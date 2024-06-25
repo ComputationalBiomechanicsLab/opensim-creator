@@ -107,21 +107,31 @@ private:
 
     void drawCameraLockCheckbox()
     {
-        ui::draw_checkbox("link cameras", &m_State->linkCameras);
+        {
+            bool linked = m_State->isCamerasLinked();
+            if (ui::draw_checkbox("link cameras", &linked)) {
+                m_State->setCamerasLinked(linked);
+            }
+        }
         ui::same_line();
-        if (not m_State->linkCameras) {
+        if (not m_State->isCamerasLinked()) {
             ui::begin_disabled();
         }
-        ui::draw_checkbox("only link rotation", &m_State->onlyLinkRotation);
-        if (not m_State->linkCameras) {
+        {
+            bool linkRotation = m_State->isOnlyCameraRotationLinked();
+            if (ui::draw_checkbox("only link rotation", &linkRotation)) {
+                m_State->setOnlyCameraRotationLinked(linkRotation);
+            }
+        }
+        if (not m_State->isCamerasLinked()) {
             ui::end_disabled();
         }
     }
 
     std::string m_Label;
     std::shared_ptr<MeshWarpingTabSharedState> m_State;
-    UndoButton m_UndoButton{m_State->editedDocument};
-    RedoButton m_RedoButton{m_State->editedDocument};
+    UndoButton m_UndoButton{m_State->getUndoableSharedPtr()};
+    RedoButton m_RedoButton{m_State->getUndoableSharedPtr()};
 };
 
 osc::MeshWarpingTabToolbar::MeshWarpingTabToolbar(

@@ -13,7 +13,7 @@ namespace osc
 {
     // append decorations that are common to all panels to the given output vector
     void AppendCommonDecorations(
-        const MeshWarpingTabSharedState& sharedState,
+        MeshWarpingTabSharedState& sharedState,
         const Mesh& tpsSourceOrDestinationMesh,
         bool wireframeMode,
         const std::function<void(SceneDecoration&&)>& out,
@@ -30,13 +30,13 @@ namespace osc
         {
             out({
                 .mesh = tpsSourceOrDestinationMesh,
-                .material = sharedState.wireframe_material,
+                .material = sharedState.wireframe_material(),
             });
         }
 
         // add grid decorations
-        draw_xz_grid(*sharedState.meshCache, out);
-        draw_xz_floor_lines(*sharedState.meshCache, out, 100.0f);
+        draw_xz_grid(sharedState.updSceneCache(), out);
+        draw_xz_floor_lines(sharedState.updSceneCache(), out, 100.0f);
     }
 
     // returns the amount by which non-participating landmarks should be scaled w.r.t. pariticpating ones

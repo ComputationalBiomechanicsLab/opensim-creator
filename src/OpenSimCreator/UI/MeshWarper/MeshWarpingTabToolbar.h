@@ -3,7 +3,7 @@
 #include <memory>
 #include <string_view>
 
-namespace osc { struct MeshWarpingTabSharedState; }
+namespace osc { class MeshWarpingTabSharedState; }
 
 namespace osc
 {

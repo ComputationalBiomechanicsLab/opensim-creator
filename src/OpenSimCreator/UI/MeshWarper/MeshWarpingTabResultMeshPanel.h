@@ -61,25 +61,14 @@ namespace osc
         void updateCamera()
         {
             // if cameras are linked together, ensure all cameras match the "base" camera
-            if (m_State->linkCameras && m_Camera != m_State->linkedCameraBase)
-            {
-                if (m_State->onlyLinkRotation)
-                {
-                    m_Camera.phi = m_State->linkedCameraBase.phi;
-                    m_Camera.theta = m_State->linkedCameraBase.theta;
-                }
-                else
-                {
-                    m_Camera = m_State->linkedCameraBase;
-                }
-            }
+            m_State->updateOneCameraFromLinkedBase(m_Camera);
 
             // update camera if user drags it around etc.
             if (m_LastTextureHittestResult.is_hovered)
             {
                 if (ui::update_polar_camera_from_mouse_inputs(m_Camera, dimensions_of(m_LastTextureHittestResult.item_screen_rect)))
                 {
-                    m_State->linkedCameraBase = m_Camera;  // reflects latest modification
+                    m_State->setLinkedBaseCamera(m_Camera);  // reflects latest modification
                 }
             }
         }
@@ -162,11 +151,11 @@ namespace osc
                 }
                 if (ui::draw_menu_item("Warped Non-Participating Landmarks to CSV"))
                 {
-                    ActionSaveWarpedNonParticipatingLandmarksToCSV(m_State->getScratch(), m_State->meshResultCache);
+                    ActionSaveWarpedNonParticipatingLandmarksToCSV(m_State->getScratch(), m_State->updResultCache());
                 }
                 if (ui::draw_menu_item("Warped Non-Participating Landmark Positions to CSV"))
                 {
-                    ActionSaveWarpedNonParticipatingLandmarksToCSV(m_State->getScratch(), m_State->meshResultCache, LandmarkCSVFlags::NoHeader | LandmarkCSVFlags::NoNames);
+                    ActionSaveWarpedNonParticipatingLandmarksToCSV(m_State->getScratch(), m_State->updResultCache(), LandmarkCSVFlags::NoHeader | LandmarkCSVFlags::NoNames);
                 }
                 if (ui::draw_menu_item("Landmark Pairs to CSV"))
                 {
@@ -190,7 +179,7 @@ namespace osc
                     m_State->getResultMesh().bounds(),
                     aspect_ratio_of(m_LastTextureHittestResult.item_screen_rect)
                 );
-                m_State->linkedCameraBase = m_Camera;
+                m_State->setLinkedBaseCamera(m_Camera);
             }
             ui::draw_tooltip_if_item_hovered(
                 "Autoscale Scene",
@@ -206,7 +195,7 @@ namespace osc
             const ImGuiSliderFlags flags = ImGuiSliderFlags_Logarithmic;
 
             const CStringView label = "landmark radius";
-            ui::set_next_item_width(ui::get_content_region_avail().x - ui::calc_text_size(label).x - ui::get_style_item_inner_spacing().x - m_State->overlayPadding.x);
+            ui::set_next_item_width(ui::get_content_region_avail().x - ui::calc_text_size(label).x - ui::get_style_item_inner_spacing().x - m_State->getOverlayPadding().x);
             ui::draw_float_slider(label, &m_LandmarkRadius, 0.0001f, 100.0f, "%.4f", flags);
         }
 
@@ -254,12 +243,12 @@ namespace osc
             for (const Vec3& nonParticipatingLandmarkPos : m_State->getResultNonParticipatingLandmarkLocations())
             {
                 decorationConsumer({
-                    .mesh = m_State->landmarkSphere,
+                    .mesh = m_State->getLandmarkSphereMesh(),
                     .transform = {
                         .scale = Vec3{GetNonParticipatingLandmarkScaleFactor()*m_LandmarkRadius},
                         .position = nonParticipatingLandmarkPos,
                     },
-                    .color = m_State->nonParticipatingLandmarkColor,
+                    .color = m_State->getNonParticipatingLandmarkColor(),
                 });
             }
 

@@ -221,7 +221,7 @@ namespace osc
             ui::get_panel_draw_list()->AddCircleFilled(
                 circle.origin,
                 circle.radius,
-                ui::to_ImU32(m_State->nonParticipatingLandmarkColor)
+                ui::to_ImU32(m_State->getNonParticipatingLandmarkColor())
             );
 
             tryDrawCircleHighlight(circle, isSelected, isHovered);
@@ -229,15 +229,11 @@ namespace osc
 
         Color landmarkDotColor(bool hasLocation, bool isPaired) const
         {
-            if (hasLocation)
-            {
-                if (isPaired)
-                {
-                    return m_State->pairedLandmarkColor;
-                }
-                else
-                {
-                    return m_State->unpairedLandmarkColor;
+            if (hasLocation) {
+                if (isPaired) {
+                    return m_State->getPairedLandmarkColor();
+                } else {
+                    return m_State->getUnpairedLandmarkColor();
                 }
             }
             return Color::half_grey();

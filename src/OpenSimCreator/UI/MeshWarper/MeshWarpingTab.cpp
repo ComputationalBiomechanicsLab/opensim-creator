@@ -10,6 +10,7 @@
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabToolbar.h>
 
 #include <SDL_events.h>
+#include <oscar/Platform/App.h>
 #include <oscar/UI/Panels/LogViewerPanel.h>
 #include <oscar/UI/Panels/PanelManager.h>
 #include <oscar/UI/Panels/PerfPanel.h>
@@ -57,7 +58,7 @@ public:
             "History",
             [state = m_Shared](std::string_view panelName)
             {
-                return std::make_shared<UndoRedoPanel>(panelName, state->editedDocument);
+                return std::make_shared<UndoRedoPanel>(panelName, state->getUndoableSharedPtr());
             },
             ToggleablePanelFlags::Default - ToggleablePanelFlags::IsEnabledByDefault
         );
@@ -104,23 +105,21 @@ public:
     {
         App::upd().make_main_loop_waiting();
         m_PanelManager->on_mount();
-        m_Shared->popupManager.on_mount();
+        m_Shared->on_mount();
     }
 
     void on_unmount()
     {
+        m_Shared->on_unmount();
         m_PanelManager->on_unmount();
         App::upd().make_main_loop_polling();
     }
 
     bool onEvent(const SDL_Event& e)
     {
-        if (e.type == SDL_KEYDOWN)
-        {
+        if (e.type == SDL_KEYDOWN) {
             return onKeydownEvent(e.key);
-        }
-        else
-        {
+        } else {
             return false;
         }
     }
@@ -128,7 +127,7 @@ public:
     void on_tick()
     {
         // re-perform hover test each frame
-        m_Shared->currentHover.reset();
+        m_Shared->setHover(std::nullopt);
 
         // garbage collect panel data
         m_PanelManager->on_tick();
@@ -146,9 +145,7 @@ public:
         m_TopToolbar.onDraw();
         m_PanelManager->on_draw();
         m_StatusBar.onDraw();
-
-        // draw active popups over the UI
-        m_Shared->popupManager.on_draw();
+        m_Shared->on_draw();
     }
 
 private:
@@ -202,7 +199,7 @@ private:
     ParentPtr<ITabHost> m_Parent;
 
     // top-level state that all panels can potentially access
-    std::shared_ptr<MeshWarpingTabSharedState> m_Shared = std::make_shared<MeshWarpingTabSharedState>(m_TabID, m_Parent);
+    std::shared_ptr<MeshWarpingTabSharedState> m_Shared = std::make_shared<MeshWarpingTabSharedState>(m_TabID, m_Parent, App::singleton<SceneCache>(App::resource_loader()));
 
     // available/active panels that the user can toggle via the `window` menu
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();

@@ -88,11 +88,11 @@ namespace osc
             // state update: tell central state if something's being hovered in this panel
             if (landmarkCollision)
             {
-                m_State->currentHover = landmarkCollision;
+                m_State->setHover(landmarkCollision);
             }
             else if (meshCollision)
             {
-                m_State->currentHover.emplace(m_DocumentIdentifier, meshCollision->position);
+                m_State->setHover(m_DocumentIdentifier, meshCollision->position);
             }
 
             // update camera: NOTE: make sure it's updated *before* rendering; otherwise, it'll be one frame late
@@ -114,26 +114,13 @@ namespace osc
         void updateCamera()
         {
             // if the cameras are linked together, ensure this camera is updated from the linked camera
-            if (m_State->linkCameras && m_Camera != m_State->linkedCameraBase)
-            {
-                if (m_State->onlyLinkRotation)
-                {
-                    m_Camera.phi = m_State->linkedCameraBase.phi;
-                    m_Camera.theta = m_State->linkedCameraBase.theta;
-                }
-                else
-                {
-                    m_Camera = m_State->linkedCameraBase;
-                }
-            }
+            m_State->updateOneCameraFromLinkedBase(m_Camera);
 
             // if the user interacts with the render, update the camera as necessary
-            if (m_LastTextureHittestResult.is_hovered)
-            {
-                if (ui::update_polar_camera_from_mouse_inputs(m_Camera, dimensions_of(m_LastTextureHittestResult.item_screen_rect)))
-                {
-                    m_State->linkedCameraBase = m_Camera;  // reflects latest modification
-                }
+            if (m_LastTextureHittestResult.is_hovered and
+                ui::update_polar_camera_from_mouse_inputs(m_Camera, dimensions_of(m_LastTextureHittestResult.item_screen_rect))) {
+
+                m_State->setLinkedBaseCamera(m_Camera);
             }
         }
 
@@ -287,9 +274,9 @@ namespace osc
 
             SceneDecoration decoration
             {
-                .mesh = m_State->landmarkSphere,
+                .mesh = m_State->getLandmarkSphereMesh(),
                 .transform = {.scale = Vec3{m_LandmarkRadius}, .position = *maybeLocation},
-                .color = IsFullyPaired(landmarkPair) ? m_State->pairedLandmarkColor : m_State->unpairedLandmarkColor,
+                .color = IsFullyPaired(landmarkPair) ? m_State->getPairedLandmarkColor() : m_State->getUnpairedLandmarkColor(),
             };
 
             const TPSDocumentElementID landmarkID{landmarkPair.uid, TPSDocumentElementType::Landmark, m_DocumentIdentifier};
@@ -324,13 +311,13 @@ namespace osc
         {
             SceneDecoration decoration
             {
-                .mesh = m_State->landmarkSphere,
+                .mesh = m_State->getLandmarkSphereMesh(),
                 .transform =
                 {
                     .scale = Vec3{GetNonParticipatingLandmarkScaleFactor()*m_LandmarkRadius},
                     .position = npl.location,
                 },
-                .color = m_State->nonParticipatingLandmarkColor,
+                .color = m_State->getNonParticipatingLandmarkColor(),
             };
             const TPSDocumentElementID id{npl.uid, TPSDocumentElementType::NonParticipatingLandmark, m_DocumentIdentifier};
             if (m_State->isSelected(id))
@@ -353,15 +340,15 @@ namespace osc
             const bool nonParticipating = isUserPlacingNonParticipatingLandmark();
 
             const Color color = nonParticipating ?
-                m_State->nonParticipatingLandmarkColor :
-                m_State->unpairedLandmarkColor;
+                m_State->getNonParticipatingLandmarkColor() :
+                m_State->getUnpairedLandmarkColor();
 
             const float radius = nonParticipating ?
                 GetNonParticipatingLandmarkScaleFactor()*m_LandmarkRadius :
                 m_LandmarkRadius;
 
             decorationConsumer({
-                .mesh = m_State->landmarkSphere,
+                .mesh = m_State->getLandmarkSphereMesh(),
                 .transform = {.scale = Vec3{radius}, .position = meshCollisionPosition},
                 .color = color.with_alpha(0.8f),  // faded
             });
@@ -417,7 +404,7 @@ namespace osc
             {
                 ActionDeleteSceneElementsByID(
                     m_State->updUndoable(),
-                    m_State->userSelection.getUnderlyingSet()
+                    m_State->getUnderlyingSelectionSet()
                 );
                 m_State->clearSelection();
             }
@@ -428,7 +415,7 @@ namespace osc
         // draws 2D ImGui overlays over the scene render
         void draw2DOverlayUI(const Rect& renderRect)
         {
-            ui::set_cursor_screen_pos(renderRect.p1 + m_State->overlayPadding);
+            ui::set_cursor_screen_pos(renderRect.p1 + m_State->getOverlayPadding());
 
             drawInformationIcon();
             ui::same_line();
@@ -574,7 +561,7 @@ namespace osc
             if (ui::draw_button(ICON_FA_EXPAND_ARROWS_ALT))
             {
                 auto_focus(m_Camera, m_State->getScratchMesh(m_DocumentIdentifier).bounds(), aspect_ratio_of(m_LastTextureHittestResult.item_screen_rect));
-                m_State->linkedCameraBase = m_Camera;
+                m_State->setLinkedBaseCamera(m_Camera);
             }
             ui::draw_tooltip_if_item_hovered("Autoscale Scene", "Zooms camera to try and fit everything in the scene into the viewer");
         }
@@ -587,7 +574,7 @@ namespace osc
             const ImGuiSliderFlags flags = ImGuiSliderFlags_Logarithmic;
 
             const CStringView label = "landmark radius";
-            ui::set_next_item_width(ui::get_content_region_avail().x - ui::calc_text_size(label).x - ui::get_style_item_inner_spacing().x - m_State->overlayPadding.x);
+            ui::set_next_item_width(ui::get_content_region_avail().x - ui::calc_text_size(label).x - ui::get_style_item_inner_spacing().x - m_State->getOverlayPadding().x);
             ui::draw_float_slider(label, &m_LandmarkRadius, 0.0001f, 100.0f, "%.4f", flags);
         }
 
