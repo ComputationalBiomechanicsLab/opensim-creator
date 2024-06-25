@@ -28,8 +28,7 @@ public:
 
     void onDraw()
     {
-        if (BeginToolbar(m_Label))
-        {
+        if (BeginToolbar(m_Label)) {
             drawContent();
         }
         ui::end_panel();
@@ -68,8 +67,7 @@ private:
 
     void drawNewDocumentButton()
     {
-        if (ui::draw_button(ICON_FA_FILE))
-        {
+        if (ui::draw_button(ICON_FA_FILE)) {
             ActionCreateNewDocument(m_State->updUndoable());
         }
         ui::draw_tooltip_if_item_hovered(
@@ -81,14 +79,11 @@ private:
     void drawOpenDocumentButton()
     {
         ui::draw_button(ICON_FA_FOLDER_OPEN);
-        if (ui::begin_popup_context_menu("##OpenFolder", ImGuiPopupFlags_MouseButtonLeft))
-        {
-            if (ui::draw_menu_item("Load Source Mesh"))
-            {
+        if (ui::begin_popup_context_menu("##OpenFolder", ImGuiPopupFlags_MouseButtonLeft)) {
+            if (ui::draw_menu_item("Load Source Mesh")) {
                 ActionLoadMeshFile(m_State->updUndoable(), TPSDocumentInputIdentifier::Source);
             }
-            if (ui::draw_menu_item("Load Destination Mesh"))
-            {
+            if (ui::draw_menu_item("Load Destination Mesh")) {
                 ActionLoadMeshFile(m_State->updUndoable(), TPSDocumentInputIdentifier::Destination);
             }
             ui::end_popup();
@@ -101,8 +96,7 @@ private:
 
     void drawSaveLandmarksButton()
     {
-        if (ui::draw_button(ICON_FA_SAVE))
-        {
+        if (ui::draw_button(ICON_FA_SAVE)) {
             ActionSavePairedLandmarksToCSV(m_State->getScratch(), lm::LandmarkCSVFlags::NoNames);
         }
         ui::draw_tooltip_if_item_hovered(
@@ -115,13 +109,11 @@ private:
     {
         ui::draw_checkbox("link cameras", &m_State->linkCameras);
         ui::same_line();
-        if (!m_State->linkCameras)
-        {
+        if (not m_State->linkCameras) {
             ui::begin_disabled();
         }
         ui::draw_checkbox("only link rotation", &m_State->onlyLinkRotation);
-        if (!m_State->linkCameras)
-        {
+        if (not m_State->linkCameras) {
             ui::end_disabled();
         }
     }
