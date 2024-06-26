@@ -50,7 +50,7 @@ set(
     "enable special build parameters for emscripten (emsdk) - don't try this unless you know what you're doing ;)"
 )
 set(OSC_EXECUTABLE_SUFFIX ${CMAKE_EXECUTABLE_SUFFIX}
-    CACHE BOOL
+    CACHE STRING
     "global suffix to place on the end of each executable (platform-dependent)"
 )
 
