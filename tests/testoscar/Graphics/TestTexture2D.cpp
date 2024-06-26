@@ -13,14 +13,17 @@
 #include <oscar/Maths/Vec4.h>
 #include <oscar/Utils/ObjectRepresentation.h>
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <ranges>
 #include <sstream>
 #include <utility>
 #include <vector>
 
 using namespace osc::testing;
 using namespace osc;
+namespace rgs = std::ranges;
 
 namespace
 {
@@ -149,14 +152,14 @@ TEST(Texture2D, SetPixelDataWith8BitSingleChannelDataFollowedByGetPixels32Blanks
 
 TEST(Texture2D, SetPixelDataWith32BitFloatingPointValuesFollowedByGetPixelDataReturnsSameSpan)
 {
-    const Vec4 color = GenerateVec4();
+    const Vec4 color = generate<Vec4>();
     const Vec2i dimensions = {1, 1};
     std::vector<Vec4> const rgbaFloatPixels(static_cast<size_t>(dimensions.x * dimensions.y), color);
 
     Texture2D t(dimensions, TextureFormat::RGBAFloat);
     t.set_pixel_data(view_object_representations<uint8_t>(rgbaFloatPixels));
 
-    ASSERT_TRUE(ContainersEqual(t.pixel_data(), view_object_representations<uint8_t>(rgbaFloatPixels)));
+    ASSERT_TRUE(rgs::equal(t.pixel_data(), view_object_representations<uint8_t>(rgbaFloatPixels)));
 }
 
 TEST(Texture2D, SetPixelDataWith32BitFloatingPointValuesFollowedByGetPixelsReturnsSameValues)

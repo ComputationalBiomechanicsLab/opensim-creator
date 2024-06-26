@@ -748,7 +748,7 @@ TEST_F(Renderer, MaterialSetFloatOnMaterialCausesGetFloatToReturnTheProvidedValu
     Material mat = GenerateMaterial();
 
     std::string key = "someKey";
-    float value = GenerateFloat();
+    float value = generate<float>();
 
     mat.set_float(key, value);
 
@@ -759,7 +759,7 @@ TEST_F(Renderer, MaterialSetFloatArrayOnMaterialCausesGetFloatArrayToReturnThePr
 {
     Material mat = GenerateMaterial();
     std::string key = "someKey";
-    std::array<float, 4> values = {GenerateFloat(), GenerateFloat(), GenerateFloat(), GenerateFloat()};
+    std::array<float, 4> values = {generate<float>(), generate<float>(), generate<float>(), generate<float>()};
 
     ASSERT_FALSE(mat.get_float_array(key));
 
@@ -774,7 +774,7 @@ TEST_F(Renderer, MaterialSetVec2OnMaterialCausesGetVec2ToReturnTheProvidedValue)
     Material mat = GenerateMaterial();
 
     std::string key = "someKey";
-    Vec2 value = GenerateVec2();
+    Vec2 value = generate<Vec2>();
 
     mat.set_vec2(key, value);
 
@@ -786,7 +786,7 @@ TEST_F(Renderer, MaterialSetVec2AndThenSetVec3CausesGetVec2ToReturnEmpty)
     Material mat = GenerateMaterial();
 
     std::string key = "someKey";
-    Vec2 value = GenerateVec2();
+    Vec2 value = generate<Vec2>();
 
     ASSERT_FALSE(mat.get_vec2(key).has_value());
 
@@ -805,7 +805,7 @@ TEST_F(Renderer, MaterialSetVec2CausesMaterialToCompareNotEqualToCopy)
     Material mat = GenerateMaterial();
     Material copy{mat};
 
-    mat.set_vec2("someKey", GenerateVec2());
+    mat.set_vec2("someKey", generate<Vec2>());
 
     ASSERT_NE(mat, copy);
 }
@@ -815,7 +815,7 @@ TEST_F(Renderer, MaterialSetVec3OnMaterialCausesGetVec3ToReturnTheProvidedValue)
     Material mat = GenerateMaterial();
 
     std::string key = "someKey";
-    Vec3 value = GenerateVec3();
+    Vec3 value = generate<Vec3>();
 
     mat.set_vec3(key, value);
 
@@ -826,7 +826,7 @@ TEST_F(Renderer, MaterialSetVec3ArrayOnMaterialCausesGetVec3ArrayToReutrnTheProv
 {
     Material mat = GenerateMaterial();
     std::string key = "someKey";
-    std::array<Vec3, 4> values = {GenerateVec3(), GenerateVec3(), GenerateVec3(), GenerateVec3()};
+    std::array<Vec3, 4> values = {generate<Vec3>(), generate<Vec3>(), generate<Vec3>(), generate<Vec3>()};
 
     ASSERT_FALSE(mat.get_vec3_array(key));
 
@@ -841,7 +841,7 @@ TEST_F(Renderer, MaterialSetVec4OnMaterialCausesGetVec4ToReturnTheProvidedValue)
     Material mat = GenerateMaterial();
 
     std::string key = "someKey";
-    Vec4 value = GenerateVec4();
+    Vec4 value = generate<Vec4>();
 
     mat.set_vec4(key, value);
 
@@ -853,7 +853,7 @@ TEST_F(Renderer, MaterialSetMat3OnMaterialCausesGetMat3ToReturnTheProvidedValue)
     Material mat = GenerateMaterial();
 
     std::string key = "someKey";
-    Mat3 value = GenerateMat3x3();
+    Mat3 value = generate<Mat3>();
 
     mat.set_mat3(key, value);
 
@@ -865,7 +865,7 @@ TEST_F(Renderer, MaterialSetMat4OnMaterialCausesGetMat4ToReturnTheProvidedValue)
     Material mat = GenerateMaterial();
 
     std::string key = "someKey";
-    Mat4 value = GenerateMat4x4();
+    Mat4 value = generate<Mat4>();
 
     mat.set_mat4(key, value);
 
@@ -881,10 +881,10 @@ TEST_F(Renderer, MaterialGetMat4ArrayInitiallyReturnsNothing)
 TEST_F(Renderer, MaterialSetMat4ArrayCausesGetMat4ArrayToReturnSameSequenceOfValues)
 {
     const auto mat4Array = std::to_array<Mat4>({
-        GenerateMat4x4(),
-        GenerateMat4x4(),
-        GenerateMat4x4(),
-        GenerateMat4x4()
+        generate<Mat4>(),
+        generate<Mat4>(),
+        generate<Mat4>(),
+        generate<Mat4>()
     });
 
     Material mat = GenerateMaterial();
@@ -901,7 +901,7 @@ TEST_F(Renderer, MaterialSetIntOnMaterialCausesGetIntToReturnTheProvidedValue)
     Material mat = GenerateMaterial();
 
     std::string key = "someKey";
-    int value = GenerateInt();
+    int value = generate<int>();
 
     mat.set_int(key, value);
 
@@ -913,7 +913,7 @@ TEST_F(Renderer, MaterialSetBoolOnMaterialCausesGetBoolToReturnTheProvidedValue)
     Material mat = GenerateMaterial();
 
     std::string key = "someKey";
-    bool value = GenerateBool();
+    bool value = generate<bool>();
 
     mat.set_bool(key, value);
 
@@ -1189,8 +1189,8 @@ TEST_F(Renderer, MaterialSetFloatAndThenSetVec3CausesGetFloatToReturnEmpty)
     Material mat = GenerateMaterial();
 
     std::string key = "someKey";
-    float floatValue = GenerateFloat();
-    Vec3 vecValue = GenerateVec3();
+    float floatValue = generate<float>();
+    Vec3 vecValue = generate<Vec3>();
 
     mat.set_float(key, floatValue);
 
@@ -1254,7 +1254,7 @@ TEST_F(Renderer, MaterialPropertyBlockClearClearsProperties)
 {
     MaterialPropertyBlock mpb;
 
-    mpb.set_float("someKey", GenerateFloat());
+    mpb.set_float("someKey", generate<float>());
 
     ASSERT_FALSE(mpb.empty());
 
@@ -1329,7 +1329,7 @@ TEST_F(Renderer, MaterialPropertyBlockSetFloatCausesGetterToReturnSetValue)
 {
     MaterialPropertyBlock mpb;
     std::string key = "someKey";
-    float value = GenerateFloat();
+    float value = generate<float>();
 
     ASSERT_FALSE(mpb.get_float(key));
 
@@ -1342,7 +1342,7 @@ TEST_F(Renderer, MaterialPropertyBlockSetVec3CausesGetterToReturnSetValue)
 {
     MaterialPropertyBlock mpb;
     std::string key = "someKey";
-    Vec3 value = GenerateVec3();
+    Vec3 value = generate<Vec3>();
 
     ASSERT_FALSE(mpb.get_vec3(key));
 
@@ -1355,7 +1355,7 @@ TEST_F(Renderer, MaterialPropertyBlockSetVec4CausesGetterToReturnSetValue)
 {
     MaterialPropertyBlock mpb;
     std::string key = "someKey";
-    Vec4 value = GenerateVec4();
+    Vec4 value = generate<Vec4>();
 
     ASSERT_FALSE(mpb.get_vec4(key));
 
@@ -1368,7 +1368,7 @@ TEST_F(Renderer, MaterialPropertyBlockSetMat3CausesGetterToReturnSetValue)
 {
     MaterialPropertyBlock mpb;
     std::string key = "someKey";
-    Mat3 value = GenerateMat3x3();
+    Mat3 value = generate<Mat3>();
 
     ASSERT_FALSE(mpb.get_vec4(key));
 
@@ -1381,7 +1381,7 @@ TEST_F(Renderer, MaterialPropertyBlockSetIntCausesGetterToReturnSetValue)
 {
     MaterialPropertyBlock mpb;
     std::string key = "someKey";
-    int value = GenerateInt();
+    int value = generate<int>();
 
     ASSERT_FALSE(mpb.get_int(key));
 
@@ -1394,7 +1394,7 @@ TEST_F(Renderer, MaterialPropertyBlockSetBoolCausesGetterToReturnSetValue)
 {
     MaterialPropertyBlock mpb;
     std::string key = "someKey";
-    bool value = GenerateBool();
+    bool value = generate<bool>();
 
     ASSERT_FALSE(mpb.get_bool(key));
 
@@ -1438,7 +1438,7 @@ TEST_F(Renderer, MaterialPropertyBlockCopyAssignmentComparesEqual)
     MaterialPropertyBlock m1;
     MaterialPropertyBlock m2;
 
-    m1.set_float("someKey", GenerateFloat());
+    m1.set_float("someKey", generate<float>());
 
     ASSERT_NE(m1, m2);
 
@@ -1452,7 +1452,7 @@ TEST_F(Renderer, MaterialPropertyBlockDifferentMaterialBlocksCompareNotEqual)
     MaterialPropertyBlock m1;
     MaterialPropertyBlock m2;
 
-    m1.set_float("someKey", GenerateFloat());
+    m1.set_float("someKey", generate<float>());
 
     ASSERT_NE(m1, m2);
 }

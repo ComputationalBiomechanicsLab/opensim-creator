@@ -107,13 +107,13 @@ TEST(Camera, CanGetBackgroundColor)
 TEST(Camera, CanSetBackgroundColor)
 {
     Camera camera;
-    camera.set_background_color(GenerateColor());
+    camera.set_background_color(generate<Color>());
 }
 
 TEST(Camera, SetBackgroundColorMakesGetBackgroundColorReturnTheColor)
 {
     Camera camera;
-    const Color color = GenerateColor();
+    const Color color = generate<Color>();
 
     camera.set_background_color(color);
 
@@ -127,7 +127,7 @@ TEST(Camera, SetBackgroundColorMakesCameraCompareNonEqualWithCopySource)
 
     ASSERT_EQ(camera, copy);
 
-    copy.set_background_color(GenerateColor());
+    copy.set_background_color(generate<Color>());
 
     ASSERT_NE(camera, copy);
 }

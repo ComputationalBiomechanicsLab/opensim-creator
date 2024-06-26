@@ -20,40 +20,36 @@
 
 namespace osc::testing
 {
-    std::default_random_engine& GetRngEngine();
+    std::default_random_engine& get_process_random_engine();
 
-    float GenerateFloat();
-    int GenerateInt();
-    bool GenerateBool();
-    uint8_t GenerateUint8();
-    Color GenerateColor();
-    Color32 GenerateColor32();
-    Vec2 GenerateVec2();
-    Vec3 GenerateVec3();
-    Vec4 GenerateVec4();
-    Mat3 GenerateMat3x3();
-    Mat4 GenerateMat4x4();
-    Triangle GenerateTriangle();
-    std::vector<Vec3> GenerateTriangleVerts();
-    std::vector<Vec3> GenerateVertices(size_t);
-    std::vector<Vec3> GenerateNormals(size_t);
-    std::vector<Vec2> GenerateTexCoords(size_t);
-    std::vector<Color> GenerateColors(size_t);
-    std::vector<Vec4> GenerateTangents(size_t);
-    std::vector<uint16_t> GenerateIndices(size_t start, size_t end);
+    template<typename T>
+    T generate();
 
-    template<std::ranges::range T, std::ranges::range U>
-    bool ContainersEqual(const T& a, const U& b)
-    {
-        using std::begin;
-        using std::end;
+    template<> float generate();
+    template<> int generate();
+    template<> bool generate();
+    template<> uint8_t generate();
+    template<> Color generate();
+    template<> Color32 generate();
+    template<> Vec2 generate();
+    template<> Vec3 generate();
+    template<> Vec4 generate();
+    template<> Mat3 generate();
+    template<> Mat4 generate();
+    template<> Triangle generate();
 
-        return std::equal(begin(a), end(a), begin(b), end(b));
-    }
+    std::vector<Vec3> generate_triangle_vertices();
+    std::vector<Vec3> generate_vertices(size_t);
+    std::vector<Vec3> generate_normals(size_t);
+    std::vector<Vec2> generate_texture_coordinates(size_t);
+    std::vector<Color> generate_colors(size_t);
+    std::vector<Vec4> generate_tangent_vectors(size_t);
+
+    std::vector<uint16_t> iota_index_range(size_t start, size_t end);
 
     template<std::ranges::range Range, class UnaryOperation>
     requires std::invocable<UnaryOperation, const typename Range::value_type&>
-    auto MapToVector(const Range& src, UnaryOperation op)
+    auto project_into_vector(const Range& src, UnaryOperation op)
     {
         using std::begin;
         using std::end;
@@ -67,12 +63,16 @@ namespace osc::testing
     }
 
     template<class T>
-    std::vector<T> ResizedVectorCopy(const std::vector<T>& v, size_t newSize, const T& filler = {})
+    std::vector<T> resized_vector_copy(const std::vector<T>& v, size_t new_size, const T& filler = {})
     {
         std::vector<T> rv;
-        rv.reserve(newSize);
-        rv.insert(rv.end(), v.begin(), v.begin() + std::min(v.size(), newSize));
-        rv.resize(newSize, filler);
+        rv.reserve(new_size);
+        if (v.size() < new_size) {
+            rv.insert(rv.end(), v.begin(), v.end());
+            rv.resize(new_size, filler);
+        } else {
+            rv.insert(rv.end(), v.begin(), v.begin() + new_size);
+        }
         return rv;
     }
 }

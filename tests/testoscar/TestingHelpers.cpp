@@ -21,7 +21,7 @@ namespace
     }
 }
 
-std::default_random_engine& osc::testing::GetRngEngine()
+std::default_random_engine& osc::testing::get_process_random_engine()
 {
     // the RNG is deliberately deterministic, so that
     // test errors are reproducible
@@ -29,97 +29,97 @@ std::default_random_engine& osc::testing::GetRngEngine()
     return e;
 }
 
-float osc::testing::GenerateFloat()
+template<> float osc::testing::generate()
 {
-    return static_cast<float>(std::uniform_real_distribution{}(GetRngEngine()));
+    return static_cast<float>(std::uniform_real_distribution{}(get_process_random_engine()));
 }
 
-int osc::testing::GenerateInt()
+template<> int osc::testing::generate()
 {
-    return std::uniform_int_distribution{}(GetRngEngine());
+    return std::uniform_int_distribution{}(get_process_random_engine());
 }
 
-bool osc::testing::GenerateBool()
+template<> bool osc::testing::generate()
 {
-    return GenerateInt() % 2 == 0;
+    return generate<int>() % 2 == 0;
 }
 
-uint8_t osc::testing::GenerateUint8()
+template<> uint8_t osc::testing::generate()
 {
-    return static_cast<uint8_t>(std::uniform_int_distribution{0, 255}(GetRngEngine()));
+    return static_cast<uint8_t>(std::uniform_int_distribution{0, 255}(get_process_random_engine()));
 }
 
-Color osc::testing::GenerateColor()
+template<> Color osc::testing::generate()
 {
-    return Color{GenerateFloat(), GenerateFloat(), GenerateFloat(), GenerateFloat()};
+    return Color{generate<float>(), generate<float>(), generate<float>(), generate<float>()};
 }
 
-Color32 osc::testing::GenerateColor32()
+template<> Color32 osc::testing::generate()
 {
-    return {GenerateUint8(), GenerateUint8(), GenerateUint8(), GenerateUint8()};
+    return {generate<uint8_t>(), generate<uint8_t>(), generate<uint8_t>(), generate<uint8_t>()};
 }
 
-Vec2 osc::testing::GenerateVec2()
+template<> Vec2 osc::testing::generate()
 {
-    return Vec2{GenerateFloat(), GenerateFloat()};
+    return Vec2{generate<float>(), generate<float>()};
 }
 
-Vec3 osc::testing::GenerateVec3()
+template<> Vec3 osc::testing::generate()
 {
-    return Vec3{GenerateFloat(), GenerateFloat(), GenerateFloat()};
+    return Vec3{generate<float>(), generate<float>(), generate<float>()};
 }
 
-Vec4 osc::testing::GenerateVec4()
+template<> Vec4 osc::testing::generate()
 {
-    return Vec4{GenerateFloat(), GenerateFloat(), GenerateFloat(), GenerateFloat()};
+    return Vec4{generate<float>(), generate<float>(), generate<float>(), generate<float>()};
 }
 
-Mat3 osc::testing::GenerateMat3x3()
+template<> Mat3 osc::testing::generate()
 {
-    return Mat3{GenerateVec3(), GenerateVec3(), GenerateVec3()};
+    return Mat3{generate<Vec3>(), generate<Vec3>(), generate<Vec3>()};
 }
 
-Mat4 osc::testing::GenerateMat4x4()
+template<> Mat4 osc::testing::generate()
 {
-    return Mat4{GenerateVec4(), GenerateVec4(), GenerateVec4(), GenerateVec4()};
+    return Mat4{generate<Vec4>(), generate<Vec4>(), generate<Vec4>(), generate<Vec4>()};
 }
 
-Triangle osc::testing::GenerateTriangle()
+template<> Triangle osc::testing::generate()
 {
-    return Triangle{GenerateVec3(), GenerateVec3(), GenerateVec3()};
+    return Triangle{generate<Vec3>(), generate<Vec3>(), generate<Vec3>()};
 }
 
-std::vector<Vec3> osc::testing::GenerateTriangleVerts()
+std::vector<Vec3> osc::testing::generate_triangle_vertices()
 {
-    return GenerateVector(30, GenerateVec3);
+    return GenerateVector(30, generate<Vec3>);
 }
 
-std::vector<Vec3> osc::testing::GenerateVertices(size_t n)
+std::vector<Vec3> osc::testing::generate_vertices(size_t n)
 {
-    return GenerateVector(n, GenerateVec3);
+    return GenerateVector(n, generate<Vec3>);
 }
 
-std::vector<Vec3> osc::testing::GenerateNormals(size_t n)
+std::vector<Vec3> osc::testing::generate_normals(size_t n)
 {
-    return GenerateVector(n, []() { return normalize(GenerateVec3()); });
+    return GenerateVector(n, []() { return normalize(generate<Vec3>()); });
 }
 
-std::vector<Vec2> osc::testing::GenerateTexCoords(size_t n)
+std::vector<Vec2> osc::testing::generate_texture_coordinates(size_t n)
 {
-    return GenerateVector(n, GenerateVec2);
+    return GenerateVector(n, generate<Vec2>);
 }
 
-std::vector<Color> osc::testing::GenerateColors(size_t n)
+std::vector<Color> osc::testing::generate_colors(size_t n)
 {
-    return GenerateVector(n, GenerateColor);
+    return GenerateVector(n, generate<Color>);
 }
 
-std::vector<Vec4> osc::testing::GenerateTangents(size_t n)
+std::vector<Vec4> osc::testing::generate_tangent_vectors(size_t n)
 {
-    return GenerateVector(n, GenerateVec4);
+    return GenerateVector(n, generate<Vec4>);
 }
 
-std::vector<uint16_t> osc::testing::GenerateIndices(size_t start, size_t end)
+std::vector<uint16_t> osc::testing::iota_index_range(size_t start, size_t end)
 {
     std::vector<uint16_t> rv(end - start);
     std::iota(rv.begin(), rv.end(), static_cast<uint16_t>(start));
