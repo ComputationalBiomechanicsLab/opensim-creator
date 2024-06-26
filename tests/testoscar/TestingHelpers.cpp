@@ -10,7 +10,7 @@ using namespace osc;
 namespace
 {
     template<class Generator>
-    auto GenerateVector(size_t n, Generator f)
+    auto generate_into_vector(size_t n, Generator f)
     {
         std::vector<decltype(f())> rv;
         rv.reserve(n);
@@ -91,32 +91,32 @@ template<> Triangle osc::testing::generate()
 
 std::vector<Vec3> osc::testing::generate_triangle_vertices()
 {
-    return GenerateVector(30, generate<Vec3>);
+    return generate_into_vector(30, generate<Vec3>);
 }
 
 std::vector<Vec3> osc::testing::generate_vertices(size_t n)
 {
-    return GenerateVector(n, generate<Vec3>);
+    return generate_into_vector(n, generate<Vec3>);
 }
 
 std::vector<Vec3> osc::testing::generate_normals(size_t n)
 {
-    return GenerateVector(n, []() { return normalize(generate<Vec3>()); });
+    return generate_into_vector(n, []() { return normalize(generate<Vec3>()); });
 }
 
 std::vector<Vec2> osc::testing::generate_texture_coordinates(size_t n)
 {
-    return GenerateVector(n, generate<Vec2>);
+    return generate_into_vector(n, generate<Vec2>);
 }
 
 std::vector<Color> osc::testing::generate_colors(size_t n)
 {
-    return GenerateVector(n, generate<Color>);
+    return generate_into_vector(n, generate<Color>);
 }
 
 std::vector<Vec4> osc::testing::generate_tangent_vectors(size_t n)
 {
-    return GenerateVector(n, generate<Vec4>);
+    return generate_into_vector(n, generate<Vec4>);
 }
 
 std::vector<uint16_t> osc::testing::iota_index_range(size_t start, size_t end)
