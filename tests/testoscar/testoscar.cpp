@@ -5,17 +5,17 @@
 // runner actually functions. Application tests are placed in other compilation
 // units
 
-TEST(MetaSuite1, Test1)
+TEST(metasuite_1, Test1)
 {
     // this is here to ensure that the test actually turns up in the output/IDE
 }
 
-TEST(MetaSuite1, Test2)
+TEST(metasuite_1, Test2)
 {
     // this is here to ensure that the test actually turns up in the output/IDE
 }
 
-TEST(MetaSuite2, Test1)
+TEST(metasuite_2, Test1)
 {
     // this is here to ensure that the test actually turns up in the output/IDE
     //
