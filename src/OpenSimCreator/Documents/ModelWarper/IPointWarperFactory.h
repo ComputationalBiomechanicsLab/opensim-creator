@@ -10,7 +10,7 @@
 #include <memory>
 #include <span>
 
-namespace osc::mow { class ModelWarpDocument; }
+namespace osc::mow { class WarpableModel; }
 
 namespace osc::mow
 {
@@ -28,8 +28,8 @@ namespace osc::mow
     public:
         virtual ~IPointWarperFactory() = default;
 
-        std::unique_ptr<IPointWarper> tryCreatePointWarper(const ModelWarpDocument& document) const { return implTryCreatePointWarper(document); }
+        std::unique_ptr<IPointWarper> tryCreatePointWarper(const WarpableModel& document) const { return implTryCreatePointWarper(document); }
     private:
-        virtual std::unique_ptr<IPointWarper> implTryCreatePointWarper(const ModelWarpDocument&) const = 0;
+        virtual std::unique_ptr<IPointWarper> implTryCreatePointWarper(const WarpableModel&) const = 0;
     };
 }

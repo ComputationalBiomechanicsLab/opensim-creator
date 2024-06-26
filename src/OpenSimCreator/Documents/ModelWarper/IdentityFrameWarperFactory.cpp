@@ -30,7 +30,7 @@ std::vector<ValidationCheckResult> osc::mow::IdentityFrameWarperFactory::implVal
     };
 }
 
-std::unique_ptr<IFrameWarper> osc::mow::IdentityFrameWarperFactory::implTryCreateFrameWarper(const ModelWarpDocument&) const
+std::unique_ptr<IFrameWarper> osc::mow::IdentityFrameWarperFactory::implTryCreateFrameWarper(const WarpableModel&) const
 {
     class IdentityFrameWarper final : public IFrameWarper {
     private:

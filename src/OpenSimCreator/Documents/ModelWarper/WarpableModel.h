@@ -22,18 +22,25 @@ namespace OpenSim { class PhysicalOffsetFrame; }
 
 namespace osc::mow
 {
-    // top-level model warping document that contains all the necessary state to render
-    // the model warping UI and can, if valid, contain all the necessary state to warp
-    // an OpenSim model
-    class ModelWarpDocument final : public IValidateable {
+    // a top-level datastructure that can produce a warped `OpenSim::Model` from
+    // appropriate inputs
+    //
+    // i.e. this ties together:
+    //
+    // - an input `OpenSim::Model`
+    // - (optional) a warp configuration, which tells the engine how to warp the model
+    //
+    // because this may be polled or used by the UI, it may (hopefully, temporarily) be
+    // in an error/warning state that the user is expected to resolve at runtime
+    class WarpableModel final : public IValidateable {
     public:
-        ModelWarpDocument();
-        explicit ModelWarpDocument(const std::filesystem::path& osimFileLocation);
-        ModelWarpDocument(const ModelWarpDocument&);
-        ModelWarpDocument(ModelWarpDocument&&) noexcept;
-        ModelWarpDocument& operator=(const ModelWarpDocument&);
-        ModelWarpDocument& operator=(ModelWarpDocument&&) noexcept;
-        ~ModelWarpDocument() noexcept;
+        WarpableModel();
+        explicit WarpableModel(const std::filesystem::path& osimFileLocation);
+        WarpableModel(const WarpableModel&);
+        WarpableModel(WarpableModel&&) noexcept;
+        WarpableModel& operator=(const WarpableModel&);
+        WarpableModel& operator=(WarpableModel&&) noexcept;
+        ~WarpableModel() noexcept;
 
         const OpenSim::Model& model() const;
         const IConstModelStatePair& modelstate() const;
@@ -59,8 +66,8 @@ namespace osc::mow
 
         ValidationCheckState state() const;
 
-        // only checks reference equality by leaning on the copy-on-write behavior
-        friend bool operator==(const ModelWarpDocument&, const ModelWarpDocument&) = default;
+        // returns `true` if both the left- and right-hand side _point_ to the same information
+        friend bool operator==(const WarpableModel&, const WarpableModel&) = default;
     private:
         std::vector<ValidationCheckResult> implValidate() const;
 

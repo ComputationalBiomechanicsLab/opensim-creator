@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSimCreator/Documents/ModelWarper/ModelWarpDocument.h>
+#include <OpenSimCreator/Documents/ModelWarper/WarpableModel.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 using namespace osc;
@@ -15,7 +15,7 @@ TEST(CachedModelWarper, CanBeDefaultConstructed)
 
 TEST(CachedModelWarper, CanWarpDefaultConstructedModelWarpingDocument)
 {
-    ModelWarpDocument document;
+    WarpableModel document;
     CachedModelWarper warper;
 
     const auto rv = warper.warp(document);

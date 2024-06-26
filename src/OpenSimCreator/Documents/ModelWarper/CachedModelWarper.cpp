@@ -7,7 +7,8 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSimCreator/Documents/CustomComponents/InMemoryMesh.h>
 #include <OpenSimCreator/Documents/Model/BasicModelStatePair.h>
-#include <OpenSimCreator/Documents/ModelWarper/ModelWarpDocument.h>
+#include <OpenSimCreator/Documents/ModelWarper/IPointWarperFactory.h>
+#include <OpenSimCreator/Documents/ModelWarper/WarpableModel.h>
 #include <OpenSimCreator/Utils/SimTKHelpers.h>
 #include <oscar/Formats/OBJ.h>
 #include <oscar/Platform/Log.h>
@@ -25,7 +26,7 @@ using namespace osc::mow;
 namespace
 {
     std::unique_ptr<OpenSim::Geometry> WarpMesh(
-        const ModelWarpDocument& document,
+        const WarpableModel& document,
         const OpenSim::Model& model,
         const SimTK::State& state,
         const OpenSim::Mesh& inputMesh,
@@ -88,7 +89,7 @@ namespace
 
 class osc::mow::CachedModelWarper::Impl final {
 public:
-    std::shared_ptr<const IConstModelStatePair> warp(const ModelWarpDocument& document)
+    std::shared_ptr<const IConstModelStatePair> warp(const WarpableModel& document)
     {
         if (document != m_PreviousDocument) {
             m_PreviousResult = createWarpedModel(document);
@@ -97,7 +98,7 @@ public:
         return m_PreviousResult;
     }
 
-    std::shared_ptr<const IConstModelStatePair> createWarpedModel(const ModelWarpDocument& document)
+    std::shared_ptr<const IConstModelStatePair> createWarpedModel(const WarpableModel& document)
     {
         // copy the model into an editable "warped" version
         OpenSim::Model warpedModel{document.model()};
@@ -130,7 +131,7 @@ public:
         // iterate over each `PathPoint` in the model (incl. muscle points) and warp them by
         // figuring out how each relates to a mesh in the model
         //
-        // TODO: the `osc::mow::ModelWarpDocument` should handle figuring out each point's warper, because
+        // TODO: the `osc::mow::WarpableModel` should handle figuring out each point's warper, because
         // there are situations where there isn't a 1:1 relationship between meshes and bodies
         for (auto& pp : warpedModel.updComponentList<OpenSim::PathPoint>()) {
             auto baseFramePath = pp.getParentFrame().findBaseFrame().getAbsolutePath();
@@ -199,7 +200,7 @@ public:
         );
     }
 private:
-    std::optional<ModelWarpDocument> m_PreviousDocument;
+    std::optional<WarpableModel> m_PreviousDocument;
     std::shared_ptr<const IConstModelStatePair> m_PreviousResult;
 };
 
@@ -210,7 +211,7 @@ osc::mow::CachedModelWarper::CachedModelWarper(CachedModelWarper&&) noexcept = d
 CachedModelWarper& osc::mow::CachedModelWarper::operator=(CachedModelWarper&&) noexcept = default;
 osc::mow::CachedModelWarper::~CachedModelWarper() noexcept = default;
 
-std::shared_ptr<const IConstModelStatePair> osc::mow::CachedModelWarper::warp(const ModelWarpDocument& document)
+std::shared_ptr<const IConstModelStatePair> osc::mow::CachedModelWarper::warp(const WarpableModel& document)
 {
     return m_Impl->warp(document);
 }

@@ -1,8 +1,8 @@
 #include "TPSLandmarkPairWarperFactory.h"
 
 #include <OpenSimCreator/Documents/Landmarks/LandmarkHelpers.h>
-#include <OpenSimCreator/Documents/ModelWarper/ModelWarpDocument.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheckState.h>
+#include <OpenSimCreator/Documents/ModelWarper/WarpableModel.h>
 #include <OpenSimCreator/Utils/TPS3D.h>
 
 #include <oscar/Maths/Vec2.h>
@@ -319,7 +319,7 @@ std::vector<ValidationCheckResult> osc::mow::TPSLandmarkPairWarperFactory::implV
     return rv;
 }
 
-std::unique_ptr<IPointWarper> osc::mow::TPSLandmarkPairWarperFactory::implTryCreatePointWarper(const ModelWarpDocument& document) const
+std::unique_ptr<IPointWarper> osc::mow::TPSLandmarkPairWarperFactory::implTryCreatePointWarper(const WarpableModel& document) const
 {
     class TPSWarper : public IPointWarper {
     public:

@@ -1,4 +1,4 @@
-#include "ModelWarpDocument.h"
+#include "WarpableModel.h"
 
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheckState.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
@@ -16,37 +16,37 @@
 using namespace osc;
 using namespace osc::mow;
 
-osc::mow::ModelWarpDocument::ModelWarpDocument() :
+osc::mow::WarpableModel::WarpableModel() :
     m_ModelState{make_cow<BasicModelStatePair>()},
     m_ModelWarpConfig{make_cow<ModelWarpConfiguration>()},
     m_MeshWarpLookup{make_cow<PointWarperFactories>()},
     m_FrameWarpLookup{make_cow<FrameWarperFactories>()}
 {}
 
-osc::mow::ModelWarpDocument::ModelWarpDocument(const std::filesystem::path& osimFileLocation) :
+osc::mow::WarpableModel::WarpableModel(const std::filesystem::path& osimFileLocation) :
     m_ModelState{make_cow<BasicModelStatePair>(osimFileLocation)},
     m_ModelWarpConfig{make_cow<ModelWarpConfiguration>(osimFileLocation, m_ModelState->getModel())},
     m_MeshWarpLookup{make_cow<PointWarperFactories>(osimFileLocation, m_ModelState->getModel(), *m_ModelWarpConfig)},
     m_FrameWarpLookup{make_cow<FrameWarperFactories>(osimFileLocation, m_ModelState->getModel(), *m_ModelWarpConfig)}
 {}
 
-osc::mow::ModelWarpDocument::ModelWarpDocument(const ModelWarpDocument&) = default;
-osc::mow::ModelWarpDocument::ModelWarpDocument(ModelWarpDocument&&) noexcept = default;
-osc::mow::ModelWarpDocument& osc::mow::ModelWarpDocument::operator=(const ModelWarpDocument&) = default;
-osc::mow::ModelWarpDocument& osc::mow::ModelWarpDocument::operator=(ModelWarpDocument&&) noexcept = default;
-osc::mow::ModelWarpDocument::~ModelWarpDocument() noexcept = default;
+osc::mow::WarpableModel::WarpableModel(const WarpableModel&) = default;
+osc::mow::WarpableModel::WarpableModel(WarpableModel&&) noexcept = default;
+osc::mow::WarpableModel& osc::mow::WarpableModel::operator=(const WarpableModel&) = default;
+osc::mow::WarpableModel& osc::mow::WarpableModel::operator=(WarpableModel&&) noexcept = default;
+osc::mow::WarpableModel::~WarpableModel() noexcept = default;
 
-const OpenSim::Model& osc::mow::ModelWarpDocument::model() const
+const OpenSim::Model& osc::mow::WarpableModel::model() const
 {
     return m_ModelState->getModel();
 }
 
-const IConstModelStatePair& osc::mow::ModelWarpDocument::modelstate() const
+const IConstModelStatePair& osc::mow::WarpableModel::modelstate() const
 {
     return *m_ModelState;
 }
 
-std::vector<WarpDetail> osc::mow::ModelWarpDocument::details(const OpenSim::Mesh& mesh) const
+std::vector<WarpDetail> osc::mow::WarpableModel::details(const OpenSim::Mesh& mesh) const
 {
     std::vector<WarpDetail> rv;
     rv.emplace_back("OpenSim::Mesh path in the OpenSim::Model", GetAbsolutePathString(mesh));
@@ -59,7 +59,7 @@ std::vector<WarpDetail> osc::mow::ModelWarpDocument::details(const OpenSim::Mesh
     return rv;
 }
 
-std::vector<ValidationCheckResult> osc::mow::ModelWarpDocument::validate(const OpenSim::Mesh& mesh) const
+std::vector<ValidationCheckResult> osc::mow::WarpableModel::validate(const OpenSim::Mesh& mesh) const
 {
     if (const IPointWarperFactory* p = m_MeshWarpLookup->find(GetAbsolutePathString(mesh))) {
         return p->validate();
@@ -69,18 +69,18 @@ std::vector<ValidationCheckResult> osc::mow::ModelWarpDocument::validate(const O
     }
 }
 
-ValidationCheckState osc::mow::ModelWarpDocument::state(const OpenSim::Mesh& mesh) const
+ValidationCheckState osc::mow::WarpableModel::state(const OpenSim::Mesh& mesh) const
 {
     const IPointWarperFactory* p = m_MeshWarpLookup->find(GetAbsolutePathString(mesh));
     return p ? p->state() : ValidationCheckState::Error;
 }
 
-const IPointWarperFactory* osc::mow::ModelWarpDocument::findMeshWarp(const OpenSim::Mesh& mesh) const
+const IPointWarperFactory* osc::mow::WarpableModel::findMeshWarp(const OpenSim::Mesh& mesh) const
 {
     return m_MeshWarpLookup->find(GetAbsolutePathString(mesh));
 }
 
-std::vector<WarpDetail> osc::mow::ModelWarpDocument::details(const OpenSim::PhysicalOffsetFrame& pof) const
+std::vector<WarpDetail> osc::mow::WarpableModel::details(const OpenSim::PhysicalOffsetFrame& pof) const
 {
     if (const IFrameWarperFactory* p = m_FrameWarpLookup->find(GetAbsolutePathString(pof))) {
         return p->details();
@@ -88,7 +88,7 @@ std::vector<WarpDetail> osc::mow::ModelWarpDocument::details(const OpenSim::Phys
     return {};
 }
 
-std::vector<ValidationCheckResult> osc::mow::ModelWarpDocument::validate(const OpenSim::PhysicalOffsetFrame& pof) const
+std::vector<ValidationCheckResult> osc::mow::WarpableModel::validate(const OpenSim::PhysicalOffsetFrame& pof) const
 {
     if (const IFrameWarperFactory* p = m_FrameWarpLookup->find(GetAbsolutePathString(pof))) {
         return p->validate();
@@ -98,14 +98,14 @@ std::vector<ValidationCheckResult> osc::mow::ModelWarpDocument::validate(const O
     }
 }
 
-ValidationCheckState osc::mow::ModelWarpDocument::state(
+ValidationCheckState osc::mow::WarpableModel::state(
     const OpenSim::PhysicalOffsetFrame& pof) const
 {
     const IFrameWarperFactory* p = m_FrameWarpLookup->find(GetAbsolutePathString(pof));
     return p ? p->state() : ValidationCheckState::Error;
 }
 
-ValidationCheckState osc::mow::ModelWarpDocument::state() const
+ValidationCheckState osc::mow::WarpableModel::state() const
 {
     ValidationCheckState rv = ValidationCheckState::Ok;
     for (const auto& mesh : model().getComponentList<OpenSim::Mesh>()) {
@@ -117,27 +117,27 @@ ValidationCheckState osc::mow::ModelWarpDocument::state() const
     return rv;
 }
 
-float osc::mow::ModelWarpDocument::getWarpBlendingFactor() const
+float osc::mow::WarpableModel::getWarpBlendingFactor() const
 {
     return m_ModelWarpConfig->getWarpBlendingFactor();
 }
 
-void osc::mow::ModelWarpDocument::setWarpBlendingFactor(float v)
+void osc::mow::WarpableModel::setWarpBlendingFactor(float v)
 {
     m_ModelWarpConfig.upd()->setWarpBlendingFactor(v);
 }
 
-bool osc::mow::ModelWarpDocument::getShouldWriteWarpedMeshesToDisk() const
+bool osc::mow::WarpableModel::getShouldWriteWarpedMeshesToDisk() const
 {
     return m_ModelWarpConfig->getShouldWriteWarpedMeshesToDisk();
 }
 
-void osc::mow::ModelWarpDocument::setShouldWriteWarpedMeshesToDisk(bool v)
+void osc::mow::WarpableModel::setShouldWriteWarpedMeshesToDisk(bool v)
 {
     m_ModelWarpConfig.upd()->setShouldWriteWarpedMeshesToDisk(v);
 }
 
-std::optional<std::filesystem::path> osc::mow::ModelWarpDocument::getWarpedMeshesOutputDirectory() const
+std::optional<std::filesystem::path> osc::mow::WarpableModel::getWarpedMeshesOutputDirectory() const
 {
     const auto osimFileLocation = getOsimFileLocation();
     if (not osimFileLocation) {
@@ -146,12 +146,12 @@ std::optional<std::filesystem::path> osc::mow::ModelWarpDocument::getWarpedMeshe
     return std::filesystem::weakly_canonical(osimFileLocation->parent_path() / m_ModelWarpConfig->getWarpedMeshesOutputDirectory());
 }
 
-std::optional<std::filesystem::path> osc::mow::ModelWarpDocument::getOsimFileLocation() const
+std::optional<std::filesystem::path> osc::mow::WarpableModel::getOsimFileLocation() const
 {
     return TryFindInputFile(m_ModelState->getModel());
 }
 
-std::vector<ValidationCheckResult> osc::mow::ModelWarpDocument::implValidate() const
+std::vector<ValidationCheckResult> osc::mow::WarpableModel::implValidate() const
 {
     std::vector<ValidationCheckResult> rv;
     for (const auto& mesh : model().getComponentList<OpenSim::Mesh>()) {

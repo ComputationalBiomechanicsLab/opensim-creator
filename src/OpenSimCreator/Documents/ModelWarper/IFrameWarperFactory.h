@@ -5,7 +5,7 @@
 #include <OpenSimCreator/Documents/ModelWarper/IFrameWarper.h>
 #include <OpenSimCreator/Documents/ModelWarper/IValidateable.h>
 
-namespace osc::mow { class ModelWarpDocument; }
+namespace osc::mow { class WarpableModel; }
 
 namespace osc::mow
 {
@@ -22,11 +22,11 @@ namespace osc::mow
     public:
         virtual ~IFrameWarperFactory() noexcept = default;
 
-        std::unique_ptr<IFrameWarper> tryCreateFrameWarper(const ModelWarpDocument& document) const
+        std::unique_ptr<IFrameWarper> tryCreateFrameWarper(const WarpableModel& document) const
         {
             return implTryCreateFrameWarper(document);
         }
     private:
-        virtual std::unique_ptr<IFrameWarper> implTryCreateFrameWarper(const ModelWarpDocument& document) const = 0;
+        virtual std::unique_ptr<IFrameWarper> implTryCreateFrameWarper(const WarpableModel& document) const = 0;
     };
 }

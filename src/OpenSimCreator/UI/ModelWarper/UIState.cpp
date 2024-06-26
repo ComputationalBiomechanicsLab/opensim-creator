@@ -23,7 +23,7 @@ void osc::mow::UIState::actionOpenOsimOrPromptUser(std::optional<std::filesystem
 
     if (path) {
         App::singleton<RecentFiles>()->push_back(*path);
-        m_Document = std::make_shared<ModelWarpDocument>(std::move(path).value());
+        m_Document = std::make_shared<WarpableModel>(std::move(path).value());
     }
 }
 
@@ -42,7 +42,7 @@ void osc::mow::UIState::actionWarpModelAndOpenInModelEditor()
 
     // create a copy of the document so that we can apply export-specific
     // configuration changes to it
-    ModelWarpDocument copy{*m_Document};
+    WarpableModel copy{*m_Document};
     copy.setShouldWriteWarpedMeshesToDisk(true);  // required for OpenSim to be able to load the warped model correctly
     auto warpedModelStatePair = m_ModelWarper.warp(copy);
     m_TabHost->add_and_select_tab<ModelEditorTab>(*api, std::make_unique<UndoableModelStatePair>(warpedModelStatePair->getModel()));

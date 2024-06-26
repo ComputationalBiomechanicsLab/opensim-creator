@@ -5,7 +5,7 @@
 #include <memory>
 
 namespace OpenSim { class Model; }
-namespace osc::mow { class ModelWarpDocument; }
+namespace osc::mow { class WarpableModel; }
 
 namespace osc::mow
 {
@@ -21,7 +21,7 @@ namespace osc::mow
         CachedModelWarper& operator=(CachedModelWarper&&) noexcept;
         ~CachedModelWarper() noexcept;
 
-        std::shared_ptr<const IConstModelStatePair> warp(const ModelWarpDocument&);
+        std::shared_ptr<const IConstModelStatePair> warp(const WarpableModel&);
     private:
         class Impl;
         std::unique_ptr<Impl> m_Impl;

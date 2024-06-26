@@ -2,9 +2,9 @@
 
 #include <OpenSimCreator/Documents/Model/IConstModelStatePair.h>
 #include <OpenSimCreator/Documents/ModelWarper/CachedModelWarper.h>
-#include <OpenSimCreator/Documents/ModelWarper/ModelWarpDocument.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheckResult.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheckState.h>
+#include <OpenSimCreator/Documents/ModelWarper/WarpableModel.h>
 #include <OpenSimCreator/Documents/ModelWarper/WarpDetail.h>
 
 #include <oscar/Maths/PolarPerspectiveCamera.h>
@@ -70,7 +70,7 @@ namespace osc::mow
         void actionWarpModelAndOpenInModelEditor();
     private:
         ParentPtr<ITabHost> m_TabHost;
-        std::shared_ptr<ModelWarpDocument> m_Document = std::make_shared<ModelWarpDocument>();
+        std::shared_ptr<WarpableModel> m_Document = std::make_shared<WarpableModel>();
         CachedModelWarper m_ModelWarper;
 
         bool m_LinkCameras = true;
