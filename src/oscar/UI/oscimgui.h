@@ -329,7 +329,7 @@ namespace osc::ui
 
     inline ImGuiID enable_dockspace_over_viewport(const ImGuiViewport* viewport = NULL, ImGuiDockNodeFlags flags = 0, const ImGuiWindowClass* window_class = NULL)
     {
-        return ImGui::DockSpaceOverViewport(viewport, flags, window_class);
+        return ImGui::DockSpaceOverViewport(0, viewport, flags, window_class);
     }
 
     inline bool begin_panel(CStringView name, bool* p_open = nullptr, ImGuiWindowFlags flags = 0)
