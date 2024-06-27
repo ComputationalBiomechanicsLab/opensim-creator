@@ -24,6 +24,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - The "Axis Lines" overlay option now extends the lines out to 5 meters (previously: 1 m)
 - Internal: Added `src/OpenSimThirdPartyPlugins`, for housing copy+pasted OpenSim
   plugin code sourced from the internet (e.g. SimTK.org)
+- Internal: Third-party dependencies were updated to their latest versions, where applicable
 
 
 ## [0.5.12] - 2024/04/29
