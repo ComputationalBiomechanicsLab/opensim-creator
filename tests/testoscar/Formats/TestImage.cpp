@@ -5,7 +5,6 @@
 #include <gtest/gtest.h>
 #include <oscar/Graphics/ColorSpace.h>
 #include <oscar/Graphics/Texture2D.h>
-#include <oscar/Platform/AppConfig.h>
 #include <oscar/Platform/ResourceStream.h>
 #include <oscar/Utils/NullOStream.h>
 

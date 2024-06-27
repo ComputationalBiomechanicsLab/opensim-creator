@@ -72,6 +72,7 @@ namespace
         void toggle_activated()
         {
             if (instance_ and (*instance_)->is_open()) {
+                (*instance_)->close();
                 instance_.reset();
             }
             else {
@@ -259,14 +260,10 @@ public:
 
     void set_toggleable_panel_activated(std::string_view panel_name, bool v)
     {
-        for (ToggleablePanel& panel : toggleable_panels_) {
-            if (panel.name() == panel_name) {
-                if (v) {
-                    panel.activate();
-                }
-                else {
-                    panel.deactivate();
-                }
+        for (size_t i = 0; i < toggleable_panels_.size(); ++i) {
+            if (toggleable_panels_[i].name() == panel_name) {
+                set_toggleable_panel_activated(i, v);
+                return;
             }
         }
     }

@@ -15,7 +15,6 @@
 #include <OpenSimCreator/Platform/OpenSimCreatorApp.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 #include <gtest/gtest.h>
-#include <oscar/Platform/AppConfig.h>
 
 #include <array>
 #include <filesystem>
@@ -29,12 +28,8 @@ using namespace osc;
 // https://github.com/opensim-org/opensim-core/issues/3211
 TEST(OpenSimModel, ProducesCorrectMomentArmOnFirstComputeCall)
 {
-    const auto config = LoadOpenSimCreatorConfig();
-
-    //GlobalInitOpenSim(*config);  // ensure muscles are available etc.
-
     // data sources
-    std::filesystem::path modelPath{config.resource_directory() / "models" / "Arm26" / "arm26.osim"};
+    std::filesystem::path modelPath{std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "models" / "Arm26" / "arm26.osim"};
     OpenSim::ComponentPath coordinatePath{"/jointset/r_shoulder/r_shoulder_elev"};
     OpenSim::ComponentPath musclePath{"/forceset/BIClong"};
 
@@ -87,11 +82,7 @@ TEST(OpenSimModel, ProducesCorrectMomentArmOnFirstComputeCall)
 // breaks this test, and prompts removing fixups from OSC
 TEST(OpenSimModel, EditingACoordinateLockMutatesModel)
 {
-    const auto config = LoadOpenSimCreatorConfig();
-
-    //GlobalInitOpenSim(*config);  // ensure muscles are available etc.
-
-    std::filesystem::path modelPath{config.resource_directory() / "models" / "Arm26" / "arm26.osim"};
+    std::filesystem::path modelPath{std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "models" / "Arm26" / "arm26.osim"};
     OpenSim::ComponentPath coordinatePath{"/jointset/r_shoulder/r_shoulder_elev"};
 
     OpenSim::Model model{modelPath.string()};

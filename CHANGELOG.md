@@ -5,6 +5,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- The UI now remembers which panels (e.g. Log, Properties) you had open between boots (#17)
 - The mesh warping tab now has a `Visualization Options` menu, which lets users toggle a few
   basic visualization options (e.g. grid lines, #892)
 - The model warping workflow now writes the warped meshes to disk at `$MODEL_DIR/WarpedGeometry`
@@ -25,6 +26,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Internal: Added `src/OpenSimThirdPartyPlugins`, for housing copy+pasted OpenSim
   plugin code sourced from the internet (e.g. SimTK.org)
 - Internal: Third-party dependencies were updated to their latest versions, where applicable
+- Internal: `AppConfig` was dropped and all uses of it were converted to `AppSettings` (#893)
 
 
 ## [0.5.12] - 2024/04/29

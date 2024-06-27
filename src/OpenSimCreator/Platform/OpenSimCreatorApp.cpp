@@ -18,8 +18,8 @@
 #include <OpenSim/Tools/RegisterTypes_osimTools.h>
 #include <OpenSimThirdPartyPlugins/RegisterTypes_osimPlugin.h>
 #include <oscar/Platform/App.h>
-#include <oscar/Platform/AppConfig.h>
 #include <oscar/Platform/AppMetadata.h>
+#include <oscar/Platform/AppSettings.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
 #include <oscar/UI/Tabs/TabRegistry.h>
@@ -38,6 +38,8 @@ using namespace osc;
 
 namespace
 {
+    OpenSimCreatorApp* g_opensimcreator_app_global = nullptr;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+
     // minor alias for setlocale so that any linter complaints about MT unsafety
     // are all deduped to this one source location
     //
@@ -142,19 +144,20 @@ namespace
         OpenSim::Object::registerType(SphereLandmark{});
     }
 
-    void GloballySetOpenSimsGeometrySearchPath(const AppConfig& config)
+    void GloballySetOpenSimsGeometrySearchPath(const std::filesystem::path& geometryDir)
     {
         // globally set OpenSim's geometry search path
         //
         // when an osim file contains relative geometry path (e.g. "sphere.vtp"), the
         // OpenSim implementation will look in these directories for that file
-        std::filesystem::path geometryDir = config.resource_directory() / "geometry";
+
+        // TODO: detect and overwrite existing entries?
         log_info("registering OpenSim geometry search path to use osc resources");
         OpenSim::ModelVisualizer::addDirToGeometrySearchPaths(geometryDir.string());
         log_info("added geometry search path entry: %s", geometryDir.string().c_str());
     }
 
-    bool InitializeOpenSim(const AppConfig& config)
+    bool InitializeOpenSim()
     {
         // make this process (OSC) globally use the same locale that OpenSim uses
         //
@@ -182,10 +185,6 @@ namespace
         // implementation method (e.g. a ctor)
         RegisterOpenSimTypes();
 
-        // make OpenSim use OSC's `geometry/` resource directory when searching for
-        // geometry files
-        GloballySetOpenSimsGeometrySearchPath(config);
-
         return true;
     }
 
@@ -196,15 +195,27 @@ namespace
         register_demo_tabs(registry);
         RegisterOpenSimCreatorTabs(registry);
     }
+
+    void InitializeOpenSimCreatorSpecificSettingDefaults(AppSettings& settings)
+    {
+        settings.set_value("panels/Actions/enabled", AppSettingValue{true}, AppSettingScope::System);
+        settings.set_value("panels/Navigator/enabled", AppSettingValue{true}, AppSettingScope::System);
+        settings.set_value("panels/Log/enabled", AppSettingValue{true}, AppSettingScope::System);
+        settings.set_value("panels/Properties/enabled", AppSettingValue{true}, AppSettingScope::System);
+        settings.set_value("panels/Selection Details/enabled", AppSettingValue{true}, AppSettingScope::System);
+        settings.set_value("panels/Simulation Details/enabled", AppSettingValue{false}, AppSettingScope::System);
+        settings.set_value("panels/Coordinates/enabled", AppSettingValue{true}, AppSettingScope::System);
+        settings.set_value("panels/Performance/enabled", AppSettingValue{false}, AppSettingScope::System);
+        settings.set_value("panels/Muscle Plot/enabled", AppSettingValue{false}, AppSettingScope::System);
+        settings.set_value("panels/Output Watches/enabled", AppSettingValue{false}, AppSettingScope::System);
+        settings.set_value("panels/Output Plots/enabled", AppSettingValue{false}, AppSettingScope::System);
+    }
 }
 
 
-// public API
-
 AppMetadata osc::GetOpenSimCreatorAppMetadata()
 {
-    return AppMetadata
-    {
+    return AppMetadata{
         OSC_ORGNAME_STRING,
         OSC_APPNAME_STRING,
         OSC_LONG_APPNAME_STRING,
@@ -215,26 +226,50 @@ AppMetadata osc::GetOpenSimCreatorAppMetadata()
     };
 }
 
-AppConfig osc::LoadOpenSimCreatorConfig()
+AppSettings osc::LoadOpenSimCreatorSettings()
 {
     auto metadata = GetOpenSimCreatorAppMetadata();
-    return AppConfig{metadata.organization_name(), metadata.application_name()};
+    return AppSettings{metadata.organization_name(), metadata.application_name()};
 }
 
 bool osc::GlobalInitOpenSim()
 {
-    return GlobalInitOpenSim(LoadOpenSimCreatorConfig());
+    static const bool s_OpenSimInitialized = InitializeOpenSim();
+    return s_OpenSimInitialized;
 }
 
-bool osc::GlobalInitOpenSim(const AppConfig& config)
+void osc::AddDirectoryToOpenSimGeometrySearchPath(const std::filesystem::path& p)
 {
-    static const bool s_OpenSimInitialized = InitializeOpenSim(config);
-    return s_OpenSimInitialized;
+    GloballySetOpenSimsGeometrySearchPath(p);
+}
+
+const OpenSimCreatorApp& osc::OpenSimCreatorApp::get()
+{
+    OSC_ASSERT(g_opensimcreator_app_global && "OpenSimCreatorApp is not initialized: have you constructed a (singleton) instance of OpenSimCreatorApp?");
+    return *g_opensimcreator_app_global;
 }
 
 osc::OpenSimCreatorApp::OpenSimCreatorApp() :
     App{GetOpenSimCreatorAppMetadata()}
 {
-    GlobalInitOpenSim(config());
+    GlobalInitOpenSim();
+    AddDirectoryToOpenSimGeometrySearchPath(resource_filepath("geometry"));
     InitializeTabRegistry(*singleton<TabRegistry>());
+    InitializeOpenSimCreatorSpecificSettingDefaults(upd_settings());
+    g_opensimcreator_app_global = this;
+}
+
+osc::OpenSimCreatorApp::~OpenSimCreatorApp() noexcept
+{
+    g_opensimcreator_app_global = nullptr;
+}
+
+std::string osc::OpenSimCreatorApp::docs_url() const
+{
+    if (const auto runtime_url = settings().find_value("docs_url")) {
+        return runtime_url->to_string();
+    }
+    else {
+        return "https://docs.opensimcreator.com";
+    }
 }

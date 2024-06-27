@@ -1,6 +1,7 @@
 #include "AppSettings.h"
 
 #include <oscar/Platform/AppSettingValue.h>
+#include <oscar/Platform/AppSettingScope.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
 #include <oscar/Utils/Algorithms.h>
@@ -42,21 +43,6 @@ R"(# configuration options
 
 )";
 
-    // the "scope" of an application setting value
-    enum class AppSettingScope {
-
-        // set by a user-level configuration file, or by runtime code
-        // (e.g. the user clicked a checkbox or similar)
-        //
-        // user settings override system-wide settings
-        User,
-
-        // set by a readonly system-level configuration file
-        System,
-
-        NUM_OPTIONS,
-    };
-
     // a value stored in the AppSettings lookup table
     class AppSettingsLookupValue final {
     public:
@@ -88,7 +74,13 @@ R"(# configuration options
 
         void set_value(std::string_view key, AppSettingScope scope, AppSettingValue value)
         {
-            hashmap_.insert_or_assign(key, AppSettingsLookupValue{scope, std::move(value)});
+            AppSettingsLookupValue scoped_value{scope, std::move(value)};
+
+            auto [it, inserted] = hashmap_.try_emplace(key, scoped_value);
+            static_assert(AppSettingScope::System < AppSettingScope::User);  // (as an example)
+            if (not inserted and it->second.scope() <= scope) {
+                it->second = scoped_value;
+            }
         }
 
         std::optional<AppSettingScope> scope_of(std::string_view key) const
@@ -129,7 +121,7 @@ R"(# configuration options
         std::string_view application_config_file_name)
     {
         // copied from the legacy `AppConfig` implementation for backwards
-        // compatibility with existing config files
+        // compatibility with existing settings files
 
         std::filesystem::path p = current_executable_directory();
         bool exists = false;
@@ -142,7 +134,7 @@ R"(# configuration options
                 break;
             }
 
-            // HACK: there is a file at "MacOS/$configName", which is where the config
+            // HACK: there is a file at "MacOS/$configName", which is where the settings
             // is relative to SDL_GetBasePath. current_exe_dir should be fixed
             // accordingly.
             const std::filesystem::path maybe_macos_config = p / "MacOS" / application_config_file_name;
@@ -390,10 +382,17 @@ R"(# configuration options
             return app_settings_lookup_.find_value(key);
         }
 
-        void setValue(std::string_view key, AppSettingValue value)
+        void set_value(std::string_view key, AppSettingValue value, AppSettingScope scope)
         {
-            app_settings_lookup_.set_value(key, AppSettingScope::User, std::move(value));
+            app_settings_lookup_.set_value(key, scope, std::move(value));
             is_dirty_ = true;
+        }
+
+        void set_value_if_not_found(std::string_view key, AppSettingValue value, AppSettingScope scope)
+        {
+            if (not find_value(key)) {
+                set_value(key, value, scope);
+            }
         }
 
         std::optional<std::filesystem::path> find_value_filesystem_source(
@@ -473,9 +472,14 @@ public:
         return guarded_data_.lock()->find_value(key);
     }
 
-    void set_value(std::string_view key, AppSettingValue value)
+    void set_value(std::string_view key, AppSettingValue value, AppSettingScope scope)
     {
-        guarded_data_.lock()->setValue(key, std::move(value));
+        guarded_data_.lock()->set_value(key, std::move(value), scope);
+    }
+
+    void set_value_if_not_found(std::string_view key, AppSettingValue value, AppSettingScope scope)
+    {
+        guarded_data_.lock()->set_value_if_not_found(key, std::move(value), scope);
     }
 
     std::optional<std::filesystem::path> find_value_filesystem_source(
@@ -538,6 +542,69 @@ namespace
         static SynchronizedValue<GlobalAppSettingsLookup> s_global_settings_lookup;
         return s_global_settings_lookup.lock()->get(organization_name, application_name, application_config_file_name);
     }
+
+    std::filesystem::path get_resources_dir_fallback_path(const AppSettings& settings)
+    {
+        if (const auto system_config = settings.system_configuration_file_location()) {
+
+            auto resources_dir_path = system_config->parent_path() / "resources";
+            if (std::filesystem::exists(resources_dir_path)) {
+                return resources_dir_path;
+            }
+            else {
+                log_warn("resources path fallback: tried %s, but it doesn't exist", resources_dir_path.string().c_str());
+            }
+        }
+
+        auto resources_relative_to_exe = current_executable_directory().parent_path() / "resources";
+        if (std::filesystem::exists(resources_relative_to_exe)) {
+            return resources_relative_to_exe;
+        }
+        else {
+            log_warn("resources path fallback: using %s as a filler entry, but it doesn't actually exist: the application's configuration file has an incorrect/missing 'resources' key", resources_relative_to_exe.string().c_str());
+        }
+
+        return resources_relative_to_exe;
+    }
+}
+
+std::filesystem::path osc::get_resource_dir_from_settings(const AppSettings& settings)
+{
+    // care: the resources directory is _very_, __very__ important
+    //
+    // if the application can't find resources, then it'll _probably_ fail to
+    // boot correctly, which will result in great disappointment, so this code
+    // has to try its best
+
+    constexpr CStringView resources_key = "resources";
+
+    const auto resources_dir_setting_value = settings.find_value(resources_key);
+    if (not resources_dir_setting_value) {
+        return get_resources_dir_fallback_path(settings);
+    }
+
+    if (resources_dir_setting_value->type() != AppSettingValueType::String) {
+        log_error("application setting for '%s' is not a string: falling back", resources_key.c_str());
+        return get_resources_dir_fallback_path(settings);
+    }
+
+    // resolve `resources` dir relative to the configuration file in which it was defined
+    std::filesystem::path config_file_dir;
+    if (const auto p = settings.find_value_filesystem_source(resources_key)) {
+        config_file_dir = p->parent_path();
+    }
+    else {
+        config_file_dir = current_executable_directory().parent_path();  // assume the `bin/` dir is one-up from the settings
+    }
+    const std::filesystem::path configured_resources_dir{resources_dir_setting_value->to_string()};
+
+    auto resolved_resource_dir = std::filesystem::weakly_canonical(config_file_dir / configured_resources_dir);
+    if (not std::filesystem::exists(resolved_resource_dir)) {
+        log_error("'resources', in the application configuration, points to a location that does not exist (%s), so the application may fail to load resources (which is usually a fatal error). Note: the 'resources' path is relative to the configuration file in which you define it (or can be absolute). Attemtping to fallback to a default resources location (which may or may not work).", resolved_resource_dir.string().c_str());
+        return get_resources_dir_fallback_path(settings);
+    }
+
+    return resolved_resource_dir;
 }
 
 osc::AppSettings::AppSettings(
@@ -569,9 +636,18 @@ std::optional<AppSettingValue> osc::AppSettings::find_value(
 
 void osc::AppSettings::set_value(
     std::string_view key,
-    AppSettingValue value)
+    AppSettingValue value,
+    AppSettingScope scope)
 {
-    impl_->set_value(key, std::move(value));
+    impl_->set_value(key, std::move(value), scope);
+}
+
+void osc::AppSettings::set_value_if_not_found(
+    std::string_view key,
+    AppSettingValue value,
+    AppSettingScope scope)
+{
+    impl_->set_value_if_not_found(key, std::move(value), scope);
 }
 
 std::optional<std::filesystem::path> osc::AppSettings::find_value_filesystem_source(

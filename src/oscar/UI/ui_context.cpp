@@ -2,7 +2,7 @@
 
 #include <IconsFontAwesome5.h>
 #include <oscar/Platform/App.h>
-#include <oscar/Platform/AppConfig.h>
+#include <oscar/Platform/AppSettings.h>
 #include <oscar/Platform/ResourceLoader.h>
 #include <oscar/Platform/ResourcePath.h>
 #include <oscar/Shims/Cpp20/bit.h>
@@ -68,8 +68,8 @@ void osc::ui::context::init()
     // make it so that windows can only ever be moved from the title bar
     ui::get_io().ConfigWindowsMoveFromTitleBarOnly = true;
 
-    // load application-level ImGui config, then the user one,
-    // so that the user config takes precedence
+    // load application-level ImGui settings, then the user one,
+    // so that the user settings takes precedence
     {
         const std::string base_ini_data = App::slurp("imgui_base_config.ini");
         ImGui::LoadIniSettingsFromMemory(base_ini_data.data(), base_ini_data.size());
@@ -89,7 +89,7 @@ void osc::ui::context::init()
         float vdpi{};
 
         // if the user explicitly enabled high_dpi_mode...
-        if (auto v = App::config().find_value("experimental_feature_flags/high_dpi_mode"); v and v->to_bool()) {
+        if (auto v = App::settings().find_value("experimental_feature_flags/high_dpi_mode"); v and v->to_bool()) {
             // and SDL is able to get the DPI of the given window...
             if (SDL_GetDisplayDPI(SDL_GetWindowDisplayIndex(App::upd().upd_underlying_window()), &dpi, &hdpi, &vdpi) == 0) {
                 return dpi / 96.0f;  // then calculate the scaling factor

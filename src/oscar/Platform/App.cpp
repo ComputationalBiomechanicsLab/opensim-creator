@@ -4,8 +4,8 @@
 #include <oscar/Graphics/Texture2D.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Platform/AppClock.h>
-#include <oscar/Platform/AppConfig.h>
 #include <oscar/Platform/AppMetadata.h>
+#include <oscar/Platform/AppSettings.h>
 #include <oscar/Platform/FilesystemResourceLoader.h>
 #include <oscar/Platform/IResourceLoader.h>
 #include <oscar/Platform/IScreen.h>
@@ -76,16 +76,26 @@ namespace
         return true;
     }
 
-    bool configure_application_log(const AppConfig& config)
+    LogLevel get_log_level_from_settings(const AppSettings& settings)
+    {
+        if (const auto v = settings.find_value("log_level")) {
+            if (auto parsed = try_parse_as_log_level(v->to_string())) {
+                return *parsed;
+            }
+        }
+        return LogLevel::DEFAULT;
+    }
+
+    bool configure_application_log(const AppSettings& config)
     {
         if (auto logger = global_default_logger()) {
-            logger->set_level(config.log_level());
+            logger->set_level(get_log_level_from_settings(config));
         }
         return true;
     }
 
     // initialize the main application window
-    sdl::Window create_main_app_window(const AppConfig& config, CStringView application_name)
+    sdl::Window create_main_app_window(const AppSettings& config, CStringView application_name)
     {
         log_info("initializing main application window");
 
@@ -418,9 +428,9 @@ public:
         set_main_window_subtitle({});
     }
 
-    const AppConfig& get_config() const { return config_; }
+    const AppSettings& get_config() const { return config_; }
 
-    AppConfig& upd_config() { return config_; }
+    AppSettings& upd_settings() { return config_; }
 
     ResourceLoader& upd_resource_loader()
     {
@@ -429,7 +439,7 @@ public:
 
     std::filesystem::path get_resource_filepath(const ResourcePath& rp) const
     {
-        return std::filesystem::weakly_canonical(config_.resource_directory() / rp.string());
+        return std::filesystem::weakly_canonical(resources_dir_ / rp.string());
     }
 
     std::string slurp_resource(const ResourcePath& rp)
@@ -664,6 +674,16 @@ private:
     // immutable application metadata (can be provided at runtime via ctor)
     AppMetadata metadata_;
 
+    // top-level application configuration
+    AppSettings config_{
+        metadata_.organization_name(),
+        metadata_.application_name()
+    };
+
+    // initialization-time resources dir (so that it doesn't have to be fetched
+    // from the settings over-and-over)
+    std::filesystem::path resources_dir_ = get_resource_dir_from_settings(config_);
+
     // path to the directory that the application's executable is contained within
     std::filesystem::path executable_dir_ = get_current_exe_dir_and_log_it();
 
@@ -673,12 +693,6 @@ private:
         metadata_.application_name()
     );
 
-    // top-level application configuration
-    AppConfig config_{
-        metadata_.organization_name(),
-        metadata_.application_name()
-    };
-
     // ensure the application log is configured according to the given configuration file
     bool log_is_configured_ = configure_application_log(config_);
 
@@ -686,7 +700,7 @@ private:
     bool backtrace_handler_is_installed_ = ensure_backtrace_handler_enabled(user_data_dir_);
 
     // top-level runtime resource loader
-    ResourceLoader resource_loader_ = make_resource_loader<FilesystemResourceLoader>(config_.resource_directory());
+    ResourceLoader resource_loader_ = make_resource_loader<FilesystemResourceLoader>(resources_dir_);
 
     // init SDL context (windowing, etc.)
     sdl::Context sdl_context_{SDL_INIT_VIDEO};
@@ -722,7 +736,7 @@ private:
     SynchronizedValue<std::unordered_map<TypeInfoReference, std::shared_ptr<void>>> singletons_;
 
     // how many antiAliasingLevel the implementation should actually use
-    AntiAliasingLevel antialiasing_level_ = min(graphics_context_.max_antialiasing_level(), config_.anti_aliasing_level());
+    AntiAliasingLevel antialiasing_level_ = min(graphics_context_.max_antialiasing_level(), AntiAliasingLevel{4});
 
     // set to true if the application should quit
     bool quit_requested_ = false;
@@ -748,8 +762,6 @@ private:
     std::vector<AnnotatedScreenshotRequest> active_screenshot_requests_;
 };
 
-// public API
-
 App& osc::App::upd()
 {
     OSC_ASSERT(g_app_global && "App is not initialized: have you constructed a (singleton) instance of App?");
@@ -762,7 +774,7 @@ const App& osc::App::get()
     return *g_app_global;
 }
 
-const AppConfig& osc::App::config()
+const AppSettings& osc::App::settings()
 {
     return get().get_config();
 }
@@ -798,10 +810,6 @@ osc::App::App(const AppMetadata& metadata)
     impl_ = std::make_unique<Impl>(metadata);
     g_app_global = this;
 }
-
-osc::App::App(App&&) noexcept = default;
-
-App& osc::App::operator=(App&&) noexcept = default;
 
 osc::App::~App() noexcept
 {
@@ -993,14 +1001,14 @@ void osc::App::unset_main_window_subtitle()
     impl_->unset_main_window_subtitle();
 }
 
-const AppConfig& osc::App::get_config() const
+const AppSettings& osc::App::get_config() const
 {
     return impl_->get_config();
 }
 
-AppConfig& osc::App::upd_config()
+AppSettings& osc::App::upd_settings()
 {
-    return impl_->upd_config();
+    return impl_->upd_settings();
 }
 
 ResourceLoader& osc::App::upd_resource_loader()

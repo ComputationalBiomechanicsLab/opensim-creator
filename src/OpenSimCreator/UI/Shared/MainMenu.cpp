@@ -4,6 +4,7 @@
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
 #include <OpenSimCreator/Documents/Simulation/Simulation.h>
 #include <OpenSimCreator/Documents/Simulation/StoFileSimulation.h>
+#include <OpenSimCreator/Platform/OpenSimCreatorApp.h>
 #include <OpenSimCreator/Platform/RecentFiles.h>
 #include <OpenSimCreator/UI/IMainUIStateAPI.h>
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterTab.h>
@@ -13,8 +14,6 @@
 #include <IconsFontAwesome5.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Graphics/Scene/SceneCache.h>
-#include <oscar/Platform/App.h>
-#include <oscar/Platform/AppConfig.h>
 #include <oscar/Platform/AppMetadata.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
@@ -411,7 +410,7 @@ void osc::MainMenuAboutTab::onDraw()
         ui::push_id(id++);
         if (ui::draw_button(ICON_FA_LINK " open"))
         {
-            open_url_in_os_default_web_browser(App::config().docs_url());
+            open_url_in_os_default_web_browser(OpenSimCreatorApp::get().docs_url());
         }
         ui::draw_tooltip_body_only_if_item_hovered("this will open the (locally installed) documentation in a separate browser window");
         ui::pop_id();

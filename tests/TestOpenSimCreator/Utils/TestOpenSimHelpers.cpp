@@ -13,7 +13,6 @@
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
 #include <OpenSimCreator/Platform/OpenSimCreatorApp.h>
 #include <gtest/gtest.h>
-#include <oscar/Platform/AppConfig.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Shims/Cpp23/ranges.h>
 #include <oscar/Utils/Algorithms.h>
@@ -70,10 +69,9 @@ namespace
 // the joint) but it shouldn't hard crash (it is)
 TEST(OpenSimHelpers, DISABLED_CanSwapACustomJointForAFreeJoint)
 {
-    const auto config = LoadOpenSimCreatorConfig();
-    GlobalInitOpenSim(config);  // ensure muscles are available etc.
+    GlobalInitOpenSim();  // ensure muscles are available etc.
 
-    std::filesystem::path modelPath = config.resource_directory() / "models" / "Leg39" / "leg39.osim";
+    std::filesystem::path modelPath = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "models" / "Leg39" / "leg39.osim";
 
     UndoableModelStatePair model{std::make_unique<OpenSim::Model>(modelPath.string())};
 
@@ -88,13 +86,11 @@ TEST(OpenSimHelpers, DISABLED_CanSwapACustomJointForAFreeJoint)
     // cache joint paths, because we are changing the model during this test and it might
     // invalidate the model's `getComponentList` function
     std::vector<OpenSim::ComponentPath> allJointPaths;
-    for (const OpenSim::Joint& joint : model.getModel().getComponentList<OpenSim::Joint>())
-    {
+    for (const OpenSim::Joint& joint : model.getModel().getComponentList<OpenSim::Joint>()) {
         allJointPaths.push_back(joint.getAbsolutePath());
     }
 
-    for (const OpenSim::ComponentPath& p : allJointPaths)
-    {
+    for (const OpenSim::ComponentPath& p : allJointPaths) {
         const auto& joint = model.getModel().getComponent<OpenSim::Joint>(p);
 
         std::string msg = "changed " + joint.getAbsolutePathString();
@@ -149,13 +145,13 @@ TEST(OpenSimHelpers, GetAbsolutePathStringWithOutparamWorksForModel)
 
 TEST(OpenSimHelpers, GetAbsolutePathStringReturnsSameResultAsOpenSimVersionForComplexModel)
 {
-    const auto config = LoadOpenSimCreatorConfig();
-    std::filesystem::path modelPath = config.resource_directory() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
+    GlobalInitOpenSim();  // ensure muscles are available etc.
+
+    std::filesystem::path modelPath = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
     OpenSim::Model m{modelPath.string()};
     std::string outparam;
-    for (const OpenSim::Component& c : m.getComponentList())
-    {
+    for (const OpenSim::Component& c : m.getComponentList()) {
         // test both the "pure" and "assigning" versions at the same time
         GetAbsolutePathString(c, outparam);
         ASSERT_EQ(c.getAbsolutePathString(), GetAbsolutePathString(c));
@@ -165,12 +161,12 @@ TEST(OpenSimHelpers, GetAbsolutePathStringReturnsSameResultAsOpenSimVersionForCo
 
 TEST(OpenSimHelpers, GetAbsolutePathReturnsSameResultAsOpenSimVersionForComplexModel)
 {
-    const auto config = LoadOpenSimCreatorConfig();
-    std::filesystem::path modelPath = config.resource_directory() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
+    GlobalInitOpenSim();  // ensure muscles are available etc.
+
+    std::filesystem::path modelPath = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
     OpenSim::Model m{modelPath.string()};
-    for (const OpenSim::Component& c : m.getComponentList())
-    {
+    for (const OpenSim::Component& c : m.getComponentList()) {
         ASSERT_EQ(c.getAbsolutePath(), GetAbsolutePath(c));
     }
 }
@@ -182,12 +178,12 @@ TEST(OpenSimHelpers, GetAbsolutePathOrEmptyReuturnsEmptyIfPassedANullptr)
 
 TEST(OpenSimHelpers, GetAbsolutePathOrEmptyReuturnsSameResultAsOpenSimVersionForComplexModel)
 {
-    const auto config = LoadOpenSimCreatorConfig();
-    std::filesystem::path modelPath = config.resource_directory() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
+    GlobalInitOpenSim();  // ensure muscles are available etc.
+
+    std::filesystem::path modelPath = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
     OpenSim::Model m{modelPath.string()};
-    for (const OpenSim::Component& c : m.getComponentList())
-    {
+    for (const OpenSim::Component& c : m.getComponentList()) {
         ASSERT_EQ(c.getAbsolutePath(), GetAbsolutePathOrEmpty(&c));
     }
 }
@@ -196,8 +192,9 @@ TEST(OpenSimHelpers, GetAbsolutePathOrEmptyReuturnsSameResultAsOpenSimVersionFor
 // model without anything exploding (deletion failure is ok, though)
 TEST(OpenSimHelpers, CanTryToDeleteEveryComponentFromComplicatedModelWithNoFaultsOrExceptions)
 {
-    const auto config = LoadOpenSimCreatorConfig();
-    std::filesystem::path modelPath = config.resource_directory() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
+    GlobalInitOpenSim();  // ensure muscles are available etc.
+
+    std::filesystem::path modelPath = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
     const OpenSim::Model originalModel{modelPath.string()};
     OpenSim::Model modifiedModel{originalModel};
@@ -222,6 +219,8 @@ TEST(OpenSimHelpers, CanTryToDeleteEveryComponentFromComplicatedModelWithNoFault
 // later clean up in the UI
 TEST(OpenSimHelpers, CanDeleteAnOffsetFrameFromAModelsComponentSet)
 {
+    GlobalInitOpenSim();  // ensure muscles are available etc.
+
     OpenSim::Model model;
     auto& pof = AddModelComponent(model, std::make_unique<OpenSim::PhysicalOffsetFrame>());
     pof.setParentFrame(model.getGround());
@@ -272,8 +271,7 @@ TEST(OpenSimHelpers, DISABLED_FinalizeConnectionsWithUnusualJointTopologyDoesNot
     OpenSim::Model model{brokenFilePath.string()};
     model.finalizeFromProperties();
 
-    for (size_t i = 0; i < 10; ++i)
-    {
+    for (size_t i = 0; i < 10; ++i) {
         FinalizeConnections(model);  // the HACK should make this work fine
     }
 }
@@ -331,8 +329,8 @@ TEST(OpenSimHelpers, GetAllWrapObjectsReferencedByWorksAsExpected)
         {OpenSim::ComponentPath{"/forceset/gaslat_r/path"}, {"GasLat_at_shank_r", "Gastroc_at_condyles_r"}},
     });
 
-    const auto config = LoadOpenSimCreatorConfig();
-    std::filesystem::path modelPath = config.resource_directory() / "models" / "RajagopalModel" / "Rajagopal2015.osim";
+    const auto config = LoadOpenSimCreatorSettings();
+    std::filesystem::path modelPath = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim";
     OpenSim::Model m{modelPath.string()};
     InitializeModel(m);
     InitializeState(m);

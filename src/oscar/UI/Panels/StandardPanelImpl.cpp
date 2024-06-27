@@ -1,12 +1,25 @@
 #include "StandardPanelImpl.h"
 
 #include <oscar/Platform/App.h>
-#include <oscar/Platform/AppConfig.h>
+#include <oscar/Platform/AppSettings.h>
+#include <oscar/Platform/AppSettingValue.h>
 #include <oscar/UI/oscimgui.h>
 
+#include <sstream>
 #include <string_view>
+#include <utility>
 
 using namespace osc;
+
+namespace
+{
+    std::string create_panel_enabled_config_key(std::string_view panel_name)
+    {
+        std::stringstream ss;
+        ss << "panels/" << panel_name << "/enabled";
+        return std::move(ss).str();
+    }
+}
 
 osc::StandardPanelImpl::StandardPanelImpl(std::string_view panel_name) :
     StandardPanelImpl{panel_name, ImGuiWindowFlags_None}
@@ -17,6 +30,7 @@ osc::StandardPanelImpl::StandardPanelImpl(
     ImGuiWindowFlags panel_flags) :
 
     panel_name_{panel_name},
+    panel_enabled_config_key_{create_panel_enabled_config_key(panel_name_)},
     panel_flags_{panel_flags}
 {}
 
@@ -27,17 +41,22 @@ CStringView osc::StandardPanelImpl::impl_get_name() const
 
 bool osc::StandardPanelImpl::impl_is_open() const
 {
-    return App::config().is_panel_enabled(panel_name_);
+    if (auto v = App::settings().find_value(panel_enabled_config_key_)) {
+        return v->to_bool();
+    }
+    else {
+        return false;
+    }
 }
 
 void osc::StandardPanelImpl::impl_open()
 {
-    App::upd().upd_config().set_panel_enabled(panel_name_, true);
+    App::upd().upd_settings().set_value(panel_enabled_config_key_, AppSettingValue{true});
 }
 
 void osc::StandardPanelImpl::impl_close()
 {
-    App::upd().upd_config().set_panel_enabled(panel_name_, false);
+    App::upd().upd_settings().set_value(panel_enabled_config_key_, AppSettingValue{false});
 }
 
 void osc::StandardPanelImpl::impl_on_draw()

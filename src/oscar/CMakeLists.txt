@@ -245,12 +245,11 @@ add_library(oscar STATIC
     Platform/App.cpp
     Platform/App.h
     Platform/AppClock.h
-    Platform/AppConfig.cpp
-    Platform/AppConfig.h
     Platform/AppMetadata.cpp
     Platform/AppMetadata.h
     Platform/AppSettings.cpp
     Platform/AppSettings.h
+    Platform/AppSettingScope.h
     Platform/AppSettingValue.cpp
     Platform/AppSettingValue.h
     Platform/AppSettingValueType.h

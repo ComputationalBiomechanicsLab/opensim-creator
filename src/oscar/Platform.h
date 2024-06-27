@@ -2,7 +2,6 @@
 
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/AppClock.h>
-#include <oscar/Platform/AppConfig.h>
 #include <oscar/Platform/AppMetadata.h>
 #include <oscar/Platform/AppSettings.h>
 #include <oscar/Platform/AppSettingValue.h>

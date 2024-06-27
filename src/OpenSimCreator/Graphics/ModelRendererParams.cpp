@@ -7,7 +7,7 @@
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/Scene/SceneRendererParams.h>
 #include <oscar/Maths/PolarPerspectiveCamera.h>
-#include <oscar/Platform/AppConfig.h>
+#include <oscar/Platform/AppSettings.h>
 #include <oscar/Platform/AppSettingValue.h>
 #include <oscar/Utils/Algorithms.h>
 
@@ -70,16 +70,14 @@ osc::ModelRendererParams::ModelRendererParams() :
 }
 
 void osc::UpdModelRendererParamsFrom(
-    const AppConfig& config,
+    const AppSettings& settings,
     std::string_view keyPrefix,
     ModelRendererParams& params)
 {
     auto values = ToValues(keyPrefix, params);
-    for (auto& [k, v] : values)
-    {
-        if (auto configV = config.find_value(k))
-        {
-            v = *configV;
+    for (auto& [k, v] : values) {
+        if (auto settingValue = settings.find_value(k)) {
+            v = *settingValue;
         }
     }
     UpdFromValues(keyPrefix, values, params);
@@ -88,16 +86,16 @@ void osc::UpdModelRendererParamsFrom(
 void osc::SaveModelRendererParamsDifference(
     const ModelRendererParams& a,
     const ModelRendererParams& b,
-    std::string_view keyPrefix,
-    AppConfig& config)
+    std::string_view settingsKeyPrefix,
+    AppSettings& settings)
 {
-    const auto aVals = ToValues(keyPrefix, a);
-    const auto bVals = ToValues(keyPrefix, b);
+    const auto aVals = ToValues(settingsKeyPrefix, a);
+    const auto bVals = ToValues(settingsKeyPrefix, b);
 
     for (const auto& [aK, aV] : aVals) {
         if (const auto* bV = lookup_or_nullptr(bVals, aK)) {
             if (*bV != aV) {
-                config.set_value(aK, *bV);
+                settings.set_value(aK, *bV);
             }
         }
     }

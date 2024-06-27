@@ -83,7 +83,7 @@ TEST(FrameWarperFactories, WhenLoadingAModelUsingStationDefinedFramesAssignsStat
 
     const auto osimFileLocation = ModelWarperFixturesDir() / "StationDefinedFramePaired" / "model.osim";
     OpenSim::Model model{osimFileLocation.string()};
-    const ModelWarpConfiguration config{osimFileLocation, model};  // note: it has no associated config file
+    const ModelWarpConfiguration config{osimFileLocation, model};  // note: it has no associated settings file
 
     InitializeModel(model);
     InitializeState(model);

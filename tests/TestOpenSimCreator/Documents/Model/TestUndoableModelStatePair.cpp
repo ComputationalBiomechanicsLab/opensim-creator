@@ -21,7 +21,12 @@ using namespace osc;
 
 TEST(UndoableModelStatePair, CanLoadAndRenderAllUserFacingExampleFiles)
 {
-    GlobalInitOpenSim();
+    // ensure the OpenSim API is initialized and the meshes are loadable from
+    // the central `geometry/` directory
+    {
+        GlobalInitOpenSim();
+        AddDirectoryToOpenSimGeometrySearchPath(get_resource_dir_from_settings(LoadOpenSimCreatorSettings()) / "geometry");
+    }
 
     SceneCache meshCache;
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <oscar/Platform/AppSettingScope.h>
 #include <oscar/Platform/AppSettingValue.h>
 
 #include <filesystem>
@@ -30,7 +31,8 @@ namespace osc
         std::optional<std::filesystem::path> system_configuration_file_location() const;
 
         std::optional<AppSettingValue> find_value(std::string_view key) const;
-        void set_value(std::string_view key, AppSettingValue);
+        void set_value(std::string_view key, AppSettingValue, AppSettingScope = AppSettingScope::User);
+        void set_value_if_not_found(std::string_view key, AppSettingValue, AppSettingScope = AppSettingScope::User);
 
         // if available, returns the filesystem path of the configuration file that
         // provided the given setting value
@@ -57,4 +59,9 @@ namespace osc
     private:
         std::shared_ptr<Impl> impl_;
     };
+
+    // returns a filesystem path to the application's `resources/` directory. Uses heuristics
+    // to figure out where it is if the provided `AppSettings` doesn't contain the necessary
+    // information
+    std::filesystem::path get_resource_dir_from_settings(const AppSettings&);
 }

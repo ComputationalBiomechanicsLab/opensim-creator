@@ -1,6 +1,7 @@
 #include "SplashTab.h"
 
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
+#include <OpenSimCreator/Platform/OpenSimCreatorApp.h>
 #include <OpenSimCreator/Platform/RecentFile.h>
 #include <OpenSimCreator/Platform/RecentFiles.h>
 #include <OpenSimCreator/UI/IMainUIStateAPI.h>
@@ -22,9 +23,8 @@
 #include <oscar/Maths/PolarPerspectiveCamera.h>
 #include <oscar/Maths/Rect.h>
 #include <oscar/Maths/Vec2.h>
-#include <oscar/Platform/App.h>
-#include <oscar/Platform/AppConfig.h>
 #include <oscar/Platform/AppMetadata.h>
+#include <oscar/Platform/AppSettings.h>
 #include <oscar/Platform/os.h>
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
@@ -261,7 +261,7 @@ private:
         }
         App::upd().add_frame_annotation("SplashTab/ImportMeshesMenuItem", ui::get_last_drawn_item_screen_rect());
         if (ui::draw_menu_item(ICON_FA_BOOK " Open Documentation")) {
-            open_url_in_os_default_web_browser(App::config().docs_url());
+            open_url_in_os_default_web_browser(OpenSimCreatorApp::get().docs_url());
         }
     }
 

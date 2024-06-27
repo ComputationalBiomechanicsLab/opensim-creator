@@ -24,7 +24,7 @@
 
 struct SDL_Window;
 namespace osc { struct Color; }
-namespace osc { class AppConfig; }
+namespace osc { class AppSettings; }
 namespace osc { class AppMetadata; }
 namespace osc { class IScreen; }
 namespace osc::ui::context { void init(); }
@@ -57,7 +57,7 @@ namespace osc
         static App& upd();
         static const App& get();
 
-        static const AppConfig& config();
+        static const AppSettings& settings();
 
         // returns a full filesystem path to a (runtime- and configuration-dependent) application resource
         static std::filesystem::path resource_filepath(const ResourcePath&);
@@ -74,14 +74,14 @@ namespace osc
         // constructs an `App` from a default-constructed `AppMetadata`
         App();
 
-        // constructs an app by initializing it from a config at the default app config location
+        // constructs an app by initializing it from a settings at the default app settings location
         //
         // this also sets the currently-active application global (i.e. `App::upd()` and `App::get()` will work)
         explicit App(const AppMetadata&);
         App(const App&) = delete;
-        App(App&&) noexcept;
+        App(App&&) noexcept = delete;
         App& operator=(const App&) = delete;
-        App& operator=(App&&) noexcept;
+        App& operator=(App&&) noexcept = delete;
         ~App() noexcept;
 
         // returns the application's metadata (name, organization, repo URL, version, etc.)
@@ -153,7 +153,7 @@ namespace osc
         void make_windowed();
 
         // returns the recommended number of anti-aliasing samples that renderers that want to render
-        // to this `App`'s screen should use (based on user config, etc.)
+        // to this `App`'s screen should use (based on user settings, etc.)
         AntiAliasingLevel anti_aliasing_level() const;
 
         // sets the number of anti-aliasing samples that multisampled renderers should use when they
@@ -233,8 +233,8 @@ namespace osc
         void unset_main_window_subtitle();
 
         // returns the current application configuration
-        const AppConfig& get_config() const;
-        AppConfig& upd_config();
+        const AppSettings& get_config() const;
+        AppSettings& upd_settings();
 
         // returns the top- (application-)level resource loader
         ResourceLoader& upd_resource_loader();

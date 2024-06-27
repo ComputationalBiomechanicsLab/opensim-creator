@@ -40,7 +40,7 @@ public:
         m_Flags{flags_}
     {
         UpdModelRendererParamsFrom(
-            App::config(),
+            App::settings(),
             GetSettingsKeyPrefixForPanel(parentPanelName_),
             m_Params
         );
@@ -129,7 +129,7 @@ public:
                 renderParamsBefore,
                 renderParamsAfter,
                 GetSettingsKeyPrefixForPanel(m_ParentPanelName),
-                App::upd().upd_config()
+                App::upd().upd_settings()
             );
         }
 
@@ -181,7 +181,7 @@ private:
         return rv;
     }
 
-    // used for saving per-panel data to the application config
+    // used for saving per-panel data to the application settings
     std::string m_ParentPanelName;
 
     // runtime modification flags

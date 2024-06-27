@@ -154,7 +154,7 @@ namespace
                     renderParamsBefore,
                     renderParamsAfter,
                     GetSettingsKeyPrefixForPanel(panel_name_),
-                    App::upd().upd_config()
+                    App::upd().upd_settings()
                 );
             }
 
@@ -339,7 +339,7 @@ public:
         //
         // each panel has its own configuration set (`panels/viewer0,1,2, etc.`)
         UpdModelRendererParamsFrom(
-            App::config(),
+            App::settings(),
             GetSettingsKeyPrefixForPanel(panelName_),
             m_Parameters.updRenderParams()
         );

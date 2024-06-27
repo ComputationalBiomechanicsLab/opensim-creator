@@ -10,7 +10,7 @@
 
 #include <string_view>
 
-namespace osc { class AppConfig; }
+namespace osc { class AppSettings; }
 
 namespace osc
 {
@@ -27,7 +27,7 @@ namespace osc
     };
 
     void UpdModelRendererParamsFrom(
-        const AppConfig&,
+        const AppSettings&,
         std::string_view keyPrefix,
         ModelRendererParams& params
     );
@@ -35,7 +35,7 @@ namespace osc
     void SaveModelRendererParamsDifference(
         const ModelRendererParams&,
         const ModelRendererParams&,
-        std::string_view keyPrefix,
-        AppConfig& config
+        std::string_view settingsKeyPrefix,
+        AppSettings&
     );
 }

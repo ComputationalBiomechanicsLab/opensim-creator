@@ -38,6 +38,7 @@ namespace osc
         virtual void impl_draw_content() = 0;
 
         std::string panel_name_;
+        std::string panel_enabled_config_key_;
         ImGuiWindowFlags panel_flags_;
     };
 }

@@ -12,7 +12,7 @@
 
 #include <IconsFontAwesome5.h>
 #include <oscar/Platform/App.h>
-#include <oscar/Platform/AppConfig.h>
+#include <oscar/Platform/AppSettings.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
 #include <oscar/Platform/Screenshot.h>
@@ -54,16 +54,16 @@ namespace rgs = std::ranges;
 namespace
 {
     std::unique_ptr<ITab> LoadConfigurationDefinedTabIfNecessary(
-        const AppConfig& config,
+        const AppSettings& settings,
         const TabRegistry& tabRegistry,
         const ParentPtr<ITabHost>& api)
     {
-        if (std::optional<std::string> maybeRequestedTab = config.initial_tab_override()) {
-            if (std::optional<TabRegistryEntry> maybeEntry = tabRegistry.find_by_name(*maybeRequestedTab)) {
+        if (auto maybeRequestedTab = settings.find_value("initial_tab")) {
+            if (std::optional<TabRegistryEntry> maybeEntry = tabRegistry.find_by_name(maybeRequestedTab->to_string())) {
                 return maybeEntry->construct_tab(api);
             }
 
-            log_warn("%s: cannot find a tab with this name in the tab registry: ignoring", maybeRequestedTab->c_str());
+            log_warn("%s: cannot find a tab with this name in the tab registry: ignoring", maybeRequestedTab->to_string().c_str());
             log_warn("available tabs are:");
             for (auto&& tabRegistryEntry : tabRegistry) {
                 log_warn("    %s", tabRegistryEntry.name().c_str());
@@ -157,7 +157,7 @@ public:
 
             // if the application configuration has requested that a specific tab should be opened,
             // then try looking it up and open it
-            if (auto tab = LoadConfigurationDefinedTabIfNecessary(App::config(), *App::singleton<TabRegistry>(), getTabHostAPI())) {
+            if (auto tab = LoadConfigurationDefinedTabIfNecessary(App::settings(), *App::singleton<TabRegistry>(), getTabHostAPI())) {
                 addTab(std::move(tab));
             }
 
@@ -386,7 +386,7 @@ public:
     void implAddUserOutputExtractor(const OutputExtractor& output) final
     {
         m_UserOutputExtractors.push_back(output);
-        App::upd().upd_config().set_panel_enabled("Output Watches", true);
+        App::upd().upd_settings().set_value("panels/Output Watches/enabled", AppSettingValue{true});
     }
 
     void implRemoveUserOutputExtractor(int idx) final
