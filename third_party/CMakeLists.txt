@@ -17,6 +17,7 @@ set(OSCDEPS_GET_IMGUI ON CACHE BOOL "enable getting imgui")
 set(OSCDEPS_GET_IMGUIZMO ON CACHE BOOL "enable getting ImGuizmo")
 set(OSCDEPS_GET_IMPLOT ON CACHE BOOL "enable gettting implot")
 set(OSCDEPS_GET_OPENSIM ON CACHE BOOL "enable getting OpenSim (+its dependencies)")
+set(OSCDEPS_BUILD_ALWAYS OFF CACHE BOOL "set BUILD_ALWAYS on all dependency targets, useful when editing dependencies")
 
 include(ExternalProject)  # ExternalProject_Add
 include(GNUInstallDirs)  # CMAKE_INSTALL_LIBDIR
@@ -51,6 +52,7 @@ endif()
 if(${OSCDEPS_GET_GOOGLETEST})
     ExternalProject_Add(googletest
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/googletest
+        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
             -DBUILD_GMOCK:BOOL=OFF
@@ -62,6 +64,7 @@ if(${OSCDEPS_GET_BENCHMARK})
     ExternalProject_Add(benchmark
         DEPENDS googletest
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/benchmark
+        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
             -DGOOGLETEST_PATH:STRING=${CMAKE_CURRENT_SOURCE_DIR}/googletest
@@ -73,6 +76,7 @@ endif()
 if(${OSCDEPS_GET_LUNASVG})
     ExternalProject_Add(lunasvg
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lunasvg
+        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
     )
@@ -81,6 +85,7 @@ endif()
 if(${OSCDEPS_GET_SDL})
     ExternalProject_Add(sdl
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/SDL
+        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
             -DSDL_INSTALL_CMAKEDIR:STRING=${CMAKE_INSTALL_LIBDIR}/cmake/SDL2
@@ -92,6 +97,7 @@ endif()
 if(${OSCDEPS_GET_TOMLPLUSPLUS})
     ExternalProject_Add(tomlplusplus
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tomlplusplus
+        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
     )
@@ -100,6 +106,7 @@ endif()
 if(${OSCDEPS_GET_UNORDERED_DENSE})
     ExternalProject_Add(unordered_dense
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/unordered_dense
+        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
     )
@@ -109,6 +116,7 @@ if(${OSCDEPS_GET_GLEW})
     ExternalProject_Add(glew
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/glew
         SOURCE_SUBDIR build/cmake
+        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
             -DBUILD_UTILS:BOOL=OFF
@@ -124,6 +132,7 @@ if (${OSCDEPS_GET_ICONFONTCPPHEADERS})
         PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/IconFontCppHeaders.cmake" <SOURCE_DIR>/CMakeLists.txt
         COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/IconFontCppHeadersConfig.cmake.in" <SOURCE_DIR>/IconFontCppHeadersConfig.cmake.in
 
+        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
     )
@@ -137,6 +146,7 @@ if (${OSCDEPS_GET_STB})
         PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/stb.cmake" <SOURCE_DIR>/CMakeLists.txt
         COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/stbConfig.cmake.in" <SOURCE_DIR>/stbConfig.cmake.in
 
+        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
     )
@@ -150,6 +160,7 @@ if(${OSCDEPS_GET_NATIVEFILEDIALOG})
         PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/nativefiledialog.cmake" <SOURCE_DIR>/CMakeLists.txt
         COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/nativefiledialogConfig.cmake.in" <SOURCE_DIR>/nativefiledialogConfig.cmake.in
 
+        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
     )
@@ -163,6 +174,7 @@ if (${OSCDEPS_GET_IMGUI})
         PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/imgui.cmake" <SOURCE_DIR>/CMakeLists.txt
         COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/imguiConfig.cmake.in" <SOURCE_DIR>/imguiConfig.cmake.in
 
+        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
             -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}
@@ -178,6 +190,7 @@ if(${OSCDEPS_GET_IMGUIZMO})
         PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/ImGuizmo.cmake" <SOURCE_DIR>/CMakeLists.txt
         COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/ImGuizmoConfig.cmake.in" <SOURCE_DIR>/ImGuizmoConfig.cmake.in
 
+        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
             -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}
@@ -193,6 +206,7 @@ if(${OSCDEPS_GET_IMPLOT})
         PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/implot.cmake" <SOURCE_DIR>/CMakeLists.txt
         COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/implotConfig.cmake.in" <SOURCE_DIR>/implotConfig.cmake.in
 
+        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
             -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}
@@ -204,6 +218,7 @@ if(${OSCDEPS_GET_OPENSIM})
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/opensim-core/dependencies
         INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/opensim-core-dependencies-install
         INSTALL_COMMAND ""  # OpenSim's dependency build installs during its build step
+        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
             -DOPENSIM_WITH_CASADI:BOOL=OFF
@@ -216,6 +231,7 @@ if(${OSCDEPS_GET_OPENSIM})
         DEPENDS opensim-core-dependencies
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/opensim-core
         TEST_EXCLUDE_FROM_MAIN ON
+        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
             -DOPENSIM_WITH_CASADI:BOOL=OFF
