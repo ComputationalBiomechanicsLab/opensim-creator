@@ -6,7 +6,7 @@
 
 using namespace osc;
 
-TEST(read_csv_row, ReadingAnEmptyStreamReturnsASingleEmptyColumn)
+TEST(read_csv_row, reading_an_empty_stream_returns_a_single_empty_column)
 {
     std::istringstream input;
     const std::optional<std::vector<std::string>> output = read_csv_row(input);
@@ -16,7 +16,7 @@ TEST(read_csv_row, ReadingAnEmptyStreamReturnsASingleEmptyColumn)
     ASSERT_EQ(output->at(0), "");
 }
 
-TEST(read_csv_row, ReadingAStreamContainingASpaceReturnsASingleColumnContainingTheSpace)
+TEST(read_csv_row, reading_a_stream_containing_one_space_returns_a_single_column_containing_the_spaace)
 {
     std::istringstream input{" "};
     const std::optional<std::vector<std::string>> output = read_csv_row(input);
@@ -26,7 +26,7 @@ TEST(read_csv_row, ReadingAStreamContainingASpaceReturnsASingleColumnContainingT
     ASSERT_EQ(output->at(0), " ");
 }
 
-TEST(read_csv_row, ReadingAStreamContainingTwoCommasShouldReturnThreeEmptyColumns)
+TEST(read_csv_row, reading_a_stream_containing_just_two_commas_should_return_three_empty_columns)
 {
     std::istringstream input{",,"};
     const  std::optional<std::vector<std::string>> output = read_csv_row(input);
@@ -38,7 +38,7 @@ TEST(read_csv_row, ReadingAStreamContainingTwoCommasShouldReturnThreeEmptyColumn
     }
 }
 
-TEST(read_csv_row, ReadingAStreamContainingStandardColumnHeadersReturnsExpectedOutput)
+TEST(read_csv_row, reading_a_stream_containing_standard_column_headers_returns_expected_output)
 {
     std::istringstream input{"col1,col2,col3"};
     const std::vector<std::string> expected_output = {"col1", "col2", "col3"};
@@ -48,7 +48,7 @@ TEST(read_csv_row, ReadingAStreamContainingStandardColumnHeadersReturnsExpectedO
     ASSERT_EQ(*output, expected_output);
 }
 
-TEST(read_csv_row, ReadingAStreamContainingMultipleLinesReturnsEachRowAsExpected)
+TEST(read_csv_row, reading_a_stream_containing_multiple_lines_returns_each_row_as_expected)
 {
     std::istringstream input{"col1,col2\n1,2\n,\n \n\n"};
     const std::vector<std::vector<std::string>> expected_outputs = {
@@ -66,7 +66,7 @@ TEST(read_csv_row, ReadingAStreamContainingMultipleLinesReturnsEachRowAsExpected
     }
 }
 
-TEST(read_csv_row, ReadingAStreamContainingNestedQuotesWorksAsExpectedForBasicExample)
+TEST(read_csv_row, reading_a_stream_containing_nested_quotes_works_as_expected_for_basic_example)
 {
     std::istringstream input{R"("contains spaces",col2)"};
     const std::optional<std::vector<std::string>> output = read_csv_row(input);
@@ -77,7 +77,7 @@ TEST(read_csv_row, ReadingAStreamContainingNestedQuotesWorksAsExpectedForBasicEx
     ASSERT_EQ(output->at(1), "col2");
 }
 
-TEST(read_csv_row, ReadingAStreamWithNestedQuotesWorksAsExpectedForExampleExportedFromExcel)
+TEST(read_csv_row, reading_a_stream_containing_nested_quotes_works_as_expected_for_example_exported_from_microsoft_excel)
 {
     std::istringstream input{R"("""quoted text""",col2)"};
     const std::optional<std::vector<std::string>> output = read_csv_row(input);
@@ -88,7 +88,7 @@ TEST(read_csv_row, ReadingAStreamWithNestedQuotesWorksAsExpectedForExampleExport
     ASSERT_EQ(output->at(1), "col2");
 }
 
-TEST(read_csv_row, ReadingAStreamAfterEOFReturnsAnEmptyOptional)
+TEST(read_csv_row, reading_a_stream_after_eof_returns_std_nullopt)
 {
     std::istringstream input{"col1,col2,col3"};
 
@@ -102,7 +102,7 @@ TEST(read_csv_row, ReadingAStreamAfterEOFReturnsAnEmptyOptional)
 
     ASSERT_FALSE(second_output_after_eof.has_value());
 }
-TEST(read_csv_row, EdgeCase1)
+TEST(read_csv_row, edge_case_1)
 {
     // e.g. https://stackoverflow.com/questions/9714322/parsing-a-csv-edge-cases
 
@@ -114,7 +114,7 @@ TEST(read_csv_row, EdgeCase1)
     ASSERT_EQ(*output, expected_output);
 }
 
-TEST(read_csv_row, EdgeCase2)
+TEST(read_csv_row, edge_case_2)
 {
     // e.g. https://stackoverflow.com/questions/9714322/parsing-a-csv-edge-cases
 
@@ -126,7 +126,7 @@ TEST(read_csv_row, EdgeCase2)
     ASSERT_EQ(*output, expected_output);
 }
 
-TEST(read_csv_row, EdgeCase3)
+TEST(read_csv_row, edge_case_3)
 {
     // from GitHub: maxogden/csv-spectrum: comma_in_quotes.csv
 
@@ -138,7 +138,7 @@ TEST(read_csv_row, EdgeCase3)
     ASSERT_EQ(*output, expected_output);
 }
 
-TEST(read_csv_row, EdgeCase4)
+TEST(read_csv_row, edge_case_4)
 {
     // from GitHub: maxogden/csv-spectrum: empty.csv
 
@@ -150,7 +150,7 @@ TEST(read_csv_row, EdgeCase4)
     ASSERT_EQ(*output, expected_output);
 }
 
-TEST(read_csv_row, EdgeCase5)
+TEST(read_csv_row, edge_case_5)
 {
     // from GitHub: maxogden/csv-spectrum: empty_crlf.csv
 
@@ -162,7 +162,7 @@ TEST(read_csv_row, EdgeCase5)
     ASSERT_EQ(*output, expected_output);
 }
 
-TEST(read_csv_row, EdgeCase6)
+TEST(read_csv_row, edge_case_6)
 {
     // from GitHub: maxogden/csv-spectrum: escaped_quotes.csv
 
@@ -174,7 +174,7 @@ TEST(read_csv_row, EdgeCase6)
     ASSERT_EQ(*output, expected_output);
 }
 
-TEST(read_csv_row, EdgeCase7)
+TEST(read_csv_row, edge_case_7)
 {
     // from GitHub: maxogden/csv-spectrum: json.csv
 
@@ -186,7 +186,7 @@ TEST(read_csv_row, EdgeCase7)
     ASSERT_EQ(*output, expected_output);
 }
 
-TEST(read_csv_row, EdgeCase8)
+TEST(read_csv_row, edge_case_8)
 {
     // from GitHub: maxogden/csv-spectrum: newlines.csv
 
@@ -198,7 +198,7 @@ TEST(read_csv_row, EdgeCase8)
     ASSERT_EQ(output, expected_output);
 }
 
-TEST(read_csv_row, EdgeCase9)
+TEST(read_csv_row, edge_case_9)
 {
     // from GitHub: maxogden/csv-spectrum: newlines_crlf.csv
 
@@ -210,7 +210,7 @@ TEST(read_csv_row, EdgeCase9)
     ASSERT_EQ(*output, expected_output);
 }
 
-TEST(read_csv_row, EdgeCase10)
+TEST(read_csv_row, edge_case_10)
 {
     // from GitHub: maxogden/csv-spectrum: simple_crlf.csv
 
@@ -226,7 +226,7 @@ TEST(read_csv_row, EdgeCase10)
     }
 }
 
-TEST(write_csv_row, WritesExpectedContentForBasicExample)
+TEST(write_csv_row, writes_expected_content_to_stream_for_basic_example)
 {
     const std::vector<std::string> input = {"a", "b", "c"};
     const std::string expected_output = "a,b,c\n";
@@ -237,7 +237,7 @@ TEST(write_csv_row, WritesExpectedContentForBasicExample)
     ASSERT_EQ(output.str(), expected_output);
 }
 
-TEST(write_csv_row, WritesExpectedContentForMultilineExample)
+TEST(write_csv_row, writes_expected_content_to_stream_for_multiline_example)
 {
     const std::vector<std::vector<std::string>> inputs = {
         {"col1", "col2", "col3"},
@@ -253,7 +253,7 @@ TEST(write_csv_row, WritesExpectedContentForMultilineExample)
     ASSERT_EQ(output.str(), expected_output);
 }
 
-TEST(write_csv_row, EdgeCase1)
+TEST(write_csv_row, edge_case_1)
 {
     const std::vector<std::vector<std::string>> inputs = {
         {"\"quoted column\"", "column, with comma", "nested\nnewline"},
