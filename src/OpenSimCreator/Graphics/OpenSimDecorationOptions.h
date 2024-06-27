@@ -6,6 +6,7 @@
 #include <OpenSimCreator/Graphics/OpenSimDecorationOptionFlags.h>
 
 #include <oscar/Utils/CStringView.h>
+#include <oscar/Variant/Variant.h>
 
 #include <cstddef>
 #include <functional>
@@ -62,8 +63,8 @@ namespace osc
         bool getShouldShowContactForces() const;
         void setShouldShowContactForces(bool);
 
-        void forEachOptionAsAppSettingValue(const std::function<void(std::string_view, const AppSettingValue&)>&) const;
-        void tryUpdFromValues(std::string_view keyPrefix, const std::unordered_map<std::string, AppSettingValue>&);
+        void forEachOptionAsAppSettingValue(const std::function<void(std::string_view, const Variant&)>&) const;
+        void tryUpdFromValues(std::string_view keyPrefix, const std::unordered_map<std::string, Variant>&);
 
         friend bool operator==(const OpenSimDecorationOptions&, const OpenSimDecorationOptions&) = default;
 

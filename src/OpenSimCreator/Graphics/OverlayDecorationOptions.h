@@ -2,8 +2,8 @@
 
 #include <OpenSimCreator/Graphics/OverlayDecorationOptionFlags.h>
 
-#include <oscar/Platform/AppSettingValue.h>
 #include <oscar/Utils/CStringView.h>
+#include <oscar/Variant/Variant.h>
 
 #include <cstddef>
 #include <cstdint>
@@ -39,8 +39,8 @@ namespace osc
         bool getDrawBVH() const;
         void setDrawBVH(bool);
 
-        void forEachOptionAsAppSettingValue(const std::function<void(std::string_view, const AppSettingValue&)>&) const;
-        void tryUpdFromValues(std::string_view keyPrefix, const std::unordered_map<std::string, AppSettingValue>&);
+        void forEachOptionAsAppSettingValue(const std::function<void(std::string_view, const Variant&)>&) const;
+        void tryUpdFromValues(std::string_view keyPrefix, const std::unordered_map<std::string, Variant>&);
 
         friend bool operator==(const OverlayDecorationOptions&, const OverlayDecorationOptions&) = default;
 

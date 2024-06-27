@@ -79,7 +79,7 @@ namespace
     LogLevel get_log_level_from_settings(const AppSettings& settings)
     {
         if (const auto v = settings.find_value("log_level")) {
-            if (auto parsed = try_parse_as_log_level(v->to_string())) {
+            if (auto parsed = try_parse_as_log_level(v->to<std::string>())) {
                 return *parsed;
             }
         }
@@ -117,7 +117,7 @@ namespace
         constexpr int height = 600;
 
         Uint32 flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED;
-        if (auto v = config.find_value("experimental_feature_flags/high_dpi_mode"); v and v->to_bool()) {
+        if (auto v = config.find_value("experimental_feature_flags/high_dpi_mode"); v and *v) {
             flags |= SDL_WINDOW_ALLOW_HIGHDPI;
             enable_highdpi_mode_for_this_process();
         }

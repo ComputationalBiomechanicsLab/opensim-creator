@@ -4,8 +4,6 @@
 #include <oscar/Platform/AppClock.h>
 #include <oscar/Platform/AppMetadata.h>
 #include <oscar/Platform/AppSettings.h>
-#include <oscar/Platform/AppSettingValue.h>
-#include <oscar/Platform/AppSettingValueType.h>
 #include <oscar/Platform/FilesystemResourceLoader.h>
 #include <oscar/Platform/ILogSink.h>
 #include <oscar/Platform/IResourceLoader.h>

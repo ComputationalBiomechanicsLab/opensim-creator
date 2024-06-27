@@ -1,7 +1,7 @@
 #pragma once
 
 #include <oscar/Platform/AppSettingScope.h>
-#include <oscar/Platform/AppSettingValue.h>
+#include <oscar/Variant/Variant.h>
 
 #include <filesystem>
 #include <memory>
@@ -30,9 +30,9 @@ namespace osc
         // may have deleted it)
         std::optional<std::filesystem::path> system_configuration_file_location() const;
 
-        std::optional<AppSettingValue> find_value(std::string_view key) const;
-        void set_value(std::string_view key, AppSettingValue, AppSettingScope = AppSettingScope::User);
-        void set_value_if_not_found(std::string_view key, AppSettingValue, AppSettingScope = AppSettingScope::User);
+        std::optional<Variant> find_value(std::string_view key) const;
+        void set_value(std::string_view key, Variant, AppSettingScope = AppSettingScope::User);
+        void set_value_if_not_found(std::string_view key, Variant, AppSettingScope = AppSettingScope::User);
 
         // if available, returns the filesystem path of the configuration file that
         // provided the given setting value

@@ -250,9 +250,6 @@ add_library(oscar STATIC
     Platform/AppSettings.cpp
     Platform/AppSettings.h
     Platform/AppSettingScope.h
-    Platform/AppSettingValue.cpp
-    Platform/AppSettingValue.h
-    Platform/AppSettingValueType.h
     Platform/FilesystemResourceLoader.cpp
     Platform/FilesystemResourceLoader.h
     Platform/ILogSink.h

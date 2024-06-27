@@ -1,10 +1,10 @@
 #include "OverlayDecorationOptions.h"
 
-#include <oscar/Platform/AppSettingValue.h>
-#include <oscar/Platform/AppSettingValueType.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/EnumHelpers.h>
+#include <oscar/Variant/Variant.h>
+#include <oscar/Variant/VariantType.h>
 
 #include <cstddef>
 
@@ -95,23 +95,22 @@ void osc::OverlayDecorationOptions::setDrawBVH(bool v)
     SetOption(m_Flags, OverlayDecorationOptionFlags::DrawBVH, v);
 }
 
-void osc::OverlayDecorationOptions::forEachOptionAsAppSettingValue(const std::function<void(std::string_view, const AppSettingValue&)>& callback) const
+void osc::OverlayDecorationOptions::forEachOptionAsAppSettingValue(const std::function<void(std::string_view, const Variant&)>& callback) const
 {
-    for (const auto& metadata : GetAllOverlayDecorationOptionFlagsMetadata())
-    {
-        callback(metadata.id, AppSettingValue{m_Flags & metadata.value});
+    for (const auto& metadata : GetAllOverlayDecorationOptionFlagsMetadata()) {
+        callback(metadata.id, static_cast<bool>(m_Flags & metadata.value));
     }
 }
 
-void osc::OverlayDecorationOptions::tryUpdFromValues(std::string_view keyPrefix, const std::unordered_map<std::string, AppSettingValue>& lut)
+void osc::OverlayDecorationOptions::tryUpdFromValues(std::string_view keyPrefix, const std::unordered_map<std::string, Variant>& lut)
 {
     for (size_t i = 0; i < num_flags<OverlayDecorationOptionFlags>(); ++i)
     {
         const auto& metadata = at(GetAllOverlayDecorationOptionFlagsMetadata(), i);
 
         const std::string key = std::string{keyPrefix}+metadata.id;
-        if (const auto* v = lookup_or_nullptr(lut, key); v and v->type() == osc::AppSettingValueType::Bool) {
-            SetOption(m_Flags, metadata.value, v->to_bool());
+        if (const auto* v = lookup_or_nullptr(lut, key); v and v->type() == VariantType::Bool) {
+            SetOption(m_Flags, metadata.value, v->to<bool>());
         }
     }
 }

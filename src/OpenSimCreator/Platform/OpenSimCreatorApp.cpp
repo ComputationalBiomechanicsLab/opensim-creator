@@ -27,11 +27,13 @@
 #include <oscar_demos/OscarDemosTabRegistry.h>
 #include <oscar_learnopengl/LearnOpenGLTabRegistry.h>
 
+#include <array>
 #include <clocale>
 #include <filesystem>
 #include <locale>
 #include <memory>
 #include <string>
+#include <utility>
 
 using namespace osc::fd;
 using namespace osc;
@@ -39,6 +41,20 @@ using namespace osc;
 namespace
 {
     OpenSimCreatorApp* g_opensimcreator_app_global = nullptr;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+
+    constexpr auto c_default_panel_states = std::to_array<std::pair<const char*, bool>>({
+        {"panels/Actions/enabled", true},
+        {"panels/Navigator/enabled", true},
+        {"panels/Log/enabled", true},
+        {"panels/Properties/enabled", true},
+        {"panels/Selection Details/enabled", true},
+        {"panels/Simulation Details/enabled", false},
+        {"panels/Coordinates/enabled", true},
+        {"panels/Performance/enabled", false},
+        {"panels/Muscle Plot/enabled", false},
+        {"panels/Output Watches/enabled", false},
+        {"panels/Output Plots/enabled", false},
+    });
 
     // minor alias for setlocale so that any linter complaints about MT unsafety
     // are all deduped to this one source location
@@ -198,17 +214,9 @@ namespace
 
     void InitializeOpenSimCreatorSpecificSettingDefaults(AppSettings& settings)
     {
-        settings.set_value("panels/Actions/enabled", AppSettingValue{true}, AppSettingScope::System);
-        settings.set_value("panels/Navigator/enabled", AppSettingValue{true}, AppSettingScope::System);
-        settings.set_value("panels/Log/enabled", AppSettingValue{true}, AppSettingScope::System);
-        settings.set_value("panels/Properties/enabled", AppSettingValue{true}, AppSettingScope::System);
-        settings.set_value("panels/Selection Details/enabled", AppSettingValue{true}, AppSettingScope::System);
-        settings.set_value("panels/Simulation Details/enabled", AppSettingValue{false}, AppSettingScope::System);
-        settings.set_value("panels/Coordinates/enabled", AppSettingValue{true}, AppSettingScope::System);
-        settings.set_value("panels/Performance/enabled", AppSettingValue{false}, AppSettingScope::System);
-        settings.set_value("panels/Muscle Plot/enabled", AppSettingValue{false}, AppSettingScope::System);
-        settings.set_value("panels/Output Watches/enabled", AppSettingValue{false}, AppSettingScope::System);
-        settings.set_value("panels/Output Plots/enabled", AppSettingValue{false}, AppSettingScope::System);
+        for (const auto& [setting_id, default_state] : c_default_panel_states) {
+            settings.set_value(setting_id, default_state, AppSettingScope::System);
+        }
     }
 }
 
@@ -267,7 +275,7 @@ osc::OpenSimCreatorApp::~OpenSimCreatorApp() noexcept
 std::string osc::OpenSimCreatorApp::docs_url() const
 {
     if (const auto runtime_url = settings().find_value("docs_url")) {
-        return runtime_url->to_string();
+        return runtime_url->to<std::string>();
     }
     else {
         return "https://docs.opensimcreator.com";

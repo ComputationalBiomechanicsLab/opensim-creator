@@ -2,8 +2,8 @@
 
 #include <OpenSimCreator/Graphics/CustomRenderingOptionFlags.h>
 
-#include <oscar/Platform/AppSettingValue.h>
 #include <oscar/Utils/CStringView.h>
+#include <oscar/Variant/Variant.h>
 
 #include <cstddef>
 #include <cstdint>
@@ -34,8 +34,8 @@ namespace osc
         bool getDrawSelectionRims() const;
         void setDrawSelectionRims(bool);
 
-        void forEachOptionAsAppSettingValue(const std::function<void(std::string_view, const AppSettingValue&)>&) const;
-        void tryUpdFromValues(std::string_view keyPrefix, const std::unordered_map<std::string, AppSettingValue>&);
+        void forEachOptionAsAppSettingValue(const std::function<void(std::string_view, const Variant&)>&) const;
+        void tryUpdFromValues(std::string_view keyPrefix, const std::unordered_map<std::string, Variant>&);
 
         void applyTo(SceneRendererParams&) const;
 

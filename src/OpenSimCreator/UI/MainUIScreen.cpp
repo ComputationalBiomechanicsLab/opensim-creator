@@ -59,11 +59,11 @@ namespace
         const ParentPtr<ITabHost>& api)
     {
         if (auto maybeRequestedTab = settings.find_value("initial_tab")) {
-            if (std::optional<TabRegistryEntry> maybeEntry = tabRegistry.find_by_name(maybeRequestedTab->to_string())) {
+            if (std::optional<TabRegistryEntry> maybeEntry = tabRegistry.find_by_name(maybeRequestedTab->to<std::string>())) {
                 return maybeEntry->construct_tab(api);
             }
 
-            log_warn("%s: cannot find a tab with this name in the tab registry: ignoring", maybeRequestedTab->to_string().c_str());
+            log_warn("%s: cannot find a tab with this name in the tab registry: ignoring", maybeRequestedTab->to<std::string>().c_str());
             log_warn("available tabs are:");
             for (auto&& tabRegistryEntry : tabRegistry) {
                 log_warn("    %s", tabRegistryEntry.name().c_str());
@@ -386,7 +386,7 @@ public:
     void implAddUserOutputExtractor(const OutputExtractor& output) final
     {
         m_UserOutputExtractors.push_back(output);
-        App::upd().upd_settings().set_value("panels/Output Watches/enabled", AppSettingValue{true});
+        App::upd().upd_settings().set_value("panels/Output Watches/enabled", true);
     }
 
     void implRemoveUserOutputExtractor(int idx) final

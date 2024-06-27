@@ -6,6 +6,8 @@
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/EnumHelpers.h>
+#include <oscar/Variant/Variant.h>
+#include <oscar/Variant/VariantType.h>
 
 #include <cstddef>
 #include <cstdint>
@@ -72,21 +74,21 @@ void osc::CustomRenderingOptions::setDrawSelectionRims(bool v)
     SetOption(m_Flags, CustomRenderingOptionFlags::DrawSelectionRims, v);
 }
 
-void osc::CustomRenderingOptions::forEachOptionAsAppSettingValue(const std::function<void(std::string_view, const AppSettingValue&)>& callback) const
+void osc::CustomRenderingOptions::forEachOptionAsAppSettingValue(const std::function<void(std::string_view, const Variant&)>& callback) const
 {
     for (const auto& metadata : GetAllCustomRenderingOptionFlagsMetadata())
     {
-        callback(metadata.id, AppSettingValue{m_Flags & metadata.value});
+        callback(metadata.id, static_cast<bool>(m_Flags & metadata.value));
     }
 }
 
-void osc::CustomRenderingOptions::tryUpdFromValues(std::string_view keyPrefix, const std::unordered_map<std::string, AppSettingValue>& lut)
+void osc::CustomRenderingOptions::tryUpdFromValues(std::string_view keyPrefix, const std::unordered_map<std::string, Variant>& lut)
 {
     for (const auto& metadata : GetAllCustomRenderingOptionFlagsMetadata()) {
 
         std::string key = std::string{keyPrefix} + metadata.id;
-        if (const auto* v = lookup_or_nullptr(lut, key); v->type() == AppSettingValueType::Bool) {
-            SetOption(m_Flags, metadata.value, v->to_bool());
+        if (const auto* v = lookup_or_nullptr(lut, key); v->type() == VariantType::Bool) {
+            SetOption(m_Flags, metadata.value, v->to<bool>());
         }
     }
 }

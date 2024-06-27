@@ -1,6 +1,5 @@
 #include "AppSettings.h"
 
-#include <oscar/Platform/AppSettingValue.h>
 #include <oscar/Platform/AppSettingScope.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
@@ -8,6 +7,8 @@
 #include <oscar/Utils/EnumHelpers.h>
 #include <oscar/Utils/HashHelpers.h>
 #include <oscar/Utils/SynchronizedValue.h>
+#include <oscar/Variant/Variant.h>
+#include <oscar/Variant/VariantType.h>
 
 #include <ankerl/unordered_dense.h>
 #include <toml++/toml.h>
@@ -46,23 +47,23 @@ R"(# configuration options
     // a value stored in the AppSettings lookup table
     class AppSettingsLookupValue final {
     public:
-        AppSettingsLookupValue(AppSettingScope scope, AppSettingValue value) :
+        AppSettingsLookupValue(AppSettingScope scope, Variant value) :
             scope_{scope},
             value_{std::move(value)}
         {}
 
         AppSettingScope scope() const { return scope_; }
-        const AppSettingValue& value() const { return value_; }
+        const Variant& value() const { return value_; }
 
     private:
         AppSettingScope scope_;
-        AppSettingValue value_;
+        Variant value_;
     };
 
     // a lookup containing all app setting values
     class AppSettingsLookup final {
     public:
-        std::optional<AppSettingValue> find_value(std::string_view key) const
+        std::optional<Variant> find_value(std::string_view key) const
         {
             if (const auto v = lookup_or_nullptr(hashmap_, key)) {
                 return v->value();
@@ -72,7 +73,7 @@ R"(# configuration options
             }
         }
 
-        void set_value(std::string_view key, AppSettingScope scope, AppSettingValue value)
+        void set_value(std::string_view key, AppSettingScope scope, Variant value)
         {
             AppSettingsLookupValue scoped_value{scope, std::move(value)};
 
@@ -237,11 +238,17 @@ R"(# configuration options
                     ++cur.iterator;
                     break;
                 }
+                else if (const auto* int_value = node.as_integer()) {
+                    out.set_value(key_prefix + std::string{k.str()}, scope, Variant{static_cast<int>(**int_value)});  // TODO: 64-bit int support
+                }
+                else if (const auto* float_value = node.as_floating_point()) {
+                    out.set_value(key_prefix + std::string{k.str()}, scope, Variant{static_cast<float>(**float_value)});  // TODO: 64-bit float support
+                }
                 else if (const auto* string_value = node.as_string()) {
-                    out.set_value(key_prefix + std::string{k.str()}, scope, AppSettingValue{**string_value});
+                    out.set_value(key_prefix + std::string{k.str()}, scope, Variant{**string_value});
                 }
                 else if (auto const* bool_value = node.as_boolean()) {
-                    out.set_value(key_prefix + std::string{k.str()}, scope, AppSettingValue{**bool_value});
+                    out.set_value(key_prefix + std::string{k.str()}, scope, Variant{**bool_value});
                 }
             }
 
@@ -323,18 +330,26 @@ R"(# configuration options
     void insert_into_toml_table(
         toml::table& table,
         std::string_view key,
-        const AppSettingValue& value)
+        const Variant& value)
     {
-        static_assert(num_options<AppSettingValueType>() == 3);
+        static_assert(num_options<VariantType>() == 9);  // TODO: support more of them
 
         switch (value.type()) {
-        case AppSettingValueType::Bool:
-            table.insert(key, value.to_bool());
+        case VariantType::None:
+        case VariantType::Bool:
+            table.insert(key, value.to<bool>());
             break;
-        case AppSettingValueType::String:
-        case AppSettingValueType::Color:
+        case VariantType::Float:
+            table.insert(key, value.to<float>());
+            break;
+        case VariantType::Int:
+            table.insert(key, value.to<int>());
+            break;
+        case VariantType::Color:
+        case VariantType::String:
+        case VariantType::StringName:
         default:
-            table.insert(key, value.to_string());
+            table.insert(key, value.to<std::string>());
             break;
         }
     }
@@ -377,18 +392,18 @@ R"(# configuration options
             return system_config_path_;
         }
 
-        std::optional<AppSettingValue> find_value(std::string_view key) const
+        std::optional<Variant> find_value(std::string_view key) const
         {
             return app_settings_lookup_.find_value(key);
         }
 
-        void set_value(std::string_view key, AppSettingValue value, AppSettingScope scope)
+        void set_value(std::string_view key, Variant value, AppSettingScope scope)
         {
             app_settings_lookup_.set_value(key, scope, std::move(value));
             is_dirty_ = true;
         }
 
-        void set_value_if_not_found(std::string_view key, AppSettingValue value, AppSettingScope scope)
+        void set_value_if_not_found(std::string_view key, Variant value, AppSettingScope scope)
         {
             if (not find_value(key)) {
                 set_value(key, value, scope);
@@ -467,17 +482,17 @@ public:
         return guarded_data_.lock()->system_configuration_file_location();
     }
 
-    std::optional<AppSettingValue> find_value(std::string_view key) const
+    std::optional<Variant> find_value(std::string_view key) const
     {
         return guarded_data_.lock()->find_value(key);
     }
 
-    void set_value(std::string_view key, AppSettingValue value, AppSettingScope scope)
+    void set_value(std::string_view key, Variant value, AppSettingScope scope)
     {
         guarded_data_.lock()->set_value(key, std::move(value), scope);
     }
 
-    void set_value_if_not_found(std::string_view key, AppSettingValue value, AppSettingScope scope)
+    void set_value_if_not_found(std::string_view key, Variant value, AppSettingScope scope)
     {
         guarded_data_.lock()->set_value_if_not_found(key, std::move(value), scope);
     }
@@ -583,7 +598,7 @@ std::filesystem::path osc::get_resource_dir_from_settings(const AppSettings& set
         return get_resources_dir_fallback_path(settings);
     }
 
-    if (resources_dir_setting_value->type() != AppSettingValueType::String) {
+    if (resources_dir_setting_value->type() != VariantType::String) {
         log_error("application setting for '%s' is not a string: falling back", resources_key.c_str());
         return get_resources_dir_fallback_path(settings);
     }
@@ -596,7 +611,7 @@ std::filesystem::path osc::get_resource_dir_from_settings(const AppSettings& set
     else {
         config_file_dir = current_executable_directory().parent_path();  // assume the `bin/` dir is one-up from the settings
     }
-    const std::filesystem::path configured_resources_dir{resources_dir_setting_value->to_string()};
+    const std::filesystem::path configured_resources_dir{resources_dir_setting_value->to<std::string>()};
 
     auto resolved_resource_dir = std::filesystem::weakly_canonical(config_file_dir / configured_resources_dir);
     if (not std::filesystem::exists(resolved_resource_dir)) {
@@ -628,7 +643,7 @@ std::optional<std::filesystem::path> osc::AppSettings::system_configuration_file
     return impl_->system_configuration_file_location();
 }
 
-std::optional<AppSettingValue> osc::AppSettings::find_value(
+std::optional<Variant> osc::AppSettings::find_value(
     std::string_view key) const
 {
     return impl_->find_value(key);
@@ -636,7 +651,7 @@ std::optional<AppSettingValue> osc::AppSettings::find_value(
 
 void osc::AppSettings::set_value(
     std::string_view key,
-    AppSettingValue value,
+    Variant value,
     AppSettingScope scope)
 {
     impl_->set_value(key, std::move(value), scope);
@@ -644,7 +659,7 @@ void osc::AppSettings::set_value(
 
 void osc::AppSettings::set_value_if_not_found(
     std::string_view key,
-    AppSettingValue value,
+    Variant value,
     AppSettingScope scope)
 {
     impl_->set_value_if_not_found(key, std::move(value), scope);

@@ -27,6 +27,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   plugin code sourced from the internet (e.g. SimTK.org)
 - Internal: Third-party dependencies were updated to their latest versions, where applicable
 - Internal: `AppConfig` was dropped and all uses of it were converted to `AppSettings` (#893)
+- Internal: `AppSettingValue` was refactored into a `Variant` (#789)
 
 
 ## [0.5.12] - 2024/04/29

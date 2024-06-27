@@ -71,7 +71,6 @@ add_executable(testoscar
     MetaTests/TestUtilsHeader.cpp
     MetaTests/TestVariantHeader.cpp
 
-    Platform/TestAppSettingValueType.cpp
     Platform/TestResourceDirectoryEntry.cpp
     Platform/TestResourceLoader.cpp
     Platform/TestResourcePath.cpp
