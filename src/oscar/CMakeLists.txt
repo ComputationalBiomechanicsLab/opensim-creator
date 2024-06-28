@@ -375,6 +375,8 @@ add_library(oscar STATIC
     Utils/FilesystemHelpers.cpp
     Utils/FilesystemHelpers.h
     Utils/HashHelpers.h
+    Utils/LifetimedPtr.h
+    Utils/LifetimeWatcher.h
     Utils/NonTypelist.h
     Utils/NullOStream.h
     Utils/NullStreambuf.h
@@ -386,7 +388,9 @@ add_library(oscar STATIC
     Utils/PerfClock.h
     Utils/PerfMeasurement.h
     Utils/PerfMeasurementMetadata.h
+    Utils/ScopedLifetime.h
     Utils/ScopeGuard.h
+    Utils/SharedLifetimeBlock.h
     Utils/Spsc.h
     Utils/StringHelpers.cpp
     Utils/StringHelpers.h
@@ -400,6 +404,7 @@ add_library(oscar STATIC
     Utils/UID.h
     Utils/UndoRedo.cpp
     Utils/UndoRedo.h
+    Utils/WatchableLifetime.h
 
     Variant/Variant.cpp
     Variant/Variant.h

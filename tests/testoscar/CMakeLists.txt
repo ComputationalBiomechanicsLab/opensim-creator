@@ -85,9 +85,14 @@ add_executable(testoscar
     Utils/TestEnumHelpers.cpp
     Utils/TestFileChangePoller.cpp
     Utils/TestFilenameExtractor.cpp
+    Utils/TestLifetimedPtr.cpp
+    Utils/TestLifetimeWatcher.cpp
     Utils/TestNonTypelist.cpp
     Utils/TestNullOStream.cpp
     Utils/TestNullStreambuf.cpp
+    Utils/TestScopedLifetime.cpp
+    Utils/TestSharedLifetimeBlock.cpp
+    Utils/TestScopedLifetime.cpp
     Utils/TestStringHelpers.cpp
     Utils/TestStringName.cpp
     Utils/TestTypelist.cpp
