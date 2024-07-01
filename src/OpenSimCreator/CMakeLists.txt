@@ -121,6 +121,8 @@ add_library(OpenSimCreator STATIC
     Documents/ModelWarper/MaybePairedLandmark.h
     Documents/ModelWarper/ModelWarpConfiguration.cpp
     Documents/ModelWarper/ModelWarpConfiguration.h
+    Documents/ModelWarper/ModelWarperConfiguration.cpp
+    Documents/ModelWarper/ModelWarperConfiguration.h
     Documents/ModelWarper/PointWarperFactories.cpp
     Documents/ModelWarper/PointWarperFactories.h
     Documents/ModelWarper/StationDefinedFrameWarperFactory.cpp
