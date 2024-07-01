@@ -113,11 +113,11 @@ namespace osc
         // self-friend-class for the coercing constructor
         template<typename> friend class LifetimedPtr;
 
-        template<typename T, typename U>
-        friend bool operator==(const LifetimedPtr<T>&, const LifetimedPtr<U>&);
+        template<typename T1, typename T2>
+        friend bool operator==(const LifetimedPtr<T1>&, const LifetimedPtr<T2>&);
 
-        template<typename T>
-        friend bool operator==(const LifetimedPtr<T>&, std::nullptr_t);
+        template<typename T1>
+        friend bool operator==(const LifetimedPtr<T1>&, std::nullptr_t);
 
         LifetimeWatcher lifetime_watcher_;
         T* ptr_ = nullptr;

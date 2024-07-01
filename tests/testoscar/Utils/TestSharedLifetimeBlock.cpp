@@ -19,7 +19,7 @@ TEST(SharedLifetimeBlock, can_be_default_constructed)
 TEST(SharedLifetimeBlock, can_be_copy_constructed)
 {
     SharedLifetimeBlock lifetime;
-    [[maybe_unused]] SharedLifetimeBlock copy = lifetime;
+    [[maybe_unused]] SharedLifetimeBlock copy = lifetime;  // NOLINT(performance-unnecessary-copy-initialization)
 }
 
 TEST(SharedLifetimeBlock, num_owners_is_initially_one)
@@ -31,7 +31,7 @@ TEST(SharedLifetimeBlock, num_owners_is_initially_one)
 TEST(SharedLifetimeBlock, num_owners_increments_if_copied)
 {
     SharedLifetimeBlock lifetime;
-    SharedLifetimeBlock copy = lifetime;
+    [[maybe_unused]] SharedLifetimeBlock copy = lifetime;  // NOLINT(performance-unnecessary-copy-initialization)
     ASSERT_EQ(lifetime.num_owners(), 2);
 }
 
@@ -39,7 +39,7 @@ TEST(SharedLifetimeBlock, num_owners_returns_to_1_after_copy_is_dropped)
 {
     SharedLifetimeBlock lifetime;
     {
-        SharedLifetimeBlock copy = lifetime;
+        SharedLifetimeBlock copy = lifetime;  // NOLINT(performance-unnecessary-copy-initialization)
         ASSERT_EQ(lifetime.num_owners(), 2);
         ASSERT_EQ(copy.num_owners(), 2);
     }

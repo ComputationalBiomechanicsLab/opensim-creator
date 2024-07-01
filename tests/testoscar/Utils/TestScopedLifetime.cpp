@@ -20,7 +20,7 @@ TEST(ScopedLifetime, can_default_construct)
 TEST(ScopedLifetime, can_copy_construct)
 {
     ScopedLifetime scoped_lifetime;
-    [[maybe_unused]] ScopedLifetime copy = scoped_lifetime;
+    [[maybe_unused]] ScopedLifetime copy = scoped_lifetime;  // NOLINT(performance-unnecessary-copy-initialization)
 }
 
 TEST(ScopedLifetime, can_copy_assign)
@@ -54,7 +54,7 @@ TEST(ScopedLifetime, copying_scoped_lifetime_creates_unique_lifetime)
 
     LifetimeWatcher watcher;
     {
-        ScopedLifetime second_lifetime = first_lifetime;
+        ScopedLifetime second_lifetime = first_lifetime;  // NOLINT(performance-unnecessary-copy-initialization)
         watcher = second_lifetime.watch();
         ASSERT_FALSE(watcher.expired());
     }
