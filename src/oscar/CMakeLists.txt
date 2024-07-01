@@ -399,6 +399,9 @@ add_library(oscar STATIC
     Utils/StdVariantHelpers.h
     Utils/SynchronizedValue.h
     Utils/SynchronizedValueGuard.h
+    Utils/TemporaryFile.cpp
+    Utils/TemporaryFile.h
+    Utils/TemporaryFileParameters.h
     Utils/Typelist.h
     Utils/UID.cpp
     Utils/UID.h

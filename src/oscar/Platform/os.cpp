@@ -23,6 +23,8 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <random>
+#include <ranges>
 #include <span>
 #include <sstream>
 #include <stdexcept>
@@ -30,6 +32,7 @@
 #include <utility>
 
 using namespace osc;
+namespace rgs = std::ranges;
 
 namespace
 {
@@ -237,6 +240,43 @@ std::optional<std::filesystem::path> osc::PromptUserForFileSaveLocationAndAddExt
 std::string osc::errno_to_string_threadsafe()
 {
     return strerror_threadsafe(errno);
+}
+
+namespace
+{
+    const std::string_view c_valid_dynamic_characters = "abcdefghijklmnopqrstuvwxyz0123456789";
+    void write_dynamic_name_els(std::ostream& out)
+    {
+        static std::default_random_engine s_prng{std::random_device{}()};
+        std::array<char, 8> rv{};
+        rgs::sample(c_valid_dynamic_characters, rv.begin(), rv.size(), s_prng);
+        out << std::string_view{rv.begin(), rv.end()};
+    }
+
+    std::filesystem::path generate_tempfile_name(std::string_view suffix, std::string_view prefix)
+    {
+        std::stringstream ss;
+        ss << prefix;
+        write_dynamic_name_els(ss);
+        ss << suffix;
+        return std::filesystem::path{std::move(ss).str()};
+    }
+}
+
+std::pair<std::fstream, std::filesystem::path> osc::mkstemp(std::string_view suffix, std::string_view prefix)
+{
+    const std::filesystem::path tmpdir = std::filesystem::temp_directory_path();
+    for (size_t attempt = 0; attempt < 100; ++attempt) {
+        std::filesystem::path attempt_path = tmpdir / generate_tempfile_name(suffix, prefix);
+        // TODO: this pragma is here because `std::fopen` is considered insecure by Windows /W3 (because the string
+        //       could be spiked)
+#pragma warning(suppress : 4996)
+        if (auto fd = std::fopen(attempt_path.string().c_str(), "w+x"); fd != nullptr) {  // TODO: replace with `std::ios_base::noreplace` in C++23
+            std::fclose(fd);
+            return {std::fstream{attempt_path, std::ios_base::in | std::ios_base::out | std::ios_base::binary}, std::move(attempt_path)};
+        }
+    }
+    throw std::runtime_error{"failed to create a unique temporary filename after 100 attempts - are you creating _a lot_ of temporary files? ;)"};
 }
 
 

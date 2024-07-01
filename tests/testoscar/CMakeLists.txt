@@ -95,6 +95,7 @@ add_executable(testoscar
     Utils/TestScopedLifetime.cpp
     Utils/TestStringHelpers.cpp
     Utils/TestStringName.cpp
+    Utils/TestTemporaryFile.cpp
     Utils/TestTypelist.cpp
 
     Variant/TestVariant.cpp

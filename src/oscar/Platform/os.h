@@ -5,11 +5,13 @@
 
 #include <ctime>
 #include <filesystem>
+#include <fstream>
 #include <initializer_list>
 #include <optional>
 #include <span>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 // os: where all the icky OS/distro/filesystem-specific stuff is hidden
@@ -153,5 +155,18 @@ namespace osc
     std::optional<std::filesystem::path> PromptUserForFileSaveLocationAndAddExtensionIfNecessary(
         std::optional<CStringView> maybeExtension = std::nullopt,
         std::optional<CStringView> maybeInitialDirectoryToOpen = std::nullopt
+    );
+
+
+    // creates a temporary file in the most secure manner possible. There are no race conditions
+    // in the file's creation - assuming that the operating system properly implements the `os.O_EXCL`
+    // flag
+    //
+    // the caller is responsible for deleting the temporary file once it is no longer needed
+    //
+    // returns an open handle to the file (opened with `w+b`) and the absolute path to the temporary file
+    std::pair<std::fstream, std::filesystem::path> mkstemp(
+        std::string_view suffix = {},
+        std::string_view prefix = {}
     );
 }
