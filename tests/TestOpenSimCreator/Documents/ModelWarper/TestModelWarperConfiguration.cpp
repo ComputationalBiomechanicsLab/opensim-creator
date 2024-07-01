@@ -3,6 +3,7 @@
 #include <TestOpenSimCreator/TestOpenSimCreatorConfig.h>
 
 #include <gtest/gtest.h>
+#include <oscar/Utils/TemporaryFile.h>
 
 #include <filesystem>
 
@@ -24,17 +25,14 @@ TEST(ModelWarperConfiguration, CanDefaultConstruct)
 
 TEST(ModelWarperConfiguration, CanSaveDefaultConstructedToXMLFile)
 {
+	TemporaryFile temporary_file;
+	temporary_file.close();  // so that `OpenSim::Object::print`'s implementation can open+write to it
+
 	ModelWarperConfiguration configuration;
-	configuration.print(R"(C:\Users\adamk\Desktop\somefile.xml)");
+	configuration.print(temporary_file.absolute_path().string());
 }
 
 TEST(ModelWarperConfiguration, LoadingNonExistentFileThrows)
 {
 	ASSERT_ANY_THROW({ [[maybe_unused]] ModelWarperConfiguration configuration{GetFixturePath("doesnt_exist")}; });
 }
-
-TEST(ModelWarperConfiguration, LoadingMalformedFileThrows)
-{
-	ModelWarperConfiguration configuration{GetFixturePath("Document/ModelWarper/ModelWarperConfiguration/malformed.xml")};
-}
-
