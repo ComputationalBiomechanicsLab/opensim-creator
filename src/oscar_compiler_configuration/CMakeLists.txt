@@ -136,6 +136,10 @@ target_compile_options(oscar_compiler_configuration INTERFACE
         # warn if an implicit conversion involving signed-to-unsigned etc. may alter a value
         -Wno-sign-conversion
 
+        # disabled: the codebase contains MSVC-specific `pragma warning` etc. that should hopefully
+        #           be dropped once the codebase is upgraded to C++23
+        -Wno-unknown-pragmas
+
         # disabled: requires newer gcc
         # warn if a suspicous use of a logical operator is detected (e.g. i < 0 && i < 0)
         # -Wlogical-op

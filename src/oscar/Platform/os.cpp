@@ -268,13 +268,14 @@ std::pair<std::fstream, std::filesystem::path> osc::mkstemp(std::string_view suf
     const std::filesystem::path tmpdir = std::filesystem::temp_directory_path();
     for (size_t attempt = 0; attempt < 100; ++attempt) {
         std::filesystem::path attempt_path = tmpdir / generate_tempfile_name(suffix, prefix);
-        // TODO: this pragma is here because `std::fopen` is considered insecure by Windows /W3 (because the string
-        //       could be spiked)
+        // TODO: remove these `pragma`s once the codebase is upgraded to C++23, because it has `std::ios_base::noreplace` support
+#pragma warning(push)
 #pragma warning(suppress : 4996)
         if (auto fd = std::fopen(attempt_path.string().c_str(), "w+x"); fd != nullptr) {  // TODO: replace with `std::ios_base::noreplace` in C++23
             std::fclose(fd);
             return {std::fstream{attempt_path, std::ios_base::in | std::ios_base::out | std::ios_base::binary}, std::move(attempt_path)};
         }
+#pragma warning(pop)
     }
     throw std::runtime_error{"failed to create a unique temporary filename after 100 attempts - are you creating _a lot_ of temporary files? ;)"};
 }
