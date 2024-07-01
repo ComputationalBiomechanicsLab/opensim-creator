@@ -406,7 +406,7 @@ R"(# configuration options
         void set_value_if_not_found(std::string_view key, Variant value, AppSettingScope scope)
         {
             if (not find_value(key)) {
-                set_value(key, value, scope);
+                set_value(key, std::move(value), scope);
             }
         }
 
