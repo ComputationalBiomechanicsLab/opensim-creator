@@ -152,7 +152,7 @@ namespace osc
     //
     // returns std::nullopt if the user doesn't select a file; otherwise, returns the user-selected save location--including the extension--if
     // the user selects a location
-    std::optional<std::filesystem::path> PromptUserForFileSaveLocationAndAddExtensionIfNecessary(
+    std::optional<std::filesystem::path> promp_user_for_file_save_location_add_extension_if_necessary(
         std::optional<CStringView> maybeExtension = std::nullopt,
         std::optional<CStringView> maybeInitialDirectoryToOpen = std::nullopt
     );

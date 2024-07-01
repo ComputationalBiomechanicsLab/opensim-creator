@@ -12,7 +12,7 @@
 
 using namespace osc;
 
-TEST(write_as_dae, WorksForEmptyScene)
+TEST(write_as_dae, works_for_empty_scene)
 {
     DAEMetadata metadata{TESTOSCAR_APPNAME_STRING, TESTOSCAR_APPNAME_STRING};
 
@@ -22,7 +22,7 @@ TEST(write_as_dae, WorksForEmptyScene)
     ASSERT_FALSE(ss.str().empty());
 }
 
-TEST(write_as_dae, WorksForNonEmptyScene)
+TEST(write_as_dae, works_for_nonempty_scene)
 {
     DAEMetadata metadata{TESTOSCAR_APPNAME_STRING, TESTOSCAR_APPNAME_STRING};
 
@@ -34,7 +34,7 @@ TEST(write_as_dae, WorksForNonEmptyScene)
     ASSERT_FALSE(ss.str().empty());
 }
 
-TEST(write_as_dae, SetAuthorWritesAuthorToOutput)
+TEST(write_as_dae, set_author_writes_author_to_output)
 {
     DAEMetadata metadata{TESTOSCAR_APPNAME_STRING, TESTOSCAR_APPNAME_STRING};
     metadata.author = "TestThis";
@@ -45,7 +45,7 @@ TEST(write_as_dae, SetAuthorWritesAuthorToOutput)
     ASSERT_TRUE(contains(ss.str(), metadata.author));
 }
 
-TEST(write_as_dae, SetAuthoringToolsWritesAuthoringToolToOutput)
+TEST(write_as_dae, set_authoring_tool_writes_authoring_tool_to_output)
 {
     DAEMetadata metadata{TESTOSCAR_APPNAME_STRING, TESTOSCAR_APPNAME_STRING};
     metadata.authoring_tool = "TestThis";

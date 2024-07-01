@@ -12,7 +12,7 @@
 
 using namespace osc;
 
-TEST(SceneCache, GetBVHOnEmptyMeshReturnsEmptyBVH)
+TEST(SceneCache, get_bvh_on_empty_mesh_returns_empty_bvh)
 {
     SceneCache c;
     Mesh m;
@@ -20,7 +20,7 @@ TEST(SceneCache, GetBVHOnEmptyMeshReturnsEmptyBVH)
     ASSERT_TRUE(bvh.empty());
 }
 
-TEST(SceneCache, GetBVHOnNonEmptyMeshReturnsExpectedRootNode)
+TEST(SceneCache, get_bvh_on_nonempty_mesh_returns_expected_root_node)
 {
     const auto pyramid = std::to_array<Vec3>({
         {-1.0f, -1.0f, 0.0f},  // base: bottom-left

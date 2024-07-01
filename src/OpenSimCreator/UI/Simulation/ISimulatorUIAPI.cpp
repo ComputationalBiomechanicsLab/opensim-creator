@@ -26,7 +26,7 @@ namespace
     {
         // prompt user for save location
         std::optional<std::filesystem::path> path =
-            PromptUserForFileSaveLocationAndAddExtensionIfNecessary("csv");
+            promp_user_for_file_save_location_add_extension_if_necessary("csv");
         if (not path) {
             return std::nullopt;  // user probably cancelled out
         }

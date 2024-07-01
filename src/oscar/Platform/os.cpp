@@ -182,26 +182,26 @@ std::vector<std::filesystem::path> osc::prompt_user_to_select_files(
 #endif
 }
 
-std::optional<std::filesystem::path> osc::PromptUserForFileSaveLocationAndAddExtensionIfNecessary(
-    std::optional<CStringView> maybeExtension,
-    std::optional<CStringView> maybeInitialDirectoryToOpen)
+std::optional<std::filesystem::path> osc::promp_user_for_file_save_location_add_extension_if_necessary(
+    std::optional<CStringView> maybe_extension,
+    std::optional<CStringView> maybe_initial_directory_to_open)
 {
 #ifdef EMSCRIPTEN
-    static_cast<void>(maybeExtension);
-    static_cast<void>(maybeInitialDirectoryToOpen);
+    static_cast<void>(maybe_extension);
+    static_cast<void>(maybe_initial_directory_to_open);
     return std::nullopt;
 #else
-    if (maybeExtension)
+    if (maybe_extension)
     {
-        OSC_ASSERT(!contains(*maybeExtension, ',') && "can only provide one extension to this implementation!");
+        OSC_ASSERT(!contains(*maybe_extension, ',') && "can only provide one extension to this implementation!");
     }
 
     auto [path, result] = [&]()
     {
         nfdchar_t* ptr = nullptr;
         const nfdresult_t res = NFD_SaveDialog(
-            maybeExtension ? maybeExtension->c_str() : nullptr,
-            maybeInitialDirectoryToOpen ? maybeInitialDirectoryToOpen->c_str() : nullptr,
+            maybe_extension ? maybe_extension->c_str() : nullptr,
+            maybe_initial_directory_to_open ? maybe_initial_directory_to_open->c_str() : nullptr,
             &ptr
         );
         return std::pair<std::unique_ptr<nfdchar_t, decltype(::free)*>, nfdresult_t>
@@ -219,7 +219,7 @@ std::optional<std::filesystem::path> osc::PromptUserForFileSaveLocationAndAddExt
     static_assert(std::is_same_v<nfdchar_t, char>);
     auto p = std::filesystem::weakly_canonical(path.get());
 
-    if (maybeExtension)
+    if (maybe_extension)
     {
         // ensure that the user-selected path is tested against '.$EXTENSION' (#771)
         //
@@ -227,7 +227,7 @@ std::optional<std::filesystem::path> osc::PromptUserForFileSaveLocationAndAddExt
         // NFD requires) but the user may have manually wrote a string that is
         // suffixed with the dot-less version of the extension (e.g. "somecsv")
 
-        const std::string fullExtension = std::string{"."} + *maybeExtension;
+        const std::string fullExtension = std::string{"."} + *maybe_extension;
         if (!std::string_view{path.get()}.ends_with(fullExtension)) {
             p += fullExtension;
         }

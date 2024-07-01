@@ -183,7 +183,7 @@ private:
     void action_try_save_annotated_screenshot()
     {
         const std::optional<std::filesystem::path> maybe_image_path =
-            PromptUserForFileSaveLocationAndAddExtensionIfNecessary("png");
+            promp_user_for_file_save_location_add_extension_if_necessary("png");
 
         if (maybe_image_path) {
             std::ofstream fout{*maybe_image_path, std::ios_base::binary};

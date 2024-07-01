@@ -10,7 +10,7 @@
 using namespace osc;
 using namespace osc::detail;
 
-TEST(VertexAttributeList, EveryEntryInTheListHasAnAssociatedTraitsObject)
+TEST(VertexAttributeList, every_entry_has_an_associted_VertexAttributeTraits_implementation)
 {
     [[maybe_unused]] constexpr auto ary = []<VertexAttribute... Attributes>(OptionList<VertexAttribute, Attributes...>)
     {

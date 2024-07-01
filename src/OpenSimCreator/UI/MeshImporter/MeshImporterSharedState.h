@@ -138,7 +138,7 @@ namespace osc::mi
         bool exportAsModelGraphAsOsimFile()
         {
             const std::optional<std::filesystem::path> maybeExportPath =
-                PromptUserForFileSaveLocationAndAddExtensionIfNecessary("osim");
+                promp_user_for_file_save_location_add_extension_if_necessary("osim");
 
             if (!maybeExportPath)
             {

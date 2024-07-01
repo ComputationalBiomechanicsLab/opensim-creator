@@ -1356,7 +1356,7 @@ private:
     {
         // prompt user for a save location
         const std::optional<std::filesystem::path> maybeUserSaveLocation =
-            PromptUserForFileSaveLocationAndAddExtensionIfNecessary("obj");
+            promp_user_for_file_save_location_add_extension_if_necessary("obj");
         if (!maybeUserSaveLocation)
         {
             return;  // user didn't select a save location
@@ -1395,7 +1395,7 @@ private:
     {
         // prompt user for a save location
         const std::optional<std::filesystem::path> maybeUserSaveLocation =
-            PromptUserForFileSaveLocationAndAddExtensionIfNecessary("stl");
+            promp_user_for_file_save_location_add_extension_if_necessary("stl");
         if (!maybeUserSaveLocation)
         {
             return;  // user didn't select a save location
