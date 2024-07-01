@@ -28,6 +28,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Internal: Third-party dependencies were updated to their latest versions, where applicable
 - Internal: `AppConfig` was dropped and all uses of it were converted to `AppSettings` (#893)
 - Internal: `AppSettingValue` was refactored into a `Variant` (#789)
+- Internal: Added runtime-checked pointer classes (`LifetimedPtr`, `LifetimeWatcher`,
+            `ScopedLifetime`, `SharedLifetimeBlock`, `WatchableLifetime`)
+- Internal: Added barebones `TemporaryFile` class (handy for testing IO-related code)
 
 
 ## [0.5.12] - 2024/04/29
