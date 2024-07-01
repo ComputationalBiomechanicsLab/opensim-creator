@@ -35,6 +35,8 @@
 #include <oscar/Utils/StringName.h>
 #include <oscar/Utils/SynchronizedValue.h>
 #include <oscar/Utils/SynchronizedValueGuard.h>
+#include <oscar/Utils/TemporaryFile.h>
+#include <oscar/Utils/TemporaryFileParameters.h>
 #include <oscar/Utils/Typelist.h>
 #include <oscar/Utils/UID.h>
 #include <oscar/Utils/UndoRedo.h>
