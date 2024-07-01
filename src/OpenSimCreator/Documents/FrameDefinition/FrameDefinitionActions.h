@@ -3,7 +3,6 @@
 #include <OpenSim/Common/ComponentPath.h>
 #include <oscar/Maths/CoordinateDirection.h>
 #include <oscar/Maths/Vec3.h>
-#include <oscar/Utils/ParentPtr.h>
 
 #include <memory>
 #include <optional>
