@@ -162,7 +162,7 @@ TEST(ProduceErrorOffsetFrameWarpingStrategy, FinalizeFromPropertiesThrowsIfDupli
 
 TEST(ModelWarperConfiguration, finalizeFromPropertiesThrowsWhenGivenConfigurationContainingTwoStrategiesWithTheSameStrategyTarget)
 {
-    OpenSim::Object::registerType(ProduceErrorStationWarpingStrategy{});
+    OpenSim::Object::registerType(ProduceErrorOffsetFrameWarpingStrategy{});
     OpenSim::Object::registerType(ThinPlateSplineOnlyTranslationOffsetFrameWarpingStrategy{});
 
     ModelWarperConfiguration configuration{GetFixturePath("Document/ModelWarper/ModelWarperConfiguration/duplicated_offsetframe_strategytarget.xml")};
