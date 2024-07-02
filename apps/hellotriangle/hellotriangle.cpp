@@ -1,5 +1,8 @@
 #include <oscar/oscar.h>
 
+#include <emscripten.h>
+#include <emscripten/html5.h>
+
 using namespace osc;
 
 namespace
@@ -30,11 +33,17 @@ namespace
         MeshPhongMaterial material_;
         Camera camera_;
     };
+
+    EM_BOOL one_iter(double, void* userData) {
+        static_cast<osc::App*>(userData)->tick();
+        return EM_TRUE;
+    }
 }
 
 int main(int, char**)
 {
-    osc::App app;
-    app.show<HelloTriangleScreen>();
+    osc::App* app = new osc::App{};
+    app->set_screen<HelloTriangleScreen>();
+    emscripten_request_animation_frame_loop(one_iter, app);
     return 0;
 }

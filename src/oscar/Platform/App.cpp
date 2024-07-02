@@ -222,6 +222,16 @@ public:
     const std::filesystem::path& executable_dir() const { return executable_dir_; }
     const std::filesystem::path& user_data_dir() const { return user_data_dir_; }
 
+    void set_screen(std::unique_ptr<IScreen> screen)
+    {
+        if (screen_) {
+            screen_->on_unmount();
+        }
+        screen_ = std::move(screen);
+        screen_->on_mount();
+        reset_loop_data();
+    }
+
     void show(std::unique_ptr<IScreen> screen)
     {
         log_info("showing screen %s", screen->name().c_str());
@@ -514,6 +524,149 @@ private:
         log_info("transitioned main screen to %s", screen_->name().c_str());
     }
 
+    void reset_loop_data()
+    {
+        // reset counters
+        perf_counter_ = SDL_GetPerformanceCounter();
+        frame_counter_ = 0;
+        frame_start_time_ = convert_perf_counter_to_appclock(perf_counter_, perf_counter_frequency_);
+        time_since_last_frame_ = AppClock::duration{1.0f/60.0f};  // (estimated value for first frame)
+    }
+
+public:
+    bool tick()
+    {
+        // pump events
+        {
+            OSC_PERF("App/pumpEvents");
+
+            bool shouldWait = is_in_wait_mode_ and num_frames_to_poll_ <= 0;
+            num_frames_to_poll_ = max(0, num_frames_to_poll_ - 1);
+
+            for (SDL_Event e; shouldWait ? SDL_WaitEventTimeout(&e, 1000) : SDL_PollEvent(&e);) {
+                shouldWait = false;
+
+                // let screen handle the event
+                const bool screenHandledEvent = screen_->on_event(e);
+
+                // if the active screen didn't handle the event, try to handle it here by following
+                // reasonable heuristics
+                if (not screenHandledEvent) {
+                    if (e.type == SDL_WINDOWEVENT) {
+                        // window was resized and should be drawn a couple of times quickly
+                        // to ensure any immediate UIs in screens are updated
+                        num_frames_to_poll_ = 2;
+                    }
+                    else if (e.type == SDL_QUIT) {
+                        request_quit();  // i.e. "as if the current screen tried to quit"
+                    }
+                }
+
+                if (quit_requested_) {
+                    // screen requested application quit, so exit this function
+                    return false;
+                }
+
+                if (next_screen_) {
+                    // screen requested a new screen, so perform the transition
+                    transition_to_next_screen();
+                }
+
+                if (e.type == SDL_DROPTEXT or e.type == SDL_DROPFILE) {
+                    SDL_free(e.drop.file);  // SDL documentation mandates that the caller frees this
+                }
+            }
+        }
+
+        // update clocks
+        {
+            const auto counter = SDL_GetPerformanceCounter();
+            const Uint64 delta_ticks = counter - perf_counter_;
+
+            perf_counter_ = counter;
+            frame_start_time_ = convert_perf_counter_to_appclock(counter, perf_counter_frequency_);
+            time_since_last_frame_ = convert_perf_ticks_to_appclock_duration(delta_ticks, perf_counter_frequency_);
+        }
+
+        // "tick" the screen
+        {
+            OSC_PERF("App/on_tick");
+            screen_->on_tick();
+        }
+
+        if (quit_requested_) {
+            // screen requested application quit, so exit this function
+            return false;
+        }
+
+        if (next_screen_) {
+            // screen requested a new screen, so perform the transition
+            transition_to_next_screen();
+        }
+
+        // "draw" the screen into the window framebuffer
+        {
+            OSC_PERF("App/on_draw");
+            screen_->on_draw();
+        }
+
+        // "present" the rendered screen to the user (can block on VSYNC)
+        {
+            OSC_PERF("App/swap_buffers");
+            graphics_context_.swap_buffers(*main_window_);
+        }
+
+        // handle annotated screenshot requests (if any)
+        {
+            // save this frame's annotations into the requests, if necessary
+            for (AnnotatedScreenshotRequest& req : active_screenshot_requests_) {
+                if (req.frame_requested == frame_counter_) {
+                    req.annotations = frame_annotations_;
+                }
+            }
+            frame_annotations_.clear();  // this frame's annotations are now saved (if necessary)
+
+            // complete any requests for which screenshot data has arrived
+            for (AnnotatedScreenshotRequest& req : active_screenshot_requests_) {
+
+                if (req.underlying_future.valid() and
+                    req.underlying_future.wait_for(std::chrono::seconds{0}) == std::future_status::ready) {
+
+                    // screenshot is ready: create an annotated screenshot and send it to
+                    // the caller
+                    req.result_promise.set_value(Screenshot{req.underlying_future.get(), std::move(req.annotations)});
+                }
+            }
+
+            // gc any invalid (i.e. handled) requests
+            std::erase_if(
+                active_screenshot_requests_,
+                [](const AnnotatedScreenshotRequest& request)
+                {
+                    return not request.underlying_future.valid();
+                }
+            );
+        }
+
+        // care: only update the frame counter here because the above methods
+        // and checks depend on it being consistient throughout a single crank
+        // of the application loop
+        ++frame_counter_;
+
+        if (quit_requested_) {
+            // screen requested application quit, so exit this function
+            return false;
+        }
+
+        if (next_screen_) {
+            // screen requested a new screen, so perform the transition
+            transition_to_next_screen();
+        }
+
+        return true;
+    }
+private:
+
     // the main application loop
     //
     // this is what he application enters when it `show`s the first screen
@@ -533,141 +686,10 @@ private:
         }};
 
         // reset counters
-        perf_counter_ = SDL_GetPerformanceCounter();
-        frame_counter_ = 0;
-        frame_start_time_ = convert_perf_counter_to_appclock(perf_counter_, perf_counter_frequency_);
-        time_since_last_frame_ = AppClock::duration{1.0f/60.0f};  // (estimated value for first frame)
+        reset_loop_data();
 
-        while (true) {  // game loop pattern
-
-            // pump events
-            {
-                OSC_PERF("App/pumpEvents");
-
-                bool shouldWait = is_in_wait_mode_ and num_frames_to_poll_ <= 0;
-                num_frames_to_poll_ = max(0, num_frames_to_poll_ - 1);
-
-                for (SDL_Event e; shouldWait ? SDL_WaitEventTimeout(&e, 1000) : SDL_PollEvent(&e);) {
-                    shouldWait = false;
-
-                    // let screen handle the event
-                    const bool screenHandledEvent = screen_->on_event(e);
-
-                    // if the active screen didn't handle the event, try to handle it here by following
-                    // reasonable heuristics
-                    if (not screenHandledEvent) {
-                        if (e.type == SDL_WINDOWEVENT) {
-                            // window was resized and should be drawn a couple of times quickly
-                            // to ensure any immediate UIs in screens are updated
-                            num_frames_to_poll_ = 2;
-                        }
-                        else if (e.type == SDL_QUIT) {
-                            request_quit();  // i.e. "as if the current screen tried to quit"
-                        }
-                    }
-
-                    if (quit_requested_) {
-                        // screen requested application quit, so exit this function
-                        return;
-                    }
-
-                    if (next_screen_) {
-                        // screen requested a new screen, so perform the transition
-                        transition_to_next_screen();
-                    }
-
-                    if (e.type == SDL_DROPTEXT or e.type == SDL_DROPFILE) {
-                        SDL_free(e.drop.file);  // SDL documentation mandates that the caller frees this
-                    }
-                }
-            }
-
-            // update clocks
-            {
-                const auto counter = SDL_GetPerformanceCounter();
-                const Uint64 delta_ticks = counter - perf_counter_;
-
-                perf_counter_ = counter;
-                frame_start_time_ = convert_perf_counter_to_appclock(counter, perf_counter_frequency_);
-                time_since_last_frame_ = convert_perf_ticks_to_appclock_duration(delta_ticks, perf_counter_frequency_);
-            }
-
-            // "tick" the screen
-            {
-                OSC_PERF("App/on_tick");
-                screen_->on_tick();
-            }
-
-            if (quit_requested_) {
-                // screen requested application quit, so exit this function
-                return;
-            }
-
-            if (next_screen_) {
-                // screen requested a new screen, so perform the transition
-                transition_to_next_screen();
-                continue;
-            }
-
-            // "draw" the screen into the window framebuffer
-            {
-                OSC_PERF("App/on_draw");
-                screen_->on_draw();
-            }
-
-            // "present" the rendered screen to the user (can block on VSYNC)
-            {
-                OSC_PERF("App/swap_buffers");
-                graphics_context_.swap_buffers(*main_window_);
-            }
-
-            // handle annotated screenshot requests (if any)
-            {
-                // save this frame's annotations into the requests, if necessary
-                for (AnnotatedScreenshotRequest& req : active_screenshot_requests_) {
-                    if (req.frame_requested == frame_counter_) {
-                        req.annotations = frame_annotations_;
-                    }
-                }
-                frame_annotations_.clear();  // this frame's annotations are now saved (if necessary)
-
-                // complete any requests for which screenshot data has arrived
-                for (AnnotatedScreenshotRequest& req : active_screenshot_requests_) {
-
-                    if (req.underlying_future.valid() and
-                        req.underlying_future.wait_for(std::chrono::seconds{0}) == std::future_status::ready) {
-
-                        // screenshot is ready: create an annotated screenshot and send it to
-                        // the caller
-                        req.result_promise.set_value(Screenshot{req.underlying_future.get(), std::move(req.annotations)});
-                    }
-                }
-
-                // gc any invalid (i.e. handled) requests
-                std::erase_if(
-                    active_screenshot_requests_,
-                    [](const AnnotatedScreenshotRequest& request)
-                    {
-                        return not request.underlying_future.valid();
-                    }
-                );
-            }
-
-            // care: only update the frame counter here because the above methods
-            // and checks depend on it being consistient throughout a single crank
-            // of the application loop
-            ++frame_counter_;
-
-            if (quit_requested_) {
-                // screen requested application quit, so exit this function
-                return;
-            }
-
-            if (next_screen_) {
-                // screen requested a new screen, so perform the transition
-                transition_to_next_screen();
-                continue;
-            }
+        while (tick()) {  // game loop pattern
+            ;
         }
     }
 
@@ -834,6 +856,16 @@ const std::filesystem::path& osc::App::user_data_dir() const
 void osc::App::show(std::unique_ptr<IScreen> s)
 {
     impl_->show(std::move(s));
+}
+
+void osc::App::set_screen(std::unique_ptr<IScreen> screen)
+{
+    impl_->set_screen(std::move(screen));
+}
+
+void osc::App::tick()
+{
+    impl_->tick();    
 }
 
 void osc::App::request_transition(std::unique_ptr<IScreen> s)

@@ -108,6 +108,17 @@ namespace osc
             show(std::make_unique<TScreen>(std::forward<Args>(args)...));
         }
 
+        void set_screen(std::unique_ptr<IScreen>);
+
+        template<std::derived_from<IScreen> TScreen, typename... Args>
+        requires std::constructible_from<TScreen, Args&&...>
+        void set_screen(Args&&... args)
+        {
+            set_screen(std::make_unique<TScreen>(std::forward<Args>(args)...));
+        }
+
+        void tick();
+
         // requests that the app transitions to a new screen
         //
         // this is merely a *request* that the `App` will fulfill at a later
