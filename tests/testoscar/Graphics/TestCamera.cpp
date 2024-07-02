@@ -20,50 +20,50 @@ using namespace osc;
 using namespace osc::literals;
 using namespace osc::testing;
 
-TEST(Camera, CanDefaultConstruct)
+TEST(Camera, can_default_construct)
 {
-    Camera camera;  // should compile + run
+    const Camera camera;  // should compile + run
 }
 
-TEST(Camera, CanCopyConstruct)
+TEST(Camera, can_copy_construct)
 {
-    Camera camera;
-    Camera{camera};
+    const Camera camera;
+    const Camera copy = camera;
 }
 
-TEST(Camera, CopyConstructedComparesEqual)
+TEST(Camera, copied_instance_compares_equal_to_original)
 {
-    Camera camera;
-    Camera copy{camera};  // NOLINT(performance-unnecessary-copy-initialization)
+    const Camera camera;
+    const Camera copy = camera;  // NOLINT(performance-unnecessary-copy-initialization)
 
     ASSERT_EQ(camera, copy);
 }
 
-TEST(Camera, CanMoveConstruct)
+TEST(Camera, can_move_construct)
 {
     Camera camera;
-    Camera copy{std::move(camera)};
+    const Camera copy{std::move(camera)};
 }
 
-TEST(Camera, CanCopyAssign)
+TEST(Camera, can_copy_assign)
 {
-    Camera c1;
+    const Camera c1;
     Camera c2;
 
     c2 = c1;
 }
 
-TEST(Camera, CopyAssignedComparesEqualToSource)
+TEST(Camera, copy_assigned_instance_compares_equal_to_rhs)
 {
     Camera c1;
-    Camera c2;
+    const Camera c2;
 
     c1 = c2;
 
     ASSERT_EQ(c1, c2);
 }
 
-TEST(Camera, CanMoveAssign)
+TEST(Camera, can_move_assign)
 {
     Camera c1;
     Camera c2;
@@ -71,7 +71,7 @@ TEST(Camera, CanMoveAssign)
     c2 = std::move(c1);
 }
 
-TEST(Camera, UsesValueComparison)
+TEST(Camera, uses_value_comparision)
 {
     Camera c1;
     Camera c2;
@@ -87,7 +87,7 @@ TEST(Camera, UsesValueComparison)
     ASSERT_EQ(c1, c2);
 }
 
-TEST(Camera, ResetResetsToDefaultValues)
+TEST(Camera, reset_resets_the_instance_to_default_values)
 {
     const Camera default_camera;
     Camera camera = default_camera;
@@ -97,20 +97,19 @@ TEST(Camera, ResetResetsToDefaultValues)
     ASSERT_EQ(camera, default_camera);
 }
 
-TEST(Camera, CanGetBackgroundColor)
+TEST(Camera, background_color_returns_clear_if_not_set)
 {
-    Camera camera;
-
+    const Camera camera;
     ASSERT_EQ(camera.background_color(), Color::clear());
 }
 
-TEST(Camera, CanSetBackgroundColor)
+TEST(Camera, can_call_set_background_color)
 {
     Camera camera;
     camera.set_background_color(generate<Color>());
 }
 
-TEST(Camera, SetBackgroundColorMakesGetBackgroundColorReturnTheColor)
+TEST(Camera, set_background_color_makes_getter_return_new_color)
 {
     Camera camera;
     const Color color = generate<Color>();
@@ -120,9 +119,9 @@ TEST(Camera, SetBackgroundColorMakesGetBackgroundColorReturnTheColor)
     ASSERT_EQ(camera.background_color(), color);
 }
 
-TEST(Camera, SetBackgroundColorMakesCameraCompareNonEqualWithCopySource)
+TEST(Camera, set_background_color_on_copy_makes_camera_compare_non_equal_with_copy_source)
 {
-    Camera camera;
+    const Camera camera;
     Camera copy{camera};
 
     ASSERT_EQ(camera, copy);
@@ -132,15 +131,15 @@ TEST(Camera, SetBackgroundColorMakesCameraCompareNonEqualWithCopySource)
     ASSERT_NE(camera, copy);
 }
 
-TEST(Camera, GetClearFlagsReturnsColorAndDepthOnDefaultConstruction)
+TEST(Camera, clear_flags_defaults_to_SolidColor_and_Depth)
 {
-    Camera camera;
+    const Camera camera;
 
     ASSERT_TRUE(camera.clear_flags() & CameraClearFlags::SolidColor);
     ASSERT_TRUE(camera.clear_flags() & CameraClearFlags::Depth);
 }
 
-TEST(Camera, SetClearFlagsWorksAsExpected)
+TEST(Camera, set_clear_flags_works_as_expected)
 {
     Camera camera;
 
@@ -156,50 +155,46 @@ TEST(Camera, SetClearFlagsWorksAsExpected)
     }
 }
 
-TEST(Camera, GetCameraProjectionReturnsProject)
+TEST(Camera, projection_defaults_to_Perspective)
 {
-    Camera camera;
+    const Camera camera;
     ASSERT_EQ(camera.projection(), CameraProjection::Perspective);
 }
 
-TEST(Camera, CanSetCameraProjection)
+TEST(Camera, can_call_set_projection)
 {
     Camera camera;
     camera.set_projection(CameraProjection::Orthographic);
 }
 
-TEST(Camera, SetCameraProjectionMakesGetCameraProjectionReturnSetProjection)
+TEST(Camera, set_projection_makes_getter_return_the_projection)
 {
     Camera camera;
-    CameraProjection proj = CameraProjection::Orthographic;
+    const CameraProjection new_projection = CameraProjection::Orthographic;
 
-    ASSERT_NE(camera.projection(), proj);
-
-    camera.set_projection(proj);
-
-    ASSERT_EQ(camera.projection(), proj);
+    ASSERT_NE(camera.projection(), new_projection);
+    camera.set_projection(new_projection);
+    ASSERT_EQ(camera.projection(), new_projection);
 }
 
-TEST(Camera, SetCameraProjectionMakesCameraCompareNotEqual)
+TEST(Camera, set_projection_on_copy_makes_it_compare_nonequal_to_original)
 {
-    Camera camera;
-    Camera copy{camera};
-    CameraProjection proj = CameraProjection::Orthographic;
+    const Camera camera;
+    Camera copy = camera;
+    const CameraProjection new_projection = CameraProjection::Orthographic;
 
-    ASSERT_NE(copy.projection(), proj);
-
-    copy.set_projection(proj);
-
+    ASSERT_NE(copy.projection(), new_projection);
+    copy.set_projection(new_projection);
     ASSERT_NE(camera, copy);
 }
 
-TEST(Camera, GetPositionReturnsOriginOnDefaultConstruction)
+TEST(Camera, position_defaults_to_zero_vector)
 {
-    Camera camera;
+    const Camera camera;
     ASSERT_EQ(camera.position(), Vec3(0.0f, 0.0f, 0.0f));
 }
 
-TEST(Camera, SetDirectionToStandardDirectionCausesGetDirectionToReturnTheDirection)
+TEST(Camera, set_direction_to_standard_direction_causes_direction_to_return_new_direction)
 {
     // this test kind of sucks, because it's assuming that the direction isn't touched if it's
     // a default one - that isn't strictly true because it is identity transformed
@@ -208,22 +203,22 @@ TEST(Camera, SetDirectionToStandardDirectionCausesGetDirectionToReturnTheDirecti
 
     Camera camera;
 
-    Vec3 defaultDirection = {0.0f, 0.0f, -1.0f};
+    const Vec3 default_direction = {0.0f, 0.0f, -1.0f};
 
-    ASSERT_EQ(camera.direction(), defaultDirection);
+    ASSERT_EQ(camera.direction(), default_direction);
 
-    Vec3 differentDirection = normalize(Vec3{1.0f, 2.0f, -0.5f});
-    camera.set_direction(differentDirection);
+    Vec3 new_direction = normalize(Vec3{1.0f, 2.0f, -0.5f});
+    camera.set_direction(new_direction);
 
     // not guaranteed: the camera stores *rotation*, not *direction*
-    (void)(camera.direction() == differentDirection);  // just ensure it compiles
+    (void)(camera.direction() == new_direction);  // just ensure it compiles
 
-    camera.set_direction(defaultDirection);
+    camera.set_direction(default_direction);
 
-    ASSERT_EQ(camera.direction(), defaultDirection);
+    ASSERT_EQ(camera.direction(), default_direction);
 }
 
-TEST(Camera, SetDirectionToDifferentDirectionGivesAccurateEnoughResults)
+TEST(Camera, set_direction_to_different_direction_gives_accurate_enough_results)
 {
     // this kind of test sucks, because it's effectively saying "is the result good enough"
     //
@@ -233,28 +228,28 @@ TEST(Camera, SetDirectionToDifferentDirectionGivesAccurateEnoughResults)
 
     Camera camera;
 
-    Vec3 newDirection = normalize(Vec3{1.0f, 1.0f, 1.0f});
+    Vec3 new_direction = normalize(Vec3{1.0f, 1.0f, 1.0f});
 
-    camera.set_direction(newDirection);
+    camera.set_direction(new_direction);
 
-    Vec3 returnedDirection = camera.direction();
+    Vec3 returned_direction = camera.direction();
 
-    ASSERT_GT(dot(newDirection, returnedDirection), 0.999f);
+    ASSERT_GT(dot(new_direction, returned_direction), 0.999f);
 }
 
-TEST(Camera, GetViewMatrixReturnsViewMatrixBasedOnPositonDirectionAndUp)
+TEST(Camera, view_matrix_returns_view_matrix_based_on_position_direction_and_up)
 {
     Camera camera;
     camera.set_projection(CameraProjection::Orthographic);
     camera.set_position({0.0f, 0.0f, 0.0f});
 
-    Mat4 viewMatrix = camera.view_matrix();
-    Mat4 expectedMatrix = identity<Mat4>();
+    const Mat4 view_matrix = camera.view_matrix();
+    const Mat4 expected_matrix = identity<Mat4>();
 
-    ASSERT_EQ(viewMatrix, expectedMatrix);
+    ASSERT_EQ(view_matrix, expected_matrix);
 }
 
-TEST(Camera, SetViewMatrixOverrideSetsANewViewMatrixThatCanBeRetrievedWithGetViewMatrix)
+TEST(Camera, set_view_matrix_override_makes_view_matrix_return_the_override)
 {
     Camera camera;
 
@@ -262,48 +257,48 @@ TEST(Camera, SetViewMatrixOverrideSetsANewViewMatrixThatCanBeRetrievedWithGetVie
     camera.set_projection(CameraProjection::Orthographic);
     camera.set_position({7.0f, 5.0f, -3.0f});
 
-    Mat4 viewMatrix = identity<Mat4>();
-    viewMatrix[0][1] = 9.0f;  // change some part of it
+    Mat4 view_matrix = identity<Mat4>();
+    view_matrix[0][1] = 9.0f;  // change some part of it
 
-    camera.set_view_matrix_override(viewMatrix);
+    camera.set_view_matrix_override(view_matrix);
 
-    ASSERT_EQ(camera.view_matrix(), viewMatrix);
+    ASSERT_EQ(camera.view_matrix(), view_matrix);
 }
 
-TEST(Camera, SetViewMatrixOverrideNulloptResetsTheViewMatrixToUsingStandardCameraPositionEtc)
+TEST(Camera, set_view_matrix_override_to_nullopt_resets_view_matrix_to_use_camera_position_and_up)
 {
     Camera camera;
-    Mat4 initialViewMatrix = camera.view_matrix();
+    Mat4 initial_view_matrix = camera.view_matrix();
 
-    Mat4 viewMatrix = identity<Mat4>();
-    viewMatrix[0][1] = 9.0f;  // change some part of it
+    Mat4 view_matrix = identity<Mat4>();
+    view_matrix[0][1] = 9.0f;  // change some part of it
 
-    camera.set_view_matrix_override(viewMatrix);
-    ASSERT_NE(camera.view_matrix(), initialViewMatrix);
-    ASSERT_EQ(camera.view_matrix(), viewMatrix);
+    camera.set_view_matrix_override(view_matrix);
+    ASSERT_NE(camera.view_matrix(), initial_view_matrix);
+    ASSERT_EQ(camera.view_matrix(), view_matrix);
 
     camera.set_view_matrix_override(std::nullopt);
 
-    ASSERT_EQ(camera.view_matrix(), initialViewMatrix);
+    ASSERT_EQ(camera.view_matrix(), initial_view_matrix);
 }
 
-TEST(Camera, GetProjectionMatrixReturnsProjectionMatrixBasedOnPositonDirectionAndUp)
+TEST(Camera, projection_matrix_returns_matrix_based_on_camera_position_and_up)
 {
     Camera camera;
     camera.set_projection(CameraProjection::Orthographic);
     camera.set_position({0.0f, 0.0f, 0.0f});
 
-    Mat4 mtx = camera.projection_matrix(1.0f);
-    Mat4 expected = identity<Mat4>();
+    const Mat4 returned = camera.projection_matrix(1.0f);
+    const Mat4 expected = identity<Mat4>();
 
     // only compare the Y, Z, and W columns: the X column depends on the aspect ratio of the output
     // target
-    ASSERT_EQ(mtx[1], expected[1]);
-    ASSERT_EQ(mtx[2], expected[2]);
-    ASSERT_EQ(mtx[3], expected[3]);
+    ASSERT_EQ(returned[1], expected[1]);
+    ASSERT_EQ(returned[2], expected[2]);
+    ASSERT_EQ(returned[3], expected[3]);
 }
 
-TEST(Camera, SetProjectionMatrixOverrideSetsANewProjectionMatrixThatCanBeRetrievedWithGetProjectionMatrix)
+TEST(Camera, set_projection_matrix_override_makes_projection_matrix_return_the_override)
 {
     Camera camera;
 
@@ -311,93 +306,87 @@ TEST(Camera, SetProjectionMatrixOverrideSetsANewProjectionMatrixThatCanBeRetriev
     camera.set_projection(CameraProjection::Orthographic);
     camera.set_position({7.0f, 5.0f, -3.0f});
 
-    Mat4 ProjectionMatrix = identity<Mat4>();
-    ProjectionMatrix[0][1] = 9.0f;  // change some part of it
+    Mat4 projection_matrix = identity<Mat4>();
+    projection_matrix[0][1] = 9.0f;  // change some part of it
 
-    camera.set_projection_matrix_override(ProjectionMatrix);
+    camera.set_projection_matrix_override(projection_matrix);
 
-    ASSERT_EQ(camera.projection_matrix(1.0f), ProjectionMatrix);
+    ASSERT_EQ(camera.projection_matrix(1.0f), projection_matrix);
 }
 
-TEST(Camera, SetProjectionMatrixNulloptResetsTheProjectionMatrixToUsingStandardCameraPositionEtc)
+TEST(Camera, set_projection_matrix_override_to_nullopt_resets_projection_matrix_to_use_camera_fov_etc)
 {
     Camera camera;
-    Mat4 initialProjectionMatrix = camera.projection_matrix(1.0f);
+    const Mat4 initial_projection_matrix = camera.projection_matrix(1.0f);
 
-    Mat4 ProjectionMatrix = identity<Mat4>();
-    ProjectionMatrix[0][1] = 9.0f;  // change some part of it
+    Mat4 projection_matrix = identity<Mat4>();
+    projection_matrix[0][1] = 9.0f;  // change some part of it
 
-    camera.set_projection_matrix_override(ProjectionMatrix);
-    ASSERT_NE(camera.projection_matrix(1.0f), initialProjectionMatrix);
-    ASSERT_EQ(camera.projection_matrix(1.0f), ProjectionMatrix);
+    camera.set_projection_matrix_override(projection_matrix);
+    ASSERT_NE(camera.projection_matrix(1.0f), initial_projection_matrix);
+    ASSERT_EQ(camera.projection_matrix(1.0f), projection_matrix);
 
     camera.set_projection_matrix_override(std::nullopt);
 
-    ASSERT_EQ(camera.projection_matrix(1.0f), initialProjectionMatrix);
+    ASSERT_EQ(camera.projection_matrix(1.0f), initial_projection_matrix);
 }
 
-TEST(Camera, GetViewProjectionMatrixReturnsViewMatrixMultipliedByProjectionMatrix)
+TEST(Camera, view_projection_matrix_returns_view_matrix_multiplied_by_projection_matrix)
 {
     Camera camera;
 
-    Mat4 viewMatrix = identity<Mat4>();
-    viewMatrix[0][3] = 2.5f;  // change some part of it
+    Mat4 view_matrix = identity<Mat4>();
+    view_matrix[0][3] = 2.5f;  // change some part of it
 
-    Mat4 projectionMatrix = identity<Mat4>();
-    projectionMatrix[0][1] = 9.0f;  // change some part of it
+    Mat4 projection_matrix = identity<Mat4>();
+    projection_matrix[0][1] = 9.0f;  // change some part of it
 
-    Mat4 expected = projectionMatrix * viewMatrix;
+    camera.set_view_matrix_override(view_matrix);
+    camera.set_projection_matrix_override(projection_matrix);
 
-    camera.set_view_matrix_override(viewMatrix);
-    camera.set_projection_matrix_override(projectionMatrix);
-
+    const Mat4 expected = projection_matrix * view_matrix;
     ASSERT_EQ(camera.view_projection_matrix(1.0f), expected);
 }
 
-TEST(Camera, GetInverseViewProjectionMatrixReturnsExpectedAnswerWhenUsingOverriddenMatrices)
+TEST(Camera, inverse_view_projection_matrix_returns_expected_matrix)
 {
     Camera camera;
 
-    Mat4 viewMatrix = identity<Mat4>();
-    viewMatrix[0][3] = 2.5f;  // change some part of it
+    Mat4 view_matrix = identity<Mat4>();
+    view_matrix[0][3] = 2.5f;  // change some part of it
 
-    Mat4 projectionMatrix = identity<Mat4>();
-    projectionMatrix[0][1] = 9.0f;  // change some part of it
+    Mat4 projection_matrix = identity<Mat4>();
+    projection_matrix[0][1] = 9.0f;  // change some part of it
 
-    Mat4 expected = inverse(projectionMatrix * viewMatrix);
+    camera.set_view_matrix_override(view_matrix);
+    camera.set_projection_matrix_override(projection_matrix);
 
-    camera.set_view_matrix_override(viewMatrix);
-    camera.set_projection_matrix_override(projectionMatrix);
-
+    const Mat4 expected = inverse(projection_matrix * view_matrix);
     ASSERT_EQ(camera.inverse_view_projection_matrix(1.0f), expected);
 }
 
-TEST(Camera, GetClearFlagsReturnsDefaultOnDefaultConstruction)
+TEST(Camera, clear_flags_defaults_to_Default)
 {
     Camera camera;
     ASSERT_EQ(camera.clear_flags(), CameraClearFlags::Default);
 }
 
-TEST(Camera, SetClearFlagsCausesGetClearFlagsToReturnNewValue)
+TEST(Camera, set_clear_flags_causes_clear_flags_to_return_new_flags)
 {
     Camera camera;
 
     ASSERT_EQ(camera.clear_flags(), CameraClearFlags::Default);
-
     camera.set_clear_flags(CameraClearFlags::Nothing);
-
     ASSERT_EQ(camera.clear_flags(), CameraClearFlags::Nothing);
 }
 
-TEST(Camera, SetClearFlagsCausesCopyToReturnNonEqual)
+TEST(Camera, set_clear_flags_causes_copy_to_compare_not_equivalent)
 {
     Camera camera;
-    Camera copy{camera};
+    Camera copy = camera;
 
     ASSERT_EQ(camera, copy);
     ASSERT_EQ(camera.clear_flags(), CameraClearFlags::Default);
-
     camera.set_clear_flags(CameraClearFlags::Nothing);
-
     ASSERT_NE(camera, copy);
 }
