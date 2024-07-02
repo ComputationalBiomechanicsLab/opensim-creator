@@ -48,3 +48,28 @@ void osc::mow::ModelWarperConfiguration::extendFinalizeFromProperties()
         }
     }
 }
+
+const osc::mow::ComponentWarpingStrategy* osc::mow::ModelWarperConfiguration::tryMatchStrategy(const OpenSim::Component& component) const
+{
+    struct StrategyMatch {
+        const ComponentWarpingStrategy* strategy = nullptr;
+        StrategyMatchQuality quality = StrategyMatchQuality::none();
+    };
+
+    StrategyMatch bestMatch;
+    for (const ComponentWarpingStrategy& strategy : getComponentList<ComponentWarpingStrategy>()) {
+        const auto quality = strategy.calculateMatchQuality(component);
+        if (quality == StrategyMatchQuality::none()) {
+            continue;  // no quality
+        }
+        else if (quality == bestMatch.quality) {
+            std::stringstream ss;
+            ss << "ambigous match detected: both " << strategy.getAbsolutePathString() << " and " << bestMatch.strategy->getAbsolutePathString() << " match to " << component.getAbsolutePathString();
+            OPENSIM_THROW_FRMOBJ(OpenSim::Exception, std::move(ss).str());
+        }
+        else if (quality > bestMatch.quality) {
+            bestMatch = {&strategy, quality};  // overwrite with better quality
+        }
+    }
+    return bestMatch.strategy;
+}

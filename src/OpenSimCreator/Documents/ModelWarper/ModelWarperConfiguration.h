@@ -4,6 +4,7 @@
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/Model/Station.h>
 
+#include <compare>
 #include <concepts>
 #include <filesystem>
 #include <sstream>
@@ -14,6 +15,34 @@
 
 namespace osc::mow
 {
+    // describes how closely (if at all) a `ComponentWarpingStrategy` matches a
+    // given `OpenSim::Component`
+    //
+    // used for resolving potentially-ambiguous matches across multiple strategies
+    class StrategyMatchQuality final {
+    public:
+        static constexpr StrategyMatchQuality none() { return StrategyMatchQuality{State::None}; }
+        static constexpr StrategyMatchQuality wildcard() { return StrategyMatchQuality{State::Wildcard}; }
+        static constexpr StrategyMatchQuality exact() { return StrategyMatchQuality{State::Exact}; }
+
+        constexpr operator bool () const { return _state != State::None; }
+
+        friend constexpr bool operator==(StrategyMatchQuality, StrategyMatchQuality) = default;
+        friend constexpr auto operator<=>(StrategyMatchQuality, StrategyMatchQuality) = default;
+    private:
+        enum class State {
+            None,
+            Wildcard,
+            Exact
+        };
+
+        explicit constexpr StrategyMatchQuality(State state) :
+            _state{state}
+        {}
+
+        State _state = State::None;
+    };
+
     // abstract interface to a component that is capable of warping `n` other
     // components (`StrategyTargets`) during a model warp
     class ComponentWarpingStrategy : public OpenSim::Component {
@@ -21,8 +50,7 @@ namespace osc::mow
     public:
         OpenSim_DECLARE_LIST_PROPERTY(StrategyTargets, std::string, "a sequence of strategy target strings that this strategy applies to");
     protected:
-        ComponentWarpingStrategy(const std::type_info& targetComponentType) :
-            _targetComponentType{&targetComponentType}
+        ComponentWarpingStrategy()
         {
             constructProperty_StrategyTargets();
         }
@@ -35,9 +63,38 @@ namespace osc::mow
 
         const std::type_info& getTargetComponentTypeInfo() const
         {
-            return *_targetComponentType;
+            return implGetTargetComponentTypeInfo();
+        }
+
+        StrategyMatchQuality calculateMatchQuality(const OpenSim::Component& candidateComponent) const
+        {
+            if (not implIsMatchForComponentType(candidateComponent)) {
+                return StrategyMatchQuality::none();
+            }
+
+            const auto componentAbsPath = candidateComponent.getAbsolutePathString();
+
+            // loop through strategy targets and select the best one, throw if any match
+            // is ambiguous
+            StrategyMatchQuality best = StrategyMatchQuality::none();
+            for (int i = 0; i < getProperty_StrategyTargets().size(); ++i) {
+                const std::string& target = get_StrategyTargets(i);
+                if (target == componentAbsPath) {
+                    // you can't do any better than this, and `extendFinalizeFromProperties`
+                    // guarantees no other `StrategyTarget`s are going to match exactly, so
+                    // exit early
+                    return StrategyMatchQuality::exact();
+                }
+                else if (target == "*") {
+                    best = StrategyMatchQuality::wildcard();
+                }
+            }
+            return best;
         }
     private:
+        virtual const std::type_info& implGetTargetComponentTypeInfo() const = 0;
+        virtual bool implIsMatchForComponentType(const OpenSim::Component&) const = 0;
+
         void extendFinalizeFromProperties() override
         {
             assertStrategyTargetsNotEmpty();
@@ -66,8 +123,6 @@ namespace osc::mow
                 }
             }
         }
-
-        const std::type_info* _targetComponentType;
     };
 
     // abstract interface to a component that is capable of warping `n` other
@@ -75,7 +130,18 @@ namespace osc::mow
     template<std::derived_from<OpenSim::Component> T>
     class ComponentWarpingStrategyFor : public ComponentWarpingStrategy {
     public:
-        ComponentWarpingStrategyFor() : ComponentWarpingStrategy{typeid(T)} {}
+        ComponentWarpingStrategyFor() = default;
+
+    private:
+        const std::type_info& implGetTargetComponentTypeInfo() const override
+        {
+            return typeid(T);
+        }
+
+        bool implIsMatchForComponentType(const OpenSim::Component& component) const override
+        {
+            return dynamic_cast<const T*>(&component) != nullptr;
+        }
     };
 
     // abstract interface to a component that is capable of warping `n`
@@ -143,6 +209,8 @@ namespace osc::mow
         // constructs a `ModelWarperConfiguration` by loading its properties from an XML file
         // at the given filesystem location
         explicit ModelWarperConfiguration(const std::filesystem::path& filePath);
+
+        const ComponentWarpingStrategy* tryMatchStrategy(const OpenSim::Component&) const;
     private:
         void constructProperties();
         void extendFinalizeFromProperties() override;

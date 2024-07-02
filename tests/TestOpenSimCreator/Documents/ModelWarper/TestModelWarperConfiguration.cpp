@@ -3,6 +3,8 @@
 #include <TestOpenSimCreator/TestOpenSimCreatorConfig.h>
 
 #include <gtest/gtest.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 #include <oscar/Utils/TemporaryFile.h>
 
 #include <filesystem>
@@ -17,6 +19,12 @@ namespace
         return std::filesystem::weakly_canonical(std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / subpath);
     }
 }
+
+static_assert(StrategyMatchQuality::none() < StrategyMatchQuality::wildcard());
+static_assert(StrategyMatchQuality::wildcard() < StrategyMatchQuality::exact());
+static_assert(static_cast<bool>(StrategyMatchQuality::none()) == false);
+static_assert(static_cast<bool>(StrategyMatchQuality::wildcard()) == true);
+static_assert(static_cast<bool>(StrategyMatchQuality::exact()) == true);
 
 TEST(ModelWarperConfiguration, CanDefaultConstruct)
 {
@@ -170,4 +178,148 @@ TEST(ModelWarperConfiguration, finalizeFromPropertiesDoesNotThrowWhenGivenConfig
     ModelWarperConfiguration configuration{GetFixturePath("Document/ModelWarper/ModelWarperConfiguration/duplicated_but_different_types.xml")};
 
     ASSERT_NO_THROW({ configuration.finalizeFromProperties(); });
+}
+
+TEST(ModelWarperConfiguration, MatchingAnOffsetFrameStrategyToExactPathWorksAsExpected)
+{
+    OpenSim::Model model;
+    OpenSim::PhysicalOffsetFrame& pof = AddComponent<OpenSim::PhysicalOffsetFrame>(
+        model,
+        "someoffsetframe",
+        model.getGround(),
+        SimTK::Transform{}
+    );
+    model.finalizeConnections();
+    ASSERT_EQ(pof.getAbsolutePathString(), "/someoffsetframe");
+
+    ProduceErrorOffsetFrameWarpingStrategy strategy;
+    strategy.append_StrategyTargets("/someoffsetframe");
+    strategy.finalizeConnections(strategy);
+
+    ASSERT_EQ(strategy.calculateMatchQuality(pof), StrategyMatchQuality::exact());
+}
+
+TEST(ModelWarperConfiguration, MatchingAnOffsetFrameStrategyToWildcardWorksAsExpected)
+{
+    OpenSim::Model model;
+    OpenSim::PhysicalOffsetFrame& pof = AddComponent<OpenSim::PhysicalOffsetFrame>(
+        model,
+        "someoffsetframe",
+        model.getGround(),
+        SimTK::Transform{}
+    );
+    model.finalizeConnections();
+    ASSERT_EQ(pof.getAbsolutePathString(), "/someoffsetframe");
+
+    ProduceErrorOffsetFrameWarpingStrategy strategy;
+    strategy.append_StrategyTargets("*");
+    strategy.finalizeConnections(strategy);
+
+    ASSERT_EQ(strategy.calculateMatchQuality(pof), StrategyMatchQuality::wildcard());
+}
+
+TEST(ModelWarperConfiguration, MatchesExactlyEvenIfWildcardMatchIsAlsoPresent)
+{
+    OpenSim::Model model;
+    OpenSim::PhysicalOffsetFrame& pof = AddComponent<OpenSim::PhysicalOffsetFrame>(
+        model,
+        "someoffsetframe",
+        model.getGround(),
+        SimTK::Transform{}
+    );
+    model.finalizeConnections();
+    ASSERT_EQ(pof.getAbsolutePathString(), "/someoffsetframe");
+
+    ProduceErrorOffsetFrameWarpingStrategy strategy;
+    strategy.append_StrategyTargets("*");
+    strategy.append_StrategyTargets("/someoffsetframe");  // should match this
+    strategy.finalizeConnections(strategy);
+
+    ASSERT_EQ(strategy.calculateMatchQuality(pof), StrategyMatchQuality::exact());
+}
+
+TEST(ModelWarperConfiguration, MatchesWildcardIfInvalidPathPresent)
+{
+    OpenSim::Model model;
+    OpenSim::PhysicalOffsetFrame& pof = AddComponent<OpenSim::PhysicalOffsetFrame>(
+        model,
+        "someoffsetframe",
+        model.getGround(),
+        SimTK::Transform{}
+    );
+    model.finalizeConnections();
+    ASSERT_EQ(pof.getAbsolutePathString(), "/someoffsetframe");
+
+    ProduceErrorOffsetFrameWarpingStrategy strategy;
+    strategy.append_StrategyTargets("/someinvalidpath");
+    strategy.append_StrategyTargets("*");  // should match this, because the exact one isn't valid for the component
+    strategy.finalizeConnections(strategy);
+
+    ASSERT_EQ(strategy.calculateMatchQuality(pof), StrategyMatchQuality::wildcard());
+}
+
+TEST(ModelWarperConfiguration, MatchesMoreSpecificStrategyWhenTwoStrategiesAreAvailable)
+{
+    OpenSim::Model model;
+    OpenSim::PhysicalOffsetFrame& pof = AddComponent<OpenSim::PhysicalOffsetFrame>(
+        model,
+        "someoffsetframe",
+        model.getGround(),
+        SimTK::Transform{}
+    );
+    model.finalizeConnections();
+    ASSERT_EQ(pof.getAbsolutePathString(), "/someoffsetframe");
+
+    ModelWarperConfiguration configuration;
+    // add less-specific strategy
+    {
+        auto strategy = std::make_unique<ProduceErrorOffsetFrameWarpingStrategy>();
+        strategy->append_StrategyTargets("*");  // should match this, because the exact one isn't valid for the component
+        configuration.addComponent(strategy.release());
+    }
+    // add more-specific one
+    {
+        auto strategy = std::make_unique<IdentityOffsetFrameWarpingStrategy>();
+        strategy->append_StrategyTargets("/someoffsetframe");
+        configuration.addComponent(strategy.release());
+    }
+    configuration.finalizeConnections(configuration);
+
+    const ComponentWarpingStrategy* matchedStrategy = configuration.tryMatchStrategy(pof);
+
+    ASSERT_NE(matchedStrategy, nullptr);
+    ASSERT_NE(dynamic_cast<const IdentityOffsetFrameWarpingStrategy*>(matchedStrategy), nullptr);
+}
+
+TEST(ModelWarperConfiguration, tryMatchStrategyDoesNotThrowIfTwoWildcardsForDifferentTargetsMatch)
+{
+    OpenSim::Model model;
+    OpenSim::PhysicalOffsetFrame& pof = AddComponent<OpenSim::PhysicalOffsetFrame>(
+        model,
+        "someoffsetframe",
+        model.getGround(),
+        SimTK::Transform{}
+    );
+    model.finalizeConnections();
+    ASSERT_EQ(pof.getAbsolutePathString(), "/someoffsetframe");
+
+    ModelWarperConfiguration configuration;
+    // add a wildcard strategy specifically for `OpenSim::Station`
+    {
+        auto strategy = std::make_unique<ProduceErrorStationWarpingStrategy>();
+        strategy->append_StrategyTargets("*");
+        configuration.addComponent(strategy.release());
+    }
+    // add a wildcard strategy specifically for `OpenSim::PhysicalOffsetFrame`
+    {
+        auto strategy = std::make_unique<ProduceErrorOffsetFrameWarpingStrategy>();
+        strategy->append_StrategyTargets("*");
+        configuration.addComponent(strategy.release());
+    }
+    configuration.finalizeConnections(configuration);
+
+    const ComponentWarpingStrategy* matchedStrategy = configuration.tryMatchStrategy(pof);
+
+    ASSERT_NE(matchedStrategy, nullptr);
+    ASSERT_NE(dynamic_cast<const ProduceErrorOffsetFrameWarpingStrategy*>(matchedStrategy), nullptr);
 }
