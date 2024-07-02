@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <functional>
 #include <ranges>
+#include <utility>
 
 namespace osc
 {
@@ -36,4 +37,20 @@ namespace osc
         }
         return rv;
     }
+
+    // an osc-specific hashing object
+    //
+    // think of it as a `std::hash` that's used specifically in situations where
+    // specializing `std::hash` might be a bad idea (e.g. on `std` library types
+    // templated on other `std` library types, where there's a nonzero chance the
+    template<typename Key>
+    struct Hasher;
+
+    template<typename T1, typename T2>
+    struct Hasher<std::pair<T1, T2>> final {
+        size_t operator()(const std::pair<T1, T2>& p) const
+        {
+            return hash_of(p.first, p.second);
+        }
+    };
 }

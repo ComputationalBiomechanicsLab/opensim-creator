@@ -2,11 +2,12 @@
 <OpenSimDocument Version="40600">
 	<ModelWarperConfiguration>
 		<components>
-			<ProduceErrorOffsetFrameWarpingStrategy name="warp1">
+			<ProduceErrorStationWarpingStrategy name="two_targets">
 				<StrategyTargets>
+					/first/target
 					*
 				</StrategyTargets>
-			</ProduceErrorOffsetFrameWarpingStrategy>
+			</ProduceErrorStationWarpingStrategy>
 		</components>
 	</ModelWarperConfiguration>
 </OpenSimDocument>

@@ -4,9 +4,16 @@
 		<components>
 			<ProduceErrorOffsetFrameWarpingStrategy name="warp1">
 				<StrategyTargets>
-					*
+					/something/more/specific
 				</StrategyTargets>
 			</ProduceErrorOffsetFrameWarpingStrategy>
+
+			<!-- not an error, because this applies to stations -->
+			<ProduceErrorStationWarpingStrategy name="warp2">
+				<StrategyTargets>
+					/something/more/specific
+				</StrategyTargets>
+			</ProduceErrorStationWarpingStrategy>
 		</components>
 	</ModelWarperConfiguration>
 </OpenSimDocument>

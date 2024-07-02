@@ -85,6 +85,7 @@ add_executable(testoscar
     Utils/TestEnumHelpers.cpp
     Utils/TestFileChangePoller.cpp
     Utils/TestFilenameExtractor.cpp
+    Utils/TestHashHelpers.cpp
     Utils/TestLifetimedPtr.cpp
     Utils/TestLifetimeWatcher.cpp
     Utils/TestNonTypelist.cpp
@@ -104,7 +105,7 @@ add_executable(testoscar
     TestingHelpers.cpp
     TestingHelpers.h
     testoscar.cpp  # entry point
- )
+)
 
 
 configure_file(

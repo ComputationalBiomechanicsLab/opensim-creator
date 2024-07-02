@@ -2,9 +2,11 @@
 <OpenSimDocument Version="40600">
 	<ModelWarperConfiguration>
 		<components>
+			<!-- this is an error because /something/more/specific would be ambigously matched against
+			     two strategies (might be relaxed later) -->
 			<ProduceErrorOffsetFrameWarpingStrategy name="warp1">
 				<StrategyTargets>
-					*
+					/something/more/specific
 				</StrategyTargets>
 			</ProduceErrorOffsetFrameWarpingStrategy>
 			<ThinPlateSplineOnlyTranslationOffsetFrameWarpingStrategy name="warp2">

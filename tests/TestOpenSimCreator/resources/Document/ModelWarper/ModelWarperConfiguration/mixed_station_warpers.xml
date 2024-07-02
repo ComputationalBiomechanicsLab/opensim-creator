@@ -3,8 +3,15 @@
 	<ModelWarperConfiguration>
 		<components>
 			<ProduceErrorStationWarpingStrategy name="warp1">
-				<StrategyTargets>*</StrategyTargets>
+				<StrategyTargets>
+					*
+				</StrategyTargets>
 			</ProduceErrorStationWarpingStrategy>
+			<ThinPlateSplineStationWarpingStrategy>
+				<StrategyTargets>
+					/something/more/specific
+				</StrategyTargets>
+			</ThinPlateSplineStationWarpingStrategy>
 		</components>
 	</ModelWarperConfiguration>
 </OpenSimDocument>
