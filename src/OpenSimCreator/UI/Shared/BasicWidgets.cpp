@@ -76,7 +76,7 @@ namespace
     void TryPromptUserToSaveAsDAE(std::span<const SceneDecoration> scene)
     {
         std::optional<std::filesystem::path> maybeDAEPath =
-            PromptUserForFileSaveLocationAndAddExtensionIfNecessary("dae");
+            promp_user_for_file_save_location_add_extension_if_necessary("dae");
 
         if (!maybeDAEPath)
         {
@@ -200,7 +200,7 @@ namespace
     {
         // prompt user for a save location
         const std::optional<std::filesystem::path> maybeUserSaveLocation =
-            PromptUserForFileSaveLocationAndAddExtensionIfNecessary("obj");
+            promp_user_for_file_save_location_add_extension_if_necessary("obj");
         if (!maybeUserSaveLocation)
         {
             return;  // user didn't select a save location
@@ -248,7 +248,7 @@ namespace
     {
         // prompt user for a save location
         const std::optional<std::filesystem::path> maybeUserSaveLocation =
-            PromptUserForFileSaveLocationAndAddExtensionIfNecessary("stl");
+            promp_user_for_file_save_location_add_extension_if_necessary("stl");
         if (!maybeUserSaveLocation)
         {
             return;  // user didn't select a save location
