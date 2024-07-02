@@ -91,8 +91,8 @@ TEST(PropertyInfo, constructor_throws_exception_if_name_contains_any_ASCII_contr
         ASSERT_ANY_THROW({ PropertyInfo(std::string("inner") + c + std::string("usage"), Variant{true}); });
     };
 
-    constexpr char c_LastControlCharacterInASCII = 0x1F;
-    for (char c = 0; c <= c_LastControlCharacterInASCII; ++c) {
+    constexpr char c_last_acii_control_character = 0x1F;
+    for (char c = 0; c <= c_last_acii_control_character; ++c) {
         test(c);
     }
     test(0x7F);  // DEL
