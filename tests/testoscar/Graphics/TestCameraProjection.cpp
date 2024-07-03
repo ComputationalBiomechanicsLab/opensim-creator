@@ -9,7 +9,7 @@
 
 using namespace osc;
 
-TEST(CameraProjection, CanBeStreamed)
+TEST(CameraProjection, can_be_written_to_std_ostream)
 {
     for (size_t i = 0; i < num_options<CameraProjection>(); ++i) {
         std::stringstream ss;
