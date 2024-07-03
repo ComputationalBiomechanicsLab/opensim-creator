@@ -6,10 +6,10 @@
 
 using namespace osc::mow;
 
-ValidationCheckState osc::mow::IValidateable::implState() const
+ValidationCheckState osc::mow::IValidateable::implState(const WarpableModel& root) const
 {
     ValidationCheckState worst = ValidationCheckState::Ok;
-    for (const auto& c : validate()) {
+    for (const auto& c : validate(root)) {
         worst = max(worst, c.state());
         if (worst == ValidationCheckState::Error) {
             break;

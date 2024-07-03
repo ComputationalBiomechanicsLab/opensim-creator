@@ -62,7 +62,7 @@ std::vector<WarpDetail> osc::mow::WarpableModel::details(const OpenSim::Mesh& me
 std::vector<ValidationCheckResult> osc::mow::WarpableModel::validate(const OpenSim::Mesh& mesh) const
 {
     if (const IPointWarperFactory* p = m_MeshWarpLookup->find(GetAbsolutePathString(mesh))) {
-        return p->validate();
+        return p->validate(*this);
     }
     else {
         return {ValidationCheckResult{"no mesh warp pairing found: this is probably an implementation error (try reloading?)", ValidationCheckState::Error}};
@@ -72,7 +72,7 @@ std::vector<ValidationCheckResult> osc::mow::WarpableModel::validate(const OpenS
 ValidationCheckState osc::mow::WarpableModel::state(const OpenSim::Mesh& mesh) const
 {
     const IPointWarperFactory* p = m_MeshWarpLookup->find(GetAbsolutePathString(mesh));
-    return p ? p->state() : ValidationCheckState::Error;
+    return p ? p->state(*this) : ValidationCheckState::Error;
 }
 
 const IPointWarperFactory* osc::mow::WarpableModel::findMeshWarp(const OpenSim::Mesh& mesh) const
@@ -91,7 +91,7 @@ std::vector<WarpDetail> osc::mow::WarpableModel::details(const OpenSim::Physical
 std::vector<ValidationCheckResult> osc::mow::WarpableModel::validate(const OpenSim::PhysicalOffsetFrame& pof) const
 {
     if (const IFrameWarperFactory* p = m_FrameWarpLookup->find(GetAbsolutePathString(pof))) {
-        return p->validate();
+        return p->validate(*this);
     }
     else {
         return {ValidationCheckResult{"no frame warp method found: this is probably an implementation error (try reloading?)", ValidationCheckState::Error}};
@@ -102,7 +102,7 @@ ValidationCheckState osc::mow::WarpableModel::state(
     const OpenSim::PhysicalOffsetFrame& pof) const
 {
     const IFrameWarperFactory* p = m_FrameWarpLookup->find(GetAbsolutePathString(pof));
-    return p ? p->state() : ValidationCheckState::Error;
+    return p ? p->state(*this) : ValidationCheckState::Error;
 }
 
 ValidationCheckState osc::mow::WarpableModel::state() const

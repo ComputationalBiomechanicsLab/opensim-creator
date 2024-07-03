@@ -5,9 +5,12 @@
 
 #include <vector>
 
+namespace osc::mow { class WarpableModel; }
+
 namespace osc::mow
 {
-    // an interface to an object that can be runtime-validated
+    // an interface to an object that can be runtime-validated against the
+    // root document
     class IValidateable {
     protected:
         IValidateable() = default;
@@ -19,10 +22,12 @@ namespace osc::mow
         friend bool operator==(const IValidateable&, const IValidateable&) = default;
     public:
         virtual ~IValidateable() noexcept = default;
-        std::vector<ValidationCheckResult> validate() const { return implValidate(); }
-        ValidationCheckState state() const { return implState(); }
+        std::vector<ValidationCheckResult> validate(const WarpableModel& root) const { return implValidate(root); }
+        ValidationCheckState state(const WarpableModel& root) const { return implState(root); }
+
     private:
-        virtual std::vector<ValidationCheckResult> implValidate() const  { return {}; }
-        virtual ValidationCheckState implState() const;  // by default, gets the least-valid entry returned by `validate()`
+        virtual std::vector<ValidationCheckResult> implValidate(const WarpableModel&) const  { return {}; }
+        // by default, gets the least-valid entry returned by `validate()`
+        virtual ValidationCheckState implState(const WarpableModel&) const;
     };
 }

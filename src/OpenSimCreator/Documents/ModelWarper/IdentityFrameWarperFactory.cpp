@@ -23,7 +23,7 @@ std::vector<WarpDetail> osc::mow::IdentityFrameWarperFactory::implWarpDetails() 
     return {};
 }
 
-std::vector<ValidationCheckResult> osc::mow::IdentityFrameWarperFactory::implValidate() const
+std::vector<ValidationCheckResult> osc::mow::IdentityFrameWarperFactory::implValidate(const WarpableModel&) const
 {
     return {
         ValidationCheckResult{"this is an identity warp (i.e. it ignores warping this frame altogether)", ValidationCheckState::Warning},

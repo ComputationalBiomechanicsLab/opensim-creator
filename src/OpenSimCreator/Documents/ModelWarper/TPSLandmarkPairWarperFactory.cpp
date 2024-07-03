@@ -279,7 +279,7 @@ std::vector<WarpDetail> osc::mow::TPSLandmarkPairWarperFactory::implWarpDetails(
     return rv;
 }
 
-std::vector<ValidationCheckResult> osc::mow::TPSLandmarkPairWarperFactory::implValidate() const
+std::vector<ValidationCheckResult> osc::mow::TPSLandmarkPairWarperFactory::implValidate(const WarpableModel&) const
 {
     std::vector<ValidationCheckResult> rv;
 

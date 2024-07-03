@@ -411,7 +411,7 @@ add_library(OpenSimCreator STATIC
     Utils/SimTKHelpers.h
     Utils/TPS3D.cpp
     Utils/TPS3D.h
- )
+  )
 
 # OpenSimCreatorConfig.h
 #

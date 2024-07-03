@@ -23,7 +23,7 @@ std::vector<WarpDetail> osc::mow::StationDefinedFrameWarperFactory::implWarpDeta
     return {};
 }
 
-std::vector<ValidationCheckResult> osc::mow::StationDefinedFrameWarperFactory::implValidate() const
+std::vector<ValidationCheckResult> osc::mow::StationDefinedFrameWarperFactory::implValidate(const WarpableModel&) const
 {
     return {
         ValidationCheckResult{"this frame is automatically warped when the model warper warps all stations in the model", ValidationCheckState::Ok},

@@ -65,7 +65,7 @@ namespace osc::mow
     private:
         std::unique_ptr<IPointWarperFactory> implClone() const override;
         std::vector<WarpDetail> implWarpDetails() const override;
-        std::vector<ValidationCheckResult> implValidate() const override;
+        std::vector<ValidationCheckResult> implValidate(const WarpableModel&) const override;
         std::unique_ptr<IPointWarper> implTryCreatePointWarper(const WarpableModel&) const override;
 
         std::filesystem::path m_SourceMeshAbsoluteFilepath;
