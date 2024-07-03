@@ -87,7 +87,7 @@ namespace osc::mow
         public IWarpDetailProvider,
         public IValidateable {
 
-        OpenSim_DECLARE_ABSTRACT_OBJECT(ComponentWarpingStrategy, OpenSim::Component);
+        OpenSim_DECLARE_ABSTRACT_OBJECT(ComponentWarpingStrategy, OpenSim::Component)
     public:
         OpenSim_DECLARE_LIST_PROPERTY(StrategyTargets, std::string, "a sequence of strategy target strings that this strategy applies to");
     protected:
@@ -194,14 +194,14 @@ namespace osc::mow
     // abstract interface to a component that is capable of warping `n`
     // `OpenSim::PhysicalOffsetFrame`s during a model warp
     class OffsetFrameWarpingStrategy : public ComponentWarpingStrategyFor<OpenSim::PhysicalOffsetFrame> {
-        OpenSim_DECLARE_ABSTRACT_OBJECT(OffsetFrameWarpingStrategy, ComponentWarpingStrategyFor<OpenSim::PhysicalOffsetFrame>);
+        OpenSim_DECLARE_ABSTRACT_OBJECT(OffsetFrameWarpingStrategy, ComponentWarpingStrategyFor<OpenSim::PhysicalOffsetFrame>)
     };
 
     // concrete implementation of an `OffsetFrameWarpingStrategy` in which
     // only the `translation` property of the offset frame is warped but the
     // rotation is left as-is
     class ThinPlateSplineOnlyTranslationOffsetFrameWarpingStrategy final : public OffsetFrameWarpingStrategy {
-        OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplineOnlyTranslationOffsetFrameWarpingStrategy, OffsetFrameWarpingStrategy);
+        OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplineOnlyTranslationOffsetFrameWarpingStrategy, OffsetFrameWarpingStrategy)
     public:
         // PointSources
     private:
@@ -225,7 +225,7 @@ namespace osc::mow
     // implementation should produce a halting error rather than continuing with
     // the model warp
     class ProduceErrorOffsetFrameWarpingStrategy final : public OffsetFrameWarpingStrategy {
-        OpenSim_DECLARE_CONCRETE_OBJECT(ProduceErrorOffsetFrameWarpingStrategy, OffsetFrameWarpingStrategy);
+        OpenSim_DECLARE_CONCRETE_OBJECT(ProduceErrorOffsetFrameWarpingStrategy, OffsetFrameWarpingStrategy)
     private:
         std::unique_ptr<ComponentWarpingStrategy> implClone() const override
         {
@@ -247,7 +247,7 @@ namespace osc::mow
     // simply copies the `translation` and `rotation` of the source `OpenSim::PhysicalOffsetFrame` to
     // the destination model with no modifications
     class IdentityOffsetFrameWarpingStrategy final : public OffsetFrameWarpingStrategy {
-        OpenSim_DECLARE_CONCRETE_OBJECT(IdentityOffsetFrameWarpingStrategy, OffsetFrameWarpingStrategy);
+        OpenSim_DECLARE_CONCRETE_OBJECT(IdentityOffsetFrameWarpingStrategy, OffsetFrameWarpingStrategy)
     private:
         std::unique_ptr<ComponentWarpingStrategy> implClone() const override
         {
@@ -268,13 +268,13 @@ namespace osc::mow
     // abstract interface to a component that is capable of warping `n`
     // `OpenSim::Station`s during a model warp
     class StationWarpingStrategy : public ComponentWarpingStrategyFor<OpenSim::Station> {
-        OpenSim_DECLARE_ABSTRACT_OBJECT(StationWarpingStrategy, ComponentWarpingStrategy);
+        OpenSim_DECLARE_ABSTRACT_OBJECT(StationWarpingStrategy, ComponentWarpingStrategy)
     };
 
     // concrete implementation of a `StationWarpingStrategy` that uses the Thin-Plate
     // Spline (TPS) algorithm to fit correspondences between mesh landmarks (`MeshSources`)
     class ThinPlateSplineStationWarpingStrategy final : public StationWarpingStrategy {
-        OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplineStationWarpingStrategy, StationWarpingStrategy);
+        OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplineStationWarpingStrategy, StationWarpingStrategy)
         // MeshSources
     private:
         std::unique_ptr<ComponentWarpingStrategy> implClone() const override
@@ -296,7 +296,7 @@ namespace osc::mow
     // concrete implementation of a `StationWarpingStrategy` in which the implementation should
     // produce a halting error rather than continuing with the model warp
     class ProduceErrorStationWarpingStrategy final : public StationWarpingStrategy {
-        OpenSim_DECLARE_CONCRETE_OBJECT(ProduceErrorStationWarpingStrategy, StationWarpingStrategy);
+        OpenSim_DECLARE_CONCRETE_OBJECT(ProduceErrorStationWarpingStrategy, StationWarpingStrategy)
     private:
         std::unique_ptr<ComponentWarpingStrategy> implClone() const override
         {
@@ -317,7 +317,7 @@ namespace osc::mow
     // concrete implementation of a `StationWarpingStrategy` in which the implementation should
     // just copy the station's postion (+parent) without any modification
     class IdentityStationWarpingStrategy final : public StationWarpingStrategy {
-        OpenSim_DECLARE_CONCRETE_OBJECT(IdentityStationWarpingStrategy, StationWarpingStrategy);
+        OpenSim_DECLARE_CONCRETE_OBJECT(IdentityStationWarpingStrategy, StationWarpingStrategy)
     private:
         std::unique_ptr<ComponentWarpingStrategy> implClone() const override
         {
@@ -337,7 +337,7 @@ namespace osc::mow
 
     // top-level model warping configuration file
     class ModelWarperConfiguration final : public OpenSim::Component {
-        OpenSim_DECLARE_CONCRETE_OBJECT(ModelWarperConfiguration, OpenSim::Component);
+        OpenSim_DECLARE_CONCRETE_OBJECT(ModelWarperConfiguration, OpenSim::Component)
     public:
         // constructs a blank (default) configuration object
         ModelWarperConfiguration();
