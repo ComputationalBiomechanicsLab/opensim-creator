@@ -10,6 +10,10 @@ set(
     CACHE BOOL
     "force-enable/disable NDEBUG - even if building a release build. Note: unlike OSC_FORCE_ASSERTS_ENABLED, this also tends to enable runtime assertions from library headers"
 )
+set(OSC_RUNTIME_PERF_MEASUREMENTS_ENABLED ON
+    CACHE BOOL
+    "enable/disable whether performance counters are collected at runtime wherever the `OSC_PERF` macro is used in the source code"
+)
 
 # -------------- set globally-applicable policies ---------------- #
 
@@ -196,7 +200,7 @@ target_link_options(oscar_compiler_configuration INTERFACE
 )
 target_compile_features(oscar_compiler_configuration INTERFACE cxx_std_20)
 
-# handle OSC_FORCE_ASSERTS_ENABLED
-if(OSC_FORCE_ASSERTS_ENABLED)
-    target_compile_definitions(oscar_compiler_configuration INTERFACE -DOSC_FORCE_ASSERTS_ENABLED=1)
-endif()
+target_compile_definitions(oscar_compiler_configuration INTERFACE
+    $<$<BOOL:${OSC_FORCE_ASSERTS_ENABLED}>:-DOSC_FORCE_ASSERTS_ENABLED=1>
+    $<$<BOOL:${OSC_RUNTIME_PERF_MEASUREMENTS_ENABLED}>:-DOSC_RUNTIME_PERF_MEASUREMENTS_ENABLED=1>
+)
