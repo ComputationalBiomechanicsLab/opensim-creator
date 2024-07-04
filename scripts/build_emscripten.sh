@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+#
+# `build_emscripten.sh`: performs an end-to-end build of the `hellotriangle` demo
+# of OpenSim Creator using the Emscripten SDK (`emmake`, `emcc`, etc.) toolchain
+# to build a wasm version of the binary
+#
+#     usage (must be ran in repository root): `bash build_emscripten.sh`
 
 set -xeuo pipefail
 

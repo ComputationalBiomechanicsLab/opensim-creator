@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 
-# throwaway script for building and OSC that's compatible with valgrind
-# debugging on Ubuntu20
+# `build_linux_valgrind-compat`: performs an end-to-end build of OpenSim Creator
+# with build flags that make it valgrind-compatible. This is handy for debugging
+# things like memory accesses, segfaults, etc.
+#
+#     usage (must be ran in repository root): `bash build_linux_valgrind-compat.sh`
 
 set -xeuo pipefail
 

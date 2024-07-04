@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
-
-# build OSC with all the necessary debugging bells and whistles
-# that are used during a release
+#
+# `build_linux_debugging.sh`: performs an end-to-end build of OpenSim Creator with
+# as many debugging options enabled as possible. This is usaully used to verify a
+# release, or lint the source code
+#
+#     usage (must be ran in repository root): `bash build_linux_debugging.sh`
 
 set -xeuo pipefail
 OSC_BUILD_CONCURRENCY=$(nproc)

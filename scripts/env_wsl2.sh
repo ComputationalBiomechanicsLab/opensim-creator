@@ -1,6 +1,6 @@
-# usage (unix only): `source env_wsl2.sh`
-
-# environment variables that can be handy in Windows 11's WSL2
+# `env_wsl2.sh`: sets up a WSL2 environment to use WSL2 optimally
+#
+#     usage (WSL2 unix terminal only): `source env_wsl2.sh`
 
 # force OSC to render via Mesa (see env_mesa_debugging.sh)
 # LIBGL_ALWAYS_SOFTWARE=1

@@ -1,3 +1,10 @@
+#!/usr/bin/env python3
+
+# `build_windows`: performs an end-to-end build of OpenSim Creator on
+# the Windows platform
+#
+#     usage (run it from the root of the repository): `python3 build_windows.py`
+
 import argparse
 import logging
 import multiprocessing

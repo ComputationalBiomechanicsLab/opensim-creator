@@ -1,4 +1,7 @@
-# usage (unix only): `source env_libasan.sh`
+# `env_libasan.sh`: sets up an environment for running libASAN-enabled
+# binaries with aggressive flags
+#
+#     usage (unix only): `source env_libasan.sh`
 
 # - these are libASAN options that I use when debugging OSC
 # - it assumes you have compiled OSC with libASAN, e.g.:
