@@ -201,6 +201,6 @@ target_link_options(oscar_compiler_configuration INTERFACE
 target_compile_features(oscar_compiler_configuration INTERFACE cxx_std_20)
 
 target_compile_definitions(oscar_compiler_configuration INTERFACE
-    $<$<BOOL:${OSC_FORCE_ASSERTS_ENABLED}>:-DOSC_FORCE_ASSERTS_ENABLED=1>
-    $<$<BOOL:${OSC_RUNTIME_PERF_MEASUREMENTS_ENABLED}>:-DOSC_RUNTIME_PERF_MEASUREMENTS_ENABLED=1>
+    $<$<BOOL:${OSC_FORCE_ASSERTS_ENABLED}>:OSC_FORCE_ASSERTS_ENABLED>
+    $<$<BOOL:${OSC_RUNTIME_PERF_MEASUREMENTS_ENABLED}>:OSC_RUNTIME_PERF_MEASUREMENTS_ENABLED>
 )
