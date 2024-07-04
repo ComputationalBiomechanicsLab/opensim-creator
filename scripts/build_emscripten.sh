@@ -22,7 +22,8 @@ source ./emsdk/emsdk_env.sh
 CXXFLAGS="-fexceptions --use-port=sdl2" emcmake cmake -S third_party/ -B osc-deps-build -DOSCDEPS_GET_BENCHMARK=OFF -DOSCDEPS_GET_SDL=OFF -DOSCDEPS_GET_GLEW=OFF -DOSCDEPS_GET_NATIVEFILEDIALOG=OFF -DOSCDEPS_GET_OPENSIM=OFF -DCMAKE_INSTALL_PREFIX=${PWD}/osc-deps-install -DCMAKE_INSTALL_LIBDIR=${PWD}/osc-deps-install/lib
 emmake cmake --build osc-deps-build -j$(nproc) -v
 
-LDFLAGS="-fexceptions -sNO_DISABLE_EXCEPTION_CATCHING=1 -sUSE_WEBGL2=1 -sMIN_WEBGL_VERSION=2 -sFULL_ES2=1 -sFULL_ES3=1 -sUSE_SDL=2" CXXFLAGS="-fexceptions --use-port=sdl2" emcmake cmake -S . -B osc-build -DOSC_EXECUTABLE_SUFFIX=.html -DOSC_BUILD_OPENSIMCREATOR=OFF -DOSC_DISCOVER_TESTS=OFF -DOSC_EMSCRIPTEN=ON -DCMAKE_PREFIX_PATH=${PWD}/osc-deps-install -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH
+LDFLAGS="-fexceptions -sNO_DISABLE_EXCEPTION_CATCHING=1 -sUSE_WEBGL2=1 -sMIN_WEBGL_VERSION=2 -sFULL_ES2=1 -sFULL_ES3=1 -sUSE_SDL=2" CXXFLAGS="-fexceptions --use-port=sdl2" emcmake cmake -S . -B osc-build -DOSC_BUILD_OPENSIMCREATOR=OFF -DOSC_DISCOVER_TESTS=OFF -DOSC_EMSCRIPTEN=ON -DCMAKE_PREFIX_PATH=${PWD}/osc-deps-install -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH
+cp -ar scripts/hellotriangle.html osc-build/apps/hellotriangle/
 emmake cmake --build osc-build --target testoscar -v -j$(nproc)
 emmake cmake --build osc-build --target hellotriangle -v -j$(nproc)
 
