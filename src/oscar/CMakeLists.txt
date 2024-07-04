@@ -245,6 +245,7 @@ add_library(oscar STATIC
     Platform/App.cpp
     Platform/App.h
     Platform/AppClock.h
+    Platform/AppMainLoopStatus.h
     Platform/AppMetadata.cpp
     Platform/AppMetadata.h
     Platform/AppSettings.cpp
@@ -426,7 +427,7 @@ add_library(oscar STATIC
     UI.h
     Utils.h
     Variant.h
- )
+  )
 
 target_include_directories(oscar PUBLIC
 

@@ -3,6 +3,7 @@
 #include <oscar/Graphics/AntiAliasingLevel.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Platform/AppClock.h>
+#include <oscar/Platform/AppMainLoopStatus.h>
 #include <oscar/Platform/ResourceLoader.h>
 #include <oscar/Platform/ResourceStream.h>
 #include <oscar/Platform/Screenshot.h>
@@ -94,10 +95,33 @@ namespace osc
         // application
         const std::filesystem::path& user_data_dir() const;
 
-        // starts showing the supplied screen
+        void setup_main_loop(std::unique_ptr<IScreen>);
+        template<std::derived_from<IScreen> TScreen, typename... Args>
+        requires std::constructible_from<TScreen, Args&&...>
+        void setup_main_loop(Args&&... args)
+        {
+            setup_main_loop(std::make_unique<TScreen>(std::forward<Args>(args)...));
+        }
+        AppMainLoopStatus do_main_loop_step();
+        void teardown_main_loop();
+
+        // sets the currently active screen, creates an application loop, then starts showing
+        // the supplied screen
         //
         // this function only returns once the active screen calls `app.request_quit()`, or an exception
-        // is thrown
+        // is thrown. Use `set_screen` in combination with `handle_one_frame` if you want to use your
+        // own application loop (e.g. as required by emscripten)
+        //
+        // this is effectively sugar over:
+        //
+        //     set_screen(...);
+        //     setup_main_loop();
+        //     while (true) {
+        //         do_main_loop_step(...);
+        //     }
+        //     teardown_main_loop();
+        //
+        // which you may need to write yourself if your loop is external (e.g. from a browser's event loop)
         void show(std::unique_ptr<IScreen>);
 
         // constructs `TScreen` with `Args` and starts `show`ing it

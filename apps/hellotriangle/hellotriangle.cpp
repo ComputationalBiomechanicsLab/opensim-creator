@@ -35,6 +35,9 @@ namespace
 int main(int, char**)
 {
     osc::App app;
-    app.show<HelloTriangleScreen>();
+    app.setup_main_loop<HelloTriangleScreen>();
+    ScopeGuard guard{[&app](){ app.teardown_main_loop(); }};
+    while (app.do_main_loop_step()) {
+    }
     return 0;
 }
