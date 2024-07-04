@@ -85,8 +85,6 @@ if(UNIX AND NOT APPLE)
     set(LINUX TRUE)
 endif()
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
 # -------------- setup top-level project state ---------------- #
 
 # enable testing in this top-level project, so that `ctest` works when
