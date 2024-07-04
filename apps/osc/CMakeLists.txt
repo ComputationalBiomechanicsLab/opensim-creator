@@ -83,7 +83,7 @@ set(CPACK_PACKAGE_EXECUTABLES "osc;${OSC_PACKAGE_NAME}")
 # `include` platform-specific packaging instructions
 if (WIN32)
     include(${CMAKE_CURRENT_SOURCE_DIR}/Windows/Packaging.cmake)
-elseif(LINUX)
+elseif(UNIX AND NOT APPLE)  # i.e. it's Linux
     include(${CMAKE_CURRENT_SOURCE_DIR}/Debian/Packaging.cmake)
 elseif(APPLE)
     include(${CMAKE_CURRENT_SOURCE_DIR}/MacOS/Packaging.cmake)

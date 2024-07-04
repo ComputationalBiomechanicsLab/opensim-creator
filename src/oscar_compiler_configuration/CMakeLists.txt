@@ -23,13 +23,15 @@ cmake_policy(SET CMP0092 NEW)
 # handle OSC_FORCE_UNDEFINE_NDEBUG
 #
 # this unsets the relevant flags globally
-if(OSC_FORCE_UNDEFINE_NDEBUG)
+if(${OSC_FORCE_UNDEFINE_NDEBUG})
     # MSVC
-    string(REPLACE "/DNDEBUG" "" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
     string(REPLACE "/DNDEBUG" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+    string(REPLACE "/DNDEBUG" "" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+    string(REPLACE "/DNDEBUG" "" CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL}")
     # others
-    string(REPLACE "-DNDEBUG" "" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
     string(REPLACE "-DNDEBUG" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+    string(REPLACE "-DNDEBUG" "" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+    string(REPLACE "-DNDEBUG" "" CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL}")
 endif()
 
 
@@ -183,19 +185,6 @@ target_compile_options(oscar_compiler_configuration INTERFACE
 
         # false-positive in googletest https://github.com/google/googletest/issues/4232
         -Wno-restrict
-    >
-)
-target_link_options(oscar_compiler_configuration INTERFACE
-
-    # Linux /w GCC or Clang
-    $<$<AND:$<BOOL:LINUX>,$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>>:
-
-        # make `ld` emit symbols for all functions - even if they aren't
-        # externally used (with an exe, only `main` is used, really)
-        #
-        # this makes the binary a bigger, but means that the application
-        # can emit its own stack trace /w function names - even in Release mode.
-        -rdynamic
     >
 )
 target_compile_features(oscar_compiler_configuration INTERFACE cxx_std_20)

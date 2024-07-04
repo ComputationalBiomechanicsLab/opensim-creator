@@ -118,6 +118,7 @@ cmake \
     -B "osc-build" \
     -DCMAKE_BUILD_TYPE=${OSC_BUILD_TYPE} \
     -DCMAKE_PREFIX_PATH="${PWD}/osc-deps-install" \
+    -DCMAKE_EXECUTABLE_ENABLE_EXPORTS=ON \
     ${OSC_BUILD_DOCS:+-DOSC_BUILD_DOCS=ON}
 
 # build all

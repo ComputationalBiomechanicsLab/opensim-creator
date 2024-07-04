@@ -56,15 +56,10 @@ set(
 # that produced the binary later on (user errors, etc.)
 if(TRUE)
 
-    # compute OSC_DEFAULT_BUILD_ID
-    if(DEFINED ENV{GITHUB_RUN_ID})
-        # build is running inside GitHub Action CI - use that ID
-        set(OSC_DEFAULT_BUILD_ID "GITHUB_$ENV{GITHUB_RUN_ID}.$ENV{GITHUB_RUN_NUMBER}")
+    if(DEFINED ENV{OSC_BUILD_ID})
+        set(OSC_DEFAULT_BUILD_ID "$ENV{OSC_BUILD_ID}")
     else()
-        # build is probably running on a dev's machine - generate a random ID
-        string(RANDOM RANDOM_ID)
-        set(OSC_DEFAULT_BUILD_ID "CUSTOM_${RANDOM_ID}")
-        unset(RANDOM_ID)
+        set(OSC_DEFAULT_BUILD_ID "CUSTOM_BUILD")
     endif()
 
     set(
@@ -75,15 +70,6 @@ if(TRUE)
     unset(OSC_DEFAULT_BUILD_ID)
 endif()
 
-
-# -------------- set/mutate internal vars ---------------- #
-
-# set LINUX
-#
-# this is based on whether the UNIX variant being used appears to be Linux
-if(UNIX AND NOT APPLE)
-    set(LINUX TRUE)
-endif()
 
 # -------------- setup top-level project state ---------------- #
 
