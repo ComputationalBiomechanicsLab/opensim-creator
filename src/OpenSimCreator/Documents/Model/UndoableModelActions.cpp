@@ -90,7 +90,7 @@ namespace
 
     std::optional<std::filesystem::path> PromptSaveOneFile()
     {
-        return promp_user_for_file_save_location_add_extension_if_necessary("osim");
+        return prompt_user_for_file_save_location_add_extension_if_necessary("osim");
     }
 
     bool IsAnExampleFile(const std::filesystem::path& path)
@@ -2293,7 +2293,7 @@ bool osc::ActionImportLandmarks(
 
 bool osc::ActionExportModelGraphToDotviz(const UndoableModelStatePair& model)
 {
-    if (auto p = promp_user_for_file_save_location_add_extension_if_necessary("dot")) {
+    if (auto p = prompt_user_for_file_save_location_add_extension_if_necessary("dot")) {
         if (std::ofstream of{*p}) {
             WriteComponentTopologyGraphAsDotViz(model.getModel(), of);
             return true;

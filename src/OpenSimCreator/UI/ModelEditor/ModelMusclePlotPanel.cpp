@@ -989,7 +989,7 @@ namespace
     void ActionPromptUserToSavePlotToCSV(const OpenSim::Coordinate& coord, const PlotParameters& params, const Plot& plot)
     {
         const std::optional<std::filesystem::path> maybeCSVPath =
-            promp_user_for_file_save_location_add_extension_if_necessary("csv");
+            prompt_user_for_file_save_location_add_extension_if_necessary("csv");
 
         if (maybeCSVPath)
         {
@@ -1437,7 +1437,7 @@ namespace
     void ActionPromptUserToSavePlotLinesToCSV(const OpenSim::Coordinate& coord, const PlotParameters& params, const PlotLines& lines)
     {
         const std::optional<std::filesystem::path> maybeCSVPath =
-            promp_user_for_file_save_location_add_extension_if_necessary("csv");
+            prompt_user_for_file_save_location_add_extension_if_necessary("csv");
 
         if (maybeCSVPath)
         {

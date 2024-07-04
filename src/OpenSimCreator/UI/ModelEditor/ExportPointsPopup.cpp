@@ -518,7 +518,7 @@ namespace
         bool shouldExportPointsWithAbsPathNames)
     {
         // prompt user to select a save location
-        const std::optional<std::filesystem::path> saveLoc = promp_user_for_file_save_location_add_extension_if_necessary("csv");
+        const std::optional<std::filesystem::path> saveLoc = prompt_user_for_file_save_location_add_extension_if_necessary("csv");
         if (!saveLoc) {
             return ExportStepReturn::UserCancelled;
         }
