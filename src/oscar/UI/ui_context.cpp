@@ -25,8 +25,6 @@ namespace rgs = std::ranges;
 
 namespace
 {
-    constexpr auto c_icon_ranges = std::to_array<ImWchar>({ ICON_MIN_FA, ICON_MAX_FA, 0 });
-
     // this is necessary because ImGui will take ownership, but will free the
     // font atlas with `free`, rather than `delete`, which memory sanitizers
     // like libASAN dislike (`malloc`/`free`, or `new`/`delete` - no mixes)
@@ -40,6 +38,7 @@ namespace
         return ptr;
     }
 
+#ifndef EMSCRIPTEN
     void add_resource_as_font(
         const ImFontConfig& config,
         ImFontAtlas& atlas,
@@ -55,6 +54,7 @@ namespace
             glyph_ranges
         );
     }
+#endif
 }
 
 void osc::ui::context::init()
@@ -70,18 +70,9 @@ void osc::ui::context::init()
 
     // load application-level ImGui settings, then the user one,
     // so that the user settings takes precedence
-    {
-        const std::string base_ini_data = App::slurp("imgui_base_config.ini");
-        ImGui::LoadIniSettingsFromMemory(base_ini_data.data(), base_ini_data.size());
-
-        // CARE: the reason this filepath is `static` is because ImGui requires that
-        // the string outlives the ImGui context
-        static const std::string s_user_imgui_ini_file_path = (App::get().user_data_dir() / "imgui.ini").string();
-
-        ImGui::LoadIniSettingsFromDisk(s_user_imgui_ini_file_path.c_str());
-        io.IniFilename = s_user_imgui_ini_file_path.c_str();
-    }
-
+#ifdef EMSCRIPTEN
+    io.IniFilename = NULL;
+#else
     float dpi_scale_factor = [&]()
     {
         float dpi{};
@@ -98,6 +89,18 @@ void osc::ui::context::init()
         return 1.0f;  // else: assume it's an unscaled 96dpi screen
     }();
 
+    {
+        const std::string base_ini_data = App::slurp("imgui_base_config.ini");
+        ImGui::LoadIniSettingsFromMemory(base_ini_data.data(), base_ini_data.size());
+
+        // CARE: the reason this filepath is `static` is because ImGui requires that
+        // the string outlives the ImGui context
+        static const std::string s_user_imgui_ini_file_path = (App::get().user_data_dir() / "imgui.ini").string();
+
+        ImGui::LoadIniSettingsFromDisk(s_user_imgui_ini_file_path.c_str());
+        io.IniFilename = s_user_imgui_ini_file_path.c_str();
+    }
+
     ImFontConfig base_config;
     base_config.SizePixels = dpi_scale_factor*15.0f;
     base_config.PixelSnapH = true;
@@ -110,8 +113,10 @@ void osc::ui::context::init()
         config.MergeMode = true;
         config.GlyphMinAdvanceX = floor(1.5f * config.SizePixels);
         config.GlyphMaxAdvanceX = floor(1.5f * config.SizePixels);
+        static constexpr auto c_icon_ranges = std::to_array<ImWchar>({ ICON_MIN_FA, ICON_MAX_FA, 0 });
         add_resource_as_font(config, *io.Fonts, "oscar/fonts/fa-solid-900.ttf", c_icon_ranges.data());
     }
+#endif
 
     // init ImGui for SDL2 /w OpenGL
     ImGui_ImplSDL2_InitForOpenGL(

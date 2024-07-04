@@ -61,39 +61,22 @@ void main()
     private:
         void impl_on_mount() override
         {
-            // ui::context::init();
+            ui::context::init();
         }
 
         void impl_on_unmount() override
         {
-            // ui::context::shutdown();
+            ui::context::shutdown();
         }
 
         bool impl_on_event(const SDL_Event& e) override
         {
-            if (e.type == SDL_KEYDOWN) {
-                switch (e.key.keysym.sym) {
-                case SDLK_LEFT:
-                    edited_torus_parameters_.torus_radius += 0.1f;
-                    return true;
-                case SDLK_RIGHT:
-                    edited_torus_parameters_.torus_radius -= 0.1f;
-                    return true;
-                case SDLK_UP:
-                    edited_torus_parameters_.tube_radius += 0.1f;
-                    return true;
-                case SDLK_DOWN:
-                    edited_torus_parameters_.tube_radius -= 0.1f;
-                    return true;
-                }
-            }
-
-            return false; // return ui::context::on_event(e);
+            return ui::context::on_event(e);
         }
 
         void impl_on_draw() override
         {
-            // ui::context::on_start_new_frame();
+            ui::context::on_start_new_frame();
 
             // ensure target texture matches screen dimensions
             {
@@ -108,7 +91,12 @@ void main()
             camera_.render_to(target_texture_);
             graphics::blit_to_screen(target_texture_, Rect{{}, App::get().main_window_dimensions()}, gamma_correcter_);
 
-            // ui::context::render();
+            ui::begin_panel("window");
+            ui::draw_float_slider("torus_radius", &edited_torus_parameters_.torus_radius, 0.0f, 5.0f);
+            ui::draw_float_slider("tube_radius", &edited_torus_parameters_.tube_radius, 0.0f, 5.0f);
+            ui::end_panel();
+
+            ui::context::render();
         }
 
         void update_torus_if_params_changed()
