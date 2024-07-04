@@ -10,6 +10,10 @@ set_target_properties(hellotriangle PROPERTIES
     CXX_STANDARD_REQUIRED ON
 )
 
+# -------------- installation/packaging ------------- #
+if(${OSC_EMSCRIPTEN})
+    include(${CMAKE_CURRENT_SOURCE_DIR}/Emscripten/Packaging.cmake)
+endif()
 
 # for development on Windows, copy all runtime dlls to the exe directory
 # (because Windows doesn't have an RPATH)
