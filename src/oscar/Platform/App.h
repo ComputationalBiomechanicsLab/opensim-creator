@@ -189,6 +189,10 @@ namespace osc
         // returns the maximum number of anti-aliasing samples that the graphics backend supports
         AntiAliasingLevel max_anti_aliasing_level() const;
 
+        // returns true if the main window is backed by a framebuffer/renderbuffer that automatically
+        // converts the linear outputs (from shaders) into (e.g.) sRGB on-write
+        bool is_main_window_gamma_corrected() const;
+
         // returns true if the application is rendering in debug mode
         //
         // other parts of the application can use this to decide whether to render
@@ -248,7 +252,7 @@ namespace osc
         void request_redraw();  // threadsafe: used to make a waiting loop redraw
 
         // fill all pixels in the main window with the given color
-        void clear_screen(const Color&);
+        void clear_screen(const Color& = Color::clear());
 
         // sets the main window's subtitle (e.g. document name)
         void set_main_window_subtitle(std::string_view);

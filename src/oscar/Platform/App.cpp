@@ -423,6 +423,15 @@ public:
         return graphics_context_.max_antialiasing_level();
     }
 
+    bool is_main_window_gamma_corrected() const
+    {
+#ifdef EMSCRIPTEN
+        return false;
+#else
+        return true;
+#endif
+    }
+
     bool is_in_debug_mode() const
     {
         return graphics_context_.is_in_debug_mode();
@@ -904,6 +913,11 @@ void osc::App::set_anti_aliasing_level(AntiAliasingLevel s)
 AntiAliasingLevel osc::App::max_anti_aliasing_level() const
 {
     return impl_->max_anti_aliasing_level();
+}
+
+bool osc::App::is_main_window_gamma_corrected() const
+{
+    return impl_->is_main_window_gamma_corrected();
 }
 
 bool osc::App::is_in_debug_mode() const

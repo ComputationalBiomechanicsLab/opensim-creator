@@ -54,7 +54,7 @@ private:
 
     void impl_on_draw() override
     {
-        App::upd().clear_screen({0.0f, 0.0f, 0.0f, 0.0f});
+        App::upd().clear_screen();
         ui::context::on_start_new_frame();
         current_tab_->on_draw();
         ui::context::render();

@@ -76,6 +76,8 @@ void main()
 
         void impl_on_draw() override
         {
+            App::upd().clear_screen();
+
             ui::context::on_start_new_frame();
 
             // ensure target texture matches screen dimensions
@@ -89,11 +91,13 @@ void main()
             const auto transform = identity<Transform>().with_rotation(angle_axis(Radians{seconds_since_startup}, Vec3{0.0f, 1.0f, 0.0f}));
             graphics::draw(mesh_, transform, material_, camera_);
             camera_.render_to(target_texture_);
-#ifdef EMSCRIPTEN
-            graphics::blit_to_screen(target_texture_, Rect{{}, App::get().main_window_dimensions()}, gamma_correcter_);
-#else
-            graphics::blit_to_screen(target_texture_, Rect{{}, App::get().main_window_dimensions()});
-#endif
+
+            if (App::get().is_main_window_gamma_corrected()) {
+                graphics::blit_to_screen(target_texture_, Rect{{}, App::get().main_window_dimensions()});
+            }
+            else {
+                graphics::blit_to_screen(target_texture_, Rect{{}, App::get().main_window_dimensions()}, gamma_correcter_);
+            }
 
             ui::begin_panel("window");
             ui::draw_float_slider("torus_radius", &edited_torus_parameters_.torus_radius, 0.0f, 5.0f);
@@ -137,10 +141,7 @@ int main(int, char**)
     return 0;
 #else
     osc::App app;
-    app.setup_main_loop<HelloTriangleScreen>();
-    ScopeGuard guard{[&app](){ app.teardown_main_loop(); }};
-    while (app.do_main_loop_step()) {
-    }
+    app.show<HelloTriangleScreen>();
     return 0;
 #endif
 }

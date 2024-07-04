@@ -56,7 +56,7 @@ public:
 
         ui::context::on_start_new_frame();  // prepare the 2D UI for drawing a new frame
 
-        App::upd().clear_screen(Color::clear());  // set app window bg color
+        App::upd().clear_screen();  // set app window bg color
 
         ui::begin_panel("cookiecutter panel");
         ui::draw_text("hello world");

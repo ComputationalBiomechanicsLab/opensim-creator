@@ -74,7 +74,7 @@ private:
         camera_.on_draw();
 
         // clear screen and ensure camera has correct pixel rect
-        App::upd().clear_screen({0.1f, 0.1f, 0.1f, 1.0f});
+        App::upd().clear_screen(Color::dark_grey());
 
         // draw cube
         lighting_maps_material_.set_vec3("uViewPos", camera_.position());

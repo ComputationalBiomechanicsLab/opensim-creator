@@ -326,7 +326,7 @@ public:
 
         {
             OSC_PERF("MainUIScreen/clear_screen");
-            App::upd().clear_screen({0.0f, 0.0f, 0.0f, 0.0f});
+            App::upd().clear_screen();
         }
 
         ui::context::on_start_new_frame();
