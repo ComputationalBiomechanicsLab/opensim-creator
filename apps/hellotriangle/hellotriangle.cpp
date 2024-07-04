@@ -1,5 +1,10 @@
 #include <oscar/oscar.h>
 
+#ifdef EMSCRIPTEN
+    #include <emscripten.h>
+    #include <emscripten/html5.h>
+#endif
+
 using namespace osc;
 
 namespace
@@ -32,12 +37,24 @@ namespace
     };
 }
 
+
 int main(int, char**)
 {
+#ifdef EMSCRIPTEN
+    osc::App* app = new osc::App{};
+    app->setup_main_loop<HelloTriangleScreen>();
+    emscripten_request_animation_frame_loop([](double, void* ptr) -> int
+    {
+        const bool keep_running = static_cast<App*>(ptr)->do_main_loop_step();
+        return keep_running ? EM_TRUE : EM_FALSE;
+    }, app);
+    return 0;
+#else
     osc::App app;
     app.setup_main_loop<HelloTriangleScreen>();
     ScopeGuard guard{[&app](){ app.teardown_main_loop(); }};
     while (app.do_main_loop_step()) {
     }
     return 0;
+#endif
 }
