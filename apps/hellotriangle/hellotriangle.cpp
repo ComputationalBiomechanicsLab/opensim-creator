@@ -89,7 +89,11 @@ void main()
             const auto transform = identity<Transform>().with_rotation(angle_axis(Radians{seconds_since_startup}, Vec3{0.0f, 1.0f, 0.0f}));
             graphics::draw(mesh_, transform, material_, camera_);
             camera_.render_to(target_texture_);
+#ifdef EMSCRIPTEN
             graphics::blit_to_screen(target_texture_, Rect{{}, App::get().main_window_dimensions()}, gamma_correcter_);
+#else
+            graphics::blit_to_screen(target_texture_, Rect{{}, App::get().main_window_dimensions()});
+#endif
 
             ui::begin_panel("window");
             ui::draw_float_slider("torus_radius", &edited_torus_parameters_.torus_radius, 0.0f, 5.0f);
