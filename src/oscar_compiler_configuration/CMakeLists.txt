@@ -5,11 +5,6 @@ set(
     CACHE BOOL
     "force-enable/-disable OSC's runtime assertions - even if building a release build"
 )
-set(
-    OSC_FORCE_UNDEFINE_NDEBUG OFF
-    CACHE BOOL
-    "force-enable/disable NDEBUG - even if building a release build. Note: unlike OSC_FORCE_ASSERTS_ENABLED, this also tends to enable runtime assertions from library headers"
-)
 set(OSC_RUNTIME_PERF_MEASUREMENTS_ENABLED ON
     CACHE BOOL
     "enable/disable whether performance counters are collected at runtime wherever the `OSC_PERF` macro is used in the source code"
@@ -19,21 +14,6 @@ set(OSC_RUNTIME_PERF_MEASUREMENTS_ENABLED ON
 
 # tell cmake that we will define MSVC warning flags (e.g. /W3 /W4) ourselves
 cmake_policy(SET CMP0092 NEW)
-
-# handle OSC_FORCE_UNDEFINE_NDEBUG
-#
-# this unsets the relevant flags globally
-if(${OSC_FORCE_UNDEFINE_NDEBUG})
-    # MSVC
-    string(REPLACE "/DNDEBUG" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
-    string(REPLACE "/DNDEBUG" "" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
-    string(REPLACE "/DNDEBUG" "" CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL}")
-    # others
-    string(REPLACE "-DNDEBUG" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
-    string(REPLACE "-DNDEBUG" "" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
-    string(REPLACE "-DNDEBUG" "" CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL}")
-endif()
-
 
 # oscar_compiler_configuration:
 #
