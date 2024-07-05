@@ -5,31 +5,6 @@ project(osc VERSION 0.5.12 LANGUAGES CXX)
 
 # -------------- gather user-facing build cache vars ---------------- #
 
-set(
-    OSC_REPO_URL "https://github.com/ComputationalBiomechanicsLab/opensim-creator"
-    CACHE STRING
-    "the internet location of the software's repo - used by in-app links, installers, etc."
-)
-set(
-    OSC_HELP_URL "https://github.com/ComputationalBiomechanicsLab/opensim-creator/discussions"
-    CACHE STRING
-    "the internet location of the software's help page - used by in-app links, installers, etc."
-)
-set(
-    OSC_ORGNAME "cbl"
-    CACHE STRING
-    "the name of the organization that created the application (affects configuration location)"
-)
-set(
-    OSC_APPNAME "osc"
-    CACHE STRING
-    "the short name for the application (affects configuration location)"
-)
-set(
-    OSC_LONG_APPNAME "OpenSim Creator"
-    CACHE STRING
-    "a longer, user-friendly name of the application"
-)
 set(OSC_BUILD_OPENSIMCREATOR ON
     CACHE BOOL
     "enable/disable building OpenSim Creator (i.e. the OpenSim-dependent part of the codebase)"

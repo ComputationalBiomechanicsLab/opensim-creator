@@ -1,26 +1,22 @@
 #pragma once
 
 #include <oscar/Platform/App.h>
-#include <oscar/Platform/AppSettings.h>
-#include <oscar/Platform/AppMetadata.h>
 
 #include <filesystem>
+#include <string>
 
-namespace osc { class AppSettings; }
+namespace osc { class AppMetdata; }
 
 namespace osc
 {
-    AppMetadata GetOpenSimCreatorAppMetadata();
-    AppSettings LoadOpenSimCreatorSettings();
-
     // manually ensure OpenSim is initialized
     //
     // e.g. initializes OpenSim logging, registering components, etc.
-    bool GlobalInitOpenSim();
+    bool GloballyInitOpenSim();
 
     // adds the given filesystem path to a directory to OpenSim's global
     // search list that it uses when searching for mesh files
-    void AddDirectoryToOpenSimGeometrySearchPath(const std::filesystem::path&);
+    void GloballyAddDirectoryToOpenSimGeometrySearchPath(const std::filesystem::path&);
 
     // an `App` that:
     //
@@ -34,6 +30,7 @@ namespace osc
         static const OpenSimCreatorApp& get();
 
         OpenSimCreatorApp();
+        explicit OpenSimCreatorApp(const AppMetadata&);
         OpenSimCreatorApp(const OpenSimCreatorApp&) = delete;
         OpenSimCreatorApp(OpenSimCreatorApp&&) noexcept = delete;
         OpenSimCreatorApp& operator=(const OpenSimCreatorApp&) = delete;

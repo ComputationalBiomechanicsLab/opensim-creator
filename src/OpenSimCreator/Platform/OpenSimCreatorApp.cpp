@@ -1,6 +1,5 @@
 #include "OpenSimCreatorApp.h"
 
-#include <OpenSimCreator/OpenSimCreatorConfig.h>
 #include <OpenSimCreator/Documents/CustomComponents/CrossProductEdge.h>
 #include <OpenSimCreator/Documents/CustomComponents/MidpointLandmark.h>
 #include <OpenSimCreator/Documents/CustomComponents/PointToPointEdge.h>
@@ -220,33 +219,13 @@ namespace
     }
 }
 
-
-AppMetadata osc::GetOpenSimCreatorAppMetadata()
-{
-    return AppMetadata{
-        OSC_ORGNAME_STRING,
-        OSC_APPNAME_STRING,
-        OSC_LONG_APPNAME_STRING,
-        OSC_VERSION_STRING,
-        OSC_BUILD_ID,
-        OSC_REPO_URL,
-        OSC_HELP_URL,
-    };
-}
-
-AppSettings osc::LoadOpenSimCreatorSettings()
-{
-    auto metadata = GetOpenSimCreatorAppMetadata();
-    return AppSettings{metadata.organization_name(), metadata.application_name()};
-}
-
-bool osc::GlobalInitOpenSim()
+bool osc::GloballyInitOpenSim()
 {
     static const bool s_OpenSimInitialized = InitializeOpenSim();
     return s_OpenSimInitialized;
 }
 
-void osc::AddDirectoryToOpenSimGeometrySearchPath(const std::filesystem::path& p)
+void osc::GloballyAddDirectoryToOpenSimGeometrySearchPath(const std::filesystem::path& p)
 {
     GloballySetOpenSimsGeometrySearchPath(p);
 }
@@ -258,10 +237,14 @@ const OpenSimCreatorApp& osc::OpenSimCreatorApp::get()
 }
 
 osc::OpenSimCreatorApp::OpenSimCreatorApp() :
-    App{GetOpenSimCreatorAppMetadata()}
+    OpenSimCreatorApp{AppMetadata{}}
+{}
+
+osc::OpenSimCreatorApp::OpenSimCreatorApp(const AppMetadata& metadata) :
+    App{metadata}
 {
-    GlobalInitOpenSim();
-    AddDirectoryToOpenSimGeometrySearchPath(resource_filepath("geometry"));
+    GloballyInitOpenSim();
+    GloballyAddDirectoryToOpenSimGeometrySearchPath(resource_filepath("geometry"));
     InitializeTabRegistry(*singleton<TabRegistry>());
     InitializeOpenSimCreatorSpecificSettingDefaults(upd_settings());
     g_opensimcreator_app_global = this;

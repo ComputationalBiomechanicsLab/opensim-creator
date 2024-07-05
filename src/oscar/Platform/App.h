@@ -110,7 +110,7 @@ namespace osc
         //
         // this function only returns once the active screen calls `app.request_quit()`, or an exception
         // is thrown. Use `set_screen` in combination with `handle_one_frame` if you want to use your
-        // own application loop (e.g. as required by emscripten)
+        // own application loop
         //
         // this is effectively sugar over:
         //
