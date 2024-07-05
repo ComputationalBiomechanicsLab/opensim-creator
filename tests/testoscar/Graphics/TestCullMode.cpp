@@ -4,7 +4,7 @@
 
 using namespace osc;
 
-TEST(CullMode, DefaultsToOff)
+TEST(CullMode, Default_is_Off)
 {
     static_assert(CullMode::Default == CullMode::Off);
 }
