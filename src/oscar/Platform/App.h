@@ -89,11 +89,11 @@ namespace osc
         const AppMetadata& metadata() const;
 
         // returns the filesystem path to the current application executable
-        const std::filesystem::path& executable_dir() const;
+        const std::filesystem::path& executable_directory() const;
 
         // returns the filesystem path to a (usually, writable) user-specific directory for the
         // application
-        const std::filesystem::path& user_data_dir() const;
+        const std::filesystem::path& user_data_directory() const;
 
         void setup_main_loop(std::unique_ptr<IScreen>);
         template<std::derived_from<IScreen> TScreen, typename... Args>

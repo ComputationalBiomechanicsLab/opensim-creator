@@ -95,7 +95,7 @@ void osc::ui::context::init()
 
         // CARE: the reason this filepath is `static` is because ImGui requires that
         // the string outlives the ImGui context
-        static const std::string s_user_imgui_ini_file_path = (App::get().user_data_dir() / "imgui.ini").string();
+        static const std::string s_user_imgui_ini_file_path = (App::get().user_data_directory() / "imgui.ini").string();
 
         ImGui::LoadIniSettingsFromDisk(s_user_imgui_ini_file_path.c_str());
         io.IniFilename = s_user_imgui_ini_file_path.c_str();

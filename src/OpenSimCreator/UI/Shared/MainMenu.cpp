@@ -366,7 +366,7 @@ void osc::MainMenuAboutTab::onDraw()
         ui::push_id(id++);
         if (ui::draw_button(ICON_FA_FOLDER " open"))
         {
-            open_file_in_os_default_application(App::get().executable_dir());
+            open_file_in_os_default_application(App::get().executable_directory());
         }
         ui::pop_id();
         ui::next_column();
@@ -377,7 +377,7 @@ void osc::MainMenuAboutTab::onDraw()
         ui::next_column();
         ui::push_id(id++);
         if (ui::draw_button(ICON_FA_FOLDER " open")) {
-            open_file_in_os_default_application(App::get().user_data_dir());
+            open_file_in_os_default_application(App::get().user_data_directory());
         }
         ui::pop_id();
         ui::next_column();

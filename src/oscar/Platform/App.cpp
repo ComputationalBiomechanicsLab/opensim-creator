@@ -219,8 +219,8 @@ public:
     {}
 
     const AppMetadata& metadata() const { return metadata_; }
-    const std::filesystem::path& executable_dir() const { return executable_dir_; }
-    const std::filesystem::path& user_data_dir() const { return user_data_dir_; }
+    const std::filesystem::path& executable_directory() const { return executable_dir_; }
+    const std::filesystem::path& user_data_directory() const { return user_data_dir_; }
 
     void setup_main_loop(std::unique_ptr<IScreen> screen)
     {
@@ -835,14 +835,14 @@ const AppMetadata& osc::App::metadata() const
     return impl_->metadata();
 }
 
-const std::filesystem::path& osc::App::executable_dir() const
+const std::filesystem::path& osc::App::executable_directory() const
 {
-    return impl_->executable_dir();
+    return impl_->executable_directory();
 }
 
-const std::filesystem::path& osc::App::user_data_dir() const
+const std::filesystem::path& osc::App::user_data_directory() const
 {
-    return impl_->user_data_dir();
+    return impl_->user_data_directory();
 }
 
 void osc::App::setup_main_loop(std::unique_ptr<IScreen> screen)
