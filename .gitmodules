@@ -37,3 +37,6 @@
 [submodule "third_party/unordered_dense"]
 	path = third_party/unordered_dense
 	url = https://github.com/ComputationalBiomechanicsLab/unordered_dense
+[submodule "third_party/lua"]
+	path = third_party/lua
+	url = https://github.com/ComputationalBiomechanicsLab/lua
