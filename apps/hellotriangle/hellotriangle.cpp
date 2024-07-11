@@ -3,6 +3,7 @@
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
 #endif
+#include <ImGuiColorTextEdit/TextEditor.h>
 #include <lua/luaconf.h>
 #include <lua/lua.h>
 #include <lua/lcode.h>
@@ -212,6 +213,9 @@ void main()
             material_.set_diffuse_color(0.5f * color);
             material_.set_specular_color(0.5f * color);
             material_.set_viewer_position(viewer_position);
+
+            text_editor_.SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
+            text_editor_.SetText("return string.reverse('adam', 'kewley')");
         }
     private:
         void impl_on_mount() override
@@ -255,9 +259,11 @@ void main()
             }
 
             ui::begin_panel("window");
-            if (ImGui::InputTextMultiline("source code", &script_input_)) {
-                script_output_ = lua::compile_and_print("ui", script_input_);
+            ui::draw_text("source code");
+            if (text_editor_.IsTextChanged()) {
+                script_output_ = lua::compile_and_print("ui", text_editor_.GetText());
             }
+            text_editor_.Render("editor", {0.0f, 10.0f*ui::get_text_line_height()});
             ui::draw_string_input("output", script_output_, ImGuiInputTextFlags_ReadOnly);
             ui::draw_float_slider("torus_radius", &edited_torus_parameters_.torus_radius, 0.0f, 5.0f);
             ui::draw_float_slider("tube_radius", &edited_torus_parameters_.tube_radius, 0.0f, 5.0f);
@@ -282,8 +288,8 @@ void main()
         Material gamma_correcter_{Shader{c_gamma_correcting_vertex_shader_src, c_gamma_correcting_fragment_shader_src}};
         Camera camera_;
         RenderTexture target_texture_;
-        std::string script_input_ = "return string.reverse('adam', 'kewley')";
-        std::string script_output_ = lua::compile_and_print("ui-input", script_input_);
+        TextEditor text_editor_;
+        std::string script_output_ = lua::compile_and_print("ui-input", text_editor_.GetText());
     };
 }
 
