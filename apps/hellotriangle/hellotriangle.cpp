@@ -50,11 +50,6 @@ void main()
 }
 )";
 
-    constexpr CStringView c_luau_source = R"(
-x = string.reverse('adam', 'kewley')
-return 'rv'
-)";
-
     namespace lua
     {
         // a Lua state (stack, registry, etc.)
@@ -179,23 +174,22 @@ return 'rv'
                 OSC_ASSERT(lua_isstring(state, 1) && "the top of the stack should contain an error message string");
                 std::stringstream ss;
                 ss << "lua_load: error: " << tostringview(state, 1);
-                throw std::runtime_error{std::move(ss).str()};
+                return std::move(ss).str();  // ERROR: bad source code
             }
 
             // TODO: use `setfenv` to call the user-provided function with a specific
             // environment (e.g. imagine multiple environments sharing one VM)
             try {
-                lua_call(state, 0, 0);
+                lua_call(state, 0, 1);
             }
             catch (const std::exception& ex) {
-                return std::string{ex.what()};
+                return std::string{ex.what()};  // ERROR: bad allocation, c function exception, etc.
             }
 
-            OSC_ASSERT(lua_gettop(state) == 0);
-
-            // pull info out of the global table etc.
-            lua_getglobal(state, "x");
-            return std::string{tostringview(state, -1)};
+            OSC_ASSERT(lua_gettop(state) == 1);
+            const std::string rv{tostringview(state, -1)};
+            lua_pop(state, 1);
+            return rv;
         }
     }
 
@@ -261,7 +255,10 @@ return 'rv'
             }
 
             ui::begin_panel("window");
-            ui::draw_text(script_output_);
+            if (ImGui::InputTextMultiline("source code", &script_input_)) {
+                script_output_ = lua::compile_and_print("ui", script_input_);
+            }
+            ui::draw_string_input("output", script_output_, ImGuiInputTextFlags_ReadOnly);
             ui::draw_float_slider("torus_radius", &edited_torus_parameters_.torus_radius, 0.0f, 5.0f);
             ui::draw_float_slider("tube_radius", &edited_torus_parameters_.tube_radius, 0.0f, 5.0f);
             ui::end_panel();
@@ -285,7 +282,8 @@ return 'rv'
         Material gamma_correcter_{Shader{c_gamma_correcting_vertex_shader_src, c_gamma_correcting_fragment_shader_src}};
         Camera camera_;
         RenderTexture target_texture_;
-        std::string script_output_ = lua::compile_and_print("some_script.lua", c_luau_source);
+        std::string script_input_ = "return string.reverse('adam', 'kewley')";
+        std::string script_output_ = lua::compile_and_print("ui-input", script_input_);
     };
 }
 
