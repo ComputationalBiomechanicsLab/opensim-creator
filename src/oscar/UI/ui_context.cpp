@@ -14,6 +14,8 @@
 #include <oscar/Utils/Perf.h>
 #include <SDL_events.h>
 
+#include <ImGuizmo.h>
+
 #include <algorithm>
 #include <array>
 #include <iterator>

@@ -34,6 +34,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Internal: Added runtime-checked pointer classes (`LifetimedPtr`, `LifetimeWatcher`,
             `ScopedLifetime`, `SharedLifetimeBlock`, `WatchableLifetime`)
 - Internal: Added barebones `TemporaryFile` class (handy for testing IO-related code)
+- Internal: `ImGuizmo` was mostly refactored into an internal concern, with OSC using an
+  easier-to-integrate wrapper class
 
 
 ## [0.5.12] - 2024/04/29

@@ -27,7 +27,6 @@
 #include <oscar/Maths/VecFunctions.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Shims/Cpp23/utility.h>
-#include <oscar/UI/ImGuizmoHelpers.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/ScopeGuard.h>
@@ -666,124 +665,83 @@ namespace
 // drawing/rendering code
 namespace
 {
-    // state associated with one drawing command
-    struct GizmoUIState final {
-        void* gizmoID;
-        const PolarPerspectiveCamera& camera;
-        const Rect& viewportRect;
-        ImGuizmo::OPERATION operation;
-        ImGuizmo::MODE mode;
-        const std::shared_ptr<UndoableModelStatePair>& model;
-        const OpenSim::Component& component;
-        bool& wasUsingLastFrameStorage;
-    };
-
     // draws the gizmo overlay using the given `ISelectionManipulator`
     void DrawGizmoOverlayInner(
-        GizmoUIState& st,
+        ui::Gizmo& gizmo,
+        const Rect& screenRect,
+        const PolarPerspectiveCamera& camera,
         ISelectionManipulator& manipulator)
     {
         // figure out whether the gizmo should even be drawn
         {
             const SupportedManipulationOpFlags flags = manipulator.getSupportedManipulationOps();
-            if (st.operation == ImGuizmo::TRANSLATE && !(flags & SupportedManipulationOpFlags::Translation)) {
+            if (gizmo.operation() == ui::GizmoOperation::Translate && !(flags & SupportedManipulationOpFlags::Translation)) {
                 return;
             }
-            if (st.operation == ImGuizmo::ROTATE && !(flags & SupportedManipulationOpFlags::Rotation)) {
+            if (gizmo.operation() == ui::GizmoOperation::Rotate && !(flags & SupportedManipulationOpFlags::Rotation)) {
                 return;
             }
         }
-        // else: it's a supported operation and the gizmo should be drawn
 
-        // important: necessary for multi-viewport gizmos
-        // also important: don't use ui::get_id(), because it uses an ID stack and we might want to know if "isover" etc. is true outside of a window
-        ImGuizmo::SetID(static_cast<int>(std::hash<void*>{}(st.gizmoID)));
-        const ScopeGuard g{[]() { ImGuizmo::SetID(-1); }};
-
-        ImGuizmo::SetRect(
-            st.viewportRect.p1.x,
-            st.viewportRect.p1.y,
-            dimensions_of(st.viewportRect).x,
-            dimensions_of(st.viewportRect).y
+        // draw the manipulator
+        const Mat4 oldModelMatrix = manipulator.getCurrentTransformInGround();
+        Mat4 modelMatrix = oldModelMatrix;
+        const auto userEdit = gizmo.draw(
+            modelMatrix,
+            camera.view_matrix(),
+            camera.projection_matrix(aspect_ratio_of(screenRect)),
+            screenRect
         );
-        ImGuizmo::SetDrawlist(ui::get_panel_draw_list());
-        ImGuizmo::AllowAxisFlip(false);
+        if (userEdit) {
+            // propagate user edit to the model via the `ISelectionManipulator` interface
+            if (gizmo.operation() == ui::GizmoOperation::Translate) {
+                // `ISelectionManipulator` expects translations in ground
+                const Vec3 groundTranslation = transform_point(oldModelMatrix, userEdit->position);
+                manipulator.onApplyTranslation(groundTranslation);
+            }
+            else if (gizmo.operation() == ui::GizmoOperation::Rotate) {
+                manipulator.onApplyRotation(userEdit->rotation);
+            }
+        }
 
-        // use rotation from the parent, translation from station
-        Mat4 currentXformInGround = manipulator.getCurrentTransformInGround();
-        Mat4 deltaInGround;
-
-        ui::set_gizmo_style_to_osc_standard();
-        const bool gizmoWasManipulatedByUser = ImGuizmo::Manipulate(
-            value_ptr(st.camera.view_matrix()),
-            value_ptr(st.camera.projection_matrix(aspect_ratio_of(st.viewportRect))),
-            st.operation,
-            st.mode,
-            value_ptr(currentXformInGround),
-            value_ptr(deltaInGround),
-            nullptr,
-            nullptr,
-            nullptr
-        );
-
-        const bool isUsingThisFrame = ImGuizmo::IsUsing();
-        const bool wasUsingLastFrame = st.wasUsingLastFrameStorage;
-        st.wasUsingLastFrameStorage = isUsingThisFrame;  // update cached state
-
-        if (wasUsingLastFrame and not isUsingThisFrame) {
-            // user finished interacting, save model
+        // once the user stops using the manipulator, save the changes
+        if (gizmo.was_using() and not gizmo.is_using()) {
             manipulator.onSave();
-        }
-
-        if (not gizmoWasManipulatedByUser) {
-            return;  // user is not interacting, so no changes to apply
-        }
-        // else: apply in-place change to model
-
-        // decompose the overall transformation into component parts
-        Vec3 translationInGround{};
-        Vec3 rotationInLocalSpaceDegrees{};
-        Vec3 scaleInLocalSpace{};
-        ImGuizmo::DecomposeMatrixToComponents(
-            value_ptr(deltaInGround),
-            value_ptr(translationInGround),
-            value_ptr(rotationInLocalSpaceDegrees),
-            value_ptr(scaleInLocalSpace)
-        );
-        Eulers rotationInLocalSpace = Vec<3, Degrees>(rotationInLocalSpaceDegrees);
-
-        if (st.operation == ImGuizmo::TRANSLATE) {
-            manipulator.onApplyTranslation(translationInGround);
-        }
-        else if (st.operation == ImGuizmo::ROTATE) {
-            manipulator.onApplyRotation(rotationInLocalSpace);
         }
     }
 
     template<std::derived_from<ISelectionManipulator> ConcreteManipulator>
     bool TryManipulateComponentWithManipulator(
-        GizmoUIState& st)
+        ui::Gizmo& gizmo,
+        const Rect& screenRect,
+        const PolarPerspectiveCamera& camera,
+        const std::shared_ptr<UndoableModelStatePair>& model,
+        const OpenSim::Component& selected)
     {
-        if (not ConcreteManipulator::matches(st.component)) {
+        if (not ConcreteManipulator::matches(selected)) {
             return false;
         }
 
-        const auto* downcasted = dynamic_cast<const ConcreteManipulator::AssociatedComponent*>(&st.component);
+        const auto* downcasted = dynamic_cast<const ConcreteManipulator::AssociatedComponent*>(&selected);
         if (not downcasted) {
             return false;
         }
 
-        ConcreteManipulator manipulator{st.model, *downcasted};
-        DrawGizmoOverlayInner(st, manipulator);
+        ConcreteManipulator manipulator{model, *downcasted};
+        DrawGizmoOverlayInner(gizmo, screenRect, camera, manipulator);
         return true;
     }
 
     template<typename... ConcreteManipulator>
     void TryManipulateComponentWithMatchingManipulator(
-        GizmoUIState& st,
+        ui::Gizmo& gizmo,
+        const Rect& screenRect,
+        const PolarPerspectiveCamera& camera,
+        const std::shared_ptr<UndoableModelStatePair>& model,
+        const OpenSim::Component& selected,
         Typelist<ConcreteManipulator...>)
     {
-        (TryManipulateComponentWithManipulator<ConcreteManipulator>(st) || ...);
+        (TryManipulateComponentWithManipulator<ConcreteManipulator>(gizmo, screenRect, camera, model, selected) || ...);
     }
 }
 
@@ -796,27 +754,6 @@ osc::ModelSelectionGizmo& osc::ModelSelectionGizmo::operator=(const ModelSelecti
 osc::ModelSelectionGizmo& osc::ModelSelectionGizmo::operator=(ModelSelectionGizmo&&) noexcept = default;
 osc::ModelSelectionGizmo::~ModelSelectionGizmo() noexcept = default;
 
-bool osc::ModelSelectionGizmo::isUsing() const
-{
-    ImGuizmo::SetID(static_cast<int>(std::hash<const ModelSelectionGizmo*>{}(this)));
-    const bool rv = ImGuizmo::IsUsing();
-    ImGuizmo::SetID(-1);
-    return rv;
-}
-
-bool osc::ModelSelectionGizmo::isOver() const
-{
-    ImGuizmo::SetID(static_cast<int>(std::hash<const ModelSelectionGizmo*>{}(this)));
-    const bool rv = ImGuizmo::IsOver();
-    ImGuizmo::SetID(-1);
-    return rv;
-}
-
-bool osc::ModelSelectionGizmo::handleKeyboardInputs()
-{
-    return ui::update_gizmo_state_from_keyboard(m_GizmoOperation, m_GizmoMode);
-}
-
 void osc::ModelSelectionGizmo::onDraw(
     const Rect& screenRect,
     const PolarPerspectiveCamera& camera)
@@ -826,15 +763,12 @@ void osc::ModelSelectionGizmo::onDraw(
         return;
     }
 
-    GizmoUIState st{
-        .gizmoID = this,
-        .camera = camera,
-        .viewportRect = screenRect,
-        .operation = m_GizmoOperation,
-        .mode = m_GizmoMode,
-        .model = m_Model,
-        .component = *selected,
-        .wasUsingLastFrameStorage = m_WasUsingGizmoLastFrame
-    };
-    TryManipulateComponentWithMatchingManipulator(st, ManipulatorList{});
+    TryManipulateComponentWithMatchingManipulator(
+        m_Gizmo,
+        screenRect,
+        camera,
+        m_Model,
+        *selected,
+        ManipulatorList{}
+    );
 }

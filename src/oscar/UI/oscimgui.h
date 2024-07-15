@@ -5,10 +5,12 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <imgui/misc/cpp/imgui_stdlib.h>
-#include <ImGuizmo.h>
 #include <implot.h>
 #include <oscar/Graphics/Color.h>
+#include <oscar/Maths/Eulers.h>
+#include <oscar/Maths/Mat4.h>
 #include <oscar/Maths/Rect.h>
+#include <oscar/Maths/Transform.h>
 #include <oscar/Maths/Vec.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
@@ -16,6 +18,7 @@
 #include <oscar/Utils/UID.h>
 
 #include <cstddef>
+#include <optional>
 #include <utility>
 
 namespace osc::ui
@@ -830,4 +833,70 @@ namespace osc::ui
     {
         ImGui::ShowDemoWindow();
     }
+
+    // a single user-enacted manipulation performed with a `Gizmo`
+    struct GizmoTransform final {
+        Vec3 scale = {1.0f, 1.0f, 1.0f};
+        Eulers rotation = {};
+        Vec3 position = {};
+    };
+
+    // an operation that a ui `Gizmo` shall perform
+    enum class GizmoOperation {
+        Translate,
+        Rotate,
+        Scale,
+        NUM_OPTIONS,
+    };
+
+    // the mode (coordinate space) that a `Gizmo` presents its manipulations in
+    enum class GizmoMode {
+        Local,
+        World,
+        NUM_OPTIONS,
+    };
+
+    // a UI gizmo that manipulates the given model matrix using user-interactable drag handles, arrows, etc.
+    class Gizmo final {
+    public:
+
+        // if the user manipulated the gizmo, returns a model-space transform based on what the
+        // user did in the UI
+        //
+        // i.e. the transform returned by this function (T) is defined in model-space and can be
+        //      right-multiplied by `model_matrix` to produce a new model-to-world transform:
+        //
+        //          new_model_matrix = model_matrix * to_mat4(T)
+        std::optional<GizmoTransform> draw(
+            Mat4& model_matrix,  // edited in-place
+            const Mat4& view_matrix,
+            const Mat4& projection_matrix,
+            const Rect& screenspace_rect
+        );
+        bool is_using() const;
+        bool was_using() const { return was_using_last_frame_; }
+        bool is_over() const;
+        GizmoOperation operation() const { return operation_; }
+        void set_operation(GizmoOperation op) { operation_ = op; }
+        GizmoMode mode() const { return mode_; }
+        void set_mode(GizmoMode mode) { mode_ = mode; }
+
+        // updates the gizmo based on keyboard inputs (e.g. pressing `G` enables grab mode)
+        bool handle_keyboard_inputs();
+    private:
+        UID id_;
+        GizmoOperation operation_ = GizmoOperation::Translate;
+        GizmoMode mode_ = GizmoMode::World;
+        bool was_using_last_frame_ = false;
+    };
+
+    bool draw_gizmo_mode_selector(
+        GizmoMode&
+    );
+    bool draw_gizmo_op_selector(
+        GizmoOperation&,
+        bool can_translate = true,
+        bool can_rotate = true,
+        bool can_scale = true
+    );
 }

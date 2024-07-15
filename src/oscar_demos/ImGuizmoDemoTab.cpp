@@ -2,6 +2,8 @@
 
 #include <oscar/oscar.h>
 
+#include <ImGuizmo.h>
+
 #include <memory>
 
 using namespace osc::literals;
