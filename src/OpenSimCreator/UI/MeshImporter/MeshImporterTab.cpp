@@ -49,7 +49,6 @@
 #include <oscar/Platform/AppMetadata.h>
 #include <oscar/Platform/os.h>
 #include <oscar/UI/ImGuiHelpers.h>
-#include <oscar/UI/ImGuizmoHelpers.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/PerfPanel.h>
 #include <oscar/UI/Panels/UndoRedoPanel.h>
@@ -204,7 +203,7 @@ public:
             updateFromImGuiKeyboardState();
         }
 
-        if (!m_Maybe3DViewerModal && m_Shared->isRenderHovered() && !ImGuizmo::IsUsing())
+        if (!m_Maybe3DViewerModal && m_Shared->isRenderHovered() && !m_GizmoState.is_using())
         {
             ui::update_polar_camera_from_mouse_inputs(m_Shared->updCamera(), m_Shared->get3DSceneDims());
         }
@@ -829,7 +828,7 @@ private:
             tryAddingStationAtMousePosToHoveredElement();
             return true;
         }
-        else if (ui::update_gizmo_state_from_keyboard(m_ImGuizmoState.op, m_ImGuizmoState.mode))
+        else if (m_GizmoState.handle_keyboard_inputs())
         {
             return true;
         }
@@ -1826,14 +1825,24 @@ private:
 
         ui::same_line();
 
-        ui::draw_gizmo_op_selector(m_ImGuizmoState.op);
+        {
+            ui::GizmoOperation op = m_GizmoState.operation();
+            if (ui::draw_gizmo_op_selector(op)) {
+                m_GizmoState.set_operation(op);
+            }
+        }
 
         ui::push_style_var(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
         ui::same_line();
         ui::pop_style_var();
 
         // local/global dropdown
-        ui::draw_gizmo_mode_selector(m_ImGuizmoState.mode);
+        {
+            ui::GizmoMode mode = m_GizmoState.mode();
+            if (ui::draw_gizmo_mode_selector(mode)) {
+                m_GizmoState.set_mode(mode);
+            }
+        }
         ui::same_line();
 
         // scale factor
@@ -2049,18 +2058,16 @@ private:
     // draws 3D manipulator overlays (drag handles, etc.)
     void drawSelection3DManipulatorGizmos()
     {
-        if (!m_Shared->hasSelection())
-        {
+        if (not m_Shared->hasSelection()) {
             return;  // can only manipulate if selecting something
         }
 
         // if the user isn't *currently* manipulating anything, create an
         // up-to-date manipulation matrix
         //
-        // this is so that ImGuizmo can *show* the manipulation axes, and
+        // this is so that we can at least *show* the manipulation axes, and
         // because the user might start manipulating during this frame
-        if (!ImGuizmo::IsUsing())
-        {
+        if (not m_GizmoState.is_using()) {
             auto it = m_Shared->getCurrentSelection().begin();
             auto end = m_Shared->getCurrentSelection().end();
 
@@ -2092,78 +2099,45 @@ private:
             ras.scale /= static_cast<float>(n);
             ras.rotation = normalize(ras.rotation);
 
-            m_ImGuizmoState.mtx = mat4_cast(ras);
+            m_GizmoModelMatrix = mat4_cast(ras);
         }
 
         // else: is using OR nselected > 0 (so draw it)
 
         Rect sceneRect = m_Shared->get3DSceneRect();
 
-        ImGuizmo::SetRect(
-            sceneRect.p1.x,
-            sceneRect.p1.y,
-            dimensions_of(sceneRect).x,
-            dimensions_of(sceneRect).y
-        );
-        ImGuizmo::SetDrawlist(ui::get_panel_draw_list());
-        ImGuizmo::AllowAxisFlip(false);  // user's didn't like this feature in UX sessions
-
-        Mat4 delta;
-        ui::set_gizmo_style_to_osc_standard();
-        bool manipulated = ImGuizmo::Manipulate(
-            value_ptr(m_Shared->getCamera().view_matrix()),
-            value_ptr(m_Shared->getCamera().projection_matrix(aspect_ratio_of(sceneRect))),
-            m_ImGuizmoState.op,
-            m_ImGuizmoState.mode,
-            value_ptr(m_ImGuizmoState.mtx),
-            value_ptr(delta),
-            nullptr,
-            nullptr,
-            nullptr
+        const Mat4 oldModelMatrix = m_GizmoModelMatrix;
+        const auto userManipulation = m_GizmoState.draw(
+            m_GizmoModelMatrix,
+            m_Shared->getCamera().view_matrix(),
+            m_Shared->getCamera().projection_matrix(aspect_ratio_of(sceneRect)),
+            sceneRect
         );
 
-        bool isUsingThisFrame = ImGuizmo::IsUsing();
-        bool wasUsingLastFrame = m_ImGuizmoState.wasUsingLastFrame;
-        m_ImGuizmoState.wasUsingLastFrame = isUsingThisFrame;  // so next frame can know
-
-                                                               // if the user was using the gizmo last frame, and isn't using it this frame,
-                                                               // then they probably just finished a manipulation, which should be snapshotted
-                                                               // for undo/redo support
-        if (wasUsingLastFrame && !isUsingThisFrame)
-        {
+        if (m_GizmoState.was_using() and not m_GizmoState.is_using()) {
+            // the user stopped editing, so save it and re-render
             m_Shared->commitCurrentModelGraph("manipulated selection");
             App::upd().request_redraw();
         }
 
-        // if no manipulation happened this frame, exit early
-        if (!manipulated)
-        {
-            return;
+        if (not userManipulation) {
+            return;  // no user manipulation this frame, exit early
         }
 
-        Vec3 translation;
-        Vec3 rotationDegrees;
-        Vec3 scale;
-        ImGuizmo::DecomposeMatrixToComponents(
-            value_ptr(delta),
-            value_ptr(translation),
-            value_ptr(rotationDegrees),
-            value_ptr(scale)
-        );
-        Eulers rotation = Vec<3, Degrees>{rotationDegrees};
-
-        for (UID id : m_Shared->getCurrentSelection())
-        {
+        for (UID id : m_Shared->getCurrentSelection()) {
             MIObject& el = m_Shared->updModelGraph().updByID(id);
-            switch (m_ImGuizmoState.op) {
-            case ImGuizmo::ROTATE:
-                el.applyRotation(m_Shared->getModelGraph(), rotation, m_ImGuizmoState.mtx[3]);
+            switch (m_GizmoState.operation()) {
+            case ui::GizmoOperation::Rotate:
+                el.applyRotation(m_Shared->getModelGraph(), userManipulation->rotation, m_GizmoModelMatrix[3]);
                 break;
-            case ImGuizmo::TRANSLATE:
-                el.applyTranslation(m_Shared->getModelGraph(), translation);
+            case ui::GizmoOperation::Translate: {
+                // transform local-space position into ground, which is what `applyTransform` expects
+                const Vec3 worldTranslation = transform_point(oldModelMatrix, userManipulation->position);
+                el.applyTranslation(m_Shared->getModelGraph(), worldTranslation);
                 break;
-            case ImGuizmo::SCALE:
-                el.applyScale(m_Shared->getModelGraph(), scale);
+            }
+            case ui::GizmoOperation::Scale:
+                el.applyScale(m_Shared->getModelGraph(), userManipulation->scale);
                 break;
             default:
                 break;
@@ -2179,7 +2153,7 @@ private:
             return m_MaybeHover;
         }
 
-        if (ImGuizmo::IsUsing())
+        if (m_GizmoState.is_using())
         {
             return MeshImporterHover{};
         }
@@ -2198,7 +2172,7 @@ private:
         const bool lcClicked = ui::is_mouse_released_without_dragging(ImGuiMouseButton_Left);
         const bool shiftDown = ui::is_shift_down();
         const bool altDown = ui::is_alt_down();
-        const bool isUsingGizmo = ImGuizmo::IsUsing();
+        const bool isUsingGizmo = m_GizmoState.is_using();
 
         if (!m_MaybeHover && lcClicked && !isUsingGizmo && !shiftDown)
         {
@@ -2264,7 +2238,7 @@ private:
 
         // draw 3D scene (effectively, as an ui::Image)
         m_Shared->drawScene(MIObjects);
-        if (m_Shared->isRenderHovered() && ui::is_mouse_released_without_dragging(ImGuiMouseButton_Right) && !ImGuizmo::IsUsing())
+        if (m_Shared->isRenderHovered() && ui::is_mouse_released_without_dragging(ImGuiMouseButton_Right) && !m_GizmoState.is_using())
         {
             m_MaybeOpenedContextMenu = m_MaybeHover;
             ui::open_popup("##maincontextmenu");
@@ -2460,13 +2434,9 @@ private:
     // (maybe) the next state the host screen should transition to
     std::shared_ptr<MeshImporterUILayer> m_Maybe3DViewerModal;
 
-    // ImGuizmo state
-    struct {
-        bool wasUsingLastFrame = false;
-        Mat4 mtx = identity<Mat4>();
-        ImGuizmo::OPERATION op = ImGuizmo::TRANSLATE;
-        ImGuizmo::MODE mode = ImGuizmo::WORLD;
-    } m_ImGuizmoState;
+    // Gizmo state
+    ui::Gizmo m_GizmoState;
+    Mat4 m_GizmoModelMatrix = identity<Mat4>();
 
     // manager for active modal popups (importer popups, etc.)
     PopupManager m_PopupManager;

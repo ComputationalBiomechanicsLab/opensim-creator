@@ -418,6 +418,13 @@ namespace osc
         const Eulers& newPofEulers
     );
 
+    bool ActionTransformPofV2(
+        UndoableModelStatePair&,
+        const OpenSim::PhysicalOffsetFrame&,
+        const Vec3& newTranslation,
+        const Eulers& newEulers
+    );
+
     bool ActionTransformWrapObject(
         UndoableModelStatePair&,
         const OpenSim::WrapObject&,

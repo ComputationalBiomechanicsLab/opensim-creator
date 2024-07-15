@@ -342,11 +342,10 @@ add_library(oscar STATIC
     UI/IconCache.h
     UI/ImGuiHelpers.cpp
     UI/ImGuiHelpers.h
-    UI/ImGuizmoHelpers.cpp
-    UI/ImGuizmoHelpers.h
     UI/imgui_impl_sdl2.cpp
     UI/imgui_impl_sdl2.h
     UI/MouseCapturingCamera.h
+    UI/oscimgui.cpp
     UI/oscimgui.h
     UI/oscimgui_internal.h
     UI/oscimgui_config.h
@@ -428,7 +427,7 @@ add_library(oscar STATIC
     UI.h
     Utils.h
     Variant.h
-  )
+)
 
 target_include_directories(oscar PUBLIC
 

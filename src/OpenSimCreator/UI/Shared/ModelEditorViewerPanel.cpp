@@ -18,7 +18,6 @@
 #include <oscar/Platform/Log.h>
 #include <oscar/UI/IconCache.h>
 #include <oscar/UI/ImGuiHelpers.h>
-#include <oscar/UI/ImGuizmoHelpers.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/oscimgui_internal.h>
 #include <oscar/UI/Panels/StandardPanelImpl.h>
@@ -116,8 +115,7 @@ namespace
             ModelEditorViewerPanelParameters&,
             ModelEditorViewerPanelState&) final
         {
-            // care: ImGuizmo::isOver can return `true` even if it
-            // isn't being drawn this frame
+            // care: `isUsing` can return `true` even if it isn't being drawn this frame
             return m_Gizmo.isUsing();
         }
 
@@ -191,7 +189,7 @@ namespace
 
             // draw translate/rotate/scale selector
             {
-                ImGuizmo::OPERATION op = m_Gizmo.getOperation();
+                ui::GizmoOperation op = m_Gizmo.getOperation();
                 if (ui::draw_gizmo_op_selector(op, true, true, false))
                 {
                     m_Gizmo.setOperation(op);
@@ -205,7 +203,7 @@ namespace
 
             // draw global/world selector
             {
-                ImGuizmo::MODE mode = m_Gizmo.getMode();
+                ui::GizmoMode mode = m_Gizmo.getMode();
                 if (ui::draw_gizmo_mode_selector(mode))
                 {
                     m_Gizmo.setMode(mode);

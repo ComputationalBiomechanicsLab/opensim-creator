@@ -83,10 +83,10 @@ namespace osc
         }
 
         // constructs a `Qua` from euler angles (pitch, yaw, roll), in radians.
-        constexpr explicit Qua(const Vec<3, T>& euler_angle)
+        constexpr explicit Qua(const Vec<3, T>& euler_angles)
         {
-            Vec<3, T> c = cos(euler_angle * T(0.5));
-            Vec<3, T> s = sin(euler_angle * T(0.5));
+            Vec<3, T> c = cos(euler_angles * T(0.5));
+            Vec<3, T> s = sin(euler_angles * T(0.5));
 
             this->w = c.x * c.y * c.z + s.x * s.y * s.z;
             this->x = s.x * c.y * c.z - c.x * s.y * s.z;
