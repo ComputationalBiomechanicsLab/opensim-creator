@@ -4,6 +4,7 @@
 #include <emscripten.h>
 #endif
 #include <ImGuiColorTextEdit/TextEditor.h>
+#include <lua/lauxlib.h>
 #include <lua/luaconf.h>
 #include <lua/lua.h>
 #include <lua/lcode.h>
@@ -53,7 +54,7 @@ void main()
 
     namespace lua
     {
-        // a Lua state (stack, registry, etc.)
+        // a LUA state (i.e. VM, stack, registry, etc.)
         class State final {
         public:
             State()
@@ -64,8 +65,8 @@ void main()
 
                 // install a C++ exception-based panic handler for the state
                 //
-                // (otherwise, an `exit` may be called in lua, which will crash
-                //  the entire application)
+                // (otherwise, lua will call `exit`, which will crash the entire
+                //  application, rather than using the exception-handling fallback)
                 lua_atpanic(state_, [](lua_State* state) -> int
                 {
                     size_t len = 0;
@@ -112,6 +113,47 @@ void main()
 
             lua_State* state_ = lua_newstate(state_memory_allocator, nullptr);
         };
+        /*
+        // custom `Lua_CFunction` implementation of string reversal
+        int adamlib_reverse(lua_State *L) {
+            size_t len = 0;
+            const char *s = luaL_checklstring(L, 1, &len);
+            luaL_Buffer b;
+            luaL_buffinit(L, &b);
+            while (len--) luaL_addchar(&b, s[len]);
+            luaL_pushresult(&b);
+            return 1;
+        }
+
+        static const luaL_Reg adamlib[] = {
+            {"reverse", adamlib_reverse},
+            {NULL, NULL}
+        };
+
+        void adamlib_createmetatable(lua_State* L)
+        {
+            lua_createtable(L, 0, 1);  // push empty table onto stack
+            lua_pushliteral(L, "");    // push dummy string onto stack (we're setting the metatable for *all* strings)
+            lua_pushvalue(L, -2);      // copy first table on stack and push copy onto stack
+            lua_setmetatable(L, -2);   // pop copied table from stack and set it as metatable for dummy string
+            lua_pop(L, 1);             // pop copied string
+            lua_pushvalue(L, -2);      // push copy of top of stack before calling this function onto the stack
+            lua_setfield(L, -2, "__index");  // set copy of top of stack's `__index` metamethod to the table created here and pop the top of the stack
+            lua_pop(L, 1);                   // pop the table created here
+        }
+
+        // caller does:
+        //
+        // - lua_pushcfunction(state, luaopen_adamlib);
+        // - lua_pushstring(state, name.c_str());
+        // - lua_call(state, 1, 0);
+        void luaopen_adamlib(lua_State* L)
+        {
+            luaL_register(L, "adam", adamlib);
+            createmetatable(L);
+            return 1;
+        }
+        */
 
         // returns a `std::string_view` of some string located at some stack index in
         // a lua state
@@ -140,7 +182,7 @@ void main()
 
         [[maybe_unused]] std::string compile_and_print(CStringView chunk_name, CStringView source_code)
         {
-            // create a blank state (VM)
+            // create a blank state
             lua::State state;
 
             // TODO: create an environment in the state's global variable table
@@ -152,15 +194,14 @@ void main()
                 CStringView name;
                 lua_CFunction function;
             };
-            luaL_openlibs(state);
             constexpr auto standard_library_functions = std::to_array<NamedLuaCFunction>({
                 // see also: `luaL_openlibs` to just open everything
                 {"", luaopen_base},
                 {LUA_STRLIBNAME, luaopen_string},
                 {LUA_TABLIBNAME, luaopen_table},
                 {LUA_MATHLIBNAME, luaopen_math},
-                {LUA_OSLIBNAME, luaopen_os},
-                {LUA_DBLIBNAME, luaopen_debug},
+                // {LUA_OSLIBNAME, luaopen_os},
+                // {LUA_DBLIBNAME, luaopen_debug},
                 // {"package", luaopen_package},  // removed in luau (sandboxing)
                 // {"io", luaopen_io},            // removed in luau (sandboxing)
             });
@@ -205,15 +246,19 @@ void main()
     public:
         HelloTriangleScreen()
         {
+            // setup camera
             const Vec3 viewer_position = {3.0f, 0.0f, 0.0f};
             camera_.set_position(viewer_position);
             camera_.set_direction({-1.0f, 0.0f, 0.0f});
+
+            // setup torus material
             const Color color = Color::blue();
             material_.set_ambient_color(0.2f * color);
             material_.set_diffuse_color(0.5f * color);
             material_.set_specular_color(0.5f * color);
             material_.set_viewer_position(viewer_position);
 
+            // setup ui code editor
             text_editor_.SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
             text_editor_.SetText("return string.reverse('adam', 'kewley')");
         }
@@ -245,6 +290,7 @@ void main()
                 descriptor.set_anti_aliasing_level(App::get().anti_aliasing_level());
                 target_texture_.reformat(descriptor);
             }
+
             update_torus_if_params_changed();
             const auto seconds_since_startup = App::get().frame_delta_since_startup().count();
             const auto transform = identity<Transform>().with_rotation(angle_axis(Radians{seconds_since_startup}, Vec3{0.0f, 1.0f, 0.0f}));
