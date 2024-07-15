@@ -2130,11 +2130,12 @@ private:
             case ui::GizmoOperation::Rotate:
                 el.applyRotation(m_Shared->getModelGraph(), userManipulation->rotation, m_GizmoModelMatrix[3]);
                 break;
-            case ui::GizmoOperation::Translate:
+            case ui::GizmoOperation::Translate: {
                 // transform local-space position into ground, which is what `applyTransform` expects
                 const Vec3 worldTranslation = transform_point(oldModelMatrix, userManipulation->position);
                 el.applyTranslation(m_Shared->getModelGraph(), worldTranslation);
                 break;
+            }
             case ui::GizmoOperation::Scale:
                 el.applyScale(m_Shared->getModelGraph(), userManipulation->scale);
                 break;

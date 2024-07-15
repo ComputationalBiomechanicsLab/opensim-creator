@@ -618,7 +618,6 @@ namespace
                 const SimTK::Rotation R = ToSimTKRotation(deltaEulersInLocalSpace);
                 const auto& M_p = M_ppof1;
                 const auto M_o = parentPOF.getParentFrame().getTransformInGround(getState());
-                const auto M_n = ToSimTKTransform(deltaEulersInLocalSpace, deltaTranslationInGround);
 
                 const SimTK::Rotation X_r = M_p.R() * R;
                 const SimTK::Vec3 X_p = M_p.p() + ToSimTKVec3(deltaTranslationInGround);
@@ -722,7 +721,7 @@ namespace
             return false;
         }
 
-        const auto* downcasted = dynamic_cast<const ConcreteManipulator::AssociatedComponent*>(&selected);
+        const auto* downcasted = dynamic_cast<const typename ConcreteManipulator::AssociatedComponent*>(&selected);
         if (not downcasted) {
             return false;
         }
