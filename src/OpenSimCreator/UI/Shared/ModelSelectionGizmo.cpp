@@ -617,7 +617,6 @@ namespace
             {
                 const SimTK::Rotation R = ToSimTKRotation(deltaEulersInLocalSpace);
                 const auto& M_p = M_ppof1;
-                const auto M_o = parentPOF.getParentFrame().getTransformInGround(getState());
 
                 const SimTK::Rotation X_r = M_p.R() * R;
                 const SimTK::Vec3 X_p = M_p.p() + ToSimTKVec3(deltaTranslationInGround);
