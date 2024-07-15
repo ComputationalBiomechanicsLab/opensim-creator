@@ -7,6 +7,7 @@
 #include <oscar/Utils/EnumHelpers.h>
 #include <oscar/Utils/HashHelpers.h>
 #include <oscar/Utils/SynchronizedValue.h>
+#include <oscar/Utils/TransparentStringViewHasher.h>
 #include <oscar/Variant/Variant.h>
 #include <oscar/Variant/VariantType.h>
 
@@ -98,20 +99,10 @@ R"(# configuration options
         auto end() const { return hashmap_.end(); }
     private:
 
-        // see: ankerl/unordered_dense documentation for heterogeneous lookups
-        struct transparent_string_hash final {
-            using is_transparent = void;
-            using is_avalanching = void;
-
-            [[nodiscard]] auto operator()(std::string_view str) const -> uint64_t {
-                return ankerl::unordered_dense::hash<std::string_view>{}(str);
-            }
-        };
-
         using Storage = ankerl::unordered_dense::map<
             std::string,
             AppSettingsLookupValue,
-            transparent_string_hash,
+            TransparentStringViewHasher,
             std::equal_to<>
         >;
         Storage hashmap_;

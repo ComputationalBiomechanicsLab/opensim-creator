@@ -75,6 +75,7 @@
 #include <oscar/Utils/ObjectRepresentation.h>
 #include <oscar/Utils/Perf.h>
 #include <oscar/Utils/StdVariantHelpers.h>
+#include <oscar/Utils/TransparentStringViewHasher.h>
 #include <oscar/Utils/UID.h>
 
 #include <GL/glew.h>
@@ -523,21 +524,11 @@ namespace
         o << "ShadeElement(name = " << name << ", location = " << se.location << ", shader_type = " << se.shader_type << ", size = " << se.size << ')';
     }
 
-    // see: ankerl/unordered_dense documentation for heterogeneous lookups
-    struct transparent_string_hash final {
-        using is_transparent = void;
-        using is_avalanching = void;
-
-        [[nodiscard]] auto operator()(std::string_view str) const -> uint64_t {
-            return ankerl::unordered_dense::hash<std::string_view>{}(str);
-        }
-    };
-
     template<typename Value>
     using FastStringHashtable = ankerl::unordered_dense::map<
         std::string,
         Value,
-        transparent_string_hash,
+        TransparentStringViewHasher,
         std::equal_to<>
     >;
 }

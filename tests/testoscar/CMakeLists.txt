@@ -96,6 +96,7 @@ add_executable(testoscar
     Utils/TestStringHelpers.cpp
     Utils/TestStringName.cpp
     Utils/TestTemporaryFile.cpp
+    Utils/TestTransparentStringViewHasher.cpp
     Utils/TestTypelist.cpp
 
     Variant/TestVariant.cpp
@@ -104,7 +105,7 @@ add_executable(testoscar
     TestingHelpers.cpp
     TestingHelpers.h
     testoscar.cpp  # entry point
- )
+)
 
 
 configure_file(
