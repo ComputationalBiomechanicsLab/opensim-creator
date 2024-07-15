@@ -89,9 +89,9 @@ namespace
             implOnApplyTranslation(translationInGround);
         }
 
-        void onApplyRotation(const Eulers& eulersInGround)
+        void onApplyRotation(const Eulers& eulersInLocalSpace)
         {
-            implOnApplyRotation(eulersInGround);
+            implOnApplyRotation(eulersInLocalSpace);
         }
 
         void onSave()
@@ -171,13 +171,13 @@ namespace
         }
 
         // perform runtime lookup for `AssociatedComponent` and forward into concrete implementation
-        void implOnApplyRotation(const Eulers& eulersInGround) final
+        void implOnApplyRotation(const Eulers& eulersInLocalSpace) final
         {
             const AssociatedComponent* maybeSelected = findSelection();
             if (not maybeSelected) {
                 return;  // selection of that type does not exist in the model
             }
-            implOnApplyRotation(*maybeSelected, eulersInGround);
+            implOnApplyRotation(*maybeSelected, eulersInLocalSpace);
         }
 
         void implOnSave() final
@@ -199,7 +199,7 @@ namespace
         // inheritors must implement concrete manipulation methods
         virtual Mat4 implGetCurrentTransformInGround(const AssociatedComponent&) const = 0;
         virtual void implOnApplyTranslation(const AssociatedComponent&, const Vec3& translationInGround) = 0;
-        virtual void implOnApplyRotation(const AssociatedComponent&, [[maybe_unused]] const Eulers& eulersInGround) {}
+        virtual void implOnApplyRotation(const AssociatedComponent&, [[maybe_unused]] const Eulers& eulersInLocalSpace) {}
 
         std::shared_ptr<UndoableModelStatePair> m_Model;
         OpenSim::ComponentPath m_ComponentAbsPath;
@@ -363,12 +363,12 @@ namespace
 
         void implOnApplyRotation(
             const OpenSim::PhysicalOffsetFrame& pof,
-            const Eulers& eulersInGround) final
+            const Eulers& eulersInLocalSpace) final
         {
             const OpenSim::Frame& parent = pof.getParentFrame();
             const SimTK::State& state = getState();
 
-            const Quat deltaRotationInGround = to_worldspace_rotation_quat(m_IsChildFrameOfJoint ? -eulersInGround : eulersInGround);
+            const Quat deltaRotationInGround = to_worldspace_rotation_quat(m_IsChildFrameOfJoint ? -eulersInLocalSpace : eulersInLocalSpace);
             const Quat oldRotationInGround = ToQuat(pof.getRotationInGround(state));
             const Quat parentRotationInGround = ToQuat(parent.getRotationInGround(state));
             const Quat newRotationInGround = normalize(deltaRotationInGround * oldRotationInGround);
@@ -428,12 +428,12 @@ namespace
 
         void implOnApplyRotation(
             const OpenSim::WrapObject& wrapObj,
-            const Eulers& eulersInGround) final
+            const Eulers& eulersInLocalSpace) final
         {
             const OpenSim::Frame& parent = wrapObj.getFrame();
             const SimTK::State& state = getState();
 
-            const Quat deltaRotationInGround = to_worldspace_rotation_quat(eulersInGround);
+            const Quat deltaRotationInGround = to_worldspace_rotation_quat(eulersInLocalSpace);
             const Quat oldRotationInGround = ToQuat(parent.getTransformInGround(state).R() * wrapObj.getTransform().R());
             const Quat newRotationInGround = normalize(deltaRotationInGround * oldRotationInGround);
 
@@ -555,6 +555,19 @@ namespace
 
         void implOnApplyTranslation(const OpenSim::Joint& joint, const Vec3& deltaTranslationInGround) final
         {
+            applyTransform(joint, deltaTranslationInGround, Eulers{});
+        }
+
+        void implOnApplyRotation([[maybe_unused]] const OpenSim::Joint& joint, [[maybe_unused]] const Eulers& deltaEulersInLocalSpace) final
+        {
+            applyTransform(joint, Vec3{}, deltaEulersInLocalSpace);
+        }
+
+        void applyTransform(
+            const OpenSim::Joint& joint,
+            const Vec3& deltaTranslationInGround,
+            const Eulers& deltaEulersInLocalSpace)
+        {
             // in order to move a joint center without every child also moving around, we need to:
             //
             // STEP 1) move the parent offset frame (as normal)
@@ -577,17 +590,18 @@ namespace
             //
             //     vjp = M_ppof1 * M_j * M_cpof1^-1 * vcp
             //
-            // now, our goal is to apply STEP 1 (M_ppof1 --> M_ppof2) without moving children defined in the
-            // parent of the given offset frame (e.g. `vcp`) and we could do that by calculating `M_cpof2`:
+            // now, our goal is to apply STEP 1 (M_ppof1 --> M_ppof2) and calculate a new `M_cpof2` such that
+            // quantities expressed in a child body (e.g. `vcp`) do not move in the scene. I.e.:
             //
             //     vjp = M_ppof1 * M_j * M_cpof1^-1 * vcp = M_ppof2 * M_j * M_cpof2^-1 * vcp
             //
             // simplifying, and dropping the pretext of using the transforms to transform a particular point:
             //
             //     M_ppof1 * M_j * M_cpof1^-1 = M_ppof2 * M_j * M_cpof2^-1
-            //     M_j^1 * M_ppof2^-1 * M_ppof1 * M_j * M_cpof1^-1 = M_cpof2^-1
-            //
-            //     M_cpof2 = (M_j^1 * M_ppof2^-1 * M_ppof1 * M_j * M_cpof1^-1)^-1
+            //     M_ppof2^-1 * M_ppof1 * M_j * M_cpof1^-1 = M_j * M_cpof2^-1
+            //     M_j^-1 * M_ppof2^-1 * M_ppof1 * M_j * M_cpof1^-1 = M_cpof2^-1
+            //     M_cpof2^-1 = M_j^-1 * M_ppof2^-1 * M_ppof1 * M_j * M_cpof1^-1
+            //     M_cpof2 = (M_j^-1 * M_ppof2^-1 * M_ppof1 * M_j * M_cpof1^-1)^-1;
             //
             // the code below essentially collects all of this information up to figure out `M_cpof2` and stuff
             // it into the child `OpenSim::PhysicalOffsetFrame`
@@ -601,16 +615,22 @@ namespace
             const auto M_cpof1 = childPOF.findTransformBetween(getState(), childPOF.getParentFrame());
 
             // STEP 1) move the parent offset frame (as normal)
-            SimTK::Rotation parentFrameParentToGroundRotation = parentPOF.getParentFrame().getRotationInGround(getState());
-            const SimTK::InverseRotation& groundToParentFrameParentRotation = parentFrameParentToGroundRotation.invert();
-            const SimTK::Vec3 deltaTranslationInParent = groundToParentFrameParentRotation * ToSimTKVec3(deltaTranslationInGround);
-            const SimTK::Vec3& eulersInParentParent = parentPOF.get_orientation();
-            ActionTransformPof(
-                getUndoableModel(),
-                parentPOF,
-                ToVec3(deltaTranslationInParent),
-                ToVec3(eulersInParentParent)
-            );
+            {
+                const SimTK::Rotation R = ToSimTKRotation(deltaEulersInLocalSpace);
+                const auto& M_p = M_ppof1;
+                const auto M_o = parentPOF.getParentFrame().getTransformInGround(getState());
+                const auto M_n = ToSimTKTransform(deltaEulersInLocalSpace, deltaTranslationInGround);
+
+                const SimTK::Rotation X_r = M_p.R() * R;
+                const SimTK::Vec3 X_p = M_p.p() + ToSimTKVec3(deltaTranslationInGround);
+                const SimTK::Transform X{X_r, X_p};
+                ActionTransformPof(
+                    getUndoableModel(),
+                    parentPOF,
+                    ToVec3(X.p() - M_ppof1.p()),
+                    ToVec3(X.R().convertRotationToBodyFixedXYZ())
+                );
+            }
 
             // STEP 2) figure out what transform the child offset frame would need to have in
             //         order for its parent (confusing, eh) to not move
@@ -621,46 +641,14 @@ namespace
             // caclulate `M_cpof2` (i.e. the desired new child transform)
             const SimTK::Transform M_cpof2 = (M_j.invert() * M_ppof2.invert() * M_ppof1 * M_j * M_cpof1.invert()).invert();
 
-            // convert it into a "delta" that can be "added" to the offset frame
-            const SimTK::Transform M_cpofdelta = M_cpof1.invert() * M_cpof2;
-
             // decompse `M_cpof2` into the child `OpenSim::PhysicalOffsetFrame`'s properties
-            ActionTransformPof(
+            ActionTransformPofV2(
                 getUndoableModel(),
                 childPOF,
-                ToVec3(M_cpofdelta.p()),
-                ToVec3(M_cpofdelta.R().convertRotationToBodyFixedXYZ())
+                ToVec3(M_cpof2.p()),
+                ToVec3(M_cpof2.R().convertRotationToBodyFixedXYZ())
             );
         }
-
-        void implOnApplyRotation([[maybe_unused]] const OpenSim::Joint& joint, [[maybe_unused]] const Eulers& deltaEulerRadiansInGround) final
-        {
-            // TODO: translate both the parent frame and the child frame
-            //
-            // - the parent frame should be transformed straightforwardly
-            // - the child frame should be transformed in such a way that the parent frame's transform has
-            //   no effect on the downstream components
-
-            /*
-            const OpenSim::Frame& parent = pof.getParentFrame();
-            const SimTK::State& state = getState();
-
-            const Quat deltaRotationInGround = to_worldspace_rotation_quat(m_IsChildFrameOfJoint ? -eulersInGround : eulersInGround);
-            const Quat oldRotationInGround = ToQuat(pof.getRotationInGround(state));
-            const Quat parentRotationInGround = ToQuat(parent.getRotationInGround(state));
-            const Quat newRotationInGround = normalize(deltaRotationInGround * oldRotationInGround);
-            const Quat newRotationInParent = inverse(parentRotationInGround) * newRotationInGround;
-
-            ActionTransformPof(
-                getUndoableModel(),
-                pof,
-                Vec3{},  // no translation delta
-                extract_eulers_xyz(newRotationInParent)
-            );
-            */
-        }
-
-        // TODO: apply transform (rotation + translation) in one step
     };
 
     // a compile-time `Typelist` containing all concrete implementations of
@@ -754,21 +742,21 @@ namespace
 
         // decompose the overall transformation into component parts
         Vec3 translationInGround{};
-        Vec3 rotationInGroundDegrees{};
-        Vec3 scaleInGround{};
+        Vec3 rotationInLocalSpaceDegrees{};
+        Vec3 scaleInLocalSpace{};
         ImGuizmo::DecomposeMatrixToComponents(
             value_ptr(deltaInGround),
             value_ptr(translationInGround),
-            value_ptr(rotationInGroundDegrees),
-            value_ptr(scaleInGround)
+            value_ptr(rotationInLocalSpaceDegrees),
+            value_ptr(scaleInLocalSpace)
         );
-        Eulers rotationInGround = Vec<3, Degrees>(rotationInGroundDegrees);
+        Eulers rotationInLocalSpace = Vec<3, Degrees>(rotationInLocalSpaceDegrees);
 
         if (st.operation == ImGuizmo::TRANSLATE) {
             manipulator.onApplyTranslation(translationInGround);
         }
         else if (st.operation == ImGuizmo::ROTATE) {
-            manipulator.onApplyRotation(rotationInGround);
+            manipulator.onApplyRotation(rotationInLocalSpace);
         }
     }
 

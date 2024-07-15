@@ -55,9 +55,19 @@ SimTK::Transform osc::ToSimTKTransform(const Transform& t)
     return SimTK::Transform{ToSimTKRotation(t.rotation), ToSimTKVec3(t.position)};
 }
 
+SimTK::Transform osc::ToSimTKTransform(const Eulers& eulers, const Vec3& translation)
+{
+    return SimTK::Transform{ToSimTKRotation(eulers), ToSimTKVec3(translation)};
+}
+
 SimTK::Rotation osc::ToSimTKRotation(const Quat& q)
 {
     return SimTK::Rotation{ToSimTKMat3(mat3_cast(q))};
+}
+
+SimTK::Rotation osc::ToSimTKRotation(const Eulers& eulers)
+{
+    return ToSimTKRotation(to_worldspace_rotation_quat(eulers));
 }
 
 SimTK::Vec3 osc::ToSimTKRGBVec3(const Color& color)

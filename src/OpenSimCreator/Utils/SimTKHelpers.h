@@ -25,7 +25,9 @@ namespace osc
     SimTK::Mat33 ToSimTKMat3(const Mat3&);
     SimTK::Inertia ToSimTKInertia(const Vec3&);
     SimTK::Transform ToSimTKTransform(const Transform&);
+    SimTK::Transform ToSimTKTransform(const Eulers&, const Vec3&);
     SimTK::Rotation ToSimTKRotation(const Quat&);
+    SimTK::Rotation ToSimTKRotation(const Eulers&);
     SimTK::Vec3 ToSimTKRGBVec3(const Color&);
 
     // converters: from SimTK types to osc

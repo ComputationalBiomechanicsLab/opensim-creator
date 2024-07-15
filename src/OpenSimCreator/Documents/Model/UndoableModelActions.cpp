@@ -1969,6 +1969,42 @@ bool osc::ActionTransformPof(
     return false;
 }
 
+bool osc::ActionTransformPofV2(
+    UndoableModelStatePair& model,
+    const OpenSim::PhysicalOffsetFrame& pof,
+    const Vec3& newTranslation,
+    const Eulers& newEulers)
+{
+    const OpenSim::ComponentPath pofPath = GetAbsolutePath(pof);
+    const UID oldVersion = model.getModelVersion();
+    try
+    {
+        OpenSim::Model& mutModel = model.updModel();
+
+        auto* const mutPof = FindComponentMut<OpenSim::PhysicalOffsetFrame>(mutModel, pofPath);
+        if (!mutPof)
+        {
+            model.setModelVersion(oldVersion);  // the provided path isn't a station
+            return false;
+        }
+
+        // perform mutation
+        mutPof->set_translation(ToSimTKVec3(newTranslation));
+        mutPof->set_orientation(ToSimTKVec3(newEulers));
+        InitializeModel(mutModel);
+        InitializeState(mutModel);
+
+        return true;
+    }
+    catch (const std::exception& ex)
+    {
+        log_error("error detected while trying to transform a POF: %s", ex.what());
+        model.rollback();
+        return false;
+    }
+    return false;
+}
+
 bool osc::ActionTransformWrapObject(
     UndoableModelStatePair& model,
     const OpenSim::WrapObject& wo,
