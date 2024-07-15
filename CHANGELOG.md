@@ -5,6 +5,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- Selecting an `OpenSim::Joint` that has `OpenSim::PhysicalOffsetFrame`s for both its parent
+  and child frames now shows a 3D manipulation gizmo that lets you move the joint center
+  without moving anything else in the model (#159)
 - The UI now remembers which panels (e.g. Log, Properties) you had open between boots (#17)
 - The mesh warping tab now has a `Visualization Options` menu, which lets users toggle a few
   basic visualization options (e.g. grid lines, #892)
