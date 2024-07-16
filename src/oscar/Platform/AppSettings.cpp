@@ -7,7 +7,7 @@
 #include <oscar/Utils/EnumHelpers.h>
 #include <oscar/Utils/HashHelpers.h>
 #include <oscar/Utils/SynchronizedValue.h>
-#include <oscar/Utils/TransparentStringViewHasher.h>
+#include <oscar/Utils/TransparentStringHasher.h>
 #include <oscar/Variant/Variant.h>
 #include <oscar/Variant/VariantType.h>
 
@@ -102,7 +102,7 @@ R"(# configuration options
         using Storage = ankerl::unordered_dense::map<
             std::string,
             AppSettingsLookupValue,
-            TransparentStringViewHasher,
+            TransparentStringHasher,
             std::equal_to<>
         >;
         Storage hashmap_;

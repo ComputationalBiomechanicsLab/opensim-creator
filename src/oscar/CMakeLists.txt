@@ -402,7 +402,7 @@ add_library(oscar STATIC
     Utils/TemporaryFile.cpp
     Utils/TemporaryFile.h
     Utils/TemporaryFileParameters.h
-    Utils/TransparentStringViewHasher.h
+    Utils/TransparentStringHasher.h
     Utils/Typelist.h
     Utils/UID.cpp
     Utils/UID.h

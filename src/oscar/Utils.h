@@ -37,7 +37,7 @@
 #include <oscar/Utils/SynchronizedValueGuard.h>
 #include <oscar/Utils/TemporaryFile.h>
 #include <oscar/Utils/TemporaryFileParameters.h>
-#include <oscar/Utils/TransparentStringViewHasher.h>
+#include <oscar/Utils/TransparentStringHasher.h>
 #include <oscar/Utils/Typelist.h>
 #include <oscar/Utils/UID.h>
 #include <oscar/Utils/UndoRedo.h>

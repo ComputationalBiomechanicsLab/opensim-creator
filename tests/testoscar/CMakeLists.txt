@@ -96,7 +96,7 @@ add_executable(testoscar
     Utils/TestStringHelpers.cpp
     Utils/TestStringName.cpp
     Utils/TestTemporaryFile.cpp
-    Utils/TestTransparentStringViewHasher.cpp
+    Utils/TestTransparentStringHasher.cpp
     Utils/TestTypelist.cpp
 
     Variant/TestVariant.cpp

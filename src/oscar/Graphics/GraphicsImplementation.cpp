@@ -75,7 +75,7 @@
 #include <oscar/Utils/ObjectRepresentation.h>
 #include <oscar/Utils/Perf.h>
 #include <oscar/Utils/StdVariantHelpers.h>
-#include <oscar/Utils/TransparentStringViewHasher.h>
+#include <oscar/Utils/TransparentStringHasher.h>
 #include <oscar/Utils/UID.h>
 
 #include <GL/glew.h>
@@ -528,7 +528,7 @@ namespace
     using FastStringHashtable = ankerl::unordered_dense::map<
         std::string,
         Value,
-        TransparentStringViewHasher,
+        TransparentStringHasher,
         std::equal_to<>
     >;
 }

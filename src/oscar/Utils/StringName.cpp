@@ -3,7 +3,7 @@
 #include <ankerl/unordered_dense.h>
 
 #include <oscar/Utils/SynchronizedValue.h>
-#include <oscar/Utils/TransparentStringViewHasher.h>
+#include <oscar/Utils/TransparentStringHasher.h>
 
 #include <concepts>
 #include <functional>
@@ -42,18 +42,22 @@ namespace
         {
             return *ptr_;
         }
-
-        operator std::string_view () const
-        {
-            return ptr_->value();
-        }
     private:
         std::unique_ptr<StringNameData> ptr_;
     };
 
+    struct TransparentHasher : public TransparentStringHasher {
+        using TransparentStringHasher::operator();
+
+        size_t operator()(const StringNameDataPtr& ptr) const noexcept
+        {
+            return ptr->hash();
+        }
+    };
+
     using StringNameLookup = ankerl::unordered_dense::set<
         StringNameDataPtr,
-        TransparentStringViewHasher,
+        TransparentHasher,
         std::equal_to<>
     >;
 
