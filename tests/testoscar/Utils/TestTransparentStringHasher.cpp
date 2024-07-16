@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <array>
 #include <functional>
+#include <ranges>
 #include <string>
 #include <string_view>
 
@@ -53,6 +54,6 @@ TEST(TransparentStringHasher, produces_same_hash_for_all_of_OSCs_string_types)
             TransparentStringHasher{}(std::string{str}),
             TransparentStringHasher{}(StringName{str}),
         });
-        ASSERT_TRUE(rgs::equal_range(hashes, hashes.front()));
+        ASSERT_TRUE(rgs::adjacent_find(hashes, rgs::not_equal_to{}) == hashes.end());
     }
 }
