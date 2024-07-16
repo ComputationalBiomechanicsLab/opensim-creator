@@ -15,11 +15,6 @@ set(
     "enable/disable building the documentation (requires that sphinx-build is available on the PATH)"
 )
 set(
-    OSC_BUILD_BENCHMARKS ON
-    CACHE BOOL
-    "enable/disable building the benchmark suite (handy for development)"
-)
-set(
     OSC_EMSCRIPTEN OFF
     CACHE BOOL
     "enable special build parameters for emscripten (emsdk) - don't try this unless you know what you're doing ;)"
@@ -67,8 +62,4 @@ add_subdirectory(tests)
 
 if(${OSC_BUILD_DOCS})
     add_subdirectory(docs)
-endif()
-
-if(${OSC_BUILD_BENCHMARKS})
-    add_subdirectory(benchmarks)
 endif()
