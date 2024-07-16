@@ -30,7 +30,7 @@ class BuildConfiguration:
     def __init__(
             self,
             *,
-            base_build_type="RelWithDebInfo",
+            base_build_type="Release",
             build_dir=os.curdir,
             build_concurrency=multiprocessing.cpu_count(),
             build_target="package",
