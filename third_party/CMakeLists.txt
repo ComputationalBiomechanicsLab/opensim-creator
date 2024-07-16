@@ -4,7 +4,6 @@ project(osc-dependencies)
 # -------------- gather user-facing build cache vars ---------------- #
 
 set(OSCDEPS_GET_GOOGLETEST ON CACHE BOOL "enable getting googletest")
-set(OSCDEPS_GET_BENCHMARK ON CACHE BOOL "enable getting benchmark")
 set(OSCDEPS_GET_LUNASVG ON CACHE BOOL "enable getting lunasvg")
 set(OSCDEPS_GET_SDL ON CACHE BOOL "enable getting SDL")
 set(OSCDEPS_GET_TOMLPLUSPLUS ON CACHE BOOL "enable gettting tomlplusplus")
@@ -57,19 +56,6 @@ if(${OSCDEPS_GET_GOOGLETEST})
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
             -DBUILD_GMOCK:BOOL=OFF
             -Dgtest_force_shared_crt:BOOL=ON  # osc uses a shared runtime lib
-    )
-endif()
-
-if(${OSCDEPS_GET_BENCHMARK})
-    ExternalProject_Add(benchmark
-        DEPENDS googletest
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/benchmark
-        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
-        CMAKE_CACHE_ARGS
-            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
-            -DGOOGLETEST_PATH:STRING=${CMAKE_CURRENT_SOURCE_DIR}/googletest
-            -DBENCHMARK_ENABLE_TESTING:BOOL=OFF
-            -DBENCHMARK_INSTALL_DOCS:BOOL=OFF
     )
 endif()
 
