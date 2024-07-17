@@ -156,7 +156,6 @@ std::optional<ui::GizmoTransform> osc::ui::Gizmo::draw(
     ImGuizmo::AllowAxisFlip(false);  // user's didn't like this feature in UX sessions
 
     // use rotation from the parent, translation from station
-    Mat4 old_model_matrix = model_matrix;
     Mat4 delta_matrix;
 
     // ensure style matches OSC requirements
@@ -170,6 +169,7 @@ std::optional<ui::GizmoTransform> osc::ui::Gizmo::draw(
         style.ScaleLineCircleSize = 8.0f;
     }
 
+    const Vec3 original_translation = model_matrix[3];
     const bool gizmo_was_manipulated_by_user = ImGuizmo::Manipulate(
         value_ptr(view_matrix),
         value_ptr(projection_matrix),
@@ -187,33 +187,24 @@ std::optional<ui::GizmoTransform> osc::ui::Gizmo::draw(
     }
     // else: figure out the local-space transform
 
-    // decompose the overall transformation into component parts
-    //
-    // note: ImGuizmo returns:
-    //
-    // - scale in model-space
-    // - rotation in model-space
-    // - translation in world-space (!!)
+    // decompose the additional transformation into component parts
     Vec3 world_translation{};
-    Vec3 local_rotation_degrees{};
-    Vec3 local_scale{};
+    Vec3 world_rotation_in_degrees{};
+    Vec3 world_scale{};
     ImGuizmo::DecomposeMatrixToComponents(
         value_ptr(delta_matrix),
         value_ptr(world_translation),
-        value_ptr(local_rotation_degrees),
-        value_ptr(local_scale)
+        value_ptr(world_rotation_in_degrees),
+        value_ptr(world_scale)
     );
-    Eulers local_rotation = Vec<3, Degrees>(local_rotation_degrees);
+    const Eulers world_eulers = Vec<3, Degrees>(world_rotation_in_degrees);
 
-    return GizmoTransform{
-        .scale = local_scale,
-
-        // convert the euler angles to a quaternion rotation
-        .rotation = local_rotation,
-
-        // put the rotation into model-space
-        .position = transform_point(inverse(old_model_matrix), world_translation),
+    const GizmoTransform rv = {
+        .scale = world_scale,
+        .rotation = world_eulers,
+        .position = world_translation,
     };
+    return rv;
 }
 
 bool osc::ui::Gizmo::is_using() const

@@ -834,7 +834,10 @@ namespace osc::ui
         ImGui::ShowDemoWindow();
     }
 
-    // a single user-enacted manipulation performed with a `Gizmo`
+    // a the "difference" added by a user-enacted manipulation with a `Gizmo`
+    //
+    // this can be left-multiplied by the original model matrix to apply the
+    // user's transformation
     struct GizmoTransform final {
         Vec3 scale = {1.0f, 1.0f, 1.0f};
         Eulers rotation = {};
@@ -860,13 +863,16 @@ namespace osc::ui
     class Gizmo final {
     public:
 
-        // if the user manipulated the gizmo, returns a model-space transform based on what the
-        // user did in the UI
+        // if the user manipulated the gizmo, updates `model_matrix` to match the
+        // post-manipulation transform and returns a world-space transform that
+        // represents the "difference" added by the user's manipulation. I.e.:
         //
-        // i.e. the transform returned by this function (T) is defined in model-space and can be
-        //      right-multiplied by `model_matrix` to produce a new model-to-world transform:
+        //     transform_returned * model_matrix_before = model_matrix_after
         //
-        //          new_model_matrix = model_matrix * to_mat4(T)
+        // note: a user-enacted rotation/scale may not happen at the origin, so if
+        //       you're thinking "oh I'm only handling rotation/scaling, so I'll
+        //       ignore the translational part of the transform" then you're in
+        //       for a nasty surprise: T(origin)*R*S*T(-origin)
         std::optional<GizmoTransform> draw(
             Mat4& model_matrix,  // edited in-place
             const Mat4& view_matrix,

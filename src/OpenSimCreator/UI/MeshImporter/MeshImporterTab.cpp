@@ -203,7 +203,7 @@ public:
             updateFromImGuiKeyboardState();
         }
 
-        if (!m_Maybe3DViewerModal && m_Shared->isRenderHovered() && !m_GizmoState.is_using())
+        if (!m_Maybe3DViewerModal && m_Shared->isRenderHovered() && !m_Gizmo.is_using())
         {
             ui::update_polar_camera_from_mouse_inputs(m_Shared->updCamera(), m_Shared->get3DSceneDims());
         }
@@ -828,7 +828,7 @@ private:
             tryAddingStationAtMousePosToHoveredElement();
             return true;
         }
-        else if (m_GizmoState.handle_keyboard_inputs())
+        else if (m_Gizmo.handle_keyboard_inputs())
         {
             return true;
         }
@@ -1826,9 +1826,9 @@ private:
         ui::same_line();
 
         {
-            ui::GizmoOperation op = m_GizmoState.operation();
+            ui::GizmoOperation op = m_Gizmo.operation();
             if (ui::draw_gizmo_op_selector(op)) {
-                m_GizmoState.set_operation(op);
+                m_Gizmo.set_operation(op);
             }
         }
 
@@ -1838,9 +1838,9 @@ private:
 
         // local/global dropdown
         {
-            ui::GizmoMode mode = m_GizmoState.mode();
+            ui::GizmoMode mode = m_Gizmo.mode();
             if (ui::draw_gizmo_mode_selector(mode)) {
-                m_GizmoState.set_mode(mode);
+                m_Gizmo.set_mode(mode);
             }
         }
         ui::same_line();
@@ -2067,7 +2067,7 @@ private:
         //
         // this is so that we can at least *show* the manipulation axes, and
         // because the user might start manipulating during this frame
-        if (not m_GizmoState.is_using()) {
+        if (not m_Gizmo.is_using()) {
             auto it = m_Shared->getCurrentSelection().begin();
             auto end = m_Shared->getCurrentSelection().end();
 
@@ -2107,14 +2107,14 @@ private:
         Rect sceneRect = m_Shared->get3DSceneRect();
 
         const Mat4 oldModelMatrix = m_GizmoModelMatrix;
-        const auto userManipulation = m_GizmoState.draw(
+        const auto userManipulation = m_Gizmo.draw(
             m_GizmoModelMatrix,
             m_Shared->getCamera().view_matrix(),
             m_Shared->getCamera().projection_matrix(aspect_ratio_of(sceneRect)),
             sceneRect
         );
 
-        if (m_GizmoState.was_using() and not m_GizmoState.is_using()) {
+        if (m_Gizmo.was_using() and not m_Gizmo.is_using()) {
             // the user stopped editing, so save it and re-render
             m_Shared->commitCurrentModelGraph("manipulated selection");
             App::upd().request_redraw();
@@ -2126,14 +2126,12 @@ private:
 
         for (UID id : m_Shared->getCurrentSelection()) {
             MIObject& el = m_Shared->updModelGraph().updByID(id);
-            switch (m_GizmoState.operation()) {
+            switch (m_Gizmo.operation()) {
             case ui::GizmoOperation::Rotate:
                 el.applyRotation(m_Shared->getModelGraph(), userManipulation->rotation, m_GizmoModelMatrix[3]);
                 break;
             case ui::GizmoOperation::Translate: {
-                // transform local-space position into ground, which is what `applyTransform` expects
-                const Vec3 worldTranslation = transform_point(oldModelMatrix, userManipulation->position);
-                el.applyTranslation(m_Shared->getModelGraph(), worldTranslation);
+                el.applyTranslation(m_Shared->getModelGraph(), userManipulation->position);
                 break;
             }
             case ui::GizmoOperation::Scale:
@@ -2153,7 +2151,7 @@ private:
             return m_MaybeHover;
         }
 
-        if (m_GizmoState.is_using())
+        if (m_Gizmo.is_using())
         {
             return MeshImporterHover{};
         }
@@ -2172,7 +2170,7 @@ private:
         const bool lcClicked = ui::is_mouse_released_without_dragging(ImGuiMouseButton_Left);
         const bool shiftDown = ui::is_shift_down();
         const bool altDown = ui::is_alt_down();
-        const bool isUsingGizmo = m_GizmoState.is_using();
+        const bool isUsingGizmo = m_Gizmo.is_using();
 
         if (!m_MaybeHover && lcClicked && !isUsingGizmo && !shiftDown)
         {
@@ -2238,7 +2236,7 @@ private:
 
         // draw 3D scene (effectively, as an ui::Image)
         m_Shared->drawScene(MIObjects);
-        if (m_Shared->isRenderHovered() && ui::is_mouse_released_without_dragging(ImGuiMouseButton_Right) && !m_GizmoState.is_using())
+        if (m_Shared->isRenderHovered() && ui::is_mouse_released_without_dragging(ImGuiMouseButton_Right) && !m_Gizmo.is_using())
         {
             m_MaybeOpenedContextMenu = m_MaybeHover;
             ui::open_popup("##maincontextmenu");
@@ -2435,7 +2433,7 @@ private:
     std::shared_ptr<MeshImporterUILayer> m_Maybe3DViewerModal;
 
     // Gizmo state
-    ui::Gizmo m_GizmoState;
+    ui::Gizmo m_Gizmo;
     Mat4 m_GizmoModelMatrix = identity<Mat4>();
 
     // manager for active modal popups (importer popups, etc.)

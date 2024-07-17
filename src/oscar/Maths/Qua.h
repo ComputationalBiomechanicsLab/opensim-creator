@@ -1,6 +1,7 @@
 #pragma once
 
 #include <oscar/Maths/CommonFunctions.h>
+#include <oscar/Maths/Eulers.h>
 #include <oscar/Maths/GeometricFunctions.h>
 #include <oscar/Maths/TrigonometricFunctions.h>
 #include <oscar/Maths/Mat.h>
@@ -83,7 +84,7 @@ namespace osc
         }
 
         // constructs a `Qua` from euler angles (pitch, yaw, roll), in radians.
-        constexpr explicit Qua(const Vec<3, T>& euler_angles)
+        explicit Qua(const Vec<3, T>& euler_angles)
         {
             Vec<3, T> c = cos(euler_angles * T(0.5));
             Vec<3, T> s = sin(euler_angles * T(0.5));
@@ -93,6 +94,11 @@ namespace osc
             this->y = c.x * s.y * c.z + s.x * c.y * s.z;
             this->z = c.x * c.y * s.z - s.x * s.y * c.z;
         }
+
+        // constructs a `Qua` from euler angles
+        explicit Qua(const Eulers& euler_angles) :
+            Qua(Vec3{euler_angles.x.count(), euler_angles.y.count(), euler_angles.z.count()})
+        {}
 
         // constructs a `Qua` by decomposing an orthogonal matrix
         explicit Qua(const Mat<3, 3, T>& m)
