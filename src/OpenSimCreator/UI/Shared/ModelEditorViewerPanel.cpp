@@ -188,13 +188,8 @@ namespace
             ui::same_line();
 
             // draw translate/rotate/scale selector
-            {
-                ui::GizmoOperation op = m_Gizmo.getOperation();
-                if (ui::draw_gizmo_op_selector(op, true, true, false))
-                {
-                    m_Gizmo.setOperation(op);
-                    edited = true;
-                }
+            if (ui::draw_gizmo_op_selector(m_Gizmo, true, true, false)) {
+                edited = true;
             }
 
             ui::push_style_var(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
@@ -202,13 +197,8 @@ namespace
             ui::pop_style_var();
 
             // draw global/world selector
-            {
-                ui::GizmoMode mode = m_Gizmo.getMode();
-                if (ui::draw_gizmo_mode_selector(mode))
-                {
-                    m_Gizmo.setMode(mode);
-                    edited = true;
-                }
+            if (ui::draw_gizmo_mode_selector(m_Gizmo)) {
+                edited = true;
             }
 
             return edited;

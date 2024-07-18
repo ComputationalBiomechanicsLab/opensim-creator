@@ -31,6 +31,8 @@ namespace osc
         ui::GizmoMode getMode() { return m_Gizmo.mode(); }
         void setMode(ui::GizmoMode mode) { m_Gizmo.set_mode(mode); }
 
+        operator ui::Gizmo& () { return m_Gizmo; }
+
     private:
         std::shared_ptr<UndoableModelStatePair> m_Model;
         ui::Gizmo m_Gizmo;

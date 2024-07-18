@@ -834,16 +834,6 @@ namespace osc::ui
         ImGui::ShowDemoWindow();
     }
 
-    // a the "difference" added by a user-enacted manipulation with a `Gizmo`
-    //
-    // this can be left-multiplied by the original model matrix to apply the
-    // user's transformation
-    struct GizmoTransform final {
-        Vec3 scale = {1.0f, 1.0f, 1.0f};
-        EulerAngles rotation = {};
-        Vec3 position = {};
-    };
-
     // an operation that a ui `Gizmo` shall perform
     enum class GizmoOperation {
         Translate,
@@ -873,7 +863,7 @@ namespace osc::ui
         //       you're thinking "oh I'm only handling rotation/scaling, so I'll
         //       ignore the translational part of the transform" then you're in
         //       for a nasty surprise: T(origin)*R*S*T(-origin)
-        std::optional<GizmoTransform> draw(
+        std::optional<Transform> draw(
             Mat4& model_matrix,  // edited in-place
             const Mat4& view_matrix,
             const Mat4& projection_matrix,
@@ -897,8 +887,20 @@ namespace osc::ui
     };
 
     bool draw_gizmo_mode_selector(
+        Gizmo&
+    );
+
+    bool draw_gizmo_mode_selector(
         GizmoMode&
     );
+
+    bool draw_gizmo_op_selector(
+        Gizmo&,
+        bool can_translate = true,
+        bool can_rotate = true,
+        bool can_scale = true
+    );
+
     bool draw_gizmo_op_selector(
         GizmoOperation&,
         bool can_translate = true,

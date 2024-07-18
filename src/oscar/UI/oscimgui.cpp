@@ -46,6 +46,16 @@ namespace
     }
 }
 
+bool osc::ui::draw_gizmo_mode_selector(Gizmo& gizmo)
+{
+    GizmoMode mode = gizmo.mode();
+    if (draw_gizmo_mode_selector(mode)) {
+        gizmo.set_mode(mode);
+        return true;
+    }
+    return false;
+}
+
 bool osc::ui::draw_gizmo_mode_selector(GizmoMode& mode)
 {
     constexpr auto mode_labels = std::to_array({ "local", "global" });
@@ -68,7 +78,21 @@ bool osc::ui::draw_gizmo_mode_selector(GizmoMode& mode)
 }
 
 bool osc::ui::draw_gizmo_op_selector(
-    ui::GizmoOperation& op,
+    Gizmo& gizmo,
+    bool can_translate,
+    bool can_rotate,
+    bool can_scale)
+{
+    GizmoOperation op = gizmo.operation();
+    if (draw_gizmo_op_selector(op, can_translate, can_rotate, can_scale)) {
+        gizmo.set_operation(op);
+        return true;
+    }
+    return false;
+}
+
+bool osc::ui::draw_gizmo_op_selector(
+    GizmoOperation& op,
     bool can_translate,
     bool can_rotate,
     bool can_scale)
@@ -132,7 +156,7 @@ bool osc::ui::draw_gizmo_op_selector(
     return rv;
 }
 
-std::optional<ui::GizmoTransform> osc::ui::Gizmo::draw(
+std::optional<Transform> osc::ui::Gizmo::draw(
     Mat4& model_matrix,
     const Mat4& view_matrix,
     const Mat4& projection_matrix,
@@ -197,12 +221,11 @@ std::optional<ui::GizmoTransform> osc::ui::Gizmo::draw(
         value_ptr(world_scale)
     );
 
-    const GizmoTransform rv = {
+    return Transform{
         .scale = world_scale,
-        .rotation = EulerAnglesIn<Degrees>{world_rotation_in_degrees},
+        .rotation = to_worldspace_rotation_quat(EulerAnglesIn<Degrees>{world_rotation_in_degrees}),
         .position = world_translation,
     };
-    return rv;
 }
 
 bool osc::ui::Gizmo::is_using() const

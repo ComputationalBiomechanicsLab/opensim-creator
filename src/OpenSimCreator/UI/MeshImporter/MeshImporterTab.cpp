@@ -1825,24 +1825,14 @@ private:
 
         ui::same_line();
 
-        {
-            ui::GizmoOperation op = m_Gizmo.operation();
-            if (ui::draw_gizmo_op_selector(op)) {
-                m_Gizmo.set_operation(op);
-            }
-        }
+        ui::draw_gizmo_op_selector(m_Gizmo);
 
         ui::push_style_var(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
         ui::same_line();
         ui::pop_style_var();
 
         // local/global dropdown
-        {
-            ui::GizmoMode mode = m_Gizmo.mode();
-            if (ui::draw_gizmo_mode_selector(mode)) {
-                m_Gizmo.set_mode(mode);
-            }
-        }
+        ui::draw_gizmo_mode_selector(m_Gizmo);
         ui::same_line();
 
         // scale factor
@@ -2128,7 +2118,7 @@ private:
             MIObject& el = m_Shared->updModelGraph().updByID(id);
             switch (m_Gizmo.operation()) {
             case ui::GizmoOperation::Rotate:
-                el.applyRotation(m_Shared->getModelGraph(), userManipulation->rotation, Vec3{m_GizmoModelMatrix[3]});
+                el.applyRotation(m_Shared->getModelGraph(), extract_eulers_xyz(userManipulation->rotation), Vec3{m_GizmoModelMatrix[3]});
                 break;
             case ui::GizmoOperation::Translate: {
                 el.applyTranslation(m_Shared->getModelGraph(), userManipulation->position);
