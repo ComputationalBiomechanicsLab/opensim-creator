@@ -19,7 +19,7 @@
 #include <oscar/Maths/EasingFunctions.h>
 #include <oscar/Maths/Ellipsoid.h>
 #include <oscar/Maths/EulerPerspectiveCamera.h>
-#include <oscar/Maths/Eulers.h>
+#include <oscar/Maths/EulerAngles.h>
 #include <oscar/Maths/FrustumPlanes.h>
 #include <oscar/Maths/Functors.h>
 #include <oscar/Maths/GeometricFunctions.h>

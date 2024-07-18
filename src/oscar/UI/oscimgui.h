@@ -7,7 +7,7 @@
 #include <imgui/misc/cpp/imgui_stdlib.h>
 #include <implot.h>
 #include <oscar/Graphics/Color.h>
-#include <oscar/Maths/Eulers.h>
+#include <oscar/Maths/EulerAngles.h>
 #include <oscar/Maths/Mat4.h>
 #include <oscar/Maths/Rect.h>
 #include <oscar/Maths/Transform.h>
@@ -840,7 +840,7 @@ namespace osc::ui
     // user's transformation
     struct GizmoTransform final {
         Vec3 scale = {1.0f, 1.0f, 1.0f};
-        Eulers rotation = {};
+        EulerAngles rotation = {};
         Vec3 position = {};
     };
 

@@ -5,7 +5,7 @@
 #include <oscar/Graphics/RenderTexture.h>
 #include <oscar/Graphics/Texture2D.h>
 #include <oscar/Maths/CollisionTests.h>
-#include <oscar/Maths/Eulers.h>
+#include <oscar/Maths/EulerAngles.h>
 #include <oscar/Maths/Mat4.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/PolarPerspectiveCamera.h>
@@ -340,7 +340,7 @@ bool osc::ui::update_polar_camera_from_all_inputs(
     return mouse_handled or keyboard_handled;
 }
 
-void osc::ui::update_camera_from_all_inputs(Camera& camera, Eulers& eulers)
+void osc::ui::update_camera_from_all_inputs(Camera& camera, EulerAngles& eulers)
 {
     const Vec3 front = camera.direction();
     const Vec3 up = camera.upwards_direction();

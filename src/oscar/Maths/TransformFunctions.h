@@ -1,7 +1,7 @@
 #pragma once
 
 #include <oscar/Maths/Angle.h>
-#include <oscar/Maths/Eulers.h>
+#include <oscar/Maths/EulerAngles.h>
 #include <oscar/Maths/GeometricFunctions.h>
 #include <oscar/Maths/MatFunctions.h>
 #include <oscar/Maths/Mat3.h>
@@ -143,7 +143,7 @@ namespace osc
     // rotation rotates around y', and the third rotation rotates around z''
     //
     // see: https://en.wikipedia.org/wiki/Euler_angles#Conventions_by_intrinsic_rotations
-    inline Eulers extract_eulers_xyz(const Transform& transform)
+    inline EulerAngles extract_eulers_xyz(const Transform& transform)
     {
         return extract_eulers_xyz(mat4_cast(transform.rotation));
     }
@@ -155,9 +155,9 @@ namespace osc
     // to a moving body (the thing being rotated)
     //
     // see: https://en.wikipedia.org/wiki/Euler_angles#Conventions_by_extrinsic_rotations
-    inline Eulers extract_extrinsic_eulers_xyz(const Transform& transform)
+    inline EulerAngles extract_extrinsic_eulers_xyz(const Transform& transform)
     {
-        return euler_angles(transform.rotation);
+        return to_euler_angles(transform.rotation);
     }
 
     // returns the provided transform, but rotated such that the given axis, as expressed

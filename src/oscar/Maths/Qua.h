@@ -1,7 +1,7 @@
 #pragma once
 
 #include <oscar/Maths/CommonFunctions.h>
-#include <oscar/Maths/Eulers.h>
+#include <oscar/Maths/EulerAngles.h>
 #include <oscar/Maths/GeometricFunctions.h>
 #include <oscar/Maths/TrigonometricFunctions.h>
 #include <oscar/Maths/Mat.h>
@@ -96,7 +96,7 @@ namespace osc
         }
 
         // constructs a `Qua` from euler angles
-        explicit Qua(const Eulers& euler_angles) :
+        explicit Qua(const EulerAngles& euler_angles) :
             Qua(Vec3{euler_angles.x.count(), euler_angles.y.count(), euler_angles.z.count()})
         {}
 

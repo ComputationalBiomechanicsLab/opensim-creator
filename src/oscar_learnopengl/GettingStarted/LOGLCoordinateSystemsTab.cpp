@@ -142,7 +142,7 @@ private:
 
         const Vec3 camera_position = camera_.position();
         ui::draw_text("camera pos = (%f, %f, %f)", camera_position.x, camera_position.y, camera_position.z);
-        const Eulers camera_eulers = camera_.eulers();
+        const EulerAngles camera_eulers = camera_.eulers();
         ui::draw_text("camera eulers = (%f, %f, %f)", camera_eulers.x.count(), camera_eulers.y.count(), camera_eulers.z.count());
         ui::end_panel();
 

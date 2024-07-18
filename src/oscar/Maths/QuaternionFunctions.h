@@ -251,7 +251,7 @@ namespace osc
     }
 
     template<typename T>
-    Vec<3, RadiansT<T>> euler_angles(const Qua<T>& x)
+    Vec<3, RadiansT<T>> to_euler_angles(const Qua<T>& x)
     {
         return Vec<3, RadiansT<T>>(pitch(x), yaw(x), roll(x));
     }

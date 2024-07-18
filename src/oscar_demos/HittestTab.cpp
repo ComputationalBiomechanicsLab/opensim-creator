@@ -262,7 +262,7 @@ private:
     AABB scene_sphere_aabb_ = sphere_mesh_.bounds();
     Sphere sphere_bounding_sphere_ = bounding_sphere_of(sphere_mesh_);
     bool is_mouse_captured_ = false;
-    Eulers camera_eulers{};
+    EulerAngles camera_eulers{};
     bool showing_aabbs_ = true;
 };
 

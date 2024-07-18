@@ -3,7 +3,7 @@
 #include <oscar/Maths/AABB.h>
 #include <oscar/Maths/AABBFunctions.h>
 #include <oscar/Maths/Angle.h>
-#include <oscar/Maths/Eulers.h>
+#include <oscar/Maths/EulerAngles.h>
 #include <oscar/Maths/Line.h>
 #include <oscar/Maths/Mat3.h>
 #include <oscar/Maths/Mat4.h>
@@ -135,17 +135,17 @@ namespace osc
     Mat4 mat4_transform_between_directions(const Vec3& dir1, const Vec3& dir2);
 
     // returns euler angles for performing an intrinsic, step-by-step, rotation about X, Y, and then Z
-    Eulers extract_eulers_xyz(const Quat&);
+    EulerAngles extract_eulers_xyz(const Quat&);
 
     Vec3 transform_point(const Mat4&, const Vec3&);
 
     // returns the a `Quat` equivalent to the given euler angles
-    Quat to_worldspace_rotation_quat(const Eulers&);
+    Quat to_worldspace_rotation_quat(const EulerAngles&);
 
     // applies a world-space rotation to the transform
     void apply_worldspace_rotation(
         Transform& application_target,
-        const Eulers& euler_angles,
+        const EulerAngles& euler_angles,
         const Vec3& rotation_center
     );
 

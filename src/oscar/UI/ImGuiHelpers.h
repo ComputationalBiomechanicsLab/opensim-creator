@@ -2,7 +2,7 @@
 
 #include <oscar/Maths/AABB.h>
 #include <oscar/Maths/Angle.h>
-#include <oscar/Maths/Eulers.h>
+#include <oscar/Maths/EulerAngles.h>
 #include <oscar/Maths/Mat4.h>
 #include <oscar/Maths/Rect.h>
 #include <oscar/Maths/Vec.h>
@@ -52,7 +52,7 @@ namespace osc::ui
 
     void update_camera_from_all_inputs(
         Camera&,
-        Eulers&
+        EulerAngles&
     );
 
     // returns the UI content region available in screenspace as a `Rect`

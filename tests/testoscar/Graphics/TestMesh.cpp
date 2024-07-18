@@ -9,7 +9,7 @@
 #include <oscar/Graphics/VertexFormat.h>
 #include <oscar/Maths/AABB.h>
 #include <oscar/Maths/Angle.h>
-#include <oscar/Maths/Eulers.h>
+#include <oscar/Maths/EulerAngles.h>
 #include <oscar/Maths/MatFunctions.h>
 #include <oscar/Maths/Mat4.h>
 #include <oscar/Maths/MathHelpers.h>
@@ -380,7 +380,7 @@ TEST(Mesh, TransformVertsWithTransformAppliesTransformToVerts)
     // create appropriate transform
     const Transform transform = {
         .scale = Vec3{0.25f},
-        .rotation = to_worldspace_rotation_quat(Eulers{90_deg, 0_deg, 0_deg}),
+        .rotation = to_worldspace_rotation_quat(EulerAngles{90_deg, 0_deg, 0_deg}),
         .position = {1.0f, 0.25f, 0.125f},
     };
 
@@ -417,7 +417,7 @@ TEST(Mesh, TransformVertsWithMat4AppliesTransformToVerts)
 {
     const Mat4 mat = mat4_cast(Transform{
         .scale = Vec3{0.25f},
-        .rotation = to_worldspace_rotation_quat(Eulers{90_deg, 0_deg, 0_deg}),
+        .rotation = to_worldspace_rotation_quat(EulerAngles{90_deg, 0_deg, 0_deg}),
         .position = {1.0f, 0.25f, 0.125f},
     });
 

@@ -1,6 +1,6 @@
 #include "oscimgui.h"
 
-#include <oscar/Maths/Eulers.h>
+#include <oscar/Maths/EulerAngles.h>
 #include <oscar/Maths/RectFunctions.h>
 #include <oscar/Maths/MatFunctions.h>
 #include <oscar/Maths/MathHelpers.h>
@@ -197,7 +197,7 @@ std::optional<ui::GizmoTransform> osc::ui::Gizmo::draw(
         value_ptr(world_rotation_in_degrees),
         value_ptr(world_scale)
     );
-    const Eulers world_eulers = Vec<3, Degrees>(world_rotation_in_degrees);
+    const EulerAngles world_eulers = Vec<3, Degrees>(world_rotation_in_degrees);
 
     const GizmoTransform rv = {
         .scale = world_scale,

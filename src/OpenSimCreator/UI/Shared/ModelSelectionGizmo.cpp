@@ -13,7 +13,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 #include <OpenSim/Simulation/Wrap/WrapObject.h>
 #include <oscar/Maths/Angle.h>
-#include <oscar/Maths/Eulers.h>
+#include <oscar/Maths/EulerAngles.h>
 #include <oscar/Maths/Mat4.h>
 #include <oscar/Maths/MatFunctions.h>
 #include <oscar/Maths/MathHelpers.h>
@@ -84,7 +84,7 @@ namespace
             return implGetCurrentTransformInGround();
         }
 
-        void onApplyTransform(const ui::GizmoTransform& transformInGround)
+        void onApplyTransform(const SimTK::Transform& transformInGround)
         {
             implOnApplyTransform(transformInGround);
         }
@@ -96,7 +96,7 @@ namespace
     private:
         virtual SupportedManipulationOpFlags implGetSupportedManipulationOps() const = 0;
         virtual Mat4 implGetCurrentTransformInGround() const = 0;
-        virtual void implOnApplyTransform(const ui::GizmoTransform&) = 0;
+        virtual void implOnApplyTransform(const SimTK::Transform&) = 0;
         virtual void implOnSave() = 0;
     };
 
@@ -155,7 +155,7 @@ namespace
         }
 
         // perform runtime lookup for `AssociatedComponent` and forward into concrete implementation
-        void implOnApplyTransform(const ui::GizmoTransform& transformInGround) final
+        void implOnApplyTransform(const SimTK::Transform& transformInGround) final
         {
             const AssociatedComponent* maybeSelected = findSelection();
             if (not maybeSelected) {
@@ -182,7 +182,7 @@ namespace
 
         // inheritors must implement concrete manipulation methods
         virtual Mat4 implGetCurrentTransformInGround(const AssociatedComponent&) const = 0;
-        virtual void implOnApplyTransform(const AssociatedComponent&, const ui::GizmoTransform& transformInGround) = 0;
+        virtual void implOnApplyTransform(const AssociatedComponent&, const SimTK::Transform& transformInGround) = 0;
 
         std::shared_ptr<UndoableModelStatePair> m_Model;
         OpenSim::ComponentPath m_ComponentAbsPath;
@@ -219,13 +219,13 @@ namespace
 
         void implOnApplyTransform(
             const OpenSim::Station& station,
-            const ui::GizmoTransform& transformInGround) final
+            const SimTK::Transform& transformInGround) final
         {
-            // ignores `scale` and `position`
+            // ignores `rotation`
 
             const SimTK::Rotation parentToGroundRotation = station.getParentFrame().getRotationInGround(getState());
             const SimTK::InverseRotation& groundToParentRotation = parentToGroundRotation.invert();
-            const Vec3 translationInParent = ToVec3(groundToParentRotation * ToSimTKVec3(transformInGround.position));
+            const Vec3 translationInParent = ToVec3(groundToParentRotation * transformInGround.p());
 
             ActionTranslateStation(getUndoableModel(), station, translationInParent);
         }
@@ -263,11 +263,13 @@ namespace
 
         void implOnApplyTransform(
             const OpenSim::PathPoint& pathPoint,
-            const ui::GizmoTransform& transformInGround) final
+            const SimTK::Transform& transformInGround) final
         {
+            // ignores `rotation`
+
             const SimTK::Rotation parentToGroundRotation = pathPoint.getParentFrame().getRotationInGround(getState());
             const SimTK::InverseRotation& groundToParentRotation = parentToGroundRotation.invert();
-            const Vec3 translationInParent = ToVec3(groundToParentRotation * ToSimTKVec3(transformInGround.position));
+            const Vec3 translationInParent = ToVec3(groundToParentRotation * transformInGround.p());
 
             ActionTranslatePathPoint(getUndoableModel(), pathPoint, translationInParent);
         }
@@ -325,7 +327,7 @@ namespace
 
         void implOnApplyTransform(
             const OpenSim::PhysicalOffsetFrame& pof,
-            const ui::GizmoTransform& transformInGround) final
+            const SimTK::Transform& M_n) final
         {
             if (m_IsChildFrameOfJoint) {
                 // the difference here is that the child frame's translation/rotation in ground
@@ -339,11 +341,9 @@ namespace
                 // - M_p        pof-to-parent transform
                 // - v_parent   a point, expressed in the pof's parent
 
-                const SimTK::Transform M_n = {ToSimTKRotation(transformInGround.rotation), ToSimTKVec3(transformInGround.position)};
                 const SimTK::Transform M_pofg = pof.getTransformInGround(getState());
                 const SimTK::Transform M_p = pof.findTransformBetween(getState(), pof.getParentFrame());
                 const SimTK::Transform X = (M_pofg.invert() * M_n * M_pofg * M_p.invert()).invert();
-
                 ActionTransformPofV2(
                     getUndoableModel(),
                     pof,
@@ -364,11 +364,9 @@ namespace
                 // - M_p        pof-to-parent transform
                 // - v_pof      a point, expressed in the pof
 
-                const SimTK::Transform M_n = {ToSimTKRotation(transformInGround.rotation), ToSimTKVec3(transformInGround.position)};
                 const SimTK::Transform M_g = pof.getParentFrame().getTransformInGround(getState());
                 const SimTK::Transform M_p = pof.findTransformBetween(getState(), pof.getParentFrame());
                 const SimTK::Transform X = M_g.invert() * M_n * M_g * M_p;
-
                 ActionTransformPofV2(
                     getUndoableModel(),
                     pof,
@@ -408,7 +406,7 @@ namespace
 
         void implOnApplyTransform(
             const OpenSim::WrapObject& wrapObj,
-            const ui::GizmoTransform& transformInGround) final
+            const SimTK::Transform& M_n) final
         {
             // solve for X:
             //
@@ -420,11 +418,9 @@ namespace
             // - M_g   parent-frame-to-ground transform
             // - M_w   wrap object local transform
 
-            const SimTK::Transform M_n = {ToSimTKRotation(transformInGround.rotation), ToSimTKVec3(transformInGround.position)};
             const SimTK::Transform M_g = wrapObj.getFrame().getTransformInGround(getState());
             const SimTK::Transform M_w = wrapObj.getTransform();
             const SimTK::Transform X = M_g.invert() * M_n * M_g * M_w;
-
             ActionTransformWrapObject(
                 getUndoableModel(),
                 wrapObj,
@@ -461,7 +457,7 @@ namespace
 
         void implOnApplyTransform(
             const OpenSim::ContactGeometry& contactGeom,
-            const ui::GizmoTransform& transformInGround) final
+            const SimTK::Transform& M_n) final
         {
             // solve for X:
             //
@@ -473,11 +469,9 @@ namespace
             // - M_g   parent-frame-to-ground transform
             // - M_w   contact geometry local transform
 
-            const SimTK::Transform M_n = {ToSimTKRotation(transformInGround.rotation), ToSimTKVec3(transformInGround.position)};
             const SimTK::Transform M_g = contactGeom.getFrame().getTransformInGround(getState());
             const SimTK::Transform M_w = contactGeom.getTransform();
             const SimTK::Transform X = M_g.invert() * M_n * M_g * M_w;
-
             ActionTransformContactGeometry(
                 getUndoableModel(),
                 contactGeom,
@@ -527,9 +521,7 @@ namespace
             return ToMat4x4(joint.getParentFrame().getTransformInGround(getState()));
         }
 
-        void implOnApplyTransform(
-            const OpenSim::Joint& joint,
-            const ui::GizmoTransform& transformInGround) final
+        void implOnApplyTransform(const OpenSim::Joint& joint, const SimTK::Transform& M_n) final
         {
             // in order to move a joint center without every child also moving around, we need to:
             //
@@ -579,7 +571,6 @@ namespace
             // STEP 1) move the parent offset frame (as normal)
             {
                 // M_n * M_g * M_ppof1 * v = M_g * X * v
-                const SimTK::Transform M_n{ToSimTKRotation(transformInGround.rotation), ToSimTKVec3(transformInGround.position)};
                 const SimTK::Transform M_g = parentPOF.getParentFrame().getTransformInGround(getState());
                 const SimTK::Transform X = M_g.invert() * M_n * M_g * M_ppof1;
                 ActionTransformPofV2(
@@ -653,7 +644,7 @@ namespace
 
         if (userEditInGround) {
             // propagate user edit to the model via the `ISelectionManipulator` interface
-            manipulator.onApplyTransform(*userEditInGround);
+            manipulator.onApplyTransform(SimTK::Transform{ToSimTKRotation(userEditInGround->rotation), ToSimTKVec3(userEditInGround->position)});
         }
 
         // once the user stops using the manipulator, save the changes

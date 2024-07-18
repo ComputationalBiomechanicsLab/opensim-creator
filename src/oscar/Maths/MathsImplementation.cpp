@@ -1011,7 +1011,7 @@ Mat4 osc::mat4_transform_between_directions(const Vec3& dir1, const Vec3& dir2)
     return rotate(identity<Mat4>(), theta, rotation_axis);
 }
 
-Eulers osc::extract_eulers_xyz(const Quat& quaternion)
+EulerAngles osc::extract_eulers_xyz(const Quat& quaternion)
 {
     return extract_eulers_xyz(mat4_cast(quaternion));
 }
@@ -1367,15 +1367,15 @@ Vec3 osc::transform_point(const Mat4& mat, const Vec3& point)
     return Vec3{mat * Vec4{point, 1.0f}};
 }
 
-Quat osc::to_worldspace_rotation_quat(const Eulers& eulers)
+Quat osc::to_worldspace_rotation_quat(const EulerAngles& eulers)
 {
-    static_assert(std::is_same_v<Eulers::value_type, Radians>);
+    static_assert(std::is_same_v<EulerAngles::value_type, Radians>);
     return normalize(Quat{Vec3{eulers.x.count(), eulers.y.count(), eulers.z.count()}});
 }
 
 void osc::apply_worldspace_rotation(
     Transform& application_target,
-    const Eulers& euler_angles,
+    const EulerAngles& euler_angles,
     const Vec3& rotation_center)
 {
     Quat q = to_worldspace_rotation_quat(euler_angles);

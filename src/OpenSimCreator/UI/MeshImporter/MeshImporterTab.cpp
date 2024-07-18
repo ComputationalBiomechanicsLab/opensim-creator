@@ -903,7 +903,7 @@ private:
         // rotation editor
         if (e.canChangeRotation())
         {
-            Eulers eulers = euler_angles(normalize(e.rotation(m_Shared->getModelGraph())));
+            EulerAngles eulers = to_euler_angles(normalize(e.rotation(m_Shared->getModelGraph())));
 
             if (ui::draw_angle3_input("Rotation", eulers, "%.6f"))
             {

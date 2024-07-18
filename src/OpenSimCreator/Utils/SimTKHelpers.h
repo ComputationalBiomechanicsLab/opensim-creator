@@ -4,7 +4,7 @@
 #include <SimTKcommon/internal/MassProperties.h>
 #include <SimTKcommon/internal/Rotation.h>
 #include <SimTKcommon/internal/Transform.h>
-#include <oscar/Maths/Eulers.h>
+#include <oscar/Maths/EulerAngles.h>
 #include <oscar/Maths/Mat3.h>
 #include <oscar/Maths/Mat4.h>
 #include <oscar/Maths/Quat.h>
@@ -21,13 +21,13 @@ namespace osc
     // converters: from osc types to SimTK,
     SimTK::Vec3 ToSimTKVec3(const Vec3&);
     inline SimTK::Vec3 ToSimTKVec3(const Vec4& v) { return ToSimTKVec3(Vec3{v}); }
-    SimTK::Vec3 ToSimTKVec3(const Eulers&);
+    SimTK::Vec3 ToSimTKVec3(const EulerAngles&);
     SimTK::Mat33 ToSimTKMat3(const Mat3&);
     SimTK::Inertia ToSimTKInertia(const Vec3&);
     SimTK::Transform ToSimTKTransform(const Transform&);
-    SimTK::Transform ToSimTKTransform(const Eulers&, const Vec3&);
+    SimTK::Transform ToSimTKTransform(const EulerAngles&, const Vec3&);
     SimTK::Rotation ToSimTKRotation(const Quat&);
-    SimTK::Rotation ToSimTKRotation(const Eulers&);
+    SimTK::Rotation ToSimTKRotation(const EulerAngles&);
     SimTK::Vec3 ToSimTKRGBVec3(const Color&);
 
     // converters: from SimTK types to osc
