@@ -169,7 +169,6 @@ std::optional<ui::GizmoTransform> osc::ui::Gizmo::draw(
         style.ScaleLineCircleSize = 8.0f;
     }
 
-    const Vec3 original_translation = Vec3{model_matrix[3]};
     const bool gizmo_was_manipulated_by_user = ImGuizmo::Manipulate(
         value_ptr(view_matrix),
         value_ptr(projection_matrix),
