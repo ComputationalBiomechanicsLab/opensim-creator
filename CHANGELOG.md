@@ -5,6 +5,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- The model editor UI now has experimental support for viewing `OpenSim::Function` curves. This
+  is currently exposed as an eye icon in the property editor panel
 - Selecting an `OpenSim::Joint` that has `OpenSim::PhysicalOffsetFrame`s for both its parent
   and child frames now shows a 3D manipulation gizmo that lets you move the joint center
   without moving anything else in the model (#159)

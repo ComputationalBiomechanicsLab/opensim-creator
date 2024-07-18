@@ -328,6 +328,8 @@ add_library(OpenSimCreator STATIC
     UI/Shared/ChooseComponentsEditorLayer.cpp
     UI/Shared/ChooseComponentsEditorLayer.h
     UI/Shared/ChooseComponentsEditorLayerParameters.h
+    UI/Shared/FunctionCurveViewerPopup.cpp
+    UI/Shared/FunctionCurveViewerPopup.h
     UI/Shared/GeometryPathEditorPopup.cpp
     UI/Shared/GeometryPathEditorPopup.h
     UI/Shared/ImportStationsFromCSVPopup.cpp
@@ -409,7 +411,7 @@ add_library(OpenSimCreator STATIC
     Utils/SimTKHelpers.h
     Utils/TPS3D.cpp
     Utils/TPS3D.h
- )
+)
 
 target_include_directories(OpenSimCreator PUBLIC
 

@@ -2,6 +2,7 @@
 
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
 #include <OpenSimCreator/UI/IPopupAPI.h>
+#include <OpenSimCreator/UI/Shared/FunctionCurveViewerPopup.h>
 #include <OpenSimCreator/UI/Shared/GeometryPathEditorPopup.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 #include <OpenSimCreator/Utils/SimTKHelpers.h>
@@ -11,6 +12,7 @@
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/Property.h>
+#include <OpenSim/Actuators/ActiveForceLengthCurve.h>
 #include <OpenSim/Simulation/Model/AbstractGeometryPath.h>
 #include <OpenSim/Simulation/Model/Appearance.h>
 #include <OpenSim/Simulation/Model/Frame.h>
@@ -373,9 +375,9 @@ namespace
 
     template<std::derived_from<OpenSim::AbstractProperty> ConcreteProperty>
     struct PropertyEditorTraits {
-        static bool IsCompatibleWith(const OpenSim::AbstractProperty& prop)
+        static const ConcreteProperty* TryGet(const OpenSim::AbstractProperty* prop)
         {
-            return dynamic_cast<const ConcreteProperty*>(&prop) != nullptr;
+            return dynamic_cast<const ConcreteProperty*>(prop);
         }
     };
 
@@ -390,7 +392,7 @@ namespace
 
         static bool IsCompatibleWith(const OpenSim::AbstractProperty& prop)
         {
-            return Traits::IsCompatibleWith(prop);
+            return Traits::TryGet(&prop) != nullptr;
         }
 
         explicit PropertyEditor(PropertyEditorArgs args) :
@@ -401,14 +403,14 @@ namespace
     protected:
         const property_type* tryGetProperty() const
         {
-            return dynamic_cast<const property_type*>(m_Args.propertyAccessor());
+            return Traits::TryGet(m_Args.propertyAccessor());
         }
 
         std::function<const property_type*()> getPropertyAccessor() const
         {
             return [accessor = this->m_Args.propertyAccessor]()
             {
-                return dynamic_cast<const property_type*>(accessor());
+                return Traits::TryGet(accessor());
             };
         }
 
@@ -448,7 +450,7 @@ namespace
     private:
         bool implIsCompatibleWith(const OpenSim::AbstractProperty& prop) const final
         {
-            return Traits::IsCompatibleWith(prop);
+            return Traits::TryGet(&prop) != nullptr;
         }
 
         PropertyEditorArgs m_Args;
@@ -1456,7 +1458,6 @@ namespace
             }
             ui::next_column();
 
-
             if (*m_ReturnValueHolder)
             {
                 std::optional<ObjectPropertyEdit> edit;
@@ -1497,6 +1498,68 @@ namespace
         // shared between this property editor and a popup it may have spawned
         std::shared_ptr<std::optional<ObjectPropertyEdit>> m_ReturnValueHolder = std::make_shared<std::optional<ObjectPropertyEdit>>();
     };
+
+    struct FunctionPropertyEditorTraits {
+        static const OpenSim::ObjectProperty<OpenSim::Function>* TryGet(const OpenSim::AbstractProperty* prop)
+        {
+            if (not prop) {
+                return nullptr;
+            }
+            if (not prop->isObjectProperty()) {
+                return nullptr;
+            }
+            if (prop->size() <= 0) {
+                return nullptr;
+            }
+            if (dynamic_cast<const OpenSim::Function*>(&prop->getValueAsObject(0)) == nullptr) {
+                return nullptr;
+            }
+            return static_cast<const OpenSim::ObjectProperty<OpenSim::Function>*>(prop);
+        }
+    };
+
+    class FunctionPropertyEditor final :
+        public PropertyEditor<OpenSim::ObjectProperty<OpenSim::Function>, FunctionPropertyEditorTraits> {
+    public:
+        using PropertyEditor::PropertyEditor;
+
+    private:
+        std::optional<std::function<void(OpenSim::AbstractProperty&)>> implOnDraw() final
+        {
+            const property_type* maybeProp = tryGetProperty();
+            if (!maybeProp)
+            {
+                return std::nullopt;
+            }
+            const property_type& prop = *maybeProp;
+
+            ui::draw_separator();
+            DrawPropertyName(prop);
+            ui::next_column();
+            if (ui::draw_button(ICON_FA_EYE)) {
+                std::stringstream ss;
+                ss << "View " << prop.getName() << " (" << prop.getObjectClassName() << ')';
+                pushPopup(std::make_unique<FunctionCurveViewerPopup>(
+                    std::move(ss).str(),
+                    getModelPtr(),
+                    [accessor = getPropertyAccessor()]() -> const OpenSim::Function*
+                    {
+                        const property_type* p = accessor();
+                        if (!p || p->isListProperty()) {
+                            return nullptr;
+                        }
+                        return &p->getValue();
+                    }
+                ));
+            }
+            ui::draw_tooltip_if_item_hovered("View Function", ICON_FA_MAGIC " Experimental Feature " ICON_FA_MAGIC ": currently, plots the `OpenSim::Function`, but it doesn't know what the X or Y axes are, or what values might be reasonable for either. It also doesn't spawn a non-modal panel, which would be handy if you wanted to view multiple functions at the same time - I should work on that ;)");
+            ui::same_line();
+            ui::draw_text(prop.getObjectClassName());
+            ui::next_column();
+
+            return std::nullopt;
+        }
+    };
 }
 
 namespace
@@ -1513,7 +1576,8 @@ namespace
         IntPropertyEditor,
         AppearancePropertyEditor,
         ContactParameterSetEditor,
-        AbstractGeometryPathPropertyEditor
+        AbstractGeometryPathPropertyEditor,
+        FunctionPropertyEditor
     >;
 
     // a type-erased entry in the runtime registry LUT
