@@ -1,5 +1,7 @@
 #pragma once
 
+#include <oscar/Maths/Scalar.h>
+
 #include <cstddef>
 #include <cstdint>
 #include <compare>
@@ -71,5 +73,12 @@ namespace osc
         }
 
         uint8_t value_;
+    };
+
+    // tag `Unorm8` as scalar-like, so that other parts of the codebase (e.g.
+    // vectors, matrices) accept it
+    template<>
+    struct IsScalar<Unorm8> final {
+        static constexpr bool value = true;
     };
 }

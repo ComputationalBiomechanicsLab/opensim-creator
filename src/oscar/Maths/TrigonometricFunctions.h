@@ -27,6 +27,12 @@ namespace osc
         return map(v, sin<T>);
     }
 
+    template<size_t L, std::floating_point Rep, AngularUnitTraits Units>
+    Vec<L, Rep> sin(const Vec<L, Angle<Rep, Units>>& v)
+    {
+        return map(v, sin<Rep, Units>);
+    }
+
     template<std::floating_point GenType>
     GenType cos(GenType v)
     {
@@ -45,6 +51,12 @@ namespace osc
         return map(v, cos<T>);
     }
 
+    template<size_t L, std::floating_point Rep, AngularUnitTraits Units>
+    Vec<L, Rep> cos(const Vec<L, Angle<Rep, Units>>& v)
+    {
+        return map(v, cos<Rep, Units>);
+    }
+
     template<std::floating_point GenType>
     GenType tan(GenType v)
     {
@@ -60,7 +72,13 @@ namespace osc
     template<size_t L, std::floating_point T>
     Vec<L, T> tan(const Vec<L, T>& v)
     {
-        return elementwise_map(v, tan);
+        return map(v, tan<T>);
+    }
+
+    template<size_t L, std::floating_point Rep, AngularUnitTraits Units>
+    Vec<L, Rep> tan(const Vec<L, Angle<Rep, Units>>& v)
+    {
+        return map(v, tan<Rep, Units>);
     }
 
     template<std::floating_point Rep>

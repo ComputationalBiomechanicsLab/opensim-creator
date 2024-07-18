@@ -37,6 +37,7 @@ namespace osc
     Mat3 ToMat3(const SimTK::Mat33&);
     Mat4 mat4_cast(const SimTK::Rotation&);
     Quat ToQuat(const SimTK::Rotation&);
+    EulerAngles ToEulerAngles(const SimTK::Rotation&);
     std::array<float, 6> ToArray(const SimTK::Vec6&);
     Transform decompose_to_transform(const SimTK::Transform&);
 }

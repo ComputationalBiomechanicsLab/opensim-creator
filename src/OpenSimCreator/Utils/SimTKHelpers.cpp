@@ -165,6 +165,11 @@ Quat osc::ToQuat(const SimTK::Rotation& r)
     };
 }
 
+EulerAngles osc::ToEulerAngles(const SimTK::Rotation& r)
+{
+    return EulerAngles{ToVec3(r.convertRotationToBodyFixedXYZ())};
+}
+
 std::array<float, 6> osc::ToArray(const SimTK::Vec6& v)
 {
     return {

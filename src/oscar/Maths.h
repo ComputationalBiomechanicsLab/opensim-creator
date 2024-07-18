@@ -42,6 +42,7 @@
 #include <oscar/Maths/RayCollision.h>
 #include <oscar/Maths/Rect.h>
 #include <oscar/Maths/RectFunctions.h>
+#include <oscar/Maths/Scalar.h>
 #include <oscar/Maths/Sphere.h>
 #include <oscar/Maths/Tetrahedron.h>
 #include <oscar/Maths/Transform.h>

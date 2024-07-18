@@ -348,7 +348,7 @@ namespace
                     getUndoableModel(),
                     pof,
                     ToVec3(X.p()),
-                    ToVec3(X.R().convertRotationToBodyFixedXYZ())
+                    ToEulerAngles(X.R())
                 );
             }
             else {
@@ -371,7 +371,7 @@ namespace
                     getUndoableModel(),
                     pof,
                     ToVec3(X.p()),
-                    ToVec3(X.R().convertRotationToBodyFixedXYZ())
+                    ToEulerAngles(X.R())
                 );
             }
         }
@@ -425,7 +425,7 @@ namespace
                 getUndoableModel(),
                 wrapObj,
                 ToVec3(X.p() - M_w.p()),
-                ToVec3(X.R().convertRotationToBodyFixedXYZ())
+                ToEulerAngles(X.R())
             );
         }
     };
@@ -476,7 +476,7 @@ namespace
                 getUndoableModel(),
                 contactGeom,
                 ToVec3(X.p() - M_w.p()),
-                ToVec3(X.R().convertRotationToBodyFixedXYZ())
+                ToEulerAngles(X.R())
             );
         }
     };
@@ -577,7 +577,7 @@ namespace
                     getUndoableModel(),
                     parentPOF,
                     ToVec3(X.p()),
-                    ToVec3(X.R().convertRotationToBodyFixedXYZ())
+                    ToEulerAngles(X.R())
                 );
             }
 
@@ -595,7 +595,7 @@ namespace
                 getUndoableModel(),
                 childPOF,
                 ToVec3(M_cpof2.p()),
-                ToVec3(M_cpof2.R().convertRotationToBodyFixedXYZ())
+                ToEulerAngles(M_cpof2.R())
             );
         }
     };

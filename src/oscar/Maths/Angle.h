@@ -1,5 +1,7 @@
 #pragma once
 
+#include <oscar/Maths/Scalar.h>
+
 #include <algorithm>
 #include <cmath>
 #include <concepts>
@@ -32,13 +34,13 @@ namespace osc
             value_{static_cast<Rep>(value_)}
         {}
 
-        // implicitly constructs from an angle expressed in other units
+        // implicitly constructs from an angle with the same representation, but expressed in other units
         template<AngularUnitTraits Units2>
         constexpr Angle(const Angle<Rep, Units2>& other) :
             value_{static_cast<Rep>(other.count() * (Units2::radians_per_rep/Units::radians_per_rep))}
         {}
 
-        // explicitly constructs from an angle expressed of type `Rep2` expressed in other units
+        // explicitly constructs from an angle with representation `Rep2`, expressed in other units
         template<std::convertible_to<Rep> Rep2, AngularUnitTraits Units2>
         explicit constexpr Angle(const Angle<Rep2, Units2>& other) :
             value_{static_cast<Rep>(other.count() * (Units2::radians_per_rep/Units::radians_per_rep))}
@@ -149,6 +151,13 @@ namespace osc
     {
         return o << angle.count() << ' ' << Units::unit_label;
     }
+
+    // tag `Unorm8` as scalar-like, so that other parts of the codebase (e.g.
+    // vectors, matrices) accept it
+    template<std::floating_point Rep, AngularUnitTraits Units>
+    struct IsScalar<Angle<Rep, Units>> final {
+        static constexpr bool value = true;
+    };
 }
 
 // a specialization of `std::common_type` for `osc::Angle`s
@@ -203,7 +212,7 @@ namespace osc
     namespace literals
     {
         constexpr Degrees operator""_deg(long double degrees) { return Degrees{degrees}; }
-        constexpr Degrees operator""_deg(unsigned long long int degrees) { return Degrees{degrees};}
+        constexpr Degrees operator""_deg(unsigned long long int degrees) { return Degrees{degrees}; }
     }
 
     // turns

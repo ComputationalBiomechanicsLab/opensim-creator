@@ -169,7 +169,7 @@ std::optional<ui::GizmoTransform> osc::ui::Gizmo::draw(
         style.ScaleLineCircleSize = 8.0f;
     }
 
-    const Vec3 original_translation = model_matrix[3];
+    const Vec3 original_translation = Vec3{model_matrix[3]};
     const bool gizmo_was_manipulated_by_user = ImGuizmo::Manipulate(
         value_ptr(view_matrix),
         value_ptr(projection_matrix),
@@ -197,11 +197,10 @@ std::optional<ui::GizmoTransform> osc::ui::Gizmo::draw(
         value_ptr(world_rotation_in_degrees),
         value_ptr(world_scale)
     );
-    const EulerAngles world_eulers = Vec<3, Degrees>(world_rotation_in_degrees);
 
     const GizmoTransform rv = {
         .scale = world_scale,
-        .rotation = world_eulers,
+        .rotation = EulerAnglesIn<Degrees>{world_rotation_in_degrees},
         .position = world_translation,
     };
     return rv;

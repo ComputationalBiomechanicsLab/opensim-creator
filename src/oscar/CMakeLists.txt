@@ -226,6 +226,7 @@ add_library(oscar STATIC
     Maths/RayCollision.h
     Maths/Rect.h
     Maths/RectFunctions.h
+    Maths/Scalar.h
     Maths/Sphere.h
     Maths/Tetrahedron.h
     Maths/Transform.h

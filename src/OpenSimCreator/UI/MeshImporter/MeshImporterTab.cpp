@@ -2128,7 +2128,7 @@ private:
             MIObject& el = m_Shared->updModelGraph().updByID(id);
             switch (m_Gizmo.operation()) {
             case ui::GizmoOperation::Rotate:
-                el.applyRotation(m_Shared->getModelGraph(), userManipulation->rotation, m_GizmoModelMatrix[3]);
+                el.applyRotation(m_Shared->getModelGraph(), userManipulation->rotation, Vec3{m_GizmoModelMatrix[3]});
                 break;
             case ui::GizmoOperation::Translate: {
                 el.applyTranslation(m_Shared->getModelGraph(), userManipulation->position);

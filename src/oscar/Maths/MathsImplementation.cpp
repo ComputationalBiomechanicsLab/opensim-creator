@@ -1158,8 +1158,8 @@ AABB osc::bounding_aabb_of(const Sphere& sphere)
 Line osc::transform_line(const Line& line, const Mat4& mat)
 {
     Line rv{};
-    rv.direction = mat * Vec4{line.direction, 0.0f};
-    rv.origin = mat * Vec4{line.origin, 1.0f};
+    rv.direction = Vec3{mat * Vec4{line.direction, 0.0f}};
+    rv.origin = Vec3{mat * Vec4{line.origin, 1.0f}};
     return rv;
 }
 
@@ -1369,8 +1369,7 @@ Vec3 osc::transform_point(const Mat4& mat, const Vec3& point)
 
 Quat osc::to_worldspace_rotation_quat(const EulerAngles& eulers)
 {
-    static_assert(std::is_same_v<EulerAngles::value_type, Radians>);
-    return normalize(Quat{Vec3{eulers.x.count(), eulers.y.count(), eulers.z.count()}});
+    return normalize(Quat{eulers});
 }
 
 void osc::apply_worldspace_rotation(

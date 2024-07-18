@@ -83,8 +83,9 @@ namespace osc
             *this = normalize(Qua<T>::wxyz(real_part, t.x, t.y, t.z));
         }
 
-        // constructs a `Qua` from euler angles (pitch, yaw, roll), in radians.
-        explicit Qua(const Vec<3, T>& euler_angles)
+        // constructs a `Qua` from Euler angles that are assumed to represent an
+        // intrinsic, step-by-step, rotation about X, Y, and then Z
+        explicit Qua(const EulerAngles& euler_angles)
         {
             Vec<3, T> c = cos(euler_angles * T(0.5));
             Vec<3, T> s = sin(euler_angles * T(0.5));
@@ -94,11 +95,6 @@ namespace osc
             this->y = c.x * s.y * c.z + s.x * c.y * s.z;
             this->z = c.x * c.y * s.z - s.x * s.y * c.z;
         }
-
-        // constructs a `Qua` from euler angles
-        explicit Qua(const EulerAngles& euler_angles) :
-            Qua(Vec3{euler_angles.x.count(), euler_angles.y.count(), euler_angles.z.count()})
-        {}
 
         // constructs a `Qua` by decomposing an orthogonal matrix
         explicit Qua(const Mat<3, 3, T>& m)
