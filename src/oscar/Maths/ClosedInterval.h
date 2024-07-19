@@ -4,6 +4,7 @@
 
 #include <concepts>
 #include <cstddef>
+#include <utility>
 
 namespace osc
 {
@@ -11,6 +12,12 @@ namespace osc
     template<typename T>
     requires std::equality_comparable<T> and std::totally_ordered<T>
     struct ClosedInterval final {
+
+        constexpr ClosedInterval(T lower_, T upper_) :
+            lower{std::move(lower_)},
+            upper{std::move(upper_)}
+        {}
+
         friend bool operator==(const ClosedInterval&, const ClosedInterval&) = default;
 
         template<std::integral U>
@@ -20,7 +27,7 @@ namespace osc
                 return upper - lower;  // edge-case
             }
 
-            return (upper - lower) / (static_cast<std::make_unsigned_t<U>>(nsteps) - 1);
+            return (upper - lower) / static_cast<T>((static_cast<std::make_unsigned_t<U>>(nsteps) - 1));
         }
 
         constexpr T normalized_interpolant_at(T v) const

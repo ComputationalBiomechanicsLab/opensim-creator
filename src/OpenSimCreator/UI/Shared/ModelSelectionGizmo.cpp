@@ -290,11 +290,6 @@ namespace
         return false;
     }
 
-    SimTK::Rotation NegateRotation(const SimTK::Rotation& r)
-    {
-        return SimTK::Rotation{-SimTK::Mat33{r}, true};
-    }
-
     // an `ISelectionManipulator` that manipulates an `OpenSim::PhysicalOffsetFrame`
     class PhysicalOffsetFrameManipulator final : public SelectionManipulator<OpenSim::PhysicalOffsetFrame> {
     public:
@@ -341,7 +336,7 @@ namespace
                 // - M_p        pof-to-parent transform
                 // - v_parent   a point, expressed in the pof's parent
 
-                const SimTK::Transform M_pofg = pof.getTransformInGround(getState());
+                const SimTK::Transform& M_pofg = pof.getTransformInGround(getState());
                 const SimTK::Transform M_p = pof.findTransformBetween(getState(), pof.getParentFrame());
                 const SimTK::Transform X = (M_pofg.invert() * M_n * M_pofg * M_p.invert()).invert();
                 ActionTransformPofV2(
@@ -419,7 +414,7 @@ namespace
             // - M_w   wrap object local transform
 
             const SimTK::Transform M_g = wrapObj.getFrame().getTransformInGround(getState());
-            const SimTK::Transform M_w = wrapObj.getTransform();
+            const SimTK::Transform& M_w = wrapObj.getTransform();
             const SimTK::Transform X = M_g.invert() * M_n * M_g * M_w;
             ActionTransformWrapObject(
                 getUndoableModel(),

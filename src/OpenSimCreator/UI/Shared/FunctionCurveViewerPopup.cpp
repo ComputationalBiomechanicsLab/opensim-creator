@@ -106,7 +106,7 @@ private:
             for (int step = 0; step < params.numPoints; ++step) {
                 x[0] = params.inputRange.lower + stepSize*step;
                 const double y = function->calcValue(x);
-                rv.push_back({x[0], y});
+                rv.emplace_back(x[0], y);
             }
         }
         catch (const std::exception& ex) {

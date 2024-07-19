@@ -2096,7 +2096,6 @@ private:
 
         Rect sceneRect = m_Shared->get3DSceneRect();
 
-        const Mat4 oldModelMatrix = m_GizmoModelMatrix;
         const auto userManipulation = m_Gizmo.draw(
             m_GizmoModelMatrix,
             m_Shared->getCamera().view_matrix(),

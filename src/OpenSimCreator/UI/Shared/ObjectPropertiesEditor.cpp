@@ -1508,7 +1508,7 @@ namespace
             if (not prop->isObjectProperty()) {
                 return nullptr;
             }
-            if (prop->size() <= 0) {
+            if (prop->empty()) {
                 return nullptr;
             }
             if (dynamic_cast<const OpenSim::Function*>(&prop->getValueAsObject(0)) == nullptr) {
