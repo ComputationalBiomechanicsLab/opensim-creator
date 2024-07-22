@@ -483,3 +483,11 @@ TEST(Color, hsla_color_to_Color_works_as_expected)
         ASSERT_NEAR(got.a, tc.input.a, c_HLSL_conversion_tolerance_per_channel) << tc << ", got = " << got;
     }
 }
+
+TEST(Color, with_element_works_as_expected)
+{
+    ASSERT_EQ(Color::black().with_element(0, 1.0f), Color::red());
+    ASSERT_EQ(Color::black().with_element(1, 1.0f), Color::green());
+    ASSERT_EQ(Color::black().with_element(2, 1.0f), Color::blue());
+    ASSERT_EQ(Color::clear().with_element(3, 0.5f), Color(0.0f, 0.5f));
+}

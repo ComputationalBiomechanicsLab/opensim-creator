@@ -213,6 +213,13 @@ namespace osc
             return Color{r, g, b, a_};
         }
 
+        constexpr Color with_element(size_type pos, value_type value) const
+        {
+            Color copy{*this};
+            copy[pos] = value;
+            return copy;
+        }
+
         value_type r{};
         value_type g{};
         value_type b{};

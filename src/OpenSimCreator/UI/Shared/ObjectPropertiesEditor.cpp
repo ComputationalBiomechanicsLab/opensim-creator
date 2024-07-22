@@ -130,14 +130,6 @@ namespace
         };
     }
 
-    // returns a suitable color for the given dimension index (e.g. x == 0)
-    Color IthDimensionColor(Vec3::size_type i)
-    {
-        Color color = {0.0f, 0.0f, 0.0f, 0.6f};
-        color[i] = 1.0f;
-        return color;
-    }
-
     // draws a little vertical line, which is usually used to visually indicate
     // x/y/z to the user
     void DrawColoredDimensionHintVerticalLine(const Color& color)
@@ -985,7 +977,7 @@ namespace
             ui::set_next_item_width(ui::get_content_region_avail().x);
 
             // draw dimension hint (color bar next to the input)
-            DrawColoredDimensionHintVerticalLine(IthDimensionColor(i));
+            DrawColoredDimensionHintVerticalLine(Color(0.0f, 0.6f).with_element(i, 1.0f));
 
             // draw the input editor
             auto frameAnnotation = GenerateVecFrameAnnotationLabel(m_EditedProperty, i);
