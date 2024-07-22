@@ -90,7 +90,7 @@ void main()
                 }
             }
 
-            operator lua_State* () { return state_; }
+            lua_State* get() { return state_; }
         private:
             // memory allocation function that the LUA implementation uses to allocate state
             // (e.g. memory used by the script)
@@ -103,11 +103,11 @@ void main()
                 // https://www.lua.org/manual/5.1/manual.html#lua_Alloc
 
                 if (new_size == 0) {
-                    std::free(ptr);
+                    std::free(ptr);  // NOLINT(cppcoreguidelines-owning-memory,cppcoreguidelines-no-malloc,hicpp-no-malloc)
                     return nullptr;
                 }
                 else {
-                    return std::realloc(ptr, new_size);
+                    return std::realloc(ptr, new_size);  // NOLINT(cppcoreguidelines-no-malloc,hicpp-no-malloc,cppcoreguidelines-owning-memory)
                 }
             }
 
@@ -206,31 +206,31 @@ void main()
                 // {"io", luaopen_io},            // removed in luau (sandboxing)
             });
             for (const auto& [name, function_ptr] : standard_library_functions) {
-                lua_pushcfunction(state, function_ptr);
-                lua_pushstring(state, name.c_str());
-                lua_call(state, 1, 0);
+                lua_pushcfunction(state.get(), function_ptr);
+                lua_pushstring(state.get(), name.c_str());
+                lua_call(state.get(), 1, 0);
             }
 
             // load (don't run) the user-provided script as a callable function
-            if (lua_load_cstringview(state, source_code, chunk_name.c_str()) != 0) {
-                OSC_ASSERT(lua_isstring(state, 1) && "the top of the stack should contain an error message string");
+            if (lua_load_cstringview(state.get(), source_code, chunk_name.c_str()) != 0) {
+                OSC_ASSERT(lua_isstring(state.get(), 1) && "the top of the stack should contain an error message string");
                 std::stringstream ss;
-                ss << "lua_load: error: " << tostringview(state, 1);
+                ss << "lua_load: error: " << tostringview(state.get(), 1);
                 return std::move(ss).str();  // ERROR: bad source code
             }
 
             // TODO: use `setfenv` to call the user-provided function with a specific
             // environment (e.g. imagine multiple environments sharing one VM)
             try {
-                lua_call(state, 0, 1);
+                lua_call(state.get(), 0, 1);
             }
             catch (const std::exception& ex) {
                 return std::string{ex.what()};  // ERROR: bad allocation, c function exception, etc.
             }
 
-            OSC_ASSERT(lua_gettop(state) == 1);
-            const std::string rv{tostringview(state, -1)};
-            lua_pop(state, 1);
+            OSC_ASSERT(lua_gettop(state.get()) == 1);
+            std::string rv{tostringview(state.get(), -1)};
+            lua_pop(state.get(), 1);
             return rv;
         }
     }

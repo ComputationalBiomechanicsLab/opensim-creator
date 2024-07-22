@@ -99,10 +99,22 @@ namespace osc
             static_cast<Metadata*>(ptr_)->num_owners.fetch_add(1, std::memory_order_relaxed);
         }
 
+        SharedPreHashedString(SharedPreHashedString&& tmp) noexcept :
+            ptr_{tmp.ptr_}
+        {
+            static_cast<Metadata*>(ptr_)->num_owners.fetch_add(1, std::memory_order_relaxed);
+        }
+
         SharedPreHashedString& operator=(const SharedPreHashedString& src) noexcept
         {
             SharedPreHashedString copy{src};
             swap(*this, copy);
+            return *this;
+        }
+
+        SharedPreHashedString& operator=(SharedPreHashedString&& tmp) noexcept
+        {
+            swap(*this, tmp);
             return *this;
         }
 

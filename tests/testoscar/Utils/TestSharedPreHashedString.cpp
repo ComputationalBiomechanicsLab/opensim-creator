@@ -62,7 +62,7 @@ TEST(SharedPreHashedString, use_count_decrements_when_lifetime_is_dropped)
     const SharedPreHashedString str{"another string"};
     ASSERT_EQ(str.use_count(), 1);
     {
-        const SharedPreHashedString copy = str;
+        const SharedPreHashedString copy{str};  // NOLINT(performance-unnecessary-copy-initialization)
         ASSERT_EQ(str.use_count(), 2);
     }
     ASSERT_EQ(str.use_count(), 1);
