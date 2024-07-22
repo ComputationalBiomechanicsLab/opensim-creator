@@ -60,27 +60,24 @@ namespace
 {
     // returns an updater function that deletes an element from a list property
     template<typename T>
-    std::function<void(OpenSim::AbstractProperty&)> MakePropElementDeleter(int idx)
+    std::function<void(OpenSim::AbstractProperty&)> MakeSimplePropertyElementDeleter(int propertyIndex)
     {
-        return [idx](OpenSim::AbstractProperty& p)
+        return [propertyIndex](OpenSim::AbstractProperty& p)
         {
-            auto* const ps = dynamic_cast<OpenSim::SimpleProperty<T>*>(&p);
-            if (!ps)
-            {
+            auto* const simpleProp = dynamic_cast<OpenSim::SimpleProperty<T>*>(&p);
+            if (not simpleProp) {
                 return;  // types don't match: caller probably mismatched properties
             }
 
-            auto copy = std::make_unique<OpenSim::SimpleProperty<T>>(ps->getName(), ps->isOneValueProperty());
-            for (int i = 0; i < ps->size(); ++i)
-            {
-                if (i != idx)
-                {
-                    copy->appendValue(ps->getValue(i));
+            auto copy = std::make_unique<OpenSim::SimpleProperty<T>>(simpleProp->getName(), simpleProp->isOneValueProperty());
+            for (int i = 0; i < simpleProp->size(); ++i) {
+                if (i != propertyIndex) {
+                    copy->appendValue(simpleProp->getValue(i));
                 }
             }
 
-            ps->clear();
-            ps->assign(*copy);
+            simpleProp->clear();
+            simpleProp->assign(*copy);
         };
     }
 
@@ -89,49 +86,47 @@ namespace
         typename TValue,
         typename TProperty = std::remove_cvref_t<TValue>
     >
-    std::function<void(OpenSim::AbstractProperty&)> MakePropValueSetter(int idx, TValue&& value)
+    std::function<void(OpenSim::AbstractProperty&)> MakePropertyValueSetter(int propertyIndex, TValue&& value)
     {
-        return [idx, val = std::forward<TValue>(value)](OpenSim::AbstractProperty& p)
+        return [propertyIndex, val = std::forward<TValue>(value)](OpenSim::AbstractProperty& p)
         {
-            auto* const ps = dynamic_cast<OpenSim::Property<TProperty>*>(&p);
-            if (!ps)
-            {
+            auto* const concreteProp = dynamic_cast<OpenSim::Property<TProperty>*>(&p);
+            if (not concreteProp) {
                 return;  // types don't match: caller probably mismatched properties
             }
-            ps->setValue(idx, val);
+            concreteProp->setValue(propertyIndex, val);
         };
     }
 
     // draws the property name and (optionally) comment tooltip
-    void DrawPropertyName(const OpenSim::AbstractProperty& prop)
+    void DrawPropertyName(const OpenSim::AbstractProperty& property)
     {
-        ui::draw_text_unformatted(prop.getName());
+        ui::draw_text_unformatted(property.getName());
 
-        if (!prop.getComment().empty()) {
+        if (not property.getComment().empty()) {
             ui::same_line();
-            ui::draw_help_marker(prop.getComment());
+            ui::draw_help_marker(property.getComment());
         }
     }
 
     // wraps an object accessor with property information so that an individual
     // property accesssor with the same lifetime semantics as the object can exist
     std::function<const OpenSim::AbstractProperty*()> MakePropertyAccessor(
-        const std::function<const OpenSim::Object*()>& objAccessor,
+        const std::function<const OpenSim::Object*()>& objectAccessor,
         const std::string& propertyName)
     {
-        return [objAccessor, propertyName]() -> const OpenSim::AbstractProperty*
+        return [objectAccessor, propertyName]() -> const OpenSim::AbstractProperty*
         {
-            const OpenSim::Object* maybeObj = objAccessor();
-            if (!maybeObj) {
+            const OpenSim::Object* obj = objectAccessor();
+            if (not obj) {
                 return nullptr;
             }
-            const OpenSim::Object& obj = *maybeObj;
 
-            if (!obj.hasProperty(propertyName))
-            {
+            if (not obj->hasProperty(propertyName)) {
                 return nullptr;
             }
-            return &obj.getPropertyByName(propertyName);
+
+            return &obj->getPropertyByName(propertyName);
         };
     }
 
@@ -158,8 +153,7 @@ namespace
     // draws a context menu that the user can use to change the step interval of the +/- buttons
     void DrawStepSizeEditor(float& stepSize)
     {
-        if (ui::begin_popup_context_menu("##valuecontextmenu"))
-        {
+        if (ui::begin_popup_context_menu("##valuecontextmenu")) {
             ui::draw_text("Set Step Size");
             ui::same_line();
             ui::draw_help_marker("Sets the decrement/increment of the + and - buttons. Can be handy for tweaking property values");
@@ -167,8 +161,7 @@ namespace
             ui::draw_separator();
             ui::draw_dummy({0.0f, 0.2f*ui::get_text_line_height()});
 
-            if (ui::begin_table("CommonChoicesTable", 2, ImGuiTableFlags_SizingStretchProp))
-            {
+            if (ui::begin_table("CommonChoicesTable", 2, ImGuiTableFlags_SizingStretchProp)) {
                 ui::table_setup_column("Type");
                 ui::table_setup_column("Options");
 
@@ -182,23 +175,19 @@ namespace
                 ui::table_set_column_index(0);
                 ui::draw_text("Lengths");
                 ui::table_set_column_index(1);
-                if (ui::draw_button("10 cm"))
-                {
+                if (ui::draw_button("10 cm")) {
                     stepSize = 0.1f;
                 }
                 ui::same_line();
-                if (ui::draw_button("1 cm"))
-                {
+                if (ui::draw_button("1 cm")) {
                     stepSize = 0.01f;
                 }
                 ui::same_line();
-                if (ui::draw_button("1 mm"))
-                {
+                if (ui::draw_button("1 mm")) {
                     stepSize = 0.001f;
                 }
                 ui::same_line();
-                if (ui::draw_button("0.1 mm"))
-                {
+                if (ui::draw_button("0.1 mm")) {
                     stepSize = 0.0001f;
                 }
 
@@ -206,28 +195,23 @@ namespace
                 ui::table_set_column_index(0);
                 ui::draw_text("Angles (Degrees)");
                 ui::table_set_column_index(1);
-                if (ui::draw_button("180"))
-                {
+                if (ui::draw_button("180")) {
                     stepSize = 180.0f;
                 }
                 ui::same_line();
-                if (ui::draw_button("90"))
-                {
+                if (ui::draw_button("90")) {
                     stepSize = 90.0f;
                 }
                 ui::same_line();
-                if (ui::draw_button("45"))
-                {
+                if (ui::draw_button("45")) {
                     stepSize = 45.0f;
                 }
                 ui::same_line();
-                if (ui::draw_button("10"))
-                {
+                if (ui::draw_button("10")) {
                     stepSize = 10.0f;
                 }
                 ui::same_line();
-                if (ui::draw_button("1"))
-                {
+                if (ui::draw_button("1")) {
                     stepSize = 1.0f;
                 }
 
@@ -235,28 +219,23 @@ namespace
                 ui::table_set_column_index(0);
                 ui::draw_text("Angles (Radians)");
                 ui::table_set_column_index(1);
-                if (ui::draw_button("1 pi"))
-                {
+                if (ui::draw_button("1 pi")) {
                     stepSize = pi_v<float>;
                 }
                 ui::same_line();
-                if (ui::draw_button("1/2 pi"))
-                {
+                if (ui::draw_button("1/2 pi")) {
                     stepSize = pi_v<float>/2.0f;
                 }
                 ui::same_line();
-                if (ui::draw_button("1/4 pi"))
-                {
+                if (ui::draw_button("1/4 pi")) {
                     stepSize = pi_v<float>/4.0f;
                 }
                 ui::same_line();
-                if (ui::draw_button("10/180 pi"))
-                {
+                if (ui::draw_button("10/180 pi")) {
                     stepSize = (10.0f/180.0f) * pi_v<float>;
                 }
                 ui::same_line();
-                if (ui::draw_button("1/180 pi"))
-                {
+                if (ui::draw_button("1/180 pi")) {
                     stepSize = (1.0f/180.0f) * pi_v<float>;
                 }
 
@@ -264,28 +243,23 @@ namespace
                 ui::table_set_column_index(0);
                 ui::draw_text("Masses");
                 ui::table_set_column_index(1);
-                if (ui::draw_button("1 kg"))
-                {
+                if (ui::draw_button("1 kg")) {
                     stepSize = 1.0f;
                 }
                 ui::same_line();
-                if (ui::draw_button("100 g"))
-                {
+                if (ui::draw_button("100 g")) {
                     stepSize = 0.1f;
                 }
                 ui::same_line();
-                if (ui::draw_button("10 g"))
-                {
+                if (ui::draw_button("10 g")) {
                     stepSize = 0.01f;
                 }
                 ui::same_line();
-                if (ui::draw_button("1 g"))
-                {
+                if (ui::draw_button("1 g")) {
                     stepSize = 0.001f;
                 }
                 ui::same_line();
-                if (ui::draw_button("100 mg"))
-                {
+                if (ui::draw_button("100 mg")) {
                     stepSize = 0.0001f;
                 }
 
@@ -310,8 +284,7 @@ namespace
         ScalarInputRv rv;
 
         ui::push_style_var(ImGuiStyleVar_ItemInnerSpacing, {1.0f, 0.0f});
-        if (ui::draw_scalar_input(label, ImGuiDataType_Float, &value, &stepSize, nullptr, "%.6f"))
-        {
+        if (ui::draw_scalar_input(label, ImGuiDataType_Float, &value, &stepSize, nullptr, "%.6f")) {
             rv.wasEdited = true;
         }
         ui::pop_style_var();
@@ -441,8 +414,7 @@ namespace
 
         void pushPopup(std::unique_ptr<IPopup> p)
         {
-            if (auto api = getPopupAPIPtr())
-            {
+            if (auto api = getPopupAPIPtr()) {
                 api->pushPopup(std::move(p));
             }
         }
@@ -516,7 +488,7 @@ namespace
             {
                 if (ui::draw_button(ICON_FA_TRASH))
                 {
-                    rv = MakePropElementDeleter<std::string>(idx);
+                    rv = MakeSimplePropertyElementDeleter<std::string>(idx);
                 }
                 ui::same_line();
             }
@@ -538,7 +510,7 @@ namespace
 
             if (ui::should_save_last_drawn_item_value())
             {
-                rv = MakePropValueSetter(idx, m_EditedProperty.getValue(idx));
+                rv = MakePropertyValueSetter(idx, m_EditedProperty.getValue(idx));
             }
 
             return rv;
@@ -603,7 +575,7 @@ namespace
             {
                 if (ui::draw_button(ICON_FA_TRASH))
                 {
-                    rv = MakePropElementDeleter<double>(idx);
+                    rv = MakeSimplePropertyElementDeleter<double>(idx);
                 }
                 ui::same_line();
             }
@@ -629,7 +601,7 @@ namespace
             }
             if (drawRV.shouldSave)
             {
-                rv = MakePropValueSetter(idx, m_EditedProperty.getValue(idx));
+                rv = MakePropertyValueSetter(idx, m_EditedProperty.getValue(idx));
             }
 
             return rv;
@@ -695,7 +667,7 @@ namespace
             {
                 if (ui::draw_button(ICON_FA_TRASH))
                 {
-                    rv = MakePropElementDeleter<bool>(idx);
+                    rv = MakeSimplePropertyElementDeleter<bool>(idx);
                 }
                 ui::same_line();
             }
@@ -719,7 +691,7 @@ namespace
 
             if (edited || ui::should_save_last_drawn_item_value())
             {
-                rv = MakePropValueSetter(idx, m_EditedProperty.getValue(idx));
+                rv = MakePropertyValueSetter(idx, m_EditedProperty.getValue(idx));
             }
 
             return rv;
@@ -972,7 +944,7 @@ namespace
             {
                 if (ui::draw_button(ICON_FA_TRASH))
                 {
-                    rv = MakePropElementDeleter<SimTK::Vec3>(idx);
+                    rv = MakeSimplePropertyElementDeleter<SimTK::Vec3>(idx);
                 }
                 ui::same_line();
             }
@@ -994,7 +966,7 @@ namespace
             // if any component editor indicated that it should be saved then propagate that upwards
             if (shouldSave)
             {
-                rv = MakePropValueSetter(idx, m_EditedProperty.getValue(idx));
+                rv = MakePropertyValueSetter(idx, m_EditedProperty.getValue(idx));
             }
 
             return rv;
@@ -1121,7 +1093,7 @@ namespace
             {
                 if (ui::draw_button(ICON_FA_TRASH))
                 {
-                    rv = MakePropElementDeleter<SimTK::Vec6>(idx);
+                    rv = MakeSimplePropertyElementDeleter<SimTK::Vec6>(idx);
                 }
             }
 
@@ -1152,7 +1124,7 @@ namespace
 
             if (shouldSave)
             {
-                rv = MakePropValueSetter(idx, m_EditedProperty.getValue(idx));
+                rv = MakePropertyValueSetter(idx, m_EditedProperty.getValue(idx));
             }
 
             return rv;
@@ -1216,7 +1188,7 @@ namespace
             {
                 if (ui::draw_button(ICON_FA_TRASH))
                 {
-                    rv = MakePropElementDeleter<int>(idx);
+                    rv = MakeSimplePropertyElementDeleter<int>(idx);
                 }
                 ui::same_line();
             }
@@ -1240,7 +1212,7 @@ namespace
 
             if (edited || ui::should_save_last_drawn_item_value())
             {
-                rv = MakePropValueSetter(idx, m_EditedProperty.getValue(idx));
+                rv = MakePropertyValueSetter(idx, m_EditedProperty.getValue(idx));
             }
 
             return rv;
@@ -1361,7 +1333,7 @@ namespace
 
             if (shouldSave)
             {
-                rv = MakePropValueSetter(idx, m_EditedProperty.getValue(idx));
+                rv = MakePropertyValueSetter(idx, m_EditedProperty.getValue(idx));
             }
 
             return rv;
@@ -1489,7 +1461,7 @@ namespace
                 {
                     if (const property_type* prop = accessor())
                     {
-                        *shared = ObjectPropertyEdit{*prop, MakePropValueSetter<const OpenSim::GeometryPath&, OpenSim::AbstractGeometryPath>(0, gp)};
+                        *shared = ObjectPropertyEdit{*prop, MakePropertyValueSetter<const OpenSim::GeometryPath&, OpenSim::AbstractGeometryPath>(0, gp)};
                     }
                 }
             );
