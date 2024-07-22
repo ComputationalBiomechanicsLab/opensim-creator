@@ -43,6 +43,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   easier-to-integrate wrapper class
 - Internal: `benchmarks/` were dropped (unused: microbenchmarks are better-suited to
   `opensim-core`)
+- Internal: Added `SharedPreHashedString` class, as a generalization of the `StringName` class
+  without the global lookup requirement
 
 
 ## [0.5.12] - 2024/04/29
