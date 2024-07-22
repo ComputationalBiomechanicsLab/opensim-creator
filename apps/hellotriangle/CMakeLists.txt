@@ -1,8 +1,11 @@
 add_executable(hellotriangle hellotriangle.cpp)
 
+find_package(lua CONFIG REQUIRED)
+
 target_link_libraries(hellotriangle PUBLIC
     oscar_compiler_configuration  # so that it uses standard compiler flags etc.
     oscar
+    lua
 )
 
 set_target_properties(hellotriangle PROPERTIES

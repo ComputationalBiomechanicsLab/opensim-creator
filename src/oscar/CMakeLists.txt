@@ -11,6 +11,7 @@ endif()
 find_package(imgui REQUIRED CONFIG)
 find_package(IconFontCppHeaders REQUIRED CONFIG)
 find_package(ImGuizmo REQUIRED CONFIG)
+find_package(ImGuiColorTextEdit REQUIRED CONFIG)
 find_package(implot REQUIRED CONFIG)
 find_package(stb REQUIRED CONFIG)
 find_package(lunasvg REQUIRED CONFIG)
@@ -448,6 +449,7 @@ target_link_libraries(oscar PUBLIC
     imgui
     IconFontCppHeaders
     ImGuizmo
+    ImGuiColorTextEdit
     implot
     stb
     unordered_dense::unordered_dense
