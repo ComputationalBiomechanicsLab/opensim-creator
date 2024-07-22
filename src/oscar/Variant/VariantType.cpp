@@ -1,19 +1,26 @@
 #include "VariantType.h"
 
 #include <oscar/Utils/EnumHelpers.h>
+#include <oscar/Utils/StringHelpers.h>
 #include <oscar/Variant/VariantTypeList.h>
 #include <oscar/Variant/VariantTypeTraits.h>
 
 #include <array>
 #include <cstddef>
+#include <ostream>
 #include <string>
 
-std::string osc::to_string(VariantType variant_type)
+std::ostream& osc::operator<<(std::ostream& out, VariantType variant_type)
 {
-    auto constexpr lut = []<VariantType... Types>(OptionList<VariantType, Types...>)
+    constexpr auto lut = []<VariantType... Types>(OptionList<VariantType, Types...>)
     {
         return std::to_array({ VariantTypeTraits<Types>::name... });
     }(VariantTypeList{});
 
-    return std::string{lut.at(to_index(variant_type))};
+    return out << lut.at(to_index(variant_type));
+}
+
+std::string osc::to_string(VariantType variant_type)
+{
+    return stream_to_string(variant_type);
 }

@@ -281,6 +281,8 @@ namespace osc
             return s_default_instance;
         }
 
+        // internal datastructure that's placed at the front of the dynamically-allocated
+        // allocated memory block
         struct Metadata final {
 
             Metadata(std::string_view str) noexcept :
@@ -294,7 +296,7 @@ namespace osc
         };
 
         // `StringNameData`, followed by characters, followed by NUL terminator
-        void* ptr_;
+        void* ptr_ = nullptr;
     };
 }
 
