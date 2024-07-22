@@ -217,10 +217,18 @@ namespace osc
             return lhs.ptr_ == rhs.ptr_ or std::string_view{lhs} == std::string_view{rhs};
         }
 
-        template<std::convertible_to<std::string_view> StringViewLike>
+        template<typename StringViewLike>
+        requires std::constructible_from<std::string_view, StringViewLike>
         friend bool operator==(const SharedPreHashedString& lhs, const StringViewLike& rhs)
         {
-            return std::string_view{lhs} == std::string_view{rhs};
+            return std::string_view{lhs} == rhs;
+        }
+
+        template<typename StringViewLike>
+        requires std::constructible_from<std::string_view, StringViewLike>
+        friend bool operator==(const StringViewLike& lhs, const SharedPreHashedString& rhs)
+        {
+            return lhs == std::string_view{rhs};
         }
 
         friend auto operator<=>(const SharedPreHashedString& lhs, const SharedPreHashedString& rhs)
@@ -229,6 +237,20 @@ namespace osc
                 return std::strong_ordering::equal;
             }
             return std::string_view{lhs} <=> std::string_view{rhs};
+        }
+
+        template<typename StringViewLike>
+        requires std::constructible_from<std::string_view, StringViewLike>
+        friend auto operator<=>(const SharedPreHashedString& lhs, const StringViewLike& rhs)
+        {
+            return std::string_view{lhs} <=> rhs;
+        }
+
+        template<typename StringViewLike>
+        requires std::constructible_from<std::string_view, StringViewLike>
+        friend auto operator<=>(const StringViewLike& lhs, const SharedPreHashedString& rhs)
+        {
+            return lhs <=> std::string_view{rhs};
         }
 
         // returns the number of different `SharedPreHashedString` instances (`this` included)

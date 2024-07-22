@@ -2,9 +2,13 @@
 
 #include <gtest/gtest.h>
 
+#include <algorithm>
+#include <array>
+#include <ranges>
 #include <string_view>
 #include <utility>
 
+namespace rgs = std::ranges;
 using namespace osc;
 using namespace std::literals;
 
@@ -129,4 +133,31 @@ TEST(SharedPreHashedString, size_returns_expected_answers)
     ASSERT_EQ(SharedPreHashedString{"a"}.size(), 1);
     ASSERT_EQ(SharedPreHashedString{"ab"}.size(), 2);
     ASSERT_EQ(SharedPreHashedString{"abc"}.size(), 3);
+}
+
+TEST(SharedPreHashedString, can_compare_with_cstring)
+{
+    const char* cstr = "some string";
+    SharedPreHashedString str{cstr};
+
+    ASSERT_EQ(cstr, str);
+    ASSERT_EQ(str, cstr);
+}
+
+TEST(SharedPreHashedString, less_than_works_as_expected)
+{
+    auto source_strings = std::to_array<std::string_view>({
+        "there once was a reference-counted string from Oscar...",
+        "... who wanted the same sorting behavior as the standard library =)",
+        "\nbut instead of writing proper permutation tests,",
+        " settled",
+        " For this",
+        " quite hacky",
+        " compromise",
+    });
+    std::vector<SharedPreHashedString> shared_strings(source_strings.begin(), source_strings.end());
+
+    rgs::sort(source_strings);
+    rgs::sort(shared_strings);
+    ASSERT_TRUE(rgs::equal(source_strings, shared_strings));
 }
