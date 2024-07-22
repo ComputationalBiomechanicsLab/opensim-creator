@@ -8,6 +8,7 @@
 #include <functional>
 #include <memory>
 #include <new>
+#include <ostream>
 #include <span>
 #include <string_view>
 #include <utility>
@@ -65,7 +66,10 @@ namespace osc
         using reverse_iterator = std::string_view::const_reverse_iterator;
         using const_reverse_iterator = std::string_view::const_reverse_iterator;
 
-        explicit SharedPreHashedString() : SharedPreHashedString{std::string_view{}} {}
+        explicit SharedPreHashedString() :
+            SharedPreHashedString{SharedPreHashedString::static_default_instance()}
+        {}
+
         explicit SharedPreHashedString(std::string_view str)
         {
             const size_t num_bytes_allocated =
@@ -95,26 +99,16 @@ namespace osc
             static_cast<Metadata*>(ptr_)->num_owners.fetch_add(1, std::memory_order_relaxed);
         }
 
-        SharedPreHashedString(SharedPreHashedString&& tmp) noexcept :
-            ptr_{std::exchange(tmp.ptr_, nullptr)}
-        {}
-
-        SharedPreHashedString& operator=(const SharedPreHashedString& src)
+        SharedPreHashedString& operator=(const SharedPreHashedString& src) noexcept
         {
             SharedPreHashedString copy{src};
             swap(*this, copy);
             return *this;
         }
 
-        SharedPreHashedString& operator=(SharedPreHashedString&& tmp) noexcept
-        {
-            swap(*this, tmp);
-            return *this;
-        }
-
         ~SharedPreHashedString() noexcept
         {
-            if (ptr_ and static_cast<Metadata*>(ptr_)->num_owners.fetch_sub(1, std::memory_order_relaxed) == 1) {
+            if (static_cast<Metadata*>(ptr_)->num_owners.fetch_sub(1, std::memory_order_relaxed) == 1) {
                 ::operator delete(ptr_, std::align_val_t{alignof(Metadata)});
             }
         }
@@ -253,6 +247,11 @@ namespace osc
             return lhs <=> std::string_view{rhs};
         }
 
+        friend std::ostream& operator<<(std::ostream& lhs, const SharedPreHashedString& rhs)
+        {
+            return lhs << std::string_view{rhs};
+        }
+
         // returns the number of different `SharedPreHashedString` instances (`this` included)
         // managing the same underlying string data. In a multithreaded environment, the value
         // returned by `use_count` is approximate (i.e. the implementation uses a
@@ -263,6 +262,12 @@ namespace osc
         }
     private:
         friend struct std::hash<SharedPreHashedString>;
+
+        const SharedPreHashedString& static_default_instance()
+        {
+            static SharedPreHashedString s_default_instance{std::string_view{}};
+            return s_default_instance;
+        }
 
         struct Metadata final {
 

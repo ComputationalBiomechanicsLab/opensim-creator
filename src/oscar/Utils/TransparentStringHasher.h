@@ -1,5 +1,6 @@
 #pragma once
 
+#include <oscar/Utils/SharedPreHashedString.h>
 #include <oscar/Utils/StringName.h>
 
 #include <cstddef>
@@ -18,6 +19,12 @@ namespace osc
             // if something implicitly converts into a `std::string_view` then it's
             // eligible for transparent hashing
             return std::hash<std::string_view>{}(sv);
+        }
+
+        size_t operator()(const SharedPreHashedString& sn) const noexcept
+        {
+            // special case: `SharedPreHashedString`s are pre-hashed
+            return std::hash<SharedPreHashedString>{}(sn);
         }
 
         size_t operator()(const StringName& sn) const noexcept

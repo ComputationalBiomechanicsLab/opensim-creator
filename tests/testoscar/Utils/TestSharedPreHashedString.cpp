@@ -4,7 +4,9 @@
 
 #include <algorithm>
 #include <array>
+#include <functional>
 #include <ranges>
+#include <sstream>
 #include <string_view>
 #include <utility>
 
@@ -25,14 +27,6 @@ TEST(SharedPreHashedString, default_constructed_is_empty)
 TEST(SharedPreHashedString, default_constructed_size_is_zero)
 {
     ASSERT_EQ(SharedPreHashedString{}.size(), 0);
-}
-
-TEST(SharedPreHashedString, default_constructed_copy_makes_use_count_increment)
-{
-    const SharedPreHashedString str;
-    ASSERT_EQ(str.use_count(), 1);
-    const SharedPreHashedString copy = str;
-    ASSERT_EQ(str.use_count(), 2);
 }
 
 TEST(SharedPreHashedString, can_construct_from_cstring)
@@ -160,4 +154,25 @@ TEST(SharedPreHashedString, less_than_works_as_expected)
     rgs::sort(source_strings);
     rgs::sort(shared_strings);
     ASSERT_TRUE(rgs::equal(source_strings, shared_strings));
+}
+
+TEST(SharedPreHashedString, can_stream_to_ostream)
+{
+    std::stringstream ss;
+    ss << SharedPreHashedString{"stream me"};
+    ASSERT_EQ(ss.str(), "stream me");
+}
+
+
+TEST(SharedPreHashedString, std_hash_returns_same_as_std_string_view)
+{
+    auto source_strings = std::to_array<std::string_view>({
+        "",
+        "str",
+        "hash me",
+        " etc.",
+    });
+    for (const auto& source_string : source_strings) {
+        ASSERT_EQ(std::hash<std::string_view>{}(source_string), std::hash<SharedPreHashedString>{}(SharedPreHashedString{source_string}));
+    }
 }

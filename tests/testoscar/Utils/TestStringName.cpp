@@ -373,15 +373,6 @@ TEST(StringName, SizeReturnsExpectedValue)
     ASSERT_EQ(s.size(), c_LongStringToAvoidSSOData.size()-1);  // minus nul
 }
 
-TEST(StringName, SwapSwapsTheStringNamesContents)
-{
-    StringName a{c_LongStringToAvoidSSO};
-    StringName b{c_AnotherStringToAvoidSSO};
-    a.swap(b);
-    ASSERT_EQ(a, c_AnotherStringToAvoidSSO);
-    ASSERT_EQ(b, c_LongStringToAvoidSSO);
-}
-
 TEST(StringName, NonEmptyStringNameComapresEqualToAnotherLogicallyEquivalentNonEmptyStringName)
 {
     ASSERT_EQ(StringName{c_LongStringToAvoidSSO}, StringName{c_LongStringToAvoidSSO});

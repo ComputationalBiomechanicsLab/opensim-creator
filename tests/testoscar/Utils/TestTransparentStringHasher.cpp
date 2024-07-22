@@ -2,6 +2,7 @@
 
 #include <ankerl/unordered_dense.h>
 #include <oscar/Utils/CStringView.h>
+#include <oscar/Utils/SharedPreHashedString.h>
 #include <oscar/Utils/StringName.h>
 #include <gtest/gtest.h>
 
@@ -53,6 +54,7 @@ TEST(TransparentStringHasher, produces_same_hash_for_all_of_OSCs_string_types)
             TransparentStringHasher{}(CStringView{str}),
             TransparentStringHasher{}(std::string{str}),
             TransparentStringHasher{}(StringName{str}),
+            TransparentStringHasher{}(SharedPreHashedString{str}),
         });
         ASSERT_TRUE(rgs::adjacent_find(hashes, rgs::not_equal_to{}) == hashes.end());
     }
