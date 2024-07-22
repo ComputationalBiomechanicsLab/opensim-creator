@@ -332,15 +332,20 @@ namespace
 
     // construction-time arguments for the property editor
     struct PropertyEditorArgs final {
-        IPopupAPI* api;
+        IPopupAPI* api = nullptr;
         std::shared_ptr<const UndoableModelStatePair> model;
         std::function<const OpenSim::Object*()> objectAccessor;
         std::function<const OpenSim::AbstractProperty*()> propertyAccessor;
     };
 
     template<std::derived_from<OpenSim::AbstractProperty> ConcreteProperty>
-    struct PropertyEditorTraits {
-        static const ConcreteProperty* TryGet(const OpenSim::AbstractProperty* prop)
+    struct PropertyTraits {
+        static bool IsCompatibleWith(const OpenSim::AbstractProperty* prop)
+        {
+            return dynamic_cast<const ConcreteProperty*>(prop) != nullptr;
+        }
+
+        static const ConcreteProperty* TryGetDowncasted(const OpenSim::AbstractProperty* prop)
         {
             return dynamic_cast<const ConcreteProperty*>(prop);
         }
@@ -349,7 +354,7 @@ namespace
     // partial implementation class for a specific property editor
     template<
         std::derived_from<OpenSim::AbstractProperty> ConcreteProperty,
-        class Traits = PropertyEditorTraits<ConcreteProperty>
+        class Traits = PropertyTraits<ConcreteProperty>
     >
     class PropertyEditor : public IPropertyEditor {
     public:
@@ -357,25 +362,34 @@ namespace
 
         static bool IsCompatibleWith(const OpenSim::AbstractProperty& prop)
         {
-            return Traits::TryGet(&prop) != nullptr;
+            return Traits::IsCompatibleWith(&prop);
         }
 
         explicit PropertyEditor(PropertyEditorArgs args) :
             m_Args{std::move(args)}
-        {
-        }
+        {}
 
     protected:
-        const property_type* tryGetProperty() const
+        const OpenSim::AbstractProperty* tryGetProperty() const
         {
-            return Traits::TryGet(m_Args.propertyAccessor());
+            return m_Args.propertyAccessor();
         }
 
-        std::function<const property_type*()> getPropertyAccessor() const
+        const property_type* tryGetDowncastedProperty() const
         {
-            return [accessor = this->m_Args.propertyAccessor]()
+            return Traits::TryGetDowncasted(tryGetProperty());
+        }
+
+        const std::function<const OpenSim::AbstractProperty*()>& getPropertyAccessor() const
+        {
+            return m_Args.propertyAccessor;
+        }
+
+        std::function<const property_type*()> getDowncastedPropertyAccessor() const
+        {
+            return [inner = getPropertyAccessor()]()
             {
-                return Traits::TryGet(accessor());
+                return Traits::TryGetDowncasted(inner());
             };
         }
 
@@ -414,7 +428,7 @@ namespace
     private:
         bool implIsCompatibleWith(const OpenSim::AbstractProperty& prop) const final
         {
-            return Traits::TryGet(&prop) != nullptr;
+            return Traits::IsCompatibleWith(&prop);
         }
 
         PropertyEditorArgs m_Args;
@@ -432,7 +446,7 @@ namespace
     private:
         std::optional<std::function<void(OpenSim::AbstractProperty&)>> implOnDraw() final
         {
-            const property_type* maybeProp = tryGetProperty();
+            const property_type* maybeProp = tryGetDowncastedProperty();
             if (!maybeProp)
             {
                 return std::nullopt;
@@ -520,7 +534,7 @@ namespace
     private:
         std::optional<std::function<void(OpenSim::AbstractProperty&)>> implOnDraw() final
         {
-            const property_type* maybeProp = tryGetProperty();
+            const property_type* maybeProp = tryGetDowncastedProperty();
             if (!maybeProp)
             {
                 return std::nullopt;
@@ -612,7 +626,7 @@ namespace
     private:
         std::optional<std::function<void(OpenSim::AbstractProperty&)>> implOnDraw() final
         {
-            const property_type* maybeProp = tryGetProperty();
+            const property_type* maybeProp = tryGetDowncastedProperty();
             if (!maybeProp)
             {
                 return std::nullopt;
@@ -766,7 +780,7 @@ namespace
                 return std::nullopt;  // the component doesn't have a logical positional property that can be edited with the transform
             }
 
-            const OpenSim::Property<SimTK::Vec3>* const prop = tryGetProperty();
+            const OpenSim::Property<SimTK::Vec3>* const prop = tryGetDowncastedProperty();
             if (!prop)
             {
                 return std::nullopt;  // can't access the property this editor is ultimately editing
@@ -820,7 +834,7 @@ namespace
 
         std::optional<std::function<void(OpenSim::AbstractProperty&)>> implOnDraw() final
         {
-            const property_type* maybeProp = tryGetProperty();
+            const property_type* maybeProp = tryGetDowncastedProperty();
             if (!maybeProp)
             {
                 return std::nullopt;
@@ -1038,7 +1052,7 @@ namespace
     private:
         std::optional<std::function<void(OpenSim::AbstractProperty&)>> implOnDraw() final
         {
-            const property_type* maybeProp = tryGetProperty();
+            const property_type* maybeProp = tryGetDowncastedProperty();
             if (!maybeProp)
             {
                 return std::nullopt;
@@ -1133,7 +1147,7 @@ namespace
     private:
         std::optional<std::function<void(OpenSim::AbstractProperty&)>> implOnDraw() final
         {
-            const property_type* maybeProp = tryGetProperty();
+            const property_type* maybeProp = tryGetDowncastedProperty();
             if (!maybeProp)
             {
                 return std::nullopt;
@@ -1226,7 +1240,7 @@ namespace
     private:
         std::optional<std::function<void(OpenSim::AbstractProperty&)>> implOnDraw() final
         {
-            const property_type* maybeProp = tryGetProperty();
+            const property_type* maybeProp = tryGetDowncastedProperty();
             if (!maybeProp)
             {
                 return std::nullopt;
@@ -1345,7 +1359,7 @@ namespace
         {
             std::optional<std::function<void(OpenSim::AbstractProperty&)>> rv;
 
-            const property_type* maybeProp = tryGetProperty();
+            const property_type* maybeProp = tryGetDowncastedProperty();
             if (!maybeProp)
             {
                 return std::nullopt;  // cannot find property
@@ -1406,7 +1420,7 @@ namespace
     private:
         std::optional<std::function<void(OpenSim::AbstractProperty&)>> implOnDraw() final
         {
-            const property_type* maybeProp = tryGetProperty();
+            const property_type* maybeProp = tryGetDowncastedProperty();
             if (!maybeProp)
             {
                 return std::nullopt;
@@ -1436,7 +1450,7 @@ namespace
 
         std::unique_ptr<IPopup> createGeometryPathEditorPopup()
         {
-            auto accessor = getPropertyAccessor();
+            auto accessor = getDowncastedPropertyAccessor();
             return std::make_unique<GeometryPathEditorPopup>(
                 "Edit Geometry Path",
                 getModelPtr(),
@@ -1464,21 +1478,28 @@ namespace
     };
 
     struct FunctionPropertyEditorTraits {
-        static const OpenSim::ObjectProperty<OpenSim::Function>* TryGet(const OpenSim::AbstractProperty* prop)
+        static bool IsCompatibleWith(const OpenSim::AbstractProperty* prop)
         {
             if (not prop) {
-                return nullptr;
+                return false;
             }
             if (not prop->isObjectProperty()) {
-                return nullptr;
+                return false;
             }
             if (prop->empty()) {
-                return nullptr;
+                return false;
             }
-            if (dynamic_cast<const OpenSim::Function*>(&prop->getValueAsObject(0)) == nullptr) {
-                return nullptr;
-            }
-            return static_cast<const OpenSim::ObjectProperty<OpenSim::Function>*>(prop);
+
+            return dynamic_cast<const OpenSim::Function*>(&prop->getValueAsObject(0)) != nullptr;
+        }
+
+        static const OpenSim::ObjectProperty<OpenSim::Function>* TryGetDowncasted(const OpenSim::AbstractProperty*)
+        {
+            // there's no safe way to upcast an `OpenSim::Property<SpecializedFunction>` --> `OpenSim::Property<Function>`
+            //
+            // this trait implementation's job is just to ensure the `PropertyEditor` for a function is selected
+            // so that we can read data out of it generically (rather than actually edit it)
+            return nullptr;
         }
     };
 
@@ -1490,35 +1511,36 @@ namespace
     private:
         std::optional<std::function<void(OpenSim::AbstractProperty&)>> implOnDraw() final
         {
-            const property_type* maybeProp = tryGetProperty();
-            if (!maybeProp)
-            {
+            const OpenSim::AbstractProperty* prop = tryGetProperty();
+            if (not prop) {
                 return std::nullopt;
             }
-            const property_type& prop = *maybeProp;
 
             ui::draw_separator();
-            DrawPropertyName(prop);
+            DrawPropertyName(*prop);
+
             ui::next_column();
+
             if (ui::draw_button(ICON_FA_EYE)) {
                 std::stringstream ss;
-                ss << "View " << prop.getName() << " (" << prop.getObjectClassName() << ')';
+                ss << "View " << prop->getName() << " (" << prop->getTypeName() << ')';
                 pushPopup(std::make_unique<FunctionCurveViewerPopup>(
                     std::move(ss).str(),
                     getModelPtr(),
                     [accessor = getPropertyAccessor()]() -> const OpenSim::Function*
                     {
-                        const property_type* p = accessor();
-                        if (!p || p->isListProperty()) {
+                        const OpenSim::AbstractProperty* p = accessor();
+                        if (not p or not p->isObjectProperty() or p->isListProperty()) {
                             return nullptr;
                         }
-                        return &p->getValue();
+                        const OpenSim::Object& obj = p->getValueAsObject();
+                        return dynamic_cast<const OpenSim::Function*>(&obj);
                     }
                 ));
             }
             ui::draw_tooltip_if_item_hovered("View Function", ICON_FA_MAGIC " Experimental Feature " ICON_FA_MAGIC ": currently, plots the `OpenSim::Function`, but it doesn't know what the X or Y axes are, or what values might be reasonable for either. It also doesn't spawn a non-modal panel, which would be handy if you wanted to view multiple functions at the same time - I should work on that ;)");
             ui::same_line();
-            ui::draw_text(prop.getObjectClassName());
+            ui::draw_text(prop->getTypeName());
             ui::next_column();
 
             return std::nullopt;
