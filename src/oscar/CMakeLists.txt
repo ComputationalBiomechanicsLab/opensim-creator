@@ -392,6 +392,7 @@ add_library(oscar STATIC
     Utils/ScopedLifetime.h
     Utils/ScopeGuard.h
     Utils/SharedLifetimeBlock.h
+    Utils/SharedPreHashedString.h
     Utils/Spsc.h
     Utils/StringHelpers.cpp
     Utils/StringHelpers.h

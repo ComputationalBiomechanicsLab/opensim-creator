@@ -29,6 +29,7 @@
 #include <oscar/Utils/ScopedLifetime.h>
 #include <oscar/Utils/ScopeGuard.h>
 #include <oscar/Utils/SharedLifetimeBlock.h>
+#include <oscar/Utils/SharedPreHashedString.h>
 #include <oscar/Utils/Spsc.h>
 #include <oscar/Utils/StdVariantHelpers.h>
 #include <oscar/Utils/StringHelpers.h>
