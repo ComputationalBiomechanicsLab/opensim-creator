@@ -78,7 +78,7 @@ namespace
 
             ui::next_column();
 
-            ui::set_next_item_width(ui::get_content_region_avail().x);
+            ui::set_next_item_width(ui::get_content_region_available().x);
             ui::draw_string_input("##nameeditor", m_EditedName);
             if (ui::should_save_last_drawn_item_value())
             {

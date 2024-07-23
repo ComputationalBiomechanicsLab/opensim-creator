@@ -1,5 +1,8 @@
 #include "oscimgui.h"
 
+#include <implot.h>
+#include <oscar/Maths/ClosedInterval.h>
+#include <oscar/Maths/CommonFunctions.h>
 #include <oscar/Maths/EulerAngles.h>
 #include <oscar/Maths/RectFunctions.h>
 #include <oscar/Maths/MatFunctions.h>
@@ -282,4 +285,56 @@ bool osc::ui::Gizmo::handle_keyboard_inputs()
     else {
         return false;
     }
+}
+
+bool osc::ui::plot::begin(CStringView title, Vec2 size, ImPlotFlags flags)
+{
+    return ImPlot::BeginPlot(title.c_str(), size, flags);
+}
+
+void osc::ui::plot::end()
+{
+    ImPlot::EndPlot();
+}
+
+void osc::ui::plot::push_style_color(ImPlotCol idx, const Color& color)
+{
+    ImPlot::PushStyleColor(idx, Vec4{color});
+}
+
+void osc::ui::plot::pop_style_color(int count)
+{
+    ImPlot::PopStyleColor(count);
+}
+
+void osc::ui::plot::setup_axes(CStringView x_label, CStringView y_label, ImPlotAxisFlags x_flags, ImPlotAxisFlags y_flags)
+{
+    ImPlot::SetupAxes(x_label.c_str(), y_label.c_str(), x_flags, y_flags);
+}
+
+void osc::ui::plot::setup_finish()
+{
+    ImPlot::SetupFinish();
+}
+
+void osc::ui::plot::setup_axis_limits(ImAxis axis, ClosedInterval<float> data_range, float padding_percentage, ImPlotCond cond)
+{
+    // apply padding
+    data_range = expand_by_absolute_amount(data_range, padding_percentage * data_range.half_length());
+
+    // apply absolute padding in the edge-case where the data is constant
+    if (equal_within_scaled_epsilon(data_range.lower, data_range.upper)) {
+        data_range = expand_by_absolute_amount(data_range, 0.5f);
+    }
+
+    ImPlot::SetupAxisLimits(axis, data_range.lower, data_range.upper, cond);
+}
+
+void osc::ui::plot::plot_line(CStringView name, std::span<const Vec2> points, ImPlotLineFlags flags)
+{
+    if (points.empty()) {
+        return;
+    }
+
+    ImPlot::PlotLine(name.c_str(), &points.front().x, &points.front().y, static_cast<int>(points.size()), flags, 0, sizeof(Vec2));
 }

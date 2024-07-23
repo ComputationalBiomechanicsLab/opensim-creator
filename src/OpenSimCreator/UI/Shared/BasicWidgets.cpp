@@ -456,7 +456,7 @@ void osc::DrawSearchBar(std::string& out)
     // draw search bar
 
     ui::same_line();
-    ui::set_next_item_width(ui::get_content_region_avail().x);
+    ui::set_next_item_width(ui::get_content_region_available().x);
     ui::draw_string_input("##hirarchtsearchbar", out);
 }
 

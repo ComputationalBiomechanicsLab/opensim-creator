@@ -3,16 +3,28 @@
 #include <OpenSimCreator/Documents/Model/IConstModelStatePair.h>
 
 #include <OpenSim/Common/Function.h>
+#include <oscar/Formats/CSV.h>
+#include <oscar/Maths/Constants.h>
 #include <oscar/Maths/ClosedInterval.h>
+#include <oscar/Platform/os.h>
 #include <oscar/UI/Widgets/StandardPopup.h>
 #include <oscar/UI/oscimgui.h>
+#include <oscar/Utils/Algorithms.h>
 
+#include <array>
+#include <concepts>
+#include <filesystem>
+#include <fstream>
 #include <functional>
 #include <memory>
+#include <optional>
+#include <string>
 #include <string_view>
 #include <utility>
+#include <vector>
 
 using namespace osc;
+namespace plot = osc::ui::plot;
 
 class osc::FunctionCurveViewerPopup::Impl final : public StandardPopup {
 public:
@@ -22,24 +34,77 @@ public:
         std::function<const OpenSim::Function*()> functionGetter) :
 
         StandardPopup{popupName, {768.0f, 0.0f}, ImGuiWindowFlags_AlwaysAutoResize},
-        m_TargetModel{std::move(targetModel)},
+        m_Model{std::move(targetModel)},
         m_FunctionGetter{std::move(functionGetter)}
     {}
 private:
-    struct FunctionParameters final {
+    class FunctionParameters final {
+    public:
+        explicit FunctionParameters(const IConstModelStatePair& model) :
+            modelVerison{model.getModelVersion()},
+            stateVersion{model.getStateVersion()}
+        {}
+
         friend bool operator==(const FunctionParameters& lhs, const FunctionParameters& rhs) = default;
 
+        void setVersionFromModel(const IConstModelStatePair& model)
+        {
+            modelVerison = model.getModelVersion();
+            stateVersion = model.getStateVersion();
+        }
+
+        ClosedInterval<float> getInputRange() const { return inputRange; }
+        ClosedInterval<float>& updInputRange() { return inputRange; }
+        int getNumPoints() const { return numPoints; }
+        int& updNumPoints() { return numPoints; }
+
+    private:
         UID modelVerison;
         UID stateVersion;
         ClosedInterval<float> inputRange = {-1.0f, 1.0f};
         int numPoints = 100;
     };
 
+    class PlotPoints final {
+    public:
+        using value_type = Vec2;
+        using size_type = std::vector<value_type>::size_type;
+        using const_reference = std::vector<value_type>::const_reference;
+
+        auto begin() const { return m_Data.begin(); }
+        auto end() const { return m_Data.end(); }
+
+        [[nodiscard]] bool empty() const { return m_Data.empty(); }
+        size_type size() const { return m_Data.size(); }
+        const_reference front() const { return m_Data.front(); }
+        ClosedInterval<float> x_range() const { return m_XRange; }
+        ClosedInterval<float> y_range() const { return m_YRange; }
+
+        void reserve(size_type new_cap) { m_Data.reserve(new_cap); }
+
+        template<typename... Args>
+        requires std::constructible_from<Vec2, Args&&...>
+        void emplace_back(Args&&... args)
+        {
+            const Vec2& v = m_Data.emplace_back(std::forward<Args>(args)...);
+
+            // update X-/Y-range
+            m_XRange.lower = min(v.x, m_XRange.lower);
+            m_XRange.upper = max(v.x, m_XRange.upper);
+            m_YRange.lower = min(v.y, m_YRange.lower);
+            m_YRange.upper = max(v.y, m_YRange.upper);
+        }
+
+    private:
+        std::vector<value_type> m_Data;
+        ClosedInterval<float> m_XRange = {quiet_nan_v<float>, quiet_nan_v<float>};
+        ClosedInterval<float> m_YRange = {quiet_nan_v<float>, quiet_nan_v<float>};
+    };
+
     void impl_draw_content() final
     {
         // update parameter state and check if replotting is necessary
-        m_LatestParameters.modelVerison = m_TargetModel->getModelVersion();
-        m_LatestParameters.stateVersion = m_TargetModel->getStateVersion();
+        m_LatestParameters.setVersionFromModel(*m_Model);
         if (m_LatestParameters != m_PlottedParameters) {
             m_PlottedParameters = m_LatestParameters;
             m_PlotPoints = generatePlotPoints(m_LatestParameters);
@@ -52,10 +117,13 @@ private:
 
     void drawTopEditors()
     {
-        ui::draw_float_input("min", &m_LatestParameters.inputRange.lower);
-        ui::draw_float_input("max", &m_LatestParameters.inputRange.upper);
-        if (ui::draw_int_input("num points", &m_LatestParameters.numPoints)) {
-            m_LatestParameters.numPoints = clamp(m_LatestParameters.numPoints, 0, 10000);  // sanity
+        ui::draw_float_input("min x", &m_LatestParameters.updInputRange().lower);
+        ui::draw_float_input("max x", &m_LatestParameters.updInputRange().upper);
+        if (ui::draw_int_input("num points", &m_LatestParameters.updNumPoints())) {
+            m_LatestParameters.updNumPoints() = clamp(m_LatestParameters.updNumPoints(), 0, 10000);  // sanity
+        }
+        if (ui::draw_button("export CSV")) {
+            onUserRequestedCSVExport();
         }
     }
 
@@ -65,20 +133,21 @@ private:
             return;  // don't try to plot null data etc.
         }
 
-        const float availableWidth = ui::get_content_region_avail().x;
-        const Vec2 plotDimensions{availableWidth};
+        const Vec2 dimensions = Vec2{ui::get_content_region_available().x};
+        const ImPlotFlags flags = ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoFrame | ImPlotFlags_NoTitle;
+        if (plot::begin(name(), dimensions, flags)) {
 
-        if (ImPlot::BeginPlot("Plot", plotDimensions)) {
+            plot::setup_axes("x", "y");
+            plot::setup_axis_limits(ImAxis_X1, m_PlotPoints.x_range(), 0.05f, ImPlotCond_Always);
+            plot::setup_axis_limits(ImAxis_Y1, m_PlotPoints.y_range(), 0.05f, ImPlotCond_Always);
+            plot::setup_finish();
+
             ImPlot::SetNextMarkerStyle(ImPlotMarker_Circle, 2.0f);
-            ImPlot::PlotLine(
-                "Plot",
-                &m_PlotPoints.front().x,
-                &m_PlotPoints.front().y,
-                static_cast<int>(m_PlotPoints.size()),
-                0,
-                0,
-                sizeof(typename decltype(m_PlotPoints)::value_type)
-            );
+            plot::push_style_color(ImPlotCol_Line, Color::white());
+            plot::plot_line("Function Output", m_PlotPoints);
+            plot::pop_style_color();
+
+            plot::end();
         }
     }
 
@@ -89,9 +158,9 @@ private:
         }
     }
 
-    std::vector<Vec2> generatePlotPoints(const FunctionParameters& params)
+    PlotPoints generatePlotPoints(const FunctionParameters& params)
     {
-        std::vector<Vec2> rv;
+        PlotPoints rv;
 
         const OpenSim::Function* function = m_FunctionGetter();
         if (not function) {
@@ -99,12 +168,14 @@ private:
             return rv;
         }
 
-        rv.reserve(params.numPoints);
-        const double stepSize = params.inputRange.step_size(params.numPoints);
+        m_Error.reset();
+
+        rv.reserve(params.getNumPoints());
+        const double stepSize = params.getInputRange().step_size(params.getNumPoints());
         SimTK::Vector x(1);
         try {
-            for (int step = 0; step < params.numPoints; ++step) {
-                x[0] = params.inputRange.lower + stepSize*step;
+            for (int step = 0; step < params.getNumPoints(); ++step) {
+                x[0] = params.getInputRange().lower + stepSize*step;
                 const double y = function->calcValue(x);
                 rv.emplace_back(x[0], y);
             }
@@ -118,14 +189,32 @@ private:
         return rv;
     }
 
-    std::shared_ptr<const IConstModelStatePair> m_TargetModel;
+    void onUserRequestedCSVExport()
+    {
+        const auto csvPath = prompt_user_for_file_save_location_add_extension_if_necessary("csv");
+        if (not csvPath) {
+            return;  // user probably cancelled out
+        }
+
+        std::ofstream ostream{*csvPath};
+        if (not ostream) {
+            return;  // error opening the output file for writing
+        }
+
+        // write header
+        write_csv_row(ostream, std::to_array<std::string>({ "x", "y" }));
+
+        // write data rows
+        for (const auto& [x, y] : m_PlotPoints) {
+            write_csv_row(ostream, std::to_array({ std::to_string(x), std::to_string(y) }));
+        }
+    }
+
+    std::shared_ptr<const IConstModelStatePair> m_Model;
     std::function<const OpenSim::Function*()> m_FunctionGetter;
-    FunctionParameters m_LatestParameters = {
-        .modelVerison = m_TargetModel->getModelVersion(),
-        .stateVersion = m_TargetModel->getStateVersion(),
-    };
+    FunctionParameters m_LatestParameters{*m_Model};
     std::optional<FunctionParameters> m_PlottedParameters;
-    std::vector<Vec2> m_PlotPoints;
+    PlotPoints m_PlotPoints;
     std::optional<std::string> m_Error;
 };
 

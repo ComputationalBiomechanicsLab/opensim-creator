@@ -1572,7 +1572,7 @@ namespace
 
             drawPlotTitle(coord, plotTitle);  // draw a custom title bar
             ImPlot::PushStyleVar(ImPlotStyleVar_FitPadding, {0.025f, 0.05f});
-            if (ImPlot::BeginPlot(plotTitle.c_str(), ui::get_content_region_avail(), m_PlotFlags)) {
+            if (ImPlot::BeginPlot(plotTitle.c_str(), ui::get_content_region_available(), m_PlotFlags)) {
                 const PlotParameters& plotParams = getShared().getPlotParams();
 
                 ImPlot::SetupLegend(
@@ -1651,7 +1651,7 @@ namespace
                 ui::calc_text_size(ICON_FA_BARS " Options").x +
                 ui::get_style_frame_padding().x;
 
-            float cursorStart = 0.5f*(ui::get_content_region_avail().x - totalWidth);
+            float cursorStart = 0.5f*(ui::get_content_region_available().x - totalWidth);
             ui::set_cursor_pos_x(cursorStart);
 
             ui::set_next_item_width(muscleNameWidth);
@@ -1754,7 +1754,7 @@ namespace
 
                 ImPlot::PushStyleColor(ImPlotCol_Line, Vec4{color});
                 PlotLine(lineName, plot);
-                ImPlot::PopStyleColor(ImPlotCol_Line);
+                ImPlot::PopStyleColor();
 
                 if (ImPlot::BeginLegendPopup(lineName.c_str()))
                 {
@@ -1810,7 +1810,7 @@ namespace
 
                 ImPlot::PushStyleColor(ImPlotCol_Line, Vec4{color});
                 PlotLine(lineName, plot);
-                ImPlot::PopStyleColor(ImPlotCol_Line);
+                ImPlot::PopStyleColor();
 
                 if (ImPlot::BeginLegendPopup(lineName.c_str()))
                 {

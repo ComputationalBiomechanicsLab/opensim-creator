@@ -133,7 +133,7 @@ private:
     Rect draw_screenshot_as_image()
     {
         const Vec2 cursor_topleft = ui::get_cursor_screen_pos();
-        const Rect window_rect = {cursor_topleft, cursor_topleft + Vec2{ui::get_content_region_avail()}};
+        const Rect window_rect = {cursor_topleft, cursor_topleft + Vec2{ui::get_content_region_available()}};
         const Rect image_rect = shrink_to_fit(window_rect, aspect_ratio_of(screenshot_.dimensions()));
         ui::set_cursor_screen_pos(image_rect.p1);
         ui::draw_image(image_texture_, dimensions_of(image_rect));

@@ -340,7 +340,7 @@ public:
 
         ui::begin_panel("Input");
         {
-            const Vec2 windowDims = ui::get_content_region_avail();
+            const Vec2 windowDims = ui::get_content_region_available();
             const float minDim = min(windowDims.x, windowDims.y);
             const Vec2i texDims = Vec2i{minDim, minDim};
 
@@ -365,7 +365,7 @@ public:
         ui::begin_panel("Output");
         {
             outputWindowPos = ui::get_cursor_screen_pos();
-            outputWindowDims = ui::get_content_region_avail();
+            outputWindowDims = ui::get_content_region_available();
             const float minDim = min(outputWindowDims.x, outputWindowDims.y);
             const Vec2i texDims = Vec2i{minDim, minDim};
 
@@ -396,7 +396,7 @@ public:
             ui::set_next_panel_pos({ outputWindowPos.x + leftPadding, outputWindowPos.y + outputWindowDims.y - panelHeight - bottomPadding });
             ui::set_next_panel_size({ outputWindowDims.x - leftPadding, panelHeight });
             ui::begin_panel("##scrubber", nullptr, ui::get_minimal_panel_flags() & ~ImGuiWindowFlags_NoInputs);
-            ui::set_next_item_width(ui::get_content_region_avail().x);
+            ui::set_next_item_width(ui::get_content_region_available().x);
             ui::draw_float_slider("##blend", &m_BlendingFactor, 0.0f, 1.0f);
             ui::end_panel();
         }

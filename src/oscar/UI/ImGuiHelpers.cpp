@@ -384,7 +384,7 @@ void osc::ui::update_camera_from_all_inputs(Camera& camera, EulerAngles& eulers)
 Rect osc::ui::content_region_avail_as_screen_rect()
 {
     const Vec2 top_left = ui::get_cursor_screen_pos();
-    return Rect{top_left, top_left + ui::get_content_region_avail()};
+    return Rect{top_left, top_left + ui::get_content_region_available()};
 }
 
 void osc::ui::draw_image(const Texture2D& texture)
@@ -767,7 +767,7 @@ bool osc::ui::begin_main_viewport_bottom_bar(CStringView label)
 bool osc::ui::draw_button_centered(CStringView label)
 {
     const float button_width = ui::calc_text_size(label).x + 2.0f*ui::get_style_frame_padding().x;
-    const float midpoint = ui::get_cursor_screen_pos().x + 0.5f*ui::get_content_region_avail().x;
+    const float midpoint = ui::get_cursor_screen_pos().x + 0.5f*ui::get_content_region_available().x;
     const float button_start_x = midpoint - 0.5f*button_width;
 
     ui::set_cursor_screen_pos({button_start_x, ui::get_cursor_screen_pos().y});

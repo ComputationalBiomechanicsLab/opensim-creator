@@ -65,7 +65,7 @@ private:
             ui::same_line();
             ui::draw_help_marker("The name used to identify the OpenSim::Body in the model. OpenSim typically uses the name to identify connections between components in a model, so the name should be unique.");
             ui::next_column();
-            ui::set_next_item_width(ui::get_content_region_avail().x);
+            ui::set_next_item_width(ui::get_content_region_available().x);
             ui::draw_string_input("##bodyname", m_BodyDetails.bodyName);
             App::upd().add_frame_annotation("AddBodyPopup::BodyNameInput", ui::get_last_drawn_item_screen_rect());
             ui::next_column();
@@ -77,7 +77,7 @@ private:
             ui::same_line();
             ui::draw_help_marker("The mass of the body in kilograms");
             ui::next_column();
-            ui::set_next_item_width(ui::get_content_region_avail().x);
+            ui::set_next_item_width(ui::get_content_region_available().x);
             ui::draw_float_kilogram_input("##mass", m_BodyDetails.mass);
             ui::next_column();
         }
@@ -88,7 +88,7 @@ private:
             ui::same_line();
             ui::draw_help_marker("The location of the mass center in the body frame.");
             ui::next_column();
-            ui::set_next_item_width(ui::get_content_region_avail().x);
+            ui::set_next_item_width(ui::get_content_region_available().x);
             ui::draw_float3_meters_input("##comeditor", m_BodyDetails.centerOfMass);
             ui::next_column();
         }
@@ -99,7 +99,7 @@ private:
             ui::same_line();
             ui::draw_help_marker("The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz]. These are measured about the center of mass, *not* the center of the body frame.");
             ui::next_column();
-            ui::set_next_item_width(ui::get_content_region_avail().x);
+            ui::set_next_item_width(ui::get_content_region_available().x);
             ui::draw_float3_meters_input("##inertiaeditor", m_BodyDetails.inertia);
             ui::next_column();
         }
@@ -153,7 +153,7 @@ private:
             ui::same_line();
             ui::draw_help_marker("The name of the OpenSim::Joint that will join the new body to the existing frame specified above");
             ui::next_column();
-            ui::set_next_item_width(ui::get_content_region_avail().x);
+            ui::set_next_item_width(ui::get_content_region_available().x);
             ui::draw_string_input("##jointnameinput", m_BodyDetails.jointName);
             App::upd().add_frame_annotation("AddBodyPopup::JointNameInput", ui::get_last_drawn_item_screen_rect());
             ui::next_column();

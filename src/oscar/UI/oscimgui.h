@@ -7,6 +7,7 @@
 #include <imgui/misc/cpp/imgui_stdlib.h>
 #include <implot.h>
 #include <oscar/Graphics/Color.h>
+#include <oscar/Maths/ClosedInterval.h>
 #include <oscar/Maths/EulerAngles.h>
 #include <oscar/Maths/Mat4.h>
 #include <oscar/Maths/Rect.h>
@@ -378,7 +379,7 @@ namespace osc::ui
         return ImGui::GetFrameHeight();
     }
 
-    inline Vec2 get_content_region_avail()
+    inline Vec2 get_content_region_available()
     {
         return ImGui::GetContentRegionAvail();
     }
@@ -907,4 +908,32 @@ namespace osc::ui
         bool can_rotate = true,
         bool can_scale = true
     );
+
+    // oscar bindings for ImPlot
+    namespace plot
+    {
+        // wrapper for `ImPlot::BeginPlot`
+        bool begin(CStringView title, Vec2 size, ImPlotFlags flags = 0);
+
+        // wrapper for `ImPlot::EndPlot`
+        void end();
+
+        // wrapper for `ImPlot::PushStyleColor`
+        void push_style_color(ImPlotCol, const Color&);
+
+        // wrapper for `ImPlot::PopStyleColor`
+        void pop_style_color(int count = 1);
+
+        // wrapper for `ImPlot::SetupAxes`
+        void setup_axes(CStringView x_label, CStringView y_label, ImPlotAxisFlags x_flags = 0, ImPlotAxisFlags y_flags = 0);
+
+        // wrapper for `ImPlot::SetupFinish`
+        void setup_finish();
+
+        // wrapper for `ImPlot::SetupAxisLimits`
+        void setup_axis_limits(ImAxis axis, ClosedInterval<float> data_range, float padding_percentage, ImPlotCond = 2);
+
+        // wrapper for `ImPlot::PlotLine`
+        void plot_line(CStringView name, std::span<const Vec2> points, ImPlotLineFlags flags = 0);
+    }
 }

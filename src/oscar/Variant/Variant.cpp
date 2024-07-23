@@ -207,18 +207,25 @@ osc::Variant::operator osc::Vec3() const
 
 bool osc::operator==(const Variant& lhs, const Variant& rhs)
 {
-    // edge-case: `StringName` vs. `std::string` is transparent w.r.t. comparison - even
-    // though they are different entries in the underlying `std::variant`
+    if (lhs.data_ == rhs.data_) {
+        return true;   // same type, same value
+    }
+
+    if (lhs.data_.index() == rhs.data_.index()) {
+        return false;  // same type, different value
+    }
 
     if (std::holds_alternative<StringName>(lhs.data_) and std::holds_alternative<std::string>(rhs.data_)) {
+        // edge-case: different type, but interconvertible to same value
         return std::get<StringName>(lhs.data_) == std::get<std::string>(rhs.data_);
     }
-    else if (std::holds_alternative<std::string>(lhs.data_) and std::holds_alternative<StringName>(rhs.data_)) {
+
+    if (std::holds_alternative<std::string>(lhs.data_) and std::holds_alternative<StringName>(rhs.data_)) {
+        // edge-case: different type, but interconvertible to same value
         return std::get<std::string>(lhs.data_) == std::get<StringName>(rhs.data_);
     }
-    else {
-        return lhs.data_ == rhs.data_;
-    }
+
+    return false;  // different type and non-interconvertible
 }
 
 std::string osc::to_string(const Variant& variant)

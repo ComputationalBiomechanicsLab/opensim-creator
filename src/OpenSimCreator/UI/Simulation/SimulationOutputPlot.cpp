@@ -221,8 +221,8 @@ private:
         }
 
         // setup drawing area for drawing
-        ui::set_next_item_width(ui::get_content_region_avail().x);
-        const float plotWidth = ui::get_content_region_avail().x;
+        ui::set_next_item_width(ui::get_content_region_available().x);
+        const float plotWidth = ui::get_content_region_available().x;
         Rect plotRect{};
 
         // draw the plot
@@ -347,8 +347,8 @@ private:
         }
 
         // setup drawing area for drawing
-        ui::set_next_item_width(ui::get_content_region_avail().x);
-        const float plotWidth = ui::get_content_region_avail().x;
+        ui::set_next_item_width(ui::get_content_region_available().x);
+        const float plotWidth = ui::get_content_region_available().x;
         Rect plotRect{};
 
         // draw the plot

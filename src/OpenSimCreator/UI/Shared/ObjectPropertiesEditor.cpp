@@ -503,7 +503,7 @@ namespace
             // care: optional properties have size==0, so perform a range check
             std::string value = idx < m_EditedProperty.size() ? m_EditedProperty.getValue(idx) : std::string{};
 
-            ui::set_next_item_width(ui::get_content_region_avail().x);
+            ui::set_next_item_width(ui::get_content_region_available().x);
             if (ui::draw_string_input("##stringeditor", value))
             {
                 // update the edited property - don't rely on ImGui to remember edits
@@ -584,7 +584,7 @@ namespace
                 ui::same_line();
             }
 
-            ui::set_next_item_width(ui::get_content_region_avail().x);
+            ui::set_next_item_width(ui::get_content_region_available().x);
 
             // draw an invisible vertical line, so that `double` properties are properly
             // aligned with `Vec3` properties (that have a non-invisible R/G/B line)
@@ -681,7 +681,7 @@ namespace
             bool value = idx < m_EditedProperty.size() ? m_EditedProperty.getValue(idx) : false;
             bool edited = false;
 
-            ui::set_next_item_width(ui::get_content_region_avail().x);
+            ui::set_next_item_width(ui::get_content_region_available().x);
             if (ui::draw_checkbox("##booleditor", &value))
             {
                 // update the edited property - don't rely on ImGui to remember edits
@@ -893,7 +893,7 @@ namespace
                 m_MaybeUserSelectedFrameAbsPath->getComponentName() :
                 std::string{defaultedLabel};
 
-            ui::set_next_item_width(ui::get_content_region_avail().x);
+            ui::set_next_item_width(ui::get_content_region_available().x);
             if (ui::begin_combobox("##reexpressioneditor", preview))
             {
                 ui::draw_text_disabled("Frame (editing)");
@@ -984,7 +984,7 @@ namespace
             const ValueConverter& valueConverter)
         {
             ui::push_id(i);
-            ui::set_next_item_width(ui::get_content_region_avail().x);
+            ui::set_next_item_width(ui::get_content_region_available().x);
 
             // draw dimension hint (color bar next to the input)
             DrawColoredDimensionHintVerticalLine(Color(0.0f, 0.6f).with_element(i, 1.0f));
@@ -1110,7 +1110,7 @@ namespace
             {
                 ui::push_id(i);
 
-                ui::set_next_item_width(ui::get_content_region_avail().x);
+                ui::set_next_item_width(ui::get_content_region_available().x);
                 if (ui::draw_float3_input("##vec6editor", rawValue.data() + static_cast<ptrdiff_t>(3*i), "%.6f"))
                 {
                     m_EditedProperty.updValue(idx)[3*i + 0] = static_cast<double>(rawValue[3*i + 0]);
@@ -1199,7 +1199,7 @@ namespace
             int value = idx < m_EditedProperty.size() ? m_EditedProperty.getValue(idx) : 0;
             bool edited = false;
 
-            ui::set_next_item_width(ui::get_content_region_avail().x);
+            ui::set_next_item_width(ui::get_content_region_available().x);
             if (ui::draw_int_input("##inteditor", &value))
             {
                 // update the edited property - don't rely on ImGui to remember edits
@@ -1288,7 +1288,7 @@ namespace
             bool shouldSave = false;
 
             Color color = to_color(m_EditedProperty.getValue());
-            ui::set_next_item_width(ui::get_content_region_avail().x);
+            ui::set_next_item_width(ui::get_content_region_available().x);
 
             if (ui::draw_rgba_color_editor("##coloreditor", color))
             {
@@ -1515,10 +1515,8 @@ namespace
             ui::next_column();
 
             if (ui::draw_button(ICON_FA_EYE)) {
-                std::stringstream ss;
-                ss << "View " << prop->getName() << " (" << prop->getTypeName() << ')';
                 pushPopup(std::make_unique<FunctionCurveViewerPopup>(
-                    std::move(ss).str(),
+                    generatePopupName(*prop),
                     getModelPtr(),
                     [accessor = getPropertyAccessor()]() -> const OpenSim::Function*
                     {
@@ -1537,6 +1535,17 @@ namespace
             ui::next_column();
 
             return std::nullopt;
+        }
+
+        std::string generatePopupName(const OpenSim::AbstractProperty& prop) const
+        {
+            std::stringstream ss;
+            ss << "View ";
+            if (const OpenSim::Object* obj = tryGetObject()) {
+                ss << obj->getName() << '/';
+            }
+            ss << prop.getName() << " (" << prop.getTypeName() << ')';
+            return std::move(ss).str();
         }
     };
 }

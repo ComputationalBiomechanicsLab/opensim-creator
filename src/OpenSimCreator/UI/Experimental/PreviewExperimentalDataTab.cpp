@@ -473,7 +473,7 @@ private:
         ui::enable_dockspace_over_viewport(ui::get_main_viewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
         ui::begin_panel("render");
-        Vec2 dims = ui::get_content_region_avail();
+        Vec2 dims = ui::get_content_region_available();
         if (m_RenderIsMousedOver)
         {
             ui::update_polar_camera_from_mouse_inputs(m_Camera, dims);

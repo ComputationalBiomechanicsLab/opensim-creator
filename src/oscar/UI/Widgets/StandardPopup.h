@@ -3,6 +3,7 @@
 #include <oscar/Maths/Vec2.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Widgets/IPopup.h>
+#include <oscar/Utils/CStringView.h>
 
 #include <optional>
 #include <string>
@@ -34,6 +35,7 @@ namespace osc
         );
 
     protected:
+        CStringView name() const { return popup_name_; }
         bool is_popup_opened_this_frame() const;
         void request_close();
         bool is_modal() const;

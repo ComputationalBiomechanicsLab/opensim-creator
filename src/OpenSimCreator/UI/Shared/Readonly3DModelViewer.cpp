@@ -69,7 +69,7 @@ public:
             m_CachedModelRenderer.autoFocusCamera(
                 rs,
                 m_Params,
-                aspect_ratio_of(ui::get_content_region_avail())
+                aspect_ratio_of(ui::get_content_region_available())
             );
         }
 
@@ -87,14 +87,14 @@ public:
         m_CachedModelRenderer.onDraw(
             rs,
             m_Params,
-            ui::get_content_region_avail(),
+            ui::get_content_region_available(),
             App::get().anti_aliasing_level()
         );
 
         // blit texture as a ui::Image
         ui::draw_image(
             m_CachedModelRenderer.updRenderTexture(),
-            ui::get_content_region_avail()
+            ui::get_content_region_available()
         );
 
         // update current+retained hittest
