@@ -454,8 +454,7 @@ namespace
             const property_type& prop = *maybeProp;
 
             // update any cached data
-            if (!prop.equals(m_OriginalProperty))
-            {
+            if (prop != m_OriginalProperty) {
                 m_OriginalProperty = prop;
                 m_EditedProperty = prop;
             }
@@ -542,8 +541,7 @@ namespace
             const property_type& prop = *maybeProp;
 
             // update any cached data
-            if (!prop.equals(m_OriginalProperty))
-            {
+            if (prop != m_OriginalProperty) {
                 m_OriginalProperty = prop;
                 m_EditedProperty = prop;
             }
@@ -634,8 +632,7 @@ namespace
             const property_type& prop = *maybeProp;
 
             // update any cached data
-            if (!prop.equals(m_OriginalProperty))
-            {
+            if (prop != m_OriginalProperty) {
                 m_OriginalProperty = prop;
                 m_EditedProperty = prop;
             }
@@ -842,8 +839,7 @@ namespace
             const property_type& prop = *maybeProp;
 
             // update any cached data
-            if (!prop.equals(m_OriginalProperty))
-            {
+            if (prop != m_OriginalProperty) {
                 m_OriginalProperty = prop;
                 m_EditedProperty = prop;
             }
@@ -1060,8 +1056,7 @@ namespace
             const property_type& prop = *maybeProp;
 
             // update any cached data
-            if (!prop.equals(m_OriginalProperty))
-            {
+            if (prop != m_OriginalProperty) {
                 m_OriginalProperty = prop;
                 m_EditedProperty = prop;
             }
@@ -1155,8 +1150,7 @@ namespace
             const property_type& prop = *maybeProp;
 
             // update any cached data
-            if (!prop.equals(m_OriginalProperty))
-            {
+            if (prop != m_OriginalProperty) {
                 m_OriginalProperty = prop;
                 m_EditedProperty = prop;
             }
@@ -1248,8 +1242,7 @@ namespace
             const property_type& prop = *maybeProp;
 
             // update any cached data
-            if (!prop.equals(m_OriginalProperty))
-            {
+            if (prop != m_OriginalProperty) {
                 m_OriginalProperty = prop;
                 m_EditedProperty = prop;
             }
