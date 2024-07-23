@@ -285,7 +285,7 @@ namespace osc
         // value must be scaled up to the magnitude of the operands if you need
         // a more-correct equality comparison
 
-        const T scaled_epsilon = std::ranges::max({static_cast<T>(1.0), abs(x), abs(y)}) * epsilon_v<T>;
+        const T scaled_epsilon = max(static_cast<T>(1.0), max(abs(x), abs(y))) * epsilon_v<T>;
         return abs(x - y) < scaled_epsilon;
     }
 

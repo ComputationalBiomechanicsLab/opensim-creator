@@ -15,6 +15,7 @@
 #include <oscar/Maths/Vec.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
+#include <oscar/Maths/Vec4.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/UID.h>
 
@@ -962,7 +963,13 @@ namespace osc::ui
         Rect get_plot_screen_rect();
 
         // wrapper for `ImPlot::Annotation`
-        void draw_annotation(Vec2 location_dataspace, const Color&, Vec2 pixel_offset, bool clamp, const char* fmt, ...);
+        inline void draw_annotation(Vec2 location_dataspace, const Color& color, Vec2 pixel_offset, bool clamp, const char* fmt, ...)
+        {
+            va_list args;
+            va_start(args, fmt);
+            ImPlot::AnnotationV(location_dataspace.x, location_dataspace.y, Vec4{color}, pixel_offset, clamp, fmt, args);
+            va_end(args);
+        }
 
         // wrapper for `ImPlot::DragPoint`
         bool drag_point(int id, Vec2d*, const Color&, float size = 4, ImPlotDragToolFlags flags = 0, bool* out_clicked = nullptr, bool* out_hovered = nullptr, bool* held = nullptr);

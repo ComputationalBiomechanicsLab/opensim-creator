@@ -380,14 +380,6 @@ Rect osc::ui::plot::get_plot_screen_rect()
     return {top_left, top_left + Vec2{ImPlot::GetPlotSize()}};
 }
 
-void osc::ui::plot::draw_annotation(Vec2 location_dataspace, const Color& color, Vec2 pixel_offset, bool clamp, const char* fmt, ...)
-{
-    va_list args;
-    va_start(args, fmt);
-    ImPlot::AnnotationV(location_dataspace.x, location_dataspace.y, Vec4{color}, pixel_offset, clamp, fmt, args);
-    va_end(args);
-}
-
 bool osc::ui::plot::drag_point(int id, Vec2d* v, const Color& color, float size, ImPlotDragToolFlags flags, bool* out_clicked, bool* out_hovered, bool* held)
 {
     return ImPlot::DragPoint(id, &v->x, &v->y, Vec4{color}, size, flags, out_clicked, out_hovered, held);
