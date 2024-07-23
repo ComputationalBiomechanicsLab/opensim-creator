@@ -297,6 +297,21 @@ void osc::ui::plot::end()
     ImPlot::EndPlot();
 }
 
+void osc::ui::plot::push_style_var(ImPlotStyleVar idx, float value)
+{
+    ImPlot::PushStyleVar(idx, value);
+}
+
+void osc::ui::plot::push_style_var(ImPlotStyleVar idx, Vec2 value)
+{
+    ImPlot::PushStyleVar(idx, value);
+}
+
+void osc::ui::plot::pop_style_var(int count)
+{
+    ImPlot::PopStyleVar(count);
+}
+
 void osc::ui::plot::push_style_color(ImPlotCol idx, const Color& color)
 {
     ImPlot::PushStyleColor(idx, Vec4{color});
@@ -305,6 +320,11 @@ void osc::ui::plot::push_style_color(ImPlotCol idx, const Color& color)
 void osc::ui::plot::pop_style_color(int count)
 {
     ImPlot::PopStyleColor(count);
+}
+
+void osc::ui::plot::setup_axis(ImAxis axis, std::optional<CStringView> label, ImPlotFlags flags)
+{
+    ImPlot::SetupAxis(axis, label ? label->c_str() : nullptr, flags);
 }
 
 void osc::ui::plot::setup_axes(CStringView x_label, CStringView y_label, ImPlotAxisFlags x_flags, ImPlotAxisFlags y_flags)
@@ -330,6 +350,16 @@ void osc::ui::plot::setup_axis_limits(ImAxis axis, ClosedInterval<float> data_ra
     ImPlot::SetupAxisLimits(axis, data_range.lower, data_range.upper, cond);
 }
 
+void osc::ui::plot::set_next_marker_style(
+    ImPlotMarker marker,
+    float size,
+    const ImVec4& fill,
+    float weight,
+    const ImVec4& outline)
+{
+    ImPlot::SetNextMarkerStyle(marker, size, fill, weight, outline);
+}
+
 void osc::ui::plot::plot_line(CStringView name, std::span<const Vec2> points, ImPlotLineFlags flags)
 {
     if (points.empty()) {
@@ -337,4 +367,28 @@ void osc::ui::plot::plot_line(CStringView name, std::span<const Vec2> points, Im
     }
 
     ImPlot::PlotLine(name.c_str(), &points.front().x, &points.front().y, static_cast<int>(points.size()), flags, 0, sizeof(Vec2));
+}
+
+void osc::ui::plot::plot_line(CStringView name, std::span<const float> points)
+{
+    ImPlot::PlotLine(name.c_str(), points.data(), static_cast<int>(points.size()));
+}
+
+Rect osc::ui::plot::get_plot_screen_rect()
+{
+    const Vec2 top_left = ImPlot::GetPlotPos();
+    return {top_left, top_left + Vec2{ImPlot::GetPlotSize()}};
+}
+
+void osc::ui::plot::draw_annotation(Vec2 location_dataspace, const Color& color, Vec2 pixel_offset, bool clamp, const char* fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    ImPlot::AnnotationV(location_dataspace.x, location_dataspace.y, Vec4{color}, pixel_offset, clamp, fmt, args);
+    va_end(args);
+}
+
+bool osc::ui::plot::drag_point(int id, Vec2d* v, const Color& color, float size, ImPlotDragToolFlags flags, bool* out_clicked, bool* out_hovered, bool* held)
+{
+    return ImPlot::DragPoint(id, &v->x, &v->y, Vec4{color}, size, flags, out_clicked, out_hovered, held);
 }

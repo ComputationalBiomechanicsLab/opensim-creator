@@ -918,11 +918,21 @@ namespace osc::ui
         // wrapper for `ImPlot::EndPlot`
         void end();
 
+        // wrapper for `ImPlot::PushStyleVar`
+        void push_style_var(ImPlotStyleVar, float);
+        void push_style_var(ImPlotStyleVar, Vec2);
+
+        // wrapper for `ImPlot::PopStyleVar`
+        void pop_style_var(int count = 1);
+
         // wrapper for `ImPlot::PushStyleColor`
         void push_style_color(ImPlotCol, const Color&);
 
         // wrapper for `ImPlot::PopStyleColor`
         void pop_style_color(int count = 1);
+
+        // wrapper for `ImPlot::SetupAxis`
+        void setup_axis(ImAxis, std::optional<CStringView> label = std::nullopt, ImPlotFlags = 0);
 
         // wrapper for `ImPlot::SetupAxes`
         void setup_axes(CStringView x_label, CStringView y_label, ImPlotAxisFlags x_flags = 0, ImPlotAxisFlags y_flags = 0);
@@ -933,7 +943,28 @@ namespace osc::ui
         // wrapper for `ImPlot::SetupAxisLimits`
         void setup_axis_limits(ImAxis axis, ClosedInterval<float> data_range, float padding_percentage, ImPlotCond = 2);
 
+        // wrapper for `ImPlot::SetNextMarkerStyle`
+        void set_next_marker_style(
+            ImPlotMarker marker = IMPLOT_AUTO,
+            float size = IMPLOT_AUTO,
+            const ImVec4& fill = IMPLOT_AUTO_COL,
+            float weight = IMPLOT_AUTO,
+            const ImVec4& outline = IMPLOT_AUTO_COL
+        );
+
         // wrapper for `ImPlot::PlotLine`
         void plot_line(CStringView name, std::span<const Vec2> points, ImPlotLineFlags flags = 0);
+        void plot_line(CStringView name, std::span<const float> points);
+
+        // returns the plot's rectangle in screen-space
+        //
+        // must be called between `plot::begin` and `plot::end`
+        Rect get_plot_screen_rect();
+
+        // wrapper for `ImPlot::Annotation`
+        void draw_annotation(Vec2 location_dataspace, const Color&, Vec2 pixel_offset, bool clamp, const char* fmt, ...);
+
+        // wrapper for `ImPlot::DragPoint`
+        bool drag_point(int id, Vec2d*, const Color&, float size = 4, ImPlotDragToolFlags flags = 0, bool* out_clicked = nullptr, bool* out_hovered = nullptr, bool* held = nullptr);
     }
 }

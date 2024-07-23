@@ -142,7 +142,7 @@ private:
             plot::setup_axis_limits(ImAxis_Y1, m_PlotPoints.y_range(), 0.05f, ImPlotCond_Always);
             plot::setup_finish();
 
-            ImPlot::SetNextMarkerStyle(ImPlotMarker_Circle, 2.0f);
+            plot::set_next_marker_style(ImPlotMarker_Circle, 2.0f);
             plot::push_style_color(ImPlotCol_Line, Color::white());
             plot::plot_line("Function Output", m_PlotPoints);
             plot::pop_style_color();
