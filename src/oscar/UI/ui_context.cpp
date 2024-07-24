@@ -28,16 +28,12 @@ namespace rgs = std::ranges;
 
 namespace
 {
-    // this is necessary because ImGui will take ownership, but will free the
-    // font atlas with `free`, rather than `delete`, which memory sanitizers
-    // like libASAN dislike (`malloc`/`free`, or `new`/`delete` - no mixes)
-    template<rgs::contiguous_range Container>
-    typename Container::value_type* to_malloced_copy(const Container& c)
+    // this is necessary because ImGui will take ownership and be responsible for
+    // freeing the memory with `ImGui::MemFree`
+    char* to_imgui_allocated_copy(std::span<const char> span)
     {
-        using value_type = typename Container::value_type;
-
-        auto* ptr = cpp20::bit_cast<value_type*>(malloc(rgs::size(c) * sizeof(value_type)));  // NOLINT(cppcoreguidelines-owning-memory,cppcoreguidelines-no-malloc,hicpp-no-malloc)
-        rgs::copy(c, ptr);
+        auto* ptr = cpp20::bit_cast<char*>(ImGui::MemAlloc(span.size_bytes()));
+        rgs::copy(span, ptr);
         return ptr;
     }
 
@@ -49,9 +45,11 @@ namespace
         const ImWchar* glyph_ranges = nullptr)
     {
         const std::string base_font_data = App::slurp(path);
+        const std::span<const char> data_including_nul_terminator{base_font_data.data(), base_font_data.size() + 1};
+
         atlas.AddFontFromMemoryTTF(
-            to_malloced_copy(base_font_data),  // ImGui takes ownership
-            static_cast<int>(base_font_data.size()) + 1,  // +1 for NUL
+            to_imgui_allocated_copy(data_including_nul_terminator),
+            static_cast<int>(data_including_nul_terminator.size()),
             config.SizePixels,
             &config,
             glyph_ranges
@@ -62,6 +60,13 @@ namespace
 
 void osc::ui::context::init()
 {
+    // ensure ImGui uses the same allocator as the rest of
+    // our (C++ stdlib) application
+    ImGui::SetAllocatorFunctions(
+        [](size_t count, [[maybe_unused]] void* user_data) { return ::operator new(count); },
+        [](void* ptr, [[maybe_unused]] void* user_data) { ::operator delete(ptr); }
+    );
+
     // init ImGui top-level context
     ImGui::CreateContext();
 
