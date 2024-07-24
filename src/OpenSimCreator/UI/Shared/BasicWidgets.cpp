@@ -47,7 +47,6 @@
 #include <oscar/UI/IconCache.h>
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
-#include <oscar/UI/oscimgui_internal.h>
 #include <oscar/UI/Widgets/IconWithMenu.h>
 #include <oscar/UI/Widgets/CameraViewAxes.h>
 #include <oscar/Utils/ParentPtr.h>

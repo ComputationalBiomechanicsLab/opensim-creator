@@ -11,7 +11,6 @@
 #include <oscar/Maths/Vec4.h>
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
-#include <oscar/UI/oscimgui_internal.h>
 
 #include <memory>
 #include <string>

@@ -348,7 +348,6 @@ add_library(oscar STATIC
     UI/MouseCapturingCamera.h
     UI/oscimgui.cpp
     UI/oscimgui.h
-    UI/oscimgui_internal.h
     UI/oscimgui_config.h
     UI/Panels.h
     UI/Screens.h

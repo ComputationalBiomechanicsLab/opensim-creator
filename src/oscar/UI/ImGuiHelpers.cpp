@@ -16,7 +16,6 @@
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Maths/Vec4.h>
 #include <oscar/UI/oscimgui.h>
-#include <oscar/UI/oscimgui_internal.h>
 #include <oscar/UI/ui_graphics_backend.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/UID.h>

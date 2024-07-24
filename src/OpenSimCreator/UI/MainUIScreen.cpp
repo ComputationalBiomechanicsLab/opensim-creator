@@ -19,7 +19,6 @@
 #include <oscar/Shims/Cpp23/ranges.h>
 #include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
-#include <oscar/UI/oscimgui_internal.h>
 #include <oscar/UI/Tabs/ErrorTab.h>
 #include <oscar/UI/Tabs/ITab.h>
 #include <oscar/UI/Tabs/ScreenshotTab.h>
