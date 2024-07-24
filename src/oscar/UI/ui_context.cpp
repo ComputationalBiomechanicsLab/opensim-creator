@@ -28,6 +28,7 @@ namespace rgs = std::ranges;
 
 namespace
 {
+#ifndef EMSCRIPTEN
     // this is necessary because ImGui will take ownership and be responsible for
     // freeing the memory with `ImGui::MemFree`
     char* to_imgui_allocated_copy(std::span<const char> span)
@@ -37,7 +38,6 @@ namespace
         return ptr;
     }
 
-#ifndef EMSCRIPTEN
     void add_resource_as_font(
         const ImFontConfig& config,
         ImFontAtlas& atlas,
