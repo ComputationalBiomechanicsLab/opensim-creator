@@ -19,7 +19,8 @@ namespace osc
         ShouldShowCentersOfMass                             = 1<<5,
         ShouldShowPointToPointSprings                       = 1<<6,
         ShouldShowContactForces                             = 1<<7,
-        NUM_FLAGS                                           =    8,
+        ShouldShowForceLinearComponent                      = 1<<8,
+        NUM_FLAGS                                           =    9,
 
         Default = ShouldShowPointToPointSprings,
     };

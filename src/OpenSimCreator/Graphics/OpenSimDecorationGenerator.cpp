@@ -9,6 +9,7 @@
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ModelDisplayHints.h>
+#include <OpenSim/Simulation/Model/ForceAdapter.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/GeometryPath.h>
 #include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
@@ -315,6 +316,61 @@ namespace
         const std::function<void(const OpenSim::Component&, SceneDecoration&&)>& m_Out;
         SimTK::Array_<SimTK::DecorativeGeometry> m_GeomList;
     };
+
+    // OSC-specific decoration handler that adds arrows to forces
+    void HandleForceArrows(
+        RendererState& rs,
+        const OpenSim::Force& force)
+    {
+        if (!rs.getOptions().getShouldShowForceLinearComponent()) {
+            return;
+        }
+
+        // this is a very heavy-handed way of getting the relevant information, because
+        // OpenSim's `Force` implementation implicitly assumes that all body forces are
+        // available in one contiguous vector
+
+        const SimTK::SimbodyMatterSubsystem& matter = rs.getMatterSubsystem();
+        const SimTK::State& state = rs.getState();
+
+        OpenSim::ForceAdapter adapter{force};
+        SimTK::Vector_<SimTK::SpatialVec> bodyForces(matter.getNumBodies(), SimTK::SpatialVec{});
+        SimTK::Vector_<SimTK::Vec3> particleForces(matter.getNumParticles(), SimTK::Vec3{});  // (unused)
+        SimTK::Vector mobilityForces(matter.getNumMobilities(), 0.0);  // (unused)
+
+        adapter.calcForce(
+            state,
+            bodyForces,
+            particleForces,  // unused, but required
+            mobilityForces   // unused, but required
+        );
+
+        for (SimTK::MobilizedBodyIndex bodyIdx{0}; bodyIdx < bodyForces.size(); ++bodyIdx) {
+            const SimTK::Vec3 translationalForce = bodyForces[bodyIdx][1];
+            if (equal_within_scaled_epsilon(translationalForce.normSqr(), 0.0)) {
+                continue;  // no translational force applied
+            }
+
+            // else: `bodyForce` was applied to the `SimTK::MobilizedBody` at index `bodyIdx`
+            const SimTK::MobilizedBody& mobod = matter.getMobilizedBody(bodyIdx);
+            const SimTK::Transform mobod2ground = mobod.getBodyTransform(state);
+
+            const float fixupScaleFactor = rs.getFixupScaleFactor();
+
+            const ArrowProperties props = {
+                .worldspace_start = ToVec3(mobod2ground * SimTK::Vec3{}),
+                .worldspace_end = ToVec3(mobod2ground * (fixupScaleFactor * 0.005 * translationalForce)),
+                .tip_length = (fixupScaleFactor*0.015f),
+                .neck_thickness = (fixupScaleFactor*0.006f),
+                .head_thickness = (fixupScaleFactor*0.01f),
+                .color = Color::yellow(),
+            };
+            draw_arrow(rs.updMeshCache(), props, [&force, &rs](SceneDecoration&& decoration)
+            {
+                rs.consume(force, std::move(decoration));
+            });
+        }
+    }
 
     // OSC-specific decoration handler for `OpenSim::PointToPointSpring`
     void HandlePointToPointSpring(
@@ -1004,6 +1060,7 @@ void osc::GenerateSubcomponentDecorations(
         }
         else if (const auto* const p2p = dynamic_cast<const OpenSim::PointToPointSpring*>(&c); p2p && opts.getShouldShowPointToPointSprings())
         {
+            HandleForceArrows(rendererState, *p2p);
             HandlePointToPointSpring(rendererState, *p2p);
         }
         else if (typeid(c) == typeid(OpenSim::Station))
@@ -1017,6 +1074,7 @@ void osc::GenerateSubcomponentDecorations(
         }
         else if (const auto* const hcf = dynamic_cast<const OpenSim::HuntCrossleyForce*>(&c))
         {
+            HandleForceArrows(rendererState, *hcf);
             HandleHuntCrossleyForce(rendererState, *hcf);
         }
         else if (const auto* const geom = dynamic_cast<const OpenSim::Geometry*>(&c))
@@ -1026,6 +1084,11 @@ void osc::GenerateSubcomponentDecorations(
             // if the component being rendered is geometry that was explicitly added into the model then
             // the scene scale factor should not apply to that geometry
             rendererState.emitGenericDecorations(c, c, 1.0f);  // note: override scale factor
+        }
+        else if (const auto* const force = dynamic_cast<const OpenSim::Force*>(&c))
+        {
+            HandleForceArrows(rendererState, *force);
+            rendererState.emitGenericDecorations(c, c);
         }
         else
         {

@@ -63,7 +63,15 @@ namespace
             "Plane Contact Forces (EXPERIMENTAL)",
             "Tries to draw the direction of contact forces on planes in the scene.\n\nEXPERIMENTAL: the implementation of this visualization is work-in-progress and written by someone with a highschool-log_level_ understanding of Torque. Report any bugs or implementation opinions on GitHub.\n\nOpenSim Creator's implementation of this algorithm is very roughly based on Thomas Geijtenbeek's (better) implementation in scone-studio, here:\n\n    - https://github.com/tgeijten/scone-studio \n\nThanks to @tgeijten for writing an awesome project (that OSC has probably mis-implemented ;) - again, report any bugs, folks)",
         },
+        OpenSimDecorationOptionMetadata
+        {
+            "show_force_linear_component",
+            "Forces' Linear Component (EXPERIMENTAL)",
+            "Tries to draw the linear component applies by each `OpenSim::Force` in the model.\n\nEXPERIMENTAL: this currently iterates through all the forces and extracts their linear component w.r.t. the body frame, it's probably slow, and probably noisy, but also probably still useful to know (e.g. if you're debugging weird model behavior)",
+        },
     });
+
+    static_assert(c_CustomDecorationOptionLabels.size() == num_flags<OpenSimDecorationOptionFlags>());
 }
 
 
