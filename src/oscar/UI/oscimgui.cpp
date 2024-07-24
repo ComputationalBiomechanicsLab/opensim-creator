@@ -24,6 +24,7 @@
 
 using namespace osc;
 namespace rgs = std::ranges;
+namespace plot = osc::ui::plot;
 
 namespace
 {
@@ -287,9 +288,133 @@ bool osc::ui::Gizmo::handle_keyboard_inputs()
     }
 }
 
-bool osc::ui::plot::begin(CStringView title, Vec2 size, ImPlotFlags flags)
+// `ui::plot::` helpers
+namespace
 {
-    return ImPlot::BeginPlot(title.c_str(), size, flags);
+    constexpr ImPlotFlags to_ImPlotFlags(plot::PlotFlags flags)
+    {
+        static_assert(cpp23::to_underlying(plot::PlotFlags::NoTitle) == ImPlotFlags_NoTitle);
+        static_assert(cpp23::to_underlying(plot::PlotFlags::NoLegend) == ImPlotFlags_NoLegend);
+        static_assert(cpp23::to_underlying(plot::PlotFlags::NoMenus) == ImPlotFlags_NoMenus);
+        static_assert(cpp23::to_underlying(plot::PlotFlags::NoBoxSelect) == ImPlotFlags_NoBoxSelect);
+        static_assert(cpp23::to_underlying(plot::PlotFlags::NoFrame) == ImPlotFlags_NoFrame);
+        static_assert(cpp23::to_underlying(plot::PlotFlags::NoInputs) == ImPlotFlags_NoInputs);
+        return static_cast<ImPlotFlags>(flags);
+    }
+
+    constexpr ImPlotStyleVar to_ImPlotStyleVar(plot::StyleVar var)
+    {
+        static_assert(num_options<plot::StyleVar>() == 4);
+
+        switch (var) {
+        case plot::StyleVar::FitPadding:        return ImPlotStyleVar_FitPadding;
+        case plot::StyleVar::PlotPadding:       return ImPlotStyleVar_PlotPadding;
+        case plot::StyleVar::PlotBorderSize:    return ImPlotStyleVar_PlotBorderSize;
+        case plot::StyleVar::AnnotationPadding: return ImPlotStyleVar_AnnotationPadding;
+        default:                                return ImPlotStyleVar_PlotPadding;  // shouldn't happen
+        }
+    }
+
+    constexpr ImPlotCol to_ImPlotCol(plot::ColorVar var)
+    {
+        static_assert(num_options<plot::ColorVar>() == 2);
+
+        switch (var) {
+        case plot::ColorVar::Line:           return ImPlotCol_Line;
+        case plot::ColorVar::PlotBackground: return ImPlotCol_PlotBg;
+        default:                             return ImPlotCol_Line;  // shouldn't happen
+        }
+    }
+
+    constexpr ImAxis to_ImAxis(plot::Axis axis)
+    {
+        static_assert(num_options<plot::Axis>() == 2);
+
+        switch (axis) {
+        case plot::Axis::X1: return ImAxis_X1;
+        case plot::Axis::Y1: return ImAxis_Y1;
+        default:             return ImAxis_X1;  // shouldn't happen
+        }
+    }
+
+    constexpr ImPlotAxisFlags to_ImPlotAxisFlags(plot::AxisFlags flags)
+    {
+        static_assert(cpp23::to_underlying(plot::AxisFlags::None) == ImPlotAxisFlags_None);
+        static_assert(cpp23::to_underlying(plot::AxisFlags::NoLabel) == ImPlotAxisFlags_NoLabel);
+        static_assert(cpp23::to_underlying(plot::AxisFlags::NoGridLines) == ImPlotAxisFlags_NoGridLines);
+        static_assert(cpp23::to_underlying(plot::AxisFlags::NoTickMarks) == ImPlotAxisFlags_NoTickMarks);
+        static_assert(cpp23::to_underlying(plot::AxisFlags::NoTickLabels) == ImPlotAxisFlags_NoTickLabels);
+        static_assert(cpp23::to_underlying(plot::AxisFlags::NoMenus) == ImPlotAxisFlags_NoMenus);
+        static_assert(cpp23::to_underlying(plot::AxisFlags::AutoFit) == ImPlotAxisFlags_AutoFit);
+        static_assert(cpp23::to_underlying(plot::AxisFlags::LockMin) == ImPlotAxisFlags_LockMin);
+        static_assert(cpp23::to_underlying(plot::AxisFlags::LockMax) == ImPlotAxisFlags_LockMax);
+        static_assert(cpp23::to_underlying(plot::AxisFlags::Lock) == ImPlotAxisFlags_Lock);
+        static_assert(cpp23::to_underlying(plot::AxisFlags::NoDecorations) == ImPlotAxisFlags_NoDecorations);
+
+        return static_cast<ImPlotAxisFlags>(flags);
+    }
+
+    constexpr ImPlotCond to_ImPlotCond(plot::Condition condition)
+    {
+        static_assert(num_options<plot::Condition>() == 2);
+        switch (condition) {
+        case plot::Condition::Always: return ImPlotCond_Always;
+        case plot::Condition::Once:   return ImPlotCond_Once;
+        default:                      return ImPlotCond_Once;  // shouldn't happen
+        }
+    }
+
+    constexpr ImPlotMarker to_ImPlotMarker(plot::MarkerType marker_type)
+    {
+        static_assert(num_options<plot::MarkerType>() == 2);
+        switch (marker_type) {
+        case plot::MarkerType::None:   return ImPlotMarker_None;
+        case plot::MarkerType::Circle: return ImPlotMarker_Circle;
+        default:                       return ImPlotMarker_None;  // shouldn't happen
+        }
+    }
+
+    constexpr ImPlotDragToolFlags to_ImPlotDragToolFlags(plot::DragToolFlags flags)
+    {
+        static_assert(cpp23::to_underlying(plot::DragToolFlags::None) == ImPlotDragToolFlags_None);
+        static_assert(cpp23::to_underlying(plot::DragToolFlags::NoFit) == ImPlotDragToolFlags_NoFit);
+        static_assert(cpp23::to_underlying(plot::DragToolFlags::NoInputs) == ImPlotDragToolFlags_NoInputs);
+        return static_cast<ImPlotDigitalFlags>(flags);
+    }
+
+    constexpr ImPlotLocation to_ImPlotLocation(plot::Location location)
+    {
+        static_assert(num_options<plot::Location>() == 9);
+        switch (location) {
+        case plot::Location::Center:    return ImPlotLocation_Center;
+        case plot::Location::North:     return ImPlotLocation_North;
+        case plot::Location::NorthEast: return ImPlotLocation_NorthEast;
+        case plot::Location::East:      return ImPlotLocation_East;
+        case plot::Location::SouthEast: return ImPlotLocation_SouthEast;
+        case plot::Location::South:     return ImPlotLocation_South;
+        case plot::Location::SouthWest: return ImPlotLocation_SouthWest;
+        case plot::Location::West:      return ImPlotLocation_West;
+        case plot::Location::NorthWest: return ImPlotLocation_NorthWest;
+        default:                        return ImPlotLocation_Center;  // shouldn't happen
+        }
+    }
+
+    constexpr ImPlotLegendFlags to_ImPlotLegendFlags(plot::LegendFlags flags)
+    {
+        static_assert(cpp23::to_underlying(plot::LegendFlags::None) == ImPlotLegendFlags_None);
+        static_assert(cpp23::to_underlying(plot::LegendFlags::Outside) == ImPlotLegendFlags_Outside);
+        return static_cast<ImPlotLegendFlags>(flags);
+    }
+}
+
+void osc::ui::plot::show_demo_panel()
+{
+    ImPlot::ShowDemoWindow();
+}
+
+bool osc::ui::plot::begin(CStringView title, Vec2 size, PlotFlags flags)
+{
+    return ImPlot::BeginPlot(title.c_str(), size, to_ImPlotFlags(flags));
 }
 
 void osc::ui::plot::end()
@@ -297,14 +422,14 @@ void osc::ui::plot::end()
     ImPlot::EndPlot();
 }
 
-void osc::ui::plot::push_style_var(ImPlotStyleVar idx, float value)
+void osc::ui::plot::push_style_var(StyleVar var, float value)
 {
-    ImPlot::PushStyleVar(idx, value);
+    ImPlot::PushStyleVar(to_ImPlotStyleVar(var), value);
 }
 
-void osc::ui::plot::push_style_var(ImPlotStyleVar idx, Vec2 value)
+void osc::ui::plot::push_style_var(StyleVar var, Vec2 value)
 {
-    ImPlot::PushStyleVar(idx, value);
+    ImPlot::PushStyleVar(to_ImPlotStyleVar(var), value);
 }
 
 void osc::ui::plot::pop_style_var(int count)
@@ -312,9 +437,9 @@ void osc::ui::plot::pop_style_var(int count)
     ImPlot::PopStyleVar(count);
 }
 
-void osc::ui::plot::push_style_color(ImPlotCol idx, const Color& color)
+void osc::ui::plot::push_style_color(ColorVar var, const Color& color)
 {
-    ImPlot::PushStyleColor(idx, Vec4{color});
+    ImPlot::PushStyleColor(to_ImPlotCol(var), Vec4{color});
 }
 
 void osc::ui::plot::pop_style_color(int count)
@@ -322,22 +447,17 @@ void osc::ui::plot::pop_style_color(int count)
     ImPlot::PopStyleColor(count);
 }
 
-void osc::ui::plot::setup_axis(ImAxis axis, std::optional<CStringView> label, ImPlotFlags flags)
+void osc::ui::plot::setup_axis(Axis axis, std::optional<CStringView> label, AxisFlags flags)
 {
-    ImPlot::SetupAxis(axis, label ? label->c_str() : nullptr, flags);
+    ImPlot::SetupAxis(to_ImAxis(axis), label ? label->c_str() : nullptr, to_ImPlotAxisFlags(flags));
 }
 
-void osc::ui::plot::setup_axes(CStringView x_label, CStringView y_label, ImPlotAxisFlags x_flags, ImPlotAxisFlags y_flags)
+void osc::ui::plot::setup_axes(CStringView x_label, CStringView y_label, AxisFlags x_flags, AxisFlags y_flags)
 {
-    ImPlot::SetupAxes(x_label.c_str(), y_label.c_str(), x_flags, y_flags);
+    ImPlot::SetupAxes(x_label.c_str(), y_label.c_str(), to_ImPlotAxisFlags(x_flags), to_ImPlotAxisFlags(y_flags));
 }
 
-void osc::ui::plot::setup_finish()
-{
-    ImPlot::SetupFinish();
-}
-
-void osc::ui::plot::setup_axis_limits(ImAxis axis, ClosedInterval<float> data_range, float padding_percentage, ImPlotCond cond)
+void osc::ui::plot::setup_axis_limits(Axis axis, ClosedInterval<float> data_range, float padding_percentage, Condition condition)
 {
     // apply padding
     data_range = expand_by_absolute_amount(data_range, padding_percentage * data_range.half_length());
@@ -347,26 +467,41 @@ void osc::ui::plot::setup_axis_limits(ImAxis axis, ClosedInterval<float> data_ra
         data_range = expand_by_absolute_amount(data_range, 0.5f);
     }
 
-    ImPlot::SetupAxisLimits(axis, data_range.lower, data_range.upper, cond);
+    ImPlot::SetupAxisLimits(to_ImAxis(axis), data_range.lower, data_range.upper, to_ImPlotCond(condition));
+}
+
+void osc::ui::plot::setup_finish()
+{
+    ImPlot::SetupFinish();
 }
 
 void osc::ui::plot::set_next_marker_style(
-    ImPlotMarker marker,
-    float size,
-    const ImVec4& fill,
-    float weight,
-    const ImVec4& outline)
+    MarkerType marker_type,
+    std::optional<float> size,
+    std::optional<Color> fill,
+    std::optional<float> weight,
+    std::optional<Color> outline)
 {
-    ImPlot::SetNextMarkerStyle(marker, size, fill, weight, outline);
+    ImPlot::SetNextMarkerStyle(
+        to_ImPlotMarker(marker_type),
+        size ? *size : IMPLOT_AUTO,
+        fill ? ImVec4{Vec4{*fill}} : IMPLOT_AUTO_COL,
+        weight ? *weight : IMPLOT_AUTO,
+        outline ? ImVec4{Vec4{*outline}} : IMPLOT_AUTO_COL
+    );
 }
 
-void osc::ui::plot::plot_line(CStringView name, std::span<const Vec2> points, ImPlotLineFlags flags)
+void osc::ui::plot::plot_line(CStringView name, std::span<const Vec2> points)
 {
-    if (points.empty()) {
-        return;
-    }
-
-    ImPlot::PlotLine(name.c_str(), &points.front().x, &points.front().y, static_cast<int>(points.size()), flags, 0, sizeof(Vec2));
+    ImPlot::PlotLine(
+        name.c_str(),
+        points.empty() ? nullptr : &points.front().x,
+        points.empty() ? nullptr : &points.front().y,
+        static_cast<int>(points.size()),
+        0,
+        0,
+        sizeof(Vec2)
+    );
 }
 
 void osc::ui::plot::plot_line(CStringView name, std::span<const float> points)
@@ -380,7 +515,59 @@ Rect osc::ui::plot::get_plot_screen_rect()
     return {top_left, top_left + Vec2{ImPlot::GetPlotSize()}};
 }
 
-bool osc::ui::plot::drag_point(int id, Vec2d* v, const Color& color, float size, ImPlotDragToolFlags flags, bool* out_clicked, bool* out_hovered, bool* held)
+void osc::ui::plot::draw_annotation_v(Vec2 location_dataspace, const Color& color, Vec2 pixel_offset, bool clamp, const char* fmt, va_list args)
 {
-    return ImPlot::DragPoint(id, &v->x, &v->y, Vec4{color}, size, flags, out_clicked, out_hovered, held);
+    ImPlot::AnnotationV(location_dataspace.x, location_dataspace.y, Vec4{color}, pixel_offset, clamp, fmt, args);
+}
+
+bool osc::ui::plot::drag_point(int id, Vec2d* location, const Color& color, float size, DragToolFlags flags)
+{
+    return ImPlot::DragPoint(id, &location->x, &location->y, Vec4{color}, size, to_ImPlotDragToolFlags(flags));
+}
+
+bool osc::ui::plot::drag_line_x(int id, double* x, const Color& color, float thickness, DragToolFlags flags)
+{
+    return ImPlot::DragLineX(id, x, Vec4{color}, thickness, to_ImPlotDragToolFlags(flags));
+}
+
+bool osc::ui::plot::drag_line_y(int id, double* y, const Color& color, float thickness, DragToolFlags flags)
+{
+    return ImPlot::DragLineY(id, y, Vec4{color}, thickness, to_ImPlotDragToolFlags(flags));
+}
+
+void osc::ui::plot::tag_x(double x, const Color& color, bool round)
+{
+    ImPlot::TagX(x, Vec4{color}, round);
+}
+
+bool osc::ui::plot::is_plot_hovered()
+{
+    return ImPlot::IsPlotHovered();
+}
+
+Vec2 osc::ui::plot::get_plot_mouse_pos()
+{
+    const auto pos = ImPlot::GetPlotMousePos();
+    return Vec2{pos.x, pos.y};
+}
+
+Vec2 osc::ui::plot::get_plot_mouse_pos(Axis x_axis, Axis y_axis)
+{
+    const auto pos = ImPlot::GetPlotMousePos(to_ImAxis(x_axis), to_ImAxis(y_axis));
+    return Vec2{pos.x, pos.y};
+}
+
+void osc::ui::plot::setup_legend(Location location, LegendFlags flags)
+{
+    ImPlot::SetupLegend(to_ImPlotLocation(location), to_ImPlotLegendFlags(flags));
+}
+
+bool osc::ui::plot::begin_legend_popup(CStringView label_id, ImGuiMouseButton mouse_button)
+{
+    return ImPlot::BeginLegendPopup(label_id.c_str(), mouse_button);
+}
+
+void osc::ui::plot::end_legend_popup()
+{
+    ImPlot::EndLegendPopup();
 }

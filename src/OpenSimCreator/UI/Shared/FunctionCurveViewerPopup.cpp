@@ -134,16 +134,16 @@ private:
         }
 
         const Vec2 dimensions = Vec2{ui::get_content_region_available().x};
-        const ImPlotFlags flags = ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoFrame | ImPlotFlags_NoTitle;
+        const plot::PlotFlags flags = plot::PlotFlags::NoMenus | plot::PlotFlags::NoBoxSelect | plot::PlotFlags::NoFrame | plot::PlotFlags::NoTitle;
         if (plot::begin(name(), dimensions, flags)) {
 
             plot::setup_axes("x", "y");
-            plot::setup_axis_limits(ImAxis_X1, m_PlotPoints.x_range(), 0.05f, ImPlotCond_Always);
-            plot::setup_axis_limits(ImAxis_Y1, m_PlotPoints.y_range(), 0.05f, ImPlotCond_Always);
+            plot::setup_axis_limits(plot::Axis::X1, m_PlotPoints.x_range(), 0.05f, plot::Condition::Always);
+            plot::setup_axis_limits(plot::Axis::Y1, m_PlotPoints.y_range(), 0.05f, plot::Condition::Always);
             plot::setup_finish();
 
-            plot::set_next_marker_style(ImPlotMarker_Circle, 2.0f);
-            plot::push_style_color(ImPlotCol_Line, Color::white());
+            plot::set_next_marker_style(plot::MarkerType::Circle, 2.0f);
+            plot::push_style_color(plot::ColorVar::Line, Color::white());
             plot::plot_line("Function Output", m_PlotPoints);
             plot::pop_style_color();
 

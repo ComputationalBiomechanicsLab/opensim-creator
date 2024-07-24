@@ -230,16 +230,16 @@ private:
         {
             OSC_PERF("draw output plot");
 
-            plot::push_style_var(ImPlotStyleVar_PlotPadding, {0.0f, 0.0f});
-            plot::push_style_var(ImPlotStyleVar_PlotBorderSize, 0.0f);
-            plot::push_style_var(ImPlotStyleVar_FitPadding, {0.0f, 1.0f});
-            const auto flags = ImPlotFlags_NoTitle | ImPlotFlags_NoLegend | ImPlotFlags_NoInputs | ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoFrame;
+            plot::push_style_var(plot::StyleVar::PlotPadding, {0.0f, 0.0f});
+            plot::push_style_var(plot::StyleVar::PlotBorderSize, 0.0f);
+            plot::push_style_var(plot::StyleVar::FitPadding, {0.0f, 1.0f});
+            const auto flags = plot::PlotFlags::NoTitle | plot::PlotFlags::NoLegend | plot::PlotFlags::NoInputs | plot::PlotFlags::NoMenus | plot::PlotFlags::NoBoxSelect | plot::PlotFlags::NoFrame;
 
             if (plot::begin("##", {plotWidth, m_Height}, flags)) {
-                plot::setup_axis(ImAxis_X1, std::nullopt, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_NoMenus | ImPlotAxisFlags_AutoFit);
-                plot::setup_axis(ImAxis_Y1, std::nullopt, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_NoMenus | ImPlotAxisFlags_AutoFit);
-                plot::push_style_color(ImPlotCol_Line, Color::white().with_alpha(0.7f));
-                plot::push_style_color(ImPlotCol_PlotBg, Color::clear());
+                plot::setup_axis(plot::Axis::X1, std::nullopt, plot::AxisFlags::NoDecorations | plot::AxisFlags::NoMenus | plot::AxisFlags::AutoFit);
+                plot::setup_axis(plot::Axis::Y1, std::nullopt, plot::AxisFlags::NoDecorations | plot::AxisFlags::NoMenus | plot::AxisFlags::AutoFit);
+                plot::push_style_color(plot::ColorVar::Line, Color::white().with_alpha(0.7f));
+                plot::push_style_color(plot::ColorVar::PlotBackground, Color::clear());
                 plot::plot_line("##", buf);
                 plot::pop_style_color();
                 plot::pop_style_color();
@@ -353,17 +353,17 @@ private:
         {
             OSC_PERF("draw output plot");
 
-            plot::push_style_var(ImPlotStyleVar_PlotPadding, {0.0f, 0.0f});
-            plot::push_style_var(ImPlotStyleVar_PlotBorderSize, 0.0f);
-            plot::push_style_var(ImPlotStyleVar_FitPadding, {0.1f, 0.1f});
-            plot::push_style_var(ImPlotStyleVar_AnnotationPadding, ui::get_style_panel_padding());
-            const auto flags = ImPlotFlags_NoTitle | ImPlotFlags_NoLegend | ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoFrame;
+            plot::push_style_var(plot::StyleVar::PlotPadding, {0.0f, 0.0f});
+            plot::push_style_var(plot::StyleVar::PlotBorderSize, 0.0f);
+            plot::push_style_var(plot::StyleVar::FitPadding, {0.1f, 0.1f});
+            plot::push_style_var(plot::StyleVar::AnnotationPadding, ui::get_style_panel_padding());
+            const auto flags = plot::PlotFlags::NoTitle | plot::PlotFlags::NoLegend | plot::PlotFlags::NoMenus | plot::PlotFlags::NoBoxSelect | plot::PlotFlags::NoFrame;
 
             if (plot::begin("##", {plotWidth, m_Height}, flags)) {
-                plot::setup_axis(ImAxis_X1, std::nullopt, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_NoMenus | ImPlotAxisFlags_AutoFit);
-                plot::setup_axis(ImAxis_Y1, std::nullopt, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_NoMenus | ImPlotAxisFlags_AutoFit);
-                plot::push_style_color(ImPlotCol_Line, Color::white().with_alpha(0.7f));
-                plot::push_style_color(ImPlotCol_PlotBg, Color::clear());
+                plot::setup_axis(plot::Axis::X1, std::nullopt, plot::AxisFlags::NoDecorations | plot::AxisFlags::NoMenus | plot::AxisFlags::AutoFit);
+                plot::setup_axis(plot::Axis::Y1, std::nullopt, plot::AxisFlags::NoDecorations | plot::AxisFlags::NoMenus | plot::AxisFlags::AutoFit);
+                plot::push_style_color(plot::ColorVar::Line, Color::white().with_alpha(0.7f));
+                plot::push_style_color(plot::ColorVar::PlotBackground, Color::clear());
                 plot::plot_line("##", buf);
                 plot::pop_style_color();
                 plot::pop_style_color();
@@ -377,7 +377,7 @@ private:
                     // ensure the annotation doesn't occlude the line too heavily
                     auto annotationColor = ui::get_style_color(ImGuiCol_PopupBg).with_alpha(0.5f);
                     plot::draw_annotation(currentVal, annotationColor, {10.0f, 10.0f}, true, "(%f, %f)", currentVal.x, currentVal.y);
-                    plot::drag_point(0, &currentVal, c_CurrentScubTimeColor, 4.0f, ImPlotDragToolFlags_NoInputs);
+                    plot::drag_point(0, &currentVal, c_CurrentScubTimeColor, 4.0f, plot::DragToolFlags::NoInputs);
                 }
 
                 plot::end();

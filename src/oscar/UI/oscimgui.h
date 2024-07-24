@@ -5,7 +5,6 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <imgui/misc/cpp/imgui_stdlib.h>
-#include <implot.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Maths/ClosedInterval.h>
 #include <oscar/Maths/EulerAngles.h>
@@ -16,6 +15,7 @@
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Maths/Vec4.h>
+#include <oscar/Shims/Cpp23/utility.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/UID.h>
 
@@ -910,51 +910,207 @@ namespace osc::ui
         bool can_scale = true
     );
 
-    // oscar bindings for ImPlot
+    // oscar bindings for `ImPlot`
+    //
+    // the design/types used here differ from `ImPlot` in order to provide
+    // consistency with the rest of the `osc` ecosystem
     namespace plot
     {
-        // wrapper for `ImPlot::BeginPlot`
-        bool begin(CStringView title, Vec2 size, ImPlotFlags flags = 0);
+        enum class PlotFlags {
+            None        = 0,
+            NoTitle     = 1<<0,
+            NoLegend    = 1<<1,
+            NoMenus     = 1<<4,
+            NoBoxSelect = 1<<5,
+            NoFrame     = 1<<6,
+            NoInputs    = 1<<3,
 
-        // wrapper for `ImPlot::EndPlot`
+            Default     = None,
+        };
+        constexpr PlotFlags operator|(PlotFlags lhs, PlotFlags rhs)
+        {
+            return static_cast<PlotFlags>(cpp23::to_underlying(lhs) | cpp23::to_underlying(rhs));
+        }
+        constexpr PlotFlags operator^(PlotFlags lhs, PlotFlags rhs)
+        {
+            return static_cast<PlotFlags>(cpp23::to_underlying(lhs) ^ cpp23::to_underlying(rhs));
+        }
+        constexpr bool operator&(PlotFlags lhs, PlotFlags rhs)
+        {
+            return (cpp23::to_underlying(lhs) & cpp23::to_underlying(rhs)) != 0;
+        }
+
+        enum class StyleVar {
+            // `Vec2`: additional fit padding as a percentage of the fit extents (e.g. Vec2{0.1, 0.2} would add 10 % to the X axis and 20 % to the Y axis)
+            FitPadding,
+
+            // `Vec2`: padding between widget frame and plot area, labels, or outside legends (i.e. main padding)
+            PlotPadding,
+
+            // `float`: thickness of the border around plot area
+            PlotBorderSize,
+
+            // `Vec2`: text padding around annotation labels
+            AnnotationPadding,
+
+            NUM_OPTIONS
+        };
+
+        enum class ColorVar {
+            // plot line/outline color (defaults to the next unused color in the current colormap)
+            Line,
+
+            // plot area background color (defaults to `ImGuiCol_WindowBg`)
+            PlotBackground,
+
+            NUM_OPTIONS,
+        };
+
+        enum class Axis {
+            X1,  // enabled by default
+            Y1,  // enabled by default
+
+            NUM_OPTIONS,
+        };
+
+        enum class AxisFlags {
+            None         = 0,
+            NoLabel      = 1<<0,
+            NoGridLines  = 1<<1,
+            NoTickMarks  = 1<<2,
+            NoTickLabels = 1<<3,
+            NoMenus      = 1<<5,
+            AutoFit      = 1<<11,
+            LockMin      = 1<<14,
+            LockMax      = 1<<15,
+
+            Default = None,
+            Lock = LockMin | LockMax,
+            NoDecorations = NoLabel | NoGridLines | NoTickMarks | NoTickLabels,
+        };
+
+        constexpr AxisFlags operator|(AxisFlags lhs, AxisFlags rhs)
+        {
+            return static_cast<AxisFlags>(cpp23::to_underlying(lhs) | cpp23::to_underlying(rhs));
+        }
+
+        enum class Condition {
+            Always,  // unconditional, i.e. the function should always do what is being asked
+            Once,    // only perform the action once per runtime session (only the first call will succeed)
+            NUM_OPTIONS,
+        };
+
+        enum class MarkerType {
+            None,  // i.e. no marker
+            Circle,
+            NUM_OPTIONS,
+        };
+
+        enum class DragToolFlags {
+            None     = 0,
+            NoInputs = 1<<2,
+            NoFit    = 1<<1,
+
+            Default = None,
+        };
+
+        constexpr DragToolFlags operator|(DragToolFlags lhs, DragToolFlags rhs)
+        {
+            return static_cast<DragToolFlags>(cpp23::to_underlying(lhs) | cpp23::to_underlying(rhs));
+        }
+
+        enum class Location {
+            Center,
+            North,
+            NorthEast,
+            East,
+            SouthEast,
+            South,
+            SouthWest,
+            West,
+            NorthWest,
+            NUM_OPTIONS,
+
+            Default = Center,
+        };
+
+        enum class LegendFlags {
+            None    = 0,
+            Outside = 1<<4,
+
+            Default = None,
+        };
+
+        constexpr bool operator&(LegendFlags lhs, LegendFlags rhs)
+        {
+            return (cpp23::to_underlying(lhs) & cpp23::to_underlying(rhs)) != 0;
+        }
+
+        constexpr LegendFlags operator^(LegendFlags lhs, LegendFlags rhs)
+        {
+            return static_cast<LegendFlags>(cpp23::to_underlying(lhs) ^ cpp23::to_underlying(rhs));
+        }
+
+        // draws the plotting demo in its own panel
+        void show_demo_panel();
+
+        // starts a 2D plotting context
+        //
+        // - if this function returns `true`, then `plot::end` MUST be called
+        // - `title` must be unique to the current ID scope/stack
+        // - `size` is the total size of the plot including axis labels, title, etc.
+        //   you can call `get_plot_screen_rect` after finishing setup to figure out
+        //   the bounds of the plot area (i.e. where the data is)
+        bool begin(CStringView title, Vec2 size, PlotFlags = PlotFlags::Default);
+
+        // ends a 2D plotting context
+        //
+        // this must be called if `plot::begin` returns `true`
         void end();
 
-        // wrapper for `ImPlot::PushStyleVar`
-        void push_style_var(ImPlotStyleVar, float);
-        void push_style_var(ImPlotStyleVar, Vec2);
+        // temporarily modifies a style variable of `float` type. Must be paired with `pop_style_var`
+        void push_style_var(StyleVar, float);
 
-        // wrapper for `ImPlot::PopStyleVar`
+        // temporarily modifies a style variable of `Vec2` type. Must be paired with `pop_style_var`
+        void push_style_var(StyleVar, Vec2);
+
+        // undoes `count` temporary style variable modifications that were enacted by `push_style_var`
         void pop_style_var(int count = 1);
 
-        // wrapper for `ImPlot::PushStyleColor`
-        void push_style_color(ImPlotCol, const Color&);
+        // temporarily modifies a style color variable. Must be paired with `pop_style_color`
+        void push_style_color(ColorVar, const Color&);
 
-        // wrapper for `ImPlot::PopStyleColor`
+        // undoes `count` temporary style color modifications that were enacted by `push_style_color`
         void pop_style_color(int count = 1);
 
-        // wrapper for `ImPlot::SetupAxis`
-        void setup_axis(ImAxis, std::optional<CStringView> label = std::nullopt, ImPlotFlags = 0);
+        // enables an axis or sets the label and/or the flags of an existing axis
+        void setup_axis(Axis, std::optional<CStringView> label = std::nullopt, AxisFlags = AxisFlags::Default);
 
-        // wrapper for `ImPlot::SetupAxes`
-        void setup_axes(CStringView x_label, CStringView y_label, ImPlotAxisFlags x_flags = 0, ImPlotAxisFlags y_flags = 0);
+        // sets the label and/or the flags for the primary X and Y axes (shorthand for two calls to `setup_axis`)
+        void setup_axes(CStringView x_label, CStringView y_label, AxisFlags x_flags = AxisFlags::Default, AxisFlags y_flags = AxisFlags::Default);
 
-        // wrapper for `ImPlot::SetupFinish`
+        // sets an axis's range limits. If `Condition::Always` is used, the axes limits will be locked
+        void setup_axis_limits(Axis axis, ClosedInterval<float> data_range, float padding_percentage, Condition = Condition::Once);
+
+        // explicitly finalizes plot setup
+        //
+        // - once this is called, you cannot call any `plot::setup_*` functions for
+        //   in the current 2D plotting context
+        // - calling this function is OPTIONAL - the implementation will automatically
+        //   call it on the first setup-locking API call (e.g. `plot::draw_line`)
         void setup_finish();
 
-        // wrapper for `ImPlot::SetupAxisLimits`
-        void setup_axis_limits(ImAxis axis, ClosedInterval<float> data_range, float padding_percentage, ImPlotCond = 2);
-
-        // wrapper for `ImPlot::SetNextMarkerStyle`
+        // sets the marker style for the next item only
         void set_next_marker_style(
-            ImPlotMarker marker = IMPLOT_AUTO,
-            float size = IMPLOT_AUTO,
-            const ImVec4& fill = IMPLOT_AUTO_COL,
-            float weight = IMPLOT_AUTO,
-            const ImVec4& outline = IMPLOT_AUTO_COL
+            MarkerType = MarkerType::None,
+            std::optional<float> size = std::nullopt,
+            std::optional<Color> fill = std::nullopt,
+            std::optional<float> weight = std::nullopt,
+            std::optional<Color> outline = std::nullopt
         );
 
-        // wrapper for `ImPlot::PlotLine`
-        void plot_line(CStringView name, std::span<const Vec2> points, ImPlotLineFlags flags = 0);
+        // plots a standard 2D line plot
+        void plot_line(CStringView name, std::span<const Vec2> points);
         void plot_line(CStringView name, std::span<const float> points);
 
         // returns the plot's rectangle in screen-space
@@ -962,16 +1118,68 @@ namespace osc::ui
         // must be called between `plot::begin` and `plot::end`
         Rect get_plot_screen_rect();
 
-        // wrapper for `ImPlot::Annotation`
+        // draws an annotation callout at a chosen point
+        //
+        // - clamping keeps annotations in the plot area
+        // - annotations are always rendered on top of the plot area
+        void draw_annotation_v(Vec2 location_dataspace, const Color& color, Vec2 pixel_offset, bool clamp, const char* fmt, va_list args);
         inline void draw_annotation(Vec2 location_dataspace, const Color& color, Vec2 pixel_offset, bool clamp, const char* fmt, ...)
         {
             va_list args;
             va_start(args, fmt);
-            ImPlot::AnnotationV(location_dataspace.x, location_dataspace.y, Vec4{color}, pixel_offset, clamp, fmt, args);
+            draw_annotation_v(location_dataspace, color, pixel_offset, clamp, fmt, args);
             va_end(args);
         }
 
-        // wrapper for `ImPlot::DragPoint`
-        bool drag_point(int id, Vec2d*, const Color&, float size = 4, ImPlotDragToolFlags flags = 0, bool* out_clicked = nullptr, bool* out_hovered = nullptr, bool* held = nullptr);
+        // draws a draggable point at `location` in the plot area
+        //
+        // - returns `true` if the user has interacted with the point. In this
+        //   case, `location` will be updated with the new location
+        bool drag_point(
+            int id,
+            Vec2d* location,
+            const Color&,
+            float size = 4,
+            DragToolFlags = DragToolFlags::Default
+        );
+
+        // draws a draggable vertical guide line at an x-value in the plot area
+        bool drag_line_x(
+            int id,
+            double* x,
+            const Color&,
+            float thickness = 1,
+            DragToolFlags = DragToolFlags::Default
+        );
+
+        // draws a draggable horizontal guide line at a y-value in the plot area
+        bool drag_line_y(
+            int id,
+            double* y,
+            const Color&,
+            float thickness = 1,
+            DragToolFlags = DragToolFlags::Default
+        );
+
+        // draws a tag on the x axis at the specified x value
+        void tag_x(double x, const Color&, bool round = false);
+
+        // returns `true` if the plot area in the current plot is hovered
+        bool is_plot_hovered();
+
+        // returns the mouse position in the coordinate system of the current axes
+        Vec2 get_plot_mouse_pos();
+
+        // returns the mouse position in the coordinate system of the given axes
+        Vec2 get_plot_mouse_pos(Axis x_axis, Axis y_axis);
+
+        // sets up the plot legend
+        void setup_legend(Location, LegendFlags = LegendFlags::Default);
+
+        // begins a popup for a legend entry
+        bool begin_legend_popup(CStringView label_id, ImGuiMouseButton mouse_button = 1);
+
+        // ends a popup for a legend entry
+        void end_legend_popup();
     }
 }

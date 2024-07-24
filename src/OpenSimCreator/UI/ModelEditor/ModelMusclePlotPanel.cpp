@@ -54,6 +54,7 @@ namespace SimTK { class State; }
 
 using namespace osc;
 namespace rgs = std::ranges;
+namespace plot = osc::ui::plot;
 
 // muscle outputs
 //
@@ -353,17 +354,7 @@ namespace
         return (end - start) / max(1, p.getNumRequestedDataPoints() - 1);
     }
 
-    // a single data point in the plot, as emitted by a PlottingTask
-    struct PlotDataPoint final {
-        float x;
-        float y;
-    };
-
-    // plot data points are naturally ordered by their independent (X) variable
-    bool operator<(const PlotDataPoint& lhs, const PlotDataPoint& rhs)
-    {
-        return lhs.x < rhs.x;
-    }
+    using PlotDataPoint = Vec2;
 
     // virtual interface to a thing that can receive datapoints from a plotter
     class PlotDataPointConsumer {
@@ -708,6 +699,11 @@ namespace
         return (1.0f - t) * a + t * b;
     }
 
+    bool xLessThan(const Vec2& lhs, const Vec2& rhs)
+    {
+        return lhs.x < rhs.x;
+    }
+
     std::optional<float> ComputeLERPedY(const Plot& p, float x)
     {
         auto lock = p.lockDataPoints();
@@ -719,7 +715,8 @@ namespace
             return std::nullopt;
         }
 
-        const auto it = rgs::lower_bound(points, PlotDataPoint{x, 0.0f}, std::less{});
+
+        const auto it = rgs::lower_bound(points, PlotDataPoint{x, 0.0f}, xLessThan);
 
         if (it == points.end())
         {
@@ -756,7 +753,7 @@ namespace
             return std::nullopt;
         }
 
-        const auto it = rgs::lower_bound(points, PlotDataPoint{x, 0.0f}, std::less{});
+        const auto it = rgs::lower_bound(points, PlotDataPoint{x, 0.0f}, xLessThan);
 
         if (it == points.begin())
         {
@@ -797,31 +794,6 @@ namespace
         }
 
         return points.front().x <= x && x <= points.back().x;
-    }
-
-    void PlotLine(CStringView lineName, const Plot& p)
-    {
-        auto lock = p.lockDataPoints();
-        std::span<const PlotDataPoint> points = *lock;
-
-
-        const float* xPtr = nullptr;
-        const float* yPtr = nullptr;
-        if (!points.empty())
-        {
-            xPtr = &points.front().x;
-            yPtr = &points.front().y;
-        }
-
-        ImPlot::PlotLine(
-            lineName.c_str(),
-            xPtr,
-            yPtr,
-            static_cast<int>(points.size()),
-            0,
-            0,
-            sizeof(PlotDataPoint)
-        );
     }
 
     std::string IthPlotLineName(const Plot& p, size_t i)
@@ -1239,16 +1211,14 @@ namespace
     std::optional<float> TryGetMouseXPositionInPlot(const PlotLines& lines, bool snapToNearest)
     {
         // figure out mouse hover position
-        const bool isHovered = ImPlot::IsPlotHovered();
-        float mouseX = static_cast<float>(ImPlot::GetPlotMousePos().x);
+        const bool isHovered = plot::is_plot_hovered();
+        float mouseX = plot::get_plot_mouse_pos().x;
 
         // handle snapping the mouse's X position
-        if (isHovered && snapToNearest)
-        {
+        if (isHovered && snapToNearest) {
             auto maybeNearest = FindNearestPoint(lines.getActivePlot(), mouseX);
 
-            if (IsXInRange(lines.getActivePlot(), mouseX) && maybeNearest)
-            {
+            if (IsXInRange(lines.getActivePlot(), mouseX) && maybeNearest) {
                 mouseX = maybeNearest->x;
             }
         }
@@ -1571,26 +1541,29 @@ namespace
             const std::string plotTitle = ComputePlotTitle(latestParams);
 
             drawPlotTitle(coord, plotTitle);  // draw a custom title bar
-            ImPlot::PushStyleVar(ImPlotStyleVar_FitPadding, {0.025f, 0.05f});
-            if (ImPlot::BeginPlot(plotTitle.c_str(), ui::get_content_region_available(), m_PlotFlags)) {
+
+            plot::push_style_var(plot::StyleVar::FitPadding, {0.025f, 0.05f});
+            if (plot::begin(plotTitle, ui::get_content_region_available(), m_PlotFlags)) {
+
                 const PlotParameters& plotParams = getShared().getPlotParams();
 
-                ImPlot::SetupLegend(
-                    m_LegendLocation,
-                    m_LegendFlags
+                plot::setup_legend(m_LegendLocation, m_LegendFlags);
+                plot::setup_axes(
+                    ComputePlotXAxisTitle(latestParams, coord),
+                    ComputePlotYAxisTitle(latestParams),
+                    plot::AxisFlags::Lock,
+                    plot::AxisFlags::AutoFit
                 );
-                ImPlot::SetupAxes(
-                    ComputePlotXAxisTitle(latestParams, coord).c_str(),
-                    ComputePlotYAxisTitle(latestParams).c_str(),
-                    ImPlotAxisFlags_Lock,
-                    ImPlotAxisFlags_AutoFit
+                plot::setup_axis_limits(
+                    plot::Axis::X1,
+                    ClosedInterval{
+                        ConvertCoordValueToDisplayValue(coord, GetFirstXValue(plotParams, coord)),
+                        ConvertCoordValueToDisplayValue(coord, GetLastXValue(plotParams, coord)),
+                    },
+                    0.025f,
+                    plot::Condition::Always
                 );
-                ImPlot::SetupAxisLimits(
-                    ImAxis_X1,
-                    ConvertCoordValueToDisplayValue(coord, GetFirstXValue(plotParams, coord)),
-                    ConvertCoordValueToDisplayValue(coord, GetLastXValue(plotParams, coord))
-                );
-                ImPlot::SetupFinish();
+                plot::setup_finish();
 
                 std::optional<float> maybeMouseX = TryGetMouseXPositionInPlot(m_Lines, m_SnapCursor);
                 drawPlotLines(coord);
@@ -1601,10 +1574,9 @@ namespace
                     tryDrawGeneralPlotPopup(coord, plotTitle);
                 }
 
-                ImPlot::EndPlot();
+                plot::end();
             }
-
-            ImPlot::PopStyleVar();
+            plot::pop_style_var();
 
             return nullptr;
         }
@@ -1747,16 +1719,16 @@ namespace
 
                 if (m_ShowMarkersOnOtherPlots)
                 {
-                    ImPlot::SetNextMarkerStyle(ImPlotMarker_Circle, 3.0f);
+                    plot::set_next_marker_style(plot::MarkerType::Circle, 3.0f);
                 }
 
                 const std::string lineName = IthPlotLineName(plot, i + 1);
 
-                ImPlot::PushStyleColor(ImPlotCol_Line, Vec4{color});
-                PlotLine(lineName, plot);
-                ImPlot::PopStyleColor();
+                plot::push_style_color(plot::ColorVar::Line, color);
+                plot::plot_line(lineName, *plot.lockDataPoints());
+                plot::pop_style_color();
 
-                if (ImPlot::BeginLegendPopup(lineName.c_str()))
+                if (plot::begin_legend_popup(lineName))
                 {
                     m_LegendPopupIsOpen = true;
 
@@ -1780,7 +1752,7 @@ namespace
                     {
                         ActionPromptUserToSavePlotToCSV(coord, getShared().getPlotParams(), plot);
                     }
-                    ImPlot::EndLegendPopup();
+                    plot::end_legend_popup();
                 }
             }
 
@@ -1805,14 +1777,14 @@ namespace
 
                 if (m_ShowMarkersOnActivePlot)
                 {
-                    ImPlot::SetNextMarkerStyle(ImPlotMarker_Circle, 3.0f);
+                    plot::set_next_marker_style(plot::MarkerType::Circle, 3.0f);
                 }
 
-                ImPlot::PushStyleColor(ImPlotCol_Line, Vec4{color});
-                PlotLine(lineName, plot);
-                ImPlot::PopStyleColor();
+                plot::push_style_color(plot::ColorVar::Line, color);
+                plot::plot_line(lineName, *plot.lockDataPoints());
+                plot::pop_style_color();
 
-                if (ImPlot::BeginLegendPopup(lineName.c_str()))
+                if (plot::begin_legend_popup(lineName))
                 {
                     m_LegendPopupIsOpen = true;
 
@@ -1828,7 +1800,7 @@ namespace
                     {
                         ActionPromptUserToSavePlotToCSV(coord, getShared().getPlotParams(), plot);
                     }
-                    ImPlot::EndLegendPopup();
+                    plot::end_legend_popup();
                 }
             }
         }
@@ -1844,30 +1816,30 @@ namespace
             {
                 double v = coordinateXInDegrees;
 
-                // CARE: this drag line shouldn't cause ImPlot to re-fit because it will
-                // make ImPlot re-fit the plot as the user's mouse moves/drags over it, which
-                // looks very very glitchy (#490)
-                ImPlot::DragLineX(10, &v, {1.0f, 1.0f, 0.0f, 0.6f}, 1.0f, ImPlotDragToolFlags_NoInputs | ImPlotDragToolFlags_NoFit);
+                // CARE: this drag line shouldn't cause the plotter to re-fit because it will
+                // make the plotter re-fit the plot as the user's mouse moves/drags over it,
+                // which looks very very glitchy (#490)
+                plot::drag_line_x(10, &v, Color::yellow().with_alpha(0.6f), 1.0f, plot::DragToolFlags::NoInputs | plot::DragToolFlags::NoFit);
             }
 
             // also, draw an X tag on the axes where the coordinate's value currently is
-            ImPlot::TagX(coordinateXInDegrees, {1.0f, 1.0f, 1.0f, 1.0f});
+            plot::tag_x(coordinateXInDegrees, Color::white());
 
             // draw faded vertial drop line where the mouse currently is
             if (maybeMouseX)
             {
                 double v = *maybeMouseX;
 
-                // CARE: this drag line shouldn't cause ImPlot to re-fit because it will
-                // make ImPlot re-fit the plot as the user's mouse moves/drags over it, which
-                // looks very very glitchy (#490)
-                ImPlot::DragLineX(11, &v, {1.0f, 1.0f, 0.0f, 0.3f}, 1.0f, ImPlotDragToolFlags_NoInputs | ImPlotDragToolFlags_NoFit);
+                // CARE: this drag line shouldn't cause the plotter to re-fit because it will
+                // make the plotter re-fit the plot as the user's mouse moves/drags over it,
+                // which looks very very glitchy (#490)
+                plot::drag_line_x(11, &v, Color::yellow().with_alpha(0.3f), 1.0f, plot::DragToolFlags::NoInputs | plot::DragToolFlags::NoFit);
             }
 
             // also, draw a faded X tag on the axes where the mouse currently is (in X)
             if (maybeMouseX)
             {
-                ImPlot::TagX(*maybeMouseX, {1.0f, 1.0f, 1.0f, 0.6f});
+                plot::tag_x(*maybeMouseX, Color::white().with_alpha(0.6f));
             }
 
             // Y values: BEWARE
@@ -1885,12 +1857,11 @@ namespace
                     if (maybeCoordinateY) {
                         double v = *maybeCoordinateY;
 
-                        // CARE: this drag line shouldn't cause ImPlot to re-fit because it will
-                        // make ImPlot re-fit the plot as the user's mouse moves/drags over it, which
-                        // looks very very glitchy (#490)
-                        ImPlot::DragLineY(13, &v, {1.0f, 1.0f, 0.0f, 0.6f}, 1.0f, ImPlotDragToolFlags_NoInputs | ImPlotDragToolFlags_NoFit);
-
-                        ImPlot::Annotation(static_cast<float>(coordinateXInDegrees), *maybeCoordinateY, {1.0f, 1.0f, 1.0f, 1.0f}, {10.0f, 10.0f}, true, "%f", *maybeCoordinateY);
+                        // CARE: this drag line shouldn't cause the plotter to re-fit because it will
+                        // make the plotter re-fit the plot as the user's mouse moves/drags over it,
+                        // which looks very very glitchy (#490)
+                        plot::drag_line_y(13, &v, Color::yellow().with_alpha(0.6f), 1.0f, plot::DragToolFlags::NoInputs | plot::DragToolFlags::NoFit);
+                        plot::draw_annotation({coordinateXInDegrees, *maybeCoordinateY}, Color::white(), {10.0f, 10.0f}, true, "%f", *maybeCoordinateY);
                     }
                 }
 
@@ -1900,12 +1871,11 @@ namespace
                     if (maybeHoverY) {
                         double v = *maybeHoverY;
 
-                        // CARE: this drag line shouldn't cause ImPlot to re-fit because it will
-                        // make ImPlot re-fit the plot as the user's mouse moves/drags over it, which
-                        // looks very very glitchy (#490)
-                        ImPlot::DragLineY(14, &v, {1.0f, 1.0f, 0.0f, 0.3f}, 1.0f, ImPlotDragToolFlags_NoInputs | ImPlotDragToolFlags_NoFit);
-
-                        ImPlot::Annotation(*maybeMouseX, *maybeHoverY, {1.0f, 1.0f, 1.0f, 0.6f}, {10.0f, 10.0f}, true, "%f", *maybeHoverY);
+                        // CARE: this drag line shouldn't cause the plotter to re-fit because it will
+                        // make the plotter re-fit the plot as the user's mouse moves/drags over it,
+                        // which looks very very glitchy (#490)
+                        plot::drag_line_y(14, &v, Color::yellow().with_alpha(0.3f), 1.0f, plot::DragToolFlags::NoInputs | plot::DragToolFlags::NoFit);
+                        plot::draw_annotation({*maybeMouseX, *maybeHoverY}, Color::white().with_alpha(0.6f), {10.0f, 10.0f}, true, "%f", *maybeHoverY);
                     }
                 }
             }
@@ -2046,19 +2016,17 @@ namespace
         {
             // draw hide legend button
             {
-                static_assert(std::is_same_v<decltype(m_PlotFlags), int>);
-                auto f = static_cast<unsigned int>(m_PlotFlags);
-                if (ui::draw_checkbox_flags("Hide", &f, ImPlotFlags_NoLegend)) {
-                    m_PlotFlags = static_cast<int>(f);
+                bool v = m_PlotFlags & plot::PlotFlags::NoLegend;
+                if (ui::draw_checkbox("Hide", &v)) {
+                    m_PlotFlags = m_PlotFlags ^ plot::PlotFlags::NoLegend;
                 }
             }
 
             // draw outside/inside legend button
             {
-                static_assert(std::is_same_v<decltype(m_LegendFlags), int>);
-                auto f = static_cast<unsigned int>(m_LegendFlags);
-                if (ui::draw_checkbox_flags("Outside", &f, ImPlotLegendFlags_Outside)) {
-                    m_LegendFlags = static_cast<int>(f);
+                bool v = m_LegendFlags & plot::LegendFlags::Outside;
+                if (ui::draw_checkbox("Outside", &v)) {
+                    m_LegendFlags = m_LegendFlags ^ plot::LegendFlags::Outside;
                 }
             }
 
@@ -2066,15 +2034,15 @@ namespace
             const Vec2 dims{1.5f * s, s};
 
             ui::push_style_var(ImGuiStyleVar_ItemSpacing, {2.0f, 2.0f});
-            if (ui::draw_button("NW", dims))         { m_LegendLocation = ImPlotLocation_NorthWest; } ui::same_line();
-            if (ui::draw_button("N", dims))          { m_LegendLocation = ImPlotLocation_North; }     ui::same_line();
-            if (ui::draw_button("NE", dims))         { m_LegendLocation = ImPlotLocation_NorthEast; }
-            if (ui::draw_button("W", dims))          { m_LegendLocation = ImPlotLocation_West; }      ui::same_line();
-            if (ui::draw_invisible_button("C", dims)) { m_LegendLocation = ImPlotLocation_Center; }    ui::same_line();
-            if (ui::draw_button("E", dims))          { m_LegendLocation = ImPlotLocation_East; }
-            if (ui::draw_button("SW", dims))         { m_LegendLocation = ImPlotLocation_SouthWest; } ui::same_line();
-            if (ui::draw_button("S", dims))          { m_LegendLocation = ImPlotLocation_South; }     ui::same_line();
-            if (ui::draw_button("SE", dims))         { m_LegendLocation = ImPlotLocation_SouthEast; }
+            if (ui::draw_button("NW", dims))          { m_LegendLocation = plot::Location::NorthWest; } ui::same_line();
+            if (ui::draw_button("N", dims))           { m_LegendLocation = plot::Location::North; }     ui::same_line();
+            if (ui::draw_button("NE", dims))          { m_LegendLocation = plot::Location::NorthEast; }
+            if (ui::draw_button("W", dims))           { m_LegendLocation = plot::Location::West; }      ui::same_line();
+            if (ui::draw_invisible_button("C", dims)) { m_LegendLocation = plot::Location::Center; }    ui::same_line();
+            if (ui::draw_button("E", dims))           { m_LegendLocation = plot::Location::East; }
+            if (ui::draw_button("SW", dims))          { m_LegendLocation = plot::Location::SouthWest; } ui::same_line();
+            if (ui::draw_button("S", dims))           { m_LegendLocation = plot::Location::South; }     ui::same_line();
+            if (ui::draw_button("SE", dims))          { m_LegendLocation = plot::Location::SouthEast; }
             ui::pop_style_var();
         }
 
@@ -2125,9 +2093,9 @@ namespace
         bool m_ShowMarkersOnActivePlot = true;
         bool m_ShowMarkersOnOtherPlots = false;
         bool m_SnapCursor = false;
-        ImPlotFlags m_PlotFlags = ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoFrame | ImPlotFlags_NoTitle;
-        ImPlotLocation m_LegendLocation = ImPlotLocation_NorthWest;
-        ImPlotLegendFlags m_LegendFlags = ImPlotLegendFlags_None;
+        plot::PlotFlags m_PlotFlags = plot::PlotFlags::NoMenus | plot::PlotFlags::NoBoxSelect | plot::PlotFlags::NoFrame | plot::PlotFlags::NoTitle;
+        plot::Location m_LegendLocation = plot::Location::NorthWest;
+        plot::LegendFlags m_LegendFlags = plot::LegendFlags::Default;
         Color m_LockedCurveTint = {0.5f, 0.5f, 1.0f, 1.1f};
         Color m_LoadedCurveTint = {0.5f, 1.0f, 0.5f, 1.0f};
     };

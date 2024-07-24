@@ -15,6 +15,7 @@
 #include <SDL_events.h>
 
 #include <ImGuizmo.h>
+#include <implot.h>
 
 #include <algorithm>
 #include <array>
