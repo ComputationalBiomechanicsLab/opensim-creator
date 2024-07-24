@@ -129,8 +129,7 @@ void Smith2018ContactMesh::extendFinalizeFromProperties() {
 
     //Create Decorative Mesh
     if (!isObjectUpToDateWithProperties()) {
-        _decorative_mesh.reset(
-            new SimTK::DecorativeMeshFile(_full_mesh_file_path.c_str()));
+        _decorative_mesh.reset(new SimTK::DecorativeMeshFile(_full_mesh_file_path));
         _decorative_mesh->setScaleFactors(get_scale_factors());
     }
 }
@@ -310,7 +309,7 @@ std::string Smith2018ContactMesh::findMeshFile(const std::string& file)
 
         try {
             std::ifstream objFile;
-            objFile.open(attempts.back().c_str());
+            objFile.open(attempts.back());
             // objFile closes when destructed
             // if the file can be opened but had bad contents e.g. binary vtp
             // it will be handled downstream

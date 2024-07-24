@@ -577,8 +577,7 @@ namespace osc::ui
 
     inline Color get_style_color(ImGuiCol color)
     {
-        const auto vec = ImGui::GetStyleColorVec4(color);
-        return {vec.x, vec.y, vec.z, vec.w};
+        return Color{ImGui::GetStyleColorVec4(color)};
     }
 
     inline Vec2 get_style_frame_padding()
@@ -773,7 +772,7 @@ namespace osc::ui
 
     inline void push_style_color(ImGuiCol index, const Color& c)
     {
-        ImGui::PushStyleColor(index, {c.r, c.g, c.b, c.a});
+        ImGui::PushStyleColor(index, ImVec4{c});
     }
 
     inline void pop_style_color(int count = 1)

@@ -439,7 +439,7 @@ void osc::ui::plot::pop_style_var(int count)
 
 void osc::ui::plot::push_style_color(ColorVar var, const Color& color)
 {
-    ImPlot::PushStyleColor(to_ImPlotCol(var), Vec4{color});
+    ImPlot::PushStyleColor(to_ImPlotCol(var), color);
 }
 
 void osc::ui::plot::pop_style_color(int count)
@@ -485,9 +485,9 @@ void osc::ui::plot::set_next_marker_style(
     ImPlot::SetNextMarkerStyle(
         to_ImPlotMarker(marker_type),
         size ? *size : IMPLOT_AUTO,
-        fill ? ImVec4{Vec4{*fill}} : IMPLOT_AUTO_COL,
+        fill ? ImVec4{*fill} : IMPLOT_AUTO_COL,
         weight ? *weight : IMPLOT_AUTO,
-        outline ? ImVec4{Vec4{*outline}} : IMPLOT_AUTO_COL
+        outline ? ImVec4{*outline} : IMPLOT_AUTO_COL
     );
 }
 
@@ -517,27 +517,27 @@ Rect osc::ui::plot::get_plot_screen_rect()
 
 void osc::ui::plot::draw_annotation_v(Vec2 location_dataspace, const Color& color, Vec2 pixel_offset, bool clamp, const char* fmt, va_list args)
 {
-    ImPlot::AnnotationV(location_dataspace.x, location_dataspace.y, Vec4{color}, pixel_offset, clamp, fmt, args);
+    ImPlot::AnnotationV(location_dataspace.x, location_dataspace.y, color, pixel_offset, clamp, fmt, args);
 }
 
 bool osc::ui::plot::drag_point(int id, Vec2d* location, const Color& color, float size, DragToolFlags flags)
 {
-    return ImPlot::DragPoint(id, &location->x, &location->y, Vec4{color}, size, to_ImPlotDragToolFlags(flags));
+    return ImPlot::DragPoint(id, &location->x, &location->y, color, size, to_ImPlotDragToolFlags(flags));
 }
 
 bool osc::ui::plot::drag_line_x(int id, double* x, const Color& color, float thickness, DragToolFlags flags)
 {
-    return ImPlot::DragLineX(id, x, Vec4{color}, thickness, to_ImPlotDragToolFlags(flags));
+    return ImPlot::DragLineX(id, x, color, thickness, to_ImPlotDragToolFlags(flags));
 }
 
 bool osc::ui::plot::drag_line_y(int id, double* y, const Color& color, float thickness, DragToolFlags flags)
 {
-    return ImPlot::DragLineY(id, y, Vec4{color}, thickness, to_ImPlotDragToolFlags(flags));
+    return ImPlot::DragLineY(id, y, color, thickness, to_ImPlotDragToolFlags(flags));
 }
 
 void osc::ui::plot::tag_x(double x, const Color& color, bool round)
 {
-    ImPlot::TagX(x, Vec4{color}, round);
+    ImPlot::TagX(x, color, round);
 }
 
 bool osc::ui::plot::is_plot_hovered()
