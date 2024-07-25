@@ -9,7 +9,6 @@
 #include <oscar/Graphics/Color.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec4.h>
-#include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
 
 #include <memory>

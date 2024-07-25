@@ -12,7 +12,6 @@
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Platform/App.h>
 #include <oscar/UI/IconCache.h>
-#include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/ParentPtr.h>
 

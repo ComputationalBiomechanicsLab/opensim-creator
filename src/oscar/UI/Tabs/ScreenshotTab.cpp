@@ -21,7 +21,6 @@
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/os.h>
 #include <oscar/Platform/Screenshot.h>
-#include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Tabs/StandardTabImpl.h>
 #include <oscar/Utils/Assertions.h>

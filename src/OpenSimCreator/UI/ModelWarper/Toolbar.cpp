@@ -5,7 +5,6 @@
 
 #include <IconsFontAwesome5.h>
 #include <oscar/Graphics/Color.h>
-#include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
 
 #include <utility>

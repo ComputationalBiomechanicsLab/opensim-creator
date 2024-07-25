@@ -6,7 +6,6 @@
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Common/Component.h>
-#include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/ParentPtr.h>
 #include <oscar/Utils/StringHelpers.h>

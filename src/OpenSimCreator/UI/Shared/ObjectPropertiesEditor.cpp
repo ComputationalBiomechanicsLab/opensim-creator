@@ -26,7 +26,6 @@
 #include <oscar/Maths/Vec4.h>
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/Log.h>
-#include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/StringHelpers.h>

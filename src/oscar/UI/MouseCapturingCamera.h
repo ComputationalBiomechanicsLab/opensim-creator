@@ -4,7 +4,6 @@
 #include <oscar/Graphics/Camera.h>
 #include <oscar/Maths/EulerAngles.h>
 #include <oscar/Platform/App.h>
-#include <oscar/UI/ImGuiHelpers.h>
 
 namespace osc
 {

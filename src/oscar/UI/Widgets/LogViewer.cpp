@@ -4,7 +4,6 @@
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
-#include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/CircularBuffer.h>
 #include <oscar/Utils/EnumHelpers.h>

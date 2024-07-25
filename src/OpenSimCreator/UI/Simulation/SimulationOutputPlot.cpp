@@ -20,7 +20,6 @@
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
-#include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/EnumHelpers.h>

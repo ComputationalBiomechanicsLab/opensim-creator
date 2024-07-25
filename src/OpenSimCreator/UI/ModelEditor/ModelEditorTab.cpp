@@ -27,7 +27,6 @@
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/Log.h>
-#include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/LogViewerPanel.h>
 #include <oscar/UI/Panels/PanelManager.h>

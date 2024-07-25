@@ -9,7 +9,6 @@
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Platform/App.h>
 #include <oscar/UI/IconCache.h>
-#include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Widgets/GuiRuler.h>
 #include <oscar/UI/Widgets/IconWithoutMenu.h>

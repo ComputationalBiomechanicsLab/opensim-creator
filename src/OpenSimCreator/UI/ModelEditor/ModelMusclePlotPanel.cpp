@@ -24,7 +24,6 @@
 #include <oscar/Platform/os.h>
 #include <oscar/Shims/Cpp20/stop_token.h>
 #include <oscar/Shims/Cpp20/thread.h>
-#include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>

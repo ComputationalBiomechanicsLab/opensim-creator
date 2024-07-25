@@ -12,7 +12,6 @@
 #include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Shims/Cpp23/ranges.h>
-#include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/StandardPanelImpl.h>
 #include <oscar/Utils/Algorithms.h>

@@ -6,7 +6,6 @@
 #include <oscar/Platform/ResourceLoader.h>
 #include <oscar/Platform/ResourcePath.h>
 #include <oscar/Shims/Cpp20/bit.h>
-#include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/imgui_impl_sdl2.h>
 #include <oscar/UI/ui_graphics_backend.h>
