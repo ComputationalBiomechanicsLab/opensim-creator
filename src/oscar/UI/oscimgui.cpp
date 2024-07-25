@@ -104,6 +104,334 @@ namespace
     }
 }
 
+void osc::ui::align_text_to_frame_padding()
+{
+    ImGui::AlignTextToFramePadding();
+}
+
+void osc::ui::draw_text(CStringView sv)
+{
+    ImGui::TextUnformatted(sv.c_str(), sv.c_str() + sv.size());
+}
+
+void osc::ui::draw_text_v(CStringView fmt, va_list args)
+{
+    ImGui::TextV(fmt.c_str(), args);
+}
+
+void osc::ui::draw_text_disabled_v(CStringView fmt, va_list args)
+{
+    ImGui::TextDisabledV(fmt.c_str(), args);
+}
+
+void osc::ui::draw_text_disabled(CStringView sv)
+{
+    ImGui::TextDisabled("%s", sv.c_str());
+}
+
+void osc::ui::draw_text_wrapped(CStringView sv)
+{
+    ImGui::TextWrapped("%s", sv.c_str());
+}
+
+void osc::ui::draw_text_wrapped_v(CStringView fmt, va_list args)
+{
+    ImGui::TextWrappedV(fmt.c_str(), args);
+}
+
+void osc::ui::draw_text_unformatted(CStringView sv)
+{
+    ImGui::TextUnformatted(sv.c_str(), sv.c_str() + sv.size());
+}
+
+void osc::ui::draw_bullet_point()
+{
+    ImGui::Bullet();
+}
+
+void osc::ui::draw_text_bullet_pointed(CStringView str)
+{
+    ImGui::BulletText("%s", str.c_str());
+}
+
+bool osc::ui::draw_tree_node_ex(CStringView label, ImGuiTreeNodeFlags flags)
+{
+    return ImGui::TreeNodeEx(label.c_str(), flags);
+}
+
+float osc::ui::get_tree_node_to_label_spacing()
+{
+    return ImGui::GetTreeNodeToLabelSpacing();
+}
+
+void osc::ui::tree_pop()
+{
+    ImGui::TreePop();
+}
+
+void osc::ui::draw_progress_bar(float fraction)
+{
+    ImGui::ProgressBar(fraction);
+}
+
+bool osc::ui::begin_menu(CStringView sv, bool enabled)
+{
+    return ImGui::BeginMenu(sv.c_str(), enabled);
+}
+
+void osc::ui::end_menu()
+{
+    return ImGui::EndMenu();
+}
+
+bool osc::ui::draw_menu_item(
+    CStringView label,
+    CStringView shortcut,
+    bool selected,
+    bool enabled)
+{
+    return ImGui::MenuItem(label.c_str(), shortcut.empty() ? nullptr : shortcut.c_str(), selected, enabled);
+}
+
+bool osc::ui::draw_menu_item(
+    CStringView label,
+    CStringView shortcut,
+    bool* p_selected,
+    bool enabled)
+{
+    return ImGui::MenuItem(label.c_str(), shortcut.empty() ? nullptr : shortcut.c_str(), p_selected, enabled);
+}
+
+bool osc::ui::begin_tab_bar(CStringView str_id)
+{
+    return ImGui::BeginTabBar(str_id.c_str());
+}
+
+void osc::ui::end_tab_bar()
+{
+    ImGui::EndTabBar();
+}
+
+bool osc::ui::begin_tab_item(CStringView label, bool* p_open, ImGuiTabItemFlags flags)
+{
+    return ImGui::BeginTabItem(label.c_str(), p_open, flags);
+}
+
+void osc::ui::end_tab_item()
+{
+    ImGui::EndTabItem();
+}
+
+bool osc::ui::draw_tab_item_button(CStringView label)
+{
+    return ImGui::TabItemButton(label.c_str());
+}
+
+void osc::ui::set_num_columns(int count, const char* id, bool border)
+{
+    ImGui::Columns(count, id, border);
+}
+
+float osc::ui::get_column_width(int column_index)
+{
+    return ImGui::GetColumnWidth(column_index);
+}
+
+void osc::ui::next_column()
+{
+    ImGui::NextColumn();
+}
+
+void osc::ui::same_line(float offset_from_start_x, float spacing)
+{
+    ImGui::SameLine(offset_from_start_x, spacing);
+}
+
+bool osc::ui::is_mouse_clicked(ImGuiMouseButton button, bool repeat)
+{
+    return ImGui::IsMouseClicked(button, repeat);
+}
+
+bool osc::ui::is_mouse_clicked(ImGuiMouseButton button, ImGuiID owner_id, ImGuiInputFlags flags)
+{
+    return ImGui::IsMouseClicked(button, owner_id, flags);
+}
+
+bool osc::ui::is_mouse_released(ImGuiMouseButton button)
+{
+    return ImGui::IsMouseReleased(button);
+}
+
+bool osc::ui::is_mouse_down(ImGuiMouseButton button)
+{
+    return ImGui::IsMouseDown(button);
+}
+
+bool osc::ui::is_mouse_dragging(ImGuiMouseButton button, float lock_threshold)
+{
+    return ImGui::IsMouseDragging(button, lock_threshold);
+}
+
+bool osc::ui::draw_selectable(CStringView label, bool* p_selected, ImGuiSelectableFlags flags, const Vec2& size)
+{
+    return ImGui::Selectable(label.c_str(), p_selected, flags, size);
+}
+
+bool osc::ui::draw_selectable(CStringView label, bool selected, ImGuiSelectableFlags flags, const Vec2& size)
+{
+    return ImGui::Selectable(label.c_str(), selected, flags, size);
+}
+
+bool osc::ui::draw_checkbox(CStringView label, bool* v)
+{
+    return ImGui::Checkbox(label.c_str(), v);
+}
+
+bool osc::ui::draw_checkbox_flags(CStringView label, int* flags, int flags_value)
+{
+    return ImGui::CheckboxFlags(label.c_str(), flags, flags_value);
+}
+
+bool osc::ui::draw_checkbox_flags(CStringView label, unsigned int* flags, unsigned int flags_value)
+{
+    return ImGui::CheckboxFlags(label.c_str(), flags, flags_value);
+}
+
+bool osc::ui::draw_float_slider(CStringView label, float* v, float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
+{
+    return ImGui::SliderFloat(label.c_str(), v, v_min, v_max, format, flags);
+}
+
+bool osc::ui::draw_scalar_input(CStringView label, ImGuiDataType data_type, void* p_data, const void* p_step, const void* p_step_fast, const char* format, ImGuiInputTextFlags flags)
+{
+    return ImGui::InputScalar(label.c_str(), data_type, p_data, p_step, p_step_fast, format, flags);
+}
+
+bool osc::ui::draw_int_input(CStringView label, int* v, int step, int step_fast, ImGuiInputTextFlags flags)
+{
+    return ImGui::InputInt(label.c_str(), v, step, step_fast, flags);
+}
+
+bool osc::ui::draw_double_input(CStringView label, double* v, double step, double step_fast, const char* format, ImGuiInputTextFlags flags)
+{
+    return ImGui::InputDouble(label.c_str(), v, step, step_fast, format, flags);
+}
+
+bool osc::ui::draw_float_input(CStringView label, float* v, float step, float step_fast, const char* format, ImGuiInputTextFlags flags)
+{
+    return ImGui::InputFloat(label.c_str(), v, step, step_fast, format, flags);
+}
+
+bool osc::ui::draw_float3_input(CStringView label, float* v, const char* format, ImGuiInputTextFlags flags)
+{
+    return ImGui::InputFloat3(label.c_str(), v, format, flags);
+}
+
+bool osc::ui::draw_vec3_input(CStringView label, Vec3& v, const char* format, ImGuiInputTextFlags flags)
+{
+    return ImGui::InputFloat3(label.c_str(), &v.x, format, flags);
+}
+
+bool osc::ui::draw_rgb_color_editor(CStringView label, Color& color)
+{
+    return ImGui::ColorEdit3(label.c_str(), value_ptr(color));
+}
+
+bool osc::ui::draw_rgba_color_editor(CStringView label, Color& color)
+{
+    return ImGui::ColorEdit4(label.c_str(), value_ptr(color));
+}
+
+bool osc::ui::draw_button(CStringView label, const Vec2& size)
+{
+    return ImGui::Button(label.c_str(), size);
+}
+
+bool osc::ui::draw_small_button(CStringView label)
+{
+    return ImGui::SmallButton(label.c_str());
+}
+
+bool osc::ui::draw_invisible_button(CStringView label, Vec2 size)
+{
+    return ImGui::InvisibleButton(label.c_str(), size);
+}
+
+bool osc::ui::draw_radio_button(CStringView label, bool active)
+{
+    return ImGui::RadioButton(label.c_str(), active);
+}
+
+bool osc::ui::draw_collapsing_header(CStringView label, ImGuiTreeNodeFlags flags)
+{
+    return ImGui::CollapsingHeader(label.c_str(), flags);
+}
+
+void osc::ui::draw_dummy(const Vec2& size)
+{
+    ImGui::Dummy(size);
+}
+
+bool osc::ui::begin_combobox(CStringView label, CStringView preview_value, ImGuiComboFlags flags)
+{
+    return ImGui::BeginCombo(label.c_str(), preview_value.empty() ? nullptr : preview_value.c_str(), flags);
+}
+
+void osc::ui::end_combobox()
+{
+    ImGui::EndCombo();
+}
+
+bool osc::ui::draw_combobox(CStringView label, int* current_item, const char* const items[], int items_count, int popup_max_height_in_items)
+{
+    return ImGui::Combo(label.c_str(), current_item, items, items_count, popup_max_height_in_items);
+}
+
+bool osc::ui::begin_listbox(CStringView label)
+{
+    return ImGui::BeginListBox(label.c_str());
+}
+
+void osc::ui::end_listbox()
+{
+    ImGui::EndListBox();
+}
+
+ImGuiViewport* osc::ui::get_main_viewport()
+{
+    return ImGui::GetMainViewport();
+}
+
+ImGuiID osc::ui::enable_dockspace_over_viewport(const ImGuiViewport* viewport, ImGuiDockNodeFlags flags, const ImGuiWindowClass* window_class)
+{
+    return ImGui::DockSpaceOverViewport(0, viewport, flags, window_class);
+}
+
+bool osc::ui::begin_panel(CStringView name, bool* p_open, ImGuiWindowFlags flags)
+{
+    return ImGui::Begin(name.c_str(), p_open, flags);
+}
+
+void osc::ui::end_panel()
+{
+    ImGui::End();
+}
+
+bool osc::ui::begin_child_panel(CStringView str_id, const Vec2& size, ImGuiChildFlags child_flags, ImGuiWindowFlags panel_flags)
+{
+    return ImGui::BeginChild(str_id.c_str(), size, child_flags, panel_flags);
+}
+
+void osc::ui::end_child_panel()
+{
+    ImGui::EndChild();
+}
+
+void osc::ui::close_current_popup()
+{
+    ImGui::CloseCurrentPopup();
+}
+
 void osc::ui::apply_dark_theme()
 {
     // see: https://github.com/ocornut/imgui/issues/707

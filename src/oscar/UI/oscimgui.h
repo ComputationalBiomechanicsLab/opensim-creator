@@ -35,342 +35,155 @@ namespace osc { class Texture2D; }
 
 namespace osc::ui
 {
-    inline void align_text_to_frame_padding()
-    {
-        ImGui::AlignTextToFramePadding();
-    }
+    // vertically align upcoming text baseline to FramePadding.y so that it will align properly to regularly framed items (call if you have text on a line before a framed item)
+    void align_text_to_frame_padding();
 
-    inline void draw_text(CStringView sv)
-    {
-        ImGui::TextUnformatted(sv.c_str(), sv.c_str() + sv.size());
-    }
-
+    void draw_text(CStringView);
+    void draw_text_v(CStringView fmt, va_list);
     inline void draw_text(const char* fmt, ...)
     {
         va_list args;
         va_start(args, fmt);
-        ImGui::TextV(fmt, args);
+        draw_text_v(fmt, args);
         va_end(args);
     }
 
-    inline void draw_text_disabled(CStringView sv)
-    {
-        ImGui::TextDisabled("%s", sv.c_str());
-    }
-
+    void draw_text_disabled(CStringView);
+    void draw_text_disabled_v(CStringView fmt, va_list);
     inline void draw_text_disabled(const char* fmt, ...)
     {
         va_list args;
         va_start(args, fmt);
-        ImGui::TextDisabledV(fmt, args);
+        draw_text_disabled_v(fmt, args);
         va_end(args);
     }
 
-    inline void draw_text_wrapped(CStringView sv)
-    {
-        ImGui::TextWrapped("%s", sv.c_str());
-    }
-
+    void draw_text_wrapped(CStringView);
+    void draw_text_wrapped_v(CStringView fmt, va_list);
     inline void draw_text_wrapped(const char* fmt, ...)
     {
         va_list args;
         va_start(args, fmt);
-        ImGui::TextWrappedV(fmt, args);
+        draw_text_wrapped_v(fmt, args);
         va_end(args);
     }
 
-    inline void draw_text_unformatted(CStringView sv)
-    {
-        ImGui::TextUnformatted(sv.c_str(), sv.c_str() + sv.size());
-    }
+    void draw_text_unformatted(CStringView);
 
-    inline void draw_bullet_point()
-    {
-        ImGui::Bullet();
-    }
+    void draw_bullet_point();
 
-    inline void draw_text_bullet_pointed(CStringView str)
-    {
-        ImGui::BulletText("%s", str.c_str());
-    }
+    void draw_text_bullet_pointed(CStringView);
 
-    inline bool draw_tree_node_ex(CStringView label, ImGuiTreeNodeFlags flags = 0)
-    {
-        return ImGui::TreeNodeEx(label.c_str(), flags);
-    }
+    bool draw_tree_node_ex(CStringView, ImGuiTreeNodeFlags = 0);
 
-    inline float get_tree_node_to_label_spacing()
-    {
-        return ImGui::GetTreeNodeToLabelSpacing();
-    }
+    float get_tree_node_to_label_spacing();
 
-    inline void tree_pop()
-    {
-        ImGui::TreePop();
-    }
+    void tree_pop();
 
-    inline void draw_progress_bar(float fraction)
-    {
-        ImGui::ProgressBar(fraction);
-    }
+    void draw_progress_bar(float fraction);
 
-    inline bool begin_menu(CStringView sv, bool enabled = true)
-    {
-        return ImGui::BeginMenu(sv.c_str(), enabled);
-    }
+    bool begin_menu(CStringView sv, bool enabled = true);
 
-    inline void end_menu()
-    {
-        return ImGui::EndMenu();
-    }
+    void end_menu();
 
-    inline bool draw_menu_item(
+    bool draw_menu_item(
         CStringView label,
         CStringView shortcut = {},
         bool selected = false,
-        bool enabled = true)
-    {
-        return ImGui::MenuItem(label.c_str(), shortcut.empty() ? nullptr : shortcut.c_str(), selected, enabled);
-    }
+        bool enabled = true
+    );
 
-    inline bool draw_menu_item(
+    bool draw_menu_item(
         CStringView label,
         CStringView shortcut,
         bool* p_selected,
-        bool enabled = true)
-    {
-        return ImGui::MenuItem(label.c_str(), shortcut.empty() ? nullptr : shortcut.c_str(), p_selected, enabled);
-    }
+        bool enabled = true
+    );
 
-    inline bool begin_tab_bar(CStringView str_id)
-    {
-        return ImGui::BeginTabBar(str_id.c_str());
-    }
+    bool begin_tab_bar(CStringView str_id);
+    void end_tab_bar();
 
-    inline void end_tab_bar()
-    {
-        ImGui::EndTabBar();
-    }
+    bool begin_tab_item(CStringView label, bool* p_open = nullptr, ImGuiTabItemFlags flags = 0);
 
-    inline bool begin_tab_item(CStringView label, bool* p_open = nullptr, ImGuiTabItemFlags flags = 0)
-    {
-        return ImGui::BeginTabItem(label.c_str(), p_open, flags);
-    }
+    void end_tab_item();
 
-    inline void end_tab_item()
-    {
-        ImGui::EndTabItem();
-    }
+    bool draw_tab_item_button(CStringView label);
 
-    inline bool draw_tab_item_button(CStringView label)
-    {
-        return ImGui::TabItemButton(label.c_str());
-    }
+    void set_num_columns(int count = 1, const char* id = nullptr, bool border = true);
+    float get_column_width(int column_index = -1);
+    void next_column();
 
-    inline void set_num_columns(int count = 1, const char* id = nullptr, bool border = true)
-    {
-        ImGui::Columns(count, id, border);
-    }
+    void same_line(float offset_from_start_x = 0.0f, float spacing = -1.0f);
 
-    inline float get_column_width(int column_index = -1)
-    {
-        return ImGui::GetColumnWidth(column_index);
-    }
+    bool is_mouse_clicked(ImGuiMouseButton button, bool repeat = false);
 
-    inline void next_column()
-    {
-        ImGui::NextColumn();
-    }
+    bool is_mouse_clicked(ImGuiMouseButton button, ImGuiID owner_id, ImGuiInputFlags flags = 0);
 
-    inline void same_line(float offset_from_start_x = 0.0f, float spacing = -1.0f)
-    {
-        ImGui::SameLine(offset_from_start_x, spacing);
-    }
+    bool is_mouse_released(ImGuiMouseButton button);
 
-    inline bool is_mouse_clicked(ImGuiMouseButton button, bool repeat = false)
-    {
-        return ImGui::IsMouseClicked(button, repeat);
-    }
+    bool is_mouse_down(ImGuiMouseButton button);
 
-    inline bool is_mouse_clicked(ImGuiMouseButton button, ImGuiID owner_id, ImGuiInputFlags flags = 0)
-    {
-        return ImGui::IsMouseClicked(button, owner_id, flags);
-    }
+    bool is_mouse_dragging(ImGuiMouseButton button, float lock_threshold = -1.0f);
 
-    inline bool is_mouse_released(ImGuiMouseButton button)
-    {
-        return ImGui::IsMouseReleased(button);
-    }
+    bool draw_selectable(CStringView label, bool* p_selected, ImGuiSelectableFlags flags = 0, const Vec2& size = {});
 
-    inline bool is_mouse_down(ImGuiMouseButton button)
-    {
-        return ImGui::IsMouseDown(button);
-    }
+    bool draw_selectable(CStringView label, bool selected = false, ImGuiSelectableFlags flags = 0, const Vec2& size = {});
 
-    inline bool is_mouse_dragging(ImGuiMouseButton button, float lock_threshold = -1.0f)
-    {
-        return ImGui::IsMouseDragging(button, lock_threshold);
-    }
+    bool draw_checkbox(CStringView label, bool* v);
 
-    inline bool draw_selectable(CStringView label, bool* p_selected, ImGuiSelectableFlags flags = 0, const Vec2& size = {})
-    {
-        return ImGui::Selectable(label.c_str(), p_selected, flags, size);
-    }
+    bool draw_checkbox_flags(CStringView label, int* flags, int flags_value);
 
-    inline bool draw_selectable(CStringView label, bool selected = false, ImGuiSelectableFlags flags = 0, const Vec2& size = {})
-    {
-        return ImGui::Selectable(label.c_str(), selected, flags, size);
-    }
+    bool draw_checkbox_flags(CStringView label, unsigned int* flags, unsigned int flags_value);
 
-    inline bool draw_checkbox(CStringView label, bool* v)
-    {
-        return ImGui::Checkbox(label.c_str(), v);
-    }
+    bool draw_float_slider(CStringView label, float* v, float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
 
-    inline bool draw_checkbox_flags(CStringView label, int* flags, int flags_value)
-    {
-        return ImGui::CheckboxFlags(label.c_str(), flags, flags_value);
-    }
+    bool draw_scalar_input(CStringView label, ImGuiDataType data_type, void* p_data, const void* p_step = NULL, const void* p_step_fast = NULL, const char* format = NULL, ImGuiInputTextFlags flags = 0);
 
-    inline bool draw_checkbox_flags(CStringView label, unsigned int* flags, unsigned int flags_value)
-    {
-        return ImGui::CheckboxFlags(label.c_str(), flags, flags_value);
-    }
+    bool draw_int_input(CStringView label, int* v, int step = 1, int step_fast = 100, ImGuiInputTextFlags flags = 0);
 
-    inline bool draw_float_slider(CStringView label, float* v, float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0)
-    {
-        return ImGui::SliderFloat(label.c_str(), v, v_min, v_max, format, flags);
-    }
+    bool draw_double_input(CStringView label, double* v, double step = 0.0, double step_fast = 0.0, const char* format = "%.6f", ImGuiInputTextFlags flags = 0);
 
-    inline bool draw_scalar_input(CStringView label, ImGuiDataType data_type, void* p_data, const void* p_step = NULL, const void* p_step_fast = NULL, const char* format = NULL, ImGuiInputTextFlags flags = 0)
-    {
-        return ImGui::InputScalar(label.c_str(), data_type, p_data, p_step, p_step_fast, format, flags);
-    }
+    bool draw_float_input(CStringView label, float* v, float step = 0.0f, float step_fast = 0.0f, const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
 
-    inline bool draw_int_input(CStringView label, int* v, int step = 1, int step_fast = 100, ImGuiInputTextFlags flags = 0)
-    {
-        return ImGui::InputInt(label.c_str(), v, step, step_fast, flags);
-    }
+    bool draw_float3_input(CStringView label, float v[3], const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
 
-    inline bool draw_double_input(CStringView label, double* v, double step = 0.0, double step_fast = 0.0, const char* format = "%.6f", ImGuiInputTextFlags flags = 0)
-    {
-        return ImGui::InputDouble(label.c_str(), v, step, step_fast, format, flags);
-    }
+    bool draw_vec3_input(CStringView label, Vec3& v, const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
 
-    inline bool draw_float_input(CStringView label, float* v, float step = 0.0f, float step_fast = 0.0f, const char* format = "%.3f", ImGuiInputTextFlags flags = 0)
-    {
-        return ImGui::InputFloat(label.c_str(), v, step, step_fast, format, flags);
-    }
+    bool draw_rgb_color_editor(CStringView label, Color& color);
 
-    inline bool draw_float3_input(CStringView label, float v[3], const char* format = "%.3f", ImGuiInputTextFlags flags = 0)
-    {
-        return ImGui::InputFloat3(label.c_str(), v, format, flags);
-    }
+    bool draw_rgba_color_editor(CStringView label, Color& color);
 
-    inline bool draw_vec3_input(CStringView label, Vec3& v, const char* format = "%.3f", ImGuiInputTextFlags flags = 0)
-    {
-        return ImGui::InputFloat3(label.c_str(), &v.x, format, flags);
-    }
+    bool draw_button(CStringView label, const Vec2& size = {});
 
-    inline bool draw_rgb_color_editor(CStringView label, Color& color)
-    {
-        return ImGui::ColorEdit3(label.c_str(), value_ptr(color));
-    }
+    bool draw_small_button(CStringView label);
 
-    inline bool draw_rgba_color_editor(CStringView label, Color& color)
-    {
-        return ImGui::ColorEdit4(label.c_str(), value_ptr(color));
-    }
+    bool draw_invisible_button(CStringView label, Vec2 size = {});
 
-    inline bool draw_button(CStringView label, const Vec2& size = {})
-    {
-        return ImGui::Button(label.c_str(), size);
-    }
+    bool draw_radio_button(CStringView label, bool active);
 
-    inline bool draw_small_button(CStringView label)
-    {
-        return ImGui::SmallButton(label.c_str());
-    }
+    bool draw_collapsing_header(CStringView label, ImGuiTreeNodeFlags flags = 0);
 
-    inline bool draw_invisible_button(CStringView label, Vec2 size = {})
-    {
-        return ImGui::InvisibleButton(label.c_str(), size);
-    }
+    void draw_dummy(const Vec2& size);
 
-    inline bool draw_radio_button(CStringView label, bool active)
-    {
-        return ImGui::RadioButton(label.c_str(), active);
-    }
+    bool begin_combobox(CStringView label, CStringView preview_value, ImGuiComboFlags flags = 0);
+    void end_combobox();
 
-    inline bool draw_collapsing_header(CStringView label, ImGuiTreeNodeFlags flags = 0)
-    {
-        return ImGui::CollapsingHeader(label.c_str(), flags);
-    }
+    bool draw_combobox(CStringView label, int* current_item, const char* const items[], int items_count, int popup_max_height_in_items = -1);
 
-    inline void draw_dummy(const Vec2& size)
-    {
-        ImGui::Dummy(size);
-    }
+    bool begin_listbox(CStringView label);
+    void end_listbox();
 
-    inline bool begin_combobox(CStringView label, CStringView preview_value, ImGuiComboFlags flags = 0)
-    {
-        return ImGui::BeginCombo(label.c_str(), preview_value.empty() ? nullptr : preview_value.c_str(), flags);
-    }
+    ImGuiViewport* get_main_viewport();
 
-    inline void end_combobox()
-    {
-        ImGui::EndCombo();
-    }
+    ImGuiID enable_dockspace_over_viewport(const ImGuiViewport* viewport = NULL, ImGuiDockNodeFlags flags = 0, const ImGuiWindowClass* window_class = NULL);
 
-    inline bool draw_combobox(CStringView label, int* current_item, const char* const items[], int items_count, int popup_max_height_in_items = -1)
-    {
-        return ImGui::Combo(label.c_str(), current_item, items, items_count, popup_max_height_in_items);
-    }
+    bool begin_panel(CStringView name, bool* p_open = nullptr, ImGuiWindowFlags flags = 0);
+    void end_panel();
 
-    inline bool begin_listbox(CStringView label)
-    {
-        return ImGui::BeginListBox(label.c_str());
-    }
+    bool begin_child_panel(CStringView str_id, const Vec2& size = {}, ImGuiChildFlags child_flags = 0, ImGuiWindowFlags panel_flags = 0);
+    void end_child_panel();
 
-    inline void end_listbox()
-    {
-        ImGui::EndListBox();
-    }
-
-    inline ImGuiViewport* get_main_viewport()
-    {
-        return ImGui::GetMainViewport();
-    }
-
-    inline ImGuiID enable_dockspace_over_viewport(const ImGuiViewport* viewport = NULL, ImGuiDockNodeFlags flags = 0, const ImGuiWindowClass* window_class = NULL)
-    {
-        return ImGui::DockSpaceOverViewport(0, viewport, flags, window_class);
-    }
-
-    inline bool begin_panel(CStringView name, bool* p_open = nullptr, ImGuiWindowFlags flags = 0)
-    {
-        return ImGui::Begin(name.c_str(), p_open, flags);
-    }
-
-    inline void end_panel()
-    {
-        ImGui::End();
-    }
-
-    inline bool begin_child_panel(CStringView str_id, const Vec2& size = {}, ImGuiChildFlags child_flags = 0, ImGuiWindowFlags panel_flags = 0)
-    {
-        return ImGui::BeginChild(str_id.c_str(), size, child_flags, panel_flags);
-    }
-
-    inline void end_child_panel()
-    {
-        ImGui::EndChild();
-    }
-
-    inline void close_current_popup()
-    {
-        ImGui::CloseCurrentPopup();
-    }
+    void close_current_popup();
 
     inline void set_tooltip(const char* fmt, ...)
     {

@@ -51,6 +51,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   without the global lookup requirement
 - Internal: Integrated `lua` and `ImGuiColorTextEdit`, which will currently only be used to
   experiment with scripting in a developer-facing fashion (no user-facing LUA support... yet)
+- Internal: a wrapper layer was added around `ImPlot`, so that the UI code can use oscar-like
+  bindings, rather than translating everything to ImPlot
 
 
 ## [0.5.12] - 2024/04/29
