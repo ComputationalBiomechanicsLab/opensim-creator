@@ -67,7 +67,13 @@ namespace
         {
             "show_force_linear_component",
             "Forces' Linear Component (EXPERIMENTAL)",
-            "Tries to draw the linear component applies by each `OpenSim::Force` in the model.\n\nEXPERIMENTAL: this currently iterates through all the forces and extracts their linear component w.r.t. the body frame, it's probably slow, and probably noisy, but also probably still useful to know (e.g. if you're debugging weird model behavior)",
+            "Tries to draw the linear component applied by each `OpenSim::Force` in the model.\n\nEXPERIMENTAL: this currently iterates through all the forces and extracts their linear component w.r.t. the body frame, it's probably slow, and probably noisy, but also probably still useful to know (e.g. if you're debugging weird model behavior)",
+        },
+        OpenSimDecorationOptionMetadata
+        {
+            "show_force_angular_component",
+            "Forces' Angular Component (EXPERIMENTAL)",
+            "Tries to draw the angular component applied by each `OpenSim::Force` in the model.\n\nEXPERIMENTAL: this currently iterates through all the forces and extracts their angular component w.r.t. the body frame, it's probably slow, and probably noisy, but also probably still useful to know (e.g. if you're debugging weird model behavior)",
         },
     });
 

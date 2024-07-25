@@ -20,7 +20,8 @@ namespace osc
         ShouldShowPointToPointSprings                       = 1<<6,
         ShouldShowContactForces                             = 1<<7,
         ShouldShowForceLinearComponent                      = 1<<8,
-        NUM_FLAGS                                           =    9,
+        ShouldShowForceAngularComponent                     = 1<<9,
+        NUM_FLAGS                                           =   10,
 
         Default = ShouldShowPointToPointSprings,
     };

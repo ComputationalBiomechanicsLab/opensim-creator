@@ -318,12 +318,15 @@ namespace
     };
 
     // OSC-specific decoration handler that adds arrows to forces
-    void HandleForceArrows(
+    void HandleLinearForceArrows(
         RendererState& rs,
         const OpenSim::Force& force)
     {
-        if (!rs.getOptions().getShouldShowForceLinearComponent()) {
-            return;
+        const bool showLinearForces = rs.getOptions().getShouldShowForceLinearComponent();
+        const bool showAngularForces = rs.getOptions().getShouldShowForceAngularComponent();
+
+        if (not showLinearForces and not showAngularForces) {
+            return;  // nothing to draw
         }
 
         // this is a very heavy-handed way of getting the relevant information, because
@@ -333,7 +336,7 @@ namespace
         const SimTK::SimbodyMatterSubsystem& matter = rs.getMatterSubsystem();
         const SimTK::State& state = rs.getState();
 
-        OpenSim::ForceAdapter adapter{force};
+        const OpenSim::ForceAdapter adapter{force};
         SimTK::Vector_<SimTK::SpatialVec> bodyForces(matter.getNumBodies(), SimTK::SpatialVec{});
         SimTK::Vector_<SimTK::Vec3> particleForces(matter.getNumParticles(), SimTK::Vec3{});  // (unused)
         SimTK::Vector mobilityForces(matter.getNumMobilities(), 0.0);  // (unused)
@@ -346,29 +349,60 @@ namespace
         );
 
         for (SimTK::MobilizedBodyIndex bodyIdx{0}; bodyIdx < bodyForces.size(); ++bodyIdx) {
-            const SimTK::Vec3 translationalForce = bodyForces[bodyIdx][1];
-            if (equal_within_scaled_epsilon(translationalForce.normSqr(), 0.0)) {
-                continue;  // no translational force applied
+
+            // if applicable, handle drawing the linear component of force as a yellow arrow
+            if (showLinearForces) {
+                const SimTK::Vec3 linearForce = bodyForces[bodyIdx][1];
+                if (equal_within_scaled_epsilon(linearForce.normSqr(), 0.0)) {
+                    continue;  // no translational force applied
+                }
+
+                // else: `bodyForce` was applied to the `SimTK::MobilizedBody` at index `bodyIdx`
+                const SimTK::MobilizedBody& mobod = matter.getMobilizedBody(bodyIdx);
+                const SimTK::Transform mobod2ground = mobod.getBodyTransform(state);
+
+                const float fixupScaleFactor = rs.getFixupScaleFactor();
+
+                const ArrowProperties props = {
+                    .worldspace_start = ToVec3(mobod2ground * SimTK::Vec3{}),
+                    .worldspace_end = ToVec3(mobod2ground * (fixupScaleFactor * 0.005 * linearForce)),
+                    .tip_length = (fixupScaleFactor*0.015f),
+                    .neck_thickness = (fixupScaleFactor*0.006f),
+                    .head_thickness = (fixupScaleFactor*0.01f),
+                    .color = Color::yellow(),
+                };
+                draw_arrow(rs.updMeshCache(), props, [&force, &rs](SceneDecoration&& decoration)
+                {
+                    rs.consume(force, std::move(decoration));
+                });
             }
 
-            // else: `bodyForce` was applied to the `SimTK::MobilizedBody` at index `bodyIdx`
-            const SimTK::MobilizedBody& mobod = matter.getMobilizedBody(bodyIdx);
-            const SimTK::Transform mobod2ground = mobod.getBodyTransform(state);
+            // if applicable, handle drawing the angular component of force as an orange arrow
+            if (showAngularForces) {
+                const SimTK::Vec3 angularForce = bodyForces[bodyIdx][0];
+                if (equal_within_scaled_epsilon(angularForce.normSqr(), 0.0)) {
+                    continue;  // no translational force applied
+                }
 
-            const float fixupScaleFactor = rs.getFixupScaleFactor();
+                // else: `bodyForce` was applied to the `SimTK::MobilizedBody` at index `bodyIdx`
+                const SimTK::MobilizedBody& mobod = matter.getMobilizedBody(bodyIdx);
+                const SimTK::Transform mobod2ground = mobod.getBodyTransform(state);
 
-            const ArrowProperties props = {
-                .worldspace_start = ToVec3(mobod2ground * SimTK::Vec3{}),
-                .worldspace_end = ToVec3(mobod2ground * (fixupScaleFactor * 0.005 * translationalForce)),
-                .tip_length = (fixupScaleFactor*0.015f),
-                .neck_thickness = (fixupScaleFactor*0.006f),
-                .head_thickness = (fixupScaleFactor*0.01f),
-                .color = Color::yellow(),
-            };
-            draw_arrow(rs.updMeshCache(), props, [&force, &rs](SceneDecoration&& decoration)
-            {
-                rs.consume(force, std::move(decoration));
-            });
+                const float fixupScaleFactor = rs.getFixupScaleFactor();
+
+                const ArrowProperties props = {
+                    .worldspace_start = ToVec3(mobod2ground * SimTK::Vec3{}),
+                    .worldspace_end = ToVec3(mobod2ground * (fixupScaleFactor * 0.005 * angularForce)),
+                    .tip_length = (fixupScaleFactor*0.015f),
+                    .neck_thickness = (fixupScaleFactor*0.006f),
+                    .head_thickness = (fixupScaleFactor*0.01f),
+                    .color = Color::orange(),
+                };
+                draw_arrow(rs.updMeshCache(), props, [&force, &rs](SceneDecoration&& decoration)
+                {
+                    rs.consume(force, std::move(decoration));
+                });
+            }
         }
     }
 
@@ -1060,7 +1094,7 @@ void osc::GenerateSubcomponentDecorations(
         }
         else if (const auto* const p2p = dynamic_cast<const OpenSim::PointToPointSpring*>(&c); p2p && opts.getShouldShowPointToPointSprings())
         {
-            HandleForceArrows(rendererState, *p2p);
+            HandleLinearForceArrows(rendererState, *p2p);
             HandlePointToPointSpring(rendererState, *p2p);
         }
         else if (typeid(c) == typeid(OpenSim::Station))
@@ -1074,7 +1108,7 @@ void osc::GenerateSubcomponentDecorations(
         }
         else if (const auto* const hcf = dynamic_cast<const OpenSim::HuntCrossleyForce*>(&c))
         {
-            HandleForceArrows(rendererState, *hcf);
+            HandleLinearForceArrows(rendererState, *hcf);
             HandleHuntCrossleyForce(rendererState, *hcf);
         }
         else if (const auto* const geom = dynamic_cast<const OpenSim::Geometry*>(&c))
@@ -1087,7 +1121,7 @@ void osc::GenerateSubcomponentDecorations(
         }
         else if (const auto* const force = dynamic_cast<const OpenSim::Force*>(&c))
         {
-            HandleForceArrows(rendererState, *force);
+            HandleLinearForceArrows(rendererState, *force);
             rendererState.emitGenericDecorations(c, c);
         }
         else
