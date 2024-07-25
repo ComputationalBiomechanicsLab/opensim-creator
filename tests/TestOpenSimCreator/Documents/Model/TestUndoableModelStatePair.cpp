@@ -4,6 +4,7 @@
 
 #include <gtest/gtest.h>
 #include <OpenSim/Common/Component.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSimCreator/Graphics/OpenSimDecorationGenerator.h>
 #include <OpenSimCreator/Graphics/OpenSimDecorationOptions.h>
 #include <OpenSimCreator/Platform/OpenSimCreatorApp.h>
@@ -82,4 +83,20 @@ TEST(UndoableModelStatePair, CanLoadAndRenderAllUserFacingExampleFiles)
         }
     }
     ASSERT_GT(nExamplesTested, 10);  // sanity check: remove this if you want <10 examples
+}
+
+// related issue: #890
+//
+// calling `setModel` with an `OpenSim::Model` should retain the scene scale factor of
+// the current scratch space
+TEST(UndoableModelStatePair, setModelRetainsSceneScaleFactor)
+{
+    UndoableModelStatePair model;
+
+    ASSERT_EQ(model.getFixupScaleFactor(), 1.0f);
+    model.setFixupScaleFactor(0.5f);
+    ASSERT_EQ(model.getFixupScaleFactor(), 0.5f);
+
+    model.setModel(std::make_unique<OpenSim::Model>());
+    ASSERT_EQ(model.getFixupScaleFactor(), 0.5f);
 }

@@ -6,6 +6,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Upcoming Release]
 
 
+- Fixed non-default scene scale factors not being retained whenever a model file is
+  hot-reloaded from disk in the model editor (#890)
 - The model editor's/simulator's 3D visualizers now have an experimental
   `Show > Forces' Linear/Rotational Component` visualization option, which adds arrows indicating
   how each `OpenSim::Force` in the model applies its linear/angular force component to each

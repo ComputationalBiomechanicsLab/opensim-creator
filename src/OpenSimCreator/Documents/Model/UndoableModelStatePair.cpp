@@ -339,6 +339,7 @@ public:
     {
         UiModelStatePair p{std::move(newModel)};
         CopySelectedAndHovered(m_Scratch, p);
+        p.setFixupScaleFactor(m_Scratch.getFixupScaleFactor());
         m_Scratch = std::move(p);
     }
 

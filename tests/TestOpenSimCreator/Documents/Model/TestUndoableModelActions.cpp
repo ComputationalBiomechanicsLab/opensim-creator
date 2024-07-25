@@ -376,3 +376,28 @@ TEST(OpenSimActions, ActionRemoveWrapObjectFromGeometryPathWrapsWorksInExampleCa
 
     ASSERT_NEAR(path.getLength(um.getState()), 1.0, epsilon_v<double>)  << "should stop wrapping";
 }
+
+// related issue: #890
+//
+// when a model is hot-reloaded from disk, the scene scale factor should be retained from
+// the in-editor model, to support the user changing it to a non-default value while they
+// seperately edit the underlying model file
+TEST(OpenSimActions, ActionUpdateModelFromBackingFileShouldRetainSceneScaleFactor)
+{
+    const std::filesystem::path backingFile = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "models" / "Blank" / "blank.osim";
+
+    UndoableModelStatePair model{backingFile};
+    model.setUpToDateWithFilesystem(model.getLastFilesystemWriteTime() - std::chrono::seconds{1});  // ensure it's invalid
+
+    ASSERT_TRUE(model.hasFilesystemLocation());
+
+    // set the scale factor to a nonstandard value
+    ASSERT_NE(model.getFixupScaleFactor(), 0.5f);
+    model.setFixupScaleFactor(0.5f);
+    ASSERT_EQ(model.getFixupScaleFactor(), 0.5f);
+
+    // reload the model from disk
+    ASSERT_TRUE(ActionUpdateModelFromBackingFile(model)) << "this should work fine";
+
+    ASSERT_EQ(model.getFixupScaleFactor(), 0.5f) << "the scene scale factor should be retained after a reload";
+}
