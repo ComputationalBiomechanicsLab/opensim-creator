@@ -29,17 +29,11 @@ osc::FileChangePoller::FileChangePoller(
 
     delay_between_checks_{delay_between_checks},
     next_polling_time_{std::chrono::system_clock::now() + delay_between_checks},
-    file_last_modification_time_{get_last_modification_time(path)},
-    enabled_{true}
+    file_last_modification_time_{get_last_modification_time(path)}
 {}
 
 bool osc::FileChangePoller::change_detected(const std::string& path)
 {
-    if (not enabled_) {
-        // is disabled
-        return false;
-    }
-
     if (path.empty() or path == c_model_no_backing_file_sentinel) {
         // has no, or a senteniel, path - do no checks
         return false;
