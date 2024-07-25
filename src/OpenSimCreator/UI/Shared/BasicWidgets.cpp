@@ -1468,6 +1468,16 @@ void osc::DrawToggleContactGeometryButton(UndoableModelStatePair& model, IconCac
     ui::draw_tooltip_if_item_hovered("Toggle Rendering Contact Geometry", "Toggles whether contact geometry should be rendered in the 3D scene");
 }
 
+void osc::DrawToggleForcesButton(UndoableModelStatePair& model, IconCache& icons)
+{
+    const Icon& icon = icons.find_or_throw(IsShowingForces(model.getModel()) ? "forces_colored" : "forces_bw");
+    if (ui::draw_image_button("##toggleforces", icon.texture(), icon.dimensions(), icon.texture_coordinates()))
+    {
+        ActionToggleForces(model);
+    }
+    ui::draw_tooltip_if_item_hovered("Toggle Rendering Forces", "Toggles whether forces should be rendered in the 3D scene.\n\nNOTE: this is a model-level property that only applies to forces in OpenSim that actually check this flag. OpenSim Creator's visualizers also offer custom overlays for forces, muscles, etc. separately to this mechanism.");
+}
+
 void osc::DrawAllDecorationToggleButtons(UndoableModelStatePair& model, IconCache& icons)
 {
     DrawToggleFramesButton(model, icons);
@@ -1477,6 +1487,8 @@ void osc::DrawAllDecorationToggleButtons(UndoableModelStatePair& model, IconCach
     DrawToggleWrapGeometryButton(model, icons);
     ui::same_line();
     DrawToggleContactGeometryButton(model, icons);
+    ui::same_line();
+    DrawToggleForcesButton(model, icons);
 }
 
 void osc::DrawSceneScaleFactorEditorControls(UndoableModelStatePair& model)

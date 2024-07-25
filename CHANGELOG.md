@@ -6,6 +6,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Upcoming Release]
 
 
+- The model editor toolbar now contains a toggle for toggling a model's `show_forces`
+  display property (#887). Note: OpenSim only really uses this for `SmoothSphereHalfSpaceForce`
 - Fixed non-default scene scale factors not being retained whenever a model file is
   hot-reloaded from disk in the model editor (#890)
 - The model editor's/simulator's 3D visualizers now have an experimental

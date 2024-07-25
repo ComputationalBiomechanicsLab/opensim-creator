@@ -603,8 +603,14 @@ namespace osc
     // returns `true` if the given model's display properties asks to show contact geometry
     bool IsShowingContactGeometry(const OpenSim::Model&);
 
+    // returns `true` if the given model's display properties asks to show forces
+    bool IsShowingForces(const OpenSim::Model&);
+
     // toggles the model's "show contact geometry" display property and returns the new value
     bool ToggleShowingContactGeometry(OpenSim::Model&);
+
+    // toggles the model's "show forces" display property and returns the new value
+    bool ToggleShowingForces(OpenSim::Model&);
 
     // returns/assigns the absolute path to a component within its hierarchy (e.g. /jointset/joint/somejoint)
     //

@@ -401,3 +401,16 @@ TEST(OpenSimActions, ActionUpdateModelFromBackingFileShouldRetainSceneScaleFacto
 
     ASSERT_EQ(model.getFixupScaleFactor(), 0.5f) << "the scene scale factor should be retained after a reload";
 }
+
+// related issue: #887
+//
+// the user wanted this toggle in the UI. At time of writing, it's really only used for `SmoothSphereHalfSpaceForce`
+TEST(OpenSimActions, ActionToggleForcesTogglesTheForces)
+{
+    UndoableModelStatePair model;
+    ASSERT_FALSE(IsShowingForces(model.getModel()));
+    ActionToggleForces(model);
+    ASSERT_TRUE(IsShowingForces(model.getModel()));
+    model.doUndo();
+    ASSERT_FALSE(IsShowingForces(model.getModel()));
+}

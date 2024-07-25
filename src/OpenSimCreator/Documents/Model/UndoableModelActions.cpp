@@ -579,6 +579,26 @@ bool osc::ActionToggleContactGeometry(UndoableModelStatePair& uim)
     }
 }
 
+bool osc::ActionToggleForces(UndoableModelStatePair& uim)
+{
+    try
+    {
+        OpenSim::Model& mutModel = uim.updModel();
+        const bool newState = ToggleShowingForces(mutModel);
+        InitializeModel(mutModel);
+        InitializeState(mutModel);
+        uim.commit(newState ? "shown forces" : "hidden forces");
+
+        return true;
+    }
+    catch (const std::exception& ex)
+    {
+        log_error("error detected while trying to toggle forces: %s", ex.what());
+        uim.rollback();
+        return false;
+    }
+}
+
 bool osc::ActionToggleWrapGeometry(UndoableModelStatePair& uim)
 {
     try

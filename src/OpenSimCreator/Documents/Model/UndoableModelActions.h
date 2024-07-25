@@ -138,6 +138,11 @@ namespace osc
         UndoableModelStatePair&
     );
 
+    // toggle force visibility (#887)
+    bool ActionToggleForces(
+        UndoableModelStatePair&
+    );
+
     // toggle model wrap geometry visibility
     bool ActionToggleWrapGeometry(
         UndoableModelStatePair&
