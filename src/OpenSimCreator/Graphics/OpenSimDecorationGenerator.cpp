@@ -322,6 +322,9 @@ namespace
         RendererState& rs,
         const OpenSim::Force& force)
     {
+        constexpr float linearForceLengthScale = 0.005f;
+        constexpr float angularForceLengthScale = 0.01f;
+
         const bool showLinearForces = rs.getOptions().getShouldShowForceLinearComponent();
         const bool showAngularForces = rs.getOptions().getShouldShowForceAngularComponent();
 
@@ -339,7 +342,7 @@ namespace
         const OpenSim::ForceAdapter adapter{force};
         SimTK::Vector_<SimTK::SpatialVec> bodyForces(matter.getNumBodies(), SimTK::SpatialVec{});
         SimTK::Vector_<SimTK::Vec3> particleForces(matter.getNumParticles(), SimTK::Vec3{});  // (unused)
-        SimTK::Vector mobilityForces(matter.getNumMobilities(), 0.0);  // (unused)
+        SimTK::Vector mobilityForces(matter.getNumMobilities(), double{});  // (unused)
 
         adapter.calcForce(
             state,
@@ -348,7 +351,11 @@ namespace
             mobilityForces   // unused, but required
         );
 
+        const float fixupScaleFactor = rs.getFixupScaleFactor();
         for (SimTK::MobilizedBodyIndex bodyIdx{0}; bodyIdx < bodyForces.size(); ++bodyIdx) {
+
+            const SimTK::MobilizedBody& mobod = matter.getMobilizedBody(bodyIdx);
+            const SimTK::Transform mobod2ground = mobod.getBodyTransform(state);
 
             // if applicable, handle drawing the linear component of force as a yellow arrow
             if (showLinearForces) {
@@ -357,21 +364,15 @@ namespace
                     continue;  // no translational force applied
                 }
 
-                // else: `bodyForce` was applied to the `SimTK::MobilizedBody` at index `bodyIdx`
-                const SimTK::MobilizedBody& mobod = matter.getMobilizedBody(bodyIdx);
-                const SimTK::Transform mobod2ground = mobod.getBodyTransform(state);
-
-                const float fixupScaleFactor = rs.getFixupScaleFactor();
-
-                const ArrowProperties props = {
-                    .worldspace_start = ToVec3(mobod2ground * SimTK::Vec3{}),
-                    .worldspace_end = ToVec3(mobod2ground * (fixupScaleFactor * 0.005 * linearForce)),
+                const ArrowProperties arrowProperties = {
+                    .start = ToVec3(mobod2ground * SimTK::Vec3{}),
+                    .end = ToVec3(mobod2ground * (fixupScaleFactor * linearForceLengthScale * linearForce)),
                     .tip_length = (fixupScaleFactor*0.015f),
                     .neck_thickness = (fixupScaleFactor*0.006f),
                     .head_thickness = (fixupScaleFactor*0.01f),
                     .color = Color::yellow(),
                 };
-                draw_arrow(rs.updMeshCache(), props, [&force, &rs](SceneDecoration&& decoration)
+                draw_arrow(rs.updMeshCache(), arrowProperties, [&force, &rs](SceneDecoration&& decoration)
                 {
                     rs.consume(force, std::move(decoration));
                 });
@@ -384,21 +385,15 @@ namespace
                     continue;  // no translational force applied
                 }
 
-                // else: `bodyForce` was applied to the `SimTK::MobilizedBody` at index `bodyIdx`
-                const SimTK::MobilizedBody& mobod = matter.getMobilizedBody(bodyIdx);
-                const SimTK::Transform mobod2ground = mobod.getBodyTransform(state);
-
-                const float fixupScaleFactor = rs.getFixupScaleFactor();
-
-                const ArrowProperties props = {
-                    .worldspace_start = ToVec3(mobod2ground * SimTK::Vec3{}),
-                    .worldspace_end = ToVec3(mobod2ground * (fixupScaleFactor * 0.005 * angularForce)),
+                const ArrowProperties arrowProperties = {
+                    .start = ToVec3(mobod2ground * SimTK::Vec3{}),
+                    .end = ToVec3(mobod2ground * (fixupScaleFactor * angularForceLengthScale * angularForce)),
                     .tip_length = (fixupScaleFactor*0.015f),
                     .neck_thickness = (fixupScaleFactor*0.006f),
                     .head_thickness = (fixupScaleFactor*0.01f),
                     .color = Color::orange(),
                 };
-                draw_arrow(rs.updMeshCache(), props, [&force, &rs](SceneDecoration&& decoration)
+                draw_arrow(rs.updMeshCache(), arrowProperties, [&force, &rs](SceneDecoration&& decoration)
                 {
                     rs.consume(force, std::move(decoration));
                 });
@@ -843,15 +838,16 @@ namespace
     {
         const float fixupScaleFactor = rs.getFixupScaleFactor();
 
-        ArrowProperties p;
-        p.worldspace_start = loaPointDirection.point;
-        p.worldspace_end = loaPointDirection.point + (fixupScaleFactor*0.1f)*loaPointDirection.direction;
-        p.tip_length = (fixupScaleFactor*0.015f);
-        p.head_thickness = (fixupScaleFactor*0.01f);
-        p.neck_thickness = (fixupScaleFactor*0.006f);
-        p.color = color;
+        const ArrowProperties arrowProperties = {
+            .start = loaPointDirection.point,
+            .end = loaPointDirection.point + (fixupScaleFactor*0.1f)*loaPointDirection.direction,
+            .tip_length = (fixupScaleFactor*0.015f),
+            .neck_thickness = (fixupScaleFactor*0.006f),
+            .head_thickness = (fixupScaleFactor*0.01f),
+            .color = color,
+        };
 
-        draw_arrow(rs.updMeshCache(), p, [&muscle, &rs](SceneDecoration&& d)
+        draw_arrow(rs.updMeshCache(), arrowProperties, [&muscle, &rs](SceneDecoration&& d)
         {
             rs.consume(muscle, std::move(d));
         });
@@ -1006,15 +1002,16 @@ namespace
         const float baseRadius = 0.025f;
         const float tip_length = 0.1f*length((fixupScaleFactor*lenScale)*maybeContact->force);
 
-        ArrowProperties p;
-        p.worldspace_start = maybeContact->point;
-        p.worldspace_end = maybeContact->point + (fixupScaleFactor*lenScale)*maybeContact->force;
-        p.tip_length = tip_length;
-        p.head_thickness = fixupScaleFactor*baseRadius;
-        p.neck_thickness = fixupScaleFactor*baseRadius*0.6f;
-        p.color = Color::yellow();
+        const ArrowProperties arrowProperties = {
+            .start = maybeContact->point,
+            .end = maybeContact->point + (fixupScaleFactor*lenScale)*maybeContact->force,
+            .tip_length = tip_length,
+            .neck_thickness = fixupScaleFactor*baseRadius*0.6f,
+            .head_thickness = fixupScaleFactor*baseRadius,
+            .color = Color::yellow(),
+        };
 
-        draw_arrow(rs.updMeshCache(), p, [&hcf, &rs](SceneDecoration&& d)
+        draw_arrow(rs.updMeshCache(), arrowProperties, [&hcf, &rs](SceneDecoration&& d)
         {
             rs.consume(hcf, std::move(d));
         });
