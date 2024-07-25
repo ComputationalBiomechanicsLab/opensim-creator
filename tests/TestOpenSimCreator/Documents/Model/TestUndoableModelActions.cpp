@@ -408,9 +408,9 @@ TEST(OpenSimActions, ActionUpdateModelFromBackingFileShouldRetainSceneScaleFacto
 TEST(OpenSimActions, ActionToggleForcesTogglesTheForces)
 {
     UndoableModelStatePair model;
-    ASSERT_FALSE(IsShowingForces(model.getModel()));
-    ActionToggleForces(model);
     ASSERT_TRUE(IsShowingForces(model.getModel()));
-    model.doUndo();
+    ActionToggleForces(model);
     ASSERT_FALSE(IsShowingForces(model.getModel()));
+    model.doUndo();
+    ASSERT_TRUE(IsShowingForces(model.getModel()));
 }
