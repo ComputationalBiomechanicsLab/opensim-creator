@@ -674,6 +674,7 @@ Ellipsoid osc::FitEllipsoid(const Mesh& mesh)
     // as a form of PCA?
 
     const std::vector<Vec3> meshVertices = mesh.indexed_vertices();
+    OSC_ASSERT_ALWAYS(meshVertices.size() >= 9 && "there must be >= 9 indexed vertices in the mesh in order to solve the ellipsoid's algebreic form");
     const auto u = SolveEllipsoidAlgebraicForm(meshVertices);
     const auto v = SolveV(u);
     const auto A = CalcA(v);  // form the algebraic form of the ellipsoid

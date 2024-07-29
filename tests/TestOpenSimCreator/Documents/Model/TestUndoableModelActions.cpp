@@ -103,7 +103,7 @@ TEST(OpenSimActions, ActionApplyRangeDeletionPropertyEditReturnsFalseToIndicateF
 // the underlying bug appears to be related to finalizing connections in
 // the model graph (grep for 773 to see other tests), but the user-reported
 // bug is specifically related to renaming a component
-TEST(OpenSimActions, DISABLED_ActionSetComponentNameOnModelWithUnusualJointTopologyDoesNotSegfault)
+TEST(OpenSimActions, ActionSetComponentNameOnModelWithUnusualJointTopologyDoesNotSegfault)
 {
     const std::filesystem::path brokenFilePath =
         std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "opensim-creator_773-2_repro.osim";
@@ -198,7 +198,7 @@ TEST(OpenSimActions, ActionAddParentOffsetFrameToJointWorksInNormalCase)
 // joint is already attached to an offset frame
 //
 // - DISABLED because there's a bug in OpenSim that prevents this from working: https://github.com/opensim-org/opensim-core/pull/3711
-TEST(OpenSimActions, DISABLED_ActionAddParentOffsetFrameToJointWorksInChainedCase)
+TEST(OpenSimActions, ActionAddParentOffsetFrameToJointWorksInChainedCase)
 {
     UndoableModelStatePair um;
     auto& body = AddBody(um.updModel(), "bodyname", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{1.0});
@@ -258,7 +258,7 @@ TEST(OpenSimActions, ActionAddChildOffsetFrameToJointWorksInNormalCase)
 // joint is already attached to an offset frame
 //
 // - DISABLED because there's a bug in OpenSim that prevents this from working: https://github.com/opensim-org/opensim-core/pull/3711
-TEST(OpenSimActions, DISABLED_ActionAddChildOffsetFrameToJointWorksInChainedCase)
+TEST(OpenSimActions, ActionAddChildOffsetFrameToJointWorksInChainedCase)
 {
     UndoableModelStatePair um;
     auto& body = AddBody(um.updModel(), "bodyname", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{1.0});

@@ -445,7 +445,7 @@ TEST(OpenSimModel, OriginalReproFrom3299ThrowsInsteadOfSegfaulting)
 //
 // - if you don't, then `finalizeConnections` will segfault because there's a dangling
 //   socket hanging around in a now-dead object
-TEST(OpenSimModel, DISABLED_DeleteComponentFromModelFollowedByFinalizeConnectionsShouldNotSegfault)
+TEST(OpenSimModel, DeleteComponentFromModelFollowedByFinalizeConnectionsShouldNotSegfault)
 {
     OpenSim::Model model;
     auto& sphere = AttachGeometry<OpenSim::Sphere>(model.updGround());
