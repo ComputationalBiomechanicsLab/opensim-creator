@@ -296,8 +296,8 @@ TEST(OpenSimModel, CoordinateCouplerConstraintWorksWithMultiVariatePolynomialWit
 
     // user report: if you load a model containing a `CoordinateCouplerConstraint` and then change
     // the value of the independent coordinates (tx, rx, or ry), OSC will freeze
-    for (auto coord : {"tx", "rx", "ry"}) {
-        std::string fullPath = std::string{"/jointset/freejoint/"} + coord;
+    for (auto coordName : {"tx", "rx", "ry"}) {
+        std::string fullPath = std::string{"/jointset/freejoint/"} + coordName;
         auto& coord = model.updComponent<OpenSim::Coordinate>(fullPath);
         coord.set_default_value(coord.get_default_value() + 1.0); // change it at the model-level
         model.buildSystem();  // shouldn't have any problems
