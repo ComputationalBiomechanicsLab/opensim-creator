@@ -66,7 +66,7 @@ namespace
         }},
     });
 
-    constexpr auto c_GeomNames = std::to_array(
+    constexpr auto c_GeomNames = std::to_array<CStringView>(
     {
         "Brick",
         "Sphere",
@@ -116,10 +116,10 @@ private:
             ui::draw_separator();
             ui::draw_dummy({0.0f, 2.0f});
 
-            int item = -1;
-            if (ui::draw_combobox("##premade", &item, c_GeomNames.data(), static_cast<int>(c_GeomNames.size())))
+            size_t item = 0;
+            if (ui::draw_combobox("##premade", &item, c_GeomNames))
             {
-                const auto& ctor = c_GeomCtors.at(static_cast<size_t>(item));
+                const auto& ctor = c_GeomCtors.at(item);
                 m_Result = ctor();
             }
         }

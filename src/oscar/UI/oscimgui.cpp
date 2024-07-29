@@ -254,7 +254,7 @@ bool osc::ui::is_mouse_clicked(ImGuiMouseButton button, bool repeat)
 
 bool osc::ui::is_mouse_clicked(ImGuiMouseButton button, ImGuiID owner_id, ImGuiInputFlags flags)
 {
-    return ImGui::IsMouseClicked(button, owner_id, flags);
+    return ImGui::IsMouseClicked(button, flags, owner_id);
 }
 
 bool osc::ui::is_mouse_released(ImGuiMouseButton button)
@@ -380,11 +380,6 @@ bool osc::ui::begin_combobox(CStringView label, CStringView preview_value, ImGui
 void osc::ui::end_combobox()
 {
     ImGui::EndCombo();
-}
-
-bool osc::ui::draw_combobox(CStringView label, int* current_item, const char* const items[], int items_count, int popup_max_height_in_items)
-{
-    return ImGui::Combo(label.c_str(), current_item, items, items_count, popup_max_height_in_items);
 }
 
 bool osc::ui::begin_listbox(CStringView label)
@@ -1962,15 +1957,15 @@ bool osc::ui::draw_gizmo_mode_selector(Gizmo& gizmo)
 
 bool osc::ui::draw_gizmo_mode_selector(GizmoMode& mode)
 {
-    constexpr auto mode_labels = std::to_array({ "local", "global" });
+    constexpr auto mode_labels = std::to_array<CStringView>({ "local", "global" });
     constexpr auto modes = std::to_array<GizmoMode, 2>({ GizmoMode::Local, GizmoMode::World });
 
     bool rv = false;
-    int current_mode = static_cast<int>(std::distance(rgs::begin(modes), rgs::find(modes, mode)));
+    size_t current_mode = std::distance(rgs::begin(modes), rgs::find(modes, mode));
     ui::push_style_var(ImGuiStyleVar_FrameRounding, 0.0f);
     ui::set_next_item_width(ui::calc_text_size(mode_labels[0]).x + 40.0f);
-    if (ui::draw_combobox("##modeselect", &current_mode, mode_labels.data(), static_cast<int>(mode_labels.size()))) {
-        mode = modes.at(static_cast<size_t>(current_mode));
+    if (ui::draw_combobox("##modeselect", &current_mode, mode_labels)) {
+        mode = modes.at(current_mode);
         rv = true;
     }
     ui::pop_style_var();

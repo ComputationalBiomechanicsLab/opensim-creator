@@ -169,8 +169,6 @@ namespace osc::ui
     bool begin_combobox(CStringView label, CStringView preview_value, ImGuiComboFlags flags = 0);
     void end_combobox();
 
-    bool draw_combobox(CStringView label, int* current_item, const char* const items[], int items_count, int popup_max_height_in_items = -1);
-
     bool begin_listbox(CStringView label);
     void end_listbox();
 

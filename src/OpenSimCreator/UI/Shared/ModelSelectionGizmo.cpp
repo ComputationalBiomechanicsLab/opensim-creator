@@ -26,7 +26,6 @@
 #include <oscar/Maths/Vec4.h>
 #include <oscar/Maths/VecFunctions.h>
 #include <oscar/Platform/Log.h>
-#include <oscar/Shims/Cpp23/utility.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/ScopeGuard.h>
@@ -40,7 +39,6 @@
 #include <type_traits>
 #include <utility>
 
-namespace cpp23 = osc::cpp23;
 using namespace osc;
 
 // common/virtual manipulator data/APIs
