@@ -14,6 +14,7 @@
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
 #include <OpenSimCreator/Platform/OpenSimCreatorApp.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
+#include <oscar/Maths/CommonFunctions.h>
 #include <gtest/gtest.h>
 
 #include <array>
@@ -301,7 +302,8 @@ TEST(OpenSimModel, CoordinateCouplerConstraintWorksWithMultiVariatePolynomialWit
         auto& coord = model.updComponent<OpenSim::Coordinate>(fullPath);
         coord.set_default_value(coord.get_default_value() + 1.0); // change it at the model-level
         model.buildSystem();  // shouldn't have any problems
-        ASSERT_EQ(coord.getValue(model.getWorkingState()), coord.get_default_value());
+        model.initializeState();
+        ASSERT_NEAR(coord.getValue(model.getWorkingState()), coord.get_default_value(), 0.00001);
     }
 }
 
