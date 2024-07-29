@@ -42,6 +42,7 @@ cmake --build osc-build -j${OSC_BUILD_CONCURRENCY}
 cmake --build osc-build -j${OSC_BUILD_CONCURRENCY} --target testoscar
 cmake --build osc-build -j${OSC_BUILD_CONCURRENCY} --target testoscar_learnopengl
 cmake --build osc-build -j${OSC_BUILD_CONCURRENCY} --target testoscar_demos
+cmake --build osc-build -j${OSC_BUILD_CONCURRENCY} --target TestOpenSimThirdPartyPlugins
 cmake --build osc-build -j${OSC_BUILD_CONCURRENCY} --target TestOpenSimCreator
 
 # run tests
@@ -52,4 +53,5 @@ export LD_PRELOAD=osc-build/libdlclose.so  # minimize library unloading leaks (d
 ./osc-build/tests/testoscar/testoscar
 ./osc-build/tests/testoscar_learnopengl/testoscar_learnopengl
 ./osc-build/tests/testoscar_demos/testoscar_demos
+LSAN_OPTIONS="suppressions=osc-build/opensim_suppressions.supp" ASAN_OPTIONS="${ASAN_OPTIONS}:check_initialization_order=false:strict_init_order=false" ./osc-build/tests/TestOpenSimThirdPartyPlugins/TestOpenSimThirdPartyPlugins
 LSAN_OPTIONS="suppressions=osc-build/opensim_suppressions.supp" ASAN_OPTIONS="${ASAN_OPTIONS}:check_initialization_order=false:strict_init_order=false" ./osc-build/tests/TestOpenSimCreator/TestOpenSimCreator
