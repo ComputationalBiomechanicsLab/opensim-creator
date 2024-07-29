@@ -124,6 +124,7 @@ namespace
             *state.meshCache,
             state.renderParams.overlayOptions,
             out.bvh,
+            state.model->getFixupScaleFactor(),
             onOverlayDecoration
         );
     }

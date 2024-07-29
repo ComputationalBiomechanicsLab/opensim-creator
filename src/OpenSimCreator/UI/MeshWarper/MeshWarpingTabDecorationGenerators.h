@@ -39,6 +39,7 @@ namespace osc
             sharedState.updSceneCache(),
             sharedState.getOverlayDecorationOptions(),
             BVH{},  // TODO: should have a scene BVH by this point
+            1.0f,  // scale factor
             out
         );
     }

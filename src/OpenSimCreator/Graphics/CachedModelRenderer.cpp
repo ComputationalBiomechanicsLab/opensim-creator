@@ -73,6 +73,7 @@ namespace
                     *m_MeshCache,
                     params.overlayOptions,
                     m_BVH,
+                    modelState.getFixupScaleFactor(),
                     onOverlayDecoration
                 );
 

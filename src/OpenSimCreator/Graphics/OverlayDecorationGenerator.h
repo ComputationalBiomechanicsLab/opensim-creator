@@ -15,6 +15,7 @@ namespace osc
         SceneCache&,
         const OverlayDecorationOptions&,
         const BVH& sceneBVH,
+        float fixupScaleFactor,
         const std::function<void(SceneDecoration&&)>& out
     );
 }

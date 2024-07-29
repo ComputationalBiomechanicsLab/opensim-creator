@@ -5,6 +5,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- Overlay geometry (e.g. the XY grid overlay, the axis lines overlay) are now correctly
+  scaled by the `scene scale factor` (#700)
 - The mesh warper UI now recalculates the result mesh's normals after applying the warp
   to the source mesh. This behavior can be disabled using a checkbox that was added to
   the UI (#743)
