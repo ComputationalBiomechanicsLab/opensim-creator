@@ -432,6 +432,476 @@ void osc::ui::close_current_popup()
     ImGui::CloseCurrentPopup();
 }
 
+void osc::ui::set_tooltip_v(const char* fmt, va_list args)
+{
+    ImGui::SetTooltipV(fmt, args);
+}
+
+void osc::ui::set_scroll_y_here()
+{
+    ImGui::SetScrollHereY();
+}
+
+float osc::ui::get_frame_height()
+{
+    return ImGui::GetFrameHeight();
+}
+
+Vec2 osc::ui::get_content_region_available()
+{
+    return ImGui::GetContentRegionAvail();
+}
+
+Vec2 osc::ui::get_cursor_start_pos()
+{
+    return ImGui::GetCursorStartPos();
+}
+
+Vec2 osc::ui::get_cursor_pos()
+{
+    return ImGui::GetCursorPos();
+}
+
+float osc::ui::get_cursor_pos_x()
+{
+    return ImGui::GetCursorPosX();
+}
+
+void osc::ui::set_cursor_pos(Vec2 p)
+{
+    ImGui::SetCursorPos(p);
+}
+
+void osc::ui::set_cursor_pos_x(float local_x)
+{
+    ImGui::SetCursorPosX(local_x);
+}
+
+Vec2 osc::ui::get_cursor_screen_pos()
+{
+    return ImGui::GetCursorScreenPos();
+}
+
+void osc::ui::set_cursor_screen_pos(Vec2 pos)
+{
+    ImGui::SetCursorScreenPos(pos);
+}
+
+void osc::ui::set_next_panel_pos(Vec2 pos, ImGuiCond cond, Vec2 pivot)
+{
+    ImGui::SetNextWindowPos(pos, cond, pivot);
+}
+
+void osc::ui::set_next_panel_size(Vec2 size, ImGuiCond cond)
+{
+    ImGui::SetNextWindowSize(size, cond);
+}
+
+void osc::ui::set_next_panel_size_constraints(Vec2 size_min, Vec2 size_max)
+{
+    ImGui::SetNextWindowSizeConstraints(size_min, size_max);
+}
+
+void osc::ui::set_next_panel_bg_alpha(float alpha)
+{
+    ImGui::SetNextWindowBgAlpha(alpha);
+}
+
+bool osc::ui::is_panel_hovered(ImGuiHoveredFlags flags)
+{
+    return ImGui::IsWindowHovered(flags);
+}
+
+void osc::ui::begin_disabled(bool disabled)
+{
+    ImGui::BeginDisabled(disabled);
+}
+
+void osc::ui::end_disabled()
+{
+    ImGui::EndDisabled();
+}
+
+bool osc::ui::begin_tooltip_nowrap()
+{
+    return ImGui::BeginTooltip();
+}
+
+void osc::ui::end_tooltip_nowrap()
+{
+    ImGui::EndTooltip();
+}
+
+void osc::ui::push_id(UID id)
+{
+    ImGui::PushID(static_cast<int>(id.get()));
+}
+
+void osc::ui::push_id(ptrdiff_t p)
+{
+    ImGui::PushID(static_cast<int>(p));
+}
+
+void osc::ui::push_id(size_t i)
+{
+    ImGui::PushID(static_cast<int>(i));
+}
+
+void osc::ui::push_id(int int_id)
+{
+    ImGui::PushID(int_id);
+}
+
+void osc::ui::push_id(const void* ptr_id)
+{
+    ImGui::PushID(ptr_id);
+}
+
+void osc::ui::push_id(CStringView str_id)
+{
+    ImGui::PushID(str_id.data(), str_id.data() + str_id.size());
+}
+
+void osc::ui::pop_id()
+{
+    ImGui::PopID();
+}
+
+ImGuiID osc::ui::get_id(CStringView str_id)
+{
+    return ImGui::GetID(str_id.c_str());
+}
+
+ImGuiItemFlags osc::ui::get_item_flags()
+{
+    return ImGui::GetItemFlags();
+}
+
+void osc::ui::set_next_item_size(Rect r)  // note: ImGui API assumes cursor is located at `p1` already
+{
+    ImGui::ItemSize(ImRect{r.p1, r.p2});
+}
+
+bool osc::ui::add_item(Rect bounds, ImGuiID id)
+{
+    return ImGui::ItemAdd(ImRect{bounds.p1, bounds.p2}, id);
+}
+
+bool osc::ui::is_item_hoverable(Rect bounds, ImGuiID id, ImGuiItemFlags item_flags)
+{
+    return ImGui::ItemHoverable(ImRect{bounds.p1, bounds.p2}, id, item_flags);
+}
+
+void osc::ui::draw_separator()
+{
+    ImGui::Separator();
+}
+
+void osc::ui::draw_separator(ImGuiSeparatorFlags flags)
+{
+    ImGui::SeparatorEx(flags);
+}
+
+void osc::ui::start_new_line()
+{
+    ImGui::NewLine();
+}
+
+void osc::ui::indent(float indent_w)
+{
+    ImGui::Indent(indent_w);
+}
+
+void osc::ui::unindent(float indent_w)
+{
+    ImGui::Unindent(indent_w);
+}
+
+void osc::ui::set_keyboard_focus_here()
+{
+    ImGui::SetKeyboardFocusHere();
+}
+
+bool osc::ui::is_key_pressed(ImGuiKey key, bool repeat)
+{
+    return ImGui::IsKeyPressed(key, repeat);
+}
+
+bool osc::ui::is_key_released(ImGuiKey key)
+{
+    return ImGui::IsKeyReleased(key);
+}
+
+bool osc::ui::is_key_down(ImGuiKey key)
+{
+    return ImGui::IsKeyDown(key);
+}
+
+ImGuiStyle& osc::ui::get_style()
+{
+    return ImGui::GetStyle();
+}
+
+Color osc::ui::get_style_color(ImGuiCol color)
+{
+    return Color{ImGui::GetStyleColorVec4(color)};
+}
+
+Vec2 osc::ui::get_style_frame_padding()
+{
+    return get_style().FramePadding;
+}
+
+float osc::ui::get_style_frame_border_size()
+{
+    return get_style().FrameBorderSize;
+}
+
+Vec2 osc::ui::get_style_panel_padding()
+{
+    return get_style().WindowPadding;
+}
+
+Vec2 osc::ui::get_style_item_spacing()
+{
+    return get_style().ItemSpacing;
+}
+
+Vec2 osc::ui::get_style_item_inner_spacing()
+{
+    return get_style().ItemInnerSpacing;
+}
+
+float osc::ui::get_style_alpha()
+{
+    return get_style().Alpha;
+}
+
+ImGuiIO& osc::ui::get_io()
+{
+    return ImGui::GetIO();
+}
+
+void osc::ui::push_style_var(ImGuiStyleVar style, const Vec2& pos)
+{
+    ImGui::PushStyleVar(style, pos);
+}
+
+void osc::ui::push_style_var(ImGuiStyleVar style, float pos)
+{
+    ImGui::PushStyleVar(style, pos);
+}
+
+void osc::ui::pop_style_var(int count)
+{
+    ImGui::PopStyleVar(count);
+}
+
+void osc::ui::open_popup(CStringView str_id, ImGuiPopupFlags popup_flags)
+{
+    return ImGui::OpenPopup(str_id.c_str(), popup_flags);
+}
+
+bool osc::ui::begin_popup(CStringView str_id, ImGuiWindowFlags flags)
+{
+    return ImGui::BeginPopup(str_id.c_str(), flags);
+}
+
+bool osc::ui::begin_popup_context_menu(CStringView str_id, ImGuiPopupFlags popup_flags)
+{
+    return ImGui::BeginPopupContextItem(str_id.c_str(), popup_flags);
+}
+
+bool osc::ui::begin_popup_modal(CStringView name, bool* p_open, ImGuiWindowFlags flags)
+{
+    return ImGui::BeginPopupModal(name.c_str(), p_open, flags);
+}
+
+void osc::ui::end_popup()
+{
+    ImGui::EndPopup();
+}
+
+Vec2 osc::ui::get_mouse_pos()
+{
+    return ImGui::GetMousePos();
+}
+
+bool osc::ui::begin_menu_bar()
+{
+    return ImGui::BeginMenuBar();
+}
+
+void osc::ui::end_menu_bar()
+{
+    ImGui::EndMenuBar();
+}
+
+void osc::ui::set_mouse_cursor(ImGuiMouseCursor cursor_type)
+{
+    ImGui::SetMouseCursor(cursor_type);
+}
+
+void osc::ui::set_next_item_width(float item_width)
+{
+    ImGui::SetNextItemWidth(item_width);
+}
+
+void osc::ui::set_next_item_open(bool is_open)
+{
+    ImGui::SetNextItemOpen(is_open);
+}
+
+void osc::ui::push_item_flag(ImGuiItemFlags option, bool enabled)
+{
+    ImGui::PushItemFlag(option, enabled);
+}
+
+void osc::ui::pop_item_flag()
+{
+    ImGui::PopItemFlag();
+}
+
+bool osc::ui::is_item_clicked(ImGuiMouseButton mouse_button)
+{
+    return ImGui::IsItemClicked(mouse_button);
+}
+
+bool osc::ui::is_item_hovered(ImGuiHoveredFlags flags)
+{
+    return ImGui::IsItemHovered(flags);
+}
+
+bool osc::ui::is_item_deactivated_after_edit()
+{
+    return ImGui::IsItemDeactivatedAfterEdit();
+}
+
+Vec2 osc::ui::get_item_topleft()
+{
+    return ImGui::GetItemRectMin();
+}
+
+Vec2 osc::ui::get_item_bottomright()
+{
+    return ImGui::GetItemRectMax();
+}
+
+bool osc::ui::begin_table(CStringView str_id, int column, ImGuiTableFlags flags, const Vec2& outer_size, float inner_width)
+{
+    return ImGui::BeginTable(str_id.c_str(), column, flags, outer_size, inner_width);
+}
+
+void osc::ui::table_setup_scroll_freeze(int cols, int rows)
+{
+    ImGui::TableSetupScrollFreeze(cols, rows);
+}
+
+ImGuiTableSortSpecs* osc::ui::table_get_sort_specs()
+{
+    return ImGui::TableGetSortSpecs();
+}
+
+void osc::ui::table_headers_row()
+{
+    ImGui::TableHeadersRow();
+}
+
+bool osc::ui::table_set_column_index(int column_n)
+{
+    return ImGui::TableSetColumnIndex(column_n);
+}
+
+void osc::ui::table_next_row(ImGuiTableRowFlags row_flags, float min_row_height)
+{
+    ImGui::TableNextRow(row_flags, min_row_height);
+}
+
+void osc::ui::table_setup_column(CStringView label, ImGuiTableColumnFlags flags, float init_width_or_weight, ImGuiID user_id)
+{
+    ImGui::TableSetupColumn(label.c_str(), flags, init_width_or_weight, user_id);
+}
+
+void osc::ui::end_table()
+{
+    ImGui::EndTable();
+}
+
+void osc::ui::push_style_color(ImGuiCol index, ImU32 col)
+{
+    ImGui::PushStyleColor(index, col);
+}
+
+void osc::ui::push_style_color(ImGuiCol index, const Vec4& col)
+{
+    ImGui::PushStyleColor(index, ImVec4{col});
+}
+
+void osc::ui::push_style_color(ImGuiCol index, const Color& c)
+{
+    ImGui::PushStyleColor(index, ImVec4{c});
+}
+
+void osc::ui::pop_style_color(int count)
+{
+    ImGui::PopStyleColor(count);
+}
+
+ImU32 osc::ui::get_color_ImU32(ImGuiCol index)
+{
+    return ImGui::GetColorU32(index);
+}
+
+ImU32 osc::ui::to_ImU32(const Vec4& color)
+{
+    return ImGui::ColorConvertFloat4ToU32(color);
+}
+
+float osc::ui::get_text_line_height()
+{
+    return ImGui::GetTextLineHeight();
+}
+
+float osc::ui::get_text_line_height_with_spacing()
+{
+    return ImGui::GetTextLineHeightWithSpacing();
+}
+
+float osc::ui::get_font_size()
+{
+    return ImGui::GetFontSize();
+}
+
+Vec2 osc::ui::calc_text_size(CStringView text, bool hide_text_after_double_hash)
+{
+    return ImGui::CalcTextSize(text.c_str(), text.c_str() + text.size(), hide_text_after_double_hash);
+}
+
+Vec2 osc::ui::get_panel_size()
+{
+    return ImGui::GetWindowSize();
+}
+
+ImDrawList* osc::ui::get_panel_draw_list()
+{
+    return ImGui::GetWindowDrawList();
+}
+
+ImDrawList* osc::ui::get_foreground_draw_list()
+{
+    return ImGui::GetForegroundDrawList();
+}
+
+ImDrawListSharedData* osc::ui::get_draw_list_shared_data()
+{
+    return ImGui::GetDrawListSharedData();
+}
+
+void osc::ui::show_demo_panel()
+{
+    ImGui::ShowDemoWindow();
+}
+
 void osc::ui::apply_dark_theme()
 {
     // see: https://github.com/ocornut/imgui/issues/707
