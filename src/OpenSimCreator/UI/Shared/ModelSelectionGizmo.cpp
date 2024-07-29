@@ -46,23 +46,6 @@ using namespace osc;
 // common/virtual manipulator data/APIs
 namespace
 {
-    // operations that are supported by a manipulator
-    enum class SupportedManipulationOpFlags : uint32_t {
-        None        = 0,
-        Translation = 1<<0,
-        Rotation    = 1<<1,
-    };
-
-    constexpr SupportedManipulationOpFlags operator|(SupportedManipulationOpFlags lhs, SupportedManipulationOpFlags rhs)
-    {
-        return static_cast<SupportedManipulationOpFlags>(cpp23::to_underlying(lhs) | cpp23::to_underlying(rhs));
-    }
-
-    constexpr bool operator&(SupportedManipulationOpFlags lhs, SupportedManipulationOpFlags rhs)
-    {
-        return (cpp23::to_underlying(lhs) & cpp23::to_underlying(rhs)) != 0u;
-    }
-
     // type-erased interface to an object that manipulates something in a model
     class ISelectionManipulator {
     protected:
@@ -74,7 +57,7 @@ namespace
     public:
         virtual ~ISelectionManipulator() noexcept = default;
 
-        SupportedManipulationOpFlags getSupportedManipulationOps() const
+        ui::GizmoOperations getSupportedManipulationOps() const
         {
             return implGetSupportedManipulationOps();
         }
@@ -94,7 +77,7 @@ namespace
             implOnSave();
         }
     private:
-        virtual SupportedManipulationOpFlags implGetSupportedManipulationOps() const = 0;
+        virtual ui::GizmoOperations implGetSupportedManipulationOps() const = 0;
         virtual Mat4 implGetCurrentTransformInGround() const = 0;
         virtual void implOnApplyTransform(const SimTK::Transform&) = 0;
         virtual void implOnSave() = 0;
@@ -202,9 +185,9 @@ namespace
         {}
 
     private:
-        SupportedManipulationOpFlags implGetSupportedManipulationOps() const final
+        ui::GizmoOperations implGetSupportedManipulationOps() const final
         {
-            return SupportedManipulationOpFlags::Translation;
+            return ui::GizmoOperation::Translate;
         }
 
         Mat4 implGetCurrentTransformInGround(
@@ -246,9 +229,9 @@ namespace
         {}
 
     private:
-        SupportedManipulationOpFlags implGetSupportedManipulationOps() const final
+        ui::GizmoOperations implGetSupportedManipulationOps() const final
         {
-            return SupportedManipulationOpFlags::Translation;
+            return ui::GizmoOperation::Translate;
         }
 
         Mat4 implGetCurrentTransformInGround(
@@ -301,9 +284,9 @@ namespace
         {}
 
     private:
-        SupportedManipulationOpFlags implGetSupportedManipulationOps() const final
+        ui::GizmoOperations implGetSupportedManipulationOps() const final
         {
-            return SupportedManipulationOpFlags::Translation | SupportedManipulationOpFlags::Rotation;
+            return {ui::GizmoOperation::Translate, ui::GizmoOperation::Rotate};
         }
 
         Mat4 implGetCurrentTransformInGround(
@@ -384,9 +367,9 @@ namespace
         {}
 
     private:
-        SupportedManipulationOpFlags implGetSupportedManipulationOps() const final
+        ui::GizmoOperations implGetSupportedManipulationOps() const final
         {
-            return SupportedManipulationOpFlags::Rotation | SupportedManipulationOpFlags::Translation;
+            return {ui::GizmoOperation::Rotate, ui::GizmoOperation::Translate};
         }
 
         Mat4 implGetCurrentTransformInGround(
@@ -435,9 +418,9 @@ namespace
         {}
 
     private:
-        SupportedManipulationOpFlags implGetSupportedManipulationOps() const final
+        ui::GizmoOperations implGetSupportedManipulationOps() const final
         {
-            return SupportedManipulationOpFlags::Rotation | SupportedManipulationOpFlags::Translation;
+            return {ui::GizmoOperation::Rotate, ui::GizmoOperation::Translate};
         }
 
         Mat4 implGetCurrentTransformInGround(
@@ -505,9 +488,9 @@ namespace
         {}
 
     private:
-        SupportedManipulationOpFlags implGetSupportedManipulationOps() const final
+        ui::GizmoOperations implGetSupportedManipulationOps() const final
         {
-            return SupportedManipulationOpFlags::Translation | SupportedManipulationOpFlags::Rotation;
+            return {ui::GizmoOperation::Translate, ui::GizmoOperation::Rotate};
         }
 
         Mat4 implGetCurrentTransformInGround(const OpenSim::Joint& joint) const final
@@ -617,14 +600,26 @@ namespace
         const PolarPerspectiveCamera& camera,
         ISelectionManipulator& manipulator)
     {
+
         // figure out whether the gizmo should even be drawn
+        //
+        // If the current operation isn't actually supported by the current manipulator, but
+        // the current manipulator supports something else, then the gizmo should coerce its
+        // current operation to a supported one. This is to handle the case where (e.g.) a
+        // user is manipulating something that's rotate-able but then select something that's
+        // only translate-able (#705)
         {
-            const SupportedManipulationOpFlags flags = manipulator.getSupportedManipulationOps();
-            if (gizmo.operation() == ui::GizmoOperation::Translate && !(flags & SupportedManipulationOpFlags::Translation)) {
-                return;
+            const ui::GizmoOperations supportedOperations = manipulator.getSupportedManipulationOps();
+            const ui::GizmoOperation currentOperation = gizmo.operation();
+
+            if (not supportedOperations) {
+                return;  // no operations are supported by the manipulator at all
             }
-            if (gizmo.operation() == ui::GizmoOperation::Rotate && !(flags & SupportedManipulationOpFlags::Rotation)) {
-                return;
+
+            if (!(currentOperation & supportedOperations)) {
+                // the manipulator supports _something_, but it isn't the same as the current
+                // operation, so we coerce the current operation to something that's supported
+                gizmo.set_operation(supportedOperations.lowest_set());
             }
         }
 

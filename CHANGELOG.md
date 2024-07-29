@@ -5,6 +5,10 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- When changing selection in the model editor, the 3D gizmo manipulator will now check
+  whether the new selection supports the same transformation type (rotate/translate) and
+  will automatically coerce the transformation type to a supported one if the user's
+  currently selected mode isn't supported (#705)
 - Overlay geometry (e.g. the XY grid overlay, the axis lines overlay) are now correctly
   scaled by the `scene scale factor` (#700)
 - The mesh warper UI now recalculates the result mesh's normals after applying the warp
