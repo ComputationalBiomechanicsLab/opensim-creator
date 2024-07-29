@@ -58,6 +58,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   experiment with scripting in a developer-facing fashion (no user-facing LUA support... yet)
 - Internal: a wrapper layer was added around `ImPlot`, so that the UI code can use oscar-like
   bindings, rather than translating everything to ImPlot
+- Internal: the `OpenSimCreator` test suite now also ensures that all user-facing models in the
+  documentation can be loaded + rendered by `OpenSimCreator` (#844)
 
 
 ## [0.5.12] - 2024/04/29
