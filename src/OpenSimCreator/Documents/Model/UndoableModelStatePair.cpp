@@ -293,19 +293,8 @@ public:
 
     void commit(std::string_view message)
     {
-        // ensure the scratch space is clean
-        try
-        {
-            OSC_PERF("commit model");
-            doCommit(message);
-        }
-        catch (const std::exception& ex)
-        {
-            log_error("exception occurred after applying changes to a model:");
-            log_error("    %s", ex.what());
-            log_error("attempting to rollback to an earlier version of the model");
-            rollback();
-        }
+        OSC_PERF("commit model");
+        doCommit(message);
     }
 
     void rollback()

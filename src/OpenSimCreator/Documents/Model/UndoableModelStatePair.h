@@ -16,17 +16,6 @@ namespace SimTK { class State; }
 namespace osc
 {
     // `UndoableModelStatePair` is an `IModelStatePair` that's designed for immediate UI usage.
-    //
-    // Key features:
-    //
-    // - supports deferred (queued) undo/redo/rollback
-    // - supports deferred (queued) model mutation
-    // - all deferred changes can be applied by calling `applyQueuedMutations`
-    //
-    // The reason why all mutations are deferred is so that the UI and associated systems can
-    // safely get references to elements inside the `OpenSim::Model` and `SimTK::State` without
-    // having to tiptoe around reference invalidation due to mid-drawcall mutations (a
-    // drawback/benefit of immediate UIs)
     class UndoableModelStatePair final : public IModelStatePair {
     public:
 
