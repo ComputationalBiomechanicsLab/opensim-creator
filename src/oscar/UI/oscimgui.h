@@ -18,6 +18,7 @@
 #include <oscar/Maths/Vec4.h>
 #include <oscar/Shims/Cpp23/utility.h>
 #include <oscar/Utils/CStringView.h>
+#include <oscar/Utils/EnumHelpers.h>
 #include <oscar/Utils/UID.h>
 
 #include <cstddef>
@@ -653,11 +654,13 @@ namespace osc::ui
 
     // an operation that a ui `Gizmo` shall perform
     enum class GizmoOperation {
-        Translate,
-        Rotate,
-        Scale,
-        NUM_OPTIONS,
+        None         = 0,
+        Translate    = 1<<0,
+        Rotate       = 1<<1,
+        Scale        = 1<<2,
+        NUM_FLAGS    = 3,
     };
+    using GizmoOperations = Flags<GizmoOperation>;
 
     // the mode (coordinate space) that a `Gizmo` presents its manipulations in
     enum class GizmoMode {

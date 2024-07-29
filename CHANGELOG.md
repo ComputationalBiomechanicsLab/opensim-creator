@@ -66,6 +66,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   bindings, rather than translating everything to ImPlot
 - Internal: the `OpenSimCreator` test suite now also ensures that all user-facing models in the
   documentation can be loaded + rendered by `OpenSimCreator` (#844)
+- Internal: Added `osc::Flags` class as a templated helper class for handling for flag-based enum
+  types, inspired by `QFlags` from Qt
 
 
 ## [0.5.12] - 2024/04/29

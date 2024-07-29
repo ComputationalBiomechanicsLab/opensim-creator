@@ -84,7 +84,7 @@ namespace
 
     ImGuizmo::OPERATION to_imguizmo_operation(ui::GizmoOperation op)
     {
-        static_assert(num_options<ui::GizmoOperation>() == 3);
+        static_assert(num_flags<ui::GizmoOperation>() == 3);
         switch (op) {
         case ui::GizmoOperation::Scale:     return ImGuizmo::OPERATION::SCALE;
         case ui::GizmoOperation::Rotate:    return ImGuizmo::OPERATION::ROTATE;
@@ -2066,6 +2066,10 @@ std::optional<Transform> osc::ui::Gizmo::draw(
     const Mat4& projection_matrix,
     const Rect& screenspace_rect)
 {
+    if (operation_ == GizmoOperation::None) {
+        return std::nullopt;  // disabled
+    }
+
     // important: necessary for multi-viewport gizmos
     // also important: don't use ui::get_id(), because it uses an ID stack and we might want to know if "isover" etc. is true outside of a window
     ImGuizmo::SetID(static_cast<int>(std::hash<UID>{}(id_)));
