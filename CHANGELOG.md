@@ -5,7 +5,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
-
+- The socket reassignment popup now shows the name of the component that the socket is
+  currently assigned to (#770)
 - The model editor toolbar now contains a toggle for toggling a model's `show_forces`
   display property (#887). Note: OpenSim only really uses this for `SmoothSphereHalfSpaceForce`
 - Fixed non-default scene scale factors not being retained whenever a model file is
