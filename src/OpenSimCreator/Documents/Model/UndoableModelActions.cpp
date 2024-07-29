@@ -1095,7 +1095,7 @@ bool osc::ActionAssignContactGeometryToHCF(
         // calling this ensures at least one `OpenSim::HuntCrossleyForce::ContactParameters`
         // is present in the HCF
         mutHCF->getStaticFriction();
-        OSC_ASSERT(!empty(mutHCF->updContactParametersSet()));
+        OSC_ASSERT_ALWAYS(!empty(mutHCF->updContactParametersSet()));
 
         mutHCF->updContactParametersSet()[0].updGeometry().appendValue(geom->getName());
         FinalizeConnections(mutModel);

@@ -157,9 +157,9 @@ public:
             if (m_IsMousedOver)
             {
                 ui::draw_text("hit = (%.2f, %.2f, %.2f)", m_HitPos.x, m_HitPos.y, m_HitPos.z);
-                ui::draw_text("p1 = (%.2f, %.2f, %.2f)", m_Tris[0].x, m_Tris[0].y, m_Tris[0].z);
-                ui::draw_text("p2 = (%.2f, %.2f, %.2f)", m_Tris[1].x, m_Tris[1].y, m_Tris[1].z);
-                ui::draw_text("p3 = (%.2f, %.2f, %.2f)", m_Tris[2].x, m_Tris[2].y, m_Tris[2].z);
+                ui::draw_text("p0 = (%.2f, %.2f, %.2f)", m_Tris.p0.x, m_Tris.p0.y, m_Tris.p0.z);
+                ui::draw_text("p1 = (%.2f, %.2f, %.2f)", m_Tris.p1.x, m_Tris.p1.y, m_Tris.p1.z);
+                ui::draw_text("p2 = (%.2f, %.2f, %.2f)", m_Tris.p2.x, m_Tris.p2.y, m_Tris.p2.z);
 
             }
             ui::end_panel();

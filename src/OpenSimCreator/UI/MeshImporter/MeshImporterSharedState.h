@@ -899,7 +899,7 @@ namespace osc::mi
                 }
                 else if (ok.meshes.size() == 1)
                 {
-                    commitMsgSS << "loaded " << ok.meshes[0].path.filename();
+                    commitMsgSS << "loaded " << ok.meshes.front().path.filename();
                 }
                 else
                 {
@@ -1398,7 +1398,7 @@ namespace osc::mi
         Color RedifyColor(const Color& srcColor) const
         {
             constexpr float factor = 0.8f;
-            return {srcColor[0], factor * srcColor[1], factor * srcColor[2], factor * srcColor[3]};
+            return {srcColor.r, factor * srcColor.g, factor * srcColor.b, factor * srcColor.a};
         }
 
         // returns a transform that maps a sphere mesh (defined to be @ 0,0,0 with radius 1)

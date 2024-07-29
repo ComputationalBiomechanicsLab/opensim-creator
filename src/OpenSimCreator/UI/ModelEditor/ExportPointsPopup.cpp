@@ -459,12 +459,11 @@ namespace
             GetAbsolutePathString(*c) :
             c->getName();
 
-        const auto columns = std::to_array<std::string>(
-        {
+        const auto columns = std::to_array<std::string>({
             name,
-            std::to_string(position[0]),
-            std::to_string(position[1]),
-            std::to_string(position[2]),
+            std::to_string(position.x),
+            std::to_string(position.y),
+            std::to_string(position.z),
         });
 
         write_csv_row(out, columns);

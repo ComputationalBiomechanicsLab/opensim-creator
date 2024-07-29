@@ -6801,6 +6801,7 @@ void osc::GraphicsBackend::handle_batch_with_same_submesh(
     std::span<const RenderObject> batch,
     std::optional<InstancingState>& instancing_state)
 {
+    OSC_ASSERT(not batch.empty());
     auto& mesh_impl = const_cast<Mesh::Impl&>(*batch.front().mesh.impl_);
     const Shader::Impl& shader_impl = *batch.front().material.impl_->shader_.impl_;
     const std::optional<size_t> maybe_submesh_index = batch.front().maybe_submesh_index;
@@ -6887,6 +6888,7 @@ void osc::GraphicsBackend::handle_batch_with_same_material_property_block(
     std::optional<InstancingState>& instancing_state)
 {
     OSC_PERF("GraphicsBackend::handle_batch_with_same_material_property_block");
+    OSC_ASSERT(not batch.empty());
 
     const Material::Impl& material_impl = *batch.front().material.impl_;
     const Shader::Impl& shader_impl = *material_impl.shader_.impl_;
@@ -6918,6 +6920,7 @@ void osc::GraphicsBackend::handle_batch_with_same_material(
     std::span<const RenderObject> batch)
 {
     OSC_PERF("GraphicsBackend::handle_batch_with_same_material");
+    OSC_ASSERT(not batch.empty());
 
     const auto& material_impl = *batch.front().material.impl_;
     const auto& shader_impl = *material_impl.shader_.impl_;
@@ -7143,7 +7146,7 @@ osc::GraphicsBackend::ViewportGeometry osc::GraphicsBackend::calc_viewport_geome
         return {pixel_rect->p1, dimensions_of(*pixel_rect)};
     }
     else if (maybe_custom_render_target) {
-        return {{}, maybe_custom_render_target->colors.front().buffer->impl_->dimensions()};
+        return {{}, maybe_custom_render_target->depth.buffer->impl_->dimensions()};
     }
     else {
         return {{}, App::get().main_window_dimensions()};
