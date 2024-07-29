@@ -19,7 +19,6 @@
 #include <oscar/Graphics/Color.h>
 #include <oscar/Platform/App.h>
 #include <oscar/Shims/Cpp23/ranges.h>
-#include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Widgets/StandardPopup.h>
 #include <oscar/Utils/Algorithms.h>
@@ -240,9 +239,9 @@ private:
         ui::push_id(static_cast<int>(i));
         ui::draw_text_unformatted(ICON_FA_SEARCH);
         ui::same_line();
-        ui::set_next_item_width(ui::get_content_region_avail().x);
+        ui::set_next_item_width(ui::get_content_region_available().x);
         ui::draw_string_input("##search", m_SocketSearchStrings[i]);
-        ui::begin_child_panel("##pfselector", {ui::get_content_region_avail().x, 128.0f});
+        ui::begin_child_panel("##pfselector", {ui::get_content_region_available().x, 128.0f});
 
         // iterate through potential connectees in model and print connect-able options
         int innerID = 0;
@@ -291,7 +290,7 @@ private:
         const OpenSim::Model& model = m_Uum->getModel();
 
         // show list of choices
-        ui::begin_child_panel("##pf_ppchoices", {ui::get_content_region_avail().x, 128.0f});
+        ui::begin_child_panel("##pf_ppchoices", {ui::get_content_region_available().x, 128.0f});
 
         // choices
         for (const OpenSim::Component& c : model.getComponentList())
@@ -366,7 +365,7 @@ private:
     {
         const OpenSim::Model& model = m_Uum->getModel();
 
-        ui::begin_child_panel("##pf_pathpoints", {ui::get_content_region_avail().x, 128.0f});
+        ui::begin_child_panel("##pf_pathpoints", {ui::get_content_region_available().x, 128.0f});
 
         std::optional<ptrdiff_t> maybeIndexToErase;
         for (ptrdiff_t i = 0; i < std::ssize(m_PathPoints); ++i)

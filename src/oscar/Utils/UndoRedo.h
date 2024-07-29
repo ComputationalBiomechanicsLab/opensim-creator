@@ -76,12 +76,13 @@ namespace osc
             data_{std::move(data)}
         {}
 
+        const detail::UndoRedoEntryMetadata& metadata() const { return *data_; }
     public:
         UID id() const { return data_->id(); }
         std::chrono::system_clock::time_point time() const { return data_->time(); }
         CStringView message() const { return data_->message(); }
 
-    protected:
+    private:
         std::shared_ptr<const detail::UndoRedoEntryMetadata> data_;
     };
 
@@ -95,7 +96,7 @@ namespace osc
             UndoRedoEntryBase{std::make_shared<detail::UndoRedoEntryData<T>>(std::move(message), std::forward<Args>(args)...)}
         {}
 
-        const T& value() const { return static_cast<const detail::UndoRedoEntryData<T>&>(*data_).value(); }
+        const T& value() const { return static_cast<const detail::UndoRedoEntryData<T>&>(metadata()).value(); }
     };
 
     // type-erased base class for undo/redo storage
@@ -171,12 +172,12 @@ namespace osc
         }
 
     private:
-        virtual UndoRedoEntryBase impl_construct_commit_from_scratch(std::string_view commit_message)
+        UndoRedoEntryBase impl_construct_commit_from_scratch(std::string_view commit_message) final
         {
             return UndoRedoEntry<T>{std::move(commit_message), scratch_};
         }
 
-        virtual void impl_copy_assign_scratch_from_commit(const UndoRedoEntryBase& commit)
+        void impl_copy_assign_scratch_from_commit(const UndoRedoEntryBase& commit) final
         {
             scratch_ = static_cast<const UndoRedoEntry<T>&>(commit).value();
         }

@@ -154,6 +154,26 @@ void osc::OpenSimDecorationOptions::setShouldShowContactForces(bool v)
     SetOption(m_Flags, OpenSimDecorationOptionFlags::ShouldShowContactForces, v);
 }
 
+bool osc::OpenSimDecorationOptions::getShouldShowForceLinearComponent() const
+{
+    return m_Flags & OpenSimDecorationOptionFlags::ShouldShowForceLinearComponent;
+}
+
+void osc::OpenSimDecorationOptions::setShouldShowForceLinearComponent(bool v)
+{
+    SetOption(m_Flags, OpenSimDecorationOptionFlags::ShouldShowForceLinearComponent, v);
+}
+
+bool osc::OpenSimDecorationOptions::getShouldShowForceAngularComponent() const
+{
+    return m_Flags & OpenSimDecorationOptionFlags::ShouldShowForceAngularComponent;
+}
+
+void osc::OpenSimDecorationOptions::getShouldShowForceAngularComponent(bool v)
+{
+    SetOption(m_Flags, OpenSimDecorationOptionFlags::ShouldShowForceAngularComponent, v);
+}
+
 void osc::OpenSimDecorationOptions::forEachOptionAsAppSettingValue(const std::function<void(std::string_view, const Variant&)>& callback) const
 {
     callback("muscle_decoration_style", GetMuscleDecorationStyleMetadata(m_MuscleDecorationStyle).id);

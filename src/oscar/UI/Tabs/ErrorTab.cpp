@@ -3,7 +3,6 @@
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Rect.h>
 #include <oscar/Maths/Vec2.h>
-#include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Tabs/StandardTabImpl.h>
 #include <oscar/UI/Widgets/LogViewer.h>

@@ -93,10 +93,12 @@ add_executable(testoscar
     Utils/TestNullStreambuf.cpp
     Utils/TestScopedLifetime.cpp
     Utils/TestSharedLifetimeBlock.cpp
+    Utils/TestSharedPreHashedString.cpp
     Utils/TestScopedLifetime.cpp
     Utils/TestStringHelpers.cpp
     Utils/TestStringName.cpp
     Utils/TestTemporaryFile.cpp
+    Utils/TestTransparentStringHasher.cpp
     Utils/TestTypelist.cpp
 
     Variant/TestVariant.cpp

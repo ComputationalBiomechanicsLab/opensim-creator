@@ -8,7 +8,6 @@
 #include <IconsFontAwesome5.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Platform/os.h>
-#include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/Widgets/StandardPopup.h>
 
 #include <filesystem>

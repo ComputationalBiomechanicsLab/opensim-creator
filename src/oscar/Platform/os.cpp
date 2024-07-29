@@ -182,7 +182,7 @@ std::vector<std::filesystem::path> osc::prompt_user_to_select_files(
 #endif
 }
 
-std::optional<std::filesystem::path> osc::promp_user_for_file_save_location_add_extension_if_necessary(
+std::optional<std::filesystem::path> osc::prompt_user_for_file_save_location_add_extension_if_necessary(
     std::optional<CStringView> maybe_extension,
     std::optional<CStringView> maybe_initial_directory_to_open)
 {

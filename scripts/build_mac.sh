@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
 
-# Mac Catalina: end-2-end build
+# `build_mac`: performs an end-to-end build of OpenSim Creator on the
+# mac platform
 #
-#     - this script should run to completion on a relatively clean
-#       Catalina (OSX 10.5) machine with xcode, CMake, etc. installed
-#
-#     - run this from the repo root (opensim-creator) dir
+#     usage (must be ran in repository root): `bash build_mac.sh`
 
 
 # error out of this script if it fails for any reason
@@ -138,6 +136,7 @@ cmake \
     -B "osc-build" \
     -DCMAKE_BUILD_TYPE=${OSC_BUILD_TYPE} \
     -DCMAKE_PREFIX_PATH="${PWD}/osc-deps-install" \
+    -DCMAKE_EXECUTABLE_ENABLE_EXPORTS=ON \
     ${OSC_BUILD_DOCS:+-DOSC_BUILD_DOCS=ON}
 
 # build all

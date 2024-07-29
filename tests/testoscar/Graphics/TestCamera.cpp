@@ -28,7 +28,7 @@ TEST(Camera, can_default_construct)
 TEST(Camera, can_copy_construct)
 {
     const Camera camera;
-    const Camera copy = camera;
+    const Camera copy = camera;  // NOLINT(performance-unnecessary-copy-initialization)
 }
 
 TEST(Camera, copied_instance_compares_equal_to_original)

@@ -20,7 +20,6 @@
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
-#include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/EnumHelpers.h>
@@ -40,6 +39,7 @@
 #include <vector>
 
 using namespace osc;
+namespace plot = osc::ui::plot;
 
 namespace
 {
@@ -221,38 +221,35 @@ private:
         }
 
         // setup drawing area for drawing
-        ui::set_next_item_width(ui::get_content_region_avail().x);
-        const float plotWidth = ui::get_content_region_avail().x;
+        ui::set_next_item_width(ui::get_content_region_available().x);
+        const float plotWidth = ui::get_content_region_available().x;
         Rect plotRect{};
 
         // draw the plot
         {
             OSC_PERF("draw output plot");
 
-            ImPlot::PushStyleVar(ImPlotStyleVar_PlotPadding, {0.0f, 0.0f});
-            ImPlot::PushStyleVar(ImPlotStyleVar_PlotBorderSize, 0.0f);
-            ImPlot::PushStyleVar(ImPlotStyleVar_FitPadding, {0.0f, 1.0f});
-            const auto flags = ImPlotFlags_NoTitle | ImPlotFlags_NoLegend | ImPlotFlags_NoInputs | ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoFrame;
+            plot::push_style_var(plot::StyleVar::PlotPadding, {0.0f, 0.0f});
+            plot::push_style_var(plot::StyleVar::PlotBorderSize, 0.0f);
+            plot::push_style_var(plot::StyleVar::FitPadding, {0.0f, 1.0f});
+            const auto flags = plot::PlotFlags::NoTitle | plot::PlotFlags::NoLegend | plot::PlotFlags::NoInputs | plot::PlotFlags::NoMenus | plot::PlotFlags::NoBoxSelect | plot::PlotFlags::NoFrame;
 
-            if (ImPlot::BeginPlot("##", Vec2{plotWidth, m_Height}, flags)) {
-                ImPlot::SetupAxis(ImAxis_X1, nullptr, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_NoMenus | ImPlotAxisFlags_AutoFit);
-                ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_NoMenus | ImPlotAxisFlags_AutoFit);
-                ImPlot::PushStyleColor(ImPlotCol_Line, Vec4{1.0f, 1.0f, 1.0f, 0.7f});
-                ImPlot::PushStyleColor(ImPlotCol_PlotBg, Vec4{0.0f, 0.0f, 0.0f, 0.0f});
-                ImPlot::PlotLine("##",
-                    buf.data(),
-                    static_cast<int>(buf.size())
-                );
-                ImPlot::PopStyleColor();
-                ImPlot::PopStyleColor();
-                plotRect.p1 = ImPlot::GetPlotPos();
-                plotRect.p2 = plotRect.p1 + Vec2{ImPlot::GetPlotSize()};
+            if (plot::begin("##", {plotWidth, m_Height}, flags)) {
+                plot::setup_axis(plot::Axis::X1, std::nullopt, plot::AxisFlags::NoDecorations | plot::AxisFlags::NoMenus | plot::AxisFlags::AutoFit);
+                plot::setup_axis(plot::Axis::Y1, std::nullopt, plot::AxisFlags::NoDecorations | plot::AxisFlags::NoMenus | plot::AxisFlags::AutoFit);
+                plot::push_style_color(plot::ColorVar::Line, Color::white().with_alpha(0.7f));
+                plot::push_style_color(plot::ColorVar::PlotBackground, Color::clear());
+                plot::plot_line("##", buf);
+                plot::pop_style_color();
+                plot::pop_style_color();
 
-                ImPlot::EndPlot();
+                plotRect = plot::get_plot_screen_rect();
+
+                plot::end();
             }
-            ImPlot::PopStyleVar();
-            ImPlot::PopStyleVar();
-            ImPlot::PopStyleVar();
+            plot::pop_style_var();
+            plot::pop_style_var();
+            plot::pop_style_var();
         }
 
         // if the user right-clicks, draw a context menu
@@ -347,38 +344,30 @@ private:
         }
 
         // setup drawing area for drawing
-        ui::set_next_item_width(ui::get_content_region_avail().x);
-        const float plotWidth = ui::get_content_region_avail().x;
+        ui::set_next_item_width(ui::get_content_region_available().x);
+        const float plotWidth = ui::get_content_region_available().x;
         Rect plotRect{};
 
         // draw the plot
         {
             OSC_PERF("draw output plot");
 
-            ImPlot::PushStyleVar(ImPlotStyleVar_PlotPadding, {0.0f, 0.0f});
-            ImPlot::PushStyleVar(ImPlotStyleVar_PlotBorderSize, 0.0f);
-            ImPlot::PushStyleVar(ImPlotStyleVar_FitPadding, {0.1f, 0.1f});
-            ImPlot::PushStyleVar(ImPlotStyleVar_AnnotationPadding, ui::get_style_panel_padding());
-            const auto flags = ImPlotFlags_NoTitle | ImPlotFlags_NoLegend | ImPlotFlags_NoMenus | ImPlotFlags_NoBoxSelect | ImPlotFlags_NoFrame;
+            plot::push_style_var(plot::StyleVar::PlotPadding, {0.0f, 0.0f});
+            plot::push_style_var(plot::StyleVar::PlotBorderSize, 0.0f);
+            plot::push_style_var(plot::StyleVar::FitPadding, {0.1f, 0.1f});
+            plot::push_style_var(plot::StyleVar::AnnotationPadding, ui::get_style_panel_padding());
+            const auto flags = plot::PlotFlags::NoTitle | plot::PlotFlags::NoLegend | plot::PlotFlags::NoMenus | plot::PlotFlags::NoBoxSelect | plot::PlotFlags::NoFrame;
 
-            if (ImPlot::BeginPlot("##", Vec2{plotWidth, m_Height}, flags)) {
-                ImPlot::SetupAxis(ImAxis_X1, nullptr, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_NoMenus | ImPlotAxisFlags_AutoFit);
-                ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_NoDecorations | ImPlotAxisFlags_NoMenus | ImPlotAxisFlags_AutoFit);
-                ImPlot::PushStyleColor(ImPlotCol_Line, Vec4{1.0f, 1.0f, 1.0f, 0.7f});
-                ImPlot::PushStyleColor(ImPlotCol_PlotBg, Vec4{0.0f, 0.0f, 0.0f, 0.0f});
-                ImPlot::PlotLine(
-                    "##",
-                    &buf.front().x,
-                    &buf.front().y,
-                    static_cast<int>(buf.size()),
-                    ImPlotInfLinesFlags_None,
-                    0,
-                    sizeof(Vec2)
-                );
-                ImPlot::PopStyleColor();
-                ImPlot::PopStyleColor();
-                plotRect.p1 = ImPlot::GetPlotPos();
-                plotRect.p2 = plotRect.p1 + Vec2{ImPlot::GetPlotSize()};
+            if (plot::begin("##", {plotWidth, m_Height}, flags)) {
+                plot::setup_axis(plot::Axis::X1, std::nullopt, plot::AxisFlags::NoDecorations | plot::AxisFlags::NoMenus | plot::AxisFlags::AutoFit);
+                plot::setup_axis(plot::Axis::Y1, std::nullopt, plot::AxisFlags::NoDecorations | plot::AxisFlags::NoMenus | plot::AxisFlags::AutoFit);
+                plot::push_style_color(plot::ColorVar::Line, Color::white().with_alpha(0.7f));
+                plot::push_style_color(plot::ColorVar::PlotBackground, Color::clear());
+                plot::plot_line("##", buf);
+                plot::pop_style_color();
+                plot::pop_style_color();
+
+                plotRect = plot::get_plot_screen_rect();
 
                 // overlays
                 {
@@ -386,16 +375,16 @@ private:
                     Vec2d currentVal = m_OutputExtractor.getValueVec2(*sim.getModel(), currentReport);
                     // ensure the annotation doesn't occlude the line too heavily
                     auto annotationColor = ui::get_style_color(ImGuiCol_PopupBg).with_alpha(0.5f);
-                    ImPlot::Annotation(currentVal.x, currentVal.y, ui::to_ImVec4(annotationColor), {10.0f, 10.0f}, true, "(%f, %f)", currentVal.x, currentVal.y);
-                    ImPlot::DragPoint(0, &currentVal.x, &currentVal.y, ui::to_ImVec4(c_CurrentScubTimeColor), 4.0f, ImPlotDragToolFlags_NoInputs);
+                    plot::draw_annotation(currentVal, annotationColor, {10.0f, 10.0f}, true, "(%f, %f)", currentVal.x, currentVal.y);
+                    plot::drag_point(0, &currentVal, c_CurrentScubTimeColor, 4.0f, plot::DragToolFlags::NoInputs);
                 }
 
-                ImPlot::EndPlot();
+                plot::end();
             }
-            ImPlot::PopStyleVar();
-            ImPlot::PopStyleVar();
-            ImPlot::PopStyleVar();
-            ImPlot::PopStyleVar();
+            plot::pop_style_var();
+            plot::pop_style_var();
+            plot::pop_style_var();
+            plot::pop_style_var();
         }
 
         // if the user right-clicks the output, show a context menu

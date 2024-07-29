@@ -6,277 +6,277 @@
 using namespace osc;
 using namespace osc::literals;
 
-TEST(GenerateTorusKnotMesh, DefaultCtorWorksFine)
+TEST(TorusKnotGeometry, can_default_construct)
 {
-    const Mesh m = TorusKnotGeometry{};
-    ASSERT_TRUE(m.has_vertices());
-    ASSERT_TRUE(m.has_normals());
-    ASSERT_TRUE(m.has_tex_coords());
-    ASSERT_FALSE(m.indices().empty());
+    const Mesh mesh = TorusKnotGeometry{};
+    ASSERT_TRUE(mesh.has_vertices());
+    ASSERT_TRUE(mesh.has_normals());
+    ASSERT_TRUE(mesh.has_tex_coords());
+    ASSERT_FALSE(mesh.indices().empty());
 }
 
-TEST(GenerateTorusKnotMesh, WorksWithOtherArguments)
+TEST(TorusKnotGeometry, works_with_non_default_args)
 {
     ASSERT_NO_THROW({ TorusKnotGeometry(0.5f, 0.1f, 32, 4, 1, 10); });
     ASSERT_NO_THROW({ TorusKnotGeometry(0.0f, 100.0f, 1, 3, 4, 2); });
 }
 
-TEST(GenerateBoxMesh, DefaultCtorWorksFine)
+TEST(BoxGeometry, can_default_construct)
 {
-    const Mesh m = BoxGeometry{};
-    ASSERT_TRUE(m.has_vertices());
-    ASSERT_TRUE(m.has_normals());
-    ASSERT_TRUE(m.has_tex_coords());
-    ASSERT_FALSE(m.indices().empty());
+    const Mesh mesh = BoxGeometry{};
+    ASSERT_TRUE(mesh.has_vertices());
+    ASSERT_TRUE(mesh.has_normals());
+    ASSERT_TRUE(mesh.has_tex_coords());
+    ASSERT_FALSE(mesh.indices().empty());
 }
 
-TEST(GenerateBoxMesh, WorksWithNonDefaultArgs)
+TEST(BoxGeometry, works_with_non_default_args)
 {
     ASSERT_NO_THROW({ BoxGeometry(0.5f, 100.0f, 0.0f, 10, 1, 5); });
 }
 
-TEST(GeneratePolyhedronMesh, WorksWithACoupleOfBasicVerts)
+TEST(PolyhedronGeometry, works_with_a_couple_of_basic_verts)
 {
-    const Mesh m = PolyhedronGeometry{
+    const Mesh mesh = PolyhedronGeometry{
         {{{0.0f, 1.0f, 0.0f}, {1.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}}},
         {{0, 1, 2}},
         5.0f,
         2
     };
-    ASSERT_TRUE(m.has_vertices());
-    ASSERT_TRUE(m.has_normals());
-    ASSERT_TRUE(m.has_tex_coords());
-    ASSERT_FALSE(m.indices().empty());
+    ASSERT_TRUE(mesh.has_vertices());
+    ASSERT_TRUE(mesh.has_normals());
+    ASSERT_TRUE(mesh.has_tex_coords());
+    ASSERT_FALSE(mesh.indices().empty());
 }
 
-TEST(GeneratePolyhedronMesh, ReturnsEmptyMeshIfGivenLessThanThreePoints)
+TEST(PolyhedronGeometry, is_empty_if_given_less_than_3_points)
 {
-    const Mesh m = PolyhedronGeometry{
+    const Mesh mesh = PolyhedronGeometry{
         {{{0.0f, 1.0f, 0.0f}, {1.0f, 0.0f, 1.0f}}},
         {{0, 1}},
         5.0f,
         2
     };
-    ASSERT_FALSE(m.has_vertices());
-    ASSERT_FALSE(m.has_normals());
-    ASSERT_FALSE(m.has_tex_coords());
-    ASSERT_TRUE(m.indices().empty());
+    ASSERT_FALSE(mesh.has_vertices());
+    ASSERT_FALSE(mesh.has_normals());
+    ASSERT_FALSE(mesh.has_tex_coords());
+    ASSERT_TRUE(mesh.indices().empty());
 }
 
 
-TEST(GenerateIcosahedronMesh, DefaultCtorWorksFine)
+TEST(IcosahedronGeometry, can_default_construct)
 {
-    const Mesh m = IcosahedronGeometry{};
-    ASSERT_TRUE(m.has_vertices());
-    ASSERT_TRUE(m.has_normals());
-    ASSERT_TRUE(m.has_tex_coords());
-    ASSERT_FALSE(m.indices().empty());
+    const Mesh mesh = IcosahedronGeometry{};
+    ASSERT_TRUE(mesh.has_vertices());
+    ASSERT_TRUE(mesh.has_normals());
+    ASSERT_TRUE(mesh.has_tex_coords());
+    ASSERT_FALSE(mesh.indices().empty());
 }
 
-TEST(GenerateIcosahedronMesh, WorksWithNonDefaultArgs)
+TEST(IcosahedronGeometry, works_with_non_default_args)
 {
     ASSERT_NO_THROW(IcosahedronGeometry(10.0f, 2));
 }
 
-TEST(GenerateDodecahedronMesh, DefaultCtorWorksFine)
+TEST(DodecahedronGeometry, can_default_construct)
 {
-    const Mesh m = DodecahedronGeometry{};
-    ASSERT_TRUE(m.has_vertices());
-    ASSERT_TRUE(m.has_normals());
-    ASSERT_TRUE(m.has_tex_coords());
-    ASSERT_FALSE(m.indices().empty());
+    const Mesh mesh = DodecahedronGeometry{};
+    ASSERT_TRUE(mesh.has_vertices());
+    ASSERT_TRUE(mesh.has_normals());
+    ASSERT_TRUE(mesh.has_tex_coords());
+    ASSERT_FALSE(mesh.indices().empty());
 }
 
-TEST(GenerateDodecahedronMesh, WorksWithNonDefaultArgs)
+TEST(DodecahedronGeometry, works_with_non_default_args)
 {
-    const Mesh m = DodecahedronGeometry{5.0f, 3};
-    ASSERT_TRUE(m.has_vertices());
-    ASSERT_TRUE(m.has_normals());
-    ASSERT_TRUE(m.has_tex_coords());
-    ASSERT_FALSE(m.indices().empty());
+    const Mesh mesh = DodecahedronGeometry{5.0f, 3};
+    ASSERT_TRUE(mesh.has_vertices());
+    ASSERT_TRUE(mesh.has_normals());
+    ASSERT_TRUE(mesh.has_tex_coords());
+    ASSERT_FALSE(mesh.indices().empty());
 }
 
-TEST(GenerateOctahedronMesh, DefaultCtorWorksFine)
+TEST(OctahedronGeometry, can_default_construct)
 {
-    const Mesh m = OctahedronGeometry{};
-    ASSERT_TRUE(m.has_vertices());
-    ASSERT_TRUE(m.has_normals());
-    ASSERT_TRUE(m.has_tex_coords());
-    ASSERT_FALSE(m.indices().empty());
+    const Mesh mesh = OctahedronGeometry{};
+    ASSERT_TRUE(mesh.has_vertices());
+    ASSERT_TRUE(mesh.has_normals());
+    ASSERT_TRUE(mesh.has_tex_coords());
+    ASSERT_FALSE(mesh.indices().empty());
 }
 
-TEST(GenerateOctahedronMesh, WorksWithNonDefaultArgs)
+TEST(OctahedronGeometry, works_with_non_default_args)
 {
-    const Mesh m = OctahedronGeometry{11.0f, 2};
-    ASSERT_TRUE(m.has_vertices());
-    ASSERT_TRUE(m.has_normals());
-    ASSERT_TRUE(m.has_tex_coords());
-    ASSERT_FALSE(m.indices().empty());
+    const Mesh mesh = OctahedronGeometry{11.0f, 2};
+    ASSERT_TRUE(mesh.has_vertices());
+    ASSERT_TRUE(mesh.has_normals());
+    ASSERT_TRUE(mesh.has_tex_coords());
+    ASSERT_FALSE(mesh.indices().empty());
 }
 
-TEST(GenerateTetrahedronMesh, DefaultCtorWorksFine)
+TEST(TetrahedronGeometry, can_default_construct)
 {
-    const Mesh m = TetrahedronGeometry{};
-    ASSERT_TRUE(m.has_vertices());
-    ASSERT_TRUE(m.has_normals());
-    ASSERT_TRUE(m.has_tex_coords());
-    ASSERT_FALSE(m.indices().empty());
+    const Mesh mesh = TetrahedronGeometry{};
+    ASSERT_TRUE(mesh.has_vertices());
+    ASSERT_TRUE(mesh.has_normals());
+    ASSERT_TRUE(mesh.has_tex_coords());
+    ASSERT_FALSE(mesh.indices().empty());
 }
 
-TEST(GenerateTetrahedronMesh, WorksWithNonDefaultArgs)
+TEST(TetrahedronGeometry, works_with_non_default_args)
 {
-    const Mesh m = TetrahedronGeometry{0.5f, 3};
-    ASSERT_TRUE(m.has_vertices());
-    ASSERT_TRUE(m.has_normals());
-    ASSERT_TRUE(m.has_tex_coords());
-    ASSERT_FALSE(m.indices().empty());
+    const Mesh mesh = TetrahedronGeometry{0.5f, 3};
+    ASSERT_TRUE(mesh.has_vertices());
+    ASSERT_TRUE(mesh.has_normals());
+    ASSERT_TRUE(mesh.has_tex_coords());
+    ASSERT_FALSE(mesh.indices().empty());
 }
 
-TEST(GenerateLatheMesh, DefaultCtorWorksFine)
+TEST(LatheGeometry, can_default_construct)
 {
-    const Mesh m = LatheGeometry{};
-    ASSERT_TRUE(m.has_vertices());
-    ASSERT_TRUE(m.has_normals());
-    ASSERT_TRUE(m.has_tex_coords());
-    ASSERT_FALSE(m.indices().empty());
+    const Mesh mesh = LatheGeometry{};
+    ASSERT_TRUE(mesh.has_vertices());
+    ASSERT_TRUE(mesh.has_normals());
+    ASSERT_TRUE(mesh.has_tex_coords());
+    ASSERT_FALSE(mesh.indices().empty());
 }
 
-TEST(GenerateLatheMesh, WorksWithNonDefaultArgs)
+TEST(LatheGeometry, works_with_non_default_args)
 {
-    const Mesh m = LatheGeometry{
+    const Mesh mesh = LatheGeometry{
         {{{0.0f, 0.0f}, {1.0f, 1.0f}, {2.0f, 2.0f}, {3.0f, 3.0f}}},
         32,
         45_deg,
         180_deg
     };
-    ASSERT_TRUE(m.has_vertices());
-    ASSERT_TRUE(m.has_normals());
-    ASSERT_TRUE(m.has_tex_coords());
-    ASSERT_FALSE(m.indices().empty());
+    ASSERT_TRUE(mesh.has_vertices());
+    ASSERT_TRUE(mesh.has_normals());
+    ASSERT_TRUE(mesh.has_tex_coords());
+    ASSERT_FALSE(mesh.indices().empty());
 }
 
-TEST(GenerateCircleMesh, DefaultCtorWorksFine)
+TEST(CircleGeometry, can_default_construct)
 {
-    const Mesh m = CircleGeometry{};
-    ASSERT_TRUE(m.has_vertices());
-    ASSERT_TRUE(m.has_normals());
-    ASSERT_TRUE(m.has_tex_coords());
-    ASSERT_FALSE(m.indices().empty());
+    const Mesh mesh = CircleGeometry{};
+    ASSERT_TRUE(mesh.has_vertices());
+    ASSERT_TRUE(mesh.has_normals());
+    ASSERT_TRUE(mesh.has_tex_coords());
+    ASSERT_FALSE(mesh.indices().empty());
 }
 
-TEST(GenerateCircleMesh, WorksWithNonDefaultArgs)
+TEST(CircleGeometry, works_with_non_default_args)
 {
-    const Mesh m = CircleGeometry{0.5f, 64, 90_deg, 80_deg};
-    ASSERT_TRUE(m.has_vertices());
-    ASSERT_TRUE(m.has_normals());
-    ASSERT_TRUE(m.has_tex_coords());
-    ASSERT_FALSE(m.indices().empty());
+    const Mesh mesh = CircleGeometry{0.5f, 64, 90_deg, 80_deg};
+    ASSERT_TRUE(mesh.has_vertices());
+    ASSERT_TRUE(mesh.has_normals());
+    ASSERT_TRUE(mesh.has_tex_coords());
+    ASSERT_FALSE(mesh.indices().empty());
 }
 
-TEST(GenerateRingMesh, DefaultCtorWorksFine)
+TEST(RingGeometry, can_default_construct)
 {
-    const Mesh m = RingGeometry{};
-    ASSERT_TRUE(m.has_vertices());
-    ASSERT_TRUE(m.has_normals());
-    ASSERT_TRUE(m.has_tex_coords());
-    ASSERT_FALSE(m.indices().empty());
+    const Mesh mesh = RingGeometry{};
+    ASSERT_TRUE(mesh.has_vertices());
+    ASSERT_TRUE(mesh.has_normals());
+    ASSERT_TRUE(mesh.has_tex_coords());
+    ASSERT_FALSE(mesh.indices().empty());
 }
 
-TEST(GenerateRingMesh, WorksWithNonDefaultArgs)
+TEST(RingGeometry, works_with_non_default_args)
 {
-    const Mesh m = RingGeometry{0.1f, 0.2f, 16, 3, 90_deg, 180_deg};
-    ASSERT_TRUE(m.has_vertices());
-    ASSERT_TRUE(m.has_normals());
-    ASSERT_TRUE(m.has_tex_coords());
-    ASSERT_FALSE(m.indices().empty());
+    const Mesh mesh = RingGeometry{0.1f, 0.2f, 16, 3, 90_deg, 180_deg};
+    ASSERT_TRUE(mesh.has_vertices());
+    ASSERT_TRUE(mesh.has_normals());
+    ASSERT_TRUE(mesh.has_tex_coords());
+    ASSERT_FALSE(mesh.indices().empty());
 }
 
-TEST(GenerateTorusMesh, DefaultCtorWorksFine)
+TEST(TorusGeometry, can_default_construct)
 {
-    const Mesh m = TorusGeometry{};
-    ASSERT_TRUE(m.has_vertices());
-    ASSERT_TRUE(m.has_normals());
-    ASSERT_TRUE(m.has_tex_coords());
-    ASSERT_FALSE(m.indices().empty());
+    const Mesh mesh = TorusGeometry{};
+    ASSERT_TRUE(mesh.has_vertices());
+    ASSERT_TRUE(mesh.has_normals());
+    ASSERT_TRUE(mesh.has_tex_coords());
+    ASSERT_FALSE(mesh.indices().empty());
 }
 
-TEST(GenerateTorusMesh, WorksWithNonDefaultArgs)
+TEST(TorusGeometry, works_with_non_default_args)
 {
-    const Mesh m = TorusGeometry{0.2f, 0.3f, 4, 32, 180_deg};
-    ASSERT_TRUE(m.has_vertices());
-    ASSERT_TRUE(m.has_normals());
-    ASSERT_TRUE(m.has_tex_coords());
-    ASSERT_FALSE(m.indices().empty());
+    const Mesh mesh = TorusGeometry{0.2f, 0.3f, 4, 32, 180_deg};
+    ASSERT_TRUE(mesh.has_vertices());
+    ASSERT_TRUE(mesh.has_normals());
+    ASSERT_TRUE(mesh.has_tex_coords());
+    ASSERT_FALSE(mesh.indices().empty());
 }
 
-TEST(GenerateCylinderMesh, DefaultCtorWorksFine)
+TEST(CylinderGeometry, can_default_construct)
 {
-    const Mesh m = CylinderGeometry{};
-    ASSERT_TRUE(m.has_vertices());
-    ASSERT_TRUE(m.has_normals());
-    ASSERT_TRUE(m.has_tex_coords());
-    ASSERT_FALSE(m.indices().empty());
+    const Mesh mesh = CylinderGeometry{};
+    ASSERT_TRUE(mesh.has_vertices());
+    ASSERT_TRUE(mesh.has_normals());
+    ASSERT_TRUE(mesh.has_tex_coords());
+    ASSERT_FALSE(mesh.indices().empty());
 }
 
-TEST(GenerateCylinderMesh, WorksWithNonDefaultArgs)
+TEST(CylinderGeometry, works_with_non_default_args)
 {
-    const Mesh m = CylinderGeometry{0.1f, 0.05f, 0.5f, 16, 2, true, 180_deg, 270_deg};
-    ASSERT_TRUE(m.has_vertices());
-    ASSERT_TRUE(m.has_normals());
-    ASSERT_TRUE(m.has_tex_coords());
-    ASSERT_FALSE(m.indices().empty());
+    const Mesh mesh = CylinderGeometry{0.1f, 0.05f, 0.5f, 16, 2, true, 180_deg, 270_deg};
+    ASSERT_TRUE(mesh.has_vertices());
+    ASSERT_TRUE(mesh.has_normals());
+    ASSERT_TRUE(mesh.has_tex_coords());
+    ASSERT_FALSE(mesh.indices().empty());
 }
 
-TEST(GenerateConeMesh, DefaultCtorWorksFine)
+TEST(ConeGeometry, can_default_construct)
 {
-    const Mesh m = ConeGeometry{};
-    ASSERT_TRUE(m.has_vertices());
-    ASSERT_TRUE(m.has_normals());
-    ASSERT_TRUE(m.has_tex_coords());
-    ASSERT_FALSE(m.indices().empty());
+    const Mesh mesh = ConeGeometry{};
+    ASSERT_TRUE(mesh.has_vertices());
+    ASSERT_TRUE(mesh.has_normals());
+    ASSERT_TRUE(mesh.has_tex_coords());
+    ASSERT_FALSE(mesh.indices().empty());
 }
 
-TEST(GenerateConeMesh, WorksWithNonDefaultArgs)
+TEST(ConeGeometry, works_with_non_default_args)
 {
-    const Mesh m = ConeGeometry{0.2f, 500.0f, 4, 3, true, -90_deg, 90_deg};
-    ASSERT_TRUE(m.has_vertices());
-    ASSERT_TRUE(m.has_normals());
-    ASSERT_TRUE(m.has_tex_coords());
-    ASSERT_FALSE(m.indices().empty());
+    const Mesh mesh = ConeGeometry{0.2f, 500.0f, 4, 3, true, -90_deg, 90_deg};
+    ASSERT_TRUE(mesh.has_vertices());
+    ASSERT_TRUE(mesh.has_normals());
+    ASSERT_TRUE(mesh.has_tex_coords());
+    ASSERT_FALSE(mesh.indices().empty());
 }
 
-TEST(GeneratePlaneMesh, DefaultCtorWorksFine)
+TEST(PlaneGeometry, can_default_construct)
 {
-    const Mesh m = PlaneGeometry{};
-    ASSERT_TRUE(m.has_vertices());
-    ASSERT_TRUE(m.has_normals());
-    ASSERT_TRUE(m.has_tex_coords());
-    ASSERT_FALSE(m.indices().empty());
+    const Mesh mesh = PlaneGeometry{};
+    ASSERT_TRUE(mesh.has_vertices());
+    ASSERT_TRUE(mesh.has_normals());
+    ASSERT_TRUE(mesh.has_tex_coords());
+    ASSERT_FALSE(mesh.indices().empty());
 }
 
-TEST(GeneratePlaneMesh, WorksWithNonDefaultArgs)
+TEST(PlaneGeometry, works_with_non_default_args)
 {
-    const Mesh m = PlaneGeometry{0.5f, 2.0f, 4, 4};
-    ASSERT_TRUE(m.has_vertices());
-    ASSERT_TRUE(m.has_normals());
-    ASSERT_TRUE(m.has_tex_coords());
-    ASSERT_FALSE(m.indices().empty());
+    const Mesh mesh = PlaneGeometry{0.5f, 2.0f, 4, 4};
+    ASSERT_TRUE(mesh.has_vertices());
+    ASSERT_TRUE(mesh.has_normals());
+    ASSERT_TRUE(mesh.has_tex_coords());
+    ASSERT_FALSE(mesh.indices().empty());
 }
 
-TEST(GenerateSphereMesh, DefaultCtorWorksFine)
+TEST(SphereGeometry, can_default_construct)
 {
-    const Mesh m = SphereGeometry{};
-    ASSERT_TRUE(m.has_vertices());
-    ASSERT_TRUE(m.has_normals());
-    ASSERT_TRUE(m.has_tex_coords());
-    ASSERT_FALSE(m.indices().empty());
+    const Mesh mesh = SphereGeometry{};
+    ASSERT_TRUE(mesh.has_vertices());
+    ASSERT_TRUE(mesh.has_normals());
+    ASSERT_TRUE(mesh.has_tex_coords());
+    ASSERT_FALSE(mesh.indices().empty());
 }
 
-TEST(GenerateSphereMesh, WorksWithNonDefaultArgs)
+TEST(SphereGeometry, works_with_non_default_args)
 {
-    const Mesh m = SphereGeometry{0.5f, 12, 4, 90_deg, 180_deg, -45_deg, -60_deg};
-    ASSERT_TRUE(m.has_vertices());
-    ASSERT_TRUE(m.has_normals());
-    ASSERT_TRUE(m.has_tex_coords());
-    ASSERT_FALSE(m.indices().empty());
+    const Mesh mesh = SphereGeometry{0.5f, 12, 4, 90_deg, 180_deg, -45_deg, -60_deg};
+    ASSERT_TRUE(mesh.has_vertices());
+    ASSERT_TRUE(mesh.has_normals());
+    ASSERT_TRUE(mesh.has_tex_coords());
+    ASSERT_FALSE(mesh.indices().empty());
 }

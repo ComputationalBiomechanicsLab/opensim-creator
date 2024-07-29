@@ -11,7 +11,6 @@
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/Object.h>
 #include <oscar/Graphics/Color.h>
-#include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/StandardPanelImpl.h>
 #include <oscar/Utils/ScopeGuard.h>
@@ -78,7 +77,7 @@ namespace
 
             ui::next_column();
 
-            ui::set_next_item_width(ui::get_content_region_avail().x);
+            ui::set_next_item_width(ui::get_content_region_available().x);
             ui::draw_string_input("##nameeditor", m_EditedName);
             if (ui::should_save_last_drawn_item_value())
             {

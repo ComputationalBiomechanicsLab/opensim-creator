@@ -11,6 +11,7 @@ endif()
 find_package(imgui REQUIRED CONFIG)
 find_package(IconFontCppHeaders REQUIRED CONFIG)
 find_package(ImGuizmo REQUIRED CONFIG)
+find_package(ImGuiColorTextEdit REQUIRED CONFIG)
 find_package(implot REQUIRED CONFIG)
 find_package(stb REQUIRED CONFIG)
 find_package(lunasvg REQUIRED CONFIG)
@@ -202,7 +203,7 @@ add_library(oscar STATIC
     Maths/Ellipsoid.h
     Maths/EllipsoidFunctions.h
     Maths/EulerPerspectiveCamera.h
-    Maths/Eulers.h
+    Maths/EulerAngles.h
     Maths/FrustumPlanes.h
     Maths/Functors.h
     Maths/GeometricFunctions.h
@@ -226,6 +227,7 @@ add_library(oscar STATIC
     Maths/RayCollision.h
     Maths/Rect.h
     Maths/RectFunctions.h
+    Maths/Scalar.h
     Maths/Sphere.h
     Maths/Tetrahedron.h
     Maths/Transform.h
@@ -245,6 +247,7 @@ add_library(oscar STATIC
     Platform/App.cpp
     Platform/App.h
     Platform/AppClock.h
+    Platform/AppMainLoopStatus.h
     Platform/AppMetadata.cpp
     Platform/AppMetadata.h
     Platform/AppSettings.cpp
@@ -338,15 +341,13 @@ add_library(oscar STATIC
     UI/Icon.h
     UI/IconCache.cpp
     UI/IconCache.h
-    UI/ImGuiHelpers.cpp
-    UI/ImGuiHelpers.h
-    UI/ImGuizmoHelpers.cpp
-    UI/ImGuizmoHelpers.h
+
+
     UI/imgui_impl_sdl2.cpp
     UI/imgui_impl_sdl2.h
     UI/MouseCapturingCamera.h
+    UI/oscimgui.cpp
     UI/oscimgui.h
-    UI/oscimgui_internal.h
     UI/oscimgui_config.h
     UI/Panels.h
     UI/Screens.h
@@ -391,6 +392,7 @@ add_library(oscar STATIC
     Utils/ScopedLifetime.h
     Utils/ScopeGuard.h
     Utils/SharedLifetimeBlock.h
+    Utils/SharedPreHashedString.h
     Utils/Spsc.h
     Utils/StringHelpers.cpp
     Utils/StringHelpers.h
@@ -402,6 +404,7 @@ add_library(oscar STATIC
     Utils/TemporaryFile.cpp
     Utils/TemporaryFile.h
     Utils/TemporaryFileParameters.h
+    Utils/TransparentStringHasher.h
     Utils/Typelist.h
     Utils/UID.cpp
     Utils/UID.h
@@ -426,7 +429,7 @@ add_library(oscar STATIC
     UI.h
     Utils.h
     Variant.h
- )
+)
 
 target_include_directories(oscar PUBLIC
 
@@ -445,6 +448,7 @@ target_link_libraries(oscar PUBLIC
     imgui
     IconFontCppHeaders
     ImGuizmo
+    ImGuiColorTextEdit
     implot
     stb
     unordered_dense::unordered_dense

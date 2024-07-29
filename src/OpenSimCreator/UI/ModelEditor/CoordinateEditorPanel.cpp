@@ -10,7 +10,6 @@
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <oscar/Graphics/Color.h>
-#include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/StandardPanelImpl.h>
 #include <oscar/Utils/CStringView.h>
@@ -197,7 +196,7 @@ private:
     {
         const bool coordinateLocked = c.getLocked(m_Model->getState());
 
-        ui::set_next_item_width(ui::get_content_region_avail().x);
+        ui::set_next_item_width(ui::get_content_region_available().x);
 
         float minValue = ConvertCoordValueToDisplayValue(c, c.getRangeMin());
         float maxValue = ConvertCoordValueToDisplayValue(c, c.getRangeMax());
@@ -230,7 +229,7 @@ private:
     {
         float displayedSpeed = ConvertCoordValueToDisplayValue(c, c.getSpeedValue(m_Model->getState()));
 
-        ui::set_next_item_width(ui::get_content_region_avail().x);
+        ui::set_next_item_width(ui::get_content_region_available().x);
         if (ui::draw_float_meters_input("##coordinatespeededitor", displayedSpeed))
         {
             double storedSpeed = ConvertCoordDisplayValueToStorageValue(c, displayedSpeed);

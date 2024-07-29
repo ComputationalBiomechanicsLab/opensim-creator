@@ -270,6 +270,7 @@ namespace osc
     void DrawToggleMarkersButton(UndoableModelStatePair&, IconCache&);
     void DrawToggleWrapGeometryButton(UndoableModelStatePair&, IconCache&);
     void DrawToggleContactGeometryButton(UndoableModelStatePair&, IconCache&);
+    void DrawToggleForcesButton(UndoableModelStatePair&, IconCache&);
     void DrawAllDecorationToggleButtons(UndoableModelStatePair&, IconCache&);
     void DrawSceneScaleFactorEditorControls(UndoableModelStatePair&);
 

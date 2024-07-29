@@ -8,7 +8,6 @@
 #include <IconsFontAwesome5.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/UI/Panels/StandardPanelImpl.h>
-#include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/ParentPtr.h>
 #include <oscar/Utils/UID.h>

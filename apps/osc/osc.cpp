@@ -1,11 +1,16 @@
+#include <osc/osc_config.h>
+
 #include <OpenSimCreator/Platform/OpenSimCreatorApp.h>
 #include <OpenSimCreator/UI/MainUIScreen.h>
+#include <oscar/Platform/AppMetadata.h>
 
 #include <cstdlib>
 #include <iostream>
 #include <memory>
 #include <string_view>
 #include <vector>
+
+using namespace osc;
 
 namespace
 {
@@ -15,6 +20,19 @@ namespace
     --help
         Show this help
 )";
+
+    AppMetadata GetOpenSimCreatorAppMetadata()
+    {
+        return AppMetadata{
+            OSC_ORGNAME_STRING,
+            OSC_APPNAME_STRING,
+            OSC_LONG_APPNAME_STRING,
+            OSC_VERSION_STRING,
+            OSC_BUILD_ID,
+            OSC_REPO_URL,
+            OSC_HELP_URL,
+        };
+    }
 }
 
 int main(int argc, char* argv[])
@@ -40,10 +58,10 @@ int main(int argc, char* argv[])
     }
 
     // init top-level application state
-    osc::OpenSimCreatorApp app;
+    OpenSimCreatorApp app{GetOpenSimCreatorAppMetadata()};
 
     // init top-level screen (tab host)
-    auto screen = std::make_unique<osc::MainUIScreen>();
+    auto screen = std::make_unique<MainUIScreen>();
 
     // load each unnamed arg as a file in the UI
     for (const auto& unnamedArg : unnamedArgs) {

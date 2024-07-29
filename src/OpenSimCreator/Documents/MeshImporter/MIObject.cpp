@@ -8,7 +8,7 @@ namespace rgs = std::ranges;
 
 void osc::mi::MIObject::applyRotation(
     const IObjectFinder& lookup,
-    const Eulers& eulerAngles,
+    const EulerAngles& eulerAngles,
     const Vec3& rotationCenter)
 {
     Transform t = getXForm(lookup);

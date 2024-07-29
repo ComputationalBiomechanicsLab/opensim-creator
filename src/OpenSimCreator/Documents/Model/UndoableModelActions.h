@@ -2,7 +2,7 @@
 
 #include <OpenSimCreator/Documents/Landmarks/NamedLandmark.h>
 
-#include <oscar/Maths/Eulers.h>
+#include <oscar/Maths/EulerAngles.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Shims/Cpp23/utility.h>
 
@@ -135,6 +135,11 @@ namespace osc
 
     // toggle contact geometry visibility
     bool ActionToggleContactGeometry(
+        UndoableModelStatePair&
+    );
+
+    // toggle force visibility (#887)
+    bool ActionToggleForces(
         UndoableModelStatePair&
     );
 
@@ -415,21 +420,28 @@ namespace osc
         UndoableModelStatePair&,
         const OpenSim::PhysicalOffsetFrame&,
         const Vec3& deltaTranslationInParentFrame,
-        const Eulers& newPofEulers
+        const EulerAngles& newPofEulers
+    );
+
+    bool ActionTransformPofV2(
+        UndoableModelStatePair&,
+        const OpenSim::PhysicalOffsetFrame&,
+        const Vec3& newTranslation,
+        const EulerAngles& newEulers
     );
 
     bool ActionTransformWrapObject(
         UndoableModelStatePair&,
         const OpenSim::WrapObject&,
         const Vec3& deltaPosition,
-        const Eulers& newEulers
+        const EulerAngles& newEulers
     );
 
     bool ActionTransformContactGeometry(
         UndoableModelStatePair&,
         const OpenSim::ContactGeometry&,
         const Vec3& deltaPosition,
-        const Eulers& newEulers
+        const EulerAngles& newEulers
     );
 
     bool ActionFitSphereToMesh(

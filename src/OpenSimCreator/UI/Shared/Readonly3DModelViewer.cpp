@@ -9,7 +9,6 @@
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Platform/App.h>
 #include <oscar/UI/IconCache.h>
-#include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Widgets/GuiRuler.h>
 #include <oscar/UI/Widgets/IconWithoutMenu.h>
@@ -69,7 +68,7 @@ public:
             m_CachedModelRenderer.autoFocusCamera(
                 rs,
                 m_Params,
-                aspect_ratio_of(ui::get_content_region_avail())
+                aspect_ratio_of(ui::get_content_region_available())
             );
         }
 
@@ -87,14 +86,14 @@ public:
         m_CachedModelRenderer.onDraw(
             rs,
             m_Params,
-            ui::get_content_region_avail(),
+            ui::get_content_region_available(),
             App::get().anti_aliasing_level()
         );
 
         // blit texture as a ui::Image
         ui::draw_image(
             m_CachedModelRenderer.updRenderTexture(),
-            ui::get_content_region_avail()
+            ui::get_content_region_available()
         );
 
         // update current+retained hittest

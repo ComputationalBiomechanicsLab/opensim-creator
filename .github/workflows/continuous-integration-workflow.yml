@@ -2,6 +2,7 @@ on: [push]
 
 env:
   OSC_BUILD_DOCS: 1
+  OSC_BUILD_ID: "GITHUB_${{ github.run_id }}.${{ github.run_number }}"
 
 jobs:
   windows2022msvc:

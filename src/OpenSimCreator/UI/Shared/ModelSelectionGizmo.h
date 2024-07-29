@@ -19,34 +19,22 @@ namespace osc
         ModelSelectionGizmo& operator=(ModelSelectionGizmo&&) noexcept;
         ~ModelSelectionGizmo() noexcept;
 
-        bool isUsing() const;
-        bool isOver() const;
+        bool isUsing() const { return m_Gizmo.is_using(); }
+        bool isOver() const { return m_Gizmo.is_over(); }
 
-        bool handleKeyboardInputs();
+        bool handleKeyboardInputs() { return m_Gizmo.handle_keyboard_inputs(); }
         void onDraw(const Rect& screenRect, const PolarPerspectiveCamera&);
 
-        ImGuizmo::OPERATION getOperation() const
-        {
-            return m_GizmoOperation;
-        }
-        void setOperation(ImGuizmo::OPERATION newOperation)
-        {
-            m_GizmoOperation = newOperation;
-        }
+        ui::GizmoOperation getOperation() const { return m_Gizmo.operation(); }
+        void setOperation(ui::GizmoOperation op) { m_Gizmo.set_operation(op); }
 
-        ImGuizmo::MODE getMode() const
-        {
-            return m_GizmoMode;
-        }
-        void setMode(ImGuizmo::MODE newMode)
-        {
-            m_GizmoMode = newMode;
-        }
+        ui::GizmoMode getMode() { return m_Gizmo.mode(); }
+        void setMode(ui::GizmoMode mode) { m_Gizmo.set_mode(mode); }
+
+        operator ui::Gizmo& () { return m_Gizmo; }
 
     private:
         std::shared_ptr<UndoableModelStatePair> m_Model;
-        ImGuizmo::OPERATION m_GizmoOperation = ImGuizmo::TRANSLATE;
-        ImGuizmo::MODE m_GizmoMode = ImGuizmo::WORLD;
-        bool m_WasUsingGizmoLastFrame = false;
+        ui::Gizmo m_Gizmo;
     };
 }

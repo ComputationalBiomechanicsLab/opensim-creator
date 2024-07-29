@@ -10,12 +10,12 @@
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Graphics/Shader.h>
 #include <oscar/Maths/Angle.h>
-#include <oscar/Maths/Eulers.h>
+#include <oscar/Maths/EulerAngles.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/App.h>
-#include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
 
 #include <memory>
 
@@ -118,7 +118,7 @@ private:
     Mesh m_Mesh = LoadMeshViaSimTK(App::resource_filepath("geometry/hat_ribs_scap.vtp"));
     Camera m_SceneCamera;
     bool m_IsMouseCaptured = false;
-    Eulers m_CameraEulers = {};
+    EulerAngles m_CameraEulers = {};
     Color m_MeshColor = Color::white();
 };
 

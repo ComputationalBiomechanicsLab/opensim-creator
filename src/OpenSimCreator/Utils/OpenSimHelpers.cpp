@@ -1135,10 +1135,22 @@ bool osc::IsShowingContactGeometry(const OpenSim::Model& model)
     return model.getDisplayHints().get_show_contact_geometry();
 }
 
+bool osc::IsShowingForces(const OpenSim::Model& model)
+{
+    return model.getDisplayHints().get_show_forces();
+}
+
 bool osc::ToggleShowingContactGeometry(OpenSim::Model& model)
 {
     const bool newValue = !IsShowingContactGeometry(model);
     model.updDisplayHints().set_show_contact_geometry(newValue);
+    return newValue;
+}
+
+bool osc::ToggleShowingForces(OpenSim::Model& model)
+{
+    const bool newValue = !IsShowingForces(model);
+    model.updDisplayHints().set_show_forces(newValue);
     return newValue;
 }
 

@@ -5,6 +5,33 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- When changing selection in the model editor, the 3D gizmo manipulator will now check
+  whether the new selection supports the same transformation type (rotate/translate) and
+  will automatically coerce the transformation type to a supported one if the user's
+  currently selected mode isn't supported (#705)
+- Overlay geometry (e.g. the XY grid overlay, the axis lines overlay) are now correctly
+  scaled by the `scene scale factor` (#700)
+- The mesh warper UI now recalculates the result mesh's normals after applying the warp
+  to the source mesh. This behavior can be disabled using a checkbox that was added to
+  the UI (#743)
+- The socket reassignment popup now shows the name of the component that the socket is
+  currently assigned to (#770)
+- The model editor toolbar now contains a toggle for toggling a model's `show_forces`
+  display property (#887). Note: OpenSim only really uses this for `SmoothSphereHalfSpaceForce`
+- Fixed non-default scene scale factors not being retained whenever a model file is
+  hot-reloaded from disk in the model editor (#890)
+- The model editor's/simulator's 3D visualizers now have an experimental
+  `Show > Forces' Linear/Rotational Component` visualization option, which adds arrows indicating
+  how each `OpenSim::Force` in the model applies its linear/angular force component to each
+  body in the model. This can be useful for debugging model creation or `ExternalForce`s
+- The model editor UI now has experimental support for viewing `OpenSim::Function` curves. This
+  is currently exposed as an eye icon in the property editor panel (#695)
+- Selecting an `OpenSim::Joint` that has `OpenSim::PhysicalOffsetFrame`s for both its parent
+  and child frames now shows a 3D manipulation gizmo that lets you move the joint center
+  without moving anything else in the model (#159)
+- Manipulating a child offset frame of a `OpenSim::Joint` should now work correctly for both
+  translation and rotation, allowing you visually place the parent of the child offset frame
+  (e.g. a body) that's moved by the joint
 - The UI now remembers which panels (e.g. Log, Properties) you had open between boots (#17)
 - The mesh warping tab now has a `Visualization Options` menu, which lets users toggle a few
   basic visualization options (e.g. grid lines, #892)
@@ -31,6 +58,20 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Internal: Added runtime-checked pointer classes (`LifetimedPtr`, `LifetimeWatcher`,
             `ScopedLifetime`, `SharedLifetimeBlock`, `WatchableLifetime`)
 - Internal: Added barebones `TemporaryFile` class (handy for testing IO-related code)
+- Internal: `ImGuizmo` was mostly refactored into an internal concern, with OSC using an
+  easier-to-integrate wrapper class
+- Internal: `benchmarks/` were dropped (unused: microbenchmarks are better-suited to
+  `opensim-core`)
+- Internal: Added `SharedPreHashedString` class, as a generalization of the `StringName` class
+  without the global lookup requirement
+- Internal: Integrated `lua` and `ImGuiColorTextEdit`, which will currently only be used to
+  experiment with scripting in a developer-facing fashion (no user-facing LUA support... yet)
+- Internal: a wrapper layer was added around `ImPlot`, so that the UI code can use oscar-like
+  bindings, rather than translating everything to ImPlot
+- Internal: the `OpenSimCreator` test suite now also ensures that all user-facing models in the
+  documentation can be loaded + rendered by `OpenSimCreator` (#844)
+- Internal: Added `osc::Flags` class as a templated helper class for handling for flag-based enum
+  types, inspired by `QFlags` from Qt
 
 
 ## [0.5.12] - 2024/04/29

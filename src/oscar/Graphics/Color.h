@@ -22,6 +22,11 @@ namespace osc
         using iterator = value_type*;
         using const_iterator = const value_type*;
 
+        static constexpr Color dark_grey()
+        {
+            return {0.5f, 0.5f, 0.5f};
+        }
+
         static constexpr Color half_grey()
         {
             return {0.5f, 0.5f, 0.5f};
@@ -206,6 +211,13 @@ namespace osc
         constexpr Color with_alpha(value_type a_) const
         {
             return Color{r, g, b, a_};
+        }
+
+        constexpr Color with_element(size_type pos, value_type value) const
+        {
+            Color copy{*this};
+            copy[pos] = value;
+            return copy;
         }
 
         value_type r{};

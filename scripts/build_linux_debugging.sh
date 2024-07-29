@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
-
-# build OSC with all the necessary debugging bells and whistles
-# that are used during a release
+#
+# `build_linux_debugging.sh`: performs an end-to-end build of OpenSim Creator with
+# as many debugging options enabled as possible. This is usaully used to verify a
+# release, or lint the source code
+#
+#     usage (must be ran in repository root): `bash build_linux_debugging.sh`
 
 set -xeuo pipefail
 OSC_BUILD_CONCURRENCY=$(nproc)
@@ -34,11 +37,12 @@ cmake --build osc-deps-build/ -v -j${OSC_BUILD_CONCURRENCY}
 # configure+build OpenSimCreator
 # also: `-DCMAKE_CXX_INCLUDE_WHAT_YOU_USE "include-what-you-use;-Xiwyu;any;-Xiwyu;iwyu;-Xiwyu;"`
 
-CCFLAGS="-fsanitize=address,undefined,bounds -fno-sanitize-recover=all" CXXFLAGS="-fsanitize=address,undefined,bounds -fno-sanitize-recover=all" cmake -S . -B osc-build -DCMAKE_BUILD_TYPE=Debug -DOSC_FORCE_ASSERTS_ENABLED=ON -DOSC_FORCE_UNDEFINE_NDEBUG=ON -DCMAKE_PREFIX_PATH=${PWD}/osc-deps-install -DCMAKE_INSTALL_PREFIX=${PWD}/osc-install -DCMAKE_CXX_CLANG_TIDY=clang-tidy
+CCFLAGS="-fsanitize=address,undefined,bounds -fno-sanitize-recover=all" CXXFLAGS="-fsanitize=address,undefined,bounds -fno-sanitize-recover=all" cmake -S . -B osc-build -DCMAKE_BUILD_TYPE=Debug -DOSC_FORCE_ASSERTS_ENABLED=ON -DCMAKE_PREFIX_PATH=${PWD}/osc-deps-install -DCMAKE_INSTALL_PREFIX=${PWD}/osc-install -DCMAKE_CXX_CLANG_TIDY=clang-tidy -DCMAKE_EXECUTABLE_ENABLE_EXPORTS=ON
 cmake --build osc-build -j${OSC_BUILD_CONCURRENCY}
 cmake --build osc-build -j${OSC_BUILD_CONCURRENCY} --target testoscar
 cmake --build osc-build -j${OSC_BUILD_CONCURRENCY} --target testoscar_learnopengl
 cmake --build osc-build -j${OSC_BUILD_CONCURRENCY} --target testoscar_demos
+cmake --build osc-build -j${OSC_BUILD_CONCURRENCY} --target TestOpenSimThirdPartyPlugins
 cmake --build osc-build -j${OSC_BUILD_CONCURRENCY} --target TestOpenSimCreator
 
 # run tests
@@ -49,4 +53,5 @@ export LD_PRELOAD=osc-build/libdlclose.so  # minimize library unloading leaks (d
 ./osc-build/tests/testoscar/testoscar
 ./osc-build/tests/testoscar_learnopengl/testoscar_learnopengl
 ./osc-build/tests/testoscar_demos/testoscar_demos
+LSAN_OPTIONS="suppressions=osc-build/opensim_suppressions.supp" ASAN_OPTIONS="${ASAN_OPTIONS}:check_initialization_order=false:strict_init_order=false" ./osc-build/tests/TestOpenSimThirdPartyPlugins/TestOpenSimThirdPartyPlugins
 LSAN_OPTIONS="suppressions=osc-build/opensim_suppressions.supp" ASAN_OPTIONS="${ASAN_OPTIONS}:check_initialization_order=false:strict_init_order=false" ./osc-build/tests/TestOpenSimCreator/TestOpenSimCreator

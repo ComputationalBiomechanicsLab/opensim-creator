@@ -1,9 +1,5 @@
 #pragma once
 
-// beware: this includes every header in `oscar`: very convenient for
-//         prototyping or initial development, but is likely to make
-//         your compile times explode ;)
-
 #include <oscar/DOM.h>
 #include <oscar/Formats.h>
 #include <oscar/Graphics.h>

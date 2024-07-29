@@ -29,6 +29,7 @@
 #include <oscar/Utils/ScopedLifetime.h>
 #include <oscar/Utils/ScopeGuard.h>
 #include <oscar/Utils/SharedLifetimeBlock.h>
+#include <oscar/Utils/SharedPreHashedString.h>
 #include <oscar/Utils/Spsc.h>
 #include <oscar/Utils/StdVariantHelpers.h>
 #include <oscar/Utils/StringHelpers.h>
@@ -37,6 +38,7 @@
 #include <oscar/Utils/SynchronizedValueGuard.h>
 #include <oscar/Utils/TemporaryFile.h>
 #include <oscar/Utils/TemporaryFileParameters.h>
+#include <oscar/Utils/TransparentStringHasher.h>
 #include <oscar/Utils/Typelist.h>
 #include <oscar/Utils/UID.h>
 #include <oscar/Utils/UndoRedo.h>

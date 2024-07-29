@@ -17,9 +17,7 @@
 #include <oscar/Platform/os.h>
 #include <oscar/Platform/Screenshot.h>
 #include <oscar/Shims/Cpp23/ranges.h>
-#include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
-#include <oscar/UI/oscimgui_internal.h>
 #include <oscar/UI/Tabs/ErrorTab.h>
 #include <oscar/UI/Tabs/ITab.h>
 #include <oscar/UI/Tabs/ScreenshotTab.h>
@@ -326,7 +324,7 @@ public:
 
         {
             OSC_PERF("MainUIScreen/clear_screen");
-            App::upd().clear_screen({0.0f, 0.0f, 0.0f, 0.0f});
+            App::upd().clear_screen();
         }
 
         ui::context::on_start_new_frame();

@@ -20,5 +20,6 @@ namespace osc
         std::vector<TPSDocumentLandmarkPair> landmarkPairs;
         std::vector<TPSDocumentNonParticipatingLandmark> nonParticipatingLandmarks;
         float blendingFactor;
+        bool recalculateNormals;
     };
 }

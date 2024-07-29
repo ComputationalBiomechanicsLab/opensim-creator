@@ -90,7 +90,7 @@ namespace
 
     std::optional<std::filesystem::path> PromptSaveOneFile()
     {
-        return promp_user_for_file_save_location_add_extension_if_necessary("osim");
+        return prompt_user_for_file_save_location_add_extension_if_necessary("osim");
     }
 
     bool IsAnExampleFile(const std::filesystem::path& path)
@@ -574,6 +574,26 @@ bool osc::ActionToggleContactGeometry(UndoableModelStatePair& uim)
     catch (const std::exception& ex)
     {
         log_error("error detected while trying to toggle contact geometry: %s", ex.what());
+        uim.rollback();
+        return false;
+    }
+}
+
+bool osc::ActionToggleForces(UndoableModelStatePair& uim)
+{
+    try
+    {
+        OpenSim::Model& mutModel = uim.updModel();
+        const bool newState = ToggleShowingForces(mutModel);
+        InitializeModel(mutModel);
+        InitializeState(mutModel);
+        uim.commit(newState ? "shown forces" : "hidden forces");
+
+        return true;
+    }
+    catch (const std::exception& ex)
+    {
+        log_error("error detected while trying to toggle forces: %s", ex.what());
         uim.rollback();
         return false;
     }
@@ -1075,7 +1095,7 @@ bool osc::ActionAssignContactGeometryToHCF(
         // calling this ensures at least one `OpenSim::HuntCrossleyForce::ContactParameters`
         // is present in the HCF
         mutHCF->getStaticFriction();
-        OSC_ASSERT(!empty(mutHCF->updContactParametersSet()));
+        OSC_ASSERT_ALWAYS(!empty(mutHCF->updContactParametersSet()));
 
         mutHCF->updContactParametersSet()[0].updGeometry().appendValue(geom->getName());
         FinalizeConnections(mutModel);
@@ -1934,7 +1954,7 @@ bool osc::ActionTransformPof(
     UndoableModelStatePair& model,
     const OpenSim::PhysicalOffsetFrame& pof,
     const Vec3& deltaTranslationInParentFrame,
-    const Eulers& newPofEulers)
+    const EulerAngles& newPofEulers)
 {
     const OpenSim::ComponentPath pofPath = GetAbsolutePath(pof);
     const UID oldVersion = model.getModelVersion();
@@ -1969,11 +1989,47 @@ bool osc::ActionTransformPof(
     return false;
 }
 
+bool osc::ActionTransformPofV2(
+    UndoableModelStatePair& model,
+    const OpenSim::PhysicalOffsetFrame& pof,
+    const Vec3& newTranslation,
+    const EulerAngles& newEulers)
+{
+    const OpenSim::ComponentPath pofPath = GetAbsolutePath(pof);
+    const UID oldVersion = model.getModelVersion();
+    try
+    {
+        OpenSim::Model& mutModel = model.updModel();
+
+        auto* const mutPof = FindComponentMut<OpenSim::PhysicalOffsetFrame>(mutModel, pofPath);
+        if (!mutPof)
+        {
+            model.setModelVersion(oldVersion);  // the provided path isn't a station
+            return false;
+        }
+
+        // perform mutation
+        mutPof->set_translation(ToSimTKVec3(newTranslation));
+        mutPof->set_orientation(ToSimTKVec3(newEulers));
+        InitializeModel(mutModel);
+        InitializeState(mutModel);
+
+        return true;
+    }
+    catch (const std::exception& ex)
+    {
+        log_error("error detected while trying to transform a POF: %s", ex.what());
+        model.rollback();
+        return false;
+    }
+    return false;
+}
+
 bool osc::ActionTransformWrapObject(
     UndoableModelStatePair& model,
     const OpenSim::WrapObject& wo,
     const Vec3& deltaPosition,
-    const Eulers& newEulers)
+    const EulerAngles& newEulers)
 {
     const OpenSim::ComponentPath pofPath = GetAbsolutePath(wo);
     const UID oldVersion = model.getModelVersion();
@@ -2012,7 +2068,7 @@ bool osc::ActionTransformContactGeometry(
     UndoableModelStatePair& model,
     const OpenSim::ContactGeometry& contactGeom,
     const Vec3& deltaPosition,
-    const Eulers& newEulers)
+    const EulerAngles& newEulers)
 {
     const OpenSim::ComponentPath pofPath = GetAbsolutePath(contactGeom);
     const UID oldVersion = model.getModelVersion();
@@ -2293,7 +2349,7 @@ bool osc::ActionImportLandmarks(
 
 bool osc::ActionExportModelGraphToDotviz(const UndoableModelStatePair& model)
 {
-    if (auto p = promp_user_for_file_save_location_add_extension_if_necessary("dot")) {
+    if (auto p = prompt_user_for_file_save_location_add_extension_if_necessary("dot")) {
         if (std::ofstream of{*p}) {
             WriteComponentTopologyGraphAsDotViz(model.getModel(), of);
             return true;

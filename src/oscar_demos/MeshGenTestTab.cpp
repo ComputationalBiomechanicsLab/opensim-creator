@@ -80,7 +80,7 @@ private:
             }
             ui::start_new_line();
 
-            Vec2 content_region = ui::get_content_region_avail();
+            Vec2 content_region = ui::get_content_region_available();
             render_params_.dimensions = elementwise_max(content_region, {0.0f, 0.0f});
             render_params_.antialiasing_level = App::get().anti_aliasing_level();
             render_params_.light_direction = recommended_light_direction(camera_);

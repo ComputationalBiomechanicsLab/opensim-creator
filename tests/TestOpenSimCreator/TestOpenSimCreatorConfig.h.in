@@ -12,6 +12,11 @@
 
 // char[]
 //
+// absolute path to OpenSimCreator's documentation
+#define OSC_DOCS_SOURCES_DIR "@CMAKE_CURRENT_SOURCE_DIR@/../../docs/source"
+
+// char[]
+//
 // absolute path to the resources directory for this test suite
 #define OSC_TESTING_RESOURCES_DIR "@CMAKE_CURRENT_SOURCE_DIR@/resources"
 

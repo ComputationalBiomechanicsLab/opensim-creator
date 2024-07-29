@@ -18,7 +18,14 @@ target_include_directories(OpenSimThirdPartyPlugins PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/..
 )
 
-target_link_libraries(OpenSimThirdPartyPlugins PUBLIC ${OpenSim_LIBRARIES})
+target_link_libraries(OpenSimThirdPartyPlugins PUBLIC
+    osimCommon
+    osimSimulation
+    osimActuators
+    osimAnalyses
+    osimTools
+    osimLepton
+)
 
 set_target_properties(OpenSimThirdPartyPlugins PROPERTIES
     DEFINE_SYMBOL OSIMPLUGIN_EXPORTS

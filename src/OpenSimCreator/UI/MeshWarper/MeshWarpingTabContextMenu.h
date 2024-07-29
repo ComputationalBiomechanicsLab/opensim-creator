@@ -10,7 +10,6 @@
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 
 #include <IconsFontAwesome5.h>
-#include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Widgets/StandardPopup.h>
 #include <oscar/Utils/StringHelpers.h>

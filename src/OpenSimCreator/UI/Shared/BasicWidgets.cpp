@@ -45,9 +45,7 @@
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
 #include <oscar/UI/IconCache.h>
-#include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
-#include <oscar/UI/oscimgui_internal.h>
 #include <oscar/UI/Widgets/IconWithMenu.h>
 #include <oscar/UI/Widgets/CameraViewAxes.h>
 #include <oscar/Utils/ParentPtr.h>
@@ -76,7 +74,7 @@ namespace
     void TryPromptUserToSaveAsDAE(std::span<const SceneDecoration> scene)
     {
         std::optional<std::filesystem::path> maybeDAEPath =
-            promp_user_for_file_save_location_add_extension_if_necessary("dae");
+            prompt_user_for_file_save_location_add_extension_if_necessary("dae");
 
         if (!maybeDAEPath)
         {
@@ -200,7 +198,7 @@ namespace
     {
         // prompt user for a save location
         const std::optional<std::filesystem::path> maybeUserSaveLocation =
-            promp_user_for_file_save_location_add_extension_if_necessary("obj");
+            prompt_user_for_file_save_location_add_extension_if_necessary("obj");
         if (!maybeUserSaveLocation)
         {
             return;  // user didn't select a save location
@@ -248,7 +246,7 @@ namespace
     {
         // prompt user for a save location
         const std::optional<std::filesystem::path> maybeUserSaveLocation =
-            promp_user_for_file_save_location_add_extension_if_necessary("stl");
+            prompt_user_for_file_save_location_add_extension_if_necessary("stl");
         if (!maybeUserSaveLocation)
         {
             return;  // user didn't select a save location
@@ -456,7 +454,7 @@ void osc::DrawSearchBar(std::string& out)
     // draw search bar
 
     ui::same_line();
-    ui::set_next_item_width(ui::get_content_region_avail().x);
+    ui::set_next_item_width(ui::get_content_region_available().x);
     ui::draw_string_input("##hirarchtsearchbar", out);
 }
 
@@ -1470,6 +1468,16 @@ void osc::DrawToggleContactGeometryButton(UndoableModelStatePair& model, IconCac
     ui::draw_tooltip_if_item_hovered("Toggle Rendering Contact Geometry", "Toggles whether contact geometry should be rendered in the 3D scene");
 }
 
+void osc::DrawToggleForcesButton(UndoableModelStatePair& model, IconCache& icons)
+{
+    const Icon& icon = icons.find_or_throw(IsShowingForces(model.getModel()) ? "forces_colored" : "forces_bw");
+    if (ui::draw_image_button("##toggleforces", icon.texture(), icon.dimensions(), icon.texture_coordinates()))
+    {
+        ActionToggleForces(model);
+    }
+    ui::draw_tooltip_if_item_hovered("Toggle Rendering Forces", "Toggles whether forces should be rendered in the 3D scene.\n\nNOTE: this is a model-level property that only applies to forces in OpenSim that actually check this flag. OpenSim Creator's visualizers also offer custom overlays for forces, muscles, etc. separately to this mechanism.");
+}
+
 void osc::DrawAllDecorationToggleButtons(UndoableModelStatePair& model, IconCache& icons)
 {
     DrawToggleFramesButton(model, icons);
@@ -1479,6 +1487,8 @@ void osc::DrawAllDecorationToggleButtons(UndoableModelStatePair& model, IconCach
     DrawToggleWrapGeometryButton(model, icons);
     ui::same_line();
     DrawToggleContactGeometryButton(model, icons);
+    ui::same_line();
+    DrawToggleForcesButton(model, icons);
 }
 
 void osc::DrawSceneScaleFactorEditorControls(UndoableModelStatePair& model)

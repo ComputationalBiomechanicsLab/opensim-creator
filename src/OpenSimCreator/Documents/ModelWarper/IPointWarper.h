@@ -22,7 +22,7 @@ namespace osc::mow
         {
             auto ap = std::to_array({p});
             implWarpInPlace(ap);
-            return ap[0];
+            return ap.front();
         }
         void warpInPlace(std::span<Vec3> points) const { implWarpInPlace(points); }
     private:

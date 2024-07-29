@@ -1,7 +1,6 @@
 #include "IconWithoutMenu.h"
 
 #include <oscar/UI/Icon.h>
-#include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/CStringView.h>
 

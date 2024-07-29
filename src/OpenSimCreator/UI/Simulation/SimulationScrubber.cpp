@@ -6,7 +6,6 @@
 
 #include <IconsFontAwesome5.h>
 #include <oscar/UI/oscimgui.h>
-#include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/Utils/EnumHelpers.h>
 
 #include <memory>

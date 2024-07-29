@@ -133,6 +133,15 @@ void osc::ActionSetBlendFactor(UndoableTPSDocument& doc, float factor)
     doc.commit_scratch("changed blend factor");
 }
 
+void osc::ActionSetRecalculatingNormals(UndoableTPSDocument& doc, bool newState)
+{
+    doc.upd_scratch().recalculateNormals = newState;
+    const std::string_view msg = newState ?
+        "enabled recalculating normals" :
+        "disabled recalculating normals";
+    doc.commit_scratch(msg);
+}
+
 void osc::ActionCreateNewDocument(UndoableTPSDocument& doc)
 {
     doc.upd_scratch() = TPSDocument{};
@@ -250,7 +259,7 @@ void osc::ActionSaveLandmarksToCSV(
     lm::LandmarkCSVFlags flags)
 {
     const std::optional<std::filesystem::path> maybeCSVPath =
-        promp_user_for_file_save_location_add_extension_if_necessary("csv");
+        prompt_user_for_file_save_location_add_extension_if_necessary("csv");
     if (!maybeCSVPath)
     {
         return;  // user didn't select a save location
@@ -281,7 +290,7 @@ void osc::ActionSaveNonParticipatingLandmarksToCSV(
     lm::LandmarkCSVFlags flags)
 {
     const std::optional<std::filesystem::path> maybeCSVPath =
-        promp_user_for_file_save_location_add_extension_if_necessary("csv");
+        prompt_user_for_file_save_location_add_extension_if_necessary("csv");
     if (!maybeCSVPath)
     {
         return;  // user didn't select a save location
@@ -307,7 +316,7 @@ void osc::ActionSaveNonParticipatingLandmarksToCSV(
 void osc::ActionSavePairedLandmarksToCSV(const TPSDocument& doc, lm::LandmarkCSVFlags flags)
 {
     const std::optional<std::filesystem::path> maybeCSVPath =
-        promp_user_for_file_save_location_add_extension_if_necessary("csv");
+        prompt_user_for_file_save_location_add_extension_if_necessary("csv");
     if (!maybeCSVPath)
     {
         return;  // user didn't select a save location
@@ -361,7 +370,7 @@ void osc::ActionSavePairedLandmarksToCSV(const TPSDocument& doc, lm::LandmarkCSV
 void osc::ActionTrySaveMeshToObjFile(const Mesh& mesh, ObjWriterFlags flags)
 {
     const std::optional<std::filesystem::path> maybeSavePath =
-        promp_user_for_file_save_location_add_extension_if_necessary("obj");
+        prompt_user_for_file_save_location_add_extension_if_necessary("obj");
     if (!maybeSavePath)
     {
         return;  // user didn't select a save location
@@ -394,7 +403,7 @@ void osc::ActionTrySaveMeshToObjFile(const Mesh& mesh, ObjWriterFlags flags)
 void osc::ActionTrySaveMeshToStlFile(const Mesh& mesh)
 {
     const std::optional<std::filesystem::path> maybeSTLPath =
-        promp_user_for_file_save_location_add_extension_if_necessary("stl");
+        prompt_user_for_file_save_location_add_extension_if_necessary("stl");
     if (!maybeSTLPath)
     {
         return;  // user didn't select a save location
@@ -424,7 +433,7 @@ void osc::ActionSaveWarpedNonParticipatingLandmarksToCSV(
     TPSResultCache& cache,
     lm::LandmarkCSVFlags flags)
 {
-    const auto maybeCSVPath = promp_user_for_file_save_location_add_extension_if_necessary("csv");
+    const auto maybeCSVPath = prompt_user_for_file_save_location_add_extension_if_necessary("csv");
     if (!maybeCSVPath)
     {
         return;  // user didn't select a save location

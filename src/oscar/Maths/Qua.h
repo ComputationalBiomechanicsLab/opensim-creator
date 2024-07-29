@@ -1,6 +1,7 @@
 #pragma once
 
 #include <oscar/Maths/CommonFunctions.h>
+#include <oscar/Maths/EulerAngles.h>
 #include <oscar/Maths/GeometricFunctions.h>
 #include <oscar/Maths/TrigonometricFunctions.h>
 #include <oscar/Maths/Mat.h>
@@ -82,11 +83,12 @@ namespace osc
             *this = normalize(Qua<T>::wxyz(real_part, t.x, t.y, t.z));
         }
 
-        // constructs a `Qua` from euler angles (pitch, yaw, roll), in radians.
-        constexpr explicit Qua(const Vec<3, T>& euler_angle)
+        // constructs a `Qua` from Euler angles that are assumed to represent an
+        // intrinsic, step-by-step, rotation about X, Y, and then Z
+        explicit Qua(const EulerAngles& euler_angles)
         {
-            Vec<3, T> c = cos(euler_angle * T(0.5));
-            Vec<3, T> s = sin(euler_angle * T(0.5));
+            Vec<3, T> c = cos(euler_angles * T(0.5));
+            Vec<3, T> s = sin(euler_angles * T(0.5));
 
             this->w = c.x * c.y * c.z + s.x * s.y * s.z;
             this->x = s.x * c.y * c.z - c.x * s.y * s.z;

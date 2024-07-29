@@ -9,6 +9,7 @@
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ModelDisplayHints.h>
+#include <OpenSim/Simulation/Model/ForceAdapter.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/GeometryPath.h>
 #include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
@@ -315,6 +316,90 @@ namespace
         const std::function<void(const OpenSim::Component&, SceneDecoration&&)>& m_Out;
         SimTK::Array_<SimTK::DecorativeGeometry> m_GeomList;
     };
+
+    // OSC-specific decoration handler that adds arrows to forces
+    void HandleLinearForceArrows(
+        RendererState& rs,
+        const OpenSim::Force& force)
+    {
+        constexpr float linearForceLengthScale = 0.005f;
+        constexpr float angularForceLengthScale = 0.01f;
+
+        const bool showLinearForces = rs.getOptions().getShouldShowForceLinearComponent();
+        const bool showAngularForces = rs.getOptions().getShouldShowForceAngularComponent();
+
+        if (not showLinearForces and not showAngularForces) {
+            return;  // nothing to draw
+        }
+
+        // this is a very heavy-handed way of getting the relevant information, because
+        // OpenSim's `Force` implementation implicitly assumes that all body forces are
+        // available in one contiguous vector
+
+        const SimTK::SimbodyMatterSubsystem& matter = rs.getMatterSubsystem();
+        const SimTK::State& state = rs.getState();
+
+        const OpenSim::ForceAdapter adapter{force};
+        SimTK::Vector_<SimTK::SpatialVec> bodyForces(matter.getNumBodies(), SimTK::SpatialVec{});
+        SimTK::Vector_<SimTK::Vec3> particleForces(matter.getNumParticles(), SimTK::Vec3{});  // (unused)
+        SimTK::Vector mobilityForces(matter.getNumMobilities(), double{});  // (unused)
+
+        adapter.calcForce(
+            state,
+            bodyForces,
+            particleForces,  // unused, but required
+            mobilityForces   // unused, but required
+        );
+
+        const float fixupScaleFactor = rs.getFixupScaleFactor();
+        for (SimTK::MobilizedBodyIndex bodyIdx{0}; bodyIdx < bodyForces.size(); ++bodyIdx) {
+
+            const SimTK::MobilizedBody& mobod = matter.getMobilizedBody(bodyIdx);
+            const SimTK::Transform mobod2ground = mobod.getBodyTransform(state);
+
+            // if applicable, handle drawing the linear component of force as a yellow arrow
+            if (showLinearForces) {
+                const SimTK::Vec3 linearForce = bodyForces[bodyIdx][1];
+                if (equal_within_scaled_epsilon(linearForce.normSqr(), 0.0)) {
+                    continue;  // no translational force applied
+                }
+
+                const ArrowProperties arrowProperties = {
+                    .start = ToVec3(mobod2ground * SimTK::Vec3{}),
+                    .end = ToVec3(mobod2ground * (fixupScaleFactor * linearForceLengthScale * linearForce)),
+                    .tip_length = (fixupScaleFactor*0.015f),
+                    .neck_thickness = (fixupScaleFactor*0.006f),
+                    .head_thickness = (fixupScaleFactor*0.01f),
+                    .color = Color::yellow(),
+                };
+                draw_arrow(rs.updMeshCache(), arrowProperties, [&force, &rs](SceneDecoration&& decoration)
+                {
+                    rs.consume(force, std::move(decoration));
+                });
+            }
+
+            // if applicable, handle drawing the angular component of force as an orange arrow
+            if (showAngularForces) {
+                const SimTK::Vec3 angularForce = bodyForces[bodyIdx][0];
+                if (equal_within_scaled_epsilon(angularForce.normSqr(), 0.0)) {
+                    continue;  // no translational force applied
+                }
+
+                const ArrowProperties arrowProperties = {
+                    .start = ToVec3(mobod2ground * SimTK::Vec3{}),
+                    .end = ToVec3(mobod2ground * (fixupScaleFactor * angularForceLengthScale * angularForce)),
+                    .tip_length = (fixupScaleFactor*0.015f),
+                    .neck_thickness = (fixupScaleFactor*0.006f),
+                    .head_thickness = (fixupScaleFactor*0.01f),
+                    .color = Color::orange(),
+                };
+                draw_arrow(rs.updMeshCache(), arrowProperties, [&force, &rs](SceneDecoration&& decoration)
+                {
+                    rs.consume(force, std::move(decoration));
+                });
+            }
+        }
+    }
 
     // OSC-specific decoration handler for `OpenSim::PointToPointSpring`
     void HandlePointToPointSpring(
@@ -753,15 +838,16 @@ namespace
     {
         const float fixupScaleFactor = rs.getFixupScaleFactor();
 
-        ArrowProperties p;
-        p.worldspace_start = loaPointDirection.point;
-        p.worldspace_end = loaPointDirection.point + (fixupScaleFactor*0.1f)*loaPointDirection.direction;
-        p.tip_length = (fixupScaleFactor*0.015f);
-        p.head_thickness = (fixupScaleFactor*0.01f);
-        p.neck_thickness = (fixupScaleFactor*0.006f);
-        p.color = color;
+        const ArrowProperties arrowProperties = {
+            .start = loaPointDirection.point,
+            .end = loaPointDirection.point + (fixupScaleFactor*0.1f)*loaPointDirection.direction,
+            .tip_length = (fixupScaleFactor*0.015f),
+            .neck_thickness = (fixupScaleFactor*0.006f),
+            .head_thickness = (fixupScaleFactor*0.01f),
+            .color = color,
+        };
 
-        draw_arrow(rs.updMeshCache(), p, [&muscle, &rs](SceneDecoration&& d)
+        draw_arrow(rs.updMeshCache(), arrowProperties, [&muscle, &rs](SceneDecoration&& d)
         {
             rs.consume(muscle, std::move(d));
         });
@@ -916,15 +1002,16 @@ namespace
         const float baseRadius = 0.025f;
         const float tip_length = 0.1f*length((fixupScaleFactor*lenScale)*maybeContact->force);
 
-        ArrowProperties p;
-        p.worldspace_start = maybeContact->point;
-        p.worldspace_end = maybeContact->point + (fixupScaleFactor*lenScale)*maybeContact->force;
-        p.tip_length = tip_length;
-        p.head_thickness = fixupScaleFactor*baseRadius;
-        p.neck_thickness = fixupScaleFactor*baseRadius*0.6f;
-        p.color = Color::yellow();
+        const ArrowProperties arrowProperties = {
+            .start = maybeContact->point,
+            .end = maybeContact->point + (fixupScaleFactor*lenScale)*maybeContact->force,
+            .tip_length = tip_length,
+            .neck_thickness = fixupScaleFactor*baseRadius*0.6f,
+            .head_thickness = fixupScaleFactor*baseRadius,
+            .color = Color::yellow(),
+        };
 
-        draw_arrow(rs.updMeshCache(), p, [&hcf, &rs](SceneDecoration&& d)
+        draw_arrow(rs.updMeshCache(), arrowProperties, [&hcf, &rs](SceneDecoration&& d)
         {
             rs.consume(hcf, std::move(d));
         });
@@ -1004,6 +1091,7 @@ void osc::GenerateSubcomponentDecorations(
         }
         else if (const auto* const p2p = dynamic_cast<const OpenSim::PointToPointSpring*>(&c); p2p && opts.getShouldShowPointToPointSprings())
         {
+            HandleLinearForceArrows(rendererState, *p2p);
             HandlePointToPointSpring(rendererState, *p2p);
         }
         else if (typeid(c) == typeid(OpenSim::Station))
@@ -1017,6 +1105,7 @@ void osc::GenerateSubcomponentDecorations(
         }
         else if (const auto* const hcf = dynamic_cast<const OpenSim::HuntCrossleyForce*>(&c))
         {
+            HandleLinearForceArrows(rendererState, *hcf);
             HandleHuntCrossleyForce(rendererState, *hcf);
         }
         else if (const auto* const geom = dynamic_cast<const OpenSim::Geometry*>(&c))
@@ -1026,6 +1115,11 @@ void osc::GenerateSubcomponentDecorations(
             // if the component being rendered is geometry that was explicitly added into the model then
             // the scene scale factor should not apply to that geometry
             rendererState.emitGenericDecorations(c, c, 1.0f);  // note: override scale factor
+        }
+        else if (const auto* const force = dynamic_cast<const OpenSim::Force*>(&c))
+        {
+            HandleLinearForceArrows(rendererState, *force);
+            rendererState.emitGenericDecorations(c, c);
         }
         else
         {
@@ -1077,7 +1171,7 @@ Mesh osc::ToOscMesh(
         auto path = mesh.getAbsolutePathString();
         log_warn("%s: this OpenSim::Mesh component generated more than one decoration: OSC defaulted to using the first one, but that may not be correct: if you are seeing unusual behavior, then it's because OpenSim is doing something whacky when generating decorations for a mesh", path.c_str());
     }
-    return std::move(decs[0].mesh);
+    return std::move(decs.front().mesh);
 }
 
 Mesh osc::ToOscMesh(

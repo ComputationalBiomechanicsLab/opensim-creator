@@ -17,13 +17,13 @@ class osc::ImPlotDemoTab::Impl final : public StandardTabImpl {
 public:
     Impl() : StandardTabImpl{c_tab_string_id}
     {
-        // ImPlot::CreateContext();  // presumed to already done by the screen
+        // ui::context::init()  // presumed to already done by the screen
     }
 
 private:
     void impl_on_draw() final
     {
-        ImPlot::ShowDemoWindow();
+        ui::plot::show_demo_panel();
     }
 };
 

@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
 
-# recursively adds trailing newline to any files missing one in the given dir
+# `format_sources`: applies basic text formatting to any files found in the
+# given (command-line argument) directories
+#
+# formatting steps:
+#
+# - ensures files have a trailing newline
+# - ensures files have stripped whitespace (i.e. no trailing whitespace)
+# - ensures files don't use tabs (it's a race war, or something)
 
 import argparse
 import os

@@ -45,7 +45,7 @@ namespace
             data = data.subspan(1);
         }
 
-        const std::optional<float> x = from_chars_strip_whitespace(data[0]);
+        const std::optional<float> x = from_chars_strip_whitespace(data.front());
         if (!x)
         {
             if (lineNum == 0)

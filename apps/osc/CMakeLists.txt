@@ -1,3 +1,30 @@
+# -------------- gather user-facing build cache vars ---------------- #
+
+set(
+    OSC_REPO_URL "https://github.com/ComputationalBiomechanicsLab/opensim-creator"
+    CACHE STRING
+    "the internet location of the software's repo - used by in-app links, installers, etc."
+)
+set(
+    OSC_HELP_URL "https://github.com/ComputationalBiomechanicsLab/opensim-creator/discussions"
+    CACHE STRING
+    "the internet location of the software's help page - used by in-app links, installers, etc."
+)
+set(
+    OSC_ORGNAME "cbl"
+    CACHE STRING
+    "the name of the organization that created the application (affects configuration location)"
+)
+set(
+    OSC_APPNAME "osc"
+    CACHE STRING
+    "the short name for the application (affects configuration location)"
+)
+set(
+    OSC_LONG_APPNAME "OpenSim Creator"
+    CACHE STRING
+    "a longer, user-friendly name of the application"
+)
 set(
     OSC_PACKAGE_NAME "OpenSimCreator"
     CACHE STRING
@@ -19,9 +46,22 @@ set(
     "the user-facing email of the author (appears in 'email support', installer, etc.)"
 )
 
+# OpenSimCreatorConfig.h
+#
+# a configured header file that contains values that are accessible in the source
+# code at compile-time
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/osc_config.h.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/generated/osc/osc_config.h"
+)
+
 add_executable(osc
 
-    osc.cpp  # entrypoint (main)
+    # configured by `configure_file`
+    "${CMAKE_CURRENT_BINARY_DIR}/generated/osc/osc_config.h"
+
+    # entrypoint (main)
+    osc.cpp
 
     # Windows: also link a resources file (rc)
     #
@@ -48,6 +88,9 @@ target_include_directories(osc PUBLIC
     $<$<CXX_COMPILER_ID:MSVC>:
         ${CMAKE_CURRENT_SOURCE_DIR}/../..
     >
+
+    # so that source code can `#include <osc/osc_config.h>`
+    "${CMAKE_CURRENT_BINARY_DIR}/generated/"
 )
 
 target_link_options(osc PUBLIC
@@ -83,7 +126,7 @@ set(CPACK_PACKAGE_EXECUTABLES "osc;${OSC_PACKAGE_NAME}")
 # `include` platform-specific packaging instructions
 if (WIN32)
     include(${CMAKE_CURRENT_SOURCE_DIR}/Windows/Packaging.cmake)
-elseif(LINUX)
+elseif(UNIX AND NOT APPLE)  # i.e. it's Linux
     include(${CMAKE_CURRENT_SOURCE_DIR}/Debian/Packaging.cmake)
 elseif(APPLE)
     include(${CMAKE_CURRENT_SOURCE_DIR}/MacOS/Packaging.cmake)

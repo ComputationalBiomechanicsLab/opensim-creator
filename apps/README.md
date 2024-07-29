@@ -6,5 +6,5 @@ that users run. Generally speaking, this code is a thin layer around the
 
 | Directory | Description | Depends on |
 | - | - | - |
-| `osc/` | Handles the main OpenSim Creator UI binary that users typically boot into | `oscar`, `OpenSimCreator` |
-| `hellotriangle/` | A bare-minimum usage of `oscar`'s `App` and graphics stack, used by developers for testing minimum platform compliance | `oscar` |
+| `osc/` | Handles the main user-facing OpenSim Creator UI binary (`osc.exe`) | `oscar`, `OpenSimCreator` |
+| `hellotriangle/` | Implements a minimal usage of `oscar`'s `App` and graphics stack, used to test platform compatiblity | `oscar` |

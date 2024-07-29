@@ -21,7 +21,6 @@
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/os.h>
 #include <oscar/Platform/Screenshot.h>
-#include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Tabs/StandardTabImpl.h>
 #include <oscar/Utils/Assertions.h>
@@ -133,7 +132,7 @@ private:
     Rect draw_screenshot_as_image()
     {
         const Vec2 cursor_topleft = ui::get_cursor_screen_pos();
-        const Rect window_rect = {cursor_topleft, cursor_topleft + Vec2{ui::get_content_region_avail()}};
+        const Rect window_rect = {cursor_topleft, cursor_topleft + Vec2{ui::get_content_region_available()}};
         const Rect image_rect = shrink_to_fit(window_rect, aspect_ratio_of(screenshot_.dimensions()));
         ui::set_cursor_screen_pos(image_rect.p1);
         ui::draw_image(image_texture_, dimensions_of(image_rect));
@@ -183,7 +182,7 @@ private:
     void action_try_save_annotated_screenshot()
     {
         const std::optional<std::filesystem::path> maybe_image_path =
-            promp_user_for_file_save_location_add_extension_if_necessary("png");
+            prompt_user_for_file_save_location_add_extension_if_necessary("png");
 
         if (maybe_image_path) {
             std::ofstream fout{*maybe_image_path, std::ios_base::binary};

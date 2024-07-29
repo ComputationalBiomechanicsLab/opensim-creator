@@ -103,7 +103,7 @@ TEST(OpenSimActions, ActionApplyRangeDeletionPropertyEditReturnsFalseToIndicateF
 // the underlying bug appears to be related to finalizing connections in
 // the model graph (grep for 773 to see other tests), but the user-reported
 // bug is specifically related to renaming a component
-TEST(OpenSimActions, DISABLED_ActionSetComponentNameOnModelWithUnusualJointTopologyDoesNotSegfault)
+TEST(OpenSimActions, ActionSetComponentNameOnModelWithUnusualJointTopologyDoesNotSegfault)
 {
     const std::filesystem::path brokenFilePath =
         std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "opensim-creator_773-2_repro.osim";
@@ -198,7 +198,7 @@ TEST(OpenSimActions, ActionAddParentOffsetFrameToJointWorksInNormalCase)
 // joint is already attached to an offset frame
 //
 // - DISABLED because there's a bug in OpenSim that prevents this from working: https://github.com/opensim-org/opensim-core/pull/3711
-TEST(OpenSimActions, DISABLED_ActionAddParentOffsetFrameToJointWorksInChainedCase)
+TEST(OpenSimActions, ActionAddParentOffsetFrameToJointWorksInChainedCase)
 {
     UndoableModelStatePair um;
     auto& body = AddBody(um.updModel(), "bodyname", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{1.0});
@@ -258,7 +258,7 @@ TEST(OpenSimActions, ActionAddChildOffsetFrameToJointWorksInNormalCase)
 // joint is already attached to an offset frame
 //
 // - DISABLED because there's a bug in OpenSim that prevents this from working: https://github.com/opensim-org/opensim-core/pull/3711
-TEST(OpenSimActions, DISABLED_ActionAddChildOffsetFrameToJointWorksInChainedCase)
+TEST(OpenSimActions, ActionAddChildOffsetFrameToJointWorksInChainedCase)
 {
     UndoableModelStatePair um;
     auto& body = AddBody(um.updModel(), "bodyname", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{1.0});
@@ -375,4 +375,42 @@ TEST(OpenSimActions, ActionRemoveWrapObjectFromGeometryPathWrapsWorksInExampleCa
     ActionRemoveWrapObjectFromGeometryPathWraps(um, path, sphere);
 
     ASSERT_NEAR(path.getLength(um.getState()), 1.0, epsilon_v<double>)  << "should stop wrapping";
+}
+
+// related issue: #890
+//
+// when a model is hot-reloaded from disk, the scene scale factor should be retained from
+// the in-editor model, to support the user changing it to a non-default value while they
+// seperately edit the underlying model file
+TEST(OpenSimActions, ActionUpdateModelFromBackingFileShouldRetainSceneScaleFactor)
+{
+    const std::filesystem::path backingFile = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "models" / "Blank" / "blank.osim";
+
+    UndoableModelStatePair model{backingFile};
+    model.setUpToDateWithFilesystem(model.getLastFilesystemWriteTime() - std::chrono::seconds{1});  // ensure it's invalid
+
+    ASSERT_TRUE(model.hasFilesystemLocation());
+
+    // set the scale factor to a nonstandard value
+    ASSERT_NE(model.getFixupScaleFactor(), 0.5f);
+    model.setFixupScaleFactor(0.5f);
+    ASSERT_EQ(model.getFixupScaleFactor(), 0.5f);
+
+    // reload the model from disk
+    ASSERT_TRUE(ActionUpdateModelFromBackingFile(model)) << "this should work fine";
+
+    ASSERT_EQ(model.getFixupScaleFactor(), 0.5f) << "the scene scale factor should be retained after a reload";
+}
+
+// related issue: #887
+//
+// the user wanted this toggle in the UI. At time of writing, it's really only used for `SmoothSphereHalfSpaceForce`
+TEST(OpenSimActions, ActionToggleForcesTogglesTheForces)
+{
+    UndoableModelStatePair model;
+    ASSERT_TRUE(IsShowingForces(model.getModel()));
+    ActionToggleForces(model);
+    ASSERT_FALSE(IsShowingForces(model.getModel()));
+    model.doUndo();
+    ASSERT_TRUE(IsShowingForces(model.getModel()));
 }

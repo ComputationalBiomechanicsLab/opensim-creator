@@ -69,7 +69,7 @@ namespace
 // the joint) but it shouldn't hard crash (it is)
 TEST(OpenSimHelpers, DISABLED_CanSwapACustomJointForAFreeJoint)
 {
-    GlobalInitOpenSim();  // ensure muscles are available etc.
+    GloballyInitOpenSim();  // ensure muscles are available etc.
 
     std::filesystem::path modelPath = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "models" / "Leg39" / "leg39.osim";
 
@@ -145,7 +145,7 @@ TEST(OpenSimHelpers, GetAbsolutePathStringWithOutparamWorksForModel)
 
 TEST(OpenSimHelpers, GetAbsolutePathStringReturnsSameResultAsOpenSimVersionForComplexModel)
 {
-    GlobalInitOpenSim();  // ensure muscles are available etc.
+    GloballyInitOpenSim();  // ensure muscles are available etc.
 
     std::filesystem::path modelPath = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
@@ -161,7 +161,7 @@ TEST(OpenSimHelpers, GetAbsolutePathStringReturnsSameResultAsOpenSimVersionForCo
 
 TEST(OpenSimHelpers, GetAbsolutePathReturnsSameResultAsOpenSimVersionForComplexModel)
 {
-    GlobalInitOpenSim();  // ensure muscles are available etc.
+    GloballyInitOpenSim();  // ensure muscles are available etc.
 
     std::filesystem::path modelPath = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
@@ -178,7 +178,7 @@ TEST(OpenSimHelpers, GetAbsolutePathOrEmptyReuturnsEmptyIfPassedANullptr)
 
 TEST(OpenSimHelpers, GetAbsolutePathOrEmptyReuturnsSameResultAsOpenSimVersionForComplexModel)
 {
-    GlobalInitOpenSim();  // ensure muscles are available etc.
+    GloballyInitOpenSim();  // ensure muscles are available etc.
 
     std::filesystem::path modelPath = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
@@ -192,7 +192,7 @@ TEST(OpenSimHelpers, GetAbsolutePathOrEmptyReuturnsSameResultAsOpenSimVersionFor
 // model without anything exploding (deletion failure is ok, though)
 TEST(OpenSimHelpers, CanTryToDeleteEveryComponentFromComplicatedModelWithNoFaultsOrExceptions)
 {
-    GlobalInitOpenSim();  // ensure muscles are available etc.
+    GloballyInitOpenSim();  // ensure muscles are available etc.
 
     std::filesystem::path modelPath = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim";
 
@@ -219,8 +219,6 @@ TEST(OpenSimHelpers, CanTryToDeleteEveryComponentFromComplicatedModelWithNoFault
 // later clean up in the UI
 TEST(OpenSimHelpers, CanDeleteAnOffsetFrameFromAModelsComponentSet)
 {
-    GlobalInitOpenSim();  // ensure muscles are available etc.
-
     OpenSim::Model model;
     auto& pof = AddModelComponent(model, std::make_unique<OpenSim::PhysicalOffsetFrame>());
     pof.setParentFrame(model.getGround());
@@ -329,7 +327,6 @@ TEST(OpenSimHelpers, GetAllWrapObjectsReferencedByWorksAsExpected)
         {OpenSim::ComponentPath{"/forceset/gaslat_r/path"}, {"GasLat_at_shank_r", "Gastroc_at_condyles_r"}},
     });
 
-    const auto config = LoadOpenSimCreatorSettings();
     std::filesystem::path modelPath = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim";
     OpenSim::Model m{modelPath.string()};
     InitializeModel(m);

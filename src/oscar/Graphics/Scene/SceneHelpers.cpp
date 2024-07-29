@@ -164,28 +164,30 @@ void osc::draw_arrow(
     const ArrowProperties& props,
     const std::function<void(SceneDecoration&&)>& out)
 {
-    const Vec3 start_to_end = props.worldspace_end - props.worldspace_start;
-    const float len = length(start_to_end);
-    const Vec3 direction = start_to_end/len;
+    const Vec3 start_to_end = props.end - props.start;
+    const float total_length = length(start_to_end);
+    const Vec3 direction = start_to_end/total_length;
 
-    const Vec3 neck_start = props.worldspace_start;
-    const Vec3 neck_end = props.worldspace_start + (len - props.tip_length)*direction;
-    const Vec3 head_start = neck_end;
-    const Vec3 head_end = props.worldspace_end;
+    // draw the arrow from tip-to-base, because the neck might be
+    // excluded in the case where the total length of the arrow is
+    // less than or equal to the desired tip length
+    const Vec3 tip_start = props.end - (direction * min(props.tip_length, total_length));
 
-    // emit neck cylinder
-    out({
-        .mesh = cache.cylinder_mesh(),
-        .transform = cylinder_to_line_segment_transform({neck_start, neck_end}, props.neck_thickness),
-        .color = props.color,
-    });
-
-    // emit head cone
+    // emit tip cone
     out({
         .mesh = cache.cone_mesh(),
-        .transform = cylinder_to_line_segment_transform({head_start, head_end}, props.head_thickness),
+        .transform = cylinder_to_line_segment_transform({tip_start, props.end}, props.head_thickness),
         .color = props.color,
     });
+
+    // if there's space for it, emit the neck cylinder
+    if (total_length > props.tip_length) {
+        out({
+            .mesh = cache.cylinder_mesh(),
+            .transform = cylinder_to_line_segment_transform({props.start, tip_start}, props.neck_thickness),
+            .color = props.color,
+        });
+    }
 }
 
 void osc::draw_line_segment(

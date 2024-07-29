@@ -23,7 +23,7 @@ SimTK::Vec3 osc::ToSimTKVec3(const Vec3& v)
     };
 }
 
-SimTK::Vec3 osc::ToSimTKVec3(const Eulers& v)
+SimTK::Vec3 osc::ToSimTKVec3(const EulerAngles& v)
 {
     return {
         static_cast<double>(v.x.count()),
@@ -55,9 +55,19 @@ SimTK::Transform osc::ToSimTKTransform(const Transform& t)
     return SimTK::Transform{ToSimTKRotation(t.rotation), ToSimTKVec3(t.position)};
 }
 
+SimTK::Transform osc::ToSimTKTransform(const EulerAngles& eulers, const Vec3& translation)
+{
+    return SimTK::Transform{ToSimTKRotation(eulers), ToSimTKVec3(translation)};
+}
+
 SimTK::Rotation osc::ToSimTKRotation(const Quat& q)
 {
     return SimTK::Rotation{ToSimTKMat3(mat3_cast(q))};
+}
+
+SimTK::Rotation osc::ToSimTKRotation(const EulerAngles& eulers)
+{
+    return ToSimTKRotation(to_worldspace_rotation_quat(eulers));
 }
 
 SimTK::Vec3 osc::ToSimTKRGBVec3(const Color& color)
@@ -153,6 +163,11 @@ Quat osc::ToQuat(const SimTK::Rotation& r)
         static_cast<float>(q[2]),
         static_cast<float>(q[3]),
     };
+}
+
+EulerAngles osc::ToEulerAngles(const SimTK::Rotation& r)
+{
+    return EulerAngles{ToVec3(r.convertRotationToBodyFixedXYZ())};
 }
 
 std::array<float, 6> osc::ToArray(const SimTK::Vec6& v)

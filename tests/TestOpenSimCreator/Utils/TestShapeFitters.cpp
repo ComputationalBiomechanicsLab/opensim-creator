@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 #include <oscar/Graphics/Geometries/SphereGeometry.h>
 #include <oscar/Graphics/Mesh.h>
+#include <oscar/Maths/Angle.h>
 #include <oscar/Maths/CommonFunctions.h>
 #include <oscar/Maths/Ellipsoid.h>
 #include <oscar/Maths/EllipsoidFunctions.h>
@@ -13,6 +14,7 @@
 #include <oscar/Maths/Plane.h>
 #include <oscar/Maths/Sphere.h>
 #include <oscar/Maths/Transform.h>
+#include <oscar/Maths/TrigonometricFunctions.h>
 #include <oscar/Maths/UnitVec3.h>
 #include <oscar/Maths/Vec3.h>
 
@@ -188,11 +190,22 @@ TEST(FitEllipsoid, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedA
     ASSERT_TRUE(all_of(equal_within_absdiff(directions[2], c_ExpectedRadiiDirections[2], c_MaximumAbsoluteError)));
 }
 
-TEST(FitEllipsoid, DISABLED_ThrowsErrorIfGivenLessThan9Points)
+TEST(FitEllipsoid, ThrowsErrorIfGivenLessThan9Points)
 {
-    const auto generateMeshWithNPoints = [](size_t n)
+    const auto generateSphericalMeshWithNPoints = [](size_t n)
     {
+        Radians theta{0.0f};
+        Radians phi{0.0f};
+        const float radius = 1.0f;
+
         std::vector<Vec3> vertices(n);
+        for (Vec3& vertex : vertices) {
+            vertex.x = radius * sin(theta) * cos(phi);
+            vertex.y = radius * sin(theta);
+            vertex.z = radius * cos(theta) * cos(phi);
+            theta += 360_deg / static_cast<float>(n);
+            phi += 360_deg / static_cast<float>(n);
+        }
         std::vector<uint16_t> indices(n);
         std::iota(indices.begin(), indices.end(), static_cast<uint16_t>(0));
 
@@ -204,10 +217,10 @@ TEST(FitEllipsoid, DISABLED_ThrowsErrorIfGivenLessThan9Points)
 
     for (size_t i = 0; i < 9; ++i)
     {
-        ASSERT_ANY_THROW({ generateMeshWithNPoints(i); });
+        ASSERT_ANY_THROW({ FitEllipsoid(generateSphericalMeshWithNPoints(i)); });
     }
 
     // shouldn't throw
-    generateMeshWithNPoints(9);
-    generateMeshWithNPoints(10);
+    FitEllipsoid(generateSphericalMeshWithNPoints(9));
+    FitEllipsoid(generateSphericalMeshWithNPoints(10));
 }

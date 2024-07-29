@@ -2,9 +2,8 @@
 
 #include <SDL_events.h>
 #include <oscar/Graphics/Camera.h>
-#include <oscar/Maths/Eulers.h>
+#include <oscar/Maths/EulerAngles.h>
 #include <oscar/Platform/App.h>
-#include <oscar/UI/ImGuiHelpers.h>
 
 namespace osc
 {
@@ -52,11 +51,11 @@ namespace osc
 
         bool is_capturing_mouse() const { return mouse_captured_; }
 
-        const Eulers& eulers() const { return camera_eulers_; }
-        Eulers& eulers() { return camera_eulers_; }
+        const EulerAngles& eulers() const { return camera_eulers_; }
+        EulerAngles& eulers() { return camera_eulers_; }
 
     private:
         bool mouse_captured_ = false;
-        Eulers camera_eulers_ = {};
+        EulerAngles camera_eulers_ = {};
     };
 }

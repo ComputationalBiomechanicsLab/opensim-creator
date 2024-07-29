@@ -1,0 +1,7 @@
+#pragma once
+
+// char[]
+//
+// absolute path to the resources directory for this test suite
+#define TESTOPENSIMTHIRDPARTYPLUGINS_RESOURCES_DIR "@CMAKE_CURRENT_SOURCE_DIR@/resources"
+

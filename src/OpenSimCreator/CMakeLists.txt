@@ -330,6 +330,8 @@ add_library(OpenSimCreator STATIC
     UI/Shared/ChooseComponentsEditorLayer.cpp
     UI/Shared/ChooseComponentsEditorLayer.h
     UI/Shared/ChooseComponentsEditorLayerParameters.h
+    UI/Shared/FunctionCurveViewerPopup.cpp
+    UI/Shared/FunctionCurveViewerPopup.h
     UI/Shared/GeometryPathEditorPopup.cpp
     UI/Shared/GeometryPathEditorPopup.h
     UI/Shared/ImportStationsFromCSVPopup.cpp
@@ -411,24 +413,12 @@ add_library(OpenSimCreator STATIC
     Utils/SimTKHelpers.h
     Utils/TPS3D.cpp
     Utils/TPS3D.h
-  )
-
-# OpenSimCreatorConfig.h
-#
-# a configured header file that contains values that are accessible in the source
-# code at compile-time
-configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/OpenSimCreatorConfig.h.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/generated/OpenSimCreator/OpenSimCreatorConfig.h"
 )
 
 target_include_directories(OpenSimCreator PUBLIC
 
     # so that the source code can `#include <OpenSimCreator/SomeModule.h>`
     ${CMAKE_CURRENT_SOURCE_DIR}/..
-
-    # so that source code can `#include <OpenSimCreator/OpenSimCreatorConfig.h>`
-    "${CMAKE_CURRENT_BINARY_DIR}/generated/"
 )
 
 target_link_libraries(OpenSimCreator PUBLIC

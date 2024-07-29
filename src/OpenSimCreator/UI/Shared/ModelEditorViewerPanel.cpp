@@ -17,10 +17,7 @@
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/UI/IconCache.h>
-#include <oscar/UI/ImGuiHelpers.h>
-#include <oscar/UI/ImGuizmoHelpers.h>
 #include <oscar/UI/oscimgui.h>
-#include <oscar/UI/oscimgui_internal.h>
 #include <oscar/UI/Panels/StandardPanelImpl.h>
 #include <oscar/UI/Widgets/GuiRuler.h>
 #include <oscar/UI/Widgets/IconWithoutMenu.h>
@@ -116,8 +113,7 @@ namespace
             ModelEditorViewerPanelParameters&,
             ModelEditorViewerPanelState&) final
         {
-            // care: ImGuizmo::isOver can return `true` even if it
-            // isn't being drawn this frame
+            // care: `isUsing` can return `true` even if it isn't being drawn this frame
             return m_Gizmo.isUsing();
         }
 
@@ -190,13 +186,8 @@ namespace
             ui::same_line();
 
             // draw translate/rotate/scale selector
-            {
-                ImGuizmo::OPERATION op = m_Gizmo.getOperation();
-                if (ui::draw_gizmo_op_selector(op, true, true, false))
-                {
-                    m_Gizmo.setOperation(op);
-                    edited = true;
-                }
+            if (ui::draw_gizmo_op_selector(m_Gizmo, true, true, false)) {
+                edited = true;
             }
 
             ui::push_style_var(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
@@ -204,13 +195,8 @@ namespace
             ui::pop_style_var();
 
             // draw global/world selector
-            {
-                ImGuizmo::MODE mode = m_Gizmo.getMode();
-                if (ui::draw_gizmo_mode_selector(mode))
-                {
-                    m_Gizmo.setMode(mode);
-                    edited = true;
-                }
+            if (ui::draw_gizmo_mode_selector(m_Gizmo)) {
+                edited = true;
             }
 
             return edited;

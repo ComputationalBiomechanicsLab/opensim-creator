@@ -5,29 +5,15 @@ set(
     CACHE BOOL
     "force-enable/-disable OSC's runtime assertions - even if building a release build"
 )
-set(
-    OSC_FORCE_UNDEFINE_NDEBUG OFF
+set(OSC_RUNTIME_PERF_MEASUREMENTS_ENABLED ON
     CACHE BOOL
-    "force-enable/disable NDEBUG - even if building a release build. Note: unlike OSC_FORCE_ASSERTS_ENABLED, this also tends to enable runtime assertions from library headers"
+    "enable/disable whether performance counters are collected at runtime wherever the `OSC_PERF` macro is used in the source code"
 )
 
 # -------------- set globally-applicable policies ---------------- #
 
 # tell cmake that we will define MSVC warning flags (e.g. /W3 /W4) ourselves
 cmake_policy(SET CMP0092 NEW)
-
-# handle OSC_FORCE_UNDEFINE_NDEBUG
-#
-# this unsets the relevant flags globally
-if(OSC_FORCE_UNDEFINE_NDEBUG)
-    # MSVC
-    string(REPLACE "/DNDEBUG" "" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
-    string(REPLACE "/DNDEBUG" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
-    # others
-    string(REPLACE "-DNDEBUG" "" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
-    string(REPLACE "-DNDEBUG" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
-endif()
-
 
 # oscar_compiler_configuration:
 #
@@ -181,22 +167,9 @@ target_compile_options(oscar_compiler_configuration INTERFACE
         -Wno-restrict
     >
 )
-target_link_options(oscar_compiler_configuration INTERFACE
-
-    # Linux /w GCC or Clang
-    $<$<AND:$<BOOL:LINUX>,$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>>:
-
-        # make `ld` emit symbols for all functions - even if they aren't
-        # externally used (with an exe, only `main` is used, really)
-        #
-        # this makes the binary a bigger, but means that the application
-        # can emit its own stack trace /w function names - even in Release mode.
-        -rdynamic
-    >
-)
 target_compile_features(oscar_compiler_configuration INTERFACE cxx_std_20)
 
-# handle OSC_FORCE_ASSERTS_ENABLED
-if(OSC_FORCE_ASSERTS_ENABLED)
-    target_compile_definitions(oscar_compiler_configuration INTERFACE -DOSC_FORCE_ASSERTS_ENABLED=1)
-endif()
+target_compile_definitions(oscar_compiler_configuration INTERFACE
+    $<$<BOOL:${OSC_FORCE_ASSERTS_ENABLED}>:OSC_FORCE_ASSERTS_ENABLED>
+    $<$<BOOL:${OSC_RUNTIME_PERF_MEASUREMENTS_ENABLED}>:OSC_RUNTIME_PERF_MEASUREMENTS_ENABLED>
+)

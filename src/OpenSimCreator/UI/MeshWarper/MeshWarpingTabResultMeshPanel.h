@@ -17,7 +17,6 @@
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/App.h>
-#include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/CStringView.h>
 
@@ -46,7 +45,7 @@ namespace osc
         void impl_draw_content() final
         {
             // fill the entire available region with the render
-            const Vec2 dims = ui::get_content_region_avail();
+            const Vec2 dims = ui::get_content_region_available();
 
             updateCamera();
 
@@ -85,10 +84,18 @@ namespace osc
             ui::same_line();
             drawAutoFitCameraButton();
             ui::same_line();
-            ui::draw_checkbox("show destination", &m_ShowDestinationMesh);
-            ui::same_line();
             drawLandmarkRadiusSlider();
             drawBlendingFactorSlider();
+
+            ui::set_cursor_pos_x(m_CursorXAtExportButton);  // align with "export" button in row above
+            ui::draw_checkbox("overlay destination mesh", &m_ShowDestinationMesh);
+            ui::same_line();
+            {
+                bool recalculatingNormals = m_State->getScratch().recalculateNormals;
+                if (ui::draw_checkbox("recalculate mesh's normals", &recalculatingNormals)) {
+                    ActionSetRecalculatingNormals(m_State->updUndoable(), recalculatingNormals);
+                }
+            }
         }
 
         // draws a information icon that shows basic mesh info when hovered
@@ -195,7 +202,7 @@ namespace osc
             const ImGuiSliderFlags flags = ImGuiSliderFlags_Logarithmic;
 
             const CStringView label = "landmark radius";
-            ui::set_next_item_width(ui::get_content_region_avail().x - ui::calc_text_size(label).x - ui::get_style_item_inner_spacing().x - m_State->getOverlayPadding().x);
+            ui::set_next_item_width(ui::get_content_region_available().x - ui::calc_text_size(label).x - ui::get_style_item_inner_spacing().x - m_State->getOverlayPadding().x);
             ui::draw_float_slider(label, &m_LandmarkRadius, 0.0001f, 100.0f, "%.4f", flags);
         }
 
@@ -204,7 +211,7 @@ namespace osc
             ui::set_cursor_pos_x(m_CursorXAtExportButton);  // align with "export" button in row above
 
             const CStringView label = "blending factor  ";  // deliberate trailing spaces (for alignment with "landmark radius")
-            ui::set_next_item_width(ui::get_content_region_avail().x - ui::calc_text_size(label).x - ui::get_style_item_inner_spacing().x - m_OverlayPadding.x);
+            ui::set_next_item_width(ui::get_content_region_available().x - ui::calc_text_size(label).x - ui::get_style_item_inner_spacing().x - m_OverlayPadding.x);
 
             float factor = m_State->getScratch().blendingFactor;
             if (ui::draw_float_slider(label, &factor, 0.0f, 1.0f))

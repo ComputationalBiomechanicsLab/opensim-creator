@@ -10,7 +10,6 @@
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Common/ComponentSocket.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Widgets/StandardPopup.h>
 #include <oscar/Utils/StringHelpers.h>
@@ -167,7 +166,7 @@ private:
 
         // draw UI
 
-        ui::draw_text("connect %s (%s) to:", socket->getName().c_str(), socket->getConnecteeTypeName().c_str());
+        ui::draw_text("connect socket '%s' (type: %s) from '%s' to:", socket->getName().c_str(), socket->getConnecteeTypeName().c_str(), socket->getConnecteeAsObject().getName().c_str());
 
         ui::draw_dummy({0.0f, 0.1f * ui::get_text_line_height()});
         ui::draw_separator();
@@ -193,7 +192,7 @@ private:
 
         if (!m_Error.empty())
         {
-            ui::set_next_item_width(ui::get_content_region_avail().x);
+            ui::set_next_item_width(ui::get_content_region_available().x);
             ui::draw_text_wrapped(m_Error);
         }
 

@@ -21,7 +21,7 @@
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Platform/App.h>
-#include <oscar/UI/ImGuiHelpers.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/CStringView.h>
 
 #include <memory>
@@ -124,6 +124,7 @@ namespace
             *state.meshCache,
             state.renderParams.overlayOptions,
             out.bvh,
+            state.model->getFixupScaleFactor(),
             onOverlayDecoration
         );
     }

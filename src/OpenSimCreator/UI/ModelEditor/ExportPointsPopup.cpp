@@ -12,7 +12,6 @@
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
-#include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Widgets/StandardPopup.h>
 #include <oscar/Utils/Assertions.h>
@@ -460,12 +459,11 @@ namespace
             GetAbsolutePathString(*c) :
             c->getName();
 
-        const auto columns = std::to_array<std::string>(
-        {
+        const auto columns = std::to_array<std::string>({
             name,
-            std::to_string(position[0]),
-            std::to_string(position[1]),
-            std::to_string(position[2]),
+            std::to_string(position.x),
+            std::to_string(position.y),
+            std::to_string(position.z),
         });
 
         write_csv_row(out, columns);
@@ -518,7 +516,7 @@ namespace
         bool shouldExportPointsWithAbsPathNames)
     {
         // prompt user to select a save location
-        const std::optional<std::filesystem::path> saveLoc = promp_user_for_file_save_location_add_extension_if_necessary("csv");
+        const std::optional<std::filesystem::path> saveLoc = prompt_user_for_file_save_location_add_extension_if_necessary("csv");
         if (!saveLoc) {
             return ExportStepReturn::UserCancelled;
         }

@@ -1,4 +1,8 @@
-# usage: ASAN_OPTIONS=detect_leaks=1 LSAN_OPTIONS=suppressions=suppressions.supp ./osc-build/tests/TestOpenSimCreator/TestOpenSimCreator
+# `mac_suppressions.supp`: a list of known leaks/issues in the binaries
+#  that are spuriously detected by libASAN
+#
+#     usage: ASAN_OPTIONS=detect_leaks=1 LSAN_OPTIONS=suppressions=suppressions.supp ./osc-build/tests/TestOpenSimCreator/TestOpenSimCreator
+
 leak:SDL
 leak:NS
 leak:dyld4
@@ -8,4 +12,3 @@ leak:HIView
 leak:glDrawElementsInstanced
 leak:glDrawElementsBaseVertex
 leak:CUICoreThemeRenderer
-

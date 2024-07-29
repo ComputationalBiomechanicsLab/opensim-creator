@@ -14,6 +14,7 @@
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
 #include <OpenSimCreator/Platform/OpenSimCreatorApp.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
+#include <oscar/Maths/CommonFunctions.h>
 #include <gtest/gtest.h>
 
 #include <array>
@@ -277,6 +278,35 @@ TEST(OpenSimModel, CoordinateCouplerConstraintWorksWithMultiVariatePolynomial)
     model.buildSystem();  // shouldn't have any problems
 }
 
+// repro for #515 (v3)
+//
+// github/@modenaxe (Luca Modenese) reported (paraphrasing):
+//
+// > I encountered an OpenSim bug/crash when using a CoordinateCouplerConstraint that has a MultiVariatePolynomial function
+//
+// this test uses a `MultiVariatePolynomialFunction` with multiple variables, which is what @modenaxe reported as
+// causing the crash?
+TEST(OpenSimModel, CoordinateCouplerConstraintWorksWithMultiVariatePolynomialWithMultipleInputs)
+{
+    const std::filesystem::path brokenFilePath =
+        std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "opensim-creator_515-3_repro.osim";
+
+    OpenSim::Model model{brokenFilePath.string()};
+    //ActionSetCoordinateValueAndSave(model, )
+    model.buildSystem();  // shouldn't have any problems
+
+    // user report: if you load a model containing a `CoordinateCouplerConstraint` and then change
+    // the value of the independent coordinates (tx, rx, or ry), OSC will freeze
+    for (auto coordName : {"tx", "rx", "ry"}) {
+        std::string fullPath = std::string{"/jointset/freejoint/"} + coordName;
+        auto& coord = model.updComponent<OpenSim::Coordinate>(fullPath);
+        coord.set_default_value(coord.get_default_value() + 1.0); // change it at the model-level
+        model.buildSystem();  // shouldn't have any problems
+        model.initializeState();
+        ASSERT_NEAR(coord.getValue(model.getWorkingState()), coord.get_default_value(), 0.00001);
+    }
+}
+
 // repro for bug found in #654
 //
 // `OpenSim::Coordinate` exposes its `range` as a list property but OpenSim's API doesn't
@@ -445,7 +475,7 @@ TEST(OpenSimModel, OriginalReproFrom3299ThrowsInsteadOfSegfaulting)
 //
 // - if you don't, then `finalizeConnections` will segfault because there's a dangling
 //   socket hanging around in a now-dead object
-TEST(OpenSimModel, DISABLED_DeleteComponentFromModelFollowedByFinalizeConnectionsShouldNotSegfault)
+TEST(OpenSimModel, DeleteComponentFromModelFollowedByFinalizeConnectionsShouldNotSegfault)
 {
     OpenSim::Model model;
     auto& sphere = AttachGeometry<OpenSim::Sphere>(model.updGround());

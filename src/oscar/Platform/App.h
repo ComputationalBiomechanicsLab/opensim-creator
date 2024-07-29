@@ -3,6 +3,7 @@
 #include <oscar/Graphics/AntiAliasingLevel.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Platform/AppClock.h>
+#include <oscar/Platform/AppMainLoopStatus.h>
 #include <oscar/Platform/ResourceLoader.h>
 #include <oscar/Platform/ResourceStream.h>
 #include <oscar/Platform/Screenshot.h>
@@ -88,16 +89,39 @@ namespace osc
         const AppMetadata& metadata() const;
 
         // returns the filesystem path to the current application executable
-        const std::filesystem::path& executable_dir() const;
+        const std::filesystem::path& executable_directory() const;
 
         // returns the filesystem path to a (usually, writable) user-specific directory for the
         // application
-        const std::filesystem::path& user_data_dir() const;
+        const std::filesystem::path& user_data_directory() const;
 
-        // starts showing the supplied screen
+        void setup_main_loop(std::unique_ptr<IScreen>);
+        template<std::derived_from<IScreen> TScreen, typename... Args>
+        requires std::constructible_from<TScreen, Args&&...>
+        void setup_main_loop(Args&&... args)
+        {
+            setup_main_loop(std::make_unique<TScreen>(std::forward<Args>(args)...));
+        }
+        AppMainLoopStatus do_main_loop_step();
+        void teardown_main_loop();
+
+        // sets the currently active screen, creates an application loop, then starts showing
+        // the supplied screen
         //
         // this function only returns once the active screen calls `app.request_quit()`, or an exception
-        // is thrown
+        // is thrown. Use `set_screen` in combination with `handle_one_frame` if you want to use your
+        // own application loop
+        //
+        // this is effectively sugar over:
+        //
+        //     set_screen(...);
+        //     setup_main_loop();
+        //     while (true) {
+        //         do_main_loop_step(...);
+        //     }
+        //     teardown_main_loop();
+        //
+        // which you may need to write yourself if your loop is external (e.g. from a browser's event loop)
         void show(std::unique_ptr<IScreen>);
 
         // constructs `TScreen` with `Args` and starts `show`ing it
@@ -165,6 +189,10 @@ namespace osc
         // returns the maximum number of anti-aliasing samples that the graphics backend supports
         AntiAliasingLevel max_anti_aliasing_level() const;
 
+        // returns true if the main window is backed by a framebuffer/renderbuffer that automatically
+        // converts the linear outputs (from shaders) into (e.g.) sRGB on-write
+        bool is_main_window_gamma_corrected() const;
+
         // returns true if the application is rendering in debug mode
         //
         // other parts of the application can use this to decide whether to render
@@ -224,7 +252,7 @@ namespace osc
         void request_redraw();  // threadsafe: used to make a waiting loop redraw
 
         // fill all pixels in the main window with the given color
-        void clear_screen(const Color&);
+        void clear_screen(const Color& = Color::clear());
 
         // sets the main window's subtitle (e.g. document name)
         void set_main_window_subtitle(std::string_view);

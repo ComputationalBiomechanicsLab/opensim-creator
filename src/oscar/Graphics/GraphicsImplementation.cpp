@@ -75,6 +75,7 @@
 #include <oscar/Utils/ObjectRepresentation.h>
 #include <oscar/Utils/Perf.h>
 #include <oscar/Utils/StdVariantHelpers.h>
+#include <oscar/Utils/TransparentStringHasher.h>
 #include <oscar/Utils/UID.h>
 
 #include <GL/glew.h>
@@ -523,21 +524,11 @@ namespace
         o << "ShadeElement(name = " << name << ", location = " << se.location << ", shader_type = " << se.shader_type << ", size = " << se.size << ')';
     }
 
-    // see: ankerl/unordered_dense documentation for heterogeneous lookups
-    struct transparent_string_hash final {
-        using is_transparent = void;
-        using is_avalanching = void;
-
-        [[nodiscard]] auto operator()(std::string_view str) const -> uint64_t {
-            return ankerl::unordered_dense::hash<std::string_view>{}(str);
-        }
-    };
-
     template<typename Value>
     using FastStringHashtable = ankerl::unordered_dense::map<
         std::string,
         Value,
-        transparent_string_hash,
+        TransparentStringHasher,
         std::equal_to<>
     >;
 }
@@ -4932,8 +4923,14 @@ private:
     {
         indices_are_32bit_ = false;
         num_indices_ = indices.size();
-        indices_data_.resize((indices.size()+1)/2);
-        rgs::copy(indices, &indices_data_.front().u16.a);
+
+        if (not indices.empty()) {
+            indices_data_.resize((indices.size()+1)/2);
+            rgs::copy(indices, &indices_data_.front().u16.a);
+        }
+        else {
+            indices_data_.clear();
+        }
 
         range_check_indices_and_recalculate_bounds(flags);
         version_->reset();
@@ -6804,6 +6801,7 @@ void osc::GraphicsBackend::handle_batch_with_same_submesh(
     std::span<const RenderObject> batch,
     std::optional<InstancingState>& instancing_state)
 {
+    OSC_ASSERT(not batch.empty());
     auto& mesh_impl = const_cast<Mesh::Impl&>(*batch.front().mesh.impl_);
     const Shader::Impl& shader_impl = *batch.front().material.impl_->shader_.impl_;
     const std::optional<size_t> maybe_submesh_index = batch.front().maybe_submesh_index;
@@ -6890,6 +6888,7 @@ void osc::GraphicsBackend::handle_batch_with_same_material_property_block(
     std::optional<InstancingState>& instancing_state)
 {
     OSC_PERF("GraphicsBackend::handle_batch_with_same_material_property_block");
+    OSC_ASSERT(not batch.empty());
 
     const Material::Impl& material_impl = *batch.front().material.impl_;
     const Shader::Impl& shader_impl = *material_impl.shader_.impl_;
@@ -6921,6 +6920,7 @@ void osc::GraphicsBackend::handle_batch_with_same_material(
     std::span<const RenderObject> batch)
 {
     OSC_PERF("GraphicsBackend::handle_batch_with_same_material");
+    OSC_ASSERT(not batch.empty());
 
     const auto& material_impl = *batch.front().material.impl_;
     const auto& shader_impl = *material_impl.shader_.impl_;
@@ -7146,7 +7146,7 @@ osc::GraphicsBackend::ViewportGeometry osc::GraphicsBackend::calc_viewport_geome
         return {pixel_rect->p1, dimensions_of(*pixel_rect)};
     }
     else if (maybe_custom_render_target) {
-        return {{}, maybe_custom_render_target->colors.front().buffer->impl_->dimensions()};
+        return {{}, maybe_custom_render_target->depth.buffer->impl_->dimensions()};
     }
     else {
         return {{}, App::get().main_window_dimensions()};

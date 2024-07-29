@@ -112,3 +112,11 @@ TEST(Angle, CanUseProjectedClampWithAngles)
     };
     static_assert(clamp(S{-10_deg}, S{0_deg}, S{180_deg}, {}, &S::ang).ang == S{0_deg}.ang);
 }
+
+TEST(Angle, std_is_convertible_to_works_between_angles)
+{
+    static_assert(std::convertible_to<Radians, Degrees>);
+    static_assert(std::convertible_to<Degrees, Radians>);
+    static_assert(std::convertible_to<Degrees, Turns>);
+    // etc. - many parts of the codebase require that these are automatically convertible
+}

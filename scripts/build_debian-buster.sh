@@ -1,12 +1,9 @@
 #!/usr/bin/env bash
-
-# Ubuntu 20 (Groovy) / Debian Buster: end-2-end build
 #
-#     - this script should run to completion on a clean install of the
-#       OSes and produce a ready-to-use osc build
+# `build_debian-buster.sh`: performs an end-to-end build of OpenSim Creator
+# on Debian platforms
 #
-#     - run this from the repo root (opensim-creator) dir
-
+#     usage (must be ran in repository root): `bash build_debian-buster.sh`
 
 # error out of this script if it fails for any reason
 set -xeuo pipefail
@@ -121,6 +118,7 @@ cmake \
     -B "osc-build" \
     -DCMAKE_BUILD_TYPE=${OSC_BUILD_TYPE} \
     -DCMAKE_PREFIX_PATH="${PWD}/osc-deps-install" \
+    -DCMAKE_EXECUTABLE_ENABLE_EXPORTS=ON \
     ${OSC_BUILD_DOCS:+-DOSC_BUILD_DOCS=ON}
 
 # build all

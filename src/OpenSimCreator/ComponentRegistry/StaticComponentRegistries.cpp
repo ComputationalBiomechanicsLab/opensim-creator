@@ -528,7 +528,7 @@ namespace
                 }(),
             },
 
-            // HOTFIX: set SpringGeneralizedForce's `coordinate` property to prevent an OpenSim 4.4 segfault (#524)
+            // set SpringGeneralizedForce's `coordinate` property to prevent an OpenSim 4.4 segfault (#524, #689)
             {
                 "SpringGeneralizedForce",
                 []()
@@ -539,7 +539,7 @@ namespace
                 }(),
             },
 
-            // HOTFIX: set `CoordinateCouplerConstraint`s `coupled_coordinates_function` property to prevent an OpenSim 4.4 segfault (#515)
+            // set `CoordinateCouplerConstraint`s `coupled_coordinates_function` property to prevent an OpenSim 4.4 segfault (#515, #689)
             {
                 "CoordinateCouplerConstraint",
                 []()
@@ -555,7 +555,7 @@ namespace
                 }(),
             },
 
-            // HOTFIX: set `ActivationCoordinateActuator`s `coordinate` property to prevent an OpenSim 4.4 segfault (#517)
+            // set `ActivationCoordinateActuator`s `coordinate` property to prevent an OpenSim 4.4 segfault (#517, #689)
             {
                 "ActivationCoordinateActuator",
                 []()
@@ -566,7 +566,7 @@ namespace
                 }(),
             },
 
-            // HOTFIX: set `ExpressionBasedPointToPointForce` body properties to prevent an OpenSim 4.4 segfault (#520)
+            // set `ExpressionBasedPointToPointForce` body properties to prevent an OpenSim 4.4 segfault (#520, #689)
             {
                 "ExpressionBasedPointToPointForce",
                 []()
@@ -578,7 +578,7 @@ namespace
                 }(),
             },
 
-            // HOTFIX: set `PointToPointActuator`s body properties to prevent an OpenSim 4.4 segfault (#523)
+            // set `PointToPointActuator`s body properties to prevent an OpenSim 4.4 segfault (#523, #689)
             {
                 "PointToPointActuator",
                 []()

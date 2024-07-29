@@ -4,6 +4,7 @@ find_package(GTest REQUIRED CONFIG)
 add_executable(TestOpenSimCreator
 
     ComponentRegistry/TestStaticComponentRegistries.cpp
+    docs/TestDocumentationModels.cpp
     Documents/CustomComponents/TestInMemoryMesh.cpp
     Documents/Landmarks/TestLandmarkHelpers.cpp
     Documents/Model/TestBasicModelStatePair.cpp
@@ -21,6 +22,7 @@ add_executable(TestOpenSimCreator
     Graphics/TestSimTKDecorationGenerator.cpp
     MetaTests/TestOpenSimLibraryAPI.cpp
     Platform/TestRecentFiles.cpp
+    UI/Shared/TestFunctionCurveViewerPopup.cpp
     UI/Widgets/TestAddComponentPopup.cpp
     UI/TestAllRegisteredOpenSimCreatorTabs.cpp
     Utils/TestOpenSimHelpers.cpp

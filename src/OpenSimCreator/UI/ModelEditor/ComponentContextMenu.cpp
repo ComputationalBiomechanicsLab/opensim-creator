@@ -31,7 +31,6 @@
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/os.h>
 #include <oscar/Shims/Cpp23/ranges.h>
-#include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/PanelManager.h>
 #include <oscar/UI/Widgets/StandardPopup.h>

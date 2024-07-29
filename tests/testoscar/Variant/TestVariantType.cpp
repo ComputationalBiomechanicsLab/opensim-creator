@@ -5,17 +5,18 @@
 
 #include <array>
 #include <limits>
+#include <sstream>
 #include <type_traits>
 
 using namespace osc;
 
-TEST(VariantType, ToStringReturnsExpectedResults)
+namespace
 {
-    struct TestCase final {
+    struct VariantTypeStringTestCases final {
         VariantType input;
         std::string_view expectedOutput;
     };
-    const auto testCases = std::to_array<TestCase>({
+    const auto c_expected_varianttype_strings = std::to_array<VariantTypeStringTestCases>({
         {VariantType::None, "NoneType"},
         {VariantType::Bool, "bool"},
         {VariantType::Color, "Color"},
@@ -26,10 +27,22 @@ TEST(VariantType, ToStringReturnsExpectedResults)
         {VariantType::Vec2, "Vec2"},
         {VariantType::Vec3, "Vec3"},
     });
-    static_assert(num_options<VariantType>() == std::tuple_size<decltype(testCases)>());
+    static_assert(num_options<VariantType>() == std::tuple_size<decltype(c_expected_varianttype_strings)>());
+}
 
-    for (const auto& tc : testCases) {
-        ASSERT_EQ(to_string(tc.input), tc.expectedOutput);
+TEST(VariantType, pipe_to_ostream_works_as_intended)
+{
+    for (const auto& [input, expectedOutput] : c_expected_varianttype_strings) {
+        std::stringstream ss;
+        ss << input;
+        ASSERT_EQ(ss.str(), expectedOutput);
+    }
+}
+
+TEST(VariantType, ToStringReturnsExpectedResults)
+{
+    for (const auto& [input, expectedOutput] : c_expected_varianttype_strings) {
+        ASSERT_EQ(to_string(input), expectedOutput);
     }
 }
 

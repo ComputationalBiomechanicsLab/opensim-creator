@@ -11,7 +11,6 @@
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
-#include <oscar/UI/ImGuiHelpers.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/LogViewerPanel.h>
 #include <oscar/UI/Tabs/StandardTabImpl.h>
@@ -473,7 +472,7 @@ private:
         ui::enable_dockspace_over_viewport(ui::get_main_viewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
         ui::begin_panel("render");
-        Vec2 dims = ui::get_content_region_avail();
+        Vec2 dims = ui::get_content_region_available();
         if (m_RenderIsMousedOver)
         {
             ui::update_polar_camera_from_mouse_inputs(m_Camera, dims);

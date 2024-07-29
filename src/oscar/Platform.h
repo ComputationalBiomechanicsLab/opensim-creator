@@ -2,6 +2,7 @@
 
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/AppClock.h>
+#include <oscar/Platform/AppMainLoopStatus.h>
 #include <oscar/Platform/AppMetadata.h>
 #include <oscar/Platform/AppSettings.h>
 #include <oscar/Platform/FilesystemResourceLoader.h>

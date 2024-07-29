@@ -142,7 +142,7 @@ private:
     {
         // try prompt user for save location
         const std::optional<std::filesystem::path> maybeCSVPath =
-            promp_user_for_file_save_location_add_extension_if_necessary("csv");
+            prompt_user_for_file_save_location_add_extension_if_necessary("csv");
 
         if (!maybeCSVPath) {
             return;  // user probably cancelled out

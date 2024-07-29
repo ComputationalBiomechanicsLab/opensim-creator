@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-# this is a script for generating icon files that Mac (icns) and Windows (ico)
-# use
+# `generate_icon_files`: generates icon files from images that are compatible with
+# Mac's (icns) and Windows' (ico) icon systems
 #
-# guide:
+# usage:
 #
 # - open raw icon SVG in editor (e.g. inkscape)
 # - save the raw icon SVG as a high (e.g. 1024x1024) resolution PNG file (e.g. logoBIG.png)
@@ -20,7 +20,7 @@
 
 import argparse
 import os
-from PIL import Image  # pip install Pillow
+from PIL import Image  # `pip install Pillow`
 
 def convert(input_filename, output_filename):
     assert os.path.exists(input_filename)

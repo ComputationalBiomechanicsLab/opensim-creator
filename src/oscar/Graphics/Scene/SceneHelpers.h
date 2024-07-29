@@ -76,8 +76,8 @@ namespace osc
     );
 
     struct ArrowProperties final {
-        Vec3 worldspace_start{};
-        Vec3 worldspace_end{};
+        Vec3 start{};
+        Vec3 end{};
         float tip_length{};
         float neck_thickness{};
         float head_thickness{};

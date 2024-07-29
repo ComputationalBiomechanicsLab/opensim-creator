@@ -285,8 +285,8 @@ namespace osc
         // value must be scaled up to the magnitude of the operands if you need
         // a more-correct equality comparison
 
-        const T scaledEpsilon = max(static_cast<T>(1.0), x, y) * epsilon_v<T>;
-        return abs(x - y) < scaledEpsilon;
+        const T scaled_epsilon = max(static_cast<T>(1.0), max(abs(x), abs(y))) * epsilon_v<T>;
+        return abs(x - y) < scaled_epsilon;
     }
 
     // tests if the relative difference between `x` and `y` is less than `reldiff` (fraction)

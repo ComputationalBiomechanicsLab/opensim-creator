@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-# run this to get the download counters for osc on GitHub
+# `get_osc_github_download_counts`: print the GitHub download counters for
+# all releases of OpenSim Creator to the standard output
 
 import datetime
 import itertools
