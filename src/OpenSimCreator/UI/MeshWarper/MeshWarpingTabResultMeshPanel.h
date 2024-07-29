@@ -84,10 +84,18 @@ namespace osc
             ui::same_line();
             drawAutoFitCameraButton();
             ui::same_line();
-            ui::draw_checkbox("show destination", &m_ShowDestinationMesh);
-            ui::same_line();
             drawLandmarkRadiusSlider();
             drawBlendingFactorSlider();
+
+            ui::set_cursor_pos_x(m_CursorXAtExportButton);  // align with "export" button in row above
+            ui::draw_checkbox("overlay destination mesh", &m_ShowDestinationMesh);
+            ui::same_line();
+            {
+                bool recalculatingNormals = m_State->getScratch().recalculateNormals;
+                if (ui::draw_checkbox("recalculate mesh's normals", &recalculatingNormals)) {
+                    ActionSetRecalculatingNormals(m_State->updUndoable(), recalculatingNormals);
+                }
+            }
         }
 
         // draws a information icon that shows basic mesh info when hovered

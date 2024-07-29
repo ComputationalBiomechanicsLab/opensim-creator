@@ -83,7 +83,7 @@ namespace osc
     Vec3 EvaluateTPSEquation(const TPSCoefficients3D&, Vec3);
 
     // returns a mesh that is the equivalent of applying the 3D TPS warp to the mesh
-    Mesh ApplyThinPlateWarpToMesh(const TPSCoefficients3D&, const Mesh&, float blendingFactor);
+    Mesh ApplyThinPlateWarpToMeshVertices(const TPSCoefficients3D&, const Mesh&, float blendingFactor);
 
     // returns points that are the equivalent of applying the 3D TPS warp to each input point
     std::vector<Vec3> ApplyThinPlateWarpToPoints(const TPSCoefficients3D&, std::span<const Vec3>, float blendingFactor);

@@ -42,10 +42,14 @@ namespace osc
             const bool updatedNonParticipatingLandmarks = updateSourceNonParticipatingLandmarks(doc);
             const bool updatedMesh = updateInputMesh(doc);
             const bool updatedBlendingFactor = updateBlendingFactor(doc);
+            const bool updatedRecalculateNormalsState = updateRecalculateNormalsState(doc);
 
-            if (updatedCoefficients || updatedNonParticipatingLandmarks || updatedMesh || updatedBlendingFactor)
+            if (updatedCoefficients || updatedNonParticipatingLandmarks || updatedMesh || updatedBlendingFactor || updatedRecalculateNormalsState)
             {
-                m_CachedResultMesh = ApplyThinPlateWarpToMesh(m_CachedCoefficients, m_CachedSourceMesh, m_CachedBlendingFactor);
+                m_CachedResultMesh = ApplyThinPlateWarpToMeshVertices(m_CachedCoefficients, m_CachedSourceMesh, m_CachedBlendingFactor);
+                if (m_CachedRecalculateNormalsState) {
+                    m_CachedResultMesh.recalculate_normals();
+                }
                 m_CachedResultNonParticipatingLandmarks = ApplyThinPlateWarpToPoints(m_CachedCoefficients, m_CachedSourceNonParticipatingLandmarks, m_CachedBlendingFactor);
             }
         }
@@ -146,10 +150,22 @@ namespace osc
             }
         }
 
+        bool updateRecalculateNormalsState(const TPSDocument& doc)
+        {
+            if (m_CachedRecalculateNormalsState != doc.recalculateNormals) {
+                m_CachedRecalculateNormalsState = doc.recalculateNormals;
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+
         TPSCoefficientSolverInputs3D m_CachedInputs;
         TPSCoefficients3D m_CachedCoefficients;
         Mesh m_CachedSourceMesh;
         float m_CachedBlendingFactor = 1.0f;
+        bool m_CachedRecalculateNormalsState = false;
         Mesh m_CachedResultMesh;
         std::vector<Vec3> m_CachedSourceNonParticipatingLandmarks;
         std::vector<Vec3> m_CachedResultNonParticipatingLandmarks;

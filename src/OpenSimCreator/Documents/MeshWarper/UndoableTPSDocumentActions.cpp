@@ -133,6 +133,15 @@ void osc::ActionSetBlendFactor(UndoableTPSDocument& doc, float factor)
     doc.commit_scratch("changed blend factor");
 }
 
+void osc::ActionSetRecalculatingNormals(UndoableTPSDocument& doc, bool newState)
+{
+    doc.upd_scratch().recalculateNormals = newState;
+    const std::string_view msg = newState ?
+        "enabled recalculating normals" :
+        "disabled recalculating normals";
+    doc.commit_scratch(msg);
+}
+
 void osc::ActionCreateNewDocument(UndoableTPSDocument& doc)
 {
     doc.upd_scratch() = TPSDocument{};

@@ -43,6 +43,9 @@ namespace osc
     // sets the TPS blending factor for the result and saves the change to undo/redo storage
     void ActionSetBlendFactor(UndoableTPSDocument&, float factor);
 
+    // sets whether the engine should recalculate the mesh's normal after applying the warp
+    void ActionSetRecalculatingNormals(UndoableTPSDocument&, bool newState);
+
     // creates a "fresh" (default) TPS document
     void ActionCreateNewDocument(UndoableTPSDocument&);
 

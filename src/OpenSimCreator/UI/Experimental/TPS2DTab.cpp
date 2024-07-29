@@ -288,7 +288,7 @@ namespace
 
     // returns a mesh that is the equivalent of applying the 2D TPS warp to all
     // vertices of the input mesh
-    Mesh ApplyThinPlateWarpToMesh(const ThinPlateWarper2D& t, const Mesh& mesh)
+    Mesh ApplyThinPlateWarpToMeshVertices(const ThinPlateWarper2D& t, const Mesh& mesh)
     {
         Mesh rv = mesh;
         rv.transform_vertices([&t](Vec3 v) { return Vec3{t.transform(Vec2{v}), v.z}; });
@@ -377,7 +377,7 @@ public:
                     p.dest = lerp(p.src, p.dest, m_BlendingFactor);
                 }
                 ThinPlateWarper2D warper{pairs};
-                m_OutputGrid = ApplyThinPlateWarpToMesh(warper, m_InputGrid);
+                m_OutputGrid = ApplyThinPlateWarpToMeshVertices(warper, m_InputGrid);
             }
 
             renderMesh(m_OutputGrid, texDims, m_OutputRender);

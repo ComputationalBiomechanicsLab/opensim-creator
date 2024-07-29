@@ -5,6 +5,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- The mesh warper UI now recalculates the result mesh's normals after applying the warp
+  to the source mesh. This behavior can be disabled using a checkbox that was added to
+  the UI (#743)
 - The socket reassignment popup now shows the name of the component that the socket is
   currently assigned to (#770)
 - The model editor toolbar now contains a toggle for toggling a model's `show_forces`
