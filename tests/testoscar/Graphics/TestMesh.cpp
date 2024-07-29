@@ -809,6 +809,24 @@ TEST(Mesh, SetIndicesThrowsIfOutOfBounds)
     ASSERT_ANY_THROW({ m.set_indices(iota_index_range(3, 6)); }) << "should throw: indices are out-of-bounds";
 }
 
+TEST(Mesh, SetIndices16BitWorksWithEmptyVector)
+{
+    std::vector<uint16_t> indices;
+    Mesh m;
+    m.set_vertices(generate_vertices(3));
+    m.set_indices(indices);  // should just work
+    ASSERT_TRUE(m.indices().empty());
+}
+
+TEST(Mesh, SetIndices32BitWorksWithEmptyVector)
+{
+    std::vector<uint32_t> indices;
+    Mesh m;
+    m.set_vertices(generate_vertices(3));
+    m.set_indices(indices);  // should just work
+    ASSERT_TRUE(m.indices().empty());
+}
+
 TEST(Mesh, SetIndiciesWithDontValidateIndicesAndDontRecalculateBounds)
 {
     Mesh m;

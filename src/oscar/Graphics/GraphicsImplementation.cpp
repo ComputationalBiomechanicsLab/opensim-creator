@@ -4923,8 +4923,14 @@ private:
     {
         indices_are_32bit_ = false;
         num_indices_ = indices.size();
-        indices_data_.resize((indices.size()+1)/2);
-        rgs::copy(indices, &indices_data_.front().u16.a);
+
+        if (not indices.empty()) {
+            indices_data_.resize((indices.size()+1)/2);
+            rgs::copy(indices, &indices_data_.front().u16.a);
+        }
+        else {
+            indices_data_.clear();
+        }
 
         range_check_indices_and_recalculate_bounds(flags);
         version_->reset();
