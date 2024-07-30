@@ -53,6 +53,9 @@ namespace
         {"panels/Muscle Plot/enabled", false},
         {"panels/Output Watches/enabled", false},
         {"panels/Output Plots/enabled", false},
+        {"panels/Source Mesh/enabled", true},
+        {"panels/Destination Mesh/enabled", true},
+        {"panels/Result/enabled", true},
     });
 
     // minor alias for setlocale so that any linter complaints about MT unsafety
