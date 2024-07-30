@@ -1,0 +1,5 @@
+{
+    Memcheck:Leak
+    obj:/usr/lib/wsl/lib/*.so
+    obj:/usr/lib/x86_64-linux-gnu/libgobject-2.0.*
+}
