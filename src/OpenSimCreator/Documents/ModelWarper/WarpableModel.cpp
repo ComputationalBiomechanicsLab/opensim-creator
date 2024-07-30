@@ -151,7 +151,7 @@ std::optional<std::filesystem::path> osc::mow::WarpableModel::getOsimFileLocatio
     return TryFindInputFile(m_ModelState->getModel());
 }
 
-std::vector<ValidationCheckResult> osc::mow::WarpableModel::implValidate() const
+std::vector<ValidationCheckResult> osc::mow::WarpableModel::implValidate(const WarpableModel&) const
 {
     std::vector<ValidationCheckResult> rv;
     for (const auto& mesh : model().getComponentList<OpenSim::Mesh>()) {

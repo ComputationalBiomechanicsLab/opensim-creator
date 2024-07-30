@@ -6,6 +6,11 @@
 
 using namespace osc::mow;
 
+std::vector<ValidationCheckResult> osc::mow::IValidateable::implValidate(const WarpableModel&) const
+{
+    return {};
+}
+
 ValidationCheckState osc::mow::IValidateable::implState(const WarpableModel& root) const
 {
     ValidationCheckState worst = ValidationCheckState::Ok;

@@ -69,7 +69,7 @@ namespace osc::mow
         // returns `true` if both the left- and right-hand side _point_ to the same information
         friend bool operator==(const WarpableModel&, const WarpableModel&) = default;
     private:
-        std::vector<ValidationCheckResult> implValidate() const;
+        std::vector<ValidationCheckResult> implValidate(const WarpableModel&) const final;
 
         CopyOnUpdPtr<BasicModelStatePair> m_ModelState;
         CopyOnUpdPtr<ModelWarpConfiguration> m_ModelWarpConfig;

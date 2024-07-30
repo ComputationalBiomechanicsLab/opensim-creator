@@ -26,7 +26,9 @@ namespace osc::mow
         ValidationCheckState state(const WarpableModel& root) const { return implState(root); }
 
     private:
-        virtual std::vector<ValidationCheckResult> implValidate(const WarpableModel&) const  { return {}; }
+        // by default, returns an empty list of `ValidationCheckResult`s
+        virtual std::vector<ValidationCheckResult> implValidate(const WarpableModel&) const;
+
         // by default, gets the least-valid entry returned by `validate()`
         virtual ValidationCheckState implState(const WarpableModel&) const;
     };
