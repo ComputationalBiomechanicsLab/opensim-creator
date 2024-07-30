@@ -5,6 +5,28 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- (nothing here yet)
+
+## [0.5.13] - 2024/07/30
+
+0.5.13 adds support for visualizing force vectors in the model editor, the
+ability to visualize `OpenSim::Function` properties (e.g. the `ActiveForceLengthCurve` of
+a `MillardEquilibriumMuscle2018`), and easier visual joint parent/child/center placement
+in the model editor - along with a bunch of other smaller changes/fixes!
+
+- The model editor's/simulator's 3D visualizers now have an experimental
+  `Show > Forces' Linear/Rotational Component` visualization option, which adds arrows indicating
+  how each `OpenSim::Force` in the model applies its linear/angular force component to each
+  body in the model. This can be useful for debugging model creation or `ExternalForce`s
+- The model editor UI now has experimental support for viewing `OpenSim::Function` curves. This
+  is currently exposed as an eye icon in the property editor panel (#695)
+- Selecting an `OpenSim::Joint` that has `OpenSim::PhysicalOffsetFrame`s for both its parent
+  and child frames now shows a 3D manipulation gizmo that lets you move the joint center
+  without moving anything else in the model (#159)
+- Manipulating a child offset frame of a `OpenSim::Joint` should now work correctly for both
+  translation and rotation, allowing you visually place the parent of the child offset frame
+  (e.g. a body) that's moved by the joint
+- The UI now remembers which panels (e.g. Log, Properties) you had open between boots (#17)
 - When changing selection in the model editor, the 3D gizmo manipulator will now check
   whether the new selection supports the same transformation type (rotate/translate) and
   will automatically coerce the transformation type to a supported one if the user's
@@ -20,19 +42,6 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   display property (#887). Note: OpenSim only really uses this for `SmoothSphereHalfSpaceForce`
 - Fixed non-default scene scale factors not being retained whenever a model file is
   hot-reloaded from disk in the model editor (#890)
-- The model editor's/simulator's 3D visualizers now have an experimental
-  `Show > Forces' Linear/Rotational Component` visualization option, which adds arrows indicating
-  how each `OpenSim::Force` in the model applies its linear/angular force component to each
-  body in the model. This can be useful for debugging model creation or `ExternalForce`s
-- The model editor UI now has experimental support for viewing `OpenSim::Function` curves. This
-  is currently exposed as an eye icon in the property editor panel (#695)
-- Selecting an `OpenSim::Joint` that has `OpenSim::PhysicalOffsetFrame`s for both its parent
-  and child frames now shows a 3D manipulation gizmo that lets you move the joint center
-  without moving anything else in the model (#159)
-- Manipulating a child offset frame of a `OpenSim::Joint` should now work correctly for both
-  translation and rotation, allowing you visually place the parent of the child offset frame
-  (e.g. a body) that's moved by the joint
-- The UI now remembers which panels (e.g. Log, Properties) you had open between boots (#17)
 - The mesh warping tab now has a `Visualization Options` menu, which lets users toggle a few
   basic visualization options (e.g. grid lines, #892)
 - The model warping workflow now writes the warped meshes to disk at `$MODEL_DIR/WarpedGeometry`
