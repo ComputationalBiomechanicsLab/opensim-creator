@@ -32,6 +32,7 @@ cd opensim-creator
 ```
 
 - [ ] Ensure the test suite passes with the debug build
+  - [ ] Optionally, also ensure the test suite passes under valgrind (see: scripts/build_linux_valgrind-compat.sh)
 - [ ] Manually spot-check new changes with the debug+ASAN build
 - [ ] Fix all bugs/problems found during the above steps
 - [ ] Update `CHANGELOG.md` sections such that the current `Unreleased`
