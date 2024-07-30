@@ -24,8 +24,8 @@ authors:
     orcid: 'https://orcid.org/0000-0003-4217-1580'
 identifiers:
   - type: doi
-    value: 10.5281/zenodo.11086325
-    description: Zenodo entry containing 0.5.12 binaries
+    value: 10.5281/zenodo.13133987
+    description: Zenodo entry containing 0.5.13 binaries
   - type: url
     value: 'https://www.opensimcreator.com'
     description: Project URL
@@ -43,6 +43,6 @@ keywords:
   - Mechanical Modelling
   - Simulation Software
 license: Apache-2.0
-commit: ae7bbbb064f1b21397fd531928d523a40d4e16d1
-version: 0.5.12
-date-released: '2024-04-29'
+commit: a8300323daafc32b7c30f8a56a70166634ae9304
+version: 0.5.13
+date-released: '2024-07-30'
