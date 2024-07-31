@@ -375,6 +375,7 @@ add_library(oscar STATIC
     Utils/FilenameExtractor.h
     Utils/FilesystemHelpers.cpp
     Utils/FilesystemHelpers.h
+    Utils/Flags.h
     Utils/HashHelpers.h
     Utils/LifetimedPtr.h
     Utils/LifetimeWatcher.h

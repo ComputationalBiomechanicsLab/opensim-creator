@@ -33,7 +33,5 @@ TEST(FileChangePoller, ChangeWasDetectedDoesNotThrowExceptionIfGivenInvalidPath)
 
     // change_detected should return `false` (as in, no change detected) if the file
     // does not exist (e.g. because it was deleted by a user)
-    //
-    // (maybe this method should return an enum { NoChange, Change, Missing } )
     ASSERT_FALSE(p.change_detected(path));
 }

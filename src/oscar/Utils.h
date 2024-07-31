@@ -13,6 +13,7 @@
 #include <oscar/Utils/FileChangePoller.h>
 #include <oscar/Utils/FilenameExtractor.h>
 #include <oscar/Utils/FilesystemHelpers.h>
+#include <oscar/Utils/Flags.h>
 #include <oscar/Utils/HashHelpers.h>
 #include <oscar/Utils/LifetimedPtr.h>
 #include <oscar/Utils/LifetimeWatcher.h>

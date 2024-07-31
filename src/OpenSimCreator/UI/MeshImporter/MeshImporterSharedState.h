@@ -47,6 +47,7 @@
 #include <oscar/UI/Panels/PerfPanel.h>
 #include <oscar/UI/Widgets/LogViewer.h>
 #include <oscar/Utils/CStringView.h>
+#include <oscar/Utils/EnumHelpers.h>
 #include <oscar/Utils/StdVariantHelpers.h>
 #include <oscar/Utils/UID.h>
 #include <SDL_events.h>
@@ -725,16 +726,17 @@ namespace osc::mi
         //
         // WINDOWS
         //
-        enum PanelIndex_ {
-            PanelIndex_History = 0,
-            PanelIndex_Navigator,
-            PanelIndex_Log,
-            PanelIndex_Performance,
-            PanelIndex_COUNT,
+        enum class PanelIndex {
+            History = 0,
+            Navigator,
+            Log,
+            Performance,
+            NUM_OPTIONS,
         };
+
         size_t num_toggleable_panels() const
         {
-            return static_cast<size_t>(PanelIndex_COUNT);
+            return num_options<PanelIndex>();
         }
 
         CStringView getNthPanelName(size_t n) const
@@ -752,14 +754,14 @@ namespace osc::mi
             m_PanelStates[n] = v;
         }
 
-        bool isPanelEnabled(PanelIndex_ idx) const
+        bool isPanelEnabled(PanelIndex idx) const
         {
-            return m_PanelStates[idx];
+            return m_PanelStates[to_index(idx)];
         }
 
-        void setPanelEnabled(PanelIndex_ idx, bool v)
+        void setPanelEnabled(PanelIndex idx, bool v)
         {
-            m_PanelStates[idx] = v;
+            m_PanelStates[to_index(idx)] = v;
         }
 
         LogViewer& updLogViewer()
@@ -1544,7 +1546,7 @@ namespace osc::mi
             "Performance",
         });
         static_assert(c_OpenedPanelNames.size() == c_NumPanelStates);
-        static_assert(PanelIndex_COUNT == c_NumPanelStates);
+        static_assert(num_options<PanelIndex>() == c_NumPanelStates);
         LogViewer m_Logviewer;
         PerfPanel m_PerfPanel{"Performance"};
 
