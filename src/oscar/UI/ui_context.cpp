@@ -78,7 +78,7 @@ void osc::ui::context::init()
     // load application-level ImGui settings, then the user one,
     // so that the user settings takes precedence
 #ifdef EMSCRIPTEN
-    io.IniFilename = NULL;
+    io.IniFilename = nullptr;
 #else
     float dpi_scale_factor = [&]()
     {
