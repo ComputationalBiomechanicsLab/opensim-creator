@@ -86,6 +86,7 @@ add_executable(testoscar
     Utils/TestFileChangePoller.cpp
     Utils/TestFilenameExtractor.cpp
     Utils/TestHashHelpers.cpp
+    Utils/TestFlags.cpp
     Utils/TestLifetimedPtr.cpp
     Utils/TestLifetimeWatcher.cpp
     Utils/TestNonTypelist.cpp

@@ -32,6 +32,7 @@ cd opensim-creator
 ```
 
 - [ ] Ensure the test suite passes with the debug build
+  - [ ] Optionally, also ensure the test suite passes under valgrind (see: scripts/build_linux_valgrind-compat.sh)
 - [ ] Manually spot-check new changes with the debug+ASAN build
 - [ ] Fix all bugs/problems found during the above steps
 - [ ] Update `CHANGELOG.md` sections such that the current `Unreleased`
@@ -58,7 +59,7 @@ cd opensim-creator
   - [ ] **Note**: this requires appropriate credentials for `docs.opensimcreator.com`
   - [ ] Build the docs yourself, or get the CI build of them
   - [ ] Upload with (e.g.) `rsync -avz build/html/ docs.opensimcreator.com:/var/www/docs.opensimcreator.com/manual/en/VERSION`
-  - [ ] Make them the "latest" with a softlink, e.g.: `ssh docs.opensimcreator.com ln -sfn /var/www/docs.opensimcreator.com/manual/en/0.5.12 /var/www/docs.opensimcreator.com/manual/en/latest`
+  - [ ] Make them the "latest" with a softlink, e.g.: `ssh docs.opensimcreator.com ln -sfn /var/www/docs.opensimcreator.com/manual/en/VERSION /var/www/docs.opensimcreator.com/manual/en/latest`
 - [ ] (optional) Update `www.opensimcreator.com` with a basic announcement news post
   - [ ] **Note**: this requires appropriate SSH credentials for `www.opensimcreator.com`
   - [ ] Edit https://github.com/ComputationalBiomechanicsLab/opensim-creator-site appropriately

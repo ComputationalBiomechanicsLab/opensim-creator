@@ -208,7 +208,7 @@ public:
         }
 
         // draw history panel (if enabled)
-        if (m_Shared->isPanelEnabled(MeshImporterSharedState::PanelIndex_History))
+        if (m_Shared->isPanelEnabled(MeshImporterSharedState::PanelIndex::History))
         {
             bool v = true;
             if (ui::begin_panel("history", &v))
@@ -217,11 +217,11 @@ public:
             }
             ui::end_panel();
 
-            m_Shared->setPanelEnabled(MeshImporterSharedState::PanelIndex_History, v);
+            m_Shared->setPanelEnabled(MeshImporterSharedState::PanelIndex::History, v);
         }
 
         // draw navigator panel (if enabled)
-        if (m_Shared->isPanelEnabled(MeshImporterSharedState::PanelIndex_Navigator))
+        if (m_Shared->isPanelEnabled(MeshImporterSharedState::PanelIndex::Navigator))
         {
             bool v = true;
             if (ui::begin_panel("navigator", &v))
@@ -230,11 +230,11 @@ public:
             }
             ui::end_panel();
 
-            m_Shared->setPanelEnabled(MeshImporterSharedState::PanelIndex_Navigator, v);
+            m_Shared->setPanelEnabled(MeshImporterSharedState::PanelIndex::Navigator, v);
         }
 
         // draw log panel (if enabled)
-        if (m_Shared->isPanelEnabled(MeshImporterSharedState::PanelIndex_Log))
+        if (m_Shared->isPanelEnabled(MeshImporterSharedState::PanelIndex::Log))
         {
             bool v = true;
             if (ui::begin_panel("Log", &v, ImGuiWindowFlags_MenuBar))
@@ -243,11 +243,11 @@ public:
             }
             ui::end_panel();
 
-            m_Shared->setPanelEnabled(MeshImporterSharedState::PanelIndex_Log, v);
+            m_Shared->setPanelEnabled(MeshImporterSharedState::PanelIndex::Log, v);
         }
 
         // draw performance panel (if enabled)
-        if (m_Shared->isPanelEnabled(MeshImporterSharedState::PanelIndex_Performance))
+        if (m_Shared->isPanelEnabled(MeshImporterSharedState::PanelIndex::Performance))
         {
             PerfPanel& pp = m_Shared->updPerfPanel();
 
@@ -255,7 +255,7 @@ public:
             pp.on_draw();
             if (!pp.is_open())
             {
-                m_Shared->setPanelEnabled(MeshImporterSharedState::PanelIndex_Performance, false);
+                m_Shared->setPanelEnabled(MeshImporterSharedState::PanelIndex::Performance, false);
             }
         }
 

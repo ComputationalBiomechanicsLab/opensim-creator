@@ -1519,12 +1519,19 @@ namespace
                     getModelPtr(),
                     [accessor = getPropertyAccessor()]() -> const OpenSim::Function*
                     {
-                        const OpenSim::AbstractProperty* p = accessor();
-                        if (not p or not p->isObjectProperty() or p->isListProperty()) {
+                        const OpenSim::AbstractProperty* prop = accessor();
+
+                        if (not prop) {
                             return nullptr;
                         }
-                        const OpenSim::Object& obj = p->getValueAsObject();
-                        return dynamic_cast<const OpenSim::Function*>(&obj);
+                        if (not prop->isObjectProperty()) {
+                            return nullptr;
+                        }
+                        if (prop->empty()) {
+                            return nullptr;
+                        }
+
+                        return dynamic_cast<const OpenSim::Function*>(&prop->getValueAsObject(0));
                     }
                 ));
             }

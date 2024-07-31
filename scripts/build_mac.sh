@@ -84,16 +84,10 @@ if [[ -z ${OSC_SKIP_BREW:+x} ]]; then
     #
     # seems to be a transitive dependency of OpenSim (Metis),
     # which uses wget to get other deps
-
-    # `automake`
-    #
-    # seems to be a transitive dependency of OpenSim (adolc)
-    # uses `aclocal` for configuration
-
-    brew install wget
+    # brew install wget  # unnecessary: it's usually already installed
 
     # osc: docs dependencies
-    # [[ ! -z ${OSC_BUILD_DOCS:+z} ]] && brew install python3  # probably unnecessary: most MacOS nodes will have python support
+    # [[ ! -z ${OSC_BUILD_DOCS:+z} ]] && brew install python3  # unnecessary: it's usually already installed
     [[ ! -z ${OSC_BUILD_DOCS:+z} ]] && pip3 install --user wheel
     [[ ! -z ${OSC_BUILD_DOCS:+z} ]] && pip3 install --user -r docs/requirements.txt
 

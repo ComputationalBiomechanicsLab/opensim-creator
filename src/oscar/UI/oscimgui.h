@@ -18,7 +18,7 @@
 #include <oscar/Maths/Vec4.h>
 #include <oscar/Shims/Cpp23/utility.h>
 #include <oscar/Utils/CStringView.h>
-#include <oscar/Utils/EnumHelpers.h>
+#include <oscar/Utils/Flags.h>
 #include <oscar/Utils/UID.h>
 
 #include <cstddef>

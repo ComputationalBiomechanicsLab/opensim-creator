@@ -340,8 +340,8 @@ namespace
         const SimTK::State& state = rs.getState();
 
         const OpenSim::ForceAdapter adapter{force};
-        SimTK::Vector_<SimTK::SpatialVec> bodyForces(matter.getNumBodies(), SimTK::SpatialVec{});
-        SimTK::Vector_<SimTK::Vec3> particleForces(matter.getNumParticles(), SimTK::Vec3{});  // (unused)
+        SimTK::Vector_<SimTK::SpatialVec> bodyForces(matter.getNumBodies(), SimTK::SpatialVec{SimTK::Vec3{0.0}, SimTK::Vec3{0.0}});
+        SimTK::Vector_<SimTK::Vec3> particleForces(matter.getNumParticles(), SimTK::Vec3{0.0});  // (unused)
         SimTK::Vector mobilityForces(matter.getNumMobilities(), double{});  // (unused)
 
         adapter.calcForce(
@@ -365,7 +365,7 @@ namespace
                 }
 
                 const ArrowProperties arrowProperties = {
-                    .start = ToVec3(mobod2ground * SimTK::Vec3{}),
+                    .start = ToVec3(mobod2ground * SimTK::Vec3{0.0}),
                     .end = ToVec3(mobod2ground * (fixupScaleFactor * linearForceLengthScale * linearForce)),
                     .tip_length = (fixupScaleFactor*0.015f),
                     .neck_thickness = (fixupScaleFactor*0.006f),
@@ -386,7 +386,7 @@ namespace
                 }
 
                 const ArrowProperties arrowProperties = {
-                    .start = ToVec3(mobod2ground * SimTK::Vec3{}),
+                    .start = ToVec3(mobod2ground * SimTK::Vec3{0.0}),
                     .end = ToVec3(mobod2ground * (fixupScaleFactor * angularForceLengthScale * angularForce)),
                     .tip_length = (fixupScaleFactor*0.015f),
                     .neck_thickness = (fixupScaleFactor*0.006f),
@@ -467,7 +467,7 @@ namespace
         RendererState& rs,
         const OpenSim::Body& b)
     {
-        if (rs.getOptions().getShouldShowCentersOfMass() && b.getMassCenter() != SimTK::Vec3{0.0, 0.0, 0.0})
+        if (rs.getOptions().getShouldShowCentersOfMass() && b.getMassCenter() != SimTK::Vec3{0.0})
         {
             const float radius = rs.getFixupScaleFactor() * 0.005f;
             Transform t = TransformInGround(b, rs.getState());

@@ -9,7 +9,7 @@
 
 using namespace osc;
 
-// double-check that the `VertexAttribute` enum is in the same order as data
+// double-check that the `VertexAttribute` enum class is in the same order as data
 // will be in the vertex buffer, so that (e.g.) implementations can perform
 // set intersection between multiple vertex buffers etc. more easily
 TEST(VertexAttribute, OrderMatchesAttributeLayout)

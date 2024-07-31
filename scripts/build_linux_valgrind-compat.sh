@@ -15,15 +15,18 @@ export CFLAGS=-gdwarf-4
 export CXXFLAGS=-gdwarf-4
 export CC=clang
 export CXX=clang++
+export LIBGL_ALWAYS_SOFTWARE=1
 
 cmake -S third_party/ -B osc-deps-build -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=${PWD}/osc-deps-install
-cmake --build osc-deps-build -j20
+cmake --build osc-deps-build -j$(nproc)
 cmake -S . -B osc-build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_PREFIX_PATH=${PWD}/osc-deps-install
-cmake --build osc-build/ -j20
+cmake --build osc-build/ -j$(nproc)
 
-valgrind_cmd="valgrind --leak-check=full"
+valgrind_cmd="valgrind --leak-check=full --suppressions=scripts/valgrind_suppressions.supp"
 
 ${valgrind_cmd} -- ./osc-build/tests/testoscar/testoscar
 ${valgrind_cmd} -- ./osc-build/tests/testoscar_demos/testoscar_demos
 ${valgrind_cmd} -- ./osc-build/tests/testoscar_learnopengl/testoscar_learnopengl
 ${valgrind_cmd} -- ./osc-build/tests/TestOpenSimCreator/TestOpenSimCreator
+${valgrind_cmd} -- ./osc-build/tests/TestOpenSimThirdPartyPlugins/TestOpenSimThirdPartyPlugins
+
