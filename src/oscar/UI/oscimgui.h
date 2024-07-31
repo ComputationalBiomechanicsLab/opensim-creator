@@ -39,34 +39,58 @@ namespace osc::ui
     // vertically align upcoming text baseline to FramePadding.y so that it will align properly to regularly framed items (call if you have text on a line before a framed item)
     void align_text_to_frame_padding();
 
+    namespace detail
+    {
+        void draw_text_v(CStringView fmt, va_list);
+        inline void draw_text(CStringView fmt, ...)
+        {
+            va_list args;
+            va_start(args, fmt);
+            draw_text_v(fmt, args);
+            va_end(args);
+        }
+    }
     void draw_text(CStringView);
-    void draw_text_v(CStringView fmt, va_list);
-    inline void draw_text(const char* fmt, ...)
+    template<typename... Args>
+    void draw_text(CStringView fmt, Args&&... args)
     {
-        va_list args;
-        va_start(args, fmt);
-        draw_text_v(fmt, args);
-        va_end(args);
+        detail::draw_text(fmt, std::forward<Args>(args)...);
     }
 
+    namespace detail
+    {
+        void draw_text_disabled_v(CStringView fmt, va_list);
+        inline void draw_text_disabled(CStringView fmt, ...)
+        {
+            va_list args;
+            va_start(args, fmt);
+            draw_text_disabled_v(fmt, args);
+            va_end(args);
+        }
+    }
     void draw_text_disabled(CStringView);
-    void draw_text_disabled_v(CStringView fmt, va_list);
-    inline void draw_text_disabled(const char* fmt, ...)
+    template<typename... Args>
+    void draw_text_disabled(CStringView fmt, Args&&... args)
     {
-        va_list args;
-        va_start(args, fmt);
-        draw_text_disabled_v(fmt, args);
-        va_end(args);
+        detail::draw_text_disabled(fmt, std::forward<Args>(args)...);
     }
 
-    void draw_text_wrapped(CStringView);
-    void draw_text_wrapped_v(CStringView fmt, va_list);
-    inline void draw_text_wrapped(const char* fmt, ...)
+    namespace detail
     {
-        va_list args;
-        va_start(args, fmt);
-        draw_text_wrapped_v(fmt, args);
-        va_end(args);
+        void draw_text_wrapped_v(CStringView fmt, va_list);
+        inline void draw_text_wrapped(CStringView fmt, ...)
+        {
+            va_list args;
+            va_start(args, fmt);
+            draw_text_wrapped_v(fmt, args);
+            va_end(args);
+        }
+    }
+    void draw_text_wrapped(CStringView);
+    template<typename... Args>
+    void draw_text_wrapped(CStringView fmt, Args&&... args)
+    {
+        detail::draw_text_wrapped(fmt, std::forward<Args>(args)...);
     }
 
     void draw_text_unformatted(CStringView);
@@ -110,7 +134,7 @@ namespace osc::ui
 
     bool draw_tab_item_button(CStringView label);
 
-    void set_num_columns(int count = 1, const char* id = nullptr, bool border = true);
+    void set_num_columns(int count = 1, std::optional<CStringView> id = std::nullopt, bool border = true);
     float get_column_width(int column_index = -1);
     void next_column();
 
@@ -138,7 +162,7 @@ namespace osc::ui
 
     bool draw_float_slider(CStringView label, float* v, float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
 
-    bool draw_scalar_input(CStringView label, ImGuiDataType data_type, void* p_data, const void* p_step = NULL, const void* p_step_fast = NULL, const char* format = NULL, ImGuiInputTextFlags flags = 0);
+    bool draw_scalar_input(CStringView label, ImGuiDataType data_type, void* p_data, const void* p_step = nullptr, const void* p_step_fast = nullptr, const char* format = nullptr, ImGuiInputTextFlags flags = 0);
 
     bool draw_int_input(CStringView label, int* v, int step = 1, int step_fast = 100, ImGuiInputTextFlags flags = 0);
 
@@ -174,7 +198,7 @@ namespace osc::ui
 
     ImGuiViewport* get_main_viewport();
 
-    ImGuiID enable_dockspace_over_viewport(const ImGuiViewport* viewport = NULL, ImGuiDockNodeFlags flags = 0, const ImGuiWindowClass* window_class = NULL);
+    ImGuiID enable_dockspace_over_viewport(const ImGuiViewport* viewport = nullptr, ImGuiDockNodeFlags flags = 0, const ImGuiWindowClass* window_class = nullptr);
 
     bool begin_panel(CStringView name, bool* p_open = nullptr, ImGuiWindowFlags flags = 0);
     void end_panel();
@@ -184,12 +208,15 @@ namespace osc::ui
 
     void close_current_popup();
 
-    void set_tooltip_v(const char* fmt, va_list);
-    inline void set_tooltip(const char* fmt, ...)
+    namespace detail
+    {
+        void set_tooltip_v(CStringView fmt, va_list);
+    }
+    inline void set_tooltip(CStringView fmt, ...)
     {
         va_list args;
         va_start(args, fmt);
-        set_tooltip_v(fmt, args);
+        detail::set_tooltip_v(fmt, args);
         va_end(args);
     }
 
@@ -272,7 +299,7 @@ namespace osc::ui
     void open_popup(CStringView str_id, ImGuiPopupFlags popup_flags = 0);
     bool begin_popup(CStringView str_id, ImGuiWindowFlags flags = 0);
     bool begin_popup_context_menu(CStringView str_id = nullptr, ImGuiPopupFlags popup_flags = 1);
-    bool begin_popup_modal(CStringView name, bool* p_open = NULL, ImGuiWindowFlags flags = 0);
+    bool begin_popup_modal(CStringView name, bool* p_open = nullptr, ImGuiWindowFlags flags = 0);
     void end_popup();
 
     Vec2 get_mouse_pos();
@@ -938,12 +965,15 @@ namespace osc::ui
         //
         // - clamping keeps annotations in the plot area
         // - annotations are always rendered on top of the plot area
-        void draw_annotation_v(Vec2 location_dataspace, const Color& color, Vec2 pixel_offset, bool clamp, const char* fmt, va_list args);
-        inline void draw_annotation(Vec2 location_dataspace, const Color& color, Vec2 pixel_offset, bool clamp, const char* fmt, ...)
+        namespace detail
+        {
+            void draw_annotation_v(Vec2 location_dataspace, const Color& color, Vec2 pixel_offset, bool clamp, CStringView fmt, va_list args);
+        }
+        inline void draw_annotation(Vec2 location_dataspace, const Color& color, Vec2 pixel_offset, bool clamp, CStringView fmt, ...)
         {
             va_list args;
             va_start(args, fmt);
-            draw_annotation_v(location_dataspace, color, pixel_offset, clamp, fmt, args);
+            detail::draw_annotation_v(location_dataspace, color, pixel_offset, clamp, fmt, args);
             va_end(args);
         }
 

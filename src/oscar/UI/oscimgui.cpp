@@ -114,12 +114,12 @@ void osc::ui::draw_text(CStringView sv)
     ImGui::TextUnformatted(sv.c_str(), sv.c_str() + sv.size());
 }
 
-void osc::ui::draw_text_v(CStringView fmt, va_list args)
+void osc::ui::detail::draw_text_v(CStringView fmt, va_list args)
 {
     ImGui::TextV(fmt.c_str(), args);
 }
 
-void osc::ui::draw_text_disabled_v(CStringView fmt, va_list args)
+void osc::ui::detail::draw_text_disabled_v(CStringView fmt, va_list args)
 {
     ImGui::TextDisabledV(fmt.c_str(), args);
 }
@@ -134,7 +134,7 @@ void osc::ui::draw_text_wrapped(CStringView sv)
     ImGui::TextWrapped("%s", sv.c_str());
 }
 
-void osc::ui::draw_text_wrapped_v(CStringView fmt, va_list args)
+void osc::ui::detail::draw_text_wrapped_v(CStringView fmt, va_list args)
 {
     ImGui::TextWrappedV(fmt.c_str(), args);
 }
@@ -227,9 +227,9 @@ bool osc::ui::draw_tab_item_button(CStringView label)
     return ImGui::TabItemButton(label.c_str());
 }
 
-void osc::ui::set_num_columns(int count, const char* id, bool border)
+void osc::ui::set_num_columns(int count, std::optional<CStringView> id, bool border)
 {
-    ImGui::Columns(count, id, border);
+    ImGui::Columns(count, id ? id->c_str() : nullptr, border);
 }
 
 float osc::ui::get_column_width(int column_index)
@@ -427,9 +427,9 @@ void osc::ui::close_current_popup()
     ImGui::CloseCurrentPopup();
 }
 
-void osc::ui::set_tooltip_v(const char* fmt, va_list args)
+void osc::ui::detail::set_tooltip_v(CStringView fmt, va_list args)
 {
-    ImGui::SetTooltipV(fmt, args);
+    ImGui::SetTooltipV(fmt.c_str(), args);
 }
 
 void osc::ui::set_scroll_y_here()
@@ -2414,9 +2414,9 @@ Rect osc::ui::plot::get_plot_screen_rect()
     return {top_left, top_left + Vec2{ImPlot::GetPlotSize()}};
 }
 
-void osc::ui::plot::draw_annotation_v(Vec2 location_dataspace, const Color& color, Vec2 pixel_offset, bool clamp, const char* fmt, va_list args)
+void osc::ui::plot::detail::draw_annotation_v(Vec2 location_dataspace, const Color& color, Vec2 pixel_offset, bool clamp, CStringView fmt, va_list args)
 {
-    ImPlot::AnnotationV(location_dataspace.x, location_dataspace.y, color, pixel_offset, clamp, fmt, args);
+    ImPlot::AnnotationV(location_dataspace.x, location_dataspace.y, color, pixel_offset, clamp, fmt.c_str(), args);
 }
 
 bool osc::ui::plot::drag_point(int id, Vec2d* location, const Color& color, float size, DragToolFlags flags)

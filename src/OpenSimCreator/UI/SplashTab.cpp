@@ -239,7 +239,7 @@ private:
         // names
         int imguiID = 0;
 
-        ui::set_num_columns(2, nullptr, false);
+        ui::set_num_columns(2, std::nullopt, false);
         drawMenuLeftColumnContent(imguiID);
         ui::next_column();
         drawMenuRightColumnContent(imguiID);
