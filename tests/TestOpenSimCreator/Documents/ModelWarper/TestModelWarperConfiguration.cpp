@@ -3,8 +3,10 @@
 #include <TestOpenSimCreator/TestOpenSimCreatorConfig.h>
 
 #include <gtest/gtest.h>
+#include <OpenSim/Simulation/Model/Marker.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
+#include <oscar/Utils/StringHelpers.h>
 #include <oscar/Utils/TemporaryFile.h>
 
 #include <filesystem>
@@ -26,9 +28,70 @@ static_assert(static_cast<bool>(StrategyMatchQuality::none()) == false);
 static_assert(static_cast<bool>(StrategyMatchQuality::wildcard()) == true);
 static_assert(static_cast<bool>(StrategyMatchQuality::exact()) == true);
 
+TEST(RuntimeWarpParameters, ConstructedWithBlendFactorMakesGetBlendFactorReturnTheBlendFactor)
+{
+    RuntimeWarpParameters params{0.3f};
+    ASSERT_EQ(params.getBlendFactor(), 0.3f);
+}
+
+TEST(WarpCache, CanDefaultConstruct)
+{
+    [[maybe_unused]] WarpCache instance;
+}
+
 TEST(ModelWarperConfiguration, CanDefaultConstruct)
 {
-    [[maybe_unused]] ModelWarperConfiguration configuration;
+    [[maybe_unused]] ModelWarperConfiguration instance;
+}
+
+TEST(IdentityComponentWarper, CanDefaultConstruct)
+{
+    [[maybe_unused]] IdentityComponentWarper instance;
+}
+
+TEST(IdentityComponentWarper, DoesNotChangeAnyComponentProperty)
+{
+    OpenSim::Model sourceModel;
+    OpenSim::Marker& sourceMarker = AddMarker(sourceModel, "marker", sourceModel.getGround(), SimTK::Vec3{0.0});
+    FinalizeConnections(sourceModel);
+    InitializeModel(sourceModel);
+    OpenSim::Model destinationModel = sourceModel;  // create copy for writing
+    InitializeModel(destinationModel);
+    auto& destinationMarker = sourceModel.updComponent<OpenSim::Marker>(sourceMarker.getAbsolutePath());
+
+    RuntimeWarpParameters parameters;
+    WarpCache cache;
+    IdentityComponentWarper warper;
+
+    ASSERT_TRUE(destinationMarker.isObjectUpToDateWithProperties());
+    warper.warpInPlace(parameters, cache, sourceModel, sourceMarker, destinationModel, destinationMarker);
+    ASSERT_TRUE(destinationMarker.isObjectUpToDateWithProperties());
+}
+
+TEST(ExceptionThrowingComponentWarper, ThrowsWhenWarpInPlaceIsCalled)
+{
+    OpenSim::Model sourceModel;
+    OpenSim::Marker& sourceMarker = AddMarker(sourceModel, "marker", sourceModel.getGround(), SimTK::Vec3{0.0});
+    FinalizeConnections(sourceModel);
+    InitializeModel(sourceModel);
+    OpenSim::Model destinationModel = sourceModel;  // create copy for writing
+    InitializeModel(destinationModel);
+    auto& destinationMarker = sourceModel.updComponent<OpenSim::Marker>(sourceMarker.getAbsolutePath());
+
+    RuntimeWarpParameters parameters;
+    WarpCache cache;
+    ExceptionThrowingComponentWarper warper{"some message content"};
+
+    ASSERT_TRUE(destinationMarker.isObjectUpToDateWithProperties());
+    bool warperThrownException = false;
+    try {
+        warper.warpInPlace(parameters, cache, sourceModel, sourceMarker, destinationModel, destinationMarker);
+    } catch (const std::exception& ex) {
+        ASSERT_TRUE(contains(ex.what(), "some message content"));
+        warperThrownException = true;
+    }
+    ASSERT_TRUE(warperThrownException) << "should always throw an exception";
+    ASSERT_TRUE(destinationMarker.isObjectUpToDateWithProperties());
 }
 
 TEST(ModelWarperConfiguration, CanSaveAndLoadDefaultConstructedToAndFromXMLFile)

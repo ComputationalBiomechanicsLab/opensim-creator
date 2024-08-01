@@ -9,6 +9,7 @@
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/Model/Station.h>
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/CopyOnUpdPtr.h>
 
 #include <compare>
@@ -25,10 +26,8 @@
 
 namespace osc::mow
 {
-    // describes how closely (if at all) a `ComponentWarpingStrategy` matches a
+    // describes how closely, if at all, a `ComponentWarpingStrategy` matches a
     // given `OpenSim::Component`
-    //
-    // used for resolving potentially-ambiguous matches across multiple strategies
     class StrategyMatchQuality final {
     public:
         static constexpr StrategyMatchQuality none() { return StrategyMatchQuality{State::None}; }
@@ -53,7 +52,7 @@ namespace osc::mow
         State _state = State::None;
     };
 
-    // warping parameters that are provided at runtime each time a warp is requested
+    // parameters that are provided each time a model warp is requested at runtime
     class RuntimeWarpParameters final {
     public:
         RuntimeWarpParameters() = default;
@@ -64,11 +63,10 @@ namespace osc::mow
         float m_BlendFactor = 1.0f;
     };
 
-    // an associative cache that `IComponentWarper`s can use to fetch warping state
-    class WarpCache final {
-    };
+    // an associative cache that can be used to fetch relevant warping state
+    class WarpCache final {};
 
-    // an abstract interface to an object that is capable of warping an `OpenSim::Component`
+    // an abstract interface to something that is capable of warping an `OpenSim::Component`
     // in an `OpenSim::Model`
     //
     // this is produced by matching a `ComponentWarpingStrategy` to a specific `OpenSim::Component`
@@ -92,11 +90,18 @@ namespace osc::mow
             OpenSim::Model& targetModel,
             OpenSim::Component& targetComponent)
         {
-            implWarpInPlace(warpParameters, warpCache, sourceModel, sourceComponent, targetModel, targetComponent);
+            implWarpInPlace(
+                warpParameters,
+                warpCache,
+                sourceModel,
+                sourceComponent,
+                targetModel,
+                targetComponent
+            );
         }
     private:
 
-        // implementors of this function should:
+        // overriders should:
         //
         // - mutate the `targetComponent` based on the warping behavior of their concrete implementation
         // - handle the `RuntimeWarpParameters` appropriately
@@ -113,11 +118,11 @@ namespace osc::mow
         ) = 0;
     };
 
-    // an `IComponentWarper` that leaves the component untouched
+    // an `IComponentWarper` that leaves the target `OpenSim::Component` untouched
     //
     // this can be useful for development, or for when the type of the component
     // isn't really warp-able (e.g. frame geometry, `OpenSim::Controller`s, etc.)
-    class IdentityComponentWarper : public IComponentWarper {
+    class IdentityComponentWarper final : public IComponentWarper {
     private:
         void implWarpInPlace(
             const RuntimeWarpParameters&,
@@ -125,15 +130,18 @@ namespace osc::mow
             const OpenSim::Model&,
             const OpenSim::Component&,
             OpenSim::Model&,
-            OpenSim::Component&) override
-        {}
+            OpenSim::Component&) final
+        {
+            // don't do anything (it's an identity warper)
+        }
     };
 
-    // an `IComponentWarper` that throws a `std::exception` with the given message
+    // an `IComponentWarper` that throws a `std::exception` with the given message when
+    // warping is required
     //
-    // can be useful in the warping configuration file, so that users can express "if
+    // this can be useful in the warping configuration file, so that users can express "if
     // this component matches, then it's an error"
-    class ExceptionThrowingComponentWarper : public IComponentWarper {
+    class ExceptionThrowingComponentWarper final : public IComponentWarper {
     public:
         explicit ExceptionThrowingComponentWarper(std::string message) :
             m_Message{std::move(message)}
@@ -145,7 +153,7 @@ namespace osc::mow
             const OpenSim::Model&,
             const OpenSim::Component&,
             OpenSim::Model&,
-            OpenSim::Component&) override
+            OpenSim::Component&) final
         {
             throw std::runtime_error{m_Message};
         }
@@ -153,9 +161,9 @@ namespace osc::mow
         std::string m_Message;
     };
 
-    // an abstract interface to an `OpenSim::Component` that is capable of matching
+    // an abstract base class for an `OpenSim::Component` that is capable of matching
     // against, and producing `IComponentWarper`s for, components (`StrategyTargets`)
-    // in the warping source
+    // in the source model
     class ComponentWarpingStrategy :
         public OpenSim::Component,
         public ICloneable<ComponentWarpingStrategy>,
@@ -184,37 +192,49 @@ namespace osc::mow
         StrategyMatchQuality calculateMatchQuality(const OpenSim::Component& candidateComponent) const
         {
             if (not implIsMatchForComponentType(candidateComponent)) {
-                return StrategyMatchQuality::none();
+                return StrategyMatchQuality::none();  // mis-matched implementation, this will never match
             }
 
+            // select the best (max) match of all available possibilities
             const auto componentAbsPath = candidateComponent.getAbsolutePathString();
-
-            // loop through strategy targets and select the best one, throw if any match
-            // is ambiguous
             StrategyMatchQuality best = StrategyMatchQuality::none();
             for (int i = 0; i < getProperty_StrategyTargets().size(); ++i) {
                 const std::string& target = get_StrategyTargets(i);
                 if (target == componentAbsPath) {
-                    // you can't do any better than this, and `extendFinalizeFromProperties`
-                    // guarantees no other `StrategyTarget`s are going to match exactly, so
-                    // exit early
-                    return StrategyMatchQuality::exact();
+                    best = max(best, StrategyMatchQuality::exact());
                 }
                 else if (target == "*") {
-                    best = StrategyMatchQuality::wildcard();
+                    best = max(best, StrategyMatchQuality::wildcard());
                 }
             }
             return best;
         }
 
-        std::unique_ptr<IComponentWarper> createWarper(const OpenSim::Model& model, const OpenSim::Component& component)
+        std::unique_ptr<IComponentWarper> createWarper(
+            const OpenSim::Model& model,
+            const OpenSim::Component& component)
         {
+            if (auto quality = calculateMatchQuality(component); quality <= StrategyMatchQuality::none()) {
+                // the caller probably called this function without first checking `calculateMatchQuality`, so throw here
+                std::stringstream msg;
+                msg << component.getAbsolutePathString() << ": cannot be warped by " << getName() << "(type: " << getConcreteClassName() << ')';
+                OPENSIM_THROW_FRMOBJ(OpenSim::Exception, std::move(msg).str());
+            }
+
+            // else: call into the concrete implementation
             return implCreateWarper(model, component);
         }
     private:
+        // overriders should return the `typeinfo` of the concrete class that this warper can warp
         virtual const std::type_info& implGetTargetComponentTypeInfo() const = 0;
+
+        // overriders should return `true` if `implCreateWarper` would create a valid warper for the given `OpenSim::Component`
         virtual bool implIsMatchForComponentType(const OpenSim::Component&) const = 0;
+
+        // overriders should return a valid `IComponentWarper` that can warp the given `OpenSim::Component` at runtime
         virtual std::unique_ptr<IComponentWarper> implCreateWarper(const OpenSim::Model&, const OpenSim::Component&) = 0;
+
+        // overriders should return a list of `ValidationCheckResult`s that describe any validation problems in the object, if any
         virtual std::vector<ValidationCheckResult> implValidate(const OpenSim::Model&) const { return {}; }
 
         void extendFinalizeFromProperties() override
@@ -223,6 +243,7 @@ namespace osc::mow
             assertStrategyTargetsAreUnique();
         }
 
+        // raises an `OpenSim::Exception` if the `StrategyTargets` property is empty
         void assertStrategyTargetsNotEmpty() const
         {
             if (getProperty_StrategyTargets().empty()) {
@@ -230,6 +251,7 @@ namespace osc::mow
             }
         }
 
+        // raises an `OpenSim::Exception` if the `StrategyTargets` property contains duplicate entries
         void assertStrategyTargetsAreUnique() const
         {
             const int numStrategyTargets = getProperty_StrategyTargets().size();
@@ -247,19 +269,19 @@ namespace osc::mow
         }
     };
 
-    // an abstract interface that specializes `ComponentWarpingStrategy` for `T`
+    // an abstract base class for a `ComponentWarpingStrategy` specialized for `T`
     template<std::derived_from<OpenSim::Component> T>
     class ComponentWarpingStrategyFor : public ComponentWarpingStrategy {
     public:
         ComponentWarpingStrategyFor() = default;
 
     private:
-        const std::type_info& implGetTargetComponentTypeInfo() const override
+        const std::type_info& implGetTargetComponentTypeInfo() const final
         {
             return typeid(T);
         }
 
-        bool implIsMatchForComponentType(const OpenSim::Component& component) const override
+        bool implIsMatchForComponentType(const OpenSim::Component& component) const final
         {
             return dynamic_cast<const T*>(&component) != nullptr;
         }
@@ -280,34 +302,50 @@ namespace osc::mow
         OpenSim_DECLARE_ABSTRACT_OBJECT(MeshWarpingStrategy, ComponentWarpingStrategyFor<OpenSim::Mesh>)
     };
 
-    // represents a sequence of paired (corresponding) landmarks expressed in a
-    // base frame
+    // a sequence of paired (corresponding) landmarks expressed in a common base
+    // `OpenSim::Frame`
     //
-    // designed to be cheap-to-copy, because this information might be shared or
-    // cached by other systems
+    // designed to be cheap to copy and compare, because this information might be
+    // shared or cached by multiple systems
     class PairedPoints final {
     public:
+        PairedPoints() = default;
+
         template<std::ranges::input_range Range>
         requires std::convertible_to<std::ranges::range_value_t<Range>, LandmarkPair3D>
-        explicit PairedPoints(Range&& range, const OpenSim::ComponentPath& baseFrameAbsPath)
-        {
-            m_Data.upd()->pointsInGround.assign(std::ranges::begin(range), std::ranges::end(range));
-        }
+        explicit PairedPoints(Range&& range, const OpenSim::ComponentPath& baseFrameAbsPath) :
+            m_Data{make_cow<Data>(std::forward<Range>(range), baseFrameAbsPath)}
+        {}
 
         auto begin() const { return m_Data->pointsInBaseFrame.begin(); }
         auto end() const { return m_Data->pointsInBaseFrame.end(); }
+        const OpenSim::ComponentPath& getBaseFrameAbsPath() const { return m_Data->baseFrameAbsPath; }
     private:
         struct Data {
+            Data() = default;
+
+            template<std::ranges::input_range Range>
+            requires std::convertible_to<std::ranges::range_value_t<Range>, LandmarkPair3D>
+            explicit Data(Range&& range, const OpenSim::ComponentPath& baseFrameAbsPath_) :
+                pointsInBaseFrame{std::ranges::begin(range), std::ranges::end(range)},
+                baseFrameAbsPath{baseFrameAbsPath_}
+            {}
+
             std::vector<LandmarkPair3D> pointsInBaseFrame;
             OpenSim::ComponentPath baseFrameAbsPath;
         };
         CopyOnUpdPtr<Data> m_Data = make_cow<Data>();
     };
 
+    // an abstract base class to an `OpenSim::Object` that can lookup and produce
+    // `PairedPoints` (e.g. for feeding into a Thin-Plate Spline fitter)
     class PairedPointSource : public OpenSim::Object {
         OpenSim_DECLARE_ABSTRACT_OBJECT(PairedPointSource, OpenSim::Object)
     public:
-        PairedPoints getPairedPoints(WarpCache& warpCache, const OpenSim::Model& sourceModel, const OpenSim::Component& sourceComponent)
+        PairedPoints getPairedPoints(
+            WarpCache& warpCache,
+            const OpenSim::Model& sourceModel,
+            const OpenSim::Component& sourceComponent)
         {
             return implGetPairedPoints(warpCache, sourceModel, sourceComponent);
         }
@@ -315,28 +353,78 @@ namespace osc::mow
         virtual PairedPoints implGetPairedPoints(WarpCache&, const OpenSim::Model&, const OpenSim::Component&) = 0;
     };
 
-    class LandmarksOfMeshesAttachedToSameBaseFramePairedPointSource final {};
-    class PairedLandmarkFilesPairedPointSource final {};
+    // a `PairedPointsource` that uses heuristics to find the landmarks associated with one `OpenSim::Mesh`
+    //
+    // - the source component supplied be an `OpenSim::Mesh`; otherwise, an error is thrown
+    // - the source landmarks file is assumed to be on the filesystem "next to" the `OpenSim::Mesh` and
+    //   named `${mesh_file_name_without_extension}.landmarks.csv`
+    // - the destination landmarks file is assumed to be on the filesystem "next to" the `OpenSim::Model` (!)
+    //   in a directory named `DestinationGeometry` at `${model_parent_directory}/DestinationGeometry/${mesh_file_name_without_extension}.landmarks.csv`
+    // - if both landmark files cannot be found, throw an error
+    // - if either landmark file is invalid in some way (invalid CSV, etc.), throw an error
+    // - if zero landmark pairs can be associated between the two landmark files, throw an error
+    // - else, accept those pairs as "the mesh's landmark pairs"
+    class LandmarksAttachedToSuppliedMesh final : public PairedPointSource {
+        OpenSim_DECLARE_CONCRETE_OBJECT(LandmarksAttachedToSuppliedMesh, PairedPointSource);
+    private:
+        PairedPoints implGetPairedPoints(WarpCache&, const OpenSim::Model&, const OpenSim::Component&) final
+        {
+            return {};  // TODO
+        }
+    };
+
+    // a `PairedPointSource` that uses heuristics to find the most appropriate `PairedPoints`
+    // for a given `OpenSim::Component`. The heuristic is:
+    //
+    // 1. find the base frame of the component:
+    //
+    //     - `OpenSim::Station`s have a `parent_frame`
+    //     - `OpenSim::PhysicalOffsetFrame`s have a `parent_frame`
+    //     - `OpenSim::Mesh`es have a `parent_frame`
+    //     - (etc. - this needs to be handled on a per-component-type basis)
+    //
+    // 2. find all `OpenSim::Mesh`es in the source model that are attached to the same base frame:
+    //
+    //     - if no `OpenSim::Mesh`es are attached to the base frame, throw an error
+    //     - if more than one `OpenSim::Mesh` are attached to the base frame, throw an error
+    //     - else, accept the resulting 1..n meshes as "the input mesh set"
+    //
+    // 3. for each mesh in "the input mesh set":
+    //
+    //     - extract their `PairedPoints` "as if" by using `LandmarksAttachedToSuppliedMesh` any errors
+    //       should be propagated upwards
+    //     - transform all of "the mesh's landmark pairs" in the mesh's frame to the base frame found in step 1
+    //     - merge all of "the mesh's landmark pairs" in "the input mesh set" into a `PairedPoints`
+    class LandmarksOfMeshesAttachedToSameBaseFramePairedPointSource final : public PairedPointSource {
+        OpenSim_DECLARE_CONCRETE_OBJECT(LandmarksOfMeshesAttachedToSameBaseFramePairedPointSource, PairedPointSource);
+    private:
+        PairedPoints implGetPairedPoints(WarpCache&, const OpenSim::Model&, const OpenSim::Component&) final
+        {
+            return {};  // TODO
+        }
+    };
 
     // an `OffsetFrameWarpingStrategy` that uses point correspondences and Thin-Plate Spline (TPS) warping to
     // warp the `translation` property of an `OpenSim::PhysicalOffsetFrame`
     class ThinPlateSplineOnlyTranslationOffsetFrameWarpingStrategy final : public OffsetFrameWarpingStrategy {
         OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplineOnlyTranslationOffsetFrameWarpingStrategy, OffsetFrameWarpingStrategy)
+
     public:
-        // TODO PointSources
+        OpenSim_DECLARE_PROPERTY(point_source, PairedPointSource, "a `PairedPointSource` that describes where the Thin Plate Spline algorithm should source its data from");
+
     private:
-        std::unique_ptr<ComponentWarpingStrategy> implClone() const override
+        std::unique_ptr<ComponentWarpingStrategy> implClone() const final
         {
             return std::make_unique<ThinPlateSplineOnlyTranslationOffsetFrameWarpingStrategy>(*this);
         }
 
-        std::vector<WarpDetail> implWarpDetails() const override
+        std::vector<WarpDetail> implWarpDetails() const final
         {
             // TODO: similar steps to `ThinPlateSplineStationWarpingStrategy`
             return {};
         }
 
-        std::unique_ptr<IComponentWarper> implCreateWarper(const OpenSim::Model&, const OpenSim::Component&) override
+        std::unique_ptr<IComponentWarper> implCreateWarper(const OpenSim::Model&, const OpenSim::Component&) final
         {
             return std::make_unique<IdentityComponentWarper>();
         }
