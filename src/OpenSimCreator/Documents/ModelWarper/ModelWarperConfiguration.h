@@ -708,8 +708,43 @@ namespace osc::mow
         }
     };
 
-    class IdentityMeshWarpingStrategy final : public MeshWarpingStrategy {};
-    class ProduceErrorMeshWarpingStrategy final : public MeshWarpingStrategy {};
+    class IdentityMeshWarpingStrategy final : public MeshWarpingStrategy {
+        OpenSim_DECLARE_CONCRETE_OBJECT(IdentityMeshWarpingStrategy, MeshWarpingStrategy);
+    private:
+        std::unique_ptr<ComponentWarpingStrategy> implClone() const final
+        {
+            return std::make_unique<IdentityMeshWarpingStrategy>(*this);
+        }
+
+        std::vector<WarpDetail> implWarpDetails() const final
+        {
+            return {};
+        }
+
+        std::unique_ptr<IComponentWarper> implCreateWarper(const OpenSim::Model&, const OpenSim::Component&) final
+        {
+            return std::make_unique<IdentityComponentWarper>();
+        }
+    };
+
+    class ProduceErrorMeshWarpingStrategy final : public MeshWarpingStrategy {
+        OpenSim_DECLARE_CONCRETE_OBJECT(ProduceErrorMeshWarpingStrategy, MeshWarpingStrategy);
+    private:
+        std::unique_ptr<ComponentWarpingStrategy> implClone() const final
+        {
+            return std::make_unique<ProduceErrorMeshWarpingStrategy>(*this);
+        }
+
+        std::vector<WarpDetail> implWarpDetails() const final
+        {
+            return {};
+        }
+
+        std::unique_ptr<IComponentWarper> implCreateWarper(const OpenSim::Model&, const OpenSim::Component&) final
+        {
+            return std::make_unique<ExceptionThrowingComponentWarper>("ProduceErrorMeshWarpingStrategy: TODO: configuration-customizable error message");
+        }
+    };
 
     // a configuration object that associatively stores a sequence of
     // `ComponentWarpingStrategy`s that can be associatively matched

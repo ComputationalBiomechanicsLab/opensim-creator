@@ -24,9 +24,9 @@ namespace
 
 static_assert(StrategyMatchQuality::none() < StrategyMatchQuality::wildcard());
 static_assert(StrategyMatchQuality::wildcard() < StrategyMatchQuality::exact());
-static_assert(static_cast<bool>(StrategyMatchQuality::none()) == false);
-static_assert(static_cast<bool>(StrategyMatchQuality::wildcard()) == true);
-static_assert(static_cast<bool>(StrategyMatchQuality::exact()) == true);
+static_assert(not static_cast<bool>(StrategyMatchQuality::none()));
+static_assert(static_cast<bool>(StrategyMatchQuality::wildcard()));
+static_assert(static_cast<bool>(StrategyMatchQuality::exact()));
 
 TEST(RuntimeWarpParameters, ConstructedWithBlendFactorMakesGetBlendFactorReturnTheBlendFactor)
 {
@@ -246,7 +246,7 @@ TEST(ModelWarperConfiguration, finalizeFromPropertiesDoesNotThrowWhenGivenConfig
 TEST(ModelWarperConfiguration, MatchingAnOffsetFrameStrategyToExactPathWorksAsExpected)
 {
     OpenSim::Model model;
-    OpenSim::PhysicalOffsetFrame& pof = AddComponent<OpenSim::PhysicalOffsetFrame>(
+    auto& pof = AddComponent<OpenSim::PhysicalOffsetFrame>(
         model,
         "someoffsetframe",
         model.getGround(),
@@ -265,7 +265,7 @@ TEST(ModelWarperConfiguration, MatchingAnOffsetFrameStrategyToExactPathWorksAsEx
 TEST(ModelWarperConfiguration, MatchingAnOffsetFrameStrategyToWildcardWorksAsExpected)
 {
     OpenSim::Model model;
-    OpenSim::PhysicalOffsetFrame& pof = AddComponent<OpenSim::PhysicalOffsetFrame>(
+    auto& pof = AddComponent<OpenSim::PhysicalOffsetFrame>(
         model,
         "someoffsetframe",
         model.getGround(),
@@ -284,7 +284,7 @@ TEST(ModelWarperConfiguration, MatchingAnOffsetFrameStrategyToWildcardWorksAsExp
 TEST(ModelWarperConfiguration, MatchesExactlyEvenIfWildcardMatchIsAlsoPresent)
 {
     OpenSim::Model model;
-    OpenSim::PhysicalOffsetFrame& pof = AddComponent<OpenSim::PhysicalOffsetFrame>(
+    auto& pof = AddComponent<OpenSim::PhysicalOffsetFrame>(
         model,
         "someoffsetframe",
         model.getGround(),
@@ -304,7 +304,7 @@ TEST(ModelWarperConfiguration, MatchesExactlyEvenIfWildcardMatchIsAlsoPresent)
 TEST(ModelWarperConfiguration, MatchesWildcardIfInvalidPathPresent)
 {
     OpenSim::Model model;
-    OpenSim::PhysicalOffsetFrame& pof = AddComponent<OpenSim::PhysicalOffsetFrame>(
+    auto& pof = AddComponent<OpenSim::PhysicalOffsetFrame>(
         model,
         "someoffsetframe",
         model.getGround(),
@@ -324,7 +324,7 @@ TEST(ModelWarperConfiguration, MatchesWildcardIfInvalidPathPresent)
 TEST(ModelWarperConfiguration, MatchesMoreSpecificStrategyWhenTwoStrategiesAreAvailable)
 {
     OpenSim::Model model;
-    OpenSim::PhysicalOffsetFrame& pof = AddComponent<OpenSim::PhysicalOffsetFrame>(
+    auto& pof = AddComponent<OpenSim::PhysicalOffsetFrame>(
         model,
         "someoffsetframe",
         model.getGround(),
@@ -357,7 +357,7 @@ TEST(ModelWarperConfiguration, MatchesMoreSpecificStrategyWhenTwoStrategiesAreAv
 TEST(ModelWarperConfiguration, tryMatchStrategyDoesNotThrowIfTwoWildcardsForDifferentTargetsMatch)
 {
     OpenSim::Model model;
-    OpenSim::PhysicalOffsetFrame& pof = AddComponent<OpenSim::PhysicalOffsetFrame>(
+    auto& pof = AddComponent<OpenSim::PhysicalOffsetFrame>(
         model,
         "someoffsetframe",
         model.getGround(),
