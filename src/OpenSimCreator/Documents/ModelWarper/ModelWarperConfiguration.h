@@ -365,7 +365,7 @@ namespace osc::mow
     // - if zero landmark pairs can be associated between the two landmark files, throw an error
     // - else, accept those pairs as "the mesh's landmark pairs"
     class LandmarksAttachedToSuppliedMesh final : public PairedPointSource {
-        OpenSim_DECLARE_CONCRETE_OBJECT(LandmarksAttachedToSuppliedMesh, PairedPointSource);
+        OpenSim_DECLARE_CONCRETE_OBJECT(LandmarksAttachedToSuppliedMesh, PairedPointSource)
     private:
         PairedPoints implGetPairedPoints(WarpCache&, const OpenSim::Model&, const OpenSim::Component&) final
         {
@@ -396,7 +396,7 @@ namespace osc::mow
     //     - transform all of "the mesh's landmark pairs" in the mesh's frame to the base frame found in step 1
     //     - merge all of "the mesh's landmark pairs" in "the input mesh set" into a `PairedPoints`
     class LandmarksOfMeshesAttachedToSameBaseFramePairedPointSource final : public PairedPointSource {
-        OpenSim_DECLARE_CONCRETE_OBJECT(LandmarksOfMeshesAttachedToSameBaseFramePairedPointSource, PairedPointSource);
+        OpenSim_DECLARE_CONCRETE_OBJECT(LandmarksOfMeshesAttachedToSameBaseFramePairedPointSource, PairedPointSource)
     private:
         PairedPoints implGetPairedPoints(WarpCache&, const OpenSim::Model&, const OpenSim::Component&) final
         {
@@ -709,7 +709,7 @@ namespace osc::mow
     };
 
     class IdentityMeshWarpingStrategy final : public MeshWarpingStrategy {
-        OpenSim_DECLARE_CONCRETE_OBJECT(IdentityMeshWarpingStrategy, MeshWarpingStrategy);
+        OpenSim_DECLARE_CONCRETE_OBJECT(IdentityMeshWarpingStrategy, MeshWarpingStrategy)
     private:
         std::unique_ptr<ComponentWarpingStrategy> implClone() const final
         {
@@ -728,7 +728,7 @@ namespace osc::mow
     };
 
     class ProduceErrorMeshWarpingStrategy final : public MeshWarpingStrategy {
-        OpenSim_DECLARE_CONCRETE_OBJECT(ProduceErrorMeshWarpingStrategy, MeshWarpingStrategy);
+        OpenSim_DECLARE_CONCRETE_OBJECT(ProduceErrorMeshWarpingStrategy, MeshWarpingStrategy)
     private:
         std::unique_ptr<ComponentWarpingStrategy> implClone() const final
         {
