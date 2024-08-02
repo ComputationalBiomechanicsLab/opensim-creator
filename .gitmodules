@@ -39,4 +39,4 @@
 	url = https://github.com/ComputationalBiomechanicsLab/lua
 [submodule "third_party/ImGuiColorTextEdit"]
 	path = third_party/ImGuiColorTextEdit
-	url = https://github.com/BalazsJako/ImGuiColorTextEdit.git
+	url = https://github.com/ComputationalBiomechanicsLab/ImGuiColorTextEdit.git
