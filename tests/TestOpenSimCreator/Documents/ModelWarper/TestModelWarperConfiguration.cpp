@@ -274,19 +274,50 @@ TEST(LandmarkPairsAssociatedWithMesh, CanBeDefaultConstructed)
     [[maybe_unused]] LandmarkPairsAssociatedWithMesh instance;
 }
 
-//TEST(LandmarkPairsAssociatedWithMesh, ValidateReturnsErrorIfProvidedNonMesh)
-//{
-//    LandmarkPairsAssociatedWithMesh pairSource;
-//    OpenSim::Model model;
-//    const auto checks = pairSource.validate(model, model.getGround());
-//
-//    ASSERT_TRUE(rgs::any_of(checks, [](const ValidationCheckResult& res) { return res.state() == ValidationCheckState::Error;  }));
-//}
-// TODO: error if mesh has no source landmarks (but has destination landmarks)
-// TODO: error if mesh has no destination landmarks (but has source landmarks)
-// TODO: error if source landmarks isn't valid CSV (but destination is)
-// TODO: error if destination landmarks isn't valid CSV (but source is)
-// TODO: error if zero landmark pairs generated
+TEST(LandmarkPairsAssociatedWithMesh, ValidateReturnsErrorIfProvidedNonMesh)
+{
+    LandmarkPairsAssociatedWithMesh pairSource;
+    OpenSim::Model model;
+    const auto checks = pairSource.validate(model, model.getGround());
+
+    ASSERT_TRUE(rgs::any_of(checks, &ValidationCheckResult::is_error));
+}
+
+TEST(LandmarkPairsAssociatedWithMesh, ValidateReturnsErrorIfProvidedMeshWithoutSourceLandmarksButWithDestinationLandmarks)
+{
+    // note: doesn't have a `landmarks.csv` file
+    const std::filesystem::path sourceMeshPath = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "Document/ModelWarper/MissingSourceLMs/Geometry/sphere.obj";
+
+    // create a model that contains the mesh
+    OpenSim::Model model;
+    auto& mesh = AddComponent<OpenSim::Mesh>(model, sourceMeshPath.string());
+    mesh.connectSocket_frame(model.getGround());
+    FinalizeConnections(model);
+    InitializeModel(model);
+
+    LandmarkPairsAssociatedWithMesh pointSource;
+    const auto checks = pointSource.validate(model, mesh);
+
+    ASSERT_TRUE(rgs::any_of(checks, &ValidationCheckResult::is_error));
+}
+
+TEST(LandmarkPairsAssociatedWithMesh, ValidateReturnsErrorIfProvidedMeshWithSourceLandmarksButNoDestinationLandmarks)
+{
+    // note: doesn't have a `landmarks.csv` file
+    std::filesystem::path sourceMeshPath = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "Document/ModelWarper/MissingDestinationLMs/Geometry/sphere.obj";
+
+    // create a model that contains the mesh
+    OpenSim::Model model;
+    auto& mesh = AddComponent<OpenSim::Mesh>(model, sourceMeshPath.string());
+    mesh.connectSocket_frame(model.getGround());
+    FinalizeConnections(model);
+    InitializeModel(model);
+
+    LandmarkPairsAssociatedWithMesh pointSource;
+    const auto checks = pointSource.validate(model, mesh);
+
+    ASSERT_TRUE(rgs::any_of(checks, &ValidationCheckResult::is_error));
+}
 
 TEST(ModelWarperConfiguration, CanDefaultConstruct)
 {

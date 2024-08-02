@@ -4,6 +4,7 @@
 #include <OpenSimCreator/Documents/ModelWarper/IValidateable.h>
 #include <OpenSimCreator/Documents/ModelWarper/IWarpDetailProvider.h>
 #include <OpenSimCreator/Utils/LandmarkPair3D.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
@@ -407,15 +408,80 @@ namespace osc::mow
     // - the destination landmarks file is assumed to be on the filesystem "next to" the `OpenSim::Model`
     //   in a directory named `DestinationGeometry` at `${model_parent_directory}/DestinationGeometry/${mesh_file_name_without_extension}.landmarks.csv`;
     //   otherwise, a validation error is generated
-    // - if either landmark file is invalid in some way (invalid CSV, etc.), a validation error is generated
-    // - if zero landmark pairs can be associated between the two landmark files, a validation error is generated
-    // - else, accept those pairs as "the mesh's landmark pairs"
+    // - else, accept those pairs as "the mesh's landmark pairs" (even if empty)
     class LandmarkPairsAssociatedWithMesh final : public PairedPointSource {
         OpenSim_DECLARE_CONCRETE_OBJECT(LandmarkPairsAssociatedWithMesh, PairedPointSource)
     private:
         PairedPoints implGetPairedPoints(WarpCache&, const OpenSim::Model&, const OpenSim::Component&) final
         {
             return {};  // TODO
+        }
+
+        std::vector<ValidationCheckResult> implValidate(
+            const OpenSim::Model& sourceModel,
+            const OpenSim::Component& sourceComponent) const final
+        {
+            std::vector<ValidationCheckResult> rv;
+
+            const auto* sourceMesh = dynamic_cast<const OpenSim::Mesh*>(&sourceComponent);
+            if (not sourceMesh) {
+                std::stringstream ss;
+                ss << sourceComponent.getName() << "(type: " << sourceComponent.getConcreteClassName() << ") is not an OpenSim::Mesh. " << getName() << "(type: " << getConcreteClassName() << ") requires this";
+                rv.emplace_back(std::move(ss).str(), ValidationCheckState::Error);
+                return rv;
+            }
+
+            const auto sourceMeshPath = FindGeometryFileAbsPath(sourceModel, *sourceMesh);
+            if (not sourceMeshPath) {
+                std::stringstream ss;
+                ss << sourceComponent.getName() << ": the absolute filesystem location of this mesh cannot be found";
+                rv.emplace_back(std::move(ss).str(), ValidationCheckState::Error);
+                return rv;
+            } else {
+                std::stringstream ss;
+                ss << sourceMesh->getName() << ": was found on the filesystem at " << *sourceMeshPath;
+                rv.emplace_back(std::move(ss).str(), ValidationCheckState::Ok);
+            }
+
+            auto sourceLandmarksPath{*sourceMeshPath};
+            sourceLandmarksPath.replace_extension(".landmarks.csv");
+            if (not std::filesystem::exists(sourceLandmarksPath)) {
+                std::stringstream ss;
+                ss << sourceMesh->getName() << ": could not find an associated .landmarks.csv file at " << sourceLandmarksPath;
+                rv.emplace_back(std::move(ss).str(), ValidationCheckState::Error);
+                return rv;
+            } else {
+                std::stringstream ss;
+                ss << sourceMesh->getName() << ": has a .landmarks.csv file at " << sourceLandmarksPath;
+                rv.emplace_back(std::move(ss).str(), ValidationCheckState::Ok);
+            }
+
+            const auto modelFilePath = TryFindInputFile(sourceModel);
+            if (not modelFilePath) {
+                std::stringstream ss;
+                ss << getName() << ": cannot find the supplied model file's filesystem location: this is required in order to locate the `DestinationGeometry` directory";
+                rv.emplace_back(std::move(ss).str(), ValidationCheckState::Error);
+                return rv;
+            } else {
+                std::stringstream ss;
+                ss << getName() << ": the model file was found at " << *modelFilePath;
+                rv.emplace_back(std::move(ss).str(), ValidationCheckState::Ok);
+            }
+
+            const auto destinationLandmarksPath = modelFilePath->parent_path() / "DestinationGeometry" / sourceMeshPath->filename().replace_extension(".landmarks.csv");
+            if (not std::filesystem::exists(destinationLandmarksPath)) {
+                std::stringstream ss;
+                ss << sourceMesh->getName() << ": cannot find a destination .landmarks.csv at " << destinationLandmarksPath;
+                rv.emplace_back(std::move(ss).str(), ValidationCheckState::Error);
+                return rv;
+            }
+            else {
+                std::stringstream ss;
+                ss << getName() << ": found a destination .landmarks.csv file at " << destinationLandmarksPath;
+                rv.emplace_back(std::move(ss).str(), ValidationCheckState::Ok);
+            }
+
+            return rv;
         }
     };
 

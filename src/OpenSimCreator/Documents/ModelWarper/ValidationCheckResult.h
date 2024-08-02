@@ -32,6 +32,7 @@ namespace osc::mow
 
         CStringView description() const { return m_Description; }
         ValidationCheckState state() const { return m_State; }
+        bool is_error() const { return m_State == ValidationCheckState::Error; }
 
     private:
         std::string m_Description;
