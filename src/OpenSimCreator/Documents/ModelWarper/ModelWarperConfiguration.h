@@ -64,7 +64,12 @@ namespace osc::mow
     };
 
     // an associative cache that can be used to fetch relevant warping state
-    class WarpCache final {};
+    //
+    // higher-level systems should try persist this cache between components,
+    // `IComponentWarper`s, `ComponentWarpingStrategy`s, and model-warping
+    // requests (e.g. after a user edit in a UI) to minimize redundant work
+    class WarpCache final {
+    };
 
     // an abstract interface to something that is capable of warping an `OpenSim::Component`
     // in an `OpenSim::Model`
@@ -143,6 +148,8 @@ namespace osc::mow
     // this component matches, then it's an error"
     class ExceptionThrowingComponentWarper final : public IComponentWarper {
     public:
+        ExceptionThrowingComponentWarper() = default;
+
         explicit ExceptionThrowingComponentWarper(std::string message) :
             m_Message{std::move(message)}
         {}
@@ -158,7 +165,7 @@ namespace osc::mow
             throw std::runtime_error{m_Message};
         }
 
-        std::string m_Message;
+        std::string m_Message = "(no error message available)";
     };
 
     // an abstract base class for an `OpenSim::Component` that is capable of matching
@@ -234,7 +241,10 @@ namespace osc::mow
         // overriders should return a valid `IComponentWarper` that can warp the given `OpenSim::Component` at runtime
         virtual std::unique_ptr<IComponentWarper> implCreateWarper(const OpenSim::Model&, const OpenSim::Component&) = 0;
 
-        // overriders should return a list of `ValidationCheckResult`s that describe any validation problems in the object, if any
+        // by default, returns an empty `std::vector<ValidationCheckResult>` (i.e. no validation checks made)
+        //
+        // overriders should return a `std::vector<ValidationCheckResult>` that describe any validation
+        // checks (incl. `Ok`, `Warning` and `Error` checks) against the provided `OpenSim::Model`
         virtual std::vector<ValidationCheckResult> implValidate(const OpenSim::Model&) const { return {}; }
 
         void extendFinalizeFromProperties() override
@@ -319,9 +329,15 @@ namespace osc::mow
 
         auto begin() const { return m_Data->pointsInBaseFrame.begin(); }
         auto end() const { return m_Data->pointsInBaseFrame.end(); }
+
         const OpenSim::ComponentPath& getBaseFrameAbsPath() const { return m_Data->baseFrameAbsPath; }
+
+        friend bool operator==(const PairedPoints& lhs, const PairedPoints& rhs)
+        {
+            return lhs.m_Data == rhs.m_Data or *lhs.m_Data == *rhs.m_Data;
+        }
     private:
-        struct Data {
+        struct Data final {
             Data() = default;
 
             template<std::ranges::input_range Range>
@@ -331,6 +347,8 @@ namespace osc::mow
                 baseFrameAbsPath{baseFrameAbsPath_}
             {}
 
+            friend bool operator==(const Data&, const Data&) = default;
+
             std::vector<LandmarkPair3D> pointsInBaseFrame;
             OpenSim::ComponentPath baseFrameAbsPath;
         };
@@ -339,33 +357,61 @@ namespace osc::mow
 
     // an abstract base class to an `OpenSim::Object` that can lookup and produce
     // `PairedPoints` (e.g. for feeding into a Thin-Plate Spline fitter)
-    class PairedPointSource : public OpenSim::Object {
+    class PairedPointSource : public OpenSim::Object, public IWarpDetailProvider {
         OpenSim_DECLARE_ABSTRACT_OBJECT(PairedPointSource, OpenSim::Object)
     public:
+
+        // returns the paired points, based on the concrete implementation's approach
+        // for finding + pairing them
+        //
+        // throws a `std::exception` if the concrete implementation's `implValidate`
+        // returns any `ValidationCheckResult` with a `state()` of `ValidationCheckState::Error`
         PairedPoints getPairedPoints(
             WarpCache& warpCache,
             const OpenSim::Model& sourceModel,
-            const OpenSim::Component& sourceComponent)
+            const OpenSim::Component& sourceComponent
+        );
+
+        // returns a sequence of `ValidationCheckResult`s related to applying the provided
+        // `sourceModel` and `sourceComponent` to this `PairedPointSource`
+        std::vector<ValidationCheckResult> validate(
+            const OpenSim::Model& sourceModel,
+            const OpenSim::Component& sourceComponent) const
         {
-            return implGetPairedPoints(warpCache, sourceModel, sourceComponent);
+            return implValidate(sourceModel, sourceComponent);
         }
     private:
-        virtual PairedPoints implGetPairedPoints(WarpCache&, const OpenSim::Model&, const OpenSim::Component&) = 0;
+        // overriders should find + pair the points and return a `PairedPoints` instance, or throw an exception
+        virtual PairedPoints implGetPairedPoints(
+            WarpCache& warpCache,
+            const OpenSim::Model& sourceModel,
+            const OpenSim::Component& sourceComponent
+        ) = 0;
+
+        // by default, returns no `ValidationCheckResult`s (i.e. no validation)
+        //
+        // overriders should return `ValidationCheckResult`s for their concrete `PairedPointSource`
+        // implementation--including checks that pass/warn--so that the information can be propagated
+        // to other layers of the system (e.g. so that a UI system could display "this thing is ok")
+        virtual std::vector<ValidationCheckResult> implValidate(
+            const OpenSim::Model& sourceModel,
+            const OpenSim::Component& sourceComponent
+        ) const;
     };
 
     // a `PairedPointsource` that uses heuristics to find the landmarks associated with one `OpenSim::Mesh`
     //
-    // - the source component supplied be an `OpenSim::Mesh`; otherwise, an error is thrown
+    // - the source component supplied must be an `OpenSim::Mesh`; otherwise, a validation error is generated
     // - the source landmarks file is assumed to be on the filesystem "next to" the `OpenSim::Mesh` and
-    //   named `${mesh_file_name_without_extension}.landmarks.csv`
-    // - the destination landmarks file is assumed to be on the filesystem "next to" the `OpenSim::Model` (!)
-    //   in a directory named `DestinationGeometry` at `${model_parent_directory}/DestinationGeometry/${mesh_file_name_without_extension}.landmarks.csv`
-    // - if both landmark files cannot be found, throw an error
-    // - if either landmark file is invalid in some way (invalid CSV, etc.), throw an error
-    // - if zero landmark pairs can be associated between the two landmark files, throw an error
+    //   named `${mesh_file_name_without_extension}.landmarks.csv`; otherwise, a validation error is generated
+    // - the destination landmarks file is assumed to be on the filesystem "next to" the `OpenSim::Model`
+    //   in a directory named `DestinationGeometry` at `${model_parent_directory}/DestinationGeometry/${mesh_file_name_without_extension}.landmarks.csv`;
+    //   otherwise, a validation error is generated
+    // - if either landmark file is invalid in some way (invalid CSV, etc.), a validation error is generated
+    // - if zero landmark pairs can be associated between the two landmark files, a validation error is generated
     // - else, accept those pairs as "the mesh's landmark pairs"
-    class LandmarksAttachedToSuppliedMesh final : public PairedPointSource {
-        OpenSim_DECLARE_CONCRETE_OBJECT(LandmarksAttachedToSuppliedMesh, PairedPointSource)
+    class LandmarkPairsAssociatedWithMesh final : public PairedPointSource {
+        OpenSim_DECLARE_CONCRETE_OBJECT(LandmarkPairsAssociatedWithMesh, PairedPointSource)
     private:
         PairedPoints implGetPairedPoints(WarpCache&, const OpenSim::Model&, const OpenSim::Component&) final
         {
@@ -395,8 +441,8 @@ namespace osc::mow
     //       should be propagated upwards
     //     - transform all of "the mesh's landmark pairs" in the mesh's frame to the base frame found in step 1
     //     - merge all of "the mesh's landmark pairs" in "the input mesh set" into a `PairedPoints`
-    class LandmarksOfMeshesAttachedToSameBaseFramePairedPointSource final : public PairedPointSource {
-        OpenSim_DECLARE_CONCRETE_OBJECT(LandmarksOfMeshesAttachedToSameBaseFramePairedPointSource, PairedPointSource)
+    class LandmarkPairsOfMeshesAttachedToSameBaseFrame final : public PairedPointSource {
+        OpenSim_DECLARE_CONCRETE_OBJECT(LandmarkPairsOfMeshesAttachedToSameBaseFrame, PairedPointSource)
     private:
         PairedPoints implGetPairedPoints(WarpCache&, const OpenSim::Model&, const OpenSim::Component&) final
         {

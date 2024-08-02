@@ -6,13 +6,19 @@
 #include <OpenSim/Simulation/Model/Marker.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
+#include <OpenSimCreator/Utils/LandmarkPair3D.h>
 #include <oscar/Utils/StringHelpers.h>
 #include <oscar/Utils/TemporaryFile.h>
 
+#include <algorithm>
+#include <array>
+#include <exception>
 #include <filesystem>
+#include <ranges>
 
 using namespace osc;
 using namespace osc::mow;
+namespace rgs = std::ranges;
 
 namespace
 {
@@ -39,11 +45,6 @@ TEST(WarpCache, CanDefaultConstruct)
     [[maybe_unused]] WarpCache instance;
 }
 
-TEST(ModelWarperConfiguration, CanDefaultConstruct)
-{
-    [[maybe_unused]] ModelWarperConfiguration instance;
-}
-
 TEST(IdentityComponentWarper, CanDefaultConstruct)
 {
     [[maybe_unused]] IdentityComponentWarper instance;
@@ -66,6 +67,11 @@ TEST(IdentityComponentWarper, DoesNotChangeAnyComponentProperty)
     ASSERT_TRUE(destinationMarker.isObjectUpToDateWithProperties());
     warper.warpInPlace(parameters, cache, sourceModel, sourceMarker, destinationModel, destinationMarker);
     ASSERT_TRUE(destinationMarker.isObjectUpToDateWithProperties());
+}
+
+TEST(ExceptionThrowingComponentWarper, CanDefaultConstruct)
+{
+    [[maybe_unused]] ExceptionThrowingComponentWarper instance;
 }
 
 TEST(ExceptionThrowingComponentWarper, ThrowsWhenWarpInPlaceIsCalled)
@@ -92,6 +98,199 @@ TEST(ExceptionThrowingComponentWarper, ThrowsWhenWarpInPlaceIsCalled)
     }
     ASSERT_TRUE(warperThrownException) << "should always throw an exception";
     ASSERT_TRUE(destinationMarker.isObjectUpToDateWithProperties());
+}
+
+TEST(PairedPoints, CanDefaultConstruct)
+{
+    [[maybe_unused]] PairedPoints instance;
+}
+
+TEST(PairedPoints, CanConstructFromRangeOfPairedPointsPlusBaseOffsetPath)
+{
+    const auto points = std::to_array<LandmarkPair3D>({
+        {Vec3{0.0f}, Vec3{1.0f}},
+        {Vec3{2.0f}, Vec3{3.0f}},
+    });
+    const OpenSim::ComponentPath path{"/bodyset/somebody"};
+
+    const PairedPoints pps{points, path};
+
+    ASSERT_EQ(pps.getBaseFrameAbsPath(), path);
+    ASSERT_TRUE(rgs::equal(pps, points));
+}
+
+TEST(PairedPoints, CopyingPointsWorksAsExpected)
+{
+    const auto points = std::to_array<LandmarkPair3D>({
+        {Vec3{0.0f}, Vec3{1.0f}},
+        {Vec3{2.0f}, Vec3{3.0f}},
+    });
+    const OpenSim::ComponentPath path{"/bodyset/somebody"};
+
+    const PairedPoints pps{points, path};
+    const PairedPoints copy = pps;
+
+    ASSERT_EQ(pps.getBaseFrameAbsPath(), copy.getBaseFrameAbsPath());
+    ASSERT_TRUE(rgs::equal(pps, copy));
+}
+
+TEST(PairedPoints, CopyComparesEqualToOriginal)
+{
+    const auto points = std::to_array<LandmarkPair3D>({
+        {Vec3{0.0f}, Vec3{1.0f}},
+        {Vec3{2.0f}, Vec3{3.0f}},
+    });
+    const OpenSim::ComponentPath path{"/bodyset/somebody"};
+
+    const PairedPoints pps{points, path};
+    const PairedPoints copy = pps;
+
+    ASSERT_EQ(pps, copy);
+}
+
+TEST(PairedPoints, EqualityIsValueBased)
+{
+    const auto points = std::to_array<LandmarkPair3D>({
+        {Vec3{0.0f}, Vec3{1.0f}},
+        {Vec3{2.0f}, Vec3{3.0f}},
+    });
+    const OpenSim::ComponentPath path{"/bodyset/somebody"};
+
+    // construct two independent instances (no copying)
+    const PairedPoints a{points, path};
+    const PairedPoints b{points, path};
+
+    ASSERT_EQ(a, b);
+}
+
+namespace
+{
+    class TestablePairedPointSource final : public PairedPointSource {
+        OpenSim_DECLARE_CONCRETE_OBJECT(TestablePairedPointSource, PairedPointSource);
+    public:
+        template<std::ranges::input_range Range>
+        requires std::convertible_to<std::ranges::range_value_t<Range>, ValidationCheckResult>
+        void setChecks(Range&& checks)
+        {
+            m_Checks.assign(rgs::begin(checks), rgs::end(checks));
+        }
+
+        void setPairedPoints(const PairedPoints& points)
+        {
+            m_Points = points;
+        }
+    private:
+        PairedPoints implGetPairedPoints(
+            WarpCache&,
+            const OpenSim::Model&,
+            const OpenSim::Component&) final
+        {
+            return m_Points;
+        }
+
+        std::vector<ValidationCheckResult> implValidate(
+            const OpenSim::Model&,
+            const OpenSim::Component&) const final
+        {
+            return m_Checks;
+        }
+
+        PairedPoints m_Points;
+        std::vector<ValidationCheckResult> m_Checks;
+    };
+}
+
+TEST(PairedPointSource, getPairedPoints_returnsPairedPoints)
+{
+    const PairedPoints points{
+        std::to_array<LandmarkPair3D>({
+            {Vec3{}, Vec3{}},
+            {Vec3{}, Vec3{}},
+        }),
+        OpenSim::ComponentPath{"somebaseframe"},
+    };
+
+    TestablePairedPointSource mock;
+    mock.setPairedPoints(points);
+
+    WarpCache cache;
+    OpenSim::Model sourceModel;
+    const auto& sourceComponent = sourceModel.getGround();
+    const PairedPoints returnedPoints = mock.getPairedPoints(cache, sourceModel, sourceComponent);
+
+    ASSERT_EQ(returnedPoints, points);
+}
+
+TEST(PairedPointSource, getPairedPoints_validateReturnsValidationChecks)
+{
+    const std::vector<ValidationCheckResult> checks = {
+        {"some ok check", ValidationCheckState::Ok},
+        {"some warning check", ValidationCheckState::Warning},
+        {"some error check", ValidationCheckState::Error},
+    };
+
+    TestablePairedPointSource mock;
+    mock.setChecks(checks);
+
+    OpenSim::Model sourceModel;
+    const auto& sourceComponent = sourceModel.getGround();
+    const std::vector<ValidationCheckResult> returnedChecks = mock.validate(sourceModel, sourceComponent);
+
+    ASSERT_EQ(returnedChecks, checks);
+}
+
+TEST(PairedPointSource, getPairedPoints_throwsIfValidationChecksContainError)
+{
+    const std::vector<ValidationCheckResult> checks = {
+        {"uh oh", ValidationCheckState::Error},
+    };
+
+    TestablePairedPointSource mock;
+    mock.setChecks(checks);
+
+    WarpCache cache;
+    OpenSim::Model sourceModel;
+    const auto& sourceComponent = sourceModel.getGround();
+    ASSERT_THROW({ mock.getPairedPoints(cache, sourceModel, sourceComponent); }, std::exception);
+}
+
+TEST(PairedPointSource, getPairedPoints_doesntThrowIfChecksContainWarning)
+{
+    const std::vector<ValidationCheckResult> checks = {
+        {"should be ok", ValidationCheckState::Warning},
+    };
+
+    TestablePairedPointSource mock;
+    mock.setChecks(checks);
+
+    WarpCache cache;
+    OpenSim::Model sourceModel;
+    const auto& sourceComponent = sourceModel.getGround();
+    ASSERT_NO_THROW({ mock.getPairedPoints(cache, sourceModel, sourceComponent); });
+}
+
+TEST(LandmarkPairsAssociatedWithMesh, CanBeDefaultConstructed)
+{
+    [[maybe_unused]] LandmarkPairsAssociatedWithMesh instance;
+}
+
+//TEST(LandmarkPairsAssociatedWithMesh, ValidateReturnsErrorIfProvidedNonMesh)
+//{
+//    LandmarkPairsAssociatedWithMesh pairSource;
+//    OpenSim::Model model;
+//    const auto checks = pairSource.validate(model, model.getGround());
+//
+//    ASSERT_TRUE(rgs::any_of(checks, [](const ValidationCheckResult& res) { return res.state() == ValidationCheckState::Error;  }));
+//}
+// TODO: error if mesh has no source landmarks (but has destination landmarks)
+// TODO: error if mesh has no destination landmarks (but has source landmarks)
+// TODO: error if source landmarks isn't valid CSV (but destination is)
+// TODO: error if destination landmarks isn't valid CSV (but source is)
+// TODO: error if zero landmark pairs generated
+
+TEST(ModelWarperConfiguration, CanDefaultConstruct)
+{
+    [[maybe_unused]] ModelWarperConfiguration instance;
 }
 
 TEST(ModelWarperConfiguration, CanSaveAndLoadDefaultConstructedToAndFromXMLFile)

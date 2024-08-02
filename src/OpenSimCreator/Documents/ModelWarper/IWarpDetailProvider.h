@@ -16,8 +16,17 @@ namespace osc::mow
         IWarpDetailProvider& operator=(IWarpDetailProvider&&) noexcept = default;
     public:
         virtual ~IWarpDetailProvider() noexcept = default;
+
+        // returns a sequence of potentially-useful-to-know details about the
+        // the object (e.g. parameters it's using, filesystem paths it's
+        // referring to - anything that could help a user debug the system)
         std::vector<WarpDetail> details() const { return implWarpDetails(); }
     private:
-        virtual std::vector<WarpDetail> implWarpDetails() const = 0;
+
+        // by default, returns nothing (i.e. no details)
+        //
+        // overriders should return a sequence of potentially-useful-to-know details
+        // about the object
+        virtual std::vector<WarpDetail> implWarpDetails() const { return {}; }
     };
 }

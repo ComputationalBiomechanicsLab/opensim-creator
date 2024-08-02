@@ -28,6 +28,8 @@ namespace osc::mow
             m_State{state_}
         {}
 
+        friend bool operator==(const ValidationCheckResult&, const ValidationCheckResult&) = default;
+
         CStringView description() const { return m_Description; }
         ValidationCheckState state() const { return m_State; }
 

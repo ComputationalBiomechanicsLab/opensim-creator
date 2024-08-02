@@ -1,13 +1,51 @@
 #include "ModelWarperConfiguration.h"
 
+#include <OpenSimCreator/Documents/ModelWarper/ValidationCheckResult.h>
+#include <OpenSimCreator/Documents/ModelWarper/ValidationCheckState.h>
+
 #include <OpenSim/Common/Component.h>
 #include <oscar/Utils/HashHelpers.h>
 
+#include <algorithm>
 #include <filesystem>
+#include <ranges>
 #include <sstream>
+#include <stdexcept>
 #include <string_view>
 #include <unordered_set>
 #include <utility>
+
+using namespace osc::mow;
+namespace rgs = std::ranges;
+namespace views = std::ranges::views;
+
+PairedPoints osc::mow::PairedPointSource::getPairedPoints(
+    WarpCache& warpCache,
+    const OpenSim::Model& sourceModel,
+    const OpenSim::Component& sourceComponent)
+{
+    // ensure no validation errors
+    {
+        const auto checks = validate(sourceModel, sourceComponent);
+        auto filtered = views::filter(checks, [](const auto& check) { return check.state() == ValidationCheckState::Error; });
+        if (not filtered.empty()) {
+            std::stringstream ss;
+            ss << getName() << ": validation errors detected:\n";
+            for (const ValidationCheckResult& result : filtered) {
+                ss << "    - " << result.description() << '\n';
+            }
+            throw std::runtime_error{std::move(ss).str()};
+        }
+    }
+    return implGetPairedPoints(warpCache, sourceModel, sourceComponent);
+}
+
+std::vector<ValidationCheckResult> osc::mow::PairedPointSource::implValidate(
+    const OpenSim::Model&,
+    const OpenSim::Component&) const
+{
+    return {};  // i.e. no validation checks
+}
 
 osc::mow::ModelWarperConfiguration::ModelWarperConfiguration()
 {
