@@ -28,6 +28,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <functional>
+#include <iterator>
 #include <random>
 #include <span>
 #include <sstream>
@@ -38,24 +39,24 @@ using namespace osc;
 using namespace osc::literals;
 using namespace osc::testing;
 
-TEST(Mesh, CanBeDefaultConstructed)
+TEST(Mesh, can_be_default_constructed)
 {
     const Mesh mesh;
 }
 
-TEST(Mesh, CanBeCopyConstructed)
+TEST(Mesh, can_be_copy_constructed)
 {
     const Mesh m;
     Mesh{m};
 }
 
-TEST(Mesh, CanBeMoveConstructed)
+TEST(Mesh, can_be_move_constructed)
 {
     Mesh m1;
     const Mesh m2{std::move(m1)};
 }
 
-TEST(Mesh, CanBeCopyAssigned)
+TEST(Mesh, can_be_copy_assigned)
 {
     Mesh m1;
     const Mesh m2;
@@ -63,7 +64,7 @@ TEST(Mesh, CanBeCopyAssigned)
     m1 = m2;
 }
 
-TEST(Mesh, CanBeMoveAssigned)
+TEST(Mesh, can_be_move_assigned)
 {
     Mesh m1;
     Mesh m2;
@@ -71,21 +72,21 @@ TEST(Mesh, CanBeMoveAssigned)
     m1 = std::move(m2);
 }
 
-TEST(Mesh, CanGetTopology)
+TEST(Mesh, can_call_topology)
 {
     const Mesh m;
 
     m.topology();
 }
 
-TEST(Mesh, GetTopologyDefaultsToTriangles)
+TEST(Mesh, topology_defaults_to_Triangles)
 {
     const Mesh m;
 
     ASSERT_EQ(m.topology(), MeshTopology::Triangles);
 }
 
-TEST(Mesh, SetTopologyCausesGetTopologyToUseSetValue)
+TEST(Mesh, set_topology_causes_topology_to_return_new_MeshTopology)
 {
     Mesh m;
     const auto newTopology = MeshTopology::Lines;
@@ -97,7 +98,7 @@ TEST(Mesh, SetTopologyCausesGetTopologyToUseSetValue)
     ASSERT_EQ(m.topology(), newTopology);
 }
 
-TEST(Mesh, SetTopologyCausesCopiedMeshTobeNotEqualToInitialMesh)
+TEST(Mesh, set_topology_causes_copied_Mesh_to_compare_not_equal_to_initial_Mesh)
 {
     const Mesh m;
     Mesh copy{m};
@@ -111,24 +112,24 @@ TEST(Mesh, SetTopologyCausesCopiedMeshTobeNotEqualToInitialMesh)
     ASSERT_NE(m, copy);
 }
 
-TEST(Mesh, GetNumVertsInitiallyEmpty)
+TEST(Mesh, num_vertices_initially_returns_zero)
 {
     ASSERT_EQ(Mesh{}.num_vertices(), 0);
 }
 
-TEST(Mesh, Assigning3VertsMakesGetNumVertsReturn3Verts)
+TEST(Mesh, set_vertices_causes_num_vertices_to_return_the_number_of_set_vertices)
 {
     Mesh m;
     m.set_vertices(generate_vertices(3));
     ASSERT_EQ(m.num_vertices(), 3);
 }
 
-TEST(Mesh, HasVertsInitiallyfalse)
+TEST(Mesh, has_vertices_initially_returns_false)
 {
     ASSERT_FALSE(Mesh{}.has_vertices());
 }
 
-TEST(Mesh, HasVertsTrueAfterSettingVerts)
+TEST(Mesh, has_vertices_returns_true_after_setting_vertices)
 {
     Mesh m;
     m.set_vertices(generate_vertices(6));
@@ -140,7 +141,7 @@ TEST(Mesh, GetVertsReturnsEmptyVertsOnDefaultConstruction)
     ASSERT_TRUE(Mesh{}.vertices().empty());
 }
 
-TEST(Mesh, SetVertsMakesGetCallReturnVerts)
+TEST(Mesh, set_vertices_makes_vertices_return_the_vertices)
 {
     Mesh m;
     const auto verts = generate_vertices(9);
@@ -150,7 +151,7 @@ TEST(Mesh, SetVertsMakesGetCallReturnVerts)
     ASSERT_EQ(m.vertices(), verts);
 }
 
-TEST(Mesh, SetVertsCanBeCalledWithInitializerList)
+TEST(Mesh, set_vertices_can_be_called_with_an_initializer_list_of_vertices)
 {
     Mesh m;
 
@@ -164,7 +165,7 @@ TEST(Mesh, SetVertsCanBeCalledWithInitializerList)
     ASSERT_EQ(m.vertices(), expected);
 }
 
-TEST(Mesh, SetVertsCanBeCalledWithUnitVectorsBecauseOfImplicitConversion)
+TEST(Mesh, set_vertices_can_be_called_with_UnitVec3_because_of_implicit_conversion)
 {
     Mesh m;
     UnitVec3 v{1.0f, 0.0f, 0.0f};
@@ -173,7 +174,7 @@ TEST(Mesh, SetVertsCanBeCalledWithUnitVectorsBecauseOfImplicitConversion)
     ASSERT_EQ(m.vertices(), expected);
 }
 
-TEST(Mesh, SetVertsCausesCopiedMeshToNotBeEqualToInitialMesh)
+TEST(Mesh, set_vertices_causes_copied_Mesh_to_compare_not_equal_to_initial_Mesh)
 {
     const Mesh m;
     Mesh copy{m};
@@ -185,7 +186,7 @@ TEST(Mesh, SetVertsCausesCopiedMeshToNotBeEqualToInitialMesh)
     ASSERT_NE(m, copy);
 }
 
-TEST(Mesh, ShrinkingVertsCausesNormalsToShrinkAlso)
+TEST(Mesh, shrinking_vertices_also_shrinks_normals)
 {
     const auto normals = generate_normals(6);
 
@@ -197,7 +198,7 @@ TEST(Mesh, ShrinkingVertsCausesNormalsToShrinkAlso)
     ASSERT_EQ(m.normals(), resized_vector_copy(normals, 3));
 }
 
-TEST(Mesh, CanCallSetNormalsWithInitializerList)
+TEST(Mesh, set_normals_can_be_called_with_an_initializer_list)
 {
     const auto verts = generate_vertices(3);
     const auto normals = generate_normals(3);
@@ -209,7 +210,7 @@ TEST(Mesh, CanCallSetNormalsWithInitializerList)
     ASSERT_EQ(m.normals(), normals);
 }
 
-TEST(Mesh, CanCallSetTexCoordsWithInitializerList)
+TEST(Mesh, set_tex_coords_can_be_called_with_an_initializer_list)
 {
     const auto verts = generate_vertices(3);
     const auto uvs = generate_texture_coordinates(3);
@@ -221,7 +222,7 @@ TEST(Mesh, CanCallSetTexCoordsWithInitializerList)
     ASSERT_EQ(m.tex_coords(), uvs);
 }
 
-TEST(Mesh, CanCallSetColorsWithInitializerList)
+TEST(Mesh, set_colors_can_be_called_with_an_initializer_list)
 {
     const auto verts = generate_vertices(3);
     const auto colors = generate_colors(3);
@@ -233,7 +234,7 @@ TEST(Mesh, CanCallSetColorsWithInitializerList)
     ASSERT_EQ(m.colors(), colors);
 }
 
-TEST(Mesh, CanCallSetTangentsWithInitializerList)
+TEST(Mesh, set_tangents_can_be_called_with_an_initializer_list)
 {
     const auto verts = generate_vertices(3);
     const auto tangents = generate_tangent_vectors(3);
@@ -245,7 +246,7 @@ TEST(Mesh, CanCallSetTangentsWithInitializerList)
     ASSERT_EQ(m.tangents(), tangents);
 }
 
-TEST(Mesh, ExpandingVertsCausesNormalsToExpandWithZeroedNormals)
+TEST(Mesh, expanding_vertices_also_expands_normals_with_zeroed_normals)
 {
     const auto normals = generate_normals(6);
 
@@ -257,7 +258,7 @@ TEST(Mesh, ExpandingVertsCausesNormalsToExpandWithZeroedNormals)
     ASSERT_EQ(m.normals(), resized_vector_copy(normals, 12));
 }
 
-TEST(Mesh, ShrinkingVertsCausesTexCoordsToShrinkAlso)
+TEST(Mesh, shrinking_vertices_also_shrinks_tex_coords)
 {
     const auto uvs = generate_texture_coordinates(6);
 
@@ -269,7 +270,7 @@ TEST(Mesh, ShrinkingVertsCausesTexCoordsToShrinkAlso)
     ASSERT_EQ(m.tex_coords(), resized_vector_copy(uvs, 3));
 }
 
-TEST(Mesh, ExpandingVertsCausesTexCoordsToExpandWithZeroedTexCoords)
+TEST(Mesh, expanding_vertices_also_expands_tex_coords_with_zeroed_tex_coords)
 {
     const auto uvs = generate_texture_coordinates(6);
 
@@ -281,7 +282,7 @@ TEST(Mesh, ExpandingVertsCausesTexCoordsToExpandWithZeroedTexCoords)
     ASSERT_EQ(m.tex_coords(), resized_vector_copy(uvs, 12));
 }
 
-TEST(Mesh, ShrinkingVertsCausesColorsToShrinkAlso)
+TEST(Mesh, shrinking_vertices_also_shrinks_colors)
 {
     const auto colors = generate_colors(6);
 
@@ -293,7 +294,7 @@ TEST(Mesh, ShrinkingVertsCausesColorsToShrinkAlso)
     ASSERT_EQ(m.colors(), resized_vector_copy(colors, 3));
 }
 
-TEST(Mesh, ExpandingVertsCausesColorsToExpandWithClearColor)
+TEST(Mesh, expanding_vertices_also_expands_colors_with_clear_color)
 {
     const auto colors = generate_colors(6);
 
@@ -305,7 +306,7 @@ TEST(Mesh, ExpandingVertsCausesColorsToExpandWithClearColor)
     ASSERT_EQ(m.colors(), resized_vector_copy(colors, 12, Color::clear()));
 }
 
-TEST(Mesh, ShrinkingVertsCausesTangentsToShrinkAlso)
+TEST(Mesh, shrinking_vertices_also_shrinks_tangents)
 {
     const auto tangents = generate_tangent_vectors(6);
 
@@ -319,7 +320,7 @@ TEST(Mesh, ShrinkingVertsCausesTangentsToShrinkAlso)
     ASSERT_EQ(got, expected);
 }
 
-TEST(Mesh, ExpandingVertsCausesTangentsToExpandAlsoAsZeroedTangents)
+TEST(Mesh, expanding_vertices_also_expands_tangents_with_zeroed_tangents)
 {
     const auto tangents = generate_tangent_vectors(6);
 
@@ -331,39 +332,39 @@ TEST(Mesh, ExpandingVertsCausesTangentsToExpandAlsoAsZeroedTangents)
     ASSERT_EQ(m.tangents(), resized_vector_copy(tangents, 12));
 }
 
-TEST(Mesh, TransformVertsMakesGetCallReturnVerts)
+TEST(Mesh, transform_certices_makes_vertices_return_transformed_vertices)
 {
     Mesh m;
 
     // generate "original" verts
-    const auto originalVerts = generate_vertices(30);
+    const auto original_vertices = generate_vertices(30);
 
     // create "transformed" version of the verts
-    const auto newVerts = project_into_vector(originalVerts, [](const Vec3& v) { return v + 1.0f; });
+    const auto new_vertices = project_into_vector(original_vertices, [](const Vec3& v) { return v + 1.0f; });
 
-    // sanity check that `setVerts` works as expected
+    // sanity check that `set_vertices` works as expected
     ASSERT_FALSE(m.has_vertices());
-    m.set_vertices(originalVerts);
-    ASSERT_EQ(m.vertices(), originalVerts);
+    m.set_vertices(original_vertices);
+    ASSERT_EQ(m.vertices(), original_vertices);
 
-    // the verts passed to `transform_vertices` should match those returned by getVerts
-    std::vector<Vec3> vertsPassedToTransformVerts;
-    m.transform_vertices([&vertsPassedToTransformVerts](Vec3 v)
+    // the vertices passed to `transform_vertices` should match those returned by `vertices()`
+    std::vector<Vec3> vertices_passed_to_transform_vertices;
+    m.transform_vertices([&vertices_passed_to_transform_vertices](Vec3 v)
     {
-        vertsPassedToTransformVerts.push_back(v);
+        vertices_passed_to_transform_vertices.push_back(v);
         return v;
     });
-    ASSERT_EQ(vertsPassedToTransformVerts, originalVerts);
+    ASSERT_EQ(vertices_passed_to_transform_vertices, original_vertices);
 
     // applying the transformation should return the transformed verts
-    m.transform_vertices([&newVerts, i = 0](Vec3) mutable
+    m.transform_vertices([&new_vertices, i = 0](Vec3) mutable
     {
-        return newVerts.at(i++);
+        return new_vertices.at(i++);
     });
-    ASSERT_EQ(m.vertices(), newVerts);
+    ASSERT_EQ(m.vertices(), new_vertices);
 }
 
-TEST(Mesh, TransformVertsCausesTransformedMeshToNotBeEqualToInitialMesh)
+TEST(Mesh, transform_vertices_causes_transformed_Mesh_to_compare_not_equal_to_original_Mesh)
 {
     const Mesh m;
     Mesh copy{m};
@@ -375,7 +376,7 @@ TEST(Mesh, TransformVertsCausesTransformedMeshToNotBeEqualToInitialMesh)
     ASSERT_NE(m, copy);
 }
 
-TEST(Mesh, TransformVertsWithTransformAppliesTransformToVerts)
+TEST(Mesh, transform_vertices_with_Transform_applies_Transform_to_each_vertex)
 {
     // create appropriate transform
     const Transform transform = {
