@@ -444,7 +444,7 @@ target_compile_options(OpenSimCreator PUBLIC
     # msvc (Windows) flags
     $<$<CXX_COMPILER_ID:MSVC>:
 
-        # disable warning 4996: Simbody uses a deprecated iterator class
+        # disable warning 4996: OpenSim's `spdlog` transitively uses a deprecated `stdext::checked_array_iterator`
         /wd4996
 
         # disable warning about signed/unsigned comparison mismatch
