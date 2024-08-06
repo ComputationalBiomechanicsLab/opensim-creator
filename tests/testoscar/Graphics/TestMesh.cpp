@@ -136,7 +136,7 @@ TEST(Mesh, has_vertices_returns_true_after_setting_vertices)
     ASSERT_TRUE(m.has_vertices());
 }
 
-TEST(Mesh, GetVertsReturnsEmptyVertsOnDefaultConstruction)
+TEST(Mesh, vertices_is_empty_on_default_construction)
 {
     ASSERT_TRUE(Mesh{}.vertices().empty());
 }
@@ -402,19 +402,17 @@ TEST(Mesh, transform_vertices_with_Transform_applies_Transform_to_each_vertex)
     ASSERT_EQ(m.vertices(), expected);
 }
 
-TEST(Mesh, TransformVertsWithTransformCausesTransformedMeshToNotBeEqualToInitialMesh)
+TEST(Mesh, transform_vertices_with_identity_transform_causes_transformed_mesh_to_compare_not_equal_to_original_Mesh)
 {
     const Mesh m;
     Mesh copy{m};
 
     ASSERT_EQ(m, copy);
-
     copy.transform_vertices(identity<Transform>());  // noop transform also triggers this (meshes aren't value-comparable)
-
     ASSERT_NE(m, copy);
 }
 
-TEST(Mesh, TransformVertsWithMat4AppliesTransformToVerts)
+TEST(Mesh, transform_vertices_with_Mat4_applies_transform_to_vertices)
 {
     const Mat4 mat = mat4_cast(Transform{
         .scale = Vec3{0.25f},
@@ -439,7 +437,7 @@ TEST(Mesh, TransformVertsWithMat4AppliesTransformToVerts)
     ASSERT_EQ(m.vertices(), expected);
 }
 
-TEST(Mesh, TransformVertsWithMat4CausesTransformedMeshToNotBeEqualToInitialMesh)
+TEST(Mesh, transform_vertices_with_identity_Mat4_causes_transformed_mesh_to_compare_not_equal_to_original_mesh)
 {
     const Mesh m;
     Mesh copy{m};
@@ -451,19 +449,19 @@ TEST(Mesh, TransformVertsWithMat4CausesTransformedMeshToNotBeEqualToInitialMesh)
     ASSERT_NE(m, copy) << "should be non-equal because mesh equality is reference-based (if it becomes value-based, delete this test)";
 }
 
-TEST(Mesh, HasNormalsReturnsFalseForNewlyConstructedMesh)
+TEST(Mesh, has_normals_returns_false_on_default_construction)
 {
     ASSERT_FALSE(Mesh{}.has_normals());
 }
 
-TEST(Mesh, AssigningOnlyNormalsButNoVertsMakesHasNormalsStillReturnFalse)
+TEST(Mesh, set_normals_on_Mesh_with_no_vertices_makes_has_normals_still_return_false)
 {
     Mesh m;
     m.set_normals(generate_normals(6));
     ASSERT_FALSE(m.has_normals()) << "shouldn't have any normals, because the caller didn't first assign any vertices";
 }
 
-TEST(Mesh, SettingEmptyNormalsOnAnEmptyMeshDoesNotCauseHasNormalsToReturnTrue)
+TEST(Mesh, set_normals_on_an_empty_Mesh_makes_has_normals_still_return_false)
 {
     Mesh m;
     m.set_vertices({});
@@ -472,7 +470,7 @@ TEST(Mesh, SettingEmptyNormalsOnAnEmptyMeshDoesNotCauseHasNormalsToReturnTrue)
     ASSERT_FALSE(m.has_normals());
 }
 
-TEST(Mesh, AssigningNormalsAndThenVerticiesMakesNormalsAssignmentFail)
+TEST(Mesh, set_normals_followed_by_set_vertices_makes_normal_assignment_still_fail)
 {
     Mesh m;
     m.set_normals(generate_normals(9));
@@ -480,7 +478,7 @@ TEST(Mesh, AssigningNormalsAndThenVerticiesMakesNormalsAssignmentFail)
     ASSERT_FALSE(m.has_normals()) << "shouldn't have any normals, because the caller assigned the vertices _after_ assigning the normals (must be first)";
 }
 
-TEST(Mesh, AssigningVerticesAndThenNormalsMakesHasNormalsReturnTrue)
+TEST(Mesh, set_vertices_followed_by_set_normals_makes_has_normals_return_true)
 {
     Mesh m;
     m.set_vertices(generate_vertices(6));
@@ -488,7 +486,7 @@ TEST(Mesh, AssigningVerticesAndThenNormalsMakesHasNormalsReturnTrue)
     ASSERT_TRUE(m.has_normals()) << "this should work: the caller assigned vertices (good) _and then_ normals (also good)";
 }
 
-TEST(Mesh, ClearingMeshClearsHasNormals)
+TEST(Mesh, clear_makes_has_normals_return_false)
 {
     Mesh m;
     m.set_vertices(generate_vertices(3));
@@ -498,14 +496,14 @@ TEST(Mesh, ClearingMeshClearsHasNormals)
     ASSERT_FALSE(m.has_normals());
 }
 
-TEST(Mesh, HasNormalsReturnsFalseIfOnlyAssigningVerts)
+TEST(Mesh, has_normals_returns_false_if_only_vertices_are_set)
 {
     Mesh m;
     m.set_vertices(generate_vertices(3));
     ASSERT_FALSE(m.has_normals()) << "shouldn't have normals: the caller didn't assign any vertices first";
 }
 
-TEST(Mesh, GetNormalsReturnsEmptyOnDefaultConstruction)
+TEST(Mesh, normals_returns_empty_on_default_construction)
 {
     Mesh m;
     ASSERT_TRUE(m.normals().empty());
