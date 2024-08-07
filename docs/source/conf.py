@@ -38,6 +38,9 @@ templates_path = ['_templates']
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
 
+# enable numbering each figure (e.g. "figure 1", "figure 2" in caption)
+numfig = True
+
 
 # -- Options for HTML output -------------------------------------------------
 
