@@ -9,6 +9,7 @@
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ModelDisplayHints.h>
+#include <OpenSim/Simulation/Model/ExternalForce.h>
 #include <OpenSim/Simulation/Model/ForceAdapter.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/GeometryPath.h>
@@ -318,7 +319,7 @@ namespace
     };
 
     // OSC-specific decoration handler that adds arrows to forces
-    void HandleLinearForceArrows(
+    void HandleForceArrows(
         RendererState& rs,
         const OpenSim::Force& force)
     {
@@ -1091,7 +1092,7 @@ void osc::GenerateSubcomponentDecorations(
         }
         else if (const auto* const p2p = dynamic_cast<const OpenSim::PointToPointSpring*>(&c); p2p && opts.getShouldShowPointToPointSprings())
         {
-            HandleLinearForceArrows(rendererState, *p2p);
+            HandleForceArrows(rendererState, *p2p);
             HandlePointToPointSpring(rendererState, *p2p);
         }
         else if (typeid(c) == typeid(OpenSim::Station))
@@ -1105,7 +1106,7 @@ void osc::GenerateSubcomponentDecorations(
         }
         else if (const auto* const hcf = dynamic_cast<const OpenSim::HuntCrossleyForce*>(&c))
         {
-            HandleLinearForceArrows(rendererState, *hcf);
+            HandleForceArrows(rendererState, *hcf);
             HandleHuntCrossleyForce(rendererState, *hcf);
         }
         else if (const auto* const geom = dynamic_cast<const OpenSim::Geometry*>(&c))
@@ -1118,7 +1119,7 @@ void osc::GenerateSubcomponentDecorations(
         }
         else if (const auto* const force = dynamic_cast<const OpenSim::Force*>(&c))
         {
-            HandleLinearForceArrows(rendererState, *force);
+            HandleForceArrows(rendererState, *force);
             rendererState.emitGenericDecorations(c, c);
         }
         else
