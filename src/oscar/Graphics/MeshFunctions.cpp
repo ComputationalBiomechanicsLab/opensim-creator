@@ -26,7 +26,7 @@ Vec3 osc::average_centroid_of(const Mesh& mesh)
 {
     Vec3d accumulator{};
     size_t i = 0;
-    mesh.for_each_indexed_vert([&accumulator, &i](Vec3 v)
+    mesh.for_each_indexed_vertex([&accumulator, &i](Vec3 v)
     {
         accumulator += v;
         ++i;

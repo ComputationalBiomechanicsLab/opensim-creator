@@ -855,40 +855,40 @@ TEST(Mesh, set_indices_with_DontRecalculateBounds_does_not_recalculate_bounds)
     ASSERT_EQ(m.bounds(), AABB{}) << "bounds shouldn't update: we explicitly asked for the engine to skip it";
 }
 
-TEST(Mesh, for_each_indexed_vert_is_not_called_when_given_empty_Mesh)
+TEST(Mesh, for_each_indexed_vertex_is_not_called_when_given_empty_Mesh)
 {
     size_t ncalls = 0;
-    Mesh{}.for_each_indexed_vert([&ncalls](auto&&) { ++ncalls; });
+    Mesh{}.for_each_indexed_vertex([&ncalls](auto&&) { ++ncalls; });
     ASSERT_EQ(ncalls, 0);
 }
 
-TEST(Mesh, for_each_indexed_vert_is_not_called_when_only_vertices_with_no_indices_supplied)
+TEST(Mesh, for_each_indexed_vertex_is_not_called_when_only_vertices_with_no_indices_supplied)
 {
     Mesh m;
     m.set_vertices({Vec3{}, Vec3{}, Vec3{}});
     size_t ncalls = 0;
-    m.for_each_indexed_vert([&ncalls](auto&&) { ++ncalls; });
+    m.for_each_indexed_vertex([&ncalls](auto&&) { ++ncalls; });
     ASSERT_EQ(ncalls, 0);
 }
 
-TEST(Mesh, for_each_indexed_vert_called_as_expected_when_supplied_correctly_indexed_mesh)
+TEST(Mesh, for_each_indexed_vertex_called_as_expected_when_supplied_correctly_indexed_mesh)
 {
     Mesh m;
     m.set_vertices({Vec3{}, Vec3{}, Vec3{}});
     m.set_indices(std::to_array<uint16_t>({0, 1, 2}));
     size_t ncalls = 0;
-    m.for_each_indexed_vert([&ncalls](auto&&) { ++ncalls; });
+    m.for_each_indexed_vertex([&ncalls](auto&&) { ++ncalls; });
     ASSERT_EQ(ncalls, 3);
 }
 
-TEST(Mesh, for_each_indexed_vert_called_even_when_mesh_is_non_triangular)
+TEST(Mesh, for_each_indexed_vertex_called_even_when_mesh_is_non_triangular)
 {
     Mesh m;
     m.set_topology(MeshTopology::Lines);
     m.set_vertices({Vec3{}, Vec3{}, Vec3{}, Vec3{}});
     m.set_indices(std::to_array<uint16_t>({0, 1, 2, 3}));
     size_t ncalls = 0;
-    m.for_each_indexed_vert([&ncalls](auto&&) { ++ncalls; });
+    m.for_each_indexed_vertex([&ncalls](auto&&) { ++ncalls; });
     ASSERT_EQ(ncalls, 4);
 }
 

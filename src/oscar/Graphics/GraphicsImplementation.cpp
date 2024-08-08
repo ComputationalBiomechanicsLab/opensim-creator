@@ -4645,7 +4645,7 @@ public:
         }
     }
 
-    void for_each_indexed_vert(const std::function<void(Vec3)>& callback) const
+    void for_each_indexed_vertex(const std::function<void(Vec3)>& callback) const
     {
         const auto positions = vertex_buffer_.iter<Vec3>(VertexAttribute::Position).begin();
         for (auto index : indices()) {
@@ -4700,7 +4700,7 @@ public:
     {
         std::vector<Vec3> rv;
         rv.reserve(num_indices());
-        for_each_indexed_vert([&rv](Vec3 v) { rv.push_back(v); });
+        for_each_indexed_vertex([&rv](Vec3 v) { rv.push_back(v); });
         return rv;
     }
 
@@ -5242,9 +5242,9 @@ void osc::Mesh::set_indices(MeshIndicesView indices, MeshUpdateFlags flags)
     impl_.upd()->set_indices(indices, flags);
 }
 
-void osc::Mesh::for_each_indexed_vert(const std::function<void(Vec3)>& callback) const
+void osc::Mesh::for_each_indexed_vertex(const std::function<void(Vec3)>& callback) const
 {
-    impl_->for_each_indexed_vert(callback);
+    impl_->for_each_indexed_vertex(callback);
 }
 
 void osc::Mesh::for_each_indexed_triangle(const std::function<void(Triangle)>& callback) const
