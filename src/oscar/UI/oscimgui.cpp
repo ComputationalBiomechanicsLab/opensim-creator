@@ -102,6 +102,39 @@ namespace
         default:                   return ImGuizmo::MODE::WORLD;
         }
     }
+
+    ImGuiTreeNodeFlags to_ImGuiTreeNodeFlags(ui::TreeNodeFlags flags)
+    {
+        ImGuiTreeNodeFlags rv = 0;
+        if (flags & ui::TreeNodeFlag::OpenOnArrow) {
+            rv |= ImGuiTreeNodeFlags_OpenOnArrow;
+        }
+        if (flags & ui::TreeNodeFlag::Leaf) {
+            rv |= ImGuiTreeNodeFlags_Leaf;
+        }
+        if (flags & ui::TreeNodeFlag::Bullet) {
+            rv |= ImGuiTreeNodeFlags_Bullet;
+        }
+        return rv;
+    }
+
+    ImGuiTabItemFlags to_ImGuiTabItemFlags(ui::TabItemFlags flags)
+    {
+        ImGuiTabItemFlags rv = 0;
+        if (flags & ui::TabItemFlag::NoReorder) {
+            rv |= ImGuiTabItemFlags_NoReorder;
+        }
+        if (flags & ui::TabItemFlag::NoCloseButton) {
+            rv |= ImGuiTabItemFlags_NoCloseButton;
+        }
+        if (flags & ui::TabItemFlag::UnsavedDocument) {
+            rv |= ImGuiTabItemFlags_UnsavedDocument;
+        }
+        if (flags & ui::TabItemFlag::SetSelected) {
+            rv |= ImGuiTabItemFlags_SetSelected;
+        }
+        return rv;
+    }
 }
 
 void osc::ui::align_text_to_frame_padding()
@@ -154,9 +187,9 @@ void osc::ui::draw_text_bullet_pointed(CStringView str)
     ImGui::BulletText("%s", str.c_str());
 }
 
-bool osc::ui::draw_tree_node_ex(CStringView label, ImGuiTreeNodeFlags flags)
+bool osc::ui::draw_tree_node_ex(CStringView label, ui::TreeNodeFlags flags)
 {
-    return ImGui::TreeNodeEx(label.c_str(), flags);
+    return ImGui::TreeNodeEx(label.c_str(), to_ImGuiTreeNodeFlags(flags));
 }
 
 float osc::ui::get_tree_node_to_label_spacing()
@@ -212,9 +245,9 @@ void osc::ui::end_tab_bar()
     ImGui::EndTabBar();
 }
 
-bool osc::ui::begin_tab_item(CStringView label, bool* p_open, ImGuiTabItemFlags flags)
+bool osc::ui::begin_tab_item(CStringView label, bool* p_open, TabItemFlags flags)
 {
-    return ImGui::BeginTabItem(label.c_str(), p_open, flags);
+    return ImGui::BeginTabItem(label.c_str(), p_open, to_ImGuiTabItemFlags(flags));
 }
 
 void osc::ui::end_tab_item()

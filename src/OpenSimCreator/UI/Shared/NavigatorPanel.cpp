@@ -332,7 +332,7 @@ private:
 
             // handle display mode (node vs leaf)
             const bool isInternalNode = currentPath.size() < 2 || lookaheadPath.size() > currentPath.size();
-            const ImGuiTreeNodeFlags nodeFlags = isInternalNode ? ImGuiTreeNodeFlags_OpenOnArrow : (ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet);
+            const ui::TreeNodeFlags nodeFlags = isInternalNode ? ui::TreeNodeFlag::OpenOnArrow : ui::TreeNodeFlags{ui::TreeNodeFlag::Leaf, ui::TreeNodeFlag::Bullet};
 
             // handle coloring
             int styles = 0;

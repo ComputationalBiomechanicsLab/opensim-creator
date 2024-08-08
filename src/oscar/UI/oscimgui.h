@@ -18,6 +18,7 @@
 #include <oscar/Maths/Vec4.h>
 #include <oscar/Shims/Cpp23/utility.h>
 #include <oscar/Utils/CStringView.h>
+#include <oscar/Utils/EnumHelpers.h>
 #include <oscar/Utils/Flags.h>
 #include <oscar/Utils/UID.h>
 
@@ -99,7 +100,15 @@ namespace osc::ui
 
     void draw_text_bullet_pointed(CStringView);
 
-    bool draw_tree_node_ex(CStringView, ImGuiTreeNodeFlags = 0);
+    enum class TreeNodeFlag {
+        None        = 0,
+        OpenOnArrow = 1<<0,  // only open when clicking on the arrow part
+        Leaf        = 1<<1,  // no collapsing, no arrow (use as a convenience for leaf nodes)
+        Bullet      = 1<<2,  // display a bullet instead of arrow. IMPORTANT: node can still be marked open/close if you don't also set the `Leaf` flag!
+    };
+    using TreeNodeFlags = Flags<TreeNodeFlag>;
+
+    bool draw_tree_node_ex(CStringView, TreeNodeFlags = {});
 
     float get_tree_node_to_label_spacing();
 
@@ -128,8 +137,16 @@ namespace osc::ui
     bool begin_tab_bar(CStringView str_id);
     void end_tab_bar();
 
-    bool begin_tab_item(CStringView label, bool* p_open = nullptr, ImGuiTabItemFlags flags = 0);
+    enum class TabItemFlag {
+        None            = 0,
+        NoReorder       = 1<<0,  // disable reordering this tab or having another tab cross over this tab
+        NoCloseButton   = 1<<1,  // track whether `p_open` was set or not (we'll need this info on the next frame to recompute ContentWidth during layout)
+        UnsavedDocument = 1<<2,  // display a dot next to the title + (internally) set `ImGuiTabItemFlags_NoAssumedClosure`
+        SetSelected     = 1<<3,  // trigger flag to programmatically make the tab selected when calling `begin_tab_item`
+    };
+    using TabItemFlags = Flags<TabItemFlag>;
 
+    bool begin_tab_item(CStringView label, bool* p_open = nullptr, TabItemFlags = {});
     void end_tab_item();
 
     bool draw_tab_item_button(CStringView label);

@@ -473,26 +473,26 @@ private:
                 {
                     for (size_t i = 0; i < m_Tabs.size(); ++i)
                     {
-                        ImGuiTabItemFlags flags = ImGuiTabItemFlags_NoReorder;
+                        ui::TabItemFlags flags = ui::TabItemFlag::NoReorder;
 
                         if (i == 0)
                         {
-                            flags |= ImGuiTabItemFlags_NoCloseButton;  // splash screen
+                            flags |= ui::TabItemFlag::NoCloseButton;  // splash screen
                         }
 
                         if (m_Tabs[i]->is_unsaved())
                         {
-                            flags |= ImGuiTabItemFlags_UnsavedDocument;
+                            flags |= ui::TabItemFlag::UnsavedDocument;
                         }
 
                         if (m_Tabs[i]->id() == m_RequestedTab)
                         {
-                            flags |= ImGuiTabItemFlags_SetSelected;
+                            flags |= ui::TabItemFlag::SetSelected;;
                         }
 
                         if (m_Tabs[i]->id() == m_ActiveTabID && m_Tabs[i]->name() != m_ActiveTabNameLastFrame)
                         {
-                            flags |= ImGuiTabItemFlags_SetSelected;
+                            flags |= ui::TabItemFlag::SetSelected;
                             m_ActiveTabNameLastFrame = m_Tabs[i]->name();
                         }
 
