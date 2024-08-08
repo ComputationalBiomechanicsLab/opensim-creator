@@ -14,10 +14,10 @@
 #include <string_view>
 #include <unordered_set>
 #include <utility>
+#include <vector>
 
 using namespace osc::mow;
 namespace rgs = std::ranges;
-namespace views = std::ranges::views;
 
 PairedPoints osc::mow::PairedPointSource::getPairedPoints(
     WarpCache& warpCache,
@@ -27,13 +27,14 @@ PairedPoints osc::mow::PairedPointSource::getPairedPoints(
     // ensure no validation errors
     {
         const auto checks = validate(sourceModel, sourceComponent);
-        auto filtered = views::filter(checks, [](const auto& check) { return check.state() == ValidationCheckState::Error; });
-        if (not filtered.empty()) {
+        auto it = rgs::find_if(checks, &ValidationCheckResult::is_error);
+        if (it != checks.end()) {
             std::stringstream ss;
             ss << getName() << ": validation errors detected:\n";
-            for (const ValidationCheckResult& result : filtered) {
-                ss << "    - " << result.description() << '\n';
-            }
+            do {
+                ss << "    - " << it->description() << '\n';
+                it = rgs::find_if(it+1, checks.end(), &ValidationCheckResult::is_error);
+            } while (it != checks.end());
             throw std::runtime_error{std::move(ss).str()};
         }
     }
