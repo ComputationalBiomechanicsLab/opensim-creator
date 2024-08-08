@@ -166,7 +166,7 @@ TEST(PairedPoints, EqualityIsValueBased)
 namespace
 {
     class TestablePairedPointSource final : public PairedPointSource {
-        OpenSim_DECLARE_CONCRETE_OBJECT(TestablePairedPointSource, PairedPointSource);
+        OpenSim_DECLARE_CONCRETE_OBJECT(TestablePairedPointSource, PairedPointSource)
     public:
         template<std::ranges::input_range Range>
         requires std::convertible_to<std::ranges::range_value_t<Range>, ValidationCheckResult>
