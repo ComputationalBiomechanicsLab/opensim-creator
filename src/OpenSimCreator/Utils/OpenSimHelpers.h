@@ -33,6 +33,7 @@ namespace OpenSim { class Body; }
 namespace OpenSim { class Component; }
 namespace OpenSim { class ComponentPath; }
 namespace OpenSim { class Coordinate; }
+namespace OpenSim { class ExternalForce; }
 namespace OpenSim { class Frame; }
 namespace OpenSim { class Geometry; }
 namespace OpenSim { class GeometryPath; }
@@ -52,6 +53,7 @@ namespace OpenSim { template<typename, typename> class Set; }
 namespace OpenSim { template<typename> class SimpleProperty; }
 namespace OpenSim { class WrapObject; }
 namespace SimTK { class State; }
+namespace SimTK { class SimbodyMatterSubsystem; }
 
 // OpenSimHelpers: a collection of various helper functions that are used by `osc`
 namespace osc
@@ -676,6 +678,14 @@ namespace osc
         const OpenSim::Model&,
         const SimTK::State&,
         const OpenSim::HuntCrossleyForce&
+    );
+
+    // force vectors
+    //
+    // helper functions for pulling force vectors out of components in the model
+    const OpenSim::PhysicalFrame& GetFrameUsingExternalForceLookupHeuristic(
+        const OpenSim::Model&,
+        const std::string& bodyNameOrPath
     );
 
     // point info

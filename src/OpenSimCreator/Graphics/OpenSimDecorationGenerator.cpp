@@ -58,6 +58,8 @@ namespace rgs = std::ranges;
 namespace
 {
     inline constexpr float c_GeometryPathBaseRadius = 0.005f;
+    inline constexpr float c_ForceArrowLengthScale = 0.005f;
+    inline constexpr float c_TorqueArrowLengthScale = 0.01f;
     constexpr Color c_EffectiveLineOfActionColor = Color::green();
     constexpr Color c_AnatomicalLineOfActionColor = Color::red();
 
@@ -317,19 +319,20 @@ namespace
         SimTK::Array_<SimTK::DecorativeGeometry> m_GeomList;
     };
 
-    // OSC-specific decoration handler that adds arrows to forces
+    // OSC-specific decoration handler that decorates the force/torque applied by `OpenSim::Force`s
+    // as user-visible arrows
     void HandleForceArrows(
         RendererState& rs,
         const OpenSim::Force& force)
     {
-        constexpr float linearForceLengthScale = 0.005f;
-        constexpr float angularForceLengthScale = 0.01f;
+        const bool showForces = rs.getOptions().getShouldShowForceLinearComponent();
+        const bool showTorques = rs.getOptions().getShouldShowForceAngularComponent();
+        if (not showForces and not showTorques) {
+            return;  // caller doesn't want to draw this
+        }
 
-        const bool showLinearForces = rs.getOptions().getShouldShowForceLinearComponent();
-        const bool showAngularForces = rs.getOptions().getShouldShowForceAngularComponent();
-
-        if (not showLinearForces and not showAngularForces) {
-            return;  // nothing to draw
+        if (not force.appliesForce(rs.getState())) {
+            return;  // the `Force` does not apply a force
         }
 
         // this is a very heavy-handed way of getting the relevant information, because
@@ -358,15 +361,15 @@ namespace
             const SimTK::Transform mobod2ground = mobod.getBodyTransform(state);
 
             // if applicable, handle drawing the linear component of force as a yellow arrow
-            if (showLinearForces) {
-                const SimTK::Vec3 linearForce = bodyForces[bodyIdx][1];
-                if (equal_within_scaled_epsilon(linearForce.normSqr(), 0.0)) {
+            if (showForces) {
+                const SimTK::Vec3 forceVec = bodyForces[bodyIdx][1];
+                if (equal_within_scaled_epsilon(forceVec.normSqr(), 0.0)) {
                     continue;  // no translational force applied
                 }
 
                 const ArrowProperties arrowProperties = {
                     .start = ToVec3(mobod2ground * SimTK::Vec3{0.0}),
-                    .end = ToVec3(mobod2ground * (fixupScaleFactor * linearForceLengthScale * linearForce)),
+                    .end = ToVec3(mobod2ground * (fixupScaleFactor * c_ForceArrowLengthScale * forceVec)),
                     .tip_length = (fixupScaleFactor*0.015f),
                     .neck_thickness = (fixupScaleFactor*0.006f),
                     .head_thickness = (fixupScaleFactor*0.01f),
@@ -379,15 +382,15 @@ namespace
             }
 
             // if applicable, handle drawing the angular component of force as an orange arrow
-            if (showAngularForces) {
-                const SimTK::Vec3 angularForce = bodyForces[bodyIdx][0];
-                if (equal_within_scaled_epsilon(angularForce.normSqr(), 0.0)) {
+            if (showTorques) {
+                const SimTK::Vec3 torqueVec = bodyForces[bodyIdx][0];
+                if (equal_within_scaled_epsilon(torqueVec.normSqr(), 0.0)) {
                     continue;  // no translational force applied
                 }
 
                 const ArrowProperties arrowProperties = {
                     .start = ToVec3(mobod2ground * SimTK::Vec3{0.0}),
-                    .end = ToVec3(mobod2ground * (fixupScaleFactor * angularForceLengthScale * angularForce)),
+                    .end = ToVec3(mobod2ground * (fixupScaleFactor * c_TorqueArrowLengthScale * torqueVec)),
                     .tip_length = (fixupScaleFactor*0.015f),
                     .neck_thickness = (fixupScaleFactor*0.006f),
                     .head_thickness = (fixupScaleFactor*0.01f),
@@ -398,6 +401,79 @@ namespace
                     rs.consume(force, std::move(decoration));
                 });
             }
+        }
+    }
+
+    // OSC-specific decoration handler that decorates the force/torque applied by `OpenSim::ExternalForce`s
+    //
+    // note: this specialization is necessary because the vectors extracted from `OpenSim::Force`s are stated
+    //       w.r.t. a body; whereas users of `ExternalForce`s usually want to see how the force was initially
+    //       applied as a point within a body (not necessarily pointing directly from the body - yet, #904)
+    void HandleExternalForcePointForceArrows(
+        RendererState& rs,
+        const OpenSim::ExternalForce& force)
+    {
+        const bool showForces = rs.getOptions().getShouldShowPointForces();
+        const bool showTorques = rs.getOptions().getShouldShowPointTorques();
+        if (not showForces and not showTorques) {
+            return;  // caller doesn't want to draw this
+        }
+
+        const bool appliesForce = force.appliesForce();
+        const bool appliesTorque = force.appliesTorque();
+        if (not appliesForce and not appliesTorque) {
+            return;  // the `ExternalForce` doesn't apply anything
+        }
+
+        // figure out which frames the `ExternalForce` is using
+        const OpenSim::Frame& forceExpressionFrame = GetFrameUsingExternalForceLookupHeuristic(
+            rs.getModel(),
+            force.get_force_expressed_in_body()
+        );
+        const OpenSim::Frame& pointExpressionFrame = GetFrameUsingExternalForceLookupHeuristic(
+            rs.getModel(),
+            force.get_point_expressed_in_body()
+        );
+
+        // calculate common values
+        const double t = rs.getState().getTime();
+        const SimTK::Vec3 pointInPointExpressionFrame = force.getPointAtTime(t);
+        const SimTK::Vec3 pointInGround = pointExpressionFrame.expressVectorInGround(rs.getState(), pointInPointExpressionFrame);
+
+        if (showForces and appliesForce) {
+            const SimTK::Vec3 forceInForceExpressionFrame = force.getForceAtTime(t);
+            const SimTK::Vec3 forceInGround = forceExpressionFrame.expressVectorInGround(rs.getState(), forceInForceExpressionFrame);
+
+            const ArrowProperties arrowProperties = {
+                .start = ToVec3((rs.getFixupScaleFactor() * c_ForceArrowLengthScale * forceInGround) - pointInGround),
+                .end = ToVec3(pointInGround),
+                .tip_length = 0.015f * rs.getFixupScaleFactor(),
+                .neck_thickness = 0.006f * rs.getFixupScaleFactor(),
+                .head_thickness = 0.01f * rs.getFixupScaleFactor(),
+                .color = Color::yellow(),
+            };
+            draw_arrow(rs.updMeshCache(), arrowProperties, [&force, &rs](SceneDecoration&& decoration)
+            {
+                rs.consume(force, std::move(decoration));
+            });
+        }
+
+        if (showTorques and appliesTorque) {
+            const SimTK::Vec3 torqueInTorqueExpressionFrame = force.getTorqueAtTime(t);
+            const SimTK::Vec3 torqueInGround = forceExpressionFrame.expressVectorInGround(rs.getState(), torqueInTorqueExpressionFrame);
+
+            const ArrowProperties arrowProperties = {
+                .start = ToVec3((rs.getFixupScaleFactor() * c_TorqueArrowLengthScale * torqueInGround) - pointInGround),
+                .end = ToVec3(pointInGround),
+                .tip_length = 0.015f * rs.getFixupScaleFactor(),
+                .neck_thickness = 0.006f * rs.getFixupScaleFactor(),
+                .head_thickness = 0.01f * rs.getFixupScaleFactor(),
+                .color = Color::yellow(),
+            };
+            draw_arrow(rs.updMeshCache(), arrowProperties, [&force, &rs](SceneDecoration&& decoration)
+            {
+                rs.consume(force, std::move(decoration));
+            });
         }
     }
 
@@ -1068,6 +1144,11 @@ void osc::GenerateSubcomponentDecorations(
             // if the component being rendered is geometry that was explicitly added into the model then
             // the scene scale factor should not apply to that geometry
             rendererState.emitGenericDecorations(c, c, 1.0f);  // note: override scale factor
+        }
+        else if (const auto* const externalForce = dynamic_cast<const OpenSim::ExternalForce*>(&c)) {
+            HandleExternalForcePointForceArrows(rendererState, *externalForce);
+            HandleForceArrows(rendererState, *externalForce);
+            rendererState.emitGenericDecorations(c, c);
         }
         else if (const auto* const force = dynamic_cast<const OpenSim::Force*>(&c)) {
             HandleForceArrows(rendererState, *force);

@@ -1,5 +1,6 @@
 #include "OpenSimDecorationOptionFlags.h"
 
+#include <IconsFontAwesome5.h>
 #include <oscar/Shims/Cpp23/utility.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/EnumHelpers.h>
@@ -60,20 +61,32 @@ namespace
         OpenSimDecorationOptionMetadata
         {
             "show_contact_forces",
-            "Plane Contact Forces (EXPERIMENTAL)",
+            ICON_FA_MAGIC " Plane Contact Forces",
             "Tries to draw the direction of contact forces on planes in the scene.\n\nEXPERIMENTAL: the implementation of this visualization is work-in-progress and written by someone with a highschool-log_level_ understanding of Torque. Report any bugs or implementation opinions on GitHub.\n\nOpenSim Creator's implementation of this algorithm is very roughly based on Thomas Geijtenbeek's (better) implementation in scone-studio, here:\n\n    - https://github.com/tgeijten/scone-studio \n\nThanks to @tgeijten for writing an awesome project (that OSC has probably mis-implemented ;) - again, report any bugs, folks)",
         },
         OpenSimDecorationOptionMetadata
         {
             "show_force_linear_component",
-            "Forces' Linear Component (EXPERIMENTAL)",
+            ICON_FA_MAGIC " Forces on Bodies",
             "Tries to draw the linear component applied by each `OpenSim::Force` in the model.\n\nEXPERIMENTAL: this currently iterates through all the forces and extracts their linear component w.r.t. the body frame, it's probably slow, and probably noisy, but also probably still useful to know (e.g. if you're debugging weird model behavior)",
         },
         OpenSimDecorationOptionMetadata
         {
             "show_force_angular_component",
-            "Forces' Angular Component (EXPERIMENTAL)",
+            ICON_FA_MAGIC " Torques on Bodies",
             "Tries to draw the angular component applied by each `OpenSim::Force` in the model.\n\nEXPERIMENTAL: this currently iterates through all the forces and extracts their angular component w.r.t. the body frame, it's probably slow, and probably noisy, but also probably still useful to know (e.g. if you're debugging weird model behavior)",
+        },
+        OpenSimDecorationOptionMetadata
+        {
+            "show_point_forces",
+            ICON_FA_MAGIC " Point Forces",
+            "Tries to draw the an arrow to the point where point-based linear force component(s) are applied. This only applies to `OpenSim::Force`s that support applying forces to points.\n\nEXPERIMENTAL: for technical reasons, this implementation is ad-hoc: it currently only really works for `ExternalForce`s",
+        },
+        OpenSimDecorationOptionMetadata
+        {
+            "show_point_torques",
+            ICON_FA_MAGIC " Point Torques",
+            "Tries to draw the an arrow to the point where point-based linear force component(s) are applied. This only applies to `OpenSim::Force`s that support applying forces to points.\n\nEXPERIMENTAL: for technical reasons, this implementation is ad-hoc: it currently only really works for `ExternalForce`s",
         },
     });
 

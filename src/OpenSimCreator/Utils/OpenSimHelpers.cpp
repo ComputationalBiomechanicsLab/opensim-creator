@@ -21,6 +21,7 @@
 #include <OpenSim/Simulation/Model/ContactHalfSpace.h>
 #include <OpenSim/Simulation/Model/ControllerSet.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
+#include <OpenSim/Simulation/Model/ExternalForce.h>
 #include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
 #include <OpenSim/Simulation/Model/Frame.h>
@@ -1418,6 +1419,24 @@ std::optional<ForcePoint> osc::TryGetContactForceInGround(
     }
 
     return ForcePoint{forceTorque.force, *maybePosition};
+}
+
+const OpenSim::PhysicalFrame& osc::GetFrameUsingExternalForceLookupHeuristic(
+    const OpenSim::Model& model,
+    const std::string& bodyNameOrPath)
+{
+    // this tries to match the implementation that's hidden inside
+    // of `ExternalForce.cpp` from OpenSim
+
+    if (const auto* direct = FindComponent<OpenSim::PhysicalFrame>(model, bodyNameOrPath)) {
+        return *direct;
+    }
+    else if (const auto* shimmed = FindComponent<OpenSim::PhysicalFrame>(model, "./bodyset/" + bodyNameOrPath)) {
+        return *shimmed;
+    }
+    else {
+        return model.getGround();
+    }
 }
 
 bool osc::CanExtractPointInfoFrom(const OpenSim::Component& c, const SimTK::State& st)
