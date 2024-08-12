@@ -617,6 +617,9 @@ namespace osc::ui
     // returns the dimensions of the current workspace area in pixels in the main viewport
     Vec2 get_main_viewport_workspace_screen_dimensions();
 
+    // returns the aspect ratio (width divided by height) of the pixel dimensions of the current workspace area
+    float get_main_viewport_workspace_aspect_ratio();
+
     // returns `true` if the user's mouse is within the current workspace area of the main viewport
     bool is_mouse_in_main_viewport_workspace();
 

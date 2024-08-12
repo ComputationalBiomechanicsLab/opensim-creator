@@ -1591,6 +1591,11 @@ Vec2 osc::ui::get_main_viewport_workspace_screen_dimensions()
     return dimensions_of(get_main_viewport_workspace_uiscreenspace_rect());
 }
 
+float osc::ui::get_main_viewport_workspace_aspect_ratio()
+{
+    return aspect_ratio_of(get_main_viewport_workspace_screenspace_rect());
+}
+
 bool osc::ui::is_mouse_in_main_viewport_workspace()
 {
     const Vec2 mousepos = ui::get_mouse_pos();
