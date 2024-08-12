@@ -13,7 +13,7 @@ namespace osc
             const RenderTextureDescriptor&,
             RenderBufferType
         );
-        RenderBuffer(const RenderBuffer&) = delete;
+        RenderBuffer(const RenderBuffer&);
         RenderBuffer(RenderBuffer&&) noexcept = delete;
         RenderBuffer& operator=(const RenderBuffer&) = delete;
         RenderBuffer& operator=(RenderBuffer&&) noexcept = delete;

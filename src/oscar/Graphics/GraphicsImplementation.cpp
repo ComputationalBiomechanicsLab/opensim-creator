@@ -2465,6 +2465,10 @@ osc::RenderBuffer::RenderBuffer(
     impl_{std::make_unique<Impl>(descriptor, buffer_type)}
 {}
 
+osc::RenderBuffer::RenderBuffer(const RenderBuffer& src) :
+    impl_{std::make_unique<Impl>(*src.impl_)}
+{}
+
 osc::RenderBuffer::~RenderBuffer() noexcept = default;
 
 class osc::RenderTexture::Impl final {
@@ -2480,6 +2484,29 @@ public:
         color_buffer_{std::make_shared<RenderBuffer>(descriptor, RenderBufferType::Color)},
         depth_buffer_{std::make_shared<RenderBuffer>(descriptor, RenderBufferType::Depth)}
     {}
+
+    // note: independent `RenderTexture::Impl` should have independent data, so value-copy
+    //       the underlying `RenderBuffer` here
+    Impl(const Impl& src) :
+        color_buffer_{std::make_shared<RenderBuffer>(*src.color_buffer_)},
+        depth_buffer_{std::make_shared<RenderBuffer>(*src.depth_buffer_)}
+    {}
+
+    Impl(Impl&&) noexcept = default;
+
+    Impl& operator=(const Impl& src)
+    {
+        if (&src == this) {
+            return *this;
+        }
+        color_buffer_ = std::make_shared<RenderBuffer>(*src.color_buffer_);
+        depth_buffer_ = std::make_shared<RenderBuffer>(*src.depth_buffer_);
+        return *this;
+    }
+
+    Impl& operator=(Impl&&) noexcept = default;
+
+    ~Impl() noexcept = default;
 
     Vec2i dimensions() const
     {
