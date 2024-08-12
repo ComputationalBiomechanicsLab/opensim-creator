@@ -899,7 +899,7 @@ TEST(Mesh, for_each_indexed_triangle_not_called_when_given_empty_Mesh)
     ASSERT_EQ(ncalls, 0);
 }
 
-TEST(Mesh, ForEachIndexedTriangleNotCalledWhenMeshhasNoIndicies)
+TEST(Mesh, for_each_indexed_triangle_not_called_when_Mesh_contains_no_indices)
 {
     Mesh m;
     m.set_vertices({Vec3{}, Vec3{}, Vec3{}});  // unindexed
@@ -908,7 +908,7 @@ TEST(Mesh, ForEachIndexedTriangleNotCalledWhenMeshhasNoIndicies)
     ASSERT_EQ(ncalls, 0);
 }
 
-TEST(Mesh, ForEachIndexedTriangleCalledIfMeshContainsIndexedTriangles)
+TEST(Mesh, for_each_indexed_triangle_is_called_if_Mesh_contains_indexed_triangles)
 {
     Mesh m;
     m.set_vertices({Vec3{}, Vec3{}, Vec3{}});
@@ -918,7 +918,7 @@ TEST(Mesh, ForEachIndexedTriangleCalledIfMeshContainsIndexedTriangles)
     ASSERT_EQ(ncalls, 1);
 }
 
-TEST(Mesh, ForEachIndexedTriangleNotCalledIfMeshContainsInsufficientIndices)
+TEST(Mesh, for_each_indexed_triangle_not_called_if_Mesh_contains_insufficient_indices)
 {
     Mesh m;
     m.set_vertices({Vec3{}, Vec3{}, Vec3{}});
@@ -928,7 +928,7 @@ TEST(Mesh, ForEachIndexedTriangleNotCalledIfMeshContainsInsufficientIndices)
     ASSERT_EQ(ncalls, 0);
 }
 
-TEST(Mesh, ForEachIndexedTriangleCalledMultipleTimesForMultipleTriangles)
+TEST(Mesh, for_each_indexed_triangle_called_multiple_times_when_Mesh_contains_multiple_triangles)
 {
     Mesh m;
     m.set_vertices({Vec3{}, Vec3{}, Vec3{}});
@@ -938,7 +938,7 @@ TEST(Mesh, ForEachIndexedTriangleCalledMultipleTimesForMultipleTriangles)
     ASSERT_EQ(ncalls, 2);
 }
 
-TEST(Mesh, ForEachIndexedTriangleNotCalledIfMeshTopologyIsLines)
+TEST(Mesh, for_each_indexed_triangle_not_called_if_Mesh_has_Lines_topology)
 {
     Mesh m;
     m.set_topology(MeshTopology::Lines);
@@ -949,7 +949,7 @@ TEST(Mesh, ForEachIndexedTriangleNotCalledIfMeshTopologyIsLines)
     ASSERT_EQ(ncalls, 0);
 }
 
-TEST(Mesh, GetTriangleAtReturnsExpectedTriangleForNormalCase)
+TEST(Mesh, get_triangle_at_returns_expected_triangle_for_typical_case)
 {
     const Triangle t = generate<Triangle>();
 
@@ -960,7 +960,7 @@ TEST(Mesh, GetTriangleAtReturnsExpectedTriangleForNormalCase)
     ASSERT_EQ(m.get_triangle_at(0), t);
 }
 
-TEST(Mesh, GetTriangleAtReturnsTriangleIndexedByIndiciesAtProvidedOffset)
+TEST(Mesh, get_triangle_at_returns_triangle_indexed_by_indices_at_provided_offset)
 {
     const Triangle a = generate<Triangle>();
     const Triangle b = generate<Triangle>();
@@ -973,7 +973,7 @@ TEST(Mesh, GetTriangleAtReturnsTriangleIndexedByIndiciesAtProvidedOffset)
     ASSERT_EQ(m.get_triangle_at(3), a) << "the provided arg is an offset into the _indices_";
 }
 
-TEST(Mesh, GetTriangleAtThrowsIfCalledOnNonTriangularMesh)
+TEST(Mesh, get_triangle_at_throws_exception_if_called_on_non_triangular_mesh_topology)
 {
     Mesh m;
     m.set_topology(MeshTopology::Lines);
@@ -983,7 +983,7 @@ TEST(Mesh, GetTriangleAtThrowsIfCalledOnNonTriangularMesh)
     ASSERT_ANY_THROW({ m.get_triangle_at(0); }) << "incorrect topology";
 }
 
-TEST(Mesh, GetTriangleAtThrowsIfGivenOutOfBoundsIndexOffset)
+TEST(Mesh, get_triangle_at_throws_exception_if_given_out_of_bounds_index_offset)
 {
     const Triangle t = generate<Triangle>();
 
@@ -996,12 +996,12 @@ TEST(Mesh, GetTriangleAtThrowsIfGivenOutOfBoundsIndexOffset)
     ASSERT_ANY_THROW({ m.get_triangle_at(3); }) << "should throw: it's out-of-bounds";
 }
 
-TEST(Mesh, GetIndexedVertsReturnsEmptyArrayForBlankMesh)
+TEST(Mesh, indexed_vertices_on_empty_Mesh_returns_empty)
 {
     ASSERT_TRUE(Mesh{}.indexed_vertices().empty());
 }
 
-TEST(Mesh, GetIndexedVertsReturnsEmptyArrayForMeshWithVertsButNoIndices)
+TEST(Mesh, indexed_vertices_on_Mesh_with_no_indices_returns_empty)
 {
     Mesh m;
     m.set_vertices(generate_vertices(6));
@@ -1009,29 +1009,29 @@ TEST(Mesh, GetIndexedVertsReturnsEmptyArrayForMeshWithVertsButNoIndices)
     ASSERT_TRUE(m.indexed_vertices().empty());
 }
 
-TEST(Mesh, GetIndexedVertsReturnsOnlyTheIndexedVerts)
+TEST(Mesh, indexed_vertices_only_returns_the_indexed_vertices)
 {
-    const auto allVerts = generate_vertices(12);
-    const auto subIndices = iota_index_range(5, 8);
+    const auto all_vertices = generate_vertices(12);
+    const auto sub_indices = iota_index_range(5, 8);
 
     Mesh m;
-    m.set_vertices(allVerts);
-    m.set_indices(subIndices);
+    m.set_vertices(all_vertices);
+    m.set_indices(sub_indices);
 
-    const auto expected = project_into_vector(std::span{allVerts}.subspan(5, 3), std::identity{});
+    const auto expected = project_into_vector(std::span{all_vertices}.subspan(5, 3), std::identity{});
     const auto got = m.indexed_vertices();
 
     ASSERT_EQ(m.indexed_vertices(), expected);
 }
 
-TEST(Mesh, GetBoundsReturnsEmptyBoundsOnInitialization)
+TEST(Mesh, bounds_on_empty_Mesh_returns_empty_AABB)
 {
     Mesh m;
     AABB empty{};
     ASSERT_EQ(m.bounds(), empty);
 }
 
-TEST(Mesh, GetBoundsReturnsEmptyForMeshWithUnindexedVerts)
+TEST(Mesh, bounds_on_Mesh_without_indices_returns_empty_AABB)
 {
     const auto pyramid = std::to_array<Vec3>({
         {-1.0f, -1.0f, 0.0f},  // base: bottom-left
@@ -1043,33 +1043,30 @@ TEST(Mesh, GetBoundsReturnsEmptyForMeshWithUnindexedVerts)
     Mesh m;
     m.set_vertices(pyramid);
     AABB empty{};
-    ASSERT_EQ(m.bounds(), empty);
+    ASSERT_EQ(m.bounds(), empty) << "should be empty, because the caller forgot to provide indices";
 }
 
-TEST(Mesh, GetBooundsReturnsNonemptyForIndexedVerts)
+TEST(Mesh, bounds_on_correctly_initialized_Mesh_returns_expected_AABB)
 {
     const auto pyramid = std::to_array<Vec3>({
         {-1.0f, -1.0f, 0.0f},  // base: bottom-left
         { 1.0f, -1.0f, 0.0f},  // base: bottom-right
         { 0.0f,  1.0f, 0.0f},  // base: top-middle
     });
-    const auto pyramidIndices = std::to_array<uint16_t>({0, 1, 2});
+    const auto pyramid_indices = std::to_array<uint16_t>({0, 1, 2});
 
     Mesh m;
     m.set_vertices(pyramid);
-    m.set_indices(pyramidIndices);
+    m.set_indices(pyramid_indices);
     ASSERT_EQ(m.bounds(), bounding_aabb_of(pyramid));
 }
 
-TEST(Mesh, CanBeComparedForEquality)
+TEST(Mesh, can_be_compared_for_equality)
 {
-    Mesh m1;
-    Mesh m2;
-
-    (void)(m1 == m2);  // just ensure the expression compiles
+    static_assert(std::equality_comparable<Mesh>);
 }
 
-TEST(Mesh, CopiesAreEqual)
+TEST(Mesh, unmodified_copies_are_equivalent)
 {
     Mesh m;
     Mesh copy{m};  // NOLINT(performance-unnecessary-copy-initialization)
@@ -1079,13 +1076,10 @@ TEST(Mesh, CopiesAreEqual)
 
 TEST(Mesh, CanBeComparedForNotEquals)
 {
-    Mesh m1;
-    Mesh m2;
-
-    (void)(m1 != m2);  // just ensure the expression compiles
+    static_assert(std::equality_comparable<Mesh>);
 }
 
-TEST(Mesh, CanBeWrittenToOutputStreamForDebugging)
+TEST(Mesh, can_be_written_to_a_std_ostream_for_debugging)
 {
     Mesh m;
     std::stringstream ss;
@@ -1095,28 +1089,28 @@ TEST(Mesh, CanBeWrittenToOutputStreamForDebugging)
     ASSERT_FALSE(ss.str().empty());
 }
 
-TEST(Mesh, GetSubMeshCountReturnsZeroForDefaultConstructedMesh)
+TEST(Mesh, num_submesh_descriptors_on_empty_Mesh_returns_zero)
 {
     ASSERT_EQ(Mesh{}.num_submesh_descriptors(), 0);
 }
 
-TEST(Mesh, GetSubMeshCountReturnsZeroForMeshWithSomeData)
+TEST(Mesh, num_submesh_descriptors_returns_zero_for_Mesh_with_data_but_no_descriptors)
 {
     const auto pyramid = std::to_array<Vec3>({
         {-1.0f, -1.0f, 0.0f},  // base: bottom-left
         { 1.0f, -1.0f, 0.0f},  // base: bottom-right
         { 0.0f,  1.0f, 0.0f},  // base: top-middle
     });
-    const auto pyramidIndices = std::to_array<uint16_t>({0, 1, 2});
+    const auto pyramic_indices = std::to_array<uint16_t>({0, 1, 2});
 
     Mesh m;
     m.set_vertices(pyramid);
-    m.set_indices(pyramidIndices);
+    m.set_indices(pyramic_indices);
 
     ASSERT_EQ(m.num_submesh_descriptors(), 0);
 }
 
-TEST(Mesh, PushSubMeshDescriptorMakesGetMeshSubCountIncrease)
+TEST(Mesh, push_submesh_descriptor_increments_num_submesh_descriptors)
 {
     Mesh m;
     ASSERT_EQ(m.num_submesh_descriptors(), 0);
@@ -1126,7 +1120,7 @@ TEST(Mesh, PushSubMeshDescriptorMakesGetMeshSubCountIncrease)
     ASSERT_EQ(m.num_submesh_descriptors(), 2);
 }
 
-TEST(Mesh, PushSubMeshDescriptorMakesGetSubMeshDescriptorReturnPushedDescriptor)
+TEST(Mesh, push_submesh_descriptor_makes_get_submesh_descriptor_return_pushed_descriptor)
 {
     Mesh m;
     const SubMeshDescriptor descriptor{0, 10, MeshTopology::Triangles};
@@ -1136,53 +1130,53 @@ TEST(Mesh, PushSubMeshDescriptorMakesGetSubMeshDescriptorReturnPushedDescriptor)
     ASSERT_EQ(m.submesh_descriptor_at(0), descriptor);
 }
 
-TEST(Mesh, PushSecondDescriptorMakesGetReturnExpectedResults)
+TEST(Mesh, push_submesh_descriptor_a_second_time_works_as_expected)
 {
     Mesh m;
-    const SubMeshDescriptor firstDesc{0, 10, MeshTopology::Triangles};
-    const SubMeshDescriptor secondDesc{5, 15, MeshTopology::Lines};
+    const SubMeshDescriptor first_descriptor{0, 10, MeshTopology::Triangles};
+    const SubMeshDescriptor second_descriptor{5, 15, MeshTopology::Lines};
 
-    m.push_submesh_descriptor(firstDesc);
-    m.push_submesh_descriptor(secondDesc);
+    m.push_submesh_descriptor(first_descriptor);
+    m.push_submesh_descriptor(second_descriptor);
 
     ASSERT_EQ(m.num_submesh_descriptors(), 2);
-    ASSERT_EQ(m.submesh_descriptor_at(0), firstDesc);
-    ASSERT_EQ(m.submesh_descriptor_at(1), secondDesc);
+    ASSERT_EQ(m.submesh_descriptor_at(0), first_descriptor);
+    ASSERT_EQ(m.submesh_descriptor_at(1), second_descriptor);
 }
 
-TEST(Mesh, SetSubmeshDescriptorsWithRangeWorksAsExpected)
+TEST(Mesh, set_submesh_descriptors_with_range_works_as_expected)
 {
     Mesh m;
-    const SubMeshDescriptor firstDesc{0, 10, MeshTopology::Triangles};
-    const SubMeshDescriptor secondDesc{5, 15, MeshTopology::Lines};
+    const SubMeshDescriptor first_descriptor{0, 10, MeshTopology::Triangles};
+    const SubMeshDescriptor second_descriptor{5, 15, MeshTopology::Lines};
 
-    m.set_submesh_descriptors(std::vector{firstDesc, secondDesc});
+    m.set_submesh_descriptors(std::to_array({first_descriptor, second_descriptor}));
 
     ASSERT_EQ(m.num_submesh_descriptors(), 2);
-    ASSERT_EQ(m.submesh_descriptor_at(0), firstDesc);
-    ASSERT_EQ(m.submesh_descriptor_at(1), secondDesc);
+    ASSERT_EQ(m.submesh_descriptor_at(0), first_descriptor);
+    ASSERT_EQ(m.submesh_descriptor_at(1), second_descriptor);
 }
 
-TEST(Mesh, SetSubmeshDescriptorsRemovesExistingDescriptors)
+TEST(Mesh, set_submesh_descriptors_erases_existing_descriptors)
 {
-    const SubMeshDescriptor firstDesc{0, 10, MeshTopology::Triangles};
-    const SubMeshDescriptor secondDesc{5, 15, MeshTopology::Lines};
-    const SubMeshDescriptor thirdDesc{20, 35, MeshTopology::Triangles};
+    const SubMeshDescriptor first_descriptor{0, 10, MeshTopology::Triangles};
+    const SubMeshDescriptor second_descriptor{5, 15, MeshTopology::Lines};
+    const SubMeshDescriptor third_descriptor{20, 35, MeshTopology::Triangles};
 
     Mesh m;
-    m.push_submesh_descriptor(firstDesc);
+    m.push_submesh_descriptor(first_descriptor);
 
     ASSERT_EQ(m.num_submesh_descriptors(), 1);
-    ASSERT_EQ(m.submesh_descriptor_at(0), firstDesc);
+    ASSERT_EQ(m.submesh_descriptor_at(0), first_descriptor);
 
-    m.set_submesh_descriptors(std::vector{secondDesc, thirdDesc});
+    m.set_submesh_descriptors(std::vector{second_descriptor, third_descriptor});
 
     ASSERT_EQ(m.num_submesh_descriptors(), 2);
-    ASSERT_EQ(m.submesh_descriptor_at(0), secondDesc);
-    ASSERT_EQ(m.submesh_descriptor_at(1), thirdDesc);
+    ASSERT_EQ(m.submesh_descriptor_at(0), second_descriptor);
+    ASSERT_EQ(m.submesh_descriptor_at(1), third_descriptor);
 }
 
-TEST(Mesh, GetSubMeshDescriptorThrowsOOBExceptionIfOOBAccessed)
+TEST(Mesh, get_submesh_descriptor_throws_exception_if_out_of_bounds)
 {
     Mesh m;
 
@@ -1192,16 +1186,16 @@ TEST(Mesh, GetSubMeshDescriptorThrowsOOBExceptionIfOOBAccessed)
     m.push_submesh_descriptor({0, 10, MeshTopology::Triangles});
     ASSERT_EQ(m.num_submesh_descriptors(), 1);
     ASSERT_NO_THROW({ m.submesh_descriptor_at(0); });
-    ASSERT_ANY_THROW({ m.submesh_descriptor_at(1); });
+    ASSERT_ANY_THROW({ m.submesh_descriptor_at(1); }) << "should throw: it's out of bounds";
 }
 
-TEST(Mesh, ClearSubMeshDescriptorsDoesNothingOnEmptyMesh)
+TEST(Mesh, clear_submesh_descriptors_does_nothing_on_empty_Mesh)
 {
     Mesh m;
     ASSERT_NO_THROW({ m.clear_submesh_descriptors(); });
 }
 
-TEST(Mesh, ClearSubMeshDescriptorsClearsAllDescriptors)
+TEST(Mesh, clear_submesh_descriptors_clears_all_assigned_submesh_descriptors)
 {
     Mesh m;
     m.push_submesh_descriptor({0, 10, MeshTopology::Triangles});
@@ -1212,7 +1206,7 @@ TEST(Mesh, ClearSubMeshDescriptorsClearsAllDescriptors)
     ASSERT_EQ(m.num_submesh_descriptors(), 0);
 }
 
-TEST(Mesh, GeneralClearMethodAlsoClearsSubMeshDescriptors)
+TEST(Mesh, clear_clears_submesh_descriptors)
 {
     Mesh m;
     m.push_submesh_descriptor({0, 10, MeshTopology::Triangles});
@@ -1223,19 +1217,19 @@ TEST(Mesh, GeneralClearMethodAlsoClearsSubMeshDescriptors)
     ASSERT_EQ(m.num_submesh_descriptors(), 0);
 }
 
-TEST(Mesh, GetVertexAttributeCountInitiallyZero)
+TEST(Mesh, num_vertex_attributes_on_empty_Mesh_returns_zero)
 {
     ASSERT_EQ(Mesh{}.num_vertex_attributes(), 0);
 }
 
-TEST(Mesh, GetVertexAttributeCountBecomes1AfterSettingVerts)
+TEST(Mesh, num_vertex_attributes_on_Mesh_with_only_vertex_positions_returns_1)
 {
     Mesh m;
     m.set_vertices(generate_vertices(6));
     ASSERT_EQ(m.num_vertex_attributes(), 1);
 }
 
-TEST(Mesh, GetVertexAttributeCountRezeroesIfVerticesAreCleared)
+TEST(Mesh, num_vertex_attributes_becomes_zero_if_vertices_are_cleared)
 {
     Mesh m;
     m.set_vertices(generate_vertices(6));
@@ -1244,7 +1238,7 @@ TEST(Mesh, GetVertexAttributeCountRezeroesIfVerticesAreCleared)
     ASSERT_EQ(m.num_vertex_attributes(), 0);
 }
 
-TEST(Mesh, GetVertexAttributeCountGoesToTwoAfterSetting)
+TEST(Mesh, num_vertex_attributes_returns_2_after_setting_vertices_and_normals)
 {
     Mesh m;
     m.set_vertices(generate_vertices(6));
@@ -1252,7 +1246,7 @@ TEST(Mesh, GetVertexAttributeCountGoesToTwoAfterSetting)
     ASSERT_EQ(m.num_vertex_attributes(), 2);
 }
 
-TEST(Mesh, GetVertexAttributeCountGoesDownAsExpectedWrtNormals)
+TEST(Mesh, num_vertex_attribute_decrements_when_normals_are_cleared)
 {
     Mesh m;
     m.set_vertices(generate_vertices(12));
@@ -1266,7 +1260,7 @@ TEST(Mesh, GetVertexAttributeCountGoesDownAsExpectedWrtNormals)
     ASSERT_EQ(m.num_vertex_attributes(), 0);
 }
 
-TEST(Mesh, GetVertexAttributeCountIsZeroAfterClearingWholeMeshWrtNormals)
+TEST(Mesh, num_vertex_attributes_returns_zero_after_calling_clear)
 {
     Mesh m;
     m.set_vertices(generate_vertices(6));
@@ -1276,7 +1270,7 @@ TEST(Mesh, GetVertexAttributeCountIsZeroAfterClearingWholeMeshWrtNormals)
     ASSERT_EQ(m.num_vertex_attributes(), 0);
 }
 
-TEST(Mesh, GetVertexAttributeCountGoesToTwoAfterAssigningTexCoords)
+TEST(Mesh, num_vertex_attribues_returns_2_after_assigning_vertices_and_texture_coordinates)
 {
     Mesh m;
     m.set_vertices(generate_vertices(6));
