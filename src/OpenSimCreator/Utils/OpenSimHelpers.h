@@ -45,6 +45,7 @@ namespace OpenSim { class Model; }
 namespace OpenSim { class ModelComponent; }
 namespace OpenSim { class Muscle; }
 namespace OpenSim { class Object; }
+namespace OpenSim { class PointForceDirection; }
 namespace OpenSim { template<typename> class Property; }
 namespace OpenSim { template<typename> class ObjectProperty; }
 namespace OpenSim { class PhysicalFrame; }
@@ -643,6 +644,9 @@ namespace osc
     };
     std::optional<LinesOfAction> GetEffectiveLinesOfActionInGround(const OpenSim::Muscle&, const SimTK::State&);
     std::optional<LinesOfAction> GetAnatomicalLinesOfActionInGround(const OpenSim::Muscle&, const SimTK::State&);
+
+    // returns a memory-safe equivalent to `OpenSim::GeometryPath::getPointForceDirections`
+    std::vector<std::unique_ptr<OpenSim::PointForceDirection>> GetPointForceDirections(const OpenSim::GeometryPath&, const SimTK::State&);
 
     // path points
     //

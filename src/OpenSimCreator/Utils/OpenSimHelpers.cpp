@@ -144,22 +144,6 @@ namespace
         return allConnectees;
     }
 
-    // (a memory-safe stdlib version of OpenSim::GeometryPath::getPointForceDirections)
-    std::vector<std::unique_ptr<OpenSim::PointForceDirection>> GetPointForceDirections(
-        const OpenSim::GeometryPath& path,
-        const SimTK::State& st)
-    {
-        OpenSim::Array<OpenSim::PointForceDirection*> pfds;
-        path.getPointForceDirections(st, &pfds);
-
-        std::vector<std::unique_ptr<OpenSim::PointForceDirection>> rv;
-        rv.reserve(size(pfds));
-        for (size_t i = 0; i < size(pfds); ++i) {
-            rv.emplace_back(At(pfds, i));
-        }
-        return rv;
-    }
-
     // returns the index of the "effective" origin point of a muscle PFD sequence
     ptrdiff_t GetEffectiveOrigin(const std::vector<std::unique_ptr<OpenSim::PointForceDirection>>& pfds)
     {
@@ -1241,6 +1225,21 @@ std::optional<LinesOfAction> osc::GetAnatomicalLinesOfActionInGround(
     LinesOfActionConfig config;
     config.useEffectiveInsertion = false;
     return TryGetLinesOfAction(muscle, state, config);
+}
+
+std::vector<std::unique_ptr<OpenSim::PointForceDirection>> osc::GetPointForceDirections(
+    const OpenSim::GeometryPath& path,
+    const SimTK::State& st)
+{
+    OpenSim::Array<OpenSim::PointForceDirection*> pfds;
+    path.getPointForceDirections(st, &pfds);
+
+    std::vector<std::unique_ptr<OpenSim::PointForceDirection>> rv;
+    rv.reserve(size(pfds));
+    for (size_t i = 0; i < size(pfds); ++i) {
+        rv.emplace_back(At(pfds, i));
+    }
+    return rv;
 }
 
 std::vector<GeometryPathPoint> osc::GetAllPathPoints(const OpenSim::GeometryPath& gp, const SimTK::State& st)

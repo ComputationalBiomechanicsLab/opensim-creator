@@ -87,6 +87,11 @@ namespace osc
             return {1.0f, 1.0f, 0.0f};
         }
 
+        static constexpr Color muted_yellow()
+        {
+            return {1.0f, 1.0f, 0.6f};
+        }
+
         static constexpr Color orange()
         {
             return {255.0f/255.0f, 165.0f/255.0f, 0.0f};

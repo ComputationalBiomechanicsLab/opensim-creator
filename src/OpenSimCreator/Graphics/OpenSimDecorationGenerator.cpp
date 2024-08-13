@@ -18,6 +18,7 @@
 #include <OpenSim/Simulation/Model/Muscle.h>
 #include <OpenSim/Simulation/Model/PathSpring.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
+#include <OpenSim/Simulation/Model/PointForceDirection.h>
 #include <OpenSim/Simulation/Model/PointToPointSpring.h>
 #include <OpenSim/Simulation/Model/Station.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
@@ -60,8 +61,14 @@ namespace
     inline constexpr float c_GeometryPathBaseRadius = 0.005f;
     inline constexpr float c_ForceArrowLengthScale = 0.005f;
     inline constexpr float c_TorqueArrowLengthScale = 0.01f;
-    constexpr Color c_EffectiveLineOfActionColor = Color::green();
-    constexpr Color c_AnatomicalLineOfActionColor = Color::red();
+    inline constexpr Color c_EffectiveLineOfActionColor = Color::green();
+    inline constexpr Color c_AnatomicalLineOfActionColor = Color::red();
+    inline constexpr Color c_BodyForceArrowColor = Color::yellow();
+    inline constexpr Color c_BodyTorqueArrowColor = Color::orange();
+    inline constexpr Color c_PointForceArrowColor = Color::muted_yellow();  // note: should be similar to body force arrows
+    inline constexpr Color c_StationColor = Color::red();
+    inline constexpr Color c_ScapulothoracicJointColor =  Color::yellow().with_alpha(0.2f);
+    inline constexpr Color c_CenterOfMassColor = Color::black();
 
     // helper: convert a physical frame's transform to ground into an Transform
     Transform TransformInGround(const OpenSim::Frame& frame, const SimTK::State& state)
@@ -360,7 +367,7 @@ namespace
             const SimTK::MobilizedBody& mobod = matter.getMobilizedBody(bodyIdx);
             const SimTK::Transform mobod2ground = mobod.getBodyTransform(state);
 
-            // if applicable, handle drawing the linear component of force as a yellow arrow
+            // if applicable, handle drawing the linear component of force as an arrow
             if (showForces) {
                 const SimTK::Vec3 forceVec = bodyForces[bodyIdx][1];
                 if (equal_within_scaled_epsilon(forceVec.normSqr(), 0.0)) {
@@ -373,7 +380,7 @@ namespace
                     .tip_length = (fixupScaleFactor*0.015f),
                     .neck_thickness = (fixupScaleFactor*0.006f),
                     .head_thickness = (fixupScaleFactor*0.01f),
-                    .color = Color::yellow(),
+                    .color = c_BodyForceArrowColor,
                 };
                 draw_arrow(rs.updMeshCache(), arrowProperties, [&force, &rs](SceneDecoration&& decoration)
                 {
@@ -381,7 +388,7 @@ namespace
                 });
             }
 
-            // if applicable, handle drawing the angular component of force as an orange arrow
+            // if applicable, handle drawing the angular component of force as an arrow
             if (showTorques) {
                 const SimTK::Vec3 torqueVec = bodyForces[bodyIdx][0];
                 if (equal_within_scaled_epsilon(torqueVec.normSqr(), 0.0)) {
@@ -394,7 +401,7 @@ namespace
                     .tip_length = (fixupScaleFactor*0.015f),
                     .neck_thickness = (fixupScaleFactor*0.006f),
                     .head_thickness = (fixupScaleFactor*0.01f),
-                    .color = Color::orange(),
+                    .color = c_BodyTorqueArrowColor,
                 };
                 draw_arrow(rs.updMeshCache(), arrowProperties, [&force, &rs](SceneDecoration&& decoration)
                 {
@@ -438,11 +445,11 @@ namespace
         // calculate common values
         const double t = rs.getState().getTime();
         const SimTK::Vec3 pointInPointExpressionFrame = force.getPointAtTime(t);
-        const SimTK::Vec3 pointInGround = pointExpressionFrame.expressVectorInGround(rs.getState(), pointInPointExpressionFrame);
+        const SimTK::Vec3 pointInGround = pointExpressionFrame.findStationLocationInGround(rs.getState(), pointInPointExpressionFrame);
 
         if (showForces and appliesForce) {
             const SimTK::Vec3 forceInForceExpressionFrame = force.getForceAtTime(t);
-            const SimTK::Vec3 forceInGround = forceExpressionFrame.expressVectorInGround(rs.getState(), forceInForceExpressionFrame);
+            const SimTK::Vec3 forceInGround = forceExpressionFrame.findStationLocationInGround(rs.getState(), forceInForceExpressionFrame);
 
             const ArrowProperties arrowProperties = {
                 .start = ToVec3((rs.getFixupScaleFactor() * c_ForceArrowLengthScale * forceInGround) - pointInGround),
@@ -450,7 +457,7 @@ namespace
                 .tip_length = 0.015f * rs.getFixupScaleFactor(),
                 .neck_thickness = 0.006f * rs.getFixupScaleFactor(),
                 .head_thickness = 0.01f * rs.getFixupScaleFactor(),
-                .color = Color::yellow(),
+                .color = c_PointForceArrowColor,
             };
             draw_arrow(rs.updMeshCache(), arrowProperties, [&force, &rs](SceneDecoration&& decoration)
             {
@@ -460,7 +467,7 @@ namespace
 
         if (showTorques and appliesTorque) {
             const SimTK::Vec3 torqueInTorqueExpressionFrame = force.getTorqueAtTime(t);
-            const SimTK::Vec3 torqueInGround = forceExpressionFrame.expressVectorInGround(rs.getState(), torqueInTorqueExpressionFrame);
+            const SimTK::Vec3 torqueInGround = forceExpressionFrame.findStationLocationInGround(rs.getState(), torqueInTorqueExpressionFrame);
 
             const ArrowProperties arrowProperties = {
                 .start = ToVec3((rs.getFixupScaleFactor() * c_TorqueArrowLengthScale * torqueInGround) - pointInGround),
@@ -468,11 +475,67 @@ namespace
                 .tip_length = 0.015f * rs.getFixupScaleFactor(),
                 .neck_thickness = 0.006f * rs.getFixupScaleFactor(),
                 .head_thickness = 0.01f * rs.getFixupScaleFactor(),
-                .color = Color::yellow(),
+                .color = c_PointForceArrowColor,
             };
             draw_arrow(rs.updMeshCache(), arrowProperties, [&force, &rs](SceneDecoration&& decoration)
             {
                 rs.consume(force, std::move(decoration));
+            });
+        }
+    }
+
+    // OSC-specific decoration handler that decorates the force/torque applied by `OpenSim::GeometryPath`s
+    //
+    // note: this specialization is necessary because the vectors extracted from `OpenSim::Force`s are stated
+    //       w.r.t. a body; whereas users of `GeometryPath`s usually want to see how the path applies forces
+    //       to bodies along it (#907)
+    void HandleGeometryPathPointForceArrows(
+        RendererState& rs,
+        const OpenSim::GeometryPath& path)
+    {
+        if (not rs.getOptions().getShouldShowPointForces()) {
+            return;  // the caller doesn't want to draw point-force vectors
+        }
+
+        if (not path.hasOwner()) {
+            return;  // this implementation needs additional information (tension)
+        }
+
+        const auto* pathActuator = dynamic_cast<const OpenSim::PathActuator*>(&path.getOwner());
+        if (not pathActuator) {
+            return;  // this implementation can't figure out what the tension along the path is
+        }
+
+        const double tension = pathActuator->computeActuation(rs.getState());
+        if (isnan(tension) or equal_within_epsilon(tension, 0.0)) {
+            return;  // the `PathActuator` isn't applying a tension
+        }
+
+        // else: figure out the point-force directions applied by the `GeometryPath` and use
+        //       `tension` to scale the length of the resulting force arrow decoration
+
+        const auto pfdPtrs = GetPointForceDirections(path, rs.getState());
+        for (const auto& pfdPtr : pfdPtrs) {
+            OpenSim::PointForceDirection& pfd = *pfdPtr;
+
+            const SimTK::Vec3 pointInGround = pfd.frame().findStationLocationInGround(rs.getState(), pfd.point());
+            const SimTK::Vec3 directionInGround = pfd.direction();  // note: sometimes zero? `draw_arrow` checks this
+            const double scale = pfd.scale();
+
+            const double arrowLength = tension * scale * c_ForceArrowLengthScale;
+
+            const ArrowProperties arrowProperties = {
+                .start = ToVec3(pointInGround),
+                .end = ToVec3(pointInGround + arrowLength*directionInGround),
+                .tip_length = 0.015f * rs.getFixupScaleFactor(),
+                .neck_thickness = 0.006f * rs.getFixupScaleFactor(),
+                .head_thickness = 0.01f * rs.getFixupScaleFactor(),
+                .color = c_PointForceArrowColor,
+            };
+
+            draw_arrow(rs.updMeshCache(), arrowProperties, [&pathActuator, &rs](SceneDecoration&& decoration)
+            {
+                rs.consume(*pathActuator, std::move(decoration));
             });
         }
     }
@@ -512,7 +575,7 @@ namespace
                 .scale = Vec3{radius},
                 .position = ToVec3(s.getLocationInGround(rs.getState())),
             },
-            .color = Color::red(),
+            .color = c_StationColor,
             .flags = SceneDecorationFlags::CastsShadows,
         });
     }
@@ -528,7 +591,7 @@ namespace
         rs.consume(scapuloJoint, SceneDecoration{
             .mesh = rs.sphere_mesh(),
             .transform = t,
-            .color = Color::yellow().with_alpha(0.2f),
+            .color = c_ScapulothoracicJointColor,
             .flags = SceneDecorationFlags::CastsShadows,
         });
     }
@@ -553,7 +616,7 @@ namespace
         rs.consume(b, SceneDecoration{
             .mesh = rs.sphere_mesh(),
             .transform = t,
-            .color = Color::black(),
+            .color = c_CenterOfMassColor,
             .flags = SceneDecorationFlags::CastsShadows,
         });
     }
@@ -955,6 +1018,9 @@ namespace
             return;
         }
 
+        // if requested, draw point-force vector arrows (#907)
+        HandleGeometryPathPointForceArrows(rs, gp);
+
         if (not gp.hasOwner()) {
             // it's a standalone path that's not part of a muscle
             HandleGenericGeometryPath(rs, gp, gp);
@@ -1047,7 +1113,7 @@ namespace
             .tip_length = tip_length,
             .neck_thickness = fixupScaleFactor*baseRadius*0.6f,
             .head_thickness = fixupScaleFactor*baseRadius,
-            .color = Color::yellow(),
+            .color = c_PointForceArrowColor,
         };
 
         draw_arrow(rs.updMeshCache(), arrowProperties, [&hcf, &rs](SceneDecoration&& d)

@@ -166,6 +166,9 @@ void osc::draw_arrow(
 {
     const Vec3 start_to_end = props.end - props.start;
     const float total_length = length(start_to_end);
+    if (isnan(total_length) or equal_within_epsilon(total_length, 0.0f)) {
+        return;  // edge-case: caller passed junk vectors to this implementation
+    }
     const Vec3 direction = start_to_end/total_length;
 
     // draw the arrow from tip-to-base, because the neck might be

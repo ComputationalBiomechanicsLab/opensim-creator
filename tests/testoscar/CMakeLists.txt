@@ -17,6 +17,7 @@ add_executable(testoscar
     Graphics/Detail/TestVertexAttributeFormatList.cpp
     Graphics/Detail/TestVertexAttributeList.cpp
     Graphics/Scene/TestSceneCache.cpp
+    Graphics/Scene/TestSceneHelpers.cpp
     Graphics/TestAntiAliasingLevel.cpp
     Graphics/TestCamera.cpp
     Graphics/TestCameraProjection.cpp
