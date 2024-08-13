@@ -13,12 +13,12 @@ using namespace osc;
 
 TEST(RenderTextureParams, can_be_default_constructed)
 {
-    const RenderTextureParams params;
+    [[maybe_unused]] const RenderTextureParams params;
 }
 
 TEST(RenderTextureParams, can_be_constructed_via_designated_initializer)
 {
-    const RenderTextureParams params{.dimensions = {1, 4}};
+    [[maybe_unused]] const RenderTextureParams params{.dimensions = {1, 4}};
 }
 
 TEST(RenderTextureParams, can_be_copy_constructed)
