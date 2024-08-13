@@ -46,70 +46,68 @@ TEST(Mesh, can_be_default_constructed)
 
 TEST(Mesh, can_be_copy_constructed)
 {
-    const Mesh m;
-    Mesh{m};
+    const Mesh mesh;
+    [[maybe_unused]] const Mesh copy{mesh};
 }
 
 TEST(Mesh, can_be_move_constructed)
 {
-    Mesh m1;
-    const Mesh m2{std::move(m1)};
+    Mesh mesh;
+    const Mesh move_constructed{std::move(mesh)};
 }
 
 TEST(Mesh, can_be_copy_assigned)
 {
-    Mesh m1;
-    const Mesh m2;
+    Mesh lhs;
+    const Mesh rhs;
 
-    m1 = m2;
+    lhs = rhs;
 }
 
 TEST(Mesh, can_be_move_assigned)
 {
-    Mesh m1;
-    Mesh m2;
+    Mesh lhs;
+    Mesh rhs;
 
-    m1 = std::move(m2);
+    lhs = std::move(rhs);
 }
 
 TEST(Mesh, can_call_topology)
 {
-    const Mesh m;
+    const Mesh mesh;
 
-    m.topology();
+    mesh.topology();
 }
 
 TEST(Mesh, topology_defaults_to_Triangles)
 {
-    const Mesh m;
+    const Mesh mesh;
 
-    ASSERT_EQ(m.topology(), MeshTopology::Triangles);
+    ASSERT_EQ(mesh.topology(), MeshTopology::Triangles);
 }
 
 TEST(Mesh, set_topology_causes_topology_to_return_new_MeshTopology)
 {
-    Mesh m;
-    const auto newTopology = MeshTopology::Lines;
+    Mesh mesh;
+    const auto new_topology = MeshTopology::Lines;
 
-    ASSERT_NE(m.topology(), MeshTopology::Lines);
-
-    m.set_topology(newTopology);
-
-    ASSERT_EQ(m.topology(), newTopology);
+    ASSERT_NE(mesh.topology(), new_topology);
+    mesh.set_topology(new_topology);
+    ASSERT_EQ(mesh.topology(), new_topology);
 }
 
 TEST(Mesh, set_topology_causes_copied_Mesh_to_compare_not_equal_to_initial_Mesh)
 {
-    const Mesh m;
-    Mesh copy{m};
-    const auto newTopology = MeshTopology::Lines;
+    const Mesh mesh;
+    Mesh copy{mesh};
+    const auto new_topology = MeshTopology::Lines;
 
-    ASSERT_EQ(m, copy);
-    ASSERT_NE(copy.topology(), newTopology);
+    ASSERT_EQ(mesh, copy);
+    ASSERT_NE(copy.topology(), new_topology);
 
-    copy.set_topology(newTopology);
+    copy.set_topology(new_topology);
 
-    ASSERT_NE(m, copy);
+    ASSERT_NE(mesh, copy);
 }
 
 TEST(Mesh, num_vertices_initially_returns_zero)
@@ -119,9 +117,9 @@ TEST(Mesh, num_vertices_initially_returns_zero)
 
 TEST(Mesh, set_vertices_causes_num_vertices_to_return_the_number_of_set_vertices)
 {
-    Mesh m;
-    m.set_vertices(generate_vertices(3));
-    ASSERT_EQ(m.num_vertices(), 3);
+    Mesh mesh;
+    mesh.set_vertices(generate_vertices(3));
+    ASSERT_EQ(mesh.num_vertices(), 3);
 }
 
 TEST(Mesh, has_vertices_initially_returns_false)
@@ -131,9 +129,9 @@ TEST(Mesh, has_vertices_initially_returns_false)
 
 TEST(Mesh, has_vertices_returns_true_after_setting_vertices)
 {
-    Mesh m;
-    m.set_vertices(generate_vertices(6));
-    ASSERT_TRUE(m.has_vertices());
+    Mesh mesh;
+    mesh.set_vertices(generate_vertices(6));
+    ASSERT_TRUE(mesh.has_vertices());
 }
 
 TEST(Mesh, vertices_is_empty_on_default_construction)
@@ -143,119 +141,117 @@ TEST(Mesh, vertices_is_empty_on_default_construction)
 
 TEST(Mesh, set_vertices_makes_vertices_return_the_vertices)
 {
-    Mesh m;
-    const auto verts = generate_vertices(9);
+    Mesh mesh;
+    const auto vertices = generate_vertices(9);
 
-    m.set_vertices(verts);
+    mesh.set_vertices(vertices);
 
-    ASSERT_EQ(m.vertices(), verts);
+    ASSERT_EQ(mesh.vertices(), vertices);
 }
 
 TEST(Mesh, set_vertices_can_be_called_with_an_initializer_list_of_vertices)
 {
-    Mesh m;
+    Mesh mesh;
 
-    Vec3 a{};
-    Vec3 b{};
-    Vec3 c{};
+    const Vec3 a{};
+    const Vec3 b{};
+    const Vec3 c{};
 
-    m.set_vertices({a, b, c});
-    std::vector<Vec3> expected = {a, b, c};
+    mesh.set_vertices({a, b, c});
+    const std::vector<Vec3> expected = {a, b, c};
 
-    ASSERT_EQ(m.vertices(), expected);
+    ASSERT_EQ(mesh.vertices(), expected);
 }
 
 TEST(Mesh, set_vertices_can_be_called_with_UnitVec3_because_of_implicit_conversion)
 {
-    Mesh m;
-    UnitVec3 v{1.0f, 0.0f, 0.0f};
-    m.set_vertices({v});
-    std::vector<Vec3> expected = {v};
-    ASSERT_EQ(m.vertices(), expected);
+    Mesh mesh;
+    UnitVec3 unit_vec3{1.0f, 0.0f, 0.0f};
+    mesh.set_vertices({unit_vec3});
+    const std::vector<Vec3> expected = {unit_vec3};
+    ASSERT_EQ(mesh.vertices(), expected);
 }
 
 TEST(Mesh, set_vertices_causes_copied_Mesh_to_compare_not_equal_to_initial_Mesh)
 {
-    const Mesh m;
-    Mesh copy{m};
+    const Mesh mesh;
+    Mesh copy{mesh};
 
-    ASSERT_EQ(m, copy);
-
+    ASSERT_EQ(mesh, copy);
     copy.set_vertices(generate_vertices(30));
-
-    ASSERT_NE(m, copy);
+    ASSERT_NE(mesh, copy);
 }
 
 TEST(Mesh, shrinking_vertices_also_shrinks_normals)
 {
     const auto normals = generate_normals(6);
 
-    Mesh m;
-    m.set_vertices(generate_vertices(6));
-    m.set_normals(normals);
-    m.set_vertices(generate_vertices(3));
+    Mesh mesh;
+    mesh.set_vertices(generate_vertices(6));
+    mesh.set_normals(normals);
+    mesh.set_vertices(generate_vertices(3));
 
-    ASSERT_EQ(m.normals(), resized_vector_copy(normals, 3));
+    ASSERT_EQ(mesh.normals(), resized_vector_copy(normals, 3));
 }
 
 TEST(Mesh, set_normals_can_be_called_with_an_initializer_list)
 {
-    const auto verts = generate_vertices(3);
+    const auto vertices = generate_vertices(3);
     const auto normals = generate_normals(3);
 
-    Mesh m;
-    m.set_vertices(verts);
-    m.set_normals({normals[0], normals[1], normals[2]});
+    Mesh mesh;
+    mesh.set_vertices(vertices);
+    mesh.set_normals({normals[0], normals[1], normals[2]});
 
-    ASSERT_EQ(m.normals(), normals);
+    ASSERT_EQ(mesh.normals(), normals);
 }
 
 TEST(Mesh, set_tex_coords_can_be_called_with_an_initializer_list)
 {
-    const auto verts = generate_vertices(3);
-    const auto uvs = generate_texture_coordinates(3);
+    const auto vertices = generate_vertices(3);
+    const auto texture_coordinates = generate_texture_coordinates(3);
 
-    Mesh m;
-    m.set_vertices(verts);
-    m.set_tex_coords({uvs[0], uvs[1], uvs[2]});
+    Mesh mesh;
+    mesh.set_vertices(vertices);
+    mesh.set_tex_coords({texture_coordinates[0], texture_coordinates[1], texture_coordinates[2]});
 
-    ASSERT_EQ(m.tex_coords(), uvs);
+    ASSERT_EQ(mesh.tex_coords(), texture_coordinates);
 }
 
 TEST(Mesh, set_colors_can_be_called_with_an_initializer_list)
 {
-    const auto verts = generate_vertices(3);
+    const auto vertices = generate_vertices(3);
     const auto colors = generate_colors(3);
 
-    Mesh m;
-    m.set_vertices(verts);
-    m.set_colors({colors[0], colors[1], colors[2]});
+    Mesh mesh;
+    mesh.set_vertices(vertices);
+    mesh.set_colors({colors[0], colors[1], colors[2]});
 
-    ASSERT_EQ(m.colors(), colors);
+    ASSERT_EQ(mesh.colors(), colors);
 }
 
 TEST(Mesh, set_tangents_can_be_called_with_an_initializer_list)
 {
-    const auto verts = generate_vertices(3);
+    const auto vertices = generate_vertices(3);
     const auto tangents = generate_tangent_vectors(3);
 
-    Mesh m;
-    m.set_vertices(verts);
-    m.set_tangents({tangents[0], tangents[1], tangents[2]});
+    Mesh mesh;
+    mesh.set_vertices(vertices);
+    mesh.set_tangents({tangents[0], tangents[1], tangents[2]});
 
-    ASSERT_EQ(m.tangents(), tangents);
+    ASSERT_EQ(mesh.tangents(), tangents);
 }
 
 TEST(Mesh, expanding_vertices_also_expands_normals_with_zeroed_normals)
 {
     const auto normals = generate_normals(6);
 
-    Mesh m;
-    m.set_vertices(generate_vertices(6));
-    m.set_normals(normals);
-    m.set_vertices(generate_vertices(12));
+    Mesh mesh;
+    mesh.set_vertices(generate_vertices(6));
+    mesh.set_normals(normals);
+    mesh.set_vertices(generate_vertices(12));
 
-    ASSERT_EQ(m.normals(), resized_vector_copy(normals, 12));
+    ASSERT_EQ(mesh.normals(), resized_vector_copy(normals, 12));
 }
 
 TEST(Mesh, shrinking_vertices_also_shrinks_tex_coords)
@@ -1278,7 +1274,7 @@ TEST(Mesh, num_vertex_attribues_returns_2_after_assigning_vertices_and_texture_c
     ASSERT_EQ(m.num_vertex_attributes(), 2);
 }
 
-TEST(Mesh, GetVertexAttributeCountGoesBackToOneAfterClearingTexCoords)
+TEST(Mesh, num_vertex_attributes_returns_1_after_setting_and_then_clearing_texture_coordinates)
 {
     Mesh m;
     m.set_vertices(generate_vertices(6));
@@ -1288,7 +1284,7 @@ TEST(Mesh, GetVertexAttributeCountGoesBackToOneAfterClearingTexCoords)
     ASSERT_EQ(m.num_vertex_attributes(), 1);
 }
 
-TEST(Mesh, GetVertexAttributeCountBehavesAsExpectedWrtTexCoords)
+TEST(Mesh, num_vertex_attributes_behaves_as_expected_wrt_texture_coordinates)
 {
     Mesh m;
     m.set_vertices(generate_vertices(6));
@@ -1304,7 +1300,7 @@ TEST(Mesh, GetVertexAttributeCountBehavesAsExpectedWrtTexCoords)
     ASSERT_EQ(m.num_vertex_attributes(), 0);
 }
 
-TEST(Mesh, GetVertexAttributeCountBehavesAsExpectedWrtColors)
+TEST(Mesh, num_vertex_attributes_behaves_as_expected_wrt_colors)
 {
     Mesh m;
     m.set_vertices(generate_vertices(12));
@@ -1323,7 +1319,7 @@ TEST(Mesh, GetVertexAttributeCountBehavesAsExpectedWrtColors)
     ASSERT_EQ(m.num_vertex_attributes(), 0);
 }
 
-TEST(Mesh, GetVertexAttributeCountBehavesAsExpectedWrtTangents)
+TEST(Mesh, num_vertex_attributes_behaves_as_expected_wrt_tangents)
 {
     Mesh m;
     ASSERT_EQ(m.num_vertex_attributes(), 0);
@@ -1344,7 +1340,7 @@ TEST(Mesh, GetVertexAttributeCountBehavesAsExpectedWrtTangents)
     ASSERT_EQ(m.num_vertex_attributes(), 0);
 }
 
-TEST(Mesh, GetVertexAttributeCountBehavesAsExpectedForMultipleAttributes)
+TEST(Mesh, num_vertex_attributes_behaves_as_expected_for_multiple_attributes)
 {
     Mesh m;
 
@@ -1409,12 +1405,12 @@ TEST(Mesh, GetVertexAttributeCountBehavesAsExpectedForMultipleAttributes)
     }
 }
 
-TEST(Mesh, GetVertexAttributesReturnsEmptyOnConstruction)
+TEST(Mesh, vertex_format_is_empty_on_empty_Mesh)
 {
     ASSERT_TRUE(Mesh{}.vertex_format().empty());
 }
 
-TEST(Mesh, GetVertexAttributesReturnsExpectedAttributeWhenJustVerticesAreSet)
+TEST(Mesh, vertex_format_returns_expected_format_when_just_vertices_are_set)
 {
     Mesh m;
     m.set_vertices(generate_vertices(6));
@@ -1426,7 +1422,7 @@ TEST(Mesh, GetVertexAttributesReturnsExpectedAttributeWhenJustVerticesAreSet)
     ASSERT_EQ(m.vertex_format(), expected);
 }
 
-TEST(Mesh, GetVertexAttributesReturnsExpectedAttributesWhenVerticesAndNormalsSet)
+TEST(Mesh, vertex_format_returns_expected_format_when_vertices_and_normals_are_set)
 {
     Mesh m;
     m.set_vertices(generate_vertices(6));
@@ -1440,7 +1436,7 @@ TEST(Mesh, GetVertexAttributesReturnsExpectedAttributesWhenVerticesAndNormalsSet
     ASSERT_EQ(m.vertex_format(), expected);
 }
 
-TEST(Mesh, GetVertexAttributesReturnsExpectedWhenVerticesAndTexCoordsSet)
+TEST(Mesh, vertex_format_returns_expected_format_when_vertices_and_texture_coordinates_are_set)
 {
     Mesh m;
     m.set_vertices(generate_vertices(6));
@@ -1454,7 +1450,7 @@ TEST(Mesh, GetVertexAttributesReturnsExpectedWhenVerticesAndTexCoordsSet)
     ASSERT_EQ(m.vertex_format(), expected);
 }
 
-TEST(Mesh, GetVertexAttributesReturnsExpectedWhenVerticesAndColorsSet)
+TEST(Mesh, vertex_format_returns_expected_format_when_vertices_and_colors_are_set)
 {
     Mesh m;
     m.set_vertices(generate_vertices(6));
@@ -1468,7 +1464,7 @@ TEST(Mesh, GetVertexAttributesReturnsExpectedWhenVerticesAndColorsSet)
     ASSERT_EQ(m.vertex_format(), expected);
 }
 
-TEST(Mesh, GetVertexAttributesReturnsExpectedWhenVerticesAndTangentsSet)
+TEST(Mesh, vertex_format_returns_expected_format_when_vertices_and_tangents_are_set)
 {
     Mesh m;
     m.set_vertices(generate_vertices(6));
@@ -1482,7 +1478,7 @@ TEST(Mesh, GetVertexAttributesReturnsExpectedWhenVerticesAndTangentsSet)
     ASSERT_EQ(m.vertex_format(), expected);
 }
 
-TEST(Mesh, GetVertexAttributesReturnsExpectedForCombinations)
+TEST(Mesh, vertex_format_returns_expected_formats_for_various_combinations)
 {
     Mesh m;
     m.set_vertices(generate_vertices(6));
@@ -1589,7 +1585,7 @@ TEST(Mesh, GetVertexAttributesReturnsExpectedForCombinations)
     }
 }
 
-TEST(Mesh, SetVertexBufferParamsWithEmptyDescriptorIgnoresN)
+TEST(Mesh, set_vertex_buffer_params_with_empty_descriptor_ignores_N_arg)
 {
     Mesh m;
     m.set_vertices(generate_vertices(9));
@@ -1603,7 +1599,7 @@ TEST(Mesh, SetVertexBufferParamsWithEmptyDescriptorIgnoresN)
     ASSERT_EQ(m.num_vertex_attributes(), 0);
 }
 
-TEST(Mesh, SetVertexBufferParamsWithEmptyDescriptorClearsAllAttributesNotJustPosition)
+TEST(Mesh, set_vertex_buffer_params_with_empty_descriptor_clears_all_attributes_not_just_position)
 {
     Mesh m;
     m.set_vertices(generate_vertices(6));
@@ -1619,7 +1615,7 @@ TEST(Mesh, SetVertexBufferParamsWithEmptyDescriptorClearsAllAttributesNotJustPos
     ASSERT_EQ(m.num_vertex_attributes(), 0);
 }
 
-TEST(Mesh, SetVertexBufferParamsExpandsPositionsWithZeroedVectors)
+TEST(Mesh, set_vertex_buffer_params_with_larger_N_expands_positions_with_zeroed_vectors)
 {
     const auto verts = generate_vertices(6);
 
@@ -1629,13 +1625,13 @@ TEST(Mesh, SetVertexBufferParamsExpandsPositionsWithZeroedVectors)
         {VertexAttribute::Position, VertexAttributeFormat::Float32x3}
     });
 
-    auto expected = verts;
+    auto expected{verts};
     expected.resize(12, Vec3{});
 
     ASSERT_EQ(m.vertices(), expected);
 }
 
-TEST(Mesh, SetVertexBufferParamsCanShrinkPositionVectors)
+TEST(Mesh, set_vertex_buffer_params_with_smaller_N_shrinks_existing_data)
 {
     const auto verts = generate_vertices(12);
 
@@ -1645,13 +1641,13 @@ TEST(Mesh, SetVertexBufferParamsCanShrinkPositionVectors)
         {VertexAttribute::Position, VertexAttributeFormat::Float32x3}
     });
 
-    auto expected = verts;
+    auto expected{verts};
     expected.resize(6);
 
     ASSERT_EQ(m.vertices(), expected);
 }
 
-TEST(Mesh, SetVertexBufferParamsWhenDimensionalityOfVerticesIs2ZeroesTheMissingDimension)
+TEST(Mesh, set_vertex_buffer_params_when_dimensionality_of_vertices_is_2_zeroes_missing_dimension)
 {
     const auto verts = generate_vertices(6);
 
@@ -1666,7 +1662,7 @@ TEST(Mesh, SetVertexBufferParamsWhenDimensionalityOfVerticesIs2ZeroesTheMissingD
     ASSERT_EQ(m.vertices(), expected);
 }
 
-TEST(Mesh, SetVertexBufferParamsCanBeUsedToRemoveAParticularAttribute)
+TEST(Mesh, set_vertex_buffer_params_can_be_used_to_remove_a_particular_attribute)
 {
     const auto verts = generate_vertices(6);
     const auto tangents = generate_tangent_vectors(6);
@@ -1690,7 +1686,7 @@ TEST(Mesh, SetVertexBufferParamsCanBeUsedToRemoveAParticularAttribute)
     ASSERT_EQ(m.tangents(), tangents);
 }
 
-TEST(Mesh, SetVertexBufferParamsCanBeUsedToAddAParticularAttributeAsZeroed)
+TEST(Mesh, set_vertex_buffer_params_can_be_used_to_add_a_particular_attribute_as_zeroed_data)
 {
     const auto verts = generate_vertices(6);
     const auto tangents = generate_tangent_vectors(6);
@@ -1716,7 +1712,7 @@ TEST(Mesh, SetVertexBufferParamsCanBeUsedToAddAParticularAttributeAsZeroed)
     ASSERT_EQ(m.tex_coords(), std::vector<Vec2>(6));
 }
 
-TEST(Mesh, SetVertexBufferParamsThrowsIfItCausesIndicesToGoOutOfBounds)
+TEST(Mesh, set_vertex_buffer_params_throws_if_it_causes_Mesh_indices_to_go_out_of_bounds)
 {
     Mesh m;
     m.set_vertices(generate_vertices(6));
@@ -1725,7 +1721,7 @@ TEST(Mesh, SetVertexBufferParamsThrowsIfItCausesIndicesToGoOutOfBounds)
     ASSERT_ANY_THROW({ m.set_vertex_buffer_params(3, m.vertex_format()); })  << "should throw because indices are now OOB";
 }
 
-TEST(Mesh, SetVertexBufferParamsCanBeUsedToReformatToU8NormFormat)
+TEST(Mesh, set_vertex_buffer_params_can_be_used_to_reformat_a_float_attribute_to_Unorm8)
 {
     const auto colors = generate_colors(9);
 
@@ -1747,7 +1743,7 @@ TEST(Mesh, SetVertexBufferParamsCanBeUsedToReformatToU8NormFormat)
     ASSERT_EQ(m.colors(), expected);
 }
 
-TEST(Mesh, GetVertexBufferStrideReturnsExpectedResults)
+TEST(Mesh, get_vertex_buffer_stride_returns_expected_results)
 {
     Mesh m;
     ASSERT_EQ(m.vertex_buffer_stride(), 0);
@@ -1788,7 +1784,7 @@ TEST(Mesh, GetVertexBufferStrideReturnsExpectedResults)
     ASSERT_EQ(m.vertex_buffer_stride(), 2*sizeof(float) + 4 + 4*sizeof(float));
 }
 
-TEST(Mesh, SetVertexBufferDataWorksForSimplestCase)
+TEST(Mesh, set_vertex_buffer_data_works_for_simplest_case_of_just_positional_data)
 {
     struct Entry final {
         Vec3 vert = generate<Vec3>();
