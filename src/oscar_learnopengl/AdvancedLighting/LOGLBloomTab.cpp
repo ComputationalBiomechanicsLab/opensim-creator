@@ -142,18 +142,20 @@ private:
     {
         const AntiAliasingLevel aa_level = App::get().anti_aliasing_level();
 
-        RenderTextureDescriptor texture_descriptor{viewport_dimensions};
-        texture_descriptor.set_anti_aliasing_level(aa_level);
-        texture_descriptor.set_color_format(RenderTextureFormat::DefaultHDR);
+        RenderTextureParams params = {
+            .dimensions = viewport_dimensions,
+            .anti_aliasing_level = aa_level,
+            .color_format = RenderTextureFormat::DefaultHDR,
+        };
 
         // direct render targets are multisampled HDR textures
-        scene_hdr_color_output_.reformat(texture_descriptor);
-        scene_hdr_thresholded_output_.reformat(texture_descriptor);
+        scene_hdr_color_output_.reformat(params);
+        scene_hdr_thresholded_output_.reformat(params);
 
         // intermediate buffers are single-sampled HDR textures
-        texture_descriptor.set_anti_aliasing_level(AntiAliasingLevel::none());
+        params.anti_aliasing_level = AntiAliasingLevel::none();
         for (RenderTexture& ping_pong_buffer : ping_pong_blur_output_buffers_) {
-            ping_pong_buffer.reformat(texture_descriptor);
+            ping_pong_buffer.reformat(params);
         }
     }
 

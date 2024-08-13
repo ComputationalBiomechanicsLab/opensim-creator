@@ -108,13 +108,15 @@ private:
     {
         // reformat intermediate HDR texture to match tab dimensions etc.
         {
-            RenderTextureDescriptor descriptor{ui::get_main_viewport_workspace_screen_dimensions()};
-            descriptor.set_anti_aliasing_level(App::get().anti_aliasing_level());
+            RenderTextureParams params = {
+                .dimensions = ui::get_main_viewport_workspace_screen_dimensions(),
+                .anti_aliasing_level = App::get().anti_aliasing_level(),
+            };
             if (use_16bit_format_) {
-                descriptor.set_color_format(RenderTextureFormat::ARGBFloat16);
+                params.color_format = RenderTextureFormat::ARGBFloat16;
             }
 
-            scene_hdr_texture_.reformat(descriptor);
+            scene_hdr_texture_.reformat(params);
         }
 
         graphics::draw(cube_mesh_, corridoor_transform_, scene_material_, camera_);

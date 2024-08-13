@@ -49,9 +49,11 @@ namespace
         hdr_texture.set_wrap_mode(TextureWrapMode::Clamp);
         hdr_texture.set_filter_mode(TextureFilterMode::Linear);
 
-        RenderTexture cubemap_render_target{{512, 512}};
-        cubemap_render_target.set_dimensionality(TextureDimensionality::Cube);
-        cubemap_render_target.set_color_format(RenderTextureFormat::RGBFloat16);
+        RenderTexture cubemap_render_target{{
+            .dimensions = {512, 512},
+            .dimensionality = TextureDimensionality::Cube,
+            .color_format = RenderTextureFormat::RGBFloat16,
+        }};
 
         // create a 90 degree cube cone projection matrix
         const Mat4 projection_matrix = perspective(90_deg, 1.0f, 0.1f, 10.0f);
@@ -75,9 +77,11 @@ namespace
 
     RenderTexture create_irradiance_cubemap(ResourceLoader& loader, const RenderTexture& skybox)
     {
-        RenderTexture irradiance_cubemap{{32, 32}};
-        irradiance_cubemap.set_dimensionality(TextureDimensionality::Cube);
-        irradiance_cubemap.set_color_format(RenderTextureFormat::RGBFloat16);
+        RenderTexture irradiance_cubemap{{
+            .dimensions = {32, 32},
+            .dimensionality = TextureDimensionality::Cube,
+            .color_format = RenderTextureFormat::RGBFloat16,
+        }};
 
         const Mat4 captureProjection = perspective(90_deg, 1.0f, 0.1f, 10.0f);
 
@@ -102,9 +106,11 @@ namespace
         constexpr int level_zero_width = 128;
         static_assert(std::popcount(static_cast<unsigned>(level_zero_width)) == 1);
 
-        RenderTexture capture_render_target{{level_zero_width, level_zero_width}};
-        capture_render_target.set_dimensionality(TextureDimensionality::Cube);
-        capture_render_target.set_color_format(RenderTextureFormat::RGBFloat16);
+        RenderTexture capture_render_target{{
+            .dimensions = {level_zero_width, level_zero_width},
+            .dimensionality = TextureDimensionality::Cube,
+            .color_format = RenderTextureFormat::RGBFloat16
+        }};
 
         const Mat4 capture_projection = perspective(90_deg, 1.0f, 0.1f, 10.0f);
 
@@ -162,8 +168,7 @@ namespace
             camera
         );
 
-        RenderTexture render_texture{{512, 512}};
-        render_texture.set_color_format(RenderTextureFormat::RGFloat16);
+        RenderTexture render_texture{{.dimensions = {512, 512}, .color_format = RenderTextureFormat::RGFloat16}};
         camera.render_to(render_texture);
 
         Texture2D rv{
@@ -323,7 +328,7 @@ private:
     RenderTexture irradiance_map_ = create_irradiance_cubemap(loader_, projected_map_);
     Cubemap prefilter_map_ = create_prefiltered_environment_map(loader_, projected_map_);
     Texture2D brdf_lookup_ = create_2D_brdf_lookup(loader_);
-    RenderTexture output_render_{{1, 1}};
+    RenderTexture output_render_;
 
     Material background_material_{Shader{
         loader_.slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/Skybox.vert"),

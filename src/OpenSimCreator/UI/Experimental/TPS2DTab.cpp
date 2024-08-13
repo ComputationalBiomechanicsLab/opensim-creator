@@ -410,9 +410,11 @@ private:
     // render the given mesh as-is to the given output render texture
     void renderMesh(const Mesh& mesh, Vec2i dims, std::optional<RenderTexture>& out)
     {
-        RenderTextureDescriptor desc{dims};
-        desc.set_anti_aliasing_level(App::get().anti_aliasing_level());
-        out.emplace(desc);
+        const RenderTextureParams textureParameters = {
+            .dimensions = dims,
+            .anti_aliasing_level = App::get().anti_aliasing_level()
+        };
+        out.emplace(textureParameters);
         graphics::draw(mesh, identity<Transform>(), m_Material, m_Camera);
         graphics::draw(mesh, identity<Transform>(), wireframe_material_, m_Camera);
 

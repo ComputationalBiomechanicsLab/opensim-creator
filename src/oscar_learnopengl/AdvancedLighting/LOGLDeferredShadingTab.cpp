@@ -137,12 +137,12 @@ namespace
 
         void reformat(Vec2 dimensions, AntiAliasingLevel aa_level)
         {
-            RenderTextureDescriptor desc{dimensions};
-            desc.set_anti_aliasing_level(aa_level);
-
             for (RenderTexture* texture_ptr : {&albedo, &normal, &position}) {
-                desc.set_color_format(texture_ptr->color_format());
-                texture_ptr->reformat(desc);
+                texture_ptr->reformat({
+                    .dimensions = dimensions,
+                    .anti_aliasing_level = aa_level,
+                    .color_format = texture_ptr->color_format(),
+                });
             }
         }
     };

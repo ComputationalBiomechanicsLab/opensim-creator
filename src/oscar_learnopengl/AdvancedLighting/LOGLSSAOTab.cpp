@@ -319,12 +319,12 @@ private:
 
         void reformat(Vec2 dimensions, AntiAliasingLevel aa_level)
         {
-            RenderTextureDescriptor descriptor{dimensions};
-            descriptor.set_anti_aliasing_level(aa_level);
-
             for (RenderTexture* texture_ptr : {&albedo, &normal, &position}) {
-                descriptor.set_color_format(texture_ptr->color_format());
-                texture_ptr->reformat(descriptor);
+                texture_ptr->reformat({
+                    .dimensions = dimensions,
+                    .anti_aliasing_level = aa_level,
+                    .color_format = texture_ptr->color_format(),
+                });
             }
         }
     } gbuffer_state_;

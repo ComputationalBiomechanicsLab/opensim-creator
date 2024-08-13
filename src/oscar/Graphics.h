@@ -35,8 +35,8 @@
 #include <oscar/Graphics/RenderTargetColorAttachment.h>
 #include <oscar/Graphics/RenderTargetDepthAttachment.h>
 #include <oscar/Graphics/RenderTexture.h>
-#include <oscar/Graphics/RenderTextureDescriptor.h>
 #include <oscar/Graphics/RenderTextureFormat.h>
+#include <oscar/Graphics/RenderTextureParams.h>
 #include <oscar/Graphics/RenderTextureReadWrite.h>
 #include <oscar/Graphics/Scene.h>
 #include <oscar/Graphics/Shader.h>

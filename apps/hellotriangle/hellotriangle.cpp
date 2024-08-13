@@ -285,11 +285,10 @@ void main()
             ui::context::on_start_new_frame();
 
             // ensure target texture matches screen dimensions
-            {
-                RenderTextureDescriptor descriptor{App::get().main_window_dimensions()};
-                descriptor.set_anti_aliasing_level(App::get().anti_aliasing_level());
-                target_texture_.reformat(descriptor);
-            }
+            target_texture_.reformat({
+                .dimensions = App::get().main_window_dimensions(),
+                .anti_aliasing_level = App::get().anti_aliasing_level()
+            });
 
             update_torus_if_params_changed();
             const auto seconds_since_startup = App::get().frame_delta_since_startup().count();

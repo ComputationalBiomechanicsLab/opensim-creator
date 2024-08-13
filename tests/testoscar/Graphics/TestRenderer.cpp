@@ -19,7 +19,6 @@
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Graphics/MeshTopology.h>
 #include <oscar/Graphics/RenderTexture.h>
-#include <oscar/Graphics/RenderTextureDescriptor.h>
 #include <oscar/Graphics/RenderTextureFormat.h>
 #include <oscar/Graphics/Shader.h>
 #include <oscar/Graphics/ShaderPropertyType.h>
@@ -392,8 +391,7 @@ namespace
 
     RenderTexture GenerateRenderTexture()
     {
-        RenderTextureDescriptor d{{2, 2}};
-        return RenderTexture{d};
+        return RenderTexture{{.dimensions = {2, 2}}};
     }
 }
 

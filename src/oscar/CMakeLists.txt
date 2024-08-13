@@ -162,8 +162,8 @@ add_library(oscar STATIC
     Graphics/RenderTargetColorAttachment.h
     Graphics/RenderTargetDepthAttachment.h
     Graphics/RenderTexture.h
-    Graphics/RenderTextureDescriptor.h
     Graphics/RenderTextureFormat.h
+    Graphics/RenderTextureParams.h
     Graphics/RenderTextureReadWrite.h
     Graphics/Scene.h
     Graphics/Shader.h

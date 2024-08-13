@@ -376,10 +376,11 @@ private:
         }
 
         // configure the off-screen solid-colored texture
-        RenderTextureDescriptor desc{params.dimensions};
-        desc.set_anti_aliasing_level(params.antialiasing_level);
-        desc.set_color_format(RenderTextureFormat::ARGB32);  // care: don't use RED: causes an explosion on some Intel machines (#418)
-        rims_rendertexture_.reformat(desc);
+        rims_rendertexture_.reformat({
+            .dimensions = params.dimensions,
+            .anti_aliasing_level = params.antialiasing_level,
+            .color_format = RenderTextureFormat::ARGB32  // care: don't use RED: causes an explosion on some Intel machines (#418)
+        });
 
         // render to the off-screen solid-colored texture
         camera_.render_to(rims_rendertexture_);

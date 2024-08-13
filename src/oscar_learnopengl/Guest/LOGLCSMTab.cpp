@@ -204,7 +204,7 @@ public:
         });
 
         // setup cascade render texture (targets)
-        cascade_rasters_.resize(3, RenderTexture{Vec2i{256, 256}});
+        cascade_rasters_.resize(3, RenderTexture{{.dimensions = {256, 256}}});
 
         // ui
         log_viewer_.open();

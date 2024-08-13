@@ -59,11 +59,10 @@ namespace
 
     RenderTexture create_depth_texture()
     {
-        RenderTexture rv;
-        RenderTextureDescriptor shadowmap_descriptor{Vec2i{1024, 1024}};
-        shadowmap_descriptor.set_read_write(RenderTextureReadWrite::Linear);
-        rv.reformat(shadowmap_descriptor);
-        return rv;
+        return RenderTexture{{
+            .dimensions = {1024, 1024},
+            .read_write = RenderTextureReadWrite::Linear,
+        }};
     }
 }
 

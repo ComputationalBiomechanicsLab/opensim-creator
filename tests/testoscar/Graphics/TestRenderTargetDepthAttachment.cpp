@@ -10,16 +10,15 @@ using namespace osc;
 
 TEST(RenderTargetDepthAttachment, CanConstructFromPartsOfRenderTexture)
 {
-    RenderTexture renderTex{{1, 1}};
+    RenderTexture render_texture;
 
-    RenderTargetDepthAttachment attachment
-    {
-        renderTex.upd_depth_buffer(),
+    RenderTargetDepthAttachment attachment{
+        render_texture.upd_depth_buffer(),
         RenderBufferLoadAction::Clear,
         RenderBufferStoreAction::Resolve,
     };
 
-    ASSERT_EQ(attachment.buffer, renderTex.upd_depth_buffer());
+    ASSERT_EQ(attachment.buffer, render_texture.upd_depth_buffer());
     ASSERT_EQ(attachment.load_action, RenderBufferLoadAction::Clear);
     ASSERT_EQ(attachment.store_action, RenderBufferStoreAction::Resolve);
 }

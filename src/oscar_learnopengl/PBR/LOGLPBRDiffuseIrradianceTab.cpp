@@ -53,9 +53,11 @@ namespace
         hdr_texture.set_wrap_mode(TextureWrapMode::Clamp);
         hdr_texture.set_filter_mode(TextureFilterMode::Linear);
 
-        RenderTexture cubemap_render_texture{{512, 512}};
-        cubemap_render_texture.set_dimensionality(TextureDimensionality::Cube);
-        cubemap_render_texture.set_color_format(RenderTextureFormat::RGBFloat16);
+        RenderTexture cubemap_render_texture{{
+            .dimensions = {512, 512},
+            .dimensionality = TextureDimensionality::Cube,
+            .color_format = RenderTextureFormat::RGBFloat16,
+        }};
 
         // create a 90 degree cube cone projection matrix
         const Mat4 projection_matrix = perspective(90_deg, 1.0f, 0.1f, 10.0f);
@@ -81,9 +83,11 @@ namespace
         IResourceLoader& loader,
         const RenderTexture& skybox)
     {
-        RenderTexture irradiance_cubemap{{32, 32}};
-        irradiance_cubemap.set_dimensionality(TextureDimensionality::Cube);
-        irradiance_cubemap.set_color_format(RenderTextureFormat::RGBFloat16);
+        RenderTexture irradiance_cubemap{{
+            .dimensions = {32, 32},
+            .dimensionality = TextureDimensionality::Cube,
+            .color_format = RenderTextureFormat::RGBFloat16,
+        }};
 
         const Mat4 capture_projection = perspective(90_deg, 1.0f, 0.1f, 10.0f);
 

@@ -53,11 +53,12 @@ namespace
 
     RenderTexture create_depth_texture()
     {
-        RenderTextureDescriptor descriptor{c_shadowmap_dimensions};
-        descriptor.set_dimensionality(TextureDimensionality::Cube);
-        descriptor.set_read_write(RenderTextureReadWrite::Linear);
-        descriptor.set_color_format(RenderTextureFormat::Depth);
-        return RenderTexture{descriptor};
+        return RenderTexture{{
+            .dimensions = c_shadowmap_dimensions,
+            .dimensionality = TextureDimensionality::Cube,
+            .color_format = RenderTextureFormat::Depth,
+            .read_write = RenderTextureReadWrite::Linear
+        }};
     }
 
     MouseCapturingCamera create_camera()
