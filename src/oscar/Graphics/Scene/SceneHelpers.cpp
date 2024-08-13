@@ -348,8 +348,7 @@ BVH osc::create_triangle_bvh(const Mesh& mesh)
 FrustumPlanes osc::calc_frustum_planes(const Camera& camera, float aspect_ratio)
 {
     const Radians fov_y = camera.vertical_fov();
-    const float z_near = camera.near_clipping_plane();
-    const float z_far = camera.far_clipping_plane();
+    const auto [z_near, z_far] = camera.clipping_planes();
     const float half_v_size = z_far * tan(fov_y * 0.5f);
     const float half_h_size = half_v_size * aspect_ratio;
     const Vec3 pos = camera.position();

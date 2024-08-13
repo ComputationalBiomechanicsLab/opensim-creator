@@ -97,8 +97,7 @@ namespace
         const Mat4 view2light = model2light * view2model;
 
         // precompute necessary values to figure out the corners of the view frustum
-        const float view_znear = camera.near_clipping_plane();
-        const float view_zfar = camera.far_clipping_plane();
+        const auto [view_znear, view_zfar] = camera.clipping_planes();
         const Radians view_vfov = camera.vertical_fov();
         const Radians view_hfov = vertial_to_horizontal_fov(view_vfov, aspect_ratio);
         const float view_tan_half_vfov = tan(0.5f * view_vfov);
@@ -188,8 +187,7 @@ public:
     Impl() : StandardTabImpl{c_tab_string_id}
     {
         // setup camera
-        user_camera_.set_near_clipping_plane(0.1f);
-        user_camera_.set_far_clipping_plane(10.0f);
+        user_camera_.set_clipping_planes({0.1f, 10.0f});
 
         // setup scene material
         material_.set_light_position(Vec3{5.0f});

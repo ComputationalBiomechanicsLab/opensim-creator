@@ -65,8 +65,7 @@ public:
     Impl() : StandardTabImpl{c_tab_string_id}
     {
         camera_.set_background_color(Color::white());
-        camera_.set_near_clipping_plane(0.1f);
-        camera_.set_far_clipping_plane(5.0f);
+        camera_.set_clipping_planes({0.1f, 5.0f});
         camera_.set_position({0.0f, 0.0f, -2.5f});
         camera_.set_direction({0.0f, 0.0f, 1.0f});
 

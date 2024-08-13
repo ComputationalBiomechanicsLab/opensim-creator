@@ -104,8 +104,7 @@ public:
 
             // update real scene camera from constrained polar camera
             m_Camera.set_position(m_PolarCamera.position());
-            m_Camera.set_near_clipping_plane(m_PolarCamera.znear);
-            m_Camera.set_far_clipping_plane(m_PolarCamera.zfar);
+            m_Camera.set_clipping_planes({m_PolarCamera.znear, m_PolarCamera.zfar});
             m_Camera.set_view_matrix_override(m_PolarCamera.view_matrix());
             m_Camera.set_projection_matrix_override(m_PolarCamera.projection_matrix(aspect_ratio_of(viewportScreenRect)));
         }

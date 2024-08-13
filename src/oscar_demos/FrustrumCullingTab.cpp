@@ -69,12 +69,10 @@ class osc::FrustrumCullingTab::Impl final : public StandardTabImpl {
 public:
     Impl() : StandardTabImpl{c_tab_string_id}
     {
-        user_camera_.set_near_clipping_plane(0.1f);
-        user_camera_.set_far_clipping_plane(10.0f);
+        user_camera_.set_clipping_planes({0.1f, 10.0f});
         top_down_camera_.set_position({0.0f, 9.5f, 0.0f});
         top_down_camera_.set_direction({0.0f, -1.0f, 0.0f});
-        top_down_camera_.set_near_clipping_plane(0.1f);
-        top_down_camera_.set_far_clipping_plane(10.0f);
+        top_down_camera_.set_clipping_planes({0.1f, 10.0f});
     }
 
 private:

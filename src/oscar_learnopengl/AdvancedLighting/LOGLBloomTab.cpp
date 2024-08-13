@@ -87,9 +87,8 @@ namespace
     {
         MouseCapturingCamera rv;
         rv.set_position({0.0f, 0.5f, 5.0f});
-        rv.set_near_clipping_plane(0.1f);
-        rv.set_far_clipping_plane(100.0f);
-        rv.set_background_color({0.0f, 0.0f, 0.0f, 1.0f});
+        rv.set_clipping_planes({0.1f, 100.0f});
+        rv.set_background_color(Color::black());
         return rv;
     }
 }

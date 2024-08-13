@@ -4,6 +4,7 @@
 #include <oscar/Graphics/BlitFlags.h>
 #include <oscar/Graphics/Camera.h>
 #include <oscar/Graphics/CameraClearFlags.h>
+#include <oscar/Graphics/CameraClippingPlanes.h>
 #include <oscar/Graphics/CameraProjection.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/ColorHSLA.h>

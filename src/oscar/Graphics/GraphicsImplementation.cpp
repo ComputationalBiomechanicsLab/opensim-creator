@@ -5420,24 +5420,34 @@ public:
         perspective_fov_ = size;
     }
 
+    CameraClippingPlanes clipping_planes() const
+    {
+        return clipping_planes_;
+    }
+
+    void set_clipping_planes(CameraClippingPlanes planes)
+    {
+        clipping_planes_ = planes;
+    }
+
     float near_clipping_plane() const
     {
-        return near_clipping_plane_;
+        return clipping_planes_.znear;
     }
 
     void set_near_clipping_plane(float distance)
     {
-        near_clipping_plane_ = distance;
+        clipping_planes_.znear = distance;
     }
 
     float far_clipping_plane() const
     {
-        return far_clipping_plane_;
+        return clipping_planes_.zfar;
     }
 
     void set_far_clipping_plane(float distance)
     {
-        far_clipping_plane_ = distance;
+        clipping_planes_.zfar = distance;
     }
 
     CameraClearFlags clear_flags() const
@@ -5534,8 +5544,8 @@ public:
             return perspective(
                 perspective_fov_,
                 aspect_ratio,
-                near_clipping_plane_,
-                far_clipping_plane_
+                clipping_planes_.znear,
+                clipping_planes_.zfar
             );
         }
         else
@@ -5548,7 +5558,7 @@ public:
             const float top = 0.5f * height;
             const float bottom = -top;
 
-            return ortho(left, right, bottom, top, near_clipping_plane_, far_clipping_plane_);
+            return ortho(left, right, bottom, top, clipping_planes_.znear, clipping_planes_.zfar);
         }
     }
 
@@ -5634,8 +5644,7 @@ private:
     CameraProjection camera_projection_ = CameraProjection::Perspective;
     float orthographic_size_ = 2.0f;
     Radians perspective_fov_ = 90_deg;
-    float near_clipping_plane_ = 1.0f;
-    float far_clipping_plane_ = -1.0f;
+    CameraClippingPlanes clipping_planes_{1.0f, -1.0f};
     CameraClearFlags clear_flags_ = CameraClearFlags::Default;
     std::optional<Rect> maybe_screen_pixel_rect_ = std::nullopt;
     std::optional<Rect> maybe_scissor_rect_ = std::nullopt;
@@ -5700,6 +5709,16 @@ Radians osc::Camera::vertical_fov() const
 void osc::Camera::set_vertical_fov(Radians vertical_fov)
 {
     impl_.upd()->set_vertical_fov(vertical_fov);
+}
+
+CameraClippingPlanes osc::Camera::clipping_planes() const
+{
+    return impl_->clipping_planes();
+}
+
+void osc::Camera::set_clipping_planes(CameraClippingPlanes planes)
+{
+    impl_.upd()->set_clipping_planes(planes);
 }
 
 float osc::Camera::near_clipping_plane() const

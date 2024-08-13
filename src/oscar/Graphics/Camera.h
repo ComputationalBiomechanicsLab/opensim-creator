@@ -1,6 +1,7 @@
 #pragma once
 
 #include <oscar/Graphics/CameraClearFlags.h>
+#include <oscar/Graphics/CameraClippingPlanes.h>
 #include <oscar/Graphics/CameraProjection.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Maths/Angle.h>
@@ -53,6 +54,11 @@ namespace osc
         // calculated from the aspect ratio of the render target at runtime.
         Radians vertical_fov() const;
         void set_vertical_fov(Radians);
+
+        // get/set the distance, in worldspace units, between both the camera and the nearest
+        // clipping plane, and the camera and the farthest clipping plane
+        CameraClippingPlanes clipping_planes() const;
+        void set_clipping_planes(CameraClippingPlanes);
 
         // get/set the distance, in worldspace units, between the camera and the nearest
         // clipping plane

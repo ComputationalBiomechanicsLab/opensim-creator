@@ -178,8 +178,7 @@ public:
         // setup camera for this render
         camera_.reset();
         camera_.set_position(params.view_pos);
-        camera_.set_near_clipping_plane(params.near_clipping_plane);
-        camera_.set_far_clipping_plane(params.far_clipping_plane);
+        camera_.set_clipping_planes({params.near_clipping_plane, params.far_clipping_plane});
         camera_.set_view_matrix_override(params.view_matrix);
         camera_.set_projection_matrix_override(params.projection_matrix);
         camera_.set_background_color(params.background_color);
@@ -360,8 +359,7 @@ private:
         // setup scene camera
         camera_.reset();
         camera_.set_position(params.view_pos);
-        camera_.set_near_clipping_plane(params.near_clipping_plane);
-        camera_.set_far_clipping_plane(params.far_clipping_plane);
+        camera_.set_clipping_planes({params.near_clipping_plane, params.far_clipping_plane});
         camera_.set_view_matrix_override(params.view_matrix);
         camera_.set_projection_matrix_override(params.projection_matrix);
         camera_.set_background_color(Color::clear());

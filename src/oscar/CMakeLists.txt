@@ -127,6 +127,7 @@ add_library(oscar STATIC
     Graphics/BlitFlags.h
     Graphics/Camera.h
     Graphics/CameraClearFlags.h
+    Graphics/CameraClippingPlanes.h
     Graphics/CameraProjection.h
     Graphics/Color.cpp
     Graphics/Color.h
