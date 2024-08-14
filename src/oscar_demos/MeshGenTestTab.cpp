@@ -95,7 +95,9 @@ private:
             viewer_.on_draw({{SceneDecoration{
                 .mesh = all_meshes_[current_mesh_],
                 .color = Color::white(),
-                .flags = draw_wireframe_ ? SceneDecorationFlags::WireframeOverlay : SceneDecorationFlags::None,
+                .flags = draw_wireframe_ ?
+                    SceneDecorationFlags{SceneDecorationFlag::Default, SceneDecorationFlag::DrawWireframeOverlay} :
+                    SceneDecorationFlags{SceneDecorationFlag::Default},
             }}}, render_params_);
         }
         ui::end_panel();

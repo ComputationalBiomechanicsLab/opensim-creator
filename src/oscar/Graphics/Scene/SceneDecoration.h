@@ -13,11 +13,12 @@
 
 namespace osc
 {
-    // represents a renderable decoration for a component in a model
+    // a single renderable decoration element in the scene
     struct SceneDecoration final {
 
         friend bool operator==(const SceneDecoration&, const SceneDecoration&) = default;
 
+        // returns a copy of this `SceneDecoration` with `position` set the provided position
         SceneDecoration with_position(const Vec3& position_) const
         {
             SceneDecoration copy{*this};
@@ -25,6 +26,7 @@ namespace osc
             return copy;
         }
 
+        // returns a copy of this `SceneDecoration` with `transform` set to the provided transform
         SceneDecoration with_transform(const Transform& transform_) const
         {
             SceneDecoration copy{*this};
@@ -32,6 +34,7 @@ namespace osc
             return copy;
         }
 
+        // returns a copy of this `SceneDecoration` with `color` set to the provided color
         SceneDecoration with_color(const Color& color_) const
         {
             SceneDecoration copy{*this};
@@ -39,12 +42,18 @@ namespace osc
             return copy;
         }
 
-        Mesh mesh{};
-        Transform transform{};
-        Color color = Color::white();
-        std::string id{};
-        SceneDecorationFlags flags = SceneDecorationFlags::None;
-        std::optional<Material> material{};
-        std::optional<MaterialPropertyBlock> material_properties{};
+        // returns `true` if this `SceneDecoration` is rim highlighted (any group)
+        bool is_rim_highlighted() const
+        {
+            return flags & SceneDecorationFlags{SceneDecorationFlag::RimHighlight0, SceneDecorationFlag::RimHighlight1};
+        }
+
+        Mesh mesh;
+        Transform transform;
+        Color color = Color::white();  // ignored if `material` is provided
+        std::string id;
+        SceneDecorationFlags flags = SceneDecorationFlag::Default;
+        std::optional<Material> material;
+        std::optional<MaterialPropertyBlock> material_properties;
     };
 }

@@ -14,6 +14,5 @@ void osc::mow::InMemoryMesh::implGenerateCustomDecorations(
         .mesh = m_OscMesh,
         .transform = decompose_to_transform(getFrame().getTransformInGround(state)),
         .color = to_color(get_Appearance()),
-        .flags = SceneDecorationFlags::CastsShadows,
     });
 }

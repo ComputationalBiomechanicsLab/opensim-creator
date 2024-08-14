@@ -13,6 +13,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fixed force vector arrows not casting shadows
 - Internal: `RenderTextureDescriptor` was refactored into a POD struct called `RenderTextureParams`
   for ease-of-use
+- Internal: oscar's `Graphics/Scene` classes were refactored for ease-of-use and grouping of rim
+  highlights (#24)
 
 ## [0.5.13] - 2024/07/30
 

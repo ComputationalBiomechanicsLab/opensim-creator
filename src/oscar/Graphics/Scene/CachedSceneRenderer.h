@@ -10,7 +10,8 @@ namespace osc { struct SceneRendererParams; }
 
 namespace osc
 {
-    // a scene renderer that only renders if the render parameters + decorations change
+    // a cached version of `SceneRenderer` that will re-render if either
+    // the `SceneDecoration`s or the `SceneRendererParams` change
     class CachedSceneRenderer final {
     public:
         CachedSceneRenderer(SceneCache&);

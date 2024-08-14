@@ -157,16 +157,6 @@ public:
         edge_detection_material_.set_depth_tested(false);
     }
 
-    Vec2i dimensions() const
-    {
-        return output_rendertexture_.dimensions();
-    }
-
-    AntiAliasingLevel antialiasing_level() const
-    {
-        return output_rendertexture_.anti_aliasing_level();
-    }
-
     void render(
         std::span<const SceneDecoration> decorations,
         const SceneRendererParams& params)
@@ -212,7 +202,7 @@ public:
             MaterialPropertyBlock wireframe_prop_block;
             Color previous_color = {-1.0f, -1.0f, -1.0f, 0.0f};
             for (const SceneDecoration& dec : decorations) {
-                if (not (dec.flags & SceneDecorationFlags::NoDrawNormally)) {
+                if (not (dec.flags & SceneDecorationFlag::NoDrawNormally)) {
                     if (dec.color != previous_color) {
                         prop_block.set_color("uDiffuseColor", dec.color);
                         previous_color = dec.color;
@@ -231,7 +221,7 @@ public:
 
                 // if a wireframe overlay is requested for the decoration then draw it over the top in
                 // a solid color
-                if (dec.flags & SceneDecorationFlags::WireframeOverlay) {
+                if (dec.flags & SceneDecorationFlag::DrawWireframeOverlay) {
                     wireframe_prop_block.set_color("uDiffuseColor", multiply_luminance(dec.color, 0.5f));
                     graphics::draw(dec.mesh, dec.transform, wireframe_material_, camera_, wireframe_prop_block);
                 }
@@ -305,7 +295,7 @@ private:
         // compute the worldspace bounds union of all rim-highlighted geometry
         const auto rim_aabb_of = [](const SceneDecoration& decoration) -> std::optional<AABB>
         {
-            if (decoration.flags & (SceneDecorationFlags::IsSelected | SceneDecorationFlags::IsChildOfSelected | SceneDecorationFlags::IsHovered | SceneDecorationFlags::IsChildOfHovered)) {
+            if (decoration.is_rim_highlighted()) {
                 return worldspace_bounds_of(decoration);
             }
             return std::nullopt;
@@ -367,10 +357,10 @@ private:
         // draw all selected geometry in a solid color
         for (const SceneDecoration& decoration : decorations) {
 
-            if (decoration.flags & (SceneDecorationFlags::IsSelected | SceneDecorationFlags::IsChildOfSelected)) {
+            if (decoration.flags & SceneDecorationFlag::RimHighlight0) {
                 graphics::draw(decoration.mesh, decoration.transform, solid_color_material_, camera_, rims_selected_properties_);
             }
-            else if (decoration.flags & (SceneDecorationFlags::IsHovered | SceneDecorationFlags::IsChildOfHovered)) {
+            else if (decoration.flags & SceneDecorationFlag::RimHighlight1) {
                 graphics::draw(decoration.mesh, decoration.transform, solid_color_material_, camera_, rims_hovered_properties_);
             }
         }
@@ -419,7 +409,7 @@ private:
         // (also, while doing that, draw each mesh - to prevent multipass)
         std::optional<AABB> shadowcaster_aabbs;
         for (const SceneDecoration& decoration : decorations) {
-            if (decoration.flags & SceneDecorationFlags::CastsShadows) {
+            if (decoration.flags & SceneDecorationFlag::CastsShadows) {
                 shadowcaster_aabbs = bounding_aabb_of(shadowcaster_aabbs, worldspace_bounds_of(decoration));
                 graphics::draw(decoration.mesh, decoration.transform, depth_writer_material_, camera_);
             }
@@ -471,16 +461,6 @@ osc::SceneRenderer::SceneRenderer(const SceneRenderer& other) :
 osc::SceneRenderer::SceneRenderer(SceneRenderer&&) noexcept = default;
 osc::SceneRenderer& osc::SceneRenderer::operator=(SceneRenderer&&) noexcept = default;
 osc::SceneRenderer::~SceneRenderer() noexcept = default;
-
-Vec2i osc::SceneRenderer::dimensions() const
-{
-    return impl_->dimensions();
-}
-
-AntiAliasingLevel osc::SceneRenderer::antialiasing_level() const
-{
-    return impl_->antialiasing_level();
-}
 
 void osc::SceneRenderer::render(
     std::span<const SceneDecoration> decorations,

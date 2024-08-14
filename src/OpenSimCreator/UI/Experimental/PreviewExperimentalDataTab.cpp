@@ -305,18 +305,14 @@ namespace
     // retuns a scene decoration for the floor grid
     SceneDecoration GenerateFloorGrid()
     {
-        Transform t;
-        t.rotation = angle_axis(180_deg, Vec3{-1.0f, 0.0f, 0.0f});
-        t.scale = {50.0f, 50.0f, 1.0f};
-        const Color color = {128.0f/255.0f, 128.0f/255.0f, 128.0f/255.0f, 1.0f};
-
-        return SceneDecoration
-        {
-            App::singleton<SceneCache>(App::resource_loader())->grid_mesh(),
-            t,
-            color,
-            std::string{},
-            SceneDecorationFlags::None
+        return SceneDecoration{
+            .mesh = App::singleton<SceneCache>(App::resource_loader())->grid_mesh(),
+            .transform = {
+                .scale = {50.0f, 50.0f, 1.0f},
+                .rotation = angle_axis(180_deg, Vec3{-1.0f, 0.0f, 0.0f}),
+            },
+            .color = Color::half_grey(),
+            .flags = SceneDecorationFlag::None,
         };
     }
 
@@ -359,33 +355,31 @@ namespace
 
         // emit neck (note: meshes have a height of 2 in mesh-space)
         {
-            Transform t;
-            t.scale = {arrow.neck_thickness, 0.5f * neckLength, arrow.neck_thickness};
-            t.rotation = rotation;
-            t.position = neckMidpoint;
-
             out(SceneDecoration{
-                App::singleton<SceneCache>(App::resource_loader())->cylinder_mesh(),
-                t,
-                arrow.color,
-                arrow.label,
-                osc::SceneDecorationFlags::None,
+                .mesh = App::singleton<SceneCache>(App::resource_loader())->cylinder_mesh(),
+                .transform = {
+                    .scale = {arrow.neck_thickness, 0.5f * neckLength, arrow.neck_thickness},
+                    .rotation = rotation,
+                    .position = neckMidpoint,
+                },
+                .color = arrow.color,
+                .id = arrow.label,
+                .flags = SceneDecorationFlag::None,
             });
         }
 
         // emit head (note: meshes have a height of 2 in mesh-space)
         {
-            Transform t;
-            t.scale = {arrow.head_thickness, 0.5f * headLength, arrow.head_thickness};
-            t.rotation = rotation;
-            t.position = headMidpoint;
-
             out(SceneDecoration{
-                App::singleton<SceneCache>(App::resource_loader())->cone_mesh(),
-                t,
-                arrow.color,
-                arrow.label,
-                osc::SceneDecorationFlags::None,
+                .mesh = App::singleton<SceneCache>(App::resource_loader())->cone_mesh(),
+                .transform = {
+                    .scale = {arrow.head_thickness, 0.5f * headLength, arrow.head_thickness},
+                    .rotation = rotation,
+                    .position = headMidpoint,
+                },
+                .color = arrow.color,
+                .id = arrow.label,
+                .flags = SceneDecorationFlag::None,
             });
         }
     }

@@ -154,17 +154,14 @@ namespace osc::mi
 
         SceneDecorationFlags computeFlags(const MIObject& el) const
         {
-            if (isSelected(el))
-            {
-                return SceneDecorationFlags::IsSelected;
+            if (isSelected(el)) {
+                return SceneDecorationFlag::RimHighlight0;
             }
-            else if (isHovered(el))
-            {
-                return SceneDecorationFlags::IsHovered;
+            else if (isHovered(el)) {
+                return SceneDecorationFlag::RimHighlight1;
             }
-            else
-            {
-                return SceneDecorationFlags::None;
+            else {
+                return SceneDecorationFlag::None;
             }
         }
 

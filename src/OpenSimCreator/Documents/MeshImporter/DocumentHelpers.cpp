@@ -253,24 +253,19 @@ SceneDecorationFlags osc::mi::computeFlags(
 {
     const UID hoverID = maybeHoverID ? *maybeHoverID : MIIDs::Empty();
 
-    if (id == MIIDs::Empty())
-    {
-        return SceneDecorationFlags::None;
+    if (id == MIIDs::Empty()) {
+        return SceneDecorationFlag::Default;
     }
-    else if (doc.isSelected(id))
-    {
-        return SceneDecorationFlags::IsSelected;
+    else if (doc.isSelected(id)) {
+        return SceneDecorationFlag::RimHighlight0;
     }
-    else if (id == hoverID)
-    {
-        return SceneDecorationFlags::IsHovered | SceneDecorationFlags::IsChildOfHovered;
+    else if (id == hoverID) {
+        return SceneDecorationFlag::RimHighlight1;
     }
-    else if (IsInSelectionGroupOf(doc, hoverID, id))
-    {
-        return SceneDecorationFlags::IsChildOfHovered;
+    else if (IsInSelectionGroupOf(doc, hoverID, id)) {
+        return SceneDecorationFlag::RimHighlight1;
     }
-    else
-    {
-        return SceneDecorationFlags::None;
+    else {
+        return SceneDecorationFlag::None;
     }
 }

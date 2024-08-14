@@ -79,25 +79,20 @@ namespace
         {
             // update flags based on path
             const std::string absPath = GetAbsolutePathString(component);
-            if (state.popupParams.componentsBeingAssignedTo.contains(absPath))
-            {
-                decoration.flags |= SceneDecorationFlags::IsSelected;
+            if (state.popupParams.componentsBeingAssignedTo.contains(absPath)) {
+                decoration.flags |= SceneDecorationFlag::RimHighlight0;
             }
-            if (state.alreadyChosenComponents.contains(absPath))
-            {
-                decoration.flags |= SceneDecorationFlags::IsSelected;
+            if (state.alreadyChosenComponents.contains(absPath)) {
+                decoration.flags |= SceneDecorationFlag::RimHighlight0;
             }
-            if (absPath == state.hoveredComponent)
-            {
-                decoration.flags |= SceneDecorationFlags::IsHovered;
+            if (absPath == state.hoveredComponent) {
+                decoration.flags |= SceneDecorationFlag::RimHighlight1;
             }
 
-            if (state.popupParams.canChooseItem(component))
-            {
+            if (state.popupParams.canChooseItem(component)) {
                 decoration.id = absPath;
             }
-            else
-            {
+            else {
                 decoration.color.a *= 0.2f;  // fade non-selectable objects
             }
 

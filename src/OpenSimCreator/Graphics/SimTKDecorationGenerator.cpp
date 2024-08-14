@@ -56,16 +56,18 @@ namespace
 
     SceneDecorationFlags GetFlags(const SimTK::DecorativeGeometry& geom)
     {
-        SceneDecorationFlags rv = SceneDecorationFlags::None;
+        SceneDecorationFlags rv = SceneDecorationFlag::None;
+
         switch (geom.getRepresentation()) {
         case SimTK::DecorativeGeometry::Hide:
-            rv |= SceneDecorationFlags::NoDrawNormally;
+            rv |= SceneDecorationFlag::NoDrawNormally;
             break;
         case SimTK::DecorativeGeometry::DrawWireframe:
-            rv |= SceneDecorationFlags::WireframeOverlay | SceneDecorationFlags::NoDrawNormally;
+            rv |= SceneDecorationFlag::DrawWireframeOverlay;
+            rv |= SceneDecorationFlag::NoDrawNormally;
             break;
         default:
-            rv |= SceneDecorationFlags::CastsShadows;
+            rv |= SceneDecorationFlag::CastsShadows;
             break;
         }
         return rv;

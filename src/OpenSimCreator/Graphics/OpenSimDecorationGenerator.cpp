@@ -557,7 +557,6 @@ namespace
             .mesh = rs.updSceneCache().cylinder_mesh(),
             .transform = cylinder_to_line_segment_transform({p1, p2}, radius),
             .color = {0.7f, 0.7f, 0.7f, 1.0f},
-            .flags = SceneDecorationFlags::CastsShadows,
         });
     }
 
@@ -575,7 +574,6 @@ namespace
                 .position = ToVec3(s.getLocationInGround(rs.getState())),
             },
             .color = c_StationColor,
-            .flags = SceneDecorationFlags::CastsShadows,
         });
     }
 
@@ -591,7 +589,6 @@ namespace
             .mesh = rs.sphere_mesh(),
             .transform = t,
             .color = c_ScapulothoracicJointColor,
-            .flags = SceneDecorationFlags::CastsShadows,
         });
     }
 
@@ -616,7 +613,6 @@ namespace
             .mesh = rs.sphere_mesh(),
             .transform = t,
             .color = c_CenterOfMassColor,
-            .flags = SceneDecorationFlags::CastsShadows,
         });
     }
 
@@ -661,23 +657,19 @@ namespace
             .mesh = rs.sphere_mesh(),
             .transform = {.scale = Vec3{tendonUiRadius}},
             .color = tendonColor,
-            .flags = SceneDecorationFlags::CastsShadows,
         };
         const SceneDecoration tendonCylinderPrototype = {
             .mesh = rs.uncapped_cylinder_mesh(),
             .color = tendonColor,
-            .flags = SceneDecorationFlags::CastsShadows,
         };
         const SceneDecoration fiberSpherePrototype = {
             .mesh = rs.sphere_mesh(),
             .transform = {.scale = Vec3{fiberUiRadius}},
             .color = fiberColor,
-            .flags = SceneDecorationFlags::CastsShadows,
         };
         const SceneDecoration fiberCylinderPrototype = {
             .mesh = rs.uncapped_cylinder_mesh(),
             .color = fiberColor,
-            .flags = SceneDecorationFlags::CastsShadows,
         };
 
         const auto emitTendonSphere = [&](const GeometryPathPoint& p)
@@ -851,7 +843,6 @@ namespace
                     .position = pp.locationInGround
                 },
                 .color = color,
-                .flags = SceneDecorationFlags::CastsShadows,
             });
         };
 
@@ -864,7 +855,6 @@ namespace
                 .mesh = rs.uncapped_cylinder_mesh(),
                 .transform = cylinder_to_line_segment_transform({p1, p2}, radius),
                 .color  = color,
-                .flags = SceneDecorationFlags::CastsShadows,
             });
         };
 
