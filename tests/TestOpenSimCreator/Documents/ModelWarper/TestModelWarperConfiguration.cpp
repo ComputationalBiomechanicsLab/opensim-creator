@@ -128,7 +128,7 @@ TEST(PairedPoints, CopyingPointsWorksAsExpected)
     const OpenSim::ComponentPath path{"/bodyset/somebody"};
 
     const PairedPoints pps{points, path};
-    const PairedPoints copy = pps;
+    const PairedPoints copy = pps;  // NOLINT(performance-unnecessary-copy-initialization)
 
     ASSERT_EQ(pps.getBaseFrameAbsPath(), copy.getBaseFrameAbsPath());
     ASSERT_TRUE(rgs::equal(pps, copy));
@@ -143,7 +143,7 @@ TEST(PairedPoints, CopyComparesEqualToOriginal)
     const OpenSim::ComponentPath path{"/bodyset/somebody"};
 
     const PairedPoints pps{points, path};
-    const PairedPoints copy = pps;
+    const PairedPoints copy = pps;  // NOLINT(performance-unnecessary-copy-initialization)
 
     ASSERT_EQ(pps, copy);
 }

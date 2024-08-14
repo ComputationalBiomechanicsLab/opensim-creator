@@ -48,12 +48,12 @@ namespace osc
             return flags & SceneDecorationFlags{SceneDecorationFlag::RimHighlight0, SceneDecorationFlag::RimHighlight1};
         }
 
-        Mesh mesh;
-        Transform transform;
+        Mesh mesh{};
+        Transform transform{};
         Color color = Color::white();  // ignored if `material` is provided
-        std::string id;
+        std::string id{};
         SceneDecorationFlags flags = SceneDecorationFlag::Default;
-        std::optional<Material> material;
-        std::optional<MaterialPropertyBlock> material_properties;
+        std::optional<Material> material{};
+        std::optional<MaterialPropertyBlock> material_properties{};
     };
 }

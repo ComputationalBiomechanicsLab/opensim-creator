@@ -47,7 +47,7 @@ TEST(Mesh, can_be_default_constructed)
 TEST(Mesh, can_be_copy_constructed)
 {
     const Mesh mesh;
-    [[maybe_unused]] const Mesh copy{mesh};
+    [[maybe_unused]] const Mesh copy{mesh};  // NOLINT(performance-unnecessary-copy-initialization)
 }
 
 TEST(Mesh, can_be_move_constructed)
