@@ -181,6 +181,7 @@ void osc::draw_arrow(
         .mesh = cache.cone_mesh(),
         .transform = cylinder_to_line_segment_transform({tip_start, props.end}, props.head_thickness),
         .color = props.color,
+        .flags = props.decoration_flags,
     });
 
     // if there's space for it, emit the neck cylinder
@@ -189,6 +190,7 @@ void osc::draw_arrow(
             .mesh = cache.cylinder_mesh(),
             .transform = cylinder_to_line_segment_transform({props.start, tip_start}, props.neck_thickness),
             .color = props.color,
+            .flags = props.decoration_flags,
         });
     }
 }

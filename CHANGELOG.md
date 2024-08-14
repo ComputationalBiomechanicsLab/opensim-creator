@@ -10,6 +10,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   currently only works for `ExternalForce`s in the model (#904) and `GeometryPath`s (#907).
 - The `Show Forces' Linear/Rotation Component` option was reworded to `Forces on Bodies` and
   `Torques on Bodies` to reflect what's actually being shown
+- Fixed force vector arrows not casting shadows
 - Internal: `RenderTextureDescriptor` was refactored into a POD struct called `RenderTextureParams`
   for ease-of-use
 

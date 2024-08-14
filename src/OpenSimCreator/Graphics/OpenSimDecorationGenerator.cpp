@@ -198,7 +198,7 @@ namespace
             m_Out{out}
         {}
 
-        SceneCache& updMeshCache()
+        SceneCache& updSceneCache()
         {
             return m_MeshCache;
         }
@@ -274,7 +274,7 @@ namespace
             for (const SimTK::DecorativeGeometry& geom : m_GeomList)
             {
                 GenerateDecorations(
-                    updMeshCache(),
+                    updSceneCache(),
                     getMatterSubsystem(),
                     getState(),
                     geom,
@@ -293,7 +293,7 @@ namespace
             for (const SimTK::DecorativeGeometry& geom : m_GeomList)
             {
                 GenerateDecorations(
-                    updMeshCache(),
+                    updSceneCache(),
                     getMatterSubsystem(),
                     getState(),
                     geom,
@@ -382,7 +382,7 @@ namespace
                     .head_thickness = (fixupScaleFactor*0.01f),
                     .color = c_BodyForceArrowColor,
                 };
-                draw_arrow(rs.updMeshCache(), arrowProperties, [&force, &rs](SceneDecoration&& decoration)
+                draw_arrow(rs.updSceneCache(), arrowProperties, [&force, &rs](SceneDecoration&& decoration)
                 {
                     rs.consume(force, std::move(decoration));
                 });
@@ -403,7 +403,7 @@ namespace
                     .head_thickness = (fixupScaleFactor*0.01f),
                     .color = c_BodyTorqueArrowColor,
                 };
-                draw_arrow(rs.updMeshCache(), arrowProperties, [&force, &rs](SceneDecoration&& decoration)
+                draw_arrow(rs.updSceneCache(), arrowProperties, [&force, &rs](SceneDecoration&& decoration)
                 {
                     rs.consume(force, std::move(decoration));
                 });
@@ -459,7 +459,7 @@ namespace
                 .head_thickness = 0.01f * rs.getFixupScaleFactor(),
                 .color = c_PointForceArrowColor,
             };
-            draw_arrow(rs.updMeshCache(), arrowProperties, [&force, &rs](SceneDecoration&& decoration)
+            draw_arrow(rs.updSceneCache(), arrowProperties, [&force, &rs](SceneDecoration&& decoration)
             {
                 rs.consume(force, std::move(decoration));
             });
@@ -477,7 +477,7 @@ namespace
                 .head_thickness = 0.01f * rs.getFixupScaleFactor(),
                 .color = c_PointForceArrowColor,
             };
-            draw_arrow(rs.updMeshCache(), arrowProperties, [&force, &rs](SceneDecoration&& decoration)
+            draw_arrow(rs.updSceneCache(), arrowProperties, [&force, &rs](SceneDecoration&& decoration)
             {
                 rs.consume(force, std::move(decoration));
             });
@@ -532,8 +532,7 @@ namespace
                 .head_thickness = 0.01f * rs.getFixupScaleFactor(),
                 .color = c_PointForceArrowColor,
             };
-
-            draw_arrow(rs.updMeshCache(), arrowProperties, [&pathActuator, &rs](SceneDecoration&& decoration)
+            draw_arrow(rs.updSceneCache(), arrowProperties, [&pathActuator, &rs](SceneDecoration&& decoration)
             {
                 rs.consume(*pathActuator, std::move(decoration));
             });
@@ -555,7 +554,7 @@ namespace
         const float radius = c_GeometryPathBaseRadius * rs.getFixupScaleFactor();
 
         rs.consume(p2p, SceneDecoration{
-            .mesh = rs.updMeshCache().cylinder_mesh(),
+            .mesh = rs.updSceneCache().cylinder_mesh(),
             .transform = cylinder_to_line_segment_transform({p1, p2}, radius),
             .color = {0.7f, 0.7f, 0.7f, 1.0f},
             .flags = SceneDecorationFlags::CastsShadows,
@@ -963,8 +962,7 @@ namespace
             .head_thickness = (fixupScaleFactor*0.01f),
             .color = color,
         };
-
-        draw_arrow(rs.updMeshCache(), arrowProperties, [&muscle, &rs](SceneDecoration&& d)
+        draw_arrow(rs.updSceneCache(), arrowProperties, [&muscle, &rs](SceneDecoration&& d)
         {
             rs.consume(muscle, std::move(d));
         });
@@ -1115,8 +1113,7 @@ namespace
             .head_thickness = fixupScaleFactor*baseRadius,
             .color = c_PointForceArrowColor,
         };
-
-        draw_arrow(rs.updMeshCache(), arrowProperties, [&hcf, &rs](SceneDecoration&& d)
+        draw_arrow(rs.updSceneCache(), arrowProperties, [&hcf, &rs](SceneDecoration&& d)
         {
             rs.consume(hcf, std::move(d));
         });
@@ -1155,8 +1152,7 @@ void osc::GenerateSubcomponentDecorations(
 {
     OSC_PERF("OpenSimRenderer/GenerateModelDecorations");
 
-    RendererState rendererState
-    {
+    RendererState rendererState{
         meshCache,
         model,
         state,
