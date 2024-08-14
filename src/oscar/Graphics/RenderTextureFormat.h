@@ -6,7 +6,7 @@ namespace osc
 {
     // format of the "color" (albedo) part of a render
     enum class RenderTextureFormat {
-        Red8,
+        Red8,  // careful: `Red8` has previously caused an explosion on some Intel machines (#418)
         ARGB32,
 
         RGFloat16,

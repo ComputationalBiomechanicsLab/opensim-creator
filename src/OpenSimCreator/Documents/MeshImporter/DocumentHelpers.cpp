@@ -256,16 +256,16 @@ SceneDecorationFlags osc::mi::computeFlags(
     if (id == MIIDs::Empty()) {
         return SceneDecorationFlag::Default;
     }
-    else if (doc.isSelected(id)) {
-        return SceneDecorationFlag::RimHighlight0;
+
+    SceneDecorationFlags rv = SceneDecorationFlag::Default;
+    if (doc.isSelected(id)) {
+        rv |= SceneDecorationFlag::RimHighlight0;
     }
-    else if (id == hoverID) {
-        return SceneDecorationFlag::RimHighlight1;
+    if (id == hoverID) {
+        rv |= SceneDecorationFlag::RimHighlight1;
     }
-    else if (IsInSelectionGroupOf(doc, hoverID, id)) {
-        return SceneDecorationFlag::RimHighlight1;
+    if (IsInSelectionGroupOf(doc, hoverID, id)) {
+        rv |= SceneDecorationFlag::RimHighlight1;
     }
-    else {
-        return SceneDecorationFlag::None;
-    }
+    return rv;
 }

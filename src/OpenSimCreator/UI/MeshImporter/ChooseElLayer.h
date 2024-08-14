@@ -154,15 +154,14 @@ namespace osc::mi
 
         SceneDecorationFlags computeFlags(const MIObject& el) const
         {
+            SceneDecorationFlags rv = SceneDecorationFlag::None;
             if (isSelected(el)) {
-                return SceneDecorationFlag::RimHighlight0;
+                rv |= SceneDecorationFlag::RimHighlight0;
             }
-            else if (isHovered(el)) {
-                return SceneDecorationFlag::RimHighlight1;
+            if (isHovered(el)) {
+                rv |= SceneDecorationFlag::RimHighlight1;
             }
-            else {
-                return SceneDecorationFlag::None;
-            }
+            return rv;
         }
 
         // returns a list of 3D drawable scene objects for this layer

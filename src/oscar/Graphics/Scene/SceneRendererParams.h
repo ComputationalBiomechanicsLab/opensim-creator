@@ -6,6 +6,8 @@
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 
+#include <array>
+
 namespace osc
 {
     // the parameters associated with a single call to `SceneRenderer::render`
@@ -24,6 +26,14 @@ namespace osc
         static constexpr Vec3 default_floor_location()
         {
             return {0.0f, -0.001f, 0.0f};
+        }
+
+    private:
+        static inline constexpr size_t c_num_rim_groups = 2;
+    public:
+        static constexpr size_t num_rim_groups()
+        {
+            return c_num_rim_groups;
         }
 
         friend bool operator==(const SceneRendererParams&, const SceneRendererParams&) = default;
@@ -53,7 +63,10 @@ namespace osc
         float specular_strength = 0.7f;
         float specular_shininess = 6.0f;
         Color background_color = default_background_color();
-        Color rim_color = {0.95f, 0.35f, 0.0f, 1.0f};
+        std::array<Color, c_num_rim_groups> rim_group_colors = std::to_array<Color>({
+            Color{0.95f, 0.35f, 0.0f, 0.95f},
+            Color{0.95f, 0.35f, 0.0f, 0.35f},
+        });
         Vec2 rim_thickness_in_pixels = {1.0f, 1.0f};
 
         // scene parameters
