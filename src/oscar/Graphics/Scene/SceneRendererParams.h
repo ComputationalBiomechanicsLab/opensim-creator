@@ -5,8 +5,10 @@
 #include <oscar/Maths/Mat4.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
+#include <oscar/Shims/Cpp23/utility.h>
 
 #include <array>
+#include <bit>
 
 namespace osc
 {

@@ -202,27 +202,29 @@ public:
             MaterialPropertyBlock wireframe_prop_block;
             Color previous_color = {-1.0f, -1.0f, -1.0f, 0.0f};
             for (const SceneDecoration& dec : decorations) {
-                if (not (dec.flags & SceneDecorationFlag::NoDrawNormally)) {
-                    if (dec.color != previous_color) {
-                        prop_block.set_color("uDiffuseColor", dec.color);
-                        previous_color = dec.color;
-                    }
+                if (dec.flags & SceneDecorationFlag::NoDrawInScene) {
+                    continue;  // skip this
+                }
 
-                    if (dec.material) {
-                        graphics::draw(dec.mesh, dec.transform, *dec.material, camera_, dec.material_properties);
-                    }
-                    else if (dec.color.a > 0.99f) {
-                        graphics::draw(dec.mesh, dec.transform, scene_main_material_, camera_, prop_block);
-                    }
-                    else {
-                        graphics::draw(dec.mesh, dec.transform, transparent_material, camera_, prop_block);
-                    }
+                if (dec.color != previous_color) {
+                    prop_block.set_color("uDiffuseColor", dec.color);
+                    previous_color = dec.color;
+                }
+
+                if (dec.material) {
+                    graphics::draw(dec.mesh, dec.transform, *dec.material, camera_, dec.material_properties);
+                }
+                else if (dec.color.a > 0.99f) {
+                    graphics::draw(dec.mesh, dec.transform, scene_main_material_, camera_, prop_block);
+                }
+                else {
+                    graphics::draw(dec.mesh, dec.transform, transparent_material, camera_, prop_block);
                 }
 
                 // if a wireframe overlay is requested for the decoration then draw it over the top in
                 // a solid color
                 if (dec.flags & SceneDecorationFlag::DrawWireframeOverlay) {
-                    wireframe_prop_block.set_color("uDiffuseColor", multiply_luminance(dec.color, 0.5f));
+                    wireframe_prop_block.set_color("uDiffuseColor", multiply_luminance(dec.color, 0.1f));
                     graphics::draw(dec.mesh, dec.transform, wireframe_material_, camera_, wireframe_prop_block);
                 }
 
@@ -420,10 +422,11 @@ private:
         // (also, while doing that, draw each mesh - to prevent multipass)
         std::optional<AABB> shadowcaster_aabbs;
         for (const SceneDecoration& decoration : decorations) {
-            if (decoration.flags & SceneDecorationFlag::CastsShadows) {
-                shadowcaster_aabbs = bounding_aabb_of(shadowcaster_aabbs, worldspace_bounds_of(decoration));
-                graphics::draw(decoration.mesh, decoration.transform, depth_writer_material_, camera_);
+            if (decoration.flags & SceneDecorationFlag::NoCastsShadows) {
+                continue;  // this decoration shouldn't cast shadows
             }
+            shadowcaster_aabbs = bounding_aabb_of(shadowcaster_aabbs, worldspace_bounds_of(decoration));
+            graphics::draw(decoration.mesh, decoration.transform, depth_writer_material_, camera_);
         }
 
         if (not shadowcaster_aabbs) {

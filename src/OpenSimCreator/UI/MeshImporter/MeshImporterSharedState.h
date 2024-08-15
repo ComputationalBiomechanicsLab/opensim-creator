@@ -518,7 +518,7 @@ namespace osc::mi
                     .rotation = angle_axis(90_deg, Vec3{-1.0f, 0.0f, 0.0f}),
                 },
                 .color = m_Colors.gridLines,
-                .flags = SceneDecorationFlag::None,
+                .flags = SceneDecorationFlag::AnnotationElement,
                 .material = m_FloorMaterial,
                 .maybePropertyBlock = props,
             };

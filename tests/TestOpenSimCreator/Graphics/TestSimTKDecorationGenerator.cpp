@@ -22,7 +22,7 @@ TEST(SimTKDecorationGenerator, PropagatesWireframeShadingFlag)
     sphere.setRepresentation(SimTK::DecorativeGeometry::DrawWireframe);
 
     size_t ncalls = 0;
-    osc::GenerateDecorations(cache, matter, state, sphere, 1.0f, [&ncalls](SceneDecoration&& dec)
+    GenerateDecorations(cache, matter, state, sphere, 1.0f, [&ncalls](SceneDecoration&& dec)
     {
         ++ncalls;
         ASSERT_TRUE(dec.flags & SceneDecorationFlag::DrawWireframeOverlay);
@@ -49,7 +49,7 @@ TEST(SimTKDecorationGenerator, PropagatesHiddenRepresentation)
     osc::GenerateDecorations(cache, matter, state, sphere, 1.0f, [&ncalls](SceneDecoration&& dec)
     {
         ++ncalls;
-        ASSERT_TRUE(dec.flags & SceneDecorationFlag::NoDrawNormally);
+        ASSERT_TRUE(dec.flags & SceneDecorationFlag::NoDrawInScene);
     });
     ASSERT_EQ(ncalls, 1) << "should only emit one is_wireframe sphere";
 }

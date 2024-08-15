@@ -79,10 +79,9 @@ namespace
         {
             // update flags based on path
             const std::string absPath = GetAbsolutePathString(component);
-            if (state.popupParams.componentsBeingAssignedTo.contains(absPath)) {
-                decoration.flags |= SceneDecorationFlag::RimHighlight0;
-            }
-            if (state.alreadyChosenComponents.contains(absPath)) {
+            if (state.popupParams.componentsBeingAssignedTo.contains(absPath) or
+                state.alreadyChosenComponents.contains(absPath)) {
+
                 decoration.flags |= SceneDecorationFlag::RimHighlight0;
             }
             if (absPath == state.hoveredComponent) {

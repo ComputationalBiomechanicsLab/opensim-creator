@@ -312,7 +312,7 @@ namespace
                 .rotation = angle_axis(180_deg, Vec3{-1.0f, 0.0f, 0.0f}),
             },
             .color = Color::half_grey(),
-            .flags = SceneDecorationFlag::None,
+            .flags = SceneDecorationFlag::AnnotationElement,
         };
     }
 
@@ -364,7 +364,7 @@ namespace
                 },
                 .color = arrow.color,
                 .id = arrow.label,
-                .flags = SceneDecorationFlag::None,
+                .flags = SceneDecorationFlag::AnnotationElement,
             });
         }
 
@@ -379,7 +379,7 @@ namespace
                 },
                 .color = arrow.color,
                 .id = arrow.label,
-                .flags = SceneDecorationFlag::None,
+                .flags = SceneDecorationFlag::AnnotationElement,
             });
         }
     }
@@ -474,7 +474,7 @@ private:
 
         if (static_cast<size_t>(m_ActiveRow) < NumRows(*m_Motion))
         {
-            ui::draw_image(render3DScene(dims), dims);
+            ui::draw_image(render3DScene(dims));
             m_RenderIsMousedOver = ui::is_item_hovered();
         }
         else

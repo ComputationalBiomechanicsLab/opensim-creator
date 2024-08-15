@@ -49,6 +49,7 @@ namespace
                 .rotation = rotation,
             },
             .color = {0.7f, 0.15f},
+            .flags = SceneDecorationFlag::AnnotationElement,
         });
     }
 }
@@ -67,6 +68,7 @@ void osc::draw_bvh(
                 .position = centroid_of(node.bounds()),
             },
             .color = Color::black(),
+            .flags = SceneDecorationFlag::AnnotationElement,
         });
     });
 }
@@ -93,6 +95,7 @@ void osc::draw_aabbs(
                 .position = centroid_of(aabb),
             },
             .color = Color::black(),
+            .flags = SceneDecorationFlag::AnnotationElement,
         });
     }
 }
@@ -123,6 +126,7 @@ void osc::draw_xz_floor_lines(
             .rotation = angle_axis(90_deg, Vec3{0.0f, 0.0f, 1.0f}),
         },
         .color = Color::red(),
+        .flags = SceneDecorationFlag::AnnotationElement,
     });
 
     // Z line
@@ -133,6 +137,7 @@ void osc::draw_xz_floor_lines(
             .rotation = angle_axis(90_deg, Vec3{1.0f, 0.0f, 0.0f}),
         },
         .color = Color::blue(),
+        .flags = SceneDecorationFlag::AnnotationElement,
     });
 }
 

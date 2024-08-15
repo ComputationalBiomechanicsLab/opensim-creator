@@ -251,20 +251,16 @@ SceneDecorationFlags osc::mi::computeFlags(
     UID id,
     std::optional<UID> maybeHoverID)
 {
-    const UID hoverID = maybeHoverID ? *maybeHoverID : MIIDs::Empty();
-
     if (id == MIIDs::Empty()) {
         return SceneDecorationFlag::Default;
     }
 
+    const UID hoverID = maybeHoverID ? *maybeHoverID : MIIDs::Empty();
     SceneDecorationFlags rv = SceneDecorationFlag::Default;
     if (doc.isSelected(id)) {
         rv |= SceneDecorationFlag::RimHighlight0;
     }
-    if (id == hoverID) {
-        rv |= SceneDecorationFlag::RimHighlight1;
-    }
-    if (IsInSelectionGroupOf(doc, hoverID, id)) {
+    if (id == hoverID or IsInSelectionGroupOf(doc, hoverID, id)) {
         rv |= SceneDecorationFlag::RimHighlight1;
     }
     return rv;

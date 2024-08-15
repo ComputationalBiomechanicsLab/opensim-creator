@@ -37,8 +37,7 @@ void osc::GenerateOverlayDecorations(
         });
     }
 
-    if (params.getDrawYZGrid())
-    {
+    if (params.getDrawYZGrid()) {
         draw_yz_grid(meshCache, [&out, fixupScaleFactor](SceneDecoration&& dec)
         {
             dec.transform.scale *= fixupScaleFactor;
@@ -46,8 +45,7 @@ void osc::GenerateOverlayDecorations(
         });
     }
 
-    if (params.getDrawAxisLines())
-    {
+    if (params.getDrawAxisLines()) {
         draw_xz_floor_lines(meshCache, [&out, fixupScaleFactor](SceneDecoration&& dec)
         {
             dec.transform.scale *= fixupScaleFactor;

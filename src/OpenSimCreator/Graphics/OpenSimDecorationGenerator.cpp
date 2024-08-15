@@ -381,6 +381,7 @@ namespace
                     .neck_thickness = (fixupScaleFactor*0.006f),
                     .head_thickness = (fixupScaleFactor*0.01f),
                     .color = c_BodyForceArrowColor,
+                    .decoration_flags = SceneDecorationFlag::AnnotationElement,
                 };
                 draw_arrow(rs.updSceneCache(), arrowProperties, [&force, &rs](SceneDecoration&& decoration)
                 {
@@ -402,6 +403,7 @@ namespace
                     .neck_thickness = (fixupScaleFactor*0.006f),
                     .head_thickness = (fixupScaleFactor*0.01f),
                     .color = c_BodyTorqueArrowColor,
+                    .decoration_flags = SceneDecorationFlag::AnnotationElement,
                 };
                 draw_arrow(rs.updSceneCache(), arrowProperties, [&force, &rs](SceneDecoration&& decoration)
                 {
@@ -458,6 +460,7 @@ namespace
                 .neck_thickness = 0.006f * rs.getFixupScaleFactor(),
                 .head_thickness = 0.01f * rs.getFixupScaleFactor(),
                 .color = c_PointForceArrowColor,
+                .decoration_flags = SceneDecorationFlag::AnnotationElement,
             };
             draw_arrow(rs.updSceneCache(), arrowProperties, [&force, &rs](SceneDecoration&& decoration)
             {
@@ -476,6 +479,7 @@ namespace
                 .neck_thickness = 0.006f * rs.getFixupScaleFactor(),
                 .head_thickness = 0.01f * rs.getFixupScaleFactor(),
                 .color = c_PointForceArrowColor,
+                .decoration_flags = SceneDecorationFlag::AnnotationElement,
             };
             draw_arrow(rs.updSceneCache(), arrowProperties, [&force, &rs](SceneDecoration&& decoration)
             {
@@ -531,6 +535,7 @@ namespace
                 .neck_thickness = 0.006f * rs.getFixupScaleFactor(),
                 .head_thickness = 0.01f * rs.getFixupScaleFactor(),
                 .color = c_PointForceArrowColor,
+                .decoration_flags = SceneDecorationFlag::AnnotationElement,
             };
             draw_arrow(rs.updSceneCache(), arrowProperties, [&pathActuator, &rs](SceneDecoration&& decoration)
             {
@@ -613,6 +618,7 @@ namespace
             .mesh = rs.sphere_mesh(),
             .transform = t,
             .color = c_CenterOfMassColor,
+            .flags = SceneDecorationFlag::AnnotationElement,
         });
     }
 
@@ -951,6 +957,7 @@ namespace
             .neck_thickness = (fixupScaleFactor*0.006f),
             .head_thickness = (fixupScaleFactor*0.01f),
             .color = color,
+            .decoration_flags = SceneDecorationFlag::AnnotationElement,
         };
         draw_arrow(rs.updSceneCache(), arrowProperties, [&muscle, &rs](SceneDecoration&& d)
         {
@@ -1102,6 +1109,7 @@ namespace
             .neck_thickness = fixupScaleFactor*baseRadius*0.6f,
             .head_thickness = fixupScaleFactor*baseRadius,
             .color = c_PointForceArrowColor,
+            .decoration_flags = SceneDecorationFlag::AnnotationElement,
         };
         draw_arrow(rs.updSceneCache(), arrowProperties, [&hcf, &rs](SceneDecoration&& d)
         {

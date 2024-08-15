@@ -53,7 +53,7 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsWithOpenSimMuscleColoringGen
                 ASSERT_GT(dec.color.r, 5.0f*dec.color.b);
 
                 // and that it casts shadows (rando bug in 0.5.9)
-                ASSERT_TRUE(dec.flags & SceneDecorationFlag::CastsShadows);
+                ASSERT_FALSE(dec.flags & SceneDecorationFlag::NoCastsShadows);
                 passedTest = true;
             }
         }

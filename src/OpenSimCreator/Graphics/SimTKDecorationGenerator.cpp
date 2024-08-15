@@ -35,8 +35,7 @@ namespace
     {
         SimTK::Vec3 sf = geom.getScaleFactors();
 
-        for (int i = 0; i < 3; ++i)
-        {
+        for (int i = 0; i < 3; ++i) {
             sf[i] = sf[i] <= 0.0 ? 1.0 : sf[i];
         }
 
@@ -56,21 +55,14 @@ namespace
 
     SceneDecorationFlags GetFlags(const SimTK::DecorativeGeometry& geom)
     {
-        SceneDecorationFlags rv = SceneDecorationFlag::None;
-
         switch (geom.getRepresentation()) {
-        case SimTK::DecorativeGeometry::Hide:
-            rv |= SceneDecorationFlag::NoDrawNormally;
-            break;
         case SimTK::DecorativeGeometry::DrawWireframe:
-            rv |= SceneDecorationFlag::DrawWireframeOverlay;
-            rv |= SceneDecorationFlag::NoDrawNormally;
-            break;
+            return SceneDecorationFlag::OnlyWireframe;
+        case SimTK::DecorativeGeometry::Hide:
+            return SceneDecorationFlag::Hidden;
         default:
-            rv |= SceneDecorationFlag::CastsShadows;
-            break;
+            return SceneDecorationFlag::Default;
         }
-        return rv;
     }
 
     // creates a geometry-to-ground transform for the given geometry
