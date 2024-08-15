@@ -311,7 +311,7 @@ namespace
                 .scale = {50.0f, 50.0f, 1.0f},
                 .rotation = angle_axis(180_deg, Vec3{-1.0f, 0.0f, 0.0f}),
             },
-            .color = Color::half_grey(),
+            .shading = Color::half_grey(),
             .flags = SceneDecorationFlag::AnnotationElement,
         };
     }
@@ -362,7 +362,7 @@ namespace
                     .rotation = rotation,
                     .position = neckMidpoint,
                 },
-                .color = arrow.color,
+                .shading = arrow.color,
                 .id = arrow.label,
                 .flags = SceneDecorationFlag::AnnotationElement,
             });
@@ -377,7 +377,7 @@ namespace
                     .rotation = rotation,
                     .position = headMidpoint,
                 },
-                .color = arrow.color,
+                .shading = arrow.color,
                 .id = arrow.label,
                 .flags = SceneDecorationFlag::AnnotationElement,
             });

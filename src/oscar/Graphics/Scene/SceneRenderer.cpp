@@ -27,6 +27,7 @@
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/ResourcePath.h>
 #include <oscar/Utils/Perf.h>
+#include <oscar/Utils/StdVariantHelpers.h>
 
 #include <algorithm>
 #include <memory>
@@ -206,25 +207,37 @@ public:
                     continue;  // skip this
                 }
 
-                if (dec.color != previous_color) {
-                    prop_block.set_color("uDiffuseColor", dec.color);
-                    previous_color = dec.color;
-                }
+                Color color_guess = Color::white();
+                std::visit(Overload{
+                    [this, &transparent_material, &dec, &previous_color, &prop_block, &color_guess](const Color& color)
+                    {
+                        if (color != previous_color) {
+                            prop_block.set_color("uDiffuseColor", color);
+                            previous_color = color;
+                        }
 
-                if (dec.material) {
-                    graphics::draw(dec.mesh, dec.transform, *dec.material, camera_, dec.material_properties);
-                }
-                else if (dec.color.a > 0.99f) {
-                    graphics::draw(dec.mesh, dec.transform, scene_main_material_, camera_, prop_block);
-                }
-                else {
-                    graphics::draw(dec.mesh, dec.transform, transparent_material, camera_, prop_block);
-                }
+                        if (color.a > 0.99f) {
+                            graphics::draw(dec.mesh, dec.transform, scene_main_material_, camera_, prop_block);
+                        }
+                        else {
+                            graphics::draw(dec.mesh, dec.transform, transparent_material, camera_, prop_block);
+                        }
+                        color_guess = color;
+                    },
+                    [this, &dec](const Material& material)
+                    {
+                        graphics::draw(dec.mesh, dec.transform, material, camera_);
+                    },
+                    [this, &dec](const std::pair<Material, MaterialPropertyBlock>& material_props_pair)
+                    {
+                        graphics::draw(dec.mesh, dec.transform, material_props_pair.first, camera_, material_props_pair.second);
+                    }
+                }, dec.shading);
 
                 // if a wireframe overlay is requested for the decoration then draw it over the top in
                 // a solid color
                 if (dec.flags & SceneDecorationFlag::DrawWireframeOverlay) {
-                    wireframe_prop_block.set_color("uDiffuseColor", multiply_luminance(dec.color, 0.1f));
+                    wireframe_prop_block.set_color("uDiffuseColor", multiply_luminance(color_guess, 0.1f));
                     graphics::draw(dec.mesh, dec.transform, wireframe_material_, camera_, wireframe_prop_block);
                 }
 

@@ -112,6 +112,7 @@ add_library(oscar STATIC
     Graphics/Scene/SceneCollision.h
     Graphics/Scene/SceneDecoration.h
     Graphics/Scene/SceneDecorationFlags.h
+    Graphics/Scene/SceneDecorationShading.h
     Graphics/Scene/SceneHelpers.cpp
     Graphics/Scene/SceneHelpers.h
     Graphics/Scene/SceneRenderer.cpp

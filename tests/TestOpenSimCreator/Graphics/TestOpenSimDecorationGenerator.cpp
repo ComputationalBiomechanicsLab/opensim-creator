@@ -16,6 +16,7 @@
 
 #include <filesystem>
 #include <utility>
+#include <variant>
 #include <vector>
 
 using namespace osc;
@@ -45,12 +46,15 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsWithOpenSimMuscleColoringGen
         1.0f,
         [&passedTest](const OpenSim::Component& c, SceneDecoration&& dec)
         {
-            if (contains_case_insensitive(c.getName(), "muscle1"))
-            {
+            if (contains_case_insensitive(c.getName(), "muscle1")) {
+
+                ASSERT_TRUE(std::holds_alternative<Color>(dec.shading)) << "should have an assigned color";
+
                 // check that it's red
-                ASSERT_GT(dec.color.r, 0.5f);
-                ASSERT_GT(dec.color.r, 5.0f*dec.color.g);
-                ASSERT_GT(dec.color.r, 5.0f*dec.color.b);
+                const Color& color = std::get<Color>(dec.shading);
+                ASSERT_GT(color.r, 0.5f);
+                ASSERT_GT(color.r, 5.0f*color.g);
+                ASSERT_GT(color.r, 5.0f*color.b);
 
                 // and that it casts shadows (rando bug in 0.5.9)
                 ASSERT_FALSE(dec.flags & SceneDecorationFlag::NoCastsShadows);

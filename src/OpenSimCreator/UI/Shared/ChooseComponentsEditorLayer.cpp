@@ -29,6 +29,7 @@
 #include <string>
 #include <unordered_set>
 #include <utility>
+#include <variant>
 #include <vector>
 
 using namespace osc;
@@ -91,8 +92,8 @@ namespace
             if (state.popupParams.canChooseItem(component)) {
                 decoration.id = absPath;
             }
-            else {
-                decoration.color.a *= 0.2f;  // fade non-selectable objects
+            else if (std::holds_alternative<Color>(decoration.shading)) {
+                std::get<Color>(decoration.shading).a *= 0.2f;  // fade non-selectable objects
             }
 
             out.decorations.push_back(std::move(decoration));

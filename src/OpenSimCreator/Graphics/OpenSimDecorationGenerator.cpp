@@ -561,7 +561,7 @@ namespace
         rs.consume(p2p, SceneDecoration{
             .mesh = rs.updSceneCache().cylinder_mesh(),
             .transform = cylinder_to_line_segment_transform({p1, p2}, radius),
-            .color = {0.7f, 0.7f, 0.7f, 1.0f},
+            .shading = Color::light_grey(),
         });
     }
 
@@ -578,7 +578,7 @@ namespace
                 .scale = Vec3{radius},
                 .position = ToVec3(s.getLocationInGround(rs.getState())),
             },
-            .color = c_StationColor,
+            .shading = c_StationColor,
         });
     }
 
@@ -593,7 +593,7 @@ namespace
         rs.consume(scapuloJoint, SceneDecoration{
             .mesh = rs.sphere_mesh(),
             .transform = t,
-            .color = c_ScapulothoracicJointColor,
+            .shading = c_ScapulothoracicJointColor,
         });
     }
 
@@ -617,7 +617,7 @@ namespace
         rs.consume(b, SceneDecoration{
             .mesh = rs.sphere_mesh(),
             .transform = t,
-            .color = c_CenterOfMassColor,
+            .shading = c_CenterOfMassColor,
             .flags = SceneDecorationFlag::AnnotationElement,
         });
     }
@@ -662,20 +662,20 @@ namespace
         const SceneDecoration tendonSpherePrototype = {
             .mesh = rs.sphere_mesh(),
             .transform = {.scale = Vec3{tendonUiRadius}},
-            .color = tendonColor,
+            .shading = tendonColor,
         };
         const SceneDecoration tendonCylinderPrototype = {
             .mesh = rs.uncapped_cylinder_mesh(),
-            .color = tendonColor,
+            .shading = tendonColor,
         };
         const SceneDecoration fiberSpherePrototype = {
             .mesh = rs.sphere_mesh(),
             .transform = {.scale = Vec3{fiberUiRadius}},
-            .color = fiberColor,
+            .shading = fiberColor,
         };
         const SceneDecoration fiberCylinderPrototype = {
             .mesh = rs.uncapped_cylinder_mesh(),
-            .color = fiberColor,
+            .shading = fiberColor,
         };
 
         const auto emitTendonSphere = [&](const GeometryPathPoint& p)
@@ -848,7 +848,7 @@ namespace
                     .rotation = normalize(rotation(Vec3{0.0f, 1.0f, 0.0f}, upDirection)),
                     .position = pp.locationInGround
                 },
-                .color = color,
+                .shading = color,
             });
         };
 
@@ -860,7 +860,7 @@ namespace
             rs.consume(hittestTarget, SceneDecoration{
                 .mesh = rs.uncapped_cylinder_mesh(),
                 .transform = cylinder_to_line_segment_transform({p1, p2}, radius),
-                .color  = color,
+                .shading  = color,
             });
         };
 

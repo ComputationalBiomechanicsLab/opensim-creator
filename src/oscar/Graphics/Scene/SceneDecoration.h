@@ -5,11 +5,13 @@
 #include <oscar/Graphics/MaterialPropertyBlock.h>
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Graphics/Scene/SceneDecorationFlags.h>
+#include <oscar/Graphics/Scene/SceneDecorationShading.h>
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/Vec3.h>
 
 #include <optional>
 #include <string>
+#include <variant>
 
 namespace osc
 {
@@ -34,11 +36,11 @@ namespace osc
             return copy;
         }
 
-        // returns a copy of this `SceneDecoration` with `color` set to the provided color
+        // returns a copy of this `SceneDecoration` with `shading` set to the provided color
         SceneDecoration with_color(const Color& color_) const
         {
             SceneDecoration copy{*this};
-            copy.color = color_;
+            copy.shading = color_;
             return copy;
         }
 
@@ -50,10 +52,8 @@ namespace osc
 
         Mesh mesh{};
         Transform transform{};
-        Color color = Color::white();  // ignored if `material` is provided
+        SceneDecorationShading shading = Color::white();
         std::string id{};
         SceneDecorationFlags flags = SceneDecorationFlag::Default;
-        std::optional<Material> material{};
-        std::optional<MaterialPropertyBlock> material_properties{};
     };
 }

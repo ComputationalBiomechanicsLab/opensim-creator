@@ -188,9 +188,10 @@ namespace osc::mi
                     DrawableThing& d = m_DrawablesBuffer[i];
                     d.flags = flags;
 
-                    if (!isSelectableEl)
-                    {
-                        d.color.a = fadedAlpha;
+                    if (not isSelectableEl) {
+                        if (std::holds_alternative<Color>(d.shading)) {
+                            std::get<Color>(d.shading).a = fadedAlpha;   // fade non-selectable colored scene elements
+                        }
                         d.id = MIIDs::Empty();
                         d.groupId = MIIDs::Empty();
                     }

@@ -15,6 +15,7 @@ namespace osc
 
         // helpful combinations
         Default = None,
+        WireframeOverlayedDefault = Default | DrawWireframeOverlay,
         AnnotationElement = NoCastsShadows,
         OnlyWireframe = NoDrawInScene | DrawWireframeOverlay,
         Hidden = NoCastsShadows | NoDrawInScene,

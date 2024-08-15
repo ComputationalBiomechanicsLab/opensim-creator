@@ -94,6 +94,10 @@ namespace
                 continue;  // unsupported
             }
 
+            if (not std::holds_alternative<Color>(decoration.shading)) {
+                continue;  // custom materials are unsupported
+            }
+
             auto [mesh_iter, mesh_inserted] = mesh_to_id.try_emplace(decoration.mesh, std::string{});
             if (mesh_inserted) {
                 std::stringstream id;
@@ -103,7 +107,7 @@ namespace
                 rv.geometries.emplace_back(mesh_iter->second, mesh_iter->first);
             }
 
-            auto [material_iter, material_inserted] = color_to_material_id.try_emplace(decoration.color, std::string{});
+            auto [material_iter, material_inserted] = color_to_material_id.try_emplace(std::get<Color>(decoration.shading), std::string{});
             if (material_inserted) {
                 std::stringstream id;
                 id << "material_" << latest_material++;

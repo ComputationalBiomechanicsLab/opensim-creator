@@ -1677,7 +1677,7 @@ void osc::ui::draw_text_column_centered(CStringView content)
 
 void osc::ui::draw_text_faded(CStringView content)
 {
-    ui::push_style_color(ImGuiCol_Text, Color{0.7f, 0.7f, 0.7f});
+    ui::push_style_color(ImGuiCol_Text, Color::light_grey());
     draw_text_unformatted(content);
     ui::pop_style_color();
 }

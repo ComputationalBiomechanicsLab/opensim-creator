@@ -21,9 +21,9 @@ namespace osc
         Color meshColor = Color::white())
     {
         // draw the mesh
-        out({
+        out(SceneDecoration{
             .mesh = tpsSourceOrDestinationMesh,
-            .color = meshColor,
+            .shading = meshColor,
             .flags = wireframeMode ? SceneDecorationFlags{SceneDecorationFlag::Default, SceneDecorationFlag::DrawWireframeOverlay} : SceneDecorationFlag::Default,
         });
 
