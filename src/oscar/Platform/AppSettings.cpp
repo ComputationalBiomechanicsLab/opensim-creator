@@ -537,7 +537,7 @@ namespace
             }
         };
 
-        std::unordered_map<Key, std::shared_ptr<AppSettings::Impl>, KeyHasher> data_;
+        ankerl::unordered_dense::map<Key, std::shared_ptr<AppSettings::Impl>, KeyHasher> data_;
     };
 
     std::shared_ptr<AppSettings::Impl> get_globally_shared_settings_impl(

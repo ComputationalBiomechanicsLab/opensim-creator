@@ -3,6 +3,8 @@
 #include <oscar/Utils/HashHelpers.h>
 #include <oscar/Utils/SynchronizedValue.h>
 
+#include <ankerl/unordered_dense.h>
+
 #include <unordered_map>
 #include <string>
 #include <string_view>
@@ -22,9 +24,9 @@ namespace
         return hash_of(label, filename, line);
     }
 
-    SynchronizedValue<std::unordered_map<size_t, PerfMeasurement>>& get_global_perf_measurement_storage()
+    SynchronizedValue<ankerl::unordered_dense::map<size_t, PerfMeasurement>>& get_global_perf_measurement_storage()
     {
-        static SynchronizedValue<std::unordered_map<size_t, PerfMeasurement>> s_measurement_storage;
+        static SynchronizedValue<ankerl::unordered_dense::map<size_t, PerfMeasurement>> s_measurement_storage;
         return s_measurement_storage;
     }
 }

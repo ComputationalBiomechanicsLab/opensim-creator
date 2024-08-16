@@ -8,6 +8,7 @@
 #include <oscar/Graphics/Scene/SceneDecorationShading.h>
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/Vec3.h>
+#include <oscar/Utils/StringName.h>
 
 #include <optional>
 #include <string>
@@ -53,7 +54,7 @@ namespace osc
         Mesh mesh{};
         Transform transform{};
         SceneDecorationShading shading = Color::white();
-        std::string id{};
+        StringName id{};
         SceneDecorationFlags flags = SceneDecorationFlag::Default;
     };
 }

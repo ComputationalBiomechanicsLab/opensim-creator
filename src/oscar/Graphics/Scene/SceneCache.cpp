@@ -13,6 +13,8 @@
 #include <oscar/Utils/HashHelpers.h>
 #include <oscar/Utils/SynchronizedValue.h>
 
+#include <ankerl/unordered_dense.h>
+
 #include <cstddef>
 #include <functional>
 #include <memory>
@@ -230,13 +232,13 @@ private:
     Mesh y_line = generate_y_to_y_line_mesh();
     Mesh textured_quad = floor;
 
-    SynchronizedValue<std::unordered_map<TorusParameters, Mesh>> torus_cache;
-    SynchronizedValue<std::unordered_map<std::string, Mesh>> mesh_cache;
-    SynchronizedValue<std::unordered_map<Mesh, std::unique_ptr<BVH>>> bvh_cache;
+    SynchronizedValue<ankerl::unordered_dense::map<TorusParameters, Mesh>> torus_cache;
+    SynchronizedValue<ankerl::unordered_dense::map<std::string, Mesh>> mesh_cache;
+    SynchronizedValue<ankerl::unordered_dense::map<Mesh, std::unique_ptr<BVH>>> bvh_cache;
 
     // shader stuff
     ResourceLoader resource_loader_;
-    SynchronizedValue<std::unordered_map<ShaderLookupKey, Shader>> shader_cache_;
+    SynchronizedValue<ankerl::unordered_dense::map<ShaderLookupKey, Shader>> shader_cache_;
     std::optional<MeshBasicMaterial> basic_material_;
     std::optional<MeshBasicMaterial> wireframe_material_;
 };

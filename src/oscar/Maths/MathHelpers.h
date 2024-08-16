@@ -137,7 +137,10 @@ namespace osc
     // returns euler angles for performing an intrinsic, step-by-step, rotation about X, Y, and then Z
     EulerAngles extract_eulers_xyz(const Quat&);
 
-    Vec3 transform_point(const Mat4&, const Vec3&);
+    inline Vec3 transform_point(const Mat4& mat, const Vec3& point)
+    {
+        return Vec3{mat * Vec4{point, 1.0f}};
+    }
 
     // returns the a `Quat` equivalent to the given euler angles
     Quat to_worldspace_rotation_quat(const EulerAngles&);

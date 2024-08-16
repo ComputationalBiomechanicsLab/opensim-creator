@@ -40,7 +40,7 @@ namespace osc
         Vec3 position{};
     };
 
-    // applies the transform to a point vector (equivalent to `TransformPoint`)
+    // applies the transform to a point vector (equivalent to `transform_point`)
     constexpr Vec3 operator*(const Transform& transform, Vec3 point)
     {
         point *= transform.scale;

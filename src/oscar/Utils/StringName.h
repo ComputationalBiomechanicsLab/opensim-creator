@@ -14,7 +14,7 @@ namespace osc
     // immutable, globally unique string with fast hashing+equality
     class StringName final : public SharedPreHashedString {
     public:
-        explicit StringName() = default;
+        StringName() = default;
         explicit StringName(std::string_view);
         explicit StringName(const char* s) : StringName{std::string_view{s}} {}
         explicit StringName(std::nullptr_t) = delete;

@@ -623,6 +623,13 @@ const OpenSim::Component* osc::FindComponent(
     return FindComponent(model, OpenSim::ComponentPath{absPath});
 }
 
+const OpenSim::Component* osc::FindComponent(
+    const OpenSim::Model& model,
+    const StringName& absPath)
+{
+    return FindComponent(model, std::string{absPath});
+}
+
 OpenSim::Component* osc::FindComponentMut(
     OpenSim::Component& root,
     const OpenSim::ComponentPath& cp)
@@ -1192,6 +1199,11 @@ std::string osc::GetAbsolutePathString(const OpenSim::Component& c)
     std::string rv;
     GetAbsolutePathString(c, rv);
     return rv;
+}
+
+StringName osc::GetAbsolutePathStringName(const OpenSim::Component& c)
+{
+    return StringName{GetAbsolutePathString(c)};
 }
 
 OpenSim::ComponentPath osc::GetAbsolutePath(const OpenSim::Component& c)

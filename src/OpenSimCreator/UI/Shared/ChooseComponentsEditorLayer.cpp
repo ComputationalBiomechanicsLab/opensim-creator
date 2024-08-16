@@ -23,6 +23,7 @@
 #include <oscar/Platform/App.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/CStringView.h>
+#include <oscar/Utils/StringName.h>
 
 #include <memory>
 #include <optional>
@@ -52,8 +53,8 @@ namespace
         std::shared_ptr<UndoableModelStatePair> model;
         ChooseComponentsEditorLayerParameters popupParams;
         ModelRendererParams renderParams;
-        std::string hoveredComponent;
-        std::unordered_set<std::string> alreadyChosenComponents;
+        StringName hoveredComponent;
+        std::unordered_set<StringName> alreadyChosenComponents;
         bool shouldClosePopup = false;
     };
 
@@ -79,7 +80,7 @@ namespace
         const auto onModelDecoration = [&state, &out](const OpenSim::Component& component, SceneDecoration&& decoration)
         {
             // update flags based on path
-            const std::string absPath = GetAbsolutePathString(component);
+            const StringName absPath = GetAbsolutePathStringName(component);
             if (state.popupParams.componentsBeingAssignedTo.contains(absPath) or
                 state.alreadyChosenComponents.contains(absPath)) {
 
@@ -269,7 +270,7 @@ public:
 
     bool tryToggleHover()
     {
-        const std::string& absPath = m_State.hoveredComponent;
+        const auto& absPath = m_State.hoveredComponent;
         const OpenSim::Component* component = FindComponent(m_State.model->getModel(), absPath);
 
         if (!component)

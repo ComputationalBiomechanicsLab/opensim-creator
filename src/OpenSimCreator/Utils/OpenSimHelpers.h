@@ -7,6 +7,7 @@
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/Concepts.h>
+#include <oscar/Utils/StringName.h>
 
 #include <concepts>
 #include <cstddef>
@@ -389,14 +390,9 @@ namespace osc
     );
 
     // returns a pointer if the given path resolves a component relative to root
-    const OpenSim::Component* FindComponent(
-        const OpenSim::Component& root,
-        const OpenSim::ComponentPath&
-    );
-    const OpenSim::Component* FindComponent(
-        const OpenSim::Model&,
-        const std::string& absPath
-    );
+    const OpenSim::Component* FindComponent(const OpenSim::Component& root, const OpenSim::ComponentPath&);
+    const OpenSim::Component* FindComponent(const OpenSim::Model&, const std::string& absPath);
+    const OpenSim::Component* FindComponent(const OpenSim::Model&, const StringName& absPath);
 
     // return non-nullptr if the given path resolves a component of type T relative to root
     template<std::derived_from<OpenSim::Component> T>
@@ -406,7 +402,13 @@ namespace osc
     }
 
     template<std::derived_from<OpenSim::Component> T>
-    const T* FindComponent(const OpenSim::Component& root, const std::string& cp)
+    const T* FindComponent(const OpenSim::Model& root, const std::string& cp)
+    {
+        return dynamic_cast<const T*>(FindComponent(root, cp));
+    }
+
+    template<std::derived_from<OpenSim::Component> T>
+    const T* FindComponent(const OpenSim::Model& root, const StringName& cp)
     {
         return dynamic_cast<const T*>(FindComponent(root, cp));
     }
@@ -620,6 +622,7 @@ namespace osc
     // (custom OSC version that may be faster than OpenSim::Component::getAbsolutePathString)
     void GetAbsolutePathString(const OpenSim::Component&, std::string&);
     std::string GetAbsolutePathString(const OpenSim::Component&);
+    StringName GetAbsolutePathStringName(const OpenSim::Component&);
 
     // returns the absolute path to a component within its hierarchy (e.g. /jointset/joint/somejoint)
     //

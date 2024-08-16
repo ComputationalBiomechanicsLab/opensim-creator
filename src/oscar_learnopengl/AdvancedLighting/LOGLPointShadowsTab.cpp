@@ -157,13 +157,13 @@ private:
         material.set_float("uFarPlane", 25.0f);
         material.set_bool("uShadows", soft_shadows_);
 
+        material.set_render_texture("uDepthMap", depth_texture_);
         for (const SceneCube& cube : scene_cubes_) {
             MaterialPropertyBlock material_props;
-            material_props.set_bool("uReverseNormals", cube.invert_normals);
-            material.set_render_texture("uDepthMap", depth_texture_);
+            material_props.set_bool("uReverseNormals", cube.invert_normals);  // UNDOME
             graphics::draw(cube_mesh_, cube.transform, material, scene_camera_, std::move(material_props));
-            material.unset("uDepthMap");
         }
+        material.unset("uDepthMap");
 
         // also, draw the light as a little cube
         material.set_bool("uShadows", soft_shadows_);

@@ -149,7 +149,7 @@ namespace
         {}
 
         int offset;
-        std::string label;
+        StringName label;
         ColumnDataType dataType;
     };
 
@@ -328,7 +328,7 @@ namespace
         float neck_thickness = 0.025f;
         float head_thickness = 0.05f;
         float percentageHead = 0.15f;
-        std::string label;
+        StringName id;
     };
 
     // writes relevant geometry to output for drawing an arrow between two points in space
@@ -363,7 +363,7 @@ namespace
                     .position = neckMidpoint,
                 },
                 .shading = arrow.color,
-                .id = arrow.label,
+                .id = arrow.id,
                 .flags = SceneDecorationFlag::AnnotationElement,
             });
         }
@@ -378,7 +378,7 @@ namespace
                     .position = headMidpoint,
                 },
                 .shading = arrow.color,
-                .id = arrow.label,
+                .id = arrow.id,
                 .flags = SceneDecorationFlag::AnnotationElement,
             });
         }
@@ -409,7 +409,7 @@ namespace
         arrow.p0 = {0.0f, 0.0f, 0.0f};
         arrow.p1 = q * Vec3{0.0f, 1.0f, 0.0f};
         arrow.color = Color::green();
-        arrow.label = columnDescription.label;
+        arrow.id = columnDescription.label;
 
         GenerateDecorations(arrow, out);
     }

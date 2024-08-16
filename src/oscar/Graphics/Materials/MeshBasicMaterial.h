@@ -45,7 +45,7 @@ namespace osc
         operator const Material& () const { return material_; }
 
     private:
-        static constexpr std::string_view c_color_propname = "uDiffuseColor";
+        static const StringName c_color_propname;
         Material material_;
     };
 }

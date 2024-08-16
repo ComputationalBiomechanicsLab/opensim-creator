@@ -446,7 +446,7 @@ private:
         // if there's a 3D-hit, transform it into an OpenSim-hit
         if (m_State.maybeBaseLayerHittest)
         {
-            m_State.maybeHoveredComponentAbsPath = m_State.maybeBaseLayerHittest->decoration_id;
+            m_State.maybeHoveredComponentAbsPath = OpenSim::ComponentPath{std::string{m_State.maybeBaseLayerHittest->decoration_id}};
         }
         else
         {

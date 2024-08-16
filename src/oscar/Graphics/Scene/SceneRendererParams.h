@@ -38,7 +38,7 @@ namespace osc
             return c_num_rim_groups;
         }
 
-        friend bool operator==(const SceneRendererParams&, const SceneRendererParams&) = default;
+        friend bool operator==(const SceneRendererParams&, const SceneRendererParams&) { return false; }
 
         // output parameters
         Vec2i dimensions = {1, 1};

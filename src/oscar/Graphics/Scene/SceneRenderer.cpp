@@ -39,6 +39,8 @@ using namespace osc;
 
 namespace
 {
+    const StringName c_diffuse_color_propname{"uDiffuseColor"};
+
     Transform calc_floor_transform(Vec3 floor_origin, float fixup_scale_factor)
     {
         return {
@@ -212,7 +214,7 @@ public:
                     [this, &transparent_material, &dec, &previous_color, &prop_block, &color_guess](const Color& color)
                     {
                         if (color != previous_color) {
-                            prop_block.set_color("uDiffuseColor", color);
+                            prop_block.set_color(c_diffuse_color_propname, color);
                             previous_color = color;
                         }
 
@@ -237,7 +239,7 @@ public:
                 // if a wireframe overlay is requested for the decoration then draw it over the top in
                 // a solid color
                 if (dec.flags & SceneDecorationFlag::DrawWireframeOverlay) {
-                    wireframe_prop_block.set_color("uDiffuseColor", multiply_luminance(color_guess, 0.1f));
+                    wireframe_prop_block.set_color(c_diffuse_color_propname, multiply_luminance(color_guess, 0.1f));
                     graphics::draw(dec.mesh, dec.transform, wireframe_material_, camera_, wireframe_prop_block);
                 }
 

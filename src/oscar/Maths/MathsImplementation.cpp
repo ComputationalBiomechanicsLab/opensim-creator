@@ -1362,11 +1362,6 @@ Transform osc::y_to_y_cone_to_segment_transform(const LineSegment& line_segment,
     return cylinder_to_line_segment_transform(line_segment, radius);
 }
 
-Vec3 osc::transform_point(const Mat4& mat, const Vec3& point)
-{
-    return Vec3{mat * Vec4{point, 1.0f}};
-}
-
 Quat osc::to_worldspace_rotation_quat(const EulerAngles& eulers)
 {
     return normalize(Quat{eulers});

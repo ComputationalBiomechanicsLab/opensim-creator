@@ -63,7 +63,7 @@ TEST(UndoableModelStatePair, CanLoadAndRenderAllUserFacingExampleFiles)
                 1.0f,  // 1:1 scaling
                 [&decorations](const OpenSim::Component& component, SceneDecoration&& dec)
                 {
-                    dec.id = GetAbsolutePathString(component);
+                    dec.id = GetAbsolutePathStringName(component);
                     decorations.push_back(std::move(dec));
                 }
             );

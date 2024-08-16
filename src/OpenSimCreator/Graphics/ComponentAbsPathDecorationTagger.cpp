@@ -8,9 +8,8 @@ void osc::ComponentAbsPathDecorationTagger::operator()(
     const OpenSim::Component& component,
     SceneDecoration& decoration)
 {
-    if (&component != m_LastComponent)
-    {
-        GetAbsolutePathString(component, m_ID);
+    if (&component != m_LastComponent) {
+        m_ID = GetAbsolutePathStringName(component);
         m_LastComponent = &component;
     }
 
