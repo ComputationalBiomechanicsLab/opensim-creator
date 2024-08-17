@@ -154,7 +154,7 @@ public:
         wireframe_material_.set_color(Color::black());
 
         // rim materials
-        rim_filler_material_.set_depth_tested(false);
+        rim_filler_material_.set_depth_tested(true);
         rim_filler_material_.set_transparent(false);
         edge_detection_material_.set_transparent(true);
         edge_detection_material_.set_depth_tested(false);

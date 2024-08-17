@@ -535,39 +535,27 @@ namespace
 
 namespace
 {
-    // transform storage: either as a matrix or a transform
-    //
-    // calling code is allowed to submit transforms as either a `Transform` (preferred) or a
-    // `Mat4` (can be handier)
-    //
-    // these need to be stored as-is, because that's the smallest possible representation and
-    // the drawing algorithm needs to traverse + sort the render objects at runtime (so size
-    // is important)
-    using Mat4OrTransform = std::variant<Mat4, Transform>;
+    class MaybeIndex final {
+    public:
+        constexpr MaybeIndex() = default;
+        explicit constexpr MaybeIndex(std::optional<size_t> tagged)
+        {
+            if (tagged) {
+                if (tagged.value() == c_senteniel_index_value) {
+                    throw std::invalid_argument{"the provided index value is out of range"};
+                }
+                value_ = *tagged;
+            }
+        }
 
-    Mat4 mat4_cast(const Mat4OrTransform& mat4_or_transform)
-    {
-        return std::visit(Overload{
-            [](const Mat4& mat4) { return mat4; },
-            [](const Transform& transform) { return mat4_cast(transform); }
-        }, mat4_or_transform);
-    }
+        friend bool operator==(MaybeIndex, MaybeIndex) = default;
 
-    Mat4 normal_matrix4(const Mat4OrTransform& mat4_or_transform)
-    {
-        return std::visit(Overload{
-            [](const Mat4& mat4) { return normal_matrix4(mat4); },
-            [](const Transform& transform) { return normal_matrix_4x4(transform); }
-        }, mat4_or_transform);
-    }
-
-    Mat3 normal_matrix(const Mat4OrTransform& mat4_or_transform)
-    {
-        return std::visit(Overload{
-            [](const Mat4& mat4) { return normal_matrix(mat4); },
-            [](const Transform& transform) { return normal_matrix(transform); }
-        }, mat4_or_transform);
-    }
+        operator bool () const { return value_ != c_senteniel_index_value; }
+        size_t operator*() const { return value_; }
+    private:
+        static inline constexpr size_t c_senteniel_index_value = std::numeric_limits<size_t>::max();
+        size_t value_ = c_senteniel_index_value;
+    };
 
     // this is what is stored in the renderer's render queue
     struct RenderObject final {
@@ -580,11 +568,11 @@ namespace
             std::optional<size_t> maybe_submesh_index_) :
 
             material{std::move(material_)},
+            property_block{maybe_prop_block_ ? std::move(maybe_prop_block_).value() : MaterialPropertyBlock{}},
             mesh{std::move(mesh_)},
-            maybe_prop_block{std::move(maybe_prop_block_)},
-            transform{transform_},
-            world_centroid{transform_point(transform_, centroid_of(mesh.bounds()))},
-            maybe_submesh_index{maybe_submesh_index_}
+            maybe_submesh_index{maybe_submesh_index_},
+            transform{mat4_cast(transform_)},
+            world_centroid{transform_point(transform, centroid_of(mesh.bounds()))}
         {}
 
         RenderObject(
@@ -595,11 +583,11 @@ namespace
             std::optional<size_t> maybe_submesh_index_) :
 
             material{std::move(material_)},
+            property_block{maybe_prop_block_ ? std::move(maybe_prop_block_).value() : MaterialPropertyBlock{}},
             mesh{std::move(mesh_)},
-            maybe_prop_block{std::move(maybe_prop_block_)},
+            maybe_submesh_index{maybe_submesh_index_},
             transform{transform_},
-            world_centroid{transform_point(transform_, centroid_of(mesh.bounds()))},
-            maybe_submesh_index{maybe_submesh_index_}
+            world_centroid{transform_point(transform_, centroid_of(mesh.bounds()))}
         {}
 
         friend void swap(RenderObject& a, RenderObject& b) noexcept
@@ -607,22 +595,24 @@ namespace
             using std::swap;
 
             swap(a.material, b.material);
+            swap(a.property_block, b.property_block);
             swap(a.mesh, b.mesh);
-            swap(a.maybe_prop_block, b.maybe_prop_block);
             swap(a.transform, b.transform);
-            swap(a.world_centroid, b.world_centroid);
             swap(a.maybe_submesh_index, b.maybe_submesh_index);
+            swap(a.world_centroid, b.world_centroid);
         }
 
         friend bool operator==(const RenderObject&, const RenderObject&) = default;
 
         Material material;
+        MaterialPropertyBlock property_block;
         Mesh mesh;
-        std::optional<MaterialPropertyBlock> maybe_prop_block;
-        Mat4OrTransform transform;
+        MaybeIndex maybe_submesh_index;
+        Mat4 transform;
         Vec3 world_centroid;
-        std::optional<size_t> maybe_submesh_index;
     };
+
+    static_assert(std::is_nothrow_destructible_v<RenderObject>);
 
     bool is_opaque(const RenderObject& ro)
     {
@@ -634,9 +624,9 @@ namespace
         return ro.material.is_depth_tested();
     }
 
-    Mat4 model_mat4(const RenderObject& ro)
+    const Mat4& model_mat4(const RenderObject& ro)
     {
-        return mat4_cast(ro.transform);
+        return ro.transform;
     }
 
     Mat3 normal_matrix(const RenderObject& ro)
@@ -691,19 +681,17 @@ namespace
 
     class RenderObjectHasMaterialPropertyBlock final {
     public:
-        explicit RenderObjectHasMaterialPropertyBlock(const std::optional<MaterialPropertyBlock>* mpb) :
-            mpb_{mpb}
-        {
-            OSC_ASSERT(mpb_ != nullptr);
-        }
+        explicit RenderObjectHasMaterialPropertyBlock(const MaterialPropertyBlock& mpb) :
+            mpb_{&mpb}
+        {}
 
         bool operator()(const RenderObject& ro) const
         {
-            return ro.maybe_prop_block == *mpb_;
+            return ro.property_block == *mpb_;
         }
 
     private:
-        const std::optional<MaterialPropertyBlock>* mpb_;
+        const MaterialPropertyBlock* mpb_;
     };
 
     class RenderObjectHasMesh final {
@@ -724,7 +712,7 @@ namespace
 
     class RenderObjectHasSubMeshIndex final {
     public:
-        explicit RenderObjectHasSubMeshIndex(std::optional<size_t> maybe_submesh_index) :
+        explicit RenderObjectHasSubMeshIndex(MaybeIndex maybe_submesh_index) :
             maybe_submesh_index_{maybe_submesh_index}
         {}
 
@@ -733,7 +721,7 @@ namespace
             return ro.maybe_submesh_index == maybe_submesh_index_;
         }
     private:
-        std::optional<size_t> maybe_submesh_index_;
+        MaybeIndex maybe_submesh_index_;
     };
 
     // sort a sequence of `RenderObject`s for optimal drawing
@@ -765,7 +753,7 @@ namespace
                 const auto props_batch_end = std::partition(
                     props_batch_start,
                     material_batch_end,
-                    RenderObjectHasMaterialPropertyBlock{&props_batch_start->maybe_prop_block}
+                    RenderObjectHasMaterialPropertyBlock{props_batch_start->property_block}
                 );
 
                 // third, batch `RenderObject`s with the same `Material` and `MaterialPropertyBlock`s
@@ -2979,74 +2967,27 @@ namespace
 
 class osc::Material::Impl final {
 public:
-    explicit Impl(Shader shader) :
-        shader_{std::move(shader)}
-    {}
+    explicit Impl(Shader shader) : shader_{std::move(shader)} {}
 
-    const Shader& shader() const
-    {
-        return shader_;
-    }
+    const Shader& shader() const { return shader_; }
 
-    const MaterialPropertyBlock& properties() const
-    {
-        return properties_;
-    }
+    const MaterialPropertyBlock& properties() const { return properties_; }
+    MaterialPropertyBlock& upd_properties() { return properties_; }
 
-    MaterialPropertyBlock& upd_properties()
-    {
-        return properties_;
-    }
+    bool is_transparent() const { return is_transparent_; }
+    void set_transparent(bool value) { is_transparent_ = value; }
 
-    bool is_transparent() const
-    {
-        return is_transparent_;
-    }
+    bool is_depth_tested() const { return is_depth_tested_; }
+    void set_depth_tested(bool value) { is_depth_tested_ = value; }
 
-    void set_transparent(bool value)
-    {
-        is_transparent_ = value;
-    }
+    DepthFunction depth_function() const { return depth_function_; }
+    void set_depth_function(DepthFunction depth_function) { depth_function_ = depth_function; }
 
-    bool is_depth_tested() const
-    {
-        return is_depth_tested_;
-    }
+    bool is_wireframe() const { return is_wireframe_mode_; }
+    void set_wireframe(bool value) { is_wireframe_mode_ = value; }
 
-    void set_depth_tested(bool value)
-    {
-        is_depth_tested_ = value;
-    }
-
-    DepthFunction depth_function() const
-    {
-        return depth_function_;
-    }
-
-    void set_depth_function(DepthFunction depth_function)
-    {
-        depth_function_ = depth_function;
-    }
-
-    bool is_wireframe() const
-    {
-        return is_wireframe_mode_;
-    }
-
-    void set_wireframe(bool value)
-    {
-        is_wireframe_mode_ = value;
-    }
-
-    CullMode cull_mode() const
-    {
-        return cull_mode_;
-    }
-
-    void set_cull_mode(CullMode cull_mode)
-    {
-        cull_mode_ = cull_mode;
-    }
+    CullMode cull_mode() const { return cull_mode_; }
+    void set_cull_mode(CullMode cull_mode) { cull_mode_ = cull_mode; }
 
 private:
     friend class GraphicsBackend;
@@ -4675,7 +4616,7 @@ public:
 
     void drawInstanced(
         size_t n,
-        std::optional<size_t> maybe_submesh_index)
+        MaybeIndex maybe_submesh_index)
     {
         const SubMeshDescriptor descriptor = maybe_submesh_index ?
             submesh_descriptors_.at(*maybe_submesh_index) :         // draw the requested sub-mesh
@@ -5143,9 +5084,12 @@ public:
 
     void reset()
     {
-        Impl new_impl;
-        std::swap(*this, new_impl);
-        render_queue_ = std::move(new_impl.render_queue_);
+        // keep the render queue memory allocation
+        auto tmp_queue{std::move(render_queue_)};
+        tmp_queue.clear();
+
+        *this = Impl{};
+        this->render_queue_ = std::move(tmp_queue);
     }
 
     Color background_color() const
@@ -6618,7 +6562,7 @@ void osc::GraphicsBackend::handle_batch_with_same_submesh(
     OSC_ASSERT(not batch.empty());
     auto& mesh_impl = const_cast<Mesh::Impl&>(*batch.front().mesh.impl_);
     const Shader::Impl& shader_impl = *batch.front().material.impl_->shader_.impl_;
-    const std::optional<size_t> maybe_submesh_index = batch.front().maybe_submesh_index;
+    const MaybeIndex maybe_submesh_index = batch.front().maybe_submesh_index;
 
     gl::bind_vertex_array(mesh_impl.upd_vertex_array());
 
@@ -6709,11 +6653,9 @@ void osc::GraphicsBackend::handle_batch_with_same_material_property_block(
     const FastStringHashtable<ShaderElement>& uniforms = shader_impl.uniforms();
 
     // bind property block variables (if applicable)
-    if (batch.front().maybe_prop_block) {
-        for (const auto& [name, value] : batch.front().maybe_prop_block->impl_->values_) {
-            if (const auto* uniform = lookup_or_nullptr(uniforms, name)) {
-                try_bind_material_value_to_shader_element(*uniform, value, texture_slot);
-            }
+    for (const auto& [name, value] : batch.front().property_block.impl_->values_) {
+        if (const auto* uniform = lookup_or_nullptr(uniforms, name)) {
+            try_bind_material_value_to_shader_element(*uniform, value, texture_slot);
         }
     }
 
@@ -6794,7 +6736,7 @@ void osc::GraphicsBackend::handle_batch_with_same_material(
         }
 
         // bind material values
-        for (const auto& [name, value] : material_impl.properties_->impl_->values_) {
+        for (const auto& [name, value] : material_impl.properties_.impl_->values_) {
             if (const ShaderElement* e = lookup_or_nullptr(uniforms, name)) {
                 try_bind_material_value_to_shader_element(*e, value, texture_slot);
             }
@@ -6805,7 +6747,7 @@ void osc::GraphicsBackend::handle_batch_with_same_material(
     auto subbatch_begin = batch.begin();
     while (subbatch_begin != batch.end())
     {
-        const auto subbatch_end = find_if_not(subbatch_begin, batch.end(), RenderObjectHasMaterialPropertyBlock{&subbatch_begin->maybe_prop_block});
+        const auto subbatch_end = find_if_not(subbatch_begin, batch.end(), RenderObjectHasMaterialPropertyBlock{subbatch_begin->property_block});
         handle_batch_with_same_material_property_block({subbatch_begin, subbatch_end}, texture_slot, maybe_instances);
         subbatch_begin = subbatch_end;
     }
