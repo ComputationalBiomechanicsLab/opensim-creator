@@ -140,11 +140,11 @@ namespace
 
         ColumnDescription(
             int offset_,
-            std::string label_,
+            const std::string& label_,
             ColumnDataType dataType_) :
 
             offset{offset_},
-            label{std::move(label_)},
+            label{label_},
             dataType{dataType_}
         {}
 

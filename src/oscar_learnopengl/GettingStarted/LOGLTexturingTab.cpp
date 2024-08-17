@@ -37,7 +37,7 @@ namespace
             );
             container.set_wrap_mode(TextureWrapMode::Clamp);
 
-            rv.set_texture("uTexture1", std::move(container));
+            rv.set_texture("uTexture1", container);
         }
 
         // set uTexture2

@@ -550,7 +550,7 @@ namespace
 
         friend bool operator==(MaybeIndex, MaybeIndex) = default;
 
-        operator bool () const { return value_ != c_senteniel_index_value; }
+        explicit operator bool () const { return value_ != c_senteniel_index_value; }
         size_t operator*() const { return value_; }
     private:
         static inline constexpr size_t c_senteniel_index_value = std::numeric_limits<size_t>::max();
@@ -3099,7 +3099,7 @@ public:
     template<typename T, std::convertible_to<std::string_view> StringLike>
     std::optional<std::span<const T>> get_array(StringLike&& property_name) const
     {
-        return get_value<std::vector<T>>(std::forward<StringLike>(property_name));
+        return get_value<std::vector<T>, std::span<const T>>(std::forward<StringLike>(property_name));
     }
 
     template<typename T, std::convertible_to<std::string_view> StringLike>
@@ -3121,21 +3121,27 @@ public:
     }
 
 private:
-    template<typename T, std::convertible_to<std::string_view> StringLike>
-    std::optional<T> get_value(StringLike&& property_name) const
+    template<typename T, typename TConverted = T, std::convertible_to<std::string_view> StringLike>
+    requires std::convertible_to<T, TConverted>
+    std::optional<TConverted> get_value(StringLike&& property_name) const
     {
         const auto it = values_.find(std::forward<StringLike>(property_name));
 
         if (it == values_.end()) {
-            return std::nullopt;
+            return std::nullopt;  // property doesn't exist in lookup
         }
 
         const T* v = std::get_if<T>(&it->second);
         if (not v) {
-            return std::nullopt;
+            return std::nullopt;  // property has a different type than requested
         }
 
-        return *v;
+        if constexpr (std::same_as<T, TConverted>) {
+            return *v;  // return with no conversion
+        }
+        else {
+            return TConverted{*v}; // convert and return
+        }
     }
 
     friend class GraphicsBackend;
