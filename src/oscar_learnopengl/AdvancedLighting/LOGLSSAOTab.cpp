@@ -208,8 +208,8 @@ private:
         ssao_state_.material.set_render_texture("uPositionTex", gbuffer_state_.position);
         ssao_state_.material.set_render_texture("uNormalTex", gbuffer_state_.normal);
         ssao_state_.material.set_texture("uNoiseTex", noise_texture_);
-        ssao_state_.material.set_vec3_array("uSamples", sample_kernel_);
-        ssao_state_.material.set_vec2("uNoiseScale", viewport_dimensions / Vec2{noise_texture_.dimensions()});
+        ssao_state_.material.set_array<Vec3>("uSamples", sample_kernel_);
+        ssao_state_.material.set<Vec2>("uNoiseScale", viewport_dimensions / Vec2{noise_texture_.dimensions()});
         ssao_state_.material.set_int("uKernelSize", static_cast<int32_t>(sample_kernel_.size()));
         ssao_state_.material.set<float>("uRadius", 0.5f);
         ssao_state_.material.set<float>("uBias", 0.125f);
@@ -237,7 +237,7 @@ private:
         lighting_state_.material.set_render_texture("uNormalTex", gbuffer_state_.normal);
         lighting_state_.material.set_render_texture("uAlbedoTex", gbuffer_state_.albedo);
         lighting_state_.material.set_render_texture("uSSAOTex", ssao_state_.output_texture);
-        lighting_state_.material.set_vec3("uLightPosition", light_position_);
+        lighting_state_.material.set<Vec3>("uLightPosition", light_position_);
         lighting_state_.material.set<Color>("uLightColor", light_color_);
         lighting_state_.material.set<float>("uLightLinear", 0.09f);
         lighting_state_.material.set<float>("uLightQuadratic", 0.032f);

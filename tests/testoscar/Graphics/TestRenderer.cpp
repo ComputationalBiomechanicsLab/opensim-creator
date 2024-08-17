@@ -696,25 +696,25 @@ TEST_F(Renderer, MaterialGetFloatArrayOnNewMaterialReturnsEmptyOptional)
 TEST_F(Renderer, MaterialGetVec2OnNewMaterialReturnsEmptyOptional)
 {
     Material mat = GenerateMaterial();
-    ASSERT_FALSE(mat.get_vec2("someKey"));
+    ASSERT_FALSE(mat.get<Vec2>("someKey"));
 }
 
 TEST_F(Renderer, MaterialGetVec3OnNewMaterialReturnsEmptyOptional)
 {
     Material mat = GenerateMaterial();
-    ASSERT_FALSE(mat.get_vec3("someKey"));
+    ASSERT_FALSE(mat.get<Vec3>("someKey"));
 }
 
 TEST_F(Renderer, MaterialGetVec3ArrayOnNewMaterialReturnsEmptyOptional)
 {
     Material mat = GenerateMaterial();
-    ASSERT_FALSE(mat.get_vec3_array("someKey"));
+    ASSERT_FALSE(mat.get_array<Vec3>("someKey"));
 }
 
 TEST_F(Renderer, MaterialGetVec4OnNewMaterialReturnsEmptyOptional)
 {
     Material mat = GenerateMaterial();
-    ASSERT_FALSE(mat.get_vec4("someKey"));
+    ASSERT_FALSE(mat.get<Vec4>("someKey"));
 }
 
 TEST_F(Renderer, MaterialGetMat3OnNewMaterialReturnsEmptyOptional)
@@ -774,9 +774,9 @@ TEST_F(Renderer, MaterialSetVec2OnMaterialCausesGetVec2ToReturnTheProvidedValue)
     std::string key = "someKey";
     Vec2 value = generate<Vec2>();
 
-    mat.set_vec2(key, value);
+    mat.set<Vec2>(key, value);
 
-    ASSERT_EQ(*mat.get_vec2(key), value);
+    ASSERT_EQ(*mat.get<Vec2>(key), value);
 }
 
 TEST_F(Renderer, MaterialSetVec2AndThenSetVec3CausesGetVec2ToReturnEmpty)
@@ -786,16 +786,16 @@ TEST_F(Renderer, MaterialSetVec2AndThenSetVec3CausesGetVec2ToReturnEmpty)
     std::string key = "someKey";
     Vec2 value = generate<Vec2>();
 
-    ASSERT_FALSE(mat.get_vec2(key).has_value());
+    ASSERT_FALSE(mat.get<Vec2>(key).has_value());
 
-    mat.set_vec2(key, value);
+    mat.set<Vec2>(key, value);
 
-    ASSERT_TRUE(mat.get_vec2(key).has_value());
+    ASSERT_TRUE(mat.get<Vec2>(key).has_value());
 
-    mat.set_vec3(key, {});
+    mat.set<Vec3>(key, {});
 
-    ASSERT_TRUE(mat.get_vec3(key));
-    ASSERT_FALSE(mat.get_vec2(key));
+    ASSERT_TRUE(mat.get<Vec3>(key));
+    ASSERT_FALSE(mat.get<Vec2>(key));
 }
 
 TEST_F(Renderer, MaterialSetVec2CausesMaterialToCompareNotEqualToCopy)
@@ -803,7 +803,7 @@ TEST_F(Renderer, MaterialSetVec2CausesMaterialToCompareNotEqualToCopy)
     Material mat = GenerateMaterial();
     Material copy{mat};
 
-    mat.set_vec2("someKey", generate<Vec2>());
+    mat.set<Vec2>("someKey", generate<Vec2>());
 
     ASSERT_NE(mat, copy);
 }
@@ -815,9 +815,9 @@ TEST_F(Renderer, MaterialSetVec3OnMaterialCausesGetVec3ToReturnTheProvidedValue)
     std::string key = "someKey";
     Vec3 value = generate<Vec3>();
 
-    mat.set_vec3(key, value);
+    mat.set<Vec3>(key, value);
 
-    ASSERT_EQ(*mat.get_vec3(key), value);
+    ASSERT_EQ(*mat.get<Vec3>(key), value);
 }
 
 TEST_F(Renderer, MaterialSetVec3ArrayOnMaterialCausesGetVec3ArrayToReutrnTheProvidedValues)
@@ -826,11 +826,11 @@ TEST_F(Renderer, MaterialSetVec3ArrayOnMaterialCausesGetVec3ArrayToReutrnTheProv
     std::string key = "someKey";
     std::array<Vec3, 4> values = {generate<Vec3>(), generate<Vec3>(), generate<Vec3>(), generate<Vec3>()};
 
-    ASSERT_FALSE(mat.get_vec3_array(key));
+    ASSERT_FALSE(mat.get_array<Vec3>(key));
 
-    mat.set_vec3_array(key, values);
+    mat.set_array<Vec3>(key, values);
 
-    std::span<const Vec3> rv = mat.get_vec3_array(key).value();
+    std::span<const Vec3> rv = mat.get_array<Vec3>(key).value();
     ASSERT_TRUE(std::equal(rv.begin(), rv.end(), values.begin(), values.end()));
 }
 
@@ -841,9 +841,9 @@ TEST_F(Renderer, MaterialSetVec4OnMaterialCausesGetVec4ToReturnTheProvidedValue)
     std::string key = "someKey";
     Vec4 value = generate<Vec4>();
 
-    mat.set_vec4(key, value);
+    mat.set<Vec4>(key, value);
 
-    ASSERT_EQ(*mat.get_vec4(key), value);
+    ASSERT_EQ(*mat.get<Vec4>(key), value);
 }
 
 TEST_F(Renderer, MaterialSetMat3OnMaterialCausesGetMat3ToReturnTheProvidedValue)
@@ -1194,9 +1194,9 @@ TEST_F(Renderer, MaterialSetFloatAndThenSetVec3CausesGetFloatToReturnEmpty)
 
     ASSERT_TRUE(mat.get<float>(key));
 
-    mat.set_vec3(key, vecValue);
+    mat.set<Vec3>(key, vecValue);
 
-    ASSERT_TRUE(mat.get_vec3(key));
+    ASSERT_TRUE(mat.get<Vec3>(key));
     ASSERT_FALSE(mat.get<float>(key));
 }
 
@@ -1290,13 +1290,13 @@ TEST_F(Renderer, MaterialPropertyBlockGetFloatReturnsEmptyOnDefaultConstructedIn
 TEST_F(Renderer, MaterialPropertyBlockGetVec3ReturnsEmptyOnDefaultConstructedInstance)
 {
     MaterialPropertyBlock mpb;
-    ASSERT_FALSE(mpb.get_vec3("someKey"));
+    ASSERT_FALSE(mpb.get<Vec3>("someKey"));
 }
 
 TEST_F(Renderer, MaterialPropertyBlockGetVec4ReturnsEmptyOnDefaultConstructedInstance)
 {
     MaterialPropertyBlock mpb;
-    ASSERT_FALSE(mpb.get_vec4("someKey"));
+    ASSERT_FALSE(mpb.get<Vec4>("someKey"));
 }
 
 TEST_F(Renderer, MaterialPropertyBlockGetMat3ReturnsEmptyOnDefaultConstructedInstance)
@@ -1342,11 +1342,11 @@ TEST_F(Renderer, MaterialPropertyBlockSetVec3CausesGetterToReturnSetValue)
     std::string key = "someKey";
     Vec3 value = generate<Vec3>();
 
-    ASSERT_FALSE(mpb.get_vec3(key));
+    ASSERT_FALSE(mpb.get<Vec3>(key));
 
-    mpb.set_vec3(key, value);
-    ASSERT_TRUE(mpb.get_vec3(key));
-    ASSERT_EQ(mpb.get_vec3(key), value);
+    mpb.set<Vec3>(key, value);
+    ASSERT_TRUE(mpb.get<Vec3>(key));
+    ASSERT_EQ(mpb.get<Vec3>(key), value);
 }
 
 TEST_F(Renderer, MaterialPropertyBlockSetVec4CausesGetterToReturnSetValue)
@@ -1355,11 +1355,11 @@ TEST_F(Renderer, MaterialPropertyBlockSetVec4CausesGetterToReturnSetValue)
     std::string key = "someKey";
     Vec4 value = generate<Vec4>();
 
-    ASSERT_FALSE(mpb.get_vec4(key));
+    ASSERT_FALSE(mpb.get<Vec4>(key));
 
-    mpb.set_vec4(key, value);
-    ASSERT_TRUE(mpb.get_vec4(key));
-    ASSERT_EQ(mpb.get_vec4(key), value);
+    mpb.set<Vec4>(key, value);
+    ASSERT_TRUE(mpb.get<Vec4>(key));
+    ASSERT_EQ(mpb.get<Vec4>(key), value);
 }
 
 TEST_F(Renderer, MaterialPropertyBlockSetMat3CausesGetterToReturnSetValue)
@@ -1368,7 +1368,7 @@ TEST_F(Renderer, MaterialPropertyBlockSetMat3CausesGetterToReturnSetValue)
     std::string key = "someKey";
     Mat3 value = generate<Mat3>();
 
-    ASSERT_FALSE(mpb.get_vec4(key));
+    ASSERT_FALSE(mpb.get<Vec4>(key));
 
     mpb.set_mat3(key, value);
     ASSERT_TRUE(mpb.get_mat3(key));

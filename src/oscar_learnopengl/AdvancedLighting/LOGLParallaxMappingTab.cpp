@@ -119,8 +119,8 @@ private:
 
         // draw normal-mapped quad
         {
-            parallax_mapping_material_.set_vec3("uLightWorldPos", light_transform_.position);
-            parallax_mapping_material_.set_vec3("uViewWorldPos", camera_.position());
+            parallax_mapping_material_.set<Vec3>("uLightWorldPos", light_transform_.position);
+            parallax_mapping_material_.set<Vec3>("uViewWorldPos", camera_.position());
             parallax_mapping_material_.set_bool("uEnableMapping", parallax_mapping_enabled_);
             graphics::draw(quad_mesh_, quad_transform_, parallax_mapping_material_, camera_);
         }

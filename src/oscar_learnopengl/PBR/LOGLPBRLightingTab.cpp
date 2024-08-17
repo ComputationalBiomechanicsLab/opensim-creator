@@ -86,9 +86,9 @@ private:
     {
         camera_.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
 
-        pbr_material_.set_vec3("uCameraWorldPos", camera_.position());
-        pbr_material_.set_vec3_array("uLightPositions", c_light_positions);
-        pbr_material_.set_vec3_array("uLightColors", c_light_radiances);
+        pbr_material_.set<Vec3>("uCameraWorldPos", camera_.position());
+        pbr_material_.set_array<Vec3>("uLightPositions", c_light_positions);
+        pbr_material_.set_array<Vec3>("uLightColors", c_light_radiances);
 
         draw_spheres();
         draw_lights();
@@ -98,7 +98,7 @@ private:
 
     void draw_spheres()
     {
-        pbr_material_.set_vec3("uAlbedoColor", {0.5f, 0.0f, 0.0f});
+        pbr_material_.set<Vec3>("uAlbedoColor", {0.5f, 0.0f, 0.0f});
 
         for (int row = 0; row < c_num_rows; ++row) {
             pbr_material_.set<float>("uMetallicity", static_cast<float>(row) / static_cast<float>(c_num_rows));
@@ -116,7 +116,7 @@ private:
 
     void draw_lights()
     {
-        pbr_material_.set_vec3("uAlbedoColor", {1.0f, 1.0f, 1.0f});
+        pbr_material_.set<Vec3>("uAlbedoColor", {1.0f, 1.0f, 1.0f});
 
         for (const Vec3& light_position : c_light_positions) {
             graphics::draw(sphere_mesh_, {.scale = Vec3{0.5f}, .position = light_position}, pbr_material_, camera_);

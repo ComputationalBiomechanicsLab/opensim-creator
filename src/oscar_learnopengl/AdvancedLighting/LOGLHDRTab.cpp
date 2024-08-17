@@ -57,7 +57,7 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Scene.vert"),
             loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Scene.frag"),
         }};
-        rv.set_vec3_array("uSceneLightPositions", c_light_positions);
+        rv.set_array<Vec3>("uSceneLightPositions", c_light_positions);
         rv.set_array<Color>("uSceneLightColors", GetLightColors());
         rv.set_texture("uDiffuseTexture", wood_texture);
         rv.set_bool("uInverseNormals", true);

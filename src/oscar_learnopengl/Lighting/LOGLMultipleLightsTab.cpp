@@ -73,7 +73,7 @@ namespace
 
         rv.set_texture("uMaterialDiffuse", diffuse_map);
         rv.set_texture("uMaterialSpecular", specular_map);
-        rv.set_vec3("uDirLightDirection", {-0.2f, -1.0f, -0.3f});
+        rv.set<Vec3>("uDirLightDirection", { -0.2f, -1.0f, -0.3f });
         rv.set<float>("uDirLightAmbient", 0.01f);
         rv.set<float>("uDirLightDiffuse", 0.2f);
         rv.set<float>("uDirLightSpecular", 0.4f);
@@ -88,7 +88,7 @@ namespace
         rv.set<float>("uSpotLightCutoff", cos(45_deg));
         rv.set<float>("uSpotLightOuterCutoff", cos(15_deg));
 
-        rv.set_vec3_array("uPointLightPos", c_point_light_positions);
+        rv.set_array<Vec3>("uPointLightPos", c_point_light_positions);
         rv.set_array<float>("uPointLightConstant", c_point_light_constants);
         rv.set_array<float>("uPointLightLinear", c_point_light_linears);
         rv.set_array<float>("uPointLightQuadratic", c_point_light_quadratics);
@@ -143,10 +143,10 @@ private:
         // clear screen and ensure camera has correct pixel rect
 
         // setup per-frame material vals
-        multiple_lights_material_.set_vec3("uViewPos", camera_.position());
+        multiple_lights_material_.set<Vec3>("uViewPos", camera_.position());
         multiple_lights_material_.set<float>("uMaterialShininess", material_shininess_);
-        multiple_lights_material_.set_vec3("uSpotLightPosition", camera_.position());
-        multiple_lights_material_.set_vec3("uSpotLightDirection", camera_.direction());
+        multiple_lights_material_.set<Vec3>("uSpotLightPosition", camera_.position());
+        multiple_lights_material_.set<Vec3>("uSpotLightDirection", camera_.direction());
 
         // render containers
         const UnitVec3 axis{1.0f, 0.3f, 0.5f};

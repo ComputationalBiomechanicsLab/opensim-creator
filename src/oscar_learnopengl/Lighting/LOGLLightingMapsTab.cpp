@@ -76,8 +76,8 @@ private:
         App::upd().clear_screen(Color::dark_grey());
 
         // draw cube
-        lighting_maps_material_.set_vec3("uViewPos", camera_.position());
-        lighting_maps_material_.set_vec3("uLightPos", light_transform_.position);
+        lighting_maps_material_.set<Vec3>("uViewPos", camera_.position());
+        lighting_maps_material_.set<Vec3>("uLightPos", light_transform_.position);
         lighting_maps_material_.set<float>("uLightAmbient", light_ambient_);
         lighting_maps_material_.set<float>("uLightDiffuse", light_diffuse_);
         lighting_maps_material_.set<float>("uLightSpecular", light_specular_);

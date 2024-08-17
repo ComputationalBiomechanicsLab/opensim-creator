@@ -3263,82 +3263,98 @@ void osc::MaterialPropertyBlock::set_array<float>(const StringName& property_nam
     impl_.upd()->set_array<float>(property_name, values);
 }
 
-std::optional<Vec2> osc::MaterialPropertyBlock::get_vec2(std::string_view property_name) const
+template<>
+std::optional<Vec2> osc::MaterialPropertyBlock::get<Vec2>(std::string_view property_name) const
 {
     return impl_->get<Vec2>(property_name);
 }
 
-std::optional<Vec2> osc::MaterialPropertyBlock::get_vec2(const StringName& property_name) const
+template<>
+std::optional<Vec2> osc::MaterialPropertyBlock::get<Vec2>(const StringName& property_name) const
 {
     return impl_->get<Vec2>(property_name);
 }
 
-void osc::MaterialPropertyBlock::set_vec2(std::string_view property_name, Vec2 value)
+template<>
+void osc::MaterialPropertyBlock::set<Vec2>(std::string_view property_name, const Vec2& value)
 {
     impl_.upd()->set(property_name, value);
 }
 
-void osc::MaterialPropertyBlock::set_vec2(const StringName& property_name, Vec2 value)
+template<>
+void osc::MaterialPropertyBlock::set<Vec2>(const StringName& property_name, const Vec2& value)
 {
     impl_.upd()->set(property_name, value);
 }
 
-std::optional<Vec3> osc::MaterialPropertyBlock::get_vec3(std::string_view property_name) const
+template<>
+std::optional<Vec3> osc::MaterialPropertyBlock::get<Vec3>(std::string_view property_name) const
 {
     return impl_->get<Vec3>(property_name);
 }
 
-std::optional<Vec3> osc::MaterialPropertyBlock::get_vec3(const StringName& property_name) const
+template<>
+std::optional<Vec3> osc::MaterialPropertyBlock::get<Vec3>(const StringName& property_name) const
 {
     return impl_->get<Vec3>(property_name);
 }
 
-std::optional<std::span<const Vec3>> osc::MaterialPropertyBlock::get_vec3_array(std::string_view property_name) const
+template<>
+std::optional<std::span<const Vec3>> osc::MaterialPropertyBlock::get_array<Vec3>(std::string_view property_name) const
 {
     return impl_->get_array<Vec3>(property_name);
 }
 
-std::optional<std::span<const Vec3>> osc::MaterialPropertyBlock::get_vec3_array(const StringName& property_name) const
+template<>
+std::optional<std::span<const Vec3>> osc::MaterialPropertyBlock::get_array<Vec3>(const StringName& property_name) const
 {
     return impl_->get_array<Vec3>(property_name);
 }
 
-void osc::MaterialPropertyBlock::set_vec3_array(std::string_view property_name, std::span<const Vec3> values)
+template<>
+void osc::MaterialPropertyBlock::set_array<Vec3>(std::string_view property_name, std::span<const Vec3> values)
 {
     impl_.upd()->set_array(property_name, values);
 }
 
-void osc::MaterialPropertyBlock::set_vec3_array(const StringName& property_name, std::span<const Vec3> values)
+template<>
+void osc::MaterialPropertyBlock::set_array<Vec3>(const StringName& property_name, std::span<const Vec3> values)
 {
     impl_.upd()->set_array<Vec3>(property_name, values);
 }
 
-void osc::MaterialPropertyBlock::set_vec3(std::string_view property_name, Vec3 value)
+template<>
+void osc::MaterialPropertyBlock::set<Vec3>(std::string_view property_name, const Vec3& value)
 {
     impl_.upd()->set(property_name, value);
 }
 
-void osc::MaterialPropertyBlock::set_vec3(const StringName& property_name, Vec3 value)
+template<>
+void osc::MaterialPropertyBlock::set<Vec3>(const StringName& property_name, const Vec3& value)
 {
     impl_.upd()->set(property_name, value);
 }
 
-std::optional<Vec4> osc::MaterialPropertyBlock::get_vec4(std::string_view property_name) const
+template<>
+std::optional<Vec4> osc::MaterialPropertyBlock::get<Vec4>(std::string_view property_name) const
 {
     return impl_->get<Vec4>(property_name);
 }
 
-std::optional<Vec4> osc::MaterialPropertyBlock::get_vec4(const StringName& property_name) const
+template<>
+std::optional<Vec4> osc::MaterialPropertyBlock::get<Vec4>(const StringName& property_name) const
 {
     return impl_->get<Vec4>(property_name);
 }
 
-void osc::MaterialPropertyBlock::set_vec4(std::string_view property_name, Vec4 value)
+template<>
+void osc::MaterialPropertyBlock::set<Vec4>(std::string_view property_name, const Vec4& value)
 {
     impl_.upd()->set(property_name, value);
 }
 
-void osc::MaterialPropertyBlock::set_vec4(const StringName& property_name, Vec4 value)
+template<>
+void osc::MaterialPropertyBlock::set<Vec4>(const StringName& property_name, const Vec4& value)
 {
     impl_.upd()->set(property_name, value);
 }

@@ -56,8 +56,8 @@ private:
         // draw cube
         lighting_material_.set<Color>("uObjectColor", object_color_);
         lighting_material_.set<Color>("uLightColor", light_color_);
-        lighting_material_.set_vec3("uLightPos", light_transform_.position);
-        lighting_material_.set_vec3("uViewPos", camera_.position());
+        lighting_material_.set<Vec3>("uLightPos", light_transform_.position);
+        lighting_material_.set<Vec3>("uViewPos", camera_.position());
         lighting_material_.set<float>("uAmbientStrength", ambient_strength_);
         lighting_material_.set<float>("uDiffuseStrength", diffuse_strength_);
         lighting_material_.set<float>("uSpecularStrength", specular_strength_);

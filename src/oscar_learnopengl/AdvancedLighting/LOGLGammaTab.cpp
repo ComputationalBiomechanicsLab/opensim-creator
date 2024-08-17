@@ -83,7 +83,7 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/Gamma.frag"),
         }};
         rv.set_texture("uFloorTexture", wood_texture);
-        rv.set_vec3_array("uLightPositions", c_light_positions);
+        rv.set_array<Vec3>("uLightPositions", c_light_positions);
         rv.set_array<Color>("uLightColors", c_light_colors);
         return rv;
     }
@@ -125,7 +125,7 @@ private:
         camera_.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
 
         // render scene
-        material_.set_vec3("uViewPos", camera_.position());
+        material_.set<Vec3>("uViewPos", camera_.position());
         graphics::draw(plane_mesh_, identity<Transform>(), material_, camera_);
         camera_.render_to_screen();
     }

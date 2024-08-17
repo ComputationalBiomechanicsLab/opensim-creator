@@ -98,7 +98,7 @@ public:
 
     Impl() : StandardTabImpl{c_tab_string_id}
     {
-        scene_material_.set_vec3_array("uLightPositions", c_scene_light_positions);
+        scene_material_.set_array<Vec3>("uLightPositions", c_scene_light_positions);
         scene_material_.set_array<Color>("uLightColors", get_scene_light_colors());
     }
 
@@ -168,7 +168,7 @@ private:
 
     void draw_scene_cubes_to_camera()
     {
-        scene_material_.set_vec3("uViewWorldPos", camera_.position());
+        scene_material_.set<Vec3>("uViewWorldPos", camera_.position());
 
         // draw floor
         {

@@ -135,7 +135,7 @@ private:
 
         // pass data to material
         shadowmapping_material_.set_mat4_array("uShadowMatrices", shadow_matrices);
-        shadowmapping_material_.set_vec3("uLightPos", light_pos_);
+        shadowmapping_material_.set<Vec3>("uLightPos", light_pos_);
         shadowmapping_material_.set<float>("uFarPlane", zfar);
 
         // render (shadowmapping does not use the camera's view/projection matrices)
@@ -152,8 +152,8 @@ private:
 
         // set shared material params
         material.set_texture("uDiffuseTexture", m_WoodTexture);
-        material.set_vec3("uLightPos", light_pos_);
-        material.set_vec3("uViewPos", scene_camera_.position());
+        material.set<Vec3>("uLightPos", light_pos_);
+        material.set<Vec3>("uViewPos", scene_camera_.position());
         material.set<float>("uFarPlane", 25.0f);
         material.set_bool("uShadows", soft_shadows_);
 

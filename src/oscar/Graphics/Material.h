@@ -55,54 +55,6 @@ namespace osc
         }
 
         template<std::convertible_to<std::string_view> StringLike>
-        std::optional<Vec2> get_vec2(StringLike&& property_name) const
-        {
-            return properties().get_vec2(std::forward<StringLike>(property_name));
-        }
-
-        template<std::convertible_to<std::string_view> StringLike>
-        void set_vec2(StringLike&& property_name, Vec2 value)
-        {
-            upd_properties().set_vec2(std::forward<StringLike>(property_name), value);
-        }
-
-        template<std::convertible_to<std::string_view> StringLike>
-        std::optional<Vec3> get_vec3(StringLike&& property_name) const
-        {
-            return properties().get_vec3(std::forward<StringLike>(property_name));
-        }
-
-        template<std::convertible_to<std::string_view> StringLike>
-        std::optional<std::span<const Vec3>> get_vec3_array(StringLike&& property_name) const
-        {
-            return properties().get_vec3_array(std::forward<StringLike>(property_name));
-        }
-
-        template<std::convertible_to<std::string_view> StringLike>
-        void set_vec3_array(StringLike&& property_name, std::span<const Vec3> value)
-        {
-            upd_properties().set_vec3_array(std::forward<StringLike>(property_name), value);
-        }
-
-        template<std::convertible_to<std::string_view> StringLike>
-        void set_vec3(StringLike&& property_name, Vec3 vec)
-        {
-            upd_properties().set_vec3(std::forward<StringLike>(property_name), vec);
-        }
-
-        template<std::convertible_to<std::string_view> StringLike>
-        std::optional<Vec4> get_vec4(StringLike&& property_name) const
-        {
-            return properties().get_vec4(std::forward<StringLike>(property_name));
-        }
-
-        template<std::convertible_to<std::string_view> StringLike>
-        void set_vec4(StringLike&& property_name, Vec4 value)
-        {
-            upd_properties().set_vec4(std::forward<StringLike>(property_name), value);
-        }
-
-        template<std::convertible_to<std::string_view> StringLike>
         std::optional<Mat3> get_mat3(StringLike&& property_name) const
         {
             return properties().get_mat3(std::forward<StringLike>(property_name));

@@ -251,11 +251,11 @@ private:
         light_pass_.material.set_render_texture("uPositionTex", gbuffer_.position);
         light_pass_.material.set_render_texture("uNormalTex", gbuffer_.normal);
         light_pass_.material.set_render_texture("uAlbedoTex", gbuffer_.albedo);
-        light_pass_.material.set_vec3_array("uLightPositions", light_positions_);
-        light_pass_.material.set_vec3_array("uLightColors", light_colors_);
+        light_pass_.material.set_array<Vec3>("uLightPositions", light_positions_);
+        light_pass_.material.set_array<Vec3>("uLightColors", light_colors_);
         light_pass_.material.set<float>("uLightLinear", 0.7f);
         light_pass_.material.set<float>("uLightQuadratic", 1.8f);
-        light_pass_.material.set_vec3("uViewPos", camera_.position());
+        light_pass_.material.set<Vec3>("uViewPos", camera_.position());
 
         graphics::draw(quad_mesh_, identity<Transform>(), light_pass_.material, camera_);
 
@@ -271,7 +271,7 @@ private:
         OSC_ASSERT(light_positions_.size() == light_colors_.size());
 
         for (size_t i = 0; i < light_positions_.size(); ++i) {
-            light_box_material_.set_vec3("uLightColor", light_colors_[i]);
+            light_box_material_.set<Vec3>("uLightColor", light_colors_[i]);
             graphics::draw(cube_mesh_, {.scale = Vec3{0.125f}, .position = light_positions_[i]}, light_box_material_, camera_);
         }
 

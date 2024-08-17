@@ -65,25 +65,27 @@ namespace osc
         template<> void set_array(std::string_view property_name, std::span<const float>);
         template<> void set_array(const StringName& property_name, std::span<const float>);
 
-        std::optional<Vec2> get_vec2(std::string_view property_name) const;
-        std::optional<Vec2> get_vec2(const StringName& property_name) const;
-        void set_vec2(std::string_view property_name, Vec2);
-        void set_vec2(const StringName& property_name, Vec2);
+        // `Vec2` getters/setters
+        template<> std::optional<Vec2> get<Vec2>(std::string_view property_name) const;
+        template<> std::optional<Vec2> get<Vec2>(const StringName& property_name) const;
+        template<> void set<Vec2>(std::string_view property_name, const Vec2&);
+        template<> void set<Vec2>(const StringName& property_name, const Vec2&);
 
-        std::optional<Vec3> get_vec3(std::string_view property_name) const;
-        std::optional<Vec3> get_vec3(const StringName& property_name) const;
-        void set_vec3(std::string_view property_name, Vec3);
-        void set_vec3(const StringName& property_name, Vec3);
+        // `Vec3` getters/setters
+        template<> std::optional<Vec3> get<Vec3>(std::string_view property_name) const;
+        template<> std::optional<Vec3> get<Vec3>(const StringName& property_name) const;
+        template<> void set<Vec3>(std::string_view property_name, const Vec3&);
+        template<> void set<Vec3>(const StringName& property_name, const Vec3&);
+        template<> std::optional<std::span<const Vec3>> get_array<Vec3>(std::string_view property_name) const;
+        template<> std::optional<std::span<const Vec3>> get_array<Vec3>(const StringName& property_name) const;
+        template<> void set_array<Vec3>(std::string_view property_name, std::span<const Vec3>);
+        template<> void set_array<Vec3>(const StringName& property_name, std::span<const Vec3>);
 
-        std::optional<std::span<const Vec3>> get_vec3_array(std::string_view property_name) const;
-        std::optional<std::span<const Vec3>> get_vec3_array(const StringName& property_name) const;
-        void set_vec3_array(std::string_view property_name, std::span<const Vec3>);
-        void set_vec3_array(const StringName& property_name, std::span<const Vec3>);
-
-        std::optional<Vec4> get_vec4(std::string_view property_name) const;
-        std::optional<Vec4> get_vec4(const StringName& property_name) const;
-        void set_vec4(std::string_view property_name, Vec4);
-        void set_vec4(const StringName& property_name, Vec4);
+        // `Vec4` getters/setters
+        template<> std::optional<Vec4> get<Vec4>(std::string_view property_name) const;
+        template<> std::optional<Vec4> get<Vec4>(const StringName& property_name) const;
+        template<> void set<Vec4>(std::string_view property_name, const Vec4&);
+        template<> void set<Vec4>(const StringName& property_name, const Vec4&);
 
         std::optional<Mat3> get_mat3(std::string_view property_name) const;
         std::optional<Mat3> get_mat3(const StringName& property_name) const;

@@ -256,9 +256,9 @@ private:
 
     void set_common_material_properties()
     {
-        pbr_material_.set_vec3("uCameraWorldPos", camera_.position());
-        pbr_material_.set_vec3_array("uLightPositions", c_light_positions);
-        pbr_material_.set_vec3_array("uLightColors", c_light_radiances);
+        pbr_material_.set<Vec3>("uCameraWorldPos", camera_.position());
+        pbr_material_.set_array<Vec3>("uLightPositions", c_light_positions);
+        pbr_material_.set_array<Vec3>("uLightColors", c_light_radiances);
         pbr_material_.set_render_texture("uIrradianceMap", irradiance_map_);
         pbr_material_.set_cubemap("uPrefilterMap", prefilter_map_);
         pbr_material_.set<float>("uMaxReflectionLOD", static_cast<float>(std::bit_width(static_cast<size_t>(prefilter_map_.width()) - 1)));

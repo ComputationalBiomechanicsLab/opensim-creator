@@ -124,8 +124,8 @@ private:
 
         // draw normal-mapped quad
         {
-            normal_mapping_material_.set_vec3("uLightWorldPos", light_transform_.position);
-            normal_mapping_material_.set_vec3("uViewWorldPos", camera_.position());
+            normal_mapping_material_.set<Vec3>("uLightWorldPos", light_transform_.position);
+            normal_mapping_material_.set<Vec3>("uViewWorldPos", camera_.position());
             normal_mapping_material_.set_bool("uEnableNormalMapping", normal_mapping_enabled_);
             graphics::draw(quad_mesh_, quad_transform_, normal_mapping_material_, camera_);
         }

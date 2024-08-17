@@ -148,7 +148,7 @@ public:
         quad_mesh_{cache.quad_mesh()}
     {
         scene_floor_material_.set_texture("uDiffuseTexture", chequered_texture_);
-        scene_floor_material_.set_vec2("uTextureScale", {200.0f, 200.0f});
+        scene_floor_material_.set<Vec2>("uTextureScale", {200.0f, 200.0f});
         scene_floor_material_.set_transparent(true);
 
         wireframe_material_.set_color(Color::black());
@@ -178,8 +178,8 @@ public:
 
         // draw the the scene
         {
-            scene_main_material_.set_vec3("uViewPos", camera_.position());
-            scene_main_material_.set_vec3("uLightDir", params.light_direction);
+            scene_main_material_.set<Vec3>("uViewPos", camera_.position());
+            scene_main_material_.set<Vec3>("uLightDir", params.light_direction);
             scene_main_material_.set<Color>("uLightColor", params.light_color);
             scene_main_material_.set<float>("uAmbientStrength", params.ambient_strength);
             scene_main_material_.set<float>("uDiffuseStrength", params.diffuse_strength);
@@ -254,8 +254,8 @@ public:
 
             // if a floor is requested, draw a textured floor
             if (params.draw_floor) {
-                scene_floor_material_.set_vec3("uViewPos", camera_.position());
-                scene_floor_material_.set_vec3("uLightDir", params.light_direction);
+                scene_floor_material_.set<Vec3>("uViewPos", camera_.position());
+                scene_floor_material_.set<Vec3>("uLightDir", params.light_direction);
                 scene_floor_material_.set<Color>("uLightColor", params.light_color);
                 scene_floor_material_.set<float>("uAmbientStrength", 0.7f);
                 scene_floor_material_.set<float>("uDiffuseStrength", 0.4f);
@@ -409,9 +409,9 @@ private:
         static_assert(SceneRendererParams::num_rim_groups() == 2);
         edge_detection_material_.set<Color>("uRim0Color", params.rim_group_colors[0]);
         edge_detection_material_.set<Color>("uRim1Color", params.rim_group_colors[1]);
-        edge_detection_material_.set_vec2("uRimThickness", 0.5f*rim_ndc_thickness);
-        edge_detection_material_.set_vec2("uTextureOffset", rim_rect_uv.p1);
-        edge_detection_material_.set_vec2("uTextureScale", dimensions_of(rim_rect_uv));
+        edge_detection_material_.set<Vec2>("uRimThickness", 0.5f*rim_ndc_thickness);
+        edge_detection_material_.set<Vec2>("uTextureOffset", rim_rect_uv.p1);
+        edge_detection_material_.set<Vec2>("uTextureScale", dimensions_of(rim_rect_uv));
 
         // return necessary information for rendering the rims
         return RimHighlights{

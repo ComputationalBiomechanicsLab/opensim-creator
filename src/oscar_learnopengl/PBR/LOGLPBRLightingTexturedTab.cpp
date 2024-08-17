@@ -73,8 +73,8 @@ namespace
         rv.set_texture("uMetallicMap", metallic);
         rv.set_texture("uRoughnessMap", roughness);
         rv.set_texture("uAOMap", ao);
-        rv.set_vec3_array("uLightWorldPositions", c_light_positions);
-        rv.set_vec3_array("uLightRadiances", c_light_radiances);
+        rv.set_array<Vec3>("uLightWorldPositions", c_light_positions);
+        rv.set_array<Vec3>("uLightRadiances", c_light_radiances);
         return rv;
     }
 }
@@ -113,7 +113,7 @@ private:
     {
         camera_.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
 
-        pbr_material_.set_vec3("uCameraWorldPosition", camera_.position());
+        pbr_material_.set<Vec3>("uCameraWorldPosition", camera_.position());
 
         draw_spheres();
         draw_lights();

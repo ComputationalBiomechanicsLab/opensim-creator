@@ -16,11 +16,11 @@ namespace osc
     public:
         MeshPhongMaterial();
 
-        Vec3 light_position() const { return *material_.get_vec3(c_light_pos_propname); }
-        void set_light_position(Vec3 v) { material_.set_vec3(c_light_pos_propname, v); }
+        Vec3 light_position() const { return *material_.get<Vec3>(c_light_pos_propname); }
+        void set_light_position(Vec3 v) { material_.set<Vec3>(c_light_pos_propname, v); }
 
-        Vec3 viewer_position() const { return *material_.get_vec3(c_view_pos_propname); }
-        void set_viewer_position(Vec3 v) { material_.set_vec3(c_view_pos_propname, v); }
+        Vec3 viewer_position() const { return *material_.get<Vec3>(c_view_pos_propname); }
+        void set_viewer_position(Vec3 v) { material_.set<Vec3>(c_view_pos_propname, v); }
 
         Color light_color() const { return *material_.get<Color>(c_light_color_propname); }
         void set_light_color(Color c) { material_.set<Color>(c_light_color_propname, c); }
