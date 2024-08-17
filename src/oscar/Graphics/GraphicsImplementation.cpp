@@ -3167,82 +3167,98 @@ bool osc::MaterialPropertyBlock::empty() const
     return impl_->empty();
 }
 
-std::optional<Color> osc::MaterialPropertyBlock::get_color(std::string_view property_name) const
+template<>
+std::optional<Color> osc::MaterialPropertyBlock::get<Color>(std::string_view property_name) const
 {
     return impl_->get<Color>(property_name);
 }
 
-std::optional<Color> osc::MaterialPropertyBlock::get_color(const StringName& property_name) const
+template<>
+std::optional<Color> osc::MaterialPropertyBlock::get<Color>(const StringName& property_name) const
 {
     return impl_->get<Color>(property_name);
 }
 
-void osc::MaterialPropertyBlock::set_color(std::string_view property_name, Color color)
+template<>
+void osc::MaterialPropertyBlock::set<Color>(std::string_view property_name, const Color& color)
 {
     impl_.upd()->set(property_name, color);
 }
 
-void osc::MaterialPropertyBlock::set_color(const StringName& property_name, Color color)
+template<>
+void osc::MaterialPropertyBlock::set<Color>(const StringName& property_name, const Color& color)
 {
     impl_.upd()->set(property_name, color);
 }
 
-std::optional<std::span<const Color>> osc::MaterialPropertyBlock::get_color_array(std::string_view property_name) const
+template<>
+std::optional<std::span<const Color>> osc::MaterialPropertyBlock::get_array<Color>(std::string_view property_name) const
 {
     return impl_->get_array<Color>(property_name);
 }
 
-std::optional<std::span<const Color>> osc::MaterialPropertyBlock::get_color_array(const StringName& property_name) const
+template<>
+std::optional<std::span<const Color>> osc::MaterialPropertyBlock::get_array<Color>(const StringName& property_name) const
 {
     return impl_->get_array<Color>(property_name);
 }
 
-void osc::MaterialPropertyBlock::set_color_array(std::string_view property_name, std::span<const Color> colors)
+template<>
+void osc::MaterialPropertyBlock::set_array<Color>(std::string_view property_name, std::span<const Color> colors)
 {
     impl_.upd()->set_array<Color>(property_name, colors);
 }
 
-void osc::MaterialPropertyBlock::set_color_array(const StringName& property_name, std::span<const Color> colors)
+template<>
+void osc::MaterialPropertyBlock::set_array<Color>(const StringName& property_name, std::span<const Color> colors)
 {
     impl_.upd()->set_array<Color>(property_name, colors);
 }
 
-std::optional<float> osc::MaterialPropertyBlock::get_float(std::string_view property_name) const
+template<>
+std::optional<float> osc::MaterialPropertyBlock::get<float>(std::string_view property_name) const
 {
     return impl_->get<float>(property_name);
 }
 
-std::optional<float> osc::MaterialPropertyBlock::get_float(const StringName& property_name) const
+template<>
+std::optional<float> osc::MaterialPropertyBlock::get<float>(const StringName& property_name) const
 {
     return impl_->get<float>(property_name);
 }
 
-void osc::MaterialPropertyBlock::set_float(std::string_view property_name, float value)
+template<>
+void osc::MaterialPropertyBlock::set<float>(std::string_view property_name, const float& value)
 {
     impl_.upd()->set(property_name, value);
 }
 
-void osc::MaterialPropertyBlock::set_float(const StringName& property_name, float value)
+template<>
+void osc::MaterialPropertyBlock::set<float>(const StringName& property_name, const float& value)
 {
     impl_.upd()->set(property_name, value);
 }
 
-std::optional<std::span<const float>> osc::MaterialPropertyBlock::get_float_array(std::string_view property_name) const
+template<>
+std::optional<std::span<const float>> osc::MaterialPropertyBlock::get_array<float>(std::string_view property_name) const
 {
     return impl_->get_array<float>(property_name);
 }
 
-std::optional<std::span<const float>> osc::MaterialPropertyBlock::get_float_array(const StringName& property_name) const
+template<>
+std::optional<std::span<const float>> osc::MaterialPropertyBlock::get_array<float>(const StringName& property_name) const
 {
     return impl_->get_array<float>(property_name);
 }
 
-void osc::MaterialPropertyBlock::set_float_array(std::string_view property_name, std::span<const float> values)
+template<>
+void osc::MaterialPropertyBlock::set_array<float>(std::string_view property_name, std::span<const float> values)
 {
     impl_.upd()->set_array<float>(property_name, values);
 }
 
-void osc::MaterialPropertyBlock::set_float_array(const StringName& property_name, std::span<const float> values)
+template<>
+void osc::MaterialPropertyBlock::set_array<float>(const StringName& property_name, std::span<const float> values)
 {
     impl_.upd()->set_array<float>(property_name, values);
 }

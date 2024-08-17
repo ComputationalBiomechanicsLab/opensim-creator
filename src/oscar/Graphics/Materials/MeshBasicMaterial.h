@@ -17,11 +17,11 @@ namespace osc
             PropertyBlock() = default;
             explicit PropertyBlock(Color color)
             {
-                property_block_.set_color(c_color_propname, color);
+                property_block_.set<Color>(c_color_propname, color);
             }
 
-            std::optional<Color> color() const { return property_block_.get_color(c_color_propname); }
-            void set_color(Color c) { property_block_.set_color(c_color_propname, c); }
+            std::optional<Color> color() const { return property_block_.get<Color>(c_color_propname); }
+            void set_color(Color c) { property_block_.set<Color>(c_color_propname, c); }
 
             operator const MaterialPropertyBlock& () const { return property_block_; }
         private:
@@ -30,8 +30,8 @@ namespace osc
 
         explicit MeshBasicMaterial(const Color& = Color::black());
 
-        Color color() const { return *material_.get_color(c_color_propname); }
-        void set_color(Color c) { material_.set_color(c_color_propname, c); }
+        Color color() const { return *material_.get<Color>(c_color_propname); }
+        void set_color(Color c) { material_.set<Color>(c_color_propname, c); }
 
         bool is_wireframe() const { return material_.is_wireframe(); }
         void set_wireframe(bool v) { material_.set_wireframe(v); }

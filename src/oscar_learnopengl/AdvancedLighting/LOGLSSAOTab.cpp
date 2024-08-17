@@ -211,8 +211,8 @@ private:
         ssao_state_.material.set_vec3_array("uSamples", sample_kernel_);
         ssao_state_.material.set_vec2("uNoiseScale", viewport_dimensions / Vec2{noise_texture_.dimensions()});
         ssao_state_.material.set_int("uKernelSize", static_cast<int32_t>(sample_kernel_.size()));
-        ssao_state_.material.set_float("uRadius", 0.5f);
-        ssao_state_.material.set_float("uBias", 0.125f);
+        ssao_state_.material.set<float>("uRadius", 0.5f);
+        ssao_state_.material.set<float>("uBias", 0.125f);
 
         graphics::draw(quad_mesh_, identity<Transform>(), ssao_state_.material, camera_);
         camera_.render_to(ssao_state_.output_texture);
@@ -238,9 +238,9 @@ private:
         lighting_state_.material.set_render_texture("uAlbedoTex", gbuffer_state_.albedo);
         lighting_state_.material.set_render_texture("uSSAOTex", ssao_state_.output_texture);
         lighting_state_.material.set_vec3("uLightPosition", light_position_);
-        lighting_state_.material.set_color("uLightColor", light_color_);
-        lighting_state_.material.set_float("uLightLinear", 0.09f);
-        lighting_state_.material.set_float("uLightQuadratic", 0.032f);
+        lighting_state_.material.set<Color>("uLightColor", light_color_);
+        lighting_state_.material.set<float>("uLightLinear", 0.09f);
+        lighting_state_.material.set<float>("uLightQuadratic", 0.032f);
 
         graphics::draw(quad_mesh_, identity<Transform>(), lighting_state_.material, camera_);
         camera_.render_to(lighting_state_.output_texture);

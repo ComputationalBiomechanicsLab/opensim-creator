@@ -76,7 +76,7 @@ namespace
         rv.set_texture("uDiffuseMap", diffuse_map);
         rv.set_texture("uNormalMap", normal_map);
         rv.set_texture("uDisplacementMap", displacement_map);
-        rv.set_float("uHeightScale", 0.1f);
+        rv.set<float>("uHeightScale", 0.1f);
         return rv;
     }
 
@@ -127,7 +127,7 @@ private:
 
         // draw light source cube
         {
-            light_cube_material_.set_color("uLightColor", Color::white());
+            light_cube_material_.set<Color>("uLightColor", Color::white());
             graphics::draw(cube_mesh_, light_transform_, light_cube_material_, camera_);
         }
 

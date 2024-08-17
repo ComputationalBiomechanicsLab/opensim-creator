@@ -47,7 +47,7 @@ namespace
             rl.slurp("oscar_learnopengl/shaders/PBR/lighting/PBR.vert"),
             rl.slurp("oscar_learnopengl/shaders/PBR/lighting/PBR.frag"),
         }};
-        rv.set_float("uAO", 1.0f);
+        rv.set<float>("uAO", 1.0f);
         return rv;
     }
 }
@@ -101,11 +101,11 @@ private:
         pbr_material_.set_vec3("uAlbedoColor", {0.5f, 0.0f, 0.0f});
 
         for (int row = 0; row < c_num_rows; ++row) {
-            pbr_material_.set_float("uMetallicity", static_cast<float>(row) / static_cast<float>(c_num_rows));
+            pbr_material_.set<float>("uMetallicity", static_cast<float>(row) / static_cast<float>(c_num_rows));
 
             for (int col = 0; col < c_num_cols; ++col) {
                 const float normalized_col = static_cast<float>(col) / static_cast<float>(c_num_cols);
-                pbr_material_.set_float("uRoughness", clamp(normalized_col, 0.005f, 1.0f));
+                pbr_material_.set<float>("uRoughness", clamp(normalized_col, 0.005f, 1.0f));
 
                 const float x = (static_cast<float>(col) - static_cast<float>(c_num_cols)/2.0f) * c_cell_spacing;
                 const float y = (static_cast<float>(row) - static_cast<float>(c_num_rows)/2.0f) * c_cell_spacing;

@@ -635,28 +635,28 @@ TEST_F(Renderer, MaterialGetColorOnNewMaterialReturnsEmptyOptional)
 {
     Material mat = GenerateMaterial();
 
-    ASSERT_FALSE(mat.get_color("someKey"));
+    ASSERT_FALSE(mat.get<Color>("someKey"));
 }
 
 TEST_F(Renderer, MaterialCanCallSetColorOnNewMaterial)
 {
     Material mat = GenerateMaterial();
-    mat.set_color("someKey", Color::red());
+    mat.set<Color>("someKey", Color::red());
 }
 
 TEST_F(Renderer, MaterialCallingGetColorOnMaterialAfterSetColorReturnsTheColor)
 {
     Material mat = GenerateMaterial();
-    mat.set_color("someKey", Color::red());
+    mat.set<Color>("someKey", Color::red());
 
-    ASSERT_EQ(mat.get_color("someKey"), Color::red());
+    ASSERT_EQ(mat.get<Color>("someKey"), Color::red());
 }
 
 TEST_F(Renderer, MaterialGetColorArrayReturnsEmptyOnNewMaterial)
 {
     Material mat = GenerateMaterial();
 
-    ASSERT_FALSE(mat.get_color_array("someKey"));
+    ASSERT_FALSE(mat.get_array<Color>("someKey"));
 }
 
 TEST_F(Renderer, MaterialCanCallSetColorArrayOnNewMaterial)
@@ -664,7 +664,7 @@ TEST_F(Renderer, MaterialCanCallSetColorArrayOnNewMaterial)
     Material mat = GenerateMaterial();
     const auto colors = std::to_array({Color::black(), Color::blue()});
 
-    mat.set_color_array("someKey", colors);
+    mat.set_array<Color>("someKey", colors);
 }
 
 TEST_F(Renderer, MaterialCallingGetColorArrayOnMaterialAfterSettingThemReturnsTheSameColors)
@@ -673,9 +673,9 @@ TEST_F(Renderer, MaterialCallingGetColorArrayOnMaterialAfterSettingThemReturnsTh
     const auto colors = std::to_array({Color::red(), Color::green(), Color::blue()});
     const CStringView key = "someKey";
 
-    mat.set_color_array(key, colors);
+    mat.set_array<Color>(key, colors);
 
-    std::optional<std::span<const Color>> rv = mat.get_color_array(key);
+    std::optional<std::span<const Color>> rv = mat.get_array<Color>(key);
 
     ASSERT_TRUE(rv);
     ASSERT_EQ(std::size(*rv), std::size(colors));
@@ -684,13 +684,13 @@ TEST_F(Renderer, MaterialCallingGetColorArrayOnMaterialAfterSettingThemReturnsTh
 TEST_F(Renderer, MaterialGetFloatOnNewMaterialReturnsEmptyOptional)
 {
     Material mat = GenerateMaterial();
-    ASSERT_FALSE(mat.get_float("someKey"));
+    ASSERT_FALSE(mat.get<float>("someKey"));
 }
 
 TEST_F(Renderer, MaterialGetFloatArrayOnNewMaterialReturnsEmptyOptional)
 {
     Material mat = GenerateMaterial();
-    ASSERT_FALSE(mat.get_float_array("someKey"));
+    ASSERT_FALSE(mat.get_array<float>("someKey"));
 }
 
 TEST_F(Renderer, MaterialGetVec2OnNewMaterialReturnsEmptyOptional)
@@ -748,9 +748,9 @@ TEST_F(Renderer, MaterialSetFloatOnMaterialCausesGetFloatToReturnTheProvidedValu
     std::string key = "someKey";
     float value = generate<float>();
 
-    mat.set_float(key, value);
+    mat.set<float>(key, value);
 
-    ASSERT_EQ(*mat.get_float(key), value);
+    ASSERT_EQ(*mat.get<float>(key), value);
 }
 
 TEST_F(Renderer, MaterialSetFloatArrayOnMaterialCausesGetFloatArrayToReturnTheProvidedValues)
@@ -759,11 +759,11 @@ TEST_F(Renderer, MaterialSetFloatArrayOnMaterialCausesGetFloatArrayToReturnThePr
     std::string key = "someKey";
     std::array<float, 4> values = {generate<float>(), generate<float>(), generate<float>(), generate<float>()};
 
-    ASSERT_FALSE(mat.get_float_array(key));
+    ASSERT_FALSE(mat.get_array<float>(key));
 
-    mat.set_float_array(key, values);
+    mat.set_array<float>(key, values);
 
-    std::span<const float> rv = mat.get_float_array(key).value();
+    std::span<const float> rv = mat.get_array<float>(key).value();
     ASSERT_TRUE(std::equal(rv.begin(), rv.end(), values.begin(), values.end()));
 }
 
@@ -1190,14 +1190,14 @@ TEST_F(Renderer, MaterialSetFloatAndThenSetVec3CausesGetFloatToReturnEmpty)
     float floatValue = generate<float>();
     Vec3 vecValue = generate<Vec3>();
 
-    mat.set_float(key, floatValue);
+    mat.set<float>(key, floatValue);
 
-    ASSERT_TRUE(mat.get_float(key));
+    ASSERT_TRUE(mat.get<float>(key));
 
     mat.set_vec3(key, vecValue);
 
     ASSERT_TRUE(mat.get_vec3(key));
-    ASSERT_FALSE(mat.get_float(key));
+    ASSERT_FALSE(mat.get<float>(key));
 }
 
 TEST_F(Renderer, MaterialPropertyBlockCanDefaultConstruct)
@@ -1252,7 +1252,7 @@ TEST_F(Renderer, MaterialPropertyBlockClearClearsProperties)
 {
     MaterialPropertyBlock mpb;
 
-    mpb.set_float("someKey", generate<float>());
+    mpb.set<float>("someKey", generate<float>());
 
     ASSERT_FALSE(mpb.empty());
 
@@ -1264,27 +1264,27 @@ TEST_F(Renderer, MaterialPropertyBlockClearClearsProperties)
 TEST_F(Renderer, MaterialPropertyBlockGetColorOnNewMPBlReturnsEmptyOptional)
 {
     MaterialPropertyBlock mpb;
-    ASSERT_FALSE(mpb.get_color("someKey"));
+    ASSERT_FALSE(mpb.get<Color>("someKey"));
 }
 
 TEST_F(Renderer, MaterialPropertyBlockCanCallSetColorOnNewMaterial)
 {
     MaterialPropertyBlock mpb;
-    mpb.set_color("someKey", Color::red());
+    mpb.set<Color>("someKey", Color::red());
 }
 
 TEST_F(Renderer, MaterialPropertyBlockCallingGetColorOnMPBAfterSetColorReturnsTheColor)
 {
     MaterialPropertyBlock mpb;
-    mpb.set_color("someKey", Color::red());
+    mpb.set<Color>("someKey", Color::red());
 
-    ASSERT_EQ(mpb.get_color("someKey"), Color::red());
+    ASSERT_EQ(mpb.get<Color>("someKey"), Color::red());
 }
 
 TEST_F(Renderer, MaterialPropertyBlockGetFloatReturnsEmptyOnDefaultConstructedInstance)
 {
     MaterialPropertyBlock mpb;
-    ASSERT_FALSE(mpb.get_float("someKey"));
+    ASSERT_FALSE(mpb.get<float>("someKey"));
 }
 
 TEST_F(Renderer, MaterialPropertyBlockGetVec3ReturnsEmptyOnDefaultConstructedInstance)
@@ -1329,11 +1329,11 @@ TEST_F(Renderer, MaterialPropertyBlockSetFloatCausesGetterToReturnSetValue)
     std::string key = "someKey";
     float value = generate<float>();
 
-    ASSERT_FALSE(mpb.get_float(key));
+    ASSERT_FALSE(mpb.get<float>(key));
 
-    mpb.set_float(key, value);
-    ASSERT_TRUE(mpb.get_float(key));
-    ASSERT_EQ(mpb.get_float(key), value);
+    mpb.set<float>(key, value);
+    ASSERT_TRUE(mpb.get<float>(key));
+    ASSERT_EQ(mpb.get<float>(key), value);
 }
 
 TEST_F(Renderer, MaterialPropertyBlockSetVec3CausesGetterToReturnSetValue)
@@ -1436,7 +1436,7 @@ TEST_F(Renderer, MaterialPropertyBlockCopyAssignmentComparesEqual)
     MaterialPropertyBlock m1;
     MaterialPropertyBlock m2;
 
-    m1.set_float("someKey", generate<float>());
+    m1.set<float>("someKey", generate<float>());
 
     ASSERT_NE(m1, m2);
 
@@ -1450,7 +1450,7 @@ TEST_F(Renderer, MaterialPropertyBlockDifferentMaterialBlocksCompareNotEqual)
     MaterialPropertyBlock m1;
     MaterialPropertyBlock m2;
 
-    m1.set_float("someKey", generate<float>());
+    m1.set<float>("someKey", generate<float>());
 
     ASSERT_NE(m1, m2);
 }

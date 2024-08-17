@@ -99,7 +99,7 @@ public:
     Impl() : StandardTabImpl{c_tab_string_id}
     {
         scene_material_.set_vec3_array("uLightPositions", c_scene_light_positions);
-        scene_material_.set_color_array("uLightColors", get_scene_light_colors());
+        scene_material_.set_array<Color>("uLightColors", get_scene_light_colors());
     }
 
 private:
@@ -211,7 +211,7 @@ private:
             light_mat4 = scale(light_mat4, Vec3(0.25f));
 
             MaterialPropertyBlock light_props;
-            light_props.set_color("uLightColor", scene_light_colors[i]);
+            light_props.set<Color>("uLightColor", scene_light_colors[i]);
 
             graphics::draw(
                 cube_mesh_,
@@ -270,7 +270,7 @@ private:
         final_compositing_material_.set_render_texture("uHDRSceneRender", scene_hdr_color_output_);
         final_compositing_material_.set_render_texture("uBloomBlur", ping_pong_blur_output_buffers_[0]);
         final_compositing_material_.set_bool("uBloom", true);
-        final_compositing_material_.set_float("uExposure", 1.0f);
+        final_compositing_material_.set<float>("uExposure", 1.0f);
 
         Camera camera;
         graphics::draw(quad_mesh_, identity<Transform>(), final_compositing_material_, camera);

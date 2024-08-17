@@ -74,27 +74,27 @@ namespace
         rv.set_texture("uMaterialDiffuse", diffuse_map);
         rv.set_texture("uMaterialSpecular", specular_map);
         rv.set_vec3("uDirLightDirection", {-0.2f, -1.0f, -0.3f});
-        rv.set_float("uDirLightAmbient", 0.01f);
-        rv.set_float("uDirLightDiffuse", 0.2f);
-        rv.set_float("uDirLightSpecular", 0.4f);
+        rv.set<float>("uDirLightAmbient", 0.01f);
+        rv.set<float>("uDirLightDiffuse", 0.2f);
+        rv.set<float>("uDirLightSpecular", 0.4f);
 
-        rv.set_float("uSpotLightAmbient", 0.0f);
-        rv.set_float("uSpotLightDiffuse", 1.0f);
-        rv.set_float("uSpotLightSpecular", 0.75f);
+        rv.set<float>("uSpotLightAmbient", 0.0f);
+        rv.set<float>("uSpotLightDiffuse", 1.0f);
+        rv.set<float>("uSpotLightSpecular", 0.75f);
 
-        rv.set_float("uSpotLightConstant", 1.0f);
-        rv.set_float("uSpotLightLinear", 0.09f);
-        rv.set_float("uSpotLightQuadratic", 0.032f);
-        rv.set_float("uSpotLightCutoff", cos(45_deg));
-        rv.set_float("uSpotLightOuterCutoff", cos(15_deg));
+        rv.set<float>("uSpotLightConstant", 1.0f);
+        rv.set<float>("uSpotLightLinear", 0.09f);
+        rv.set<float>("uSpotLightQuadratic", 0.032f);
+        rv.set<float>("uSpotLightCutoff", cos(45_deg));
+        rv.set<float>("uSpotLightOuterCutoff", cos(15_deg));
 
         rv.set_vec3_array("uPointLightPos", c_point_light_positions);
-        rv.set_float_array("uPointLightConstant", c_point_light_constants);
-        rv.set_float_array("uPointLightLinear", c_point_light_linears);
-        rv.set_float_array("uPointLightQuadratic", c_point_light_quadratics);
-        rv.set_float_array("uPointLightAmbient", c_point_light_ambients);
-        rv.set_float_array("uPointLightDiffuse", c_point_light_diffuses);
-        rv.set_float_array("uPointLightSpecular", c_point_light_speculars);
+        rv.set_array<float>("uPointLightConstant", c_point_light_constants);
+        rv.set_array<float>("uPointLightLinear", c_point_light_linears);
+        rv.set_array<float>("uPointLightQuadratic", c_point_light_quadratics);
+        rv.set_array<float>("uPointLightAmbient", c_point_light_ambients);
+        rv.set_array<float>("uPointLightDiffuse", c_point_light_diffuses);
+        rv.set_array<float>("uPointLightSpecular", c_point_light_speculars);
 
         return rv;
     }
@@ -105,7 +105,7 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/LightCube.vert"),
             loader.slurp("oscar_learnopengl/shaders/LightCube.frag"),
         }};
-        rv.set_color("uLightColor", Color::white());
+        rv.set<Color>("uLightColor", Color::white());
         return rv;
     }
 }
@@ -144,7 +144,7 @@ private:
 
         // setup per-frame material vals
         multiple_lights_material_.set_vec3("uViewPos", camera_.position());
-        multiple_lights_material_.set_float("uMaterialShininess", material_shininess_);
+        multiple_lights_material_.set<float>("uMaterialShininess", material_shininess_);
         multiple_lights_material_.set_vec3("uSpotLightPosition", camera_.position());
         multiple_lights_material_.set_vec3("uSpotLightDirection", camera_.direction());
 

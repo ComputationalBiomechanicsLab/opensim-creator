@@ -84,7 +84,7 @@ namespace
         }};
         rv.set_texture("uFloorTexture", wood_texture);
         rv.set_vec3_array("uLightPositions", c_light_positions);
-        rv.set_color_array("uLightColors", c_light_colors);
+        rv.set_array<Color>("uLightColors", c_light_colors);
         return rv;
     }
 }

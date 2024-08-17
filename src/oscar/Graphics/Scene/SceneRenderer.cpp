@@ -180,13 +180,13 @@ public:
         {
             scene_main_material_.set_vec3("uViewPos", camera_.position());
             scene_main_material_.set_vec3("uLightDir", params.light_direction);
-            scene_main_material_.set_color("uLightColor", params.light_color);
-            scene_main_material_.set_float("uAmbientStrength", params.ambient_strength);
-            scene_main_material_.set_float("uDiffuseStrength", params.diffuse_strength);
-            scene_main_material_.set_float("uSpecularStrength", params.specular_strength);
-            scene_main_material_.set_float("uShininess", params.specular_shininess);
-            scene_main_material_.set_float("uNear", camera_.near_clipping_plane());
-            scene_main_material_.set_float("uFar", camera_.far_clipping_plane());
+            scene_main_material_.set<Color>("uLightColor", params.light_color);
+            scene_main_material_.set<float>("uAmbientStrength", params.ambient_strength);
+            scene_main_material_.set<float>("uDiffuseStrength", params.diffuse_strength);
+            scene_main_material_.set<float>("uSpecularStrength", params.specular_strength);
+            scene_main_material_.set<float>("uShininess", params.specular_shininess);
+            scene_main_material_.set<float>("uNear", camera_.near_clipping_plane());
+            scene_main_material_.set<float>("uFar", camera_.far_clipping_plane());
 
             // supply shadowmap, if applicable
             if (maybe_shadowmap) {
@@ -214,7 +214,7 @@ public:
                     [this, &transparent_material, &dec, &previous_color, &prop_block, &color_guess](const Color& color)
                     {
                         if (color != previous_color) {
-                            prop_block.set_color(c_diffuse_color_propname, color);
+                            prop_block.set<Color>(c_diffuse_color_propname, color);
                             previous_color = color;
                         }
 
@@ -239,7 +239,7 @@ public:
                 // if a wireframe overlay is requested for the decoration then draw it over the top in
                 // a solid color
                 if (dec.flags & SceneDecorationFlag::DrawWireframeOverlay) {
-                    wireframe_prop_block.set_color(c_diffuse_color_propname, multiply_luminance(color_guess, 0.1f));
+                    wireframe_prop_block.set<Color>(c_diffuse_color_propname, multiply_luminance(color_guess, 0.1f));
                     graphics::draw(dec.mesh, dec.transform, wireframe_material_, camera_, wireframe_prop_block);
                 }
 
@@ -256,13 +256,13 @@ public:
             if (params.draw_floor) {
                 scene_floor_material_.set_vec3("uViewPos", camera_.position());
                 scene_floor_material_.set_vec3("uLightDir", params.light_direction);
-                scene_floor_material_.set_color("uLightColor", params.light_color);
-                scene_floor_material_.set_float("uAmbientStrength", 0.7f);
-                scene_floor_material_.set_float("uDiffuseStrength", 0.4f);
-                scene_floor_material_.set_float("uSpecularStrength", 0.4f);
-                scene_floor_material_.set_float("uShininess", 8.0f);
-                scene_floor_material_.set_float("uNear", camera_.near_clipping_plane());
-                scene_floor_material_.set_float("uFar", camera_.far_clipping_plane());
+                scene_floor_material_.set<Color>("uLightColor", params.light_color);
+                scene_floor_material_.set<float>("uAmbientStrength", 0.7f);
+                scene_floor_material_.set<float>("uDiffuseStrength", 0.4f);
+                scene_floor_material_.set<float>("uSpecularStrength", 0.4f);
+                scene_floor_material_.set<float>("uShininess", 8.0f);
+                scene_floor_material_.set<float>("uNear", camera_.near_clipping_plane());
+                scene_floor_material_.set<float>("uFar", camera_.far_clipping_plane());
 
                 // supply shadowmap, if applicable
                 if (maybe_shadowmap) {
@@ -407,8 +407,8 @@ private:
         // that transforms the solid shapes into "rims"
         edge_detection_material_.set_render_texture("uScreenTexture", rims_rendertexture_);
         static_assert(SceneRendererParams::num_rim_groups() == 2);
-        edge_detection_material_.set_color("uRim0Color", params.rim_group_colors[0]);
-        edge_detection_material_.set_color("uRim1Color", params.rim_group_colors[1]);
+        edge_detection_material_.set<Color>("uRim0Color", params.rim_group_colors[0]);
+        edge_detection_material_.set<Color>("uRim1Color", params.rim_group_colors[1]);
         edge_detection_material_.set_vec2("uRimThickness", 0.5f*rim_ndc_thickness);
         edge_detection_material_.set_vec2("uTextureOffset", rim_rect_uv.p1);
         edge_detection_material_.set_vec2("uTextureScale", dimensions_of(rim_rect_uv));

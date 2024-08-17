@@ -30,52 +30,28 @@ namespace osc
 
         const Shader& shader() const;
 
-        template<std::convertible_to<std::string_view> StringLike>
-        std::optional<Color> get_color(StringLike&& property_name) const
+        template<typename T, std::convertible_to<std::string_view> StringLike>
+        std::optional<T> get(StringLike&& property_name) const
         {
-            return properties().get_color(std::forward<StringLike>(property_name));
+            return properties().get<T>(std::forward<StringLike>(property_name));
         }
 
-        template<std::convertible_to<std::string_view> StringLike>
-        void set_color(StringLike&& property_name, Color value)
+        template<typename T, std::convertible_to<std::string_view> StringLike>
+        void set(StringLike&& property_name, const T& value)
         {
-            upd_properties().set_color(std::forward<StringLike>(property_name), value);
+            upd_properties().set<T>(std::forward<StringLike>(property_name), value);
         }
 
-        template<std::convertible_to<std::string_view> StringLike>
-        std::optional<std::span<const Color>> get_color_array(StringLike&& property_name) const
+        template<typename T, std::convertible_to<std::string_view> StringLike>
+        std::optional<std::span<const T>> get_array(StringLike&& property_name) const
         {
-            return properties().get_color_array(std::forward<StringLike>(property_name));
+            return properties().get_array<T>(std::forward<StringLike>(property_name));
         }
 
-        template<std::convertible_to<std::string_view> StringLike>
-        void set_color_array(StringLike&& property_name, std::span<const Color> value)
+        template<typename T, std::convertible_to<std::string_view> StringLike>
+        void set_array(StringLike&& property_name, std::span<const T> values)
         {
-            upd_properties().set_color_array(std::forward<StringLike>(property_name), value);
-        }
-
-        template<std::convertible_to<std::string_view> StringLike>
-        std::optional<float> get_float(StringLike&& property_name) const
-        {
-            return properties().get_float(std::forward<StringLike>(property_name));
-        }
-
-        template<std::convertible_to<std::string_view> StringLike>
-        void set_float(StringLike&& property_name, float value)
-        {
-            upd_properties().set_float(std::forward<StringLike>(property_name), value);
-        }
-
-        template<std::convertible_to<std::string_view> StringLike>
-        std::optional<std::span<const float>> get_float_array(StringLike&& property_name) const
-        {
-            return properties().get_float_array(std::forward<StringLike>(property_name));
-        }
-
-        template<std::convertible_to<std::string_view> StringLike>
-        void set_float_array(StringLike&& property_name, std::span<const float> value)
-        {
-            upd_properties().set_float_array(std::forward<StringLike>(property_name), value);
+            upd_properties().set_array<T>(std::forward<StringLike>(property_name), values);
         }
 
         template<std::convertible_to<std::string_view> StringLike>

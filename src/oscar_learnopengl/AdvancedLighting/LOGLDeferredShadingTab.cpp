@@ -253,8 +253,8 @@ private:
         light_pass_.material.set_render_texture("uAlbedoTex", gbuffer_.albedo);
         light_pass_.material.set_vec3_array("uLightPositions", light_positions_);
         light_pass_.material.set_vec3_array("uLightColors", light_colors_);
-        light_pass_.material.set_float("uLightLinear", 0.7f);
-        light_pass_.material.set_float("uLightQuadratic", 1.8f);
+        light_pass_.material.set<float>("uLightLinear", 0.7f);
+        light_pass_.material.set<float>("uLightQuadratic", 1.8f);
         light_pass_.material.set_vec3("uViewPos", camera_.position());
 
         graphics::draw(quad_mesh_, identity<Transform>(), light_pass_.material, camera_);

@@ -141,7 +141,7 @@ namespace
             capture_render_target.set_dimensions({static_cast<int>(mip_width), static_cast<int>(mip_width)});
 
             const float roughness = static_cast<float>(mip)/static_cast<float>(max_mipmap_level);
-            material.set_float("uRoughness", roughness);
+            material.set<float>("uRoughness", roughness);
 
             graphics::draw(BoxGeometry{2.0f, 2.0f, 2.0f}, identity<Transform>(), material, camera);
             camera.render_to(capture_render_target);
@@ -188,7 +188,7 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/PBR.vert"),
             loader.slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/PBR.frag"),
         }};
-        rv.set_float("uAO", 1.0f);
+        rv.set<float>("uAO", 1.0f);
         return rv;
     }
 
@@ -261,7 +261,7 @@ private:
         pbr_material_.set_vec3_array("uLightColors", c_light_radiances);
         pbr_material_.set_render_texture("uIrradianceMap", irradiance_map_);
         pbr_material_.set_cubemap("uPrefilterMap", prefilter_map_);
-        pbr_material_.set_float("uMaxReflectionLOD", static_cast<float>(std::bit_width(static_cast<size_t>(prefilter_map_.width()) - 1)));
+        pbr_material_.set<float>("uMaxReflectionLOD", static_cast<float>(std::bit_width(static_cast<size_t>(prefilter_map_.width()) - 1)));
         pbr_material_.set_texture("uBRDFLut", brdf_lookup_);
     }
 

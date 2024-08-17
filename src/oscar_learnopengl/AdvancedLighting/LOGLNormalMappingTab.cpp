@@ -132,7 +132,7 @@ private:
 
         // draw light source cube
         {
-            light_cube_material_.set_color("uLightColor", Color::white());
+            light_cube_material_.set<Color>("uLightColor", Color::white());
             graphics::draw(cube_mesh_, light_transform_, light_cube_material_, camera_);
         }
 

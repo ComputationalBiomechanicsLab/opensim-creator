@@ -156,7 +156,7 @@ namespace
             capture_render_texture.set_dimensions({static_cast<int>(mip_width), static_cast<int>(mip_width)});
 
             const float mip_roughness = static_cast<float>(mip)/static_cast<float>(max_mipmap_level);
-            material.set_float("uRoughness", mip_roughness);
+            material.set<float>("uRoughness", mip_roughness);
 
             graphics::draw(BoxGeometry{2.0f, 2.0f, 2.0f}, identity<Transform>(), material, camera);
             camera.render_to(capture_render_texture);
@@ -205,7 +205,7 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/PBR/ibl_specular/PBR.vert"),
             loader.slurp("oscar_learnopengl/shaders/PBR/ibl_specular/PBR.frag"),
         }};
-        rv.set_float("uAO", 1.0f);
+        rv.set<float>("uAO", 1.0f);
         return rv;
     }
 }
@@ -254,7 +254,7 @@ private:
         pbr_material_.set_vec3_array("uLightColors", c_light_radiances);
         pbr_material_.set_render_texture("uIrradianceMap", irradiance_map_);
         pbr_material_.set_cubemap("uPrefilterMap", prefilter_map_);
-        pbr_material_.set_float("uMaxReflectionLOD", static_cast<float>(std::bit_width(static_cast<size_t>(prefilter_map_.width()) - 1)));
+        pbr_material_.set<float>("uMaxReflectionLOD", static_cast<float>(std::bit_width(static_cast<size_t>(prefilter_map_.width()) - 1)));
         pbr_material_.set_texture("uBRDFLut", brdf_lookup_);
 
         draw_spheres();
@@ -268,11 +268,11 @@ private:
         pbr_material_.set_vec3("uAlbedoColor", {0.5f, 0.0f, 0.0f});
 
         for (int row = 0; row < c_num_rows; ++row) {
-            pbr_material_.set_float("uMetallicity", static_cast<float>(row) / static_cast<float>(c_num_rows));
+            pbr_material_.set<float>("uMetallicity", static_cast<float>(row) / static_cast<float>(c_num_rows));
 
             for (int col = 0; col < c_num_cols; ++col) {
                 const float normalizedCol = static_cast<float>(col) / static_cast<float>(c_num_cols);
-                pbr_material_.set_float("uRoughness", clamp(normalizedCol, 0.005f, 1.0f));
+                pbr_material_.set<float>("uRoughness", clamp(normalizedCol, 0.005f, 1.0f));
 
                 const float x = (static_cast<float>(col) - static_cast<float>(c_num_cols)/2.0f) * c_cell_spacing;
                 const float y = (static_cast<float>(row) - static_cast<float>(c_num_rows)/2.0f) * c_cell_spacing;
@@ -309,9 +309,9 @@ private:
     void draw_2D_ui()
     {
         if (ui::begin_panel("Controls")) {
-            float ao = pbr_material_.get_float("uAO").value_or(1.0f);
+            float ao = pbr_material_.get<float>("uAO").value_or(1.0f);
             if (ui::draw_float_slider("ao", &ao, 0.0f, 1.0f)) {
-                pbr_material_.set_float("uAO", ao);
+                pbr_material_.set<float>("uAO", ao);
             }
         }
         ui::end_panel();

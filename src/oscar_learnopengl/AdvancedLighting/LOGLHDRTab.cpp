@@ -58,7 +58,7 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Scene.frag"),
         }};
         rv.set_vec3_array("uSceneLightPositions", c_light_positions);
-        rv.set_color_array("uSceneLightColors", GetLightColors());
+        rv.set_array<Color>("uSceneLightColors", GetLightColors());
         rv.set_texture("uDiffuseTexture", wood_texture);
         rv.set_bool("uInverseNormals", true);
         return rv;
@@ -133,7 +133,7 @@ private:
 
         tonemap_material_.set_render_texture("uTexture", scene_hdr_texture_);
         tonemap_material_.set_bool("uUseTonemap", use_tonemap_);
-        tonemap_material_.set_float("uExposure", exposure_);
+        tonemap_material_.set<float>("uExposure", exposure_);
 
         graphics::draw(quad_mesh_, identity<Transform>(), tonemap_material_, ortho_camera);
         ortho_camera.render_to_screen();
