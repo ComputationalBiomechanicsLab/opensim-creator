@@ -1050,6 +1050,51 @@ TEST_F(Renderer, MaterialSetTransparentBehavesAsExpected)
     ASSERT_TRUE(mat.is_transparent());
 }
 
+TEST_F(Renderer, Material_source_blend_function_returns_SourceDefault_when_not_set)
+{
+    const Material mat = GenerateMaterial();
+    ASSERT_EQ(mat.source_blend_function(), BlendFunction::SourceDefault);
+}
+
+TEST_F(Renderer, Material_set_source_blend_function_sets_source_blend_function)
+{
+    static_assert(BlendFunction::SourceDefault != BlendFunction::Zero);
+
+    Material mat = GenerateMaterial();
+    mat.set_source_blend_function(BlendFunction::Zero);
+    ASSERT_EQ(mat.source_blend_function(), BlendFunction::Zero);
+}
+
+TEST_F(Renderer, Material_destination_blend_function_returns_DestinationDefault_when_not_set)
+{
+    const Material mat = GenerateMaterial();
+    ASSERT_EQ(mat.destination_blend_function(), BlendFunction::DestinationDefault);
+}
+
+TEST_F(Renderer, Material_set_destination_blend_function_sets_destination_blend_function)
+{
+    static_assert(BlendFunction::DestinationDefault != BlendFunction::SourceAlpha);
+
+    Material mat = GenerateMaterial();
+    mat.set_source_blend_function(BlendFunction::SourceAlpha);
+    ASSERT_EQ(mat.source_blend_function(), BlendFunction::SourceAlpha);
+}
+
+TEST_F(Renderer, Material_blend_equation_returns_Default_when_not_set)
+{
+    const Material mat = GenerateMaterial();
+    ASSERT_EQ(mat.blend_equation(), BlendEquation::Default);
+}
+
+TEST_F(Renderer, Material_set_blend_equation_sets_blend_equation)
+{
+    static_assert(BlendEquation::Default != BlendEquation::Max);
+
+    Material mat = GenerateMaterial();
+    mat.set_blend_equation(BlendEquation::Max);
+    ASSERT_EQ(mat.blend_equation(), BlendEquation::Max);
+}
+
 TEST_F(Renderer, MaterialGetDepthTestedIsInitiallyTrue)
 {
     Material mat = GenerateMaterial();

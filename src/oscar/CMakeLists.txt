@@ -124,6 +124,8 @@ add_library(oscar STATIC
 
     Graphics/AntiAliasingLevel.cpp
     Graphics/AntiAliasingLevel.h
+    Graphics/BlendEquation.h
+    Graphics/BlendFunction.h
     Graphics/BlitFlags.h
     Graphics/Camera.h
     Graphics/CameraClearFlags.h

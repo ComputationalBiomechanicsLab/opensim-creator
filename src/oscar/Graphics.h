@@ -1,6 +1,8 @@
 #pragma once
 
 #include <oscar/Graphics/AntiAliasingLevel.h>
+#include <oscar/Graphics/BlendEquation.h>
+#include <oscar/Graphics/BlendFunction.h>
 #include <oscar/Graphics/BlitFlags.h>
 #include <oscar/Graphics/Camera.h>
 #include <oscar/Graphics/CameraClearFlags.h>

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <oscar/Graphics/BlendEquation.h>
+#include <oscar/Graphics/BlendFunction.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/Cubemap.h>
 #include <oscar/Graphics/CullMode.h>
@@ -24,7 +26,7 @@
 
 namespace osc
 {
-    class Material final {
+    class Material {
     public:
         explicit Material(Shader);
 
@@ -62,6 +64,15 @@ namespace osc
 
         bool is_transparent() const;
         void set_transparent(bool);
+
+        BlendFunction source_blend_function() const;
+        void set_source_blend_function(BlendFunction);
+
+        BlendFunction destination_blend_function() const;
+        void set_destination_blend_function(BlendFunction);
+
+        BlendEquation blend_equation() const;
+        void set_blend_equation(BlendEquation);
 
         bool is_depth_tested() const;
         void set_depth_tested(bool);

@@ -377,6 +377,33 @@ namespace
     }
 }
 
+// blending functions
+namespace
+{
+    GLenum to_opengl_blend_func(BlendFunction f)
+    {
+        static_assert(num_options<BlendFunction>() == 4);
+        switch (f) {
+        case BlendFunction::One:                 return GL_ONE;
+        case BlendFunction::Zero:                return GL_ZERO;
+        case BlendFunction::SourceAlpha:         return GL_SRC_ALPHA;
+        case BlendFunction::OneMinusSourceAlpha: return GL_ONE_MINUS_SRC_ALPHA;
+        default:                                 return GL_ONE;
+        }
+    }
+
+    GLenum to_opengl_blend_equation(BlendEquation f)
+    {
+        static_assert(num_options<BlendEquation>() == 3);
+        switch (f) {
+        case BlendEquation::Add: return GL_FUNC_ADD;
+        case BlendEquation::Min: return GL_MIN;
+        case BlendEquation::Max: return GL_MAX;
+        default:                 return GL_FUNC_ADD;
+        }
+    }
+}
+
 // material value storage
 //
 // materials can store a variety of stuff (colors, positions, offsets, textures, etc.). This
@@ -2977,6 +3004,15 @@ public:
     bool is_transparent() const { return is_transparent_; }
     void set_transparent(bool value) { is_transparent_ = value; }
 
+    BlendFunction source_blend_function() const { return source_blend_function_; }
+    void set_source_blend_function(BlendFunction f) { source_blend_function_ = f; }
+
+    BlendFunction destination_blend_function() const { return destination_blend_function_; }
+    void set_destination_blend_function(BlendFunction f) { destination_blend_function_ = f; }
+
+    BlendEquation blend_equation() const { return blend_equation_; }
+    void set_blend_equation(BlendEquation f) { blend_equation_ = f; }
+
     bool is_depth_tested() const { return is_depth_tested_; }
     void set_depth_tested(bool value) { is_depth_tested_ = value; }
 
@@ -2996,6 +3032,9 @@ private:
     MaterialPropertyBlock properties_;
     DepthFunction depth_function_ = DepthFunction::Default;
     CullMode cull_mode_ = CullMode::Default;
+    BlendFunction source_blend_function_ = BlendFunction::SourceDefault;
+    BlendFunction destination_blend_function_ = BlendFunction::DestinationDefault;
+    BlendEquation blend_equation_ = BlendEquation::Default;
     bool is_transparent_ = false;
     bool is_depth_tested_ = true;
     bool is_wireframe_mode_ = false;
@@ -3018,6 +3057,36 @@ bool osc::Material::is_transparent() const
 void osc::Material::set_transparent(bool value)
 {
     impl_.upd()->set_transparent(value);
+}
+
+BlendFunction osc::Material::source_blend_function() const
+{
+    return impl_->source_blend_function();
+}
+
+void osc::Material::set_source_blend_function(BlendFunction f)
+{
+    impl_.upd()->set_source_blend_function(f);
+}
+
+BlendFunction osc::Material::destination_blend_function() const
+{
+    return impl_->destination_blend_function();
+}
+
+void osc::Material::set_destination_blend_function(BlendFunction f)
+{
+    impl_.upd()->set_destination_blend_function(f);
+}
+
+BlendEquation osc::Material::blend_equation() const
+{
+    return impl_->blend_equation();
+}
+
+void osc::Material::set_blend_equation(BlendEquation f)
+{
+    impl_.upd()->set_blend_equation(f);
 }
 
 bool osc::Material::is_depth_tested() const
@@ -5718,12 +5787,17 @@ namespace
         // reports anything missing to the log at the provided log level
         validate_opengl_backend_extension_support(LogLevel::debug);
 
+        // enable required capabilities
         for (const auto& capability : c_required_opengl_capabilities) {
             glEnable(capability.id);
             if (not glIsEnabled(capability.id)) {
                 log_warn("failed to enable %s: this may cause rendering issues", capability.label.c_str());
             }
         }
+
+        // ensure alpha blending functions are defaulted
+        glBlendFunc(to_opengl_blend_func(BlendFunction::SourceDefault), to_opengl_blend_func(BlendFunction::DestinationDefault));
+        glBlendEquation(to_opengl_blend_equation(BlendEquation::Default));
 
         // print OpenGL information to console (handy for debugging user's rendering
         // issues)
@@ -6760,6 +6834,19 @@ void osc::GraphicsBackend::handle_batch_with_same_material(
 
     gl::use_program(shader_impl.program());
 
+    if (material_impl.source_blend_function() != BlendFunction::SourceDefault or
+        material_impl.destination_blend_function() != BlendFunction::DestinationDefault) {
+
+        glBlendFunc(
+            to_opengl_blend_func(material_impl.source_blend_function()),
+            to_opengl_blend_func(material_impl.destination_blend_function())
+        );
+    }
+
+    if (material_impl.blend_equation() != BlendEquation::Default) {
+        glBlendEquation(to_opengl_blend_equation(material_impl.blend_equation()));
+    }
+
 #ifndef EMSCRIPTEN
     if (material_impl.is_wireframe()) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -6836,6 +6923,19 @@ void osc::GraphicsBackend::handle_batch_with_same_material(
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
 #endif
+
+    if (material_impl.blend_equation() != BlendEquation::Default) {
+        glBlendEquation(to_opengl_blend_equation(BlendEquation::Default));
+    }
+
+    if (material_impl.source_blend_function() != BlendFunction::SourceDefault or
+        material_impl.destination_blend_function() != BlendFunction::DestinationDefault) {
+
+        glBlendFunc(
+            to_opengl_blend_func(BlendFunction::SourceDefault),
+            to_opengl_blend_func(BlendFunction::DestinationDefault)
+        );
+    }
 }
 
 // helper: draw a sequence of `RenderObject`s
@@ -6985,7 +7085,6 @@ float osc::GraphicsBackend::setup_top_level_pipeline_state(
 {
     const auto viewport_geom = calc_viewport_geometry(camera, maybe_custom_render_target);
 
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     gl::viewport(
         static_cast<GLsizei>(viewport_geom.bottom_left.x),
         static_cast<GLsizei>(viewport_geom.bottom_left.y),

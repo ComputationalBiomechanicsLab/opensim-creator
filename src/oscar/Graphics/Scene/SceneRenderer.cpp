@@ -154,8 +154,11 @@ public:
         wireframe_material_.set_color(Color::black());
 
         // rim materials
-        rim_filler_material_.set_depth_tested(true);
-        rim_filler_material_.set_transparent(false);
+        rim_filler_material_.set_depth_tested(false);
+        rim_filler_material_.set_transparent(true);
+        rim_filler_material_.set_source_blend_function(BlendFunction::One);
+        rim_filler_material_.set_destination_blend_function(BlendFunction::One);
+        rim_filler_material_.set_blend_equation(BlendEquation::Max);
         edge_detection_material_.set_transparent(true);
         edge_detection_material_.set_depth_tested(false);
     }

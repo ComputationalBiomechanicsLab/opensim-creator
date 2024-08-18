@@ -67,7 +67,7 @@ namespace osc
         Color background_color = default_background_color();
         std::array<Color, c_num_rim_groups> rim_group_colors = std::to_array<Color>({
             Color{0.95f, 0.4f, 0.0f, 1.0f},
-            Color{0.95f, 0.2f, 0.0f, 0.25f},
+            Color{0.95f, 0.2f, 0.0f, 0.4f},
         });
         Vec2 rim_thickness_in_pixels = {1.0f, 1.0f};
 
