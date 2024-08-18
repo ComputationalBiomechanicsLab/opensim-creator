@@ -56,7 +56,7 @@ private:
 
         material_.set<Vec2>("uRescale", {1.0f, 1.0f});
         material_.set<Vec2>("uOffset", {});
-        material_.set_int("uNumIterations", num_iterations_);
+        material_.set<int>("uNumIterations", num_iterations_);
         graphics::draw(quad_mesh_, identity<Transform>(), material_, camera_);
         camera_.set_pixel_rect(main_viewport_workspace_screenspace_rect_);
         camera_.render_to_screen();

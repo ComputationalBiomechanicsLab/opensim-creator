@@ -68,11 +68,11 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/PBR/lighting_textured/PBR.vert"),
             loader.slurp("oscar_learnopengl/shaders/PBR/lighting_textured/PBR.frag"),
         }};
-        rv.set_texture("uAlbedoMap", albedo);
-        rv.set_texture("uNormalMap", normal);
-        rv.set_texture("uMetallicMap", metallic);
-        rv.set_texture("uRoughnessMap", roughness);
-        rv.set_texture("uAOMap", ao);
+        rv.set("uAlbedoMap", albedo);
+        rv.set("uNormalMap", normal);
+        rv.set("uMetallicMap", metallic);
+        rv.set("uRoughnessMap", roughness);
+        rv.set("uAOMap", ao);
         rv.set_array<Vec3>("uLightWorldPositions", c_light_positions);
         rv.set_array<Vec3>("uLightRadiances", c_light_radiances);
         return rv;

@@ -12,6 +12,7 @@
 #include <oscar/Utils/CopyOnUpdPtr.h>
 #include <oscar/Utils/StringName.h>
 
+#include <concepts>
 #include <cstdint>
 #include <iosfwd>
 #include <optional>
@@ -31,101 +32,81 @@ namespace osc
         void clear();
         [[nodiscard]] bool empty() const;
 
-        // templated methods (specialized below for supported types)
+        template<std::same_as<Color>> std::optional<Color> get(std::string_view property_name) const;
+        template<std::same_as<Color>> std::optional<Color> get(const StringName& property_name) const;
+        template<std::same_as<Color>> void set(std::string_view property_name, const Color&);
+        template<std::same_as<Color>> void set(const StringName& property_name, const Color&);
+        template<std::same_as<Color>> std::optional<std::span<const Color>> get_array(std::string_view property_name) const;
+        template<std::same_as<Color>> std::optional<std::span<const Color>> get_array(const StringName& property_name) const;
+        template<std::same_as<Color>> void set_array(std::string_view property_name, std::span<const Color>);
+        template<std::same_as<Color>> void set_array(const StringName& property_name, std::span<const Color>);
 
-        template<typename T> std::optional<T> get(std::string_view property_name) const;
-        template<typename T> std::optional<T> get(const StringName& property_name) const;
-        template<typename T> void set(std::string_view property_name, const T& value);
-        template<typename T> void set(const StringName& property_name, const T& value);
+        template<std::same_as<float>> std::optional<float> get(std::string_view property_name) const;
+        template<std::same_as<float>> std::optional<float> get(const StringName& property_name) const;
+        template<std::same_as<float>> void set(std::string_view property_name, const float&);
+        template<std::same_as<float>> void set(const StringName& property_name, const float&);
+        template<std::same_as<float>> std::optional<std::span<const float>> get_array(std::string_view property_name) const;
+        template<std::same_as<float>> std::optional<std::span<const float>> get_array(const StringName& property_name) const;
+        template<std::same_as<float>> void set_array(std::string_view property_name, std::span<const float>);
+        template<std::same_as<float>> void set_array(const StringName& property_name, std::span<const float>);
 
-        template<typename T> std::optional<std::span<const T>> get_array(std::string_view property_name) const;
-        template<typename T> std::optional<std::span<const T>> get_array(const StringName& property_name) const;
-        template<typename T> void set_array(std::string_view property_name, std::span<const T>);
-        template<typename T> void set_array(const StringName& property_name, std::span<const T>);
+        template<std::same_as<Vec2>> std::optional<Vec2> get(std::string_view property_name) const;
+        template<std::same_as<Vec2>> std::optional<Vec2> get(const StringName& property_name) const;
+        template<std::same_as<Vec2>> void set(std::string_view property_name, const Vec2&);
+        template<std::same_as<Vec2>> void set(const StringName& property_name, const Vec2&);
 
-        // template specializations
+        template<std::same_as<Vec3>> std::optional<Vec3> get(std::string_view property_name) const;
+        template<std::same_as<Vec3>> std::optional<Vec3> get(const StringName& property_name) const;
+        template<std::same_as<Vec3>> void set(std::string_view property_name, const Vec3&);
+        template<std::same_as<Vec3>> void set(const StringName& property_name, const Vec3&);
+        template<std::same_as<Vec3>> std::optional<std::span<const Vec3>> get_array(std::string_view property_name) const;
+        template<std::same_as<Vec3>> std::optional<std::span<const Vec3>> get_array(const StringName& property_name) const;
+        template<std::same_as<Vec3>> void set_array(std::string_view property_name, std::span<const Vec3>);
+        template<std::same_as<Vec3>> void set_array(const StringName& property_name, std::span<const Vec3>);
 
-        // `Color` getters/setters
-        template<> std::optional<Color> get<Color>(std::string_view property_name) const;
-        template<> std::optional<Color> get<Color>(const StringName& property_name) const;
-        template<> void set<Color>(std::string_view property_name, const Color&);
-        template<> void set<Color>(const StringName& property_name, const Color&);
-        template<> std::optional<std::span<const Color>> get_array(std::string_view property_name) const;
-        template<> std::optional<std::span<const Color>> get_array(const StringName& property_name) const;
-        template<> void set_array(std::string_view property_name, std::span<const Color>);
-        template<> void set_array(const StringName& property_name, std::span<const Color>);
+        template<std::same_as<Vec4>> std::optional<Vec4> get(std::string_view property_name) const;
+        template<std::same_as<Vec4>> std::optional<Vec4> get(const StringName& property_name) const;
+        template<std::same_as<Vec4>> void set(std::string_view property_name, const Vec4&);
+        template<std::same_as<Vec4>> void set(const StringName& property_name, const Vec4&);
 
-        // `float` getters/setters
-        template<> std::optional<float> get<float>(std::string_view property_name) const;
-        template<> std::optional<float> get<float>(const StringName& property_name) const;
-        template<> void set<float>(std::string_view property_name, const float&);
-        template<> void set<float>(const StringName& property_name, const float&);
-        template<> std::optional<std::span<const float>> get_array(std::string_view property_name) const;
-        template<> std::optional<std::span<const float>> get_array(const StringName& property_name) const;
-        template<> void set_array(std::string_view property_name, std::span<const float>);
-        template<> void set_array(const StringName& property_name, std::span<const float>);
+        template<std::same_as<Mat3>> std::optional<Mat3> get(std::string_view property_name) const;
+        template<std::same_as<Mat3>> std::optional<Mat3> get(const StringName& property_name) const;
+        template<std::same_as<Mat3>> void set(std::string_view property_name, const Mat3&);
+        template<std::same_as<Mat3>> void set(const StringName& property_name, const Mat3&);
 
-        // `Vec2` getters/setters
-        template<> std::optional<Vec2> get<Vec2>(std::string_view property_name) const;
-        template<> std::optional<Vec2> get<Vec2>(const StringName& property_name) const;
-        template<> void set<Vec2>(std::string_view property_name, const Vec2&);
-        template<> void set<Vec2>(const StringName& property_name, const Vec2&);
+        template<std::same_as<Mat4>> std::optional<Mat4> get(std::string_view property_name) const;
+        template<std::same_as<Mat4>> std::optional<Mat4> get(const StringName& property_name) const;
+        template<std::same_as<Mat4>> void set(std::string_view, const Mat4&);
+        template<std::same_as<Mat4>> void set(const StringName& property_name, const Mat4&);
+        template<std::same_as<Mat4>> std::optional<std::span<const Mat4>> get_array(std::string_view property_name) const;
+        template<std::same_as<Mat4>> std::optional<std::span<const Mat4>> get_array(const StringName& property_name) const;
+        template<std::same_as<Mat4>> void set_array(std::string_view property_name, std::span<const Mat4>);
+        template<std::same_as<Mat4>> void set_array(const StringName& property_name, std::span<const Mat4>);
 
-        // `Vec3` getters/setters
-        template<> std::optional<Vec3> get<Vec3>(std::string_view property_name) const;
-        template<> std::optional<Vec3> get<Vec3>(const StringName& property_name) const;
-        template<> void set<Vec3>(std::string_view property_name, const Vec3&);
-        template<> void set<Vec3>(const StringName& property_name, const Vec3&);
-        template<> std::optional<std::span<const Vec3>> get_array<Vec3>(std::string_view property_name) const;
-        template<> std::optional<std::span<const Vec3>> get_array<Vec3>(const StringName& property_name) const;
-        template<> void set_array<Vec3>(std::string_view property_name, std::span<const Vec3>);
-        template<> void set_array<Vec3>(const StringName& property_name, std::span<const Vec3>);
+        template<std::same_as<int>> std::optional<int32_t> get(std::string_view property_name) const;
+        template<std::same_as<int>> std::optional<int32_t> get(const StringName& property_name) const;
+        template<std::same_as<int>> void set(std::string_view property_name, const int&);
+        template<std::same_as<int>> void set(const StringName& property_name, const int&);
 
-        // `Vec4` getters/setters
-        template<> std::optional<Vec4> get<Vec4>(std::string_view property_name) const;
-        template<> std::optional<Vec4> get<Vec4>(const StringName& property_name) const;
-        template<> void set<Vec4>(std::string_view property_name, const Vec4&);
-        template<> void set<Vec4>(const StringName& property_name, const Vec4&);
+        template<std::same_as<bool>> std::optional<bool> get(std::string_view property_name) const;
+        template<std::same_as<bool>> std::optional<bool> get(const StringName& property_name) const;
+        template<std::same_as<bool>> void set(std::string_view property_name, bool);
+        template<std::same_as<bool>> void set(const StringName& property_name, bool);
 
-        std::optional<Mat3> get_mat3(std::string_view property_name) const;
-        std::optional<Mat3> get_mat3(const StringName& property_name) const;
-        void set_mat3(std::string_view property_name, const Mat3&);
-        void set_mat3(const StringName& property_name, const Mat3&);
+        template<std::same_as<Texture2D>> std::optional<Texture2D> get(std::string_view property_name) const;
+        template<std::same_as<Texture2D>> std::optional<Texture2D> get(const StringName& property_name) const;
+        template<std::same_as<Texture2D>> void set(std::string_view property_name, const Texture2D&);
+        template<std::same_as<Texture2D>> void set(const StringName& property_name, const Texture2D&);
 
-        std::optional<Mat4> get_mat4(std::string_view property_name) const;
-        std::optional<Mat4> get_mat4(const StringName& property_name) const;
-        void set_mat4(std::string_view, const Mat4&);
-        void set_mat4(const StringName& property_name, const Mat4&);
+        template<std::same_as<RenderTexture>> std::optional<RenderTexture> get(std::string_view property_name) const;
+        template<std::same_as<RenderTexture>> std::optional<RenderTexture> get(const StringName& property_name) const;
+        template<std::same_as<RenderTexture>> void set(std::string_view property_name, const RenderTexture&);
+        template<std::same_as<RenderTexture>> void set(const StringName& property_name, const RenderTexture&);
 
-        std::optional<std::span<const Mat4>> get_mat4_array(std::string_view property_name) const;
-        std::optional<std::span<const Mat4>> get_mat4_array(const StringName& property_name) const;
-        void set_mat4_array(std::string_view property_name, std::span<const Mat4>);
-        void set_mat4_array(const StringName& property_name, std::span<const Mat4>);
-
-        std::optional<int32_t> get_int(std::string_view property_name) const;
-        std::optional<int32_t> get_int(const StringName& property_name) const;
-        void set_int(std::string_view property_name, int32_t);
-        void set_int(const StringName& property_name, int32_t);
-
-        std::optional<bool> get_bool(std::string_view property_name) const;
-        std::optional<bool> get_bool(const StringName& property_name) const;
-        void set_bool(std::string_view property_name, bool);
-        void set_bool(const StringName& property_name, bool);
-
-        std::optional<Texture2D> get_texture(std::string_view property_name) const;
-        std::optional<Texture2D> get_texture(const StringName& property_name) const;
-        void set_texture(std::string_view property_name, const Texture2D&);
-        void set_texture(const StringName& property_name, const Texture2D&);
-
-        std::optional<RenderTexture> get_render_texture(std::string_view property_name) const;
-        std::optional<RenderTexture> get_render_texture(const StringName& property_name) const;
-        void set_render_texture(std::string_view property_name, RenderTexture);
-        void set_render_texture(const StringName& property_name, RenderTexture);
-
-        std::optional<Cubemap> get_cubemap(std::string_view property_name) const;
-        std::optional<Cubemap> get_cubemap(const StringName& property_name) const;
-        void set_cubemap(std::string_view property_name, Cubemap);
-        void set_cubemap(const StringName& property_name, Cubemap);
+        template<std::same_as<Cubemap>> std::optional<Cubemap> get(std::string_view property_name) const;
+        template<std::same_as<Cubemap>> std::optional<Cubemap> get(const StringName& property_name) const;
+        template<std::same_as<Cubemap>> void set(std::string_view property_name, const Cubemap&);
+        template<std::same_as<Cubemap>> void set(const StringName& property_name, const Cubemap&);
 
         void unset(std::string_view property_name);
         void unset(const StringName& property_name);

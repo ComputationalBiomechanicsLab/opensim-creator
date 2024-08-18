@@ -240,8 +240,7 @@ namespace
 
         if (const auto* texture = lookup_or_nullptr(bd.texures_allocated_this_frame, to_uid(draw_command.GetTexID()))) {
             std::visit(Overload{
-                [&bd](const Texture2D& t) { bd.ui_material.set_texture("uTexture", t); },
-                [&bd](const RenderTexture& t) { bd.ui_material.set_render_texture("uTexture", t); },
+                [&bd](const auto& texture) { bd.ui_material.set("uTexture", texture); },
             }, *texture);
             graphics::draw(mesh, identity<Mat4>(), bd.ui_material, bd.camera, std::nullopt, idx);
             bd.camera.render_to_screen();

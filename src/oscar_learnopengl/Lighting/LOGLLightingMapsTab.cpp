@@ -39,8 +39,8 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/Lighting/LightingMaps.vert"),
             loader.slurp("oscar_learnopengl/shaders/Lighting/LightingMaps.frag"),
         }};
-        rv.set_texture("uMaterialDiffuse", diffuse_map);
-        rv.set_texture("uMaterialSpecular", specular_map);
+        rv.set("uMaterialDiffuse", diffuse_map);
+        rv.set("uMaterialSpecular", specular_map);
         return rv;
     }
 }

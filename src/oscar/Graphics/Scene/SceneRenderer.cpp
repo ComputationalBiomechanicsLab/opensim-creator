@@ -147,8 +147,8 @@ public:
         depth_writer_material_{cache.get_shader("oscar/shaders/SceneRenderer/DepthMap.vert", "oscar/shaders/SceneRenderer/DepthMap.frag")},
         quad_mesh_{cache.quad_mesh()}
     {
-        scene_floor_material_.set_texture("uDiffuseTexture", chequered_texture_);
-        scene_floor_material_.set<Vec2>("uTextureScale", {200.0f, 200.0f});
+        scene_floor_material_.set("uDiffuseTexture", chequered_texture_);
+        scene_floor_material_.set("uTextureScale", Vec2{200.0f, 200.0f});
         scene_floor_material_.set_transparent(true);
 
         wireframe_material_.set_color(Color::black());
@@ -178,24 +178,24 @@ public:
 
         // draw the the scene
         {
-            scene_main_material_.set<Vec3>("uViewPos", camera_.position());
-            scene_main_material_.set<Vec3>("uLightDir", params.light_direction);
-            scene_main_material_.set<Color>("uLightColor", params.light_color);
-            scene_main_material_.set<float>("uAmbientStrength", params.ambient_strength);
-            scene_main_material_.set<float>("uDiffuseStrength", params.diffuse_strength);
-            scene_main_material_.set<float>("uSpecularStrength", params.specular_strength);
-            scene_main_material_.set<float>("uShininess", params.specular_shininess);
-            scene_main_material_.set<float>("uNear", camera_.near_clipping_plane());
-            scene_main_material_.set<float>("uFar", camera_.far_clipping_plane());
+            scene_main_material_.set("uViewPos", camera_.position());
+            scene_main_material_.set("uLightDir", params.light_direction);
+            scene_main_material_.set("uLightColor", params.light_color);
+            scene_main_material_.set("uAmbientStrength", params.ambient_strength);
+            scene_main_material_.set("uDiffuseStrength", params.diffuse_strength);
+            scene_main_material_.set("uSpecularStrength", params.specular_strength);
+            scene_main_material_.set("uShininess", params.specular_shininess);
+            scene_main_material_.set("uNear", camera_.near_clipping_plane());
+            scene_main_material_.set("uFar", camera_.far_clipping_plane());
 
             // supply shadowmap, if applicable
             if (maybe_shadowmap) {
-                scene_main_material_.set_bool("uHasShadowMap", true);
-                scene_main_material_.set_mat4("uLightSpaceMat", maybe_shadowmap->lightspace_mat);
-                scene_main_material_.set_render_texture("uShadowMapTexture", maybe_shadowmap->shadow_map);
+                scene_main_material_.set("uHasShadowMap", true);
+                scene_main_material_.set("uLightSpaceMat", maybe_shadowmap->lightspace_mat);
+                scene_main_material_.set("uShadowMapTexture", maybe_shadowmap->shadow_map);
             }
             else {
-                scene_main_material_.set_bool("uHasShadowMap", false);
+                scene_main_material_.set("uHasShadowMap", false);
             }
 
             Material transparent_material = scene_main_material_;
@@ -254,24 +254,24 @@ public:
 
             // if a floor is requested, draw a textured floor
             if (params.draw_floor) {
-                scene_floor_material_.set<Vec3>("uViewPos", camera_.position());
-                scene_floor_material_.set<Vec3>("uLightDir", params.light_direction);
-                scene_floor_material_.set<Color>("uLightColor", params.light_color);
-                scene_floor_material_.set<float>("uAmbientStrength", 0.7f);
-                scene_floor_material_.set<float>("uDiffuseStrength", 0.4f);
-                scene_floor_material_.set<float>("uSpecularStrength", 0.4f);
-                scene_floor_material_.set<float>("uShininess", 8.0f);
-                scene_floor_material_.set<float>("uNear", camera_.near_clipping_plane());
-                scene_floor_material_.set<float>("uFar", camera_.far_clipping_plane());
+                scene_floor_material_.set("uViewPos", camera_.position());
+                scene_floor_material_.set("uLightDir", params.light_direction);
+                scene_floor_material_.set("uLightColor", params.light_color);
+                scene_floor_material_.set("uAmbientStrength", 0.7f);
+                scene_floor_material_.set("uDiffuseStrength", 0.4f);
+                scene_floor_material_.set("uSpecularStrength", 0.4f);
+                scene_floor_material_.set("uShininess", 8.0f);
+                scene_floor_material_.set("uNear", camera_.near_clipping_plane());
+                scene_floor_material_.set("uFar", camera_.far_clipping_plane());
 
                 // supply shadowmap, if applicable
                 if (maybe_shadowmap) {
-                    scene_floor_material_.set_bool("uHasShadowMap", true);
-                    scene_floor_material_.set_mat4("uLightSpaceMat", maybe_shadowmap->lightspace_mat);
-                    scene_floor_material_.set_render_texture("uShadowMapTexture", maybe_shadowmap->shadow_map);
+                    scene_floor_material_.set("uHasShadowMap", true);
+                    scene_floor_material_.set("uLightSpaceMat", maybe_shadowmap->lightspace_mat);
+                    scene_floor_material_.set("uShadowMapTexture", maybe_shadowmap->shadow_map);
                 }
                 else {
-                    scene_floor_material_.set_bool("uHasShadowMap", false);
+                    scene_floor_material_.set("uHasShadowMap", false);
                 }
 
                 const Transform t = calc_floor_transform(params.floor_location, params.fixup_scale_factor);
@@ -405,13 +405,13 @@ private:
         //
         // the off-screen texture is rendered as a quad via an edge-detection kernel
         // that transforms the solid shapes into "rims"
-        edge_detection_material_.set_render_texture("uScreenTexture", rims_rendertexture_);
+        edge_detection_material_.set("uScreenTexture", rims_rendertexture_);
         static_assert(SceneRendererParams::num_rim_groups() == 2);
-        edge_detection_material_.set<Color>("uRim0Color", params.rim_group_colors[0]);
-        edge_detection_material_.set<Color>("uRim1Color", params.rim_group_colors[1]);
-        edge_detection_material_.set<Vec2>("uRimThickness", 0.5f*rim_ndc_thickness);
-        edge_detection_material_.set<Vec2>("uTextureOffset", rim_rect_uv.p1);
-        edge_detection_material_.set<Vec2>("uTextureScale", dimensions_of(rim_rect_uv));
+        edge_detection_material_.set("uRim0Color", params.rim_group_colors[0]);
+        edge_detection_material_.set("uRim1Color", params.rim_group_colors[1]);
+        edge_detection_material_.set("uRimThickness", 0.5f*rim_ndc_thickness);
+        edge_detection_material_.set("uTextureOffset", rim_rect_uv.p1);
+        edge_detection_material_.set("uTextureScale", dimensions_of(rim_rect_uv));
 
         // return necessary information for rendering the rims
         return RimHighlights{

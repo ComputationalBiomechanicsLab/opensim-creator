@@ -71,22 +71,22 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/Lighting/MultipleLights.frag"),
         }};
 
-        rv.set_texture("uMaterialDiffuse", diffuse_map);
-        rv.set_texture("uMaterialSpecular", specular_map);
-        rv.set<Vec3>("uDirLightDirection", { -0.2f, -1.0f, -0.3f });
-        rv.set<float>("uDirLightAmbient", 0.01f);
-        rv.set<float>("uDirLightDiffuse", 0.2f);
-        rv.set<float>("uDirLightSpecular", 0.4f);
+        rv.set("uMaterialDiffuse", diffuse_map);
+        rv.set("uMaterialSpecular", specular_map);
+        rv.set("uDirLightDirection", Vec3{-0.2f, -1.0f, -0.3f});
+        rv.set("uDirLightAmbient", 0.01f);
+        rv.set("uDirLightDiffuse", 0.2f);
+        rv.set("uDirLightSpecular", 0.4f);
 
-        rv.set<float>("uSpotLightAmbient", 0.0f);
-        rv.set<float>("uSpotLightDiffuse", 1.0f);
-        rv.set<float>("uSpotLightSpecular", 0.75f);
+        rv.set("uSpotLightAmbient", 0.0f);
+        rv.set("uSpotLightDiffuse", 1.0f);
+        rv.set("uSpotLightSpecular", 0.75f);
 
-        rv.set<float>("uSpotLightConstant", 1.0f);
-        rv.set<float>("uSpotLightLinear", 0.09f);
-        rv.set<float>("uSpotLightQuadratic", 0.032f);
-        rv.set<float>("uSpotLightCutoff", cos(45_deg));
-        rv.set<float>("uSpotLightOuterCutoff", cos(15_deg));
+        rv.set("uSpotLightConstant", 1.0f);
+        rv.set("uSpotLightLinear", 0.09f);
+        rv.set("uSpotLightQuadratic", 0.032f);
+        rv.set("uSpotLightCutoff", cos(45_deg));
+        rv.set("uSpotLightOuterCutoff", cos(15_deg));
 
         rv.set_array<Vec3>("uPointLightPos", c_point_light_positions);
         rv.set_array<float>("uPointLightConstant", c_point_light_constants);

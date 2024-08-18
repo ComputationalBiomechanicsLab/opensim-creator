@@ -68,8 +68,8 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/EquirectangularToCubemap.geom"),
             loader.slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/EquirectangularToCubemap.frag"),
         }};
-        material.set_texture("uEquirectangularMap", hdr_texture);
-        material.set_mat4_array("uShadowMatrices", calc_cubemap_view_proj_matrices(projection_matrix, Vec3{}));
+        material.set("uEquirectangularMap", hdr_texture);
+        material.set_array<Mat4>("uShadowMatrices", calc_cubemap_view_proj_matrices(projection_matrix, Vec3{}));
 
         Camera camera;
         graphics::draw(BoxGeometry{2.0f, 2.0f, 2.0f}, identity<Transform>(), material, camera);
@@ -96,8 +96,8 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/Convolution.geom"),
             loader.slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/Convolution.frag"),
         }};
-        material.set_render_texture("uEnvironmentMap", skybox);
-        material.set_mat4_array("uShadowMatrices", calc_cubemap_view_proj_matrices(capture_projection, Vec3{}));
+        material.set("uEnvironmentMap", skybox);
+        material.set_array<Mat4>("uShadowMatrices", calc_cubemap_view_proj_matrices(capture_projection, Vec3{}));
 
         Camera camera;
         graphics::draw(BoxGeometry{2.0f, 2.0f, 2.0f}, identity<Transform>(), material, camera);
@@ -156,7 +156,7 @@ private:
         pbr_material_.set<Vec3>("uCameraWorldPos", camera_.position());
         pbr_material_.set_array<Vec3>("uLightPositions", c_light_positions);
         pbr_material_.set_array<Vec3>("uLightColors", c_light_radiances);
-        pbr_material_.set_render_texture("uIrradianceMap", irradiance_map_);
+        pbr_material_.set("uIrradianceMap", irradiance_map_);
 
         draw_spheres();
         draw_lights();
@@ -194,7 +194,7 @@ private:
 
     void draw_background()
     {
-        background_material_.set_render_texture("uEnvironmentMap", projected_map_);
+        background_material_.set("uEnvironmentMap", projected_map_);
         background_material_.set_depth_function(DepthFunction::LessOrEqual);  // for skybox depth trick
         graphics::draw(cube_mesh_, identity<Transform>(), background_material_, camera_);
         camera_.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());

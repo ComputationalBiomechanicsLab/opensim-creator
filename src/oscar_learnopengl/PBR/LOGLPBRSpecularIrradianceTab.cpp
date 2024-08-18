@@ -69,8 +69,8 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/PBR/ibl_specular/EquirectangularToCubemap.geom"),
             loader.slurp("oscar_learnopengl/shaders/PBR/ibl_specular/EquirectangularToCubemap.frag"),
         }};
-        material.set_texture("uEquirectangularMap", hdr_texture);
-        material.set_mat4_array(
+        material.set("uEquirectangularMap", hdr_texture);
+        material.set_array<Mat4>(
             "uShadowMatrices",
             calc_cubemap_view_proj_matrices(projection_matrix, Vec3{})
         );
@@ -100,8 +100,8 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/PBR/ibl_specular/IrradianceConvolution.geom"),
             loader.slurp("oscar_learnopengl/shaders/PBR/ibl_specular/IrradianceConvolution.frag"),
         }};
-        material.set_render_texture("uEnvironmentMap", skybox);
-        material.set_mat4_array(
+        material.set("uEnvironmentMap", skybox);
+        material.set_array<Mat4>(
             "uShadowMatrices",
             calc_cubemap_view_proj_matrices(capture_projection, Vec3{})
         );
@@ -134,8 +134,8 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/PBR/ibl_specular/Prefilter.geom"),
             loader.slurp("oscar_learnopengl/shaders/PBR/ibl_specular/Prefilter.frag"),
         }};
-        material.set_render_texture("uEnvironmentMap", environment_map);
-        material.set_mat4_array("uShadowMatrices", calc_cubemap_view_proj_matrices(capture_projection, Vec3{}));
+        material.set("uEnvironmentMap", environment_map);
+        material.set_array<Mat4>("uShadowMatrices", calc_cubemap_view_proj_matrices(capture_projection, Vec3{}));
 
         Camera camera;
 
@@ -249,13 +249,13 @@ private:
 
     void draw_3D_render()
     {
-        pbr_material_.set<Vec3>("uCameraWorldPos", camera_.position());
+        pbr_material_.set("uCameraWorldPos", camera_.position());
         pbr_material_.set_array<Vec3>("uLightPositions", c_light_positions);
         pbr_material_.set_array<Vec3>("uLightColors", c_light_radiances);
-        pbr_material_.set_render_texture("uIrradianceMap", irradiance_map_);
-        pbr_material_.set_cubemap("uPrefilterMap", prefilter_map_);
-        pbr_material_.set<float>("uMaxReflectionLOD", static_cast<float>(std::bit_width(static_cast<size_t>(prefilter_map_.width()) - 1)));
-        pbr_material_.set_texture("uBRDFLut", brdf_lookup_);
+        pbr_material_.set("uIrradianceMap", irradiance_map_);
+        pbr_material_.set("uPrefilterMap", prefilter_map_);
+        pbr_material_.set("uMaxReflectionLOD", static_cast<float>(std::bit_width(static_cast<size_t>(prefilter_map_.width()) - 1)));
+        pbr_material_.set("uBRDFLut", brdf_lookup_);
 
         draw_spheres();
         draw_lights();
@@ -298,7 +298,7 @@ private:
 
     void draw_background()
     {
-        background_material_.set_render_texture("uEnvironmentMap", projected_map_);
+        background_material_.set("uEnvironmentMap", projected_map_);
         background_material_.set_depth_function(DepthFunction::LessOrEqual);  // for skybox depth trick
         graphics::draw(cube_mesh_, identity<Transform>(), background_material_, camera_);
         camera_.set_clear_flags(CameraClearFlags::Nothing);

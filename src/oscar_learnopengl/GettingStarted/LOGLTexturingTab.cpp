@@ -37,7 +37,7 @@ namespace
             );
             container.set_wrap_mode(TextureWrapMode::Clamp);
 
-            rv.set_texture("uTexture1", container);
+            rv.set("uTexture1", container);
         }
 
         // set uTexture2
@@ -48,7 +48,7 @@ namespace
                 ImageLoadingFlags::FlipVertically
             );
 
-            rv.set_texture("uTexture2", face);
+            rv.set("uTexture2", face);
         }
 
         return rv;

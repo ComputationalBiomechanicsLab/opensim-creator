@@ -211,8 +211,8 @@ private:
 
     void render_3d_scene_to_gbuffers()
     {
-        gbuffer_.material.set_texture("uDiffuseMap", diffuse_map_);
-        gbuffer_.material.set_texture("uSpecularMap", specular_map_);
+        gbuffer_.material.set("uDiffuseMap", diffuse_map_);
+        gbuffer_.material.set("uSpecularMap", specular_map_);
 
         // render scene cubes
         for (const Vec3& object_position : c_object_positions) {
@@ -248,14 +248,14 @@ private:
 
     void render_lighting_pass()
     {
-        light_pass_.material.set_render_texture("uPositionTex", gbuffer_.position);
-        light_pass_.material.set_render_texture("uNormalTex", gbuffer_.normal);
-        light_pass_.material.set_render_texture("uAlbedoTex", gbuffer_.albedo);
+        light_pass_.material.set("uPositionTex", gbuffer_.position);
+        light_pass_.material.set("uNormalTex", gbuffer_.normal);
+        light_pass_.material.set("uAlbedoTex", gbuffer_.albedo);
         light_pass_.material.set_array<Vec3>("uLightPositions", light_positions_);
         light_pass_.material.set_array<Vec3>("uLightColors", light_colors_);
-        light_pass_.material.set<float>("uLightLinear", 0.7f);
-        light_pass_.material.set<float>("uLightQuadratic", 1.8f);
-        light_pass_.material.set<Vec3>("uViewPos", camera_.position());
+        light_pass_.material.set("uLightLinear", 0.7f);
+        light_pass_.material.set("uLightQuadratic", 1.8f);
+        light_pass_.material.set("uViewPos", camera_.position());
 
         graphics::draw(quad_mesh_, identity<Transform>(), light_pass_.material, camera_);
 

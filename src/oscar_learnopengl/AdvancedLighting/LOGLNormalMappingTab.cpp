@@ -70,8 +70,8 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/NormalMapping.vert"),
             loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/NormalMapping.frag"),
         }};
-        rv.set_texture("uDiffuseMap", diffuse_map);
-        rv.set_texture("uNormalMap", normal_map);
+        rv.set("uDiffuseMap", diffuse_map);
+        rv.set("uNormalMap", normal_map);
 
         return rv;
     }
@@ -126,7 +126,7 @@ private:
         {
             normal_mapping_material_.set<Vec3>("uLightWorldPos", light_transform_.position);
             normal_mapping_material_.set<Vec3>("uViewWorldPos", camera_.position());
-            normal_mapping_material_.set_bool("uEnableNormalMapping", normal_mapping_enabled_);
+            normal_mapping_material_.set<bool>("uEnableNormalMapping", normal_mapping_enabled_);
             graphics::draw(quad_mesh_, quad_transform_, normal_mapping_material_, camera_);
         }
 

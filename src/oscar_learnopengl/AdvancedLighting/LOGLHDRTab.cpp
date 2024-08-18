@@ -59,8 +59,8 @@ namespace
         }};
         rv.set_array<Vec3>("uSceneLightPositions", c_light_positions);
         rv.set_array<Color>("uSceneLightColors", GetLightColors());
-        rv.set_texture("uDiffuseTexture", wood_texture);
-        rv.set_bool("uInverseNormals", true);
+        rv.set("uDiffuseTexture", wood_texture);
+        rv.set<bool>("uInverseNormals", true);
         return rv;
     }
 
@@ -131,9 +131,9 @@ private:
         ortho_camera.set_projection_matrix_override(identity<Mat4>());
         ortho_camera.set_view_matrix_override(identity<Mat4>());
 
-        tonemap_material_.set_render_texture("uTexture", scene_hdr_texture_);
-        tonemap_material_.set_bool("uUseTonemap", use_tonemap_);
-        tonemap_material_.set<float>("uExposure", exposure_);
+        tonemap_material_.set("uTexture", scene_hdr_texture_);
+        tonemap_material_.set("uUseTonemap", use_tonemap_);
+        tonemap_material_.set("uExposure", exposure_);
 
         graphics::draw(quad_mesh_, identity<Transform>(), tonemap_material_, ortho_camera);
         ortho_camera.render_to_screen();

@@ -73,10 +73,10 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/ParallaxMapping.vert"),
             loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/ParallaxMapping.frag"),
         }};
-        rv.set_texture("uDiffuseMap", diffuse_map);
-        rv.set_texture("uNormalMap", normal_map);
-        rv.set_texture("uDisplacementMap", displacement_map);
-        rv.set<float>("uHeightScale", 0.1f);
+        rv.set("uDiffuseMap", diffuse_map);
+        rv.set("uNormalMap", normal_map);
+        rv.set("uDisplacementMap", displacement_map);
+        rv.set("uHeightScale", 0.1f);
         return rv;
     }
 
@@ -121,7 +121,7 @@ private:
         {
             parallax_mapping_material_.set<Vec3>("uLightWorldPos", light_transform_.position);
             parallax_mapping_material_.set<Vec3>("uViewWorldPos", camera_.position());
-            parallax_mapping_material_.set_bool("uEnableMapping", parallax_mapping_enabled_);
+            parallax_mapping_material_.set<bool>("uEnableMapping", parallax_mapping_enabled_);
             graphics::draw(quad_mesh_, quad_transform_, parallax_mapping_material_, camera_);
         }
 

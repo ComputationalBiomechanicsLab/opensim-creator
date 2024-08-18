@@ -119,20 +119,20 @@ private:
 
         // cubes
         {
-            opaque_material_.set_texture("uTexture", marble_texture_);
+            opaque_material_.set("uTexture", marble_texture_);
             graphics::draw(cube_mesh_, {.position = {-1.0f, 0.0f, -1.0f}}, opaque_material_, camera_);
             graphics::draw(cube_mesh_, {.position = { 1.0f, 0.0f, -1.0f}}, opaque_material_, camera_);
         }
 
         // floor
         {
-            opaque_material_.set_texture("uTexture", metal_texture_);
+            opaque_material_.set("uTexture", metal_texture_);
             graphics::draw(plane_mesh_, identity<Transform>(), opaque_material_, camera_);
         }
 
         // windows
         {
-            blending_material_.set_texture("uTexture", window_texture_);
+            blending_material_.set("uTexture", window_texture_);
             for (const Vec3& window_location : c_window_locations) {
                 graphics::draw(transparent_mesh_, {.position = window_location}, blending_material_, camera_);
             }

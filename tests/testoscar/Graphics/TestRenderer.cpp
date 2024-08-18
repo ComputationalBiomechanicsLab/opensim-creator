@@ -720,25 +720,25 @@ TEST_F(Renderer, MaterialGetVec4OnNewMaterialReturnsEmptyOptional)
 TEST_F(Renderer, MaterialGetMat3OnNewMaterialReturnsEmptyOptional)
 {
     Material mat = GenerateMaterial();
-    ASSERT_FALSE(mat.get_mat3("someKey"));
+    ASSERT_FALSE(mat.get<Mat3>("someKey"));
 }
 
 TEST_F(Renderer, MaterialGetMat4OnNewMaterialReturnsEmptyOptional)
 {
     Material mat = GenerateMaterial();
-    ASSERT_FALSE(mat.get_mat4("someKey"));
+    ASSERT_FALSE(mat.get<Mat4>("someKey"));
 }
 
 TEST_F(Renderer, MaterialGetIntOnNewMaterialReturnsEmptyOptional)
 {
     Material mat = GenerateMaterial();
-    ASSERT_FALSE(mat.get_int("someKey"));
+    ASSERT_FALSE(mat.get<int>("someKey"));
 }
 
 TEST_F(Renderer, MaterialGetBoolOnNewMaterialReturnsEmptyOptional)
 {
     Material mat = GenerateMaterial();
-    ASSERT_FALSE(mat.get_bool("someKey"));
+    ASSERT_FALSE(mat.get<bool>("someKey"));
 }
 
 TEST_F(Renderer, MaterialSetFloatOnMaterialCausesGetFloatToReturnTheProvidedValue)
@@ -853,9 +853,9 @@ TEST_F(Renderer, MaterialSetMat3OnMaterialCausesGetMat3ToReturnTheProvidedValue)
     std::string key = "someKey";
     Mat3 value = generate<Mat3>();
 
-    mat.set_mat3(key, value);
+    mat.set<Mat3>(key, value);
 
-    ASSERT_EQ(*mat.get_mat3(key), value);
+    ASSERT_EQ(*mat.get<Mat3>(key), value);
 }
 
 TEST_F(Renderer, MaterialSetMat4OnMaterialCausesGetMat4ToReturnTheProvidedValue)
@@ -865,15 +865,15 @@ TEST_F(Renderer, MaterialSetMat4OnMaterialCausesGetMat4ToReturnTheProvidedValue)
     std::string key = "someKey";
     Mat4 value = generate<Mat4>();
 
-    mat.set_mat4(key, value);
+    mat.set<Mat4>(key, value);
 
-    ASSERT_EQ(*mat.get_mat4(key), value);
+    ASSERT_EQ(*mat.get<Mat4>(key), value);
 }
 
 TEST_F(Renderer, MaterialGetMat4ArrayInitiallyReturnsNothing)
 {
     Material mat = GenerateMaterial();
-    ASSERT_FALSE(mat.get_mat4_array("someKey").has_value());
+    ASSERT_FALSE(mat.get_array<Mat4>("someKey").has_value());
 }
 
 TEST_F(Renderer, MaterialSetMat4ArrayCausesGetMat4ArrayToReturnSameSequenceOfValues)
@@ -886,9 +886,9 @@ TEST_F(Renderer, MaterialSetMat4ArrayCausesGetMat4ArrayToReturnSameSequenceOfVal
     });
 
     Material mat = GenerateMaterial();
-    mat.set_mat4_array("someKey", mat4Array);
+    mat.set_array<Mat4>("someKey", mat4Array);
 
-    std::optional<std::span<const Mat4>> rv = mat.get_mat4_array("someKey");
+    std::optional<std::span<const Mat4>> rv = mat.get_array<Mat4>("someKey");
     ASSERT_TRUE(rv.has_value());
     ASSERT_EQ(mat4Array.size(), rv->size());
     ASSERT_TRUE(std::equal(mat4Array.begin(), mat4Array.end(), rv->begin()));
@@ -901,9 +901,9 @@ TEST_F(Renderer, MaterialSetIntOnMaterialCausesGetIntToReturnTheProvidedValue)
     std::string key = "someKey";
     int value = generate<int>();
 
-    mat.set_int(key, value);
+    mat.set<int>(key, value);
 
-    ASSERT_EQ(*mat.get_int(key), value);
+    ASSERT_EQ(*mat.get<int>(key), value);
 }
 
 TEST_F(Renderer, MaterialSetBoolOnMaterialCausesGetBoolToReturnTheProvidedValue)
@@ -913,9 +913,9 @@ TEST_F(Renderer, MaterialSetBoolOnMaterialCausesGetBoolToReturnTheProvidedValue)
     std::string key = "someKey";
     bool value = generate<bool>();
 
-    mat.set_bool(key, value);
+    mat.set<bool>(key, value);
 
-    ASSERT_EQ(*mat.get_bool(key), value);
+    ASSERT_EQ(*mat.get<bool>(key), value);
 }
 
 TEST_F(Renderer, MaterialSetTextureOnMaterialCausesGetTextureToReturnTheTexture)
@@ -925,11 +925,11 @@ TEST_F(Renderer, MaterialSetTextureOnMaterialCausesGetTextureToReturnTheTexture)
     std::string key = "someKey";
     Texture2D t = GenerateTexture();
 
-    ASSERT_FALSE(mat.get_texture(key));
+    ASSERT_FALSE(mat.get<Texture2D>(key));
 
-    mat.set_texture(key, t);
+    mat.set(key, t);
 
-    ASSERT_TRUE(mat.get_texture(key));
+    ASSERT_TRUE(mat.get<Texture2D>(key));
 }
 
 TEST_F(Renderer, MaterialUnsetTextureOnMaterialCausesGetTextureToReturnNothing)
@@ -939,15 +939,15 @@ TEST_F(Renderer, MaterialUnsetTextureOnMaterialCausesGetTextureToReturnNothing)
     std::string key = "someKey";
     Texture2D t = GenerateTexture();
 
-    ASSERT_FALSE(mat.get_texture(key));
+    ASSERT_FALSE(mat.get<Texture2D>(key));
 
-    mat.set_texture(key, t);
+    mat.set(key, t);
 
-    ASSERT_TRUE(mat.get_texture(key));
+    ASSERT_TRUE(mat.get<Texture2D>(key));
 
     mat.unset(key);
 
-    ASSERT_FALSE(mat.get_texture(key));
+    ASSERT_FALSE(mat.get<Texture2D>(key));
 }
 
 TEST_F(Renderer, MaterialSetRenderTextureCausesGetRenderTextureToReturnTheTexture)
@@ -956,11 +956,11 @@ TEST_F(Renderer, MaterialSetRenderTextureCausesGetRenderTextureToReturnTheTextur
     RenderTexture renderTex = GenerateRenderTexture();
     std::string key = "someKey";
 
-    ASSERT_FALSE(mat.get_render_texture(key));
+    ASSERT_FALSE(mat.get<RenderTexture>(key));
 
-    mat.set_render_texture(key, renderTex);
+    mat.set(key, renderTex);
 
-    ASSERT_EQ(*mat.get_render_texture(key), renderTex);
+    ASSERT_EQ(*mat.get<RenderTexture>(key), renderTex);
 }
 
 TEST_F(Renderer, MaterialSetRenderTextureFollowedByUnsetClearsTheRenderTexture)
@@ -969,68 +969,68 @@ TEST_F(Renderer, MaterialSetRenderTextureFollowedByUnsetClearsTheRenderTexture)
     RenderTexture renderTex = GenerateRenderTexture();
     std::string key = "someKey";
 
-    ASSERT_FALSE(mat.get_render_texture(key));
+    ASSERT_FALSE(mat.get<RenderTexture>(key));
 
-    mat.set_render_texture(key, renderTex);
+    mat.set(key, renderTex);
 
-    ASSERT_EQ(*mat.get_render_texture(key), renderTex);
+    ASSERT_EQ(*mat.get<RenderTexture>(key), renderTex);
 
     mat.unset(key);
 
-    ASSERT_FALSE(mat.get_render_texture(key));
+    ASSERT_FALSE(mat.get<RenderTexture>(key));
 }
 
 TEST_F(Renderer, MaterialGetCubemapInitiallyReturnsNothing)
 {
     const Material mat = GenerateMaterial();
 
-    ASSERT_FALSE(mat.get_cubemap("cubemap").has_value());
+    ASSERT_FALSE(mat.get<Cubemap>("cubemap").has_value());
 }
 
 TEST_F(Renderer, MaterialGetCubemapReturnsSomethingAfterSettingCubemap)
 {
     Material mat = GenerateMaterial();
 
-    ASSERT_FALSE(mat.get_cubemap("cubemap").has_value());
+    ASSERT_FALSE(mat.get<Cubemap>("cubemap").has_value());
 
     const Cubemap cubemap{1, TextureFormat::RGBA32};
 
-    mat.set_cubemap("cubemap", cubemap);
+    mat.set("cubemap", cubemap);
 
-    ASSERT_TRUE(mat.get_cubemap("cubemap").has_value());
+    ASSERT_TRUE(mat.get<Cubemap>("cubemap").has_value());
 }
 
 TEST_F(Renderer, MaterialGetCubemapReturnsTheCubemapThatWasLastSet)
 {
     Material mat = GenerateMaterial();
 
-    ASSERT_FALSE(mat.get_cubemap("cubemap").has_value());
+    ASSERT_FALSE(mat.get<Cubemap>("cubemap").has_value());
 
     const Cubemap firstCubemap{1, TextureFormat::RGBA32};
     const Cubemap secondCubemap{2, TextureFormat::RGBA32};  // different
 
-    mat.set_cubemap("cubemap", firstCubemap);
-    ASSERT_EQ(mat.get_cubemap("cubemap"), firstCubemap);
+    mat.set<Cubemap>("cubemap", firstCubemap);
+    ASSERT_EQ(mat.get<Cubemap>("cubemap"), firstCubemap);
 
-    mat.set_cubemap("cubemap", secondCubemap);
-    ASSERT_EQ(mat.get_cubemap("cubemap"), secondCubemap);
+    mat.set<Cubemap>("cubemap", secondCubemap);
+    ASSERT_EQ(mat.get<Cubemap>("cubemap"), secondCubemap);
 }
 
 TEST_F(Renderer, MaterialUnsetCubemapClearsTheCubemap)
 {
     Material mat = GenerateMaterial();
 
-    ASSERT_FALSE(mat.get_cubemap("cubemap").has_value());
+    ASSERT_FALSE(mat.get<Cubemap>("cubemap").has_value());
 
     const Cubemap cubemap{1, TextureFormat::RGBA32};
 
-    mat.set_cubemap("cubemap", cubemap);
+    mat.set("cubemap", cubemap);
 
-    ASSERT_TRUE(mat.get_cubemap("cubemap").has_value());
+    ASSERT_TRUE(mat.get<Cubemap>("cubemap").has_value());
 
     mat.unset("cubemap");
 
-    ASSERT_FALSE(mat.get_cubemap("cubemap").has_value());
+    ASSERT_FALSE(mat.get<Cubemap>("cubemap").has_value());
 }
 
 TEST_F(Renderer, MaterialGetTransparentIsInitiallyFalse)
@@ -1302,25 +1302,25 @@ TEST_F(Renderer, MaterialPropertyBlockGetVec4ReturnsEmptyOnDefaultConstructedIns
 TEST_F(Renderer, MaterialPropertyBlockGetMat3ReturnsEmptyOnDefaultConstructedInstance)
 {
     MaterialPropertyBlock mpb;
-    ASSERT_FALSE(mpb.get_mat3("someKey"));
+    ASSERT_FALSE(mpb.get<Mat3>("someKey"));
 }
 
 TEST_F(Renderer, MaterialPropertyBlockGetMat4ReturnsEmptyOnDefaultConstructedInstance)
 {
     MaterialPropertyBlock mpb;
-    ASSERT_FALSE(mpb.get_mat4("someKey"));
+    ASSERT_FALSE(mpb.get<Mat4>("someKey"));
 }
 
 TEST_F(Renderer, MaterialPropertyBlockGetIntReturnsEmptyOnDefaultConstructedInstance)
 {
     MaterialPropertyBlock mpb;
-    ASSERT_FALSE(mpb.get_int("someKey"));
+    ASSERT_FALSE(mpb.get<int>("someKey"));
 }
 
 TEST_F(Renderer, MaterialPropertyBlockGetBoolReturnsEmptyOnDefaultConstructedInstance)
 {
     MaterialPropertyBlock mpb;
-    ASSERT_FALSE(mpb.get_bool("someKey"));
+    ASSERT_FALSE(mpb.get<bool>("someKey"));
 }
 
 TEST_F(Renderer, MaterialPropertyBlockSetFloatCausesGetterToReturnSetValue)
@@ -1370,9 +1370,9 @@ TEST_F(Renderer, MaterialPropertyBlockSetMat3CausesGetterToReturnSetValue)
 
     ASSERT_FALSE(mpb.get<Vec4>(key));
 
-    mpb.set_mat3(key, value);
-    ASSERT_TRUE(mpb.get_mat3(key));
-    ASSERT_EQ(mpb.get_mat3(key), value);
+    mpb.set<Mat3>(key, value);
+    ASSERT_TRUE(mpb.get<Mat3>(key));
+    ASSERT_EQ(mpb.get<Mat3>(key), value);
 }
 
 TEST_F(Renderer, MaterialPropertyBlockSetIntCausesGetterToReturnSetValue)
@@ -1381,11 +1381,11 @@ TEST_F(Renderer, MaterialPropertyBlockSetIntCausesGetterToReturnSetValue)
     std::string key = "someKey";
     int value = generate<int>();
 
-    ASSERT_FALSE(mpb.get_int(key));
+    ASSERT_FALSE(mpb.get<int>(key));
 
-    mpb.set_int(key, value);
-    ASSERT_TRUE(mpb.get_int(key));
-    ASSERT_EQ(mpb.get_int(key), value);
+    mpb.set<int>(key, value);
+    ASSERT_TRUE(mpb.get<int>(key));
+    ASSERT_EQ(mpb.get<int>(key), value);
 }
 
 TEST_F(Renderer, MaterialPropertyBlockSetBoolCausesGetterToReturnSetValue)
@@ -1394,11 +1394,11 @@ TEST_F(Renderer, MaterialPropertyBlockSetBoolCausesGetterToReturnSetValue)
     std::string key = "someKey";
     bool value = generate<bool>();
 
-    ASSERT_FALSE(mpb.get_bool(key));
+    ASSERT_FALSE(mpb.get<bool>(key));
 
-    mpb.set_bool(key, value);
-    ASSERT_TRUE(mpb.get_bool(key));
-    ASSERT_EQ(mpb.get_bool(key), value);
+    mpb.set<bool>(key, value);
+    ASSERT_TRUE(mpb.get<bool>(key));
+    ASSERT_EQ(mpb.get<bool>(key), value);
 }
 
 TEST_F(Renderer, MaterialPropertyBlockSetTextureOnMaterialCausesGetTextureToReturnTheTexture)
@@ -1408,11 +1408,11 @@ TEST_F(Renderer, MaterialPropertyBlockSetTextureOnMaterialCausesGetTextureToRetu
     std::string key = "someKey";
     Texture2D t = GenerateTexture();
 
-    ASSERT_FALSE(mpb.get_texture(key));
+    ASSERT_FALSE(mpb.get<Texture2D>(key));
 
-    mpb.set_texture(key, t);
+    mpb.set<Texture2D>(key, t);
 
-    ASSERT_TRUE(mpb.get_texture(key));
+    ASSERT_TRUE(mpb.get<Texture2D>(key));
 }
 
 TEST_F(Renderer, MaterialPropertyBlockCanCompareEquals)

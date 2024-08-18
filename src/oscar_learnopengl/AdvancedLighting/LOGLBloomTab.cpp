@@ -177,7 +177,7 @@ private:
             floor_mat4 = scale(floor_mat4, Vec3(12.5f, 0.5f, 12.5f));
 
             MaterialPropertyBlock floor_props;
-            floor_props.set_texture("uDiffuseTexture", wood_texture_);
+            floor_props.set<Texture2D>("uDiffuseTexture", wood_texture_);
 
             graphics::draw(
                 cube_mesh_,
@@ -189,7 +189,7 @@ private:
         }
 
         MaterialPropertyBlock cube_props;
-        cube_props.set_texture("uDiffuseTexture", container_texture_);
+        cube_props.set<Texture2D>("uDiffuseTexture", container_texture_);
         for (const auto& cube_transform : create_cube_transforms()) {
             graphics::draw(
                 cube_mesh_,
@@ -251,11 +251,11 @@ private:
 
     void render_blurred_brightness()
     {
-        blur_material_.set_render_texture("uInputImage", scene_hdr_thresholded_output_);
+        blur_material_.set("uInputImage", scene_hdr_thresholded_output_);
 
         bool horizontal = false;
         for (RenderTexture& ping_pong_buffer : ping_pong_blur_output_buffers_) {
-            blur_material_.set_bool("uHorizontal", horizontal);
+            blur_material_.set<bool>("uHorizontal", horizontal);
             Camera camera;
             graphics::draw(quad_mesh_, identity<Transform>(), blur_material_, camera);
             camera.render_to(ping_pong_buffer);
@@ -267,10 +267,10 @@ private:
 
     void render_combined_scene(const Rect& viewport_rect)
     {
-        final_compositing_material_.set_render_texture("uHDRSceneRender", scene_hdr_color_output_);
-        final_compositing_material_.set_render_texture("uBloomBlur", ping_pong_blur_output_buffers_[0]);
-        final_compositing_material_.set_bool("uBloom", true);
-        final_compositing_material_.set<float>("uExposure", 1.0f);
+        final_compositing_material_.set("uHDRSceneRender", scene_hdr_color_output_);
+        final_compositing_material_.set("uBloomBlur", ping_pong_blur_output_buffers_[0]);
+        final_compositing_material_.set("uBloom", true);
+        final_compositing_material_.set("uExposure", 1.0f);
 
         Camera camera;
         graphics::draw(quad_mesh_, identity<Transform>(), final_compositing_material_, camera);

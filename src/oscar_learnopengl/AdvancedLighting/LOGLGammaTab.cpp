@@ -82,7 +82,7 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/Gamma.vert"),
             loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/Gamma.frag"),
         }};
-        rv.set_texture("uFloorTexture", wood_texture);
+        rv.set("uFloorTexture", wood_texture);
         rv.set_array<Vec3>("uLightPositions", c_light_positions);
         rv.set_array<Color>("uLightColors", c_light_colors);
         return rv;

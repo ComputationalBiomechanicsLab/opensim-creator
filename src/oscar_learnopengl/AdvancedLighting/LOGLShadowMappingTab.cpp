@@ -105,11 +105,11 @@ private:
 
         camera_.set_background_color({0.1f, 0.1f, 0.1f, 1.0f});
 
-        scene_material_.set<Vec3>("uLightWorldPos", light_pos_);
-        scene_material_.set<Vec3>("uViewWorldPos", camera_.position());
-        scene_material_.set_mat4("uLightSpaceMat", latest_lightspace_matrix_);
-        scene_material_.set_texture("uDiffuseTexture", wood_texture_);
-        scene_material_.set_render_texture("uShadowMapTexture", depth_texture_);
+        scene_material_.set("uLightWorldPos", light_pos_);
+        scene_material_.set("uViewWorldPos", camera_.position());
+        scene_material_.set("uLightSpaceMat", latest_lightspace_matrix_);
+        scene_material_.set("uDiffuseTexture", wood_texture_);
+        scene_material_.set("uShadowMapTexture", depth_texture_);
 
         draw_meshes_with_material(scene_material_);
         camera_.set_pixel_rect(viewport_screenspace_rect);

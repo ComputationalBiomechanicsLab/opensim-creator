@@ -180,7 +180,7 @@ private:
     {
         // render cube
         {
-            gbuffer_state_.material.set_bool("uInvertedNormals", true);
+            gbuffer_state_.material.set<bool>("uInvertedNormals", true);
             graphics::draw(
                 cube_mesh_,
                 {.scale = Vec3{7.5f}, .position = {0.0f, 7.0f, 0.0f}},
@@ -191,7 +191,7 @@ private:
 
         // render sphere
         {
-            gbuffer_state_.material.set_bool("uInvertedNormals", false);
+            gbuffer_state_.material.set<bool>("uInvertedNormals", false);
             graphics::draw(
                 sphere_mesh_,
                 {.position = {0.0f, 0.5f, 0.0f}},
@@ -205,14 +205,14 @@ private:
 
     void render_ssao_pass(const Vec2& viewport_dimensions)
     {
-        ssao_state_.material.set_render_texture("uPositionTex", gbuffer_state_.position);
-        ssao_state_.material.set_render_texture("uNormalTex", gbuffer_state_.normal);
-        ssao_state_.material.set_texture("uNoiseTex", noise_texture_);
+        ssao_state_.material.set("uPositionTex", gbuffer_state_.position);
+        ssao_state_.material.set("uNormalTex", gbuffer_state_.normal);
+        ssao_state_.material.set("uNoiseTex", noise_texture_);
         ssao_state_.material.set_array<Vec3>("uSamples", sample_kernel_);
-        ssao_state_.material.set<Vec2>("uNoiseScale", viewport_dimensions / Vec2{noise_texture_.dimensions()});
-        ssao_state_.material.set_int("uKernelSize", static_cast<int32_t>(sample_kernel_.size()));
-        ssao_state_.material.set<float>("uRadius", 0.5f);
-        ssao_state_.material.set<float>("uBias", 0.125f);
+        ssao_state_.material.set("uNoiseScale", viewport_dimensions / Vec2{noise_texture_.dimensions()});
+        ssao_state_.material.set("uKernelSize", static_cast<int32_t>(sample_kernel_.size()));
+        ssao_state_.material.set("uRadius", 0.5f);
+        ssao_state_.material.set("uBias", 0.125f);
 
         graphics::draw(quad_mesh_, identity<Transform>(), ssao_state_.material, camera_);
         camera_.render_to(ssao_state_.output_texture);
@@ -223,7 +223,7 @@ private:
 
     void render_blur_pass()
     {
-        blur_state_.material.set_render_texture("uSSAOTex", ssao_state_.output_texture);
+        blur_state_.material.set("uSSAOTex", ssao_state_.output_texture);
 
         graphics::draw(quad_mesh_, identity<Transform>(), blur_state_.material, camera_);
         camera_.render_to(blur_state_.output_texture);
@@ -233,14 +233,14 @@ private:
 
     void render_lighting_pass()
     {
-        lighting_state_.material.set_render_texture("uPositionTex", gbuffer_state_.position);
-        lighting_state_.material.set_render_texture("uNormalTex", gbuffer_state_.normal);
-        lighting_state_.material.set_render_texture("uAlbedoTex", gbuffer_state_.albedo);
-        lighting_state_.material.set_render_texture("uSSAOTex", ssao_state_.output_texture);
-        lighting_state_.material.set<Vec3>("uLightPosition", light_position_);
-        lighting_state_.material.set<Color>("uLightColor", light_color_);
-        lighting_state_.material.set<float>("uLightLinear", 0.09f);
-        lighting_state_.material.set<float>("uLightQuadratic", 0.032f);
+        lighting_state_.material.set("uPositionTex", gbuffer_state_.position);
+        lighting_state_.material.set("uNormalTex", gbuffer_state_.normal);
+        lighting_state_.material.set("uAlbedoTex", gbuffer_state_.albedo);
+        lighting_state_.material.set("uSSAOTex", ssao_state_.output_texture);
+        lighting_state_.material.set("uLightPosition", light_position_);
+        lighting_state_.material.set("uLightColor", light_color_);
+        lighting_state_.material.set("uLightLinear", 0.09f);
+        lighting_state_.material.set("uLightQuadratic", 0.032f);
 
         graphics::draw(quad_mesh_, identity<Transform>(), lighting_state_.material, camera_);
         camera_.render_to(lighting_state_.output_texture);

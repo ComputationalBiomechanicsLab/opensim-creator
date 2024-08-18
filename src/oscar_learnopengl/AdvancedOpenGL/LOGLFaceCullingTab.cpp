@@ -24,7 +24,7 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/FaceCulling.frag"),
         }};
 
-        rv.set_texture("uTexture", load_texture2D_from_image(
+        rv.set("uTexture", load_texture2D_from_image(
             loader.open("oscar_learnopengl/textures/uv_checker.jpg"),
             ColorSpace::sRGB
         ));

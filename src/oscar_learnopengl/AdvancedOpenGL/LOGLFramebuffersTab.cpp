@@ -93,12 +93,12 @@ private:
         // render scene
         {
             // cubes
-            scene_render_material_.set_texture("uTexture1", container_texture_);
+            scene_render_material_.set("uTexture1", container_texture_);
             graphics::draw(cube_mesh_, {.position = {-1.0f, 0.0f, -1.0f}}, scene_render_material_, scene_camera_);
             graphics::draw(cube_mesh_, {.position = { 1.0f, 0.0f, -1.0f}}, scene_render_material_, scene_camera_);
 
             // floor
-            scene_render_material_.set_texture("uTexture1", metal_texture_);
+            scene_render_material_.set("uTexture1", metal_texture_);
             graphics::draw(plane_mesh_, identity<Transform>(), scene_render_material_, scene_camera_);
         }
         scene_camera_.render_to(render_texture_);
