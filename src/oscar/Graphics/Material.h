@@ -56,6 +56,15 @@ namespace osc
             upd_properties().set_array<T>(std::forward<StringLike>(property_name), values);
         }
 
+        template<
+            std::convertible_to<std::string_view> StringLike,
+            std::ranges::contiguous_range Range
+        >
+        void set_array(StringLike&& property_name, Range&& values)
+        {
+            upd_properties().set_array(std::forward<StringLike>(property_name), std::forward<Range>(values));
+        }
+
         template<std::convertible_to<std::string_view> StringLike>
         void unset(StringLike&& property_name)
         {

@@ -70,7 +70,7 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/PBR/ibl_specular/EquirectangularToCubemap.frag"),
         }};
         material.set("uEquirectangularMap", hdr_texture);
-        material.set_array<Mat4>(
+        material.set_array(
             "uShadowMatrices",
             calc_cubemap_view_proj_matrices(projection_matrix, Vec3{})
         );
@@ -101,7 +101,7 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/PBR/ibl_specular/IrradianceConvolution.frag"),
         }};
         material.set("uEnvironmentMap", skybox);
-        material.set_array<Mat4>(
+        material.set_array(
             "uShadowMatrices",
             calc_cubemap_view_proj_matrices(capture_projection, Vec3{})
         );
@@ -135,7 +135,7 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/PBR/ibl_specular/Prefilter.frag"),
         }};
         material.set("uEnvironmentMap", environment_map);
-        material.set_array<Mat4>("uShadowMatrices", calc_cubemap_view_proj_matrices(capture_projection, Vec3{}));
+        material.set_array("uShadowMatrices", calc_cubemap_view_proj_matrices(capture_projection, Vec3{}));
 
         Camera camera;
 
@@ -156,7 +156,7 @@ namespace
             capture_render_texture.set_dimensions({static_cast<int>(mip_width), static_cast<int>(mip_width)});
 
             const float mip_roughness = static_cast<float>(mip)/static_cast<float>(max_mipmap_level);
-            material.set<float>("uRoughness", mip_roughness);
+            material.set("uRoughness", mip_roughness);
 
             graphics::draw(BoxGeometry{2.0f, 2.0f, 2.0f}, identity<Transform>(), material, camera);
             camera.render_to(capture_render_texture);
@@ -250,8 +250,8 @@ private:
     void draw_3D_render()
     {
         pbr_material_.set("uCameraWorldPos", camera_.position());
-        pbr_material_.set_array<Vec3>("uLightPositions", c_light_positions);
-        pbr_material_.set_array<Vec3>("uLightColors", c_light_radiances);
+        pbr_material_.set_array("uLightPositions", c_light_positions);
+        pbr_material_.set_array("uLightColors", c_light_radiances);
         pbr_material_.set("uIrradianceMap", irradiance_map_);
         pbr_material_.set("uPrefilterMap", prefilter_map_);
         pbr_material_.set("uMaxReflectionLOD", static_cast<float>(std::bit_width(static_cast<size_t>(prefilter_map_.width()) - 1)));
@@ -265,14 +265,14 @@ private:
 
     void draw_spheres()
     {
-        pbr_material_.set<Vec3>("uAlbedoColor", {0.5f, 0.0f, 0.0f});
+        pbr_material_.set("uAlbedoColor", Vec3{0.5f, 0.0f, 0.0f});
 
         for (int row = 0; row < c_num_rows; ++row) {
-            pbr_material_.set<float>("uMetallicity", static_cast<float>(row) / static_cast<float>(c_num_rows));
+            pbr_material_.set("uMetallicity", static_cast<float>(row) / static_cast<float>(c_num_rows));
 
             for (int col = 0; col < c_num_cols; ++col) {
                 const float normalizedCol = static_cast<float>(col) / static_cast<float>(c_num_cols);
-                pbr_material_.set<float>("uRoughness", clamp(normalizedCol, 0.005f, 1.0f));
+                pbr_material_.set("uRoughness", clamp(normalizedCol, 0.005f, 1.0f));
 
                 const float x = (static_cast<float>(col) - static_cast<float>(c_num_cols)/2.0f) * c_cell_spacing;
                 const float y = (static_cast<float>(row) - static_cast<float>(c_num_rows)/2.0f) * c_cell_spacing;
@@ -284,7 +284,7 @@ private:
 
     void draw_lights()
     {
-        pbr_material_.set<Vec3>("uAlbedoColor", {1.0f, 1.0f, 1.0f});
+        pbr_material_.set("uAlbedoColor", Vec3{1.0f, 1.0f, 1.0f});
 
         for (const Vec3& pos : c_light_positions) {
             graphics::draw(
@@ -311,7 +311,7 @@ private:
         if (ui::begin_panel("Controls")) {
             float ao = pbr_material_.get<float>("uAO").value_or(1.0f);
             if (ui::draw_float_slider("ao", &ao, 0.0f, 1.0f)) {
-                pbr_material_.set<float>("uAO", ao);
+                pbr_material_.set("uAO", ao);
             }
         }
         ui::end_panel();

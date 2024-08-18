@@ -151,8 +151,8 @@ private:
 
     void draw_scene_cube()
     {
-        cube_properties_.set<Vec3>("uCameraPos", camera_.position());
-        cube_properties_.set<float>("uIOR", ior_);
+        cube_properties_.set("uCameraPos", camera_.position());
+        cube_properties_.set("uIOR", ior_);
         graphics::draw(
             cube_mesh_,
             identity<Transform>(),

@@ -76,16 +76,16 @@ private:
         App::upd().clear_screen(Color::dark_grey());
 
         // draw cube
-        lighting_maps_material_.set<Vec3>("uViewPos", camera_.position());
-        lighting_maps_material_.set<Vec3>("uLightPos", light_transform_.position);
-        lighting_maps_material_.set<float>("uLightAmbient", light_ambient_);
-        lighting_maps_material_.set<float>("uLightDiffuse", light_diffuse_);
-        lighting_maps_material_.set<float>("uLightSpecular", light_specular_);
-        lighting_maps_material_.set<float>("uMaterialShininess", material_shininess_);
+        lighting_maps_material_.set("uViewPos", camera_.position());
+        lighting_maps_material_.set("uLightPos", light_transform_.position);
+        lighting_maps_material_.set("uLightAmbient", light_ambient_);
+        lighting_maps_material_.set("uLightDiffuse", light_diffuse_);
+        lighting_maps_material_.set("uLightSpecular", light_specular_);
+        lighting_maps_material_.set("uMaterialShininess", material_shininess_);
         graphics::draw(mesh_, identity<Transform>(), lighting_maps_material_, camera_);
 
         // draw lamp
-        light_cube_material_.set<Color>("uLightColor", Color::white());
+        light_cube_material_.set("uLightColor", Color::white());
         graphics::draw(mesh_, light_transform_, light_cube_material_, camera_);
 
         // render 3D scene

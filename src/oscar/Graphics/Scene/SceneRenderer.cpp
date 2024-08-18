@@ -217,7 +217,7 @@ public:
                     [this, &transparent_material, &dec, &previous_color, &prop_block, &color_guess](const Color& color)
                     {
                         if (color != previous_color) {
-                            prop_block.set<Color>(c_diffuse_color_propname, color);
+                            prop_block.set(c_diffuse_color_propname, color);
                             previous_color = color;
                         }
 
@@ -242,7 +242,7 @@ public:
                 // if a wireframe overlay is requested for the decoration then draw it over the top in
                 // a solid color
                 if (dec.flags & SceneDecorationFlag::DrawWireframeOverlay) {
-                    wireframe_prop_block.set<Color>(c_diffuse_color_propname, multiply_luminance(color_guess, 0.1f));
+                    wireframe_prop_block.set(c_diffuse_color_propname, multiply_luminance(color_guess, 0.1f));
                     graphics::draw(dec.mesh, dec.transform, wireframe_material_, camera_, wireframe_prop_block);
                 }
 

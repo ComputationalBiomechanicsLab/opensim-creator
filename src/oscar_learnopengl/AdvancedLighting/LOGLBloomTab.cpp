@@ -98,8 +98,8 @@ public:
 
     Impl() : StandardTabImpl{c_tab_string_id}
     {
-        scene_material_.set_array<Vec3>("uLightPositions", c_scene_light_positions);
-        scene_material_.set_array<Color>("uLightColors", get_scene_light_colors());
+        scene_material_.set_array("uLightPositions", c_scene_light_positions);
+        scene_material_.set_array("uLightColors", get_scene_light_colors());
     }
 
 private:
@@ -168,7 +168,7 @@ private:
 
     void draw_scene_cubes_to_camera()
     {
-        scene_material_.set<Vec3>("uViewWorldPos", camera_.position());
+        scene_material_.set("uViewWorldPos", camera_.position());
 
         // draw floor
         {
@@ -177,7 +177,7 @@ private:
             floor_mat4 = scale(floor_mat4, Vec3(12.5f, 0.5f, 12.5f));
 
             MaterialPropertyBlock floor_props;
-            floor_props.set<Texture2D>("uDiffuseTexture", wood_texture_);
+            floor_props.set("uDiffuseTexture", wood_texture_);
 
             graphics::draw(
                 cube_mesh_,
@@ -189,7 +189,7 @@ private:
         }
 
         MaterialPropertyBlock cube_props;
-        cube_props.set<Texture2D>("uDiffuseTexture", container_texture_);
+        cube_props.set("uDiffuseTexture", container_texture_);
         for (const auto& cube_transform : create_cube_transforms()) {
             graphics::draw(
                 cube_mesh_,
@@ -211,7 +211,7 @@ private:
             light_mat4 = scale(light_mat4, Vec3(0.25f));
 
             MaterialPropertyBlock light_props;
-            light_props.set<Color>("uLightColor", scene_light_colors[i]);
+            light_props.set("uLightColor", scene_light_colors[i]);
 
             graphics::draw(
                 cube_mesh_,
@@ -255,7 +255,7 @@ private:
 
         bool horizontal = false;
         for (RenderTexture& ping_pong_buffer : ping_pong_blur_output_buffers_) {
-            blur_material_.set<bool>("uHorizontal", horizontal);
+            blur_material_.set("uHorizontal", horizontal);
             Camera camera;
             graphics::draw(quad_mesh_, identity<Transform>(), blur_material_, camera);
             camera.render_to(ping_pong_buffer);

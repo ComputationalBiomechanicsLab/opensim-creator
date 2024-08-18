@@ -119,15 +119,15 @@ private:
 
         // draw normal-mapped quad
         {
-            parallax_mapping_material_.set<Vec3>("uLightWorldPos", light_transform_.position);
-            parallax_mapping_material_.set<Vec3>("uViewWorldPos", camera_.position());
-            parallax_mapping_material_.set<bool>("uEnableMapping", parallax_mapping_enabled_);
+            parallax_mapping_material_.set("uLightWorldPos", light_transform_.position);
+            parallax_mapping_material_.set("uViewWorldPos", camera_.position());
+            parallax_mapping_material_.set("uEnableMapping", parallax_mapping_enabled_);
             graphics::draw(quad_mesh_, quad_transform_, parallax_mapping_material_, camera_);
         }
 
         // draw light source cube
         {
-            light_cube_material_.set<Color>("uLightColor", Color::white());
+            light_cube_material_.set("uLightColor", Color::white());
             graphics::draw(cube_mesh_, light_transform_, light_cube_material_, camera_);
         }
 

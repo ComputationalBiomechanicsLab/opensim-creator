@@ -65,7 +65,7 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/EquirectangularToCubemap.frag"),
         }};
         material.set("uEquirectangularMap", hdr_texture);
-        material.set_array<Mat4>("uShadowMatrices", calc_cubemap_view_proj_matrices(projection_matrix, Vec3{}));
+        material.set_array("uShadowMatrices", calc_cubemap_view_proj_matrices(projection_matrix, Vec3{}));
 
         Camera camera;
         graphics::draw(BoxGeometry{2.0f, 2.0f, 2.0f}, identity<Transform>(), material, camera);
@@ -91,7 +91,7 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/IrradianceConvolution.frag"),
         }};
         material.set("uEnvironmentMap", skybox);
-        material.set_array<Mat4>("uShadowMatrices", calc_cubemap_view_proj_matrices(captureProjection, Vec3{}));
+        material.set_array("uShadowMatrices", calc_cubemap_view_proj_matrices(captureProjection, Vec3{}));
 
         Camera camera;
         graphics::draw(BoxGeometry{2.0f, 2.0f, 2.0f}, identity<Transform>(), material, camera);
@@ -120,7 +120,7 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/Prefilter.frag"),
         }};
         material.set("uEnvironmentMap", environment_map);
-        material.set_array<Mat4>("uShadowMatrices", calc_cubemap_view_proj_matrices(capture_projection, Vec3{}));
+        material.set_array("uShadowMatrices", calc_cubemap_view_proj_matrices(capture_projection, Vec3{}));
 
         Camera camera;
 
@@ -140,8 +140,7 @@ namespace
             const size_t mip_width = level_zero_width >> mip;
             capture_render_target.set_dimensions({static_cast<int>(mip_width), static_cast<int>(mip_width)});
 
-            const float roughness = static_cast<float>(mip)/static_cast<float>(max_mipmap_level);
-            material.set<float>("uRoughness", roughness);
+           material.set("uRoughness", static_cast<float>(mip)/static_cast<float>(max_mipmap_level));
 
             graphics::draw(BoxGeometry{2.0f, 2.0f, 2.0f}, identity<Transform>(), material, camera);
             camera.render_to(capture_render_target);
@@ -188,7 +187,7 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/PBR.vert"),
             loader.slurp("oscar_learnopengl/shaders/PBR/ibl_specular_textured/PBR.frag"),
         }};
-        rv.set<float>("uAO", 1.0f);
+        rv.set("uAO", 1.0f);
         return rv;
     }
 
@@ -257,8 +256,8 @@ private:
     void set_common_material_properties()
     {
         pbr_material_.set("uCameraWorldPos", camera_.position());
-        pbr_material_.set_array<Vec3>("uLightPositions", c_light_positions);
-        pbr_material_.set_array<Vec3>("uLightColors", c_light_radiances);
+        pbr_material_.set_array("uLightPositions", c_light_positions);
+        pbr_material_.set_array("uLightColors", c_light_radiances);
         pbr_material_.set("uIrradianceMap", irradiance_map_);
         pbr_material_.set("uPrefilterMap", prefilter_map_);
         pbr_material_.set("uMaxReflectionLOD", static_cast<float>(std::bit_width(static_cast<size_t>(prefilter_map_.width()) - 1)));

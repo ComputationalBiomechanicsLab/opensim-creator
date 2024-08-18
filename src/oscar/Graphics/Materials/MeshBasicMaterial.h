@@ -21,7 +21,7 @@ namespace osc
             }
 
             std::optional<Color> color() const { return property_block_.get<Color>(c_color_propname); }
-            void set_color(Color c) { property_block_.set<Color>(c_color_propname, c); }
+            void set_color(const Color& c) { property_block_.set(c_color_propname, c); }
 
             operator const MaterialPropertyBlock& () const { return property_block_; }
         private:

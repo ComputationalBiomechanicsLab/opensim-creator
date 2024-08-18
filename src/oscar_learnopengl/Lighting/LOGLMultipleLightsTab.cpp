@@ -88,13 +88,13 @@ namespace
         rv.set("uSpotLightCutoff", cos(45_deg));
         rv.set("uSpotLightOuterCutoff", cos(15_deg));
 
-        rv.set_array<Vec3>("uPointLightPos", c_point_light_positions);
-        rv.set_array<float>("uPointLightConstant", c_point_light_constants);
-        rv.set_array<float>("uPointLightLinear", c_point_light_linears);
-        rv.set_array<float>("uPointLightQuadratic", c_point_light_quadratics);
-        rv.set_array<float>("uPointLightAmbient", c_point_light_ambients);
-        rv.set_array<float>("uPointLightDiffuse", c_point_light_diffuses);
-        rv.set_array<float>("uPointLightSpecular", c_point_light_speculars);
+        rv.set_array("uPointLightPos", c_point_light_positions);
+        rv.set_array("uPointLightConstant", c_point_light_constants);
+        rv.set_array("uPointLightLinear", c_point_light_linears);
+        rv.set_array("uPointLightQuadratic", c_point_light_quadratics);
+        rv.set_array("uPointLightAmbient", c_point_light_ambients);
+        rv.set_array("uPointLightDiffuse", c_point_light_diffuses);
+        rv.set_array("uPointLightSpecular", c_point_light_speculars);
 
         return rv;
     }
@@ -105,7 +105,7 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/LightCube.vert"),
             loader.slurp("oscar_learnopengl/shaders/LightCube.frag"),
         }};
-        rv.set<Color>("uLightColor", Color::white());
+        rv.set("uLightColor", Color::white());
         return rv;
     }
 }
@@ -143,10 +143,10 @@ private:
         // clear screen and ensure camera has correct pixel rect
 
         // setup per-frame material vals
-        multiple_lights_material_.set<Vec3>("uViewPos", camera_.position());
-        multiple_lights_material_.set<float>("uMaterialShininess", material_shininess_);
-        multiple_lights_material_.set<Vec3>("uSpotLightPosition", camera_.position());
-        multiple_lights_material_.set<Vec3>("uSpotLightDirection", camera_.direction());
+        multiple_lights_material_.set("uViewPos", camera_.position());
+        multiple_lights_material_.set("uMaterialShininess", material_shininess_);
+        multiple_lights_material_.set("uSpotLightPosition", camera_.position());
+        multiple_lights_material_.set("uSpotLightDirection", camera_.direction());
 
         // render containers
         const UnitVec3 axis{1.0f, 0.3f, 0.5f};

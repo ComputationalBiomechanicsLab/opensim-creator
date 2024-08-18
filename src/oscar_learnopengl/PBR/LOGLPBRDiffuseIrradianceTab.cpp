@@ -69,7 +69,7 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/EquirectangularToCubemap.frag"),
         }};
         material.set("uEquirectangularMap", hdr_texture);
-        material.set_array<Mat4>("uShadowMatrices", calc_cubemap_view_proj_matrices(projection_matrix, Vec3{}));
+        material.set_array("uShadowMatrices", calc_cubemap_view_proj_matrices(projection_matrix, Vec3{}));
 
         Camera camera;
         graphics::draw(BoxGeometry{2.0f, 2.0f, 2.0f}, identity<Transform>(), material, camera);
@@ -97,7 +97,7 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/Convolution.frag"),
         }};
         material.set("uEnvironmentMap", skybox);
-        material.set_array<Mat4>("uShadowMatrices", calc_cubemap_view_proj_matrices(capture_projection, Vec3{}));
+        material.set_array("uShadowMatrices", calc_cubemap_view_proj_matrices(capture_projection, Vec3{}));
 
         Camera camera;
         graphics::draw(BoxGeometry{2.0f, 2.0f, 2.0f}, identity<Transform>(), material, camera);
@@ -113,7 +113,7 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/PBR.vert"),
             loader.slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/PBR.frag"),
         }};
-        rv.set<float>("uAO", 1.0f);
+        rv.set("uAO", 1.0f);
         return rv;
     }
 }
@@ -153,9 +153,9 @@ private:
     {
         camera_.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
 
-        pbr_material_.set<Vec3>("uCameraWorldPos", camera_.position());
-        pbr_material_.set_array<Vec3>("uLightPositions", c_light_positions);
-        pbr_material_.set_array<Vec3>("uLightColors", c_light_radiances);
+        pbr_material_.set("uCameraWorldPos", camera_.position());
+        pbr_material_.set_array("uLightPositions", c_light_positions);
+        pbr_material_.set_array("uLightColors", c_light_radiances);
         pbr_material_.set("uIrradianceMap", irradiance_map_);
 
         draw_spheres();
@@ -166,14 +166,14 @@ private:
 
     void draw_spheres()
     {
-        pbr_material_.set<Vec3>("uAlbedoColor", {0.5f, 0.0f, 0.0f});
+        pbr_material_.set("uAlbedoColor", Vec3{0.5f, 0.0f, 0.0f});
 
         for (int row = 0; row < c_num_rows; ++row) {
-            pbr_material_.set<float>("uMetallicity", static_cast<float>(row) / static_cast<float>(c_num_rows));
+            pbr_material_.set("uMetallicity", static_cast<float>(row) / static_cast<float>(c_num_rows));
 
             for (int col = 0; col < c_num_cols; ++col) {
                 const float normalizedCol = static_cast<float>(col) / static_cast<float>(c_num_cols);
-                pbr_material_.set<float>("uRoughness", clamp(normalizedCol, 0.005f, 1.0f));
+                pbr_material_.set("uRoughness", clamp(normalizedCol, 0.005f, 1.0f));
 
                 const float x = (static_cast<float>(col) - static_cast<float>(c_num_cols)/2.0f) * c_cell_spacing;
                 const float y = (static_cast<float>(row) - static_cast<float>(c_num_rows)/2.0f) * c_cell_spacing;
@@ -185,7 +185,7 @@ private:
 
     void draw_lights()
     {
-        pbr_material_.set<Vec3>("uAlbedoColor", {1.0f, 1.0f, 1.0f});
+        pbr_material_.set("uAlbedoColor", Vec3{1.0f, 1.0f, 1.0f});
 
         for (const Vec3& light_positions : c_light_positions) {
             graphics::draw(sphere_mesh_, {.scale = Vec3{0.5f}, .position = light_positions}, pbr_material_, camera_);
@@ -208,7 +208,7 @@ private:
         if (ui::begin_panel("Controls")) {
             float ao = pbr_material_.get<float>("uAO").value_or(1.0f);
             if (ui::draw_float_slider("ao", &ao, 0.0f, 1.0f)) {
-                pbr_material_.set<float>("uAO", ao);
+                pbr_material_.set("uAO", ao);
             }
         }
         ui::end_panel();

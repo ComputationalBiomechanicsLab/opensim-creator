@@ -86,7 +86,7 @@ public:
         }
         m_SceneCamera.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
 
-        m_SceneMaterial.set<Color>("uDiffuseColor", m_MeshColor);
+        m_SceneMaterial.set("uDiffuseColor", m_MeshColor);
         graphics::draw(m_Mesh, identity<Transform>(), m_SceneMaterial, m_SceneCamera);
         graphics::draw(m_Mesh, identity<Transform>(), m_NormalsMaterial, m_SceneCamera);
         m_SceneCamera.render_to_screen();

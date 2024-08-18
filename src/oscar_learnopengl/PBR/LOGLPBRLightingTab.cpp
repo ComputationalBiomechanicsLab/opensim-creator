@@ -86,9 +86,9 @@ private:
     {
         camera_.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
 
-        pbr_material_.set<Vec3>("uCameraWorldPos", camera_.position());
-        pbr_material_.set_array<Vec3>("uLightPositions", c_light_positions);
-        pbr_material_.set_array<Vec3>("uLightColors", c_light_radiances);
+        pbr_material_.set("uCameraWorldPos", camera_.position());
+        pbr_material_.set_array("uLightPositions", c_light_positions);
+        pbr_material_.set_array("uLightColors", c_light_radiances);
 
         draw_spheres();
         draw_lights();
@@ -98,14 +98,14 @@ private:
 
     void draw_spheres()
     {
-        pbr_material_.set<Vec3>("uAlbedoColor", {0.5f, 0.0f, 0.0f});
+        pbr_material_.set("uAlbedoColor", Vec3{0.5f, 0.0f, 0.0f});
 
         for (int row = 0; row < c_num_rows; ++row) {
-            pbr_material_.set<float>("uMetallicity", static_cast<float>(row) / static_cast<float>(c_num_rows));
+            pbr_material_.set("uMetallicity", static_cast<float>(row) / static_cast<float>(c_num_rows));
 
             for (int col = 0; col < c_num_cols; ++col) {
                 const float normalized_col = static_cast<float>(col) / static_cast<float>(c_num_cols);
-                pbr_material_.set<float>("uRoughness", clamp(normalized_col, 0.005f, 1.0f));
+                pbr_material_.set("uRoughness", clamp(normalized_col, 0.005f, 1.0f));
 
                 const float x = (static_cast<float>(col) - static_cast<float>(c_num_cols)/2.0f) * c_cell_spacing;
                 const float y = (static_cast<float>(row) - static_cast<float>(c_num_rows)/2.0f) * c_cell_spacing;
@@ -116,7 +116,7 @@ private:
 
     void draw_lights()
     {
-        pbr_material_.set<Vec3>("uAlbedoColor", {1.0f, 1.0f, 1.0f});
+        pbr_material_.set("uAlbedoColor", Vec3{1.0f, 1.0f, 1.0f});
 
         for (const Vec3& light_position : c_light_positions) {
             graphics::draw(sphere_mesh_, {.scale = Vec3{0.5f}, .position = light_position}, pbr_material_, camera_);

@@ -16,8 +16,10 @@
 #include <cstdint>
 #include <iosfwd>
 #include <optional>
+#include <ranges>
 #include <span>
 #include <string_view>
+#include <utility>
 
 namespace osc
 {
@@ -31,6 +33,25 @@ namespace osc
 
         void clear();
         [[nodiscard]] bool empty() const;
+
+        // calling `set` without a type argument (e.g. `set(prop, value);`) should coerce the value
+        // to a `const T&` in order to call `set<T>(prop, value)`
+        template<std::convertible_to<std::string_view> StringLike, typename T>
+        void set(StringLike&& property_name, const T& value)
+        {
+            set<T>(std::forward<StringLike>(property_name), value);
+        }
+
+        // calling `set_array` without a type argument (e.g. `set_array(prop, some_range)`) deduces
+        // the type from the range in order to call `set_array<T>(prop, some_range)`
+        template<
+            std::convertible_to<std::string_view> StringLike,
+            std::ranges::contiguous_range Range
+        >
+        void set_array(StringLike&& property_name, Range&& values)
+        {
+            set_array<std::ranges::range_value_t<Range>>(std::forward<StringLike>(property_name), std::forward<Range>(values));
+        }
 
         template<std::same_as<Color>> std::optional<Color> get(std::string_view property_name) const;
         template<std::same_as<Color>> std::optional<Color> get(const StringName& property_name) const;

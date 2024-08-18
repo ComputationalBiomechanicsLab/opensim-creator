@@ -17,25 +17,25 @@ namespace osc
         MeshPhongMaterial();
 
         Vec3 light_position() const { return *material_.get<Vec3>(c_light_pos_propname); }
-        void set_light_position(Vec3 v) { material_.set<Vec3>(c_light_pos_propname, v); }
+        void set_light_position(const Vec3& v) { material_.set(c_light_pos_propname, v); }
 
         Vec3 viewer_position() const { return *material_.get<Vec3>(c_view_pos_propname); }
-        void set_viewer_position(Vec3 v) { material_.set<Vec3>(c_view_pos_propname, v); }
+        void set_viewer_position(const Vec3& v) { material_.set(c_view_pos_propname, v); }
 
         Color light_color() const { return *material_.get<Color>(c_light_color_propname); }
-        void set_light_color(Color c) { material_.set<Color>(c_light_color_propname, c); }
+        void set_light_color(const Color& c) { material_.set(c_light_color_propname, c); }
 
         Color ambient_color() const { return *material_.get<Color>(c_ambient_color_propname); }
-        void set_ambient_color(Color c) { material_.set<Color>(c_ambient_color_propname, c); }
+        void set_ambient_color(const Color& c) { material_.set(c_ambient_color_propname, c); }
 
         Color diffuse_color() const { return *material_.get<Color>(c_diffuse_color_propname); }
-        void set_diffuse_color(Color c) { material_.set<Color>(c_diffuse_color_propname, c); }
+        void set_diffuse_color(const Color& c) { material_.set(c_diffuse_color_propname, c); }
 
         Color specular_color() const { return *material_.get<Color>(c_specular_color_propname); }
-        void set_specular_color(Color c) { material_.set<Color>(c_specular_color_propname, c); }
+        void set_specular_color(const Color& c) { material_.set(c_specular_color_propname, c); }
 
         float specular_shininess() const { return *material_.get<float>(c_shininess_propname); }
-        void set_specular_shininess(float v) { material_.set<float>(c_shininess_propname, v); }
+        void set_specular_shininess(float v) { material_.set(c_shininess_propname, v); }
 
         operator const Material& () const { return material_; }
     private:

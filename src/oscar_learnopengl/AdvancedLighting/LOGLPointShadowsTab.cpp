@@ -134,9 +134,9 @@ private:
             calc_cubemap_view_proj_matrices(projection_matrix, light_pos_);
 
         // pass data to material
-        shadowmapping_material_.set_array<Mat4>("uShadowMatrices", shadow_matrices);
-        shadowmapping_material_.set<Vec3>("uLightPos", light_pos_);
-        shadowmapping_material_.set<float>("uFarPlane", zfar);
+        shadowmapping_material_.set_array("uShadowMatrices", shadow_matrices);
+        shadowmapping_material_.set("uLightPos", light_pos_);
+        shadowmapping_material_.set("uFarPlane", zfar);
 
         // render (shadowmapping does not use the camera's view/projection matrices)
         Camera camera;
@@ -160,13 +160,13 @@ private:
         material.set("uDepthMap", depth_texture_);
         for (const SceneCube& cube : scene_cubes_) {
             MaterialPropertyBlock material_props;
-            material_props.set<bool>("uReverseNormals", cube.invert_normals);  // UNDOME
+            material_props.set("uReverseNormals", cube.invert_normals);  // UNDOME
             graphics::draw(cube_mesh_, cube.transform, material, scene_camera_, std::move(material_props));
         }
         material.unset("uDepthMap");
 
         // also, draw the light as a little cube
-        material.set<bool>("uShadows", soft_shadows_);
+        material.set("uShadows", soft_shadows_);
         graphics::draw(cube_mesh_, {.scale = Vec3{0.1f}, .position = light_pos_}, material, scene_camera_);
 
         scene_camera_.set_pixel_rect(viewport_screenspace_rect);

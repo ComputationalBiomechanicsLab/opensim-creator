@@ -57,10 +57,10 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Scene.vert"),
             loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Scene.frag"),
         }};
-        rv.set_array<Vec3>("uSceneLightPositions", c_light_positions);
-        rv.set_array<Color>("uSceneLightColors", GetLightColors());
+        rv.set_array("uSceneLightPositions", c_light_positions);
+        rv.set_array("uSceneLightColors", GetLightColors());
         rv.set("uDiffuseTexture", wood_texture);
-        rv.set<bool>("uInverseNormals", true);
+        rv.set("uInverseNormals", true);
         return rv;
     }
 

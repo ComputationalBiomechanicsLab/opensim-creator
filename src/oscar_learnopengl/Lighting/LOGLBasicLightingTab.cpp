@@ -54,17 +54,17 @@ private:
         camera_.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
 
         // draw cube
-        lighting_material_.set<Color>("uObjectColor", object_color_);
-        lighting_material_.set<Color>("uLightColor", light_color_);
-        lighting_material_.set<Vec3>("uLightPos", light_transform_.position);
-        lighting_material_.set<Vec3>("uViewPos", camera_.position());
-        lighting_material_.set<float>("uAmbientStrength", ambient_strength_);
-        lighting_material_.set<float>("uDiffuseStrength", diffuse_strength_);
-        lighting_material_.set<float>("uSpecularStrength", specular_strength_);
+        lighting_material_.set("uObjectColor", object_color_);
+        lighting_material_.set("uLightColor", light_color_);
+        lighting_material_.set("uLightPos", light_transform_.position);
+        lighting_material_.set("uViewPos", camera_.position());
+        lighting_material_.set("uAmbientStrength", ambient_strength_);
+        lighting_material_.set("uDiffuseStrength", diffuse_strength_);
+        lighting_material_.set("uSpecularStrength", specular_strength_);
         graphics::draw(cube_mesh_, identity<Transform>(), lighting_material_, camera_);
 
         // draw lamp
-        light_cube_material_.set<Color>("uLightColor", light_color_);
+        light_cube_material_.set("uLightColor", light_color_);
         graphics::draw(cube_mesh_, light_transform_, light_cube_material_, camera_);
 
         // render to output (window)

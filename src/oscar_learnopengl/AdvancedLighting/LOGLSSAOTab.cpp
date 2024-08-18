@@ -180,7 +180,7 @@ private:
     {
         // render cube
         {
-            gbuffer_state_.material.set<bool>("uInvertedNormals", true);
+            gbuffer_state_.material.set("uInvertedNormals", true);
             graphics::draw(
                 cube_mesh_,
                 {.scale = Vec3{7.5f}, .position = {0.0f, 7.0f, 0.0f}},
@@ -191,7 +191,7 @@ private:
 
         // render sphere
         {
-            gbuffer_state_.material.set<bool>("uInvertedNormals", false);
+            gbuffer_state_.material.set("uInvertedNormals", false);
             graphics::draw(
                 sphere_mesh_,
                 {.position = {0.0f, 0.5f, 0.0f}},
@@ -208,7 +208,7 @@ private:
         ssao_state_.material.set("uPositionTex", gbuffer_state_.position);
         ssao_state_.material.set("uNormalTex", gbuffer_state_.normal);
         ssao_state_.material.set("uNoiseTex", noise_texture_);
-        ssao_state_.material.set_array<Vec3>("uSamples", sample_kernel_);
+        ssao_state_.material.set_array("uSamples", sample_kernel_);
         ssao_state_.material.set("uNoiseScale", viewport_dimensions / Vec2{noise_texture_.dimensions()});
         ssao_state_.material.set("uKernelSize", static_cast<int32_t>(sample_kernel_.size()));
         ssao_state_.material.set("uRadius", 0.5f);
