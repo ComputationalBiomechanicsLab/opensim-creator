@@ -32,7 +32,7 @@ namespace
 
 CStringView osc::to_cstringview(LogLevel level)
 {
-    return c_log_level_strings.at(static_cast<ptrdiff_t>(level));
+    return c_log_level_strings.at(to_index(level));
 }
 
 std::optional<LogLevel> osc::try_parse_as_log_level(std::string_view str)

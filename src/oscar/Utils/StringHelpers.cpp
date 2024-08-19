@@ -1,5 +1,6 @@
 #include "StringHelpers.h"
 
+#include <oscar/Shims/Cpp23/cstddef.h>
 #include <oscar/Shims/Cpp23/ranges.h>
 #include <oscar/Utils/Algorithms.h>
 
@@ -15,6 +16,7 @@
 #include <type_traits>
 
 using namespace osc;
+using namespace osc::literals;
 namespace rgs = std::ranges;
 
 namespace
@@ -158,7 +160,7 @@ std::string osc::truncate_with_ellipsis(std::string_view v, size_t max_length)
         return std::string{v};
     }
 
-    std::string_view substr = v.substr(0, max(static_cast<ptrdiff_t>(0), static_cast<ptrdiff_t>(max_length)-3));
+    std::string_view substr = v.substr(0, max(0_z, static_cast<ptrdiff_t>(max_length)-3));
     std::string rv;
     rv.reserve(substr.length() + 3);
     rv = substr;

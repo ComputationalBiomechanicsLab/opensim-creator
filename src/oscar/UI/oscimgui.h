@@ -22,12 +22,14 @@
 #include <oscar/Utils/Flags.h>
 #include <oscar/Utils/UID.h>
 
+#include <concepts>
 #include <cstddef>
 #include <functional>
 #include <initializer_list>
 #include <optional>
 #include <span>
 #include <string>
+#include <string_view>
 #include <utility>
 
 namespace osc { class Camera; }
@@ -94,7 +96,7 @@ namespace osc::ui
         detail::draw_text_wrapped(fmt, std::forward<Args>(args)...);
     }
 
-    void draw_text_unformatted(CStringView);
+    void draw_text_unformatted(std::string_view);
 
     void draw_bullet_point();
 
@@ -271,14 +273,14 @@ namespace osc::ui
     void end_tooltip_nowrap();
 
     void push_id(UID);
-    void push_id(ptrdiff_t);
-    void push_id(size_t);
     void push_id(int);
+    template<std::integral T> void push_id(T number) { push_id(static_cast<int>(number)); }
+    void push_id(std::string_view);
     void push_id(const void*);
-    void push_id(CStringView);
+
     void pop_id();
 
-    ImGuiID get_id(CStringView str_id);
+    ImGuiID get_id(std::string_view);
 
     ImGuiItemFlags get_item_flags();
     void set_next_item_size(Rect);  // note: ImGui API assumes cursor is located at `p1` already

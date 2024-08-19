@@ -39,7 +39,7 @@ void osc::RedoButton::onDraw()
     }
 
     if (ui::begin_popup_context_menu("##OpenRedoMenu", ImGuiPopupFlags_MouseButtonLeft)) {
-        for (ptrdiff_t i = 0; i < undo_redo_->num_redo_entriesi(); ++i) {
+        for (size_t i = 0; i < undo_redo_->num_redo_entries(); ++i) {
             ui::push_id(ui_id++);
             if (ui::draw_selectable(undo_redo_->redo_entry_at(i).message())) {
                 undo_redo_->redo_to(i);

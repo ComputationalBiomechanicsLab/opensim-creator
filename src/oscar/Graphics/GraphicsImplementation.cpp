@@ -1743,7 +1743,7 @@ public:
 
     void set_pixels(std::span<const Color> pixels)
     {
-        OSC_ASSERT(ssize(pixels) == static_cast<ptrdiff_t>(dimensions_.x*dimensions_.y));
+        OSC_ASSERT(ssize(pixels) == area_of(dimensions_));
         convert_colors_to_pixel_bytes(pixels, texture_format_, pixel_data_);
     }
 
@@ -1754,7 +1754,7 @@ public:
 
     void set_pixels32(std::span<const Color32> pixels)
     {
-        OSC_ASSERT(ssize(pixels) == static_cast<ptrdiff_t>(dimensions_.x*dimensions_.y));
+        OSC_ASSERT(ssize(pixels) == area_of(dimensions_));
         convert_color32s_to_pixel_bytes(pixels, texture_format_, pixel_data_);
     }
 
@@ -2759,24 +2759,24 @@ public:
         return uniforms_.size();
     }
 
-    std::optional<ptrdiff_t> property_index(std::string_view property_name) const
+    std::optional<size_t> property_index(std::string_view property_name) const
     {
         if (const auto it = uniforms_.find(property_name); it != uniforms_.end()) {
-            return static_cast<ptrdiff_t>(std::distance(uniforms_.begin(), it));
+            return static_cast<size_t>(std::distance(uniforms_.begin(), it));
         }
         else {
             return std::nullopt;
         }
     }
 
-    std::string_view property_name(ptrdiff_t pos) const
+    std::string_view property_name(size_t pos) const
     {
         auto it = uniforms_.begin();
         std::advance(it, pos);
         return it->first;
     }
 
-    ShaderPropertyType property_type(ptrdiff_t pos) const
+    ShaderPropertyType property_type(size_t pos) const
     {
         auto it = uniforms_.begin();
         std::advance(it, pos);
@@ -2920,17 +2920,17 @@ size_t osc::Shader::num_properties() const
     return impl_->num_properties();
 }
 
-std::optional<ptrdiff_t> osc::Shader::property_index(std::string_view property_name) const
+std::optional<size_t> osc::Shader::property_index(std::string_view property_name) const
 {
     return impl_->property_index(property_name);
 }
 
-std::string_view osc::Shader::property_name(ptrdiff_t property_index) const
+std::string_view osc::Shader::property_name(size_t property_index) const
 {
     return impl_->property_name(property_index);
 }
 
-ShaderPropertyType osc::Shader::property_type(ptrdiff_t property_index) const
+ShaderPropertyType osc::Shader::property_type(size_t property_index) const
 {
     return impl_->property_type(property_index);
 }
@@ -7625,7 +7625,7 @@ void osc::GraphicsBackend::copy_texture(
         const GLint pack_format = to_opengl_image_pixel_pack_alignment(destination.texture_format());
 
         OSC_ASSERT(is_aligned_at_least(cpu_buffer.data(), pack_format) && "glReadPixels must be called with a buffer that is aligned to GL_PACK_ALIGNMENT (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
-        OSC_ASSERT(cpu_buffer.size() == static_cast<ptrdiff_t>(destination.dimensions().x*destination.dimensions().y)*num_bytes_per_pixel_in(destination.texture_format()));
+        OSC_ASSERT(cpu_buffer.size() == area_of(destination.dimensions())*num_bytes_per_pixel_in(destination.texture_format()));
 
         gl::viewport(0, 0, destination.dimensions().x, destination.dimensions().y);
         gl::bind_framebuffer(GL_READ_FRAMEBUFFER, draw_fbo);

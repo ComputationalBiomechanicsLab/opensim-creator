@@ -45,11 +45,16 @@ namespace
     void write_faces(std::ostream& out, const Mesh& mesh, ObjWriterFlags flags)
     {
         if (mesh.topology() != MeshTopology::Triangles) {
-            return;
+            return;  // can only write `MeshTopology::Triangles`
         }
 
         const auto indices = mesh.indices();
-        for (ptrdiff_t i = 0; i < std::ssize(indices)-2; i += 3) {
+
+        if (indices.size() < 3) {
+            return;  // insufficient primatives
+        }
+
+        for (size_t i = 0; i < indices.size()-2; i += 3) {
             // vertex indices start at 1 in OBJ
             const uint32_t i0 = indices[i]+1;
             const uint32_t i1 = indices[i+1]+1;

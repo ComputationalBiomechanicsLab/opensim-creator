@@ -57,7 +57,8 @@ std::vector<Vec4> osc::calc_tangent_vectors(
     //            return fallback-filled ({1,0,0,1}) vector
     if (topology != MeshTopology::Triangles or
         normals.empty() or
-        tex_coords.empty()) {
+        tex_coords.empty() or
+        indices.size() < 3) {
 
         rv.assign(vertices.size(), {1.0f, 0.0f, 0.0f, 1.0f});
         return rv;
@@ -66,9 +67,9 @@ std::vector<Vec4> osc::calc_tangent_vectors(
     // else: there must be enough data to compute the tangents
     //
     // (but, just to keep sane, assert that the mesh data is actually valid)
-    OSC_ASSERT_ALWAYS(ranges::all_of(indices, [num_verts = vertices.size(), num_normals = normals.size(), num_tex_coords = tex_coords.size()](auto index)
+    OSC_ASSERT_ALWAYS(ranges::all_of(indices, [&vertices, &normals, &tex_coords](auto index)
     {
-        return index < num_verts and index < num_normals and index < num_tex_coords;
+        return index < vertices.size() and index < normals.size() and index < tex_coords.size();
     }) && "the provided mesh contains invalid indices");
 
     // for smooth shading, vertices, normals, texture coordinates, and tangents
@@ -81,7 +82,7 @@ std::vector<Vec4> osc::calc_tangent_vectors(
     //     - accumulate a new average: `tangents[i] = (weights[i]*tangents[i] + new_tangent)/weights[i]+1;`
     //     - increment weight: `weights[i]++`
     rv.assign(vertices.size(), Vec4{});
-    std::vector<uint16_t> weights(vertices.size(), 0);
+    std::vector<uint16_t> weights(vertices.size());
     const auto accumulate_tangent = [&rv, &weights](auto i, const Vec4& new_tangent)
     {
         rv[i] = (static_cast<float>(weights[i])*rv[i] + new_tangent)/(static_cast<float>(weights[i]+1));
@@ -89,7 +90,8 @@ std::vector<Vec4> osc::calc_tangent_vectors(
     };
 
     // compute tangent vectors from triangle primitives
-    for (ptrdiff_t triangle_begin = 0, end = std::ssize(indices)-2; triangle_begin < end; triangle_begin += 3) {
+    OSC_ASSERT(indices.size() >= 3 && "insufficient indices provided to compute triangle tangents");  // checked above
+    for (size_t triangle_begin = 0, triangle_end = indices.size()-2; triangle_begin < triangle_end; triangle_begin += 3) {
 
         // compute edge vectors in object and tangent (UV) space
         const Vec3 e1 = vertices[indices[triangle_begin+1]] - vertices[indices[triangle_begin+0]];
@@ -115,7 +117,7 @@ std::vector<Vec4> osc::calc_tangent_vectors(
 
         // care: due to smooth shading, each normal may not actually be orthogonal
         // to the triangle's surface
-        for (ptrdiff_t ith_vertex = 0; ith_vertex < 3; ++ith_vertex) {
+        for (size_t ith_vertex = 0; ith_vertex < 3; ++ith_vertex) {
             const auto triangle_vertex_index = indices[triangle_begin + ith_vertex];
 
             // Gram-Schmidt orthogonalization (w.r.t. the stored normal)

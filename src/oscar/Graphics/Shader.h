@@ -28,9 +28,9 @@ namespace osc
         );
 
         size_t num_properties() const;
-        std::optional<ptrdiff_t> property_index(std::string_view property_name) const;
-        std::string_view property_name(ptrdiff_t) const;
-        ShaderPropertyType property_type(ptrdiff_t) const;
+        std::optional<size_t> property_index(std::string_view property_name) const;
+        std::string_view property_name(size_t) const;
+        ShaderPropertyType property_type(size_t) const;
 
         friend bool operator==(const Shader&, const Shader&) = default;
 

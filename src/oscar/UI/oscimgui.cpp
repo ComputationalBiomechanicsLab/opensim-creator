@@ -31,6 +31,7 @@
 #include <concepts>
 #include <functional>
 #include <ranges>
+#include <string_view>
 
 using namespace osc;
 using namespace osc::literals;
@@ -172,9 +173,9 @@ void osc::ui::detail::draw_text_wrapped_v(CStringView fmt, va_list args)
     ImGui::TextWrappedV(fmt.c_str(), args);
 }
 
-void osc::ui::draw_text_unformatted(CStringView sv)
+void osc::ui::draw_text_unformatted(std::string_view sv)
 {
-    ImGui::TextUnformatted(sv.c_str(), sv.c_str() + sv.size());
+    ImGui::TextUnformatted(sv.data(), sv.data() + sv.size());
 }
 
 void osc::ui::draw_bullet_point()
@@ -565,27 +566,17 @@ void osc::ui::push_id(UID id)
     ImGui::PushID(static_cast<int>(id.get()));
 }
 
-void osc::ui::push_id(ptrdiff_t p)
+void osc::ui::push_id(int id)
 {
-    ImGui::PushID(static_cast<int>(p));
+    ImGui::PushID(id);
 }
 
-void osc::ui::push_id(size_t i)
+void osc::ui::push_id(const void* id)
 {
-    ImGui::PushID(static_cast<int>(i));
+    ImGui::PushID(id);
 }
 
-void osc::ui::push_id(int int_id)
-{
-    ImGui::PushID(int_id);
-}
-
-void osc::ui::push_id(const void* ptr_id)
-{
-    ImGui::PushID(ptr_id);
-}
-
-void osc::ui::push_id(CStringView str_id)
+void osc::ui::push_id(std::string_view str_id)
 {
     ImGui::PushID(str_id.data(), str_id.data() + str_id.size());
 }
@@ -595,9 +586,9 @@ void osc::ui::pop_id()
     ImGui::PopID();
 }
 
-ImGuiID osc::ui::get_id(CStringView str_id)
+ImGuiID osc::ui::get_id(std::string_view str_id)
 {
-    return ImGui::GetID(str_id.c_str());
+    return ImGui::GetID(str_id.data(), str_id.data() + str_id.size());
 }
 
 ImGuiItemFlags osc::ui::get_item_flags()

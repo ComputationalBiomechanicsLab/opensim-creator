@@ -9,6 +9,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <limits>
 #include <vector>
 
 using namespace osc;
@@ -40,7 +41,7 @@ osc::CircleGeometry::CircleGeometry(
     uvs.emplace_back(0.5f, 0.5f);
 
     // not-middle vertices
-    for (ptrdiff_t s = 0; s <= static_cast<ptrdiff_t>(num_segments); ++s) {
+    for (size_t s = 0; s <= num_segments; ++s) {
         const auto fs = static_cast<float>(s);
         const auto segment = theta_start + (fs/fnum_segments * theta_length);
         const auto cos_segment = cos(segment);
@@ -51,6 +52,7 @@ osc::CircleGeometry::CircleGeometry(
         uvs.emplace_back((cos_segment + 1.0f) / 2.0f, (sin_segment + 1.0f) / 2.0f);
     }
 
+    OSC_ASSERT(num_segments + 1 < std::numeric_limits<uint32_t>::max());
     for (uint32_t i = 1; i <= static_cast<uint32_t>(num_segments); ++i) {
         indices.insert(indices.end(), {i, i+1, 0});
     }

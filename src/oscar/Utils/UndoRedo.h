@@ -120,17 +120,15 @@ namespace osc
         UID head_id() const;
 
         size_t num_undo_entries() const;
-        ptrdiff_t num_undo_entriesi() const;
-        const UndoRedoEntryBase& undo_entry_at(ptrdiff_t pos) const;
-        void undo_to(ptrdiff_t pos);
+        const UndoRedoEntryBase& undo_entry_at(size_t pos) const;
+        void undo_to(size_t pos);
         bool can_undo() const;
         void undo();
 
         size_t num_redo_entries() const;
-        ptrdiff_t num_redo_entriesi() const;
-        const UndoRedoEntryBase& redo_entry_at(ptrdiff_t pos) const;
+        const UndoRedoEntryBase& redo_entry_at(size_t pos) const;
         bool can_redo() const;
-        void redo_to(ptrdiff_t pos);
+        void redo_to(size_t pos);
         void redo();
 
     private:
@@ -161,12 +159,12 @@ namespace osc
 
         T& upd_scratch() { return scratch_; }
 
-        const UndoRedoEntry<T>& undo_entry_at(ptrdiff_t pos) const
+        const UndoRedoEntry<T>& undo_entry_at(size_t pos) const
         {
             return static_cast<const UndoRedoEntry<T>&>(static_cast<const UndoRedoBase&>(*this).undo_entry_at(pos));
         }
 
-        const UndoRedoEntry<T>& redo_entry_at(ptrdiff_t pos) const
+        const UndoRedoEntry<T>& redo_entry_at(size_t pos) const
         {
             return static_cast<const UndoRedoEntry<T>&>(static_cast<const UndoRedoBase&>(*this).redo_entry_at(pos));
         }
