@@ -511,7 +511,12 @@ private:
         m_Loader.open("textures/container.jpg"),
         ColorSpace::sRGB
     );
-    Mesh m_InputGrid = PlaneGeometry{2.0f, 2.0f, 50, 50};
+    Mesh m_InputGrid = PlaneGeometry{{
+        .width = 2.0f,
+        .height = 2.0f,
+        .num_width_segments = 50,
+        .num_height_segments = 50,
+    }};
     Mesh m_OutputGrid = m_InputGrid;
     Material m_Material{Shader{m_Loader.slurp("shaders/TPS2D/Textured.vert"), m_Loader.slurp("shaders/TPS2D/Textured.frag")}};
     MeshBasicMaterial wireframe_material_;

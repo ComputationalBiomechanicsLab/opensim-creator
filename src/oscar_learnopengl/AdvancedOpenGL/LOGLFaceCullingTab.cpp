@@ -14,7 +14,7 @@ namespace
 
     Mesh generate_cube_like_learnopengl()
     {
-        return BoxGeometry{1.0f, 1.0f, 1.0f}.mesh();
+        return BoxGeometry{};
     }
 
     Material generate_uv_testing_texture_mapped_material(IResourceLoader& loader)

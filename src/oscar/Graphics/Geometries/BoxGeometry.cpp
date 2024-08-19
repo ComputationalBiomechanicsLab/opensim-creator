@@ -12,13 +12,7 @@
 
 using namespace osc;
 
-osc::BoxGeometry::BoxGeometry(
-    float width,
-    float height,
-    float depth,
-    size_t num_width_segments,
-    size_t num_height_segments,
-    size_t num_depth_segments)
+osc::BoxGeometry::BoxGeometry(const Params& p)
 {
     // the implementation of this was initially translated from `three.js`'s
     // `BoxGeometry`, which has excellent documentation and source code. The
@@ -106,20 +100,20 @@ osc::BoxGeometry::BoxGeometry(
     };
 
     // build each side of the box
-    build_plane(2, 1, 0, -1.0f, -1.0f, {depth, height,  width},  num_depth_segments, num_height_segments);  // px
-    build_plane(2, 1, 0,  1.0f, -1.0f, {depth, height, -width},  num_depth_segments, num_height_segments);  // nx
-    build_plane(0, 2, 1,  1.0f,  1.0f, {width, depth,   height}, num_width_segments, num_depth_segments );  // py
-    build_plane(0, 2, 1,  1.0f, -1.0f, {width, depth,  -height}, num_width_segments, num_depth_segments );  // ny
-    build_plane(0, 1, 2,  1.0f, -1.0f, {width, height,  depth},  num_width_segments, num_height_segments);  // pz
-    build_plane(0, 1, 2, -1.0f, -1.0f, {width, height, -depth},  num_width_segments, num_height_segments);  // nz
+    build_plane(2, 1, 0, -1.0f, -1.0f, {p.depth, p.height,  p.width},  p.num_depth_segments, p.num_height_segments);  // px
+    build_plane(2, 1, 0,  1.0f, -1.0f, {p.depth, p.height, -p.width},  p.num_depth_segments, p.num_height_segments);  // nx
+    build_plane(0, 2, 1,  1.0f,  1.0f, {p.width, p.depth,   p.height}, p.num_width_segments, p.num_depth_segments );  // py
+    build_plane(0, 2, 1,  1.0f, -1.0f, {p.width, p.depth,  -p.height}, p.num_width_segments, p.num_depth_segments );  // ny
+    build_plane(0, 1, 2,  1.0f, -1.0f, {p.width, p.height,  p.depth},  p.num_width_segments, p.num_height_segments);  // pz
+    build_plane(0, 1, 2, -1.0f, -1.0f, {p.width, p.height, -p.depth},  p.num_width_segments, p.num_height_segments);  // nz
 
     // the first submesh is "the entire cube"
     submeshes.insert(submeshes.begin(), SubMeshDescriptor{0, group_start, MeshTopology::Triangles});
 
     // build geometry
-    mesh_.set_vertices(vertices);
-    mesh_.set_normals(normals);
-    mesh_.set_tex_coords(uvs);
-    mesh_.set_indices(indices);
-    mesh_.set_submesh_descriptors(submeshes);
+    set_vertices(vertices);
+    set_normals(normals);
+    set_tex_coords(uvs);
+    set_indices(indices);
+    set_submesh_descriptors(submeshes);
 }

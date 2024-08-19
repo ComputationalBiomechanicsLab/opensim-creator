@@ -517,11 +517,11 @@ namespace osc
             {
                 if (ui::draw_menu_item("Mesh to OBJ"))
                 {
-                    ActionTrySaveMeshToObjFile(m_State->getScratchMesh(m_DocumentIdentifier), ObjWriterFlags::Default);
+                    ActionTrySaveMeshToObjFile(m_State->getScratchMesh(m_DocumentIdentifier), ObjWriterFlag::Default);
                 }
                 if (ui::draw_menu_item("Mesh to OBJ (no normals)"))
                 {
-                    ActionTrySaveMeshToObjFile(m_State->getScratchMesh(m_DocumentIdentifier), ObjWriterFlags::NoWriteNormals);
+                    ActionTrySaveMeshToObjFile(m_State->getScratchMesh(m_DocumentIdentifier), ObjWriterFlag::NoWriteNormals);
                 }
                 if (ui::draw_menu_item("Mesh to STL"))
                 {

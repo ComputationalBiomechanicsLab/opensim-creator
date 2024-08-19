@@ -17,8 +17,8 @@ osc::AABBGeometry::AABBGeometry(const AABB& aabb)
 
     const auto& [min, max] = aabb;
 
-    mesh_.set_topology(MeshTopology::Lines);
-    mesh_.set_vertices({
+    set_topology(MeshTopology::Lines);
+    set_vertices({
         {max.x, max.y, max.z},
         {min.x, max.y, max.z},
         {min.x, min.y, max.z},
@@ -28,5 +28,5 @@ osc::AABBGeometry::AABBGeometry(const AABB& aabb)
         {min.x, min.y, min.z},
         {max.x, min.y, min.z},
     });
-    mesh_.set_indices({0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7});
+    set_indices({0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7});
 }

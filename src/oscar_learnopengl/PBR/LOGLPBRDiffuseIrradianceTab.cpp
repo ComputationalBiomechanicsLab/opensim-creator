@@ -48,7 +48,7 @@ namespace
         Texture2D hdr_texture = load_texture2D_from_image(
             loader.open("oscar_learnopengl/textures/hdr/newport_loft.hdr"),
             ColorSpace::Linear,
-            ImageLoadingFlags::FlipVertically
+            ImageLoadingFlag::FlipVertically
         );
         hdr_texture.set_wrap_mode(TextureWrapMode::Clamp);
         hdr_texture.set_filter_mode(TextureFilterMode::Linear);
@@ -72,7 +72,12 @@ namespace
         material.set_array("uShadowMatrices", calc_cubemap_view_proj_matrices(projection_matrix, Vec3{}));
 
         Camera camera;
-        graphics::draw(BoxGeometry{2.0f, 2.0f, 2.0f}, identity<Transform>(), material, camera);
+        graphics::draw(
+            BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}},
+            identity<Transform>(),
+            material,
+            camera
+        );
         camera.render_to(cubemap_render_texture);
 
         // TODO: some way of copying it into an `osc::Cubemap` would make sense
@@ -100,7 +105,7 @@ namespace
         material.set_array("uShadowMatrices", calc_cubemap_view_proj_matrices(capture_projection, Vec3{}));
 
         Camera camera;
-        graphics::draw(BoxGeometry{2.0f, 2.0f, 2.0f}, identity<Transform>(), material, camera);
+        graphics::draw(BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}}, identity<Transform>(), material, camera);
         camera.render_to(irradiance_cubemap);
 
         // TODO: some way of copying it into an `osc::Cubemap` would make sense
@@ -219,7 +224,7 @@ private:
     Texture2D texture_ = load_texture2D_from_image(
         loader_.open("oscar_learnopengl/textures/hdr/newport_loft.hdr"),
         ColorSpace::Linear,
-        ImageLoadingFlags::FlipVertically
+        ImageLoadingFlag::FlipVertically
     );
 
     RenderTexture projected_map_ = load_equirectangular_hdr_texture_into_cubemap(loader_);
@@ -230,9 +235,9 @@ private:
         loader_.slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/Background.frag"),
     }};
 
-    Mesh cube_mesh_ = BoxGeometry{2.0f, 2.0f, 2.0f};
+    Mesh cube_mesh_ = BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}};
     Material pbr_material_ = CreateMaterial(loader_);
-    Mesh sphere_mesh_ = SphereGeometry{1.0f, 64, 64};
+    Mesh sphere_mesh_ = SphereGeometry{{.num_width_segments = 64, .num_height_segments = 64}};
     MouseCapturingCamera camera_ = create_camera();
 };
 

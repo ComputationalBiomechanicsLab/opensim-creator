@@ -7,18 +7,15 @@
 
 namespace osc
 {
-    class IcosahedronGeometry final {
+    class IcosahedronGeometry final : public Mesh {
     public:
         static constexpr CStringView name() { return "Icosahedron"; }
 
-        IcosahedronGeometry(
-            float radius = 1.0f,
-            size_t detail = 0
-        );
+        struct Params final {
+            float radius = 1.0f;
+            size_t detail = 0;
+        };
 
-        const Mesh& mesh() const { return mesh_; }
-        operator const Mesh& () const { return mesh_; }
-    private:
-        Mesh mesh_;
+        explicit IcosahedronGeometry(const Params& = {});
     };
 }

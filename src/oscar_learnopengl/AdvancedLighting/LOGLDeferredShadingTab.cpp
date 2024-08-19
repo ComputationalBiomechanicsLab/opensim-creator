@@ -299,17 +299,17 @@ private:
     std::vector<Vec3> light_positions_ = generate_n_scene_light_positions(c_num_lights);
     std::vector<Vec3> light_colors_ = generate_n_scene_light_colors(c_num_lights);
     MouseCapturingCamera camera_ = create_camera_that_matches_learnopengl();
-    Mesh cube_mesh_ = BoxGeometry{2.0f, 2.0f, 2.0f};
-    Mesh quad_mesh_ = PlaneGeometry{2.0f, 2.0f};
+    Mesh cube_mesh_ = BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}};
+    Mesh quad_mesh_ = PlaneGeometry{{.width = 2.0f, .height = 2.0f}};
     Texture2D diffuse_map_ = load_texture2D_from_image(
         loader_.open("oscar_learnopengl/textures/container2.png"),
         ColorSpace::sRGB,
-        ImageLoadingFlags::FlipVertically
+        ImageLoadingFlag::FlipVertically
     );
     Texture2D specular_map_ = load_texture2D_from_image(
         loader_.open("oscar_learnopengl/textures/container2_specular.png"),
         ColorSpace::sRGB,
-        ImageLoadingFlags::FlipVertically
+        ImageLoadingFlag::FlipVertically
     );
 
     // rendering state

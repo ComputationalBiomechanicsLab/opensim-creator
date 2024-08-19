@@ -9,6 +9,7 @@
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/os.h>
+#include <oscar/Strings.h>
 
 #include <cstddef>
 #include <cstdint>
@@ -83,7 +84,9 @@ namespace
         DAESceneGraph rv;
 
         std::unordered_map<Mesh, std::string> mesh_to_id;
+        mesh_to_id.reserve(decorations.size());  // upper limit
         std::unordered_map<Color, std::string> color_to_material_id;
+        color_to_material_id.reserve(decorations.size());  // upper limit
         size_t latest_mesh = 0;
         size_t latest_material = 0;
         size_t latest_instance = 0;
@@ -407,6 +410,9 @@ namespace
     }
 }
 
+osc::DAEMetadata::DAEMetadata() :
+    DAEMetadata{"unknown_author", strings::library_name()}
+{}
 
 osc::DAEMetadata::DAEMetadata(
     std::string_view author_,

@@ -14,15 +14,7 @@
 
 using namespace osc;
 
-osc::CylinderGeometry::CylinderGeometry(
-    float radius_top,
-    float radius_bottom,
-    float height,
-    size_t num_radial_segments,
-    size_t num_height_segments,
-    bool open_ended,
-    Radians theta_start,
-    Radians theta_length)
+osc::CylinderGeometry::CylinderGeometry(const Params& p)
 {
     // the implementation of this was initially translated from `three.js`'s
     // `CylinderGeometry`, which has excellent documentation and source code. The
@@ -30,8 +22,8 @@ osc::CylinderGeometry::CylinderGeometry(
     //
     // https://threejs.org/docs/#api/en/geometries/CylinderGeometry
 
-    const auto fnum_radial_segments = static_cast<float>(num_radial_segments);
-    const auto fnum_height_segments = static_cast<float>(num_height_segments);
+    const auto fnum_radial_segments = static_cast<float>(p.num_radial_segments);
+    const auto fnum_height_segments = static_cast<float>(p.num_height_segments);
 
     std::vector<uint32_t> indices;
     std::vector<Vec3> vertices;
@@ -40,31 +32,31 @@ osc::CylinderGeometry::CylinderGeometry(
 
     uint32_t index = 0;
     std::vector<std::vector<uint32_t>> index_array;
-    const float half_height = 0.5f * height;
+    const float half_height = 0.5f * p.height;
     size_t group_start = 0;
     std::vector<SubMeshDescriptor> groups;
 
     const auto generate_torso = [&]()
     {
         // used to calculate normal
-        const float slope = (radius_bottom - radius_top) / height;
+        const float slope = (p.radius_bottom - p.radius_top) / p.height;
 
         // generate vertices, normals, and uvs
         size_t group_count = 0;
-        for (size_t y = 0; y <= num_height_segments; ++y) {
+        for (size_t y = 0; y <= p.num_height_segments; ++y) {
             std::vector<uint32_t> row_indices;
             const float v = static_cast<float>(y)/fnum_height_segments;
-            const float radius = v * (radius_bottom - radius_top) + radius_top;
-            for (size_t x = 0; x <= num_radial_segments; ++x) {
+            const float radius = v * (p.radius_bottom - p.radius_top) + p.radius_top;
+            for (size_t x = 0; x <= p.num_radial_segments; ++x) {
                 const auto fx = static_cast<float>(x);
                 const float u = fx/fnum_radial_segments;
-                const Radians theta = u*theta_length + theta_start;
+                const Radians theta = u*p.theta_length + p.theta_start;
                 const float sin_theta = sin(theta);
                 const float cos_theta = cos(theta);
 
                 vertices.emplace_back(
                     radius * sin_theta,
-                    (-v * height) + half_height,
+                    (-v * p.height) + half_height,
                     radius * cos_theta
                 );
                 normals.push_back(UnitVec3{sin_theta, slope, cos_theta});
@@ -75,8 +67,8 @@ osc::CylinderGeometry::CylinderGeometry(
         }
 
         // generate indices
-        for (size_t x = 0; x < num_radial_segments; ++x) {
-            for (size_t y = 0; y < num_height_segments; ++y) {
+        for (size_t x = 0; x < p.num_radial_segments; ++x) {
+            for (size_t y = 0; y < p.num_height_segments; ++y) {
                 const auto a = index_array.at(y+0).at(x+0);
                 const auto b = index_array.at(y+1).at(x+0);
                 const auto c = index_array.at(y+1).at(x+1);
@@ -95,7 +87,7 @@ osc::CylinderGeometry::CylinderGeometry(
     {
         size_t group_count = 0;
 
-        const auto radius = top ? radius_top : radius_bottom;
+        const auto radius = top ? p.radius_top : p.radius_bottom;
         const auto sign = top ? 1.0f : -1.0f;
 
         // first, generate the center vertex data of the cap.
@@ -103,7 +95,7 @@ osc::CylinderGeometry::CylinderGeometry(
         // we must generate a center vertex per face/segment
 
         const auto center_index_start = index;  // save first center vertex
-        for (size_t x = 1; x <= num_radial_segments; ++x) {
+        for (size_t x = 1; x <= p.num_radial_segments; ++x) {
             vertices.emplace_back(0.0f, sign*half_height, 0.0f);
             normals.emplace_back(0.0f, sign, 0.0f);
             uvs.emplace_back(0.5f, 0.5f);
@@ -112,10 +104,10 @@ osc::CylinderGeometry::CylinderGeometry(
         const auto center_index_end = index;  // save last center vertex
 
         // generate surrounding vertices, normals, and uvs
-        for (size_t x = 0; x <= num_radial_segments; ++x) {
+        for (size_t x = 0; x <= p.num_radial_segments; ++x) {
             const auto fx = static_cast<float>(x);
             const float u = fx / fnum_radial_segments;
-            const Radians theta = u * theta_length + theta_start;
+            const Radians theta = u * p.theta_length + p.theta_start;
             const float cos_theta = cos(theta);
             const float sin_theta = sin(theta);
 
@@ -129,7 +121,7 @@ osc::CylinderGeometry::CylinderGeometry(
         }
 
         // generate indices
-        for (size_t x = 0; x < num_radial_segments; ++x) {
+        for (size_t x = 0; x < p.num_radial_segments; ++x) {
             const auto c = static_cast<uint32_t>(center_index_start + x);
             const auto i = static_cast<uint32_t>(center_index_end + x);
 
@@ -147,18 +139,18 @@ osc::CylinderGeometry::CylinderGeometry(
     };
 
     generate_torso();
-    if (not open_ended) {
-        if (radius_top > 0.0f) {
+    if (not p.open_ended) {
+        if (p.radius_top > 0.0f) {
             generate_cap(true);
         }
-        if (radius_bottom > 0.0f) {
+        if (p.radius_bottom > 0.0f) {
             generate_cap(false);
         }
     }
 
-    mesh_.set_vertices(vertices);
-    mesh_.set_normals(normals);
-    mesh_.set_tex_coords(uvs);
-    mesh_.set_indices(indices);
-    mesh_.set_submesh_descriptors(groups);
+    set_vertices(vertices);
+    set_normals(normals);
+    set_tex_coords(uvs);
+    set_indices(indices);
+    set_submesh_descriptors(groups);
 }

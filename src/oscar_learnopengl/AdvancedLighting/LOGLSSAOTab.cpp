@@ -279,9 +279,9 @@ private:
 
     MouseCapturingCamera camera_ = create_camera_that_matches_learnopengl();
 
-    Mesh sphere_mesh_ = SphereGeometry{1.0f, 32, 32};
-    Mesh cube_mesh_ = BoxGeometry{2.0f, 2.0f, 2.0f};
-    Mesh quad_mesh_ = PlaneGeometry{2.0f, 2.0f};
+    Mesh sphere_mesh_ = SphereGeometry{{.num_width_segments = 32, .num_height_segments = 32}};
+    Mesh cube_mesh_ = BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}};
+    Mesh quad_mesh_ = PlaneGeometry{{.width = 2.0f, .height = 2.0f}};
 
     // rendering state
     struct GBufferRenderingState final {

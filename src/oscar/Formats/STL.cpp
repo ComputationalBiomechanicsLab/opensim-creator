@@ -9,6 +9,7 @@
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/ObjectRepresentation.h>
+#include <oscar/Strings.h>
 
 #include <algorithm>
 #include <cstddef>
@@ -99,6 +100,9 @@ namespace
     }
 }
 
+osc::StlMetadata::StlMetadata() :
+    StlMetadata{strings::library_name()}
+{}
 
 osc::StlMetadata::StlMetadata(
     std::string_view authoring_tool_) :

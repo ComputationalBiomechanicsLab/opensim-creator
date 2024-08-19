@@ -10,17 +10,15 @@
 
 using namespace osc;
 
-osc::GridGeometry::GridGeometry(
-    float size,
-    size_t num_divisions)
+osc::GridGeometry::GridGeometry(const Params& p)
 {
     constexpr float z = 0.0f;
-    const float min = -0.5f*size;
-    const float max =  0.5f*size;
+    const float min = -0.5f*p.size;
+    const float max =  0.5f*p.size;
 
-    const float step_size = (max - min) / static_cast<float>(num_divisions);
+    const float step_size = (max - min) / static_cast<float>(p.num_divisions);
 
-    const size_t num_lines = num_divisions + 1;
+    const size_t num_lines = p.num_divisions + 1;
 
     std::vector<Vec3> vertices;
     vertices.reserve(4 * num_lines);
@@ -53,8 +51,8 @@ osc::GridGeometry::GridGeometry(
         push({x, +1.0f, z});
     }
 
-    mesh_.set_topology(MeshTopology::Lines);
-    mesh_.set_vertices(vertices);
-    mesh_.set_normals(normals);
-    mesh_.set_indices(indices);
+    set_topology(MeshTopology::Lines);
+    set_vertices(vertices);
+    set_normals(normals);
+    set_indices(indices);
 }

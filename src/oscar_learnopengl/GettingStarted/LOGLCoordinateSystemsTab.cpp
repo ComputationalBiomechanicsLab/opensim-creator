@@ -49,7 +49,7 @@ namespace
             load_texture2D_from_image(
                 loader.open("oscar_learnopengl/textures/container.jpg"),
                 ColorSpace::sRGB,
-                ImageLoadingFlags::FlipVertically
+                ImageLoadingFlag::FlipVertically
             )
         );
 
@@ -58,7 +58,7 @@ namespace
             load_texture2D_from_image(
                 loader.open("oscar_learnopengl/textures/awesomeface.png"),
                 ColorSpace::sRGB,
-                ImageLoadingFlags::FlipVertically
+                ImageLoadingFlag::FlipVertically
             )
         );
 

@@ -15,11 +15,7 @@
 using namespace osc;
 using namespace osc::literals;
 
-osc::CircleGeometry::CircleGeometry(
-    float radius,
-    size_t num_segments,
-    Radians theta_start,
-    Radians theta_length)
+osc::CircleGeometry::CircleGeometry(const Params& p)
 {
     // the implementation of this was initially translated from `three.js`'s
     // `CircleGeometry`, which has excellent documentation and source code. The
@@ -27,7 +23,7 @@ osc::CircleGeometry::CircleGeometry(
     //
     // https://threejs.org/docs/#api/en/geometries/CircleGeometry
 
-    num_segments = max(3_uz, num_segments);
+    const size_t num_segments = max(3_uz, p.num_segments);
     const auto fnum_segments = static_cast<float>(num_segments);
 
     std::vector<uint32_t> indices;
@@ -43,11 +39,11 @@ osc::CircleGeometry::CircleGeometry(
     // not-middle vertices
     for (size_t s = 0; s <= num_segments; ++s) {
         const auto fs = static_cast<float>(s);
-        const auto segment = theta_start + (fs/fnum_segments * theta_length);
+        const auto segment = p.theta_start + (fs/fnum_segments * p.theta_length);
         const auto cos_segment = cos(segment);
         const auto sin_segment = sin(segment);
 
-        vertices.emplace_back(radius * cos_segment, radius * sin_segment, 0.0f);
+        vertices.emplace_back(p.radius * cos_segment, p.radius * sin_segment, 0.0f);
         normals.emplace_back(0.0f, 0.0f, 1.0f);
         uvs.emplace_back((cos_segment + 1.0f) / 2.0f, (sin_segment + 1.0f) / 2.0f);
     }
@@ -57,8 +53,8 @@ osc::CircleGeometry::CircleGeometry(
         indices.insert(indices.end(), {i, i+1, 0});
     }
 
-    mesh_.set_vertices(vertices);
-    mesh_.set_normals(normals);
-    mesh_.set_tex_coords(uvs);
-    mesh_.set_indices(indices);
+    set_vertices(vertices);
+    set_normals(normals);
+    set_tex_coords(uvs);
+    set_indices(indices);
 }

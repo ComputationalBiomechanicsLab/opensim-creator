@@ -434,7 +434,7 @@ add_library(oscar STATIC
     UI.h
     Utils.h
     Variant.h
-)
+ "Strings.h")
 
 target_include_directories(oscar PUBLIC
 

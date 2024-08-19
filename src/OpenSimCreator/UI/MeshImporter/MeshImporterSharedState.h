@@ -1413,13 +1413,13 @@ namespace osc::mi
         MeshLoader m_MeshLoader;
 
         // sphere mesh used by various scene elements
-        osc::Mesh m_SphereMesh = SphereGeometry{1.0f, 12, 12};
+        osc::Mesh m_SphereMesh = SphereGeometry{{.num_width_segments = 12, .num_height_segments = 12}};
 
         // cylinder mesh used by various scene elements
-        osc::Mesh m_CylinderMesh = CylinderGeometry{1.0f, 1.0f, 2.0f, 16};
+        osc::Mesh m_CylinderMesh = CylinderGeometry{{.height = 2.0f, .num_radial_segments = 32}};
 
         // cone mesh used to render scene elements
-        osc::Mesh m_ConeMesh = ConeGeometry{1.0f, 2.0f, 16};
+        osc::Mesh m_ConeMesh = ConeGeometry{{.radius = 1.0f, .height = 2.0f, .num_radial_segments = 16}};
 
         // material used to draw the floor grid
         MeshBasicMaterial m_FloorMaterial;

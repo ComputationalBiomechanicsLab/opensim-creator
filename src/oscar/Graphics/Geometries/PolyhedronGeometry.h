@@ -13,7 +13,7 @@ namespace osc
     // generates a 3D solid with flat faces by projecting triangle faces (`indicies`
     // indexes into `vertices` for each triangle) onto a sphere of `radius`, followed
     // by dividing them up to the desired `detail_level`
-    class PolyhedronGeometry final {
+    class PolyhedronGeometry final : public Mesh {
     public:
         static constexpr CStringView name() { return "Polyhedron"; }
 
@@ -23,10 +23,5 @@ namespace osc
             float radius,
             size_t detail_level
         );
-
-        operator const Mesh& () const { return mesh_; }
-        const Mesh& mesh() const { return mesh_; }
-    private:
-        Mesh mesh_;
     };
 }

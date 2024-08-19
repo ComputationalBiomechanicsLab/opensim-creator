@@ -33,7 +33,7 @@ namespace osc { class VertexFormat; }
 
 namespace osc
 {
-    class Mesh final {
+    class Mesh {
     public:
         Mesh();
 

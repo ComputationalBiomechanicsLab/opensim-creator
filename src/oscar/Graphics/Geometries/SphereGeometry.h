@@ -8,23 +8,20 @@
 
 namespace osc
 {
-    class SphereGeometry final {
+    class SphereGeometry final : public Mesh {
     public:
         static constexpr CStringView name() { return "Sphere"; }
 
-        SphereGeometry(
-            float radius = 1.0f,
-            size_t num_width_segments = 32,
-            size_t num_height_segments = 16,
-            Radians phi_start = Degrees{0},
-            Radians phi_length = Degrees{360},
-            Radians theta_start = Degrees{0},
-            Radians theta_length = Degrees{180}
-        );
+        struct Params final {
+            float radius = 1.0f;
+            size_t num_width_segments = 32;
+            size_t num_height_segments = 16;
+            Radians phi_start = Degrees{0};
+            Radians phi_length = Degrees{360};
+            Radians theta_start = Degrees{0};
+            Radians theta_length = Degrees{180};
+        };
 
-        const Mesh& mesh() const { return mesh_; }
-        operator const Mesh& () const { return mesh_; }
-    private:
-        Mesh mesh_;
+        explicit SphereGeometry(const Params& = {});
     };
 }

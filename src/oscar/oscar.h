@@ -6,6 +6,7 @@
 #include <oscar/Maths.h>
 #include <oscar/Platform.h>
 #include <oscar/Shims.h>
+#include <oscar/Strings.h>
 #include <oscar/UI.h>
 #include <oscar/Utils.h>
 #include <oscar/Variant.h>

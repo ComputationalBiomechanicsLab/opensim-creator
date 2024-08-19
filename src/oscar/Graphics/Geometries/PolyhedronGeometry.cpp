@@ -193,12 +193,12 @@ osc::PolyhedronGeometry::PolyhedronGeometry(
         generated_indices.push_back(i);
     }
 
-    mesh_.set_vertices(generated_vertices);
-    mesh_.set_tex_coords(uvs);
-    mesh_.set_indices(generated_indices);
+    set_vertices(generated_vertices);
+    set_tex_coords(uvs);
+    set_indices(generated_indices);
     if (detail_level == 0) {
         // flat-shade
-        mesh_.recalculate_normals();
+        recalculate_normals();
     }
     else {
         // smooth-shade
@@ -206,6 +206,6 @@ osc::PolyhedronGeometry::PolyhedronGeometry(
         for (auto& v : normals) {
             v = normalize(v);
         }
-        mesh_.set_normals(normals);
+        set_normals(normals);
     }
 }

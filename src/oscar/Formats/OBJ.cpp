@@ -3,6 +3,7 @@
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/os.h>
+#include <oscar/Strings.h>
 
 #include <cstddef>
 #include <iomanip>
@@ -60,7 +61,7 @@ namespace
             const uint32_t i1 = indices[i+1]+1;
             const uint32_t i2 = indices[i+2]+1;
 
-            if (not (flags & ObjWriterFlags::NoWriteNormals)) {
+            if (not (flags & ObjWriterFlag::NoWriteNormals)) {
                 out << "f " << i0 << "//" << i0 << ' ' << i1  << "//" << i1 << ' ' << i2 << "//" << i2 << '\n';
             }
             else {
@@ -71,6 +72,9 @@ namespace
     }
 }
 
+osc::ObjMetadata::ObjMetadata() :
+    ObjMetadata{strings::library_name()}
+{}
 
 osc::ObjMetadata::ObjMetadata(std::string_view authoring_tool_) :
     authoring_tool{authoring_tool_},
@@ -85,7 +89,7 @@ void osc::write_as_obj(
 {
     write_header(out, metadata);
     write_vertices(out, mesh);
-    if (not (flags & ObjWriterFlags::NoWriteNormals)) {
+    if (not (flags & ObjWriterFlag::NoWriteNormals)) {
         write_normals(out, mesh);
     }
     write_faces(out, mesh, flags);

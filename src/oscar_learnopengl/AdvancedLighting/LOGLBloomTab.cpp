@@ -333,8 +333,8 @@ private:
         loader_.open("oscar_learnopengl/textures/container2.png"),
         ColorSpace::sRGB
     );
-    Mesh cube_mesh_ = BoxGeometry{2.0f, 2.0f, 2.0f};
-    Mesh quad_mesh_ = PlaneGeometry{2.0f, 2.0f};
+    Mesh cube_mesh_ = BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}};
+    Mesh quad_mesh_ = PlaneGeometry{{.width = 2.0f, .height = 2.0f}};
 
     RenderTexture scene_hdr_color_output_;
     RenderTexture scene_hdr_thresholded_output_;

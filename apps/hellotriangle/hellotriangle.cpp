@@ -322,7 +322,10 @@ void main()
             if (torus_parameters_ == edited_torus_parameters_) {
                 return;
             }
-            mesh_ = TorusKnotGeometry{edited_torus_parameters_.torus_radius, edited_torus_parameters_.tube_radius};
+            mesh_ = TorusKnotGeometry{{
+                .torus_radius = edited_torus_parameters_.torus_radius,
+                .tube_radius = edited_torus_parameters_.tube_radius,
+            }};
             torus_parameters_ = edited_torus_parameters_;
         }
 

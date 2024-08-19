@@ -16,6 +16,9 @@ namespace osc
     >
     class SynchronizedValue final {
     public:
+        // default-construct T
+        SynchronizedValue() = default;
+
         // in-place constructor for `T`
         template<typename... Args>
         requires std::constructible_from<T, Args&&...>

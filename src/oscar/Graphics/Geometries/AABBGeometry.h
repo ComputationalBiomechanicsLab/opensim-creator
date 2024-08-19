@@ -6,15 +6,10 @@
 
 namespace osc
 {
-    class AABBGeometry final {
+    class AABBGeometry final : public Mesh {
     public:
         static constexpr CStringView name() { return "AABB"; }
 
-        AABBGeometry(const AABB& = {.min = {-1.0f, -1.0f, -1.0f}, .max = {1.0f, 1.0f, 1.0f}});
-
-        const Mesh& mesh() const { return mesh_; }
-        operator const Mesh& () const { return mesh_; }
-    private:
-        Mesh mesh_;
+        explicit AABBGeometry(const AABB& = {.min = {-1.0f, -1.0f, -1.0f}, .max = {1.0f, 1.0f, 1.0f}});
     };
 }

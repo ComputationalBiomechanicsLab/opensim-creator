@@ -27,9 +27,9 @@ namespace
     Mesh generate_mesh_with_submeshes()
     {
         const auto meshes = std::to_array<Mesh>({
-            BoxGeometry{2.0f, 2.0f, 2.0f},
-            SphereGeometry{1.0f, 16, 16},
-            CircleGeometry{1.0f, 32},
+            BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}},
+            SphereGeometry{{.num_width_segments = 16, .num_height_segments = 16}},
+            CircleGeometry{{.radius = 1.0f, .num_segments = 32}},
         });
 
         std::vector<Vec3> all_verts;

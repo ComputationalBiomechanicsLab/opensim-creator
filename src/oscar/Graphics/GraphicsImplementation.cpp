@@ -6167,7 +6167,7 @@ private:
     }};
 
     // a generic quad mesh: two triangles covering NDC @ Z=0
-    Mesh quad_mesh_ = PlaneGeometry{2.0f, 2.0f, 1, 1};
+    Mesh quad_mesh_ = PlaneGeometry{{.width = 2.0f, .height = 2.0f}};
 
     // storage for instance data
     std::vector<float> instance_cpu_buffer_;

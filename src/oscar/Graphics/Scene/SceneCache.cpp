@@ -150,7 +150,13 @@ public:
         auto guard = torus_cache.lock();
         auto [it, inserted] = guard->try_emplace(key, cube);
         if (inserted) {
-            it->second = TorusGeometry{key.tube_center_radius, key.tube_radius, 12, 12, Degrees{360}};
+            it->second = TorusGeometry{{
+                .tube_center_radius = key.tube_center_radius,
+                .tube_radius = key.tube_radius,
+                .num_radial_segments = 12,
+                .num_tubular_segments = 12,
+                .arc = Degrees{360},
+            }};
         }
 
         return it->second;
@@ -220,14 +226,14 @@ public:
     }
 
 private:
-    Mesh sphere = SphereGeometry{1.0f, 16, 16};
-    Mesh circle = CircleGeometry{1.0f, 16};
-    Mesh cylinder = CylinderGeometry{1.0f, 1.0f, 2.0f, 16};
-    Mesh uncapped_cylinder = CylinderGeometry{1.0f, 1.0f, 2.0f, 16, 1, true};
-    Mesh cube = BoxGeometry{2.0f, 2.0f, 2.0f};
-    Mesh cone = ConeGeometry{1.0f, 2.0f, 16};
-    Mesh floor = PlaneGeometry{2.0f, 2.0f, 1, 1};
-    Mesh grid100x100 = GridGeometry{2.0f, 1000};
+    Mesh sphere = SphereGeometry{{.num_width_segments = 16, .num_height_segments = 16}};
+    Mesh circle = CircleGeometry{{.radius = 1.0f, .num_segments = 16}};
+    Mesh cylinder = CylinderGeometry{{.height = 2.0f, .num_radial_segments = 16}};
+    Mesh uncapped_cylinder = CylinderGeometry{{.height = 2.0f, .num_radial_segments = 16, .open_ended = true}};
+    Mesh cube = BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}};
+    Mesh cone = ConeGeometry{{.radius = 1.0f, .height = 2.0f, .num_radial_segments = 16}};
+    Mesh floor = PlaneGeometry{{.width = 2.0f, .height = 2.0f}};
+    Mesh grid100x100 = GridGeometry{{.num_divisions = 1000}};
     Mesh cube_wireframe = AABBGeometry{};
     Mesh y_line = generate_y_to_y_line_mesh();
     Mesh textured_quad = floor;

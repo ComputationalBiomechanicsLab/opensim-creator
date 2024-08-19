@@ -8,20 +8,17 @@
 
 namespace osc
 {
-    class CircleGeometry final {
+    class CircleGeometry final : public Mesh {
     public:
         static constexpr CStringView name() { return "Circle"; }
 
-        CircleGeometry(
-            float radius = 1.0f,
-            size_t num_segments = 32,
-            Radians theta_start = Degrees{0},
-            Radians theta_length = Degrees{360}
-        );
+        struct Params final {
+            float radius = 1.0f;
+            size_t num_segments = 32;
+            Radians theta_start = Degrees{0};
+            Radians theta_length = Degrees{360};
+        };
 
-        const Mesh& mesh() const { return mesh_; }
-        operator const Mesh& () const { return mesh_; }
-    private:
-        Mesh mesh_;
+        explicit CircleGeometry(const Params& = Params{});
     };
 }

@@ -8,11 +8,7 @@
 
 using namespace osc;
 
-osc::PlaneGeometry::PlaneGeometry(
-    float width,
-    float height,
-    size_t num_width_segments,
-    size_t num_height_segments)
+osc::PlaneGeometry::PlaneGeometry(const Params& p)
 {
     // the implementation of this was initially translated from `three.js`'s
     // `PlaneGeometry`, which has excellent documentation and source code. The
@@ -20,14 +16,14 @@ osc::PlaneGeometry::PlaneGeometry(
     //
     // https://threejs.org/docs/#api/en/geometries/PlaneGeometry
 
-    const float half_width = 0.5f * width;
-    const float half_height = 0.5f * height;
-    const size_t grid_x = num_width_segments;
-    const size_t grid_y = num_height_segments;
+    const float half_width = 0.5f * p.width;
+    const float half_height = 0.5f * p.height;
+    const size_t grid_x = p.num_width_segments;
+    const size_t grid_y = p.num_height_segments;
     const size_t grid_x1 = grid_x + 1;
     const size_t grid_y1 = grid_y + 1;
-    const float segment_width = width / static_cast<float>(grid_x);
-    const float segment_height = height / static_cast<float>(grid_y);
+    const float segment_width = p.width / static_cast<float>(grid_x);
+    const float segment_height = p.height / static_cast<float>(grid_y);
 
     std::vector<uint32_t> indices;
     std::vector<Vec3> vertices;
@@ -60,8 +56,8 @@ osc::PlaneGeometry::PlaneGeometry(
         }
     }
 
-    mesh_.set_vertices(vertices);
-    mesh_.set_normals(normals);
-    mesh_.set_tex_coords(uvs);
-    mesh_.set_indices(indices);
+    set_vertices(vertices);
+    set_normals(normals);
+    set_tex_coords(uvs);
+    set_indices(indices);
 }

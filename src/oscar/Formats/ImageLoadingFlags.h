@@ -1,10 +1,10 @@
 #pragma once
 
-#include <oscar/Shims/Cpp23/utility.h>
+#include <oscar/Utils/Flags.h>
 
 namespace osc
 {
-    enum class ImageLoadingFlags {
+    enum class ImageLoadingFlag {
         None = 0,
 
         // BEWARE: this flips pixels vertically (in Y) but leaves the pixel's
@@ -16,9 +16,5 @@ namespace osc
         // you'll need to negate each G)
         FlipVertically = 1<<0,
     };
-
-    constexpr bool operator&(ImageLoadingFlags lhs, ImageLoadingFlags rhs)
-    {
-        return cpp23::to_underlying(lhs) & cpp23::to_underlying(rhs);
-    }
+    using ImageLoadingFlags = Flags<ImageLoadingFlag>;
 }

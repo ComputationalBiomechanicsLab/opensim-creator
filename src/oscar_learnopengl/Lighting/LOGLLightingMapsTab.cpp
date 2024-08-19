@@ -26,13 +26,13 @@ namespace
         const Texture2D diffuse_map = load_texture2D_from_image(
             loader.open("oscar_learnopengl/textures/container2.png"),
             ColorSpace::sRGB,
-            ImageLoadingFlags::FlipVertically
+            ImageLoadingFlag::FlipVertically
         );
 
         const Texture2D specular_map = load_texture2D_from_image(
             loader.open("oscar_learnopengl/textures/container2_specular.png"),
             ColorSpace::sRGB,
-            ImageLoadingFlags::FlipVertically
+            ImageLoadingFlag::FlipVertically
         );
 
         Material rv{Shader{
