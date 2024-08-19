@@ -7,6 +7,7 @@
 
 namespace osc
 {
+    // a `std::ostream` that performs no actual input-output operations
     class NullOStream final : public std::ostream {
     public:
         NullOStream() : std::ostream{&streambuf_} {}

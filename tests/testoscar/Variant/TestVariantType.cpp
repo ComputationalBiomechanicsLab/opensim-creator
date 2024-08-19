@@ -2,6 +2,7 @@
 
 #include <gtest/gtest.h>
 #include <oscar/Utils/EnumHelpers.h>
+#include <oscar/Utils/StringHelpers.h>
 
 #include <array>
 #include <limits>
@@ -42,12 +43,12 @@ TEST(VariantType, pipe_to_ostream_works_as_intended)
 TEST(VariantType, ToStringReturnsExpectedResults)
 {
     for (const auto& [input, expectedOutput] : c_expected_varianttype_strings) {
-        ASSERT_EQ(to_string(input), expectedOutput);
+        ASSERT_EQ(stream_to_string(input), expectedOutput);
     }
 }
 
 TEST(VariantType, PassingBsValueIntoToStringThrows)
 {
     const auto bs = static_cast<VariantType>(std::numeric_limits<std::underlying_type_t<VariantType>>::max()-1);
-    ASSERT_ANY_THROW({ to_string(bs); });
+    ASSERT_ANY_THROW({ stream_to_string(bs); });
 }

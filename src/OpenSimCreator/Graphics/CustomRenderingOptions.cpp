@@ -4,6 +4,7 @@
 
 #include <oscar/Graphics/Scene/SceneRendererParams.h>
 #include <oscar/Utils/Algorithms.h>
+#include <oscar/Utils/Conversion.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/EnumHelpers.h>
 #include <oscar/Variant/Variant.h>
@@ -88,7 +89,7 @@ void osc::CustomRenderingOptions::tryUpdFromValues(std::string_view keyPrefix, c
 
         std::string key = std::string{keyPrefix} + metadata.id;
         if (const auto* v = lookup_or_nullptr(lut, key); v->type() == VariantType::Bool) {
-            SetOption(m_Flags, metadata.value, v->to<bool>());
+            SetOption(m_Flags, metadata.value, to<bool>(*v));
         }
     }
 }

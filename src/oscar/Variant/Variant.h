@@ -44,13 +44,6 @@ namespace osc
         operator Vec2() const;
         operator Vec3() const;
 
-        // explicit conversion
-        template<typename T>
-        T to() const
-        {
-            return this->operator T();
-        }
-
         friend bool operator==(const Variant&, const Variant&);
 
         friend void swap(Variant& a, Variant& b) noexcept
@@ -75,7 +68,6 @@ namespace osc
     };
 
     bool operator==(const Variant&, const Variant&);
-    std::string to_string(const Variant&);
     std::ostream& operator<<(std::ostream&, const Variant&);
 }
 

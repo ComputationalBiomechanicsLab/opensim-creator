@@ -1,6 +1,7 @@
 #include "OpenSimDecorationOptions.h"
 
 #include <oscar/Utils/Algorithms.h>
+#include <oscar/Utils/Conversion.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/EnumHelpers.h>
 #include <oscar/Variant/Variant.h>
@@ -224,7 +225,7 @@ void osc::OpenSimDecorationOptions::tryUpdFromValues(
     if (auto* appVal = lookup("muscle_decoration_style"); appVal->type() == VariantType::String)
     {
         const auto metadata = GetAllMuscleDecorationStyleMetadata();
-        const auto it = rgs::find(metadata, appVal->to<std::string>(), [](const auto& m) { return m.id; });
+        const auto it = rgs::find(metadata, to<std::string>(*appVal), [](const auto& m) { return m.id; });
         if (it != metadata.end()) {
             m_MuscleDecorationStyle = it->value;
         }
@@ -233,7 +234,7 @@ void osc::OpenSimDecorationOptions::tryUpdFromValues(
     if (auto* appVal = lookup("muscle_coloring_style"); appVal->type() == VariantType::String)
     {
         const auto metadata = GetAllMuscleColoringStyleMetadata();
-        const auto it = rgs::find(metadata, appVal->to<std::string>(), [](const auto& m) { return m.id; });
+        const auto it = rgs::find(metadata, to<std::string>(*appVal), [](const auto& m) { return m.id; });
         if (it != metadata.end()) {
             m_MuscleColoringStyle = it->value;
         }
@@ -242,7 +243,7 @@ void osc::OpenSimDecorationOptions::tryUpdFromValues(
     if (auto* appVal = lookup("muscle_sizing_style"); appVal->type() == VariantType::String)
     {
         const auto metadata = GetAllMuscleSizingStyleMetadata();
-        const auto it = rgs::find(metadata, appVal->to<std::string>(), [](const auto& m) { return m.id; });
+        const auto it = rgs::find(metadata, to<std::string>(*appVal), [](const auto& m) { return m.id; });
         if (it != metadata.end()) {
             m_MuscleSizingStyle = it->value;
         }
@@ -252,8 +253,7 @@ void osc::OpenSimDecorationOptions::tryUpdFromValues(
         const auto& metadata = GetIthOptionMetadata(i);
         if (auto* appVal = lookup(metadata.id); appVal->type() == VariantType::Bool)
         {
-            const bool v = appVal->to<bool>();
-            SetOption(m_Flags, GetIthOption(i), v);
+            SetOption(m_Flags, GetIthOption(i), to<bool>(*appVal));
         }
     }
 }

@@ -18,6 +18,7 @@
 #include <oscar/Platform/Detail/SDL2Helpers.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
+#include <oscar/Utils/Conversion.h>
 #include <oscar/Utils/FilesystemHelpers.h>
 #include <oscar/Utils/Perf.h>
 #include <oscar/Utils/ScopeGuard.h>
@@ -80,7 +81,7 @@ namespace
     LogLevel get_log_level_from_settings(const AppSettings& settings)
     {
         if (const auto v = settings.find_value("log_level")) {
-            if (auto parsed = try_parse_as_log_level(v->to<std::string>())) {
+            if (auto parsed = try_parse_as_log_level(to<std::string>(*v))) {
                 return *parsed;
             }
         }

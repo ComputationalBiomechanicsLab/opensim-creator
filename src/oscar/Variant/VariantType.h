@@ -1,7 +1,6 @@
 #pragma once
 
 #include <iosfwd>
-#include <string>
 
 namespace osc
 {
@@ -19,5 +18,4 @@ namespace osc
     };
 
     std::ostream& operator<<(std::ostream&, VariantType);
-    std::string to_string(VariantType);
 }

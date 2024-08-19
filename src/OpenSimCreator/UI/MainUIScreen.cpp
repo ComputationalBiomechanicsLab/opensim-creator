@@ -27,6 +27,7 @@
 #include <oscar/UI/Widgets/SaveChangesPopupConfig.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
+#include <oscar/Utils/Conversion.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/ParentPtr.h>
 #include <oscar/Utils/Perf.h>
@@ -57,11 +58,11 @@ namespace
         const ParentPtr<ITabHost>& api)
     {
         if (auto maybeRequestedTab = settings.find_value("initial_tab")) {
-            if (std::optional<TabRegistryEntry> maybeEntry = tabRegistry.find_by_name(maybeRequestedTab->to<std::string>())) {
+            if (std::optional<TabRegistryEntry> maybeEntry = tabRegistry.find_by_name(to<std::string>(*maybeRequestedTab))) {
                 return maybeEntry->construct_tab(api);
             }
 
-            log_warn("%s: cannot find a tab with this name in the tab registry: ignoring", maybeRequestedTab->to<std::string>().c_str());
+            log_warn("%s: cannot find a tab with this name in the tab registry: ignoring", to<std::string>(*maybeRequestedTab).c_str());
             log_warn("available tabs are:");
             for (auto&& tabRegistryEntry : tabRegistry) {
                 log_warn("    %s", tabRegistryEntry.name().c_str());
