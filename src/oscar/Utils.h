@@ -6,6 +6,7 @@
 #include <oscar/Utils/CircularBuffer.h>
 #include <oscar/Utils/ClonePtr.h>
 #include <oscar/Utils/Concepts.h>
+#include <oscar/Utils/Conversion.h>
 #include <oscar/Utils/CopyOnUpdPtr.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/DefaultConstructOnCopy.h>

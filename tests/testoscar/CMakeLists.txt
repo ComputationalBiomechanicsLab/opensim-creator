@@ -82,6 +82,7 @@ add_executable(testoscar
 
     Utils/TestAlgorithms.cpp
     Utils/TestChronoHelpers.cpp
+    Utils/TestConversion.cpp
     Utils/TestCStringView.cpp
     Utils/TestEnumHelpers.cpp
     Utils/TestFileChangePoller.cpp

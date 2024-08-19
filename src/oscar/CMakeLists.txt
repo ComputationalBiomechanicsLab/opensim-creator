@@ -368,6 +368,7 @@ add_library(oscar STATIC
     Utils/CircularBuffer.h
     Utils/ClonePtr.h
     Utils/Concepts.h
+    Utils/Conversion.h
     Utils/CopyOnUpdPtr.h
     Utils/CStringView.cpp
     Utils/CStringView.h
