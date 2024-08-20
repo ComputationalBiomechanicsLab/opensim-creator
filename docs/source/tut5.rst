@@ -152,49 +152,74 @@ The mesh warping UI uses separate windows to display relevant warp information. 
 toggle each window from the ``Window`` menu at the top of the UI. Here is how each
 window relates to mesh warping and the TPS technique:
 
-- **Source Mesh (window)**: "source", or "reference" meshes and landmarks. These are where
-  you're starting from. In this panel, you can ``Import`` meshes, landmarks,
-  and non-participating landmarks (datapoints, such as markers, that should
-  be warped, but shouldn't participate in fitting TPS parameters).
+- **Source Mesh (window)**: shows the source mesh, source landmarks,
+  and non-participating landmarks. Source landmarks that have no corresponding
+  destination landmark (an unpaired source landmark) are displayed in :red:`red`,
+  paired landmarks in :green:`green`, and non-participating landmarks in :purple:`purple`.
 
-- **Destination Mesh (window)**: ``TODO``
+- **Destination Mesh (window)**: shows the destination mesh and destination landmarks.
+  Destination landmarks that have no corresponding source landmark (an unpaired
+  destination landmark) are displayed in :red:`red`, paired landmarks in :green:`green`.
 
-- **Result (window)**: ``TODO``
+- **Result (window)**: shows the result mesh and any warped non-participating landmarks.
+  There's also an option to overlay the destination mesh in this panel, which helps with
+  evaluating how closely the result mesh (made by warping the source mesh) matches the
+  destination mesh. There is also a ``Blending Factor`` control, which enables blending
+  between "not warped" (i.e. source data) and "fully warped" on a linear scale.
 
-- **Landmark Navigator (window)**: ``TODO``
+- **Landmark Navigator (window)**: shows each (source/destination/non-participating)
+  landmark the UI is editing. This is handy when editing many landmarks.
 
-- **Toolbar (top)**: ``TODO``
+- **Toolbar (top)**: The top toolbar. The main feature of note here is the ability
+  to (un)lock the camera, which can make viewing paired meshes easier.
 
+How you use these panels is up to you. A typical workflow has these steps:
 
-Placing/Warping Landmarks
-^^^^^^^^^^^^^^^^^^^^^^^^^
+1. Import/generate meshes in the source mesh and destination mesh panels
+2. Import landmarks into each panel, **or** ``LeftClick`` on the mesh to place a
+   landmark, **or** ``Ctrl+LeftClick`` to place a non-participating landmark on
+   the source mesh.
+3. View the result mesh and non-participating landmarks.
+4. Export whatever you need elsewhere using the ``Export`` buttons
 
-Although the TPS technique (explained above) only actually requires paired
-landmarks in 3D space, the mesh warping UI focuses on using `ray casting <RayCasting_>`_
-to make *surface* points easier. This approach makes sense when working with
-physiological meshes. If you need to place a landmarks at an arbitrary location,
-then you can right-click a landmark and type the 3D location in, or import the
-points as CSV data.
+.. note::
+  The main thing to take away from this high-level UI explanation is how each panel
+  relates to the underlying TPS technique and how data can be ``import`` ed and
+  ``export`` ed into each panel.
 
-Importing/Exporting Data
-^^^^^^^^^^^^^^^^^^^^^^^^
-
-* ``TODO``: Explain top-level UI design (what each panel does)
-* ``TODO``: Explain key features (import, export, blending, etc.)
+  Apart from that, the easiest way to get familiar with the UI is to actually
+  use it. We recommend "playing around" with some generated geometry, or
+  mesh files, to "get a feel for the algorithm", or continuing through
+  this tutorial 📖
 
 
 Walkthrough: Warping a Femur
 ----------------------------
 
-* ``TODO``: Provide + Load Example Meshes
-* ``TODO``: Step-by-step explanation
-* ``TODO``: warping single points/non-participating landmarks
+In this concrete walkthrough, we'll go through pairing landmarks between two
+femur CT scans, followed by exporting the warped data.
+
+1. ``TODO``: provide the meshes
+2. ``TODO``: load meshes using import
+3. ``TODO``: manually place some landmark pairs, rename, etc.
+4. ``TODO``: manually rename some landmarks
+5. ``TODO``: import example landmarks (additionally, or in place of, the manual ones)
+6. ``TODO``: play with result
+7. ``TODO``: export result
 
 Next Steps
 ----------
 
-* ``TODO``: encourage experimentation, maybe mention some open CT scan repositories?
-* ``TODO``: mention relationship to model warping
+With the theory, UI, and a concrete example covered, we'd recommend:
+
+* **Experiment with simple/generated meshes**. Experimenting with the mesh
+  warping UI by warping a generated/simple will help you feel more
+  comfortable with the layout, keybindings, and functionality of the UI.
+* **Import/export** some data files/meshes to/from the UI. This will give you an
+  idea of what the mesh warping UI can work with. For example, knowing the format
+  of the landmark CSV files is useful for integrating the UI with scripts.
+* **Go to the next section**. :doc:`tut6`, covers using this techniques as part
+  of warping an entire OpenSim model.
 
 
 .. _Relevant References:
