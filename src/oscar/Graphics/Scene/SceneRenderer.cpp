@@ -131,6 +131,62 @@ namespace
 
         return ShadowCameraMatrices{view_mat, projection_mat};
     }
+
+    // the `Material` that's used to shade the main scene (colored `SceneDecoration`s)
+    class SceneMainMaterial final : public Material {
+    public:
+        explicit SceneMainMaterial(SceneCache& cache) :
+            Material{cache.get_shader(
+                "oscar/shaders/SceneRenderer/DrawColoredObjects.vert",
+                "oscar/shaders/SceneRenderer/DrawColoredObjects.frag"
+            )}
+        {}
+    };
+
+    // the `Material` that's used to shade the main scene (textured `SceneDecoration`s)
+    class SceneFloorMaterial final : public Material {
+    public:
+        explicit SceneFloorMaterial(SceneCache& cache) :
+            Material{cache.get_shader(
+                "oscar/shaders/SceneRenderer/DrawTexturedObjects.vert",
+                "oscar/shaders/SceneRenderer/DrawTexturedObjects.frag"
+            )}
+        {}
+    };
+
+    // the `Material` that's used to detect the edges, per channel, in the input texture (used for rim-highlighting)
+    class EdgeDetectionMaterial final : public Material {
+    public:
+        explicit EdgeDetectionMaterial(SceneCache& cache) :
+            Material{cache.get_shader(
+                "oscar/shaders/SceneRenderer/EdgeDetector.vert",
+                "oscar/shaders/SceneRenderer/EdgeDetector.frag"
+            )}
+        {}
+    };
+
+    // the `Material` that's used to draw mesh surface normal vectors
+    class NormalsMaterial final : public Material {
+    public:
+        explicit NormalsMaterial(SceneCache& cache) :
+            Material{cache.get_shader(
+                "oscar/shaders/SceneRenderer/NormalsVisualizer.vert",
+                "oscar/shaders/SceneRenderer/NormalsVisualizer.geom",
+                "oscar/shaders/SceneRenderer/NormalsVisualizer.frag"
+            )}
+        {}
+    };
+
+    // a `Material` that emits the NDC depth of the fragment as a color
+    class DepthColoringMaterial final : public Material {
+    public:
+        explicit DepthColoringMaterial(SceneCache& cache) :
+            Material{cache.get_shader(
+                "oscar/shaders/SceneRenderer/DepthMap.vert",
+                "oscar/shaders/SceneRenderer/DepthMap.frag"
+            )}
+        {}
+    };
 }
 
 
@@ -138,13 +194,13 @@ class osc::SceneRenderer::Impl final {
 public:
     explicit Impl(SceneCache& cache) :
 
-        scene_main_material_{cache.get_shader("oscar/shaders/SceneRenderer/DrawColoredObjects.vert", "oscar/shaders/SceneRenderer/DrawColoredObjects.frag")},
-        scene_floor_material_{cache.get_shader("oscar/shaders/SceneRenderer/DrawTexturedObjects.vert", "oscar/shaders/SceneRenderer/DrawTexturedObjects.frag")},
+        scene_main_material_{cache},
+        scene_floor_material_{cache},
         rim_filler_material_{cache.basic_material()},
         wireframe_material_{cache.wireframe_material()},
-        edge_detection_material_{cache.get_shader("oscar/shaders/SceneRenderer/EdgeDetector.vert", "oscar/shaders/SceneRenderer/EdgeDetector.frag")},
-        normals_material_{cache.get_shader("oscar/shaders/SceneRenderer/NormalsVisualizer.vert", "oscar/shaders/SceneRenderer/NormalsVisualizer.geom", "oscar/shaders/SceneRenderer/NormalsVisualizer.frag")},
-        depth_writer_material_{cache.get_shader("oscar/shaders/SceneRenderer/DepthMap.vert", "oscar/shaders/SceneRenderer/DepthMap.frag")},
+        edge_detection_material_{cache},
+        normals_material_{cache},
+        depth_writer_material_{cache},
         quad_mesh_{cache.quad_mesh()}
     {
         scene_floor_material_.set("uDiffuseTexture", chequered_texture_);
@@ -466,13 +522,14 @@ private:
         return Shadows{shadowmap_rendertexture_, matrices.projection_mat * matrices.view_mat};
     }
 
-    Material scene_main_material_;
-    Material scene_floor_material_;
+    SceneMainMaterial scene_main_material_;
+    SceneFloorMaterial scene_floor_material_;
     MeshBasicMaterial rim_filler_material_;
     MeshBasicMaterial wireframe_material_;
-    Material edge_detection_material_;
-    Material normals_material_;
-    Material depth_writer_material_;
+    EdgeDetectionMaterial edge_detection_material_;
+    NormalsMaterial normals_material_;
+    DepthColoringMaterial depth_writer_material_;
+
     Mesh quad_mesh_;
     Texture2D chequered_texture_ = ChequeredTexture{};
     Camera camera_;

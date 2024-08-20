@@ -3,6 +3,7 @@
 #include <oscar/Graphics/Shader.h>
 #include <oscar/Graphics/Material.h>
 #include <oscar/Utils/CStringView.h>
+#include <oscar/Utils/StringName.h>
 
 using namespace osc;
 

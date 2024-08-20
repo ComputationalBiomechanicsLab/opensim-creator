@@ -3,9 +3,6 @@
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/Material.h>
 #include <oscar/Maths/Vec3.h>
-#include <oscar/Utils/StringName.h>
-
-#include <string_view>
 
 namespace osc
 {
