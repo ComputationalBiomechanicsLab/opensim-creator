@@ -9,26 +9,33 @@
 
 namespace osc
 {
+    struct MeshBasicMaterialParams final {
+        friend bool operator==(const MeshBasicMaterialParams&, const MeshBasicMaterialParams&) = default;
+
+        Color color = Color::black();
+    };
+
     // a material for drawing meshes with a simple solid color
     class MeshBasicMaterial final : public Material {
     public:
-        class PropertyBlock final {
+        using Params = MeshBasicMaterialParams;
+
+        // a `MaterialPropertyBlock` that's specialized for the `MeshBasicMaterial`'s shader
+        class PropertyBlock final : public MaterialPropertyBlock {
         public:
-            PropertyBlock() = default;
-            explicit PropertyBlock(Color color)
+            explicit PropertyBlock() = default;
+
+            explicit PropertyBlock(const Color& color)
             {
-                property_block_.set<Color>(c_color_propname, color);
+                set_color(color);
             }
 
-            std::optional<Color> color() const { return property_block_.get<Color>(c_color_propname); }
-            void set_color(const Color& c) { property_block_.set(c_color_propname, c); }
-
-            operator const MaterialPropertyBlock& () const { return property_block_; }
-        private:
-            MaterialPropertyBlock property_block_;
+            std::optional<Color> color() const { return get<Color>(c_color_propname); }
+            void set_color(const Color& c) { set(c_color_propname, c); }
         };
 
-        explicit MeshBasicMaterial(const Color& = Color::black());
+        explicit MeshBasicMaterial(const Params& = {});
+        explicit MeshBasicMaterial(const Color& color) : MeshBasicMaterial{Params{.color = color}} {}
 
         Color color() const { return *get<Color>(c_color_propname); }
         void set_color(const Color& color) { set(c_color_propname, color); }

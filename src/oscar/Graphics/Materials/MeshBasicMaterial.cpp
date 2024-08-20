@@ -37,8 +37,8 @@ void main()
 
 const StringName osc::MeshBasicMaterial::c_color_propname{"uDiffuseColor"};
 
-osc::MeshBasicMaterial::MeshBasicMaterial(const Color& color) :
+osc::MeshBasicMaterial::MeshBasicMaterial(const Params& p) :
     Material{Shader{c_vertex_shader_src, c_fragment_shader_src}}
 {
-    set_color(color);
+    set_color(p.color);
 }

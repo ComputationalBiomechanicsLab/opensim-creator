@@ -287,7 +287,7 @@ private:
     MouseCapturingCamera user_camera_;
     std::vector<TransformedMesh> decorations_ = generate_decorations();
     MeshPhongMaterial material_;
-    MeshBasicMaterial shadowmapper_material_{Color::red()};  // TODO: should be depth-only
+    MeshBasicMaterial shadowmapper_material_{{.color = Color::red()}};  // TODO: should be depth-only
     UnitVec3 light_direction_{0.5f, -1.0f, 0.0f};
     std::vector<RenderTexture> cascade_rasters_;
 

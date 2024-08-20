@@ -27,7 +27,7 @@ namespace osc
     //
     // enables callers to apply per-instance properties when using a material (more efficiently
     // than using a different `Material` every time)
-    class MaterialPropertyBlock final {
+    class MaterialPropertyBlock {
     public:
         MaterialPropertyBlock();
 

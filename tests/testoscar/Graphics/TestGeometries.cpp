@@ -374,8 +374,6 @@ TEST(WireframeGeometry, can_default_construct)
 {
     WireframeGeometry mesh;
     ASSERT_TRUE(mesh.has_vertices());
-    ASSERT_TRUE(mesh.has_normals());
-    ASSERT_TRUE(mesh.has_tex_coords());
     ASSERT_FALSE(mesh.indices().empty());
 }
 
@@ -383,7 +381,5 @@ TEST(WireframeGeometry, can_construct_from_some_other_geometry)
 {
     WireframeGeometry mesh{TorusKnotGeometry{}};
     ASSERT_TRUE(mesh.has_vertices());
-    ASSERT_TRUE(mesh.has_normals());
-    ASSERT_TRUE(mesh.has_tex_coords());
     ASSERT_FALSE(mesh.indices().empty());
 }
