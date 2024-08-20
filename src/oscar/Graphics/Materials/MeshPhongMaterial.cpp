@@ -65,16 +65,46 @@ void main()
     FragColor = vec4(ambient + diffuse + specular, 1.0);
 }
 )";
+
+    const StringName c_light_pos_propname{"uLightPos"};
+    const StringName c_view_pos_propname{"uViewPos"};
+    const StringName c_light_color_propname{"uLightColor"};
+    const StringName c_ambient_color_propname{"uAmbientColor"};
+    const StringName c_diffuse_color_propname{"uDiffuseColor"};
+    const StringName c_specular_color_propname{"uSpecularColor"};
+    const StringName c_shininess_propname{"uShininess"};
 }
 
-osc::MeshPhongMaterial::MeshPhongMaterial() :
-    material_{Shader{c_vertex_shader_src, c_fragment_shader_src}}
+
+osc::MeshPhongMaterial::MeshPhongMaterial(const Params& p) :
+    Material{Shader{c_vertex_shader_src, c_fragment_shader_src}}
 {
-    set_light_position({1.0f, 1.0f, 1.0f});
-    set_viewer_position({0.0f, 0.0f, 0.0f});
-    set_light_color(Color::white());
-    set_ambient_color({0.1f, 0.1f, 0.1f});
-    set_diffuse_color(Color::blue());
-    set_specular_color({0.1f, 0.1f, 0.1f});
-    set_specular_shininess(32.0f);
+    set_light_position(p.light_position);
+    set_viewer_position(p.viewer_position);
+    set_light_color(p.light_color);
+    set_ambient_color(p.ambient_color);
+    set_diffuse_color(p.diffuse_color);
+    set_specular_color(p.specular_color);
+    set_specular_shininess(p.specular_shininess);
 }
+
+Vec3 osc::MeshPhongMaterial::light_position() const { return *get<Vec3>(c_light_pos_propname); }
+void osc::MeshPhongMaterial::set_light_position(const Vec3& v) { set(c_light_pos_propname, v); }
+
+Vec3 osc::MeshPhongMaterial::viewer_position() const { return *get<Vec3>(c_view_pos_propname); }
+void osc::MeshPhongMaterial::set_viewer_position(const Vec3& v) { set(c_view_pos_propname, v); }
+
+Color osc::MeshPhongMaterial::light_color() const { return *get<Color>(c_light_color_propname); }
+void osc::MeshPhongMaterial::set_light_color(const Color& c) { set(c_light_color_propname, c); }
+
+Color osc::MeshPhongMaterial::ambient_color() const { return *get<Color>(c_ambient_color_propname); }
+void osc::MeshPhongMaterial::set_ambient_color(const Color& c) { set(c_ambient_color_propname, c); }
+
+Color osc::MeshPhongMaterial::diffuse_color() const { return *get<Color>(c_diffuse_color_propname); }
+void osc::MeshPhongMaterial::set_diffuse_color(const Color& c) { set(c_diffuse_color_propname, c); }
+
+Color osc::MeshPhongMaterial::specular_color() const { return *get<Color>(c_specular_color_propname); }
+void osc::MeshPhongMaterial::set_specular_color(const Color& c) { set(c_specular_color_propname, c); }
+
+float osc::MeshPhongMaterial::specular_shininess() const { return *get<float>(c_shininess_propname); }
+void osc::MeshPhongMaterial::set_specular_shininess(float v) { set(c_shininess_propname, v); }

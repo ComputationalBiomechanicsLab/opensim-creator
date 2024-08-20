@@ -60,6 +60,16 @@ namespace
             }
         }
 
+        // also, add a floor plane
+        rv.push_back(TransformedMesh{
+            .mesh = PlaneGeometry{},
+            .transform = {
+                .scale = {10.0f, 10.0f, 1.0f},
+                .rotation = angle_axis(-90_deg, CoordinateDirection::x()),
+                .position = {0.0f, -1.0f, 0.0f},
+            },
+        });
+
         return rv;
     }
 
@@ -189,23 +199,6 @@ public:
         // setup camera
         user_camera_.set_clipping_planes({0.1f, 10.0f});
 
-        // setup scene material
-        material_.set_light_position(Vec3{5.0f});
-        material_.set_diffuse_color(Color::orange());
-
-        // setup floor plane
-        decorations_.push_back(TransformedMesh{
-            .mesh = PlaneGeometry{},
-            .transform = {
-                .scale = {10.0f, 10.0f, 1.0f},
-                .rotation = angle_axis(-90_deg, CoordinateDirection::x()),
-                .position = {0.0f, -1.0f, 0.0f},
-            },
-        });
-
-        // setup cascade render texture (targets)
-        cascade_rasters_.resize(3, RenderTexture{{.dimensions = {256, 256}}});
-
         // ui
         log_viewer_.open();
     }
@@ -286,10 +279,15 @@ private:
 
     MouseCapturingCamera user_camera_;
     std::vector<TransformedMesh> decorations_ = generate_decorations();
-    MeshPhongMaterial material_;
-    MeshBasicMaterial shadowmapper_material_{{.color = Color::red()}};  // TODO: should be depth-only
+    MeshPhongMaterial material_{{
+        .light_position = Vec3{5.0f},
+        .diffuse_color = Color::orange(),
+    }};
+    MeshBasicMaterial shadowmapper_material_{{
+        .color = Color::red(),  // TODO: should be depth-only
+    }};
     UnitVec3 light_direction_{0.5f, -1.0f, 0.0f};
-    std::vector<RenderTexture> cascade_rasters_;
+    std::vector<RenderTexture> cascade_rasters_ = std::vector<RenderTexture>(3, RenderTexture{{.dimensions = {256, 256}}});
 
     // ui
     LogViewerPanel log_viewer_{"log"};

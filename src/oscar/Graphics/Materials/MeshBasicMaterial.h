@@ -5,7 +5,6 @@
 #include <oscar/Graphics/Color.h>
 
 #include <optional>
-#include <string_view>
 
 namespace osc
 {
@@ -25,22 +24,16 @@ namespace osc
         public:
             explicit PropertyBlock() = default;
 
-            explicit PropertyBlock(const Color& color)
-            {
-                set_color(color);
-            }
+            explicit PropertyBlock(const Color&);
 
-            std::optional<Color> color() const { return get<Color>(c_color_propname); }
-            void set_color(const Color& c) { set(c_color_propname, c); }
+            std::optional<Color> color() const;
+            void set_color(const Color&);
         };
 
         explicit MeshBasicMaterial(const Params& = {});
-        explicit MeshBasicMaterial(const Color& color) : MeshBasicMaterial{Params{.color = color}} {}
+        explicit MeshBasicMaterial(const Color&);
 
-        Color color() const { return *get<Color>(c_color_propname); }
-        void set_color(const Color& color) { set(c_color_propname, color); }
-
-    private:
-        static const StringName c_color_propname;
+        Color color() const;
+        void set_color(const Color&);
     };
 }

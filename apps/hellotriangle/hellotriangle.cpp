@@ -251,11 +251,7 @@ void main()
             camera_.set_position(viewer_position);
             camera_.set_direction({-1.0f, 0.0f, 0.0f});
 
-            // setup torus material
-            const Color color = Color::blue();
-            material_.set_ambient_color(0.2f * color);
-            material_.set_diffuse_color(0.5f * color);
-            material_.set_specular_color(0.5f * color);
+            // setup material
             material_.set_viewer_position(viewer_position);
 
             // setup ui code editor
@@ -332,7 +328,12 @@ void main()
         TorusParameters torus_parameters_;
         TorusParameters edited_torus_parameters_;
         TorusKnotGeometry mesh_;
-        MeshPhongMaterial material_;
+        Color torus_color_ = Color::blue();
+        MeshPhongMaterial material_{{
+            .ambient_color = 0.2f * torus_color_,
+            .diffuse_color = 0.5f * torus_color_,
+            .specular_color = 0.5f * torus_color_,
+        }};
         Material gamma_correcter_{Shader{c_gamma_correcting_vertex_shader_src, c_gamma_correcting_fragment_shader_src}};
         Camera camera_;
         RenderTexture target_texture_;
