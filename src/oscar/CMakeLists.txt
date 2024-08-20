@@ -124,8 +124,7 @@ add_library(oscar STATIC
 
     Graphics/AntiAliasingLevel.cpp
     Graphics/AntiAliasingLevel.h
-    Graphics/BlendEquation.h
-    Graphics/BlendFunction.h
+    Graphics/BlendingEquation.h
     Graphics/BlitFlags.h
     Graphics/Camera.h
     Graphics/CameraClearFlags.h
@@ -140,6 +139,7 @@ add_library(oscar STATIC
     Graphics/Cubemap.h
     Graphics/CubemapFace.h
     Graphics/DepthStencilFormat.h
+    Graphics/DestinationBlendingFactor.h
     Graphics/Geometries.h
     Graphics/Graphics.h
     Graphics/GraphicsContext.h
@@ -170,6 +170,7 @@ add_library(oscar STATIC
     Graphics/Scene.h
     Graphics/Shader.h
     Graphics/ShaderPropertyType.h
+    Graphics/SourceBlendingFactor.h
     Graphics/SubMeshDescriptor.h
     Graphics/TextureChannelFormat.h
     Graphics/TextureDimensionality.h
@@ -431,10 +432,11 @@ add_library(oscar STATIC
     oscar.h
     Platform.h
     Shims.h
+    Strings.h
     UI.h
     Utils.h
     Variant.h
- "Strings.h")
+)
 
 target_include_directories(oscar PUBLIC
 

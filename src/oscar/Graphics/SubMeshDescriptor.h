@@ -20,12 +20,12 @@ namespace osc
             base_vertex_{base_vertex}
         {}
 
+        friend bool operator==(const SubMeshDescriptor&, const SubMeshDescriptor&) = default;
+
         size_t index_start() const { return index_start_; }
         size_t index_count() const { return index_count_; }
         MeshTopology topology() const { return topology_; }
         size_t base_vertex() const { return base_vertex_; }
-
-        friend bool operator==(const SubMeshDescriptor&, const SubMeshDescriptor&) = default;
     private:
         size_t index_start_;
         size_t index_count_;

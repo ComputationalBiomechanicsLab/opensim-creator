@@ -1,14 +1,15 @@
 #pragma once
 
-#include <oscar/Graphics/BlendEquation.h>
-#include <oscar/Graphics/BlendFunction.h>
+#include <oscar/Graphics/BlendingEquation.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/Cubemap.h>
 #include <oscar/Graphics/CullMode.h>
 #include <oscar/Graphics/DepthFunction.h>
+#include <oscar/Graphics/DestinationBlendingFactor.h>
 #include <oscar/Graphics/MaterialPropertyBlock.h>
 #include <oscar/Graphics/RenderTexture.h>
 #include <oscar/Graphics/Shader.h>
+#include <oscar/Graphics/SourceBlendingFactor.h>
 #include <oscar/Graphics/Texture2D.h>
 #include <oscar/Maths/Mat3.h>
 #include <oscar/Maths/Mat4.h>
@@ -74,14 +75,14 @@ namespace osc
         bool is_transparent() const;
         void set_transparent(bool);
 
-        BlendFunction source_blend_function() const;
-        void set_source_blend_function(BlendFunction);
+        SourceBlendingFactor source_blending_factor() const;
+        void set_source_blending_factor(SourceBlendingFactor);
 
-        BlendFunction destination_blend_function() const;
-        void set_destination_blend_function(BlendFunction);
+        DestinationBlendingFactor destination_blending_factor() const;
+        void set_destination_blending_factor(DestinationBlendingFactor);
 
-        BlendEquation blend_equation() const;
-        void set_blend_equation(BlendEquation);
+        BlendingEquation blending_equation() const;
+        void set_blending_equation(BlendingEquation);
 
         bool is_depth_tested() const;
         void set_depth_tested(bool);

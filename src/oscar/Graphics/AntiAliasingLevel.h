@@ -1,9 +1,9 @@
 #pragma once
 
 #include <bit>
+#include <compare>
 #include <concepts>
 #include <iosfwd>
-#include <string>
 
 namespace osc
 {
@@ -43,5 +43,4 @@ namespace osc
     };
 
     std::ostream& operator<<(std::ostream&, AntiAliasingLevel);
-    std::string to_string(AntiAliasingLevel);
 }

@@ -1,8 +1,7 @@
 #pragma once
 
 #include <oscar/Graphics/AntiAliasingLevel.h>
-#include <oscar/Graphics/BlendEquation.h>
-#include <oscar/Graphics/BlendFunction.h>
+#include <oscar/Graphics/BlendingEquation.h>
 #include <oscar/Graphics/BlitFlags.h>
 #include <oscar/Graphics/Camera.h>
 #include <oscar/Graphics/CameraClearFlags.h>
@@ -17,6 +16,7 @@
 #include <oscar/Graphics/CullMode.h>
 #include <oscar/Graphics/DepthFunction.h>
 #include <oscar/Graphics/DepthStencilFormat.h>
+#include <oscar/Graphics/DestinationBlendingFactor.h>
 #include <oscar/Graphics/Geometries.h>
 #include <oscar/Graphics/Graphics.h>
 #include <oscar/Graphics/GraphicsContext.h>
@@ -43,6 +43,7 @@
 #include <oscar/Graphics/Scene.h>
 #include <oscar/Graphics/Shader.h>
 #include <oscar/Graphics/ShaderPropertyType.h>
+#include <oscar/Graphics/SourceBlendingFactor.h>
 #include <oscar/Graphics/SubMeshDescriptor.h>
 #include <oscar/Graphics/TextureChannelFormat.h>
 #include <oscar/Graphics/TextureDimensionality.h>

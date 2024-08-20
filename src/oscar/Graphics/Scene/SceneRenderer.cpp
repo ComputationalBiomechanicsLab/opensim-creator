@@ -143,7 +143,7 @@ namespace
         {}
     };
 
-    // the `Material` that's used to shade the main scene (textured `SceneDecoration`s)
+    // the `Material` that's used to shade the scene's floor (special case)
     class SceneFloorMaterial final : public Material {
     public:
         explicit SceneFloorMaterial(SceneCache& cache) :
@@ -151,7 +151,11 @@ namespace
                 "oscar/shaders/SceneRenderer/DrawTexturedObjects.vert",
                 "oscar/shaders/SceneRenderer/DrawTexturedObjects.frag"
             )}
-        {}
+        {
+            set<Texture2D>("uDiffuseTexture", ChequeredTexture{});
+            set("uTextureScale", Vec2{200.0f, 200.0f});
+            set_transparent(true);
+        }
     };
 
     // the `Material` that's used to detect the edges, per channel, in the input texture (used for rim-highlighting)
@@ -162,7 +166,10 @@ namespace
                 "oscar/shaders/SceneRenderer/EdgeDetector.vert",
                 "oscar/shaders/SceneRenderer/EdgeDetector.frag"
             )}
-        {}
+        {
+            set_transparent(true);    // so that anti-aliased edged alpha-blend correctly
+            set_depth_tested(false);  // not required: it's handling a single quad
+        }
     };
 
     // the `Material` that's used to draw mesh surface normal vectors
@@ -187,6 +194,20 @@ namespace
             )}
         {}
     };
+
+    // a `Material` that colors `SceneDecoration`s in the rim color (groups)
+    class RimFillerMaterial final : public MeshBasicMaterial {
+    public:
+        explicit RimFillerMaterial(SceneCache& cache) :
+            MeshBasicMaterial{cache.basic_material()}
+        {
+            set_depth_tested(false);
+            set_transparent(true);
+            set_source_blending_factor(SourceBlendingFactor::One);
+            set_destination_blending_factor(DestinationBlendingFactor::One);
+            set_blending_equation(BlendingEquation::Max);
+        }
+    };
 }
 
 
@@ -196,27 +217,14 @@ public:
 
         scene_main_material_{cache},
         scene_floor_material_{cache},
-        rim_filler_material_{cache.basic_material()},
+        rim_filler_material_{cache},
         wireframe_material_{cache.wireframe_material()},
         edge_detection_material_{cache},
         normals_material_{cache},
         depth_writer_material_{cache},
         quad_mesh_{cache.quad_mesh()}
     {
-        scene_floor_material_.set("uDiffuseTexture", chequered_texture_);
-        scene_floor_material_.set("uTextureScale", Vec2{200.0f, 200.0f});
-        scene_floor_material_.set_transparent(true);
-
         wireframe_material_.set_color(Color::black());
-
-        // rim materials
-        rim_filler_material_.set_depth_tested(false);
-        rim_filler_material_.set_transparent(true);
-        rim_filler_material_.set_source_blend_function(BlendFunction::One);
-        rim_filler_material_.set_destination_blend_function(BlendFunction::One);
-        rim_filler_material_.set_blend_equation(BlendEquation::Max);
-        edge_detection_material_.set_transparent(true);
-        edge_detection_material_.set_depth_tested(false);
     }
 
     void render(
@@ -524,14 +532,13 @@ private:
 
     SceneMainMaterial scene_main_material_;
     SceneFloorMaterial scene_floor_material_;
-    MeshBasicMaterial rim_filler_material_;
+    RimFillerMaterial rim_filler_material_;
     MeshBasicMaterial wireframe_material_;
     EdgeDetectionMaterial edge_detection_material_;
     NormalsMaterial normals_material_;
     DepthColoringMaterial depth_writer_material_;
 
     Mesh quad_mesh_;
-    Texture2D chequered_texture_ = ChequeredTexture{};
     Camera camera_;
     RenderTexture rims_rendertexture_;
     RenderTexture shadowmap_rendertexture_;

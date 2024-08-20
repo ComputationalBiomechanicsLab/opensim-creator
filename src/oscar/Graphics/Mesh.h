@@ -102,7 +102,7 @@ namespace osc
         // all meshes _must_ be indexed: even if you're just drawing a single triangle
         size_t num_indices() const;
         MeshIndicesView indices() const;
-        void set_indices(MeshIndicesView, MeshUpdateFlags = MeshUpdateFlags::Default);
+        void set_indices(MeshIndicesView, MeshUpdateFlags = MeshUpdateFlag::Default);
         void set_indices(std::initializer_list<uint32_t> il)
         {
             set_indices(MeshIndicesView{il});
@@ -151,10 +151,10 @@ namespace osc
         const VertexFormat& vertex_format() const;
         void set_vertex_buffer_params(size_t num_vertices, const VertexFormat&);
         size_t vertex_buffer_stride() const;
-        void set_vertex_buffer_data(std::span<const uint8_t>, MeshUpdateFlags = MeshUpdateFlags::Default);
+        void set_vertex_buffer_data(std::span<const uint8_t>, MeshUpdateFlags = MeshUpdateFlag::Default);
         template<std::ranges::contiguous_range Range>
         requires BitCastable<typename Range::value_type>
-        void set_vertex_buffer_data(const Range& range, MeshUpdateFlags flags = MeshUpdateFlags::Default)
+        void set_vertex_buffer_data(const Range& range, MeshUpdateFlags flags = MeshUpdateFlag::Default)
         {
             std::span<const uint8_t> bytes = view_object_representations<uint8_t>(range);
             set_vertex_buffer_data(bytes, flags);

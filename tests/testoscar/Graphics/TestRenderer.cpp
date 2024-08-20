@@ -1050,49 +1050,49 @@ TEST_F(Renderer, MaterialSetTransparentBehavesAsExpected)
     ASSERT_TRUE(mat.is_transparent());
 }
 
-TEST_F(Renderer, Material_source_blend_function_returns_SourceDefault_when_not_set)
+TEST_F(Renderer, Material_source_blending_factor_returns_Default_when_not_set)
 {
     const Material mat = GenerateMaterial();
-    ASSERT_EQ(mat.source_blend_function(), BlendFunction::SourceDefault);
+    ASSERT_EQ(mat.source_blending_factor(), SourceBlendingFactor::Default);
 }
 
-TEST_F(Renderer, Material_set_source_blend_function_sets_source_blend_function)
+TEST_F(Renderer, Material_set_source_blending_factor_sets_source_blending_factor)
 {
-    static_assert(BlendFunction::SourceDefault != BlendFunction::Zero);
+    static_assert(SourceBlendingFactor::Default != SourceBlendingFactor::Zero);
 
     Material mat = GenerateMaterial();
-    mat.set_source_blend_function(BlendFunction::Zero);
-    ASSERT_EQ(mat.source_blend_function(), BlendFunction::Zero);
+    mat.set_source_blending_factor(SourceBlendingFactor::Zero);
+    ASSERT_EQ(mat.source_blending_factor(), SourceBlendingFactor::Zero);
 }
 
-TEST_F(Renderer, Material_destination_blend_function_returns_DestinationDefault_when_not_set)
+TEST_F(Renderer, Material_destination_blending_factor_returns_Default_when_not_set)
 {
     const Material mat = GenerateMaterial();
-    ASSERT_EQ(mat.destination_blend_function(), BlendFunction::DestinationDefault);
+    ASSERT_EQ(mat.destination_blending_factor(), DestinationBlendingFactor::Default);
 }
 
-TEST_F(Renderer, Material_set_destination_blend_function_sets_destination_blend_function)
+TEST_F(Renderer, Material_set_destination_blending_factor_sets_destination_blending_factor)
 {
-    static_assert(BlendFunction::DestinationDefault != BlendFunction::SourceAlpha);
+    static_assert(DestinationBlendingFactor::Default != DestinationBlendingFactor::SourceAlpha);
 
     Material mat = GenerateMaterial();
-    mat.set_source_blend_function(BlendFunction::SourceAlpha);
-    ASSERT_EQ(mat.source_blend_function(), BlendFunction::SourceAlpha);
+    mat.set_destination_blending_factor(DestinationBlendingFactor::SourceAlpha);
+    ASSERT_EQ(mat.destination_blending_factor(), DestinationBlendingFactor::SourceAlpha);
 }
 
-TEST_F(Renderer, Material_blend_equation_returns_Default_when_not_set)
+TEST_F(Renderer, Material_blending_equation_returns_Default_when_not_set)
 {
     const Material mat = GenerateMaterial();
-    ASSERT_EQ(mat.blend_equation(), BlendEquation::Default);
+    ASSERT_EQ(mat.blending_equation(), BlendingEquation::Default);
 }
 
-TEST_F(Renderer, Material_set_blend_equation_sets_blend_equation)
+TEST_F(Renderer, Material_set_blending_equation_sets_blending_equation)
 {
-    static_assert(BlendEquation::Default != BlendEquation::Max);
+    static_assert(BlendingEquation::Default != BlendingEquation::Max);
 
     Material mat = GenerateMaterial();
-    mat.set_blend_equation(BlendEquation::Max);
-    ASSERT_EQ(mat.blend_equation(), BlendEquation::Max);
+    mat.set_blending_equation(BlendingEquation::Max);
+    ASSERT_EQ(mat.blending_equation(), BlendingEquation::Max);
 }
 
 TEST_F(Renderer, MaterialGetDepthTestedIsInitiallyTrue)

@@ -15,7 +15,7 @@ namespace osc
     };
 
     // a material for drawing meshes with a simple solid color
-    class MeshBasicMaterial final : public Material {
+    class MeshBasicMaterial : public Material {
     public:
         using Params = MeshBasicMaterialParams;
 

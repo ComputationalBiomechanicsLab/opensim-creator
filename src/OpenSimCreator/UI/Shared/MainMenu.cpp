@@ -21,6 +21,7 @@
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/FilesystemHelpers.h>
 #include <oscar/Utils/ParentPtr.h>
+#include <oscar/Utils/StringHelpers.h>
 
 #include <algorithm>
 #include <array>
@@ -258,12 +259,12 @@ void osc::MainMenuAboutTab::onDraw()
             const AntiAliasingLevel current = App::get().anti_aliasing_level();
             const AntiAliasingLevel max = App::get().max_anti_aliasing_level();
 
-            if (ui::begin_combobox("##msxaa", to_string(current)))
+            if (ui::begin_combobox("##msxaa", stream_to_string(current)))
             {
                 for (AntiAliasingLevel l = AntiAliasingLevel::min(); l <= max; ++l)
                 {
                     bool selected = l == current;
-                    if (ui::draw_selectable(to_string(l), &selected))
+                    if (ui::draw_selectable(stream_to_string(l), &selected))
                     {
                         App::upd().set_anti_aliasing_level(l);
                     }

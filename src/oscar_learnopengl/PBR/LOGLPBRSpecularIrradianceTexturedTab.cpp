@@ -302,9 +302,9 @@ private:
 
         graphics::draw(cube_mesh_, identity<Transform>(), background_material_, camera_);
 
-        camera_.set_clear_flags(CameraClearFlags::Nothing);
+        camera_.set_clear_flags(CameraClearFlag::Nothing);
         camera_.render_to(output_render_);
-        camera_.set_clear_flags(CameraClearFlags::Default);
+        camera_.set_clear_flags(CameraClearFlag::Default);
     }
 
     ResourceLoader loader_ = App::resource_loader();

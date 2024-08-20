@@ -42,12 +42,12 @@ namespace osc
 
         friend constexpr Flags operator&(const Flags& lhs, const Flags& rhs)
         {
-            return Flags{lhs.value_ & rhs.value_};
+            return Flags{static_cast<underlying_type>(lhs.value_ & rhs.value_)};
         }
 
-        constexpr Flags operator|(const Flags& rhs) const
+        friend constexpr Flags operator|(const Flags& lhs, const Flags& rhs)
         {
-            return Flags{value_ | rhs.value_};
+            return Flags{static_cast<underlying_type>(lhs.value_ | rhs.value_)};
         }
 
         constexpr Flags& operator|=(const Flags& rhs)

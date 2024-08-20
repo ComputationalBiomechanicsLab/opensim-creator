@@ -822,7 +822,7 @@ TEST(Mesh, set_indices_with_DontValidateIndices_and_DontRecalculateBounds_does_n
 {
     Mesh m;
     m.set_vertices(generate_vertices(3));
-    ASSERT_NO_THROW({ m.set_indices(iota_index_range(3, 6), MeshUpdateFlags::DontValidateIndices | MeshUpdateFlags::DontRecalculateBounds); }) << "shouldn't throw: we explicitly asked the engine to not check indices";
+    ASSERT_NO_THROW({ m.set_indices(iota_index_range(3, 6), {MeshUpdateFlag::DontValidateIndices, MeshUpdateFlag::DontRecalculateBounds}); }) << "shouldn't throw: we explicitly asked the engine to not check indices";
 }
 
 TEST(Mesh, set_indices_recalculates_Mesh_bounds)
@@ -843,7 +843,7 @@ TEST(Mesh, set_indices_with_DontRecalculateBounds_does_not_recalculate_bounds)
     Mesh m;
     m.set_vertices(triangle);
     ASSERT_EQ(m.bounds(), AABB{});
-    m.set_indices(iota_index_range(0, 3), MeshUpdateFlags::DontRecalculateBounds);
+    m.set_indices(iota_index_range(0, 3), MeshUpdateFlag::DontRecalculateBounds);
     ASSERT_EQ(m.bounds(), AABB{}) << "bounds shouldn't update: we explicitly asked for the engine to skip it";
 }
 

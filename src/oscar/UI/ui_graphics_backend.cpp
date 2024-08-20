@@ -224,7 +224,7 @@ namespace
         }
 
         // setup clipping rectangle
-        bd.camera.set_clear_flags(CameraClearFlags::Nothing);
+        bd.camera.set_clear_flags(CameraClearFlag::Nothing);
         const Vec2 minflip{clip_min.x, (draw_data.FramebufferScale.y * draw_data.DisplaySize.y) - clip_max.y};
         const Vec2 maxflip{clip_max.x, (draw_data.FramebufferScale.y * draw_data.DisplaySize.y) - clip_min.y};
         bd.camera.set_scissor_rect(Rect{minflip, maxflip});
@@ -279,7 +279,7 @@ namespace
             {VertexAttribute::Color,     VertexAttributeFormat::Unorm8x4},
         });
         mesh.set_vertex_buffer_data(std::span<ImDrawVert>{draw_list.VtxBuffer.Data, static_cast<size_t>(draw_list.VtxBuffer.Size)});
-        mesh.set_indices({draw_list.IdxBuffer.Data, static_cast<size_t>(draw_list.IdxBuffer.size())}, MeshUpdateFlags::DontRecalculateBounds | MeshUpdateFlags::DontValidateIndices);
+        mesh.set_indices({draw_list.IdxBuffer.Data, static_cast<size_t>(draw_list.IdxBuffer.size())}, {MeshUpdateFlag::DontRecalculateBounds, MeshUpdateFlag::DontValidateIndices});
 
         // iterate through command buffer
         for (const ImDrawCmd& cmd : draw_list.CmdBuffer) {

@@ -135,18 +135,18 @@ TEST(Camera, clear_flags_defaults_to_SolidColor_and_Depth)
 {
     const Camera camera;
 
-    ASSERT_TRUE(camera.clear_flags() & CameraClearFlags::SolidColor);
-    ASSERT_TRUE(camera.clear_flags() & CameraClearFlags::Depth);
+    ASSERT_TRUE(camera.clear_flags() & CameraClearFlag::SolidColor);
+    ASSERT_TRUE(camera.clear_flags() & CameraClearFlag::Depth);
 }
 
 TEST(Camera, set_clear_flags_works_as_expected)
 {
     Camera camera;
 
-    const auto flagsToTest = std::to_array({
-        CameraClearFlags::SolidColor,
-        CameraClearFlags::Depth,
-        CameraClearFlags::SolidColor | CameraClearFlags::Depth,
+    const auto flagsToTest = std::to_array<CameraClearFlags>({
+        {CameraClearFlag::SolidColor},
+        {CameraClearFlag::Depth},
+        {CameraClearFlag::SolidColor, CameraClearFlag::Depth},
     });
 
     for (CameraClearFlags flags : flagsToTest) {
@@ -368,16 +368,16 @@ TEST(Camera, inverse_view_projection_matrix_returns_expected_matrix)
 TEST(Camera, clear_flags_defaults_to_Default)
 {
     Camera camera;
-    ASSERT_EQ(camera.clear_flags(), CameraClearFlags::Default);
+    ASSERT_EQ(camera.clear_flags(), CameraClearFlag::Default);
 }
 
 TEST(Camera, set_clear_flags_causes_clear_flags_to_return_new_flags)
 {
     Camera camera;
 
-    ASSERT_EQ(camera.clear_flags(), CameraClearFlags::Default);
-    camera.set_clear_flags(CameraClearFlags::Nothing);
-    ASSERT_EQ(camera.clear_flags(), CameraClearFlags::Nothing);
+    ASSERT_EQ(camera.clear_flags(), CameraClearFlag::Default);
+    camera.set_clear_flags(CameraClearFlag::Nothing);
+    ASSERT_EQ(camera.clear_flags(), CameraClearFlag::Nothing);
 }
 
 TEST(Camera, set_clear_flags_causes_copy_to_compare_not_equivalent)
@@ -386,8 +386,8 @@ TEST(Camera, set_clear_flags_causes_copy_to_compare_not_equivalent)
     Camera copy = camera;
 
     ASSERT_EQ(camera, copy);
-    ASSERT_EQ(camera.clear_flags(), CameraClearFlags::Default);
-    camera.set_clear_flags(CameraClearFlags::Nothing);
+    ASSERT_EQ(camera.clear_flags(), CameraClearFlag::Default);
+    camera.set_clear_flags(CameraClearFlag::Nothing);
     ASSERT_NE(camera, copy);
 }
 

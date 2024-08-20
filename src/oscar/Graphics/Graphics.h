@@ -53,7 +53,7 @@ namespace osc::graphics
     void blit_to_screen(
         const RenderTexture&,
         const Rect&,
-        BlitFlags = BlitFlags::None
+        BlitFlags = {}
     );
 
     // assigns the source RenderTexture to the texture uniform "uTexture"
@@ -63,7 +63,7 @@ namespace osc::graphics
         const RenderTexture&,
         const Rect&,
         const Material&,
-        BlitFlags = BlitFlags::None
+        BlitFlags = {}
     );
 
     void blit_to_screen(

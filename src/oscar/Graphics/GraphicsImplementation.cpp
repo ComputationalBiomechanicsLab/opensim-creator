@@ -380,26 +380,38 @@ namespace
 // blending functions
 namespace
 {
-    GLenum to_opengl_blend_func(BlendFunction f)
+    GLenum to_opengl_blend_func(SourceBlendingFactor f)
     {
-        static_assert(num_options<BlendFunction>() == 4);
+        static_assert(num_options<SourceBlendingFactor>() == 4);
         switch (f) {
-        case BlendFunction::One:                 return GL_ONE;
-        case BlendFunction::Zero:                return GL_ZERO;
-        case BlendFunction::SourceAlpha:         return GL_SRC_ALPHA;
-        case BlendFunction::OneMinusSourceAlpha: return GL_ONE_MINUS_SRC_ALPHA;
-        default:                                 return GL_ONE;
+        case SourceBlendingFactor::One:                 return GL_ONE;
+        case SourceBlendingFactor::Zero:                return GL_ZERO;
+        case SourceBlendingFactor::SourceAlpha:         return GL_SRC_ALPHA;
+        case SourceBlendingFactor::OneMinusSourceAlpha: return GL_ONE_MINUS_SRC_ALPHA;
+        default:                                        return GL_ONE;
         }
     }
 
-    GLenum to_opengl_blend_equation(BlendEquation f)
+    GLenum to_opengl_blend_func(DestinationBlendingFactor f)
     {
-        static_assert(num_options<BlendEquation>() == 3);
+        static_assert(num_options<DestinationBlendingFactor>() == 4);
         switch (f) {
-        case BlendEquation::Add: return GL_FUNC_ADD;
-        case BlendEquation::Min: return GL_MIN;
-        case BlendEquation::Max: return GL_MAX;
-        default:                 return GL_FUNC_ADD;
+        case DestinationBlendingFactor::One:                 return GL_ONE;
+        case DestinationBlendingFactor::Zero:                return GL_ZERO;
+        case DestinationBlendingFactor::SourceAlpha:         return GL_SRC_ALPHA;
+        case DestinationBlendingFactor::OneMinusSourceAlpha: return GL_ONE_MINUS_SRC_ALPHA;
+        default:                                             return GL_ONE;
+        }
+    }
+
+    GLenum to_opengl_blend_equation(BlendingEquation f)
+    {
+        static_assert(num_options<BlendingEquation>() == 3);
+        switch (f) {
+        case BlendingEquation::Add: return GL_FUNC_ADD;
+        case BlendingEquation::Min: return GL_MIN;
+        case BlendingEquation::Max: return GL_MAX;
+        default:                    return GL_FUNC_ADD;
         }
     }
 }
@@ -3004,14 +3016,14 @@ public:
     bool is_transparent() const { return is_transparent_; }
     void set_transparent(bool value) { is_transparent_ = value; }
 
-    BlendFunction source_blend_function() const { return source_blend_function_; }
-    void set_source_blend_function(BlendFunction f) { source_blend_function_ = f; }
+    SourceBlendingFactor source_blending_factor() const { return source_blending_factor_; }
+    void set_source_blending_factor(SourceBlendingFactor f) { source_blending_factor_ = f; }
 
-    BlendFunction destination_blend_function() const { return destination_blend_function_; }
-    void set_destination_blend_function(BlendFunction f) { destination_blend_function_ = f; }
+    DestinationBlendingFactor destination_blending_factor() const { return destination_blending_factor_; }
+    void set_destination_blending_factor(DestinationBlendingFactor f) { destination_blending_factor_ = f; }
 
-    BlendEquation blend_equation() const { return blend_equation_; }
-    void set_blend_equation(BlendEquation f) { blend_equation_ = f; }
+    BlendingEquation blending_equation() const { return blending_equation_; }
+    void set_blending_equation(BlendingEquation f) { blending_equation_ = f; }
 
     bool is_depth_tested() const { return is_depth_tested_; }
     void set_depth_tested(bool value) { is_depth_tested_ = value; }
@@ -3032,9 +3044,9 @@ private:
     MaterialPropertyBlock properties_;
     DepthFunction depth_function_ = DepthFunction::Default;
     CullMode cull_mode_ = CullMode::Default;
-    BlendFunction source_blend_function_ = BlendFunction::SourceDefault;
-    BlendFunction destination_blend_function_ = BlendFunction::DestinationDefault;
-    BlendEquation blend_equation_ = BlendEquation::Default;
+    SourceBlendingFactor source_blending_factor_ = SourceBlendingFactor::Default;
+    DestinationBlendingFactor destination_blending_factor_ = DestinationBlendingFactor::Default;
+    BlendingEquation blending_equation_ = BlendingEquation::Default;
     bool is_transparent_ = false;
     bool is_depth_tested_ = true;
     bool is_wireframe_mode_ = false;
@@ -3059,34 +3071,34 @@ void osc::Material::set_transparent(bool value)
     impl_.upd()->set_transparent(value);
 }
 
-BlendFunction osc::Material::source_blend_function() const
+SourceBlendingFactor osc::Material::source_blending_factor() const
 {
-    return impl_->source_blend_function();
+    return impl_->source_blending_factor();
 }
 
-void osc::Material::set_source_blend_function(BlendFunction f)
+void osc::Material::set_source_blending_factor(SourceBlendingFactor f)
 {
-    impl_.upd()->set_source_blend_function(f);
+    impl_.upd()->set_source_blending_factor(f);
 }
 
-BlendFunction osc::Material::destination_blend_function() const
+DestinationBlendingFactor osc::Material::destination_blending_factor() const
 {
-    return impl_->destination_blend_function();
+    return impl_->destination_blending_factor();
 }
 
-void osc::Material::set_destination_blend_function(BlendFunction f)
+void osc::Material::set_destination_blending_factor(DestinationBlendingFactor f)
 {
-    impl_.upd()->set_destination_blend_function(f);
+    impl_.upd()->set_destination_blending_factor(f);
 }
 
-BlendEquation osc::Material::blend_equation() const
+BlendingEquation osc::Material::blending_equation() const
 {
-    return impl_->blend_equation();
+    return impl_->blending_equation();
 }
 
-void osc::Material::set_blend_equation(BlendEquation f)
+void osc::Material::set_blending_equation(BlendingEquation f)
 {
-    impl_.upd()->set_blend_equation(f);
+    impl_.upd()->set_blending_equation(f);
 }
 
 bool osc::Material::is_depth_tested() const
@@ -4836,16 +4848,16 @@ private:
     }
 
     void range_check_indices_and_recalculate_bounds(
-        MeshUpdateFlags flags = MeshUpdateFlags::Default)
+        MeshUpdateFlags flags = MeshUpdateFlag::Default)
     {
         // note: recalculating bounds will always validate indices anyway, because it's assumed
         //       that the caller's intention is that all indices are valid when computing the
         //       bounds
-        const bool should_check_indices = not ((flags & MeshUpdateFlags::DontValidateIndices) and (flags & MeshUpdateFlags::DontRecalculateBounds));
+        const bool should_check_indices = not ((flags & MeshUpdateFlag::DontValidateIndices) and (flags & MeshUpdateFlag::DontRecalculateBounds));
 
         //       ... but it's perfectly reasonable for the caller to only want the indices to be
         //       validated, leaving the bounds untouched
-        const bool should_recalculate_bounds = not (flags & MeshUpdateFlags::DontRecalculateBounds);
+        const bool should_recalculate_bounds = not (flags & MeshUpdateFlag::DontRecalculateBounds);
 
         if (should_check_indices and should_recalculate_bounds) {
             if (num_indices_ == 0) {
@@ -5440,7 +5452,7 @@ public:
 
     void render_to(RenderTexture& render_texture)
     {
-        static_assert(CameraClearFlags::All == (CameraClearFlags::SolidColor | CameraClearFlags::Depth));
+        static_assert(CameraClearFlag::All == CameraClearFlags{CameraClearFlag::SolidColor, CameraClearFlag::Depth});
         static_assert(num_options<RenderTextureReadWrite>() == 2);
 
         RenderTarget render_target
@@ -5452,7 +5464,7 @@ public:
                     render_texture.upd_color_buffer(),
 
                     // load the color buffer based on this camera's clear flags
-                    clear_flags() & CameraClearFlags::SolidColor ?
+                    clear_flags() & CameraClearFlag::SolidColor ?
                         RenderBufferLoadAction::Clear :
                         RenderBufferLoadAction::Load,
 
@@ -5470,7 +5482,7 @@ public:
                 render_texture.upd_depth_buffer(),
 
                 // load the depth buffer based on this camera's clear flags
-                clear_flags() & CameraClearFlags::Depth ?
+                clear_flags() & CameraClearFlag::Depth ?
                     RenderBufferLoadAction::Clear :
                     RenderBufferLoadAction::Load,
 
@@ -5496,7 +5508,7 @@ private:
     float orthographic_size_ = 2.0f;
     Radians perspective_fov_ = 90_deg;
     CameraClippingPlanes clipping_planes_{1.0f, -1.0f};
-    CameraClearFlags clear_flags_ = CameraClearFlags::Default;
+    CameraClearFlags clear_flags_ = CameraClearFlag::Default;
     std::optional<Rect> maybe_screen_pixel_rect_ = std::nullopt;
     std::optional<Rect> maybe_scissor_rect_ = std::nullopt;
     Vec3 position_ = {};
@@ -5796,8 +5808,8 @@ namespace
         }
 
         // ensure alpha blending functions are defaulted
-        glBlendFunc(to_opengl_blend_func(BlendFunction::SourceDefault), to_opengl_blend_func(BlendFunction::DestinationDefault));
-        glBlendEquation(to_opengl_blend_equation(BlendEquation::Default));
+        glBlendFunc(to_opengl_blend_func(SourceBlendingFactor::Default), to_opengl_blend_func(DestinationBlendingFactor::Default));
+        glBlendEquation(to_opengl_blend_equation(BlendingEquation::Default));
 
         // print OpenGL information to console (handy for debugging user's rendering
         // issues)
@@ -6834,17 +6846,17 @@ void osc::GraphicsBackend::handle_batch_with_same_material(
 
     gl::use_program(shader_impl.program());
 
-    if (material_impl.source_blend_function() != BlendFunction::SourceDefault or
-        material_impl.destination_blend_function() != BlendFunction::DestinationDefault) {
+    if (material_impl.source_blending_factor() != SourceBlendingFactor::Default or
+        material_impl.destination_blending_factor() != DestinationBlendingFactor::Default) {
 
         glBlendFunc(
-            to_opengl_blend_func(material_impl.source_blend_function()),
-            to_opengl_blend_func(material_impl.destination_blend_function())
+            to_opengl_blend_func(material_impl.source_blending_factor()),
+            to_opengl_blend_func(material_impl.destination_blending_factor())
         );
     }
 
-    if (material_impl.blend_equation() != BlendEquation::Default) {
-        glBlendEquation(to_opengl_blend_equation(material_impl.blend_equation()));
+    if (material_impl.blending_equation() != BlendingEquation::Default) {
+        glBlendEquation(to_opengl_blend_equation(material_impl.blending_equation()));
     }
 
 #ifndef EMSCRIPTEN
@@ -6924,16 +6936,16 @@ void osc::GraphicsBackend::handle_batch_with_same_material(
     }
 #endif
 
-    if (material_impl.blend_equation() != BlendEquation::Default) {
-        glBlendEquation(to_opengl_blend_equation(BlendEquation::Default));
+    if (material_impl.blending_equation() != BlendingEquation::Default) {
+        glBlendEquation(to_opengl_blend_equation(BlendingEquation::Default));
     }
 
-    if (material_impl.source_blend_function() != BlendFunction::SourceDefault or
-        material_impl.destination_blend_function() != BlendFunction::DestinationDefault) {
+    if (material_impl.source_blending_factor() != SourceBlendingFactor::Default or
+        material_impl.destination_blending_factor() != DestinationBlendingFactor::Default) {
 
         glBlendFunc(
-            to_opengl_blend_func(BlendFunction::SourceDefault),
-            to_opengl_blend_func(BlendFunction::DestinationDefault)
+            to_opengl_blend_func(SourceBlendingFactor::Default),
+            to_opengl_blend_func(DestinationBlendingFactor::Default)
         );
     }
 }
@@ -7249,10 +7261,10 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::bind_and_clear_render_buffe
         gl::bind_framebuffer(GL_FRAMEBUFFER, gl::window_framebuffer);
 
         // we're rendering to the window
-        if (camera.clear_flags_ != CameraClearFlags::Nothing) {
+        if (camera.clear_flags_ != CameraClearFlag::Nothing) {
 
             // clear window
-            const GLenum clearFlags = camera.clear_flags_ & CameraClearFlags::SolidColor ?
+            const GLenum clearFlags = camera.clear_flags_ & CameraClearFlag::SolidColor ?
                 GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT :
                 GL_DEPTH_BUFFER_BIT;
 
@@ -7512,7 +7524,7 @@ void osc::GraphicsBackend::blit_to_screen(
     camera.set_pixel_rect(rect);
     camera.set_projection_matrix_override(identity<Mat4>());
     camera.set_view_matrix_override(identity<Mat4>());
-    camera.set_clear_flags(CameraClearFlags::Nothing);
+    camera.set_clear_flags(CameraClearFlag::Nothing);
 
     Material material_copy{material};
     material_copy.set("uTexture", source);
@@ -7532,7 +7544,7 @@ void osc::GraphicsBackend::blit_to_screen(
     camera.set_pixel_rect(rect);
     camera.set_projection_matrix_override(identity<Mat4>());
     camera.set_view_matrix_override(identity<Mat4>());
-    camera.set_clear_flags(CameraClearFlags::Nothing);
+    camera.set_clear_flags(CameraClearFlag::Nothing);
 
     Material material_copy{g_graphics_context_impl->getQuadMaterial()};
     material_copy.set("uTexture", source);
