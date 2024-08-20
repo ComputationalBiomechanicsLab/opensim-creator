@@ -1,19 +1,20 @@
 #pragma once
 
 #include <oscar/Graphics/RenderBufferType.h>
-#include <oscar/Graphics/RenderTextureDescriptor.h>
 
 #include <memory>
+
+namespace osc { struct RenderTextureParams; }
 
 namespace osc
 {
     class RenderBuffer final {
     public:
         RenderBuffer(
-            const RenderTextureDescriptor&,
+            const RenderTextureParams&,
             RenderBufferType
         );
-        RenderBuffer(const RenderBuffer&) = delete;
+        RenderBuffer(const RenderBuffer&);
         RenderBuffer(RenderBuffer&&) noexcept = delete;
         RenderBuffer& operator=(const RenderBuffer&) = delete;
         RenderBuffer& operator=(RenderBuffer&&) noexcept = delete;

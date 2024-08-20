@@ -40,8 +40,7 @@ namespace
         MouseCapturingCamera rv;
         rv.set_position({0.0f, 0.0f, 5.0f});
         rv.set_vertical_fov(45_deg);
-        rv.set_near_clipping_plane(0.1f);
-        rv.set_far_clipping_plane(100.0f);
+        rv.set_clipping_planes({0.1f, 100.0f});
         rv.set_background_color({0.1f, 0.1f, 0.1f, 1.0f});
         rv.eulers() = {0_deg, 180_deg, 0_deg};
         return rv;
@@ -58,10 +57,10 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Scene.vert"),
             loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/HDR/Scene.frag"),
         }};
-        rv.set_vec3_array("uSceneLightPositions", c_light_positions);
-        rv.set_color_array("uSceneLightColors", GetLightColors());
-        rv.set_texture("uDiffuseTexture", wood_texture);
-        rv.set_bool("uInverseNormals", true);
+        rv.set_array("uSceneLightPositions", c_light_positions);
+        rv.set_array("uSceneLightColors", GetLightColors());
+        rv.set("uDiffuseTexture", wood_texture);
+        rv.set("uInverseNormals", true);
         return rv;
     }
 
@@ -109,13 +108,15 @@ private:
     {
         // reformat intermediate HDR texture to match tab dimensions etc.
         {
-            RenderTextureDescriptor descriptor{ui::get_main_viewport_workspace_screen_dimensions()};
-            descriptor.set_anti_aliasing_level(App::get().anti_aliasing_level());
+            RenderTextureParams params = {
+                .dimensions = ui::get_main_viewport_workspace_screen_dimensions(),
+                .anti_aliasing_level = App::get().anti_aliasing_level(),
+            };
             if (use_16bit_format_) {
-                descriptor.set_color_format(RenderTextureFormat::ARGBFloat16);
+                params.color_format = RenderTextureFormat::ARGBFloat16;
             }
 
-            scene_hdr_texture_.reformat(descriptor);
+            scene_hdr_texture_.reformat(params);
         }
 
         graphics::draw(cube_mesh_, corridoor_transform_, scene_material_, camera_);
@@ -130,9 +131,9 @@ private:
         ortho_camera.set_projection_matrix_override(identity<Mat4>());
         ortho_camera.set_view_matrix_override(identity<Mat4>());
 
-        tonemap_material_.set_render_texture("uTexture", scene_hdr_texture_);
-        tonemap_material_.set_bool("uUseTonemap", use_tonemap_);
-        tonemap_material_.set_float("uExposure", exposure_);
+        tonemap_material_.set("uTexture", scene_hdr_texture_);
+        tonemap_material_.set("uUseTonemap", use_tonemap_);
+        tonemap_material_.set("uExposure", exposure_);
 
         graphics::draw(quad_mesh_, identity<Transform>(), tonemap_material_, ortho_camera);
         ortho_camera.render_to_screen();
@@ -155,8 +156,8 @@ private:
     Material scene_material_ = create_scene_material(loader_);
     Material tonemap_material_ = create_tonemap_material(loader_);
     MouseCapturingCamera camera_ = create_scene_camera();
-    Mesh cube_mesh_ = BoxGeometry{2.0f, 2.0f, 2.0f};
-    Mesh quad_mesh_ = PlaneGeometry{2.0f, 2.0f};
+    Mesh cube_mesh_ = BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}};
+    Mesh quad_mesh_ = PlaneGeometry{{.width = 2.0f, .height = 2.0f}};
     Transform corridoor_transform_ = calc_corridoor_transform();
     RenderTexture scene_hdr_texture_;
     float exposure_ = 1.0f;

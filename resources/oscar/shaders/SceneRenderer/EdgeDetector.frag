@@ -1,7 +1,8 @@
 #version 330 core
 
 uniform sampler2D uScreenTexture;
-uniform vec4 uRimRgba;
+uniform vec4 uRim0Color;
+uniform vec4 uRim1Color;
 uniform vec2 uRimThickness;
 
 in vec2 TexCoords;
@@ -40,20 +41,24 @@ const vec2 g_KernelCoefficients[9] = vec2[](
 
 void main(void)
 {
-    vec2 rimXY = vec2(0.0, 0.0);
-    for (int i = 0; i < g_KernelCoefficients.length(); ++i)
-    {
+    vec2 rim0XY = vec2(0.0, 0.0);
+    vec2 rim1XY = vec2(0.0, 0.0);
+    for (int i = 0; i < g_KernelCoefficients.length(); ++i) {
         vec2 offset = uRimThickness * g_TextureOffsets[i];
         vec2 coord = TexCoords + offset;
-
-        float v = texture(uScreenTexture, coord).r;
-        rimXY += v * g_KernelCoefficients[i];
+        vec2 v = texture(uScreenTexture, coord).rg;
+        rim0XY += v.r * g_KernelCoefficients[i];
+        rim1XY += v.g * g_KernelCoefficients[i];
     }
 
     // the maximum value from the Sobel Kernel is sqrt(3^2 + 3^2) == sqrt(18)
     //
     // but lowering the scaling factor a bit is handy for making the rims more solid
-    float rimStrength = length(rimXY) / 4.242640;
+    float rim0Strength = length(rim0XY) / 4.242640;
+    float rim1Strength = length(rim1XY) / 4.242640;
 
-    FragColor = vec4(uRimRgba.rgb, clamp(rimStrength * uRimRgba.a, 0.0, 1.0));
+    vec4 rim0Color = rim0Strength * uRim0Color;
+    vec4 rim1Color = rim1Strength * uRim1Color;
+
+    FragColor = rim0Color + rim1Color;
 }

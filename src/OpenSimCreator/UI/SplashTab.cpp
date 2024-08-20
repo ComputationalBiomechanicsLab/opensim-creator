@@ -275,6 +275,7 @@ private:
         if (ui::draw_menu_item(ICON_FA_CUBE " Mesh Warping")) {
             m_Parent->add_and_select_tab<MeshWarpingTab>(m_Parent);
         }
+        App::upd().add_frame_annotation("SplashTab/MeshWarpingMenuItem", ui::get_last_drawn_item_screen_rect());
     }
 
     void drawRecentlyOpenedFilesMenuSectionContent(int& imguiID)

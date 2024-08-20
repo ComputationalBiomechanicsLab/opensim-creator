@@ -17,8 +17,22 @@ TEST(TorusKnotGeometry, can_default_construct)
 
 TEST(TorusKnotGeometry, works_with_non_default_args)
 {
-    ASSERT_NO_THROW({ TorusKnotGeometry(0.5f, 0.1f, 32, 4, 1, 10); });
-    ASSERT_NO_THROW({ TorusKnotGeometry(0.0f, 100.0f, 1, 3, 4, 2); });
+    ASSERT_NO_THROW({ TorusKnotGeometry({
+        .torus_radius = 0.5f,
+        .tube_radius = 0.1f,
+        .num_tubular_segments = 32,
+        .num_radial_segments = 4,
+        .p = 1,
+        .q = 10,
+    }); });
+    ASSERT_NO_THROW({ TorusKnotGeometry({
+        .torus_radius = 0.0f,
+        .tube_radius = 100.0f,
+        .num_tubular_segments = 1,
+        .num_radial_segments = 3,
+        .p = 4,
+        .q = 2,
+    }); });
 }
 
 TEST(BoxGeometry, can_default_construct)
@@ -32,7 +46,34 @@ TEST(BoxGeometry, can_default_construct)
 
 TEST(BoxGeometry, works_with_non_default_args)
 {
-    ASSERT_NO_THROW({ BoxGeometry(0.5f, 100.0f, 0.0f, 10, 1, 5); });
+    ASSERT_NO_THROW({ BoxGeometry({
+        .width = 0.5f,
+        .height = 100.0f,
+        .depth = 0.0f,
+        .num_width_segments = 10,
+        .num_height_segments = 1,
+        .num_depth_segments = 5,
+    }); });
+}
+
+TEST(PolyhedronGeometry, can_default_construct_with_params)
+{
+    PolyhedronGeometry mesh;
+
+    ASSERT_TRUE(mesh.has_vertices());
+    ASSERT_TRUE(mesh.has_normals());
+    ASSERT_TRUE(mesh.has_tex_coords());
+    ASSERT_FALSE(mesh.indices().empty());
+}
+
+TEST(PolyhedronGeometry, can_construct_with_custom_params)
+{
+    PolyhedronGeometry mesh{{
+        .vertices = {{1.0f, 1.0f, 1.0f}, {-1.0f, -1.0f, 1.0f}, {-1.0f, 1.0f, -1.0f}, {1.0f, -1.0f, -1.0f}},
+        .indices = {2, 1, 0,    0, 3, 2,    1, 3, 0,    2, 3, 1},
+        .radius = 10.0f,
+        .detail_level = 1,
+    }};
 }
 
 TEST(PolyhedronGeometry, works_with_a_couple_of_basic_verts)
@@ -75,7 +116,7 @@ TEST(IcosahedronGeometry, can_default_construct)
 
 TEST(IcosahedronGeometry, works_with_non_default_args)
 {
-    ASSERT_NO_THROW(IcosahedronGeometry(10.0f, 2));
+    ASSERT_NO_THROW(IcosahedronGeometry({.radius = 10.0f, .detail = 2}));
 }
 
 TEST(DodecahedronGeometry, can_default_construct)
@@ -89,7 +130,7 @@ TEST(DodecahedronGeometry, can_default_construct)
 
 TEST(DodecahedronGeometry, works_with_non_default_args)
 {
-    const Mesh mesh = DodecahedronGeometry{5.0f, 3};
+    const Mesh mesh = DodecahedronGeometry{{.radius = 5.0f, .detail = 3}};
     ASSERT_TRUE(mesh.has_vertices());
     ASSERT_TRUE(mesh.has_normals());
     ASSERT_TRUE(mesh.has_tex_coords());
@@ -107,7 +148,7 @@ TEST(OctahedronGeometry, can_default_construct)
 
 TEST(OctahedronGeometry, works_with_non_default_args)
 {
-    const Mesh mesh = OctahedronGeometry{11.0f, 2};
+    const Mesh mesh = OctahedronGeometry{{.radius = 11.0f, .detail = 2}};
     ASSERT_TRUE(mesh.has_vertices());
     ASSERT_TRUE(mesh.has_normals());
     ASSERT_TRUE(mesh.has_tex_coords());
@@ -125,7 +166,7 @@ TEST(TetrahedronGeometry, can_default_construct)
 
 TEST(TetrahedronGeometry, works_with_non_default_args)
 {
-    const Mesh mesh = TetrahedronGeometry{0.5f, 3};
+    const Mesh mesh = TetrahedronGeometry{{.radius = 0.5f, .detail_level = 3}};
     ASSERT_TRUE(mesh.has_vertices());
     ASSERT_TRUE(mesh.has_normals());
     ASSERT_TRUE(mesh.has_tex_coords());
@@ -143,12 +184,12 @@ TEST(LatheGeometry, can_default_construct)
 
 TEST(LatheGeometry, works_with_non_default_args)
 {
-    const Mesh mesh = LatheGeometry{
-        {{{0.0f, 0.0f}, {1.0f, 1.0f}, {2.0f, 2.0f}, {3.0f, 3.0f}}},
-        32,
-        45_deg,
-        180_deg
-    };
+    const Mesh mesh = LatheGeometry{{
+        .points = {{0.0f, 0.0f}, {1.0f, 1.0f}, {2.0f, 2.0f}, {3.0f, 3.0f}},
+        .num_segments = 32,
+        .phi_start = 45_deg,
+        .phi_length = 180_deg,
+    }};
     ASSERT_TRUE(mesh.has_vertices());
     ASSERT_TRUE(mesh.has_normals());
     ASSERT_TRUE(mesh.has_tex_coords());
@@ -166,7 +207,12 @@ TEST(CircleGeometry, can_default_construct)
 
 TEST(CircleGeometry, works_with_non_default_args)
 {
-    const Mesh mesh = CircleGeometry{0.5f, 64, 90_deg, 80_deg};
+    const Mesh mesh = CircleGeometry{{
+        .radius = 0.5f,
+        .num_segments = 64,
+        .theta_start = 90_deg,
+        .theta_length = 80_deg,
+    }};
     ASSERT_TRUE(mesh.has_vertices());
     ASSERT_TRUE(mesh.has_normals());
     ASSERT_TRUE(mesh.has_tex_coords());
@@ -184,7 +230,14 @@ TEST(RingGeometry, can_default_construct)
 
 TEST(RingGeometry, works_with_non_default_args)
 {
-    const Mesh mesh = RingGeometry{0.1f, 0.2f, 16, 3, 90_deg, 180_deg};
+    const Mesh mesh = RingGeometry{{
+        .inner_radius = 0.1f,
+        .outer_radius = 0.2f,
+        .num_theta_segments = 16,
+        .num_phi_segments = 3,
+        .theta_start = 90_deg,
+        .theta_length = 180_deg,
+    }};
     ASSERT_TRUE(mesh.has_vertices());
     ASSERT_TRUE(mesh.has_normals());
     ASSERT_TRUE(mesh.has_tex_coords());
@@ -202,7 +255,13 @@ TEST(TorusGeometry, can_default_construct)
 
 TEST(TorusGeometry, works_with_non_default_args)
 {
-    const Mesh mesh = TorusGeometry{0.2f, 0.3f, 4, 32, 180_deg};
+    const Mesh mesh = TorusGeometry{{
+        .tube_center_radius = 0.2f,
+        .tube_radius = 0.3f,
+        .num_radial_segments = 4,
+        .num_tubular_segments = 32,
+        .arc = 180_deg,
+    }};
     ASSERT_TRUE(mesh.has_vertices());
     ASSERT_TRUE(mesh.has_normals());
     ASSERT_TRUE(mesh.has_tex_coords());
@@ -220,7 +279,16 @@ TEST(CylinderGeometry, can_default_construct)
 
 TEST(CylinderGeometry, works_with_non_default_args)
 {
-    const Mesh mesh = CylinderGeometry{0.1f, 0.05f, 0.5f, 16, 2, true, 180_deg, 270_deg};
+    const Mesh mesh = CylinderGeometry{{
+        .radius_top = 0.1f,
+        .radius_bottom = 0.05f,
+        .height = 0.5f,
+        .num_radial_segments = 16,
+        .num_height_segments = 2,
+        .open_ended = true,
+        .theta_start = 180_deg,
+        .theta_length = 270_deg
+    }};
     ASSERT_TRUE(mesh.has_vertices());
     ASSERT_TRUE(mesh.has_normals());
     ASSERT_TRUE(mesh.has_tex_coords());
@@ -238,7 +306,15 @@ TEST(ConeGeometry, can_default_construct)
 
 TEST(ConeGeometry, works_with_non_default_args)
 {
-    const Mesh mesh = ConeGeometry{0.2f, 500.0f, 4, 3, true, -90_deg, 90_deg};
+    const Mesh mesh = ConeGeometry{{
+        .radius = 0.2f,
+        .height = 500.0f,
+        .num_radial_segments = 4,
+        .num_height_segments = 3,
+        .open_ended = true,
+        .theta_start = -90_deg,
+        .theta_length = 90_deg,
+    }};
     ASSERT_TRUE(mesh.has_vertices());
     ASSERT_TRUE(mesh.has_normals());
     ASSERT_TRUE(mesh.has_tex_coords());
@@ -256,7 +332,12 @@ TEST(PlaneGeometry, can_default_construct)
 
 TEST(PlaneGeometry, works_with_non_default_args)
 {
-    const Mesh mesh = PlaneGeometry{0.5f, 2.0f, 4, 4};
+    const Mesh mesh = PlaneGeometry{{
+        .width = 0.5f,
+        .height = 2.0f,
+        .num_width_segments = 4,
+        .num_height_segments = 4
+    }};
     ASSERT_TRUE(mesh.has_vertices());
     ASSERT_TRUE(mesh.has_normals());
     ASSERT_TRUE(mesh.has_tex_coords());
@@ -274,9 +355,31 @@ TEST(SphereGeometry, can_default_construct)
 
 TEST(SphereGeometry, works_with_non_default_args)
 {
-    const Mesh mesh = SphereGeometry{0.5f, 12, 4, 90_deg, 180_deg, -45_deg, -60_deg};
+    const Mesh mesh = SphereGeometry{{
+        .radius = 0.5f,
+        .num_width_segments = 12,
+        .num_height_segments = 4,
+        .phi_start = 90_deg,
+        .phi_length = 180_deg,
+        .theta_start = -45_deg,
+        .theta_length = -60_deg,
+    }};
     ASSERT_TRUE(mesh.has_vertices());
     ASSERT_TRUE(mesh.has_normals());
     ASSERT_TRUE(mesh.has_tex_coords());
+    ASSERT_FALSE(mesh.indices().empty());
+}
+
+TEST(WireframeGeometry, can_default_construct)
+{
+    WireframeGeometry mesh;
+    ASSERT_TRUE(mesh.has_vertices());
+    ASSERT_FALSE(mesh.indices().empty());
+}
+
+TEST(WireframeGeometry, can_construct_from_some_other_geometry)
+{
+    WireframeGeometry mesh{TorusKnotGeometry{}};
+    ASSERT_TRUE(mesh.has_vertices());
     ASSERT_FALSE(mesh.indices().empty());
 }

@@ -37,10 +37,10 @@ namespace osc::spsc
             std::list<T> message_queue_;
 
             // how many `Sender` classes use this Impl (should be 1/0)
-            std::atomic<ptrdiff_t> num_senders_ = 0;
+            std::atomic<size_t> num_senders_ = 0;
 
             // how many `Receiver` classes use this impl (should be 1/0)
-            std::atomic<ptrdiff_t> num_receivers_ = 0;
+            std::atomic<size_t> num_receivers_ = 0;
 
             template<typename U>
             friend std::pair<Sender<U>, Receiver<U>> channel();
@@ -87,7 +87,7 @@ namespace osc::spsc
 
         [[nodiscard]] bool is_receiver_hung_up()
         {
-            return impl_->num_receivers_ <= 0;
+            return impl_->num_receivers_ == 0;
         }
     };
 
@@ -147,7 +147,7 @@ namespace osc::spsc
             // the sender hangs up
             impl_->condition_variable_.wait(l, [&]()
             {
-                return not impl_->message_queue_.empty() or impl_->num_senders_ <= 0;
+                return not impl_->message_queue_.empty() or impl_->num_senders_ == 0;
             });
 
             // the condvar woke up (non-spuriously), either:
@@ -167,7 +167,7 @@ namespace osc::spsc
 
         [[nodiscard]] bool is_sender_hung_up()
         {
-            return impl_->num_senders_ <= 0;
+            return impl_->num_senders_ == 0;
         }
     };
 

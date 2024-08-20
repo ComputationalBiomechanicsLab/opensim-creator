@@ -5,7 +5,18 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
-- (nothing here yet)
+- Added `Point Forces` and `Point Torques` visualization options, which enables drawing force
+  vectors in their point-force form (as opposed to their reduced body-force form). This feature
+  currently only works for `ExternalForce`s in the model (#904) and `GeometryPath`s (#907).
+- The `Show Forces' Linear/Rotation Component` option was reworded to `Forces on Bodies` and
+  `Torques on Bodies` to reflect what's actually being shown
+- Fixed force vector arrows not casting shadows
+- The rim highlights now more-clearly distinguish between hovered, selected, hovered+selected
+  elements in the scene when they are overlapping (#24)
+- Internal: `RenderTextureDescriptor` was refactored into a POD struct called `RenderTextureParams`
+  for ease-of-use
+- Internal: oscar's `Graphics/Scene` classes were refactored for ease-of-use and grouping of rim
+  highlights (#24)
 
 ## [0.5.13] - 2024/07/30
 

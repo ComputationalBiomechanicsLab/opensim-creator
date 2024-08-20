@@ -11,7 +11,10 @@ namespace osc { struct SceneDecoration; }
 namespace osc
 {
     struct DAEMetadata final {
-        DAEMetadata(
+
+        explicit DAEMetadata();
+
+        explicit DAEMetadata(
             std::string_view author_,
             std::string_view authoring_tool_
         );
@@ -25,6 +28,6 @@ namespace osc
     void write_as_dae(
         std::ostream&,
         std::span<const SceneDecoration>,
-        const DAEMetadata&
+        const DAEMetadata& = DAEMetadata{}
     );
 }

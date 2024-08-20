@@ -36,8 +36,7 @@ namespace
         MouseCapturingCamera rv;
         rv.set_position({0.0f, 0.0f, 20.0f});
         rv.set_vertical_fov(45_deg);
-        rv.set_near_clipping_plane(0.1f);
-        rv.set_far_clipping_plane(100.0f);
+        rv.set_clipping_planes({0.1f, 100.0f});
         rv.set_background_color({0.1f, 0.1f, 0.1f, 1.0f});
         return rv;
     }
@@ -48,7 +47,7 @@ namespace
             rl.slurp("oscar_learnopengl/shaders/PBR/lighting/PBR.vert"),
             rl.slurp("oscar_learnopengl/shaders/PBR/lighting/PBR.frag"),
         }};
-        rv.set_float("uAO", 1.0f);
+        rv.set<float>("uAO", 1.0f);
         return rv;
     }
 }
@@ -87,9 +86,9 @@ private:
     {
         camera_.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
 
-        pbr_material_.set_vec3("uCameraWorldPos", camera_.position());
-        pbr_material_.set_vec3_array("uLightPositions", c_light_positions);
-        pbr_material_.set_vec3_array("uLightColors", c_light_radiances);
+        pbr_material_.set("uCameraWorldPos", camera_.position());
+        pbr_material_.set_array("uLightPositions", c_light_positions);
+        pbr_material_.set_array("uLightColors", c_light_radiances);
 
         draw_spheres();
         draw_lights();
@@ -99,14 +98,14 @@ private:
 
     void draw_spheres()
     {
-        pbr_material_.set_vec3("uAlbedoColor", {0.5f, 0.0f, 0.0f});
+        pbr_material_.set("uAlbedoColor", Vec3{0.5f, 0.0f, 0.0f});
 
         for (int row = 0; row < c_num_rows; ++row) {
-            pbr_material_.set_float("uMetallicity", static_cast<float>(row) / static_cast<float>(c_num_rows));
+            pbr_material_.set("uMetallicity", static_cast<float>(row) / static_cast<float>(c_num_rows));
 
             for (int col = 0; col < c_num_cols; ++col) {
                 const float normalized_col = static_cast<float>(col) / static_cast<float>(c_num_cols);
-                pbr_material_.set_float("uRoughness", clamp(normalized_col, 0.005f, 1.0f));
+                pbr_material_.set("uRoughness", clamp(normalized_col, 0.005f, 1.0f));
 
                 const float x = (static_cast<float>(col) - static_cast<float>(c_num_cols)/2.0f) * c_cell_spacing;
                 const float y = (static_cast<float>(row) - static_cast<float>(c_num_rows)/2.0f) * c_cell_spacing;
@@ -117,7 +116,7 @@ private:
 
     void draw_lights()
     {
-        pbr_material_.set_vec3("uAlbedoColor", {1.0f, 1.0f, 1.0f});
+        pbr_material_.set("uAlbedoColor", Vec3{1.0f, 1.0f, 1.0f});
 
         for (const Vec3& light_position : c_light_positions) {
             graphics::draw(sphere_mesh_, {.scale = Vec3{0.5f}, .position = light_position}, pbr_material_, camera_);
@@ -131,7 +130,7 @@ private:
 
     ResourceLoader loader_ = App::resource_loader();
     MouseCapturingCamera camera_ = CreateCamera();
-    Mesh sphere_mesh_ = SphereGeometry{1.0f, 64, 64};
+    Mesh sphere_mesh_ = SphereGeometry{{.num_width_segments = 64, .num_height_segments = 64}};
     Material pbr_material_ = CreateMaterial(loader_);
     PerfPanel perf_panel_{"Perf"};
 };

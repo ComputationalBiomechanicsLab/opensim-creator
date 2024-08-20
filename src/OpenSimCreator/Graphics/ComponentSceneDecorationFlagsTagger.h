@@ -22,6 +22,6 @@ namespace osc
         const OpenSim::Component* m_Selected;
         const OpenSim::Component* m_Hovered;
         const OpenSim::Component* m_LastComponent = nullptr;
-        SceneDecorationFlags m_Flags = SceneDecorationFlags::None;
+        SceneDecorationFlags m_LastFlags = SceneDecorationFlag::Default;
     };
 }

@@ -7,6 +7,7 @@
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/Concepts.h>
+#include <oscar/Utils/StringName.h>
 
 #include <concepts>
 #include <cstddef>
@@ -33,6 +34,7 @@ namespace OpenSim { class Body; }
 namespace OpenSim { class Component; }
 namespace OpenSim { class ComponentPath; }
 namespace OpenSim { class Coordinate; }
+namespace OpenSim { class ExternalForce; }
 namespace OpenSim { class Frame; }
 namespace OpenSim { class Geometry; }
 namespace OpenSim { class GeometryPath; }
@@ -44,6 +46,7 @@ namespace OpenSim { class Model; }
 namespace OpenSim { class ModelComponent; }
 namespace OpenSim { class Muscle; }
 namespace OpenSim { class Object; }
+namespace OpenSim { class PointForceDirection; }
 namespace OpenSim { template<typename> class Property; }
 namespace OpenSim { template<typename> class ObjectProperty; }
 namespace OpenSim { class PhysicalFrame; }
@@ -52,6 +55,7 @@ namespace OpenSim { template<typename, typename> class Set; }
 namespace OpenSim { template<typename> class SimpleProperty; }
 namespace OpenSim { class WrapObject; }
 namespace SimTK { class State; }
+namespace SimTK { class SimbodyMatterSubsystem; }
 
 // OpenSimHelpers: a collection of various helper functions that are used by `osc`
 namespace osc
@@ -386,14 +390,9 @@ namespace osc
     );
 
     // returns a pointer if the given path resolves a component relative to root
-    const OpenSim::Component* FindComponent(
-        const OpenSim::Component& root,
-        const OpenSim::ComponentPath&
-    );
-    const OpenSim::Component* FindComponent(
-        const OpenSim::Model&,
-        const std::string& absPath
-    );
+    const OpenSim::Component* FindComponent(const OpenSim::Component& root, const OpenSim::ComponentPath&);
+    const OpenSim::Component* FindComponent(const OpenSim::Model&, const std::string& absPath);
+    const OpenSim::Component* FindComponent(const OpenSim::Model&, const StringName& absPath);
 
     // return non-nullptr if the given path resolves a component of type T relative to root
     template<std::derived_from<OpenSim::Component> T>
@@ -403,7 +402,13 @@ namespace osc
     }
 
     template<std::derived_from<OpenSim::Component> T>
-    const T* FindComponent(const OpenSim::Component& root, const std::string& cp)
+    const T* FindComponent(const OpenSim::Model& root, const std::string& cp)
+    {
+        return dynamic_cast<const T*>(FindComponent(root, cp));
+    }
+
+    template<std::derived_from<OpenSim::Component> T>
+    const T* FindComponent(const OpenSim::Model& root, const StringName& cp)
     {
         return dynamic_cast<const T*>(FindComponent(root, cp));
     }
@@ -617,6 +622,7 @@ namespace osc
     // (custom OSC version that may be faster than OpenSim::Component::getAbsolutePathString)
     void GetAbsolutePathString(const OpenSim::Component&, std::string&);
     std::string GetAbsolutePathString(const OpenSim::Component&);
+    StringName GetAbsolutePathStringName(const OpenSim::Component&);
 
     // returns the absolute path to a component within its hierarchy (e.g. /jointset/joint/somejoint)
     //
@@ -641,6 +647,9 @@ namespace osc
     };
     std::optional<LinesOfAction> GetEffectiveLinesOfActionInGround(const OpenSim::Muscle&, const SimTK::State&);
     std::optional<LinesOfAction> GetAnatomicalLinesOfActionInGround(const OpenSim::Muscle&, const SimTK::State&);
+
+    // returns a memory-safe equivalent to `OpenSim::GeometryPath::getPointForceDirections`
+    std::vector<std::unique_ptr<OpenSim::PointForceDirection>> GetPointForceDirections(const OpenSim::GeometryPath&, const SimTK::State&);
 
     // path points
     //
@@ -676,6 +685,14 @@ namespace osc
         const OpenSim::Model&,
         const SimTK::State&,
         const OpenSim::HuntCrossleyForce&
+    );
+
+    // force vectors
+    //
+    // helper functions for pulling force vectors out of components in the model
+    const OpenSim::PhysicalFrame& GetFrameUsingExternalForceLookupHeuristic(
+        const OpenSim::Model&,
+        const std::string& bodyNameOrPath
     );
 
     // point info

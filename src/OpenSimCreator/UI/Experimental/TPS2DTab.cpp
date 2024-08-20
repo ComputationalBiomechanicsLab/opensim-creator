@@ -313,7 +313,7 @@ public:
 
     Impl()
     {
-        m_Material.set_texture("uTextureSampler", m_BoxTexture);
+        m_Material.set("uTextureSampler", m_BoxTexture);
         wireframe_material_.set_color({0.0f, 0.0f, 0.0f, 0.15f});
         wireframe_material_.set_transparent(true);
         wireframe_material_.set_wireframe(true);
@@ -410,9 +410,11 @@ private:
     // render the given mesh as-is to the given output render texture
     void renderMesh(const Mesh& mesh, Vec2i dims, std::optional<RenderTexture>& out)
     {
-        RenderTextureDescriptor desc{dims};
-        desc.set_anti_aliasing_level(App::get().anti_aliasing_level());
-        out.emplace(desc);
+        const RenderTextureParams textureParameters = {
+            .dimensions = dims,
+            .anti_aliasing_level = App::get().anti_aliasing_level()
+        };
+        out.emplace(textureParameters);
         graphics::draw(mesh, identity<Transform>(), m_Material, m_Camera);
         graphics::draw(mesh, identity<Transform>(), wireframe_material_, m_Camera);
 
@@ -509,7 +511,12 @@ private:
         m_Loader.open("textures/container.jpg"),
         ColorSpace::sRGB
     );
-    Mesh m_InputGrid = PlaneGeometry{2.0f, 2.0f, 50, 50};
+    Mesh m_InputGrid = PlaneGeometry{{
+        .width = 2.0f,
+        .height = 2.0f,
+        .num_width_segments = 50,
+        .num_height_segments = 50,
+    }};
     Mesh m_OutputGrid = m_InputGrid;
     Material m_Material{Shader{m_Loader.slurp("shaders/TPS2D/Textured.vert"), m_Loader.slurp("shaders/TPS2D/Textured.frag")}};
     MeshBasicMaterial wireframe_material_;

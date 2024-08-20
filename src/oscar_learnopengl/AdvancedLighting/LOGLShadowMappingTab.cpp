@@ -53,18 +53,16 @@ namespace
     {
         MouseCapturingCamera rv;
         rv.set_position({-2.0f, 1.0f, 0.0f});
-        rv.set_near_clipping_plane(0.1f);
-        rv.set_far_clipping_plane(100.0f);
+        rv.set_clipping_planes({0.1f, 100.0f});
         return rv;
     }
 
     RenderTexture create_depth_texture()
     {
-        RenderTexture rv;
-        RenderTextureDescriptor shadowmap_descriptor{Vec2i{1024, 1024}};
-        shadowmap_descriptor.set_read_write(RenderTextureReadWrite::Linear);
-        rv.reformat(shadowmap_descriptor);
-        return rv;
+        return RenderTexture{{
+            .dimensions = {1024, 1024},
+            .read_write = RenderTextureReadWrite::Linear,
+        }};
     }
 }
 
@@ -107,11 +105,11 @@ private:
 
         camera_.set_background_color({0.1f, 0.1f, 0.1f, 1.0f});
 
-        scene_material_.set_vec3("uLightWorldPos", light_pos_);
-        scene_material_.set_vec3("uViewWorldPos", camera_.position());
-        scene_material_.set_mat4("uLightSpaceMat", latest_lightspace_matrix_);
-        scene_material_.set_texture("uDiffuseTexture", wood_texture_);
-        scene_material_.set_render_texture("uShadowMapTexture", depth_texture_);
+        scene_material_.set("uLightWorldPos", light_pos_);
+        scene_material_.set("uViewWorldPos", camera_.position());
+        scene_material_.set("uLightSpaceMat", latest_lightspace_matrix_);
+        scene_material_.set("uDiffuseTexture", wood_texture_);
+        scene_material_.set("uShadowMapTexture", depth_texture_);
 
         draw_meshes_with_material(scene_material_);
         camera_.set_pixel_rect(viewport_screenspace_rect);
@@ -175,7 +173,7 @@ private:
         loader_.open("oscar_learnopengl/textures/wood.png"),
         ColorSpace::sRGB
     );
-    Mesh cube_mesh_ = BoxGeometry{2.0f, 2.0f, 2.0f};
+    Mesh cube_mesh_ = BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}};
     Mesh plane_mesh_ = generate_learnopengl_plane_mesh();
     Material scene_material_{Shader{
         loader_.slurp("oscar_learnopengl/shaders/AdvancedLighting/shadow_mapping/Scene.vert"),

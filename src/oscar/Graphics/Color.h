@@ -22,6 +22,11 @@ namespace osc
         using iterator = value_type*;
         using const_iterator = const value_type*;
 
+        static constexpr Color light_grey()
+        {
+            return {0.7f, 0.7f, 0.7f};
+        }
+
         static constexpr Color dark_grey()
         {
             return {0.5f, 0.5f, 0.5f};
@@ -85,6 +90,11 @@ namespace osc
         static constexpr Color yellow()
         {
             return {1.0f, 1.0f, 0.0f};
+        }
+
+        static constexpr Color muted_yellow()
+        {
+            return {1.0f, 1.0f, 0.6f};
         }
 
         static constexpr Color orange()

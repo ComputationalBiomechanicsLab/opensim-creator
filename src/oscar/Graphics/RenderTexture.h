@@ -1,9 +1,11 @@
 #pragma once
 
 #include <oscar/Graphics/AntiAliasingLevel.h>
-#include <oscar/Graphics/RenderTextureDescriptor.h>
+#include <oscar/Graphics/DepthStencilFormat.h>
 #include <oscar/Graphics/RenderTextureFormat.h>
+#include <oscar/Graphics/RenderTextureParams.h>
 #include <oscar/Graphics/RenderTextureReadWrite.h>
+#include <oscar/Graphics/TextureDimensionality.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Utils/CopyOnUpdPtr.h>
 
@@ -20,8 +22,7 @@ namespace osc
     class RenderTexture final {
     public:
         RenderTexture();
-        explicit RenderTexture(Vec2i dimensions);
-        explicit RenderTexture(const RenderTextureDescriptor&);
+        explicit RenderTexture(const RenderTextureParams&);
 
         Vec2i dimensions() const;
         void set_dimensions(Vec2i);
@@ -41,7 +42,7 @@ namespace osc
         RenderTextureReadWrite read_write() const;
         void set_read_write(RenderTextureReadWrite);
 
-        void reformat(const RenderTextureDescriptor&);
+        void reformat(const RenderTextureParams&);
 
         std::shared_ptr<RenderBuffer> upd_color_buffer();
         std::shared_ptr<RenderBuffer> upd_depth_buffer();

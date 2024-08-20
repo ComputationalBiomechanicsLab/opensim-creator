@@ -29,8 +29,7 @@ public:
     {
         m_SceneCamera.set_position({0.0f, 0.0f, 3.0f});
         m_SceneCamera.set_vertical_fov(45_deg);
-        m_SceneCamera.set_near_clipping_plane(0.1f);
-        m_SceneCamera.set_far_clipping_plane(100.0f);
+        m_SceneCamera.set_clipping_planes({0.1f, 100.0f});
     }
 
     UID getID() const
@@ -87,7 +86,7 @@ public:
         }
         m_SceneCamera.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
 
-        m_SceneMaterial.set_color("uDiffuseColor", m_MeshColor);
+        m_SceneMaterial.set("uDiffuseColor", m_MeshColor);
         graphics::draw(m_Mesh, identity<Transform>(), m_SceneMaterial, m_SceneCamera);
         graphics::draw(m_Mesh, identity<Transform>(), m_NormalsMaterial, m_SceneCamera);
         m_SceneCamera.render_to_screen();

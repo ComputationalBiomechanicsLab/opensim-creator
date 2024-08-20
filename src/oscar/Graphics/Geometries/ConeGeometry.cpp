@@ -8,25 +8,18 @@
 
 using namespace osc;
 
-osc::ConeGeometry::ConeGeometry(
-    float radius,
-    float height,
-    size_t num_radial_segments,
-    size_t num_height_segments,
-    bool open_ended,
-    Radians theta_start,
-    Radians theta_length) :
+osc::ConeGeometry::ConeGeometry(const Params& p) :
 
-    mesh_{CylinderGeometry{
-        0.0f,
-        radius,
-        height,
-        num_radial_segments,
-        num_height_segments,
-        open_ended,
-        theta_start,
-        theta_length
-    }}
+    Mesh{CylinderGeometry{{
+        .radius_top = 0.0f,
+        .radius_bottom = p.radius,
+        .height = p.height,
+        .num_radial_segments = p.num_radial_segments,
+        .num_height_segments = p.num_height_segments,
+        .open_ended = p.open_ended,
+        .theta_start = p.theta_start,
+        .theta_length = p.theta_length,
+    }}}
 {
     // the implementation of this was initially translated from `three.js`'s
     // `ConeGeometry`, which has excellent documentation and source code. The

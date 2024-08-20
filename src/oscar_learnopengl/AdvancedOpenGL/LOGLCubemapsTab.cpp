@@ -62,8 +62,7 @@ namespace
         MouseCapturingCamera rv;
         rv.set_position({0.0f, 0.0f, 3.0f});
         rv.set_vertical_fov(45_deg);
-        rv.set_near_clipping_plane(0.1f);
-        rv.set_far_clipping_plane(100.0f);
+        rv.set_clipping_planes({0.1f, 100.0f});
         rv.set_background_color({0.1f, 0.1f, 0.1f, 1.0f});
         return rv;
     }
@@ -106,8 +105,8 @@ public:
     Impl() : StandardTabImpl{c_tab_string_id}
     {
         for (CubeMaterial& cube_material : cube_materials_) {
-            cube_material.material.set_texture("uTexture", container_texture_);
-            cube_material.material.set_cubemap("uSkybox", cubemap_);
+            cube_material.material.set("uTexture", container_texture_);
+            cube_material.material.set("uSkybox", cubemap_);
         }
 
         // set the depth function to LessOrEqual because the skybox shader
@@ -116,7 +115,7 @@ public:
         // the highest possible depth, so that it fails an early depth
         // test if anything is drawn over it in the scene (reduces
         // fragment shader pressure)
-        skybox_material_.set_cubemap("uSkybox", cubemap_);
+        skybox_material_.set("uSkybox", cubemap_);
         skybox_material_.set_depth_function(DepthFunction::LessOrEqual);
     }
 
@@ -152,8 +151,8 @@ private:
 
     void draw_scene_cube()
     {
-        cube_properties_.set_vec3("uCameraPos", camera_.position());
-        cube_properties_.set_float("uIOR", ior_);
+        cube_properties_.set("uCameraPos", camera_.position());
+        cube_properties_.set("uIOR", ior_);
         graphics::draw(
             cube_mesh_,
             identity<Transform>(),
@@ -211,7 +210,7 @@ private:
         loader_.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Cubemaps/Skybox.vert"),
         loader_.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Cubemaps/Skybox.frag"),
     }};
-    Mesh skybox_ = BoxGeometry{2.0f, 2.0f, 2.0f};
+    Mesh skybox_ = BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}};
     Cubemap cubemap_ = load_cubemap(loader_);
 
     MouseCapturingCamera camera_ = create_camera_that_matches_learnopengl();

@@ -87,9 +87,8 @@ namespace
     {
         MouseCapturingCamera rv;
         rv.set_position({0.0f, 0.5f, 5.0f});
-        rv.set_near_clipping_plane(0.1f);
-        rv.set_far_clipping_plane(100.0f);
-        rv.set_background_color({0.0f, 0.0f, 0.0f, 1.0f});
+        rv.set_clipping_planes({0.1f, 100.0f});
+        rv.set_background_color(Color::black());
         return rv;
     }
 }
@@ -99,8 +98,8 @@ public:
 
     Impl() : StandardTabImpl{c_tab_string_id}
     {
-        scene_material_.set_vec3_array("uLightPositions", c_scene_light_positions);
-        scene_material_.set_color_array("uLightColors", get_scene_light_colors());
+        scene_material_.set_array("uLightPositions", c_scene_light_positions);
+        scene_material_.set_array("uLightColors", get_scene_light_colors());
     }
 
 private:
@@ -143,18 +142,20 @@ private:
     {
         const AntiAliasingLevel aa_level = App::get().anti_aliasing_level();
 
-        RenderTextureDescriptor texture_descriptor{viewport_dimensions};
-        texture_descriptor.set_anti_aliasing_level(aa_level);
-        texture_descriptor.set_color_format(RenderTextureFormat::DefaultHDR);
+        RenderTextureParams params = {
+            .dimensions = viewport_dimensions,
+            .anti_aliasing_level = aa_level,
+            .color_format = RenderTextureFormat::DefaultHDR,
+        };
 
         // direct render targets are multisampled HDR textures
-        scene_hdr_color_output_.reformat(texture_descriptor);
-        scene_hdr_thresholded_output_.reformat(texture_descriptor);
+        scene_hdr_color_output_.reformat(params);
+        scene_hdr_thresholded_output_.reformat(params);
 
         // intermediate buffers are single-sampled HDR textures
-        texture_descriptor.set_anti_aliasing_level(AntiAliasingLevel::none());
+        params.anti_aliasing_level = AntiAliasingLevel::none();
         for (RenderTexture& ping_pong_buffer : ping_pong_blur_output_buffers_) {
-            ping_pong_buffer.reformat(texture_descriptor);
+            ping_pong_buffer.reformat(params);
         }
     }
 
@@ -167,7 +168,7 @@ private:
 
     void draw_scene_cubes_to_camera()
     {
-        scene_material_.set_vec3("uViewWorldPos", camera_.position());
+        scene_material_.set("uViewWorldPos", camera_.position());
 
         // draw floor
         {
@@ -176,7 +177,7 @@ private:
             floor_mat4 = scale(floor_mat4, Vec3(12.5f, 0.5f, 12.5f));
 
             MaterialPropertyBlock floor_props;
-            floor_props.set_texture("uDiffuseTexture", wood_texture_);
+            floor_props.set("uDiffuseTexture", wood_texture_);
 
             graphics::draw(
                 cube_mesh_,
@@ -188,7 +189,7 @@ private:
         }
 
         MaterialPropertyBlock cube_props;
-        cube_props.set_texture("uDiffuseTexture", container_texture_);
+        cube_props.set("uDiffuseTexture", container_texture_);
         for (const auto& cube_transform : create_cube_transforms()) {
             graphics::draw(
                 cube_mesh_,
@@ -210,7 +211,7 @@ private:
             light_mat4 = scale(light_mat4, Vec3(0.25f));
 
             MaterialPropertyBlock light_props;
-            light_props.set_color("uLightColor", scene_light_colors[i]);
+            light_props.set("uLightColor", scene_light_colors[i]);
 
             graphics::draw(
                 cube_mesh_,
@@ -250,11 +251,11 @@ private:
 
     void render_blurred_brightness()
     {
-        blur_material_.set_render_texture("uInputImage", scene_hdr_thresholded_output_);
+        blur_material_.set("uInputImage", scene_hdr_thresholded_output_);
 
         bool horizontal = false;
         for (RenderTexture& ping_pong_buffer : ping_pong_blur_output_buffers_) {
-            blur_material_.set_bool("uHorizontal", horizontal);
+            blur_material_.set("uHorizontal", horizontal);
             Camera camera;
             graphics::draw(quad_mesh_, identity<Transform>(), blur_material_, camera);
             camera.render_to(ping_pong_buffer);
@@ -266,10 +267,10 @@ private:
 
     void render_combined_scene(const Rect& viewport_rect)
     {
-        final_compositing_material_.set_render_texture("uHDRSceneRender", scene_hdr_color_output_);
-        final_compositing_material_.set_render_texture("uBloomBlur", ping_pong_blur_output_buffers_[0]);
-        final_compositing_material_.set_bool("uBloom", true);
-        final_compositing_material_.set_float("uExposure", 1.0f);
+        final_compositing_material_.set("uHDRSceneRender", scene_hdr_color_output_);
+        final_compositing_material_.set("uBloomBlur", ping_pong_blur_output_buffers_[0]);
+        final_compositing_material_.set("uBloom", true);
+        final_compositing_material_.set("uExposure", 1.0f);
 
         Camera camera;
         graphics::draw(quad_mesh_, identity<Transform>(), final_compositing_material_, camera);
@@ -332,8 +333,8 @@ private:
         loader_.open("oscar_learnopengl/textures/container2.png"),
         ColorSpace::sRGB
     );
-    Mesh cube_mesh_ = BoxGeometry{2.0f, 2.0f, 2.0f};
-    Mesh quad_mesh_ = PlaneGeometry{2.0f, 2.0f};
+    Mesh cube_mesh_ = BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}};
+    Mesh quad_mesh_ = PlaneGeometry{{.width = 2.0f, .height = 2.0f}};
 
     RenderTexture scene_hdr_color_output_;
     RenderTexture scene_hdr_thresholded_output_;

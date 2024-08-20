@@ -18,11 +18,13 @@
 #include <oscar/Platform/Detail/SDL2Helpers.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
+#include <oscar/Utils/Conversion.h>
 #include <oscar/Utils/FilesystemHelpers.h>
 #include <oscar/Utils/Perf.h>
 #include <oscar/Utils/ScopeGuard.h>
 #include <oscar/Utils/SynchronizedValue.h>
 
+#include <ankerl/unordered_dense.h>
 #include <SDL.h>
 #include <SDL_error.h>
 #include <SDL_keyboard.h>
@@ -79,7 +81,7 @@ namespace
     LogLevel get_log_level_from_settings(const AppSettings& settings)
     {
         if (const auto v = settings.find_value("log_level")) {
-            if (auto parsed = try_parse_as_log_level(v->to<std::string>())) {
+            if (auto parsed = try_parse_as_log_level(to<std::string>(*v))) {
                 return *parsed;
             }
         }
@@ -747,7 +749,7 @@ private:
     AppClock::duration time_since_last_frame_ = {};
 
     // global cache of application-wide singletons (usually, for caching)
-    SynchronizedValue<std::unordered_map<TypeInfoReference, std::shared_ptr<void>>> singletons_;
+    SynchronizedValue<ankerl::unordered_dense::map<TypeInfoReference, std::shared_ptr<void>>> singletons_;
 
     // how many antiAliasingLevel the implementation should actually use
     AntiAliasingLevel antialiasing_level_ = min(graphics_context_.max_antialiasing_level(), AntiAliasingLevel{4});

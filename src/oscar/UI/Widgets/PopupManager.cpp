@@ -26,9 +26,9 @@ void osc::PopupManager::open_all()
 void osc::PopupManager::on_draw()
 {
     // begin and (if applicable) draw bottom-to-top in a nested fashion
-    ptrdiff_t num_opened = 0;
-    ptrdiff_t num_popups = std::ssize(popups_);  // only draw the popups that existed at the start of this frame, not the ones added during this frame
-    for (ptrdiff_t i = 0; i < num_popups; ++i) {
+    size_t num_opened = 0;
+    const size_t num_popups = popups_.size();  // only draw the popups that existed at the start of this frame, not the ones added during this frame
+    for (size_t i = 0; i < num_popups; ++i) {
         if (popups_[i]->begin_popup()) {
             popups_[i]->on_draw();
             ++num_opened;
@@ -39,7 +39,7 @@ void osc::PopupManager::on_draw()
     }
 
     // end the opened popups top-to-bottom
-    for (ptrdiff_t i = num_opened-1; i >= 0; --i) {
+    for (auto i = static_cast<ptrdiff_t>(num_opened)-1; i >= 0; --i) {
         popups_[i]->end_popup();
     }
 

@@ -404,14 +404,11 @@ namespace osc::mi
             decs.reserve(drawables.size());
             for (const DrawableThing& dt : drawables)
             {
-                decs.push_back({
-                    dt.mesh,
-                    dt.transform,
-                    dt.color,
-                    std::string{},
-                    dt.flags,
-                    dt.material,
-                    dt.maybePropertyBlock
+                decs.push_back(SceneDecoration{
+                    .mesh = dt.mesh,
+                    .transform = dt.transform,
+                    .shading = dt.shading,
+                    .flags = dt.flags,
                 });
             }
 
@@ -419,7 +416,7 @@ namespace osc::mi
             scene_renderer_.render(decs, p);
 
             // send texture to ImGui
-            ui::draw_image(scene_renderer_.upd_render_texture(), scene_renderer_.dimensions());
+            ui::draw_image(scene_renderer_.upd_render_texture());
 
             // handle hittesting, etc.
             setIsRenderHovered(ui::is_item_hovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup));
@@ -506,22 +503,20 @@ namespace osc::mi
 
         DrawableThing generateFloorDrawable() const
         {
-            Transform t = calc_floor_transform();
-            t.scale *= 0.5f;
-
             auto props = MeshBasicMaterial::PropertyBlock{};
             props.set_color(m_Colors.gridLines);
 
-            DrawableThing dt;
-            dt.id = MIIDs::Empty();
-            dt.groupId = MIIDs::Empty();
-            dt.mesh = App::singleton<SceneCache>(App::resource_loader())->grid_mesh();
-            dt.transform = t;
-            dt.color = m_Colors.gridLines;
-            dt.flags = SceneDecorationFlags::None;
-            dt.material = m_FloorMaterial;
-            dt.maybePropertyBlock = props;
-            return dt;
+            return DrawableThing{
+                .id = MIIDs::Empty(),
+                .groupId = MIIDs::Empty(),
+                .mesh = App::singleton<SceneCache>(App::resource_loader())->grid_mesh(),
+                .transform = {
+                    .scale = 0.5f * Vec3{m_SceneScaleFactor * 100.0f, m_SceneScaleFactor * 100.0f, 1.0f},
+                    .rotation = angle_axis(90_deg, Vec3{-1.0f, 0.0f, 0.0f}),
+                },
+                .shading = std::pair<Material, MaterialPropertyBlock>{m_FloorMaterial, props},
+                .flags = SceneDecorationFlag::AnnotationElement,
+            };
         }
 
         //
@@ -651,14 +646,13 @@ namespace osc::mi
 
         DrawableThing generateMeshDrawable(const osc::mi::Mesh& el) const
         {
-            DrawableThing rv;
-            rv.id = el.getID();
-            rv.groupId = MIIDs::MeshGroup();
-            rv.mesh = el.getMeshData();
-            rv.transform = el.getXForm();
-            rv.color = el.getParentID() == MIIDs::Ground() || el.getParentID() == MIIDs::Empty() ? RedifyColor(getColorMesh()) : getColorMesh();
-            rv.flags = SceneDecorationFlags::None;
-            return rv;
+            return DrawableThing{
+                .id = el.getID(),
+                .groupId = MIIDs::MeshGroup(),
+                .mesh = el.getMeshData(),
+                .transform = el.getXForm(),
+                .shading = el.getParentID() == MIIDs::Ground() || el.getParentID() == MIIDs::Empty() ? RedifyColor(getColorMesh()) : getColorMesh(),
+            };
         }
 
         void appendDrawables(
@@ -707,7 +701,7 @@ namespace osc::mi
                         el.getXForm(),
                         appendOut,
                         1.0f,
-                        SceneDecorationFlags::None,
+                        SceneDecorationFlag::Default,
                         GetJointAxisLengths(el)
                     );
                 },
@@ -1164,14 +1158,6 @@ namespace osc::mi
             m_VisibilityFlags.stationConnectionLines = newIsShowing;
         }
 
-        Transform calc_floor_transform() const
-        {
-            return {
-                .scale = {m_SceneScaleFactor * 100.0f, m_SceneScaleFactor * 100.0f, 1.0f},
-                .rotation = angle_axis(90_deg, Vec3{-1.0f, 0.0f, 0.0f}),
-            };
-        }
-
         float getSphereRadius() const
         {
             return 0.02f * m_SceneScaleFactor;
@@ -1188,7 +1174,7 @@ namespace osc::mi
             const Transform& xform,
             std::vector<DrawableThing>& appendOut,
             float alpha = 1.0f,
-            SceneDecorationFlags flags = SceneDecorationFlags::None,
+            SceneDecorationFlags flags = SceneDecorationFlag::Default,
             Vec3 legLen = {1.0f, 1.0f, 1.0f},
             Color coreColor = Color::white()) const
         {
@@ -1199,7 +1185,7 @@ namespace osc::mi
             const float cylinderPullback = coreRadius * sin((180_deg * legThickness) / coreRadius);
 
             // emit origin sphere
-            appendOut.push_back({
+            appendOut.push_back(DrawableThing{
                 .id = logicalID,
                 .groupId = groupID,
                 .mesh = m_SphereMesh,
@@ -1208,7 +1194,7 @@ namespace osc::mi
                     .rotation = xform.rotation,
                     .position = xform.position,
                 },
-                .color = coreColor.with_alpha(coreColor.a * alpha),
+                .shading = coreColor.with_alpha(coreColor.a * alpha),
                 .flags = flags,
             });
 
@@ -1227,23 +1213,19 @@ namespace osc::mi
 
                 const float actualLegLen = 4.0f * legLen[i] * coreRadius;
 
-                Transform t;
-                t.scale.x = legThickness;
-                t.scale.y = 0.5f * actualLegLen;  // cylinder is 2 units high
-                t.scale.z = legThickness;
-                t.rotation = normalize(xform.rotation * rotation(meshDirection, cylinderDirection));
-                t.position = xform.position + (t.rotation * (((getSphereRadius() + (0.5f * actualLegLen)) - cylinderPullback) * meshDirection));
-
-                Color color = {0.0f, 0.0f, 0.0f, alpha};
-                color[i] = 1.0f;
-
-                DrawableThing& se = appendOut.emplace_back();
-                se.id = logicalID;
-                se.groupId = groupID;
-                se.mesh = m_CylinderMesh;
-                se.transform = t;
-                se.color = color;
-                se.flags = flags;
+                const Quat rot = normalize(xform.rotation * rotation(meshDirection, cylinderDirection));
+                appendOut.push_back(DrawableThing{
+                    .id = logicalID,
+                    .groupId = groupID,
+                    .mesh = m_CylinderMesh,
+                    .transform = {
+                        .scale = {legThickness, 0.5f * actualLegLen, legThickness}, // note: cylinder is 2 units high
+                        .rotation = rot,
+                        .position = xform.position + (rot * (((getSphereRadius() + (0.5f * actualLegLen)) - cylinderPullback) * meshDirection)),
+                    },
+                    .shading = Color{0.0f, alpha}.with_element(i, 1.0f),
+                    .flags = flags,
+                });
             }
         }
 
@@ -1260,42 +1242,37 @@ namespace osc::mi
                 Transform scaled{xform};
                 scaled.scale *= halfWidth;
 
-                DrawableThing& originCube = appendOut.emplace_back();
-                originCube.id = logicalID;
-                originCube.groupId = groupID;
-                originCube.mesh = App::singleton<SceneCache>(App::resource_loader())->brick_mesh();
-                originCube.transform = scaled;
-                originCube.color = Color::white();
-                originCube.flags = SceneDecorationFlags::None;
+                appendOut.push_back(DrawableThing{
+                    .id = logicalID,
+                    .groupId = groupID,
+                    .mesh = App::singleton<SceneCache>(App::resource_loader())->brick_mesh(),
+                    .transform = scaled,
+                    .shading = Color::white(),
+                });
             }
 
             // legs
-            for (int i = 0; i < 3; ++i)
-            {
+            for (int i = 0; i < 3; ++i) {
                 // cone mesh has a source height of 2, stretches from -1 to +1 in Y
                 const float coneHeight = 0.75f * halfWidth;
 
                 const Vec3 meshDirection = {0.0f, 1.0f, 0.0f};
-                Vec3 coneDirection = {};
-                coneDirection[i] = 1.0f;
+                const Vec3 coneDirection = Vec3{}.with_element(i, 1.0f);
 
-                Transform t;
-                t.scale.x = 0.5f * halfWidth;
-                t.scale.y = 0.5f * coneHeight;
-                t.scale.z = 0.5f * halfWidth;
-                t.rotation = xform.rotation * rotation(meshDirection, coneDirection);
-                t.position = xform.position + (t.rotation * ((halfWidth + (0.5f * coneHeight)) * meshDirection));
+                const Quat rot = xform.rotation * rotation(meshDirection, coneDirection);
 
-                Color color = {0.0f, 0.0f, 0.0f, 1.0f};
-                color[i] = 1.0f;
+                appendOut.push_back(DrawableThing{
+                    .id = logicalID,
+                    .groupId = groupID,
+                    .mesh = App::singleton<SceneCache>(App::resource_loader())->cone_mesh(),
+                    .transform = {
+                        .scale = 0.5f * Vec3{halfWidth, coneHeight, halfWidth},
+                        .rotation = rot,
+                        .position = xform.position + (rot * ((halfWidth + (0.5f * coneHeight)) * meshDirection)),
+                    },
+                    .shading = Color::black().with_element(i, 1.0f),
+                });
 
-                DrawableThing& legCube = appendOut.emplace_back();
-                legCube.id = logicalID;
-                legCube.groupId = groupID;
-                legCube.mesh = App::singleton<SceneCache>(App::resource_loader())->cone_mesh();
-                legCube.transform = t;
-                legCube.color = color;
-                legCube.flags = SceneDecorationFlags::None;
             }
         }
 
@@ -1363,38 +1340,35 @@ namespace osc::mi
 
         DrawableThing generateBodyElSphere(const Body& bodyEl, const Color& color) const
         {
-            DrawableThing rv;
-            rv.id = bodyEl.getID();
-            rv.groupId = MIIDs::BodyGroup();
-            rv.mesh = m_SphereMesh;
-            rv.transform = SphereMeshToSceneSphereTransform(sphereAtTranslation(bodyEl.getXForm().position));
-            rv.color = color;
-            rv.flags = SceneDecorationFlags::None;
-            return rv;
+            return {
+                .id = bodyEl.getID(),
+                .groupId = MIIDs::BodyGroup(),
+                .mesh = m_SphereMesh,
+                .transform = SphereMeshToSceneSphereTransform(sphereAtTranslation(bodyEl.getXForm().position)),
+                .shading = color,
+            };
         }
 
         DrawableThing generateGroundSphere(const Color& color) const
         {
-            DrawableThing rv;
-            rv.id = MIIDs::Ground();
-            rv.groupId = MIIDs::GroundGroup();
-            rv.mesh = m_SphereMesh;
-            rv.transform = SphereMeshToSceneSphereTransform(sphereAtTranslation({0.0f, 0.0f, 0.0f}));
-            rv.color = color;
-            rv.flags = SceneDecorationFlags::None;
-            return rv;
+            return {
+                .id = MIIDs::Ground(),
+                .groupId = MIIDs::GroundGroup(),
+                .mesh = m_SphereMesh,
+                .transform = SphereMeshToSceneSphereTransform(sphereAtTranslation({0.0f, 0.0f, 0.0f})),
+                .shading = color,
+            };
         }
 
         DrawableThing generateStationSphere(const StationEl& el, const Color& color) const
         {
-            DrawableThing rv;
-            rv.id = el.getID();
-            rv.groupId = MIIDs::StationGroup();
-            rv.mesh = m_SphereMesh;
-            rv.transform = SphereMeshToSceneSphereTransform(sphereAtTranslation(el.getPos(getModelGraph())));
-            rv.color = color;
-            rv.flags = SceneDecorationFlags::None;
-            return rv;
+            return {
+                .id = el.getID(),
+                .groupId = MIIDs::StationGroup(),
+                .mesh = m_SphereMesh,
+                .transform = SphereMeshToSceneSphereTransform(sphereAtTranslation(el.getPos(getModelGraph()))),
+                .shading = color,
+            };
         }
 
         Color RedifyColor(const Color& srcColor) const
@@ -1407,10 +1381,10 @@ namespace osc::mi
         // to some sphere in the scene (e.g. a body/ground)
         Transform SphereMeshToSceneSphereTransform(const Sphere& sceneSphere) const
         {
-            Transform t;
-            t.scale *= sceneSphere.radius;
-            t.position = sceneSphere.origin;
-            return t;
+            return {
+                .scale = Vec3{sceneSphere.radius},
+                .position = sceneSphere.origin,
+            };
         }
 
         // returns a camera that is in the initial position the camera should be in for this screen
@@ -1439,13 +1413,13 @@ namespace osc::mi
         MeshLoader m_MeshLoader;
 
         // sphere mesh used by various scene elements
-        osc::Mesh m_SphereMesh = SphereGeometry{1.0f, 12, 12};
+        osc::Mesh m_SphereMesh = SphereGeometry{{.num_width_segments = 12, .num_height_segments = 12}};
 
         // cylinder mesh used by various scene elements
-        osc::Mesh m_CylinderMesh = CylinderGeometry{1.0f, 1.0f, 2.0f, 16};
+        osc::Mesh m_CylinderMesh = CylinderGeometry{{.height = 2.0f, .num_radial_segments = 32}};
 
         // cone mesh used to render scene elements
-        osc::Mesh m_ConeMesh = ConeGeometry{1.0f, 2.0f, 16};
+        osc::Mesh m_ConeMesh = ConeGeometry{{.radius = 1.0f, .height = 2.0f, .num_radial_segments = 16}};
 
         // material used to draw the floor grid
         MeshBasicMaterial m_FloorMaterial;

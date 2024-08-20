@@ -4,6 +4,7 @@
 #include <oscar/Variant/Variant.h>
 
 #include <cstddef>
+#include <iosfwd>
 #include <memory>
 #include <optional>
 #include <string>
@@ -79,8 +80,5 @@ namespace osc
         std::vector<Variant> property_values_;
     };
 
-    inline std::string to_string(const Object& obj)
-    {
-        return obj.to_string();
-    }
+    std::ostream& operator<<(std::ostream&, const Object&);
 }

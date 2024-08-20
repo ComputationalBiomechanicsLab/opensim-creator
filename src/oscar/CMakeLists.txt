@@ -112,11 +112,11 @@ add_library(oscar STATIC
     Graphics/Scene/SceneCollision.h
     Graphics/Scene/SceneDecoration.h
     Graphics/Scene/SceneDecorationFlags.h
+    Graphics/Scene/SceneDecorationShading.h
     Graphics/Scene/SceneHelpers.cpp
     Graphics/Scene/SceneHelpers.h
     Graphics/Scene/SceneRenderer.cpp
     Graphics/Scene/SceneRenderer.h
-    Graphics/Scene/SceneRendererParams.cpp
     Graphics/Scene/SceneRendererParams.h
 
     Graphics/Textures/ChequeredTexture.cpp
@@ -124,9 +124,12 @@ add_library(oscar STATIC
 
     Graphics/AntiAliasingLevel.cpp
     Graphics/AntiAliasingLevel.h
+    Graphics/BlendEquation.h
+    Graphics/BlendFunction.h
     Graphics/BlitFlags.h
     Graphics/Camera.h
     Graphics/CameraClearFlags.h
+    Graphics/CameraClippingPlanes.h
     Graphics/CameraProjection.h
     Graphics/Color.cpp
     Graphics/Color.h
@@ -161,8 +164,8 @@ add_library(oscar STATIC
     Graphics/RenderTargetColorAttachment.h
     Graphics/RenderTargetDepthAttachment.h
     Graphics/RenderTexture.h
-    Graphics/RenderTextureDescriptor.h
     Graphics/RenderTextureFormat.h
+    Graphics/RenderTextureParams.h
     Graphics/RenderTextureReadWrite.h
     Graphics/Scene.h
     Graphics/Shader.h
@@ -365,6 +368,7 @@ add_library(oscar STATIC
     Utils/CircularBuffer.h
     Utils/ClonePtr.h
     Utils/Concepts.h
+    Utils/Conversion.h
     Utils/CopyOnUpdPtr.h
     Utils/CStringView.cpp
     Utils/CStringView.h
@@ -430,7 +434,7 @@ add_library(oscar STATIC
     UI.h
     Utils.h
     Variant.h
-)
+ "Strings.h")
 
 target_include_directories(oscar PUBLIC
 

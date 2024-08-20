@@ -146,11 +146,11 @@ namespace osc
             {
                 if (ui::draw_menu_item("Mesh to OBJ"))
                 {
-                    ActionTrySaveMeshToObjFile(m_State->getResultMesh(), ObjWriterFlags::Default);
+                    ActionTrySaveMeshToObjFile(m_State->getResultMesh(), ObjWriterFlag::Default);
                 }
                 if (ui::draw_menu_item("Mesh to OBJ (no normals)"))
                 {
-                    ActionTrySaveMeshToObjFile(m_State->getResultMesh(), ObjWriterFlags::NoWriteNormals);
+                    ActionTrySaveMeshToObjFile(m_State->getResultMesh(), ObjWriterFlag::NoWriteNormals);
                 }
                 if (ui::draw_menu_item("Mesh to STL"))
                 {
@@ -240,22 +240,22 @@ namespace osc
 
             if (m_ShowDestinationMesh)
             {
-                decorationConsumer({
+                decorationConsumer(SceneDecoration{
                     .mesh = m_State->getScratch().destinationMesh,
-                    .color = Color::red().with_alpha(0.5f),
+                    .shading = Color::red().with_alpha(0.5f),
                 });
             }
 
             // draw non-participating landmarks
             for (const Vec3& nonParticipatingLandmarkPos : m_State->getResultNonParticipatingLandmarkLocations())
             {
-                decorationConsumer({
+                decorationConsumer(SceneDecoration{
                     .mesh = m_State->getLandmarkSphereMesh(),
                     .transform = {
                         .scale = Vec3{GetNonParticipatingLandmarkScaleFactor()*m_LandmarkRadius},
                         .position = nonParticipatingLandmarkPos,
                     },
-                    .color = m_State->getNonParticipatingLandmarkColor(),
+                    .shading = m_State->getNonParticipatingLandmarkColor(),
                 });
             }
 

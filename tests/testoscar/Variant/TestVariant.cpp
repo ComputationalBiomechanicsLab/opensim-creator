@@ -3,8 +3,10 @@
 #include <gtest/gtest.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Maths/Vec3.h>
+#include <oscar/Utils/Conversion.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/StringName.h>
+#include <oscar/Utils/StringHelpers.h>
 
 #include <array>
 #include <charconv>
@@ -51,9 +53,9 @@ TEST(Variant, CanDefaultConstruct)
 TEST(Variant, CanExplicitlyContructFromBool)
 {
     Variant vfalse{false};
-    ASSERT_EQ(vfalse.to<bool>(), false);
+    ASSERT_EQ(to<bool>(vfalse), false);
     Variant vtrue{true};
-    ASSERT_EQ(vtrue.to<bool>(), true);
+    ASSERT_EQ(to<bool>(vtrue), true);
 
     ASSERT_EQ(vtrue.type(), VariantType::Bool);
 }
@@ -66,7 +68,7 @@ TEST(Variant, CanImplicitlyConstructFromBool)
 TEST(Variant, CanExplicitlyConstructFromColor)
 {
     Variant v{Color::red()};
-    ASSERT_EQ(v.to<Color>(), Color::red());
+    ASSERT_EQ(to<Color>(v), Color::red());
     ASSERT_EQ(v.type(), VariantType::Color);
 }
 
@@ -78,7 +80,7 @@ TEST(Variant, CanImplicitlyConstructFromColor)
 TEST(Variant, CanExplicityConstructFromFloat)
 {
     Variant v{1.0f};
-    ASSERT_EQ(v.to<float>(), 1.0f);
+    ASSERT_EQ(to<float>(v), 1.0f);
     ASSERT_EQ(v.type(), VariantType::Float);
 }
 
@@ -90,7 +92,7 @@ TEST(Variant, CanImplicitlyConstructFromFloat)
 TEST(Variant, CanExplicitlyConstructFromInt)
 {
     Variant v{5};
-    ASSERT_EQ(v.to<int>(), 5);
+    ASSERT_EQ(to<int>(v), 5);
     ASSERT_EQ(v.type(), VariantType::Int);
 }
 
@@ -102,7 +104,7 @@ TEST(Variant, CanImplicitlyConstructFromInt)
 TEST(Variant, CanExplicitlyConstructFromStringRValue)
 {
     Variant v{std::string{"stringrval"}};
-    ASSERT_EQ(v.to<std::string>(), "stringrval");
+    ASSERT_EQ(to<std::string>(v), "stringrval");
     ASSERT_EQ(v.type(), VariantType::String);
 }
 
@@ -114,7 +116,7 @@ TEST(Variant, CanImplicitlyConstructFromStringRValue)
 TEST(Variant, CanExplicitlyConstructFromStringLiteral)
 {
     Variant v{"cstringliteral"};
-    ASSERT_EQ(v.to<std::string>(), "cstringliteral");
+    ASSERT_EQ(to<std::string>(v), "cstringliteral");
     ASSERT_EQ(v.type(), VariantType::String);
 }
 
@@ -126,7 +128,7 @@ TEST(Variant, CanImplicitlyConstructFromStringLiteral)
 TEST(Variant, CanExplicitlyConstructFromCStringView)
 {
     Variant v{CStringView{"cstringview"}};
-    ASSERT_EQ(v.to<std::string>(), "cstringview");
+    ASSERT_EQ(to<std::string>(v), "cstringview");
     ASSERT_EQ(v.type(), VariantType::String);
 }
 
@@ -138,7 +140,7 @@ TEST(Variant, CanImplicitlyConstructFromCStringView)
 TEST(Variant, CanExplicitlyConstructFromVec2)
 {
     Variant v{Vec2{1.0f, 2.0f}};
-    ASSERT_EQ(v.to<Vec2>(), Vec2(1.0f, 2.0f));
+    ASSERT_EQ(to<Vec2>(v), Vec2(1.0f, 2.0f));
     ASSERT_EQ(v.type(), VariantType::Vec2);
 }
 
@@ -150,7 +152,7 @@ TEST(Variant, CanImplicitlyConstructFromVec2)
 TEST(Variant, CanExplicitlyConstructFromVec3)
 {
     Variant v{Vec3{1.0f, 2.0f, 3.0f}};
-    ASSERT_EQ(v.to<Vec3>(), Vec3(1.0f, 2.0f, 3.0f));
+    ASSERT_EQ(to<Vec3>(v), Vec3(1.0f, 2.0f, 3.0f));
     ASSERT_EQ(v.type(), VariantType::Vec3);
 }
 
@@ -166,123 +168,123 @@ TEST(Variant, DefaultConstructedValueIsNil)
 
 TEST(Variant, NilValueToBoolReturnsFalse)
 {
-    ASSERT_EQ(Variant{}.to<bool>(), false);
+    ASSERT_EQ(to<bool>(Variant{}), false);
 }
 
 TEST(Variant, NilValueToColorReturnsBlack)
 {
-    ASSERT_EQ(Variant{}.to<Color>(), Color::black());
+    ASSERT_EQ(to<Color>(Variant{}), Color::black());
 }
 
 TEST(Variant, NilValueToFloatReturnsZero)
 {
-    ASSERT_EQ(Variant{}.to<float>(), 0.0f);
+    ASSERT_EQ(to<float>(Variant{}), 0.0f);
 }
 
 TEST(Variant, NilValueToIntReturnsZero)
 {
-    ASSERT_EQ(Variant{}.to<int>(), 0);
+    ASSERT_EQ(to<int>(Variant{}), 0);
 }
 
 TEST(Variant, NilValueToStringReturnsNull)
 {
-    ASSERT_EQ(Variant{}.to<std::string>(), "<null>");
+    ASSERT_EQ(to<std::string>(Variant{}), "<null>");
 }
 
 TEST(Variant, NilValueToStringNameReturnsEmptyStringName)
 {
-    ASSERT_EQ(Variant{}.to<StringName>(), StringName{});
+    ASSERT_EQ(to<StringName>(Variant{}), StringName{});
 }
 
 TEST(Variant, NilValueToVec2ReturnsZeroedVec2)
 {
-    ASSERT_EQ(Variant{}.to<Vec2>(), Vec2{});
+    ASSERT_EQ(to<Vec2>(Variant{}), Vec2{});
 }
 
 TEST(Variant, NilValueToVec3ReturnsZeroedVec3)
 {
-    ASSERT_EQ(Variant{}.to<Vec3>(), Vec3{});
+    ASSERT_EQ(to<Vec3>(Variant{}), Vec3{});
 }
 
 TEST(Variant, BoolValueToBoolReturnsExpectedBools)
 {
-    ASSERT_EQ(Variant(false).to<bool>(), false);
-    ASSERT_EQ(Variant(true).to<bool>(), true);
+    ASSERT_EQ(to<bool>(Variant(false)), false);
+    ASSERT_EQ(to<bool>(Variant(true)), true);
 }
 
 TEST(Variant, BoolValueToColorReturnsExpectedColors)
 {
-    ASSERT_EQ(Variant(false).to<Color>(), Color::black());
-    ASSERT_EQ(Variant(true).to<Color>(), Color::white());
+    ASSERT_EQ(to<Color>(Variant(false)), Color::black());
+    ASSERT_EQ(to<Color>(Variant(true)), Color::white());
 }
 
 TEST(Variant, BoolValueToFloatReturnsExpectedFloats)
 {
-    ASSERT_EQ(Variant(false).to<float>(), 0.0f);
-    ASSERT_EQ(Variant(true).to<float>(), 1.0f);
+    ASSERT_EQ(to<float>(Variant(false)), 0.0f);
+    ASSERT_EQ(to<float>(Variant(true)), 1.0f);
 }
 
 TEST(Variant, BoolValueToIntReturnsExpectedInts)
 {
-    ASSERT_EQ(Variant(false).to<int>(), 0);
-    ASSERT_EQ(Variant(true).to<int>(), 1);
+    ASSERT_EQ(to<int>(Variant(false)), 0);
+    ASSERT_EQ(to<int>(Variant(true)), 1);
 }
 
 TEST(Variant, BoolValueToStringReturnsExpectedStrings)
 {
     Variant vfalse{false};
-    ASSERT_EQ(vfalse.to<std::string>(), "false");
+    ASSERT_EQ(to<std::string>(vfalse), "false");
     Variant vtrue{true};
-    ASSERT_EQ(vtrue.to<std::string>(), "true");
+    ASSERT_EQ(to<std::string>(vtrue), "true");
 }
 
 TEST(Variant, BoolValueToStringNameReturnsEmptyStringName)
 {
-    ASSERT_EQ(Variant{false}.to<StringName>(), StringName{});
-    ASSERT_EQ(Variant{true}.to<StringName>(), StringName{});
+    ASSERT_EQ(to<StringName>(Variant{false}), StringName{});
+    ASSERT_EQ(to<StringName>(Variant{true}), StringName{});
 }
 
 TEST(Variant, BoolValueToVec2ReturnsExpectedVec2s)
 {
-    ASSERT_EQ(Variant(false).to<Vec2>(), Vec2{});
-    ASSERT_EQ(Variant(true).to<Vec2>(), Vec2(1.0f, 1.0f));
+    ASSERT_EQ(to<Vec2>(Variant(false)), Vec2{});
+    ASSERT_EQ(to<Vec2>(Variant(true)), Vec2(1.0f, 1.0f));
 }
 
 TEST(Variant, BoolValueToVec3ReturnsExpectedVec3s)
 {
-    ASSERT_EQ(Variant(false).to<Vec3>(), Vec3{});
-    ASSERT_EQ(Variant(true).to<Vec3>(), Vec3(1.0f, 1.0f, 1.0f));
+    ASSERT_EQ(to<Vec3>(Variant(false)), Vec3{});
+    ASSERT_EQ(to<Vec3>(Variant(true)), Vec3(1.0f, 1.0f, 1.0f));
 }
 
 TEST(Variant, ColorToBoolReturnsExpectedValues)
 {
-    ASSERT_EQ(Variant(Color::black()).to<bool>(), false);
-    ASSERT_EQ(Variant(Color::white()).to<bool>(), true);
-    ASSERT_EQ(Variant(Color::magenta()).to<bool>(), true);
+    ASSERT_EQ(to<bool>(Variant(Color::black())), false);
+    ASSERT_EQ(to<bool>(Variant(Color::white())), true);
+    ASSERT_EQ(to<bool>(Variant(Color::magenta())), true);
 }
 
 TEST(Variant, ColorToColorReturnsExpectedValues)
 {
-    ASSERT_EQ(Variant(Color::black()).to<Color>(), Color::black());
-    ASSERT_EQ(Variant(Color::red()).to<Color>(), Color::red());
-    ASSERT_EQ(Variant(Color::yellow()).to<Color>(), Color::yellow());
+    ASSERT_EQ(to<Color>(Variant(Color::black())), Color::black());
+    ASSERT_EQ(to<Color>(Variant(Color::red())), Color::red());
+    ASSERT_EQ(to<Color>(Variant(Color::yellow())), Color::yellow());
 }
 
 TEST(Variant, ColorToFloatReturnsExpectedValues)
 {
     // should only extract first channel, to match vec3 behavior for conversion
-    ASSERT_EQ(Variant(Color::black()).to<float>(), 0.0f);
-    ASSERT_EQ(Variant(Color::white()).to<float>(), 1.0f);
-    ASSERT_EQ(Variant(Color::blue()).to<float>(), 0.0f);
+    ASSERT_EQ(to<float>(Variant(Color::black())), 0.0f);
+    ASSERT_EQ(to<float>(Variant(Color::white())), 1.0f);
+    ASSERT_EQ(to<float>(Variant(Color::blue())), 0.0f);
 }
 
 TEST(Variant, ColorToIntReturnsExpectedValues)
 {
     // should only extract first channel, to match vec3 behavior for conversion
-    ASSERT_EQ(Variant(Color::black()).to<int>(), 0);
-    ASSERT_EQ(Variant(Color::white()).to<int>(), 1);
-    ASSERT_EQ(Variant(Color::cyan()).to<int>(), 0);
-    ASSERT_EQ(Variant(Color::yellow()).to<int>(), 1);
+    ASSERT_EQ(to<int>(Variant(Color::black())), 0);
+    ASSERT_EQ(to<int>(Variant(Color::white())), 1);
+    ASSERT_EQ(to<int>(Variant(Color::cyan())), 0);
+    ASSERT_EQ(to<int>(Variant(Color::yellow())), 1);
 }
 
 TEST(Variant, ColorValueToStringReturnsSameAsToHtmlStringRGBA)
@@ -293,57 +295,57 @@ TEST(Variant, ColorValueToStringReturnsSameAsToHtmlStringRGBA)
     });
 
     for (const auto& color : colors) {
-        ASSERT_EQ(Variant(color).to<std::string>(), to_html_string_rgba(color));
+        ASSERT_EQ(to<std::string>(Variant(color)), to_html_string_rgba(color));
     }
 }
 
 TEST(Variant, ColorValueToStringReturnsExpectedManualExamples)
 {
-    ASSERT_EQ(Variant{Color::yellow()}.to<std::string>(), "#ffff00ff");
-    ASSERT_EQ(Variant{Color::magenta()}.to<std::string>(), "#ff00ffff");
+    ASSERT_EQ(to<std::string>(Variant{Color::yellow()}), "#ffff00ff");
+    ASSERT_EQ(to<std::string>(Variant{Color::magenta()}), "#ff00ffff");
 }
 
 TEST(Variant, ColorValueToVec2ReturnsFirst2Channels)
 {
-    ASSERT_EQ(Variant(Color(1.0f, 2.0f, 3.0f)).to<Vec2>(), Vec2(1.0f, 2.0f));
-    ASSERT_EQ(Variant(Color::red()).to<Vec2>(), Vec2(1.0f, 0.0f));
+    ASSERT_EQ(to<Vec2>(Variant(Color(1.0f, 2.0f, 3.0f))), Vec2(1.0f, 2.0f));
+    ASSERT_EQ(to<Vec2>(Variant(Color::red())), Vec2(1.0f, 0.0f));
 }
 
 TEST(Variant, ColorValueToVec3ReturnsFirst3Channels)
 {
-    ASSERT_EQ(Variant(Color(1.0f, 2.0f, 3.0f)).to<Vec3>(), Vec3(1.0f, 2.0f, 3.0f));
-    ASSERT_EQ(Variant(Color::red()).to<Vec3>(), Vec3(1.0f, 0.0f, 0.0f));
+    ASSERT_EQ(to<Vec3>(Variant(Color(1.0f, 2.0f, 3.0f))), Vec3(1.0f, 2.0f, 3.0f));
+    ASSERT_EQ(to<Vec3>(Variant(Color::red())), Vec3(1.0f, 0.0f, 0.0f));
 }
 
 TEST(Variant, FloatValueToBoolReturnsExpectedValues)
 {
-    ASSERT_EQ(Variant(0.0f).to<bool>(), false);
-    ASSERT_EQ(Variant(-0.5f).to<bool>(), true);
-    ASSERT_EQ(Variant(-1.0f).to<bool>(), true);
-    ASSERT_EQ(Variant(1.0f).to<bool>(), true);
-    ASSERT_EQ(Variant(0.75f).to<bool>(), true);
+    ASSERT_EQ(to<bool>(Variant(0.0f)), false);
+    ASSERT_EQ(to<bool>(Variant(-0.5f)), true);
+    ASSERT_EQ(to<bool>(Variant(-1.0f)), true);
+    ASSERT_EQ(to<bool>(Variant(1.0f)), true);
+    ASSERT_EQ(to<bool>(Variant(0.75f)), true);
 }
 
 TEST(Variant, FloatValueToColorReturnsExpectedColor)
 {
     for (float v : std::to_array<float>({0.0f, 0.5f, 0.75, 1.0f})) {
         const Color expected = {v, v, v};
-        ASSERT_EQ(Variant(v).to<Color>(), expected);
+        ASSERT_EQ(to<Color>(Variant(v)), expected);
     }
 }
 
 TEST(Variant, FloatValueToFloatReturnsInput)
 {
-    ASSERT_EQ(Variant(0.0f).to<float>(), 0.0f);
-    ASSERT_EQ(Variant(0.12345f).to<float>(), 0.12345f);
-    ASSERT_EQ(Variant(-0.54321f).to<float>(), -0.54321f);
+    ASSERT_EQ(to<float>(Variant(0.0f)), 0.0f);
+    ASSERT_EQ(to<float>(Variant(0.12345f)), 0.12345f);
+    ASSERT_EQ(to<float>(Variant(-0.54321f)), -0.54321f);
 }
 
 TEST(Variant, FloatValueToIntReturnsCastedResult)
 {
     for (float v : std::to_array<float>({-0.5f, -0.123f, 0.0f, 1.0f, 1337.0f})) {
         const int expected = static_cast<int>(v);
-        ASSERT_EQ(Variant(v).to<int>(), expected);
+        ASSERT_EQ(to<int>(Variant(v)), expected);
     }
 }
 
@@ -351,21 +353,21 @@ TEST(Variant, FloatValueToStringReturnsToStringedResult)
 {
     for (float v : std::to_array<float>({-5.35f, -2.0f, -1.0f, 0.0f, 0.123f, 18000.0f})) {
         const std::string expected = std::to_string(v);
-        ASSERT_EQ(Variant(v).to<std::string>(), expected);
+        ASSERT_EQ(to<std::string>(Variant(v)), expected);
     }
 }
 
 TEST(Variant, FloatValueToStringNameReturnsEmptyStringName)
 {
-    ASSERT_EQ(Variant{0.0f}.to<StringName>(), StringName{});
-    ASSERT_EQ(Variant{1.0f}.to<StringName>(), StringName{});
+    ASSERT_EQ(to<StringName>(Variant{0.0f}), StringName{});
+    ASSERT_EQ(to<StringName>(Variant{1.0f}), StringName{});
 }
 
 TEST(Variant, FloatValueToVec2ReturnsVec2FilledWithFloat)
 {
     for (float v : std::to_array<float>({-20000.0f, -5.328f, -1.2f, 0.0f, 0.123f, 50.0f, 18000.0f})) {
         const Vec2 expected = {v, v};
-        ASSERT_EQ(Variant(v).to<Vec2>(), expected);
+        ASSERT_EQ(to<Vec2>(Variant(v)), expected);
     }
 }
 
@@ -373,33 +375,33 @@ TEST(Variant, FloatValueToVec3ReturnsVec3FilledWithFloat)
 {
     for (float v : std::to_array<float>({-20000.0f, -5.328f, -1.2f, 0.0f, 0.123f, 50.0f, 18000.0f})) {
         const Vec3 expected = {v, v, v};
-        ASSERT_EQ(Variant(v).to<Vec3>(), expected);
+        ASSERT_EQ(to<Vec3>(Variant(v)), expected);
     }
 }
 
 TEST(Variant, IntValueToBoolReturnsExpectedResults)
 {
-    ASSERT_EQ(Variant(0).to<bool>(), false);
-    ASSERT_EQ(Variant(1).to<bool>(), true);
-    ASSERT_EQ(Variant(-1).to<bool>(), true);
-    ASSERT_EQ(Variant(234056).to<bool>(), true);
-    ASSERT_EQ(Variant(-12938).to<bool>(), true);
+    ASSERT_EQ(to<bool>(Variant(0)), false);
+    ASSERT_EQ(to<bool>(Variant(1)), true);
+    ASSERT_EQ(to<bool>(Variant(-1)), true);
+    ASSERT_EQ(to<bool>(Variant(234056)), true);
+    ASSERT_EQ(to<bool>(Variant(-12938)), true);
 }
 
 TEST(Variant, IntValueToColorReturnsBlackOrWhite)
 {
-    ASSERT_EQ(Variant(0).to<Color>(), Color::black());
-    ASSERT_EQ(Variant(1).to<Color>(), Color::white());
-    ASSERT_EQ(Variant(-1).to<Color>(), Color::white());
-    ASSERT_EQ(Variant(-230244).to<Color>(), Color::white());
-    ASSERT_EQ(Variant(100983).to<Color>(), Color::white());
+    ASSERT_EQ(to<Color>(Variant(0)), Color::black());
+    ASSERT_EQ(to<Color>(Variant(1)), Color::white());
+    ASSERT_EQ(to<Color>(Variant(-1)), Color::white());
+    ASSERT_EQ(to<Color>(Variant(-230244)), Color::white());
+    ASSERT_EQ(to<Color>(Variant(100983)), Color::white());
 }
 
 TEST(Variant, IntValueToFloatReturnsIntCastedToFloat)
 {
     for (int v : std::to_array<int>({-10000, -1000, -1, 0, 1, 17, 23000})) {
         const auto expected = static_cast<float>(v);
-        ASSERT_EQ(Variant(v).to<float>(), expected);
+        ASSERT_EQ(to<float>(Variant(v)), expected);
     }
 }
 
@@ -407,7 +409,7 @@ TEST(Variant, IntValueToIntReturnsTheSuppliedInt)
 {
     for (int v : std::to_array<int>({ -123028, -2381, -32, -2, 0, 1, 1488, 5098}))
     {
-        ASSERT_EQ(Variant(v).to<int>(), v);
+        ASSERT_EQ(to<int>(Variant(v)), v);
     }
 }
 
@@ -415,15 +417,15 @@ TEST(Variant, IntValueToStringReturnsStringifiedInt)
 {
     for (int v : std::to_array<int>({ -121010, -13482, -1923, -123, -92, -7, 0, 1, 1294, 1209849})) {
         const std::string expected = std::to_string(v);
-        ASSERT_EQ(Variant(v).to<std::string>(), expected);
+        ASSERT_EQ(to<std::string>(Variant(v)), expected);
     }
 }
 
 TEST(Variant, IntValueToStringNameReturnsEmptyString)
 {
-    ASSERT_EQ(Variant{-1}.to<StringName>(), StringName{});
-    ASSERT_EQ(Variant{0}.to<StringName>(), StringName{});
-    ASSERT_EQ(Variant{1337}.to<StringName>(), StringName{});
+    ASSERT_EQ(to<StringName>(Variant{-1}), StringName{});
+    ASSERT_EQ(to<StringName>(Variant{0}), StringName{});
+    ASSERT_EQ(to<StringName>(Variant{1337}), StringName{});
 }
 
 TEST(Variant, IntValueToVec2CastsValueToFloatThenPlacesItInAllSlots)
@@ -431,7 +433,7 @@ TEST(Variant, IntValueToVec2CastsValueToFloatThenPlacesItInAllSlots)
     for (int v : std::to_array<int>({ -12193, -1212, -738, -12, -1, 0, 1, 18, 1294, 1209849})) {
         const auto vf = static_cast<float>(v);
         const Vec2 expected = {vf, vf};
-        ASSERT_EQ(Variant(v).to<Vec2>(), expected);
+        ASSERT_EQ(to<Vec2>(Variant(v)), expected);
     }
 }
 
@@ -440,39 +442,39 @@ TEST(Variant, IntValueToVec3CastsValueToFloatThenPlacesInAllSlots)
     for (int v : std::to_array<int>({ -12193, -1212, -738, -12, -1, 0, 1, 18, 1294, 1209849})) {
         const auto vf = static_cast<float>(v);
         const Vec3 expected = {vf, vf, vf};
-        ASSERT_EQ(Variant(v).to<Vec3>(), expected);
+        ASSERT_EQ(to<Vec3>(Variant(v)), expected);
     }
 }
 
 TEST(Variant, StringValueToBoolReturnsExpectedBoolValues)
 {
-    ASSERT_EQ(Variant("false").to<bool>(), false);
-    ASSERT_EQ(Variant("FALSE").to<bool>(), false);
-    ASSERT_EQ(Variant("False").to<bool>(), false);
-    ASSERT_EQ(Variant("FaLsE").to<bool>(), false);
-    ASSERT_EQ(Variant("0").to<bool>(), false);
-    ASSERT_EQ(Variant("").to<bool>(), false);
+    ASSERT_EQ(to<bool>(Variant("false")), false);
+    ASSERT_EQ(to<bool>(Variant("FALSE")), false);
+    ASSERT_EQ(to<bool>(Variant("False")), false);
+    ASSERT_EQ(to<bool>(Variant("FaLsE")), false);
+    ASSERT_EQ(to<bool>(Variant("0")), false);
+    ASSERT_EQ(to<bool>(Variant("")), false);
 
     // all other strings are effectively `true`
-    ASSERT_EQ(Variant("true").to<bool>(), true);
-    ASSERT_EQ(Variant("non-empty string").to<bool>(), true);
-    ASSERT_EQ(Variant(" ").to<bool>(), true);
+    ASSERT_EQ(to<bool>(Variant("true")), true);
+    ASSERT_EQ(to<bool>(Variant("non-empty string")), true);
+    ASSERT_EQ(to<bool>(Variant(" ")), true);
 }
 
 TEST(Variant, StringValueToColorWorksIfStringIsAValidHTMLColorString)
 {
-    ASSERT_EQ(Variant{"#ff0000ff"}.to<Color>(), Color::red());
-    ASSERT_EQ(Variant{"#00ff00ff"}.to<Color>(), Color::green());
-    ASSERT_EQ(Variant{"#ffffffff"}.to<Color>(), Color::white());
-    ASSERT_EQ(Variant{"#00000000"}.to<Color>(), Color::clear());
-    ASSERT_EQ(Variant{"#000000ff"}.to<Color>(), Color::black());
-    ASSERT_EQ(Variant{"#000000FF"}.to<Color>(), Color::black());
-    ASSERT_EQ(Variant{"#123456ae"}.to<Color>(), *try_parse_html_color_string("#123456ae"));
+    ASSERT_EQ(to<Color>(Variant{"#ff0000ff"}), Color::red());
+    ASSERT_EQ(to<Color>(Variant{"#00ff00ff"}), Color::green());
+    ASSERT_EQ(to<Color>(Variant{"#ffffffff"}), Color::white());
+    ASSERT_EQ(to<Color>(Variant{"#00000000"}), Color::clear());
+    ASSERT_EQ(to<Color>(Variant{"#000000ff"}), Color::black());
+    ASSERT_EQ(to<Color>(Variant{"#000000FF"}), Color::black());
+    ASSERT_EQ(to<Color>(Variant{"#123456ae"}), *try_parse_html_color_string("#123456ae"));
 }
 
 TEST(Variant, StringValueColorReturnsBlackIfStringIsInvalidHTMLColorString)
 {
-    ASSERT_EQ(Variant{"not a color"}.to<Color>(), Color::black());
+    ASSERT_EQ(to<Color>(Variant{"not a color"}), Color::black());
 }
 
 TEST(Variant, StringValueToFloatTriesToParseStringAsFloatAndReturnsZeroOnFailure)
@@ -490,7 +492,7 @@ TEST(Variant, StringValueToFloatTriesToParseStringAsFloatAndReturnsZeroOnFailure
 
     for (const auto& input : inputs) {
         const float expectedOutput = ToFloatOrZero(input);
-        ASSERT_EQ(Variant{input}.to<float>(), expectedOutput);
+        ASSERT_EQ(to<float>(Variant{input}), expectedOutput);
     }
 }
 
@@ -509,7 +511,7 @@ TEST(Variant, StringValueToIntTriesToParseStringAsBase10Int)
 
     for (const auto& input : inputs) {
         const int expectedOutput = ToIntOrZero(input);
-        ASSERT_EQ(Variant{input}.to<int>(), expectedOutput);
+        ASSERT_EQ(to<int>(Variant{input}), expectedOutput);
     }
 }
 
@@ -529,7 +531,7 @@ TEST(Variant, StringValueToStringReturnsSuppliedString)
     });
 
     for (const auto& input : inputs) {
-        ASSERT_EQ(Variant{input}.to<std::string>(), input);
+        ASSERT_EQ(to<std::string>(Variant{input}), input);
     }
 }
 
@@ -549,7 +551,7 @@ TEST(Variant, StringValueToStringNameReturnsSuppliedStringAsAStringName)
     });
 
     for (const auto& input : inputs) {
-        ASSERT_EQ(Variant{input}.to<StringName>(), StringName{input});
+        ASSERT_EQ(to<StringName>(Variant{input}), StringName{input});
     }
 }
 
@@ -569,7 +571,7 @@ TEST(Variant, StringValueToVec2AlwaysReturnsZeroedVec)
     });
 
     for (const auto& input : inputs) {
-        ASSERT_EQ(Variant{input}.to<Vec2>(), Vec2{});
+        ASSERT_EQ(to<Vec2>(Variant{input}), Vec2{});
     }
 }
 
@@ -589,36 +591,36 @@ TEST(Variant, StringValueToVec3AlwaysReturnsZeroedVec)
     });
 
     for (const auto& input : inputs) {
-        ASSERT_EQ(Variant{input}.to<Vec3>(), Vec3{});
+        ASSERT_EQ(to<Vec3>(Variant{input}), Vec3{});
     }
 }
 
 TEST(Variant, Vec2ValueToBoolReturnsFalseForZeroVec)
 {
-    ASSERT_EQ(Variant{Vec2{}}.to<bool>(), false);
+    ASSERT_EQ(to<bool>(Variant{Vec2{}}), false);
 }
 
 TEST(Variant, Vec2ValueToBoolReturnsFalseIfXIsZeroRegardlessOfOtherComponents)
 {
     // why: because it's consistent with the `toInt()` and `toFloat()` behavior, and
     // one would logically expect `if (v.to<int>())` to behave the same as `if (v.to<bool>())`
-    ASSERT_EQ(Variant{Vec2{0.0f}}.to<bool>(), false);
-    ASSERT_EQ(Variant{Vec2(0.0f, 1000.0f)}.to<bool>(), false);
-    ASSERT_EQ(Variant{Vec2(0.0f, 7.0f)}.to<bool>(), false);
-    ASSERT_EQ(Variant{Vec2(0.0f, 2.0f)}.to<bool>(), false);
-    ASSERT_EQ(Variant{Vec2(0.0f, 1.0f)}.to<bool>(), false);
-    ASSERT_EQ(Variant{Vec2(0.0f, -1.0f)}.to<bool>(), false);
+    ASSERT_EQ(to<bool>(Variant{Vec2{0.0f}}), false);
+    ASSERT_EQ(to<bool>(Variant{Vec2(0.0f, 1000.0f)}), false);
+    ASSERT_EQ(to<bool>(Variant{Vec2(0.0f, 7.0f)}), false);
+    ASSERT_EQ(to<bool>(Variant{Vec2(0.0f, 2.0f)}), false);
+    ASSERT_EQ(to<bool>(Variant{Vec2(0.0f, 1.0f)}), false);
+    ASSERT_EQ(to<bool>(Variant{Vec2(0.0f, -1.0f)}), false);
     static_assert(+0.0f == -0.0f);
-    ASSERT_EQ(Variant{Vec2(-0.0f, 1000.0f)}.to<bool>(), false);  // how fun ;)
+    ASSERT_EQ(to<bool>(Variant{Vec2(-0.0f, 1000.0f)}), false);  // how fun ;)
 }
 
 TEST(Variant, Vec2ValueToBoolReturnsTrueIfXIsNonZeroRegardlessOfOtherComponents)
 {
-    ASSERT_EQ(Variant{Vec2{1.0f}}.to<bool>(), true);
-    ASSERT_EQ(Variant{Vec2(2.0f, 7.0f)}.to<bool>(), true);
-    ASSERT_EQ(Variant{Vec2(30.0f, 2.0f)}.to<bool>(), true);
-    ASSERT_EQ(Variant{Vec2(-40.0f, 1.0f)}.to<bool>(), true);
-    ASSERT_EQ(Variant{Vec2(std::numeric_limits<float>::quiet_NaN(), -1.0f)}.to<bool>(), true);
+    ASSERT_EQ(to<bool>(Variant{Vec2{1.0f}}), true);
+    ASSERT_EQ(to<bool>(Variant{Vec2(2.0f, 7.0f)}), true);
+    ASSERT_EQ(to<bool>(Variant{Vec2(30.0f, 2.0f)}), true);
+    ASSERT_EQ(to<bool>(Variant{Vec2(-40.0f, 1.0f)}), true);
+    ASSERT_EQ(to<bool>(Variant{Vec2(std::numeric_limits<float>::quiet_NaN(), -1.0f)}), true);
 }
 
 TEST(Variant, Vec2ValueToColorExtractsTheElementsIntoRGB)
@@ -632,7 +634,7 @@ TEST(Variant, Vec2ValueToColorExtractsTheElementsIntoRGB)
     });
 
     for (const auto& testCase : testCases) {
-        ASSERT_EQ(Variant{testCase}.to<Color>(), Color(testCase.x, testCase.y, 0.0f));
+        ASSERT_EQ(to<Color>(Variant{testCase}), Color(testCase.x, testCase.y, 0.0f));
     }
 }
 
@@ -647,7 +649,7 @@ TEST(Variant, Vec2ValueToFloatExtractsXToTheFloat)
     });
 
     for (const auto& testCase : testCases) {
-        ASSERT_EQ(Variant{testCase}.to<float>(), testCase.x);
+        ASSERT_EQ(to<float>(Variant{testCase}), testCase.x);
     }
 }
 
@@ -662,7 +664,7 @@ TEST(Variant, Vec2ValueToIntExtractsXToTheInt)
      });
 
     for (const auto& testCase : testCases) {
-        ASSERT_EQ(Variant{testCase}.to<int>(), static_cast<int>(testCase.x));
+        ASSERT_EQ(to<int>(Variant{testCase}), static_cast<int>(testCase.x));
     }
 }
 
@@ -677,14 +679,14 @@ TEST(Variant, Vec2ValueToStringReturnsSameAsDirectlyConvertingVectorToString)
     });
 
     for (const auto& testCase : testCases) {
-        ASSERT_EQ(Variant{testCase}.to<std::string>(), to_string(testCase));
+        ASSERT_EQ(to<std::string>(Variant{testCase}), to_string(testCase));
     }
 }
 
 TEST(Variant, Vec2ValueToStringNameReturnsAnEmptyString)
 {
-    ASSERT_EQ(Variant{Vec2{}}.to<StringName>(), StringName{});
-    ASSERT_EQ(Variant{Vec2(0.0f, -20.0f)}.to<StringName>(), StringName{});
+    ASSERT_EQ(to<StringName>(Variant{Vec2{}}), StringName{});
+    ASSERT_EQ(to<StringName>(Variant{Vec2(0.0f, -20.0f)}), StringName{});
 }
 
 TEST(Variant, Vec2ValueToVec3ReturnsOriginalValue)
@@ -698,36 +700,36 @@ TEST(Variant, Vec2ValueToVec3ReturnsOriginalValue)
     });
 
     for (const auto& testCase : testCases) {
-        ASSERT_EQ(Variant{testCase}.to<Vec2>(), testCase);
+        ASSERT_EQ(to<Vec2>(Variant{testCase}), testCase);
     }
 }
 
 TEST(Variant, Vec3ValueToBoolReturnsFalseForZeroVec)
 {
-    ASSERT_EQ(Variant{Vec3{}}.to<bool>(), false);
+    ASSERT_EQ(to<bool>(Variant{Vec3{}}), false);
 }
 
 TEST(Variant, Vec3ValueToBoolReturnsFalseIfXIsZeroRegardlessOfOtherComponents)
 {
     // why: because it's consistent with the `toInt()` and `toFloat()` behavior, and
     // one would logically expect `if (v.to<int>())` to behave the same as `if (v.to<bool>())`
-    ASSERT_EQ(Variant{Vec3{0.0f}}.to<bool>(), false);
-    ASSERT_EQ(Variant{Vec3(0.0f, 0.0f, 1000.0f)}.to<bool>(), false);
-    ASSERT_EQ(Variant{Vec3(0.0f, 7.0f, -30.0f)}.to<bool>(), false);
-    ASSERT_EQ(Variant{Vec3(0.0f, 2.0f, 1.0f)}.to<bool>(), false);
-    ASSERT_EQ(Variant{Vec3(0.0f, 1.0f, 1.0f)}.to<bool>(), false);
-    ASSERT_EQ(Variant{Vec3(0.0f, -1.0f, 0.0f)}.to<bool>(), false);
+    ASSERT_EQ(to<bool>(Variant{Vec3{0.0f}}), false);
+    ASSERT_EQ(to<bool>(Variant{Vec3(0.0f, 0.0f, 1000.0f)}), false);
+    ASSERT_EQ(to<bool>(Variant{Vec3(0.0f, 7.0f, -30.0f)}), false);
+    ASSERT_EQ(to<bool>(Variant{Vec3(0.0f, 2.0f, 1.0f)}), false);
+    ASSERT_EQ(to<bool>(Variant{Vec3(0.0f, 1.0f, 1.0f)}), false);
+    ASSERT_EQ(to<bool>(Variant{Vec3(0.0f, -1.0f, 0.0f)}), false);
     static_assert(+0.0f == -0.0f);
-    ASSERT_EQ(Variant{Vec3(-0.0f, 0.0f, 1000.0f)}.to<bool>(), false);  // how fun ;)
+    ASSERT_EQ(to<bool>(Variant{Vec3(-0.0f, 0.0f, 1000.0f)}), false);  // how fun ;)
 }
 
 TEST(Variant, Vec3ValueToBoolReturnsTrueIfXIsNonZeroRegardlessOfOtherComponents)
 {
-    ASSERT_EQ(Variant{Vec3{1.0f}}.to<bool>(), true);
-    ASSERT_EQ(Variant{Vec3(2.0f, 7.0f, -30.0f)}.to<bool>(), true);
-    ASSERT_EQ(Variant{Vec3(30.0f, 2.0f, 1.0f)}.to<bool>(), true);
-    ASSERT_EQ(Variant{Vec3(-40.0f, 1.0f, 1.0f)}.to<bool>(), true);
-    ASSERT_EQ(Variant{Vec3(std::numeric_limits<float>::quiet_NaN(), -1.0f, 0.0f)}.to<bool>(), true);
+    ASSERT_EQ(to<bool>(Variant{Vec3{1.0f}}), true);
+    ASSERT_EQ(to<bool>(Variant{Vec3(2.0f, 7.0f, -30.0f)}), true);
+    ASSERT_EQ(to<bool>(Variant{Vec3(30.0f, 2.0f, 1.0f)}), true);
+    ASSERT_EQ(to<bool>(Variant{Vec3(-40.0f, 1.0f, 1.0f)}), true);
+    ASSERT_EQ(to<bool>(Variant{Vec3(std::numeric_limits<float>::quiet_NaN(), -1.0f, 0.0f)}), true);
 }
 
 TEST(Variant, Vec3ValueToColorExtractsTheElementsIntoRGB)
@@ -741,7 +743,7 @@ TEST(Variant, Vec3ValueToColorExtractsTheElementsIntoRGB)
     });
 
     for (const auto& testCase : testCases) {
-        ASSERT_EQ(Variant{testCase}.to<Color>(), Color{testCase});
+        ASSERT_EQ(to<Color>(Variant{testCase}), Color{testCase});
     }
 }
 
@@ -756,7 +758,7 @@ TEST(Variant, Vec3ValueToFloatExtractsXToTheFloat)
     });
 
     for (const auto& testCase : testCases) {
-        ASSERT_EQ(Variant{testCase}.to<float>(), testCase.x);
+        ASSERT_EQ(to<float>(Variant{testCase}), testCase.x);
     }
 }
 
@@ -771,7 +773,7 @@ TEST(Variant, Vec3ValueToIntExtractsXToTheInt)
     });
 
     for (const auto& testCase : testCases) {
-        ASSERT_EQ(Variant{testCase}.to<int>(), static_cast<int>(testCase.x));
+        ASSERT_EQ(to<int>(Variant{testCase}), static_cast<int>(testCase.x));
     }
 }
 
@@ -786,14 +788,14 @@ TEST(Variant, Vec3ValueToStringReturnsSameAsDirectlyConvertingVectorToString)
     });
 
     for (const auto& testCase : testCases) {
-        ASSERT_EQ(Variant{testCase}.to<std::string>(), to_string(testCase));
+        ASSERT_EQ(to<std::string>(Variant{testCase}), to_string(testCase));
     }
 }
 
 TEST(Variant, Vec3ValueToStringNameReturnsAnEmptyString)
 {
-    ASSERT_EQ(Variant{Vec3{}}.to<StringName>(), StringName{});
-    ASSERT_EQ(Variant{Vec3(0.0f, -20.0f, 0.5f)}.to<StringName>(), StringName{});
+    ASSERT_EQ(to<StringName>(Variant{Vec3{}}), StringName{});
+    ASSERT_EQ(to<StringName>(Variant{Vec3(0.0f, -20.0f, 0.5f)}), StringName{});
 }
 
 TEST(Variant, Vec3ValueToVec3ReturnsOriginalValue)
@@ -807,7 +809,7 @@ TEST(Variant, Vec3ValueToVec3ReturnsOriginalValue)
     });
 
     for (const auto& testCase : testCases) {
-        ASSERT_EQ(Variant{testCase}.to<Vec3>(), testCase);
+        ASSERT_EQ(to<Vec3>(Variant{testCase}), testCase);
     }
 }
 
@@ -849,7 +851,7 @@ TEST(Variant, IsAlwaysEqualToACopyOfItself)
     });
 
     for (const auto& tc : testCases) {
-        ASSERT_EQ(tc, tc) << "input: " << tc.to<std::string>();
+        ASSERT_EQ(tc, tc) << "input: " << to<std::string>(tc);
     }
 
     const auto exceptions = std::to_array<Variant>({
@@ -857,7 +859,7 @@ TEST(Variant, IsAlwaysEqualToACopyOfItself)
         Variant{std::numeric_limits<float>::signaling_NaN()},
     });
     for (const auto& tc : exceptions) {
-        ASSERT_NE(tc, tc) << "input: " << tc.to<std::string>();
+        ASSERT_NE(tc, tc) << "input: " << to<std::string>(tc);
     }
 }
 
@@ -1000,7 +1002,7 @@ TEST(Variant, FreeFunctionToStringOnVarietyOfTypesReturnsSameAsCallingToStringMe
     });
 
     for (const auto& testCase : testCases) {
-        ASSERT_EQ(to_string(testCase), testCase.to<std::string>());
+        ASSERT_EQ(stream_to_string(testCase), to<std::string>(testCase));
     }
 }
 
@@ -1047,7 +1049,7 @@ TEST(Variant, StreamingToOutputStreamProducesSameOutputAsToString)
     for (const auto& testCase : testCases) {
         std::stringstream ss;
         ss << testCase;
-        ASSERT_EQ(ss.str(), testCase.to<std::string>());
+        ASSERT_EQ(ss.str(), to<std::string>(testCase));
     }
 }
 
@@ -1088,33 +1090,33 @@ TEST(Variant, ConstructedFromStringNameComparesInequivalentToVariantConstructedF
 
 TEST(Variant, StringNameValueToBoolReturnsExpectedBoolValues)
 {
-    ASSERT_EQ(Variant(StringName{"false"}).to<bool>(), false);
-    ASSERT_EQ(Variant(StringName{"FALSE"}).to<bool>(), false);
-    ASSERT_EQ(Variant(StringName{"False"}).to<bool>(), false);
-    ASSERT_EQ(Variant(StringName{"FaLsE"}).to<bool>(), false);
-    ASSERT_EQ(Variant(StringName{"0"}).to<bool>(), false);
-    ASSERT_EQ(Variant(StringName{""}).to<bool>(), false);
+    ASSERT_EQ(to<bool>(Variant(StringName{"false"})), false);
+    ASSERT_EQ(to<bool>(Variant(StringName{"FALSE"})), false);
+    ASSERT_EQ(to<bool>(Variant(StringName{"False"})), false);
+    ASSERT_EQ(to<bool>(Variant(StringName{"FaLsE"})), false);
+    ASSERT_EQ(to<bool>(Variant(StringName{"0"})), false);
+    ASSERT_EQ(to<bool>(Variant(StringName{""})), false);
 
     // all other strings are effectively `true`
-    ASSERT_EQ(Variant(StringName{"true"}).to<bool>(), true);
-    ASSERT_EQ(Variant(StringName{"non-empty string"}).to<bool>(), true);
-    ASSERT_EQ(Variant(StringName{" "}).to<bool>(), true);
+    ASSERT_EQ(to<bool>(Variant(StringName{"true"})), true);
+    ASSERT_EQ(to<bool>(Variant(StringName{"non-empty string"})), true);
+    ASSERT_EQ(to<bool>(Variant(StringName{" "})), true);
 }
 
 TEST(Variant, StringNameValueToColorWorksIfStringIsAValidHTMLColorString)
 {
-    ASSERT_EQ(Variant{StringName{"#ff0000ff"}}.to<Color>(), Color::red());
-    ASSERT_EQ(Variant{StringName{"#00ff00ff"}}.to<Color>(), Color::green());
-    ASSERT_EQ(Variant{StringName{"#ffffffff"}}.to<Color>(), Color::white());
-    ASSERT_EQ(Variant{StringName{"#00000000"}}.to<Color>(), Color::clear());
-    ASSERT_EQ(Variant{StringName{"#000000ff"}}.to<Color>(), Color::black());
-    ASSERT_EQ(Variant{StringName{"#000000FF"}}.to<Color>(), Color::black());
-    ASSERT_EQ(Variant{StringName{"#123456ae"}}.to<Color>(), *try_parse_html_color_string("#123456ae"));
+    ASSERT_EQ(to<Color>(Variant{StringName{"#ff0000ff"}}), Color::red());
+    ASSERT_EQ(to<Color>(Variant{StringName{"#00ff00ff"}}), Color::green());
+    ASSERT_EQ(to<Color>(Variant{StringName{"#ffffffff"}}), Color::white());
+    ASSERT_EQ(to<Color>(Variant{StringName{"#00000000"}}), Color::clear());
+    ASSERT_EQ(to<Color>(Variant{StringName{"#000000ff"}}), Color::black());
+    ASSERT_EQ(to<Color>(Variant{StringName{"#000000FF"}}), Color::black());
+    ASSERT_EQ(to<Color>(Variant{StringName{"#123456ae"}}), *try_parse_html_color_string("#123456ae"));
 }
 
 TEST(Variant, StringNameValueToColorReturnsBlackIfStringIsInvalidHTMLColorString)
 {
-    ASSERT_EQ(Variant{StringName{"not a color"}}.to<Color>(), Color::black());
+    ASSERT_EQ(to<Color>(Variant{StringName{"not a color"}}), Color::black());
 }
 
 TEST(Variant, StringNameValueToFloatTriesToParseStringAsFloatAndReturnsZeroOnFailure)
@@ -1132,7 +1134,7 @@ TEST(Variant, StringNameValueToFloatTriesToParseStringAsFloatAndReturnsZeroOnFai
 
     for (const auto& input : inputs) {
         const float expectedOutput = ToFloatOrZero(input);
-        ASSERT_EQ(Variant{StringName{input}}.to<float>(), expectedOutput);
+        ASSERT_EQ(to<float>(Variant{StringName{input}}), expectedOutput);
     }
 }
 
@@ -1151,7 +1153,7 @@ TEST(Variant, StringNameValueToIntTriesToParseStringAsBase10Int)
 
     for (const auto& input : inputs) {
         const int expectedOutput = ToIntOrZero(input);
-        ASSERT_EQ(Variant{StringName{input}}.to<int>(), expectedOutput);
+        ASSERT_EQ(to<int>(Variant{StringName{input}}), expectedOutput);
     }
 }
 
@@ -1171,7 +1173,7 @@ TEST(Variant, StringNameValueToStringReturnsSuppliedString)
     });
 
     for (const auto& input : inputs) {
-        ASSERT_EQ(Variant{StringName{input}}.to<std::string>(), input);
+        ASSERT_EQ(to<std::string>(Variant{StringName{input}}), input);
     }
 }
 
@@ -1191,7 +1193,7 @@ TEST(Variant, StringNameValueToStringNameReturnsSuppliedStringName)
     });
 
     for (const auto& input : inputs) {
-        ASSERT_EQ(Variant{StringName{input}}.to<StringName>(), StringName{input});
+        ASSERT_EQ(to<StringName>(Variant{StringName{input}}), StringName{input});
     }
 }
 
@@ -1211,7 +1213,7 @@ TEST(Variant, StringNameToVec3AlwaysReturnsZeroedVec)
     });
 
     for (const auto& input : inputs) {
-        ASSERT_EQ(Variant{StringName{input}}.to<Vec3>(), Vec3{});
+        ASSERT_EQ(to<Vec3>(Variant{StringName{input}}), Vec3{});
     }
 }
 

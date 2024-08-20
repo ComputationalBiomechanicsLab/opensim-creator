@@ -7,6 +7,20 @@
 
 using namespace osc;
 
+TEST(ClosedInterval, default_constructor_value_initializes)
+{
+    ClosedInterval<float> r;
+    ASSERT_EQ(r.lower, float{});
+    ASSERT_EQ(r.upper, float{});
+}
+
+TEST(ClosedInterval, can_use_structured_bindings_to_get_lower_and_upper)
+{
+    const auto [lower, upper] = ClosedInterval<int>{1, 3};
+    ASSERT_EQ(lower, 1);
+    ASSERT_EQ(upper, 3);
+}
+
 TEST(ClosedInterval, CanConstructForInts)
 {
     [[maybe_unused]] ClosedInterval<int> r{0, 1}; // shouldn't throw etc

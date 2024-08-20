@@ -4,6 +4,7 @@
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
 #include <oscar/Utils/Algorithms.h>
+#include <oscar/Utils/Conversion.h>
 #include <oscar/Utils/EnumHelpers.h>
 #include <oscar/Utils/HashHelpers.h>
 #include <oscar/Utils/SynchronizedValue.h>
@@ -328,19 +329,19 @@ R"(# configuration options
         switch (value.type()) {
         case VariantType::None:
         case VariantType::Bool:
-            table.insert(key, value.to<bool>());
+            table.insert(key, to<bool>(value));
             break;
         case VariantType::Float:
-            table.insert(key, value.to<float>());
+            table.insert(key, to<float>(value));
             break;
         case VariantType::Int:
-            table.insert(key, value.to<int>());
+            table.insert(key, to<int>(value));
             break;
         case VariantType::Color:
         case VariantType::String:
         case VariantType::StringName:
         default:
-            table.insert(key, value.to<std::string>());
+            table.insert(key, to<std::string>(value));
             break;
         }
     }
@@ -537,7 +538,7 @@ namespace
             }
         };
 
-        std::unordered_map<Key, std::shared_ptr<AppSettings::Impl>, KeyHasher> data_;
+        ankerl::unordered_dense::map<Key, std::shared_ptr<AppSettings::Impl>, KeyHasher> data_;
     };
 
     std::shared_ptr<AppSettings::Impl> get_globally_shared_settings_impl(
@@ -602,7 +603,7 @@ std::filesystem::path osc::get_resource_dir_from_settings(const AppSettings& set
     else {
         config_file_dir = current_executable_directory().parent_path();  // assume the `bin/` dir is one-up from the settings
     }
-    const std::filesystem::path configured_resources_dir{resources_dir_setting_value->to<std::string>()};
+    const std::filesystem::path configured_resources_dir{to<std::string>(*resources_dir_setting_value)};
 
     auto resolved_resource_dir = std::filesystem::weakly_canonical(config_file_dir / configured_resources_dir);
     if (not std::filesystem::exists(resolved_resource_dir)) {

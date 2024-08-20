@@ -14,7 +14,7 @@ namespace
 
     Mesh generate_cube_like_learnopengl()
     {
-        return BoxGeometry{1.0f, 1.0f, 1.0f}.mesh();
+        return BoxGeometry{};
     }
 
     Material generate_uv_testing_texture_mapped_material(IResourceLoader& loader)
@@ -24,7 +24,7 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/FaceCulling.frag"),
         }};
 
-        rv.set_texture("uTexture", load_texture2D_from_image(
+        rv.set("uTexture", load_texture2D_from_image(
             loader.open("oscar_learnopengl/textures/uv_checker.jpg"),
             ColorSpace::sRGB
         ));
@@ -37,8 +37,7 @@ namespace
         MouseCapturingCamera rv;
         rv.set_position({0.0f, 0.0f, 3.0f});
         rv.set_vertical_fov(45_deg);
-        rv.set_near_clipping_plane(0.1f);
-        rv.set_far_clipping_plane(100.0f);
+        rv.set_clipping_planes({0.1f, 100.0f});
         rv.set_background_color({0.1f, 0.1f, 0.1f, 1.0f});
         return rv;
     }

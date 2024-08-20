@@ -13,7 +13,7 @@ namespace
 
     Mesh generate_textured_quad_mesh()
     {
-        Mesh quad = PlaneGeometry{1.0f, 1.0f, 1, 1};
+        Mesh quad = PlaneGeometry{};
 
         // transform default quad texture coordinates to exercise wrap modes
         quad.transform_tex_coords([](Vec2 coord) { return 2.0f * coord; });
@@ -33,11 +33,11 @@ namespace
             Texture2D container = load_texture2D_from_image(
                 loader.open("oscar_learnopengl/textures/container.jpg"),
                 ColorSpace::sRGB,
-                ImageLoadingFlags::FlipVertically
+                ImageLoadingFlag::FlipVertically
             );
             container.set_wrap_mode(TextureWrapMode::Clamp);
 
-            rv.set_texture("uTexture1", std::move(container));
+            rv.set("uTexture1", container);
         }
 
         // set uTexture2
@@ -45,10 +45,10 @@ namespace
             const Texture2D face = load_texture2D_from_image(
                 loader.open("oscar_learnopengl/textures/awesomeface.png"),
                 ColorSpace::sRGB,
-                ImageLoadingFlags::FlipVertically
+                ImageLoadingFlag::FlipVertically
             );
 
-            rv.set_texture("uTexture2", face);
+            rv.set("uTexture2", face);
         }
 
         return rv;

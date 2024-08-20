@@ -17,8 +17,7 @@ namespace
         MouseCapturingCamera rv;
         rv.set_position({0.0f, 0.0f, 3.0f});
         rv.set_vertical_fov(45_deg);
-        rv.set_near_clipping_plane(0.1f);
-        rv.set_far_clipping_plane(100.0f);
+        rv.set_clipping_planes({0.1f, 100.0f});
         return rv;
     }
 
@@ -27,21 +26,21 @@ namespace
         const Texture2D diffuse_map = load_texture2D_from_image(
             loader.open("oscar_learnopengl/textures/container2.png"),
             ColorSpace::sRGB,
-            ImageLoadingFlags::FlipVertically
+            ImageLoadingFlag::FlipVertically
         );
 
         const Texture2D specular_map = load_texture2D_from_image(
             loader.open("oscar_learnopengl/textures/container2_specular.png"),
             ColorSpace::sRGB,
-            ImageLoadingFlags::FlipVertically
+            ImageLoadingFlag::FlipVertically
         );
 
         Material rv{Shader{
             loader.slurp("oscar_learnopengl/shaders/Lighting/LightingMaps.vert"),
             loader.slurp("oscar_learnopengl/shaders/Lighting/LightingMaps.frag"),
         }};
-        rv.set_texture("uMaterialDiffuse", diffuse_map);
-        rv.set_texture("uMaterialSpecular", specular_map);
+        rv.set("uMaterialDiffuse", diffuse_map);
+        rv.set("uMaterialSpecular", specular_map);
         return rv;
     }
 }
@@ -77,16 +76,16 @@ private:
         App::upd().clear_screen(Color::dark_grey());
 
         // draw cube
-        lighting_maps_material_.set_vec3("uViewPos", camera_.position());
-        lighting_maps_material_.set_vec3("uLightPos", light_transform_.position);
-        lighting_maps_material_.set_float("uLightAmbient", light_ambient_);
-        lighting_maps_material_.set_float("uLightDiffuse", light_diffuse_);
-        lighting_maps_material_.set_float("uLightSpecular", light_specular_);
-        lighting_maps_material_.set_float("uMaterialShininess", material_shininess_);
+        lighting_maps_material_.set("uViewPos", camera_.position());
+        lighting_maps_material_.set("uLightPos", light_transform_.position);
+        lighting_maps_material_.set("uLightAmbient", light_ambient_);
+        lighting_maps_material_.set("uLightDiffuse", light_diffuse_);
+        lighting_maps_material_.set("uLightSpecular", light_specular_);
+        lighting_maps_material_.set("uMaterialShininess", material_shininess_);
         graphics::draw(mesh_, identity<Transform>(), lighting_maps_material_, camera_);
 
         // draw lamp
-        light_cube_material_.set_color("uLightColor", Color::white());
+        light_cube_material_.set("uLightColor", Color::white());
         graphics::draw(mesh_, light_transform_, light_cube_material_, camera_);
 
         // render 3D scene

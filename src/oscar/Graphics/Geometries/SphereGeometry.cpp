@@ -13,14 +13,7 @@
 using namespace osc;
 using namespace osc::literals;
 
-osc::SphereGeometry::SphereGeometry(
-    float radius,
-    size_t num_width_segments,
-    size_t num_height_segments,
-    Radians phi_start,
-    Radians phi_length,
-    Radians theta_start,
-    Radians theta_length)
+osc::SphereGeometry::SphereGeometry(const Params& p)
 {
     // the implementation of this was initially translated from `three.js`'s
     // `SphereGeometry`, which has excellent documentation and source code. The
@@ -28,11 +21,11 @@ osc::SphereGeometry::SphereGeometry(
     //
     // https://threejs.org/docs/#api/en/geometries/SphereGeometry
 
-    num_width_segments = max(3_uz, num_width_segments);
-    num_height_segments = max(2_uz, num_height_segments);
+    const auto num_width_segments = max(3_uz, p.num_width_segments);
+    const auto num_height_segments = max(2_uz, p.num_height_segments);
     const auto fnum_width_segments = static_cast<float>(num_width_segments);
     const auto fnum_height_segments = static_cast<float>(num_height_segments);
-    const auto theta_end = min(theta_start + theta_length, 180_deg);
+    const auto theta_end = min(p.theta_start + p.theta_length, 180_deg);
 
     uint32_t index = 0;
     std::vector<std::vector<uint32_t>> grid;
@@ -49,7 +42,7 @@ osc::SphereGeometry::SphereGeometry(
 
         // edge-case: poles
         float u_offset = 0.0f;
-        if (iy == 0 and theta_start == 0_deg) {
+        if (iy == 0 and p.theta_start == 0_deg) {
             u_offset = 0.5f / fnum_width_segments;
         }
         else if (iy == num_height_segments and theta_end == 180_deg) {
@@ -60,9 +53,9 @@ osc::SphereGeometry::SphereGeometry(
             const float u = static_cast<float>(ix) / fnum_width_segments;
 
             const Vec3& vertex = vertices.emplace_back(
-                -radius * cos(phi_start   + u*phi_length)    * sin(theta_start + v*theta_length),
-                 radius * cos(theta_start + v*theta_length),
-                 radius * sin(phi_start   + u*phi_length)    * sin(theta_start + v*theta_length)
+                -p.radius * cos(p.phi_start   + u*p.phi_length)    * sin(p.theta_start + v*p.theta_length),
+                 p.radius * cos(p.theta_start + v*p.theta_length),
+                 p.radius * sin(p.phi_start   + u*p.phi_length)    * sin(p.theta_start + v*p.theta_length)
             );
             normals.push_back(normalize(vertex));
             uvs.emplace_back(u + u_offset, 1.0f - v);
@@ -80,7 +73,7 @@ osc::SphereGeometry::SphereGeometry(
             const uint32_t c = grid.at(iy+1).at(ix);
             const uint32_t d = grid.at(iy+1).at(ix+1);
 
-            if (iy != 0 or theta_start > 0_deg) {
+            if (iy != 0 or p.theta_start > 0_deg) {
                 indices.insert(indices.end(), {a, b, d});
             }
             if (iy != (num_height_segments-1) or theta_end < 180_deg) {
@@ -89,8 +82,8 @@ osc::SphereGeometry::SphereGeometry(
         }
     }
 
-    mesh_.set_vertices(vertices);
-    mesh_.set_normals(normals);
-    mesh_.set_tex_coords(uvs);
-    mesh_.set_indices(indices);
+    set_vertices(vertices);
+    set_normals(normals);
+    set_tex_coords(uvs);
+    set_indices(indices);
 }

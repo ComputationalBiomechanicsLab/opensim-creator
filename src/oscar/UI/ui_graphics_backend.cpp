@@ -33,6 +33,8 @@
 #include <oscar/Utils/StdVariantHelpers.h>
 #include <oscar/Utils/UID.h>
 
+#include <ankerl/unordered_dense.h>
+
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -169,7 +171,7 @@ namespace
         Material ui_material{Shader{c_VertexShader, c_FragmentShader}};
         Camera camera;
         Mesh mesh;
-        std::unordered_map<UID, std::variant<Texture2D, RenderTexture>> texures_allocated_this_frame = {{font_texture_id, font_texture}};
+        ankerl::unordered_dense::map<UID, std::variant<Texture2D, RenderTexture>> texures_allocated_this_frame = {{font_texture_id, font_texture}};
     };
 
     // Backend data stored in io.BackendRendererUserData to allow support for multiple Dear ImGui contexts
@@ -238,8 +240,7 @@ namespace
 
         if (const auto* texture = lookup_or_nullptr(bd.texures_allocated_this_frame, to_uid(draw_command.GetTexID()))) {
             std::visit(Overload{
-                [&bd](const Texture2D& t) { bd.ui_material.set_texture("uTexture", t); },
-                [&bd](const RenderTexture& t) { bd.ui_material.set_render_texture("uTexture", t); },
+                [&bd](const auto& texture) { bd.ui_material.set("uTexture", texture); },
             }, *texture);
             graphics::draw(mesh, identity<Mat4>(), bd.ui_material, bd.camera, std::nullopt, idx);
             bd.camera.render_to_screen();

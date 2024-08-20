@@ -1384,7 +1384,7 @@ private:
             outputFileStream,
             mesh,
             objMetadata,
-            ObjWriterFlags::NoWriteNormals
+            ObjWriterFlag::NoWriteNormals
         );
     }
 

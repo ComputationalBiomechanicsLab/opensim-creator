@@ -4,6 +4,7 @@
 #include <oscar/Maths/VecFunctions.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
+#include <oscar/Utils/Conversion.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/EnumHelpers.h>
 #include <oscar/Utils/StdVariantHelpers.h>
@@ -228,14 +229,9 @@ bool osc::operator==(const Variant& lhs, const Variant& rhs)
     return false;  // different type and non-interconvertible
 }
 
-std::string osc::to_string(const Variant& variant)
-{
-    return variant.to<std::string>();
-}
-
 std::ostream& osc::operator<<(std::ostream& out, const Variant& variant)
 {
-    return out << to_string(variant);
+    return out << to<std::string>(variant);
 }
 
 size_t std::hash<osc::Variant>::operator()(const Variant& variant) const

@@ -1,5 +1,6 @@
 #include "WireframeGeometry.h"
 
+#include <oscar/Graphics/Geometries/BoxGeometry.h>
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Graphics/MeshTopology.h>
 #include <oscar/Maths/CommonFunctions.h>
@@ -17,6 +18,10 @@
 using namespace osc;
 namespace rgs = std::ranges;
 
+osc::WireframeGeometry::WireframeGeometry() :
+    WireframeGeometry{BoxGeometry{}}
+{}
+
 osc::WireframeGeometry::WireframeGeometry(const Mesh& mesh)
 {
     // the implementation/API of this was initially translated from `three.js`'s
@@ -28,7 +33,7 @@ osc::WireframeGeometry::WireframeGeometry(const Mesh& mesh)
     static_assert(num_options<MeshTopology>() == 2);
 
     if (mesh.topology() == MeshTopology::Lines) {
-        mesh_ = mesh;
+        static_cast<Mesh&>(*this) = mesh;
         return;
     }
 
@@ -66,7 +71,7 @@ osc::WireframeGeometry::WireframeGeometry(const Mesh& mesh)
         indices.push_back(static_cast<uint32_t>(i));
     }
 
-    mesh_.set_topology(MeshTopology::Lines);
-    mesh_.set_vertices(vertices);
-    mesh_.set_indices(indices);
+    set_topology(MeshTopology::Lines);
+    set_vertices(vertices);
+    set_indices(indices);
 }

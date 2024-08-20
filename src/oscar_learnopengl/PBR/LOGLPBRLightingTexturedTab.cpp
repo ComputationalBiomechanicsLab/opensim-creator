@@ -36,8 +36,7 @@ namespace
         MouseCapturingCamera rv;
         rv.set_position({0.0f, 0.0f, 20.0f});
         rv.set_vertical_fov(45_deg);
-        rv.set_near_clipping_plane(0.1f);
-        rv.set_far_clipping_plane(100.0f);
+        rv.set_clipping_planes({0.1f, 100.0f});
         rv.set_background_color({0.1f, 0.1f, 0.1f, 1.0f});
         return rv;
     }
@@ -69,13 +68,13 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/PBR/lighting_textured/PBR.vert"),
             loader.slurp("oscar_learnopengl/shaders/PBR/lighting_textured/PBR.frag"),
         }};
-        rv.set_texture("uAlbedoMap", albedo);
-        rv.set_texture("uNormalMap", normal);
-        rv.set_texture("uMetallicMap", metallic);
-        rv.set_texture("uRoughnessMap", roughness);
-        rv.set_texture("uAOMap", ao);
-        rv.set_vec3_array("uLightWorldPositions", c_light_positions);
-        rv.set_vec3_array("uLightRadiances", c_light_radiances);
+        rv.set("uAlbedoMap", albedo);
+        rv.set("uNormalMap", normal);
+        rv.set("uMetallicMap", metallic);
+        rv.set("uRoughnessMap", roughness);
+        rv.set("uAOMap", ao);
+        rv.set_array("uLightWorldPositions", c_light_positions);
+        rv.set_array("uLightRadiances", c_light_radiances);
         return rv;
     }
 }
@@ -114,7 +113,7 @@ private:
     {
         camera_.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
 
-        pbr_material_.set_vec3("uCameraWorldPosition", camera_.position());
+        pbr_material_.set("uCameraWorldPosition", camera_.position());
 
         draw_spheres();
         draw_lights();
@@ -142,7 +141,7 @@ private:
 
     ResourceLoader loader_ = App::resource_loader();
     MouseCapturingCamera camera_ = create_camera();
-    Mesh sphere_mesh_ = SphereGeometry{1.0f, 64, 64};
+    Mesh sphere_mesh_ = SphereGeometry{{.num_width_segments = 64, .num_height_segments = 64}};
     Material pbr_material_ = create_material(loader_);
     PerfPanel perf_panel_{"Perf"};
 };

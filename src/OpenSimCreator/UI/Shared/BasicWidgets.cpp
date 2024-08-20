@@ -234,7 +234,7 @@ namespace
             outputFileStream,
             oscMesh,
             objMetadata,
-            ObjWriterFlags::NoWriteNormals
+            ObjWriterFlag::NoWriteNormals
         );
     }
 

@@ -9,6 +9,7 @@
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ModelDisplayHints.h>
+#include <OpenSim/Simulation/Model/ExternalForce.h>
 #include <OpenSim/Simulation/Model/ForceAdapter.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/GeometryPath.h>
@@ -17,6 +18,7 @@
 #include <OpenSim/Simulation/Model/Muscle.h>
 #include <OpenSim/Simulation/Model/PathSpring.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
+#include <OpenSim/Simulation/Model/PointForceDirection.h>
 #include <OpenSim/Simulation/Model/PointToPointSpring.h>
 #include <OpenSim/Simulation/Model/Station.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
@@ -57,8 +59,16 @@ namespace rgs = std::ranges;
 namespace
 {
     inline constexpr float c_GeometryPathBaseRadius = 0.005f;
-    constexpr Color c_EffectiveLineOfActionColor = Color::green();
-    constexpr Color c_AnatomicalLineOfActionColor = Color::red();
+    inline constexpr float c_ForceArrowLengthScale = 0.005f;
+    inline constexpr float c_TorqueArrowLengthScale = 0.01f;
+    inline constexpr Color c_EffectiveLineOfActionColor = Color::green();
+    inline constexpr Color c_AnatomicalLineOfActionColor = Color::red();
+    inline constexpr Color c_BodyForceArrowColor = Color::yellow();
+    inline constexpr Color c_BodyTorqueArrowColor = Color::orange();
+    inline constexpr Color c_PointForceArrowColor = Color::muted_yellow();  // note: should be similar to body force arrows
+    inline constexpr Color c_StationColor = Color::red();
+    inline constexpr Color c_ScapulothoracicJointColor =  Color::yellow().with_alpha(0.2f);
+    inline constexpr Color c_CenterOfMassColor = Color::black();
 
     // helper: convert a physical frame's transform to ground into an Transform
     Transform TransformInGround(const OpenSim::Frame& frame, const SimTK::State& state)
@@ -125,8 +135,7 @@ namespace
         const SimTK::State& st,
         MuscleColoringStyle s)
     {
-        switch (s)
-        {
+        switch (s) {
         case MuscleColoringStyle::OpenSimAppearanceProperty:
             return GetGeometryPathDefaultColor(musc.getGeometryPath());
         case MuscleColoringStyle::OpenSim:
@@ -189,7 +198,7 @@ namespace
             m_Out{out}
         {}
 
-        SceneCache& updMeshCache()
+        SceneCache& updSceneCache()
         {
             return m_MeshCache;
         }
@@ -265,7 +274,7 @@ namespace
             for (const SimTK::DecorativeGeometry& geom : m_GeomList)
             {
                 GenerateDecorations(
-                    updMeshCache(),
+                    updSceneCache(),
                     getMatterSubsystem(),
                     getState(),
                     geom,
@@ -284,7 +293,7 @@ namespace
             for (const SimTK::DecorativeGeometry& geom : m_GeomList)
             {
                 GenerateDecorations(
-                    updMeshCache(),
+                    updSceneCache(),
                     getMatterSubsystem(),
                     getState(),
                     geom,
@@ -317,19 +326,20 @@ namespace
         SimTK::Array_<SimTK::DecorativeGeometry> m_GeomList;
     };
 
-    // OSC-specific decoration handler that adds arrows to forces
-    void HandleLinearForceArrows(
+    // OSC-specific decoration handler that decorates the force/torque applied by `OpenSim::Force`s
+    // as user-visible arrows
+    void HandleForceArrows(
         RendererState& rs,
         const OpenSim::Force& force)
     {
-        constexpr float linearForceLengthScale = 0.005f;
-        constexpr float angularForceLengthScale = 0.01f;
+        const bool showForces = rs.getOptions().getShouldShowForceLinearComponent();
+        const bool showTorques = rs.getOptions().getShouldShowForceAngularComponent();
+        if (not showForces and not showTorques) {
+            return;  // caller doesn't want to draw this
+        }
 
-        const bool showLinearForces = rs.getOptions().getShouldShowForceLinearComponent();
-        const bool showAngularForces = rs.getOptions().getShouldShowForceAngularComponent();
-
-        if (not showLinearForces and not showAngularForces) {
-            return;  // nothing to draw
+        if (not force.appliesForce(rs.getState())) {
+            return;  // the `Force` does not apply a force
         }
 
         // this is a very heavy-handed way of getting the relevant information, because
@@ -357,47 +367,180 @@ namespace
             const SimTK::MobilizedBody& mobod = matter.getMobilizedBody(bodyIdx);
             const SimTK::Transform mobod2ground = mobod.getBodyTransform(state);
 
-            // if applicable, handle drawing the linear component of force as a yellow arrow
-            if (showLinearForces) {
-                const SimTK::Vec3 linearForce = bodyForces[bodyIdx][1];
-                if (equal_within_scaled_epsilon(linearForce.normSqr(), 0.0)) {
+            // if applicable, handle drawing the linear component of force as an arrow
+            if (showForces) {
+                const SimTK::Vec3 forceVec = bodyForces[bodyIdx][1];
+                if (equal_within_scaled_epsilon(forceVec.normSqr(), 0.0)) {
                     continue;  // no translational force applied
                 }
 
                 const ArrowProperties arrowProperties = {
                     .start = ToVec3(mobod2ground * SimTK::Vec3{0.0}),
-                    .end = ToVec3(mobod2ground * (fixupScaleFactor * linearForceLengthScale * linearForce)),
+                    .end = ToVec3(mobod2ground * (fixupScaleFactor * c_ForceArrowLengthScale * forceVec)),
                     .tip_length = (fixupScaleFactor*0.015f),
                     .neck_thickness = (fixupScaleFactor*0.006f),
                     .head_thickness = (fixupScaleFactor*0.01f),
-                    .color = Color::yellow(),
+                    .color = c_BodyForceArrowColor,
+                    .decoration_flags = SceneDecorationFlag::AnnotationElement,
                 };
-                draw_arrow(rs.updMeshCache(), arrowProperties, [&force, &rs](SceneDecoration&& decoration)
+                draw_arrow(rs.updSceneCache(), arrowProperties, [&force, &rs](SceneDecoration&& decoration)
                 {
                     rs.consume(force, std::move(decoration));
                 });
             }
 
-            // if applicable, handle drawing the angular component of force as an orange arrow
-            if (showAngularForces) {
-                const SimTK::Vec3 angularForce = bodyForces[bodyIdx][0];
-                if (equal_within_scaled_epsilon(angularForce.normSqr(), 0.0)) {
+            // if applicable, handle drawing the angular component of force as an arrow
+            if (showTorques) {
+                const SimTK::Vec3 torqueVec = bodyForces[bodyIdx][0];
+                if (equal_within_scaled_epsilon(torqueVec.normSqr(), 0.0)) {
                     continue;  // no translational force applied
                 }
 
                 const ArrowProperties arrowProperties = {
                     .start = ToVec3(mobod2ground * SimTK::Vec3{0.0}),
-                    .end = ToVec3(mobod2ground * (fixupScaleFactor * angularForceLengthScale * angularForce)),
+                    .end = ToVec3(mobod2ground * (fixupScaleFactor * c_TorqueArrowLengthScale * torqueVec)),
                     .tip_length = (fixupScaleFactor*0.015f),
                     .neck_thickness = (fixupScaleFactor*0.006f),
                     .head_thickness = (fixupScaleFactor*0.01f),
-                    .color = Color::orange(),
+                    .color = c_BodyTorqueArrowColor,
+                    .decoration_flags = SceneDecorationFlag::AnnotationElement,
                 };
-                draw_arrow(rs.updMeshCache(), arrowProperties, [&force, &rs](SceneDecoration&& decoration)
+                draw_arrow(rs.updSceneCache(), arrowProperties, [&force, &rs](SceneDecoration&& decoration)
                 {
                     rs.consume(force, std::move(decoration));
                 });
             }
+        }
+    }
+
+    // OSC-specific decoration handler that decorates the force/torque applied by `OpenSim::ExternalForce`s
+    //
+    // note: this specialization is necessary because the vectors extracted from `OpenSim::Force`s are stated
+    //       w.r.t. a body; whereas users of `ExternalForce`s usually want to see how the force was initially
+    //       applied as a point within a body (not necessarily pointing directly from the body - yet, #904)
+    void HandleExternalForcePointForceArrows(
+        RendererState& rs,
+        const OpenSim::ExternalForce& force)
+    {
+        const bool showForces = rs.getOptions().getShouldShowPointForces();
+        const bool showTorques = rs.getOptions().getShouldShowPointTorques();
+        if (not showForces and not showTorques) {
+            return;  // caller doesn't want to draw this
+        }
+
+        const bool appliesForce = force.appliesForce();
+        const bool appliesTorque = force.appliesTorque();
+        if (not appliesForce and not appliesTorque) {
+            return;  // the `ExternalForce` doesn't apply anything
+        }
+
+        // figure out which frames the `ExternalForce` is using
+        const OpenSim::Frame& forceExpressionFrame = GetFrameUsingExternalForceLookupHeuristic(
+            rs.getModel(),
+            force.get_force_expressed_in_body()
+        );
+        const OpenSim::Frame& pointExpressionFrame = GetFrameUsingExternalForceLookupHeuristic(
+            rs.getModel(),
+            force.get_point_expressed_in_body()
+        );
+
+        // calculate common values
+        const double t = rs.getState().getTime();
+        const SimTK::Vec3 pointInPointExpressionFrame = force.getPointAtTime(t);
+        const SimTK::Vec3 pointInGround = pointExpressionFrame.findStationLocationInGround(rs.getState(), pointInPointExpressionFrame);
+
+        if (showForces and appliesForce) {
+            const SimTK::Vec3 forceInForceExpressionFrame = force.getForceAtTime(t);
+            const SimTK::Vec3 forceInGround = forceExpressionFrame.findStationLocationInGround(rs.getState(), forceInForceExpressionFrame);
+
+            const ArrowProperties arrowProperties = {
+                .start = ToVec3((rs.getFixupScaleFactor() * c_ForceArrowLengthScale * forceInGround) - pointInGround),
+                .end = ToVec3(pointInGround),
+                .tip_length = 0.015f * rs.getFixupScaleFactor(),
+                .neck_thickness = 0.006f * rs.getFixupScaleFactor(),
+                .head_thickness = 0.01f * rs.getFixupScaleFactor(),
+                .color = c_PointForceArrowColor,
+                .decoration_flags = SceneDecorationFlag::AnnotationElement,
+            };
+            draw_arrow(rs.updSceneCache(), arrowProperties, [&force, &rs](SceneDecoration&& decoration)
+            {
+                rs.consume(force, std::move(decoration));
+            });
+        }
+
+        if (showTorques and appliesTorque) {
+            const SimTK::Vec3 torqueInTorqueExpressionFrame = force.getTorqueAtTime(t);
+            const SimTK::Vec3 torqueInGround = forceExpressionFrame.findStationLocationInGround(rs.getState(), torqueInTorqueExpressionFrame);
+
+            const ArrowProperties arrowProperties = {
+                .start = ToVec3((rs.getFixupScaleFactor() * c_TorqueArrowLengthScale * torqueInGround) - pointInGround),
+                .end = ToVec3(pointInGround),
+                .tip_length = 0.015f * rs.getFixupScaleFactor(),
+                .neck_thickness = 0.006f * rs.getFixupScaleFactor(),
+                .head_thickness = 0.01f * rs.getFixupScaleFactor(),
+                .color = c_PointForceArrowColor,
+                .decoration_flags = SceneDecorationFlag::AnnotationElement,
+            };
+            draw_arrow(rs.updSceneCache(), arrowProperties, [&force, &rs](SceneDecoration&& decoration)
+            {
+                rs.consume(force, std::move(decoration));
+            });
+        }
+    }
+
+    // OSC-specific decoration handler that decorates the force/torque applied by `OpenSim::GeometryPath`s
+    //
+    // note: this specialization is necessary because the vectors extracted from `OpenSim::Force`s are stated
+    //       w.r.t. a body; whereas users of `GeometryPath`s usually want to see how the path applies forces
+    //       to bodies along it (#907)
+    void HandleGeometryPathPointForceArrows(
+        RendererState& rs,
+        const OpenSim::GeometryPath& path)
+    {
+        if (not rs.getOptions().getShouldShowPointForces()) {
+            return;  // the caller doesn't want to draw point-force vectors
+        }
+
+        if (not path.hasOwner()) {
+            return;  // this implementation needs additional information (tension)
+        }
+
+        const auto* pathActuator = dynamic_cast<const OpenSim::PathActuator*>(&path.getOwner());
+        if (not pathActuator) {
+            return;  // this implementation can't figure out what the tension along the path is
+        }
+
+        const double tension = pathActuator->computeActuation(rs.getState());
+        if (isnan(tension) or equal_within_epsilon(tension, 0.0)) {
+            return;  // the `PathActuator` isn't applying a tension
+        }
+
+        // else: figure out the point-force directions applied by the `GeometryPath` and use
+        //       `tension` to scale the length of the resulting force arrow decoration
+
+        const auto pfdPtrs = GetPointForceDirections(path, rs.getState());
+        for (const auto& pfdPtr : pfdPtrs) {
+            OpenSim::PointForceDirection& pfd = *pfdPtr;
+
+            const SimTK::Vec3 pointInGround = pfd.frame().findStationLocationInGround(rs.getState(), pfd.point());
+            const SimTK::Vec3 directionInGround = pfd.direction();  // note: sometimes zero? `draw_arrow` checks this
+            const double scale = pfd.scale();
+
+            const double arrowLength = tension * scale * c_ForceArrowLengthScale;
+
+            const ArrowProperties arrowProperties = {
+                .start = ToVec3(pointInGround),
+                .end = ToVec3(pointInGround + arrowLength*directionInGround),
+                .tip_length = 0.015f * rs.getFixupScaleFactor(),
+                .neck_thickness = 0.006f * rs.getFixupScaleFactor(),
+                .head_thickness = 0.01f * rs.getFixupScaleFactor(),
+                .color = c_PointForceArrowColor,
+                .decoration_flags = SceneDecorationFlag::AnnotationElement,
+            };
+            draw_arrow(rs.updSceneCache(), arrowProperties, [&pathActuator, &rs](SceneDecoration&& decoration)
+            {
+                rs.consume(*pathActuator, std::move(decoration));
+            });
         }
     }
 
@@ -406,8 +549,7 @@ namespace
         RendererState& rs,
         const OpenSim::PointToPointSpring& p2p)
     {
-        if (!rs.getOptions().getShouldShowPointToPointSprings())
-        {
+        if (not rs.getOptions().getShouldShowPointToPointSprings()) {
             return;
         }
 
@@ -416,12 +558,10 @@ namespace
 
         const float radius = c_GeometryPathBaseRadius * rs.getFixupScaleFactor();
 
-        rs.consume(p2p, SceneDecoration
-        {
-            .mesh = rs.updMeshCache().cylinder_mesh(),
+        rs.consume(p2p, SceneDecoration{
+            .mesh = rs.updSceneCache().cylinder_mesh(),
             .transform = cylinder_to_line_segment_transform({p1, p2}, radius),
-            .color = {0.7f, 0.7f, 0.7f, 1.0f},
-            .flags = SceneDecorationFlags::CastsShadows,
+            .shading = Color::light_grey(),
         });
     }
 
@@ -430,18 +570,15 @@ namespace
         RendererState& rs,
         const OpenSim::Station& s)
     {
-        float radius = rs.getFixupScaleFactor() * 0.0045f;  // care: must be smaller than muscle caps (Tutorial 4)
+        const float radius = rs.getFixupScaleFactor() * 0.0045f;  // care: must be smaller than muscle caps (Tutorial 4)
 
-        Transform xform;
-        xform.position = ToVec3(s.getLocationInGround(rs.getState()));
-        xform.scale = {radius, radius, radius};
-
-        rs.consume(s, SceneDecoration
-        {
+        rs.consume(s, SceneDecoration{
             .mesh = rs.sphere_mesh(),
-            .transform = xform,
-            .color = Color::red(),
-            .flags = SceneDecorationFlags::CastsShadows,
+            .transform = {
+                .scale = Vec3{radius},
+                .position = ToVec3(s.getLocationInGround(rs.getState())),
+            },
+            .shading = c_StationColor,
         });
     }
 
@@ -453,12 +590,10 @@ namespace
         Transform t = TransformInGround(scapuloJoint.getParentFrame(), rs.getState());
         t.scale = ToVec3(scapuloJoint.get_thoracic_ellipsoid_radii_x_y_z());
 
-        rs.consume(scapuloJoint, SceneDecoration
-        {
+        rs.consume(scapuloJoint, SceneDecoration{
             .mesh = rs.sphere_mesh(),
             .transform = t,
-            .color = {1.0f, 1.0f, 0.0f, 0.2f},
-            .flags = SceneDecorationFlags::CastsShadows,
+            .shading = c_ScapulothoracicJointColor,
         });
     }
 
@@ -467,21 +602,24 @@ namespace
         RendererState& rs,
         const OpenSim::Body& b)
     {
-        if (rs.getOptions().getShouldShowCentersOfMass() && b.getMassCenter() != SimTK::Vec3{0.0})
-        {
-            const float radius = rs.getFixupScaleFactor() * 0.005f;
-            Transform t = TransformInGround(b, rs.getState());
-            t.position = t * ToVec3(b.getMassCenter());
-            t.scale = Vec3{radius};
-
-            rs.consume(b, SceneDecoration
-            {
-                .mesh = rs.sphere_mesh(),
-                .transform = t,
-                .color = Color::black(),
-                .flags = SceneDecorationFlags::CastsShadows,
-            });
+        if (not rs.getOptions().getShouldShowCentersOfMass()) {
+            return;
         }
+        if (b.getMassCenter() == SimTK::Vec3{0.0}) {
+            return;
+        }
+
+        const float radius = rs.getFixupScaleFactor() * 0.005f;
+        Transform t = TransformInGround(b, rs.getState());
+        t.position = t * ToVec3(b.getMassCenter());
+        t.scale = Vec3{radius};
+
+        rs.consume(b, SceneDecoration{
+            .mesh = rs.sphere_mesh(),
+            .transform = t,
+            .shading = c_CenterOfMassColor,
+            .flags = SceneDecorationFlag::AnnotationElement,
+        });
     }
 
     // OSC-specific decoration handler for `OpenSim::Body`
@@ -499,10 +637,11 @@ namespace
         const OpenSim::Muscle& muscle)
     {
         const std::vector<GeometryPathPoint> pps = GetAllPathPoints(muscle.getGeometryPath(), rs.getState());
-        if (pps.empty())
-        {
+        if (pps.empty()) {
             return;  // edge-case: there are no points in the muscle path
         }
+
+        // precompute various coefficients, reused meshes, helpers, etc.
 
         const float fixupScaleFactor = rs.getFixupScaleFactor();
 
@@ -520,38 +659,29 @@ namespace
         );
         const Color tendonColor = {204.0f/255.0f, 203.0f/255.0f, 200.0f/255.0f};
 
-        const SceneDecoration tendonSpherePrototype =
-        {
+        const SceneDecoration tendonSpherePrototype = {
             .mesh = rs.sphere_mesh(),
             .transform = {.scale = Vec3{tendonUiRadius}},
-            .color = tendonColor,
-            .flags = SceneDecorationFlags::CastsShadows,
+            .shading = tendonColor,
         };
-        const SceneDecoration tendonCylinderPrototype =
-        {
+        const SceneDecoration tendonCylinderPrototype = {
             .mesh = rs.uncapped_cylinder_mesh(),
-            .color = tendonColor,
-            .flags = SceneDecorationFlags::CastsShadows,
+            .shading = tendonColor,
         };
-        const SceneDecoration fiberSpherePrototype =
-        {
+        const SceneDecoration fiberSpherePrototype = {
             .mesh = rs.sphere_mesh(),
             .transform = {.scale = Vec3{fiberUiRadius}},
-            .color = fiberColor,
-            .flags = SceneDecorationFlags::CastsShadows,
+            .shading = fiberColor,
         };
-        const SceneDecoration fiberCylinderPrototype =
-        {
+        const SceneDecoration fiberCylinderPrototype = {
             .mesh = rs.uncapped_cylinder_mesh(),
-            .color = fiberColor,
-            .flags = SceneDecorationFlags::CastsShadows,
+            .shading = fiberColor,
         };
 
         const auto emitTendonSphere = [&](const GeometryPathPoint& p)
         {
             const OpenSim::Component* c = &muscle;
-            if (p.maybeUnderlyingUserPathPoint)
-            {
+            if (p.maybeUnderlyingUserPathPoint) {
                 c = p.maybeUnderlyingUserPathPoint;
             }
             rs.consume(*c, tendonSpherePrototype.with_position(p.locationInGround));
@@ -564,8 +694,7 @@ namespace
         auto emitFiberSphere = [&](const GeometryPathPoint& p)
         {
             const OpenSim::Component* c = &muscle;
-            if (p.maybeUnderlyingUserPathPoint)
-            {
+            if (p.maybeUnderlyingUserPathPoint) {
                 c = p.maybeUnderlyingUserPathPoint;
             }
             rs.consume(*c, fiberSpherePrototype.with_position(p.locationInGround));
@@ -576,14 +705,16 @@ namespace
             rs.consume(muscle, fiberCylinderPrototype.with_transform(xform));
         };
 
-        if (pps.size() == 1)
-        {
-            emitFiberSphere(pps.front());  // paranoia: shouldn't happen
+        // start emitting the path
+
+        if (pps.size() == 1) {
+            // edge-case: this shouldn't happen but, just to be safe...
+            emitFiberSphere(pps.front());
             return;
         }
 
         // else: the path is >= 2 points, so it's possible to measure a traversal
-        //       length along it
+        //       length along it and split it into tendon-fiber-tendon
         const float tendonLen = max(0.0f, static_cast<float>(muscle.getTendonLength(rs.getState()) * 0.5));
         const float fiberLen = max(0.0f, static_cast<float>(muscle.getFiberLength(rs.getState())));
         const float fiberEnd = tendonLen + fiberLen;
@@ -593,15 +724,13 @@ namespace
         GeometryPathPoint prevPoint = pps.front();
         float prevTraversalPos = 0.0f;
 
-        // draw first tendon
-        if (prevTraversalPos < tendonLen)
-        {
-            // emit first tendon sphere
-            emitTendonSphere(prevPoint);
+        // emit first sphere for first tendon
+        if (prevTraversalPos < tendonLen) {
+            emitTendonSphere(prevPoint);  // emit first tendon sphere
         }
-        while (i < pps.size() && prevTraversalPos < tendonLen)
-        {
-            // emit remaining tendon cylinder + spheres
+
+        // emit remaining cylinders + spheres for first tendon
+        while (i < pps.size() && prevTraversalPos < tendonLen) {
 
             const GeometryPathPoint& point = pps[i];
             const Vec3 prevToPos = point.locationInGround - prevPoint.locationInGround;
@@ -609,8 +738,7 @@ namespace
             float traversalPos = prevTraversalPos + prevToPosLen;
             float excess = traversalPos - tendonLen;
 
-            if (excess > 0.0f)
-            {
+            if (excess > 0.0f) {
                 float scaler = (prevToPosLen - excess)/prevToPosLen;
                 Vec3 tendonEnd = prevPoint.locationInGround + scaler * prevToPos;
 
@@ -620,8 +748,7 @@ namespace
                 prevPoint.locationInGround = tendonEnd;
                 prevTraversalPos = tendonLen;
             }
-            else
-            {
+            else {
                 emitTendonCylinder(prevPoint.locationInGround, point.locationInGround);
                 emitTendonSphere(point);
 
@@ -631,15 +758,14 @@ namespace
             }
         }
 
-        // draw fiber
-        if (i < pps.size() && prevTraversalPos < fiberEnd)
-        {
-            // emit first fiber sphere (label it if no tendon spheres were emitted)
+        // emit first sphere for fiber
+        if (i < pps.size() && prevTraversalPos < fiberEnd) {
+            // label the sphere if no tendon spheres were previously emitted
             emitFiberSphere(hasTendonSpheres ? GeometryPathPoint{prevPoint.locationInGround} : prevPoint);
         }
-        while (i < pps.size() && prevTraversalPos < fiberEnd)
-        {
-            // emit remaining fiber cylinder + spheres
+
+        // emit remaining cylinders + spheres for fiber
+        while (i < pps.size() && prevTraversalPos < fiberEnd) {
 
             const GeometryPathPoint& point = pps[i];
             Vec3 prevToPos = point.locationInGround - prevPoint.locationInGround;
@@ -647,8 +773,7 @@ namespace
             float traversalPos = prevTraversalPos + prevToPosLen;
             float excess = traversalPos - fiberEnd;
 
-            if (excess > 0.0f)
-            {
+            if (excess > 0.0f) {
                 // emit end point and then exit
                 float scaler = (prevToPosLen - excess)/prevToPosLen;
                 Vec3 fiberEndPos = prevPoint.locationInGround + scaler * prevToPos;
@@ -659,8 +784,7 @@ namespace
                 prevPoint.locationInGround = fiberEndPos;
                 prevTraversalPos = fiberEnd;
             }
-            else
-            {
+            else {
                 emitFiberCylinder(prevPoint.locationInGround, point.locationInGround);
                 emitFiberSphere(point);
 
@@ -670,15 +794,13 @@ namespace
             }
         }
 
-        // draw second tendon
-        if (i < pps.size())
-        {
-            // emit first tendon sphere
+        // emit first sphere for second tendon
+        if (i < pps.size()) {
             emitTendonSphere(GeometryPathPoint{prevPoint});
         }
-        while (i < pps.size())
-        {
-            // emit remaining fiber cylinder + spheres
+
+        // emit remaining cylinders + spheres for second tendon
+        while (i < pps.size()) {
 
             const GeometryPathPoint& point = pps[i];
             Vec3 prevToPos = point.locationInGround - prevPoint.locationInGround;
@@ -703,10 +825,8 @@ namespace
         float radius,
         const Color& color)
     {
-        if (points.empty())
-        {
-            // edge-case: there's no points to emit
-            return;
+        if (points.empty()) {
+            return;  // edge-case: there's no points to emit
         }
 
         // helper function: emits a sphere decoration
@@ -719,19 +839,16 @@ namespace
                 *pp.maybeUnderlyingUserPathPoint :
                 hittestTarget;
 
-            rs.consume(c, SceneDecoration
-            {
+            rs.consume(c, SceneDecoration {
                 .mesh = rs.sphere_mesh(),
-                .transform =
-                {
+                .transform = {
                     // ensure the sphere directionally tries to line up with the cylinders, to make
                     // the "join" between the sphere and cylinders nicer (#593)
                     .scale = Vec3{radius},
                     .rotation = normalize(rotation(Vec3{0.0f, 1.0f, 0.0f}, upDirection)),
                     .position = pp.locationInGround
                 },
-                .color = color,
-                .flags = SceneDecorationFlags::CastsShadows,
+                .shading = color,
             });
         };
 
@@ -740,18 +857,15 @@ namespace
             const Vec3& p1,
             const Vec3& p2)
         {
-            rs.consume(hittestTarget, SceneDecoration
-            {
+            rs.consume(hittestTarget, SceneDecoration{
                 .mesh = rs.uncapped_cylinder_mesh(),
                 .transform = cylinder_to_line_segment_transform({p1, p2}, radius),
-                .color  = color,
-                .flags = SceneDecorationFlags::CastsShadows,
+                .shading  = color,
             });
         };
 
-        // if required, draw first path point
-        if (rs.getShowPathPoints())
-        {
+        // if required, draw the first path point
+        if (rs.getShowPathPoints()) {
             const GeometryPathPoint& firstPoint = points.front();
             const Vec3& ppPos = firstPoint.locationInGround;
             const Vec3 direction = points.size() == 1 ?
@@ -761,9 +875,8 @@ namespace
             emitSphere(firstPoint, direction);
         }
 
-        // draw remaining cylinders and (if required) muscle path points
-        for (size_t i = 1; i < points.size(); ++i)
-        {
+        // draw remaining cylinders and (if required) path points
+        for (size_t i = 1; i < points.size(); ++i) {
             const GeometryPathPoint& point = points[i];
 
             const Vec3& prevPos = points[i - 1].locationInGround;
@@ -772,8 +885,7 @@ namespace
             emitCylinder(prevPos, curPos);
 
             // if required, draw path points
-            if (rs.getShowPathPoints())
-            {
+            if (rs.getShowPathPoints()) {
                 const Vec3 direction = normalize(curPos - prevPos);
                 emitSphere(point, direction);
             }
@@ -808,16 +920,16 @@ namespace
 
     // custom implementation of `OpenSim::GeometryPath::generateDecorations` that also
     // handles tagging
+    //
+    // this specialized `OpenSim::GeometryPath` handler is used, rather than
+    // `emitGenericDecorations`, because the custom implementation also coerces
+    // selection hits to enable users to click on individual path points within
+    // a path (#647)
     void HandleGenericGeometryPath(
         RendererState& rs,
         const OpenSim::GeometryPath& gp,
         const OpenSim::Component& hittestTarget)
     {
-        // this specialized `OpenSim::GeometryPath` handler is used, rather than
-        // `emitGenericDecorations`, because the custom implementation also coerces
-        // selection hits to enable users to click on individual path points within
-        // a path (#647)
-
         const std::vector<GeometryPathPoint> points = GetAllPathPoints(gp, rs.getState());
         const Color color = GetGeometryPathColor(gp, rs.getState());
 
@@ -845,9 +957,9 @@ namespace
             .neck_thickness = (fixupScaleFactor*0.006f),
             .head_thickness = (fixupScaleFactor*0.01f),
             .color = color,
+            .decoration_flags = SceneDecorationFlag::AnnotationElement,
         };
-
-        draw_arrow(rs.updMeshCache(), arrowProperties, [&muscle, &rs](SceneDecoration&& d)
+        draw_arrow(rs.updSceneCache(), arrowProperties, [&muscle, &rs](SceneDecoration&& d)
         {
             rs.consume(muscle, std::move(d));
         });
@@ -858,35 +970,32 @@ namespace
         const OpenSim::Muscle& musc)
     {
         // if options request, render effective muscle lines of action
-        if (rs.getOptions().getShouldShowEffectiveMuscleLineOfActionForOrigin() ||
-            rs.getOptions().getShouldShowEffectiveMuscleLineOfActionForInsertion())
-        {
-            if (const std::optional<LinesOfAction> loas = GetEffectiveLinesOfActionInGround(musc, rs.getState()))
-            {
-                if (rs.getOptions().getShouldShowEffectiveMuscleLineOfActionForOrigin())
-                {
+        if (rs.getOptions().getShouldShowEffectiveMuscleLineOfActionForOrigin() or
+            rs.getOptions().getShouldShowEffectiveMuscleLineOfActionForInsertion()) {
+
+            if (const auto loas = GetEffectiveLinesOfActionInGround(musc, rs.getState())) {
+
+                if (rs.getOptions().getShouldShowEffectiveMuscleLineOfActionForOrigin()) {
                     DrawLineOfActionArrow(rs, musc, loas->origin, c_EffectiveLineOfActionColor);
                 }
 
-                if (rs.getOptions().getShouldShowEffectiveMuscleLineOfActionForInsertion())
-                {
+                if (rs.getOptions().getShouldShowEffectiveMuscleLineOfActionForInsertion()) {
                     DrawLineOfActionArrow(rs, musc, loas->insertion, c_EffectiveLineOfActionColor);
                 }
             }
         }
 
         // if options request, render anatomical muscle lines of action
-        if (rs.getOptions().getShouldShowAnatomicalMuscleLineOfActionForOrigin() ||
-            rs.getOptions().getShouldShowAnatomicalMuscleLineOfActionForInsertion())
-        {
-            if (const std::optional<LinesOfAction> loas = GetAnatomicalLinesOfActionInGround(musc, rs.getState())) {
-                if (rs.getOptions().getShouldShowAnatomicalMuscleLineOfActionForOrigin())
-                {
+        if (rs.getOptions().getShouldShowAnatomicalMuscleLineOfActionForOrigin() or
+            rs.getOptions().getShouldShowAnatomicalMuscleLineOfActionForInsertion()) {
+
+            if (const auto loas = GetAnatomicalLinesOfActionInGround(musc, rs.getState())) {
+
+                if (rs.getOptions().getShouldShowAnatomicalMuscleLineOfActionForOrigin()) {
                     DrawLineOfActionArrow(rs, musc, loas->origin, c_AnatomicalLineOfActionColor);
                 }
 
-                if (rs.getOptions().getShouldShowAnatomicalMuscleLineOfActionForInsertion())
-                {
+                if (rs.getOptions().getShouldShowAnatomicalMuscleLineOfActionForInsertion()) {
                     DrawLineOfActionArrow(rs, musc, loas->insertion, c_AnatomicalLineOfActionColor);
                 }
             }
@@ -898,54 +1007,50 @@ namespace
         RendererState& rs,
         const OpenSim::GeometryPath& gp)
     {
-        if (!gp.get_Appearance().get_visible())
-        {
+        if (not gp.get_Appearance().get_visible()) {
             // even custom muscle decoration implementations *must* obey the visibility
             // flag on `GeometryPath` (#414)
             return;
         }
 
-        if (!gp.hasOwner())
-        {
+        // if requested, draw point-force vector arrows (#907)
+        HandleGeometryPathPointForceArrows(rs, gp);
+
+        if (not gp.hasOwner()) {
             // it's a standalone path that's not part of a muscle
             HandleGenericGeometryPath(rs, gp, gp);
             return;
         }
 
-        // the `GeometryPath` has a owner, which might be a muscle or path actuator
-        if (const auto* const musc = GetOwner<OpenSim::Muscle>(gp))
-        {
+        // the `GeometryPath` has a owner, downcast to specialize
+        if (const auto* const muscle = GetOwner<OpenSim::Muscle>(gp)) {
             // owner is a muscle, coerce selection "hit" to the muscle
 
-            HandleLinesOfAction(rs, *musc);
+            HandleLinesOfAction(rs, *muscle);
 
-            switch (rs.getOptions().getMuscleDecorationStyle())
-            {
+            switch (rs.getOptions().getMuscleDecorationStyle()) {
             case MuscleDecorationStyle::FibersAndTendons:
-                HandleMuscleFibersAndTendons(rs, *musc);
+                HandleMuscleFibersAndTendons(rs, *muscle);
                 return;
             case MuscleDecorationStyle::Hidden:
                 return;  // just don't generate them
             case MuscleDecorationStyle::OpenSim:
             default:
-                HandleMuscleOpenSimStyle(rs, *musc);
+                HandleMuscleOpenSimStyle(rs, *muscle);
                 return;
             }
         }
-        else if (const auto* const pa = GetOwner<OpenSim::PathActuator>(gp))
-        {
+        else if (const auto* const pa = GetOwner<OpenSim::PathActuator>(gp)) {
             // owner is a path actuator, coerce selection "hit" to the path actuator (#519)
             HandleGenericGeometryPath(rs, gp, *pa);
             return;
         }
-        else if (const auto* const pathSpring = GetOwner<OpenSim::PathSpring>(gp))
-        {
+        else if (const auto* const pathSpring = GetOwner<OpenSim::PathSpring>(gp)) {
             // owner is a path spring, coerce selection "hit" to the path spring (#650)
             HandleGenericGeometryPath(rs, gp, *pathSpring);
             return;
         }
-        else
-        {
+        else {
             // it's a path in some non-muscular context
             HandleGenericGeometryPath(rs, gp, gp);
             return;
@@ -959,8 +1064,7 @@ namespace
         // promote current component to the parent of the frame geometry, because
         // a user is probably more interested in the thing the frame geometry
         // represents (e.g. an offset frame) than the geometry itself (#506)
-        const OpenSim::Component& componentToLinkTo =
-            GetOwnerOr(frameGeometry, frameGeometry);
+        const OpenSim::Component& componentToLinkTo = GetOwnerOr(frameGeometry, frameGeometry);
 
         rs.emitGenericDecorations(frameGeometry, componentToLinkTo);
     }
@@ -969,8 +1073,7 @@ namespace
         RendererState& rs,
         const OpenSim::HuntCrossleyForce& hcf)
     {
-        if (!rs.getOptions().getShouldShowContactForces())
-        {
+        if (not rs.getOptions().getShouldShowContactForces()) {
             return;  // the user hasn't opted to see contact forces
         }
 
@@ -980,38 +1083,35 @@ namespace
         // to expect the user to *also* toggle the "show_forces" option inside
         // the OpenSim model
 
-        if (!hcf.appliesForce(rs.getState()))
-        {
+        if (not hcf.appliesForce(rs.getState())) {
             return;  // not applying this force
         }
 
         // else: try and compute a geometry-to-plane contact force and show it in-UI
-        const std::optional<ForcePoint> maybeContact = TryGetContactForceInGround(
+        const std::optional<ForcePoint> contactForcePoint = TryGetContactForceInGround(
             rs.getModel(),
             rs.getState(),
             hcf
         );
-
-        if (!maybeContact)
-        {
+        if (not contactForcePoint) {
             return;
         }
 
         const float fixupScaleFactor = rs.getFixupScaleFactor();
         const float lenScale = 0.0025f;
         const float baseRadius = 0.025f;
-        const float tip_length = 0.1f*length((fixupScaleFactor*lenScale)*maybeContact->force);
+        const float tip_length = 0.1f*length((fixupScaleFactor*lenScale)*contactForcePoint->force);
 
         const ArrowProperties arrowProperties = {
-            .start = maybeContact->point,
-            .end = maybeContact->point + (fixupScaleFactor*lenScale)*maybeContact->force,
+            .start = contactForcePoint->point,
+            .end = contactForcePoint->point + (fixupScaleFactor*lenScale)*contactForcePoint->force,
             .tip_length = tip_length,
             .neck_thickness = fixupScaleFactor*baseRadius*0.6f,
             .head_thickness = fixupScaleFactor*baseRadius,
-            .color = Color::yellow(),
+            .color = c_PointForceArrowColor,
+            .decoration_flags = SceneDecorationFlag::AnnotationElement,
         };
-
-        draw_arrow(rs.updMeshCache(), arrowProperties, [&hcf, &rs](SceneDecoration&& d)
+        draw_arrow(rs.updSceneCache(), arrowProperties, [&hcf, &rs](SceneDecoration&& d)
         {
             rs.consume(hcf, std::move(d));
         });
@@ -1050,8 +1150,7 @@ void osc::GenerateSubcomponentDecorations(
 {
     OSC_PERF("OpenSimRenderer/GenerateModelDecorations");
 
-    RendererState rendererState
-    {
+    RendererState rendererState{
         meshCache,
         model,
         state,
@@ -1064,12 +1163,10 @@ void osc::GenerateSubcomponentDecorations(
     {
         // handle OSC-specific decoration specializations, or fallback to generic
         // component decoration handling
-        if (!ShouldShowInUI(c))
-        {
+        if (not ShouldShowInUI(c)) {
             return;
         }
-        else if (const auto* const custom = dynamic_cast<const ICustomDecorationGenerator*>(&c))
-        {
+        else if (const auto* const custom = dynamic_cast<const ICustomDecorationGenerator*>(&c)) {
             // edge-case: it's a component that has an OSC-specific `ICustomDecorationGenerator`
             //            so we can skip the song-and-dance with caches, OpenSim, SimTK, etc.
             custom->generateCustomDecorations(rendererState.getState(), [&c, &rendererState](SceneDecoration&& dec)
@@ -1077,62 +1174,55 @@ void osc::GenerateSubcomponentDecorations(
                 rendererState.consume(c, std::move(dec));
             });
         }
-        else if (const auto* const gp = dynamic_cast<const OpenSim::GeometryPath*>(&c))
-        {
+        else if (const auto* const gp = dynamic_cast<const OpenSim::GeometryPath*>(&c)) {
             HandleGeometryPath(rendererState, *gp);
         }
-        else if (const auto* const b = dynamic_cast<const OpenSim::Body*>(&c))
-        {
+        else if (const auto* const b = dynamic_cast<const OpenSim::Body*>(&c)) {
             HandleBody(rendererState, *b);
         }
-        else if (const auto* const fg = dynamic_cast<const OpenSim::FrameGeometry*>(&c))
-        {
+        else if (const auto* const fg = dynamic_cast<const OpenSim::FrameGeometry*>(&c)) {
             HandleFrameGeometry(rendererState, *fg);
         }
-        else if (const auto* const p2p = dynamic_cast<const OpenSim::PointToPointSpring*>(&c); p2p && opts.getShouldShowPointToPointSprings())
-        {
-            HandleLinearForceArrows(rendererState, *p2p);
+        else if (const auto* const p2p = dynamic_cast<const OpenSim::PointToPointSpring*>(&c); p2p and opts.getShouldShowPointToPointSprings()) {
+            HandleForceArrows(rendererState, *p2p);
             HandlePointToPointSpring(rendererState, *p2p);
         }
-        else if (typeid(c) == typeid(OpenSim::Station))
-        {
+        else if (typeid(c) == typeid(OpenSim::Station)) {
             // CARE: it's a typeid comparison because OpenSim::Marker inherits from OpenSim::Station
             HandleStation(rendererState, dynamic_cast<const OpenSim::Station&>(c));
         }
-        else if (const auto* const sj = dynamic_cast<const OpenSim::ScapulothoracicJoint*>(&c); sj && opts.getShouldShowScapulo())
-        {
+        else if (const auto* const sj = dynamic_cast<const OpenSim::ScapulothoracicJoint*>(&c); sj && opts.getShouldShowScapulo()) {
             HandleScapulothoracicJoint(rendererState, *sj);
         }
-        else if (const auto* const hcf = dynamic_cast<const OpenSim::HuntCrossleyForce*>(&c))
-        {
-            HandleLinearForceArrows(rendererState, *hcf);
+        else if (const auto* const hcf = dynamic_cast<const OpenSim::HuntCrossleyForce*>(&c)) {
+            HandleForceArrows(rendererState, *hcf);
             HandleHuntCrossleyForce(rendererState, *hcf);
         }
-        else if (const auto* const geom = dynamic_cast<const OpenSim::Geometry*>(&c))
-        {
+        else if (const auto* const geom = dynamic_cast<const OpenSim::Geometry*>(&c)) {
             // EDGE-CASE:
             //
             // if the component being rendered is geometry that was explicitly added into the model then
             // the scene scale factor should not apply to that geometry
             rendererState.emitGenericDecorations(c, c, 1.0f);  // note: override scale factor
         }
-        else if (const auto* const force = dynamic_cast<const OpenSim::Force*>(&c))
-        {
-            HandleLinearForceArrows(rendererState, *force);
+        else if (const auto* const externalForce = dynamic_cast<const OpenSim::ExternalForce*>(&c)) {
+            HandleExternalForcePointForceArrows(rendererState, *externalForce);
+            HandleForceArrows(rendererState, *externalForce);
             rendererState.emitGenericDecorations(c, c);
         }
-        else
-        {
+        else if (const auto* const force = dynamic_cast<const OpenSim::Force*>(&c)) {
+            HandleForceArrows(rendererState, *force);
+            rendererState.emitGenericDecorations(c, c);
+        }
+        else {
             rendererState.emitGenericDecorations(c, c);
         }
     };
 
-    if (inclusiveOfProvidedSubcomponent)
-    {
+    if (inclusiveOfProvidedSubcomponent) {
         emitDecorationsForComponent(subcomponent);
     }
-    for (const OpenSim::Component& c : subcomponent.getComponentList())
-    {
+    for (const OpenSim::Component& c : subcomponent.getComponentList()) {
         emitDecorationsForComponent(c);
     }
 }
@@ -1160,15 +1250,13 @@ Mesh osc::ToOscMesh(
         }
     );
 
-    if (decs.empty())
-    {
+    if (decs.empty()) {
         std::stringstream ss;
         ss << mesh.getAbsolutePathString() << ": could not be converted into an OSC mesh because OpenSim did not emit any decorations for the given OpenSim::Mesh component";
         throw std::runtime_error{std::move(ss).str()};
     }
-    if (decs.size() > 1)
-    {
-        auto path = mesh.getAbsolutePathString();
+    if (decs.size() > 1) {
+        const auto path = mesh.getAbsolutePathString();
         log_warn("%s: this OpenSim::Mesh component generated more than one decoration: OSC defaulted to using the first one, but that may not be correct: if you are seeing unusual behavior, then it's because OpenSim is doing something whacky when generating decorations for a mesh", path.c_str());
     }
     return std::move(decs.front().mesh);
@@ -1215,9 +1303,8 @@ float osc::GetRecommendedScaleFactor(
         }
     );
 
-    if (!aabb)
-    {
-        return 1.0f;  // no scene elements
+    if (not aabb) {
+        return 1.0f;  // no scene elements (the scene is empty)
     }
 
     // calculate the longest dimension and use that to figure out
@@ -1226,8 +1313,7 @@ float osc::GetRecommendedScaleFactor(
     // decoration generator)
     float longest = rgs::max(dimensions_of(*aabb));
     float rv = 1.0f;
-    while (longest < 0.01)
-    {
+    while (longest < 0.01) {
         longest *= 10.0f;
         rv /= 10.0f;
     }

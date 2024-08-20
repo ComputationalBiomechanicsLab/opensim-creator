@@ -6,6 +6,7 @@
 
 namespace osc
 {
+    // a `std::streambuf` that performs no actual input-output operations
     class NullStreambuf final : public std::streambuf {
     public:
         size_t num_chars_written() const

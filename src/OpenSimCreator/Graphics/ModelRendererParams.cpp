@@ -9,6 +9,7 @@
 #include <oscar/Maths/PolarPerspectiveCamera.h>
 #include <oscar/Platform/AppSettings.h>
 #include <oscar/Utils/Algorithms.h>
+#include <oscar/Utils/Conversion.h>
 #include <oscar/Variant/Variant.h>
 
 #include <string>
@@ -52,10 +53,10 @@ namespace
         params.overlayOptions.tryUpdFromValues(std::string{prefix} + "overlays/", values);
         params.renderingOptions.tryUpdFromValues(std::string{prefix} + "graphics/", values);
         if (const auto* v = lookup_or_nullptr(values, std::string{prefix} + "light_color")) {
-            params.lightColor = v->to<Color>();
+            params.lightColor = to<Color>(*v);
         }
         if (const auto* v = lookup_or_nullptr(values,std::string{prefix} + "background_color")) {
-            params.backgroundColor = v->to<Color>();
+            params.backgroundColor = to<Color>(*v);
         }
         // TODO: floorLocation
     }

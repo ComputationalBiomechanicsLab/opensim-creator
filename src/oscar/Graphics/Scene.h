@@ -5,6 +5,7 @@
 #include <oscar/Graphics/Scene/SceneCollision.h>
 #include <oscar/Graphics/Scene/SceneDecoration.h>
 #include <oscar/Graphics/Scene/SceneDecorationFlags.h>
+#include <oscar/Graphics/Scene/SceneDecorationShading.h>
 #include <oscar/Graphics/Scene/SceneHelpers.h>
 #include <oscar/Graphics/Scene/SceneRenderer.h>
 #include <oscar/Graphics/Scene/SceneRendererParams.h>

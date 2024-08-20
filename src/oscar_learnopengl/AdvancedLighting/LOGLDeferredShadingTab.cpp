@@ -91,8 +91,7 @@ namespace
         MouseCapturingCamera rv;
         rv.set_position({0.0f, 0.5f, 5.0f});
         rv.set_vertical_fov(45_deg);
-        rv.set_near_clipping_plane(0.1f);
-        rv.set_far_clipping_plane(100.0f);
+        rv.set_clipping_planes({0.1f, 100.0f});
         rv.set_background_color(Color::black());
         return rv;
     }
@@ -138,12 +137,12 @@ namespace
 
         void reformat(Vec2 dimensions, AntiAliasingLevel aa_level)
         {
-            RenderTextureDescriptor desc{dimensions};
-            desc.set_anti_aliasing_level(aa_level);
-
             for (RenderTexture* texture_ptr : {&albedo, &normal, &position}) {
-                desc.set_color_format(texture_ptr->color_format());
-                texture_ptr->reformat(desc);
+                texture_ptr->reformat({
+                    .dimensions = dimensions,
+                    .anti_aliasing_level = aa_level,
+                    .color_format = texture_ptr->color_format(),
+                });
             }
         }
     };
@@ -212,8 +211,8 @@ private:
 
     void render_3d_scene_to_gbuffers()
     {
-        gbuffer_.material.set_texture("uDiffuseMap", diffuse_map_);
-        gbuffer_.material.set_texture("uSpecularMap", specular_map_);
+        gbuffer_.material.set("uDiffuseMap", diffuse_map_);
+        gbuffer_.material.set("uSpecularMap", specular_map_);
 
         // render scene cubes
         for (const Vec3& object_position : c_object_positions) {
@@ -249,14 +248,14 @@ private:
 
     void render_lighting_pass()
     {
-        light_pass_.material.set_render_texture("uPositionTex", gbuffer_.position);
-        light_pass_.material.set_render_texture("uNormalTex", gbuffer_.normal);
-        light_pass_.material.set_render_texture("uAlbedoTex", gbuffer_.albedo);
-        light_pass_.material.set_vec3_array("uLightPositions", light_positions_);
-        light_pass_.material.set_vec3_array("uLightColors", light_colors_);
-        light_pass_.material.set_float("uLightLinear", 0.7f);
-        light_pass_.material.set_float("uLightQuadratic", 1.8f);
-        light_pass_.material.set_vec3("uViewPos", camera_.position());
+        light_pass_.material.set("uPositionTex", gbuffer_.position);
+        light_pass_.material.set("uNormalTex", gbuffer_.normal);
+        light_pass_.material.set("uAlbedoTex", gbuffer_.albedo);
+        light_pass_.material.set_array("uLightPositions", light_positions_);
+        light_pass_.material.set_array("uLightColors", light_colors_);
+        light_pass_.material.set("uLightLinear", 0.7f);
+        light_pass_.material.set("uLightQuadratic", 1.8f);
+        light_pass_.material.set("uViewPos", camera_.position());
 
         graphics::draw(quad_mesh_, identity<Transform>(), light_pass_.material, camera_);
 
@@ -272,7 +271,7 @@ private:
         OSC_ASSERT(light_positions_.size() == light_colors_.size());
 
         for (size_t i = 0; i < light_positions_.size(); ++i) {
-            light_box_material_.set_vec3("uLightColor", light_colors_[i]);
+            light_box_material_.set("uLightColor", light_colors_[i]);
             graphics::draw(cube_mesh_, {.scale = Vec3{0.125f}, .position = light_positions_[i]}, light_box_material_, camera_);
         }
 
@@ -300,17 +299,17 @@ private:
     std::vector<Vec3> light_positions_ = generate_n_scene_light_positions(c_num_lights);
     std::vector<Vec3> light_colors_ = generate_n_scene_light_colors(c_num_lights);
     MouseCapturingCamera camera_ = create_camera_that_matches_learnopengl();
-    Mesh cube_mesh_ = BoxGeometry{2.0f, 2.0f, 2.0f};
-    Mesh quad_mesh_ = PlaneGeometry{2.0f, 2.0f};
+    Mesh cube_mesh_ = BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}};
+    Mesh quad_mesh_ = PlaneGeometry{{.width = 2.0f, .height = 2.0f}};
     Texture2D diffuse_map_ = load_texture2D_from_image(
         loader_.open("oscar_learnopengl/textures/container2.png"),
         ColorSpace::sRGB,
-        ImageLoadingFlags::FlipVertically
+        ImageLoadingFlag::FlipVertically
     );
     Texture2D specular_map_ = load_texture2D_from_image(
         loader_.open("oscar_learnopengl/textures/container2_specular.png"),
         ColorSpace::sRGB,
-        ImageLoadingFlags::FlipVertically
+        ImageLoadingFlag::FlipVertically
     );
 
     // rendering state

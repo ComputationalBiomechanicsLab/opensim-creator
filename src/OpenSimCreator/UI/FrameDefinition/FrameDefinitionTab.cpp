@@ -82,39 +82,34 @@ namespace
         const ModelEditorViewerPanelRightClickEvent& sourceEvent)
     {
         auto* const visualizer = editor.getPanelManager()->try_upd_panel_by_name_T<ModelEditorViewerPanel>(sourceEvent.sourcePanelName);
-        if (!visualizer)
-        {
+        if (not visualizer) {
             return;  // can't figure out which visualizer to push the layer to
         }
 
         ChooseComponentsEditorLayerParameters options;
         options.popupHeaderText = "choose other point";
         options.canChooseItem = IsPoint;
-        options.componentsBeingAssignedTo = {point.getAbsolutePathString()};
+        options.componentsBeingAssignedTo = {GetAbsolutePathStringName(point)};
         options.numComponentsUserMustChoose = 1;
-        options.onUserFinishedChoosing = [model, pointAPath = point.getAbsolutePathString()](const std::unordered_set<std::string>& choices) -> bool
+        options.onUserFinishedChoosing = [model, pointAPath = point.getAbsolutePathString()](const auto& choices) -> bool
         {
-            if (choices.empty())
-            {
+            if (choices.empty()) {
                 log_error("user selections from the 'choose components' layer was empty: this bug should be reported");
                 return false;
             }
-            if (choices.size() > 1)
-            {
+            if (choices.size() > 1) {
                 log_warn("number of user selections from 'choose components' layer was greater than expected: this bug should be reported");
             }
-            const std::string& pointBPath = *choices.begin();
+            const auto& pointBPath = *choices.begin();
 
             const auto* pointA = FindComponent<OpenSim::Point>(model->getModel(), pointAPath);
-            if (!pointA)
-            {
+            if (not pointA) {
                 log_error("point A's component path (%s) does not exist in the model", pointAPath.c_str());
                 return false;
             }
 
             const auto* pointB = FindComponent<OpenSim::Point>(model->getModel(), pointBPath);
-            if (!pointB)
-            {
+            if (not pointB) {
                 log_error("point B's component path (%s) does not exist in the model", pointBPath.c_str());
                 return false;
             }
@@ -133,39 +128,34 @@ namespace
         const ModelEditorViewerPanelRightClickEvent& sourceEvent)
     {
         auto* const visualizer = editor.getPanelManager()->try_upd_panel_by_name_T<ModelEditorViewerPanel>(sourceEvent.sourcePanelName);
-        if (!visualizer)
-        {
+        if (not visualizer) {
             return;  // can't figure out which visualizer to push the layer to
         }
 
         ChooseComponentsEditorLayerParameters options;
         options.popupHeaderText = "choose other point";
         options.canChooseItem = IsPoint;
-        options.componentsBeingAssignedTo = {point.getAbsolutePathString()};
+        options.componentsBeingAssignedTo = {GetAbsolutePathStringName(point)};
         options.numComponentsUserMustChoose = 1;
-        options.onUserFinishedChoosing = [model, pointAPath = point.getAbsolutePathString()](const std::unordered_set<std::string>& choices) -> bool
+        options.onUserFinishedChoosing = [model, pointAPath = point.getAbsolutePathString()](const auto& choices) -> bool
         {
-            if (choices.empty())
-            {
+            if (choices.empty()) {
                 log_error("user selections from the 'choose components' layer was empty: this bug should be reported");
                 return false;
             }
-            if (choices.size() > 1)
-            {
+            if (choices.size() > 1) {
                 log_warn("number of user selections from 'choose components' layer was greater than expected: this bug should be reported");
             }
-            const std::string& pointBPath = *choices.begin();
+            const auto& pointBPath = *choices.begin();
 
             const auto* pointA = FindComponent<OpenSim::Point>(model->getModel(), pointAPath);
-            if (!pointA)
-            {
+            if (not pointA) {
                 log_error("point A's component path (%s) does not exist in the model", pointAPath.c_str());
                 return false;
             }
 
             const auto* pointB = FindComponent<OpenSim::Point>(model->getModel(), pointBPath);
-            if (!pointB)
-            {
+            if (not pointB) {
                 log_error("point B's component path (%s) does not exist in the model", pointBPath.c_str());
                 return false;
             }
@@ -184,39 +174,34 @@ namespace
         const ModelEditorViewerPanelRightClickEvent& sourceEvent)
     {
         auto* const visualizer = editor.getPanelManager()->try_upd_panel_by_name_T<ModelEditorViewerPanel>(sourceEvent.sourcePanelName);
-        if (!visualizer)
-        {
+        if (not visualizer) {
             return;  // can't figure out which visualizer to push the layer to
         }
 
         ChooseComponentsEditorLayerParameters options;
         options.popupHeaderText = "choose other edge";
         options.canChooseItem = IsEdge;
-        options.componentsBeingAssignedTo = {firstEdge.getAbsolutePathString()};
+        options.componentsBeingAssignedTo = {GetAbsolutePathStringName(firstEdge)};
         options.numComponentsUserMustChoose = 1;
-        options.onUserFinishedChoosing = [model, edgeAPath = firstEdge.getAbsolutePathString()](const std::unordered_set<std::string>& choices) -> bool
+        options.onUserFinishedChoosing = [model, edgeAPath = GetAbsolutePathStringName(firstEdge)](const auto& choices) -> bool
         {
-            if (choices.empty())
-            {
+            if (choices.empty()) {
                 log_error("user selections from the 'choose components' layer was empty: this bug should be reported");
                 return false;
             }
-            if (choices.size() > 1)
-            {
+            if (choices.size() > 1) {
                 log_warn("number of user selections from 'choose components' layer was greater than expected: this bug should be reported");
             }
-            const std::string& edgeBPath = *choices.begin();
+            const auto& edgeBPath = *choices.begin();
 
             const auto* edgeA = FindComponent<Edge>(model->getModel(), edgeAPath);
-            if (!edgeA)
-            {
+            if (not edgeA) {
                 log_error("edge A's component path (%s) does not exist in the model", edgeAPath.c_str());
                 return false;
             }
 
             const auto* edgeB = FindComponent<Edge>(model->getModel(), edgeBPath);
-            if (!edgeB)
-            {
+            if (not edgeB) {
                 log_error("point B's component path (%s) does not exist in the model", edgeBPath.c_str());
                 return false;
             }
@@ -231,9 +216,9 @@ namespace
     void PushPickOriginForFrameDefinitionLayer(
         ModelEditorViewerPanel& visualizer,
         const std::shared_ptr<UndoableModelStatePair>& model,
-        const std::string& firstEdgeAbsPath,
+        const StringName& firstEdgeAbsPath,
         CoordinateDirection firstEdgeAxis,
-        const std::string& secondEdgeAbsPath)
+        const StringName& secondEdgeAbsPath)
     {
         ChooseComponentsEditorLayerParameters options;
         options.popupHeaderText = "choose frame origin";
@@ -241,39 +226,34 @@ namespace
         options.numComponentsUserMustChoose = 1;
         options.onUserFinishedChoosing = [
             model,
-            firstEdgeAbsPath = firstEdgeAbsPath,
+            firstEdgeAbsPath,
             firstEdgeAxis,
             secondEdgeAbsPath
-        ](const std::unordered_set<std::string>& choices) -> bool
+        ](const auto& choices) -> bool
         {
-            if (choices.empty())
-            {
+            if (choices.empty()) {
                 log_error("user selections from the 'choose components' layer was empty: this bug should be reported");
                 return false;
             }
-            if (choices.size() > 1)
-            {
+            if (choices.size() > 1) {
                 log_warn("number of user selections from 'choose components' layer was greater than expected: this bug should be reported");
             }
-            const std::string& originPath = *choices.begin();
+            const auto& originPath = *choices.begin();
 
             const auto* firstEdge = FindComponent<Edge>(model->getModel(), firstEdgeAbsPath);
-            if (!firstEdge)
-            {
+            if (not firstEdge) {
                 log_error("the first edge's component path (%s) does not exist in the model", firstEdgeAbsPath.c_str());
                 return false;
             }
 
             const auto* otherEdge = FindComponent<Edge>(model->getModel(), secondEdgeAbsPath);
-            if (!otherEdge)
-            {
+            if (not otherEdge) {
                 log_error("the second edge's component path (%s) does not exist in the model", secondEdgeAbsPath.c_str());
                 return false;
             }
 
             const auto* originPoint = FindComponent<OpenSim::Point>(model->getModel(), originPath);
-            if (!originPoint)
-            {
+            if (not originPoint) {
                 log_error("the origin's component path (%s) does not exist in the model", originPath.c_str());
                 return false;
             }
@@ -300,23 +280,22 @@ namespace
         ChooseComponentsEditorLayerParameters options;
         options.popupHeaderText = "choose other edge";
         options.canChooseItem = IsEdge;
-        options.componentsBeingAssignedTo = {firstEdge.getAbsolutePathString()};
+        options.componentsBeingAssignedTo = {GetAbsolutePathStringName(firstEdge)};
         options.numComponentsUserMustChoose = 1;
         options.onUserFinishedChoosing = [
             visualizerPtr = &visualizer,  // TODO: implement weak_ptr for panel lookup
-                model,
-                firstEdgeAbsPath = firstEdge.getAbsolutePathString(),
-                firstEdgeAxis
-        ](const std::unordered_set<std::string>& choices) -> bool
+            model,
+            firstEdgeAbsPath = GetAbsolutePathStringName(firstEdge),
+            firstEdgeAxis
+        ](const auto& choices) -> bool
         {
             // go into "pick origin" state
 
-            if (choices.empty())
-            {
+            if (choices.empty()) {
                 log_error("user selections from the 'choose components' layer was empty: this bug should be reported");
                 return false;
             }
-            const std::string& otherEdgePath = *choices.begin();
+            const auto& otherEdgePath = *choices.begin();
 
             PushPickOriginForFrameDefinitionLayer(
                 *visualizerPtr,  // TODO: unsafe if not guarded by weak_ptr or similar
@@ -341,14 +320,12 @@ namespace
         CoordinateDirection firstEdgeAxis,
         const std::optional<ModelEditorViewerPanelRightClickEvent>& maybeSourceEvent)
     {
-        if (!maybeSourceEvent)
-        {
+        if (not maybeSourceEvent) {
             return;  // there is no way to figure out which visualizer to push the layer to
         }
 
         auto* const visualizer = editor.getPanelManager()->try_upd_panel_by_name_T<ModelEditorViewerPanel>(maybeSourceEvent->sourcePanelName);
-        if (!visualizer)
-        {
+        if (not visualizer) {
             return;  // the visualizer that the user clicked cannot be found
         }
 
@@ -386,17 +363,15 @@ namespace
             frameAbsPath,
             meshAbsPath,
             jointFrameAbsPath
-        ](const std::unordered_set<std::string>& choices) -> bool
+        ](const auto& choices) -> bool
         {
-            if (choices.empty())
-            {
+            if (choices.empty()) {
                 log_error("user selections from the 'choose components' layer was empty: this bug should be reported");
                 return false;
             }
 
             const auto* const parentFrame = FindComponent<OpenSim::PhysicalFrame>(model->getModel(), *choices.begin());
-            if (!parentFrame)
-            {
+            if (not parentFrame) {
                 log_error("user selection from 'choose components' layer did not select a frame: this shouldn't happen?");
                 return false;
             }
@@ -430,17 +405,15 @@ namespace
             model,
             frameAbsPath,
             meshAbsPath
-        ](const std::unordered_set<std::string>& choices) -> bool
+        ](const auto& choices) -> bool
         {
-            if (choices.empty())
-            {
+            if (choices.empty()) {
                 log_error("user selections from the 'choose components' layer was empty: this bug should be reported");
                 return false;
             }
 
             const auto* const jointFrame = FindComponent<OpenSim::Frame>(model->getModel(), *choices.begin());
-            if (!jointFrame)
-            {
+            if (not jointFrame) {
                 log_error("user selection from 'choose components' layer did not select a frame: this shouldn't happen?");
                 return false;
             }
@@ -472,17 +445,15 @@ namespace
             visualizerPtr = &visualizer,  // TODO: implement weak_ptr for panel lookup
             model,
             frameAbsPath = frame.getAbsolutePath()
-        ](const std::unordered_set<std::string>& choices) -> bool
+        ](const auto& choices) -> bool
         {
-            if (choices.empty())
-            {
+            if (choices.empty()) {
                 log_error("user selections from the 'choose components' layer was empty: this bug should be reported");
                 return false;
             }
 
             const auto* const mesh = FindComponent<OpenSim::Mesh>(model->getModel(), *choices.begin());
-            if (!mesh)
-            {
+            if (not mesh) {
                 log_error("user selection from 'choose components' layer did not select a mesh: this shouldn't happen?");
                 return false;
             }

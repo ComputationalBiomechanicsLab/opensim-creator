@@ -9,6 +9,7 @@
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/os.h>
+#include <oscar/Strings.h>
 
 #include <cstddef>
 #include <cstdint>
@@ -83,7 +84,9 @@ namespace
         DAESceneGraph rv;
 
         std::unordered_map<Mesh, std::string> mesh_to_id;
+        mesh_to_id.reserve(decorations.size());  // upper limit
         std::unordered_map<Color, std::string> color_to_material_id;
+        color_to_material_id.reserve(decorations.size());  // upper limit
         size_t latest_mesh = 0;
         size_t latest_material = 0;
         size_t latest_instance = 0;
@@ -92,6 +95,10 @@ namespace
 
             if (decoration.mesh.topology() != MeshTopology::Triangles) {
                 continue;  // unsupported
+            }
+
+            if (not std::holds_alternative<Color>(decoration.shading)) {
+                continue;  // custom materials are unsupported
             }
 
             auto [mesh_iter, mesh_inserted] = mesh_to_id.try_emplace(decoration.mesh, std::string{});
@@ -103,7 +110,7 @@ namespace
                 rv.geometries.emplace_back(mesh_iter->second, mesh_iter->first);
             }
 
-            auto [material_iter, material_inserted] = color_to_material_id.try_emplace(decoration.color, std::string{});
+            auto [material_iter, material_inserted] = color_to_material_id.try_emplace(std::get<Color>(decoration.shading), std::string{});
             if (material_inserted) {
                 std::stringstream id;
                 id << "material_" << latest_material++;
@@ -403,6 +410,9 @@ namespace
     }
 }
 
+osc::DAEMetadata::DAEMetadata() :
+    DAEMetadata{"unknown_author", strings::library_name()}
+{}
 
 osc::DAEMetadata::DAEMetadata(
     std::string_view author_,

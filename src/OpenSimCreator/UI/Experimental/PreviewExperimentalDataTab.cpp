@@ -140,16 +140,16 @@ namespace
 
         ColumnDescription(
             int offset_,
-            std::string label_,
+            const std::string& label_,
             ColumnDataType dataType_) :
 
             offset{offset_},
-            label{std::move(label_)},
+            label{label_},
             dataType{dataType_}
         {}
 
         int offset;
-        std::string label;
+        StringName label;
         ColumnDataType dataType;
     };
 
@@ -305,18 +305,14 @@ namespace
     // retuns a scene decoration for the floor grid
     SceneDecoration GenerateFloorGrid()
     {
-        Transform t;
-        t.rotation = angle_axis(180_deg, Vec3{-1.0f, 0.0f, 0.0f});
-        t.scale = {50.0f, 50.0f, 1.0f};
-        const Color color = {128.0f/255.0f, 128.0f/255.0f, 128.0f/255.0f, 1.0f};
-
-        return SceneDecoration
-        {
-            App::singleton<SceneCache>(App::resource_loader())->grid_mesh(),
-            t,
-            color,
-            std::string{},
-            SceneDecorationFlags::None
+        return SceneDecoration{
+            .mesh = App::singleton<SceneCache>(App::resource_loader())->grid_mesh(),
+            .transform = {
+                .scale = {50.0f, 50.0f, 1.0f},
+                .rotation = angle_axis(180_deg, Vec3{-1.0f, 0.0f, 0.0f}),
+            },
+            .shading = Color::half_grey(),
+            .flags = SceneDecorationFlag::AnnotationElement,
         };
     }
 
@@ -332,7 +328,7 @@ namespace
         float neck_thickness = 0.025f;
         float head_thickness = 0.05f;
         float percentageHead = 0.15f;
-        std::string label;
+        StringName id;
     };
 
     // writes relevant geometry to output for drawing an arrow between two points in space
@@ -359,33 +355,31 @@ namespace
 
         // emit neck (note: meshes have a height of 2 in mesh-space)
         {
-            Transform t;
-            t.scale = {arrow.neck_thickness, 0.5f * neckLength, arrow.neck_thickness};
-            t.rotation = rotation;
-            t.position = neckMidpoint;
-
             out(SceneDecoration{
-                App::singleton<SceneCache>(App::resource_loader())->cylinder_mesh(),
-                t,
-                arrow.color,
-                arrow.label,
-                osc::SceneDecorationFlags::None,
+                .mesh = App::singleton<SceneCache>(App::resource_loader())->cylinder_mesh(),
+                .transform = {
+                    .scale = {arrow.neck_thickness, 0.5f * neckLength, arrow.neck_thickness},
+                    .rotation = rotation,
+                    .position = neckMidpoint,
+                },
+                .shading = arrow.color,
+                .id = arrow.id,
+                .flags = SceneDecorationFlag::AnnotationElement,
             });
         }
 
         // emit head (note: meshes have a height of 2 in mesh-space)
         {
-            Transform t;
-            t.scale = {arrow.head_thickness, 0.5f * headLength, arrow.head_thickness};
-            t.rotation = rotation;
-            t.position = headMidpoint;
-
             out(SceneDecoration{
-                App::singleton<SceneCache>(App::resource_loader())->cone_mesh(),
-                t,
-                arrow.color,
-                arrow.label,
-                osc::SceneDecorationFlags::None,
+                .mesh = App::singleton<SceneCache>(App::resource_loader())->cone_mesh(),
+                .transform = {
+                    .scale = {arrow.head_thickness, 0.5f * headLength, arrow.head_thickness},
+                    .rotation = rotation,
+                    .position = headMidpoint,
+                },
+                .shading = arrow.color,
+                .id = arrow.id,
+                .flags = SceneDecorationFlag::AnnotationElement,
             });
         }
     }
@@ -415,7 +409,7 @@ namespace
         arrow.p0 = {0.0f, 0.0f, 0.0f};
         arrow.p1 = q * Vec3{0.0f, 1.0f, 0.0f};
         arrow.color = Color::green();
-        arrow.label = columnDescription.label;
+        arrow.id = columnDescription.label;
 
         GenerateDecorations(arrow, out);
     }
@@ -480,7 +474,7 @@ private:
 
         if (static_cast<size_t>(m_ActiveRow) < NumRows(*m_Motion))
         {
-            ui::draw_image(render3DScene(dims), dims);
+            ui::draw_image(render3DScene(dims));
             m_RenderIsMousedOver = ui::is_item_hovered();
         }
         else

@@ -43,13 +43,13 @@ namespace
             {"quad", cache.quad_mesh()},
             {"torus", cache.torus_mesh(0.9f, 0.1f)},
             {"torusknot", TorusKnotGeometry{}},
-            {"box", BoxGeometry{2.0f, 2.0f, 2.0f, 1, 1, 1}},
+            {"box", BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}}},
             {"icosahedron", IcosahedronGeometry{}},
             {"dodecahedron", DodecahedronGeometry{}},
             {"octahedron", OctahedronGeometry{}},
             {"tetrahedron", TetrahedronGeometry{}},
-            {"lathe", LatheGeometry{generate_lathe_points(), 3}},
-            {"ring", RingGeometry{0.5f, 1.0f, 32, 3, Degrees{0}, Degrees{180}}},
+            {"lathe", LatheGeometry{{.points = generate_lathe_points(), .num_segments = 3}}},
+            {"ring", RingGeometry{{.num_phi_segments = 3, .theta_length = Degrees{180}}}},
         };
     }
 }
@@ -94,8 +94,8 @@ private:
 
             viewer_.on_draw({{SceneDecoration{
                 .mesh = all_meshes_[current_mesh_],
-                .color = Color::white(),
-                .flags = draw_wireframe_ ? SceneDecorationFlags::WireframeOverlay : SceneDecorationFlags::None,
+                .shading = Color::white(),
+                .flags = draw_wireframe_ ? SceneDecorationFlag::WireframeOverlayedDefault : SceneDecorationFlag::Default,
             }}}, render_params_);
         }
         ui::end_panel();

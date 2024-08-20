@@ -1,5 +1,7 @@
 #pragma once
 
+#include <oscar/Utils/StringName.h>
+
 #include <cstddef>
 #include <functional>
 #include <string>
@@ -23,11 +25,11 @@ namespace osc
 
         // (maybe) the absolute paths of components that the user has already chosen, or is
         // assigning to (and, therefore, should maybe be highlighted but non-selectable)
-        std::unordered_set<std::string> componentsBeingAssignedTo;
+        std::unordered_set<StringName> componentsBeingAssignedTo;
 
         size_t numComponentsUserMustChoose = 1;
 
-        std::function<bool(const std::unordered_set<std::string>&)> onUserFinishedChoosing = [](const std::unordered_set<std::string>&)
+        std::function<bool(const std::unordered_set<StringName>&)> onUserFinishedChoosing = [](const std::unordered_set<StringName>&)
         {
             return true;
         };

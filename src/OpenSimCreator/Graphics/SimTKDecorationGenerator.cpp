@@ -35,8 +35,7 @@ namespace
     {
         SimTK::Vec3 sf = geom.getScaleFactors();
 
-        for (int i = 0; i < 3; ++i)
-        {
+        for (int i = 0; i < 3; ++i) {
             sf[i] = sf[i] <= 0.0 ? 1.0 : sf[i];
         }
 
@@ -56,19 +55,14 @@ namespace
 
     SceneDecorationFlags GetFlags(const SimTK::DecorativeGeometry& geom)
     {
-        SceneDecorationFlags rv = SceneDecorationFlags::None;
         switch (geom.getRepresentation()) {
-        case SimTK::DecorativeGeometry::Hide:
-            rv |= SceneDecorationFlags::NoDrawNormally;
-            break;
         case SimTK::DecorativeGeometry::DrawWireframe:
-            rv |= SceneDecorationFlags::WireframeOverlay | SceneDecorationFlags::NoDrawNormally;
-            break;
+            return SceneDecorationFlag::OnlyWireframe;
+        case SimTK::DecorativeGeometry::Hide:
+            return SceneDecorationFlag::Hidden;
         default:
-            rv |= SceneDecorationFlags::CastsShadows;
-            break;
+            return SceneDecorationFlag::Default;
         }
-        return rv;
     }
 
     // creates a geometry-to-ground transform for the given geometry
@@ -161,10 +155,10 @@ namespace
             Transform cylinderXform = cylinder_to_line_segment_transform({p1, p2}, thickness);
             cylinderXform.scale *= t.scale;
 
-            m_Consumer({
+            m_Consumer(SceneDecoration{
                 .mesh = m_MeshCache.cylinder_mesh(),
                 .transform = cylinderXform,
-                .color = GetColor(d),
+                .shading = GetColor(d),
                 .flags = GetFlags(d),
             });
         }
@@ -174,10 +168,10 @@ namespace
             Transform t = ToOscTransform(d);
             t.scale *= ToVec3(d.getHalfLengths());
 
-            m_Consumer({
+            m_Consumer(SceneDecoration{
                 .mesh = m_MeshCache.brick_mesh(),
                 .transform = t,
-                .color = GetColor(d),
+                .shading = GetColor(d),
                 .flags = GetFlags(d),
             });
         }
@@ -190,10 +184,10 @@ namespace
             Transform t = ToOscTransform(d);
             t.scale *= Vec3{radius, halfHeight , radius};
 
-            m_Consumer({
+            m_Consumer(SceneDecoration{
                 .mesh = m_MeshCache.cylinder_mesh(),
                 .transform = t,
-                .color = GetColor(d),
+                .shading = GetColor(d),
                 .flags = GetFlags(d),
             });
         }
@@ -205,10 +199,10 @@ namespace
             Transform t = ToOscTransform(d);
             t.scale *= Vec3{radius, radius, 1.0f};
 
-            m_Consumer({
+            m_Consumer(SceneDecoration{
                 .mesh = m_MeshCache.circle_mesh(),
                 .transform = t,
-                .color = GetColor(d),
+                .shading = GetColor(d),
                 .flags = GetFlags(d),
             });
         }
@@ -218,10 +212,10 @@ namespace
             Transform t = ToOscTransform(d);
             t.scale *= m_FixupScaleFactor * static_cast<float>(d.getRadius());
 
-            m_Consumer({
+            m_Consumer(SceneDecoration{
                 .mesh = m_MeshCache.sphere_mesh(),
                 .transform = t,
-                .color = GetColor(d),
+                .shading = GetColor(d),
                 .flags = GetFlags(d),
             });
         }
@@ -231,10 +225,10 @@ namespace
             Transform t = ToOscTransform(d);
             t.scale *= ToVec3(d.getRadii());
 
-            m_Consumer({
+            m_Consumer(SceneDecoration{
                 .mesh = m_MeshCache.sphere_mesh(),
                 .transform = t,
-                .color = GetColor(d),
+                .shading = GetColor(d),
                 .flags = GetFlags(d),
             });
         }
@@ -248,10 +242,10 @@ namespace
                 const float radius = 0.05f * c_FrameAxisLengthRescale * m_FixupScaleFactor;
                 const Transform sphereXform = t.with_scale(radius);
 
-                m_Consumer({
+                m_Consumer(SceneDecoration{
                     .mesh = m_MeshCache.sphere_mesh(),
                     .transform = sphereXform,
-                    .color = Color::white(),
+                    .shading = Color::white(),
                     .flags = GetFlags(d),
                 });
             }
@@ -276,10 +270,10 @@ namespace
                 Color color = {0.0f, 0.0f, 0.0f, 1.0f};
                 color[axis] = 1.0f;
 
-                m_Consumer({
+                m_Consumer(SceneDecoration{
                     .mesh = m_MeshCache.cylinder_mesh(),
                     .transform = legXform,
-                    .color = color,
+                    .shading = color,
                     .flags = flags,
                 });
             }
@@ -307,10 +301,10 @@ namespace
             const std::string id = std::to_string(hash_of(d.getMesh()));
             const auto meshLoaderFunc = [&d]() { return ToOscMesh(d.getMesh()); };
 
-            m_Consumer({
+            m_Consumer(SceneDecoration{
                 .mesh = m_MeshCache.get_mesh(id, meshLoaderFunc),
                 .transform = ToOscTransform(d),
-                .color = GetColor(d),
+                .shading = GetColor(d),
                 .flags = GetFlags(d),
             });
         }
@@ -320,10 +314,10 @@ namespace
             const std::string& path = d.getMeshFile();
             const auto meshLoader = [&d](){ return ToOscMesh(d.getMesh()); };
 
-            m_Consumer({
+            m_Consumer(SceneDecoration{
                 .mesh = m_MeshCache.get_mesh(path, meshLoader),
                 .transform = ToOscTransform(d),
-                .color = GetColor(d),
+                .shading = GetColor(d),
                 .flags = GetFlags(d),
             });
         }
@@ -352,10 +346,10 @@ namespace
             const auto flags = GetFlags(d);
 
             // emit neck cylinder
-            m_Consumer({
+            m_Consumer(SceneDecoration{
                 .mesh = m_MeshCache.cylinder_mesh(),
                 .transform = cylinder_to_line_segment_transform({neckStart, neckEnd}, neck_thickness),
-                .color = color,
+                .shading = color,
                 .flags = flags,
             });
 
@@ -363,7 +357,7 @@ namespace
             m_Consumer({
                 .mesh = m_MeshCache.cone_mesh(),
                 .transform = cylinder_to_line_segment_transform({headStart, headEnd}, head_thickness),
-                .color = color,
+                .shading = color,
                 .flags = flags,
             });
         }
@@ -373,10 +367,10 @@ namespace
             const auto tube_center_radius = static_cast<float>(d.getTorusRadius());
             const auto tube_radius = static_cast<float>(d.getTubeRadius());
 
-            m_Consumer({
+            m_Consumer(SceneDecoration{
                 .mesh = m_MeshCache.torus_mesh(tube_center_radius, tube_radius),
                 .transform = ToOscTransform(d),
-                .color = GetColor(d),
+                .shading = GetColor(d),
                 .flags = GetFlags(d),
             });
         }
@@ -397,10 +391,10 @@ namespace
             Transform coneXform = cylinder_to_line_segment_transform({pos, pos + height*direction}, radius);
             coneXform.scale *= t.scale;
 
-            m_Consumer({
+            m_Consumer(SceneDecoration{
                 .mesh = m_MeshCache.cone_mesh(),
                 .transform = coneXform,
-                .color = GetColor(d),
+                .shading = GetColor(d),
                 .flags = GetFlags(d),
             });
         }

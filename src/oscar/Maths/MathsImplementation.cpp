@@ -96,7 +96,7 @@ namespace
                 midpoint = begin + n/2;
             }
 
-            internal_node_loc = static_cast<ptrdiff_t>(nodes.size());
+            internal_node_loc = std::ssize(nodes);
 
             // push the internal node
             nodes.push_back(BVHNode::node(
@@ -109,13 +109,13 @@ namespace
         bvh_recursive_build(nodes, prims, begin, midpoint-begin);
 
         // the left-hand build allocated nodes for the left hand side contiguously in memory
-        const ptrdiff_t num_lhs_nodes = (static_cast<ptrdiff_t>(nodes.size()) - 1) - internal_node_loc;
+        const ptrdiff_t num_lhs_nodes = (std::ssize(nodes) - 1) - internal_node_loc;
         OSC_ASSERT(num_lhs_nodes > 0);
         nodes[internal_node_loc].set_num_lhs_nodes(num_lhs_nodes);
 
         // build right node
         bvh_recursive_build(nodes, prims, midpoint, (begin + n) - midpoint);
-        OSC_ASSERT(internal_node_loc+num_lhs_nodes < static_cast<ptrdiff_t>(nodes.size()));
+        OSC_ASSERT(internal_node_loc+num_lhs_nodes < std::ssize(nodes));
     }
 
     // returns `true` if something hit (recursively)
@@ -125,10 +125,10 @@ namespace
         std::span<const BVHNode> nodes,
         std::span<const BVHPrim> prims,
         const Line& ray,
-        ptrdiff_t nodeidx,
+        ptrdiff_t node_index,
         const std::function<void(BVHCollision)>& callback)
     {
-        const BVHNode& node = nodes[nodeidx];
+        const BVHNode& node = nodes[node_index];
 
         // check ray-AABB intersection with the BVH node
         const std::optional<RayCollision> maybe_collision = find_collision(ray, node.bounds());
@@ -147,8 +147,8 @@ namespace
         }
 
         // else: we've "hit" an internal node and need to recurse to find the leaf
-        const bool lhs_hit = bvh_for_each_ray_aabb_collisions_recursive(nodes, prims, ray, nodeidx+1, callback);
-        const bool rhs_hit = bvh_for_each_ray_aabb_collisions_recursive(nodes, prims, ray, nodeidx+node.num_lhs_nodes()+1, callback);
+        const bool lhs_hit = bvh_for_each_ray_aabb_collisions_recursive(nodes, prims, ray, node_index+1, callback);
+        const bool rhs_hit = bvh_for_each_ray_aabb_collisions_recursive(nodes, prims, ray, node_index+node.num_lhs_nodes()+1, callback);
         return lhs_hit or rhs_hit;
     }
 
@@ -160,9 +160,9 @@ namespace
         std::span<const TIndex> indices,
         const Line& ray,
         float& closest,
-        ptrdiff_t nodeidx)
+        ptrdiff_t node_index)
     {
-        const BVHNode& node = nodes[nodeidx];
+        const BVHNode& node = nodes[node_index];
         const std::optional<RayCollision> node_collision = find_collision(ray, node.bounds());
 
         if (not node_collision) {
@@ -203,7 +203,7 @@ namespace
             indices,
             ray,
             closest,
-            nodeidx+1
+            node_index+1
         );
         const std::optional<BVHCollision> rhs = bvh_get_closest_ray_indexed_triangle_collision_recursive(
             nodes,
@@ -212,7 +212,7 @@ namespace
             indices,
             ray,
             closest,
-            nodeidx+node.num_lhs_nodes()+1
+            node_index+node.num_lhs_nodes()+1
         );
 
         return rhs ? rhs : lhs;
@@ -245,7 +245,7 @@ namespace
 
         nodes.reserve(2 * prims.size());  // guess
         if (not prims.empty()) {
-            bvh_recursive_build(nodes, prims, 0, static_cast<ptrdiff_t>(prims.size()));
+            bvh_recursive_build(nodes, prims, 0, std::ssize(prims));
         }
 
         prims.shrink_to_fit();
@@ -1360,11 +1360,6 @@ Transform osc::cylinder_to_line_segment_transform(const LineSegment& line_segmen
 Transform osc::y_to_y_cone_to_segment_transform(const LineSegment& line_segment, float radius)
 {
     return cylinder_to_line_segment_transform(line_segment, radius);
-}
-
-Vec3 osc::transform_point(const Mat4& mat, const Vec3& point)
-{
-    return Vec3{mat * Vec4{point, 1.0f}};
 }
 
 Quat osc::to_worldspace_rotation_quat(const EulerAngles& eulers)

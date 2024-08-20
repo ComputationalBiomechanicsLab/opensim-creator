@@ -10,6 +10,8 @@ namespace osc
     //
     // - see `Circle` for the 2D equivalent of this
     struct Disc final {
+        friend bool operator==(const Disc&, const Disc&) = default;
+
         Vec3 origin{};
         Vec3 normal = {0.0f, 1.0f, 0.0f};
         float radius = 1.0f;

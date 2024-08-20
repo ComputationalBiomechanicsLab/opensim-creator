@@ -7,6 +7,7 @@
 #include <oscar/Maths/Constants.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
+#include <oscar/Utils/Conversion.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/EnumHelpers.h>
 #include <oscar/Utils/HashHelpers.h>
@@ -68,8 +69,8 @@ OutputValueExtractor osc::ConcatenatingOutputExtractor::implGetOutputValueExtrac
     if (m_OutputType == OutputExtractorDataType::Vec2) {
         auto extractor = [lhs = m_First.getOutputValueExtractor(comp), rhs = m_Second.getOutputValueExtractor(comp)](const SimulationReport& report)
         {
-            const auto lv = lhs(report).to<float>();
-            const auto rv = rhs(report).to<float>();
+            const auto lv = to<float>(lhs(report));
+            const auto rv = to<float>(lhs(report));
 
             return Variant{Vec2{lv, rv}};
         };
@@ -78,7 +79,7 @@ OutputValueExtractor osc::ConcatenatingOutputExtractor::implGetOutputValueExtrac
     else {
         auto extractor = [lhs = m_First.getOutputValueExtractor(comp), rhs = m_Second.getOutputValueExtractor(comp)](const SimulationReport& report)
         {
-            return Variant{lhs(report).to<std::string>() + rhs(report).to<std::string>()};
+            return Variant{to<std::string>(lhs(report)) + to<std::string>(rhs(report))};
         };
         return OutputValueExtractor{std::move(extractor)};
     }

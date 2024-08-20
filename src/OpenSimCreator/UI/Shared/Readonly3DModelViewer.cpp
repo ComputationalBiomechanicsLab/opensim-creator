@@ -83,7 +83,7 @@ public:
         }
 
         // render scene to texture
-        m_CachedModelRenderer.onDraw(
+        RenderTexture& render = m_CachedModelRenderer.onDraw(
             rs,
             m_Params,
             ui::get_content_region_available(),
@@ -91,10 +91,7 @@ public:
         );
 
         // blit texture as a ui::Image
-        ui::draw_image(
-            m_CachedModelRenderer.updRenderTexture(),
-            ui::get_content_region_available()
-        );
+        ui::draw_image(render);
 
         // update current+retained hittest
         const ui::HittestResult hittest = ui::hittest_last_drawn_item();

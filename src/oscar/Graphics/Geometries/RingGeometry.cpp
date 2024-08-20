@@ -15,13 +15,7 @@
 using namespace osc;
 using namespace osc::literals;
 
-osc::RingGeometry::RingGeometry(
-    float inner_radius,
-    float outer_radius,
-    size_t num_theta_segments,
-    size_t num_phi_segments,
-    Radians theta_start,
-    Radians theta_length)
+osc::RingGeometry::RingGeometry(const Params& p)
 {
     // the implementation of this was initially translated from `three.js`'s
     // `RingGeometry`, which has excellent documentation and source code. The
@@ -29,8 +23,8 @@ osc::RingGeometry::RingGeometry(
     //
     // https://threejs.org/docs/#api/en/geometries/RingGeometry
 
-    num_theta_segments = max(3_uz, num_theta_segments);
-    num_phi_segments = max(1_uz, num_phi_segments);
+    const auto num_theta_segments = max(3_uz, p.num_theta_segments);
+    const auto num_phi_segments = max(1_uz, p.num_phi_segments);
     const auto fnum_theta_segments = static_cast<float>(num_theta_segments);
     const auto fnum_phi_segments = static_cast<float>(num_phi_segments);
 
@@ -39,20 +33,20 @@ osc::RingGeometry::RingGeometry(
     std::vector<Vec3> normals;
     std::vector<Vec2> uvs;
 
-    float radius = inner_radius;
-    float radius_step = (outer_radius - inner_radius)/fnum_phi_segments;
+    float radius = p.inner_radius;
+    float radius_step = (p.outer_radius - p.inner_radius)/fnum_phi_segments;
 
     // generate vertices, normals, and uvs
     for (size_t j = 0; j <= num_phi_segments; ++j) {
         for (size_t i = 0; i <= num_theta_segments; ++i) {
             const auto fi = static_cast<float>(i);
-            const Radians segment = theta_start + (fi/fnum_theta_segments * theta_length);
+            const Radians segment = p.theta_start + (fi/fnum_theta_segments * p.theta_length);
 
             const Vec3& v = vertices.emplace_back(radius * cos(segment), radius * sin(segment), 0.0f);
             normals.emplace_back(0.0f, 0.0f, 1.0f);
             uvs.emplace_back(
-                (v.x/outer_radius + 1.0f) / 2.0f,
-                (v.y/outer_radius + 1.0f) / 2.0f
+                (v.x/p.outer_radius + 1.0f) / 2.0f,
+                (v.y/p.outer_radius + 1.0f) / 2.0f
             );
         }
         radius += radius_step;
@@ -73,8 +67,8 @@ osc::RingGeometry::RingGeometry(
         }
     }
 
-    mesh_.set_vertices(vertices);
-    mesh_.set_normals(normals);
-    mesh_.set_tex_coords(uvs);
-    mesh_.set_indices(indices);
+    set_vertices(vertices);
+    set_normals(normals);
+    set_tex_coords(uvs);
+    set_indices(indices);
 }

@@ -13,6 +13,8 @@ namespace osc { class RenderTexture; }
 
 namespace osc
 {
+    // renders the given `SceneDecoration`s with the given `SceneRendererParams`
+    // to a rasterized `RenderTexture`
     class SceneRenderer final {
     public:
         explicit SceneRenderer(SceneCache&);
@@ -22,8 +24,6 @@ namespace osc
         SceneRenderer& operator=(SceneRenderer&&) noexcept;
         ~SceneRenderer() noexcept;
 
-        Vec2i dimensions() const;
-        AntiAliasingLevel antialiasing_level() const;
         void render(std::span<const SceneDecoration>, const SceneRendererParams&);
         RenderTexture& upd_render_texture();
 

@@ -8,7 +8,7 @@ using namespace osc;
 
 namespace
 {
-    enum class ExampleDenseFlags {
+    enum class ExampleDenseFlag {
         None,
         Flag1 = 1<<0,
         Flag2 = 1<<1,
@@ -19,47 +19,47 @@ namespace
 
 TEST(Flags, can_default_construct)
 {
-    Flags<ExampleDenseFlags> default_constructed;
-    ASSERT_EQ(default_constructed, ExampleDenseFlags::None);
+    Flags<ExampleDenseFlag> default_constructed;
+    ASSERT_EQ(default_constructed, ExampleDenseFlag::None);
 }
 
 TEST(Flags, can_implicitly_convert_from_single_flag)
 {
-    ExampleDenseFlags flag = ExampleDenseFlags::Flag1;
-    Flags<ExampleDenseFlags> flags = flag;
+    ExampleDenseFlag flag = ExampleDenseFlag::Flag1;
+    Flags<ExampleDenseFlag> flags = flag;
 
-    ASSERT_TRUE(flags & ExampleDenseFlags::Flag1);
+    ASSERT_TRUE(flags & ExampleDenseFlag::Flag1);
 }
 
 TEST(Flags, can_initialize_from_initializer_list_of_flags)
 {
-    Flags<ExampleDenseFlags> flags = {ExampleDenseFlags::Flag1, ExampleDenseFlags::Flag2};
-    ASSERT_TRUE(flags & ExampleDenseFlags::Flag1);
-    ASSERT_TRUE(flags & ExampleDenseFlags::Flag2);
-    ASSERT_FALSE(flags & ExampleDenseFlags::Flag3);
+    Flags<ExampleDenseFlag> flags = {ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag2};
+    ASSERT_TRUE(flags & ExampleDenseFlag::Flag1);
+    ASSERT_TRUE(flags & ExampleDenseFlag::Flag2);
+    ASSERT_FALSE(flags & ExampleDenseFlag::Flag3);
 }
 
 TEST(Flags, operator_exclamation_mark_returns_false_if_any_flag_set)
 {
-    ASSERT_FALSE(!Flags<ExampleDenseFlags>{ExampleDenseFlags::Flag1});
-    ASSERT_FALSE(!Flags<ExampleDenseFlags>{ExampleDenseFlags::Flag2});
-    ASSERT_FALSE(!Flags<ExampleDenseFlags>{ExampleDenseFlags::Flag3});
+    ASSERT_FALSE(!Flags<ExampleDenseFlag>{ExampleDenseFlag::Flag1});
+    ASSERT_FALSE(!Flags<ExampleDenseFlag>{ExampleDenseFlag::Flag2});
+    ASSERT_FALSE(!Flags<ExampleDenseFlag>{ExampleDenseFlag::Flag3});
 
-    ASSERT_TRUE(!Flags<ExampleDenseFlags>{ExampleDenseFlags::None});
+    ASSERT_TRUE(!Flags<ExampleDenseFlag>{ExampleDenseFlag::None});
 }
 
 TEST(Flags, operator_bool_returns_true_if_any_flag_set)
 {
-    ASSERT_TRUE(Flags<ExampleDenseFlags>{ExampleDenseFlags::Flag1});
-    ASSERT_TRUE(Flags<ExampleDenseFlags>{ExampleDenseFlags::Flag2});
-    ASSERT_TRUE(Flags<ExampleDenseFlags>{ExampleDenseFlags::Flag3});
+    ASSERT_TRUE(Flags<ExampleDenseFlag>{ExampleDenseFlag::Flag1});
+    ASSERT_TRUE(Flags<ExampleDenseFlag>{ExampleDenseFlag::Flag2});
+    ASSERT_TRUE(Flags<ExampleDenseFlag>{ExampleDenseFlag::Flag3});
 
-    ASSERT_FALSE(Flags<ExampleDenseFlags>{ExampleDenseFlags::None});
+    ASSERT_FALSE(Flags<ExampleDenseFlag>{ExampleDenseFlag::None});
 }
 
 TEST(Flags, operator_amphresand_returns_AND_of_two_flags)
 {
-    using Flags = Flags<ExampleDenseFlags>;
+    using Flags = Flags<ExampleDenseFlag>;
     struct TestCase {
         Flags lhs;
         Flags rhs;
@@ -67,24 +67,24 @@ TEST(Flags, operator_amphresand_returns_AND_of_two_flags)
     };
     const auto testCases = std::to_array<TestCase>({
         {
-            .lhs = Flags{ExampleDenseFlags::Flag1, ExampleDenseFlags::Flag2},
-            .rhs = Flags{ExampleDenseFlags::Flag1},
-            .expected = Flags{ExampleDenseFlags::Flag1},
+            .lhs = Flags{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag2},
+            .rhs = Flags{ExampleDenseFlag::Flag1},
+            .expected = Flags{ExampleDenseFlag::Flag1},
         },
         {
-            .lhs = Flags{ExampleDenseFlags::Flag1, ExampleDenseFlags::Flag2},
-            .rhs = Flags{ExampleDenseFlags::Flag2},
-            .expected = Flags{ExampleDenseFlags::Flag2},
+            .lhs = Flags{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag2},
+            .rhs = Flags{ExampleDenseFlag::Flag2},
+            .expected = Flags{ExampleDenseFlag::Flag2},
         },
         {
-            .lhs = Flags{ExampleDenseFlags::Flag1, ExampleDenseFlags::Flag2},
-            .rhs = Flags{ExampleDenseFlags::Flag3},
-            .expected = Flags{ExampleDenseFlags::None},
+            .lhs = Flags{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag2},
+            .rhs = Flags{ExampleDenseFlag::Flag3},
+            .expected = Flags{ExampleDenseFlag::None},
         },
         {
-            .lhs = Flags{ExampleDenseFlags::Flag1, ExampleDenseFlags::Flag2},
-            .rhs = Flags{ExampleDenseFlags::None},
-            .expected = Flags{ExampleDenseFlags::None},
+            .lhs = Flags{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag2},
+            .rhs = Flags{ExampleDenseFlag::None},
+            .expected = Flags{ExampleDenseFlag::None},
         },
     });
 
@@ -93,9 +93,9 @@ TEST(Flags, operator_amphresand_returns_AND_of_two_flags)
     }
 }
 
-TEST(Flags, operator_or_equals_works_as_expected)
+TEST(Flags, operator_or_works_as_expected)
 {
-    using Flags = Flags<ExampleDenseFlags>;
+    using Flags = Flags<ExampleDenseFlag>;
     struct TestCase {
         Flags lhs;
         Flags rhs;
@@ -103,24 +103,62 @@ TEST(Flags, operator_or_equals_works_as_expected)
     };
     const auto testCases = std::to_array<TestCase>({
         {
-            .lhs = Flags{ExampleDenseFlags::None},
-            .rhs = Flags{ExampleDenseFlags::Flag1},
-            .expected = Flags{ExampleDenseFlags::Flag1},
+            .lhs = Flags{ExampleDenseFlag::None},
+            .rhs = Flags{ExampleDenseFlag::Flag1},
+            .expected = Flags{ExampleDenseFlag::Flag1},
         },
         {
-            .lhs = Flags{ExampleDenseFlags::Flag1, ExampleDenseFlags::Flag2},
-            .rhs = Flags{ExampleDenseFlags::Flag2},
-            .expected = Flags{ExampleDenseFlags::Flag1, ExampleDenseFlags::Flag2},
+            .lhs = Flags{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag2},
+            .rhs = Flags{ExampleDenseFlag::Flag2},
+            .expected = Flags{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag2},
         },
         {
-            .lhs = Flags{ExampleDenseFlags::Flag1, ExampleDenseFlags::Flag2},
-            .rhs = Flags{ExampleDenseFlags::Flag3},
-            .expected = Flags{ExampleDenseFlags::Flag1, ExampleDenseFlags::Flag2, ExampleDenseFlags::Flag3},
+            .lhs = Flags{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag2},
+            .rhs = Flags{ExampleDenseFlag::Flag3},
+            .expected = Flags{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag2, ExampleDenseFlag::Flag3},
         },
         {
-            .lhs = Flags{ExampleDenseFlags::Flag1, ExampleDenseFlags::Flag2},
-            .rhs = Flags{ExampleDenseFlags::None},
-            .expected = Flags{ExampleDenseFlags::Flag1, ExampleDenseFlags::Flag2},
+            .lhs = Flags{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag2},
+            .rhs = Flags{ExampleDenseFlag::None},
+            .expected = Flags{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag2},
+        },
+    });
+
+    for (const auto& testCase : testCases) {
+        const Flags lhs = testCase.lhs;
+        const Flags result = lhs | testCase.rhs;
+        ASSERT_EQ(result, testCase.expected);
+    }
+}
+
+TEST(Flags, operator_or_equals_works_as_expected)
+{
+    using Flags = Flags<ExampleDenseFlag>;
+    struct TestCase {
+        Flags lhs;
+        Flags rhs;
+        Flags expected;
+    };
+    const auto testCases = std::to_array<TestCase>({
+        {
+            .lhs = Flags{ExampleDenseFlag::None},
+            .rhs = Flags{ExampleDenseFlag::Flag1},
+            .expected = Flags{ExampleDenseFlag::Flag1},
+        },
+        {
+            .lhs = Flags{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag2},
+            .rhs = Flags{ExampleDenseFlag::Flag2},
+            .expected = Flags{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag2},
+        },
+        {
+            .lhs = Flags{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag2},
+            .rhs = Flags{ExampleDenseFlag::Flag3},
+            .expected = Flags{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag2, ExampleDenseFlag::Flag3},
+        },
+        {
+            .lhs = Flags{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag2},
+            .rhs = Flags{ExampleDenseFlag::None},
+            .expected = Flags{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag2},
         },
     });
 
@@ -133,21 +171,54 @@ TEST(Flags, operator_or_equals_works_as_expected)
 
 TEST(Flags, lowest_set_returns_none_if_none_are_set)
 {
-    ASSERT_EQ(Flags<ExampleDenseFlags>{}.lowest_set(), ExampleDenseFlags::None);
-    ASSERT_EQ(Flags<ExampleDenseFlags>{ExampleDenseFlags::None}.lowest_set(), ExampleDenseFlags::None);
+    ASSERT_EQ(Flags<ExampleDenseFlag>{}.lowest_set(), ExampleDenseFlag::None);
+    ASSERT_EQ(Flags<ExampleDenseFlag>{ExampleDenseFlag::None}.lowest_set(), ExampleDenseFlag::None);
 }
 
 TEST(Flags, lowest_set_returns_lowest_flag_for_non_None_values)
 {
-    ASSERT_EQ(Flags<ExampleDenseFlags>{ExampleDenseFlags::Flag1}.lowest_set(), ExampleDenseFlags::Flag1);
-    ASSERT_EQ(Flags<ExampleDenseFlags>{ExampleDenseFlags::Flag2}.lowest_set(), ExampleDenseFlags::Flag2);
-    ASSERT_EQ(Flags<ExampleDenseFlags>{ExampleDenseFlags::Flag3}.lowest_set(), ExampleDenseFlags::Flag3);
+    ASSERT_EQ(Flags<ExampleDenseFlag>{ExampleDenseFlag::Flag1}.lowest_set(), ExampleDenseFlag::Flag1);
+    ASSERT_EQ(Flags<ExampleDenseFlag>{ExampleDenseFlag::Flag2}.lowest_set(), ExampleDenseFlag::Flag2);
+    ASSERT_EQ(Flags<ExampleDenseFlag>{ExampleDenseFlag::Flag3}.lowest_set(), ExampleDenseFlag::Flag3);
     {
-        const auto flags = Flags<ExampleDenseFlags>{ExampleDenseFlags::Flag2, ExampleDenseFlags::Flag3};
-        ASSERT_EQ(flags.lowest_set(), ExampleDenseFlags::Flag2);
+        const auto flags = Flags<ExampleDenseFlag>{ExampleDenseFlag::Flag2, ExampleDenseFlag::Flag3};
+        ASSERT_EQ(flags.lowest_set(), ExampleDenseFlag::Flag2);
     }
     {
-        const auto flags = Flags<ExampleDenseFlags>{ExampleDenseFlags::Flag1, ExampleDenseFlags::Flag3};
-        ASSERT_EQ(flags.lowest_set(), ExampleDenseFlags::Flag1);
+        const auto flags = Flags<ExampleDenseFlag>{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag3};
+        ASSERT_EQ(flags.lowest_set(), ExampleDenseFlag::Flag1);
     }
+}
+
+TEST(Flags, with_returns_new_enum_with_original_flags_plus_provided_flags_set)
+{
+    const Flags<ExampleDenseFlag> flags{ExampleDenseFlag::Flag1};
+    const Flags<ExampleDenseFlag> flags_after = flags.with(ExampleDenseFlag::Flag2);
+    const Flags<ExampleDenseFlag> expected{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag2};
+
+    ASSERT_EQ(flags_after, expected);
+}
+
+TEST(Flags, with_doesnt_unset_already_set_flag)
+{
+    const Flags<ExampleDenseFlag> flags{ExampleDenseFlag::Flag1};
+    const Flags<ExampleDenseFlag> flags_after = flags.with(ExampleDenseFlag::Flag1);
+
+    ASSERT_EQ(flags, flags_after);
+}
+
+TEST(Flags, without_returns_new_enum_with_original_flags_minus_provided_flags_set)
+{
+    const Flags<ExampleDenseFlag> flags{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag3};
+    const Flags<ExampleDenseFlag> flags_after = flags.without(ExampleDenseFlag::Flag3);
+    const Flags<ExampleDenseFlag> expected{ExampleDenseFlag::Flag1};
+
+    ASSERT_EQ(flags_after, expected);
+}
+
+TEST(Flags, without_doesnt_set_already_unset_flag)
+{
+    const Flags<ExampleDenseFlag> flags{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag3};
+    const Flags<ExampleDenseFlag> flags_after = flags.without(ExampleDenseFlag::Flag2);
+    ASSERT_EQ(flags, flags_after);
 }

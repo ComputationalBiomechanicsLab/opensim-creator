@@ -66,8 +66,7 @@ namespace
         MouseCapturingCamera rv;
         rv.set_position({0.0f, 0.0f, 3.0f});
         rv.set_vertical_fov(45_deg);
-        rv.set_near_clipping_plane(0.1f);
-        rv.set_far_clipping_plane(100.0f);
+        rv.set_clipping_planes({0.1f, 100.0f});
         rv.set_background_color({0.1f, 0.1f, 0.1f, 1.0f});
         return rv;
     }
@@ -83,9 +82,9 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/Gamma.vert"),
             loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/Gamma.frag"),
         }};
-        rv.set_texture("uFloorTexture", wood_texture);
-        rv.set_vec3_array("uLightPositions", c_light_positions);
-        rv.set_color_array("uLightColors", c_light_colors);
+        rv.set("uFloorTexture", wood_texture);
+        rv.set_array("uLightPositions", c_light_positions);
+        rv.set_array("uLightColors", c_light_colors);
         return rv;
     }
 }
@@ -126,7 +125,7 @@ private:
         camera_.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
 
         // render scene
-        material_.set_vec3("uViewPos", camera_.position());
+        material_.set("uViewPos", camera_.position());
         graphics::draw(plane_mesh_, identity<Transform>(), material_, camera_);
         camera_.render_to_screen();
     }

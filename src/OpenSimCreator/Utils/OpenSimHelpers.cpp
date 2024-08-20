@@ -21,6 +21,7 @@
 #include <OpenSim/Simulation/Model/ContactHalfSpace.h>
 #include <OpenSim/Simulation/Model/ControllerSet.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
+#include <OpenSim/Simulation/Model/ExternalForce.h>
 #include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
 #include <OpenSim/Simulation/Model/Frame.h>
@@ -141,22 +142,6 @@ namespace
                 GetAnyComponentsConnectedViaSocketTo(root, *connectee).empty();  // care: the child may, itself, have things connected to it
         });
         return allConnectees;
-    }
-
-    // (a memory-safe stdlib version of OpenSim::GeometryPath::getPointForceDirections)
-    std::vector<std::unique_ptr<OpenSim::PointForceDirection>> GetPointForceDirections(
-        const OpenSim::GeometryPath& path,
-        const SimTK::State& st)
-    {
-        OpenSim::Array<OpenSim::PointForceDirection*> pfds;
-        path.getPointForceDirections(st, &pfds);
-
-        std::vector<std::unique_ptr<OpenSim::PointForceDirection>> rv;
-        rv.reserve(size(pfds));
-        for (size_t i = 0; i < size(pfds); ++i) {
-            rv.emplace_back(At(pfds, i));
-        }
-        return rv;
     }
 
     // returns the index of the "effective" origin point of a muscle PFD sequence
@@ -636,6 +621,13 @@ const OpenSim::Component* osc::FindComponent(
     const std::string& absPath)
 {
     return FindComponent(model, OpenSim::ComponentPath{absPath});
+}
+
+const OpenSim::Component* osc::FindComponent(
+    const OpenSim::Model& model,
+    const StringName& absPath)
+{
+    return FindComponent(model, std::string{absPath});
 }
 
 OpenSim::Component* osc::FindComponentMut(
@@ -1209,6 +1201,11 @@ std::string osc::GetAbsolutePathString(const OpenSim::Component& c)
     return rv;
 }
 
+StringName osc::GetAbsolutePathStringName(const OpenSim::Component& c)
+{
+    return StringName{GetAbsolutePathString(c)};
+}
+
 OpenSim::ComponentPath osc::GetAbsolutePath(const OpenSim::Component& c)
 {
     return OpenSim::ComponentPath{GetAbsolutePathString(c)};
@@ -1240,6 +1237,21 @@ std::optional<LinesOfAction> osc::GetAnatomicalLinesOfActionInGround(
     LinesOfActionConfig config;
     config.useEffectiveInsertion = false;
     return TryGetLinesOfAction(muscle, state, config);
+}
+
+std::vector<std::unique_ptr<OpenSim::PointForceDirection>> osc::GetPointForceDirections(
+    const OpenSim::GeometryPath& path,
+    const SimTK::State& st)
+{
+    OpenSim::Array<OpenSim::PointForceDirection*> pfds;
+    path.getPointForceDirections(st, &pfds);
+
+    std::vector<std::unique_ptr<OpenSim::PointForceDirection>> rv;
+    rv.reserve(size(pfds));
+    for (size_t i = 0; i < size(pfds); ++i) {
+        rv.emplace_back(At(pfds, i));
+    }
+    return rv;
 }
 
 std::vector<GeometryPathPoint> osc::GetAllPathPoints(const OpenSim::GeometryPath& gp, const SimTK::State& st)
@@ -1418,6 +1430,24 @@ std::optional<ForcePoint> osc::TryGetContactForceInGround(
     }
 
     return ForcePoint{forceTorque.force, *maybePosition};
+}
+
+const OpenSim::PhysicalFrame& osc::GetFrameUsingExternalForceLookupHeuristic(
+    const OpenSim::Model& model,
+    const std::string& bodyNameOrPath)
+{
+    // this tries to match the implementation that's hidden inside
+    // of `ExternalForce.cpp` from OpenSim
+
+    if (const auto* direct = FindComponent<OpenSim::PhysicalFrame>(model, bodyNameOrPath)) {
+        return *direct;
+    }
+    else if (const auto* shimmed = FindComponent<OpenSim::PhysicalFrame>(model, "./bodyset/" + bodyNameOrPath)) {
+        return *shimmed;
+    }
+    else {
+        return model.getGround();
+    }
 }
 
 bool osc::CanExtractPointInfoFrom(const OpenSim::Component& c, const SimTK::State& st)

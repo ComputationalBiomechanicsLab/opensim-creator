@@ -33,7 +33,7 @@ namespace osc { class VertexFormat; }
 
 namespace osc
 {
-    class Mesh final {
+    class Mesh {
     public:
         Mesh();
 
@@ -107,7 +107,7 @@ namespace osc
         {
             set_indices(MeshIndicesView{il});
         }
-        void for_each_indexed_vert(const std::function<void(Vec3)>&) const;
+        void for_each_indexed_vertex(const std::function<void(Vec3)>&) const;
         void for_each_indexed_triangle(const std::function<void(Triangle)>&) const;
         Triangle get_triangle_at(size_t first_index_offset) const;
         std::vector<Vec3> indexed_vertices() const;
@@ -132,11 +132,12 @@ namespace osc
         void push_submesh_descriptor(const SubMeshDescriptor&);
         const SubMeshDescriptor& submesh_descriptor_at(size_t) const;
         template<std::ranges::input_range Range>
-        void set_submesh_descriptors(const Range& range)
+        requires std::constructible_from<SubMeshDescriptor, std::ranges::range_value_t<Range>>
+        void set_submesh_descriptors(const Range& submesh_descriptors)
         {
             clear_submesh_descriptors();
-            for (const auto& desc : range) {
-                push_submesh_descriptor(desc);
+            for (const auto& submesh_descriptor : submesh_descriptors) {
+                push_submesh_descriptor(submesh_descriptor);
             }
         }
         void clear_submesh_descriptors();

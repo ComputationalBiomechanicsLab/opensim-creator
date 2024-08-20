@@ -46,8 +46,7 @@ namespace
         MouseCapturingCamera rv;
         rv.set_position({0.0f, 0.0f, 3.0f});
         rv.set_vertical_fov(45_deg);
-        rv.set_near_clipping_plane(0.1f);
-        rv.set_far_clipping_plane(100.0f);
+        rv.set_clipping_planes({0.1f, 100.0f});
         rv.set_background_color({0.1f, 0.1f, 0.1f, 1.0f});
         return rv;
     }
@@ -58,13 +57,13 @@ namespace
         const Texture2D diffuse_map = load_texture2D_from_image(
             loader.open("oscar_learnopengl/textures/container2.png"),
             ColorSpace::sRGB,
-            ImageLoadingFlags::FlipVertically
+            ImageLoadingFlag::FlipVertically
         );
 
         const Texture2D specular_map = load_texture2D_from_image(
             loader.open("oscar_learnopengl/textures/container2_specular.png"),
             ColorSpace::sRGB,
-            ImageLoadingFlags::FlipVertically
+            ImageLoadingFlag::FlipVertically
         );
 
         Material rv{Shader{
@@ -72,30 +71,30 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/Lighting/MultipleLights.frag"),
         }};
 
-        rv.set_texture("uMaterialDiffuse", diffuse_map);
-        rv.set_texture("uMaterialSpecular", specular_map);
-        rv.set_vec3("uDirLightDirection", {-0.2f, -1.0f, -0.3f});
-        rv.set_float("uDirLightAmbient", 0.01f);
-        rv.set_float("uDirLightDiffuse", 0.2f);
-        rv.set_float("uDirLightSpecular", 0.4f);
+        rv.set("uMaterialDiffuse", diffuse_map);
+        rv.set("uMaterialSpecular", specular_map);
+        rv.set("uDirLightDirection", Vec3{-0.2f, -1.0f, -0.3f});
+        rv.set("uDirLightAmbient", 0.01f);
+        rv.set("uDirLightDiffuse", 0.2f);
+        rv.set("uDirLightSpecular", 0.4f);
 
-        rv.set_float("uSpotLightAmbient", 0.0f);
-        rv.set_float("uSpotLightDiffuse", 1.0f);
-        rv.set_float("uSpotLightSpecular", 0.75f);
+        rv.set("uSpotLightAmbient", 0.0f);
+        rv.set("uSpotLightDiffuse", 1.0f);
+        rv.set("uSpotLightSpecular", 0.75f);
 
-        rv.set_float("uSpotLightConstant", 1.0f);
-        rv.set_float("uSpotLightLinear", 0.09f);
-        rv.set_float("uSpotLightQuadratic", 0.032f);
-        rv.set_float("uSpotLightCutoff", cos(45_deg));
-        rv.set_float("uSpotLightOuterCutoff", cos(15_deg));
+        rv.set("uSpotLightConstant", 1.0f);
+        rv.set("uSpotLightLinear", 0.09f);
+        rv.set("uSpotLightQuadratic", 0.032f);
+        rv.set("uSpotLightCutoff", cos(45_deg));
+        rv.set("uSpotLightOuterCutoff", cos(15_deg));
 
-        rv.set_vec3_array("uPointLightPos", c_point_light_positions);
-        rv.set_float_array("uPointLightConstant", c_point_light_constants);
-        rv.set_float_array("uPointLightLinear", c_point_light_linears);
-        rv.set_float_array("uPointLightQuadratic", c_point_light_quadratics);
-        rv.set_float_array("uPointLightAmbient", c_point_light_ambients);
-        rv.set_float_array("uPointLightDiffuse", c_point_light_diffuses);
-        rv.set_float_array("uPointLightSpecular", c_point_light_speculars);
+        rv.set_array("uPointLightPos", c_point_light_positions);
+        rv.set_array("uPointLightConstant", c_point_light_constants);
+        rv.set_array("uPointLightLinear", c_point_light_linears);
+        rv.set_array("uPointLightQuadratic", c_point_light_quadratics);
+        rv.set_array("uPointLightAmbient", c_point_light_ambients);
+        rv.set_array("uPointLightDiffuse", c_point_light_diffuses);
+        rv.set_array("uPointLightSpecular", c_point_light_speculars);
 
         return rv;
     }
@@ -106,7 +105,7 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/LightCube.vert"),
             loader.slurp("oscar_learnopengl/shaders/LightCube.frag"),
         }};
-        rv.set_color("uLightColor", Color::white());
+        rv.set("uLightColor", Color::white());
         return rv;
     }
 }
@@ -144,10 +143,10 @@ private:
         // clear screen and ensure camera has correct pixel rect
 
         // setup per-frame material vals
-        multiple_lights_material_.set_vec3("uViewPos", camera_.position());
-        multiple_lights_material_.set_float("uMaterialShininess", material_shininess_);
-        multiple_lights_material_.set_vec3("uSpotLightPosition", camera_.position());
-        multiple_lights_material_.set_vec3("uSpotLightDirection", camera_.direction());
+        multiple_lights_material_.set("uViewPos", camera_.position());
+        multiple_lights_material_.set("uMaterialShininess", material_shininess_);
+        multiple_lights_material_.set("uSpotLightPosition", camera_.position());
+        multiple_lights_material_.set("uSpotLightDirection", camera_.direction());
 
         // render containers
         const UnitVec3 axis{1.0f, 0.3f, 0.5f};

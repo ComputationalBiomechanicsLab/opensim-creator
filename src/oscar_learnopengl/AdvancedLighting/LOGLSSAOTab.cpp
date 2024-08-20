@@ -22,8 +22,7 @@ namespace
         MouseCapturingCamera rv;
         rv.set_position({0.0f, 0.0f, 5.0f});
         rv.set_vertical_fov(45_deg);
-        rv.set_near_clipping_plane(0.1f);
-        rv.set_far_clipping_plane(50.0f);
+        rv.set_clipping_planes({0.1f, 50.0f});
         rv.set_background_color(Color::black());
         return rv;
     }
@@ -181,7 +180,7 @@ private:
     {
         // render cube
         {
-            gbuffer_state_.material.set_bool("uInvertedNormals", true);
+            gbuffer_state_.material.set("uInvertedNormals", true);
             graphics::draw(
                 cube_mesh_,
                 {.scale = Vec3{7.5f}, .position = {0.0f, 7.0f, 0.0f}},
@@ -192,7 +191,7 @@ private:
 
         // render sphere
         {
-            gbuffer_state_.material.set_bool("uInvertedNormals", false);
+            gbuffer_state_.material.set("uInvertedNormals", false);
             graphics::draw(
                 sphere_mesh_,
                 {.position = {0.0f, 0.5f, 0.0f}},
@@ -206,14 +205,14 @@ private:
 
     void render_ssao_pass(const Vec2& viewport_dimensions)
     {
-        ssao_state_.material.set_render_texture("uPositionTex", gbuffer_state_.position);
-        ssao_state_.material.set_render_texture("uNormalTex", gbuffer_state_.normal);
-        ssao_state_.material.set_texture("uNoiseTex", noise_texture_);
-        ssao_state_.material.set_vec3_array("uSamples", sample_kernel_);
-        ssao_state_.material.set_vec2("uNoiseScale", viewport_dimensions / Vec2{noise_texture_.dimensions()});
-        ssao_state_.material.set_int("uKernelSize", static_cast<int32_t>(sample_kernel_.size()));
-        ssao_state_.material.set_float("uRadius", 0.5f);
-        ssao_state_.material.set_float("uBias", 0.125f);
+        ssao_state_.material.set("uPositionTex", gbuffer_state_.position);
+        ssao_state_.material.set("uNormalTex", gbuffer_state_.normal);
+        ssao_state_.material.set("uNoiseTex", noise_texture_);
+        ssao_state_.material.set_array("uSamples", sample_kernel_);
+        ssao_state_.material.set("uNoiseScale", viewport_dimensions / Vec2{noise_texture_.dimensions()});
+        ssao_state_.material.set("uKernelSize", static_cast<int32_t>(sample_kernel_.size()));
+        ssao_state_.material.set("uRadius", 0.5f);
+        ssao_state_.material.set("uBias", 0.125f);
 
         graphics::draw(quad_mesh_, identity<Transform>(), ssao_state_.material, camera_);
         camera_.render_to(ssao_state_.output_texture);
@@ -224,7 +223,7 @@ private:
 
     void render_blur_pass()
     {
-        blur_state_.material.set_render_texture("uSSAOTex", ssao_state_.output_texture);
+        blur_state_.material.set("uSSAOTex", ssao_state_.output_texture);
 
         graphics::draw(quad_mesh_, identity<Transform>(), blur_state_.material, camera_);
         camera_.render_to(blur_state_.output_texture);
@@ -234,14 +233,14 @@ private:
 
     void render_lighting_pass()
     {
-        lighting_state_.material.set_render_texture("uPositionTex", gbuffer_state_.position);
-        lighting_state_.material.set_render_texture("uNormalTex", gbuffer_state_.normal);
-        lighting_state_.material.set_render_texture("uAlbedoTex", gbuffer_state_.albedo);
-        lighting_state_.material.set_render_texture("uSSAOTex", ssao_state_.output_texture);
-        lighting_state_.material.set_vec3("uLightPosition", light_position_);
-        lighting_state_.material.set_color("uLightColor", light_color_);
-        lighting_state_.material.set_float("uLightLinear", 0.09f);
-        lighting_state_.material.set_float("uLightQuadratic", 0.032f);
+        lighting_state_.material.set("uPositionTex", gbuffer_state_.position);
+        lighting_state_.material.set("uNormalTex", gbuffer_state_.normal);
+        lighting_state_.material.set("uAlbedoTex", gbuffer_state_.albedo);
+        lighting_state_.material.set("uSSAOTex", ssao_state_.output_texture);
+        lighting_state_.material.set("uLightPosition", light_position_);
+        lighting_state_.material.set("uLightColor", light_color_);
+        lighting_state_.material.set("uLightLinear", 0.09f);
+        lighting_state_.material.set("uLightQuadratic", 0.032f);
 
         graphics::draw(quad_mesh_, identity<Transform>(), lighting_state_.material, camera_);
         camera_.render_to(lighting_state_.output_texture);
@@ -280,9 +279,9 @@ private:
 
     MouseCapturingCamera camera_ = create_camera_that_matches_learnopengl();
 
-    Mesh sphere_mesh_ = SphereGeometry{1.0f, 32, 32};
-    Mesh cube_mesh_ = BoxGeometry{2.0f, 2.0f, 2.0f};
-    Mesh quad_mesh_ = PlaneGeometry{2.0f, 2.0f};
+    Mesh sphere_mesh_ = SphereGeometry{{.num_width_segments = 32, .num_height_segments = 32}};
+    Mesh cube_mesh_ = BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}};
+    Mesh quad_mesh_ = PlaneGeometry{{.width = 2.0f, .height = 2.0f}};
 
     // rendering state
     struct GBufferRenderingState final {
@@ -320,12 +319,12 @@ private:
 
         void reformat(Vec2 dimensions, AntiAliasingLevel aa_level)
         {
-            RenderTextureDescriptor descriptor{dimensions};
-            descriptor.set_anti_aliasing_level(aa_level);
-
             for (RenderTexture* texture_ptr : {&albedo, &normal, &position}) {
-                descriptor.set_color_format(texture_ptr->color_format());
-                texture_ptr->reformat(descriptor);
+                texture_ptr->reformat({
+                    .dimensions = dimensions,
+                    .anti_aliasing_level = aa_level,
+                    .color_format = texture_ptr->color_format(),
+                });
             }
         }
     } gbuffer_state_;

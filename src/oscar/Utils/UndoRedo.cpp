@@ -41,20 +41,15 @@ size_t osc::UndoRedoBase::num_undo_entries() const
     return undo_.size();
 }
 
-ptrdiff_t osc::UndoRedoBase::num_undo_entriesi() const
+const osc::UndoRedoEntryBase& osc::UndoRedoBase::undo_entry_at(size_t pos) const
 {
-    return static_cast<ptrdiff_t>(num_undo_entries());
-}
-
-const osc::UndoRedoEntryBase& osc::UndoRedoBase::undo_entry_at(ptrdiff_t pos) const
-{
-    OSC_ASSERT_ALWAYS(pos < std::ssize(undo_));
+    OSC_ASSERT_ALWAYS(pos < undo_.size());
     return undo_.rbegin()[pos];
 }
 
-void osc::UndoRedoBase::undo_to(ptrdiff_t pos)
+void osc::UndoRedoBase::undo_to(size_t pos)
 {
-    if (pos >= std::ssize(undo_)) {
+    if (pos >= undo_.size()) {
         return;  // out of bounds: ignore request
     }
 
@@ -88,14 +83,9 @@ size_t osc::UndoRedoBase::num_redo_entries() const
     return redo_.size();
 }
 
-ptrdiff_t osc::UndoRedoBase::num_redo_entriesi() const
+const UndoRedoEntryBase& osc::UndoRedoBase::redo_entry_at(size_t pos) const
 {
-    return static_cast<ptrdiff_t>(num_redo_entries());
-}
-
-const UndoRedoEntryBase& osc::UndoRedoBase::redo_entry_at(ptrdiff_t pos) const
-{
-    OSC_ASSERT_ALWAYS(pos < std::ssize(redo_));
+    OSC_ASSERT_ALWAYS(pos < redo_.size());
     return redo_.rbegin()[pos];
 }
 
@@ -104,9 +94,9 @@ bool osc::UndoRedoBase::can_redo() const
     return not redo_.empty();
 }
 
-void osc::UndoRedoBase::redo_to(ptrdiff_t pos)
+void osc::UndoRedoBase::redo_to(size_t pos)
 {
-    if (pos >= std::ssize(redo_)) {
+    if (pos >= redo_.size()) {
         return;  // out of bounds: ignore request
     }
 

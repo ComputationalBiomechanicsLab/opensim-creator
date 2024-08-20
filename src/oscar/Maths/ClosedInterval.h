@@ -13,6 +13,8 @@ namespace osc
     requires std::equality_comparable<T> and std::totally_ordered<T>
     struct ClosedInterval final {
 
+        constexpr ClosedInterval() = default;
+
         constexpr ClosedInterval(T lower_, T upper_) :
             lower{std::move(lower_)},
             upper{std::move(upper_)}
@@ -69,8 +71,8 @@ namespace osc
             return length() / T{2};
         }
 
-        T lower;
-        T upper;
+        T lower{};
+        T upper{};
     };
 
     // returns a `ClosedInterval<T>` with `lower == interval.lower - abs_amount` and

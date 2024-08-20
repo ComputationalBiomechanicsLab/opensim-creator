@@ -154,18 +154,14 @@ namespace osc::mi
 
         SceneDecorationFlags computeFlags(const MIObject& el) const
         {
-            if (isSelected(el))
-            {
-                return SceneDecorationFlags::IsSelected;
+            SceneDecorationFlags rv = SceneDecorationFlag::None;
+            if (isSelected(el)) {
+                rv |= SceneDecorationFlag::RimHighlight0;
             }
-            else if (isHovered(el))
-            {
-                return SceneDecorationFlags::IsHovered;
+            if (isHovered(el)) {
+                rv |= SceneDecorationFlag::RimHighlight1;
             }
-            else
-            {
-                return SceneDecorationFlags::None;
-            }
+            return rv;
         }
 
         // returns a list of 3D drawable scene objects for this layer
@@ -192,9 +188,10 @@ namespace osc::mi
                     DrawableThing& d = m_DrawablesBuffer[i];
                     d.flags = flags;
 
-                    if (!isSelectableEl)
-                    {
-                        d.color.a = fadedAlpha;
+                    if (not isSelectableEl) {
+                        if (std::holds_alternative<Color>(d.shading)) {
+                            std::get<Color>(d.shading).a = fadedAlpha;   // fade non-selectable colored scene elements
+                        }
                         d.id = MIIDs::Empty();
                         d.groupId = MIIDs::Empty();
                     }

@@ -3,6 +3,7 @@
 #include <oscar/Graphics/Material.h>
 #include <oscar/Graphics/Shader.h>
 #include <oscar/Utils/CStringView.h>
+#include <oscar/Utils/StringName.h>
 
 using namespace osc;
 
@@ -33,10 +34,45 @@ void main()
     FragColor = uDiffuseColor;
 }
 )";
+
+    const StringName& color_property_name()
+    {
+        static const StringName s_color_property_name{"uDiffuseColor"};
+        return s_color_property_name;
+    }
+}
+
+osc::MeshBasicMaterial::PropertyBlock::PropertyBlock(const Color& color)
+{
+    set_color(color);
+}
+
+std::optional<Color> osc::MeshBasicMaterial::PropertyBlock::color() const
+{
+    return get<Color>(color_property_name());
+}
+
+void osc::MeshBasicMaterial::PropertyBlock::set_color(const Color& c)
+{
+    set(color_property_name(), c);
+}
+
+osc::MeshBasicMaterial::MeshBasicMaterial(const Params& p) :
+    Material{Shader{c_vertex_shader_src, c_fragment_shader_src}}
+{
+    set_color(p.color);
 }
 
 osc::MeshBasicMaterial::MeshBasicMaterial(const Color& color) :
-    material_{Shader{c_vertex_shader_src, c_fragment_shader_src}}
+    MeshBasicMaterial{Params{.color = color}}
+{}
+
+Color osc::MeshBasicMaterial::color() const
 {
-    set_color(color);
+    return *get<Color>(color_property_name());
+}
+
+void osc::MeshBasicMaterial::set_color(const Color& color)
+{
+    set(color_property_name(), color);
 }

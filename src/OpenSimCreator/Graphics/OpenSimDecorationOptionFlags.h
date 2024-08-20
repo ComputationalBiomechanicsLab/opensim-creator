@@ -21,7 +21,9 @@ namespace osc
         ShouldShowContactForces                             = 1<<7,
         ShouldShowForceLinearComponent                      = 1<<8,
         ShouldShowForceAngularComponent                     = 1<<9,
-        NUM_FLAGS                                           =   10,
+        ShouldShowPointForces                               = 1<<10,
+        ShouldShowPointTorques                              = 1<<11,
+        NUM_FLAGS                                           = 12,
 
         Default = ShouldShowPointToPointSprings,
     };

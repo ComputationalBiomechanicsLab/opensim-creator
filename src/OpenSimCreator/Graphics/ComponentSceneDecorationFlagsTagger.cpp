@@ -19,37 +19,27 @@ void osc::ComponentSceneDecorationFlagsTagger::operator()(
 {
     if (&component != m_LastComponent)
     {
-        m_Flags = computeFlags(component);
+        m_LastFlags = computeFlags(component);
         m_LastComponent = &component;
     }
 
-    decoration.flags |= m_Flags;
+    decoration.flags |= m_LastFlags;
 }
 
 SceneDecorationFlags osc::ComponentSceneDecorationFlagsTagger::computeFlags(
     const OpenSim::Component& component) const
 {
-    SceneDecorationFlags rv = SceneDecorationFlags::None;
+    SceneDecorationFlags rv = SceneDecorationFlag::Default;
 
-    if (&component == m_Selected)
-    {
-        rv |= SceneDecorationFlags::IsSelected;
-    }
-
-    if (&component == m_Hovered)
-    {
-        rv |= SceneDecorationFlags::IsHovered;
-    }
-
-    for (const OpenSim::Component* p = GetOwner(component); p; p = GetOwner(*p))
-    {
-        if (p == m_Selected)
-        {
-            rv |= SceneDecorationFlags::IsChildOfSelected;
+    // iterate through this component and all of its owners, because
+    // selecting/highlighting a parent implies that this component
+    // should also be highlighted
+    for (const OpenSim::Component* p = &component; p; p = GetOwner(*p)) {
+        if (p == m_Selected) {
+            rv |= SceneDecorationFlag::RimHighlight0;
         }
-        if (p == m_Hovered)
-        {
-            rv |= SceneDecorationFlags::IsChildOfHovered;
+        if (p == m_Hovered) {
+            rv |= SceneDecorationFlag::RimHighlight1;
         }
     }
 

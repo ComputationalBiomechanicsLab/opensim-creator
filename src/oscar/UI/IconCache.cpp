@@ -4,6 +4,9 @@
 #include <oscar/Platform/ResourceLoader.h>
 #include <oscar/UI/Icon.h>
 #include <oscar/Utils/Algorithms.h>
+#include <oscar/Utils/TransparentStringHasher.h>
+
+#include <ankerl/unordered_dense.h>
 
 #include <memory>
 #include <stdexcept>
@@ -41,8 +44,8 @@ public:
 
     const Icon& find_or_throw(std::string_view icon_name) const
     {
-        if (const auto* icon = lookup_or_nullptr(icons_by_name_, std::string{icon_name})) {
-            return *icon;
+        if (const auto it = icons_by_name_.find(icon_name); it != icons_by_name_.end()) {
+            return it->second;
         }
         else {
             std::stringstream ss;
@@ -52,7 +55,7 @@ public:
     }
 
 private:
-    std::unordered_map<std::string, Icon> icons_by_name_;
+    ankerl::unordered_dense::map<std::string, Icon, TransparentStringHasher, std::equal_to<>> icons_by_name_;
 };
 
 

@@ -4,48 +4,49 @@
 #include <oscar/Graphics/Material.h>
 #include <oscar/Maths/Vec3.h>
 
-#include <string_view>
-
 namespace osc
 {
+    struct MeshPhongMaterialParams final {
+        friend bool operator==(const MeshPhongMaterialParams&, const MeshPhongMaterialParams&) = default;
+
+        Vec3 light_position = {1.0f, 1.0f, 1.0f};
+        Vec3 viewer_position = {0.0f, 0.0f, 0.0f};
+        Color light_color = Color::white();
+        Color ambient_color = {0.1f, 0.1f, 0.1f};
+        Color diffuse_color = Color::blue();
+        Color specular_color = {0.1f, 0.1f, 0.1f};
+        float specular_shininess = 32.0f;
+    };
+
     // a material for drawing shiny meshes with specular highlights
     //
     // naming inspired by three.js's `MeshPhongMaterial`, but the implementation
     // was ported from LearnOpenGL's basic lighting tutorial
-    class MeshPhongMaterial final {
+    class MeshPhongMaterial final : public Material {
     public:
-        MeshPhongMaterial();
+        using Params = MeshPhongMaterialParams;
 
-        Vec3 light_position() const { return *material_.get_vec3(c_light_pos_propname); }
-        void set_light_position(Vec3 v) { material_.set_vec3(c_light_pos_propname, v); }
+        explicit MeshPhongMaterial(const Params& = Params{});
 
-        Vec3 viewer_position() const { return *material_.get_vec3(c_view_pos_propname); }
-        void set_viewer_position(Vec3 v) { material_.set_vec3(c_view_pos_propname, v); }
+        Vec3 light_position() const;
+        void set_light_position(const Vec3&);
 
-        Color light_color() const { return *material_.get_color(c_light_color_propname); }
-        void set_light_color(Color c) { material_.set_color(c_light_color_propname, c); }
+        Vec3 viewer_position() const;
+        void set_viewer_position(const Vec3&);
 
-        Color ambient_color() const { return *material_.get_color(c_ambient_color_propname); }
-        void set_ambient_color(Color c) { material_.set_color(c_ambient_color_propname, c); }
+        Color light_color() const;
+        void set_light_color(const Color&);
 
-        Color diffuse_color() const { return *material_.get_color(c_diffuse_color_propname); }
-        void set_diffuse_color(Color c) { material_.set_color(c_diffuse_color_propname, c); }
+        Color ambient_color() const;
+        void set_ambient_color(const Color&);
 
-        Color specular_color() const { return *material_.get_color(c_specular_color_propname); }
-        void set_specular_color(Color c) { material_.set_color(c_specular_color_propname, c); }
+        Color diffuse_color() const;
+        void set_diffuse_color(const Color&);
 
-        float specular_shininess() const { return *material_.get_float(c_shininess_propname); }
-        void set_specular_shininess(float v) { material_.set_float(c_shininess_propname, v); }
+        Color specular_color() const;
+        void set_specular_color(const Color&);
 
-        operator const Material& () const { return material_; }
-    private:
-        static constexpr std::string_view c_light_pos_propname = "uLightPos";
-        static constexpr std::string_view c_view_pos_propname = "uViewPos";
-        static constexpr std::string_view c_light_color_propname = "uLightColor";
-        static constexpr std::string_view c_ambient_color_propname = "uAmbientColor";
-        static constexpr std::string_view c_diffuse_color_propname = "uDiffuseColor";
-        static constexpr std::string_view c_specular_color_propname = "uSpecularColor";
-        static constexpr std::string_view c_shininess_propname = "uShininess";
-        Material material_;
+        float specular_shininess() const;
+        void set_specular_shininess(float);
     };
 }

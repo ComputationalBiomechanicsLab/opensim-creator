@@ -390,3 +390,32 @@ TEST(Camera, set_clear_flags_causes_copy_to_compare_not_equivalent)
     camera.set_clear_flags(CameraClearFlags::Nothing);
     ASSERT_NE(camera, copy);
 }
+
+TEST(Camera, can_call_clipping_planes)
+{
+    Camera camera;
+    const auto [znear, zfar] = camera.clipping_planes();
+    ASSERT_FALSE(isnan(znear));
+    ASSERT_FALSE(isnan(zfar));
+}
+
+TEST(Camera, clipping_planes_can_be_set_via_set_near_clipping_plane)
+{
+    Camera camera;
+    camera.set_near_clipping_plane(1337.0f);
+    ASSERT_EQ(camera.clipping_planes().znear, 1337.0f);
+}
+
+TEST(Camera, set_clipping_planes_makes_near_clipping_plane_return_new_near_clipping_plane)
+{
+    Camera camera;
+    camera.set_clipping_planes({-1337.0f, 1337.0f});
+    ASSERT_EQ(camera.near_clipping_plane(), -1337.0f);
+}
+
+TEST(Camera, set_clipping_planes_makes_far_clipping_plane_return_new_far_clipping_plane)
+{
+    Camera camera;
+    camera.set_clipping_planes({-1337.0f, 1337.0f});
+    ASSERT_EQ(camera.far_clipping_plane(), 1337.0f);
+}

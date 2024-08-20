@@ -50,8 +50,7 @@ namespace
         MouseCapturingCamera rv;
         rv.set_position({0.0f, 0.0f, 3.0f});
         rv.set_vertical_fov(45_deg);
-        rv.set_near_clipping_plane(0.1f);
-        rv.set_far_clipping_plane(100.0f);
+        rv.set_clipping_planes({0.1f, 100.0f});
         return rv;
     }
 
@@ -74,10 +73,10 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/ParallaxMapping.vert"),
             loader.slurp("oscar_learnopengl/shaders/AdvancedLighting/ParallaxMapping.frag"),
         }};
-        rv.set_texture("uDiffuseMap", diffuse_map);
-        rv.set_texture("uNormalMap", normal_map);
-        rv.set_texture("uDisplacementMap", displacement_map);
-        rv.set_float("uHeightScale", 0.1f);
+        rv.set("uDiffuseMap", diffuse_map);
+        rv.set("uNormalMap", normal_map);
+        rv.set("uDisplacementMap", displacement_map);
+        rv.set("uHeightScale", 0.1f);
         return rv;
     }
 
@@ -120,15 +119,15 @@ private:
 
         // draw normal-mapped quad
         {
-            parallax_mapping_material_.set_vec3("uLightWorldPos", light_transform_.position);
-            parallax_mapping_material_.set_vec3("uViewWorldPos", camera_.position());
-            parallax_mapping_material_.set_bool("uEnableMapping", parallax_mapping_enabled_);
+            parallax_mapping_material_.set("uLightWorldPos", light_transform_.position);
+            parallax_mapping_material_.set("uViewWorldPos", camera_.position());
+            parallax_mapping_material_.set("uEnableMapping", parallax_mapping_enabled_);
             graphics::draw(quad_mesh_, quad_transform_, parallax_mapping_material_, camera_);
         }
 
         // draw light source cube
         {
-            light_cube_material_.set_color("uLightColor", Color::white());
+            light_cube_material_.set("uLightColor", Color::white());
             graphics::draw(cube_mesh_, light_transform_, light_cube_material_, camera_);
         }
 

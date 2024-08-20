@@ -37,8 +37,7 @@ namespace
         MouseCapturingCamera rv;
         rv.set_position({0.0f, 0.0f, 20.0f});
         rv.set_vertical_fov(45_deg);
-        rv.set_near_clipping_plane(0.1f);
-        rv.set_far_clipping_plane(100.0f);
+        rv.set_clipping_planes({0.1f, 100.0f});
         rv.set_background_color({0.1f, 0.1f, 0.1f, 1.0f});
         return rv;
     }
@@ -49,14 +48,16 @@ namespace
         Texture2D hdr_texture = load_texture2D_from_image(
             loader.open("oscar_learnopengl/textures/hdr/newport_loft.hdr"),
             ColorSpace::Linear,
-            ImageLoadingFlags::FlipVertically
+            ImageLoadingFlag::FlipVertically
         );
         hdr_texture.set_wrap_mode(TextureWrapMode::Clamp);
         hdr_texture.set_filter_mode(TextureFilterMode::Linear);
 
-        RenderTexture cubemap_render_texture{{512, 512}};
-        cubemap_render_texture.set_dimensionality(TextureDimensionality::Cube);
-        cubemap_render_texture.set_color_format(RenderTextureFormat::RGBFloat16);
+        RenderTexture cubemap_render_texture{{
+            .dimensions = {512, 512},
+            .dimensionality = TextureDimensionality::Cube,
+            .color_format = RenderTextureFormat::RGBFloat16,
+        }};
 
         // create a 90 degree cube cone projection matrix
         const Mat4 projection_matrix = perspective(90_deg, 1.0f, 0.1f, 10.0f);
@@ -67,11 +68,16 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/EquirectangularToCubemap.geom"),
             loader.slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/EquirectangularToCubemap.frag"),
         }};
-        material.set_texture("uEquirectangularMap", hdr_texture);
-        material.set_mat4_array("uShadowMatrices", calc_cubemap_view_proj_matrices(projection_matrix, Vec3{}));
+        material.set("uEquirectangularMap", hdr_texture);
+        material.set_array("uShadowMatrices", calc_cubemap_view_proj_matrices(projection_matrix, Vec3{}));
 
         Camera camera;
-        graphics::draw(BoxGeometry{2.0f, 2.0f, 2.0f}, identity<Transform>(), material, camera);
+        graphics::draw(
+            BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}},
+            identity<Transform>(),
+            material,
+            camera
+        );
         camera.render_to(cubemap_render_texture);
 
         // TODO: some way of copying it into an `osc::Cubemap` would make sense
@@ -82,9 +88,11 @@ namespace
         IResourceLoader& loader,
         const RenderTexture& skybox)
     {
-        RenderTexture irradiance_cubemap{{32, 32}};
-        irradiance_cubemap.set_dimensionality(TextureDimensionality::Cube);
-        irradiance_cubemap.set_color_format(RenderTextureFormat::RGBFloat16);
+        RenderTexture irradiance_cubemap{{
+            .dimensions = {32, 32},
+            .dimensionality = TextureDimensionality::Cube,
+            .color_format = RenderTextureFormat::RGBFloat16,
+        }};
 
         const Mat4 capture_projection = perspective(90_deg, 1.0f, 0.1f, 10.0f);
 
@@ -93,11 +101,11 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/Convolution.geom"),
             loader.slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/Convolution.frag"),
         }};
-        material.set_render_texture("uEnvironmentMap", skybox);
-        material.set_mat4_array("uShadowMatrices", calc_cubemap_view_proj_matrices(capture_projection, Vec3{}));
+        material.set("uEnvironmentMap", skybox);
+        material.set_array("uShadowMatrices", calc_cubemap_view_proj_matrices(capture_projection, Vec3{}));
 
         Camera camera;
-        graphics::draw(BoxGeometry{2.0f, 2.0f, 2.0f}, identity<Transform>(), material, camera);
+        graphics::draw(BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}}, identity<Transform>(), material, camera);
         camera.render_to(irradiance_cubemap);
 
         // TODO: some way of copying it into an `osc::Cubemap` would make sense
@@ -110,7 +118,7 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/PBR.vert"),
             loader.slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/PBR.frag"),
         }};
-        rv.set_float("uAO", 1.0f);
+        rv.set("uAO", 1.0f);
         return rv;
     }
 }
@@ -150,10 +158,10 @@ private:
     {
         camera_.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
 
-        pbr_material_.set_vec3("uCameraWorldPos", camera_.position());
-        pbr_material_.set_vec3_array("uLightPositions", c_light_positions);
-        pbr_material_.set_vec3_array("uLightColors", c_light_radiances);
-        pbr_material_.set_render_texture("uIrradianceMap", irradiance_map_);
+        pbr_material_.set("uCameraWorldPos", camera_.position());
+        pbr_material_.set_array("uLightPositions", c_light_positions);
+        pbr_material_.set_array("uLightColors", c_light_radiances);
+        pbr_material_.set("uIrradianceMap", irradiance_map_);
 
         draw_spheres();
         draw_lights();
@@ -163,14 +171,14 @@ private:
 
     void draw_spheres()
     {
-        pbr_material_.set_vec3("uAlbedoColor", {0.5f, 0.0f, 0.0f});
+        pbr_material_.set("uAlbedoColor", Vec3{0.5f, 0.0f, 0.0f});
 
         for (int row = 0; row < c_num_rows; ++row) {
-            pbr_material_.set_float("uMetallicity", static_cast<float>(row) / static_cast<float>(c_num_rows));
+            pbr_material_.set("uMetallicity", static_cast<float>(row) / static_cast<float>(c_num_rows));
 
             for (int col = 0; col < c_num_cols; ++col) {
                 const float normalizedCol = static_cast<float>(col) / static_cast<float>(c_num_cols);
-                pbr_material_.set_float("uRoughness", clamp(normalizedCol, 0.005f, 1.0f));
+                pbr_material_.set("uRoughness", clamp(normalizedCol, 0.005f, 1.0f));
 
                 const float x = (static_cast<float>(col) - static_cast<float>(c_num_cols)/2.0f) * c_cell_spacing;
                 const float y = (static_cast<float>(row) - static_cast<float>(c_num_rows)/2.0f) * c_cell_spacing;
@@ -182,7 +190,7 @@ private:
 
     void draw_lights()
     {
-        pbr_material_.set_vec3("uAlbedoColor", {1.0f, 1.0f, 1.0f});
+        pbr_material_.set("uAlbedoColor", Vec3{1.0f, 1.0f, 1.0f});
 
         for (const Vec3& light_positions : c_light_positions) {
             graphics::draw(sphere_mesh_, {.scale = Vec3{0.5f}, .position = light_positions}, pbr_material_, camera_);
@@ -191,7 +199,7 @@ private:
 
     void draw_background()
     {
-        background_material_.set_render_texture("uEnvironmentMap", projected_map_);
+        background_material_.set("uEnvironmentMap", projected_map_);
         background_material_.set_depth_function(DepthFunction::LessOrEqual);  // for skybox depth trick
         graphics::draw(cube_mesh_, identity<Transform>(), background_material_, camera_);
         camera_.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
@@ -203,9 +211,9 @@ private:
     void draw_2D_ui()
     {
         if (ui::begin_panel("Controls")) {
-            float ao = pbr_material_.get_float("uAO").value_or(1.0f);
+            float ao = pbr_material_.get<float>("uAO").value_or(1.0f);
             if (ui::draw_float_slider("ao", &ao, 0.0f, 1.0f)) {
-                pbr_material_.set_float("uAO", ao);
+                pbr_material_.set("uAO", ao);
             }
         }
         ui::end_panel();
@@ -216,7 +224,7 @@ private:
     Texture2D texture_ = load_texture2D_from_image(
         loader_.open("oscar_learnopengl/textures/hdr/newport_loft.hdr"),
         ColorSpace::Linear,
-        ImageLoadingFlags::FlipVertically
+        ImageLoadingFlag::FlipVertically
     );
 
     RenderTexture projected_map_ = load_equirectangular_hdr_texture_into_cubemap(loader_);
@@ -227,9 +235,9 @@ private:
         loader_.slurp("oscar_learnopengl/shaders/PBR/diffuse_irradiance/Background.frag"),
     }};
 
-    Mesh cube_mesh_ = BoxGeometry{2.0f, 2.0f, 2.0f};
+    Mesh cube_mesh_ = BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}};
     Material pbr_material_ = CreateMaterial(loader_);
-    Mesh sphere_mesh_ = SphereGeometry{1.0f, 64, 64};
+    Mesh sphere_mesh_ = SphereGeometry{{.num_width_segments = 64, .num_height_segments = 64}};
     MouseCapturingCamera camera_ = create_camera();
 };
 

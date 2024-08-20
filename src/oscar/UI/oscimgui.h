@@ -18,15 +18,18 @@
 #include <oscar/Maths/Vec4.h>
 #include <oscar/Shims/Cpp23/utility.h>
 #include <oscar/Utils/CStringView.h>
+#include <oscar/Utils/EnumHelpers.h>
 #include <oscar/Utils/Flags.h>
 #include <oscar/Utils/UID.h>
 
+#include <concepts>
 #include <cstddef>
 #include <functional>
 #include <initializer_list>
 #include <optional>
 #include <span>
 #include <string>
+#include <string_view>
 #include <utility>
 
 namespace osc { class Camera; }
@@ -93,13 +96,21 @@ namespace osc::ui
         detail::draw_text_wrapped(fmt, std::forward<Args>(args)...);
     }
 
-    void draw_text_unformatted(CStringView);
+    void draw_text_unformatted(std::string_view);
 
     void draw_bullet_point();
 
     void draw_text_bullet_pointed(CStringView);
 
-    bool draw_tree_node_ex(CStringView, ImGuiTreeNodeFlags = 0);
+    enum class TreeNodeFlag {
+        None        = 0,
+        OpenOnArrow = 1<<0,  // only open when clicking on the arrow part
+        Leaf        = 1<<1,  // no collapsing, no arrow (use as a convenience for leaf nodes)
+        Bullet      = 1<<2,  // display a bullet instead of arrow. IMPORTANT: node can still be marked open/close if you don't also set the `Leaf` flag!
+    };
+    using TreeNodeFlags = Flags<TreeNodeFlag>;
+
+    bool draw_tree_node_ex(CStringView, TreeNodeFlags = {});
 
     float get_tree_node_to_label_spacing();
 
@@ -128,8 +139,16 @@ namespace osc::ui
     bool begin_tab_bar(CStringView str_id);
     void end_tab_bar();
 
-    bool begin_tab_item(CStringView label, bool* p_open = nullptr, ImGuiTabItemFlags flags = 0);
+    enum class TabItemFlag {
+        None            = 0,
+        NoReorder       = 1<<0,  // disable reordering this tab or having another tab cross over this tab
+        NoCloseButton   = 1<<1,  // track whether `p_open` was set or not (we'll need this info on the next frame to recompute ContentWidth during layout)
+        UnsavedDocument = 1<<2,  // display a dot next to the title + (internally) set `ImGuiTabItemFlags_NoAssumedClosure`
+        SetSelected     = 1<<3,  // trigger flag to programmatically make the tab selected when calling `begin_tab_item`
+    };
+    using TabItemFlags = Flags<TabItemFlag>;
 
+    bool begin_tab_item(CStringView label, bool* p_open = nullptr, TabItemFlags = {});
     void end_tab_item();
 
     bool draw_tab_item_button(CStringView label);
@@ -254,14 +273,14 @@ namespace osc::ui
     void end_tooltip_nowrap();
 
     void push_id(UID);
-    void push_id(ptrdiff_t);
-    void push_id(size_t);
     void push_id(int);
+    template<std::integral T> void push_id(T number) { push_id(static_cast<int>(number)); }
+    void push_id(std::string_view);
     void push_id(const void*);
-    void push_id(CStringView);
+
     void pop_id();
 
-    ImGuiID get_id(CStringView str_id);
+    ImGuiID get_id(std::string_view);
 
     ImGuiItemFlags get_item_flags();
     void set_next_item_size(Rect);  // note: ImGui API assumes cursor is located at `p1` already
@@ -599,6 +618,9 @@ namespace osc::ui
 
     // returns the dimensions of the current workspace area in pixels in the main viewport
     Vec2 get_main_viewport_workspace_screen_dimensions();
+
+    // returns the aspect ratio (width divided by height) of the pixel dimensions of the current workspace area
+    float get_main_viewport_workspace_aspect_ratio();
 
     // returns `true` if the user's mouse is within the current workspace area of the main viewport
     bool is_mouse_in_main_viewport_workspace();

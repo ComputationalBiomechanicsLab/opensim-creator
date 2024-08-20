@@ -307,7 +307,7 @@ public:
         }
 
         // garbage-collect non-open dynamic panels
-        for (ptrdiff_t i = 0; i < ssize(dynamic_panels_); ++i) {
+        for (size_t i = 0; i < dynamic_panels_.size(); ++i) {
             if (not dynamic_panels_[i].is_open()) {
                 dynamic_panels_.erase(dynamic_panels_.begin() + i);
                 --i;

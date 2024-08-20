@@ -251,11 +251,7 @@ void main()
             camera_.set_position(viewer_position);
             camera_.set_direction({-1.0f, 0.0f, 0.0f});
 
-            // setup torus material
-            const Color color = Color::blue();
-            material_.set_ambient_color(0.2f * color);
-            material_.set_diffuse_color(0.5f * color);
-            material_.set_specular_color(0.5f * color);
+            // setup material
             material_.set_viewer_position(viewer_position);
 
             // setup ui code editor
@@ -285,11 +281,10 @@ void main()
             ui::context::on_start_new_frame();
 
             // ensure target texture matches screen dimensions
-            {
-                RenderTextureDescriptor descriptor{App::get().main_window_dimensions()};
-                descriptor.set_anti_aliasing_level(App::get().anti_aliasing_level());
-                target_texture_.reformat(descriptor);
-            }
+            target_texture_.reformat({
+                .dimensions = App::get().main_window_dimensions(),
+                .anti_aliasing_level = App::get().anti_aliasing_level()
+            });
 
             update_torus_if_params_changed();
             const auto seconds_since_startup = App::get().frame_delta_since_startup().count();
@@ -323,14 +318,22 @@ void main()
             if (torus_parameters_ == edited_torus_parameters_) {
                 return;
             }
-            mesh_ = TorusKnotGeometry{edited_torus_parameters_.torus_radius, edited_torus_parameters_.tube_radius};
+            mesh_ = TorusKnotGeometry{{
+                .torus_radius = edited_torus_parameters_.torus_radius,
+                .tube_radius = edited_torus_parameters_.tube_radius,
+            }};
             torus_parameters_ = edited_torus_parameters_;
         }
 
         TorusParameters torus_parameters_;
         TorusParameters edited_torus_parameters_;
         TorusKnotGeometry mesh_;
-        MeshPhongMaterial material_;
+        Color torus_color_ = Color::blue();
+        MeshPhongMaterial material_{{
+            .ambient_color = 0.2f * torus_color_,
+            .diffuse_color = 0.5f * torus_color_,
+            .specular_color = 0.5f * torus_color_,
+        }};
         Material gamma_correcter_{Shader{c_gamma_correcting_vertex_shader_src, c_gamma_correcting_fragment_shader_src}};
         Camera camera_;
         RenderTexture target_texture_;

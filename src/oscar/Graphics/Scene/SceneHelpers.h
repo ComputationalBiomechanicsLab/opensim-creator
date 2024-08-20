@@ -82,6 +82,7 @@ namespace osc
         float neck_thickness{};
         float head_thickness{};
         Color color = Color::black();
+        SceneDecorationFlags decoration_flags = SceneDecorationFlag::Default;
     };
     void draw_arrow(
         SceneCache&,

@@ -3,8 +3,8 @@
 #include <gtest/gtest.h>
 #include <oscar/Graphics/AntiAliasingLevel.h>
 #include <oscar/Graphics/DepthStencilFormat.h>
-#include <oscar/Graphics/RenderTextureDescriptor.h>
 #include <oscar/Graphics/RenderTextureFormat.h>
+#include <oscar/Graphics/RenderTextureParams.h>
 #include <oscar/Graphics/RenderTextureReadWrite.h>
 #include <oscar/Graphics/TextureDimensionality.h>
 #include <oscar/Maths/Vec2.h>
@@ -58,11 +58,12 @@ TEST(RenderTexture, CtorThrowsIfGivenCubeDimensionalityAndAntialiasedDescriptor)
     // edge-case: OpenGL doesn't support rendering to a multisampled cube texture,
     // so loudly throw an error if the caller is trying to render a multisampled
     // cubemap
-    RenderTextureDescriptor desc{{1, 1}};
 
     // allowed: RenderTextureDescriptor is non-throwing until the texture is actually constructed
-    desc.set_anti_aliasing_level(AntiAliasingLevel{2});
-    desc.set_dimensionality(TextureDimensionality::Cube);
+    const RenderTextureParams desc = {
+        .dimensionality = TextureDimensionality::Cube,
+        .anti_aliasing_level = AntiAliasingLevel{2},
+    };
 
     // throws because the descriptor is bad
     ASSERT_ANY_THROW(RenderTexture rt(desc));
@@ -71,30 +72,37 @@ TEST(RenderTexture, CtorThrowsIfGivenCubeDimensionalityAndAntialiasedDescriptor)
 TEST(RenderTexture, ReformatThrowsIfGivenCubeDimensionalityAndAntialiasedDescriptor)
 {
     // allowed: RenderTextureDescriptor is non-throwing until the texture is actually constructed
-    RenderTextureDescriptor desc{{1, 1}};
-    desc.set_anti_aliasing_level(AntiAliasingLevel{2});
-    desc.set_dimensionality(TextureDimensionality::Cube);
+    const RenderTextureParams params = {
+        .dimensionality = TextureDimensionality::Cube,
+        .anti_aliasing_level = AntiAliasingLevel{2},
+    };
 
     // throws because the descriptor is bad
-    ASSERT_ANY_THROW(RenderTexture().reformat(desc));
+    ASSERT_ANY_THROW(RenderTexture().reformat(params));
 }
 
 TEST(RenderTexture, ThrowsIfGivenNonSquareButCubeDimensionalityDescriptor)
 {
-    RenderTextureDescriptor desc{{1, 2}};  // not square
-    desc.set_dimensionality(TextureDimensionality::Cube);  // permitted, at least for now
+    // permitted
+    const RenderTextureParams params = {
+        .dimensions = {1, 2},
+        .dimensionality = TextureDimensionality::Cube,
+    };
 
-    ASSERT_ANY_THROW(RenderTexture rt(desc));
+    // throws because non-square
+    ASSERT_ANY_THROW(RenderTexture rt(params));
 }
 
 TEST(RenderTexture, ReformatThrowsIfGivenNonSquareButCubeDimensionalityDescriptor)
 {
     // allowed: RenderTextureDescriptor is non-throwing until the texture is actually constructed
-    RenderTextureDescriptor desc{{1, 2}};
-    desc.set_dimensionality(TextureDimensionality::Cube);
+    const RenderTextureParams params = {
+        .dimensions = {1, 2},
+        .dimensionality = TextureDimensionality::Cube,
+    };
 
     // throws because the descriptor is bad
-    ASSERT_ANY_THROW(RenderTexture().reformat(desc));
+    ASSERT_ANY_THROW(RenderTexture().reformat(params));
 }
 
 TEST(RenderTexture, SetDimensionThrowsIfSetToCubeOnNonSquareRenderTexture)
@@ -128,14 +136,14 @@ TEST(RenderTexture, SetDimensionChangesEquality)
 TEST(RenderTexture, CanBeConstructedFromDimensions)
 {
     const Vec2i dims = {12, 12};
-    RenderTexture tex{dims};
+    RenderTexture tex{{.dimensions = dims}};
     ASSERT_EQ(tex.dimensions(), dims);
 }
 
 TEST(RenderTexture, CanBeConstructedFromADescriptor)
 {
-    RenderTextureDescriptor d1{{1, 1}};
-    RenderTexture d{d1};
+    const RenderTextureParams params{{1, 1}};
+    const RenderTexture d{params};
 }
 
 TEST(RenderTexture, DefaultCtorAssignsDefaultReadWrite)
@@ -147,20 +155,22 @@ TEST(RenderTexture, DefaultCtorAssignsDefaultReadWrite)
 
 TEST(RenderTexture, FromDescriptorHasExpectedValues)
 {
-    int width = 8;
-    int height = 8;
-    AntiAliasingLevel aaLevel{1};
-    RenderTextureFormat format = RenderTextureFormat::Red8;
-    RenderTextureReadWrite rw = RenderTextureReadWrite::Linear;
-    TextureDimensionality dimension = TextureDimensionality::Cube;
+    const int width = 8;
+    const int height = 8;
+    const AntiAliasingLevel aaLevel{1};
+    const RenderTextureFormat format = RenderTextureFormat::Red8;
+    const RenderTextureReadWrite rw = RenderTextureReadWrite::Linear;
+    const TextureDimensionality dimension = TextureDimensionality::Cube;
 
-    RenderTextureDescriptor desc{{width, height}};
-    desc.set_dimensionality(dimension);
-    desc.set_anti_aliasing_level(aaLevel);
-    desc.set_color_format(format);
-    desc.set_read_write(rw);
+    const RenderTextureParams params = {
+        .dimensions = {width, height},
+        .dimensionality = dimension,
+        .anti_aliasing_level = aaLevel,
+        .color_format = format,
+        .read_write = rw,
+    };
 
-    RenderTexture tex{desc};
+    const RenderTexture tex{params};
 
     ASSERT_EQ(tex.dimensions(), Vec2i(width, height));
     ASSERT_EQ(tex.dimensionality(), TextureDimensionality::Cube);
@@ -171,8 +181,8 @@ TEST(RenderTexture, FromDescriptorHasExpectedValues)
 
 TEST(RenderTexture, SetColorFormatCausesGetColorFormatToReturnValue)
 {
-    RenderTextureDescriptor d1{{1, 1}};
-    RenderTexture d{d1};
+    const RenderTextureParams params{{1, 1}};
+    RenderTexture d{params};
 
     ASSERT_EQ(d.color_format(), RenderTextureFormat::ARGB32);
 
@@ -183,14 +193,46 @@ TEST(RenderTexture, SetColorFormatCausesGetColorFormatToReturnValue)
 
 TEST(RenderTexture, UpdColorBufferReturnsNonNullPtr)
 {
-    RenderTexture rt{{1, 1}};
+    RenderTexture rt{{.dimensions = {1, 1}}};
 
     ASSERT_NE(rt.upd_color_buffer(), nullptr);
 }
 
 TEST(RenderTexture, UpdDepthBufferReturnsNonNullPtr)
 {
-    RenderTexture rt{{1, 1}};
+    RenderTexture rt{{.dimensions = {1, 1}}};
 
     ASSERT_NE(rt.upd_depth_buffer(), nullptr);
+}
+
+TEST(RenderTexture, upd_color_buffer_returns_independent_RenderBuffers_from_copies)
+{
+    // this popped up while developing the `LearnOpenGL/CSM` tab implementation, where
+    // it was using a pattern like:
+    //
+    //     std::vector<RenderTexture> shadowmaps(num_cascades, RenderTexture{common_params});
+    //
+    // that pattern wasn't creating independent shadowmaps because the underlying `RenderBuffer`s
+    // were being reference-copied, rather than value-copied
+
+    RenderTexture rt;
+    RenderTexture copy{rt};
+
+    ASSERT_NE(copy.upd_color_buffer(), rt.upd_color_buffer());
+}
+
+TEST(RenderTexture, upd_depth_buffer_returns_independent_RenderBuffers_from_copies)
+{
+    // this popped up while developing the `LearnOpenGL/CSM` tab implementation, where
+    // it was using a pattern like:
+    //
+    //     std::vector<RenderTexture> shadowmaps(num_cascades, RenderTexture{common_params});
+    //
+    // that pattern wasn't creating independent shadowmaps because the underlying `RenderBuffer`s
+    // were being reference-copied, rather than value-copied
+
+    RenderTexture rt;
+    RenderTexture copy{rt};
+
+    ASSERT_NE(copy.upd_depth_buffer(), rt.upd_depth_buffer());
 }

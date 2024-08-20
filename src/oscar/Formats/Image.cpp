@@ -76,7 +76,7 @@ namespace
     {
         const auto guard = lock_stbi_api();
 
-        if (flags & ImageLoadingFlags::FlipVertically) {
+        if (flags & ImageLoadingFlag::FlipVertically) {
             stbi_set_flip_vertically_on_load(c_stb_true);
         }
 
@@ -87,7 +87,7 @@ namespace
             stbi_image_free,
         };
 
-        if (flags & ImageLoadingFlags::FlipVertically) {
+        if (flags & ImageLoadingFlag::FlipVertically) {
             stbi_set_flip_vertically_on_load(c_stb_false);
         }
 
@@ -126,7 +126,7 @@ namespace
     {
         const auto guard = lock_stbi_api();
 
-        if (flags & ImageLoadingFlags::FlipVertically) {
+        if (flags & ImageLoadingFlag::FlipVertically) {
             stbi_set_flip_vertically_on_load(c_stb_true);
         }
 
@@ -137,7 +137,7 @@ namespace
             stbi_image_free,
         };
 
-        if (flags & ImageLoadingFlags::FlipVertically) {
+        if (flags & ImageLoadingFlag::FlipVertically) {
             stbi_set_flip_vertically_on_load(c_stb_false);
         }
 

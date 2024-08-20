@@ -17,8 +17,7 @@ namespace
         MouseCapturingCamera rv;
         rv.set_position({0.0f, 0.0f, 3.0f});
         rv.set_vertical_fov(45_deg);
-        rv.set_near_clipping_plane(0.1f);
-        rv.set_far_clipping_plane(100.0f);
+        rv.set_clipping_planes({0.1f, 100.0f});
         rv.set_background_color({0.1f, 0.1f, 0.1f, 1.0f});
         return rv;
     }
@@ -55,17 +54,17 @@ private:
         camera_.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
 
         // draw cube
-        lighting_material_.set_color("uObjectColor", object_color_);
-        lighting_material_.set_color("uLightColor", light_color_);
-        lighting_material_.set_vec3("uLightPos", light_transform_.position);
-        lighting_material_.set_vec3("uViewPos", camera_.position());
-        lighting_material_.set_float("uAmbientStrength", ambient_strength_);
-        lighting_material_.set_float("uDiffuseStrength", diffuse_strength_);
-        lighting_material_.set_float("uSpecularStrength", specular_strength_);
+        lighting_material_.set("uObjectColor", object_color_);
+        lighting_material_.set("uLightColor", light_color_);
+        lighting_material_.set("uLightPos", light_transform_.position);
+        lighting_material_.set("uViewPos", camera_.position());
+        lighting_material_.set("uAmbientStrength", ambient_strength_);
+        lighting_material_.set("uDiffuseStrength", diffuse_strength_);
+        lighting_material_.set("uSpecularStrength", specular_strength_);
         graphics::draw(cube_mesh_, identity<Transform>(), lighting_material_, camera_);
 
         // draw lamp
-        light_cube_material_.set_color("uLightColor", light_color_);
+        light_cube_material_.set("uLightColor", light_color_);
         graphics::draw(cube_mesh_, light_transform_, light_cube_material_, camera_);
 
         // render to output (window)

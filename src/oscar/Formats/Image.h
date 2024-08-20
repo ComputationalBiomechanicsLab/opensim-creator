@@ -18,14 +18,14 @@ namespace osc
         std::istream&,
         std::string_view input_name,
         ColorSpace,
-        ImageLoadingFlags = ImageLoadingFlags::None
+        ImageLoadingFlags = {}
     );
 
     template<NamedInputStream Stream>
     Texture2D load_texture2D_from_image(
         Stream&& stream,
         ColorSpace color_space,
-        ImageLoadingFlags flags = ImageLoadingFlags::None)
+        ImageLoadingFlags flags = {})
     {
         return load_texture2D_from_image(
             std::forward<Stream>(stream),

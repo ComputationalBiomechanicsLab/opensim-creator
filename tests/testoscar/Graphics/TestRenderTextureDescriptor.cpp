@@ -1,4 +1,4 @@
-#include <oscar/Graphics/RenderTextureDescriptor.h>
+#include <oscar/Graphics/RenderTextureParams.h>
 
 #include <gtest/gtest.h>
 #include <oscar/Graphics/AntiAliasingLevel.h>
@@ -11,258 +11,81 @@
 
 using namespace osc;
 
-TEST(RenderTextureDescriptor, CanBeConstructedFromWithAndHeight)
+TEST(RenderTextureParams, can_be_default_constructed)
 {
-    RenderTextureDescriptor d{{1, 1}};
+    [[maybe_unused]] const RenderTextureParams params;
 }
 
-TEST(RenderTextureDescriptor, CoercesNegativeWidthsToZero)
+TEST(RenderTextureParams, can_be_constructed_via_designated_initializer)
 {
-    RenderTextureDescriptor d{{-1, 1}};
-
-    ASSERT_EQ(d.dimensions().x, 0);
+    [[maybe_unused]] const RenderTextureParams params{.dimensions = {1, 4}};
 }
 
-TEST(RenderTextureDescriptor, CoercesNegativeHeightsToZero)
+TEST(RenderTextureParams, can_be_copy_constructed)
 {
-    RenderTextureDescriptor d{{1, -1}};
-
-    ASSERT_EQ(d.dimensions().y, 0);
+    const RenderTextureParams params;
+    [[maybe_unused]] const RenderTextureParams copy{params};
 }
 
-TEST(RenderTextureDescriptor, CanBeCopyConstructed)
+TEST(RenderTextureDescriptor, can_be_copy_assigned)
 {
-    RenderTextureDescriptor d1{{1, 1}};
-    RenderTextureDescriptor{d1};
+    RenderTextureParams lhs;
+    const RenderTextureParams rhs;
+    lhs = rhs;
 }
 
-TEST(RenderTextureDescriptor, CanBeCopyAssigned)
+TEST(RenderTextureParams, anti_aliasing_level_defaults_to_1)
 {
-    RenderTextureDescriptor d1{{1, 1}};
-    RenderTextureDescriptor d2{{1, 1}};
-    d1 = d2;
+    const RenderTextureParams params;
+    ASSERT_EQ(params.anti_aliasing_level, AntiAliasingLevel{1});
 }
 
-TEST(RenderTextureDescriptor, GetWidthReturnsConstructedWith)
+TEST(RenderTextureDescriptor, color_format_defaults_to_ARGB32)
 {
-    int width = 1;
-    RenderTextureDescriptor d1{{width, 1}};
-    ASSERT_EQ(d1.dimensions().x, width);
+    const RenderTextureParams params;
+    ASSERT_EQ(params.color_format, RenderTextureFormat::ARGB32);
 }
 
-TEST(RenderTextureDescriptor, SetWithFollowedByGetWithReturnsSetWidth)
+TEST(RenderTextureParams, depth_stencil_format_defaults_to_D24_UNorm_S8_UInt)
 {
-    RenderTextureDescriptor d1{{1, 1}};
-
-
-    int newWidth = 31;
-    Vec2i d = d1.dimensions();
-    d.x = newWidth;
-
-    d1.set_dimensions(d);
-    ASSERT_EQ(d1.dimensions(), d);
+    const RenderTextureParams params;
+    ASSERT_EQ(params.depth_stencil_format, DepthStencilFormat::D24_UNorm_S8_UInt);
 }
 
-TEST(RenderTextureDescriptor, SetWidthNegativeValueThrows)
+TEST(RenderTextureParams, read_write_defaults_to_Default)
 {
-    RenderTextureDescriptor d1{{1, 1}};
-    ASSERT_ANY_THROW({ d1.set_dimensions({-1, 1}); });
+    const RenderTextureParams params;
+    ASSERT_EQ(params.read_write, RenderTextureReadWrite::Default);
 }
 
-TEST(RenderTextureDescriptor, GetHeightReturnsConstructedHeight)
+TEST(RenderTextureParams, dimensionality_defaults_to_Tex2D)
 {
-    int height = 1;
-    RenderTextureDescriptor d1{{1, height}};
-    ASSERT_EQ(d1.dimensions().y, height);
+    const RenderTextureParams params;
+    ASSERT_EQ(params.dimensionality, TextureDimensionality::Tex2D);
 }
 
-TEST(RenderTextureDescriptor, SetHeightFollowedByGetHeightReturnsSetHeight)
+TEST(RenderTextureParams, compares_equivalent_on_copy_construction)
 {
-    RenderTextureDescriptor d1{{1, 1}};
+    const RenderTextureParams params;
+    const RenderTextureParams copy{params};
 
-    Vec2i d = d1.dimensions();
-    d.y = 31;
-
-    d1.set_dimensions(d);
-
-    ASSERT_EQ(d1.dimensions(), d);
+    ASSERT_EQ(params, copy);
 }
 
-TEST(RenderTextureDescriptor, GetAntialiasingLevelInitiallyReturns1)
+TEST(RenderTextureParams, compares_equivalent_when_independently_constructed_with_same_params)
 {
-    RenderTextureDescriptor d1{{1, 1}};
-    ASSERT_EQ(d1.anti_aliasing_level(), AntiAliasingLevel{1});
+    const RenderTextureParams first{.dimensions = {3, 3}, .dimensionality = TextureDimensionality::Cube};
+    const RenderTextureParams second{.dimensions = {3, 3}, .dimensionality = TextureDimensionality::Cube};
+
+    ASSERT_EQ(first, second);
 }
 
-TEST(RenderTextureDescriptor, SetAntialiasingLevelMakesGetAntialiasingLevelReturnValue)
+TEST(RenderTextureParams, can_be_streamed_to_string)
 {
-    AntiAliasingLevel newAntialiasingLevel{4};
-
-    RenderTextureDescriptor d1{{1, 1}};
-    d1.set_anti_aliasing_level(newAntialiasingLevel);
-    ASSERT_EQ(d1.anti_aliasing_level(), newAntialiasingLevel);
-}
-
-TEST(RenderTextureDescriptor, GetColorFormatReturnsARGB32ByDefault)
-{
-    RenderTextureDescriptor d1{{1, 1}};
-    ASSERT_EQ(d1.color_format(), RenderTextureFormat::ARGB32);
-}
-
-TEST(RenderTextureDescriptor, SetColorFormatMakesGetColorFormatReturnTheFormat)
-{
-    RenderTextureDescriptor d{{1, 1}};
-
-    ASSERT_EQ(d.color_format(), RenderTextureFormat::ARGB32);
-
-    d.set_color_format(RenderTextureFormat::Red8);
-
-    ASSERT_EQ(d.color_format(), RenderTextureFormat::Red8);
-}
-
-TEST(RenderTextureDescriptor, GetDepthStencilFormatReturnsDefaultValue)
-{
-    RenderTextureDescriptor d1{{1, 1}};
-    ASSERT_EQ(d1.depth_stencil_format(), DepthStencilFormat::D24_UNorm_S8_UInt);
-}
-
-TEST(RenderTextureDescriptor, StandardCtorGetReadWriteReturnsDefaultValue)
-{
-    RenderTextureDescriptor d1{{1, 1}};
-    ASSERT_EQ(d1.read_write(), RenderTextureReadWrite::Default);
-}
-
-TEST(RenderTextureDescriptor, SetReadWriteMakesGetReadWriteReturnNewValue)
-{
-    RenderTextureDescriptor d1{{1, 1}};
-    ASSERT_EQ(d1.read_write(), RenderTextureReadWrite::Default);
-
-    d1.set_read_write(RenderTextureReadWrite::Linear);
-
-    ASSERT_EQ(d1.read_write(), RenderTextureReadWrite::Linear);
-}
-
-TEST(RenderTextureDescriptor, GetDimensionReturns2DOnConstruction)
-{
-    RenderTextureDescriptor d1{{1, 1}};
-
-    ASSERT_EQ(d1.dimensionality(), TextureDimensionality::Tex2D);
-}
-
-TEST(RenderTextureDescriptor, SetDimensionCausesGetDimensionToReturnTheSetDimension)
-{
-    RenderTextureDescriptor d1{{1, 1}};
-    d1.set_dimensionality(TextureDimensionality::Cube);
-
-    ASSERT_EQ(d1.dimensionality(), TextureDimensionality::Cube);
-}
-
-TEST(RenderTextureDescriptor, SetDimensionChangesDescriptorEquality)
-{
-    RenderTextureDescriptor d1{{1, 1}};
-    RenderTextureDescriptor d2{d1};
-
-    ASSERT_EQ(d1, d2);
-
-    d1.set_dimensionality(TextureDimensionality::Cube);
-
-    ASSERT_NE(d1, d2);
-}
-
-TEST(RenderTextureDescriptor, SetDimensionToCubeOnRectangularDimensionsCausesNoError)
-{
-    // logically, a cubemap's dimensions must be square, but RenderTextureDescriptor
-    // allows changing the dimension independently from changing the dimensions without
-    // throwing an error, so that code like:
-    //
-    // desc.set_dimensionality(TextureDimensionality::Cube);
-    // desc.set_dimensions({2,2});
-    //
-    // is permitted, even though the first line might create an "invalid" descriptor
-
-    RenderTextureDescriptor rect{{1, 2}};
-    rect.set_dimensionality(TextureDimensionality::Cube);
-
-    // also permitted
-    RenderTextureDescriptor initiallySquare{{1, 1}};
-    initiallySquare.set_dimensions({1, 2});
-    initiallySquare.set_dimensionality(TextureDimensionality::Cube);
-}
-
-TEST(RenderTextureDescriptor, SetReadWriteChangesEquality)
-{
-    RenderTextureDescriptor d1{{1, 1}};
-    RenderTextureDescriptor d2{d1};
-
-    ASSERT_EQ(d1, d2);
-
-    d2.set_read_write(RenderTextureReadWrite::Linear);
-
-    ASSERT_NE(d1, d2);
-}
-
-TEST(RenderTextureDescriptor, ComparesEqualOnCopyConstruct)
-{
-    RenderTextureDescriptor d1{{1, 1}};
-    RenderTextureDescriptor d2{d1};
-
-    ASSERT_EQ(d1, d2);
-}
-
-TEST(RenderTextureDescriptor, ComparesEqualWithSameConstructionVals)
-{
-    RenderTextureDescriptor d1{{1, 1}};
-    RenderTextureDescriptor d2{{1, 1}};
-
-    ASSERT_EQ(d1, d2);
-}
-
-TEST(RenderTextureDescriptor, SetDimensionsWidthMakesItCompareNotEqual)
-{
-    RenderTextureDescriptor d1{{1, 1}};
-    RenderTextureDescriptor d2{{1, 1}};
-
-    d2.set_dimensions({2, 1});
-
-    ASSERT_NE(d1, d2);
-}
-
-TEST(RenderTextureDescriptor, SetDimensionsHeightMakesItCompareNotEqual)
-{
-    RenderTextureDescriptor d1{{1, 1}};
-    RenderTextureDescriptor d2{{1, 1}};
-
-    d2.set_dimensions({1, 2});
-
-    ASSERT_NE(d1, d2);
-}
-
-TEST(RenderTextureDescriptor, SetAntialiasingLevelMakesItCompareNotEqual)
-{
-    RenderTextureDescriptor d1{{1, 1}};
-    RenderTextureDescriptor d2{{1, 1}};
-
-    d2.set_anti_aliasing_level(AntiAliasingLevel{2});
-
-    ASSERT_NE(d1, d2);
-}
-
-TEST(RenderTextureDescriptor, SetAntialiasingLevelToSameValueComparesEqual)
-{
-    RenderTextureDescriptor d1{{1, 1}};
-    RenderTextureDescriptor d2{{1, 1}};
-
-    d2.set_anti_aliasing_level(d2.anti_aliasing_level());
-
-    ASSERT_EQ(d1, d2);
-}
-
-TEST(RenderTextureDescriptor, CanBeStreamedToAString)
-{
-    RenderTextureDescriptor d1{{1, 1}};
+    RenderTextureParams params;
     std::stringstream ss;
-    ss << d1;
+    ss << params;
 
     std::string str{ss.str()};
-    ASSERT_TRUE(contains_case_insensitive(str, "RenderTextureDescriptor"));
+    ASSERT_TRUE(contains_case_insensitive(str, "RenderTextureParams"));
 }

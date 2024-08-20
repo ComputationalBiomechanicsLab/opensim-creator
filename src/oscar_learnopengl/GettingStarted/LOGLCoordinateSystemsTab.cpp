@@ -32,8 +32,7 @@ namespace
         MouseCapturingCamera rv;
         rv.set_position({0.0f, 0.0f, 3.0f});
         rv.set_vertical_fov(45_deg);
-        rv.set_near_clipping_plane(0.1f);
-        rv.set_far_clipping_plane(100.0f);
+        rv.set_clipping_planes({0.1f, 100.0f});
         rv.set_background_color({0.2f, 0.3f, 0.3f, 1.0f});
         return rv;
     }
@@ -45,21 +44,21 @@ namespace
             loader.slurp("oscar_learnopengl/shaders/GettingStarted/CoordinateSystems.frag"),
         }};
 
-        rv.set_texture(
+        rv.set(
             "uTexture1",
             load_texture2D_from_image(
                 loader.open("oscar_learnopengl/textures/container.jpg"),
                 ColorSpace::sRGB,
-                ImageLoadingFlags::FlipVertically
+                ImageLoadingFlag::FlipVertically
             )
         );
 
-        rv.set_texture(
+        rv.set(
             "uTexture2",
             load_texture2D_from_image(
                 loader.open("oscar_learnopengl/textures/awesomeface.png"),
                 ColorSpace::sRGB,
-                ImageLoadingFlags::FlipVertically
+                ImageLoadingFlag::FlipVertically
             )
         );
 

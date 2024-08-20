@@ -21,6 +21,10 @@ using namespace osc;
 using namespace osc::literals;
 namespace rgs = std::ranges;
 
+osc::PolyhedronGeometry::PolyhedronGeometry(const Params& p) :
+    PolyhedronGeometry{p.vertices, p.indices, p.radius, p.detail_level}
+{}
+
 osc::PolyhedronGeometry::PolyhedronGeometry(
     std::span<const Vec3> vertices,
     std::span<const uint32_t> indices,
@@ -193,12 +197,12 @@ osc::PolyhedronGeometry::PolyhedronGeometry(
         generated_indices.push_back(i);
     }
 
-    mesh_.set_vertices(generated_vertices);
-    mesh_.set_tex_coords(uvs);
-    mesh_.set_indices(generated_indices);
+    set_vertices(generated_vertices);
+    set_tex_coords(uvs);
+    set_indices(generated_indices);
     if (detail_level == 0) {
         // flat-shade
-        mesh_.recalculate_normals();
+        recalculate_normals();
     }
     else {
         // smooth-shade
@@ -206,6 +210,6 @@ osc::PolyhedronGeometry::PolyhedronGeometry(
         for (auto& v : normals) {
             v = normalize(v);
         }
-        mesh_.set_normals(normals);
+        set_normals(normals);
     }
 }

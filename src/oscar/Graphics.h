@@ -1,9 +1,12 @@
 #pragma once
 
 #include <oscar/Graphics/AntiAliasingLevel.h>
+#include <oscar/Graphics/BlendEquation.h>
+#include <oscar/Graphics/BlendFunction.h>
 #include <oscar/Graphics/BlitFlags.h>
 #include <oscar/Graphics/Camera.h>
 #include <oscar/Graphics/CameraClearFlags.h>
+#include <oscar/Graphics/CameraClippingPlanes.h>
 #include <oscar/Graphics/CameraProjection.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/ColorHSLA.h>
@@ -34,8 +37,8 @@
 #include <oscar/Graphics/RenderTargetColorAttachment.h>
 #include <oscar/Graphics/RenderTargetDepthAttachment.h>
 #include <oscar/Graphics/RenderTexture.h>
-#include <oscar/Graphics/RenderTextureDescriptor.h>
 #include <oscar/Graphics/RenderTextureFormat.h>
+#include <oscar/Graphics/RenderTextureParams.h>
 #include <oscar/Graphics/RenderTextureReadWrite.h>
 #include <oscar/Graphics/Scene.h>
 #include <oscar/Graphics/Shader.h>

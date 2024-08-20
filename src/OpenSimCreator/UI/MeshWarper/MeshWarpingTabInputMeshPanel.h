@@ -267,27 +267,25 @@ namespace osc
             const TPSDocumentLandmarkPair& landmarkPair,
             const std::function<void(SceneDecoration&&)>& decorationConsumer) const
         {
-            const std::optional<Vec3> maybeLocation = GetLocation(landmarkPair, m_DocumentIdentifier);
-            if (!maybeLocation) {
+            const std::optional<Vec3> location = GetLocation(landmarkPair, m_DocumentIdentifier);
+            if (not location) {
                 return;  // no source/destination location for the landmark
             }
 
-            SceneDecoration decoration
-            {
+            const Color color = IsFullyPaired(landmarkPair) ? m_State->getPairedLandmarkColor() : m_State->getUnpairedLandmarkColor();
+            SceneDecoration decoration{
                 .mesh = m_State->getLandmarkSphereMesh(),
-                .transform = {.scale = Vec3{m_LandmarkRadius}, .position = *maybeLocation},
-                .color = IsFullyPaired(landmarkPair) ? m_State->getPairedLandmarkColor() : m_State->getUnpairedLandmarkColor(),
+                .transform = {.scale = Vec3{m_LandmarkRadius}, .position = *location},
+                .shading = color,
             };
 
             const TPSDocumentElementID landmarkID{landmarkPair.uid, TPSDocumentElementType::Landmark, m_DocumentIdentifier};
-            if (m_State->isSelected(landmarkID))
-            {
-                decoration.flags |= SceneDecorationFlags::IsSelected;
+            if (m_State->isSelected(landmarkID)) {
+                decoration.flags |= SceneDecorationFlag::RimHighlight0;
             }
-            if (m_State->isHovered(landmarkID))
-            {
-                decoration.color = to_srgb_colorspace(clamp_to_ldr(multiply_luminance(to_linear_colorspace(decoration.color), 1.2f)));
-                decoration.flags |= SceneDecorationFlags::IsHovered;
+            if (m_State->isHovered(landmarkID)) {
+                decoration.shading = to_srgb_colorspace(clamp_to_ldr(multiply_luminance(to_linear_colorspace(color), 1.2f)));
+                decoration.flags |= SceneDecorationFlag::RimHighlight1;
             }
 
             decorationConsumer(std::move(decoration));
@@ -309,25 +307,22 @@ namespace osc
             const TPSDocumentNonParticipatingLandmark& npl,
             const std::function<void(SceneDecoration&&)>& decorationConsumer) const
         {
-            SceneDecoration decoration
-            {
+            const Color color = m_State->getNonParticipatingLandmarkColor();
+            SceneDecoration decoration{
                 .mesh = m_State->getLandmarkSphereMesh(),
-                .transform =
-                {
+                .transform = {
                     .scale = Vec3{GetNonParticipatingLandmarkScaleFactor()*m_LandmarkRadius},
                     .position = npl.location,
                 },
-                .color = m_State->getNonParticipatingLandmarkColor(),
+                .shading = color,
             };
             const TPSDocumentElementID id{npl.uid, TPSDocumentElementType::NonParticipatingLandmark, m_DocumentIdentifier};
-            if (m_State->isSelected(id))
-            {
-                decoration.flags |= SceneDecorationFlags::IsSelected;
+            if (m_State->isSelected(id)) {
+                decoration.flags |= SceneDecorationFlag::RimHighlight0;
             }
-            if (m_State->isHovered(id))
-            {
-                decoration.color = to_srgb_colorspace(clamp_to_ldr(multiply_luminance(to_linear_colorspace(decoration.color), 1.2f)));
-                decoration.flags |= SceneDecorationFlags::IsHovered;
+            if (m_State->isHovered(id)) {
+                decoration.shading = to_srgb_colorspace(clamp_to_ldr(multiply_luminance(to_linear_colorspace(color), 1.2f)));
+                decoration.flags |= SceneDecorationFlag::RimHighlight1;
             }
 
             decorationConsumer(std::move(decoration));
@@ -347,10 +342,10 @@ namespace osc
                 GetNonParticipatingLandmarkScaleFactor()*m_LandmarkRadius :
                 m_LandmarkRadius;
 
-            decorationConsumer({
+            decorationConsumer(SceneDecoration{
                 .mesh = m_State->getLandmarkSphereMesh(),
                 .transform = {.scale = Vec3{radius}, .position = meshCollisionPosition},
-                .color = color.with_alpha(0.8f),  // faded
+                .shading = color.with_alpha(0.8f),  // faded
             });
         }
 
@@ -522,11 +517,11 @@ namespace osc
             {
                 if (ui::draw_menu_item("Mesh to OBJ"))
                 {
-                    ActionTrySaveMeshToObjFile(m_State->getScratchMesh(m_DocumentIdentifier), ObjWriterFlags::Default);
+                    ActionTrySaveMeshToObjFile(m_State->getScratchMesh(m_DocumentIdentifier), ObjWriterFlag::Default);
                 }
                 if (ui::draw_menu_item("Mesh to OBJ (no normals)"))
                 {
-                    ActionTrySaveMeshToObjFile(m_State->getScratchMesh(m_DocumentIdentifier), ObjWriterFlags::NoWriteNormals);
+                    ActionTrySaveMeshToObjFile(m_State->getScratchMesh(m_DocumentIdentifier), ObjWriterFlag::NoWriteNormals);
                 }
                 if (ui::draw_menu_item("Mesh to STL"))
                 {

@@ -5,15 +5,13 @@
 
 namespace osc
 {
-    class WireframeGeometry final {
+    class WireframeGeometry final : public Mesh {
     public:
         static constexpr CStringView name() { return "Wireframe"; }
 
-        explicit WireframeGeometry(const Mesh&);
+        // default-constructs a `WireframeGeometry` of a default-constructed `BoxGeometry`
+        explicit WireframeGeometry();
 
-        const Mesh& mesh() const { return mesh_; }
-        operator const Mesh& () const { return mesh_; }
-    private:
-        Mesh mesh_;
+        explicit WireframeGeometry(const Mesh&);
     };
 }

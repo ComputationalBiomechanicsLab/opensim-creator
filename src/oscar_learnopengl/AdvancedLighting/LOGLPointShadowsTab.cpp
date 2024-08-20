@@ -53,11 +53,12 @@ namespace
 
     RenderTexture create_depth_texture()
     {
-        RenderTextureDescriptor descriptor{c_shadowmap_dimensions};
-        descriptor.set_dimensionality(TextureDimensionality::Cube);
-        descriptor.set_read_write(RenderTextureReadWrite::Linear);
-        descriptor.set_color_format(RenderTextureFormat::Depth);
-        return RenderTexture{descriptor};
+        return RenderTexture{{
+            .dimensions = c_shadowmap_dimensions,
+            .dimensionality = TextureDimensionality::Cube,
+            .color_format = RenderTextureFormat::Depth,
+            .read_write = RenderTextureReadWrite::Linear
+        }};
     }
 
     MouseCapturingCamera create_camera()
@@ -65,8 +66,7 @@ namespace
         MouseCapturingCamera rv;
         rv.set_position({0.0f, 0.0f, 5.0f});
         rv.set_vertical_fov(45_deg);
-        rv.set_near_clipping_plane(0.1f);
-        rv.set_far_clipping_plane(100.0f);
+        rv.set_clipping_planes({0.1f, 100.0f});
         rv.set_background_color(Color::clear());
         return rv;
     }
@@ -134,9 +134,9 @@ private:
             calc_cubemap_view_proj_matrices(projection_matrix, light_pos_);
 
         // pass data to material
-        shadowmapping_material_.set_mat4_array("uShadowMatrices", shadow_matrices);
-        shadowmapping_material_.set_vec3("uLightPos", light_pos_);
-        shadowmapping_material_.set_float("uFarPlane", zfar);
+        shadowmapping_material_.set_array("uShadowMatrices", shadow_matrices);
+        shadowmapping_material_.set("uLightPos", light_pos_);
+        shadowmapping_material_.set("uFarPlane", zfar);
 
         // render (shadowmapping does not use the camera's view/projection matrices)
         Camera camera;
@@ -151,22 +151,22 @@ private:
         Material material = use_soft_shadows_ ? soft_scene_material_ : scene_material_;
 
         // set shared material params
-        material.set_texture("uDiffuseTexture", m_WoodTexture);
-        material.set_vec3("uLightPos", light_pos_);
-        material.set_vec3("uViewPos", scene_camera_.position());
-        material.set_float("uFarPlane", 25.0f);
-        material.set_bool("uShadows", soft_shadows_);
+        material.set("uDiffuseTexture", m_WoodTexture);
+        material.set("uLightPos", light_pos_);
+        material.set("uViewPos", scene_camera_.position());
+        material.set("uFarPlane", 25.0f);
+        material.set("uShadows", soft_shadows_);
 
+        material.set("uDepthMap", depth_texture_);
         for (const SceneCube& cube : scene_cubes_) {
             MaterialPropertyBlock material_props;
-            material_props.set_bool("uReverseNormals", cube.invert_normals);
-            material.set_render_texture("uDepthMap", depth_texture_);
+            material_props.set("uReverseNormals", cube.invert_normals);  // UNDOME
             graphics::draw(cube_mesh_, cube.transform, material, scene_camera_, std::move(material_props));
-            material.unset("uDepthMap");
         }
+        material.unset("uDepthMap");
 
         // also, draw the light as a little cube
-        material.set_bool("uShadows", soft_shadows_);
+        material.set("uShadows", soft_shadows_);
         graphics::draw(cube_mesh_, {.scale = Vec3{0.1f}, .position = light_pos_}, material, scene_camera_);
 
         scene_camera_.set_pixel_rect(viewport_screenspace_rect);
@@ -207,7 +207,7 @@ private:
         loader_.open("oscar_learnopengl/textures/wood.png"),
         ColorSpace::sRGB
     );
-    Mesh cube_mesh_ = BoxGeometry{2.0f, 2.0f, 2.0f};
+    Mesh cube_mesh_ = BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}};
     std::array<SceneCube, 6> scene_cubes_ = make_scene_cubes();
     RenderTexture depth_texture_ = create_depth_texture();
     Vec3 light_pos_ = {};

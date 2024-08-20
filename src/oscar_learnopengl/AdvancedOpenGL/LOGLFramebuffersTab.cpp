@@ -44,8 +44,7 @@ namespace
         MouseCapturingCamera rv;
         rv.set_position({0.0f, 0.0f, 3.0f});
         rv.set_vertical_fov(45_deg);
-        rv.set_near_clipping_plane(0.1f);
-        rv.set_far_clipping_plane(100.0f);
+        rv.set_clipping_planes({0.1f, 100.0f});
         return rv;
     }
 
@@ -94,12 +93,12 @@ private:
         // render scene
         {
             // cubes
-            scene_render_material_.set_texture("uTexture1", container_texture_);
+            scene_render_material_.set("uTexture1", container_texture_);
             graphics::draw(cube_mesh_, {.position = {-1.0f, 0.0f, -1.0f}}, scene_render_material_, scene_camera_);
             graphics::draw(cube_mesh_, {.position = { 1.0f, 0.0f, -1.0f}}, scene_render_material_, scene_camera_);
 
             // floor
-            scene_render_material_.set_texture("uTexture1", metal_texture_);
+            scene_render_material_.set("uTexture1", metal_texture_);
             graphics::draw(plane_mesh_, identity<Transform>(), scene_render_material_, scene_camera_);
         }
         scene_camera_.render_to(render_texture_);
@@ -132,7 +131,7 @@ private:
 
     Mesh cube_mesh_ = BoxGeometry{};
     Mesh plane_mesh_ = generate_plane();
-    Mesh quad_mesh_ = PlaneGeometry{2.0f, 2.0f, 1, 1};
+    Mesh quad_mesh_ = PlaneGeometry{{.width = 2.0f, .height = 2.0f}};
 
     RenderTexture render_texture_;
     Camera screen_camera_ = create_screen_camera();

@@ -22,6 +22,7 @@
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
 #include <oscar/UI/Tabs/TabRegistry.h>
+#include <oscar/Utils/Conversion.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar_demos/OscarDemosTabRegistry.h>
 #include <oscar_learnopengl/LearnOpenGLTabRegistry.h>
@@ -261,7 +262,7 @@ osc::OpenSimCreatorApp::~OpenSimCreatorApp() noexcept
 std::string osc::OpenSimCreatorApp::docs_url() const
 {
     if (const auto runtime_url = settings().find_value("docs_url")) {
-        return runtime_url->to<std::string>();
+        return to<std::string>(*runtime_url);
     }
     else {
         return "https://docs.opensimcreator.com";

@@ -24,7 +24,7 @@ namespace osc
         constexpr Flags(std::initializer_list<TEnum> flags)
         {
             for (TEnum flag : flags) {
-                *this |= flag;
+                value_ |= static_cast<underlying_type>(flag);
             }
         }
 
@@ -45,6 +45,11 @@ namespace osc
             return Flags{lhs.value_ & rhs.value_};
         }
 
+        constexpr Flags operator|(const Flags& rhs) const
+        {
+            return Flags{value_ | rhs.value_};
+        }
+
         constexpr Flags& operator|=(const Flags& rhs)
         {
             value_ |= rhs.value_;
@@ -58,6 +63,16 @@ namespace osc
                 return static_cast<TEnum>(underlying_type{1} << std::countr_zero(unsigned_val));
             }
             return static_cast<TEnum>(underlying_type{0});
+        }
+
+        constexpr Flags with(TEnum flag) const
+        {
+            return Flags{value_ | static_cast<underlying_type>(flag)};
+        }
+
+        constexpr Flags without(TEnum flag) const
+        {
+            return Flags{value_ & ~static_cast<underlying_type>(flag)};
         }
 
     private:

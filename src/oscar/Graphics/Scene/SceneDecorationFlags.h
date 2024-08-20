@@ -1,34 +1,27 @@
 #pragma once
 
-#include <oscar/Shims/Cpp23/utility.h>
+#include <oscar/Utils/Flags.h>
 
 namespace osc
 {
-    enum class SceneDecorationFlags {
+    // a flag associated with a `SceneDecoration`
+    enum class SceneDecorationFlag : unsigned {
         None                 = 0,
-        IsSelected           = 1<<0,  // is the active user selection (so highlight it)
-        IsChildOfSelected    = 1<<1,  // is a child of the active user selection (so highlight it)
-        IsHovered            = 1<<2,  // is currently hovered by the mouse (so highlight it, but fainter)
-        IsChildOfHovered     = 1<<3,  // is a child of the mouse hover (so highlight it, but fainter)
-        IsShowingOnly        = 1<<4,  // is the only thing being shown (helpful for culling)
-        IsChildOfShowingOnly = 1<<5,  // is a child of the only thing being shown (helpful for culling)
-        CastsShadows         = 1<<6,  // casts shadows on other elements in the scene
-        WireframeOverlay     = 1<<7,  // in addition to everything else, draw the geometry as a wireframe
-        NoDrawNormally       = 1<<8,  // disable drawing "normally" (i.e. in the scene) but still draw wireframes, cast shadows, rims, etc.
+        NoCastsShadows       = 1<<0,  // the decoration should not cast shadows
+        NoDrawInScene        = 1<<1,  // the decoration should not be drawn in the scene (still can cast shadows, show as wireframe, etc.)
+        RimHighlight0        = 1<<2,  // the decoration should be highlighted with a colored rim (group #0)
+        RimHighlight1        = 1<<3,  // the decoration should be highlighted with a colored rim (group #1)
+        DrawWireframeOverlay = 1<<4,  // the decoration's wireframe should additionally be drawn in the scene
+
+        // helpful combinations
+        Default = None,
+        WireframeOverlayedDefault = Default | DrawWireframeOverlay,
+        AnnotationElement = NoCastsShadows,
+        OnlyWireframe = NoDrawInScene | DrawWireframeOverlay,
+        Hidden = NoCastsShadows | NoDrawInScene,
+        AllRimHighlightGroups = RimHighlight0 | RimHighlight1,
     };
 
-    constexpr SceneDecorationFlags operator|(SceneDecorationFlags lhs, SceneDecorationFlags rhs)
-    {
-        return static_cast<SceneDecorationFlags>(cpp23::to_underlying(lhs) | cpp23::to_underlying(rhs));
-    }
-
-    constexpr SceneDecorationFlags& operator|=(SceneDecorationFlags& lhs, SceneDecorationFlags rhs)
-    {
-        return lhs = lhs | rhs;
-    }
-
-    constexpr bool operator&(SceneDecorationFlags lhs, SceneDecorationFlags rhs)
-    {
-        return cpp23::to_underlying(lhs) & cpp23::to_underlying(rhs);
-    }
+    // a set of flags associated with a `SceneDecoration`
+    using SceneDecorationFlags = Flags<SceneDecorationFlag>;
 }

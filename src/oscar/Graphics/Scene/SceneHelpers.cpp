@@ -42,13 +42,14 @@ namespace
         const Quat& rotation,
         const std::function<void(SceneDecoration&&)>& out)
     {
-        out({
+        out(SceneDecoration{
             .mesh = cache.grid_mesh(),
             .transform = {
                 .scale = Vec3{50.0f, 50.0f, 1.0f},
                 .rotation = rotation,
             },
-            .color = {0.7f, 0.15f},
+            .shading = Color::light_grey().with_alpha(0.15f),
+            .flags = SceneDecorationFlag::AnnotationElement,
         });
     }
 }
@@ -60,13 +61,14 @@ void osc::draw_bvh(
 {
     scene_bvh.for_each_leaf_or_inner_node([cube = cache.cube_wireframe_mesh(), &out](const BVHNode& node)
     {
-        out({
+        out(SceneDecoration{
             .mesh = cube,
             .transform = {
                 .scale = half_widths_of(node.bounds()),
                 .position = centroid_of(node.bounds()),
             },
-            .color = Color::black(),
+            .shading = Color::black(),
+            .flags = SceneDecorationFlag::AnnotationElement,
         });
     });
 }
@@ -86,13 +88,14 @@ void osc::draw_aabbs(
 {
     const Mesh cube = cache.cube_wireframe_mesh();
     for (const AABB& aabb : aabbs) {
-        out({
+        out(SceneDecoration{
             .mesh = cube,
             .transform = {
                 .scale = half_widths_of(aabb),
                 .position = centroid_of(aabb),
             },
-            .color = Color::black(),
+            .shading = Color::black(),
+            .flags = SceneDecorationFlag::AnnotationElement,
         });
     }
 }
@@ -116,23 +119,25 @@ void osc::draw_xz_floor_lines(
     const Mesh y_line = cache.yline_mesh();
 
     // X line
-    out({
+    out(SceneDecoration{
         .mesh = y_line,
         .transform = {
             .scale = Vec3{scale},
             .rotation = angle_axis(90_deg, Vec3{0.0f, 0.0f, 1.0f}),
         },
-        .color = Color::red(),
+        .shading = Color::red(),
+        .flags = SceneDecorationFlag::AnnotationElement,
     });
 
     // Z line
-    out({
+    out(SceneDecoration{
         .mesh = y_line,
         .transform = {
             .scale = Vec3{scale},
             .rotation = angle_axis(90_deg, Vec3{1.0f, 0.0f, 0.0f}),
         },
-        .color = Color::blue(),
+        .shading = Color::blue(),
+        .flags = SceneDecorationFlag::AnnotationElement,
     });
 }
 
@@ -166,6 +171,9 @@ void osc::draw_arrow(
 {
     const Vec3 start_to_end = props.end - props.start;
     const float total_length = length(start_to_end);
+    if (isnan(total_length) or equal_within_epsilon(total_length, 0.0f)) {
+        return;  // edge-case: caller passed junk vectors to this implementation
+    }
     const Vec3 direction = start_to_end/total_length;
 
     // draw the arrow from tip-to-base, because the neck might be
@@ -174,18 +182,20 @@ void osc::draw_arrow(
     const Vec3 tip_start = props.end - (direction * min(props.tip_length, total_length));
 
     // emit tip cone
-    out({
+    out(SceneDecoration{
         .mesh = cache.cone_mesh(),
         .transform = cylinder_to_line_segment_transform({tip_start, props.end}, props.head_thickness),
-        .color = props.color,
+        .shading = props.color,
+        .flags = props.decoration_flags,
     });
 
     // if there's space for it, emit the neck cylinder
     if (total_length > props.tip_length) {
-        out({
+        out(SceneDecoration{
             .mesh = cache.cylinder_mesh(),
             .transform = cylinder_to_line_segment_transform({props.start, tip_start}, props.neck_thickness),
-            .color = props.color,
+            .shading = props.color,
+            .flags = props.decoration_flags,
         });
     }
 }
@@ -197,10 +207,10 @@ void osc::draw_line_segment(
     float radius,
     const std::function<void(SceneDecoration&&)>& out)
 {
-    out({
+    out(SceneDecoration{
         .mesh = cache.cylinder_mesh(),
         .transform = cylinder_to_line_segment_transform(line_segment, radius),
-        .color = color,
+        .shading = color,
     });
 }
 
@@ -345,8 +355,7 @@ BVH osc::create_triangle_bvh(const Mesh& mesh)
 FrustumPlanes osc::calc_frustum_planes(const Camera& camera, float aspect_ratio)
 {
     const Radians fov_y = camera.vertical_fov();
-    const float z_near = camera.near_clipping_plane();
-    const float z_far = camera.far_clipping_plane();
+    const auto [z_near, z_far] = camera.clipping_planes();
     const float half_v_size = z_far * tan(fov_y * 0.5f);
     const float half_h_size = half_v_size * aspect_ratio;
     const Vec3 pos = camera.position();

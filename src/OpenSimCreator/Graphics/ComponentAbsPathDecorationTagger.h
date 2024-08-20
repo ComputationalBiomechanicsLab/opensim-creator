@@ -1,6 +1,6 @@
 #pragma once
 
-#include <string>
+#include <oscar/Utils/StringName.h>
 
 namespace OpenSim { class Component; }
 namespace osc { struct SceneDecoration; }
@@ -13,6 +13,6 @@ namespace osc
         void operator()(const OpenSim::Component&, SceneDecoration&);
     private:
         const OpenSim::Component* m_LastComponent = nullptr;
-        std::string m_ID;
+        StringName m_ID;
     };
 }

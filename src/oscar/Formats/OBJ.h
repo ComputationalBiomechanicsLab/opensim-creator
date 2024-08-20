@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/Shims/Cpp23/utility.h>
+#include <oscar/Utils/Flags.h>
 
 #include <ctime>
 #include <iosfwd>
@@ -11,22 +11,17 @@ namespace osc { class Mesh; }
 
 namespace osc
 {
-    enum class ObjWriterFlags {
+    enum class ObjWriterFlag {
         None           = 0,
         NoWriteNormals = 1<<0,
 
         Default = None,
     };
-
-    constexpr bool operator&(ObjWriterFlags lhs, ObjWriterFlags rhs)
-    {
-        return cpp23::to_underlying(lhs) & cpp23::to_underlying(rhs);
-    }
+    using ObjWriterFlags = Flags<ObjWriterFlag>;
 
     struct ObjMetadata final {
-        explicit ObjMetadata(
-            std::string_view authoring_tool_
-        );
+        explicit ObjMetadata();
+        explicit ObjMetadata(std::string_view authoring_tool_);
 
         std::string authoring_tool;
         std::tm creation_time;
@@ -35,7 +30,7 @@ namespace osc
     void write_as_obj(
         std::ostream&,
         const Mesh&,
-        const ObjMetadata&,
-        ObjWriterFlags = ObjWriterFlags::Default
+        const ObjMetadata& = ObjMetadata{},
+        ObjWriterFlags = ObjWriterFlag::Default
     );
 }

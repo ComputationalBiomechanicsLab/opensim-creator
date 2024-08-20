@@ -10,6 +10,9 @@ namespace osc { class Mesh; }
 namespace osc
 {
     struct StlMetadata final {
+
+        explicit StlMetadata();
+
         explicit StlMetadata(
             std::string_view authoring_tool_
         );

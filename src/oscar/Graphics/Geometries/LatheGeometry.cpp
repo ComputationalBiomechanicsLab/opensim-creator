@@ -15,11 +15,7 @@
 using namespace osc;
 using namespace osc::literals;
 
-osc::LatheGeometry::LatheGeometry(
-    std::span<const Vec2> points,
-    size_t num_segments,
-    Radians phi_start,
-    Radians phi_length)
+osc::LatheGeometry::LatheGeometry(const Params& p)
 {
     // the implementation of this was initially translated from `three.js`'s
     // `LatheGeometry`, which has excellent documentation and source code. The
@@ -27,11 +23,11 @@ osc::LatheGeometry::LatheGeometry(
     //
     // https://threejs.org/docs/#api/en/geometries/LatheGeometry
 
-    if (points.size() <= 2) {
+    if (p.points.size() <= 2) {
         return;  // edge-case: requires at least 2 points
     }
 
-    phi_length = clamp(phi_length, 0_deg, 360_deg);
+    const auto phi_length = clamp(p.phi_length, 0_deg, 360_deg);
 
     std::vector<uint32_t> indices;
     std::vector<Vec3> vertices;
@@ -39,22 +35,22 @@ osc::LatheGeometry::LatheGeometry(
     std::vector<Vec3> init_normals;
     std::vector<Vec3> normals;
 
-    const auto fnum_segments = static_cast<float>(num_segments);
+    const auto fnum_segments = static_cast<float>(p.num_segments);
     const auto recip_num_segments = 1.0f/fnum_segments;
     Vec3 previous_normal{};
 
     // pre-compute normals for initial "meridian"
     {
         // first vertex
-        const Vec2 dv = points[1] - points[0];
+        const Vec2 dv = p.points[1] - p.points[0];
         const Vec3 normal = {dv.y * 1.0f, -dv.x, dv.y * 0.0f};
 
         init_normals.push_back(normalize(normal));
         previous_normal = normal;
     }
     // in-between vertices
-    for (size_t i = 1; i < points.size()-1; ++i) {
-        const Vec2 dv = points[i+1] - points[i];
+    for (size_t i = 1; i < p.points.size()-1; ++i) {
+        const Vec2 dv = p.points[i+1] - p.points[i];
         const Vec3 normal = {dv.y * 1.0f, -dv.x, dv.y * 0.0f};
 
         init_normals.push_back(normalize(normal + previous_normal));
@@ -64,23 +60,23 @@ osc::LatheGeometry::LatheGeometry(
     init_normals.push_back(previous_normal);
 
     // generate vertices, uvs, and normals
-    for (size_t i = 0; i <= num_segments; ++i) {
+    for (size_t i = 0; i <= p.num_segments; ++i) {
         const auto fi = static_cast<float>(i);
-        const auto phi = phi_start + fi*recip_num_segments*phi_length;
+        const auto phi = p.phi_start + fi*recip_num_segments*phi_length;
         const auto sin_phi = sin(phi);
         const auto cos_phi = cos(phi);
 
-        for (size_t j = 0; j <= points.size()-1; ++j) {
+        for (size_t j = 0; j <= p.points.size()-1; ++j) {
             const auto fj = static_cast<float>(j);
 
             vertices.emplace_back(
-                points[j].x * sin_phi,
-                points[j].y,
-                points[j].x * cos_phi
+                p.points[j].x * sin_phi,
+                p.points[j].y,
+                p.points[j].x * cos_phi
             );
             uvs.emplace_back(
                 fi / fnum_segments,
-                fj / static_cast<float>(points.size()-1)
+                fj / static_cast<float>(p.points.size()-1)
             );
             normals.emplace_back(
                 init_normals[j].x * sin_phi,
@@ -91,13 +87,13 @@ osc::LatheGeometry::LatheGeometry(
     }
 
     // indices
-    for (size_t i = 0; i < num_segments; ++i) {
-        for (size_t j = 0; j < points.size()-1; ++j) {
-            const size_t base = j + i*points.size();
+    for (size_t i = 0; i < p.num_segments; ++i) {
+        for (size_t j = 0; j < p.points.size()-1; ++j) {
+            const size_t base = j + i*p.points.size();
 
             const auto a = static_cast<uint32_t>(base);
-            const auto b = static_cast<uint32_t>(base + points.size());
-            const auto c = static_cast<uint32_t>(base + points.size() + 1);
+            const auto b = static_cast<uint32_t>(base + p.points.size());
+            const auto c = static_cast<uint32_t>(base + p.points.size() + 1);
             const auto d = static_cast<uint32_t>(base + 1);
 
             indices.insert(indices.end(), {a, b, d});
@@ -105,8 +101,8 @@ osc::LatheGeometry::LatheGeometry(
         }
     }
 
-    mesh_.set_vertices(vertices);
-    mesh_.set_normals(normals);
-    mesh_.set_tex_coords(uvs);
-    mesh_.set_indices(indices);
+    set_vertices(vertices);
+    set_normals(normals);
+    set_tex_coords(uvs);
+    set_indices(indices);
 }

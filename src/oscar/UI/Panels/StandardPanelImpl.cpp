@@ -3,6 +3,7 @@
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/AppSettings.h>
 #include <oscar/UI/oscimgui.h>
+#include <oscar/Utils/Conversion.h>
 #include <oscar/Variant/Variant.h>
 
 #include <sstream>
@@ -42,7 +43,7 @@ CStringView osc::StandardPanelImpl::impl_get_name() const
 bool osc::StandardPanelImpl::impl_is_open() const
 {
     if (auto v = App::settings().find_value(panel_enabled_config_key_)) {
-        return v->to<bool>();
+        return to<bool>(*v);
     }
     else {
         return false;

@@ -14,9 +14,20 @@ namespace osc { class Shader; }
 
 namespace osc
 {
+    // a persistent cache that can be used to accelerate initializing
+    // scene-related data (meshes, shaders, materials, etc.)
+    //
+    // this is usually used when rendering multiple images that are likely
+    // to share these datastructures (e.g. you'll keep this around as state
+    // across multiple frames and share it between multiple `SceneRenderer`s)
     class SceneCache final {
     public:
+        // constructs the cache with a defaulted `ResourceLoader`, which will be used
+        // with any method that uses a `ResourcePath`
         SceneCache();
+
+        // constructs the cache with the provided `ResourceLoader`, which will be used
+        // with any method that uses a `ResourcePath`
         explicit SceneCache(const ResourceLoader&);
         SceneCache(const SceneCache&) = delete;
         SceneCache(SceneCache&&) noexcept;
@@ -45,11 +56,13 @@ namespace osc
 
         const BVH& get_bvh(const Mesh&);
 
+        // returns a `Shader` loaded via the `ResourceLoader` that was provided to the constructor
         const Shader& get_shader(
             const ResourcePath& vertex_shader_path,
             const ResourcePath& fragment_shader_path
         );
 
+        // returns a `Shader` loaded via the `ResourceLoader` that was provided to the constructor
         const Shader& get_shader(
             const ResourcePath& vertex_shader_path,
             const ResourcePath& geometry_shader_path,

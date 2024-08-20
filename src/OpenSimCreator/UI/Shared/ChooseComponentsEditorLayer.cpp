@@ -23,12 +23,14 @@
 #include <oscar/Platform/App.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/CStringView.h>
+#include <oscar/Utils/StringName.h>
 
 #include <memory>
 #include <optional>
 #include <string>
 #include <unordered_set>
 #include <utility>
+#include <variant>
 #include <vector>
 
 using namespace osc;
@@ -51,8 +53,8 @@ namespace
         std::shared_ptr<UndoableModelStatePair> model;
         ChooseComponentsEditorLayerParameters popupParams;
         ModelRendererParams renderParams;
-        std::string hoveredComponent;
-        std::unordered_set<std::string> alreadyChosenComponents;
+        StringName hoveredComponent;
+        std::unordered_set<StringName> alreadyChosenComponents;
         bool shouldClosePopup = false;
     };
 
@@ -78,27 +80,21 @@ namespace
         const auto onModelDecoration = [&state, &out](const OpenSim::Component& component, SceneDecoration&& decoration)
         {
             // update flags based on path
-            const std::string absPath = GetAbsolutePathString(component);
-            if (state.popupParams.componentsBeingAssignedTo.contains(absPath))
-            {
-                decoration.flags |= SceneDecorationFlags::IsSelected;
+            const StringName absPath = GetAbsolutePathStringName(component);
+            if (state.popupParams.componentsBeingAssignedTo.contains(absPath) or
+                state.alreadyChosenComponents.contains(absPath)) {
+
+                decoration.flags |= SceneDecorationFlag::RimHighlight0;
             }
-            if (state.alreadyChosenComponents.contains(absPath))
-            {
-                decoration.flags |= SceneDecorationFlags::IsSelected;
-            }
-            if (absPath == state.hoveredComponent)
-            {
-                decoration.flags |= SceneDecorationFlags::IsHovered;
+            if (absPath == state.hoveredComponent) {
+                decoration.flags |= SceneDecorationFlag::RimHighlight1;
             }
 
-            if (state.popupParams.canChooseItem(component))
-            {
+            if (state.popupParams.canChooseItem(component)) {
                 decoration.id = absPath;
             }
-            else
-            {
-                decoration.color.a *= 0.2f;  // fade non-selectable objects
+            else if (std::holds_alternative<Color>(decoration.shading)) {
+                std::get<Color>(decoration.shading).a *= 0.2f;  // fade non-selectable objects
             }
 
             out.decorations.push_back(std::move(decoration));
@@ -274,7 +270,7 @@ public:
 
     bool tryToggleHover()
     {
-        const std::string& absPath = m_State.hoveredComponent;
+        const auto& absPath = m_State.hoveredComponent;
         const OpenSim::Component* component = FindComponent(m_State.model->getModel(), absPath);
 
         if (!component)
