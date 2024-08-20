@@ -170,6 +170,7 @@ add_library(oscar STATIC
     Graphics/Scene.h
     Graphics/Shader.h
     Graphics/ShaderPropertyType.h
+    Graphics/Snorm8.h
     Graphics/SourceBlendingFactor.h
     Graphics/SubMeshDescriptor.h
     Graphics/TextureChannelFormat.h

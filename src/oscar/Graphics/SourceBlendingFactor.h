@@ -4,7 +4,7 @@
 
 namespace osc
 {
-	enum class SourceBlendingFactor : uint8_t {
+    enum class SourceBlendingFactor : uint8_t {
         One,
         Zero,
         SourceAlpha,
@@ -12,5 +12,5 @@ namespace osc
         NUM_OPTIONS,
 
         Default = SourceAlpha,
-	};
+    };
 }

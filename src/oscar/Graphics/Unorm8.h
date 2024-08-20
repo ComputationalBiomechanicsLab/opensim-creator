@@ -11,12 +11,12 @@
 namespace osc
 {
     // Representation of an unsigned normalized floating-point value (i.e. [0, 1])
-    // as a single 8-bit byte.
+    // as a single 8-bit byte. Handy for storing LDR colors.
     //
-    // Handy for storing LDR colors
+    // see: https://www.khronos.org/opengl/wiki/Normalized_Integer
     class Unorm8 final {
     public:
-        Unorm8() = default;
+        constexpr Unorm8() = default;
 
         consteval Unorm8(int literal) :
             value_{static_cast<uint8_t>(literal)}
@@ -72,7 +72,7 @@ namespace osc
             return static_cast<uint8_t>(255.0f * saturated);
         }
 
-        uint8_t value_;
+        uint8_t value_ = 0;
     };
 
     // tag `Unorm8` as scalar-like, so that other parts of the codebase (e.g.

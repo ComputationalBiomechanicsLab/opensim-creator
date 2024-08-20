@@ -5,9 +5,19 @@
 #include <oscar/Maths/Vec3.h>
 
 #include <limits>
+#include <type_traits>
 
 using namespace osc;
 
+TEST(Unorm, is_not_trivially_constructible)
+{
+    static_assert(not std::is_trivially_constructible_v<Unorm8>);
+}
+
+TEST(Unorm8, default_constructs_to_zero)
+{
+    static_assert(Unorm8{} == Unorm8{0});
+}
 TEST(Unorm8, ComparisonBetweenBytesWorksAsExpected)
 {
     static_assert(Unorm8{static_cast<std::byte>(0xfa)} == Unorm8{static_cast<std::byte>(0xfa)});

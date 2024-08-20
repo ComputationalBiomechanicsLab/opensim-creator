@@ -36,6 +36,7 @@ add_executable(testoscar
     Graphics/TestRenderTexture.cpp
     Graphics/TestRenderTextureDescriptor.cpp
     Graphics/TestRenderTextureFormat.cpp
+    Graphics/TestSnorm8.cpp
     Graphics/TestTextureChannelFormat.cpp
     Graphics/TestTextureFormat.cpp
     Graphics/TestTexture2D.cpp

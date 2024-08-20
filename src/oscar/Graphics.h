@@ -43,6 +43,7 @@
 #include <oscar/Graphics/Scene.h>
 #include <oscar/Graphics/Shader.h>
 #include <oscar/Graphics/ShaderPropertyType.h>
+#include <oscar/Graphics/Snorm8.h>
 #include <oscar/Graphics/SourceBlendingFactor.h>
 #include <oscar/Graphics/SubMeshDescriptor.h>
 #include <oscar/Graphics/TextureChannelFormat.h>
