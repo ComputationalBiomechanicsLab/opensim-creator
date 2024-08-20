@@ -1,16 +1,24 @@
 .. _tut6:
 
 
-Use the Model Warper
-====================
+🪄 Use the Model Warper
+=======================
 
 .. warning::
 
-    **Model Warping is 🪄 experimental 🪄.**
+    **Model warping is very 🪄 experimental 🪄.**
 
-    You can try it out, get a feel for it, but beware that some things (e.g.
-    the ``.warpconfig.toml`` file) aren't established yet, which means they
-    may change, as we rollout more robust designs.
+    We invite you to try model warping out and get a feel for how it might be
+    useful. Maybe it's already useful enough for your requirements for you to use
+    it in something serious (some researchers already have 🎉). However, be
+    aware that some implementation details of model warping, such as the structure
+    of the ``.warpconfig.toml`` file, aren't stable yet. This means that they may
+    change as model warping is developed.
+
+    The documentation here is extremely work-in-progress, so expect many ``TODO`` s
+    and ``FIXME`` s. This will be improved as the model warping feature is developed.
+    We figured it's better to show you what's happening as we develop it, rather
+    than only releasing it once it's perfect.
     
 
 TODO: overview and screenshot, top-level motivations, etc.
