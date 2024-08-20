@@ -35,7 +35,7 @@ namespace
             4, 9,  5,    2, 4,  11,    6,  2,  10,    8,  6, 7,     9, 8, 1,
         });
 
-        return PolyhedronGeometry(vertices, indices, p.radius, p.detail);
+        return {vertices, indices, p.radius, p.detail};
     }
 }
 

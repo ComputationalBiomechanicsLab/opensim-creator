@@ -31,7 +31,7 @@ namespace
             1, 3, 4,    1, 4, 2
         });
 
-        return PolyhedronGeometry(vertices, indices, p.radius, p.detail);
+        return {vertices, indices, p.radius, p.detail};
     }
 }
 

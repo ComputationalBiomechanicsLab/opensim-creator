@@ -13,7 +13,7 @@ TEST(Converter, automatically_defined_for_language_type_thats_implicitly_convert
 TEST(Converter, automatically_defined_if_implicit_construction_already_defined)
 {
     struct A {};
-    struct B { B(A) {} };
+    struct B { B(A) {} };  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
     Converter<A, B>{}(A{});  // should compile
 }
@@ -29,7 +29,7 @@ TEST(Converter, automatically_defined_if_explicit_construction_already_defined)
 TEST(Converter, automatically_defined_if_user_defined_conversion_operator_defined)
 {
     struct B {};
-    struct A { operator B() const { return B{}; } };
+    struct A { operator B() const { return B{}; } };  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
     Converter<A, B>{}(A{});  // should compile
 }

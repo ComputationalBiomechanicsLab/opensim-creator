@@ -7,16 +7,18 @@
 
 namespace osc
 {
+    struct PlaneGeometryParams final {
+        float width = 1.0f;
+        float height = 1.0f;
+        size_t num_width_segments = 1;
+        size_t num_height_segments = 1;
+    };
+
     class PlaneGeometry final : public Mesh {
     public:
-        static constexpr CStringView name() { return "Plane"; }
+        using Params = PlaneGeometryParams;
 
-        struct Params final {
-            float width = 1.0f;
-            float height = 1.0f;
-            size_t num_width_segments = 1;
-            size_t num_height_segments = 1;
-        };
+        static constexpr CStringView name() { return "Plane"; }
 
         explicit PlaneGeometry(const Params& = {});
     };

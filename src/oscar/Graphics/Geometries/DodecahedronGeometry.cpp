@@ -12,7 +12,7 @@ using namespace osc;
 
 namespace
 {
-    PolyhedronGeometry calc_dodecahedron_as_polyhedron(const DodecahedronGeometry::Params& p)
+    PolyhedronGeometry as_polyhedron_geometry(const DodecahedronGeometry::Params& p)
     {
         // the implementation of this was initially translated from `three.js`'s
         // `DodecahedronGeometry`, which has excellent documentation and source code. The
@@ -54,10 +54,10 @@ namespace
             1, 12, 14, 	1, 14, 5, 	1, 5, 9
         });
 
-        return PolyhedronGeometry{vertices, indices, p.radius, p.detail};
+        return {vertices, indices, p.radius, p.detail};
     }
 }
 
 osc::DodecahedronGeometry::DodecahedronGeometry(const Params& p) :
-    Mesh{calc_dodecahedron_as_polyhedron(p)}
+    Mesh{as_polyhedron_geometry(p)}
 {}

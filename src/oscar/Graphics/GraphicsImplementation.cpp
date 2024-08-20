@@ -3587,13 +3587,13 @@ std::optional<RenderTexture> osc::MaterialPropertyBlock::get<RenderTexture>(cons
 template<>
 void osc::MaterialPropertyBlock::set<RenderTexture>(std::string_view property_name, const RenderTexture& value)
 {
-    impl_.upd()->set(property_name, std::move(value));
+    impl_.upd()->set(property_name, value);
 }
 
 template<>
 void osc::MaterialPropertyBlock::set<RenderTexture>(const StringName& property_name, const RenderTexture& value)
 {
-    impl_.upd()->set(property_name, std::move(value));
+    impl_.upd()->set(property_name, value);
 }
 
 template<>
@@ -3611,13 +3611,13 @@ std::optional<Cubemap> osc::MaterialPropertyBlock::get<Cubemap>(const StringName
 template<>
 void osc::MaterialPropertyBlock::set<Cubemap>(std::string_view property_name, const Cubemap& value)
 {
-    impl_.upd()->set(property_name, std::move(value));
+    impl_.upd()->set(property_name, value);
 }
 
 template<>
 void osc::MaterialPropertyBlock::set<Cubemap>(const StringName& property_name, const Cubemap& value)
 {
-    impl_.upd()->set(property_name, std::move(value));
+    impl_.upd()->set(property_name, value);
 }
 
 void osc::MaterialPropertyBlock::unset(std::string_view property_name)

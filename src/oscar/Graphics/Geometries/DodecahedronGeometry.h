@@ -7,14 +7,16 @@
 
 namespace osc
 {
+    struct DodecahedronGeometryParams final {
+        float radius = 1.0f;
+        size_t detail = 0;
+    };
+
     class DodecahedronGeometry final : public Mesh {
     public:
-        static constexpr CStringView name() { return "Dodecahedron"; }
+        using Params = DodecahedronGeometryParams;
 
-        struct Params final {
-            float radius = 1.0f;
-            size_t detail = 0;
-        };
+        static constexpr CStringView name() { return "Dodecahedron"; }
 
         explicit DodecahedronGeometry(const Params& = {});
     };

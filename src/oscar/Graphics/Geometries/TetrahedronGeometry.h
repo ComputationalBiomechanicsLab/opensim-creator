@@ -7,14 +7,16 @@
 
 namespace osc
 {
+    struct TetrahedronGeometryParams final {
+        float radius = 1.0f;
+        size_t detail_level = 0;
+    };
+
     class TetrahedronGeometry final : public Mesh {
     public:
-        static constexpr CStringView name() { return "Tetrahedron"; }
+        using Params = TetrahedronGeometryParams;
 
-        struct Params final {
-            float radius = 1.0f;
-            size_t detail_level = 0;
-        };
+        static constexpr CStringView name() { return "Tetrahedron"; }
 
         explicit TetrahedronGeometry(const Params& = {});
     };

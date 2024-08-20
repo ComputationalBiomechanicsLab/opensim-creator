@@ -7,14 +7,16 @@
 
 namespace osc
 {
+    struct GridGeometryParams final {
+        float size = 2.0f;
+        size_t num_divisions = 10;
+    };
+
     class GridGeometry final : public Mesh {
     public:
-        static constexpr CStringView name() { return "Grid"; }
+        using Params = GridGeometryParams;
 
-        struct Params final {
-            float size = 2.0f;
-            size_t num_divisions = 10;
-        };
+        static constexpr CStringView name() { return "Grid"; }
 
         explicit GridGeometry(const Params& = {});
     };

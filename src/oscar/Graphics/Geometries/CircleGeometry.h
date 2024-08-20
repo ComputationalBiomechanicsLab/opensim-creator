@@ -8,16 +8,18 @@
 
 namespace osc
 {
+    struct CircleGeometryParams final {
+        float radius = 1.0f;
+        size_t num_segments = 32;
+        Radians theta_start = Degrees{0};
+        Radians theta_length = Degrees{360};
+    };
+
     class CircleGeometry final : public Mesh {
     public:
-        static constexpr CStringView name() { return "Circle"; }
+        using Params = CircleGeometryParams;
 
-        struct Params final {
-            float radius = 1.0f;
-            size_t num_segments = 32;
-            Radians theta_start = Degrees{0};
-            Radians theta_length = Degrees{360};
-        };
+        static constexpr CStringView name() { return "Circle"; }
 
         explicit CircleGeometry(const Params& = Params{});
     };
