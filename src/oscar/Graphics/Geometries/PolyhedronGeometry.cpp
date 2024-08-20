@@ -21,6 +21,10 @@ using namespace osc;
 using namespace osc::literals;
 namespace rgs = std::ranges;
 
+osc::PolyhedronGeometry::PolyhedronGeometry(const Params& p) :
+    PolyhedronGeometry{p.vertices, p.indices, p.radius, p.detail_level}
+{}
+
 osc::PolyhedronGeometry::PolyhedronGeometry(
     std::span<const Vec3> vertices,
     std::span<const uint32_t> indices,

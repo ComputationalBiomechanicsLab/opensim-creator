@@ -8,6 +8,8 @@
 namespace osc
 {
     struct TetrahedronGeometryParams final {
+        friend bool operator==(const TetrahedronGeometryParams&, const TetrahedronGeometryParams&) = default;
+
         float radius = 1.0f;
         size_t detail_level = 0;
     };

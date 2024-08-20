@@ -8,6 +8,8 @@
 namespace osc
 {
     struct BoxGeometryParams final {
+        friend bool operator==(const BoxGeometryParams&, const BoxGeometryParams&) = default;
+
         float width = 1.0f;
         float height = 1.0f;
         float depth = 1.0f;

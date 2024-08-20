@@ -9,6 +9,8 @@
 namespace osc
 {
     struct SphereGeometryParams final {
+        friend bool operator==(const SphereGeometryParams&, const SphereGeometryParams&) = default;
+
         float radius = 1.0f;
         size_t num_width_segments = 32;
         size_t num_height_segments = 16;

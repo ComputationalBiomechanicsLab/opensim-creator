@@ -8,6 +8,8 @@
 namespace osc
 {
     struct OctahedronGeometryParams final {
+        friend bool operator==(const OctahedronGeometryParams&, const OctahedronGeometryParams&) = default;
+
         float radius = 1.0f;
         size_t detail = 0;
     };

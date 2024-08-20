@@ -8,6 +8,8 @@
 namespace osc
 {
     struct GridGeometryParams final {
+        friend bool operator==(const GridGeometryParams&, const GridGeometryParams&) = default;
+
         float size = 2.0f;
         size_t num_divisions = 10;
     };

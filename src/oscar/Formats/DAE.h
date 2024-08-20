@@ -11,12 +11,15 @@ namespace osc { struct SceneDecoration; }
 namespace osc
 {
     struct DAEMetadata final {
+
         explicit DAEMetadata();
 
         explicit DAEMetadata(
             std::string_view author_,
             std::string_view authoring_tool_
         );
+
+        friend bool operator==(const DAEMetadata&, const DAEMetadata&) = default;
 
         std::string author;
         std::string authoring_tool;

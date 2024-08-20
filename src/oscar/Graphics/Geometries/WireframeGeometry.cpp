@@ -1,5 +1,6 @@
 #include "WireframeGeometry.h"
 
+#include <oscar/Graphics/Geometries/BoxGeometry.h>
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Graphics/MeshTopology.h>
 #include <oscar/Maths/CommonFunctions.h>
@@ -16,6 +17,10 @@
 
 using namespace osc;
 namespace rgs = std::ranges;
+
+osc::WireframeGeometry::WireframeGeometry() :
+    WireframeGeometry{BoxGeometry{}}
+{}
 
 osc::WireframeGeometry::WireframeGeometry(const Mesh& mesh)
 {

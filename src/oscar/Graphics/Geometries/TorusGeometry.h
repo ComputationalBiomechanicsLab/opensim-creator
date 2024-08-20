@@ -9,6 +9,8 @@
 namespace osc
 {
     struct TorusGeometryParams final {
+        friend bool operator==(const TorusGeometryParams&, const TorusGeometryParams&) = default;
+
         float tube_center_radius = 1.0f;
         float tube_radius = 0.4f;
         size_t num_radial_segments = 12;

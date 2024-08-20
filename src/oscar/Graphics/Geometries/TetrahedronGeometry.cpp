@@ -28,7 +28,7 @@ namespace
             2, 1, 0,    0, 3, 2,    1, 3, 0,    2, 3, 1
         });
 
-        return {vertices, indices, p.radius, p.detail_level};
+        return PolyhedronGeometry{vertices, indices, p.radius, p.detail_level};
     }
 }
 

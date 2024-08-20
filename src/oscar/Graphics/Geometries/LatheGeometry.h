@@ -12,6 +12,8 @@
 namespace osc
 {
     struct LatheGeometryParams final {
+        friend bool operator==(const LatheGeometryParams&, const LatheGeometryParams&) = default;
+
         std::vector<Vec2> points = {{0.0f, -0.5f}, {0.5f, 0.0f}, {0.0f, 0.5f}};
         size_t num_segments = 12;
         Radians phi_start = Degrees{0};

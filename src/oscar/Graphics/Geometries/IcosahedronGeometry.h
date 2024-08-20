@@ -8,6 +8,8 @@
 namespace osc
 {
     struct IcosahedronGeometryParams final {
+        friend bool operator==(const IcosahedronGeometryParams&, const IcosahedronGeometryParams&) = default;
+
         float radius = 1.0f;
         size_t detail = 0;
     };

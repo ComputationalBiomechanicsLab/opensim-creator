@@ -9,6 +9,8 @@
 namespace osc
 {
     struct CylinderGeometryParams final {
+        friend bool operator==(const CylinderGeometryParams&, const CylinderGeometryParams&) = default;
+
         float radius_top = 1.0f;
         float radius_bottom = 1.0f;
         float height = 1.0f;

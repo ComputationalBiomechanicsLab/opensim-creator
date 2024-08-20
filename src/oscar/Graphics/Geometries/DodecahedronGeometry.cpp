@@ -54,7 +54,7 @@ namespace
             1, 12, 14, 	1, 14, 5, 	1, 5, 9
         });
 
-        return {vertices, indices, p.radius, p.detail};
+        return PolyhedronGeometry{vertices, indices, p.radius, p.detail};
     }
 }
 

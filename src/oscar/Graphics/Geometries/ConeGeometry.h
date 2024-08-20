@@ -9,6 +9,8 @@
 namespace osc
 {
     struct ConeGeometryParams final {
+        friend bool operator==(const ConeGeometryParams&, const ConeGeometryParams&) = default;
+
         float radius = 1.0f;
         float height = 1.0f;
         size_t num_radial_segments = 32;

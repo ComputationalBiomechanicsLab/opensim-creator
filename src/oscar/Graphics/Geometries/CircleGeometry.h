@@ -9,6 +9,8 @@
 namespace osc
 {
     struct CircleGeometryParams final {
+        friend bool operator==(const CircleGeometryParams&, const CircleGeometryParams&) = default;
+
         float radius = 1.0f;
         size_t num_segments = 32;
         Radians theta_start = Degrees{0};

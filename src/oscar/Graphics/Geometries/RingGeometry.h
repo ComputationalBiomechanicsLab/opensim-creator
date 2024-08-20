@@ -9,6 +9,8 @@
 namespace osc
 {
     struct RingGeometryParams final {
+        friend bool operator==(const RingGeometryParams&, const RingGeometryParams&) = default;
+
         float inner_radius = 0.5f;
         float outer_radius = 1.0f;
         size_t num_theta_segments = 32;

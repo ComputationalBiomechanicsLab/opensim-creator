@@ -8,6 +8,8 @@
 namespace osc
 {
     struct PlaneGeometryParams final {
+        friend bool operator==(const PlaneGeometryParams&, const PlaneGeometryParams&) = default;
+
         float width = 1.0f;
         float height = 1.0f;
         size_t num_width_segments = 1;

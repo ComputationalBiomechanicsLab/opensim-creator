@@ -12,7 +12,7 @@ using namespace osc;
 
 namespace
 {
-    PolyhedronGeometry as_polyhedron(const OctahedronGeometry::Params& p)
+    PolyhedronGeometry as_polyhedron_geometry(const OctahedronGeometry::Params& p)
     {
         // the implementation of this was initially translated from `three.js`'s
         // `OctahedronGeometry`, which has excellent documentation and source code. The
@@ -31,10 +31,10 @@ namespace
             1, 3, 4,    1, 4, 2
         });
 
-        return {vertices, indices, p.radius, p.detail};
+        return PolyhedronGeometry{vertices, indices, p.radius, p.detail};
     }
 }
 
 osc::OctahedronGeometry::OctahedronGeometry(const Params& p) :
-    Mesh{as_polyhedron(p)}
+    Mesh{as_polyhedron_geometry(p)}
 {}

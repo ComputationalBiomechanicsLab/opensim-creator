@@ -56,6 +56,26 @@ TEST(BoxGeometry, works_with_non_default_args)
     }); });
 }
 
+TEST(PolyhedronGeometry, can_default_construct_with_params)
+{
+    PolyhedronGeometry mesh;
+
+    ASSERT_TRUE(mesh.has_vertices());
+    ASSERT_TRUE(mesh.has_normals());
+    ASSERT_TRUE(mesh.has_tex_coords());
+    ASSERT_FALSE(mesh.indices().empty());
+}
+
+TEST(PolyhedronGeometry, can_construct_with_custom_params)
+{
+    PolyhedronGeometry mesh{{
+        .vertices = {{1.0f, 1.0f, 1.0f}, {-1.0f, -1.0f, 1.0f}, {-1.0f, 1.0f, -1.0f}, {1.0f, -1.0f, -1.0f}},
+        .indices = {2, 1, 0,    0, 3, 2,    1, 3, 0,    2, 3, 1},
+        .radius = 10.0f,
+        .detail_level = 1,
+    }};
+}
+
 TEST(PolyhedronGeometry, works_with_a_couple_of_basic_verts)
 {
     const Mesh mesh = PolyhedronGeometry{
@@ -344,6 +364,24 @@ TEST(SphereGeometry, works_with_non_default_args)
         .theta_start = -45_deg,
         .theta_length = -60_deg,
     }};
+    ASSERT_TRUE(mesh.has_vertices());
+    ASSERT_TRUE(mesh.has_normals());
+    ASSERT_TRUE(mesh.has_tex_coords());
+    ASSERT_FALSE(mesh.indices().empty());
+}
+
+TEST(WireframeGeometry, can_default_construct)
+{
+    WireframeGeometry mesh;
+    ASSERT_TRUE(mesh.has_vertices());
+    ASSERT_TRUE(mesh.has_normals());
+    ASSERT_TRUE(mesh.has_tex_coords());
+    ASSERT_FALSE(mesh.indices().empty());
+}
+
+TEST(WireframeGeometry, can_construct_from_some_other_geometry)
+{
+    WireframeGeometry mesh{TorusKnotGeometry{}};
     ASSERT_TRUE(mesh.has_vertices());
     ASSERT_TRUE(mesh.has_normals());
     ASSERT_TRUE(mesh.has_tex_coords());

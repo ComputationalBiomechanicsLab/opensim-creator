@@ -12,7 +12,7 @@ using namespace osc;
 
 namespace
 {
-    PolyhedronGeometry icosahedron_as_polyhedron(const IcosahedronGeometry::Params& p)
+    PolyhedronGeometry as_polyhedron_geometry(const IcosahedronGeometry::Params& p)
     {
         // the implementation of this was initially translated from `three.js`'s
         // `IcosahedronGeometry`, which has excellent documentation and source code. The
@@ -35,10 +35,10 @@ namespace
             4, 9,  5,    2, 4,  11,    6,  2,  10,    8,  6, 7,     9, 8, 1,
         });
 
-        return {vertices, indices, p.radius, p.detail};
+        return PolyhedronGeometry{vertices, indices, p.radius, p.detail};
     }
 }
 
 osc::IcosahedronGeometry::IcosahedronGeometry(const Params& p) :
-    Mesh{icosahedron_as_polyhedron(p)}
+    Mesh{as_polyhedron_geometry(p)}
 {}

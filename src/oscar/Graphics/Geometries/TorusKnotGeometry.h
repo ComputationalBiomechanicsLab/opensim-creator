@@ -8,6 +8,8 @@
 namespace osc
 {
     struct TorusKnotGeometryParams final {
+        friend bool operator==(const TorusKnotGeometryParams&, const TorusKnotGeometryParams&) = default;
+
         float torus_radius = 1.0f;
         float tube_radius = 0.4f;
         size_t num_tubular_segments = 64;
