@@ -3,6 +3,7 @@
 #include <bit>
 #include <compare>
 #include <concepts>
+#include <cstdint>
 #include <iosfwd>
 
 namespace osc
