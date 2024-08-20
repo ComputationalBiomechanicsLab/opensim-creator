@@ -17,8 +17,6 @@ namespace osc
             std::string_view authoring_tool_
         );
 
-        friend bool operator==(const StlMetadata&, const StlMetadata&) = default;
-
         std::string authoring_tool;
         std::tm creation_time;
     };

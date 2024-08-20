@@ -19,8 +19,6 @@ namespace osc
             std::string_view authoring_tool_
         );
 
-        friend bool operator==(const DAEMetadata&, const DAEMetadata&) = default;
-
         std::string author;
         std::string authoring_tool;
         std::tm creation_time;

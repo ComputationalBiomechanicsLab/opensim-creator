@@ -23,8 +23,6 @@ namespace osc
         explicit ObjMetadata();
         explicit ObjMetadata(std::string_view authoring_tool_);
 
-        friend bool operator==(const ObjMetadata&, const ObjMetadata&) = default;
-
         std::string authoring_tool;
         std::tm creation_time;
     };
