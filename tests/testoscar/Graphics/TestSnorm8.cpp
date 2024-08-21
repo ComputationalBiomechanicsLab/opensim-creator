@@ -1,7 +1,9 @@
 #include <oscar/Graphics/Snorm8.h>
 
 #include <gtest/gtest.h>
+#include <oscar/Maths/Vec3.h>
 
+#include <cstdint>
 #include <type_traits>
 
 using namespace osc;
@@ -62,4 +64,14 @@ TEST(Snorm8, implicit_conversion_to_float_is_equivalent_to_calling_normalized_va
 TEST(Snorm8, implicit_conversion_to_int8_is_equivalent_to_calling_raw_value)
 {
     static_assert(static_cast<int8_t>(Snorm8{-47}) == Snorm8{-47}.raw_value());
+}
+
+TEST(Snorm8, can_be_placed_into_vec)
+{
+    [[maybe_unused]] Vec<3, Snorm8> should_compile;
+}
+
+TEST(Snorm8, value_type_returns_int8_t)
+{
+    static_assert(std::same_as<Snorm8::value_type, int8_t>);
 }

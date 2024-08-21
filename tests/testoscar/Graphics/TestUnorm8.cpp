@@ -30,7 +30,7 @@ TEST(Unorm8, ComparisonBetweenConvertedFloatsWorksAsExpected)
 
 TEST(Unorm8, NaNsAreConvertedToZero)
 {
-    static_assert(Unorm8(std::numeric_limits<float>::quiet_NaN()) == Unorm8{0.0f});
+    static_assert(Unorm8{std::numeric_limits<float>::quiet_NaN()} == Unorm8{0.0f});
 }
 
 TEST(Unorm8, CanCreateVec3OfUnormsFromUsualVec3OfFloats)
@@ -52,4 +52,9 @@ TEST(Unorm8, CanCreateUsualVec3FromVec3OfUNorms)
 TEST(Unorm8, ConvertsAsExpected)
 {
     ASSERT_EQ(Unorm8{0.5f}, Unorm8{static_cast<std::byte>(127)});
+}
+
+TEST(Unorm8, value_type_returns_uint8_t)
+{
+    static_assert(std::same_as<Unorm8::value_type, uint8_t>);
 }

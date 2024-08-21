@@ -1,5 +1,6 @@
 #pragma once
 
+#include <oscar/Graphics/Snorm8.h>
 #include <oscar/Graphics/Unorm8.h>
 #include <oscar/Graphics/VertexAttributeFormat.h>
 #include <oscar/Maths/Vec.h>
@@ -45,6 +46,15 @@ namespace osc::detail
     template<>
     struct VertexAttributeFormatTraits<VertexAttributeFormat::Unorm8x4> final {
         using type = Vec<4, Unorm8>;
+        using component_type = type::value_type;
+        static inline constexpr size_t num_components = std::tuple_size_v<type>;
+        static inline constexpr size_t component_size = sizeof(component_type);
+        static inline constexpr size_t stride = num_components * component_size;
+    };
+
+    template<>
+    struct VertexAttributeFormatTraits<VertexAttributeFormat::Snorm8x4> final {
+        using type = Vec<4, Snorm8>;
         using component_type = type::value_type;
         static inline constexpr size_t num_components = std::tuple_size_v<type>;
         static inline constexpr size_t component_size = sizeof(component_type);

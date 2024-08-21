@@ -1,5 +1,7 @@
 #pragma once
 
+#include <oscar/Maths/Scalar.h>
+
 #include <compare>
 #include <concepts>
 #include <limits>
@@ -14,6 +16,8 @@ namespace osc
     template<std::signed_integral T>
     class Snorm final {
     public:
+        using value_type = T;
+
         constexpr Snorm() = default;
 
         consteval Snorm(int literal) :
@@ -55,7 +59,7 @@ namespace osc
         {
             // remapping signed integers is tricker than unsigned ones, because
             // `|MIN| > |MAX|`
-            // 
+            //
             // this implementation follows OpenGL 4.2+'s convention of mapping
             // the integer range `[-MAX, MAX]` onto `[-1.0f, 1.0f]`, with
             // the edge-case (MIN) mapping onto `-1.0f`, which ensures `0` maps
@@ -75,5 +79,12 @@ namespace osc
         }
 
         T value_ = 0;
+    };
+
+    // tag `Snorm<T>` as scalar-like, so that other parts of the codebase (e.g.
+    // vectors, matrices) accept it
+    template<std::signed_integral T>
+    struct IsScalar<Snorm<T>> final {
+        static constexpr bool value = true;
     };
 }

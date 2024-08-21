@@ -16,6 +16,8 @@ namespace osc
     template<std::unsigned_integral T>
     class Unorm {
     public:
+        using value_type = T;
+
         constexpr Unorm() = default;
 
         consteval Unorm(int literal) :

@@ -69,6 +69,7 @@
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/Concepts.h>
+#include <oscar/Utils/Conversion.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/DefaultConstructOnCopy.h>
 #include <oscar/Utils/EnumHelpers.h>
@@ -3652,6 +3653,24 @@ std::ostream& osc::operator<<(std::ostream& o, const MaterialPropertyBlock&)
     return o << "MaterialPropertyBlock()";
 }
 
+// define Unorm8 --> Snorm8 `Converter`, so that vertex buffers support
+// this reencoding pathway
+template<>
+struct Converter<Unorm8, Snorm8> final {
+    Snorm8 operator()(Unorm8 v) const
+    {
+        return Snorm8{v.normalized_value()};
+    }
+};
+
+template<>
+struct Converter<Snorm8, Unorm8> final {
+    Unorm8 operator()(Snorm8 v) const
+    {
+        return Unorm8{v.normalized_value()};
+    }
+};
+
 namespace
 {
     constexpr auto c_mesh_topology_strings = std::to_array<CStringView>(
@@ -3683,53 +3702,32 @@ namespace
     // types that can be read/written to/from a vertex buffer by higher
     // levels of the API
     template<typename T>
-    concept UserFacingVertexData = IsAnyOf<T, Vec2, Vec3, Vec4, Vec<4, Unorm8>, Color, Color32>;
+    concept UserFacingVertexData = IsAnyOf<T, Vec2, Vec3, Vec4, Vec<4, Unorm8>, Vec<4, Snorm8>, Color, Color32>;
 
     // types that are encode-/decode-able into a vertex buffer
     template<typename T>
-    concept VertexBufferComponent = IsAnyOf<T, float, Unorm8>;
+    concept VertexBufferComponent = IsAnyOf<T, float, Unorm8, Snorm8>;
 
-    // low-level single-component decode/encode functions
+    // low-level single-component decoder function
+    //
+    // relies on the fact that every `VertexBufferComponent<T>` has a conversion operation
+    // to every other `VertexBufferComponent<T>`
     template<VertexBufferComponent EncodedValue, typename DecodedValue>
-    DecodedValue decode(const std::byte*);
+    DecodedValue decode(const std::byte* b)
+    {
+        const EncodedValue& encoded_value = *std::launder(reinterpret_cast<const EncodedValue*>(b));
+        return to<DecodedValue>(encoded_value);
+    }
 
+    // low-level single-component encoder function
+    //
+    // relies on the fact that every `VertexBufferComponent<T>` has a conversion operation
+    // to every other `VertexBufferComponent<T>`
     template<typename DecodedValue, VertexBufferComponent EncodedValue>
-    void encode(std::byte*, DecodedValue);
-
-    template<>
-    float decode<float, float>(const std::byte* p)
+    void encode(std::byte* p, DecodedValue v)
     {
-        return *std::launder(reinterpret_cast<const float*>(p));
-    }
-
-    template<>
-    void encode<float, float>(std::byte* p, float v)
-    {
-        *std::launder(reinterpret_cast<float*>(p)) = v;
-    }
-
-    template<>
-    float decode<Unorm8, float>(const std::byte* p)
-    {
-        return Unorm8{*p}.normalized_value();
-    }
-
-    template<>
-    void encode<float, Unorm8>(std::byte* p, float v)
-    {
-        *p = Unorm8{v}.byte();
-    }
-
-    template<>
-    Unorm8 decode<Unorm8, Unorm8>(const std::byte* p)
-    {
-        return Unorm8{*p};
-    }
-
-    template<>
-    void encode<Unorm8, Unorm8>(std::byte* p, Unorm8 v)
-    {
-        *p = v.byte();
+        EncodedValue& encoded_value = *std::launder(reinterpret_cast<EncodedValue*>(p));
+        encoded_value = to<EncodedValue>(v);
     }
 
     // mid-level multi-component decode/encode functions
@@ -3767,7 +3765,7 @@ namespace
     public:
         explicit MultiComponentEncoding(VertexAttributeFormat attribute_format)
         {
-            static_assert(num_options<VertexAttributeFormat>() == 4);
+            static_assert(num_options<VertexAttributeFormat>() == 5);
 
             switch (attribute_format) {
             case VertexAttributeFormat::Float32x2:
@@ -3786,6 +3784,10 @@ namespace
             case VertexAttributeFormat::Unorm8x4:
                 encoder_ = encode_many<T, VertexAttributeFormat::Unorm8x4>;
                 decoder_ = decode_many<VertexAttributeFormat::Unorm8x4, T>;
+                break;
+            case VertexAttributeFormat::Snorm8x4:
+                encoder_ = encode_many<T, VertexAttributeFormat::Snorm8x4>;
+                decoder_ = decode_many<VertexAttributeFormat::Snorm8x4, T>;
                 break;
             }
         }
@@ -3823,7 +3825,7 @@ namespace
         const auto decoded = decode_many<SourceFormat, SourceCPUFormat>(src.data());
         DestCPUFormat converted{};
         for (size_t i = 0; i < n; ++i) {
-            converted[i] = typename DestCPUFormat::value_type{decoded[i]};
+            converted[i] = to<typename DestCPUFormat::value_type>(decoded[i]);
         }
         encode_many<DestCPUFormat, DestinationFormat>(dest.data(), converted);
     }
@@ -4906,26 +4908,28 @@ private:
 
     static GLenum to_opengl_attribute_type_enum(const VertexAttributeFormat& format)
     {
-        static_assert(num_options<VertexAttributeFormat>() == 4);
+        static_assert(num_options<VertexAttributeFormat>() == 5);
 
         switch (format) {
         case VertexAttributeFormat::Float32x2: return GL_FLOAT;
         case VertexAttributeFormat::Float32x3: return GL_FLOAT;
         case VertexAttributeFormat::Float32x4: return GL_FLOAT;
         case VertexAttributeFormat::Unorm8x4:  return GL_UNSIGNED_BYTE;
+        case VertexAttributeFormat::Snorm8x4:  return GL_BYTE;
         default:                               return GL_FLOAT;  // should never happen (static_assert)
         }
     }
 
     static GLboolean is_normalized_attribute_type(const VertexAttributeFormat& format)
     {
-        static_assert(num_options<VertexAttributeFormat>() == 4);
+        static_assert(num_options<VertexAttributeFormat>() == 5);
 
         switch (format) {
         case VertexAttributeFormat::Float32x2: return GL_FALSE;
         case VertexAttributeFormat::Float32x3: return GL_FALSE;
         case VertexAttributeFormat::Float32x4: return GL_FALSE;
         case VertexAttributeFormat::Unorm8x4:  return GL_TRUE;
+        case VertexAttributeFormat::Snorm8x4:  return GL_TRUE;
         default:                               return GL_FALSE;  // should never happen (static_assert)
         }
     }
