@@ -2,15 +2,18 @@
 
 #include <OpenSimCreator/UI/ModelWarper/ChecklistPanel.h>
 #include <OpenSimCreator/UI/ModelWarper/MainMenu.h>
+#include <OpenSimCreator/UI/ModelWarper/ModelWarperTabInitialPopup.h>
 #include <OpenSimCreator/UI/ModelWarper/ResultModelViewerPanel.h>
 #include <OpenSimCreator/UI/ModelWarper/SourceModelViewerPanel.h>
 #include <OpenSimCreator/UI/ModelWarper/Toolbar.h>
 #include <OpenSimCreator/UI/ModelWarper/UIState.h>
 
 #include <SDL_events.h>
+#include <IconsFontAwesome5.h>
 #include <oscar/Platform/App.h>
 #include <oscar/UI/Panels/LogViewerPanel.h>
 #include <oscar/UI/Panels/PanelManager.h>
+#include <oscar/UI/Widgets/PopupManager.h>
 #include <oscar/UI/Tabs/StandardTabImpl.h>
 #include <oscar/Utils/CStringView.h>
 
@@ -21,7 +24,7 @@ using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_TabStringID = "OpenSim/ModelWarper";
+    constexpr CStringView c_TabStringID = "Model Warper (" ICON_FA_MAGIC " experimental)";
 }
 
 class osc::mow::ModelWarperTab::Impl final : public StandardTabImpl {
@@ -61,6 +64,8 @@ public:
                 return std::make_shared<LogViewerPanel>(panelName);
             }
         );
+
+        m_PopupManager.emplace_back<ModelWarperTabInitialPopup>("Model Warper Experimental Warning").open();
     }
 
 private:
@@ -68,6 +73,7 @@ private:
     {
         App::upd().make_main_loop_waiting();
         m_PanelManager->on_mount();
+        m_PopupManager.on_mount();
     }
 
     void impl_on_unmount() final
@@ -96,11 +102,13 @@ private:
         ui::enable_dockspace_over_viewport(ui::get_main_viewport(), ImGuiDockNodeFlags_PassthruCentralNode);
         m_Toolbar.onDraw();
         m_PanelManager->on_draw();
+        m_PopupManager.on_draw();
     }
 
     ParentPtr<ITabHost> m_TabHost;
     std::shared_ptr<UIState> m_State = std::make_shared<UIState>(m_TabHost);
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
+    PopupManager m_PopupManager;
     MainMenu m_MainMenu{m_State, m_PanelManager};
     Toolbar m_Toolbar{"##ModelWarperToolbar", m_State};
 };

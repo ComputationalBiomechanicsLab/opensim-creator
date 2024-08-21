@@ -102,6 +102,8 @@ namespace osc::ui
 
     void draw_text_bullet_pointed(CStringView);
 
+    bool draw_text_link(CStringView);
+
     enum class TreeNodeFlag {
         None        = 0,
         OpenOnArrow = 1<<0,  // only open when clicking on the arrow part

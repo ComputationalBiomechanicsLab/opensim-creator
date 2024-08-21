@@ -188,6 +188,11 @@ void osc::ui::draw_text_bullet_pointed(CStringView str)
     ImGui::BulletText("%s", str.c_str());
 }
 
+bool osc::ui::draw_text_link(CStringView str)
+{
+    return ImGui::TextLink(str.c_str());
+}
+
 bool osc::ui::draw_tree_node_ex(CStringView label, ui::TreeNodeFlags flags)
 {
     return ImGui::TreeNodeEx(label.c_str(), to_ImGuiTreeNodeFlags(flags));

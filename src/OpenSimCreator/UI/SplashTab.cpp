@@ -9,6 +9,7 @@
 #include <OpenSimCreator/UI/FrameDefinition/FrameDefinitionTab.h>
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterTab.h>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTab.h>
+#include <OpenSimCreator/UI/ModelWarper/ModelWarperTab.h>
 #include <OpenSimCreator/UI/Shared/MainMenu.h>
 
 #include <IconsFontAwesome5.h>
@@ -255,7 +256,7 @@ private:
         if (ui::draw_menu_item(ICON_FA_FOLDER_OPEN " Open Model")) {
             ActionOpenModel(m_Parent);
         }
-        if (ui::draw_menu_item(ICON_FA_MAGIC " Import Meshes")) {
+        if (ui::draw_menu_item(ICON_FA_FILE_IMPORT " Import Meshes")) {
             m_Parent->add_and_select_tab<mi::MeshImporterTab>(m_Parent);
         }
         App::upd().add_frame_annotation("SplashTab/ImportMeshesMenuItem", ui::get_last_drawn_item_screen_rect());
@@ -269,11 +270,14 @@ private:
         if (ui::draw_menu_item(ICON_FA_ARROWS_ALT " Frame Definition")) {
             m_Parent->add_and_select_tab<FrameDefinitionTab>(m_Parent);
         }
-        if (ui::draw_menu_item(ICON_FA_MAGIC " Mesh Importer")) {
+        if (ui::draw_menu_item(ICON_FA_FILE_IMPORT " Mesh Importer")) {
             m_Parent->add_and_select_tab<mi::MeshImporterTab>(m_Parent);
         }
         if (ui::draw_menu_item(ICON_FA_CUBE " Mesh Warping")) {
             m_Parent->add_and_select_tab<MeshWarpingTab>(m_Parent);
+        }
+        if (ui::draw_menu_item(ICON_FA_MAGIC " Model Warping (" ICON_FA_MAGIC " experimental)")) {
+            m_Parent->add_and_select_tab<mow::ModelWarperTab>(m_Parent);
         }
         App::upd().add_frame_annotation("SplashTab/MeshWarpingMenuItem", ui::get_last_drawn_item_screen_rect());
     }

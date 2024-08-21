@@ -211,7 +211,7 @@ void osc::MainMenuFileTab::onDraw(
 
     ui::draw_separator();
 
-    if (ui::draw_menu_item(ICON_FA_MAGIC " Import Meshes"))
+    if (ui::draw_menu_item(ICON_FA_FILE_IMPORT " Import Meshes"))
     {
         api->add_and_select_tab<mi::MeshImporterTab>(api);
     }

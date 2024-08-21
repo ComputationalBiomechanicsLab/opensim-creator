@@ -209,9 +209,7 @@ namespace osc
         requires std::constructible_from<TPopup, Args&&...>
         void emplacePopup(Args&&... args)
         {
-            auto p = std::make_shared<TPopup>(std::forward<Args>(args)...);
-            p->open();
-            m_PopupManager.push_back(std::move(p));
+            m_PopupManager.emplace_back<TPopup>(std::forward<Args>(args)...).open();
         }
 
         const Material& wireframe_material() const { return m_WireframeMaterial; }
