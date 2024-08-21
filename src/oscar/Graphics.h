@@ -43,6 +43,7 @@
 #include <oscar/Graphics/Scene.h>
 #include <oscar/Graphics/Shader.h>
 #include <oscar/Graphics/ShaderPropertyType.h>
+#include <oscar/Graphics/Snorm.h>
 #include <oscar/Graphics/Snorm8.h>
 #include <oscar/Graphics/SourceBlendingFactor.h>
 #include <oscar/Graphics/SubMeshDescriptor.h>
@@ -53,6 +54,7 @@
 #include <oscar/Graphics/Textures.h>
 #include <oscar/Graphics/TextureWrapMode.h>
 #include <oscar/Graphics/Texture2D.h>
+#include <oscar/Graphics/Unorm.h>
 #include <oscar/Graphics/Unorm8.h>
 #include <oscar/Graphics/VertexAttribute.h>
 #include <oscar/Graphics/VertexAttributeDescriptor.h>

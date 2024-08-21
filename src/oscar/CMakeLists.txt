@@ -170,6 +170,7 @@ add_library(oscar STATIC
     Graphics/Scene.h
     Graphics/Shader.h
     Graphics/ShaderPropertyType.h
+    Graphics/Snorm.h
     Graphics/Snorm8.h
     Graphics/SourceBlendingFactor.h
     Graphics/SubMeshDescriptor.h
@@ -180,6 +181,7 @@ add_library(oscar STATIC
     Graphics/Textures.h
     Graphics/TextureWrapMode.h
     Graphics/Texture2D.h
+    Graphics/Unorm.h
     Graphics/Unorm8.h
     Graphics/VertexAttribute.h
     Graphics/VertexAttributeDescriptor.cpp
