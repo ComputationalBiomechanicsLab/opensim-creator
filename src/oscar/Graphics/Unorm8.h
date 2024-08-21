@@ -14,7 +14,7 @@ namespace osc
     // see: https://www.khronos.org/opengl/wiki/Normalized_Integer
     class Unorm8 : public Unorm<uint8_t> {
     public:
-        using Unorm<uint8_t>::Unorm;
+        using Unorm::Unorm;
 
         constexpr Unorm8(std::byte raw_value) :
             Unorm8{static_cast<uint8_t>(raw_value)}
