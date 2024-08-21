@@ -11,11 +11,6 @@ osc::PopupManager::PopupManager(PopupManager&&) noexcept = default;
 osc::PopupManager& osc::PopupManager::operator=(PopupManager&&) noexcept = default;
 osc::PopupManager::~PopupManager() noexcept = default;
 
-void osc::PopupManager::push_back(std::shared_ptr<IPopup> popup)
-{
-    popups_.push_back(std::move(popup));
-}
-
 void osc::PopupManager::open_all()
 {
     for (std::shared_ptr<IPopup>& popup : popups_) {
