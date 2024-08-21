@@ -13,6 +13,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fixed force vector arrows not casting shadows
 - The rim highlights now more-clearly distinguish between hovered, selected, hovered+selected
   elements in the scene when they are overlapping (#24)
+- The (experimental) model warping UI is now available from the splash screen. Note: it's still
+  in development, and things may break!
 - Internal: `RenderTextureDescriptor` was refactored into a POD struct called `RenderTextureParams`
   for ease-of-use
 - Internal: oscar's `Graphics/Scene` classes were refactored for ease-of-use and grouping of rim
