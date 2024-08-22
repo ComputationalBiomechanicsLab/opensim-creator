@@ -1,5 +1,6 @@
 #include <OpenSimCreator/UI/OpenSimCreatorTabRegistry.h>
 
+#include <OpenSimCreator/Platform/OpenSimCreatorApp.h>
 #include <oscar/oscar.h>
 
 #include <gtest/gtest.h>
@@ -30,12 +31,12 @@ namespace {
         return rv;
     }();
 
-    std::unique_ptr<App> g_App;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+    std::unique_ptr<OpenSimCreatorApp> g_App;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
     class RegisteredOpenSimCreatorTabsFixture : public testing::TestWithParam<std::string> {
     protected:
         static void SetUpTestSuite()
         {
-            g_App = std::make_unique<App>();
+            g_App = std::make_unique<OpenSimCreatorApp>();
         }
 
         static void TearDownTestSuite()
