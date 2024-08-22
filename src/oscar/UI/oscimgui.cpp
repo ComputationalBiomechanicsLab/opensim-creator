@@ -18,6 +18,7 @@
 #include <oscar/Maths/VecFunctions.h>
 #include <oscar/UI/ui_graphics_backend.h>
 #include <oscar/Utils/EnumHelpers.h>
+#include <oscar/Utils/Conversion.h>
 #include <oscar/Utils/ScopeGuard.h>
 #include <oscar/Utils/UID.h>
 
@@ -82,8 +83,11 @@ namespace
         const Color clamped = clamp_to_ldr(brightened);
         return ui::to_ImU32(clamped);
     }
+}
 
-    ImGuizmo::OPERATION to_imguizmo_operation(ui::GizmoOperation op)
+template<>
+struct osc::Converter<ui::GizmoOperation, ImGuizmo::OPERATION> final {
+    ImGuizmo::OPERATION operator()(ui::GizmoOperation op) const
     {
         static_assert(num_flags<ui::GizmoOperation>() == 3);
         switch (op) {
@@ -93,8 +97,11 @@ namespace
         default:                            return ImGuizmo::OPERATION::TRANSLATE;
         }
     }
+};
 
-    ImGuizmo::MODE to_imguizmo_mode(ui::GizmoMode mode)
+template<>
+struct osc::Converter<ui::GizmoMode, ImGuizmo::MODE> final {
+    ImGuizmo::MODE operator()(ui::GizmoMode mode) const
     {
         static_assert(num_options<ui::GizmoMode>() == 2);
         switch (mode) {
@@ -103,8 +110,11 @@ namespace
         default:                   return ImGuizmo::MODE::WORLD;
         }
     }
+};
 
-    ImGuiTreeNodeFlags to_ImGuiTreeNodeFlags(ui::TreeNodeFlags flags)
+template<>
+struct osc::Converter<ui::TreeNodeFlags, ImGuiTreeNodeFlags> final {
+    ImGuiTreeNodeFlags operator()(ui::TreeNodeFlags flags) const
     {
         ImGuiTreeNodeFlags rv = 0;
         if (flags & ui::TreeNodeFlag::OpenOnArrow) {
@@ -118,8 +128,11 @@ namespace
         }
         return rv;
     }
+};
 
-    ImGuiTabItemFlags to_ImGuiTabItemFlags(ui::TabItemFlags flags)
+template<>
+struct osc::Converter<ui::TabItemFlags, ImGuiTabItemFlags> final {
+    ImGuiTabItemFlags operator()(ui::TabItemFlags flags) const
     {
         ImGuiTabItemFlags rv = 0;
         if (flags & ui::TabItemFlag::NoReorder) {
@@ -136,10 +149,15 @@ namespace
         }
         return rv;
     }
+};
 
-    ImGuiMouseButton to_ImGuiMouseButton(ui::MouseButton button)
+template<>
+struct osc::Converter<ui::MouseButton, ImGuiMouseButton> final {
+    ImGuiMouseButton operator()(ui::MouseButton button) const
     {
         static_assert(ImGuiMouseButton_COUNT == 5);
+        static_assert(num_options<ui::MouseButton>() == 3);
+
         switch (button) {
         case ui::MouseButton::Left:   return ImGuiMouseButton_Left;
         case ui::MouseButton::Right:  return ImGuiMouseButton_Right;
@@ -147,7 +165,27 @@ namespace
         default:                      return ImGuiMouseButton_Left;  // shouldn't happen
         }
     }
-}
+};
+
+template<>
+struct osc::Converter<ui::SliderFlags, ImGuiSliderFlags> final {
+    ImGuiSliderFlags operator()(ui::SliderFlags flags) const
+    {
+        static_assert(num_flags<ui::SliderFlag>() == 3);
+
+        ImGuiSliderFlags rv = ImGuiSliderFlags_None;
+        if (flags & ui::SliderFlag::Logarithmic) {
+            rv |= ImGuiSliderFlags_Logarithmic;
+        }
+        if (flags & ui::SliderFlag::AlwaysClamp) {
+            rv |= ImGuiSliderFlags_AlwaysClamp;
+        }
+        if (flags & ui::SliderFlag::NoInput) {
+            rv |= ImGuiSliderFlags_NoInput;
+        }
+        return rv;
+    }
+};
 
 void osc::ui::align_text_to_frame_padding()
 {
@@ -206,7 +244,7 @@ bool osc::ui::draw_text_link(CStringView str)
 
 bool osc::ui::draw_tree_node_ex(CStringView label, ui::TreeNodeFlags flags)
 {
-    return ImGui::TreeNodeEx(label.c_str(), to_ImGuiTreeNodeFlags(flags));
+    return ImGui::TreeNodeEx(label.c_str(), to<ImGuiTreeNodeFlags>(flags));
 }
 
 float osc::ui::get_tree_node_to_label_spacing()
@@ -264,7 +302,7 @@ void osc::ui::end_tab_bar()
 
 bool osc::ui::begin_tab_item(CStringView label, bool* p_open, TabItemFlags flags)
 {
-    return ImGui::BeginTabItem(label.c_str(), p_open, to_ImGuiTabItemFlags(flags));
+    return ImGui::BeginTabItem(label.c_str(), p_open, to<ImGuiTabItemFlags>(flags));
 }
 
 void osc::ui::end_tab_item()
@@ -299,37 +337,37 @@ void osc::ui::same_line(float offset_from_start_x, float spacing)
 
 bool osc::ui::is_mouse_clicked(MouseButton button, bool repeat)
 {
-    return ImGui::IsMouseClicked(to_ImGuiMouseButton(button), repeat);
+    return ImGui::IsMouseClicked(to<ImGuiMouseButton>(button), repeat);
 }
 
-bool osc::ui::is_mouse_clicked(MouseButton button, ImGuiID owner_id, ImGuiInputFlags flags)
+bool osc::ui::is_mouse_clicked(MouseButton button, ID owner_id)
 {
-    return ImGui::IsMouseClicked(to_ImGuiMouseButton(button), flags, owner_id);
+    return ImGui::IsMouseClicked(to<ImGuiMouseButton>(button), ImGuiInputFlags_None,  owner_id.value());
 }
 
 bool osc::ui::is_mouse_released(MouseButton button)
 {
-    return ImGui::IsMouseReleased(to_ImGuiMouseButton(button));
+    return ImGui::IsMouseReleased(to<ImGuiMouseButton>(button));
 }
 
 bool osc::ui::is_mouse_down(MouseButton button)
 {
-    return ImGui::IsMouseDown(to_ImGuiMouseButton(button));
+    return ImGui::IsMouseDown(to<ImGuiMouseButton>(button));
 }
 
 bool osc::ui::is_mouse_dragging(MouseButton button, float lock_threshold)
 {
-    return ImGui::IsMouseDragging(to_ImGuiMouseButton(button), lock_threshold);
+    return ImGui::IsMouseDragging(to<ImGuiMouseButton>(button), lock_threshold);
 }
 
-bool osc::ui::draw_selectable(CStringView label, bool* p_selected, ImGuiSelectableFlags flags, const Vec2& size)
+bool osc::ui::draw_selectable(CStringView label, bool* p_selected)
 {
-    return ImGui::Selectable(label.c_str(), p_selected, flags, size);
+    return ImGui::Selectable(label.c_str(), p_selected);
 }
 
-bool osc::ui::draw_selectable(CStringView label, bool selected, ImGuiSelectableFlags flags, const Vec2& size)
+bool osc::ui::draw_selectable(CStringView label, bool selected)
 {
-    return ImGui::Selectable(label.c_str(), selected, flags, size);
+    return ImGui::Selectable(label.c_str(), selected);
 }
 
 bool osc::ui::draw_checkbox(CStringView label, bool* v)
@@ -337,19 +375,9 @@ bool osc::ui::draw_checkbox(CStringView label, bool* v)
     return ImGui::Checkbox(label.c_str(), v);
 }
 
-bool osc::ui::draw_checkbox_flags(CStringView label, int* flags, int flags_value)
+bool osc::ui::draw_float_slider(CStringView label, float* v, float v_min, float v_max, const char* format, SliderFlags flags)
 {
-    return ImGui::CheckboxFlags(label.c_str(), flags, flags_value);
-}
-
-bool osc::ui::draw_checkbox_flags(CStringView label, unsigned int* flags, unsigned int flags_value)
-{
-    return ImGui::CheckboxFlags(label.c_str(), flags, flags_value);
-}
-
-bool osc::ui::draw_float_slider(CStringView label, float* v, float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
-{
-    return ImGui::SliderFloat(label.c_str(), v, v_min, v_max, format, flags);
+    return ImGui::SliderFloat(label.c_str(), v, v_min, v_max, format, to<ImGuiSliderFlags>(flags));
 }
 
 bool osc::ui::draw_scalar_input(CStringView label, ImGuiDataType data_type, void* p_data, const void* p_step, const void* p_step_fast, const char* format, ImGuiInputTextFlags flags)
@@ -447,9 +475,9 @@ ImGuiViewport* osc::ui::get_main_viewport()
     return ImGui::GetMainViewport();
 }
 
-ImGuiID osc::ui::enable_dockspace_over_viewport(const ImGuiViewport* viewport, ImGuiDockNodeFlags flags, const ImGuiWindowClass* window_class)
+ui::ID osc::ui::enable_dockspace_over_viewport(const ImGuiViewport* viewport, ImGuiDockNodeFlags flags, const ImGuiWindowClass* window_class)
 {
-    return ImGui::DockSpaceOverViewport(0, viewport, flags, window_class);
+    return ID{ImGui::DockSpaceOverViewport(0, viewport, flags, window_class)};
 }
 
 bool osc::ui::begin_panel(CStringView name, bool* p_open, ImGuiWindowFlags flags)
@@ -602,9 +630,9 @@ void osc::ui::pop_id()
     ImGui::PopID();
 }
 
-ImGuiID osc::ui::get_id(std::string_view str_id)
+ui::ID osc::ui::get_id(std::string_view str_id)
 {
-    return ImGui::GetID(str_id.data(), str_id.data() + str_id.size());
+    return ID{ImGui::GetID(str_id.data(), str_id.data() + str_id.size())};
 }
 
 ImGuiItemFlags osc::ui::get_item_flags()
@@ -617,14 +645,14 @@ void osc::ui::set_next_item_size(Rect r)  // note: ImGui API assumes cursor is l
     ImGui::ItemSize(ImRect{r.p1, r.p2});
 }
 
-bool osc::ui::add_item(Rect bounds, ImGuiID id)
+bool osc::ui::add_item(Rect bounds, ID id)
 {
-    return ImGui::ItemAdd(ImRect{bounds.p1, bounds.p2}, id);
+    return ImGui::ItemAdd(ImRect{bounds.p1, bounds.p2}, id.value());
 }
 
-bool osc::ui::is_item_hoverable(Rect bounds, ImGuiID id, ImGuiItemFlags item_flags)
+bool osc::ui::is_item_hoverable(Rect bounds, ID id, ImGuiItemFlags item_flags)
 {
-    return ImGui::ItemHoverable(ImRect{bounds.p1, bounds.p2}, id, item_flags);
+    return ImGui::ItemHoverable(ImRect{bounds.p1, bounds.p2}, id.value(), item_flags);
 }
 
 void osc::ui::draw_separator()
@@ -799,7 +827,7 @@ void osc::ui::pop_item_flag()
 
 bool osc::ui::is_item_clicked(MouseButton mouse_button)
 {
-    return ImGui::IsItemClicked(to_ImGuiMouseButton(mouse_button));
+    return ImGui::IsItemClicked(to<ImGuiMouseButton>(mouse_button));
 }
 
 bool osc::ui::is_item_hovered(ImGuiHoveredFlags flags)
@@ -852,9 +880,9 @@ void osc::ui::table_next_row(ImGuiTableRowFlags row_flags, float min_row_height)
     ImGui::TableNextRow(row_flags, min_row_height);
 }
 
-void osc::ui::table_setup_column(CStringView label, ImGuiTableColumnFlags flags, float init_width_or_weight, ImGuiID user_id)
+void osc::ui::table_setup_column(CStringView label, ImGuiTableColumnFlags flags, float init_width_or_weight, ID user_id)
 {
-    ImGui::TableSetupColumn(label.c_str(), flags, init_width_or_weight, user_id);
+    ImGui::TableSetupColumn(label.c_str(), flags, init_width_or_weight, user_id.value());
 }
 
 void osc::ui::end_table()
@@ -1387,7 +1415,7 @@ bool osc::ui::is_mouse_released_without_dragging(MouseButton mouse_button, float
         return false;
     }
 
-    const Vec2 drag_delta = ImGui::GetMouseDragDelta(to_ImGuiMouseButton(mouse_button));
+    const Vec2 drag_delta = ImGui::GetMouseDragDelta(to<ImGuiMouseButton>(mouse_button));
 
     return length(drag_delta) < threshold;
 }
@@ -1491,7 +1519,7 @@ bool osc::ui::draw_float3_meters_input(CStringView label, Vec3& vec, ImGuiInputT
     return ui::draw_float3_input(label, value_ptr(vec), "%.6f", flags);
 }
 
-bool osc::ui::draw_float_meters_slider(CStringView label, float& v, float v_min, float v_max, ImGuiSliderFlags flags)
+bool osc::ui::draw_float_meters_slider(CStringView label, float& v, float v_min, float v_max, SliderFlags flags)
 {
     return ui::draw_float_slider(label, &v, v_min, v_max, "%.6f", flags);
 }
@@ -1788,7 +1816,7 @@ bool osc::ui::draw_float_circular_slider(
     float min,
     float max,
     CStringView format,
-    ImGuiSliderFlags flags)
+    SliderFlags flags)
 {
     // this implementation was initially copied from `ImGui::SliderFloat` and written in a
     // similar style to code in `imgui_widgets.cpp` (see https://github.com/ocornut/imgui),
@@ -2144,8 +2172,8 @@ std::optional<Transform> osc::ui::Gizmo::draw(
     const bool gizmo_was_manipulated_by_user = ImGuizmo::Manipulate(
         value_ptr(view_matrix),
         value_ptr(projection_matrix),
-        to_imguizmo_operation(operation_),
-        to_imguizmo_mode(mode_),
+        to<ImGuizmo::OPERATION>(operation_),
+        to<ImGuizmo::MODE>(mode_),
         value_ptr(model_matrix),
         value_ptr(delta_matrix),
         nullptr,
@@ -2508,7 +2536,7 @@ void osc::ui::plot::setup_legend(Location location, LegendFlags flags)
 
 bool osc::ui::plot::begin_legend_popup(CStringView label_id, MouseButton mouse_button)
 {
-    return ImPlot::BeginLegendPopup(label_id.c_str(), to_ImGuiMouseButton(mouse_button));
+    return ImPlot::BeginLegendPopup(label_id.c_str(), to<ImGuiMouseButton>(mouse_button));
 }
 
 void osc::ui::plot::end_legend_popup()

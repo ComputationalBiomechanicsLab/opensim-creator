@@ -165,51 +165,51 @@ namespace osc::ui
         Left,
         Right,
         Middle,
+        NUM_OPTIONS,
     };
+
+    struct ID final {
+    public:
+        explicit ID() = default;
+        explicit ID(unsigned int value) : value_{value} {}
+
+        unsigned int value() const { return value_; }
+    private:
+        unsigned int value_ = 0;  // defaults to "no ID"
+    };
+
     bool is_mouse_clicked(MouseButton, bool repeat = false);
-    bool is_mouse_clicked(MouseButton, ImGuiID owner_id, ImGuiInputFlags flags = 0);
+    bool is_mouse_clicked(MouseButton, ID owner_id);
     bool is_mouse_released(MouseButton);
     bool is_mouse_down(MouseButton);
     bool is_mouse_dragging(MouseButton, float lock_threshold = -1.0f);
 
-    bool draw_selectable(CStringView label, bool* p_selected, ImGuiSelectableFlags flags = 0, const Vec2& size = {});
+    enum class SliderFlag {
+        None        = 0,
+        Logarithmic = 1<<0,
+        AlwaysClamp = 1<<1,
+        NoInput     = 1<<2,
+        NUM_FLAGS   =    3,
+    };
+    using SliderFlags = Flags<SliderFlag>;
 
-    bool draw_selectable(CStringView label, bool selected = false, ImGuiSelectableFlags flags = 0, const Vec2& size = {});
-
+    bool draw_selectable(CStringView label, bool* p_selected);
+    bool draw_selectable(CStringView label, bool selected = false);
     bool draw_checkbox(CStringView label, bool* v);
-
-    bool draw_checkbox_flags(CStringView label, int* flags, int flags_value);
-
-    bool draw_checkbox_flags(CStringView label, unsigned int* flags, unsigned int flags_value);
-
-    bool draw_float_slider(CStringView label, float* v, float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
-
+    bool draw_float_slider(CStringView label, float* v, float v_min, float v_max, const char* format = "%.3f", SliderFlags = {});
     bool draw_scalar_input(CStringView label, ImGuiDataType data_type, void* p_data, const void* p_step = nullptr, const void* p_step_fast = nullptr, const char* format = nullptr, ImGuiInputTextFlags flags = 0);
-
     bool draw_int_input(CStringView label, int* v, int step = 1, int step_fast = 100, ImGuiInputTextFlags flags = 0);
-
     bool draw_double_input(CStringView label, double* v, double step = 0.0, double step_fast = 0.0, const char* format = "%.6f", ImGuiInputTextFlags flags = 0);
-
     bool draw_float_input(CStringView label, float* v, float step = 0.0f, float step_fast = 0.0f, const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
-
     bool draw_float3_input(CStringView label, float v[3], const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
-
     bool draw_vec3_input(CStringView label, Vec3& v, const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
-
     bool draw_rgb_color_editor(CStringView label, Color& color);
-
     bool draw_rgba_color_editor(CStringView label, Color& color);
-
     bool draw_button(CStringView label, const Vec2& size = {});
-
     bool draw_small_button(CStringView label);
-
     bool draw_invisible_button(CStringView label, Vec2 size = {});
-
     bool draw_radio_button(CStringView label, bool active);
-
     bool draw_collapsing_header(CStringView label, ImGuiTreeNodeFlags flags = 0);
-
     void draw_dummy(const Vec2& size);
 
     bool begin_combobox(CStringView label, CStringView preview_value, ImGuiComboFlags flags = 0);
@@ -220,7 +220,7 @@ namespace osc::ui
 
     ImGuiViewport* get_main_viewport();
 
-    ImGuiID enable_dockspace_over_viewport(const ImGuiViewport* viewport = nullptr, ImGuiDockNodeFlags flags = 0, const ImGuiWindowClass* window_class = nullptr);
+    ID enable_dockspace_over_viewport(const ImGuiViewport* viewport = nullptr, ImGuiDockNodeFlags flags = 0, const ImGuiWindowClass* window_class = nullptr);
 
     bool begin_panel(CStringView name, bool* p_open = nullptr, ImGuiWindowFlags flags = 0);
     void end_panel();
@@ -283,12 +283,12 @@ namespace osc::ui
 
     void pop_id();
 
-    ImGuiID get_id(std::string_view);
+    ID get_id(std::string_view);
 
     ImGuiItemFlags get_item_flags();
     void set_next_item_size(Rect);  // note: ImGui API assumes cursor is located at `p1` already
-    bool add_item(Rect bounds, ImGuiID);
-    bool is_item_hoverable(Rect bounds, ImGuiID id, ImGuiItemFlags item_flags);
+    bool add_item(Rect bounds, ID);
+    bool is_item_hoverable(Rect bounds, ID, ImGuiItemFlags item_flags);
 
     void draw_separator();
     void draw_separator(ImGuiSeparatorFlags);
@@ -349,7 +349,7 @@ namespace osc::ui
     void table_headers_row();
     bool table_set_column_index(int column_n);
     void table_next_row(ImGuiTableRowFlags row_flags = 0, float min_row_height = 0.0f);
-    void table_setup_column(CStringView label, ImGuiTableColumnFlags flags = 0, float init_width_or_weight = 0.0f, ImGuiID user_id = 0);
+    void table_setup_column(CStringView label, ImGuiTableColumnFlags flags = 0, float init_width_or_weight = 0.0f, ID = ID{});
     void end_table();
 
     void push_style_color(ImGuiCol index, ImU32 col);
@@ -552,7 +552,7 @@ namespace osc::ui
         float& v,
         float v_min,
         float v_max,
-        ImGuiSliderFlags flags = ImGuiInputTextFlags_None
+        SliderFlags flags = {}
     );
 
     // behaves like `ui::draw_float_input`, but edits the given value as a mass (kg)
@@ -693,7 +693,7 @@ namespace osc::ui
         float min,
         float max,
         CStringView format = "%.3f",
-        ImGuiSliderFlags flags = 0
+        SliderFlags = {}
     );
 
     // updates a polar comera's rotation, position, etc. from UI mouse input state

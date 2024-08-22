@@ -167,7 +167,7 @@ private:
             static_cast<float>(tStart.time_since_epoch().count()),
             static_cast<float>(tEnd.time_since_epoch().count()),
             "%.2f",
-            ImGuiSliderFlags_AlwaysClamp
+            ui::SliderFlag::AlwaysClamp
         );
         ui::same_line();
 
