@@ -1,10 +1,9 @@
 #pragma once
 
 #include <oscar/Graphics/RenderBufferType.h>
+#include <oscar/Graphics/RenderTextureParams.h>
 
 #include <memory>
-
-namespace osc { struct RenderTextureParams; }
 
 namespace osc
 {
@@ -45,6 +44,7 @@ namespace osc
     // chains between render passes.
     class SharedRenderBuffer final {
     public:
+        SharedRenderBuffer() : SharedRenderBuffer{RenderTextureParams{}, RenderBufferType::Color} {}
         SharedRenderBuffer(const RenderTextureParams&, RenderBufferType);
 
         // reference equality
