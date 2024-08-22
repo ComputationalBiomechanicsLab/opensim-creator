@@ -485,7 +485,7 @@ void osc::DrawOutputNameColumn(
             maybeActiveSate->setHovered(FindComponent(maybeActiveSate->getModel(), co->getComponentAbsPath()));
         }
 
-        if (ui::is_item_clicked(ImGuiMouseButton_Left))
+        if (ui::is_item_clicked(ui::MouseButton::Left))
         {
             maybeActiveSate->setSelected(FindComponent(maybeActiveSate->getModel(), co->getComponentAbsPath()));
         }

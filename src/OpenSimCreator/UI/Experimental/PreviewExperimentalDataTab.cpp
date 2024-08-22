@@ -536,9 +536,7 @@ private:
             return;  // only hittest while the user is moused over the viewport
         }
 
-        if (ui::is_mouse_dragging(ImGuiMouseButton_Left) ||
-            ui::is_mouse_dragging(ImGuiMouseButton_Middle) ||
-            ui::is_mouse_dragging(ImGuiMouseButton_Right))
+        if (ui::is_mouse_dragging_with_any_button_down())
         {
             return;  // don't hittest while a user is dragging around
         }

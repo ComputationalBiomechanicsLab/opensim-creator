@@ -307,7 +307,7 @@ private:
 
             // if the user presses their left mouse while hovering over the plot,
             // change the current sim scrub time to match their press location
-            if (ui::is_mouse_down(ImGuiMouseButton_Left)) {
+            if (ui::is_mouse_down(ui::MouseButton::Left)) {
                 m_API->setSimulationScrubTime(timeLoc);
             }
         }

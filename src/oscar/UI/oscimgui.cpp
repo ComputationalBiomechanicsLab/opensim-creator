@@ -136,6 +136,17 @@ namespace
         }
         return rv;
     }
+
+    ImGuiMouseButton to_ImGuiMouseButton(ui::MouseButton button)
+    {
+        static_assert(ImGuiMouseButton_COUNT == 5);
+        switch (button) {
+        case ui::MouseButton::Left:   return ImGuiMouseButton_Left;
+        case ui::MouseButton::Right:  return ImGuiMouseButton_Right;
+        case ui::MouseButton::Middle: return ImGuiMouseButton_Middle;
+        default:                      return ImGuiMouseButton_Left;  // shouldn't happen
+        }
+    }
 }
 
 void osc::ui::align_text_to_frame_padding()
@@ -286,29 +297,29 @@ void osc::ui::same_line(float offset_from_start_x, float spacing)
     ImGui::SameLine(offset_from_start_x, spacing);
 }
 
-bool osc::ui::is_mouse_clicked(ImGuiMouseButton button, bool repeat)
+bool osc::ui::is_mouse_clicked(MouseButton button, bool repeat)
 {
-    return ImGui::IsMouseClicked(button, repeat);
+    return ImGui::IsMouseClicked(to_ImGuiMouseButton(button), repeat);
 }
 
-bool osc::ui::is_mouse_clicked(ImGuiMouseButton button, ImGuiID owner_id, ImGuiInputFlags flags)
+bool osc::ui::is_mouse_clicked(MouseButton button, ImGuiID owner_id, ImGuiInputFlags flags)
 {
-    return ImGui::IsMouseClicked(button, flags, owner_id);
+    return ImGui::IsMouseClicked(to_ImGuiMouseButton(button), flags, owner_id);
 }
 
-bool osc::ui::is_mouse_released(ImGuiMouseButton button)
+bool osc::ui::is_mouse_released(MouseButton button)
 {
-    return ImGui::IsMouseReleased(button);
+    return ImGui::IsMouseReleased(to_ImGuiMouseButton(button));
 }
 
-bool osc::ui::is_mouse_down(ImGuiMouseButton button)
+bool osc::ui::is_mouse_down(MouseButton button)
 {
-    return ImGui::IsMouseDown(button);
+    return ImGui::IsMouseDown(to_ImGuiMouseButton(button));
 }
 
-bool osc::ui::is_mouse_dragging(ImGuiMouseButton button, float lock_threshold)
+bool osc::ui::is_mouse_dragging(MouseButton button, float lock_threshold)
 {
-    return ImGui::IsMouseDragging(button, lock_threshold);
+    return ImGui::IsMouseDragging(to_ImGuiMouseButton(button), lock_threshold);
 }
 
 bool osc::ui::draw_selectable(CStringView label, bool* p_selected, ImGuiSelectableFlags flags, const Vec2& size)
@@ -786,9 +797,9 @@ void osc::ui::pop_item_flag()
     ImGui::PopItemFlag();
 }
 
-bool osc::ui::is_item_clicked(ImGuiMouseButton mouse_button)
+bool osc::ui::is_item_clicked(MouseButton mouse_button)
 {
-    return ImGui::IsItemClicked(mouse_button);
+    return ImGui::IsItemClicked(to_ImGuiMouseButton(mouse_button));
 }
 
 bool osc::ui::is_item_hovered(ImGuiHoveredFlags flags)
@@ -1016,8 +1027,8 @@ bool osc::ui::update_polar_camera_from_mouse_inputs(
 
     const float aspect_ratio = aspect_ratio_of(viewport_dimensions);
 
-    const bool left_dragging = ui::is_mouse_dragging(ImGuiMouseButton_Left);
-    const bool middle_dragging = ui::is_mouse_dragging(ImGuiMouseButton_Middle);
+    const bool left_dragging = ui::is_mouse_dragging(MouseButton::Left);
+    const bool middle_dragging = ui::is_mouse_dragging(MouseButton::Middle);
     const Vec2 delta = ui::get_io().MouseDelta;
 
     if (delta != Vec2{} and (left_dragging or middle_dragging)) {
@@ -1034,7 +1045,7 @@ bool osc::ui::update_polar_camera_from_mouse_inputs(
             modified = true;
         }
     }
-    else if (ui::is_mouse_dragging(ImGuiMouseButton_Right)) {
+    else if (ui::is_mouse_dragging(MouseButton::Right)) {
         if (is_alt_down()) {
             camera.radius *= 1.0f + 4.0f*delta.y/viewport_dimensions.y;
             modified = true;
@@ -1321,8 +1332,8 @@ ui::HittestResult osc::ui::hittest_last_drawn_item(float drag_threshold)
     rv.item_screen_rect.p1 = ui::get_item_topleft();
     rv.item_screen_rect.p2 = ui::get_item_bottomright();
     rv.is_hovered = ui::is_item_hovered();
-    rv.is_left_click_released_without_dragging = rv.is_hovered and is_mouse_released_without_dragging(ImGuiMouseButton_Left, drag_threshold);
-    rv.is_right_click_released_without_dragging = rv.is_hovered and is_mouse_released_without_dragging(ImGuiMouseButton_Right, drag_threshold);
+    rv.is_left_click_released_without_dragging = rv.is_hovered and is_mouse_released_without_dragging(MouseButton::Left, drag_threshold);
+    rv.is_right_click_released_without_dragging = rv.is_hovered and is_mouse_released_without_dragging(MouseButton::Right, drag_threshold);
     return rv;
 }
 
@@ -1365,18 +1376,18 @@ bool osc::ui::is_alt_down()
     return ui::get_io().KeyAlt;
 }
 
-bool osc::ui::is_mouse_released_without_dragging(ImGuiMouseButton mouse_button)
+bool osc::ui::is_mouse_released_without_dragging(MouseButton mouse_button)
 {
     return is_mouse_released_without_dragging(mouse_button, c_default_drag_threshold);
 }
 
-bool osc::ui::is_mouse_released_without_dragging(ImGuiMouseButton mouse_button, float threshold)
+bool osc::ui::is_mouse_released_without_dragging(MouseButton mouse_button, float threshold)
 {
     if (not ui::is_mouse_released(mouse_button)) {
         return false;
     }
 
-    const Vec2 drag_delta = ImGui::GetMouseDragDelta(mouse_button);
+    const Vec2 drag_delta = ImGui::GetMouseDragDelta(to_ImGuiMouseButton(mouse_button));
 
     return length(drag_delta) < threshold;
 }
@@ -1384,9 +1395,9 @@ bool osc::ui::is_mouse_released_without_dragging(ImGuiMouseButton mouse_button, 
 bool osc::ui::is_mouse_dragging_with_any_button_down()
 {
     return
-        ui::is_mouse_dragging(ImGuiMouseButton_Left) or
-        ui::is_mouse_dragging(ImGuiMouseButton_Middle) or
-        ui::is_mouse_dragging(ImGuiMouseButton_Right);
+        ui::is_mouse_dragging(MouseButton::Left) or
+        ui::is_mouse_dragging(MouseButton::Middle) or
+        ui::is_mouse_dragging(MouseButton::Right);
 }
 
 void osc::ui::begin_tooltip(std::optional<float> wrap_width)
@@ -1818,7 +1829,7 @@ bool osc::ui::draw_float_circular_slider(
     bool temporary_text_input_active = temporary_text_input_allowed and ImGui::TempInputIsActive(id);
     if (not temporary_text_input_active) {
         // tabbing or double clicking the slider temporarily transforms it into an input box
-        const bool clicked = is_hovered and ui::is_mouse_clicked(ImGuiMouseButton_Left, id);
+        const bool clicked = is_hovered and ui::is_mouse_clicked(MouseButton::Left, id);
         const bool double_clicked = (is_hovered and g.IO.MouseClickedCount[0] == 2 and ImGui::TestKeyOwner(ImGuiKey_MouseLeft, id));
         const bool make_active = (clicked or double_clicked or g.NavActivateId == id);
 
@@ -2495,9 +2506,9 @@ void osc::ui::plot::setup_legend(Location location, LegendFlags flags)
     ImPlot::SetupLegend(to_ImPlotLocation(location), to_ImPlotLegendFlags(flags));
 }
 
-bool osc::ui::plot::begin_legend_popup(CStringView label_id, ImGuiMouseButton mouse_button)
+bool osc::ui::plot::begin_legend_popup(CStringView label_id, MouseButton mouse_button)
 {
-    return ImPlot::BeginLegendPopup(label_id.c_str(), mouse_button);
+    return ImPlot::BeginLegendPopup(label_id.c_str(), to_ImGuiMouseButton(mouse_button));
 }
 
 void osc::ui::plot::end_legend_popup()

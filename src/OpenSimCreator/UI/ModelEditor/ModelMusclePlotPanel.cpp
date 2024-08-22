@@ -1888,7 +1888,7 @@ namespace
             // then "scrub" through the output in the model
             //
             // this is handy for users to visually see how the independent variable affects the model
-            if (maybeMouseX && ui::is_mouse_down(ImGuiMouseButton_Left)) {
+            if (maybeMouseX && ui::is_mouse_down(ui::MouseButton::Left)) {
                 if (coord.getDefaultLocked()) {
                     ui::draw_tooltip("scrubbing disabled", "you cannot scrub this plot because the coordinate is locked");
                 }
@@ -1900,7 +1900,7 @@ namespace
 
             // when the user stops dragging their left-mouse around, commit the scrubbed-to
             // coordinate to model storage
-            if (maybeMouseX && ui::is_mouse_released(ImGuiMouseButton_Left)) {
+            if (maybeMouseX && ui::is_mouse_released(ui::MouseButton::Left)) {
                 if (coord.getDefaultLocked()) {
                     ui::draw_tooltip("scrubbing disabled", "you cannot scrub this plot because the coordinate is locked");
                 }

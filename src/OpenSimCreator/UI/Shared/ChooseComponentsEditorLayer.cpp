@@ -177,8 +177,8 @@ public:
 
         // update this layer's state from provided state
         m_State.renderParams = panelParams.getRenderParams();
-        m_IsLeftClickReleasedWithoutDragging = ui::is_mouse_released_without_dragging(ImGuiMouseButton_Left);
-        m_IsRightClickReleasedWithoutDragging = ui::is_mouse_released_without_dragging(ImGuiMouseButton_Right);
+        m_IsLeftClickReleasedWithoutDragging = ui::is_mouse_released_without_dragging(ui::MouseButton::Left);
+        m_IsRightClickReleasedWithoutDragging = ui::is_mouse_released_without_dragging(ui::MouseButton::Right);
         if (ui::is_key_released(ImGuiKey_Escape))
         {
             m_State.shouldClosePopup = true;

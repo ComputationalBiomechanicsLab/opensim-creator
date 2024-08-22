@@ -77,7 +77,7 @@ private:
             ui::draw_text_disabled(c.getConcreteClassName());
             ui::end_tooltip();
         }
-        if (ui::is_item_clicked(ImGuiMouseButton_Right))
+        if (ui::is_item_clicked(ui::MouseButton::Right))
         {
             auto menu = std::make_unique<ComponentContextMenu>(
                 "##hovermenu",

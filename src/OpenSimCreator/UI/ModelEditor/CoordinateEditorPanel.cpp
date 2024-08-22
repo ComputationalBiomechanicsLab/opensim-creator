@@ -149,11 +149,11 @@ private:
             ui::draw_tooltip(c.getName(), ss.str());
         }
 
-        if (ui::is_item_clicked(ImGuiMouseButton_Left))
+        if (ui::is_item_clicked(ui::MouseButton::Left))
         {
             m_Model->setSelected(&c);
         }
-        else if (ui::is_item_clicked(ImGuiMouseButton_Right))
+        else if (ui::is_item_clicked(ui::MouseButton::Right))
         {
             auto popup = std::make_unique<ComponentContextMenu>(
                 "##componentcontextmenu",

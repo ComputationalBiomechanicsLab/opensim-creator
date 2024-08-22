@@ -37,7 +37,7 @@ namespace
         ui::draw_help_marker("Shows a menu containing extra actions that can be performed on this component.\n\nYou can also access the same menu by right-clicking the component in the 3D viewer, bottom status bar, or navigator panel.");
         ui::next_column();
         ui::push_style_color(ImGuiCol_Text, Color::yellow());
-        if (ui::draw_button(ICON_FA_BOLT) || ui::is_item_clicked(ImGuiMouseButton_Right))
+        if (ui::draw_button(ICON_FA_BOLT) || ui::is_item_clicked(ui::MouseButton::Right))
         {
             editorAPI->pushComponentContextMenuPopup(GetAbsolutePath(*selection));
         }

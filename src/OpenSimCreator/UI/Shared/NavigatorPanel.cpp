@@ -379,13 +379,13 @@ private:
                 ui::draw_tooltip(cur->getConcreteClassName());
             }
 
-            if (ui::is_item_clicked(ImGuiMouseButton_Left))
+            if (ui::is_item_clicked(ui::MouseButton::Left))
             {
                 rv.type = ResponseType::SelectionChanged;
                 rv.ptr = cur;
             }
 
-            if (ui::is_item_clicked(ImGuiMouseButton_Right))
+            if (ui::is_item_clicked(ui::MouseButton::Right))
             {
                 m_OnRightClick(GetAbsolutePath(*cur));
             }

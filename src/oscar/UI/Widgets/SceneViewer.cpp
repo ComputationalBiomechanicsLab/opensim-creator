@@ -21,8 +21,8 @@ public:
         // emit the texture to ImGui
         ui::draw_image(renderer_.upd_render_texture());
         is_hovered_ = ui::is_item_hovered();
-        is_left_clicked_ = ui::is_item_hovered() and ui::is_mouse_released_without_dragging(ImGuiMouseButton_Left);
-        is_right_clicked_ = ui::is_item_hovered() and ui::is_mouse_released_without_dragging(ImGuiMouseButton_Right);
+        is_left_clicked_ = ui::is_item_hovered() and ui::is_mouse_released_without_dragging(ui::MouseButton::Left);
+        is_right_clicked_ = ui::is_item_hovered() and ui::is_mouse_released_without_dragging(ui::MouseButton::Right);
     }
 
     bool is_hovered() const { return is_hovered_; }

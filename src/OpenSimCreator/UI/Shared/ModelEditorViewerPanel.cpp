@@ -364,8 +364,8 @@ private:
         layersGarbageCollect();
 
         m_State.viewportRect = ui::content_region_avail_as_screen_rect();
-        m_State.isLeftClickReleasedWithoutDragging = ui::is_mouse_released_without_dragging(ImGuiMouseButton_Left);
-        m_State.isRightClickReleasedWithoutDragging = ui::is_mouse_released_without_dragging(ImGuiMouseButton_Right);
+        m_State.isLeftClickReleasedWithoutDragging = ui::is_mouse_released_without_dragging(ui::MouseButton::Left);
+        m_State.isRightClickReleasedWithoutDragging = ui::is_mouse_released_without_dragging(ui::MouseButton::Right);
 
         // if necessary, auto-focus the camera on the first frame
         if (m_IsFirstFrame)

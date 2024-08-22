@@ -161,15 +161,16 @@ namespace osc::ui
 
     void same_line(float offset_from_start_x = 0.0f, float spacing = -1.0f);
 
-    bool is_mouse_clicked(ImGuiMouseButton button, bool repeat = false);
-
-    bool is_mouse_clicked(ImGuiMouseButton button, ImGuiID owner_id, ImGuiInputFlags flags = 0);
-
-    bool is_mouse_released(ImGuiMouseButton button);
-
-    bool is_mouse_down(ImGuiMouseButton button);
-
-    bool is_mouse_dragging(ImGuiMouseButton button, float lock_threshold = -1.0f);
+    enum class MouseButton {
+        Left,
+        Right,
+        Middle,
+    };
+    bool is_mouse_clicked(MouseButton, bool repeat = false);
+    bool is_mouse_clicked(MouseButton, ImGuiID owner_id, ImGuiInputFlags flags = 0);
+    bool is_mouse_released(MouseButton);
+    bool is_mouse_down(MouseButton);
+    bool is_mouse_dragging(MouseButton, float lock_threshold = -1.0f);
 
     bool draw_selectable(CStringView label, bool* p_selected, ImGuiSelectableFlags flags = 0, const Vec2& size = {});
 
@@ -334,7 +335,7 @@ namespace osc::ui
     void set_next_item_open(bool is_open);
     void push_item_flag(ImGuiItemFlags option, bool enabled);
     void pop_item_flag();
-    bool is_item_clicked(ImGuiMouseButton mouse_button = 0);
+    bool is_item_clicked(MouseButton = MouseButton::Left);
     bool is_item_hovered(ImGuiHoveredFlags flags = 0);
     bool is_item_deactivated_after_edit();
 
@@ -483,8 +484,8 @@ namespace osc::ui
     bool is_alt_down();
 
     // returns `true` if the specified mouse button was released without the user dragging
-    bool is_mouse_released_without_dragging(ImGuiMouseButton);
-    bool is_mouse_released_without_dragging(ImGuiMouseButton, float drag_threshold);
+    bool is_mouse_released_without_dragging(MouseButton);
+    bool is_mouse_released_without_dragging(MouseButton, float drag_threshold);
 
     // returns `true` if the user is dragging their mouse with any button pressed
     bool is_mouse_dragging_with_any_button_down();
@@ -1047,7 +1048,7 @@ namespace osc::ui
         void setup_legend(Location, LegendFlags = LegendFlags::Default);
 
         // begins a popup for a legend entry
-        bool begin_legend_popup(CStringView label_id, ImGuiMouseButton mouse_button = 1);
+        bool begin_legend_popup(CStringView label_id, MouseButton = MouseButton::Right);
 
         // ends a popup for a legend entry
         void end_legend_popup();
