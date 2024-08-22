@@ -22,6 +22,7 @@
 #include <oscar/Graphics/RenderTextureFormat.h>
 #include <oscar/Graphics/Shader.h>
 #include <oscar/Graphics/ShaderPropertyType.h>
+#include <oscar/Graphics/SharedRenderBuffer.h>
 #include <oscar/Graphics/SubMeshDescriptor.h>
 #include <oscar/Graphics/Texture2D.h>
 #include <oscar/Graphics/TextureFormat.h>
@@ -1458,6 +1459,14 @@ TEST_F(Renderer, MaterialPropertyBlockSetTextureOnMaterialCausesGetTextureToRetu
     mpb.set<Texture2D>(key, t);
 
     ASSERT_TRUE(mpb.get<Texture2D>(key));
+}
+
+TEST_F(Renderer, MaterialPropertyBlockSetSharedRenderBufferOnMaterialCausesGetRenderBufferToReturnTheRenderBuffer)
+{
+    MaterialPropertyBlock mpb;
+    ASSERT_FALSE(mpb.get<SharedRenderBuffer>("someKey"));
+    mpb.set("someKey", SharedRenderBuffer{});
+    ASSERT_TRUE(mpb.get<SharedRenderBuffer>("someKey"));
 }
 
 TEST_F(Renderer, MaterialPropertyBlockCanCompareEquals)

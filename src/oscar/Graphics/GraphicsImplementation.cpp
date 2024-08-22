@@ -439,11 +439,14 @@ namespace
         bool,
         Texture2D,
         RenderTexture,
-        Cubemap
+        Cubemap,
+        SharedRenderBuffer
     >;
 
     ShaderPropertyType get_shader_type(const MaterialValue& material_val)
     {
+        static_assert(std::variant_size_v<MaterialValue> == 17);
+
         switch (material_val.index()) {
         case variant_index<MaterialValue, Color>():
         case variant_index<MaterialValue, std::vector<Color>>():
@@ -478,6 +481,12 @@ namespace
         }
         case variant_index<MaterialValue, Cubemap>():
             return ShaderPropertyType::SamplerCube;
+        case variant_index<MaterialValue, SharedRenderBuffer>(): {
+            static_assert(num_options<TextureDimensionality>() == 2);
+            return std::get<SharedRenderBuffer>(material_val).dimensionality() == TextureDimensionality::Tex2D ?
+                ShaderPropertyType::Sampler2D :
+                ShaderPropertyType::SamplerCube;
+        }
         default:
             return ShaderPropertyType::Unknown;
         }
@@ -2432,6 +2441,11 @@ SharedRenderBuffer osc::SharedRenderBuffer::clone() const
     return SharedRenderBuffer{*impl_};
 }
 
+TextureDimensionality osc::SharedRenderBuffer::dimensionality() const
+{
+    return impl_->dimensionality();
+}
+
 class osc::RenderTexture::Impl final {
 public:
     Impl() : Impl{RenderTextureParams{}} {}
@@ -3632,6 +3646,30 @@ void osc::MaterialPropertyBlock::set<Cubemap>(std::string_view property_name, co
 
 template<>
 void osc::MaterialPropertyBlock::set<Cubemap>(const StringName& property_name, const Cubemap& value)
+{
+    impl_.upd()->set(property_name, value);
+}
+
+template<>
+std::optional<SharedRenderBuffer> osc::MaterialPropertyBlock::get<SharedRenderBuffer>(std::string_view property_name) const
+{
+    return impl_->get<SharedRenderBuffer>(property_name);
+}
+
+template<>
+std::optional<SharedRenderBuffer> osc::MaterialPropertyBlock::get<SharedRenderBuffer>(const StringName& property_name) const
+{
+    return impl_->get<SharedRenderBuffer>(property_name);
+}
+
+template<>
+void osc::MaterialPropertyBlock::set<SharedRenderBuffer>(std::string_view property_name, const SharedRenderBuffer& value)
+{
+    impl_.upd()->set(property_name, value);
+}
+
+template<>
+void osc::MaterialPropertyBlock::set<SharedRenderBuffer>(const StringName& property_name, const SharedRenderBuffer& value)
 {
     impl_.upd()->set(property_name, value);
 }
@@ -6498,6 +6536,8 @@ void osc::GraphicsBackend::try_bind_material_value_to_shader_element(
         return;  // mismatched types
     }
 
+    static_assert(std::variant_size_v<MaterialValue> == 17);
+
     switch (material_value.index()) {
     case variant_index<MaterialValue, Color>():
     {
@@ -6691,6 +6731,38 @@ void osc::GraphicsBackend::try_bind_material_value_to_shader_element(
                 ++texture_slot;
             },
         }, const_cast<RenderTexture::Impl&>(*std::get<RenderTexture>(material_value).impl_).getColorRenderBufferData());
+
+        break;
+    }
+    case variant_index<MaterialValue, SharedRenderBuffer>():
+    {
+        static_assert(num_options<TextureDimensionality>() == 2);
+        std::visit(Overload{
+            [&texture_slot, &shader_element](SingleSampledTexture& sst)
+            {
+                gl::active_texture(GL_TEXTURE0 + texture_slot);
+                gl::bind_texture(sst.texture2D);
+                gl::UniformSampler2D u{shader_element.location};
+                gl::set_uniform(u, texture_slot);
+                ++texture_slot;
+            },
+            [&texture_slot, &shader_element](MultisampledRBOAndResolvedTexture& mst)
+            {
+                gl::active_texture(GL_TEXTURE0 + texture_slot);
+                gl::bind_texture(mst.single_sampled_texture2D);
+                gl::UniformSampler2D u{shader_element.location};
+                gl::set_uniform(u, texture_slot);
+                ++texture_slot;
+            },
+            [&texture_slot, &shader_element](SingleSampledCubemap& cubemap)
+            {
+                gl::active_texture(GL_TEXTURE0 + texture_slot);
+                gl::bind_texture(cubemap.cubemap);
+                gl::UniformSamplerCube u{shader_element.location};
+                gl::set_uniform(u, texture_slot);
+                ++texture_slot;
+            },
+            }, const_cast<SharedRenderBuffer::RenderBuffer&>(*std::get<SharedRenderBuffer>(material_value).impl_).upd_opengl_data());
 
         break;
     }

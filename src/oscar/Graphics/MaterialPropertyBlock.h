@@ -3,6 +3,7 @@
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/Cubemap.h>
 #include <oscar/Graphics/RenderTexture.h>
+#include <oscar/Graphics/SharedRenderBuffer.h>
 #include <oscar/Graphics/Texture2D.h>
 #include <oscar/Maths/Mat3.h>
 #include <oscar/Maths/Mat4.h>
@@ -128,6 +129,11 @@ namespace osc
         template<std::same_as<Cubemap>> std::optional<Cubemap> get(const StringName& property_name) const;
         template<std::same_as<Cubemap>> void set(std::string_view property_name, const Cubemap&);
         template<std::same_as<Cubemap>> void set(const StringName& property_name, const Cubemap&);
+
+        template<std::same_as<SharedRenderBuffer>> std::optional<SharedRenderBuffer> get(std::string_view property_name) const;
+        template<std::same_as<SharedRenderBuffer>> std::optional<SharedRenderBuffer> get(const StringName& property_name) const;
+        template<std::same_as<SharedRenderBuffer>> void set(std::string_view property_name, const SharedRenderBuffer&);
+        template<std::same_as<SharedRenderBuffer>> void set(const StringName& property_name, const SharedRenderBuffer&);
 
         void unset(std::string_view property_name);
         void unset(const StringName& property_name);

@@ -2,6 +2,7 @@
 
 #include <oscar/Graphics/RenderBufferType.h>
 #include <oscar/Graphics/RenderTextureParams.h>
+#include <oscar/Graphics/TextureDimensionality.h>
 
 #include <memory>
 
@@ -52,6 +53,8 @@ namespace osc
 
         // returns an independent (as in, not-shared) copy of the underlying render buffer data
         SharedRenderBuffer clone() const;  // TODO: should copy the underlying GPU data also
+
+        TextureDimensionality dimensionality() const;
 
     private:
         friend class GraphicsBackend;
