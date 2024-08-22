@@ -3653,18 +3653,20 @@ std::ostream& osc::operator<<(std::ostream& o, const MaterialPropertyBlock&)
     return o << "MaterialPropertyBlock()";
 }
 
-// define Unorm8 --> Snorm8 `Converter`, so that vertex buffers support
-// this reencoding pathway
+// define an `Unorm8` to `Snorm8` `Converter`, so that vertex buffers
+// support this (re)encoding pathway
 template<>
-struct Converter<Unorm8, Snorm8> final {
+struct osc::Converter<Unorm8, Snorm8> final {
     Snorm8 operator()(Unorm8 v) const
     {
         return Snorm8{v.normalized_value()};
     }
 };
 
+// define a `Snorm8` to `Unorm8` `Converter`, so that vertex buffers
+// support this (re)encoding pathway
 template<>
-struct Converter<Snorm8, Unorm8> final {
+struct osc::Converter<Snorm8, Unorm8> final {
     Unorm8 operator()(Snorm8 v) const
     {
         return Unorm8{v.normalized_value()};
