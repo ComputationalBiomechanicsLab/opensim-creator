@@ -28,7 +28,6 @@
 #include <oscar/Graphics/MeshIndicesView.h>
 #include <oscar/Graphics/MeshTopology.h>
 #include <oscar/Graphics/MeshUpdateFlags.h>
-#include <oscar/Graphics/RenderBuffer.h>
 #include <oscar/Graphics/RenderBufferLoadAction.h>
 #include <oscar/Graphics/RenderBufferStoreAction.h>
 #include <oscar/Graphics/RenderBufferType.h>
@@ -43,6 +42,7 @@
 #include <oscar/Graphics/Scene.h>
 #include <oscar/Graphics/Shader.h>
 #include <oscar/Graphics/ShaderPropertyType.h>
+#include <oscar/Graphics/SharedRenderBuffer.h>
 #include <oscar/Graphics/Snorm.h>
 #include <oscar/Graphics/Snorm8.h>
 #include <oscar/Graphics/SourceBlendingFactor.h>

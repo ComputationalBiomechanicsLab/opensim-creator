@@ -1,23 +1,26 @@
 #pragma once
 
-#include <oscar/Graphics/RenderBuffer.h>
 #include <oscar/Graphics/RenderBufferLoadAction.h>
 #include <oscar/Graphics/RenderBufferStoreAction.h>
-
-#include <memory>
+#include <oscar/Graphics/SharedRenderBuffer.h>
 
 namespace osc
 {
     struct RenderTargetAttachment {
-        RenderTargetAttachment(
-            std::shared_ptr<RenderBuffer>,
-            RenderBufferLoadAction,
-            RenderBufferStoreAction
-        );
+
+        explicit RenderTargetAttachment(
+            SharedRenderBuffer buffer_,
+            RenderBufferLoadAction load_action_,
+            RenderBufferStoreAction store_action_) :
+
+            buffer{std::move(buffer_)},
+            load_action{load_action_},
+            store_action{store_action_}
+        {}
 
         friend bool operator==(const RenderTargetAttachment&, const RenderTargetAttachment&) = default;
 
-        std::shared_ptr<RenderBuffer> buffer;
+        SharedRenderBuffer buffer;
         RenderBufferLoadAction load_action;
         RenderBufferStoreAction store_action;
     };

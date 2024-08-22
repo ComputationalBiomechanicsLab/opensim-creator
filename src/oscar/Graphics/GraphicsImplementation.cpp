@@ -28,7 +28,6 @@
 #include <oscar/Graphics/OpenGL/CPUImageFormatOpenGLTraits.h>
 #include <oscar/Graphics/OpenGL/Gl.h>
 #include <oscar/Graphics/OpenGL/TextureFormatOpenGLTraits.h>
-#include <oscar/Graphics/RenderBuffer.h>
 #include <oscar/Graphics/RenderBufferLoadAction.h>
 #include <oscar/Graphics/RenderBufferStoreAction.h>
 #include <oscar/Graphics/RenderTarget.h>
@@ -39,6 +38,7 @@
 #include <oscar/Graphics/RenderTextureFormat.h>
 #include <oscar/Graphics/Shader.h>
 #include <oscar/Graphics/ShaderPropertyType.h>
+#include <oscar/Graphics/SharedRenderBuffer.h>
 #include <oscar/Graphics/SubMeshDescriptor.h>
 #include <oscar/Graphics/Texture2D.h>
 #include <oscar/Graphics/TextureFilterMode.h>
@@ -2172,9 +2172,9 @@ std::ostream& osc::operator<<(std::ostream& o, const RenderTextureParams& params
         << ")";
 }
 
-class osc::RenderBuffer::Impl final {
+class osc::SharedRenderBuffer::RenderBuffer final {
 public:
-    Impl(
+    RenderBuffer(
         const RenderTextureParams& params,
         RenderBufferType buffer_type) :
 
@@ -2416,18 +2416,21 @@ private:
     DefaultConstructOnCopy<std::optional<RenderBufferOpenGLData>> maybe_opengl_data_;
 };
 
-osc::RenderBuffer::RenderBuffer(
+osc::SharedRenderBuffer::SharedRenderBuffer(
     const RenderTextureParams& params,
     RenderBufferType buffer_type) :
 
-    impl_{std::make_unique<Impl>(params, buffer_type)}
+    impl_{std::make_shared<RenderBuffer>(params, buffer_type)}
 {}
 
-osc::RenderBuffer::RenderBuffer(const RenderBuffer& src) :
-    impl_{std::make_unique<Impl>(*src.impl_)}
+osc::SharedRenderBuffer::SharedRenderBuffer(const RenderBuffer& impl) :
+    impl_{std::make_shared<RenderBuffer>(impl)}
 {}
 
-osc::RenderBuffer::~RenderBuffer() noexcept = default;
+SharedRenderBuffer osc::SharedRenderBuffer::clone() const
+{
+    return SharedRenderBuffer{*impl_};
+}
 
 class osc::RenderTexture::Impl final {
 public:
@@ -2436,15 +2439,15 @@ public:
     explicit Impl(Vec2i dimensions) : Impl{RenderTextureParams{.dimensions = dimensions}} {}
 
     explicit Impl(const RenderTextureParams& params) :
-        color_buffer_{std::make_shared<RenderBuffer>(params, RenderBufferType::Color)},
-        depth_buffer_{std::make_shared<RenderBuffer>(params, RenderBufferType::Depth)}
+        color_buffer_{params, RenderBufferType::Color},
+        depth_buffer_{params, RenderBufferType::Depth}
     {}
 
     // note: independent `RenderTexture::Impl` should have independent data, so value-copy
     //       the underlying `RenderBuffer` here
     Impl(const Impl& src) :
-        color_buffer_{std::make_shared<RenderBuffer>(*src.color_buffer_)},
-        depth_buffer_{std::make_shared<RenderBuffer>(*src.depth_buffer_)}
+        color_buffer_{src.color_buffer_.clone()},
+        depth_buffer_{src.depth_buffer_.clone()}
     {}
 
     Impl(Impl&&) noexcept = default;
@@ -2454,8 +2457,8 @@ public:
         if (&src == this) {
             return *this;
         }
-        color_buffer_ = std::make_shared<RenderBuffer>(*src.color_buffer_);
-        depth_buffer_ = std::make_shared<RenderBuffer>(*src.depth_buffer_);
+        color_buffer_ = src.color_buffer_.clone();
+        depth_buffer_ = src.depth_buffer_.clone();
         return *this;
     }
 
@@ -2465,111 +2468,111 @@ public:
 
     Vec2i dimensions() const
     {
-        return color_buffer_->impl_->dimensions();
+        return color_buffer_.impl_->dimensions();
     }
 
     void set_dimensions(Vec2i new_dimensions)
     {
         if (new_dimensions != dimensions()) {
-            color_buffer_->impl_->set_dimensions(new_dimensions);
-            depth_buffer_->impl_->set_dimensions(new_dimensions);
+            color_buffer_.impl_->set_dimensions(new_dimensions);
+            depth_buffer_.impl_->set_dimensions(new_dimensions);
         }
     }
 
     TextureDimensionality dimensionality() const
     {
-        return color_buffer_->impl_->dimensionality();
+        return color_buffer_.impl_->dimensionality();
     }
 
     void set_dimensionality(TextureDimensionality new_dimensionality)
     {
         if (new_dimensionality != dimensionality()) {
-            color_buffer_->impl_->set_dimensionality(new_dimensionality);
-            depth_buffer_->impl_->set_dimensionality(new_dimensionality);
+            color_buffer_.impl_->set_dimensionality(new_dimensionality);
+            depth_buffer_.impl_->set_dimensionality(new_dimensionality);
         }
     }
 
     RenderTextureFormat color_format() const
     {
-        return color_buffer_->impl_->color_format();
+        return color_buffer_.impl_->color_format();
     }
 
     void set_color_format(RenderTextureFormat new_color_format)
     {
         if (new_color_format != color_format()) {
-            color_buffer_->impl_->set_color_format(new_color_format);
-            depth_buffer_->impl_->set_color_format(new_color_format);
+            color_buffer_.impl_->set_color_format(new_color_format);
+            depth_buffer_.impl_->set_color_format(new_color_format);
         }
     }
 
     AntiAliasingLevel anti_aliasing_level() const
     {
-        return color_buffer_->impl_->anti_aliasing_level();
+        return color_buffer_.impl_->anti_aliasing_level();
     }
 
     void set_anti_aliasing_level(AntiAliasingLevel aa_level)
     {
         if (aa_level != anti_aliasing_level()) {
-            color_buffer_->impl_->set_anti_aliasing_level(aa_level);
-            depth_buffer_->impl_->set_anti_aliasing_level(aa_level);
+            color_buffer_.impl_->set_anti_aliasing_level(aa_level);
+            depth_buffer_.impl_->set_anti_aliasing_level(aa_level);
         }
     }
 
     DepthStencilFormat depth_stencil_format() const
     {
-        return color_buffer_->impl_->depth_stencil_format();
+        return color_buffer_.impl_->depth_stencil_format();
     }
 
     void set_depth_stencil_format(DepthStencilFormat new_depth_stencil_format)
     {
         if (new_depth_stencil_format != depth_stencil_format()) {
-            color_buffer_->impl_->set_depth_stencil_format(new_depth_stencil_format);
-            depth_buffer_->impl_->set_depth_stencil_format(new_depth_stencil_format);
+            color_buffer_.impl_->set_depth_stencil_format(new_depth_stencil_format);
+            depth_buffer_.impl_->set_depth_stencil_format(new_depth_stencil_format);
         }
     }
 
     RenderTextureReadWrite read_write() const
     {
-        return color_buffer_->impl_->read_write();
+        return color_buffer_.impl_->read_write();
     }
 
     void set_read_write(RenderTextureReadWrite new_read_write)
     {
         if (new_read_write != read_write()) {
-            color_buffer_->impl_->set_read_write(new_read_write);
-            depth_buffer_->impl_->set_read_write(new_read_write);
+            color_buffer_.impl_->set_read_write(new_read_write);
+            depth_buffer_.impl_->set_read_write(new_read_write);
         }
     }
 
     void reformat(const RenderTextureParams& params)
     {
-        if (params != color_buffer_->impl_->parameters()) {
-            color_buffer_->impl_->reformat(params);
-            depth_buffer_->impl_->reformat(params);
+        if (params != color_buffer_.impl_->parameters()) {
+            color_buffer_.impl_->reformat(params);
+            depth_buffer_.impl_->reformat(params);
         }
     }
 
     RenderBufferOpenGLData& getColorRenderBufferData()
     {
-        return color_buffer_->impl_->upd_opengl_data();
+        return color_buffer_.impl_->upd_opengl_data();
     }
 
     RenderBufferOpenGLData& getDepthStencilRenderBufferData()
     {
-        return depth_buffer_->impl_->upd_opengl_data();
+        return depth_buffer_.impl_->upd_opengl_data();
     }
 
     bool has_been_rendered_to() const
     {
-        return color_buffer_->impl_->has_been_rendered_to();
+        return color_buffer_.impl_->has_been_rendered_to();
     }
 
-    std::shared_ptr<RenderBuffer> upd_color_buffer()
+    SharedRenderBuffer upd_color_buffer()
     {
         return color_buffer_;
     }
 
-    std::shared_ptr<RenderBuffer> upd_depth_buffer()
+    SharedRenderBuffer upd_depth_buffer()
     {
         return depth_buffer_;
     }
@@ -2577,8 +2580,8 @@ public:
 private:
     friend class GraphicsBackend;
 
-    std::shared_ptr<RenderBuffer> color_buffer_;
-    std::shared_ptr<RenderBuffer> depth_buffer_;
+    SharedRenderBuffer color_buffer_;
+    SharedRenderBuffer depth_buffer_;
 };
 
 osc::RenderTexture::RenderTexture() :
@@ -2654,12 +2657,12 @@ void osc::RenderTexture::reformat(const RenderTextureParams& params)
     impl_.upd()->reformat(params);
 }
 
-std::shared_ptr<RenderBuffer> osc::RenderTexture::upd_color_buffer()
+SharedRenderBuffer osc::RenderTexture::upd_color_buffer()
 {
     return impl_.upd()->upd_color_buffer();
 }
 
-std::shared_ptr<RenderBuffer> osc::RenderTexture::upd_depth_buffer()
+SharedRenderBuffer osc::RenderTexture::upd_depth_buffer()
 {
     return impl_.upd()->upd_depth_buffer();
 }
@@ -7066,20 +7069,17 @@ void osc::GraphicsBackend::validate_render_target(RenderTarget& render_target)
     // ensure there is at least one color attachment
     OSC_ASSERT(not render_target.colors.empty() && "a render target must have one or more color attachments");
 
-    OSC_ASSERT(render_target.colors.front().buffer != nullptr && "a color attachment must have a non-null render buffer");
-    const Vec2i first_color_buffer_dimensions = render_target.colors.front().buffer->impl_->dimensions();
-    const AntiAliasingLevel first_color_buffer_samples = render_target.colors.front().buffer->impl_->anti_aliasing_level();
+    const Vec2i first_color_buffer_dimensions = render_target.colors.front().buffer.impl_->dimensions();
+    const AntiAliasingLevel first_color_buffer_samples = render_target.colors.front().buffer.impl_->anti_aliasing_level();
 
     // validate other buffers against the first
     for (auto it = render_target.colors.begin()+1; it != render_target.colors.end(); ++it) {
         const RenderTargetColorAttachment& colorAttachment = *it;
-        OSC_ASSERT(colorAttachment.buffer != nullptr);
-        OSC_ASSERT(colorAttachment.buffer->impl_->dimensions() == first_color_buffer_dimensions);
-        OSC_ASSERT(colorAttachment.buffer->impl_->anti_aliasing_level() == first_color_buffer_samples);
+        OSC_ASSERT(colorAttachment.buffer.impl_->dimensions() == first_color_buffer_dimensions);
+        OSC_ASSERT(colorAttachment.buffer.impl_->anti_aliasing_level() == first_color_buffer_samples);
     }
-    OSC_ASSERT(render_target.depth.buffer != nullptr);
-    OSC_ASSERT(render_target.depth.buffer->impl_->dimensions() == first_color_buffer_dimensions);
-    OSC_ASSERT(render_target.depth.buffer->impl_->anti_aliasing_level() == first_color_buffer_samples);
+    OSC_ASSERT(render_target.depth.buffer.impl_->dimensions() == first_color_buffer_dimensions);
+    OSC_ASSERT(render_target.depth.buffer.impl_->anti_aliasing_level() == first_color_buffer_samples);
 }
 
 osc::GraphicsBackend::ViewportGeometry osc::GraphicsBackend::calc_viewport_geometry(
@@ -7090,7 +7090,7 @@ osc::GraphicsBackend::ViewportGeometry osc::GraphicsBackend::calc_viewport_geome
         return {pixel_rect->p1, dimensions_of(*pixel_rect)};
     }
     else if (maybe_custom_render_target) {
-        return {{}, maybe_custom_render_target->depth.buffer->impl_->dimensions()};
+        return {{}, maybe_custom_render_target->depth.buffer.impl_->dimensions()};
     }
     else {
         return {{}, App::get().main_window_dimensions()};
@@ -7188,7 +7188,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::bind_and_clear_render_buffe
                     );
                 }
 #endif
-            }, maybe_custom_render_target->colors[i].buffer->impl_->upd_opengl_data());
+            }, maybe_custom_render_target->colors[i].buffer.impl_->upd_opengl_data());
         }
 
         // attach depth buffer to the FBO
@@ -7224,7 +7224,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::bind_and_clear_render_buffe
                 );
             }
 #endif
-        }, maybe_custom_render_target->depth.buffer->impl_->upd_opengl_data());
+        }, maybe_custom_render_target->depth.buffer.impl_->upd_opengl_data());
 
         // Multi-Render Target (MRT) support: tell OpenGL to use all specified
         // render targets when drawing and/or clearing
@@ -7306,7 +7306,7 @@ void osc::GraphicsBackend::resolve_render_buffers(RenderTarget& render_target)
     // resolve each color buffer with a blit
     for (size_t i = 0; i < render_target.colors.size(); ++i) {
         const RenderTargetColorAttachment& attachment = render_target.colors[i];
-        RenderBuffer& buffer = *attachment.buffer;
+        const SharedRenderBuffer& buffer = attachment.buffer;
         RenderBufferOpenGLData& buffer_opengl_data = buffer.impl_->upd_opengl_data();
 
         if (attachment.store_action != RenderBufferStoreAction::Resolve) {
@@ -7347,7 +7347,7 @@ void osc::GraphicsBackend::resolve_render_buffers(RenderTarget& render_target)
         }, buffer_opengl_data);
 
         if (can_resolve_buffer) {
-            const Vec2i dimensions = attachment.buffer->impl_->dimensions();
+            const Vec2i dimensions = attachment.buffer.impl_->dimensions();
             gl::blit_framebuffer(
                 0,
                 0,
@@ -7398,11 +7398,11 @@ void osc::GraphicsBackend::resolve_render_buffers(RenderTarget& render_target)
             {
                 // don't resolve: it's single-sampled
             }
-        }, render_target.depth.buffer->impl_->upd_opengl_data());
+        }, render_target.depth.buffer.impl_->upd_opengl_data());
 
         if (can_resolve_buffer)
         {
-            const Vec2i dimensions = render_target.depth.buffer->impl_->dimensions();
+            const Vec2i dimensions = render_target.depth.buffer.impl_->dimensions();
             gl::blit_framebuffer(
                 0,
                 0,

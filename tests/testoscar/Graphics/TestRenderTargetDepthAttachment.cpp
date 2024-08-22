@@ -23,19 +23,6 @@ TEST(RenderTargetDepthAttachment, CanConstructFromPartsOfRenderTexture)
     ASSERT_EQ(attachment.store_action, RenderBufferStoreAction::Resolve);
 }
 
-TEST(RenderTargetDepthAttachment, ConstructingWithNullptrThrowsException)
-{
-    ASSERT_ANY_THROW(
-    {
-        RenderTargetDepthAttachment
-        (
-            nullptr,
-            RenderBufferLoadAction::Clear,
-            RenderBufferStoreAction::Resolve
-        );
-    });
-}
-
 TEST(RenderTargetDepthAttachment, EqualityReturnsTrueForCopies)
 {
     RenderTexture renderTex;

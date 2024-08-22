@@ -5,14 +5,13 @@
 #include <oscar/Graphics/RenderTextureFormat.h>
 #include <oscar/Graphics/RenderTextureParams.h>
 #include <oscar/Graphics/RenderTextureReadWrite.h>
+#include <oscar/Graphics/SharedRenderBuffer.h>
 #include <oscar/Graphics/TextureDimensionality.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Utils/CopyOnUpdPtr.h>
 
 #include <iosfwd>
 #include <memory>
-
-namespace osc { class RenderBuffer; }
 
 namespace osc
 {
@@ -44,8 +43,8 @@ namespace osc
 
         void reformat(const RenderTextureParams&);
 
-        std::shared_ptr<RenderBuffer> upd_color_buffer();
-        std::shared_ptr<RenderBuffer> upd_depth_buffer();
+        SharedRenderBuffer upd_color_buffer();
+        SharedRenderBuffer upd_depth_buffer();
 
         friend bool operator==(const RenderTexture&, const RenderTexture&) = default;
 

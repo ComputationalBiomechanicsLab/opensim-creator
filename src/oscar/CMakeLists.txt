@@ -153,14 +153,11 @@ add_library(oscar STATIC
     Graphics/MeshFunctions.h
     Graphics/MeshTopology.h
     Graphics/MeshUpdateFlags.h
-    Graphics/RenderBuffer.h
     Graphics/RenderBufferLoadAction.h
     Graphics/RenderBufferStoreAction.h
     Graphics/RenderBufferType.h
     Graphics/RenderTarget.h
-    Graphics/RenderTargetAttachment.cpp
     Graphics/RenderTargetAttachment.h
-    Graphics/RenderTargetColorAttachment.cpp
     Graphics/RenderTargetColorAttachment.h
     Graphics/RenderTargetDepthAttachment.h
     Graphics/RenderTexture.h
@@ -170,6 +167,7 @@ add_library(oscar STATIC
     Graphics/Scene.h
     Graphics/Shader.h
     Graphics/ShaderPropertyType.h
+    Graphics/SharedRenderBuffer.h
     Graphics/Snorm.h
     Graphics/Snorm8.h
     Graphics/SourceBlendingFactor.h
@@ -348,8 +346,6 @@ add_library(oscar STATIC
     UI/Icon.h
     UI/IconCache.cpp
     UI/IconCache.h
-
-
     UI/imgui_impl_sdl2.cpp
     UI/imgui_impl_sdl2.h
     UI/MouseCapturingCamera.h

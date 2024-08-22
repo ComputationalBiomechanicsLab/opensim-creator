@@ -25,20 +25,6 @@ TEST(RenderTargetColorAttachment, CanConstructFromPartsOfRenderTexture)
     ASSERT_EQ(attachment.clear_color, Color::red());
 }
 
-TEST(RenderTargetColorAttachment, ConstructingWithNullptrThrowsException)
-{
-    ASSERT_ANY_THROW(
-    {
-        RenderTargetColorAttachment
-        (
-            nullptr,
-            RenderBufferLoadAction::Clear,
-            RenderBufferStoreAction::Resolve,
-            Color::red()
-        );
-    });
-}
-
 TEST(RenderTargetColorAttachment, EqualityReturnsTrueForCopies)
 {
     RenderTexture renderTex;

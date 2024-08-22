@@ -191,20 +191,6 @@ TEST(RenderTexture, SetColorFormatCausesGetColorFormatToReturnValue)
     ASSERT_EQ(d.color_format(), RenderTextureFormat::Red8);
 }
 
-TEST(RenderTexture, UpdColorBufferReturnsNonNullPtr)
-{
-    RenderTexture rt{{.dimensions = {1, 1}}};
-
-    ASSERT_NE(rt.upd_color_buffer(), nullptr);
-}
-
-TEST(RenderTexture, UpdDepthBufferReturnsNonNullPtr)
-{
-    RenderTexture rt{{.dimensions = {1, 1}}};
-
-    ASSERT_NE(rt.upd_depth_buffer(), nullptr);
-}
-
 TEST(RenderTexture, upd_color_buffer_returns_independent_RenderBuffers_from_copies)
 {
     // this popped up while developing the `LearnOpenGL/CSM` tab implementation, where
