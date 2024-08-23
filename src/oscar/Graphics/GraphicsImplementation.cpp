@@ -978,10 +978,6 @@ namespace osc
             std::span<const RenderObject>
         );
 
-        static void validate_render_target(
-            RenderTarget&
-        );
-
         struct ViewportGeometry final {
             Vec2 bottom_left;
             Vec2 dimensions;
@@ -2427,9 +2423,19 @@ SharedColorRenderBuffer osc::SharedColorRenderBuffer::clone() const
     return SharedColorRenderBuffer{*impl_};
 }
 
+Vec2i osc::SharedColorRenderBuffer::dimensions() const
+{
+    return impl_->dimensions();
+}
+
 TextureDimensionality osc::SharedColorRenderBuffer::dimensionality() const
 {
     return impl_->dimensionality();
+}
+
+AntiAliasingLevel osc::SharedColorRenderBuffer::anti_aliasing_level() const
+{
+    return impl_->anti_aliasing_level();
 }
 
 class osc::SharedDepthRenderBuffer::DepthRenderBuffer final : public RenderBufferImpl<DepthRenderBufferParams> {
@@ -2495,9 +2501,19 @@ SharedDepthRenderBuffer osc::SharedDepthRenderBuffer::clone() const
     return SharedDepthRenderBuffer{*impl_};
 }
 
+Vec2i osc::SharedDepthRenderBuffer::dimensions() const
+{
+    return impl_->dimensions();
+}
+
 TextureDimensionality osc::SharedDepthRenderBuffer::dimensionality() const
 {
     return impl_->dimensionality();
+}
+
+AntiAliasingLevel osc::SharedDepthRenderBuffer::anti_aliasing_level() const
+{
+    return impl_->anti_aliasing_level();
 }
 
 class osc::RenderTexture::Impl final {
@@ -7242,24 +7258,6 @@ void osc::GraphicsBackend::flush_render_queue(Camera::Impl& camera, float aspect
     queue.clear();
 }
 
-void osc::GraphicsBackend::validate_render_target(RenderTarget& render_target)
-{
-    // ensure there is at least one color attachment
-    OSC_ASSERT(not render_target.colors.empty() && "a render target must have one or more color attachments");
-
-    const Vec2i first_color_buffer_dimensions = render_target.colors.front().color_buffer.impl_->dimensions();
-    const AntiAliasingLevel first_color_buffer_samples = render_target.colors.front().color_buffer.impl_->anti_aliasing_level();
-
-    // validate other buffers against the first
-    for (auto it = render_target.colors.begin()+1; it != render_target.colors.end(); ++it) {
-        const RenderTargetColorAttachment& colorAttachment = *it;
-        OSC_ASSERT(colorAttachment.color_buffer.impl_->dimensions() == first_color_buffer_dimensions);
-        OSC_ASSERT(colorAttachment.color_buffer.impl_->anti_aliasing_level() == first_color_buffer_samples);
-    }
-    OSC_ASSERT(render_target.depth.buffer.impl_->dimensions() == first_color_buffer_dimensions);
-    OSC_ASSERT(render_target.depth.buffer.impl_->anti_aliasing_level() == first_color_buffer_samples);
-}
-
 osc::GraphicsBackend::ViewportGeometry osc::GraphicsBackend::calc_viewport_geometry(
     Camera::Impl& camera,
     RenderTarget* maybe_custom_render_target)
@@ -7268,7 +7266,7 @@ osc::GraphicsBackend::ViewportGeometry osc::GraphicsBackend::calc_viewport_geome
         return {pixel_rect->p1, dimensions_of(*pixel_rect)};
     }
     else if (maybe_custom_render_target) {
-        return {{}, maybe_custom_render_target->depth.buffer.impl_->dimensions()};
+        return {{}, maybe_custom_render_target->dimensions()};
     }
     else {
         return {{}, App::get().main_window_dimensions()};
@@ -7333,7 +7331,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::bind_and_clear_render_buffe
         gl::bind_framebuffer(GL_DRAW_FRAMEBUFFER, render_fbo);
 
         // attach color buffers to the FBO
-        for (size_t i = 0; i < maybe_custom_render_target->colors.size(); ++i) {
+        for (size_t i = 0; i < maybe_custom_render_target->color_attachments().size(); ++i) {
             std::visit(Overload
             {
                 [i](SingleSampledTexture& t)
@@ -7366,48 +7364,50 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::bind_and_clear_render_buffe
                     );
                 }
 #endif
-            }, maybe_custom_render_target->colors[i].color_buffer.impl_->upd_opengl_data());
+            }, maybe_custom_render_target->color_attachments()[i].color_buffer.impl_->upd_opengl_data());
         }
 
         // attach depth buffer to the FBO
-        std::visit(Overload
-        {
-            [](SingleSampledTexture& t)
+        if (maybe_custom_render_target->depth_attachment()) {
+            std::visit(Overload
             {
-                gl::framebuffer_texture2D(
-                    GL_DRAW_FRAMEBUFFER,
-                    GL_DEPTH_STENCIL_ATTACHMENT,
-                    t.texture2D,
-                    0
-                );
-            },
-            [](MultisampledRBOAndResolvedTexture& t)
-            {
-                gl::framebuffer_renderbuffer(
-                    GL_DRAW_FRAMEBUFFER,
-                    GL_DEPTH_STENCIL_ATTACHMENT,
-                    t.multisampled_rbo
-                );
-            },
-#ifdef EMSCRIPTEN
-            [](SingleSampledCubemap&) {}
-#else
-            [](SingleSampledCubemap& t)
-            {
-                glFramebufferTexture(
-                    GL_DRAW_FRAMEBUFFER,
-                    GL_DEPTH_STENCIL_ATTACHMENT,
-                    t.cubemap.get(),
-                    0
-                );
-            }
-#endif
-        }, maybe_custom_render_target->depth.buffer.impl_->upd_opengl_data());
+                [](SingleSampledTexture& t)
+                {
+                    gl::framebuffer_texture2D(
+                        GL_DRAW_FRAMEBUFFER,
+                        GL_DEPTH_STENCIL_ATTACHMENT,
+                        t.texture2D,
+                        0
+                    );
+                },
+                [](MultisampledRBOAndResolvedTexture& t)
+                {
+                    gl::framebuffer_renderbuffer(
+                        GL_DRAW_FRAMEBUFFER,
+                        GL_DEPTH_STENCIL_ATTACHMENT,
+                        t.multisampled_rbo
+                    );
+                },
+    #ifdef EMSCRIPTEN
+                [](SingleSampledCubemap&) {}
+    #else
+                [](SingleSampledCubemap& t)
+                {
+                    glFramebufferTexture(
+                        GL_DRAW_FRAMEBUFFER,
+                        GL_DEPTH_STENCIL_ATTACHMENT,
+                        t.cubemap.get(),
+                        0
+                    );
+                }
+    #endif
+            }, maybe_custom_render_target->depth_attachment()->buffer.impl_->upd_opengl_data());
+        }
 
         // Multi-Render Target (MRT) support: tell OpenGL to use all specified
         // render targets when drawing and/or clearing
         {
-            const size_t num_color_attachments = maybe_custom_render_target->colors.size();
+            const size_t num_color_attachments = maybe_custom_render_target->color_attachments().size();
 
             std::vector<GLenum> attachments;
             attachments.reserve(num_color_attachments);
@@ -7422,8 +7422,8 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::bind_and_clear_render_buffe
             static_assert(num_options<RenderBufferLoadAction>() == 2);
 
             // if requested, clear color buffers
-            for (size_t i = 0; i < maybe_custom_render_target->colors.size(); ++i) {
-                RenderTargetColorAttachment& colorAttachment = maybe_custom_render_target->colors[i];
+            for (size_t i = 0; i < maybe_custom_render_target->color_attachments().size(); ++i) {
+                const RenderTargetColorAttachment& colorAttachment = maybe_custom_render_target->color_attachments()[i];
                 if (colorAttachment.load_action == RenderBufferLoadAction::Clear)
                 {
                     glClearBufferfv(
@@ -7435,7 +7435,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::bind_and_clear_render_buffe
             }
 
             // if requested, clear depth buffer
-            if (maybe_custom_render_target->depth.load_action == RenderBufferLoadAction::Clear) {
+            if (maybe_custom_render_target->depth_attachment() and maybe_custom_render_target->depth_attachment()->load_action == RenderBufferLoadAction::Clear) {
                 gl::clear(GL_DEPTH_BUFFER_BIT);
             }
         }
@@ -7482,8 +7482,8 @@ void osc::GraphicsBackend::resolve_render_buffers(RenderTarget& render_target)
     gl::bind_framebuffer(GL_DRAW_FRAMEBUFFER, resolved_draw_fbo);
 
     // resolve each color buffer with a blit
-    for (size_t i = 0; i < render_target.colors.size(); ++i) {
-        const RenderTargetColorAttachment& attachment = render_target.colors[i];
+    for (size_t i = 0; i < render_target.color_attachments().size(); ++i) {
+        const RenderTargetColorAttachment& attachment = render_target.color_attachments()[i];
         const SharedColorRenderBuffer& buffer = attachment.color_buffer;
         RenderBufferOpenGLData& buffer_opengl_data = buffer.impl_->upd_opengl_data();
 
@@ -7542,7 +7542,7 @@ void osc::GraphicsBackend::resolve_render_buffers(RenderTarget& render_target)
     }
 
     // resolve depth buffer with a blit
-    if (render_target.depth.store_action == RenderBufferStoreAction::Resolve) {
+    if (render_target.depth_attachment() and render_target.depth_attachment()->store_action == RenderBufferStoreAction::Resolve) {
         bool can_resolve_buffer = false;  // changes if the underlying buffer data is resolve-able
         std::visit(Overload
         {
@@ -7576,11 +7576,11 @@ void osc::GraphicsBackend::resolve_render_buffers(RenderTarget& render_target)
             {
                 // don't resolve: it's single-sampled
             }
-        }, render_target.depth.buffer.impl_->upd_opengl_data());
+        }, render_target.depth_attachment()->buffer.impl_->upd_opengl_data());
 
         if (can_resolve_buffer)
         {
-            const Vec2i dimensions = render_target.depth.buffer.impl_->dimensions();
+            const Vec2i dimensions = render_target.depth_attachment()->buffer.impl_->dimensions();
             gl::blit_framebuffer(
                 0,
                 0,
@@ -7604,7 +7604,7 @@ void osc::GraphicsBackend::render_camera_queue(
     OSC_PERF("GraphicsBackend::render_camera_queue");
 
     if (maybe_custom_render_target) {
-        validate_render_target(*maybe_custom_render_target);
+        maybe_custom_render_target->validate_or_throw();
     }
 
     const float output_aspect_ratio = setup_top_level_pipeline_state(

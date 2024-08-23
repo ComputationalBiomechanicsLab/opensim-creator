@@ -11,6 +11,16 @@ TEST(SharedDepthRenderBuffer, can_default_construct)
     [[maybe_unused]] const SharedDepthRenderBuffer default_constructed;
 }
 
+TEST(SharedDepthRenderBuffer, default_constructed_as_1x1_dimensions)
+{
+    ASSERT_EQ(SharedDepthRenderBuffer{}.dimensions(), Vec2i(1, 1));
+}
+
+TEST(SharedDepthRenderBuffer, default_constructed_with_1x_anti_aliasing)
+{
+    ASSERT_EQ(SharedDepthRenderBuffer{}.anti_aliasing_level(), AntiAliasingLevel{1});
+}
+
 TEST(SharedDepthRenderBuffer, can_construct_depth_buffer)
 {
     [[maybe_unused]] const SharedDepthRenderBuffer depth_buffer{DepthRenderBufferParams{}};
@@ -25,4 +35,16 @@ TEST(SharedDepthRenderBuffer, dimensionality_is_based_on_parameters)
 {
     const SharedDepthRenderBuffer buffer{DepthRenderBufferParams{.dimensionality = TextureDimensionality::Cube}};
     ASSERT_EQ(buffer.dimensionality(), TextureDimensionality::Cube);
+}
+
+TEST(SharedDepthRenderBuffer, dimensions_is_based_on_parameters)
+{
+    const SharedDepthRenderBuffer buffer{{.dimensions = Vec2i(3, 5)}};
+    ASSERT_EQ(buffer.dimensions(), Vec2i(3,5));
+}
+
+TEST(SharedDepthRenderBuffer, anti_aliasing_level_is_based_on_parameters)
+{
+    const SharedDepthRenderBuffer buffer{{.anti_aliasing_level = AntiAliasingLevel{4}}};
+    ASSERT_EQ(buffer.anti_aliasing_level(), AntiAliasingLevel{4});
 }

@@ -15,7 +15,7 @@
 #include <optional>
 
 namespace osc { class RenderTexture; }
-namespace osc { struct RenderTarget; }
+namespace osc { class RenderTarget; }
 
 namespace osc
 {

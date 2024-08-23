@@ -107,27 +107,24 @@ namespace
         RenderTexture normal = render_texture_with_color_format(RenderTextureFormat::ARGBFloat16);
         RenderTexture position = render_texture_with_color_format(RenderTextureFormat::ARGBFloat16);
         RenderTarget render_target{
-            {
-                RenderTargetColorAttachment{
-                    albedo.upd_color_buffer(),
-                    RenderBufferLoadAction::Clear,
-                    RenderBufferStoreAction::Resolve,
-                    Color::black(),
-                },
-                RenderTargetColorAttachment{
-                    normal.upd_color_buffer(),
-                    RenderBufferLoadAction::Clear,
-                    RenderBufferStoreAction::Resolve,
-                    Color::black(),
-                },
-                RenderTargetColorAttachment{
-                    position.upd_color_buffer(),
-                    RenderBufferLoadAction::Clear,
-                    RenderBufferStoreAction::Resolve,
-                    Color::black(),
-                },
+            RenderTargetColorAttachment{
+                albedo.upd_color_buffer(),
+                RenderBufferLoadAction::Clear,
+                RenderBufferStoreAction::Resolve,
+                Color::black(),
             },
-
+            RenderTargetColorAttachment{
+                normal.upd_color_buffer(),
+                RenderBufferLoadAction::Clear,
+                RenderBufferStoreAction::Resolve,
+                Color::black(),
+            },
+            RenderTargetColorAttachment{
+                position.upd_color_buffer(),
+                RenderBufferLoadAction::Clear,
+                RenderBufferStoreAction::Resolve,
+                Color::black(),
+            },
             RenderTargetDepthAttachment{
                 albedo.upd_depth_buffer(),
                 RenderBufferLoadAction::Clear,

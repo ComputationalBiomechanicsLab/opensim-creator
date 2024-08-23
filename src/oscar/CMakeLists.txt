@@ -159,6 +159,7 @@ add_library(oscar STATIC
     Graphics/MeshUpdateFlags.h
     Graphics/RenderBufferLoadAction.h
     Graphics/RenderBufferStoreAction.h
+    Graphics/RenderTarget.cpp
     Graphics/RenderTarget.h
     Graphics/RenderTargetColorAttachment.h
     Graphics/RenderTargetDepthAttachment.h

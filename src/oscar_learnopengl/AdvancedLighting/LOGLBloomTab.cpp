@@ -226,19 +226,17 @@ private:
     void flush_camera_render_queue_to_mrt()
     {
         RenderTarget mrt{
-            {
-                RenderTargetColorAttachment{
-                    scene_hdr_color_output_.upd_color_buffer(),
-                    RenderBufferLoadAction::Clear,
-                    RenderBufferStoreAction::Resolve,
-                    Color::clear(),
-                },
-                RenderTargetColorAttachment{
-                    scene_hdr_thresholded_output_.upd_color_buffer(),
-                    RenderBufferLoadAction::Clear,
-                    RenderBufferStoreAction::Resolve,
-                    Color::clear(),
-                },
+            RenderTargetColorAttachment{
+                scene_hdr_color_output_.upd_color_buffer(),
+                RenderBufferLoadAction::Clear,
+                RenderBufferStoreAction::Resolve,
+                Color::clear(),
+            },
+            RenderTargetColorAttachment{
+                scene_hdr_thresholded_output_.upd_color_buffer(),
+                RenderBufferLoadAction::Clear,
+                RenderBufferStoreAction::Resolve,
+                Color::clear(),
             },
             RenderTargetDepthAttachment{
                 scene_hdr_thresholded_output_.upd_depth_buffer(),

@@ -1,6 +1,8 @@
 #pragma once
 
+#include <oscar/Graphics/AntiAliasingLevel.h>
 #include <oscar/Graphics/TextureDimensionality.h>
+#include <oscar/Maths/Vec2.h>
 
 #include <memory>
 
@@ -52,7 +54,9 @@ namespace osc
 
         SharedDepthRenderBuffer clone() const;
 
+        Vec2i dimensions() const;
         TextureDimensionality dimensionality() const;
+        AntiAliasingLevel anti_aliasing_level() const;
 
     private:
         friend class GraphicsBackend;
