@@ -134,10 +134,14 @@ add_library(oscar STATIC
     Graphics/Color.h
     Graphics/ColorHSLA.h
     Graphics/ColorHSLA.cpp
+    Graphics/ColorRenderBufferParams.h
     Graphics/ColorSpace.h
     Graphics/Color32.h
     Graphics/Cubemap.h
     Graphics/CubemapFace.h
+    Graphics/CullMode.h
+    Graphics/DepthFunction.h
+    Graphics/DepthRenderBufferParams.h
     Graphics/DepthStencilFormat.h
     Graphics/DestinationBlendingFactor.h
     Graphics/Geometries.h
@@ -155,9 +159,7 @@ add_library(oscar STATIC
     Graphics/MeshUpdateFlags.h
     Graphics/RenderBufferLoadAction.h
     Graphics/RenderBufferStoreAction.h
-    Graphics/RenderBufferType.h
     Graphics/RenderTarget.h
-    Graphics/RenderTargetAttachment.h
     Graphics/RenderTargetColorAttachment.h
     Graphics/RenderTargetDepthAttachment.h
     Graphics/RenderTexture.h
@@ -167,7 +169,8 @@ add_library(oscar STATIC
     Graphics/Scene.h
     Graphics/Shader.h
     Graphics/ShaderPropertyType.h
-    Graphics/SharedRenderBuffer.h
+    Graphics/SharedColorRenderBuffer.h
+    Graphics/SharedDepthRenderBuffer.h
     Graphics/Snorm.h
     Graphics/Snorm8.h
     Graphics/SourceBlendingFactor.h

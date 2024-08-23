@@ -19,7 +19,7 @@ TEST(RenderTargetColorAttachment, CanConstructFromPartsOfRenderTexture)
         Color::red(),
     };
 
-    ASSERT_EQ(attachment.buffer, renderTex.upd_color_buffer());
+    ASSERT_EQ(attachment.color_buffer, renderTex.upd_color_buffer());
     ASSERT_EQ(attachment.load_action, RenderBufferLoadAction::Clear);
     ASSERT_EQ(attachment.store_action, RenderBufferStoreAction::Resolve);
     ASSERT_EQ(attachment.clear_color, Color::red());
@@ -79,7 +79,7 @@ TEST(RenderTargetColorAttachment, EqualityReturnsFalseIfSomethingIsModified)
     {
         RenderTargetColorAttachment copy = attachment;
         ASSERT_EQ(copy, attachment);
-        copy.buffer = secondRenderTex.upd_color_buffer();
+        copy.color_buffer = secondRenderTex.upd_color_buffer();
         ASSERT_NE(copy, attachment);
     }
 

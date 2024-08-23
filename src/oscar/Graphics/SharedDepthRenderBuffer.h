@@ -1,10 +1,10 @@
 #pragma once
 
-#include <oscar/Graphics/RenderBufferType.h>
-#include <oscar/Graphics/RenderTextureParams.h>
 #include <oscar/Graphics/TextureDimensionality.h>
 
 #include <memory>
+
+namespace osc { struct DepthRenderBufferParams; }
 
 namespace osc
 {
@@ -43,26 +43,24 @@ namespace osc
     // shared references and it's assumed that the calling code knows when/where to share it.
     // This also makes it easier for graph traversal algorithms to figure out the dependency
     // chains between render passes.
-    class SharedRenderBuffer final {
+    class SharedDepthRenderBuffer final {
     public:
-        SharedRenderBuffer() : SharedRenderBuffer{RenderTextureParams{}, RenderBufferType::Color} {}
-        SharedRenderBuffer(const RenderTextureParams&, RenderBufferType);
+        explicit SharedDepthRenderBuffer();
+        explicit SharedDepthRenderBuffer(const DepthRenderBufferParams&);
 
-        // reference equality
-        friend bool operator==(const SharedRenderBuffer&, const SharedRenderBuffer&) = default;
+        friend bool operator==(const SharedDepthRenderBuffer&, const SharedDepthRenderBuffer&) = default;
 
-        // returns an independent (as in, not-shared) copy of the underlying render buffer data
-        SharedRenderBuffer clone() const;  // TODO: should copy the underlying GPU data also
+        SharedDepthRenderBuffer clone() const;
 
         TextureDimensionality dimensionality() const;
 
     private:
         friend class GraphicsBackend;
         friend class RenderTexture;
-        class RenderBuffer;
+        class DepthRenderBuffer;
 
-        SharedRenderBuffer(const RenderBuffer&);
+        SharedDepthRenderBuffer(const DepthRenderBuffer&);
 
-        std::shared_ptr<RenderBuffer> impl_;
+        std::shared_ptr<DepthRenderBuffer> impl_;
     };
 }

@@ -76,7 +76,7 @@ private:
     std::unique_ptr<ITab> current_tab_;
     size_t min_frames_shown_ = 2;
     size_t frames_shown_ = 0;
-    AppClock::duration min_open_duration_ = AppSeconds{0};
+    AppClock::duration min_open_duration_ = AppSeconds{5};
     AppClock::time_point close_time_ = App::get().frame_start_time() + min_open_duration_;
 };
 

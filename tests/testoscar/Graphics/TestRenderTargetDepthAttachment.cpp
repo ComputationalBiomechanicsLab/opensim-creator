@@ -28,7 +28,7 @@ TEST(RenderTargetDepthAttachment, EqualityReturnsTrueForCopies)
     RenderTexture renderTex;
     RenderTargetDepthAttachment attachment
     {
-        renderTex.upd_color_buffer(),
+        renderTex.upd_depth_buffer(),
         RenderBufferLoadAction::Clear,
         RenderBufferStoreAction::Resolve,
     };
@@ -43,14 +43,14 @@ TEST(RenderTargetDepthAttachment, EqualityReturnsTrueForSeperatelyConstructedBut
 
     RenderTargetDepthAttachment a
     {
-        renderTex.upd_color_buffer(),
+        renderTex.upd_depth_buffer(),
         RenderBufferLoadAction::Clear,
         RenderBufferStoreAction::Resolve,
     };
 
     RenderTargetDepthAttachment b
     {
-        renderTex.upd_color_buffer(),
+        renderTex.upd_depth_buffer(),
         RenderBufferLoadAction::Clear,
         RenderBufferStoreAction::Resolve,
     };
@@ -64,7 +64,7 @@ TEST(RenderTargetDepthAttachment, EqualityReturnsFalseIfSomethingIsModified)
     RenderTexture secondRenderTex;
     RenderTargetDepthAttachment attachment
     {
-        firstRenderTex.upd_color_buffer(),
+        firstRenderTex.upd_depth_buffer(),
         RenderBufferLoadAction::Clear,
         RenderBufferStoreAction::Resolve,
     };
@@ -73,7 +73,7 @@ TEST(RenderTargetDepthAttachment, EqualityReturnsFalseIfSomethingIsModified)
     {
         RenderTargetDepthAttachment copy = attachment;
         ASSERT_EQ(copy, attachment);
-        copy.buffer = secondRenderTex.upd_color_buffer();
+        copy.buffer = secondRenderTex.upd_depth_buffer();
         ASSERT_NE(copy, attachment);
     }
 

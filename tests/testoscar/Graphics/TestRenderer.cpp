@@ -22,7 +22,6 @@
 #include <oscar/Graphics/RenderTextureFormat.h>
 #include <oscar/Graphics/Shader.h>
 #include <oscar/Graphics/ShaderPropertyType.h>
-#include <oscar/Graphics/SharedRenderBuffer.h>
 #include <oscar/Graphics/SubMeshDescriptor.h>
 #include <oscar/Graphics/Texture2D.h>
 #include <oscar/Graphics/TextureFormat.h>
@@ -1461,12 +1460,20 @@ TEST_F(Renderer, MaterialPropertyBlockSetTextureOnMaterialCausesGetTextureToRetu
     ASSERT_TRUE(mpb.get<Texture2D>(key));
 }
 
-TEST_F(Renderer, MaterialPropertyBlockSetSharedRenderBufferOnMaterialCausesGetRenderBufferToReturnTheRenderBuffer)
+TEST_F(Renderer, MaterialPropertyBlockSetSharedColorRenderBufferOnMaterialCausesGetRenderBufferToReturnTheRenderBuffer)
 {
     MaterialPropertyBlock mpb;
-    ASSERT_FALSE(mpb.get<SharedRenderBuffer>("someKey"));
-    mpb.set("someKey", SharedRenderBuffer{});
-    ASSERT_TRUE(mpb.get<SharedRenderBuffer>("someKey"));
+    ASSERT_FALSE(mpb.get<SharedColorRenderBuffer>("someKey"));
+    mpb.set("someKey", SharedColorRenderBuffer{});
+    ASSERT_TRUE(mpb.get<SharedColorRenderBuffer>("someKey"));
+}
+
+TEST_F(Renderer, MaterialPropertyBlockSetSharedDepthRenderBufferOnMaterialCausesGetRenderBufferToReturnTheRenderBuffer)
+{
+    MaterialPropertyBlock mpb;
+    ASSERT_FALSE(mpb.get<SharedDepthRenderBuffer>("someKey"));
+    mpb.set("someKey", SharedDepthRenderBuffer{});
+    ASSERT_TRUE(mpb.get<SharedDepthRenderBuffer>("someKey"));
 }
 
 TEST_F(Renderer, MaterialPropertyBlockCanCompareEquals)
