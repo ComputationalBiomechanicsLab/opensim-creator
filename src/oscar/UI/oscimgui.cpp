@@ -1845,7 +1845,7 @@ bool osc::ui::draw_float_circular_slider(
     const float label_width_with_spacing = label_size.x > 0.0f ? label_size.x + style.ItemInnerSpacing.x : 0.0f;
     const ImRect total_bounds = {frame_bounds.Min, Vec2{frame_bounds.Max} + Vec2{label_width_with_spacing, 0.0f}};
 
-    const bool temporary_text_input_allowed = (flags & ImGuiSliderFlags_NoInput) == 0;
+    const bool temporary_text_input_allowed = (to<ImGuiSliderFlags>(flags) & ImGuiSliderFlags_NoInput) == 0;
     ImGui::ItemSize(total_bounds, style.FramePadding.y);
     if (not ImGui::ItemAdd(total_bounds, id, &frame_bounds, temporary_text_input_allowed ? ImGuiItemFlags_Inputable : 0)) {
         // skip drawing: the slider item is off-screen or not interactable
@@ -1857,7 +1857,7 @@ bool osc::ui::draw_float_circular_slider(
     bool temporary_text_input_active = temporary_text_input_allowed and ImGui::TempInputIsActive(id);
     if (not temporary_text_input_active) {
         // tabbing or double clicking the slider temporarily transforms it into an input box
-        const bool clicked = is_hovered and ui::is_mouse_clicked(MouseButton::Left, id);
+        const bool clicked = is_hovered and ui::is_mouse_clicked(MouseButton::Left, ui::ID{id});
         const bool double_clicked = (is_hovered and g.IO.MouseClickedCount[0] == 2 and ImGui::TestKeyOwner(ImGuiKey_MouseLeft, id));
         const bool make_active = (clicked or double_clicked or g.NavActivateId == id);
 
@@ -1882,7 +1882,7 @@ bool osc::ui::draw_float_circular_slider(
 
     // if the user is editing the slider as an input text box then draw that instead of the slider
     if (temporary_text_input_active) {
-        const bool should_clamp_textual_input = (flags & ImGuiSliderFlags_AlwaysClamp) != 0;
+        const bool should_clamp_textual_input = (to<ImGuiSliderFlags>(flags) & ImGuiSliderFlags_AlwaysClamp) != 0;
 
         return ImGui::TempInputScalar(
             frame_bounds,
@@ -1912,7 +1912,7 @@ bool osc::ui::draw_float_circular_slider(
         min,
         max,
         format.c_str(),
-        flags,
+        to<ImGuiSliderFlags>(flags),
         &grab_bounding_box
     );
     if (value_changed) {

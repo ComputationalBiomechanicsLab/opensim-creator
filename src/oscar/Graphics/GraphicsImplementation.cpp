@@ -2192,7 +2192,7 @@ namespace
     template<IsAnyOf<ColorRenderBufferParams, DepthRenderBufferParams> RenderBufferParams>
     class RenderBufferImpl {
     public:
-        RenderBufferImpl(const RenderBufferParams& params) : params_{params}
+        explicit RenderBufferImpl(const RenderBufferParams& params) : params_{params}
         {
             OSC_ASSERT_ALWAYS((dimensionality() != TextureDimensionality::Cube or dimensions().x == dimensions().y) && "cannot construct a Cube renderbuffer with non-square dimensions");
             OSC_ASSERT_ALWAYS((dimensionality() != TextureDimensionality::Cube or anti_aliasing_level() == AntiAliasingLevel::none()) && "cannot construct a Cube renderbuffer that is anti-aliased (not supported by backends like OpenGL)");
@@ -2321,7 +2321,7 @@ namespace
             gl::bind_renderbuffer(multisampled_rbo_and_texture.multisampled_rbo);
             glRenderbufferStorageMultisample(
                 GL_RENDERBUFFER,
-                params_.anti_aliasing_level.get_as<GLsizei>(),
+                params_.anti_aliasing_level.template get_as<GLsizei>(),
                 to_opengl_internal_color_format_enum(params_),
                 dimensions.x,
                 dimensions.y
