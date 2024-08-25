@@ -7572,10 +7572,7 @@ void osc::GraphicsBackend::resolve_render_buffers(
             GL_DEPTH_ATTACHMENT;
         std::visit(Overload
         {
-            [attachment](SingleSampledTexture&)
-            {
-                // don't resolve: it's single-sampled
-            },
+            [](SingleSampledTexture&) { },  // don't resolve: it's single-sampled
             [&can_resolve_buffer, attachment](MultisampledRBOAndResolvedTexture& t)
             {
                 gl::framebuffer_renderbuffer(
@@ -7598,10 +7595,7 @@ void osc::GraphicsBackend::resolve_render_buffers(
 
                 can_resolve_buffer = true;
             },
-            [](SingleSampledCubemap&)
-            {
-                // don't resolve: it's single-sampled
-            }
+            [](SingleSampledCubemap&) {}  // don't resolve: it's single-sampled
         }, render_target.depth_attachment()->buffer.impl_->upd_opengl_data());
 
         if (can_resolve_buffer)
