@@ -183,7 +183,7 @@ namespace osc
         // the rendered geometry
         void render_to_screen();
         void render_to(RenderTexture&);
-        void render_to(RenderTarget&);
+        void render_to(const RenderTarget&);
 
     private:
         friend bool operator==(const Camera&, const Camera&);

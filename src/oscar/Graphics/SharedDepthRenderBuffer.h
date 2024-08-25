@@ -1,6 +1,7 @@
 #pragma once
 
 #include <oscar/Graphics/AntiAliasingLevel.h>
+#include <oscar/Graphics/DepthStencilFormat.h>
 #include <oscar/Graphics/TextureDimensionality.h>
 #include <oscar/Maths/Vec2.h>
 
@@ -57,6 +58,7 @@ namespace osc
         Vec2i dimensions() const;
         TextureDimensionality dimensionality() const;
         AntiAliasingLevel anti_aliasing_level() const;
+        DepthStencilFormat depth_stencil_format() const;
 
     private:
         friend class GraphicsBackend;

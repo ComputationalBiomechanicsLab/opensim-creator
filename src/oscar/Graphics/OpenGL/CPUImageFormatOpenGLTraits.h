@@ -29,6 +29,11 @@ namespace osc::detail
     };
 
     template<>
+    struct CPUImageFormatOpenGLTraits<CPUImageFormat::Depth> {
+        static inline constexpr GLenum opengl_format = GL_DEPTH_COMPONENT;
+    };
+
+    template<>
     struct CPUImageFormatOpenGLTraits<CPUImageFormat::DepthStencil> {
         static inline constexpr GLenum opengl_format = GL_DEPTH_STENCIL;
     };

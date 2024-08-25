@@ -11,6 +11,7 @@ namespace osc::detail
         RG,
         RGB,
         RGBA,
+        Depth,
         DepthStencil,
         NUM_OPTIONS,
     };
@@ -20,6 +21,7 @@ namespace osc::detail
         CPUImageFormat::RG,
         CPUImageFormat::RGB,
         CPUImageFormat::RGBA,
+        CPUImageFormat::Depth,
         CPUImageFormat::DepthStencil
     >;
 }

@@ -6,10 +6,12 @@
 #include <oscar/Graphics/AntiAliasingLevel.h>
 #include <oscar/Graphics/Camera.h>
 #include <oscar/Graphics/Color.h>
+#include <oscar/Graphics/DepthRenderBufferParams.h>
 #include <oscar/Graphics/Graphics.h>
 #include <oscar/Graphics/Material.h>
 #include <oscar/Graphics/MaterialPropertyBlock.h>
 #include <oscar/Graphics/Mesh.h>
+#include <oscar/Graphics/RenderTarget.h>
 #include <oscar/Graphics/RenderTexture.h>
 #include <oscar/Graphics/Scene/SceneCache.h>
 #include <oscar/Graphics/Scene/SceneDecoration.h>
@@ -68,7 +70,7 @@ namespace
     };
 
     struct Shadows final {
-        RenderTexture shadow_map;
+        SharedDepthRenderBuffer shadow_map;
         Mat4 lightspace_mat;
     };
 
@@ -466,13 +468,17 @@ private:
         });
 
         // render to the off-screen solid-colored texture
-        camera_.render_to(rims_rendertexture_);
+        camera_.render_to(RenderTarget{
+            RenderTargetColorAttachment{
+                .color_buffer = rims_rendertexture_.upd_color_buffer(),
+            },
+        });
 
         // configure a material that draws the off-screen colored texture on-screen
         //
         // the off-screen texture is rendered as a quad via an edge-detection kernel
         // that transforms the solid shapes into "rims"
-        edge_detection_material_.set("uScreenTexture", rims_rendertexture_);
+        edge_detection_material_.set("uScreenTexture", rims_rendertexture_.upd_color_buffer());
         static_assert(SceneRendererParams::num_rim_groups() == 2);
         edge_detection_material_.set("uRim0Color", params.rim_group_colors[0]);
         edge_detection_material_.set("uRim1Color", params.rim_group_colors[1]);
@@ -520,14 +526,15 @@ private:
         // compute camera matrices for the orthogonal (direction) camera used for lighting
         const ShadowCameraMatrices matrices = calc_shadow_camera_matrices(*shadowcaster_aabbs, params.light_direction);
 
-        camera_.set_background_color({1.0f, 0.0f, 0.0f, 0.0f});
         camera_.set_view_matrix_override(matrices.view_mat);
         camera_.set_projection_matrix_override(matrices.projection_mat);
-        shadowmap_rendertexture_.set_dimensions({1024, 1024});
-        shadowmap_rendertexture_.set_read_write(RenderTextureReadWrite::Linear);  // it's writing distances
-        camera_.render_to(shadowmap_rendertexture_);
+        camera_.render_to(RenderTarget{
+            RenderTargetDepthAttachment{
+                .buffer = shadowmap_render_buffer_,
+            },
+        });
 
-        return Shadows{shadowmap_rendertexture_, matrices.projection_mat * matrices.view_mat};
+        return Shadows{shadowmap_render_buffer_ , matrices.projection_mat * matrices.view_mat};
     }
 
     SceneMainMaterial scene_main_material_;
@@ -541,7 +548,10 @@ private:
     Mesh quad_mesh_;
     Camera camera_;
     RenderTexture rims_rendertexture_;
-    RenderTexture shadowmap_rendertexture_;
+    SharedDepthRenderBuffer shadowmap_render_buffer_{{
+        .dimensions = {1024, 1024},
+        .depth_format = DepthStencilFormat::D24_UNorm_S8_UInt,
+    }};
     RenderTexture output_rendertexture_;
 };
 

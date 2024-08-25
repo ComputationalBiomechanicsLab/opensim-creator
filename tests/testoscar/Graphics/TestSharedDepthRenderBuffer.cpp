@@ -21,6 +21,11 @@ TEST(SharedDepthRenderBuffer, default_constructed_with_1x_anti_aliasing)
     ASSERT_EQ(SharedDepthRenderBuffer{}.anti_aliasing_level(), AntiAliasingLevel{1});
 }
 
+TEST(SharedDepthRenderBuffer, default_constructed_has_D24_depth_stencil_format)
+{
+    ASSERT_EQ(SharedDepthRenderBuffer{}.depth_stencil_format(), DepthStencilFormat::D24_UNorm_S8_UInt);
+}
+
 TEST(SharedDepthRenderBuffer, can_construct_depth_buffer)
 {
     [[maybe_unused]] const SharedDepthRenderBuffer depth_buffer{DepthRenderBufferParams{}};
@@ -47,4 +52,10 @@ TEST(SharedDepthRenderBuffer, anti_aliasing_level_is_based_on_parameters)
 {
     const SharedDepthRenderBuffer buffer{{.anti_aliasing_level = AntiAliasingLevel{4}}};
     ASSERT_EQ(buffer.anti_aliasing_level(), AntiAliasingLevel{4});
+}
+
+TEST(SharedDepthRenderBuffer, depth_stencil_format_is_based_on_parameters)
+{
+    const SharedDepthRenderBuffer buffer{{.depth_format = DepthStencilFormat::D32_SFloat}};
+    ASSERT_EQ(buffer.depth_stencil_format(), DepthStencilFormat::D32_SFloat);
 }

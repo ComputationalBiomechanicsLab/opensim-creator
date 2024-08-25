@@ -12,6 +12,7 @@
 #include <oscar/Graphics/DepthStencilFormat.h>
 #include <oscar/Graphics/Detail/CPUDataType.h>
 #include <oscar/Graphics/Detail/CPUImageFormat.h>
+#include <oscar/Graphics/Detail/DepthStencilFormatHelpers.h>
 #include <oscar/Graphics/Detail/ShaderPropertyTypeList.h>
 #include <oscar/Graphics/Detail/ShaderPropertyTypeTraits.h>
 #include <oscar/Graphics/Detail/TextureFormatList.h>
@@ -984,18 +985,18 @@ namespace osc
         };
         static ViewportGeometry calc_viewport_geometry(
             Camera::Impl&,
-            RenderTarget* maybe_custom_render_target
+            const RenderTarget* maybe_custom_render_target
         );
         static float setup_top_level_pipeline_state(
             Camera::Impl&,
-            RenderTarget* maybe_custom_render_target
+            const RenderTarget* maybe_custom_render_target
         );
         static std::optional<gl::FrameBuffer> bind_and_clear_render_buffers(
             Camera::Impl&,
-            RenderTarget* maybe_custom_render_target
+            const RenderTarget* maybe_custom_render_target
         );
         static void resolve_render_buffers(
-            RenderTarget& maybe_custom_render_target
+            const RenderTarget& maybe_custom_render_target
         );
         static void flush_render_queue(
             Camera::Impl& camera,
@@ -1003,11 +1004,11 @@ namespace osc
         );
         static void teardown_top_level_pipeline_state(
             Camera::Impl&,
-            RenderTarget* maybe_custom_render_target
+            const RenderTarget* maybe_custom_render_target
         );
         static void render_camera_queue(
             Camera::Impl& camera,
-            RenderTarget* maybe_custom_render_target = nullptr
+            const RenderTarget* maybe_custom_render_target = nullptr
         );
 
 
@@ -2066,6 +2067,7 @@ namespace
 
     constexpr auto c_depth_stencil_format_strings = std::to_array<CStringView>({
         "D24_UNorm_S8_UInt",
+        "D32_SFloat",
     });
     static_assert(c_depth_stencil_format_strings.size() == num_options<DepthStencilFormat>());
 
@@ -2085,16 +2087,21 @@ namespace
         }
     }
 
-    constexpr GLenum to_opengl_internal_color_format_enum(const DepthRenderBufferParams&)
+    constexpr GLenum to_opengl_internal_color_format_enum(const DepthRenderBufferParams& params)
     {
-        static_assert(num_options<DepthStencilFormat>() == 1);
-        return GL_DEPTH24_STENCIL8;
+        static_assert(num_options<DepthStencilFormat>() == 2);
+
+        switch (params.depth_format) {
+        case DepthStencilFormat::D24_UNorm_S8_UInt: return GL_DEPTH24_STENCIL8;
+        case DepthStencilFormat::D32_SFloat:        return GL_DEPTH_COMPONENT32F;
+        default:                                    return GL_DEPTH24_STENCIL8;
+        }
     }
 
     constexpr CPUImageFormat equivalent_cpu_image_format_of(const ColorRenderBufferParams& params)
     {
         static_assert(num_options<RenderTextureFormat>() == 6);
-        static_assert(num_options<CPUImageFormat>() == 5);
+        static_assert(num_options<CPUImageFormat>() == 6);
 
         switch (params.color_format) {
         case RenderTextureFormat::Red8:        return CPUImageFormat::R8;
@@ -2107,12 +2114,16 @@ namespace
         }
     }
 
-    constexpr CPUImageFormat equivalent_cpu_image_format_of(const DepthRenderBufferParams&)
+    constexpr CPUImageFormat equivalent_cpu_image_format_of(const DepthRenderBufferParams& params)
     {
-        static_assert(num_options<DepthStencilFormat>() == 1);
-        static_assert(num_options<CPUImageFormat>() == 5);
+        static_assert(num_options<DepthStencilFormat>() == 2);
+        static_assert(num_options<CPUImageFormat>() == 6);
 
-        return CPUImageFormat::DepthStencil;
+        switch (params.depth_format) {
+        case DepthStencilFormat::D24_UNorm_S8_UInt: return CPUImageFormat::DepthStencil;
+        case DepthStencilFormat::D32_SFloat:        return CPUImageFormat::Depth;
+        default:                                    return CPUImageFormat::DepthStencil;
+        }
     }
 
     constexpr CPUDataType equivalent_cpu_datatype_of(const ColorRenderBufferParams& params)
@@ -2131,12 +2142,16 @@ namespace
         }
     }
 
-    constexpr CPUDataType equivalent_cpu_datatype_of(const DepthRenderBufferParams&)
+    constexpr CPUDataType equivalent_cpu_datatype_of(const DepthRenderBufferParams& params)
     {
-        static_assert(num_options<DepthStencilFormat>() == 1);
+        static_assert(num_options<DepthStencilFormat>() == 2);
         static_assert(num_options<CPUDataType>() == 4);
 
-        return CPUDataType::UnsignedInt24_8;
+        switch (params.depth_format) {
+        case DepthStencilFormat::D24_UNorm_S8_UInt: return CPUDataType::UnsignedInt24_8;
+        case DepthStencilFormat::D32_SFloat:        return CPUDataType::Float;
+        default:                                    return CPUDataType::UnsignedInt24_8;
+        }
     }
 
     constexpr GLenum to_opengl_image_color_format_enum(TextureFormat format)
@@ -2244,16 +2259,6 @@ namespace
 
             if (aa_level != anti_aliasing_level()) {
                 params_.anti_aliasing_level = aa_level;
-                maybe_opengl_data_->reset();
-            }
-        }
-
-        RenderTextureReadWrite read_write() const { return params_.read_write; }
-
-        void set_read_write(RenderTextureReadWrite new_read_write)
-        {
-            if (new_read_write != params_.read_write) {
-                params_.read_write = new_read_write;
                 maybe_opengl_data_->reset();
             }
         }
@@ -2404,6 +2409,16 @@ public:
             reset_opengl_data();
         }
     }
+
+    RenderTextureReadWrite read_write() const { return parameters().read_write; }
+
+    void set_read_write(RenderTextureReadWrite new_read_write)
+    {
+        if (new_read_write != parameters().read_write) {
+            upd_parameters().read_write = new_read_write;
+            reset_opengl_data();
+        }
+    }
 };
 
 osc::SharedColorRenderBuffer::SharedColorRenderBuffer() :
@@ -2478,7 +2493,6 @@ struct osc::Converter<RenderTextureParams, DepthRenderBufferParams> final {
             .dimensions = params.dimensions,
             .dimensionality = params.dimensionality,
             .anti_aliasing_level = params.anti_aliasing_level,
-            .read_write = params.read_write,
             .depth_format = params.depth_stencil_format,
         };
     }
@@ -2514,6 +2528,11 @@ TextureDimensionality osc::SharedDepthRenderBuffer::dimensionality() const
 AntiAliasingLevel osc::SharedDepthRenderBuffer::anti_aliasing_level() const
 {
     return impl_->anti_aliasing_level();
+}
+
+DepthStencilFormat osc::SharedDepthRenderBuffer::depth_stencil_format() const
+{
+    return impl_->depth_stencil_format();
 }
 
 class osc::RenderTexture::Impl final {
@@ -2622,7 +2641,6 @@ public:
     {
         if (new_read_write != read_write()) {
             color_buffer_.impl_->set_read_write(new_read_write);
-            depth_buffer_.impl_->set_read_write(new_read_write);
         }
     }
 
@@ -5630,7 +5648,7 @@ public:
         render_to(render_target);
     }
 
-    void render_to(RenderTarget& render_target)
+    void render_to(const RenderTarget& render_target)
     {
         GraphicsBackend::render_camera_queue(*this, &render_target);
     }
@@ -5856,7 +5874,7 @@ void osc::Camera::render_to(RenderTexture& render_texture)
     impl_.upd()->render_to(render_texture);
 }
 
-void osc::Camera::render_to(RenderTarget& render_target)
+void osc::Camera::render_to(const RenderTarget& render_target)
 {
     impl_.upd()->render_to(render_target);
 }
@@ -7260,7 +7278,7 @@ void osc::GraphicsBackend::flush_render_queue(Camera::Impl& camera, float aspect
 
 osc::GraphicsBackend::ViewportGeometry osc::GraphicsBackend::calc_viewport_geometry(
     Camera::Impl& camera,
-    RenderTarget* maybe_custom_render_target)
+    const RenderTarget* maybe_custom_render_target)
 {
     if (auto pixel_rect = camera.pixel_rect()) {
         return {pixel_rect->p1, dimensions_of(*pixel_rect)};
@@ -7275,7 +7293,7 @@ osc::GraphicsBackend::ViewportGeometry osc::GraphicsBackend::calc_viewport_geome
 
 float osc::GraphicsBackend::setup_top_level_pipeline_state(
     Camera::Impl& camera,
-    RenderTarget* maybe_custom_render_target)
+    const RenderTarget* maybe_custom_render_target)
 {
     const auto viewport_geom = calc_viewport_geometry(camera, maybe_custom_render_target);
 
@@ -7307,7 +7325,7 @@ float osc::GraphicsBackend::setup_top_level_pipeline_state(
 
 void osc::GraphicsBackend::teardown_top_level_pipeline_state(
     Camera::Impl& camera,
-    RenderTarget*)
+    const RenderTarget*)
 {
     if (camera.maybe_scissor_rect_) {
         gl::disable(GL_SCISSOR_TEST);
@@ -7318,7 +7336,7 @@ void osc::GraphicsBackend::teardown_top_level_pipeline_state(
 
 std::optional<gl::FrameBuffer> osc::GraphicsBackend::bind_and_clear_render_buffers(
     Camera::Impl& camera,
-    RenderTarget* maybe_custom_render_target)
+    const RenderTarget* maybe_custom_render_target)
 {
     // if necessary, create pass-specific FBO
     std::optional<gl::FrameBuffer> maybe_render_fbo;
@@ -7367,41 +7385,45 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::bind_and_clear_render_buffe
             }, maybe_custom_render_target->color_attachments()[i].color_buffer.impl_->upd_opengl_data());
         }
 
-        // attach depth buffer to the FBO
-        if (maybe_custom_render_target->depth_attachment()) {
+        // attach depth (+stencil) buffer to the FBO
+        if (auto const& depth_attachment = maybe_custom_render_target->depth_attachment()) {
+            const GLenum attachment = detail::has_stencil_component(depth_attachment->buffer.depth_stencil_format()) ?
+                GL_DEPTH_STENCIL_ATTACHMENT :
+                GL_DEPTH_ATTACHMENT;
+
             std::visit(Overload
             {
-                [](SingleSampledTexture& t)
+                [attachment](SingleSampledTexture& t)
                 {
                     gl::framebuffer_texture2D(
                         GL_DRAW_FRAMEBUFFER,
-                        GL_DEPTH_STENCIL_ATTACHMENT,
+                        attachment,
                         t.texture2D,
                         0
                     );
                 },
-                [](MultisampledRBOAndResolvedTexture& t)
+                [attachment](MultisampledRBOAndResolvedTexture& t)
                 {
                     gl::framebuffer_renderbuffer(
                         GL_DRAW_FRAMEBUFFER,
-                        GL_DEPTH_STENCIL_ATTACHMENT,
+                        attachment,
                         t.multisampled_rbo
                     );
                 },
     #ifdef EMSCRIPTEN
                 [](SingleSampledCubemap&) {}
     #else
-                [](SingleSampledCubemap& t)
+                [attachment](SingleSampledCubemap& t)
                 {
                     glFramebufferTexture(
                         GL_DRAW_FRAMEBUFFER,
-                        GL_DEPTH_STENCIL_ATTACHMENT,
+                        attachment,
                         t.cubemap.get(),
                         0
                     );
                 }
     #endif
-            }, maybe_custom_render_target->depth_attachment()->buffer.impl_->upd_opengl_data());
+            }, depth_attachment->buffer.impl_->upd_opengl_data());
         }
 
         // Multi-Render Target (MRT) support: tell OpenGL to use all specified
@@ -7468,7 +7490,8 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::bind_and_clear_render_buffe
     return maybe_render_fbo;
 }
 
-void osc::GraphicsBackend::resolve_render_buffers(RenderTarget& render_target)
+void osc::GraphicsBackend::resolve_render_buffers(
+    const RenderTarget& render_target)
 {
     static_assert(num_options<RenderBufferStoreAction>() == 2, "check 'if's etc. in this code");
 
@@ -7541,32 +7564,35 @@ void osc::GraphicsBackend::resolve_render_buffers(RenderTarget& render_target)
         }
     }
 
-    // resolve depth buffer with a blit
+    // resolve depth (+stencil) buffer with a blit
     if (render_target.depth_attachment() and render_target.depth_attachment()->store_action == RenderBufferStoreAction::Resolve) {
         bool can_resolve_buffer = false;  // changes if the underlying buffer data is resolve-able
+        const GLenum attachment = detail::has_stencil_component(render_target.depth_attachment()->buffer.depth_stencil_format()) ?
+            GL_DEPTH_STENCIL_ATTACHMENT :
+            GL_DEPTH_ATTACHMENT;
         std::visit(Overload
         {
-            [](SingleSampledTexture&)
+            [attachment](SingleSampledTexture&)
             {
                 // don't resolve: it's single-sampled
             },
-            [&can_resolve_buffer](MultisampledRBOAndResolvedTexture& t)
+            [&can_resolve_buffer, attachment](MultisampledRBOAndResolvedTexture& t)
             {
                 gl::framebuffer_renderbuffer(
                     GL_READ_FRAMEBUFFER,
-                    GL_DEPTH_ATTACHMENT,
+                    attachment,
                     t.multisampled_rbo
                 );
-                glReadBuffer(GL_DEPTH_ATTACHMENT);
+                glReadBuffer(attachment);
 
                 gl::framebuffer_texture2D(
                     GL_DRAW_FRAMEBUFFER,
-                    GL_DEPTH_ATTACHMENT,
+                    attachment,
                     t.single_sampled_texture2D,
                     0
                 );
                 {
-                    const GLenum buf = GL_DEPTH_ATTACHMENT;
+                    const GLenum buf = attachment;
                     glDrawBuffers(1, &buf);
                 }
 
@@ -7599,7 +7625,7 @@ void osc::GraphicsBackend::resolve_render_buffers(RenderTarget& render_target)
 
 void osc::GraphicsBackend::render_camera_queue(
     Camera::Impl& camera,
-    RenderTarget* maybe_custom_render_target)
+    const RenderTarget* maybe_custom_render_target)
 {
     OSC_PERF("GraphicsBackend::render_camera_queue");
 

@@ -44,6 +44,9 @@ add_library(oscar STATIC
 
     Graphics/Detail/CPUDataType.h
     Graphics/Detail/CPUImageFormat.h
+    Graphics/Detail/DepthStencilFormatHelpers.h
+    Graphics/Detail/DepthStencilFormatList.h
+    Graphics/Detail/DepthStencilFormatTraits.h
     Graphics/Detail/ShaderLocations.h
     Graphics/Detail/ShaderPropertyTypeList.h
     Graphics/Detail/ShaderPropertyTypeTraits.h
