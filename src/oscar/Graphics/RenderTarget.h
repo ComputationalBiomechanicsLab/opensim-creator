@@ -5,6 +5,7 @@
 #include <oscar/Maths/Vec2.h>
 
 #include <optional>
+#include <span>
 #include <utility>
 #include <vector>
 
