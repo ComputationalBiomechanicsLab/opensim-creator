@@ -18,7 +18,7 @@ namespace osc
         TextureDimensionality dimensionality = TextureDimensionality::Tex2D;
         AntiAliasingLevel anti_aliasing_level = AntiAliasingLevel{1};
         RenderTextureFormat color_format = RenderTextureFormat::ARGB32;
-        DepthStencilFormat depth_stencil_format = DepthStencilFormat::D24_UNorm_S8_UInt;
+        DepthStencilFormat depth_stencil_format = DepthStencilFormat::Default;
         RenderTextureReadWrite read_write = RenderTextureReadWrite::Default;
     };
 

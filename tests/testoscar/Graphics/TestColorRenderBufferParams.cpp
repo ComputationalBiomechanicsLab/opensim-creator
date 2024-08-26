@@ -42,9 +42,9 @@ TEST(ColorRenderBufferParams, can_be_initialized_with_designated_initializer)
 {
     const ColorRenderBufferParams params = {
         .dimensions = {2, 2},
-        .color_format = RenderTextureFormat::ARGB32,
+        .format = RenderTextureFormat::ARGB32,
     };
 
     ASSERT_EQ(params.dimensions, Vec2i(2, 2));
-    ASSERT_EQ(params.color_format, RenderTextureFormat::ARGB32);
+    ASSERT_EQ(params.format, RenderTextureFormat::ARGB32);
 }

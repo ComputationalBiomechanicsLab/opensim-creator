@@ -2065,18 +2065,12 @@ namespace
     });
     static_assert(c_render_texture_format_strings.size() == num_options<RenderTextureFormat>());
 
-    constexpr auto c_depth_stencil_format_strings = std::to_array<CStringView>({
-        "D24_UNorm_S8_UInt",
-        "D32_SFloat",
-    });
-    static_assert(c_depth_stencil_format_strings.size() == num_options<DepthStencilFormat>());
-
     constexpr GLenum to_opengl_internal_color_format_enum(const ColorRenderBufferParams& params)
     {
         static_assert(num_options<RenderTextureFormat>() == 6);
         static_assert(num_options<RenderTextureReadWrite>() == 2);
 
-        switch (params.color_format) {
+        switch (params.format) {
         case RenderTextureFormat::Red8:        return GL_RED;
         case RenderTextureFormat::ARGB32:      return params.read_write == RenderTextureReadWrite::sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8;
         case RenderTextureFormat::RGFloat16:   return GL_RG16F;
@@ -2091,19 +2085,19 @@ namespace
     {
         static_assert(num_options<DepthStencilFormat>() == 2);
 
-        switch (params.depth_format) {
+        switch (params.format) {
         case DepthStencilFormat::D24_UNorm_S8_UInt: return GL_DEPTH24_STENCIL8;
         case DepthStencilFormat::D32_SFloat:        return GL_DEPTH_COMPONENT32F;
         default:                                    return GL_DEPTH24_STENCIL8;
         }
     }
 
-    constexpr CPUImageFormat equivalent_cpu_image_format_of(const ColorRenderBufferParams& params)
+    constexpr CPUImageFormat equivalent_cpu_image_format_of(const RenderTextureFormat& format)
     {
         static_assert(num_options<RenderTextureFormat>() == 6);
         static_assert(num_options<CPUImageFormat>() == 6);
 
-        switch (params.color_format) {
+        switch (format) {
         case RenderTextureFormat::Red8:        return CPUImageFormat::R8;
         case RenderTextureFormat::ARGB32:      return CPUImageFormat::RGBA;
         case RenderTextureFormat::RGFloat16:   return CPUImageFormat::RG;
@@ -2114,24 +2108,12 @@ namespace
         }
     }
 
-    constexpr CPUImageFormat equivalent_cpu_image_format_of(const DepthRenderBufferParams& params)
-    {
-        static_assert(num_options<DepthStencilFormat>() == 2);
-        static_assert(num_options<CPUImageFormat>() == 6);
-
-        switch (params.depth_format) {
-        case DepthStencilFormat::D24_UNorm_S8_UInt: return CPUImageFormat::DepthStencil;
-        case DepthStencilFormat::D32_SFloat:        return CPUImageFormat::Depth;
-        default:                                    return CPUImageFormat::DepthStencil;
-        }
-    }
-
-    constexpr CPUDataType equivalent_cpu_datatype_of(const ColorRenderBufferParams& params)
+    constexpr CPUDataType equivalent_cpu_datatype_of(const RenderTextureFormat& format)
     {
         static_assert(num_options<RenderTextureFormat>() == 6);
         static_assert(num_options<CPUDataType>() == 4);
 
-        switch (params.color_format) {
+        switch (format) {
         case RenderTextureFormat::Red8:        return CPUDataType::UnsignedByte;
         case RenderTextureFormat::ARGB32:      return CPUDataType::UnsignedByte;
         case RenderTextureFormat::RGFloat16:   return CPUDataType::HalfFloat;
@@ -2139,18 +2121,6 @@ namespace
         case RenderTextureFormat::ARGBFloat16: return CPUDataType::HalfFloat;
         case RenderTextureFormat::Depth:       return CPUDataType::Float;
         default:                               return CPUDataType::UnsignedByte;
-        }
-    }
-
-    constexpr CPUDataType equivalent_cpu_datatype_of(const DepthRenderBufferParams& params)
-    {
-        static_assert(num_options<DepthStencilFormat>() == 2);
-        static_assert(num_options<CPUDataType>() == 4);
-
-        switch (params.depth_format) {
-        case DepthStencilFormat::D24_UNorm_S8_UInt: return CPUDataType::UnsignedInt24_8;
-        case DepthStencilFormat::D32_SFloat:        return CPUDataType::Float;
-        default:                                    return CPUDataType::UnsignedInt24_8;
         }
     }
 
@@ -2188,7 +2158,7 @@ std::ostream& osc::operator<<(std::ostream& o, RenderTextureFormat render_textur
 
 std::ostream& osc::operator<<(std::ostream& o, DepthStencilFormat depth_stencil_format)
 {
-    return o << c_depth_stencil_format_strings.at(to_index(depth_stencil_format));
+    return o << detail::get_label(depth_stencil_format);
 }
 
 std::ostream& osc::operator<<(std::ostream& o, const RenderTextureParams& params)
@@ -2295,6 +2265,11 @@ namespace
 
         void configure_texture(SingleSampledTexture& single_samped_texture)
         {
+            using detail::equivalent_cpu_image_format_of;
+            using ::equivalent_cpu_image_format_of;
+            using detail::equivalent_cpu_datatype_of;
+            using ::equivalent_cpu_datatype_of;
+
             const Vec2i dimensions = params_.dimensions;
 
             // setup resolved texture
@@ -2306,8 +2281,8 @@ namespace
                 dimensions.x,
                 dimensions.y,
                 0,
-                opengl_format_of(equivalent_cpu_image_format_of(params_)),
-                opengl_data_type_of(equivalent_cpu_datatype_of(params_)),
+                opengl_format_of(equivalent_cpu_image_format_of(params_.format)),
+                opengl_data_type_of(equivalent_cpu_datatype_of(params_.format)),
                 nullptr
             );
             gl::tex_parameter_i(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -2320,6 +2295,11 @@ namespace
 
         void configure_texture(MultisampledRBOAndResolvedTexture& multisampled_rbo_and_texture)
         {
+            using detail::equivalent_cpu_image_format_of;
+            using ::equivalent_cpu_image_format_of;
+            using detail::equivalent_cpu_datatype_of;
+            using ::equivalent_cpu_datatype_of;
+
             const Vec2i dimensions = params_.dimensions;
 
             // setup multisampled RBO
@@ -2342,8 +2322,8 @@ namespace
                 dimensions.x,
                 dimensions.y,
                 0,
-                opengl_format_of(equivalent_cpu_image_format_of(params_)),
-                opengl_data_type_of(equivalent_cpu_datatype_of(params_)),
+                opengl_format_of(equivalent_cpu_image_format_of(params_.format)),
+                opengl_data_type_of(equivalent_cpu_datatype_of(params_.format)),
                 nullptr
             );
             gl::tex_parameter_i(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -2356,6 +2336,11 @@ namespace
 
         void configure_texture(SingleSampledCubemap& single_sampled_cubemap)
         {
+            using detail::equivalent_cpu_image_format_of;
+            using ::equivalent_cpu_image_format_of;
+            using detail::equivalent_cpu_datatype_of;
+            using ::equivalent_cpu_datatype_of;
+
             const Vec2i dimensions = params_.dimensions;
 
             // setup resolved texture
@@ -2369,8 +2354,8 @@ namespace
                     dimensions.x,
                     dimensions.y,
                     0,
-                    opengl_format_of(equivalent_cpu_image_format_of(params_)),
-                    opengl_data_type_of(equivalent_cpu_datatype_of(params_)),
+                    opengl_format_of(equivalent_cpu_image_format_of(params_.format)),
+                    opengl_data_type_of(equivalent_cpu_datatype_of(params_.format)),
                     nullptr
                 );
             }
@@ -2400,12 +2385,12 @@ class osc::SharedColorRenderBuffer::ColorRenderBuffer final : public RenderBuffe
 public:
     using RenderBufferImpl<ColorRenderBufferParams>::RenderBufferImpl;
 
-    RenderTextureFormat color_format() const { return parameters().color_format; }
+    RenderTextureFormat color_format() const { return parameters().format; }
 
     void set_color_format(RenderTextureFormat new_color_format)
     {
         if (new_color_format != color_format()) {
-            upd_parameters().color_format = new_color_format;
+            upd_parameters().format = new_color_format;
             reset_opengl_data();
         }
     }
@@ -2459,13 +2444,13 @@ public:
 
     DepthStencilFormat depth_stencil_format() const
     {
-        return parameters().depth_format;
+        return parameters().format;
     }
 
     void set_depth_stencil_format(DepthStencilFormat new_depth_stencil_format)
     {
         if (new_depth_stencil_format != depth_stencil_format()) {
-            upd_parameters().depth_format = new_depth_stencil_format;
+            upd_parameters().format = new_depth_stencil_format;
             reset_opengl_data();
         }
     }
@@ -2479,8 +2464,8 @@ struct osc::Converter<RenderTextureParams, ColorRenderBufferParams> final {
             .dimensions = params.dimensions,
             .dimensionality = params.dimensionality,
             .anti_aliasing_level = params.anti_aliasing_level,
+            .format = params.color_format,
             .read_write = params.read_write,
-            .color_format = params.color_format,
         };
     }
 };
@@ -2493,7 +2478,7 @@ struct osc::Converter<RenderTextureParams, DepthRenderBufferParams> final {
             .dimensions = params.dimensions,
             .dimensionality = params.dimensionality,
             .anti_aliasing_level = params.anti_aliasing_level,
-            .depth_format = params.depth_stencil_format,
+            .format = params.depth_stencil_format,
         };
     }
 };

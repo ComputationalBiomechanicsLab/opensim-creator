@@ -15,6 +15,6 @@ namespace osc
         Vec2i dimensions = {1, 1};
         TextureDimensionality dimensionality = TextureDimensionality::Tex2D;
         AntiAliasingLevel anti_aliasing_level = AntiAliasingLevel{1};
-        DepthStencilFormat depth_format = DepthStencilFormat::D24_UNorm_S8_UInt;
+        DepthStencilFormat format = DepthStencilFormat::Default;
     };
 }

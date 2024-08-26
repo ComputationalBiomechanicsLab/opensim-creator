@@ -11,11 +11,11 @@
 
 using namespace osc;
 
-TEST(RenderTexture, DefaultConstructorCreates1x1RgbaRenderTexture)
+TEST(RenderTexture, DefaultConstructorCreates1x1DefaultRenderTexture)
 {
     const RenderTexture tex;
     ASSERT_EQ(tex.dimensions(), Vec2i(1, 1));
-    ASSERT_EQ(tex.depth_stencil_format(), DepthStencilFormat::D24_UNorm_S8_UInt);
+    ASSERT_EQ(tex.depth_stencil_format(), DepthStencilFormat::Default);
     ASSERT_EQ(tex.color_format(), RenderTextureFormat::ARGB32);
     ASSERT_EQ(tex.anti_aliasing_level(), AntiAliasingLevel{1});
 }

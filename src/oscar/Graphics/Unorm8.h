@@ -18,7 +18,9 @@ namespace osc
 
         // FIXME: this is necessary, in addition to the `using` above, because
         //        `gcc-12` doesn't seem to forward `consteval`
-        consteval Unorm8(int literal) : Unorm<uint8_t>{literal} {}
+        consteval Unorm8(int literal) :
+            Unorm<uint8_t>{literal}
+        {}
 
         constexpr Unorm8(std::byte raw_value) :
             Unorm8{static_cast<uint8_t>(raw_value)}

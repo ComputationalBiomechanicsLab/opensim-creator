@@ -550,7 +550,6 @@ private:
     RenderTexture rims_rendertexture_;
     SharedDepthRenderBuffer shadowmap_render_buffer_{{
         .dimensions = {1024, 1024},
-        .depth_format = DepthStencilFormat::D24_UNorm_S8_UInt,
     }};
     RenderTexture output_rendertexture_;
 };

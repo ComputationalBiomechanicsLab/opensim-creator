@@ -46,10 +46,10 @@ TEST(RenderTextureDescriptor, color_format_defaults_to_ARGB32)
     ASSERT_EQ(params.color_format, RenderTextureFormat::ARGB32);
 }
 
-TEST(RenderTextureParams, depth_stencil_format_defaults_to_D24_UNorm_S8_UInt)
+TEST(RenderTextureParams, depth_stencil_format_defaults_to_Default)
 {
     const RenderTextureParams params;
-    ASSERT_EQ(params.depth_stencil_format, DepthStencilFormat::D24_UNorm_S8_UInt);
+    ASSERT_EQ(params.depth_stencil_format, DepthStencilFormat::Default);
 }
 
 TEST(RenderTextureParams, read_write_defaults_to_Default)

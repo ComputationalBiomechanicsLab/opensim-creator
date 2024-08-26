@@ -35,6 +35,6 @@ TEST(DepthRenderBufferParams, can_be_initialized_with_designated_initializer)
     [[maybe_unused]] const DepthRenderBufferParams params = {
         .dimensions = {2, 3},
         .dimensionality = TextureDimensionality::Cube,
-        .depth_format = DepthStencilFormat::D24_UNorm_S8_UInt,
+        .format = DepthStencilFormat::D32_SFloat,
     };
 }
