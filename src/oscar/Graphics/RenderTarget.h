@@ -52,7 +52,7 @@ namespace osc
         const std::optional<RenderTargetDepthAttachment>& depth_attachment() const { return depth_; }
         Vec2i dimensions() const
         {
-            return depth_ ? depth_->buffer.dimensions() : colors_.front().color_buffer.dimensions();
+            return depth_ ? depth_->buffer.dimensions() : colors_.front().buffer.dimensions();
         }
         void validate_or_throw() const;
 

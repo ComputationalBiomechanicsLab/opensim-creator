@@ -9,6 +9,8 @@ namespace osc
         Triangles,
         Lines,
         NUM_OPTIONS,
+
+        Default = Triangles,
     };
 
     std::ostream& operator<<(std::ostream&, MeshTopology);

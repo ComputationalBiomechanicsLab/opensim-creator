@@ -301,7 +301,7 @@ private:
         background_material_.set("uEnvironmentMap", projected_map_);
         background_material_.set_depth_function(DepthFunction::LessOrEqual);  // for skybox depth trick
         graphics::draw(cube_mesh_, identity<Transform>(), background_material_, camera_);
-        camera_.set_clear_flags(CameraClearFlag::Nothing);
+        camera_.set_clear_flags(CameraClearFlag::None);
         camera_.render_to(output_render_texture_);
         camera_.set_clear_flags(CameraClearFlag::Default);
     }

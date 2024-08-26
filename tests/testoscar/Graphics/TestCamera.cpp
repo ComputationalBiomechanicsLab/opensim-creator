@@ -155,10 +155,10 @@ TEST(Camera, set_clear_flags_works_as_expected)
     }
 }
 
-TEST(Camera, projection_defaults_to_Perspective)
+TEST(Camera, projection_defaults_to_Default)
 {
     const Camera camera;
-    ASSERT_EQ(camera.projection(), CameraProjection::Perspective);
+    ASSERT_EQ(camera.projection(), CameraProjection::Default);
 }
 
 TEST(Camera, can_call_set_projection)
@@ -376,8 +376,8 @@ TEST(Camera, set_clear_flags_causes_clear_flags_to_return_new_flags)
     Camera camera;
 
     ASSERT_EQ(camera.clear_flags(), CameraClearFlag::Default);
-    camera.set_clear_flags(CameraClearFlag::Nothing);
-    ASSERT_EQ(camera.clear_flags(), CameraClearFlag::Nothing);
+    camera.set_clear_flags(CameraClearFlag::None);
+    ASSERT_EQ(camera.clear_flags(), CameraClearFlag::None);
 }
 
 TEST(Camera, set_clear_flags_causes_copy_to_compare_not_equivalent)
@@ -387,7 +387,7 @@ TEST(Camera, set_clear_flags_causes_copy_to_compare_not_equivalent)
 
     ASSERT_EQ(camera, copy);
     ASSERT_EQ(camera.clear_flags(), CameraClearFlag::Default);
-    camera.set_clear_flags(CameraClearFlag::Nothing);
+    camera.set_clear_flags(CameraClearFlag::None);
     ASSERT_NE(camera, copy);
 }
 

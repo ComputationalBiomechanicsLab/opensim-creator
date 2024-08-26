@@ -9,6 +9,8 @@ namespace osc
         Perspective,
         Orthographic,
         NUM_OPTIONS,
+
+        Default = Perspective,
     };
 
     std::ostream& operator<<(std::ostream&, CameraProjection);

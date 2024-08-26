@@ -11,7 +11,7 @@ namespace osc
 
         friend bool operator==(const RenderTargetColorAttachment&, const RenderTargetColorAttachment&) = default;
 
-        SharedColorRenderBuffer color_buffer{};
+        SharedColorRenderBuffer buffer{};
         RenderBufferLoadAction load_action = RenderBufferLoadAction::Clear;
         RenderBufferStoreAction store_action = RenderBufferStoreAction::Resolve;
         Color clear_color = Color::clear();

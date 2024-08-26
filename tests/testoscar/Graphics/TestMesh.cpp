@@ -79,11 +79,11 @@ TEST(Mesh, can_call_topology)
     mesh.topology();
 }
 
-TEST(Mesh, topology_defaults_to_Triangles)
+TEST(Mesh, topology_defaults_to_Default)
 {
     const Mesh mesh;
 
-    ASSERT_EQ(mesh.topology(), MeshTopology::Triangles);
+    ASSERT_EQ(mesh.topology(), MeshTopology::Default);
 }
 
 TEST(Mesh, set_topology_causes_topology_to_return_new_MeshTopology)

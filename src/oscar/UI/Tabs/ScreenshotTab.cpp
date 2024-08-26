@@ -265,7 +265,7 @@ private:
                 };
                 c.set_projection_matrix_override(proj);
             }
-            c.set_clear_flags(CameraClearFlag::Nothing);
+            c.set_clear_flags(CameraClearFlag::None);
 
             for (const ImDrawCmd& cmd : drawlist.CmdBuffer) {
                 // upload indices

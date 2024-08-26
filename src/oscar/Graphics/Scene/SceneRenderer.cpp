@@ -470,7 +470,7 @@ private:
         // render to the off-screen solid-colored texture
         camera_.render_to(RenderTarget{
             RenderTargetColorAttachment{
-                .color_buffer = rims_rendertexture_.upd_color_buffer(),
+                .buffer = rims_rendertexture_.upd_color_buffer(),
             },
         });
 

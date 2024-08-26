@@ -28,10 +28,10 @@ TEST(RenderTarget, default_constructed_has_one_dummy_color_attachment_and_one_du
 TEST(RenderTarget, can_construct_with_just_color_attachment)
 {
     const SharedColorRenderBuffer buffer;
-    const RenderTarget render_target{RenderTargetColorAttachment{.color_buffer = buffer}};
+    const RenderTarget render_target{RenderTargetColorAttachment{.buffer = buffer}};
 
     ASSERT_EQ(render_target.color_attachments().size(), 1);
-    ASSERT_EQ(render_target.color_attachments().front(), RenderTargetColorAttachment{.color_buffer = buffer});
+    ASSERT_EQ(render_target.color_attachments().front(), RenderTargetColorAttachment{.buffer = buffer});
     ASSERT_FALSE(render_target.depth_attachment().has_value());
 }
 
@@ -90,7 +90,7 @@ TEST(RenderTarget, can_construct_with_3x_color_and_1x_depth_attachments)
 TEST(RenderTarget, validate_or_throw_doesnt_throw_when_given_buffers_with_same_dimensions_and_anti_aliasing_level)
 {
     const SharedColorRenderBuffer color_buffer{{.dimensions = Vec2i(3, 3), .anti_aliasing_level = AntiAliasingLevel{4}}};
-    const RenderTargetColorAttachment color_attachment{.color_buffer = color_buffer};
+    const RenderTargetColorAttachment color_attachment{.buffer = color_buffer};
     const SharedDepthRenderBuffer depth_buffer{{.dimensions = Vec2i(3,3), .anti_aliasing_level = AntiAliasingLevel{4}}};
     const RenderTargetDepthAttachment depth_attachment{.buffer = depth_buffer};
 

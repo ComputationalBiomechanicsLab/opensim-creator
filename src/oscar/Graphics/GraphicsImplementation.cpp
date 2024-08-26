@@ -4730,7 +4730,7 @@ public:
     void clear()
     {
         version_->reset();
-        topology_ = MeshTopology::Triangles;
+        topology_ = MeshTopology::Default;
         vertex_buffer_.clear();
         indices_are_32bit_ = false;
         num_indices_ = 0;
@@ -5119,7 +5119,7 @@ private:
     }
 
     DefaultConstructOnCopy<UID> version_;
-    MeshTopology topology_ = MeshTopology::Triangles;
+    MeshTopology topology_ = MeshTopology::Default;
     VertexBuffer vertex_buffer_;
 
     bool indices_are_32bit_ = false;
@@ -5637,7 +5637,7 @@ private:
     friend class GraphicsBackend;
 
     Color background_color_ = Color::clear();
-    CameraProjection camera_projection_ = CameraProjection::Perspective;
+    CameraProjection camera_projection_ = CameraProjection::Default;
     float orthographic_size_ = 2.0f;
     Radians perspective_fov_ = 90_deg;
     CameraClippingPlanes clipping_planes_{1.0f, -1.0f};
@@ -7360,7 +7360,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::bind_and_clear_render_buffe
                     );
                 }
 #endif
-            }, maybe_custom_render_target->color_attachments()[i].color_buffer.impl_->upd_opengl_data());
+            }, maybe_custom_render_target->color_attachments()[i].buffer.impl_->upd_opengl_data());
         }
 
         // attach depth (+stencil) buffer to the FBO
@@ -7445,7 +7445,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::bind_and_clear_render_buffe
         gl::bind_framebuffer(GL_FRAMEBUFFER, gl::window_framebuffer);
 
         // we're rendering to the window
-        if (camera.clear_flags_ != CameraClearFlag::Nothing) {
+        if (camera.clear_flags_ != CameraClearFlag::None) {
 
             // clear window
             const GLenum clearFlags = camera.clear_flags_ & CameraClearFlag::SolidColor ?
@@ -7485,7 +7485,7 @@ void osc::GraphicsBackend::resolve_render_buffers(
     // resolve each color buffer with a blit
     for (size_t i = 0; i < render_target.color_attachments().size(); ++i) {
         const RenderTargetColorAttachment& attachment = render_target.color_attachments()[i];
-        const SharedColorRenderBuffer& buffer = attachment.color_buffer;
+        const SharedColorRenderBuffer& buffer = attachment.buffer;
         RenderBufferOpenGLData& buffer_opengl_data = buffer.impl_->upd_opengl_data();
 
         if (attachment.store_action != RenderBufferStoreAction::Resolve) {
@@ -7526,7 +7526,7 @@ void osc::GraphicsBackend::resolve_render_buffers(
         }, buffer_opengl_data);
 
         if (can_resolve_buffer) {
-            const Vec2i dimensions = attachment.color_buffer.impl_->dimensions();
+            const Vec2i dimensions = attachment.buffer.impl_->dimensions();
             gl::blit_framebuffer(
                 0,
                 0,
@@ -7706,7 +7706,7 @@ void osc::GraphicsBackend::blit_to_screen(
     camera.set_pixel_rect(rect);
     camera.set_projection_matrix_override(identity<Mat4>());
     camera.set_view_matrix_override(identity<Mat4>());
-    camera.set_clear_flags(CameraClearFlag::Nothing);
+    camera.set_clear_flags(CameraClearFlag::None);
 
     Material material_copy{material};
     material_copy.set("uTexture", source);
@@ -7726,7 +7726,7 @@ void osc::GraphicsBackend::blit_to_screen(
     camera.set_pixel_rect(rect);
     camera.set_projection_matrix_override(identity<Mat4>());
     camera.set_view_matrix_override(identity<Mat4>());
-    camera.set_clear_flags(CameraClearFlag::Nothing);
+    camera.set_clear_flags(CameraClearFlag::None);
 
     Material material_copy{g_graphics_context_impl->getQuadMaterial()};
     material_copy.set("uTexture", source);
