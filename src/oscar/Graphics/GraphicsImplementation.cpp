@@ -31,6 +31,7 @@
 #include <oscar/Graphics/MeshTopology.h>
 #include <oscar/Graphics/OpenGL/CPUDataTypeOpenGLTraits.h>
 #include <oscar/Graphics/OpenGL/CPUImageFormatOpenGLTraits.h>
+#include <oscar/Graphics/OpenGL/DepthStencilFormatOpenGLHelpers.h>
 #include <oscar/Graphics/OpenGL/Gl.h>
 #include <oscar/Graphics/OpenGL/TextureFormatOpenGLTraits.h>
 #include <oscar/Graphics/RenderBufferLoadAction.h>
@@ -2051,8 +2052,6 @@ std::ostream& osc::operator<<(std::ostream& o, const Texture2D&)
 
 namespace
 {
-    enum class RenderBufferType { Color, Depth, NUM_OPTIONS };
-
     constexpr auto c_render_texture_format_strings = std::to_array<CStringView>({
         "Red8",
         "ARGB32",
@@ -2083,13 +2082,7 @@ namespace
 
     constexpr GLenum to_opengl_internal_color_format_enum(const DepthRenderBufferParams& params)
     {
-        static_assert(num_options<DepthStencilFormat>() == 2);
-
-        switch (params.format) {
-        case DepthStencilFormat::D24_UNorm_S8_UInt: return GL_DEPTH24_STENCIL8;
-        case DepthStencilFormat::D32_SFloat:        return GL_DEPTH_COMPONENT32F;
-        default:                                    return GL_DEPTH24_STENCIL8;
-        }
+        return detail::to_opengl_internal_color_format_enum(params.format);
     }
 
     constexpr CPUImageFormat equivalent_cpu_image_format_of(const RenderTextureFormat& format)

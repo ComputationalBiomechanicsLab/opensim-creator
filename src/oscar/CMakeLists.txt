@@ -104,6 +104,8 @@ add_library(oscar STATIC
 
     Graphics/OpenGL/CPUDataTypeOpenGLTraits.h
     Graphics/OpenGL/CPUImageFormatOpenGLTraits.h
+    Graphics/OpenGL/DepthStencilFormatOpenGLTraits.h
+    Graphics/OpenGL/DepthStencilFormatOpenGLHelpers.h
     Graphics/OpenGL/Gl.cpp
     Graphics/OpenGL/Gl.h
     Graphics/OpenGL/TextureFormatOpenGLTraits.h
