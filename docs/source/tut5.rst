@@ -79,15 +79,17 @@ bend the plate. If you could figure out an "optimal" way to bend it, you could
 minimize the distance between each surface point and its corresponding "target"
 point.
 
-The TPS technique models that idea, but in :math:`n`-dimensional space by
+The TPS technique models that idea, but in :math:`n`-dimensional space, by
+making several assumptions:
 
-- Describing "bending" the plate as a bounded linear combination of some
+- It describes "bending" the plate as a bounded linear combination of some
   basis function, :math:`U(v)`. The `original paper <TPS Primary Literature Source_>`_
-  used :math:`U(v) = |v|^2 \log{|v|^2}`, but `other sources <SemilandmarksInThreeDimensions_>`_ use :math:`U(v) = |v|`.
-- Treating the problem of transforming "source/reference" points (landmarks),
+  used :math:`U(v) = |v|^2 \log{|v|^2}`, but `other sources <SemilandmarksInThreeDimensions_>`_, including
+  OpenSim Creator, use :math:`U(v) = |v|`.
+- It treats the problem of transforming "source/reference" points (landmarks),
   :math:`x_i`, to "destination/reference" points (landmarks), :math:`y_i`, as an
   interpolation problem.
-- Solving the coefficients of that linear combination while minimizing the
+- And it solves the coefficients of that linear combination while minimizing the
   "bending energy". `Wikipedia example <TPS General Info_>`_:
 
 .. math::
@@ -95,8 +97,8 @@ The TPS technique models that idea, but in :math:`n`-dimensional space by
     E_{\mathrm{tps}}(U) = \sum_{i=1}^K \|y_i - U(x_i) \|^2
 
 The coefficients that drop out of this process can then be used to warp any
-point in the same space. If you'd like to know more, we recommend the `Relevant References`_
-section.
+point in the same space. If you'd like to know more, we recommend the literature
+in the `Relevant References`_ section.
 
 Here's how these high-level concepts from the TPS technique apply to
 OpenSim Creator's mesh warping UI, which internally uses the TPS algorithm:
@@ -170,7 +172,7 @@ window relates to mesh warping and the TPS technique:
 - **Landmark Navigator (window)**: shows each (source/destination/non-participating)
   landmark the UI is editing. This is handy when editing many landmarks.
 
-- **Toolbar (top)**: The top toolbar. The main feature of note here is the ability
+- **Toolbar (top)**: the main feature of note here is the ability
   to (un)lock the camera, which can make viewing paired meshes easier.
 
 How you use these panels is up to you. A typical workflow has these steps:
@@ -210,7 +212,8 @@ femur CT scans, followed by exporting the warped data.
 Next Steps
 ----------
 
-With the theory, UI, and a concrete example covered, we'd recommend:
+With the theory, UI, and a concrete example covered, the next steps we would
+recommend are:
 
 * **Experiment with simple/generated meshes**. Experimenting with the mesh
   warping UI by warping a generated/simple will help you feel more
