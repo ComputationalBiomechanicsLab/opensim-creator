@@ -464,7 +464,7 @@ private:
         rims_rendertexture_.reformat({
             .dimensions = params.dimensions,
             .anti_aliasing_level = params.antialiasing_level,
-            .color_format = ColorRenderBufferFormat::ARGB32,
+            .color_format = ColorRenderBufferFormat::R8G8B8A8_UNORM,
         });
 
         // render to the off-screen solid-colored texture

@@ -57,7 +57,7 @@ namespace
         RenderTexture cubemap_render_target{{
             .dimensions = {512, 512},
             .dimensionality = TextureDimensionality::Cube,
-            .color_format = ColorRenderBufferFormat::RGBFloat16,
+            .color_format = ColorRenderBufferFormat::R16G16B16_SFLOAT,
         }};
 
         // create a 90 degree cube cone projection matrix
@@ -90,7 +90,7 @@ namespace
         RenderTexture irradiance_cubemap{{
             .dimensions = {32, 32},
             .dimensionality = TextureDimensionality::Cube,
-            .color_format = ColorRenderBufferFormat::RGBFloat16,
+            .color_format = ColorRenderBufferFormat::R16G16B16_SFLOAT,
         }};
 
         const Mat4 capture_projection = perspective(90_deg, 1.0f, 0.1f, 10.0f);
@@ -124,7 +124,7 @@ namespace
         RenderTexture capture_render_texture{{
             .dimensions = {level_zero_width, level_zero_width},
             .dimensionality = TextureDimensionality::Cube,
-            .color_format = ColorRenderBufferFormat::RGBFloat16,
+            .color_format = ColorRenderBufferFormat::R16G16B16_SFLOAT,
         }};
 
         const Mat4 capture_projection = perspective(90_deg, 1.0f, 0.1f, 10.0f);
@@ -171,7 +171,7 @@ namespace
     {
         RenderTexture render_texture{{
             .dimensions = {512, 512},
-            .color_format = ColorRenderBufferFormat::RGFloat16,
+            .color_format = ColorRenderBufferFormat::R16G16_SFLOAT,
         }};
 
         Material material{Shader{

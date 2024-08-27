@@ -113,7 +113,7 @@ private:
                 .anti_aliasing_level = App::get().anti_aliasing_level(),
             };
             if (use_16bit_format_) {
-                params.color_format = ColorRenderBufferFormat::ARGBFloat16;
+                params.color_format = ColorRenderBufferFormat::R16G16B16A16_SFLOAT;
             }
 
             scene_hdr_texture_.reformat(params);

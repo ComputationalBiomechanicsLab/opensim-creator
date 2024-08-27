@@ -164,6 +164,7 @@ add_library(oscar STATIC
     Graphics/MeshTopology.h
     Graphics/MeshUpdateFlags.h
     Graphics/RenderBufferLoadAction.h
+    Graphics/RenderBufferReadWrite.h
     Graphics/RenderBufferStoreAction.h
     Graphics/RenderTarget.cpp
     Graphics/RenderTarget.h
@@ -171,7 +172,6 @@ add_library(oscar STATIC
     Graphics/RenderTargetDepthStencilAttachment.h
     Graphics/RenderTexture.h
     Graphics/RenderTextureParams.h
-    Graphics/RenderTextureReadWrite.h
     Graphics/Scene.h
     Graphics/Shader.h
     Graphics/ShaderPropertyType.h

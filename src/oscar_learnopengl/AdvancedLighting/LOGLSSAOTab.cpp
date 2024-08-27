@@ -286,9 +286,9 @@ private:
     // rendering state
     struct GBufferRenderingState final {
         Material material = load_gbuffer_material(App::resource_loader());
-        RenderTexture albedo = render_texture_with_color_format(ColorRenderBufferFormat::ARGB32);
-        RenderTexture normal = render_texture_with_color_format(ColorRenderBufferFormat::ARGBFloat16);
-        RenderTexture position = render_texture_with_color_format(ColorRenderBufferFormat::ARGBFloat16);
+        RenderTexture albedo = render_texture_with_color_format(ColorRenderBufferFormat::R8G8B8A8_UNORM);
+        RenderTexture normal = render_texture_with_color_format(ColorRenderBufferFormat::R16G16B16_SFLOAT);
+        RenderTexture position = render_texture_with_color_format(ColorRenderBufferFormat::R16G16B16_SFLOAT);
         RenderTarget render_target{
             RenderTargetColorAttachment{
                 albedo.upd_color_buffer(),
@@ -329,7 +329,7 @@ private:
 
     struct SSAORenderingState final {
         Material material = load_ssao_material(App::resource_loader());
-        RenderTexture output_texture = render_texture_with_color_format(ColorRenderBufferFormat::Red8);
+        RenderTexture output_texture = render_texture_with_color_format(ColorRenderBufferFormat::R8_UNORM);
 
         void reformat(Vec2 dimensions, AntiAliasingLevel aa_level)
         {
@@ -340,7 +340,7 @@ private:
 
     struct BlurRenderingState final {
         Material material = load_blur_material(App::resource_loader());
-        RenderTexture output_texture = render_texture_with_color_format(ColorRenderBufferFormat::Red8);
+        RenderTexture output_texture = render_texture_with_color_format(ColorRenderBufferFormat::R8_UNORM);
 
         void reformat(Vec2 dimensions, AntiAliasingLevel aa_level)
         {
@@ -351,7 +351,7 @@ private:
 
     struct LightingRenderingState final {
         Material material = load_lighting_material(App::resource_loader());
-        RenderTexture output_texture = render_texture_with_color_format(ColorRenderBufferFormat::ARGB32);
+        RenderTexture output_texture = render_texture_with_color_format(ColorRenderBufferFormat::R8G8B8A8_UNORM);
 
         void reformat(Vec2 dimensions, AntiAliasingLevel aa_level)
         {

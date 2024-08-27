@@ -103,9 +103,9 @@ namespace
         {}
 
         Material material;
-        RenderTexture albedo = render_texture_with_color_format(ColorRenderBufferFormat::ARGB32);
-        RenderTexture normal = render_texture_with_color_format(ColorRenderBufferFormat::ARGBFloat16);
-        RenderTexture position = render_texture_with_color_format(ColorRenderBufferFormat::ARGBFloat16);
+        RenderTexture albedo = render_texture_with_color_format(ColorRenderBufferFormat::R8G8B8A8_UNORM);
+        RenderTexture normal = render_texture_with_color_format(ColorRenderBufferFormat::R16G16B16_SFLOAT);
+        RenderTexture position = render_texture_with_color_format(ColorRenderBufferFormat::R16G16B16_SFLOAT);
         RenderTarget render_target{
             RenderTargetColorAttachment{
                 albedo.upd_color_buffer(),

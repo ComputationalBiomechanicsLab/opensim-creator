@@ -61,7 +61,7 @@ namespace
     {
         return RenderTexture{{
             .dimensions = {1024, 1024},
-            .read_write = RenderTextureReadWrite::Linear,
+            .read_write = RenderBufferReadWrite::Linear,
         }};
     }
 }

@@ -2,7 +2,7 @@
 
 #include <oscar/Graphics/AntiAliasingLevel.h>
 #include <oscar/Graphics/DepthStencilRenderBufferFormat.h>
-#include <oscar/Graphics/RenderTextureReadWrite.h>
+#include <oscar/Graphics/RenderBufferReadWrite.h>
 #include <oscar/Graphics/TextureDimensionality.h>
 #include <oscar/Maths/Vec2.h>
 

@@ -32,13 +32,13 @@
 #include <oscar/Graphics/MeshTopology.h>
 #include <oscar/Graphics/MeshUpdateFlags.h>
 #include <oscar/Graphics/RenderBufferLoadAction.h>
+#include <oscar/Graphics/RenderBufferReadWrite.h>
 #include <oscar/Graphics/RenderBufferStoreAction.h>
 #include <oscar/Graphics/RenderTarget.h>
 #include <oscar/Graphics/RenderTargetColorAttachment.h>
 #include <oscar/Graphics/RenderTargetDepthStencilAttachment.h>
 #include <oscar/Graphics/RenderTexture.h>
 #include <oscar/Graphics/RenderTextureParams.h>
-#include <oscar/Graphics/RenderTextureReadWrite.h>
 #include <oscar/Graphics/Scene.h>
 #include <oscar/Graphics/Shader.h>
 #include <oscar/Graphics/ShaderPropertyType.h>

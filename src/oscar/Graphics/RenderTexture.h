@@ -3,8 +3,8 @@
 #include <oscar/Graphics/AntiAliasingLevel.h>
 #include <oscar/Graphics/ColorRenderBufferFormat.h>
 #include <oscar/Graphics/DepthStencilRenderBufferFormat.h>
+#include <oscar/Graphics/RenderBufferReadWrite.h>
 #include <oscar/Graphics/RenderTextureParams.h>
-#include <oscar/Graphics/RenderTextureReadWrite.h>
 #include <oscar/Graphics/SharedColorRenderBuffer.h>
 #include <oscar/Graphics/SharedDepthStencilRenderBuffer.h>
 #include <oscar/Graphics/TextureDimensionality.h>
@@ -39,8 +39,8 @@ namespace osc
         DepthStencilRenderBufferFormat depth_stencil_format() const;
         void set_depth_stencil_format(DepthStencilRenderBufferFormat);
 
-        RenderTextureReadWrite read_write() const;
-        void set_read_write(RenderTextureReadWrite);
+        RenderBufferReadWrite read_write() const;
+        void set_read_write(RenderBufferReadWrite);
 
         void reformat(const RenderTextureParams&);
 
