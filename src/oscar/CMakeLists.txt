@@ -44,9 +44,9 @@ add_library(oscar STATIC
 
     Graphics/Detail/CPUDataType.h
     Graphics/Detail/CPUImageFormat.h
-    Graphics/Detail/DepthStencilFormatHelpers.h
-    Graphics/Detail/DepthStencilFormatList.h
-    Graphics/Detail/DepthStencilFormatTraits.h
+    Graphics/Detail/DepthStencilRenderBufferFormatHelpers.h
+    Graphics/Detail/DepthStencilRenderBufferFormatList.h
+    Graphics/Detail/DepthStencilRenderBufferFormatTraits.h
     Graphics/Detail/ShaderLocations.h
     Graphics/Detail/ShaderPropertyTypeList.h
     Graphics/Detail/ShaderPropertyTypeTraits.h
@@ -104,8 +104,8 @@ add_library(oscar STATIC
 
     Graphics/OpenGL/CPUDataTypeOpenGLTraits.h
     Graphics/OpenGL/CPUImageFormatOpenGLTraits.h
-    Graphics/OpenGL/DepthStencilFormatOpenGLTraits.h
-    Graphics/OpenGL/DepthStencilFormatOpenGLHelpers.h
+    Graphics/OpenGL/DepthStencilRenderBufferFormatOpenGLTraits.h
+    Graphics/OpenGL/DepthStencilRenderBufferFormatOpenGLHelpers.h
     Graphics/OpenGL/Gl.cpp
     Graphics/OpenGL/Gl.h
     Graphics/OpenGL/TextureFormatOpenGLTraits.h
@@ -139,6 +139,7 @@ add_library(oscar STATIC
     Graphics/Color.h
     Graphics/ColorHSLA.h
     Graphics/ColorHSLA.cpp
+    Graphics/ColorRenderBufferFormat.h
     Graphics/ColorRenderBufferParams.h
     Graphics/ColorSpace.h
     Graphics/Color32.h
@@ -146,8 +147,8 @@ add_library(oscar STATIC
     Graphics/CubemapFace.h
     Graphics/CullMode.h
     Graphics/DepthFunction.h
-    Graphics/DepthRenderBufferParams.h
-    Graphics/DepthStencilFormat.h
+    Graphics/DepthStencilRenderBufferFormat.h
+    Graphics/DepthStencilRenderBufferParams.h
     Graphics/DestinationBlendingFactor.h
     Graphics/Geometries.h
     Graphics/Graphics.h
@@ -167,16 +168,15 @@ add_library(oscar STATIC
     Graphics/RenderTarget.cpp
     Graphics/RenderTarget.h
     Graphics/RenderTargetColorAttachment.h
-    Graphics/RenderTargetDepthAttachment.h
+    Graphics/RenderTargetDepthStencilAttachment.h
     Graphics/RenderTexture.h
-    Graphics/RenderTextureFormat.h
     Graphics/RenderTextureParams.h
     Graphics/RenderTextureReadWrite.h
     Graphics/Scene.h
     Graphics/Shader.h
     Graphics/ShaderPropertyType.h
     Graphics/SharedColorRenderBuffer.h
-    Graphics/SharedDepthRenderBuffer.h
+    Graphics/SharedDepthStencilRenderBuffer.h
     Graphics/Snorm.h
     Graphics/Snorm8.h
     Graphics/SourceBlendingFactor.h

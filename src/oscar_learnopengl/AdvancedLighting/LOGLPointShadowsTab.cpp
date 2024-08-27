@@ -56,7 +56,7 @@ namespace
         return RenderTexture{{
             .dimensions = c_shadowmap_dimensions,
             .dimensionality = TextureDimensionality::Cube,
-            .color_format = RenderTextureFormat::Depth,
+            .color_format = ColorRenderBufferFormat::Depth,
             .read_write = RenderTextureReadWrite::Linear
         }};
     }

@@ -22,11 +22,12 @@ add_executable(testoscar
     Graphics/TestCamera.cpp
     Graphics/TestCameraProjection.cpp
     Graphics/TestColor.cpp
+    Graphics/TestColorRenderBufferFormat.cpp
     Graphics/TestColorRenderBufferParams.cpp
     Graphics/TestCubemap.cpp
     Graphics/TestCubemapFace.cpp
     Graphics/TestCullMode.cpp
-    Graphics/TestDepthRenderBufferParams.cpp
+    Graphics/TestDepthStencilRenderBufferParams.cpp
     Graphics/TestGeometries.cpp
     Graphics/TestSubMeshDescriptor.cpp
     Graphics/TestMesh.cpp
@@ -34,12 +35,11 @@ add_executable(testoscar
     Graphics/TestRenderer.cpp
     Graphics/TestRenderTarget.cpp
     Graphics/TestRenderTargetColorAttachment.cpp
-    Graphics/TestRenderTargetDepthAttachment.cpp
+    Graphics/TestRenderTargetDepthStencilAttachment.cpp
     Graphics/TestRenderTexture.cpp
     Graphics/TestRenderTextureDescriptor.cpp
-    Graphics/TestRenderTextureFormat.cpp
     Graphics/TestSharedColorRenderBuffer.cpp
-    Graphics/TestSharedDepthRenderBuffer.cpp
+    Graphics/TestSharedDepthStencilRenderBuffer.cpp
     Graphics/TestSnorm8.cpp
     Graphics/TestTextureChannelFormat.cpp
     Graphics/TestTextureFormat.cpp

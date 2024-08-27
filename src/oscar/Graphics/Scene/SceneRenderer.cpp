@@ -6,7 +6,7 @@
 #include <oscar/Graphics/AntiAliasingLevel.h>
 #include <oscar/Graphics/Camera.h>
 #include <oscar/Graphics/Color.h>
-#include <oscar/Graphics/DepthRenderBufferParams.h>
+#include <oscar/Graphics/DepthStencilRenderBufferParams.h>
 #include <oscar/Graphics/Graphics.h>
 #include <oscar/Graphics/Material.h>
 #include <oscar/Graphics/MaterialPropertyBlock.h>
@@ -70,7 +70,7 @@ namespace
     };
 
     struct Shadows final {
-        SharedDepthRenderBuffer shadow_map;
+        SharedDepthStencilRenderBuffer shadow_map;
         Mat4 lightspace_mat;
     };
 
@@ -464,7 +464,7 @@ private:
         rims_rendertexture_.reformat({
             .dimensions = params.dimensions,
             .anti_aliasing_level = params.antialiasing_level,
-            .color_format = RenderTextureFormat::ARGB32,
+            .color_format = ColorRenderBufferFormat::ARGB32,
         });
 
         // render to the off-screen solid-colored texture
@@ -529,7 +529,7 @@ private:
         camera_.set_view_matrix_override(matrices.view_mat);
         camera_.set_projection_matrix_override(matrices.projection_mat);
         camera_.render_to(RenderTarget{
-            RenderTargetDepthAttachment{
+            RenderTargetDepthStencilAttachment{
                 .buffer = shadowmap_render_buffer_,
             },
         });
@@ -548,7 +548,7 @@ private:
     Mesh quad_mesh_;
     Camera camera_;
     RenderTexture rims_rendertexture_;
-    SharedDepthRenderBuffer shadowmap_render_buffer_{{
+    SharedDepthStencilRenderBuffer shadowmap_render_buffer_{{
         .dimensions = {1024, 1024},
     }};
     RenderTexture output_rendertexture_;

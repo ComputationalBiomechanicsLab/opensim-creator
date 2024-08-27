@@ -1,7 +1,7 @@
 #pragma once
 
 #include <oscar/Graphics/RenderTargetColorAttachment.h>
-#include <oscar/Graphics/RenderTargetDepthAttachment.h>
+#include <oscar/Graphics/RenderTargetDepthStencilAttachment.h>
 #include <oscar/Maths/Vec2.h>
 
 #include <optional>
@@ -15,7 +15,7 @@ namespace osc
     public:
         explicit RenderTarget() :
             colors_{RenderTargetColorAttachment{}},
-            depth_{RenderTargetDepthAttachment{}}
+            depth_{RenderTargetDepthStencilAttachment{}}
         {
             validate_or_throw();
         }
@@ -24,24 +24,24 @@ namespace osc
         {
             validate_or_throw();
         }
-        explicit RenderTarget(RenderTargetDepthAttachment depth_attachment) :
+        explicit RenderTarget(RenderTargetDepthStencilAttachment depth_attachment) :
             depth_{std::move(depth_attachment)}
         {
             validate_or_throw();
         }
-        explicit RenderTarget(RenderTargetColorAttachment color_attachment, RenderTargetDepthAttachment depth_attachment) :
+        explicit RenderTarget(RenderTargetColorAttachment color_attachment, RenderTargetDepthStencilAttachment depth_attachment) :
             colors_{std::move(color_attachment)},
             depth_{std::move(depth_attachment)}
         {
             validate_or_throw();
         }
-        explicit RenderTarget(RenderTargetColorAttachment color0_attachment, RenderTargetColorAttachment color1_attachment, RenderTargetDepthAttachment depth_attachment) :
+        explicit RenderTarget(RenderTargetColorAttachment color0_attachment, RenderTargetColorAttachment color1_attachment, RenderTargetDepthStencilAttachment depth_attachment) :
             colors_{std::move(color0_attachment), std::move(color1_attachment)},
             depth_{std::move(depth_attachment)}
         {
             validate_or_throw();
         }
-        explicit RenderTarget(RenderTargetColorAttachment color0_attachment, RenderTargetColorAttachment color1_attachment, RenderTargetColorAttachment color2_attachment, RenderTargetDepthAttachment depth_attachment) :
+        explicit RenderTarget(RenderTargetColorAttachment color0_attachment, RenderTargetColorAttachment color1_attachment, RenderTargetColorAttachment color2_attachment, RenderTargetDepthStencilAttachment depth_attachment) :
             colors_{std::move(color0_attachment), std::move(color1_attachment), std::move(color2_attachment)},
             depth_{std::move(depth_attachment)}
         {
@@ -49,7 +49,7 @@ namespace osc
         }
 
         std::span<const RenderTargetColorAttachment> color_attachments() const { return colors_; }
-        const std::optional<RenderTargetDepthAttachment>& depth_attachment() const { return depth_; }
+        const std::optional<RenderTargetDepthStencilAttachment>& depth_attachment() const { return depth_; }
         Vec2i dimensions() const
         {
             return depth_ ? depth_->buffer.dimensions() : colors_.front().buffer.dimensions();
@@ -58,6 +58,6 @@ namespace osc
 
     private:
         std::vector<RenderTargetColorAttachment> colors_;
-        std::optional<RenderTargetDepthAttachment> depth_;
+        std::optional<RenderTargetDepthStencilAttachment> depth_;
     };
 }

@@ -1,4 +1,4 @@
-#include <oscar/Graphics/RenderTargetDepthAttachment.h>
+#include <oscar/Graphics/RenderTargetDepthStencilAttachment.h>
 
 #include <gtest/gtest.h>
 #include <oscar/Graphics/Color.h>
@@ -8,11 +8,11 @@
 
 using namespace osc;
 
-TEST(RenderTargetDepthAttachment, CanConstructFromPartsOfRenderTexture)
+TEST(RenderTargetDepthStencilAttachment, CanConstructFromPartsOfRenderTexture)
 {
     RenderTexture render_texture;
 
-    RenderTargetDepthAttachment attachment{
+    RenderTargetDepthStencilAttachment attachment{
         render_texture.upd_depth_buffer(),
         RenderBufferLoadAction::Clear,
         RenderBufferStoreAction::Resolve,
@@ -23,32 +23,32 @@ TEST(RenderTargetDepthAttachment, CanConstructFromPartsOfRenderTexture)
     ASSERT_EQ(attachment.store_action, RenderBufferStoreAction::Resolve);
 }
 
-TEST(RenderTargetDepthAttachment, EqualityReturnsTrueForCopies)
+TEST(RenderTargetDepthStencilAttachment, EqualityReturnsTrueForCopies)
 {
     RenderTexture renderTex;
-    RenderTargetDepthAttachment attachment
+    RenderTargetDepthStencilAttachment attachment
     {
         renderTex.upd_depth_buffer(),
         RenderBufferLoadAction::Clear,
         RenderBufferStoreAction::Resolve,
     };
-    const RenderTargetDepthAttachment copy = attachment;  // NOLINT(performance-unnecessary-copy-initialization)
+    const RenderTargetDepthStencilAttachment copy = attachment;  // NOLINT(performance-unnecessary-copy-initialization)
 
     ASSERT_EQ(copy, attachment);
 }
 
-TEST(RenderTargetDepthAttachment, EqualityReturnsTrueForSeperatelyConstructedButLogicallyEqualValues)
+TEST(RenderTargetDepthStencilAttachment, EqualityReturnsTrueForSeperatelyConstructedButLogicallyEqualValues)
 {
     RenderTexture renderTex;
 
-    RenderTargetDepthAttachment a
+    RenderTargetDepthStencilAttachment a
     {
         renderTex.upd_depth_buffer(),
         RenderBufferLoadAction::Clear,
         RenderBufferStoreAction::Resolve,
     };
 
-    RenderTargetDepthAttachment b
+    RenderTargetDepthStencilAttachment b
     {
         renderTex.upd_depth_buffer(),
         RenderBufferLoadAction::Clear,
@@ -58,11 +58,11 @@ TEST(RenderTargetDepthAttachment, EqualityReturnsTrueForSeperatelyConstructedBut
     ASSERT_EQ(a, b);
 }
 
-TEST(RenderTargetDepthAttachment, EqualityReturnsFalseIfSomethingIsModified)
+TEST(RenderTargetDepthStencilAttachment, EqualityReturnsFalseIfSomethingIsModified)
 {
     RenderTexture firstRenderTex;
     RenderTexture secondRenderTex;
-    RenderTargetDepthAttachment attachment
+    RenderTargetDepthStencilAttachment attachment
     {
         firstRenderTex.upd_depth_buffer(),
         RenderBufferLoadAction::Clear,
@@ -71,7 +71,7 @@ TEST(RenderTargetDepthAttachment, EqualityReturnsFalseIfSomethingIsModified)
 
     // modify buffer
     {
-        RenderTargetDepthAttachment copy = attachment;
+        RenderTargetDepthStencilAttachment copy = attachment;
         ASSERT_EQ(copy, attachment);
         copy.buffer = secondRenderTex.upd_depth_buffer();
         ASSERT_NE(copy, attachment);
@@ -79,7 +79,7 @@ TEST(RenderTargetDepthAttachment, EqualityReturnsFalseIfSomethingIsModified)
 
     // modify load action
     {
-        RenderTargetDepthAttachment copy = attachment;
+        RenderTargetDepthStencilAttachment copy = attachment;
         ASSERT_EQ(copy, attachment);
         copy.load_action = RenderBufferLoadAction::Load;
         ASSERT_NE(copy, attachment);
@@ -87,7 +87,7 @@ TEST(RenderTargetDepthAttachment, EqualityReturnsFalseIfSomethingIsModified)
 
     // modify store action
     {
-        RenderTargetDepthAttachment copy = attachment;
+        RenderTargetDepthStencilAttachment copy = attachment;
         ASSERT_EQ(copy, attachment);
         copy.store_action = RenderBufferStoreAction::DontCare;
         ASSERT_NE(copy, attachment);

@@ -1,7 +1,7 @@
 #include <oscar/Graphics/ColorRenderBufferParams.h>
 
 #include <oscar/Graphics/AntiAliasingLevel.h>
-#include <oscar/Graphics/RenderTextureFormat.h>
+#include <oscar/Graphics/ColorRenderBufferFormat.h>
 #include <oscar/Maths/Vec2.h>
 #include <gtest/gtest.h>
 
@@ -42,9 +42,9 @@ TEST(ColorRenderBufferParams, can_be_initialized_with_designated_initializer)
 {
     const ColorRenderBufferParams params = {
         .dimensions = {2, 2},
-        .format = RenderTextureFormat::ARGB32,
+        .format = ColorRenderBufferFormat::ARGB32,
     };
 
     ASSERT_EQ(params.dimensions, Vec2i(2, 2));
-    ASSERT_EQ(params.format, RenderTextureFormat::ARGB32);
+    ASSERT_EQ(params.format, ColorRenderBufferFormat::ARGB32);
 }

@@ -2,15 +2,15 @@
 
 #include <oscar/Graphics/RenderBufferLoadAction.h>
 #include <oscar/Graphics/RenderBufferStoreAction.h>
-#include <oscar/Graphics/SharedDepthRenderBuffer.h>
+#include <oscar/Graphics/SharedDepthStencilRenderBuffer.h>
 
 namespace osc
 {
-    struct RenderTargetDepthAttachment final {
+    struct RenderTargetDepthStencilAttachment final {
 
-        friend bool operator==(const RenderTargetDepthAttachment&, const RenderTargetDepthAttachment&) = default;
+        friend bool operator==(const RenderTargetDepthStencilAttachment&, const RenderTargetDepthStencilAttachment&) = default;
 
-        SharedDepthRenderBuffer buffer{};
+        SharedDepthStencilRenderBuffer buffer{};
         RenderBufferLoadAction load_action = RenderBufferLoadAction::Clear;
         RenderBufferStoreAction store_action = RenderBufferStoreAction::DontCare;
     };

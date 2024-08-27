@@ -9,6 +9,7 @@
 #include <oscar/Graphics/CameraProjection.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/ColorHSLA.h>
+#include <oscar/Graphics/ColorRenderBufferFormat.h>
 #include <oscar/Graphics/ColorRenderBufferParams.h>
 #include <oscar/Graphics/ColorSpace.h>
 #include <oscar/Graphics/Color32.h>
@@ -16,8 +17,8 @@
 #include <oscar/Graphics/CubemapFace.h>
 #include <oscar/Graphics/CullMode.h>
 #include <oscar/Graphics/DepthFunction.h>
-#include <oscar/Graphics/DepthRenderBufferParams.h>
-#include <oscar/Graphics/DepthStencilFormat.h>
+#include <oscar/Graphics/DepthStencilRenderBufferFormat.h>
+#include <oscar/Graphics/DepthStencilRenderBufferParams.h>
 #include <oscar/Graphics/DestinationBlendingFactor.h>
 #include <oscar/Graphics/Geometries.h>
 #include <oscar/Graphics/Graphics.h>
@@ -34,16 +35,15 @@
 #include <oscar/Graphics/RenderBufferStoreAction.h>
 #include <oscar/Graphics/RenderTarget.h>
 #include <oscar/Graphics/RenderTargetColorAttachment.h>
-#include <oscar/Graphics/RenderTargetDepthAttachment.h>
+#include <oscar/Graphics/RenderTargetDepthStencilAttachment.h>
 #include <oscar/Graphics/RenderTexture.h>
-#include <oscar/Graphics/RenderTextureFormat.h>
 #include <oscar/Graphics/RenderTextureParams.h>
 #include <oscar/Graphics/RenderTextureReadWrite.h>
 #include <oscar/Graphics/Scene.h>
 #include <oscar/Graphics/Shader.h>
 #include <oscar/Graphics/ShaderPropertyType.h>
 #include <oscar/Graphics/SharedColorRenderBuffer.h>
-#include <oscar/Graphics/SharedDepthRenderBuffer.h>
+#include <oscar/Graphics/SharedDepthStencilRenderBuffer.h>
 #include <oscar/Graphics/Snorm.h>
 #include <oscar/Graphics/Snorm8.h>
 #include <oscar/Graphics/SourceBlendingFactor.h>

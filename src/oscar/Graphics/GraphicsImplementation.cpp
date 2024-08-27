@@ -8,11 +8,11 @@
 #include <oscar/Graphics/ColorSpace.h>
 #include <oscar/Graphics/Cubemap.h>
 #include <oscar/Graphics/DepthFunction.h>
-#include <oscar/Graphics/DepthRenderBufferParams.h>
-#include <oscar/Graphics/DepthStencilFormat.h>
+#include <oscar/Graphics/DepthStencilRenderBufferFormat.h>
+#include <oscar/Graphics/DepthStencilRenderBufferParams.h>
 #include <oscar/Graphics/Detail/CPUDataType.h>
 #include <oscar/Graphics/Detail/CPUImageFormat.h>
-#include <oscar/Graphics/Detail/DepthStencilFormatHelpers.h>
+#include <oscar/Graphics/Detail/DepthStencilRenderBufferFormatHelpers.h>
 #include <oscar/Graphics/Detail/ShaderPropertyTypeList.h>
 #include <oscar/Graphics/Detail/ShaderPropertyTypeTraits.h>
 #include <oscar/Graphics/Detail/TextureFormatList.h>
@@ -31,21 +31,21 @@
 #include <oscar/Graphics/MeshTopology.h>
 #include <oscar/Graphics/OpenGL/CPUDataTypeOpenGLTraits.h>
 #include <oscar/Graphics/OpenGL/CPUImageFormatOpenGLTraits.h>
-#include <oscar/Graphics/OpenGL/DepthStencilFormatOpenGLHelpers.h>
+#include <oscar/Graphics/OpenGL/DepthStencilRenderBufferFormatOpenGLHelpers.h>
 #include <oscar/Graphics/OpenGL/Gl.h>
 #include <oscar/Graphics/OpenGL/TextureFormatOpenGLTraits.h>
+#include <oscar/Graphics/ColorRenderBufferFormat.h>
 #include <oscar/Graphics/RenderBufferLoadAction.h>
 #include <oscar/Graphics/RenderBufferStoreAction.h>
 #include <oscar/Graphics/RenderTarget.h>
 #include <oscar/Graphics/RenderTargetColorAttachment.h>
-#include <oscar/Graphics/RenderTargetDepthAttachment.h>
+#include <oscar/Graphics/RenderTargetDepthStencilAttachment.h>
 #include <oscar/Graphics/RenderTexture.h>
 #include <oscar/Graphics/RenderTextureParams.h>
-#include <oscar/Graphics/RenderTextureFormat.h>
 #include <oscar/Graphics/Shader.h>
 #include <oscar/Graphics/ShaderPropertyType.h>
 #include <oscar/Graphics/SharedColorRenderBuffer.h>
-#include <oscar/Graphics/SharedDepthRenderBuffer.h>
+#include <oscar/Graphics/SharedDepthStencilRenderBuffer.h>
 #include <oscar/Graphics/SubMeshDescriptor.h>
 #include <oscar/Graphics/Texture2D.h>
 #include <oscar/Graphics/TextureFilterMode.h>
@@ -448,7 +448,7 @@ namespace
         RenderTexture,
         Cubemap,
         SharedColorRenderBuffer,
-        SharedDepthRenderBuffer
+        SharedDepthStencilRenderBuffer
     >;
 
     ShaderPropertyType get_shader_type(const MaterialValue& material_val)
@@ -495,9 +495,9 @@ namespace
                 ShaderPropertyType::Sampler2D :
                 ShaderPropertyType::SamplerCube;
         }
-        case variant_index<MaterialValue, SharedDepthRenderBuffer>(): {
+        case variant_index<MaterialValue, SharedDepthStencilRenderBuffer>(): {
             static_assert(num_options<TextureDimensionality>() == 2);
-            return std::get<SharedDepthRenderBuffer>(material_val).dimensionality() == TextureDimensionality::Tex2D ?
+            return std::get<SharedDepthStencilRenderBuffer>(material_val).dimensionality() == TextureDimensionality::Tex2D ?
                 ShaderPropertyType::Sampler2D :
                 ShaderPropertyType::SamplerCube;
         }
@@ -2062,57 +2062,57 @@ namespace
 
         "Depth",
     });
-    static_assert(c_render_texture_format_strings.size() == num_options<RenderTextureFormat>());
+    static_assert(c_render_texture_format_strings.size() == num_options<ColorRenderBufferFormat>());
 
     constexpr GLenum to_opengl_internal_color_format_enum(const ColorRenderBufferParams& params)
     {
-        static_assert(num_options<RenderTextureFormat>() == 6);
+        static_assert(num_options<ColorRenderBufferFormat>() == 6);
         static_assert(num_options<RenderTextureReadWrite>() == 2);
 
         switch (params.format) {
-        case RenderTextureFormat::Red8:        return GL_RED;
-        case RenderTextureFormat::ARGB32:      return params.read_write == RenderTextureReadWrite::sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8;
-        case RenderTextureFormat::RGFloat16:   return GL_RG16F;
-        case RenderTextureFormat::RGBFloat16:  return GL_RGB16F;
-        case RenderTextureFormat::ARGBFloat16: return GL_RGBA16F;
-        case RenderTextureFormat::Depth:       return GL_R32F;
-        default:                               return params.read_write == RenderTextureReadWrite::sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8;
+        case ColorRenderBufferFormat::Red8:        return GL_RED;
+        case ColorRenderBufferFormat::ARGB32:      return params.read_write == RenderTextureReadWrite::sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8;
+        case ColorRenderBufferFormat::RGFloat16:   return GL_RG16F;
+        case ColorRenderBufferFormat::RGBFloat16:  return GL_RGB16F;
+        case ColorRenderBufferFormat::ARGBFloat16: return GL_RGBA16F;
+        case ColorRenderBufferFormat::Depth:       return GL_R32F;
+        default:                                   return params.read_write == RenderTextureReadWrite::sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8;
         }
     }
 
-    constexpr GLenum to_opengl_internal_color_format_enum(const DepthRenderBufferParams& params)
+    constexpr GLenum to_opengl_internal_color_format_enum(const DepthStencilRenderBufferParams& params)
     {
         return detail::to_opengl_internal_color_format_enum(params.format);
     }
 
-    constexpr CPUImageFormat equivalent_cpu_image_format_of(const RenderTextureFormat& format)
+    constexpr CPUImageFormat equivalent_cpu_image_format_of(const ColorRenderBufferFormat& format)
     {
-        static_assert(num_options<RenderTextureFormat>() == 6);
+        static_assert(num_options<ColorRenderBufferFormat>() == 6);
         static_assert(num_options<CPUImageFormat>() == 6);
 
         switch (format) {
-        case RenderTextureFormat::Red8:        return CPUImageFormat::R8;
-        case RenderTextureFormat::ARGB32:      return CPUImageFormat::RGBA;
-        case RenderTextureFormat::RGFloat16:   return CPUImageFormat::RG;
-        case RenderTextureFormat::RGBFloat16:  return CPUImageFormat::RGB;
-        case RenderTextureFormat::ARGBFloat16: return CPUImageFormat::RGBA;
-        case RenderTextureFormat::Depth:       return CPUImageFormat::R8;
-        default:                               return CPUImageFormat::RGBA;
+        case ColorRenderBufferFormat::Red8:        return CPUImageFormat::R8;
+        case ColorRenderBufferFormat::ARGB32:      return CPUImageFormat::RGBA;
+        case ColorRenderBufferFormat::RGFloat16:   return CPUImageFormat::RG;
+        case ColorRenderBufferFormat::RGBFloat16:  return CPUImageFormat::RGB;
+        case ColorRenderBufferFormat::ARGBFloat16: return CPUImageFormat::RGBA;
+        case ColorRenderBufferFormat::Depth:       return CPUImageFormat::R8;
+        default:                                   return CPUImageFormat::RGBA;
         }
     }
 
-    constexpr CPUDataType equivalent_cpu_datatype_of(const RenderTextureFormat& format)
+    constexpr CPUDataType equivalent_cpu_datatype_of(const ColorRenderBufferFormat& format)
     {
-        static_assert(num_options<RenderTextureFormat>() == 6);
+        static_assert(num_options<ColorRenderBufferFormat>() == 6);
         static_assert(num_options<CPUDataType>() == 4);
 
         switch (format) {
-        case RenderTextureFormat::Red8:        return CPUDataType::UnsignedByte;
-        case RenderTextureFormat::ARGB32:      return CPUDataType::UnsignedByte;
-        case RenderTextureFormat::RGFloat16:   return CPUDataType::HalfFloat;
-        case RenderTextureFormat::RGBFloat16:  return CPUDataType::HalfFloat;
-        case RenderTextureFormat::ARGBFloat16: return CPUDataType::HalfFloat;
-        case RenderTextureFormat::Depth:       return CPUDataType::Float;
+        case ColorRenderBufferFormat::Red8:        return CPUDataType::UnsignedByte;
+        case ColorRenderBufferFormat::ARGB32:      return CPUDataType::UnsignedByte;
+        case ColorRenderBufferFormat::RGFloat16:   return CPUDataType::HalfFloat;
+        case ColorRenderBufferFormat::RGBFloat16:  return CPUDataType::HalfFloat;
+        case ColorRenderBufferFormat::ARGBFloat16: return CPUDataType::HalfFloat;
+        case ColorRenderBufferFormat::Depth:       return CPUDataType::Float;
         default:                               return CPUDataType::UnsignedByte;
         }
     }
@@ -2144,12 +2144,12 @@ namespace
     }
 }
 
-std::ostream& osc::operator<<(std::ostream& o, RenderTextureFormat render_texture_format)
+std::ostream& osc::operator<<(std::ostream& o, ColorRenderBufferFormat render_texture_format)
 {
     return o << c_render_texture_format_strings.at(to_index(render_texture_format));
 }
 
-std::ostream& osc::operator<<(std::ostream& o, DepthStencilFormat depth_stencil_format)
+std::ostream& osc::operator<<(std::ostream& o, DepthStencilRenderBufferFormat depth_stencil_format)
 {
     return o << detail::get_label(depth_stencil_format);
 }
@@ -2167,7 +2167,7 @@ std::ostream& osc::operator<<(std::ostream& o, const RenderTextureParams& params
 
 namespace
 {
-    template<IsAnyOf<ColorRenderBufferParams, DepthRenderBufferParams> RenderBufferParams>
+    template<IsAnyOf<ColorRenderBufferParams, DepthStencilRenderBufferParams> RenderBufferParams>
     class RenderBufferImpl {
     public:
         explicit RenderBufferImpl(const RenderBufferParams& params) : params_{params}
@@ -2378,9 +2378,9 @@ class osc::SharedColorRenderBuffer::ColorRenderBuffer final : public RenderBuffe
 public:
     using RenderBufferImpl<ColorRenderBufferParams>::RenderBufferImpl;
 
-    RenderTextureFormat color_format() const { return parameters().format; }
+    ColorRenderBufferFormat color_format() const { return parameters().format; }
 
-    void set_color_format(RenderTextureFormat new_color_format)
+    void set_color_format(ColorRenderBufferFormat new_color_format)
     {
         if (new_color_format != color_format()) {
             upd_parameters().format = new_color_format;
@@ -2431,16 +2431,16 @@ AntiAliasingLevel osc::SharedColorRenderBuffer::anti_aliasing_level() const
     return impl_->anti_aliasing_level();
 }
 
-class osc::SharedDepthRenderBuffer::DepthRenderBuffer final : public RenderBufferImpl<DepthRenderBufferParams> {
+class osc::SharedDepthStencilRenderBuffer::DepthStencilRenderBuffer final : public RenderBufferImpl<DepthStencilRenderBufferParams> {
 public:
-    using RenderBufferImpl<DepthRenderBufferParams>::RenderBufferImpl;
+    using RenderBufferImpl<DepthStencilRenderBufferParams>::RenderBufferImpl;
 
-    DepthStencilFormat depth_stencil_format() const
+    DepthStencilRenderBufferFormat depth_stencil_format() const
     {
         return parameters().format;
     }
 
-    void set_depth_stencil_format(DepthStencilFormat new_depth_stencil_format)
+    void set_depth_stencil_format(DepthStencilRenderBufferFormat new_depth_stencil_format)
     {
         if (new_depth_stencil_format != depth_stencil_format()) {
             upd_parameters().format = new_depth_stencil_format;
@@ -2464,10 +2464,10 @@ struct osc::Converter<RenderTextureParams, ColorRenderBufferParams> final {
 };
 
 template<>
-struct osc::Converter<RenderTextureParams, DepthRenderBufferParams> final {
-    DepthRenderBufferParams operator()(const RenderTextureParams& params) const
+struct osc::Converter<RenderTextureParams, DepthStencilRenderBufferParams> final {
+    DepthStencilRenderBufferParams operator()(const RenderTextureParams& params) const
     {
-        return DepthRenderBufferParams{
+        return DepthStencilRenderBufferParams{
             .dimensions = params.dimensions,
             .dimensionality = params.dimensionality,
             .anti_aliasing_level = params.anti_aliasing_level,
@@ -2476,39 +2476,39 @@ struct osc::Converter<RenderTextureParams, DepthRenderBufferParams> final {
     }
 };
 
-osc::SharedDepthRenderBuffer::SharedDepthRenderBuffer() :
-    SharedDepthRenderBuffer{DepthRenderBufferParams{}}
+osc::SharedDepthStencilRenderBuffer::SharedDepthStencilRenderBuffer() :
+    SharedDepthStencilRenderBuffer{DepthStencilRenderBufferParams{}}
 {}
 
-osc::SharedDepthRenderBuffer::SharedDepthRenderBuffer(const DepthRenderBufferParams& params) :
-    impl_{std::make_shared<DepthRenderBuffer>(params)}
+osc::SharedDepthStencilRenderBuffer::SharedDepthStencilRenderBuffer(const DepthStencilRenderBufferParams& params) :
+    impl_{std::make_shared<DepthStencilRenderBuffer>(params)}
 {}
 
-osc::SharedDepthRenderBuffer::SharedDepthRenderBuffer(const DepthRenderBuffer& impl) :
-    impl_{std::make_shared<DepthRenderBuffer>(impl)}
+osc::SharedDepthStencilRenderBuffer::SharedDepthStencilRenderBuffer(const DepthStencilRenderBuffer& impl) :
+    impl_{std::make_shared<DepthStencilRenderBuffer>(impl)}
 {}
 
-SharedDepthRenderBuffer osc::SharedDepthRenderBuffer::clone() const
+SharedDepthStencilRenderBuffer osc::SharedDepthStencilRenderBuffer::clone() const
 {
-    return SharedDepthRenderBuffer{*impl_};
+    return SharedDepthStencilRenderBuffer{*impl_};
 }
 
-Vec2i osc::SharedDepthRenderBuffer::dimensions() const
+Vec2i osc::SharedDepthStencilRenderBuffer::dimensions() const
 {
     return impl_->dimensions();
 }
 
-TextureDimensionality osc::SharedDepthRenderBuffer::dimensionality() const
+TextureDimensionality osc::SharedDepthStencilRenderBuffer::dimensionality() const
 {
     return impl_->dimensionality();
 }
 
-AntiAliasingLevel osc::SharedDepthRenderBuffer::anti_aliasing_level() const
+AntiAliasingLevel osc::SharedDepthStencilRenderBuffer::anti_aliasing_level() const
 {
     return impl_->anti_aliasing_level();
 }
 
-DepthStencilFormat osc::SharedDepthRenderBuffer::depth_stencil_format() const
+DepthStencilRenderBufferFormat osc::SharedDepthStencilRenderBuffer::format() const
 {
     return impl_->depth_stencil_format();
 }
@@ -2521,7 +2521,7 @@ public:
 
     explicit Impl(const RenderTextureParams& params) :
         color_buffer_{to<ColorRenderBufferParams>(params)},
-        depth_buffer_{to<DepthRenderBufferParams>(params)}
+        depth_buffer_{to<DepthStencilRenderBufferParams>(params)}
     {}
 
     // note: independent `RenderTexture::Impl` should have independent data, so value-copy
@@ -2573,12 +2573,12 @@ public:
         }
     }
 
-    RenderTextureFormat color_format() const
+    ColorRenderBufferFormat color_format() const
     {
         return color_buffer_.impl_->color_format();
     }
 
-    void set_color_format(RenderTextureFormat new_color_format)
+    void set_color_format(ColorRenderBufferFormat new_color_format)
     {
         if (new_color_format != color_format()) {
             color_buffer_.impl_->set_color_format(new_color_format);
@@ -2598,12 +2598,12 @@ public:
         }
     }
 
-    DepthStencilFormat depth_stencil_format() const
+    DepthStencilRenderBufferFormat depth_stencil_format() const
     {
         return depth_buffer_.impl_->depth_stencil_format();
     }
 
-    void set_depth_stencil_format(DepthStencilFormat new_depth_stencil_format)
+    void set_depth_stencil_format(DepthStencilRenderBufferFormat new_depth_stencil_format)
     {
         if (new_depth_stencil_format != depth_stencil_format()) {
             depth_buffer_.impl_->set_depth_stencil_format(new_depth_stencil_format);
@@ -2625,7 +2625,7 @@ public:
     void reformat(const RenderTextureParams& params)
     {
         color_buffer_.impl_->reformat(to<ColorRenderBufferParams>(params));
-        depth_buffer_.impl_->reformat(to<DepthRenderBufferParams>(params));
+        depth_buffer_.impl_->reformat(to<DepthStencilRenderBufferParams>(params));
     }
 
     RenderBufferOpenGLData& getColorRenderBufferData()
@@ -2648,7 +2648,7 @@ public:
         return color_buffer_;
     }
 
-    SharedDepthRenderBuffer upd_depth_buffer()
+    SharedDepthStencilRenderBuffer upd_depth_buffer()
     {
         return depth_buffer_;
     }
@@ -2657,7 +2657,7 @@ private:
     friend class GraphicsBackend;
 
     SharedColorRenderBuffer color_buffer_;
-    SharedDepthRenderBuffer depth_buffer_;
+    SharedDepthStencilRenderBuffer depth_buffer_;
 };
 
 osc::RenderTexture::RenderTexture() :
@@ -2688,12 +2688,12 @@ void osc::RenderTexture::set_dimensionality(TextureDimensionality dimensionality
     impl_.upd()->set_dimensionality(dimensionality);
 }
 
-RenderTextureFormat osc::RenderTexture::color_format() const
+ColorRenderBufferFormat osc::RenderTexture::color_format() const
 {
     return impl_->color_format();
 }
 
-void osc::RenderTexture::set_color_format(RenderTextureFormat format)
+void osc::RenderTexture::set_color_format(ColorRenderBufferFormat format)
 {
     impl_.upd()->set_color_format(format);
 }
@@ -2708,12 +2708,12 @@ void osc::RenderTexture::set_anti_aliasing_level(AntiAliasingLevel aa_level)
     impl_.upd()->set_anti_aliasing_level(aa_level);
 }
 
-DepthStencilFormat osc::RenderTexture::depth_stencil_format() const
+DepthStencilRenderBufferFormat osc::RenderTexture::depth_stencil_format() const
 {
     return impl_->depth_stencil_format();
 }
 
-void osc::RenderTexture::set_depth_stencil_format(DepthStencilFormat depth_stencil_format)
+void osc::RenderTexture::set_depth_stencil_format(DepthStencilRenderBufferFormat depth_stencil_format)
 {
     impl_.upd()->set_depth_stencil_format(depth_stencil_format);
 }
@@ -2738,7 +2738,7 @@ SharedColorRenderBuffer osc::RenderTexture::upd_color_buffer()
     return impl_.upd()->upd_color_buffer();
 }
 
-SharedDepthRenderBuffer osc::RenderTexture::upd_depth_buffer()
+SharedDepthStencilRenderBuffer osc::RenderTexture::upd_depth_buffer()
 {
     return impl_.upd()->upd_depth_buffer();
 }
@@ -3737,25 +3737,25 @@ void osc::MaterialPropertyBlock::set<SharedColorRenderBuffer>(const StringName& 
 }
 
 template<>
-std::optional<SharedDepthRenderBuffer> osc::MaterialPropertyBlock::get<SharedDepthRenderBuffer>(std::string_view property_name) const
+std::optional<SharedDepthStencilRenderBuffer> osc::MaterialPropertyBlock::get<SharedDepthStencilRenderBuffer>(std::string_view property_name) const
 {
-    return impl_->get<SharedDepthRenderBuffer>(property_name);
+    return impl_->get<SharedDepthStencilRenderBuffer>(property_name);
 }
 
 template<>
-std::optional<SharedDepthRenderBuffer> osc::MaterialPropertyBlock::get<SharedDepthRenderBuffer>(const StringName& property_name) const
+std::optional<SharedDepthStencilRenderBuffer> osc::MaterialPropertyBlock::get<SharedDepthStencilRenderBuffer>(const StringName& property_name) const
 {
-    return impl_->get<SharedDepthRenderBuffer>(property_name);
+    return impl_->get<SharedDepthStencilRenderBuffer>(property_name);
 }
 
 template<>
-void osc::MaterialPropertyBlock::set<SharedDepthRenderBuffer>(std::string_view property_name, const SharedDepthRenderBuffer& value)
+void osc::MaterialPropertyBlock::set<SharedDepthStencilRenderBuffer>(std::string_view property_name, const SharedDepthStencilRenderBuffer& value)
 {
     impl_.upd()->set(property_name, value);
 }
 
 template<>
-void osc::MaterialPropertyBlock::set<SharedDepthRenderBuffer>(const StringName& property_name, const SharedDepthRenderBuffer& value)
+void osc::MaterialPropertyBlock::set<SharedDepthStencilRenderBuffer>(const StringName& property_name, const SharedDepthStencilRenderBuffer& value)
 {
     impl_.upd()->set(property_name, value);
 }
@@ -5609,7 +5609,7 @@ public:
                         background_color(),
                 },
             },
-            RenderTargetDepthAttachment
+            RenderTargetDepthStencilAttachment
             {
                 // attach to the render texture's depth buffer
                 render_texture.upd_depth_buffer(),
@@ -6852,7 +6852,7 @@ void osc::GraphicsBackend::try_bind_material_value_to_shader_element(
 
         break;
     }
-    case variant_index<MaterialValue, SharedDepthRenderBuffer>():
+    case variant_index<MaterialValue, SharedDepthStencilRenderBuffer>():
     {
         static_assert(num_options<TextureDimensionality>() == 2);
         std::visit(Overload{
@@ -6880,7 +6880,7 @@ void osc::GraphicsBackend::try_bind_material_value_to_shader_element(
                 gl::set_uniform(u, texture_slot);
                 ++texture_slot;
             },
-            }, const_cast<SharedDepthRenderBuffer::DepthRenderBuffer&>(*std::get<SharedDepthRenderBuffer>(material_value).impl_).upd_opengl_data());
+            }, const_cast<SharedDepthStencilRenderBuffer::DepthStencilRenderBuffer&>(*std::get<SharedDepthStencilRenderBuffer>(material_value).impl_).upd_opengl_data());
 
         break;
     }
@@ -7365,7 +7365,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::bind_and_clear_render_buffe
 
         // attach depth (+stencil) buffer to the FBO
         if (auto const& depth_attachment = maybe_custom_render_target->depth_attachment()) {
-            const GLenum attachment = detail::has_stencil_component(depth_attachment->buffer.depth_stencil_format()) ?
+            const GLenum attachment = detail::has_stencil_component(depth_attachment->buffer.format()) ?
                 GL_DEPTH_STENCIL_ATTACHMENT :
                 GL_DEPTH_ATTACHMENT;
 
@@ -7545,7 +7545,7 @@ void osc::GraphicsBackend::resolve_render_buffers(
     // resolve depth (+stencil) buffer with a blit
     if (render_target.depth_attachment() and render_target.depth_attachment()->store_action == RenderBufferStoreAction::Resolve) {
         bool can_resolve_buffer = false;  // changes if the underlying buffer data is resolve-able
-        const GLenum attachment = detail::has_stencil_component(render_target.depth_attachment()->buffer.depth_stencil_format()) ?
+        const GLenum attachment = detail::has_stencil_component(render_target.depth_attachment()->buffer.format()) ?
             GL_DEPTH_STENCIL_ATTACHMENT :
             GL_DEPTH_ATTACHMENT;
         std::visit(Overload

@@ -1,8 +1,8 @@
 #pragma once
 
 #include <oscar/Graphics/AntiAliasingLevel.h>
-#include <oscar/Graphics/DepthStencilFormat.h>
-#include <oscar/Graphics/RenderTextureFormat.h>
+#include <oscar/Graphics/ColorRenderBufferFormat.h>
+#include <oscar/Graphics/DepthStencilRenderBufferFormat.h>
 #include <oscar/Graphics/RenderTextureReadWrite.h>
 #include <oscar/Graphics/TextureDimensionality.h>
 #include <oscar/Maths/Vec2.h>
@@ -17,8 +17,8 @@ namespace osc
         Vec2i dimensions = {1, 1};
         TextureDimensionality dimensionality = TextureDimensionality::Tex2D;
         AntiAliasingLevel anti_aliasing_level = AntiAliasingLevel{1};
-        RenderTextureFormat color_format = RenderTextureFormat::ARGB32;
-        DepthStencilFormat depth_stencil_format = DepthStencilFormat::Default;
+        ColorRenderBufferFormat color_format = ColorRenderBufferFormat::ARGB32;
+        DepthStencilRenderBufferFormat depth_stencil_format = DepthStencilRenderBufferFormat::Default;
         RenderTextureReadWrite read_write = RenderTextureReadWrite::Default;
     };
 

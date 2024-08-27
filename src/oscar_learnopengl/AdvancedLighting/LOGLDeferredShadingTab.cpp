@@ -79,7 +79,7 @@ namespace
         }};
     }
 
-    RenderTexture render_texture_with_color_format(RenderTextureFormat color_format)
+    RenderTexture render_texture_with_color_format(ColorRenderBufferFormat color_format)
     {
         RenderTexture rv;
         rv.set_color_format(color_format);
@@ -103,9 +103,9 @@ namespace
         {}
 
         Material material;
-        RenderTexture albedo = render_texture_with_color_format(RenderTextureFormat::ARGB32);
-        RenderTexture normal = render_texture_with_color_format(RenderTextureFormat::ARGBFloat16);
-        RenderTexture position = render_texture_with_color_format(RenderTextureFormat::ARGBFloat16);
+        RenderTexture albedo = render_texture_with_color_format(ColorRenderBufferFormat::ARGB32);
+        RenderTexture normal = render_texture_with_color_format(ColorRenderBufferFormat::ARGBFloat16);
+        RenderTexture position = render_texture_with_color_format(ColorRenderBufferFormat::ARGBFloat16);
         RenderTarget render_target{
             RenderTargetColorAttachment{
                 albedo.upd_color_buffer(),
@@ -125,7 +125,7 @@ namespace
                 RenderBufferStoreAction::Resolve,
                 Color::black(),
             },
-            RenderTargetDepthAttachment{
+            RenderTargetDepthStencilAttachment{
                 albedo.upd_depth_buffer(),
                 RenderBufferLoadAction::Clear,
                 RenderBufferStoreAction::DontCare,
@@ -273,15 +273,13 @@ private:
         }
 
         RenderTarget render_target{
-            {
-                RenderTargetColorAttachment{
-                    output_texture_.upd_color_buffer(),
-                    RenderBufferLoadAction::Load,
-                    RenderBufferStoreAction::Resolve,
-                    Color::clear(),
-                },
+            RenderTargetColorAttachment{
+                output_texture_.upd_color_buffer(),
+                RenderBufferLoadAction::Load,
+                RenderBufferStoreAction::Resolve,
+                Color::clear(),
             },
-            RenderTargetDepthAttachment{
+            RenderTargetDepthStencilAttachment{
                 gbuffer_.albedo.upd_depth_buffer(),
                 RenderBufferLoadAction::Load,
                 RenderBufferStoreAction::DontCare,

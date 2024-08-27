@@ -9,17 +9,17 @@
 #include <oscar/Graphics/AntiAliasingLevel.h>
 #include <oscar/Graphics/Camera.h>
 #include <oscar/Graphics/Color.h>
+#include <oscar/Graphics/ColorRenderBufferFormat.h>
 #include <oscar/Graphics/ColorSpace.h>
 #include <oscar/Graphics/Cubemap.h>
 #include <oscar/Graphics/CullMode.h>
-#include <oscar/Graphics/DepthStencilFormat.h>
+#include <oscar/Graphics/DepthStencilRenderBufferFormat.h>
 #include <oscar/Graphics/Graphics.h>
 #include <oscar/Graphics/Material.h>
 #include <oscar/Graphics/MaterialPropertyBlock.h>
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Graphics/MeshTopology.h>
 #include <oscar/Graphics/RenderTexture.h>
-#include <oscar/Graphics/RenderTextureFormat.h>
 #include <oscar/Graphics/Shader.h>
 #include <oscar/Graphics/ShaderPropertyType.h>
 #include <oscar/Graphics/SubMeshDescriptor.h>
@@ -1471,9 +1471,9 @@ TEST_F(Renderer, MaterialPropertyBlockSetSharedColorRenderBufferOnMaterialCauses
 TEST_F(Renderer, MaterialPropertyBlockSetSharedDepthRenderBufferOnMaterialCausesGetRenderBufferToReturnTheRenderBuffer)
 {
     MaterialPropertyBlock mpb;
-    ASSERT_FALSE(mpb.get<SharedDepthRenderBuffer>("someKey"));
-    mpb.set("someKey", SharedDepthRenderBuffer{});
-    ASSERT_TRUE(mpb.get<SharedDepthRenderBuffer>("someKey"));
+    ASSERT_FALSE(mpb.get<SharedDepthStencilRenderBuffer>("someKey"));
+    mpb.set("someKey", SharedDepthStencilRenderBuffer{});
+    ASSERT_TRUE(mpb.get<SharedDepthStencilRenderBuffer>("someKey"));
 }
 
 TEST_F(Renderer, MaterialPropertyBlockCanCompareEquals)
@@ -1567,21 +1567,21 @@ TEST_F(Renderer, LoadTexture2DFromImageResourceThrowsIfResourceNotFound)
     });
 }
 
-TEST_F(Renderer, RenderTextureFormatCanBeIteratedOverAndStreamedToString)
+TEST_F(Renderer, ColorRenderBufferFormatCanBeIteratedOverAndStreamedToString)
 {
-    for (size_t i = 0; i < num_options<RenderTextureFormat>(); ++i)
+    for (size_t i = 0; i < num_options<ColorRenderBufferFormat>(); ++i)
     {
         std::stringstream ss;
-        ss << static_cast<RenderTextureFormat>(i);  // shouldn't throw
+        ss << static_cast<ColorRenderBufferFormat>(i);  // shouldn't throw
     }
 }
 
-TEST_F(Renderer, DepthStencilFormatCanBeIteratedOverAndStreamedToString)
+TEST_F(Renderer, DepthStencilRenderBufferFormatCanBeIteratedOverAndStreamedToString)
 {
-    for (size_t i = 0; i < num_options<DepthStencilFormat>(); ++i)
+    for (size_t i = 0; i < num_options<DepthStencilRenderBufferFormat>(); ++i)
     {
         std::stringstream ss;
-        ss << static_cast<DepthStencilFormat>(i);  // shouldn't throw
+        ss << static_cast<DepthStencilRenderBufferFormat>(i);  // shouldn't throw
     }
 }
 

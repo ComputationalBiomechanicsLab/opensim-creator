@@ -2,8 +2,8 @@
 
 #include <gtest/gtest.h>
 #include <oscar/Graphics/AntiAliasingLevel.h>
-#include <oscar/Graphics/DepthStencilFormat.h>
-#include <oscar/Graphics/RenderTextureFormat.h>
+#include <oscar/Graphics/ColorRenderBufferFormat.h>
+#include <oscar/Graphics/DepthStencilRenderBufferFormat.h>
 #include <oscar/Graphics/RenderTextureParams.h>
 #include <oscar/Graphics/RenderTextureReadWrite.h>
 #include <oscar/Graphics/TextureDimensionality.h>
@@ -15,8 +15,8 @@ TEST(RenderTexture, DefaultConstructorCreates1x1DefaultRenderTexture)
 {
     const RenderTexture tex;
     ASSERT_EQ(tex.dimensions(), Vec2i(1, 1));
-    ASSERT_EQ(tex.depth_stencil_format(), DepthStencilFormat::Default);
-    ASSERT_EQ(tex.color_format(), RenderTextureFormat::ARGB32);
+    ASSERT_EQ(tex.depth_stencil_format(), DepthStencilRenderBufferFormat::Default);
+    ASSERT_EQ(tex.color_format(), ColorRenderBufferFormat::ARGB32);
     ASSERT_EQ(tex.anti_aliasing_level(), AntiAliasingLevel{1});
 }
 
@@ -158,7 +158,7 @@ TEST(RenderTexture, FromDescriptorHasExpectedValues)
     const int width = 8;
     const int height = 8;
     const AntiAliasingLevel aaLevel{1};
-    const RenderTextureFormat format = RenderTextureFormat::Red8;
+    const ColorRenderBufferFormat format = ColorRenderBufferFormat::Red8;
     const RenderTextureReadWrite rw = RenderTextureReadWrite::Linear;
     const TextureDimensionality dimension = TextureDimensionality::Cube;
 
@@ -184,11 +184,11 @@ TEST(RenderTexture, SetColorFormatCausesGetColorFormatToReturnValue)
     const RenderTextureParams params{{1, 1}};
     RenderTexture d{params};
 
-    ASSERT_EQ(d.color_format(), RenderTextureFormat::ARGB32);
+    ASSERT_EQ(d.color_format(), ColorRenderBufferFormat::ARGB32);
 
-    d.set_color_format(RenderTextureFormat::Red8);
+    d.set_color_format(ColorRenderBufferFormat::Red8);
 
-    ASSERT_EQ(d.color_format(), RenderTextureFormat::Red8);
+    ASSERT_EQ(d.color_format(), ColorRenderBufferFormat::Red8);
 }
 
 TEST(RenderTexture, upd_color_buffer_returns_independent_RenderBuffers_from_copies)

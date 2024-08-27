@@ -2,8 +2,8 @@
 
 #include <gtest/gtest.h>
 #include <oscar/Graphics/AntiAliasingLevel.h>
-#include <oscar/Graphics/DepthStencilFormat.h>
-#include <oscar/Graphics/RenderTextureFormat.h>
+#include <oscar/Graphics/ColorRenderBufferFormat.h>
+#include <oscar/Graphics/DepthStencilRenderBufferFormat.h>
 #include <oscar/Graphics/RenderTextureReadWrite.h>
 #include <oscar/Graphics/TextureDimensionality.h>
 #include <oscar/Maths/Vec2.h>
@@ -43,13 +43,13 @@ TEST(RenderTextureParams, anti_aliasing_level_defaults_to_1)
 TEST(RenderTextureDescriptor, color_format_defaults_to_ARGB32)
 {
     const RenderTextureParams params;
-    ASSERT_EQ(params.color_format, RenderTextureFormat::ARGB32);
+    ASSERT_EQ(params.color_format, ColorRenderBufferFormat::ARGB32);
 }
 
 TEST(RenderTextureParams, depth_stencil_format_defaults_to_Default)
 {
     const RenderTextureParams params;
-    ASSERT_EQ(params.depth_stencil_format, DepthStencilFormat::Default);
+    ASSERT_EQ(params.depth_stencil_format, DepthStencilRenderBufferFormat::Default);
 }
 
 TEST(RenderTextureParams, read_write_defaults_to_Default)

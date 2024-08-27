@@ -145,7 +145,7 @@ private:
         RenderTextureParams params = {
             .dimensions = viewport_dimensions,
             .anti_aliasing_level = aa_level,
-            .color_format = RenderTextureFormat::DefaultHDR,
+            .color_format = ColorRenderBufferFormat::DefaultHDR,
         };
 
         // direct render targets are multisampled HDR textures
@@ -238,7 +238,7 @@ private:
                 RenderBufferStoreAction::Resolve,
                 Color::clear(),
             },
-            RenderTargetDepthAttachment{
+            RenderTargetDepthStencilAttachment{
                 scene_hdr_thresholded_output_.upd_depth_buffer(),
                 RenderBufferLoadAction::Clear,
                 RenderBufferStoreAction::DontCare,

@@ -1,13 +1,13 @@
 #pragma once
 
 #include <oscar/Graphics/AntiAliasingLevel.h>
-#include <oscar/Graphics/DepthStencilFormat.h>
+#include <oscar/Graphics/DepthStencilRenderBufferFormat.h>
 #include <oscar/Graphics/TextureDimensionality.h>
 #include <oscar/Maths/Vec2.h>
 
 #include <memory>
 
-namespace osc { struct DepthRenderBufferParams; }
+namespace osc { struct DepthStencilRenderBufferParams; }
 
 namespace osc
 {
@@ -46,27 +46,27 @@ namespace osc
     // shared references and it's assumed that the calling code knows when/where to share it.
     // This also makes it easier for graph traversal algorithms to figure out the dependency
     // chains between render passes.
-    class SharedDepthRenderBuffer final {
+    class SharedDepthStencilRenderBuffer final {
     public:
-        explicit SharedDepthRenderBuffer();
-        explicit SharedDepthRenderBuffer(const DepthRenderBufferParams&);
+        explicit SharedDepthStencilRenderBuffer();
+        explicit SharedDepthStencilRenderBuffer(const DepthStencilRenderBufferParams&);
 
-        friend bool operator==(const SharedDepthRenderBuffer&, const SharedDepthRenderBuffer&) = default;
+        friend bool operator==(const SharedDepthStencilRenderBuffer&, const SharedDepthStencilRenderBuffer&) = default;
 
-        SharedDepthRenderBuffer clone() const;
+        SharedDepthStencilRenderBuffer clone() const;
 
         Vec2i dimensions() const;
         TextureDimensionality dimensionality() const;
         AntiAliasingLevel anti_aliasing_level() const;
-        DepthStencilFormat depth_stencil_format() const;
+        DepthStencilRenderBufferFormat format() const;
 
     private:
         friend class GraphicsBackend;
         friend class RenderTexture;
-        class DepthRenderBuffer;
+        class DepthStencilRenderBuffer;
 
-        SharedDepthRenderBuffer(const DepthRenderBuffer&);
+        SharedDepthStencilRenderBuffer(const DepthStencilRenderBuffer&);
 
-        std::shared_ptr<DepthRenderBuffer> impl_;
+        std::shared_ptr<DepthStencilRenderBuffer> impl_;
     };
 }

@@ -5,7 +5,7 @@
 namespace osc
 {
     // format of the "color" (albedo) part of a render
-    enum class RenderTextureFormat {
+    enum class ColorRenderBufferFormat {
         Red8,  // careful: `Red8` has previously caused an explosion on some Intel machines (#418)
         ARGB32,
 
@@ -20,5 +20,5 @@ namespace osc
         DefaultHDR = ARGBFloat16,
     };
 
-    std::ostream& operator<<(std::ostream&, RenderTextureFormat);
+    std::ostream& operator<<(std::ostream&, ColorRenderBufferFormat);
 }

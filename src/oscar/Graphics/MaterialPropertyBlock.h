@@ -4,7 +4,7 @@
 #include <oscar/Graphics/Cubemap.h>
 #include <oscar/Graphics/RenderTexture.h>
 #include <oscar/Graphics/SharedColorRenderBuffer.h>
-#include <oscar/Graphics/SharedDepthRenderBuffer.h>
+#include <oscar/Graphics/SharedDepthStencilRenderBuffer.h>
 #include <oscar/Graphics/Texture2D.h>
 #include <oscar/Maths/Mat3.h>
 #include <oscar/Maths/Mat4.h>
@@ -136,10 +136,10 @@ namespace osc
         template<std::same_as<SharedColorRenderBuffer>> void set(std::string_view property_name, const SharedColorRenderBuffer&);
         template<std::same_as<SharedColorRenderBuffer>> void set(const StringName& property_name, const SharedColorRenderBuffer&);
 
-        template<std::same_as<SharedDepthRenderBuffer>> std::optional<SharedDepthRenderBuffer> get(std::string_view property_name) const;
-        template<std::same_as<SharedDepthRenderBuffer>> std::optional<SharedDepthRenderBuffer> get(const StringName& property_name) const;
-        template<std::same_as<SharedDepthRenderBuffer>> void set(std::string_view property_name, const SharedDepthRenderBuffer&);
-        template<std::same_as<SharedDepthRenderBuffer>> void set(const StringName& property_name, const SharedDepthRenderBuffer&);
+        template<std::same_as<SharedDepthStencilRenderBuffer>> std::optional<SharedDepthStencilRenderBuffer> get(std::string_view property_name) const;
+        template<std::same_as<SharedDepthStencilRenderBuffer>> std::optional<SharedDepthStencilRenderBuffer> get(const StringName& property_name) const;
+        template<std::same_as<SharedDepthStencilRenderBuffer>> void set(std::string_view property_name, const SharedDepthStencilRenderBuffer&);
+        template<std::same_as<SharedDepthStencilRenderBuffer>> void set(const StringName& property_name, const SharedDepthStencilRenderBuffer&);
 
         void unset(std::string_view property_name);
         void unset(const StringName& property_name);
