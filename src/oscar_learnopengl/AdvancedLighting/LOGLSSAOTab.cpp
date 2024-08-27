@@ -286,7 +286,7 @@ private:
     // rendering state
     struct GBufferRenderingState final {
         Material material = load_gbuffer_material(App::resource_loader());
-        RenderTexture albedo = render_texture_with_color_format(ColorRenderBufferFormat::R8G8B8A8_UNORM);
+        RenderTexture albedo = render_texture_with_color_format(ColorRenderBufferFormat::R8G8B8A8_SRGB);
         RenderTexture normal = render_texture_with_color_format(ColorRenderBufferFormat::R16G16B16_SFLOAT);
         RenderTexture position = render_texture_with_color_format(ColorRenderBufferFormat::R16G16B16_SFLOAT);
         RenderTarget render_target{
@@ -351,7 +351,7 @@ private:
 
     struct LightingRenderingState final {
         Material material = load_lighting_material(App::resource_loader());
-        RenderTexture output_texture = render_texture_with_color_format(ColorRenderBufferFormat::R8G8B8A8_UNORM);
+        RenderTexture output_texture = render_texture_with_color_format(ColorRenderBufferFormat::R8G8B8A8_SRGB);
 
         void reformat(Vec2 dimensions, AntiAliasingLevel aa_level)
         {

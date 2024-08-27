@@ -4,7 +4,7 @@
 
 namespace osc
 {
-    // the underlying format of a color render buffer
+    // the underlying, color-renderable, format of a color render buffer
     //
     // note: the naming convention and docuemntation for each format is designed
     //       to be the same as Vulkan's:
@@ -19,6 +19,12 @@ namespace osc
         // byte 0, an 8-bit G component in byte 1, an 8-bit B component in byte 2, and an 8-bit A
         // component in byte 3.
         R8G8B8A8_UNORM,
+
+        // a four-component, 32-bit unsigned normalized format that has an 8-bit R component
+        // stored with sRGB nonlinear encoding in byte 0, an 8-bit G component stored with sRGB
+        // nonlinear encoding in byte 1, an 8-bit B component stored with sRGB nonlinear encoding
+        // in byte 2, and an 8-bit A component in byte 3.
+        R8G8B8A8_SRGB,
 
         // a two-component, 32-bit signed floating-point format that has a 16-bit R component in
         // bytes 0..1, and a 16-bit G component in bytes 2..3
@@ -38,9 +44,14 @@ namespace osc
 
         NUM_OPTIONS,
 
-        Default = R8G8B8A8_UNORM,
+        Default = R8G8B8A8_SRGB,
         DefaultHDR = R16G16B16A16_SFLOAT,
     };
+
+    constexpr bool is_srgb_encoded(ColorRenderBufferFormat format)
+    {
+        return format == ColorRenderBufferFormat::R8G8B8A8_SRGB;
+    }
 
     std::ostream& operator<<(std::ostream&, ColorRenderBufferFormat);
 }

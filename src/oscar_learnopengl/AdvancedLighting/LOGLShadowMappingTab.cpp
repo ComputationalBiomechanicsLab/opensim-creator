@@ -61,7 +61,7 @@ namespace
     {
         return RenderTexture{{
             .dimensions = {1024, 1024},
-            .read_write = RenderBufferReadWrite::Linear,
+            .color_format = ColorRenderBufferFormat::R8G8B8A8_UNORM,  // linear depth values
         }};
     }
 }

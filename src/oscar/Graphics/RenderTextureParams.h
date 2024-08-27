@@ -3,7 +3,6 @@
 #include <oscar/Graphics/AntiAliasingLevel.h>
 #include <oscar/Graphics/ColorRenderBufferFormat.h>
 #include <oscar/Graphics/DepthStencilRenderBufferFormat.h>
-#include <oscar/Graphics/RenderBufferReadWrite.h>
 #include <oscar/Graphics/TextureDimensionality.h>
 #include <oscar/Maths/Vec2.h>
 
@@ -19,7 +18,6 @@ namespace osc
         AntiAliasingLevel anti_aliasing_level = AntiAliasingLevel{1};
         ColorRenderBufferFormat color_format = ColorRenderBufferFormat::Default;
         DepthStencilRenderBufferFormat depth_stencil_format = DepthStencilRenderBufferFormat::Default;
-        RenderBufferReadWrite read_write = RenderBufferReadWrite::Default;
     };
 
     std::ostream& operator<<(std::ostream&, const RenderTextureParams&);

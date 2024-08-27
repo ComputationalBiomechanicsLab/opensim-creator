@@ -22,7 +22,7 @@ TEST(ColorRenderBufferFormat, AnyValueCanBePrintedToStream)
 
 TEST(ColorRenderBufferFormat, DefaultsToRGBA32)
 {
-    static_assert(ColorRenderBufferFormat::Default == ColorRenderBufferFormat::R8G8B8A8_UNORM);
+    static_assert(ColorRenderBufferFormat::Default == ColorRenderBufferFormat::R8G8B8A8_SRGB);
 }
 
 TEST(ColorRenderBufferFormat, DefaultHDRFormatIsARGBHalf)

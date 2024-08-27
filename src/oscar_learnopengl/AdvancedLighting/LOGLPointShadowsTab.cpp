@@ -57,7 +57,6 @@ namespace
             .dimensions = c_shadowmap_dimensions,
             .dimensionality = TextureDimensionality::Cube,
             .color_format = ColorRenderBufferFormat::R32_SFLOAT,
-            .read_write = RenderBufferReadWrite::Linear
         }};
     }
 

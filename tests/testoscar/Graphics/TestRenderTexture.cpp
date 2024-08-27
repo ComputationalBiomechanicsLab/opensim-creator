@@ -4,7 +4,6 @@
 #include <oscar/Graphics/AntiAliasingLevel.h>
 #include <oscar/Graphics/ColorRenderBufferFormat.h>
 #include <oscar/Graphics/DepthStencilRenderBufferFormat.h>
-#include <oscar/Graphics/RenderBufferReadWrite.h>
 #include <oscar/Graphics/RenderTextureParams.h>
 #include <oscar/Graphics/TextureDimensionality.h>
 #include <oscar/Maths/Vec2.h>
@@ -16,7 +15,7 @@ TEST(RenderTexture, DefaultConstructorCreates1x1DefaultRenderTexture)
     const RenderTexture tex;
     ASSERT_EQ(tex.dimensions(), Vec2i(1, 1));
     ASSERT_EQ(tex.depth_stencil_format(), DepthStencilRenderBufferFormat::Default);
-    ASSERT_EQ(tex.color_format(), ColorRenderBufferFormat::R8G8B8A8_UNORM);
+    ASSERT_EQ(tex.color_format(), ColorRenderBufferFormat::Default);
     ASSERT_EQ(tex.anti_aliasing_level(), AntiAliasingLevel{1});
 }
 
@@ -146,20 +145,12 @@ TEST(RenderTexture, CanBeConstructedFromADescriptor)
     const RenderTexture d{params};
 }
 
-TEST(RenderTexture, DefaultCtorAssignsDefaultReadWrite)
-{
-    RenderTexture t;
-
-    ASSERT_EQ(t.read_write(), RenderBufferReadWrite::Default);
-}
-
 TEST(RenderTexture, FromDescriptorHasExpectedValues)
 {
     const int width = 8;
     const int height = 8;
     const AntiAliasingLevel aaLevel{1};
     const ColorRenderBufferFormat format = ColorRenderBufferFormat::R8_UNORM;
-    const RenderBufferReadWrite rw = RenderBufferReadWrite::Linear;
     const TextureDimensionality dimension = TextureDimensionality::Cube;
 
     const RenderTextureParams params = {
@@ -167,7 +158,6 @@ TEST(RenderTexture, FromDescriptorHasExpectedValues)
         .dimensionality = dimension,
         .anti_aliasing_level = aaLevel,
         .color_format = format,
-        .read_write = rw,
     };
 
     const RenderTexture tex{params};
@@ -176,7 +166,6 @@ TEST(RenderTexture, FromDescriptorHasExpectedValues)
     ASSERT_EQ(tex.dimensionality(), TextureDimensionality::Cube);
     ASSERT_EQ(tex.anti_aliasing_level(), aaLevel);
     ASSERT_EQ(tex.color_format(), format);
-    ASSERT_EQ(tex.read_write(), rw);
 }
 
 TEST(RenderTexture, SetColorFormatCausesGetColorFormatToReturnValue)
@@ -184,7 +173,8 @@ TEST(RenderTexture, SetColorFormatCausesGetColorFormatToReturnValue)
     const RenderTextureParams params{{1, 1}};
     RenderTexture d{params};
 
-    ASSERT_EQ(d.color_format(), ColorRenderBufferFormat::R8G8B8A8_UNORM);
+    ASSERT_EQ(d.color_format(), ColorRenderBufferFormat::Default);
+    static_assert(ColorRenderBufferFormat::Default != ColorRenderBufferFormat::R8_UNORM);
 
     d.set_color_format(ColorRenderBufferFormat::R8_UNORM);
 

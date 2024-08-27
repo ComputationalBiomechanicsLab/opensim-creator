@@ -2055,7 +2055,7 @@ namespace
     constexpr auto c_render_texture_format_strings = std::to_array<CStringView>({
         "R8_UNORM",
         "R8G8B8A8_UNORM",
-
+        "R8G8B8A8_SRGB",
         "R16G16_SFLOAT",
         "R16G16B16_SFLOAT",
         "R16G16B16A16_SFLOAT",
@@ -2066,17 +2066,17 @@ namespace
 
     constexpr GLenum to_opengl_internal_color_format_enum(const ColorRenderBufferParams& params)
     {
-        static_assert(num_options<ColorRenderBufferFormat>() == 6);
-        static_assert(num_options<RenderBufferReadWrite>() == 2);
+        static_assert(num_options<ColorRenderBufferFormat>() == 7);
 
         switch (params.format) {
         case ColorRenderBufferFormat::R8_UNORM:            return GL_RED;
-        case ColorRenderBufferFormat::R8G8B8A8_UNORM:      return params.read_write == RenderBufferReadWrite::sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8;
+        case ColorRenderBufferFormat::R8G8B8A8_UNORM:      return GL_RGBA8;
+        case ColorRenderBufferFormat::R8G8B8A8_SRGB:       return GL_SRGB8_ALPHA8;
         case ColorRenderBufferFormat::R16G16_SFLOAT:       return GL_RG16F;
         case ColorRenderBufferFormat::R16G16B16_SFLOAT:    return GL_RGB16F;
         case ColorRenderBufferFormat::R16G16B16A16_SFLOAT: return GL_RGBA16F;
         case ColorRenderBufferFormat::R32_SFLOAT:          return GL_R32F;
-        default:                                           return params.read_write == RenderBufferReadWrite::sRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8;
+        default:                                           return GL_SRGB8_ALPHA8;
         }
     }
 
@@ -2087,12 +2087,13 @@ namespace
 
     constexpr CPUImageFormat equivalent_cpu_image_format_of(const ColorRenderBufferFormat& format)
     {
-        static_assert(num_options<ColorRenderBufferFormat>() == 6);
+        static_assert(num_options<ColorRenderBufferFormat>() == 7);
         static_assert(num_options<CPUImageFormat>() == 6);
 
         switch (format) {
         case ColorRenderBufferFormat::R8_UNORM:            return CPUImageFormat::R8;
         case ColorRenderBufferFormat::R8G8B8A8_UNORM:      return CPUImageFormat::RGBA;
+        case ColorRenderBufferFormat::R8G8B8A8_SRGB:       return CPUImageFormat::RGBA;
         case ColorRenderBufferFormat::R16G16_SFLOAT:       return CPUImageFormat::RG;
         case ColorRenderBufferFormat::R16G16B16_SFLOAT:    return CPUImageFormat::RGB;
         case ColorRenderBufferFormat::R16G16B16A16_SFLOAT: return CPUImageFormat::RGBA;
@@ -2103,12 +2104,13 @@ namespace
 
     constexpr CPUDataType equivalent_cpu_datatype_of(const ColorRenderBufferFormat& format)
     {
-        static_assert(num_options<ColorRenderBufferFormat>() == 6);
+        static_assert(num_options<ColorRenderBufferFormat>() == 7);
         static_assert(num_options<CPUDataType>() == 4);
 
         switch (format) {
         case ColorRenderBufferFormat::R8_UNORM:            return CPUDataType::UnsignedByte;
         case ColorRenderBufferFormat::R8G8B8A8_UNORM:      return CPUDataType::UnsignedByte;
+        case ColorRenderBufferFormat::R8G8B8A8_SRGB:       return CPUDataType::UnsignedByte;
         case ColorRenderBufferFormat::R16G16_SFLOAT:       return CPUDataType::HalfFloat;
         case ColorRenderBufferFormat::R16G16B16_SFLOAT:    return CPUDataType::HalfFloat;
         case ColorRenderBufferFormat::R16G16B16A16_SFLOAT: return CPUDataType::HalfFloat;
@@ -2387,16 +2389,6 @@ public:
             reset_opengl_data();
         }
     }
-
-    RenderBufferReadWrite read_write() const { return parameters().read_write; }
-
-    void set_read_write(RenderBufferReadWrite new_read_write)
-    {
-        if (new_read_write != parameters().read_write) {
-            upd_parameters().read_write = new_read_write;
-            reset_opengl_data();
-        }
-    }
 };
 
 osc::SharedColorRenderBuffer::SharedColorRenderBuffer() :
@@ -2458,7 +2450,6 @@ struct osc::Converter<RenderTextureParams, ColorRenderBufferParams> final {
             .dimensionality = params.dimensionality,
             .anti_aliasing_level = params.anti_aliasing_level,
             .format = params.color_format,
-            .read_write = params.read_write,
         };
     }
 };
@@ -2610,18 +2601,6 @@ public:
         }
     }
 
-    RenderBufferReadWrite read_write() const
-    {
-        return color_buffer_.impl_->read_write();
-    }
-
-    void set_read_write(RenderBufferReadWrite new_read_write)
-    {
-        if (new_read_write != read_write()) {
-            color_buffer_.impl_->set_read_write(new_read_write);
-        }
-    }
-
     void reformat(const RenderTextureParams& params)
     {
         color_buffer_.impl_->reformat(to<ColorRenderBufferParams>(params));
@@ -2716,16 +2695,6 @@ DepthStencilRenderBufferFormat osc::RenderTexture::depth_stencil_format() const
 void osc::RenderTexture::set_depth_stencil_format(DepthStencilRenderBufferFormat depth_stencil_format)
 {
     impl_.upd()->set_depth_stencil_format(depth_stencil_format);
-}
-
-RenderBufferReadWrite osc::RenderTexture::read_write() const
-{
-    return impl_->read_write();
-}
-
-void osc::RenderTexture::set_read_write(RenderBufferReadWrite read_write)
-{
-    impl_.upd()->set_read_write(read_write);
 }
 
 void osc::RenderTexture::reformat(const RenderTextureParams& params)
@@ -5586,7 +5555,6 @@ public:
     void render_to(RenderTexture& render_texture)
     {
         static_assert(CameraClearFlag::All == CameraClearFlags{CameraClearFlag::SolidColor, CameraClearFlag::Depth});
-        static_assert(num_options<RenderBufferReadWrite>() == 2);
 
         RenderTarget render_target
         {
@@ -5604,7 +5572,7 @@ public:
                     RenderBufferStoreAction::Resolve,
 
                     // ensure clear color matches colorspace of render texture
-                    render_texture.read_write() == RenderBufferReadWrite::sRGB ?
+                    is_srgb_encoded(render_texture.color_format()) ?
                         to_linear_colorspace(background_color()) :
                         background_color(),
                 },
