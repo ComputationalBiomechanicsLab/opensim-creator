@@ -109,33 +109,31 @@ namespace
         size_t m_Size = 0;
     };
 
-    using ComponentPath = SizedArray<const OpenSim::Component*, 16>;
+    using ComponentTreePathPointers = SizedArray<const OpenSim::Component*, 16>;
 
     // populates `out` with the sequence of nodes between (ancestor..child]
-    void computeComponentPath(
+    ComponentTreePathPointers computeComponentTreePath(
         const OpenSim::Component* ancestor,
-        const OpenSim::Component* child,
-        ComponentPath& out)
+        const OpenSim::Component* child)
     {
-
-        out.clear();
+        ComponentTreePathPointers rv;
 
         // populate child --> parent
-        for (; child != nullptr; child = GetOwner(*child))
-        {
-            out.push_back(child);
+        for (; child != nullptr; child = GetOwner(*child)) {
+            rv.push_back(child);
 
-            if (!child->hasOwner() || child == ancestor)
-            {
+            if (!child->hasOwner() || child == ancestor) {
                 break;
             }
         }
 
         // reverse to yield parent --> child
-        rgs::reverse(out);
+        rgs::reverse(rv);
+
+        return rv;
     }
 
-    bool pathContains(const ComponentPath& p, const OpenSim::Component* c)
+    bool pathContains(const ComponentTreePathPointers& p, const OpenSim::Component* c)
     {
         auto end = p.begin() == p.end() ? p.end() : p.end()-1;
         return cpp23::contains(p.begin(), end, c);
@@ -152,7 +150,7 @@ namespace
         ResponseType type = ResponseType::NothingHappened;
     };
 
-    bool isSearchHit(const std::string& searchStr, const ComponentPath& cp)
+    bool isSearchHit(const std::string& searchStr, const ComponentTreePathPointers& cp)
     {
         return rgs::any_of(cp, [&searchStr](const OpenSim::Component* c)
         {
@@ -171,56 +169,42 @@ public:
         StandardPanelImpl{panelName},
         m_Model{std::move(model)},
         m_OnRightClick{std::move(onRightClick)}
-    {
-    }
-
-    bool isOpen() const
-    {
-        return static_cast<const StandardPanelImpl&>(*this).is_open();
-    }
-
-    void open()
-    {
-        return static_cast<StandardPanelImpl&>(*this).open();
-    }
-
-    void close()
-    {
-        return static_cast<StandardPanelImpl&>(*this).close();
-    }
+    {}
 
 private:
 
     void impl_draw_content() final
     {
-        if (!m_Model)
-        {
-            ui::draw_text_disabled("(no model)");
+        if (not m_Model) {
+            ui::draw_text_disabled("(no model)");  // edge-case
             return;
         }
 
-        Response r = drawWithResponse();
-        if (r.type == ResponseType::SelectionChanged)
-        {
-            m_Model->setSelected(r.ptr);
+        // draw the UI
+        const Response response = drawWithResponse();
+
+        // propagate any UI-initated changes
+        if (response.type == ResponseType::SelectionChanged) {
+            m_Model->setSelected(response.ptr);
         }
-        else if (r.type == ResponseType::HoverChanged)
-        {
-            m_Model->setHovered(r.ptr);
+        else if (response.type == ResponseType::HoverChanged) {
+            m_Model->setHovered(response.ptr);
         }
     }
 
     Response drawWithResponse()
     {
         Response rv;
-
         ui::draw_dummy({0.0f, 3.0f});
+        drawFilterAndSearchRow();
+        drawNavigationTreeChildPanel(rv);
+        return rv;
+    }
 
-        // draw filter stuff
-
+    void drawFilterAndSearchRow()
+    {
         ui::draw_text_unformatted(ICON_FA_EYE);
-        if (ui::begin_popup_context_menu("##filterpopup"))
-        {
+        if (ui::begin_popup_context_menu("##filterpopup")) {
             ui::draw_checkbox("frames", &m_ShowFrames);
             ui::end_popup();
         }
@@ -230,54 +214,59 @@ private:
         ui::draw_dummy({0.0f, 3.0f});
         ui::draw_separator();
         ui::draw_dummy({0.0f, 3.0f});
+    }
 
-        // draw content
-        ui::begin_child_panel("##componentnavigatorvieweritems", {0.0, 0.0}, ImGuiChildFlags_None, ImGuiWindowFlags_NoBackground);
+    void drawNavigationTreeChildPanel(Response& rv)
+    {
+        ui::begin_child_panel(
+            "##componentnavigatorvieweritems",
+            Vec2{0.0, 0.0},
+            ImGuiChildFlags_None,
+            ImGuiWindowFlags_NoBackground
+        );
+
+        drawNavigationTreeContent(rv);
+
+        ui::end_child_panel();
+    }
+
+    void drawNavigationTreeContent(Response& rv)
+    {
+        // these remain constant when rendering the tree
+        const bool hasSearch = not m_CurrentSearch.empty();
+        const float unindentPerLevel = ui::get_tree_node_to_label_spacing() - 15.0f;
 
         const OpenSim::Component* root = &m_Model->getModel();
         const OpenSim::Component* selection = m_Model->getSelected();
         const OpenSim::Component* hover = m_Model->getHovered();
 
-        ComponentPath selectionPath{};
-        if (selection)
-        {
-            computeComponentPath(root, selection, selectionPath);
-        }
+        const ComponentTreePathPointers selectionPath = selection ?
+            computeComponentTreePath(root, selection) :
+            ComponentTreePathPointers{};
 
-        ComponentPath hoverPath{};
-        if (hover)
-        {
-            computeComponentPath(root, hover, hoverPath);
-        }
+        const ComponentTreePathPointers hoverPath = selection ?
+            computeComponentTreePath(root, selection) :
+            ComponentTreePathPointers{};
 
-        // init iterators: this alg. is single-pass with a 1-token lookahead
-        const auto lst = root->getComponentList();
-        auto it = lst.begin();
-        const auto end = lst.end();
+        // get underlying component list (+iterator)
+        const auto componentList = root->getComponentList();
+        const auto componentListEnd = componentList.end();
 
-        // initially populate lookahead (+ path)
+        // setup loop invariants
+        auto componentListIterator = componentList.begin();
         const OpenSim::Component* lookahead = root;
-        ComponentPath lookaheadPath;
-        computeComponentPath(root, root, lookaheadPath);
-
-        // set cur path empty (first step copies lookahead into this)
-        const OpenSim::Component* cur = nullptr;
-        ComponentPath currentPath;
-
+        ComponentTreePathPointers lookaheadPath = computeComponentTreePath(root, root);
         int imguiTreeDepth = 0;
         int imguiId = 0;
-        const bool hasSearch = !m_CurrentSearch.empty();
 
-        const float unindentPerLevel = ui::get_tree_node_to_label_spacing() - 15.0f;
+        while (lookahead) {
 
-        while (lookahead)
-        {
             // important: ensure all nodes have a unique ID: regardess of filtering
             ++imguiId;
 
             // populate current (+ path) from lookahead
-            cur = lookahead;
-            currentPath = lookaheadPath;
+            const OpenSim::Component* cur = lookahead;
+            ComponentTreePathPointers currentPath = lookaheadPath;
 
             OSC_ASSERT(cur && "cur ptr should *definitely* be populated at this point");
             OSC_ASSERT(!currentPath.empty() && "current path cannot be empty (even a root element has a path)");
@@ -285,29 +274,24 @@ private:
             // update lookahead (+ path) by stepping to the next component in the component tree
             lookahead = nullptr;
             lookaheadPath.clear();
-            while (it != end)
-            {
-                const OpenSim::Component& c = *it++;
+            while (componentListIterator != componentListEnd) {
+                const OpenSim::Component& c = *componentListIterator++;
 
                 bool shouldRender = true;
 
-                if (!m_ShowFrames && dynamic_cast<const OpenSim::FrameGeometry*>(&c))
-                {
+                if (!m_ShowFrames && dynamic_cast<const OpenSim::FrameGeometry*>(&c)) {
                     shouldRender = false;
                 }
-                else if (const auto* wos = dynamic_cast<const OpenSim::WrapObjectSet*>(&c))
-                {
+                else if (const auto* wos = dynamic_cast<const OpenSim::WrapObjectSet*>(&c)) {
                     shouldRender = !empty(*wos);
                 }
-                else if (!ShouldShowInUI(c))
-                {
+                else if (!ShouldShowInUI(c)) {
                     shouldRender = false;
                 }
 
-                if (shouldRender)
-                {
+                if (shouldRender) {
                     lookahead = &c;
-                    computeComponentPath(root, &c, lookaheadPath);
+                    lookaheadPath = computeComponentTreePath(root, &c);
                     break;
                 }
             }
@@ -316,14 +300,12 @@ private:
             const bool searchHit = hasSearch && isSearchHit(m_CurrentSearch, currentPath);
 
             // skip rendering if a parent node is collapsed
-            if (imguiTreeDepth < currentPath.sizei() - 1)
-            {
+            if (imguiTreeDepth < currentPath.sizei() - 1) {
                 continue;
             }
 
             // pop tree nodes down to the current depth
-            while (imguiTreeDepth >= currentPath.sizei())
-            {
+            while (imguiTreeDepth >= currentPath.sizei()) {
                 ui::indent(unindentPerLevel);
                 ui::tree_pop();
                 --imguiTreeDepth;
@@ -335,72 +317,58 @@ private:
             const ui::TreeNodeFlags nodeFlags = isInternalNode ? ui::TreeNodeFlag::OpenOnArrow : ui::TreeNodeFlags{ui::TreeNodeFlag::Leaf, ui::TreeNodeFlag::Bullet};
 
             // handle coloring
-            int styles = 0;
-            if (cur == selection)
-            {
+            int pushedStyles = 0;
+            if (cur == selection) {
                 ui::push_style_color(ImGuiCol_Text, Color::yellow());
-                ++styles;
+                ++pushedStyles;
             }
-            else if (cur == hover)
-            {
+            else if (cur == hover) {
                 ui::push_style_color(ImGuiCol_Text, Color::yellow());
-                ++styles;
+                ++pushedStyles;
             }
-            else if (!hasSearch || searchHit)
-            {
+            else if (!hasSearch || searchHit) {
                 // display as normal
             }
-            else
-            {
+            else {
                 ui::push_style_color(ImGuiCol_Text, Color::half_grey());
-                ++styles;
+                ++pushedStyles;
             }
 
             // auto-open in these cases
-            if (searchHit || currentPath.sizei() == 1 || pathContains(selectionPath, cur))
-            {
+            if (searchHit || currentPath.sizei() == 1 || pathContains(selectionPath, cur)) {
                 ui::set_next_item_open(true);
             }
 
+            // draw the tree leaf/node
             ui::push_id(imguiId);
-            if (ui::draw_tree_node_ex(cur->getName(), nodeFlags))
-            {
+            if (ui::draw_tree_node_ex(cur->getName(), nodeFlags)) {
                 ui::unindent(unindentPerLevel);
                 ++imguiTreeDepth;
             }
             ui::pop_id();
-            ui::pop_style_color(styles);
+            ui::pop_style_color(pushedStyles);
 
-            if (ui::is_item_hovered())
-            {
+            // handle tree node user interaction
+            if (ui::is_item_hovered()) {
                 rv.type = ResponseType::HoverChanged;
                 rv.ptr = cur;
 
                 ui::draw_tooltip(cur->getConcreteClassName());
             }
-
-            if (ui::is_item_clicked(ui::MouseButton::Left))
-            {
+            if (ui::is_item_clicked(ui::MouseButton::Left)) {
                 rv.type = ResponseType::SelectionChanged;
                 rv.ptr = cur;
             }
-
-            if (ui::is_item_clicked(ui::MouseButton::Right))
-            {
+            if (ui::is_item_clicked(ui::MouseButton::Right)) {
                 m_OnRightClick(GetAbsolutePath(*cur));
             }
         }
 
         // pop remaining dangling tree elements
-        while (imguiTreeDepth-- > 0)
-        {
+        while (imguiTreeDepth-- > 0) {
             ui::indent(unindentPerLevel);
             ui::tree_pop();
         }
-
-        ui::end_child_panel();
-
-        return rv;
     }
 
     std::shared_ptr<IModelStatePair> m_Model;
@@ -428,7 +396,7 @@ CStringView osc::NavigatorPanel::impl_get_name() const
 
 bool osc::NavigatorPanel::impl_is_open() const
 {
-    return m_Impl->isOpen();
+    return m_Impl->is_open();
 }
 
 void osc::NavigatorPanel::impl_open()
