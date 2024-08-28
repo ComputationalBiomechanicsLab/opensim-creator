@@ -454,8 +454,8 @@ namespace
             const SimTK::Vec3 forceInGround = forceExpressionFrame.findStationLocationInGround(rs.getState(), forceInForceExpressionFrame);
 
             const ArrowProperties arrowProperties = {
-                .start = ToVec3((rs.getFixupScaleFactor() * c_ForceArrowLengthScale * forceInGround) - pointInGround),
-                .end = ToVec3(pointInGround),
+                .start = ToVec3(pointInGround),
+                .end = ToVec3(pointInGround + (rs.getFixupScaleFactor() * c_ForceArrowLengthScale * forceInGround)),
                 .tip_length = 0.015f * rs.getFixupScaleFactor(),
                 .neck_thickness = 0.006f * rs.getFixupScaleFactor(),
                 .head_thickness = 0.01f * rs.getFixupScaleFactor(),
@@ -473,8 +473,8 @@ namespace
             const SimTK::Vec3 torqueInGround = forceExpressionFrame.findStationLocationInGround(rs.getState(), torqueInTorqueExpressionFrame);
 
             const ArrowProperties arrowProperties = {
-                .start = ToVec3((rs.getFixupScaleFactor() * c_TorqueArrowLengthScale * torqueInGround) - pointInGround),
-                .end = ToVec3(pointInGround),
+                .start = ToVec3(pointInGround),
+                .end = ToVec3(pointInGround + (rs.getFixupScaleFactor() * c_TorqueArrowLengthScale * torqueInGround)),
                 .tip_length = 0.015f * rs.getFixupScaleFactor(),
                 .neck_thickness = 0.006f * rs.getFixupScaleFactor(),
                 .head_thickness = 0.01f * rs.getFixupScaleFactor(),
@@ -530,7 +530,7 @@ namespace
 
             const ArrowProperties arrowProperties = {
                 .start = ToVec3(pointInGround),
-                .end = ToVec3(pointInGround + arrowLength*directionInGround),
+                .end = ToVec3(pointInGround + (rs.getFixupScaleFactor() * arrowLength * directionInGround)),
                 .tip_length = 0.015f * rs.getFixupScaleFactor(),
                 .neck_thickness = 0.006f * rs.getFixupScaleFactor(),
                 .head_thickness = 0.01f * rs.getFixupScaleFactor(),
