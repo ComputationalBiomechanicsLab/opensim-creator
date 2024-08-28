@@ -292,6 +292,6 @@ std::optional<Color> osc::try_parse_html_color_string(std::string_view str)
 Color osc::multiply_luminance(const Color& color, float factor)
 {
     auto hsla_color = to_hsla_color(color);
-    hsla_color.l *= factor;
+    hsla_color.lightness *= factor;
     return to_color(hsla_color);
 }

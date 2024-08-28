@@ -463,10 +463,10 @@ TEST(Color, to_hsla_color_works_as_expected)
 {
     for (const auto& [rgba, expected] : c_RGBA_to_HSLA_known_conversion_values) {
         const auto got = to_hsla_color(rgba);
-        ASSERT_NEAR(got.h, expected.h/360.0f, c_HLSL_conversion_tolerance_per_component);
-        ASSERT_NEAR(got.s, expected.s, c_HLSL_conversion_tolerance_per_component);
-        ASSERT_NEAR(got.l, expected.l, c_HLSL_conversion_tolerance_per_component);
-        ASSERT_NEAR(got.a, expected.a, c_HLSL_conversion_tolerance_per_component);
+        ASSERT_NEAR(got.hue, expected.hue/360.0f, c_HLSL_conversion_tolerance_per_component);
+        ASSERT_NEAR(got.saturation, expected.saturation, c_HLSL_conversion_tolerance_per_component);
+        ASSERT_NEAR(got.lightness, expected.lightness, c_HLSL_conversion_tolerance_per_component);
+        ASSERT_NEAR(got.alpha, expected.alpha, c_HLSL_conversion_tolerance_per_component);
     }
 }
 
@@ -474,7 +474,7 @@ TEST(Color, hsla_color_to_Color_works_as_expected)
 {
     for (const auto& tc : c_RGBA_to_HSLA_known_conversion_values) {
         auto normalized = tc.expected_output;
-        normalized.h /= 360.0f;
+        normalized.hue /= 360.0f;
 
         const auto got = to_color(normalized);
         ASSERT_NEAR(got.r, tc.input.r, c_HLSL_conversion_tolerance_per_component) << tc << ", got = " << got;
